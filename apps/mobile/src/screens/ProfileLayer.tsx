@@ -234,7 +234,11 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                     >
                       <CommentsContext.Provider value={comments}>
                         <ReactionsContext.Provider value={reactions}>
-                          {children}
+                          {/* The end of a run tags members, and a tagged
+                              name opens a profile (TASK-208). */}
+                          <FollowsContext.Provider value={followsDoor}>
+                            {children}
+                          </FollowsContext.Provider>
                         </ReactionsContext.Provider>
                       </CommentsContext.Provider>
                     </View>

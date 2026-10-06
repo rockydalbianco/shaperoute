@@ -1,7 +1,8 @@
 # TASK-208 — Pubblicare una corsa in stile Strava
 
 **Stato**: In lavorazione — parte A (l'API) fatta il 2026-10-03; parte B
-da fare, dopo la conferma delle proposte da parte dell'utente
+(l'app) in PR #425 dal 2026-10-06, con le proposte confermate dall'utente:
+aspetta il merge e la prova sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-208-publish-api` (parte A),
 `feat/TASK-208-publish-app` (parte B)
 **Dipende da**: TASK-117 (fatto), TASK-211 (parte A per la nostra A, parte
@@ -138,12 +139,13 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
 - [x] Le foto non hanno EXIF (test, come per la foto del profilo).
 - [x] Taggare un account che non esiste dà `422`; cancellato un account
       taggato, il suo nome sparisce dal disegno (test).
-- [ ] Senza rete titolo, descrizione, tag, visibilità e foto non si
-      perdono (parte B, test).
+- [x] Senza rete titolo, descrizione, tag, visibilità e foto non si
+      perdono (parte B: `drawingOutbox.test.ts`, `drawingPhotos.test.ts`,
+      `activitiesDoorDrawing.test.tsx`, `PublicRow.test.tsx`).
 - [x] Con «Send to Strava» descrizione e tipo arrivano nell'invio (test
       con Strava finto).
-- [ ] Test verdi dell'API e dell'app (l'API sì, parte A; l'app è la
-      parte B).
+- [x] Test verdi dell'API e dell'app (l'API nella parte A; l'app nella
+      parte B, 338 file verdi in locale).
 - [ ] Prova sull'iPhone, dopo l'aggiornamento del server, con l'ok
       dell'utente.
 
@@ -182,6 +184,16 @@ apps/mobile/src/social/                             (file nuovi)
 apps/mobile/src/api/drawings.ts
 apps/mobile/src/strava/StravaRunEnd.tsx
 docs/UI.md, docs/DECISIONS.md, docs/STATUS.md
+apps/mobile/src/activities/outbox.ts                (ok dell'utente 2026-10-06: la scelta intera con la corsa)
+apps/mobile/src/activities/activitiesDoor.ts        (ok dell'utente: disegno prima di Strava, foto a «Save» e con la corsa cancellata)
+apps/mobile/src/activities/ActivitiesList.tsx       (una parola: `waitingText` prende la visibilità)
+apps/mobile/src/social/drawingsDoor.ts              (ok dell'utente: la scelta intera, le foto con il token)
+apps/mobile/src/screens/ProfileLayer.tsx            (ok dell'utente: `FollowsContext` anche intorno all'app)
+apps/mobile/src/i18n/it.ts, de.ts, es.ts, fr.ts     (ok dell'utente: i testi nuovi)
+apps/mobile/package.json, package-lock.json         (`expo-image-manipulator`, ok dell'utente)
+apps/mobile/__tests__/AppDrawings.test.tsx, AppStrava.test.tsx, e i test
+che usavano la scelta a due campi (`drawingsDoor`, `drawingOutbox`,
+`DrawingsGrid`, `deleteAccountQueues`, `api/drawings`)
 ```
 
 ## Fuori scope
@@ -317,4 +329,63 @@ difetto: chi segue vedeva il disegno e non i suoi commenti. Ora chiede
   vedere la crescita vera.
 
 **Non fatto**: niente sul server né sul telefono. Servono la parte B,
-l'aggiornamento del server e l'ok dell'utente.
+l'aggiornamento del server e l'ok dell'utente. (Il server ha la `0014`
+dal 2026-10-06, con `d7b490f1`.)
+
+### Parte B — l'app (2026-10-06, PR #425, ADR-0170 «Parte B»)
+
+**Le conferme dell'utente** (2026-10-06, prima di scrivere): tutte e sei
+le proposte dell'agente («Only me» a ogni corsa; «Activity» dallo sport di
+«Settings», anche per il tipo su Strava; Strava senza foto; lo stesso
+modulo in «My activities»; 10 tag e 500 caratteri; i testi). Poi il **sì**
+ai sei file fuori dall'elenco (scritti sopra in «File toccati») e alla
+dipendenza `expo-image-manipulator`, per ridurre le foto a 1080 px sul
+telefono.
+
+**Cosa funziona** (test verdi, 338 file in locale; `typecheck`, `lint`,
+`format:check` puliti):
+- **La fine corsa** (`RunEnd.tsx`): il modulo in un riquadro che scorre
+  (metà schermo), nell'ordine dell'utente: foto («Add photo» → «Choose a
+  picture» / «Take a photo», fino a tre, ognuna con la «×»), «Title», «How
+  did it go?», «Tag people», «Activity», «Who can see it»; sotto, Strava;
+  fuori dal riquadro «Discard» e «Save». Con «Save» la scelta intera va con
+  la corsa (`toDrawing`) e le foto con lei (`toPhotos`); niente di scelto,
+  niente di più. I testi di `RunEnd` passano da `t()`.
+- **La scelta intera** (`DrawingChoice` in `api/drawings.ts`: titolo,
+  descrizione, attività, tag con i nomi, visibilità) in `outbox.ts`,
+  `drawingOutbox.ts` e `drawingsDoor.ts`; i file dell'app di prima
+  (`{title, public}`) si leggono e si fanno interi. `PUT` con tutti i
+  campi, i tag come `public_id`.
+- **Le foto sul telefono** (`drawingPhotos.ts`, nuovo): un file per foto
+  (`drawing-photo-{account}-{chiave}-{posto}.b64`) e `drawing-photos.json`
+  (`sent`, `removed`); `syncPhotos` dopo ogni `PUT` del disegno riuscito:
+  con «Only me» tutte da rimandare, se no i `PUT` dei posti non ancora
+  sull'API e i `DELETE` dei posti svuotati; `409`, rete e API occupata
+  lasciano foto e disegno in coda; `422` butta la foto; la corsa cancellata
+  cancella le foto (`activitiesDoor.remove`).
+- **Il disegno prima di Strava** in `activitiesDoor.send`: Strava prende
+  descrizione e tipo dal disegno.
+- **La scheda di «My activities»** (`PublicRow.tsx`): lo stesso modulo
+  (40 % dello schermo); pillole, tag e foto mandano subito; titolo e
+  descrizione a tastiera chiusa; rifiutata, il modulo torna a com'era;
+  «Only me» con foto dice che lasciano Sgrava.
+- **Il disegno aperto** (`DrawingCard.tsx`): «Run · 4.0 km», le foto da
+  scorrere (160 pt, con il token), la descrizione, i nomi taggati che
+  aprono il profilo da `FollowsContext` (ora anche intorno all'app, una
+  riga in `ProfileLayer.tsx`).
+- **I tag** (`TagPeople.tsx`, nuovo): la ricerca di TASK-215 in un foglio
+  dal basso.
+- **La riduzione** (`pickDrawingPhoto.ts`, nuovo): il picker senza
+  ritaglio, poi `expo-image-manipulator` a 1080 px sul lato lungo, JPEG
+  0,8; fotocamera negata → la riga rossa e «Open Settings».
+- **24 testi nuovi** in it/de/es/fr (`tables.test.ts` verde).
+
+**Non fatto / da fare dopo**:
+- la **prova sull'iPhone** (l'aspetto del modulo, il foglio dei tag, le
+  foto vere): aspetta l'utente, dopo la pubblicazione;
+- cancellato l'account, i file delle foto restano sul telefono
+  (`forgetAllPhotosOf` c'è; `useAccount.ts` non è del task);
+- il `409` e il `404` di una foto si leggono uguali (`http_error`, l'app
+  non ha lo stato HTTP): dopo un `PUT` del disegno riuscito si prende per
+  `409`;
+- `docs/API.md` e `DATABASE.md` non cambiano (parte A).

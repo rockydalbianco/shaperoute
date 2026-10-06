@@ -1,14 +1,25 @@
 import { sessionEnded } from "../account/messages";
-import { type DrawingChoice, saveDrawing, worthAgain } from "../api/drawings";
+import {
+  choiceFrom,
+  type DrawingChoice,
+  isChosen,
+  isSeen,
+  sameChoice,
+  saveDrawing,
+  worthAgain,
+} from "../api/drawings";
 import { keptList } from "../storage/keptList";
+import { syncPhotos } from "./drawingPhotos";
 
 /**
- * The choices of «Public» and title still to reach the API (TASK-117), in
- * a file of the app's documents, like the runs still to go to Strava
- * (strava/stravaOutbox.ts): a run saved with a title or «Public» joins it
+ * The choices for the drawings still to reach the API (TASK-117, TASK-208),
+ * in a file of the app's documents, like the runs still to go to Strava
+ * (strava/stravaOutbox.ts): a run saved with something chosen joins it
  * once the API has the run; a choice made on a run of «My activities»
  * without a network joins it at once. Only the latest choice for a run
  * waits: it is the choice whole, and sending it again changes nothing.
+ * After the choice go the run's photos (drawingPhotos.ts), while others
+ * see the drawing.
  */
 
 export const DRAWING_OUTBOX_FILE = "drawings-outbox.json";
@@ -22,17 +33,25 @@ export type DrawingWaiting = DrawingChoice & {
   key: string;
 };
 
-function isDrawingWaiting(value: unknown): value is DrawingWaiting {
+/** An item of the file; a choice of before TASK-208 is made whole. */
+function drawingWaitingFrom(value: unknown): DrawingWaiting | null {
   if (typeof value !== "object" || value === null) {
-    return false;
+    return null;
   }
   const item = value as Record<string, unknown>;
-  return (
-    typeof item.owner === "number" &&
-    typeof item.key === "string" &&
-    (item.title === null || typeof item.title === "string") &&
-    typeof item.public === "boolean"
-  );
+  const choice = choiceFrom(item);
+  if (
+    choice === null ||
+    typeof item.owner !== "number" ||
+    typeof item.key !== "string"
+  ) {
+    return null;
+  }
+  return { owner: item.owner, key: item.key, ...choice };
+}
+
+function isDrawingWaiting(value: unknown): value is DrawingWaiting {
+  return drawingWaitingFrom(value) !== null;
 }
 
 // Written so that a write cut short loses nothing that waited (TASK-252).
@@ -40,7 +59,10 @@ const kept = keptList(DRAWING_OUTBOX_FILE, isDrawingWaiting);
 
 /** The choices in the file, the oldest first; none when it cannot be read. */
 export function loadDrawingOutbox(): DrawingWaiting[] {
-  return kept.load();
+  return kept
+    .load()
+    .map(drawingWaitingFrom)
+    .filter((item): item is DrawingWaiting => item !== null);
 }
 
 function saveDrawingOutbox(list: DrawingWaiting[]): boolean {
@@ -64,7 +86,13 @@ export function keepForDrawing(choice: DrawingWaiting): boolean {
         owner: choice.owner,
         key: choice.key,
         title: choice.title,
-        public: choice.public,
+        description: choice.description,
+        activity: choice.activity,
+        tags: choice.tags.map((tag) => ({
+          public_id: tag.public_id,
+          username: tag.username,
+        })),
+        visibility: choice.visibility,
       },
     ].slice(-MAX_DRAWINGS_WAITING),
   );
@@ -79,12 +107,7 @@ export function waitingDrawing(owner: number, key: string): DrawingWaiting | nul
 export function dropForDrawing(choice: DrawingWaiting): void {
   const list = loadDrawingOutbox();
   const next = list.filter(
-    (item) =>
-      !(
-        sameRun(item, choice.owner, choice.key) &&
-        item.title === choice.title &&
-        item.public === choice.public
-      ),
+    (item) => !(sameRun(item, choice.owner, choice.key) && sameChoice(item, choice)),
   );
   if (next.length !== list.length) {
     saveDrawingOutbox(next);
@@ -115,10 +138,12 @@ export function forgetDrawingsOf(owner: number): void {
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
 /**
- * Sends the choices of `owner` that wait, the oldest first. With no
- * network, or the API silent or busy, they wait on. A choice the API
- * refuses leaves the file: sending it again would change nothing. A run
- * too short to publish keeps its title, private (ADR-0159, point 4).
+ * Sends the choices of `owner` that wait, the oldest first, each followed
+ * by the photos of its run (drawingPhotos.ts). With no network, or the API
+ * silent or busy, they wait on; a choice whose photos still wait stays
+ * too, to be sent again before them. A choice the API refuses leaves the
+ * file: sending it again would change nothing. A run too short to publish
+ * keeps the rest of its choice, for its owner only (ADR-0159, point 4).
  * "session_ended" when the token opens no session any more.
  */
 export async function sendWaitingDrawings(
@@ -135,17 +160,32 @@ export async function sendWaitingDrawings(
     if (worthAgain(outcome)) {
       break;
     }
-    if (
+    if (outcome.kind === "ok") {
+      const photos = await syncPhotos(
+        baseUrl,
+        token,
+        owner,
+        choice.key,
+        choice.visibility,
+        options,
+      );
+      if (photos === "session_ended") {
+        return "session_ended";
+      }
+      if (photos === "waits") {
+        break;
+      }
+    } else if (
       outcome.kind === "api_error" &&
       outcome.code === "invalid_request" &&
-      choice.public &&
-      choice.title !== null
+      isSeen(choice.visibility) &&
+      isChosen({ ...choice, visibility: "only_me" })
     ) {
       await saveDrawing(
         baseUrl,
         token,
         choice.key,
-        { title: choice.title, public: false },
+        { ...choice, visibility: "only_me" },
         options,
       );
     }

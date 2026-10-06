@@ -78,7 +78,7 @@ export function ActivitiesList() {
         </Text>
       )}
       {activities.waitingPublic > 0 && (
-        <Text style={styles.message}>{waitingText(true)}</Text>
+        <Text style={styles.message}>{waitingText("everyone")}</Text>
       )}
       {activities.list.length > 0 ? (
         <>

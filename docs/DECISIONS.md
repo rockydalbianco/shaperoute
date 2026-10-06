@@ -8818,6 +8818,70 @@ in `tasks/TASK-208.md`, «Note per il
 deploy». Niente sul server né sul telefono senza la parte B e l'ok
 dell'utente.
 
+**Parte B, l'app** (2026-10-06; deciso dall'agente su delega dell'utente,
+dentro le **sei proposte confermate dall'utente** lo stesso giorno: «Only
+me» a ogni corsa, «Activity» dallo sport di «Settings», Strava senza foto,
+lo stesso modulo in «My activities», 10 tag e 500 caratteri, i testi; e
+il suo **sì** ai sei file fuori dall'elenco del task e alla dipendenza
+nuova):
+1. **Una scelta sola, intera** (`DrawingChoice`: titolo, descrizione,
+   attività, tag con i nomi, visibilità) in ogni posto dove prima c'erano
+   `title` e `public`: la coda delle corse, quella dei disegni, la porta
+   dei disegni. I file scritti dall'app di prima (`{title, public}`) si
+   leggono ancora e si fanno interi (`choiceFrom`). Niente va all'API con
+   niente di scelto, come prima; una corsa che non è una corsa (bici,
+   canoa) conta come scelta, perché l'API tiene ogni corsa per corsa
+   finché non glielo si dice.
+2. **Le foto in un file per foto**, base64 già ridotto
+   (`drawing-photo-{account}-{chiave}-{posto}.b64`), con un elenco
+   (`drawing-photos.json`, scritto come le code di TASK-252) che dice per
+   ognuna se l'API l'ha (`sent`) e se un posto è stato svuotato qui mentre
+   l'API l'ha ancora (`removed`). Non dentro il JSON della coda (una corsa
+   con tre foto sarebbe un file da 1 MB riscritto a ogni corsa) e non in
+   un `.jpg` (il base64 serve così com'è per il `PUT`, e il mock dei test
+   legge testo). Il `data:` URI basta all'`Image`.
+3. **La sincronizzazione delle foto viene sempre dopo un `PUT` del
+   disegno riuscito**, con la visibilità appena confermata: con «Only me»
+   l'API le ha cancellate e si segnano tutte `sent: false`; se no vanno i
+   posti non ancora sull'API e si svuotano quelli `removed`. Un `409` (per
+   l'API il disegno è ancora `only_me`), la rete che manca o l'API occupata
+   lasciano la foto **e il disegno** in coda: il prossimo giro rifà il
+   `PUT` del disegno (innocuo) e riprova le foto. Un `422` (non è una foto)
+   la butta. L'app non distingue il `409` dal `404` (l'errore dell'API non
+   porta lo stato HTTP): dopo un `PUT` del disegno riuscito un `404` non
+   può venire, quindi `http_error` dopo il disegno è il `409`.
+4. **Il disegno va all'API prima di Strava**: Strava prende descrizione e
+   tipo dal disegno (ADR-0170, punti 10 e 11), così il corpo di Strava
+   resta com'era (`name`, `post`). Prima era il contrario (ADR-0166).
+5. **Le foto si riducono sul telefono** con `expo-image-manipulator`
+   (dipendenza nuova, pacchetto dell'SDK di Expo, dentro Expo Go; ok
+   dell'utente): 1080 px sul lato lungo, JPEG a qualità 0,8, senza EXIF,
+   come farebbe l'API. Così il telefono tiene 0,1–0,3 MB a foto invece di
+   1–2 MB, e il `PUT` pesa altrettanto. Il picker non ritaglia (una foto
+   di una corsa è quella che è), al contrario di quello del profilo.
+6. **Il modulo scorre in un riquadro**: metà schermo a fine corsa, 40 %
+   sulla scheda di «My activities», con «Save» e «Discard» fuori dal
+   riquadro, sempre in vista. Il foglio sotto la mappa non scorre da sé, e
+   sei campi più Strava lo farebbero uscire dallo schermo.
+7. **I tag con la ricerca di TASK-215** in un foglio dal basso
+   (`TagPeople.tsx`), che prende l'API e l'account da `FollowsContext`:
+   per questo il contesto, che stava solo intorno a «Profile», sta anche
+   intorno all'app (una riga in `ProfileLayer.tsx`), e lo stesso contesto
+   dà a un nome taggato il modo di aprire il profilo.
+8. **La risposta del `PUT` del disegno viene ripulita dei posti svuotati**
+   prima di tornare alla scheda: arriva prima che il `DELETE` della foto
+   parta, e mostrerebbe di nuovo la foto appena tolta.
+
+**Scartate (parte B)**: un contesto nuovo per l'account (c'è già
+`FollowsContext`); mandare le foto con `activity` nel `PUT` della corsa
+(il task dice «prima il disegno, poi le foto»); riusare il picker del
+profilo (ritaglia al quadrato); un «Modifica» che apre il modulo sulla
+scheda (il task vuole lo stesso modulo, in vista).
+
+**Da fare dopo**: cancellato l'account, i file delle foto restano sul
+telefono (`forgetAllPhotosOf` c'è, `useAccount.ts` non è del task);
+l'aspetto sull'iPhone.
+
 ## ADR-0181 — Le immagini ufficiali di Strava: il pulsante «Connect with Strava» e «Compatible with Strava» dal pacchetto di Strava, mai ridisegnate
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-218). Usare le immagini ufficiali di Strava al posto del pulsante di

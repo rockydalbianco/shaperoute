@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
-import { titleOf } from "../api/drawings";
+import { type DrawingChoice, isChosen, NOT_CHOSEN } from "../api/drawings";
 import { t } from "../i18n";
 import { showSavedLogo } from "../intro/SavedLogo";
+import { activityOf } from "../settings/sport";
+import { useSport } from "../settings/useSport";
+import { phonePhotoUri } from "../social/drawingPhotos";
+import type { PhotoShown } from "../social/drawingsDoor";
 import {
-  DrawingTitle,
-  PUBLIC_AT_END,
-  PublicLine,
-  PublicSwitch,
+  DrawingForm,
+  FormScroll,
+  nextPlace,
+  type PickPhoto,
 } from "../social/PublicParts";
 import { loadSendToStrava, saveSendToStrava } from "../strava/stravaChoice";
 import { StravaRunEnd } from "../strava/StravaRunEnd";
@@ -30,37 +34,57 @@ type Props = {
   onSave: () => boolean;
   /** «Discard», after a yes: the run is gone for good. */
   onDiscard: () => void;
+  /** The fakes of the tests: the photo picker, the fetch of the tag search. */
+  pick?: PickPhoto;
+  fetchFn?: typeof fetch;
+  apiKey?: string | null;
 };
+
+/** How much of the screen the form may take: the map and the buttons
+ * keep the rest. */
+export const FORM_SHARE = 0.5;
+
+/** A photo chosen at the end of the run, on the phone until «Save». */
+type Chosen = { n: number; base64: string };
 
 /**
  * The way out of a run that ended, under its card (TASK-172): with an
  * account, «Save» keeps it in «My activities» and «Discard» throws it
  * away, after asking. Nothing is saved without «Save». Without an account
  * the card keeps its «Done», and a line here says how to keep the next
- * runs. With Strava connected, «Send to Strava» over them sends the run
- * there too, with «Save» (TASK-187). Over all of them «Public» and the
- * run's «Title» (TASK-117): with «Save» the run becomes a drawing in the
- * profile, and the title names it, on Strava too.
+ * runs. Over the buttons the form of the drawing, as Strava's (TASK-208,
+ * ADR-0170): up to three photos, the title, «How did it go?», the people
+ * tagged, what the run was (from the sport of «Settings») and who can see
+ * it («Only me» at every run, the user's choice); then «Send to Strava»
+ * with Strava connected (TASK-187). With «Save» the choice and the photos
+ * go with the run: to the API once it has the run, the photos only while
+ * others see it.
  */
-export function RunEnd({ onSave, onDiscard }: Props) {
-  const { signedIn, signIn, toStrava, toDrawing, full, waiting, refused } =
+export function RunEnd({ onSave, onDiscard, pick, fetchFn, apiKey }: Props) {
+  const { signedIn, signIn, toStrava, toDrawing, toPhotos, full, waiting, refused } =
     useActivitiesDoor();
   const strava = useStrava();
+  const sport = useSport();
+  const { height } = useWindowDimensions();
   // «Discard» asks first, here: a run thrown away does not come back.
   const [confirming, setConfirming] = useState(false);
   const [failed, setFailed] = useState(false);
   // As it was left at the end of the last run (the user's choice).
   const [send, setSend] = useState(loadSendToStrava);
-  // Off at every run, whatever the last one chose (the user's choice):
-  // publishing by mistake costs more than forgetting to.
-  const [publicOn, setPublicOn] = useState(false);
-  const [title, setTitle] = useState("");
+  // «Only me» at every run, whatever the last one chose (the user's
+  // choice): publishing by mistake costs more than forgetting to. The
+  // activity is the sport chosen in «Settings».
+  const [choice, setChoice] = useState<DrawingChoice>(() => ({
+    ...NOT_CHOSEN,
+    activity: activityOf(sport),
+  }));
+  const [photos, setPhotos] = useState<Chosen[]>([]);
 
   function save() {
-    const typed = titleOf(title);
     const sending = strava.status.available && strava.status.connected && send;
-    toStrava(sending ? { name: typed } : null);
-    toDrawing(publicOn || typed !== null ? { title: typed, public: publicOn } : null);
+    toStrava(sending ? { name: choice.title } : null);
+    toDrawing(isChosen(choice) ? choice : null);
+    toPhotos([...photos].sort((a, b) => a.n - b.n).map((photo) => photo.base64));
     const kept = onSave();
     setFailed(!kept);
     if (kept) {
@@ -72,50 +96,79 @@ export function RunEnd({ onSave, onDiscard }: Props) {
   if (!signedIn) {
     return (
       <Pressable style={styles.tap} onPress={signIn} accessibilityRole="button">
-        <Text style={[styles.line, styles.link]}>{SIGN_IN_TO_KEEP_RUNS}</Text>
+        <Text style={[styles.line, styles.link]}>{t(SIGN_IN_TO_KEEP_RUNS)}</Text>
       </Pressable>
     );
   }
   if (confirming) {
     return (
       <View style={styles.end}>
-        <Text style={styles.question}>Discard this run? It will not be saved.</Text>
+        <Text style={styles.question}>
+          {t("Discard this run? It will not be saved.")}
+        </Text>
         <View style={styles.buttons}>
           <Pressable
             style={styles.button}
             onPress={() => setConfirming(false)}
             accessibilityRole="button"
           >
-            <Text style={styles.buttonText}>Keep it</Text>
+            <Text style={styles.buttonText}>{t("Keep it")}</Text>
           </Pressable>
           <Pressable
             style={[styles.button, styles.danger]}
             onPress={onDiscard}
             accessibilityRole="button"
           >
-            <Text style={[styles.buttonText, styles.dangerText]}>Discard run</Text>
+            <Text style={[styles.buttonText, styles.dangerText]}>
+              {t("Discard run")}
+            </Text>
           </Pressable>
         </View>
       </View>
     );
   }
+  const shown: PhotoShown[] = [...photos]
+    .sort((a, b) => a.n - b.n)
+    .map((photo) => ({
+      n: photo.n,
+      source: { uri: phonePhotoUri(photo.base64) },
+      onPhone: true,
+    }));
   return (
     <View style={styles.end}>
-      <PublicSwitch on={publicOn} onChange={setPublicOn} />
-      {publicOn && <PublicLine text={PUBLIC_AT_END} />}
-      <DrawingTitle value={title} onChange={setTitle} />
-      <StravaRunEnd
-        strava={strava}
-        send={send}
-        onSend={(on) => {
-          setSend(on);
-          saveSendToStrava(on);
-        }}
-      />
+      <FormScroll maxHeight={Math.round(height * FORM_SHARE)}>
+        <View style={styles.form}>
+          <DrawingForm
+            choice={choice}
+            onChoice={setChoice}
+            photos={shown}
+            onAddPhoto={(base64) => {
+              const n = nextPlace(photos);
+              if (n !== null) {
+                setPhotos((was) => [...was, { n, base64 }]);
+              }
+            }}
+            onRemovePhoto={(photo) =>
+              setPhotos((was) => was.filter((other) => other.n !== photo.n))
+            }
+            pick={pick}
+            fetchFn={fetchFn}
+            apiKey={apiKey}
+          />
+          <StravaRunEnd
+            strava={strava}
+            send={send}
+            onSend={(on) => {
+              setSend(on);
+              saveSendToStrava(on);
+            }}
+          />
+        </View>
+      </FormScroll>
       {failed && (
         <Text style={styles.problem} accessibilityRole="alert">
           {!full
-            ? "This run could not be kept on the phone. Try again."
+            ? t("This run could not be kept on the phone. Try again.")
             : // Nothing is let go to make room (TASK-257): only a run the
               // API refused can be discarded, in «My activities».
               t(
@@ -132,15 +185,15 @@ export function RunEnd({ onSave, onDiscard }: Props) {
           onPress={() => setConfirming(true)}
           accessibilityRole="button"
         >
-          <Text style={[styles.buttonText, styles.dangerText]}>Discard</Text>
+          <Text style={[styles.buttonText, styles.dangerText]}>{t("Discard")}</Text>
         </Pressable>
         <Pressable
           style={styles.button}
           onPress={save}
           accessibilityRole="button"
-          accessibilityLabel="Save to My activities"
+          accessibilityLabel={t("Save to My activities")}
         >
-          <Text style={styles.buttonText}>Save</Text>
+          <Text style={styles.buttonText}>{t("Save")}</Text>
         </Pressable>
       </View>
     </View>
@@ -151,6 +204,10 @@ const styles = StyleSheet.create({
   end: {
     gap: space.sm,
     paddingTop: space.md,
+  },
+  form: {
+    gap: space.sm,
+    paddingBottom: space.xs,
   },
   buttons: {
     flexDirection: "row",

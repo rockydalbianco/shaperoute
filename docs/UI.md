@@ -507,9 +507,14 @@ Non arrivata: il motivo e «Try again». **Un disegno toccato si apre sulla
 mappa**, come una corsa di «My activities»: «Profile» si toglie, la mappa
 si inquadra sulla linea gialla (nessun segnaposto di partenza, nessuna
 linea bianca) e sotto c'è la sua scheda: il titolo (senza titolo, il
-giorno), il giorno, i km, mai il punteggio né l'ora;
-**«Back to the profile»** e «←» tornano a «Profile». Se nel frattempo è
-tornato privato: «This drawing is no longer public.» sopra la griglia.
+giorno), il giorno, l'attività e i km («Run · 4.0 km»), mai il punteggio
+né l'ora; poi, da TASK-208, **le foto** (alte 160 punti, da scorrere di
+lato, lette dall'API con il token), **com'è andata** (la descrizione) e
+**i nomi taggati** in pillole, ognuna delle quali apre il profilo di quella
+persona sopra l'app; un disegno di un'API senza questi campi si vede come
+prima. **«Back to the profile»** e «←» tornano a «Profile». Se nel
+frattempo è tornato privato: «This drawing is no longer public.» sopra la
+griglia.
 
 **I commenti di un disegno** (TASK-120, ADR-0175, scelta dell'utente del
 2026-10-03: subito sotto le corse vere, non sugli esempi di «Feed»): nella
@@ -991,24 +996,38 @@ telefono dell'account: con un percorso o senza.
   rossa sotto («Strava could not read this run.», «No connection. Try
   again when you are online.»). Un atleta che ha tolto l'accesso da Strava
   torna a «Connect with Strava».
-- **«Public» sulla corsa aperta** (TASK-117, ADR-0159, ADR-0166), sopra
-  Strava: l'interruttore **«Public»** («Off» / «On») e il campo
-  **«Title»** («Give it a name», al più 60 caratteri), come l'API li ha;
-  niente finché l'API non risponde, niente del tutto da un'API senza
-  disegni. L'interruttore manda subito la scelta intera (titolo e
-  «Public»); il titolo si manda chiusa la tastiera, se è cambiato. Acceso,
-  sotto: «Public in your profile, without the first and last 200 m.».
-  Rifiutata, il motivo dell'API in rosso («This run is too short to
-  publish: …»). **Senza rete** la scelta resta sul telefono
+- **Il modulo del disegno sulla corsa aperta** (TASK-117, ADR-0159,
+  ADR-0166; TASK-208, ADR-0170), sopra Strava: lo stesso della fine corsa
+  («La fine della corsa», più giù), come l'API lo ha: le foto, «Title»,
+  «How did it go?», «Tag people», «Activity» e «Who can see it», in un
+  riquadro che scorre (al più il 40 % dello schermo). Niente finché l'API
+  non risponde, niente del tutto da un'API senza disegni. Una pillola
+  («Activity», «Who can see it»), un tag messo o tolto e una foto mandano
+  **subito** la scelta intera (`PUT /me/activities/{key}/drawing`); il
+  titolo e la descrizione si mandano chiusa la tastiera, se sono cambiati.
+  Sotto le pillole, con «Everyone»: «Every member sees it in your profile,
+  without the first and last 200 m.»; con «Followers»: «Your followers see
+  it in your profile, without the first and last 200 m.». Rifiutata, il
+  motivo dell'API in rosso («This run is too short to publish: …») e il
+  modulo torna a com'era. **Senza rete** la scelta resta sul telefono
   (`drawings-outbox.json`) e parte con la prossima apertura con la rete:
-  «Saved on the phone. It goes public when you are back online.» (o, per
-  un titolo o un «Off», «Saved on the phone. It is sent when you are back
-  online.»).
-- **Una corsa pubblica** ha nell'elenco il segno **«Public»** sotto i suoi
-  numeri (`GET /me/drawings`, chiesto a ogni elenco che arriva). Una corsa
-  che aspetta sul telefono e andrà pubblica aggiunge, sotto «1 run is on
-  this phone…», «Saved on the phone. It goes public when you are back
-  online.».
+  «Saved on the phone. Others see it when you are back online.» (o, con
+  «Only me», «Saved on the phone. It is sent when you are back online.»).
+  **Le foto** (scelta dell'utente, ADR-0170 punto 7): «Add photo» aggiunge
+  dal rullino o dalla fotocamera, fino a tre; ogni foto ha la sua «×».
+  Mentre altri vedono la corsa, una foto aggiunta va all'API dopo il
+  disegno, e una tolta viene svuotata là; con «Only me» restano sul
+  telefono, e sotto c'è «Photos of a run only you can see stay on this
+  phone. Delete the app or change phone and they are gone.». Tornare a
+  «Only me» con delle foto dice «Its photos leave Sgrava and stay only on
+  this phone.»: l'API le cancella, il telefono le tiene e le rimanda quando
+  la corsa si riapre agli altri. Una foto che il telefono non riesce a
+  scrivere: «This photo could not be kept on the phone. Try again.».
+- **Una corsa che altri vedono** («Everyone» o «Followers») ha nell'elenco
+  il segno **«Public»** sotto i suoi numeri (`GET /me/drawings`, chiesto a
+  ogni elenco che arriva). Una corsa che aspetta sul telefono e andrà agli
+  altri aggiunge, sotto «1 run is on this phone…», «Saved on the phone.
+  Others see it when you are back online.».
 - **«Delete»**, in rosso, sulla scheda dell'elenco e sotto la mappa, chiede
   prima sulla scheda stessa: «Delete this run? It cannot be undone.», con
   «Keep it» e «Delete run». La corsa sparisce subito; se l'API rifiuta
@@ -2115,18 +2134,44 @@ mostra le lettere unite da linee dritte sulla base.
   (scelta dell'utente); mai se il telefono non tiene la corsa, né a
   «Discard». Al lettore di schermo: «Saved to My activities». Sta in
   `src/intro/SavedLogo.tsx`, in `Root` sotto l'animazione d'avvio.
-- **«Public» e «Title»** (TASK-117, ADR-0159, ADR-0166), in cima, sopra
-  Strava, solo con un account: l'interruttore **«Public»**, **spento a ogni
-  corsa** (scelta dell'utente: non ricorda la volta prima); acceso, sotto,
-  «Others see it in your profile, without the first and last 200 m.».
-  Poi il campo **«Title»** («Give it a name», al più 60 caratteri): **un
-  solo campo** (scelta dell'utente) che dà il nome al disegno e, con «Send
-  to Strava» acceso, alla corsa su Strava. Con **«Save»** la corsa va
-  all'API e, appena l'API l'ha, il titolo e «Public» (`PUT
-  /me/activities/{key}/drawing`); senza titolo e spento non va niente in
-  più. Senza rete aspettano con la corsa e partono dopo di lei; un'API che
-  rifiuta di pubblicare una corsa troppo corta tiene il titolo, privata.
-  Cambiare idea dopo si fa dalla corsa in «My activities».
+- **Il modulo del disegno, come su Strava** (TASK-117, ADR-0159,
+  ADR-0166; TASK-208, ADR-0170; le scelte dell'utente del 2026-10-03 e le
+  sei proposte confermate il 2026-10-06), sopra Strava, solo con un
+  account, in un riquadro che scorre (al più metà schermo, così la mappa e
+  «Save» restano in vista). Nell'ordine scelto dall'utente:
+  1. **le foto**: «Add photo» chiede «Choose a picture» o «Take a photo»
+     («Cancel» chiude), fino a tre, ognuna con la sua «×»; il telefono le
+     riduce a 1080 px sul lato lungo (JPEG, senza EXIF) e le tiene con la
+     corsa. Fotocamera negata: la riga rossa di sempre e «Open Settings»;
+  2. **«Title»** («Give it a name», al più 60 caratteri): **un solo
+     campo** (scelta dell'utente) che dà il nome al disegno e, con «Send to
+     Strava» acceso, alla corsa su Strava;
+  3. **«How did it go?»**: la descrizione, vuota, su più righe, al più 500
+     caratteri; va anche su Strava, mai filtrata (scelta dell'utente);
+  4. **«Tag people»**: le persone taggate in pillole, con la «×»; il tasto
+     apre un foglio dal basso con la ricerca per nome di «Find friends»
+     (TASK-215): un nome toccato lo tagga e chiude il foglio. Al più 10;
+  5. **«Activity»**: «Run», «Bike», «Paddle», **scelta in partenza dallo
+     sport di «Settings»**; va anche a Strava come tipo (`Run`, `Ride`,
+     `StandUpPaddling`); non cambia il punteggio;
+  6. **«Who can see it»**: «Everyone», «Followers», «Only me», **«Only me»
+     a ogni corsa** (scelta dell'utente: non ricorda la volta prima); sotto,
+     con «Everyone», «Every member sees it in your profile, without the
+     first and last 200 m.», con «Followers» «Your followers see it in
+     your profile, without the first and last 200 m.»; con «Only me» e
+     delle foto, «Photos of a run only you can see stay on this phone.
+     Delete the app or change phone and they are gone.» (ADR-0170, punto
+     7: le foto delle corse private sono del telefono).
+
+  Con **«Save»** la corsa va all'API e, appena l'API l'ha, la scelta
+  intera (`PUT /me/activities/{key}/drawing`) e poi le foto, **solo con
+  «Everyone» o «Followers»**; con niente di scelto (né titolo, né
+  descrizione, né tag, corsa a piedi, «Only me») non va niente in più, e
+  le foto restano sul telefono. Il disegno va **prima di Strava**, che ne
+  prende descrizione e tipo. Senza rete aspettano con la corsa e partono
+  dopo di lei; un'API che rifiuta di pubblicare una corsa troppo corta
+  tiene il resto della scelta, per il solo proprietario. Cambiare idea
+  dopo si fa dalla corsa in «My activities», con lo stesso modulo.
 - **«Send to Strava»** (TASK-187, ADR-0156), sopra «Save» e «Discard», solo
   se l'API ha Strava (`GET /me/strava` dice `available`; un'API senza
   Strava, o più vecchia, e niente si vede). Atleta non collegato:
@@ -2679,13 +2724,21 @@ c'è anche l'errore.
   mappa sotto. A Strava, con «Send to Strava» o «Update on Strava» dal
   post, va in più il testo del post (emoji e risultati scelti), che
   sull'attività già là sostituisce il testo di prima.
-- **Un disegno pubblico** (TASK-117): una corsa diventa visibile agli altri
-  iscritti **solo con «Public» acceso** dall'utente, a fine corsa o su una
-  corsa aperta; acceso a ogni corsa da spento. Il telefono manda all'API la
-  chiave della corsa, il titolo e «Public»; la traccia la taglia l'API
-  (mai i primi e gli ultimi 200 m, mai il percorso pianificato né gli
-  orari, ADR-0159). Senza rete la scelta aspetta in `drawings-outbox.json`
-  (chiave, titolo e «Public», l'ultima per corsa, al più 20).
+- **Un disegno che altri vedono** (TASK-117, TASK-208): una corsa diventa
+  visibile agli altri iscritti **solo con «Everyone» o «Followers»**
+  scelto dall'utente, a fine corsa o su una corsa aperta; «Only me» a ogni
+  corsa. Il telefono manda all'API la chiave della corsa, il titolo, la
+  descrizione, l'attività, i `public_id` dei taggati e «Who can see it»;
+  la traccia la taglia l'API (mai i primi e gli ultimi 200 m, mai il
+  percorso pianificato né gli orari, ADR-0159). Senza rete la scelta
+  aspetta in `drawings-outbox.json` (chiave e scelta intera, l'ultima per
+  corsa, al più 20). **Le foto** stanno sul telefono, in un file per foto
+  (`drawing-photo-{account}-{chiave}-{posto}.b64`, già ridotte a 1080 px e
+  senza EXIF) con `drawing-photos.json` che dice quali l'API ha; vanno
+  all'API **solo mentre altri vedono la corsa**, e tornate a «Only me»
+  l'API le cancella (ADR-0170, punto 7: scelta dell'utente). Una corsa
+  cancellata le cancella anche dal telefono. Le foto di una corsa privata
+  non passano mai da un telefono all'altro, e si perdono con l'app.
 
 ## Quando la mappa non si carica
 

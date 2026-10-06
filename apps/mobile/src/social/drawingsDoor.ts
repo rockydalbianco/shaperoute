@@ -1,9 +1,11 @@
 import type {
   Drawing,
   DrawingDetail,
+  DrawingPhoto,
   DrawingsPage,
   MyDrawing,
 } from "@shaperoute/shared-types";
+import { DRAWING_MAX_PHOTOS } from "@shaperoute/shared-types";
 import {
   createContext,
   useCallback,
@@ -17,22 +19,34 @@ import { sessionEnded } from "../account/messages";
 import type { Account } from "../account/useAccount";
 import type { AccountOutcome } from "../api/accounts";
 import {
+  choiceOf as choiceOfDrawing,
   type DrawingChoice,
+  drawingPhotoSource,
   drawingProblem,
   fetchDrawing,
   fetchMyDrawing,
   fetchMyDrawings,
   fetchUserDrawings,
+  isSeen,
   saveDrawing,
   worthAgain,
 } from "../api/drawings";
 import { t } from "../i18n";
 import { forgetForDrawing, keepForDrawing, waitingDrawing } from "./drawingOutbox";
+import {
+  keepPhoto,
+  loadDrawingPhotos,
+  phonePhotoUri,
+  photosOnPhone,
+  removePhoto,
+  syncPhotos,
+} from "./drawingPhotos";
 
 /** What the owner chose for a run, as a run of «My activities» shows it. */
 export type ChoiceShown =
-  /** `waiting`: chosen on this phone, not on the API yet. */
-  | { kind: "known"; choice: DrawingChoice; waiting: boolean }
+  /** `waiting`: chosen on this phone, not on the API yet. `photos`: the
+   * API's, for the places this phone has no photo of. */
+  | { kind: "known"; choice: DrawingChoice; waiting: boolean; photos: DrawingPhoto[] }
   /** An API from before drawings: nothing to choose. */
   | { kind: "off" }
   | { kind: "failed"; problem: string };
@@ -44,23 +58,41 @@ export type Chosen =
   | { kind: "waiting" }
   | { kind: "failed"; problem: string };
 
+/** A photo of a run as the form shows it: from this phone, or from the API. */
+export type PhotoShown = {
+  n: number;
+  source: { uri: string; headers?: Record<string, string> };
+  onPhone: boolean;
+};
+
 /**
  * The drawings of the account as the whole app reaches them (TASK-117,
- * ADR-0159): «Public» and the title of a run of «My activities», which of
- * its runs are public, the drawings of a profile, and the drawing opened
- * from one, which the map shows.
+ * ADR-0159; TASK-208): what was chosen for a run of «My activities» and
+ * its photos, which of its runs others see, the drawings of a profile,
+ * and the drawing opened from one, which the map shows.
  */
 export type DrawingsDoor = {
-  /** The keys of the account's public runs; empty until the API says. */
+  /** The keys of the account's runs others see; empty until the API says. */
   publicKeys: ReadonlySet<string>;
-  /** Asks the API which runs are public: «My activities» does when it shows. */
+  /** Asks the API which runs others see: «My activities» does when it shows. */
   refreshMine: () => void;
   /** What the owner chose for the run `key`; null with nobody signed in. */
   choiceOf: (key: string) => Promise<ChoiceShown | null>;
-  /** Makes `choice` the run's, now or when there is a network; null with
-   * nobody signed in. */
+  /** Makes `choice` the run's, now or when there is a network, and the
+   * run's photos the API's after it; null with nobody signed in. */
   choose: (key: string, choice: DrawingChoice) => Promise<Chosen | null>;
-  /** A page of the public drawings of a profile; null with nobody signed in. */
+  /** The photos of the run `key` to show: this phone's, and `fromApi` for
+   * the places it has none of (TASK-208). */
+  photosOf: (key: string, fromApi: readonly DrawingPhoto[]) => PhotoShown[];
+  /** Keeps `base64` as the photo `n` of the run `key` on this phone; false
+   * when the phone refused. `choose` then sends it, while others see the run. */
+  keepPhotoOf: (key: string, n: number, base64: string) => boolean;
+  /** Takes the photo `n` of the run `key` off this phone; `onApi` when the
+   * API has it: `choose` then empties the place there. */
+  removePhotoOf: (key: string, n: number, onApi: boolean) => void;
+  /** What an `Image` shows of a photo on the API; null with nobody signed in. */
+  photoSource: (photo: DrawingPhoto) => PhotoShown["source"] | null;
+  /** A page of the drawings of a profile; null with nobody signed in. */
   pageOf: (
     publicId: string,
     cursor: string | null,
@@ -84,6 +116,10 @@ const NOTHING: DrawingsDoor = {
   refreshMine: () => {},
   choiceOf: async () => null,
   choose: async () => null,
+  photosOf: () => [],
+  keepPhotoOf: () => false,
+  removePhotoOf: () => {},
+  photoSource: () => null,
   pageOf: async () => null,
   opening: null,
   openProblem: null,
@@ -144,7 +180,11 @@ export function useDrawingsOf(
       if (outcome.kind === "ok") {
         setHeld({
           token,
-          keys: new Set(outcome.value.filter((d) => d.public).map((d) => d.key)),
+          keys: new Set(
+            outcome.value
+              .filter((d) => isSeen(choiceOfDrawing(d).visibility))
+              .map((d) => d.key),
+          ),
         });
       } else {
         ended(token, outcome);
@@ -152,7 +192,7 @@ export function useDrawingsOf(
     });
   }, [baseUrl, ended, fetchFn, key, token]);
 
-  /** The run `key` is public, or not, as chosen. */
+  /** The run `key` is seen by others, or not, as chosen. */
   const mark = useCallback((of: string, runKey: string, on: boolean) => {
     setHeld((was) => {
       const keys = new Set(was !== null && was.token === of ? was.keys : NO_KEYS);
@@ -173,16 +213,17 @@ export function useDrawingsOf(
       // What this phone chose and could not send yet is the choice.
       const waiting = waitingDrawing(owner, runKey);
       if (waiting !== null) {
-        return {
-          kind: "known",
-          choice: { title: waiting.title, public: waiting.public },
-          waiting: true,
-        };
+        const { owner: _owner, key: _key, ...choice } = waiting;
+        return { kind: "known", choice, waiting: true, photos: [] };
       }
       const outcome = await fetchMyDrawing(baseUrl, token, runKey, { fetchFn, key });
       if (outcome.kind === "ok") {
-        const { title, public: on } = outcome.value;
-        return { kind: "known", choice: { title, public: on }, waiting: false };
+        return {
+          kind: "known",
+          choice: choiceOfDrawing(outcome.value),
+          waiting: false,
+          photos: outcome.value.photos ?? [],
+        };
       }
       if (ended(token, outcome)) {
         return { kind: "failed", problem: drawingProblem(outcome) ?? "" };
@@ -209,15 +250,48 @@ export function useDrawingsOf(
         // The API has this choice: an older one still waiting on the phone
         // would undo it when it is sent (TASK-252).
         forgetForDrawing(owner, runKey);
-        mark(token, runKey, outcome.value.public);
-        return { kind: "saved", drawing: outcome.value };
+        const kept = choiceOfDrawing(outcome.value);
+        mark(token, runKey, isSeen(kept.visibility));
+        // Then the photos (TASK-208): those the phone has and the API has
+        // not, while others see the run, and the places emptied here. A
+        // photo that cannot go now goes with the next round of what waits.
+        const emptied = new Set(
+          loadDrawingPhotos()
+            .filter(
+              (item) => item.owner === owner && item.key === runKey && item.removed,
+            )
+            .map((item) => item.n),
+        );
+        const photos = await syncPhotos(
+          baseUrl,
+          token,
+          owner,
+          runKey,
+          kept.visibility,
+          {
+            fetchFn,
+            key,
+          },
+        );
+        if (photos === "session_ended") {
+          endSession(token);
+        } else if (photos === "waits") {
+          keepForDrawing({ owner, key: runKey, ...kept });
+        }
+        // The answer came before the photos went: without the places
+        // emptied since, which the API has let go or will.
+        const drawing: MyDrawing = {
+          ...outcome.value,
+          photos: (outcome.value.photos ?? []).filter((photo) => !emptied.has(photo.n)),
+        };
+        return { kind: "saved", drawing };
       }
       if (ended(token, outcome)) {
         return { kind: "failed", problem: drawingProblem(outcome) ?? "" };
       }
       if (worthAgain(outcome)) {
         if (keepForDrawing({ owner, key: runKey, ...choice })) {
-          mark(token, runKey, choice.public);
+          mark(token, runKey, isSeen(choice.visibility));
           return { kind: "waiting" };
         }
       } else {
@@ -226,7 +300,60 @@ export function useDrawingsOf(
       }
       return { kind: "failed", problem: drawingProblem(outcome) ?? "" };
     },
-    [baseUrl, ended, fetchFn, key, mark, owner, token],
+    [baseUrl, endSession, ended, fetchFn, key, mark, owner, token],
+  );
+
+  const photoSource = useCallback(
+    (photo: DrawingPhoto) =>
+      token === null || baseUrl === null
+        ? null
+        : drawingPhotoSource(baseUrl, token, photo),
+    [baseUrl, token],
+  );
+
+  const photosOf = useCallback(
+    (runKey: string, fromApi: readonly DrawingPhoto[]): PhotoShown[] => {
+      if (owner === null) {
+        return [];
+      }
+      const onPhone = photosOnPhone(owner, runKey);
+      // A place emptied here is empty, whatever the API still holds there.
+      const removed = new Set(
+        loadDrawingPhotos()
+          .filter((item) => item.owner === owner && item.key === runKey && item.removed)
+          .map((item) => item.n),
+      );
+      const shown: PhotoShown[] = [];
+      for (let n = 1; n <= DRAWING_MAX_PHOTOS; n += 1) {
+        const mine = onPhone.find((photo) => photo.n === n);
+        if (mine !== undefined) {
+          shown.push({ n, source: { uri: phonePhotoUri(mine.base64) }, onPhone: true });
+          continue;
+        }
+        const theirs = fromApi.find((photo) => photo.n === n);
+        const source = theirs === undefined ? null : photoSource(theirs);
+        if (source !== null && !removed.has(n)) {
+          shown.push({ n, source, onPhone: false });
+        }
+      }
+      return shown;
+    },
+    [owner, photoSource],
+  );
+
+  const keepPhotoOf = useCallback(
+    (runKey: string, n: number, base64: string) =>
+      owner !== null && keepPhoto(owner, runKey, n, base64),
+    [owner],
+  );
+
+  const removePhotoOf = useCallback(
+    (runKey: string, n: number, onApi: boolean) => {
+      if (owner !== null) {
+        removePhoto(owner, runKey, n, onApi);
+      }
+    },
+    [owner],
   );
 
   const pageOf = useCallback(
@@ -299,6 +426,10 @@ export function useDrawingsOf(
       refreshMine,
       choiceOf,
       choose,
+      photosOf,
+      keepPhotoOf,
+      removePhotoOf,
+      photoSource,
       pageOf,
       opening: token === null ? null : opening,
       openProblem,
@@ -311,6 +442,10 @@ export function useDrawingsOf(
       refreshMine,
       choiceOf,
       choose,
+      photosOf,
+      keepPhotoOf,
+      removePhotoOf,
+      photoSource,
       pageOf,
       opening,
       openProblem,

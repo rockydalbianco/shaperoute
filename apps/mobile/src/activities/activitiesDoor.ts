@@ -20,11 +20,12 @@ import {
   saveActivity,
   savePost,
 } from "../api/activities";
-import type { DrawingChoice } from "../api/drawings";
+import { type DrawingChoice, isSeen } from "../api/drawings";
 import { t, tLater } from "../i18n";
 import { metresBetween } from "../map/coordinates";
 import type { SavedRun } from "../navigation/trackStore";
 import { keepForDrawing, sendWaitingDrawings } from "../social/drawingOutbox";
+import { forgetPhotosOf, keepPhotos } from "../social/drawingPhotos";
 import { keepForStrava, sendWaitingToStrava } from "../strava/stravaOutbox";
 import {
   keepWaiting,
@@ -77,11 +78,18 @@ export type ActivitiesDoor = ActivitiesState & {
    */
   toStrava: (choice: ToStrava | null) => void;
   /**
-   * The title and «Public» of the next `record` (TASK-117): they go to the
-   * API once it has the run; null: nothing chosen. Told by the end of the
-   * run just before «Save», and forgotten by `record`.
+   * What was chosen for the drawing of the next `record` (TASK-117,
+   * TASK-208): it goes to the API once it has the run; null: nothing
+   * chosen. Told by the end of the run just before «Save», and forgotten
+   * by `record`.
    */
   toDrawing: (choice: DrawingChoice | null) => void;
+  /**
+   * The photos of the next `record` (TASK-208), JPEG in base64 in order:
+   * kept on the phone with the run, and sent after its drawing while
+   * others see it. Told just before «Save», forgotten by `record`.
+   */
+  toPhotos: (photos: readonly string[]) => void;
   /** The runs of this account still on the phone, waiting for the API;
    * those it refused too. */
   waiting: number;
@@ -132,6 +140,7 @@ const NOTHING: ActivitiesDoor = {
   record: () => false,
   toStrava: () => {},
   toDrawing: () => {},
+  toPhotos: () => {},
   waiting: 0,
   full: false,
   refused: [],
@@ -218,7 +227,10 @@ function waitingOf(owner: number | null): Counted {
   return {
     owner,
     count: runs.length,
-    publicCount: runs.filter((run) => toDrawingOf(run)?.public === true).length,
+    publicCount: runs.filter((run) => {
+      const drawing = toDrawingOf(run);
+      return drawing !== null && isSeen(drawing.visibility);
+    }).length,
     refused: runs.flatMap((run): RefusedRun[] => {
       const refused = refusedOf(run);
       return refused === null
@@ -337,20 +349,22 @@ export function useActivitiesOf(
           again.current = false;
           break;
         }
-        // Then what waits for Strava, these runs and those of before. A run
-        // that ends meanwhile still makes another round.
+        // Then what was chosen for their drawings (TASK-117, TASK-208),
+        // these runs and those of before: before Strava, which takes the
+        // description and what the run was from the drawing.
         if (
           !ended &&
-          (await sendWaitingToStrava(baseUrl, token, owner, { fetchFn, key })) ===
+          (await sendWaitingDrawings(baseUrl, token, owner, { fetchFn, key })) ===
             "session_ended"
         ) {
           ended = true;
           endSession(token);
         }
-        // And the titles and «Public» chosen for them (TASK-117).
+        // And what waits for Strava. A run that ends meanwhile still makes
+        // another round.
         if (
           !ended &&
-          (await sendWaitingDrawings(baseUrl, token, owner, { fetchFn, key })) ===
+          (await sendWaitingToStrava(baseUrl, token, owner, { fetchFn, key })) ===
             "session_ended"
         ) {
           ended = true;
@@ -398,12 +412,20 @@ export function useActivitiesOf(
     nextDrawing.current = choice;
   }, []);
 
+  // And for the photos (TASK-208).
+  const nextPhotos = useRef<readonly string[]>([]);
+  const toPhotos = useCallback((photos: readonly string[]) => {
+    nextPhotos.current = photos;
+  }, []);
+
   const record = useCallback(
     (run: SavedRun, drawn: Drawn | null) => {
       const strava = nextStrava.current;
       nextStrava.current = null;
       const drawing = nextDrawing.current;
       nextDrawing.current = null;
+      const photos = nextPhotos.current;
+      nextPhotos.current = [];
       const recorded = owner === null ? null : recordedRun(run, drawn);
       if (owner === null || recorded === null) {
         return false;
@@ -420,6 +442,9 @@ export function useActivitiesOf(
         recount();
         return false;
       }
+      // Its photos beside it (TASK-208): with the run safe, a photo the
+      // phone will not write is a photo lost, not a run.
+      keepPhotos(owner, recorded.id, photos);
       recount();
       void send();
       return true;
@@ -524,16 +549,31 @@ export function useActivitiesOf(
     [baseUrl, endSession, fetchFn, key, token],
   );
 
+  // A run deleted takes its photos off the phone too (TASK-208); the API
+  // drops its own with the run.
+  const { remove: removeFromList } = activities;
+  const remove = useCallback(
+    (id: string) => {
+      removeFromList(id);
+      if (owner !== null) {
+        forgetPhotosOf(owner, id);
+      }
+    },
+    [owner, removeFromList],
+  );
+
   return useMemo(
     () => ({
       ...activities,
       refresh,
+      remove,
       problem: activities.problem ?? openProblem,
       clearProblem,
       signedIn: owner !== null,
       record,
       toStrava,
       toDrawing,
+      toPhotos,
       waiting,
       full: waiting >= MAX_WAITING,
       refused: refusedRuns,
@@ -552,12 +592,14 @@ export function useActivitiesOf(
     [
       activities,
       refresh,
+      remove,
       openProblem,
       clearProblem,
       owner,
       record,
       toStrava,
       toDrawing,
+      toPhotos,
       waiting,
       refusedRuns,
       discard,

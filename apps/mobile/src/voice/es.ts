@@ -101,4 +101,9 @@ export const ES: Phrasebook = {
   rideMiles: (miles, time, speed) =>
     `${capital(units(miles, "una milla", "millas"))}. Tiempo: ${time}. Velocidad media: ${speed} millas por hora.`,
   walkTheBikeFeet: (feet) => `bájate y empuja la bici durante ${feet} pies`,
+  // On the water, the pace of 500 metres (TASK-251).
+  paddleKilometre: (km, time, pace) =>
+    `${capital(units(km, "un kilómetro", "kilómetros"))}. Tiempo: ${time}. Ritmo medio: ${pace} cada 500 metros.`,
+  paddleMile: (miles, time, pace) =>
+    `${capital(units(miles, "una milla", "millas"))}. Tiempo: ${time}. Ritmo medio: ${pace} cada 500 metros.`,
 };

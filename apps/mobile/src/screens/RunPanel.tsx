@@ -178,7 +178,7 @@ function lastLabel(numbers: RunNumbers): string {
   if (numbers.units === "mi") {
     return t("Last mi");
   }
-  return numbers.ride ? t("Last km") : "Last km";
+  return t("Last km");
 }
 
 /** Under the map, where the map is what is looked at: three numbers, the
@@ -186,15 +186,15 @@ function lastLabel(numbers: RunNumbers): string {
 export function RunStrip({ numbers }: { numbers: RunNumbers }) {
   return (
     <View style={styles.strip}>
-      <Metric label="Distance" value={numbers.km} unit={numbers.units} lead />
+      <Metric label={t("Distance")} value={numbers.km} unit={numbers.units} lead />
       <View style={styles.divider} />
       <Metric
-        label={speeds(numbers) ? t("Speed now") : "Pace now"}
+        label={speeds(numbers) ? t("Speed now") : t("Pace now")}
         value={numbers.recent}
         unit={unitOf(numbers)}
       />
       <View style={styles.divider} />
-      <Metric label="Time" value={numbers.time} />
+      <Metric label={t("Time")} value={numbers.time} />
     </View>
   );
 }
@@ -258,16 +258,16 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
     <View style={styles.grid}>
       <View style={styles.tiles}>
         <Tile
-          label={speeds(numbers) ? t("Speed now") : "Pace now"}
+          label={speeds(numbers) ? t("Speed now") : t("Pace now")}
           value={numbers.recent}
           unit={unitOf(numbers)}
         />
         <Tile
-          label={speeds(numbers) ? t("Avg speed") : "Avg pace"}
+          label={speeds(numbers) ? t("Avg speed") : t("Avg pace")}
           value={numbers.average}
           unit={unitOf(numbers)}
         />
-        <Tile label="Time" value={numbers.time} />
+        <Tile label={t("Time")} value={numbers.time} />
       </View>
       {numbers.paddle ? (
         // On the water: a paddler's pace where a run has the last
@@ -284,12 +284,12 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
             value={numbers.lastKm}
             unit={unitOf(numbers)}
           />
-          <Tile label="Elev. gain" value={numbers.climb} unit="m" />
+          <Tile label={t("Elev. gain")} value={numbers.climb} unit="m" />
           {/* The energy is a runner's (KCAL_PER_KG_KM): on a bike it would
               read about three times the truth. Off a run, no tile
               (TASK-255, the user's choice). */}
           {!numbers.ride && (
-            <Tile label="Calories" value={numbers.energy} unit="kcal" />
+            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
           )}
         </View>
       )}

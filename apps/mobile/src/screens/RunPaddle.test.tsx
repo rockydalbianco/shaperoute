@@ -218,7 +218,7 @@ test("in Italian, the names of the paddler's tiles", async () => {
   try {
     await render(<LivePaddle fixes={slowingDown()} />);
     expect(screen.getByLabelText("Vel. ora: 5.0 km/h")).toBeOnTheScreen();
-    await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+    await fireEvent.press(screen.getByRole("tab", { name: "Dati" }));
     expect(screen.getByLabelText("Vel. media: 5.3 km/h")).toBeOnTheScreen();
     expect(screen.getByLabelText("Med. /500 m: 5:37")).toBeOnTheScreen();
     expect(screen.getByLabelText("Ultimi 500 m: 6:00")).toBeOnTheScreen();

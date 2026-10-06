@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Animated, Easing, Modal, StyleSheet, Text, View } from "react-native";
 
 import { useRunControl } from "../navigation/runControl";
+import { t } from "../i18n";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { useNow } from "./RunPanel";
 
@@ -58,7 +59,7 @@ export function Countdown() {
         style={styles.screen}
         accessible
         accessibilityRole="timer"
-        accessibilityLabel={`Starting in ${number}`}
+        accessibilityLabel={t("Starting in {number}", { number })}
       >
         <View style={styles.stage}>
           <Animated.View
@@ -99,7 +100,7 @@ export function Countdown() {
             {number}
           </Animated.Text>
         </View>
-        <Text style={styles.hint}>Get ready</Text>
+        <Text style={styles.hint}>{t("Get ready")}</Text>
       </View>
     </Modal>
   );

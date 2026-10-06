@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
 
 /** How long «Stop» is held to end the run, in milliseconds: long enough
@@ -45,8 +46,8 @@ export function HoldButton({ onHeld }: { onHeld: () => void }) {
           onHeld();
         }}
         accessibilityRole="button"
-        accessibilityLabel="Stop"
-        accessibilityHint="Hold to end the run"
+        accessibilityLabel={t("Stop")}
+        accessibilityHint={t("Hold to end the run")}
       >
         <Animated.View
           testID="stop-fill"
@@ -54,7 +55,7 @@ export function HoldButton({ onHeld }: { onHeld: () => void }) {
         />
         <View style={styles.square} />
       </Pressable>
-      <Text style={styles.label}>{tapped ? "Hold to stop" : "Stop"}</Text>
+      <Text style={styles.label}>{tapped ? t("Hold to stop") : t("Stop")}</Text>
     </View>
   );
 }

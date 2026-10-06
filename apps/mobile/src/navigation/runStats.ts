@@ -1,4 +1,5 @@
 import type { LatLon } from "@shaperoute/shared-types";
+import { t, tLater } from "../i18n";
 
 import { metresBetween } from "../map/coordinates";
 import { MIN_PACE_M } from "./freeRun";
@@ -50,15 +51,16 @@ export function headingDeg(track: Track): number | null {
 }
 
 const POINTS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] as const;
+// Translated where shown, with t() (TASK-210).
 const WORDS = [
-  "north",
-  "north-east",
-  "east",
-  "south-east",
-  "south",
-  "south-west",
-  "west",
-  "north-west",
+  tLater("north"),
+  tLater("north-east"),
+  tLater("east"),
+  tLater("south-east"),
+  tLater("south"),
+  tLater("south-west"),
+  tLater("west"),
+  tLater("north-west"),
 ] as const;
 
 function octant(deg: number): number {
@@ -148,8 +150,11 @@ export function etaMs(remainingM: number, track: Track, ms: number): number | nu
 export function aboutMinutes(ms: number): string {
   const minutes = Math.max(1, Math.round(ms / 60_000));
   return minutes < 60
-    ? `about ${minutes} min`
-    : `about ${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+    ? t("about {minutes} min", { minutes })
+    : t("about {hours} h {minutes} min", {
+        hours: Math.floor(minutes / 60),
+        minutes: minutes % 60,
+      });
 }
 
 /** Closer than this to the first fix, the runner is at the start. */

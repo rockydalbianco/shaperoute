@@ -180,7 +180,7 @@ test("in Italian, the names the user chose", async () => {
   try {
     await render(<LiveRide fixes={slowingDown()} />);
     expect(screen.getByLabelText("Vel. ora: 20.0 km/h")).toBeOnTheScreen();
-    await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+    await fireEvent.press(screen.getByRole("tab", { name: "Dati" }));
     expect(screen.getByLabelText("Vel. media: 21.6 km/h")).toBeOnTheScreen();
     expect(screen.getByLabelText("Ultimo km: 20.0 km/h")).toBeOnTheScreen();
     expect(screen.getByText("Velocità")).toBeOnTheScreen();

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { t } from "../i18n";
 import { color, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { MapError } from "./ChooseScreen";
 
@@ -52,7 +53,7 @@ export function MapScreen({
                   style={styles.back}
                   onPress={onBack}
                   accessibilityRole="button"
-                  accessibilityLabel="Back"
+                  accessibilityLabel={t("Back")}
                 >
                   <Text style={styles.backText}>←</Text>
                 </Pressable>

@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
 import { distanceLabel } from "../navigation/phrases";
 import { durationMs } from "../navigation/trackRecorder";
 import type { ScorableRun } from "../navigation/trackStore";
@@ -25,16 +26,19 @@ import { useUnits } from "../units/useUnits";
 export function durationLabel(ms: number): string {
   const minutes = Math.round(ms / 60_000);
   if (minutes < 60) {
-    return `${minutes} min`;
+    return t("{minutes} min", { minutes });
   }
-  return `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")} min`;
+  return t("{hours} h {minutes} min", {
+    hours: Math.floor(minutes / 60),
+    minutes: String(minutes % 60).padStart(2, "0"),
+  });
 }
 
 export function FinishBanner() {
   return (
     <View style={styles.banner}>
-      <Text style={styles.bannerText}>Your run</Text>
-      <Text style={styles.message}>Yellow: the route. White: what you ran.</Text>
+      <Text style={styles.bannerText}>{t("Your run")}</Text>
+      <Text style={styles.message}>{t("Yellow: the route. White: what you ran.")}</Text>
     </View>
   );
 }
@@ -66,12 +70,12 @@ export function FinishCard({ run, onDone, onResume }: Props) {
             onPress={onResume}
             accessibilityRole="button"
           >
-            <Text style={styles.buttonText}>Keep running</Text>
+            <Text style={styles.buttonText}>{t("Keep running")}</Text>
           </Pressable>
         )}
         {onDone && (
           <Pressable style={styles.button} onPress={onDone} accessibilityRole="button">
-            <Text style={styles.buttonText}>Done</Text>
+            <Text style={styles.buttonText}>{t("Done")}</Text>
           </Pressable>
         )}
       </View>

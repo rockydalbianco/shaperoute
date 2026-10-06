@@ -44,7 +44,8 @@ const TOWNS = [
   },
   {
     label: "Trento, Trentino – Alto Adige/Südtirol, Italy",
-    point: [46.0664228, 11.1257601],
+    // 20 km north of the start: the phone measures the distance (TASK-254).
+    point: [46.18347, 11.2647],
     away_m: 20_000,
   },
 ];

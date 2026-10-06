@@ -60,8 +60,14 @@ export function fitLines(
   };
   return lines.map((line) => {
     const segments: Segment[] = [];
+    if (line.length === 0) {
+      return segments;
+    }
+    // A segment starts where the last one drawn ended (TASK-254): points
+    // too close to draw are skipped, not lost, so a long run with a point
+    // every few metres is still one line.
+    let [x1, y1] = at(line[0]);
     for (let i = 1; i < line.length; i += 1) {
-      const [x1, y1] = at(line[i - 1]);
       const [x2, y2] = at(line[i]);
       const length = Math.hypot(x2 - x1, y2 - y1);
       if (length < 0.5) {
@@ -74,6 +80,7 @@ export function fitLines(
         length,
         angle: (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI,
       });
+      [x1, y1] = [x2, y2];
     }
     return segments;
   });

@@ -360,13 +360,14 @@ test("under «Near me», the towns around the start; a chosen city has none", as
   const view = await render(page(null));
   expect(await screen.findByText("NEARBY TOWNS")).toBeOnTheScreen();
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://api/nearby-cities?lat=46.067&lon=11.1215",
+    "http://api/nearby-cities?lat=46.07&lon=11.12",
     expect.anything(),
   );
   // The page has routes: one credit for the maps, the page's.
   await screen.findByText("Star · 5.1 km");
   expect(screen.getAllByText(CARD_MAPS_CREDIT)).toHaveLength(1);
-  await fireEvent.press(screen.getByLabelText("Pergine Valsugana, 9.3 km away"));
+  // 9.3 km for the API, from the rounded start; 9.2 km from the start itself (TASK-254).
+  await fireEvent.press(screen.getByLabelText("Pergine Valsugana, 9.2 km away"));
   expect(onCity).toHaveBeenCalledWith({ label: town.label, point: town.point });
   await view.rerender(page(vercelli));
   expect(screen.queryByText("NEARBY TOWNS")).toBeNull();

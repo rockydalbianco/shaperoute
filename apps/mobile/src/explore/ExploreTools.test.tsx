@@ -237,3 +237,43 @@ test("a name typed and searched with Enter is told as typed", async () => {
     expect.objectContaining({ kind: "city_chosen", label: paris.label, via: "typed" }),
   );
 });
+
+test("of two cities asked, the last asked wins (TASK-254)", async () => {
+  const london: Place = {
+    label: "London, England, United Kingdom",
+    point: [51.5, -0.12],
+  };
+  const pending = new Map<string, (response: Response) => void>();
+  const fetchFn = jest.fn(
+    (input: RequestInfo | URL) =>
+      new Promise<Response>((resolve) => {
+        pending.set(decodeURIComponent(String(input).split("q=")[1]), resolve);
+      }),
+  );
+  const onCity = jest.fn();
+  const { unmount } = await render(
+    <CityPicker apiUrl="http://api" city={null} onCity={onCity} fetchFn={fetchFn} />,
+  );
+  await fireEvent.press(screen.getByText("Paris"));
+  await fireEvent.press(screen.getByText("London"));
+  expect(screen.getByText("London …")).toBeOnTheScreen();
+  // London answers first, then Paris, late: the city stays London.
+  await act(async () => pending.get("London")?.(Response.json({ places: [london] })));
+  expect(onCity).toHaveBeenCalledWith(london);
+  await act(async () => pending.get("Paris")?.(Response.json({ places: [paris] })));
+  expect(onCity).toHaveBeenCalledTimes(1);
+  expect(screen.queryByText("Paris …")).toBeNull();
+
+  // Asked, then «Near me» before the answer: the answer is not a choice.
+  await fireEvent.press(screen.getByText("Rome"));
+  await fireEvent.press(screen.getByText("Near me"));
+  await act(async () => pending.get("Rome")?.(Response.json({ places: [parma] })));
+  expect(onCity).toHaveBeenLastCalledWith(null);
+  expect(onCity).toHaveBeenCalledTimes(2);
+
+  // Gone from the screen: a late answer chooses nothing.
+  await fireEvent.press(screen.getByText("Tokyo"));
+  await unmount();
+  await act(async () => pending.get("Tokyo")?.(Response.json({ places: [newYork] })));
+  expect(onCity).toHaveBeenCalledTimes(2);
+});

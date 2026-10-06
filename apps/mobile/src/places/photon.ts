@@ -17,11 +17,20 @@ export interface Place {
   kind?: "city" | "place";
 }
 
+/** The decimals of the position sent out as «around here» (TASK-254): two,
+ * about a kilometre. Photon is a third party, and orders by it only. */
+export const NEAR_DECIMALS = 2;
+
+/** `near` as it leaves the phone: rounded to about a kilometre. */
+export function nearParams(near: LatLon): string {
+  return `lat=${near[0].toFixed(NEAR_DECIMALS)}&lon=${near[1].toFixed(NEAR_DECIMALS)}`;
+}
+
 /** With `near`, places around it come first (TASK-085): "via bel" typed in
  * Trento is a street of Trentino, not one of Brazil. */
 export function photonSearchUrl(query: string, near: LatLon | null = null): string {
   const url = `${PHOTON_URL}?q=${encodeURIComponent(query.trim())}&limit=${MAX_PLACES}`;
-  return near ? `${url}&lat=${near[0]}&lon=${near[1]}` : url;
+  return near ? `${url}&${nearParams(near)}` : url;
 }
 
 /** Throws when the service cannot be reached or does not answer 200. */

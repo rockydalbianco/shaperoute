@@ -81,9 +81,11 @@ test("searchPlaces fails when the network does", async () => {
   );
 });
 
-test("with a position, Photon is asked for places around it (TASK-085)", async () => {
+test("with a position, Photon is asked for places around it (TASK-085), to about a kilometre (TASK-254)", async () => {
   expect(photonSearchUrl("via bel", [46.0671, 11.1214])).toBe(
-    "https://photon.komoot.io/api/?q=via%20bel&limit=5&lat=46.0671&lon=11.1214",
+    "https://photon.komoot.io/api/?q=via%20bel&limit=5&lat=46.07&lon=11.12",
   );
+  // Never more than two decimals: a third party hears where, not the house.
+  expect(photonSearchUrl("x", [-0.004, 179.995])).toMatch(/&lat=-0\.00&lon=180\.00$/);
   expect(photonSearchUrl("via bel", null)).toBe(photonSearchUrl("via bel"));
 });

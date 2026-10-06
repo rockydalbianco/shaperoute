@@ -12168,3 +12168,52 @@ sport: in bici circa il triplo del vero.
 modalità tasca). Il file della corsa può avere pause `away`
 (`trackStore.isPause` le legge). `NavigateScreen.test.tsx` cambia verso:
 lo schermo è acceso anche senza la modalità tasca.
+
+## ADR-0218 — Le correzioni piccole della revisione: tolleranza ai 5xx e a quello che l'app non conosce, posizione arrotondata dove è solo «qui vicino»
+
+**Data**: 2026-10-06 · **Stato**: accettata · **Task**: TASK-254
+(deciso dall'agente su delega dell'utente, dentro i punti del task file)
+
+**Contesto**: la revisione del codice dell'app del 2026-10-06 ha trovato
+dodici difetti piccoli e verificati. Tre di questi chiedevano una scelta
+tecnica, non solo una correzione.
+
+**Decisione**:
+
+1. **Un 5xx che non è un errore dell'API** (una pagina di un proxy, non
+   JSON) durante i controlli di `/route-jobs` conta come un errore di rete:
+   uno è perdonato, tre di fila chiudono la richiesta come `bad_answer`
+   con l'ultimo stato (`MAX_POLL_FAILURES`, `api/routes.ts`). Un errore
+   dell'API con il suo codice, a qualunque stato, chiude subito come prima.
+   Lo stesso per i controlli dei percorsi a tema (`useThemedRoute`), che
+   prima si chiudevano al primo controllo fallito.
+2. **Server e app si pubblicano separati**: una risposta con una forma, una
+   svolta, uno stato del job o un codice d'errore che questa versione
+   dell'app non conosce **non si rifiuta**. La forma sconosciuta è una forma
+   (`shapeName` ha già un nome per tutte); la svolta sconosciuta si legge
+   «straight» prima dei controlli (`withKnownTurns`, solo nella strada di
+   `requestRoute`: le indicazioni chieste a parte restano strette); lo stato
+   sconosciuto è lavoro in corso, detto a `onStatus` come «computing»; il
+   codice sconosciuto è un errore con il messaggio dell'API, mostrato dal
+   ramo generico di `route/problems.ts`. I controlli di struttura (punti,
+   numeri, campi obbligatori) restano com'erano.
+3. **La posizione del telefono esce con due decimali** (circa 1 km,
+   `nearParams` in `places/photon.ts`) dove serve solo come «qui vicino»:
+   a Photon, servizio terzo che la usa per ordinare, e a `/nearby-cities`,
+   che cerca già nel quadrato di due decimali. **Resta intera verso
+   `/phone-zones`**: il server sceglie la zona più piccola che tiene 3 km
+   attorno al punto (`ZONE_MARGIN_M`), e con il punto spostato fino a
+   ~550 m ai bordi sceglierebbe un'altra zona o risponderebbe 404; la
+   zona deve tenere il percorso vero, non uno vicino. Intera resta anche
+   come partenza del percorso, per forza.
+
+   Il server misura `away_m` dal punto che riceve, fino a ~700 m di
+   differenza: **«km away» e l'ordine dei paesi li misura il telefono** dal
+   punto preciso (`metresBetween`), su richiesta del coordinatore; l'`away_m`
+   del server non si usa.
+
+**Conseguenze**: i paesi tenuti in memoria per quadrato si rimisurano a
+ogni partenza; un posto senza `away_m` non si scarta più. I guard `isApiError` e
+`isRouteJob` accettano codici e stati come stringhe qualsiasi: chi li usa
+ha già un ramo generico. Un profilo nuovo sul server (una forma nuova)
+arriva all'app vecchia senza aggiornarla.

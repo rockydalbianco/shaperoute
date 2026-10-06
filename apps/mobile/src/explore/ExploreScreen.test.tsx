@@ -360,7 +360,7 @@ test("under «Near me», the towns around the start; a chosen city has none", as
   const view = await render(page(null));
   expect(await screen.findByText("NEARBY TOWNS")).toBeOnTheScreen();
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://api/nearby-cities?lat=46.067&lon=11.1215",
+    "http://api/nearby-cities?lat=46.07&lon=11.12",
     expect.anything(),
   );
   // The page has routes: one credit for the maps, the page's.

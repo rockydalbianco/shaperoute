@@ -145,6 +145,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-254 — Le correzioni piccole della revisione** (ADR-0218; dalla
+  revisione del codice dell'app del 2026-10-06, «sì» dell'utente). Dodici
+  difetti piccoli, ognuno con il suo test, solo app, niente da vedere di
+  nuovo: il preferito di un esempio a pezzi tiene la penna alzata; una foto
+  negata non azzera il contorno e i ritocchi; una ricerca di membri fallita
+  si ripete; due richieste di «Follow» in corso tengono spenti i bottoni di
+  tutte e due; un 5xx di un proxy durante l'attesa del percorso è perdonato
+  come un errore di rete (tre di fila no); forma, svolta, stato o codice
+  d'errore nuovi di un server più nuovo non rifiutano la risposta; la
+  posizione va a Photon e a `/nearby-cities` con due decimali (circa 1 km),
+  a `/phone-zones` intera (il server sceglie la zona con 3 km di margine
+  attorno al punto: arrotondato, ai bordi cambierebbe zona); il disegno di
+  una corsa lunga da condividere non sparisce; di due città chieste in
+  «Explore» resta l'ultima; un controllo fallito non chiude il percorso a
+  tema; il conto alla rovescia parte da 3. In PR; la pubblicazione è del
+  coordinatore. `tasks/TASK-254.md`.
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
   **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06),

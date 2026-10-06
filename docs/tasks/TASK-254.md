@@ -1,6 +1,6 @@
 # TASK-254 — Correzioni piccole dalla revisione dell'app
 
-**Stato**: Todo
+**Stato**: In lavorazione
 **Fase**: 4 · **Branch**: `fix/TASK-254-review-small-fixes`
 
 ## Obiettivo
@@ -81,25 +81,25 @@ piccola che lo fa passare. Niente refactoring intorno.
 
 ## Criteri di accettazione
 
-- [ ] 1: il preferito di un esempio a pezzi riaperto ha gli stessi `walks`
+- [x] 1: il preferito di un esempio a pezzi riaperto ha gli stessi `walks`
       dell'esempio (`favoriteRoute.test.ts`).
-- [ ] 2: dopo una scelta negata, contorno e ritocchi sono quelli di prima.
-- [ ] 3: una ricerca fallita si può ripetere con lo stesso nome.
-- [ ] 4: con due richieste in corso, i bottoni di tutte e due restano
+- [x] 2: dopo una scelta negata, contorno e ritocchi sono quelli di prima.
+- [x] 3: una ricerca fallita si può ripetere con lo stesso nome.
+- [x] 4: con due richieste in corso, i bottoni di tutte e due restano
       spenti fino alla propria risposta.
-- [ ] 5: un 502 fra due controlli buoni non chiude la richiesta; tre di
+- [x] 5: un 502 fra due controlli buoni non chiude la richiesta; tre di
       fila sì.
-- [ ] 6: una risposta con `shape: "unicorn"` è un percorso; una svolta
+- [x] 6: una risposta con `shape: "unicorn"` è un percorso; una svolta
       sconosciuta è «straight»; un codice d'errore sconosciuto porta il
       suo messaggio.
-- [ ] 7 e 11: negli URL la posizione ha al più 2 decimali; la zona scelta
+- [x] 7 e 11: negli URL la posizione ha al più 2 decimali; la zona scelta
       dal server è la stessa (test dell'API, o la nota del perché no).
-- [ ] 8: una traccia con un punto ogni 5 m lunga 8 km dà un disegno
+- [x] 8: una traccia con un punto ogni 5 m lunga 8 km dà un disegno
       continuo in un riquadro di 190 × 200 pt.
-- [ ] 9: di due città chieste, resta l'ultima chiesta.
-- [ ] 10: un controllo fallito fra due buoni non chiude il percorso a tema.
-- [ ] 12: il primo numero del conto alla rovescia è 3.
-- [ ] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
+- [x] 9: di due città chieste, resta l'ultima chiesta.
+- [x] 10: un controllo fallito fra due buoni non chiude il percorso a tema.
+- [x] 12: il primo numero del conto alla rovescia è 3.
+- [x] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
 
 ## File toccati
 
@@ -117,6 +117,8 @@ apps/mobile/src/explore/ExploreTools.tsx            (+ test) — dopo TASK-232 B
 apps/mobile/src/explore/useThemedRoute.ts           (+ test) — dopo TASK-232 B2
 apps/mobile/src/explore/nearbyCities.ts             (+ test) — dopo TASK-232 B2
 apps/mobile/src/screens/RunPanel.tsx                (+ test) — dopo TASK-251
+apps/mobile/src/explore/ExploreScreen.test.tsx      (una riga: l'URL di /nearby-cities
+                                                     arrotondato, voce 11)
 docs/STATUS.md, docs/DECISIONS.md                   (le righe di questo task)
 ```
 
@@ -133,4 +135,30 @@ docs/STATUS.md, docs/DECISIONS.md                   (le righe di questo task)
 
 ## Esito
 
-*(si compila a fine task)*
+Tutte e dodici le voci in un'unica PR (il branch è partito da `main` con
+TASK-232 B2, 232 C e 251 già dentro), ognuna con il suo test che fallisce
+sul file di `main` e passa con la correzione (verificato voce per voce).
+Scelte tecniche in ADR-0218. Note:
+
+- **7, `/phone-zones` resta a piena precisione.** Il server sceglie la
+  zona più piccola che tiene `ZONE_MARGIN_M` = 3 km attorno al punto
+  (`phone_zone_api.py`, `area_around`): con il punto arrotondato a due
+  decimali (spostato fino a ~550 m) un telefono vicino al bordo del
+  margine riceverebbe un'altra zona o un 404, e la zona deve tenere il
+  percorso vero. La posizione intera va al server comunque come partenza
+  di ogni percorso. `engine/zones.ts` non cambia.
+- **7 e 11, `/nearby-cities`**: il server cerca già nel quadrato di due
+  decimali (`CELL_DECIMALS`), quindi lo stesso quadrato; ma misura
+  `away_m` e l'ordine dal punto che riceve: «km away» può differire fino a
+  ~700 m da prima. Detto al coordinatore.
+- **6, lo stato del job**: uno stato sconosciuto è lavoro in corso, detto
+  a `onStatus` come «computing». La svolta sconosciuta diventa «straight»
+  prima dei controlli, solo in `requestRoute`: `api/routeDirections.ts`
+  (non di questo task) resta stretto.
+- **2, lo schermo**: lo stato «traced» porta `problem?` quando la scelta
+  di un'altra foto fallisce; contorno e ritocchi restano (test del hook).
+  Perché il problema **si veda** serve una riga in `route/ImageChoice.tsx`
+  (caso «traced» di `ImageNote`), file libero ma non elencato qui: chiesto
+  al coordinatore.
+- **12**: il test è in `screens/useNow.test.ts`, file nuovo, perché
+  `RunPanel.test.tsx` è fra i file più grandi (partenza fredda in CI).

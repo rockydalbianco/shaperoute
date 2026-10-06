@@ -566,6 +566,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-257: una corsa rifiutata resta sul telefono con il
+  motivo (ADR-0221; dalla revisione dell'app, «sì» dell'utente del
+  2026-10-06). Una corsa a cui l'API risponde `invalid_request` non
+  sparisce più: resta nel file segnata e non viene rimandata; in cima a
+  «My activities» una riga con giorno, km, «The server could not take
+  this run: {message}», «Try again» e «Discard» dopo un sì. Il telefono
+  tiene al più 20 corse non mandate **per account** e non ne butta più
+  nessuna: «Save» della ventunesima dice che è pieno e la corsa in corso
+  resta. Otto testi nuovi nelle cinque lingue, da confermare
+  dall'utente prima del merge. Solo app. `tasks/TASK-257.md`.
 - **App** — TASK-253: la navigazione non salta avanti e riprende dove era
   (ADR-0217; dalla revisione del codice dell'app del 2026-10-06). Dove il
   percorso ripassa dallo stesso punto entro 300 m la posizione resta sul

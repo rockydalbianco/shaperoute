@@ -1625,6 +1625,10 @@ dal vivo, «Turn left onto Via Roma», e una seconda riga per le svolte a
 pochi metri da leggere insieme); sotto la mappa la scheda della corsa, con
 pochi numeri e «Pause» (vedi «La corsa», qui sotto). La mappa segue la
 posizione, vicina (zoom 17), e a fine corsa inquadra di nuovo il percorso.
+Senza il permesso della posizione, o con la posizione del telefono spenta,
+il banner dice «Location is off» e «Allow it for Sgrava in Settings to
+follow the route.», con «Open Settings» che apre la pagina dell'app nelle
+impostazioni del telefono (TASK-259).
 
 **La corsa: due pagine, il conto alla rovescia, la pausa** (TASK-169,
 ADR-0137), chiesta dall'utente con una registrazione di Nike Run Club come
@@ -2521,8 +2525,8 @@ in grande («1.2 km») e «Your start, in a straight line»; sotto, «Heading
 north-east». La freccia è come la vede chi corre: in su vuol dire davanti,
 in giù alle spalle. A meno di 30 m dalla partenza, «You are at your start»
 senza freccia. Prima della prima posizione, «Finding your position…»; senza
-permesso, «Location is off for Sgrava: allow it in Settings to record a
-run.». Sotto la mappa la scheda della corsa, la stessa della navigazione
+permesso, «Location is off», «Allow it for Sgrava in Settings to record
+your track.» e «Open Settings» (TASK-259). Sotto la mappa la scheda della corsa, la stessa della navigazione
 («La corsa», sopra): il conto alla rovescia, le pagine «Map» e «Data»,
 «Pause», «Pocket», «Stop» da tenere premuto; su «Data», al posto della
 svolta, c'è la partenza. A ogni km la voce, in

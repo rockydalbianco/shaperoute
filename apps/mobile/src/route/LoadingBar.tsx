@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet } from "react-native";
 
+import { t, tLater } from "../i18n";
 import { color, radius } from "../theme/tokens";
 import {
   estimateProgress,
@@ -16,8 +17,9 @@ import {
 /** How often the bar moves on. */
 export const TICK_MS = 250;
 
-/** What the bar says to a screen reader once a wait outlasts the usual. */
-export const SLOW_TEXT = "Still waiting";
+/** What the bar says to a screen reader once a wait outlasts the usual, in
+ * English: said with t() (TASK-210). */
+export const SLOW_TEXT = tLater("Still waiting");
 
 type Props = {
   phase: WaitingPhase;
@@ -38,7 +40,7 @@ export function LoadingBar({ phase, distanceM, word }: Props) {
       stage={phase}
       progressAt={(seconds) => estimateProgress(phase, seconds, distanceM, word)}
       usualS={phaseSeconds(phase, distanceM, word)}
-      label="Drawing the route"
+      label={t("Drawing the route")}
       testID="loading"
     />
   );
@@ -51,7 +53,7 @@ export function ReadingBar() {
       stage="reading"
       progressAt={readingProgress}
       usualS={READING_S}
-      label="Reading the shape"
+      label={t("Reading the shape")}
       testID="reading-loading"
     />
   );
@@ -64,7 +66,7 @@ export function MapLoadingBar() {
       stage="map"
       progressAt={mapProgress}
       usualS={MAP_S}
-      label="Loading the map"
+      label={t("Loading the map")}
       testID="map-loading"
     />
   );
@@ -146,7 +148,7 @@ function EstimateBar({ stage, progressAt, usualS, label, testID }: EstimateProps
         min: 0,
         max: 100,
         now: percent,
-        ...(slow ? { text: SLOW_TEXT } : {}),
+        ...(slow ? { text: t(SLOW_TEXT) } : {}),
       }}
       testID={testID}
     >

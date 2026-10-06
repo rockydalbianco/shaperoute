@@ -469,6 +469,179 @@ export const IT: Table = {
   // src/route/warnings.ts
   "Includes {distance} walking the bike.": "Di cui {distance} con la bici a mano.",
 
+  // src/route/RoutePanel.tsx (TASK-210, «Draw»)
+  Shape: "Forma",
+  Word: "Parola",
+  Image: "Immagine",
+  Round: "Tonde",
+  Square: "Quadrate",
+  DRAW: "DISEGNA",
+  LETTERS: "LETTERE",
+  DISTANCE: "DISTANZA",
+  "heart, star, horse…": "cuore, stella, cavallo…",
+  "Lift the pen between parts": "Alza la penna fra le parti",
+  "Lift the pen between letters": "Alza la penna fra le lettere",
+  "Square letters follow the street grid: best for short words.":
+    "Le lettere quadrate seguono la griglia delle strade: meglio per parole corte.",
+  "Enter a distance between {lowest} and {highest} km.":
+    "Inserisci una distanza fra {lowest} e {highest} km.",
+  "Long routes take longer: up to a few minutes.":
+    "I percorsi lunghi richiedono più tempo: fino a qualche minuto.",
+  "Draw route": "Disegna il percorso",
+  Start: "Parti",
+  "Preparing GPX…": "Preparo il GPX…",
+  "Export GPX": "Esporta GPX",
+  "{letters} km of letters + {between} km walking between them":
+    "{letters} km di lettere + {between} km a piedi fra una lettera e l'altra",
+  "Press Done and the AI will read it.": "Premi Fine e l'AI lo leggerà.",
+  "The AI is reading it…": "L'AI lo sta leggendo…",
+  "No shape in the catalogue for “{text}”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one:":
+    "Nessuna forma del catalogo per «{text}». Descrivi com'è fatta («cavallo rampante», non «stemma Ferrari»), o scegline una:",
+  "Unknown shape. Try: {list}.": "Forma sconosciuta. Prova: {list}.",
+  "{count} letter: at least {km} km. A word takes a few minutes to draw.":
+    "{count} lettera: almeno {km} km. Per disegnare una parola servono alcuni minuti.",
+  "{count} letters: at least {km} km. A word takes a few minutes to draw.":
+    "{count} lettere: almeno {km} km. Per disegnare una parola servono alcuni minuti.",
+  "Use {km} km": "Usa {km} km",
+  Picture: "Foto",
+  "Waiting for the API…": "In attesa del servizio…",
+  "Downloading map data for this area…": "Scarico la mappa di questa zona…",
+  "Drawing the picture's outline, {km} km…": "Disegno il contorno della foto, {km} km…",
+  "Drawing “{word}”, {km} km…": "Disegno «{word}», {km} km…",
+  "Drawing a {km} km {name}…": "Disegno: {name}, {km} km…",
+
+  // src/route/problems.ts (TASK-210, «Draw»)
+  "This shape does not fit the roads here at this distance. It fits at about {km} km.":
+    "Qui questa forma non sta sulle strade a questa distanza. Ci sta a circa {km} km.",
+  "This word does not fit the roads here at this distance. It fits at about {km} km.":
+    "Qui questa parola non sta sulle strade a questa distanza. Ci sta a circa {km} km.",
+  "This image does not fit the roads here at this distance. It fits at about {km} km.":
+    "Qui questa immagine non sta sulle strade a questa distanza. Ci sta a circa {km} km.",
+  "This word does not fit the roads here. Try a shorter word, or another start.":
+    "Qui questa parola non sta sulle strade. Prova una parola più corta, o un'altra partenza.",
+  "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.":
+    "Qui questo contorno non sta sulle strade. Prova un'altra distanza, un'altra partenza o una foto più semplice.",
+  "This shape does not fit the roads here. Try another shape, or another start:":
+    "Qui questa forma non sta sulle strade. Prova un'altra forma, o un'altra partenza:",
+  "Map data for this area could not be downloaded. Try again later.":
+    "Non si è potuta scaricare la mappa di questa zona. Riprova più tardi.",
+  "The route engine cannot find one clear outline in this picture.":
+    "In questa foto non si trova un contorno chiaro.",
+  "Only PNG and JPEG pictures work. Choose another one.":
+    "Vanno bene solo foto PNG e JPEG. Scegline un'altra.",
+  "This picture could not be read. Choose another one.":
+    "Questa foto non si è potuta leggere. Scegline un'altra.",
+  "The background is too busy. Use one subject on a plain background, like a drawing on white paper or an object on a bare table.":
+    "Lo sfondo è troppo pieno. Usa un solo soggetto su uno sfondo uniforme, come un disegno su un foglio bianco o un oggetto su un tavolo vuoto.",
+  "Nothing stands out from the background. Use a subject much darker or brighter than what is around it.":
+    "Niente spicca sullo sfondo. Usa un soggetto molto più scuro o più chiaro di ciò che ha intorno.",
+  "The picture shows more than 4 separate things. Use a picture with 4 subjects at most.":
+    "La foto mostra più di 4 cose separate. Usa una foto con al massimo 4 soggetti.",
+  "The subject touches the edge of the picture. Leave some background all around it.":
+    "Il soggetto tocca il bordo della foto. Lascia un po' di sfondo tutt'intorno.",
+  "The subject is too small. Get closer, or use a bigger picture.":
+    "Il soggetto è troppo piccolo. Avvicinati, o usa una foto più grande.",
+  "The outline is too jagged to run on roads. Try a simpler subject.":
+    "Il contorno è troppo frastagliato per correrlo sulle strade. Prova un soggetto più semplice.",
+  "This line cannot be added to the outline. Draw it again.":
+    "Questa linea non si può aggiungere al contorno. Disegnala di nuovo.",
+  "This line is too short to add. Draw a longer one.":
+    "Questa linea è troppo corta per aggiungerla. Disegnane una più lunga.",
+  "This part covers where a detail starts. Undo the detail first, or draw the part elsewhere.":
+    "Questa parte copre il punto da cui parte un dettaglio. Prima annulla il dettaglio, o disegna la parte altrove.",
+  "That is too much for one route. Undo something, or draw simpler lines.":
+    "È troppo per un solo percorso. Annulla qualcosa, o disegna linee più semplici.",
+  "Too many requests to the API in the last minute. Wait a minute, then try again.":
+    "Troppe richieste nell'ultimo minuto. Aspetta un minuto, poi riprova.",
+  "This phone cannot open the share sheet.":
+    "Questo telefono non può aprire il foglio di condivisione.",
+  "The GPX could not be saved on the phone. Try again.":
+    "Il GPX non si è potuto salvare sul telefono. Riprova.",
+  "This picture is too large: {mb} MB, at most {most} MB. Choose a smaller one.":
+    "Questa foto è troppo grande: {mb} MB, al massimo {most} MB. Scegline una più piccola.",
+  "The picture could not be opened. Try again, or choose another one.":
+    "La foto non si è potuta aprire. Riprova, o scegline un'altra.",
+
+  // src/route/warnings.ts (TASK-210, «Draw»; the direction is the compass word)
+  "The route starts {distance} {direction} of your start, where the shape fits the roads. Go to “Start here”.":
+    "Il percorso parte {distance} a {direction} dalla tua partenza, dove la forma sta sulle strade. Vai a «Parti da qui».",
+  "There are {distance} of steps along the way.":
+    "Lungo la strada ci sono {distance} di scale.",
+  "{distance} runs along main roads, with traffic.":
+    "{distance} corrono su strade principali, con traffico.",
+  "{distance} runs through tunnels.": "{distance} passano in galleria.",
+  "About {share}% of the route goes over the same roads twice.":
+    "Circa il {share}% del percorso passa due volte sulle stesse strade.",
+  "About {share}% of the route runs alongside itself.":
+    "Circa il {share}% del percorso corre affiancato a se stesso.",
+  "The route is {share}% longer than asked.":
+    "Il percorso è più lungo del {share}% rispetto a quanto chiesto.",
+  "The route is {share}% shorter than asked.":
+    "Il percorso è più corto del {share}% rispetto a quanto chiesto.",
+  "The roads here follow the shape only roughly.":
+    "Qui le strade seguono la forma solo all'incirca.",
+  "Few roads here: the route follows the shape loosely.":
+    "Poche strade qui: il percorso segue la forma alla larga.",
+  "The nearest road is {distance} away: the route begins there.":
+    "La strada più vicina è a {distance}: il percorso comincia lì.",
+  "A bit of the shape has no road to follow, so the route skips it.":
+    "Un pezzo della forma non ha strade da seguire, e il percorso lo salta.",
+
+  // src/route/wordInput.ts (TASK-210, «Draw»)
+  "Write a word to draw, with the letters A to Z.":
+    "Scrivi una parola da disegnare, con le lettere dalla A alla Z.",
+  "One word only, without spaces.": "Una parola sola, senza spazi.",
+  "No letter “{letter}”: a word can use only the letters A to Z, without accents.":
+    "Niente «{letter}»: una parola può usare solo le lettere dalla A alla Z, senza accenti.",
+  "At most {most} letters.": "Al massimo {most} lettere.",
+  "At most {most} letters: each needs {each} km, and the app goes up to {highest} km.":
+    "Al massimo {most} lettere: a ognuna servono {each} km, e l'app arriva a {highest} km.",
+  "“{word}” needs at least {km} km: {each} km for each letter.":
+    "A «{word}» servono almeno {km} km: {each} km per ogni lettera.",
+
+  // src/route/ImageChoice.tsx (TASK-210, «Draw»)
+  "Choose another": "Scegline un'altra",
+  "Choose picture": "Scegli una foto",
+  "Take photo": "Scatta una foto",
+  "Hide the picture": "Nascondi la foto",
+  "Show the picture": "Mostra la foto",
+  "Edit the outline": "Modifica il contorno",
+  "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
+    "Funziona meglio un solo soggetto su uno sfondo uniforme: un disegno, un logo, un oggetto su un tavolo vuoto. Il percorso ne segue la linea esterna. Fino a 4 soggetti separati vengono uniti in una linea sola.",
+  "Tracing the outline…": "Traccio il contorno…",
+  "The yellow line is what the route will draw. If it does not look like the subject, the route will not either: try another picture, or edit the outline. Separate subjects are joined by a short line, which the route runs there and back.":
+    "La linea gialla è quello che il percorso disegnerà. Se non somiglia al soggetto, nemmeno il percorso gli somiglierà: prova un'altra foto, o modifica il contorno. I soggetti separati sono uniti da una linea corta, che il percorso fa all'andata e al ritorno.",
+
+  // src/route/OutlineBoard.tsx (TASK-210, «Draw»)
+  "Add a part": "Aggiungi una parte",
+  "Add a detail": "Aggiungi un dettaglio",
+  "Choose what to add. Two fingers zoom and move the picture.":
+    "Scegli cosa aggiungere. Con due dita ingrandisci e sposti la foto.",
+  "Draw a closed shape. Across the yellow line it becomes part of the outline; anywhere else it is joined to the nearest yellow line.":
+    "Disegna una forma chiusa. Sopra la linea gialla diventa parte del contorno; altrove viene unita alla linea gialla più vicina.",
+  "Draw a line anywhere: it is joined to the nearest yellow line, and the route runs along it and back. Close a loop to make an eye.":
+    "Disegna una linea dove vuoi: viene unita alla linea gialla più vicina, e il percorso la fa all'andata e al ritorno. Chiudi un anello per fare un occhio.",
+  Fit: "Adatta",
+  "Adding the part…": "Aggiungo la parte…",
+  "Adding the detail…": "Aggiungo il dettaglio…",
+  Undo: "Annulla",
+
+  // src/route/LoadingBar.tsx (TASK-210, «Draw»: what a screen reader hears)
+  "Still waiting": "Ancora in attesa",
+  "Drawing the route": "Disegno del percorso",
+  "Reading the shape": "Lettura della forma",
+  "Loading the map": "Caricamento della mappa",
+
+  // src/route/DistanceStepper.tsx (TASK-210, «Draw»)
+  "Distance in km": "Distanza in km",
+  Shorter: "Più corta",
+  Longer: "Più lunga",
+
+  // src/route/RouteTiles.tsx, ImagePreview.tsx (TASK-210, «Draw»: what a screen reader hears)
+  "Route {label}, {distance}, {likeness} like the shape":
+    "Percorso {label}, {distance}, somiglia alla forma al {likeness}",
+  "The outline traced from the picture": "Il contorno ricavato dalla foto",
+
   // src/screens/PeopleScreen.tsx
   "Find friends": "Trova amici",
 
@@ -563,8 +736,6 @@ export const IT: Table = {
   Pace: "Passo",
 
   // src/share/sharePicture.ts
-  "This phone cannot open the share sheet.":
-    "Questo telefono non riesce ad aprire il menu di condivisione.",
   "The picture could not be made. Try again.":
     "Non è stato possibile creare l'immagine. Riprova.",
 
@@ -804,4 +975,84 @@ export const IT: Table = {
   "Add photo": "Aggiungi foto",
   "This photo could not be kept on the phone. Try again.":
     "Questa foto non si è potuta tenere sul telefono. Riprova.",
+
+  // «Explore»: src/explore/* (TASK-210, parte C)
+  "ASK FOR A ROUTE": "CHIEDI UN PERCORSO",
+  "A shape through real places {place}. Tap one to make it.":
+    "Una forma che passa per posti veri {place}. Toccane una per farla.",
+  Food: "Cibo",
+  "Famous Places": "Posti famosi",
+  Romantic: "Romantico",
+  "Best Views": "Panorami",
+  Shopping: "Shopping",
+  Culture: "Cultura",
+  Nightlife: "Vita notturna",
+  "Hidden Gems": "Angoli nascosti",
+  Running: "Corsa",
+  Walking: "Passeggiata",
+  Family: "Famiglia",
+  Photography: "Fotografia",
+  "Local Experience": "Vita locale",
+  "More categories": "Altre categorie",
+  "More…": "Altre…",
+  "{count} more": "altre {count}",
+  "OR IN YOUR WORDS": "O CON PAROLE TUE",
+  "From {where}. Name a city in the words to go elsewhere.":
+    "Si parte {where}. Scrivi una città nelle parole per andare altrove.",
+  "Make my route": "Crea il mio percorso",
+  "EXAMPLES IN {city}": "ESEMPI A {city}",
+  "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
+    "Qui non ci sono ancora percorsi consigliati: forme di {distance} dal centro, disegnate adesso.",
+  "Three first, more while you choose.": "Prima tre, altre mentre scegli.",
+  "Best near you": "I migliori vicino a te",
+  "Starting within {distance} of {place}": "Con partenza entro {distance} da {place}",
+  "your start": "dove sei",
+  "Loading routes…": "Carico i percorsi…",
+  "Choose a start first: the routes are the ones near it.":
+    "Scegli prima una partenza: i percorsi sono quelli vicini.",
+  "The routes could not load. Check the connection and try again.":
+    "I percorsi non si sono caricati. Controlla la connessione e riprova.",
+  "Ask for a route": "Chiedi un percorso",
+  "Getting directions…": "Prendo le indicazioni…",
+  CITY: "CITTÀ",
+  "Type a city or a place": "Scrivi una città o un posto",
+  "No city or place matches “{typed}”.":
+    "Nessuna città o posto corrisponde a “{typed}”.",
+  "The search did not answer. Try again.": "La ricerca non ha risposto. Riprova.",
+  "A city you chose before": "Una città scelta prima",
+  "The routes near your start": "I percorsi vicino alla tua partenza",
+  "{title} · {city} · looks {percent}% like it":
+    "{title} · {city} · somiglia al {percent}%",
+  "Loading the route…": "Carico il percorso…",
+  "The route could not load. Try again.": "Il percorso non si è caricato. Riprova.",
+  "Drawing a {distance} {title}…": "Disegno {title} da {distance}…",
+  "The GPX could not be made. Try again.": "Il GPX non si è potuto creare. Riprova.",
+  "It passes by none of the {found} {theme} found: the shape did not fit near them.":
+    "Non passa per nessuno dei {found} {theme} trovati: la forma non ci stava vicino.",
+  "Passes by {passed} of the {found} {theme} found:":
+    "Passa per {passed} dei {found} {theme} trovati:",
+  "Back to Explore": "Torna a Explore",
+  "MEANWHILE, FROM THE FEED": "INTANTO, DAL FEED",
+  "The first time in a city the map has to download: it can take a minute. The shapes show up above as they are ready.":
+    "La prima volta in una città la mappa va scaricata: può volerci un minuto. Le forme compaiono qui sopra man mano che sono pronte.",
+  "The shapes of this city are ready above.":
+    "Le forme di questa città sono pronte qui sopra.",
+  "Maps: {credit}": "Mappe: {credit}",
+  "City centre": "Centro città",
+  "The API did not answer. Check the connection and try again.":
+    "Il server non ha risposto. Controlla la connessione e riprova.",
+  "The map of this area could not be loaded for directions. Try again later.":
+    "La mappa di questa zona non si è caricata per le indicazioni. Riprova più tardi.",
+  "This route is not on the map the API has: it has no directions.":
+    "Questo percorso non è sulla mappa del server: non ha indicazioni.",
+  "The directions could not be found. Try again.":
+    "Le indicazioni non si sono trovate. Riprova.",
+  "The API answered without directions. It may be out of date.":
+    "Il server ha risposto senza indicazioni. Potrebbe non essere aggiornato.",
+  "near your start": "vicino a te",
+  "near {place}": "vicino a {place}",
+  "in {city}": "a {city}",
+  "e.g. a romantic heart, famous places, food 8 km":
+    "es. un cuore romantico, posti famosi, cibo 8 km",
+  "e.g. a romantic heart in {city}, 8 km": "es. un cuore romantico a {city}, 8 km",
 };

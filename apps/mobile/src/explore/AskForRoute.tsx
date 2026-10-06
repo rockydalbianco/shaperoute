@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { t } from "../i18n";
 
 import type { Place } from "../places/photon";
 import {
@@ -38,9 +39,9 @@ export function AskForRoute({ city = null, where, onAsk }: Props) {
   const shown = all ? CATEGORIES : CATEGORIES.slice(0, QUICK_CATEGORIES);
   return (
     <View style={styles.section}>
-      <Text style={styles.label}>ASK FOR A ROUTE</Text>
+      <Text style={styles.label}>{t("ASK FOR A ROUTE")}</Text>
       <Text style={styles.note}>
-        {`A shape through real places ${place}. Tap one to make it.`}
+        {t("A shape through real places {place}. Tap one to make it.", { place })}
       </Text>
       <View style={styles.grid}>
         {shown.map((category) => (
@@ -51,7 +52,7 @@ export function AskForRoute({ city = null, where, onAsk }: Props) {
             accessibilityRole="button"
             accessibilityLabel={requestFor(category, city)}
           >
-            <Text style={styles.categoryText}>{category}</Text>
+            <Text style={styles.categoryText}>{t(category)}</Text>
             <Text style={styles.categoryWhere} numberOfLines={1}>
               {place}
             </Text>
@@ -62,16 +63,16 @@ export function AskForRoute({ city = null, where, onAsk }: Props) {
             style={({ pressed }) => [styles.category, pressed && styles.pressed]}
             onPress={() => setAll(true)}
             accessibilityRole="button"
-            accessibilityLabel="More categories"
+            accessibilityLabel={t("More categories")}
           >
-            <Text style={styles.categoryText}>More…</Text>
+            <Text style={styles.categoryText}>{t("More…")}</Text>
             <Text style={styles.categoryWhere} numberOfLines={1}>
-              {`${CATEGORIES.length - QUICK_CATEGORIES} more`}
+              {t("{count} more", { count: CATEGORIES.length - QUICK_CATEGORIES })}
             </Text>
           </Pressable>
         )}
       </View>
-      <Text style={styles.label}>OR IN YOUR WORDS</Text>
+      <Text style={styles.label}>{t("OR IN YOUR WORDS")}</Text>
       <TextInput
         style={styles.input}
         value={text}
@@ -84,7 +85,7 @@ export function AskForRoute({ city = null, where, onAsk }: Props) {
         keyboardAppearance="dark"
       />
       <Text style={styles.note}>
-        {`From ${where}. Name a city in the words to go elsewhere.`}
+        {t("From {where}. Name a city in the words to go elsewhere.", { where })}
       </Text>
       <Pressable
         style={({ pressed }) => [
@@ -97,7 +98,7 @@ export function AskForRoute({ city = null, where, onAsk }: Props) {
         accessibilityRole="button"
         accessibilityState={{ disabled: !ready }}
       >
-        <Text style={styles.makeText}>Make my route</Text>
+        <Text style={styles.makeText}>{t("Make my route")}</Text>
       </Pressable>
     </View>
   );

@@ -8150,6 +8150,23 @@ il nome su Strava) restano in inglese. Le traduzioni le ha riviste
 l'agente su delega dell'utente («controlla te, mi fido»); chi parla le
 altre lingue può migliorarle senza toccare il codice.
 
+**Aggiunta** (2026-10-06, TASK-210 parte D, «Draw»; deciso dall'agente su
+delega dell'utente): (1) gli avvisi del motore (`warnings.ts`) restano
+riconosciuti dai suoi testi inglesi e detti con `t()`; la direzione dello
+start spostato («north-east») è tradotta con le stesse chiavi dei punti
+cardinali della corsa (`runStats.ts`), così un avviso e la scheda «Dati»
+dicono «nord-est» allo stesso modo; una distanza che il motore scrive
+«1.2 km» si mostra con il decimale della lingua («1,2 km»). (2) Le ragioni
+di una foto o di una linea rifiutata (`REASON_TEXT`, `EDIT_REASON_TEXT`)
+restano tabelle inglesi marcate con `tLater` e tradotte dove si mostrano:
+i test le confrontano in inglese. (3) I nomi delle forme («heart», «dog
+head») e il segnaposto del campo restano per la parte «nomi delle forme»:
+in de/es/fr il segnaposto suggerisce parole («Herz, Stern, Pferd…») che
+`shapeWords.ts` non conosce e manda all'AI, accettato fino a quella parte.
+(4) L'avviso dice «Vai a «Parti da qui»» (de «Hier starten», es «Empieza
+aquí», fr «Départ ici»): la parte di `mapPage.ts` chiamerà così «Start
+here».
+
 ## ADR-0173 — Seguire con richiesta, l'API: una tabella `follows` con due stati, la ricerca per nome, gli elenchi solo propri
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-211, parte A), dentro due **scelte dell'utente** del 2026-10-03:

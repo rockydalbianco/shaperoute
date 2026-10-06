@@ -1,8 +1,9 @@
 # TASK-117 — Pubblicare una corsa salvata: i disegni
 
-**Stato**: In corso — parte A (API) in `main` (PR #232); parte B (app)
-in `main` (PR #242, 2026-10-03); mancano l'aggiornamento del server, la
-pubblicazione e la prova sull'iPhone, con l'ok dell'utente
+**Stato**: Done — parte A (API) in `main` (PR #232); parte B (app)
+in `main` (PR #242, 2026-10-03); sul server (migrazione `0009`) e su
+`preview` dal 2026-10-06; aperti per l'utente i quattro testi e la
+prova sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-117-publish-runs` (parte A),
 `feat/TASK-117-publish-app` (parte B)
 **Dipende da**: TASK-113, TASK-116, TASK-172 · **ADR**: ADR-0159
@@ -227,3 +228,9 @@ Seguiti:
   dell'utente; poi la prova sull'iPhone.
 - Da dove si apre il profilo di un altro (TASK-116), e i disegni degli
   altri nel feed (TASK-118).
+
+**Chiusura (2026-10-06, pulizia dei task file).** Il server è su `main`
+`d7b490f1` con le migrazioni fino alla `0019`, quindi con la `0009` e
+gli endpoint dei disegni; l'app con «Public» e «Drawings» è su `preview`
+(gruppo `f062e005` e seguenti). Restano dell'utente i quattro testi
+elencati sopra e la prova sull'iPhone.

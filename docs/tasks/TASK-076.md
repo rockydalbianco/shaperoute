@@ -1,6 +1,6 @@
 # TASK-076 — Il cuore meno sensibile alla partenza: più partenze vicine, si tiene la migliore
 
-**Stato**: In revisione (PR #93; merge del coordinatore)
+**Stato**: Done — in `main` (PR #93, `96bb1db6`, 2026-09-26)
 **Fase**: 4 · **Branch**: `feat/TASK-076-nearby-starts`
 
 ## Obiettivo

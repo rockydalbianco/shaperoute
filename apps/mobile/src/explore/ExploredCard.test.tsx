@@ -138,7 +138,7 @@ test("while the finger has the shape: what to do, and «Cancel»", async () => {
 
 test("while the moved route is drawn there is nothing to start, only the way back", async () => {
   await card(opened([]).explored, { status: "idle" }, moveOf({ waiting: true }));
-  expect(screen.getByText("Drawing a 5 km star…")).toBeOnTheScreen();
+  expect(screen.getByText(/^Drawing a 5(\.0)? km star…$/)).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: "Start" })).toBeNull();
   expect(screen.queryByRole("button", MOVE)).toBeNull();
   expect(screen.queryByText("Export GPX")).toBeNull();

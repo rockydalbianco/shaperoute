@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { t, tLater } from "../i18n";
 
 import { shapeLabel } from "../feed/FeedPost";
 import type { Place } from "../places/photon";
@@ -27,8 +28,8 @@ type Props = {
 };
 
 const STATUS: Record<"waiting" | "drawing", string> = {
-  waiting: "Next",
-  drawing: "Drawing…",
+  waiting: tLater("Next"),
+  drawing: tLater("Drawing…"),
 };
 
 /**
@@ -54,11 +55,17 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
       : `${EXAMPLE_DISTANCE_M / 1000} km`;
   return (
     <View style={styles.section}>
-      <Text
-        style={styles.label}
-      >{`EXAMPLES IN ${cityShort(city.label).toUpperCase()}`}</Text>
+      <Text style={styles.label}>
+        {t("EXAMPLES IN {city}", { city: cityShort(city.label).toUpperCase() })}
+      </Text>
       <Text style={styles.note}>
-        {`No recommended routes here yet: shapes of ${asked} from the centre, drawn now.${coming ? " Three first, more while you choose." : ""}`}
+        {t(
+          "No recommended routes here yet: shapes of {distance} from the centre, drawn now.",
+          {
+            distance: asked,
+          },
+        )}
+        {coming ? ` ${t("Three first, more while you choose.")}` : ""}
       </Text>
       <View style={styles.grid}>
         {shown.map((example) => {
@@ -89,7 +96,7 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
               line={null}
               title={name}
               detail={
-                example.status === "failed" ? "Not drawn" : STATUS[example.status]
+                example.status === "failed" ? t("Not drawn") : t(STATUS[example.status])
               }
             />
           );
@@ -107,7 +114,7 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
           onPress={onRetry}
           accessibilityRole="button"
         >
-          <Text style={styles.retryText}>Try again</Text>
+          <Text style={styles.retryText}>{t("Try again")}</Text>
         </Pressable>
       )}
     </View>

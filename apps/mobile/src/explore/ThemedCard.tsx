@@ -1,5 +1,6 @@
 import { type RouteResult, type Shape, SHAPES } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { t } from "../i18n";
 
 import type { ExportState } from "../route/useGpxExport";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
@@ -53,9 +54,19 @@ export function passedText(result: ThemedResult): string {
   const passed = result.stops.filter((s) => s.passed).length;
   const found = result.stops.length;
   if (passed === 0) {
-    return `It passes by none of the ${found} ${result.theme_label} found: the shape did not fit near them.`;
+    return t(
+      "It passes by none of the {found} {theme} found: the shape did not fit near them.",
+      {
+        found,
+        theme: result.theme_label,
+      },
+    );
   }
-  return `Passes by ${passed} of the ${found} ${result.theme_label} found:`;
+  return t("Passes by {passed} of the {found} {theme} found:", {
+    passed,
+    found,
+    theme: result.theme_label,
+  });
 }
 
 type Props = {
@@ -94,7 +105,7 @@ export function ThemedCard({
           onPress={onCancel}
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryText}>Cancel</Text>
+          <Text style={styles.secondaryText}>{t("Cancel")}</Text>
         </Pressable>
       </View>
     );
@@ -108,7 +119,7 @@ export function ThemedCard({
           onPress={onCancel}
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryText}>Back to Explore</Text>
+          <Text style={styles.secondaryText}>{t("Back to Explore")}</Text>
         </Pressable>
       </View>
     );
@@ -137,14 +148,14 @@ export function ThemedCard({
         accessibilityRole="button"
       >
         <Text style={styles.secondaryText}>
-          {exporting.status === "preparing" ? "Preparing GPX…" : "Export GPX"}
+          {exporting.status === "preparing" ? t("Preparing GPX…") : t("Export GPX")}
         </Text>
       </Pressable>
       {exporting.status === "failed" && (
-        <Text style={styles.error}>The GPX could not be made. Try again.</Text>
+        <Text style={styles.error}>{t("The GPX could not be made. Try again.")}</Text>
       )}
       <Pressable style={styles.secondary} onPress={onCancel} accessibilityRole="button">
-        <Text style={styles.secondaryText}>Back to Explore</Text>
+        <Text style={styles.secondaryText}>{t("Back to Explore")}</Text>
       </Pressable>
     </View>
   );

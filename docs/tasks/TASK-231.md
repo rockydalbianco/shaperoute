@@ -1,7 +1,8 @@
 # TASK-231 — Condividere il post di una corsa su Instagram e Strava
 
-**Stato**: In corso — parte A (l'app) in `main` (PR #303, `cf973d1`,
-2026-10-04); parte B (l'API) da fare, se l'utente la vuole
+**Stato**: Done — parte A (l'app) in `main` (PR #303, `cf973d1`,
+2026-10-04); parte B (l'API) in `main` (PR #306, `3b6e821`, 2026-10-05);
+sul server e su `preview` dal 2026-10-05; aperta la prova sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-231-share-post` (parte A)
 **ADR**: ADR-0194
 
@@ -135,4 +136,13 @@ docs/DECISIONS.md, docs/UI.md, docs/STATUS.md             (solo le righe nuove)
 dall'app; provato nel simulatore con Expo Go (immagine PNG da 116 KB, il
 foglio si apre). Rispetto al disegno mostrato all'utente manca «More»,
 che apriva lo stesso foglio di «Instagram». Restano la prova sull'iPhone,
-la pubblicazione e la parte B. *(il resto a fine task)*
+la pubblicazione e la parte B.
+
+**Parte B** (2026-10-05, PR #306, merge `3b6e821`): il testo del post va
+come `post` in cima alla descrizione all'invio, e su una corsa già su
+Strava la cambia con `PUT /activities/{id}` («Update on Strava»
+nell'app). Server aggiornato a `3b6e821` e app pubblicata su `preview`
+(gruppo `f8951439`) il 2026-10-05.
+
+**Chiusura (2026-10-06, pulizia dei task file).** Tutto in `main`, sul
+server e su `preview`; resta dell'utente la prova sull'iPhone.

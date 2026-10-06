@@ -1,8 +1,8 @@
 # TASK-120 — Commenti
 
-**Stato**: In corso — codice in `main` (PR #260, `8a938fd`, 2026-10-03);
-mancano l'aggiornamento del server con la migrazione `0013`, la
-pubblicazione e la prova sull'iPhone con due account, con l'ok dell'utente
+**Stato**: Done — codice in `main` (PR #260, `8a938fd`, 2026-10-03);
+sul server (migrazione `0013`) e su `preview` dal 2026-10-06; aperti per
+l'utente i testi nuovi e la prova sull'iPhone con due account
 **Fase**: 4 · **Branch**: `feat/TASK-120-comments`
 **Dipende da**: TASK-117 (i disegni pubblicati) · TASK-213 (il filtro dei
 commenti negativi, in `main`) · **Prima di aprirli a tutti**: TASK-121
@@ -152,3 +152,9 @@ Seguiti:
   seguono la stessa regola del disegno. Fino ad allora i commenti di un
   disegno «Followers» li vede solo il proprietario: sbaglia per difetto,
   mai mostrando a chi non deve (indicazione del coordinatore).
+
+**Chiusura (2026-10-06, pulizia dei task file).** Il server è su `main`
+`d7b490f1` con le migrazioni fino alla `0019`, quindi con la `0013` e
+gli endpoint dei commenti; l'app è su `preview` (gruppo `f062e005` e
+seguenti). Restano dell'utente i testi nuovi di `UI.md` e la prova
+sull'iPhone con due account.

@@ -12067,6 +12067,18 @@ spenti) era un rifiuto non gestito.
 arriva una posizione dopo: +20 m in `penUpRun.test.ts`, una posizione in più
 in `mileRun.test.ts`). Nessun testo nuovo.
 
+## ADR-0217 — aggiornamento: nessun rientro più avanti, chi sbaglia strada disegna un'alternativa
+**Stato**: Attiva · 2026-10-06 · **scelta dell'utente**, alla domanda
+lasciata aperta dal punto 4 (TASK-253).
+
+L'utente, il 2026-10-06: «no, hai sbagliato a disegnare e basta, ma puoi
+continuare dicendo che è sbagliato e così disegni un'alternativa». Quindi:
+il navigatore **non** cerca il corridore più avanti sul percorso dopo un
+pezzo saltato. Chi esce dal percorso sente «Off the route» una volta e vede
+il banner arancio finché non ci torna (ADR-0070); la registrazione continua
+e la corsa che ne esce è il disegno che ha fatto davvero. Nessun lavoro da
+fare: è il comportamento di oggi. La domanda è chiusa.
+
 ## ADR-0219 — La corsa tiene lo schermo acceso, l'app in secondo piano è una pausa, niente calorie fuori dalla corsa
 **Stato**: Attiva · 2026-10-06 · **scelte dell'utente** del 2026-10-06
 («sì a tutte e cinque» alle domande della revisione: lo schermo acceso, le

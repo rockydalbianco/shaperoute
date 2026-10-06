@@ -22,6 +22,7 @@ from shaperoute_api.recommended import (
     distance_m,
     parse_city,
     preview,
+    turn_of,
 )
 
 HERE = Path(__file__).parent
@@ -129,6 +130,54 @@ def test_preview_keeps_ends_and_at_most_size_points() -> None:
 
 def test_distance_one_degree_of_latitude() -> None:
     assert distance_m((46.0, 11.0), (47.0, 11.0)) == pytest.approx(111_195, abs=1)
+
+
+def test_the_catalogue_says_how_far_a_shape_is_turned(api: TestClient) -> None:
+    """TASK-232 part C: `rotation_deg` as the engine's seed_catalog writes
+    it, 0 for a route north up or one of a file written before."""
+    listed = api.get("/recommended-routes", params=PIAZZA_DUOMO).json()["routes"]
+    assert {r["id"]: r["rotation_deg"] for r in listed} == {
+        "trento-star-5000-0": -30,
+        "trento-heart-10000-1": 0,
+        "trento-heart-21000-2": 0,
+        "trento-ciao-15000-3": 0,
+    }
+    assert (
+        api.get("/recommended-routes/trento-star-5000-0").json()["rotation_deg"] == -30
+    )
+    assert (
+        api.get("/recommended-routes/trento-heart-10000-1").json()["rotation_deg"] == 0
+    )
+
+
+@pytest.mark.parametrize(
+    ("said", "turn"),
+    [
+        ({}, 0.0),
+        ({"rotation_deg": -30}, -30.0),
+        ({"rotation_deg": 22.5}, 22.5),
+        ({"rotation_deg": 0}, 0.0),
+        ({"rotation_deg": "30"}, 0.0),
+        ({"rotation_deg": True}, 0.0),
+        ({"rotation_deg": None}, 0.0),
+        ({"rotation_deg": 181}, 0.0),
+        ({"rotation_deg": float("nan")}, 0.0),
+    ],
+)
+def test_a_turn_that_does_not_read_is_north_up(
+    said: dict[str, Any], turn: float
+) -> None:
+    assert turn_of(said) == turn
+    route = {
+        "shape": "heart",
+        "distance_m": 5000,
+        "route_m": 5000,
+        "similarity": 0.9,
+        "points": [[46.0, 11.0], [46.001, 11.0]],
+        **said,
+    }
+    (parsed,) = parse_city({"city": "x", "routes": [route]})
+    assert parsed.rotation_deg == turn
 
 
 def test_a_route_of_one_point_is_left_out() -> None:

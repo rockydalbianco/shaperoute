@@ -57,6 +57,10 @@ class RecommendedRouteBody(BaseModel):
     away_m: int
     """From the point asked about to the start, in a straight line."""
     preview: list[tuple[float, float]]
+    rotation_deg: float
+    """How far its shape is turned, as RouteResult.rotation_deg (TASK-232,
+    ADR-0195): the app draws it turned back. 0 for a route north up, and
+    for every route of a city file that does not say."""
 
 
 class RecommendedRoutesBody(BaseModel):
@@ -76,6 +80,8 @@ class RecommendedRouteDetailBody(BaseModel):
     similarity: float
     points: list[tuple[float, float]]
     license: str
+    rotation_deg: float
+    """As in the list."""
 
 
 @dataclass(frozen=True)
@@ -90,6 +96,7 @@ class CatalogRoute:
     similarity: float
     points: tuple[LatLon, ...]
     license: str
+    rotation_deg: float = 0.0
 
     @property
     def start(self) -> LatLon:
@@ -145,9 +152,20 @@ def parse_city(body: dict[str, Any]) -> list[CatalogRoute]:
                 similarity=float(r["similarity"]),
                 points=points,
                 license=str(body.get("license", "")),
+                rotation_deg=turn_of(r),
             )
         )
     return routes
+
+
+def turn_of(route: dict[str, Any]) -> float:
+    """How far a route of a city file says its shape is turned
+    (`rotation_deg`, written by the engine's seed_catalog since TASK-232):
+    0 when it does not say, or says something that is not a turn."""
+    turn = route.get("rotation_deg")
+    if isinstance(turn, bool) or not isinstance(turn, int | float):
+        return 0.0
+    return float(turn) if math.isfinite(turn) and -180 <= turn <= 180 else 0.0
 
 
 class RecommendedCatalog:
@@ -203,6 +221,7 @@ class RecommendedCatalog:
                 start=r.start,
                 away_m=round(away),
                 preview=preview(r.points),
+                rotation_deg=r.rotation_deg,
             )
             for r, away in found[:limit]
         ]
@@ -222,4 +241,5 @@ class RecommendedCatalog:
             similarity=r.similarity,
             points=list(r.points),
             license=r.license,
+            rotation_deg=r.rotation_deg,
         )

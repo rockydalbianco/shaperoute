@@ -49,6 +49,10 @@ test.each(WATER_PLACES.map((place) => [place.name, place] as const))(
         alternatives: [],
         ...(detail.walks !== undefined ? { walks: detail.walks } : {}),
         centre: detail.centre,
+        // How far the engine turned the shape (TASK-232), when it did.
+        ...(detail.rotation_deg !== undefined
+          ? { rotation_deg: detail.rotation_deg }
+          : {}),
       } as unknown as RouteResult;
       expect(
         asRecommended(asPlace(place), shape, drawn, PADDLE_EXAMPLES).detail,

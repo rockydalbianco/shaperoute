@@ -3,7 +3,8 @@ listed a page at a time, opened and deleted; the API counts metres, seconds
 and score itself; each account sees only its own; the bodies are the
 examples of packages/shared-types/fixtures. A run along a word with the pen
 up keeps its walks and its pauses of the pen (TASK-199); a run opened whole
-has its pauses (TASK-200)."""
+has its pauses (TASK-200); a run along a route whose shape the engine turned
+keeps the turn, and those saved before are north up (TASK-232 part C)."""
 
 from __future__ import annotations
 
@@ -43,6 +44,9 @@ FAST_HASHER = PasswordHasher(time_cost=1, memory_cost=1024, parallelism=1)
 KEY = "7c2e91a4b05d3f68"
 OTHER_KEY = "e5d0a83f19c7b246"
 PLACE_KEY = "test-key"
+# Added by TASK-232 part C: the fixtures written before are what an older
+# app sends and an older API answers.
+TURN = {"rotation_deg"}
 
 
 def _load(name: str) -> Any:
@@ -152,28 +156,41 @@ def test_the_fixtures_are_the_contract() -> None:
     # older API, without the walks and the pen; and without the activity of
     # TASK-208, in activity-request-cycling.json (test_drawings.py).
     body = _load("activity-request.json")
-    assert set(body) == set(ActivityRequestBody.model_fields) - {"walks", "activity"}
+    assert set(body) == (
+        set(ActivityRequestBody.model_fields) - {"walks", "activity"} - TURN
+    )
     assert set(body["pauses"][0]) == set(PauseBody.model_fields) - {"pen"}
     ActivityRequestBody.model_validate(body)
     listed = _load("activities.json")
     assert set(listed) == set(ActivitiesBody.model_fields)
     for activity in listed["activities"]:
-        assert set(activity) == set(ActivityBody.model_fields)
+        assert set(activity) == set(ActivityBody.model_fields) - TURN
     ActivitiesBody.model_validate(listed)
     whole = _load("activity.json")
-    assert set(whole) == set(ActivityDetailBody.model_fields) - {"walks", "pauses"}
+    assert set(whole) == (
+        set(ActivityDetailBody.model_fields) - {"walks", "pauses"} - TURN
+    )
     # A word with the pen up (TASK-199): every field but the activity.
     walked = _load("activity-request-walks.json")
-    assert set(walked) == set(ActivityRequestBody.model_fields) - {"activity"}
+    assert set(walked) == set(ActivityRequestBody.model_fields) - {"activity"} - TURN
     assert set(walked["pauses"][0]) == set(PauseBody.model_fields)
     ActivityRequestBody.model_validate(walked)
     whole_walked = _load("activity-walks.json")
-    assert set(whole_walked) == set(ActivityDetailBody.model_fields) - {"pauses"}
+    assert set(whole_walked) == set(ActivityDetailBody.model_fields) - {"pauses"} - TURN
     # The same run opened from the API of TASK-200: every field.
     whole_paused = _load("activity-pauses.json")
-    assert set(whole_paused) == set(ActivityDetailBody.model_fields)
+    assert set(whole_paused) == set(ActivityDetailBody.model_fields) - TURN
     assert {**whole_paused, "pauses": None} == {**whole_walked, "pauses": None}
     ActivityDetailBody.model_validate(whole_paused)
+    # A run along a route whose shape is turned (TASK-232 part C): the
+    # request of before with its turn, and the run whole with every field.
+    turned = _load("activity-request-turned.json")
+    assert set(turned) == set(ActivityRequestBody.model_fields) - {"walks", "activity"}
+    assert {**turned, "rotation_deg": None} == {**body, "rotation_deg": None}
+    assert ActivityRequestBody.model_validate(turned).rotation_deg == -30
+    whole_turned = _load("activity-turned.json")
+    assert set(whole_turned) == set(ActivityDetailBody.model_fields)
+    assert ActivityDetailBody.model_validate(whole_turned).rotation_deg == -30
 
 
 def test_the_migration_comes_after_the_favorites() -> None:
@@ -187,6 +204,13 @@ def test_the_walks_come_after_the_runs_and_the_favorites() -> None:
         i for i, name in enumerate(names) if name.endswith("_pen_up_walks.sql")
     )
     assert walks > names.index("0003_runs.sql") > names.index("0002_favorites.sql")
+
+
+def test_the_turn_comes_last_and_once() -> None:
+    names = [path.name for path in migrations()]
+    turns = [name for name in names if name.endswith("_route_rotation.sql")]
+    assert len(turns) == 1
+    assert names.index(turns[0]) > names.index("0003_runs.sql")
 
 
 @pytest.mark.parametrize(
@@ -213,7 +237,8 @@ def test_a_run_saved_is_listed_as_the_example(client: TestClient) -> None:
     me = signed_up(client)
     saved = client.put(f"/me/activities/{KEY}", json=request(), headers=me)
     assert saved.status_code == 201
-    expected = _load("activities.json")["activities"][0]
+    # The example of before TASK-232 part C: north up.
+    expected = {**_load("activities.json")["activities"][0], "rotation_deg": None}
     assert saved.json() == expected
     listed = client.get("/me/activities", headers=me)
     assert listed.status_code == 200
@@ -231,7 +256,51 @@ def test_a_run_opens_whole_as_the_example(client: TestClient) -> None:
         **_load("activity.json"),
         "walks": [],
         "pauses": [{"from_s": 300.0, "to_s": 360.0, "auto": True}],
+        "rotation_deg": None,
     }
+
+
+def test_a_run_along_a_turned_route_keeps_the_turn(client: TestClient) -> None:
+    """TASK-232 part C: the app sends how far the engine turned the shape,
+    and reads it back in the list and on the run whole, to draw the run
+    turned back."""
+    me = signed_up(client)
+    turned = _load("activity-request-turned.json")
+    saved = client.put(f"/me/activities/{KEY}", json=turned, headers=me)
+    assert saved.status_code == 201
+    assert saved.json()["rotation_deg"] == -30
+    listed = client.get("/me/activities", headers=me).json()["activities"]
+    assert [run["rotation_deg"] for run in listed] == [-30]
+    whole = client.get(f"/me/activities/{KEY}", headers=me)
+    assert whole.status_code == 200
+    assert whole.json() == _load("activity-turned.json")
+    # Half degrees come back as sent: the water tries every 5°, and a
+    # `real` column holds them.
+    client.put(
+        f"/me/activities/{OTHER_KEY}",
+        json=later({**turned, "rotation_deg": 22.5}, 60_000),
+        headers=me,
+    )
+    assert (
+        client.get(f"/me/activities/{OTHER_KEY}", headers=me).json()["rotation_deg"]
+        == 22.5
+    )
+
+
+def test_a_turn_is_the_routes_and_within_half_a_turn(client: TestClient) -> None:
+    me = signed_up(client)
+    # Without a route there is nothing turned.
+    answer = client.put(
+        f"/me/activities/{KEY}", json=free(rotation_deg=-30), headers=me
+    )
+    assert answer.status_code == 422
+    assert code(answer) == "invalid_request"
+    for turn in (181, -180.5, "thirty", [30]):
+        answer = client.put(
+            f"/me/activities/{KEY}", json=request(rotation_deg=turn), headers=me
+        )
+        assert answer.status_code == 422, turn
+    assert client.get("/me/activities", headers=me).json()["total"] == 0
 
 
 def test_a_run_without_a_route_has_no_score(client: TestClient) -> None:
@@ -478,8 +547,8 @@ def test_a_run_with_walks_has_the_score_of_its_letters(client: TestClient) -> No
     assert (run["distance_m"], run["duration_s"]) == (4003, 1200)
     whole = client.get(f"/me/activities/{KEY}", headers=me)
     assert whole.status_code == 200
-    # With its pause of the pen (TASK-200).
-    assert whole.json() == _load("activity-pauses.json")
+    # With its pause of the pen (TASK-200); north up (TASK-232).
+    assert whole.json() == {**_load("activity-pauses.json"), "rotation_deg": None}
 
 
 def test_the_same_run_without_walks_is_scored_on_the_whole_route(
@@ -551,6 +620,73 @@ def test_walks_that_are_not_of_the_route_are_refused(
     assert answer.status_code == 422
     assert code(answer) == "invalid_request"
     assert client.get("/me/activities", headers=me).json()["total"] == 0
+
+
+def test_runs_saved_before_the_turn_are_north_up(
+    database_url: str, tmp_path: Path, wall: WallClock, service: PlaceService
+) -> None:
+    """TASK-232 part C: the schema of before, with a run and a favorite in
+    it; the API of part C starts with its migration, and reads them without
+    a turn: the app shows them north up, as they were."""
+    database = Database(database_url)
+    before = [p for p in migrations() if not p.name.endswith("_route_rotation.sql")]
+    assert len(before) == len(migrations()) - 1
+    for path in before:
+        shutil.copy(path, tmp_path / path.name)
+    database.migrate(tmp_path)
+    accounts = Accounts(database, now=wall, hasher=FAST_HASHER)
+    old = TestClient(
+        create_app(
+            FileSource(Path("unused.graphml")),
+            accounts=accounts,
+            run_places=PlaceNames(PLACE_KEY, fetch=service),
+        )
+    )
+    me = signed_up(old)
+    with database.connect() as conn:
+        user = conn.execute("SELECT id FROM users").fetchone()
+        assert user is not None
+        # As the API of before wrote them.
+        conn.execute(
+            "INSERT INTO runs (user_id, key, route, route_similarity, shape,"
+            " track, pauses, started_at, distance_m, duration_s, score,"
+            " fidelity, place, created_at) VALUES (%s, %s,"
+            " ST_GeomFromText('LINESTRING(11.1214 46.0671,11.1344 46.0671)', 4326),"
+            " 0.91, 'star', ST_GeomFromText("
+            "'LINESTRING M (11.1214 46.0671 0,11.1344 46.0671 300)', 4326),"
+            " '[]', %s, 1001, 299, 91, 1.0, 'Trento', %s)",
+            (user["id"], KEY, wall.t, wall.t),
+        )
+        conn.execute(
+            "INSERT INTO favorites (user_id, key, city, shape, distance_m,"
+            " route_m, similarity, line, created_at) VALUES (%s, %s, 'trento',"
+            " 'star', 5000, 5120, 0.996,"
+            " ST_GeomFromText('LINESTRING(11.1215 46.067,11.123 46.07)', 4326), %s)",
+            (user["id"], "3f9a1c0e7b2d4a65", wall.t),
+        )
+    assert database.migrate(MIGRATIONS_DIR) == [
+        p.stem for p in migrations() if p.name.endswith("_route_rotation.sql")
+    ]
+    new = TestClient(
+        create_app(
+            FileSource(Path("unused.graphml")),
+            accounts=accounts,
+            run_places=PlaceNames(PLACE_KEY, fetch=service),
+        )
+    )
+    listed = new.get("/me/activities", headers=me).json()["activities"]
+    assert [run["rotation_deg"] for run in listed] == [None]
+    whole = new.get(f"/me/activities/{KEY}", headers=me)
+    assert whole.status_code == 200
+    assert whole.json()["rotation_deg"] is None
+    assert whole.json()["points"] == [[46.0671, 11.1214], [46.0671, 11.1344]]
+    favorite = new.get("/me/favorites/3f9a1c0e7b2d4a65", headers=me)
+    assert favorite.status_code == 200
+    assert favorite.json()["rotation_deg"] is None
+    assert (
+        new.get("/me/favorites", headers=me).json()["favorites"][0]["rotation_deg"]
+        is None
+    )
 
 
 def test_runs_saved_before_the_walks_read_as_they_did(

@@ -322,6 +322,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `paddleExamples.json`. Prossimo passo: la **parte C** (corse salvate,
   preferiti, «Feed», post: una migrazione), in un contesto pulito, dopo
   aver sentito il coordinatore.
+  **Parte C** (API e app, in PR dal 2026-10-06; **migrazione `0018`**:
+  prima del merge serve l'ok dell'utente per il server, tramite il
+  coordinatore): le corse salvate e i preferiti tengono `rotation_deg`
+  come l'app l'ha mandato (`runs.route_rotation_deg`,
+  `favorites.rotation_deg`; `null` per le righe di prima, che restano col
+  nord in alto); «My activities», il disegno nel profilo, il post da
+  condividere e la scheda di un preferito si vedono girati dall'altra
+  parte (percorso e traccia insieme, `fitLines` con un `bearing`), e un
+  preferito inclinato si apre con la mappa girata; il disegno visto dagli
+  altri (`Drawing`) dice l'inclinazione. I due seguiti della B2: il
+  catalogo dell'API risponde `rotation_deg` (`0` finché i file delle città
+  non si ridisegnano; `seed_catalog` lo scrive) e gli esempi sull'acqua
+  nell'app rifatti con l'acqua del Mac (25 su 32 inclinati di 5–15°,
+  percorsi identici): i quattro disegni sull'acqua del «Feed» girano. Un'API
+  precedente rifiuta il campo e l'app rimanda senza. Visto solo nei test
+  (API in PostgreSQL, app con jest); non nel simulatore né sul telefono.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

@@ -93,6 +93,7 @@ export function FavoritesList({ margin }: Props) {
                 title={favoriteHeading(favorite)}
                 detail={detailOf(favorite, favorites.opening === favorite.id)}
                 match={favorite.similarity}
+                rotationDeg={favorite.rotation_deg}
                 onPress={() => favorites.open(favorite)}
                 accessibilityLabel={t("{title}, open on the map", {
                   title: favoriteHeading(favorite),

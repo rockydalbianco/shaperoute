@@ -366,3 +366,34 @@ def test_each_city_is_prepared_once_before_its_cases(tmp_path: Path) -> None:
     ]
     assert said[0] == "bari: zone not loaded (OSError), skipped"
     assert run_cases(todo, planner, tmp_path / "runs.jsonl", say=said.append) == 2
+
+
+def test_a_shape_the_engine_turned_is_logged_and_written_with_its_turn(
+    tmp_path: Path,
+) -> None:
+    """TASK-232 part C: `rotation_deg` in the log and in the city file, only
+    when the shape is turned; the API's catalogue reads it, and the app
+    draws the route turned back. A route north up is written as before."""
+    log = tmp_path / "runs.jsonl"
+
+    def planner(case: Case, start: LatLon) -> RouteResult:
+        result = _result(0.9)
+        if case.shape == "star":
+            return RouteResult(
+                points=result.points,
+                distance_m=result.distance_m,
+                similarity=0.9,
+                shape="star",
+                rotation_deg=-30.0,
+            )
+        return result
+
+    todo = cases(["levico"], ["heart", "star"], [5000])
+    assert run_cases(todo, planner, log, say=lambda _: None) == 2
+    runs = {r["key"]: r for r in read_runs(log)}
+    assert runs["levico/star/5000"]["rotation_deg"] == -30.0
+    assert "rotation_deg" not in runs["levico/heart/5000"]
+    kept = [runs["levico/heart/5000"], runs["levico/star/5000"]]
+    heart, star = json.loads(catalogue_files(kept, 0.88)["levico.json"])["routes"]
+    assert star["shape"] == "star" and star["rotation_deg"] == -30.0
+    assert heart["shape"] == "heart" and "rotation_deg" not in heart

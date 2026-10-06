@@ -21,8 +21,10 @@ from sample_feed import (
     choose,
     main,
     read_catalogue,
+    read_city,
     simplified,
     to_json,
+    turn_of,
 )
 
 # As the app accepts a username (apps/mobile/src/account/fields.ts).
@@ -211,3 +213,49 @@ def test_a_catalogue_too_small_is_an_error_not_a_short_feed(
     assert main(["--seed", str(seed), "--out", str(out)]) == 1
     assert "the feed wants 15" in capsys.readouterr().err
     assert not out.exists()
+
+
+def test_a_figure_the_engine_turned_says_so_and_the_others_do_not(
+    tmp_path: Path,
+) -> None:
+    """TASK-232 part C: `rotation_deg` of a city file goes to the post, so
+    «Feed» draws the figure turned back; a route north up, or of a file
+    written before, has no field, as before."""
+    assert turn_of({}) == 0.0
+    assert turn_of({"rotation_deg": -30}) == -30.0
+    assert turn_of({"rotation_deg": 22.5}) == 22.5
+    for junk in ("30", True, None, 181, float("nan")):
+        assert turn_of({"rotation_deg": junk}) == 0.0
+    city = tmp_path / "x.json"
+    route = {"distance_m": 5000, "route_m": 5000, "similarity": 0.9, "points": ring(30)}
+    city.write_text(
+        json.dumps(
+            {
+                "city": "x",
+                "routes": [
+                    {"shape": "star", "rotation_deg": -30, **route},
+                    {"shape": "heart", **route},
+                    {"shape": "moon", "rotation_deg": 0, **route},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    star, heart, moon = read_city(city)
+    assert (star.rotation_deg, heart.rotation_deg, moon.rotation_deg) == (-30, 0, 0)
+    # Eight cities, two shapes each: a feed of fifteen, the star turned.
+    shapes = ["star", "heart", "moon", "cat", "horse", "snail", "sun", "fish"]
+    figures = [
+        figure(chr(ord("a") + i), shape, 0.99 - i * 0.001)
+        for i, shape in enumerate(shapes)
+    ] + [
+        figure(chr(ord("a") + i), shapes[(i + 1) % len(shapes)], 0.98 - i * 0.001)
+        for i in range(len(shapes))
+    ]
+    figures[0] = Figure(**{**figures[0].__dict__, "rotation_deg": -30.0})
+    posts = build(figures)
+    turned = [post for post in posts if "rotation_deg" in post]
+    assert [(p["city"], p["shape"], p["rotation_deg"]) for p in turned] == [
+        ("a", "star", -30.0)
+    ]
+    assert len(posts) == POSTS

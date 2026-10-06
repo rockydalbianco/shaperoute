@@ -7,39 +7,57 @@ export type Segment = { left: number; top: number; length: number; angle: number
  * them fitted together inside `pad`, north up, proportions kept (metres east
  * and north, not degrees). As RouteThumb's for one line (src/explore): here
  * the run and its route share the frame, so one lies on the other where the
- * runner followed it. One list of segments for each line, in order.
+ * runner followed it. One list of segments for each line, in order. With a
+ * `bearing` (degrees clockwise from north, MapLibre's) the lines are drawn
+ * as a map turned so shows them (TASK-232): what points to `bearing` points
+ * up. All of them turn about one middle, so they still lie on each other.
  */
 export function fitLines(
   lines: LatLon[][],
   width: number,
   height: number,
   pad: number,
+  bearing: number = 0,
 ): Segment[][] {
   const all = lines.flat();
   if (all.length < 2) {
     return lines.map(() => []);
   }
   const midLat = all.reduce((sum, [lat]) => sum + lat, 0) / all.length;
+  const midLon = all.reduce((sum, [, lon]) => sum + lon, 0) / all.length;
   const k = Math.cos((midLat * Math.PI) / 180);
+  const turn = (bearing * Math.PI) / 180;
+  const cos = Math.cos(turn);
+  const sin = Math.sin(turn);
+  // A point on the plane, east and north in degrees of latitude, turned
+  // about the middle of every line (as turnedLine does for one).
+  const plane = ([lat, lon]: LatLon): [number, number] => {
+    const east = (lon - midLon) * k;
+    const north = lat - midLat;
+    return bearing === 0
+      ? [east, north]
+      : [east * cos - north * sin, east * sin + north * cos];
+  };
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
   let maxY = -Infinity;
-  for (const [lat, lon] of all) {
-    minX = Math.min(minX, lon * k);
-    maxX = Math.max(maxX, lon * k);
-    minY = Math.min(minY, lat);
-    maxY = Math.max(maxY, lat);
+  for (const point of all) {
+    const [x, y] = plane(point);
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
   }
   const spanX = Math.max(maxX - minX, 1e-9);
   const spanY = Math.max(maxY - minY, 1e-9);
   const scale = Math.min((width - 2 * pad) / spanX, (height - 2 * pad) / spanY);
   const offX = (width - spanX * scale) / 2;
   const offY = (height - spanY * scale) / 2;
-  const at = ([lat, lon]: LatLon): [number, number] => [
-    offX + (lon * k - minX) * scale,
-    offY + (maxY - lat) * scale,
-  ];
+  const at = (point: LatLon): [number, number] => {
+    const [x, y] = plane(point);
+    return [offX + (x - minX) * scale, offY + (maxY - y) * scale];
+  };
   return lines.map((line) => {
     const segments: Segment[] = [];
     for (let i = 1; i < line.length; i += 1) {

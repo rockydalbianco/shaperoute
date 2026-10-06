@@ -11,7 +11,9 @@ favorites (ON DELETE CASCADE).
 
 A favorite remembers the activity it was drawn for (TASK-200): a bike route
 reopens as one. Those kept before are runs. A bike route also keeps where it
-is walked with the bike on foot (TASK-206).
+is walked with the bike on foot (TASK-206). A route whose shape the engine
+turned keeps the turn (TASK-232, ADR-0195): its card and the map show it
+turned back, so the drawing reads upright.
 """
 
 from __future__ import annotations
@@ -87,6 +89,12 @@ class FavoriteRequestBody(BaseModel):
     activity: str = Field(default="running", description=ACTIVITY_DESCRIPTION)
     """RouteRequest.activity of the route (TASK-200); the app sends it only
     when it is not running, so an older API never sees it for a run."""
+    rotation_deg: float | None = Field(
+        default=None, ge=-180, le=180, allow_inf_nan=False
+    )
+    """RouteResult.rotation_deg (TASK-232, ADR-0195): how far the shape is
+    turned; the app shows the route turned back. Sent only when the route is
+    turned: an older app, and a route north up, send nothing."""
 
     @field_validator("activity")
     @classmethod
@@ -137,6 +145,11 @@ class FavoriteBody(BaseModel):
     activity: str
     """What the route was drawn for (TASK-200): `running` for those kept
     before."""
+    rotation_deg: float | None = None
+    """How far its shape is turned (TASK-232, ADR-0195): the card and the
+    map show it turned back. Null for a route north up and for every
+    favorite kept before. Always answered; the default is for the examples
+    written before."""
 
 
 class FavoritesBody(BaseModel):
@@ -168,11 +181,14 @@ class FavoriteDetailBody(BaseModel):
     activity: str
     """What the route was drawn for (TASK-200): `running` for those kept
     before."""
+    rotation_deg: float | None = None
+    """As in the list: how far its shape is turned, or null."""
 
 
 COLUMNS = (
     "key, city, shape, word, style, title, distance_m, route_m, similarity,"
-    " created_at, walks, activity, on_foot, ST_AsGeoJSON(line, 15) AS line"
+    " created_at, walks, activity, on_foot, rotation_deg,"
+    " ST_AsGeoJSON(line, 15) AS line"
 )
 
 
@@ -187,6 +203,7 @@ def _points(row: DictRow) -> list[LatLon]:
 
 
 def _fields(row: DictRow) -> dict[str, Any]:
+    rotation = row["rotation_deg"]
     return {
         "id": row["key"],
         "city": row["city"],
@@ -200,6 +217,8 @@ def _fields(row: DictRow) -> dict[str, Any]:
         "similarity": round(row["similarity"], 4),
         "created_at": row["created_at"],
         "activity": row["activity"],
+        # A `real` column too, as the app sent it: whole degrees mostly.
+        "rotation_deg": None if rotation is None else round(rotation, 2),
     }
 
 
@@ -266,8 +285,8 @@ class Favorites:
             row = conn.execute(
                 "INSERT INTO favorites (user_id, key, city, shape, word, style,"
                 " title, distance_m, route_m, similarity, line, created_at, walks,"
-                " activity, on_foot) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,"
-                " %s, ST_GeomFromText(%s, 4326), %s, %s, %s, %s)"
+                " activity, on_foot, rotation_deg) VALUES (%s, %s, %s, %s, %s, %s,"
+                " %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s)"
                 f" RETURNING {COLUMNS}",
                 (
                     user_id,
@@ -285,6 +304,7 @@ class Favorites:
                     Jsonb([list(walk) for walk in body.walks]),
                     body.activity,
                     Jsonb([list(stretch) for stretch in body.on_foot]),
+                    body.rotation_deg,
                 ),
             ).fetchone()
             assert row is not None

@@ -92,11 +92,15 @@ export function useNavigation(
     word,
     onFoot,
     activity,
+    rotationDeg,
   }: {
     walks?: Walk[];
     word?: string | null;
     onFoot?: Stretch[];
     activity?: Activity;
+    /** How far the route's shape is turned (TASK-232): kept with the
+     * track, so the run saved shows the drawing turned back. */
+    rotationDeg?: number;
   } = {},
 ): NavigationState {
   const [state, setState] = useState<NavigationState>({ status: "starting" });
@@ -133,7 +137,14 @@ export function useNavigation(
       let pen = startPen(started.navigation.along, walked, word, activity);
       let bike = startOnFoot(started.navigation.along, onFootOf(points, onFoot));
       // A route stopped lately goes on with its track (trackStore).
-      const recorder = startRun(points, Date.now(), similarity, walked, activity);
+      const recorder = startRun(
+        points,
+        Date.now(),
+        similarity,
+        walked,
+        activity,
+        rotationDeg,
+      );
       stopRecording = recorder.stop;
       // A run that goes on does not say again the kilometres it has said;
       // with miles, the miles (TASK-182).
@@ -261,7 +272,17 @@ export function useNavigation(
       void Speech.stop();
       setState({ status: "starting" });
     };
-  }, [active, points, directions, similarity, walks, word, onFoot, activity]);
+  }, [
+    active,
+    points,
+    directions,
+    similarity,
+    walks,
+    word,
+    onFoot,
+    activity,
+    rotationDeg,
+  ]);
 
   return state;
 }

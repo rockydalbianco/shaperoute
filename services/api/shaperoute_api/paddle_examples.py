@@ -11,7 +11,9 @@ It writes them as the app keeps the examples it draws
 looks it up by, its eight shapes whole. A shape in pieces is drawn piece by
 piece, the pen up between them, as the app asks for it on the water
 (TASK-226): its example has the `walks`. Each says the `centre` of its
-shape, as the API's answer does, so the app can ask for it moved (TASK-244).
+shape, as the API's answer does, so the app can ask for it moved (TASK-244),
+and how far the engine turned the shape (`rotation_deg`, TASK-232), when it
+did: the app shows the card and the map turned back.
 
     python -m shaperoute_api.paddle_examples --cache-dir out/water-cache
 
@@ -211,6 +213,13 @@ def example(place: WaterPlace, shape: str, source: WaterSource) -> dict[str, Any
         ),
         # The stretches with the pen up, only when there are some.
         **({"walks": [list(walk) for walk in result.walks]} if result.walks else {}),
+        # How far the shape is turned (TASK-232, ADR-0195), only when it is:
+        # as the app keeps it (`turnOf`), upright means no field.
+        **(
+            {"rotation_deg": round(result.rotation_deg, 2)}
+            if result.rotation_deg
+            else {}
+        ),
         # On the water the engine places the shape once (ADR-0164).
         "alternatives": [],
     }

@@ -353,6 +353,21 @@ primo libero in `main` al merge):
   non c'è ancora. Chi lo farà parte da queste due colonne. Nessun indice:
   lo chiederà l'invio, quando ci sarà.
 
+Migrazione `0018_route_rotation.sql` (TASK-232, parte C, ADR-0195; il
+numero è il primo libero in `main` al merge):
+
+- `runs.route_rotation_deg` e `favorites.rotation_deg` (`real`, fra −180 e
+  180, facoltative): di quanti gradi il motore ha girato la forma del
+  percorso (`RouteResult.rotation_deg`, antiorario), come l'app l'ha
+  mandato. L'app mostra la corsa salvata, il preferito e il disegno visto
+  dagli altri girati dall'altra parte, così la forma si legge dritta. In
+  `runs` solo con un percorso (`CHECK`): una corsa libera non ha niente da
+  girare.
+- **Assenti** per ogni riga di prima, per un percorso che l'app ha mandato
+  col nord in alto e per un'app precedente: si leggono `null`, e l'app li
+  mostra col nord in alto, com'erano (test con dati sullo schema senza la
+  migrazione). Nessun indice: non si cerca per inclinazione.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

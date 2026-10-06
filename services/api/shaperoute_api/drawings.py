@@ -60,6 +60,7 @@ from shaperoute_api.activities import (
     UNKNOWN_ACTIVITY,
     Key,
     RunActivity,
+    turn_kept,
 )
 from shaperoute_api.db import Database
 from shaperoute_api.follows import follows_sql
@@ -354,6 +355,12 @@ class SeenFields(BaseModel):
     activity: RunActivity
     tags: list[TagBody]
     photos: list[PhotoBody]
+    rotation_deg: float | None = None
+    """How far the planned route's shape is turned (TASK-232, ADR-0195),
+    as My activities has it: the drawing is shown turned back, so it reads
+    upright. Null for a run without a route, one north up and every run
+    saved before. Always answered; the default is for the examples written
+    before."""
 
 
 class DrawingBody(SeenFields):
@@ -392,7 +399,8 @@ SEEN_COLUMNS = (
     "d.id, d.title, d.visibility, d.description, d.published_at,"
     " ST_AsGeoJSON(d.track, 15) AS track,"
     " r.started_at, r.place, r.shape, r.word, r.style, r.title AS route_title,"
-    " r.distance_m, r.duration_s, r.score, r.fidelity, r.activity"
+    " r.distance_m, r.duration_s, r.score, r.fidelity, r.activity,"
+    " r.route_rotation_deg"
 )
 MINE_COLUMNS = (
     "r.key, r.activity, d.id, d.title, d.visibility, d.description, d.published_at"
@@ -485,6 +493,8 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         "activity": row["activity"],
         "tags": details.tags.get(row["id"], []),
         "photos": details.photos.get(row["id"], []),
+        # The run's, as My activities answers it (activities._turn).
+        "rotation_deg": turn_kept(row["route_rotation_deg"]),
     }
 
 

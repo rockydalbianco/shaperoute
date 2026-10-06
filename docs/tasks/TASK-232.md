@@ -3,10 +3,11 @@
 **Stato**: In lavorazione — parte A (motore e API) in `main` dalla #356
 (`799071a`) e sul server; parte B (la mappa girata in «Draw» e in corsa,
 la freccia del nord) in `main` dalla #378 (`44f17c8`); parte B2
-(«Explore») in PR; C da fare
+(«Explore») in `main` dalla #384 (`b2d7662`); parte C (i disegni salvati,
+migrazione `0018`) in PR dal 2026-10-06
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
 `feat/TASK-232-b-turned-map` (B), `feat/TASK-232-b2-explore-turned` (B2),
-`feat/TASK-232-c-saved-turn` (C)
+`feat/TASK-232-c-saved-turned` (C)
 **ADR**: ADR-0195 (supera in parte ADR-0038: il limite di 15°)
 
 ## Obiettivo
@@ -143,12 +144,12 @@ servono anche alla parte C.
       girata: nessun `sì` diventa `no`.
 - [x] L'API restituisce `rotation_deg`; un'app senza il campo funziona
       come prima.
-- [ ] L'app gira la mappa di `−rotation_deg` in «Draw», «Explore», nella
+- [x] L'app gira la mappa di `−rotation_deg` in «Draw», «Explore», nella
       corsa, in «My activities», nel «Feed» e nel post; un percorso senza
-      il campo resta col nord in alto. (Fatti «Draw», la corsa e
-      «Explore»: parti B e B2; il resto è la parte C.)
+      il campo resta col nord in alto. («Draw», la corsa e «Explore»: parti
+      B e B2; «My activities», i preferiti, il «Feed» e il post: parte C.)
 - [x] Il GPX non cambia.
-- [ ] Test deterministici per ogni parte (`docs/TESTING.md`).
+- [x] Test deterministici per ogni parte (`docs/TESTING.md`).
 
 ## File toccati
 
@@ -224,11 +225,45 @@ apps/mobile/__tests__/AppExploreTurned.test.tsx             (nuovo)
 docs/UI.md, docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-232.md
 ```
 
-Parte C: da completare all'inizio della parte C, dopo B. Almeno
-`services/api/shaperoute_api/activities.py`, `favorites.py`, la
-migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
-`RunDrawing.tsx`, `apps/mobile/src/feed/FeedMaps.tsx`, `feedMapPage.ts`,
-`apps/mobile/src/share/PostImage.tsx`.
+Parte C (completati all'inizio della parte C, 2026-10-06; i file oltre
+l'elenco del coordinatore sono segnati):
+
+```
+services/api/migrations/0018_route_rotation.sql                (nuova: il primo numero libero al merge)
+services/api/shaperoute_api/activities.py, favorites.py
+services/api/shaperoute_api/drawings.py                          (il disegno visto dagli altri dice l'inclinazione; libero)
+services/api/shaperoute_api/recommended.py                       (punto 4)
+services/api/shaperoute_api/paddle_examples.py                   (punto 5)
+services/api/tests/test_activities.py, test_favorites.py, test_drawings.py, test_recommended.py, test_paddle_examples.py
+services/api/tests/fixtures/catalog/trento.json                  (la stella inclinata)
+services/route-engine/route_engine/seed_catalog.py               (scrive `rotation_deg` nei file delle città; oltre l'elenco)
+services/route-engine/tests/test_seed_catalog.py
+tools/sample_feed.py, tools/test_sample_feed.py                  (il feed campione porta il campo; oltre l'elenco)
+packages/shared-types/src/index.ts                               (`Drawing.rotation_deg`)
+packages/shared-types/test/contract.test.ts
+packages/shared-types/fixtures/activity-request-turned.json, activity-turned.json, favorite-request-turned.json, favorite-turned.json   (nuove)
+packages/shared-types/fixtures/recommended-routes.json, recommended-route.json, drawings-details.json, drawing-details.json
+apps/mobile/App.tsx                                              (l'inclinazione del percorso seguito alla corsa)
+apps/mobile/src/api/activities.ts, favorites.ts                  (il campo, `withoutTurn`)
+apps/mobile/src/activities/fitLines.ts, RunDrawing.tsx, ActivitiesList.tsx, recordedRun.ts
+apps/mobile/src/navigation/trackStore.ts, useNavigation.ts       (l'inclinazione nel file della corsa)
+apps/mobile/src/share/PostImage.tsx, postRun.ts
+apps/mobile/src/screens/FinishScreen.tsx                         (il post della corsa appena finita)
+apps/mobile/src/social/DrawingsGrid.tsx                          (il disegno nel profilo)
+apps/mobile/src/feed/FeedPost.tsx, sampleFeed.ts, paddlePosts.ts, feedRoute.ts
+apps/mobile/src/favorites/favoriteRoute.ts, FavoritesList.tsx
+apps/mobile/src/paddle/paddleExamples.json                       (rifatto: punto 5), paddleExamples.test.ts
+apps/mobile/__tests__/AppFavorites.test.tsx                      (la stella dell'esempio ora è inclinata)
+apps/mobile/src/activities/fitLinesTurn.test.ts, RunDrawingTurn.test.tsx, recordedRunTurn.test.ts   (nuovi)
+apps/mobile/src/api/activitiesTurn.test.ts, favoritesTurn.test.ts                                   (nuovi)
+apps/mobile/src/navigation/trackStoreTurn.test.ts, src/favorites/favoriteRouteTurn.test.ts          (nuovi)
+apps/mobile/src/feed/FeedPostTurn.test.tsx, feedRouteTurn.test.ts                                   (nuovi)
+apps/mobile/src/share/PostImageTurn.test.tsx, postRunTurn.test.ts                                   (nuovi)
+docs/API.md, docs/DATABASE.md, docs/UI.md, docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-232.md
+```
+
+Non toccati: `apps/mobile/src/feed/FeedMaps.tsx` e `feedMapPage.ts` (la
+B2 li ha già pronti con il `bearing`).
 
 ## Fuori scope
 
@@ -356,3 +391,49 @@ ADR-0195 «Parte B2»):
   `turnedLine(line, bearing)` sono pronti per `FeedPost.tsx`,
   `RunDrawing.tsx` e `PostImage.tsx`; manca che le corse salvate e i
   preferiti tengano `rotation_deg` (API, una migrazione).
+
+**Parte C, i disegni salvati** (2026-10-06, API e app, in PR; ADR-0195
+«Parte C»; migrazione `0018`, il primo numero libero al merge):
+
+- **Le corse salvate e i preferiti tengono l'inclinazione** come l'app
+  l'ha mandata (`runs.route_rotation_deg`, `favorites.rotation_deg`): il
+  `PUT` la porta solo quando la forma è girata, l'API risponde sempre
+  (`null` per un percorso dritto, senza percorso e per ogni riga di
+  prima). Un'API precedente rifiuta il campo: l'app rimanda senza
+  (`withoutTurn`), poi come un'app precedente. Esempi nuovi:
+  `activity-request-turned.json`, `activity-turned.json`,
+  `favorite-request-turned.json`, `favorite-turned.json`.
+- **La corsa la porta con sé**: il percorso seguito mette la sua
+  inclinazione nel file della corsa (`SavedRun.rotation_deg`,
+  `useNavigation` → `startRun`), `recordedRun` la manda all'API e la fine
+  corsa la mette nel post.
+- **Dove si vede girato**: «My activities» (l'elenco; la corsa aperta è la
+  mappa, già girata dalla B), il disegno nel profilo (`DrawingsGrid`), il
+  post da condividere (`PostImage`), la scheda di un preferito
+  (`RouteCard` con `rotationDeg`) e il preferito aperto (mappa girata e
+  freccia del nord, dalla B2). `fitLines` gira tutte le linee attorno a un
+  centro solo, così la traccia resta sul suo percorso.
+- **Il disegno visto dagli altri** (`Drawing`, `DrawingDetail`) dice
+  `rotation_deg`, quello della corsa; `MyDrawing` no.
+- **Punto 4**: `GET /recommended-routes` e `/recommended-routes/{id}`
+  rispondono sempre `rotation_deg` (`0` quando il file della città non lo
+  dice: tutto il catalogo di oggi, di prima della parte A); `seed_catalog`
+  del motore lo scrive quando il motore inclina; `tools/sample_feed.py` lo
+  porta nel post del feed campione (`sampleFeed.json` non cambia).
+- **Punto 5**: `paddle_examples.py` scrive `rotation_deg` quando c'è;
+  `paddleExamples.json` rifatto con l'acqua del server copiata sul Mac
+  (`out/task227-paddle/cache`): 25 esempi su 32 inclinati di 5–15°, i
+  percorsi identici byte per byte. I quattro disegni sull'acqua del «Feed»
+  e le schede di «Explore» con «Paddle» girano da soli.
+- **Il «Feed»**: `FeedPost` gira la linea (`turnedLine`) e chiede la
+  foto-mappa con il `bearing`; oggi girano i quattro disegni sull'acqua,
+  quelli delle corse quando il catalogo dirà l'inclinazione.
+- **Test**: API in PostgreSQL (una corsa e un preferito inclinati, i
+  limiti, lo schema di prima che si legge col nord in alto, il disegno
+  visto dagli altri), il catalogo, gli esempi sull'acqua, `seed_catalog`,
+  il feed campione, il contratto; app con jest per ogni file toccato.
+  **Non visto** nel simulatore né sul telefono.
+- **Prima del merge**: l'ok dell'utente per il server (la migrazione),
+  tramite il coordinatore; `draw_examples` non serve (il catalogo non
+  cambia). Dopo il merge: il server con `0018`, poi la pubblicazione
+  dell'app.

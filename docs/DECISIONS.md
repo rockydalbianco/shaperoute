@@ -11695,6 +11695,40 @@ campioni di `samples/`, `TASK-243_*`, con la domanda «va bene così,
 compresi i casi 6 e 7?», il pesce e il fantasmino in cui la somiglianza
 scende): «continua va bene».
 
+## ADR-0212 — La CI ha un tempo massimo per job e dice dove un test si è fermato
+**Stato**: Attiva · 2026-10-06 · **deciso dall'agente su delega
+dell'utente** (TASK-248): i tempi e il modo.
+
+**Contesto**: il 2026-10-05 il job `api` della CI è rimasto appeso tre
+volte nel passo «Test», una per sei ore. La causa è nel motore
+(`multiprocessing.Pool.terminate()` in `plan_nearby` aspetta per sempre
+se arriva mentre un grafo sta per essere mandato a un processo:
+`tasks/TASK-248.md`), ma dal log non si capiva: pytest stampa una riga
+per file, a file finito, e un job di GitHub senza tempo massimo dura fino
+a sei ore.
+
+**Decisione**:
+
+1. **Ogni job ha `timeout-minutes`**, almeno il doppio del suo tempo
+   normale: `route-engine` 15, `api` 25, `ai` 5, `mobile` 10, `docker`
+   15. Un job che lo supera fallisce.
+2. **`faulthandler_timeout = 120`** nei `pyproject.toml` dell'API e del
+   route-engine: un test che dura più di due minuti stampa lo stack di
+   ogni thread e prosegue. Vale anche in locale.
+3. **Nessuna dipendenza nuova.** `pytest-timeout` farebbe fallire il
+   singolo test invece del job, ma è una dipendenza da chiedere, e con la
+   causa tolta (parte B) non serve.
+
+**Conseguenze**:
+
+- Un blocco costa al più il tempo massimo del job, non ore, e il log dice
+  quale test e in quale riga.
+- Un test lento ma sano che supera i due minuti stampa uno stack e passa:
+  rumore nel log, non un errore. Oggi nessun test ci arriva.
+- Se un job diventa più lento del suo tempo massimo per buone ragioni, il
+  numero in `ci.yml` va alzato: resta almeno il doppio del tempo normale.
+- Chi aggiunge un job a `ci.yml` gli dà un tempo massimo.
+
 ## ADR-0215 — Con «Paddle» la velocità è in km/h e l'andatura è il tempo di 500 m
 **Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente
 (TASK-251), dentro la **scelta dell'utente** del 2026-10-06: velocità in

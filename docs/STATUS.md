@@ -148,6 +148,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-248 — Il job `api` della CI che resta appeso** (ADR-0212;
+  assegnato dal coordinatore il 2026-10-06). **Causa trovata**: non un
+  test lento ma `multiprocessing.Pool.terminate()` in `plan_nearby`
+  (`route_engine/nearby_starts.py`), che aspetta per sempre se arriva
+  mentre un grafo sta per essere mandato a un processo delle partenze
+  vicine; in CI succede in `test_cycling.py`, dove il motore rifiuta
+  subito. **Parte A** (in PR, niente motore): ogni job di `ci.yml` ha un
+  tempo massimo e un test fermo da due minuti stampa gli stack
+  (`faulthandler_timeout`, nessuna dipendenza nuova). **Parte B** (dopo,
+  motore): le partenze vicine senza `Pool`, percorsi identici,
+  `engine.zip` rifatto; l'impronta del motore cambia, quindi al prossimo
+  aggiornamento del server serve `draw_examples`. Sul server lo stesso
+  blocco può prendere un thread dei job dopo un `engine_error`: non
+  verificato, lo guarda il coordinatore. Da dove riprendere:
+  `tasks/TASK-248.md`, «Esito».
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
   **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06), non

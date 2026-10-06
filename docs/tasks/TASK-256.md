@@ -1,7 +1,8 @@
 # TASK-256 — Gli errori parlano a chi corre
 
-**Stato**: Todo
-**Fase**: 4 · **Branch**: `fix/TASK-256-runner-errors`
+**Stato**: In lavorazione (PR aperta il 2026-10-06)
+**Fase**: 4 · **Branch**: `feat/TASK-256-errors-for-runners` (nome dal
+brief del coordinatore)
 
 ## Obiettivo
 
@@ -129,4 +130,25 @@ docs/UI.md, docs/STATUS.md, docs/DECISIONS.md (le righe di questo task)
 
 ## Esito
 
-*(si compila a fine task)*
+Fatto il 2026-10-06 (ADR-0220), in attesa di merge:
+
+- Punti 1–4, 6 fatti. Punto 5 («Open Settings» accanto a fotocamera e
+  posizione negate) **non fatto**: i testi stanno in `ImageChoice.tsx`
+  (TASK-254) e in `NavigateScreen.tsx` / `FreeRunScreen.tsx`, fuori dai
+  file del task; seguito senza numero.
+- `problems.ts`: `devDetail()` e `ProblemText.retry`; `messages.ts`:
+  `withDetail()`; `useRouteRequest.retry()`; `RouteOutcome.onRetry`;
+  `src/intro/AppBoundary.tsx` in `Root.tsx`; `MapView` con «Retry»,
+  ricarica al ritorno in primo piano e `onError(null)`.
+- Test nuovi: `AppBoundary.test.tsx`, `RoutePanelRetry.test.tsx`,
+  `MapViewRetry.test.tsx`; test delle parole da sviluppatore in
+  `problems.test.ts` e `messages.test.ts`. Test di altri moduli che
+  leggevano i vecchi testi aggiornati (account, profilo, impostazioni,
+  `App.test.tsx`, `AppBike.test.tsx`, `DrawingsGrid.test.tsx`,
+  `accessProblems.test.ts`).
+- Fuori dai «File toccati», da segnalare al coordinatore: i test sopra e
+  le **due righe in `App.tsx`** (`retry` dal hook, `onRetry={retry}` su
+  `RouteOutcome`), senza le quali «Try again» non compare sotto «Draw
+  route».
+- La riga rossa di `ChooseScreen.MapError` («…reopen the app») resta
+  finché la mappa non carica: seguito.

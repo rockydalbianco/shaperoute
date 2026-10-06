@@ -12168,3 +12168,80 @@ sport: in bici circa il triplo del vero.
 modalità tasca). Il file della corsa può avere pause `away`
 (`trackStore.isPause` le legge). `NavigateScreen.test.tsx` cambia verso:
 lo schermo è acceso anche senza la modalità tasca.
+
+## ADR-0220 — Gli errori parlano a chi corre: il dettaglio tecnico solo in sviluppo, «Try again» dove la richiesta può andare, uno schermo giallo al posto di quello bianco
+**Stato**: Attiva · 2026-10-06 · scelta dell'utente del 2026-10-06 («sì» ai
+testi per chi corre con «Try again», dalla revisione dell'app); il resto
+deciso dall'agente su delega dell'utente (TASK-256).
+
+**Contesto**: i messaggi di `route/problems.ts` e `account/messages.ts`
+erano scritti per chi sviluppa: «Cannot reach the API at https://…sslip.io.
+Check that it is running (on the PC: with --lan)…», «look at the API log»,
+«not running on the PC (Ollama)», «Put the API's key in
+EXPO_PUBLIC_API_KEY in apps/mobile/.env…», «The app and the API do not
+agree (a bug): HTTP 502». L'indirizzo del server finiva sullo schermo del
+telefono. Dopo un errore di «Draw route» non c'era modo di rifare la stessa
+richiesta. L'app non aveva un `ErrorBoundary`: un componente in errore
+lasciava lo schermo bianco, anche a metà corsa. Una mappa che non caricava
+(offline, `unpkg.com` irraggiungibile) restava in errore per sempre e il
+testo diceva di riaprire l'app.
+
+**Decisione**:
+
+1. **I testi dicono cosa è successo e cosa fare, a chi corre.** «No
+   connection. Check the network and try again.», «Something went wrong on
+   our side. Try again in a moment.», «The route could not be drawn. Try
+   again, or try another start.», «This word cannot be read right now. Try
+   one of these: …», «Drawing this route is taking too long…», «This
+   request was lost. Try again.», «Accounts are not available right now.
+   Try again later.». Una chiave rifiutata o una build senza indirizzo
+   dell'API sono, sul telefono, un'app più vecchia del suo servizio: «This
+   version of the app is no longer allowed in. Update the app.» e «The app
+   cannot reach the service. Update the app.». Nessun testo mostrato
+   contiene `http`, `.env`, `npm`, `Ollama`, `--lan`, «API log» o «bug»: un
+   test lo verifica su ogni problema di `problems.ts` e su ogni codice di
+   `messages.ts`. Testi nelle cinque lingue (ADR-0172); in `problems.ts`
+   si traducono solo i testi toccati, il resto resta a TASK-210.
+2. **Il dettaglio tecnico solo nelle build di sviluppo**: `detail`
+   (l'indirizzo, lo stato HTTP, il codice e il testo dell'API, le parole
+   del motore) passa da `devDetail()`, che fuori da `__DEV__` non dà
+   niente; nei messaggi dell'account `withDetail()` lo accoda fra
+   parentesi, solo in sviluppo. Sotto jest `__DEV__` è vero: i test del
+   dettaglio lo spengono a mano.
+3. **«Try again» dove la stessa richiesta può andare bene la seconda
+   volta**: `ProblemText.retry` è vero per rete assente, risposta
+   inattesa, motore fallito, dati OSM non scaricati, cinque minuti
+   passati, richiesta persa; falso per una forma che non ci sta, una
+   chiave rifiutata, troppe richieste, l'AI spenta. `useRouteRequest.retry()`
+   rimanda l'ultima richiesta com'era; `RouteOutcome` riceve `onRetry` e
+   senza di esso non mostra il pulsante.
+4. **`AppBoundary` attorno all'app** (`src/intro/AppBoundary.tsx`, in
+   `Root.tsx` intorno all'app, al logo di «Save» e all'animazione): un
+   componente che lancia mentre disegna mostra il giallo della partenza con
+   il logo, «Something went wrong.» e «Try again», che rimonta l'app con
+   una `key` nuova senza rifare l'animazione (lo stato dell'intro sta
+   fuori). La corsa in corso è nel suo file (TASK-252) e torna da sola.
+   Nessuna segnalazione a un servizio esterno (dipendenza nuova, scelta
+   dell'utente).
+5. **La mappa in errore si ricarica**: `MapView` mostra al posto della
+   barra «The map could not be loaded. Check the network.» e «Retry»
+   (`reload()` della WebView), ricarica da sola quando `AppState` torna
+   «active» con la mappa in errore, e appena la pagina dice `loaded`
+   chiama `onError(null)`: la riga rossa della schermata sparisce. Il
+   tipo di `onError` diventa `(reason: string | null) => void`, compatibile
+   con `setMapError` in `App.tsx` e con `giveUp()` in `FeedMaps.tsx` senza
+   toccarli.
+
+**Alternative scartate**: tradurre tutto `problems.ts` (è di TASK-210);
+un «Try again» che passa da `onTryDistance(view.request.distance_m)` per
+non toccare `App.tsx` (meno chiaro di `retry()`; `App.tsx` va comunque
+collegato); «Open Settings» accanto a «The camera is off…» e a «Location is
+off» (stanno in `ImageChoice.tsx`, di TASK-254, e in `NavigateScreen` /
+`FreeRunScreen`: seguito).
+
+**Conseguenze**: i test che leggevano i vecchi testi (account, profilo,
+impostazioni, `App.test.tsx`, `AppBike.test.tsx`) leggono i nuovi, con il
+dettaglio fra parentesi dove jest fa da build di sviluppo. La riga rossa di
+`ChooseScreen` («Check the connection and reopen the app») è ancora quella
+di prima finché la mappa non carica: seguito, file non del task. `UI.md`
+(«Quando non va», «Quando la mappa non si carica») aggiornato.

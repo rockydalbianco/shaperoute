@@ -215,9 +215,10 @@ test("an API without the bike refuses it with the words of before", async () => 
   await atTrento();
   await draw();
   expect(
-    screen.getByText("The app and the API do not agree (a bug): invalid_request."),
+    screen.getByText("Something went wrong on our side. Try again in a moment."),
   ).toBeOnTheScreen();
-  expect(screen.getByText(OLD_API_REFUSAL)).toBeOnTheScreen();
+  // The API's words for the developer, under jest as in a development build.
+  expect(screen.getByText(`invalid_request: ${OLD_API_REFUSAL}`)).toBeOnTheScreen();
 });
 
 test("a bike route past the 5 minutes the app waits says so, as before", async () => {
@@ -230,7 +231,7 @@ test("a bike route past the 5 minutes the app waits says so, as before", async (
   await act(() => jest.advanceTimersByTimeAsync(5 * 60_000));
   expect(
     screen.getByText(
-      "The API took more than 5 minutes. Try again later, or a shorter distance.",
+      "Drawing this route is taking too long. Try again later, or a shorter distance.",
     ),
   ).toBeOnTheScreen();
 });

@@ -90,11 +90,9 @@ test("a switch refused leaves the account as it was, and says why", async () => 
   };
   // The published server, before TASK-185, has no such endpoint.
   expect(await turn()).toBe(NO_NOTIFICATIONS);
+  expect(await turn()).toBe("Accounts are not available right now. Try again later.");
   expect(await turn()).toBe(
-    "Accounts are not available on this API: it has no database.",
-  );
-  expect(await turn()).toBe(
-    `Cannot reach the API at ${URL}. Check the connection and try again.`,
+    `No connection. Check the network and try again. (Cannot reach the API at ${URL}.)`,
   );
   expect(result.current.state).toEqual({ status: "signedIn", session });
   expect(kept()).toEqual(session);

@@ -90,6 +90,6 @@ test("a change that failed is said in words", () => {
     }),
   ).toBe(NO_PROFILE_EDITS);
   expect(profileProblem({ kind: "unreachable", url: "http://api" })).toBe(
-    "Cannot reach the API at http://api. Check the connection and try again.",
+    "No connection. Check the network and try again. (Cannot reach the API at http://api.)",
   );
 });

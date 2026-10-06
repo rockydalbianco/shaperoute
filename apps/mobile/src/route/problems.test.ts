@@ -12,6 +12,21 @@ import type { RouteProblem } from "./useRouteRequest";
 const REASON = "a 5 km heart cannot be drawn here: the best route scores 0.52";
 
 test.each<[RouteProblem, string, string | undefined]>([
+  [{ kind: "no_sharing" }, "This phone cannot open the share sheet.", undefined],
+  [
+    { kind: "share_failed" },
+    "The GPX could not be saved on the phone. Try again.",
+    undefined,
+  ],
+])("%j", (problem, text, detail) => {
+  expect(problemText(problem)).toEqual(detail ? { text, detail } : { text });
+});
+
+// --- what the runner reads, and what only the developer reads (TASK-256) ---
+
+const OUR_SIDE = "Something went wrong on our side. Try again in a moment.";
+
+test.each<[RouteProblem, string, string | undefined]>([
   [
     { kind: "api_error", code: "map_data_unavailable", message: "Overpass timed out" },
     "Map data for this area could not be downloaded. Try again later.",
@@ -19,52 +34,118 @@ test.each<[RouteProblem, string, string | undefined]>([
   ],
   [
     { kind: "api_error", code: "engine_error", message: "see the API log" },
-    "The route engine failed. Try again; if it happens again, look at the API log.",
-    undefined,
+    "The route could not be drawn. Try again, or try another start.",
+    "see the API log",
   ],
   [
     { kind: "api_error", code: "invalid_request", message: "distance_m: missing" },
-    "The app and the API do not agree (a bug): invalid_request.",
-    "distance_m: missing",
+    OUR_SIDE,
+    "invalid_request: distance_m: missing",
   ],
   [
     { kind: "api_error", code: "http_error", message: "Not Found" },
-    "The app and the API do not agree (a bug): http_error.",
-    "Not Found",
+    OUR_SIDE,
+    "http_error: Not Found",
   ],
-  [
-    { kind: "bad_answer", status: 502 },
-    "The app and the API do not agree (a bug): unexpected answer, HTTP 502.",
-    undefined,
-  ],
+  [{ kind: "bad_answer", status: 502 }, OUR_SIDE, "unexpected answer, HTTP 502"],
   [
     { kind: "unreachable", url: "http://192.168.1.23:8000" },
-    "Cannot reach the API at http://192.168.1.23:8000. Check that it is running (on the PC: with --lan) and that the phone can reach it: same Wi-Fi, Tailscale on, or the server address in apps/mobile/.env (docs/DEPLOY.md).",
-    undefined,
+    "No connection. Check the network and try again.",
+    "Cannot reach the API at http://192.168.1.23:8000.",
   ],
   [
     { kind: "timeout" },
-    "The API took more than 5 minutes. Try again later, or a shorter distance.",
+    "Drawing this route is taking too long. Try again later, or a shorter distance.",
     undefined,
   ],
-  [
-    { kind: "lost" },
-    "The API lost this request (was it restarted?). Try again.",
-    undefined,
-  ],
-  [{ kind: "no_sharing" }, "This phone cannot open the share sheet.", undefined],
-  [
-    { kind: "share_failed" },
-    "The GPX could not be saved on the phone. Try again.",
-    undefined,
-  ],
-  [
-    { kind: "no_api_url" },
-    "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.",
-    undefined,
-  ],
-])("%j", (problem, text, detail) => {
-  expect(problemText(problem)).toEqual(detail ? { text, detail } : { text });
+  [{ kind: "lost" }, "This request was lost. Try again.", undefined],
+])("%j may well go through a second time: «Try again»", (problem, text, detail) => {
+  expect(problemText(problem)).toEqual(
+    detail ? { text, detail, retry: true } : { text, retry: true },
+  );
+});
+
+test("an app without the address of its service is an app to update", () => {
+  expect(problemText({ kind: "no_api_url" })).toEqual({
+    text: "The app cannot reach the service. Update the app.",
+    detail: "The app has no API address: open it from the QR code of npm run mobile.",
+  });
+});
+
+test("a word the AI cannot read right now offers the shapes that need no AI", () => {
+  const { text, retry } = problemText({
+    kind: "api_error",
+    code: "ai_unavailable",
+    message: "Ollama is not running",
+  });
+  expect(text).toMatch(
+    /^This word cannot be read right now\. Try one of these: circle, heart/,
+  );
+  expect(retry).toBeUndefined();
+});
+
+/** Every problem the screen can be given, with the API's words at their
+ * most technical. */
+const EVERY_PROBLEM: RouteProblem[] = [
+  ...(
+    [
+      "shape_not_drawable",
+      "map_data_unavailable",
+      "engine_error",
+      "image_not_usable",
+      "outline_edit_rejected",
+      "ai_unavailable",
+      "unauthorized",
+      "too_many_requests",
+      "invalid_request",
+      "http_error",
+    ] as const
+  ).map((code) => ({
+    kind: "api_error" as const,
+    code,
+    message:
+      "HTTP 500 from http://10.0.0.2:8000: look at the API log (Ollama, npm, .env)",
+  })),
+  { kind: "bad_answer", status: 502 },
+  { kind: "unreachable", url: "http://10.0.0.2:8000" },
+  { kind: "timeout" },
+  { kind: "lost" },
+  { kind: "no_sharing" },
+  { kind: "share_failed" },
+  { kind: "no_api_url" },
+];
+
+/** Words for the developer, never for whoever runs (TASK-256). */
+const DEVELOPER_WORDS = /http|\.env|npm|Ollama|--lan|API log|bug/i;
+
+test("no text for the runner has a developer's words in it", () => {
+  for (const problem of EVERY_PROBLEM) {
+    for (const kind of ["shape", "word", "image"] as const) {
+      expect(problemText(problem, kind).text).not.toMatch(DEVELOPER_WORDS);
+    }
+  }
+  for (const text of [
+    ...Object.values(REASON_TEXT),
+    ...Object.values(EDIT_REASON_TEXT),
+  ]) {
+    expect(text).not.toMatch(DEVELOPER_WORDS);
+  }
+});
+
+test("the detail is for a development build: nothing on a phone", () => {
+  const dev = __DEV__;
+  (globalThis as unknown as { __DEV__: boolean }).__DEV__ = false;
+  try {
+    for (const problem of EVERY_PROBLEM) {
+      expect(problemText(problem).detail).toBeUndefined();
+    }
+  } finally {
+    (globalThis as unknown as { __DEV__: boolean }).__DEV__ = dev;
+  }
+  // Under jest, as in a development build.
+  expect(problemText({ kind: "unreachable", url: "http://pc:8000" }).detail).toBe(
+    "Cannot reach the API at http://pc:8000.",
+  );
 });
 
 const FAR =
@@ -284,7 +365,7 @@ test("picking problems are said before any API is asked", () => {
   );
   expect(imageProblemText({ kind: "pick_failed" }).text).toMatch(/could not be opened/);
   expect(imageProblemText({ kind: "unreachable", url: "http://pc:8000" }).text).toMatch(
-    /Cannot reach the API/,
+    /^No connection/,
   );
 });
 

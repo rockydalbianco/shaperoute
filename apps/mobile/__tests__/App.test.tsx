@@ -377,17 +377,17 @@ test("Try N km draws again at the distance the shape fits", async () => {
   jest.useRealTimers();
 });
 
-test("an API that does not answer says where it was looked for", async () => {
+test("an API that does not answer says so for the runner, and where it was looked for underneath", async () => {
   requestPermission.mockResolvedValue(permission(true));
   getPosition.mockResolvedValue(positionAt(46.0671, 11.1214));
   fetchSpy.mockRejectedValue(new TypeError("Network request failed"));
   await render(<App />);
   await fireEvent.press(await screen.findByText("Draw route"));
   expect(
-    await screen.findByText(
-      `Cannot reach the API at ${API}. Check that it is running (on the PC: with --lan) and that the phone can reach it: same Wi-Fi, Tailscale on, or the server address in apps/mobile/.env (docs/DEPLOY.md).`,
-    ),
+    await screen.findByText("No connection. Check the network and try again."),
   ).toBeOnTheScreen();
+  // For the developer, under jest as in a development build (TASK-256).
+  expect(screen.getByText(`Cannot reach the API at ${API}.`)).toBeOnTheScreen();
 });
 
 test("a new start takes the old route away", async () => {
@@ -583,7 +583,7 @@ test("when the AI is off the app says so, and asks again next time", async () =>
   await fireEvent(field, "endEditing");
   expect(
     await screen.findByText(
-      "The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun.",
+      "This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();

@@ -34,15 +34,20 @@ export function useRouteRequest(baseUrl: string | null): {
   state: RouteState;
   draw: (request: AnyRouteRequest) => void;
   cancel: () => void;
+  /** Sends the last request again, as it was (TASK-256): the «Try again»
+   * under an error. Nothing before the first request. */
+  retry: () => void;
 } {
   const [state, setState] = useState<RouteState>({ status: "idle" });
   const current = useRef<AbortController | null>(null);
+  const last = useRef<AnyRouteRequest | null>(null);
 
   const draw = useCallback(
     (request: AnyRouteRequest) => {
       current.current?.abort();
       const mine = new AbortController();
       current.current = mine;
+      last.current = request;
       setState({ status: "waiting", request, startedAt: Date.now(), phase: "sending" });
       const onStatus = (phase: JobStatus) => {
         if (current.current === mine) {
@@ -71,7 +76,13 @@ export function useRouteRequest(baseUrl: string | null): {
 
   const cancel = useCallback(() => current.current?.abort(), []);
 
-  return { state, draw, cancel };
+  const retry = useCallback(() => {
+    if (last.current) {
+      draw(last.current);
+    }
+  }, [draw]);
+
+  return { state, draw, cancel, retry };
 }
 
 /** Same start, shape, word or image, and distance: the state still belongs

@@ -30,12 +30,30 @@ export type ChoiceKind = DrawKind | "image";
  */
 export type ProblemText = {
   text: string;
+  /** For whoever develops the app: the API's words, an address, a code.
+   * Only in a development build (TASK-256). */
   detail?: string;
   tryDistanceM?: number;
   pickShape?: boolean;
+  /** The same request may well go through a second time: «Try again»
+   * (TASK-256). Not for a shape that does not fit, nor a key refused. */
+  retry?: boolean;
 };
 
-const BUG = "The app and the API do not agree (a bug)";
+/** `text` as a `detail`: in a development build; nothing on a phone. */
+export function devDetail(text: string | undefined): string | undefined {
+  return __DEV__ ? text : undefined;
+}
+
+/** Something the app did not expect from the API: the words for the runner,
+ * who can do nothing about it but try again. */
+function ourSide(detail: string): ProblemText {
+  return {
+    text: t("Something went wrong on our side. Try again in a moment."),
+    detail: devDetail(detail),
+    retry: true,
+  };
+}
 
 /**
  * The distance the API says the shape fits at, as the app offers it: only
@@ -129,43 +147,46 @@ export function problemText(
           if (fits !== null) {
             return {
               text: fitsAtText(kind, fits, units),
-              detail: problem.message,
+              detail: devDetail(problem.message),
               tryDistanceM: fits,
             };
           }
           if (kind === "word") {
             return {
               text: "This word does not fit the roads here. Try a shorter word, or another start.",
-              detail: problem.message,
+              detail: devDetail(problem.message),
             };
           }
           if (kind === "image") {
             return {
               text: "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.",
-              detail: problem.message,
+              detail: devDetail(problem.message),
             };
           }
           return {
             text: "This shape does not fit the roads here. Try another shape, or another start:",
-            detail: problem.message,
+            detail: devDetail(problem.message),
             pickShape: true,
           };
         }
         case "map_data_unavailable":
           return {
             text: "Map data for this area could not be downloaded. Try again later.",
-            detail: problem.message,
+            detail: devDetail(problem.message),
+            retry: true,
           };
         case "engine_error":
           return {
-            text: "The route engine failed. Try again; if it happens again, look at the API log.",
+            text: t("The route could not be drawn. Try again, or try another start."),
+            detail: devDetail(problem.message),
+            retry: true,
           };
         case "image_not_usable":
           return {
             text: isImageReason(problem.reason)
               ? REASON_TEXT[problem.reason]
               : "The route engine cannot find one clear outline in this picture.",
-            detail: problem.message,
+            detail: devDetail(problem.message),
           };
         case "outline_edit_rejected":
           return {
@@ -173,48 +194,62 @@ export function problemText(
               problem.reason && problem.reason in EDIT_REASON_TEXT
                 ? EDIT_REASON_TEXT[problem.reason as EditReason]
                 : "This line cannot be added to the outline. Draw it again.",
-            detail: problem.message,
+            detail: devDetail(problem.message),
           };
         case "ai_unavailable":
           return {
-            text: `The AI that reads shape words is not running on the PC (Ollama). These words work without it: ${shapeList()}.`,
-            detail: problem.message,
+            text: t("This word cannot be read right now. Try one of these: {list}.", {
+              list: shapeList(),
+            }),
+            detail: devDetail(problem.message),
           };
-        // The key and the limit of an API reached from outside (TASK-081).
+        // The key and the limit of an API reached from outside (TASK-081). A
+        // key refused is an app older than its service: nothing to retry.
         case "unauthorized":
           return {
-            text: "The API refused this app's key. Put the API's key in EXPO_PUBLIC_API_KEY in apps/mobile/.env, then restart npm run mobile (docs/DEPLOY.md).",
-            detail: problem.message,
+            text: t("This version of the app is no longer allowed in. Update the app."),
+            detail: devDetail(problem.message),
           };
         case "too_many_requests":
           return {
             text: "Too many requests to the API in the last minute. Wait a minute, then try again.",
-            detail: problem.message,
+            detail: devDetail(problem.message),
           };
         default:
-          return { text: `${BUG}: ${problem.code}.`, detail: problem.message };
+          return ourSide(`${problem.code}: ${problem.message}`);
       }
     case "bad_answer":
-      return { text: `${BUG}: unexpected answer, HTTP ${problem.status}.` };
+      return ourSide(`unexpected answer, HTTP ${problem.status}`);
     case "unreachable":
       return {
-        text: `Cannot reach the API at ${problem.url}. Check that it is running (on the PC: with --lan) and that the phone can reach it: same Wi-Fi, Tailscale on, or the server address in apps/mobile/.env (docs/DEPLOY.md).`,
+        text: t("No connection. Check the network and try again."),
+        detail: devDetail(`Cannot reach the API at ${problem.url}.`),
+        retry: true,
       };
     case "timeout":
       return {
-        text: "The API took more than 5 minutes. Try again later, or a shorter distance.",
+        text: t(
+          "Drawing this route is taking too long. Try again later, or a shorter distance.",
+        ),
+        retry: true,
       };
     case "lost":
       return {
-        text: "The API lost this request (was it restarted?). Try again.",
+        text: t("This request was lost. Try again."),
+        retry: true,
       };
     case "no_sharing":
       return { text: "This phone cannot open the share sheet." };
     case "share_failed":
       return { text: "The GPX could not be saved on the phone. Try again." };
+    // An app built without the address of its service (TASK-256): on a
+    // phone, only one older than the service.
     case "no_api_url":
       return {
-        text: "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.",
+        text: t("The app cannot reach the service. Update the app."),
+        detail: devDetail(
+          "The app has no API address: open it from the QR code of npm run mobile.",
+        ),
       };
   }
 }
@@ -247,7 +282,7 @@ function waterProblemText(
           : t(
               "There is no lake or sea near this start. Start from the shore, within 2 km of the water.",
             ),
-      detail: message,
+      detail: devDetail(message),
     };
   }
   if (fits !== null) {
@@ -262,7 +297,7 @@ function waterProblemText(
               "This shape does not fit on the water here at this distance. It fits at about {km} km.",
               { km: fits / 1000 },
             ),
-      detail: message,
+      detail: devDetail(message),
       tryDistanceM: fits,
     };
   }
@@ -270,7 +305,7 @@ function waterProblemText(
     text: t(
       "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:",
     ),
-    detail: message,
+    detail: devDetail(message),
     pickShape: true,
   };
 }

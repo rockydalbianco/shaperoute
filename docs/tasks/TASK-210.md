@@ -251,7 +251,7 @@ non conosce (vanno all'AI): sono la parte «nomi delle forme». «Vai a
 «Parti da qui»» nell'avviso dello start spostato: la parte di
 `mapPage.ts` deve chiamare così «Start here» (de «Hier starten», es
 «Empieza aquí», fr «Départ ici»). **Testi approvati dall'utente** il
-2026-10-06 («va bene procedi»); PR #421, in coda dopo #419 e #420.
+2026-10-06 («va bene procedi»); in `main` con la PR #421 (merge `438c019`, 2026-10-06), job `mobile` verde; la pubblicazione su «preview» è del coordinatore.
 
 **Da fare nelle parti successive** (dopo le parti C e D, entrambe in
 `main` il 2026-10-06): i nomi delle forme sulle schede di «Explore»

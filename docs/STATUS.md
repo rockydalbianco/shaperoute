@@ -452,7 +452,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pannello di «Draw», i testi d'errore in km, gli avvisi del motore, la
   parola, la foto e il contorno, 101 testi nuovi
   (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`; testi
-  approvati dall'utente il 2026-10-06, PR #421. Restano la fine corsa,
+  approvati dall'utente il 2026-10-06, PR #421 (merge `438c019`); C e D in
+  `main` e su «preview» (gruppo `65620103`). Restano la fine corsa,
   «Sport», `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano

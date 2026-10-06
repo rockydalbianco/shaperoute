@@ -115,24 +115,23 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-06**. **Server**: su `main` `a784f77` dalle
-  22:13Z del 2026-10-05 («ok server» dell'utente nella sessione di
-  TASK-243, che l'ha eseguito al via del coordinatore), con le migrazioni
-  `0001`–`0017` e il motore di TASK-243 (la penna alzata sui baffi del
-  contorno); fermo circa 9 secondi; immagine di prima
-  `shaperoute-api:before-task243`, copia del database
-  `shaperoute-2026-10-05T2212Z.dump`; `draw_examples` finito («70 of 70»,
-  con Borgo Valsugana, Caldonazzo, Pergine Valsugana, Vigolo Vattaro).
-  Zone del telefono: 528 file. Acqua della canoa: 247 file, 93 MB. **Non
-  ancora sul server**: #381 (TASK-249), #386 (TASK-247), #392 (TASK-248
-  B: cambia l'impronta del motore), #394 (TASK-251 B): un aggiornamento
-  con `draw_examples`, con l'ok dell'utente. **App** su `preview` da
-  `main` `e12ba55` (gruppo `e17c80c3`): tutto `main` fino alle code sul
-  telefono (TASK-252), compresi la mappa girata in «Draw», in corsa e in
-  «Explore» (TASK-232 B, B2), le unità del kayak (TASK-251 A), la penna
-  alzata sui baffi (TASK-243, `engine.zip`); #392 e #394 escono con il
-  server. **Da provare sull'iPhone.** Strava spento per scelta
-  dell'utente.
+- **Server e app, al 2026-10-06**. **Server**: su `main` `f41eaea` dalle
+  ~07:25Z (ok dell'utente «ok, aggiorna il server», eseguito dalla
+  sessione di TASK-251 al via del coordinatore), con le migrazioni
+  `0001`–`0018` (`0018_route_rotation`: la rotazione nelle corse salvate e
+  nei preferiti), il punto del luogo in `/cities` (TASK-249: Tenna
+  [46.015703, 11.264283]), `run_scored` al salvataggio (TASK-247), le
+  partenze vicine senza `Pool` (TASK-248 B), `activity` in
+  `/me/activities` (TASK-251 B), `rotation_deg` nel catalogo e negli
+  esempi della canoa (TASK-232 C); fermo circa 15 secondi; immagine di
+  prima `shaperoute-api:before-task232c`, copia del database
+  `shaperoute-2026-10-06T0723Z.dump`; `draw_examples` finito («70 of 72»:
+  a Tenna il cuore e a Calceranica il cerchio non si disegnano). Zone del
+  telefono: 528 file. Acqua della canoa: 247 file, 93 MB. **App** su
+  `preview` da `main` `f41eaea` (gruppo `1541decf`): tutto `main`, fino
+  ai disegni salvati girati (TASK-232 C), alla navigazione che non salta
+  (TASK-253) e alle code sul telefono (TASK-252). **Da provare
+  sull'iPhone.** Strava spento per scelta dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -575,6 +574,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   tutto come prima (scelta dell'utente); «Calories» solo correndo. Solo app, nessun testo nuovo,
   nessuna dipendenza nuova. `tasks/TASK-255.md`.
 
+
+- **App** — TASK-257: una corsa rifiutata resta sul telefono con il
+  motivo (ADR-0221; dalla revisione dell'app, «sì» dell'utente del
+  2026-10-06). Una corsa a cui l'API risponde `invalid_request` non
+  sparisce più: resta nel file segnata e non viene rimandata; in cima a
+  «My activities» una riga con giorno, km, «The server could not take
+  this run: {message}», «Try again» e «Discard» dopo un sì. Il telefono
+  tiene al più 20 corse non mandate **per account** e non ne butta più
+  nessuna: «Save» della ventunesima dice che è pieno e la corsa in corso
+  resta. Otto testi nuovi nelle cinque lingue, da confermare
+  dall'utente prima del merge. Solo app. `tasks/TASK-257.md`.
 - **App** — TASK-253: la navigazione non salta avanti e riprende dove era
   (ADR-0217; dalla revisione del codice dell'app del 2026-10-06). Dove il
   percorso ripassa dallo stesso punto entro 300 m la posizione resta sul

@@ -12079,6 +12079,48 @@ il banner arancio finché non ci torna (ADR-0070); la registrazione continua
 e la corsa che ne esce è il disegno che ha fatto davvero. Nessun lavoro da
 fare: è il comportamento di oggi. La domanda è chiusa.
 
+## ADR-0221 — Una corsa rifiutata resta sul telefono con il motivo; il telefono pieno lo dice invece di lasciarne andare una
+**Stato**: Attiva · 2026-10-06 · scelta dell'utente (la corsa resta con il
+motivo e «Discard», «sì» alla revisione dell'app del 2026-10-06); il resto
+deciso dall'agente su delega dell'utente (TASK-257). Numero assegnato dal
+coordinatore.
+
+**Contesto**: dopo TASK-252 (ADR-0216) una corsa a cui l'API risponde
+`422 invalid_request` era tolta dal file senza una parola, quando l'utente
+aveva già visto il logo «salvato» e la corsa in corso era già cancellata.
+Oltre le 20 corse in attesa, la più vecchia spariva in silenzio.
+`invalid_request` di `PUT /me/activities/{key}` vuol dire, nell'API di
+oggi: meno di due posizioni buone, un orologio che non è un orologio, i
+2 000 salvataggi dell'account già pieni, un corpo che non va.
+
+**Decisione**:
+
+1. **La voce del file ha `refused: { code, message }`** (il messaggio
+   dell'API in inglese, com'è). Il giro delle corse salta le voci
+   segnate; il contatore `waiting` le conta ancora, `refused` le elenca.
+2. **«My activities» le mostra sopra la lista**: giorno, km del telefono
+   (la somma dei tratti della traccia registrata, non pulita come la
+   conta l'API), un solo testo per tutti i motivi («The server could not
+   take this run: {message}»), «Discard» dopo un sì e **«Try again»**,
+   che toglie il segno e rimanda la corsa: serve dopo aver fatto posto in
+   una lista piena; per gli altri motivi la risposta torna uguale, senza
+   danno.
+3. **Il limite di 20 è per account**, non per file: le corse di un altro
+   account sullo stesso telefono non si possono scartare da qui, e non
+   devono bloccare chi è entrato. `keepWaiting` risponde `kept`, `full` o
+   `not_written`; `withRun` non toglie mai niente. A telefono pieno
+   `record` risponde `false` come a file rifiutato: `App.tsx` già non
+   cancella la corsa in corso quando `Save` fallisce, e non cambia.
+4. **Due testi a telefono pieno**: con una corsa rifiutata fra le 20,
+   «Discard one in My activities first.»; senza, le 20 aspettano solo la
+   rete (o un'API che risponda), e il testo dice che partono con la
+   connessione. Una corsa in attesa non ha «Discard»: fuori scope.
+
+**Conseguenze**: otto testi nuovi nelle quattro tabelle (i due di «Save» a
+telefono pieno e sei della riga rifiutata). Un file d'attesa di prima si
+legge com'era: le voci senza `refused` sono in attesa. Un telefono che
+aveva già perso una corsa non la ritrova.
+
 ## ADR-0219 — La corsa tiene lo schermo acceso, l'app in secondo piano è una pausa, niente calorie fuori dalla corsa
 **Stato**: Attiva · 2026-10-06 · **scelte dell'utente** del 2026-10-06
 («sì a tutte e cinque» alle domande della revisione: lo schermo acceso, le

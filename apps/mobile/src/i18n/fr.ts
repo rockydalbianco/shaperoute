@@ -73,6 +73,15 @@ export const FR: Table = {
   "Delete run": "Supprimer la course",
   "Delete the run of {when}": "Supprimer la course du {when}",
   Delete: "Supprimer",
+  // A run the API will not take (TASK-257).
+  "The server could not take this run: {message}":
+    "Le serveur n'a pas pu accepter cette course : {message}",
+  "Discard this run? It will not be saved.":
+    "Ignorer cette course ? Elle ne sera pas enregistrée.",
+  "Discard run": "Ignorer la course",
+  "Send the run of {when} again": "Renvoyer la course du {when}",
+  "Discard the run of {when}": "Ignorer la course du {when}",
+  Discard: "Ignorer",
 
   // src/activities/ActivityCard.tsx
   "Yellow: the route. White: what you ran.":
@@ -108,6 +117,12 @@ export const FR: Table = {
   Dec: "déc.",
   "{weekday} {day} {month} {year}": "{weekday} {day} {month} {year}",
   Run: "Course",
+
+  // src/activities/RunEnd.tsx
+  "The phone holds {count} runs not sent yet. Discard one in My activities first.":
+    "Le téléphone contient déjà {count} courses non envoyées. Ignorez-en d'abord une dans Mes activités.",
+  "The phone holds {count} runs not sent yet. They go when there is a connection; then save this one.":
+    "Le téléphone contient déjà {count} courses non envoyées. Elles partent dès qu'il y a une connexion ; enregistrez ensuite celle-ci.",
 
   // src/api/comments.ts
   "A comment needs some words.": "Un commentaire a besoin de quelques mots.",

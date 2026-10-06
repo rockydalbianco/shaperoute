@@ -9,11 +9,19 @@ import { apiError } from "../account/testing";
 import type { Account } from "../account/useAccount";
 import type { ActivityRequest } from "../api/activities";
 import { useActivitiesOf } from "./activitiesDoor";
-import { keepWaiting, loadOutbox, type Waiting } from "./outbox";
+import {
+  keepWaiting,
+  loadOutbox,
+  MAX_WAITING,
+  refusedOf,
+  saveOutbox,
+  type Waiting,
+} from "./outbox";
 
 // The runs that wait on the phone, sent one after the other (TASK-252): a
 // run the API will not take does not hold the others, and the round starts
-// again when the app comes back to the front.
+// again when the app comes back to the front. A run it will never take
+// stays on the phone with the reason (TASK-257).
 
 // The phone's documents folder, in memory.
 jest.mock("expo-file-system", () => {
@@ -191,4 +199,79 @@ test("what waits goes when the app comes back to the front", async () => {
   await waitFor(() => expect(result.current.waiting).toBe(0));
   expect(sent).toEqual(["a", "a"]);
   expect(loadOutbox()).toEqual([]);
+});
+
+// What the API says of a run it will never take (activities.py).
+const NEVER: Answer = {
+  status: 422,
+  body: apiError(
+    "invalid_request",
+    "This run cannot be saved: the track has 1 usable positions, 2 are needed.",
+  ),
+};
+
+test("a run the API will never take stays, with its reason, and is not sent again", async () => {
+  keepWaiting(run("a"));
+  keepWaiting(run("b"));
+  const { fetchFn, sent } = api({ a: NEVER, b: OK });
+  const { result } = await door(fetchFn);
+
+  await waitFor(() => expect(result.current.refused).toHaveLength(1));
+  expect(sent).toEqual(["a", "b"]);
+  const [refused] = result.current.refused;
+  expect(refused.id).toBe("a");
+  expect(refused.message).toBe(
+    "This run cannot be saved: the track has 1 usable positions, 2 are needed.",
+  );
+  expect(refused.startedAt).toBe(new Date(request.track[0].time_ms).toISOString());
+  expect(refused.distanceM).toBeGreaterThan(0);
+  // Still on the phone, and still counted.
+  expect(result.current.waiting).toBe(1);
+  expect(refusedOf(loadOutbox()[0])?.code).toBe("invalid_request");
+
+  // The next round leaves it be.
+  await act(async () => appState("active"));
+  await act(async () => result.current.refresh());
+  expect(sent).toEqual(["a", "b"]);
+});
+
+test("«Discard» takes a refused run off the phone", async () => {
+  keepWaiting(run("a"));
+  const { fetchFn } = api({ a: NEVER });
+  const { result } = await door(fetchFn);
+  await waitFor(() => expect(result.current.refused).toHaveLength(1));
+
+  await act(async () => result.current.discard("a"));
+  expect(result.current.refused).toEqual([]);
+  expect(result.current.waiting).toBe(0);
+  expect(loadOutbox()).toEqual([]);
+});
+
+test("«Try again» sends a refused run once more", async () => {
+  keepWaiting(run("a"));
+  // The account had a full list; a run deleted since makes room.
+  const { fetchFn, sent } = api({ a: [NEVER, OK] });
+  const { result } = await door(fetchFn);
+  await waitFor(() => expect(result.current.refused).toHaveLength(1));
+
+  await act(async () => result.current.retry("a"));
+  await waitFor(() => expect(result.current.waiting).toBe(0));
+  expect(sent).toEqual(["a", "a"]);
+  expect(result.current.refused).toEqual([]);
+});
+
+test("a full phone is said, not emptied", async () => {
+  saveOutbox(
+    Array.from({ length: MAX_WAITING }, (_, n) => ({
+      ...run(`run${n}`),
+      refused: { code: "invalid_request", message: "…" },
+    })),
+  );
+  const { fetchFn } = api({});
+  const { result } = await door(fetchFn);
+  expect(result.current.full).toBe(true);
+  expect(result.current.refused).toHaveLength(MAX_WAITING);
+
+  await act(async () => result.current.discard("run0"));
+  expect(result.current.full).toBe(false);
 });

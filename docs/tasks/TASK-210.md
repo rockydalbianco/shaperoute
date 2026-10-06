@@ -1,7 +1,8 @@
 # TASK-210 — La lingua dell'app
 
 **Stato**: In corso
-**Fase**: 4 · **Branch**: `feat/TASK-210-app-language` (parte A)
+**Fase**: 4 · **Branch**: `feat/TASK-210-app-language` (parte A),
+`feat/TASK-210-run-screens` (parte B, la corsa)
 
 ## Obiettivo
 
@@ -164,10 +165,35 @@ simulatore con il telefono in italiano (italiano all'avvio, «Deutsch»
 subito, resta dopo un riavvio). Le traduzioni le ha riviste l'agente su
 delega dell'utente.
 
-**Da fare nelle parti successive**: i file di TASK-191 C (i suoi testi
-nuovi della canoa li mette in `t()` la #255 stessa; il resto di
-`sport.ts`, `RoutePanel`, `problems`, `distance`, `explore/` dopo il suo
-merge), di TASK-208 (`RunEnd.tsx`, `PublicParts.tsx`, `PublicRow.tsx`,
-`api/drawings.ts`) e di TASK-209 (il banner della svolta e i file della
-corsa); poi «Draw», «Explore», la corsa, `SportSetting`/`SportButton`, i
-titoli delle pagine in `App.tsx`, i nomi delle forme in «Draw».
+**Parte B — la corsa** (2026-10-06, dopo la revisione del codice
+dell'app; chiesta dall'utente: «parti con le traduzioni di TASK-210»):
+`NavigateScreen`, `FreeRunScreen`, `RunDashboard`, `RunPanel`,
+`FinishScreen`, `Countdown`, `HoldButton`, `PocketScreen`, `MapScreen`,
+`navigation/runStats.ts` (i punti cardinali e «about 17 min»), più i km
+con la virgola in `phrases.distanceLabel`. 58 testi nuovi nelle quattro
+tabelle (`out/task-210-corsa-testi.md` sul Mac per l'occhio dell'utente);
+«Back», «Cancel», «Time», «Distance», «Pace», «Last km», «Speed now»,
+«Avg speed» e le due righe della legenda erano già tradotti. **Il banner
+della svolta** non ha più un costruttore inglese suo: `NavigateScreen`
+scrive la svolta con il frasario della voce nella lingua dell'app
+(`wordsOf(useLanguage())`, TASK-209), così una via si dice e si legge
+allo stesso modo, e la seconda riga è «Poi …» con `t("Then {directions}")`;
+`phrases.instruction`/`thenText` restano per i loro test, da togliere con
+«Draw». Test: `screens/RunItalian.test.tsx` (banner, fine corsa, numeri,
+bottone, tempi in italiano); `RunBike`, `RunPaddle`, `RunMiles` cercano
+la scheda «Dati» dove sono in italiano. **Testi da vedere all'utente
+prima del merge.**
+
+**Da fare nelle parti successive**: «Draw» (`RoutePanel`, `problems`,
+`distance`, `ImageChoice`, `OutlineBoard`, `warnings`, `wordInput`,
+`LoadingBar`, `DistanceStepper`, `RouteTiles`, `shareGpx`; dopo
+TASK-256, che ne tocca i testi d'errore), «Explore» (`ExploreScreen`,
+`ExploreTools`, `CityExamples`, `AskForRoute`, `ThemedCard`,
+`ExploredCard`, `ExploreStart`, `WhileDrawing`, `useStartDirections`,
+`useThemedRoute`, `presets`), la fine corsa di TASK-208 (`RunEnd.tsx`,
+`PublicParts.tsx`, `PublicRow.tsx`, `api/drawings.ts`), `VoiceSetting.tsx`,
+`SportSetting`/`SportButton`/`sport.ts`, i titoli delle pagine in
+`App.tsx`, i nomi delle forme in «Draw» (`shapeWords.ts` sa solo
+inglese e italiano: «Herz», «cœur» vanno all'AI), i nomi sulla mappa
+forzati in italiano (`mapStyle.ts`) e «Start here» nella pagina della
+mappa (`mapPage.ts`), «Help» in de/es/fr.

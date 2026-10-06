@@ -120,7 +120,7 @@ lingue, in aiuto/condizioni/privacy, e l'API scrive «Drawn with MuW»,
 «Go back to MuW», `creator="MuW"`; su `preview` (gruppo `36e2a9f1`).
 **Parte B** (PR #428, merge `873de538`, anteprima approvata dall'utente:
 «si va bene così»): il cuore su giallo con la scritta «MuW» come logo e
-icona, generati da `docs/brand/make_brand.py`. **Restano**: il server con
-i testi dell'API (coordinatore, ok dell'utente); icona, splash e favicon
-si vedono solo con una build nativa; il sito (`site/`, TASK-237) e i nomi
+icona, generati da `docs/brand/make_brand.py`; su `preview` (gruppo
+`9585ffac`), server a `873de538` con l'ok dell'utente. **Restano**: icona,
+splash e favicon si vedono solo con una build nativa; il sito (`site/`, TASK-237) e i nomi
 nel codice (`sgrava` in file e variabili) tengono il nome vecchio.

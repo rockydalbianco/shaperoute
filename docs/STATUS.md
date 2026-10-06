@@ -531,9 +531,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (gruppo `36e2a9f1`). **Parte B** PR #428 (`873de538`, anteprima
   approvata dall'utente): il cuore su giallo con la scritta «MuW» come
   logo, icona iOS e Android, splash, favicon, `docs/brand/muw-*.svg` e
-  il generatore `make_brand.py`. **Restano**: il server con i testi
-  dell'API (coordinatore, ok dell'utente); icona, splash e favicon si
-  vedono solo con una build nativa, su `preview` arrivano la scritta
+  il generatore `make_brand.py`; su `preview` (gruppo `9585ffac`), server
+  a `873de538` (ok dell'utente). **Resta**: icona, splash e favicon si
+  vedono solo con una build nativa; su `preview` arrivano la scritta
   all'avvio e in «salvato». `bundleIdentifier`, `slug` e il sito tengono
   il nome vecchio. `tasks/TASK-260.md`.
 

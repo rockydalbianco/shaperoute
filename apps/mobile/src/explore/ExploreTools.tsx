@@ -1,5 +1,5 @@
 import type { CityChosenSignal, Signal } from "@shaperoute/shared-types/src/signals";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Keyboard,
   Pressable,
@@ -63,6 +63,15 @@ export function CityPicker({
   );
   const [opening, setOpening] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  // The cities asked by name are numbered (TASK-254): only the answer to
+  // the last one counts. A choice, «Near me» and the unmount end them all.
+  const asked = useRef(0);
+  useEffect(
+    () => () => {
+      asked.current += 1;
+    },
+    [],
+  );
 
   // Suggestions while typing, after a short pause; the last query wins.
   useEffect(() => {
@@ -89,6 +98,8 @@ export function CityPicker({
   /** A city or a place chosen, and how: a suggestion picked never calls
    * /cities, so the API hears of it only from the signal (TASK-142). */
   function choose(place: Place, via: CityChosenSignal["via"]) {
+    asked.current += 1;
+    setOpening(null);
     Keyboard.dismiss();
     setQuery("");
     setFound(null);
@@ -105,6 +116,8 @@ export function CityPicker({
 
   /** Back to the routes near the start: no city, nothing typed. */
   function nearMe() {
+    asked.current += 1;
+    setOpening(null);
     Keyboard.dismiss();
     setQuery("");
     setFound(null);
@@ -118,9 +131,14 @@ export function CityPicker({
       setFailed(true);
       return;
     }
+    const mine = ++asked.current;
     setOpening(name);
     setFailed(false);
     const cities = await searchCities(apiUrl, name, { fetchFn });
+    if (mine !== asked.current) {
+      // Another city was asked, or chosen, in the meantime: it wins.
+      return;
+    }
     setOpening(null);
     if (cities !== null && cities.length > 0) {
       choose(cities[0], via);

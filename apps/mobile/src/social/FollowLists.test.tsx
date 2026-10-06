@@ -1,7 +1,7 @@
 import people from "@shaperoute/shared-types/fixtures/people.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { PeoplePage, Session } from "@shaperoute/shared-types";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 import { apiError } from "../account/testing";
 import type { AccountState } from "../account/useAccount";
@@ -208,4 +208,29 @@ test("a session that ended signs out; signed out, nothing is asked", async () =>
   const second = api({});
   await show(second.fetchFn, { state: { status: "signedOut", notice: null } });
   expect(second.fetchFn).not.toHaveBeenCalled();
+});
+
+test("two answers on their way: each row waits for its own (TASK-254)", async () => {
+  const pending = new Map<string, (response: Response) => void>();
+  const { fetchFn } = api({
+    ...lists(page(adam, ada), page(), page()),
+    [`POST /me/follow-requests/${adam.public_id}/accept`]: () =>
+      new Promise<Response>((resolve) => pending.set("adam", resolve)) as never,
+    [`POST /me/follow-requests/${ada.public_id}/accept`]: () =>
+      new Promise<Response>((resolve) => pending.set("ada", resolve)) as never,
+  });
+  await show(fetchFn);
+  await fireEvent.press(await screen.findByRole("button", { name: "Requests, 2" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Accept adam.trento" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Accept Ada_runs" }));
+  expect(screen.getByRole("button", { name: "Accept adam.trento" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Accept Ada_runs" })).toBeDisabled();
+  await act(async () => pending.get("adam")?.(done()));
+  expect(await screen.findByRole("button", { name: "Requests, 1" })).toBeOnTheScreen();
+  // Ada's answer is still on its way: her buttons stay off, no second tap.
+  expect(screen.getByRole("button", { name: "Accept Ada_runs" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Decline Ada_runs" })).toBeDisabled();
+  await act(async () => pending.get("ada")?.(done()));
+  expect(await screen.findByRole("button", { name: "Requests, 0" })).toBeOnTheScreen();
+  expect(screen.queryByRole("alert")).toBeNull();
 });

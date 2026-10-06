@@ -49,6 +49,15 @@ export const NO_NUMBER = "–";
 /** Now, again every `everyMs` while `on`. */
 export function useNow(on: boolean, everyMs: number): number {
   const [now, setNow] = useState(Date.now);
+  // Read again the moment it is turned on (TASK-254): the clock read at the
+  // mount is as old as the screen, and the countdown would start from it.
+  const [wasOn, setWasOn] = useState(on);
+  if (on !== wasOn) {
+    setWasOn(on);
+    if (on) {
+      setNow(Date.now());
+    }
+  }
   useEffect(() => {
     if (!on) {
       return;

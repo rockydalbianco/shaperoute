@@ -27,8 +27,10 @@ export type ImageState =
   | { status: "none" }
   /** The picture is on its way to the API, which traces its outline. */
   | { status: "tracing"; picture: Picture }
-  /** `outline` is the one shown: as traced, or edited (TASK-079). */
-  | { status: "traced"; picture: Picture; outline: ImageOutline }
+  /** `outline` is the one shown: as traced, or edited (TASK-079). `problem`
+   * is why another picture could not be chosen after it (TASK-254): the
+   * outline and its edits stay. */
+  | { status: "traced"; picture: Picture; outline: ImageOutline; problem?: ImageProblem }
   /** `picture` is null when none was chosen: the picker failed. */
   | { status: "failed"; picture: Picture | null; problem: ImageProblem };
 
@@ -59,12 +61,21 @@ export function useImageOutline(
   const [state, setState] = useState<ImageState>({ status: "none" });
   const [edits, setEdits] = useState<EditsState>(NO_EDITS);
   const current = useRef<AbortController | null>(null);
+  // The state as it is when the picker answers, whatever `choose` closed over.
+  const latest = useRef(state);
+  latest.current = state;
 
   const choose = useCallback(
     (source: ImageSource) => {
       void (async () => {
         const picked = await pick(source);
         if (picked.kind === "cancelled") {
+          return;
+        }
+        if (picked.kind !== "picked" && latest.current.status === "traced") {
+          // No picture was taken (TASK-254): the outline traced and its
+          // edits stay, and why the choice failed is shown beside them.
+          setState((now) => (now.status === "traced" ? { ...now, problem: picked } : now));
           return;
         }
         current.current?.abort();

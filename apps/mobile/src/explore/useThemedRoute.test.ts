@@ -41,3 +41,35 @@ test("no API, or an API that does not answer, is said too", async () => {
   await act(async () => result.current.close());
   expect(result.current.state.status).toBe("idle");
 });
+
+test("an ask that fails between two good ones does not end the route (TASK-254)", async () => {
+  const offline = new TypeError("Network request failed");
+  const fetchFn = jest
+    .fn()
+    .mockResolvedValueOnce(Response.json(running, { status: 202 }))
+    .mockRejectedValueOnce(offline)
+    .mockResolvedValueOnce(Response.json(running))
+    .mockRejectedValueOnce(offline)
+    .mockRejectedValueOnce(offline)
+    .mockResolvedValueOnce(Response.json(done));
+  const { result } = await renderHook(() =>
+    useThemedRoute("http://api", { fetchFn, pollMs: 1 }),
+  );
+  await act(async () => result.current.ask(request));
+  await waitFor(() => expect(result.current.state.status).toBe("done"));
+  expect(fetchFn).toHaveBeenCalledTimes(6);
+
+  // Three in a row: the API is gone.
+  const gone = jest
+    .fn()
+    .mockResolvedValueOnce(Response.json(running, { status: 202 }))
+    .mockRejectedValue(offline);
+  const { result: lost } = await renderHook(() =>
+    useThemedRoute("http://api", { fetchFn: gone, pollMs: 1 }),
+  );
+  await act(async () => lost.current.ask(request));
+  await waitFor(() => expect(lost.current.state.status).toBe("failed"));
+  expect(gone).toHaveBeenCalledTimes(4);
+  const state = lost.current.state;
+  expect(state.status === "failed" && state.message).toMatch(/did not answer/);
+});

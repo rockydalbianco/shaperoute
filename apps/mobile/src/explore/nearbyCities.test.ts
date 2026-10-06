@@ -25,12 +25,12 @@ function answering(body: unknown, status = 200): jest.Mock {
   return jest.fn(() => Promise.resolve(Response.json(body, { status })));
 }
 
-test("the towns near the start, with the key and no position kept twice", async () => {
+test("the towns near the start, with the key, to about a kilometre (TASK-254), and no position kept twice", async () => {
   const fetchFn = answering({ places: [levico, pergine] });
   const towns = await fetchNearbyCities(API, CALDONAZZO, { fetchFn, key: "K" });
   expect(towns).toEqual([levico, pergine]);
   expect(fetchFn).toHaveBeenCalledWith(
-    `${API}/nearby-cities?lat=46.0036&lon=11.2647`,
+    `${API}/nearby-cities?lat=46.00&lon=11.26`,
     expect.objectContaining({ headers: { "X-API-Key": "K" } }),
   );
   // The same square again, a few metres away: nothing is asked.

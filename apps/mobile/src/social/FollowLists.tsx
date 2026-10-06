@@ -131,8 +131,9 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
   );
   // The members accepted since the lists came, still in «Requests».
   const [accepted, setAccepted] = useState<Record<string, Back>>({});
-  // The member a request is on its way for: no second tap.
-  const [busy, setBusy] = useState<string | null>(null);
+  // The members a request is on its way for: no second tap on any of them,
+  // each until its own answer (TASK-254).
+  const [busy, setBusy] = useState<ReadonlySet<string>>(() => new Set());
   // The follower «Remove» was touched for: it asks first.
   const [removing, setRemoving] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -202,11 +203,11 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
     request: Promise<AccountOutcome<T>>,
     done: (value: T) => void,
   ) {
-    setBusy(person.public_id);
+    setBusy((was) => new Set([...was, person.public_id]));
     setProblem(null);
     setRemoving(null);
     void request.then((outcome) => {
-      setBusy(null);
+      setBusy((was) => new Set([...was].filter((id) => id !== person.public_id)));
       if (outcome.kind === "ok") {
         done(outcome.value);
         return;
@@ -366,7 +367,7 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
           )}
           {shown.kind === "ready" &&
             shown.people.map((person) => {
-              const waiting = busy === person.public_id;
+              const waiting = busy.has(person.public_id);
               const back = open === "requests" ? accepted[person.public_id] : undefined;
               return (
                 <View key={person.public_id} style={styles.member}>

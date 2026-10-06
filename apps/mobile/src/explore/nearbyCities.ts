@@ -1,7 +1,7 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
 import { apiKey, keyHeaders } from "../api/apiUrl";
-import type { Place } from "../places/photon";
+import { nearParams, type Place } from "../places/photon";
 
 /**
  * A town near the start (TASK-236): a city as the search gives it, its
@@ -66,10 +66,12 @@ export async function fetchNearbyCities(
     return kept;
   }
   try {
-    const response = await fetchFn(
-      `${baseUrl}/nearby-cities?lat=${near[0]}&lon=${near[1]}`,
-      { headers: keyHeaders(key), signal },
-    );
+    // The square's worth of position, not the phone's (TASK-254): the API
+    // looks around the square anyway, and measures `away_m` from the point.
+    const response = await fetchFn(`${baseUrl}/nearby-cities?${nearParams(near)}`, {
+      headers: keyHeaders(key),
+      signal,
+    });
     const body: unknown = await response.json();
     const places = (body as { places?: unknown } | null)?.places;
     if (!response.ok || !Array.isArray(places)) {

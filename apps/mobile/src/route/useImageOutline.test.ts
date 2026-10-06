@@ -168,3 +168,36 @@ test("Undo drops a line still on its way", async () => {
   expect(result.current.state).toMatchObject({ outline: imageOutline });
   expect(result.current.edits).toEqual({ earlier: [], edit: { status: "idle" } });
 });
+
+test("a choice that fails after a trace keeps the outline and its edits (TASK-254)", async () => {
+  const picks: Picked[] = [PICKED, { kind: "denied" }, { kind: "too_large" }];
+  fetchSpy.mockResolvedValueOnce(Response.json(imageOutline));
+  const { result } = await renderHook(() =>
+    useImageOutline("http://pc:8000", async () => picks.shift()!),
+  );
+  await act(async () => result.current.choose("library"));
+  await waitFor(() => expect(result.current.state.status).toBe("traced"));
+  fetchSpy.mockResolvedValueOnce(Response.json(edited));
+  await act(async () => result.current.add("detail", LINE));
+  await waitFor(() => expect(result.current.edits.earlier).toEqual([imageOutline]));
+  // The camera refused: what was there stays, and why is beside it.
+  await act(async () => result.current.choose("camera"));
+  await waitFor(() =>
+    expect(result.current.state).toEqual({
+      status: "traced",
+      picture: PICTURE,
+      outline: edited,
+      problem: { kind: "denied" },
+    }),
+  );
+  expect(result.current.edits).toEqual({ earlier: [imageOutline], edit: { status: "idle" } });
+  // Undo still works on the edits kept.
+  await act(async () => result.current.undo());
+  expect(result.current.state).toMatchObject({ outline: imageOutline });
+  // A later failure replaces the earlier reason; nothing was asked of the API.
+  await act(async () => result.current.choose("library"));
+  await waitFor(() =>
+    expect(result.current.state).toMatchObject({ problem: { kind: "too_large" } }),
+  );
+  expect(fetchSpy).toHaveBeenCalledTimes(2);
+});

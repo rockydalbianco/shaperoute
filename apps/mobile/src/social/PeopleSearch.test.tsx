@@ -156,3 +156,19 @@ test("without an account, or without the API, nothing is asked", async () => {
   expect(screen.getByText(NO_API)).toBeOnTheScreen();
   expect(fetchFn).not.toHaveBeenCalled();
 });
+
+test("a search that failed can be asked again with the same name (TASK-254)", async () => {
+  const fetchFn = answers(new TypeError("Network request failed"), {
+    status: 200,
+    body: people,
+  });
+  await show(fetchFn);
+  await type("ada");
+  await pause();
+  expect(fetchFn).toHaveBeenCalledTimes(1);
+  expect(screen.queryByText("Ada_runs")).toBeNull();
+  await fireEvent(screen.getByPlaceholderText("Name"), "submitEditing");
+  await pause();
+  expect(fetchFn).toHaveBeenCalledTimes(2);
+  expect(screen.getByText("Ada_runs")).toBeOnTheScreen();
+});

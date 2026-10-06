@@ -170,7 +170,11 @@ test("Undo drops a line still on its way", async () => {
 });
 
 test("a choice that fails after a trace keeps the outline and its edits (TASK-254)", async () => {
-  const picks: Picked[] = [PICKED, { kind: "denied" }, { kind: "too_large" }];
+  const picks: Picked[] = [
+    PICKED,
+    { kind: "denied" },
+    { kind: "too_large", bytes: 9e6 },
+  ];
   fetchSpy.mockResolvedValueOnce(Response.json(imageOutline));
   const { result } = await renderHook(() =>
     useImageOutline("http://pc:8000", async () => picks.shift()!),
@@ -190,14 +194,19 @@ test("a choice that fails after a trace keeps the outline and its edits (TASK-25
       problem: { kind: "denied" },
     }),
   );
-  expect(result.current.edits).toEqual({ earlier: [imageOutline], edit: { status: "idle" } });
+  expect(result.current.edits).toEqual({
+    earlier: [imageOutline],
+    edit: { status: "idle" },
+  });
   // Undo still works on the edits kept.
   await act(async () => result.current.undo());
   expect(result.current.state).toMatchObject({ outline: imageOutline });
   // A later failure replaces the earlier reason; nothing was asked of the API.
   await act(async () => result.current.choose("library"));
   await waitFor(() =>
-    expect(result.current.state).toMatchObject({ problem: { kind: "too_large" } }),
+    expect(result.current.state).toMatchObject({
+      problem: { kind: "too_large", bytes: 9e6 },
+    }),
   );
   expect(fetchSpy).toHaveBeenCalledTimes(2);
 });

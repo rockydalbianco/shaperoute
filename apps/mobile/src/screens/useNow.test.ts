@@ -14,9 +14,12 @@ afterEach(() => {
 });
 
 test("turned on, the clock is read again at once: the countdown starts at 3 (TASK-254)", async () => {
-  const { result, rerender } = await renderHook(({ on }) => useNow(on, 100), {
-    initialProps: { on: false },
-  });
+  const { result, rerender } = await renderHook<number, { on: boolean }>(
+    ({ on }) => useNow(on, 100),
+    {
+      initialProps: { on: false },
+    },
+  );
   expect(result.current).toBe(NOW);
   // The screen was open for a while before «Start».
   await act(async () => {

@@ -550,13 +550,24 @@ test("a favorite of before, or of an activity unknown here, opens as a run", () 
 test("an example of «Explore» in pieces keeps its walks (TASK-254)", () => {
   // A dog's head on the water: the eyes apart from the head, the pen up.
   const route = list.routes[0] as RecommendedRoute;
-  const pieces = { ...(detail as RecommendedRouteDetail), activity: "paddling" as const };
-  const dog = exploredKeepable(route, { ...pieces, shape: "dog_head", walks: [[1, 3]] });
+  const pieces = {
+    ...(detail as RecommendedRouteDetail),
+    activity: "paddling" as const,
+  };
+  const dog = exploredKeepable(route, {
+    ...pieces,
+    shape: "dog_head",
+    walks: [[1, 3]],
+  });
   expect(dog.request).toMatchObject({ shape: "dog_head", walks: [[1, 3]] });
   // A star is one line: walks are not its, and the request is the one of before.
   const star = exploredKeepable(route, { ...pieces, walks: [[1, 3]] });
   expect(star.request).not.toHaveProperty("walks");
   // Walks that do not fit the line are not trusted.
-  const broken = exploredKeepable(route, { ...pieces, shape: "dog_head", walks: [[3, 9]] });
+  const broken = exploredKeepable(route, {
+    ...pieces,
+    shape: "dog_head",
+    walks: [[3, 9]],
+  });
   expect(broken.request).not.toHaveProperty("walks");
 });

@@ -1,5 +1,5 @@
 import type { EditKind, ImageOutline, OutlinePoint } from "@shaperoute/shared-types";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { type ImageOutcome, requestImageOutline } from "../api/imageOutlines";
 import { requestOutlineEdit } from "../api/outlineEdits";
@@ -30,7 +30,12 @@ export type ImageState =
   /** `outline` is the one shown: as traced, or edited (TASK-079). `problem`
    * is why another picture could not be chosen after it (TASK-254): the
    * outline and its edits stay. */
-  | { status: "traced"; picture: Picture; outline: ImageOutline; problem?: ImageProblem }
+  | {
+      status: "traced";
+      picture: Picture;
+      outline: ImageOutline;
+      problem?: ImageProblem;
+    }
   /** `picture` is null when none was chosen: the picker failed. */
   | { status: "failed"; picture: Picture | null; problem: ImageProblem };
 
@@ -63,7 +68,9 @@ export function useImageOutline(
   const current = useRef<AbortController | null>(null);
   // The state as it is when the picker answers, whatever `choose` closed over.
   const latest = useRef(state);
-  latest.current = state;
+  useEffect(() => {
+    latest.current = state;
+  }, [state]);
 
   const choose = useCallback(
     (source: ImageSource) => {
@@ -75,7 +82,9 @@ export function useImageOutline(
         if (picked.kind !== "picked" && latest.current.status === "traced") {
           // No picture was taken (TASK-254): the outline traced and its
           // edits stay, and why the choice failed is shown beside them.
-          setState((now) => (now.status === "traced" ? { ...now, problem: picked } : now));
+          setState((now) =>
+            now.status === "traced" ? { ...now, problem: picked } : now,
+          );
           return;
         }
         current.current?.abort();

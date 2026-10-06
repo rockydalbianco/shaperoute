@@ -239,12 +239,15 @@ test("a name typed and searched with Enter is told as typed", async () => {
 });
 
 test("of two cities asked, the last asked wins (TASK-254)", async () => {
-  const london: Place = { label: "London, England, United Kingdom", point: [51.5, -0.12] };
+  const london: Place = {
+    label: "London, England, United Kingdom",
+    point: [51.5, -0.12],
+  };
   const pending = new Map<string, (response: Response) => void>();
   const fetchFn = jest.fn(
-    (url: string) =>
+    (input: RequestInfo | URL) =>
       new Promise<Response>((resolve) => {
-        pending.set(decodeURIComponent(url.split("q=")[1]), resolve);
+        pending.set(decodeURIComponent(String(input).split("q=")[1]), resolve);
       }),
   );
   const onCity = jest.fn();

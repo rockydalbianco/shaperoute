@@ -342,7 +342,10 @@ test("what a newer API sends is read, not refused (TASK-254)", async () => {
   const [first, ...rest] = result.directions;
   const newer = {
     ...jobDone,
-    result: { ...result, directions: [first, { ...rest[0], turn: "roundabout" }, ...rest.slice(1)] },
+    result: {
+      ...result,
+      directions: [first, { ...rest[0], turn: "roundabout" }, ...rest.slice(1)],
+    },
   };
   const statuses: JobStatus[] = [];
   const { fetchFn } = api(
@@ -352,15 +355,24 @@ test("what a newer API sends is read, not refused (TASK-254)", async () => {
   const outcome = await run(fetchFn, (status) => statuses.push(status));
   expect(statuses).toEqual(["computing"]);
   expect(outcome.kind).toBe("route");
-  expect(outcome.kind === "route" && outcome.result.directions[1].turn).toBe("straight");
+  expect(outcome.kind === "route" && outcome.result.directions[1].turn).toBe(
+    "straight",
+  );
   expect(outcome.kind === "route" && outcome.result.directions[0]).toEqual(first);
 
   // An error code it does not know is an error, with the API's words.
   const refused = {
     ...jobFailed,
-    error: { code: "quota_exceeded", message: "Enough routes today.", suggested_distance_m: null },
+    error: {
+      code: "quota_exceeded",
+      message: "Enough routes today.",
+      suggested_distance_m: null,
+    },
   };
-  const failing = api({ status: 202, body: job("queued") }, { status: 200, body: refused });
+  const failing = api(
+    { status: 202, body: job("queued") },
+    { status: 200, body: refused },
+  );
   expect(await run(failing.fetchFn)).toEqual({
     kind: "api_error",
     code: "quota_exceeded",

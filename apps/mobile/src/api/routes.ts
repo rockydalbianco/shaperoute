@@ -185,7 +185,11 @@ function knownStatus(status: string): JobStatus {
  * a new kind of turn must not refuse the whole route.
  */
 export function withKnownTurns(body: unknown): unknown {
-  if (!isRecord(body) || !isRecord(body.result) || !Array.isArray(body.result.directions)) {
+  if (
+    !isRecord(body) ||
+    !isRecord(body.result) ||
+    !Array.isArray(body.result.directions)
+  ) {
     return body;
   }
   const directions = body.result.directions.map((direction: unknown) =>
@@ -292,7 +296,11 @@ export function isDirection(value: unknown): value is Direction {
 /** A code this version of the app does not know is an error all the same
  * (TASK-254): shown as the API's words say it (route/problems.ts, default). */
 function isErrorDetail(value: unknown): value is ApiError["error"] {
-  return isRecord(value) && typeof value.code === "string" && typeof value.message === "string";
+  return (
+    isRecord(value) &&
+    typeof value.code === "string" &&
+    typeof value.message === "string"
+  );
 }
 
 export function isApiError(body: unknown): body is ApiError {

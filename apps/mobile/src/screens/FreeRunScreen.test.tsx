@@ -119,7 +119,7 @@ test("without the location, the banner says how to turn it on and opens the Sett
   await render(<FreeRunBanner state={{ status: "denied" }} />);
   expect(screen.getByText("Location is off")).toBeOnTheScreen();
   expect(
-    screen.getByText("Allow it for Sgrava in Settings to record your track."),
+    screen.getByText("Allow it for MuW in Settings to record your track."),
   ).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Open Settings" }));
   expect(openSettings).toHaveBeenCalledTimes(1);

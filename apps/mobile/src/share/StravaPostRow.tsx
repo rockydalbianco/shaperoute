@@ -101,9 +101,7 @@ export function StravaPostRow({ runKey, caption, onSent }: Props) {
       setKnown({ kind: "known", activity: updating ? was : NOT_SENT });
       setProblem(
         updating && outcome.kind === "api_error" && outcome.code === "invalid_request"
-          ? t(
-              "Strava did not let Sgrava change this activity. Change its text on Strava.",
-            )
+          ? t("Strava did not let MuW change this activity. Change its text on Strava.")
           : stravaProblem(outcome),
       );
     });

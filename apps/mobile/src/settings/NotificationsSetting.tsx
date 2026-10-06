@@ -24,7 +24,7 @@ const SWITCHES: { which: Which; emoji: string; name: string }[] = [
 /**
  * «NOTIFICATIONS» in «Settings» (TASK-185, ADR-0206): «Email notifications»
  * and «Push notifications», each a switch kept in the account, both off
- * until turned on. Sgrava sends nothing yet, and the note under the rows
+ * until turned on. MuW sends nothing yet, and the note under the rows
  * says so: turning «Push notifications» on only keeps the choice, the phone
  * is asked for no permission. A switch shows its new value at once and goes
  * back if the API refuses, with the reason under the rows; while one answer
@@ -87,7 +87,7 @@ export function NotificationsSetting({ user, account }: Props) {
       </View>
       <Text style={styles.note}>
         {t(
-          "Sgrava does not send notifications yet. Your choice is kept for when it does.",
+          "MuW does not send notifications yet. Your choice is kept for when it does.",
         )}
       </Text>
       {problem !== null && <Text style={styles.problem}>{problem}</Text>}

@@ -32,7 +32,7 @@ dell'app nelle cinque lingue. Chiesto dall'utente il 2026-10-06
    `i18n/*`): le sette chiavi inglesi con «Sgrava» e le loro quattro
    traduzioni, con i componenti che le usano (`PaddleNotice`,
    `StravaSetting`, `reactionKinds`, `StravaPostRow`,
-   `NotificationsSetting`, `PhoneSetting`, `LocationOff`) e i test.
+   `NotificationsSetting`, `PhoneSetting`, `LocationOff`, `PublicParts`) e i test.
 5. `docs/UI.md`, `STATUS.md`, `DECISIONS.md` (ADR-0224).
 
 ## Criteri di accettazione
@@ -41,7 +41,7 @@ dell'app nelle cinque lingue. Chiesto dall'utente il 2026-10-06
       stringa dell'app fuori da `i18n/*` e dai componenti del punto 4.
 - [x] L'API scrive «Drawn with MuW» / «Recorded with MuW», le pagine di
       ritorno da Strava dicono «Go back to MuW», il GPX ha `creator="MuW"`.
-- [ ] Le tabelle delle cinque lingue non contengono «Sgrava» (punto 4).
+- [x] Le tabelle delle cinque lingue non contengono «Sgrava» (punto 4).
 - [x] `tsc`, `expo lint`, Prettier, jest sui file toccati, `ruff`,
       `black` e pytest di `test_strava.py` e `test_run_gpx.py` verdi.
 
@@ -80,6 +80,7 @@ apps/mobile/src/settings/NotificationsSetting.tsx · NotificationsSetting.test.t
 apps/mobile/src/settings/PhoneSetting.tsx · PhoneSetting.test.tsx
 apps/mobile/src/profile/SettingsPage.test.tsx
 apps/mobile/src/location/LocationOff.tsx · LocationOff.test.tsx
+apps/mobile/src/social/PublicParts.tsx · PublicRow.test.tsx
 apps/mobile/src/screens/NavigateScreen.test.tsx · FreeRunScreen.test.tsx
 ```
 

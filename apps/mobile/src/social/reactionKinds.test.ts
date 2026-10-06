@@ -17,7 +17,7 @@ const NONE: ReactionsSummary = {
 test("every reaction has a name, and every one but the heart an emoji", () => {
   const names = REACTION_KINDS.map(reactionName);
   expect(names).toEqual([
-    "Sgrava heart, super like",
+    "MuW heart, super like",
     "Fire",
     "Clap",
     "Strong",

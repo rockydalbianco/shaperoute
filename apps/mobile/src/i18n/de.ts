@@ -258,8 +258,8 @@ export const DE: Table = {
   "Wear a life jacket.": "Trag eine Schwimmweste.",
   "Check the weather and the wind before you go out.":
     "Prüf Wetter und Wind, bevor du rausfährst.",
-  "Follow the local rules: swimming areas, boat lanes, harbours. Sgrava does not know them.":
-    "Halte dich an die Regeln vor Ort: Badezonen, Fahrrinnen, Häfen. Sgrava kennt sie nicht.",
+  "Follow the local rules: swimming areas, boat lanes, harbours. MuW does not know them.":
+    "Halte dich an die Regeln vor Ort: Badezonen, Fahrrinnen, Häfen. MuW kennt sie nicht.",
   "The route stays within 1 km of the shore. That does not make it safe or allowed.":
     "Die Route bleibt höchstens 1 km vom Ufer entfernt. Das macht sie weder sicher noch erlaubt.",
   "I understand": "Verstanden",
@@ -318,8 +318,8 @@ export const DE: Table = {
   "PHONE NUMBER": "TELEFONNUMMER",
   Add: "Hinzufügen",
   "Remove number": "Nummer entfernen",
-  "Only you see your number. Friends who already have it will be able to find you on Sgrava.":
-    "Nur du siehst deine Nummer. Freunde, die sie schon haben, können dich auf Sgrava finden.",
+  "Only you see your number. Friends who already have it will be able to find you on MuW.":
+    "Nur du siehst deine Nummer. Freunde, die sie schon haben, können dich auf MuW finden.",
   "Changing the email is not available on this API yet.":
     "Die E-Mail lässt sich auf dieser API noch nicht ändern.",
   "The phone number is not available on this API yet.":
@@ -332,8 +332,8 @@ export const DE: Table = {
   "Another account has this email.": "Ein anderes Konto hat diese E-Mail.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts
-  "Sgrava does not send notifications yet. Your choice is kept for when it does.":
-    "Sgrava verschickt noch keine Benachrichtigungen. Deine Auswahl bleibt gespeichert, bis es so weit ist.",
+  "MuW does not send notifications yet. Your choice is kept for when it does.":
+    "MuW verschickt noch keine Benachrichtigungen. Deine Auswahl bleibt gespeichert, bis es so weit ist.",
   "Notifications are not available on this API yet.":
     "Benachrichtigungen gibt es auf dieser API noch nicht.",
 
@@ -733,8 +733,8 @@ export const DE: Table = {
   "Update on Strava": "Auf Strava aktualisieren",
   "The activity on Strava has this post's text now.":
     "Die Aktivität auf Strava hat jetzt den Text dieses Beitrags.",
-  "Strava did not let Sgrava change this activity. Change its text on Strava.":
-    "Strava hat Sgrava diese Aktivität nicht ändern lassen. Ändere den Text auf Strava.",
+  "Strava did not let MuW change this activity. Change its text on Strava.":
+    "Strava hat MuW diese Aktivität nicht ändern lassen. Ändere den Text auf Strava.",
   "Strava takes no pictures from other apps: keep this one in Photos with «Save Image» and add it there.":
     "Strava nimmt keine Bilder aus anderen Apps: leg dieses mit «Bild sichern» in Fotos ab und füg es dort hinzu.",
 
@@ -786,7 +786,7 @@ export const DE: Table = {
   Send: "Senden",
 
   // src/social/reactionKinds.ts
-  "Sgrava heart, super like": "Sgrava-Herz, Super-Like",
+  "MuW heart, super like": "MuW-Herz, Super-Like",
   Fire: "Feuer",
   Clap: "Applaus",
   Strong: "Stark",
@@ -872,8 +872,8 @@ export const DE: Table = {
   Disconnect: "Trennen",
   "Disconnecting…": "Wird getrennt…",
   "Disconnect Strava": "Strava trennen",
-  "Send the runs you save in Sgrava to your Strava profile.":
-    "Sende die Läufe, die du in Sgrava speicherst, an dein Strava-Profil.",
+  "Send the runs you save in MuW to your Strava profile.":
+    "Sende die Läufe, die du in MuW speicherst, an dein Strava-Profil.",
 
   // src/strava/useStrava.ts
   "Could not open Strava. Try again.":
@@ -947,10 +947,10 @@ export const DE: Table = {
   // src/permissions/OpenSettings.tsx, src/location/LocationOff.tsx (TASK-259)
   "Open Settings": "Einstellungen öffnen",
   "Location is off": "Standort ist aus",
-  "Allow it for Sgrava in Settings to follow the route.":
-    "Erlaube ihn für Sgrava in den Einstellungen, um der Route zu folgen.",
-  "Allow it for Sgrava in Settings to record your track.":
-    "Erlaube ihn für Sgrava in den Einstellungen, um deine Strecke aufzuzeichnen.",
+  "Allow it for MuW in Settings to follow the route.":
+    "Erlaube ihn für MuW in den Einstellungen, um der Route zu folgen.",
+  "Allow it for MuW in Settings to record your track.":
+    "Erlaube ihn für MuW in den Einstellungen, um deine Strecke aufzuzeichnen.",
   // src/activities/RunEnd.tsx, src/social/PublicParts.tsx, PublicRow.tsx,
   // DrawingCard.tsx (TASK-208)
   "This run could not be kept on the phone. Try again.":
@@ -961,8 +961,8 @@ export const DE: Table = {
   "Photo {n}": "Foto {n}",
   "Photos of a run only you can see stay on this phone. Delete the app or change phone and they are gone.":
     "Fotos eines Laufs, den nur du siehst, bleiben auf diesem Telefon. Löschst du die App oder wechselst das Telefon, sind sie weg.",
-  "Its photos leave Sgrava and stay only on this phone.":
-    "Seine Fotos verlassen Sgrava und bleiben nur auf diesem Telefon.",
+  "Its photos leave MuW and stay only on this phone.":
+    "Seine Fotos verlassen MuW und bleiben nur auf diesem Telefon.",
   "Every member sees it in your profile, without the first and last 200 m.":
     "Jedes Mitglied sieht ihn in deinem Profil, ohne die ersten und letzten 200 m.",
   "Your followers see it in your profile, without the first and last 200 m.":

@@ -100,7 +100,7 @@ test("one's own reaction, the three most used and how many, next to the comments
   const summary = screen.getByTestId("reactions-summary");
   expect(summary).toHaveProp("accessibilityLabel", "7 reactions");
   expect(screen.getByText("7")).toBeTruthy();
-  // fire, the Sgrava heart, clap: wow is as used as clap, and comes after.
+  // fire, the MuW heart, clap: wow is as used as clap, and comes after.
   expect(screen.getAllByTestId("mark-fire")).toHaveLength(2);
   // Only a picture to a screen reader, which hears the count.
   expect(
@@ -126,7 +126,7 @@ test("the button opens the bar of the six, one's own marked", async () => {
   expect(screen.queryByRole("button", { name: "Clap" })).toBeNull();
   await openBar("Your reaction: Fire");
   for (const name of [
-    "Sgrava heart, super like",
+    "MuW heart, super like",
     "Fire",
     "Clap",
     "Strong",
@@ -214,7 +214,7 @@ test("the next try forgets the notice of the last", async () => {
 });
 
 describe("the super like", () => {
-  const HEART = "Sgrava heart, super like";
+  const HEART = "MuW heart, super like";
 
   async function write(text: string) {
     await fireEvent.changeText(screen.getByLabelText("Comment"), text);

@@ -120,7 +120,7 @@ test("the notice says the four things, with «I understand» and «Not now»", a
   expect(NOTICE_LINES).toEqual([
     "Wear a life jacket.",
     "Check the weather and the wind before you go out.",
-    "Follow the local rules: swimming areas, boat lanes, harbours. Sgrava does not know them.",
+    "Follow the local rules: swimming areas, boat lanes, harbours. MuW does not know them.",
     "The route stays within 1 km of the shore. That does not make it safe or allowed.",
   ]);
   for (const line of NOTICE_LINES) {

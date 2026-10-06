@@ -11,7 +11,7 @@ test("following a route: what is off, what for, and «Open Settings»", async ()
   await render(<LocationOff use="navigate" />);
   expect(screen.getByText("Location is off")).toBeOnTheScreen();
   expect(
-    screen.getByText("Allow it for Sgrava in Settings to follow the route."),
+    screen.getByText("Allow it for MuW in Settings to follow the route."),
   ).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Open Settings" }));
   expect(openSettings).toHaveBeenCalledTimes(1);
@@ -22,7 +22,7 @@ test("recording without a route: the track", async () => {
   await render(<LocationOff use="record" />);
   expect(screen.getByText("Location is off")).toBeOnTheScreen();
   expect(
-    screen.getByText("Allow it for Sgrava in Settings to record your track."),
+    screen.getByText("Allow it for MuW in Settings to record your track."),
   ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Open Settings" })).toBeOnTheScreen();
 });

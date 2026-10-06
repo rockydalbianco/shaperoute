@@ -95,7 +95,7 @@ export function PhoneSetting({ user, account }: Props) {
             />
             <Text style={styles.note}>
               {t(
-                "Only you see your number. Friends who already have it will be able to find you on Sgrava.",
+                "Only you see your number. Friends who already have it will be able to find you on MuW.",
               )}
             </Text>
             <Pressable

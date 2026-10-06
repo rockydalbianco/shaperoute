@@ -50,9 +50,7 @@ export const ONLY_ME_PHOTOS = tLater(
   "Photos of a run only you can see stay on this phone. Delete the app or change phone and they are gone.",
 );
 /** When a run with photos goes from «Everyone» or «Followers» to «Only me». */
-export const PHOTOS_LEAVE = tLater(
-  "Its photos leave Sgrava and stay only on this phone.",
-);
+export const PHOTOS_LEAVE = tLater("Its photos leave MuW and stay only on this phone.");
 
 /** What a choice does, in words: under the chips once chosen; null for
  * «Only me», which needs none. */

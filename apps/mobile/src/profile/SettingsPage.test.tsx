@@ -95,7 +95,7 @@ test("the notifications are two switches kept in the account, off at first (TASK
   // The page says nothing is sent yet.
   expect(
     screen.getByText(
-      "Sgrava does not send notifications yet. Your choice is kept for when it does.",
+      "MuW does not send notifications yet. Your choice is kept for when it does.",
     ),
   ).toBeOnTheScreen();
   await fireEvent.press(push);

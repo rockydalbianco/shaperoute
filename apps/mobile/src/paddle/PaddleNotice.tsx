@@ -22,7 +22,7 @@ export const NOTICE_LINES = [
   tLater("Wear a life jacket."),
   tLater("Check the weather and the wind before you go out."),
   tLater(
-    "Follow the local rules: swimming areas, boat lanes, harbours. Sgrava does not know them.",
+    "Follow the local rules: swimming areas, boat lanes, harbours. MuW does not know them.",
   ),
   tLater(
     "The route stays within 1 km of the shore. That does not make it safe or allowed.",

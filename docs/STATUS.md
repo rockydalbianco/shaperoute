@@ -154,9 +154,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'utente il 2026-10-06). `name` in `app.json`, i permessi, il titolo
   di «Draw», il post, l'avvio, aiuto/condizioni/privacy, lo stile della
   mappa, e nell'API «Drawn with MuW», le pagine di ritorno da Strava, il
-  `creator` del GPX e il messaggio dei tag. **Mancano**: le sette chiavi
-  di `i18n/*` con il nome, dopo il merge della PR #425 (TASK-208 B);
-  l'aggiornamento del server (ok dell'utente) e la pubblicazione. **Fuori
+  `creator` del GPX e il messaggio dei tag, e le otto chiavi di `i18n/*`
+  con il nome nelle cinque lingue. **Mancano**: l'aggiornamento del
+  server (ok dell'utente) e la pubblicazione. **Fuori
   scope**: logo, segno e icona leggono ancora «SGRAVA» (scelta
   dell'utente), `bundleIdentifier`, `slug`, il sito. `tasks/TASK-260.md`.
 

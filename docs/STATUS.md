@@ -175,11 +175,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Last km» ed «Elev. gain»; i parziali sono ogni 500 m; la voce dice ogni
   km col passo medio ogni 500 metri (cinque lingue); il post di fine
   uscita scrive «5:37 /500 m». Corsa e bici come prima. Caselle guardate in un
-  simulatore, non su un telefono. **Parte B** in PR (#394): `activity`
+  simulatore, non su un telefono. **Parte B** in `main` (PR #394, merge
+  `c99b8c8`, 2026-10-06): `activity`
   nelle risposte di `/me/activities` (campo in più nel contratto, nessuna
   migrazione), e «My activities» e il post da lì scrivono il passo ogni
   500 m per una pagaiata salvata; con un server di prima l'app scrive il
-  passo al km come prima. Poi il server, con l'ok dell'utente.
+  passo al km come prima. **Il server non è aggiornato**: lo fa il
+  coordinatore con l'ok dell'utente, poi la pubblicazione dell'app.
   **Aspettano l'utente**: i testi nuovi, «Elev. gain» tolto sull'acqua, e
   cosa mostra la bici senza percorso (oggi il passo al km). Da dove
   riprendere: `tasks/TASK-251.md`.

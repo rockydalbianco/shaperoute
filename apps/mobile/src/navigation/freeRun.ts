@@ -5,7 +5,7 @@ import { METRES_PER_MILE, metresPer } from "../units/format";
 import { appUnits, type Units } from "../units/units";
 import { wordsOf } from "../voice/words";
 import { activeMs, durationMs, type Track } from "./trackRecorder";
-import { endRun, loadRun, RESUME_WITHIN_MS, type SavedRun } from "./trackStore";
+import { endRecording, loadRun, RESUME_WITHIN_MS, type SavedRun } from "./trackStore";
 
 /**
  * A run without a route (TASK-149, ADR-0122): «Run» on the first screen
@@ -24,17 +24,19 @@ export function isFreeRun(run: SavedRun): boolean {
   return run.route.length === 0;
 }
 
+function withLine(run: SavedRun | null): FreeRun | null {
+  return run !== null && isFreeRun(run) && run.track.fixes.length > 1 ? run : null;
+}
+
 /** The free run left in the file, when it has a line; null otherwise. */
 export function pendingFreeRun(): FreeRun | null {
-  const run = loadRun();
-  return run !== null && isFreeRun(run) && run.track.fixes.length > 1 ? run : null;
+  return withLine(loadRun());
 }
 
 /** Ends the run in progress, writing what there is, and gives back the
  * free run when it has a line to show. */
 export function endFreeRun(): FreeRun | null {
-  endRun();
-  return pendingFreeRun();
+  return withLine(endRecording());
 }
 
 /** Whether «Run» again would go on with `run`'s track (trackStore). */

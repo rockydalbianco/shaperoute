@@ -66,6 +66,7 @@ from shaperoute_api.accounts import (
     now_utc,
 )
 from shaperoute_api.db import Database
+from shaperoute_api.insights import Insights
 from shaperoute_api.places import KEY_VARIABLE, Fetch, fetch_json
 from shaperoute_api.recommended import preview
 from shaperoute_api.schemas import (
@@ -228,6 +229,8 @@ class ActivityBody(BaseModel):
     the app draws the run turned the other way. Null for a run without a
     route, one whose route was north up, and every run saved before. Always
     answered; the default is for the examples written before."""
+    activity: RunActivity
+    """What the run was (TASK-251): the app writes a paddler's pace."""
     route_preview: list[LatLon] | None
     track_preview: list[LatLon]
 
@@ -271,6 +274,8 @@ class ActivityDetailBody(BaseModel):
     fidelity: float | None
     rotation_deg: float | None = None
     """As in the list: the planned route's turn, or null."""
+    activity: RunActivity
+    """What the run was (TASK-251)."""
     similarity: float | None
     """The planned route's."""
     points: list[LatLon] | None
@@ -474,7 +479,8 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
 
 COLUMNS = (
     "id, key, started_at, place, shape, word, style, title, distance_m,"
-    " duration_s, score, fidelity, route_similarity, walks, route_rotation_deg,"
+    " duration_s, score, fidelity, route_similarity, walks, activity,"
+    " route_rotation_deg,"
     " ST_AsGeoJSON(route, 15) AS route,"
     " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
 )
@@ -517,6 +523,7 @@ def _fields(row: DictRow) -> dict[str, Any]:
         # A `real` column: without rounding 0.83 comes back as 0.8299999833.
         "fidelity": None if fidelity is None else round(fidelity, 4),
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
+        "activity": row["activity"],
     }
 
 
@@ -734,6 +741,7 @@ def activity_routes() -> APIRouter:
     def save_activity(
         key: Key,
         body: ActivityRequestBody,
+        request: Request,
         response: Response,
         activities: Annotated[Activities, Depends(activities_of)],
         user: Annotated[UserBody, Depends(current_user)],
@@ -741,6 +749,12 @@ def activity_routes() -> APIRouter:
         activity, created = activities.save(user.id, key, body)
         if created:
             response.status_code = 201
+            if activity.score is not None:
+                # A run along a route, kept: the search led somewhere
+                # (TASK-130). Once, when the run is new, and only how well
+                # it went: nothing of who ran it, nor where.
+                insights: Insights = request.app.state.run_insights
+                insights.record("run_scored", quality=round(activity.score / 100, 3))
         return activity
 
     @router.delete("/me/activities/{key}", status_code=204)
@@ -755,8 +769,14 @@ def activity_routes() -> APIRouter:
     return router
 
 
-def install_activities(app: FastAPI, places: PlaceNames | None = None) -> None:
+def install_activities(
+    app: FastAPI,
+    places: PlaceNames | None = None,
+    insights: Insights | None = None,
+) -> None:
     """The runs of the accounts; after install_accounts, which sets the
-    database and the errors. `places` None: the environment's key."""
+    database and the errors. `places` None: the environment's key.
+    `insights` hears of each new run saved with a score; None: nobody."""
     app.state.run_places = places if places is not None else PlaceNames.from_env()
+    app.state.run_insights = insights if insights is not None else Insights(None)
     app.include_router(activity_routes())

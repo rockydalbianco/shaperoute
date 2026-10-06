@@ -1,6 +1,6 @@
 # TASK-252 — Le code sul telefono non perdono niente
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `fix/TASK-252-phone-queues`
 
 ## Obiettivo
@@ -68,10 +68,11 @@ Dalla revisione del codice dell'app chiesta dall'utente il 2026-10-06
    vuoto o rotto lascia il posto alla copia. Solo con i metodi di `File`
    che i test già imitano (`create`, `write`, `textSync`, `delete`,
    `exists`).
-3. `activitiesDoor.send`: il giro si ferma solo quando non vale la pena
-   continuare (senza rete, API occupata o in errore 5xx, sessione finita:
-   `worthAgain`); una corsa rifiutata in un altro modo resta in coda e il
-   giro passa alla successiva.
+3. `activitiesDoor.send`: il giro si ferma solo quando le corse dopo non
+   andrebbero meglio (senza rete, API che chiede di rallentare, sessione
+   finita); una corsa rifiutata in un altro modo (413, 5xx) resta in coda
+   e il giro passa alla successiva. Due fallimenti dell'API di fila (5xx)
+   fermano il giro: un'API in difficoltà non riceve tutte le corse.
 4. `activitiesDoor`: `send()` anche quando l'app torna in primo piano
    (`AppState`, come `social/followRequests.ts`).
 5. `api/accounts.ts` `ask`: un tempo massimo (`AbortController`), che dà
@@ -130,10 +131,11 @@ apps/mobile/src/social/drawingsDoor.test.tsx        (nuovo)
 apps/mobile/src/api/accounts.ts
 apps/mobile/src/api/accounts.test.ts
 apps/mobile/src/account/useAccount.ts
-apps/mobile/src/account/useAccount.test.ts
+apps/mobile/src/account/deleteAccountQueues.test.ts (nuovo)
 apps/mobile/src/navigation/trackStore.ts
 apps/mobile/src/navigation/trackStore.test.ts
-apps/mobile/src/navigation/freeRun.ts               (solo se `resumable` della corsa libera sta lì)
+apps/mobile/src/navigation/freeRun.ts               (`endFreeRun` dalla memoria)
+docs/tasks/TASK-252.md
 docs/STATUS.md, docs/DECISIONS.md                   (le righe di questo task)
 ```
 
@@ -154,4 +156,15 @@ docs/STATUS.md, docs/DECISIONS.md                   (le righe di questo task)
 
 ## Esito
 
-*(si compila a fine task)*
+Fatto il 2026-10-06 (ADR-0216). Le tre code passano da `storage/keptList`
+(copia accanto al file, letta se il file è vuoto o rotto); «Public» spento
+dopo un acceso in coda non torna acceso; una corsa che l'API rifiuta
+(413, 5xx) non ferma le altre, e due 5xx di fila fermano il giro; la coda
+riparte quando l'app torna in primo piano; le richieste dell'account si
+interrompono dopo 30 s (90 s le PUT); «Delete account» riuscito svuota le
+tre code di quell'account; una corsa con una sola posizione non si
+riprende; «Stop» dà la corsa anche se il telefono ha rifiutato il file.
+Dodici test nuovi falliscono su `main` e passano qui; suite dell'app verde
+(290 file). Niente di visibile cambia. **Rimandato**: la corsa rifiutata
+con `invalid_request` cancellata in silenzio e il limite di venti
+(domanda all'utente), il file della corsa in corso in due tempi.

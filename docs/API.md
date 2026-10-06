@@ -332,6 +332,17 @@ centro dell'area del comune (Milano: Baggio, 6 km dal Duomo). Corpo come
 imparate dal vocabolario (`city_names`, TASK-142) cercano il nome imparato:
 «levic» cerca «Levico Terme», non Levič.
 
+**Il punto è quello del luogo** (TASK-249, ADR-0213): per certi comuni la
+geocodifica dà il confine (`category: administrative`) col punto al centro
+dell'area, a 650 m dal paese per Tenna. Per ogni risultato così l'API
+chiede al Places i luoghi con quel nome dentro il `bbox` e prende il punto
+di quello con la stessa etichetta: lo stesso punto di `/city-suggestions` e
+di `/nearby-cities`. Senza un luogo con quell'etichetta resta il punto
+della geocodifica. Se il Places non risponde la ricerca risponde lo
+stesso, coi punti della geocodifica, e quella risposta non è tenuta: la
+ricerca dopo richiede. Una ricerca nuova costa così una richiesta in più
+per ogni area fra i risultati (meno di 2 s in tutto, misurato).
+
 ### `GET /nearby-cities` (TASK-236, ADR-0200)
 
 I posti intorno a un punto, `?lat=…&lon=…`, al più 6, dal più vicino, da
@@ -340,7 +351,7 @@ città e paesi (`place=city`, `place=town`): quelli entro 20 km, i più
 grandi per abitanti; se sono meno di quattro, i più vicini oltre i 20, fino
 a 50 km. Due sono i più vicini di tutti entro 20 km, anche villaggi
 (`place=village`), che non siano già fra i quattro. Mai il posto in cui si
-è: il più vicino, se ha il centro entro 1,5 km dal punto. Etichetta e punto come `/cities`. Al servizio va il centro
+è: il più vicino, se ha il centro entro 1,5 km dal punto. Etichetta e punto come `/cities`, anche per i villaggi (TASK-249). Al servizio va il centro
 di un quadrato di circa 1 km, e la risposta è tenuta un giorno. I centri
 sono centri di città per gli esempi tenuti (ADR-0136). 503 senza chiave o
 se il servizio non risponde; 422 per un punto fuori dalla Terra.
@@ -1059,7 +1070,9 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   esadecimali dall'orario e dal punto della prima posizione; l'API accetta
   da 8 a 40 fra minuscole e cifre): la stessa corsa mandata due volte è
   salvata una volta, com'era la prima (il secondo `PUT` risponde `200` e
-  non cambia niente, nemmeno se il corpo è diverso).
+  non cambia niente, nemmeno se il corpo è diverso). Il primo `PUT` di una
+  corsa che ha un punteggio registra l'evento `run_scored` degli
+  `insights`, con la sola `quality` (TASK-247, `INSIGHTS.md`).
 - **Il corpo del `PUT`** è la corsa come il telefono l'ha registrata:
   `track`, le posizioni in ordine come per `POST /track-scores` (`point`,
   `time_ms` sull'orologio del telefono, `accuracy_m`), da 2 a 20 000;
@@ -1100,7 +1113,9 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   restano in memoria: due corse dallo stesso chilometro chiedono una volta.
 - **Una corsa dell'elenco** ha `id` (la chiave), `started_at`, `place`,
   `shape`, `word`, `style`, `title`, `distance_m`, `duration_s`, `score`,
-  `fidelity`, e due anteprime leggere, al più 64 punti l'una:
+  `fidelity`, `activity` (`running`, `cycling` o `paddling`, com'è stata
+  salvata; dal TASK-251: sull'acqua l'app scrive il passo ogni 500 m) e
+  due anteprime leggere, al più 64 punti l'una:
   `route_preview` (`null` senza percorso) e `track_preview`. Quella intera
   ha al loro posto `points` (o `null`), `track` (la traccia pulita, come
   `[lat, lon]`) e `similarity`, e in più `walks` (sotto) e `pauses`.

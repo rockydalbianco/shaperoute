@@ -22,10 +22,13 @@ import {
 } from "../api/contact";
 import { changeNotifications as notificationsRequest } from "../api/notifications";
 import { editProfile as editRequest } from "../api/profiles";
+import { forgetOutboxOf } from "../activities/outbox";
 import { t } from "../i18n";
 import { profileProblem } from "../profile/profileFields";
 import { contactProblem } from "../settings/contactFields";
 import { notificationsProblem } from "../settings/notificationFields";
+import { forgetDrawingsOf } from "../social/drawingOutbox";
+import { forgetStravaOf } from "../strava/stravaOutbox";
 import {
   type Checked,
   checkSignIn,
@@ -234,7 +237,7 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
       setProblem(t(NO_API));
       return;
     }
-    const { token } = now.session;
+    const { token, user } = now.session;
     busyNow.current = "delete";
     setBusy("delete");
     setProblem(null);
@@ -242,6 +245,12 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     busyNow.current = null;
     setBusy(null);
     if (outcome.kind === "ok") {
+      // What waited on this phone for the account goes with it (TASK-252):
+      // its runs not sent yet, and what was to follow them to Strava and to
+      // «Public». Nobody will sign in to send them.
+      forgetOutboxOf(user.id);
+      forgetStravaOf(user.id);
+      forgetDrawingsOf(user.id);
       await forgetSession();
       put({ status: "signedOut", notice: "deleted" });
     } else if (sessionEnded(outcome)) {

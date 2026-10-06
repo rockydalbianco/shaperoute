@@ -1,6 +1,7 @@
 import { favoriteTitle } from "../favorites/favoriteRoute";
 import { t, tLater } from "../i18n";
 import { clockLabel } from "../navigation/freeRun";
+import { paddlePaceLabel } from "../navigation/paddle";
 import { paceLabel, runDistanceLabel } from "../units/format";
 
 /**
@@ -80,13 +81,22 @@ export function whereAndWhat(
 
 /** "4.01 km · 19:00 · 4:44 /km": distance, time and average pace, in the
  * app's units (TASK-182: "2.49 mi · 19:00 · 7:37 /mi"); no pace for a run
- * too short to have one. */
-export function runFacts(run: { distance_m: number; duration_s: number }): string {
+ * too short to have one. On the water the pace is a paddler's, "5:37
+ * /500 m" (TASK-251); an API before it says no sport, and the pace is a
+ * run's. */
+export function runFacts(run: {
+  distance_m: number;
+  duration_s: number;
+  /** As the API writes it: "paddling" is an outing on the water. */
+  activity?: string;
+}): string {
   const ms = run.duration_s * 1000;
   return [
     runDistanceLabel(run.distance_m),
     clockLabel(ms),
-    paceLabel(run.distance_m, ms),
+    run.activity === "paddling"
+      ? paddlePaceLabel(run.distance_m, ms)
+      : paceLabel(run.distance_m, ms),
   ]
     .filter((part): part is string => part !== null)
     .join(" · ");

@@ -744,6 +744,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sull'iPhone lo scorrimento e il «←». Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
   aggiorna anche «Privacy».
 
+- **App e API** — TASK-250: il Lago di Ledro nell'elenco di «Paddle»
+  (ADR-0214; chiesto dall'utente il 2026-10-06, seguito di TASK-233). In
+  OpenStreetMap Ledro è `water=pond` dal 2023, e su uno stagno il motore
+  non pagaia: ora uno stagno con un nome da lago è un lago dell'elenco, e
+  `lake_catalog --ponds` lo scrive come lago nei file d'acqua; **il motore
+  non cambia**. `lakes.json` ha due punti di Ledro a 2 km, con tutte e otto
+  le forme. I sette laghi scartati restano fuori: sei non hanno una via
+  alla riva nei dati, Gannano tiene a 1 km solo la stella (tabella in
+  `tasks/TASK-250.md`). **L'acqua è sul server dal 2026-10-06** (Ledro
+  nuovo, Garda riscritto, il vecchio in `before-task250/`; senza riavvio):
+  un cuore da 2 km da Ledro e uno da Riva rispondono 200 dentro l'API. Esce
+  con la pubblicazione del coordinatore. **Aspettano l'utente**: se
+  riportare Ledro a `water=lake` in OpenStreetMap; se togliere i cinque
+  laghi segnati `boat=no` o `access=private`.
+
 - **App** — TASK-245 parte B: in «Another place» con «Paddle», una parola
   comune scritta sceglie fra i nomi trovati (ADR-0210, aggiornamento;
   seguito del task, fatto dopo il «continua» dell'utente del 2026-10-05).

@@ -148,24 +148,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-248 — Il job `api` della CI che resta appeso** (ADR-0212;
-  assegnato dal coordinatore il 2026-10-06). **Causa trovata**: non un
-  test lento ma `multiprocessing.Pool.terminate()` in `plan_nearby`
-  (`route_engine/nearby_starts.py`), che aspetta per sempre se arriva
-  mentre un grafo sta per essere mandato a un processo delle partenze
-  vicine; in CI succede in `test_cycling.py`, dove il motore rifiuta
-  subito. **Parte A in `main`** (PR #385, merge `cdb50bb`, niente
-  motore): ogni job di `ci.yml` ha un tempo massimo e un test fermo da
-  due minuti stampa gli stack (`faulthandler_timeout`, nessuna dipendenza
-  nuova). **Parte B in PR** (motore, ADR-0212 aggiornamento): le
-  partenze vicine senza `Pool` (un processo e una pipe ciascuna, fermarli
-  ritorna sempre), 12 test nuovi, percorsi identici (impronte fissate e
-  7 casi su 7 con i processi), tempi uguali, `engine.zip` rifatto;
-  l'impronta del motore cambia, quindi al prossimo aggiornamento del
-  server serve `draw_examples` (~40 minuti). Sul server lo stesso
-  blocco può prendere un thread dei job dopo un `engine_error`: non
-  verificato, lo guarda il coordinatore. Da dove riprendere:
-  `tasks/TASK-248.md`, «Esito».
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
   **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06),
@@ -570,6 +552,24 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **CI e motore** — TASK-248: il job `api` della CI che restava appeso
+  (ADR-0212 e aggiornamento; assegnato dal coordinatore il 2026-10-06;
+  PR #385, merge `cdb50bb`, e PR #392, merge `11eeac7`). **La causa**:
+  non un test lento ma `multiprocessing.Pool.terminate()` in
+  `plan_nearby` (`route_engine/nearby_starts.py`), che aspetta per
+  sempre se arriva mentre un grafo sta per essere mandato a un processo
+  delle partenze vicine; in CI in `test_cycling.py`, dove il motore
+  rifiuta subito; sul server solo dopo un `engine_error` inatteso (non
+  verificato: lo guarda il coordinatore). **Parte A**: ogni job di
+  `ci.yml` ha un tempo massimo e un test fermo da due minuti stampa gli
+  stack (`faulthandler_timeout`, nessuna dipendenza nuova). **Parte B**:
+  le partenze vicine senza `Pool` (un processo e una pipe ciascuna,
+  fermarli ritorna sempre), 12 test nuovi, percorsi identici (impronte
+  fissate e 7 casi su 7 con i processi), tempi uguali, `engine.zip`
+  rifatto. **Per il server**: l'impronta del motore cambia, i percorsi
+  no → al prossimo aggiornamento serve `draw_examples` (~40 minuti); la
+  pubblicazione con `engine.zip` nuovo è del coordinatore. Come si
+  riconosce il blocco sul server: `tasks/TASK-248.md`, «Esito».
 - **App** — TASK-252: le code sul telefono non perdono niente (ADR-0216;
   dalla revisione del codice dell'app chiesta dall'utente il 2026-10-06,
   elenco in `out/revisione-app-2026-10-06.md` sul Mac, fuori dal

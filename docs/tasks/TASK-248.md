@@ -1,7 +1,10 @@
 # TASK-248 — Il job `api` della CI che resta appeso
 
-**Stato**: In lavorazione (2026-10-06) — parte A in `main` (PR #385,
-merge `cdb50bb`); parte B in PR
+**Stato**: Done (2026-10-06) — parte A PR #385 (merge `cdb50bb`), parte
+B PR #392 (merge `11eeac7`): la CI ha un tempo massimo e dice dove si
+ferma, e la causa è tolta dal motore. Restano al coordinatore il server
+(`draw_examples` dopo l'aggiornamento) e la pubblicazione con
+`engine.zip` nuovo
 **Fase**: 4 · **Branch**: `fix/TASK-248-api-ci-hang` (parte A),
 `fix/TASK-248-b-no-pool` (parte B)
 **Dipende da**: niente
@@ -202,3 +205,17 @@ percorsi no: al prossimo aggiornamento gli esempi tenuti scadono e serve
 `draw_examples` (~40 minuti); l'app non ha bisogno di una pubblicazione
 per questo (il telefono usa `processes=False`), ma `engine.zip` esce con
 la prossima.
+
+### 2026-10-06, chiuso
+
+PR **#392** mergiata in `main` (`11eeac7`) al turno dato dal
+coordinatore («aggiornati 392»), riallineata sulla #388 (conflitto solo
+in `DECISIONS.md`, tenute tutte le voci), CI 5/5 verde e CLEAN; in
+locale, dopo il riallineamento, motore 1569 test verdi, `tools/` 56,
+l'API che passa da `plan_nearby` 80.
+
+**Seguiti** (del coordinatore): l'aggiornamento del server con
+`draw_examples` dopo, con l'ok dell'utente; la pubblicazione dell'app
+con `engine.zip` nuovo; il controllo in sola lettura sul server di un
+thread fermo in `write` (sopra, «Come si riconosce sul server»), dopo
+`draw_examples`.

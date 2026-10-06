@@ -3,7 +3,7 @@ import result from "@shaperoute/shared-types/fixtures/route-result.json";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import * as Brightness from "expo-brightness";
 import { activateKeepAwakeAsync } from "expo-keep-awake";
-import { Alert, type AlertButton } from "react-native";
+import { Alert, type AlertButton, Linking } from "react-native";
 
 import { type Navigation, remainingM, startNavigation } from "../navigation/navigator";
 import { distanceLabel } from "../navigation/phrases";
@@ -36,11 +36,16 @@ function beforeFootway(footway: Direction): Navigation {
   return { ...navigation, next: 2, saidUpTo: 2, alongM: 1900 };
 }
 
-test("without the location, the banner says how to turn it on, by the app's name", async () => {
+test("without the location, the banner says how to turn it on and opens the Settings", async () => {
+  const openSettings = jest.spyOn(Linking, "openSettings").mockResolvedValue();
   await render(<NavigationBanner state={{ status: "denied" }} />);
+  expect(screen.getByText("Location is off")).toBeOnTheScreen();
   expect(
-    screen.getByText("Location is off for Sgrava: allow it in Settings to navigate."),
+    screen.getByText("Allow it for Sgrava in Settings to follow the route."),
   ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Open Settings" }));
+  expect(openSettings).toHaveBeenCalledTimes(1);
+  openSettings.mockRestore();
 });
 
 test("the banner says the street beside an unnamed road", async () => {

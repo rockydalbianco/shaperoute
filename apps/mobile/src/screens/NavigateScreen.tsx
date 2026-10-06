@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { type Navigation, remainingM, upcoming } from "../navigation/navigator";
 import { t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
+import { LocationOff } from "../location/LocationOff";
 import { ARROWS, distanceLabel } from "../navigation/phrases";
 import { wordsOf } from "../voice/words";
 import { compassPoint, headingDeg, share } from "../navigation/runStats";
@@ -38,9 +39,7 @@ export function NavigationBanner({ state }: { state: NavigationState }) {
   if (state.status === "denied") {
     return (
       <View style={styles.banner}>
-        <Text style={styles.message}>
-          Location is off for Sgrava: allow it in Settings to navigate.
-        </Text>
+        <LocationOff use="navigate" />
       </View>
     );
   }

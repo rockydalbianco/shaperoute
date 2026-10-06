@@ -18,6 +18,10 @@ export const ANNOUNCE_M = 50;
 export const PASS_M = 10;
 /** The end of the route is reached this close to it. */
 export const ARRIVE_M = 25;
+/** And only after this many fixes in a row there, none of them poor
+ * (TASK-253): arriving ends the recording for good, so one stray fix on
+ * the end of a route that passes near its own end must not do it. */
+export const ARRIVE_FIXES = 2;
 /**
  * Off the route is said only after this many fixes in a row beyond
  * OFF_ROUTE_M, lasting OFF_SECONDS (TASK-074, ADR-0070): a GPS in a town
@@ -56,6 +60,8 @@ export type Navigation = {
   offStreak: OffStreak | null;
   /** Fixes on the route in a row while off it. */
   backFixes: number;
+  /** Fixes in a row at the end of the route; absent before TASK-253. */
+  endFixes?: number;
   arrived: boolean;
   /** How far ahead a turn is said: ANNOUNCE_M when absent, further on a
    * bike (TASK-216, `ride.ts`). */
@@ -156,9 +162,16 @@ export function onFix(
   while (next < directions.length && directions[next].distance_m + PASS_M <= alongM) {
     next += 1;
   }
-  let saidUpTo = Math.max(navigation.saidUpTo, next - 1);
   const total = navigation.along[navigation.along.length - 1] ?? 0;
-  if (next >= directions.length && total - alongM <= ARRIVE_M) {
+  const atEnd = total - alongM <= ARRIVE_M;
+  // A direction within ARRIVE_M of the end cannot be passed by PASS_M
+  // before the route ends: at the end, it is behind (TASK-253).
+  if (atEnd) {
+    next = directions.length;
+  }
+  let saidUpTo = Math.max(navigation.saidUpTo, next - 1);
+  const endFixes = atEnd && !poor ? (navigation.endFixes ?? 0) + 1 : 0;
+  if (endFixes >= ARRIVE_FIXES) {
     cues.push({ say: words.arrived, vibrate: true });
     return {
       navigation: {
@@ -169,6 +182,7 @@ export function onFix(
         offRoute: false,
         offStreak: null,
         backFixes: 0,
+        endFixes,
         arrived: true,
       },
       cues,
@@ -193,6 +207,7 @@ export function onFix(
       offRoute: false,
       offStreak,
       backFixes: 0,
+      endFixes,
     },
     cues,
   };

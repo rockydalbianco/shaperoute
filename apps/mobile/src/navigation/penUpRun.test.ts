@@ -183,14 +183,14 @@ test("the run's metres and time leave the walks out", async () => {
   if (state.status !== "following") {
     throw new Error(`not following: ${state.status}`);
   }
-  // Arrived 25 m from the end: the letters, 300 + 300 + 280 m, and the
-  // PEN_DOWN_M before each of the two letters that follow a walk; none of
-  // the 2 × 200 m walked.
+  // Arrived at the end, on the second fix within ARRIVE_M of it (TASK-253):
+  // the letters, 300 + 300 + 300 m, and the PEN_DOWN_M before each of the
+  // two letters that follow a walk; none of the 2 × 200 m walked.
   expect(state.navigation.arrived).toBe(true);
-  expect(state.track.distanceM).toBeCloseTo(300 + 300 + 280 + 2 * PEN_DOWN_M, 0);
+  expect(state.track.distanceM).toBeCloseTo(300 + 300 + 300 + 2 * PEN_DOWN_M, 0);
   // From the first fix to the last, less the two walks.
   const walked = 2 * (msAt(500 - PEN_DOWN_M) - msAt(300));
-  expect(durationMs(state.track)).toBe(msAt(1280) - walked);
+  expect(durationMs(state.track)).toBe(msAt(1300) - walked);
   await unmount();
 });
 
@@ -250,7 +250,7 @@ test("a route without walks runs as before: no pause, nothing said of a pen", as
     throw new Error(`not following: ${state.status}`);
   }
   expect(state.track.pauses).toBeUndefined();
-  expect(state.track.distanceM).toBeCloseTo(1280, 0);
+  expect(state.track.distanceM).toBeCloseTo(1300, 0);
   expect(said().filter((words) => /Letter done|Pen down/.test(words))).toEqual([]);
   await unmount();
   expect(loadRun()?.walks).toBeUndefined();

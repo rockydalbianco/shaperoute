@@ -550,6 +550,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-253: la navigazione non salta avanti e riprende dove era
+  (ADR-0217; dalla revisione del codice dell'app del 2026-10-06). Dove il
+  percorso ripassa dallo stesso punto entro 300 m la posizione resta sul
+  passaggio vicino (andare avanti costa un quarto di metro al metro);
+  «You have arrived» alla seconda posizione di fila entro 25 m; dopo
+  «Stop» e «Keep running», o l'app chiusa a metà corsa, il navigatore
+  riparte da dove la traccia era arrivata (svolte, penna, bici a piedi);
+  un rifiuto della posizione porta a «denied». Solo app, niente testi
+  nuovi. **Rimandato all'utente**: rientrare più avanti dopo aver saltato
+  un pezzo. `tasks/TASK-253.md`.
+
+
 - **CI e motore** — TASK-248: il job `api` della CI che restava appeso
   (ADR-0212 e aggiornamento; assegnato dal coordinatore il 2026-10-06;
   PR #385, merge `cdb50bb`, e PR #392, merge `11eeac7`). **La causa**:

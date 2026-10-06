@@ -115,23 +115,26 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-06**. **Server**: su `main` `d7b490f` dalle
-  ~11:25Z (ok dell'utente «ok server, merge 412», eseguito dal
-  coordinatore), con le migrazioni `0001`–`0019` (`0019_run_posts`: il
+- **Server e app, al 2026-10-06**. **Server**: su `main` `873de53` dalle
+  ~20:00Z (ok dell'utente «ok server», eseguito dal coordinatore; «MuW»
+  nei testi di Strava, nel creatore del GPX e nel messaggio dei tag,
+  TASK-260 A), con le migrazioni `0001`–`0019` (`0019_run_posts`: il
   post della corsa sul server, TASK-258; `0018_route_rotation`: la
   rotazione nelle corse salvate e nei preferiti), il punto del luogo in `/cities` (TASK-249: Tenna
   [46.015703, 11.264283]), `run_scored` al salvataggio (TASK-247), le
   partenze vicine senza `Pool` (TASK-248 B), `activity` in
   `/me/activities` (TASK-251 B), `rotation_deg` nel catalogo e negli
   esempi della canoa (TASK-232 C); fermo circa 10 secondi; immagine di
-  prima `shaperoute-api:before-task258`, copia del database
-  `shaperoute-2026-10-06T1124Z.dump`; `draw_examples` del mattino finito («70 of 72»:
+  prima `shaperoute-api:before-task260`, copia del database
+  `shaperoute-2026-10-06T1957Z.dump`; `draw_examples` del mattino finito («70 of 72»:
   a Tenna il cuore e a Calceranica il cerchio non si disegnano). Zone del
   telefono: 528 file. Acqua della canoa: 248 file (Ledro dal 2026-10-06,
   TASK-250; l'elenco dei laghi vive nell'app, `lake_catalog.py` è un
   comando offline: il server non ha bisogno di altro). **App** su `preview` da `main`
-  `4a8e23f` (gruppo `65620103`, 2026-10-06 ~14:50Z): tutto `main`, fino
-  a «Draw» ed «Explore» in italiano (TASK-210 C, D), a «Location is off»
+  `873de53` (gruppo `9585ffac`, 2026-10-06 ~19:57Z): tutto `main`, fino
+  al nome e alla scritta «MuW» (TASK-260; icona e splash con una build
+  nativa), alla fine corsa stile Strava (TASK-208 B), a «Draw» ed
+  «Explore» in italiano (TASK-210 C, D), a «Location is off»
   in corsa (TASK-259 B), alla corsa in italiano (TASK-210 B), al post che
   resta sul server
   (TASK-258), a «Open Settings» e «Retry» (TASK-259 A), agli errori che

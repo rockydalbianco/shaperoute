@@ -147,6 +147,9 @@ export function exploredKeepable(
       distance_m: detail.distance_m,
       route_m: Math.round(detail.route_m),
       points: detail.points,
+      // An example in pieces keeps its walks (TASK-254): a dog's head on
+      // the water opened again has its eyes apart, and Start pauses there.
+      ...penUp({ word: detail.word, shape: detail.shape }, detail.points, detail.walks),
       ...drawnFor(detail.activity ?? "running"),
       ...turnOf(detail),
     },

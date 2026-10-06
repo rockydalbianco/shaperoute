@@ -53,8 +53,12 @@ export function useNow(on: boolean, everyMs: number): number {
     if (!on) {
       return;
     }
-    // Stale for at most a tick: the clock never goes below 0:00.
-    const timer = setInterval(() => setNow(Date.now()), everyMs);
+    // Read the moment it is turned on (TASK-254): the clock read at the
+    // mount is as old as the screen, and the countdown would start from it.
+    const tick = () => setNow(Date.now());
+    tick();
+    // Then stale for at most a tick: the clock never goes below 0:00.
+    const timer = setInterval(tick, everyMs);
     return () => clearInterval(timer);
   }, [on, everyMs]);
   return now;

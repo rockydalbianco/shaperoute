@@ -1,5 +1,4 @@
 import {
-  API_ERROR_CODES,
   type ApiError,
   type ApiErrorCode,
   type Direction,
@@ -9,7 +8,6 @@ import {
   type RouteJob,
   type RouteRequest,
   type RouteResult,
-  SHAPES,
   TURNS,
 } from "@shaperoute/shared-types";
 
@@ -29,7 +27,8 @@ export const QUICK_POLLS: readonly (readonly [untilMs: number, everyMs: number])
 ];
 /** When the app stops waiting: the worst case seen was about 165 s. */
 export const MAX_WAIT_MS = 5 * 60_000;
-/** Network errors in a row while waiting before the API counts as gone. */
+/** Failures in a row while waiting before the API counts as gone: network
+ * errors, and 5xx answers that are not the API's (TASK-254: a proxy's). */
 export const MAX_POLL_FAILURES = 3;
 
 /** How long to wait before asking again, `waitedMs` after the request. */
@@ -133,7 +132,7 @@ export async function requestRoute(
     if (job.status === "failed" && job.error) {
       return { kind: "api_error", ...job.error };
     }
-    onStatus?.(job.status);
+    onStatus?.(knownStatus(job.status));
     if (Date.now() >= deadline) {
       forget();
       return { kind: "timeout" };
@@ -152,15 +151,55 @@ export async function requestRoute(
       }
       continue;
     }
-    failures = 0;
     if (answer.status === 404) {
       return { kind: "lost" };
     }
     if (!isRouteJob(answer.body)) {
+      // A 5xx that is not the API's own error (a proxy's, TASK-254): one
+      // failure, as a network error is; the job may well be fine.
+      if (answer.status >= 500 && !isApiError(answer.body)) {
+        failures += 1;
+        if (failures >= MAX_POLL_FAILURES) {
+          return { kind: "bad_answer", status: answer.status };
+        }
+        continue;
+      }
       return problemOf(answer);
     }
+    failures = 0;
     job = answer.body;
   }
+}
+
+/** A status this version of the app knows, for `onStatus`: a new one of a
+ * newer API is work in progress, as "computing" is (TASK-254). */
+function knownStatus(status: string): JobStatus {
+  return (JOB_STATUSES as readonly string[]).includes(status)
+    ? (status as JobStatus)
+    : "computing";
+}
+
+/**
+ * The answer with the turns this version of the app has no words for read
+ * as "straight" (TASK-254): the server and the app are published apart, and
+ * a new kind of turn must not refuse the whole route.
+ */
+export function withKnownTurns(body: unknown): unknown {
+  if (
+    !isRecord(body) ||
+    !isRecord(body.result) ||
+    !Array.isArray(body.result.directions)
+  ) {
+    return body;
+  }
+  const directions = body.result.directions.map((direction: unknown) =>
+    isRecord(direction) &&
+    typeof direction.turn === "string" &&
+    !(TURNS as readonly string[]).includes(direction.turn)
+      ? { ...direction, turn: "straight" }
+      : direction,
+  );
+  return { ...body, result: { ...body.result, directions } };
 }
 
 async function call(
@@ -170,7 +209,7 @@ async function call(
 ): Promise<Answer> {
   const response = await fetchFn(url, init);
   const body: unknown = await response.json().catch(() => undefined);
-  return { status: response.status, ok: response.ok, body };
+  return { status: response.status, ok: response.ok, body: withKnownTurns(body) };
 }
 
 function problemOf(answer: Answer): RouteOutcome {
@@ -220,9 +259,11 @@ export function isRouteResult(body: unknown): body is RouteResult {
     body.points.every(isPoint) &&
     typeof body.distance_m === "number" &&
     typeof body.similarity === "number" &&
-    // A shape of the catalogue, or a word (TASK-056), never both; both null
-    // for an image (TASK-073), which only an API that knows words sends.
-    ((SHAPES as readonly unknown[]).includes(body.shape)
+    // A shape, or a word (TASK-056), never both; both null for an image
+    // (TASK-073), which only an API that knows words sends. A shape this
+    // version of the app does not know is one all the same (TASK-254): a
+    // newer server draws it, and shapeName has a name for it.
+    (typeof body.shape === "string"
       ? body.word === undefined || body.word === null
       : body.shape === null && (typeof body.word === "string" || body.word === null)) &&
     Array.isArray(body.warnings) &&
@@ -252,10 +293,12 @@ export function isDirection(value: unknown): value is Direction {
   );
 }
 
+/** A code this version of the app does not know is an error all the same
+ * (TASK-254): shown as the API's words say it (route/problems.ts, default). */
 function isErrorDetail(value: unknown): value is ApiError["error"] {
   return (
     isRecord(value) &&
-    (API_ERROR_CODES as readonly unknown[]).includes(value.code) &&
+    typeof value.code === "string" &&
     typeof value.message === "string"
   );
 }
@@ -268,7 +311,8 @@ export function isRouteJob(body: unknown): body is RouteJob {
   return (
     isRecord(body) &&
     typeof body.job_id === "string" &&
-    (JOB_STATUSES as readonly unknown[]).includes(body.status) &&
+    // A status of a newer API is work in progress (TASK-254, knownStatus).
+    typeof body.status === "string" &&
     (body.result === null || isRouteResult(body.result)) &&
     (body.error === null || isErrorDetail(body.error))
   );

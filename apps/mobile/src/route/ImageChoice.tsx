@@ -14,7 +14,7 @@ import { ImagePreview } from "./ImagePreview";
 import { OutlineBoard } from "./OutlineBoard";
 import type { ImageSource } from "./pickImage";
 import { imageProblemText } from "./problems";
-import type { ImageState } from "./useImageOutline";
+import type { ImageProblem, ImageState } from "./useImageOutline";
 
 /**
  * A picture instead of a shape or a word (TASK-073): choose one or take a
@@ -115,6 +115,11 @@ function ImageNote({ state }: { state: ImageState }) {
     case "tracing":
       return <Text style={styles.note}>Tracing the outline…</Text>;
     case "traced":
+      // Another picture could not be chosen (TASK-254): why, in the place
+      // of the note; the outline and its edits stay below.
+      if (state.problem) {
+        return <ProblemNote problem={state.problem} />;
+      }
       return (
         <Text style={styles.note}>
           The yellow line is what the route will draw. If it does not look like the
@@ -123,16 +128,19 @@ function ImageNote({ state }: { state: ImageState }) {
           back.
         </Text>
       );
-    case "failed": {
-      const { text, detail } = imageProblemText(state.problem);
-      return (
-        <View style={styles.problemBox}>
-          <Text style={styles.problem}>{text}</Text>
-          {detail && <Text style={styles.detail}>{detail}</Text>}
-        </View>
-      );
-    }
+    case "failed":
+      return <ProblemNote problem={state.problem} />;
   }
+}
+
+function ProblemNote({ problem }: { problem: ImageProblem }) {
+  const { text, detail } = imageProblemText(problem);
+  return (
+    <View style={styles.problemBox}>
+      <Text style={styles.problem}>{text}</Text>
+      {detail && <Text style={styles.detail}>{detail}</Text>}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

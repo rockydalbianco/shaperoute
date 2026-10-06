@@ -87,6 +87,8 @@ export function PeopleSearch({ apiUrl, account, onPick, fetchFn, apiKey }: Props
           return;
         }
         setFound({ status: "failed", problem: searchProblem(outcome) });
+        // The same name can be asked again (TASK-254): nothing was found for it.
+        askedQuery.current = "";
         if (sessionEnded(outcome)) {
           onSessionEnded(token);
         }

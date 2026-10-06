@@ -583,6 +583,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-254: le correzioni piccole della revisione (ADR-0218;
+  dalla revisione del codice dell'app del 2026-10-06, «sì» dell'utente).
+  Dodici difetti piccoli, ognuno con il suo test, solo app, niente da
+  vedere di nuovo: il preferito di un esempio a pezzi tiene la penna
+  alzata; una foto negata non azzera il contorno e i ritocchi e dice
+  perché; una ricerca di membri fallita si ripete; due richieste di
+  «Follow» in corso tengono spenti i bottoni di tutte e due; un 5xx di un
+  proxy durante l'attesa del percorso è perdonato come un errore di rete
+  (tre di fila no); forma, svolta, stato o codice d'errore nuovi di un
+  server più nuovo non rifiutano la risposta; la posizione va a Photon e a
+  `/nearby-cities` con due decimali (circa 1 km; «km away» e l'ordine dei
+  paesi li misura il telefono dal punto preciso), a `/phone-zones` intera
+  (il server sceglie la zona con 3 km di margine attorno al punto); il
+  disegno di una corsa lunga da condividere non sparisce; di due città
+  chieste in «Explore» resta l'ultima; un controllo fallito non chiude il
+  percorso a tema; il conto alla rovescia parte da 3. PR #407, merge il
+  2026-10-06; la pubblicazione è del coordinatore. `tasks/TASK-254.md`.
 - **App** — TASK-255: la corsa tiene lo schermo acceso (ADR-0219; scelte
   dell'utente del 2026-10-06 dalla revisione). Schermo acceso per tutta la
   corsa, con o senza percorso, non solo in modalità tasca; l'app che va in

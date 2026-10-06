@@ -30,7 +30,10 @@ export async function readPosition(): Promise<PositionState> {
 
 /**
  * The position of the phone, read when the screen opens and again on
- * `refresh`. It never leaves the phone.
+ * `refresh`. It leaves the phone only for what is asked from it: whole to
+ * the API as the start of a route and for the zone of the engine on the
+ * phone, rounded to about a kilometre for the places and the towns around
+ * (TASK-254, places/photon.ts).
  */
 export function useCurrentPosition(): {
   position: PositionState;

@@ -37,6 +37,12 @@ sul Mac, voci sugli errori). Assegnato dal coordinatore il 2026-10-06.
 
 ## Cosa fare
 
+Diviso in due parti con l'ok del coordinatore (2026-10-06):
+`feat/TASK-210-run-screens` modifica `NavigateScreen.tsx` e
+`FreeRunScreen.tsx`, che restano fuori dalla parte A.
+
+### Parte A — PR #413
+
 1. Un bottone «Open Settings» nuovo e riusabile
    (`src/permissions/OpenSettings.tsx`, `Linking.openSettings()`, già in
    React Native: nessuna dipendenza).
@@ -45,13 +51,18 @@ sul Mac, voci sugli errori). Assegnato dal coordinatore il 2026-10-06.
    loaded. Check the network.»), senza il motivo tecnico, e «Retry» quando
    la schermata lo offre. In «Draw» «Retry» monta di nuovo la mappa
    (`key` in `App.tsx`) e toglie la riga; se non carica ancora, torna.
-4. Un avviso «Location is off» con «Open Settings»
-   (`src/permissions/LocationOff.tsx`) per le due schermate della corsa,
-   **collegato a `NavigateScreen` e `FreeRunScreen` solo dopo il merge di
-   TASK-210 parte «corsa»** (`feat/TASK-210-run-screens` modifica quei due
-   file): parte B di questo task.
-5. Testi nuovi nelle cinque lingue (`i18n/*`, solo righe nuove), mostrati
-   all'utente prima del merge.
+4. L'avviso «Location is off» con «Open Settings» in un file nuovo,
+   `src/location/LocationOff.tsx`, con i suoi test, **non ancora usato**
+   dalle schermate.
+5. Testi nuovi nelle cinque lingue (`i18n/*`, solo righe nuove in fondo),
+   mostrati all'utente prima del merge.
+
+### Parte B — dopo il merge di TASK-210 «corsa»
+
+Quando il coordinatore lo dice: in `NavigateScreen` e `FreeRunScreen`
+il testo «Location is off for Sgrava: allow it in Settings to …» diventa
+`<LocationOff use="navigate" />` e `<LocationOff use="record" />`, con i
+test delle due schermate aggiornati. Branch nuovo da `main`.
 
 ## Criteri di accettazione
 
@@ -62,7 +73,7 @@ sul Mac, voci sugli errori). Assegnato dal coordinatore il 2026-10-06.
 - [ ] In «Draw», «Retry» chiama la funzione della schermata (test); in
       `App.tsx` la mappa viene montata di nuovo e l'errore azzerato.
 - [ ] `LocationOff` dice il testo con «Open Settings» (test).
-- [ ] Parte B: le due schermate della corsa mostrano `LocationOff` (test).
+- [ ] **Parte B**: le due schermate della corsa mostrano `LocationOff` (test).
 - [ ] Testi nelle cinque lingue, approvati dall'utente.
 
 ## File toccati
@@ -70,8 +81,8 @@ sul Mac, voci sugli errori). Assegnato dal coordinatore il 2026-10-06.
 ```
 apps/mobile/src/permissions/OpenSettings.tsx            (nuovo)
 apps/mobile/src/permissions/OpenSettings.test.tsx       (nuovo)
-apps/mobile/src/permissions/LocationOff.tsx             (nuovo)
-apps/mobile/src/permissions/LocationOff.test.tsx        (nuovo)
+apps/mobile/src/location/LocationOff.tsx             (nuovo)
+apps/mobile/src/location/LocationOff.test.tsx        (nuovo)
 apps/mobile/src/route/ImageChoice.tsx
 apps/mobile/src/route/ImageChoice.test.tsx
 apps/mobile/src/screens/ChooseScreen.tsx

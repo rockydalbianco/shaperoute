@@ -151,7 +151,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   off for this app…» in «Draw»; la riga rossa della mappa che non carica
   dice «The map could not be loaded. Check the network.», senza il motivo
   tecnico né «reopen the app», con un «Retry» che monta di nuovo la mappa;
-  `permissions/LocationOff.tsx` («Location is off» + «Open Settings») pronto
+  `location/LocationOff.tsx` («Location is off» + «Open Settings») pronto
   ma non ancora sulle schermate della corsa. **Parte B**: collegarlo a
   `NavigateScreen` e `FreeRunScreen` dopo il merge della parte «corsa» di
   TASK-210, che li modifica. **Aspettano l'utente**: i testi nuovi. Da dove

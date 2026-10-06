@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
-import { OpenSettings } from "./OpenSettings";
+import { OpenSettings } from "../permissions/OpenSettings";
 
 /** What the position was wanted for: following a route, or recording. */
 export type LocationUse = "navigate" | "record";

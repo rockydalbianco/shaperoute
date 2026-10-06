@@ -702,7 +702,7 @@ export const ES: Table = {
   "Could not open Strava. Try again.":
     "No se ha podido abrir Strava. Inténtalo de nuevo.",
 
-  // src/permissions/{OpenSettings,LocationOff}.tsx (TASK-259)
+  // src/permissions/OpenSettings.tsx, src/location/LocationOff.tsx (TASK-259)
   "Open Settings": "Abrir Ajustes",
   "Location is off": "La ubicación está desactivada",
   "Allow it for Sgrava in Settings to follow the route.":

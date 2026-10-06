@@ -12379,7 +12379,7 @@ vede, perché la mappa è sotto la schermata.
 1. Un solo bottone `permissions/OpenSettings.tsx`
    (`Linking.openSettings()`, già in React Native: nessuna dipendenza),
    un link sottolineato e non giallo, usato dalla partenza, dalla
-   fotocamera negata e da `permissions/LocationOff.tsx` per la corsa.
+   fotocamera negata e da `location/LocationOff.tsx` per la corsa.
 2. `MapError` dice le parole della mappa, «The map could not be loaded.
    Check the network.», senza il motivo (resta per il log); con
    `onRetry` mostra «Retry». In «Draw» `App.tsx` azzera l'errore e cambia

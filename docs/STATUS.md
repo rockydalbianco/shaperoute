@@ -115,26 +115,24 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `c2bb428` dalle
-  12:02Z (ok dell'utente per la migrazione 0017 nella sessione
-  «Impostazioni» e «ok server per le forme inclinate» in quella di
-  TASK-232; eseguito da «Impostazioni» al via del coordinatore), con le
-  migrazioni `0001`–`0017`, `PUT /me/notifications`, il motore di TASK-232
-  A (un cuore da 5 km a Trento: `rotation_deg: -30`, somiglianza 0,94),
-  di TASK-238 A e TASK-242; fermo circa 10 secondi; immagine di prima
-  `shaperoute-api:before-task185`, copia del database
-  `shaperoute-2026-10-05T1202Z.dump`; `draw_examples` rilanciato alle
-  12:03Z (`data/draw-examples-2026-10-05-task232.log`). Zone del telefono:
-  528 file (le 521 della mattina più Borgo Valsugana, Tenna, Calceranica,
-  Caldonazzo, Pergine, Vigolo Vattaro, chieste dall'utente). Acqua della canoa: 247 file,
-  93 MB (i laghi d'Italia e i 27 tratti di costa di TASK-245). **App** su
-  `preview` da `main` `7a9d28b` (gruppo `b21caee9`): tutto `main`, fino
-  alle miglia (TASK-182), alle 29 spiagge (TASK-245), alle figure «Paddle»
-  al primo avvio (TASK-246) e alla fine corsa senza punteggio (TASK-241).
-  In coda, verdi: la #378 (TASK-232 B, aspetta l'utente) e la #362
-  (TASK-243: entra con l'ok per il server). Dal 2026-10-05 le cose di sola
-  app le pubblica il coordinatore appena sono in `main` (ok dell'utente).
-  **Da provare sull'iPhone.** Strava spento per scelta dell'utente.
+- **Server e app, al 2026-10-06**. **Server**: su `main` `a784f77` dalle
+  22:13Z del 2026-10-05 («ok server» dell'utente nella sessione di
+  TASK-243, che l'ha eseguito al via del coordinatore), con le migrazioni
+  `0001`–`0017` e il motore di TASK-243 (la penna alzata sui baffi del
+  contorno); fermo circa 9 secondi; immagine di prima
+  `shaperoute-api:before-task243`, copia del database
+  `shaperoute-2026-10-05T2212Z.dump`; `draw_examples` finito («70 of 70»,
+  con Borgo Valsugana, Caldonazzo, Pergine Valsugana, Vigolo Vattaro).
+  Zone del telefono: 528 file. Acqua della canoa: 247 file, 93 MB. **Non
+  ancora sul server**: #381 (TASK-249), #386 (TASK-247), #392 (TASK-248
+  B: cambia l'impronta del motore), #394 (TASK-251 B): un aggiornamento
+  con `draw_examples`, con l'ok dell'utente. **App** su `preview` da
+  `main` `e12ba55` (gruppo `e17c80c3`): tutto `main` fino alle code sul
+  telefono (TASK-252), compresi la mappa girata in «Draw», in corsa e in
+  «Explore» (TASK-232 B, B2), le unità del kayak (TASK-251 A), la penna
+  alzata sui baffi (TASK-243, `engine.zip`); #392 e #394 escono con il
+  server. **Da provare sull'iPhone.** Strava spento per scelta
+  dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

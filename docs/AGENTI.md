@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-06, 00:10 · `main` = `4e4370f`
+**Ultimo aggiornamento**: 2026-10-06, 10:10 · `main` = `c99b8c8`
 
 ## Come si usa
 
@@ -52,37 +52,51 @@
 
 ## La coda dei merge
 
-Alle 00:10 del 2026-10-06: due PR verdi e CLEAN, ferme sull'utente: la
-**#378** (TASK-232 B, la mappa girata: aspetta che l'utente veda i tre
-testi e la freccia del nord) e la **#362** (TASK-243, motore: aspetta
-l'«ok server», perché dopo il suo merge `main` non si pubblica prima
-dell'aggiornamento). Ordine: prima le PR di sola app, la #362 per ultima.
-Entra prima chi è pronto prima; la sessione proprietaria mergia da sola
-al 5/5 verde e CLEAN, ricontrollato subito prima, dopo il «merge NNN» del
-coordinatore. Le PR di soli documenti di una sessione chiusa le mergia (e
-le aggiorna) il coordinatore. Quando più PR sono pronte insieme **non
-aggiornarti e non mergiare da solo**: ogni merge rimette le altre in
-conflitto su STATUS e DECISIONS, il turno lo dà il coordinatore (la sua
-risposta arriva a fine turno: leggila nel suo transcript prima di
-mergiare).
+Alle 10:10 del 2026-10-06: coda vuota. In `main`, **non ancora sul
+server**: #381 (TASK-249, il punto del luogo per `/cities`), #386
+(TASK-247, `run_scored` al salvataggio), #392 (TASK-248 B, le partenze
+vicine senza `Pool`: l'impronta del motore cambia), #394 (TASK-251 B,
+`activity` in `/me/activities`): un solo aggiornamento del server con
+`draw_examples`, con l'ok dell'utente; poi la pubblicazione. Entra prima
+chi è pronto prima; la sessione proprietaria mergia da sola al 5/5 verde
+e CLEAN, ricontrollato subito prima, dopo il «merge NNN» del
+coordinatore; quando il coordinatore scrive «al verde mergia senza
+aspettarmi» vale come «merge» anticipato. Le PR di soli documenti di una
+sessione chiusa le mergia (e le aggiorna) il coordinatore. Quando più PR
+sono pronte insieme **non aggiornarti e non mergiare da solo**: ogni
+merge rimette le altre in conflitto su STATUS e DECISIONS, il turno lo
+dà il coordinatore (la sua risposta arriva a fine turno: leggila nel suo
+transcript prima di mergiare).
 
 ## L'albero
 
 ```
 Posizionamento figura sezione padel
-  ├─ Adesso  TASK-232 B  La mappa girata come il percorso in «Draw» e in
-  │                      corsa, la freccia del nord: #378 verde, aspetta
-  │                      la conferma dell'utente
-  ├─ Dopo    TASK-232 B2  «Explore»: l'esempio aperto, la sua corsa, le
-  │                       schede girate
-  └─ Dopo    TASK-232 C  I disegni salvati girati (una migrazione: l'ok
-                         per il server tramite il coordinatore) ADR-0195
+  └─ Adesso  TASK-232 C  I disegni salvati girati (migrazione: primo
+                         numero libero al merge, oggi 0018; l'ok per il
+                         server tramite il coordinatore); dentro anche
+                         `rotation_deg` nel catalogo e in
+                         `paddle_examples.py`, e l'esempio aperto
+                         inquadrato sotto la scheda            ADR-0195
 
-Possibilità di alzare la penna per la bocca
-  └─ Adesso  TASK-243  La penna alzata sui baffi del contorno (forme a
-                       pezzi con `pen_up`): #362 verde, giudicata
-                       dall'utente; entra con l'«ok server», poi
-                       `draw_examples` e la pubblicazione      ADR-0209
+Revisione e miglioramento App
+  ├─ Adesso  TASK-253  La navigazione non salta avanti e riprende
+  │                                                            ADR-0217
+  ├─ Dopo    TASK-255  Lo schermo acceso per tutta la corsa; niente
+  │                    calorie fuori dalla corsa               ADR-0219
+  ├─ Dopo    TASK-256  Gli errori parlano a chi corre, «Try again»,
+  │                    `ErrorBoundary`                          ADR-0220
+  └─ Dopo    TASK-257  Una corsa rifiutata resta sul telefono con il
+                       motivo e «Discard»                      ADR-0221
+
+Lago di Ledro e sette laghi scartati
+  └─ Adesso  TASK-250  Ledro nell'elenco dei laghi e i sette scartati
+                       (preferire il catalogo al motore; l'acqua sul
+                       server con l'ok dell'utente)            ADR-0214
+
+Unità di misura velocità Kayak/Padel (TASK-251, chiuso in `main`)
+  └─ Aspetta l'utente: i testi delle cinque lingue e le due scelte
+     («Elev. gain» tolto sull'acqua, la voce a ogni km); il server
 
 Mappe offline: parte B pubblicata
   └─ Dopo    TASK-214 D  La prova sull'iPhone: le zone del telefono
@@ -96,47 +110,39 @@ SITO WEB (già «Sezione merchandising magliette»)
                        in inglese, il link dell'App Store, il dominio,
                        la pubblicazione                        ADR-0201
 
-Chiuse il 2026-10-05: TASK-226, 228, 233, 211 B, 235, 236, 234, 214
-(A2, B2, B2b), 238, 239, 240, 241 (A–G), 242, 244, 245 (A, B), 246, 183,
-184, 185, 182 (A–D), 232 A. Sessioni archiviate o libere: «Impostazioni
-utente e notifiche», «Sezione Near me con città vicine», «Forme inclinate
-e distanza ottimale», «Toggle foto post», «Add lakes and seas…»,
-«Download mappe e figure padel all'installazione».
+Chiuse il 2026-10-05/06: TASK-226, 228, 233, 211 B, 235, 236, 234, 214
+(A2, B2, B2b), 238, 239, 240, 241 (A–G), 242, 243, 244, 245 (A, B), 246,
+247, 248 (A, B), 249, 251 (A, B), 252, 183, 184, 185, 182 (A–D), 232 (A,
+B, B2). Sessioni chiuse o libere: «Impostazioni utente e notifiche»,
+«Sezione Near me con città vicine», «Forme inclinate e distanza
+ottimale», «Toggle foto post», «Add lakes and seas…», «Download mappe e
+figure padel all'installazione», «Nuovo task», «Possibilità di alzare la
+penna per la bocca».
 
 Da assegnare (task file in `main`)
+  ├─ TASK-254  Le correzioni piccole della revisione (dopo TASK-232 C
+  │            per `fitLines.ts`)                              ADR-0218
   ├─ TASK-208 B  La fine corsa stile Strava, dopo le conferme
   │              dell'utente                                   ADR-0170
-  ├─ **Il job `api` della CI che resta appeso** nel passo «Test» (due
-  │  volte il 2026-10-05: #332 e `main` `1c8366e`): trovare il test e
-  │  dargli un tempo massimo (una dipendenza nuova va chiesta)
-  └─ Seguiti: il Lago di Ledro (`water=pond`) e i sette laghi scartati
-     (TASK-233); un villaggio di «NEARBY TOWNS» e lo stesso per nome
-     sono due città (TASK-236); `run_scored` negli `insights` senza
-     `POST /track-scores` (TASK-241, scelta dell'utente); un segnale per
-     i tocchi su «Try» (TASK-234); il server non tiene le figure dei
-     laghi e delle spiagge (TASK-246); la ricerca degli amici dalla
-     rubrica, la mail di conferma e l'invio vero delle notifiche
+  └─ Seguiti: `run_scored` è tornato (TASK-247); il server non tiene le
+     figure dei laghi e delle spiagge (TASK-246); la ricerca degli amici
+     dalla rubrica, la mail di conferma e l'invio vero delle notifiche
      (TASK-183, 185); la distanza di «Draw» in metri dentro `App.tsx`
-     (TASK-182); altre spiagge (TASK-245)
+     (TASK-182); altre spiagge (TASK-245); in bici senza percorso la
+     schermata mostra il passo al km (TASK-251); le parti rimaste di
+     TASK-210 e la velocità (scelte dell'utente del 2026-10-06, dopo
+     TASK-253–257); un segnale per i tocchi su «Try» (TASK-234)
 
 Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ **L'«ok server» per TASK-243** (#362): aggiornamento, `draw_examples`
-  │  (~40 minuti), poi la pubblicazione
-  ├─ TASK-232 B (#378): i tre testi di VoiceOver e l'aspetto della
-  │  freccia del nord
-  ├─ La prova sull'iPhone di `b21caee9`: le mappe offline (la zona
-  │  scaricata, un percorso disegnato sul telefono senza rete), le figure
-  │  «Paddle» già pronte dopo tre minuti, il numero rosso e «Follow back»
-  │  con due account, il cambio di email e numero, gli interruttori delle
-  │  notifiche, «Move the shape» con un dito vero, «Units» e la voce in
-  │  miglia, una spiaggia nuova, laghi e mari nella ricerca di «Draw»,
-  │  «Help»/«Terms»/«Privacy», i paesi vicini, la fine corsa senza
-  │  punteggio
-  ├─ TASK-184: i segnaposto di «Terms» e «Privacy», le due frasi che
-  │  nominano il punteggio · TASK-237: i testi in inglese del sito
+  ├─ **L'«ok server»** per #381, #386, #392, #394 (10 s di fermo, poi
+  │  `draw_examples` ~40 min), poi la pubblicazione con `engine.zip` nuovo
+  ├─ TASK-251: i testi delle cinque lingue (già pubblicati) · TASK-184: i
+  │  segnaposto di «Terms» e «Privacy» · TASK-237: i testi in inglese
+  ├─ La prova sull'iPhone di `e17c80c3`: tutto il 2026-10-05 più la
+  │  mappa girata (Draw, corsa, Explore), le unità del kayak, le code
   ├─ Strava: spento per scelta dell'utente del 2026-10-05 («teniamo solo
   │  Instagram per ora»); per riaccenderlo, `DEPLOY.md` «Strava»
   ├─ TASK-236: la regola dei quattro paesi e i tre testi · TASK-237: il
@@ -192,8 +198,9 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `detours.py`, `pen_up.py`, `engine.zip` | TASK-243 (#362) |
-| `App.tsx`, `src/map/*`, `screens/MapScreen.tsx`, `paddle/useMoveShape.ts`; poi `src/explore/*`, `paddle/PaddleExplore.tsx`, `feed/feedMapPage.ts`, `FeedMaps.tsx` (B2 e C) | TASK-232 B, B2, C |
+| `activities.py`, `favorites.py`, la migrazione nuova, `fitLines.ts`, `RunDrawing.tsx`, `feed/FeedMaps.tsx`, `feedMapPage.ts`, `share/PostImage.tsx`, `recommended.py`, `paddle_examples.py` | TASK-232 C |
+| `navigation/progress.ts`, `navigator.ts`, `useNavigation.ts` | TASK-253 |
+| `lake_catalog.py`, `lakes.json` (forse `route_engine/water.py`: prima chiedere) | TASK-250 |
 | `site/`, `docs/SITO.md`, `.github/workflows/site.yml` | TASK-237 |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 (in attesa dello Storage Box) |
 | `docs/PUBBLICITA.md` | TASK-150 |
@@ -202,16 +209,19 @@ Da assegnare
 
 ## Numeri
 
-- Task: presi fino a **TASK-246**. Il prossimo libero è **TASK-247**.
-- ADR: presi fino a **ADR-0211** (0183 TASK-220, 0184 TASK-221, 0185
+- Task: presi fino a **TASK-257**. Il prossimo libero è **TASK-258**.
+- ADR: presi fino a **ADR-0221** (0183 TASK-220, 0184 TASK-221, 0185
   TASK-223, 0186 TASK-224, 0187 TASK-225, 0188 TASK-226, 0189 TASK-227,
   0190 TASK-228, 0191 TASK-229, 0192 TASK-230, 0193 TASK-119, 0194
   TASK-231, 0195 TASK-232, 0196 TASK-233, 0197 TASK-234, 0198 TASK-235, 0199
   TASK-211 B, 0200 TASK-236, 0201 TASK-237, 0202 TASK-238, 0203
   TASK-239, 0204 TASK-240, 0205 TASK-184, 0206 TASK-185, 0207 TASK-241,
-  0208 TASK-242, 0209 TASK-243, 0210 TASK-245, 0211 TASK-246; TASK-244 è
-  un'aggiunta ad ADR-0202; 0149 TASK-182 e 0150 TASK-183 tenuti da
-  prima). Il prossimo libero è **ADR-0212**.
+  0208 TASK-242, 0209 TASK-243, 0210 TASK-245, 0211 TASK-246, 0212
+  TASK-248, 0213 TASK-249, 0214 TASK-250, 0215 TASK-251, 0216 TASK-252,
+  0217 TASK-253, 0218 TASK-254, 0219 TASK-255, 0220 TASK-256, 0221
+  TASK-257; TASK-244 e TASK-247 sono aggiunte ad ADR-0202 e ADR-0207;
+  0149 TASK-182 e 0150 TASK-183 tenuti da prima). Il prossimo libero è
+  **ADR-0222**.
 - Migrazioni in `main`: 0001 account, 0002 preferiti, 0003 corse, 0004
   Strava, 0005 foto, 0006 penna alzata, 0007 profili, 0008 attività nei
   preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti, 0011
@@ -221,20 +231,21 @@ Da assegnare
 ## Il server e l'app
 
 - **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`, da
-  `deploy/compose.yaml` con PostgreSQL. A `main` `c2bb428` dal 2026-10-05
-  12:02Z (migrazioni 0001–0017; immagine di prima
-  `shaperoute-api:before-task185`, copia del database
-  `shaperoute-2026-10-05T1202Z.dump`), con `PUT /me/notifications` e il
-  motore di TASK-232 A (un cuore da 5 km a Trento esce con
-  `rotation_deg: -30`). `draw_examples` rilanciato alle 12:03Z con
-  Rovereto, Borgo Valsugana, Caldonazzo, Pergine Valsugana. Zone del
-  telefono: 528 file (`python -m shaperoute_api.phone_zone_api`, dentro il
-  container dell'API: un riavvio lo uccide; rilanciarlo dopo zone nuove
-  scrive solo quelle che mancano). Acqua della canoa: 247 file, 93 MB (i
-  laghi d'Italia e, dal 2026-10-05, 27 tratti di costa di TASK-245).
-  Strava spento per scelta dell'utente.
-- **App**: su `preview` da `main` `7a9d28b` (gruppo `b21caee9`,
-  2026-10-05): tutto `main`. **Dal 2026-10-05 il coordinatore pubblica da
+  `deploy/compose.yaml` con PostgreSQL. A `main` `a784f77` dal 2026-10-05
+  22:13Z (migrazioni 0001–0017; immagine di prima
+  `shaperoute-api:before-task243`, copia del database
+  `shaperoute-2026-10-05T2212Z.dump`), con il motore di TASK-243;
+  `draw_examples` finito (70 città su 70, con Borgo Valsugana,
+  Caldonazzo, Pergine Valsugana, Vigolo Vattaro). Zone del telefono: 528
+  file. Acqua della canoa: 247 file, 93 MB. **Manca** `main` da `c290d04`
+  in poi (#381, #386, #392, #394): aggiornamento con `draw_examples`, con
+  l'ok dell'utente. Strava spento per scelta dell'utente. Il motore ha un
+  difetto noto fino a quell'aggiornamento: dopo un `engine_error`
+  inatteso un `terminate()` del `Pool` può lasciare appeso un thread dei
+  job (TASK-248); lo toglie il riavvio.
+- **App**: su `preview` da `main` `e12ba55` (gruppo `e17c80c3`,
+  2026-10-06): tutto `main` fino alle code sul telefono (TASK-252); non
+  ancora pubblicati #392 (`engine.zip`) e #394, che escono con il server. **Dal 2026-10-05 il coordinatore pubblica da
   solo le cose di sola app** appena sono in `main` e il job `mobile` è
   verde (ok dell'utente: «sì, pubblica sempre le cose di sola app»); per
   il server l'ok si chiede ogni volta. Una PR la cui app vuole qualcosa
@@ -257,7 +268,7 @@ In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
 #150 (137), #166 (158), #165 (157), #164 (156), #167 (122, copie), #140
 (141), #169 (141), #170 (AGENTI), #168 (159), #171 (160), #172 (165), #173
 (162), #174 (163, prima PR), #175 (161), #176 (164), e poi fino alla #214:
-#177–#377, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
+#177–#393, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
 177, 178, 179, 180, 181, 186, 187 (API), 188, 189, 190 A, 192, 193, 194,
 195, 196, 067, 190 (A, B, C), 191 A1 e A2, 197, 198, 199, 116, 201 (misurato, non conviene), 200,
 202, 203, 187 (app), 204, 117 (A e B), 191 B, 205, 206 (A e B), 207,

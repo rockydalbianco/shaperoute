@@ -144,7 +144,8 @@ hanno nemmeno un sentiero alla riva. Non proposto.
 **Trovato guardando i dati**: cinque laghi dell'elenco sono segnati
 `boat=no` o `access=private` in OpenStreetMap (Laghetto del Frassino, Lago
 di Vico, Lago di Montimannu, Lago di Place Moulin: `boat=no`; Lago Grande:
-`access=private`). Restano: se toglierli è una scelta dell'utente.
+`access=private`). **Restano nell'elenco**: scelta dell'utente del
+2026-10-06 («tieni i cinque laghi»).
 
 **L'acqua sul server** (2026-10-06, 10:22 ora del server; ok dell'utente
 nella sessione del task, «via» del coordinatore): prima lo SHA del file del
@@ -158,7 +159,13 @@ canoa da Riva del Garda, 200 in 4,1 s (2006 m), e da Ledro
 
 **Seguiti**:
 
-1. La pubblicazione dell'app, del coordinatore; la prova di Ledro
-   sull'iPhone è dell'utente.
-2. Proposta all'utente: riportare Ledro a `water=lake` in OpenStreetMap
-   (una modifica pubblica, con un suo account).
+1. Pubblicata dal coordinatore su `preview` da `main` `938c70d` (gruppo
+   37310f11); la prova di Ledro sull'iPhone è dell'utente. Il server non
+   va aggiornato per Ledro: `lake_catalog.py` è un comando, l'API non lo
+   usa; l'elenco è nell'app e l'acqua è già sul server.
+2. Ledro di nuovo `water=lake` in OpenStreetMap: chiesto dall'utente il
+   2026-10-06 («Ledro su OSM fai tu»). Lo stagno viene da un errore: la
+   versione 17 della relazione, changeset 137746195 del 2023-06-25
+   («adeguamento pianta nuova struttura», iD), stava sistemando un
+   edificio vicino. La modifica si fa con l'account OpenStreetMap
+   dell'utente: senza il suo accesso nel browser non si fa.

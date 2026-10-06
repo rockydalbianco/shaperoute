@@ -1,7 +1,7 @@
 # TASK-260 — Il nome dell'app diventa «MuW»
 
-**Stato**: In corso
-**Fase**: 4 · **Branch**: `feat/TASK-260-app-name-muw`
+**Stato**: Done
+**Fase**: 4 · **Branch**: `feat/TASK-260-app-name-muw` (parte A), `feat/TASK-260-logo-muw` (parte B)
 
 ## Obiettivo
 
@@ -52,7 +52,7 @@ dell'app nelle cinque lingue. Chiesto dall'utente il 2026-10-06
 - [x] Le tabelle delle cinque lingue non contengono «Sgrava» (punto 4).
 - [x] `tsc`, `expo lint`, Prettier, jest sui file toccati, `ruff`,
       `black` e pytest di `test_strava.py` e `test_run_gpx.py` verdi.
-- [ ] Parte B: l'avvio mostra il cuore e «MuW»; l'icona è il cuore su
+- [x] Parte B: l'avvio mostra il cuore e «MuW»; l'icona è il cuore su
       giallo; l'anteprima è approvata dall'utente prima del merge.
       Con l'aggiornamento su `preview` (Expo Go) arrivano subito solo
       la scritta all'avvio e in «salvato»: icona, splash e favicon di
@@ -114,4 +114,13 @@ apps/mobile/src/screens/NavigateScreen.test.tsx · FreeRunScreen.test.tsx
 
 ## Esito
 
-*(a fine task)*
+Fatto il 2026-10-06. **Parte A** (PR #426, merge `717eb69b`): l'app si
+chiama «MuW» sotto l'icona, nei permessi, in ogni testo delle cinque
+lingue, in aiuto/condizioni/privacy, e l'API scrive «Drawn with MuW»,
+«Go back to MuW», `creator="MuW"`; su `preview` (gruppo `36e2a9f1`).
+**Parte B** (PR #428, merge `873de538`, anteprima approvata dall'utente:
+«si va bene così»): il cuore su giallo con la scritta «MuW» come logo e
+icona, generati da `docs/brand/make_brand.py`. **Restano**: il server con
+i testi dell'API (coordinatore, ok dell'utente); icona, splash e favicon
+si vedono solo con una build nativa; il sito (`site/`, TASK-237) e i nomi
+nel codice (`sgrava` in file e variabili) tengono il nome vecchio.

@@ -11,7 +11,7 @@
 
 ## In una riga
 
-MuW (fino al 2026-10-06 «Sgrava») gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
+MuW (già «Sgrava», TASK-260) gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
 Hetzner, in HTTPS e sempre accesa, con il database degli account; il Mac
 serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (per ora
 disegni d'esempio), «Draw» ed «Explore», e «Profile» per iscriversi ed
@@ -149,22 +149,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
-
-- **App e API** — TASK-260: l'app si chiama «MuW» (ADR-0224; chiesto
-  dall'utente il 2026-10-06). **Parte A** in `main` (PR #426, merge
-  `717eb69b`, 2026-10-06), su `preview` (gruppo `36e2a9f1`): il nome
-  sotto l'icona, i permessi, i testi dell'app nelle cinque lingue,
-  aiuto/condizioni/privacy, e nell'API «Drawn with MuW», le pagine di
-  ritorno da Strava, il `creator` del GPX, il messaggio dei tag. **Il
-  server** lo aggiorna il coordinatore con l'ok dell'utente. **Parte B**
-  (logo: il cuore su giallo con la scritta «MuW», scelta dell'utente):
-  icona iOS e Android, splash, favicon, `docs/brand/muw-*.svg` e il
-  generatore `make_brand.py`; in PR, **anteprima mostrata all'utente, il
-  merge aspetta il suo ok**. Con l'aggiornamento su `preview` (Expo Go)
-  sul telefono arrivano subito solo la scritta «MuW» all'avvio e in
-  «salvato»: icona, splash e favicon di `app.json` si vedono solo con
-  una build nativa. Non si toccano `bundleIdentifier`, `slug`, il sito.
-  `tasks/TASK-260.md`.
 
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
@@ -538,6 +522,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App e API** — TASK-260: l'app si chiama «MuW» (ADR-0224; chiesto
+  dall'utente il 2026-10-06). **Parte A** PR #426 (`717eb69b`): il nome
+  sotto l'icona, i permessi, i testi nelle cinque lingue, aiuto,
+  condizioni e privacy, e nell'API «Drawn with MuW», le pagine di ritorno
+  da Strava, il `creator` del GPX, il messaggio dei tag; su `preview`
+  (gruppo `36e2a9f1`). **Parte B** PR #428 (`873de538`, anteprima
+  approvata dall'utente): il cuore su giallo con la scritta «MuW» come
+  logo, icona iOS e Android, splash, favicon, `docs/brand/muw-*.svg` e
+  il generatore `make_brand.py`; su `preview` (gruppo `9585ffac`), server
+  a `873de538` (ok dell'utente). **Resta**: icona, splash e favicon si
+  vedono solo con una build nativa; su `preview` arrivano la scritta
+  all'avvio e in «salvato». `bundleIdentifier`, `slug` e il sito tengono
+  il nome vecchio. `tasks/TASK-260.md`.
 
 - **App** — TASK-251: «Paddle» con velocità in km/h e andatura in
   min/500 m (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte

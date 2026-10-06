@@ -9,6 +9,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { t } from "../i18n";
 import { distanceLabel, withPoint } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { choiceLabel, likeness } from "./choices";
@@ -44,7 +45,14 @@ export function RouteTiles({ choices, chosen, onChoose }: Props) {
             onPress={() => onChoose(index)}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            accessibilityLabel={`Route ${choiceLabel(index)}, ${km}, ${likeness(result)} like the shape`}
+            accessibilityLabel={t(
+              "Route {label}, {distance}, {likeness} like the shape",
+              {
+                label: choiceLabel(index),
+                distance: km,
+                likeness: likeness(result),
+              },
+            )}
           >
             <Text style={styles.label}>{choiceLabel(index)}</Text>
             <Text style={styles.detail}>{`${km} · ${likeness(result)}`}</Text>

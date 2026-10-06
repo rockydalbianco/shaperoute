@@ -2,6 +2,7 @@ import type { OutlinePoint } from "@shaperoute/shared-types";
 import { useState } from "react";
 import { Image, StyleSheet, View } from "react-native";
 
+import { t } from "../i18n";
 import { color, radius } from "../theme/tokens";
 import type { Picture } from "./pickImage";
 
@@ -79,7 +80,7 @@ export function ImagePreview({
       <View
         style={[styles.frame, { width, height }]}
         accessibilityRole="image"
-        accessibilityLabel="The outline traced from the picture"
+        accessibilityLabel={t("The outline traced from the picture")}
       >
         {showPicture && (
           // The frame has the picture's own proportions: stretching is exact.

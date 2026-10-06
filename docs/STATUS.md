@@ -150,19 +150,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-259 — «Open Settings» e «Location is off»** (ADR-0223; seguito
-  di TASK-256 e della revisione del 2026-10-06). **Parte A, solo app**, in
-  `main` (PR #413, merge `2990b9d`, 2026-10-06), non ancora pubblicata
-  (la pubblica il coordinatore): «Open Settings» sotto «The camera is off
-  for this app…» in «Draw»; la riga rossa della mappa che non carica dice
-  «The map could not be loaded. Check the network.», senza il motivo
-  tecnico né «reopen the app», con un «Retry» che monta di nuovo la mappa;
-  `location/LocationOff.tsx` («Location is off» + «Open Settings») pronto
-  ma non ancora sulle schermate della corsa. Testi nelle cinque lingue
-  **approvati dall'utente** (2026-10-06). **Parte B**, al via del
-  coordinatore dopo il merge della parte «corsa» di TASK-210: collegare
-  `LocationOff` a `NavigateScreen` e `FreeRunScreen`. Da dove
-  riprendere: `tasks/TASK-259.md`.
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
   **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06),
@@ -535,7 +522,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   svolta con il frasario della voce, 58 testi nuovi; testi approvati
   dall'utente il 2026-10-06). **Parte C — «Explore»** fatta il 2026-10-06
   (64 testi nuovi, le categorie tradotte a vista e inglesi verso l'API;
-  testi approvati dall'utente il 2026-10-06): restano «Draw», la fine corsa,
+  testi approvati dall'utente il 2026-10-06). **Parte D — «Draw»** fatta
+  il 2026-10-06 (branch `feat/TASK-210-draw`, in parallelo con la C): il
+  pannello di «Draw», i testi d'errore in km, gli avvisi del motore, la
+  parola, la foto e il contorno, 101 testi nuovi
+  (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`; testi
+  approvati dall'utente il 2026-10-06, PR #421. Restano la fine corsa,
   «Sport», `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
@@ -587,6 +579,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App** — TASK-259: «Open Settings» e «Location is off» (ADR-0223;
+  seguito di TASK-256 e della revisione del 2026-10-06; testi nelle cinque
+  lingue approvati dall'utente). **Parte A** PR #413, merge `2990b9d`,
+  2026-10-06, su `preview` (gruppo `f062e005`): «Open Settings» sotto «The
+  camera is off for this app…» in «Draw»; la riga rossa della mappa che
+  non carica dice «The map could not be loaded. Check the network.», con
+  un «Retry» che monta di nuovo la mappa. **Parte B** PR #419,
+  2026-10-06: senza il permesso della posizione, o con la posizione del
+  telefono spenta, il banner della navigazione e della corsa libera dice
+  «Location is off», a cosa serve e «Open Settings» (`LocationOff`). Solo
+  app: **la pubblicazione della parte B è del coordinatore**; da provare
+  sull'iPhone con la posizione negata. Seguito senza numero: la foto del
+  profilo (`profile/useProfilePhoto.ts`) ha la fotocamera negata senza
+  bottone. `tasks/TASK-259.md`.
 
 - **App e API** — TASK-258: il post condiviso resta sul server (ADR-0222;
   chiesto dall'utente il 2026-10-06, tre scelte sue: emoji e risultati
@@ -807,9 +814,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `tasks/TASK-250.md`). **L'acqua è sul server dal 2026-10-06** (Ledro
   nuovo, Garda riscritto, il vecchio in `before-task250/`; senza riavvio):
   un cuore da 2 km da Ledro e uno da Riva rispondono 200 dentro l'API. Esce
-  con la pubblicazione del coordinatore. **Aspettano l'utente**: se
-  riportare Ledro a `water=lake` in OpenStreetMap; se togliere i cinque
-  laghi segnati `boat=no` o `access=private`.
+  con la pubblicazione del coordinatore (gruppo 37310f11). I cinque laghi
+  segnati `boat=no` o `access=private` restano nell'elenco (utente,
+  2026-10-06). Ledro di nuovo `water=lake` in OpenStreetMap: chiesto
+  dall'utente il 2026-10-06, da fare con il suo account.
 
 - **App** — TASK-245 parte B: in «Another place» con «Paddle», una parola
   comune scritta sceglie fra i nomi trovati (ADR-0210, aggiornamento;

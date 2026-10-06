@@ -9,6 +9,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { t } from "../i18n";
 import { OpenSettings } from "../permissions/OpenSettings";
 import { ImageEditsContext } from "./imageEdits";
 import { ImagePreview } from "./ImagePreview";
@@ -47,7 +48,7 @@ export function ImageChoice({
           accessibilityRole="button"
         >
           <Text style={styles.buttonText}>
-            {chosen ? "Choose another" : "Choose picture"}
+            {chosen ? t("Choose another") : t("Choose picture")}
           </Text>
         </Pressable>
         <Pressable
@@ -55,7 +56,7 @@ export function ImageChoice({
           onPress={() => onChoose("camera")}
           accessibilityRole="button"
         >
-          <Text style={styles.buttonText}>Take photo</Text>
+          <Text style={styles.buttonText}>{t("Take photo")}</Text>
         </Pressable>
       </View>
       <ImageNote state={state} />
@@ -75,7 +76,7 @@ export function ImageChoice({
               accessibilityRole="button"
             >
               <Text style={styles.linkText}>
-                {showPicture ? "Hide the picture" : "Show the picture"}
+                {showPicture ? t("Hide the picture") : t("Show the picture")}
               </Text>
             </Pressable>
           </View>
@@ -86,7 +87,7 @@ export function ImageChoice({
                 onPress={() => setEditing(true)}
                 accessibilityRole="button"
               >
-                <Text style={styles.buttonText}>Edit the outline</Text>
+                <Text style={styles.buttonText}>{t("Edit the outline")}</Text>
               </Pressable>
               <OutlineBoard
                 visible={editing}
@@ -108,13 +109,13 @@ function ImageNote({ state }: { state: ImageState }) {
     case "none":
       return (
         <Text style={styles.note}>
-          One subject on a plain background works best: a drawing, a logo, an object on
-          a bare table. The route follows its outside line. Up to 4 separate subjects
-          are joined in one line.
+          {t(
+            "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.",
+          )}
         </Text>
       );
     case "tracing":
-      return <Text style={styles.note}>Tracing the outline…</Text>;
+      return <Text style={styles.note}>{t("Tracing the outline…")}</Text>;
     case "traced":
       // Another picture could not be chosen (TASK-254): why, in the place
       // of the note; the outline and its edits stay below.
@@ -123,10 +124,9 @@ function ImageNote({ state }: { state: ImageState }) {
       }
       return (
         <Text style={styles.note}>
-          The yellow line is what the route will draw. If it does not look like the
-          subject, the route will not either: try another picture, or edit the outline.
-          Separate subjects are joined by a short line, which the route runs there and
-          back.
+          {t(
+            "The yellow line is what the route will draw. If it does not look like the subject, the route will not either: try another picture, or edit the outline. Separate subjects are joined by a short line, which the route runs there and back.",
+          )}
         </Text>
       );
     case "failed":

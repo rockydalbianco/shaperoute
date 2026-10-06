@@ -3,7 +3,7 @@
 **Stato**: In corso
 **Fase**: 4 · **Branch**: `feat/TASK-210-app-language` (parte A),
 `feat/TASK-210-run-screens` (parte B, la corsa), `feat/TASK-210-explore`
-(parte C, «Explore»)
+(parte C, «Explore»), `feat/TASK-210-draw` (parte D, «Draw»)
 
 ## Obiettivo
 
@@ -146,6 +146,28 @@ docs/UI.md
 docs/STATUS.md
 ```
 
+Parte D («Draw»):
+
+```
+apps/mobile/src/i18n/de.ts, it.ts, es.ts, fr.ts   (voci aggiunte)
+apps/mobile/src/route/RoutePanel.tsx
+apps/mobile/src/route/problems.ts
+apps/mobile/src/route/warnings.ts
+apps/mobile/src/route/wordInput.ts
+apps/mobile/src/route/ImageChoice.tsx
+apps/mobile/src/route/OutlineBoard.tsx
+apps/mobile/src/route/LoadingBar.tsx
+apps/mobile/src/route/DistanceStepper.tsx
+apps/mobile/src/route/RouteTiles.tsx
+apps/mobile/src/route/ImagePreview.tsx
+apps/mobile/src/route/shareGpx.ts
+apps/mobile/src/route/milesTexts.test.ts
+apps/mobile/src/route/DrawItalian.test.tsx   (nuovo)
+docs/tasks/TASK-210.md
+docs/DECISIONS.md
+docs/STATUS.md
+```
+
 ## Fuori scope
 
 - Le frasi dette dalla voce: TASK-209.
@@ -204,12 +226,37 @@ inglese, frasi del percorso a tema e delle indicazioni, credito). I nomi
 delle città e i nomi dei percorsi dell'API restano com'è. **Testi
 approvati dall'utente** il 2026-10-06 («va bene procedi»).
 
-**Da fare nelle parti successive**: «Draw» (`RoutePanel`, `problems`,
-`distance`, `ImageChoice`, `OutlineBoard`, `warnings`, `wordInput`,
-`LoadingBar`, `DistanceStepper`, `RouteTiles`, `shareGpx`; dopo
-TASK-256, che ne tocca i testi d'errore), i nomi delle forme sulle schede
-di «Explore» (`routeTitle` dà l'inglese, «dog head»: `shapeLabel` lo
-tradurrebbe), la fine corsa di TASK-208 (`RunEnd.tsx`,
+**Parte D — «Draw»** (2026-10-06, branch `feat/TASK-210-draw`, in
+parallelo con la parte C «Explore» di un'altra sessione): `RoutePanel`
+(etichette «DRAW»/«LETTERS»/«DISTANCE», lo switch forma/parola/immagine,
+le lettere tonde o quadrate, la penna alzata, le note sotto i campi,
+l'attesa, «Draw route», «Start», «Export GPX»), `problems.ts` (tutti i
+testi d'errore in km, le ragioni di una foto rifiutata e di una linea
+rifiutata con `tLater`), `warnings.ts` (gli avvisi del motore; la
+direzione dello start spostato usa le stesse parole dei punti cardinali
+della corsa, `t("north-east")`; «1.2 km» del motore scritto «1,2 km»),
+`wordInput.ts`, `ImageChoice`, `OutlineBoard`, `LoadingBar` (quello che
+VoiceOver legge), `DistanceStepper`, `RouteTiles`, `ImagePreview`,
+`shareGpx` (il titolo del foglio di condivisione). **101 testi nuovi**
+nelle quattro tabelle (`out/task-210-draw-testi.md` sul Mac per l'occhio
+dell'utente); «Cancel», «Save», «On», «Off», «Try again», «Try {km} km»,
+le righe in miglia di TASK-182 e i punti cardinali erano già tradotti.
+`milesTexts.test.ts` aspettava il testo in km ancora in inglese: ora
+quello in italiano. Test: `route/DrawItalian.test.tsx` (pannello,
+parola, attesa, forma che non sta, foto, avvisi, pulsanti in italiano).
+**Non tradotti, di proposito**: i nomi delle forme («heart», «dog head»
+nelle tessere, nel campo e in «Drawing a 5 km heart…») e il segnaposto
+«cuore, stella, cavallo…» con parole che in de/es/fr `shapeWords.ts`
+non conosce (vanno all'AI): sono la parte «nomi delle forme». «Vai a
+«Parti da qui»» nell'avviso dello start spostato: la parte di
+`mapPage.ts` deve chiamare così «Start here» (de «Hier starten», es
+«Empieza aquí», fr «Départ ici»). **Testi approvati dall'utente** il
+2026-10-06 («va bene procedi»); PR #421, in coda dopo #419 e #420.
+
+**Da fare nelle parti successive** (dopo le parti C e D, entrambe in
+`main` il 2026-10-06): i nomi delle forme sulle schede di «Explore»
+(`routeTitle` dà l'inglese, «dog head»: `shapeLabel` lo tradurrebbe), la
+fine corsa di TASK-208 (`RunEnd.tsx`,
 `PublicParts.tsx`, `PublicRow.tsx`, `api/drawings.ts`), `VoiceSetting.tsx`,
 `SportSetting`/`SportButton`/`sport.ts`, i titoli delle pagine in
 `App.tsx`, i nomi delle forme in «Draw» (`shapeWords.ts` sa solo

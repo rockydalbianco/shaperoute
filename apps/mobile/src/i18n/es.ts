@@ -472,6 +472,180 @@ export const ES: Table = {
   // src/route/warnings.ts
   "Includes {distance} walking the bike.": "Incluye {distance} caminando con la bici.",
 
+  // src/route/RoutePanel.tsx (TASK-210, «Draw»)
+  Shape: "Forma",
+  Word: "Palabra",
+  Image: "Imagen",
+  Round: "Redondas",
+  Square: "Cuadradas",
+  DRAW: "DIBUJA",
+  LETTERS: "LETRAS",
+  DISTANCE: "DISTANCIA",
+  "heart, star, horse…": "corazón, estrella, caballo…",
+  "Lift the pen between parts": "Levanta el lápiz entre las partes",
+  "Lift the pen between letters": "Levanta el lápiz entre las letras",
+  "Square letters follow the street grid: best for short words.":
+    "Las letras cuadradas siguen la cuadrícula de las calles: mejor para palabras cortas.",
+  "Enter a distance between {lowest} and {highest} km.":
+    "Introduce una distancia entre {lowest} y {highest} km.",
+  "Long routes take longer: up to a few minutes.":
+    "Las rutas largas tardan más: hasta unos minutos.",
+  "Draw route": "Dibujar la ruta",
+  Start: "Empezar",
+  "Preparing GPX…": "Preparando el GPX…",
+  "Export GPX": "Exportar GPX",
+  "{letters} km of letters + {between} km walking between them":
+    "{letters} km de letras + {between} km a pie entre una y otra",
+  "Press Done and the AI will read it.": "Pulsa OK y la IA lo leerá.",
+  "The AI is reading it…": "La IA lo está leyendo…",
+  "No shape in the catalogue for “{text}”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one:":
+    "Ninguna forma del catálogo para «{text}». Describe cómo es («caballo encabritado», no «escudo de Ferrari»), o elige una:",
+  "Unknown shape. Try: {list}.": "Forma desconocida. Prueba: {list}.",
+  "{count} letter: at least {km} km. A word takes a few minutes to draw.":
+    "{count} letra: al menos {km} km. Dibujar una palabra lleva unos minutos.",
+  "{count} letters: at least {km} km. A word takes a few minutes to draw.":
+    "{count} letras: al menos {km} km. Dibujar una palabra lleva unos minutos.",
+  "Use {km} km": "Usar {km} km",
+  Picture: "Imagen",
+  "Waiting for the API…": "Esperando al servicio…",
+  "Downloading map data for this area…": "Descargando el mapa de esta zona…",
+  "Drawing the picture's outline, {km} km…":
+    "Dibujando el contorno de la foto, {km} km…",
+  "Drawing “{word}”, {km} km…": "Dibujando «{word}», {km} km…",
+  "Drawing a {km} km {name}…": "Dibujando: {name}, {km} km…",
+
+  // src/route/problems.ts (TASK-210, «Draw»)
+  "This shape does not fit the roads here at this distance. It fits at about {km} km.":
+    "Esta forma no cabe en las calles aquí a esta distancia. Cabe a unos {km} km.",
+  "This word does not fit the roads here at this distance. It fits at about {km} km.":
+    "Esta palabra no cabe en las calles aquí a esta distancia. Cabe a unos {km} km.",
+  "This image does not fit the roads here at this distance. It fits at about {km} km.":
+    "Esta imagen no cabe en las calles aquí a esta distancia. Cabe a unos {km} km.",
+  "This word does not fit the roads here. Try a shorter word, or another start.":
+    "Esta palabra no cabe en las calles aquí. Prueba una palabra más corta u otro inicio.",
+  "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.":
+    "Este contorno no cabe en las calles aquí. Prueba otra distancia, otro inicio o una foto más sencilla.",
+  "This shape does not fit the roads here. Try another shape, or another start:":
+    "Esta forma no cabe en las calles aquí. Prueba otra forma u otro inicio:",
+  "Map data for this area could not be downloaded. Try again later.":
+    "No se pudo descargar el mapa de esta zona. Inténtalo más tarde.",
+  "The route engine cannot find one clear outline in this picture.":
+    "En esta foto no se encuentra un contorno claro.",
+  "Only PNG and JPEG pictures work. Choose another one.":
+    "Solo funcionan fotos PNG y JPEG. Elige otra.",
+  "This picture could not be read. Choose another one.":
+    "Esta foto no se pudo leer. Elige otra.",
+  "The background is too busy. Use one subject on a plain background, like a drawing on white paper or an object on a bare table.":
+    "El fondo está demasiado cargado. Usa un solo sujeto sobre un fondo liso, como un dibujo en papel blanco o un objeto en una mesa vacía.",
+  "Nothing stands out from the background. Use a subject much darker or brighter than what is around it.":
+    "Nada destaca sobre el fondo. Usa un sujeto mucho más oscuro o más claro que lo que tiene alrededor.",
+  "The picture shows more than 4 separate things. Use a picture with 4 subjects at most.":
+    "La foto muestra más de 4 cosas separadas. Usa una foto con 4 sujetos como máximo.",
+  "The subject touches the edge of the picture. Leave some background all around it.":
+    "El sujeto toca el borde de la foto. Deja algo de fondo alrededor.",
+  "The subject is too small. Get closer, or use a bigger picture.":
+    "El sujeto es demasiado pequeño. Acércate o usa una foto más grande.",
+  "The outline is too jagged to run on roads. Try a simpler subject.":
+    "El contorno es demasiado irregular para correrlo por las calles. Prueba un sujeto más sencillo.",
+  "This line cannot be added to the outline. Draw it again.":
+    "Esta línea no se puede añadir al contorno. Dibújala de nuevo.",
+  "This line is too short to add. Draw a longer one.":
+    "Esta línea es demasiado corta para añadirla. Dibuja una más larga.",
+  "This part covers where a detail starts. Undo the detail first, or draw the part elsewhere.":
+    "Esta parte cubre donde empieza un detalle. Deshaz primero el detalle o dibuja la parte en otro sitio.",
+  "That is too much for one route. Undo something, or draw simpler lines.":
+    "Es demasiado para una sola ruta. Deshaz algo o dibuja líneas más sencillas.",
+  "Too many requests to the API in the last minute. Wait a minute, then try again.":
+    "Demasiadas solicitudes en el último minuto. Espera un minuto y vuelve a intentarlo.",
+  "This phone cannot open the share sheet.":
+    "Este teléfono no puede abrir la hoja para compartir.",
+  "The GPX could not be saved on the phone. Try again.":
+    "El GPX no se pudo guardar en el teléfono. Inténtalo de nuevo.",
+  "This picture is too large: {mb} MB, at most {most} MB. Choose a smaller one.":
+    "Esta foto es demasiado grande: {mb} MB, como máximo {most} MB. Elige una más pequeña.",
+  "The picture could not be opened. Try again, or choose another one.":
+    "La foto no se pudo abrir. Inténtalo de nuevo o elige otra.",
+
+  // src/route/warnings.ts (TASK-210, «Draw»; the direction is the compass word)
+  "The route starts {distance} {direction} of your start, where the shape fits the roads. Go to “Start here”.":
+    "La ruta empieza a {distance} al {direction} de tu inicio, donde la forma cabe en las calles. Ve a «Empieza aquí».",
+  "There are {distance} of steps along the way.":
+    "Hay {distance} de escaleras por el camino.",
+  "{distance} runs along main roads, with traffic.":
+    "{distance} van por calles principales, con tráfico.",
+  "{distance} runs through tunnels.": "{distance} pasan por túneles.",
+  "About {share}% of the route goes over the same roads twice.":
+    "Alrededor del {share}% de la ruta pasa dos veces por las mismas calles.",
+  "About {share}% of the route runs alongside itself.":
+    "Alrededor del {share}% de la ruta va paralela a sí misma.",
+  "The route is {share}% longer than asked.":
+    "La ruta es un {share}% más larga de lo pedido.",
+  "The route is {share}% shorter than asked.":
+    "La ruta es un {share}% más corta de lo pedido.",
+  "The roads here follow the shape only roughly.":
+    "Las calles de aquí siguen la forma solo a grandes rasgos.",
+  "Few roads here: the route follows the shape loosely.":
+    "Pocas calles aquí: la ruta sigue la forma de lejos.",
+  "The nearest road is {distance} away: the route begins there.":
+    "La calle más cercana está a {distance}: la ruta empieza allí.",
+  "A bit of the shape has no road to follow, so the route skips it.":
+    "Un trozo de la forma no tiene calle que seguir, y la ruta lo salta.",
+
+  // src/route/wordInput.ts (TASK-210, «Draw»)
+  "Write a word to draw, with the letters A to Z.":
+    "Escribe una palabra para dibujar, con las letras de la A a la Z.",
+  "One word only, without spaces.": "Solo una palabra, sin espacios.",
+  "No letter “{letter}”: a word can use only the letters A to Z, without accents.":
+    "Sin «{letter}»: una palabra solo puede usar las letras de la A a la Z, sin acentos.",
+  "At most {most} letters.": "Como máximo {most} letras.",
+  "At most {most} letters: each needs {each} km, and the app goes up to {highest} km.":
+    "Como máximo {most} letras: cada una necesita {each} km, y la app llega hasta {highest} km.",
+  "“{word}” needs at least {km} km: {each} km for each letter.":
+    "«{word}» necesita al menos {km} km: {each} km por cada letra.",
+
+  // src/route/ImageChoice.tsx (TASK-210, «Draw»)
+  "Choose another": "Elegir otra",
+  "Choose picture": "Elegir foto",
+  "Take photo": "Hacer una foto",
+  "Hide the picture": "Ocultar la foto",
+  "Show the picture": "Mostrar la foto",
+  "Edit the outline": "Editar el contorno",
+  "One subject on a plain background works best: a drawing, a logo, an object on a bare table. The route follows its outside line. Up to 4 separate subjects are joined in one line.":
+    "Lo mejor es un solo sujeto sobre un fondo liso: un dibujo, un logo, un objeto en una mesa vacía. La ruta sigue su línea exterior. Hasta 4 sujetos separados se unen en una sola línea.",
+  "Tracing the outline…": "Trazando el contorno…",
+  "The yellow line is what the route will draw. If it does not look like the subject, the route will not either: try another picture, or edit the outline. Separate subjects are joined by a short line, which the route runs there and back.":
+    "La línea amarilla es lo que dibujará la ruta. Si no se parece al sujeto, la ruta tampoco: prueba otra foto o edita el contorno. Los sujetos separados se unen con una línea corta, que la ruta recorre ida y vuelta.",
+
+  // src/route/OutlineBoard.tsx (TASK-210, «Draw»)
+  "Add a part": "Añadir una parte",
+  "Add a detail": "Añadir un detalle",
+  "Choose what to add. Two fingers zoom and move the picture.":
+    "Elige qué añadir. Con dos dedos amplías y mueves la foto.",
+  "Draw a closed shape. Across the yellow line it becomes part of the outline; anywhere else it is joined to the nearest yellow line.":
+    "Dibuja una forma cerrada. Sobre la línea amarilla pasa a ser parte del contorno; en otro sitio se une a la línea amarilla más cercana.",
+  "Draw a line anywhere: it is joined to the nearest yellow line, and the route runs along it and back. Close a loop to make an eye.":
+    "Dibuja una línea donde quieras: se une a la línea amarilla más cercana, y la ruta la recorre ida y vuelta. Cierra un bucle para hacer un ojo.",
+  Fit: "Ajustar",
+  "Adding the part…": "Añadiendo la parte…",
+  "Adding the detail…": "Añadiendo el detalle…",
+  Undo: "Deshacer",
+
+  // src/route/LoadingBar.tsx (TASK-210, «Draw»: what a screen reader hears)
+  "Still waiting": "Todavía esperando",
+  "Drawing the route": "Dibujando la ruta",
+  "Reading the shape": "Leyendo la forma",
+  "Loading the map": "Cargando el mapa",
+
+  // src/route/DistanceStepper.tsx (TASK-210, «Draw»)
+  "Distance in km": "Distancia en km",
+  Shorter: "Más corta",
+  Longer: "Más larga",
+
+  // src/route/RouteTiles.tsx, ImagePreview.tsx (TASK-210, «Draw»: what a screen reader hears)
+  "Route {label}, {distance}, {likeness} like the shape":
+    "Ruta {label}, {distance}, {likeness} parecida a la forma",
+  "The outline traced from the picture": "El contorno trazado de la foto",
+
   // src/screens/PeopleScreen.tsx
   "Find friends": "Buscar amigos",
 
@@ -566,8 +740,6 @@ export const ES: Table = {
   Pace: "Ritmo",
 
   // src/share/sharePicture.ts
-  "This phone cannot open the share sheet.":
-    "Este teléfono no puede abrir el menú de compartir.",
   "The picture could not be made. Try again.":
     "No se pudo crear la imagen. Inténtalo de nuevo.",
 
@@ -814,7 +986,6 @@ export const ES: Table = {
     "Las rutas no se han cargado. Comprueba la conexión e inténtalo de nuevo.",
   "Ask for a route": "Pide una ruta",
   "Getting directions…": "Obteniendo indicaciones…",
-  Start: "Empezar",
   CITY: "CIUDAD",
   "Type a city or a place": "Escribe una ciudad o un lugar",
   "No city or place matches “{typed}”.":
@@ -829,8 +1000,6 @@ export const ES: Table = {
   "The route could not load. Try again.":
     "La ruta no se ha cargado. Inténtalo de nuevo.",
   "Drawing a {distance} {title}…": "Dibujando {title} de {distance}…",
-  "Preparing GPX…": "Preparando el GPX…",
-  "Export GPX": "Exportar GPX",
   "The GPX could not be made. Try again.":
     "No se ha podido crear el GPX. Inténtalo de nuevo.",
   "It passes by none of the {found} {theme} found: the shape did not fit near them.":

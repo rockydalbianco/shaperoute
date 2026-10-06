@@ -40,7 +40,7 @@ export function DistanceStepper({
     <View style={[styles.row, !editable && styles.off]}>
       <Step
         label="−"
-        name="Shorter"
+        name={t("Shorter")}
         editable={editable}
         onPress={() => onText(stepDistance(text, -1, activity, units))}
       />
@@ -55,14 +55,14 @@ export function DistanceStepper({
           selectTextOnFocus
           textAlign="center"
           accessibilityLabel={
-            units === "mi" ? t("Distance in miles") : "Distance in km"
+            units === "mi" ? t("Distance in miles") : t("Distance in km")
           }
         />
         <Text style={styles.unit}>{units}</Text>
       </View>
       <Step
         label="+"
-        name="Longer"
+        name={t("Longer")}
         editable={editable}
         onPress={() => onText(stepDistance(text, 1, activity, units))}
       />

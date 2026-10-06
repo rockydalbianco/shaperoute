@@ -160,8 +160,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (logo: il cuore su giallo con la scritta «MuW», scelta dell'utente):
   icona iOS e Android, splash, favicon, `docs/brand/muw-*.svg` e il
   generatore `make_brand.py`; in PR, **anteprima mostrata all'utente, il
-  merge aspetta il suo ok**. Icona e splash si vedono solo in una build
-  propria. Non si toccano `bundleIdentifier`, `slug`, il sito.
+  merge aspetta il suo ok**. Con l'aggiornamento su `preview` (Expo Go)
+  sul telefono arrivano subito solo la scritta «MuW» all'avvio e in
+  «salvato»: icona, splash e favicon di `app.json` si vedono solo con
+  una build nativa. Non si toccano `bundleIdentifier`, `slug`, il sito.
   `tasks/TASK-260.md`.
 
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il

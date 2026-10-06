@@ -54,6 +54,9 @@ dell'app nelle cinque lingue. Chiesto dall'utente il 2026-10-06
       `black` e pytest di `test_strava.py` e `test_run_gpx.py` verdi.
 - [ ] Parte B: l'avvio mostra il cuore e «MuW»; l'icona è il cuore su
       giallo; l'anteprima è approvata dall'utente prima del merge.
+      Con l'aggiornamento su `preview` (Expo Go) arrivano subito solo
+      la scritta all'avvio e in «salvato»: icona, splash e favicon di
+      `app.json` si vedono solo con una build nativa.
 
 ## File toccati
 

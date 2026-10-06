@@ -527,7 +527,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   km, gli avvisi del motore, la parola, la foto e il contorno, 101 testi
   nuovi (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`;
   i nomi delle forme restano inglesi fino alla loro parte; testi
-  approvati dall'utente il 2026-10-06, PR #421 in coda. L'utente ha
+  approvati dall'utente il 2026-10-06; in `main` con la PR #421 (merge
+  `438c019`), da pubblicare. L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:

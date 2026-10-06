@@ -127,11 +127,14 @@ In coda, dopo o accanto:
   prima `shaperoute-api:before-task232c`, copia del database
   `shaperoute-2026-10-06T0723Z.dump`; `draw_examples` finito («70 of 72»:
   a Tenna il cuore e a Calceranica il cerchio non si disegnano). Zone del
-  telefono: 528 file. Acqua della canoa: 247 file, 93 MB. **App** su
-  `preview` da `main` `f41eaea` (gruppo `1541decf`): tutto `main`, fino
-  ai disegni salvati girati (TASK-232 C), alla navigazione che non salta
-  (TASK-253) e alle code sul telefono (TASK-252). **Da provare
-  sull'iPhone.** Strava spento per scelta dell'utente.
+  telefono: 528 file. Acqua della canoa: 248 file (Ledro dal 2026-10-06,
+  TASK-250). **Manca sul server** Ledro nell'elenco dei laghi dell'API
+  (#406): aspetta l'ok dell'utente. **App** su `preview` da `main`
+  `938c70d` (gruppo `37310f11`, 2026-10-06 ~10:50Z): tutto `main`, fino
+  agli errori che parlano a chi corre (TASK-256), alla corsa rifiutata
+  con il motivo (TASK-257), allo schermo acceso in corsa (TASK-255), alle
+  dodici correzioni piccole (TASK-254) e a Ledro in «Paddle» (TASK-250).
+  **Da provare sull'iPhone.** Strava spento per scelta dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

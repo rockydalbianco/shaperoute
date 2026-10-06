@@ -779,4 +779,38 @@ export const DE: Table = {
     "Erlaube ihn für Sgrava in den Einstellungen, um der Route zu folgen.",
   "Allow it for Sgrava in Settings to record your track.":
     "Erlaube ihn für Sgrava in den Einstellungen, um deine Strecke aufzuzeichnen.",
+  // src/activities/RunEnd.tsx, src/social/PublicParts.tsx, PublicRow.tsx,
+  // DrawingCard.tsx (TASK-208)
+  "This run could not be kept on the phone. Try again.":
+    "Dieser Lauf konnte nicht auf dem Telefon behalten werden. Versuch es noch einmal.",
+  "Save to My activities": "In Meine Aktivitäten speichern",
+  Tagged: "Markiert",
+  "{name}'s profile": "Profil von {name}",
+  "Photo {n}": "Foto {n}",
+  "Photos of a run only you can see stay on this phone. Delete the app or change phone and they are gone.":
+    "Fotos eines Laufs, den nur du siehst, bleiben auf diesem Telefon. Löschst du die App oder wechselst das Telefon, sind sie weg.",
+  "Its photos leave Sgrava and stay only on this phone.":
+    "Seine Fotos verlassen Sgrava und bleiben nur auf diesem Telefon.",
+  "Every member sees it in your profile, without the first and last 200 m.":
+    "Jedes Mitglied sieht ihn in deinem Profil, ohne die ersten und letzten 200 m.",
+  "Your followers see it in your profile, without the first and last 200 m.":
+    "Deine Follower sehen ihn in deinem Profil, ohne die ersten und letzten 200 m.",
+  "Saved on the phone. It is sent when you are back online.":
+    "Auf dem Telefon gespeichert. Wird gesendet, sobald du wieder online bist.",
+  "Saved on the phone. Others see it when you are back online.":
+    "Auf dem Telefon gespeichert. Andere sehen ihn, sobald du wieder online bist.",
+  Bike: "Rad",
+  Paddle: "Paddeln",
+  Title: "Titel",
+  "Give it a name": "Gib ihm einen Namen",
+  "How did it go?": "Wie war's?",
+  Activity: "Aktivität",
+  Everyone: "Alle",
+  "Only me": "Nur ich",
+  "Who can see it": "Wer kann es sehen",
+  "Tag people": "Personen markieren",
+  "Remove photo {n}": "Foto {n} entfernen",
+  "Add photo": "Foto hinzufügen",
+  "This photo could not be kept on the phone. Try again.":
+    "Dieses Foto konnte nicht auf dem Telefon behalten werden. Versuch es noch einmal.",
 };

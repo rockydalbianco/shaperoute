@@ -770,4 +770,38 @@ export const IT: Table = {
     "Consentila a Sgrava nelle Impostazioni per seguire il percorso.",
   "Allow it for Sgrava in Settings to record your track.":
     "Consentila a Sgrava nelle Impostazioni per registrare la traccia.",
+  // src/activities/RunEnd.tsx, src/social/PublicParts.tsx, PublicRow.tsx,
+  // DrawingCard.tsx (TASK-208)
+  "This run could not be kept on the phone. Try again.":
+    "Questa corsa non si è potuta tenere sul telefono. Riprova.",
+  "Save to My activities": "Salva in Le mie attività",
+  Tagged: "Taggati",
+  "{name}'s profile": "Profilo di {name}",
+  "Photo {n}": "Foto {n}",
+  "Photos of a run only you can see stay on this phone. Delete the app or change phone and they are gone.":
+    "Le foto di una corsa che vedi solo tu restano su questo telefono. Se cancelli l'app o cambi telefono, si perdono.",
+  "Its photos leave Sgrava and stay only on this phone.":
+    "Le sue foto lasciano Sgrava e restano solo su questo telefono.",
+  "Every member sees it in your profile, without the first and last 200 m.":
+    "Ogni iscritto la vede nel tuo profilo, senza i primi e gli ultimi 200 m.",
+  "Your followers see it in your profile, without the first and last 200 m.":
+    "I tuoi follower la vedono nel tuo profilo, senza i primi e gli ultimi 200 m.",
+  "Saved on the phone. It is sent when you are back online.":
+    "Salvata sul telefono. Viene inviata quando torni online.",
+  "Saved on the phone. Others see it when you are back online.":
+    "Salvata sul telefono. Gli altri la vedono quando torni online.",
+  Bike: "Bici",
+  Paddle: "Pagaia",
+  Title: "Titolo",
+  "Give it a name": "Dalle un nome",
+  "How did it go?": "Com'è andata?",
+  Activity: "Attività",
+  Everyone: "Tutti",
+  "Only me": "Solo io",
+  "Who can see it": "Chi può vederla",
+  "Tag people": "Tagga persone",
+  "Remove photo {n}": "Togli la foto {n}",
+  "Add photo": "Aggiungi foto",
+  "This photo could not be kept on the phone. Try again.":
+    "Questa foto non si è potuta tenere sul telefono. Riprova.",
 };

@@ -772,4 +772,38 @@ export const FR: Table = {
     "Autorise-la pour Sgrava dans Réglages pour suivre le parcours.",
   "Allow it for Sgrava in Settings to record your track.":
     "Autorise-la pour Sgrava dans Réglages pour enregistrer ta trace.",
+  // src/activities/RunEnd.tsx, src/social/PublicParts.tsx, PublicRow.tsx,
+  // DrawingCard.tsx (TASK-208)
+  "This run could not be kept on the phone. Try again.":
+    "Cette course n'a pas pu être gardée sur le téléphone. Réessaie.",
+  "Save to My activities": "Enregistrer dans Mes activités",
+  Tagged: "Identifiés",
+  "{name}'s profile": "Profil de {name}",
+  "Photo {n}": "Photo {n}",
+  "Photos of a run only you can see stay on this phone. Delete the app or change phone and they are gone.":
+    "Les photos d'une course que toi seul vois restent sur ce téléphone. Si tu supprimes l'app ou changes de téléphone, elles sont perdues.",
+  "Its photos leave Sgrava and stay only on this phone.":
+    "Ses photos quittent Sgrava et restent seulement sur ce téléphone.",
+  "Every member sees it in your profile, without the first and last 200 m.":
+    "Chaque membre la voit dans ton profil, sans les 200 premiers et derniers mètres.",
+  "Your followers see it in your profile, without the first and last 200 m.":
+    "Tes abonnés la voient dans ton profil, sans les 200 premiers et derniers mètres.",
+  "Saved on the phone. It is sent when you are back online.":
+    "Enregistrée sur le téléphone. Elle est envoyée quand tu seras de nouveau en ligne.",
+  "Saved on the phone. Others see it when you are back online.":
+    "Enregistrée sur le téléphone. Les autres la voient quand tu seras de nouveau en ligne.",
+  Bike: "Vélo",
+  Paddle: "Pagaie",
+  Title: "Titre",
+  "Give it a name": "Donne-lui un nom",
+  "How did it go?": "Comment ça s'est passé ?",
+  Activity: "Activité",
+  Everyone: "Tout le monde",
+  "Only me": "Moi seulement",
+  "Who can see it": "Qui peut la voir",
+  "Tag people": "Identifier des personnes",
+  "Remove photo {n}": "Retirer la photo {n}",
+  "Add photo": "Ajouter une photo",
+  "This photo could not be kept on the phone. Try again.":
+    "Cette photo n'a pas pu être gardée sur le téléphone. Réessaie.",
 };

@@ -78,6 +78,8 @@ apps/mobile/src/activities/outbox.ts                 (+ test)
 apps/mobile/src/activities/activitiesDoor.ts         (+ test)
 apps/mobile/src/activities/ActivitiesList.tsx        (+ test)
 apps/mobile/src/activities/RunEnd.tsx                (+ test)
+apps/mobile/src/activities/RunEnd.test.tsx           (nuovo; ok del coordinatore)
+apps/mobile/__tests__/AppActivities.test.tsx         (la prova del comportamento di prima; ok del coordinatore)
 apps/mobile/src/i18n/{de,it,es,fr}.ts
 apps/mobile/App.tsx                                  (solo se «Save» a telefono pieno lo richiede: dirlo nella PR)
 docs/UI.md, docs/STATUS.md, docs/DECISIONS.md        (le righe di questo task)

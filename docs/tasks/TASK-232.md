@@ -1,10 +1,12 @@
 # TASK-232 — Forme inclinate fino a 45°, con la mappa girata
 
-**Stato**: In lavorazione — parte A (motore e API) in `main` dalla #356
+**Stato**: Done — parte A (motore e API) in `main` dalla #356
 (`799071a`) e sul server; parte B (la mappa girata in «Draw» e in corsa,
 la freccia del nord) in `main` dalla #378 (`44f17c8`); parte B2
 («Explore») in `main` dalla #384 (`b2d7662`); parte C (i disegni salvati,
-migrazione `0018`) in PR dal 2026-10-06
+migrazione `0018`) in `main` dalla #395 (`f41eaea`, 2026-10-06). Server
+con `0018` e pubblicazione dell'app: del coordinatore, con l'ok
+dell'utente
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
 `feat/TASK-232-b-turned-map` (B), `feat/TASK-232-b2-explore-turned` (B2),
 `feat/TASK-232-c-saved-turned` (C)
@@ -419,7 +421,8 @@ dalla #378, `44f17c8`, il 2026-10-06; ADR-0195 «Parte B»):
   `RunDrawing.tsx` e `PostImage.tsx`; manca che le corse salvate e i
   preferiti tengano `rotation_deg` (API, una migrazione).
 
-**Parte C, i disegni salvati** (2026-10-06, API e app, in PR; ADR-0195
+**Parte C, i disegni salvati** (2026-10-06, API e app, in `main` dalla
+#395, `f41eaea`; ADR-0195
 «Parte C»; migrazione `0018`, il primo numero libero al merge):
 
 - **Le corse salvate e i preferiti tengono l'inclinazione** come l'app

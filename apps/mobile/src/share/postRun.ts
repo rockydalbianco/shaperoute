@@ -2,6 +2,7 @@ import type { Activity, LatLon } from "@shaperoute/shared-types";
 
 import { whereAndWhat } from "../activities/activityText";
 import type { ActivityDetail } from "../api/activities";
+import { turnOf } from "../explore/recommendedRoutes";
 import { t } from "../i18n";
 import { metresBetween } from "../map/coordinates";
 import { clockLabel } from "../navigation/freeRun";
@@ -27,7 +28,16 @@ export type PostRun = {
   /** What the run was, when the post knows: on the water its pace is of
    * 500 m (TASK-251). Absent, a run's. */
   activity?: Activity;
+  /** How far the route's shape is turned (TASK-232): the drawing on the
+   * post is turned back, so it reads upright. Absent, north up. */
+  rotationDeg?: number;
 };
+
+/** The turn of a route as the post keeps it: only when it is turned. */
+function turned(route: { rotation_deg?: number | null }): { rotationDeg?: number } {
+  const turn = turnOf(route).rotation_deg;
+  return turn === undefined ? {} : { rotationDeg: turn };
+}
 
 /** A run of «My activities» as its post shows it: its title, or where it
  * was and what it drew; its sport, when the API says it (TASK-251). */
@@ -39,12 +49,18 @@ export function postOfActivity(activity: ActivityDetail): PostRun {
     distanceM: activity.distance_m,
     durationMs: activity.duration_s * 1000,
     ...(activity.activity === undefined ? {} : { activity: activity.activity }),
+    ...turned(activity),
   };
 }
 
 /** A run that just ended, before «Save»: no title yet. `activity` is its
- * route's, when it followed one. */
-export function postOfTrack(track: Track, activity?: Activity): PostRun {
+ * route's, when it followed one, and `rotationDeg` how far the route's
+ * shape is turned. */
+export function postOfTrack(
+  track: Track,
+  activity?: Activity,
+  rotationDeg?: number,
+): PostRun {
   return {
     key: null,
     title: null,
@@ -52,6 +68,7 @@ export function postOfTrack(track: Track, activity?: Activity): PostRun {
     distanceM: track.distanceM,
     durationMs: durationMs(track),
     ...(activity === undefined ? {} : { activity }),
+    ...turned({ rotation_deg: rotationDeg }),
   };
 }
 

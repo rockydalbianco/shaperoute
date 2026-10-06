@@ -47,6 +47,10 @@ export type SavedRun = {
    * a run on the water writes a paddler's pace. Absent for a run, and
    * before TASK-251. */
   activity?: Activity;
+  /** How far the route's shape is turned (RouteResult.rotation_deg,
+   * TASK-232): the run saved and its post show the drawing turned back.
+   * Absent for a route north up, and before TASK-232 part C. */
+  rotation_deg?: number;
   track: Track;
   status: RunStatus;
 };
@@ -153,6 +157,7 @@ function isSavedRun(value: unknown): value is SavedRun {
       (Array.isArray(run.walks) && run.walks.every(isWalk))) &&
     (run.activity === undefined ||
       (ACTIVITIES as readonly unknown[]).includes(run.activity)) &&
+    (run.rotation_deg === undefined || typeof run.rotation_deg === "number") &&
     (run.status === "running" ||
       run.status === "stopped" ||
       run.status === "arrived") &&
@@ -221,6 +226,8 @@ export type RunRecorder = {
  * else in the file is replaced at the first fix kept. `walks` are the
  * route's, for a word with the pen up (TASK-198): kept for the score.
  * `activity` is the route's, kept when it is not a run's (TASK-251).
+ * `rotationDeg` is how far the route's shape is turned, kept when it is
+ * (TASK-232): the run saved shows the drawing turned back.
  */
 export function startRun(
   route: LatLon[],
@@ -228,6 +235,7 @@ export function startRun(
   similarity?: number,
   walks: readonly Walk[] = [],
   activity?: Activity,
+  rotationDeg?: number,
 ): RunRecorder {
   let track = resumable(loadRun(), route, nowMs) ?? emptyTrack();
   let status: RunStatus = "running";
@@ -239,6 +247,11 @@ export function startRun(
     walks.length > 0 ? { walks: walks.map(([from, to]): Walk => [from, to]) } : {};
   // Only when it is not a run: the file of a run is as it was.
   const sport = activity === undefined || activity === "running" ? {} : { activity };
+  // Only when the shape is turned: the file of any other route is as it was.
+  const turned =
+    typeof rotationDeg === "number" && Number.isFinite(rotationDeg) && rotationDeg !== 0
+      ? { rotation_deg: rotationDeg }
+      : {};
 
   // The run as it would be in the file, when the last write failed.
   let notWritten: SavedRun | null = null;
@@ -250,6 +263,7 @@ export function startRun(
       similarity,
       ...walked,
       ...sport,
+      ...turned,
       track,
       status,
     };

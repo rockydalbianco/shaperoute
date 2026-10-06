@@ -13,7 +13,9 @@ import { forgetExamples, movedExample, useCityExamples } from "./exampleRoutes";
 import { optionsOf, toResult, useExplored } from "./explored";
 import type { RecommendedRoute, RecommendedRouteDetail } from "./recommendedRoutes";
 
-const star = detail as RecommendedRouteDetail;
+// The star of the example is turned since TASK-232 part C: here, a route
+// that does not say how it is turned.
+const { rotation_deg: _starTurn, ...star } = detail as RecommendedRouteDetail;
 const drawn = routeResult as unknown as RouteResult;
 const [other] = drawn.alternatives ?? [];
 /** The engine's route turned 30° counterclockwise; the other one upright. */
@@ -35,7 +37,8 @@ const listed: RecommendedRoute = {
 
 test("the result of a turned route says how it is turned", () => {
   expect(toResult({ ...star, rotation_deg: -25 }).rotation_deg).toBe(-25);
-  // A route of the catalogue does not say: north up.
+  expect(toResult(detail as RecommendedRouteDetail).rotation_deg).toBe(-30);
+  // A route that does not say: north up.
   expect(toResult(star)).not.toHaveProperty("rotation_deg");
   expect(toResult({ ...star, rotation_deg: 0 })).not.toHaveProperty("rotation_deg");
 });

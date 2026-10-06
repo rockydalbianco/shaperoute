@@ -41,6 +41,13 @@ export type Favorite = {
    * TASK-200, whose favorites are all runs. Read through `favoriteActivity`.
    */
   activity?: string;
+  /**
+   * How far its shape is turned, as RouteResult.rotation_deg (TASK-232):
+   * the card and the map show it turned back. Null for a route north up and
+   * every favorite kept before; missing from an API older than TASK-232
+   * part C. Read through `turnOf`.
+   */
+  rotation_deg?: number | null;
 };
 
 /** One favorite whole, to show on the map. */
@@ -87,6 +94,12 @@ export type FavoriteRequest = {
    * when it has some: an API older than TASK-206 refuses the field.
    */
   on_foot?: Stretch[];
+  /**
+   * How far its shape is turned, as RouteResult.rotation_deg (TASK-232,
+   * ADR-0195). Sent only when the route is turned: an API older than
+   * TASK-232 part C refuses the field.
+   */
+  rotation_deg?: number;
 };
 
 /**
@@ -100,18 +113,39 @@ export function favoriteActivity(favorite: { activity?: string }): Activity {
 
 /**
  * `request` as an app older than TASK-199 sends it, without the fields added
- * since (TASK-199 `walks`, TASK-200 `activity`, TASK-206 `on_foot`), which
- * an older API refuses. The same object when it has none.
+ * since (TASK-199 `walks`, TASK-200 `activity`, TASK-206 `on_foot`, TASK-232
+ * `rotation_deg`), which an older API refuses. The same object when it has
+ * none.
  */
 export function asBefore(request: FavoriteRequest): FavoriteRequest {
   if (
     request.walks === undefined &&
     request.activity === undefined &&
-    request.on_foot === undefined
+    request.on_foot === undefined &&
+    request.rotation_deg === undefined
   ) {
     return request;
   }
-  const { walks: _walks, activity: _activity, on_foot: _onFoot, ...older } = request;
+  const {
+    walks: _walks,
+    activity: _activity,
+    on_foot: _onFoot,
+    rotation_deg: _turn,
+    ...older
+  } = request;
+  return older;
+}
+
+/**
+ * `request` as an app older than TASK-232 part C sends it, without the turn
+ * of its shape: an API before it refuses the field, and keeps the route as
+ * one north up. The same object when it has none.
+ */
+export function withoutTurn(request: FavoriteRequest): FavoriteRequest {
+  if (request.rotation_deg === undefined) {
+    return request;
+  }
+  const { rotation_deg: _turn, ...older } = request;
   return older;
 }
 
@@ -162,9 +196,10 @@ export function fetchFavorite(
  * PUT /me/favorites/{key}: kept once, however many times it is asked. A
  * word with the pen up, or a route not drawn for a run, that the API refuses
  * goes once more as an older app sends it (TASK-199, TASK-200, ADR-0158,
- * ADR-0160): an older API keeps it as one line, and as a run. A bike route
- * with the bike on foot is first sent again without its stretches (TASK-206,
- * ADR-0167), then, if refused again, as an older app sends it.
+ * ADR-0160): an older API keeps it as one line, and as a run. A turned
+ * route is first sent again without its turn (TASK-232, ADR-0195), a bike
+ * route with the bike on foot without its stretches (TASK-206, ADR-0167),
+ * then, if refused again, as an older app sends it.
  */
 export async function keepFavorite(
   baseUrl: string,
@@ -185,7 +220,7 @@ export async function keepFavorite(
     outcome.kind === "api_error" && outcome.code === "invalid_request";
   let sent = request;
   let outcome = await put(sent);
-  for (const older of [beforeOnFoot, asBefore]) {
+  for (const older of [withoutTurn, beforeOnFoot, asBefore]) {
     const next = older(sent);
     if (refused(outcome) && next !== sent) {
       sent = next;
@@ -244,7 +279,10 @@ function hasFields(body: Record<string, unknown>): boolean {
     typeof body.route_m === "number" &&
     typeof body.similarity === "number" &&
     typeof body.created_at === "string" &&
-    (body.activity === undefined || typeof body.activity === "string")
+    (body.activity === undefined || typeof body.activity === "string") &&
+    (body.rotation_deg === undefined ||
+      body.rotation_deg === null ||
+      typeof body.rotation_deg === "number")
   );
 }
 

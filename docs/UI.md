@@ -391,7 +391,11 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   città e la mappa del lago o del mare sotto la linea; la riga dei fatti
   comincia con lo sport, «Paddle · Heart · 2.0 km · 26 min». Nomi, titoli,
   tempi e punteggi sono inventati; i percorsi sono gli esempi che l'app ha
-  già per quei luoghi, disegnati dal motore sull'acqua vera. Un tocco apre
+  già per quei luoghi, disegnati dal motore sull'acqua vera. **Un disegno
+  che il motore ha inclinato** (TASK-232, parte C) è girato dall'altra
+  parte, linea e mappa sotto, così la figura si legge dritta: oggi i
+  quattro sull'acqua (gli esempi nell'app dicono l'inclinazione); quelli
+  delle corse la diranno quando la dirà il catalogo. Un tocco apre
   il percorso come un esempio di «Explore» con «Paddle», senza chiedere
   niente all'API: «on the water», «Start» con l'avviso della canoa, la
   linea senza indicazioni. Lo sport scelto non cambia.
@@ -867,7 +871,10 @@ dell'account.
   disegnato dal GPS, il giorno («Kept 2 Oct 2026»). Il titolo è la parola,
   o il tema di un percorso a tema, o la forma; un percorso da una foto è
   «Image». Il cuore nell'altro angolo del disegno toglie il preferito
-  dall'elenco, subito.
+  dall'elenco, subito. **Un preferito dalla forma inclinata** (TASK-232,
+  parte C) ha la scheda girata come in «Explore», e si apre con la mappa
+  girata e la freccia del nord; quelli tenuti prima restano col nord in
+  alto.
 - **Una scheda apre il percorso sulla mappa**, con la scheda dei percorsi di
   «Explore»: km, «star · Trento · looks 97% like it» («Favorite» al posto
   della città, quando non c'è), «Start», «Export GPX». «←» e «Back to the
@@ -961,7 +968,11 @@ telefono dell'account: con un percorso o senza.
   km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio.
   **Il punteggio non c'è** (TASK-241 parte D, chiesto dall'utente), né
   nell'elenco né sulla corsa aperta. Niente è giallo, tranne il percorso
-  nel disegno.
+  nel disegno. **Una corsa lungo un percorso inclinato** (TASK-232, parte
+  C) ha il disegno girato dall'altra parte, percorso e linea corsa
+  insieme, così la forma si legge dritta come sulla mappa; lo stesso nel
+  post da condividere (TASK-231) e nel disegno che gli altri vedono nel
+  profilo (TASK-117). Le corse salvate prima restano col nord in alto.
 - **Venti per volta**: in fondo «Show more» porta le venti successive. Il
   numero in «Profile» le conta tutte.
 - **Una scheda apre la corsa sulla mappa**: il percorso giallo e la linea

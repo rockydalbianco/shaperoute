@@ -3,6 +3,7 @@ import {
   fetchRecommended,
   fetchRecommendedRoute,
   type RecommendedRoute,
+  turnOf,
 } from "../explore/recommendedRoutes";
 import { paddleDetail } from "./paddlePosts";
 import type { SamplePost } from "./sampleFeed";
@@ -30,6 +31,8 @@ export function postRoute(post: SamplePost): RecommendedRoute {
     away_m: 0,
     preview: post.line,
     ...(post.gaps !== undefined ? { gaps: post.gaps } : {}),
+    // Turned as the drawing is (TASK-232), until the route says itself.
+    ...turnOf(post),
   };
 }
 

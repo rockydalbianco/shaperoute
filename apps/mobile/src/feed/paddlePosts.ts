@@ -6,6 +6,7 @@ import {
   PADDLE_EXAMPLES,
   thinned,
 } from "../explore/exampleRoutes";
+import { turnOf } from "../explore/recommendedRoutes";
 import { WATER_PLACES } from "../paddle/waterPlaces";
 import { walksOf } from "../route/walks";
 import type { SamplePost } from "./sampleFeed";
@@ -113,6 +114,8 @@ export const PADDLE_POSTS: readonly SamplePost[] = PADDLERS.flatMap(
         route_m: Math.round(detail.route_m),
         activity: "paddling" as const,
         ...lineOf(detail),
+        // Turned as the engine turned it on the water (TASK-232).
+        ...turnOf(detail),
       },
     ];
   },

@@ -310,6 +310,14 @@ nella query: il log di accesso non la scrive (ADR-0096).
 `GET /recommended-routes/{id}` dà il percorso intero (`points`, `license`;
 `recommended-route.json`), 404 per un id che non c'è.
 
+**`rotation_deg`** (TASK-232, parte C, ADR-0195), nell'elenco e nel
+percorso intero: di quanti gradi il motore ha girato la forma, come
+`RouteResult.rotation_deg`; l'app gira la scheda e la mappa dall'altra
+parte. `0` per un percorso dritto e per ogni percorso di un file di città
+che non lo dice (il catalogo di oggi è di prima della parte A: tutti `0`);
+lo scrive `seed_catalog` del motore quando il motore inclina, e un valore
+che non è un numero fra −180 e 180 si legge `0`.
+
 I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
 `--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
 nuovo vuole un riavvio dell'API.
@@ -1032,6 +1040,15 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
   Un'API precedente rifiuta il campo: l'app lo manda solo quando non è
   vuoto, e se il `PUT` torna `422 invalid_request` lo rimanda senza (parte
   C).
+- **L'inclinazione della forma** (TASK-232, parte C, ADR-0195, migrazione
+  `0018`): il corpo del `PUT` può avere `rotation_deg`, quello del
+  `RouteResult` (gradi, antiorario, fra −180 e 180), facoltativo; l'app lo
+  manda solo quando la forma è girata. Il preferito dell'elenco e quello
+  intero hanno **sempre** `rotation_deg`: `null` per un percorso dritto e
+  per quelli tenuti prima; la scheda e la mappa li girano dall'altra parte.
+  Esempi: `favorite-request-turned.json`, `favorite-turned.json`. Un'API
+  precedente rifiuta il campo: se il `PUT` torna `422 invalid_request`
+  l'app lo rimanda senza, prima di provare come un'app precedente.
 
 ### My activities (TASK-172, ADR-0140)
 
@@ -1112,6 +1129,17 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   L'elenco non le ha. Esempio: `activity-pauses.json`, la corsa di
   `activity-walks.json` con la sua pausa della penna. Un'API precedente non
   le manda: l'app legge il dettaglio anche senza, e oggi non le mostra.
+- **L'inclinazione del percorso** (TASK-232, parte C, ADR-0195, migrazione
+  `0018`): il corpo del `PUT` può avere `rotation_deg`, quello del
+  `RouteResult` del percorso seguito (gradi, antiorario, fra −180 e 180),
+  facoltativo e solo con `points` (senza percorso: `422`); l'app lo manda
+  solo quando la forma è girata. La corsa dell'elenco e quella intera hanno
+  **sempre** `rotation_deg`: `null` senza percorso, per un percorso dritto
+  e per le corse salvate prima; «My activities» e il post le disegnano
+  girate dall'altra parte, così la forma si legge dritta. Esempi:
+  `activity-request-turned.json`, `activity-turned.json`. Un'API precedente
+  rifiuta il campo: se il `PUT` torna `422 invalid_request` l'app lo rimanda
+  senza, prima di provare come un'app precedente a TASK-199.
 - **Le pagine**: `GET /me/activities?limit=20&cursor=…`, `limit` da 1 a
   50. `next` è il `cursor` della pagina dopo, `null` all'ultima; `total` è
   il numero di tutte le corse dell'account, su ogni pagina. L'ordine è
@@ -1403,6 +1431,12 @@ nuovi. Il codice in `drawings.py` e `drawing_photos.py`.
   è il momento nuovo. L'`id` non cambia mai. Una corsa senza disegno ha
   `visibility` `only_me`, `tags` e `photos` vuoti, e l'`activity` della
   corsa.
+- **L'inclinazione** (TASK-232, parte C): il disegno dell'elenco e quello
+  intero hanno **sempre** `rotation_deg`, quello della corsa in «My
+  activities» (`runs.route_rotation_deg`): `null` senza percorso, per un
+  percorso dritto e per le corse salvate prima. Chi lo vede lo disegna
+  girato dall'altra parte. `MyDrawing` non ce l'ha: è della corsa, non del
+  disegno.
 - **Le foto**, fino a tre oltre alla mappa, ognuna nel suo **posto** `n`
   (da 1 a 3; `0` o `4` sono `422`): il `PUT` mette la foto nel posto (`{
   "image": … }`, un JPEG o PNG in base64 fino a 10 MB, come la foto del

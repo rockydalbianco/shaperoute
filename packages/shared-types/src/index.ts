@@ -835,6 +835,13 @@ interface DrawingFields {
   activity?: Activity;
   tags?: DrawingTag[];
   photos?: DrawingPhoto[];
+  /**
+   * How far the planned route's shape is turned, as RouteResult.rotation_deg
+   * (TASK-232, ADR-0195): the drawing is shown turned back, so it reads
+   * upright. Null for a run without a route, one north up and every run
+   * saved before; missing from an API before TASK-232 part C.
+   */
+  rotation_deg?: number | null;
 }
 
 /** One drawing of GET /users/{public_id}/drawings. */

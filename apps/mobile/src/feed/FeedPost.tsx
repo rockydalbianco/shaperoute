@@ -12,6 +12,7 @@ import { cityName } from "../explore/recommendedRoutes";
 import { thumbSegments } from "../explore/RouteThumb";
 import { t, tLater } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
+import { bearingOf } from "../map/turnedMap";
 import { durationLabel } from "../screens/FinishScreen";
 import { SPORTS } from "../settings/sport";
 import {
@@ -27,6 +28,7 @@ import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { useFeedMap } from "./FeedMaps";
 import type { SamplePost } from "./sampleFeed";
+import { turnedLine } from "./turnedLine";
 
 /** How tall the drawing is, for how wide: most figures are wider than tall. */
 const DRAWING_RATIO = 0.62;
@@ -83,18 +85,27 @@ export function postFacts(post: SamplePost): string {
  * the line, once its picture is taken, the map of where it was run
  * (TASK-162). With `onOpen` a tap opens its route on the map, to keep among
  * the favorites or to run (TASK-188). A drawing on the water is drawn the
- * same, in pieces when its shape is (TASK-228).
+ * same, in pieces when its shape is (TASK-228). A figure the engine turned
+ * is drawn turned back, line and map, so it reads upright (TASK-232).
  */
 export function FeedPost({ post, width, onOpen }: Props) {
   // The line of facts is written again when «Settings» changes the units
   // (TASK-182).
   useUnits();
   const height = drawingHeight(width);
+  const bearing = bearingOf(post.rotation_deg);
   const segments = useMemo(
-    () => thumbSegments(post.line, width, height, DRAWING_PAD, post.gaps),
-    [post.line, post.gaps, width, height],
+    () =>
+      thumbSegments(
+        turnedLine(post.line, bearing),
+        width,
+        height,
+        DRAWING_PAD,
+        post.gaps,
+      ),
+    [post.line, bearing, post.gaps, width, height],
   );
-  const map = useFeedMap(post.id, post.line, width, height, DRAWING_PAD);
+  const map = useFeedMap(post.id, post.line, width, height, DRAWING_PAD, bearing);
   const city = cityName(post.city);
   // Where the finger came down. «Feed» is the first page: a swipe towards
   // it moves nothing, so nothing takes the touch away, and it would end as

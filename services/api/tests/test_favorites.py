@@ -3,7 +3,8 @@ open and remove it; each account sees only its own; the bodies are the
 examples of packages/shared-types/fixtures. A word with the pen up keeps its
 walks (TASK-199); a route keeps the activity it was drawn for, and those
 kept before are runs (TASK-200); a bike route keeps where it is walked with
-the bike on foot (TASK-206)."""
+the bike on foot (TASK-206); a route whose shape the engine turned keeps the
+turn, and those kept before are north up (TASK-232 part C)."""
 
 from __future__ import annotations
 
@@ -47,6 +48,9 @@ ACTIVITY_MIGRATIONS = ("_favorite_activity.sql", "_favorite_paddling.sql")
 # app sends and an older API answers.
 ON_FOOT = {"on_foot"}
 ON_FOOT_KEY = "e5a90c3b1d7f2468"
+# Added by TASK-232 part C, the same way.
+TURN = {"rotation_deg"}
+TURNED_KEY = "c4e1f7a2b9d05836"
 
 
 def _load(name: str) -> Any:
@@ -116,10 +120,13 @@ def test_the_fixtures_are_the_contract() -> None:
             "activity",
         }
         - ON_FOOT
+        - TURN
     )
     FavoriteRequestBody.model_validate(body)
     listed = _load("favorites.json")
-    assert set(listed["favorites"][0]) == set(FavoriteBody.model_fields) - {"activity"}
+    assert set(listed["favorites"][0]) == (
+        set(FavoriteBody.model_fields) - {"activity"} - TURN
+    )
     whole = _load("favorite.json")
     assert (
         set(whole)
@@ -129,31 +136,47 @@ def test_the_fixtures_are_the_contract() -> None:
             "activity",
         }
         - ON_FOOT
+        - TURN
     )
     # A word with the pen up (TASK-199), still without the activity: a run.
     walked = _load("favorite-request-walks.json")
-    assert set(walked) == set(FavoriteRequestBody.model_fields) - {"activity"} - ON_FOOT
+    assert set(walked) == (
+        set(FavoriteRequestBody.model_fields) - {"activity"} - ON_FOOT - TURN
+    )
     FavoriteRequestBody.model_validate(walked)
     whole_walked = _load("favorite-walks.json")
     assert set(whole_walked) == (
-        set(FavoriteDetailBody.model_fields) - {"activity"} - ON_FOOT
+        set(FavoriteDetailBody.model_fields) - {"activity"} - ON_FOOT - TURN
     )
     # A bike route (TASK-200): a shape, so no walks in the request.
     cycling = _load("favorite-request-cycling.json")
-    assert set(cycling) == set(FavoriteRequestBody.model_fields) - {"walks"} - ON_FOOT
+    assert set(cycling) == (
+        set(FavoriteRequestBody.model_fields) - {"walks"} - ON_FOOT - TURN
+    )
     assert FavoriteRequestBody.model_validate(cycling).activity == "cycling"
     listed_now = _load("favorites-cycling.json")
     for favorite in listed_now["favorites"]:
-        assert set(favorite) == set(FavoriteBody.model_fields)
+        assert set(favorite) == set(FavoriteBody.model_fields) - TURN
     FavoritesBody.model_validate(listed_now)
     whole_cycling = _load("favorite-cycling.json")
-    assert set(whole_cycling) == set(FavoriteDetailBody.model_fields) - ON_FOOT
+    assert set(whole_cycling) == set(FavoriteDetailBody.model_fields) - ON_FOOT - TURN
+    # A route whose shape is turned (TASK-232 part C): the request of before
+    # with its turn, a run; and the favorite whole with every field.
+    turned = _load("favorite-request-turned.json")
+    assert set(turned) == (
+        set(FavoriteRequestBody.model_fields) - {"walks", "activity"} - ON_FOOT
+    )
+    assert {**turned, "rotation_deg": None} == {**body, "rotation_deg": None}
+    assert FavoriteRequestBody.model_validate(turned).rotation_deg == -30
+    whole_turned = _load("favorite-turned.json")
+    assert set(whole_turned) == set(FavoriteDetailBody.model_fields)
+    assert FavoriteDetailBody.model_validate(whole_turned).rotation_deg == -30
     # A bike route walked in part (TASK-206): every field.
     on_foot = _load("favorite-request-on-foot.json")
-    assert set(on_foot) == set(FavoriteRequestBody.model_fields) - {"walks"}
+    assert set(on_foot) == set(FavoriteRequestBody.model_fields) - {"walks"} - TURN
     assert FavoriteRequestBody.model_validate(on_foot).on_foot == [(2, 3)]
     whole_on_foot = _load("favorite-on-foot.json")
-    assert set(whole_on_foot) == set(FavoriteDetailBody.model_fields)
+    assert set(whole_on_foot) == set(FavoriteDetailBody.model_fields) - TURN
     FavoriteDetailBody.model_validate(whole_on_foot)
 
 
@@ -181,8 +204,12 @@ def test_a_route_kept_is_listed_as_the_example(client: TestClient) -> None:
     me = signed_up(client)
     kept = client.put(f"/me/favorites/{KEY}", json=request(), headers=me)
     assert kept.status_code == 201
-    # The example of before TASK-200: a run.
-    expected = {**_load("favorites.json")["favorites"][0], "activity": "running"}
+    # The example of before TASK-200: a run; north up (TASK-232).
+    expected = {
+        **_load("favorites.json")["favorites"][0],
+        "activity": "running",
+        "rotation_deg": None,
+    }
     assert kept.json() == expected
     listed = client.get("/me/favorites", headers=me)
     assert listed.status_code == 200
@@ -194,13 +221,48 @@ def test_a_favorite_opens_whole_as_the_example(client: TestClient) -> None:
     client.put(f"/me/favorites/{KEY}", json=request(), headers=me)
     whole = client.get(f"/me/favorites/{KEY}", headers=me)
     assert whole.status_code == 200
-    # The example of before TASK-199, and no walks; a run.
+    # The example of before TASK-199, and no walks; a run; north up.
     assert whole.json() == {
         **_load("favorite.json"),
         "walks": [],
         "activity": "running",
         "on_foot": [],
+        "rotation_deg": None,
     }
+
+
+def test_a_turned_route_is_kept_with_its_turn(client: TestClient) -> None:
+    """TASK-232 part C: the app sends how far the engine turned the shape,
+    and reads it back in the list and on the favorite whole, to draw the
+    card and turn the map."""
+    me = signed_up(client)
+    turned = _load("favorite-request-turned.json")
+    kept = client.put(f"/me/favorites/{KEY}", json=turned, headers=me)
+    assert kept.status_code == 201
+    assert kept.json()["rotation_deg"] == -30
+    listed = client.get("/me/favorites", headers=me).json()["favorites"]
+    assert [favorite["rotation_deg"] for favorite in listed] == [-30]
+    whole = client.get(f"/me/favorites/{KEY}", headers=me)
+    assert whole.status_code == 200
+    assert whole.json() == _load("favorite-turned.json")
+    # Half degrees come back as sent (the water tries every 5°).
+    client.put(
+        f"/me/favorites/{TURNED_KEY}",
+        json={**turned, "rotation_deg": 22.5, "points": turned["points"][::-1]},
+        headers=me,
+    )
+    assert (
+        client.get(f"/me/favorites/{TURNED_KEY}", headers=me).json()["rotation_deg"]
+        == 22.5
+    )
+    # Beyond half a turn, or not a number: refused.
+    for turn in (181, -180.5, "thirty", [30]):
+        answer = client.put(
+            f"/me/favorites/{OTHER_KEY}",
+            json={**turned, "rotation_deg": turn},
+            headers=me,
+        )
+        assert answer.status_code == 422, turn
 
 
 def test_the_line_comes_back_digit_for_digit(client: TestClient) -> None:
@@ -279,6 +341,7 @@ def test_a_favorite_keeps_its_walks(client: TestClient) -> None:
         **_load("favorite-walks.json"),
         "activity": "running",
         "on_foot": [],
+        "rotation_deg": None,
     }
 
 
@@ -321,11 +384,18 @@ def test_a_bike_route_comes_back_a_bike_route(
     kept = client.put(f"/me/favorites/{BIKE_KEY}", json=cycling(), headers=me)
     assert kept.status_code == 201
     expected = _load("favorites-cycling.json")
+    expected["favorites"] = [
+        {**favorite, "rotation_deg": None} for favorite in expected["favorites"]
+    ]
     assert kept.json() == expected["favorites"][0]
     listed = client.get("/me/favorites", headers=me)
     assert listed.json() == expected
     whole = client.get(f"/me/favorites/{BIKE_KEY}", headers=me)
-    assert whole.json() == {**_load("favorite-cycling.json"), "on_foot": []}
+    assert whole.json() == {
+        **_load("favorite-cycling.json"),
+        "on_foot": [],
+        "rotation_deg": None,
+    }
     assert client.get(f"/me/favorites/{KEY}", headers=me).json()["activity"] == (
         "running"
     )
@@ -441,6 +511,7 @@ def test_favorites_kept_before_are_runs(
         "walks": [],
         "activity": "running",
         "on_foot": [],
+        "rotation_deg": None,
     }
     whole_walked = new.get(f"/me/favorites/{walked_key}", headers=me).json()
     assert whole_walked == {
@@ -448,6 +519,7 @@ def test_favorites_kept_before_are_runs(
         "id": walked_key,
         "activity": "running",
         "on_foot": [],
+        "rotation_deg": None,
     }
 
 
@@ -471,7 +543,7 @@ def test_a_bike_route_keeps_where_it_is_walked(
     assert "on_foot" not in listed[0]
     whole = client.get(f"/me/favorites/{ON_FOOT_KEY}", headers=me)
     assert whole.status_code == 200
-    assert whole.json() == _load("favorite-on-foot.json")
+    assert whole.json() == {**_load("favorite-on-foot.json"), "rotation_deg": None}
 
 
 @pytest.mark.parametrize(
@@ -545,6 +617,7 @@ def test_favorites_kept_before_walk_nowhere(
     assert new.get(f"/me/favorites/{BIKE_KEY}", headers=me).json() == {
         **_load("favorite-cycling.json"),
         "on_foot": [],
+        "rotation_deg": None,
     }
 
 

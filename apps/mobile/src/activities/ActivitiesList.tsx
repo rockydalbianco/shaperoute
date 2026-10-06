@@ -264,6 +264,7 @@ function ActivityRow({
           track={activity.track_preview}
           width={DRAWING}
           height={DRAWING}
+          rotationDeg={activity.rotation_deg}
         />
         <View style={styles.words}>
           <Text style={styles.when} numberOfLines={1}>

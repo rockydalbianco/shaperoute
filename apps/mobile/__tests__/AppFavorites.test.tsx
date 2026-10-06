@@ -149,6 +149,8 @@ test("the heart keeps the route on the map, and removes it", async () => {
     route_m: detail.route_m,
     similarity: detail.similarity,
     points: detail.points,
+    // The star of the example is turned (TASK-232): kept with its turn.
+    rotation_deg: detail.rotation_deg,
   });
 
   await fireEvent.press(screen.getByRole("button", { name: "Remove from favorites" }));

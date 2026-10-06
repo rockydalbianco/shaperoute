@@ -566,16 +566,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **API** — TASK-249: un paese toccato in «NEARBY TOWNS» e lo stesso
   paese cercato per nome sono la stessa città (ADR-0213; seguito di
-  TASK-236, scelto dall'utente il 2026-10-06). **In revisione**: PR #381,
-  aspetta la coda. Per Tenna, Calceranica al Lago, Caldonazzo, Riva del
+  TASK-236, scelto dall'utente il 2026-10-06). **Fatto**: in `main` dalla
+  #381 (`c290d04`). Per Tenna, Calceranica al Lago, Caldonazzo, Riva del
   Garda e altri comuni `GET /cities` dava il centro dell'area del comune,
   a 500–1200 m dal paese, e `GET /nearby-cities` il centro del paese: due
   punti, due serie di esempi tenuti, percorsi diversi. Ora il punto di un
   luogo è uno, il suo nodo `place` di OpenStreetMap: `/cities` lo chiede
   al Places per i risultati che sono aree. Solo API: **niente app, motore,
   database**. Provato col servizio vero dal Mac; delle 66 città con gli
-  esempi disegnati prima nessuna cambia punto. **Aspettano**: il merge,
-  poi l'aggiornamento del server (del coordinatore, con l'ok dell'utente;
+  esempi disegnati prima nessuna cambia punto. Se il Places non risponde
+  la ricerca torna ai punti di prima, senza tenerli. **Aspetta**
+  l'aggiornamento del server (del coordinatore, con l'ok dell'utente;
   nessun `draw_examples` del catalogo, solo Tenna, Calceranica e
   Caldonazzo per non far aspettare il primo telefono). **Seguito**: le
   etichette di una frazione e di un nome tradotto differiscono ancora fra

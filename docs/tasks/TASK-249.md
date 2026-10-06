@@ -1,6 +1,6 @@
 # TASK-249 — Un paese toccato in «NEARBY TOWNS» e lo stesso paese cercato per nome sono la stessa città
 
-**Stato**: In revisione — PR #381 aperta il 2026-10-06, aspetta la coda dei merge
+**Stato**: Done — in `main` dalla #381 (`c290d04`, 2026-10-06); sul server con il prossimo aggiornamento dell'API (del coordinatore, con l'ok dell'utente)
 **Fase**: 4 · **Branch**: `fix/TASK-249-one-town-one-point`
 **Dipende da**: TASK-236 (`GET /nearby-cities`, ADR-0200), TASK-168 (gli
 esempi tenuti, ADR-0136), TASK-129 (`GET /cities`, ADR-0099)

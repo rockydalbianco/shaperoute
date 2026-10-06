@@ -20,6 +20,8 @@ const NOT_SENT: StravaActivity = { status: "not_sent", url: null };
 type Props = {
   /** The saved run; null at the end of a run, before «Save». */
   runKey: string | null;
+  /** The run is on Strava with this post's text (TASK-258). */
+  onSent?: () => void;
   /** The post's emoji and results, over the text on Strava. */
   caption: string | null;
 };
@@ -31,7 +33,7 @@ type Props = {
  * Strava» puts it over the text it went with. The picture, kept in Photos,
  * is added there by hand. Nothing when the API has no Strava.
  */
-export function StravaPostRow({ runKey, caption }: Props) {
+export function StravaPostRow({ runKey, caption, onSent }: Props) {
   const strava = useStrava();
   const { status, busy, activityOf, send } = strava;
   const connected = status.available && status.connected;
@@ -93,6 +95,7 @@ export function StravaPostRow({ runKey, caption }: Props) {
       if (outcome.kind === "ok") {
         setKnown({ kind: "known", activity: outcome.value });
         setUpdated(updating);
+        onSent?.();
         return;
       }
       setKnown({ kind: "known", activity: updating ? was : NOT_SENT });

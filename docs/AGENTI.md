@@ -56,8 +56,9 @@ Alle 13:10 del 2026-10-06: nessuna PR aperta. In lavorazione
 TASK-258 (il post sul server, aspetta le tre risposte dell'utente) e
 TASK-259 («Open Settings» quando il telefono nega fotocamera, foto o
 posizione). Il telefono ha tutto `main` (gruppo `37310f11`); il server è
-a `f41eaea` e aspetta l'ok dell'utente per Ledro nell'elenco dell'API
-(#406) — una PR di soli documenti alla volta la mergia il coordinatore.
+a `f41eaea` e ha tutto ciò che serve (Ledro è solo acqua + app:
+`lake_catalog.py` è un comando offline). Le PR di soli documenti le
+mergia il coordinatore, una alla volta.
 Entra prima chi è pronto prima; la sessione proprietaria mergia da sola al
 5/5 verde e CLEAN, ricontrollato subito prima, dopo il «merge NNN» del
 coordinatore; quando il coordinatore scrive «al verde mergia senza
@@ -100,8 +101,8 @@ Chiuse il 2026-10-05/06: TASK-226, 228, 233, 211 B, 235, 236, 234, 214
 (A2, B2, B2b), 238, 239, 240, 241 (A–G), 242, 243, 244, 245 (A, B), 246,
 247, 248 (A, B), 249, 251 (A, B), 252, 253, 183, 184, 185, 182 (A–D), 232
 (A, B, B2, C), 254 (#407), 255 (#403), 256 (#408), 257 (#400), 250 (#406:
-l'acqua di Ledro è sul server, Ledro nell'elenco dell'API aspetta
-l'aggiornamento del server). Sessioni chiuse o libere: «Impostazioni
+l'acqua di Ledro è sul server; `lake_catalog.py` è un comando offline,
+niente da aggiornare sul server). Sessioni chiuse o libere: «Impostazioni
 utente e notifiche», «Sezione Near me con città vicine», «Forme inclinate
 e distanza ottimale», «Download mappe e figure padel all'installazione»,
 «Possibilità di alzare la penna per la bocca», «Posizionamento figura
@@ -126,8 +127,8 @@ Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ L'ok per il server: Ledro nell'elenco dell'API (#406, `main`
-  │  `938c70d`) e, dopo il merge, TASK-258 (migrazione nuova)
+  ├─ L'ok per il server: TASK-258 (#412, migrazione 0019), da dare
+  │  prima del merge
   ├─ TASK-258: le tre domande · TASK-251: i testi delle cinque lingue
   │  (già pubblicati) · TASK-184: i segnaposto di «Terms» e «Privacy» ·
   │  TASK-237: i testi in inglese
@@ -236,9 +237,9 @@ Da assegnare
   cerchio non si disegnano su quelle strade). Zone del telefono: 528
   file. Acqua della canoa: 248 file (il Lago di Ledro dal 2026-10-06,
   TASK-250, con il Garda riscritto; quello di prima in
-  `data/cache/water/before-task250/`). **Manca** Ledro nell'elenco dei
-  laghi dell'API (#406): aspetta l'ok dell'utente. Strava spento per
-  scelta dell'utente.
+  `data/cache/water/before-task250/`); l'elenco dei laghi vive
+  nell'app (`lakes.json`), `lake_catalog.py` è un comando offline. Strava
+  spento per scelta dell'utente.
 - **App**: su `preview` da `main` `938c70d` (gruppo `37310f11`,
   2026-10-06 ~10:50Z): tutto `main`. **Dal 2026-10-05 il coordinatore pubblica da
   solo le cose di sola app** appena sono in `main` e il job `mobile` è

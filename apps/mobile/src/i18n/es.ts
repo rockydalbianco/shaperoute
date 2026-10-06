@@ -767,4 +767,11 @@ export const ES: Table = {
   "Keep holding…": "Sigue pulsando…",
   "Hold for 2 seconds to leave pocket mode":
     "Mantén pulsado 2 segundos para salir del modo bolsillo",
+  // src/permissions/OpenSettings.tsx, src/location/LocationOff.tsx (TASK-259)
+  "Open Settings": "Abrir Ajustes",
+  "Location is off": "La ubicación está desactivada",
+  "Allow it for Sgrava in Settings to follow the route.":
+    "Permítela a Sgrava en Ajustes para seguir la ruta.",
+  "Allow it for Sgrava in Settings to record your track.":
+    "Permítela a Sgrava en Ajustes para grabar tu recorrido.",
 };

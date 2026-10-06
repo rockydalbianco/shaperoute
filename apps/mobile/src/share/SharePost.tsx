@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { t } from "../i18n";
 import {
   color,
@@ -25,6 +26,7 @@ import {
   type PostResult,
   type PostRun,
   postCaption,
+  postRequestOf,
   resultName,
   resultsOf,
 } from "./postRun";
@@ -33,9 +35,11 @@ import {
   addSticker,
   MAX_STICKERS,
   moveSticker,
+  placedOf,
   POST_EMOJI,
   removeSticker,
   type Sticker,
+  stickersOf,
 } from "./stickers";
 import { StravaPostRow } from "./StravaPostRow";
 
@@ -51,7 +55,9 @@ type Props = {
  * The post of a run, to make and share (TASK-231, ADR-0194): the picture
  * on top, then which results it shows, the emoji to lay on it, «Instagram»
  * (the share sheet, where Instagram has Story, Feed and Messages) and
- * Strava, where the emoji and the results go as the activity's text.
+ * Strava, where the emoji and the results go as the activity's text. Once
+ * shared, the post goes to the API with its saved run (TASK-258), and
+ * opens as it was the next time.
  */
 export function SharePost({ run, onClose }: Props) {
   const insets = useSafeAreaInsets();
@@ -61,9 +67,16 @@ export function SharePost({ run, onClose }: Props) {
     (window.height * POST_HEIGHT_SHARE) / POST_RATIO,
   );
   const results = useMemo(() => resultsOf(run), [run]);
-  // Every result the run has, on: the runner turns off what they keep.
-  const [shown, setShown] = useState<PostResult[]>(results);
-  const [stickers, setStickers] = useState<Sticker[]>([]);
+  const { keepPost } = useActivitiesDoor();
+  const kept = run.post ?? null;
+  // Every result the run has, on: the runner turns off what they keep. A
+  // post shared before opens as it was (TASK-258).
+  const [shown, setShown] = useState<PostResult[]>(() =>
+    kept === null ? results : results.filter((r) => kept.results.includes(r)),
+  );
+  const [stickers, setStickers] = useState<Sticker[]>(() =>
+    kept === null ? [] : stickersOf(kept.emoji),
+  );
   const [sharing, setSharing] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const post = useRef<View>(null);
@@ -79,12 +92,22 @@ export function SharePost({ run, onClose }: Props) {
     );
   }
 
+  /** The post as it is now, to the API with its run; nothing before «Save». */
+  function keep() {
+    if (run.key !== null) {
+      keepPost(run.key, postRequestOf(run, shown, placedOf(stickers)));
+    }
+  }
+
   async function share() {
     setProblem(null);
     setSharing(true);
     const outcome = await sharePicture(post);
     setSharing(false);
     setProblem(pictureProblem(outcome));
+    if (outcome === "shared") {
+      keep();
+    }
   }
 
   return (
@@ -189,7 +212,7 @@ export function SharePost({ run, onClose }: Props) {
                 {problem}
               </Text>
             )}
-            <StravaPostRow runKey={run.key} caption={caption} />
+            <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />
           </View>
         </ScrollView>
       </View>

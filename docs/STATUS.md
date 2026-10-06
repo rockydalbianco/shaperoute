@@ -128,8 +128,8 @@ In coda, dopo o accanto:
   `shaperoute-2026-10-06T0723Z.dump`; `draw_examples` finito («70 of 72»:
   a Tenna il cuore e a Calceranica il cerchio non si disegnano). Zone del
   telefono: 528 file. Acqua della canoa: 248 file (Ledro dal 2026-10-06,
-  TASK-250). **Manca sul server** Ledro nell'elenco dei laghi dell'API
-  (#406): aspetta l'ok dell'utente. **App** su `preview` da `main`
+  TASK-250; l'elenco dei laghi vive nell'app, `lake_catalog.py` è un
+  comando offline: il server non ha bisogno di altro). **App** su `preview` da `main`
   `938c70d` (gruppo `37310f11`, 2026-10-06 ~10:50Z): tutto `main`, fino
   agli errori che parlano a chi corre (TASK-256), alla corsa rifiutata
   con il motivo (TASK-257), allo schermo acceso in corsa (TASK-255), alle
@@ -148,6 +148,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-259 — «Open Settings» e «Location is off»** (ADR-0223; seguito
+  di TASK-256 e della revisione del 2026-10-06). **Parte A, solo app**,
+  branch `feat/TASK-259-open-settings`: «Open Settings» sotto «The camera is
+  off for this app…» in «Draw»; la riga rossa della mappa che non carica
+  dice «The map could not be loaded. Check the network.», senza il motivo
+  tecnico né «reopen the app», con un «Retry» che monta di nuovo la mappa;
+  `location/LocationOff.tsx` («Location is off» + «Open Settings») pronto
+  ma non ancora sulle schermate della corsa. **Parte B**: collegarlo a
+  `NavigateScreen` e `FreeRunScreen` dopo il merge della parte «corsa» di
+  TASK-210, che li modifica. **Aspettano l'utente**: i testi nuovi. Da dove
+  riprendere: `tasks/TASK-259.md`.
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
   **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06),
@@ -570,6 +581,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App e API** — TASK-258: il post condiviso resta sul server (ADR-0222;
+  chiesto dall'utente il 2026-10-06, tre scelte sue: emoji e risultati
+  senza l'immagine, salvato quando lo si condivide, rivisto riaprendo
+  «Share»). Migrazione **0019** (`runs.post`), `PUT
+  /me/activities/{key}/post`, `post` nella corsa intera; nell'app
+  «Instagram» e «Send to Strava» mandano il post con la corsa, e «Share»
+  da «My activities» lo riapre com'era. L'attività era già tutta sul
+  server. **Vuole l'aggiornamento del server** (migrazione, motore non
+  toccato) con l'ok dell'utente; poi la pubblicazione. Usare post e corse
+  per «cosa piace» è un seguito, in forma aggregata e anonima.
+  `tasks/TASK-258.md`.
 
 - **App** — TASK-256: gli errori parlano a chi corre (ADR-0220; dalla
   revisione dell'app, «sì» dell'utente del 2026-10-06, testi nelle cinque

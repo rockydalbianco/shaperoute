@@ -763,4 +763,11 @@ export const IT: Table = {
   "Keep holding…": "Continua a tenere premuto…",
   "Hold for 2 seconds to leave pocket mode":
     "Tieni premuto 2 secondi per uscire dalla modalità tasca",
+  // src/permissions/OpenSettings.tsx, src/location/LocationOff.tsx (TASK-259)
+  "Open Settings": "Apri Impostazioni",
+  "Location is off": "Posizione disattivata",
+  "Allow it for Sgrava in Settings to follow the route.":
+    "Consentila a Sgrava nelle Impostazioni per seguire il percorso.",
+  "Allow it for Sgrava in Settings to record your track.":
+    "Consentila a Sgrava nelle Impostazioni per registrare la traccia.",
 };

@@ -3,9 +3,11 @@ import {
   isTap,
   MAX_STICKERS,
   moveSticker,
+  placedOf,
   POST_EMOJI,
   removeSticker,
   type Sticker,
+  stickersOf,
 } from "./stickers";
 
 function added(emoji: string[]): Sticker[] {
@@ -54,4 +56,25 @@ test("a finger that hardly moved tapped", () => {
   expect(isTap(3, 4)).toBe(true);
   expect(isTap(6, 0)).toBe(false);
   expect(isTap(20, 30)).toBe(false);
+});
+
+test("the emoji of a post kept come back on the post, with ids, kept on it", () => {
+  const kept = [
+    { emoji: "🔥", x: 0.8, y: 0.24 },
+    { emoji: "❤️", x: 0.0, y: 1.0 },
+  ];
+  const stickers = stickersOf(kept);
+  expect(stickers.map((s) => s.emoji)).toEqual(["🔥", "❤️"]);
+  expect(new Set(stickers.map((s) => s.id)).size).toBe(2);
+  expect(stickers[0]).toMatchObject({ x: 0.8, y: 0.24 });
+  // An emoji on the edge is brought onto the post, as a moved one is.
+  expect(stickers[1].x).toBeGreaterThan(0);
+  expect(stickers[1].y).toBeLessThan(1);
+  // Never more than the post takes.
+  expect(stickersOf(Array(MAX_STICKERS + 3).fill(kept[0]))).toHaveLength(MAX_STICKERS);
+  // And back the other way, without the ids.
+  expect(placedOf(stickers)).toEqual([
+    { emoji: "🔥", x: 0.8, y: 0.24 },
+    { emoji: "❤️", x: stickers[1].x, y: stickers[1].y },
+  ]);
 });

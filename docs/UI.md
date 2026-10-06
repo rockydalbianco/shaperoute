@@ -745,7 +745,7 @@ prima resta:
 
 | Quando | Cosa dice |
 |---|---|
-| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. |
+| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. + «Open Settings» (TASK-259) |
 | foto oltre 10 MB | This picture is too large. Choose a smaller one. |
 | il selettore non si apre | Could not open the picture. Try again. |
 | l'API non legge l'immagine | This picture cannot be used. Choose another one. |
@@ -1395,7 +1395,7 @@ semplici, con sotto il testo del motore:
 | `jagged` | The outline is too jagged to run on roads. Try a simpler subject. |
 | `format` | Only PNG and JPEG pictures work. Choose another one. |
 | `unreadable` | This picture could not be read. Choose another one. |
-| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. |
+| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. + «Open Settings» (TASK-259) |
 | oltre 10 MB | This picture is too large: 12.3 MB, at most 10 MB. Choose a smaller one. |
 
 ## Chiedere un percorso
@@ -2189,6 +2189,15 @@ run», con «Close» in alto a sinistra:
   text on Strava.»; e «View on Strava». Sotto, sempre: «Strava takes no
   pictures from other apps: keep this one in Photos with «Save Image» and
   add it there.» (TASK-231 B).
+- **Il post resta sul server** (TASK-258, ADR-0222; scelte dell'utente):
+  su una corsa salvata, quando il foglio di condivisione si è aperto o
+  la corsa è andata a Strava, l'app manda all'API gli emoji con la loro
+  posizione, i risultati accesi e il titolo — mai l'immagine. Niente
+  cambia sullo schermo e niente si dice se non arriva. Riaprendo «Share»
+  da «My activities» il post torna com'era: stessi emoji nelle stesse
+  posizioni, stessi risultati accesi (un risultato che la corsa non ha
+  più non compare). A fine corsa, prima di «Save», il post si condivide
+  come prima e non resta.
 
 ## Sull'acqua: «Paddle» (TASK-191, ADR-0169)
 
@@ -2683,8 +2692,11 @@ scrive «The map could not be loaded. Check the network.» con un pulsante
 **«Retry»** che ricarica la pagina (TASK-256); la ricarica anche da sola
 quando l'app torna in primo piano con la mappa in errore. Appena la mappa
 carica, il testo sparisce e la schermata viene avvisata che l'errore non
-c'è più (`onError(null)`), così la riga rossa sotto la ricerca («The map
-could not load (motivo)…», `ChooseScreen`) se ne va. Se iOS chiude la
+c'è più (`onError(null)`), così la riga rossa sotto la ricerca
+(`ChooseScreen`) se ne va. In «Draw» la mappa è sotto la schermata e il suo
+«Retry» non si vede: la riga rossa dice le stesse parole della mappa, senza
+il motivo tecnico (resta per il log), con un suo **«Retry»** che monta di
+nuovo la mappa (TASK-259); se non carica ancora, la riga torna. Se iOS chiude la
 pagina per liberare memoria, la WebView la ricarica da sola.
 
 ## Domande ancora aperte

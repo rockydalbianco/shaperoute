@@ -1,7 +1,7 @@
 import type { Activity, LatLon } from "@shaperoute/shared-types";
 
 import { whereAndWhat } from "../activities/activityText";
-import type { ActivityDetail } from "../api/activities";
+import type { ActivityDetail, RunPost, RunPostRequest } from "../api/activities";
 import { turnOf } from "../explore/recommendedRoutes";
 import { t } from "../i18n";
 import { metresBetween } from "../map/coordinates";
@@ -31,6 +31,9 @@ export type PostRun = {
   /** How far the route's shape is turned (TASK-232): the drawing on the
    * post is turned back, so it reads upright. Absent, north up. */
   rotationDeg?: number;
+  /** Its post as last shared, kept by the API (TASK-258): «Share» opens it
+   * as it was. Absent or null: none, or a run not saved yet. */
+  post?: RunPost | null;
 };
 
 /** The turn of a route as the post keeps it: only when it is turned. */
@@ -50,6 +53,23 @@ export function postOfActivity(activity: ActivityDetail): PostRun {
     durationMs: activity.duration_s * 1000,
     ...(activity.activity === undefined ? {} : { activity: activity.activity }),
     ...turned(activity),
+    post: activity.post ?? null,
+  };
+}
+
+/**
+ * The post as the API keeps it (TASK-258): what is on the picture now, the
+ * results in the post's order. `emoji` are the stickers without their ids.
+ */
+export function postRequestOf(
+  run: PostRun,
+  shown: readonly PostResult[],
+  emoji: RunPostRequest["emoji"],
+): RunPostRequest {
+  return {
+    title: run.title,
+    results: POST_RESULTS.filter((result) => shown.includes(result)),
+    emoji,
   };
 }
 

@@ -229,9 +229,16 @@ test("a map that cannot load says so", async () => {
   await fireEvent(screen.getByTestId("map"), "message", {
     nativeEvent: { data: '{"type":"error","message":"MapLibre GL JS did not load"}' },
   });
-  expect(
-    screen.getByText(/The map could not load \(MapLibre GL JS did not load\)/),
-  ).toBeOnTheScreen();
+  // On the map, and in the line under «Draw», where the map is hidden: the
+  // same words, without the reason (TASK-259).
+  const words = "The map could not be loaded. Check the network.";
+  expect(screen.getAllByText(words)).toHaveLength(2);
+  expect(screen.queryByText(/MapLibre/)).toBeNull();
+  // The «Retry» of «Draw», the last on the screen, mounts the map again.
+  const retries = screen.getAllByRole("button", { name: "Retry" });
+  await fireEvent.press(retries[retries.length - 1]);
+  expect(screen.queryByText(words)).toBeNull();
+  expect(screen.getByTestId("map")).toBeOnTheScreen();
 });
 
 test("Draw route is off until there is a start", async () => {

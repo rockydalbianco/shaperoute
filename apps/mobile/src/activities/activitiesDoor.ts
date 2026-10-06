@@ -16,7 +16,9 @@ import {
   type Activity,
   type ActivityDetail,
   fetchActivity,
+  type RunPostRequest,
   saveActivity,
+  savePost,
 } from "../api/activities";
 import type { DrawingChoice } from "../api/drawings";
 import { t, tLater } from "../i18n";
@@ -107,6 +109,12 @@ export type ActivitiesDoor = ActivitiesState & {
   close: () => void;
   /** From the map back to the list in «Profile». */
   showList: () => void;
+  /**
+   * The post of a saved run, as it was just shared (TASK-258): it goes to
+   * the API, which keeps the last one. Nothing waits for the answer and
+   * nothing is said of a failure: the post is a nicety, the share is done.
+   */
+  keepPost: (key: string, post: RunPostRequest) => void;
 };
 
 const NOTHING: ActivitiesDoor = {
@@ -136,6 +144,7 @@ const NOTHING: ActivitiesDoor = {
   opened: null,
   close: () => {},
   showList: () => {},
+  keepPost: () => {},
 };
 
 /** Without «Profile» around it (a test of one screen): no activities. */
@@ -499,6 +508,22 @@ export function useActivitiesOf(
     setOpenProblem(null);
   }, [clearListProblem]);
 
+  // The post as shared, to the API and no further (TASK-258): a session
+  // that ended is the one thing worth hearing.
+  const keepPost = useCallback(
+    (runKey: string, post: RunPostRequest) => {
+      if (token === null || baseUrl === null) {
+        return;
+      }
+      void savePost(baseUrl, token, runKey, post, { fetchFn, key }).then((outcome) => {
+        if (sessionEnded(outcome)) {
+          endSession(token);
+        }
+      });
+    },
+    [baseUrl, endSession, fetchFn, key, token],
+  );
+
   return useMemo(
     () => ({
       ...activities,
@@ -522,6 +547,7 @@ export function useActivitiesOf(
       opened: token === null ? null : opened,
       close,
       showList: onList,
+      keepPost,
     }),
     [
       activities,
@@ -544,6 +570,7 @@ export function useActivitiesOf(
       opened,
       close,
       onList,
+      keepPost,
     ],
   );
 }

@@ -6,6 +6,7 @@ import { Linking } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { captureRef } from "react-native-view-shot";
 
+import { ActivitiesContext, useActivitiesDoor } from "../activities/activitiesDoor";
 import type { StravaActivity, StravaOutcome } from "../api/strava";
 import { StravaContext, type StravaState } from "../strava/useStrava";
 import type { PostRun } from "./postRun";
@@ -67,10 +68,24 @@ const METRICS = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
+/** The post, as the API keeps it (TASK-258): what «Share» sent. */
+const keepPost = jest.fn();
+
+function WithDoor({ children }: { children: ReactNode }) {
+  const nothing = useActivitiesDoor();
+  return (
+    <ActivitiesContext.Provider value={{ ...nothing, keepPost }}>
+      {children}
+    </ActivitiesContext.Provider>
+  );
+}
+
 function shown(node: ReactNode, state: StravaState = strava()) {
   return render(
     <SafeAreaProvider initialMetrics={METRICS}>
-      <StravaContext.Provider value={state}>{node}</StravaContext.Provider>
+      <StravaContext.Provider value={state}>
+        <WithDoor>{node}</WithDoor>
+      </StravaContext.Provider>
     </SafeAreaProvider>,
   );
 }
@@ -78,6 +93,7 @@ function shown(node: ReactNode, state: StravaState = strava()) {
 beforeEach(() => {
   share.mockClear();
   capture.mockClear();
+  keepPost.mockClear();
 });
 
 describe("the post", () => {
@@ -326,4 +342,76 @@ test("«Share» opens the post of the run, and «Close» closes it", async () =>
   expect(screen.getByText("Share your run")).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Close" }));
   expect(screen.queryByText("Share your run")).toBeNull();
+});
+
+describe("the post kept with the run (TASK-258)", () => {
+  const KEPT = {
+    title: "Heart in Trento",
+    results: ["distance", "pace"],
+    emoji: [
+      { emoji: "🔥", x: 0.8, y: 0.24 },
+      { emoji: "🎉", x: 0.2, y: 0.5 },
+    ],
+    shared_at: "2026-10-06T10:15:00Z",
+  };
+
+  it("goes to the API once the share sheet has opened, as it is", async () => {
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
+    await fireEvent.press(screen.getByRole("button", { name: "Add 🔥" }));
+    await fireEvent.press(screen.getByRole("checkbox", { name: "Time" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Instagram" }));
+    await waitFor(() => expect(keepPost).toHaveBeenCalledTimes(1));
+    expect(keepPost).toHaveBeenCalledWith("run-1", {
+      title: "Heart in Trento",
+      results: ["distance", "pace"],
+      emoji: [{ emoji: "🔥", x: 0.8, y: 0.24 }],
+    });
+  });
+
+  it("goes to the API when the run is sent to Strava, and not when the picture fails", async () => {
+    capture.mockRejectedValueOnce(new Error("no view"));
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
+    await fireEvent.press(screen.getByRole("button", { name: "Instagram" }));
+    await screen.findByText("The picture could not be made. Try again.");
+    expect(keepPost).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByRole("button", { name: "Add ❤️" }));
+    await fireEvent.press(
+      await screen.findByRole("button", { name: "Send to Strava" }),
+    );
+    await screen.findByText("View on Strava");
+    expect(keepPost).toHaveBeenCalledWith("run-1", {
+      title: "Heart in Trento",
+      results: ["distance", "time", "pace"],
+      emoji: [{ emoji: "❤️", x: 0.8, y: 0.24 }],
+    });
+  });
+
+  it("is not kept before «Save»: the run has no key yet", async () => {
+    await shown(<SharePost run={{ ...RUN, key: null }} onClose={() => {}} />);
+    await fireEvent.press(screen.getByRole("button", { name: "Instagram" }));
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+    expect(keepPost).not.toHaveBeenCalled();
+  });
+
+  it("opens as it was shared: the same emoji where they were, the same results", async () => {
+    await shown(<SharePost run={{ ...RUN, post: KEPT }} onClose={() => {}} />);
+    expect(screen.getAllByTestId("post-sticker")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "🔥" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "🎉" })).toBeOnTheScreen();
+    expect(screen.getByRole("checkbox", { name: "Distance" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Time" })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Pace" })).toBeChecked();
+    expect(screen.queryByText("28:10")).toBeNull();
+    await screen.findByText("Send to Strava");
+  });
+
+  it("forgets a kept result the run no longer has", async () => {
+    // Too short for a pace: the kept «pace» has nothing to show.
+    const short = { ...RUN, distanceM: 60, durationMs: 20_000, post: KEPT };
+    await shown(<SharePost run={short} onClose={() => {}} />);
+    expect(screen.queryByRole("checkbox", { name: "Pace" })).toBeNull();
+    expect(screen.getByRole("checkbox", { name: "Distance" })).toBeChecked();
+    await screen.findByText("Send to Strava");
+  });
 });

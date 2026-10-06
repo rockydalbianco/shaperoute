@@ -47,6 +47,8 @@ PLACE_KEY = "test-key"
 # Added by TASK-232 part C: the fixtures written before are what an older
 # app sends and an older API answers.
 TURN = {"rotation_deg"}
+# The post of a run (TASK-258): the runs opened whole were written before it.
+POST = {"post"}
 
 
 def _load(name: str) -> Any:
@@ -168,7 +170,7 @@ def test_the_fixtures_are_the_contract() -> None:
     ActivitiesBody.model_validate(listed)
     whole = _load("activity.json")
     assert set(whole) == (
-        set(ActivityDetailBody.model_fields) - {"walks", "pauses"} - TURN
+        set(ActivityDetailBody.model_fields) - {"walks", "pauses"} - TURN - POST
     )
     # A word with the pen up (TASK-199): every field but the activity.
     walked = _load("activity-request-walks.json")
@@ -176,10 +178,12 @@ def test_the_fixtures_are_the_contract() -> None:
     assert set(walked["pauses"][0]) == set(PauseBody.model_fields)
     ActivityRequestBody.model_validate(walked)
     whole_walked = _load("activity-walks.json")
-    assert set(whole_walked) == set(ActivityDetailBody.model_fields) - {"pauses"} - TURN
+    assert set(whole_walked) == (
+        set(ActivityDetailBody.model_fields) - {"pauses"} - TURN - POST
+    )
     # The same run opened from the API of TASK-200: every field.
     whole_paused = _load("activity-pauses.json")
-    assert set(whole_paused) == set(ActivityDetailBody.model_fields) - TURN
+    assert set(whole_paused) == set(ActivityDetailBody.model_fields) - TURN - POST
     assert {**whole_paused, "pauses": None} == {**whole_walked, "pauses": None}
     ActivityDetailBody.model_validate(whole_paused)
     # A run along a route whose shape is turned (TASK-232 part C): the
@@ -189,7 +193,7 @@ def test_the_fixtures_are_the_contract() -> None:
     assert {**turned, "rotation_deg": None} == {**body, "rotation_deg": None}
     assert ActivityRequestBody.model_validate(turned).rotation_deg == -30
     whole_turned = _load("activity-turned.json")
-    assert set(whole_turned) == set(ActivityDetailBody.model_fields)
+    assert set(whole_turned) == set(ActivityDetailBody.model_fields) - POST
     assert ActivityDetailBody.model_validate(whole_turned).rotation_deg == -30
 
 
@@ -254,6 +258,7 @@ def test_a_run_opens_whole_as_the_example(client: TestClient) -> None:
     # on the clock of the track.
     assert whole.json() == {
         **_load("activity.json"),
+        "post": None,
         "walks": [],
         "pauses": [{"from_s": 300.0, "to_s": 360.0, "auto": True}],
         "rotation_deg": None,
@@ -273,7 +278,7 @@ def test_a_run_along_a_turned_route_keeps_the_turn(client: TestClient) -> None:
     assert [run["rotation_deg"] for run in listed] == [-30]
     whole = client.get(f"/me/activities/{KEY}", headers=me)
     assert whole.status_code == 200
-    assert whole.json() == _load("activity-turned.json")
+    assert whole.json() == {**_load("activity-turned.json"), "post": None}
     # Half degrees come back as sent: the water tries every 5°, and a
     # `real` column holds them.
     client.put(
@@ -548,7 +553,11 @@ def test_a_run_with_walks_has_the_score_of_its_letters(client: TestClient) -> No
     whole = client.get(f"/me/activities/{KEY}", headers=me)
     assert whole.status_code == 200
     # With its pause of the pen (TASK-200); north up (TASK-232).
-    assert whole.json() == {**_load("activity-pauses.json"), "rotation_deg": None}
+    assert whole.json() == {
+        **_load("activity-pauses.json"),
+        "rotation_deg": None,
+        "post": None,
+    }
 
 
 def test_the_same_run_without_walks_is_scored_on_the_whole_route(

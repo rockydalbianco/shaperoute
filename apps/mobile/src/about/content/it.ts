@@ -10,14 +10,14 @@ import type { AboutContent, AboutDocument } from "../documents";
 const UPDATED = "5 ottobre 2026";
 
 const help: AboutDocument = {
-  title: "Come funziona Sgrava",
+  title: "Come funziona MuW",
   draft: false,
   updated: null,
   sections: [
     {
-      heading: "Che cos'è Sgrava",
+      heading: "Che cos'è MuW",
       blocks: [
-        "Sgrava disegna percorsi veri che sulla mappa tracciano una forma. Scegli la forma, la distanza e da dove partire: ottieni un percorso su strade vere, con il suo file GPX.",
+        "MuW disegna percorsi veri che sulla mappa tracciano una forma. Scegli la forma, la distanza e da dove partire: ottieni un percorso su strade vere, con il suo file GPX.",
         "L'app ha tre pagine affiancate, «Feed», «Draw» ed «Explore»: scorri a destra o a sinistra, oppure tocca un nome in alto. «Profilo» si apre dal cerchio in alto.",
       ],
     },
@@ -28,7 +28,7 @@ const help: AboutDocument = {
           bullets: [
             "Scegli una forma: un cuore, una stella, un gatto e altre, una parola dalla A alla Z, o il contorno di una tua foto.",
             "Scegli la distanza: fino a 21 km a piedi, partendo da dove sei o da un luogo che cerchi.",
-            "Tocca «Draw route». Sgrava disegna fino a tre percorsi su strade vere, A, B e C: tieni quello che ti piace.",
+            "Tocca «Draw route». MuW disegna fino a tre percorsi su strade vere, A, B e C: tieni quello che ti piace.",
             "«Export GPX» ti dà il file per l'orologio o per un'altra app.",
           ],
         },
@@ -102,7 +102,7 @@ const help: AboutDocument = {
             "Lingua: English, Deutsch, Italiano, Español o Français. La voce la segue.",
             "Mappe offline: il telefono tiene le mappe intorno a te e disegna i percorsi da solo; «Elimina» libera lo spazio.",
             "Unità di misura: quelle del telefono, chilometri o miglia. Con le miglia cambiano le distanze, il passo e la voce: un annuncio a ogni miglio, le svolte in piedi.",
-            "Notifiche: due interruttori, email e push, spenti finché non li accendi. Sgrava non manda ancora notifiche: la tua scelta resta salvata nel tuo account per quando lo farà.",
+            "Notifiche: due interruttori, email e push, spenti finché non li accendi. MuW non manda ancora notifiche: la tua scelta resta salvata nel tuo account per quando lo farà.",
           ],
         },
       ],
@@ -128,16 +128,16 @@ const terms: AboutDocument = {
   updated: UPDATED,
   sections: [
     {
-      heading: "Chi offre Sgrava",
+      heading: "Chi offre MuW",
       blocks: [
-        "Sgrava è offerta da [name] («noi»). Puoi scriverci a [contact email].",
-        "Queste condizioni sono l'accordo fra te e noi per l'uso dell'app Sgrava. Creando un account o usando l'app le accetti.",
+        "MuW è offerta da [name] («noi»). Puoi scriverci a [contact email].",
+        "Queste condizioni sono l'accordo fra te e noi per l'uso dell'app MuW. Creando un account o usando l'app le accetti.",
       ],
     },
     {
-      heading: "Che cos'è Sgrava",
+      heading: "Che cos'è MuW",
       blocks: [
-        "Sgrava disegna percorsi che sulla mappa tracciano una forma, da fare di corsa, in bici o in canoa; registra la tua attività mentre li segui; e permette agli iscritti di pubblicare i loro disegni, seguirsi, reagire e commentare.",
+        "MuW disegna percorsi che sulla mappa tracciano una forma, da fare di corsa, in bici o in canoa; registra la tua attività mentre li segui; e permette agli iscritti di pubblicare i loro disegni, seguirsi, reagire e commentare.",
       ],
     },
     {
@@ -160,7 +160,7 @@ const terms: AboutDocument = {
       ],
     },
     {
-      heading: "Come usare Sgrava",
+      heading: "Come usare MuW",
       blocks: [
         "Usa l'app nel rispetto della legge e degli altri iscritti. In particolare, non:",
         {
@@ -189,7 +189,7 @@ const terms: AboutDocument = {
             "Sei tu responsabile di dove vai. Rispetta il codice della strada e la segnaletica, anche quando il percorso o la voce dicono altro.",
             "Controlla le condizioni prima e durante l'attività: traffico, luce, meteo, fondo, la tua salute e il tuo allenamento.",
             "Non guardare il telefono mentre ti muovi nel traffico.",
-            "Sull'acqua serve ancora più attenzione: indossa il giubbotto salvagente, controlla il meteo e il vento, rispetta le regole del posto (zone di balneazione, corridoi di lancio, porti). Sgrava non le conosce. Un percorso vicino alla riva non è, per questo, sicuro né permesso.",
+            "Sull'acqua serve ancora più attenzione: indossa il giubbotto salvagente, controlla il meteo e il vento, rispetta le regole del posto (zone di balneazione, corridoi di lancio, porti). MuW non le conosce. Un percorso vicino alla riva non è, per questo, sicuro né permesso.",
           ],
         },
         "Distanze, tempi e velocità vengono dal GPS del telefono e sono stime.",
@@ -198,14 +198,14 @@ const terms: AboutDocument = {
     {
       heading: "Nessuna garanzia, e i limiti della nostra responsabilità",
       blocks: [
-        "Lavoriamo perché Sgrava funzioni e i suoi percorsi siano buoni, ma l'app è offerta così com'è: non promettiamo che sia sempre disponibile o senza errori, che un percorso si possa completare, o che le sue misure siano esatte.",
+        "Lavoriamo perché MuW funzioni e i suoi percorsi siano buoni, ma l'app è offerta così com'è: non promettiamo che sia sempre disponibile o senza errori, che un percorso si possa completare, o che le sue misure siano esatte.",
         "Nei limiti in cui la legge lo permette, non rispondiamo dei danni che derivano dall'uso dell'app o dei suoi percorsi. Niente in queste condizioni limita una responsabilità che la legge non permette di limitare, né i diritti che hai come consumatore.",
       ],
     },
     {
       heading: "Pubblicità",
       blocks: [
-        "Sgrava mostra pubblicità, fornita da Google AdMob, fra i disegni di «Feed» e segnata «Sponsorizzato». Un annuncio apre quello che dice l'inserzionista: il suo contenuto non è nostro.",
+        "MuW mostra pubblicità, fornita da Google AdMob, fra i disegni di «Feed» e segnata «Sponsorizzato». Un annuncio apre quello che dice l'inserzionista: il suo contenuto non è nostro.",
       ],
     },
     {
@@ -230,7 +230,7 @@ const terms: AboutDocument = {
     {
       heading: "Chiudere l'account",
       blocks: [
-        "Puoi smettere di usare Sgrava ed eliminare l'account in ogni momento: «Privacy» dice che cosa si cancella e quando. Possiamo sospendere o chiudere un account contrario a queste condizioni.",
+        "Puoi smettere di usare MuW ed eliminare l'account in ogni momento: «Privacy» dice che cosa si cancella e quando. Possiamo sospendere o chiudere un account contrario a queste condizioni.",
       ],
     },
     {
@@ -255,7 +255,7 @@ const privacy: AboutDocument = {
       heading: "Chi è responsabile dei tuoi dati",
       blocks: [
         "Il titolare del trattamento dei tuoi dati personali è [name]. Per tutto ciò che riguarda i tuoi dati, scrivi a [contact email].",
-        "Questo testo dice quali dati tratta Sgrava, perché, dove stanno e per quanto tempo, e che cosa puoi fare.",
+        "Questo testo dice quali dati tratta MuW, perché, dove stanno e per quanto tempo, e che cosa puoi fare.",
       ],
     },
     {
@@ -273,7 +273,7 @@ const privacy: AboutDocument = {
             "La tua password, conservata solo come hash (Argon2id): la password vera non la conserviamo e non la vediamo mai.",
             "Il giorno in cui ti sei iscritto e quando hai confermato di avere almeno 16 anni.",
             "La sessione di ogni telefono da cui sei entrato: il telefono tiene un token nel suo archivio protetto, il server ne tiene solo l'hash. Una sessione finisce 90 giorni dopo l'ultimo uso, o quando esci.",
-            "Le tue due scelte sulle notifiche in «Impostazioni», email e push: sono spente finché non le accendi, e Sgrava non manda ancora notifiche.",
+            "Le tue due scelte sulle notifiche in «Impostazioni», email e push: sono spente finché non le accendi, e MuW non manda ancora notifiche.",
           ],
         },
         "Il tuo indirizzo email non è mai mostrato agli altri iscritti.",
@@ -334,14 +334,14 @@ const privacy: AboutDocument = {
     {
       heading: "Pubblicità",
       blocks: [
-        "Sgrava mostra annunci di Google AdMob fra i disegni di «Feed». La prima volta che apri «Feed», il modulo di consenso di Google chiede la tua scelta dove serve; finché gli annunci non si possono chiedere, non se ne mostrano. Su iPhone l'app non chiede di tracciarti nelle altre app e gli annunci sono chiesti senza l'identificativo pubblicitario.",
+        "MuW mostra annunci di Google AdMob fra i disegni di «Feed». La prima volta che apri «Feed», il modulo di consenso di Google chiede la tua scelta dove serve; finché gli annunci non si possono chiedere, non se ne mostrano. Su iPhone l'app non chiede di tracciarti nelle altre app e gli annunci sono chiesti senza l'identificativo pubblicitario.",
         "Google tratta ciò che il suo software pubblicitario raccoglie secondo la propria informativa sulla privacy.",
       ],
     },
     {
       heading: "Strava",
       blocks: [
-        "Una corsa va a Strava solo quando lo chiedi, e solo dopo che hai collegato il tuo profilo Strava. Finché è collegato, il nostro server tiene il tuo nome su Strava e le chiavi che Strava ci ha dato per il tuo profilo. A Strava mandiamo allora la traccia con gli orari, il nome e una riga di descrizione. A Strava chiediamo solo il permesso di aggiungere attività, mai di leggere le tue. Su Strava l'attività segue le tue impostazioni di privacy di Strava, non quelle di Sgrava.",
+        "Una corsa va a Strava solo quando lo chiedi, e solo dopo che hai collegato il tuo profilo Strava. Finché è collegato, il nostro server tiene il tuo nome su Strava e le chiavi che Strava ci ha dato per il tuo profilo. A Strava mandiamo allora la traccia con gli orari, il nome e una riga di descrizione. A Strava chiediamo solo il permesso di aggiungere attività, mai di leggere le tue. Su Strava l'attività segue le tue impostazioni di privacy di Strava, non quelle di MuW.",
       ],
     },
     {
@@ -400,7 +400,7 @@ const privacy: AboutDocument = {
     {
       heading: "Minori",
       blocks: [
-        "Gli account di Sgrava sono per chi ha almeno 16 anni. Se pensi che qualcuno più giovane abbia un account, scrivici e lo elimineremo.",
+        "Gli account di MuW sono per chi ha almeno 16 anni. Se pensi che qualcuno più giovane abbia un account, scrivici e lo elimineremo.",
       ],
     },
     {

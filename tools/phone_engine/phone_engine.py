@@ -267,7 +267,7 @@ def notice(lock: dict) -> bytes:
     """Who wrote what is in pyodide.zip, under which license."""
     versions = {_key(p["name"]): p["version"] for p in lock["packages"].values()}
     lines = [
-        "Third-party software in pyodide.zip, run by Sgrava's WebView to draw",
+        "Third-party software in pyodide.zip, run by MuW's WebView to draw",
         "routes on the phone (TASK-214). Sources at the addresses below.",
         "",
     ]

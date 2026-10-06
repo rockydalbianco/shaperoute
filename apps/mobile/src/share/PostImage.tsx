@@ -83,7 +83,7 @@ export const PostImage = forwardRef<View, Props>(function PostImage(
         style={[styles.brand, { top: width * SIDE * 0.6, left: width * SIDE * 0.6 }]}
       >
         <HeartBadge size={width * BADGE} />
-        <Text style={[styles.name, { fontSize: width * NAME }]}>Sgrava</Text>
+        <Text style={[styles.name, { fontSize: width * NAME }]}>MuW</Text>
       </View>
       {run.title !== null && (
         <Text

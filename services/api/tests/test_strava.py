@@ -126,7 +126,7 @@ class FakeStrava:
         self.activities: dict[tuple[int, str], int] = {}
         # The text under each activity's name, as changed after its upload.
         self.descriptions: dict[int, str] = {}
-        # Activities Strava does not let Sgrava change (only their athlete
+        # Activities Strava does not let MuW change (only their athlete
         # sees them).
         self.locked: set[int] = set()
         self.files: list[dict[str, Any]] = []
@@ -583,7 +583,7 @@ def test_the_callback_connects_the_athlete(
     assert answer.headers["content-type"].startswith("text/html")
     assert answer.headers["cache-control"] == "no-store"
     assert "Strava is connected." in answer.text
-    assert "Go back to Sgrava." in answer.text
+    assert "Go back to MuW." in answer.text
     assert status(client, headers) == _load("strava-status.json")
     [kept] = rows(database, "SELECT * FROM strava_accounts")
     assert kept["athlete_id"] == ADA
@@ -817,12 +817,12 @@ def test_what_strava_receives_is_the_run_with_its_times(
         "sport_type": "Run",
         "external_id": KEY,
         "name": "Star in Trento",
-        "description": "Drawn with Sgrava",
+        "description": "Drawn with MuW",
         "file_name": f"{KEY}.gpx",
         "file_type": "application/gpx+xml",
     }
     root = ET.fromstring(gpx)
-    assert root.get("creator") == "Sgrava"
+    assert root.get("creator") == "MuW"
     # The example pauses after its second fix: two segments.
     segments = root.findall(f"{GPX}trk/{GPX}trkseg")
     assert [len(segment) for segment in segments] == [2, 3]
@@ -849,8 +849,8 @@ def test_a_run_without_a_route_has_stravas_own_name(
 
     [form] = fake.files
     assert "name" not in form
-    # It drew nothing: Sgrava only recorded it (the user's choice).
-    assert form["description"] == "Recorded with Sgrava"
+    # It drew nothing: MuW only recorded it (the user's choice).
+    assert form["description"] == "Recorded with MuW"
 
 
 def test_the_name_typed_in_the_app_is_the_activitys(
@@ -868,7 +868,7 @@ def test_the_name_typed_in_the_app_is_the_activitys(
     assert answer.status_code == 200
     [form] = fake.files
     assert form["name"] == "Sunday heart run"
-    assert form["description"] == "Drawn with Sgrava"
+    assert form["description"] == "Drawn with MuW"
     # The file has the same name as the activity.
     root = ET.fromstring(form["file"])
     assert root.findtext(f"{GPX}metadata/{GPX}name") == "Sunday heart run"
@@ -929,8 +929,8 @@ def test_the_description_and_the_activity_go_to_strava(
     [form] = fake.files
     assert form["sport_type"] == "Ride"
     assert form["name"] == body["name"]
-    # The runner's words, then Sgrava's line.
-    assert form["description"] == body["description"] + "\n\nDrawn with Sgrava"
+    # The runner's words, then MuW's line.
+    assert form["description"] == body["description"] + "\n\nDrawn with MuW"
 
 
 def test_without_a_typed_description_strava_gets_the_drawings(
@@ -954,10 +954,10 @@ def test_without_a_typed_description_strava_gets_the_drawings(
     client.post(f"/me/activities/{OTHER_KEY}/strava", headers=headers)
 
     freehand, drawn = fake.files
-    assert freehand["description"] == "Legs heavy.\n\nRecorded with Sgrava"
+    assert freehand["description"] == "Legs heavy.\n\nRecorded with MuW"
     assert freehand["sport_type"] == drawn["sport_type"] == "StandUpPaddling"
-    # No words anywhere: Sgrava's line alone, as before TASK-208.
-    assert drawn["description"] == "Drawn with Sgrava"
+    # No words anywhere: MuW's line alone, as before TASK-208.
+    assert drawn["description"] == "Drawn with MuW"
 
 
 def test_every_activity_has_a_strava_sport() -> None:
@@ -972,14 +972,14 @@ def test_a_typed_description_keeps_its_lines_and_is_cut_not_refused() -> None:
     )
     long = typed_description("x" * (MAX_DESCRIPTION_LENGTH + 20))
     assert long == "x" * MAX_DESCRIPTION_LENGTH
-    assert strava_description(None, drawn=False) == "Recorded with Sgrava"
-    assert strava_description("Fun.", drawn=True) == "Fun.\n\nDrawn with Sgrava"
+    assert strava_description(None, drawn=False) == "Recorded with MuW"
+    assert strava_description("Fun.", drawn=True) == "Fun.\n\nDrawn with MuW"
     # The post's text on top (TASK-231).
     assert strava_description("Fun.", drawn=True, post="🔥 5.20 km") == (
-        "🔥 5.20 km\n\nFun.\n\nDrawn with Sgrava"
+        "🔥 5.20 km\n\nFun.\n\nDrawn with MuW"
     )
     assert strava_description(None, drawn=False, post="🔥") == (
-        "🔥\n\nRecorded with Sgrava"
+        "🔥\n\nRecorded with MuW"
     )
 
 
@@ -995,7 +995,7 @@ def test_the_post_goes_over_the_runners_words(
     [form] = fake.files
     assert form["name"] == body["name"]
     assert form["description"] == (
-        f"{body['post']}\n\n{body['description']}\n\nDrawn with Sgrava"
+        f"{body['post']}\n\n{body['description']}\n\nDrawn with MuW"
     )
 
 
@@ -1013,7 +1013,7 @@ def test_a_post_changes_the_text_of_a_run_already_on_strava(
     assert kept.status_code == 200
     first = client.post(f"/me/activities/{KEY}/strava", headers=headers)
     [form] = fake.files
-    assert form["description"] == "Legs heavy.\n\nDrawn with Sgrava"
+    assert form["description"] == "Legs heavy.\n\nDrawn with MuW"
 
     again = client.post(
         f"/me/activities/{KEY}/strava",
@@ -1029,7 +1029,7 @@ def test_a_post_changes_the_text_of_a_run_already_on_strava(
     [put] = fake.made("PUT", ACTIVITIES_URL)
     assert put.url == f"{ACTIVITIES_URL}/{activity_id}"
     assert fake.descriptions[activity_id] == (
-        "🔥❤️ 5.20 km · Score 87\n\nLegs heavy.\n\nDrawn with Sgrava"
+        "🔥❤️ 5.20 km · Score 87\n\nLegs heavy.\n\nDrawn with MuW"
     )
     # Without a post a run already sent is answered as it is.
     client.post(f"/me/activities/{KEY}/strava", json={"post": " "}, headers=headers)
@@ -1054,7 +1054,7 @@ def test_an_activity_strava_will_not_let_change_is_said(
     assert refused.status_code == 422
     assert refused.json()["error"]["code"] == "invalid_request"
     assert message(refused) == (
-        "Strava did not let Sgrava change this activity: change its text on Strava."
+        "Strava did not let MuW change this activity: change its text on Strava."
     )
     assert activity_id not in fake.descriptions
     # Deleted on Strava: the same. The run stays sent, as it was.

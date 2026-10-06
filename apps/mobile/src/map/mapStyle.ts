@@ -57,7 +57,7 @@ function roadWidth(far: number, mid: number, near: number) {
 
 export const sgravaDarkStyle = {
   version: 8,
-  name: "Sgrava Dark",
+  name: "MuW Dark",
   glyphs: GLYPHS_URL,
   sources: {
     openmaptiles: {

@@ -99,6 +99,6 @@ test("what the API refuses is said in words", () => {
     "Too many tries. Wait a minute and try again.",
   );
   expect(contactProblem({ kind: "unreachable", url: "http://api" }, "phone")).toBe(
-    "Cannot reach the API at http://api. Check the connection and try again.",
+    "No connection. Check the network and try again. (Cannot reach the API at http://api.)",
   );
 });

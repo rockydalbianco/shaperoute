@@ -309,7 +309,7 @@ function Sgrava() {
   // Past RouteChoice to the image panel (TASK-079).
   const { edits, add, undo } = image;
   const imageEdits = useMemo(() => ({ ...edits, add, undo }), [edits, add, undo]);
-  const { draw, cancel, state } = useRouteRequest(API_URL);
+  const { draw, cancel, retry, state } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
   const {
     explored: exploredRoute,
@@ -1000,6 +1000,7 @@ function Sgrava() {
               }
             }}
             onPickShape={onPickShape}
+            onRetry={retry}
             onStart={() => {
               if (view.status === "done" && view.request.activity === "paddling") {
                 paddleNotice.ask(() => setScreen("navigate"));

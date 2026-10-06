@@ -24,26 +24,24 @@ export const DE: Table = {
   "A password is at most {max} characters.":
     "Ein Passwort hat höchstens {max} Zeichen.",
 
-  // src/account/messages.ts
-  "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.":
-    "Die App weiß nicht, wo die API ist: Öffne sie über den QR-Code von npm run mobile auf dem PC.",
+  // src/account/messages.ts (TASK-256: words for whoever uses the phone)
+  "The app cannot reach the service. Update the app.":
+    "Die App erreicht den Dienst nicht. Aktualisiere die App.",
   "Your session has ended. Log in again.":
     "Deine Sitzung ist abgelaufen. Melde dich erneut an.",
-  "Cannot reach the API at {url}. Check the connection and try again.":
-    "Die API unter {url} ist nicht erreichbar. Prüfe die Verbindung und versuche es noch einmal.",
-  "The app and the API do not agree (a bug): HTTP {status}.":
-    "App und API passen nicht zusammen (ein Fehler): HTTP {status}.",
+  "Something went wrong on our side. Try again in a moment.":
+    "Bei uns ist etwas schiefgelaufen. Versuche es gleich noch einmal.",
+  "No connection. Check the network and try again.":
+    "Keine Verbindung. Prüfe die Netzverbindung und versuche es noch einmal.",
   "This email already has an account. Log in instead.":
     "Diese E-Mail-Adresse hat schon ein Konto. Melde dich stattdessen an.",
   "This username is taken. Try another one.":
     "Dieser Benutzername ist vergeben. Versuche einen anderen.",
   "Wrong email or password.": "Falsche E-Mail-Adresse oder falsches Passwort.",
-  "Accounts are not available on this API: it has no database.":
-    "Konten sind auf dieser API nicht verfügbar: Sie hat keine Datenbank.",
-  "The API refused the app's key (EXPO_PUBLIC_API_KEY in apps/mobile/.env).":
-    "Die API hat den Schlüssel der App abgelehnt (EXPO_PUBLIC_API_KEY in apps/mobile/.env).",
-  "The app and the API do not agree (a bug): {message}":
-    "App und API passen nicht zusammen (ein Fehler): {message}",
+  "Accounts are not available right now. Try again later.":
+    "Konten sind gerade nicht verfügbar. Versuche es später noch einmal.",
+  "This version of the app is no longer allowed in. Update the app.":
+    "Diese Version der App wird nicht mehr hereingelassen. Aktualisiere die App.",
   "Too many tries. Wait a minute and try again.":
     "Zu viele Versuche. Warte eine Minute und versuche es noch einmal.",
   "Too many tries. Wait {minutes} minutes and try again.":
@@ -217,6 +215,14 @@ export const DE: Table = {
   "{town}, {km} km away": "{town}, {km} km entfernt",
   "{mi} mi away": "{mi} mi entfernt",
   "{town}, {mi} mi away": "{town}, {mi} mi entfernt",
+
+  // src/intro/AppBoundary.tsx
+  "Something went wrong.": "Etwas ist schiefgelaufen.",
+
+  // src/map/MapView.tsx
+  "The map could not be loaded. Check the network.":
+    "Die Karte konnte nicht geladen werden. Prüfe die Netzverbindung.",
+  Retry: "Erneut versuchen",
 
   // src/map/NorthArrow.tsx
   "North arrow": "Nordpfeil",
@@ -441,6 +447,14 @@ export const DE: Table = {
   "Try {mi} mi": "{mi} mi versuchen",
 
   // src/route/problems.ts
+  "The route could not be drawn. Try again, or try another start.":
+    "Die Route konnte nicht gezeichnet werden. Versuche es noch einmal oder mit einem anderen Start.",
+  "This word cannot be read right now. Try one of these: {list}.":
+    "Dieses Wort kann gerade nicht gelesen werden. Versuche eines von diesen: {list}.",
+  "Drawing this route is taking too long. Try again later, or a shorter distance.":
+    "Das Zeichnen dieser Route dauert zu lange. Versuche es später noch einmal oder mit einer kürzeren Distanz.",
+  "This request was lost. Try again.":
+    "Diese Anfrage ist verloren gegangen. Versuche es noch einmal.",
   "There is no lake or sea near this start. Start from the shore, within 2 km of the water.":
     "In der Nähe dieses Starts gibt es keinen See und kein Meer. Starte am Ufer, höchstens 2 km vom Wasser entfernt.",
   "This shape does not fit on the water here at this distance. It fits at about {km} km.":

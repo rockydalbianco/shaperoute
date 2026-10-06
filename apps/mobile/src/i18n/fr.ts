@@ -24,25 +24,23 @@ export const FR: Table = {
   "A password is at most {max} characters.":
     "Un mot de passe compte au plus {max} caractères.",
 
-  // src/account/messages.ts
-  "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.":
-    "L'app ne sait pas où est l'API : ouvre-la depuis le QR code de npm run mobile sur le PC.",
+  // src/account/messages.ts (TASK-256: words for whoever uses the phone)
+  "The app cannot reach the service. Update the app.":
+    "L'app ne parvient pas à joindre le service. Mets l'app à jour.",
   "Your session has ended. Log in again.": "Ta session a expiré. Reconnecte-toi.",
-  "Cannot reach the API at {url}. Check the connection and try again.":
-    "Impossible de joindre l'API à {url}. Vérifie la connexion et réessaie.",
-  "The app and the API do not agree (a bug): HTTP {status}.":
-    "L'app et l'API ne s'entendent pas (un bug) : HTTP {status}.",
+  "Something went wrong on our side. Try again in a moment.":
+    "Quelque chose n'a pas marché de notre côté. Réessaie dans un instant.",
+  "No connection. Check the network and try again.":
+    "Pas de connexion. Vérifie le réseau et réessaie.",
   "This email already has an account. Log in instead.":
     "Cet e-mail a déjà un compte. Connecte-toi plutôt.",
   "This username is taken. Try another one.":
     "Ce nom d'utilisateur est déjà pris. Essaie-en un autre.",
   "Wrong email or password.": "E-mail ou mot de passe incorrect.",
-  "Accounts are not available on this API: it has no database.":
-    "Les comptes ne sont pas disponibles sur cette API : elle n'a pas de base de données.",
-  "The API refused the app's key (EXPO_PUBLIC_API_KEY in apps/mobile/.env).":
-    "L'API a refusé la clé de l'app (EXPO_PUBLIC_API_KEY dans apps/mobile/.env).",
-  "The app and the API do not agree (a bug): {message}":
-    "L'app et l'API ne s'entendent pas (un bug) : {message}",
+  "Accounts are not available right now. Try again later.":
+    "Les comptes ne sont pas disponibles pour le moment. Réessaie plus tard.",
+  "This version of the app is no longer allowed in. Update the app.":
+    "Cette version de l'app n'est plus acceptée. Mets l'app à jour.",
   "Too many tries. Wait a minute and try again.":
     "Trop de tentatives. Attends une minute et réessaie.",
   "Too many tries. Wait {minutes} minutes and try again.":
@@ -216,6 +214,14 @@ export const FR: Table = {
   "{town}, {km} km away": "{town}, à {km} km",
   "{mi} mi away": "à {mi} mi",
   "{town}, {mi} mi away": "{town}, à {mi} mi",
+
+  // src/intro/AppBoundary.tsx
+  "Something went wrong.": "Quelque chose n'a pas marché.",
+
+  // src/map/MapView.tsx
+  "The map could not be loaded. Check the network.":
+    "La carte n'a pas pu être chargée. Vérifie le réseau.",
+  Retry: "Réessayer",
 
   // src/map/NorthArrow.tsx
   "North arrow": "Flèche du nord",
@@ -437,6 +443,13 @@ export const FR: Table = {
   "Try {mi} mi": "Essayer {mi} mi",
 
   // src/route/problems.ts
+  "The route could not be drawn. Try again, or try another start.":
+    "Le parcours n'a pas pu être tracé. Réessaie, ou essaie un autre départ.",
+  "This word cannot be read right now. Try one of these: {list}.":
+    "Ce mot ne peut pas être lu pour le moment. Essaie l'un de ceux-ci : {list}.",
+  "Drawing this route is taking too long. Try again later, or a shorter distance.":
+    "Le tracé de ce parcours prend trop de temps. Réessaie plus tard, ou avec une distance plus courte.",
+  "This request was lost. Try again.": "Cette demande a été perdue. Réessaie.",
   "There is no lake or sea near this start. Start from the shore, within 2 km of the water.":
     "Il n'y a ni lac ni mer près de ce départ. Pars du rivage, à moins de 2 km de l'eau.",
   "This shape does not fit on the water here at this distance. It fits at about {km} km.":

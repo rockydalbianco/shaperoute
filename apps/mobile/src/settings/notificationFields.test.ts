@@ -39,9 +39,9 @@ test("a switch that could not be kept is said in words", () => {
   // The rest as every request of the account says it.
   expect(notificationsProblem(refused("session_expired"))).toBe(SESSION_ENDED);
   expect(notificationsProblem(refused("accounts_unavailable"))).toBe(
-    "Accounts are not available on this API: it has no database.",
+    "Accounts are not available right now. Try again later.",
   );
   expect(notificationsProblem({ kind: "unreachable", url: "http://api" })).toBe(
-    "Cannot reach the API at http://api. Check the connection and try again.",
+    "No connection. Check the network and try again. (Cannot reach the API at http://api.)",
   );
 });

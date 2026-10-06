@@ -211,7 +211,7 @@ test("removing refused keeps the picture and says why", async () => {
   await waitFor(() => expect(result.current.uri).toBe(URI));
   await act(async () => result.current.remove());
   expect(result.current.uri).toBe(URI);
-  expect(result.current.problem).toMatch(/^Cannot reach the API/);
+  expect(result.current.problem).toMatch(/^No connection/);
 });
 
 test("without the API's address, choosing says so and opens nothing", async () => {

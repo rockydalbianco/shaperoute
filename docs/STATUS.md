@@ -513,6 +513,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-252: le code sul telefono non perdono niente (ADR-0216;
+  dalla revisione del codice dell'app chiesta dall'utente il 2026-10-06,
+  elenco in `out/revisione-app-2026-10-06.md` sul Mac, fuori dal
+  repository). Le tre code (corse, «Public», Strava) con una copia accanto
+  al file; «Public» spento non torna acceso da una scelta in coda; una
+  corsa rifiutata non ferma le altre; la coda riparte quando l'app torna
+  in primo piano; 30 s alle richieste dell'account (90 alle PUT); «Delete
+  account» svuota le code di quell'account; «Stop» dà la corsa anche a
+  file rifiutato. Solo app, niente di visibile. **Aspettano l'utente** (le
+  cinque domande della revisione): schermo acceso per tutta la corsa, i
+  testi d'errore per chi corre, la corsa rifiutata da tenere con il
+  motivo, le calorie in bici e canoa, l'ordine dei prossimi task
+  (TASK-253 navigazione e TASK-254 correzioni piccole sono scritti e da
+  assegnare). `tasks/TASK-252.md`.
+
 - **App** — TASK-182: le unità di misura, km o miglia (ADR-0149 e i suoi
   tre aggiornamenti; chiesto dall'utente il 2026-10-02 e il 2026-10-03;
   PR #351, #366, #368, #374, ultimo merge `3ad0c22`, 2026-10-05). In

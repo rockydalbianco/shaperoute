@@ -12217,3 +12217,71 @@ ogni partenza; un posto senza `away_m` non si scarta più. I guard `isApiError` 
 `isRouteJob` accettano codici e stati come stringhe qualsiasi: chi li usa
 ha già un ramo generico. Un profilo nuovo sul server (una forma nuova)
 arriva all'app vecchia senza aggiornarla.
+
+## ADR-0222 — Il post condiviso resta sul server: emoji, risultati e titolo con la corsa, mai l'immagine
+
+**Data**: 2026-10-06 · **Stato**: Accettato · **Task**: TASK-258 · cosa
+resta del post, quando si salva e dove si rivede sono scelte dell'utente;
+il resto è deciso dall'agente su delega dell'utente. Numero assegnato dal
+coordinatore.
+
+**Contesto**: il 2026-10-06 l'utente ha scritto «voglio che rimanga
+salvato sul server il post dell'utente e l'attività con tutti i dati,
+luogo, passo medio, km… poi ti serviranno tutti questi dati per
+migliorarti nelle ricerche in cosa la gente preferisce». La corsa salvata
+era già intera sul server (ADR-0140: traccia, pause, percorso, km, durata,
+punteggio, luogo, forma o parola, titolo, `walks`, sport); il post di
+«Share» (ADR-0194) viveva solo sul telefono: emoji, posizioni, risultati
+accesi, immagine. Alle tre domande ha scelto: **emoji e risultati, non
+l'immagine**; **quando lo si condivide**, senza un pulsante «Save»;
+**si rivede riaprendo «Share»**.
+
+**Decisione**:
+
+1. **Cosa**: `runs.post` (`jsonb`, migrazione 0019): `title` (quello sul
+   disegno, o `null`), `results` (fra `distance`, `time`, `pace`,
+   nell'ordine del post), `emoji` (al più 5, con il centro come frazioni
+   dell'immagine, fra 0 e 1), `shared_at`. Mai l'immagine: si rifà da
+   questi dati e dalla corsa, ed è 300 KB a post per niente. Niente di
+   nuovo su chi è l'utente: il post è della sua corsa.
+2. **Quando**: l'app manda `PUT /me/activities/{key}/post` dopo che il
+   foglio di condivisione si è aperto («Instagram») e dopo un invio a
+   Strava riuscito («Send to Strava», «Update on Strava»); scritto
+   intero, l'ultimo vince. L'immagine che non si fa, o Strava che
+   rifiuta, non salva niente. Prima di «Save» la corsa non ha una chiave:
+   il post si condivide come prima e non resta.
+3. **Fuoco e dimentica** (`keepPost` nella porta delle attività): la
+   condivisione è fatta, il post è un di più. Nessun riprova, nessun
+   messaggio; una sessione finita si ascolta (come ogni altra chiamata
+   con il token). Un'API senza la migrazione risponde `404`: lo stesso.
+4. **Dove si rivede**: «Share» su una corsa di «My activities» con un post
+   si apre com'era: gli stessi emoji nelle stesse posizioni (riportati
+   sul post se stavano sul bordo), gli stessi risultati accesi; un
+   risultato tenuto che la corsa non ha più (un passo per una corsa
+   troppo corta) non compare. Il titolo è quello della corsa adesso, non
+   quello tenuto: il post è della corsa.
+5. **Il contratto**: `post` nella corsa intera (`null` senza), mai
+   nell'elenco; esempi `run-post-request.json` e `run-post.json` in
+   `shared-types`; l'app legge una corsa senza `post` come prima (un'API
+   più vecchia).
+6. **Cosa se ne fa**: per capire «cosa preferisce la gente» i post e le
+   corse si leggono **in forma aggregata e anonima**, come gli `insights`
+   (ADR-0101), mai per account: un seguito, con un task suo.
+
+**Alternative scartate**: tenere l'immagine PNG (scelta dell'utente: no;
+pesante e ricostruibile); un pulsante «Save post» (l'utente: no; un
+pulsante e un testo in cinque lingue in più); un'anteprima del post
+nella corsa aperta (l'utente: no); una tabella `run_posts` (una riga per
+corsa al più, letta solo con la corsa: una colonna basta; una tabella
+servirebbe a più post per corsa, che non ci sono); salvare il post anche
+a fine corsa prima di «Save» (non c'è ancora una corsa sul server a cui
+attaccarlo; si potrebbe tenere nel file e mandare al «Save»: un seguito,
+se serve); riprovare l'invio del post senza rete (una coda per un dato
+che non si vede; non vale).
+
+**Conseguenze**: serve l'aggiornamento del server con la migrazione 0019
+(l'ok dell'utente, tramite il coordinatore); finché manca, l'app riceve
+`404` e non dice niente. Una corsa cancellata porta via il suo post. Un
+post condiviso da un'app precedente non c'è: si vede dal prossimo
+«Share». TASK-182 B (le miglia) non cambia il post tenuto: i risultati
+sono nomi, i numeri si rifanno nelle unità di adesso.

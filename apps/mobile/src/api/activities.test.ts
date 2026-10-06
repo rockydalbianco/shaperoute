@@ -4,6 +4,8 @@ import walkedRequest from "@shaperoute/shared-types/fixtures/activity-request-wa
 import request from "@shaperoute/shared-types/fixtures/activity-request.json";
 import walkedActivity from "@shaperoute/shared-types/fixtures/activity-walks.json";
 import activity from "@shaperoute/shared-types/fixtures/activity.json";
+import runPostRequest from "@shaperoute/shared-types/fixtures/run-post-request.json";
+import runPost from "@shaperoute/shared-types/fixtures/run-post.json";
 
 import { answers, apiError } from "../account/testing";
 import {
@@ -13,8 +15,11 @@ import {
   isActivitiesPage,
   isActivity,
   isActivityDetail,
+  isRunPost,
   removeActivity,
+  type RunPostRequest,
   saveActivity,
+  savePost,
   withoutPenUp,
 } from "./activities";
 
@@ -257,4 +262,52 @@ test("pauses that are not pauses are a bad answer", () => {
   ]) {
     expect(isActivityDetail({ ...activity, pauses })).toBe(false);
   }
+});
+
+// --- The post of a run (TASK-258) ---
+
+test("the post of the API is what the app reads, with or without one", () => {
+  expect(isRunPost(runPost)).toBe(true);
+  expect(isActivityDetail({ ...activity, post: null })).toBe(true);
+  expect(isActivityDetail({ ...activity, post: runPost })).toBe(true);
+  expect(isActivityDetail({ ...activity, post: { emoji: "🔥" } })).toBe(false);
+  // The request has the fields of the type, no more and no fewer.
+  const typed: RunPostRequest = runPostRequest;
+  expect(Object.keys(typed).sort()).toEqual(["emoji", "results", "title"]);
+  expect(Object.keys(runPost).sort()).toEqual([
+    "emoji",
+    "results",
+    "shared_at",
+    "title",
+  ]);
+});
+
+test("the post goes under the run's key, and comes back with its moment", async () => {
+  const fetchFn: jest.Mock = answers({ status: 200, body: runPost });
+  const outcome = await savePost(URL, TOKEN, ID, runPostRequest, {
+    fetchFn,
+    key: null,
+  });
+  expect(outcome).toEqual({ kind: "ok", value: runPost });
+  const [url, init] = fetchFn.mock.calls[0];
+  expect(url).toBe(`http://api/me/activities/${ID}/post`);
+  expect(init).toMatchObject({
+    method: "PUT",
+    headers: { ...AUTH, "Content-Type": "application/json" },
+  });
+  expect(JSON.parse(String(init?.body))).toEqual(runPostRequest);
+});
+
+test("a post for a run the API does not have is its error", async () => {
+  const fetchFn: jest.Mock = answers({
+    status: 404,
+    body: apiError("not_found", "No activity with this key."),
+  });
+  expect(
+    await savePost(URL, TOKEN, ID, runPostRequest, { fetchFn, key: null }),
+  ).toMatchObject({
+    kind: "api_error",
+    code: "not_found",
+    message: "No activity with this key.",
+  });
 });

@@ -256,6 +256,55 @@ class RunPauseBody(TypedDict):
     """Only when true: a pause of the pen between two letters (TASK-199)."""
 
 
+# --- The post of a run (TASK-258, ADR-0222) ---
+
+# The numbers a post can show, in its order (the app's POST_RESULTS).
+PostResult = Literal["distance", "time", "pace"]
+MAX_POST_EMOJI = 5
+MAX_POST_TITLE = 120
+
+
+class PostEmojiBody(BaseModel):
+    """An emoji laid on the post, its centre as shares of the picture's
+    width and height from the top left."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    emoji: str = Field(min_length=1, max_length=16)
+    x: float = Field(ge=0, le=1, allow_inf_nan=False)
+    y: float = Field(ge=0, le=1, allow_inf_nan=False)
+
+
+class RunPostRequestBody(BaseModel):
+    """PUT /me/activities/{key}/post: the post as the app shared it, enough
+    to make the same picture again from the run:
+    packages/shared-types/fixtures/run-post-request.json. Never the
+    picture itself."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    title: str | None = Field(default=None, max_length=MAX_POST_TITLE)
+    """What was written over the drawing: the run's title, or where it
+    was and what it drew; null for a post without one."""
+    results: list[PostResult] = Field(default_factory=list, max_length=3)
+    """The results shown, in the post's order."""
+    emoji: list[PostEmojiBody] = Field(default_factory=list, max_length=MAX_POST_EMOJI)
+
+    @field_validator("results")
+    @classmethod
+    def each_once(cls, results: list[str]) -> list[str]:
+        if len(set(results)) != len(results):
+            raise ValueError("a result is shown once")
+        return results
+
+
+class RunPostBody(RunPostRequestBody):
+    """The post kept, with when it was last shared:
+    packages/shared-types/fixtures/run-post.json."""
+
+    shared_at: datetime
+
+
 class ActivityDetailBody(BaseModel):
     """GET /me/activities/{key}: the run whole, to show on the map:
     packages/shared-types/fixtures/activity.json, and activity-pauses.json
@@ -287,6 +336,10 @@ class ActivityDetailBody(BaseModel):
     pauses: list[RunPauseBody]
     """In the order they were sent, on the clock of `track` (TASK-200);
     empty for a run without."""
+    post: RunPostBody | None = None
+    """The post as it was last shared (TASK-258); null for a run whose post
+    was never shared. Always answered; the default is for the examples
+    written before."""
 
 
 # --- The place a run starts from ---
@@ -484,8 +537,9 @@ COLUMNS = (
     " ST_AsGeoJSON(route, 15) AS route,"
     " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
 )
-# A run opened whole: its pauses too, which the list does not read.
-DETAIL_COLUMNS = COLUMNS + ", pauses"
+# A run opened whole: its pauses and its post too, which the list does not
+# read.
+DETAIL_COLUMNS = COLUMNS + ", pauses, post"
 
 
 def _route_wkt(points: Sequence[LatLon]) -> str:
@@ -551,7 +605,14 @@ def _whole(row: DictRow) -> ActivityDetailBody:
         track=_line(row["track"]),
         walks=[(start, end) for start, end in row["walks"]],
         pauses=[_kept_pause(pause) for pause in row["pauses"]],
+        post=_kept_post(row["post"]),
     )
+
+
+def _kept_post(kept: dict[str, Any] | None) -> RunPostBody | None:
+    """The post as the `post` column keeps it (TASK-258): what the app sent,
+    with `shared_at`; null for none."""
+    return None if kept is None else RunPostBody.model_validate(kept)
 
 
 def _pause(pause: Pause) -> dict[str, Any]:
@@ -697,6 +758,20 @@ class Activities:
             assert row is not None
             return _listed(row), True
 
+    def keep_post(
+        self, user_id: int, key: str, body: RunPostRequestBody
+    ) -> RunPostBody | None:
+        """The post of the run, as shared now (TASK-258): written whole,
+        over the one before. None for a run the account does not have."""
+        post = RunPostBody(**body.model_dump(), shared_at=self.now())
+        with self.database.connect() as conn:
+            row = conn.execute(
+                "UPDATE runs SET post = %s WHERE user_id = %s AND key = %s"
+                " RETURNING post",
+                (Jsonb(post.model_dump(mode="json")), user_id, key),
+            ).fetchone()
+        return None if row is None else _kept_post(row["post"])
+
     def remove(self, user_id: int, key: str) -> None:
         """Gone, or never there: the same."""
         with self.database.connect() as conn:
@@ -756,6 +831,19 @@ def activity_routes() -> APIRouter:
                 insights: Insights = request.app.state.run_insights
                 insights.record("run_scored", quality=round(activity.score / 100, 3))
         return activity
+
+    # The post, as shared: the last one wins (TASK-258).
+    @router.put("/me/activities/{key}/post", responses={404: {"model": ErrorBody}})
+    def keep_post(
+        key: Key,
+        body: RunPostRequestBody,
+        activities: Annotated[Activities, Depends(activities_of)],
+        user: Annotated[UserBody, Depends(current_user)],
+    ) -> RunPostBody:
+        post = activities.keep_post(user.id, key, body)
+        if post is None:
+            raise HTTPException(404, UNKNOWN_ACTIVITY)
+        return post
 
     @router.delete("/me/activities/{key}", status_code=204)
     def remove_activity(

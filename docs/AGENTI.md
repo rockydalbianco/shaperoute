@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-06, 13:10 · `main` = `2189faa`
+**Ultimo aggiornamento**: 2026-10-06, 13:45 · `main` = `2fd7fa1`
 
 ## Come si usa
 
@@ -52,13 +52,12 @@
 
 ## La coda dei merge
 
-Alle 13:10 del 2026-10-06: nessuna PR aperta. In lavorazione
-TASK-258 (il post sul server, aspetta le tre risposte dell'utente) e
-TASK-259 («Open Settings» quando il telefono nega fotocamera, foto o
-posizione). Il telefono ha tutto `main` (gruppo `37310f11`); il server è
-a `f41eaea` e ha tutto ciò che serve (Ledro è solo acqua + app:
-`lake_catalog.py` è un comando offline). Le PR di soli documenti le
-mergia il coordinatore, una alla volta.
+Alle 13:45 del 2026-10-06: nessuna PR aperta e nessun task in
+lavorazione: le sessioni di oggi sono tutte chiuse. Il telefono ha tutto
+`main` (gruppo `f062e005`); il server è a `d7b490f` (migrazioni fino a
+0019) e ha tutto ciò che gli serve. Da assegnare per prima: TASK-259
+parte B. Le PR di soli documenti le mergia il coordinatore, una alla
+volta.
 Entra prima chi è pronto prima; la sessione proprietaria mergia da sola al
 5/5 verde e CLEAN, ricontrollato subito prima, dopo il «merge NNN» del
 coordinatore; quando il coordinatore scrive «al verde mergia senza
@@ -72,19 +71,6 @@ transcript prima di mergiare).
 ## L'albero
 
 ```
-Unità di misura velocità Kayak/Padel
-  └─ Adesso  TASK-259  «Open Settings» quando il telefono nega la
-                       fotocamera, le foto o la posizione («Location is
-                       off» in corsa); la riga rossa della mappa in
-                       «Draw» (dalla revisione del 2026-10-06; i testi
-                       all'utente prima del merge)   ADR-0223 se serve
-
-Toggle foto post
-  └─ Adesso  TASK-258  Il post condiviso resta sul server (richiesta
-                       dell'utente del 2026-10-06; migrazione = primo
-                       numero libero al merge, oggi 0019; prima le tre
-                       domande all'utente)                     ADR-0222
-
 Mappe offline: parte B pubblicata
   └─ Dopo    TASK-214 D  La prova sull'iPhone: le zone del telefono
                          sono sul server e B2/B2b sono pubblicate; i
@@ -111,6 +97,15 @@ Draw's "Another place" with Paddle», «Nuovo task», «Lago di Ledro e sette
 laghi scartati».
 
 Da assegnare (task file in `main`)
+  ├─ TASK-259 B  «Location is off» + «Open Settings» in corsa:
+  │              collegare `src/location/LocationOff.tsx` (già in
+  │              `main`, parte A #413) in `NavigateScreen.tsx` e
+  │              `FreeRunScreen.tsx`, ora liberi; branch da `main`,
+  │              sessione nuova, parte B nel task file     ADR-0223
+  ├─ TASK-210    Le parti rimaste (elenco nel task file, «cosa resta»:
+  │              «Draw», «Explore», la fine corsa, `VoiceSetting`,
+  │              «Sport», `App.tsx`, i nomi delle forme e sulla mappa,
+  │              «Help» in de/es/fr), una parte per sessione
   ├─ TASK-208 B  La fine corsa stile Strava, dopo le conferme
   │              dell'utente                                   ADR-0170
   └─ Seguiti: il server non tiene le figure dei laghi e delle spiagge
@@ -118,8 +113,8 @@ Da assegnare (task file in `main`)
      conferma e l'invio vero delle notifiche (TASK-183, 185); la distanza
      di «Draw» in metri dentro `App.tsx` (TASK-182); altre spiagge
      (TASK-245); in bici senza percorso la schermata mostra il passo al
-     km (TASK-251); le parti rimaste di TASK-210 e la velocità (scelte
-     dell'utente del 2026-10-06, dopo TASK-254–258); un segnale per i
+     km (TASK-251); la velocità (scelte dell'utente del 2026-10-06); un
+     segnale per i
      tocchi su «Try» (TASK-234); il GPS solo in primo piano (la corsa
      non registra con l'app in secondo piano: emerso con TASK-255)
 
@@ -127,13 +122,13 @@ Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ L'ok per il server: TASK-258 (#412, migrazione 0019), da dare
-  │  prima del merge
-  ├─ TASK-258: le tre domande · TASK-251: i testi delle cinque lingue
-  │  (già pubblicati) · TASK-184: i segnaposto di «Terms» e «Privacy» ·
-  │  TASK-237: i testi in inglese
-  ├─ La prova sull'iPhone di `37310f11`: gli errori che parlano a chi
-  │  corre e «Try again» (TASK-256), la corsa rifiutata con il motivo
+  ├─ Una sessione nuova per TASK-259 B (e poi una parte di TASK-210)
+  ├─ TASK-251: i testi delle cinque lingue (già pubblicati) · TASK-184:
+  │  i segnaposto di «Terms» e «Privacy» · TASK-237: i testi in inglese
+  ├─ La prova sull'iPhone di `f062e005`: la corsa in italiano
+  │  (TASK-210 B), il post che resta sul server e si rivede da «Share»
+  │  (TASK-258), «Open Settings» e «Retry» (TASK-259 A), gli errori che
+  │  parlano a chi corre (TASK-256), la corsa rifiutata con il motivo
   │  (TASK-257), lo schermo acceso e la pausa in secondo piano
   │  (TASK-255), le dodici correzioni piccole (TASK-254), Ledro in
   │  «Paddle» (TASK-250), la mappa girata, le unità del kayak, la
@@ -194,8 +189,6 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `activities.py` (il post), `share/*`, la migrazione nuova | TASK-258 |
-| `route/ImageChoice.tsx`, `navigation/NavigateScreen.tsx`, `FreeRunScreen.tsx`, `ChooseScreen.tsx` (`MapError`), `i18n/*` (le righe nuove) | TASK-259 |
 | `site/`, `docs/SITO.md`, `.github/workflows/site.yml` | TASK-237 |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 (in attesa dello Storage Box) |
 | `docs/PUBBLICITA.md` | TASK-150 |
@@ -222,26 +215,28 @@ Da assegnare
   preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti, 0011
   seguire, 0012 bici a mano nei preferiti, 0013 commenti, 0014 dettagli
   dei disegni, 0015 reazioni, 0016 email e telefono, 0017 notifiche, 0018 la
-  rotazione dei percorsi salvati. La prossima: il primo libero al merge.
+  rotazione dei percorsi salvati, 0019 il post della corsa. La prossima:
+  il primo libero al merge.
 
 ## Il server e l'app
 
 - **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`, da
-  `deploy/compose.yaml` con PostgreSQL. A `main` `f41eaea` dal 2026-10-06
-  ~07:25Z (migrazioni 0001–0018; immagine di prima
-  `shaperoute-api:before-task232c`, copia del database
-  `shaperoute-2026-10-06T0723Z.dump`): il punto del luogo in `/cities`,
-  `run_scored` al salvataggio, le partenze vicine senza `Pool`, `activity`
-  in `/me/activities`, la rotazione nei percorsi salvati e nel catalogo.
-  `draw_examples` finito («70 of 72»: a Tenna il cuore e a Calceranica il
+  `deploy/compose.yaml` con PostgreSQL. A `main` `d7b490f` dal 2026-10-06
+  ~11:25Z (migrazioni 0001–0019; immagine di prima
+  `shaperoute-api:before-task258`, copia del database
+  `shaperoute-2026-10-06T1124Z.dump`): il post della corsa sul server
+  (`PUT /me/activities/{key}/post`, TASK-258) e tutto il precedente (il
+  punto del luogo in `/cities`, `run_scored` al salvataggio, le partenze
+  vicine senza `Pool`, `activity` in `/me/activities`, la rotazione nei
+  percorsi salvati e nel catalogo). `draw_examples` finito il mattino («70 of 72»: a Tenna il cuore e a Calceranica il
   cerchio non si disegnano su quelle strade). Zone del telefono: 528
   file. Acqua della canoa: 248 file (il Lago di Ledro dal 2026-10-06,
   TASK-250, con il Garda riscritto; quello di prima in
   `data/cache/water/before-task250/`); l'elenco dei laghi vive
   nell'app (`lakes.json`), `lake_catalog.py` è un comando offline. Strava
   spento per scelta dell'utente.
-- **App**: su `preview` da `main` `938c70d` (gruppo `37310f11`,
-  2026-10-06 ~10:50Z): tutto `main`. **Dal 2026-10-05 il coordinatore pubblica da
+- **App**: su `preview` da `main` `2fd7fa1` (gruppo `f062e005`,
+  2026-10-06 ~11:40Z): tutto `main`. **Dal 2026-10-05 il coordinatore pubblica da
   solo le cose di sola app** appena sono in `main` e il job `mobile` è
   verde (ok dell'utente: «sì, pubblica sempre le cose di sola app»); per
   il server l'ok si chiede ogni volta. Una PR la cui app vuole qualcosa

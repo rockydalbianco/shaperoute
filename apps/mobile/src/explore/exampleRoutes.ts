@@ -21,6 +21,7 @@ import {
   isRecommendedDetail,
   type RecommendedRoute,
   type RecommendedRouteDetail,
+  turnOf,
 } from "./recommendedRoutes";
 
 /**
@@ -255,6 +256,9 @@ export function asRecommended(
     license: LICENSE,
     ...(set.activity === "running" ? {} : { activity: set.activity }),
     ...penUp(of),
+    // Turned to follow the roads or the shore: its card and its map turn
+    // back (TASK-232). Each alternative has its own.
+    ...turnOf(of),
   });
   const { points, license, walks, ...common } = whole(result, id);
   return {
@@ -301,6 +305,7 @@ export function movedExample(
     license,
     ...(activity !== undefined ? { activity } : {}),
     ...penUp(result),
+    ...turnOf(result),
     ...(result.centre ? { centre: result.centre } : {}),
     alternatives: [],
   };
@@ -457,7 +462,8 @@ export function readKept(data: unknown): Record<string, ExampleDetail[]> {
       kept[key] = list
         .filter(isRecommendedDetail)
         .map(readAlternatives)
-        .map(readCentre);
+        .map(readCentre)
+        .map(readTurn);
     }
   }
   return kept;
@@ -475,6 +481,24 @@ function readAlternatives(detail: ExampleDetail): ExampleDetail {
 function readCentre(detail: ExampleDetail): ExampleDetail {
   const { centre, ...route } = detail;
   return centre === undefined || isPoint(centre) ? detail : route;
+}
+
+/** A turn that does not read is as none kept: the route stays north up. */
+function upright<T extends RecommendedRouteDetail>(route: T): T {
+  if (route.rotation_deg === undefined || turnOf(route).rotation_deg !== undefined) {
+    return route;
+  }
+  const read = { ...route };
+  delete read.rotation_deg;
+  return read;
+}
+
+/** The same for an example and for each of its alternatives. */
+function readTurn(detail: ExampleDetail): ExampleDetail {
+  const read = upright(detail);
+  return read.alternatives === undefined
+    ? read
+    : { ...read, alternatives: read.alternatives.map(upright) };
 }
 
 function isPoint(value: unknown): value is LatLon {
@@ -545,6 +569,7 @@ function fromFile(
       start: detail.points[0],
       away_m: metresBetween(city.point, detail.points[0]),
       ...previewOf(detail.points, walksOf(detail.points, detail.walks)),
+      ...turnOf(detail),
     };
     return { shape, status: "ready", route };
   });

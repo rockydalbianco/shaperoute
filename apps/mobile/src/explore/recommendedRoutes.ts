@@ -34,6 +34,12 @@ export type RecommendedRoute = {
    * water, TASK-226). Absent for a route in one line.
    */
   gaps?: number[];
+  /**
+   * How far its shape is turned, as RouteResult.rotation_deg (TASK-232): the
+   * card draws it turned back. Absent for a route that does not say, which
+   * stays north up.
+   */
+  rotation_deg?: number;
 };
 
 /** One route whole, to show on the map and export. */
@@ -58,7 +64,26 @@ export type RecommendedRouteDetail = {
    * (TASK-226), as RouteResult.walks: an example's only, when it has some.
    */
   walks?: Walk[];
+  /**
+   * How far its shape is turned, as RouteResult.rotation_deg (TASK-232): the
+   * map turns the other way, also while it is run. Absent for a route that
+   * does not say, which stays north up.
+   */
+  rotation_deg?: number;
 };
+
+/**
+ * The turn of a route to keep with it: none for a route that does not say,
+ * or that is upright. What does not read as degrees is as none.
+ */
+export function turnOf(route: {
+  rotation_deg?: unknown;
+}): Pick<RecommendedRouteDetail, "rotation_deg"> {
+  const turn = route.rotation_deg;
+  return typeof turn === "number" && Number.isFinite(turn) && turn !== 0
+    ? { rotation_deg: turn }
+    : {};
+}
 
 /** "Near you" (TASK-092, variant C): a start a short run away. */
 export const NEAR_RADIUS_M = 5000;

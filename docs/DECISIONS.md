@@ -9774,6 +9774,39 @@ delega dell'utente (TASK-232 parte B):
   alla mappa (`RecommendedRouteDetail` non ce l'ha) e le loro schede usano
   le foto-mappa del «Feed»: sono il passo B2, prima della parte C.
 
+**Parte B2, «Explore» con la mappa girata (2026-10-06)**, deciso
+dall'agente su delega dell'utente (TASK-232 parte B2):
+
+- **L'inclinazione viaggia con l'esempio**: `rotation_deg` in
+  `RecommendedRoute` (la scheda) e in `RecommendedRouteDetail` (il
+  percorso intero, le alternative ciascuna la sua), preso dal risultato del
+  motore (`asRecommended`, `movedExample`) e riportato nel risultato che
+  leggono la mappa, «Start» e la corsa (`toResult`, `ExploreRun`).
+- **Dritto vuol dire senza campo** (`turnOf`): 0, assente o illeggibile
+  non si scrive. Gli esempi dritti, il file sul telefono e le foto già
+  fatte restano identici a prima, byte per byte.
+- **Un esempio tenuto sul telefono da prima non si ridisegna** per avere
+  il campo: è un percorso trovato entro ±15°, e resta col nord in alto
+  com'era. Ridisegnarli tutti costerebbe una ricerca per forma a ogni
+  utente, per percorsi che vanno già bene.
+- **La scheda gira la linea, non la vista**: `turnedLine` gira i punti
+  attorno al loro centro, in metri, e `thumbSegments` li disegna come
+  sempre; così il disegno girato riempie la scheda con lo stesso margine.
+  Girare la vista (un `transform`) taglierebbe gli angoli o lascerebbe la
+  forma più piccola.
+- **La foto-mappa prende lo stesso `bearing`** (`lineCamera`, `Shoot`):
+  l'inquadratura è quella della linea girata, con il centro riportato sulla
+  terra. La pagina rimette il nord in alto a ogni foto che non lo chiede,
+  perché la mappa è una sola per tutte le foto. La foto girata ha un nome
+  suo (`…@−30`): non prende il posto di quella col nord in alto. Serve
+  anche alla parte C.
+- **Niente freccia del nord sulle schede**: sono disegni larghi mezzo
+  telefono; la freccia c'è sulla mappa, appena si apre il percorso.
+- **Fuori da questo passo**: il catalogo dell'API
+  (`/recommended-routes`) e gli esempi sull'acqua che arrivano con l'app
+  (`paddleExamples.json`) non dicono l'inclinazione; i preferiti non la
+  tengono (parte C).
+
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 
@@ -11661,6 +11694,95 @@ punto per punto. La faccina dello screenshot (CLI, `--nearby 3`): 0,79 →
 campioni di `samples/`, `TASK-243_*`, con la domanda «va bene così,
 compresi i casi 6 e 7?», il pesce e il fantasmino in cui la somiglianza
 scende): «continua va bene».
+
+## ADR-0212 — La CI ha un tempo massimo per job e dice dove un test si è fermato
+**Stato**: Attiva · 2026-10-06 · **deciso dall'agente su delega
+dell'utente** (TASK-248): i tempi e il modo.
+
+**Contesto**: il 2026-10-05 il job `api` della CI è rimasto appeso tre
+volte nel passo «Test», una per sei ore. La causa è nel motore
+(`multiprocessing.Pool.terminate()` in `plan_nearby` aspetta per sempre
+se arriva mentre un grafo sta per essere mandato a un processo:
+`tasks/TASK-248.md`), ma dal log non si capiva: pytest stampa una riga
+per file, a file finito, e un job di GitHub senza tempo massimo dura fino
+a sei ore.
+
+**Decisione**:
+
+1. **Ogni job ha `timeout-minutes`**, almeno il doppio del suo tempo
+   normale: `route-engine` 15, `api` 25, `ai` 5, `mobile` 10, `docker`
+   15. Un job che lo supera fallisce.
+2. **`faulthandler_timeout = 120`** nei `pyproject.toml` dell'API e del
+   route-engine: un test che dura più di due minuti stampa lo stack di
+   ogni thread e prosegue. Vale anche in locale.
+3. **Nessuna dipendenza nuova.** `pytest-timeout` farebbe fallire il
+   singolo test invece del job, ma è una dipendenza da chiedere, e con la
+   causa tolta (parte B) non serve.
+
+**Conseguenze**:
+
+- Un blocco costa al più il tempo massimo del job, non ore, e il log dice
+  quale test e in quale riga.
+- Un test lento ma sano che supera i due minuti stampa uno stack e passa:
+  rumore nel log, non un errore. Oggi nessun test ci arriva.
+- Se un job diventa più lento del suo tempo massimo per buone ragioni, il
+  numero in `ci.yml` va alzato: resta almeno il doppio del tempo normale.
+- Chi aggiunge un job a `ci.yml` gli dà un tempo massimo.
+
+## ADR-0215 — Con «Paddle» la velocità è in km/h e l'andatura è il tempo di 500 m
+**Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente
+(TASK-251), dentro la **scelta dell'utente** del 2026-10-06: velocità in
+km/h, andatura in minuti ogni 500 m (proposte anche: nodi e min/500 m; solo
+nodi). Numero assegnato dal coordinatore.
+
+**Contesto**: un'uscita sull'acqua mostrava i numeri di una corsa: passo al
+chilometro sotto la mappa, su «Data», nei parziali, nella voce e nel post,
+e nessuna velocità. Solo la bici aveva i suoi (ADR-0179). L'utente ha
+chiesto la velocità e l'andatura «che si usa col kayak».
+
+**Decisione**:
+
+1. **Sotto la mappa «Speed now»**, in km/h, al posto di «Pace now», come
+   in bici: è il numero che si guarda pagaiando.
+2. **Su «Data» e in pausa sei caselle**: «Speed now», «Avg speed», «Time»;
+   «Avg /500 m» (l'andatura media), «Last 500 m» (il tempo degli ultimi
+   500 m interi), «Calories». L'unità dell'andatura è nel nome della
+   casella: accanto al numero («5:37 /500 m») lo rimpiccioliva, visto in
+   un simulatore; i nomi nelle altre lingue sono quelli che ci stanno
+   («Med. /500 m», «Ø /500 m», «Moy. /500 m»). **«Last km» ed «Elev. gain» non ci sono**: per
+   mostrare velocità e andatura insieme due caselle dovevano lasciare il
+   posto, e un lago non sale. Le calorie restano quelle della corsa.
+3. **I parziali ogni 500 m**, non ogni km: il tempo di ogni 500 m è già
+   l'andatura, e un percorso sull'acqua è di 1–5 km (ADR-0169). Le righe
+   si chiamano coi metri («500», «1000»), sotto «m».
+4. **Con le miglia** (ADR-0149) la distanza è in miglia e la velocità in
+   mph, come in bici; **andatura e parziali restano ogni 500 m**: è il
+   metro della canoa e del canottaggio ovunque, e «ogni 0,31 miglia» non lo
+   legge nessuno.
+5. **La voce dice ogni km** (con le miglia ogni miglio), come in una corsa,
+   col **passo medio ogni 500 metri**: «1 kilometre. Time: 12 minutes.
+   Average pace: 6 minutes per 500 metres.» Il confronto col km prima
+   (ADR-0180) e l'incitamento restano quelli della corsa.
+6. **Il post** scrive l'andatura in `/500 m`. Per saperlo a fine uscita il
+   file della corsa in corso (`current-run.json`) tiene `activity` quando
+   non è una corsa; il file di una corsa resta com'era, byte per byte.
+7. **Senza percorso** vale lo sport di «Settings» alla partenza: solo con
+   «Paddle» cambia qualcosa. In bici senza percorso resta il passo al km:
+   non chiesto, lasciato com'è e segnalato all'utente.
+8. **`navigation/paddle.ts`** accanto a `ride.ts`: funzioni pure, e una
+   corsa o una pedalata non passano dal codice nuovo.
+
+**Alternative scartate**: l'andatura al posto della velocità sotto la mappa
+(un solo numero ci sta: la velocità è il primo chiesto); una terza riga di
+caselle per tenere anche «Elev. gain» (la pagina «Data» non ha lo spazio
+sopra i parziali); i parziali ogni km con l'andatura ogni 500 m (un numero
+che non è il tempo della riga); la velocità detta dalla voce (a 5–6 km/h un
+numero intero non dice niente, e i decimali la voce li legge male).
+
+**Conseguenze**: «My activities» e il post fatto da lì mostrano ancora il
+passo al km: l'API non restituisce lo sport di una corsa salvata. È la
+parte B di TASK-251 (un campo in più nel contratto). I testi nuovi in
+tedesco, spagnolo e francese sono dell'agente, da confermare.
 
 
 ## ADR-0213 — Un luogo ha un punto solo: il suo nodo `place` di OpenStreetMap

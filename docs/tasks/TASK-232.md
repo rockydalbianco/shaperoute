@@ -2,10 +2,10 @@
 
 **Stato**: In lavorazione — parte A (motore e API) in `main` dalla #356
 (`799071a`) e sul server; parte B (la mappa girata in «Draw» e in corsa,
-la freccia del nord) in `main` dalla #378 (`44f17c8`); B2 («Explore») e C
-da fare
+la freccia del nord) in `main` dalla #378 (`44f17c8`); parte B2
+(«Explore») in PR; C da fare
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
-`feat/TASK-232-b-turned-map` (B), `feat/TASK-232-b2-explore-turn` (B2),
+`feat/TASK-232-b-turned-map` (B), `feat/TASK-232-b2-explore-turned` (B2),
 `feat/TASK-232-c-saved-turn` (C)
 **ADR**: ADR-0195 (supera in parte ADR-0038: il limite di 15°)
 
@@ -145,7 +145,8 @@ servono anche alla parte C.
       come prima.
 - [ ] L'app gira la mappa di `−rotation_deg` in «Draw», «Explore», nella
       corsa, in «My activities», nel «Feed» e nel post; un percorso senza
-      il campo resta col nord in alto.
+      il campo resta col nord in alto. (Fatti «Draw», la corsa e
+      «Explore»: parti B e B2; il resto è la parte C.)
 - [x] Il GPX non cambia.
 - [ ] Test deterministici per ogni parte (`docs/TESTING.md`).
 
@@ -206,7 +207,8 @@ docs/STATUS.md
 docs/tasks/TASK-232.md
 ```
 
-Parte B2 (da confermare col coordinatore alla partenza):
+Parte B2 (confermati dal coordinatore alla partenza, 2026-10-06; i file
+nuovi e la voce in `DECISIONS.md` aggiunti qui):
 
 ```
 apps/mobile/App.tsx                                         (la rotazione di un esempio aperto e della sua corsa)
@@ -215,7 +217,11 @@ apps/mobile/src/explore/RouteCard.tsx                       (la linea e la foto-
 apps/mobile/src/explore/CityExamples.tsx, NearbyTowns.tsx, ExploreScreen.tsx   (passano la rotazione alla scheda)
 apps/mobile/src/paddle/PaddleExplore.tsx                    (lo stesso, se un esempio sull'acqua è inclinato)
 apps/mobile/src/feed/feedMapPage.ts, FeedMaps.tsx           (la foto-mappa con un `bearing`)
-docs/UI.md, docs/STATUS.md, docs/tasks/TASK-232.md
+apps/mobile/src/feed/turnedLine.ts, turnedLine.test.ts      (nuovi: la linea girata per una scheda)
+apps/mobile/src/feed/feedMapPageTurn.test.ts, FeedMapsTurn.test.tsx   (nuovi)
+apps/mobile/src/explore/RouteCardTurn.test.tsx, exampleRoutesTurn.test.ts, exploredTurn.test.ts   (nuovi)
+apps/mobile/__tests__/AppExploreTurned.test.tsx             (nuovo)
+docs/UI.md, docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-232.md
 ```
 
 Parte C: da completare all'inizio della parte C, dopo B. Almeno
@@ -316,3 +322,37 @@ dalla #378, `44f17c8`, il 2026-10-06; ADR-0195 «Parte B»):
   `explored.ts`), passarlo a `useTurnedMap` in `App.tsx` per `exploring` e
   per `exploreRun`, girare la linea delle schede e dare un `bearing` alla
   foto-mappa. La pubblicazione dell'app la fa il coordinatore.
+
+**Parte B2, «Explore» con la mappa girata** (2026-10-06, sola app, in PR;
+ADR-0195 «Parte B2»):
+
+- **L'esempio aperto**: un esempio che il motore ha inclinato si apre con
+  la mappa girata e la freccia del nord; ogni tessera «A · B · C» la sua
+  inclinazione; la mappa resta girata mentre lo si corre e a fine corsa.
+  Spostato con «Move the shape», prende l'inclinazione del percorso nuovo.
+- **Le schede**: la linea girata attorno al suo centro (`turnedLine`) e la
+  foto-mappa presa con lo stesso `bearing`; in «Explore» (le città, i
+  paesi vicini, i percorsi dell'elenco) e in «Explore» sull'acqua.
+- **Chi lo dice**: gli esempi disegnati per un posto, che passano da
+  `POST /routes` (il server ha la parte A). L'inclinazione sta
+  nell'esempio e nel file del telefono, solo quando non è 0.
+- **Chi non lo dice resta col nord in alto**, come prima: i percorsi del
+  catalogo dell'API (`/recommended-routes` non ha il campo), gli esempi
+  tenuti sul telefono da prima (non si ridisegnano apposta), gli esempi
+  sull'acqua che arrivano con l'app (`paddleExamples.json` non ha il
+  campo), i preferiti e i disegni del «Feed» (parte C).
+- **Visto**: la pagina vera delle foto-mappa nel browser, con quattro
+  campioni inclinati (`samples/TASK-232_*`: stella e fantasmino di Levico,
+  ciambella e gatto di Trento), ciascuno col nord in alto e girato: la
+  linea girata sta sulle strade della foto girata, la forma è dritta, i
+  nomi dei paesi restano dritti. **Non visto** nel simulatore né sul
+  telefono: l'app è coperta dai test (`AppExploreTurned.test.tsx`).
+- **Seguiti senza numero**, per il coordinatore: `rotation_deg` nel
+  catalogo dell'API (`recommended.py` e i file delle città) e in
+  `paddle_examples.py` con `paddleExamples.json` rifatto. Il catalogo è
+  di prima della parte A (percorsi entro ±15°), e gli esempi sull'acqua
+  dell'app sono usciti identici dalla parte A: non controllato oltre.
+- **Da dove riprende la C**: `useFeedMap(…, bearing)` e
+  `turnedLine(line, bearing)` sono pronti per `FeedPost.tsx`,
+  `RunDrawing.tsx` e `PostImage.tsx`; manca che le corse salvate e i
+  preferiti tengano `rotation_deg` (API, una migrazione).

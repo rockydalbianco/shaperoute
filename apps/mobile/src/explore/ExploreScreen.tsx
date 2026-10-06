@@ -218,6 +218,7 @@ export function ExploreScreen({
       key={route.id}
       width={card}
       line={route.preview}
+      rotationDeg={route.rotation_deg}
       title={`${capitalised(routeTitle(route))} · ${distanceLabel(route.route_m, units, withPoint)}`}
       detail={`${cityName(route.city)} · ${awayText(route.away_m)}`}
       match={route.similarity}

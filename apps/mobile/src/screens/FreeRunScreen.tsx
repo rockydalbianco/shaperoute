@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { FreeRun } from "../navigation/freeRun";
 import { isPaddle } from "../navigation/paddle";
 import { t } from "../i18n";
+import { LocationOff } from "../location/LocationOff";
 import { distanceLabel } from "../navigation/phrases";
 import {
   AT_START_M,
@@ -42,9 +43,7 @@ export function FreeRunBanner({ state }: { state: FreeRunState }) {
   if (state.status === "denied") {
     return (
       <View style={styles.banner}>
-        <Text style={styles.message}>
-          Location is off for Sgrava: allow it in Settings to record a run.
-        </Text>
+        <LocationOff use="record" />
       </View>
     );
   }

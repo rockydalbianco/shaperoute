@@ -1,7 +1,7 @@
 # TASK-259 — «Open Settings» e «Location is off»
 
-**Stato**: In corso
-**Fase**: 4 · **Branch**: `feat/TASK-259-open-settings`
+**Stato**: Done
+**Fase**: 4 · **Branch**: `feat/TASK-259-open-settings` (A), `feat/TASK-259-b-location-off` (B)
 
 ## Obiettivo
 
@@ -66,15 +66,15 @@ test delle due schermate aggiornati. Branch nuovo da `main`.
 
 ## Criteri di accettazione
 
-- [ ] Con la fotocamera negata, «Open Settings» sotto il testo chiama
+- [x] Con la fotocamera negata, «Open Settings» sotto il testo chiama
       `Linking.openSettings()` (test).
-- [ ] Con altri problemi della foto, nessun «Open Settings» (test).
-- [ ] `MapError` non mostra il motivo tecnico né «reopen the app» (test).
-- [ ] In «Draw», «Retry» chiama la funzione della schermata (test); in
+- [x] Con altri problemi della foto, nessun «Open Settings» (test).
+- [x] `MapError` non mostra il motivo tecnico né «reopen the app» (test).
+- [x] In «Draw», «Retry» chiama la funzione della schermata (test); in
       `App.tsx` la mappa viene montata di nuovo e l'errore azzerato.
-- [ ] `LocationOff` dice il testo con «Open Settings» (test).
-- [ ] **Parte B**: le due schermate della corsa mostrano `LocationOff` (test).
-- [ ] Testi nelle cinque lingue, approvati dall'utente.
+- [x] `LocationOff` dice il testo con «Open Settings» (test).
+- [x] **Parte B**: le due schermate della corsa mostrano `LocationOff` (test).
+- [x] Testi nelle cinque lingue, approvati dall'utente.
 
 ## File toccati
 
@@ -114,4 +114,12 @@ apps/mobile/src/screens/FreeRunScreen.tsx (+ test)
   della mappa in «Draw», `LocationOff` pronto e non usato. Testi approvati
   dall'utente. Seguito senza numero: la foto del profilo
   (`profile/useProfilePhoto.ts`) ha la fotocamera negata senza bottone.
-- **Parte B**: da fare al via del coordinatore.
+- **Parte B** (2026-10-06): PR #419. Senza il permesso della posizione, o
+  con la posizione del telefono spenta, il banner sopra la mappa della
+  navigazione e della corsa libera mostra `LocationOff` («Location is
+  off», a cosa serve, «Open Settings») al posto della vecchia riga solo in
+  inglese. Nessun testo nuovo: quelli di `LocationOff` sono della parte A,
+  già approvati. Da provare sull'iPhone con la posizione negata, dopo la
+  pubblicazione (la fa il coordinatore). Fuori da questo task resta la
+  riga della partenza in «Draw» (`App.tsx`, «Location is off for Sgrava.
+  Allow it in Settings, or search…»), che ha già «Open Settings».

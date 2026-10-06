@@ -2,6 +2,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 
 import { durationMs, type TrackFix } from "./trackRecorder";
 import {
+  AWAY_AFTER_MS,
   clearRun,
   endRun,
   pendingRun,
@@ -335,4 +336,44 @@ test("a run written again after a refusal is read from the file", () => {
   const ended = endRun();
   expect(ended?.track.fixes).toHaveLength(3);
   expect(loadRun()).toEqual(ended);
+});
+
+test("the app leaving for more than AWAY_AFTER_MS is a pause, read back with the run (TASK-255)", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.leave(10_000);
+  // Nothing yet: the next fix decides.
+  expect(loadRun()?.track.pauses).toBeUndefined();
+  run.onFix(fix(300, 4 + AWAY_AFTER_MS / 1000 + 1), false);
+  expect(loadRun()?.track.pauses).toEqual([
+    { fromMs: 10_000, toMs: 4000 + AWAY_AFTER_MS + 1000, away: true },
+  ]);
+  expect(run.track().fixes[2].gap).toBe(true);
+  expect(run.track().distanceM).toBeCloseTo(10, 0);
+});
+
+test("the app back within AWAY_AFTER_MS joins the line as before (the user's choice)", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.leave(10_000);
+  run.onFix(fix(100, 30), false);
+  expect(run.track().pauses).toBeUndefined();
+  expect(run.track().fixes[2].gap).toBeUndefined();
+  expect(run.track().distanceM).toBeCloseTo(100, 0);
+  // Left again, and back late this time: the pause is from the second leaving.
+  run.leave(40_000);
+  run.onFix(fix(400, 130), false);
+  expect(run.track().pauses).toEqual([{ fromMs: 40_000, toMs: 130_000, away: true }]);
+});
+
+test("paused by hand already, the app leaving changes nothing", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.pause(1000);
+  run.leave(2000);
+  run.resume(90_000);
+  run.onFix(fix(300, 100), false);
+  expect(run.track().pauses).toEqual([{ fromMs: 1000, toMs: 90_000 }]);
 });

@@ -10,6 +10,7 @@ import {
   addFix,
   continueTrack,
   emptyTrack,
+  leaveTrack,
   pauseTrack,
   penDownTrack,
   penUpTrack,
@@ -29,6 +30,10 @@ export const RUN_FILE = "current-run.json";
 export const SAVE_EVERY_MS = 15_000;
 /** A run stopped less than this ago goes on when the same route starts again. */
 export const RESUME_WITHIN_MS = 30 * 60_000;
+/** With the app behind another, or the phone locked, no fix for this long
+ * is a pause of the phone's (TASK-255, ADR-0219: the user's choice of 60
+ * seconds): a shorter absence, a change of song, joins the line as before. */
+export const AWAY_AFTER_MS = 60_000;
 
 /** "running" in the file means the app was closed during the run. */
 export type RunStatus = "running" | "stopped" | "arrived";
@@ -130,7 +135,8 @@ function isPause(value: unknown): boolean {
     typeof pause.fromMs === "number" &&
     (pause.toMs === null || typeof pause.toMs === "number") &&
     (pause.auto === undefined || pause.auto === true) &&
-    (pause.pen === undefined || pause.pen === true)
+    (pause.pen === undefined || pause.pen === true) &&
+    (pause.away === undefined || pause.away === true)
   );
 }
 
@@ -215,6 +221,12 @@ export type RunRecorder = {
   /** The next letter starts: the pen's pause ends at `nowMs`; any other
    * pause stays. */
   lowerPen(nowMs: number): void;
+  /** The app leaves the front (TASK-255): if the next fix then comes more
+   * than AWAY_AFTER_MS after the last, the run waited from `nowMs`, a pause
+   * of the phone's, unless the runner or the pen paused it; a fix sooner
+   * (a change of song, a glance at a notification) joins the line as
+   * before. */
+  leave(nowMs: number): void;
   /** The run is left: what there is goes to the file. */
   stop(): void;
   track(): Track;
@@ -271,10 +283,28 @@ export function startRun(
     unsaved = false;
   }
 
+  // When the app left the front, until the first fix after (TASK-255).
+  let leftAtMs: number | null = null;
+
   const recorder: RunRecorder = {
     onFix(fix, arrived) {
       if (status === "arrived") {
         return;
+      }
+      if (leftAtMs !== null) {
+        const last = track.fixes[track.fixes.length - 1];
+        // Away long enough that nothing of it was the run (the user's
+        // choice, ADR-0219): a pause from then, and a new stretch now.
+        // Unless the runner, or the pen, paused the run over the absence
+        // anyway: that pause already says so.
+        if (
+          last !== undefined &&
+          fix.timeMs - last.timeMs > AWAY_AFTER_MS &&
+          !pausedByHandAfter(track, last.timeMs)
+        ) {
+          track = leaveTrack(track, leftAtMs);
+        }
+        leftAtMs = null;
       }
       const next = addFix(track, fix);
       unsaved = unsaved || next !== track;
@@ -323,6 +353,11 @@ export function startRun(
         unsaved = true;
       }
     },
+    leave(nowMs) {
+      if (status === "running") {
+        leftAtMs = nowMs;
+      }
+    },
     stop() {
       if (status === "running" && track.fixes.length > 0) {
         status = "stopped";
@@ -334,6 +369,16 @@ export function startRun(
   active = recorder;
   activeNotWritten = () => notWritten;
   return recorder;
+}
+
+/** Whether a pause of the runner's, or of the pen's, reaches past `sinceMs`. */
+function pausedByHandAfter(track: Track, sinceMs: number): boolean {
+  return (track.pauses ?? []).some(
+    (pause) =>
+      pause.auto !== true &&
+      pause.away !== true &&
+      (pause.toMs === null || pause.toMs > sinceMs),
+  );
 }
 
 /** The recorder of the run in progress, if navigation started one. */

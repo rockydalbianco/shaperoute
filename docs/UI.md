@@ -1750,7 +1750,8 @@ corsa, e un percorso senza attività, restano come prima, parola per parola.
 - **La velocità al posto del passo**: su «Map» «Speed now» (km/h, sugli
   ultimi 200 m, come «Pace now»); su «Data» e in pausa «Speed now», «Avg
   speed», «Last km» (la velocità dell'ultimo km intero), «Elev. gain»,
-  «Calories»; i km uno per uno sono «Km · Speed · Change», con la velocità
+  senza «Calories» (la stima è di una corsa: TASK-255); i km uno per uno
+  sono «Km · Speed · Change», con la velocità
   a un decimale («24.0») e la differenza col km prima in km/h («-4.0» più
   lento, «+1.5» più veloce). In italiano «Vel. ora», «Vel. media», «Ultimo
   km», «Velocità» (approvati dall'utente; tedesco, spagnolo e francese da
@@ -1823,7 +1824,8 @@ I passi compaiono dopo 100 m, prima c'è «–»; «Pace now» torna «–» anc
 fermi (più lenti di 20:00 /km). «Elev. gain» è «–» se il telefono non dà
 la quota; conta le salite di almeno 3 m, perché la quota del GPS oscilla.
 «Calories» è una stima da 70 kg (il peso non è ancora nel profilo): circa
-una kilocaloria per kg e per km. Il battito non c'è: il telefono non lo
+una kilocaloria per kg e per km, e si vede solo correndo (in bici sarebbe
+il triplo del vero: TASK-255, scelta dell'utente). Il battito non c'è: il telefono non lo
 misura, e un sensore si collega solo in una build propria (seguiti in
 `tasks/TASK-169.md`). Sotto il banner della svolta restano le due
 etichette piccole di TASK-164: «42% drawn» e il punto cardinale («NE»).
@@ -1883,8 +1885,15 @@ vince il più economico (ADR-0217). Dopo «Stop» e «Keep running», o dopo
 l'app chiusa a metà corsa, il navigatore riparte da dove la traccia era
 arrivata, ripassando in silenzio le posizioni registrate: la prossima
 svolta detta è quella davanti, le lettere già disegnate restano disegnate,
-e «Head out on …» non si ripete. Funziona con lo schermo
-acceso e l'app aperta; la posizione non esce dal telefono.
+e «Head out on …» non si ripete. Funziona con l'app aperta, e **lo
+schermo resta acceso da solo per tutta la corsa** (TASK-255, ADR-0219:
+scelta dell'utente del 2026-10-06), con o senza la modalità tasca. Se
+l'app va comunque in secondo piano (il telefono bloccato a mano, una
+telefonata, «Music» che apre Spotify) il GPS si ferma: tornati entro 60
+secondi la linea continua come prima (una riga dritta, il tempo contato);
+oltre i 60 secondi quel tempo è una pausa e la linea riparte da dove si è,
+senza riga dritta (scelta dell'utente). La posizione non esce dal
+telefono.
 
 **La voce della corsa** (TASK-209, ADR-0171; chiesto dall'utente il
 2026-10-03: «scegliere la voce e la lingua della voce»). In «Data», sotto
@@ -2258,7 +2267,7 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   sotto la mappa «Speed now» in km/h; su «Data» e in pausa «Speed now»,
   «Avg speed», «Time», poi «Avg /500 m» (l'andatura media, «5:37»: l'unità
   è nel nome, perché accanto al numero lo rimpiccioliva), «Last 500 m» (il
-  tempo degli ultimi 500 m interi) e «Calories». «Last km» ed
+  tempo degli ultimi 500 m interi), senza «Calories» (TASK-255). «Last km» ed
   «Elev. gain» non ci sono. I parziali sono **ogni 500 m**: «m · /500 m ·
   Change», le righe «500», «1000», … col loro tempo e la differenza dal
   precedente; prima, «Your first 500 metres will show here.» Con le miglia

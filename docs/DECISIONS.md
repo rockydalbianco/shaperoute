@@ -12120,3 +12120,51 @@ oggi: meno di due posizioni buone, un orologio che non è un orologio, i
 telefono pieno e sei della riga rifiutata). Un file d'attesa di prima si
 legge com'era: le voci senza `refused` sono in attesa. Un telefono che
 aveva già perso una corsa non la ritrova.
+
+## ADR-0219 — La corsa tiene lo schermo acceso, l'app in secondo piano è una pausa, niente calorie fuori dalla corsa
+**Stato**: Attiva · 2026-10-06 · **scelte dell'utente** del 2026-10-06
+(«sì a tutte e cinque» alle domande della revisione: lo schermo acceso, le
+calorie); il modo deciso dall'agente su delega dell'utente (TASK-255).
+Numero assegnato dal coordinatore. Aggiorna ADR-0066.
+
+**Contesto**: `expo-keep-awake` era chiamato solo entrando in modalità
+tasca (ADR-0066). Con la mappa a vista e il blocco automatico del telefono
+l'app andava in secondo piano; il GPS è seguito solo in primo piano
+(nessun permesso di sfondo), quindi registrazione, voce e pausa automatica
+si fermavano senza avviso, e al ritorno la prima posizione era unita
+all'ultima con una riga dritta, con tutto il tempo di mezzo sul cronometro.
+Una build di sviluppo tiene lo schermo acceso da sola e lo nascondeva. Le
+calorie usavano la formula della corsa (1,036 kcal per kg e km) per ogni
+sport: in bici circa il triplo del vero.
+
+**Decisione**:
+
+1. **Lo schermo resta acceso per tutta la corsa** (`useRunAwake`, tag
+   `run`), dalla partenza a «Stop» o all'arrivo, con e senza percorso. La
+   modalità tasca tiene il suo tag (`pocket-mode`): entrare e uscire non
+   spegne lo schermo della corsa. Nessuna dipendenza nuova.
+2. **L'app che lascia il primo piano per più di 60 secondi è una pausa**
+   (`Pause.away`, `leaveTrack`, `RunRecorder.leave`, `AWAY_AFTER_MS`;
+   **scelta dell'utente** del 2026-10-06, su proposta dell'agente dopo
+   l'obiezione del coordinatore): quando `AppState` passa a «background»
+   l'app si segna il momento; se la prossima posizione arriva più di 60 s
+   dopo l'ultima, la corsa è stata in pausa da quel momento e la posizione
+   comincia un tratto nuovo (`gap`): niente metri sulla riga dritta, niente
+   tempo di mezzo (una telefonata, il telefono bloccato e dimenticato). Se
+   arriva prima (un cambio brano su Spotify, un'occhiata a una notifica)
+   la linea continua come oggi: riga dritta e tempo contato. Una pausa a
+   mano o della penna che copre l'assenza resta com'è; una pausa da fermi
+   finisce dove l'app è uscita, perché quello che segue non è del
+   corridore. Scartata la regola «nessuna posizione per 30 s» senza
+   guardare `AppState`: con la pausa automatica spenta avrebbe tolto dal
+   cronometro anche una sosta lunga a un semaforo, e sotto una galleria
+   avrebbe tolto i metri. «inactive» (centro di controllo, tasto laterale
+   senza blocco) non conta.
+3. **Il riquadro «Calories» solo correndo**: in bici e in canoa il suo
+   posto lo prendono i riquadri accanto; nessun testo nuovo. Una formula
+   per sport quando l'utente la vorrà.
+
+**Conseguenze**: più batteria con lo schermo acceso (era già così in
+modalità tasca). Il file della corsa può avere pause `away`
+(`trackStore.isPause` le legge). `NavigateScreen.test.tsx` cambia verso:
+lo schermo è acceso anche senza la modalità tasca.

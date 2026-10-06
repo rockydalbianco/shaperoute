@@ -8,7 +8,7 @@ import type {
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useRef, useState } from "react";
-import { Vibration } from "react-native";
+import { AppState, Vibration } from "react-native";
 
 import { onFootOf } from "../route/onFoot";
 import { walksOf } from "../route/walks";
@@ -115,6 +115,7 @@ export function useNavigation(
     let subscription: Location.LocationSubscription | null = null;
     let run: RunSession | null = null;
     let stopRecording: (() => void) | null = null;
+    let leaving: { remove(): void } | null = null;
     // The phone's voices, before the first words: a chosen one is used only
     // once it is known to be there.
     void loadVoices();
@@ -179,6 +180,13 @@ export function useNavigation(
           say: (text) => play([{ say: text, vibrate: false }]),
         });
         run = session;
+        // The app behind another, or the phone locked: the GPS stops with
+        // it, and so does the run, until the next fix (TASK-255).
+        leaving = AppState.addEventListener("change", (next) => {
+          if (next === "background") {
+            recorder.leave(Date.now());
+          }
+        });
         setState({
           status: "following",
           navigation: resumed.navigation,
@@ -288,6 +296,7 @@ export function useNavigation(
     return () => {
       stopped = true;
       subscription?.remove();
+      leaving?.remove();
       run?.end();
       stopRecording?.();
       void Speech.stop();

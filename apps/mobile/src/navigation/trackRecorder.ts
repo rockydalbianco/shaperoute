@@ -41,6 +41,11 @@ export type Pause = {
    * at the end of a letter, and the start of the next one ends it. Like the
    * runner's own, nothing in it is of the run. Absent otherwise. */
   pen?: true;
+  /** The app left the front (TASK-255): the phone locked, or another app
+   * over it. The GPS is followed in the foreground only, so nothing in it
+   * is of the run, wherever the runner went: the next fix ends it and
+   * starts a new stretch of the line. Absent otherwise. */
+  away?: true;
 };
 
 export type Track = {
@@ -73,6 +78,23 @@ export function pauseTrack(track: Track, atMs: number, auto = false): Track {
     ? { fromMs, toMs: null, auto: true }
     : { fromMs, toMs: null };
   return { ...track, pauses: [...(track.pauses ?? []), pause] };
+}
+
+/** `track` left by the app from `atMs` (TASK-255): a pause of the phone's.
+ * The same track when the runner, or the pen, paused it already; a pause by
+ * standing still ends here, as what follows is not the runner's. */
+export function leaveTrack(track: Track, atMs: number): Track {
+  const open = openPause(track);
+  if (open !== null && open.auto !== true) {
+    return track;
+  }
+  const still = open === null ? track : resumeTrack(track, atMs);
+  const last = still.fixes[still.fixes.length - 1];
+  const fromMs = last === undefined ? atMs : Math.max(atMs, last.timeMs);
+  return {
+    ...still,
+    pauses: [...(still.pauses ?? []), { fromMs, toMs: null, away: true }],
+  };
 }
 
 /** `track` going on from `atMs`; the same track when it is not paused. */
@@ -162,8 +184,9 @@ function afterPause(track: Track, last: TrackFix): boolean {
 export function addFix(track: Track, fix: TrackFix): Track {
   const pause = openPause(track);
   // Paused by the runner, or by the pen between two letters: nothing is of
-  // the run until it goes on.
-  if (pause !== null && pause.auto !== true) {
+  // the run until it goes on. A pause by standing still, or by the app
+  // leaving the front, ends with this fix.
+  if (pause !== null && pause.auto !== true && pause.away !== true) {
     return track;
   }
   const [lat, lon] = fix.point;
@@ -185,7 +208,8 @@ export function addFix(track: Track, fix: TrackFix): Track {
   if (stepM < MIN_STEP_M) {
     return track;
   }
-  // Moving again ends a pause that standing still began.
+  // Moving again ends a pause that standing still began; coming back
+  // ends one the app left.
   const moving = pause === null ? track : resumeTrack(track, fix.timeMs);
   if (afterPause(moving, last)) {
     return { ...moving, fixes: [...track.fixes, { ...fix, gap: true }] };

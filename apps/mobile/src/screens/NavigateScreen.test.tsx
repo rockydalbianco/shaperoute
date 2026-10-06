@@ -8,7 +8,8 @@ import { Alert, type AlertButton } from "react-native";
 import { type Navigation, remainingM, startNavigation } from "../navigation/navigator";
 import { distanceLabel } from "../navigation/phrases";
 import { addFix, emptyTrack, type Track } from "../navigation/trackRecorder";
-import { POCKET_BRIGHTNESS } from "../navigation/usePocketMode";
+import { KEEP_AWAKE_TAG, POCKET_BRIGHTNESS } from "../navigation/usePocketMode";
+import { RUN_AWAKE_TAG } from "../navigation/useRunAwake";
 import { NavigationBanner, NavigationCard } from "./NavigateScreen";
 import { POCKET_WARNING, resetPocketWarning } from "./PocketScreen";
 
@@ -245,7 +246,9 @@ describe("pocket mode", () => {
     await render(<NavigationCard navigation={navigation} onStop={() => {}} />);
     await fireEvent.press(screen.getByLabelText("Pocket mode"));
     expect(screen.queryByText("Hold for 2 seconds to leave pocket mode")).toBeNull();
-    expect(activateKeepAwakeAsync).not.toHaveBeenCalled();
+    // The run keeps the screen on by itself (TASK-255); pocket mode did not.
+    expect(activateKeepAwakeAsync).not.toHaveBeenCalledWith(KEEP_AWAKE_TAG);
+    expect(activateKeepAwakeAsync).toHaveBeenCalledWith(RUN_AWAKE_TAG);
   });
 
   test("arriving ends pocket mode, and there is no button to start it again", async () => {

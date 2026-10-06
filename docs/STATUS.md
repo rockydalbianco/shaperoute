@@ -565,6 +565,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-255: la corsa tiene lo schermo acceso (ADR-0219; scelte
+  dell'utente del 2026-10-06 dalla revisione). Schermo acceso per tutta la
+  corsa, con o senza percorso, non solo in modalità tasca; l'app che va in
+  secondo piano per più di 60 s (telefonata, telefono bloccato e
+  dimenticato) mette la corsa in pausa fino alla prossima posizione, senza
+  riga dritta e senza il tempo di mezzo, entro 60 s (un cambio brano)
+  tutto come prima (scelta dell'utente); «Calories» solo correndo. Solo app, nessun testo nuovo,
+  nessuna dipendenza nuova. `tasks/TASK-255.md`.
+
+
 - **App** — TASK-257: una corsa rifiutata resta sul telefono con il
   motivo (ADR-0221; dalla revisione dell'app, «sì» dell'utente del
   2026-10-06). Una corsa a cui l'API risponde `invalid_request` non

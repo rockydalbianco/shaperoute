@@ -113,7 +113,14 @@ apps/mobile/src/route/RoutePanel.tsx          (+ test)
 apps/mobile/src/intro/AppBoundary.tsx         (nuovo, + test)
 apps/mobile/src/intro/Root.tsx
 apps/mobile/src/map/MapView.tsx               (+ test)
+apps/mobile/App.tsx                           (due righe: `retry` → `onRetry`, ok del coordinatore 2026-10-06)
 apps/mobile/src/i18n/{de,it,es,fr}.ts
+test di altri moduli che leggevano i vecchi testi (ok del coordinatore):
+  __tests__/App.test.tsx, __tests__/AppBike.test.tsx,
+  src/account/{changeContact,changeNotifications,editProfile,useAccount}.test.ts,
+  src/profile/{profileFields,useProfilePhoto}.test.ts,
+  src/settings/{contactFields,notificationFields}.test.ts,
+  src/social/DrawingsGrid.test.tsx, src/route/accessProblems.test.ts
 docs/UI.md, docs/STATUS.md, docs/DECISIONS.md (le righe di questo task)
 ```
 
@@ -146,9 +153,17 @@ Fatto il 2026-10-06 (ADR-0220), in attesa di merge:
   leggevano i vecchi testi aggiornati (account, profilo, impostazioni,
   `App.test.tsx`, `AppBike.test.tsx`, `DrawingsGrid.test.tsx`,
   `accessProblems.test.ts`).
-- Fuori dai «File toccati», da segnalare al coordinatore: i test sopra e
-  le **due righe in `App.tsx`** (`retry` dal hook, `onRetry={retry}` su
-  `RouteOutcome`), senza le quali «Try again» non compare sotto «Draw
-  route».
-- La riga rossa di `ChooseScreen.MapError` («…reopen the app») resta
-  finché la mappa non carica: seguito.
+- `App.tsx`: le due righe (`retry` dal hook, `onRetry={retry}` su
+  `RouteOutcome`) con l'ok del coordinatore del 2026-10-06; i test di
+  altri moduli aggiornati, idem.
+
+**Seguiti, per il coordinatore** (senza numero, file non di questo task):
+
+- «Open Settings» (`Linking.openSettings`) accanto a «The camera is off for
+  this app…» in `route/ImageChoice.tsx` (TASK-254 lo sta toccando) e a
+  «Location is off for Sgrava…» in `screens/NavigateScreen.tsx` e
+  `screens/FreeRunScreen.tsx`.
+- La riga rossa di `ChooseScreen.MapError` («The map could not load
+  (motivo). Check the connection and reopen the app.») da riscrivere per
+  chi corre: ora sparisce da sola quando la mappa carica (`onError(null)`),
+  ma finché è lì dice ancora di riaprire l'app.

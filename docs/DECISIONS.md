@@ -12234,10 +12234,10 @@ testo diceva di riaprire l'app.
 
 **Alternative scartate**: tradurre tutto `problems.ts` (è di TASK-210);
 un «Try again» che passa da `onTryDistance(view.request.distance_m)` per
-non toccare `App.tsx` (meno chiaro di `retry()`; `App.tsx` va comunque
-collegato); «Open Settings» accanto a «The camera is off…» e a «Location is
-off» (stanno in `ImageChoice.tsx`, di TASK-254, e in `NavigateScreen` /
-`FreeRunScreen`: seguito).
+non toccare `App.tsx` (meno chiaro di `retry()`; `App.tsx` prende le due
+righe con l'ok del coordinatore); «Open Settings» accanto a «The camera is
+off…» e a «Location is off» (stanno in `ImageChoice.tsx`, di TASK-254, e
+in `NavigateScreen` / `FreeRunScreen`: seguito).
 
 **Conseguenze**: i test che leggevano i vecchi testi (account, profilo,
 impostazioni, `App.test.tsx`, `AppBike.test.tsx`) leggono i nuovi, con il

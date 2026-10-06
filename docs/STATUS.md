@@ -156,9 +156,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `onRetry` su `RouteOutcome`); `AppBoundary` attorno all'app (giallo,
   logo, «Something went wrong.», «Try again»); «Retry» sulla mappa che non
   carica, ricarica anche al ritorno in primo piano, `onError(null)` quando
-  carica. **PR in apertura**; aspetta: i testi nelle cinque lingue
-  all'utente, l'ok del coordinatore per le due righe in `App.tsx`
-  (`retry` → `onRetry`) e il «merge». Seguiti senza numero: «Open
+  carica; due righe in `App.tsx` (`retry` → `onRetry`, ok del
+  coordinatore). **PR #408 aperta**; aspetta il sì dell'utente sui testi
+  nelle cinque lingue e il «merge» del coordinatore, dopo la #407
+  (TASK-254). Seguiti senza numero: «Open
   Settings» accanto a fotocamera/posizione negate (`ImageChoice.tsx`,
   `NavigateScreen`, `FreeRunScreen`), la riga rossa di `ChooseScreen`
   («reopen the app») da riscrivere. `tasks/TASK-256.md`.

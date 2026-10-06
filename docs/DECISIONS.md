@@ -11880,3 +11880,58 @@ quella risposta **non è tenuta** e gli altri luoghi non si chiedono
   prima finché non lo sceglie di nuovo.
 - Le etichette possono ancora differire fra i due endpoint (una frazione,
   un nome tradotto): il punto no. `tasks/TASK-249.md`, «Emerso».
+
+## ADR-0216 — Le code sul telefono: una copia accanto al file, un tempo massimo alle richieste dell'account, una corsa rifiutata non ferma le altre
+**Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente
+(TASK-252, dalla revisione del codice dell'app chiesta il 2026-10-06).
+Numero assegnato dal coordinatore.
+
+**Contesto**: le corse salvate senza rete, «Public» e Strava aspettano in
+tre file JSON dei documenti dell'app, riscritti per intero a ogni
+cambiamento con `create({ overwrite: true })` e poi `write`: fra le due
+chiamate il file è vuoto, e con il telefono pieno resta così. Il giro che
+manda le corse si fermava alla prima risposta che non fosse un sì o un
+`invalid_request`, anche per un 413 o un 500 di quella sola corsa. Le
+richieste dell'account (`api/accounts.ts` `ask`) non avevano un tempo
+massimo: su Android una connessione che tace tiene «Logging in…»,
+reazioni e «Follow» fermi per sempre. Una scelta «Public» rimasta in coda
+non veniva tolta quando una scelta successiva arrivava all'API.
+
+**Decisione**:
+
+1. **Un modulo solo per le liste su file** (`src/storage/keptList.ts`):
+   il contenuto nuovo va prima in una copia (`<nome>.copy`), poi nel file;
+   in lettura un file vuoto o rotto lascia il posto alla copia; una lista
+   vuota cancella prima la copia, poi il file. Solo con i metodi di `File`
+   che i trenta test con un file system in memoria già imitano: niente
+   `move`, che li avrebbe cambiati tutti. **Non** per il file della corsa
+   in corso, riscritto ogni 15 secondi: lì «Stop» dà la corsa dalla
+   memoria se l'ultima scrittura è fallita.
+2. **Il giro delle corse si ferma solo** senza rete, con l'API che chiede
+   di rallentare (`too_many_requests`) o con la sessione finita. Una corsa
+   rifiutata in un altro modo resta in coda e la successiva parte; **due
+   fallimenti dell'API di fila (5xx) fermano il giro**, perché un server
+   spento dietro Caddy risponde 502 a tutto e venti corse con la traccia
+   sono megabyte di dati mobili a ogni apertura. Il giro parte anche
+   quando l'app torna in primo piano (`AppState`), oltre che all'apertura,
+   al «Save» e in «My activities».
+3. **Tempo massimo in `ask`**: 30 secondi, 90 per le `PUT` (una corsa, una
+   foto; una `PUT` mandata due volte non cambia niente). Allo scadere la
+   richiesta è interrotta (`AbortController`) e l'esito è `unreachable`,
+   che ogni chiamante già gestisce. Un corpo che smette di arrivare conta
+   lo stesso. Le altre famiglie di `fetch` (percorsi, GPX, foto del
+   contorno, Photon) restano senza: sono di TASK-254 e di un task di
+   struttura.
+4. **Una scelta «Public» arrivata all'API** (un sì, o un no definitivo)
+   toglie dalla coda quella più vecchia della stessa corsa. Con la
+   sessione finita resta: la manderà lo stesso account.
+5. **«Delete account» riuscito** toglie dalle tre code le voci di quel
+   solo account; «Log out» non toglie niente. Il file della corsa in corso
+   non ha un proprietario e non si tocca.
+6. **Una corsa salvata con una sola posizione non si riprende**: non è una
+   linea, e diventava il primo punto della corsa dopo.
+
+**Conseguenze**: tre file `.copy` in più nei documenti; una scrittura in
+più per ogni cambiamento delle code (rare). Niente di visibile cambia.
+Rimandati all'utente: la corsa rifiutata con `invalid_request`, oggi
+cancellata in silenzio, e la più vecchia che sparisce oltre le venti.

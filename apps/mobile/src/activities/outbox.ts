@@ -1,6 +1,5 @@
-import { File, Paths } from "expo-file-system";
-
 import type { DrawingChoice } from "../api/drawings";
+import { keptList } from "../storage/keptList";
 import type { RecordedRun } from "./recordedRun";
 
 /**
@@ -27,10 +26,6 @@ export type Waiting = RecordedRun & {
    * (social/drawingOutbox.ts, TASK-117). */
   drawing?: DrawingChoice;
 };
-
-function outboxFile(): File {
-  return new File(Paths.document, OUTBOX_FILE);
-}
 
 function isWaiting(value: unknown): value is Waiting {
   if (typeof value !== "object" || value === null) {
@@ -74,36 +69,17 @@ export function toDrawingOf(run: Waiting): DrawingChoice | null {
   };
 }
 
+// Written so that a write cut short loses no run that waited (TASK-252).
+const kept = keptList(OUTBOX_FILE, isWaiting);
+
 /** The runs in the file, the oldest first; none when it cannot be read. */
 export function loadOutbox(): Waiting[] {
-  try {
-    const file = outboxFile();
-    if (!file.exists) {
-      return [];
-    }
-    const data: unknown = JSON.parse(file.textSync());
-    return Array.isArray(data) ? data.filter(isWaiting) : [];
-  } catch {
-    return [];
-  }
+  return kept.load();
 }
 
 /** Writes the runs; false when the phone refuses (full, no access). */
 export function saveOutbox(list: Waiting[]): boolean {
-  try {
-    const file = outboxFile();
-    if (list.length === 0) {
-      if (file.exists) {
-        file.delete();
-      }
-      return true;
-    }
-    file.create({ overwrite: true });
-    file.write(JSON.stringify(list));
-    return true;
-  } catch {
-    return false;
-  }
+  return kept.save(list);
 }
 
 /** `list` with `run` waiting too: once for its account, the oldest dropped
@@ -129,6 +105,16 @@ export function keepWaiting(run: Waiting): boolean {
 export function stopWaiting(owner: number, id: string): void {
   const list = loadOutbox();
   const next = withoutRun(list, owner, id);
+  if (next.length !== list.length) {
+    saveOutbox(next);
+  }
+}
+
+/** Takes every run of `owner` out of the file: the account is deleted
+ * (TASK-252). The runs of the other accounts stay. */
+export function forgetOutboxOf(owner: number): void {
+  const list = loadOutbox();
+  const next = list.filter((item) => item.owner !== owner);
   if (next.length !== list.length) {
     saveOutbox(next);
   }

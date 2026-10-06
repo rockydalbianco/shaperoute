@@ -564,6 +564,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-252: le code sul telefono non perdono niente (ADR-0216;
+  dalla revisione del codice dell'app chiesta dall'utente il 2026-10-06,
+  elenco in `out/revisione-app-2026-10-06.md` sul Mac, fuori dal
+  repository). Le tre code (corse, «Public», Strava) con una copia accanto
+  al file; «Public» spento non torna acceso da una scelta in coda; una
+  corsa rifiutata non ferma le altre; la coda riparte quando l'app torna
+  in primo piano; 30 s alle richieste dell'account (90 alle PUT); «Delete
+  account» svuota le code di quell'account; «Stop» dà la corsa anche a
+  file rifiutato. Solo app, niente di visibile. Dalla stessa revisione:
+  TASK-253 (la navigazione), TASK-254 (correzioni piccole) e, dai «sì a
+  tutte e cinque» dell'utente del 2026-10-06, TASK-255 (schermo acceso in
+  corsa, niente calorie fuori dalla corsa), TASK-256 (gli errori per chi
+  corre), TASK-257 (la corsa rifiutata resta con il motivo): task file in
+  `main`, ordine 253 → 255 → 256 → 257. `tasks/TASK-252.md`.
+
 - **API** — TASK-247: `run_scored` registrato al salvataggio della corsa
   (seguito di TASK-241, aggiornamento sotto ADR-0207; «si» dell'utente
   del 2026-10-06; PR #386). Il primo `PUT /me/activities/{key}` di una

@@ -184,8 +184,13 @@ function resumable(
   if (saved === null || saved.status === "arrived" || !sameRoute(saved.route, route)) {
     return null;
   }
+  // One fix alone is no run to go on with (TASK-252): a start taken back
+  // at once would become the first point of the next run, wherever it is.
+  if (saved.track.fixes.length < 2) {
+    return null;
+  }
   const last = saved.track.fixes[saved.track.fixes.length - 1];
-  if (last === undefined || nowMs - last.timeMs > RESUME_WITHIN_MS) {
+  if (nowMs - last.timeMs > RESUME_WITHIN_MS) {
     return null;
   }
   return continueTrack(saved.track, nowMs);
@@ -235,8 +240,20 @@ export function startRun(
   // Only when it is not a run: the file of a run is as it was.
   const sport = activity === undefined || activity === "running" ? {} : { activity };
 
+  // The run as it would be in the file, when the last write failed.
+  let notWritten: SavedRun | null = null;
+
   function save(): void {
-    saveRun({ version: 1, route, similarity, ...walked, ...sport, track, status });
+    const run: SavedRun = {
+      version: 1,
+      route,
+      similarity,
+      ...walked,
+      ...sport,
+      track,
+      status,
+    };
+    notWritten = saveRun(run) ? null : run;
     unsaved = false;
   }
 
@@ -301,22 +318,42 @@ export function startRun(
     track: () => track,
   };
   active = recorder;
+  activeNotWritten = () => notWritten;
   return recorder;
 }
 
 /** The recorder of the run in progress, if navigation started one. */
 let active: RunRecorder | null = null;
+/** The run of that recorder, when the phone refused its last write. */
+let activeNotWritten: () => SavedRun | null = () => null;
 
 /** A run with enough in it to ask for a score: a line, and the route's
  * similarity. */
 export type ScorableRun = SavedRun & { similarity: number };
 
-/** The run in the file when it can be scored, or null. */
-export function pendingRun(): ScorableRun | null {
-  const run = loadRun();
+function scorable(run: SavedRun | null): ScorableRun | null {
   return run !== null && run.similarity !== undefined && run.track.fixes.length > 1
     ? { ...run, similarity: run.similarity }
     : null;
+}
+
+/** The run in the file when it can be scored, or null. */
+export function pendingRun(): ScorableRun | null {
+  return scorable(loadRun());
+}
+
+/**
+ * Ends the run in progress, writing what there is, and gives back what was
+ * recorded. From the file, as ever; from memory when the phone refused the
+ * write (full, no access), so a run is not lost at «Stop» (TASK-252).
+ */
+export function endRecording(): SavedRun | null {
+  const recording = active !== null;
+  active?.stop();
+  const notWritten = recording ? activeNotWritten() : null;
+  active = null;
+  activeNotWritten = () => null;
+  return notWritten ?? loadRun();
 }
 
 /**
@@ -325,7 +362,5 @@ export function pendingRun(): ScorableRun | null {
  * itself has stopped.
  */
 export function endRun(): ScorableRun | null {
-  active?.stop();
-  active = null;
-  return pendingRun();
+  return scorable(endRecording());
 }

@@ -109,4 +109,9 @@ apps/mobile/src/screens/FreeRunScreen.tsx (+ test)
 
 ## Esito
 
-*(da compilare)*
+- **Parte A** (2026-10-06): in `main` con la PR #413 (merge `2990b9d`),
+  CI 5/5 verde. «Open Settings» per la fotocamera negata, «Retry» e testo
+  della mappa in «Draw», `LocationOff` pronto e non usato. Testi approvati
+  dall'utente. Seguito senza numero: la foto del profilo
+  (`profile/useProfilePhoto.ts`) ha la fotocamera negata senza bottone.
+- **Parte B**: da fare al via del coordinatore.

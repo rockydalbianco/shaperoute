@@ -232,8 +232,8 @@ nelle tessere, nel campo e in «Drawing a 5 km heart…») e il segnaposto
 non conosce (vanno all'AI): sono la parte «nomi delle forme». «Vai a
 «Parti da qui»» nell'avviso dello start spostato: la parte di
 `mapPage.ts` deve chiamare così «Start here» (de «Hier starten», es
-«Empieza aquí», fr «Départ ici»). I testi aspettano l'occhio
-dell'utente.
+«Empieza aquí», fr «Départ ici»). **Testi approvati dall'utente** il
+2026-10-06 («va bene procedi»); PR #421, in coda dopo #419 e #420.
 
 **Da fare nelle parti successive**: «Explore» (`ExploreScreen`,
 `ExploreTools`, `CityExamples`, `AskForRoute`, `ThemedCard`,

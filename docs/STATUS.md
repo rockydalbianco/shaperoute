@@ -539,8 +539,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   con la parte C «Explore»): il pannello di «Draw», i testi d'errore in
   km, gli avvisi del motore, la parola, la foto e il contorno, 101 testi
   nuovi (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`;
-  i nomi delle forme restano inglesi fino alla loro parte; **i testi
-  aspettano l'occhio dell'utente**. L'utente ha
+  i nomi delle forme restano inglesi fino alla loro parte; testi
+  approvati dall'utente il 2026-10-06, PR #421 in coda. L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:

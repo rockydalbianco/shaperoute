@@ -1,6 +1,6 @@
 # TASK-254 — Correzioni piccole dalla revisione dell'app
 
-**Stato**: In lavorazione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `fix/TASK-254-review-small-fixes`
 
 ## Obiettivo
@@ -141,7 +141,8 @@ docs/STATUS.md, docs/DECISIONS.md                   (le righe di questo task)
 
 ## Esito
 
-Tutte e dodici le voci in un'unica PR (il branch è partito da `main` con
+**Fatto il 2026-10-06, PR #407**: dodici cose che andavano storte e ora no,
+nessuna schermata nuova. Tutte e dodici le voci in un'unica PR (il branch è partito da `main` con
 TASK-232 B2, 232 C e 251 già dentro), ognuna con il suo test che fallisce
 sul file di `main` e passa con la correzione (verificato voce per voce).
 Scelte tecniche in ADR-0218. Note:

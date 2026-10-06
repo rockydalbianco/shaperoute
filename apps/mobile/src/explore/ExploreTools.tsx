@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { t } from "../i18n";
 
 import { sendSignal } from "../api/signals";
 import type { Place } from "../places/photon";
@@ -163,10 +164,10 @@ export function CityPicker({
 
   return (
     <View style={styles.section}>
-      <Text style={styles.label}>CITY</Text>
+      <Text style={styles.label}>{t("CITY")}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.chips}>
-          <Chip label="Near me" on={city === null} here onPress={nearMe} />
+          <Chip label={t("Near me")} on={city === null} here onPress={nearMe} />
           {recent.map((place) => (
             <Chip
               key={`recent-${place.label}`}
@@ -193,13 +194,13 @@ export function CityPicker({
           setQuery(text);
           setFailed(false);
         }}
-        placeholder="Type a city or a place"
+        placeholder={t("Type a city or a place")}
         placeholderTextColor={color.textFaint}
         returnKeyType="search"
         onSubmitEditing={submit}
         keyboardAppearance="dark"
         autoCorrect={false}
-        accessibilityLabel="Type a city or a place"
+        accessibilityLabel={t("Type a city or a place")}
       />
       {suggestions?.map((place) => (
         <Pressable
@@ -218,10 +219,12 @@ export function CityPicker({
         </Pressable>
       ))}
       {suggestions !== null && suggestions.length === 0 && (
-        <Text style={styles.note}>{`No city or place matches “${typed}”.`}</Text>
+        <Text style={styles.note}>
+          {t("No city or place matches “{typed}”.", { typed })}
+        </Text>
       )}
       {(failed || (suggestions === null && found?.query === typed && typed !== "")) && (
-        <Text style={styles.error}>The search did not answer. Try again.</Text>
+        <Text style={styles.error}>{t("The search did not answer. Try again.")}</Text>
       )}
     </View>
   );
@@ -253,9 +256,9 @@ function Chip({
       accessibilityState={{ selected: on }}
       accessibilityHint={
         recent
-          ? "A city you chose before"
+          ? t("A city you chose before")
           : here
-            ? "The routes near your start"
+            ? t("The routes near your start")
             : undefined
       }
     >

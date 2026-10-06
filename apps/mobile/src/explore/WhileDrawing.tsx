@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { t } from "../i18n";
 
 import { FeedPost } from "../feed/FeedPost";
 import { SAMPLE_FEED, type SamplePost } from "../feed/sampleFeed";
@@ -70,11 +71,13 @@ export function WhileDrawing({ cityKey, drawing }: Props) {
   const cardWidth = width - 2 * space.lg;
   return (
     <View style={styles.section}>
-      <Text style={styles.label}>MEANWHILE, FROM THE FEED</Text>
+      <Text style={styles.label}>{t("MEANWHILE, FROM THE FEED")}</Text>
       <Text style={styles.note}>
         {drawing
-          ? "The first time in a city the map has to download: it can take a minute. The shapes show up above as they are ready."
-          : "The shapes of this city are ready above."}
+          ? t(
+              "The first time in a city the map has to download: it can take a minute. The shapes show up above as they are ready.",
+            )
+          : t("The shapes of this city are ready above.")}
       </Text>
       {postsFor(cityKey).map((post) => (
         <FeedPost key={post.id} post={post} width={cardWidth} />

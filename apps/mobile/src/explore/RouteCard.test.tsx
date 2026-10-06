@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { lineCamera } from "../feed/feedMapPage";
 import { FeedMapShooter, forgetFeedMaps } from "../feed/FeedMaps";
 import {
-  CARD_MAPS_CREDIT,
+  cardMapsCredit,
   cardDrawingHeight,
   CardMapsCredit,
   cardWidth,
@@ -188,9 +188,9 @@ test("with `map`, lays the map under the line", async () => {
 });
 
 test("the makers of the maps are named as they ask, once for the cards", async () => {
-  expect(CARD_MAPS_CREDIT).toBe(
+  expect(cardMapsCredit()).toBe(
     "Maps: OpenFreeMap © OpenMapTiles · Data from OpenStreetMap",
   );
   await render(<CardMapsCredit />);
-  expect(screen.getByText(CARD_MAPS_CREDIT)).toBeOnTheScreen();
+  expect(screen.getByText(cardMapsCredit())).toBeOnTheScreen();
 });

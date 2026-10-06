@@ -946,4 +946,89 @@ export const ES: Table = {
     "Permítela a Sgrava en Ajustes para seguir la ruta.",
   "Allow it for Sgrava in Settings to record your track.":
     "Permítela a Sgrava en Ajustes para grabar tu recorrido.",
+
+  // «Explore»: src/explore/* (TASK-210, parte C)
+  "ASK FOR A ROUTE": "PIDE UNA RUTA",
+  "A shape through real places {place}. Tap one to make it.":
+    "Una forma por lugares reales {place}. Toca una para hacerla.",
+  Food: "Comida",
+  "Famous Places": "Lugares famosos",
+  Romantic: "Romántico",
+  "Best Views": "Mejores vistas",
+  Shopping: "Compras",
+  Culture: "Cultura",
+  Nightlife: "Vida nocturna",
+  "Hidden Gems": "Rincones ocultos",
+  Running: "Correr",
+  Walking: "Pasear",
+  Family: "Familia",
+  Photography: "Fotografía",
+  "Local Experience": "Vida local",
+  "More categories": "Más categorías",
+  "More…": "Más…",
+  "{count} more": "{count} más",
+  "OR IN YOUR WORDS": "O CON TUS PALABRAS",
+  "From {where}. Name a city in the words to go elsewhere.":
+    "Se sale {where}. Nombra una ciudad en las palabras para ir a otro sitio.",
+  "Make my route": "Crear mi ruta",
+  "EXAMPLES IN {city}": "EJEMPLOS EN {city}",
+  "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
+    "Aquí aún no hay rutas recomendadas: formas de {distance} desde el centro, dibujadas ahora.",
+  "Three first, more while you choose.": "Primero tres, más mientras eliges.",
+  "Best near you": "Las mejores cerca de ti",
+  "Starting within {distance} of {place}":
+    "Con salida a menos de {distance} de {place}",
+  "your start": "tu salida",
+  "Loading routes…": "Cargando rutas…",
+  "Choose a start first: the routes are the ones near it.":
+    "Elige primero una salida: las rutas son las cercanas.",
+  "The routes could not load. Check the connection and try again.":
+    "Las rutas no se han cargado. Comprueba la conexión e inténtalo de nuevo.",
+  "Ask for a route": "Pide una ruta",
+  "Getting directions…": "Obteniendo indicaciones…",
+  CITY: "CIUDAD",
+  "Type a city or a place": "Escribe una ciudad o un lugar",
+  "No city or place matches “{typed}”.":
+    "Ninguna ciudad ni lugar coincide con “{typed}”.",
+  "The search did not answer. Try again.":
+    "La búsqueda no ha respondido. Inténtalo de nuevo.",
+  "A city you chose before": "Una ciudad que elegiste antes",
+  "The routes near your start": "Las rutas cerca de tu salida",
+  "{title} · {city} · looks {percent}% like it":
+    "{title} · {city} · se parece al {percent}%",
+  "Loading the route…": "Cargando la ruta…",
+  "The route could not load. Try again.":
+    "La ruta no se ha cargado. Inténtalo de nuevo.",
+  "Drawing a {distance} {title}…": "Dibujando {title} de {distance}…",
+  "The GPX could not be made. Try again.":
+    "No se ha podido crear el GPX. Inténtalo de nuevo.",
+  "It passes by none of the {found} {theme} found: the shape did not fit near them.":
+    "No pasa por ninguno de los {found} {theme} encontrados: la forma no cabía cerca.",
+  "Passes by {passed} of the {found} {theme} found:":
+    "Pasa por {passed} de los {found} {theme} encontrados:",
+  "Back to Explore": "Volver a Explore",
+  "MEANWHILE, FROM THE FEED": "MIENTRAS TANTO, DEL FEED",
+  "The first time in a city the map has to download: it can take a minute. The shapes show up above as they are ready.":
+    "La primera vez en una ciudad hay que descargar el mapa: puede tardar un minuto. Las formas aparecen arriba a medida que están listas.",
+  "The shapes of this city are ready above.":
+    "Las formas de esta ciudad están listas arriba.",
+  "Maps: {credit}": "Mapas: {credit}",
+  "City centre": "Centro de la ciudad",
+  "The API did not answer. Check the connection and try again.":
+    "El servidor no ha respondido. Comprueba la conexión e inténtalo de nuevo.",
+  "The map of this area could not be loaded for directions. Try again later.":
+    "El mapa de esta zona no se ha podido cargar para las indicaciones. Inténtalo más tarde.",
+  "This route is not on the map the API has: it has no directions.":
+    "Esta ruta no está en el mapa del servidor: no tiene indicaciones.",
+  "The directions could not be found. Try again.":
+    "No se han encontrado las indicaciones. Inténtalo de nuevo.",
+  "The API answered without directions. It may be out of date.":
+    "El servidor ha respondido sin indicaciones. Puede que no esté actualizado.",
+  "near your start": "cerca de ti",
+  "near {place}": "cerca de {place}",
+  "in {city}": "en {city}",
+  "e.g. a romantic heart, famous places, food 8 km":
+    "p. ej. un corazón romántico, lugares famosos, comida 8 km",
+  "e.g. a romantic heart in {city}, 8 km":
+    "p. ej. un corazón romántico en {city}, 8 km",
 };

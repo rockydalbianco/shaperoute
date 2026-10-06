@@ -1,6 +1,6 @@
 # TASK-055 — Barra di caricamento sotto la mappa
 
-**Stato**: In corso
+**Stato**: Done — in `main` (PR #61, `489016cf`, 2026-09-24), provata sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-055-loading-bar`
 
 ## Obiettivo
@@ -59,7 +59,9 @@ docs/UI.md, docs/DECISIONS.md, docs/STATUS.md
 
 ## Esito
 
-*(in attesa della prova sull'iPhone)*
+In `main` con la PR #61 (`489016cf`, 2026-09-24); provata sull'iPhone
+(`STATUS.md`, «Completato»). Chiuso il 2026-10-06 dalla pulizia dei task
+file.
 
 251 test verdi; nuovi `progress.test.ts` e `LoadingBar.test.tsx`. Il test
 dell'app sull'attesa trova la barra (`testID` «loading») come trovava la

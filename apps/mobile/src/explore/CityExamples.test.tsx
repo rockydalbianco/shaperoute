@@ -6,7 +6,7 @@ import { FeedMapShooter, forgetFeedMaps } from "../feed/FeedMaps";
 import type { Place } from "../places/photon";
 import { asRecommended, type Example } from "./exampleRoutes";
 import { CityExamples } from "./CityExamples";
-import { CARD_MAPS_CREDIT } from "./RouteCard";
+import { cardMapsCredit } from "./RouteCard";
 
 const vercelli: Place = {
   label: "Vercelli, Piedmont, Italy",
@@ -47,7 +47,7 @@ test("one card per shape: ready opens, the others say where they are", async () 
   // Where it is, under what it is (TASK-174).
   expect(screen.getByText("Vercelli")).toBeOnTheScreen();
   // A drawn example has a map under it: whose the maps are, once.
-  expect(screen.getAllByText(CARD_MAPS_CREDIT)).toHaveLength(1);
+  expect(screen.getAllByText(cardMapsCredit())).toHaveLength(1);
   expect(screen.getByText(`${Math.round(result.similarity * 100)}%`)).toBeOnTheScreen();
   expect(screen.getByText("Drawing…")).toBeOnTheScreen();
   expect(screen.getByText("Next")).toBeOnTheScreen();
@@ -115,7 +115,7 @@ test("what failed says why, once, with Try again", async () => {
   expect(screen.getAllByText(message)).toHaveLength(1);
   expect(screen.getAllByText("Not drawn")).toHaveLength(3);
   // No drawing, no map, nobody to name.
-  expect(screen.queryByText(CARD_MAPS_CREDIT)).toBeNull();
+  expect(screen.queryByText(cardMapsCredit())).toBeNull();
   await fireEvent.press(screen.getByText("Try again"));
   expect(onRetry).toHaveBeenCalled();
 });

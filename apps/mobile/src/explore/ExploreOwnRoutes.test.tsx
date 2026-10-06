@@ -7,7 +7,7 @@ import type { Place } from "../places/photon";
 import { forgetExamples, MORE_SHAPES } from "./exampleRoutes";
 import { ExploreScreen } from "./ExploreScreen";
 import type { RecommendedRoute } from "./recommendedRoutes";
-import { CARD_MAPS_CREDIT } from "./RouteCard";
+import { cardMapsCredit } from "./RouteCard";
 
 // A chosen place's own routes and its neighbours' (TASK-192): Caldonazzo has
 // Levico's catalog within "near you", and none of it starts in Caldonazzo.
@@ -93,7 +93,7 @@ test("a town beside another: its own examples first, the neighbour's routes unde
   );
   // Something to look at is already there: no feed, and the credit once.
   expect(screen.queryByText("MEANWHILE, FROM THE FEED")).toBeNull();
-  expect(screen.getAllByText(CARD_MAPS_CREDIT)).toHaveLength(1);
+  expect(screen.getAllByText(cardMapsCredit())).toHaveLength(1);
 });
 
 test("a town beside another: the neighbour's routes are there while its own are drawn", async () => {
@@ -117,7 +117,7 @@ test("a town beside another: the neighbour's routes are there while its own are 
   expect(screen.getByText("Drawing…")).toBeOnTheScreen();
   expect(screen.getAllByText(/^Levico · .* km away$/)).toHaveLength(levico.length);
   // Their maps have the credit, before any example has it.
-  expect(screen.getAllByText(CARD_MAPS_CREDIT)).toHaveLength(1);
+  expect(screen.getAllByText(cardMapsCredit())).toHaveLength(1);
   expect(screen.queryByText("MEANWHILE, FROM THE FEED")).toBeNull();
 });
 

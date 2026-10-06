@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { decimal, t } from "../i18n";
 
 import {
   color,
@@ -24,7 +25,7 @@ import {
   wholeDistanceLabel,
   withPoint,
 } from "../units/format";
-import { appUnits } from "../units/units";
+import { type Units, appUnits } from "../units/units";
 import { useUnits } from "../units/useUnits";
 import {
   cityName,
@@ -236,15 +237,18 @@ export function ExploreScreen({
             style={styles.back}
             onPress={onBack}
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t("Back")}
           >
             <Text style={styles.backText}>←</Text>
           </Pressable>
         )}
         <View style={styles.titles}>
-          <Text style={styles.title}>Best near you</Text>
+          <Text style={styles.title}>{t("Best near you")}</Text>
           <Text style={styles.subtitle}>
-            {`Starting within ${units === "mi" ? distanceLabel(NEAR_RADIUS_M, "mi", withPoint) : `${NEAR_RADIUS_M / 1000} km`} of ${city?.label ?? "your start"}`}
+            {t("Starting within {distance} of {place}", {
+              distance: kmOrMiles(NEAR_RADIUS_M, units),
+              place: city?.label ?? t("your start"),
+            })}
           </Text>
         </View>
         {/* The sign of Sgrava, under the button of «Profile» and as wide
@@ -292,12 +296,14 @@ export function ExploreScreen({
         {examplesKey !== null && waited && (
           <WhileDrawing cityKey={examplesKey} drawing={drawing} />
         )}
-        {list.status === "loading" && <Text style={styles.note}>Loading routes…</Text>}
+        {list.status === "loading" && (
+          <Text style={styles.note}>{t("Loading routes…")}</Text>
+        )}
         {list.status === "failed" && (
           <Text style={styles.note}>
             {near === null
-              ? "Choose a start first: the routes are the ones near it."
-              : "The routes could not load. Check the connection and try again."}
+              ? t("Choose a start first: the routes are the ones near it.")
+              : t("The routes could not load. Check the connection and try again.")}
           </Text>
         )}
         {list.status === "done" && routes.length === 0 && examplesCity === null && (
@@ -323,7 +329,7 @@ export function ExploreScreen({
                     title={capitalised(
                       routeTitle({ shape: example.shape, word: null }),
                     )}
-                    detail="Drawing…"
+                    detail={t("Drawing…")}
                   />
                 ),
             )}
@@ -352,7 +358,7 @@ export function ExploreScreen({
               onPress={() => setAsking(true)}
               accessibilityRole="button"
             >
-              <Text style={styles.askText}>Ask for a route</Text>
+              <Text style={styles.askText}>{t("Ask for a route")}</Text>
             </Pressable>
           ))}
       </ScrollView>
@@ -436,3 +442,12 @@ const styles = StyleSheet.create({
     gap: space.md,
   },
 });
+
+/** "5 km", "2.5 km" (with the language's comma); with miles, "3.1 mi". */
+export function kmOrMiles(metres: number, units: Units): string {
+  if (units === "mi") {
+    return distanceLabel(metres, "mi", withPoint);
+  }
+  const km = metres / 1000;
+  return `${decimal(km, Number.isInteger(km) ? 0 : 1)} km`;
+}

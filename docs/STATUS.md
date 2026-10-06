@@ -150,13 +150,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
-  **Parte A, solo app**, in PR: lungo un percorso sull'acqua e in «Paddle
+  **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06), non
+  ancora pubblicata: lungo un percorso sull'acqua e in «Paddle
   without a route» la schermata mostra «Speed now» e «Avg speed» in km/h
   (mph con le miglia), «Avg /500 m» e «Last 500 m» al posto di
   «Last km» ed «Elev. gain»; i parziali sono ogni 500 m; la voce dice ogni
   km col passo medio ogni 500 metri (cinque lingue); il post di fine
-  uscita scrive «5:37 /500 m». Corsa e bici come prima. Non guardata su un
-  telefono. **Parte B**: «My activities» e il post da lì mostrano ancora
+  uscita scrive «5:37 /500 m». Corsa e bici come prima. Caselle guardate in un
+  simulatore, non su un telefono. **Parte B**: «My activities» e il post da lì mostrano ancora
   il passo al km, perché l'API non restituisce lo sport di una corsa
   salvata; serve `activity` nel contratto (`activities.py` è di TASK-247:
   aspetta il via del coordinatore) e poi il server, con l'ok dell'utente.

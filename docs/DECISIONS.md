@@ -12089,16 +12089,23 @@ sport: in bici circa il triplo del vero.
    `run`), dalla partenza a «Stop» o all'arrivo, con e senza percorso. La
    modalità tasca tiene il suo tag (`pocket-mode`): entrare e uscire non
    spegne lo schermo della corsa. Nessuna dipendenza nuova.
-2. **L'app che lascia il primo piano è una pausa** (`Pause.away`,
-   `leaveTrack`, `RunRecorder.leave`): quando `AppState` passa a
-   «background» la corsa è in pausa da quel momento; la prossima posizione
-   la chiude e comincia un tratto nuovo (`gap`): niente metri sulla riga
-   dritta, niente tempo di mezzo. Una pausa a mano o della penna già aperta
-   resta com'è; una pausa da fermi finisce lì, perché quello che segue non
-   è del corridore. Scartata la regola «nessuna posizione per 30 s»: con la
-   pausa automatica spenta avrebbe tolto dal cronometro anche una sosta
-   lunga a un semaforo, e sotto una galleria avrebbe tolto i metri.
-   «inactive» (centro di controllo, tasto laterale senza blocco) non conta.
+2. **L'app che lascia il primo piano per più di 60 secondi è una pausa**
+   (`Pause.away`, `leaveTrack`, `RunRecorder.leave`, `AWAY_AFTER_MS`;
+   **scelta dell'utente** del 2026-10-06, su proposta dell'agente dopo
+   l'obiezione del coordinatore): quando `AppState` passa a «background»
+   l'app si segna il momento; se la prossima posizione arriva più di 60 s
+   dopo l'ultima, la corsa è stata in pausa da quel momento e la posizione
+   comincia un tratto nuovo (`gap`): niente metri sulla riga dritta, niente
+   tempo di mezzo (una telefonata, il telefono bloccato e dimenticato). Se
+   arriva prima (un cambio brano su Spotify, un'occhiata a una notifica)
+   la linea continua come oggi: riga dritta e tempo contato. Una pausa a
+   mano o della penna che copre l'assenza resta com'è; una pausa da fermi
+   finisce dove l'app è uscita, perché quello che segue non è del
+   corridore. Scartata la regola «nessuna posizione per 30 s» senza
+   guardare `AppState`: con la pausa automatica spenta avrebbe tolto dal
+   cronometro anche una sosta lunga a un semaforo, e sotto una galleria
+   avrebbe tolto i metri. «inactive» (centro di controllo, tasto laterale
+   senza blocco) non conta.
 3. **Il riquadro «Calories» solo correndo**: in bici e in canoa il suo
    posto lo prendono i riquadri accanto; nessun testo nuovo. Una formula
    per sport quando l'utente la vorrà.

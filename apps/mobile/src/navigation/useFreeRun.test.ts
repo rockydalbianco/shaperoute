@@ -374,7 +374,11 @@ test("the app behind another, or the phone locked, pauses the run until the next
     skipCountdown();
     onPosition(position(0, 0));
     onPosition(position(100, 30));
-    // The phone locks; three minutes later the app is back, 400 m on.
+    // A change of song: back within AWAY_AFTER_MS, the line goes on as before.
+    appState("background");
+    appState("active");
+    onPosition(position(200, 50));
+    // The phone locks; three minutes later the app is back, 300 m on.
     appState("background");
     appState("active");
     onPosition(position(500, 220));
@@ -386,12 +390,14 @@ test("the app behind another, or the phone locked, pauses the run until the next
     expect(state.track.fixes.map((fix) => fix.gap ?? false)).toEqual([
       false,
       false,
+      false,
       true,
       false,
     ]);
-    expect(state.track.distanceM).toBeCloseTo(200, 0);
+    expect(state.track.distanceM).toBeCloseTo(300, 0);
     expect(state.track.pauses).toEqual([
-      { fromMs: began + 40_000, toMs: began + 220_000, away: true },
+      // Never before the last fix (50 s in).
+      { fromMs: began + 50_000, toMs: began + 220_000, away: true },
     ]);
   }
   await unmount();

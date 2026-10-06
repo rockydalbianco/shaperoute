@@ -52,14 +52,16 @@ per sport.
    corsa è viva), spento nella pulizia. `expo-keep-awake` c'è già
    (`package.json`): **nessuna dipendenza nuova**. La modalità tasca
    tiene il suo tag: i due non si pestano.
-2. L'app che lascia il primo piano è una pausa (`Pause.away`,
-   `leaveTrack`, `RunRecorder.leave`, chiamata da `useNavigation` e
-   `useFreeRun` quando `AppState` passa a «background»): la prossima
-   posizione la chiude ed è un `gap`, come dopo una pausa a mano: niente
-   metri sulla riga dritta, niente tempo di mezzo. **Scartata** la regola
-   «nessuna posizione per 30 s» (ADR-0219: con la pausa automatica spenta
-   avrebbe tolto dal cronometro una sosta lunga, e sotto una galleria i
-   metri). I `gap` sulla mappa restano come sono oggi (seguito, se serve).
+2. L'app che lascia il primo piano **per più di 60 secondi** è una pausa
+   (`Pause.away`, `leaveTrack`, `RunRecorder.leave`, `AWAY_AFTER_MS`;
+   `useNavigation` e `useFreeRun` lo dicono al registratore quando
+   `AppState` passa a «background»): se la prossima posizione arriva più
+   di 60 s dopo l'ultima, è un `gap` come dopo una pausa a mano (niente
+   metri sulla riga dritta, niente tempo di mezzo); se arriva prima, la
+   linea continua come oggi. **Scelta dell'utente** del 2026-10-06, dopo
+   l'obiezione del coordinatore sui tre casi (blocco, telefonata,
+   Spotify). **Scartata** la regola «nessuna posizione per 30 s» senza
+   `AppState` (ADR-0219). I `gap` sulla mappa restano come sono oggi.
 3. `RunPanel`: il riquadro «Calories» solo con `activity === "running"`
    (e camminata, se esiste come sport); in bici e in canoa il posto resta
    vuoto o lo prende il riquadro accanto, come decide chi fa il task,
@@ -78,9 +80,10 @@ per sport.
 - [x] Lo stesso per la corsa senza percorso (`useFreeRun`).
 - [x] Entrare e uscire dalla modalità tasca non spegne lo schermo della
       corsa (due tag).
-- [x] Con l'app passata a «background», la prossima posizione non
-      aggiunge metri e il tempo di mezzo non conta; una pausa a mano o
-      della penna già aperta resta com'è (`trackRecorder.test.ts`,
+- [x] Con l'app passata a «background» e la prossima posizione oltre
+      60 s dopo l'ultima: niente metri e il tempo di mezzo non conta;
+      entro 60 s la linea continua come prima; una pausa a mano o della
+      penna che copre l'assenza resta com'è (`trackRecorder.test.ts`,
       `trackStore.test.ts`, `useFreeRun.test.ts`).
 - [x] Con «Bike» e «Paddle» il riquadro «Calories» non c'è; con «Run» c'è
       come prima.
@@ -120,10 +123,11 @@ docs/UI.md, docs/STATUS.md, docs/DECISIONS.md          (le righe di questo task)
 
 Fatto il 2026-10-06 (ADR-0219). Lo schermo resta acceso per tutta la corsa
 (`useRunAwake`, tag `run`, da `RunCard`: con e senza percorso), accanto a
-quello della modalità tasca. L'app che va in secondo piano mette la corsa
-in pausa (`Pause.away`) fino alla prossima posizione, che è un `gap`: al
-posto della regola del silenzio GPS del task file, scartata e spiegata in
-ADR-0219. «Calories» solo correndo. Test nuovi rossi su `main` e verdi
+quello della modalità tasca. L'app che va in secondo piano per più di 60 s
+mette la corsa in pausa (`Pause.away`) fino alla prossima posizione, che è
+un `gap`; entro 60 s tutto come prima (scelta dell'utente, dopo
+l'obiezione del coordinatore): al posto della regola del silenzio GPS del
+task file, scartata e spiegata in ADR-0219. «Calories» solo correndo. Test nuovi rossi su `main` e verdi
 qui; suite dell'app verde; nessun testo nuovo né dipendenza nuova.
 `NavigateScreen.test.tsx` ora controlla che il tag della corsa sia acceso
 e quello della tasca no. Non provato su un telefono: da vedere sull'iPhone

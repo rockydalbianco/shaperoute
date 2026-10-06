@@ -772,4 +772,89 @@ export const FR: Table = {
     "Autorise-la pour Sgrava dans Réglages pour suivre le parcours.",
   "Allow it for Sgrava in Settings to record your track.":
     "Autorise-la pour Sgrava dans Réglages pour enregistrer ta trace.",
+
+  // «Explore»: src/explore/* (TASK-210, parte C)
+  "ASK FOR A ROUTE": "DEMANDER UN PARCOURS",
+  "A shape through real places {place}. Tap one to make it.":
+    "Une forme à travers de vrais lieux {place}. Touchez-en une pour la créer.",
+  Food: "Gastronomie",
+  "Famous Places": "Lieux célèbres",
+  Romantic: "Romantique",
+  "Best Views": "Belles vues",
+  Shopping: "Shopping",
+  Culture: "Culture",
+  Nightlife: "Vie nocturne",
+  "Hidden Gems": "Coins cachés",
+  Running: "Course",
+  Walking: "Promenade",
+  Family: "Famille",
+  Photography: "Photographie",
+  "Local Experience": "Vie locale",
+  "More categories": "Plus de catégories",
+  "More…": "Plus…",
+  "{count} more": "{count} de plus",
+  "OR IN YOUR WORDS": "OU AVEC VOS MOTS",
+  "From {where}. Name a city in the words to go elsewhere.":
+    "Depuis {where}. Nommez une ville dans les mots pour aller ailleurs.",
+  "Make my route": "Créer mon parcours",
+  "EXAMPLES IN {city}": "EXEMPLES À {city}",
+  "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
+    "Pas encore de parcours recommandés ici : des formes de {distance} depuis le centre, dessinées maintenant.",
+  "Three first, more while you choose.":
+    "Trois d'abord, d'autres pendant que vous choisissez.",
+  "Best near you": "Les meilleurs près de vous",
+  "Starting within {distance} of {place}": "Départ à moins de {distance} de {place}",
+  "your start": "votre départ",
+  "Loading routes…": "Chargement des parcours…",
+  "Choose a start first: the routes are the ones near it.":
+    "Choisissez d'abord un départ : les parcours sont ceux à proximité.",
+  "The routes could not load. Check the connection and try again.":
+    "Les parcours n'ont pas pu se charger. Vérifiez la connexion et réessayez.",
+  "Ask for a route": "Demander un parcours",
+  "Getting directions…": "Récupération de l'itinéraire…",
+  Start: "Démarrer",
+  CITY: "VILLE",
+  "Type a city or a place": "Saisissez une ville ou un lieu",
+  "No city or place matches “{typed}”.":
+    "Aucune ville ni aucun lieu ne correspond à « {typed} ».",
+  "The search did not answer. Try again.": "La recherche n'a pas répondu. Réessayez.",
+  "A city you chose before": "Une ville choisie auparavant",
+  "The routes near your start": "Les parcours près de votre départ",
+  "{title} · {city} · looks {percent}% like it":
+    "{title} · {city} · ressemble à {percent} %",
+  "Loading the route…": "Chargement du parcours…",
+  "The route could not load. Try again.":
+    "Le parcours n'a pas pu se charger. Réessayez.",
+  "Drawing a {distance} {title}…": "Dessin de {title} sur {distance}…",
+  "Preparing GPX…": "Préparation du GPX…",
+  "Export GPX": "Exporter le GPX",
+  "The GPX could not be made. Try again.": "Le GPX n'a pas pu être créé. Réessayez.",
+  "It passes by none of the {found} {theme} found: the shape did not fit near them.":
+    "Il ne passe par aucun des {found} {theme} trouvés : la forme ne tenait pas à proximité.",
+  "Passes by {passed} of the {found} {theme} found:":
+    "Passe par {passed} des {found} {theme} trouvés :",
+  "Back to Explore": "Retour à Explore",
+  "MEANWHILE, FROM THE FEED": "EN ATTENDANT, DEPUIS LE FEED",
+  "The first time in a city the map has to download: it can take a minute. The shapes show up above as they are ready.":
+    "La première fois dans une ville, la carte doit se télécharger : cela peut prendre une minute. Les formes apparaissent ci-dessus dès qu'elles sont prêtes.",
+  "The shapes of this city are ready above.":
+    "Les formes de cette ville sont prêtes ci-dessus.",
+  "Maps: {credit}": "Cartes : {credit}",
+  "City centre": "Centre-ville",
+  "The API did not answer. Check the connection and try again.":
+    "Le serveur n'a pas répondu. Vérifiez la connexion et réessayez.",
+  "The map of this area could not be loaded for directions. Try again later.":
+    "La carte de cette zone n'a pas pu se charger pour l'itinéraire. Réessayez plus tard.",
+  "This route is not on the map the API has: it has no directions.":
+    "Ce parcours n'est pas sur la carte du serveur : il n'a pas d'itinéraire.",
+  "The directions could not be found. Try again.":
+    "L'itinéraire n'a pas été trouvé. Réessayez.",
+  "The API answered without directions. It may be out of date.":
+    "Le serveur a répondu sans itinéraire. Il n'est peut-être pas à jour.",
+  "near your start": "près de votre départ",
+  "near {place}": "près de {place}",
+  "in {city}": "à {city}",
+  "e.g. a romantic heart, famous places, food 8 km":
+    "ex. un cœur romantique, lieux célèbres, gastronomie 8 km",
+  "e.g. a romantic heart in {city}, 8 km": "ex. un cœur romantique à {city}, 8 km",
 };

@@ -8,7 +8,7 @@ import type { Place } from "../places/photon";
 import { EXAMPLE_SHAPES, forgetExamples, MORE_SHAPES } from "./exampleRoutes";
 import { awayText, ExploreScreen, kmLabel } from "./ExploreScreen";
 import type { RecommendedRoute } from "./recommendedRoutes";
-import { CARD_MAPS_CREDIT } from "./RouteCard";
+import { cardMapsCredit } from "./RouteCard";
 import { POSTS_SHOWN } from "./WhileDrawing";
 
 jest.mock(
@@ -281,7 +281,7 @@ test("the cards ask for the map under their lines (TASK-174)", async () => {
   // Until a picture comes each card stays the line on the dark.
   expect(screen.queryByTestId("route-card-map")).toBeNull();
   // Whose the maps are, once, above the cards.
-  expect(screen.getAllByText(CARD_MAPS_CREDIT)).toHaveLength(1);
+  expect(screen.getAllByText(cardMapsCredit())).toHaveLength(1);
 });
 
 test("without a start, nothing is asked", async () => {
@@ -311,7 +311,7 @@ test("no routes near: says so", async () => {
     await screen.findByText(/No recommended routes near this start yet/),
   ).toBeOnTheScreen();
   // No cards, no maps, nobody to name.
-  expect(screen.queryByText(CARD_MAPS_CREDIT)).toBeNull();
+  expect(screen.queryByText(cardMapsCredit())).toBeNull();
 });
 
 test("a failed list says so", async () => {
@@ -365,7 +365,7 @@ test("under «Near me», the towns around the start; a chosen city has none", as
   );
   // The page has routes: one credit for the maps, the page's.
   await screen.findByText("Star · 5.1 km");
-  expect(screen.getAllByText(CARD_MAPS_CREDIT)).toHaveLength(1);
+  expect(screen.getAllByText(cardMapsCredit())).toHaveLength(1);
   // 9.3 km for the API, from the rounded start; 9.2 km from the start itself (TASK-254).
   await fireEvent.press(screen.getByLabelText("Pergine Valsugana, 9.2 km away"));
   expect(onCity).toHaveBeenCalledWith({ label: town.label, point: town.point });

@@ -1,6 +1,7 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import { useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { t } from "../i18n";
 
 import { type Camera, lineCamera } from "../feed/feedMapPage";
 import { useFeedMap } from "../feed/FeedMaps";
@@ -56,11 +57,13 @@ export function framingName(camera: Camera | null): string {
  * (`MAP_CREDIT`), in one line. A card is half a phone wide: written on each
  * picture, the credit would cover the names of its towns.
  */
-export const CARD_MAPS_CREDIT = `Maps: ${MAP_CREDIT.replace("\n", " · ")}`;
+/** "Maps: © OpenStreetMap · …", in the app's language. */
+export const cardMapsCredit = (): string =>
+  t("Maps: {credit}", { credit: MAP_CREDIT.replace("\n", " · ") });
 
 /** The credit of the maps of a group of cards: once, beside the cards. */
 export function CardMapsCredit() {
-  return <Text style={styles.credit}>{CARD_MAPS_CREDIT}</Text>;
+  return <Text style={styles.credit}>{cardMapsCredit()}</Text>;
 }
 
 type Props = {

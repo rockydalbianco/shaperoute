@@ -16,6 +16,7 @@ import type { ExportState } from "../route/useGpxExport";
 import { distanceLabel, withPoint } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import type { Explored } from "./explored";
+import { kmOrMiles } from "./ExploreScreen";
 import { ExploreStart } from "./ExploreStart";
 import { cityName, routeTitle } from "./recommendedRoutes";
 import type { StartView } from "./useStartDirections";
@@ -61,19 +62,26 @@ export function ExploredCard({
           {distanceLabel(route.route_m, units, withPoint)}
         </Text>
         <Text style={styles.target}>
-          {`${title} · ${cityName(route.city)} · looks ${Math.round(route.similarity * 100)}% like it`}
+          {t("{title} · {city} · looks {percent}% like it", {
+            title,
+            city: cityName(route.city),
+            percent: Math.round(route.similarity * 100),
+          })}
         </Text>
       </View>
       {explored.status === "loading" && (
-        <Text style={styles.target}>Loading the route…</Text>
+        <Text style={styles.target}>{t("Loading the route…")}</Text>
       )}
       {explored.status === "failed" && (
-        <Text style={styles.error}>The route could not load. Try again.</Text>
+        <Text style={styles.error}>{t("The route could not load. Try again.")}</Text>
       )}
       {move?.waiting && (
         // As «Draw» says it while it draws.
         <Text style={styles.target}>
-          {`Drawing a ${route.distance_m / 1000} km ${title}…`}
+          {t("Drawing a {distance} {title}…", {
+            distance: kmOrMiles(route.distance_m, units),
+            title,
+          })}
         </Text>
       )}
       {open !== null && move?.elsewhere && (
@@ -111,15 +119,15 @@ export function ExploredCard({
           accessibilityRole="button"
         >
           <Text style={styles.secondaryText}>
-            {exporting.status === "preparing" ? "Preparing GPX…" : "Export GPX"}
+            {exporting.status === "preparing" ? t("Preparing GPX…") : t("Export GPX")}
           </Text>
         </Pressable>
       )}
       {exporting.status === "failed" && (
-        <Text style={styles.error}>The GPX could not be made. Try again.</Text>
+        <Text style={styles.error}>{t("The GPX could not be made. Try again.")}</Text>
       )}
       <Pressable style={styles.secondary} onPress={onList} accessibilityRole="button">
-        <Text style={styles.secondaryText}>Back to the list</Text>
+        <Text style={styles.secondaryText}>{t("Back to the list")}</Text>
       </Pressable>
     </View>
   );

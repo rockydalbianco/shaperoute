@@ -3,8 +3,9 @@
 **Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
 (API) è in `main` dalla #275, la parte B (l'app) dalla #282, la parte C
 («Settings» e l'avviso) dalla #295, la parte A2 (il tetto del traffico)
-dalla #330, la parte B2 (le zone in più) dalla #337; le città vicine
-(B2b) in PR; poi D.
+dalla #330, la parte B2 (le zone in più) dalla #337, le città vicine
+(B2b) dalla #341. Le zone del telefono sono sul server e B2/B2b su
+«preview» dal 2026-10-05: resta D, la prova sull'iPhone.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -603,7 +604,7 @@ migrazione.
 **Parte B2, le zone in più** (#337, in `main` come `f3fdbce` il
 2026-10-05, non pubblicata; ADR-0177, «Decisione dell'agente, parte B2»).
 Partita senza la #323 per scelta dell'utente («parti subito con la b»,
-2026-10-05); le città vicine sono entrate dopo, con la B2b (in PR).
+2026-10-05); le città vicine sono entrate dopo, con la B2b (#341).
 
 - **Quando**: a ogni apertura, finite le zone intorno al telefono, e solo
   se il server ne ha appena data una (salvata o `304`): un server senza
@@ -662,7 +663,8 @@ Partita senza la #323 per scelta dell'utente («parti subito con la b»,
   - con il giro di 25 ore prima, i due `304` e una richiesta sola, Berlino.
   - Nessun avviso sopra «Draw route».
 
-**Parte B2b, le città vicine** (in PR, 2026-10-05; ADR-0177, punto 1
+**Parte B2b, le città vicine** (#341, in `main` come `a9ca8f6` il
+2026-10-05; ADR-0177, punto 1
 della parte B2). Il giro chiede prima i paesi vicini con
 `fetchNearbyCities` di TASK-236 (`src/explore/nearbyCities.ts`, solo
 letto), che tiene la risposta per quadrato di circa 1 km, la stessa che
@@ -673,6 +675,21 @@ Test: uno nuovo per l'ordine e i paesi già dentro la zona intorno;
 tutta la suite dell'app passa (1960). Non provata nel simulatore: è
 un'aggiunta all'ordine del giro provato con la B2.
 
+**Le zone del telefono sul server** (2026-10-05, ok dell'utente «ok zone e
+pubblica» e «fallo girare anche ora»; lanciate dal coordinatore con `nice
+-n 19 python -m shaperoute_api.phone_zone_api` nel container):
+- **521 file, 2,6 GB, 82 minuti**. La stima di prima (0,7–0,8 GB, 66
+  città) era vecchia: il server aveva 521 grafi `foot` e `bike`, 7,3 GB
+  di pickle. Sul Mac 33 zone fanno 352 MB in ~155 s, con un picco di
+  memoria di 2,0–2,35 GB (una zona alla volta).
+- **Trento**: a piedi 2,5 MB, in bici 11,5 MB, in meno di 0,1 s.
+  `/phone-zones` dà la zona più piccola che contiene 3 km intorno al
+  punto, e sul server per Trento è una zona piccola: un percorso più
+  lungo di quella il telefono lo passa al server. Lo misura la D.
+- **App**: B2 e B2b su «preview» da `main` `7a9506a` (gruppo
+  `1b49d248`), pubblicate dal coordinatore. Da allora il telefono
+  scarica la sua zona e disegna da sé: comincia la D.
+
 **Le parti dopo** (d'accordo con il coordinatore, ognuna in un contesto
 pulito, tutte sotto TASK-214 e ADR-0177):
 1. **C**, la riga in «Settings» e l'avviso del primo download: fatta,
@@ -682,10 +699,9 @@ pulito, tutte sotto TASK-214 e ADR-0177):
 3. **B2**, le zone in più, cioè le città vicine e le più cercate fino a 2
    GB (scelta 4, punto 2): fatta, sopra; le città vicine con la B2b,
    dopo la #323 (TASK-236).
-4. **D**, la prova sull'iPhone: fissa i limiti di distanza. Vuole il server
-   con `/phone-zones` e le zone del telefono scritte (0,7–0,8 GB): un
-   aggiornamento del server da chiedere all'utente, che coordina il
-   coordinatore.
+4. **D**, la prova sull'iPhone: fissa i limiti di distanza. Le zone del
+   telefono sono sul server dal 2026-10-05 (sotto): la prova è
+   dell'utente, con l'app di «preview».
 
 **Seguito fuori dal task**: una scadenza per le partenze vicine anche senza
 processi, in `route_engine`, in un task suo. Il telefono disegnerebbe

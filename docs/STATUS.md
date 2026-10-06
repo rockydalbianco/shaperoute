@@ -569,16 +569,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   MB al giorno per telefono e 300 GB in tutto; oltre, `429` con
   `Retry-After` fino alla mezzanotte UTC, e l'app non ne chiede altre fino
   ad allora. Conteggio in memoria: un riavvio lo rimette a zero. Sul
-  server dal 2026-10-05, 08:54Z. **Parte B2**, le zone in più, in `main`
-  dalla #337 (`f3fdbce`, 2026-10-05, non pubblicata): finite le zone
-  intorno al telefono, una alla volta, quelle dei paesi vicini
-  (`/nearby-cities` di TASK-236: la B2b, in PR), delle città scelte per
-  ultime in «Explore» e delle 14 in evidenza, dalla più vicina, con
-  `prefetch=1`, fino a 2 GB; un giro intero al giorno. Il server ha A2 dalle 08:54Z;
-  meglio pubblicare dopo aver scritto lì le zone del telefono (se no la
-  prima richiesta di ogni zona la fa scrivere, ~50 s per Milano).
-  **Dopo**: D, la prova sull'iPhone, con le zone del telefono sul server.
-  Niente server né pubblicazione senza l'ok dell'utente. Da dove
+  server dal 2026-10-05, 08:54Z. **Parte B2**, le zone in più, dalla
+  #337 (`f3fdbce`) e **B2b**, i paesi vicini, dalla #341 (`a9ca8f6`):
+  finite le zone intorno al telefono, una alla volta, quelle dei paesi
+  vicini (`/nearby-cities`), delle città scelte per ultime in «Explore» e
+  delle 14 in evidenza, dalla più vicina, con `prefetch=1`, fino a 2 GB;
+  un giro intero al giorno. **Le zone del telefono sono sul server** dal
+  2026-10-05 (521 file, 2,6 GB, 82 minuti), e B2/B2b su «preview» da
+  `7a9506a`: il telefono disegna da sé. **Resta D**, la prova
+  sull'iPhone, che è dell'utente e fissa i limiti di distanza. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato

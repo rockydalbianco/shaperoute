@@ -13,10 +13,10 @@ test("«Help» shows its name and every section under its heading", async () => 
   await render(<AboutPage id="help" />);
   const headers = screen.getAllByRole("header").map((header) => header.props.children);
   expect(headers).toEqual([
-    "How Sgrava works",
+    "How MuW works",
     ...EN.help.sections.map((section) => section.heading),
   ]);
-  expect(screen.getByText(/^Sgrava draws real routes/)).toBeOnTheScreen();
+  expect(screen.getByText(/^MuW draws real routes/)).toBeOnTheScreen();
   // A list of points: each on its own line, the dot not read.
   expect(screen.getByText(/^Tap «Draw route»/)).toBeOnTheScreen();
 });
@@ -67,9 +67,7 @@ test("with the app in German the text is in English, the notice in German", asyn
 
 test("the page turns with the language while it is open", async () => {
   await render(<AboutPage id="help" />);
-  expect(screen.getByRole("header", { name: "How Sgrava works" })).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: "How MuW works" })).toBeOnTheScreen();
   await act(async () => saveLanguageChoice("it"));
-  expect(
-    screen.getByRole("header", { name: "Come funziona Sgrava" }),
-  ).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: "Come funziona MuW" })).toBeOnTheScreen();
 });

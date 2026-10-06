@@ -6,7 +6,7 @@ import {
 
 import { t } from "../i18n";
 
-/** A reaction that is an emoji: every one but the Sgrava heart, which is drawn. */
+/** A reaction that is an emoji: every one but the MuW heart, which is drawn. */
 export type EmojiKind = Exclude<ReactionKind, "super_like">;
 
 /** The API keeps codes (ADR-0193): the app draws them. */
@@ -28,7 +28,7 @@ export const TOP_SHOWN = 3;
 export function reactionName(kind: ReactionKind): string {
   switch (kind) {
     case "super_like":
-      return t("Sgrava heart, super like");
+      return t("MuW heart, super like");
     case "fire":
       return t("Fire");
     case "clap":

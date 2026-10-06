@@ -12553,3 +12553,42 @@ vede, perché la mappa è sotto la schermata.
   «corsa» di TASK-210, che modifica quei due file: parte B di TASK-259.
 - La foto del profilo (`profile/useProfilePhoto.ts`) ha lo stesso testo
   della fotocamera negata senza bottone: seguito.
+
+## ADR-0224 — L'app si chiama «MuW»
+**Stato**: Attiva · 2026-10-06 · scelta dell'utente (TASK-260).
+
+**Contesto**: l'app si chiamava «Sgrava» (ADR-0046, ADR-0129 per il
+logo). Il 2026-10-06 l'utente ha chiesto «Cambia il nome dell'app con
+MuW».
+
+**Decisione**:
+
+1. «MuW», scritto così, ovunque un utente lo legge: `name` in
+   `app.json` (sotto l'icona), i permessi di sistema, il titolo di
+   «Draw», il post condiviso, l'etichetta dell'avvio, aiuto, condizioni
+   e privacy, i testi nelle cinque lingue, e quello che l'API scrive
+   fuori dall'app («Drawn with MuW» su Strava, le pagine di ritorno da
+   Strava, `creator` del GPX, il messaggio dei tag).
+2. Non cambiano `bundleIdentifier` e `slug`: sono l'identità tecnica
+   dell'app sull'App Store e su EAS, e cambiarli è difficile da
+   annullare.
+3. Il logo, il segno «S» e l'icona restano quelli di ADR-0129 finché
+   l'utente non sceglie i nuovi: un segno è una scelta di prodotto.
+4. I nomi dentro al codice (`sgrava` in file, variabili e commenti) e i
+   documenti che raccontano il passato non si riscrivono.
+
+**Alternative scartate**:
+
+- *Cambiare solo `name` in `app.json`*: il nome sotto l'icona sarebbe
+  diverso da quello in cima a «Draw» e nei testi.
+- *Rinominare anche `bundleIdentifier`*: l'app installata diventerebbe
+  un'altra app, e il progetto EAS andrebbe rifatto.
+
+**Conseguenze**:
+
+- Le tabelle delle lingue (`i18n/*`) cambiano dopo il merge della PR
+  #425 (TASK-208 B), che vi aggiunge righe: seconda parte di TASK-260.
+- Il server va aggiornato (i testi di Strava e del GPX), con l'ok
+  dell'utente; l'app va pubblicata su `preview`.
+- Logo, segno e icona con «MuW»: aspettano l'utente (`tasks/TASK-260.md`,
+  «Fuori scope»). Il sito (`site/`) è di TASK-237.

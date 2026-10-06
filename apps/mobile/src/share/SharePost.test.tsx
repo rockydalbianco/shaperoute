@@ -275,7 +275,7 @@ describe("Strava on the post", () => {
     );
     expect(
       await screen.findByText(
-        "Strava did not let Sgrava change this activity. Change its text on Strava.",
+        "Strava did not let MuW change this activity. Change its text on Strava.",
       ),
     ).toBeOnTheScreen();
     // Still on Strava, as it was: it can be tried again.

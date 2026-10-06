@@ -70,7 +70,7 @@ afterEach(async () => {
 });
 
 test.each([
-  ["Help", "help", "How Sgrava works"],
+  ["Help", "help", "How MuW works"],
   ["Terms", "terms", "Terms of use"],
   ["Privacy", "privacy", "Privacy policy"],
 ] as const)("«%s» in «Settings» opens its page", async (row, page, title) => {
@@ -119,9 +119,7 @@ test("in Italian the row, the title and the text are in Italian", async () => {
   await showSettings();
   await fireEvent.press(screen.getByRole("button", { name: "Aiuto" }));
   expect(screen.getByRole("header", { name: "Aiuto" })).toBeOnTheScreen();
-  expect(
-    screen.getByRole("header", { name: "Come funziona Sgrava" }),
-  ).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: "Come funziona MuW" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Indietro" })).toBeOnTheScreen();
 });
 

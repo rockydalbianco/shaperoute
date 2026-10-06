@@ -216,7 +216,7 @@ test("a photo of the API taken off is emptied there", async () => {
   expect(loadDrawingPhotos()).toEqual([]);
 });
 
-test("back to «Only me» with photos: they leave Sgrava, and the phone's stay here", async () => {
+test("back to «Only me» with photos: they leave MuW, and the phone's stay here", async () => {
   keepPhoto(OWNER, KEY, 2, "BBBB");
   const { fetchFn, calls } = api({
     [`GET ${DRAWING}`]: () => Response.json(MINE),

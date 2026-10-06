@@ -196,7 +196,7 @@ export default function App() {
     <SafeAreaProvider>
       {/* The account, and «Profile» over the app (TASK-115, TASK-154). */}
       <ProfileLayer apiUrl={API_URL}>
-        <Sgrava />
+        <MuW />
       </ProfileLayer>
       {/* The app is dark: light status bar text on any phone setting. */}
       <StatusBar style="light" />
@@ -206,7 +206,7 @@ export default function App() {
   );
 }
 
-function Sgrava() {
+function MuW() {
   // A run still waiting for its score comes first (TASK-113).
   const [finished, setFinished] = useState<Finished | null>(leftRun);
   // Or a run without a route, closed with the app (TASK-149).
@@ -1212,7 +1212,7 @@ function statusText(
   }
   switch (position.status) {
     case "denied":
-      return "Location is off for Sgrava. Allow it in Settings, or search for a place to start from.";
+      return "Location is off for MuW. Allow it in Settings, or search for a place to start from.";
     case "unavailable":
       return "Your position is not available right now. Search for a place to start from.";
     default:

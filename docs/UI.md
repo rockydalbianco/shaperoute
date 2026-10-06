@@ -25,7 +25,7 @@
 
 ## Il tema
 
-Uno solo, scuro, con il nome Sgrava (ADR-0046). Tutti i valori stanno in
+Uno solo, scuro, con il nome «MuW» (ADR-0046; «Sgrava» fino a ADR-0224). Tutti i valori stanno in
 `apps/mobile/src/theme/tokens.ts`: colori, spaziature a passi di 4, raggi,
 corpi del testo, la linea del percorso (gialla, larga 5) e `MIN_TAP_SIZE`,
 44, l'altezza minima di ogni cosa da toccare. **Nessun colore scritto a
@@ -85,7 +85,9 @@ parte. Giallo `accent` su `background`, o nero su giallo. Il logo intero è
 il segno seguito da «GRAVA» con lo stesso tratto, le due A senza trattino.
 I vettoriali stanno in `docs/brand/` (`sgrava-mark.svg`, `sgrava-logo.svg`).
 
-Sotto l'icona il nome è «Sgrava» (`name` in `app.json`). L'icona dell'app
+Sotto l'icona il nome è «MuW» (`name` in `app.json`, TASK-260); il
+segno e il logo leggono ancora «S» e «SGRAVA», finché l'utente non
+sceglie i nuovi. L'icona dell'app
 è il segno giallo su nero (`assets/icon.png`, 1024 × 1024,
 senza trasparenza). Su Android il segno sta nel cerchio sicuro dell'icona
 adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
@@ -114,14 +116,14 @@ telefono è lento e il disegno finisce tardi, la dissolvenza aspetta.
 L'app parte sotto e si carica intanto; l'animazione prende i tocchi finché
 c'è, non si salta, e si vede una volta a ogni apertura. Sta in
 `src/intro/`, sopra `App` (`index.ts`). Al lettore di schermo dice
-«Sgrava».
+«MuW».
 
 **Il cuore su giallo** (TASK-221, ADR-0184): lo stesso cuore, fermo e
 piccolo, come un logo. Un quadrato giallo `accent` con gli angoli
 arrotondati (22% del lato), dentro il cuore nero `onAccent` largo il 68%
 del lato, con il punto di partenza; il tratto è 1/16 del lato, più spesso
 di quello dell'avvio, perché il cuore si legga alla misura di una parola.
-In cima a «Draw» sta a sinistra di «Sgrava», 32 punti, alto quanto il
+In cima a «Draw» sta a sinistra di «MuW», 32 punti, alto quanto il
 titolo. È solo un'immagine: il lettore di schermo legge il nome accanto.
 Un componente solo, `src/intro/HeartBadge.tsx` (`size`), per ogni posto
 dove il cuore su giallo compare.
@@ -133,7 +135,7 @@ prima ed «Explore» sono due delle tre pagine affiancate (sotto, «Le
 pagine»):
 
 1. **«What to draw»**, all'apertura: la pagina «Draw». Dall'alto: il nome
-   «Sgrava», con a sinistra il cuore su giallo (TASK-221, sopra), e il
+   «MuW», con a sinistra il cuore su giallo (TASK-221, sopra), e il
    pulsante «Run without a route» (TASK-149, sotto; «Ride
    without a route» con «Bike», TASK-190); una
    scheda che dice da dove partirà il percorso,

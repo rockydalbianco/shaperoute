@@ -122,7 +122,7 @@ describe("the heart at the top of «Draw»", () => {
     );
   }
 
-  it("stands just before the name «Sgrava»", async () => {
+  it("stands just before the name «MuW»", async () => {
     await choose();
     // The rendered tree: the heart's next sibling is the name.
     type Node = {
@@ -150,12 +150,12 @@ describe("the heart at the top of «Draw»", () => {
       return undefined;
     }
     const next = besideHeart(screen.toJSON() as Node);
-    expect(next).toMatchObject({ type: "Text", children: ["Sgrava"] });
+    expect(next).toMatchObject({ type: "Text", children: ["MuW"] });
   });
 
   it("leaves the name the only thing a screen reader hears there", async () => {
     await choose();
-    expect(screen.getAllByText("Sgrava")).toHaveLength(1);
+    expect(screen.getAllByText("MuW")).toHaveLength(1);
     expect(screen.queryByTestId("heart-badge")).toBeNull();
   });
 });

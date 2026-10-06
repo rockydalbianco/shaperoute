@@ -41,7 +41,7 @@ test("without the location, the banner says how to turn it on and opens the Sett
   await render(<NavigationBanner state={{ status: "denied" }} />);
   expect(screen.getByText("Location is off")).toBeOnTheScreen();
   expect(
-    screen.getByText("Allow it for Sgrava in Settings to follow the route."),
+    screen.getByText("Allow it for MuW in Settings to follow the route."),
   ).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Open Settings" }));
   expect(openSettings).toHaveBeenCalledTimes(1);

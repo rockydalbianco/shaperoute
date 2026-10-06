@@ -69,8 +69,8 @@ log = logging.getLogger(__name__)
 
 # The line under the name: what Sgrava did with the run (the user's choice,
 # 2026-10-02): a route it drew, or only the recording.
-DRAWN = "Drawn with Sgrava"
-RECORDED = "Recorded with Sgrava"
+DRAWN = "Drawn with MuW"
+RECORDED = "Recorded with MuW"
 # A name typed in the app longer than this is cut, not refused: the run
 # still goes.
 MAX_NAME = 100
@@ -94,7 +94,7 @@ STRAVA_DOWN = "Strava did not answer: try again in a while."
 STRAVA_BUSY = "Strava is taking no more uploads for now: try again later."
 RUN_REFUSED = "Strava could not read this run."
 NOT_DESCRIBED = (
-    "Strava did not let Sgrava change this activity: change its text on Strava."
+    "Strava did not let MuW change this activity: change its text on Strava."
 )
 
 T = TypeVar("T")
@@ -153,30 +153,28 @@ class Landing:
     text: str
 
 
-CONNECTED = Landing(200, "Strava is connected.", "Go back to Sgrava.")
-DENIED = Landing(
-    200, "Strava is not connected.", "Nothing was shared. Go back to Sgrava."
-)
+CONNECTED = Landing(200, "Strava is connected.", "Go back to MuW.")
+DENIED = Landing(200, "Strava is not connected.", "Nothing was shared. Go back to MuW.")
 NO_PERMISSION = Landing(
     200,
     "Strava is not connected.",
-    "Sgrava needs the permission to upload activities. Go back to Sgrava and"
+    "MuW needs the permission to upload activities. Go back to MuW and"
     " connect again, leaving it ticked.",
 )
 EXPIRED = Landing(
     400,
     "This link has expired.",
-    "Go back to Sgrava and tap «Connect with Strava» again.",
+    "Go back to MuW and tap «Connect with Strava» again.",
 )
 FULL = Landing(
     403,
     "Strava is not connected.",
-    "Sgrava's Strava app takes only its owner for now. Go back to Sgrava.",
+    "MuW's Strava app takes only its owner for now. Go back to MuW.",
 )
 NO_ANSWER = Landing(
-    502, "Strava did not answer.", "Go back to Sgrava and try again in a while."
+    502, "Strava did not answer.", "Go back to MuW and try again in a while."
 )
-OFF = Landing(503, "Strava is not set up here.", "Go back to Sgrava.")
+OFF = Landing(503, "Strava is not set up here.", "Go back to MuW.")
 
 
 def landing_page(landing: Landing) -> HTMLResponse:

@@ -48,7 +48,7 @@ def test_every_point_has_its_time_to_the_millisecond() -> None:
     root = ET.fromstring(run_gpx(FIXES, [(30.0, 90.0)], START, "Heart in Trento"))
 
     assert root.tag == f"{GPX}gpx"
-    assert (root.get("version"), root.get("creator")) == ("1.1", "Sgrava")
+    assert (root.get("version"), root.get("creator")) == ("1.1", "MuW")
     assert root.findtext(f"{GPX}metadata/{GPX}name") == "Heart in Trento"
     assert root.findtext(f"{GPX}metadata/{GPX}time") == "2026-09-21T14:13:20.000Z"
     assert root.findtext(f"{GPX}trk/{GPX}name") == "Heart in Trento"

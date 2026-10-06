@@ -94,7 +94,7 @@ export function StravaSetting() {
         <View style={styles.connect}>
           <ConnectWithStrava busy={busy === "connecting"} onPress={strava.connect} />
           <StravaLine
-            text={t("Send the runs you save in Sgrava to your Strava profile.")}
+            text={t("Send the runs you save in MuW to your Strava profile.")}
           />
         </View>
       )}

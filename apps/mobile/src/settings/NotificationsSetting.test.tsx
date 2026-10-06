@@ -8,7 +8,7 @@ import { NotificationsSetting } from "./NotificationsSetting";
 
 const off = session.user as User;
 const NOTE =
-  "Sgrava does not send notifications yet. Your choice is kept for when it does.";
+  "MuW does not send notifications yet. Your choice is kept for when it does.";
 const NO_ENDPOINT = "Notifications are not available on this API yet.";
 
 type Change = (request: NotificationsRequest) => Promise<string | null>;

@@ -130,7 +130,7 @@ export function LaunchIntro({ onDone }: Props) {
       style={[StyleSheet.absoluteFill, styles.cover, { opacity: shown }]}
       accessible
       accessibilityRole="image"
-      accessibilityLabel="Sgrava"
+      accessibilityLabel="MuW"
       testID="launch-intro"
     >
       <View style={{ width: heartWidth, height: heartHeight(heartWidth) }}>

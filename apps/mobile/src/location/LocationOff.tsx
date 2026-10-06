@@ -18,8 +18,8 @@ export function LocationOff({ use }: { use: LocationUse }) {
       <Text style={styles.title}>{t("Location is off")}</Text>
       <Text style={styles.text}>
         {use === "navigate"
-          ? t("Allow it for Sgrava in Settings to follow the route.")
-          : t("Allow it for Sgrava in Settings to record your track.")}
+          ? t("Allow it for MuW in Settings to follow the route.")
+          : t("Allow it for MuW in Settings to record your track.")}
       </Text>
       <OpenSettings />
     </View>

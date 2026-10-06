@@ -145,7 +145,7 @@ afterEach(() => {
 test("opens on the choice, with the app name and a heart", async () => {
   requestPermission.mockReturnValue(new Promise(() => {}));
   await render(<App />);
-  expect(screen.getByText("Sgrava")).toBeOnTheScreen();
+  expect(screen.getByText("MuW")).toBeOnTheScreen();
   expect(
     screen.getByRole("button", { name: "heart", selected: true }),
   ).toBeOnTheScreen();
@@ -174,7 +174,7 @@ test("without permission, a searched place becomes the start", async () => {
   // By the name under the icon: that is what Settings lists (TASK-160).
   expect(
     await screen.findByText(
-      "Location is off for Sgrava. Allow it in Settings, or search for a place to start from.",
+      "Location is off for MuW. Allow it in Settings, or search for a place to start from.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByText("Open Settings")).toBeOnTheScreen();

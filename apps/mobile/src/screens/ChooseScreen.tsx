@@ -106,7 +106,7 @@ export function ChooseScreen({
           <View style={styles.brand}>
             {/* The heart of the launch on its yellow, as a logo (TASK-221). */}
             <HeartBadge size={BADGE_SIZE} />
-            <Text style={styles.title}>Sgrava</Text>
+            <Text style={styles.title}>MuW</Text>
           </View>
           <View style={styles.titleButtons}>
             {onRun && (

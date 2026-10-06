@@ -66,7 +66,7 @@ describe("the launch animation", () => {
 
   it("says the app's name to a screen reader, once", async () => {
     await render(<LaunchIntro onDone={jest.fn()} />);
-    expect(screen.getByLabelText("Sgrava")).toBeTruthy();
+    expect(screen.getByLabelText("MuW")).toBeTruthy();
     expect(screen.getAllByRole("image")).toHaveLength(1);
   });
 

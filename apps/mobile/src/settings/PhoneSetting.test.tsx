@@ -8,7 +8,7 @@ const PHONE = "+393331234567";
 const without = session.user as User;
 const withNumber: User = { ...without, phone: PHONE };
 const NOTE =
-  "Only you see your number. Friends who already have it will be able to find you on Sgrava.";
+  "Only you see your number. Friends who already have it will be able to find you on MuW.";
 
 async function show(
   user: User = without,

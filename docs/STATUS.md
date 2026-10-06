@@ -11,7 +11,7 @@
 
 ## In una riga
 
-Sgrava gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
+MuW (fino al 2026-10-06 «Sgrava») gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
 Hetzner, in HTTPS e sempre accesa, con il database degli account; il Mac
 serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (per ora
 disegni d'esempio), «Draw» ed «Explore», e «Profile» per iscriversi ed
@@ -149,6 +149,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
+
+- **App e API** — TASK-260: l'app si chiama «MuW» (ADR-0224; chiesto
+  dall'utente il 2026-10-06). `name` in `app.json`, i permessi, il titolo
+  di «Draw», il post, l'avvio, aiuto/condizioni/privacy, lo stile della
+  mappa, e nell'API «Drawn with MuW», le pagine di ritorno da Strava, il
+  `creator` del GPX e il messaggio dei tag, e le otto chiavi di `i18n/*`
+  con il nome nelle cinque lingue. **Mancano**: l'aggiornamento del
+  server (ok dell'utente) e la pubblicazione. **Fuori
+  scope**: logo, segno e icona leggono ancora «SGRAVA» (scelta
+  dell'utente), `bundleIdentifier`, `slug`, il sito. `tasks/TASK-260.md`.
 
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte

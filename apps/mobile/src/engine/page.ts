@@ -228,7 +228,7 @@ export const ENGINE_PAGE = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sgrava engine</title>
+<title>MuW engine</title>
 </head>
 <body>
 <script>${SCRIPT}</script>

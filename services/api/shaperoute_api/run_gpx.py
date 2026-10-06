@@ -18,7 +18,7 @@ from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 
 GPX_NAMESPACE = "http://www.topografix.com/GPX/1/1"
-CREATOR = "Sgrava"
+CREATOR = "MuW"
 # 7 decimals of a degree are about 1 cm, as in the route's GPX.
 COORDINATE_DECIMALS = 7
 

@@ -88,7 +88,7 @@ describe.each(["terms", "privacy"] as const)("«%s» is a draft", (id) => {
   });
 
   test.each(CONTENTS)(
-    "in «%s» who runs Sgrava and where to write are to fill",
+    "in «%s» who runs MuW and where to write are to fill",
     (_, content) => {
       const text = all(content[id]);
       expect(text).toContain(PLACEHOLDER.name);
@@ -97,7 +97,7 @@ describe.each(["terms", "privacy"] as const)("«%s» is a draft", (id) => {
   );
 });
 
-test("who provides Sgrava and who controls the data is never a name", () => {
+test("who provides MuW and who controls the data is never a name", () => {
   expect(all(EN.terms)).toMatch(/provided by \[name\]/);
   expect(all(IT.terms)).toMatch(/offerta da \[name\]/);
   expect(all(EN.privacy)).toMatch(/controller of your personal data is \[name\]/);
@@ -144,11 +144,11 @@ test("«Privacy» says what the phone number is for (ADR-0150)", () => {
 test("«Help» and «Privacy» say the notification choices are kept, and nothing is sent (ADR-0206)", () => {
   for (const text of [all(EN.help), all(EN.privacy)]) {
     expect(text).toMatch(/off until you turn them on/);
-    expect(text).toMatch(/Sgrava sends no notifications yet/);
+    expect(text).toMatch(/MuW sends no notifications yet/);
   }
   for (const text of [all(IT.help), all(IT.privacy)]) {
     expect(text).toMatch(/spent[ie] finché non l[ie] accendi/);
-    expect(text).toMatch(/Sgrava non manda ancora notifiche/);
+    expect(text).toMatch(/MuW non manda ancora notifiche/);
   }
 });
 

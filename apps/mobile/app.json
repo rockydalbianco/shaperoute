@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Sgrava",
+    "name": "MuW",
     "slug": "shaperoute",
     "version": "0.0.0",
     "runtimeVersion": "exposdk:57.0.0",
@@ -43,8 +43,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Sgrava uses the picture you choose to trace the outline your route will draw.",
-          "cameraPermission": "Sgrava uses the photo you take to trace the outline your route will draw.",
+          "photosPermission": "MuW uses the picture you choose to trace the outline your route will draw.",
+          "cameraPermission": "MuW uses the photo you take to trace the outline your route will draw.",
           "microphonePermission": false
         }
       ],

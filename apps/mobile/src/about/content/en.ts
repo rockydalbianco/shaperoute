@@ -13,14 +13,14 @@ import type { AboutContent, AboutDocument } from "../documents";
 const UPDATED = "5 October 2026";
 
 const help: AboutDocument = {
-  title: "How Sgrava works",
+  title: "How MuW works",
   draft: false,
   updated: null,
   sections: [
     {
-      heading: "What Sgrava is",
+      heading: "What MuW is",
       blocks: [
-        "Sgrava draws real routes that trace a shape on the map. You choose the shape, the distance and where to start; you get a route on real streets, with its GPX file.",
+        "MuW draws real routes that trace a shape on the map. You choose the shape, the distance and where to start; you get a route on real streets, with its GPX file.",
         "The app has three pages side by side, «Feed», «Draw» and «Explore»: swipe left or right, or tap a name at the top. «Profile» opens from the circle at the top.",
       ],
     },
@@ -31,7 +31,7 @@ const help: AboutDocument = {
           bullets: [
             "Pick a shape: a heart, a star, a cat and more, a word from A to Z, or the outline of your own photo.",
             "Set the distance: up to 21 km on foot, starting from where you are or from any place you search.",
-            "Tap «Draw route». Sgrava draws up to three routes on real streets, A, B and C: keep the one you like.",
+            "Tap «Draw route». MuW draws up to three routes on real streets, A, B and C: keep the one you like.",
             "«Export GPX» gives you the file for your watch or for another app.",
           ],
         },
@@ -105,7 +105,7 @@ const help: AboutDocument = {
             "Language: English, Deutsch, Italiano, Español or Français. The voice follows it.",
             "Offline maps: the phone keeps the maps around you and draws routes by itself; «Delete» frees the space.",
             "Units: your phone's own, kilometres or miles. With miles the distances, the pace and the voice follow: a call at every mile, the turns in feet.",
-            "Notifications: two switches, email and push, off until you turn them on. Sgrava sends no notifications yet: your choice is kept with your account for when it does.",
+            "Notifications: two switches, email and push, off until you turn them on. MuW sends no notifications yet: your choice is kept with your account for when it does.",
           ],
         },
       ],
@@ -131,16 +131,16 @@ const terms: AboutDocument = {
   updated: UPDATED,
   sections: [
     {
-      heading: "Who provides Sgrava",
+      heading: "Who provides MuW",
       blocks: [
-        "Sgrava is provided by [name] («we»). You can write to us at [contact email].",
-        "These terms are the agreement between you and us for the use of the Sgrava app. By creating an account or using the app you accept them.",
+        "MuW is provided by [name] («we»). You can write to us at [contact email].",
+        "These terms are the agreement between you and us for the use of the MuW app. By creating an account or using the app you accept them.",
       ],
     },
     {
-      heading: "What Sgrava is",
+      heading: "What MuW is",
       blocks: [
-        "Sgrava draws routes that trace a shape on the map, to run, ride or paddle; it records your activity while you follow them; and it lets members publish their drawings, follow each other, react and comment.",
+        "MuW draws routes that trace a shape on the map, to run, ride or paddle; it records your activity while you follow them; and it lets members publish their drawings, follow each other, react and comment.",
       ],
     },
     {
@@ -163,7 +163,7 @@ const terms: AboutDocument = {
       ],
     },
     {
-      heading: "How to use Sgrava",
+      heading: "How to use MuW",
       blocks: [
         "Use the app within the law and with respect for the other members. In particular, do not:",
         {
@@ -192,7 +192,7 @@ const terms: AboutDocument = {
             "You are responsible for where you go. Follow the traffic rules and the signs, even when the route or the voice says otherwise.",
             "Check the conditions before and during your activity: traffic, light, weather, the ground, your own health and fitness.",
             "Do not look at the phone while you move in traffic.",
-            "On the water take extra care: wear a life jacket, check the weather and the wind, follow the local rules (swimming areas, boat lanes, harbours). Sgrava does not know them. A route close to the shore is not, for that, safe or allowed.",
+            "On the water take extra care: wear a life jacket, check the weather and the wind, follow the local rules (swimming areas, boat lanes, harbours). MuW does not know them. A route close to the shore is not, for that, safe or allowed.",
           ],
         },
         "Distances, times and speed come from the phone's GPS and are estimates.",
@@ -201,14 +201,14 @@ const terms: AboutDocument = {
     {
       heading: "No warranty, and the limits of our liability",
       blocks: [
-        "We work to keep Sgrava running and its routes good, but the app is provided as it is: we do not promise that it is always available or free of errors, that a route can be completed, or that its measures are exact.",
+        "We work to keep MuW running and its routes good, but the app is provided as it is: we do not promise that it is always available or free of errors, that a route can be completed, or that its measures are exact.",
         "As far as the law allows, we are not liable for damage that comes from the use of the app or of its routes. Nothing in these terms limits a liability that the law does not allow to limit, or the rights you have as a consumer.",
       ],
     },
     {
       heading: "Advertising",
       blocks: [
-        "Sgrava shows advertising, provided by Google AdMob, among the drawings of «Feed» and marked «Sponsored». An advert opens what the advertiser says: its content is not ours.",
+        "MuW shows advertising, provided by Google AdMob, among the drawings of «Feed» and marked «Sponsored». An advert opens what the advertiser says: its content is not ours.",
       ],
     },
     {
@@ -233,7 +233,7 @@ const terms: AboutDocument = {
     {
       heading: "Closing the account",
       blocks: [
-        "You can stop using Sgrava and delete your account at any time: «Privacy» says what is deleted and when. We may suspend or close an account that goes against these terms.",
+        "You can stop using MuW and delete your account at any time: «Privacy» says what is deleted and when. We may suspend or close an account that goes against these terms.",
       ],
     },
     {
@@ -258,7 +258,7 @@ const privacy: AboutDocument = {
       heading: "Who is responsible for your data",
       blocks: [
         "The controller of your personal data is [name]. For anything about your data, write to [contact email].",
-        "This text says which data Sgrava handles, why, where it is kept and for how long, and what you can do about it.",
+        "This text says which data MuW handles, why, where it is kept and for how long, and what you can do about it.",
       ],
     },
     {
@@ -276,7 +276,7 @@ const privacy: AboutDocument = {
             "Your password, kept only as a hash (Argon2id): we never keep or see the password itself.",
             "The day you signed up and when you confirmed that you are at least 16.",
             "The session of each phone you logged in from: the phone keeps a token in its secure storage, the server keeps only a hash of it. A session ends 90 days after its last use, or when you log out.",
-            "Your two notification choices in «Settings», email and push: both are off until you turn them on, and Sgrava sends no notifications yet.",
+            "Your two notification choices in «Settings», email and push: both are off until you turn them on, and MuW sends no notifications yet.",
           ],
         },
         "Your email address is never shown to the other members.",
@@ -337,14 +337,14 @@ const privacy: AboutDocument = {
     {
       heading: "Advertising",
       blocks: [
-        "Sgrava shows adverts from Google AdMob among the drawings of «Feed». The first time you open «Feed», Google's consent form asks for your choice where one is needed; until adverts may be requested, none are shown. On iPhone the app does not ask to track you across other apps and adverts are requested without the advertising identifier.",
+        "MuW shows adverts from Google AdMob among the drawings of «Feed». The first time you open «Feed», Google's consent form asks for your choice where one is needed; until adverts may be requested, none are shown. On iPhone the app does not ask to track you across other apps and adverts are requested without the advertising identifier.",
         "Google handles what its advertising software collects under its own privacy policy.",
       ],
     },
     {
       heading: "Strava",
       blocks: [
-        "A run goes to Strava only when you ask for it, and only after you connected your Strava profile. While it is connected, our server keeps your Strava name and the keys Strava gave us for your profile. We then send Strava the track with its times, the name and one line of description. We ask Strava only for the permission to add activities, never to read yours. On Strava the activity follows your Strava privacy settings, not Sgrava's.",
+        "A run goes to Strava only when you ask for it, and only after you connected your Strava profile. While it is connected, our server keeps your Strava name and the keys Strava gave us for your profile. We then send Strava the track with its times, the name and one line of description. We ask Strava only for the permission to add activities, never to read yours. On Strava the activity follows your Strava privacy settings, not MuW's.",
       ],
     },
     {
@@ -401,7 +401,7 @@ const privacy: AboutDocument = {
     {
       heading: "Children",
       blocks: [
-        "Sgrava accounts are for people who are at least 16. If you believe someone younger has an account, write to us and we will delete it.",
+        "MuW accounts are for people who are at least 16. If you believe someone younger has an account, write to us and we will delete it.",
       ],
     },
     {

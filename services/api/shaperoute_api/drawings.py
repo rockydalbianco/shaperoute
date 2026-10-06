@@ -98,7 +98,7 @@ DESCRIPTION_NOT_TEXT = (
 )
 NO_VISIBILITY = "Say who can see it: visibility."
 VISIBILITY_TWICE = "Say who can see it once: visibility, or public, not both."
-TAG_UNKNOWN = "Only Sgrava members can be tagged: one of these is not."
+TAG_UNKNOWN = "Only MuW members can be tagged: one of these is not."
 TAG_YOURSELF = "You cannot tag yourself."
 TAG_TWICE = "Each person is tagged once."
 TOO_SHORT = (

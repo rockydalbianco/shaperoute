@@ -20,7 +20,7 @@ import {
 } from "../theme/tokens";
 import { isImageRequest } from "../api/routes";
 import { drawnOf, sendSignal } from "../api/signals";
-import { decimal, t, tPlural } from "../i18n";
+import { decimal, t, tLater, tPlural } from "../i18n";
 import { Segmented } from "../screens/Segmented";
 import { milesAtLeast, tenthsToM, unitsNumber } from "../units/distanceInput";
 import { distanceLabel, inUnits, METRES_PER_MILE, withPoint } from "../units/format";
@@ -60,17 +60,25 @@ import {
   wordDistanceM,
 } from "./wordInput";
 
+// Translated where shown, with t() (TASK-210).
 const DRAW_KINDS = [
-  { value: "shape", label: "Shape" },
-  { value: "word", label: "Word" },
-  { value: "image", label: "Image" },
+  { value: "shape", label: tLater("Shape") },
+  { value: "word", label: tLater("Word") },
+  { value: "image", label: tLater("Image") },
 ] as const;
 
 // The letters of a word (TASK-080, ADR-0075): "block" is square in the API.
 const LETTER_STYLE_OPTIONS = [
-  { value: "round", label: "Round" },
-  { value: "block", label: "Square" },
+  { value: "round", label: tLater("Round") },
+  { value: "block", label: tLater("Square") },
 ] as const;
+
+/** The options with their labels in the app's language. */
+function translated<T extends string>(
+  options: readonly { value: T; label: string }[],
+): { value: T; label: string }[] {
+  return options.map((option) => ({ ...option, label: t(option.label) }));
+}
 
 type ChoiceProps = {
   /** A shape, a word or an image: one of them, and the switch shows which. */
@@ -153,12 +161,12 @@ export function RouteChoice({
   const shapesOnly = activity === "paddling";
   return (
     <View style={styles.panel}>
-      <Text style={styles.label}>DRAW</Text>
+      <Text style={styles.label}>{t("DRAW")}</Text>
       {shapesOnly ? (
         <Text style={styles.note}>{t("On the water, a shape of the catalogue.")}</Text>
       ) : (
         <Segmented
-          options={DRAW_KINDS}
+          options={translated(DRAW_KINDS)}
           value={kind}
           onChange={onKind}
           style={styles.kinds}
@@ -173,19 +181,19 @@ export function RouteChoice({
             onChangeText={onShapeText}
             onEndEditing={onShapeDone}
             maxLength={MAX_SHAPE_TEXT_LENGTH}
-            placeholder="heart, star, horse…"
+            placeholder={t("heart, star, horse…")}
             placeholderTextColor={color.textFaint}
             keyboardAppearance="dark"
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="done"
             selectTextOnFocus
-            accessibilityLabel="Shape"
+            accessibilityLabel={t("Shape")}
           />
           <ShapeNote text={shapeText} shape={shape} reading={reading} />
           {onPenUp && !shapesOnly && offersPenUp(shape) && (
             <PenSwitch
-              label="Lift the pen between parts"
+              label={t("Lift the pen between parts")}
               on={penUp}
               onChange={onPenUp}
             />
@@ -208,7 +216,7 @@ export function RouteChoice({
             spellCheck={false}
             autoComplete="off"
             returnKeyType="done"
-            accessibilityLabel="Word"
+            accessibilityLabel={t("Word")}
           />
           <WordNote
             text={wordText}
@@ -216,28 +224,28 @@ export function RouteChoice({
             units={units}
             onDistance={(metres) => onDistanceText(distanceField(metres, units))}
           />
-          <Text style={[styles.label, styles.section]}>LETTERS</Text>
+          <Text style={[styles.label, styles.section]}>{t("LETTERS")}</Text>
           <Segmented
-            options={LETTER_STYLE_OPTIONS}
+            options={translated(LETTER_STYLE_OPTIONS)}
             value={letterStyle}
             onChange={onLetterStyle}
             style={styles.kinds}
           />
           {letterStyle === "block" && (
             <Text style={styles.note}>
-              Square letters follow the street grid: best for short words.
+              {t("Square letters follow the street grid: best for short words.")}
             </Text>
           )}
           {onPenUp && (
             <PenSwitch
-              label="Lift the pen between letters"
+              label={t("Lift the pen between letters")}
               on={penUp}
               onChange={onPenUp}
             />
           )}
         </>
       )}
-      <Text style={[styles.label, styles.section]}>DISTANCE</Text>
+      <Text style={[styles.label, styles.section]}>{t("DISTANCE")}</Text>
       <DistanceStepper
         text={distanceText}
         onText={onDistanceText}
@@ -251,11 +259,16 @@ export function RouteChoice({
                 lowest,
                 highest,
               })
-            : `Enter a distance between ${lowest} and ${highest} km.`}
+            : t("Enter a distance between {lowest} and {highest} km.", {
+                lowest,
+                highest,
+              })}
         </Text>
       ) : (
         distanceM > LONG_DISTANCE_KM * 1000 && (
-          <Text style={styles.note}>Long routes take longer: up to a few minutes.</Text>
+          <Text style={styles.note}>
+            {t("Long routes take longer: up to a few minutes.")}
+          </Text>
         )
       )}
     </View>
@@ -278,7 +291,7 @@ export function DrawButton({
       accessibilityRole="button"
       accessibilityState={{ disabled: !enabled }}
     >
-      <Text style={styles.drawText}>Draw route</Text>
+      <Text style={styles.drawText}>{t("Draw route")}</Text>
     </Pressable>
   );
 }
@@ -381,7 +394,7 @@ export function RouteOutcome({
               onPress={onCancel}
               accessibilityRole="button"
             >
-              <Text style={styles.secondaryText}>Cancel</Text>
+              <Text style={styles.secondaryText}>{t("Cancel")}</Text>
             </Pressable>
           </View>
           {/* A bar, not the seconds: an estimate from the phase (ADR-0050). */}
@@ -436,7 +449,7 @@ export function RouteOutcome({
               onPress={() => use("start", onStart)}
               accessibilityRole="button"
             >
-              <Text style={styles.drawText}>Start</Text>
+              <Text style={styles.drawText}>{t("Start")}</Text>
             </Pressable>
           )}
           {onMove && (
@@ -455,7 +468,7 @@ export function RouteOutcome({
             accessibilityRole="button"
           >
             <Text style={styles.secondaryText}>
-              {exporting.status === "preparing" ? "Preparing GPX…" : "Export GPX"}
+              {exporting.status === "preparing" ? t("Preparing GPX…") : t("Export GPX")}
             </Text>
           </Pressable>
           {exporting.status === "failed" && <Problem problem={exporting.problem} />}
@@ -516,7 +529,7 @@ function PenSwitch({
     >
       <Text style={styles.switchText}>{label}</Text>
       <Text style={[styles.switchState, on && styles.switchStateOn]}>
-        {on ? "On" : "Off"}
+        {on ? t("On") : t("Off")}
       </Text>
     </Pressable>
   );
@@ -602,13 +615,12 @@ function PenSplit({
             letters: drawn,
             between,
           })
-        : `${km(split.lettersM)} km of letters + ${km(split.walksM)} km walking between them`}
+        : t("{letters} km of letters + {between} km walking between them", {
+            letters: drawn,
+            between,
+          })}
     </Text>
   );
-}
-
-function km(metres: number): string {
-  return (metres / 1000).toFixed(1);
 }
 
 /** Under the shape field: the shape the words name, or why there is none. */
@@ -629,12 +641,14 @@ function ShapeNote({
   }
   switch (reading?.status) {
     case "unread":
-      return <Text style={styles.note}>Press Done and the AI will read it.</Text>;
+      return (
+        <Text style={styles.note}>{t("Press Done and the AI will read it.")}</Text>
+      );
     case "reading":
       // A word may take the model 4–50 s: a bar, as for the route (TASK-058).
       return (
         <View style={styles.reading}>
-          <Text style={styles.note}>The AI is reading it…</Text>
+          <Text style={styles.note}>{t("The AI is reading it…")}</Text>
           <ReadingBar />
         </View>
       );
@@ -643,14 +657,19 @@ function ShapeNote({
       // plainer words may work, or a shape of the catalogue, the tiles above.
       return (
         <Text style={styles.problem}>
-          {`No shape in the catalogue for “${text.trim()}”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one:`}
+          {t(
+            "No shape in the catalogue for “{text}”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one:",
+            { text: text.trim() },
+          )}
         </Text>
       );
     case "failed":
       return <Problem problem={reading.problem} />;
     default:
       return (
-        <Text style={styles.problem}>{`Unknown shape. Try: ${shapeList()}.`}</Text>
+        <Text style={styles.problem}>
+          {t("Unknown shape. Try: {list}.", { list: shapeList() })}
+        </Text>
       );
   }
 }
@@ -681,7 +700,12 @@ function WordNote({
               "{count} letters: at least {mi} mi. A word takes a few minutes to draw.",
               { mi: milesAtLeast(wordDistanceM(check.word)) },
             )
-          : `${letters} ${letters === 1 ? "letter" : "letters"}: at least ${wordDistanceM(check.word) / 1000} km. A word takes a few minutes to draw.`}
+          : tPlural(
+              letters,
+              "{count} letter: at least {km} km. A word takes a few minutes to draw.",
+              "{count} letters: at least {km} km. A word takes a few minutes to draw.",
+              { km: wordDistanceM(check.word) / 1000 },
+            )}
       </Text>
     );
   }
@@ -706,7 +730,7 @@ function WordNote({
           <Text style={styles.secondaryText}>
             {units === "mi"
               ? t("Use {mi} mi", { mi: miles })
-              : `Use ${needs / 1000} km`}
+              : t("Use {km} km", { km: needs / 1000 })}
           </Text>
         </Pressable>
       )}
@@ -716,7 +740,7 @@ function WordNote({
 
 /** What the route draws, for the line under its distance. */
 function nameOf(request: AnyRouteRequest): string {
-  return isImageRequest(request) ? "Picture" : routeName(request);
+  return isImageRequest(request) ? t("Picture") : routeName(request);
 }
 
 /** A route on the water (TASK-191): it follows no road, and has no turns. */
@@ -751,9 +775,9 @@ function waitingText(
   switch (phase) {
     case "sending":
     case "queued":
-      return "Waiting for the API…";
+      return t("Waiting for the API…");
     case "downloading_map":
-      return "Downloading map data for this area…";
+      return t("Downloading map data for this area…");
     default:
       if (units === "mi") {
         const mi = unitsNumber(request.distance_m, "mi");
@@ -764,12 +788,13 @@ function waitingText(
           ? t("Drawing “{word}”, {mi} mi…", { word: request.word, mi })
           : t("Drawing a {mi} mi {name}…", { mi, name: routeName(request) });
       }
+      const km = request.distance_m / 1000;
       if (isImageRequest(request)) {
-        return `Drawing the picture's outline, ${request.distance_m / 1000} km…`;
+        return t("Drawing the picture's outline, {km} km…", { km });
       }
       return request.word
-        ? `Drawing “${request.word}”, ${request.distance_m / 1000} km…`
-        : `Drawing a ${request.distance_m / 1000} km ${routeName(request)}…`;
+        ? t("Drawing “{word}”, {km} km…", { word: request.word, km })
+        : t("Drawing a {km} km {name}…", { km, name: routeName(request) });
   }
 }
 
@@ -821,11 +846,7 @@ function Problem({
           onPress={() => onTryDistance(tryDistanceM)}
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryText}>
-            {units === "mi"
-              ? tryText(tryDistanceM, "mi")
-              : `Try ${tryDistanceM / 1000} km`}
-          </Text>
+          <Text style={styles.secondaryText}>{tryText(tryDistanceM, units)}</Text>
         </Pressable>
       )}
       {pickShape && onPickShape && <ShapeChoices onPick={onPickShape} />}

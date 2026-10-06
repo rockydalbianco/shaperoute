@@ -1,6 +1,8 @@
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
+import { t } from "../i18n";
+
 /** The type iOS apps register for GPX files: it decides which apps appear. */
 export const GPX_UTI = "com.topografix.gpx";
 
@@ -22,7 +24,7 @@ export async function shareGpx(
   await Sharing.shareAsync(file.uri, {
     mimeType: "application/gpx+xml",
     UTI: GPX_UTI,
-    dialogTitle: "Export GPX",
+    dialogTitle: t("Export GPX"),
   });
   return "shared";
 }

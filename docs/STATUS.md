@@ -534,7 +534,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   corsa** fatta il 2026-10-06 (le schermate della corsa, il banner della
   svolta con il frasario della voce, 58 testi nuovi; testi approvati
   dall'utente il 2026-10-06): restano «Draw», «Explore», la fine corsa, «Sport»,
-  `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). L'utente ha
+  `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). **Parte D —
+  «Draw»** fatta il 2026-10-06 (branch `feat/TASK-210-draw`, in parallelo
+  con la parte C «Explore»): il pannello di «Draw», i testi d'errore in
+  km, gli avvisi del motore, la parola, la foto e il contorno, 101 testi
+  nuovi (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`;
+  i nomi delle forme restano inglesi fino alla loro parte; **i testi
+  aspettano l'occhio dell'utente**. L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:

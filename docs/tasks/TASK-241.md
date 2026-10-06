@@ -223,6 +223,58 @@ place») resta: il server il punteggio lo tiene. Branch
 STATUS, questo task file. Se un giorno il server registra di nuovo
 l'evento al salvataggio, la frase va rimessa.
 
+**Seguito: TASK-247** (`run_scored` registrato dall'API al salvataggio,
+«si» dell'utente del 2026-10-06).
+
+## Esito
+
+Fatto il 2026-10-05. Parte A (PR #345, merge `ad80385`): il riquadro non
+c'è più, nel «Feed» e nei post che «Explore» mostra mentre disegna una
+città (stesso componente). Parte B (PR #348, merge `69af6c6`): nemmeno
+VoiceOver legge più il punteggio. Parte C (PR #355, merge `b7a82da`): il
+post da condividere non ha più il punteggio, nemmeno nel testo per
+Strava. Parte D (PR #358, merge `78e9bc1`): «My activities» non lo
+mostra più, né nell'elenco né sulla corsa aperta. Parte E (PR #365,
+merge `0294922`): via anche dai disegni del «Profile» e dalla fine corsa,
+dove l'app non lo chiede più all'API. **Il punteggio non si vede più da
+nessuna parte.** Le pubblicazioni le fa il coordinatore, con l'ok
+dell'utente: ogni parte esce con la prima che parte da un `main` che la
+contiene.
+
+**Cosa resta nell'API**, non toccata:
+
+- Il punteggio continua a essere calcolato e salvato dall'API al
+  salvataggio della corsa («Save» manda la corsa senza punteggio, com'era
+  già: `pauses`, `points`, `shape`, `similarity`, `style`, `title`,
+  `track`, `word`). `score` e `fidelity` restano nelle risposte di
+  `/me/activities` e dei disegni; l'app li legge e non li mostra. I
+  punteggi già salvati restano dove sono.
+- `POST /track-scores` esiste ancora ma l'app non lo chiama più. Con lui
+  **l'evento `run_scored` degli `insights` non viene più registrato**
+  (partiva da quella richiesta): se quel dato serve, è un seguito (il
+  server potrebbe registrarlo al salvataggio).
+- Nell'app `src/api/trackScores.ts` non c'è più (**parte G**, 2026-10-05,
+  «continua va bene» dell'utente; branch
+  `chore/TASK-241-g-remove-track-scores`): tolto con il suo test, e i due
+  test della penna alzata (`navigation/penUpRun.test.ts`,
+  `favorites/favoritePenUpRun.test.ts`) guardano i `walks` della corsa
+  tenuta invece della richiesta del punteggio. `shared-types` tiene
+  `TrackScoreRequest`, `TrackScoreResult` e le fixture: sono il contratto
+  di `POST /track-scores`, che l'API ha ancora.
+- I post d'esempio del «Feed» tengono `score` nei dati: `feedRoute` lo usa
+  come somiglianza del percorso che si apre dal post.
+
+**Parte F — la bozza di «Privacy»** (2026-10-05; alla proposta «lascio
+la prima frase, tolgo "a run scored" dalla seconda» l'utente ha risposto
+«ok continua»). In `src/about/content/en.ts` e `it.ts` l'elenco degli
+eventi tenuti è «(a route chosen, a GPX file exported)»: l'app non manda
+più la richiesta che faceva registrare `run_scored`. La frase sui dati
+della corsa salvata («…distance, duration, score and the name of the
+place») resta: il server il punteggio lo tiene. Branch
+`feat/TASK-241-f-privacy-run-scored`; file: i due di `about/content`,
+STATUS, questo task file. Se un giorno il server registra di nuovo
+l'evento al salvataggio, la frase va rimessa.
+
 **Parte H — `run_scored` al salvataggio** (2026-10-06; alla domanda «vuoi
 che il server torni a registrare l'evento "run scored" quando una corsa
 viene salvata?» l'utente ha risposto «si»). Branch

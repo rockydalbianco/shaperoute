@@ -1,4 +1,4 @@
-"""A run saved with a score is an event (TASK-241): the app no longer asks
+"""A run saved with a score is an event (TASK-247): the app no longer asks
 POST /track-scores at the end of a run, which was where `run_scored` came
 from. Against a real PostgreSQL, as test_activities."""
 

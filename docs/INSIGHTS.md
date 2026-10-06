@@ -24,7 +24,7 @@ dell'app ─┘    mai cancellati)                 cosa manca)        validato) 
    distanza chiesta; `cancelled` se l'app li annulla mentre aspetta),
    percorsi a tema (`themed`), città cercate (`city_search`), «Explore»
    (`recommended_list`, `recommended_open`), e i segnali d'uso
-   (`gpx_export`, `run_scored`). **`run_scored`** (da TASK-241 parte H)
+   (`gpx_export`, `run_scored`). **`run_scored`** (da TASK-247)
    nasce quando una corsa **nuova** lungo un percorso viene salvata con
    un punteggio (`PUT /me/activities/{key}` che risponde `201`): porta
    solo `quality`, il punteggio fra 0 e 1, niente di chi ha corso né di

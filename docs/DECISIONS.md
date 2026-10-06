@@ -10610,7 +10610,7 @@ solo km e tempo; avrebbe tenuto la richiesta all'API, l'attesa e i
 messaggi senza rete); togliere `score` dall'API (altro contratto, usato
 dai dati già salvati; non chiesto).
 
-**Aggiornamento** (2026-10-06, TASK-241 parte H; scelta dell'utente:
+**Aggiornamento** (2026-10-06, TASK-247, seguito di TASK-241; scelta dell'utente:
 «si» alla domanda «vuoi che il server torni a registrare l'evento "run
 scored" quando una corsa viene salvata?»). Il punto 4 cambia: **l'API
 registra `run_scored` al salvataggio**. Il resto è deciso dall'agente su

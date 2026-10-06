@@ -1044,7 +1044,7 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   salvata una volta, com'era la prima (il secondo `PUT` risponde `200` e
   non cambia niente, nemmeno se il corpo è diverso). Il primo `PUT` di una
   corsa che ha un punteggio registra l'evento `run_scored` degli
-  `insights`, con la sola `quality` (TASK-241 parte H, `INSIGHTS.md`).
+  `insights`, con la sola `quality` (TASK-247, `INSIGHTS.md`).
 - **Il corpo del `PUT`** è la corsa come il telefono l'ha registrata:
   `track`, le posizioni in ordine come per `POST /track-scores` (`point`,
   `time_ms` sull'orologio del telefono, `accuracy_m`), da 2 a 20 000;

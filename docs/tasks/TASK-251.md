@@ -1,6 +1,6 @@
 # TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m
 
-**Stato**: In lavorazione — parte A (l'uscita in corso e la sua fine) in PR; parte B («My activities») aspetta il via del coordinatore
+**Stato**: In lavorazione — parte A (l'uscita in corso e la sua fine) in `main` dalla #383 (`bf859e0`, 2026-10-06), non ancora pubblicata; parte B («My activities») aspetta il via del coordinatore
 **Fase**: 4 · **Branch**: `feat/TASK-251-paddle-speed-pace`
 **Dipende da**: TASK-191 (i percorsi sull'acqua), TASK-216 (la velocità
 in bici, `navigation/ride.ts`), TASK-182 (km o miglia)
@@ -109,7 +109,9 @@ docs/UI.md
 
 ## Esito
 
-Parte A: vedi la PR. Le caselle sono state guardate in un simulatore
+Parte A in `main` (#383, merge `bf859e0`, 2026-10-06; merge fatto dalla
+sessione col sì dell'utente, perché il coordinatore era senza crediti). Le
+caselle sono state guardate in un simulatore
 (iPhone 17e, Expo Go, una pagina di prova con `RunStrip` e `RunGrid`):
 «5:37 /500 m» rimpiccioliva il numero e «Passo med…» e «Letzte 500…»
 venivano tagliati, quindi l'unità è nel nome della casella («Avg /500 m»)

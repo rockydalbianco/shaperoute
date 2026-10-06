@@ -1,6 +1,6 @@
 # TASK-257 — Una corsa rifiutata resta sul telefono, con il motivo
 
-**Stato**: In review
+**Stato**: In review (PR #400)
 **Fase**: 4 · **Branch**: `fix/TASK-257-refused-run-kept`
 
 ## Obiettivo

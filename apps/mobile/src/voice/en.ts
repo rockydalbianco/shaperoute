@@ -97,4 +97,9 @@ export const EN: Phrasebook = {
   rideMiles: (miles, time, speed) =>
     `${units(miles, "mile")}. Time: ${time}. Average speed: ${units(speed, "mile")} per hour.`,
   walkTheBikeFeet: (feet) => `get off and walk the bike for ${feet} feet`,
+  // On the water, the pace of 500 metres (TASK-251).
+  paddleKilometre: (km, time, pace) =>
+    `${units(km, "kilometre")}. Time: ${time}. Average pace: ${pace} per 500 metres.`,
+  paddleMile: (miles, time, pace) =>
+    `${units(miles, "mile")}. Time: ${time}. Average pace: ${pace} per 500 metres.`,
 };

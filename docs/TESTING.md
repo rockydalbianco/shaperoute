@@ -141,6 +141,13 @@ e test dell'app e dei tipi condivisi (job `mobile`) e dell'API (job
 telefono in CI. Una CI complicata su un repository quasi vuoto è solo
 tempo speso a far passare build.
 
+Ogni job ha un tempo massimo (`timeout-minutes`, almeno il doppio del suo
+tempo normale): un job che lo supera fallisce invece di restare appeso.
+Un test Python che dura più di due minuti stampa lo stack di ogni thread
+e prosegue (`faulthandler_timeout` nei `pyproject.toml` dell'API e del
+route-engine): in un job fallito per il tempo, quello stack dice quale
+test si era fermato e dove (TASK-248, ADR-0212).
+
 ## Quando un test non va scritto
 
 Non si testano: i valori costanti, le funzioni che si limitano a chiamarne

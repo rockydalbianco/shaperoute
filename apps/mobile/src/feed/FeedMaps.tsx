@@ -71,7 +71,9 @@ export function forgetFeedMaps() {
 /**
  * The map to lay under `line` drawn by `thumbSegments` in a box `width` ×
  * `height` with `pad`: a picture, or null until `FeedMapShooter` has taken
- * it. Without a map the drawing is as it was, a line on the dark.
+ * it. Without a map the drawing is as it was, a line on the dark. With a
+ * `bearing` the map is turned (TASK-232): it lies under
+ * `turnedLine(line, bearing)`, and is another picture than the one north up.
  */
 export function useFeedMap(
   id: string,
@@ -79,11 +81,12 @@ export function useFeedMap(
   width: number,
   height: number,
   pad: number,
+  bearing: number = 0,
 ): string | null {
-  const key = `${id}:${width}x${height}`;
+  const key = `${id}:${width}x${height}${bearing === 0 ? "" : `@${bearing}`}`;
   const camera = useMemo(
-    () => lineCamera(line, width, height, pad),
-    [line, width, height, pad],
+    () => lineCamera(line, width, height, pad, bearing),
+    [line, width, height, pad, bearing],
   );
   useEffect(() => {
     if (camera !== null) {

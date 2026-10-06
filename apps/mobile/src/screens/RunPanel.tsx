@@ -5,6 +5,12 @@ import { StyleSheet, Text, View } from "react-native";
 import { t } from "../i18n";
 
 import { clockLabel } from "../navigation/freeRun";
+import {
+  isPaddle,
+  PADDLE_PACE_M,
+  PADDLE_PACE_UNIT,
+  per500S,
+} from "../navigation/paddle";
 import { distanceLabel } from "../navigation/phrases";
 import { isRide, speedNumber } from "../navigation/ride";
 import { useRunControl } from "../navigation/runControl";
@@ -32,7 +38,11 @@ import { useUnits } from "../units/useUnits";
  * the metres climbed and the energy. On a bike the speed in km/h takes the
  * place of every pace (TASK-216). With miles (TASK-182) the distance is in
  * miles, the paces are a mile's, the last mile takes the place of the last
- * kilometre and the speed is in mph; the metres climbed stay metres.
+ * kilometre and the speed is in mph; the metres climbed stay metres. On the
+ * water (TASK-251) the speed takes the place of the pace now and of the
+ * average pace, as on a bike, and the pace is a paddler's: the average time
+ * of 500 m and the last 500 m, with miles too, where a run has the last
+ * kilometre and the metres climbed, which a lake does not have.
  */
 
 /** The clock ticks once a second. */
@@ -65,12 +75,17 @@ export type RunNumbers = {
   units: Units;
   /** On a bike (TASK-216): `average`, `recent` and `lastKm` are speeds. */
   ride: boolean;
+  /** On the water (TASK-251): `average` and `recent` are speeds, `lastKm`
+   * is the time of the last whole 500 m. */
+  paddle: boolean;
   /** "5:21", or NO_NUMBER before the pace means anything; on a bike
    * "24.3", in km/h. With miles, a mile's pace and mph. */
   average: string;
   recent: string;
   /** The last whole kilometre or, with miles, the last whole mile. */
   lastKm: string;
+  /** "5:00": the average time of 500 m, a paddler's pace (TASK-251). */
+  pace500: string;
   /** "12:34". */
   time: string;
   /** "42", metres, or NO_NUMBER when the phone gives no height. */
@@ -87,8 +102,9 @@ export type RunNumbers = {
  * The numbers of `track`, again every second while `live`: the GPS is on
  * and the run is not over. The clock waits during the countdown and during
  * a pause, and a run that is over stops it at its last fix. Along a route
- * of `activity` "cycling" the paces are speeds (TASK-216). In the app's
- * units, and again when «Settings» changes them (TASK-182).
+ * of `activity` "cycling" the paces are speeds (TASK-216), and of
+ * "paddling" speeds and a pace of 500 m (TASK-251). In the app's units, and
+ * again when «Settings» changes them (TASK-182).
  */
 export function useRunNumbers(
   track: Track,
@@ -108,14 +124,24 @@ export function useRunNumbers(
   const average = averagePaceS(track, ms);
   const recent = pause === null ? recentPaceS(track, at) : null;
   // Every fix of the run, once per fix and not once per second.
-  // The last whole kilometre; with miles, the last whole mile.
-  const lastKm = useMemo(() => lastKmS(track, metresPer(units)), [track, units]);
+  const ride = isRide(activity);
+  const paddle = isPaddle(activity);
+  // The last whole kilometre; with miles, the last whole mile; on the
+  // water, the last whole 500 m.
+  const lastM = paddle ? PADDLE_PACE_M : metresPer(units);
+  const lastKm = useMemo(() => lastKmS(track, lastM), [track, lastM]);
   const climbed = useMemo(() => climbM(track), [track]);
   const eta = route ? etaMs(route.remainingM, track, ms) : null;
-  const ride = isRide(activity);
   // The seconds of a kilometre or of a mile, as a pace or as a speed.
   const said = (seconds: number | null) =>
-    seconds === null ? NO_NUMBER : ride ? speedNumber(seconds) : paceClock(seconds);
+    seconds === null
+      ? NO_NUMBER
+      : ride || paddle
+        ? speedNumber(seconds)
+        : paceClock(seconds);
+  // A time as it is: the last 500 m, and the average of 500 m.
+  const clock = (seconds: number | null) =>
+    seconds === null ? NO_NUMBER : paceClock(seconds);
   // The track's paces are a kilometre's: with miles, a mile's.
   const perUnit = (secondsPerKm: number | null) =>
     secondsPerKm === null ? null : perUnitS(secondsPerKm, units);
@@ -123,9 +149,11 @@ export function useRunNumbers(
     km: runDistanceNumber(track.distanceM, units),
     units,
     ride,
+    paddle,
     average: said(perUnit(average)),
     recent: said(perUnit(recent)),
-    lastKm: said(lastKm),
+    lastKm: paddle ? clock(lastKm) : said(lastKm),
+    pace500: clock(average === null ? null : per500S(average)),
     time: clockLabel(ms),
     climb: climbed === null ? NO_NUMBER : String(Math.round(climbed)),
     energy: String(kcal(track.distanceM)),
@@ -134,10 +162,15 @@ export function useRunNumbers(
   };
 }
 
-/** The unit of a pace, or on a bike of a speed: "/km" and "km/h" or, with
- * miles, "/mi" and "mph". */
+/** Whether `recent` and `average` are speeds: on a bike and on the water. */
+function speeds(numbers: RunNumbers): boolean {
+  return numbers.ride || numbers.paddle;
+}
+
+/** The unit of a pace, or on a bike and on the water of a speed: "/km" and
+ * "km/h" or, with miles, "/mi" and "mph". */
 function unitOf(numbers: RunNumbers): string {
-  return numbers.ride ? speedUnit(numbers.units) : paceUnit(numbers.units);
+  return speeds(numbers) ? speedUnit(numbers.units) : paceUnit(numbers.units);
 }
 
 /** The name of the last whole kilometre's tile or, with miles, of the last
@@ -157,7 +190,7 @@ export function RunStrip({ numbers }: { numbers: RunNumbers }) {
       <Metric label="Distance" value={numbers.km} unit={numbers.units} lead />
       <View style={styles.divider} />
       <Metric
-        label={numbers.ride ? t("Speed now") : "Pace now"}
+        label={speeds(numbers) ? t("Speed now") : "Pace now"}
         value={numbers.recent}
         unit={unitOf(numbers)}
       />
@@ -226,26 +259,37 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
     <View style={styles.grid}>
       <View style={styles.tiles}>
         <Tile
-          label={numbers.ride ? t("Speed now") : "Pace now"}
+          label={speeds(numbers) ? t("Speed now") : "Pace now"}
           value={numbers.recent}
           unit={unitOf(numbers)}
         />
         <Tile
-          label={numbers.ride ? t("Avg speed") : "Avg pace"}
+          label={speeds(numbers) ? t("Avg speed") : "Avg pace"}
           value={numbers.average}
           unit={unitOf(numbers)}
         />
         <Tile label="Time" value={numbers.time} />
       </View>
-      <View style={styles.tiles}>
-        <Tile
-          label={lastLabel(numbers)}
-          value={numbers.lastKm}
-          unit={unitOf(numbers)}
-        />
-        <Tile label="Elev. gain" value={numbers.climb} unit="m" />
-        <Tile label="Calories" value={numbers.energy} unit="kcal" />
-      </View>
+      {numbers.paddle ? (
+        // On the water: a paddler's pace where a run has the last
+        // kilometre and the metres climbed (TASK-251). Its unit is in the
+        // name: beside the number it made the number smaller.
+        <View style={styles.tiles}>
+          <Tile label={t("Avg /500 m")} value={numbers.pace500} />
+          <Tile label={t("Last 500 m")} value={numbers.lastKm} />
+          <Tile label="Calories" value={numbers.energy} unit="kcal" />
+        </View>
+      ) : (
+        <View style={styles.tiles}>
+          <Tile
+            label={lastLabel(numbers)}
+            value={numbers.lastKm}
+            unit={unitOf(numbers)}
+          />
+          <Tile label="Elev. gain" value={numbers.climb} unit="m" />
+          <Tile label="Calories" value={numbers.energy} unit="kcal" />
+        </View>
+      )}
     </View>
   );
 }

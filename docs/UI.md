@@ -168,7 +168,12 @@ pagine»):
    non arriva la scheda è la linea sul fondo scuro, e senza rete resta
    così. Il credito della mappa non è su ogni foto, che è larga mezzo
    telefono: sta una volta sola sopra le schede, «Maps: OpenFreeMap ©
-   OpenMapTiles · Data from OpenStreetMap». **Niente filtri** (TASK-176,
+   OpenMapTiles · Data from OpenStreetMap». **Un percorso inclinato ha la
+   scheda girata** (TASK-232 parte B2, ADR-0195): la linea e la foto della
+   mappa sotto sono girate dall'altra parte, così il disegno si legge
+   dritto già nell'elenco, come poi sulla mappa; i nomi dei paesi restano
+   dritti. Una scheda che non dice l'inclinazione resta col nord in alto.
+   **Niente filtri** (TASK-176,
    ADR-0144, chiesto dall'utente: «toglimi i filtri, non mi piacciono»):
    fino a TASK-167 sopra le schede c'erano «Shape» e «Distance». Toccata
    una scheda, il percorso si apre sulla
@@ -575,8 +580,9 @@ mappa è quella di prima.
   10 a 30 km. «Explore», «Feed» e la schermata della corsa restano quelli
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
   aperta (`tasks/TASK-190.md`, «Domande aperte»). **Con «Paddle»** cambiano
-  «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»); «Feed» e la schermata
-  della corsa restano quelli della corsa. I quattro disegni sull'acqua di
+  «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»), e dal TASK-251 i
+  numeri della schermata della corsa (sotto, «Velocità e andatura»);
+  «Feed» resta quello della corsa. I quattro disegni sull'acqua di
   «Feed» (TASK-228, sopra) ci sono con ogni sport.
 - **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
   Strava» (il pulsante ufficiale di Strava, TASK-218, come a fine corsa)
@@ -1485,10 +1491,19 @@ confermati dall'utente il 2026-10-06, sulle schermate del simulatore.
 
 Sull'acqua, «Move the shape» con la mappa girata sposta la forma dove va
 il dito sullo schermo; durante l'attesa la forma lasciata resta girata
-com'era. Per ora gira solo la mappa di un percorso **disegnato in «Draw»**
-(anche mentre lo si corre e a fine corsa): gli esempi di «Explore» e le
-loro schede, le corse salvate, il «Feed» e il post restano col nord in
-alto fino ai passi successivi di TASK-232.
+com'era.
+
+**Anche gli esempi di «Explore»** (TASK-232 parte B2): un esempio che il
+motore ha inclinato si apre con la mappa girata e la freccia del nord,
+ogni tessera «A · B · C» con la sua inclinazione, e resta girato mentre lo
+si corre e a fine corsa; spostato con «Move the shape», prende
+l'inclinazione del percorso nuovo. Vale per gli esempi disegnati per un
+posto (le città, i paesi vicini, l'acqua), che portano `rotation_deg`. Non
+lo dicono, e restano col nord in alto: i percorsi del catalogo dell'API,
+gli esempi tenuti sul telefono da prima (finché non vengono ridisegnati),
+gli esempi sull'acqua che arrivano con l'app, i preferiti. Le corse
+salvate, il «Feed» e il post restano col nord in alto fino alla parte C di
+TASK-232.
 
 Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
 riconosce i testi che il motore scrive e li riscrive brevi, con una
@@ -1904,6 +1919,7 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
 | Bici a mano (TASK-206) | «Tra 100 metri, scendi e porta la bici a mano per 200 metri.» · «Risali in bici.» |
 | Penna alzata in bici (TASK-216) | «Lettera finita. Pedala fino alla U: il disegno è in pausa.» |
 | Km in bici, ogni 10 (TASK-216) | «10 chilometri. Tempo: 25 minuti e 10 secondi. Velocità media: 24 chilometri orari.» |
+| Km sull'acqua (TASK-251) | «Un chilometro. Tempo: 12 minuti. Passo medio: 6 minuti ogni 500 metri.» |
 
 **Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi
@@ -2196,6 +2212,26 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   disegnato né per uno di «Explore» o dei preferiti. Si segue la linea:
   il banner dice «Follow the route to the end.», la barra e i km mancanti
   sono quelli della corsa, la voce dice solo i km.
+- **Velocità e andatura** (TASK-251, ADR-0215; unità scelte dall'utente il
+  2026-10-06: km/h e minuti ogni 500 m). Lungo un percorso sull'acqua, e
+  senza percorso con «Paddle» in «Settings» («Paddle without a route»):
+  sotto la mappa «Speed now» in km/h; su «Data» e in pausa «Speed now»,
+  «Avg speed», «Time», poi «Avg /500 m» (l'andatura media, «5:37»: l'unità
+  è nel nome, perché accanto al numero lo rimpiccioliva), «Last 500 m» (il
+  tempo degli ultimi 500 m interi) e «Calories». «Last km» ed
+  «Elev. gain» non ci sono. I parziali sono **ogni 500 m**: «m · /500 m ·
+  Change», le righe «500», «1000», … col loro tempo e la differenza dal
+  precedente; prima, «Your first 500 metres will show here.» Con le miglia
+  la distanza è in miglia e la velocità in mph; andatura e parziali restano
+  ogni 500 m. La voce dice ogni km (con le miglia ogni miglio) col passo
+  medio ogni 500 metri: «1 kilometre. Time: 12 minutes. Average pace: 6
+  minutes per 500 metres.» · «Un chilometro. Tempo: 12 minuti. Passo
+  medio: 6 minuti ogni 500 metri.»; il confronto col km prima è quello
+  della corsa. Il post di fine uscita scrive l'andatura in `/500 m`. In
+  italiano «Med. /500 m», «Ultimi 500 m», «I tuoi primi 500 metri
+  appariranno qui.» (dell'agente, **da confermare**, come tedesco, spagnolo
+  e francese). «My activities» mostra ancora il passo al km (parte B).
+  `src/navigation/paddle.ts`.
 - **«Move the shape»** (TASK-238, ADR-0202; trascinare col dito è una
   scelta dell'utente del 2026-10-05): sotto «Start», quando il percorso
   disegnato è sull'acqua e la risposta dice dov'è la forma (`centre`; con

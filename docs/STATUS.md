@@ -115,23 +115,25 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-06**. **Server**: su `main` `f41eaea` dalle
-  ~07:25Z (ok dell'utente «ok, aggiorna il server», eseguito dalla
-  sessione di TASK-251 al via del coordinatore), con le migrazioni
-  `0001`–`0018` (`0018_route_rotation`: la rotazione nelle corse salvate e
-  nei preferiti), il punto del luogo in `/cities` (TASK-249: Tenna
+- **Server e app, al 2026-10-06**. **Server**: su `main` `d7b490f` dalle
+  ~11:25Z (ok dell'utente «ok server, merge 412», eseguito dal
+  coordinatore), con le migrazioni `0001`–`0019` (`0019_run_posts`: il
+  post della corsa sul server, TASK-258; `0018_route_rotation`: la
+  rotazione nelle corse salvate e nei preferiti), il punto del luogo in `/cities` (TASK-249: Tenna
   [46.015703, 11.264283]), `run_scored` al salvataggio (TASK-247), le
   partenze vicine senza `Pool` (TASK-248 B), `activity` in
   `/me/activities` (TASK-251 B), `rotation_deg` nel catalogo e negli
-  esempi della canoa (TASK-232 C); fermo circa 15 secondi; immagine di
-  prima `shaperoute-api:before-task232c`, copia del database
-  `shaperoute-2026-10-06T0723Z.dump`; `draw_examples` finito («70 of 72»:
+  esempi della canoa (TASK-232 C); fermo circa 10 secondi; immagine di
+  prima `shaperoute-api:before-task258`, copia del database
+  `shaperoute-2026-10-06T1124Z.dump`; `draw_examples` del mattino finito («70 of 72»:
   a Tenna il cuore e a Calceranica il cerchio non si disegnano). Zone del
   telefono: 528 file. Acqua della canoa: 248 file (Ledro dal 2026-10-06,
   TASK-250; l'elenco dei laghi vive nell'app, `lake_catalog.py` è un
   comando offline: il server non ha bisogno di altro). **App** su `preview` da `main`
-  `938c70d` (gruppo `37310f11`, 2026-10-06 ~10:50Z): tutto `main`, fino
-  agli errori che parlano a chi corre (TASK-256), alla corsa rifiutata
+  `2fd7fa1` (gruppo `f062e005`, 2026-10-06 ~11:40Z): tutto `main`, fino
+  alla corsa in italiano (TASK-210 B), al post che resta sul server
+  (TASK-258), a «Open Settings» e «Retry» (TASK-259 A), agli errori che
+  parlano a chi corre (TASK-256), alla corsa rifiutata
   con il motivo (TASK-257), allo schermo acceso in corsa (TASK-255), alle
   dodici correzioni piccole (TASK-254) e a Ledro in «Paddle» (TASK-250).
   **Da provare sull'iPhone.** Strava spento per scelta dell'utente.

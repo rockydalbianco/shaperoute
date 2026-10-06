@@ -1,6 +1,6 @@
 # TASK-128 — Il catalogo seme: le città mancanti, New York e le frasi
 
-**Stato**: In revisione
+**Stato**: Done — in `main` (PR #147, `0a70700e`, 2026-10-01); il seguito è TASK-161 (PR #175, 2026-10-02)
 **Fase**: 4 · **Branch**: `feat/TASK-128-seed-catalog-more`
 
 Seguito di TASK-125 (ADR-0097), chiesto dall'utente il 2026-10-01:

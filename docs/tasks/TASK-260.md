@@ -34,6 +34,14 @@ dell'app nelle cinque lingue. Chiesto dall'utente il 2026-10-06
    `StravaSetting`, `reactionKinds`, `StravaPostRow`,
    `NotificationsSetting`, `PhoneSetting`, `LocationOff`, `PublicParts`) e i test.
 5. `docs/UI.md`, `STATUS.md`, `DECISIONS.md` (ADR-0224).
+6. **Parte B, il logo** (scelta dell'utente: «terrei il cuore sullo
+   sfondo giallo però con scritto muw»): `docs/brand/make_brand.py`
+   genera da `heartLine.ts` e `tokens.ts` l'icona (cuore nero su
+   giallo), `splash-logo-dark.png` (la parola «MuW» nel tratto del
+   vecchio logo), lo splash Android (il cuore), le icone adattive
+   Android (fondo giallo), la favicon e i vettoriali `muw-*.svg`; il
+   fondo dell'icona adattiva in `app.json` diventa giallo; i vecchi
+   `sgrava-*.svg` vanno via.
 
 ## Criteri di accettazione
 
@@ -44,6 +52,11 @@ dell'app nelle cinque lingue. Chiesto dall'utente il 2026-10-06
 - [x] Le tabelle delle cinque lingue non contengono «Sgrava» (punto 4).
 - [x] `tsc`, `expo lint`, Prettier, jest sui file toccati, `ruff`,
       `black` e pytest di `test_strava.py` e `test_run_gpx.py` verdi.
+- [ ] Parte B: l'avvio mostra il cuore e «MuW»; l'icona è il cuore su
+      giallo; l'anteprima è approvata dall'utente prima del merge.
+      Con l'aggiornamento su `preview` (Expo Go) arrivano subito solo
+      la scritta all'avvio e in «salvato»: icona, splash e favicon di
+      `app.json` si vedono solo con una build nativa.
 
 ## File toccati
 
@@ -70,6 +83,10 @@ services/api/tests/test_strava.py
 services/api/tests/test_run_gpx.py
 tools/phone_engine/phone_engine.py
 docs/UI.md · docs/STATUS.md · docs/DECISIONS.md · docs/tasks/TASK-260.md
+— parte B (punto 6):
+apps/mobile/app.json (il fondo dell'icona adattiva)
+apps/mobile/assets/{icon,favicon,splash-logo-dark,splash-icon-dark,android-icon-foreground,android-icon-background,android-icon-monochrome}.png
+docs/brand/make_brand.py · muw-logo.svg · muw-mark.svg (via sgrava-logo.svg, sgrava-mark.svg)
 — dopo la PR #425 (punto 4):
 apps/mobile/src/i18n/{de,es,fr,it}.ts
 apps/mobile/src/paddle/PaddleNotice.tsx · src/paddle/safetyNotice.test.tsx
@@ -86,9 +103,8 @@ apps/mobile/src/screens/NavigateScreen.test.tsx · FreeRunScreen.test.tsx
 
 ## Fuori scope
 
-- **Il logo, il segno e l'icona** (`assets/icon.png`,
-  `splash-logo-dark.png`, `docs/brand/*.svg`): leggono ancora «S» e
-  «SGRAVA». Un segno nuovo è una scelta di prodotto: aspetta l'utente.
+- Il badge di «Draw» (`HeartBadge`) e l'animazione dell'avvio non
+  cambiano: il logo nuovo è fatto di loro.
 - `bundleIdentifier` (`com.lppl1316.sgrava`) e `slug` (`shaperoute`):
   cambiarli cambia l'app sull'App Store e il progetto EAS; non si tocca.
 - Il sito (`site/`, TASK-237) e i documenti (`docs/*`, `CLAUDE.md`), che

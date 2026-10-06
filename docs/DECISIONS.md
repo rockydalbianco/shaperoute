@@ -12207,9 +12207,13 @@ tecnica, non solo una correzione.
    zona deve tenere il percorso vero, non uno vicino. Intera resta anche
    come partenza del percorso, per forza.
 
-**Conseguenze**: con `/nearby-cities` la distanza «km away» e l'ordine dei
-paesi sono misurati dal punto arrotondato, fino a ~700 m di differenza
-(il server misura `away_m` dal punto che riceve). I guard `isApiError` e
+   Il server misura `away_m` dal punto che riceve, fino a ~700 m di
+   differenza: **«km away» e l'ordine dei paesi li misura il telefono** dal
+   punto preciso (`metresBetween`), su richiesta del coordinatore; l'`away_m`
+   del server non si usa.
+
+**Conseguenze**: i paesi tenuti in memoria per quadrato si rimisurano a
+ogni partenza; un posto senza `away_m` non si scarta più. I guard `isApiError` e
 `isRouteJob` accettano codici e stati come stringhe qualsiasi: chi li usa
 ha già un ramo generico. Un profilo nuovo sul server (una forma nuova)
 arriva all'app vecchia senza aggiornarla.

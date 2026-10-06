@@ -54,3 +54,12 @@ test("without the editor the outline is only shown", async () => {
   expect(screen.getByTestId("image-preview")).toBeTruthy();
   expect(screen.queryByText("Edit the outline")).toBeNull();
 });
+
+test("a picture refused after a trace: why, and the outline and the editor stay (TASK-254)", async () => {
+  await shown(edits(), { ...TRACED, problem: { kind: "denied" } });
+  expect(screen.getByText(/The camera is off for this app/)).toBeOnTheScreen();
+  expect(screen.queryByText(/The yellow line is what the route will draw/)).toBeNull();
+  expect(screen.getByTestId("image-preview")).toBeTruthy();
+  expect(screen.getByText("Edit the outline")).toBeOnTheScreen();
+  expect(screen.getByText("Choose another")).toBeOnTheScreen();
+});

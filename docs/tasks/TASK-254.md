@@ -117,8 +117,14 @@ apps/mobile/src/explore/ExploreTools.tsx            (+ test) — dopo TASK-232 B
 apps/mobile/src/explore/useThemedRoute.ts           (+ test) — dopo TASK-232 B2
 apps/mobile/src/explore/nearbyCities.ts             (+ test) — dopo TASK-232 B2
 apps/mobile/src/screens/RunPanel.tsx                (+ test) — dopo TASK-251
-apps/mobile/src/explore/ExploreScreen.test.tsx      (una riga: l'URL di /nearby-cities
-                                                     arrotondato, voce 11)
+apps/mobile/src/explore/ExploreScreen.test.tsx      (due righe: l'URL di /nearby-cities
+                                                     arrotondato e «9.2 km away», voce 11;
+                                                     ok del coordinatore)
+apps/mobile/src/units/shownInMiles.test.tsx         (una riga: il punto di «Trento» a 20 km
+                                                     veri, il telefono misura la distanza)
+apps/mobile/src/route/ImageChoice.tsx               (+ test) — voce 2: il problema di una
+                                                     foto negata al posto della nota, con il
+                                                     contorno sotto; ok del coordinatore
 docs/STATUS.md, docs/DECISIONS.md                   (le righe di questo task)
 ```
 
@@ -149,16 +155,20 @@ Scelte tecniche in ADR-0218. Note:
   di ogni percorso. `engine/zones.ts` non cambia.
 - **7 e 11, `/nearby-cities`**: il server cerca già nel quadrato di due
   decimali (`CELL_DECIMALS`), quindi lo stesso quadrato; ma misura
-  `away_m` e l'ordine dal punto che riceve: «km away» può differire fino a
-  ~700 m da prima. Detto al coordinatore.
+  `away_m` dal punto che riceve, fino a ~700 m di differenza. Su richiesta
+  del coordinatore **«km away» e l'ordine dei paesi li misura il telefono**
+  dal punto preciso (`metresBetween`, `measured` in `nearbyCities.ts`);
+  l'`away_m` del server non si usa, e un posto senza non si scarta. I
+  paesi tenuti in memoria per quadrato si rimisurano a ogni partenza.
 - **6, lo stato del job**: uno stato sconosciuto è lavoro in corso, detto
   a `onStatus` come «computing». La svolta sconosciuta diventa «straight»
   prima dei controlli, solo in `requestRoute`: `api/routeDirections.ts`
   (non di questo task) resta stretto.
 - **2, lo schermo**: lo stato «traced» porta `problem?` quando la scelta
   di un'altra foto fallisce; contorno e ritocchi restano (test del hook).
-  Perché il problema **si veda** serve una riga in `route/ImageChoice.tsx`
-  (caso «traced» di `ImageNote`), file libero ma non elencato qui: chiesto
-  al coordinatore.
+  Perché il problema **si veda**, `route/ImageChoice.tsx` (caso «traced» di
+  `ImageNote`) mostra il riquadro rosso al posto della nota gialla, con il
+  contorno e «Edit the outline» sotto; aggiunto ai file con l'ok del
+  coordinatore. Nessun testo nuovo: sono i testi di `imageProblemText`.
 - **12**: il test è in `screens/useNow.test.ts`, file nuovo, perché
   `RunPanel.test.tsx` è fra i file più grandi (partenza fredda in CI).

@@ -154,7 +154,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   tutte e due; un 5xx di un proxy durante l'attesa del percorso è perdonato
   come un errore di rete (tre di fila no); forma, svolta, stato o codice
   d'errore nuovi di un server più nuovo non rifiutano la risposta; la
-  posizione va a Photon e a `/nearby-cities` con due decimali (circa 1 km),
+  posizione va a Photon e a `/nearby-cities` con due decimali (circa 1 km;
+  «km away» e l'ordine dei paesi li misura il telefono dal punto preciso),
   a `/phone-zones` intera (il server sceglie la zona con 3 km di margine
   attorno al punto: arrotondato, ai bordi cambierebbe zona); il disegno di
   una corsa lunga da condividere non sparisce; di due città chieste in

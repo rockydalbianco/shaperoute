@@ -1,8 +1,9 @@
 # TASK-208 — Pubblicare una corsa in stile Strava
 
-**Stato**: In lavorazione — parte A (l'API) fatta il 2026-10-03; parte B
-(l'app) in PR #425 dal 2026-10-06, con le proposte confermate dall'utente:
-aspetta il merge e la prova sull'iPhone
+**Stato**: Done — parte A (l'API) in `main` dal 2026-10-03 (#268), parte
+B (l'app) in `main` dal 2026-10-06 (#425, merge `f6fcdacd`), con le
+proposte e i testi confermati dall'utente. Aperta solo la prova
+sull'iPhone, dopo la pubblicazione
 **Fase**: 4 · **Branch**: `feat/TASK-208-publish-api` (parte A),
 `feat/TASK-208-publish-app` (parte B)
 **Dipende da**: TASK-117 (fatto), TASK-211 (parte A per la nostra A, parte

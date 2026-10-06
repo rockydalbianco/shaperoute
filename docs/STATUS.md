@@ -358,9 +358,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   mentre altri vedono la corsa, dopo il disegno; il disegno prima di
   Strava; il disegno aperto con foto, descrizione, attività e i nomi
   taggati che aprono il profilo; 24 testi in cinque lingue. Test verdi
-  (338 file), `typecheck`, `lint`, `format:check` puliti. **Aspetta il
-  merge** (CI) e la **prova sull'iPhone** con l'utente; niente da
-  aggiornare sul server. Da dove riprendere: `tasks/TASK-208.md`, «Esito».
+  (338 file), `typecheck`, `lint`, `format:check` puliti. **In `main`
+  dal 2026-10-06** (merge `f6fcdacd`, CI 5/5; i 24 testi confermati
+  dall'utente in tabella). Da pubblicare (coordinatore); niente da
+  aggiornare sul server. **Resta la prova sull'iPhone** con l'utente. Da
+  dove riprendere: `tasks/TASK-208.md`, «Esito».
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).

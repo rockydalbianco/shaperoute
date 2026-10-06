@@ -574,8 +574,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   this run: {message}», «Try again» e «Discard» dopo un sì. Il telefono
   tiene al più 20 corse non mandate **per account** e non ne butta più
   nessuna: «Save» della ventunesima dice che è pieno e la corsa in corso
-  resta. Otto testi nuovi nelle cinque lingue, da confermare
-  dall'utente prima del merge. Solo app. `tasks/TASK-257.md`.
+  resta. Otto testi nuovi nelle cinque lingue, confermati
+  dall'utente. Merge #400 (`7da5a8a0`) il 2026-10-06; solo app, la
+  pubblicazione è del coordinatore. `tasks/TASK-257.md`.
 - **App** — TASK-253: la navigazione non salta avanti e riprende dove era
   (ADR-0217; dalla revisione del codice dell'app del 2026-10-06). Dove il
   percorso ripassa dallo stesso punto entro 300 m la posizione resta sul

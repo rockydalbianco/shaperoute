@@ -1,6 +1,6 @@
 # TASK-257 — Una corsa rifiutata resta sul telefono, con il motivo
 
-**Stato**: In review (PR #400)
+**Stato**: Done
 **Fase**: 4 · **Branch**: `fix/TASK-257-refused-run-kept`
 
 ## Obiettivo
@@ -105,4 +105,6 @@ chiama `clearRun()` solo quando `record` riesce, e a telefono pieno
 (la prova «a run the API will never take stops waiting» diceva il
 comportamento di prima) e un test nuovo `RunEnd.test.tsx`. Due testi a
 telefono pieno invece di uno: senza corse rifiutate non c'è niente da
-scartare. Testi da confermare dall'utente.
+scartare. Testi confermati dall'utente il 2026-10-06; merge della PR #400
+(`7da5a8a0`) lo stesso giorno. Solo app: la pubblicazione è del
+coordinatore.

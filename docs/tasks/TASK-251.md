@@ -1,6 +1,6 @@
 # TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m
 
-**Stato**: In lavorazione — parte A (l'uscita in corso e la sua fine) in `main` dalla #383 (`bf859e0`, 2026-10-06), pubblicata su `preview` (gruppo `1924575c`); parte B («My activities») in PR
+**Stato**: In lavorazione — parte A (l'uscita in corso e la sua fine) in `main` dalla #383 (`bf859e0`, 2026-10-06), pubblicata su `preview` (gruppo `1924575c`); parte B («My activities») in `main` dalla #394 (`c99b8c8`, 2026-10-06); aspettano il server (ok dell'utente) e la prova sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-251-paddle-speed-pace`
 **Dipende da**: TASK-191 (i percorsi sull'acqua), TASK-216 (la velocità
 in bici, `navigation/ride.ts`), TASK-182 (km o miglia)
@@ -109,6 +109,7 @@ apps/mobile/src/api/activities.ts                (righe: `activity?`)
 apps/mobile/src/activities/activityText.ts       (righe: runFacts)
 apps/mobile/src/activities/paddleFacts.test.ts   (nuovo)
 apps/mobile/src/share/postRun.ts                 (righe: postOfActivity)
+apps/mobile/src/screens/RunPanel.tsx             (una riga: import inutilizzato della A)
 docs/API.md
 ```
 
@@ -127,7 +128,8 @@ docs/API.md
 
 ## Esito
 
-Parte A in `main` (#383, merge `bf859e0`, 2026-10-06; merge fatto dalla
+Parte B in `main` (#394, merge `c99b8c8`, 2026-10-06, terza nella coda del
+coordinatore dopo #388 e #392). Parte A in `main` (#383, merge `bf859e0`, 2026-10-06; merge fatto dalla
 sessione col sì dell'utente, perché il coordinatore era senza crediti). Le
 caselle sono state guardate in un simulatore
 (iPhone 17e, Expo Go, una pagina di prova con `RunStrip` e `RunGrid`):

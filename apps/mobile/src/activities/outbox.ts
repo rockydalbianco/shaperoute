@@ -1,4 +1,4 @@
-import type { DrawingChoice } from "../api/drawings";
+import { choiceFrom, type DrawingChoice } from "../api/drawings";
 import { keptList } from "../storage/keptList";
 import type { RecordedRun } from "./recordedRun";
 
@@ -27,8 +27,8 @@ export type Waiting = RecordedRun & {
   owner: number;
   /** Once the API has the run, it goes on to Strava (strava/stravaOutbox.ts). */
   strava?: ToStrava;
-  /** Once the API has the run, its title and «Public» go too
-   * (social/drawingOutbox.ts, TASK-117). */
+  /** Once the API has the run, what was chosen for its drawing goes too
+   * (social/drawingOutbox.ts, TASK-117, TASK-208). */
   drawing?: DrawingChoice;
   /** The API will not take it: it stays on the phone, not sent again,
    * until it is discarded or tried again (TASK-257). */
@@ -61,20 +61,10 @@ export function toStravaOf(run: Waiting): ToStrava | null {
   return { name: typeof name === "string" && name !== "" ? name : null };
 }
 
-/** The title and «Public» chosen before «Save»; null when nothing was. */
+/** What was chosen for the drawing before «Save» (a choice of before
+ * TASK-208, title and «Public», made whole); null when nothing was. */
 export function toDrawingOf(run: Waiting): DrawingChoice | null {
-  const drawing: unknown = run.drawing;
-  if (typeof drawing !== "object" || drawing === null) {
-    return null;
-  }
-  const { title, public: on } = drawing as Record<string, unknown>;
-  if (typeof on !== "boolean") {
-    return null;
-  }
-  return {
-    title: typeof title === "string" && title !== "" ? title : null,
-    public: on,
-  };
+  return choiceFrom(run.drawing);
 }
 
 /** Why the API will not take the run; null while it waits to be sent. */

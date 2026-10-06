@@ -147,17 +147,39 @@ function signedIn() {
 /** The API's answer to a choice: the choice itself, as it keeps it. */
 function kept(key: string) {
   return (init?: RequestInit) => {
-    const { title, public: on } = JSON.parse(String(init?.body)) as {
+    const { title, visibility, description, activity } = JSON.parse(
+      String(init?.body),
+    ) as {
       title: string | null;
-      public: boolean;
+      visibility: "everyone" | "followers" | "only_me";
+      description: string | null;
+      activity: string;
     };
+    const on = visibility !== "only_me";
     return Response.json({
       key,
       id: drawing.id,
       title,
-      public: on,
+      public: visibility === "everyone",
       published_at: on ? "2026-10-03T09:00:00Z" : null,
+      visibility,
+      description,
+      activity,
+      tags: [],
+      photos: [],
     });
+  };
+}
+
+/** The body of a choice: every field, as the app sends it. */
+function choice(over: Record<string, unknown>) {
+  return {
+    title: null,
+    visibility: "only_me",
+    description: null,
+    activity: "running",
+    tags: [],
+    ...over,
   };
 }
 
@@ -251,7 +273,7 @@ afterEach(() => {
 
 // --- The end of a run ---
 
-test("«Public» starts off; on, «Save» publishes the run with its title", async () => {
+test("«Who can see it» starts at «Only me»; «Everyone», and «Save» publishes the run with its title", async () => {
   signedIn();
   api({
     ...ACCOUNT,
@@ -259,16 +281,18 @@ test("«Public» starts off; on, «Save» publishes the run with its title", asy
     [`PUT ${RUN_DRAWING}`]: kept(KEY),
   });
   await openOnRun(ENDED);
-  const off = await screen.findByRole("switch", { name: "Public", checked: false });
+  expect(
+    await screen.findByRole("radio", { name: "Only me", checked: true }),
+  ).toBeOnTheScreen();
   expect(
     screen.queryByText(
-      "Others see it in your profile, without the first and last 200 m.",
+      "Every member sees it in your profile, without the first and last 200 m.",
     ),
   ).toBeNull();
-  await fireEvent.press(off);
+  await fireEvent.press(screen.getByRole("radio", { name: "Everyone" }));
   expect(
     screen.getByText(
-      "Others see it in your profile, without the first and last 200 m.",
+      "Every member sees it in your profile, without the first and last 200 m.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByLabelText("Title").props.placeholder).toBe("Give it a name");
@@ -285,7 +309,9 @@ test("«Public» starts off; on, «Save» publishes the run with its title", asy
     ([input, init]) => String(input).endsWith(RUN_DRAWING) && init?.method === "PUT",
   );
   expect(putDrawing).toBeGreaterThan(putRun);
-  expect(bodyOf("PUT", RUN_DRAWING)).toEqual({ title: "Sunday heart", public: true });
+  expect(bodyOf("PUT", RUN_DRAWING)).toEqual(
+    choice({ title: "Sunday heart", visibility: "everyone" }),
+  );
   await waitFor(() => expect(loadDrawingOutbox()).toEqual([]));
   expect(loadOutbox()).toEqual([]);
 });
@@ -313,7 +339,7 @@ test("without an account, the line says runs are kept and shared", async () => {
       "Sign up or log in to keep your runs and share them as drawings.",
     ),
   ).toBeOnTheScreen();
-  expect(screen.queryByRole("switch", { name: "Public" })).toBeNull();
+  expect(screen.queryByRole("radio", { name: "Everyone" })).toBeNull();
 });
 
 // --- Without a network ---
@@ -329,7 +355,7 @@ test("saved without a network, the run goes public at the next opening, with its
       request: { ...activityRequest, shape: null },
       strava: { name: "Lunch heart" },
       drawing: { title: "Lunch heart", public: true },
-    } as Waiting,
+    } as unknown as Waiting,
   ]);
   api({
     ...ACCOUNT,
@@ -340,7 +366,9 @@ test("saved without a network, the run goes public at the next opening, with its
   });
   await open();
   await waitFor(() => expect(calls("PUT", RUN_DRAWING)).toHaveLength(1));
-  expect(bodyOf("PUT", RUN_DRAWING)).toEqual({ title: "Lunch heart", public: true });
+  expect(bodyOf("PUT", RUN_DRAWING)).toEqual(
+    choice({ title: "Lunch heart", visibility: "everyone" }),
+  );
   expect(bodyOf("POST", `/me/activities/${KEY}/strava`)).toEqual({
     name: "Lunch heart",
   });
@@ -357,7 +385,7 @@ test("a run waiting to go public says so in «My activities»", async () => {
       owner: session.user.id,
       request: { ...activityRequest, shape: null },
       drawing: { title: null, public: true },
-    } as Waiting,
+    } as unknown as Waiting,
   ]);
   api({
     ...ACCOUNT,
@@ -373,7 +401,7 @@ test("a run waiting to go public says so in «My activities»", async () => {
     await screen.findByText("1 run is on this phone, waiting for a connection."),
   ).toBeOnTheScreen();
   expect(
-    screen.getByText("Saved on the phone. It goes public when you are back online."),
+    screen.getByText("Saved on the phone. Others see it when you are back online."),
   ).toBeOnTheScreen();
 });
 
@@ -391,25 +419,24 @@ test("on a run of «My activities», «Public» publishes it and the title chang
       }),
     [`PUT ${STAR_DRAWING}`]: kept(STAR.id),
   });
-  await fireEvent.press(
-    await screen.findByRole("switch", { name: "Public", checked: false }),
-  );
+  await fireEvent.press(await screen.findByRole("radio", { name: "Everyone" }));
   expect(
-    await screen.findByRole("switch", { name: "Public", checked: true }),
+    await screen.findByRole("radio", { name: "Everyone", checked: true }),
   ).toBeOnTheScreen();
-  expect(bodyOf("PUT", STAR_DRAWING)).toEqual({ title: null, public: true });
+  expect(bodyOf("PUT", STAR_DRAWING)).toEqual(choice({ visibility: "everyone" }));
   expect(
-    screen.getByText("Public in your profile, without the first and last 200 m."),
+    screen.getByText(
+      "Every member sees it in your profile, without the first and last 200 m.",
+    ),
   ).toBeOnTheScreen();
 
   const title = screen.getByLabelText("Title");
   await fireEvent.changeText(title, "Star of Trento");
   await fireEvent(title, "endEditing");
   await waitFor(() => expect(calls("PUT", STAR_DRAWING)).toHaveLength(2));
-  expect(bodyOf("PUT", STAR_DRAWING, 1)).toEqual({
-    title: "Star of Trento",
-    public: true,
-  });
+  expect(bodyOf("PUT", STAR_DRAWING, 1)).toEqual(
+    choice({ title: "Star of Trento", visibility: "everyone" }),
+  );
   // Typing over, nothing new: no call.
   await fireEvent(screen.getByLabelText("Title"), "endEditing");
   expect(calls("PUT", STAR_DRAWING)).toHaveLength(2);
@@ -429,16 +456,18 @@ test("without a network the choice waits on the phone, and says so", async () =>
       throw new TypeError("Network request failed");
     },
   });
-  await fireEvent.press(
-    await screen.findByRole("switch", { name: "Public", checked: false }),
-  );
+  await fireEvent.press(await screen.findByRole("radio", { name: "Everyone" }));
   expect(
     await screen.findByText(
-      "Saved on the phone. It goes public when you are back online.",
+      "Saved on the phone. Others see it when you are back online.",
     ),
   ).toBeOnTheScreen();
   expect(loadDrawingOutbox()).toEqual([
-    { owner: session.user.id, key: STAR.id, title: "Star", public: true },
+    {
+      owner: session.user.id,
+      key: STAR.id,
+      ...choice({ title: "Star", visibility: "everyone" }),
+    },
   ]);
 });
 
@@ -457,14 +486,12 @@ test("a run too short to publish says why", async () => {
         status: 422,
       }),
   });
-  await fireEvent.press(
-    await screen.findByRole("switch", { name: "Public", checked: false }),
-  );
+  await fireEvent.press(await screen.findByRole("radio", { name: "Everyone" }));
   expect(
     await screen.findByText("This run is too short to publish."),
   ).toBeOnTheScreen();
   expect(
-    screen.getByRole("switch", { name: "Public", checked: false }),
+    await screen.findByRole("radio", { name: "Only me", checked: true }),
   ).toBeOnTheScreen();
   expect(loadDrawingOutbox()).toEqual([]);
 });
@@ -472,7 +499,7 @@ test("a run too short to publish says why", async () => {
 test("an API without drawings shows no «Public» on a run", async () => {
   await openStar({});
   await waitFor(() => expect(calls("GET", STAR_DRAWING)).toHaveLength(1));
-  expect(screen.queryByRole("switch", { name: "Public" })).toBeNull();
+  expect(screen.queryByRole("radio", { name: "Everyone" })).toBeNull();
 });
 
 test("a public run is marked in «My activities»", async () => {

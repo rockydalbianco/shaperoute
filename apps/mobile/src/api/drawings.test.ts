@@ -1,20 +1,35 @@
 import drawing from "@shaperoute/shared-types/fixtures/drawing.json";
-import request from "@shaperoute/shared-types/fixtures/drawing-request.json";
+import detail from "@shaperoute/shared-types/fixtures/drawing-details.json";
+import photoRequest from "@shaperoute/shared-types/fixtures/drawing-photo-request.json";
+import request from "@shaperoute/shared-types/fixtures/drawing-request-details.json";
 import drawings from "@shaperoute/shared-types/fixtures/drawings.json";
 import myDrawing from "@shaperoute/shared-types/fixtures/my-drawing.json";
+import myDetails from "@shaperoute/shared-types/fixtures/my-drawing-details.json";
+import type { DrawingPhoto, MyDrawing } from "@shaperoute/shared-types";
 
 import { answers, apiError } from "../account/testing";
 import {
+  choiceFrom,
+  choiceOf,
+  descriptionOf,
+  type DrawingChoice,
+  drawingPhotoSource,
   drawingProblem,
   fetchDrawing,
   fetchMyDrawing,
   fetchMyDrawings,
   fetchUserDrawings,
+  isChosen,
   isDrawing,
   isDrawingDetail,
   isDrawingsPage,
   isMyDrawing,
+  isSeen,
+  NOT_CHOSEN,
+  removeDrawingPhoto,
+  sameChoice,
   saveDrawing,
+  saveDrawingPhoto,
   titleOf,
   worthAgain,
 } from "./drawings";
@@ -25,12 +40,29 @@ const KEY = "7c2e91a4b05d3f68";
 const AUTH = { Authorization: `Bearer ${TOKEN}` };
 const options = (fetchFn: jest.Mock) => ({ fetchFn, key: null });
 
+const MY_DETAILS = myDetails as MyDrawing;
+
+/** The choice of the API's example with details. */
+const CHOSEN: DrawingChoice = {
+  title: "Sunday heart by the river",
+  description: "Legs heavy after the bridge.\nThe heart came out round all the same.",
+  activity: "running",
+  tags: [
+    { public_id: "3b9d2e10-7c4a-4f8e-a1d6-5e2f9c0b7a44", username: "adam.trento" },
+  ],
+  visibility: "followers",
+};
+
 test("the examples of the API are what the app reads", () => {
   expect(isMyDrawing(myDrawing)).toBe(true);
+  expect(isMyDrawing(myDetails)).toBe(true);
   expect(isMyDrawing({ ...myDrawing, id: null, title: null, public: false })).toBe(
     true,
   );
   expect(isMyDrawing({ ...myDrawing, public: "yes" })).toBe(false);
+  expect(isMyDrawing({ ...myDetails, visibility: "friends" })).toBe(false);
+  expect(isMyDrawing({ ...myDetails, tags: [{ public_id: 1 }] })).toBe(false);
+  expect(isMyDrawing({ ...myDetails, photos: [{ n: 1 }] })).toBe(false);
   expect(isDrawingsPage(drawings)).toBe(true);
   expect(isDrawing(drawings.drawings[0])).toBe(true);
   // A run without a route: no score.
@@ -39,15 +71,72 @@ test("the examples of the API are what the app reads", () => {
   );
   expect(isDrawing({ ...drawings.drawings[0], track_preview: [[46]] })).toBe(false);
   expect(isDrawingDetail(drawing)).toBe(true);
+  expect(isDrawingDetail(detail)).toBe(true);
   expect(isDrawingDetail({ ...drawing, author: null })).toBe(false);
-  // The body of the choice: both fields, nothing else.
-  expect(Object.keys(request).sort()).toEqual(["public", "title"]);
+  // The body of the choice: every field, nothing else.
+  expect(Object.keys(request).sort()).toEqual([
+    "activity",
+    "description",
+    "tags",
+    "title",
+    "visibility",
+  ]);
 });
 
-test("a title loses the spaces around it, and empty is none", () => {
+test("a title or a description loses the spaces around it, and empty is none", () => {
   expect(titleOf("  Sunday heart  ")).toBe("Sunday heart");
   expect(titleOf("   ")).toBeNull();
   expect(titleOf("")).toBeNull();
+  expect(descriptionOf(" Heavy legs.\nRound heart. ")).toBe(
+    "Heavy legs.\nRound heart.",
+  );
+  expect(descriptionOf(" \n ")).toBeNull();
+});
+
+test("the choice as the API keeps it, and as an API before TASK-208 kept it", () => {
+  expect(choiceOf(MY_DETAILS)).toEqual(CHOSEN);
+  expect(choiceOf(myDrawing as MyDrawing)).toEqual({
+    ...NOT_CHOSEN,
+    title: "Sunday heart by the river",
+    visibility: "everyone",
+  });
+  expect(choiceOf({ ...(myDrawing as MyDrawing), public: false })).toEqual({
+    ...NOT_CHOSEN,
+    title: "Sunday heart by the river",
+  });
+});
+
+test("a choice read from a file of the phone is made whole", () => {
+  expect(choiceFrom(CHOSEN)).toEqual(CHOSEN);
+  expect(choiceFrom({ title: "Heart", public: true })).toEqual({
+    ...NOT_CHOSEN,
+    title: "Heart",
+    visibility: "everyone",
+  });
+  expect(choiceFrom({ title: "", public: false })).toEqual(NOT_CHOSEN);
+  expect(choiceFrom({ title: "Heart" })).toBeNull();
+  expect(choiceFrom({ ...CHOSEN, activity: "flying" })).toBeNull();
+  // A tag that is not one is left out, the rest stays.
+  expect(choiceFrom({ ...CHOSEN, tags: [{ name: "adam" }] })).toEqual({
+    ...CHOSEN,
+    tags: [],
+  });
+  expect(choiceFrom(null)).toBeNull();
+});
+
+test("something chosen is worth a drawing; nothing chosen is not", () => {
+  expect(isChosen(NOT_CHOSEN)).toBe(false);
+  expect(isChosen({ ...NOT_CHOSEN, title: "Heart" })).toBe(true);
+  expect(isChosen({ ...NOT_CHOSEN, description: "Hard." })).toBe(true);
+  expect(isChosen({ ...NOT_CHOSEN, activity: "cycling" })).toBe(true);
+  expect(isChosen({ ...NOT_CHOSEN, tags: CHOSEN.tags })).toBe(true);
+  expect(isChosen({ ...NOT_CHOSEN, visibility: "followers" })).toBe(true);
+  expect(isSeen("everyone")).toBe(true);
+  expect(isSeen("followers")).toBe(true);
+  expect(isSeen("only_me")).toBe(false);
+  expect(sameChoice(CHOSEN, { ...CHOSEN })).toBe(true);
+  expect(sameChoice(CHOSEN, { ...CHOSEN, tags: [] })).toBe(false);
+  expect(sameChoice(CHOSEN, { ...CHOSEN, description: null })).toBe(false);
 });
 
 test("the choice for a run is asked with the token", async () => {
@@ -59,15 +148,9 @@ test("the choice for a run is asked with the token", async () => {
   expect(init).toMatchObject({ method: "GET", headers: AUTH });
 });
 
-test("the choice goes whole, both fields every time", async () => {
-  const fetchFn = answers({ status: 200, body: myDrawing });
-  const outcome = await saveDrawing(
-    URL,
-    TOKEN,
-    KEY,
-    { title: "Sunday heart by the river", public: true },
-    options(fetchFn),
-  );
+test("the choice goes whole, every field every time, the tags as public ids", async () => {
+  const fetchFn = answers({ status: 200, body: myDetails });
+  const outcome = await saveDrawing(URL, TOKEN, KEY, CHOSEN, options(fetchFn));
   expect(outcome.kind).toBe("ok");
   const [url, init] = fetchFn.mock.calls[0];
   expect(url).toBe(`http://api/me/activities/${KEY}/drawing`);
@@ -78,10 +161,47 @@ test("the choice goes whole, both fields every time", async () => {
     status: 200,
     body: { ...myDrawing, title: null, public: false },
   });
-  await saveDrawing(URL, TOKEN, KEY, { title: null, public: false }, options(off));
+  await saveDrawing(URL, TOKEN, KEY, NOT_CHOSEN, options(off));
   expect(JSON.parse(String(off.mock.calls[0][1]?.body))).toEqual({
     title: null,
-    public: false,
+    visibility: "only_me",
+    description: null,
+    activity: "running",
+    tags: [],
+  });
+});
+
+test("a photo goes to its place and comes back as the drawing; a place is emptied with DELETE", async () => {
+  const fetchFn = answers({ status: 200, body: myDetails }, { status: 204 });
+  const outcome = await saveDrawingPhoto(
+    URL,
+    TOKEN,
+    KEY,
+    2,
+    photoRequest.image,
+    options(fetchFn),
+  );
+  expect(outcome).toEqual({ kind: "ok", value: myDetails });
+  const [url, init] = fetchFn.mock.calls[0];
+  expect(url).toBe(`http://api/me/activities/${KEY}/drawing/photos/2`);
+  expect(init).toMatchObject({ method: "PUT", headers: AUTH });
+  expect(JSON.parse(String(init?.body))).toEqual(photoRequest);
+
+  expect(await removeDrawingPhoto(URL, TOKEN, KEY, 2, options(fetchFn))).toEqual({
+    kind: "ok",
+    value: null,
+  });
+  expect(fetchFn.mock.calls[1][0]).toBe(
+    `http://api/me/activities/${KEY}/drawing/photos/2`,
+  );
+  expect(fetchFn.mock.calls[1][1]).toMatchObject({ method: "DELETE", headers: AUTH });
+});
+
+test("a photo on the API is shown from its address, with the token", () => {
+  const photo = MY_DETAILS.photos?.[0] as DrawingPhoto;
+  expect(drawingPhotoSource(URL, TOKEN, photo)).toEqual({
+    uri: `http://api${photo.url}`,
+    headers: AUTH,
   });
 });
 

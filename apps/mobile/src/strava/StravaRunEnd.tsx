@@ -15,8 +15,10 @@ type Props = {
 /**
  * «Send to Strava» at the end of a run (TASK-187), over «Save» and
  * «Discard»: nothing when the API has no Strava; «Connect with Strava»
- * before the athlete is connected; then the switch. The name the activity
- * takes on Strava is the run's «Title», above it (TASK-117).
+ * before the athlete is connected; then the switch. The activity on Strava
+ * takes the run's «Title» as its name (TASK-117), and from the drawing its
+ * description and what it was, Run, Ride or StandUpPaddling (TASK-208);
+ * the photos never go, Strava's API takes none.
  */
 export function StravaRunEnd({ strava, send, onSend }: Props) {
   const { status, busy, problem } = strava;

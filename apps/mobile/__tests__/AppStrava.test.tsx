@@ -272,7 +272,10 @@ test("connected, «Save» sends the run to Strava with the title typed", async (
   const [, drawn] = calls("PUT", DRAWING_PATH)[0];
   expect(JSON.parse(String(drawn?.body))).toEqual({
     title: "Sunday heart",
-    public: false,
+    visibility: "only_me",
+    description: null,
+    activity: "running",
+    tags: [],
   });
   // Nothing left waiting, for the API nor for Strava.
   await waitFor(() => expect(loadStravaOutbox()).toEqual([]));

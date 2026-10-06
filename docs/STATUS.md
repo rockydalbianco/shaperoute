@@ -346,8 +346,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (`public` sì/no) continua a funzionare: i campi nuovi assenti restano
   come sono. Non sul server: vuole la migrazione, l'ok dell'utente e la
   stima dello spazio delle foto (`tasks/TASK-208.md`, «Note per il
-  deploy»). Poi **B** (l'app), dopo la conferma delle proposte del task
-  file. Da dove riprendere: `tasks/TASK-208.md`.
+  deploy»). Il server ha la `0014` dal 2026-10-06 (`d7b490f1`).
+  **Parte B, l'app** (2026-10-06, PR #425; le sei proposte del task file
+  **confermate dall'utente**, e il suo sì ai file fuori elenco e a
+  `expo-image-manipulator`): a fine corsa e sulla corsa aperta in «My
+  activities» il modulo come su Strava (foto fino a tre, «Title», «How did
+  it go?», «Tag people» con la ricerca di TASK-215, «Activity» dallo sport
+  di «Settings», «Who can see it» con «Only me» a ogni corsa); la scelta
+  intera in una sola (`DrawingChoice`), i file di prima letti ancora; le
+  foto sul telefono (un file per foto, ridotte a 1080 px) e all'API solo
+  mentre altri vedono la corsa, dopo il disegno; il disegno prima di
+  Strava; il disegno aperto con foto, descrizione, attività e i nomi
+  taggati che aprono il profilo; 24 testi in cinque lingue. Test verdi
+  (338 file), `typecheck`, `lint`, `format:check` puliti. **Aspetta il
+  merge** (CI) e la **prova sull'iPhone** con l'utente; niente da
+  aggiornare sul server. Da dove riprendere: `tasks/TASK-208.md`, «Esito».
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).

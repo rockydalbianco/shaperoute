@@ -58,7 +58,15 @@ function fill(): void {
     keepWaiting(run("a", owner));
     keepWaiting(run("b", owner));
     keepForStrava({ owner, key: "a", name: null });
-    keepForDrawing({ owner, key: "a", title: "Heart", public: true });
+    keepForDrawing({
+      owner,
+      key: "a",
+      title: "Heart",
+      description: null,
+      activity: "running",
+      tags: [],
+      visibility: "everyone",
+    });
   }
 }
 

@@ -946,6 +946,40 @@ export const ES: Table = {
     "Permítela a Sgrava en Ajustes para seguir la ruta.",
   "Allow it for Sgrava in Settings to record your track.":
     "Permítela a Sgrava en Ajustes para grabar tu recorrido.",
+  // src/activities/RunEnd.tsx, src/social/PublicParts.tsx, PublicRow.tsx,
+  // DrawingCard.tsx (TASK-208)
+  "This run could not be kept on the phone. Try again.":
+    "Esta carrera no se ha podido guardar en el teléfono. Inténtalo de nuevo.",
+  "Save to My activities": "Guardar en Mis actividades",
+  Tagged: "Etiquetados",
+  "{name}'s profile": "Perfil de {name}",
+  "Photo {n}": "Foto {n}",
+  "Photos of a run only you can see stay on this phone. Delete the app or change phone and they are gone.":
+    "Las fotos de una carrera que solo ves tú se quedan en este teléfono. Si borras la app o cambias de teléfono, se pierden.",
+  "Its photos leave Sgrava and stay only on this phone.":
+    "Sus fotos salen de Sgrava y se quedan solo en este teléfono.",
+  "Every member sees it in your profile, without the first and last 200 m.":
+    "Todos los miembros la ven en tu perfil, sin los primeros y últimos 200 m.",
+  "Your followers see it in your profile, without the first and last 200 m.":
+    "Tus seguidores la ven en tu perfil, sin los primeros y últimos 200 m.",
+  "Saved on the phone. It is sent when you are back online.":
+    "Guardada en el teléfono. Se envía cuando vuelvas a estar en línea.",
+  "Saved on the phone. Others see it when you are back online.":
+    "Guardada en el teléfono. Los demás la ven cuando vuelvas a estar en línea.",
+  Bike: "Bici",
+  Paddle: "Remo",
+  Title: "Título",
+  "Give it a name": "Ponle un nombre",
+  "How did it go?": "¿Cómo ha ido?",
+  Activity: "Actividad",
+  Everyone: "Todos",
+  "Only me": "Solo yo",
+  "Who can see it": "Quién puede verla",
+  "Tag people": "Etiquetar personas",
+  "Remove photo {n}": "Quitar la foto {n}",
+  "Add photo": "Añadir foto",
+  "This photo could not be kept on the phone. Try again.":
+    "Esta foto no se ha podido guardar en el teléfono. Inténtalo de nuevo.",
 
   // «Explore»: src/explore/* (TASK-210, parte C)
   "ASK FOR A ROUTE": "PIDE UNA RUTA",

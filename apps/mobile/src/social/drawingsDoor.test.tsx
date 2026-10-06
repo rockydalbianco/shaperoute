@@ -5,6 +5,7 @@ import { act, renderHook } from "@testing-library/react-native";
 
 import { answers, apiError } from "../account/testing";
 import type { Account } from "../account/useAccount";
+import { type DrawingChoice, NOT_CHOSEN } from "../api/drawings";
 import { loadDrawingOutbox, sendWaitingDrawings } from "./drawingOutbox";
 import { useDrawingsOf } from "./drawingsDoor";
 
@@ -61,8 +62,8 @@ function account(over: Partial<Account> = {}): Account {
   };
 }
 
-const ON = { title: "Heart", public: true };
-const OFF = { title: "Heart", public: false };
+const ON: DrawingChoice = { ...NOT_CHOSEN, title: "Heart", visibility: "everyone" };
+const OFF: DrawingChoice = { ...NOT_CHOSEN, title: "Heart" };
 
 beforeEach(() => {
   files.clear();

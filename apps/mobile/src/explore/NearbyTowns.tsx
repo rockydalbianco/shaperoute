@@ -117,6 +117,7 @@ export function NearbyTowns({
                 key={town.label}
                 width={card}
                 line={route?.preview ?? null}
+                rotationDeg={route?.rotation_deg}
                 title={name}
                 detail={
                   route === null && sample.status !== "failed"

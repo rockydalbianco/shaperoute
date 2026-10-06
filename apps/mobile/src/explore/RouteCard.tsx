@@ -5,6 +5,8 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { type Camera, lineCamera } from "../feed/feedMapPage";
 import { useFeedMap } from "../feed/FeedMaps";
 import { MAP_CREDIT } from "../feed/FeedPost";
+import { turnedLine } from "../feed/turnedLine";
+import { bearingOf } from "../map/turnedMap";
 import {
   color,
   fontSize,
@@ -78,6 +80,12 @@ type Props = {
   /** Lays the map of its streets under the line, as in «Feed» (TASK-174). */
   map?: boolean;
   /**
+   * How far the route's shape is turned, counterclockwise
+   * (`RouteResult.rotation_deg`): the line and its map are turned the other
+   * way, so the drawing reads upright (TASK-232). Without it, north up.
+   */
+  rotationDeg?: number | null;
+  /**
    * Opens the route; without it the card is not a button. A tap opens it, a
    * swipe that ends over the card does not (TASK-196).
    */
@@ -94,7 +102,8 @@ type Props = {
  * its picture is taken (TASK-174): the pictures are those of «Feed»
  * (TASK-162), taken by its page. Who shows cards with `map` shows
  * `CardMapsCredit` beside them. A finger that slides over a card has not
- * touched it (TASK-196, `useTapNotSwipe`).
+ * touched it (TASK-196, `useTapNotSwipe`). A route whose shape is turned is
+ * drawn turned back, as the map shows it once opened (TASK-232).
  */
 export function RouteCard({
   width,
@@ -104,19 +113,24 @@ export function RouteCard({
   detail,
   match,
   map = false,
+  rotationDeg,
   onPress,
   accessibilityLabel,
 }: Props) {
   const height = cardDrawingHeight(width);
+  const bearing = bearingOf(rotationDeg);
   const mapped = map && line !== null ? line : NO_LINE;
   const framing = useMemo(
-    () => framingName(lineCamera(mapped, width, height, DRAWING_PAD)),
-    [mapped, width, height],
+    () => framingName(lineCamera(mapped, width, height, DRAWING_PAD, bearing)),
+    [mapped, width, height, bearing],
   );
-  const picture = useFeedMap(framing, mapped, width, height, DRAWING_PAD);
+  const picture = useFeedMap(framing, mapped, width, height, DRAWING_PAD, bearing);
   const segments = useMemo(
-    () => (line === null ? [] : thumbSegments(line, width, height, DRAWING_PAD, gaps)),
-    [line, width, height, gaps],
+    () =>
+      line === null
+        ? []
+        : thumbSegments(turnedLine(line, bearing), width, height, DRAWING_PAD, gaps),
+    [line, bearing, width, height, gaps],
   );
   const tap = useTapNotSwipe(onPress);
   const body = (

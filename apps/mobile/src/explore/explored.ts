@@ -15,6 +15,7 @@ import {
   fetchRecommendedRoute,
   type RecommendedRoute,
   type RecommendedRouteDetail,
+  turnOf,
 } from "./recommendedRoutes";
 
 /** A route of "Explore" opened on the map. */
@@ -72,6 +73,8 @@ export function optionsOf(
       route_m: one.route_m,
       similarity: one.similarity,
       start: one.points[0],
+      // Each route of the choice is turned as its own drawing (TASK-232).
+      rotation_deg: turnOf(one).rotation_deg,
     };
     return [{ route: shown, detail: one, request, result: toResult(one) }];
   });
@@ -115,6 +118,8 @@ export function toResult(
     directions: [],
     word: detail.word,
     ...(detail.walks !== undefined ? { walks: detail.walks } : {}),
+    // Turned, the map turns the other way (TASK-232).
+    ...turnOf(detail),
     // An example on the water says where its shape is (TASK-244).
     ...(detail.centre !== undefined ? { centre: detail.centre } : {}),
   };

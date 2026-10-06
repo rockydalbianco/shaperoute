@@ -10,9 +10,10 @@ shows it.
 
 They are OpenStreetMap's `place=city`, `place=town` and `place=village`,
 through Geoapify's Places API with the key of the place search (places.py):
-for a city or a town, the same points and the same labels GET /cities gives
-for those names, so a town tapped here and the same town typed are one
-city, with the same examples kept (route_store.py). The service is asked
+the same points and the same labels GET /cities gives for those names (a
+village too, since TASK-249: a place's point is this one, ADR-0213), so a
+town tapped here and the same town typed are one city, with the same
+examples kept (route_store.py). The service is asked
 from the middle of a square of about 1 km, not from the user's own
 position, and the answer is kept a day.
 """
@@ -31,7 +32,7 @@ from fastapi import APIRouter, FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from route_engine.geo import haversine_m
 
-from shaperoute_api.cities import city_label, result_point
+from shaperoute_api.cities import place_label, result_point
 from shaperoute_api.places import Fetch, PlacesUnavailableError, fetch_json
 from shaperoute_api.route_store import RouteStore
 from shaperoute_api.schemas import ErrorBody
@@ -124,8 +125,7 @@ def parse_towns(body: Any) -> list[Town]:
         if not isinstance(properties, dict):
             continue
         point = result_point(properties)
-        # The town's own name: `city` is the municipality around a village.
-        label = city_label({**properties, "city": properties.get("name")})
+        label = place_label(properties)
         if point is None or label is None or label in towns:
             continue
         towns[label] = Town(label, point, population_of(properties))

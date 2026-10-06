@@ -19,6 +19,7 @@ import { kmAnnouncement } from "./freeRun";
 import { comparisonOf } from "./kmCompare";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
 import { moveOnFoot, startOnFoot } from "./onFootVoice";
+import { isPaddle, paddleAnnouncement } from "./paddle";
 import { movePen, startPen } from "./penUp";
 import { announceMOf, isRide, rideAnnouncement, saidKmOf } from "./ride";
 import { controlRun, runControl, type RunSession } from "./runControl";
@@ -68,8 +69,10 @@ export function play(cues: Cue[]): void {
  * ahead, and its end, without pausing the recording (TASK-206). A route of
  * `activity` "cycling" is followed by bike (TASK-216): turns said further
  * ahead, the kilometres every RIDE_KM_EVERY with the average speed, and the
- * way between the letters ridden. After the kilometres the voice says how
- * they went against those before (TASK-217, `kmCompare`).
+ * way between the letters ridden. On the water (`activity` "paddling") each
+ * kilometre is said with the average pace of 500 m (TASK-251). After the
+ * kilometres the voice says how they went against those before (TASK-217,
+ * `kmCompare`).
  * Each fix is said in the voice's language of that moment (TASK-209), so a
  * change on «Data» is heard at once, and in the units «Settings» has at
  * that moment (TASK-182): with miles each mile, on a bike every
@@ -130,7 +133,7 @@ export function useNavigation(
       let pen = startPen(started.navigation.along, walked, word, activity);
       let bike = startOnFoot(started.navigation.along, onFootOf(points, onFoot));
       // A route stopped lately goes on with its track (trackStore).
-      const recorder = startRun(points, Date.now(), similarity, walked);
+      const recorder = startRun(points, Date.now(), similarity, walked, activity);
       stopRecording = recorder.stop;
       // A run that goes on does not say again the kilometres it has said;
       // with miles, the miles (TASK-182).
@@ -234,7 +237,9 @@ export function useNavigation(
             saidKm = km;
             const said = isRide(activity)
               ? rideAnnouncement(km, track, language, units)
-              : kmAnnouncement(km, track, language, units);
+              : isPaddle(activity)
+                ? paddleAnnouncement(km, track, language, units)
+                : kmAnnouncement(km, track, language, units);
             play([{ say: said, vibrate: false }]);
             // Then how it went against the one before (TASK-217).
             const compared = comparisonOf(km, track, activity, language, units);

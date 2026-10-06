@@ -128,8 +128,8 @@ In coda, dopo o accanto:
   `shaperoute-2026-10-06T0723Z.dump`; `draw_examples` finito («70 of 72»:
   a Tenna il cuore e a Calceranica il cerchio non si disegnano). Zone del
   telefono: 528 file. Acqua della canoa: 248 file (Ledro dal 2026-10-06,
-  TASK-250). **Manca sul server** Ledro nell'elenco dei laghi dell'API
-  (#406): aspetta l'ok dell'utente. **App** su `preview` da `main`
+  TASK-250; l'elenco dei laghi vive nell'app, `lake_catalog.py` è un
+  comando offline: il server non ha bisogno di altro). **App** su `preview` da `main`
   `938c70d` (gruppo `37310f11`, 2026-10-06 ~10:50Z): tutto `main`, fino
   agli errori che parlano a chi corre (TASK-256), alla corsa rifiutata
   con il motivo (TASK-257), allo schermo acceso in corsa (TASK-255), alle

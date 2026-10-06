@@ -336,7 +336,8 @@ dalla #378, `44f17c8`, il 2026-10-06; ADR-0195 «Parte B»):
   foto-mappa. La pubblicazione dell'app la fa il coordinatore.
 
 **Parte B2, «Explore» con la mappa girata** (2026-10-06, sola app, in
-`main` dalla #384, `b2d7662`; ADR-0195 «Parte B2»):
+`main` dalla #384, `b2d7662`, pubblicata su `preview` da `cdb50bb`, gruppo
+`8429fea6`; ADR-0195 «Parte B2»):
 
 - **L'esempio aperto**: un esempio che il motore ha inclinato si apre con
   la mappa girata e la freccia del nord; ogni tessera «A · B · C» la sua

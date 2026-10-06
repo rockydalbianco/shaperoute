@@ -294,7 +294,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   («Explore»: l'esempio aperto, la sua corsa e le schede, che usano le
   foto-mappa del «Feed»), poi la C; il server ha già la parte A.
   **Parte B2** (sola app, in `main` dalla #384, `b2d7662`, il
-  2026-10-06; la pubblica il coordinatore): un esempio di «Explore» che il motore ha
+  2026-10-06; pubblicata su `preview` dal coordinatore lo stesso giorno,
+  da `cdb50bb`, gruppo `8429fea6`): un esempio di «Explore» che il motore ha
   inclinato si apre con la mappa girata e la freccia del nord, ogni
   tessera la sua inclinazione, e resta girato in corsa e a fine corsa; la
   sua scheda è girata allo stesso modo, linea e foto-mappa. Lo dicono gli

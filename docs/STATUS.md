@@ -761,7 +761,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   coordinatore. Provato nel simulatore con il telefono sugli Stati Uniti
   («Phone units — Miles», `out/task182/`). **Da fare sull'iPhone**:
   ascoltare la voce in miglia; un iPhone vero con le miglia. **Parte E**
-  (2026-10-07, branch `feat/TASK-182-e-draw-metres`, ADR-0149
+  (2026-10-07, PR #436, branch `feat/TASK-182-e-draw-metres`, ADR-0149
   «aggiornamento (parte E)»): la distanza di «Draw» la tiene `App.tsx`
   con `useDrawDistance` (`src/units/`), come testo scritto o metri scelti
   dall'app («Try», lago piccolo), sempre nell'unità dell'app, e

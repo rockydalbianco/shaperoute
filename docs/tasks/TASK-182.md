@@ -549,7 +549,7 @@ la parte E, sotto).
 
 ### Parte E — la distanza di «Draw» tenuta in `App.tsx` (2026-10-07)
 
-**Stato**: Done (in revisione fino al merge) · branch
+**Stato**: Done (in revisione fino al merge) · PR #436, branch
 `feat/TASK-182-e-draw-metres`, da `main` `aea84e4` · ADR-0149
 «aggiornamento (parte E)». Assegnata dal coordinatore il 2026-10-07, senza
 numero nuovo, in parallelo con TASK-210 parte E (file diversi).

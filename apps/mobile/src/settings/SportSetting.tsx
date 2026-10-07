@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -29,7 +30,7 @@ export function SportSetting({ sports = SPORTS }: Props) {
   };
   return (
     <View style={styles.section}>
-      <Text style={styles.label}>SPORT</Text>
+      <Text style={styles.label}>{t("SPORT")}</Text>
       <View style={styles.menu} accessibilityRole="radiogroup">
         {sports.map((option, at) => (
           <View key={option.id}>
@@ -40,22 +41,24 @@ export function SportSetting({ sports = SPORTS }: Props) {
                 onPress={() => choose(option.id)}
                 accessibilityRole="radio"
                 // One name for the row: the emoji is not read on its own.
-                accessibilityLabel={option.name}
+                accessibilityLabel={t(option.name)}
                 accessibilityState={{ checked: option.id === chosen }}
               >
                 <Text style={styles.emoji}>{option.emoji}</Text>
-                <Text style={styles.rowText}>{option.name}</Text>
+                <Text style={styles.rowText}>{t(option.name)}</Text>
                 {option.id === chosen && <Text style={styles.check}>✓</Text>}
               </Pressable>
             ) : (
               <View
                 style={styles.row}
                 accessible
-                accessibilityLabel={`${option.name}, coming soon`}
+                accessibilityLabel={t("{sport}, coming soon", {
+                  sport: t(option.name),
+                })}
               >
                 <Text style={styles.emoji}>{option.emoji}</Text>
-                <Text style={styles.rowText}>{option.name}</Text>
-                <Text style={styles.soon}>Soon</Text>
+                <Text style={styles.rowText}>{t(option.name)}</Text>
+                <Text style={styles.soon}>{t("Soon")}</Text>
               </View>
             )}
           </View>

@@ -475,8 +475,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   parola, la foto e il contorno, 101 testi nuovi
   (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`; testi
   approvati dall'utente il 2026-10-06, PR #421 (merge `438c019`); C e D in
-  `main` e su «preview» (gruppo `65620103`). Restano la fine corsa,
-  «Sport», `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). L'utente ha
+  `main` e su «preview» (gruppo `65620103`). **Parte E — la fine corsa,
+  «Sport» e la voce di «Dati»** fatta il 2026-10-07 (branch
+  `feat/TASK-210-e-run-end-sport`, PR #433): i messaggi di `api/drawings.ts` in
+  `t()`, i nomi degli sport con `tLater` e mostrati tradotti, la riga e il
+  foglio della voce, 16 testi nuovi, test
+  `settings/SportVoiceItalian.test.tsx`; testi approvati dall'utente il
+  2026-10-07. Restano i titoli in `App.tsx`, i
+  nomi delle forme, i nomi sulla mappa e «Start here», «Help» in de/es/fr,
+  «Paddle ·» nel feed (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:

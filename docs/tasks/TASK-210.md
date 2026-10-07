@@ -3,7 +3,9 @@
 **Stato**: In corso
 **Fase**: 4 · **Branch**: `feat/TASK-210-app-language` (parte A),
 `feat/TASK-210-run-screens` (parte B, la corsa), `feat/TASK-210-explore`
-(parte C, «Explore»), `feat/TASK-210-draw` (parte D, «Draw»)
+(parte C, «Explore»), `feat/TASK-210-draw` (parte D, «Draw»),
+`feat/TASK-210-e-run-end-sport` (parte E, la fine corsa, «Sport» e la
+voce)
 
 ## Obiettivo
 
@@ -168,6 +170,21 @@ docs/DECISIONS.md
 docs/STATUS.md
 ```
 
+Parte E (la fine corsa, «Sport», la voce di «Dati»):
+
+```
+apps/mobile/src/i18n/de.ts, it.ts, es.ts, fr.ts   (voci aggiunte in fondo)
+apps/mobile/src/api/drawings.ts
+apps/mobile/src/settings/SportSetting.tsx
+apps/mobile/src/settings/SportButton.tsx
+apps/mobile/src/settings/sport.ts
+apps/mobile/src/settings/SportVoiceItalian.test.tsx   (nuovo)
+apps/mobile/src/voice/VoiceSetting.tsx
+docs/tasks/TASK-210.md
+docs/DECISIONS.md
+docs/STATUS.md
+```
+
 ## Fuori scope
 
 - Le frasi dette dalla voce: TASK-209.
@@ -263,3 +280,39 @@ fine corsa di TASK-208 (`RunEnd.tsx`,
 inglese e italiano: «Herz», «cœur» vanno all'AI), i nomi sulla mappa
 forzati in italiano (`mapStyle.ts`) e «Start here» nella pagina della
 mappa (`mapPage.ts`), «Help» in de/es/fr.
+
+**Parte E — la fine corsa, «Sport» e la voce** (2026-10-07, assegnata
+dal coordinatore con `main` a `aea84e4`; branch
+`feat/TASK-210-e-run-end-sport`, PR #433, in parallelo con TASK-182 parte E, che
+tiene `App.tsx`). **La fine corsa** era già quasi tutta in `t()`:
+TASK-208 B (#425) aveva scritto i suoi testi di `RunEnd`, `PublicParts`
+e `PublicRow` già tradotti. Restavano i messaggi di `api/drawings.ts`
+(nessuna connessione, la sessione scaduta, la corsa non più fra le
+attività): ora passano da `t()`, con traduzioni che c'erano già (quelle
+di Strava). **«Sport»** (`SportSetting`, `SportButton`, `sport.ts`): i
+nomi degli sport restano inglesi in `SPORTS`, marcati con `tLater`, e si
+mostrano con `t(name)`, con le parole delle schede «Activity» della fine
+corsa («Corsa», «Bici», «Pagaia»); tradotti anche l'etichetta «SPORT»,
+«Soon», quello che legge VoiceOver sul pulsante dello sport e sul suo
+menu. **La voce di «Dati»** (`voice/VoiceSetting.tsx`): la riga, «Listen»,
+il foglio con «Language», «App language», «Voice», «Default», le due note
+(telefono senza voci, lingua senza voce), «Enhanced» con il nome che usa
+iOS in ogni lingua («Migliorata», «Erweitert», «Mejorada», «Améliorée»),
+«Done». I nomi delle lingue restano ognuno nel suo («Deutsch» anche
+nella frase italiana), i nomi delle voci come li dà il telefono. **16
+testi nuovi** nelle quattro tabelle, in fondo; «Run», «Bike», «Paddle»,
+«Close», «Language», «Voice», «Done» e i tre messaggi di `drawings.ts`
+erano già tradotti. Test: `settings/SportVoiceItalian.test.tsx` («Sport»
+in «Settings» e nel menu, «In arrivo», la voce di «Dati» con «Voce» spenta
+e accesa, i messaggi di `drawingProblem`). **Non tradotti, di
+proposito**: il messaggio `invalid_request` dell'API (le parole del
+server, fuori scope) e «Paddle ·» dei post d'esempio del feed
+(`feed/FeedPost.tsx`, `PADDLE`), che legge il nome inglese di `SPORTS`:
+fuori dai file di questa parte, resta un seguito. **Testi approvati
+dall'utente** il 2026-10-07 («va bene procedi»); la pubblicazione su
+«preview» è del coordinatore.
+
+**Dopo la parte E restano**: i titoli delle pagine in `App.tsx` (dopo
+TASK-182 parte E), i nomi delle forme in «Draw» e sulle schede di
+«Explore», i nomi sulla mappa (`mapStyle.ts`) e «Start here»
+(`mapPage.ts`), «Help» in de/es/fr, «Paddle ·» nel feed.

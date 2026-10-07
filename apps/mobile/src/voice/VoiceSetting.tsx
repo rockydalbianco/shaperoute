@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
+import { t } from "../i18n";
 import { type Language, LANGUAGES } from "../i18n/languages";
 import { useLanguage } from "../i18n/useLanguage";
 import { useRunControl } from "../navigation/runControl";
@@ -83,7 +84,7 @@ export function VoiceSetting() {
 
   const now = speaking(choice, app, voices);
   const voiceName =
-    voices?.find((each) => each.identifier === now.options.voice)?.name ?? "Default";
+    voices?.find((each) => each.identifier === now.options.voice)?.name ?? t("Default");
   const summary = `${nameOf(now.language)} · ${voiceName}`;
 
   function listen() {
@@ -100,8 +101,11 @@ export function VoiceSetting() {
           void loadVoices().then(setVoices);
         }}
         accessibilityRole="button"
-        accessibilityLabel={`Voice language and voice: ${nameOf(now.language)}, ${voiceName}`}
-        accessibilityHint="Changes the language and the voice"
+        accessibilityLabel={t("Voice language and voice: {language}, {voice}", {
+          language: nameOf(now.language),
+          voice: voiceName,
+        })}
+        accessibilityHint={t("Changes the language and the voice")}
       >
         <Text style={styles.choiceText} numberOfLines={1}>
           {summary}
@@ -131,8 +135,10 @@ function ListenButton({ on, onPress }: { on: boolean; onPress: () => void }) {
       onPress={onPress}
       disabled={!on}
       accessibilityRole="button"
-      accessibilityLabel="Listen"
-      accessibilityHint={on ? "Says a turn with this voice" : "Turn on Voice to listen"}
+      accessibilityLabel={t("Listen")}
+      accessibilityHint={
+        on ? t("Says a turn with this voice") : t("Turn on Voice to listen")
+      }
       accessibilityState={{ disabled: !on }}
     >
       <View style={styles.play} />
@@ -188,7 +194,7 @@ function VoiceSheet({ open, onClose, choice, app, voices, on, onListen }: SheetP
         style={StyleSheet.absoluteFill}
         onPress={onClose}
         accessibilityRole="button"
-        accessibilityLabel="Close"
+        accessibilityLabel={t("Close")}
       />
       <View
         style={[
@@ -197,14 +203,14 @@ function VoiceSheet({ open, onClose, choice, app, voices, on, onListen }: SheetP
         ]}
       >
         <ScrollView contentContainerStyle={styles.lists}>
-          <Text style={styles.heading}>Language</Text>
+          <Text style={styles.heading}>{t("Language")}</Text>
           <View
             style={styles.group}
             accessibilityRole="radiogroup"
-            accessibilityLabel="Language"
+            accessibilityLabel={t("Language")}
           >
             <Option
-              label="App language"
+              label={t("App language")}
               detail={nameOf(app)}
               checked={choice.language === "app"}
               onPress={() => chooseLanguage("app")}
@@ -219,24 +225,26 @@ function VoiceSheet({ open, onClose, choice, app, voices, on, onListen }: SheetP
               />
             ))}
           </View>
-          <Text style={styles.heading}>Voice</Text>
+          <Text style={styles.heading}>{t("Voice")}</Text>
           {voices !== null && voices.length === 0 && (
             <Text style={styles.note}>
-              This phone did not list its voices: its own voice speaks.
+              {t("This phone did not list its voices: its own voice speaks.")}
             </Text>
           )}
           {now.language !== wanted && (
             <Text style={styles.note}>
-              {`This phone has no ${nameOf(wanted)} voice: the voice speaks English.`}
+              {t("This phone has no {language} voice: the voice speaks English.", {
+                language: nameOf(wanted),
+              })}
             </Text>
           )}
           <View
             style={styles.group}
             accessibilityRole="radiogroup"
-            accessibilityLabel="Voice"
+            accessibilityLabel={t("Voice")}
           >
             <Option
-              label="Default"
+              label={t("Default")}
               checked={now.options.voice === undefined}
               onPress={() => chooseVoice(null)}
             />
@@ -247,7 +255,7 @@ function VoiceSheet({ open, onClose, choice, app, voices, on, onListen }: SheetP
                 label={voice.name}
                 detail={
                   voice.quality === Speech.VoiceQuality.Enhanced
-                    ? `${voice.language} · Enhanced`
+                    ? t("{language} · Enhanced", { language: voice.language })
                     : voice.language
                 }
                 checked={now.options.voice === voice.identifier}
@@ -263,12 +271,12 @@ function VoiceSheet({ open, onClose, choice, app, voices, on, onListen }: SheetP
             disabled={!on}
             accessibilityRole="button"
             accessibilityState={{ disabled: !on }}
-            accessibilityHint={on ? undefined : "Turn on Voice to listen"}
+            accessibilityHint={on ? undefined : t("Turn on Voice to listen")}
           >
-            <Text style={styles.actionText}>Listen</Text>
+            <Text style={styles.actionText}>{t("Listen")}</Text>
           </Pressable>
           <Pressable style={styles.action} onPress={onClose} accessibilityRole="button">
-            <Text style={styles.actionText}>Done</Text>
+            <Text style={styles.actionText}>{t("Done")}</Text>
           </Pressable>
         </View>
       </View>

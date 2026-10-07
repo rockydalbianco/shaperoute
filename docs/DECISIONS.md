@@ -8167,6 +8167,22 @@ in de/es/fr il segnaposto suggerisce parole («Herz, Stern, Pferd…») che
 aquí», fr «Départ ici»): la parte di `mapPage.ts` chiamerà così «Start
 here».
 
+**Aggiunta** (2026-10-07, TASK-210 parte E, la fine corsa, «Sport» e la
+voce; deciso dall'agente su delega dell'utente): (1) i nomi degli sport
+restano inglesi in `SPORTS` (`sport.ts`), marcati con `tLater`, e si
+traducono dove si mostrano, con le stesse chiavi delle schede «Activity»
+della fine corsa: lo sport di «Settings» e quello del post si chiamano
+allo stesso modo («Corsa», «Bici», «Pagaia»). Chi legge `name` senza
+`t()` (oggi `FeedPost`, «Paddle ·») vede l'inglese, come prima. (2) Nel
+foglio della voce i nomi delle lingue restano ognuno nel suo, anche
+dentro una frase tradotta («non ha una voce per Deutsch»): sono gli
+stessi nomi delle righe da toccare. «Enhanced» si traduce con la parola
+di iOS in quella lingua; i nomi delle voci e i codici («it-IT») restano
+come li dà il telefono. (3) I messaggi di `drawingProblem` passano da
+`t()`, compresa la sessione scaduta (`t(SESSION_ENDED)`, come in
+`account/messages.ts`); il messaggio `invalid_request` resta quello
+dell'API, in inglese.
+
 ## ADR-0173 — Seguire con richiesta, l'API: una tabella `follows` con due stati, la ricerca per nome, gli elenchi solo propri
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-211, parte A), dentro due **scelte dell'utente** del 2026-10-03:

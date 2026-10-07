@@ -1055,4 +1055,24 @@ export const IT: Table = {
   "e.g. a romantic heart, famous places, food 8 km":
     "es. un cuore romantico, posti famosi, cibo 8 km",
   "e.g. a romantic heart in {city}, 8 km": "es. un cuore romantico a {city}, 8 km",
+  // «Sport»: src/settings/{SportSetting,SportButton}.tsx, sport.ts, and the voice
+  // of «Data»: src/voice/VoiceSetting.tsx (TASK-210, parte E)
+  SPORT: "SPORT",
+  Soon: "In arrivo",
+  "{sport}, coming soon": "{sport}, in arrivo",
+  "Sport, {sport}": "Sport, {sport}",
+  "Changes the sport": "Cambia lo sport",
+  Sport: "Sport",
+  Default: "Predefinita",
+  "Voice language and voice: {language}, {voice}": "Lingua e voce: {language}, {voice}",
+  "Changes the language and the voice": "Cambia la lingua e la voce",
+  Listen: "Ascolta",
+  "Says a turn with this voice": "Annuncia una svolta con questa voce",
+  "Turn on Voice to listen": "Attiva «Voce» per ascoltare",
+  "App language": "Lingua dell'app",
+  "This phone did not list its voices: its own voice speaks.":
+    "Questo telefono non ha elencato le sue voci: parla la sua voce predefinita.",
+  "This phone has no {language} voice: the voice speaks English.":
+    "Questo telefono non ha una voce per {language}: la voce parla inglese.",
+  "{language} · Enhanced": "{language} · Migliorata",
 };

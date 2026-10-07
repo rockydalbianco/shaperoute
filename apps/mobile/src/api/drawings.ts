@@ -14,6 +14,7 @@ import type {
 import { ACTIVITIES, VISIBILITIES } from "@shaperoute/shared-types";
 
 import { accountProblem, SESSION_ENDED } from "../account/messages";
+import { t } from "../i18n";
 import { type AccountOutcome, ask, authHeaders } from "./accounts";
 
 /**
@@ -316,18 +317,18 @@ export function drawingProblem(outcome: AccountOutcome<unknown>): string | null 
     return null;
   }
   if (outcome.kind === "unreachable") {
-    return "No connection. Try again when you are online.";
+    return t("No connection. Try again when you are online.");
   }
   if (outcome.kind === "api_error") {
     if (outcome.code === "session_expired" || outcome.code === "not_signed_in") {
-      return SESSION_ENDED;
+      return t(SESSION_ENDED);
     }
     // The API's own words: a title too long, a run too short to publish.
     if (outcome.code === "invalid_request") {
       return outcome.message;
     }
     if (outcome.code === "http_error") {
-      return "This run is no longer in your activities.";
+      return t("This run is no longer in your activities.");
     }
   }
   return accountProblem(outcome);

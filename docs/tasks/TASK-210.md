@@ -308,7 +308,9 @@ e accesa, i messaggi di `drawingProblem`). **Non tradotti, di
 proposito**: il messaggio `invalid_request` dell'API (le parole del
 server, fuori scope) e «Paddle ·» dei post d'esempio del feed
 (`feed/FeedPost.tsx`, `PADDLE`), che legge il nome inglese di `SPORTS`:
-fuori dai file di questa parte, resta un seguito.
+fuori dai file di questa parte, resta un seguito. **Testi approvati
+dall'utente** il 2026-10-07 («va bene procedi»); la pubblicazione su
+«preview» è del coordinatore.
 
 **Dopo la parte E restano**: i titoli delle pagine in `App.tsx` (dopo
 TASK-182 parte E), i nomi delle forme in «Draw» e sulle schede di

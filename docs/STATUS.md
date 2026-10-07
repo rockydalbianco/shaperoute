@@ -478,7 +478,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `feat/TASK-210-e-run-end-sport`, PR #433): i messaggi di `api/drawings.ts` in
   `t()`, i nomi degli sport con `tLater` e mostrati tradotti, la riga e il
   foglio della voce, 16 testi nuovi, test
-  `settings/SportVoiceItalian.test.tsx`. Restano i titoli in `App.tsx`, i
+  `settings/SportVoiceItalian.test.tsx`; testi approvati dall'utente il
+  2026-10-07. Restano i titoli in `App.tsx`, i
   nomi delle forme, i nomi sulla mappa e «Start here», «Help» in de/es/fr,
   «Paddle ·» nel feed (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare

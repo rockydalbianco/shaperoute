@@ -14,6 +14,7 @@ import type {
 import { ACTIVITIES, VISIBILITIES } from "@shaperoute/shared-types";
 
 import { accountProblem, SESSION_ENDED } from "../account/messages";
+import { t } from "../i18n";
 import { type AccountOutcome, ask, authHeaders } from "./accounts";
 
 /**
@@ -316,7 +317,7 @@ export function drawingProblem(outcome: AccountOutcome<unknown>): string | null 
     return null;
   }
   if (outcome.kind === "unreachable") {
-    return "No connection. Try again when you are online.";
+    return t("No connection. Try again when you are online.");
   }
   if (outcome.kind === "api_error") {
     if (outcome.code === "session_expired" || outcome.code === "not_signed_in") {
@@ -327,7 +328,7 @@ export function drawingProblem(outcome: AccountOutcome<unknown>): string | null 
       return outcome.message;
     }
     if (outcome.code === "http_error") {
-      return "This run is no longer in your activities.";
+      return t("This run is no longer in your activities.");
     }
   }
   return accountProblem(outcome);

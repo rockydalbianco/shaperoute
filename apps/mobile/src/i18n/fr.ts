@@ -1059,4 +1059,32 @@ export const FR: Table = {
   "e.g. a romantic heart, famous places, food 8 km":
     "ex. un cœur romantique, lieux célèbres, gastronomie 8 km",
   "e.g. a romantic heart in {city}, 8 km": "ex. un cœur romantique à {city}, 8 km",
+
+  // App.tsx (TASK-210: the titles of the three pages)
+  Feed: "Fil",
+  Draw: "Dessiner",
+  Explore: "Explorer",
+
+  // src/settings/sport.ts, SportSetting.tsx, SportButton.tsx (TASK-210)
+  SPORT: "SPORT",
+  Sport: "Sport",
+  Soon: "Bientôt",
+  "{name}, coming soon": "{name}, bientôt disponible",
+  "Sport, {name}": "Sport, {name}",
+  "Changes the sport": "Change le sport",
+
+  // src/voice/VoiceSetting.tsx (TASK-210)
+  Default: "Par défaut",
+  "Voice language and voice: {language}, {voice}":
+    "Langue de la voix et voix : {language}, {voice}",
+  "Changes the language and the voice": "Change la langue et la voix",
+  Listen: "Écouter",
+  "Says a turn with this voice": "Dit un virage avec cette voix",
+  "Turn on Voice to listen": "Active Voix pour écouter",
+  "App language": "Langue de l'app",
+  "This phone did not list its voices: its own voice speaks.":
+    "Ce téléphone n'a pas listé ses voix : c'est sa propre voix qui parle.",
+  "This phone has no {language} voice: the voice speaks English.":
+    "Ce téléphone n'a pas de voix pour {language} : la voix parle anglais.",
+  "{tag} · Enhanced": "{tag} · Améliorée",
 };

@@ -51,6 +51,7 @@ import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
 import { PhoneEngineView } from "./src/engine/PhoneEngineView";
 import { usePhoneZones } from "./src/engine/usePhoneZones";
 import { ZoneNotice } from "./src/engine/ZoneNotice";
+import { t } from "./src/i18n";
 import { useLanguage } from "./src/i18n/useLanguage";
 import { MapView } from "./src/map/MapView";
 import { NorthArrow } from "./src/map/NorthArrow";
@@ -1044,7 +1045,7 @@ function MuW() {
           }
           pages={[
             {
-              title: "Feed",
+              title: t("Feed"),
               render: () => (
                 <FeedScreen
                   active={screen === "feed"}
@@ -1058,7 +1059,7 @@ function MuW() {
               ),
             },
             {
-              title: "Draw",
+              title: t("Draw"),
               render: () => (
                 <ChooseScreen
                   status={statusText(startMode, position, start)}
@@ -1137,7 +1138,7 @@ function MuW() {
               ),
             },
             {
-              title: "Explore",
+              title: t("Explore"),
               // It asks the API for its routes as it opens: not before.
               lazy: true,
               render: () =>

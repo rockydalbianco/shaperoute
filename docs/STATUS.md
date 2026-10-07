@@ -473,8 +473,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   parola, la foto e il contorno, 101 testi nuovi
   (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`; testi
   approvati dall'utente il 2026-10-06, PR #421 (merge `438c019`); C e D in
-  `main` e su «preview» (gruppo `65620103`). Restano la fine corsa,
-  «Sport», `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). L'utente ha
+  `main` e su «preview» (gruppo `65620103`). **Parte E — voce, «Sport»,
+  titoli** fatta il 2026-10-07 (la fine corsa di TASK-208 B era già in
+  `t()`: solo due errori di `api/drawings.ts`; la riga «Voice», «Sport» e
+  il suo pulsante, i titoli «Feed», «Draw», «Explore»; 22 testi nuovi,
+  `out/task-210-sport-voce-testi.md`; test `SportItalian`, `VoiceItalian`).
+  Restano i nomi delle forme, i nomi sulla mappa con «Start here», «Help»
+  in de/es/fr (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:

@@ -253,13 +253,32 @@ non conosce (vanno all'AI): sono la parte «nomi delle forme». «Vai a
 «Empieza aquí», fr «Départ ici»). **Testi approvati dall'utente** il
 2026-10-06 («va bene procedi»); in `main` con la PR #421 (merge `438c019`, 2026-10-06), job `mobile` verde; la pubblicazione su «preview» è del coordinatore.
 
-**Da fare nelle parti successive** (dopo le parti C e D, entrambe in
-`main` il 2026-10-06): i nomi delle forme sulle schede di «Explore»
-(`routeTitle` dà l'inglese, «dog head»: `shapeLabel` lo tradurrebbe), la
-fine corsa di TASK-208 (`RunEnd.tsx`,
-`PublicParts.tsx`, `PublicRow.tsx`, `api/drawings.ts`), `VoiceSetting.tsx`,
-`SportSetting`/`SportButton`/`sport.ts`, i titoli delle pagine in
-`App.tsx`, i nomi delle forme in «Draw» (`shapeWords.ts` sa solo
-inglese e italiano: «Herz», «cœur» vanno all'AI), i nomi sulla mappa
-forzati in italiano (`mapStyle.ts`) e «Start here» nella pagina della
-mappa (`mapPage.ts`), «Help» in de/es/fr.
+**Parte E — la fine corsa, la voce, «Sport», i titoli** (2026-10-07,
+chiesta dall'utente con le parti rimaste: «Codice, senza decisioni tue»):
+la fine corsa di TASK-208 B era già tutta in `t()` dalla sua PR #425;
+restavano i due messaggi di `api/drawings.ts` («No connection…», «This run
+is no longer…»), che ora passano da `t()` con le traduzioni già in
+tabella. `VoiceSetting` (la riga, il foglio, «Default», le due note, «{tag}
+· Enhanced»); `sport.ts` (`name` con `tLater`), `SportSetting` e
+`SportButton` («SPORT», «Soon», «{name}, coming soon», «Sport, {name}»); i
+titoli delle tre pagine in `App.tsx` (it «Feed», «Disegna», «Esplora»; fr
+«Fil», «Dessiner», «Explorer»). 22 testi nuovi nelle quattro tabelle
+(`out/task-210-sport-voce-testi.md` sul Mac per l'occhio dell'utente,
+che il 2026-10-07 ha chiesto il file e autorizzato il merge a CI verde
+senza aspettare). Test: `settings/SportItalian.test.tsx`,
+`voice/VoiceItalian.test.tsx`. La guida «Help» in italiano chiama ancora
+le pagine «Draw» ed «Explore»: la parte «Help» le rinomina.
+
+**Scelte dell'utente del 2026-10-07 per le parti rimaste**: i nomi sulla
+mappa nella lingua dell'app, in inglese `name:en` («Rome»); le parole
+de/es/fr delle forme in `shapeWords.ts`, così la forma del catalogo si
+riconosce senza AI; «Help», «Terms» e «Privacy» tradotti in de/es/fr (le
+bozze restano bozze, con gli stessi segnaposto); i testi di ogni PR in
+`out/`; merge a CI verde senza attendere.
+
+**Da fare nelle parti successive**: i nomi delle forme in «Draw»
+(tessere, campo, nota, segnaposto: `shapeWords.ts` sa solo inglese e
+italiano) e sulle schede di «Explore» (`routeTitle` dà l'inglese, «dog
+head»); i nomi sulla mappa forzati in italiano (`mapStyle.ts`) e «Start
+here» nella pagina della mappa (`mapPage.ts`); «Help», «Terms» e «Privacy»
+in de/es/fr.

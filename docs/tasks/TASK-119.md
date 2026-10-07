@@ -1,6 +1,6 @@
 # TASK-119 — Reazioni ai disegni pubblicati, e il super like di Sgrava
 
-**Stato**: In lavorazione: parte A Done (merge #301, `3c94690`, 2026-10-04), parte B Done (merge #309, `0e5ff55`, 2026-10-05); restano il server (`0015`), la pubblicazione e la prova sull'iPhone con due account
+**Stato**: Done (2026-10-07): parte A merge #301 (`3c94690`, 2026-10-04), parte B merge #309 (`0e5ff55`, 2026-10-05); sul server (`0015`, 2026-10-05) e su `preview` (gruppo `9585ffac`, 2026-10-06). Resta la prova sull'iPhone con due account, dell'utente
 **Fase**: 4 · **Branch**: `feat/TASK-119-a-reactions-api` (parte A),
 `feat/TASK-119-b-reactions-app` (parte B)
 **Dipende da**: TASK-117 (i disegni pubblicati) · TASK-120 (i commenti) ·
@@ -274,3 +274,9 @@ reazioni l'app pubblicata non le mostra (la riga ha solo i commenti) e
 sul disegno aperto il doppio tocco non fa niente. Seguiti possibili:
 l'elenco di chi ha reagito, le reazioni nelle schede del feed vero
 (TASK-118).
+
+**Chiuso** (2026-10-07): il server ha la `0015` dal 2026-10-05 (`main`
+3b6e821) e oggi è a `873de538` con le migrazioni fino alla `0019`; l'app
+con la parte B è su `preview` dal gruppo `9585ffac` (2026-10-06). Le
+reazioni e il super like sono sul telefono. Resta solo la prova sull'iPhone
+con due account, che è dell'utente; i seguiti sopra restano senza numero.

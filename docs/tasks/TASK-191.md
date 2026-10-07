@@ -1,7 +1,9 @@
 # TASK-191 — Percorsi in canoa e paddle
 
-**Stato**: In corso (A1, A2, B e C fatte, PR #216, #235, #241 e #255; il
-punto 5 di A2 e l'acqua sul server da fare)
+**Stato**: Done (2026-10-07) — A1, A2, B e C in `main` (PR #216, #235,
+#241 e #255), sul server (`873de538`) e su `preview` (gruppo `9585ffac`);
+il punto 5 di A2 e l'acqua sul server fatti da TASK-225 (#285); aperti
+per l'utente il giudizio dei campioni v2, i testi e la prova sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-191-paddle-routes` (A1),
 `feat/TASK-191-paddle-a2` (A2), `feat/TASK-191-paddle-api` (B),
 `feat/TASK-191-paddle-app` (C)
@@ -149,21 +151,23 @@ In tre PR, in quest'ordine (se il coordinatore preferisce, tre task).
 
 ## Criteri di accettazione
 
-- [ ] Dalla CLI, senza rete e senza chiavi, sulle fixture: un percorso
+- [x] Dalla CLI, senza rete e senza chiavi, sulle fixture: un percorso
       `paddling` chiuso, che parte e arriva sulla riva e non tocca terra
-      in nessun punto.
-- [ ] Nessun punto del percorso è oltre 1 km dalla riva.
-- [ ] Una richiesta `paddling` lontano dall'acqua è un errore che lo
+      in nessun punto. *(Parte A2, `tests/test_paddling.py`.)*
+- [x] Nessun punto del percorso è oltre 1 km dalla riva.
+- [x] Una richiesta `paddling` lontano dall'acqua è un errore che lo
       dice; una forma che non sta nella fascia è un errore che lo dice.
-- [ ] Una richiesta `running` si comporta come prima.
+- [x] Una richiesta `running` si comporta come prima.
 - [ ] Campioni di Garda, Como, Jesolo e Riccione in `samples/`, giudicati
-      dall'utente.
+      dall'utente. *(I v1 giudicati; i v2, Como compreso, fatti da
+      TASK-225 fuori da `samples/`: il giudizio è dell'utente.)*
 - [x] Nell'app, con «Paddle» scelto, «Draw» chiede un percorso
       `paddling` e mostra l'avviso di sicurezza; con «Run» tutto è come
       prima. *(Parte C: `__tests__/AppPaddle.test.tsx`; i test di prima
       senza modifiche ai valori, tranne «Paddle» non più «Soon».)*
-- [ ] Test deterministici per motore, API e app; nessuna dipendenza nuova
-      senza l'ok dell'utente.
+- [x] Test deterministici per motore, API e app; nessuna dipendenza nuova
+      senza l'ok dell'utente. *(Nessuna delle quattro PR tocca
+      `package.json` o `pyproject.toml`.)*
 
 ## File toccati
 
@@ -719,6 +723,23 @@ sull'iPhone. Il server non è toccato, l'app non è pubblicata.
   riva poco. Schiarire l'acqua cambierebbe la mappa di tutti gli sport: da
   proporre all'utente, se serve.
 - Testi nuovi **da confermare con l'utente** (`UI.md`, «Sull'acqua»).
+
+**Chiusura (2026-10-07, pulizia dei task file).** Il punto 5 di A2 e
+l'acqua sul server li ha fatti TASK-225 (PR #285, `87115ba`,
+2026-10-04): l'acqua di Riccione, Jesolo, Garda e Como è in
+`data/cache/water/` sul server, da un estratto di OpenStreetMap; il cuore
+da 2 km a Riccione è disegnato dal server in 3,1 s; i campioni v2 (cuore,
+cerchio e stella da 2 km nei quattro luoghi, Como compreso) sono fatti
+sull'area intera di una richiesta, nella pagina
+`out/task225-paddle-samples-v2.html`, fuori dal repository. Il Lago di
+Ledro si è aggiunto con TASK-250 (PR #406). Strava non riceve più la canoa
+come corsa: TASK-208 A (PR #268) la manda come `StandUpPaddling`, scelta
+dell'utente. Velocità e andatura sull'acqua: TASK-251. Il server è su
+`main` `873de538`, che contiene le quattro parti, TASK-225 e TASK-250;
+l'app è su `preview` dal gruppo `9585ffac` (`873de538`). **Restano
+dell'utente**: il giudizio dei campioni v2 (poi in `samples/LOG.md`), i
+testi nuovi qui sopra (l'avviso di sicurezza è già approvato), se
+schiarire l'acqua sulla mappa scura, la prova sull'iPhone pagaiando.
 
 ## Note per il deploy
 

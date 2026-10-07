@@ -426,6 +426,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sceglie avrebbe solo errori. Seguito in `services/`: Strava riceve
   ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
   «Esito», parti A2, B e C (fatta).
+  **Done il 2026-10-07** (pulizia dei task file): il punto 5 e l'acqua
+  sul server sono di TASK-225, Strava di TASK-208 A; la voce in
+  «Completato».
 
 - **TASK-119 — Reazioni ai disegni pubblicati** (ADR-0193; scelte
   dell'utente del 2026-10-04): era «Like», diventa sei reazioni sotto un
@@ -525,6 +528,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **Motore, API e app** — TASK-191: percorsi in canoa e paddle (ADR-0154,
+  ADR-0161, ADR-0164, ADR-0169; chiesto dall'utente il 2026-10-02).
+  **A1** PR #216 (l'acqua e la fascia entro 1 km dalla riva), **A2** PR
+  #235 (`paddling` nel motore, 1–5 km, al mare oltre 200 m dalla riva),
+  **B** PR #241 (l'API sull'acqua, migrazione `0010`), **C** PR #255
+  («Paddle» nell'app, l'avviso di sicurezza, «Explore» sull'acqua), tutte
+  del 2026-10-02/03. Il punto 5 di A2 (i campioni v2 e Como) e l'acqua dei
+  quattro luoghi sul server sono di TASK-225 (#285, 2026-10-04), Ledro di
+  TASK-250 (#406); Strava riceve la canoa come `StandUpPaddling` da
+  TASK-208 A (#268). Sul server (`873de538`) e su `preview` (gruppo
+  `9585ffac`). Chiuso il 2026-10-07 dalla pulizia dei task file.
+  **Aspettano l'utente**: il giudizio dei campioni v2
+  (`out/task225-paddle-samples-v2.html`), i testi nuovi (`UI.md`,
+  «Sull'acqua»; l'avviso è già approvato), se schiarire l'acqua sulla mappa
+  scura, la prova sull'iPhone pagaiando. `tasks/TASK-191.md`.
 
 - **App e API** — TASK-260: l'app si chiama «MuW» (ADR-0224; chiesto
   dall'utente il 2026-10-06). **Parte A** PR #426 (`717eb69b`): il nome

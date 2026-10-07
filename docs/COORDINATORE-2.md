@@ -74,9 +74,9 @@ Non archivia mai: la sessione «Coordinatore», le sessioni **pinnate**, le
 sessioni di conversazione con l'utente senza task (scelte di prodotto,
 canvas, Instagram, sito) a meno che l'utente lo chieda, una sessione in
 turno, una sessione con lavoro non committato nel suo worktree
-(`git -C <worktree> status --short` non vuoto). Prima di archiviare
-scrive alla sessione: «TASK-XXX chiuso, archivio questa scheda». Nel
-riepilogo all'utente elenca le schede archiviate.
+(`git -C <worktree> status --short` non vuoto). Non scrive alla sessione
+prima di archiviarla: un messaggio la sveglia e una sessione in turno non
+si può archiviare. Nel riepilogo all'utente elenca le schede archiviate.
 
 L'impostazione dell'app «Archivia la sessione quando la PR si chiude»
 (Settings → Claude Code, `auto_archive_on_pr_close`) fa da sola la parte

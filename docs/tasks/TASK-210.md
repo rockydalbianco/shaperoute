@@ -283,7 +283,7 @@ mappa (`mapPage.ts`), «Help» in de/es/fr.
 
 **Parte E — la fine corsa, «Sport» e la voce** (2026-10-07, assegnata
 dal coordinatore con `main` a `aea84e4`; branch
-`feat/TASK-210-e-run-end-sport`, in parallelo con TASK-182 parte E, che
+`feat/TASK-210-e-run-end-sport`, PR #433, in parallelo con TASK-182 parte E, che
 tiene `App.tsx`). **La fine corsa** era già quasi tutta in `t()`:
 TASK-208 B (#425) aveva scritto i suoi testi di `RunEnd`, `PublicParts`
 e `PublicRow` già tradotti. Restavano i messaggi di `api/drawings.ts`

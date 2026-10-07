@@ -180,9 +180,7 @@ Aspettano l'utente
      e a cosa serve il telefono (TASK-183)
 
 Da assegnare
-  ├─ L'acqua dei quattro luoghi della canoa sul server (prima di
-  │  pubblicare «Paddle»), con l'ok dell'utente
-  ├─ La parte social: 118 (il feed vero), 119 (like), 121 (segnalare,
+  ├─ La parte social: 118 (il feed vero), 121 (segnalare,
   │  bloccare); TASK-092;
   │  TASK-152 App Store; TASK-153 AdMob vero
   ├─ Le altre idee (A) di TASK-203 non provate (`tasks/TASK-203.md`)

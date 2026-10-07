@@ -1,6 +1,6 @@
 # TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle forme
 
-**Stato**: In lavorazione: parte A Done (merge #284, 224a708), parte B Done (merge #296, 09c2c3c), 2026-10-04; restano le conferme dell'utente, il server e la pubblicazione
+**Stato**: Done (2026-10-07): parte A merge #284 (224a708), parte B merge #296 (09c2c3c), 2026-10-04; sul server da `main` 3b6e821 (2026-10-05) e su `preview` (gruppo `9585ffac`, 2026-10-06). Seguiti: le traduzioni de/es/fr da confermare, le «quasi», la prova sul telefono
 **Fase**: 4 · **Branch**: `feat/TASK-223-simple-emoji` (A), `feat/TASK-223-b-shapes-in-catalog` (B)
 **ADR**: ADR-0185 (le forme a pezzi)
 **Dipende da**: TASK-197 (la penna alzata nelle parole, `pen_up.py`)
@@ -305,3 +305,12 @@ sì, come per le parole); la frase della voce fra un pezzo e l'altro
 lingue). Script e pagina di confronto: https://claude.ai/artifact/1pJSvHAX8zhod9wsTm26eu
 (gli script dei campioni erano nella scratchpad della sessione: il CLI basta,
 `python -m route_engine --shape cat --pen-up ...`).
+
+**Chiuso** (2026-10-07): il server disegna le quattro forme da `main`
+3b6e821 (2026-10-05; oggi è a `873de538`) e l'app con le tessere 🙂 👻 🍩 ☀️,
+l'interruttore e la voce fra i pezzi è su `preview` dal gruppo `9585ffac`
+(2026-10-06). Le conferme dell'utente in inglese e italiano sono sopra.
+Restano, senza numero: le traduzioni in tedesco, spagnolo e francese da
+confermare con chi parla la lingua; le quattro forme «quasi» (palloncino,
+cono, fulmine, nuvola) se l'utente le rivede; l'interruttore in «Draw» per
+gli occhi staccati (seguito di TASK-226 B); la prova sul telefono, dell'utente.

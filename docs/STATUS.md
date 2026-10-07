@@ -178,20 +178,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Giudizio dell'utente sui campioni: «sì» faccina, fantasmino e ciambella
   con la penna alzata, sole con la penna giù. **Parte B, il catalogo**,
   in `main` con la #296 (09c2c3c, 2026-10-04, dopo il «continua e
-  pubblica» dell'utente), non ancora sul server né pubblicata: le quattro forme nel motore, nel
+  pubblica» dell'utente): le quattro forme nel motore, nel
   contratto, nell'AI e nell'app (tessere 🙂 👻 🍩 ☀️); `pen_up` anche con
   una forma a pezzi (`PEN_UP_SHAPES`), solo su strada; nell'app
   «Lift the pen between parts», acceso di partenza, per le prime tre; la
   voce «Part done. Walk to the next part…» nelle cinque lingue; fino a 8
-  tratti a piedi. Sul server da `main` 3b6e821 (2026-10-05); la
-  pubblicazione dell'app è del coordinatore. **Occhi staccati su strada**:
+  tratti a piedi. Sul server da `main` 3b6e821 (2026-10-05), su
+  `preview` dal gruppo `9585ffac` (2026-10-06). **Occhi staccati su strada**:
   sì a tutte e cinque le forme (gatto, pesce, teste, zucca; utente,
   2026-10-05, `samples/LOG.md`); l'interruttore in «Draw» anche per loro è
   un seguito di TASK-226 B. La voce fra i pezzi, la penna alzata accesa di
   partenza e i testi dello schermo sono **confermati dall'utente** in
   inglese e italiano (2026-10-05); tedesco, spagnolo e francese da
-  confermare; la prova sul telefono è dell'utente.
-  `tasks/TASK-223.md`.
+  confermare; la prova sul telefono è dell'utente. **Done** il
+  2026-10-07: i seguiti senza numero sono in `tasks/TASK-223.md`, «Esito».
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
   notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,
@@ -444,11 +444,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   doppio tocco sulla mappa del disegno (che lì non fa più lo zoom) o il
   cuore nella barra aprono il foglio «Super like» con il cuore grande e
   il commento obbligatorio. Provata nel simulatore con un'API locale, non
-  con le dita; testi confermati dall'utente. **Aspettano l'utente**:
-  l'aggiornamento del server con la `0015` e la pubblicazione, poi la
-  prova sull'iPhone con due account. Finché il server non ha le
-  reazioni l'app pubblicata non le mostra. Da dove riprendere:
-  `tasks/TASK-119.md`, «Esito».
+  con le dita; testi confermati dall'utente. **Done** (2026-10-07): il
+  server ha la `0015` dal 2026-10-05 e l'app è su `preview` dal gruppo
+  `9585ffac` (2026-10-06). Resta la prova sull'iPhone con due account,
+  dell'utente. `tasks/TASK-119.md`, «Esito».
 
 - **TASK-210 — La lingua dell'app** (ADR-0172; scelte dell'utente: inglese,
   tedesco, italiano, spagnolo, francese; senza scelta la lingua del

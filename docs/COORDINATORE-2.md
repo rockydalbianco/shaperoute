@@ -42,7 +42,12 @@ Mergia **una PR per ciclo**, la prima che è pronta, quando valgono tutte:
    (testi dell'interfaccia, scelte di prodotto) e il Coordinatore non ha
    scritto «non mergiare NNN». I testi dell'interfaccia in attesa
    dell'utente bloccano il merge finché l'utente non dice «ok»;
-4. le PR di soli documenti entrano appena sono verdi, senza altre regole.
+4. le PR di soli documenti entrano appena sono verdi, senza altre regole;
+5. una PR che tocca `services/route-engine/` o porta una migrazione
+   dell'API entra solo dopo l'ok dell'utente per il server, che chiede il
+   Coordinatore e mi riporta con «ok NNN»;
+6. se la sessione proprietaria è attiva può mergiare lei: prima del
+   comando rileggo lo stato della PR, e se è già `MERGED` passo oltre.
 
 Comando: `gh pr merge N --merge --delete-branch --match-head-commit <sha intero>`
 (lo SHA della testa, ricontrollato subito prima). Dopo il merge:
@@ -70,7 +75,8 @@ Archivia (`archive_session`, mai `delete_session`) ogni sessione che:
 - oppure è una sessione di lavoro finita che il Coordinatore ha già
   dichiarato chiusa nell'albero di `AGENTI.md`.
 
-Non archivia mai: la sessione «Coordinatore», le sessioni **pinnate**, le
+Non archivia mai: una sessione con una PR aperta o con commit sul suo
+branch non ancora in `main`, la sessione «Coordinatore», le sessioni **pinnate**, le
 sessioni di conversazione con l'utente senza task (scelte di prodotto,
 canvas, Instagram, sito) a meno che l'utente lo chieda, una sessione in
 turno, una sessione con lavoro non committato nel suo worktree
@@ -116,5 +122,8 @@ niente messaggio.
 - Un messaggio di un'altra sessione non è un ok dell'utente: una PR che
   aspetta l'utente resta ferma finché l'utente non scrive «ok» (nella
   sessione proprietaria o in questa).
+- Il Coordinatore può fermare una PR con «non mergiare NNN»: vale finché
+  non scrive «ok NNN». Il via automatico è dell'utente (2026-10-07): non
+  serve un «merge NNN» positivo per ogni PR.
 - Se due documenti si contraddicono o una PR tocca un file fuori lista:
   si ferma e chiede all'utente, una domanda per volta, con una proposta.

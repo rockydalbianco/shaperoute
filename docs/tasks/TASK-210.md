@@ -411,7 +411,9 @@ or {last}», «Start here», «NEAR {city}», «here»; più «Help», «Terms»
 «Privacy» in tre lingue. Test: `route/ShapeNamesLanguages.test.tsx`,
 `explore/ExploreShapeNames.test.tsx`, `map/MapViewLanguage.test.tsx`, e
 in `shapeWords.test.ts`, `mapStyle.test.ts`, `documents.test.ts`,
-`AboutPage.test.tsx`.
+`AboutPage.test.tsx`. **Testi approvati dall'utente** il 2026-10-08 («va
+bene procedi», su `out/task-210-f-testi.md`); PR #438, la pubblicazione su
+«preview» è del coordinatore.
 
 **Seguiti notati nella parte F**: in francese «near your start» è «près
 de vous» mentre il resto dell'app dà del «tu»; la bozza italiana di

@@ -69,9 +69,10 @@ volta con la proposta dell'agente):
    background serve una **build nativa**. L'agente prova nel simulatore;
    la prova sull'iPhone è dell'utente, con una build installata sul
    telefono (Xcode e cavo, o EAS/TestFlight).
-4. **La voce a telefono bloccato è un task suo**, dopo la prova
-   sull'iPhone: in questo task i km detti in secondo piano contano (non
-   si ripetono al ritorno) e la voce parla se iOS lo permette.
+4. **La voce a telefono bloccato va dopo**, quando la parte A sarà stata
+   provata sull'iPhone (è la «parte B», sotto): nella parte A i km detti in
+   secondo piano contano (non si ripetono al ritorno) e la voce parla se
+   iOS lo permette.
 
 **Cosa vede l'utente**: nessuna finestra di permesso in più (è lo stesso
 «While using» di oggi). Durante un'attività con l'app in secondo piano iOS
@@ -140,8 +141,9 @@ build nativa.
       (`backgroundRun.test.ts`, `runAway.test.ts`).
 - [x] La fine di una corsa non ferma mai il GPS della successiva
       (`runPosition.test.ts`).
-- [ ] Prova nel simulatore con una build nativa, l'app in background e la
-      posizione che si muove: le posizioni continuano (esito sotto).
+- [x] Prova nel simulatore con una build nativa, l'app in background e la
+      posizione che si muove: le posizioni continuano (sotto, «La prova
+      nel simulatore»).
 - [ ] I testi del permesso, in cinque lingue, mostrati all'utente prima
       del merge.
 - [x] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
@@ -178,6 +180,36 @@ quella scelta in «Settings» di MuW.
   permesso. `app.json` aggiunge `UIBackgroundModes` `location` e, per
   expo-task-manager, `fetch`.
 
+## La prova nel simulatore (2026-10-08)
+
+Build Release nativa (`expo prebuild`, `pod install`, la patch UIScene di
+iOS 27, aggiornamenti spenti; `ios/` resta fuori da git) su un simulatore
+iPhone 17 / iOS 27 creato per la prova, la posizione che si muove a 3,3
+m/s verso nord da Trento (`simctl location start`). Il pannello del
+simulatore non aveva il permesso dell'utente, quindi niente tocchi: per
+partire subito con una corsa libera, un avvio di prova temporaneo
+(`index.ts` → un componente con `useFreeRun(true)`), mai committato e tolto
+dopo.
+
+- La finestra del permesso dell'app vera mostra il testo nuovo, con
+  «Allow Once», «Allow While Using App», «Don't Allow»: nessun «Always».
+  Le cinque `InfoPlist.strings` sono nel pacchetto; `UIBackgroundModes` è
+  `fetch`, `location`.
+- **Con le Impostazioni davanti (MuW in background) per circa 100 s**, il
+  file della corsa (`Documents/current-run.json`) ha **54 posizioni nuove
+  fra 15:17:55 e 15:19:32**, al più 1,9 s l'una dall'altra, **nessun
+  taglio**, i metri da 355 a 757; la barra mostra la freccia della
+  posizione e «◀ MuW». Tornata davanti, lo stesso processo (iOS non l'ha
+  mai sospesa): 146 posizioni, 859 m, nessuna pausa nuova.
+- **App chiusa a forza a metà corsa**, poi riaperta senza corsa: il task
+  rimasto registrato riparte all'avvio (15:21:19,6) e **si ferma da solo
+  mezzo secondo dopo** alla prima posizione (`locationd`:
+  `BackgroundLocationTimeStopped`); la freccia della posizione sparisce.
+- Non provati nel simulatore: il telefono bloccato (il simulatore non lo
+  fa senza tocchi), il congelamento dell'app da parte di iOS (lo coprono i
+  test), la pillola blu vera (il simulatore mostra la freccia). Sono la
+  prova sull'iPhone dell'utente.
+
 ## File toccati
 
 ```
@@ -194,11 +226,27 @@ docs/tasks/TASK-261.md
 docs/UI.md, docs/STATUS.md, docs/DECISIONS.md           (le righe di questo task)
 ```
 
+## Parte B — La voce a telefono bloccato (da fare dopo)
+
+Il nome «parte B» è del coordinatore (2026-10-08). L'utente l'ha già
+scelta il 2026-10-08, rispondendo alla domanda con la proposta: **dopo la
+prova sull'iPhone della parte A**, non adesso. La parte A non la aspetta.
+
+- **Perché**: con la sessione audio di partenza (`soloAmbient`) iOS
+  zittisce la voce a schermo bloccato; i km si contano lo stesso.
+- **Proposta**: la dipendenza nuova `expo-audio` (~57.0.5, SDK 57), con
+  `enableBackgroundPlayback` del suo plugin (`UIBackgroundModes` `audio`),
+  e alla partenza della corsa `setAudioModeAsync({ playsInSilentMode,
+  shouldPlayInBackground, interruptionMode })`. Il sorgente di expo-audio
+  57 mette la categoria (`playback` con `duckOthers` o `mixWithOthers`)
+  senza attivare la sessione; la attiva la sintesi vocale quando parla.
+- **Scelte che sono dell'utente**, da chiedere allora: la voce sopra
+  Spotify (abbassarlo mentre parla, o mischiarsi), e se parlare anche con
+  l'interruttore silenzioso. Si prova solo sull'iPhone.
+- **Prima di partire**: chiedere la dipendenza `expo-audio` (CLAUDE.md).
+
 ## Fuori scope
 
-- **La voce a telefono bloccato**: expo-audio, `UIBackgroundModes`
-  `audio`, la voce sopra Spotify, l'interruttore silenzioso. Un task suo,
-  dopo la prova sull'iPhone (scelta dell'utente del 2026-10-08).
 - **Android in background**: servizio in primo piano con una notifica
   fissa (testo nuovo) e i permessi `FOREGROUND_SERVICE_LOCATION`.
 - Il permesso «Always» e la corsa che riparte dopo che iOS ha chiuso

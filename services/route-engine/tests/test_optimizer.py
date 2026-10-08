@@ -397,34 +397,8 @@ def test_a_shape_that_does_not_fit_near_the_start_finds_its_place() -> None:
         assert haversine_m(LEVICO, attempt.placement.start) <= FAR_OFFSET_M + 0.5
 
 
-def test_a_far_place_wins_only_when_its_route_is_good(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    # Near the start the route is drawable but, say, not good enough: the
-    # far one replaces it only if it is good.
-    import route_engine.optimizer as optimizer
-
-    real_search = optimizer.search
-
-    def searching(far_good: bool) -> object:
-        def fake(*args: object, **kwargs: object) -> optimizer.Search:
-            result = real_search(*args, **kwargs)
-            result.converged = far_good if kwargs.get("starts") else False
-            return result
-
-        return fake
-
-    start = local_to_latlon(LEVICO, 1500.0, 0.0)
-    request = RouteRequest(start=start, shape="circle", distance_m=3000)
-    for far_good in (False, True):
-        monkeypatch.setattr(optimizer, "search", searching(far_good))
-        plan = plan_route(request, _Loader(_half_grid()))
-        assert plan.far is not None
-        moved = haversine_m(start, plan.result.points[0])
-        if far_good:
-            assert plan.search is plan.far and moved >= 1000.0 - 50.0
-        else:
-            assert plan.search is not plan.far and moved <= START_OFFSET_M + 50.0
+# When the far search starts, and what it replaces, is pinned since
+# TASK-203 B in tests/test_far_search_skipped.py (ADR-0230).
 
 
 def test_a_refusal_says_the_place_was_looked_for_nearby_too() -> None:

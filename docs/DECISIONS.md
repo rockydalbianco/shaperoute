@@ -12778,3 +12778,96 @@ di quei disegni, senza inventare una classifica.
 - Seguiti: un indice su `drawings (published_at)` quando servirà; la
   foto dell'autore sulla scheda (oggi l'iniziale, come gli esempi); il
   nome dell'autore che apre il suo profilo.
+
+## ADR-0230 — La ricerca lontana parte solo dove vicino non si disegna niente
+**Stato**: Attiva · 2026-10-08 · scelta dell'utente (2026-10-07: «ok» a
+percorsi più veloci anche se diversi da quelli di oggi) e dell'agente su
+delega dell'utente (quale delle due proposte (B) di TASK-203).
+
+**Contesto**: dal TASK-038 (ADR-0040) la ricerca riparte da 1–2 km
+(«Start here») appena quella attorno alla partenza non trova un percorso
+**buono** (somiglianza ≥ 0,90 e distanza ±10%), anche se ne ha uno
+disegnabile da 0,85. TASK-203 ha misurato che è metà del piano di una
+richiesta lunga. Le due proposte (B) del task, che cambiano i percorsi,
+erano dell'utente: saltare o dimezzare la ricerca lontana, e aspettare le
+vicine 1 s invece di 3 quando la partenza è già buona. TASK-203 B le ha
+misurate sul Mac, senza rete, per la strada dell'API (`plan_nearby`, tre
+partenze vicine in processi), su 15 richieste in sei città in cache
+(Trento ×5, Bologna ×3, Palermo ×2, Verona ×2, Levico ×2, Milano ×1),
+a caldo e a freddo, 3 giri, le varianti alternate a ogni giro (load
+average 4,5–16, mediana 6,7: altre sessioni al lavoro). La ricerca lontana
+è partita in 6 richieste su 15 e ha vinto in 2: il cerchio da 15 km di
+Trento (0,925 a 1 km, ma vince una partenza vicina con 0,970 e il lontano
+resta seconda alternativa) e il cerchio da 15 km di Bologna (0,917 a 1 km
+contro 0,884 dalla partenza). Nelle altre 4 ha bruciato 16–19
+tracciamenti per niente. Nella città finta di `test_kept_per_graph.py`
+(parchi, fiume, un terzo delle strade tolte) vince 2 volte su 5, e di
+molto (cuore 0,912 contro 0,819, stella 0,935 contro 0,831).
+
+**Decisione**:
+
+1. **La ricerca lontana parte solo se vicino non c'è nessun percorso
+   disegnabile** (`optimizer.plan_shape`: `_drawable` della ricerca
+   dritta, come prima di TASK-232; somiglianza sotto 0,60 o oltre ±2 km
+   dal target). Un percorso vicino disegnabile ma non buono si tiene, e la
+   forma resta dove l'utente è. Quando parte, è come prima: 20
+   tracciamenti, e il suo percorso sostituisce quello vicino se è buono o
+   almeno disegnabile.
+2. **`FAR_TRACES` resta 20** e **`NEARBY_GOOD_GRACE_S` resta 3 s**
+   (sotto, le alternative scartate).
+3. I percorsi nuovi sono fissati da `tests/test_far_search_skipped.py`
+   (la ricerca lontana non parte con un percorso vicino disegnabile e il
+   grafo grande non si legge; parte ancora dove non si disegna niente;
+   le impronte dei due casi della città finta che cambiano) e da
+   `test_kept_per_graph.py`, le cui due impronte cambiate sono aggiornate.
+
+**Misure** (secondi, mediana di 3 giri a caldo, zona in memoria; fra
+parentesi a freddo, processo nuovo; prima → dopo):
+
+| Richiesta | Prima | Dopo | Percorso |
+|---|---|---|---|
+| Trento cuore 10 km | 4,07 (4,48) | 2,73 (3,50) | uguale, 0,915 (vicina), stesse alternative |
+| Trento cerchio 15 km | 4,86 (5,30) | 2,92 (3,38) | uguale, 0,970 (vicina); perde la seconda alternativa (quella lontana, 0,924) |
+| Trento «CIAO» 12 km tondo | 12,6 (10,1) | 6,05 (6,49) | uguale, 0,919 (vicina), stessa alternativa |
+| Bologna cerchio 15 km | 4,48 (5,26) | 2,70 (3,22) | **diverso**: 0,884 dalla partenza (14,8 km) invece di 0,917 a 1 km (14,3 km) |
+| Levico cuore 10 km | 1,84 (2,12) | 1,07 (1,63) | uguale, 0,839, stesse alternative |
+| Levico cerchio 15 km | 2,63 (3,35) | 1,25 (1,83) | uguale, 0,906 (vicina), stesse alternative |
+
+Nelle altre 9 richieste (stella 5 km, cuore 10 km e cerchio 15 km dove la
+partenza è già buona, «CIAO» con la penna alzata, Milano) la ricerca
+lontana non partiva e niente cambia. I tempi di «dopo» qui sono della
+variante provata fuori dal motore; quelli del codice vero sono nel task
+file, «Parte B».
+
+**Alternative scartate**:
+
+- *`FAR_TRACES` 20 → 10*: nessun percorso cambia nei 15 casi e nei 7 del
+  test (dove la ricerca lontana vince, converge in 7–12 tracciamenti), ma
+  guadagna solo 0,1–0,4 s sulle forme (cuore 4,07 → 3,93, cerchio 4,86 →
+  4,70, Levico cuore 1,84 → 1,45) e 1,6–4 s sulla parola tonda: il costo
+  fisso della ricerca lontana (ritaglio del grafo grande, `RoadMask`,
+  conteggio delle strade da 36 partenze) resta tutto. Scelta sicura ma da
+  poco; resta disponibile se l'utente preferisce non perdere mai uno
+  «Start here».
+- *Saltarla solo se vicino la somiglianza è ≥ 0,85*: salva i due casi
+  della città finta (0,739 e 0,831 vicino) ma non Bologna (0,884), e fra i
+  casi veri guadagna solo sul cuore di Trento.
+- *`NEARBY_GOOD_GRACE_S` 3 → 1 s*: conta solo quando la partenza è già
+  buona e le vicine sono lente, cioè le parole con la penna alzata
+  («CIAO» 12 km: 6,47 → 4,55 a caldo, 4,59 → 3,31 a freddo), e lì toglie
+  tutte le alternative; sulle forme le vicine finiscono entro 1–2 s e il
+  guadagno è ≤ 0,1 s. Sul server, più lento del Mac, 1 s toglierebbe le
+  alternative quasi sempre: l'attesa che l'utente ha scelto in TASK-093
+  resta.
+
+**Conseguenze**:
+
+- Un percorso disegnabile ma sotto 0,90 vicino alla partenza non viene
+  più sostituito da uno migliore a 1–2 km: a Bologna il cerchio da 15 km
+  passa da 92% a 88%; nei posti con buchi (fiumi, parchi, campi) la
+  perdita può essere più grande (la città finta: −0,09 e −0,10).
+- Cambia l'impronta del motore: dopo l'aggiornamento del server va
+  rilanciato `draw_examples` (circa 40 minuti, `AGENTI.md` regola 11), con
+  l'ok dell'utente; `apps/mobile/assets/engine/engine.zip` è rifatto.
+- `docs/ROUTE_ENGINE.md` §5, «Trova dove la forma ci sta», descrive la
+  regola nuova.

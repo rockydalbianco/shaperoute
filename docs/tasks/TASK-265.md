@@ -1,7 +1,7 @@
 # TASK-265 — Il dominio getmuw.app per l'API
 
-**Stato**: In corso — documentazione in PR; il Caddyfile sul server
-aspetta il DNS e l'ok dell'utente
+**Stato**: In corso — l'API risponde su `api.getmuw.app` (2026-10-08);
+documentazione in PR; l'indirizzo nell'app aspetta l'ok dell'utente
 **Fase**: 4 · **Branch**: `docs/TASK-265-domain`
 **ADR**: ADR-0234
 
@@ -61,15 +61,19 @@ record di parcheggio verso `pixie.porkbun.com`, tre record `A` (`@`,
 
 ## Criteri di accettazione
 
-- [ ] `docs/DEPLOY.md`, F.14: il cambio del Caddyfile riga per riga, i
+- [x] `docs/DEPLOY.md`, F.14: il cambio del Caddyfile riga per riga, i
       controlli con i risultati attesi, il ritorno indietro.
-- [ ] ADR-0234 in `DECISIONS.md`.
-- [ ] `dig +short api.getmuw.app @1.1.1.1` risponde `188.245.9.220`.
-- [ ] `curl -s https://api.getmuw.app/health` risponde `{"status":"ok"}`
+- [x] ADR-0234 in `DECISIONS.md`.
+- [x] `dig +short api.getmuw.app` risponde `188.245.9.220` (8.8.8.8,
+      9.9.9.9, i server di Porkbun e il server stesso; 1.1.1.1 aveva in
+      cache per mezz'ora la risposta vuota di prima del record).
+- [x] `curl -s https://api.getmuw.app/health` risponde `{"status":"ok"}`
       con un certificato valido, e `/docs` senza chiave risponde `401`.
-- [ ] `https://188-245-9-220.sslip.io/health` risponde ancora `200`.
+- [x] `https://188-245-9-220.sslip.io/health` risponde ancora `200`.
 
-Gli ultimi tre si spuntano dopo il passo 2, sul server.
+Gli ultimi tre provati dal Mac il 2026-10-08, dopo che il Coordinatore ha
+applicato il passo 2 con l'ok dell'utente: certificato Let's Encrypt
+(`YE1`) per `api.getmuw.app`, valido fino al 2027-01-06.
 
 ## File toccati
 

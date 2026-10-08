@@ -161,12 +161,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   2026-10-08). L'utente voleva spostare «il sito» su un'azienda tedesca;
   saputo che il sito non era online e che Hetzner è già tedesca, è
   **rimasto su questo server** e ha **comprato `getmuw.app`** su Porkbun.
-  L'API risponderà su `api.getmuw.app` accanto a `sslip.io`, che resta;
-  `getmuw.app` e `www` sono per il sito (TASK-237). Documentazione in PR
-  (`DEPLOY.md`, F.14). **Aspettano**: i tre record `A` che l'utente scrive
-  su Porkbun, poi il Caddyfile sul server e `EXPO_PUBLIC_API_URL` di
-  `preview`, del Coordinatore e ciascuno con l'ok dell'utente. Il ritorno
-  da Strava resta su `sslip.io`. `tasks/TASK-265.md`.
+  I tre record `A` (`@`, `www`, `api`) puntano al server. **L'API risponde
+  su `https://api.getmuw.app`** dal 2026-10-08 (Caddyfile applicato dal
+  Coordinatore con l'ok dell'utente; certificato Let's Encrypt fino al
+  2027-01-06, si rinnova da solo) accanto a `sslip.io`, che resta.
+  `getmuw.app` e `www` sono per il sito (TASK-237). Come si fa:
+  `DEPLOY.md`, F.14. **Aspetta**: `EXPO_PUBLIC_API_URL` di `preview`, del
+  Coordinatore con l'ok dell'utente. Il ritorno da Strava resta su
+  `sslip.io`. `tasks/TASK-265.md`.
+- **TASK-261 — La corsa registra anche a telefono bloccato** (ADR-0225;
+  chiesto dall'utente il 2026-10-07). Branch
+  `feat/TASK-261-background-gps`. Su iOS, nell'app costruita, il GPS va
+  avanti in background con il solo permesso «While using» e la pillola
+  blu (expo-task-manager, `UIBackgroundModes` `location`); la linea si
+  taglia solo se iOS congela l'app; in Expo Go e su Android tutto come
+  prima. Testo nuovo del permesso in cinque lingue (`apps/mobile/locales/`),
+  **da mostrare all'utente prima del merge**. Per vederlo serve una
+  **build nativa**. Fuori: la voce a telefono bloccato (un task suo, scelta
+  dell'utente) e Android in background. Da dove riprendere:
+  `tasks/TASK-261.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

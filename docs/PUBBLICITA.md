@@ -8,11 +8,16 @@
 
 ## Oggi
 
-L'app mostra un annuncio AdMob a schermo intero a ogni ricerca, prima del
-percorso (ADR-0102), solo in una build propria; in Expo Go nessun
-annuncio. Sono gli **annunci di prova di Google**: non guadagnano. Per
-quelli veri servono l'account AdMob con il profilo pagamenti (questo
-documento), l'app sull'App Store (TASK-152) e gli ID veri (TASK-153).
+Dal 2026-10-05 gli annunci stanno nel **Feed**: un annuncio nativo AdMob
+che somiglia a un post, con l'etichetta «Sponsored», ogni 5 post
+(ADR-0198, TASK-235). Ha preso il posto dell'annuncio a schermo intero
+all'inizio della ricerca (ADR-0102, TASK-132 e TASK-166). Solo in una
+build propria; in Expo Go nessun annuncio. Sono gli **annunci di prova di
+Google**: non guadagnano. Per quelli veri servono l'account AdMob con il
+profilo pagamenti (questo documento), l'app sull'App Store (TASK-152) e gli
+ID veri (TASK-153). L'unità da creare in AdMob è quindi di tipo **nativo**
+(«Nativo avanzato»), non interstitial. L'ID dell'app iOS dell'utente è in
+`apps/mobile/app.json` da TASK-166.
 
 ## Come paga Google
 

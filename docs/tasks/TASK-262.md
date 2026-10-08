@@ -157,6 +157,7 @@ apps/mobile/src/settings/notificationFields.ts
 apps/mobile/src/screens/ProfileLayer.tsx          (una chiamata)
 apps/mobile/src/social/drawingsDoor.ts            (open vuole solo l'id)
 apps/mobile/src/screens/FeedScreenPosts.test.tsx  (il tipo di open finto)
+apps/mobile/src/profile/SettingsPage.test.tsx     (la nota nuova, il telefono finto)
 apps/mobile/src/about/content/en.ts, it.ts        (le righe delle notifiche)
 apps/mobile/src/about/documents.test.ts
 apps/mobile/src/i18n/de.ts, es.ts, fr.ts, it.ts

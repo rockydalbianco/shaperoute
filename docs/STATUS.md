@@ -157,6 +157,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-262 — Le notifiche inviate davvero** (ADR-0226; scelte
+  dell'utente del 2026-10-07). **Parte A, le push**, branch
+  `feat/TASK-262-a-push`: tabella `push_tokens` (migrazione `0020` al
+  merge), `PUT`/`DELETE /me/push-token`, invio con Expo fuori dalla
+  richiesta, token morti cancellati; nell'app `expo-notifications`
+  (dipendenza nuova), il permesso solo all'interruttore, il token una
+  volta per telefono, il tocco che apre disegno o profilo. **I ganci**
+  in `follows.py`, `reactions.py`, `comments.py`, `drawings.py` entrano
+  dopo TASK-121. **Testi da mostrare all'utente** prima del merge. Le
+  push si vedono solo con una build nativa. Parti B (email, Resend) e C
+  (rubrica, con un nuovo sì) Todo. Da dove riprendere:
+  `tasks/TASK-262.md`.
 - **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** in `main`
   il 2026-10-08 (PR #446, merge `9dcacbf4`; chiesta dall'utente): profilo `production` in `eas.json`,
   canale `production`. Solo la build dello store ha il runtime dal

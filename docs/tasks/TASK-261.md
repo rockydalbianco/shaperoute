@@ -144,8 +144,9 @@ build nativa.
 - [x] Prova nel simulatore con una build nativa, l'app in background e la
       posizione che si muove: le posizioni continuano (sotto, «La prova
       nel simulatore»).
-- [ ] I testi del permesso, in cinque lingue, mostrati all'utente prima
-      del merge.
+- [x] I testi del permesso, in cinque lingue, mostrati all'utente prima
+      del merge: **approvati dall'utente** il 2026-10-08 («Sì, vanno
+      bene»).
 - [x] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
 
 ## Il testo del permesso (`NSLocationWhenInUseUsageDescription`)

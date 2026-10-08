@@ -12859,3 +12859,9 @@ i disegni pubblicati con le reazioni (TASK-117, TASK-119) e i preferiti
   suo scopo (mettere davanti i migliori), non un doppione da togliere.
 - Chi entra nell'account con «Explore» già aperto vede la riga dal punto
   o dalla città dopo: il token si legge per punto, non a ogni disegno.
+- Senza `/recommended` sul server (404, un server di prima) la riga non
+  c'è e «Explore» resta com'è, senza avvisi: l'app può uscire prima del
+  server.
+- Seguito (coordinatore, 2026-10-08): quando c'è TASK-121, le reazioni di
+  chi l'utente ha bloccato non contano per lui (l'aiuto di
+  `moderation.py`).

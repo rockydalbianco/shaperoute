@@ -12743,3 +12743,72 @@ di quei disegni, senza inventare una classifica.
 - Seguiti: un indice su `drawings (published_at)` quando servirà; la
   foto dell'autore sulla scheda (oggi l'iniziale, come gli esempi); il
   nome dell'autore che apre il suo profilo.
+
+## ADR-0229 — «Recommended»: prima il disegno, poi le reazioni, poi le corse
+**Stato**: Attiva · 2026-10-08 · il criterio è **dell'agente su delega
+esplicita dell'utente** («consiglia tu i migliori disegni», 2026-10-07);
+il come deciso dall'agente su delega dell'utente (TASK-092). Completa
+ADR-0086 e ADR-0098.
+
+**Contesto**: ADR-0086 vuole che i percorsi migliori si consiglino agli
+altri; «Explore» (ADR-0098) mostra il catalogo vicino in ordine di
+somiglianza e basta. Dal database ora ci sono le corse salvate (TASK-172),
+i disegni pubblicati con le reazioni (TASK-117, TASK-119) e i preferiti
+(TASK-171). Serviva un ordine che usasse anche quelli, senza filtri nuovi
+(ADR-0144) e senza scartare nessuno.
+
+**Decisione**:
+
+1. **Un endpoint, `GET /recommended`**, in un modulo nuovo
+   (`best_routes.py`), sullo stesso catalogo di `/recommended-routes`: i
+   percorsi che partono entro 5 km dal punto (come le altre righe), al
+   più 10 (`limit` fino a 20), con lo stesso corpo di
+   `/recommended-routes`. **Vuole un token**, come `/feed`: i dati sono
+   degli iscritti; senza account la riga non c'è.
+2. **L'ordine**, da sinistra:
+   1. **la somiglianza come la scheda la scrive** (il percento intero,
+      «97%» prima di «96%»): il disegno viene prima di tutto, e due
+      percorsi che l'utente vede uguali sono uguali anche qui;
+   2. a pari percento, **le reazioni** lasciate sui disegni pubblicati
+      (`visibility` non `only_me`) delle corse fatte su quel percorso;
+      un disegno tornato privato non conta più;
+   3. poi **quante volte è stato corso e tenuto**: le corse salvate in «My
+      activities» più i preferiti, contati insieme (ognuno è qualcuno che
+      l'ha voluto);
+   4. **a parità di tutto restano tutti**, il più vicino prima e poi l'id,
+      così l'ordine è sempre uno: nessun percorso ne scarta un altro
+      perché passa dalle stesse strade (ADR-0086, utente 2026-10-01).
+3. **Una corsa, o un preferito, è di un percorso del catalogo quando la sua
+   linea è quella**: l'app manda i punti del percorso come li mostra, e i
+   preferiti hanno già per chiave `favoriteKey` della linea. L'API calcola
+   la stessa chiave (`line_key`, la stessa funzione riscritta in Python;
+   il suo test ha l'esempio scritto in `favoriteKey.test.ts`). Le corse si
+   leggono solo se partono entro il raggio (più 100 m) e hanno tanti punti
+   quanti un candidato.
+4. **Nessuna migrazione e nessun dato nuovo**: si legge, non si scrive.
+   I conteggi non escono nella risposta: decidono solo l'ordine.
+5. `run_scored` degli `insights` **non entra**: non sa di quale percorso
+   è; le corse salvate dicono lo stesso e sanno il percorso.
+
+**Alternative scartate**:
+
+- *La somiglianza esatta per prima*: 0,9968 contro 0,9971 avrebbe deciso
+  sempre lei, e reazioni e corse non avrebbero mai contato.
+- *Un punteggio solo* (somiglianza più reazioni pesate): un percorso
+  disegnato peggio passerebbe davanti con qualche like; la scelta
+  dell'utente mette il disegno prima.
+- *Contare le reazioni di ogni disegno, anche privato*: chi rende privato
+  un disegno non vuole che parli ancora per lui.
+- *Senza token*: avrebbe mostrato agli ospiti un ordine fatto dagli
+  iscritti; la riga senza account si nasconde (criterio del coordinatore).
+- *Togliere i doppioni per strade in comune*: è la proposta che l'utente
+  aveva scartato in ADR-0086.
+
+**Conseguenze**:
+
+- Il server va aggiornato (`best_routes.py`), senza migrazioni; finché non
+  c'è, `/recommended` risponde 404 e la riga non c'è.
+- Se l'app cambia `favoriteKey`, va cambiata anche `line_key`: il test
+  dell'API ha lo stesso esempio di quello dell'app.
+- Le corse dei percorsi disegnati sul telefono o dagli esempi di una
+  città non entrano: solo il catalogo, come «Best near you».

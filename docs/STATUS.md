@@ -153,6 +153,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
+  all'agente dall'utente il 2026-10-07). Branch
+  `feat/TASK-092-recommended-routes`. **Parte API fatta** nel branch:
+  `GET /recommended` (`best_routes.py`, token obbligatorio, nessuna
+  migrazione) ordina i percorsi del catalogo entro 5 km: somiglianza come
+  la scheda la scrive, poi reazioni dei disegni pubblicati, poi corse e
+  preferiti; a parità tutti. **La parte app aspetta la #438** (TASK-210 F,
+  anche lei in `src/explore/*`). File: `tasks/TASK-092.md`, «File
+  toccati».
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

@@ -1,0 +1,419 @@
+import type { AboutContent, AboutDocument } from "../documents";
+
+/**
+ * «Help», «Terms» and «Privacy» in German (TASK-210 F): the same sections
+ * as `en.ts`, in the same order (a test compares them). The names of
+ * buttons are the ones the app shows in German; the pages as
+ * TASK-210 G names them: «Feed», «Zeichnen», «Entdecken». «Terms» and «Privacy» are
+ * drafts, as in English, with the same places to fill (the user's choice
+ * of 2026-10-07).
+ */
+
+const UPDATED = "5. Oktober 2026";
+
+const help: AboutDocument = {
+  title: "So funktioniert MuW",
+  draft: false,
+  updated: null,
+  sections: [
+    {
+      heading: "Was MuW ist",
+      blocks: [
+        "MuW zeichnet echte Routen, die auf der Karte eine Form ergeben. Du wählst die Form, die Distanz und den Start; du bekommst eine Route auf echten Straßen, mit ihrer GPX-Datei.",
+        "Die App hat drei Seiten nebeneinander, «Feed», «Zeichnen» und «Entdecken»: Wische nach links oder rechts oder tippe oben auf einen Namen. «Profil» öffnet sich über den Kreis oben.",
+      ],
+    },
+    {
+      heading: "Eine Route zeichnen",
+      blocks: [
+        {
+          bullets: [
+            "Wähle eine Form: ein Herz, einen Stern, eine Katze und mehr, ein Wort von A bis Z oder den Umriss deines eigenen Fotos.",
+            "Stelle die Distanz ein: bis zu 21 km zu Fuß, ab deinem Standort oder ab einem Ort, den du suchst.",
+            "Tippe auf «Route zeichnen». MuW zeichnet bis zu drei Routen auf echten Straßen, A, B und C: Behalte die, die dir gefällt.",
+            "«GPX exportieren» gibt dir die Datei für deine Uhr oder für eine andere App.",
+          ],
+        },
+        "Eine Route dauert meist ein paar Sekunden; die längsten können bis zu einer Minute brauchen.",
+      ],
+    },
+    {
+      heading: "Entdecken",
+      blocks: [
+        "Routen, die in deiner Stadt schon gezeichnet sind, startklar: kein Warten, wähle einfach eine.",
+        "Wähle «In meiner Nähe», einen Ort in der Nähe oder suche eine Stadt, dann tippe auf eine Route, um sie auf der Karte zu sehen.",
+      ],
+    },
+    {
+      heading: "Eine Route laufen",
+      blocks: [
+        {
+          bullets: [
+            "«Start» beginnt den Lauf nach einem kurzen Countdown.",
+            "Eine Stimme sagt dir jede Abbiegung rechtzeitig an. Die Karte zeigt den Teil, den du schon gelaufen bist, und den, der noch vor dir liegt.",
+            "«Pause» hält die Uhr an und «Weiter» lässt sie weiterlaufen.",
+            "Um den Lauf zu beenden, halte die Stopptaste gedrückt: Kurzes Tippen beendet ihn nicht.",
+          ],
+        },
+        "«Ohne Route laufen» zeichnet deinen Lauf trotzdem auf, ohne Form, der du folgst.",
+        "Eine Route ist ein Vorschlag aus Kartendaten: Behalte die Straße im Blick und halte dich an die Verkehrsregeln.",
+      ],
+    },
+    {
+      heading: "Läufe und Routen behalten",
+      blocks: [
+        "Mit einem Konto legst du einen Lauf am Ende mit «Speichern» in «Meine Aktivitäten» ab, unter «Profil»; «Verwerfen» wirft ihn weg. Ohne Verbindung wartet der Lauf auf dem Handy und wird später gesendet.",
+        "Das Herz auf einer Route auf der Karte legt sie in «Favoriten» ab.",
+      ],
+    },
+    {
+      heading: "Veröffentlichen und teilen",
+      blocks: [
+        "Ein gespeicherter Lauf ist privat: Nur du siehst ihn. Schalte «Öffentlich» ein, am Ende des Laufs oder bei einem Lauf in «Meine Aktivitäten», und die anderen Mitglieder sehen ihn als Zeichnung auf deinem Profil, ohne seine ersten und letzten 200 m.",
+        "«Teilen» macht ein Bild deines Laufs, das du verschicken kannst, wohin du willst.",
+      ],
+    },
+    {
+      heading: "Feed und Freunde",
+      blocks: [
+        "«Feed» zeigt Zeichnungen, die dich auf Ideen bringen: Tippe auf eine, um ihre Route zu öffnen und loszulaufen.",
+        "Die Lupe oben in «Feed» findet andere Mitglieder über ihren Namen. Auf einem Profil kannst du auf «Folgen» tippen; deine Anfragen, deine Follower und wem du folgst, findest du in «Profil».",
+        "Auf der öffentlichen Zeichnung eines Mitglieds kannst du mit einem Emoji reagieren, ein Super Like senden und einen Kommentar schreiben. Negative Kommentare werden nicht angenommen.",
+      ],
+    },
+    {
+      heading: "Laufen, Rad, Paddeln",
+      blocks: [
+        "Wähle deinen Sport mit der Taste neben deinem Profil oder in «Einstellungen».",
+        {
+          bullets: [
+            "Laufen: bis zu 21 km auf echten Straßen, mit der Stimme Abbiegung für Abbiegung.",
+            "Rad: 10 bis 30 km, auf Radwegen und auf Straßen, die für Räder offen sind. Abbiegungen werden rechtzeitig angesagt und der Bildschirm zeigt deine Geschwindigkeit.",
+            "Paddeln: 1 bis 5 km auf Seen und auf dem Meer, nah am Ufer, für dein Kanu, Kajak oder Board. Du folgst der Linie auf der Karte.",
+          ],
+        },
+        "Lies auf dem Wasser vor dem Start den Sicherheitshinweis: Trag eine Schwimmweste, prüfe Wetter und Wind, halte dich an die Regeln vor Ort. Die Route bleibt höchstens 1 km vom Ufer entfernt: Das macht sie weder sicher noch erlaubt.",
+      ],
+    },
+    {
+      heading: "Einstellungen",
+      blocks: [
+        {
+          bullets: [
+            "Profilbild, E-Mail und Telefonnummer. Die Telefonnummer ist freiwillig und nur du siehst sie.",
+            "Sprache: English, Deutsch, Italiano, Español oder Français. Die Stimme folgt ihr.",
+            "Offline-Karten: Das Handy behält die Karten um dich herum und zeichnet Routen selbst; «Löschen» gibt den Speicher frei.",
+            "Einheiten: die deines Handys, Kilometer oder Meilen. Mit Meilen folgen die Distanzen, das Tempo und die Stimme: eine Ansage bei jeder Meile, die Abbiegungen in Fuß.",
+            "Benachrichtigungen: zwei Schalter, E-Mail und Push, aus, bis du sie einschaltest. MuW sendet noch keine Benachrichtigungen: Deine Wahl bleibt in deinem Konto gespeichert, für den Tag, an dem es so weit ist.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Dein Konto",
+      blocks: [
+        "Du registrierst dich mit einer E-Mail, einem Benutzernamen und einem Passwort. Du musst mindestens 16 Jahre alt sein.",
+        "Ein vergessenes Passwort lässt sich noch nicht zurücksetzen: Bewahre deins gut auf.",
+        "«Abmelden» und «Konto löschen» stehen unten in «Einstellungen». Das Konto zu löschen löscht sofort alles, was dir gehört, und lässt sich nicht rückgängig machen.",
+      ],
+    },
+    {
+      heading: "Fragen",
+      blocks: ["Schreib an [contact email]."],
+    },
+  ],
+};
+
+const terms: AboutDocument = {
+  title: "Nutzungsbedingungen",
+  draft: true,
+  updated: UPDATED,
+  sections: [
+    {
+      heading: "Wer MuW anbietet",
+      blocks: [
+        "MuW wird von [name] angeboten («wir»). Du kannst uns an [contact email] schreiben.",
+        "Diese Bedingungen sind die Vereinbarung zwischen dir und uns über die Nutzung der App MuW. Wenn du ein Konto erstellst oder die App nutzt, akzeptierst du sie.",
+      ],
+    },
+    {
+      heading: "Was MuW ist",
+      blocks: [
+        "MuW zeichnet Routen, die auf der Karte eine Form ergeben, zum Laufen, Radfahren oder Paddeln; es zeichnet deine Aktivität auf, während du ihnen folgst; und es lässt Mitglieder ihre Zeichnungen veröffentlichen, einander folgen, reagieren und kommentieren.",
+      ],
+    },
+    {
+      heading: "Wer es nutzen darf",
+      blocks: [
+        "Du musst mindestens 16 Jahre alt sein, um ein Konto zu erstellen. Um eine Route zu zeichnen, brauchst du kein Konto.",
+      ],
+    },
+    {
+      heading: "Dein Konto",
+      blocks: [
+        {
+          bullets: [
+            "Du registrierst dich mit einer E-Mail-Adresse, einem Benutzernamen und einem Passwort. Das Konto gehört nur dir: Nutze nicht das Konto einer anderen Person und gib dich nicht als jemand anderes aus.",
+            "Halte dein Passwort geheim. Du bist für das verantwortlich, was mit deinem Konto getan wird. Ein vergessenes Passwort lässt sich noch nicht zurücksetzen.",
+            "Wenn du eine Telefonnummer hinzufügst, nimm nur eine Nummer, die dir gehört.",
+            "Du kannst dich jederzeit in «Einstellungen» abmelden oder dein Konto löschen.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Wie du MuW nutzt",
+      blocks: [
+        "Nutze die App im Rahmen des Gesetzes und mit Respekt vor den anderen Mitgliedern. Insbesondere darfst du nicht:",
+        {
+          bullets: [
+            "beleidigende, hasserfüllte, bedrohende oder belästigende Inhalte veröffentlichen, weder im Benutzernamen noch in Bio, Bild, Titeln oder Kommentaren;",
+            "Inhalte veröffentlichen, die du nicht veröffentlichen darfst, oder personenbezogene Daten anderer ohne deren Erlaubnis;",
+            "versuchen, den Dienst zu stören, zu überlasten oder zu umgehen, oder mit automatischen Mitteln Daten über seine Mitglieder sammeln.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Was du veröffentlichst",
+      blocks: [
+        "Deine Läufe, deine Zeichnungen, ihre Titel, dein Profil und deine Kommentare bleiben deine.",
+        "Mit der Veröffentlichung erlaubst du uns, sie aufzubewahren und sie in der App den anderen Mitgliedern zu zeigen, nur um den Dienst zu betreiben: eine kostenlose, nicht ausschließliche Erlaubnis, die endet, wenn du den Inhalt oder dein Konto löschst.",
+        "Die App nimmt keine Kommentare mit beleidigenden Wörtern an: Ein automatischer Wortfilter lehnt sie ab. Wir können Inhalte entfernen, die gegen diese Bedingungen verstoßen. Um uns auf Inhalte hinzuweisen, die nicht da sein sollten, schreib an [contact email].",
+      ],
+    },
+    {
+      heading: "Sicherheit",
+      blocks: [
+        "Eine Route ist ein Vorschlag, der aus Kartendaten berechnet wird. Niemand ist sie für dich abgegangen, und die Karte kann unvollständig oder veraltet sein: Eine Straße kann gesperrt, privat, ohne Gehweg oder gefährlich sein.",
+        {
+          bullets: [
+            "Du bist dafür verantwortlich, wohin du gehst. Halte dich an die Verkehrsregeln und die Schilder, auch wenn die Route oder die Stimme etwas anderes sagt.",
+            "Prüfe die Bedingungen vor und während deiner Aktivität: Verkehr, Licht, Wetter, den Untergrund, deine eigene Gesundheit und Fitness.",
+            "Schau nicht auf das Handy, während du dich im Verkehr bewegst.",
+            "Sei auf dem Wasser besonders vorsichtig: Trag eine Schwimmweste, prüfe Wetter und Wind, halte dich an die Regeln vor Ort (Badezonen, Fahrrinnen, Häfen). MuW kennt sie nicht. Eine Route nah am Ufer ist deshalb noch nicht sicher oder erlaubt.",
+          ],
+        },
+        "Distanzen, Zeiten und Geschwindigkeit stammen vom GPS des Handys und sind Schätzungen.",
+      ],
+    },
+    {
+      heading: "Keine Gewähr und die Grenzen unserer Haftung",
+      blocks: [
+        "Wir arbeiten daran, dass MuW läuft und seine Routen gut sind, aber die App wird so bereitgestellt, wie sie ist: Wir versprechen nicht, dass sie immer verfügbar oder fehlerfrei ist, dass sich eine Route zu Ende laufen lässt oder dass ihre Messungen genau sind.",
+        "Soweit das Gesetz es erlaubt, haften wir nicht für Schäden, die aus der Nutzung der App oder ihrer Routen entstehen. Nichts in diesen Bedingungen beschränkt eine Haftung, die das Gesetz nicht zu beschränken erlaubt, oder die Rechte, die du als Verbraucher hast.",
+      ],
+    },
+    {
+      heading: "Werbung",
+      blocks: [
+        "MuW zeigt Werbung von Google AdMob zwischen den Zeichnungen von «Feed», gekennzeichnet mit «Gesponsert». Eine Anzeige öffnet, was der Werbende angibt: Ihr Inhalt stammt nicht von uns.",
+      ],
+    },
+    {
+      heading: "Dienste anderer",
+      blocks: [
+        {
+          bullets: [
+            "Die Karten stammen von OpenFreeMap und aus den Daten von OpenStreetMap (© OpenStreetMap-Mitwirkende).",
+            "Orte werden mit Geoapify gesucht.",
+            "Wenn du Strava verbindest, gelten für die Läufe, die du dorthin sendest, die Bedingungen und Datenschutzeinstellungen von Strava.",
+            "Ein Bild, das du teilst, verlässt das Handy über das Teilen-Menü: Die App, die es empfängt, hat ihre eigenen Bedingungen.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Änderungen",
+      blocks: [
+        "Wir können die App ändern und Funktionen hinzufügen oder entfernen. Wenn wir diese Bedingungen ändern, ändern wir das Datum oben; ist eine Änderung wichtig, geben wir sie bekannt, bevor sie gilt.",
+      ],
+    },
+    {
+      heading: "Das Konto schließen",
+      blocks: [
+        "Du kannst jederzeit aufhören, MuW zu nutzen, und dein Konto löschen: «Datenschutz» sagt, was wann gelöscht wird. Wir können ein Konto sperren oder schließen, das gegen diese Bedingungen verstößt.",
+      ],
+    },
+    {
+      heading: "Anwendbares Recht",
+      blocks: [
+        "Für diese Bedingungen gilt [governing law]. Wenn du Verbraucher bist, behältst du den Schutz, den das Recht des Landes, in dem du lebst, nicht auszuschließen erlaubt.",
+      ],
+    },
+    {
+      heading: "Kontakt",
+      blocks: ["[name] · [contact email]"],
+    },
+  ],
+};
+
+const privacy: AboutDocument = {
+  title: "Datenschutzerklärung",
+  draft: true,
+  updated: UPDATED,
+  sections: [
+    {
+      heading: "Wer für deine Daten verantwortlich ist",
+      blocks: [
+        "Verantwortlich für deine personenbezogenen Daten ist [name]. Für alles, was deine Daten betrifft, schreib an [contact email].",
+        "Dieser Text sagt, welche Daten MuW verarbeitet, wozu, wo sie gespeichert werden und wie lange, und was du tun kannst.",
+      ],
+    },
+    {
+      heading: "Ohne Konto",
+      blocks: [
+        "Du kannst ohne Konto Routen zeichnen, entdecken und laufen. Der Lauf selbst verlässt das Handy dann nicht. Was das Handy trotzdem verlässt, steht unter «Routen, die du anforderst», «Dein Standort» und «Andere, die Daten erhalten».",
+      ],
+    },
+    {
+      heading: "Dein Konto",
+      blocks: [
+        {
+          bullets: [
+            "Deine E-Mail-Adresse und dein Benutzername, um dich hereinzulassen und die Konten zu unterscheiden.",
+            "Dein Passwort, nur als Hash gespeichert (Argon2id): Das Passwort selbst speichern oder sehen wir nie.",
+            "Der Tag deiner Registrierung und wann du bestätigt hast, dass du mindestens 16 bist.",
+            "Die Sitzung jedes Handys, mit dem du dich angemeldet hast: Das Handy bewahrt ein Token in seinem sicheren Speicher auf, der Server nur einen Hash davon. Eine Sitzung endet 90 Tage nach ihrer letzten Nutzung oder wenn du dich abmeldest.",
+            "Deine zwei Einstellungen zu Benachrichtigungen in «Einstellungen», E-Mail und Push: Beide sind aus, bis du sie einschaltest, und MuW sendet noch keine Benachrichtigungen.",
+          ],
+        },
+        "Deine E-Mail-Adresse wird den anderen Mitgliedern nie gezeigt.",
+      ],
+    },
+    {
+      heading: "Deine Telefonnummer (freiwillig)",
+      blocks: [
+        "Du kannst in «Einstellungen» eine Telefonnummer hinzufügen. Sie ist freiwillig: Die App funktioniert ohne sie genauso.",
+        "Sie ist privat: Nur du siehst sie. Sie steht nie auf deinem Profil, in der Suche oder in einer Liste. Sie ist dafür da, dass Freunde, die deine Nummer schon haben, dein Konto finden können, mit einer Suche aus den Kontakten des Handys, die es noch nicht gibt.",
+        "Wir prüfen die Nummer nicht und senden keine Nachrichten an sie. Du kannst sie jederzeit in «Einstellungen» entfernen; sie wird mit dem Konto gelöscht.",
+      ],
+    },
+    {
+      heading: "Dein Profil",
+      blocks: [
+        "Dein Benutzername, deine Bio und dein Profilbild sind das, was die anderen Mitglieder von dir sehen. Das Bild wird als kleines quadratisches Bild gespeichert, ohne die Daten, die die Kamera hinzufügt. Jeder mit einem Konto kann Mitglieder nach dem Benutzernamen suchen.",
+      ],
+    },
+    {
+      heading: "Deine Läufe und ihre GPS-Spuren",
+      blocks: [
+        "Mit einem Konto geht der ganze Lauf an unseren Server, wenn du am Ende eines Laufs auf «Speichern» tippst: jede Position mit ihrer Uhrzeit, die Pausen, die Route, der du gefolgt bist, Distanz, Dauer, Punktzahl und der Name des Ortes. Mit «Verwerfen» wird nichts gesendet.",
+        "Ein gespeicherter Lauf ist privat: Nur dein Konto sieht ihn. Er bleibt, bis du ihn in «Meine Aktivitäten» löschst oder dein Konto löschst.",
+        "Ein Lauf beginnt und endet oft an deiner Haustür. Deshalb wird ein Lauf für die anderen Mitglieder erst sichtbar, wenn du «Öffentlich» einschaltest, und dann sehen sie die Spur ohne ihre ersten und letzten 200 m, mit dem Titel, den du ihr gegeben hast, und ohne Zeiten, Pausen oder die geplante Route.",
+      ],
+    },
+    {
+      heading: "Favoriten, Kommentare, Reaktionen und Folgen",
+      blocks: [
+        {
+          bullets: [
+            "Eine Route, die du in «Favoriten» behältst, wird ganz gespeichert, mit ihrer Linie, die oft nahe bei dir zu Hause beginnt. Nur dein Konto sieht sie, bis du sie entfernst oder das Konto löschst.",
+            "Deine Kommentare und Reaktionen unter einer Zeichnung sehen die Mitglieder, die diese Zeichnung sehen. Du kannst deine eigenen Kommentare löschen.",
+            "Wem du folgst, wer dir folgt und die Anfragen zum Folgen werden mit deinem Konto gespeichert.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Routen, die du anforderst",
+      blocks: [
+        "Um eine Route zu zeichnen, sendet die App unserem Server den Start, die Form oder das Wort und die Distanz. Hat das Handy die Offline-Karte der Gegend, zeichnet es die Route selbst.",
+        "Die Offline-Karten kommen von unserem Server: die um dich herum und, im Voraus, die der Orte in der Nähe. Um diese Downloads zu begrenzen, zählt der Server sie pro Tag nach einer anonymen Nummer, die die App für das Handy erzeugt; die Zählung bleibt nur im Arbeitsspeicher.",
+        "Wörter, die eine Form beschreiben, werden auf unserem Server gelesen und an keinen externen KI-Dienst gesendet.",
+        "Ein Foto, das du für eine Zeichnung wählst, geht einmal an unseren Server, um seinen Umriss zu finden: Der Server speichert es nicht und protokolliert es nicht.",
+        "Um die Suche zu verbessern, bewahren wir ein Ereignis für jede Suche und für einige Nutzungen der App auf (eine gewählte Route, eine exportierte GPX-Datei, ein bewerteter Lauf): den Text in Kleinbuchstaben, höchstens 200 Zeichen, mit verborgenen E-Mails und langen Zahlen; Positionen nur als Quadrate von etwa 1 km; nichts, was sagt, wer du bist oder welches Handy es war. Diese Ereignisse werden ohne zeitliche Begrenzung aufbewahrt.",
+      ],
+    },
+    {
+      heading: "Dein Standort",
+      blocks: [
+        "Der Standort des Handys wird auf dem Handy genutzt, um eine Route dort zu beginnen, wo du bist, und um deinem Lauf zu folgen. Er geht an unseren Server als Start einer Route, die du anforderst, innerhalb eines Laufs, den du speicherst, und mit der Suche nach einem Ort, um die Orte in deiner Nähe zuerst zu zeigen.",
+        "Wie jeder Internetdienst sieht unser Server die Internetadresse (IP), von der eine Anfrage kommt, während er sie beantwortet. Das Protokoll des Servers schreibt keine Positionen, und die Datenbank enthält keine IP-Adressen.",
+        "Ein Register der Routenanfragen mit ihrem Start gibt es, um einen Fehler nachzustellen. Auf unserem Server ist es ausgeschaltet; eingeschaltet fasst es höchstens 10 MB, dann gehen die ältesten Zeilen verloren.",
+      ],
+    },
+    {
+      heading: "Werbung",
+      blocks: [
+        "MuW zeigt Anzeigen von Google AdMob zwischen den Zeichnungen von «Feed». Wenn du «Feed» zum ersten Mal öffnest, fragt das Einwilligungsformular von Google nach deiner Wahl, wo sie nötig ist; solange keine Anzeigen angefordert werden dürfen, wird keine gezeigt. Auf dem iPhone fragt die App nicht, ob sie dich über andere Apps hinweg verfolgen darf, und Anzeigen werden ohne die Werbe-ID angefordert.",
+        "Google verarbeitet, was seine Werbesoftware erfasst, nach seiner eigenen Datenschutzerklärung.",
+      ],
+    },
+    {
+      heading: "Strava",
+      blocks: [
+        "Ein Lauf geht nur an Strava, wenn du es verlangst, und erst nachdem du dein Strava-Profil verbunden hast. Solange es verbunden ist, bewahrt unser Server deinen Strava-Namen und die Schlüssel auf, die Strava uns für dein Profil gegeben hat. Wir senden Strava dann die Spur mit ihren Zeiten, den Namen und eine Zeile Beschreibung. Wir bitten Strava nur um die Erlaubnis, Aktivitäten hinzuzufügen, nie darum, deine zu lesen. Auf Strava folgt die Aktivität deinen Datenschutzeinstellungen bei Strava, nicht denen von MuW.",
+      ],
+    },
+    {
+      heading: "Andere, die Daten erhalten",
+      blocks: [
+        {
+          bullets: [
+            "Hetzner betreibt unseren Server und seine Sicherungskopien, in Deutschland.",
+            "Geoapify erhält die Suchen nach Orten und nach den Orten in deiner Nähe, mit der Position, und, um den Ort eines gespeicherten Laufs zu benennen, seinen auf etwa 1 km gerundeten Start: nie deine Haustür, den Lauf oder wer du bist. Antwortet unser Server nicht, geht eine Ortssuche stattdessen an Photon (komoot).",
+            "OpenFreeMap liefert die Karte: Wie jeder Kartendienst sieht es, welche Gegend du anschaust.",
+            "Den Overpass-Dienst für OpenStreetMap-Daten fragt unser Server nach der Karte einer Gegend, die er noch nicht hat: Er sieht, welche Gegend, nicht wer gefragt hat.",
+            "unpkg liefert die Kartenbibliothek, wenn die App startet.",
+            "Expo liefert die Updates der App.",
+            "Google AdMob und Strava, wie oben gesagt.",
+          ],
+        },
+        "Ein Bild deines Laufs, das du mit «Teilen» machst, entsteht auf dem Handy und verlässt es nur über das Teilen-Menü, dorthin, wohin du es sendest.",
+      ],
+    },
+    {
+      heading: "Wo deine Daten sind und wie lange",
+      blocks: [
+        {
+          bullets: [
+            "Auf unserem Server in Deutschland, solange du das Konto hast.",
+            "Wenn du dein Konto löschst, wird alles, was dir gehört, sofort gelöscht: Profil, Bild, Telefonnummer, Läufe, Zeichnungen, Favoriten, Kommentare, Reaktionen und Folgen.",
+            "Jede Nacht wird eine Sicherungskopie der Datenbank gemacht und 13 Tage aufbewahrt: Ein gelöschtes Konto ist nach höchstens 14 Tagen aus jeder Sicherungskopie verschwunden.",
+            "Auf deinem Handy: die Sitzung, deine Einstellungen (Sprache, Sport), die Offline-Karten und die Läufe, die noch darauf warten, gesendet zu werden.",
+          ],
+        },
+        "Die Verbindung zwischen der App und unserem Server ist verschlüsselt (HTTPS).",
+      ],
+    },
+    {
+      heading: "Warum wir deine Daten nutzen dürfen",
+      blocks: ["[Rechtsgrundlagen: zu ergänzen, bevor dieser Text endgültig ist]"],
+    },
+    {
+      heading: "Deine Rechte",
+      blocks: [
+        "Du kannst jederzeit:",
+        {
+          bullets: [
+            "deine Daten sehen und berichtigen: Benutzername, Bio und Bild in «Profil», E-Mail und Telefonnummer in «Einstellungen»;",
+            "einen Lauf in «Meine Aktivitäten», einen Favoriten, einen Kommentar oder das ganze Konto in «Einstellungen», «Konto löschen», löschen;",
+            "von uns eine Kopie deiner Daten verlangen oder verlangen, dass wir eine Nutzung beenden oder einschränken;",
+            "eine Einwilligung widerrufen, die du gegeben hast;",
+            "dich bei der Datenschutzbehörde deines Landes beschweren (in Italien beim Garante per la protezione dei dati personali).",
+          ],
+        },
+        "Für alles, was du nicht in der App tun kannst, schreib an [contact email].",
+      ],
+    },
+    {
+      heading: "Kinder",
+      blocks: [
+        "Konten bei MuW sind für Personen ab 16 Jahren. Wenn du glaubst, dass jemand Jüngeres ein Konto hat, schreib uns, und wir löschen es.",
+      ],
+    },
+    {
+      heading: "Änderungen an diesem Text",
+      blocks: [
+        "Wenn sich dieser Text ändert, ändern wir das Datum oben; ist eine Änderung wichtig, geben wir sie bekannt, bevor sie gilt.",
+      ],
+    },
+    {
+      heading: "Kontakt",
+      blocks: ["[name] · [contact email]"],
+    },
+  ],
+};
+
+export const DE: AboutContent = { help, terms, privacy };

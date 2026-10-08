@@ -1,6 +1,14 @@
 import { color } from "../theme/tokens";
 
-import { ATTRIBUTION, GLYPHS_URL, sgravaDarkStyle, TILE_SOURCE_URL } from "./mapStyle";
+import {
+  ATTRIBUTION,
+  darkMapStyle,
+  GLYPHS_URL,
+  placeName,
+  TILE_SOURCE_URL,
+} from "./mapStyle";
+
+const sgravaDarkStyle = darkMapStyle("en");
 
 /**
  * These tests catch the mistakes that make a MapLibre style fail *silently*:
@@ -67,5 +75,33 @@ describe("sgravaDarkStyle", () => {
 
   it("never paints anything in the brand yellow: that is the route's alone", () => {
     expect(JSON.stringify(sgravaDarkStyle)).not.toContain(color.accent);
+  });
+});
+
+describe("the names on the map (TASK-210 F)", () => {
+  const labels = (language: Parameters<typeof darkMapStyle>[0]) =>
+    darkMapStyle(language).layers.find((layer) => layer.id === "place-label");
+
+  it.each(["en", "de", "it", "es", "fr"] as const)(
+    "are in «%s», or the place's own name where the map has none",
+    (language) => {
+      expect(placeName(language)).toEqual([
+        "coalesce",
+        ["get", `name:${language}`],
+        ["get", "name"],
+      ]);
+      expect(labels(language)).toHaveProperty(
+        ["layout", "text-field"],
+        placeName(language),
+      );
+    },
+  );
+
+  it("are no longer Italian whatever the language", () => {
+    expect(JSON.stringify(darkMapStyle("de"))).not.toContain("name:it");
+    // Only the names change: the rest of the style is the same.
+    const without = (language: Parameters<typeof darkMapStyle>[0]) =>
+      JSON.stringify(darkMapStyle(language)).replace(`name:${language}`, "");
+    expect(without("de")).toBe(without("fr"));
   });
 });

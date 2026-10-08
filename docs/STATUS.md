@@ -157,6 +157,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-265 — Il dominio getmuw.app** (ADR-0234; scelta dell'utente del
+  2026-10-08). L'utente voleva spostare «il sito» su un'azienda tedesca;
+  saputo che il sito non era online e che Hetzner è già tedesca, è
+  **rimasto su questo server** e ha **comprato `getmuw.app`** su Porkbun.
+  I tre record `A` (`@`, `www`, `api`) puntano al server. **L'API risponde
+  su `https://api.getmuw.app`** dal 2026-10-08 (Caddyfile applicato dal
+  Coordinatore con l'ok dell'utente; certificato Let's Encrypt fino al
+  2027-01-06, si rinnova da solo) accanto a `sslip.io`, che resta.
+  `getmuw.app` e `www` sono per il sito (TASK-237). Come si fa:
+  `DEPLOY.md`, F.14. Il ritorno da Strava resta su `sslip.io`.
+  `tasks/TASK-265.md`. **Done** il 2026-10-08: l'app di `preview` chiama
+  `https://api.getmuw.app` dal gruppo `a39c9509` (vedi «Completato»).
+
 - **TASK-262 — Le notifiche inviate davvero** (ADR-0226; scelte
   dell'utente del 2026-10-07). **Parte A, le push**, branch
   `feat/TASK-262-a-push`: tabella `push_tokens` (migrazione `0020` al
@@ -596,6 +609,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
+  è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
+  2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.
+  Caddy di apt serve l'API su `https://api.getmuw.app` accanto a
+  `188-245-9-220.sslip.io`, che resta per le app su gruppi vecchi e per il
+  ritorno da Strava; certificato Let's Encrypt fino al 2027-01-06, si
+  rinnova da solo. L'app di `preview` usa il nome nuovo da `main`
+  `08793f41`, gruppo `a39c9509`. Caddyfile e pubblicazione del
+  Coordinatore, ciascuno con l'ok dell'utente. **Resta** il sito su
+  `getmuw.app` e `www` (TASK-237 B, dopo la #443): come si fa in
+  `DEPLOY.md`, F.14. `tasks/TASK-265.md`.
 - **Motore** — TASK-203 parte B: la ricerca lontana («Start here» a 1–2
   km, ADR-0040) parte solo dove vicino alla partenza non si disegna
   niente, non più appena il percorso vicino non è buono (ADR-0230; «ok»

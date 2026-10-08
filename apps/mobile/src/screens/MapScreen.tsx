@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../i18n";
+import { MapKindButton } from "../map/MapKindButton";
 import { color, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { MapError } from "./ChooseScreen";
 
@@ -47,7 +48,7 @@ export function MapScreen({
             // Beside the north arrow a finger is on the map.
             pointerEvents="box-none"
           >
-            <View style={styles.row}>
+            <View style={styles.row} testID="map-top-row">
               {banner ?? (
                 <Pressable
                   style={styles.back}
@@ -63,7 +64,15 @@ export function MapScreen({
                   <MapError reason={mapError} />
                 </View>
               )}
+              {!banner && (
+                <View style={styles.end} pointerEvents="box-none">
+                  <MapKindButton />
+                </View>
+              )}
             </View>
+            {/* The map's kind (TASK-264): opposite the way back, or under
+             * the banner that takes its row while running. */}
+            {banner && <MapKindButton />}
             {compass}
           </View>
         )}
@@ -109,6 +118,10 @@ const styles = StyleSheet.create({
   backText: {
     color: color.text,
     fontSize: fontSize.title,
+  },
+  // The rest of the row: the map's kind at its right end.
+  end: {
+    marginLeft: "auto",
   },
   errorBox: {
     flex: 1,

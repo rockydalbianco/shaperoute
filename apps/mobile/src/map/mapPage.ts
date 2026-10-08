@@ -11,6 +11,7 @@ import {
   walk,
 } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
+import { kindLayers, PITCH_3D, TERRAIN_SPEC, withKinds } from "./mapKindStyle";
 import { LABEL_FONT, sgravaDarkStyle } from "./mapStyle";
 
 /**
@@ -145,6 +146,8 @@ export function isExternalUrl(url: string): boolean {
 
 export function buildMapPage(): string {
   const bounds = JSON.stringify(ITALY_BOUNDS.map(toLngLat));
+  // With the photos and the hills in it, hidden (TASK-264).
+  const style = withKinds(MAP_STYLE);
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -202,9 +205,14 @@ export function buildMapPage(): string {
     var inFrame = false;
     var following = false;
     var toldBearing = 0;
+    // The map's kind (TASK-264): standard until the app says another, and
+    // the layers of the style each kind shows.
+    var kind = "standard";
+    var KIND_LAYERS = ${toScript(kindLayers(style))};
+    var STYLE_LAYERS = ${toScript(style.layers.map((layer) => layer.id))};
     var map = new maplibregl.Map({
       container: "map",
-      style: ${toScript(MAP_STYLE)},
+      style: ${toScript(style)},
       bounds: ${bounds},
       fitBoundsOptions: { padding: 16 },
       attributionControl: false,
@@ -340,6 +348,10 @@ export function buildMapPage(): string {
           "line-opacity": ${TRACK_OPACITY},
         },
       });
+      // A kind told before the style was drawn shows now.
+      if (kind !== "standard") {
+        showKind();
+      }
     });
     // The position: a pin, or while running an arrow turned to the heading.
     function showPin(lngLat) {
@@ -510,6 +522,33 @@ export function buildMapPage(): string {
     function frame() {
       inFrame = true;
       map.fitBounds(framed, { padding: 40, bearing: wanted });
+    }
+    // The map's kind (TASK-264, ADR-0232): the layers of the style it shows,
+    // the hills under the 3D map, and how far the map leans. The route and
+    // its marks are not in the style: they show over every kind.
+    function showKind() {
+      var shown = KIND_LAYERS[kind] || KIND_LAYERS.standard;
+      STYLE_LAYERS.forEach(function (id) {
+        map.setLayoutProperty(id, "visibility", shown.indexOf(id) >= 0 ? "visible" : "none");
+      });
+      map.setTerrain(kind === "3d" ? ${toScript(TERRAIN_SPEC)} : null);
+      var pitch = kind === "3d" ? ${PITCH_3D} : 0;
+      if (framed && inFrame && !following) {
+        // Framed on its route, it is framed again, leaning or flat.
+        map.fitBounds(framed, { padding: 40, bearing: wanted, pitch: pitch });
+      } else {
+        map.easeTo({ pitch: pitch, duration: 600 });
+      }
+    }
+    // Told before the style is drawn, the kind waits for it.
+    function setKind(next) {
+      if (next === kind || !KIND_LAYERS[next]) {
+        return;
+      }
+      kind = next;
+      if (styleLoaded) {
+        showKind();
+      }
     }
     // The north arrow (TASK-232): the map turns where the app asks. Still
     // framed on its route, it frames it again as turned; moved by the user
@@ -844,6 +883,8 @@ export function buildMapPage(): string {
           }
         } else if (message.type === "turn") {
           turnTo(message.bearing);
+        } else if (message.type === "setKind") {
+          setKind(message.kind);
         }
       },
     };

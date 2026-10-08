@@ -25,6 +25,7 @@ import {
   space,
 } from "../theme/tokens";
 import type { LngLat } from "./coordinates";
+import { type MapKind, useMapKind } from "./mapKind";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
   clearProgress,
@@ -35,6 +36,7 @@ import {
   pageScript,
   parsePageMessage,
   setDoubleTap,
+  setKind,
   setMove,
   setPosition,
   showOthers,
@@ -143,6 +145,10 @@ export function MapView({
   const doubleTapAsked = useRef(false);
   const moveAsked = useRef(false);
   const turnAsked = useRef<Turn | null>(null);
+  // The map's kind, chosen with its button (TASK-264), and the last one the
+  // page was told.
+  const kind = useMapKind();
+  const kindAsked = useRef<MapKind>("standard");
   const along = useMemo(() => (route ? cumulative(route) : null), [route]);
   // In steps, so the map is not told of every metre.
   const doneM = progress ? doneMetres(progress) : null;
@@ -307,6 +313,15 @@ export function MapView({
     }
     turnAsked.current = turn;
   }, [ready, turn]);
+
+  // A page that loads is standard: told the kind when it is another, and
+  // each new kind after. The camera and the route stay as they are.
+  useEffect(() => {
+    if (ready && (kind !== "standard" || kindAsked.current !== "standard")) {
+      webView.current?.injectJavaScript(pageScript(setKind(kind)));
+      kindAsked.current = kind;
+    }
+  }, [ready, kind]);
 
   return (
     <View style={style}>

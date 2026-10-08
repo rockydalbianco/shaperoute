@@ -10444,6 +10444,21 @@ giallo, `docs/brand/muw-mark.svg`) accanto alla scritta di
 l'icona della scheda. I testi della guida seguono l'app di oggi: niente
 punteggio (TASK-241), «Feed» fra le pagine (TASK-118).
 
+**Aggiornamento del 2026-10-08, la pagina della privacy** (TASK-237 D;
+il dove deciso dal Coordinatore, i dati e lo stato **scelte
+dell'utente**, il modo deciso dall'agente su delega): `getmuw.app/privacy/`
+è il testo «Privacy» dell'app, non una copia scritta a mano. Lo script
+`site/tools/make_privacy.mjs` carica i file dell'app (Node 24 li legge
+così come sono, importano solo tipi) e scrive una pagina statica per
+lingua, con la stessa avvertenza di bozza quando c'è; un test le
+confronta con l'app, e la CI del sito gira anche quando cambia quel
+testo. I dati mancanti si scrivono una volta sola, nell'app: titolare,
+email, basi giuridiche e data sono dell'utente, e «Privacy» è
+definitiva dall'8 ottobre 2026. L'app mostra la data anche su un testo
+definitivo. Scartato: una pagina scritta a parte per il sito (due testi
+che si separano al primo cambio); un servizio esterno di informative
+(un testo generico, che non dice cosa fa MuW).
+
 ## ADR-0200 — I paesi vicini sotto «Near me»: quattro paesi e i due posti più vicini, dal Places di Geoapify, con i campioni chiesti dal telefono
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-236 ·

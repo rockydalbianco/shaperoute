@@ -84,6 +84,20 @@ dall'utente il 2026-10-06: il cuore su giallo e la scritta «MuW».
 **Parte C — metterlo online** (fatta): sul server Hetzner, dal Caddy, su
 `getmuw.app` (scelta dell'utente, 2026-10-08; Caddy e DNS di TASK-265).
 
+**Parte D — la pagina della privacy** (chiesta dal Coordinatore il
+2026-10-08: Apple la vuole per TestFlight esterno, TASK-152 B):
+
+1. `getmuw.app/privacy/` in inglese, più `it/`, `de/`, `fr/`, `es/`,
+   scritte da `site/tools/make_privacy.mjs` dal testo «Privacy»
+   dell'app, senza copiarlo a mano; un test le confronta.
+2. I dati che mancavano, chiesti all'utente uno per volta: titolare,
+   email, basi giuridiche, data e stato. Scritti una volta sola nel testo
+   dell'app (decisione del Coordinatore), quindi uguali in app e sito.
+3. Il testo verificato contro il codice: la posizione a telefono
+   bloccato durante la corsa (TASK-261) mancava ed è aggiunta; punteggio
+   ed evento «run_scored» sono ancora salvati dal server, quindi restano.
+4. `site/privacy` nell'elenco della copia di `DEPLOY.md` F.14.
+
 **Parte B — aprire il negozio e pubblicare** (dopo le scelte dell'utente):
 
 1. L'utente sceglie il servizio di stampa e apre l'account (un agente non
@@ -205,3 +219,27 @@ funzionano, i dieci disegni ci sono, nessun errore, nessuno scorrimento
 orizzontale a 1280 e 390 px. **Il sito non si aggiorna da solo**: dopo un
 merge che cambia `site/` va ripetuta la copia di `DEPLOY.md` F.14
 (scritta da TASK-265).
+
+**Parte D** (2026-10-08): la pagina della privacy, in PR. **Scelte
+dell'utente**, una domanda per volta: titolare **Luca Pallaoro**; email
+**muw2610@gmail.com** (scelta al posto di un indirizzo di `getmuw.app`);
+le basi giuridiche proposte dall'agente (contratto, legittimo interesse,
+consenso, obbligo di legge), accettate così («Sì, usa questo testo»),
+con il consiglio di farle rileggere a un esperto; il testo è
+**definitivo**, data **8 ottobre 2026**. Nell'app «Privacy» non dice più
+«Draft» e mostra la data; «Terms» resta una bozza con i suoi
+segnaposto. Aggiunta in cinque lingue la frase sulla posizione a
+telefono bloccato (TASK-261, ADR-0225). Verificato nel codice: il server
+salva ancora il punteggio di una corsa (`activities.py`) e l'evento
+`run_scored`, quindi quelle frasi sono esatte. Un test del sito controlla
+che la copia di `DEPLOY.md` F.14 prenda ogni file che le pagine
+caricano. Dopo il merge: la copia sul server al via del Coordinatore,
+con il sì dell'utente alla pubblicazione; l'indirizzo per Apple è
+`https://getmuw.app/privacy/`.
+
+**Aperti, dell'utente**: il link per scaricare l'app. Scelta del
+2026-10-08, raccolta dalla sessione di TASK-265: resta «Download — coming
+soon» fino alla prima build su TestFlight (TASK-152 B); allora
+`site/config.js` `downloadUrl` diventa il link pubblico di TestFlight e
+si ricopia il sito (F.14). Il link di Expo Go è scartato. Il merch
+(parte B), messo da parte.

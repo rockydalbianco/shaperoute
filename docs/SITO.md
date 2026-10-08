@@ -84,6 +84,22 @@ disegni: gli elenchi in cima a `make_drawings.py`.
 Il credito «© OpenStreetMap contributors» in fondo alla pagina deve
 restare (lo controlla un test).
 
+## La pagina della privacy
+
+`getmuw.app/privacy/` (inglese) e `privacy/it/`, `de/`, `fr/`, `es/`: il
+testo «Privacy» dell'app, lo stesso parola per parola, che Apple chiede a
+un indirizzo pubblico. **Non si scrive a mano**: il testo sta in
+`apps/mobile/src/about/content/*.ts`, e le pagine le scrive
+
+```bash
+node site/tools/make_privacy.mjs
+```
+
+Dopo un cambio del testo nell'app si rilancia: un test del sito confronta
+le pagine con l'app e fallisce finché non sono uguali (la CI del sito gira
+anche quando cambiano i testi dell'app). Il piede della pagina
+principale porta a `privacy/`.
+
 ## Online
 
 Il sito è su **https://getmuw.app** dal 2026-10-08, servito dal Caddy del

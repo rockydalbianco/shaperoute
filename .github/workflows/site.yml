@@ -2,7 +2,8 @@ name: Site
 
 # Il sito web (TASK-237, docs/SITO.md): HTML, CSS e JS statici in site/,
 # senza dipendenze. I test vogliono solo Node, quindi niente `npm ci`.
-# Gira solo quando cambia il sito: il resto del repository non lo tocca.
+# Gira quando cambia il sito, il testo «Privacy» dell'app che le pagine
+# della privacy copiano, o l'elenco dei file copiati sul server.
 
 on:
   pull_request:
@@ -10,11 +11,19 @@ on:
     paths:
       - "site/**"
       - ".github/workflows/site.yml"
+      # The privacy pages copy the app's text, and the server's copy is
+      # listed in DEPLOY.md: the tests check both stay in step.
+      - "apps/mobile/src/about/content/**"
+      - "docs/DEPLOY.md"
   push:
     branches: [main]
     paths:
       - "site/**"
       - ".github/workflows/site.yml"
+      # The privacy pages copy the app's text, and the server's copy is
+      # listed in DEPLOY.md: the tests check both stay in step.
+      - "apps/mobile/src/about/content/**"
+      - "docs/DEPLOY.md"
 
 jobs:
   site:

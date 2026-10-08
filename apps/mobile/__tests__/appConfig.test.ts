@@ -1,4 +1,5 @@
-import type { ConfigContext } from "expo/config";
+import { getConfig, type ConfigContext } from "expo/config";
+import path from "path";
 
 import appConfig from "../app.config";
 import appJson from "../app.json";
@@ -7,9 +8,10 @@ import easJson from "../eas.json";
 /**
  * Expo Go opens only updates made for "exposdk:<sdk>" (ADR-0078); the App
  * Store build takes its runtime from a fingerprint of its native code
- * (ADR-0233). The two must never swap.
+ * (ADR-0233). The two must never swap, and app.config.ts must keep
+ * everything else of app.json, plugins included.
  */
-function resolve(appVariant: string | undefined) {
+function withVariant<T>(appVariant: string | undefined, run: () => T): T {
   const before = process.env.APP_VARIANT;
   if (appVariant === undefined) {
     delete process.env.APP_VARIANT;
@@ -17,14 +19,7 @@ function resolve(appVariant: string | undefined) {
     process.env.APP_VARIANT = appVariant;
   }
   try {
-    const context: ConfigContext = {
-      projectRoot: "",
-      staticConfigPath: null,
-      packageJsonPath: null,
-      // JSON gives `orientation` and the like as plain strings.
-      config: appJson.expo as ConfigContext["config"],
-    };
-    return appConfig(context);
+    return run();
   } finally {
     if (before === undefined) {
       delete process.env.APP_VARIANT;
@@ -34,14 +29,36 @@ function resolve(appVariant: string | undefined) {
   }
 }
 
-it("keeps the Expo Go runtime of app.json without a variant", () => {
-  expect(appJson.expo.runtimeVersion).toMatch(/^exposdk:\d+\.0\.0$/);
-  expect(resolve(undefined)).toEqual(appJson.expo);
-  expect(resolve("preview")).toEqual(appJson.expo);
+function fromAppJson(appVariant: string | undefined) {
+  const context: ConfigContext = {
+    projectRoot: "",
+    staticConfigPath: null,
+    packageJsonPath: null,
+    // JSON gives `orientation` and the like as plain strings.
+    config: appJson.expo as ConfigContext["config"],
+  };
+  return withVariant(appVariant, () => appConfig(context));
+}
+
+it("loads app.config.ts with the Expo Go runtime and every plugin of app.json", () => {
+  // The way eas-cli and the build load it. It runs outside Jest's sandbox
+  // and reads the real environment, where tests never set APP_VARIANT.
+  const { exp, dynamicConfigPath } = getConfig(path.resolve(__dirname, ".."), {
+    skipSDKVersionRequirement: true,
+  });
+  expect(dynamicConfigPath).toMatch(/app\.config\.ts$/);
+  expect(exp.runtimeVersion).toBe("exposdk:57.0.0");
+  expect(exp.runtimeVersion).toBe(appJson.expo.runtimeVersion);
+  expect(exp.plugins).toEqual(appJson.expo.plugins);
+});
+
+it("keeps app.json as it is without the production variant", () => {
+  expect(fromAppJson(undefined)).toEqual(appJson.expo);
+  expect(fromAppJson("preview")).toEqual(appJson.expo);
 });
 
 it("gives the App Store build a fingerprint runtime and nothing else new", () => {
-  expect(resolve("production")).toEqual({
+  expect(fromAppJson("production")).toEqual({
     ...appJson.expo,
     runtimeVersion: { policy: "fingerprint" },
   });

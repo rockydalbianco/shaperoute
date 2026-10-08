@@ -113,9 +113,13 @@ dall'utente prima dell'App Store; numero e ADR dal Coordinatore.
   tocca `app.json`.
 - `fingerprint.config.js` (nuovo): fuori dall'impronta versione, numero
   di build ed `eas.json`.
-- `__tests__/appConfig.test.ts` (nuovo): `app.json` resta `exposdk:`,
-  la variante `production` cambia solo il runtime, `APP_VARIANT` solo nel
-  profilo `production`. Provato anche sul Mac con `expo-updates
+- `__tests__/appConfig.test.ts` (nuovo): caricata come la carica Expo
+  (`getConfig`), senza variabile la config ha `exposdk:57.0.0` e tutti i
+  plugin di `app.json` (chiesto dal Coordinatore; dopo il merge di #441,
+  che aggiunge un plugin, va riallineato e riprovato); la variante
+  `production` cambia solo il runtime; `APP_VARIANT` solo nel profilo
+  `production`. `getConfig` valuta `app.config.ts` fuori da Jest, con le
+  variabili vere del processo: la variante si prova chiamando la funzione. Provato anche sul Mac con `expo-updates
   runtimeversion:resolve` (i casi sono in ADR-0233). Nessuna build e nessun `eas update`: servono
   l'account Apple e le variabili dell'ambiente EAS `production`, oggi
   vuoto (`DEPLOY.md` A.7, punti 1–2).

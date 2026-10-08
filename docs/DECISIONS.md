@@ -12814,7 +12814,7 @@ riscriverli tutti con un hook, toccando i file di ogni altro task.
    letta in modo sincrono all'avvio come lingua e unità; ogni tono ricorda
    il suo passo. Senza scelta: scuro, passo 0, cioè l'app di prima. Il
    chiaro parte dal bianco.
-6. **Cambiare tono riapre l'app** (`Updates.reloadAsync`): `color` si
+6. **Cambiare tono riapre l'app** (`reloadAppAsync` di `expo`): `color` si
    riempie una volta, quando `tokens.ts` si carica, e nessuno dei file che
    lo usano cambia. In «Settings» un'anteprima disegnata nei colori scelti
    (fondo, scheda, testi, comando, mappa e percorso) fa provare toni e

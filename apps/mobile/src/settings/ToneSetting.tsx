@@ -1,4 +1,4 @@
-import { reloadAsync } from "expo-updates";
+import { reloadAppAsync } from "expo";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -65,7 +65,7 @@ export function ToneSetting() {
       setTrouble("not-kept");
       return;
     }
-    reloadAsync().catch(() => setTrouble("not-reopened"));
+    reloadAppAsync("New tone").catch(() => setTrouble("not-reopened"));
   };
 
   return (

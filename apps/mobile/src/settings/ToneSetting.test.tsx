@@ -1,12 +1,15 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { reloadAsync } from "expo-updates";
+import { reloadAppAsync } from "expo";
 import { StyleSheet } from "react-native";
 
 import { saveToneChoice } from "../theme/tone";
 import { color, paletteOf, routeCasingOf } from "../theme/tokens";
 import { ToneSetting } from "./ToneSetting";
 
-jest.mock("expo-updates", () => ({ reloadAsync: jest.fn(() => Promise.resolve()) }));
+jest.mock("expo", () => ({
+  ...jest.requireActual<typeof import("expo")>("expo"),
+  reloadAppAsync: jest.fn(() => Promise.resolve()),
+}));
 
 jest.mock("../theme/tone", () => {
   const actual = jest.requireActual<typeof import("../theme/tone")>("../theme/tone");
@@ -15,7 +18,7 @@ jest.mock("../theme/tone", () => {
 
 afterEach(() => {
   jest.mocked(saveToneChoice).mockReset().mockReturnValue(true);
-  jest.mocked(reloadAsync).mockReset().mockResolvedValue(undefined);
+  jest.mocked(reloadAppAsync).mockReset().mockResolvedValue(undefined);
 });
 
 function previewBackground(): unknown {
@@ -97,7 +100,7 @@ test("«Apply» keeps the choice and opens the app again", async () => {
   expect(screen.getByText("MuW opens again in the new tone.")).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Apply" }));
   expect(saveToneChoice).toHaveBeenCalledWith({ tone: "light", dark: 0, light: 3 });
-  expect(reloadAsync).toHaveBeenCalledTimes(1);
+  expect(reloadAppAsync).toHaveBeenCalledTimes(1);
 });
 
 test("a step of the dark tone is applied too", async () => {
@@ -126,11 +129,11 @@ test("a phone that does not keep the choice says so, and the app stays open", as
   expect(screen.getByRole("alert")).toHaveTextContent(
     "The phone did not keep the tone. Try again.",
   );
-  expect(reloadAsync).not.toHaveBeenCalled();
+  expect(reloadAppAsync).not.toHaveBeenCalled();
 });
 
 test("an app that cannot open again asks to be closed and opened", async () => {
-  jest.mocked(reloadAsync).mockRejectedValue(new Error("not supported"));
+  jest.mocked(reloadAppAsync).mockRejectedValue(new Error("not supported"));
   await openTone();
   await fireEvent.press(screen.getByRole("radio", { name: "Light" }));
   await fireEvent.press(screen.getByRole("button", { name: "Apply" }));

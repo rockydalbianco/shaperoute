@@ -42,7 +42,7 @@ Scartata la luminosità dello schermo del telefono.
    cioè l'app di oggi. Il chiaro parte dal passo 4, il bianco.
 3. **Cambiare tono senza toccare 101 `StyleSheet.create`**: gli stili
    leggono i colori quando il file si carica, quindi «Apply» salva la scelta
-   e riapre l'app (`Updates.reloadAsync`), che si ricarica con la tavolozza
+   e riapre l'app (`reloadAppAsync` di `expo`), che si ricarica con la tavolozza
    nuova. Prima di «Apply» un'anteprima, disegnata con la tavolozza scelta,
    mostra fondo, scheda, testi, mappa e percorso: si provano i passi senza
    riaprire l'app a ogni tocco.
@@ -113,4 +113,4 @@ docs/STATUS.md
 
 ## Esito
 
-*(a fine task)*
+_(a fine task)_

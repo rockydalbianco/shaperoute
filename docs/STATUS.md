@@ -153,6 +153,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-261 — La corsa registra anche a telefono bloccato** (ADR-0225;
+  chiesto dall'utente il 2026-10-07). Branch
+  `feat/TASK-261-background-gps`. Su iOS, nell'app costruita, il GPS va
+  avanti in background con il solo permesso «While using» e la pillola
+  blu (expo-task-manager, `UIBackgroundModes` `location`); la linea si
+  taglia solo se iOS congela l'app; in Expo Go e su Android tutto come
+  prima. Testo nuovo del permesso in cinque lingue (`apps/mobile/locales/`),
+  **da mostrare all'utente prima del merge**. Per vederlo serve una
+  **build nativa**. Fuori: la voce a telefono bloccato (un task suo, scelta
+  dell'utente) e Android in background. Da dove riprendere:
+  `tasks/TASK-261.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

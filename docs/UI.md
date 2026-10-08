@@ -1913,15 +1913,22 @@ vince il più economico (ADR-0217). Dopo «Stop» e «Keep running», o dopo
 l'app chiusa a metà corsa, il navigatore riparte da dove la traccia era
 arrivata, ripassando in silenzio le posizioni registrate: la prossima
 svolta detta è quella davanti, le lettere già disegnate restano disegnate,
-e «Head out on …» non si ripete. Funziona con l'app aperta, e **lo
-schermo resta acceso da solo per tutta la corsa** (TASK-255, ADR-0219:
-scelta dell'utente del 2026-10-06), con o senza la modalità tasca. Se
-l'app va comunque in secondo piano (il telefono bloccato a mano, una
-telefonata, «Music» che apre Spotify) il GPS si ferma: tornati entro 60
-secondi la linea continua come prima (una riga dritta, il tempo contato);
-oltre i 60 secondi quel tempo è una pausa e la linea riparte da dove si è,
-senza riga dritta (scelta dell'utente). La posizione non esce dal
-telefono.
+e «Head out on …» non si ripete. **Lo schermo resta acceso da solo per
+tutta la corsa** (TASK-255, ADR-0219: scelta dell'utente del 2026-10-06),
+con o senza la modalità tasca. **Nell'app costruita (non in Expo Go) la
+corsa registra anche a telefono bloccato** o con un'altra app davanti
+(il telefono bloccato a mano, una telefonata, «Music» che apre Spotify):
+TASK-261, ADR-0225, con il solo permesso «While using». iOS mostra in
+alto la pillola blu, che riporta a MuW; la linea, i metri, i km e la
+pausa automatica vanno avanti come con l'app davanti, e la voce parla
+solo se iOS la lascia parlare (a schermo bloccato no: un task suo). Se
+iOS congela comunque l'app, il GPS si ferma con lei: tornata entro 60
+secondi la linea continua; oltre, quel tempo è una pausa e la linea
+riparte da dove si è, senza riga dritta. In Expo Go (e su Android) il GPS
+si ferma ogni volta che l'app va in secondo piano, con la stessa regola
+dei 60 secondi (scelta dell'utente). La finestra del permesso di
+posizione ha un testo suo nelle cinque lingue, nella lingua del telefono.
+La posizione non esce dal telefono.
 
 **La voce della corsa** (TASK-209, ADR-0171; chiesto dall'utente il
 2026-10-03: «scegliere la voce e la lingua della voce»). In «Data», sotto

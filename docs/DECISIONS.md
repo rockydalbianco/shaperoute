@@ -12871,3 +12871,56 @@ file, «Parte B».
   l'ok dell'utente; `apps/mobile/assets/engine/engine.zip` è rifatto.
 - `docs/ROUTE_ENGINE.md` §5, «Trova dove la forma ci sta», descrive la
   regola nuova.
+
+## ADR-0234 — Il dominio getmuw.app: si resta su Hetzner, l'API anche su api.getmuw.app
+**Stato**: Attiva · 2026-10-08 · scelta dell'utente (restare sul server,
+il nome); il modo deciso dall'agente su delega dell'utente e diviso dal
+Coordinatore (TASK-265).
+
+**Contesto**: l'utente voleva «spostare il sito» su un'azienda tedesca
+(«Zeda Server», forse Zade Servers). Il sito (`site/`, TASK-237) non era
+online da nessuna parte; sul server Hetzner CX33 di Falkenstein gira
+l'API, raggiunta dall'app su `188-245-9-220.sslip.io`, un nome che
+contiene l'IP e cambia con il server. Hetzner è già un'azienda tedesca.
+Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
+`getmuw.app`, preso da lui su Porkbun il 2026-10-08 (liberi anche
+`muw.run`, `muwrun.com`, `muw.club`; già presi `muw.com`, `muw.app`,
+`muw.it`, `muwapp.com`, `getmuw.com`).
+
+**Decisione**:
+
+1. Il server resta quello di Hetzner. Nessun trasloco.
+2. L'API risponde su `api.getmuw.app` **e** su `188-245-9-220.sslip.io`:
+   un indirizzo in più nella riga del Caddyfile di apt, un `reload` senza
+   fermare niente. Il vecchio nome resta per le app che non hanno ancora
+   l'aggiornamento con l'indirizzo nuovo.
+3. `getmuw.app` e `www.getmuw.app` sono per il sito (TASK-237), sullo
+   stesso Caddy.
+4. Tre record `A` verso l'IPv4 del server, nessun `AAAA` per ora.
+5. Il ritorno da Strava (`SHAPEROUTE_DOMAIN`) resta su `sslip.io`.
+6. Chi fa cosa: la documentazione TASK-265; il Caddyfile sul server e
+   `EXPO_PUBLIC_API_URL` di `preview` il Coordinatore, ciascuno con l'ok
+   dell'utente; il sito la sessione di TASK-237. Come si fa:
+   `DEPLOY.md`, F.14.
+
+**Alternative scartate**:
+
+- *Spostare tutto su un altro provider tedesco*: un trasloco (30 GB di
+  zone, il database, una pubblicazione dell'app) per arrivare dove si è
+  già, in Germania; il dominio rende invisibile all'app un trasloco
+  futuro, se un giorno servirà.
+- *Sostituire `sslip.io` con `api.getmuw.app`*: le app che non hanno
+  ancora scaricato l'aggiornamento resterebbero senza API.
+- *Passare al Caddy di `deploy/compose.yaml`* (F.12, punto 4): due
+  cambi insieme dove ne basta uno.
+- *DNS su Cloudflare con il proxy acceso*: Caddy e Let's Encrypt
+  lavorano già da soli; un intermediario in più da configurare.
+
+**Conseguenze**:
+
+- Un nome che resta se cambia il server, e che serve anche agli store
+  (la pagina della privacy, F.10).
+- Il dominio va rinnovato ogni anno (Porkbun, l'utente); `.app` vuole
+  sempre HTTPS, che Caddy dà da solo.
+- Spostare il ritorno da Strava su `api.getmuw.app` richiede di cambiare
+  anche l'applicazione Strava dell'utente: un passo a parte.

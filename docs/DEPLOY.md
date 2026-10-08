@@ -460,7 +460,8 @@ Caddy installato con apt, pubblico da subito su un nome `sslip.io`,
 senza dominio comprato (F.8). Misurato lì: un cuore da 5 km a Trento in
 18,7 s con la zona in cache, una stella in 3,2 s, l'API in circa 0,56 GB
 di RAM; e Overpass, che rifiuta il Mac, dal server risponde. Come
-portarlo su `deploy/compose.yaml`: F.12.
+portarlo su `deploy/compose.yaml`: F.12. Dal 2026-10-08 ha anche un nome
+dell'utente, `api.getmuw.app`: F.14.
 
 ### F.1 Quale server
 
@@ -997,6 +998,99 @@ La prima riga è la copia di adesso, per tornare indietro. Una copia che
 c'è solo nello Storage Box va prima nella cartella del server:
 `rsync -a -e "ssh -p 23 -i /root/.ssh/storagebox/id_ed25519" u123456@u123456.your-storagebox.de:sgrava-db/shaperoute-<data>.dump ~/shaperoute/data/backups/`.
 All'avvio l'API riapplica le migrazioni più nuove della copia.
+
+### F.14 Il dominio getmuw.app (TASK-265)
+
+Il 2026-10-08 l'utente ha comprato **`getmuw.app`** su Porkbun
+(registrato fino al 2027-10-08, server DNS di Porkbun) ed è rimasto su
+questo server (ADR-0234). L'API risponde anche su `api.getmuw.app`;
+`188-245-9-220.sslip.io` resta acceso per le app che hanno ancora il
+vecchio indirizzo e per il ritorno da Strava (`SHAPEROUTE_DOMAIN`, sotto).
+`getmuw.app` e `www.getmuw.app` sono per il sito (TASK-237, `SITO.md`).
+
+Sul server Caddy è quello di apt (F.12, punto 4): `caddy.service` in
+systemd, la configurazione in `/etc/caddy/Caddyfile`, l'API dietro su
+`127.0.0.1:8000`. Il `deploy/Caddyfile` del repository non c'entra.
+
+1. **Il DNS**, nel pannello di Porkbun (lo fa l'utente): via i due record
+   di parcheggio verso `pixie.porkbun.com` (un `ALIAS` senza nome e un
+   `CNAME` `*`), poi tre record `A`, TTL 600:
+
+   | Host | Valore |
+   |---|---|
+   | *(vuoto)* | `188.245.9.220` |
+   | `www` | `188.245.9.220` |
+   | `api` | `188.245.9.220` |
+
+   Niente `AAAA`: il server ha anche l'IPv6 `2a01:4f8:c016:7ef0::1` e
+   `ufw` apre 80 e 443 anche lì, quindi si può aggiungere in seguito, ma
+   senza l'app funziona uguale. Il controllo, dal Mac:
+
+   ```bash
+   dig +short api.getmuw.app @1.1.1.1
+   ```
+
+   deve rispondere `188.245.9.220`. Un dominio `.app` appena comprato
+   arriva nel registro di Google da qualche minuto a un'ora dopo; prima
+   `dig` non risponde niente. Senza quella risposta non si va avanti:
+   Caddy chiederebbe il certificato a vuoto.
+2. **Il Caddyfile**, sul server. Prima una copia, poi un solo cambio,
+   l'indirizzo in più nella riga del sito:
+
+   ```diff
+   -188-245-9-220.sslip.io {
+   +188-245-9-220.sslip.io, api.getmuw.app {
+    	reverse_proxy 127.0.0.1:8000
+    }
+   ```
+
+   ```bash
+   cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.before-task265
+   sed -i 's/^188-245-9-220\.sslip\.io {$/188-245-9-220.sslip.io, api.getmuw.app {/' /etc/caddy/Caddyfile
+   caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+   systemctl reload caddy
+   ```
+
+   `reload` cambia la configurazione senza fermare Caddy: chi usa
+   `sslip.io` non se ne accorge. Caddy chiede subito il certificato di
+   `api.getmuw.app` a Let's Encrypt e poi lo rinnova da solo; com'è
+   andata:
+
+   ```bash
+   journalctl -u caddy --since "10 min ago" | grep -i -E "api.getmuw.app|error"
+   ```
+
+   cerca una riga «certificate obtained successfully» per
+   `api.getmuw.app`.
+3. **La prova, dal Mac**:
+
+   ```bash
+   curl -s https://api.getmuw.app/health
+   curl -s -o /dev/null -w '%{http_code}\n' https://api.getmuw.app/docs
+   curl -s -o /dev/null -w '%{http_code}\n' https://188-245-9-220.sslip.io/health
+   ```
+
+   rispondono `{"status":"ok"}`, `401` (senza chiave l'API resta chiusa)
+   e `200` (il vecchio indirizzo va ancora). `curl` si ferma da solo se
+   il certificato non è valido.
+4. **L'app**: dopo la prova, con l'ok dell'utente, `EXPO_PUBLIC_API_URL`
+   di `preview` su EAS diventa `https://api.getmuw.app` (F.8, punto 6) e
+   si pubblica. La chiave non cambia. Le app che non hanno ancora scaricato
+   l'aggiornamento continuano su `sslip.io`, per questo il vecchio nome
+   resta nel Caddyfile.
+
+**Tornare indietro**: `cp /etc/caddy/Caddyfile.before-task265
+/etc/caddy/Caddyfile && systemctl reload caddy`. Se l'app era già
+passata ad `api.getmuw.app`, prima si ripubblica con l'indirizzo
+`sslip.io`.
+
+**Strava resta su `sslip.io`.** `SHAPEROUTE_DOMAIN` in `deploy/.env` è
+solo l'indirizzo a cui Strava rimanda il browser dopo «Connect with
+Strava», e deve essere uguale alla «Authorization Callback Domain»
+dell'applicazione Strava dell'utente. Per spostarlo su `api.getmuw.app`
+vanno cambiati tutti e due insieme (l'utente su
+<https://www.strava.com/settings/api>, poi `.env` e `docker compose up
+-d`): non fa parte di TASK-265.
 
 ---
 

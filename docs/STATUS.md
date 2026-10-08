@@ -157,6 +157,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-265 — Il dominio getmuw.app** (ADR-0234; scelta dell'utente del
+  2026-10-08). L'utente voleva spostare «il sito» su un'azienda tedesca;
+  saputo che il sito non era online e che Hetzner è già tedesca, è
+  **rimasto su questo server** e ha **comprato `getmuw.app`** su Porkbun.
+  L'API risponderà su `api.getmuw.app` accanto a `sslip.io`, che resta;
+  `getmuw.app` e `www` sono per il sito (TASK-237). Documentazione in PR
+  (`DEPLOY.md`, F.14). **Aspettano**: i tre record `A` che l'utente scrive
+  su Porkbun, poi il Caddyfile sul server e `EXPO_PUBLIC_API_URL` di
+  `preview`, del Coordinatore e ciascuno con l'ok dell'utente. Il ritorno
+  da Strava resta su `sslip.io`. `tasks/TASK-265.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

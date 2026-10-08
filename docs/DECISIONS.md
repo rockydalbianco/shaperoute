@@ -12824,6 +12824,14 @@ i disegni pubblicati con le reazioni (TASK-117, TASK-119) e i preferiti
    I conteggi non escono nella risposta: decidono solo l'ordine.
 5. `run_scored` degli `insights` **non entra**: non sa di quale percorso
    è; le corse salvate dicono lo stesso e sanno il percorso.
+6. **Nell'app** una riga «RECOMMENDED» che scorre di lato, sopra le
+   schede di «Best near you», con le stesse schede (`RouteCard`) larghe
+   come quelle di «NEARBY TOWNS»; un tocco apre il percorso come le altre.
+   La riga (`RecommendedRow.tsx`) legge da sola il token dal portachiavi
+   (`loadSession`), una volta per punto, perché `App.tsx` resta fuori dal
+   task. Si chiede solo quando «Best near you» ha percorsi: senza
+   catalogo vicino nessuna richiesta in più. Senza token, rete o risposta
+   valida non c'è.
 
 **Alternative scartate**:
 
@@ -12847,3 +12855,7 @@ i disegni pubblicati con le reazioni (TASK-117, TASK-119) e i preferiti
   dell'API ha lo stesso esempio di quello dell'app.
 - Le corse dei percorsi disegnati sul telefono o dagli esempi di una
   città non entrano: solo il catalogo, come «Best near you».
+- La riga ripete in un altro ordine percorsi che sono anche sotto: è il
+  suo scopo (mettere davanti i migliori), non un doppione da togliere.
+- Chi entra nell'account con «Explore» già aperto vede la riga dal punto
+  o dalla città dopo: il token si legge per punto, non a ogni disegno.

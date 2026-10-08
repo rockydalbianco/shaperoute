@@ -123,6 +123,11 @@ dall'utente prima dell'App Store; numero e ADR dal Coordinatore.
   runtimeversion:resolve` (i casi sono in ADR-0233). Nessuna build e nessun `eas update`: servono
   l'account Apple e le variabili dell'ambiente EAS `production`, oggi
   vuoto (`DEPLOY.md` A.7, punti 1–2).
-- **Resta per la parte che fa la prima build**: confrontare l'impronta
-  della build con quella del Mac (`DEPLOY.md` A.7, punto 4); poi i passi
-  1–2 e 4–9 di «Cosa fare» e le cinque domande.
+- **Resta per la parte che fa la prima build**, nell'ordine:
+  1. le variabili dell'ambiente EAS `production` (`EXPO_PUBLIC_API_URL`,
+     `EXPO_PUBLIC_API_KEY`), oggi vuoto: le scrive l'utente, o l'agente
+     solo con il suo sì esplicito, **prima** della prima build
+     (`DEPLOY.md` A.7, punto 1);
+  2. confrontare l'impronta della build con quella del Mac (`DEPLOY.md`
+     A.7, punto 4);
+  3. i passi 1–2 e 4–9 di «Cosa fare» e le cinque domande.

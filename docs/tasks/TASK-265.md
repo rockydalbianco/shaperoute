@@ -1,7 +1,8 @@
 # TASK-265 — Il dominio getmuw.app per l'API
 
-**Stato**: In corso — l'API risponde su `api.getmuw.app` (2026-10-08);
-documentazione in PR; l'indirizzo nell'app aspetta l'ok dell'utente
+**Stato**: Done — 2026-10-08: l'API risponde su `api.getmuw.app` e
+l'app di `preview` la chiama lì (gruppo `a39c9509`); il sito su
+`getmuw.app` resta a TASK-237 B
 **Fase**: 4 · **Branch**: `docs/TASK-265-domain`
 **ADR**: ADR-0234
 
@@ -114,6 +115,12 @@ docs/STATUS.md
    `CN=api.getmuw.app` (`YE1`), valido fino al 2027-01-06. `/health`
    risponde 200 su `api.getmuw.app` e su `sslip.io`, `/docs` senza chiave
    401 (prove dal Mac).
-3. **Restano**, ciascuno con l'ok dell'utente: `EXPO_PUBLIC_API_URL` di
-   `preview` → `https://api.getmuw.app` (il Coordinatore), e il sito su
-   `getmuw.app` e `www` dopo il merge della #443 (TASK-237 B).
+3. **L'app**, dal Coordinatore il 2026-10-08 con l'ok dell'utente («ok,
+   passa l'app su api.getmuw.app»): `EXPO_PUBLIC_API_URL` di `preview`
+   → `https://api.getmuw.app`, la chiave non toccata, poi `main`
+   `08793f41` pubblicato come gruppo `a39c9509`. Le app ancora su gruppi
+   più vecchi continuano su `sslip.io`, che resta nel Caddyfile.
+4. **Fuori da questo task**: il sito su `getmuw.app` e `www`, dopo il
+   merge della #443 e il sì dell'utente sulla pubblicazione (TASK-237 B,
+   `DEPLOY.md` F.14, «Il sito su `getmuw.app`»); il ritorno da Strava
+   ancora su `sslip.io` (vedi «Fuori scope»).

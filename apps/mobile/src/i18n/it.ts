@@ -1082,6 +1082,14 @@ export const IT: Table = {
   // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
   "{user}: {title}. {facts}.": "{user}: {title}. {facts}.",
 
+  // The shapes' names, the map and «Explore»: src/route/shapeWords.ts,
+  // src/map/mapPage.ts, src/explore/{ExploreScreen,ThemedCard}.tsx
+  // (TASK-210, parte F)
+  "{list} or {last}": "{list} o {last}",
+  "Start here": "Parti da qui",
+  "NEAR {city}": "VICINO A {city}",
+  here: "qui",
+
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you about follow requests, reactions, comments and tags. MuW does not send emails yet: your choice is kept for when it does.":
     "Le notifiche push ti avvisano di richieste di follow, reazioni, commenti e tag. MuW non manda ancora email: la tua scelta resta salvata per quando lo farà.",

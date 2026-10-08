@@ -761,22 +761,29 @@ inclinate»).
 
 ### Trova dove la forma ci sta (TASK-038)
 
-Se la ricerca attorno alla partenza non trova un percorso buono (distanza
-±10% e somiglianza ≥ 0,90), c'è un **secondo tempo** (ADR-0040):
+Se la ricerca attorno alla partenza non trova **nessun percorso
+disegnabile** (somiglianza sotto 0,60, o oltre ±2 km dal target: quelli che
+il motore rifiuterebbe), c'è un **secondo tempo** (ADR-0040):
 
 1. si carica un grafo più grande, che copre la forma anche da una partenza
    a 2 km (può voler dire scaricare una zona nuova);
 2. la stessa ricerca riparte dalle partenze lontane (1, 1,5 e 2 km in 12
    direzioni), con altri 20 tracciamenti;
-3. il percorso lontano sostituisce quello vicino solo se è buono, o se
-   quello vicino non c'era. Spostarsi continua a costare come sopra, quindi
-   fra due posti buoni vince il più vicino.
+3. il percorso lontano sostituisce quello vicino se è buono, o anche solo
+   disegnabile: quello vicino non lo era. Spostarsi continua a costare come
+   sopra, quindi fra due posti buoni vince il più vicino.
 
-Dove la forma ci sta già il secondo tempo non parte: stessi percorsi e
-stessi tempi di prima. Se la forma non è disponibile né vicino né lontano,
-l'errore lo dice («… cannot be drawn here, nor within 2 km: …»). L'avviso
-sullo spostamento passa ai km sopra i 1000 m («start moved 1.5 km
-north-east of the requested point, …»).
+Dove vicino alla partenza un percorso si disegna, **anche non buono**, il
+secondo tempo non parte (TASK-203 B, ADR-0230). Fino ad allora partiva
+appena il percorso vicino non era buono (distanza ±10% e somiglianza
+≥ 0,90): era metà del tempo di una richiesta lunga (1,3–1,9 s su cuore e
+cerchio, 3,6–6,5 s su una parola tonda, sul Mac) e, su 15 richieste in sei
+città, ha dato un percorso migliore in una (il cerchio da 15 km a Bologna,
+0,92 a 1 km invece di 0,88 dalla partenza). Scelta dell'utente del
+2026-10-07: percorsi più veloci anche se diversi. Se la forma non è
+disponibile né vicino né lontano, l'errore lo dice («… cannot be drawn
+here, nor within 2 km: …»). L'avviso sullo spostamento passa ai km sopra i
+1000 m («start moved 1.5 km north-east of the requested point, …»).
 
 ### Partenze vicine (TASK-076)
 

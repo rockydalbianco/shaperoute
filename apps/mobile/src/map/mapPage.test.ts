@@ -6,6 +6,7 @@ import {
   isExternalUrl,
   MAP_BACKGROUND,
   MAP_STYLE,
+  mapStyle,
   MAPLIBRE_CSS_SRI,
   MAPLIBRE_CSS_URL,
   MAPLIBRE_JS_SRI,
@@ -46,6 +47,8 @@ test("loads a pinned MapLibre GL JS with SRI hashes", () => {
 });
 
 test("writes the dark style into the page, and no key", () => {
+  // In the app's language, English under jest; the Feed's maps take it too.
+  expect(MAP_STYLE).toEqual(mapStyle("en"));
   expect(page).toContain(
     `style: ${JSON.stringify(MAP_STYLE).replace(/</g, "\\u003c")}`,
   );

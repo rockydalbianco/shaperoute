@@ -1,6 +1,7 @@
 import type { Activity, LatLon, Walk } from "@shaperoute/shared-types";
 
 import { apiKey, keyHeaders } from "../api/apiUrl";
+import { shapeWord } from "../i18n/shapeNames";
 
 /**
  * The best routes already planned near a point, for "Explore" (TASK-126,
@@ -207,12 +208,15 @@ export function isRecommendedDetail(body: unknown): body is RecommendedRouteDeta
   return hasRouteFields(r) && isLine(r.points, 2) && typeof r.license === "string";
 }
 
-/** What a route draws, as the user reads it: "heart", "CIAO". */
+/**
+ * What a route draws, as the user reads it: "heart", "CIAO"; the shape in
+ * the app's language, «Herz» (TASK-210 F).
+ */
 export function routeTitle(route: {
   shape: string | null;
   word: string | null;
 }): string {
-  return route.word ?? (route.shape ?? "").replace(/_/g, " ");
+  return route.word ?? shapeWord(route.shape ?? "");
 }
 
 /** The cities of the catalogue whose name is two words: its files have one. */

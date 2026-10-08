@@ -9,7 +9,8 @@ Run from the repository root, standard library only::
 
     python3 site/tools/make_prints.py
 
-It rewrites ``site/prints/*.svg``, the brand files in ``site/assets/`` and the
+It rewrites ``site/prints/*.svg``, the MuW brand files in ``site/assets/``
+(from ``docs/brand/``, ADR-0224) and the
 drawing between the two ``hero-route`` comments of ``site/index.html``. The
 output is deterministic: the same catalogue gives the same files.
 """
@@ -31,6 +32,9 @@ EARTH_RADIUS_M = 6_371_008.8
 
 # The two inks of the shop, the brand's yellow and black (`tokens.ts`).
 INK = {"yellow": "#FFD02B", "black": "#0A0A0B"}
+# The ink of `docs/brand/muw-logo.svg` (`onAccent`), and the app's `text`.
+BRAND_INK = "#0A0A0B"
+TEXT = "#F5F5F4"
 
 BOX = 1000.0  # side of the square the route is fitted into
 PADDING = 70.0
@@ -184,9 +188,15 @@ def write_hero(print_: Print) -> None:
 
 
 def logo_svg(ink: str) -> str:
-    """The brand's logo (`docs/brand/sgrava-logo.svg`) in one of the shop's inks."""
-    logo = (BRAND / "sgrava-logo.svg").read_text(encoding="utf-8")
-    return re.sub(r"#FFD02B", INK[ink], logo)
+    """The brand's wordmark (`docs/brand/muw-logo.svg`) in one of the shop's inks."""
+    logo = (BRAND / "muw-logo.svg").read_text(encoding="utf-8")
+    return logo.replace(BRAND_INK, INK[ink])
+
+
+def site_logo_svg() -> str:
+    """The wordmark for the page's dark background: the app's text colour."""
+    logo = (BRAND / "muw-logo.svg").read_text(encoding="utf-8")
+    return logo.replace(BRAND_INK, TEXT)
 
 
 def main() -> None:
@@ -198,10 +208,10 @@ def main() -> None:
         )
     (SITE / "prints" / "logo-black.svg").write_text(logo_svg("black"), encoding="utf-8")
     write_hero(HERO)
-    for name in ("sgrava-logo.svg", "sgrava-mark.svg"):
-        (SITE / "assets" / name).write_text(
-            (BRAND / name).read_text(encoding="utf-8"), encoding="utf-8"
-        )
+    (SITE / "assets" / "muw-logo.svg").write_text(site_logo_svg(), encoding="utf-8")
+    (SITE / "assets" / "muw-mark.svg").write_text(
+        (BRAND / "muw-mark.svg").read_text(encoding="utf-8"), encoding="utf-8"
+    )
 
 
 if __name__ == "__main__":

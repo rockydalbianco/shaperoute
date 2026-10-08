@@ -1,6 +1,6 @@
 # TASK-150 — Il conto AdMob e i pagamenti sul conto dell'utente
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `docs/TASK-150-admob-payments`
 **Dipende da**: nessuno · **Serve prima di**: TASK-153 · In parallelo con TASK-152
 
@@ -66,6 +66,10 @@ l'agente prepara le domande e la guida.
    IVA si apre quando arrivano i guadagni. Scelta dell'utente
    (2026-10-02). Conseguenze in `docs/PUBBLICITA.md`, «Persona adesso,
    partita IVA dopo».
+2. **Account AdMob e profilo pagamenti**: fatti dall'utente (2026-10-02 e
+   2026-10-08), tipo **individuale**. L'app iOS è in AdMob; il suo ID è in
+   `apps/mobile/app.json` da TASK-166. Identità e PIN arrivano quando
+   Google li chiede, intorno ai 10 $ di guadagni.
 
 Fatto dall'agente il 2026-10-02: `docs/PUBBLICITA.md` con il calendario
 dei pagamenti, i passi in ordine e le domande per il commercialista. Il
@@ -74,12 +78,12 @@ le domande al commercialista vengono prima dell'account.
 
 ## Criteri di accettazione
 
-- [ ] Le domande per il commercialista sono consegnate all'utente.
-- [ ] La scelta «persona o ditta» è scritta qui sopra, presa dall'utente.
-- [ ] L'account AdMob esiste e il profilo pagamenti ha il conto dell'utente
+- [x] Le domande per il commercialista sono consegnate all'utente.
+- [x] La scelta «persona o ditta» è scritta qui sopra, presa dall'utente.
+- [x] L'account AdMob esiste e il profilo pagamenti ha il conto dell'utente
       (lo conferma l'utente).
-- [ ] `docs/PUBBLICITA.md` esiste e `docs/INDEX.md` lo elenca.
-- [ ] Nel repository non c'è nessun dato personale: IBAN, codice fiscale,
+- [x] `docs/PUBBLICITA.md` esiste e `docs/INDEX.md` lo elenca.
+- [x] Nel repository non c'è nessun dato personale: IBAN, codice fiscale,
       indirizzo, ID del publisher.
 
 ## File toccati
@@ -100,4 +104,11 @@ docs/tasks/TASK-150.md
 
 ## Esito
 
-*(si compila a fine task)*
+**Done (2026-10-08)**: account AdMob da persona, con il profilo pagamenti
+completato dall'utente; guida in `docs/PUBBLICITA.md` (calendario dei
+pagamenti, passi, domande per il commercialista, «Persona adesso, partita
+IVA dopo»). Dal 2026-10-05 gli annunci sono nativi nel Feed (ADR-0198),
+quindi in TASK-153 l'unità da creare è nativa, non interstitial. Restano
+TASK-152 (App Store) e TASK-153 (annunci veri). Seguito chiesto
+dall'utente il 2026-10-08: annunci anche sul sito getmuw.app (AdSense),
+da numerare.

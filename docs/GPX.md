@@ -31,15 +31,40 @@ GPX **1.1**, namespace `http://www.topografix.com/GPX/1/1`.
 </gpx>
 ```
 
-- **Un solo `<trk>` con un solo `<trkseg>`.** Niente `<rte>` né `<wpt>`:
-  un track è ciò che i visualizzatori e gli orologi trattano come "percorso
-  da seguire" senza ricalcolarlo.
+- **Un solo `<trk>` con un solo `<trkseg>`.** Niente `<rte>`: un track è
+  ciò che i visualizzatori e gli orologi trattano come "percorso da
+  seguire" senza ricalcolarlo. Niente `<wpt>`, tranne per una parola con
+  la penna alzata (sotto).
 - **Primo e ultimo punto coincidono** e sono il punto di partenza
-  dell'utente (ADR-0018): il percorso è un anello.
+  dell'utente (ADR-0018): il percorso è un anello. Tranne una parola con la
+  penna alzata, che finisce sull'ultima lettera.
 - **Coordinate con 7 decimali** (≈ 1 cm). Di più è rumore; di meno
   sposterebbe i punti in modo visibile a zoom stradale.
 - **Niente quote** (`<ele>`) e niente tempi per punto: non esiste ancora una
   sorgente altimetrica, e un tempo inventato sarebbe un dato falso.
+
+## La penna alzata (TASK-197, ADR-0157)
+
+Una parola con la penna alzata ha i suoi tratti a piedi fra una lettera e
+l'altra (`RouteResult.walks`, `API.md`). La linea resta **una sola**, da
+seguire, tratti a piedi compresi; per ogni tratto a piedi il GPX ha **due
+waypoint**, prima del `<trk>` come GPX 1.1 chiede, nell'ordine del
+percorso:
+
+```
+<wpt lat="46.0671000" lon="11.1214000"><name>Pause</name></wpt>
+<wpt lat="46.0671000" lon="11.1253000"><name>Resume</name></wpt>
+```
+
+- «Pause» sul primo punto del tratto a piedi, dove finisce una lettera;
+  «Resume» sull'ultimo, dove comincia la successiva. Con n lettere,
+  2 × (n − 1) waypoint.
+- Servono a chi corre con l'orologio e mette in pausa a mano: molti
+  orologi mostrano i waypoint lungo il percorso. L'app di Sgrava mette in
+  pausa da sola (TASK-198), e il GPX della corsa fatta apre un `<trkseg>`
+  nuovo a ogni pausa (sotto).
+- Senza `walks` (una forma, un'immagine, una parola senza penna alzata,
+  un'app che non li manda) il file è quello di prima, senza `<wpt>`.
 
 ## Metadati
 
@@ -60,10 +85,49 @@ viaggia. I campioni scritti prima non la hanno, e restano come sono
 ## Dove vive il codice
 
 `services/route-engine/route_engine/export_gpx.py`, solo libreria standard
-(`xml.etree.ElementTree`). È l'unico scrittore di GPX: lo usano la CLI e
-l'API (`POST /gpx`, `API.md`), quindi il file del telefono e quello della
-CLI sono uguali per lo stesso percorso. Niente `services/export/` finché
-non arrivano i formati per orologi (ADR-0033).
+(`xml.etree.ElementTree`). È l'unico scrittore del GPX di un percorso: lo
+usano la CLI e l'API (`POST /gpx`, `API.md`), quindi il file del telefono e
+quello della CLI sono uguali per lo stesso percorso. Niente
+`services/export/` finché non arrivano i formati per orologi (ADR-0033).
+Il GPX di una corsa fatta è un'altra cosa e lo scrive l'API: «La corsa
+fatta», sotto.
+
+## La corsa fatta (TASK-187, ADR-0156)
+
+Una corsa salvata (`runs`, `DATABASE.md`) diventa un GPX quando va a
+Strava (`API.md`, «Send to Strava»): `services/api/shaperoute_api/run_gpx.py`,
+solo libreria standard. Non è il file del percorso: è dove il corridore è
+stato e quando, quindi ha quello che là manca e non ha quello che là c'è.
+
+```
+<gpx version="1.1" creator="Sgrava">
+  <metadata>
+    <name>Heart in Trento</name>
+    <time>2026-09-21T14:13:20.000Z</time>
+  </metadata>
+  <trk>
+    <name>Heart in Trento</name>
+    <trkseg>
+      <trkpt lat="46.0671000" lon="11.1214000">
+        <time>2026-09-21T14:13:20.000Z</time>
+      </trkpt>
+      …
+    </trkseg>
+    <trkseg>…</trkseg>
+  </trk>
+</gpx>
+```
+
+- **Ogni punto ha il suo orario**, in UTC al millisecondo: l'inizio della
+  corsa più i secondi del punto (la coordinata M della traccia).
+- **Una pausa chiude un `<trkseg>`** e il punto dopo ne apre un altro, come
+  GPX chiede per un ricevitore spento. I punti presi dentro una pausa non
+  ci sono: non sono della corsa. Una pausa che comincia su un punto lo
+  lascia nel segmento di prima, come l'API conta i metri.
+- **Niente attribuzione a OpenStreetMap**: la traccia è il GPS del
+  corridore, non un dato di OSM. Niente quote: `runs` non le ha.
+- Il nome c'è solo se la corsa ha disegnato qualcosa di noto.
+- Il file non si salva da nessuna parte: si scrive quando parte.
 
 ## Dal telefono
 
@@ -71,7 +135,7 @@ Sotto un percorso disegnato, «Export GPX» (TASK-024):
 
 1. l'app manda a `POST /gpx` la richiesta e il risultato che ha già;
 2. l'API risponde il GPX con il nome del file, per esempio
-   `shaperoute-heart-5km-2026-09-23.gpx`: senza spazi né caratteri strani,
+   `sgrava-heart-5km-2026-09-23.gpx`: senza spazi né caratteri strani,
    che alcune app rifiutano;
 3. l'app lo salva nella propria cartella temporanea (`expo-file-system`),
    che il sistema può svuotare;
@@ -96,3 +160,5 @@ sovrascrive mai (ADR-0014). La nomenclatura dei file in `samples/` è in
   dell'utente del 2026-09-23). **Strava** e **Komoot** non sono ancora stati
   provati.
 - Quote altimetriche: servono in fase 4 (dislivello), sorgente da decidere.
+- I waypoint «Pause» e «Resume» della penna alzata (TASK-197): scritti e
+  provati nei test, non ancora aperti su un orologio né su Garmin Connect.

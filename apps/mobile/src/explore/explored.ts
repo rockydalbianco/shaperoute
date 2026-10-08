@@ -1,4 +1,5 @@
 import {
+  type LatLon,
   type LetterStyle,
   type RouteResult,
   type Shape,
@@ -6,12 +7,15 @@ import {
 } from "@shaperoute/shared-types";
 import { useCallback, useMemo, useRef, useState } from "react";
 
+import { isPenUpShape } from "../route/penUpShapes";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
-import { exampleDetail } from "./exampleRoutes";
+import { type ExampleDetail, exampleDetail } from "./exampleRoutes";
 import {
+  type DetailOutcome,
   fetchRecommendedRoute,
   type RecommendedRoute,
   type RecommendedRouteDetail,
+  turnOf,
 } from "./recommendedRoutes";
 
 /** A route of "Explore" opened on the map. */
@@ -32,6 +36,8 @@ export type Explored =
       choices: RouteResult[];
       chosen: number;
       choose: (index: number) => void;
+      /** The lines of the routes not chosen, grey on the map (TASK-155). */
+      others: LatLon[][];
     }
   | { status: "failed"; route: RecommendedRoute };
 
@@ -67,6 +73,8 @@ export function optionsOf(
       route_m: one.route_m,
       similarity: one.similarity,
       start: one.points[0],
+      // Each route of the choice is turned as its own drawing (TASK-232).
+      rotation_deg: turnOf(one).rotation_deg,
     };
     return [{ route: shown, detail: one, request, result: toResult(one) }];
   });
@@ -76,21 +84,30 @@ function isShape(value: string | null): value is Shape {
   return value !== null && (SHAPES as readonly string[]).includes(value);
 }
 
-/** The request a drawn route would have had: what the GPX export sends. */
+/** The request a drawn route would have had: what the GPX export sends,
+ * and Start reads (on the water there are no directions to ask, TASK-191). */
 export function toRequest(detail: RecommendedRouteDetail): AnyRouteRequest | null {
   const base = {
     start: detail.points[0],
     distance_m: detail.distance_m,
-    activity: "running" as const,
+    activity: detail.activity ?? "running",
   };
   if (detail.word !== null) {
     const style: LetterStyle = detail.style === "block" ? "block" : "round";
     return { ...base, word: detail.word, style };
   }
-  return isShape(detail.shape) ? { ...base, shape: detail.shape } : null;
+  if (!isShape(detail.shape)) {
+    return null;
+  }
+  // Drawn in pieces, the pen up between them (TASK-226): asked so again.
+  return detail.walks !== undefined && isPenUpShape(detail.shape)
+    ? { ...base, shape: detail.shape, pen_up: true }
+    : { ...base, shape: detail.shape };
 }
 
-export function toResult(detail: RecommendedRouteDetail): RouteResult {
+export function toResult(
+  detail: RecommendedRouteDetail & Pick<ExampleDetail, "centre">,
+): RouteResult {
   return {
     points: detail.points,
     distance_m: detail.route_m,
@@ -100,8 +117,19 @@ export function toResult(detail: RecommendedRouteDetail): RouteResult {
     // Planned ahead, without turn-by-turn: Start asks for them (TASK-145).
     directions: [],
     word: detail.word,
+    ...(detail.walks !== undefined ? { walks: detail.walks } : {}),
+    // Turned, the map turns the other way (TASK-232).
+    ...turnOf(detail),
+    // An example on the water says where its shape is (TASK-244).
+    ...(detail.centre !== undefined ? { centre: detail.centre } : {}),
   };
 }
+
+/**
+ * How a route is fetched whole: by its id, unless who opens it knows a
+ * surer way (a drawing of «Feed», TASK-188).
+ */
+export type FetchWhole = (apiUrl: string, id: string) => Promise<DetailOutcome>;
 
 /**
  * Opens a route of "Explore": fetches it whole; a city's example (TASK-143)
@@ -109,14 +137,19 @@ export function toResult(detail: RecommendedRouteDetail): RouteResult {
  */
 export function useExplored(apiUrl: string | null): {
   explored: Explored | null;
-  open: (route: RecommendedRoute) => void;
+  open: (route: RecommendedRoute, fetchWhole?: FetchWhole) => void;
   close: () => void;
+  /**
+   * The example on the map drawn again with its shape moved (TASK-244):
+   * `detail` takes its place, alone. Nothing when another route is open.
+   */
+  redraw: (detail: ExampleDetail) => void;
 } {
   const [opened, setOpened] = useState<Opened | null>(null);
   const asked = useRef<string | null>(null);
 
   const open = useCallback(
-    (route: RecommendedRoute) => {
+    (route: RecommendedRoute, fetchWhole: FetchWhole = fetchRecommendedRoute) => {
       asked.current = route.id;
       const example = exampleDetail(route.id);
       const examples =
@@ -130,7 +163,7 @@ export function useExplored(apiUrl: string | null): {
         return;
       }
       setOpened({ status: "loading", route });
-      void fetchRecommendedRoute(apiUrl, route.id).then((outcome) => {
+      void fetchWhole(apiUrl, route.id).then((outcome) => {
         if (asked.current !== route.id) {
           return;
         }
@@ -148,6 +181,16 @@ export function useExplored(apiUrl: string | null): {
   const close = useCallback(() => {
     asked.current = null;
     setOpened(null);
+  }, []);
+
+  const redraw = useCallback((detail: ExampleDetail) => {
+    setOpened((now) => {
+      if (now?.status !== "done" || now.options[now.chosen].detail.id !== detail.id) {
+        return now;
+      }
+      const options = optionsOf(now.options[now.chosen].route, detail);
+      return options.length > 0 ? { status: "done", options, chosen: 0 } : now;
+    });
   }, []);
 
   const choose = useCallback((index: number) => {
@@ -168,8 +211,11 @@ export function useExplored(apiUrl: string | null): {
       choices: opened.options.map((option) => option.result),
       chosen: opened.chosen,
       choose,
+      others: opened.options
+        .filter((_, index) => index !== opened.chosen)
+        .map((option) => option.detail.points),
     };
   }, [opened, choose]);
 
-  return { explored, open, close };
+  return { explored, open, close, redraw };
 }

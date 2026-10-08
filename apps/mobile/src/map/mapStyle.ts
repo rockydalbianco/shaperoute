@@ -1,3 +1,4 @@
+import type { Language } from "../i18n/languages";
 import { color } from "../theme/tokens";
 
 /**
@@ -55,147 +56,158 @@ function roadWidth(far: number, mid: number, near: number) {
   return ["interpolate", ["linear"], ["zoom"], 10, far, 14, mid, 18, near];
 }
 
-export const sgravaDarkStyle = {
-  version: 8,
-  name: "Sgrava Dark",
-  glyphs: GLYPHS_URL,
-  sources: {
-    openmaptiles: {
-      type: "vector",
-      url: TILE_SOURCE_URL,
-      attribution: ATTRIBUTION,
-    },
-  },
-  layers: [
-    {
-      id: "background",
-      type: "background",
-      paint: { "background-color": color.map.background },
-    },
-    {
-      id: "landuse-built-up",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "landuse",
-      filter: [
-        "match",
-        ["get", "class"],
-        ["residential", "suburb", "neighbourhood"],
-        true,
-        false,
-      ],
-      paint: { "fill-color": color.map.builtUp },
-    },
-    {
-      id: "landcover-green",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "landcover",
-      filter: ["match", ["get", "class"], ["wood", "grass", "farmland"], true, false],
-      paint: { "fill-color": color.map.green },
-    },
-    {
-      id: "park",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "park",
-      paint: { "fill-color": color.map.green },
-    },
-    {
-      id: "water",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "water",
-      paint: { "fill-color": color.map.water },
-    },
-    {
-      id: "waterway",
-      type: "line",
-      source: "openmaptiles",
-      "source-layer": "waterway",
-      minzoom: 9,
-      paint: {
-        "line-color": color.map.waterLine,
-        "line-width": roadWidth(0.4, 1, 2.5),
+/**
+ * A place's name in `language` (TASK-210 F): «München» in German, "Munich"
+ * in English, and the name on the spot where the map has none in it. The
+ * tiles carry OpenStreetMap's `name:xx` for each of the app's languages.
+ */
+export function placeName(language: Language) {
+  return ["coalesce", ["get", `name:${language}`], ["get", "name"]];
+}
+
+/** The style with the places named in `language`. */
+export const darkMapStyle = (language: Language) =>
+  ({
+    version: 8,
+    name: "MuW Dark",
+    glyphs: GLYPHS_URL,
+    sources: {
+      openmaptiles: {
+        type: "vector",
+        url: TILE_SOURCE_URL,
+        attribution: ATTRIBUTION,
       },
     },
-    {
-      id: "building",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "building",
-      minzoom: 13,
-      paint: { "fill-color": color.map.building, "fill-opacity": 0.85 },
-    },
-    // Roads, faintest first: the later a layer is listed, the higher it draws.
-    {
-      id: "road-faint",
-      type: "line",
-      source: "openmaptiles",
-      "source-layer": "transportation",
-      minzoom: 13,
-      filter: roadFilter(FAINT_ROADS),
-      layout: { "line-join": "round", "line-cap": "round" },
-      paint: {
-        "line-color": color.map.roadFaint,
-        "line-width": roadWidth(0.3, 0.8, 3),
+    layers: [
+      {
+        id: "background",
+        type: "background",
+        paint: { "background-color": color.map.background },
       },
-    },
-    {
-      id: "road-minor",
-      type: "line",
-      source: "openmaptiles",
-      "source-layer": "transportation",
-      minzoom: 11,
-      filter: roadFilter(MINOR_ROADS),
-      layout: { "line-join": "round", "line-cap": "round" },
-      paint: {
-        "line-color": color.map.roadMinor,
-        "line-width": roadWidth(0.4, 1.2, 5),
+      {
+        id: "landuse-built-up",
+        type: "fill",
+        source: "openmaptiles",
+        "source-layer": "landuse",
+        filter: [
+          "match",
+          ["get", "class"],
+          ["residential", "suburb", "neighbourhood"],
+          true,
+          false,
+        ],
+        paint: { "fill-color": color.map.builtUp },
       },
-    },
-    {
-      id: "road-medium",
-      type: "line",
-      source: "openmaptiles",
-      "source-layer": "transportation",
-      filter: roadFilter(MEDIUM_ROADS),
-      layout: { "line-join": "round", "line-cap": "round" },
-      paint: {
-        "line-color": color.map.roadMedium,
-        "line-width": roadWidth(0.7, 2, 7),
+      {
+        id: "landcover-green",
+        type: "fill",
+        source: "openmaptiles",
+        "source-layer": "landcover",
+        filter: ["match", ["get", "class"], ["wood", "grass", "farmland"], true, false],
+        paint: { "fill-color": color.map.green },
       },
-    },
-    {
-      id: "road-major",
-      type: "line",
-      source: "openmaptiles",
-      "source-layer": "transportation",
-      filter: roadFilter(MAJOR_ROADS),
-      layout: { "line-join": "round", "line-cap": "round" },
-      paint: {
-        "line-color": color.map.roadMajor,
-        "line-width": roadWidth(1, 3, 10),
+      {
+        id: "park",
+        type: "fill",
+        source: "openmaptiles",
+        "source-layer": "park",
+        paint: { "fill-color": color.map.green },
       },
-    },
-    {
-      id: "place-label",
-      type: "symbol",
-      source: "openmaptiles",
-      "source-layer": "place",
-      filter: ["match", ["get", "class"], ["city", "town", "village"], true, false],
-      layout: {
-        "text-field": ["coalesce", ["get", "name:it"], ["get", "name"]],
-        "text-font": LABEL_FONT,
-        "text-size": ["interpolate", ["linear"], ["zoom"], 8, 11, 14, 15],
-        "text-letter-spacing": 0.08,
-        "text-max-width": 8,
+      {
+        id: "water",
+        type: "fill",
+        source: "openmaptiles",
+        "source-layer": "water",
+        paint: { "fill-color": color.map.water },
       },
-      paint: {
-        "text-color": color.map.label,
-        "text-halo-color": color.map.labelHalo,
-        "text-halo-width": 1.2,
+      {
+        id: "waterway",
+        type: "line",
+        source: "openmaptiles",
+        "source-layer": "waterway",
+        minzoom: 9,
+        paint: {
+          "line-color": color.map.waterLine,
+          "line-width": roadWidth(0.4, 1, 2.5),
+        },
       },
-    },
-  ],
-} as const;
+      {
+        id: "building",
+        type: "fill",
+        source: "openmaptiles",
+        "source-layer": "building",
+        minzoom: 13,
+        paint: { "fill-color": color.map.building, "fill-opacity": 0.85 },
+      },
+      // Roads, faintest first: the later a layer is listed, the higher it draws.
+      {
+        id: "road-faint",
+        type: "line",
+        source: "openmaptiles",
+        "source-layer": "transportation",
+        minzoom: 13,
+        filter: roadFilter(FAINT_ROADS),
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": color.map.roadFaint,
+          "line-width": roadWidth(0.3, 0.8, 3),
+        },
+      },
+      {
+        id: "road-minor",
+        type: "line",
+        source: "openmaptiles",
+        "source-layer": "transportation",
+        minzoom: 11,
+        filter: roadFilter(MINOR_ROADS),
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": color.map.roadMinor,
+          "line-width": roadWidth(0.4, 1.2, 5),
+        },
+      },
+      {
+        id: "road-medium",
+        type: "line",
+        source: "openmaptiles",
+        "source-layer": "transportation",
+        filter: roadFilter(MEDIUM_ROADS),
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": color.map.roadMedium,
+          "line-width": roadWidth(0.7, 2, 7),
+        },
+      },
+      {
+        id: "road-major",
+        type: "line",
+        source: "openmaptiles",
+        "source-layer": "transportation",
+        filter: roadFilter(MAJOR_ROADS),
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": color.map.roadMajor,
+          "line-width": roadWidth(1, 3, 10),
+        },
+      },
+      {
+        id: "place-label",
+        type: "symbol",
+        source: "openmaptiles",
+        "source-layer": "place",
+        filter: ["match", ["get", "class"], ["city", "town", "village"], true, false],
+        layout: {
+          "text-field": placeName(language),
+          "text-font": LABEL_FONT,
+          "text-size": ["interpolate", ["linear"], ["zoom"], 8, 11, 14, 15],
+          "text-letter-spacing": 0.08,
+          "text-max-width": 8,
+        },
+        paint: {
+          "text-color": color.map.label,
+          "text-halo-color": color.map.labelHalo,
+          "text-halo-width": 1.2,
+        },
+      },
+    ],
+  }) as const;

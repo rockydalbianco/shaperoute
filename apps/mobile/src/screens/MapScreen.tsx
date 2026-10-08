@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { t } from "../i18n";
 import { color, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { MapError } from "./ChooseScreen";
 
@@ -14,6 +15,9 @@ type Props = {
   mapError: string | null;
   /** While navigating, the next turn, in place of the way back (TASK-049). */
   banner?: ReactNode;
+  /** The north arrow of a turned map (TASK-232): under the way back or the
+   * banner, on the right. */
+  compass?: ReactNode;
   /** The wait, the route or the problem (RouteOutcome). */
   children: ReactNode;
 };
@@ -23,29 +27,44 @@ type Props = {
  * card underneath. The card sits below the map, not over it, so it never
  * covers the attribution (UI.md).
  */
-export function MapScreen({ map, active, onBack, mapError, banner, children }: Props) {
+export function MapScreen({
+  map,
+  active,
+  onBack,
+  mapError,
+  banner,
+  compass,
+  children,
+}: Props) {
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.screen}>
       <View style={styles.map}>
         {map}
         {active && (
-          <View style={[styles.top, { top: insets.top + space.sm }]}>
-            {banner ?? (
-              <Pressable
-                style={styles.back}
-                onPress={onBack}
-                accessibilityRole="button"
-                accessibilityLabel="Back"
-              >
-                <Text style={styles.backText}>←</Text>
-              </Pressable>
-            )}
-            {mapError && !banner && (
-              <View style={styles.errorBox}>
-                <MapError reason={mapError} />
-              </View>
-            )}
+          <View
+            style={[styles.top, { top: insets.top + space.sm }]}
+            // Beside the north arrow a finger is on the map.
+            pointerEvents="box-none"
+          >
+            <View style={styles.row}>
+              {banner ?? (
+                <Pressable
+                  style={styles.back}
+                  onPress={onBack}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("Back")}
+                >
+                  <Text style={styles.backText}>←</Text>
+                </Pressable>
+              )}
+              {mapError && !banner && (
+                <View style={styles.errorBox}>
+                  <MapError reason={mapError} />
+                </View>
+              )}
+            </View>
+            {compass}
           </View>
         )}
       </View>
@@ -70,6 +89,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: space.lg,
     right: space.lg,
+    gap: space.sm,
+  },
+  row: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: space.sm,

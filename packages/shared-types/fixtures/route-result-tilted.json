@@ -1,0 +1,45 @@
+{
+  "points": [
+    [46.0671, 11.1214],
+    [46.0742, 11.1561],
+    [46.0915, 11.1608],
+    [46.0985, 11.1388],
+    [46.0868, 11.1201],
+    [46.0671, 11.1214]
+  ],
+  "distance_m": 15104.7,
+  "similarity": 0.93,
+  "shape": "heart",
+  "warnings": [],
+  "directions": [],
+  "word": null,
+  "alternatives": [
+    {
+      "points": [
+        [46.0671, 11.1214],
+        [46.0671, 11.1644],
+        [46.0851, 11.1644],
+        [46.0941, 11.1429],
+        [46.0851, 11.1214],
+        [46.0671, 11.1214]
+      ],
+      "distance_m": 15212.4,
+      "similarity": 0.88,
+      "shape": "heart",
+      "warnings": [],
+      "directions": [],
+      "word": null,
+      "alternatives": [],
+      "walks": [],
+      "on_foot": [],
+      "better_distance_m": null,
+      "centre": null,
+      "rotation_deg": 0.0
+    }
+  ],
+  "walks": [],
+  "on_foot": [],
+  "better_distance_m": null,
+  "centre": null,
+  "rotation_deg": 30.0
+}

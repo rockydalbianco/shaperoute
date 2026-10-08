@@ -1,0 +1,28 @@
+{
+  "drawings": [
+    {
+      "id": "3f9d2c71-8a4b-4e06-b5d1-c27e9a40f815",
+      "title": "Sunday heart by the river",
+      "started_at": "2026-09-20T07:13:20Z",
+      "published_at": "2026-10-02T21:40:00Z",
+      "place": "Trento",
+      "shape": "star",
+      "word": null,
+      "style": null,
+      "route_title": null,
+      "distance_m": 4004,
+      "duration_s": 1140,
+      "score": 87,
+      "fidelity": 0.83,
+      "track_preview": [
+        [46.0671, 11.12399],
+        [46.0671, 11.1344],
+        [46.0761, 11.1344],
+        [46.0761, 11.1214],
+        [46.0689, 11.1214]
+      ]
+    }
+  ],
+  "next": null,
+  "total": 1
+}

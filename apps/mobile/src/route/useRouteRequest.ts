@@ -1,12 +1,8 @@
 import type { JobStatus, RouteResult } from "@shaperoute/shared-types";
 import { useCallback, useRef, useState } from "react";
 
-import {
-  type AnyRouteRequest,
-  isImageRequest,
-  requestRoute,
-  type RouteOutcome,
-} from "../api/routes";
+import { type AnyRouteRequest, isImageRequest, type RouteOutcome } from "../api/routes";
+import { requestRouteOnPhoneFirst } from "../engine/onPhone";
 
 export type { AnyRouteRequest };
 
@@ -38,15 +34,20 @@ export function useRouteRequest(baseUrl: string | null): {
   state: RouteState;
   draw: (request: AnyRouteRequest) => void;
   cancel: () => void;
+  /** Sends the last request again, as it was (TASK-256): the «Try again»
+   * under an error. Nothing before the first request. */
+  retry: () => void;
 } {
   const [state, setState] = useState<RouteState>({ status: "idle" });
   const current = useRef<AbortController | null>(null);
+  const last = useRef<AnyRouteRequest | null>(null);
 
   const draw = useCallback(
     (request: AnyRouteRequest) => {
       current.current?.abort();
       const mine = new AbortController();
       current.current = mine;
+      last.current = request;
       setState({ status: "waiting", request, startedAt: Date.now(), phase: "sending" });
       const onStatus = (phase: JobStatus) => {
         if (current.current === mine) {
@@ -54,7 +55,7 @@ export function useRouteRequest(baseUrl: string | null): {
         }
       };
       const outcome: Promise<RouteOutcome | { kind: "no_api_url" }> = baseUrl
-        ? requestRoute(baseUrl, request, { signal: mine.signal, onStatus })
+        ? requestRouteOnPhoneFirst(baseUrl, request, { signal: mine.signal, onStatus })
         : Promise.resolve({ kind: "no_api_url" });
       void outcome.then((answer) => {
         if (current.current !== mine) {
@@ -75,12 +76,20 @@ export function useRouteRequest(baseUrl: string | null): {
 
   const cancel = useCallback(() => current.current?.abort(), []);
 
-  return { state, draw, cancel };
+  const retry = useCallback(() => {
+    if (last.current) {
+      draw(last.current);
+    }
+  }, [draw]);
+
+  return { state, draw, cancel, retry };
 }
 
 /** Same start, shape, word or image, and distance: the state still belongs
  * to the screen. An image's outline is the same when it is the one traced
- * for the same picture, or the same edit of it (TASK-079): the same arrays. */
+ * for the same picture, or the same edit of it (TASK-079): the same arrays.
+ * A word with the pen up is another route than the same word without
+ * (TASK-198). */
 export function sameRequest(a: AnyRouteRequest, b: AnyRouteRequest): boolean {
   const drawn =
     isImageRequest(a) || isImageRequest(b)
@@ -90,7 +99,8 @@ export function sameRequest(a: AnyRouteRequest, b: AnyRouteRequest): boolean {
         a.strokes === b.strokes
       : a.shape === b.shape &&
         a.word === b.word &&
-        (a.style ?? "round") === (b.style ?? "round");
+        (a.style ?? "round") === (b.style ?? "round") &&
+        (a.pen_up ?? false) === (b.pen_up ?? false);
   return (
     a.start[0] === b.start[0] &&
     a.start[1] === b.start[1] &&

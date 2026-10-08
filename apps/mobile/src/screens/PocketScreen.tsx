@@ -2,16 +2,16 @@ import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { Alert, Modal, Pressable, StyleSheet, Text } from "react-native";
 
+import { t, tLater } from "../i18n";
 import { color, fontSize, space } from "../theme/tokens";
 
 /** How long to hold the black screen to leave pocket mode, in milliseconds. */
 export const HOLD_MS = 2000;
 
-export const POCKET_WARNING_TITLE = "Pocket mode";
-export const POCKET_WARNING =
-  "The screen goes dark but stays on, so directions go on. " +
-  "Do not lock the phone: if you press the side button, directions stop. " +
-  "To come back, hold the screen for 2 seconds.";
+export const POCKET_WARNING_TITLE = tLater("Pocket mode");
+export const POCKET_WARNING = tLater(
+  "The screen goes dark but stays on, so directions go on. Do not lock the phone: if you press the side button, directions stop. To come back, hold the screen for 2 seconds.",
+);
 
 let warned = false;
 
@@ -30,10 +30,10 @@ export function confirmPocketMode(enter: () => void): void {
     enter();
     return;
   }
-  Alert.alert(POCKET_WARNING_TITLE, POCKET_WARNING, [
-    { text: "Cancel", style: "cancel" },
+  Alert.alert(t(POCKET_WARNING_TITLE), t(POCKET_WARNING), [
+    { text: t("Cancel"), style: "cancel" },
     {
-      text: "Go dark",
+      text: t("Go dark"),
       onPress: () => {
         warned = true;
         enter();
@@ -69,10 +69,10 @@ export function PocketScreen({ on, onExit }: { on: boolean; onExit: () => void }
           onExit();
         }}
         accessibilityRole="button"
-        accessibilityLabel="Pocket mode. Hold for 2 seconds to leave."
+        accessibilityLabel={t("Pocket mode. Hold for 2 seconds to leave.")}
       >
         <Text style={styles.hint}>
-          {holding ? "Keep holding…" : "Hold for 2 seconds to leave pocket mode"}
+          {holding ? t("Keep holding…") : t("Hold for 2 seconds to leave pocket mode")}
         </Text>
       </Pressable>
     </Modal>

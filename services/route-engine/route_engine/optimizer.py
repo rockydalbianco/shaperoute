@@ -22,6 +22,8 @@ from typing import Any, Protocol
 
 import numpy as np
 
+from route_engine import pen_up, pieces
+from route_engine.errors import NoRoadsError, ShapeNotDrawableError
 from route_engine.geo import LatLon, latlon_to_local_array, local_to_latlon
 from route_engine.metrics import (
     CORNER_PENALTY,
@@ -31,7 +33,7 @@ from route_engine.metrics import (
     coverage,
     precision,
 )
-from route_engine.models import RouteRequest, RouteResult
+from route_engine.models import DISTANCE_LIMITS_M, RouteRequest, RouteResult
 from route_engine.network import (
     AREA_MARGIN_M,
     CORRIDOR_BAND,
@@ -40,10 +42,12 @@ from route_engine.network import (
     Graph,
     NetworkRoute,
     area_around,
+    check_network,
     corner_indices,
     detail_scale,
     first_leg,
     nearest_nodes,
+    on_foot_stretches,
     snap_to_network,
     twice_drawn,
 )
@@ -58,15 +62,34 @@ from route_engine.retracing import extra_doubled_share
 from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.street_grid import StreetDirections
 from route_engine.validation import check_closed, measure, validate
-from route_engine.words import MAX_SHIFT, SHIFT_STEP, Style, Word, compose
+from route_engine.words import (
+    LETTER_DISTANCE_M,
+    MAX_SHIFT,
+    SHIFT_STEP,
+    Style,
+    Word,
+    compose,
+)
 
 # Where the start enters the shape, as arc-length fractions (TASK-015).
 PHASES = (0.0, 0.25, 0.5, 0.75)
 ROTATION_STEP_DEG = 15.0
-# A shape with a top and a bottom tilts at most this much: tilted shapes
-# were judged unrecognizable (TASK-035, ADR-0038). 180 lets it turn freely.
-MAX_TILT_DEG = 15.0
+# A shape with a top and a bottom tilts at most this much, and the app turns
+# the map so it reads upright (ADR-0195): on a north-up map tilted shapes
+# were judged unrecognizable, and the limit was 15° (TASK-035, ADR-0038).
+# 180 lets it turn freely.
+MAX_TILT_DEG = 45.0
 FREE_TILT_DEG = 180.0
+# The search tries a shape first as it did before TASK-232, within
+# UPRIGHT_TILT_DEG (a word in block letters along the streets within
+# UPRIGHT_GRID_TILT_DEG); only when that gives no good route does it try
+# the tilts beyond, up to MAX_TILT_DEG, with TILTED_TRACES traces more. A
+# route good upright stays the same, and its time too; tilting everything
+# at once lost good routes to placements whose roads only looked better
+# (TASK-232, docs/MAPS.md «Forme inclinate»).
+UPRIGHT_TILT_DEG = 15.0
+UPRIGHT_GRID_TILT_DEG = 30.0
+TILTED_TRACES = 10
 # Scale bounds, as multiples of the initial scale.
 SCALE_RANGE = (0.4, 1.1)
 # The shape may start this far from the requested point, on rings of these
@@ -75,9 +98,12 @@ SCALE_RANGE = (0.4, 1.1)
 START_OFFSET_M = 500.0
 START_RINGS_M = (250.0, 500.0)
 START_BEARINGS = 8
-# When no route there is good, or the shape cannot be drawn there, a second
-# search looks for a place up to FAR_OFFSET_M away, on these rings, with its
-# own budget of traces (TASK-038, ADR-0040).
+# When the shape cannot be drawn there at all, a second search looks for a
+# place up to FAR_OFFSET_M away, on these rings, with its own budget of
+# traces (TASK-038, ADR-0040). It used to start whenever no route there was
+# good: half the time of a long request, for a better route in a case out
+# of six, so a drawable route near the start now keeps it out (TASK-203 B,
+# ADR-0230).
 FAR_OFFSET_M = 2000.0
 FAR_RINGS_M = (1000.0, 1500.0, 2000.0)
 FAR_BEARINGS = 12
@@ -117,6 +143,13 @@ W_DOUBLED: dict[str, float] = {
 # when ranking placements by roads and when choosing among traced routes.
 OFFSET_FIT_PENALTY = 0.05
 W_OFFSET = W_SHAPE * OFFSET_FIT_PENALTY
+# Tilting a shape by MAX_TILT_DEG costs as much, in both places too, in
+# proportion to the angle beyond UPRIGHT_TILT_DEG, which costs nothing as
+# before: on a tie the straighter shape wins, and it tilts only where the
+# roads follow it clearly better (TASK-232, ADR-0195). Not for a shape that
+# turns freely, like the circle.
+TILT_FIT_PENALTY = 0.05
+W_TILT = W_SHAPE * TILT_FIT_PENALTY
 # The letters of a word each move up to words.MAX_SHIFT, on a grid of
 # words.SHIFT_STEP, to where their own strokes have most roads within
 # LETTER_BAND letter heights (TASK-050, fit_letters). Moving a letter that
@@ -139,9 +172,16 @@ WORD_RETRACE = 0.5
 # start (street_grid), not kept upright: it tries each grid direction at
 # most GRID_MAX_TILT_DEG off level, upright when there is none, and the
 # refinement turns it at most GRID_TILT_DEG off one. At 43° at Levico the
-# word ran across the map like a diagonal, and did not read (TASK-077).
-GRID_MAX_TILT_DEG = 30.0
+# word ran across a north-up map like a diagonal, and did not read
+# (TASK-077); with the map turned it reads level (TASK-232, ADR-0195), and
+# the directions beyond UPRIGHT_GRID_TILT_DEG are tried as tilts.
+GRID_MAX_TILT_DEG = MAX_TILT_DEG
 GRID_TILT_DEG = 5.0
+# A route the search traced at another distance is advised (better_distance,
+# TASK-234, ADR-0197) when its cost without the distance part is lower than
+# the chosen route's by at least this much, five points of similarity, and
+# its similarity is at least SIMILARITY_THRESHOLD.
+BETTER_MARGIN = W_SHAPE * 0.05
 
 
 def reach(shape: Sequence[Point], phases: Sequence[float] = PHASES) -> float:
@@ -151,6 +191,32 @@ def reach(shape: Sequence[Point], phases: Sequence[float] = PHASES) -> float:
         points = start_at_phase(shape, phase)
         farthest = max(farthest, max(math.dist(p, points[0]) for p in points))
     return farthest
+
+
+def first_scale(
+    shape: Sequence[Point], distance_m: float, word: Word | None = None
+) -> float:
+    """`initial_scale`; for a word with the pen up, that of its letters
+    alone, which the distance asked for applies to (TASK-197)."""
+    if word is not None and word.pen_up:
+        return distance_m / word.drawn_length
+    return initial_scale(shape, distance_m)
+
+
+def _word_reach(shape: Sequence[Point], word: Word) -> float:
+    """`reach` of a word from its own phases; from the first point of the
+    open line of a word with the pen up."""
+    if word.pen_up:
+        return pen_up.reach(shape)
+    return reach(shape, word.phases)
+
+
+def drawn_distance(route: NetworkRoute) -> float:
+    """The length of `route` the distance asked for applies to: all of it,
+    but the walks between the letters of a word with the pen up (TASK-197);
+    the detours of a piece walked instead of drawn still count (TASK-242,
+    `pen_up.sized_m`)."""
+    return pen_up.sized_m(route)
 
 
 def zone_area(
@@ -166,10 +232,10 @@ def zone_area(
 
     One graph of this area serves every attempt of the search (ADR-0023).
     """
-    largest_scale = initial_scale(shape, distance_m) * SCALE_RANGE[1]
+    largest_scale = first_scale(shape, distance_m, word) * SCALE_RANGE[1]
     far = reach(shape)
     if word is not None:
-        far = reach(shape, word.phases) + MAX_SHIFT * word.height
+        far = _word_reach(shape, word) + MAX_SHIFT * word.height
     return area_around(
         [start],
         margin_m=far * largest_scale + offset_m + AREA_MARGIN_M,
@@ -208,6 +274,10 @@ class RoadMask:
                 (len(coords) + i, len(coords) + i + 1) for i in range(len(line) - 1)
             )
             coords.extend(line)
+        if not segments:
+            # A graph without a road, like the one node left of a crop: said
+            # as it is, not an index into no samples (TASK-180).
+            raise NoRoadsError()
         xy = latlon_to_local_array(origin, np.array(coords))
         idx = np.array(segments)
         a, b = xy[idx[:, 0]], xy[idx[:, 1]]
@@ -340,6 +410,14 @@ class Search:
     attempts: list[Attempt]
     converged: bool
     warnings: list[str] = field(default_factory=list)
+    # When the tilted stage ran too (TASK-232), the best of the upright one:
+    # what the search gave before tilts beyond UPRIGHT_TILT_DEG.
+    upright: Attempt | None = None
+
+    @property
+    def upright_best(self) -> Attempt:
+        """The best attempt of the upright stage of the search."""
+        return self.upright or self.best
 
 
 Tracer = Callable[[list[LatLon]], NetworkRoute]
@@ -408,7 +486,8 @@ def letter_moves(
     the share of its strokes with a road within `band_m`, less
     SHIFT_PENALTY for the longest move. Only the letter counts: a share of
     the whole word would reward the moves that shorten the gaps. A lone
-    letter does not move: the search places the word.
+    letter does not move: the search places the word. Nor does the first
+    letter of a word with the pen up, where the route starts (TASK-197).
     """
     grid = shift_grid() if len(word.letters) > 1 else np.zeros((1, 2))
     points, _ = word.line(start)
@@ -420,8 +499,10 @@ def letter_moves(
     costs = SHIFT_PENALTY * np.hypot(grid[:, 0], grid[:, 1]) / MAX_SHIFT
     chosen: list[int] = []
     scores: list[float] = []
-    for rows in word.strokes(start):
-        score = mask.fits_xy(xy[rows], moves, band_m) - costs
+    for k, rows in enumerate(word.strokes(start)):
+        # The first move of the grid is staying put.
+        tried = 1 if word.pen_up and k == 0 else len(grid)
+        score = mask.fits_xy(xy[rows], moves[:tried], band_m) - costs[:tried]
         chosen.append(int(np.argmax(score)))  # the shortest move on a tie
         scores.append(float(score[chosen[-1]]))
     return grid[chosen], np.array(scores)
@@ -484,6 +565,7 @@ def search(
     phases: Sequence[float] = PHASES,
     word: Word | None = None,
     doubled: float = 0.0,
+    tilted_traces: int = TILTED_TRACES,
 ) -> Search:
     """Best route for `shape` near `distance_m` on `graph`, starting at
     `start` or, with `move_start`, up to START_OFFSET_M away from it; or
@@ -491,19 +573,37 @@ def search(
     turns at most `max_tilt_deg` either way from how it is drawn, and the
     route enters it at one of `phases`.
 
+    The search goes upright first, within UPRIGHT_TILT_DEG and `max_traces`
+    traces; when that gives no good route and `max_tilt_deg` allows more,
+    it goes again over the tilts beyond, with `tilted_traces` traces more
+    (TASK-232, ADR-0195). The best route of both is the result, and
+    `Search.upright` that of the first.
+
     When `shape` is the `word`'s points and `phases` its phases, every
     trace first moves the letters to where the roads are (fit_letters). A
     word in block letters turns the way the streets run around each start
-    (`grid_turns`), whatever `max_tilt_deg` says (TASK-077)."""
+    (`grid_turns`), whatever `max_tilt_deg` says (TASK-077): up to
+    UPRIGHT_GRID_TILT_DEG first, the steeper ones as tilts. A word with the
+    pen up is traced letter by letter, walking between them (pen_up.py):
+    its similarity and its distance are those of the letters alone."""
     similarity = similarity or SIMILARITIES[SIMILARITY]
 
-    def allowed(rotation_deg: float) -> bool:
-        return _angle_gap(rotation_deg, 0.0) <= max_tilt_deg + 1e-9
+    def allowed(rotation_deg: float, tilted: bool) -> bool:
+        """Whether the upright search (`tilted` False) or the tilted one
+        may place the shape at `rotation_deg`."""
+        gap = _angle_gap(rotation_deg, 0.0)
+        if max_tilt_deg >= FREE_TILT_DEG:
+            return not tilted  # no upright: one search, all the way round
+        if tilted:
+            return UPRIGHT_TILT_DEG + 1e-9 < gap <= max_tilt_deg + 1e-9
+        return gap <= min(max_tilt_deg, UPRIGHT_TILT_DEG) + 1e-9
 
     retrace = 1.0 if word is None else WORD_RETRACE
+    if trace is None and word is not None and word.pen_up:
+        trace = pen_up.tracer(graph, word, reuse_penalty, retrace)
     trace = trace or _tracer(graph, reuse_penalty, retrace)
     mask = RoadMask(graph, start)
-    base_scale = initial_scale(shape, distance_m)
+    base_scale = first_scale(shape, distance_m, word)
     low, high = (base_scale * f for f in SCALE_RANGE)
     if starts is None:
         starts = candidate_starts(start) if move_start else [(start, 0.0)]
@@ -519,23 +619,32 @@ def search(
     letter_band = float(round(LETTER_BAND * base_scale * word.height)) if word else 0.0
     grid: dict[LatLon, list[float]] = {}
     if word is not None and word.style == "block":
-        grid = grid_turns(graph, start, starts, reach(shape, phases) * base_scale)
+        far = pen_up.reach(shape) if word.pen_up else reach(shape, phases)
+        grid = grid_turns(graph, start, starts, far * base_scale)
 
-    def rotations(s: LatLon) -> list[float]:
+    def grid_of(s: LatLon, tilted: bool) -> list[float]:
+        """The street directions around `s` the upright search tries, or
+        upright without one; or those the tilted search tries."""
+        steep = [g for g in grid[s] if _angle_gap(g, 0.0) > UPRIGHT_GRID_TILT_DEG]
+        if tilted:
+            return steep
+        return [g for g in grid[s] if g not in steep] or [0.0]
+
+    def rotations(s: LatLon, tilted: bool) -> list[float]:
         """The rotations a placement from `s` tries first."""
         if grid:
-            return grid[s]
+            return grid_of(s, tilted)
         steps = np.arange(0.0, 360.0, ROTATION_STEP_DEG)
-        return [float(r) for r in steps if allowed(r)]
+        return [float(r) for r in steps if allowed(r, tilted)]
 
-    def may_turn(p: Placement) -> bool:
+    def may_turn(p: Placement, tilted: bool) -> bool:
         """Whether the refinement may turn a placement this way."""
         if grid:
             return any(
                 _angle_gap(p.rotation_deg, g) <= GRID_TILT_DEG + 1e-9
-                for g in grid[p.start]
+                for g in grid_of(p.start, tilted)
             )
-        return allowed(p.rotation_deg)
+        return allowed(p.rotation_deg, tilted)
 
     def outline_xy(p: Placement, scale: float) -> np.ndarray:
         """`project_shape` in metres around `start` (same scale and rotation)."""
@@ -554,6 +663,11 @@ def search(
         return project_shape(shape, p.start, scale, p.rotation_deg, p.phase)
 
     def road_fit(p: Placement, scale: float) -> float:
+        # Moving the start and tilting the shape must earn their keep.
+        moved = (
+            OFFSET_FIT_PENALTY * p.offset_m / START_OFFSET_M
+            + TILT_FIT_PENALTY * tilt_share(p.rotation_deg, max_tilt_deg)
+        )
         if word is not None:  # letter by letter, each where it may move
             _, scores = letter_moves(
                 word,
@@ -564,21 +678,15 @@ def search(
                 mask,
                 letter_band,
             )
-            return (
-                float(scores.mean()) - OFFSET_FIT_PENALTY * p.offset_m / START_OFFSET_M
-            )
+            return float(scores.mean()) - moved
         # The band follows the scale alone, so every placement at one scale
-        # shares the same grid. Moving the start must earn its keep.
+        # shares the same grid.
         band = round(band_share * perimeter(shape) * scale, 3)
         outline = outline_xy(p, scale)
         fit = mask.fit_xy(outline, band)
         corners = outline[phase_corners[p.phase]]
         bare = int((~mask.near_xy(corners, band)).sum()) if len(corners) else 0
-        return (
-            fit
-            - CORNER_PENALTY * bare
-            - OFFSET_FIT_PENALTY * p.offset_m / START_OFFSET_M
-        )
+        return fit - CORNER_PENALTY * bare - moved
 
     def attempt(p: Placement, scale: float) -> Attempt:
         shifts: tuple[tuple[float, float], ...] = ()
@@ -594,21 +702,26 @@ def search(
                 mask,
                 letter_band,
             )
-            outline = project_shape(drawn, p.start, scale, p.rotation_deg)
+            place = pen_up.place_line if word.pen_up else project_shape
+            outline = place(drawn, p.start, scale, p.rotation_deg)
             shifts = tuple((float(x), float(y)) for x, y in moved)
         route = trace(outline)
         if word is None:
             sim = similarity(route.points, outline)
+        elif word.pen_up:
+            tolerance = WORD_TOLERANCE * scale * word.height
+            sim = pen_up.similarity(word, route.points, route.walks, outline, tolerance)
         else:
             index = word.phases.index(p.phase)
             sim = word_similarity(
                 word, index, route.points, outline, scale * word.height
             )
-        ratio = route.distance_m / distance_m
+        ratio = drawn_distance(route) / distance_m
         cost = (
             W_SHAPE * (1 - sim)
             + W_DISTANCE * abs(ratio - 1)
             + W_OFFSET * p.offset_m / START_OFFSET_M
+            + W_TILT * tilt_share(p.rotation_deg, max_tilt_deg)
         )
         if doubled:
             cost += doubled * extra_doubled_share(route.points, outline)
@@ -633,7 +746,7 @@ def search(
         guess = last.scale_m / last.ratio
         if len(history) >= 2:
             prev = history[-2]
-            d0, d1 = prev.route.distance_m, last.route.distance_m
+            d0, d1 = drawn_distance(prev.route), drawn_distance(last.route)
             if not math.isclose(d0, d1):
                 slope = (last.scale_m - prev.scale_m) / (d1 - d0)
                 secant = last.scale_m + (distance_m - d1) * slope
@@ -641,11 +754,13 @@ def search(
                     guess = secant
         return min(high, max(low, guess))
 
-    def rescale(p: Placement, scale: float) -> tuple[Attempt | None, float]:
+    def rescale(
+        p: Placement, scale: float, budget: int
+    ) -> tuple[Attempt | None, float]:
         """Trace, rescale towards the target, repeat; returns the next scale."""
         history: list[Attempt] = []
         for _ in range(MAX_RESCALES):
-            if len(attempts) >= max_traces:
+            if len(attempts) >= budget:
                 break
             history.append(attempt(p, scale))
             if abs(history[-1].ratio - 1) <= DISTANCE_TOLERANCE:
@@ -656,7 +771,7 @@ def search(
             scale = new_scale
         return (history[-1] if history else None), scale
 
-    def polish(best: Attempt) -> bool:
+    def polish(best: Attempt, budget: int) -> bool:
         """Spend the budget left on the distance of the best placement.
 
         Between a trace too short and one too long of the same placement,
@@ -665,7 +780,7 @@ def search(
         wrong then, rescaling will not fix it.
         """
         p = best.placement
-        while len(attempts) < max_traces:
+        while len(attempts) < budget:
             same = [a for a in attempts if a.placement == p]
             if any(abs(a.ratio - 1) <= DISTANCE_TOLERANCE for a in same):
                 return any(good(a) for a in same)
@@ -674,7 +789,7 @@ def search(
             if short and long:
                 a = max(short, key=lambda x: x.ratio)
                 b = min(long, key=lambda x: x.ratio)
-                da, db = a.route.distance_m, b.route.distance_m
+                da, db = drawn_distance(a.route), drawn_distance(b.route)
                 scale = a.scale_m + (distance_m - da) * (b.scale_m - a.scale_m) / (
                     db - da
                 )
@@ -688,13 +803,15 @@ def search(
                 return True
         return False
 
-    def best_placement(scale: float, tried: list[Placement]) -> Placement | None:
+    def best_placement(
+        scale: float, tried: list[Placement], tilted: bool
+    ) -> Placement | None:
         """Placement with most roads along the outline at `scale`, away from
         the tried ones (same start and phase, within two rotation steps)."""
         candidates = [
             Placement(s, offset, r, phase)
             for s, offset in starts
-            for r in rotations(s)
+            for r in rotations(s, tilted)
             for phase in phases
         ]
         ranked = sorted(
@@ -717,43 +834,81 @@ def search(
                 return p
         return None
 
-    scale = base_scale
-    tried: list[Placement] = []
-    for _ in range(TOP_PLACEMENTS):
-        placement = best_placement(scale, tried)
-        if placement is None or len(attempts) >= max_traces:
-            break
-        tried.append(placement)
-        last, scale = rescale(placement, scale)
-        if last is not None and good(last):
-            return _done(attempts, good, distance_m)
-
-    best = min(attempts, key=lambda a: a.cost)
-    turns = np.arange(-REFINE_SPAN_DEG, REFINE_SPAN_DEG + 1e-9, REFINE_STEP_DEG)
-    traced = {a.placement for a in attempts}
-    around = [
-        Placement(
-            best.placement.start,
-            best.offset_m,
-            float((best.rotation_deg + t) % 360),
-            best.phase,
+    def go(tilted: bool, budget: int) -> bool:
+        """The search over the rotations of the upright or the tilted
+        stage, until `budget` traces in all; whether a route was good."""
+        first = len(attempts)  # the stage's own attempts come after
+        scale = base_scale
+        tried: list[Placement] = []
+        for _ in range(TOP_PLACEMENTS):
+            placement = best_placement(scale, tried, tilted)
+            if placement is None or len(attempts) >= budget:
+                break
+            tried.append(placement)
+            last, scale = rescale(placement, scale, budget)
+            if last is not None and good(last):
+                return True
+        if len(attempts) == first:
+            return False  # nothing to try: no rotation, or no budget
+        best = min(attempts[first:], key=lambda a: a.cost)
+        turns = np.arange(-REFINE_SPAN_DEG, REFINE_SPAN_DEG + 1e-9, REFINE_STEP_DEG)
+        traced = {a.placement for a in attempts}
+        around = [
+            Placement(
+                best.placement.start,
+                best.offset_m,
+                float((best.rotation_deg + t) % 360),
+                best.phase,
+            )
+            for t in turns
+        ]
+        refined = sorted(
+            (p for p in around if p not in traced and may_turn(p, tilted)),
+            key=lambda p: (-road_fit(p, best.scale_m), p.rotation_deg),
         )
-        for t in turns
-    ]
-    refined = sorted(
-        (p for p in around if p not in traced and may_turn(p)),
-        key=lambda p: (-road_fit(p, best.scale_m), p.rotation_deg),
-    )
-    if refined and len(attempts) < max_traces:
-        last, _ = rescale(refined[0], best.scale_m)
-        if last is not None and good(last):
-            return _done(attempts, good, distance_m)
-    polish(min(attempts, key=lambda a: a.cost))
-    return _done(attempts, good, distance_m)
+        if refined and len(attempts) < budget:
+            last, _ = rescale(refined[0], best.scale_m, budget)
+            if last is not None and good(last):
+                return True
+        polish(min(attempts[first:], key=lambda a: a.cost), budget)
+        return any(good(a) for a in attempts[first:])
+
+    if go(False, max_traces) or tilted_traces <= 0:
+        return _done(attempts, good, distance_m)
+    upright = _done(list(attempts), good, distance_m).best
+    upright_traces = len(attempts)
+    go(True, max_traces + tilted_traces)
+    found = _done(attempts, good, distance_m)
+    if len(attempts) > upright_traces:
+        found.upright = upright
+    return found
 
 
 def _angle_gap(a: float, b: float) -> float:
     return abs((a - b + 180.0) % 360.0 - 180.0)
+
+
+def tilt_share(rotation_deg: float, max_tilt_deg: float) -> float:
+    """How far a placement leans beyond UPRIGHT_TILT_DEG, as a share of
+    the way to MAX_TILT_DEG: what its tilt costs (TILT_FIT_PENALTY, W_TILT).
+    Nothing within UPRIGHT_TILT_DEG, as before TASK-232, nor for a shape that
+    turns freely (`max_tilt_deg` FREE_TILT_DEG), which has no upright."""
+    beyond = _angle_gap(rotation_deg, 0.0) - UPRIGHT_TILT_DEG
+    span = MAX_TILT_DEG - UPRIGHT_TILT_DEG
+    if max_tilt_deg >= FREE_TILT_DEG or beyond <= 0.0 or span <= 0.0:
+        return 0.0
+    return beyond / span
+
+
+def shown_rotation(rotation_deg: float, max_tilt_deg: float) -> float:
+    """`RouteResult.rotation_deg` of a route placed at `rotation_deg`:
+    counterclockwise in (-180°, 180°], the angle the app turns the map back
+    by so the drawing reads upright (TASK-232, ADR-0195). 0 for a shape that
+    turns freely: it has no upright, and the map stays north-up."""
+    if max_tilt_deg >= FREE_TILT_DEG:
+        return 0.0
+    signed = -((-rotation_deg + 180.0) % 360.0 - 180.0)
+    return round(signed, 6) + 0.0  # no -0.0
 
 
 def grid_turns(
@@ -789,7 +944,7 @@ def _done(
     within = [
         a
         for a in attempts
-        if abs(a.route.distance_m - distance_m) <= DISTANCE_FALLBACK_M
+        if abs(drawn_distance(a.route) - distance_m) <= DISTANCE_FALLBACK_M
     ]
     best = min(good_ones or within or attempts, key=lambda a: a.cost)
     warnings = list(best.route.warnings)
@@ -828,19 +983,6 @@ def _scale_of(placed: Sequence[LatLon], shape: Sequence[Point]) -> float:
     return _perimeter_m(xy) / perimeter(shape)
 
 
-class ShapeNotDrawableError(ValueError):
-    """The roads around the start cannot draw the requested shape.
-
-    best_distance_m is the length of the best route found when it followed
-    the shape but missed the distance: that distance the shape fits
-    (TASK-031). None when the best route did not follow the shape.
-    """
-
-    def __init__(self, message: str, best_distance_m: float | None = None) -> None:
-        super().__init__(message)
-        self.best_distance_m = best_distance_m
-
-
 def _compass(origin: LatLon, point: LatLon) -> str:
     x, y = latlon_to_local_array(origin, np.array([point]))[0]
     names = ("north", "north-east", "east", "south-east")
@@ -869,7 +1011,18 @@ def required_area(
     `distance_m` is the planned one (`planned_distance`)."""
     if optimize:
         return zone_area(shape, start, distance_m, word=word)
-    return area_around(project_shape(shape, start, initial_scale(shape, distance_m)))
+    return area_around(_placed_once(shape, start, distance_m, word))
+
+
+def _placed_once(
+    shape: Sequence[Point], start: LatLon, distance_m: float, word: Word | None
+) -> list[LatLon]:
+    """The shape at its initial placement, as traced without a search; the
+    open line of a word with the pen up stays open."""
+    scale = first_scale(shape, distance_m, word)
+    if word is not None and word.pen_up:
+        return pen_up.place_line(shape, start, scale)
+    return project_shape(shape, start, scale)
 
 
 @dataclass
@@ -888,6 +1041,7 @@ def plan_route(
     optimize: bool = True,
     reuse_penalty: float = EDGE_REUSE_PENALTY,
     style: Style | None = None,
+    top_joins: bool | None = None,
 ) -> Plan:
     """RouteRequest in, RouteResult out (docs/ARCHITECTURE.md §3).
 
@@ -896,10 +1050,19 @@ def plan_route(
     as in TASK-017. A word is written one letter at a time (TASK-050), in
     the letters of `style` (TASK-077), the request's when None (TASK-080),
     and comes back with `word` instead
-    of `shape` (TASK-056).
+    of `shape` (TASK-056). `top_joins` says whether its letters may be
+    joined along the top line too (TASK-067), words.TOP_JOINS when None.
+    With the request's `pen_up` each letter is drawn on its own, and the
+    result says where the route walks between them (TASK-197); so each
+    piece of a shape in pieces (TASK-223), and the result keeps the shape.
     """
     if request.word is not None:
-        word = compose(request.word, style=style or request.style)
+        word = compose(
+            request.word,
+            style=style or request.style,
+            top_joins=top_joins,
+            pen_up=request.pen_up,
+        )
         plan = plan_shape(
             list(word.points),
             word.text,
@@ -910,10 +1073,25 @@ def plan_route(
             reuse_penalty,
             MAX_TILT_DEG,
             word=word,
+            activity=request.activity,
         )
         result = replace(plan.result, shape=None, word=word.text)
         return replace(plan, result=result)
     assert request.shape is not None  # RouteRequest has one of the two
+    if request.pen_up:  # a shape in pieces, RouteRequest checks it
+        drawn = pieces.compose_shape(request.shape)
+        return plan_shape(
+            list(drawn.points),
+            request.shape,
+            request.start,
+            request.distance_m,
+            source,
+            optimize,
+            reuse_penalty,
+            tilt_limit(request.shape),
+            word=drawn,
+            activity=request.activity,
+        )
     return plan_shape(
         get_shape(request.shape)(SHAPE_POINTS),
         request.shape,
@@ -923,6 +1101,7 @@ def plan_route(
         optimize,
         reuse_penalty,
         tilt_limit(request.shape),
+        activity=request.activity,
     )
 
 
@@ -934,7 +1113,7 @@ def doubled_weight(name: str) -> float:
 
 def tilt_limit(name: str) -> float:
     """How far a shape may turn: freely if it looks the same at any angle,
-    otherwise it stays upright (ADR-0038)."""
+    otherwise at most MAX_TILT_DEG off upright (ADR-0038, ADR-0195)."""
     return FREE_TILT_DEG if name in FREE_ROTATION else MAX_TILT_DEG
 
 
@@ -949,11 +1128,14 @@ def plan_shape(
     max_tilt_deg: float = MAX_TILT_DEG,
     one_way: bool = False,
     word: Word | None = None,
+    activity: str = "running",
 ) -> Plan:
     """plan_route for any normalized shape, also an outline read from a file
     (TASK-032). `name` only labels the result and its messages; start and
     distance are the caller's to check, as RouteRequest does. An outline
-    stays upright unless told otherwise (ADR-0038).
+    tilts at most MAX_TILT_DEG unless told otherwise (ADR-0195), and the
+    result says how far it turned (`shown_rotation`). The graphs `source`
+    gives must be of the network of `activity` (network.check_network).
 
     A `one_way` shape is drawn out and back (Outline.one_way): it is planned
     as a closed shape twice `distance_m` long, entered at its first point,
@@ -962,7 +1144,13 @@ def plan_shape(
 
     A `word` is a closed line whose `points` are `shape`: the search enters
     it half-way along a gap between letters, and moves the letters to where
-    the roads are (TASK-050).
+    the roads are (TASK-050). A word with the pen up is an open line
+    entered at its first letter; the route is open too, and its `walks`
+    say where it goes from one letter to the next without drawing
+    (TASK-197): `distance_m` is planned for the letters alone.
+
+    After a search the result may advise another distance, where the
+    search found the shape clearly better drawn (better_distance, TASK-234).
     """
     similarity = SIMILARITIES[SIMILARITY]
     planned_m = planned_distance(distance_m, one_way)
@@ -971,6 +1159,7 @@ def plan_shape(
     if word is not None:
         phases = word.phases
     graph = source.load(required_area(shape, start, planned_m, optimize, word))
+    check_network(graph, activity)
     far: Search | None = None
     if optimize:
         found = search(
@@ -984,11 +1173,17 @@ def plan_shape(
             word=word,
             doubled=doubled_weight(name),
         )
-        if not found.converged:
-            # Not good here: look for a place farther away (ADR-0040).
+        # Only when nothing here can be drawn: look for a place farther away
+        # (ADR-0040). A route here that is drawable but not good is kept
+        # instead (ADR-0230): the far search took half the time of a long
+        # request and gave a better route in a case out of six. Judged on
+        # the upright search, as before TASK-232: a drawable route found
+        # tilted does not keep the far search out.
+        if not _drawable(found.upright_best, planned_m, kept):
             far_graph = source.load(
                 zone_area(shape, start, planned_m, FAR_OFFSET_M, word)
             )
+            check_network(far_graph, activity)
             far = search(
                 far_graph,
                 shape,
@@ -1001,11 +1196,14 @@ def plan_shape(
                 phases=phases,
                 word=word,
                 doubled=doubled_weight(name),
+                # Upright only, as before TASK-232: tilting was tried
+                # where the user is, and the time stays within bounds.
+                tilted_traces=0,
             )
-            if far.converged or (
-                not _drawable(found.best, planned_m, kept)
-                and _drawable(far.best, planned_m, kept)
-            ):
+            # The far route when it is good, or drawable where nothing
+            # upright near the start was (a tilted one may have been: as
+            # before TASK-232, it does not keep the far one out).
+            if far.converged or _drawable(far.best, planned_m, kept):
                 found, graph = far, far_graph
         best = found.best
         what = f"a {distance_m / 1000:g} km {name} cannot be drawn here"
@@ -1016,13 +1214,13 @@ def plan_shape(
                 f"{what}: the best route scores "
                 f"{best.similarity:.2f} for shape, {MIN_SIMILARITY:.2f} needed"
             )
-        gap = (best.route.distance_m - planned_m) * kept
+        gap = (drawn_distance(best.route) - planned_m) * kept
         if abs(gap) > DISTANCE_FALLBACK_M:
             raise ShapeNotDrawableError(
                 f"{what}: the best shape is "
                 f"{gap / 1000:+.1f} km from the target, at most "
                 f"{DISTANCE_FALLBACK_M / 1000:g} km allowed",
-                best_distance_m=best.route.distance_m * kept,
+                best_distance_m=drawn_distance(best.route) * kept,
             )
         route, sim, warnings = best.route, best.similarity, list(found.warnings)
         placed, chosen_start = best.shape, best.placement.start
@@ -1038,6 +1236,16 @@ def plan_shape(
                 f"start moved {moved} {direction} of the requested point, "
                 "where the shape closes on the roads",
             )
+    elif word is not None and word.pen_up:
+        found = None
+        projected = _placed_once(shape, start, planned_m, word)
+        route = pen_up.trace(graph, word, projected, reuse_penalty, WORD_RETRACE)
+        height_m = first_scale(shape, planned_m, word) * word.height
+        sim = pen_up.similarity(
+            word, route.points, route.walks, projected, WORD_TOLERANCE * height_m
+        )
+        warnings = list(route.warnings)
+        placed, chosen_start = projected, start
     else:
         found = None
         projected = project_shape(shape, start, initial_scale(shape, planned_m))
@@ -1049,7 +1257,9 @@ def plan_shape(
             sim = word_similarity(word, 0, route.points, projected, height_m)
         placed, chosen_start = projected, start
     [first], _ = nearest_nodes(graph, [chosen_start])
-    check_closed(
+    # A word with the pen up ends at its last letter: only where it begins.
+    check = pen_up.check_begins if word is not None and word.pen_up else check_closed
+    check(
         route.points,
         (graph.nodes[first]["y"], graph.nodes[first]["x"]),
         start,
@@ -1078,6 +1288,16 @@ def plan_shape(
         similarity=sim,
         shape=name,
         warnings=warnings,
+        walks=list(route.walks),
+        on_foot=on_foot_stretches(graph, route.nodes),
+        better_distance_m=(
+            None
+            if found is None
+            else better_distance(found, distance_m, activity, word)
+        ),
+        rotation_deg=(
+            0.0 if found is None else shown_rotation(best.rotation_deg, max_tilt_deg)
+        ),
     )
     return Plan(result, found, measures, far)
 
@@ -1087,5 +1307,44 @@ def _drawable(best: Attempt, distance_m: float, kept: float = 1.0) -> bool:
     keeping that share of its route."""
     return (
         best.similarity >= MIN_SIMILARITY
-        and abs(best.route.distance_m - distance_m) * kept <= DISTANCE_FALLBACK_M
+        and abs(drawn_distance(best.route) - distance_m) * kept <= DISTANCE_FALLBACK_M
     )
+
+
+def shape_cost(attempt: Attempt) -> float:
+    """The cost of `attempt` without its distance part: the shape, the
+    streets run twice beyond it, the start moved and the tilt (search)."""
+    return attempt.cost - W_DISTANCE * abs(attempt.ratio - 1)
+
+
+def better_distance(
+    found: Search,
+    distance_m: float,
+    activity: str = "running",
+    word: Word | None = None,
+) -> int | None:
+    """A distance to ask for instead of `distance_m`, where the shape came
+    out clearly better (TASK-234, ADR-0197); None without one.
+
+    From the routes `found` has already traced, nothing more: one whose
+    `shape_cost` is at least BETTER_MARGIN below the chosen one's and whose
+    similarity is at least SIMILARITY_THRESHOLD. Its distance is the one
+    asked for that gives it (its ratio, as the search measures it), to the
+    whole km as the API's suggested distance; never `distance_m` itself,
+    nor one a request of `activity` (or of the letters of `word`) may not
+    ask for. Of several, the cheapest; on a tie, the nearest. The chosen
+    route stays what it is."""
+    low, high = DISTANCE_LIMITS_M.get(activity, DISTANCE_LIMITS_M["running"])
+    if word is not None and word.kind == "letter":  # models.check_word
+        low = max(low, len(word.letters) * LETTER_DISTANCE_M)
+    beaten = shape_cost(found.best) - BETTER_MARGIN + 1e-9
+    costs: dict[int, float] = {}
+    for a in found.attempts:
+        if a.similarity < SIMILARITY_THRESHOLD or shape_cost(a) > beaten:
+            continue
+        km = round(a.ratio * distance_m / 1000) * 1000
+        if km != distance_m and low <= km <= high:
+            costs[km] = min(costs.get(km, math.inf), shape_cost(a))
+    if not costs:
+        return None
+    return min(costs, key=lambda km: (costs[km], abs(km - distance_m), km))

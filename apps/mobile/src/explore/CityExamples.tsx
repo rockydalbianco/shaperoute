@@ -1,5 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { t, tLater } from "../i18n";
 
+import { shapeName } from "../i18n/shapeNames";
 import type { Place } from "../places/photon";
 import {
   color,
@@ -9,74 +11,98 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { EXAMPLE_DISTANCE_M, type Example } from "./exampleRoutes";
+import { distanceLabel, withPoint } from "../units/format";
+import { useUnits } from "../units/useUnits";
+import { EXAMPLE_DISTANCE_M, type Example, shownExamples } from "./exampleRoutes";
 import { cityShort } from "./presets";
 import type { RecommendedRoute } from "./recommendedRoutes";
-import { RouteThumb } from "./RouteThumb";
+import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 
 type Props = {
   city: Place;
   examples: Example[];
   onOpen: (route: RecommendedRoute) => void;
   onRetry: () => void;
+  /** How wide the section is; without it, the window less the page's margins. */
+  width?: number;
 };
 
 const STATUS: Record<"waiting" | "drawing", string> = {
-  waiting: "Next",
-  drawing: "Drawing…",
+  waiting: tLater("Next"),
+  drawing: tLater("Drawing…"),
 };
-
-function capitalised(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
 
 /**
  * Examples for a city without recommended routes (TASK-143): one card per
- * shape, filled when its route arrives; a ready one opens on the map.
+ * shape, filled when its route arrives; a ready one opens on the map. After
+ * the first shapes come others, a card each from its turn on (TASK-176).
  */
-export function CityExamples({ city, examples, onOpen, onRetry }: Props) {
-  const failed = examples.filter((e) => e.status === "failed");
+export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) {
+  const window = useWindowDimensions();
+  // The cards are written again when «Settings» changes the units (TASK-182).
+  const units = useUnits();
+  // Two cards side by side inside the section, as in «Best near you».
+  const card = cardWidth((width ?? window.width - 2 * space.lg) - 2 * space.md);
+  const shown = shownExamples(examples);
+  const failed = shown.filter((e) => e.status === "failed");
   const messages = Array.from(new Set(failed.map((e) => e.message)));
+  // Something is still to draw, the other shapes too: the note says to wait.
+  const coming = examples.some((e) => e.status === "waiting" || e.status === "drawing");
+  // The distance the examples are asked at: "5 km"; with «Miles», "3.1 mi".
+  const asked =
+    units === "mi"
+      ? distanceLabel(EXAMPLE_DISTANCE_M, "mi", withPoint)
+      : `${EXAMPLE_DISTANCE_M / 1000} km`;
   return (
     <View style={styles.section}>
-      <Text
-        style={styles.label}
-      >{`EXAMPLES IN ${cityShort(city.label).toUpperCase()}`}</Text>
-      <Text style={styles.note}>
-        {`No recommended routes here yet: three shapes of ${EXAMPLE_DISTANCE_M / 1000} km from the centre, drawn now.`}
+      <Text style={styles.label}>
+        {t("EXAMPLES IN {city}", { city: cityShort(city.label).toUpperCase() })}
       </Text>
-      {examples.map((example) => {
-        const name = capitalised(example.shape);
-        if (example.status === "ready") {
-          const { route } = example;
+      <Text style={styles.note}>
+        {t(
+          "No recommended routes here yet: shapes of {distance} from the centre, drawn now.",
+          {
+            distance: asked,
+          },
+        )}
+        {coming ? ` ${t("Three first, more while you choose.")}` : ""}
+      </Text>
+      <View style={styles.grid}>
+        {shown.map((example) => {
+          const name = shapeName(example.shape);
+          if (example.status === "ready") {
+            const { route } = example;
+            // With a point: the texts here are still in English.
+            const distance = distanceLabel(route.route_m, units, withPoint);
+            return (
+              <RouteCard
+                key={example.shape}
+                width={card}
+                line={route.preview}
+                rotationDeg={route.rotation_deg}
+                title={`${name} · ${distance}`}
+                detail={route.city}
+                match={route.similarity}
+                map
+                onPress={() => onOpen(route)}
+                accessibilityLabel={`${name}, ${distance}`}
+              />
+            );
+          }
           return (
-            <Pressable
+            <RouteCard
               key={example.shape}
-              style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-              onPress={() => onOpen(route)}
-              accessibilityRole="button"
-              accessibilityLabel={`${name}, ${(route.route_m / 1000).toFixed(1)} km`}
-            >
-              <RouteThumb line={route.preview} width={72} height={60} />
-              <Text style={styles.rowTitle}>
-                {`${name} · ${(route.route_m / 1000).toFixed(1)} km`}
-              </Text>
-              <Text
-                style={styles.match}
-              >{`${Math.round(route.similarity * 100)}%`}</Text>
-            </Pressable>
+              width={card}
+              line={null}
+              title={name}
+              detail={
+                example.status === "failed" ? t("Not drawn") : t(STATUS[example.status])
+              }
+            />
           );
-        }
-        return (
-          <View key={example.shape} style={styles.row}>
-            <View style={styles.thumb} />
-            <Text style={styles.rowTitle}>{name}</Text>
-            <Text style={styles.status}>
-              {example.status === "failed" ? "Not drawn" : STATUS[example.status]}
-            </Text>
-          </View>
-        );
-      })}
+        })}
+      </View>
+      {examples.some((e) => e.status === "ready") && <CardMapsCredit />}
       {messages.map((message) => (
         <Text key={message} style={styles.error}>
           {message}
@@ -88,7 +114,7 @@ export function CityExamples({ city, examples, onOpen, onRetry }: Props) {
           onPress={onRetry}
           accessibilityRole="button"
         >
-          <Text style={styles.retryText}>Try again</Text>
+          <Text style={styles.retryText}>{t("Try again")}</Text>
         </Pressable>
       )}
     </View>
@@ -116,38 +142,11 @@ const styles = StyleSheet.create({
     color: color.error,
     fontSize: fontSize.small,
   },
-  // As a row of "Best near you", inside the section.
-  row: {
+  // As the cards of "Best near you", inside the section.
+  grid: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
     gap: space.md,
-    padding: space.sm,
-    minHeight: 76,
-    borderRadius: radius.md,
-    backgroundColor: color.surfaceRaised,
-  },
-  thumb: {
-    width: 72,
-    height: 60,
-    borderRadius: radius.md,
-    backgroundColor: color.surface,
-  },
-  rowTitle: {
-    flex: 1,
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
-  },
-  match: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
-    paddingRight: space.xs,
-  },
-  status: {
-    color: color.textMuted,
-    fontSize: fontSize.detail,
-    paddingRight: space.xs,
   },
   pressed: {
     opacity: 0.6,

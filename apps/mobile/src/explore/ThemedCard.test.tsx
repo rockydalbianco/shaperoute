@@ -25,6 +25,7 @@ test("shows the route, the places it passes by, and exports", async () => {
   ).toBeOnTheScreen();
   await fireEvent.press(screen.getByText("Export GPX"));
   expect(onExport).toHaveBeenCalled();
+  expect(screen.queryByText("Run with Strava")).toBeNull();
 });
 
 test("waiting, it can be cancelled; failed, it says why", async () => {

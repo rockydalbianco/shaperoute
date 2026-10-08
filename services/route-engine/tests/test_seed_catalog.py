@@ -8,12 +8,14 @@ from pathlib import Path
 
 import pytest
 
+from route_engine import seed_catalog
 from route_engine.models import RouteResult
 from route_engine.network import LatLon
 from route_engine.optimizer import ShapeNotDrawableError
 from route_engine.seed_catalog import (
     CITIES,
     FAILED,
+    FEATURED,
     LICENSE,
     NOT_DRAWABLE,
     PHRASES,
@@ -201,12 +203,94 @@ def test_unknown_city_is_refused() -> None:
         main(["--cities", "atlantide"])
 
 
+def test_featured_cities_stay_out_of_the_whole_tour() -> None:
+    assert not set(FEATURED) & set(CITIES)
+    assert seed_catalog._build_parser().parse_args([]).cities == list(CITIES)
+
+
+def test_featured_plans_a_heart_a_circle_and_a_star_of_5_km(tmp_path: Path) -> None:
+    asked: list[tuple[str, LatLon]] = []
+
+    def planner(case: Case, start: LatLon) -> RouteResult:
+        asked.append((case.key, start))
+        return _result(0.9)
+
+    out = tmp_path / "seed"
+    argv = ["--run", "--featured", "--log", str(tmp_path / "runs.jsonl")]
+    assert main([*argv, "--out", str(out)], planner=planner) == 0
+    assert [key for key, _ in asked] == [
+        f"{city}/{shape}/5000"
+        for city in FEATURED
+        for shape in ("heart", "circle", "star")
+    ]
+    # From its own square, which the file keeps as the centre.
+    assert asked[0][1] == FEATURED["london"]
+    london = json.loads((out / "london.json").read_text(encoding="utf-8"))
+    assert london["centre"] == list(FEATURED["london"])
+    assert [r["shape"] for r in london["routes"]] == ["circle", "heart", "star"]
+    assert sorted(p.stem for p in out.glob("*.json")) == sorted(FEATURED)
+
+
 def test_word_distance_is_3750_m_a_letter_within_the_limits() -> None:
     assert word_distance("UE") == 8000
     assert word_distance("CIAO") == 15000
     assert word_distance("HELLO") == 19000
     assert word_distance("GRAZIE") == 21000
     assert word_distance("ILOVENY") == 21000
+
+
+def _word(key: str, similarity: float) -> dict:
+    city, written, distance = key.split("/")
+    word, style = written.split(":")
+    run = _run(f"{city}/{word}/{distance}", similarity, style=style)
+    run["word"] = run.pop("shape")
+    return run
+
+
+def test_select_leaves_out_a_word_judged_unreadable() -> None:
+    runs = [
+        _word("trento/CIAO:block/15000", 0.99),
+        _word("trento/CIAO:round/15000", 0.99),
+    ]
+    assert [r["style"] for r in select(runs, 0.5)] == ["round"]
+
+
+def test_select_leaves_out_a_word_no_longer_among_the_phrases() -> None:
+    runs = [
+        _word("torino/CEREA:round/19000", 0.99),
+        _word("torino/CIAO:round/15000", 0.95),
+    ]
+    assert [r["word"] for r in select(runs, 0.5)] == ["CIAO"]
+
+
+def test_phrases_are_short_words_only() -> None:
+    assert max(len(w) for words in PHRASES.values() for w in words) <= 5
+
+
+def test_prepare_downloads_nothing_when_every_zone_is_cached(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    loaded: list[tuple[float, ...]] = []
+
+    class Source:
+        def __init__(self, cache_dir: Path) -> None:
+            pass
+
+        def is_cached(self, box: tuple[float, ...]) -> bool:
+            return cached
+
+        def load(self, box: tuple[float, ...]) -> None:
+            loaded.append(box)
+
+    monkeypatch.setattr(seed_catalog, "OsmnxSource", Source)
+    prepare = seed_catalog.engine_prepare(tmp_path, pause=lambda s: None)
+    todo = cases(["bari"], ["heart", "star"], [5000])
+    cached = True
+    prepare("bari", todo)
+    assert loaded == []
+    cached = False
+    prepare("bari", todo)
+    assert len(loaded) == 1
 
 
 def test_every_city_has_phrases_the_engine_can_write() -> None:
@@ -235,7 +319,7 @@ def test_a_word_is_logged_and_kept_as_a_word(tmp_path: Path) -> None:
             "--kinds",
             "words",
             "--cities",
-            "torino",
+            "bari",
             "--log",
             str(tmp_path / "runs.jsonl"),
             "--out",
@@ -245,12 +329,12 @@ def test_a_word_is_logged_and_kept_as_a_word(tmp_path: Path) -> None:
         ],
         planner=planner,
     )
-    torino = json.loads((out / "torino.json").read_text(encoding="utf-8"))
-    words = {r["word"] for r in torino["routes"]}
-    assert words == set(PHRASES["torino"])
-    assert all("shape" not in r for r in torino["routes"])
+    bari = json.loads((out / "bari.json").read_text(encoding="utf-8"))
+    words = {r["word"] for r in bari["routes"]}
+    assert words == set(PHRASES["bari"])
+    assert all("shape" not in r for r in bari["routes"])
     assert styles == {"round", "block"}
-    assert (tmp_path / "gpx" / "torino_CEREA-round_19km.gpx").exists()
+    assert (tmp_path / "gpx" / "bari_UE-round_8km.gpx").exists()
 
 
 def test_each_city_is_prepared_once_before_its_cases(tmp_path: Path) -> None:
@@ -282,3 +366,34 @@ def test_each_city_is_prepared_once_before_its_cases(tmp_path: Path) -> None:
     ]
     assert said[0] == "bari: zone not loaded (OSError), skipped"
     assert run_cases(todo, planner, tmp_path / "runs.jsonl", say=said.append) == 2
+
+
+def test_a_shape_the_engine_turned_is_logged_and_written_with_its_turn(
+    tmp_path: Path,
+) -> None:
+    """TASK-232 part C: `rotation_deg` in the log and in the city file, only
+    when the shape is turned; the API's catalogue reads it, and the app
+    draws the route turned back. A route north up is written as before."""
+    log = tmp_path / "runs.jsonl"
+
+    def planner(case: Case, start: LatLon) -> RouteResult:
+        result = _result(0.9)
+        if case.shape == "star":
+            return RouteResult(
+                points=result.points,
+                distance_m=result.distance_m,
+                similarity=0.9,
+                shape="star",
+                rotation_deg=-30.0,
+            )
+        return result
+
+    todo = cases(["levico"], ["heart", "star"], [5000])
+    assert run_cases(todo, planner, log, say=lambda _: None) == 2
+    runs = {r["key"]: r for r in read_runs(log)}
+    assert runs["levico/star/5000"]["rotation_deg"] == -30.0
+    assert "rotation_deg" not in runs["levico/heart/5000"]
+    kept = [runs["levico/heart/5000"], runs["levico/star/5000"]]
+    heart, star = json.loads(catalogue_files(kept, 0.88)["levico.json"])["routes"]
+    assert star["shape"] == "star" and star["rotation_deg"] == -30.0
+    assert heart["shape"] == "heart" and "rotation_deg" not in heart

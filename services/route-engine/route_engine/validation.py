@@ -4,6 +4,11 @@ Each check measures one thing and becomes an `Issue` only above its limit;
 the issues end up as warnings in `RouteResult`, with measure and limit.
 A route that is not closed, or starts too far from the requested point,
 is not a warning but a bug: `check_closed` raises.
+
+On the water (TASK-191, ROUTE_ENGINE.md §8) there are no steps, roads or
+retracing to warn about: a route there is closed, never on land, never
+beyond the band from the shore and as long as asked, or it is a bug, and
+`check_on_water` raises.
 """
 
 from __future__ import annotations
@@ -15,7 +20,14 @@ from typing import Any
 import numpy as np
 
 from route_engine.geo import LatLon, haversine_m, latlon_to_local_array
-from route_engine.network import Graph, distance_to_segments
+from route_engine.network import (
+    Graph,
+    distance_to_segments,
+    on_foot_edge,
+    one_way_streets,
+)
+from route_engine.water import SHORE_BAND_M
+from route_engine.water_fit import DISTANCE_TOLERANCE, WaterMeasures
 
 # Sides of a shape, as (start, end), that the shape draws twice on purpose:
 # its strokes, out and back (TASK-037).
@@ -30,6 +42,28 @@ RETRACE_STEP_M = 10.0  # sampling step along the route
 # Ways a runner should know about (OSM `highway` values), and tunnels.
 BUSY_ROADS = frozenset({"trunk", "trunk_link", "primary", "primary_link"})
 STEPS = frozenset({"steps"})
+# Unpaved, for a bike (ADR-0153): the `surface` values of OSM without a
+# hard top, and a `track` that says nothing of its surface unless it is
+# `tracktype=grade1` (paved). The bike network has neither steps nor trunk
+# roads: on it `busy` is the metres on primary roads.
+UNPAVED = frozenset(
+    {
+        "unpaved",
+        "gravel",
+        "fine_gravel",
+        "compacted",
+        "dirt",
+        "earth",
+        "ground",
+        "grass",
+        "mud",
+        "sand",
+        "pebblestone",
+        "rock",
+        "woodchips",
+        "grass_paver",
+    }
+)
 
 
 class InvalidRouteError(RuntimeError):
@@ -161,8 +195,14 @@ def visual_retrace(
 
 
 def usability(graph: Graph, nodes: Sequence[Any]) -> dict[str, float]:
-    """Metres of the route on steps, on busy roads and in tunnels."""
+    """Metres of the route on steps, on busy roads and in tunnels; on the
+    bike network also unpaved (`unpaved`) and with the bike on foot
+    (`on_foot`, TASK-206)."""
     metres = {"steps": 0.0, "busy": 0.0, "tunnel": 0.0}
+    bike = one_way_streets(graph)
+    if bike:
+        metres["unpaved"] = 0.0
+        metres["on_foot"] = 0.0
     for u, v in zip(nodes, nodes[1:], strict=False):
         data = _edge_data(graph, u, v)
         length = float(data["length"])
@@ -173,7 +213,23 @@ def usability(graph: Graph, nodes: Sequence[Any]) -> dict[str, float]:
             metres["busy"] += length
         if "yes" in _values(data.get("tunnel")):
             metres["tunnel"] += length
+        if bike and unpaved(data):
+            metres["unpaved"] += length
+        if bike and on_foot_edge(data):
+            metres["on_foot"] += length
     return metres
+
+
+def unpaved(data: dict[str, Any]) -> bool:
+    """Whether an edge of the bike network is unpaved, all or in part: an
+    edge joins several ways, each with its own tags."""
+    if _values(data.get("surface")) & UNPAVED:
+        return True
+    return (
+        "track" in _values(data.get("highway"))
+        and data.get("surface") is None
+        and "grade1" not in _values(data.get("tracktype"))
+    )
 
 
 def check_closed(
@@ -244,9 +300,15 @@ def validate(measures: dict[str, float]) -> list[Issue]:
                 f"within {RETRACE_NEAR_M:.0f} m (limit {VISUAL_RETRACE_MAX:.0%})",
             )
         )
-    labels = {"steps": "on steps", "busy": "on main roads", "tunnel": "in tunnels"}
+    labels = {
+        "steps": "on steps",
+        "busy": "on main roads",
+        "tunnel": "in tunnels",
+        "unpaved": "on unpaved roads",
+        "on_foot": "with the bike on foot",
+    }
     for code, label in labels.items():
-        if measures[code] > 0:
+        if measures.get(code, 0.0) > 0:
             issues.append(
                 Issue(
                     code,
@@ -256,3 +318,27 @@ def validate(measures: dict[str, float]) -> list[Issue]:
                 )
             )
     return issues
+
+
+def check_on_water(measures: WaterMeasures, distance_m: float) -> None:
+    """Raise unless a route on the water (water_fit.measure) ends where it
+    begins, is nowhere on land (but for the half metre where a leg leaves
+    the shore, water_fit.ON_LAND_M), is nowhere farther than SHORE_BAND_M
+    from the shore, and is within DISTANCE_TOLERANCE of `distance_m`, as
+    on roads."""
+    if not measures.closed:
+        raise InvalidRouteError("the route does not end where it begins")
+    if measures.on_land_m > 0.0:
+        raise InvalidRouteError(
+            f"{measures.on_land_m:.1f} m of the route on the water is on land"
+        )
+    if measures.farthest_shore_m > SHORE_BAND_M:
+        raise InvalidRouteError(
+            f"the route goes {measures.farthest_shore_m:.0f} m from the shore "
+            f"(at most {SHORE_BAND_M:.0f} m)"
+        )
+    if abs(measures.distance_m - distance_m) > DISTANCE_TOLERANCE * distance_m:
+        raise InvalidRouteError(
+            f"the route on the water is {measures.distance_m:.0f} m long, "
+            f"not within {DISTANCE_TOLERANCE:.0%} of {distance_m:.0f} m"
+        )

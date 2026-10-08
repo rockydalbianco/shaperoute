@@ -1,14 +1,7 @@
 import type { Direction } from "@shaperoute/shared-types";
 import result from "@shaperoute/shared-types/fixtures/route-result.json";
 
-import {
-  announcement,
-  distanceLabel,
-  instruction,
-  onto,
-  roundMetres,
-  thenText,
-} from "./phrases";
+import { distanceLabel, instruction, onto, roundMetres, thenText } from "./phrases";
 
 const directions = result.directions as Direction[];
 
@@ -29,7 +22,7 @@ test("a road with no name is called by its kind, never named", () => {
   expect(onto({ ...unnamed, road_type: null })).toBe("");
 });
 
-test("the street beside an unnamed road is said as beside, never as its name", () => {
+test("the street beside an unnamed road is written as beside, never as its name", () => {
   const footway = directions[2];
   expect(footway.along).toBe("Via Rosmini");
   expect(onto(footway)).toBe(" onto the footpath beside Via Rosmini");
@@ -39,9 +32,6 @@ test("the street beside an unnamed road is said as beside, never as its name", (
   );
   expect(instruction({ ...footway, turn: "depart", road_type: null })).toBe(
     "Head out beside Via Rosmini",
-  );
-  expect(announcement([footway], 52)).toBe(
-    "In 50 metres, turn left onto the footpath beside Via Rosmini",
   );
 });
 
@@ -59,12 +49,8 @@ test("an API older than TASK-060, without along, reads as before", () => {
   expect(instruction({ ...old, road_type: null })).toBe("Turn left");
 });
 
-test("joined directions are said together, street names untouched", () => {
-  expect(announcement(directions.slice(3), 47)).toBe(
-    "In 50 metres, continue straight onto SP12, then turn sharp right onto Via Verdi",
-  );
+test("the banner's second line joins what follows, street names untouched", () => {
   expect(thenText(directions.slice(4))).toBe("Then turn sharp right onto Via Verdi");
-  expect(announcement(directions.slice(1, 2), null)).toBe("Turn left onto Via Manci");
 });
 
 test("distances as a runner hears and reads them", () => {

@@ -14,5 +14,6 @@
     [46.068, 11.127],
     [46.067, 11.1215]
   ],
-  "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright"
+  "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
+  "rotation_deg": -30
 }

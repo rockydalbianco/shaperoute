@@ -13,6 +13,14 @@
       "ios": {
         "simulator": true
       }
+    },
+    "production": {
+      "channel": "production",
+      "environment": "production",
+      "autoIncrement": true,
+      "env": {
+        "APP_VARIANT": "production"
+      }
     }
   }
 }

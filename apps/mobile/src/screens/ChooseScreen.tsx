@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import {
   KeyboardAvoidingView,
-  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -11,7 +10,10 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { PlaceSearch } from "../places/PlaceSearch";
+import { t } from "../i18n";
+import { HeartBadge } from "../intro/HeartBadge";
+import { OpenSettings } from "../permissions/OpenSettings";
+import { PlaceSearch, type SuggestPlaces } from "../places/PlaceSearch";
 import type { LatLon } from "@shaperoute/shared-types";
 
 import type { Place } from "../places/photon";
@@ -33,6 +35,9 @@ const START_MODES = [
   { value: "place", label: "Another place" },
 ] as const;
 
+/** The heart beside the name: as tall as the title's letters and a little more. */
+const BADGE_SIZE = 32;
+
 type Props = {
   /** Where the route will start, in words (UI.md, «La partenza»). */
   status: string;
@@ -46,15 +51,22 @@ type Props = {
   onPlace: (place: Place) => void;
   /** The GPS position when known: the search prefers places around it. */
   near: LatLon | null;
+  /** Places the search offers by itself, above the ones it finds: the lakes
+   * and beaches of «Paddle» (TASK-240). */
+  suggest?: SuggestPlaces;
+  /** What the empty search field says, when not «City or street». */
+  searchHint?: string;
   mapError: string | null;
+  /** Loads the map that could not load again (TASK-259). */
+  onMapRetry?: () => void;
   /** Shape and distance (RouteChoice). */
   children: ReactNode;
   /** "Draw route", kept at the foot of the screen. */
   footer: ReactNode;
-  /** Opens "Explore", the best routes near the start (TASK-126). */
-  onExplore?: () => void;
   /** Starts a run without a route, the track only (TASK-149). */
   onRun?: () => void;
+  /** Its button's words: «Bike» has its own (TASK-190). */
+  runLabel?: string;
 };
 
 /**
@@ -69,11 +81,14 @@ export function ChooseScreen({
   searching,
   onPlace,
   near,
+  suggest,
+  searchHint,
   mapError,
+  onMapRetry,
   children,
   footer,
-  onExplore,
   onRun,
+  runLabel = "Run without a route",
 }: Props) {
   const insets = useSafeAreaInsets();
   return (
@@ -88,25 +103,22 @@ export function ChooseScreen({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Sgrava</Text>
+          <View style={styles.brand}>
+            {/* The heart of the launch on its yellow, as a logo (TASK-221). */}
+            <HeartBadge size={BADGE_SIZE} />
+            <Text style={styles.title}>MuW</Text>
+          </View>
           <View style={styles.titleButtons}>
             {onRun && (
               <Pressable
-                style={styles.explore}
+                style={styles.run}
                 onPress={onRun}
                 accessibilityRole="button"
-                accessibilityLabel="Run without a route"
+                accessibilityLabel={runLabel}
               >
-                <Text style={styles.exploreText}>Run</Text>
-              </Pressable>
-            )}
-            {onExplore && (
-              <Pressable
-                style={styles.explore}
-                onPress={onExplore}
-                accessibilityRole="button"
-              >
-                <Text style={styles.exploreText}>Explore</Text>
+                {/* The whole of it: "Run" alone read as running the route
+                    drawn below (TASK-158). */}
+                <Text style={styles.runText}>{runLabel}</Text>
               </Pressable>
             )}
           </View>
@@ -115,18 +127,17 @@ export function ChooseScreen({
           <Text style={styles.label}>START</Text>
           <Segmented options={START_MODES} value={mode} onChange={onMode} />
           <Text style={styles.status}>{status}</Text>
-          {denied && (
-            <Pressable
-              style={styles.linkButton}
-              onPress={() => void Linking.openSettings()}
-              accessibilityRole="button"
-            >
-              <Text style={styles.link}>Open Settings</Text>
-            </Pressable>
+          {denied && <OpenSettings />}
+          {searching && (
+            <PlaceSearch
+              onSelect={onPlace}
+              near={near}
+              suggest={suggest}
+              placeholder={searchHint}
+            />
           )}
-          {searching && <PlaceSearch onSelect={onPlace} near={near} />}
         </View>
-        {mapError && <MapError reason={mapError} />}
+        {mapError && <MapError onRetry={onMapRetry} />}
         {children}
       </ScrollView>
       <View style={[styles.footer, { paddingBottom: insets.bottom + space.sm }]}>
@@ -136,12 +147,28 @@ export function ChooseScreen({
   );
 }
 
-/** The map page could not load (UI.md, «Quando la mappa non si carica»). */
-export function MapError({ reason }: { reason: string }) {
+/**
+ * The map page could not load (UI.md, «Quando la mappa non si carica»): the
+ * map's own words, without the reason, which is for the log (TASK-259). Under
+ * «Draw» the map, and its «Retry», are hidden: the screen offers its own.
+ * It goes away once the map loads (TASK-256).
+ */
+export function MapError({ onRetry }: { reason?: string; onRetry?: () => void }) {
   return (
-    <Text style={styles.error}>
-      The map could not load ({reason}). Check the connection and reopen the app.
-    </Text>
+    <View style={styles.mapError}>
+      <Text style={styles.error}>
+        {t("The map could not be loaded. Check the network.")}
+      </Text>
+      {onRetry && (
+        <Pressable
+          style={styles.linkButton}
+          onPress={onRetry}
+          accessibilityRole="button"
+        >
+          <Text style={styles.link}>{t("Retry")}</Text>
+        </Pressable>
+      )}
+    </View>
   );
 }
 
@@ -159,6 +186,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  brand: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+  },
   title: {
     color: color.text,
     fontSize: fontSize.title,
@@ -168,17 +200,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: space.sm,
   },
-  explore: {
+  // Yellow, the user's choice (TASK-220, ADR-0183): the one control yellow
+  // without being the route's. Dark text on it, as on every yellow.
+  run: {
     minHeight: MIN_TAP_SIZE,
     paddingHorizontal: space.md,
     borderRadius: radius.pill,
     justifyContent: "center",
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
+    backgroundColor: color.accent,
   },
-  exploreText: {
-    color: color.text,
+  runText: {
+    color: color.onAccent,
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,
   },
@@ -208,6 +240,9 @@ const styles = StyleSheet.create({
     color: color.text,
     fontWeight: fontWeight.bold,
     textDecorationLine: "underline",
+  },
+  mapError: {
+    gap: space.xs,
   },
   error: {
     color: color.error,

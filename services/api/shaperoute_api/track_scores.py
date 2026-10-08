@@ -29,7 +29,8 @@ def score_run(body: TrackScoreRequestBody) -> TrackScoreBody:
         for fix in body.track
     ]
     try:
-        scored = score_track(track, body.points, body.similarity)
+        # A word with the pen up is judged on its letters (TASK-197).
+        scored = score_track(track, body.points, body.similarity, body.walks)
     except TrackNotScorableError as exc:
         raise InvalidRequestError(f"This run cannot be scored: {exc}.") from None
     return TrackScoreBody(**asdict(scored))

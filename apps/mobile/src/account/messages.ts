@@ -1,42 +1,69 @@
 import type { AccountOutcome } from "../api/accounts";
+import { t, tLater } from "../i18n";
 
 /** A request that did not go as asked, in plain words (docs/UI.md). */
 type Failed = Exclude<AccountOutcome<unknown>, { kind: "ok" }>;
 
-const BUG = "The app and the API do not agree (a bug)";
+/**
+ * An app built without the address of its service (TASK-256): on a phone,
+ * only one older than the service. In English: where it is shown,
+ * `t(NO_API)` (TASK-210).
+ */
+export const NO_API = tLater("The app cannot reach the service. Update the app.");
 
-export const NO_API =
-  "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.";
+/**
+ * The session is over (`session_expired`, `not_signed_in`): log in again.
+ * In English: where it is shown, `t(SESSION_ENDED)` (TASK-210).
+ */
+export const SESSION_ENDED = tLater("Your session has ended. Log in again.");
 
-/** The session is over (`session_expired`, `not_signed_in`): log in again. */
-export const SESSION_ENDED = "Your session has ended. Log in again.";
+/**
+ * Something the app did not expect from the API, for whoever uses the
+ * phone: nothing to do but try again. `detail` (an address, a status, the
+ * API's words) follows only in a development build (TASK-256).
+ */
+function ourSide(detail: string): string {
+  return withDetail(
+    t("Something went wrong on our side. Try again in a moment."),
+    detail,
+  );
+}
+
+/** `text`, and `detail` after it in a development build. */
+export function withDetail(text: string, detail: string): string {
+  return __DEV__ ? `${text} (${detail})` : text;
+}
 
 /** An account request that failed, in words. */
 export function accountProblem(failed: Failed): string {
   switch (failed.kind) {
     case "unreachable":
-      return `Cannot reach the API at ${failed.url}. Check the connection and try again.`;
+      return withDetail(
+        t("No connection. Check the network and try again."),
+        `Cannot reach the API at ${failed.url}.`,
+      );
     case "bad_answer":
-      return `${BUG}: HTTP ${failed.status}.`;
+      return ourSide(`unexpected answer, HTTP ${failed.status}`);
     case "api_error":
       switch (failed.code) {
         case "email_taken":
-          return "This email already has an account. Log in instead.";
+          return t("This email already has an account. Log in instead.");
         case "username_taken":
-          return "This username is taken. Try another one.";
+          return t("This username is taken. Try another one.");
         case "wrong_credentials":
-          return "Wrong email or password.";
+          return t("Wrong email or password.");
         case "too_many_requests":
-          return `Too many tries. ${waitText(failed.retryAfterS)}`;
+          return tooManyTries(failed.retryAfterS);
         case "session_expired":
         case "not_signed_in":
-          return SESSION_ENDED;
+          return t(SESSION_ENDED);
         case "accounts_unavailable":
-          return "Accounts are not available on this API: it has no database.";
+          return t("Accounts are not available right now. Try again later.");
+        // A key refused is an app older than its service (TASK-081).
         case "unauthorized":
-          return "The API refused the app's key (EXPO_PUBLIC_API_KEY in apps/mobile/.env).";
+          return t("This version of the app is no longer allowed in. Update the app.");
         default:
-          return `${BUG}: ${failed.message}`;
+          return ourSide(`${failed.code}: ${failed.message}`);
       }
   }
 }
@@ -49,9 +76,12 @@ export function sessionEnded(outcome: AccountOutcome<unknown>): boolean {
   );
 }
 
-function waitText(seconds: number | null): string {
+function tooManyTries(seconds: number | null): string {
   if (seconds === null || seconds <= 60) {
-    return "Wait a minute and try again.";
+    return t("Too many tries. Wait a minute and try again.");
   }
-  return `Wait ${Math.ceil(seconds / 60)} minutes and try again.`;
+  // Always 2 or more: «minutes» in each language.
+  return t("Too many tries. Wait {minutes} minutes and try again.", {
+    minutes: Math.ceil(seconds / 60),
+  });
 }

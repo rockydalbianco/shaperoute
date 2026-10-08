@@ -1,32 +1,54 @@
-import type { LatLon } from "@shaperoute/shared-types";
-import { useEffect, useRef, useState } from "react";
+import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  AppState,
   Linking,
+  Pressable,
   type StyleProp,
   StyleSheet,
+  Text,
   View,
   type ViewStyle,
 } from "react-native";
 import { WebView } from "react-native-webview";
 
+import { t } from "../i18n";
+import { useLanguage } from "../i18n/useLanguage";
+import { usePocketOn } from "../navigation/pocketOn";
+import { cumulative } from "../navigation/progress";
 import { MapLoadingBar } from "../route/LoadingBar";
-import { color, space } from "../theme/tokens";
+import {
+  color,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "../theme/tokens";
+import type { LngLat } from "./coordinates";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
+  clearProgress,
   clearRoute,
   clearStops,
   clearTrack,
   follow,
   pageScript,
   parsePageMessage,
+  setDoubleTap,
+  setMove,
   setPosition,
   showOthers,
+  showProgress,
   showRoute,
   showStops,
   showTrack,
+  stopFollow,
+  turn as turnMap,
 } from "./messages";
+import { doneMetres, splitRoute } from "./routeSplit";
+import type { Turn } from "./turnedMap";
 
-const MAP_PAGE = buildMapPage();
 /** One empty list, so the map is not told again and again of no routes. */
 const NO_OTHERS: LatLon[][] = [];
 
@@ -35,39 +57,128 @@ type Props = {
   start: LatLon | null;
   /** The route to draw over the roads, or null for none. */
   route: LatLon[] | null;
+  /** The route's walks, for a word with the pen up (TASK-198): dashed, the
+   * letters alone in the route's colour. None draws the route as before. */
+  walks?: Walk[] | null;
+  /** A bike route's stretches with the bike on foot (TASK-206): dashed
+   * over the route. None draws the route as before. */
+  onFoot?: Stretch[] | null;
   /** The other routes to choose from, grey under the route (TASK-093). */
   others?: LatLon[][];
   /** The run to draw over the route, or null for none (TASK-113). */
   track?: LatLon[] | null;
   /** While navigating, the phone's position: the map follows it (TASK-049). */
   following?: LatLon | null;
+  /** Where the runner is heading, in degrees clockwise from north: the
+   * marker followed is an arrow turned that way (TASK-164). */
+  heading?: number | null;
+  /** While running the route, how far along it the runner is (TASK-224):
+   * the part run stays solid yellow, the part left is dashed and blinks.
+   * None draws the route whole, as before. */
+  progress?: { alongM: number; arrived: boolean } | null;
   /** The places of a themed route (TASK-129), or null for none. */
   stops?: { name: string; point: LatLon; passed: boolean }[] | null;
-  /** Called when the map cannot be shown, with a reason for the log. */
-  onError: (reason: string) => void;
+  /** With it, a double tap on the map calls it and no longer zooms
+   * (TASK-119); two fingers still do. Without, the map is as before. */
+  onDoubleTap?: () => void;
+  /** While true, one finger drags the route and no longer the map
+   * (TASK-238): the shape of a route on the water, moved by the user. */
+  moving?: boolean;
+  /** The route was dragged and left: by how many degrees of longitude and
+   * of latitude. The map keeps it there until `route` changes. */
+  onMoved?: (by: LngLat) => void;
+  /** The bearing that shows the route upright, when its shape is turned
+   * (TASK-232, `bearingOf`): the map is framed on the route turned so, and
+   * stays so while it is run. 0, north up, without. */
+  bearing?: number;
+  /** A tap on the north arrow: the map turns there. A new one for each
+   * tap; the same one is not asked twice. */
+  turn?: Turn | null;
+  /** The map turned, by the app or by two fingers: its bearing now, in
+   * whole degrees clockwise from north. */
+  onTurned?: (bearing: number) => void;
+  /** Called when the map cannot be shown, with a reason for the log; with
+   * null once the map loads after that (TASK-256), so the screen's note
+   * goes away. The map itself says it could not load and offers «Retry». */
+  onError: (reason: string | null) => void;
   style?: StyleProp<ViewStyle>;
 };
 
 export function MapView({
   start,
   route,
+  walks = null,
+  onFoot = null,
   others = NO_OTHERS,
   track = null,
   following = null,
+  heading = null,
+  progress = null,
   stops = null,
+  onDoubleTap,
+  moving = false,
+  onMoved,
+  bearing = 0,
+  turn = null,
+  onTurned,
   onError,
   style,
 }: Props) {
   const webView = useRef<WebView>(null);
   const [ready, setReady] = useState(false);
+  // The names on the map in the app's language: a new language loads the
+  // page again, as «Retry» does, and the map is told everything again.
+  const language = useLanguage();
+  const page = useMemo(() => buildMapPage(language), [language]);
   // Until the first tiles are drawn, a bar over the map (TASK-058); an error
   // takes its place.
   const [loading, setLoading] = useState(true);
+  // The page said it could not load (TASK-256): in place of the bar, the
+  // words and «Retry», until the page loads. `erred` remembers it across the
+  // reload, so `onError(null)` follows an error reported, and only that.
+  const [failed, setFailed] = useState(false);
+  const erred = useRef(false);
   const routeShown = useRef(false);
   const followed = useRef(false);
   const trackShown = useRef(false);
   const stopsShown = useRef(false);
   const othersShown = useRef(false);
+  const progressShown = useRef(false);
+  const doubleTapAsked = useRef(false);
+  const moveAsked = useRef(false);
+  const turnAsked = useRef<Turn | null>(null);
+  const along = useMemo(() => (route ? cumulative(route) : null), [route]);
+  // In steps, so the map is not told of every metre.
+  const doneM = progress ? doneMetres(progress) : null;
+  // Under the black screen of pocket mode nobody sees the blinking.
+  const pocket = usePocketOn();
+
+  const fail = (reason: string) => {
+    setLoading(false);
+    setFailed(true);
+    erred.current = true;
+    onError(reason);
+  };
+
+  const retry = () => {
+    setFailed(false);
+    setLoading(true);
+    webView.current?.reload();
+  };
+
+  // Offline when it opened, back with the network on: the map that could
+  // not load is loaded again as the app comes to the front (TASK-256).
+  useEffect(() => {
+    if (!failed) {
+      return;
+    }
+    const watching = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        retry();
+      }
+    });
+    return () => watching.remove();
+  }, [failed]);
 
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {
@@ -94,13 +205,15 @@ export function MapView({
       return;
     }
     if (route) {
-      webView.current?.injectJavaScript(pageScript(showRoute(route, start)));
+      webView.current?.injectJavaScript(
+        pageScript(showRoute(route, start, walks, onFoot, bearing)),
+      );
       routeShown.current = true;
     } else if (routeShown.current) {
       webView.current?.injectJavaScript(pageScript(clearRoute()));
       routeShown.current = false;
     }
-  }, [ready, route, start]);
+  }, [ready, route, start, walks, onFoot, bearing]);
 
   useEffect(() => {
     if (!ready) {
@@ -134,17 +247,70 @@ export function MapView({
       return;
     }
     if (following) {
-      webView.current?.injectJavaScript(pageScript(follow(following)));
+      webView.current?.injectJavaScript(pageScript(follow(following, heading)));
       followed.current = true;
     } else if (followed.current) {
       followed.current = false;
+      webView.current?.injectJavaScript(pageScript(stopFollow()));
       if (route) {
-        webView.current?.injectJavaScript(pageScript(showRoute(route, start)));
+        webView.current?.injectJavaScript(
+          pageScript(showRoute(route, start, walks, onFoot, bearing)),
+        );
       }
     }
-    // Only a new position moves the map; the route effect above draws it.
+    // Only a new position moves the map, and the heading comes with it; the
+    // route effect above draws the route.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, following]);
+
+  // Running the route: cut where the runner is. After, the route whole again.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (route && along && doneM !== null) {
+      webView.current?.injectJavaScript(
+        pageScript(showProgress(splitRoute(route, along, doneM, walks), !pocket)),
+      );
+      progressShown.current = true;
+    } else if (progressShown.current) {
+      webView.current?.injectJavaScript(pageScript(clearProgress()));
+      progressShown.current = false;
+    }
+  }, [ready, route, along, walks, doneM, pocket]);
+
+  // Asked for only where a double tap means something: elsewhere it zooms.
+  const wantsDoubleTap = onDoubleTap !== undefined;
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (wantsDoubleTap || doubleTapAsked.current) {
+      webView.current?.injectJavaScript(pageScript(setDoubleTap(wantsDoubleTap)));
+      doubleTapAsked.current = wantsDoubleTap;
+    }
+  }, [ready, wantsDoubleTap]);
+
+  // Asked for only while the user moves a shape: elsewhere a finger drags
+  // the map.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (moving || moveAsked.current) {
+      webView.current?.injectJavaScript(pageScript(setMove(moving)));
+      moveAsked.current = moving;
+    }
+  }, [ready, moving]);
+
+  // After the route, which turns the map as its drawing: a tap on the north
+  // arrow is asked of the map once, not again when the page loads again.
+  useEffect(() => {
+    if (ready && turn !== null && turn !== turnAsked.current) {
+      webView.current?.injectJavaScript(pageScript(turnMap(turn.bearing)));
+    }
+    turnAsked.current = turn;
+  }, [ready, turn]);
 
   return (
     <View style={style}>
@@ -152,11 +318,13 @@ export function MapView({
         ref={webView}
         testID="map"
         style={styles.page}
-        source={{ html: MAP_PAGE }}
+        source={{ html: page }}
         originWhitelist={["*"]}
         onLoadStart={() => {
           setReady(false);
           setLoading(true);
+          // A page that loads is north-up.
+          onTurned?.(0);
         }}
         onMessage={(event) => {
           const message = parsePageMessage(event.nativeEvent.data);
@@ -164,15 +332,22 @@ export function MapView({
             setReady(true);
           } else if (message?.type === "loaded") {
             setLoading(false);
+            setFailed(false);
+            if (erred.current) {
+              erred.current = false;
+              onError(null);
+            }
+          } else if (message?.type === "doubleTap") {
+            onDoubleTap?.();
+          } else if (message?.type === "moved") {
+            onMoved?.(message.by);
+          } else if (message?.type === "turned") {
+            onTurned?.(message.bearing);
           } else if (message?.type === "error") {
-            setLoading(false);
-            onError(message.message);
+            fail(message.message);
           }
         }}
-        onError={(event) => {
-          setLoading(false);
-          onError(event.nativeEvent.description);
-        }}
+        onError={(event) => fail(event.nativeEvent.description)}
         onShouldStartLoadWithRequest={(request) => {
           if (isExternalUrl(request.url)) {
             void Linking.openURL(request.url);
@@ -188,9 +363,19 @@ export function MapView({
         // iOS may stop the page to free memory: without a reload it stays white.
         onContentProcessDidTerminate={() => webView.current?.reload()}
       />
-      {loading && (
+      {loading && !failed && (
         <View style={styles.loading} pointerEvents="none">
           <MapLoadingBar />
+        </View>
+      )}
+      {failed && (
+        <View style={styles.failed}>
+          <Text style={styles.failedText}>
+            {t("The map could not be loaded. Check the network.")}
+          </Text>
+          <Pressable style={styles.retry} onPress={retry} accessibilityRole="button">
+            <Text style={styles.retryText}>{t("Retry")}</Text>
+          </Pressable>
         </View>
       )}
     </View>
@@ -210,5 +395,33 @@ const styles = StyleSheet.create({
     left: "20%",
     right: "20%",
     marginTop: -space.xs,
+  },
+  // Where the bar was, the words and the button, on the blank map.
+  failed: {
+    position: "absolute",
+    top: "50%",
+    left: "15%",
+    right: "15%",
+    marginTop: -space.xxl,
+    alignItems: "center",
+    gap: space.md,
+  },
+  failedText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    textAlign: "center",
+  },
+  retry: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    paddingHorizontal: space.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  retryText: {
+    color: color.text,
+    fontWeight: fontWeight.bold,
   },
 });

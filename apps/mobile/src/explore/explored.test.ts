@@ -4,7 +4,14 @@ import routeResult from "@shaperoute/shared-types/fixtures/route-result.json";
 import { act, renderHook } from "@testing-library/react-native";
 
 import type { requestRoute } from "../api/routes";
-import { drawExamples, forgetExamples, useCityExamples } from "./exampleRoutes";
+import {
+  drawExamples,
+  exampleDetail,
+  forgetExamples,
+  movedExample,
+  PADDLE_EXAMPLES,
+  useCityExamples,
+} from "./exampleRoutes";
 import { toRequest, toResult, useExplored } from "./explored";
 import type { RecommendedRouteDetail } from "./recommendedRoutes";
 
@@ -33,8 +40,38 @@ test("a word keeps its style", () => {
   expect(toResult(word).shape).toBeNull();
 });
 
+test("an example on the water asks for paddling (TASK-191)", () => {
+  expect(toRequest({ ...star, distance_m: 2000, activity: "paddling" })).toEqual({
+    start: star.points[0],
+    shape: "star",
+    distance_m: 2000,
+    activity: "paddling",
+  });
+});
+
 test("a shape the app does not know has no request", () => {
   expect(toRequest({ ...star, shape: "unicorn" })).toBeNull();
+});
+
+test("an example drawn in pieces on the water keeps its pen up (TASK-226)", () => {
+  // Asked so again, and its stretches with the pen up go with the route.
+  const walks: [number, number][] = [[1, 2]];
+  const head = { ...star, shape: "dog_head", distance_m: 2000, walks };
+  expect(toRequest({ ...head, activity: "paddling" })).toEqual({
+    start: star.points[0],
+    distance_m: 2000,
+    activity: "paddling",
+    shape: "dog_head",
+    pen_up: true,
+  });
+  expect(toResult(head).walks).toEqual(walks);
+  expect(toResult(star)).not.toHaveProperty("walks");
+});
+
+test("an example on the water says where its shape is (TASK-244)", () => {
+  const centre: [number, number] = [45.88, 10.84];
+  expect(toResult({ ...star, activity: "paddling", centre }).centre).toEqual(centre);
+  expect(toResult(star)).not.toHaveProperty("centre");
 });
 
 test("a city's example opens at once, without asking the API (TASK-143)", async () => {
@@ -101,6 +138,8 @@ test("a city's example opens with the routes to choose from (TASK-151)", async (
   expect(first.choices.map((c) => c.points)).toEqual([drawn.points, other.points]);
   expect(first.chosen).toBe(0);
   expect(first.result).toBe(first.choices[0]);
+  // The route not chosen is the grey line of the map (TASK-155).
+  expect(first.others).toEqual([other.points]);
 
   // B: the card, the map, Start and the export are about it from now on.
   await act(async () => first.choose(1));
@@ -117,6 +156,7 @@ test("a city's example opens with the routes to choose from (TASK-151)", async (
     start: other.points[0],
   });
   expect(second.request).toMatchObject({ shape: "heart", start: other.points[0] });
+  expect(second.others).toEqual([drawn.points]);
 
   // A route that is not there is not chosen; A again is the same route.
   await act(async () => second.choose(5));
@@ -140,5 +180,81 @@ test("a route of the catalogue is the only one to choose", async () => {
   expect(hook.current.explored).toMatchObject({ status: "done", chosen: 0 });
   const opened = hook.current.explored;
   expect(opened?.status === "done" && opened.choices).toHaveLength(1);
+  expect(opened?.status === "done" && opened.others).toEqual([]);
   fetchFn.mockRestore();
+});
+
+test("who opens a route may know a surer way to fetch it whole (TASK-188)", async () => {
+  const fetchFn = jest.spyOn(globalThis, "fetch");
+  const moved = { ...star, id: "trento-star-5000-7" };
+  const fetchWhole = jest.fn().mockResolvedValue({ kind: "route", route: moved });
+  const { result: hook } = await renderHook(() => useExplored("http://api"));
+  const listed = { ...star, start: star.points[0], away_m: 0, preview: star.points };
+  await act(async () => hook.current.open(listed, fetchWhole));
+  expect(fetchWhole).toHaveBeenCalledWith("http://api", star.id);
+  expect(hook.current.explored).toMatchObject({ status: "done", detail: moved });
+  expect(fetchFn).not.toHaveBeenCalled();
+
+  // And when that way fails, the route does not load.
+  fetchWhole.mockResolvedValue({ kind: "failed" });
+  await act(async () => hook.current.open(listed, fetchWhole));
+  expect(hook.current.explored).toMatchObject({ status: "failed" });
+  fetchFn.mockRestore();
+});
+
+test("an example redrawn with its shape moved takes its place on the map (TASK-244)", async () => {
+  forgetExamples();
+  const garda = { label: "Lago di Garda", point: [45.88114, 10.84559] } as {
+    label: string;
+    point: [number, number];
+  };
+  const { result: examples } = await renderHook(() =>
+    useCityExamples(null, garda, { set: PADDLE_EXAMPLES }),
+  );
+  const [heart, circle] = examples.current.examples ?? [];
+  if (heart?.status !== "ready" || circle?.status !== "ready") {
+    throw new Error("the app's examples should be ready");
+  }
+  const { result: hook } = await renderHook(() => useExplored(null));
+  await act(async () => hook.current.open(heart.route));
+  const first = hook.current.explored;
+  const whole = exampleDetail(heart.route.id);
+  if (first?.status !== "done" || whole === undefined) {
+    throw new Error("the heart should be open");
+  }
+  expect(first.result.centre).toEqual(whole.centre);
+
+  const centre: [number, number] = [45.8791, 10.8441];
+  const moved = movedExample(whole, {
+    ...first.result,
+    points: whole.points.map(([lat, lon]) => [lat - 0.002, lon + 0.002]),
+    distance_m: 1990,
+    centre,
+  });
+  // Another example's answer is not this one's.
+  const other = exampleDetail(circle.route.id);
+  await act(async () => hook.current.redraw({ ...moved, id: other?.id ?? "" }));
+  expect(hook.current.explored).toBe(first);
+
+  await act(async () => hook.current.redraw(moved));
+  const second = hook.current.explored;
+  if (second?.status !== "done") {
+    throw new Error("the heart should be open");
+  }
+  expect(second.detail).toBe(moved);
+  expect(second.result).toMatchObject({ points: moved.points, centre });
+  expect(second.route).toMatchObject({
+    id: heart.route.id,
+    route_m: 1990,
+    start: moved.points[0],
+  });
+  expect(second.choices).toEqual([second.result]);
+  expect(second.request).toMatchObject({ activity: "paddling", shape: "heart" });
+  // The list keeps the example as it was drawn.
+  expect(exampleDetail(heart.route.id)).toBe(whole);
+
+  // Closed, there is nothing to redraw.
+  await act(async () => hook.current.close());
+  await act(async () => hook.current.redraw(moved));
+  expect(hook.current.explored).toBeNull();
 });

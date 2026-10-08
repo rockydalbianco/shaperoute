@@ -4,6 +4,8 @@ import {
   type SignUpRequest,
 } from "@shaperoute/shared-types";
 
+import { t } from "../i18n";
+
 /**
  * What the forms check before asking the API (TASK-115): the same rules as
  * the API's (docs/API.md, «Account»), so a mistake is told in words at once
@@ -29,11 +31,9 @@ export function checkSignUp(fields: SignUpFields): Checked<SignUpRequest> {
   const username = fields.username.trim();
   const problem =
     emailProblem(email) ??
-    (USERNAME.test(username)
-      ? null
-      : "A username is 3 to 20 letters, digits, _ or . (no spaces).") ??
+    usernameProblem(username) ??
     passwordProblem(fields.password) ??
-    (fields.atLeast16 ? null : "You must be at least 16 to sign up.");
+    (fields.atLeast16 ? null : t("You must be at least 16 to sign up."));
   return problem === null
     ? {
         ok: true,
@@ -50,26 +50,34 @@ export function checkSignUp(fields: SignUpFields): Checked<SignUpRequest> {
 export function checkSignIn(fields: SignInFields): Checked<SignInRequest> {
   const email = fields.email.trim();
   if (email === "") {
-    return { ok: false, problem: "Enter the email of your account." };
+    return { ok: false, problem: t("Enter the email of your account.") };
   }
   if (fields.password === "") {
-    return { ok: false, problem: "Enter your password." };
+    return { ok: false, problem: t("Enter your password.") };
   }
   return { ok: true, request: { email, password: fields.password } };
 }
 
-function emailProblem(email: string): string | null {
+/** The rule of a username, at sign-up and in «Edit profile» (TASK-116). */
+export function usernameProblem(username: string): string | null {
+  return USERNAME.test(username)
+    ? null
+    : t("A username is 3 to 20 letters, digits, _ or . (no spaces).");
+}
+
+/** The rule of an email, at sign-up and in «Change email» (TASK-183). */
+export function emailProblem(email: string): string | null {
   return EMAIL.test(email) && email.length <= MAX_EMAIL_LENGTH
     ? null
-    : "Enter an email address, like name@example.com.";
+    : t("Enter an email address, like name@example.com.");
 }
 
 function passwordProblem(password: string): string | null {
   if (password.length < PASSWORD_LENGTH.min) {
-    return `A password is at least ${PASSWORD_LENGTH.min} characters.`;
+    return t("A password is at least {min} characters.", { min: PASSWORD_LENGTH.min });
   }
   if (password.length > PASSWORD_LENGTH.max) {
-    return `A password is at most ${PASSWORD_LENGTH.max} characters.`;
+    return t("A password is at most {max} characters.", { max: PASSWORD_LENGTH.max });
   }
   return null;
 }

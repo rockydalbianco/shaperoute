@@ -12,7 +12,8 @@ export const color = {
   /**
    * The brand yellow. In the app it means one thing only: the route, and the
    * control that produces it. Anything else that needs attention uses
-   * `warning` — a second meaning would make the colour say nothing.
+   * `warning` — a second meaning would make the colour say nothing. One
+   * exception, the user's choice: «Run without a route» (ADR-0183).
    */
   accent: "#FFD02B",
   /**
@@ -50,8 +51,25 @@ export const color = {
   /** A request that failed. */
   error: "#FF6B6B",
 
+  /**
+   * Someone waits for the user's answer: the number on the way to «Profile»
+   * and on «Requests» (TASK-239). Red by the user's choice; nothing else is.
+   */
+  badge: "#E02D2D",
+  /** The number on `badge`: 4.6:1. */
+  onBadge: "#FFFFFF",
+
   /** Where a moved route begins (ADR-0040). Cyan, so it never reads as route. */
   startHere: "#4DD2FF",
+
+  /**
+   * Strava's orange, for «Connect with Strava» only (TASK-187): Strava's
+   * brand rules ask for it, and the user chose it. Nothing else of the app
+   * is orange-filled.
+   */
+  strava: "#FC5200",
+  /** Text on `strava`: white, as Strava's own button; semibold, 3:1. */
+  onStrava: "#FFFFFF",
 
   map: {
     background: "#0D0E10",
@@ -104,6 +122,9 @@ export const fontSize = {
   title: 25,
   /** The distance on the result: the number people look for. */
   display: 40,
+  /** The kilometres of a run in progress, read at arm's length while
+   * running (TASK-169). */
+  hero: 88,
 } as const;
 
 export const fontWeight = {
@@ -151,4 +172,44 @@ export const route = {
   color: color.accent,
   width: 5,
   opacity: 0.95,
+} as const;
+
+/** The route still to run while running it (TASK-224): the route's yellow
+ * and width, dashed, blinking in steps between bright and dim. Never off,
+ * so the way ahead reads in the dim beat too; the part run stays `route`.
+ * Yellow and blinking, unlike the grey walks between letters (`walk`) and
+ * the dark on-foot dashes (`onFoot`), which keep still. */
+export const routeAhead = {
+  color: route.color,
+  width: route.width,
+  opacity: route.opacity,
+  /** The opacity of the dim beat. */
+  dimOpacity: 0.3,
+  /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
+  dash: [2, 1.5],
+  /** How long each beat lasts, bright or dim, in milliseconds. */
+  beatMs: 700,
+} as const;
+
+/** The walks of a word with the pen up (TASK-198): the way from one letter
+ * to the next, followed but not drawn. Dashed and grey, under the route, so
+ * the letters alone are yellow and the word still reads. */
+export const walk = {
+  color: color.textMuted,
+  width: 3,
+  opacity: 0.9,
+  /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
+  dash: [2, 1.5],
+} as const;
+
+/** The stretches of a bike route walked with the bike on foot (TASK-206,
+ * ADR-0167): dark dashes over the yellow route, which stays whole, since
+ * they are part of the drawing. Dark as text on yellow (`onAccent`), and
+ * not grey, the colour of the walks between letters. */
+export const onFoot = {
+  color: color.onAccent,
+  width: 2,
+  opacity: 0.9,
+  /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
+  dash: [1.5, 1.5],
 } as const;

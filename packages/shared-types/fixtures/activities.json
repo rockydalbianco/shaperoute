@@ -1,0 +1,54 @@
+{
+  "activities": [
+    {
+      "id": "7c2e91a4b05d3f68",
+      "started_at": "2026-09-21T14:13:20Z",
+      "place": "Trento",
+      "shape": "star",
+      "word": null,
+      "style": null,
+      "title": null,
+      "distance_m": 4007,
+      "duration_s": 1140,
+      "score": 91,
+      "fidelity": 1.0,
+      "activity": "running",
+      "route_preview": [
+        [46.0671, 11.1214],
+        [46.0671, 11.1344],
+        [46.0761, 11.1344],
+        [46.0761, 11.1214],
+        [46.0671, 11.1214]
+      ],
+      "track_preview": [
+        [46.0671, 11.1214],
+        [46.0671, 11.1344],
+        [46.0761, 11.1344],
+        [46.0761, 11.1214],
+        [46.0671, 11.1214]
+      ]
+    },
+    {
+      "id": "e5d0a83f19c7b246",
+      "started_at": "2026-09-19T05:40:02Z",
+      "place": null,
+      "shape": null,
+      "word": null,
+      "style": null,
+      "title": null,
+      "distance_m": 2310,
+      "duration_s": 815,
+      "score": null,
+      "fidelity": null,
+      "activity": "running",
+      "route_preview": null,
+      "track_preview": [
+        [45.4642, 9.19],
+        [45.47, 9.2],
+        [45.46, 9.21]
+      ]
+    }
+  ],
+  "next": null,
+  "total": 2
+}

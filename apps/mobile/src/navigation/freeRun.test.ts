@@ -10,7 +10,6 @@ import {
   kmLabel,
   paceLabel,
   pendingFreeRun,
-  spokenTime,
   wholeKm,
 } from "./freeRun";
 import { emptyTrack, type TrackFix } from "./trackRecorder";
@@ -137,16 +136,6 @@ test("Run again goes on with a free run stopped lately, and not with an old one"
   const again = startRun(FREE_ROUTE, 60_000);
   again.onFix(fix(40, 60), false);
   expect(again.track().fixes).toHaveLength(3);
-});
-
-test("the voice says a time in hours, minutes and seconds, with singulars", () => {
-  expect(spokenTime(42_000)).toBe("42 seconds");
-  expect(spokenTime(61_000)).toBe("1 minute 1 second");
-  expect(spokenTime(300_000)).toBe("5 minutes");
-  expect(spokenTime(342_400)).toBe("5 minutes 42 seconds");
-  expect(spokenTime(3_600_000)).toBe("1 hour");
-  // Past an hour the seconds do not matter.
-  expect(spokenTime(3_725_000)).toBe("1 hour 2 minutes");
 });
 
 test("each kilometre is said with the time and the average pace", () => {

@@ -1,7 +1,8 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import type { TrackFix } from "./trackRecorder";
+import { durationMs, type TrackFix } from "./trackRecorder";
 import {
+  AWAY_AFTER_MS,
   clearRun,
   endRun,
   pendingRun,
@@ -124,9 +125,64 @@ test("the same route started again soon goes on with the track", () => {
 
   const again = startRun(ROUTE, 60_000);
   expect(again.track().fixes).toHaveLength(2);
+  // The time it was left is a pause (TASK-169): the clock does not count
+  // it, and the line is not joined across it.
+  expect(again.track().pauses).toEqual([{ fromMs: 20_000, toMs: 60_000 }]);
   again.onFix(fix(100, 80), false);
+  again.onFix(fix(150, 100), false);
   expect(again.track().distanceM).toBeCloseTo(100, 0);
+  expect(durationMs(again.track())).toBe(60_000);
   expect(loadRun()?.status).toBe("running");
+});
+
+test("a pause is written at once, and read back with the run (TASK-169)", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.pause(5000);
+  expect(loadRun()?.track.pauses).toEqual([{ fromMs: 5000, toMs: null }]);
+  // Paused, nothing is added to the line.
+  run.onFix(fix(60, 20), false);
+  expect(run.track().fixes).toHaveLength(2);
+  run.resume(30_000);
+  run.onFix(fix(70, 31), false);
+  run.onFix(fix(80, 35), false);
+  run.stop();
+  const saved = loadRun();
+  expect(saved?.track.pauses).toEqual([{ fromMs: 5000, toMs: 30_000 }]);
+  expect(saved?.track.fixes[2].gap).toBe(true);
+  expect(saved?.track.distanceM).toBeCloseTo(20, 0);
+});
+
+test("a pause by standing still is kept as one", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.pause(12_000, true);
+  expect(loadRun()?.track.pauses).toEqual([{ fromMs: 12_000, toMs: null, auto: true }]);
+});
+
+test("a file from before the pauses is still a run", () => {
+  disk.files.set(
+    RUN_URI,
+    JSON.stringify({
+      version: 1,
+      route: ROUTE,
+      track: { fixes: [fix(0, 0), fix(10, 4)], distanceM: 10 },
+      status: "stopped",
+    }),
+  );
+  expect(loadRun()?.track.fixes).toHaveLength(2);
+  // Pauses that are not pauses: not a run.
+  disk.files.set(
+    RUN_URI,
+    JSON.stringify({
+      version: 1,
+      route: ROUTE,
+      track: { fixes: [fix(0, 0)], distanceM: 0, pauses: [{ fromMs: "now" }] },
+      status: "stopped",
+    }),
+  );
+  expect(loadRun()).toBeNull();
 });
 
 test.each([
@@ -238,4 +294,86 @@ test("ending with no run in progress gives what the file has", () => {
   run.onFix(fix(0, 0), false);
   run.onFix(fix(10, 4), true);
   expect(endRun()?.status).toBe("arrived");
+});
+
+test("a run stopped with one fix is not the start of the next (TASK-252)", () => {
+  const first = startRun(ROUTE, 0);
+  first.onFix(fix(0, 0), false);
+  first.stop();
+  expect(loadRun()?.track.fixes).toHaveLength(1);
+
+  // The same route, a minute later, from somewhere else.
+  const next = startRun(ROUTE, 60_000);
+  expect(next.track().fixes).toHaveLength(0);
+  next.onFix(fix(400, 61), false);
+  expect(loadRun()?.track.fixes).toEqual([fix(400, 61)]);
+});
+
+test("ending a run the phone could not write gives it back from memory (TASK-252)", () => {
+  const run = startRun(ROUTE, 0, 0.88);
+  run.onFix(fix(0, 0), false);
+  disk.state.failing = true;
+  run.onFix(fix(10, 4), false);
+  run.onFix(fix(20, 8), false);
+  const ended = endRun();
+  expect(ended?.status).toBe("stopped");
+  expect(ended?.similarity).toBe(0.88);
+  expect(ended?.track.fixes).toHaveLength(3);
+  // The file is the old one, a fix long: not what was run.
+  expect(loadRun()?.track.fixes).toHaveLength(1);
+  // Once given back, it is not given again for a run that never started.
+  disk.files.clear();
+  expect(endRun()).toBeNull();
+});
+
+test("a run written again after a refusal is read from the file", () => {
+  const run = startRun(ROUTE, 0, 0.88);
+  disk.state.failing = true;
+  run.onFix(fix(0, 0), false);
+  disk.state.failing = false;
+  run.onFix(fix(10, 4), false);
+  run.onFix(fix(20, 8), false);
+  const ended = endRun();
+  expect(ended?.track.fixes).toHaveLength(3);
+  expect(loadRun()).toEqual(ended);
+});
+
+test("the app leaving for more than AWAY_AFTER_MS is a pause, read back with the run (TASK-255)", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.leave(10_000);
+  // Nothing yet: the next fix decides.
+  expect(loadRun()?.track.pauses).toBeUndefined();
+  run.onFix(fix(300, 4 + AWAY_AFTER_MS / 1000 + 1), false);
+  expect(loadRun()?.track.pauses).toEqual([
+    { fromMs: 10_000, toMs: 4000 + AWAY_AFTER_MS + 1000, away: true },
+  ]);
+  expect(run.track().fixes[2].gap).toBe(true);
+  expect(run.track().distanceM).toBeCloseTo(10, 0);
+});
+
+test("the app back within AWAY_AFTER_MS joins the line as before (the user's choice)", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.leave(10_000);
+  run.onFix(fix(100, 30), false);
+  expect(run.track().pauses).toBeUndefined();
+  expect(run.track().fixes[2].gap).toBeUndefined();
+  expect(run.track().distanceM).toBeCloseTo(100, 0);
+  // Left again, and back late this time: the pause is from the second leaving.
+  run.leave(40_000);
+  run.onFix(fix(400, 130), false);
+  expect(run.track().pauses).toEqual([{ fromMs: 40_000, toMs: 130_000, away: true }]);
+});
+
+test("paused by hand already, the app leaving changes nothing", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.pause(1000);
+  run.leave(2000);
+  run.resume(90_000);
+  run.onFix(fix(300, 100), false);
+  expect(run.track().pauses).toEqual([{ fromMs: 1000, toMs: 90_000 }]);
 });

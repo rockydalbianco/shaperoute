@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ShapeRoute",
+    "name": "MuW",
     "slug": "shaperoute",
     "version": "0.0.0",
     "runtimeVersion": "exposdk:57.0.0",
@@ -15,11 +15,21 @@
       "bundleIdentifier": "com.lppl1316.sgrava",
       "config": {
         "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
       }
+    },
+    "locales": {
+      "en": "./locales/en.json",
+      "it": "./locales/it.json",
+      "de": "./locales/de.json",
+      "es": "./locales/es.json",
+      "fr": "./locales/fr.json"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFD02B",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -27,12 +37,31 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFD02B",
+          "image": "./assets/splash-icon-dark.png",
+          "imageWidth": 240,
+          "ios": {
+            "image": "./assets/splash-logo-dark.png",
+            "imageWidth": 260
+          }
+        }
+      ],
       "expo-sharing",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MuW uses your location to draw routes near you and to record your activities. During an activity it keeps recording with the phone locked, and iOS shows the blue bar.",
+          "isIosBackgroundLocationEnabled": true
+        }
+      ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Sgrava uses the picture you choose to trace the outline your route will draw.",
-          "cameraPermission": "Sgrava uses the photo you take to trace the outline your route will draw.",
+          "photosPermission": "MuW uses the picture you choose to trace the outline your route will draw.",
+          "cameraPermission": "MuW uses the photo you take to trace the outline your route will draw.",
           "microphonePermission": false
         }
       ],
@@ -40,7 +69,7 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-3940256099942544~3347511713",
-          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+          "iosAppId": "ca-app-pub-1288129622991398~9808900733"
         }
       ]
     ],

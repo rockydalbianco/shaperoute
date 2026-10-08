@@ -1,5 +1,5 @@
 import type { CityChosenSignal, Signal } from "@shaperoute/shared-types/src/signals";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Keyboard,
   Pressable,
@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { t } from "../i18n";
 
 import { sendSignal } from "../api/signals";
 import type { Place } from "../places/photon";
@@ -25,6 +26,8 @@ import { cityShort, FEATURED_CITIES, isSpot, suggestionDetail } from "./presets"
 
 /** A pause in typing before the suggestions are asked (as TASK-089). */
 export const SUGGEST_DELAY_MS = 250;
+/** The position mark of "Near me": as tall as a capital letter. */
+const MARK_SIZE = 12;
 
 type CityProps = {
   apiUrl: string | null;
@@ -40,10 +43,11 @@ type CityProps = {
 };
 
 /**
- * "City" (TASK-129, TASK-134): cities to tap, the recent first, then cities
- * from around the world; or "Type a city or a place", with cities and places
- * suggested while typing (TASK-138). The list below and the requests then
- * start from the city's centre, or from the place.
+ * "City" (TASK-129, TASK-134): "Near me" first, on until a city is chosen
+ * and the way back from one (TASK-176); then cities to tap, the recent
+ * first, then cities from around the world; or "Type a city or a place",
+ * with cities and places suggested while typing (TASK-138). The list below
+ * and the requests then start from the city's centre, or from the place.
  */
 export function CityPicker({
   apiUrl,
@@ -60,6 +64,15 @@ export function CityPicker({
   );
   const [opening, setOpening] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  // The cities asked by name are numbered (TASK-254): only the answer to
+  // the last one counts. A choice, «Near me» and the unmount end them all.
+  const asked = useRef(0);
+  useEffect(
+    () => () => {
+      asked.current += 1;
+    },
+    [],
+  );
 
   // Suggestions while typing, after a short pause; the last query wins.
   useEffect(() => {
@@ -86,6 +99,8 @@ export function CityPicker({
   /** A city or a place chosen, and how: a suggestion picked never calls
    * /cities, so the API hears of it only from the signal (TASK-142). */
   function choose(place: Place, via: CityChosenSignal["via"]) {
+    asked.current += 1;
+    setOpening(null);
     Keyboard.dismiss();
     setQuery("");
     setFound(null);
@@ -100,15 +115,31 @@ export function CityPicker({
     });
   }
 
+  /** Back to the routes near the start: no city, nothing typed. */
+  function nearMe() {
+    asked.current += 1;
+    setOpening(null);
+    Keyboard.dismiss();
+    setQuery("");
+    setFound(null);
+    setFailed(false);
+    onCity(null);
+  }
+
   /** A city by name (a chip, or Enter): its centre from the API. */
   async function open(name: string, via: "featured" | "typed") {
     if (apiUrl === null) {
       setFailed(true);
       return;
     }
+    const mine = ++asked.current;
     setOpening(name);
     setFailed(false);
     const cities = await searchCities(apiUrl, name, { fetchFn });
+    if (mine !== asked.current) {
+      // Another city was asked, or chosen, in the meantime: it wins.
+      return;
+    }
     setOpening(null);
     if (cities !== null && cities.length > 0) {
       choose(cities[0], via);
@@ -133,9 +164,10 @@ export function CityPicker({
 
   return (
     <View style={styles.section}>
-      <Text style={styles.label}>CITY</Text>
+      <Text style={styles.label}>{t("CITY")}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.chips}>
+          <Chip label={t("Near me")} on={city === null} here onPress={nearMe} />
           {recent.map((place) => (
             <Chip
               key={`recent-${place.label}`}
@@ -162,13 +194,13 @@ export function CityPicker({
           setQuery(text);
           setFailed(false);
         }}
-        placeholder="Type a city or a place"
+        placeholder={t("Type a city or a place")}
         placeholderTextColor={color.textFaint}
         returnKeyType="search"
         onSubmitEditing={submit}
         keyboardAppearance="dark"
         autoCorrect={false}
-        accessibilityLabel="Type a city or a place"
+        accessibilityLabel={t("Type a city or a place")}
       />
       {suggestions?.map((place) => (
         <Pressable
@@ -187,23 +219,12 @@ export function CityPicker({
         </Pressable>
       ))}
       {suggestions !== null && suggestions.length === 0 && (
-        <Text style={styles.note}>{`No city or place matches “${typed}”.`}</Text>
+        <Text style={styles.note}>
+          {t("No city or place matches “{typed}”.", { typed })}
+        </Text>
       )}
       {(failed || (suggestions === null && found?.query === typed && typed !== "")) && (
-        <Text style={styles.error}>The search did not answer. Try again.</Text>
-      )}
-      {city !== null && (
-        <View style={styles.row}>
-          <Text style={styles.chosen}>{city.label}</Text>
-          <Pressable
-            style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}
-            onPress={() => onCity(null)}
-            accessibilityRole="button"
-            accessibilityLabel="Back to my start"
-          >
-            <Text style={styles.secondaryText}>My start</Text>
-          </Pressable>
-        </View>
+        <Text style={styles.error}>{t("The search did not answer. Try again.")}</Text>
       )}
     </View>
   );
@@ -213,11 +234,14 @@ function Chip({
   label,
   on,
   recent = false,
+  here = false,
   onPress,
 }: {
   label: string;
   on: boolean;
   recent?: boolean;
+  /** The start, not a city: a position mark before the name. */
+  here?: boolean;
   onPress: () => void;
 }) {
   return (
@@ -230,8 +254,19 @@ function Chip({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
-      accessibilityHint={recent ? "A city you chose before" : undefined}
+      accessibilityHint={
+        recent
+          ? t("A city you chose before")
+          : here
+            ? t("The routes near your start")
+            : undefined
+      }
     >
+      {here && (
+        <View style={[styles.mark, on && styles.markOn]} testID="near-me-mark">
+          <View style={[styles.markDot, on && styles.markDotOn]} />
+        </View>
+      )}
       <Text style={[styles.chipText, on && styles.chipTextOn]}>
         {recent ? `↺ ${label}` : label}
       </Text>
@@ -252,11 +287,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
     letterSpacing: 1.2,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.sm,
-  },
   chips: {
     flexDirection: "row",
     gap: space.sm,
@@ -265,7 +295,9 @@ const styles = StyleSheet.create({
     minHeight: MIN_TAP_SIZE,
     paddingHorizontal: space.md,
     borderRadius: radius.pill,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xs,
     backgroundColor: color.surfaceRaised,
     borderWidth: 1,
     borderColor: color.borderStrong,
@@ -282,6 +314,28 @@ const styles = StyleSheet.create({
     color: color.background,
     fontWeight: fontWeight.semibold,
   },
+  // "You are here", drawn: a ring and its centre, in the text's colour.
+  mark: {
+    width: MARK_SIZE,
+    height: MARK_SIZE,
+    borderRadius: MARK_SIZE / 2,
+    borderWidth: 2,
+    borderColor: color.text,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  markOn: {
+    borderColor: color.background,
+  },
+  markDot: {
+    width: MARK_SIZE / 3,
+    height: MARK_SIZE / 3,
+    borderRadius: MARK_SIZE / 6,
+    backgroundColor: color.text,
+  },
+  markDotOn: {
+    backgroundColor: color.background,
+  },
   // A light touch: what is pressed dims, nothing moves.
   pressed: {
     opacity: 0.6,
@@ -295,12 +349,6 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     color: color.text,
     fontSize: fontSize.input,
-  },
-  chosen: {
-    flex: 1,
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
   },
   note: {
     color: color.textMuted,
@@ -325,19 +373,5 @@ const styles = StyleSheet.create({
   choiceDetail: {
     color: color.textMuted,
     fontSize: fontSize.detail,
-  },
-  secondary: {
-    minHeight: MIN_TAP_SIZE,
-    paddingHorizontal: space.md,
-    borderRadius: radius.pill,
-    justifyContent: "center",
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-  },
-  secondaryText: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
   },
 });

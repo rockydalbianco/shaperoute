@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -21,12 +22,21 @@ type SearchState =
   | { status: "none" }
   | { status: "failed" };
 
+/** Places known without a search, for a text being typed. */
+export type SuggestPlaces = (query: string, near: LatLon | null) => Place[];
+
 type Props = {
   onSelect: (place: Place) => void;
   /** Where the user is, when known: places around it come first. */
   near?: LatLon | null;
   /** Where places come from: the API, else Photon (TASK-123). */
   find?: FindPlaces;
+  /** Places the app knows by itself, shown at once and above the ones
+   * found: the lakes and beaches of «Paddle» (TASK-240). */
+  suggest?: SuggestPlaces;
+  /** What the empty field says when not «City or street»: an English
+   * text, shown with `t`. */
+  placeholder?: string;
 };
 
 /** Suggestions start at this many letters, this long after the last one
@@ -40,7 +50,13 @@ export const SUGGEST_DELAY_MS = 300;
  * are suggested while typing, once the typing pauses; "Search" and the
  * keyboard's return key search at once.
  */
-export function PlaceSearch({ onSelect, near = null, find }: Props) {
+export function PlaceSearch({
+  onSelect,
+  near = null,
+  find,
+  suggest,
+  placeholder,
+}: Props) {
   // One finder per field: it remembers an API without the key.
   const [ownFind] = useState(() => placeFinder());
   const findPlaces = find ?? ownFind;
@@ -53,6 +69,23 @@ export function PlaceSearch({ onSelect, near = null, find }: Props) {
   const shown = useRef(0);
   // The text of that search: the pause after "Search" does not ask it twice.
   const askedText = useRef("");
+  // The field shows the place just chosen: nothing is suggested for it.
+  const [chosen, setChosen] = useState(false);
+  const known = useMemo(
+    () =>
+      suggest && !chosen && query.trim().length >= MIN_SUGGEST_LENGTH
+        ? suggest(query, near)
+        : [],
+    [suggest, chosen, query, near],
+  );
+  // A place known and found is shown once, where the known ones are.
+  const found =
+    search.status === "found"
+      ? search.places.filter(
+          (place) => !known.some((other) => other.label === place.label),
+        )
+      : [];
+  const places = [...known, ...found];
 
   const searchFor = useCallback(
     async (text: string) => {
@@ -104,6 +137,7 @@ export function PlaceSearch({ onSelect, near = null, find }: Props) {
 
   function onText(text: string) {
     setQuery(text);
+    setChosen(false);
     if (text.trim().length < MIN_SUGGEST_LENGTH) {
       // Too short to suggest: what was found for a longer text goes.
       forget();
@@ -116,6 +150,7 @@ export function PlaceSearch({ onSelect, near = null, find }: Props) {
     // The field shows what was chosen, and the pause does not search for it.
     askedText.current = place.label;
     setQuery(place.label);
+    setChosen(true);
     Keyboard.dismiss();
     onSelect(place);
   }
@@ -131,7 +166,7 @@ export function PlaceSearch({ onSelect, near = null, find }: Props) {
       <View style={styles.row}>
         <TextInput
           style={styles.input}
-          placeholder="City or street"
+          placeholder={placeholder ? t(placeholder) : t("City or street")}
           placeholderTextColor={color.textFaint}
           keyboardAppearance="dark"
           value={query}
@@ -141,21 +176,12 @@ export function PlaceSearch({ onSelect, near = null, find }: Props) {
           autoCorrect={false}
         />
         <Pressable style={styles.button} onPress={submit} accessibilityRole="button">
-          <Text style={styles.buttonText}>Search</Text>
+          <Text style={styles.buttonText}>{t("Search")}</Text>
         </Pressable>
       </View>
-      {search.status === "searching" && <Text style={styles.note}>Searching…</Text>}
-      {search.status === "none" && (
-        <Text style={styles.note}>No place found. Try adding the city.</Text>
-      )}
-      {search.status === "failed" && (
-        <Text style={styles.note}>
-          The search failed. Check the connection and try again.
-        </Text>
-      )}
-      {search.status === "found" && (
+      {places.length > 0 && (
         <View>
-          {search.places.map((place) => (
+          {places.map((place) => (
             <Pressable
               key={place.label}
               style={({ pressed }) => [styles.place, pressed && styles.placePressed]}
@@ -165,8 +191,19 @@ export function PlaceSearch({ onSelect, near = null, find }: Props) {
               <Text style={styles.placeText}>{place.label}</Text>
             </Pressable>
           ))}
-          <Text style={styles.credit}>© OpenStreetMap contributors</Text>
+          <Text style={styles.credit}>{t("© OpenStreetMap contributors")}</Text>
         </View>
+      )}
+      {search.status === "searching" && (
+        <Text style={styles.note}>{t("Searching…")}</Text>
+      )}
+      {search.status === "none" && known.length === 0 && (
+        <Text style={styles.note}>{t("No place found. Try adding the city.")}</Text>
+      )}
+      {search.status === "failed" && (
+        <Text style={styles.note}>
+          {t("The search failed. Check the connection and try again.")}
+        </Text>
       )}
     </View>
   );

@@ -17,6 +17,7 @@ import {
   isRouteResult,
   MAX_WAIT_MS,
   POLL_MS,
+  pollDelay,
   requestRoute,
   type RouteOutcome,
 } from "./routes";
@@ -79,7 +80,7 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("posts the request, then asks every 2 s until the route is done", async () => {
+test("posts the request, then asks until the route is done", async () => {
   const { fetchFn, calls } = api(
     { status: 202, body: job("queued") },
     { status: 200, body: job("computing") },
@@ -94,6 +95,44 @@ test("posts the request, then asks every 2 s until the route is done", async () 
   expect(url).toBe(`${URL}/route-jobs`);
   expect(JSON.parse(String(init?.body))).toEqual(request);
   expect(calls("GET").map(([getUrl]) => getUrl)).toEqual([JOB_URL, JOB_URL]);
+});
+
+test("the first asks come sooner, a long route is asked every 2 s", async () => {
+  expect(pollDelay(0)).toBe(500);
+  expect(pollDelay(5_999)).toBe(500);
+  expect(pollDelay(6_000)).toBe(1_000);
+  expect(pollDelay(19_999)).toBe(1_000);
+  expect(pollDelay(20_000)).toBe(POLL_MS);
+  expect(pollDelay(MAX_WAIT_MS)).toBe(POLL_MS);
+  // Never slower than the caller asked.
+  expect(pollDelay(0, 100)).toBe(100);
+
+  const { fetchFn, calls } = api(
+    { status: 202, body: job("queued") },
+    { status: 200, body: job("computing") },
+  );
+  const controller = new AbortController();
+  const pending = requestRoute(URL, REQUEST, { fetchFn, signal: controller.signal });
+  const asks = async (ms: number) => {
+    await jest.advanceTimersByTimeAsync(ms);
+    return calls("GET").length;
+  };
+  expect(await asks(499)).toBe(0);
+  expect(await asks(1)).toBe(1);
+  // 12 in the first 6 s, 14 more up to 20 s, then one every 2 s.
+  expect(await asks(5_500)).toBe(12);
+  expect(await asks(14_000)).toBe(26);
+  expect(await asks(10_000)).toBe(31);
+  controller.abort();
+  await pending;
+});
+
+test("a route the API kept is done in the answer to the POST", async () => {
+  const { fetchFn, calls } = api({ status: 202, body: jobDone });
+  const pending = requestRoute(URL, REQUEST, { fetchFn });
+  // No timer runs: the route is there before the first wait.
+  expect(await pending).toEqual({ kind: "route", result });
+  expect(calls("GET")).toHaveLength(0);
 });
 
 test("a download is reported before the computing", async () => {
@@ -184,7 +223,7 @@ test("the guards accept the shared fixtures and refuse broken ones", () => {
   expect(isRouteResult({ ...result, points: [[46.0671]] })).toBe(false);
   expect(isRouteJob(jobDone)).toBe(true);
   expect(isRouteJob(jobFailed)).toBe(true);
-  expect(isRouteJob({ ...jobDone, status: "sleeping" })).toBe(false);
+  expect(isRouteJob({ ...jobDone, status: 7 })).toBe(false);
 });
 
 test("a route without directions, from an API older than TASK-048, is a bad answer", async () => {
@@ -267,4 +306,77 @@ test("a wrong key is an error of the API, with its code", async () => {
   const body = { error: { code: "unauthorized", message: "Missing or wrong API key" } };
   const { fetchFn } = api({ status: 401, body });
   expect(await run(fetchFn)).toEqual({ kind: "api_error", ...body.error });
+});
+
+test("a 502 between two good asks is forgiven, three in a row are not (TASK-254)", async () => {
+  const proxy = { status: 502, body: "<html>Bad Gateway</html>" };
+  const once = api(
+    { status: 202, body: job("queued") },
+    proxy,
+    { status: 200, body: job("computing") },
+    proxy,
+    { status: 200, body: jobDone },
+  );
+  expect(await run(once.fetchFn)).toEqual({ kind: "route", result });
+
+  const thrice = api({ status: 202, body: job("queued") }, proxy);
+  expect(await run(thrice.fetchFn)).toEqual({ kind: "bad_answer", status: 502 });
+  expect(thrice.calls("GET")).toHaveLength(3);
+
+  // The API's own error, whatever its status, ends the request at once.
+  const own = api(
+    { status: 202, body: job("queued") },
+    { status: 503, body: apiError },
+  );
+  expect(await run(own.fetchFn)).toMatchObject({ kind: "api_error" });
+  expect(own.calls("GET")).toHaveLength(1);
+});
+
+test("what a newer API sends is read, not refused (TASK-254)", async () => {
+  // A shape this version of the app has no tile for is a route all the same.
+  expect(isRouteResult({ ...result, shape: "unicorn" })).toBe(true);
+  expect(isRouteResult({ ...result, shape: "unicorn", word: "CIAO" })).toBe(false);
+
+  // A turn it has no words for is read as "straight"; a status it does not
+  // know is work in progress.
+  const [first, ...rest] = result.directions;
+  const newer = {
+    ...jobDone,
+    result: {
+      ...result,
+      directions: [first, { ...rest[0], turn: "roundabout" }, ...rest.slice(1)],
+    },
+  };
+  const statuses: JobStatus[] = [];
+  const { fetchFn } = api(
+    { status: 202, body: { ...job("queued"), status: "planning" } },
+    { status: 200, body: newer },
+  );
+  const outcome = await run(fetchFn, (status) => statuses.push(status));
+  expect(statuses).toEqual(["computing"]);
+  expect(outcome.kind).toBe("route");
+  expect(outcome.kind === "route" && outcome.result.directions[1].turn).toBe(
+    "straight",
+  );
+  expect(outcome.kind === "route" && outcome.result.directions[0]).toEqual(first);
+
+  // An error code it does not know is an error, with the API's words.
+  const refused = {
+    ...jobFailed,
+    error: {
+      code: "quota_exceeded",
+      message: "Enough routes today.",
+      suggested_distance_m: null,
+    },
+  };
+  const failing = api(
+    { status: 202, body: job("queued") },
+    { status: 200, body: refused },
+  );
+  expect(await run(failing.fetchFn)).toEqual({
+    kind: "api_error",
+    code: "quota_exceeded",
+    message: "Enough routes today.",
+    suggested_distance_m: null,
+  });
 });

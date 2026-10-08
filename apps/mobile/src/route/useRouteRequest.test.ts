@@ -73,6 +73,10 @@ test("sameRequest compares values, not objects", () => {
   // Round letters when not said (TASK-080).
   expect(sameRequest(word, { ...word, style: "round" })).toBe(true);
   expect(sameRequest(word, { ...word, style: "block" })).toBe(false);
+  // The pen up is another route; down when not said (TASK-198).
+  expect(sameRequest(word, { ...word, pen_up: true })).toBe(false);
+  expect(sameRequest(word, { ...word, pen_up: false })).toBe(true);
+  expect(sameRequest({ ...word, pen_up: true }, { ...word, pen_up: true })).toBe(true);
 });
 
 test("an image is the same while its outline is the one traced for it", () => {
@@ -83,6 +87,29 @@ test("an image is the same while its outline is the one traced for it", () => {
   expect(sameRequest(image, { ...image, outline: [...outline] })).toBe(false);
   expect(sameRequest(image, REQUEST)).toBe(false);
   expect(sameRequest(REQUEST, image)).toBe(false);
+});
+
+test("«Try again» sends the last request again, as it was (TASK-256)", async () => {
+  fetchSpy
+    .mockRejectedValueOnce(new TypeError("Network request failed"))
+    .mockResolvedValueOnce(Response.json(jobDone));
+  const { result: hook } = await renderHook(() => useRouteRequest("http://pc:8000"));
+  // Nothing to send again before the first request.
+  await act(() => hook.current.retry());
+  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(hook.current.state).toEqual({ status: "idle" });
+
+  await act(() => hook.current.draw(REQUEST));
+  await waitFor(() =>
+    expect(hook.current.state).toMatchObject({ status: "failed", request: REQUEST }),
+  );
+  await act(() => hook.current.retry());
+  await waitFor(() =>
+    expect(hook.current.state).toEqual({ status: "done", request: REQUEST, result }),
+  );
+  expect(fetchSpy).toHaveBeenCalledTimes(2);
+  const [first, second] = fetchSpy.mock.calls.map(([, init]) => init?.body);
+  expect(second).toEqual(first);
 });
 
 test("an image with other details is another request (TASK-079)", () => {

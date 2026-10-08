@@ -1,5 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
+import { MoveShape } from "../paddle/MoveShape";
+import type { MoveExample } from "../paddle/useMoveExample";
 import {
   color,
   fontSize,
@@ -10,8 +13,10 @@ import {
 } from "../theme/tokens";
 import { RouteTiles } from "../route/RouteTiles";
 import type { ExportState } from "../route/useGpxExport";
-import { RunWithStrava } from "../strava/RunWithStrava";
+import { distanceLabel, withPoint } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import type { Explored } from "./explored";
+import { kmOrMiles } from "./ExploreScreen";
 import { ExploreStart } from "./ExploreStart";
 import { cityName, routeTitle } from "./recommendedRoutes";
 import type { StartView } from "./useStartDirections";
@@ -24,6 +29,9 @@ type Props = {
   /** Turn-by-turn along it, the directions asked for first (TASK-145). */
   start: StartView;
   onStart: () => void;
+  /** An example on the water that says where its shape is (TASK-244):
+   * «Move the shape» lets the user drag it on the map, as in «Draw». */
+  move?: MoveExample;
 };
 
 /** Under the map: a route of "Explore", to run, look at and export (TASK-126). */
@@ -34,34 +42,76 @@ export function ExploredCard({
   onList,
   start,
   onStart,
+  move,
 }: Props) {
   const { route } = explored;
   const title = routeTitle(route);
+  // Written again when «Settings» changes the units (TASK-182); with a
+  // point, as the texts here, still in English.
+  const units = useUnits();
+  // The finger has the shape: what to do, and the way out.
+  if (move?.moving) {
+    return <MoveShape onCancel={move.cancel} />;
+  }
+  // The moved route is being drawn: nothing to start or export meanwhile.
+  const open = explored.status === "done" && !move?.waiting ? explored : null;
   return (
     <View style={styles.panel}>
       <View>
-        <Text style={styles.result}>{`${(route.route_m / 1000).toFixed(1)} km`}</Text>
+        <Text style={styles.result}>
+          {distanceLabel(route.route_m, units, withPoint)}
+        </Text>
         <Text style={styles.target}>
-          {`${title} · ${cityName(route.city)} · looks ${Math.round(route.similarity * 100)}% like it`}
+          {t("{title} · {city} · looks {percent}% like it", {
+            title,
+            city: cityName(route.city),
+            percent: Math.round(route.similarity * 100),
+          })}
         </Text>
       </View>
       {explored.status === "loading" && (
-        <Text style={styles.target}>Loading the route…</Text>
+        <Text style={styles.target}>{t("Loading the route…")}</Text>
       )}
       {explored.status === "failed" && (
-        <Text style={styles.error}>The route could not load. Try again.</Text>
+        <Text style={styles.error}>{t("The route could not load. Try again.")}</Text>
+      )}
+      {move?.waiting && (
+        // As «Draw» says it while it draws.
+        <Text style={styles.target}>
+          {t("Drawing a {distance} {title}…", {
+            distance: kmOrMiles(route.distance_m, units),
+            title,
+          })}
+        </Text>
+      )}
+      {open !== null && move?.elsewhere && (
+        <Text style={styles.target}>
+          {t("The shape does not fit there: this is the nearest place.")}
+        </Text>
+      )}
+      {open !== null && move?.problem != null && (
+        <Text style={styles.error}>{move.problem}</Text>
       )}
       {/* A city's example with the API's alternatives: A · B · C (TASK-151). */}
-      {explored.status === "done" && (
+      {open !== null && (
         <RouteTiles
-          choices={explored.choices}
-          chosen={explored.chosen}
+          choices={open.choices}
+          chosen={open.chosen}
           // The directions being asked for are those of the route chosen.
-          onChoose={start.status === "loading" ? keepChoice : explored.choose}
+          onChoose={start.status === "loading" ? keepChoice : open.choose}
         />
       )}
-      {explored.status === "done" && <ExploreStart start={start} onStart={onStart} />}
-      {explored.status === "done" && (
+      {open !== null && <ExploreStart start={start} onStart={onStart} />}
+      {open !== null && move?.available && (
+        <Pressable
+          style={styles.secondary}
+          onPress={move.begin}
+          accessibilityRole="button"
+        >
+          <Text style={styles.secondaryText}>{t("Move the shape")}</Text>
+        </Pressable>
+      )}
+      {open !== null && (
         <Pressable
           style={styles.secondary}
           onPress={onExport}
@@ -69,19 +119,15 @@ export function ExploredCard({
           accessibilityRole="button"
         >
           <Text style={styles.secondaryText}>
-            {exporting.status === "preparing" ? "Preparing GPX…" : "Export GPX"}
+            {exporting.status === "preparing" ? t("Preparing GPX…") : t("Export GPX")}
           </Text>
         </Pressable>
       )}
       {exporting.status === "failed" && (
-        <Text style={styles.error}>The GPX could not be made. Try again.</Text>
-      )}
-      {/* Strava's official flow: a GPX imported there (TASK-135). */}
-      {explored.status === "done" && (
-        <RunWithStrava exporting={exporting} onExport={onExport} />
+        <Text style={styles.error}>{t("The GPX could not be made. Try again.")}</Text>
       )}
       <Pressable style={styles.secondary} onPress={onList} accessibilityRole="button">
-        <Text style={styles.secondaryText}>Back to the list</Text>
+        <Text style={styles.secondaryText}>{t("Back to the list")}</Text>
       </Pressable>
     </View>
   );

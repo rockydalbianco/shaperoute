@@ -43,6 +43,9 @@ select = ["E", "F", "W", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# A test still running after this many seconds prints where every thread
+# is, and goes on: a run that hangs says where (TASK-248).
+faulthandler_timeout = 120
 markers = [
     "network: needs internet access; excluded from normal runs and CI",
 ]

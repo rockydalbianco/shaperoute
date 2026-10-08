@@ -2,10 +2,11 @@ import edited from "@shaperoute/shared-types/fixtures/image-outline-edited.json"
 import imageOutline from "@shaperoute/shared-types/fixtures/image-outline.json";
 import type { ImageOutline } from "@shaperoute/shared-types";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { Linking } from "react-native";
 
 import { ImageChoice } from "./ImageChoice";
 import { type ImageEdits, ImageEditsContext } from "./imageEdits";
-import type { ImageState } from "./useImageOutline";
+import type { ImageProblem, ImageState } from "./useImageOutline";
 
 jest.mock(
   "react-native-safe-area-context",
@@ -40,7 +41,7 @@ test("the preview only shows the outline; editing opens the full-screen board", 
   await fireEvent.press(screen.getByText("Edit the outline"));
   expect(screen.getByTestId("outline-board")).toBeTruthy();
   expect(screen.getByText("Add a part")).toBeTruthy();
-  await fireEvent.press(screen.getByText("Done"));
+  await fireEvent.press(screen.getByText("Save"));
   expect(screen.queryByTestId("outline-board")).toBeNull();
 });
 
@@ -53,4 +54,38 @@ test("without the editor the outline is only shown", async () => {
   await shown(null);
   expect(screen.getByTestId("image-preview")).toBeTruthy();
   expect(screen.queryByText("Edit the outline")).toBeNull();
+});
+
+test("a picture refused after a trace: why, and the outline and the editor stay (TASK-254)", async () => {
+  await shown(edits(), { ...TRACED, problem: { kind: "denied" } });
+  expect(screen.getByText(/The camera is off for this app/)).toBeOnTheScreen();
+  expect(screen.queryByText(/The yellow line is what the route will draw/)).toBeNull();
+  expect(screen.getByTestId("image-preview")).toBeTruthy();
+  expect(screen.getByText("Edit the outline")).toBeOnTheScreen();
+  expect(screen.getByText("Choose another")).toBeOnTheScreen();
+});
+
+// No outline: no preview to lay out.
+async function failed(problem: ImageProblem) {
+  await render(
+    <ImageChoice
+      state={{ status: "failed", picture: null, problem }}
+      onChoose={jest.fn()}
+    />,
+  );
+}
+
+test("the camera refused: «Open Settings» opens the app's settings (TASK-259)", async () => {
+  const openSettings = jest.spyOn(Linking, "openSettings").mockResolvedValue();
+  await failed({ kind: "denied" });
+  expect(screen.getByText(/The camera is off for this app/)).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Open Settings" }));
+  expect(openSettings).toHaveBeenCalledTimes(1);
+  openSettings.mockRestore();
+});
+
+test("a picture that could not be opened has no «Open Settings»", async () => {
+  await failed({ kind: "pick_failed" });
+  expect(screen.getByText(/The picture could not be opened/)).toBeOnTheScreen();
+  expect(screen.queryByText("Open Settings")).toBeNull();
 });

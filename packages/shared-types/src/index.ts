@@ -25,15 +25,51 @@ export const SHAPES = [
   "rabbit_head",
   "pumpkin",
   "christmas_tree",
+  "smiley",
+  "ghost",
+  "donut",
+  "sun",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 
-export const ACTIVITIES = ["running"] as const;
+/** The shapes that may be drawn with the pen up (TASK-223, ADR-0185): the
+ * outline, then each piece on its own, walking from one to the next. The
+ * first five lift off their eyes; the others have pieces apart. */
+export const PEN_UP_SHAPES = [
+  "cat",
+  "fish",
+  "dog_head",
+  "rabbit_head",
+  "pumpkin",
+  "smiley",
+  "ghost",
+  "donut",
+  "sun",
+] as const satisfies readonly Shape[];
+export type PenUpShape = (typeof PEN_UP_SHAPES)[number];
+
+/** What a route is for: on foot, by bike on the roads a bike may ride,
+ * one-way streets kept (TASK-190, ADR-0153), or paddling on a lake or the
+ * sea within 1 km of the shore, a shape of the catalogue only (TASK-191,
+ * ADR-0161). */
+export const ACTIVITIES = ["running", "cycling", "paddling"] as const;
 export type Activity = (typeof ACTIVITIES)[number];
 
 /** Plausible target distances for running, in metres. */
 export const MIN_DISTANCE_M = 1_000;
 export const MAX_DISTANCE_M = 50_000;
+
+/** The target distances of each activity, [lowest, highest] in metres:
+ * running as above, cycling 10–30 km (TASK-190), paddling 1–5 km
+ * (TASK-191). Outside them the API answers `invalid_request`, with the
+ * limits in the message. */
+export const DISTANCE_LIMITS_M: Readonly<
+  Record<Activity, readonly [lowest: number, highest: number]>
+> = {
+  running: [MIN_DISTANCE_M, MAX_DISTANCE_M],
+  cycling: [10_000, 30_000],
+  paddling: [1_000, 5_000],
+};
 
 /**
  * The letters a word may use (route_engine/letters.json, ADR-0044): A to Z
@@ -81,16 +117,60 @@ interface RouteRequestFields {
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
+  /**
+   * On the water (TASK-238, ADR-0202), where the centre of the shape is
+   * wanted: `RouteResult.centre` of the route before, moved by the user. The
+   * shape is placed at the nearest place to it where it fits. Refused with
+   * another activity; absent or null leaves the place to the engine.
+   */
+  near?: LatLon | null;
 }
 
 /** A shape of the catalogue, or a word written one letter at a time: one
- * of the two, the other absent or null (TASK-056). */
+ * of the two, the other absent or null (TASK-056). `pen_up` with a word
+ * (TASK-197, ADR-0157): each letter drawn on its own, and the route walks
+ * from one to the next without drawing (`RouteResult.walks`); the distance
+ * is the letters'. So with a shape of PEN_UP_SHAPES, piece by piece
+ * (TASK-223); on the water too (TASK-226, ADR-0188), where the distance is
+ * the whole route's. Absent means false, as an older app sends it. */
 export type RouteRequest =
-  | (RouteRequestFields & { shape: Shape; word?: null; style?: "round" })
-  | (RouteRequestFields & { shape?: null; word: string; style?: LetterStyle });
+  | (RouteRequestFields & {
+      shape: Shape;
+      word?: null;
+      style?: "round";
+      pen_up?: false;
+    })
+  | (RouteRequestFields & {
+      shape: PenUpShape;
+      word?: null;
+      style?: "round";
+      pen_up: true;
+    })
+  | (RouteRequestFields & {
+      shape?: null;
+      word: string;
+      style?: LetterStyle;
+      pen_up?: boolean;
+    });
+
+/**
+ * A stretch of a route walked from one letter to the next of a word with
+ * the pen up (TASK-197): [from, to] indices into `RouteResult.points`, both
+ * included. Recording pauses at `from` and resumes at `to`.
+ */
+export type Walk = [from: number, to: number];
+
+/**
+ * A stretch of a bike route walked with the bike on foot (TASK-206,
+ * ADR-0167): [from, to] indices into `RouteResult.points`, both included.
+ */
+export type Stretch = [from: number, to: number];
 
 export interface RouteResult {
-  /** The route, closed: the last point is the first. */
+  /**
+   * The route, closed: the last point is the first. A word with the pen up
+   * is open: from its first letter to its last (TASK-197).
+   */
   points: LatLon[];
   /** Distance actually covered, in metres. */
   distance_m: number;
@@ -109,6 +189,40 @@ export interface RouteResult {
    * alternatives of its own. Missing from an older API.
    */
   alternatives?: RouteResult[];
+  /**
+   * The walks of a word with the pen up (TASK-197, ADR-0157), in order: one
+   * fewer than its letters, the next letter beginning where a walk ends.
+   * Empty for a shape, an image and a word without; missing from an older
+   * API, which draws one line.
+   */
+  walks?: Walk[];
+  /**
+   * By bike (TASK-206, ADR-0167): where the rider walks with the bike on
+   * foot, in order, also in the approach from a nearby start; the warnings
+   * say how many metres. Empty on foot and on the water; missing from an
+   * older API, which says nothing of it.
+   */
+  on_foot?: Stretch[];
+  /**
+   * A distance in whole km where the search found the shape clearly better
+   * drawn (TASK-234, ADR-0197), for «Try N km» under the route. Null without
+   * one, in the alternatives and on the water; missing from an older API.
+   */
+  better_distance_m?: number | null;
+  /**
+   * On the water, the centre of the shape as placed (TASK-238, ADR-0202):
+   * moved and sent back as the request's `near`, it moves the shape. Null on
+   * the roads; missing from an older API, whose shapes are not moved.
+   */
+  centre?: LatLon | null;
+  /**
+   * How far the shape is turned, in degrees counterclockwise, in (-180, 180]
+   * (TASK-232, ADR-0195): the map shows the drawing upright with a MapLibre
+   * bearing of -rotation_deg. 0 for a shape that turns freely, like the
+   * circle; each alternative has its own. Missing from an older API: the map
+   * stays north-up.
+   */
+  rotation_deg?: number;
 }
 
 /** Routes besides the one chosen by the engine: three to choose from. */
@@ -186,6 +300,8 @@ export const API_ERROR_CODES = [
   "session_expired",
   /** The API has no database: accounts are off on that server. */
   "accounts_unavailable",
+  /** A comment the API refuses, a negative one (TASK-120, ADR-0176). */
+  "comment_rejected",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
@@ -203,9 +319,10 @@ export interface ApiError {
     /**
      * Only with "image_not_usable", else null: why the engine found no
      * outline (TASK-073). Missing from an API older than TASK-073. With
-     * "outline_edit_rejected", why the drawing was refused (TASK-079).
+     * "outline_edit_rejected", why the drawing was refused (TASK-079); with
+     * "comment_rejected", why the comment was (TASK-120).
      */
-    reason?: ImageReason | EditReason | null;
+    reason?: ImageReason | EditReason | CommentReason | null;
   };
 }
 
@@ -255,6 +372,12 @@ export interface TrackScoreRequest {
   similarity: number;
   /** The run, fix by fix, in order. */
   track: TrackFix[];
+  /**
+   * The planned route's: RouteResult.walks (TASK-197). The run is judged on
+   * the letters alone, its positions on a walk not counted. Absent or empty
+   * for any other route.
+   */
+  walks?: Walk[];
 }
 
 /** The score of a run (route_engine/track_score.py, ADR-0090). */
@@ -359,6 +482,8 @@ export interface ImageRouteRequest {
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
+  /** No letters to draw with the pen up: true is refused (TASK-197). */
+  pen_up?: false;
 }
 
 /** The most points of all the strokes of an outline together, as the
@@ -435,6 +560,410 @@ export interface User {
   role: UserRole;
   /** ISO 8601, UTC. */
   created_at: string;
+  /**
+   * The profile (TASK-116): a few words, "" without; missing from an API
+   * older than TASK-116, which has no bio.
+   */
+  bio?: string;
+  /**
+   * The id the others open the profile with, GET /users/{public_id}: a
+   * random UUID, never `id`. Missing from an API older than TASK-116.
+   */
+  public_id?: string;
+  /**
+   * The phone number (TASK-183), in E.164 ("+393331234567"), or null
+   * without one: told to its owner only. Missing from an API older than
+   * TASK-183.
+   */
+  phone?: string | null;
+  /**
+   * The two notification switches of «Settings» (TASK-185): told to their
+   * owner only. Missing from an API older than TASK-185: both off.
+   */
+  notifications?: Notifications;
+}
+
+/**
+ * What an account chose about being notified (TASK-185): both off until
+ * turned on. Sgrava sends nothing yet; the choice is kept for when it does.
+ */
+export interface Notifications {
+  email: boolean;
+  push: boolean;
+}
+
+/**
+ * PUT /me/notifications (TASK-185): only what changes; a switch not sent
+ * stays as it is. The answer is the User.
+ */
+export interface NotificationsRequest {
+  email?: boolean;
+  push?: boolean;
+}
+
+/**
+ * PUT /me/email (TASK-183): the new address, and the password of the
+ * account. It holds at once; the answer is the User.
+ */
+export interface ChangeEmailRequest {
+  email: string;
+  password: string;
+}
+
+/**
+ * PUT /me/phone (TASK-183): the number with its country code, however it
+ * is spaced ("+39 333 123 4567"); null takes it away. The answer is the
+ * User, with the number in E.164.
+ */
+export interface ChangePhoneRequest {
+  phone: string | null;
+}
+
+/** The limit of a bio, checked by the API too (TASK-116). */
+export const BIO_MAX_LENGTH = 160;
+
+/**
+ * PATCH /me (TASK-116): only what changes. A username follows the rule of
+ * SignUpRequest; an empty bio takes the bio away. The answer is the User.
+ */
+export interface EditProfileRequest {
+  username?: string;
+  /** At most BIO_MAX_LENGTH characters; new lines are kept. */
+  bio?: string;
+}
+
+/**
+ * GET /users/{public_id} (TASK-116): an account as every member sees it.
+ * Never the email, the role or `id`.
+ */
+export interface PublicProfile {
+  public_id: string;
+  username: string;
+  /** "" without one. */
+  bio: string;
+  /** The square JPEG of the picture in base64, as /me/photo; null without. */
+  photo: string | null;
+  /** How many runs it made public as drawings (TASK-117). */
+  drawings: number;
+  /**
+   * How many follow it, and how many it follows: only the requests accepted
+   * (TASK-211). Missing from an API older than TASK-211.
+   */
+  followers?: number;
+  following?: number;
+  /** Where the one who asks stands towards it. Missing from an older API. */
+  follow?: FollowState;
+}
+
+/**
+ * Where a member stands towards a profile (TASK-211): it asked and waits
+ * for the other to accept, or it follows. Its own profile: "none". A
+ * request declined is "none" again: nothing says it was declined.
+ */
+export const FOLLOW_STATES = ["none", "requested", "following"] as const;
+export type FollowState = (typeof FOLLOW_STATES)[number];
+
+/** POST /users/{public_id}/follow (TASK-211): where the one who asked stands now. */
+export interface Follow {
+  follow: Exclude<FollowState, "none">;
+}
+
+/** The fewest characters GET /users?q= looks for, spaces at the ends left out. */
+export const PEOPLE_QUERY_MIN_LENGTH = 2;
+/** The most members GET /users?q= gives. */
+export const PEOPLE_FOUND_MAX = 20;
+/** The side of a Person's picture, in pixels: half that of a PublicProfile. */
+export const PERSON_PHOTO_SIDE = 128;
+
+/**
+ * A member in a list (TASK-211): found by name, a follower, one followed,
+ * one who asks to follow. Never the email; the profile is GET
+ * /users/{public_id}.
+ */
+export interface Person {
+  public_id: string;
+  username: string;
+  /** A square JPEG of PERSON_PHOTO_SIDE px in base64; null without a picture. */
+  photo: string | null;
+}
+
+/**
+ * GET /users?q= (TASK-211): at most PEOPLE_FOUND_MAX members whose name
+ * holds the query, whatever the case, never the one who asks; first the
+ * names that begin with it, then the shortest.
+ */
+export interface PeopleFound {
+  people: Person[];
+}
+
+/**
+ * GET /me/followers, /me/following, /me/follow-requests (TASK-211): a
+ * page, the latest first; only the account's own.
+ */
+export interface PeoplePage {
+  people: Person[];
+  /** The `cursor` of the next page; null on the last one. */
+  next: string | null;
+  /** How many there are, on every page. */
+  total: number;
+}
+
+/** The limit of a drawing's title, checked by the API too (TASK-117). */
+export const DRAWING_TITLE_MAX_LENGTH = 60;
+
+/**
+ * What the other members never see of a public run, from either end of its
+ * track, in metres along it (ADR-0114, point 4): the API cuts it.
+ */
+export const DRAWING_CUT_M = 200;
+
+/**
+ * Who can see a drawing (TASK-208, ADR-0170): every member, the members who
+ * follow its owner with the request accepted, or only its owner.
+ */
+export const VISIBILITIES = ["everyone", "followers", "only_me"] as const;
+export type Visibility = (typeof VISIBILITIES)[number];
+
+/** The limits of a drawing, checked by the API too (TASK-208). */
+export const DRAWING_DESCRIPTION_MAX_LENGTH = 500;
+export const DRAWING_MAX_TAGS = 10;
+/** Besides the map, the first picture of a drawing. */
+export const DRAWING_MAX_PHOTOS = 3;
+
+/**
+ * PUT /me/activities/{key}/drawing (TASK-117, TASK-208): a saved run's
+ * drawing as it should be now. The answer is a MyDrawing.
+ */
+export interface DrawingRequest {
+  /** At most DRAWING_TITLE_MAX_LENGTH characters; null or "": none. */
+  title?: string | null;
+  /** Who can see it; or `public`, never both (TASK-208). */
+  visibility?: Visibility;
+  /** An app before TASK-208: true is "everyone", false "only_me". */
+  public?: boolean;
+  /**
+   * «How did it go?»: at most DRAWING_DESCRIPTION_MAX_LENGTH characters,
+   * lines and all; null or "": none; missing: as it was.
+   */
+  description?: string | null;
+  /** What the run was; missing: as it was. */
+  activity?: Activity;
+  /** The public_id of the members tagged, in order; []: none; missing: as they were. */
+  tags?: string[];
+}
+
+/**
+ * PUT /me/activities/{key}/drawing/photos/{n} (TASK-208): a JPEG or PNG in
+ * base64; the API keeps it upright, at most 1080 px a side, without EXIF.
+ */
+export interface DrawingPhotoRequest {
+  image: string;
+}
+
+/** A member tagged in a drawing: never the email. */
+export interface DrawingTag {
+  public_id: string;
+  username: string;
+}
+
+/** A photo of a drawing, besides its map (TASK-208). */
+export interface DrawingPhoto {
+  /** Its place, 1 to DRAWING_MAX_PHOTOS: a place emptied stays empty. */
+  n: number;
+  /** A JPEG on the API, read with the token; it changes with the photo. */
+  url: string;
+  width: number;
+  height: number;
+}
+
+/**
+ * What the owner chose for one of its runs: GET and PUT
+ * /me/activities/{key}/drawing, and each item of GET /me/drawings.
+ */
+export interface MyDrawing {
+  /** The run's key, as in My activities. */
+  key: string;
+  /** What the others open it with; null for a run never titled nor published. */
+  id: string | null;
+  title: string | null;
+  /** Every member sees it: `visibility` is "everyone". */
+  public: boolean;
+  /** When the others could first see it since it was last "only_me"; null while it is. */
+  published_at: string | null;
+  /** The fields of TASK-208: an API before has none. */
+  visibility?: Visibility;
+  description?: string | null;
+  activity?: Activity;
+  tags?: DrawingTag[];
+  photos?: DrawingPhoto[];
+}
+
+/** GET /me/drawings: the runs with a title or made public, latest first. */
+export interface MyDrawings {
+  drawings: MyDrawing[];
+}
+
+/** Who published a drawing: never the email. */
+export interface DrawingAuthor {
+  public_id: string;
+  username: string;
+}
+
+/** What every member sees of a drawing: the run's numbers, counted by the API. */
+interface DrawingFields {
+  id: string;
+  /** The owner's title; null: none. */
+  title: string | null;
+  started_at: string;
+  /** Null only for its owner, on a private one. */
+  published_at: string | null;
+  /** The town the run starts from ("Trento"), or null. */
+  place: string | null;
+  shape: string | null;
+  word: string | null;
+  style: LetterStyle | null;
+  /** What the planned route draws when neither shape nor word says it. */
+  route_title: string | null;
+  distance_m: number;
+  duration_s: number;
+  /** 0–100, against the planned route; null without one or too short. */
+  score: number | null;
+  fidelity: number | null;
+  /** The fields of TASK-208: an API before has none. */
+  visibility?: Visibility;
+  description?: string | null;
+  activity?: Activity;
+  tags?: DrawingTag[];
+  photos?: DrawingPhoto[];
+  /**
+   * How far the planned route's shape is turned, as RouteResult.rotation_deg
+   * (TASK-232, ADR-0195): the drawing is shown turned back, so it reads
+   * upright. Null for a run without a route, one north up and every run
+   * saved before; missing from an API before TASK-232 part C.
+   */
+  rotation_deg?: number | null;
+}
+
+/** One drawing of GET /users/{public_id}/drawings. */
+export interface Drawing extends DrawingFields {
+  /** At most 64 points of the cut track. */
+  track_preview: LatLon[];
+}
+
+/** GET /users/{public_id}/drawings: a page, the latest run first. */
+export interface DrawingsPage {
+  drawings: Drawing[];
+  /** The `cursor` of the next page; null on the last one. */
+  next: string | null;
+  /** How many drawings of the profile the one who asks sees. */
+  total: number;
+}
+
+/**
+ * GET /drawings/{id}: one drawing whole. The track is cut: never its first
+ * and last DRAWING_CUT_M metres, never its times or the planned route.
+ */
+export interface DrawingDetail extends DrawingFields {
+  author: DrawingAuthor;
+  /** Every member sees it: `visibility` is "everyone". */
+  public: boolean;
+  /** Empty only for the owner's private run too short to publish. */
+  track: LatLon[];
+}
+
+/** The limit of a comment, checked by the API too (TASK-120). */
+export const COMMENT_MAX_LENGTH = 500;
+
+/**
+ * Why the API refuses a comment with "comment_rejected" (ADR-0176): a
+ * negative one is never published, and the app says so in an alert.
+ */
+export const COMMENT_REASONS = ["negative"] as const;
+export type CommentReason = (typeof COMMENT_REASONS)[number];
+
+/**
+ * POST /drawings/{id}/comments (TASK-120): plain text, 1 to
+ * COMMENT_MAX_LENGTH characters once the spaces at either end are gone; new
+ * lines are kept. The answer is the Comment.
+ */
+export interface CommentRequest {
+  text: string;
+}
+
+/** One comment under a drawing, as who asks sees it. */
+export interface Comment {
+  id: string;
+  /** Who wrote it: never the email. */
+  author: DrawingAuthor;
+  /** Plain text: shown as text, never as a link or HTML. */
+  text: string;
+  created_at: string;
+  /** Who asks may delete it: it wrote it, or it owns the drawing. */
+  deletable: boolean;
+}
+
+/** GET /drawings/{id}/comments: a page, the oldest first. */
+export interface CommentsPage {
+  comments: Comment[];
+  /** The `cursor` of the next page; null on the last one. */
+  next: string | null;
+  /** How many comments the drawing has, on every page. */
+  total: number;
+}
+
+/**
+ * The reactions under a drawing (TASK-119, ADR-0193), in the order the app
+ * shows them: the Sgrava heart, the super like, then 🔥 👏 💪 😂 😮. Codes,
+ * never the emoji: the app draws them.
+ */
+export const REACTION_KINDS = [
+  "super_like",
+  "fire",
+  "clap",
+  "strong",
+  "laugh",
+  "wow",
+] as const;
+export type ReactionKind = (typeof REACTION_KINDS)[number];
+
+/**
+ * A super like needs a comment of at least this many characters, once the
+ * spaces at either end are gone (ADR-0193); checked by the API too.
+ */
+export const SUPER_LIKE_MIN_COMMENT = 2;
+
+/**
+ * PUT /drawings/{id}/reaction (TASK-119): one reaction each, in place of
+ * one's own; the same kind again changes nothing. `comment` only with
+ * "super_like", and then needed: SUPER_LIKE_MIN_COMMENT to
+ * COMMENT_MAX_LENGTH characters, refused as a comment is
+ * ("comment_rejected"). The answer is the ReactionResult.
+ */
+export interface ReactionRequest {
+  kind: ReactionKind;
+  comment?: string | null;
+}
+
+/**
+ * GET /drawings/{id}/reactions, and the answer of DELETE
+ * /drawings/{id}/reaction: how many, never who.
+ */
+export interface ReactionsSummary {
+  /** How many of each kind, all six, zero included. */
+  counts: Record<ReactionKind, number>;
+  total: number;
+  /** The reaction of who asks; null when it left none. */
+  mine: ReactionKind | null;
+}
+
+/** The answer of PUT /drawings/{id}/reaction. */
+export interface ReactionResult {
+  reactions: ReactionsSummary;
+  /**
+   * The comment kept with a super like just left, to add to the comments;
+   * null otherwise, also when the super like was there already.
+   */
+  comment: Comment | null;
 }
 
 /**
@@ -446,4 +975,35 @@ export interface User {
 export interface Session {
   token: string;
   user: User;
+}
+
+/** Posts a page of GET /feed holds unless `limit` says (TASK-118). */
+export const FEED_PAGE_SIZE = 20;
+
+/**
+ * How far from the phone a drawing of someone the reader does not follow
+ * is still in its feed, in metres (TASK-118, ADR-0227).
+ */
+export const FEED_NEAR_M = 50_000;
+
+/**
+ * One post of GET /feed (TASK-118): a drawing as a profile lists it, with
+ * who published it. Opened whole with GET /drawings/{id}.
+ */
+export interface FeedPost extends Drawing {
+  author: DrawingAuthor;
+}
+
+/**
+ * GET /feed?limit=20&cursor=…&lat=…&lon=…: the drawings the reader may
+ * see, its own first, then those of the people it follows, then the
+ * others' near the point sent (all of them without one), the last
+ * published first in each group. Never a private one. The pages follow
+ * the cursor: a drawing published between two pages goes above it, and
+ * the next page neither repeats nor skips one.
+ */
+export interface FeedPage {
+  posts: FeedPost[];
+  /** The `cursor` of the next page; null on the last one. */
+  next: string | null;
 }

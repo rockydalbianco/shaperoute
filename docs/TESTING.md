@@ -24,6 +24,18 @@ Testing Library nell'app, il test runner di Node (`node --test`) in
 Dalla radice, `npm test` li lancia tutti; `npm run typecheck` fa il
 controllo dei tipi, che per TypeScript è già metà dei test.
 
+**Un test dell'app ha 30 s** (`testTimeout` in `apps/mobile/package.json`,
+TASK-193), non i 5 di jest. Il primo `render` di un file, a cache fredda,
+paga la trasformazione di React Native dentro il test: in CI, dove la cache
+non c'è, 5,1–5,2 s; sul Mac, con due suite fredde insieme mentre altri
+agenti lavorano, fino a 22 s. Il primo giro in un worktree nuovo è sempre a
+freddo (ogni cartella ha la sua cache). Con il Mac saturo nessun limite
+ragionevole basta: si rilancia, e il secondo giro è a cache calda. Un test
+che legge l'orologio (conto alla rovescia, tempo della corsa, pausa da
+fermi) gira con i timer finti di jest e fa passare il tempo a mano, come
+`__tests__/AppFreeRun.test.tsx`: con l'orologio vero è il carico della
+macchina a decidere cosa dice lo schermo.
+
 ### Cosa si testa davvero
 
 **Deterministico, sempre testabile:**
@@ -128,6 +140,13 @@ e test dell'app e dei tipi condivisi (job `mobile`) e dell'API (job
 `api`). Niente build per
 telefono in CI. Una CI complicata su un repository quasi vuoto è solo
 tempo speso a far passare build.
+
+Ogni job ha un tempo massimo (`timeout-minutes`, almeno il doppio del suo
+tempo normale): un job che lo supera fallisce invece di restare appeso.
+Un test Python che dura più di due minuti stampa lo stack di ogni thread
+e prosegue (`faulthandler_timeout` nei `pyproject.toml` dell'API e del
+route-engine): in un job fallito per il tempo, quello stack dice quale
+test si era fermato e dove (TASK-248, ADR-0212).
 
 ## Quando un test non va scritto
 

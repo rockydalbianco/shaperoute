@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from route_engine.models import RouteResult
 from route_engine.network import FileSource
@@ -128,6 +129,8 @@ def test_a_shape_is_recorded_with_its_request_and_its_outcome(
         "distance_m": 10000,
         "activity": "running",
         "style": "round",
+        "pen_up": False,  # TASK-197
+        "near": None,  # TASK-238
     }
     outcome = line["outcome"]
     assert outcome.pop("elapsed_s") >= 0
@@ -291,9 +294,9 @@ def test_the_api_starts_without_a_log_and_says_so(
 ) -> None:
     made: list[Any] = []
 
-    def fake_create_app(source: object, **options: Any) -> object:
+    def fake_create_app(source: object, **options: Any) -> FastAPI:
         made.append(options["request_log"])
-        return object()
+        return FastAPI()  # main() adds the phone zones to it (TASK-214)
 
     monkeypatch.setattr(entry, "create_app", fake_create_app)
     monkeypatch.setattr(entry.uvicorn, "run", lambda *_, **__: None)

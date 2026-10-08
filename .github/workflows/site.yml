@@ -1,0 +1,31 @@
+name: Site
+
+# Il sito web (TASK-237, docs/SITO.md): HTML, CSS e JS statici in site/,
+# senza dipendenze. I test vogliono solo Node, quindi niente `npm ci`.
+# Gira solo quando cambia il sito: il resto del repository non lo tocca.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/site.yml"
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/site.yml"
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Test
+        working-directory: site
+        run: npm test

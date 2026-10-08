@@ -7,19 +7,21 @@ activities) are checked once, by the engine's RouteRequest (models.py).
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from route_engine.directions import GROUP_M, Turn
 from route_engine.image_outline import MAX_POINTS as MAX_OUTLINE_POINTS
 from route_engine.models import (
+    DISTANCE_LIMITS_M,
     MAX_DISTANCE_M,
-    MIN_DISTANCE_M,
     SUPPORTED_ACTIVITIES,
     RouteResult,
 )
 from route_engine.outline_edits import MAX_DETAIL_POINTS, MAX_DRAWN_POINTS
-from route_engine.shapes import SUPPORTED_SHAPES
+from route_engine.pen_up import walks_problem
+from route_engine.pieces import compose_shape
+from route_engine.shapes import SUPPORTED_SHAPES, in_pieces
 from route_engine.words import (
     ALPHABET,
     LETTER_DISTANCE_M,
@@ -32,6 +34,59 @@ from shaperoute_ai.reading import MAX_TEXT_LENGTH
 # (ADR-0069): a phone photo re-encoded as JPEG is 1-4 MB.
 MAX_IMAGE_BYTES = 10_000_000
 MAX_IMAGE_BASE64 = 4 * -(-MAX_IMAGE_BYTES // 3)
+# The shapes of the catalogue that may be drawn with the pen up (TASK-223).
+PEN_UP_SHAPES = tuple(name for name in SUPPORTED_SHAPES if in_pieces(name))
+# A walk between two letters of a word with the pen up (TASK-197), or two
+# pieces of a shape (TASK-223): its first and last point, indices into the
+# route's points; one fewer than letters or pieces, 8 for the sun. On the
+# water the route also comes back to the outline it left (TASK-226): one
+# more than that, 9 for the sun.
+Walk = tuple[int, int]
+MAX_WALKS = max(
+    MAX_WORD_LETTERS - 1,
+    *(len(compose_shape(name).letters) for name in PEN_UP_SHAPES),
+)
+# A stretch walked with the bike on foot (TASK-206, ADR-0167): its first and
+# last point, indices into the route's points, as a walk.
+Stretch = tuple[int, int]
+# The most a route kept may have (a favorite): far above any drawn, which
+# walk a few blocks on 10-20 km (Trento, TASK-206).
+MAX_ON_FOOT = 1000
+# Each activity has its own distances (TASK-190): "1000–50000 for running,
+# 10000–30000 for cycling".
+DISTANCE_DESCRIPTION = "Target distance in metres, " + ", ".join(
+    f"{DISTANCE_LIMITS_M[a][0]}–{DISTANCE_LIMITS_M[a][1]} for {a}"
+    for a in SUPPORTED_ACTIVITIES
+)
+ACTIVITY_DESCRIPTION = (
+    f"One of: {', '.join(SUPPORTED_ACTIVITIES)}; cycling is drawn on the "
+    f"roads a bike may ride, one-way streets kept (TASK-190); paddling on a "
+    f"lake or the sea within 1 km of the shore, from a start on the shore, "
+    f"a shape of the catalogue only (TASK-191)."
+)
+WALKS_DESCRIPTION = (
+    "A word with the pen up (TASK-197), or a shape in pieces (TASK-223): "
+    "[from, to] indices into points, both included, of each stretch walked "
+    "from one letter or piece to the next without drawing; in order, the "
+    "next beginning where a walk ends. On the water (TASK-226) they are "
+    "paddled: from the outline to a piece, between the pieces and back to "
+    "the outline. Empty for a shape with the pen down, an image and a word "
+    "without; missing from an older API."
+)
+ON_FOOT_DESCRIPTION = (
+    "By bike (TASK-206): [from, to] indices into points, both included, of "
+    "each stretch walked with the bike on foot, in order; also in the "
+    "approach from a nearby start. Empty on foot and on the water; missing "
+    "from an older API."
+)
+
+
+def _check_walks(walks: list[Walk], count: int, what: str = "walk") -> None:
+    """Pydantic's check of `walks` against a route of `count` points; also
+    of the stretches with the bike on foot, named by `what`."""
+    problem = walks_problem(walks, count, what)
+    if problem is not None:
+        raise ValueError(problem)
 
 
 class RouteRequestBody(BaseModel):
@@ -59,19 +114,36 @@ class RouteRequestBody(BaseModel):
         ),
         examples=[None],
     )
-    distance_m: int = Field(
-        description=f"Target distance in metres, {MIN_DISTANCE_M}–{MAX_DISTANCE_M}.",
-        examples=[5000],
-    )
-    activity: str = Field(
-        default="running", description=f"One of: {', '.join(SUPPORTED_ACTIVITIES)}."
-    )
+    distance_m: int = Field(description=DISTANCE_DESCRIPTION, examples=[5000])
+    activity: str = Field(default="running", description=ACTIVITY_DESCRIPTION)
     style: str = Field(
         default="round",
         description=(
             "The letters of a word (TASK-080): round, or block for square "
             "letters on the street grid (ADR-0072). Only round with a shape."
         ),
+    )
+    pen_up: bool = Field(
+        default=False,
+        description=(
+            "With a word (TASK-197): each letter drawn on its own, and the "
+            "route walks from one to the next without drawing (walks in the "
+            "result). The distance is the letters'. So with a shape in "
+            f"pieces, one of {', '.join(PEN_UP_SHAPES)}, piece by piece "
+            "(TASK-223); on the water too (TASK-226), where the distance is "
+            "the whole route's, the stretches with the pen up included."
+        ),
+    )
+    # Missing from an app of before TASK-238.
+    near: tuple[float, float] | None = Field(
+        default=None,
+        description=(
+            "On the water (TASK-238), where the centre of the shape is wanted, "
+            "as [lat, lon]: the centre of a result before, moved. The shape is "
+            "placed at the nearest place to it where it fits. With another "
+            "activity, invalid_request."
+        ),
+        examples=[None],
     )
 
 
@@ -106,7 +178,11 @@ class RouteResultBody(BaseModel):
     """What the app gets back: RouteResult in packages/shared-types."""
 
     points: list[tuple[float, float]] = Field(
-        description="The route as [lat, lon] points, closed."
+        description=(
+            "The route as [lat, lon] points, closed; a word with the pen up "
+            "goes from its first letter to its last, a shape in pieces from "
+            "its outline to its last piece."
+        )
     )
     distance_m: float = Field(description="Distance actually covered, in metres.")
     similarity: float = Field(description="How much the route looks like the shape.")
@@ -115,7 +191,10 @@ class RouteResultBody(BaseModel):
     # Missing in a GPX request from an older app: nothing to check there.
     directions: list[DirectionBody] = Field(
         default_factory=list,
-        description="Turn by turn, the start first; empty without a search.",
+        description=(
+            "Turn by turn, the start first; empty without a search, and on "
+            "the water, which has no roads (TASK-191)."
+        ),
     )
     word: str | None = Field(
         default=None, description="The word in capitals; null for a shape or an image."
@@ -125,9 +204,55 @@ class RouteResultBody(BaseModel):
         default_factory=list,
         description=(
             "Other routes for the same request, best first, to choose from "
-            "(TASK-093): whole results, with no alternatives of their own."
+            "(TASK-093): whole results, with no alternatives of their own. "
+            "None on the water (TASK-191)."
         ),
     )
+    # Missing from an older API, and in a GPX request from an older app.
+    walks: list[Walk] = Field(
+        default_factory=list, max_length=MAX_WALKS, description=WALKS_DESCRIPTION
+    )
+    # Missing from an older API, and in a GPX request from an older app.
+    on_foot: list[Stretch] = Field(
+        default_factory=list, description=ON_FOOT_DESCRIPTION
+    )
+    # Missing from an older API, and in a GPX request from an older app.
+    better_distance_m: int | None = Field(
+        default=None,
+        description=(
+            "A distance in whole km where the search found the shape clearly "
+            "better drawn, to offer as «Try N km» (TASK-234, ADR-0197); null "
+            "without one, in the alternatives and on the water."
+        ),
+    )
+    # Missing from an older API, and in a GPX request from an older app.
+    centre: tuple[float, float] | None = Field(
+        default=None,
+        description=(
+            "On the water, the centre of the shape as placed, as [lat, lon] "
+            "(TASK-238): moved and sent back as the request's near, it moves "
+            "the shape. Null on the roads."
+        ),
+    )
+    # Missing from an older API, and in a GPX request from an older app.
+    rotation_deg: float = Field(
+        default=0.0,
+        ge=-180.0,
+        le=180.0,
+        description=(
+            "How far the shape is turned, in degrees counterclockwise, in "
+            "(-180, 180] (TASK-232, ADR-0195): the app turns the map by its "
+            "opposite (a MapLibre bearing of -rotation_deg) so the drawing "
+            "reads upright. 0 for a shape that turns freely, like the "
+            "circle; each alternative has its own."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def _walks_within_points(self) -> Self:
+        _check_walks(self.walks, len(self.points))
+        _check_walks(self.on_foot, len(self.points), "stretch on foot")
+        return self
 
     @classmethod
     def from_result(cls, result: RouteResult) -> RouteResultBody:
@@ -158,6 +283,8 @@ ErrorCode = Literal[
     "not_signed_in",
     "session_expired",
     "accounts_unavailable",
+    # A comment the filter refuses (TASK-120, ADR-0176): `reason` says why.
+    "comment_rejected",
 ]
 
 # Why an image gives no outline: InvalidImageError.reason in
@@ -181,6 +308,10 @@ EditReason = Literal[
     "too_many_corners",
 ]
 
+# Why a comment was refused: check_comment in comment_filter.py (TASK-213,
+# ADR-0176).
+CommentReason = Literal["negative"]
+
 
 class ErrorDetail(BaseModel):
     code: ErrorCode
@@ -189,8 +320,9 @@ class ErrorDetail(BaseModel):
     # (TASK-031).
     suggested_distance_m: int | None = None
     # Only with image_not_usable: why the engine found no outline (TASK-073);
-    # with outline_edit_rejected, why the drawing was refused (TASK-079).
-    reason: ImageReason | EditReason | None = None
+    # with outline_edit_rejected, why the drawing was refused (TASK-079);
+    # with comment_rejected, why the comment was (TASK-120).
+    reason: ImageReason | EditReason | CommentReason | None = None
 
 
 class ErrorBody(BaseModel):
@@ -257,6 +389,19 @@ class TrackScoreRequestBody(BaseModel):
     track: list[TrackFixBody] = Field(
         max_length=MAX_TRACK_FIXES, description="The run, fix by fix, in order."
     )
+    walks: list[Walk] = Field(
+        default_factory=list,
+        max_length=MAX_WALKS,
+        description=(
+            "The planned route's: RouteResult.walks (TASK-197). The run is "
+            "then judged on the letters alone. Missing from an older app."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def _walks_within_points(self) -> Self:
+        _check_walks(self.walks, len(self.points))
+        return self
 
 
 class TrackScoreBody(BaseModel):
@@ -372,12 +517,11 @@ class ImageRouteRequestBody(BaseModel):
             f"counted twice. None for an outline without."
         ),
     )
-    distance_m: int = Field(
-        description=f"Target distance in metres, {MIN_DISTANCE_M}–{MAX_DISTANCE_M}.",
-        examples=[15000],
-    )
-    activity: str = Field(
-        default="running", description=f"One of: {', '.join(SUPPORTED_ACTIVITIES)}."
+    distance_m: int = Field(description=DISTANCE_DESCRIPTION, examples=[15000])
+    activity: str = Field(default="running", description=ACTIVITY_DESCRIPTION)
+    pen_up: bool = Field(
+        default=False,
+        description="Only for a word (TASK-197): true is refused, invalid_request.",
     )
 
 

@@ -1,4 +1,5 @@
 import {
+  clearProgress,
   clearRoute,
   clearStops,
   clearTrack,
@@ -7,10 +8,12 @@ import {
   parsePageMessage,
   setPosition,
   showOthers,
+  showProgress,
   showRoute,
   showStops,
   showTrack,
   START_HERE_M,
+  stopFollow,
 } from "./messages";
 
 test("setPosition sends the point in MapLibre order", () => {
@@ -52,6 +55,94 @@ test("showRoute marks where to go only when the route begins away", () => {
   expect(START_HERE_M).toBe(50);
 });
 
+test("a word with the pen up sends its letters and its walks apart (TASK-198)", () => {
+  const route: [number, number][] = [
+    [46.01, 11.3],
+    [46.02, 11.3],
+    [46.03, 11.3],
+    [46.03, 11.31],
+    [46.02, 11.31],
+  ];
+  expect(showRoute(route, null, [[1, 3]])).toEqual({
+    type: "showRoute",
+    // The whole line still frames the map.
+    coordinates: [
+      [11.3, 46.01],
+      [11.3, 46.02],
+      [11.3, 46.03],
+      [11.31, 46.03],
+      [11.31, 46.02],
+    ],
+    startHere: null,
+    letters: [
+      [
+        [11.3, 46.01],
+        [11.3, 46.02],
+      ],
+      [
+        [11.31, 46.03],
+        [11.31, 46.02],
+      ],
+    ],
+    walks: [
+      [
+        [11.3, 46.02],
+        [11.3, 46.03],
+        [11.31, 46.03],
+      ],
+    ],
+  });
+  // No walks, or walks that do not fit the route: the message of before.
+  const before = showRoute(route);
+  expect(showRoute(route, null, [])).toEqual(before);
+  expect(showRoute(route, null, [[3, 9]])).toEqual(before);
+  expect(before).not.toHaveProperty("walks");
+});
+
+test("a bike route marks its stretches with the bike on foot over it (TASK-206)", () => {
+  const route: [number, number][] = [
+    [46.01, 11.3],
+    [46.02, 11.3],
+    [46.03, 11.3],
+    [46.03, 11.31],
+  ];
+  expect(showRoute(route, null, null, [[1, 2]])).toEqual({
+    type: "showRoute",
+    // The route is one line, as without: the stretches are part of it.
+    coordinates: [
+      [11.3, 46.01],
+      [11.3, 46.02],
+      [11.3, 46.03],
+      [11.31, 46.03],
+    ],
+    startHere: null,
+    onFoot: [
+      [
+        [11.3, 46.02],
+        [11.3, 46.03],
+      ],
+    ],
+  });
+  // With the walks of a word with the pen up, only on its letters.
+  expect(showRoute(route, null, [[1, 2]], [[0, 3]])).toMatchObject({
+    onFoot: [
+      [
+        [11.3, 46.01],
+        [11.3, 46.02],
+      ],
+      [
+        [11.3, 46.03],
+        [11.31, 46.03],
+      ],
+    ],
+  });
+  // None, or none that fit: the message of before.
+  const before = showRoute(route);
+  expect(showRoute(route, null, null, [])).toEqual(before);
+  expect(showRoute(route, null, null, [[2, 7]])).toEqual(before);
+  expect(before).not.toHaveProperty("onFoot");
+});
+
 test("pageScript hands the message to the page and returns true", () => {
   const script = pageScript(setPosition([46.0671, 11.1214]));
   expect(script).toBe(
@@ -83,7 +174,19 @@ test("follow sends the position in MapLibre order", () => {
   expect(follow([46.0671, 11.1214])).toEqual({
     type: "follow",
     lngLat: [11.1214, 46.0671],
+    heading: null,
   });
+});
+
+test("follow sends the heading in whole degrees, stopFollow ends it", () => {
+  expect(follow([46.0671, 11.1214], 44.6)).toEqual({
+    type: "follow",
+    lngLat: [11.1214, 46.0671],
+    heading: 45,
+  });
+  // 359.7 is north, not 360.
+  expect(follow([46.0671, 11.1214], 359.7)).toMatchObject({ heading: 0 });
+  expect(stopFollow()).toEqual({ type: "stopFollow" });
 });
 
 test("showTrack sends the run in MapLibre order, clearTrack removes it", () => {
@@ -136,4 +239,40 @@ test("showOthers sends each route in MapLibre order, and none to clear", () => {
     ],
   });
   expect(showOthers([])).toEqual({ type: "showOthers", lines: [] });
+});
+
+test("showProgress sends the part run and the part left in MapLibre order (TASK-224)", () => {
+  const split = {
+    done: [
+      [
+        [46.0, 11.0],
+        [46.001, 11.0],
+      ],
+    ] as [number, number][][],
+    ahead: [
+      [
+        [46.001, 11.0],
+        [46.002, 11.0],
+      ],
+    ] as [number, number][][],
+  };
+  expect(showProgress(split, true)).toEqual({
+    type: "showProgress",
+    done: [
+      [
+        [11.0, 46.0],
+        [11.0, 46.001],
+      ],
+    ],
+    ahead: [
+      [
+        [11.0, 46.001],
+        [11.0, 46.002],
+      ],
+    ],
+    blink: true,
+  });
+  // In pocket mode the dashes keep still.
+  expect(showProgress(split, false)).toMatchObject({ blink: false });
+  expect(clearProgress()).toEqual({ type: "clearProgress" });
 });

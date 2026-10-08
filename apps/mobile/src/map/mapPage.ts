@@ -1,8 +1,21 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { color, otherRoute, route, stop, track } from "../theme/tokens";
+import { tLater } from "../i18n";
+import { appLanguage } from "../i18n/language";
+import type { Language } from "../i18n/languages";
+import { translate } from "../i18n/translate";
+import {
+  color,
+  onFoot,
+  otherRoute,
+  route,
+  routeAhead,
+  stop,
+  track,
+  walk,
+} from "../theme/tokens";
 import { toLngLat } from "./coordinates";
-import { LABEL_FONT, sgravaDarkStyle } from "./mapStyle";
+import { darkMapStyle, LABEL_FONT } from "./mapStyle";
 
 /**
  * The map page shown in the WebView (ADR-0029): MapLibre GL JS from a CDN,
@@ -20,8 +33,20 @@ export const MAPLIBRE_CSS_URL = `https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSIO
 export const MAPLIBRE_CSS_SRI =
   "sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK";
 
-/** The style, written into the page: nothing to fetch, colours from the tokens. */
-export const MAP_STYLE = sgravaDarkStyle;
+/**
+ * The style, written into the page: nothing to fetch, colours from the
+ * tokens, the places named in the app's language (TASK-210 F).
+ */
+export function mapStyle(language: Language) {
+  return darkMapStyle(language);
+}
+
+/**
+ * The style of the Feed's maps (`feed/feedMapPage.ts`), in the app's
+ * language when the app opened: the Feed follows a new language with
+ * TASK-210's part G.
+ */
+export const MAP_STYLE = mapStyle(appLanguage());
 
 /** What the map shows before a start is known: the whole of Italy. */
 export const ITALY_BOUNDS: [southWest: LatLon, northEast: LatLon] = [
@@ -40,10 +65,53 @@ export const ROUTE_COLOR = route.color;
 export const ROUTE_WIDTH = route.width;
 export const ROUTE_OPACITY = route.opacity;
 
+/**
+ * While running the route, the part left (TASK-224): dashed, under the part
+ * run, blinking in steps. A beat changes the line's feature state, not the
+ * style: a style change starts 300 ms of transitions on every property of
+ * the layer, and the map was drawn 29 times a second instead of 1.4
+ * (measured in the page, ADR-0186).
+ */
+export const AHEAD_COLOR = routeAhead.color;
+export const AHEAD_WIDTH = routeAhead.width;
+export const AHEAD_OPACITY = routeAhead.opacity;
+export const AHEAD_DIM_OPACITY = routeAhead.dimOpacity;
+export const AHEAD_DASH = routeAhead.dash;
+export const AHEAD_BEAT_MS = routeAhead.beatMs;
+
 /** The other routes to choose from, under the route (TASK-093). */
 export const OTHER_ROUTE_COLOR = otherRoute.color;
 export const OTHER_ROUTE_WIDTH = otherRoute.width;
 export const OTHER_ROUTE_OPACITY = otherRoute.opacity;
+
+/** The walks of a word with the pen up, dashed under the route (TASK-198). */
+export const WALK_COLOR = walk.color;
+export const WALK_WIDTH = walk.width;
+export const WALK_OPACITY = walk.opacity;
+export const WALK_DASH = walk.dash;
+
+/** The stretches of a bike route with the bike on foot, dashed over the
+ * route, which stays whole (TASK-206). */
+export const ON_FOOT_COLOR = onFoot.color;
+export const ON_FOOT_WIDTH = onFoot.width;
+export const ON_FOOT_OPACITY = onFoot.opacity;
+export const ON_FOOT_DASH = onFoot.dash;
+
+/**
+ * A double tap, as the page tells it to the app (TASK-119): two taps of one
+ * finger, each shorter than `TAP_MS`, within `DOUBLE_TAP_MS` and
+ * `DOUBLE_TAP_PX` of each other.
+ */
+export const TAP_MS = 300;
+export const DOUBLE_TAP_MS = 350;
+export const DOUBLE_TAP_PX = 40;
+
+/**
+ * Moving the shape of a route on the water (TASK-238): a finger that
+ * travels less than this many pixels has not moved it, and the app is told
+ * nothing.
+ */
+export const MOVE_MIN_PX = 8;
 
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
@@ -56,9 +124,25 @@ export const TRACK_OPACITY = track.opacity;
  */
 export const POSITION_COLOR = color.text;
 
-/** Where a moved route begins (ADR-0040): a cyan marker and its label. */
+/**
+ * The runner while running (TASK-164): an arrow in the marker's colour,
+ * turned where the runner is heading, on a faint disc of the same colour;
+ * the dark edge keeps it readable over the yellow of the route.
+ */
+export const HEADING_ARROW_SIZE = 36;
+export const HEADING_ARROW_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${HEADING_ARROW_SIZE}" height="${HEADING_ARROW_SIZE}" viewBox="0 0 36 36">` +
+  `<circle cx="18" cy="18" r="17" fill="${POSITION_COLOR}" fill-opacity="0.18"/>` +
+  `<path d="M18 5 L27.5 28 L18 23 L8.5 28 Z" fill="${POSITION_COLOR}" stroke="${color.map.background}" stroke-width="1.5" stroke-linejoin="round"/>` +
+  `</svg>`;
+
+/**
+ * Where a moved route begins (ADR-0040): a cyan marker and its label,
+ * written in the page's language: «Hier starten» (TASK-210 F), the words
+ * the moved-start warning sends the runner to (`route/warnings.ts`).
+ */
 export const START_HERE_COLOR = color.startHere;
-export const START_HERE_LABEL = "Start here";
+export const START_HERE_LABEL = tLater("Start here");
 
 /** Behind the map while it loads, so the page never flashes white. */
 export const MAP_BACKGROUND = color.map.background;
@@ -79,7 +163,8 @@ export function isExternalUrl(url: string): boolean {
   return /^https?:\/\//i.test(url);
 }
 
-export function buildMapPage(): string {
+/** The page, with the map's names and «Start here» in `language`. */
+export function buildMapPage(language: Language = appLanguage()): string {
   const bounds = JSON.stringify(ITALY_BOUNDS.map(toLngLat));
   return `<!DOCTYPE html>
 <html>
@@ -112,21 +197,41 @@ export function buildMapPage(): string {
     }
     var styleLoaded = false;
     var marker = null;
+    var arrow = null;
     var startHere = null;
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
+    // The route as showRoute sent it: drawn whole when no run is on it.
+    var fullRoute = noRoute;
+    // While running it (TASK-224): the part left, and whether it blinks.
+    var ahead = noRoute;
+    var progressing = false;
+    var blinking = null;
+    var dim = false;
+    var walks = noRoute;
+    var onFoot = noRoute;
     var track = noRoute;
     var stops = noRoute;
     var others = noRoute;
+    // The bearing the map keeps (TASK-232): the one of the route shown, so
+    // its drawing is upright, until the app or two fingers turn the map.
+    var wanted = 0;
+    // The bearing of the route shown, the route as framed, and whether the
+    // map is still as framed: the user has not moved it since.
+    var drawn = 0;
+    var framed = null;
+    var inFrame = false;
+    var following = false;
+    var toldBearing = 0;
     var map = new maplibregl.Map({
       container: "map",
-      style: ${toScript(MAP_STYLE)},
+      style: ${toScript(mapStyle(language))},
       bounds: ${bounds},
       fitBoundsOptions: { padding: 16 },
       attributionControl: false,
     });
+    // No zoom buttons: the map zooms with two fingers only.
     map.addControl(new maplibregl.AttributionControl({ compact: false }));
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
     map.once("style.load", function () {
       styleLoaded = true;
       // The other routes to choose from, under the route.
@@ -142,6 +247,42 @@ export function buildMapPage(): string {
           "line-opacity": ${OTHER_ROUTE_OPACITY},
         },
       });
+      // The walks between the letters of a word with the pen up, dashed,
+      // under its letters (TASK-198).
+      map.addSource("walks", { type: "geojson", data: walks });
+      map.addLayer({
+        id: "walks",
+        type: "line",
+        source: "walks",
+        layout: { "line-join": "round", "line-cap": "butt" },
+        paint: {
+          "line-color": ${toScript(WALK_COLOR)},
+          "line-width": ${WALK_WIDTH},
+          "line-opacity": ${WALK_OPACITY},
+          "line-dasharray": ${toScript(WALK_DASH)},
+        },
+      });
+      // While running the route, the part left: dashed, under the part run
+      // (TASK-224). Its one line has id 0, and its beat is its "dim" state.
+      map.addSource("route-ahead", { type: "geojson", data: ahead, generateId: true });
+      map.addLayer({
+        id: "route-ahead",
+        type: "line",
+        source: "route-ahead",
+        layout: { "line-join": "round", "line-cap": "butt" },
+        paint: {
+          "line-color": ${toScript(AHEAD_COLOR)},
+          "line-width": ${AHEAD_WIDTH},
+          "line-opacity": [
+            "case",
+            ["boolean", ["feature-state", "dim"], false],
+            ${AHEAD_DIM_OPACITY},
+            ${AHEAD_OPACITY},
+          ],
+          "line-dasharray": ${toScript(AHEAD_DASH)},
+        },
+      });
+      setAheadOpacity();
       // A route that arrived before the style is drawn now.
       map.addSource("route", { type: "geojson", data: route });
       map.addLayer({
@@ -153,6 +294,21 @@ export function buildMapPage(): string {
           "line-color": ${toScript(ROUTE_COLOR)},
           "line-width": ${ROUTE_WIDTH},
           "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      // The stretches of a bike route with the bike on foot, dashed over
+      // the route (TASK-206).
+      map.addSource("on-foot", { type: "geojson", data: onFoot });
+      map.addLayer({
+        id: "on-foot",
+        type: "line",
+        source: "on-foot",
+        layout: { "line-join": "round", "line-cap": "butt" },
+        paint: {
+          "line-color": ${toScript(ON_FOOT_COLOR)},
+          "line-width": ${ON_FOOT_WIDTH},
+          "line-opacity": ${ON_FOOT_OPACITY},
+          "line-dasharray": ${toScript(ON_FOOT_DASH)},
         },
       });
       // The places of a themed route, over the route (TASK-129).
@@ -206,6 +362,41 @@ export function buildMapPage(): string {
         },
       });
     });
+    // The position: a pin, or while running an arrow turned to the heading.
+    function showPin(lngLat) {
+      if (arrow) {
+        arrow.remove();
+        arrow = null;
+      }
+      if (marker) {
+        marker.setLngLat(lngLat);
+      } else {
+        marker = new maplibregl.Marker({ color: ${toScript(POSITION_COLOR)} })
+          .setLngLat(lngLat)
+          .addTo(map);
+      }
+    }
+    function showArrow(lngLat, heading) {
+      if (marker) {
+        marker.remove();
+        marker = null;
+      }
+      if (!arrow) {
+        var element = document.createElement("div");
+        element.style.width = "${HEADING_ARROW_SIZE}px";
+        element.style.height = "${HEADING_ARROW_SIZE}px";
+        element.style.lineHeight = "0";
+        element.innerHTML = ${toScript(HEADING_ARROW_SVG)};
+        // Turned with the map: north of the arrow is north of the map.
+        arrow = new maplibregl.Marker({ element: element, rotationAlignment: "map" })
+          .setLngLat(lngLat)
+          .addTo(map);
+      }
+      arrow.setLngLat(lngLat);
+      if (typeof heading === "number") {
+        arrow.setRotation(heading);
+      }
+    }
     function setStartHere(lngLat) {
       if (startHere) {
         startHere.remove();
@@ -213,7 +404,7 @@ export function buildMapPage(): string {
       }
       if (lngLat) {
         var label = new maplibregl.Popup({ closeButton: false, closeOnClick: false })
-          .setText(${JSON.stringify(START_HERE_LABEL)});
+          .setText(${toScript(translate(language, START_HERE_LABEL))});
         startHere = new maplibregl.Marker({ color: ${toScript(START_HERE_COLOR)} })
           .setLngLat(lngLat)
           .setPopup(label)
@@ -226,6 +417,77 @@ export function buildMapPage(): string {
       var source = map.getSource("route");
       if (source) {
         source.setData(route);
+      }
+    }
+    function setAhead(data) {
+      ahead = data;
+      var source = map.getSource("route-ahead");
+      if (source) {
+        source.setData(ahead);
+      }
+    }
+    function setAheadOpacity() {
+      if (map.getSource("route-ahead")) {
+        map.setFeatureState({ source: "route-ahead", id: 0 }, { dim: dim });
+      }
+    }
+    // With "Reduce Motion" on the phone the dashes keep still.
+    function stillWanted() {
+      return Boolean(
+        window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      );
+    }
+    function setBlink(on) {
+      if (on && !stillWanted()) {
+        if (!blinking) {
+          blinking = setInterval(function () {
+            dim = !dim;
+            setAheadOpacity();
+          }, ${AHEAD_BEAT_MS});
+        }
+        return;
+      }
+      if (blinking) {
+        clearInterval(blinking);
+        blinking = null;
+      }
+      dim = false;
+      setAheadOpacity();
+    }
+    function lines(coordinates) {
+      return coordinates.length > 0
+        ? {
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: coordinates },
+          }
+        : noRoute;
+    }
+    // The part run takes the route's layer; the part left, the dashed one.
+    function showProgress(message) {
+      progressing = true;
+      setRoute(lines(message.done));
+      setAhead(lines(message.ahead));
+      setBlink(message.blink);
+    }
+    function clearProgress() {
+      progressing = false;
+      setRoute(fullRoute);
+      setAhead(noRoute);
+      setBlink(false);
+    }
+    function setWalks(data) {
+      walks = data;
+      var source = map.getSource("walks");
+      if (source) {
+        source.setData(walks);
+      }
+    }
+    function setOnFoot(data) {
+      onFoot = data;
+      var source = map.getSource("on-foot");
+      if (source) {
+        source.setData(onFoot);
       }
     }
     function setStops(data) {
@@ -249,6 +511,38 @@ export function buildMapPage(): string {
         source.setData(track);
       }
     }
+    // The map turned, by the app or by two fingers: the app is told each
+    // whole degree, for its north arrow. Fingers leave it as they turn it.
+    map.on("rotate", function (event) {
+      if (event && event.originalEvent) {
+        wanted = map.getBearing();
+      }
+      var now = Math.round(map.getBearing()) || 0;
+      if (now !== toldBearing) {
+        toldBearing = now;
+        post({ type: "turned", bearing: now });
+      }
+    });
+    map.on("movestart", function (event) {
+      if (event && event.originalEvent) {
+        inFrame = false;
+      }
+    });
+    function frame() {
+      inFrame = true;
+      map.fitBounds(framed, { padding: 40, bearing: wanted });
+    }
+    // The north arrow (TASK-232): the map turns where the app asks. Still
+    // framed on its route, it frames it again as turned; moved by the user
+    // or following the runner, it turns where it is.
+    function turnTo(bearing) {
+      wanted = bearing;
+      if (framed && inFrame && !following) {
+        frame();
+      } else {
+        map.easeTo({ bearing: wanted, duration: 500 });
+      }
+    }
     // The first time every tile in view is drawn: the app hides its bar.
     map.once("idle", function () {
       post({ type: "loaded" });
@@ -262,24 +556,230 @@ export function buildMapPage(): string {
         fail((event.error && event.error.message) || "The map style did not load");
       }
     });
+    // On a drawing a double tap is its super like (TASK-119): told to the
+    // app in place of the zoom, only while the app asks. Two fingers zoom
+    // as ever. The fingers are listened to from the first time it asks.
+    var doubleTapAsked = false;
+    var tapListening = false;
+    var tapStart = null;
+    var lastTap = null;
+    function near(a, b) {
+      return Math.abs(a.x - b.x) <= ${DOUBLE_TAP_PX} && Math.abs(a.y - b.y) <= ${DOUBLE_TAP_PX};
+    }
+    function listenToTaps() {
+      var surface = map.getCanvasContainer();
+      var passive = { passive: true };
+      surface.addEventListener("touchstart", function (event) {
+        // A second finger is a zoom, never a tap.
+        if (event.touches.length !== 1) {
+          tapStart = null;
+          lastTap = null;
+          return;
+        }
+        var touch = event.touches[0];
+        tapStart = { x: touch.clientX, y: touch.clientY, time: event.timeStamp };
+      }, passive);
+      surface.addEventListener("touchmove", function (event) {
+        var touch = event.touches[0];
+        if (tapStart && touch && !near(tapStart, { x: touch.clientX, y: touch.clientY })) {
+          tapStart = null;
+        }
+      }, passive);
+      surface.addEventListener("touchcancel", function () {
+        tapStart = null;
+        lastTap = null;
+      }, passive);
+      surface.addEventListener("touchend", function (event) {
+        var tap = tapStart;
+        tapStart = null;
+        if (!tap || event.touches.length !== 0 || event.timeStamp - tap.time > ${TAP_MS}) {
+          lastTap = null;
+          return;
+        }
+        if (lastTap && event.timeStamp - lastTap.time <= ${DOUBLE_TAP_MS} && near(lastTap, tap)) {
+          lastTap = null;
+          if (doubleTapAsked) {
+            post({ type: "doubleTap" });
+          }
+          return;
+        }
+        lastTap = { x: tap.x, y: tap.y, time: event.timeStamp };
+      }, passive);
+    }
+    function setDoubleTap(on) {
+      doubleTapAsked = on;
+      lastTap = null;
+      if (on) {
+        map.doubleClickZoom.disable();
+        if (!tapListening) {
+          tapListening = true;
+          listenToTaps();
+        }
+      } else {
+        map.doubleClickZoom.enable();
+      }
+    }
+    // The shape of a route on the water moved by the user (TASK-238): while
+    // the app asks, one finger drags the route, its walks too, and no longer
+    // the map; two fingers zoom as ever. Lifted, the app is told by how many
+    // degrees, and the route stays where it was left until the app sends
+    // the one the engine placed there. The fingers are listened to from the
+    // first time the app asks.
+    var moving = false;
+    var moveListening = false;
+    var moveFrom = null;
+    var movedBy = null;
+    var moveTold = false;
+    function shifted(data, by) {
+      if (!data.geometry) {
+        return data;
+      }
+      function move(point) {
+        return [point[0] + by[0], point[1] + by[1]];
+      }
+      var many = data.geometry.type === "MultiLineString";
+      return {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: data.geometry.type,
+          coordinates: many
+            ? data.geometry.coordinates.map(function (line) {
+                return line.map(move);
+              })
+            : data.geometry.coordinates.map(move),
+        },
+      };
+    }
+    function drawMoved(by) {
+      [["route", route], ["walks", walks], ["on-foot", onFoot]].forEach(function (drawn) {
+        var source = map.getSource(drawn[0]);
+        if (source) {
+          source.setData(by ? shifted(drawn[1], by) : drawn[1]);
+        }
+      });
+    }
+    function dropMove() {
+      moveFrom = null;
+      movedBy = null;
+    }
+    function listenToMoves() {
+      var surface = map.getCanvasContainer();
+      var passive = { passive: true };
+      surface.addEventListener("touchstart", function (event) {
+        if (!moving) {
+          return;
+        }
+        // A second finger is a zoom: the route goes back where it was.
+        if (event.touches.length !== 1) {
+          if (moveFrom && !moveTold) {
+            drawMoved(null);
+          }
+          dropMove();
+          return;
+        }
+        var touch = event.touches[0];
+        moveFrom = { x: touch.clientX, y: touch.clientY };
+        movedBy = null;
+      }, passive);
+      surface.addEventListener("touchmove", function (event) {
+        var touch = event.touches[0];
+        if (!moving || !moveFrom || event.touches.length !== 1 || !touch) {
+          return;
+        }
+        var far =
+          Math.abs(touch.clientX - moveFrom.x) >= ${MOVE_MIN_PX} ||
+          Math.abs(touch.clientY - moveFrom.y) >= ${MOVE_MIN_PX};
+        if (!movedBy && !far) {
+          return;
+        }
+        var from = map.unproject([moveFrom.x, moveFrom.y]);
+        var to = map.unproject([touch.clientX, touch.clientY]);
+        movedBy = [to.lng - from.lng, to.lat - from.lat];
+        moveTold = false;
+        drawMoved(movedBy);
+      }, passive);
+      surface.addEventListener("touchcancel", function () {
+        if (moving && moveFrom && !moveTold) {
+          drawMoved(null);
+        }
+        dropMove();
+      }, passive);
+      surface.addEventListener("touchend", function (event) {
+        if (!moving || !moveFrom || event.touches.length !== 0) {
+          return;
+        }
+        var by = movedBy;
+        dropMove();
+        if (by) {
+          moveTold = true;
+          post({ type: "moved", by: by });
+        }
+      }, passive);
+    }
+    function setMove(on) {
+      moving = on;
+      dropMove();
+      var surface = map.getCanvasContainer();
+      if (on) {
+        moveTold = false;
+        map.dragPan.disable();
+        // The page must not take the finger for a scroll of its own.
+        surface.style.touchAction = "none";
+        if (!moveListening) {
+          moveListening = true;
+          listenToMoves();
+        }
+      } else {
+        map.dragPan.enable();
+        surface.style.touchAction = "";
+        // Left nowhere: the route is back where it was. Left somewhere, it
+        // stays there until the app sends the route placed there.
+        if (!moveTold) {
+          drawMoved(null);
+        }
+      }
+    }
     window.shaperoute = {
       receive: function (message) {
         if (message.type === "setPosition") {
-          if (marker) {
-            marker.setLngLat(message.lngLat);
-          } else {
-            marker = new maplibregl.Marker({ color: ${toScript(POSITION_COLOR)} })
-              .setLngLat(message.lngLat)
-              .addTo(map);
-          }
-          map.flyTo({ center: message.lngLat, zoom: ${START_ZOOM} });
+          showPin(message.lngLat);
+          map.flyTo({ center: message.lngLat, zoom: ${START_ZOOM}, bearing: wanted });
         } else if (message.type === "showRoute") {
           var points = message.coordinates;
-          setRoute({
+          // A word with the pen up: its letters are the route, its walks dashed.
+          fullRoute = {
             type: "Feature",
             properties: {},
-            geometry: { type: "LineString", coordinates: points },
-          });
+            geometry: message.walks
+              ? { type: "MultiLineString", coordinates: message.letters }
+              : { type: "LineString", coordinates: points },
+          };
+          // The route the engine placed where the shape was left (TASK-238).
+          moveTold = false;
+          // Running it, the route stays cut where the runner is.
+          if (!progressing) {
+            setRoute(fullRoute);
+          }
+          setWalks(
+            message.walks
+              ? {
+                  type: "Feature",
+                  properties: {},
+                  geometry: { type: "MultiLineString", coordinates: message.walks },
+                }
+              : noRoute,
+          );
+          // A bike route: the stretches with the bike on foot, over it.
+          setOnFoot(
+            message.onFoot
+              ? {
+                  type: "Feature",
+                  properties: {},
+                  geometry: { type: "MultiLineString", coordinates: message.onFoot },
+                }
+              : noRoute,
+          );
           var bounds = points.reduce(function (box, point) {
             return box.extend(point);
           }, new maplibregl.LngLatBounds(points[0], points[0]));
@@ -288,16 +788,32 @@ export function buildMapPage(): string {
             // Where the user is and where to go, both in view.
             bounds.extend(marker.getLngLat());
           }
-          map.fitBounds(bounds, { padding: 40 });
+          // Turned as its drawing is (TASK-232): the shape reads upright.
+          drawn = message.bearing || 0;
+          wanted = drawn;
+          framed = bounds;
+          frame();
         } else if (message.type === "follow") {
-          if (marker) {
-            marker.setLngLat(message.lngLat);
+          // An arrow once the heading is known; it stays one when a fix
+          // comes without it.
+          if (typeof message.heading === "number" || arrow) {
+            showArrow(message.lngLat, message.heading);
           } else {
-            marker = new maplibregl.Marker({ color: ${toScript(POSITION_COLOR)} })
-              .setLngLat(message.lngLat)
-              .addTo(map);
+            showPin(message.lngLat);
           }
-          map.easeTo({ center: message.lngLat, zoom: ${FOLLOW_ZOOM}, duration: 500 });
+          // The map stays turned as the drawing while it is run.
+          following = true;
+          map.easeTo({
+            center: message.lngLat,
+            zoom: ${FOLLOW_ZOOM},
+            bearing: wanted,
+            duration: 500,
+          });
+        } else if (message.type === "stopFollow") {
+          following = false;
+          if (arrow) {
+            showPin(arrow.getLngLat());
+          }
         } else if (message.type === "showTrack") {
           setTrack({
             type: "Feature",
@@ -325,9 +841,30 @@ export function buildMapPage(): string {
           });
         } else if (message.type === "clearTrack") {
           setTrack(noRoute);
+        } else if (message.type === "showProgress") {
+          showProgress(message);
+        } else if (message.type === "clearProgress") {
+          clearProgress();
+        } else if (message.type === "setDoubleTap") {
+          setDoubleTap(message.on);
+        } else if (message.type === "setMove") {
+          setMove(message.on);
         } else if (message.type === "clearRoute") {
-          setRoute(noRoute);
+          moveTold = false;
+          fullRoute = noRoute;
+          clearProgress();
+          setWalks(noRoute);
+          setOnFoot(noRoute);
           setStartHere(null);
+          // A map turned for its route is north-up again without it; one
+          // turned by the user stays as it was left.
+          framed = null;
+          if (drawn !== 0) {
+            drawn = 0;
+            wanted = 0;
+          }
+        } else if (message.type === "turn") {
+          turnTo(message.bearing);
         }
       },
     };

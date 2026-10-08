@@ -22,6 +22,14 @@ export type AccountOutcome<T> =
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
+/** How long a request of the account may take before it counts as an API
+ * that cannot be reached (TASK-252): a connection that accepts and then
+ * stays silent would otherwise hold the page that asked for good. */
+export const ASK_TIMEOUT_MS = 30_000;
+/** A PUT may carry a whole run or a picture, and sending it twice changes
+ * nothing: it is given longer. */
+export const PUT_TIMEOUT_MS = 90_000;
+
 /** The header that carries the session token (ADR-0120). */
 export function authHeaders(token: string): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
@@ -84,15 +92,24 @@ export function deleteAccount(
   return ask(baseUrl, "/me", { method: "DELETE", token }, isEmpty, options);
 }
 
-/** One account request. Never throws. */
-async function ask<T>(
+/**
+ * One request of the account, or in its name with `token` (the favorites,
+ * src/api/favorites.ts). Never throws.
+ */
+export async function ask<T>(
   baseUrl: string,
   path: string,
   { method, body, token }: { method: string; body?: unknown; token?: string },
   accept: (body: unknown, status: number) => body is T,
   { fetchFn = fetch, key = apiKey() }: Options,
 ): Promise<AccountOutcome<T>> {
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(),
+    method === "PUT" ? PUT_TIMEOUT_MS : ASK_TIMEOUT_MS,
+  );
   let response: Response;
+  let answer: unknown;
   try {
     response = await fetchFn(`${baseUrl}${path}`, {
       method,
@@ -102,13 +119,20 @@ async function ask<T>(
         ...(token === undefined ? {} : authHeaders(token)),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
     });
+    // A 204 has no body: reading it as JSON fails, and that is no answer.
+    answer =
+      response.status === 204 ? null : await response.json().catch(() => undefined);
   } catch {
     return { kind: "unreachable", url: baseUrl };
+  } finally {
+    clearTimeout(timer);
   }
-  // A 204 has no body: reading it as JSON fails, and that is no answer.
-  const answer: unknown =
-    response.status === 204 ? null : await response.json().catch(() => undefined);
+  // Cut while its body was still coming: no answer either.
+  if (controller.signal.aborted) {
+    return { kind: "unreachable", url: baseUrl };
+  }
   if (response.ok && accept(answer, response.status)) {
     return { kind: "ok", value: answer };
   }

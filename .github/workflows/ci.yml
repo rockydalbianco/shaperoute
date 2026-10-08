@@ -7,6 +7,9 @@ name: CI
 # dell'AI (job "ai"), senza nessun modello vero.
 # La cache di pip ha per chiave il pyproject.toml del route-engine: finché
 # le dipendenze non cambiano, OSMnx e il resto non si riscaricano a ogni run.
+# Ogni job ha un tempo massimo, almeno il doppio del suo tempo normale
+# (TASK-248): senza, un test che non termina tiene il job sei ore. Dove si è
+# fermato lo dice `faulthandler_timeout` nei pyproject.toml.
 
 on:
   pull_request:
@@ -17,6 +20,7 @@ on:
 jobs:
   route-engine:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -57,6 +61,7 @@ jobs:
   # I test girano sul grafo piccolo di Levico e sui JSON di shared-types.
   api:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -90,6 +95,7 @@ jobs:
   # Ollama non c'è, e measure_phrases.py non gira qui.
   ai:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -119,6 +125,7 @@ jobs:
   # La cache di npm ha per chiave package-lock.json.
   mobile:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -145,6 +152,7 @@ jobs:
   # prova che risponde a /health, con e senza chiave; non si pubblica.
   docker:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -170,12 +178,16 @@ jobs:
 
       # La configurazione del server della strada F (TASK-144, ADR-0111):
       # deploy/compose.yaml con il .env copiato dal modello, data/ del
-      # checkout e catalog/ montati, la porta solo su 127.0.0.1.
+      # checkout e catalog/ montati, la porta solo su 127.0.0.1. Da
+      # TASK-122 (ADR-0123) anche il database: un'iscrizione vera, poi una
+      # copia notturna fatta subito e il suo ripristino in un database a
+      # parte; senza Storage Box il servizio offsite lascia le copie qui.
       - name: Compose
         run: |
           docker rm -f api
           cp .env.example deploy/.env
           sed -i 's/^SHAPEROUTE_API_KEY=.*/SHAPEROUTE_API_KEY=ci-key-only-for-this-run/' deploy/.env
+          sed -i 's/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=ci0only0for0this0run/' deploy/.env
           cd deploy
           docker compose --profile ai --profile public config --quiet
           docker compose up -d --build
@@ -191,6 +203,16 @@ jobs:
           curl -fsS -H 'X-API-Key: ci-key-only-for-this-run' \
             'http://127.0.0.1:8000/recommended-routes?lat=46.067&lon=11.1215' \
             | python3 -c 'import json, sys; assert json.load(sys.stdin)["routes"]'
+          test "$(curl -s -o /dev/null -w '%{http_code}' \
+            -H 'X-API-Key: ci-key-only-for-this-run' http://127.0.0.1:8000/me)" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+            -H 'X-API-Key: ci-key-only-for-this-run' -H 'Content-Type: application/json' \
+            -d '{"email":"ci@example.com","password":"ci-password-1","username":"ci_runner","at_least_16":true}' \
+            http://127.0.0.1:8000/accounts)" = 201
+          docker compose exec -T backup bash /backup.sh now
+          docker compose exec -T backup bash /backup.sh check | tee /dev/stderr | grep -q ' 1 accounts'
+          test "$(stat -c %a ../data/backups/shaperoute-*.dump)" = 600
+          docker compose exec -T offsite bash /backup.sh push | grep -q 'stay on this server'
           docker run --rm -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" \
             -e SHAPEROUTE_DOMAIN=api.example.com caddy:2 \
             caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile

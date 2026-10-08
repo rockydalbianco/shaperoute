@@ -1,4 +1,5 @@
 import type { Place } from "../places/photon";
+import { t, tLater } from "../i18n";
 
 /**
  * The quick choices of "Explore" (TASK-134): cities from around the world,
@@ -24,19 +25,19 @@ export const FEATURED_CITIES = [
 
 /** Each category is a theme of the API, named in words its tables read. */
 export const CATEGORIES = [
-  "Food",
-  "Famous Places",
-  "Romantic",
-  "Best Views",
-  "Shopping",
-  "Culture",
-  "Nightlife",
-  "Hidden Gems",
-  "Running",
-  "Walking",
-  "Family",
-  "Photography",
-  "Local Experience",
+  tLater("Food"),
+  tLater("Famous Places"),
+  tLater("Romantic"),
+  tLater("Best Views"),
+  tLater("Shopping"),
+  tLater("Culture"),
+  tLater("Nightlife"),
+  tLater("Hidden Gems"),
+  tLater("Running"),
+  tLater("Walking"),
+  tLater("Family"),
+  tLater("Photography"),
+  tLater("Local Experience"),
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
@@ -65,16 +66,18 @@ export function requestFor(category: string, city: Place | null): string {
 /** Where the routes start, in words: "in Milan", "near Arena di Verona". */
 export function whereFor(city: Place | null): string {
   if (city === null) {
-    return "near your start";
+    return t("near your start");
   }
-  return `${isSpot(city) ? "near" : "in"} ${cityShort(city.label)}`;
+  return isSpot(city)
+    ? t("near {place}", { place: cityShort(city.label) })
+    : t("in {city}", { city: cityShort(city.label) });
 }
 
 /** The hint in the request field, for the chosen city. */
 export function exampleFor(city: Place | null): string {
   return city === null || isSpot(city)
-    ? "e.g. a romantic heart, famous places, food 8 km"
-    : `e.g. a romantic heart in ${cityShort(city.label)}, 8 km`;
+    ? t("e.g. a romantic heart, famous places, food 8 km")
+    : t("e.g. a romantic heart in {city}, 8 km", { city: cityShort(city.label) });
 }
 
 /**
@@ -90,5 +93,5 @@ export function suggestionDetail(place: Place): string {
   if (isSpot(place)) {
     return where;
   }
-  return where === "" ? "City centre" : `City centre · ${where}`;
+  return where === "" ? t("City centre") : `${t("City centre")} · ${where}`;
 }

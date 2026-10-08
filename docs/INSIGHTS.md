@@ -24,7 +24,14 @@ dell'app ─┘    mai cancellati)                 cosa manca)        validato) 
    distanza chiesta; `cancelled` se l'app li annulla mentre aspetta),
    percorsi a tema (`themed`), città cercate (`city_search`), «Explore»
    (`recommended_list`, `recommended_open`), e i segnali d'uso
-   (`gpx_export`, `run_scored`). Ogni evento ha esito, codice d'errore,
+   (`gpx_export`, `run_scored`). **`run_scored`** (da TASK-247)
+   nasce quando una corsa **nuova** lungo un percorso viene salvata con
+   un punteggio (`PUT /me/activities/{key}` che risponde `201`): porta
+   solo `quality`, il punteggio fra 0 e 1, niente di chi ha corso né di
+   dove. Una corsa rimandata con la stessa chiave, o senza percorso, non
+   è un evento. `POST /track-scores` lo registra ancora, ma l'app non lo
+   chiama più: una versione dell'app più vecchia di TASK-241 conta la
+   stessa corsa due volte (a fine corsa e al «Save»). Ogni evento ha esito, codice d'errore,
    numero di risultati, somiglianza, tappe trovate e toccate, millisecondi
    (`ms`; per i percorsi a tema anche `read_ms`, la sola lettura delle
    parole), chi ha risposto (`table`, `learned`, `ai`) e la **versione del
@@ -36,7 +43,7 @@ dell'app ─┘    mai cancellati)                 cosa manca)        validato) 
    «Explore» e come (`suggestion`, `recent`, `featured`, `typed`): un
    suggerimento toccato non chiama `/cities`, quindi senza questo segnale
    la città si perdeva (dal vivo: Vercelli, vuota 3 volte, mai proposta).
-   `route_chosen`: il percorso usato (Start, Export GPX, Strava) fra A, B e
+   `route_chosen`: il percorso usato (Start, Export GPX) fra A, B e
    C, una volta per percorso. `hint_taken`: «Try N km», o una forma del
    catalogo dopo un percorso fallito.
 2. **Analisi** (`report`): metriche totali e per versione; cosa si chiede di

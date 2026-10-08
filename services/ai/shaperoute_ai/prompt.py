@@ -29,6 +29,10 @@ OUTLINES: dict[str, str] = {
     "rabbit_head": "the head of a rabbit, with two long upright ears and eyes",
     "pumpkin": "a Halloween pumpkin, with a stem, carved eyes and a grin",
     "christmas_tree": "a decorated Christmas tree with a star on top, not a plain tree",
+    "smiley": "a smiling face, a round face with two eyes and a smile",
+    "ghost": "a cartoon ghost, a sheet with a wavy hem and two eyes",
+    "donut": "a doughnut seen from above, a thick ring with a hole",
+    "sun": "the sun, a round disc with rays all around",
 }
 
 SYSTEM = """\

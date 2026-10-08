@@ -23,8 +23,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.image_outline import InvalidImageError
-from route_engine.models import InvalidRequestError, RouteRequest, RouteResult
-from route_engine.optimizer import GraphLoader, ShapeNotDrawableError
+from route_engine.models import (
+    PEN_UP_WITHOUT_WORD,
+    InvalidRequestError,
+    RouteRequest,
+    RouteResult,
+)
+from route_engine.optimizer import ShapeNotDrawableError
 from route_engine.outline_edits import InvalidEditError
 from shaperoute_ai.reading import (
     InvalidTextError,
@@ -36,8 +41,22 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from shaperoute_api.access import protect
 from shaperoute_api.accounts import Accounts, install_accounts
+from shaperoute_api.activities import PlaceNames, install_activities
+from shaperoute_api.activity_graphs import (
+    Graphs,
+    check_supported,
+    ground_for,
+    source_for,
+)
 from shaperoute_api.cities import CitySearch, SuggestionsBody
+from shaperoute_api.comments import install_comments
+from shaperoute_api.contact import install_contact
+from shaperoute_api.drawing_photos import install_drawing_photos
+from shaperoute_api.drawings import install_drawings
 from shaperoute_api.errors import error_of
+from shaperoute_api.favorites import install_favorites
+from shaperoute_api.feed import install_feed
+from shaperoute_api.follows import install_follows
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import (
     AnyRequest,
@@ -54,6 +73,7 @@ from shaperoute_api.line_directions import (
     RouteDirectionsRequestBody,
     directions_of,
 )
+from shaperoute_api.notifications import install_notifications
 from shaperoute_api.outline_edits import edit_outline
 from shaperoute_api.places import (
     MAX_QUERY_LENGTH,
@@ -62,6 +82,9 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.profile_photos import install_profile_photos
+from shaperoute_api.profiles import install_profiles
+from shaperoute_api.reactions import install_reactions
 from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
     MAX_RADIUS_M,
@@ -70,6 +93,7 @@ from shaperoute_api.recommended import (
     RecommendedRoutesBody,
 )
 from shaperoute_api.request_log import RequestLog
+from shaperoute_api.route_store import RouteStore
 from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
@@ -88,6 +112,8 @@ from shaperoute_api.schemas import (
     TrackScoreRequestBody,
 )
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
+from shaperoute_api.strava import install_strava
+from shaperoute_api.strava_client import Strava
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
 from shaperoute_api.track_scores import score_run
 
@@ -134,8 +160,13 @@ def validation_message(errors: Sequence[Any]) -> str:
 
 def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
     """The engine's RouteRequest checks the values, and ImageRequest those of
-    an image route: InvalidRequestError."""
+    an image route: InvalidRequestError. An image has no letters to draw
+    with the pen up (TASK-197). The activity is one of the contract's: the
+    engine may draw more (TASK-190)."""
+    check_supported(body.activity)
     if isinstance(body, ImageRouteRequestBody):
+        if body.pen_up:
+            raise InvalidRequestError(PEN_UP_WITHOUT_WORD)
         return ImageRequest(
             start=body.start,
             outline=outline_of(body.outline, body.strokes),
@@ -149,15 +180,17 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
         distance_m=body.distance_m,
         activity=body.activity,
         style=body.style,  # type: ignore[arg-type]  # RouteRequest checks it
+        pen_up=body.pen_up,
+        near=body.near,
     )
 
 
 def gpx_file_name(request: AnyRequest, when: datetime) -> str:
     """No spaces or odd characters: some apps refuse them, e.g.
-    'shaperoute-heart-5km-2026-09-23.gpx', 'shaperoute-CIAO-15km-2026-09-24.gpx',
-    'shaperoute-image-15km-2026-09-26.gpx'."""
+    'sgrava-heart-5km-2026-09-23.gpx', 'sgrava-CIAO-15km-2026-09-24.gpx',
+    'sgrava-image-15km-2026-09-26.gpx'."""
     km = f"{request.distance_m / 1000:g}km"
-    return f"shaperoute-{request.name}-{km}-{when:%Y-%m-%d}.gpx"
+    return f"sgrava-{request.name}-{km}-{when:%Y-%m-%d}.gpx"
 
 
 def job_body(job: Job) -> RouteJobBody:
@@ -186,7 +219,7 @@ def now_utc() -> datetime:
 
 
 def create_app(
-    source: GraphLoader,
+    source: Graphs,
     planner: Planner = plan_request,
     jobs: RouteJobs | None = None,
     now: Callable[[], datetime] = now_utc,
@@ -199,6 +232,9 @@ def create_app(
     insights: Insights | None = None,
     signal_gate: SignalGate | None = None,
     accounts: Accounts | None = None,
+    route_store: RouteStore | None = None,
+    run_places: PlaceNames | None = None,
+    strava: Strava | None = None,
 ) -> FastAPI:
     # The search events and the learned vocabulary (TASK-130, ADR-0101).
     insights = insights or Insights(None)
@@ -225,7 +261,8 @@ def create_app(
             )
             insights.record("route", ms=round(elapsed * 1000), **fields)
 
-    route_jobs = jobs or RouteJobs(source, planner, on_end=on_end)
+    # A city's examples are kept once drawn (ADR-0136).
+    route_jobs = jobs or RouteJobs(source, planner, on_end=on_end, store=route_store)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -250,6 +287,42 @@ def create_app(
     protect(app)
     # Sign up, sign in, /me (TASK-114, ADR-0115); without a database, 503.
     install_accounts(app, accounts)
+    # The routes an account keeps (TASK-171); they need its token.
+    install_favorites(app)
+    # The runs an account recorded (TASK-172); the name of their place comes
+    # from the place search's key, when the environment has one.
+    install_activities(app, run_places, insights)
+    # A run sent to the runner's Strava (TASK-187); off unless the
+    # environment has this server's Strava application.
+    install_strava(app, strava)
+    # The profile picture of an account (TASK-178); it needs its token.
+    install_profile_photos(app)
+    # Username and bio, and the profile the others see (TASK-116); both need
+    # a token.
+    install_profiles(app)
+    # The email and the phone number of an account, changed by their owner
+    # (TASK-183); both need a token.
+    install_contact(app)
+    # The two notification switches of an account, kept and never acted on:
+    # nothing is sent yet (TASK-185); they need a token.
+    install_notifications(app)
+    # The runs an account publishes as drawings, cut for the others
+    # (TASK-117); they need a token.
+    install_drawings(app)
+    # Up to three photos of a drawing, besides its map (TASK-208); they need
+    # a token.
+    install_drawing_photos(app)
+    # Members found by name, and following with a request (TASK-211); they
+    # need a token.
+    install_follows(app)
+    # What the members write under a drawing (TASK-120); they need a token.
+    install_comments(app)
+    # What the members leave under a drawing with one tap, the super like
+    # with a comment (TASK-119); they need a token.
+    install_reactions(app)
+    # The drawings the members publish, read by whoever is signed in
+    # (TASK-118); it needs a token.
+    install_feed(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:
@@ -320,6 +393,8 @@ def create_app(
             body.result.points,
             route_name(request.name, request.distance_m, when),
             when,
+            # Where to pause between the letters of a word with the pen up.
+            body.result.walks,
         )
         return Response(
             document,
@@ -409,6 +484,8 @@ def create_app(
             point=None if first is None else first.point,
             by=None if learned is None else "learned",
         )
+        if route_store is not None:
+            route_store.learn(place.point for place in found.places)
         return found
 
     # Cities and places while typing, for "Explore" (TASK-134, TASK-138):
@@ -421,9 +498,13 @@ def create_app(
         if cities is None:
             raise HTTPException(503, "City search is off on this API.")
         try:
-            return SuggestionsBody(places=cities.suggest(q))
+            suggested = cities.suggest(q)
         except PlacesUnavailableError as exc:
             raise HTTPException(503, str(exc)) from None
+        if route_store is not None:
+            # The cities only: a place may be the street someone lives in.
+            route_store.learn(s.point for s in suggested if s.kind == "city")
+        return SuggestionsBody(places=suggested)
 
     # What the app did with a search (TASK-142, ADR-0112): the city chosen,
     # the route among A, B and C, a hint taken. Always 204: a signal is never
@@ -468,7 +549,8 @@ def create_app(
     @app.post("/route-directions", responses=ERROR_RESPONSES)
     def find_route_directions(body: RouteDirectionsRequestBody) -> RouteDirectionsBody:
         started = time.perf_counter()
-        directions = directions_of(source, body.points)
+        # A route of "Explore" is a run (TASK-190: on the foot network).
+        directions = directions_of(source_for(source, "running"), body.points)
         log.info(
             "directions of %d points: %d, in %.1f s",
             len(body.points),
@@ -509,20 +591,24 @@ def create_app(
     # A plain def: FastAPI runs it in a thread, so a long route does not stop
     # the server from answering the other requests.
     @app.post("/routes", responses=ERROR_RESPONSES)
-    def create_route(body: RouteRequestBody) -> RouteResultBody:
+    def create_route(body: RouteRequestBody, http: Request) -> RouteResultBody:
+        # Its errors suggest a distance of its activity (engine_answer).
+        http.state.activity = body.activity
         request = to_request(body)
         what = f"{request.name} {request.distance_m} m"
         started = time.perf_counter()
         try:
-            plan = planner(request, source)
+            # On the network of its activity (TASK-190), or on the water.
+            plan = planner(request, ground_for(source, request.activity))
             others = [other.result for other in plan.alternatives]
             result = replace(plan.result, alternatives=others)
         except Exception as exc:
             elapsed = time.perf_counter() - started
             log.info("route %s: %s after %.1f s", what, type(exc).__name__, elapsed)
+            _, detail = error_of(exc, request.activity)
             if request_log is not None:
-                request_log.record(body.model_dump(), None, error_of(exc)[1], elapsed)
-            fields = route_fields(body.model_dump(), None, error_of(exc)[1].code)
+                request_log.record(body.model_dump(), None, detail, elapsed)
+            fields = route_fields(body.model_dump(), None, detail.code)
             insights.record("route", ms=round(elapsed * 1000), **fields)
             raise
         log.info(
@@ -548,8 +634,9 @@ def create_app(
     def invalid_body(_: Request, exc: RequestValidationError) -> JSONResponse:
         return error(422, "invalid_request", validation_message(exc.errors()))
 
-    def engine_answer(_: Request, exc: Exception) -> JSONResponse:
-        status, detail = error_of(exc)
+    def engine_answer(request: Request, exc: Exception) -> JSONResponse:
+        # POST /routes says the activity of the request (TASK-190).
+        status, detail = error_of(exc, getattr(request.state, "activity", "running"))
         body = ErrorBody(error=detail)
         return JSONResponse(status_code=status, content=body.model_dump())
 

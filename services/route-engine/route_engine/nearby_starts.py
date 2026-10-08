@@ -21,10 +21,11 @@ import multiprocessing
 import os
 import pickle
 import sys
+import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, replace
-from multiprocessing.pool import AsyncResult
+from multiprocessing.connection import Connection
 from typing import Any, Protocol
 
 import networkx as nx
@@ -39,9 +40,13 @@ from route_engine.network import (
     BBox,
     Graph,
     _edge_points,
+    check_network,
     corner_indices,
     first_leg,
     nearest_nodes,
+    on_foot_stretches,
+    one_way_streets,
+    step_cost,
     twice_drawn,
 )
 from route_engine.optimizer import (
@@ -59,13 +64,18 @@ from route_engine.optimizer import (
     GraphLoader,
     Plan,
     ShapeNotDrawableError,
+    better_distance,
     doubled_weight,
+    drawn_distance,
     plan_shape,
     planned_distance,
     required_area,
     search,
+    shown_rotation,
     tilt_limit,
 )
+from route_engine.pen_up import check_begins, drawn_m
+from route_engine.pieces import compose_shape
 from route_engine.projection import Point, start_at_phase
 from route_engine.retracing import extra_doubled_share
 from route_engine.shapes import get_shape
@@ -111,6 +121,9 @@ NEARBY_MAX_NODES = 30_000
 WORKER_BASE_MB = 100.0
 WORKER_PER_MB = 10.0
 MEMORY_RESERVE_MB = 1000.0
+# A worker told to stop has this long before it is killed: it ends at
+# once, unless the system is out of breath.
+STOP_WAIT_S = 5.0
 
 
 class Job(Protocol):
@@ -145,25 +158,39 @@ class ShapeJob:
     one_way: bool = False
     word: Word | None = None
     word_result: bool = False
+    # The network the graphs must be of (network.check_network, ADR-0153).
+    activity: str = "running"
 
     @classmethod
     def of_request(cls, request: RouteRequest) -> ShapeJob:
         """What `plan_route` plans for `request`, from any start."""
         if request.word is not None:
-            word = compose(request.word, style=request.style)
+            word = compose(request.word, style=request.style, pen_up=request.pen_up)
             return cls(
                 tuple(word.points),
                 word.text,
                 request.distance_m,
                 word=word,
                 word_result=True,
+                activity=request.activity,
             )
         assert request.shape is not None  # RouteRequest has one of the two
+        if request.pen_up:  # a shape in pieces (TASK-223)
+            pieces = compose_shape(request.shape)
+            return cls(
+                tuple(pieces.points),
+                request.shape,
+                request.distance_m,
+                max_tilt_deg=tilt_limit(request.shape),
+                word=pieces,
+                activity=request.activity,
+            )
         return cls(
             tuple(get_shape(request.shape)(SHAPE_POINTS)),
             request.shape,
             request.distance_m,
             max_tilt_deg=tilt_limit(request.shape),
+            activity=request.activity,
         )
 
     @property
@@ -184,6 +211,7 @@ class ShapeJob:
             max_tilt_deg=self.max_tilt_deg,
             one_way=self.one_way,
             word=self.word,
+            activity=self.activity,
         )
         return self._as_asked(plan)
 
@@ -203,6 +231,7 @@ class ShapeJob:
         if self.word is not None:
             phases = self.word.phases
         graph = source.load(self.area(start))
+        check_network(graph, self.activity)
         found = search(
             graph,
             self.shape,
@@ -216,7 +245,7 @@ class ShapeJob:
             doubled=doubled_weight(self.name),
         )
         best = found.best
-        gap = (best.route.distance_m - self.planned_m) * kept
+        gap = (drawn_distance(best.route) - self.planned_m) * kept
         if best.similarity < MIN_SIMILARITY or abs(gap) > DISTANCE_FALLBACK_M:
             raise ShapeNotDrawableError(
                 # No position: the message ends in the log (TASK-091).
@@ -226,7 +255,10 @@ class ShapeJob:
         route, placed = best.route, best.shape
         [first], _ = nearest_nodes(graph, [start])
         begins = (graph.nodes[first]["y"], graph.nodes[first]["x"])
-        check_closed(route.points, begins, start, start, START_OFFSET_M)
+        # A word with the pen up ends at its last letter (TASK-197).
+        pen_up = self.word is not None and self.word.pen_up
+        check = check_begins if pen_up else check_closed
+        check(route.points, begins, start, start, START_OFFSET_M)
         if self.one_way:  # the far end is half-way along the shape
             route = first_leg(graph, route, start_at_phase(placed, 0.5)[0])
         outline = latlon_to_local_array(placed[0], np.array(placed))
@@ -252,6 +284,13 @@ class ShapeJob:
             similarity=best.similarity,
             shape=self.name,
             warnings=warnings,
+            walks=list(route.walks),
+            on_foot=on_foot_stretches(graph, route.nodes),
+            # As plan_shape's (TASK-234).
+            better_distance_m=better_distance(
+                found, self.distance_m, self.activity, self.word
+            ),
+            rotation_deg=shown_rotation(best.rotation_deg, self.max_tilt_deg),
         )
         if route is not best.route:
             found = replace(found, best=replace(best, route=route))
@@ -363,26 +402,49 @@ def nearby_starts(
 
 def with_approach(graph: Graph, plan: Plan, approach: list[Any]) -> Plan:
     """`plan` reached along `approach` (nodes from the start's node to where
-    the route begins) and, when the route closes, back along it."""
+    the route begins) and, when the route closes, back along it; with
+    one-way streets (the bike network) back along the shortest way allowed,
+    which may be another (NetworkXNoPath if there is none), riding rather
+    than on foot (`step_cost`, TASK-206). The walks of a
+    word with the pen up (TASK-197) move along with the points: the
+    approach is run, not walked. The stretches with the bike on foot are
+    those of the whole line, approach and way back included."""
     if len(approach) < 2 or plan.search is None:
         return plan
     best = plan.search.best
     route = best.route
     if route.nodes[0] != approach[-1]:
         raise ValueError("the approach does not lead to the start of the route")
-    back = approach[::-1] if route.nodes[-1] == route.nodes[0] else [approach[-1]]
+    if route.nodes[-1] != route.nodes[0]:
+        back = [approach[-1]]
+    elif one_way_streets(graph):
+        back = nx.shortest_path(graph, approach[-1], approach[0], weight=step_cost)
+    else:
+        back = approach[::-1]
     nodes = approach[:-1] + list(route.nodes) + back[1:]
     points = [(graph.nodes[approach[0]]["y"], graph.nodes[approach[0]]["x"])]
     for u, v in zip(approach, approach[1:], strict=False):
         points.extend(_edge_points(graph, u, v))
+    ahead = len(points) - 1  # points before the route's own first one
     points.extend(plan.result.points[1:])
     for u, v in zip(back, back[1:], strict=False):
         points.extend(_edge_points(graph, u, v))
     distance_m = path_length_m(points)
-    reached = replace(route, points=points, distance_m=distance_m, nodes=nodes)
+    walks = [(a + ahead, b + ahead) for a, b in plan.result.walks]
+    reached = replace(
+        route, points=points, distance_m=distance_m, nodes=nodes, walks=walks
+    )
     search = replace(plan.search, best=replace(best, route=reached))
     far = search if plan.far is plan.search else plan.far
-    result = replace(plan.result, points=points, distance_m=distance_m)
+    # The approach and the way back may be walked too (TASK-206).
+    on_foot = on_foot_stretches(graph, nodes)
+    result = replace(
+        plan.result,
+        points=points,
+        distance_m=distance_m,
+        walks=walks,
+        on_foot=on_foot,
+    )
     return replace(plan, result=result, search=search, far=far)
 
 
@@ -392,8 +454,10 @@ def score(plan: Plan, distance_m: float) -> float:
     search weighs it against the shape (optimizer.search). Within the
     tolerance the shape alone counts: the user judges the drawing, and
     TASK-075's cuts closest to 10 km were not the ones judged best. Where
-    the route starts does not count here (`_choose`)."""
-    ratio = plan.result.distance_m / distance_m
+    the route starts does not count here (`_choose`), nor do the walks of a
+    word with the pen up (TASK-197)."""
+    result = plan.result
+    ratio = drawn_m(result.points, result.distance_m, result.walks) / distance_m
     whiskers = doubled_weight(plan.result.shape or "") / W_SHAPE
     return (
         plan.result.similarity
@@ -497,6 +561,102 @@ def _plan_in_worker(
     return outcome, time.perf_counter() - began
 
 
+def _work(pipe: Connection) -> None:
+    """A worker process: one nearby plan, asked for and answered on `pipe`."""
+    _lower_priority()
+    try:
+        job, start, source = pipe.recv()
+    except (EOFError, OSError):
+        return  # stopped before the plan was asked
+    answer: tuple[bool, Any]
+    try:
+        answer = True, _plan_in_worker(job, start, source)
+    except Exception as exc:
+        answer = False, exc
+    try:
+        pipe.send(answer)
+    except OSError:
+        pass  # nobody waits for it any more
+    except Exception as exc:  # an answer that does not pickle
+        pipe.send((False, RuntimeError(f"{type(exc).__name__}: {exc}")))
+
+
+class _Workers:
+    """A process for each nearby start, all planning at the same time.
+
+    Not a multiprocessing.Pool: its terminate() waits for ever when it comes
+    while the pool's thread is about to send a task, and here it can, the
+    graph being megabytes and a start that cannot be planned failing at once
+    (the API's tests in CI never ended, TASK-248). Each process has a pipe
+    of its own instead: with the processes stopped nobody is left to read,
+    so the thread that sends gets an error rather than waiting, and `stop`
+    always returns."""
+
+    def __init__(self, job: Job, starts: list[LatLon], source: GraphLoader) -> None:
+        context = multiprocessing.get_context("spawn")
+        self._processes = []
+        self._pipes: list[Connection] = []
+        self._failed: dict[int, Exception] = {}
+        # Megabytes for each: sent while the start is planned.
+        self._sender = threading.Thread(
+            target=self._send, args=(job, starts, source), daemon=True
+        )
+        try:
+            for _ in starts:
+                ours, theirs = context.Pipe()
+                self._pipes.append(ours)
+                process = context.Process(target=_work, args=(theirs,), daemon=True)
+                process.start()
+                theirs.close()  # the process has the only other end
+                self._processes.append(process)
+            self._sender.start()
+        except BaseException:
+            self.stop()  # the ones that did start
+            raise
+
+    def _send(self, job: Job, starts: list[LatLon], source: GraphLoader) -> None:
+        for i, start in enumerate(starts):
+            try:
+                self._pipes[i].send((job, start, source))
+            except OSError:
+                pass  # stopped before it read
+            except Exception as exc:  # a job that does not pickle
+                self._failed[i] = exc
+                self._processes[i].terminate()
+
+    def outcome(self, i: int, wait_s: float) -> tuple[Plan | str, float] | None:
+        """What `_plan_in_worker` gave for start `i`; None when it is still
+        running after `wait_s`."""
+        try:
+            if not self._pipes[i].poll(wait_s):
+                return None
+            done, answer = self._pipes[i].recv()
+        except (EOFError, OSError):
+            if i in self._failed:
+                raise self._failed[i] from None
+            return "the worker process stopped", float("nan")
+        if not done:
+            raise answer
+        outcome: tuple[Plan | str, float] = answer
+        return outcome
+
+    def stop(self) -> None:
+        """Drops the plans still running."""
+        for process in self._processes:
+            process.terminate()
+        for process in self._processes:
+            process.join(STOP_WAIT_S)
+            if process.is_alive():
+                process.kill()
+                process.join()
+        if self._sender.is_alive():
+            self._sender.join()
+        for pipe in self._pipes:
+            pipe.close()
+        for process in self._processes:
+            process.close()
+
+
 @dataclass
 class Tried:
     """One start that was planned, for the log and the samples."""
@@ -583,15 +743,9 @@ def plan_nearby(
             nearby = nearby[:fit]
     if skipped:
         log.info(skipped)
-    pool = None
-    pending: list[AsyncResult[tuple[Plan | str, float]]] = []
-    if nearby and processes:
-        pool = multiprocessing.get_context("spawn").Pool(
-            len(nearby), initializer=_lower_priority
-        )
-        pending = [
-            pool.apply_async(_plan_in_worker, (job, n.point, here)) for n in nearby
-        ]
+    workers = None
+    if here is not None and processes:
+        workers = _Workers(job, [n.point for n in nearby], here)
     try:
         tried = [_start_tried(job, start, _First(source, area, graph), distance_m)]
         done = time.monotonic()
@@ -600,20 +754,17 @@ def plan_nearby(
             # Waited for briefly, for the alternatives only (TASK-093).
             deadline = min(deadline, done + good_grace_s)
         for i, n in enumerate(nearby):
-            if pool is None:
+            if workers is None:
                 assert here is not None  # there are nearby starts
                 outcome = _plan_in_worker(job, n.point, here)
             else:
-                try:
-                    outcome = pending[i].get(max(0.0, deadline - time.monotonic()))
-                except multiprocessing.TimeoutError:
-                    late = f"still running {deadline - began:.0f} s in"
-                    outcome = (late, float("nan"))
+                ready = workers.outcome(i, max(0.0, deadline - time.monotonic()))
+                late = f"still running {deadline - began:.0f} s in"
+                outcome = ready or (late, float("nan"))
             tried.append(_nearby_tried(graph, n, *outcome, distance_m))
     finally:
-        if pool is not None:
-            pool.terminate()  # drops the late ones
-            pool.join()
+        if workers is not None:
+            workers.stop()  # drops the late ones
     for i, t in enumerate(tried):
         what = t.note or f"score {t.score:.3f}, approach {t.approach_m:.0f} m"
         # Not t.start: where the user is stays out of the log (TASK-091).
@@ -634,7 +785,10 @@ def plan_nearby(
         key=lambda other: other[:3],
         reverse=True,
     )
-    plan = replace(plan, alternatives=alternatives(plan, [o[3] for o in others]))
+    kept = alternatives(plan, [o[3] for o in others])
+    # The better distance is the request's, not its alternatives' (TASK-234).
+    kept = [replace(p, result=replace(p.result, better_distance_m=None)) for p in kept]
+    plan = replace(plan, alternatives=kept)
     return NearbyPlan(plan, chosen, tried, None if chosen == 0 else graph, skipped)
 
 
@@ -682,5 +836,8 @@ def _nearby_tried(
         # Not the node asked for (a small piece the crop left out): the way
         # there is not known.
         return dropped("the route begins elsewhere")
-    plan = with_approach(graph, outcome, nearby.path)
+    try:
+        plan = with_approach(graph, outcome, nearby.path)
+    except nx.NetworkXNoPath:  # one-way streets only
+        return dropped("no way back to the start")
     return Tried(nearby.point, nearby.length_m, plan, score(plan, distance_m), seconds)

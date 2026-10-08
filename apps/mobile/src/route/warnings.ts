@@ -12,6 +12,17 @@
  * Codes in the contract would make this file unnecessary.
  */
 
+import { decimal, t } from "../i18n";
+import {
+  distanceLabel,
+  METRES_PER_FOOT,
+  shortBelowM,
+  shortDistanceLabel,
+  withPoint,
+  type Written,
+} from "../units/format";
+import { appUnits } from "../units/units";
+
 /** How a note should look: something to watch for, or just to know. */
 export type NoteTone = "caution" | "info";
 
@@ -26,10 +37,52 @@ type Rule = {
   say: (match: RegExpExecArray) => string;
 };
 
-/** "250 m", or "1.2 km" from a thousand metres up. */
+/**
+ * With «Miles» (TASK-182): "800 ft", to 50 feet and at least 50, or "1.2
+ * mi" from a thousand feet up.
+ */
+function inMiles(m: number, written: Written): string {
+  return m < shortBelowM("mi")
+    ? shortDistanceLabel(Math.max(m, 50 * METRES_PER_FOOT), "mi")
+    : distanceLabel(m, "mi", written);
+}
+
+/** "250 m", or "1.2 km" from a thousand metres up; in the app's units. */
 function metres(value: string): string {
   const m = Number(value);
-  return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
+  if (appUnits() === "mi") {
+    return inMiles(m, withPoint);
+  }
+  return m < 1000 ? `${Math.round(m)} m` : `${decimal(m / 1000)} km`;
+}
+
+/** The engine's own "250 m" or "1.5 km", in the app's units: in km as the
+ * app's language writes the decimal ("1,5 km" in Italian, TASK-210), and
+ * as it is when it does not read. */
+function engineDistance(text: string): string {
+  const match = /^(\d+(?:\.(\d+))?) (m|km)$/.exec(text);
+  if (!match) {
+    return text;
+  }
+  if (appUnits() === "mi") {
+    return inMiles(Number(match[1]) * (match[3] === "km" ? 1000 : 1), withPoint);
+  }
+  return match[2] === undefined
+    ? text
+    : `${decimal(Number(match[1]), match[2].length)} ${match[3]}`;
+}
+
+/**
+ * A stretch with the bike on foot as the card says it (TASK-206): "920 m",
+ * to 10 m and at least 10, or "1.1 km" ("1,1 km" in Italian) from a
+ * thousand metres up. With «Miles», "900 ft" or "0.7 mi".
+ */
+export function roughMetres(m: number): string {
+  if (appUnits() === "mi") {
+    return inMiles(m, decimal);
+  }
+  const tens = Math.max(10, Math.round(m / 10) * 10);
+  return tens < 1000 ? `${tens} m` : `${decimal(m / 1000)} km`;
 }
 
 const RULES: Rule[] = [
@@ -39,59 +92,80 @@ const RULES: Rule[] = [
     pattern:
       /^start moved (.+?) ([a-z]+(?:-[a-z]+)*) of the requested point, where the shape closes/,
     tone: "info",
+    // The direction is said as the run's heading is (runStats.ts).
     say: ([, distance, direction]) =>
-      `The route starts ${distance} ${direction} of your start, where the shape fits the roads. Go to “Start here”.`,
+      t(
+        "The route starts {distance} {direction} of your start, where the shape fits the roads. Go to “Start here”.",
+        { distance: engineDistance(distance), direction: t(direction) },
+      ),
   },
   {
     pattern: /^(\d+(?:\.\d+)?) m of the route on steps$/,
     tone: "caution",
-    say: ([, m]) => `There are ${metres(m)} of steps along the way.`,
+    say: ([, m]) =>
+      t("There are {distance} of steps along the way.", { distance: metres(m) }),
   },
   {
     pattern: /^(\d+(?:\.\d+)?) m of the route on main roads$/,
     tone: "caution",
-    say: ([, m]) => `${capitalise(metres(m))} runs along main roads, with traffic.`,
+    say: ([, m]) =>
+      t("{distance} runs along main roads, with traffic.", { distance: metres(m) }),
+  },
+  {
+    // validation.py, a bike route walked in part (TASK-206, ADR-0167): the
+    // stretches are part of the route and of its distance.
+    pattern: /^(\d+(?:\.\d+)?) m of the route with the bike on foot$/,
+    tone: "info",
+    say: ([, m]) =>
+      t("Includes {distance} walking the bike.", { distance: roughMetres(Number(m)) }),
   },
   {
     pattern: /^(\d+(?:\.\d+)?) m of the route in tunnels$/,
     tone: "caution",
-    say: ([, m]) => `${capitalise(metres(m))} runs through tunnels.`,
+    say: ([, m]) => t("{distance} runs through tunnels.", { distance: metres(m) }),
   },
   {
     pattern: /^(\d+)% of the route is on roads already travelled/,
     tone: "info",
-    say: ([, share]) => `About ${share}% of the route goes over the same roads twice.`,
+    say: ([, share]) =>
+      t("About {share}% of the route goes over the same roads twice.", { share }),
   },
   {
     pattern: /^(\d+)% of the route runs next to another stretch of it/,
     tone: "info",
-    say: ([, share]) => `About ${share}% of the route runs alongside itself.`,
+    say: ([, share]) =>
+      t("About {share}% of the route runs alongside itself.", { share }),
   },
   {
     pattern: /^distance on roads is ([+-])(\d+)% from the target/,
     tone: "info",
     say: ([, sign, share]) =>
-      `The route is ${share}% ${sign === "+" ? "longer" : "shorter"} than asked.`,
+      sign === "+"
+        ? t("The route is {share}% longer than asked.", { share })
+        : t("The route is {share}% shorter than asked.", { share }),
   },
   {
     pattern: /^shape similarity [\d.]+ is below [\d.]+/,
     tone: "caution",
-    say: () => "The roads here follow the shape only roughly.",
+    say: () => t("The roads here follow the shape only roughly."),
   },
   {
     pattern: /^sparse road network: shape points are (\d+) m from the nearest road/,
     tone: "caution",
-    say: () => "Few roads here: the route follows the shape loosely.",
+    say: () => t("Few roads here: the route follows the shape loosely."),
   },
   {
     pattern: /^start is (\d+) m from the nearest road; the route begins there$/,
     tone: "info",
-    say: ([, m]) => `The nearest road is ${metres(m)} away: the route begins there.`,
+    say: ([, m]) =>
+      t("The nearest road is {distance} away: the route begins there.", {
+        distance: metres(m),
+      }),
   },
   {
     pattern: /^no road path to shape point \d+; skipped$/,
     tone: "caution",
-    say: () => "A bit of the shape has no road to follow, so the route skips it.",
+    say: () => t("A bit of the shape has no road to follow, so the route skips it."),
   },
 ];
 

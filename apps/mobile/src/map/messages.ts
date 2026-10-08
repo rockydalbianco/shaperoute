@@ -1,6 +1,9 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
 
+import { onFootLines } from "../route/onFoot";
+import { piecesOf, walksOf } from "../route/walks";
 import { type LngLat, metresBetween, toLngLat } from "./coordinates";
+import type { RouteSplit } from "./routeSplit";
 
 /**
  * A route that begins farther than this from the requested start gets a
@@ -12,14 +15,47 @@ export const START_HERE_M = 50;
 /** From the app to the map page, delivered by `pageScript`. */
 export type ToPage =
   | { type: "setPosition"; lngLat: LngLat }
-  | { type: "showRoute"; coordinates: LngLat[]; startHere: LngLat | null }
+  | {
+      type: "showRoute";
+      coordinates: LngLat[];
+      startHere: LngLat | null;
+      /** A word with the pen up (TASK-198): the letters, drawn as the
+       * route, and the walks between them, dashed. Absent otherwise. */
+      letters?: LngLat[][];
+      walks?: LngLat[][];
+      /** A bike route (TASK-206): the stretches with the bike on foot,
+       * marked over the route. Absent otherwise. */
+      onFoot?: LngLat[][];
+      /** A route whose shape is turned (TASK-232): the bearing the map
+       * takes so the drawing is upright. Absent with north up. */
+      bearing?: number;
+    }
   | { type: "clearRoute" }
+  | {
+      /** While running the route (TASK-224): the part run, solid, and the
+       * part left, dashed; with `blink`, the dashes blink. */
+      type: "showProgress";
+      done: LngLat[][];
+      ahead: LngLat[][];
+      blink: boolean;
+    }
+  | { type: "clearProgress" }
   | { type: "showOthers"; lines: LngLat[][] }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
-  | { type: "follow"; lngLat: LngLat }
+  | { type: "follow"; lngLat: LngLat; heading: number | null }
+  | { type: "stopFollow" }
   | { type: "showStops"; stops: StopFeature[] }
-  | { type: "clearStops" };
+  | { type: "clearStops" }
+  /** With `on`, a double tap is told to the app and no longer zooms the
+   * map (TASK-119); two fingers still do. */
+  | { type: "setDoubleTap"; on: boolean }
+  /** With `on`, one finger drags the route and no longer the map
+   * (TASK-238); lifted, the page tells the app by how much (`moved`). */
+  | { type: "setMove"; on: boolean }
+  /** The north arrow (TASK-232): the map turns to `bearing`, in degrees
+   * clockwise from north; 0 is north up. */
+  | { type: "turn"; bearing: number };
 
 /** A place of a themed route on the map (TASK-129). */
 export type StopFeature = { name: string; lngLat: LngLat; passed: boolean };
@@ -29,6 +65,14 @@ export type FromPage =
   | { type: "ready" }
   /** The first tiles are drawn: the map has finished loading (TASK-058). */
   | { type: "loaded" }
+  /** A double tap on the map, while the app asked for them (TASK-119). */
+  | { type: "doubleTap" }
+  /** The route was dragged and left, while the app asked (TASK-238): by
+   * how many degrees of longitude and of latitude. */
+  | { type: "moved"; by: LngLat }
+  /** The map turned, by the app or by two fingers (TASK-232): its bearing
+   * now, in whole degrees clockwise from north. */
+  | { type: "turned"; bearing: number }
   | { type: "error"; message: string };
 
 export function setPosition(point: LatLon): ToPage {
@@ -37,24 +81,58 @@ export function setPosition(point: LatLon): ToPage {
 
 /**
  * Draws the route and frames the map on it. When it begins away from
- * `requested`, the start the user asked for, it marks where to go.
+ * `requested`, the start the user asked for, it marks where to go. With the
+ * walks of a word with the pen up (TASK-198) the letters are the route and
+ * the walks are dashed; without, the message is the one of before. With the
+ * stretches of a bike route walked with the bike on foot (TASK-206) they
+ * are marked over the route. With the `bearing` of a turned shape
+ * (TASK-232, `bearingOf`) the map turns so the drawing is upright.
  */
-export function showRoute(points: LatLon[], requested: LatLon | null = null): ToPage {
+export function showRoute(
+  points: LatLon[],
+  requested: LatLon | null = null,
+  walks: readonly Walk[] | null = null,
+  onFoot: readonly Stretch[] | null = null,
+  bearing: number = 0,
+): ToPage {
   const moved =
     requested !== null && metresBetween(requested, points[0]) > START_HERE_M;
-  return {
-    type: "showRoute",
+  const lines = onFootLines(points, onFoot, walks);
+  const shown = {
+    type: "showRoute" as const,
     coordinates: points.map(toLngLat),
     startHere: moved ? toLngLat(points[0]) : null,
+    ...(lines.length > 0 ? { onFoot: lines.map((line) => line.map(toLngLat)) } : {}),
+    ...(bearing !== 0 ? { bearing } : {}),
+  };
+  const walked = walksOf(points, walks);
+  if (walked.length === 0) {
+    return shown;
+  }
+  const pieces = piecesOf(points, walked);
+  return {
+    ...shown,
+    letters: pieces.letters.map((line) => line.map(toLngLat)),
+    walks: pieces.walks.map((line) => line.map(toLngLat)),
   };
 }
 
 /**
  * Moves the position marker and keeps the map on it, close up, without
- * framing the route again: navigation (TASK-049).
+ * framing the route again: navigation (TASK-049). With `heading`, degrees
+ * clockwise from north, the marker is an arrow turned that way (TASK-164).
  */
-export function follow(point: LatLon): ToPage {
-  return { type: "follow", lngLat: toLngLat(point) };
+export function follow(point: LatLon, heading: number | null = null): ToPage {
+  return {
+    type: "follow",
+    lngLat: toLngLat(point),
+    heading: heading === null ? null : Math.round(heading) % 360,
+  };
+}
+
+/** The run is over: the arrow goes back to being the position marker. */
+export function stopFollow(): ToPage {
+  return { type: "stopFollow" };
 }
 
 /** Draws the run over the route, without moving the map (TASK-113). */
@@ -88,10 +166,59 @@ export function clearRoute(): ToPage {
   return { type: "clearRoute" };
 }
 
+/**
+ * Draws the route as the runner has got along it (TASK-224): the part run
+ * solid yellow, the part left dashed, blinking unless `blink` is false
+ * (pocket mode). The route of `showRoute` is kept, and comes back whole
+ * with `clearProgress`.
+ */
+export function showProgress(split: RouteSplit, blink: boolean): ToPage {
+  return {
+    type: "showProgress",
+    done: split.done.map((line) => line.map(toLngLat)),
+    ahead: split.ahead.map((line) => line.map(toLngLat)),
+    blink,
+  };
+}
+
+/** The run is over: the route is drawn whole again, and nothing blinks. */
+export function clearProgress(): ToPage {
+  return { type: "clearProgress" };
+}
+
 /** Draws the other routes to choose from under the route, without moving
  * the map (TASK-093); none clears them. */
 export function showOthers(routes: LatLon[][]): ToPage {
   return { type: "showOthers", lines: routes.map((points) => points.map(toLngLat)) };
+}
+
+/**
+ * Asks the map for its double taps, in place of its zoom on a double tap
+ * (TASK-119): on a drawing they are the super like. `false` gives the zoom
+ * back.
+ */
+export function setDoubleTap(on: boolean): ToPage {
+  return { type: "setDoubleTap", on };
+}
+
+/**
+ * Lets one finger drag the route in place of the map (TASK-238): the shape
+ * of a route on the water, moved by the user. The page draws the route
+ * under the finger and, when it is lifted, tells the app by how much
+ * (`moved`); the engine then places the shape near there. `false` gives
+ * the map its drag back.
+ */
+export function setMove(on: boolean): ToPage {
+  return { type: "setMove", on };
+}
+
+/**
+ * Turns the map to `bearing`, in degrees clockwise from north (TASK-232):
+ * a tap on the north arrow. Still framed on its route, the map frames it
+ * again as turned; otherwise it turns where it is.
+ */
+export function turn(bearing: number): ToPage {
+  return { type: "turn", bearing };
 }
 
 /** JavaScript that hands a message to the page (see `mapPage.ts`). */
@@ -111,8 +238,32 @@ export function parsePageMessage(data: string): FromPage | null {
   if (typeof message !== "object" || message === null || !("type" in message)) {
     return null;
   }
-  if (message.type === "ready" || message.type === "loaded") {
+  if (
+    message.type === "ready" ||
+    message.type === "loaded" ||
+    message.type === "doubleTap"
+  ) {
     return { type: message.type };
+  }
+  if (message.type === "moved" && "by" in message) {
+    const by = message.by;
+    if (
+      Array.isArray(by) &&
+      by.length === 2 &&
+      typeof by[0] === "number" &&
+      typeof by[1] === "number" &&
+      Number.isFinite(by[0]) &&
+      Number.isFinite(by[1])
+    ) {
+      return { type: "moved", by: [by[0], by[1]] };
+    }
+    return null;
+  }
+  if (message.type === "turned" && "bearing" in message) {
+    const bearing = message.bearing;
+    return typeof bearing === "number" && Number.isFinite(bearing)
+      ? { type: "turned", bearing }
+      : null;
   }
   if (
     message.type === "error" &&

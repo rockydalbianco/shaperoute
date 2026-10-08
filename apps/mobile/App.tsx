@@ -1,16 +1,23 @@
 import type {
+  Activity,
   Direction,
   LatLon,
   LetterStyle,
   OutlinePoint,
+  PenUpShape,
   Shape,
+  Stretch,
+  Walk,
 } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { useAdBeforeRoute } from "./src/ads/useAdBeforeRoute";
+import { useActivitiesDoor } from "./src/activities/activitiesDoor";
+import { ActivityCard } from "./src/activities/ActivityCard";
+import { type Drawn, sameLine } from "./src/activities/recordedRun";
+import { RunEnd } from "./src/activities/RunEnd";
 import { apiUrl } from "./src/api/apiUrl";
 import {
   chooseStart,
@@ -33,13 +40,28 @@ import {
 import { ThemedCard, themedGpx } from "./src/explore/ThemedCard";
 import { startViewOf, useStartDirections } from "./src/explore/useStartDirections";
 import { useThemedRoute } from "./src/explore/useThemedRoute";
+import { FavoriteHeart } from "./src/favorites/FavoriteHeart";
+import {
+  drawnKeepable,
+  exploredKeepable,
+  themedKeepable,
+} from "./src/favorites/favoriteRoute";
+import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
+import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
+import { PhoneEngineView } from "./src/engine/PhoneEngineView";
+import { usePhoneZones } from "./src/engine/usePhoneZones";
+import { ZoneNotice } from "./src/engine/ZoneNotice";
+import { useLanguage } from "./src/i18n/useLanguage";
 import { MapView } from "./src/map/MapView";
+import { NorthArrow } from "./src/map/NorthArrow";
+import { useTurnedMap } from "./src/map/turnedMap";
 import {
   canResume,
   endFreeRun,
   type FreeRun,
   pendingFreeRun,
 } from "./src/navigation/freeRun";
+import { headingDeg } from "./src/navigation/runStats";
 import {
   clearRun,
   endRun,
@@ -47,12 +69,12 @@ import {
   type ScorableRun,
 } from "./src/navigation/trackStore";
 import { trackOf, useFreeRun } from "./src/navigation/useFreeRun";
-import { useNavigation } from "./src/navigation/useNavigation";
+import { trackOfNavigation, useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
-import { toDistanceM } from "./src/route/distance";
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
+import { shapeAsked } from "./src/route/penUpShapes";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { shapeName, toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
@@ -66,6 +88,7 @@ import {
 import { useShapeReading } from "./src/route/useShapeReading";
 import { checkWord } from "./src/route/wordInput";
 import { ChooseScreen } from "./src/screens/ChooseScreen";
+import { FeedScreen } from "./src/screens/FeedScreen";
 import { FinishBanner, FinishCard } from "./src/screens/FinishScreen";
 import {
   FreeFinishBanner,
@@ -75,8 +98,25 @@ import {
 } from "./src/screens/FreeRunScreen";
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
-import { Tabs, useTabBar } from "./src/screens/Tabs";
-import { color } from "./src/theme/tokens";
+import { Pager } from "./src/screens/Pager";
+import { pageTitle } from "./src/screens/pageTitles";
+import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
+import { PaddleExplore } from "./src/paddle/PaddleExplore";
+import { MoveShape } from "./src/paddle/MoveShape";
+import { PaddleNotice } from "./src/paddle/PaddleNotice";
+import { distanceOnSpot, SPOT_SEARCH_HINT, spotPlaces } from "./src/paddle/placeSpots";
+import { usePaddleNotice } from "./src/paddle/safetyNotice";
+import { useMoveExample } from "./src/paddle/useMoveExample";
+import { useMoveShape } from "./src/paddle/useMoveShape";
+import { activityOf, withoutRouteLabel } from "./src/settings/sport";
+import { SportButton } from "./src/settings/SportButton";
+import { useSport } from "./src/settings/useSport";
+import { DrawingCard } from "./src/social/DrawingCard";
+import { drawingDoubleTapped } from "./src/social/DrawingReactions";
+import { useDrawingsDoor } from "./src/social/drawingsDoor";
+import { color, space } from "./src/theme/tokens";
+import { useDrawDistance } from "./src/units/useDrawDistance";
+import { useUnits } from "./src/units/useUnits";
 
 /** A route without directions: one list, so navigation does not restart. */
 const NO_DIRECTIONS: Direction[] = [];
@@ -88,10 +128,14 @@ const API_URL = apiUrl();
 
 /** The screens (TASK-051): what to draw, the map with the route, the
  * turn-by-turn along it (TASK-049), the run with its score (TASK-113), the
- * best routes near the start (TASK-126), and a run without a route with its
- * end (TASK-149). */
+ * best routes near the start (TASK-126), a run without a route with its
+ * end (TASK-149), and what runners publish (TASK-154, then TASK-118). */
 type Screen =
-  "choose" | "map" | "navigate" | "finish" | "explore" | "run" | "runFinish";
+  "choose" | "map" | "navigate" | "finish" | "explore" | "run" | "runFinish" | "feed";
+
+/** The screens that are pages side by side, left to right, one swipe apart
+ * (TASK-154, ADR-0124); the others take the whole screen. */
+const PAGES: readonly Screen[] = ["feed", "choose", "explore"];
 
 /** A run that ended, shown on the finish screen. */
 type Finished = {
@@ -103,7 +147,20 @@ type Finished = {
 };
 
 /** A route of "Explore" run with the directions asked for it (TASK-145). */
-type ExploreRun = { points: LatLon[]; directions: Direction[]; similarity: number };
+type ExploreRun = {
+  points: LatLon[];
+  directions: Direction[];
+  similarity: number;
+  /** A favorite of a word with the pen up (TASK-199): its walks and word. */
+  walks?: Walk[];
+  word?: string | null;
+  /** A bike route (TASK-206): its stretches with the bike on foot. */
+  on_foot?: Stretch[];
+  /** What it is for (TASK-216): a favorite kept by bike is followed by bike. */
+  activity?: Activity;
+  /** How far its shape is turned (TASK-232): the map stays turned as it. */
+  rotation_deg?: number;
+};
 
 function finishedRun(run: ScorableRun, resumable: boolean): Finished {
   return { run, line: run.track.fixes.map((fix) => fix.point), resumable };
@@ -135,32 +192,93 @@ function leftFreeRun(): FreeFinished | null {
 }
 
 export default function App() {
+  // A new language from «Settings» renders the whole app again in it (TASK-210).
+  useLanguage();
+  // And so do new units (TASK-182 part E).
+  useUnits();
   return (
     <SafeAreaProvider>
-      {/* «Draw» is the app as it was; «Profile» the account (TASK-115). */}
-      <Tabs apiUrl={API_URL}>
-        <Sgrava />
-      </Tabs>
+      {/* The account, and «Profile» over the app (TASK-115, TASK-154). */}
+      <ProfileLayer apiUrl={API_URL}>
+        <MuW />
+      </ProfileLayer>
       {/* The app is dark: light status bar text on any phone setting. */}
       <StatusBar style="light" />
+      {/* Routes drawn on the phone, out of sight (TASK-214). */}
+      <PhoneEngineView />
     </SafeAreaProvider>
   );
 }
 
-function Sgrava() {
+function MuW() {
   // A run still waiting for its score comes first (TASK-113).
   const [finished, setFinished] = useState<Finished | null>(leftRun);
   // Or a run without a route, closed with the app (TASK-149).
   const [freeFinished, setFreeFinished] = useState<FreeFinished | null>(() =>
     finished === null ? leftFreeRun() : null,
   );
-  const [screen, setScreen] = useState<Screen>(() =>
+  const [screenNow, setScreen] = useState<Screen>(() =>
     finished !== null ? "finish" : freeFinished !== null ? "runFinish" : "choose",
   );
+  // A favorite opened from «Profile» (TASK-171) takes the map at once, over
+  // the page it was opened from, as a route of "Explore" does.
+  const {
+    opened: favorite,
+    close: closeFavorite,
+    showList: showFavorites,
+  } = useFavoritesDoor();
+  // And so does a run opened from «My activities» (TASK-172).
+  const {
+    opened: activity,
+    close: closeActivity,
+    showList: showActivities,
+    remove: removeActivity,
+    record: recordRun,
+    signedIn,
+  } = useActivitiesDoor();
+  // And so does a drawing opened from a profile (TASK-117).
+  const { opened: drawing, back: backFromDrawing } = useDrawingsDoor();
+  const onPage = PAGES.includes(screenNow);
+  const screen: Screen =
+    (favorite !== null || activity !== null || drawing !== null) && onPage
+      ? "map"
+      : screenNow;
+  // A run of «My activities» on the map, as the end of a run shows one: its
+  // route, and over it what was run. Or a drawing: the run cut as the
+  // others see it, in the route's yellow as in «Feed», the map framed on it.
+  const reviewing = screen === "map" && (activity !== null || drawing !== null);
+  const reviewed = useMemo(
+    () =>
+      activity !== null
+        ? {
+            start: activity.track[0] ?? null,
+            route: activity.points,
+            // A word with the pen up, dashed as at the end of the run
+            // (TASK-199); none from an API older than that.
+            walks: activity.walks ?? null,
+            others: NO_OTHERS,
+            track: activity.track,
+          }
+        : drawing !== null
+          ? {
+              start: null,
+              route: drawing.track.length > 1 ? drawing.track : null,
+              walks: null,
+              others: NO_OTHERS,
+              track: null,
+            }
+          : null,
+    [activity, drawing],
+  );
   const { position, refresh } = useCurrentPosition();
+  // The size of the first maps of the phone while they download (TASK-214).
+  const firstMaps = usePhoneZones(position, API_URL);
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  // «Retry» under «Draw» mounts the map again (TASK-259): its own «Retry»
+  // is hidden there. If it fails again, it says so again.
+  const [mapTries, setMapTries] = useState(0);
   const [kind, setKind] = useState<ChoiceKind>("shape");
   const [shapeText, setShapeText] = useState("heart");
   const tableShape = toShape(shapeText);
@@ -171,28 +289,44 @@ function Sgrava() {
       ? shapeReading.stateOf(shapeText)
       : null;
   const shape = tableShape ?? (reading?.status === "read" ? reading.shape : null);
-  const [distanceText, setDistanceText] = useState("5");
-  const distanceM = toDistanceM(distanceText);
+  // The sport of «Settings» (TASK-190): «Bike» asks for routes a bike may
+  // ride, at its own distances; «Explore», «Feed» and the run stay a run's.
+  // «Paddle» asks for a shape on the water, and has its own «Explore»
+  // (TASK-191).
+  const sport = useSport();
+  const sportActivity = activityOf(sport);
+  // The distance typed, or the metres the app chose (TASK-182 part E): in
+  // the app's units, brought within the limits of a sport just chosen.
+  const distance = useDrawDistance(sportActivity);
+  const distanceM = distance.metres;
   const [wordText, setWordText] = useState("");
-  const wordCheck = checkWord(wordText, distanceM);
+  const wordCheck = checkWord(wordText, distanceM, sportActivity);
   const [letterStyle, setLetterStyle] = useState<LetterStyle>("round");
+  // The pen lifted between the letters (TASK-198), on until switched off:
+  // the user's choice (TASK-202). An API older than TASK-197 refuses it.
+  // The same switch for the pieces of a shape that has them (TASK-223).
+  const [penUp, setPenUp] = useState(true);
   const image = useImageOutline(API_URL);
   // Past RouteChoice to the image panel (TASK-079).
   const { edits, add, undo } = image;
   const imageEdits = useMemo(() => ({ ...edits, add, undo }), [edits, add, undo]);
-  const routeRequest = useRouteRequest(API_URL);
-  const { draw, cancel } = routeRequest;
-  // A ready route waits behind the ad, if there is one (TASK-132).
-  const state = useAdBeforeRoute(routeRequest.state);
+  const { draw, cancel, retry, state } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
-  const { explored, open: openExplored, close: closeExplored } = useExplored(API_URL);
+  const {
+    explored: exploredRoute,
+    open: openExplored,
+    close: closeExplored,
+    redraw: redrawExplored,
+  } = useExplored(API_URL);
+  const explored = favorite ?? exploredRoute;
+  // The page a route was opened from, where «←» goes back to: a drawing of
+  // «Feed» opens as a route of "Explore" does (TASK-188).
+  const [routeList, setRouteList] = useState<"explore" | "feed">("explore");
   // "Explore" for any city, and a shape through a theme's places (TASK-129).
   const [exploreCity, setExploreCity] = useState<Place | null>(null);
   // The cities chosen last, kept on the phone (TASK-134).
   const [recentCities, setRecentCities] = useState<Place[]>(loadRecentCities);
-  const themedRoute = useThemedRoute(API_URL);
-  const themedState = useAdBeforeRoute(themedRoute.state);
-  const themed = { ...themedRoute, state: themedState };
+  const themed = useThemedRoute(API_URL);
   const themedExport = useMemo(
     () => (themed.state.status === "done" ? themedGpx(themed.state.result) : null),
     [themed.state],
@@ -206,18 +340,28 @@ function Sgrava() {
   // One of them (ADR-0051): the kinds not chosen are not sent. An image
   // sends the outline the engine traced and the user has seen (ADR-0069),
   // with the details drawn on it (TASK-079).
+  // On the water only a shape of the catalogue is drawn (TASK-191): a word or
+  // a picture chosen before «Paddle» waits for another sport.
+  const drawKind: ChoiceKind = sportActivity === "paddling" ? "shape" : kind;
   const drawn:
     | { shape: Shape }
-    | { word: string; style: LetterStyle }
+    | { shape: PenUpShape; pen_up: true }
+    | { word: string; style: LetterStyle; pen_up?: true }
     | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
     | null =
-    kind === "shape"
+    drawKind === "shape"
       ? shape !== null
-        ? { shape }
+        ? // A shape in pieces with the pen up, on the roads (TASK-223).
+          shapeAsked(shape, penUp, sportActivity)
         : null
-      : kind === "word"
+      : drawKind === "word"
         ? wordCheck.ok
-          ? { word: wordCheck.word, style: letterStyle }
+          ? {
+              word: wordCheck.word,
+              style: letterStyle,
+              // Only when on: a request without it is the one of before.
+              ...(penUp ? { pen_up: true as const } : {}),
+            }
           : null
         : image.state.status === "traced"
           ? {
@@ -227,7 +371,7 @@ function Sgrava() {
           : null;
   const request: AnyRouteRequest | null =
     start && drawn !== null && distanceM !== null
-      ? { start: start.point, ...drawn, distance_m: distanceM, activity: "running" }
+      ? { start: start.point, ...drawn, distance_m: distanceM, activity: sportActivity }
       : null;
   // A new start, shape, word or distance leaves the last answer behind.
   const view: RouteState =
@@ -265,14 +409,65 @@ function Sgrava() {
   // Start on a route of "Explore": its directions are asked for first,
   // then it is the route followed, in place of the drawn one (TASK-145).
   const startDirections = useStartDirections(API_URL);
+  // Start on the water: the safety notice first, the first time (TASK-191).
+  const paddleNotice = usePaddleNotice();
   const [exploreRun, setExploreRun] = useState<ExploreRun | null>(null);
   const followed = exploreRun ?? chosen;
+  // The shape of a drawn route on the water, moved with a finger (TASK-238).
+  const move = useMoveShape(view, chosen, draw);
+  // Only with the drawn route on the map, not one of "Explore" or a theme's.
+  const movingShape =
+    move.moving &&
+    screen === "map" &&
+    !reviewing &&
+    explored === null &&
+    themed.state.status === "idle";
+  // And that of an example of "Explore" on the water (TASK-244): not of a
+  // favorite, nor of a drawing of «Feed».
+  const moveExample = useMoveExample(
+    API_URL,
+    favorite === null && routeList === "explore" ? exploredRoute : null,
+    redrawExplored,
+  );
+  const movingExample =
+    moveExample.moving && screen === "map" && !reviewing && explored !== null;
+  // The walks of a drawn word with the pen up (TASK-198), or of a favorite
+  // (TASK-199); a route of "Explore" has none.
+  const followedWalks =
+    exploreRun === null ? (chosen?.walks ?? null) : (exploreRun.walks ?? null);
+  // The stretches with the bike on foot of a bike route (TASK-206).
+  const followedOnFoot =
+    exploreRun === null ? (chosen?.on_foot ?? null) : (exploreRun.on_foot ?? null);
+  // What the route followed is for: a bike route is followed by bike (TASK-216).
+  const followedActivity =
+    exploreRun === null
+      ? view.status === "done"
+        ? view.request.activity
+        : undefined
+      : exploreRun.activity;
+  // How far the shape of the route followed is turned (TASK-232): a drawn
+  // route, and one of "Explore" that says how it is turned, an example
+  // drawn for a place. Any other route, and a route that does not say,
+  // keeps north up.
+  const followedRotation =
+    exploreRun === null
+      ? (chosen?.rotation_deg ?? null)
+      : (exploreRun.rotation_deg ?? null);
   const navigating = screen === "navigate" && followed !== null;
   const navigation = useNavigation(
     followed?.points ?? null,
     followed?.directions ?? NO_DIRECTIONS,
     navigating,
     followed?.similarity,
+    {
+      walks: followedWalks ?? undefined,
+      word: exploreRun === null ? chosen?.word : (exploreRun.word ?? null),
+      onFoot: followedOnFoot ?? undefined,
+      activity: followedActivity,
+      // Kept with the run: its drawing in «My activities» and its post are
+      // turned back too (TASK-232 part C).
+      rotationDeg: followedRotation ?? undefined,
+    },
   );
   const finishing = screen === "finish" && finished !== null;
   // A run without a route (TASK-149): the map follows the runner and draws
@@ -284,16 +479,68 @@ function Sgrava() {
   const freeStart =
     freeTrack.fixes[0]?.point ?? (position.status === "ok" ? position.point : null);
   const freeFinishing = screen === "runFinish" && freeFinished !== null;
+  // Where the runner is heading, with a route or without (TASK-164): the
+  // arrow on the map.
+  const runTrack = navigating ? trackOfNavigation(navigation) : freeTrack;
+  const heading = useMemo(() => headingDeg(runTrack), [runTrack]);
   // A route of "Explore" on the map, in place of the drawn one (TASK-126).
   const theming =
-    screen === "map" && explored === null && themed.state.status !== "idle";
-  const exploring = screen === "map" && explored !== null;
+    screen === "map" &&
+    !reviewing &&
+    explored === null &&
+    themed.state.status !== "idle";
+  const exploring = screen === "map" && !reviewing && explored !== null;
+  // A route whose shape is turned turns the map, so the drawing is upright
+  // (TASK-232): choosing it, running it and at its end.
+  const turned = useTurnedMap(
+    reviewing || running || freeFinishing || theming
+      ? null
+      : exploring
+        ? explored.status === "done"
+          ? (explored.result.rotation_deg ?? null)
+          : null
+        : finishing
+          ? followed !== null && sameLine(finished.run.route, followed.points)
+            ? followedRotation
+            : null
+          : exploreRun === null
+            ? (followedRotation ?? move.left?.rotationDeg ?? null)
+            : followedRotation,
+  );
   const exploredExport: ExportState =
     explored?.status === "done" &&
     gpx.state.status !== "idle" &&
     gpx.state.result === explored.result
       ? gpx.state
       : { status: "idle" };
+  // The route on the map as a favorite keeps it (TASK-171), made once per
+  // route: the heart knows it by its key.
+  const startPlace = start?.source === "search" ? start.label : null;
+  const drawnRequest = view.status === "done" ? view.request : null;
+  const drawnFavorite = useMemo(
+    () =>
+      drawnRequest && chosen ? drawnKeepable(drawnRequest, chosen, startPlace) : null,
+    [drawnRequest, chosen, startPlace],
+  );
+  const exploredFavorite = useMemo(
+    () =>
+      exploredRoute?.status === "done"
+        ? exploredKeepable(exploredRoute.route, exploredRoute.detail)
+        : null,
+    [exploredRoute],
+  );
+  const themedFavorite = useMemo(
+    () => (themed.state.status === "done" ? themedKeepable(themed.state.result) : null),
+    [themed.state],
+  );
+  const onMap =
+    screen !== "map" || reviewing
+      ? null
+      : theming
+        ? themedFavorite
+        : exploring
+          ? (favorite?.keepable ?? exploredFavorite)
+          : drawnFavorite;
 
   /** Stop or Finish: the run ends, and with a line to judge shows its score. */
   function onEndRun() {
@@ -317,35 +564,130 @@ function Sgrava() {
     setScreen("runFinish");
   }
 
-  /** With no score to wait for, the run leaves the phone at once. */
-  function onFreeDone() {
-    clearRun();
+  /** What the route of a run draws, while the app still has that route: a
+   * run left from another opening has only its line. */
+  function drawnBy(route: LatLon[]): Drawn | null {
+    const kept = [
+      drawnFavorite,
+      exploredFavorite,
+      themedFavorite,
+      favorite?.keepable ?? null,
+    ].find((known) => known != null && sameLine(known.request.points, route));
+    return kept?.request ?? null;
+  }
+
+  /** The end of a run without a route leaves the screen. */
+  function leaveFreeFinish() {
     setFreeFinished(null);
     setScreen("choose");
   }
 
-  function onFinishDone(settled: boolean) {
-    // Without its score the run stays in the file, for the next opening.
-    if (settled) {
-      clearRun();
-    }
+  /** «Done», with nobody signed in: with no score to wait for, the run
+   * leaves the phone at once. */
+  function onFreeDone() {
+    clearRun();
+    leaveFreeFinish();
+  }
+
+  /** The end of a run along a route leaves the screen. */
+  function leaveFinish() {
     setFinished(null);
     // A run of "Explore" goes back to its route's card.
     setScreen(exploreRun !== null || view.status === "done" ? "map" : "choose");
   }
 
+  /** «Done», with nobody signed in: with no score to wait for (TASK-241),
+   * the run leaves the phone at once. */
+  function onFinishDone() {
+    clearRun();
+    leaveFinish();
+  }
+
+  /** «Save» (TASK-172): the run that ended goes to «My activities», where
+   * the API scores it by itself, and leaves the screen. False when the
+   * phone could not keep it: the run stays where it is. */
+  function onSaveRun(): boolean {
+    const kept =
+      finished !== null
+        ? recordRun(finished.run, drawnBy(finished.run.route))
+        : freeFinished !== null && recordRun(freeFinished.run, null);
+    if (kept) {
+      onDiscardRun();
+    }
+    return kept;
+  }
+
+  /** «Discard», or what follows «Save»: the run leaves the file of the run
+   * in progress, with its score or without, and the screen. */
+  function onDiscardRun() {
+    clearRun();
+    if (finished !== null) {
+      leaveFinish();
+    } else {
+      leaveFreeFinish();
+    }
+  }
+
   /** "Explore" leaves the map: its route, its directions, its run. */
   function closeExplore() {
     closeExplored();
+    closeFavorite();
     themed.close();
     startDirections.reset();
     setExploreRun(null);
   }
 
-  /** Start on a route of "Explore": its directions first (TASK-145). */
-  function onStartExplore(route: { points: LatLon[]; similarity: number }) {
+  /** Start on a route of "Explore": its directions first (TASK-145). A
+   * favorite of a word with the pen up brings its walks (TASK-199), a bike
+   * route its stretches with the bike on foot (TASK-206), and is followed
+   * by bike (TASK-216). On the water there are none to ask for (TASK-191):
+   * the notice, then the run. */
+  function onStartExplore(
+    route: {
+      points: LatLon[];
+      similarity: number;
+      walks?: Walk[];
+      word?: string | null;
+      on_foot?: Stretch[];
+      rotation_deg?: number;
+    },
+    activity?: Activity,
+  ) {
+    // Turned on the map, it stays turned while it is run (TASK-232).
+    const turn =
+      route.rotation_deg !== undefined ? { rotation_deg: route.rotation_deg } : {};
+    if (activity === "paddling") {
+      paddleNotice.ask(() => {
+        startDirections.reset();
+        setExploreRun({
+          points: route.points,
+          directions: NO_DIRECTIONS,
+          similarity: route.similarity,
+          activity,
+          ...turn,
+          // A shape in pieces: the pen up between them (TASK-226).
+          ...(route.walks !== undefined && route.walks.length > 0
+            ? { walks: route.walks, word: null }
+            : {}),
+        });
+        setScreen("navigate");
+      });
+      return;
+    }
     startDirections.start(route.points, (directions) => {
-      setExploreRun({ points: route.points, directions, similarity: route.similarity });
+      setExploreRun({
+        points: route.points,
+        directions,
+        similarity: route.similarity,
+        ...(route.walks !== undefined && route.walks.length > 0
+          ? { walks: route.walks, word: route.word ?? null }
+          : {}),
+        ...(route.on_foot !== undefined && route.on_foot.length > 0
+          ? { on_foot: route.on_foot }
+          : {}),
+        ...(activity !== undefined ? { activity } : {}),
+        ...turn,
+      });
       setScreen("navigate");
     });
   }
@@ -362,10 +704,33 @@ function Sgrava() {
     setScreen("map");
   }
 
+  /** A run of «My activities» leaves the map for the list it came from. */
+  function onActivityList() {
+    closeActivity();
+    showActivities();
+  }
+
   function onBack() {
+    if (reviewing) {
+      if (activity !== null) {
+        onActivityList();
+      } else {
+        backFromDrawing();
+      }
+      return;
+    }
+    if (favorite !== null) {
+      // Back to the list it was opened from, over the page left under it.
+      closeExplore();
+      if (!onPage) {
+        setScreen("choose");
+      }
+      showFavorites();
+      return;
+    }
     if (theming || exploring) {
       closeExplore();
-      setScreen("explore");
+      setScreen(routeList);
       return;
     }
     // Nobody is left watching the wait: drop it, as Cancel does.
@@ -380,9 +745,8 @@ function Sgrava() {
     setScreen("choose");
   }
 
-  // The tabs under the screens that choose; the map and the run take the
-  // whole screen (TASK-115).
-  useTabBar(screen === "choose" || screen === "explore");
+  // The page on screen; -1 while the map or a run takes the whole screen.
+  const page = PAGES.indexOf(screen);
 
   return (
     <View style={styles.screen}>
@@ -401,8 +765,14 @@ function Sgrava() {
             <NavigationBanner state={navigation} />
           ) : undefined
         }
+        compass={
+          turned.arrow ? (
+            <NorthArrow shown={turned.shown} onPress={turned.onArrow} />
+          ) : undefined
+        }
         map={
           <MapView
+            key={mapTries}
             style={styles.map}
             start={
               running
@@ -435,11 +805,42 @@ function Sgrava() {
                       ? explored.status === "done"
                         ? explored.detail.points
                         : null
-                      : (followed?.points ?? null)
+                      : // A shape left elsewhere stays there while it is drawn.
+                        (followed?.points ?? move.left?.points ?? null)
             }
-            // Only while choosing a drawn route: running, or on a route of
-            // "Explore", one route is the route.
-            others={screen === "map" && !exploring && !theming ? others : NO_OTHERS}
+            walks={
+              finishing
+                ? finished.run.walks
+                : running || freeFinishing || theming
+                  ? null
+                  : exploring
+                    ? // A favorite of a word with the pen up (TASK-199).
+                      explored.status === "done"
+                      ? (explored.result.walks ?? null)
+                      : null
+                    : (followedWalks ?? move.left?.walks ?? null)
+            }
+            onFoot={
+              finishing || running || freeFinishing || theming
+                ? null
+                : exploring
+                  ? // A favorite of a bike route (TASK-206).
+                    explored.status === "done"
+                    ? (explored.result.on_foot ?? null)
+                    : null
+                  : (followedOnFoot ?? move.left?.onFoot ?? null)
+            }
+            // Only while choosing, a drawn route or an example of "Explore"
+            // (TASK-155): running, or on a themed route, one route is the route.
+            others={
+              screen !== "map" || theming
+                ? NO_OTHERS
+                : exploring
+                  ? explored.status === "done"
+                    ? explored.others
+                    : NO_OTHERS
+                  : others
+            }
             track={
               finishing
                 ? finished.line
@@ -456,11 +857,43 @@ function Sgrava() {
                   ? freeRun.position
                   : null
             }
+            heading={heading}
+            // Running the route: the part run solid, the part left dashed
+            // and blinking (TASK-224).
+            progress={
+              navigating && navigation.status === "following"
+                ? navigation.navigation
+                : null
+            }
+            // On a drawing a double tap is its super like, not a zoom (TASK-119).
+            onDoubleTap={
+              reviewing && drawing !== null ? drawingDoubleTapped : undefined
+            }
+            moving={movingShape || movingExample}
+            onMoved={movingExample ? moveExample.onMoved : move.onMoved}
+            bearing={turned.bearing}
+            turn={turned.turn}
+            onTurned={turned.onTurned}
             onError={setMapError}
+            // A run of «My activities» takes the map from whatever was on it.
+            {...(reviewing ? reviewed : null)}
           />
         }
       >
-        {freeFinishing ? (
+        {reviewing && activity !== null ? (
+          <ActivityCard
+            // A new card for each run: «Delete» asks again.
+            key={activity.id}
+            activity={activity}
+            onList={onActivityList}
+            onDelete={() => {
+              removeActivity(activity.id);
+              onActivityList();
+            }}
+          />
+        ) : reviewing && drawing !== null ? (
+          <DrawingCard drawing={drawing} onBack={backFromDrawing} />
+        ) : freeFinishing ? (
           <FreeFinishCard
             run={freeFinished.run}
             onResume={
@@ -471,10 +904,15 @@ function Sgrava() {
                   }
                 : undefined
             }
-            onDone={onFreeDone}
+            // With an account the way out is «Save» or «Discard», below.
+            onDone={signedIn ? undefined : onFreeDone}
           />
         ) : running ? (
-          <FreeRunCard running={freeRun.status === "running"} onStop={onStopFreeRun} />
+          <FreeRunCard
+            running={freeRun.status === "running"}
+            track={freeTrack}
+            onStop={onStopFreeRun}
+          />
         ) : theming ? (
           <ThemedCard
             state={themed.state}
@@ -507,25 +945,23 @@ function Sgrava() {
                 gpx.exportGpx(explored.request, explored.result);
               }
             }}
-            onList={() => {
-              closeExplore();
-              setScreen("explore");
-            }}
+            // The list it came from: "Explore", or the favorites.
+            onList={onBack}
             start={startViewOf(
               startDirections.state,
               explored.status === "done" ? explored.result.points : null,
             )}
             onStart={() => {
               if (explored.status === "done") {
-                onStartExplore(explored.result);
+                onStartExplore(explored.result, explored.request.activity);
               }
             }}
+            move={moveExample}
           />
         ) : finishing ? (
           <FinishCard
-            apiUrl={API_URL}
             run={finished.run}
-            onDone={onFinishDone}
+            onDone={signedIn ? undefined : onFinishDone}
             onResume={
               finished.resumable && (exploreRun !== null || view.status === "done")
                 ? () => {
@@ -540,8 +976,12 @@ function Sgrava() {
             navigation={
               navigation.status === "following" ? navigation.navigation : null
             }
+            track={trackOfNavigation(navigation)}
             onStop={onEndRun}
+            activity={followedActivity}
           />
+        ) : movingShape ? (
+          <MoveShape onCancel={move.cancel} />
         ) : (
           <RouteOutcome
             view={shown}
@@ -556,97 +996,202 @@ function Sgrava() {
               }
             }}
             onTryDistance={(distance_m) => {
-              setDistanceText(String(distance_m / 1000));
+              distance.choose(distance_m);
               if (request) {
                 draw({ ...request, distance_m });
               }
             }}
             onPickShape={onPickShape}
-            onStart={() => setScreen("navigate")}
+            onRetry={retry}
+            onStart={() => {
+              if (view.status === "done" && view.request.activity === "paddling") {
+                paddleNotice.ask(() => setScreen("navigate"));
+              } else {
+                setScreen("navigate");
+              }
+            }}
+            onMove={move.available ? move.begin : undefined}
+            movedElsewhere={move.elsewhere}
             choices={choices}
             chosen={chosenIndex}
             onChoose={(index) => answer && setPicked({ of: answer, index })}
           />
         )}
+        {/* Under the card of a run that ended: «Save» or «Discard», with an
+            account (TASK-172). */}
+        {(finishing || freeFinishing) && (
+          <RunEnd onSave={onSaveRun} onDiscard={onDiscardRun} />
+        )}
       </MapScreen>
-      {screen === "choose" && (
-        <ChooseScreen
-          status={statusText(startMode, position, start)}
-          denied={startMode === "gps" && position.status === "denied"}
-          mode={startMode}
-          onMode={(mode) => {
-            setStartMode(mode);
-            if (mode === "gps") {
-              // Asked again, as the old button did: the permission may be on now.
-              refresh();
-            }
-          }}
-          searching={showsSearch(startMode, position)}
-          onPlace={setPlace}
-          near={position.status === "ok" ? position.point : (place?.point ?? null)}
-          mapError={mapError}
-          footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
-          onExplore={() => setScreen("explore")}
-          onRun={() => {
+      {/* Over the map, opposite the way back: keep the route shown. */}
+      <FavoriteHeart route={onMap} />
+      {page !== -1 && (
+        <Pager
+          page={page}
+          onPage={(index) => {
+            // A keyboard left open would follow to the next page.
             Keyboard.dismiss();
-            setScreen("run");
+            setScreen(PAGES[index]);
           }}
-        >
-          <ImageEditsContext.Provider value={imageEdits}>
-            <RouteChoice
-              kind={kind}
-              onKind={setKind}
-              shapeText={shapeText}
-              shape={shape}
-              onShapeText={setShapeText}
-              reading={reading}
-              onShapeDone={() => {
-                if (reading) {
-                  shapeReading.read(shapeText);
-                }
-              }}
-              wordText={wordText}
-              onWordText={setWordText}
-              wordCheck={wordCheck}
-              letterStyle={letterStyle}
-              onLetterStyle={setLetterStyle}
-              image={image.state}
-              onChooseImage={image.choose}
-              distanceText={distanceText}
-              distanceM={distanceM}
-              onDistanceText={setDistanceText}
-            />
-          </ImageEditsContext.Provider>
-        </ChooseScreen>
-      )}
-      {screen === "explore" && (
-        <ExploreScreen
-          apiUrl={API_URL}
-          near={start?.point ?? null}
-          onBack={() => setScreen("choose")}
-          onOpen={(route) => {
-            closeExplore();
-            openExplored(route);
-            setScreen("map");
-          }}
-          city={exploreCity}
-          onCity={(city) => {
-            setExploreCity(city);
-            if (city !== null) {
-              const recent = remember(recentCities, city);
-              setRecentCities(recent);
-              saveRecentCities(recent);
-            }
-          }}
-          recent={recentCities}
-          onAsk={(request) => {
-            Keyboard.dismiss();
-            closeExplore();
-            themed.ask(request);
-            setScreen("map");
-          }}
+          action={
+            // The sport at the left of the way to «Profile» (TASK-205).
+            <View style={styles.actions}>
+              <SportButton />
+              <ProfileButton />
+            </View>
+          }
+          pages={[
+            {
+              title: pageTitle("feed"),
+              render: () => (
+                <FeedScreen
+                  active={screen === "feed"}
+                  // For the drawings nearby (TASK-118), as «Explore».
+                  near={start?.point ?? null}
+                  onOpen={(post) => {
+                    closeExplore();
+                    openExplored(postRoute(post), fetchPostRoute(post));
+                    setRouteList("feed");
+                    setScreen("map");
+                  }}
+                />
+              ),
+            },
+            {
+              title: pageTitle("draw"),
+              render: () => (
+                <ChooseScreen
+                  status={statusText(startMode, position, start)}
+                  denied={startMode === "gps" && position.status === "denied"}
+                  mode={startMode}
+                  onMode={(mode) => {
+                    setStartMode(mode);
+                    if (mode === "gps") {
+                      // Asked again, as the old button did: the permission may be on now.
+                      refresh();
+                    }
+                  }}
+                  searching={showsSearch(startMode, position)}
+                  onPlace={(chosen) => {
+                    setPlace(chosen);
+                    // A small lake's shapes fit at less than 2 km (TASK-240).
+                    const fits = distanceOnSpot(chosen, distanceM);
+                    if (fits !== null) {
+                      distance.choose(fits);
+                    }
+                  }}
+                  near={
+                    position.status === "ok" ? position.point : (place?.point ?? null)
+                  }
+                  // On the water the search knows the lakes and the beaches.
+                  suggest={sportActivity === "paddling" ? spotPlaces : undefined}
+                  searchHint={
+                    sportActivity === "paddling" ? SPOT_SEARCH_HINT : undefined
+                  }
+                  mapError={mapError}
+                  onMapRetry={() => {
+                    setMapError(null);
+                    setMapTries((tries) => tries + 1);
+                  }}
+                  footer={
+                    <>
+                      <ZoneNotice bytes={firstMaps} />
+                      <DrawButton enabled={request !== null} onDraw={onDraw} />
+                    </>
+                  }
+                  onRun={() => {
+                    Keyboard.dismiss();
+                    setScreen("run");
+                  }}
+                  runLabel={withoutRouteLabel(sport)}
+                >
+                  <ImageEditsContext.Provider value={imageEdits}>
+                    <RouteChoice
+                      kind={drawKind}
+                      onKind={setKind}
+                      shapeText={shapeText}
+                      shape={shape}
+                      onShapeText={setShapeText}
+                      reading={reading}
+                      onShapeDone={() => {
+                        if (reading) {
+                          shapeReading.read(shapeText);
+                        }
+                      }}
+                      wordText={wordText}
+                      onWordText={setWordText}
+                      wordCheck={wordCheck}
+                      letterStyle={letterStyle}
+                      onLetterStyle={setLetterStyle}
+                      penUp={penUp}
+                      onPenUp={setPenUp}
+                      image={image.state}
+                      onChooseImage={image.choose}
+                      distanceText={distance.text}
+                      distanceM={distanceM}
+                      onDistanceText={distance.type}
+                      activity={sportActivity}
+                    />
+                  </ImageEditsContext.Provider>
+                </ChooseScreen>
+              ),
+            },
+            {
+              title: pageTitle("explore"),
+              // It asks the API for its routes as it opens: not before.
+              lazy: true,
+              render: () =>
+                // On the water, the lakes and the beaches (TASK-191).
+                sport === "paddle" ? (
+                  <PaddleExplore
+                    apiUrl={API_URL}
+                    near={start?.point ?? null}
+                    onOpen={(route) => {
+                      closeExplore();
+                      openExplored(route);
+                      setRouteList("explore");
+                      setScreen("map");
+                    }}
+                  />
+                ) : (
+                  <ExploreScreen
+                    apiUrl={API_URL}
+                    near={start?.point ?? null}
+                    onOpen={(route) => {
+                      closeExplore();
+                      openExplored(route);
+                      setRouteList("explore");
+                      setScreen("map");
+                    }}
+                    city={exploreCity}
+                    onCity={(city) => {
+                      setExploreCity(city);
+                      if (city !== null) {
+                        const recent = remember(recentCities, city);
+                        setRecentCities(recent);
+                        saveRecentCities(recent);
+                      }
+                    }}
+                    recent={recentCities}
+                    onAsk={(request) => {
+                      Keyboard.dismiss();
+                      closeExplore();
+                      themed.ask(request);
+                      setRouteList("explore");
+                      setScreen("map");
+                    }}
+                  />
+                ),
+            },
+          ]}
         />
       )}
+      {/* Before the first «Start» on the water (TASK-191). */}
+      <PaddleNotice
+        visible={paddleNotice.asking}
+        onAccept={paddleNotice.accept}
+        onDismiss={paddleNotice.dismiss}
+      />
     </View>
   );
 }
@@ -667,7 +1212,7 @@ function statusText(
   }
   switch (position.status) {
     case "denied":
-      return "Location is off for ShapeRoute. Allow it in Settings, or search for a place to start from.";
+      return "Location is off for MuW. Allow it in Settings, or search for a place to start from.";
     case "unavailable":
       return "Your position is not available right now. Search for a place to start from.";
     default:
@@ -684,5 +1229,10 @@ const styles = StyleSheet.create({
     flex: 1,
     // Under the page while the WebView starts, so it never flashes white.
     backgroundColor: color.map.background,
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
   },
 });

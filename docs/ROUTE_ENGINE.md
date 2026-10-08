@@ -65,7 +65,8 @@ Una forma può anche arrivare da un **contorno** in JSON (ADR-0035): dalla
 CLI con `--outline FILE`, oppure registrata in `SHAPES` come le altre. Le
 forme registrate sono il **catalogo** e sono contratto (ADR-0036): `circle`,
 `heart`, `star`, `horse`, `moon`, `cat`, `fish`, `butterfly`, `snail`,
-`dog_head`, `rabbit_head`, `pumpkin`, `christmas_tree`. `tree`
+`dog_head`, `rabbit_head`, `pumpkin`, `christmas_tree` e, a pezzi (sotto),
+`smiley`, `ghost`, `donut`, `sun` (TASK-223). `tree`
 (TASK-034) è un altro contorno, e non è nel catalogo. Un contorno entra nel catalogo solo dopo il
 giudizio a occhio dell'utente sulle strade.
 
@@ -228,6 +229,152 @@ tratti (ADR-0061); cane intero, uccello, zucca e albero di Natale restano
 candidate da CLI (TASK-064, TASK-078). Lumaca e teste hanno più di 64
 vertici: con i tratti restano tutti, e la forma ha più punti.
 
+### Lettere unite anche dalla cima (TASK-067)
+
+Due lettere si possono unire anche lungo la cima, y = 1, invece che lungo
+la base (ADR-0063): dove accorcia la parola, perché a pari chilometri una
+linea più corta dà lettere più alte. Fra una U e una V l'unione dalla base
+va dal fondo dell'una alla punta dell'altra (1,2 altezze), dalla cima
+dall'asta destra dell'una al braccio sinistro dell'altra (0,6).
+
+Una lettera che si può unire in cima lo dice nell'alfabeto, con i suoi due
+angoli alti:
+
+```json
+"V": {"top": {"in": [0, 1], "out": [0.6, 1]}, "out": [[0.3, 0], [0, 1], ...]}
+```
+
+- `in` è dove entra un'unione che arriva da sinistra, `out` dove esce
+  quella verso destra; una lettera può avere solo `in` (B, D, P, R e K
+  tonde: a destra la cima non arriva al bordo). Senza `top` la lettera si
+  unisce solo dalla base, come prima.
+- **La lettera resta la stessa**: entrata o lasciata in cima è la stessa
+  linea chiusa, cominciata dall'ingresso e tagliata all'uscita
+  (`Letter.route`). Stessi tratti, corsi lo stesso numero di volte: la
+  lunghezza delle lettere non cambia, cambiano solo gli spazi.
+- **Tre regole di lettura**, controllate sull'alfabeto da `parse_letters`:
+  un `top` che ne viola una è rifiutato.
+  1. Un'unione in cima non allunga un tratto che finisce sulla cima: la
+     sbarra della T, il braccio alto di E, F e Z, e nelle squadrate anche
+     di C, G e S. Il braccio si confonderebbe con l'unione, come la base
+     inghiottiva il braccio basso di E e L (ADR-0056). Il lato alto di una
+     pancia chiusa (P, R, la O squadrata) non finisce lì, e va bene.
+  2. Un'unione in cima non passa sopra la lettera: entra dal bordo
+     sinistro ed esce dal destro. Sotto una lettera la linea è il rigo su
+     cui la parola sta; sopra è un tratto in più (la L diventerebbe una C,
+     la A avrebbe una bandiera).
+  3. Una lettera che tocca la cima in un punto solo non si unisce lì: la I
+     fra due unioni in cima è una T («VIVA» si leggerebbe «VTVA»), e con
+     la cima da un lato e la base dall'altro la I e la L sono un gradino.
+- **La scelta** (`choose_joins`): ogni spazio va tutto lungo la base o
+  tutto lungo la cima, mai in diagonale. Fra tutte le combinazioni che le
+  lettere permettono, al più 128, vale la parola più corta; a pari
+  lunghezza quella con meno unioni in cima. Stessa parola, stesse unioni.
+  Una lettera può avere la cima da un lato e la base dall'altro (la V di
+  «UVA»).
+
+In cima si uniscono, tonde: H, M, N, U, V, W, X, Y da tutti e due i lati;
+B, D, K, P, R solo da sinistra. Squadrate: H, K, M, N, O, P, Q, R, U, V, W,
+X, Y; B e D solo da sinistra. Accorciano solo le coppie con U, V, W o Y
+(tonde) e con P, U, V o Y (squadrate), che dalla base si uniscono a metà:
+«UVA» 7,4% (8,6% squadrata), «NUVOLA» 5,2% (8,5%), «LUNA» 2,6%. Le altre
+parole restano identiche. Misure e campioni: `docs/tasks/TASK-067.md`.
+
+**Accese per difetto** in tutti e due gli stili (`words.TOP_JOINS`), per
+scelta dell'utente (2026-10-02, ADR-0063). `compose` e `plan_route` hanno
+`top_joins`, e `tests/measure_words.py` `--no-top-joins`: con `False` la
+parola è quella di prima, punto per punto. La richiesta all'API resta la
+stessa: cambia il percorso delle parole con U, V, W o Y.
+
+### Parole con la penna alzata (TASK-197)
+
+Una parola si può chiedere **con la penna alzata** (`pen_up`, ADR-0157):
+fra una lettera e l'altra si cammina senza disegnare, e l'app mette in
+pausa la registrazione (TASK-198). `compose(..., pen_up=True)`:
+
+- ogni lettera è solo il suo `out`, dall'ingresso all'uscita sulla base,
+  una volta: niente `back`, niente linea di base che la unisce alla
+  successiva, niente ritorno alla partenza. La linea è **aperta**: parte
+  dall'ingresso della prima lettera e finisce all'uscita dell'ultima;
+- le lettere stanno dove le mette la parola chiusa senza unioni in cima,
+  con lo spazio dello stile (0,6 dell'altezza, 0,3 le squadrate) fra
+  l'uscita di una e l'ingresso dell'altra. Niente unioni in cima: la linea
+  dritta che Strava traccia durante una pausa cade sulla base;
+- i punti degli spazi restano nella linea, con il loro `Place`, per
+  piazzare la parola e per allungarsi quando una lettera si sposta; il
+  percorso non li disegna (§5, «La penna alzata»).
+
+A parità di km le lettere vengono più alte, perché la distanza vale per le
+lettere sole: «CIAO» è lungo 9,5 altezze invece delle 16,2 della linea
+chiusa (andata, ritorno e base), 1,7 volte meno. A Trento, a 15 km, lettere
+di 1.121 m invece di 659.
+
+### Pezzi staccati dal contorno (TASK-223)
+
+Un contorno può avere anche dei **pezzi** (`pieces`, facoltativi, ADR-0185):
+linee staccate da tutto il resto, come gli occhi e il sorriso di una
+faccina, i raggi di un sole, il buco di una ciambella. Lo stesso file si
+disegna in due modi:
+
+```json
+"pieces": [
+  [[-0.36, 0.11], [-0.29, 0.13], ..., [-0.36, 0.11]],
+  [[-0.57, -0.14], [-0.48, -0.25], ..., [0.57, -0.14]]
+]
+```
+
+- Un pezzo **chiuso** (l'ultimo punto ripete il primo, almeno 3 punti
+  distinti) è un anello, come un occhio; uno **aperto** è una linea, come
+  una bocca. Non tocca il contorno, i tratti, gli altri pezzi, né se
+  stesso; contorno, tratti e pezzi stanno nello stesso riquadro.
+- **Con la penna alzata** (`Outline.pen_up_lines`, `pieces.py`): prima il
+  contorno con i suoi tratti, dal suo primo punto; poi ogni pezzo una
+  volta, nell'ordine del file, a piedi dall'uno all'altro come fra le
+  lettere di una parola (§5, «La penna alzata»). Un anello parte e finisce
+  dal suo vertice più vicino a dove finisce la linea prima; una linea
+  aperta dalla sua punta più vicina.
+- **Con la penna giù** (`Outline.joined`): ogni pezzo si attacca al disegno
+  con il collegamento più corto, dal punto più vicino delle linee prima di
+  lui (il contorno, i tratti, i pezzi già attaccati e i loro collegamenti)
+  al suo vertice più vicino, o alla punta più vicina di una linea aperta.
+  Da lì è un tratto (sopra): andata e ritorno sul collegamento, l'anello
+  una volta, la linea aperta fino in fondo e indietro. Un collegamento che
+  taglierebbe un'altra linea si rifiuta, con il motivo: basta cambiare
+  l'ordine dei pezzi.
+- Senza pezzi un contorno si legge e si disegna come prima.
+
+Le forme che hanno già gli occhi come tratti (gatto, pesce, teste di cane e
+coniglio, zucca) li **staccano** con la penna alzata senza cambiare il
+disegno con la penna giù: `"lift": [1, 2]` nel file dice quali tratti, da 1.
+Di un tratto staccato la penna alzata disegna solo l'anello, chiuso, con ciò
+che ci è appeso, dopo il contorno e prima dei pezzi; il collegamento che lo
+appende no. Si staccano solo tratti che chiudono un anello, e niente può
+pendere dal loro collegamento (la bocca della testa di cane pende da quello
+del naso: il naso non si stacca).
+
+I pezzi sono dettagli, come i tratti: con la penna alzata zone e corridoio
+sono sempre quelli dimezzati (ADR-0039), e un anello si traccia chiuso,
+così finisce dove è cominciato. Senza queste due cose, su una griglia di
+vie da 100 m una faccina quadrata disegnava gli occhi a «P» e non si
+chiudeva (0,48 contro 0,97, `tests/test_pieces.py`).
+
+Le forme a pezzi si provano dalla CLI, `--outline FILE --pen-up`; nel
+catalogo entrano solo dopo il giudizio dell'utente (ADR-0036). Dei candidati
+del TASK-223 (`shapes/outlines/`, campioni in `samples/`, `TASK-223_*`)
+sono entrati `smiley`, `ghost`, `donut` e `sun`, a pezzi; `lightning`,
+`drop`, `balloon`, `ice_cream`, `cloud` e `apple`, a contorno solo, restano
+alla CLI.
+
+**Una richiesta con la penna alzata** (`RouteRequest.pen_up`, TASK-223 B)
+vale per una parola e per una forma del catalogo che ha pezzi o tratti
+staccabili (`shapes.in_pieces`): le quattro sopra e gatto, pesce, teste di
+cane e coniglio, zucca. `plan_route` e `ShapeJob.of_request` la scrivono con
+`pieces.compose_shape`, il risultato tiene `shape` e ha i `walks`. Una forma
+senza pezzi si rifiuta (`… or the pieces of a shape; heart has none`).
+Sull'acqua la penna alzata vale da TASK-226 (§8, «Una forma a pezzi
+sull'acqua»): i pezzi si piazzano col contorno, senza `pieces.compose`. Con
+la penna giù una forma a pezzi è una linea chiusa come le altre.
+
 ### Il contorno da un'immagine (TASK-072, TASK-084)
 
 `route_engine/image_outline.py` ricava un contorno dal soggetto di
@@ -380,7 +527,8 @@ Procedura di base:
 
 1. Scaricare il grafo del rettangolo che contiene la forma proiettata,
    più un margine (ADR-0020), filtrato per l'attività: a piedi, la rete
-   pedonale **con le ciclopedonali** (ADR-0022).
+   pedonale **con le ciclopedonali** (ADR-0022); in bici, la rete `bike`,
+   con i sensi unici (ADR-0153, «La rete della bici» qui sotto).
 2. Il primo punto della forma è la partenza: il percorso inizia e finisce
    al **nodo più vicino**.
 3. Ogni altro punto della forma è una **zona**: i nodi entro un raggio dal
@@ -436,6 +584,65 @@ metri, la forma è irrecuperabile in quel punto. Non va nascosto: si misura
 la distanza media punto-forma → nodo e, oltre una soglia, si restituisce un
 warning esplicito in `RouteResult.warnings`. Vedi `PRODUCT.md`, rischi.
 
+**Nessuna strada.** Se attorno alla partenza il grafo non ha strade (un
+ritaglio senza nodi, o con un nodo solo), non c'è niente da agganciare: il
+motore rifiuta con `NoRoadsError` (`errors.py`), un `ShapeNotDrawableError`
+come ogni forma che lì non si disegna (TASK-180, ADR-0148; `MAPS.md`,
+«Warning»).
+
+### La rete della bici (TASK-190)
+
+Una richiesta `activity: "cycling"` (10–30 km, `DISTANCE_LIMITS_M` in
+`models.py`) si disegna sulla rete `bike` (ADR-0153, filtro e regole in
+`network.py`):
+
+- **Quali strade**: ciclabili e strade fino alle `primary` (`BIKE_ROADS`:
+  anche `service` e `track`); i `path`, `footway` e `bridleway` solo se
+  segnati come ciclabili (`bicycle=designated`); le zone pedonali dove le
+  bici sono ammesse. Mai scale, `trunk` e autostrade; mai le strade chiuse
+  alle bici (`bicycle=no`, `dismount`, `use_sidepath`, `motorroad=yes`) o
+  a tutti i veicoli (`access`, `vehicle`), salvo un `bicycle=yes` esplicito
+  (`rideable`).
+- **Sensi unici**: valgono. Il grafo è orientato e il percorso segue gli
+  archi: **un tratto contromano in sella non esiste**, non è un warning
+  (a piedi sì, dal TASK-206: «La bici a mano» qui sotto). Un senso
+  unico è percorribile nei due sensi in bici solo dove OSM lo dice
+  (`oneway:bicycle=no`, `cycleway=opposite*`, una corsia ciclabile
+  dall'altro lato con `cycleway:<lato>:oneway=-1`); una strada a doppio
+  senso con `oneway:bicycle=yes` è a senso unico per le bici
+  (`bike_direction`). Le regole si applicano strada per strada, prima che
+  OSMnx unisca le strade in archi.
+- **Pezzi**: un ritaglio della rete `bike` tiene il pezzo più grande in cui
+  **ogni nodo si raggiunge da ogni altro** (`crop`, `largest_piece`; per le
+  zone `bike` anche `ZoneCrop` passa da `crop`): da un senso unico cieco
+  non si torna. A piedi resta il pezzo con le strade unite, come prima.
+- **Partenze vicine** (§5): il ritorno alla partenza è la via più breve
+  consentita, non l'andata al contrario (`with_approach`).
+- **La rete giusta**: un grafo `bike` porta `network="bike"`; `plan_shape`
+  e `ShapeJob` rifiutano un grafo di un'altra rete con
+  `WrongNetworkError` (`check_network`): un percorso in bici sulla rete a
+  piedi passerebbe per scale e contromano.
+- **La bici a mano** (TASK-206, ADR-0167; scelta dell'utente: «poco»):
+  dove la bici non si guida ma si può portare a piedi (`walkable`:
+  `footway`, `path`, `bridleway` e zone pedonali chiuse alle bici, ogni
+  via con `bicycle=dismount`; mai scale, mai vie chiuse ai pedoni) la rete
+  ha archi nei due sensi segnati `walk`; e accanto a ogni senso unico c'è
+  l'altro senso, a piedi sul marciapiede (`walkable_beside`). Un metro a
+  piedi costa **`WALK_COST` = 6** metri in sella, nel corridoio del
+  tracciamento e nelle vie più brevi fuori dalla forma (`step_cost`): il
+  percorso porta la bici a mano solo dove la forma ne guadagna molto. A
+  Trento, 10 km: 0,7–1,1 km a piedi, cuore da 0,70 a 0,79, cerchio da 0,77
+  a 0,90. I controlli contano i metri a piedi (`on_foot`) e l'avviso li
+  dice («… m of the route with the bike on foot»). Una zona `bike_*` fatta
+  prima di TASK-206 non ha archi `walk` e si disegna come prima. Il
+  risultato dice dove (`RouteResult.on_foot`, parte B): coppie `[da, a]` di
+  indici nei punti, calcolate dai nodi del percorso
+  (`network.on_foot_stretches`: i punti sono il primo nodo più quelli di
+  ogni arco tranne il primo), nelle alternative e, da una partenza vicina,
+  con l'avvicinamento e il ritorno (`with_approach`).
+
+La rete a piedi non cambia: stesso filtro, stessi file, stessi percorsi.
+
 Il provider definitivo di routing (OSMnx locale, OSRM, GraphHopper, Valhalla)
 è una decisione aperta. Per la fase 1 si usa OSMnx perché gira in locale
 senza server, il che rende il ciclo di prova rapidissimo.
@@ -476,16 +683,19 @@ richiesto, se da lì la forma si chiude meglio (ADR-0025).
 
 | Parametro | Valori | Note |
 |---|---|---|
-| rotazione | −15°, 0°, +15°, poi ±15° ogni 5° restando entro ±15° | attorno alla partenza; il cerchio 0–345° ogni 15° |
+| rotazione | −15°, 0°, +15°, poi ±15° ogni 5° restando entro ±15°; se non basta, ±30° e ±45°, poi ogni 5° fra 15° e 45° | attorno alla partenza; il cerchio 0–345° ogni 15° |
 | fase di partenza | 0; 0,25; 0,5; 0,75 | dove la partenza entra nella forma |
 | scala | 0,4–1,1 × la stima di §3 | le strade allungano il percorso fino a 2,5× |
 | partenza | il punto richiesto, o a 250 / 500 m in 8 direzioni | spostarla deve valere almeno il 5% del contorno |
 | partenza lontana | a 1 / 1,5 / 2 km in 12 direzioni | solo nel secondo tempo, sotto |
 
 La rotazione conta molto dove la rete ha buchi (campi, fiumi, ferrovie); in
-una città fitta come Milano la forma va bene già dove cade. Ma l'occhio non
-riconosce una forma inclinata: dal TASK-036 ogni forma resta dritta entro
-±15°, tranne il cerchio, che a qualsiasi angolo è lo stesso (ADR-0038).
+una città fitta come Milano la forma va bene già dove cade. Su una mappa
+col nord in alto l'occhio non riconosce una forma inclinata: dal TASK-036
+ogni forma restava dritta entro ±15°, tranne il cerchio, che a qualsiasi
+angolo è lo stesso (ADR-0038). Dal TASK-232 l'app gira la mappa come la
+forma, e una forma si inclina fino a **45°** (ADR-0195, «Forme inclinate»
+qui sotto).
 
 ### Strategia di ricerca
 
@@ -502,31 +712,78 @@ riconosce una forma inclinata: dal TASK-036 ogni forma resta dritta entro
    lontane da quelle già provate; poi si rifinisce la rotazione migliore.
 5. Con il budget che resta (20 tracciamenti in tutto, fino a 6
    piazzamenti) si corregge ancora la distanza del piazzamento migliore.
+6. **Le inclinazioni oltre 15°** (TASK-232): se fin qui nessun percorso
+   è buono, gli stessi passi 1–5 ripartono con le sole rotazioni oltre
+   ±15° (±30°, ±45°; la rifinitura ogni 5° fra 15° e 45°) e **10
+   tracciamenti in più** (`TILTED_TRACES`); non nella ricerca lontana.
+   Sotto, «Forme inclinate».
 
 Ci si ferma appena distanza (±10%) e somiglianza (≥ 0,90) vanno bene. Se il
-budget finisce prima, si restituisce il tentativo di costo minore entro
+budget finisce prima, si restituisce il tentativo di costo minore, dritto
+o inclinato, entro
 **±2 km** dal target, con un warning che dice cosa manca. Se la somiglianza
 migliore è sotto **0,60**, o nessun tentativo sta entro ±2 km, nessun
 percorso: la forma lì non è disponibile (ADR-0025).
 
+### Forme inclinate (TASK-232)
+
+L'app gira la mappa di quanto è girata la forma (`RouteResult.rotation_deg`,
+antiorario, fra −180° e 180°, 0 per il cerchio), così il disegno si vede
+dritto anche inclinato: il motivo di ADR-0038 cade, e una forma con un
+alto e un basso si inclina fino a **±45°** (`MAX_TILT_DEG`, ADR-0195):
+catalogo, emoji, contorni da foto, parole.
+
+1. **Prima dritta, come prima**: la ricerca di sempre, entro ±15°
+   (`UPRIGHT_TILT_DEG`) e con i suoi 20 tracciamenti. Se dà un percorso
+   buono, è lui: stesso percorso e stesso tempo di prima.
+2. **Poi inclinata**, solo se il primo tempo non trova un percorso buono:
+   la stessa ricerca sulle sole rotazioni oltre ±15°, con 10 tracciamenti
+   in più (`TILTED_TRACES`). Il risultato è il migliore dei due tempi. Le
+   partenze vicine fanno lo stesso; la ricerca lontana (ADR-0040) no:
+   resta dritta, e parte, come prima, se nessun percorso vicino è buono.
+   Fra vicino e lontano si decide sul primo tempo, quello dritto
+   (`Search.upright`): un percorso inclinato vicino che non è buono non
+   tiene fuori quello lontano.
+3. **Inclinarla costa**: oltre 15°, il 5% di copertura a 45° in
+   proporzione all'angolo (`TILT_FIT_PENALTY`, come spostare la partenza
+   di 500 m), sia nel conteggio delle strade sia nel costo di un
+   tracciato (`W_TILT`). Entro 15° non costa, come prima. A parità vince
+   la forma più dritta.
+4. **Il risultato** dice la rotazione del percorso scelto (`shown_rotation`),
+   anche per ogni partenza vicina e alternativa, e in canoa; 0 senza
+   ricerca e per le forme che girano libere.
+
+Provare tutte le rotazioni insieme, con la penalità in proporzione
+dall'angolo 0 o da 15°, è stato misurato e scartato: il conteggio delle
+strade premiava piazzamenti inclinati che tracciati venivano peggio, e la
+ricerca, con lo stesso budget, perdeva percorsi buoni (`MAPS.md`, «Forme
+inclinate»).
+
 ### Trova dove la forma ci sta (TASK-038)
 
-Se la ricerca attorno alla partenza non trova un percorso buono (distanza
-±10% e somiglianza ≥ 0,90), c'è un **secondo tempo** (ADR-0040):
+Se la ricerca attorno alla partenza non trova **nessun percorso
+disegnabile** (somiglianza sotto 0,60, o oltre ±2 km dal target: quelli che
+il motore rifiuterebbe), c'è un **secondo tempo** (ADR-0040):
 
 1. si carica un grafo più grande, che copre la forma anche da una partenza
    a 2 km (può voler dire scaricare una zona nuova);
 2. la stessa ricerca riparte dalle partenze lontane (1, 1,5 e 2 km in 12
    direzioni), con altri 20 tracciamenti;
-3. il percorso lontano sostituisce quello vicino solo se è buono, o se
-   quello vicino non c'era. Spostarsi continua a costare come sopra, quindi
-   fra due posti buoni vince il più vicino.
+3. il percorso lontano sostituisce quello vicino se è buono, o anche solo
+   disegnabile: quello vicino non lo era. Spostarsi continua a costare come
+   sopra, quindi fra due posti buoni vince il più vicino.
 
-Dove la forma ci sta già il secondo tempo non parte: stessi percorsi e
-stessi tempi di prima. Se la forma non è disponibile né vicino né lontano,
-l'errore lo dice («… cannot be drawn here, nor within 2 km: …»). L'avviso
-sullo spostamento passa ai km sopra i 1000 m («start moved 1.5 km
-north-east of the requested point, …»).
+Dove vicino alla partenza un percorso si disegna, **anche non buono**, il
+secondo tempo non parte (TASK-203 B, ADR-0230). Fino ad allora partiva
+appena il percorso vicino non era buono (distanza ±10% e somiglianza
+≥ 0,90): era metà del tempo di una richiesta lunga (1,3–1,9 s su cuore e
+cerchio, 3,6–6,5 s su una parola tonda, sul Mac) e, su 15 richieste in sei
+città, ha dato un percorso migliore in una (il cerchio da 15 km a Bologna,
+0,92 a 1 km invece di 0,88 dalla partenza). Scelta dell'utente del
+2026-10-07: percorsi più veloci anche se diversi. Se la forma non è
+disponibile né vicino né lontano, l'errore lo dice («… cannot be drawn
+here, nor within 2 km: …»). L'avviso sullo spostamento passa ai km sopra i
+1000 m («start moved 1.5 km north-east of the requested point, …»).
 
 ### Partenze vicine (TASK-076)
 
@@ -547,7 +804,10 @@ da alcuni nodi della rete vicini e tiene il percorso migliore:
    altrove andrebbe scartato comunque.
 3. **Quanto si aspetta**: finita la partenza dell'utente, le vicine hanno
    al più altri 8 s, e mai oltre 25 s dalla richiesta; nessuno se il suo
-   percorso è già buono. Quelle ancora in corso si lasciano. Non si provano
+   percorso è già buono. Quelle ancora in corso si lasciano: ogni processo
+   ha una pipe sua e si ferma con `terminate`, non un `multiprocessing.Pool`,
+   il cui `terminate()` aspettava per sempre se arrivava mentre un grafo
+   stava per essere mandato (TASK-248, ADR-0212). Non si provano
    su grafi oltre 30 000 nodi (Milano) né in più processi di quanti ne
    entrano nella memoria che un processo nuovo può prendere: su Linux
    MemAvailable, che conta anche la cache dei file, non la memoria libera
@@ -604,6 +864,43 @@ danno lo stesso percorso scelto punto per punto. Dove le partenze vicine
 sono poche (una sola a Levico, via Montebello) le alternative possono
 mancare: l'app mostra allora il percorso da solo, come prima.
 
+### Dove la forma viene meglio (TASK-234)
+
+Un percorso può riuscire alla distanza chiesta mentre, a un'altra, la
+forma verrebbe chiaramente meglio. La ricerca lo ha già visto: fra i suoi
+tentativi (`Search.attempts`) ci sono quelli riscalati, ciascuno con la
+sua somiglianza e la sua lunghezza. `optimizer.better_distance` (ADR-0197)
+li guarda dopo che il percorso è scelto, senza tracciare niente in più:
+
+1. **Il confronto** è sul costo senza la parte della distanza
+   (`shape_cost`): forma, baffi in più e partenza spostata, come nella
+   funzione obiettivo qui sotto. Un tentativo è «chiaramente meglio» se lo
+   ha più basso di quello scelto di almeno `BETTER_MARGIN` = `W_SHAPE ×
+   0,05` (cinque punti di somiglianza) e se la sua somiglianza è almeno
+   0,90 (`SIMILARITY_THRESHOLD`). Un baffo ripassato o una partenza lontana
+   lo rendono più caro: non si consiglia un percorso che sembra migliore
+   solo alla somiglianza.
+2. **La distanza** è quella da chiedere per avere quel tentativo
+   (`ratio × distanza chiesta`: le lettere sole con la penna alzata, metà
+   di una forma andata e ritorno), al km intero come `suggested_distance_m`
+   di un errore. Niente consiglio se arrotondata è la distanza chiesta, se
+   è fuori dai limiti dell'attività (`DISTANCE_LIMITS_M`: la bici 10–30
+   km) o, per una parola, sotto i 3 km a lettera (`check_word`).
+3. **Fra più distanze** vince quella col tentativo più economico; a
+   parità, la più vicina alla distanza chiesta.
+4. **Da dove**: dalla ricerca che ha dato il percorso, anche quella
+   lontana (ADR-0040) quando vince lei; da una partenza vicina la sua
+   (`ShapeJob.here`), da cui il percorso viene. Le alternative (TASK-093)
+   non hanno un consiglio loro: vale per la richiesta.
+5. **Il percorso non cambia**: è un campo in più del risultato,
+   `better_distance_m`, `None` senza consiglio. Sull'acqua `water_fit` ha
+   già la sua distanza suggerita (ADR-0164) e il campo resta `None`.
+
+La ricerca prova scale fra 0,4 e 1,1 di quella iniziale, quindi il
+consiglio vede solo distanze in quell'intorno, e a volte lontane da quella
+chiesta (il cavallo di Trento da 15 km consiglia 6 km). Quanto spesso
+scatta: `MAPS.md`, «Viene meglio a N km».
+
 ### Lettere che si spostano (TASK-050)
 
 Per una parola composta (§2) la ricerca è la stessa, con due differenze
@@ -620,7 +917,9 @@ Per una parola composta (§2) la ricerca è la stessa, con due differenze
   parola intera premia gli spostamenti che accorciano gli spazi. Gli spazi
   si allungano o accorciano, e lo spazio da cui parte il percorso resta
   fermo nel suo centro, dove sta la partenza. Le lettere non ruotano e non
-  cambiano misura.
+  cambiano misura. Uno spazio lungo la cima (§2, TASK-067) si comporta
+  come uno lungo la base: si allunga e si accorcia con le sue due lettere,
+  e il percorso può partire dal suo centro.
 
 La somiglianza si misura sulla parola con le lettere spostate: è quella
 che il percorso deve disegnare.
@@ -637,7 +936,247 @@ lontane almeno 20° e alte almeno metà della prima, sono le direzioni della
 griglia. La ricerca prova, per ogni partenza, le direzioni al più **30°**
 fuori dall'orizzontale (dritta se non ce n'è), e la rifinitura gira di al
 più 5° attorno a una di esse. A Levico una griglia a 43° metteva la parola
-di traverso sulla mappa, e non si leggeva.
+di traverso sulla mappa col nord in alto, e non si leggeva. Dal TASK-232
+la mappa gira con la parola: le direzioni fra 30° e 45° (ogni griglia ne
+ha una entro 45°) sono il secondo tempo della ricerca, come le
+inclinazioni delle forme («Forme inclinate»).
+
+### La penna alzata (TASK-197)
+
+Una parola con la penna alzata (§2) si cerca come le altre parole, con
+queste differenze (`pen_up.py`, ADR-0157):
+
+1. **Ogni lettera si traccia da sola**, come linea aperta:
+   `snap_to_network(closed=False)` fa zone e corridoio come sempre, ma il
+   percorso finisce nella zona dell'ultimo punto invece di tornare alla
+   partenza. Zone e corridoio sono quelli del disegno intero, una quota
+   della lunghezza di tutte le lettere insieme (dimezzata se una lettera ha
+   tratti ripassati, ADR-0039), non della lettera sola. Una lettera che
+   cade su un nodo solo è quel nodo.
+2. **Fra una lettera e l'altra, un tratto a piedi**: dall'ultimo nodo di
+   una lettera, la strada più breve fino al primo della successiva (il nodo
+   più vicino al suo ingresso), senza zone né corridoio. Il percorso resta una
+   linea sola, lettere e tratti a piedi in fila; `walks` dice quali punti
+   sono a piedi: coppie `[da, a]` di indici in `points`, compresi, in
+   ordine. Dove finisce un tratto comincia la lettera successiva; n lettere,
+   n − 1 tratti.
+3. **Una fase sola**: la partenza è l'ingresso della prima lettera, e la
+   parola si scrive da sinistra a destra. Le lettere si spostano come in
+   «Lettere che si spostano», **tranne la prima**, che tiene la partenza.
+4. **La somiglianza è delle sole lettere** (`pen_up.similarity`): la
+   copertura di ogni lettera, linea aperta, in media sulle lettere, e la
+   precisione del percorso senza i tratti a piedi, entro 1/8 dell'altezza
+   come per le altre parole. Allungare un tratto a piedi non la cambia.
+5. **La distanza chiesta è delle lettere**, la parte che la corsa registra
+   (`pen_up.drawn_m`, `optimizer.drawn_distance`): da lì la scala iniziale
+   (`first_scale`), il ±10% della ricerca, i ±2 km oltre cui la forma non è
+   disponibile, la scelta fra le partenze vicine. `distance_m` resta la
+   lunghezza di tutti i `points`, tratti a piedi compresi.
+6. **Partenze vicine**: l'avvicinamento si corre, non è un tratto a piedi;
+   i `walks` si spostano con i punti, e dopo l'ultima lettera non si torna
+   alla partenza.
+
+Senza `pen_up` niente cambia: una parola dà lo stesso percorso di prima,
+punto per punto (`tests/test_pen_up.py`, sul grafo dei fixture e su una
+griglia, contro le impronte di `main` a 59dd8a7).
+
+Misure del 2026-10-02 sul Mac, dalla CLI con `--nearby 3`, zone già in
+cache (Overpass rifiutava il Mac). **Non giudicate a occhio dall'utente**;
+le due somiglianze non si confrontano fra loro, perché quella della penna
+alzata non vede né la base né i ritorni:
+
+| Richiesta | Linea chiusa | Penna alzata |
+|---|---|---|
+| «CIAO» 15 km, Trento centro | 0,83, 15,96 km, lettere alte 659 m, 11 s | 0,90; lettere 15,37 km + a piedi 2,09, 1,05 e 1,09 km = 19,59 km; lettere alte 1.121 m, partenza spostata di 1 km; 18 s |
+| «IO» 6 km, Levico | 0,97, 5,12 km, lettere alte 543 m, 1 s | 0,92; lettere 5,13 km + 0,98 km a piedi; lettere alte 737 m; 2 s |
+
+I tratti a piedi aggiungono il 20–30% ai km delle lettere: lo spazio fra
+le lettere cresce con la loro altezza, e per strada è più lungo che in
+linea d'aria.
+
+**Una forma a pezzi** (TASK-223, §2) con la penna alzata è la stessa cosa:
+`pieces.compose` la scrive come una parola a penna alzata, una «lettera»
+per il contorno e una per ogni pezzo (`Word.kind == "piece"`, i messaggi
+dicono «piece 2»). Il contorno tiene la partenza e non si sposta; i pezzi
+si spostano come le lettere. Un'«altezza di lettera» è `PIECE_HEIGHT`, un
+quarto del lato del disegno: i pezzi si spostano al massimo di 1/16 del
+lato, e la somiglianza tiene entro 1/32 del lato, circa l'1% del perimetro
+che la misura delle forme concede a un cerchio. I punti tracciati sono
+`PIECE_POINTS` = 128 in tutto, ogni vertice tenuto.
+
+Misure del 2026-10-03 sul Mac, 10 km, zone in cache; somiglianza dei pezzi
+con la penna alzata, delle forme con la penna giù (non si confrontano):
+
+| Forma | Trento | Levico | Milano |
+|---|---|---|---|
+| `smiley` penna alzata | 0,78; 10,6 km + 1,4 a piedi | non disponibile (0,51) | 0,86; 9,6 + 1,9 |
+| `smiley` penna giù | 0,93 | 0,82 | 0,92 |
+| `ghost` penna alzata | 0,82; 10,4 + 0,8 | 0,64 | 0,92; 10,4 + 1,2 |
+| `donut` penna alzata | 0,77; 9,7 + 0,7 | non disponibile (0,57) | 0,81; 9,4 + 0,7 |
+| `sun` penna alzata | 0,85; 10,3 + 7,6 | 0,65 | 0,95; 10,6 + 8,0 |
+
+Il sole a penna alzata cammina quasi quanto disegna: otto raggi, sette
+tratti a piedi da più di 1 km. Con la penna giù i raggi sono tratti
+ripassati, e i km a piedi non ci sono.
+
+**Le deviazioni di un pezzo** (TASK-242, ADR-0208, `detours.py`). Le
+strade non sempre seguono un pezzo: a Trento la bocca di una faccina da
+15 km attraversa la ferrovia, e il primo sottopasso è 250–370 m sotto la
+sua linea. Disegnata, quella andata e ritorno appende la bocca al bordo
+della faccia. Con la penna alzata si cammina:
+
+1. un nodo del percorso di un pezzo è **sulla linea** entro `LIFT_NEAR` =
+   1/8 di altezza di pezzo (la tolleranza della somiglianza);
+2. un tratto fra due nodi sulla linea è una **deviazione** se un suo punto
+   è più lontano di `LIFT_FAR` = 3/8 di altezza (circa un decimo del lato
+   del disegno). Ciò che si allontana meno resta disegnato;
+3. il pezzo si disegna **in parti**, e da una parte all'altra c'è un
+   tratto a piedi per la strada più breve, come fra due pezzi: `walks`
+   può avere più tratti dei pezzi meno uno, mai più di `MAX_WALKS` = 9
+   (quelli che tiene un risultato dell'API); oltre, si camminano le
+   deviazioni più profonde;
+4. una deviazione all'inizio o alla fine del pezzo si lascia fuori (il
+   pezzo comincia e finisce sulla sua linea; per un anello le due sono
+   una sola), e una che torna al nodo da cui parte si taglia: in nessuno
+   dei due casi c'è un tratto a piedi in più;
+5. **il contorno** perde solo i suoi baffi (sotto, TASK-243); le parole e
+   l'acqua non si toccano;
+6. la distanza che la ricerca insegue conta ancora i metri delle
+   deviazioni (`pen_up.sized_m`, `optimizer.drawn_distance`): la
+   forma resta grande com'era. I km disegnati del risultato
+   (`distance_m` meno i `walks`) sono quelli veri, e possono stare più
+   sotto la distanza chiesta.
+
+Un pezzo che resta vicino alla sua linea dà lo stesso percorso di prima,
+punto per punto (`tests/test_detours.py`).
+
+Misure del 2026-10-05 sul Mac, zone in cache, penna alzata, prima → dopo
+(`plan_route`, una partenza sola; a 15 km da due punti di Trento e da
+Milano per `smiley`, `ghost`, `donut`, `sun`, `cat`, `fish`, `dog_head`,
+`rabbit_head`, `pumpkin`; a 10 km da Trento, Levico e Milano per le prime
+cinque). Su 42 richieste **30 danno lo stesso percorso** di prima (tutte
+quelle di Milano), 2 restano non disponibili (`smiley` e `donut` a 10 km
+a Levico) e 10 cambiano, tutte in meglio:
+
+| Richiesta | Somiglianza | Disegnati | A piedi | Tratti |
+|---|---|---|---|---|
+| `smiley` 15 km, Trento | 0,71 → 0,73 | 15,1 → 14,2 km | 2,6 → 3,4 km | 3 → 4 |
+| `smiley` 15 km, Trento (altro punto) | 0,71 → 0,73 | 13,3 → 12,5 km | 2,0 → 2,8 km | 3 → 4 |
+| `ghost` 15 km, Trento | 0,72 → 0,75 | 14,2 → 14,6 km | 1,2 → 1,6 km | 2 → 3 |
+| `donut` 15 km, Trento | 0,74 → 0,76 | 15,9 → 14,9 km | 0,8 → 1,6 km | 1 → 2 |
+| `fish` 15 km, Trento (altro punto) | 0,64 → 0,67 | 15,1 → 14,1 km | 0,4 → 0,5 km | 1 → 2 |
+| `pumpkin` 15 km, Trento (altro punto) | 0,83 → 0,83 | 13,9 → 12,8 km | 1,9 → 3,0 km | 3 → 5 |
+| `sun` 15 km, Trento | 0,83 → 0,85 | 13,4 → 12,0 km | 8,7 → 8,8 km | 8 → 8 |
+| `sun` 15 km, Trento (altro punto) | 0,81 → 0,84 | 14,3 → 13,5 km | 10,6 → 11,4 km | 8 → 9 |
+| `sun` 10 km, Trento | 0,88 → 0,89 | 9,6 → 8,8 km | 7,5 → 6,7 km | 8 → 8 |
+| `sun` 10 km, Levico | 0,65 → 0,66 | 10,0 → 9,2 km | 5,0 → 5,7 km | 8 → 9 |
+
+A Trento è la ferrovia, che taglia il centro, a fare quasi tutte le
+deviazioni. Dove i tratti non crescono la deviazione era all'inizio o
+alla fine di un pezzo, o tornava al suo nodo. La faccina dello
+screenshot (dalla CLI con `--nearby 3`, come l'API: la variante A) passa
+da 0,77 a 0,79 con lo stesso percorso di 15,8 km: 12,9 km disegnati
+invece di 13,6, 2,9 km a piedi invece di 2,3 (`samples/`, `TASK-242_*`).
+La faccina e la ciambella a Trento, prima e dopo, **giudicate dall'utente
+il 2026-10-05: «sì, va bene»**; le altre righe della tabella no.
+
+**I baffi del contorno** (TASK-243, ADR-0209, `pen_up._lifted`,
+`pen_up._spike`). Il contorno è la forma: un buco gli toglie più di un
+tratto storto. Con la penna alzata si alza solo sui **baffi**, le
+deviazioni che escono e rientrano vicino a dove sono uscite:
+
+1. una deviazione del contorno è la stessa dei pezzi (fra due nodi sulla
+   linea, più lontana di `LIFT_FAR` = 3/8 di altezza di pezzo);
+2. è un **baffo** se salta al più `OUTLINE_GAP` = 1/2 altezza di pezzo
+   della linea del contorno (un ottavo del lato del disegno: 245 m per
+   una faccina da 15 km), che è il buco che lascia, e la sua strada è
+   lunga almeno `OUTLINE_SPIKE` = 2 volte la distanza in linea d'aria fra
+   i suoi due capi. Il buco si misura **lungo la linea** (`Detour.hole_m`),
+   da dove il percorso la lascia a dove la riprende, non in linea d'aria:
+   due punti del contorno possono essere vicini e avere fra loro un
+   orecchio, una coda, o tutto il giro. Un baffo si cammina, come la
+   deviazione di un pezzo: il contorno si disegna in parti;
+3. una deviazione che non è un baffo **resta disegnata**: è il contorno
+   stesso sulle strade che ci sono (dove nessuna strada segue il bordo
+   per centinaia di metri), e camminarla aprirebbe la forma;
+4. al più `OUTLINE_WALKS` = 2 baffi camminati, i più profondi; i tratti a
+   piedi restano al più `MAX_WALKS` = 9, contorno e pezzi insieme, le
+   deviazioni più profonde per prime (il sole, con 8 tratti fra i pezzi,
+   ne ha uno);
+5. un baffo che torna **allo stesso nodo** si taglia senza tratti a
+   piedi, come nei pezzi. Un baffo verso un **angolo** della forma è
+   sulla linea, non è una deviazione, e resta;
+6. **la partenza resta il primo punto del percorso**: il contorno
+   comincia sempre dal suo primo nodo, e una deviazione che parte da lì
+   resta disegnata (camminarla farebbe cominciare il percorso con un
+   tratto a piedi). La fine può arrivare prima, se l'ultimo tratto verso
+   la partenza è una deviazione: da lì parte il tratto a piedi verso il
+   primo pezzo;
+7. i metri dei baffi contano ancora nella distanza che la ricerca insegue
+   (`sized_m`), come quelli delle deviazioni dei pezzi.
+
+Vale solo per le forme a pezzi chieste con la penna alzata
+(`PEN_UP_SHAPES`: le forme senza pezzi non si possono chiedere con
+`pen_up`, `RouteRequest`). Senza `pen_up`, per le parole (anche con la
+penna alzata) e sull'acqua il percorso è quello di prima, punto per
+punto: provato su otto richieste a Trento, Levico e Milano (cuore,
+cerchio, faccina, gatto e sole con la penna giù, «CIAO» e «IO» con la
+penna alzata, «IO» senza) contro il motore di `main` a c2bb428, e
+l'impronta del motore sull'acqua non cambia (`paddleExamples.json`).
+
+Misure del 2026-10-05 sul Mac, zone in cache, penna alzata, prima → dopo,
+le stesse 42 richieste di TASK-242 (`plan_route`, una partenza sola), sul
+motore di `main` a c2bb428, con le forme inclinate di TASK-232. **26 danno
+lo stesso percorso** di prima, una resta non disponibile (`smiley` a
+10 km a Levico), una lo diventa (`donut` a 10 km a Levico: 0,62, 8,8 km
+disegnati e 2,4 a piedi) e **14 cambiano**. In 10 il disegno è lo stesso
+e un baffo, o due, diventano tratti a piedi: la somiglianza sale in
+tutte, da 0,008 a 0,061. In 4 la ricerca sceglie un altro disegno
+(«altro» nell'ultima colonna): la somiglianza resta uguale alla seconda
+cifra in 2 e **scende in 2**.
+
+| Richiesta | Somiglianza | Disegnati | A piedi | Tratti | Disegno |
+|---|---|---|---|---|---|
+| `ghost` 15 km, Trento (altro punto) | 0,82 → 0,78 | 14,3 → 13,7 km | 1,4 → 2,8 km | 2 → 4 | altro |
+| `donut` 15 km, Trento | 0,76 → 0,78 | 14,9 → 14,1 km | 1,6 → 2,4 km | 2 → 3 | lo stesso |
+| `cat` 15 km, Trento | 0,86 → 0,88 | 13,8 → 13,2 km | 1,8 → 2,3 km | 2 → 3 | lo stesso |
+| `cat` 15 km, Trento (altro punto) | 0,82 → 0,83 | 14,1 → 13,6 km | 1,6 → 2,2 km | 2 → 3 | lo stesso |
+| `fish` 15 km, Trento | 0,75 → 0,81 | 14,1 → 12,2 km | 0,5 → 0,5 km | 1 → 1 | lo stesso |
+| `fish` 15 km, Trento (altro punto) | 0,75 → 0,70 | 16,6 → 12,6 km | 0,9 → 1,9 km | 1 → 4 | altro |
+| `dog_head` 15 km, Trento | 0,82 → 0,82 | 14,7 → 14,0 km | 0,9 → 1,6 km | 2 → 3 | altro |
+| `pumpkin` 15 km, Trento | 0,80 → 0,82 | 14,4 → 13,5 km | 1,7 → 2,5 km | 3 → 4 | lo stesso |
+| `smiley` 10 km, Trento | 0,72 → 0,72 | 10,0 → 9,4 km | 1,9 → 2,4 km | 3 → 4 | altro |
+| `ghost` 10 km, Trento | 0,81 → 0,83 | 9,8 → 9,2 km | 0,8 → 1,5 km | 2 → 3 | lo stesso |
+| `ghost` 10 km, Levico | 0,64 → 0,65 | 9,7 → 8,6 km | 0,6 → 1,5 km | 2 → 3 | lo stesso |
+| `donut` 10 km, Trento | 0,72 → 0,74 | 9,4 → 8,9 km | 0,7 → 1,2 km | 1 → 2 | lo stesso |
+| `cat` 10 km, Trento | 0,77 → 0,80 | 10,7 → 9,6 km | 1,3 → 2,0 km | 2 → 3 | lo stesso |
+| `cat` 10 km, Milano | 0,89 → 0,91 | 10,3 → 10,0 km | 1,7 → 2,1 km | 2 → 3 | lo stesso |
+
+Nelle 14 che cambiano i km disegnati scendono in media di 1,0 km e
+quelli a piedi salgono di 0,7 km. **Due cose da sapere**:
+
+- i km «di disegno» stanno più sotto la distanza chiesta di prima (il
+  fantasmino da 10 km a Levico: 8,6 km disegnati e 1,5 a piedi), perché
+  i metri dei baffi contano ancora nella distanza inseguita (punto 7);
+- dove la ricerca sceglie un altro disegno la somiglianza può scendere.
+  Il costo che la ricerca minimizza conta anche la distanza e
+  l'inclinazione (TASK-232): con i baffi camminati un disegno dritto e
+  della misura giusta batte uno inclinato e più lungo che somiglia di
+  più. Il pesce da 15 km dal secondo punto di Trento passa da 0,75
+  (inclinato di 35°, 16,6 km disegnati) a 0,70 (inclinato di 15°,
+  12,6 km), e all'occhio dell'agente si legge meglio; il fantasmino dallo
+  stesso punto passa da 0,82 a 0,78, e all'occhio dell'agente è l'unica
+  delle 14 che peggiora.
+
+Dalla CLI con `--nearby 3`, come l'API, la faccina dello screenshot a
+Trento tiene il suo disegno: un baffo del contorno (631 m di strada, che
+rientra a 47 m da dove esce) diventa un tratto a piedi di 47 m, la
+somiglianza passa da 0,79 a 0,80, il percorso da 15,8 a 15,3 km (12,3 km
+disegnati, 3,0 a piedi in 5 tratti). I campioni prima/dopo sono in
+`samples/` (`TASK-243_*`): faccina, ciambella e gatto a Trento,
+fantasmino a Levico, gatto a Milano; il pesce e il fantasmino dal secondo
+punto di Trento, dove la ricerca sceglie un altro disegno (dalla CLI
+0,75 → 0,70 e 0,84 → 0,81); e la faccina a Milano, che resta identica.
 
 ### Funzione obiettivo
 
@@ -646,7 +1185,9 @@ costo = w_forma · (1 − somiglianza) + w_dist · |dist_reale − dist_target| 
 ```
 
 con `w_forma` = 3 e `w_dist` = 1: la forma conta più della distanza. Una
-partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura.
+partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura;
+altrettanto una forma inclinata di 45°, in proporzione ai gradi oltre 15°
+(TASK-232, `W_TILT`).
 
 **I baffi del cuore** (TASK-131, ADR-0107): per il cuore il costo ha un
 termine in più, `w_baffi · quota fatta due volte`, con `w_baffi` = 1,5
@@ -727,12 +1268,24 @@ o più corta del 10% del percorso, non ha punteggio
 Vale per forme, parole e immagini allo stesso modo: servono solo i punti e
 la somiglianza del percorso, niente grafo e niente rete.
 
+Con i `walks` di una parola con la penna alzata (TASK-197) la corsa si
+confronta con le **sole lettere**: «coperta» è la parte delle lettere con
+la traccia vicina; in «sul percorso» non contano le posizioni vicine a un
+tratto a piedi o alla linea dritta fra il suo inizio e la sua fine (dove
+salta una registrazione in pausa), se non sono vicine anche a una lettera.
+Il 10% minimo della traccia è delle lettere. Senza `walks`, come prima.
+
 ## 6. Validazione
 
 Un percorso esce dal motore solo se (altrimenti è un errore, non un warning):
 
 - è chiuso e parte dal punto di strada più vicino alla sua partenza;
 - la partenza è entro 500 m da quella richiesta (ADR-0025).
+
+Una parola con la penna alzata (TASK-197) non è chiusa: finisce sull'ultima
+lettera, e si controlla solo dove comincia (`pen_up.check_begins`). Le
+misure qui sotto sono di tutto il percorso, tratti a piedi compresi: anche
+lì si cammina.
 
 Poi si misurano, e oltre soglia diventano warning in `RouteResult.warnings`
 con misura e limite (`validation.py`, ADR-0026):
@@ -744,6 +1297,15 @@ con misura e limite (`validation.py`, ADR-0026):
   60 m lungo il percorso, sopra il 10% (le punte della forma escluse);
 - percorribilità: metri su scale, strade principali (`trunk`, `primary`) e
   in galleria, appena ci sono.
+
+**In bici** (ADR-0153) le stesse misure, sulla rete `bike`: le scale non
+ci sono (la rete non le ha, quindi 0 m); le strade principali sono le
+`primary` (le `trunk` sono escluse); in più lo **sterrato**, `unpaved`,
+solo per la bici: metri su `surface` senza fondo duro (`gravel`,
+`compacted`, `dirt`, `ground`…, `validation.UNPAVED`) o su `track` senza
+`surface` e non `tracktype=grade1`. Appena ci sono è un warning («… m of
+the route on unpaved roads»), come le strade principali. Una richiesta a
+piedi ha le misure e i messaggi di sempre, senza `unpaved`.
 
 Lungo i **tratti** della forma (§2), entro il 2% del perimetro, la strada
 ripercorsa è voluta: non conta né nella ripercorrenza esatta né in quella
@@ -799,7 +1361,212 @@ python -m route_engine --shape heart --distance 10000 \
     --start 45.9934,11.2580 --score-track corsa.gpx
 ```
 
+Con `--pen-up`, insieme a `--word`, la parola con la penna alzata
+(§5, «La penna alzata»); la CLI stampa i metri delle lettere contro il
+target, la lunghezza di ogni tratto a piedi e il totale, e il GPX ha i
+waypoint «Pause» e «Resume» (`GPX.md`):
+
+```
+python -m route_engine --word CIAO --distance 15000 --pen-up \
+    --start 46.0671,11.1214 --nearby 3 --out ciao_penna_trento.gpx
+```
+
+Con `--pen-up` e una forma a pezzi, `--outline` o `--shape` (§2, «Pezzi
+staccati dal contorno»), il contorno e poi ogni pezzo da solo, con le
+stesse righe dei pezzi al posto delle lettere; senza `--pen-up` la stessa
+forma con i pezzi attaccati. Una forma senza pezzi, o un'immagine, con
+`--pen-up` si rifiuta:
+
+```
+python -m route_engine --outline route_engine/shapes/outlines/smiley.json \
+    --distance 10000 --pen-up --start 45.4642,9.19 --out smiley_milano.gpx
+```
+
+Con `--activity cycling` un percorso in bici, 10–30 km, sulla rete `bike`
+(§4, «La rete della bici»), con la sua cache (`bike_*.graphml`); la CLI
+stampa anche i metri di sterrato:
+
+```
+python -m route_engine --shape heart --distance 20000 \
+    --start 46.0671,11.1214 --activity cycling --out heart_bici_trento.gpx
+```
+
+Con `--activity paddling` una forma del catalogo sull'acqua di un lago o
+del mare, 1–5 km, dalla riva (§8).
+
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.
 Questo è il ciclo di lavoro di tutta la fase 1: **generare, guardare,
 correggere**. Finché non produce un cuore riconoscibile, non si costruisce
 nulla sopra.
+
+## 8. Sull'acqua (TASK-191)
+
+Per la canoa e il paddle non c'è una rete: la forma piazzata (§3) **è** il
+percorso, se sta tutta sull'acqua (ADR-0154, ADR-0161). Dove ci sta lo
+decide il motore, mai l'AI. Tre moduli, senza rete né chiavi una volta che
+l'acqua è in cache:
+
+- `water.py` — **l'acqua attorno alla partenza**, in metri sul piano
+  tangente: i laghi (`natural=water`, almeno 10 ha), il mare come il
+  riquadro meno la terra della `natural=coastline` (terra a sinistra del
+  suo verso), gli ostacoli (moli, frangiflutti, pennelli, scogliere,
+  marine, porti, fiumi, lagune) e **la fascia**: acqua entro 1000 m dalla
+  riva, meno **200 m dalla riva al mare** (oltre la fascia dei bagnanti,
+  scelta dell'utente) e **50 m sui laghi** e dagli scogli, e 30 m dagli
+  ostacoli. Poi i punti della riva dove si arriva a piedi: entro 40 m da
+  una spiaggia, uno scivolo, un molo o una via pedonabile.
+- `water_fit.py` — **dove la forma ci sta**: grandezza intera, poi più
+  piccola del 3% alla volta fino al 40%, dritta entro ±15° (il cerchio
+  una volta sola) e, solo se così non ci sta nella tolleranza della
+  distanza, inclinata da 20° a 45° ogni 5°, al costo del 5% della distanza
+  a 45° (TASK-232, `TILT_WEIGHT`); per ogni scala e angolo, i centri della griglia della
+  fascia in cui tutto il contorno cade nella fascia, dal più vicino alla
+  partenza; i tre il cui contorno passa dove unirlo alla riva costa meno
+  (i tratti fino al punto della riva raggiungibile più vicino, e lo
+  spostamento fino a lì) si controllano esattamente con shapely. Poi la
+  partenza sulla riva di costo minore, entro 300 m dalla forma e 2 km
+  dalla partenza chiesta, con un tratto dritto sull'acqua fino alla forma;
+  il percorso è riva → forma → riva per lo stesso tratto. Nessun tratto è
+  più corto della via dal punto della riva raggiungibile più vicino alla
+  fascia (al mare circa 200 m): le scale troppo lunghe con i loro tratti
+  si saltano, e la ricerca si ferma quando nessuna forma più piccola può
+  costare meno.
+- `paddling.py` — **la richiesta**: `plan_paddling` prende una
+  `RouteRequest` con `activity="paddling"`, disegna la forma del catalogo
+  con 128 punti (il contorno è il percorso), la piazza con `water_fit`, la
+  controlla con `validation.check_on_water` e dà un `RouteResult`
+  (somiglianza 1, nessun warning). La usano la CLI e, con la parte B,
+  l'API.
+
+```
+costo = |distanza − chiesta| / chiesta + 2 · tratti / chiesta + 0,1 · km spostati
+```
+
+La somiglianza è quella della forma con sé stessa: il costo dice quanto si
+è dovuta rimpicciolire e spostare. Entro ±10% della distanza c'è un
+percorso; fuori, `WaterFitError` dice a quanti km la forma ci sta
+(`best_distance_m`). Lontano dall'acqua, `NoWaterError`. Tutti e due sono
+`ShapeNotDrawableError`. `measure` dà quello che la validazione guarda
+sull'acqua: metri sulla terra (oltre mezzo metro dentro), la distanza
+massima dalla riva, la distanza, se è chiuso.
+
+Con la fascia di 1 km una costa dritta tiene forme fino a circa 3 km (la
+stella 4), un lago stretto 5–6 km (tabella in ADR-0154). Con i 200 m al
+mare il percorso massimo resta circa 3 km, ma una parte sono i tratti: a
+2 km la forma è il 79% del giro, a 1 km il 58% (ADR-0161). Il motore non
+conosce le regole del posto: i bagnanti, i corridoi di lancio, il traffico
+di barche. I 200 m tengono la forma fuori dalla fascia dei bagnanti, i
+tratti dalla riva la attraversano.
+
+**L'attività** `paddling` è del motore (`DISTANCE_LIMITS_M`, **1–5 km**,
+scelta dell'utente; `WATER_ACTIVITIES`), non ancora del contratto
+dell'API (`SUPPORTED_ACTIVITIES`, parte B). Sull'acqua si disegna solo una
+forma del catalogo: una parola, un'immagine o un contorno da file sono
+`InvalidRequestError` («on the water only a shape of the catalogue is
+drawn, not a word»).
+
+**Una forma a pezzi sull'acqua** (TASK-226, ADR-0188): con la penna alzata
+(`pen_up` nella richiesta, §2 «Pezzi staccati dal contorno») il contorno e
+i pezzi, per esempio gli occhi di un gatto, si piazzano insieme, tutti
+nella fascia, e ogni pezzo si disegna da solo.
+
+- **Dove si lascia il contorno**: al vertice da cui la penna resta alzata
+  di meno (`water_fit._branch`), cioè vicino ai pezzi, non dove la riva
+  tocca il contorno. Per il pesce sono 64–76 m su 2 km; partendo dal punto
+  della riva erano 534 m.
+- **Il giro dei pezzi** (`_tour`): da quel vertice al pezzo più vicino,
+  entrando dal suo punto più vicino; poi al successivo più vicino; dopo
+  l'ultimo si torna al vertice, e il contorno prosegue.
+- **I tratti a penna alzata** sono dritti, stanno nella fascia come i
+  pezzi, e sono i `walks` del risultato: uno per pezzo più il ritorno.
+- **La distanza chiesta è quella di tutto il percorso**: contorno, pezzi,
+  tratti a penna alzata e tratti dalla riva. Su strada la distanza di una
+  forma a pezzi è quella del disegno; sull'acqua si pagaia quello che si è
+  chiesto. Alla grandezza intera contorno, pezzi e tratti a penna alzata
+  sono lunghi insieme quanto la distanza, quindi la scala è quella di una
+  forma in una linea sola (0,79 al mare e 0,94 sui laghi a 2 km).
+- **Con la penna giù niente cambia**: le forme a pezzi restano una linea
+  sola, punto per punto come prima (`tests/test_water_pieces.py`).
+
+**Una forma spostata dall'utente** (TASK-238, ADR-0202): la richiesta può
+dire dove si vuole il centro della forma (`RouteRequest.near`, solo
+sull'acqua), e il risultato dice dov'è (`RouteResult.centre`,
+`WaterRoute.centre`: la media dei vertici del contorno, che la rotazione
+non sposta). L'app fa trascinare la forma sulla mappa e richiede il
+percorso con `near` = il centro di prima più lo spostamento. **Il posto lo
+decide ancora il motore**: `near` è una preferenza, non una coordinata del
+percorso.
+
+- **La ricerca è la stessa** (`fit_shape(..., near=)`): stesse scale,
+  stesse rotazioni, stessa fascia, stessa partenza dalla riva entro 300 m
+  dalla forma e 2 km dalla partenza chiesta. Cambia quali posti si
+  guardano: per ogni scala e rotazione i centri **più vicini a `near`**
+  (`_fitting_centres`, `_nearest`: 6, a due celle l'uno dall'altro) invece
+  di quelli dove il tratto dalla riva costa meno, e solo quelli da cui una
+  riva raggiungibile a piedi sta entro 300 m (`_Wanted.reached`), così una
+  forma lasciata al largo torna dove una partenza c'è.
+- **Il costo** ha un termine in più: `NEAR_WEIGHT = 10` per ogni metro fra
+  il centro e `near`, diviso la distanza chiesta: cinque volte un metro di
+  tratto dalla riva andata e ritorno. Prima viene il posto, poi la forma
+  più grande e il tratto più corto lì. I primi `NEAR_FREE_M = 30` metri non
+  costano: un dito sulla mappa non li distingue, e la forma non si
+  rimpicciolisce né si inclina per stare dieci metri più vicina.
+- **Dove non ci sta** (sulla terra, oltre la fascia, troppo al largo,
+  oltre i 2 km dalla partenza) la forma va nel posto più vicino in cui ci
+  sta: più vicina alla riva di così non si può (50 m sui laghi, 200 m al
+  mare), e può uscirne più piccola (entro il ±10% della distanza) o
+  inclinata diversamente.
+- **Chiesta dov'è, resta dov'è**: `near` uguale al `centre` di un percorso
+  dà lo stesso percorso. **Senza `near` niente cambia**: i 32 esempi
+  dell'app sull'acqua vera sono usciti identici, punto per punto.
+- **Tempi** sull'acqua vera (Garda, Como, Jesolo, Riccione, 2 km, cuore e
+  testa di cane a pezzi): 1–6 s, contro 0,5–1,7 s senza `near`: il costo
+  del posto toglie potature alla ricerca.
+
+**La validazione sull'acqua** (`validation.check_on_water`, da
+`water_fit.measure`): il percorso è chiuso, nessun metro sulla terra (oltre
+mezzo metro dentro: il tratto parte dal bordo dell'acqua), nessun punto
+oltre 1000 m dalla riva, la distanza entro ±10%. Non sono warning: un
+percorso che non li rispetta è un errore del motore (`InvalidRouteError`).
+Niente scale, strade principali e ripercorrenza: sull'acqua non hanno
+senso.
+
+**Dalla CLI** di §7, l'acqua in `<cache-dir>/water/` (una richiesta a
+Overpass se manca):
+
+```
+python -m route_engine --shape heart --distance 2000 \
+    --start 44.0036,12.6634 --activity paddling --out heart_riccione.gpx
+```
+
+Stampa la scala e la rotazione, la partenza sulla riva e il suo tipo, il
+tratto, la distanza, quanto la forma sta lontana dalla terra e quanto il
+percorso si allontana dalla riva. `--score-track` vale anche sull'acqua;
+`--nearby` e `--no-optimize` sono delle strade e si rifiutano. Con
+`--pen-up` e una forma a pezzi stampa anche i tratti a penna alzata, e il
+GPX li segna con `Pause` e `Resume`:
+
+```
+python -m route_engine --shape cat --distance 2000 --pen-up \
+    --start 45.8132,9.0803 --activity paddling --out cat_como.gpx
+```
+
+Stampa anche il centro della forma (`centre:`). Con `--near LAT,LON` la
+forma si chiede vicino a quel punto (TASK-238), e la riga dice a quanti
+metri è finita; con un'altra attività `--near` si rifiuta:
+
+```
+python -m route_engine --shape heart --distance 2000 \
+    --start 44.0036,12.6634 --activity paddling --near 44.0105,12.6702 \
+    --out heart_riccione_moved.gpx
+```
+
+`python -m route_engine.water` resta per i campioni, dalle fixture o dalle
+risposte dell'API di OSM:
+
+```
+python -m route_engine.water --shape heart --distance 2000 \
+    --start 44.0007195,12.6512502 \
+    --water-file services/route-engine/tests/fixtures/water_coast.json \
+    --out heart_coast.gpx
+```

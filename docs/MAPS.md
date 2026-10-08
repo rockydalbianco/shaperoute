@@ -19,6 +19,22 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   che rende ogni strada percorribile nei due sensi. Con il solo filtro
   OSMnx rispetta i sensi unici, che a piedi non valgono, e alcuni punti
   della forma diventano irraggiungibili.
+- Rete **`bike`** per `activity: "cycling"` (TASK-190, ADR-0153): ciclabili
+  e strade fino alle `primary`, i sentieri e i marciapiedi solo se segnati
+  come ciclabili, mai scale, `trunk` e autostrade né le strade vietate alle
+  bici (`ROUTE_ENGINE.md` §4, «La rete della bici»). Si costruisce con
+  `network_type="bike"`, quindi **con i sensi unici**, e senza
+  semplificare: `bike_ways` scarta le strade e apre o chiude i sensi per
+  le bici strada per strada, con i tag che OSMnx di solito non tiene
+  (`BIKE_TAGS`: `bicycle`, `oneway:bicycle`, `cycleway*`, `surface`…), poi
+  semplifica come OSMnx. Due filtri Overpass (`BIKE_FILTER`), quindi **due
+  richieste per zona**: le strade, e i sentieri, i marciapiedi e le zone
+  pedonali. Fino a TASK-206 il secondo filtro prendeva solo quelli con un
+  tag `bicycle` che li apre; da TASK-206 (ADR-0167) li prende tutti:
+  dove la bici non si guida si porta a mano (archi `walk`, a sei volte il
+  costo), e anche l'altro senso di un senso unico si fa a piedi.
+  Tutti e due fatti di condizioni semplici, come `FOOT_FILTER`:
+  l'estratto (`prefetch_zones --extract`) li sa leggere.
 
 ## Overpass: come si scarica
 
@@ -74,6 +90,22 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   rettangolo arrotondato verso l'esterno a 1e-4° (≈ 10 m), così la stessa
   richiesta trova sempre lo stesso file. `<rete>` è `foot` dalla TASK-017;
   i file `walk_*` sono quelli di TASK-014, tenuti per i confronti.
+- **La bici ha la sua cache** (TASK-190, ADR-0153): `bike_<sud>_<ovest>_
+  <nord>_<est>.graphml`, col suo pickle, accanto ai `foot_*` e con le
+  stesse regole (zona, ritagli non salvati, scrittura intera). Una zona si
+  cerca solo fra i file della sua rete: un `foot_*` non serve mai una
+  richiesta in bici, né un `bike_*` una a piedi (`OsmnxSource.for_activity`
+  dà la sorgente di un'attività). I file `foot_*` già sul Mac e sul server
+  restano validi, con gli stessi nomi. Un grafo `bike` porta anche
+  l'attributo `network="bike"`, che il motore controlla prima di disegnare
+  (`check_network`). Le risposte grezze stanno nella stessa `http/`: la
+  query è un'altra, quindi un'altra chiave. Le vie con nome (`names_*`)
+  servono alla rete a piedi; quella della bici ha già le strade col
+  marciapiede a parte. **Le zone `bike_*` fatte prima di TASK-206** non
+  hanno i tratti a mano (ADR-0167): funzionano come prima, e per averli
+  vanno rifatte (cancellare il `bike_*` col suo pickle e rifarlo: dal Mac
+  da Overpass, sul server dall'estratto). Un grafo fatto da TASK-206 in
+  poi porta `on_foot=True`.
 - Dimensioni tipiche: 1–20 MB per grafo. I 12 grafi `walk` di TASK-014
   occupano 78 MB.
 - I dati OSM cambiano: un campione è riproducibile solo con lo stesso
@@ -88,6 +120,93 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   nome solo quando è intero (ADR-0104): un'API o uno script fermati a metà
   non lasciano un file rotto che faccia fallire la zona. Un `.part`
   rimasto da un processo ucciso non viene mai letto, e si può cancellare.
+- **L'acqua** (TASK-191, ADR-0154), separata dalle strade:
+  `data/cache/water/water_<sud>_<ovest>_<nord>_<est>.json`, gli elementi
+  di OpenStreetMap che servono all'acqua (coastline, `natural=water`,
+  moli, frangiflutti, pennelli, scogliere, marine, spiagge, scivoli e le
+  vie entro 40 m dall'acqua) nel formato `out body geom` di Overpass,
+  coordinate a 7 decimali. Un file che contiene l'area chiesta la serve;
+  altrimenti **una** richiesta Overpass (`water.WATER_QUERY`), scritta
+  intera o niente come gli altri file. Il 2026-10-02 la richiesta non è
+  stata provata: Overpass rifiutava il Mac. I file fatti dalle risposte
+  dell'API di OSM per i campioni (`python -m route_engine.water --osm-api
+  … --save-water …`) hanno lo stesso formato.
+  **L'acqua da un estratto** (TASK-225, ADR-0187): come le zone di
+  TASK-137, un file d'acqua si scrive anche da un estratto Geofabrik,
+  senza Overpass. Prima si tengono i tag della query e tutte le vie:
+  `osmium tags-filter <estratto>.osm.pbf
+  nwr/natural=coastline,water,beach,reef
+  nwr/man_made=pier,breakwater,groyne
+  nwr/leisure=marina,slipway,beach_resort nwr/landuse=harbour w/highway
+  -o acqua.osm.pbf`. Poi `python -m shaperoute_api.water_extract
+  --extract acqua.osm.pbf --bbox S,W,N,E --cache-dir data/cache` taglia il
+  riquadro con `osmium extract --strategy smart` (500 m di margine, i
+  laghi interi) e scrive gli elementi che Overpass avrebbe risposto, con
+  il nome di un download di quel riquadro (`--osm` se il ritaglio XML c'è
+  già). Un riquadro grande serve ogni richiesta che ci sta dentro, uguale
+  a un download del suo; la più grande, 5 km, chiede ±5,04 km attorno
+  alla partenza. osmium vuole più di 2 GB di memoria per un estratto
+  regionale: la VM docker del Mac non basta. Sul server, il 2026-10-04,
+  `italy-260930-water.osm.pbf` (674 MB, in `/srv/shaperoute/extracts`)
+  e i sei riquadri dei quattro luoghi della canoa (TASK-225).
+  **I laghi di Explore** (TASK-233, ADR-0196): l'elenco dei laghi dell'app
+  (`apps/mobile/src/paddle/lakes.json`) si scrive dallo stesso estratto, in
+  tre passi. Prima le acque, una a riga: `osmium tags-filter
+  <estratto>.osm.pbf wr/natural=water -o water.osm.pbf`, poi `osmium export
+  water.osm.pbf -f geojsonseq -o water.geojsonseq`. Poi i riquadri: `python
+  -m shaperoute_api.lake_catalog --waters water.geojsonseq --boxes` stampa
+  per ogni lago `S,W,N,E` e il nome, e ogni riga è un `water_extract
+  --extract acqua.osm.pbf --bbox S,W,N,E --cache-dir data/cache`. Infine,
+  con quell'acqua in una cartella (il server, o una sua copia), `python -m
+  shaperoute_api.lake_catalog --waters water.geojsonseq --cache-dir <cache>`
+  prova ogni punto con il motore e scrive l'elenco; dopo, Prettier sul
+  file. Un lago è un'acqua su cui il motore pagaia (`water.is_lake`), con
+  un nome da lago e largo abbastanza per un cerchio da 1 km a 50 m dalla
+  riva. Nel nord-est (estratto del 2026-10-02): 41 laghi, 93 punti, 41 file
+  d'acqua per 12 MB, 4 minuti e mezzo di prove sul Mac. **In Italia**
+  (`italy-260930-water.osm.pbf`, 2026-10-05): 211 laghi, 758 punti, 210
+  file d'acqua per 50 MB, sul server dallo stesso giorno; 26 minuti di
+  prove sul Mac.
+  **Un lago segnato come stagno** (TASK-250, ADR-0214): il Lago di Ledro è
+  `water=pond` in OpenStreetMap, e su uno stagno il motore non pagaia.
+  Uno stagno con un nome da lago è un lago dell'elenco, e prima di provare
+  i punti `lake_catalog --waters water.geojsonseq --cache-dir <cache>
+  --ponds` lo riscrive come `water=lake` nei file d'acqua della cartella
+  che lo contengono (quello che dice la mappa resta in `water:osm`); il
+  motore non cambia. Va rilanciato ogni volta che i file d'acqua si
+  rifanno. Il comando dice di ogni lago lasciato fuori il motivo del
+  motore. Dei sette laghi scartati da TASK-233, sei non hanno nei dati
+  una via, una spiaggia o uno scivolo a meno di 40 m dalla riva (Griessee,
+  Salarno, Sciaguana, Esaro, Castelnuovo, Sant'Anna in Calabria), e Gannano tiene a 1 km la
+  stella ma non il cuore e il cerchio: restano fuori (`tasks/TASK-250.md`).
+  **Le spiagge di «Paddle»** (TASK-245, ADR-0210): l'elenco dei posti di
+  mare dell'app (`apps/mobile/src/paddle/beaches.json`) si scrive in due
+  passi, senza le acque esportate. I posti sono nel comando (`PLACES`, 29
+  paesi scelti dall'utente, ognuno dove OpenStreetMap ha il suo nodo
+  `place`). Prima i riquadri: `python -m shaperoute_api.beach_catalog
+  --boxes` stampa per ogni paese `S,W,N,E` e il nome, e ogni riga è un
+  `water_extract --extract acqua.osm.pbf --bbox S,W,N,E --cache-dir
+  data/cache`; con `--cache-dir <cache>` lascia fuori i paesi che un file
+  di quella cartella copre già. Un riquadro tiene la richiesta più lunga,
+  5 km, da ogni partenza entro 3 km dal paese: circa 16 km di lato. Poi,
+  con quell'acqua in una cartella, `python -m shaperoute_api.beach_catalog
+  --cache-dir <cache>` sceglie per ogni paese un punto della riva dove si
+  arriva a piedi (`water.build_area`, quelli del motore): su una spiaggia
+  se c'è, il più vicino al paese entro 3 km; ne prova fino a quattro,
+  lontani almeno 500 m l'uno dall'altro, e tiene il primo dove cuore,
+  cerchio e stella stanno a 2 km, altrimenti quello dove stanno a 1,5 o a
+  1 km. Un paese senza un punto così resta fuori, e il comando dice
+  perché. Dopo, Prettier sul file. Il 2026-10-05
+  (`italy-260930-water.osm.pbf`): 29 paesi su 29 a 2 km, tutti con le otto
+  forme di «Explore»; 27 file d'acqua nuovi per 22,6 MB, sul server dallo
+  stesso giorno (Rimini e
+  Cavallino stanno nei file di Riccione e di Jesolo, TASK-225); 4 minuti
+  per scrivere l'acqua e 1 per le prove, sul Mac.
+  **Overpass e i laghi**: la prima risposta vera alla query (dal server,
+  2026-10-04, 184 s) dava le relazioni senza membri, perché `out tags
+  geom` non li scrive: un lago disegnato come multipoligono mancava.
+  Da TASK-230 (ADR-0192) la query chiede `out body geom`, che scrive i
+  membri con la loro geometria.
 - **Ritagli salvati prima di TASK-136** (ADR-0108): `python -m
   route_engine.prune_crops` elenca, zona per zona, i grafi che un altro
   grafo della cache contiene; con `--delete` li cancella, GraphML e
@@ -100,7 +219,11 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
 - **Con l'ottimizzatore** (TASK-015, ADR-0023): un quadrato attorno alla
   partenza che contiene la forma a ogni rotazione, fase e scala massima,
   più la partenza spostabile (500 m, ADR-0025) e 500 m di margine
-  (`zone_area`). Per 15 km circa 12,5 km di lato (155 km²). Si scarica **un grafo per zona**, partendo dal caso
+  (`zone_area`). Per 15 km circa 12,5 km di lato (155 km²); per le
+  distanze della bici (cerchio, TASK-190) 9 km a 10 km, 16 km a 20 km,
+  **23 km a 30 km** (530 km²), 26 km con la ricerca lontana: una zona di
+  oggi da 17 km non basta per 30 km, e le zone della bici fatte prima sono
+  di 26 km («Zone scaricate prima», sotto). Si scarica **un grafo per zona**, partendo dal caso
   più grande (cerchio da 15 km): ogni area più piccola si **ritaglia** da un
   grafo in cache che la contiene (`crop`). Il ritaglio resta in memoria e
   non si salva (ADR-0108): fino a TASK-136 la CLI lo salvava col suo nome,
@@ -112,6 +235,127 @@ Grafi di zona (cerchio da 15 km): Trento 22.613 nodi, Levico 6.845,
 Valsugana 7.156, Milano 85.336. Il ritaglio di Levico sull'area del cuore
 da 5 km dà 905 nodi contro i 904 del download diretto di TASK-017:
 ritagliare equivale a scaricare.
+
+**Una zona tiene ogni pezzo della sua rete** (TASK-180, ADR-0148). OSMnx
+da solo, di quello che scarica, tiene il pezzo connesso più grande e butta
+gli altri. Per una zona di 17 km è sbagliato dove la città sta su un'isola:
+la zona di **Venezia** prende anche Mestre e Marghera, e sul server il
+centro storico è rimasto senza un nodo (TASK-168). A piedi isola e
+terraferma non si toccano (dati OSM del 2026-10-02): sul Ponte della
+Libertà la ciclopedonale è `foot=designated` fino a 5 m dalla rete
+dell'isola, poi l'ultimo tratto è `highway=cycleway` con `foot=no` (way
+597743868), che `FOOT_FILTER` scarta come le due carreggiate. Ora il
+download chiede `retain_all=True` e il file della zona ha tutti i pezzi; il
+più grande si sceglie **area per area**, nel ritaglio (`crop`), e chi
+chiede la zona intera riceve il suo pezzo più grande, come prima
+(`largest_piece`). Per le città di terraferma non cambia niente: i pezzi in
+più sono piccoli (cortili, sentieri isolati) e nel ritaglio vince la stessa
+rete. Rifatte sul Mac dalle risposte di Overpass in cache, senza rete:
+
+| Zona | Nodi prima | Con tutti i pezzi | Pezzi | Il secondo pezzo |
+|---|---|---|---|---|
+| Trento, 17 km | 32.728 | 33.880 | 425 | 36 nodi |
+| Verona, 17 km | 30.838 | 31.761 | 300 | 36 nodi |
+| Verona, zona piccola | 2.459 | 2.523 | 27 | 8 nodi |
+| Rosolina Mare | 1.286 | 1.624 | 129 | 26 nodi |
+
+In tutte e quattro il pezzo più grande è il grafo di prima, nodo per nodo
+e arco per arco, nello stesso ordine, con le stesse lunghezze e geometrie;
+così i ritagli di cuore, cerchio e stella da 5 km, e il cuore da 5 km dal
+centro di Trento e di Verona ha la stessa linea. **Le zone salvate prima
+di TASK-180 restano col solo pezzo più grande** finché non si rifanno:
+quella di Venezia sul server va rifatta.
+
+Limite che resta: nel ritaglio vince il pezzo più grande **dell'area
+chiesta**, non quello della partenza. Dal centro di Venezia a 5 km l'area
+è tutta laguna e isola; un'area che prende più terraferma che isola dà la
+terraferma, e la partenza si aggancia lì.
+
+### Zone scaricate prima (TASK-137, ADR-0119)
+
+`python -m shaperoute_api.prefetch_zones --preset italy` (o `featured`, o
+nomi di città) scarica prima che qualcuno le chieda le zone di «Explore»:
+per ogni città il centro dalla ricerca delle città (lo stesso che l'app
+riceve), poi un riquadro di circa **17 × 17 km** (289 km²) che contiene
+ogni forma dei temi a 10 km da qualunque partenza entro 2,5 km
+(`search_radius_m`), con la ricerca lontana del motore da lì
+(`zone_area(..., FAR_OFFSET_M)`: senza, Romantic a Verona chiedeva 0,7 km
+oltre un riquadro di 14 km), e gli esempi di TASK-143 (cuore, cerchio e
+stella da 5 km) da qualunque partenza entro 2 km (`FAR_OFFSET_M`); più i
+nomi delle strade (ADR-0057). Una città già coperta è «ready»; le altre si scaricano
+**una alla volta**, con una pausa (`--pause-s`, 60 s) e un tetto
+(`--max-downloads`). Prima di ogni città legge la pagina di stato di
+Overpass: con un posto libero scarica, con «Slot available after … in N
+seconds» aspetta quei secondi (fino a 5 minuti). Overpass dà due posti per
+indirizzo, e dopo una richiesta grande il posto resta occupato più dei 60 s
+di pausa: senza l'attesa, il secondo download prendeva un errore HTTP. Una
+città il cui download fallisce (col codice HTTP: Overpass carico risponde
+504) resta per il giro dopo e si passa alla seguente; si ferma dopo **due
+errori di fila**, se Overpass non risponde o sotto i 5 GB liberi; rilanciato, riparte dalle
+città mancanti. `--dry-run` dice cosa manca senza scaricare. Si lancia
+dove gira l'API usata dall'app, con la sua cartella della cache e
+`GEOAPIFY_API_KEY`.
+
+**Da un estratto, senza Overpass** (`--extract FILE.pbf`, scelta
+dell'utente del 2026-10-02): Overpass blocca l'indirizzo dopo pochi
+download grandi, anche quello del server (2026-10-01: dopo 5 città). Con
+l'estratto di Geofabrik, filtrato una volta alle sole strade, ogni zona si
+ritaglia con `osmium extract --strategy complete_ways` (riquadro più 700 m:
+OSMnx chiede 500 m attorno) e, per la durata del download, OSMnx e il
+motore leggono da lì le risposte che Overpass darebbe
+(`zone_extract.served_from`): il filtro `FOOT_FILTER` letto com'è, i nodi e
+le strade in ordine di id. Il resto è di OSMnx e del motore come per un
+download. Napoli e Palermo, scaricate prima da Overpass, rifatte
+dall'estratto (30 settembre): Palermo identica (18.681 nodi, 53.930 archi,
+44 strade con nome); Napoli 26.977 nodi contro 26.979, 6 archi su 76.628 in
+meno (un giorno di modifiche a OSM); cuore e stella da 5 km dal centro con
+la stessa linea nelle due. Circa un minuto per città. osmium-tool
+(dipendenza approvata dall'utente, ADR-0119; sul Mac `brew install
+osmium-tool`, `SETUP.md` 10.5) sta solo nell'immagine dei download, non in
+quella dell'API:
+
+```bash
+curl -O https://download.geofabrik.de/europe/italy-latest.osm.pbf
+```
+
+```bash
+printf 'FROM shaperoute-api\nUSER root\nRUN apt-get update && apt-get install -y --no-install-recommends osmium-tool\nUSER shaperoute\n' | docker build -t shaperoute-prefetch -
+```
+
+```bash
+docker run --rm -v "$PWD":/extracts shaperoute-prefetch osmium tags-filter /extracts/italy-latest.osm.pbf w/highway -o /extracts/italy-highways.osm.pbf
+```
+
+Poi il comando nel container, con la cache dell'API montata e `--extract
+/extracts/italy-highways.osm.pbf` (2,2 GB l'estratto, 647 MB le sole
+strade, 90 s il filtro). Le città fuori dall'estratto (le estere in
+evidenza) vogliono il loro estratto o Overpass.
+
+**Le zone della bici** (TASK-190, ADR-0153): `--activity cycling` fa la
+zona della rete `bike` (`bike_*`, accanto alle `foot_*`) di **26 × 26 km**
+attorno al centro della città (`bike_zone_box`): ogni forma del catalogo
+a 30 km dal centro, con la ricerca lontana. Da lì entrano anche un 30 km
+da una partenza fino a circa 1,4 km dal centro, un 20 km fino a 3,4 km e
+un 10 km fino a 6,9 km. Senza i nomi delle strade, che alla bici non
+servono. **Solo dall'estratto**: senza `--extract` il comando si ferma
+(una zona della bici sono due richieste grandi a Overpass). L'estratto
+filtrato a `w/highway` va bene così: `zone_extract` legge i due filtri
+`BIKE_FILTER` come legge `FOOT_FILTER`.
+
+```bash
+python -m shaperoute_api.prefetch_zones --activity cycling --extract /extracts/italy-highways.osm.pbf Trento
+```
+
+Quali città: prima Trento (la prova sul server), poi `--preset italy` con
+l'ok dell'utente; le estere no (ADR-0153, «Aggiornamento»). Misure fatte
+sul Mac dalle risposte a piedi in cache, quindi senza le vie col
+marciapiede a parte (stessa strada dell'estratto, stesso riquadro della
+zona a piedi): Trento 20.424 nodi, 11 MB di pickle, 127 MB in memoria
+contro i 185 della zona a piedi; Milano 52.493 nodi, 24 MB, 236 MB contro
+618; Roma 186 MB contro 454; costruzione in 10–29 s, picco 1–1,8 GB. Una
+zona di 26 km dovrebbe stare fra 0,15 e 0,6 GB in memoria e 70–150 MB su
+disco; l'API ne tiene una alla volta (`API.md`, «Grafi»). Non ancora
+provata su una zona vera (task file di TASK-190).
 
 ## Dal disegno alla strada
 
@@ -146,6 +390,15 @@ quindi crescono con la distanza richiesta.
   dal punto dell'utente.
 - **Punto della forma irraggiungibile**: nessuna strada porta alla sua
   zona; il punto si salta e la CLI lo dice.
+
+**Nessuna strada** non è un warning ma un rifiuto (TASK-180, ADR-0148):
+se nell'area chiesta il grafo non ha un nodo (mare aperto, o un posto che
+la zona non copre), o ne ha uno solo senza archi, il motore alza
+`NoRoadsError`, che è un `ShapeNotDrawableError`: la CLI dice «No route:
+there are no roads to run on around here», l'API risponde
+`shape_not_drawable`. Prima il grafo vuoto si rompeva più avanti (`max()`
+di nessun pezzo, un indice in nessuna strada) e l'API diceva
+`engine_error`.
 
 In TASK-014 e TASK-017 il warning di rete rada è comparso solo in
 `valsugana` a 15 km, a 151 m e 158 m: appena sopra la soglia.
@@ -267,6 +520,116 @@ strade principali / gallerie):
   correggere la scala di ogni piazzamento (tenuta) dà somiglianza media
   0,862; tracciare più piazzamenti una volta sola 0,845.
 - Tempi dalla cache: 5–28 s per caso.
+
+### Viene meglio a N km (TASK-234)
+
+Quante volte i tentativi della ricerca dicono una distanza dove la forma
+viene chiaramente meglio (`better_distance`, `ROUTE_ENGINE.md` §5,
+ADR-0197). Misurato il 2026-10-05 sul Mac, dalla cache (`plan_route`: la
+ricerca della partenza, e quella lontana quando parte), con
+`services/route-engine/tests/measure_better.py --catalog --words`: per
+ogni caso il consiglio e il margine più grande di un tentativo con
+somiglianza ≥ 0,90 a un altro km, così la soglia si legge sugli stessi
+numeri.
+
+| Casi | Percorsi | Consigli a 5 punti (tenuta) | a 4 | a 3 |
+|---|---|---|---|---|
+| I 14 disegnabili (12 in cache: la Valsugana no) | 12 | 0 | 0 | 0 |
+| Le 17 forme del catalogo a Trento e Levico, 5/10/15 km (il pesce di Levico da 5 km rifiutato) | 93 | 6 | 6 | 8 |
+| «CIAO», «IO», «RUN» a 9/12/15 km (dai 3 km a lettera), Trento, Levico, Milano | 24 | 2 | 2 | 3 |
+| **Tutti** | **129** | **8 (6%)** | 8 | 11 |
+
+I consigli con la soglia tenuta (somiglianza scelto → consigliato):
+
+| Caso | Scelto | Consiglio |
+|---|---|---|
+| cuore 10 km, Trento | 0,86 a 8,3 km, non buono | 8 km, 0,92 |
+| cavallo 10 km, Trento | 0,97, con baffi | 7 km, 1,00 |
+| cavallo 15 km, Trento | 0,93, con baffi | 6 km, 0,96 |
+| cavallo 15 km, Levico | 0,98, con baffi | 17 km, 1,00 |
+| luna 10 km, Levico | 0,90, non buono, con baffi | 16 km, 0,91 |
+| lumaca 10 km, Levico | 0,83 a 8,6 km, non buono | 12 km, 0,94 |
+| «IO» 12 km, Levico | 0,88 a 13,8 km, non buono | 10 km, 0,94 |
+| «IO» 15 km, Levico | 0,86, non buono | 12 km, 0,92 |
+
+- **Scatta poco**: 8 percorsi su 129, nessuno dei 12 di riferimento
+  misurati. Dove la forma riesce (somiglianza ≥ 0,90, distanza ±10%: 65
+  percorsi su 129) la ricerca si ferma al primo tentativo buono e ne prova
+  pochi altri; dove non riesce, di solito non riesce a nessuna scala
+  (forme a Levico: 40 su 50 non buone, e in 36 di loro nessun tentativo
+  arriva a 0,90).
+- **La soglia resta 5 punti** (`BETTER_MARGIN` = 0,15): a 4 gli stessi
+  8; a 3 entrano testa di cane 5 km e albero 15 km a Trento, «CIAO» 12 km
+  a Milano (0,92 → 0,96 a 15 km), e il cerchio di Milano da 5 km resta
+  appena sotto (0,089): guadagni di 3–4 punti di somiglianza.
+- **Con le partenze vicine** (`plan_nearby`, come l'API) il consiglio è
+  quello della partenza che vince: il cavallo di Trento da 10 km consiglia
+  8 km invece di 7, la lumaca di Levico nessuno (vince una partenza
+  vicina, con la sua ricerca). I percorsi di prima non cambiano: stesse impronte sui
+  12 casi e su tre dei consigli, con `plan_route` e `plan_nearby`,
+  alternative comprese.
+- **I baffi pesano**: per cavallo e luna il margine viene soprattutto dalla
+  quota fatta due volte (`W_DOUBLED`), non dalla somiglianza.
+- **Le distanze possono essere lontane**: il cavallo di Trento da 15 km
+  viene meglio a 6 km (la scala più piccola che la ricerca prova, 0,4).
+- Il passo 2 (cercare apposta altre distanze, ADR-0197) troverebbe di
+  più, a 5–50 s di server per distanza.
+
+### Forme inclinate (TASK-232)
+
+Quanto cambiano i percorsi se una forma si inclina fino a 45° (ADR-0195,
+`ROUTE_ENGINE.md` §5, «Forme inclinate»). Misurato il 2026-10-05 sul Mac,
+dalla cache, con `plan_route` (la ricerca della partenza e quella lontana
+quando parte) e `services/route-engine/tests/measure_tilt.py --catalog
+--words`: ogni caso prima com'era (15°, parole squadrate a 30°, nessun
+costo dell'inclinazione) e poi con il motore nuovo, uno dopo l'altro sullo
+stesso grafo già letto. 129 percorsi: i 12 di riferimento in cache, le 17
+forme del catalogo a Trento e Levico a 5/10/15 km (il pesce di Levico da
+5 km rifiutato), «CIAO», «IO», «RUN» a 9/12/15 km. Quattro processi in
+parallelo: i tempi si confrontano dentro lo stesso processo.
+
+| Ricerca | Uguali | Meglio | Peggio | Oltre 15° | Buoni (65 prima) | Tempo medio |
+|---|---|---|---|---|---|---|
+| Tutte le rotazioni insieme, costo in proporzione da 0° | 71 | 27 | 29 | 0 | 70, ma 2 buoni persi | +22% |
+| Tutte insieme, i primi 15° gratis | 116 | 4 | 8 | 7 | 65, 2 buoni persi | +11% |
+| Prima dritta, poi inclinata, anche lontano | 107 | 15 | 4 | 22 | 69 | +31% |
+| **Prima dritta, poi inclinata solo vicino (tenuta)** | **110** | **14** | **2** | **19** | **67** | **+10%** |
+
+(«meglio» e «peggio»: somiglianza di almeno mezzo punto diversa; i
+percorsi che cambiano di meno contano fra quelli che cambiano.)
+
+- **Tutte insieme non va**: il conteggio delle strade premia piazzamenti
+  inclinati che tracciati vengono peggio, e con lo stesso budget la
+  ricerca ne prova meno di dritti. Con il costo da 0° nessuna forma si
+  inclina oltre 15°, ma molte si raddrizzano e peggiorano (il pesce di
+  Trento da 10 km 0,91 → 0,70, la testa di cane di Levico da 15 km 0,95 →
+  0,88); il cuore di Levico da 5 km, uno dei 12 di riferimento, scende da
+  0,92 a 0,88.
+- **Prima dritta**: dove la ricerca di sempre dà un percorso buono è lui,
+  punto per punto. Nella prima prova anche la ricerca lontana provava le
+  inclinazioni (tempo +31%), e un percorso inclinato vicino, disegnabile
+  ma non buono, teneva fuori quello lontano che vinceva prima: gatto e
+  pesce di Levico da 15 km da 0,71 e 0,78 a 0,64 e 0,62. Tenuta: la
+  ricerca lontana resta dritta, e vicino o lontano si decide sulla ricerca
+  dritta, come prima.
+- **I 12 di riferimento**: tutti identici, tempo medio 5,5 → 5,8 s (+6%;
+  due cuori di Levico fanno i 10 tracciamenti in più senza trovare di
+  meglio).
+- **I 19 che cambiano** (campioni `samples/TASK-232_*`, `LOG.md`): tutti
+  inclinati oltre 15°, di 20–45° (la mappa li gira), 14 con la somiglianza
+  più alta.
+  Diventano buoni la lumaca di Trento da 5 km (0,85 → 0,91) e quella di
+  Levico da 10 km (0,83 → 0,92); l'albero di Natale di Trento da 15 km
+  (0,93 → 0,98) e la lumaca di Trento da 10 km (0,92 → 0,90) erano buoni
+  solo con la partenza spostata di 1 km, ora lo sono dove l'utente è. Il
+  sole di Levico da 15 km 0,75 → 0,90, il fantasmino di Levico da 10 km
+  0,61 → 0,73. Due scendono di qualche punto con la distanza più giusta:
+  l'albero di Natale di Levico da 5 km (0,75 a 6,6 km → 0,73 a 4,8 km) e
+  la lumaca di Trento da 10 km, sopra. Il gatto e il sole di Trento da
+  5 km guadagnano forma (0,79 → 0,91, 0,84 → 0,96) allungandosi del 22–25%,
+  scelti dal costo.
+- **Sull'acqua** lo stesso schema (`water_fit.py`): i 32 esempi della canoa
+  in «Explore» non cambiano (tutti ci stanno dritti).
 
 ## Fixture di test
 

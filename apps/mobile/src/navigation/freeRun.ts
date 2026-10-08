@@ -1,7 +1,11 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { durationMs, type Track } from "./trackRecorder";
-import { endRun, loadRun, RESUME_WITHIN_MS, type SavedRun } from "./trackStore";
+import { BASE_LANGUAGE, type Language } from "../i18n/languages";
+import { METRES_PER_MILE, metresPer } from "../units/format";
+import { appUnits, type Units } from "../units/units";
+import { wordsOf } from "../voice/words";
+import { activeMs, durationMs, type Track } from "./trackRecorder";
+import { endRecording, loadRun, RESUME_WITHIN_MS, type SavedRun } from "./trackStore";
 
 /**
  * A run without a route (TASK-149, ADR-0122): «Run» on the first screen
@@ -20,17 +24,19 @@ export function isFreeRun(run: SavedRun): boolean {
   return run.route.length === 0;
 }
 
+function withLine(run: SavedRun | null): FreeRun | null {
+  return run !== null && isFreeRun(run) && run.track.fixes.length > 1 ? run : null;
+}
+
 /** The free run left in the file, when it has a line; null otherwise. */
 export function pendingFreeRun(): FreeRun | null {
-  const run = loadRun();
-  return run !== null && isFreeRun(run) && run.track.fixes.length > 1 ? run : null;
+  return withLine(loadRun());
 }
 
 /** Ends the run in progress, writing what there is, and gives back the
  * free run when it has a line to show. */
 export function endFreeRun(): FreeRun | null {
-  endRun();
-  return pendingFreeRun();
+  return withLine(endRecording());
 }
 
 /** Whether «Run» again would go on with `run`'s track (trackStore). */
@@ -43,15 +49,21 @@ export function canResume(run: FreeRun, nowMs: number): boolean {
   );
 }
 
-/** From the first fix to `nowMs`, in milliseconds: 0 before the first fix. */
+/** From the first fix to `nowMs`, in milliseconds, pauses left out: 0
+ * before the first fix. */
 export function elapsedMs(track: Track, nowMs: number): number {
-  const first = track.fixes[0];
-  return first === undefined ? 0 : Math.max(0, nowMs - first.timeMs);
+  return activeMs(track, nowMs);
 }
 
 /** "0.00 km", "12.34 km": the distance of a run, as runners read it. */
 export function kmLabel(metres: number): string {
   return `${(Math.max(0, metres) / 1000).toFixed(2)} km`;
+}
+
+/** "0.00", "12.34": the kilometres alone, for where the unit is written
+ * beside them. */
+export function kmNumber(metres: number): string {
+  return (Math.max(0, metres) / 1000).toFixed(2);
 }
 
 /** "0:07", "12:34", "1:02:03": a running clock. */
@@ -78,44 +90,34 @@ export function paceLabel(metres: number, ms: number): string | null {
   return `${minutes}:${String(secondsPerKm % 60).padStart(2, "0")} /km`;
 }
 
-/** "1 hour", "5 minutes", "1 second": a number with its unit, as said. */
-function units(count: number, unit: string): string {
-  return `${count} ${unit}${count === 1 ? "" : "s"}`;
-}
-
-/** "25 minutes 10 seconds", "1 hour 2 minutes": a time as the voice says it. */
-export function spokenTime(ms: number): string {
-  const total = Math.max(0, Math.round(ms / 1000));
-  const hours = Math.floor(total / 3600);
-  const minutes = Math.floor((total % 3600) / 60);
-  const seconds = total % 60;
-  if (hours > 0) {
-    return minutes > 0
-      ? `${units(hours, "hour")} ${units(minutes, "minute")}`
-      : units(hours, "hour");
-  }
-  if (minutes === 0) {
-    return units(seconds, "second");
-  }
-  return seconds > 0
-    ? `${units(minutes, "minute")} ${units(seconds, "second")}`
-    : units(minutes, "minute");
-}
-
 /** The whole kilometres in `track`: the voice says each one once. */
 export function wholeKm(track: Track): number {
   return Math.floor(track.distanceM / 1000);
 }
 
+/** The whole kilometres in `track` or, with miles, its whole miles
+ * (TASK-182): what the voice counts, and says each one once. */
+export function wholeUnits(track: Track, units: Units = appUnits()): number {
+  return Math.floor(track.distanceM / metresPer(units));
+}
+
 /**
  * What the voice says when the run passes `km` kilometres: the time so far
- * and the average pace, as a running watch does.
+ * and the average pace, as a running watch does, in the voice's `language`
+ * (TASK-209). With miles `km` counts miles, and the pace is a mile's
+ * (TASK-182).
  */
-export function kmAnnouncement(km: number, track: Track): string {
+export function kmAnnouncement(
+  km: number,
+  track: Track,
+  language: Language = BASE_LANGUAGE,
+  units: Units = appUnits(),
+): string {
   const ms = durationMs(track);
+  if (units === "mi") {
+    const pace = track.distanceM > 0 ? (ms / track.distanceM) * METRES_PER_MILE : 0;
+    return wordsOf(language, units).mile(km, ms, pace);
+  }
   const pace = track.distanceM > 0 ? (ms / track.distanceM) * 1000 : 0;
-  return (
-    `${units(km, "kilometre")}. Time: ${spokenTime(ms)}. ` +
-    `Average pace: ${spokenTime(pace)} per kilometre.`
-  );
+  return wordsOf(language, units).kilometre(km, ms, pace);
 }

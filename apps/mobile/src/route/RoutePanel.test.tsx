@@ -2,6 +2,7 @@ import type {
   ImageOutline,
   ImageRouteRequest,
   RouteRequest,
+  RouteResult,
 } from "@shaperoute/shared-types";
 import imageOutline from "@shaperoute/shared-types/fixtures/image-outline.json";
 import imageRequest from "@shaperoute/shared-types/fixtures/image-route-request.json";
@@ -314,6 +315,8 @@ test("the route used is told once, as A, B or C among the ones offered", async (
     />
   );
   const { rerender } = await render(outcome(0));
+  // The GPX is the one way out of the app: no "Run with Strava" (TASK-170).
+  expect(screen.queryByText("Run with Strava")).toBeNull();
   await fireEvent.press(screen.getByText("Export GPX"));
   await fireEvent.press(screen.getByText("Export GPX"));
   expect(onExport).toHaveBeenCalledTimes(2);
@@ -364,4 +367,176 @@ test("Try N km and a shape of the catalogue are told as hints taken", async () =
     },
     { kind: "hint_taken", shape: "star", hint: "catalog_shape", distance_m: 5000 },
   ]);
+});
+
+// --- where the shape comes out better (TASK-234) ---------------------------
+
+const fifteen: RouteRequest = { ...heartRequest, distance_m: 15000 };
+
+function advising(advised: number | null): RouteResult {
+  return { ...heartResult, distance_m: 15200, better_distance_m: advised };
+}
+
+function done(
+  request: RouteRequest,
+  result: RouteResult,
+  onTryDistance = jest.fn(),
+  choices: RouteResult[] = [],
+  chosen = 0,
+) {
+  return (
+    <RouteOutcome
+      view={{ status: "done", request, result }}
+      onCancel={jest.fn()}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onTryDistance={onTryDistance}
+      onPickShape={jest.fn()}
+      onStart={jest.fn()}
+      choices={choices}
+      chosen={chosen}
+      onSignal={jest.fn()}
+    />
+  );
+}
+
+const BETTER_12 = "This shape comes out better at about 12 km.";
+
+test("a line under the route offers the distance where the shape comes out better", async () => {
+  const onTryDistance = jest.fn();
+  await render(done(fifteen, advising(12000), onTryDistance));
+  expect(screen.getByText(BETTER_12)).toBeOnTheScreen();
+  await fireEvent.press(screen.getByText("Try 12 km"));
+  expect(onTryDistance).toHaveBeenCalledWith(12000);
+});
+
+test("no line without the advice, nor beyond the distances «Draw» offers", async () => {
+  const { rerender } = await render(done(fifteen, advising(null)));
+  expect(screen.queryByText(/comes out better/)).not.toBeOnTheScreen();
+  await rerender(done(fifteen, advising(25000)));
+  expect(screen.queryByText(/comes out better/)).not.toBeOnTheScreen();
+});
+
+test("the advice is the request's, whichever route is on screen", async () => {
+  const answer = advising(12000);
+  const other = { ...advising(null), similarity: 0.8 };
+  await render(done(fifteen, other, jest.fn(), [answer, other], 1));
+  expect(screen.getByText(BETTER_12)).toBeOnTheScreen();
+});
+
+test("after a Try, no line sends the runner back to the distance left", async () => {
+  const onTryDistance = jest.fn();
+  const twelve = { ...fifteen, distance_m: 12000 };
+  const { rerender } = await render(done(fifteen, advising(12000), onTryDistance));
+  await fireEvent.press(screen.getByText("Try 12 km"));
+  await rerender(done(twelve, advising(15000), onTryDistance));
+  expect(screen.queryByText(/comes out better/)).not.toBeOnTheScreen();
+  // Another distance is still offered.
+  await rerender(done(twelve, advising(10000), onTryDistance));
+  expect(screen.getByText("Try 10 km")).toBeOnTheScreen();
+});
+
+test("a word is told as a word", async () => {
+  const word: RouteRequest = {
+    start: heartRequest.start,
+    word: "ciao",
+    distance_m: 15000,
+    activity: "running",
+  };
+  await render(done(word, { ...advising(12000), shape: null, word: "CIAO" }));
+  expect(
+    screen.getByText("This word comes out better at about 12 km."),
+  ).toBeOnTheScreen();
+});
+
+// --- the pen up between the letters (TASK-198) ------------------------------
+
+test("with a word, a switch lifts the pen between the letters", async () => {
+  const onPenUp = jest.fn();
+  const pen = (on: boolean) => (
+    <RouteChoice
+      kind="word"
+      onKind={jest.fn()}
+      shapeText="heart"
+      shape="heart"
+      onShapeText={jest.fn()}
+      reading={null}
+      onShapeDone={jest.fn()}
+      wordText="sun"
+      onWordText={jest.fn()}
+      wordCheck={checkWord("sun", 9000)}
+      letterStyle="round"
+      onLetterStyle={jest.fn()}
+      penUp={on}
+      onPenUp={onPenUp}
+      distanceText="9"
+      distanceM={9000}
+      image={{ status: "none" }}
+      onChooseImage={jest.fn()}
+      onDistanceText={jest.fn()}
+    />
+  );
+  const { rerender } = await render(pen(false));
+  const name = "Lift the pen between letters";
+  expect(screen.getByRole("switch", { name, checked: false })).toBeTruthy();
+  expect(screen.getByText("Off")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("switch", { name }));
+  expect(onPenUp).toHaveBeenCalledWith(true);
+  await rerender(pen(true));
+  expect(screen.getByRole("switch", { name, checked: true })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("switch", { name }));
+  expect(onPenUp).toHaveBeenLastCalledWith(false);
+});
+
+test("no switch with a shape, nor without a way to change it", async () => {
+  await render(choice(null));
+  expect(screen.queryByRole("switch")).toBeNull();
+  await render(wordChoice("sun", 9000));
+  expect(screen.queryByRole("switch")).toBeNull();
+});
+
+test("a word with the pen up shows the km of its letters apart from the walks", async () => {
+  // North in a line: letters 0–100 m and 200–300 m, a walk of 100 m between.
+  const metre = 1 / 111_195;
+  const points = [0, 100, 200, 300].map((m): [number, number] => [
+    46.0122 + m * metre,
+    11.2986,
+  ]);
+  const result = {
+    points,
+    distance_m: 2900,
+    similarity: 0.9,
+    shape: null,
+    word: "IO",
+    warnings: [],
+    directions: [],
+    walks: [[1, 2]] as [number, number][],
+  };
+  const request = {
+    start: points[0],
+    word: "IO",
+    pen_up: true,
+    distance_m: 2000,
+    activity: "running" as const,
+  };
+  const outcome = (shown: typeof result) => (
+    <RouteOutcome
+      view={{ status: "done", request, result: shown }}
+      onCancel={jest.fn()}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onTryDistance={jest.fn()}
+      onPickShape={jest.fn()}
+      onStart={jest.fn()}
+    />
+  );
+  const { rerender } = await render(outcome(result));
+  // The whole route on top, as for every route; the split under it.
+  expect(screen.getByText("2.9 km")).toBeTruthy();
+  expect(
+    screen.getByText("2.8 km of letters + 0.1 km walking between them"),
+  ).toBeTruthy();
+  // From an API that sends no walks: as before.
+  await rerender(outcome({ ...result, walks: [] }));
+  expect(screen.queryByText(/walking between them/)).toBeNull();
 });

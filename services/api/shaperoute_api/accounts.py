@@ -26,10 +26,11 @@ import secrets
 import threading
 import time
 from collections import deque
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any, Literal
+from uuid import UUID
 
 import psycopg
 from argon2 import PasswordHasher
@@ -39,7 +40,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from psycopg import errors as pg_errors
 from psycopg.rows import DictRow
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from shaperoute_api.db import Database
 from shaperoute_api.schemas import ErrorBody, ErrorCode, ErrorDetail
@@ -109,14 +110,54 @@ class SignInRequestBody(BaseModel):
         return value.strip().lower() if isinstance(value, str) else value
 
 
+# What the API reads of an account for its owner, in the order of UserBody.
+USER_COLUMNS = (
+    "id, email, username, role, created_at, bio, public_id, phone,"
+    " notify_email, notify_push"
+)
+
+
+class NotificationsBody(BaseModel):
+    """The two notification switches of «Settings» (TASK-185), off until
+    their owner turns them on. Nothing is sent yet: they are a choice kept
+    for when Sgrava does (notifications.py)."""
+
+    email: bool
+    push: bool
+
+
 class UserBody(BaseModel):
-    """What the API tells about an account: never the password or a token."""
+    """What the API tells an account about itself: never the password or a
+    token. The others see only its profile (profiles.py)."""
 
     id: int
     email: str
     username: str
     role: Role
     created_at: datetime
+    # The profile (TASK-116): the bio, empty without one, and the id the
+    # others open the profile with (GET /users/{public_id}).
+    bio: str
+    public_id: UUID
+    # The phone number (TASK-183), in E.164, or None without one: told to its
+    # owner only, never part of a profile (contact.py).
+    phone: str | None
+    # The notification switches (TASK-185): told to their owner only.
+    notifications: NotificationsBody
+
+    @model_validator(mode="before")
+    @classmethod
+    def switches_of_a_row(cls, value: Any) -> Any:
+        """A row of `users` keeps the switches in two columns
+        (USER_COLUMNS): here they become the object the app reads."""
+        if isinstance(value, Mapping) and "notify_email" in value:
+            row = dict(value)
+            row["notifications"] = {
+                "email": row.pop("notify_email"),
+                "push": row.pop("notify_push"),
+            }
+            return row
+        return value
 
 
 class SessionBody(BaseModel):
@@ -206,7 +247,7 @@ class Accounts:
                     "INSERT INTO users"
                     " (email, password_hash, username, confirmed_16_at, created_at)"
                     " VALUES (%s, %s, %s, %s, %s)"
-                    " RETURNING id, email, username, role, created_at",
+                    f" RETURNING {USER_COLUMNS}",
                     (body.email, password_hash, body.username, now, now),
                 ).fetchone()
             except pg_errors.UniqueViolation as exc:
@@ -226,8 +267,7 @@ class Accounts:
         now = self.now()
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT id, email, username, role, created_at, password_hash"
-                " FROM users WHERE email = %s",
+                f"SELECT {USER_COLUMNS}, password_hash FROM users WHERE email = %s",
                 (body.email,),
             ).fetchone()
             if not self._matches(row, body.password):
@@ -252,8 +292,8 @@ class Accounts:
                 " UPDATE sessions SET last_used_at = %s"
                 " WHERE token_hash = %s AND last_used_at > %s"
                 " RETURNING user_id)"
-                " SELECT u.id, u.email, u.username, u.role, u.created_at"
-                " FROM users u JOIN used ON u.id = used.user_id",
+                f" SELECT {USER_COLUMNS}"
+                " FROM users JOIN used ON users.id = used.user_id",
                 (now, token_hash(token), now - timedelta(days=SESSION_DAYS)),
             ).fetchone()
             if row is not None:
@@ -362,9 +402,16 @@ def account_routes() -> APIRouter:
 
     @router.delete("/me", status_code=204)
     def delete_me(
+        request: Request,
         accounts: Annotated[Accounts, Depends(accounts_of)],
         user: Annotated[UserBody, Depends(current_user)],
     ) -> Response:
+        # What the account has outside this database goes first: the access
+        # an athlete gave on Strava (strava.py). Each sees to its own
+        # failures: none of them keeps the account from being deleted.
+        leaving: list[Callable[[int], None]] = request.app.state.before_account_delete
+        for leave in leaving:
+            leave(user.id)
         accounts.delete(user.id)
         return Response(status_code=204)
 
@@ -385,5 +432,6 @@ def account_answer(_: Request, exc: Exception) -> JSONResponse:
 def install_accounts(app: FastAPI, accounts: Accounts | None) -> None:
     """The account endpoints and their errors; `accounts` None: 503."""
     app.state.accounts = accounts
+    app.state.before_account_delete = []
     app.add_exception_handler(AccountError, account_answer)
     app.include_router(account_routes())

@@ -189,6 +189,71 @@ riaprila).
 - Una build propria (TestFlight) resta fuori: serve l'account Apple
   Developer.
 
+### A.7 La build dello store e il canale `production` (TASK-152)
+
+Due canali, ognuno con il suo runtime (ADR-0233):
+
+| Canale | Chi lo apre | Runtime |
+|---|---|---|
+| `preview` | Expo Go, le build `preview` | `exposdk:57.0.0`, da `app.json` |
+| `production` | le build dell'App Store | un'impronta del codice nativo (`fingerprint`) |
+
+Il runtime dello store lo mette `apps/mobile/app.config.ts`, solo quando
+c'è `APP_VARIANT=production`: il profilo `production` di `eas.json` la
+imposta da solo, `eas update` no. Un update arriva solo ai telefoni con
+lo stesso runtime: uno fatto dopo un cambio nativo non può far chiudere
+le build vecchie, semplicemente non le raggiunge.
+
+1. **Prima della prima build**: l'ambiente EAS `production` è vuoto. Da
+   `apps/mobile`, come in A.6 punto 2 ma con `production`:
+
+   ```
+   npx eas-cli env:set production --name EXPO_PUBLIC_API_URL --value https://INDIRIZZO-DELL-API --visibility plaintext
+   ```
+
+   La chiave, `EXPO_PUBLIC_API_KEY`, dalla pagina del progetto su
+   expo.dev, ambiente `production`, visibilità *Sensitive*.
+2. **La build** (serve l'account Apple Developer, lo fa l'utente con le
+   sue credenziali):
+
+   ```
+   npx eas-cli build --platform ios --profile production
+   ```
+
+   Il numero di build sale da solo (`autoIncrement`, le versioni stanno
+   su EAS).
+3. **Un update per lo store**: prima su `preview` e provato sull'iPhone
+   (A.6), poi la **stessa commit**, da un worktree pulito di `main`:
+
+   ```
+   APP_VARIANT=production npx eas-cli update --channel production --environment production --message "cosa è cambiato"
+   ```
+
+   Nell'output, «Runtime version» deve essere un hash di 40 caratteri.
+   Se dice `exposdk:57.0.0` manca la variabile: l'update è andato sul
+   canale ma nessuna build dello store lo prende; si ripubblica con la
+   variabile.
+4. **L'update raggiunge la build?** Il runtime che avrebbe un update di
+   adesso:
+
+   ```
+   APP_VARIANT=production npx expo-updates runtimeversion:resolve --platform ios --workflow managed
+   ```
+
+   va confrontato con quello della build sulla sua pagina su expo.dev.
+   Si lancia nel worktree del punto 3, dopo un `npm install` vero:
+   nell'impronta conta anche il percorso dei pacchetti, e con
+   `node_modules` collegati da un'altra cartella esce un altro hash.
+   Uguali: l'update arriva. Diversi: dalla build è cambiato qualcosa di
+   nativo (una libreria, un plugin, un permesso, l'icona, lo splash,
+   l'SDK) e serve una build nuova, con la revisione di Apple. **Alla
+   prima build va fatto comunque**: l'impronta calcolata sul Mac e
+   quella di EAS non sono ancora state confrontate.
+
+L'impronta non guarda la versione, il numero di build né `eas.json`
+(`apps/mobile/fingerprint.config.js`): alzarli non separa gli update.
+Una modifica solo JavaScript non la cambia mai.
+
 ---
 
 ## La chiave dell'API
@@ -249,6 +314,63 @@ I suggerimenti della partenza vengono dall'API, che li chiede a Geoapify
 3. L'app non cambia: niente da mettere in `apps/mobile/.env` né su EAS.
 
 Come ogni chiave, mai in un file del repository o in una chat.
+
+## Strava (TASK-187)
+
+«Send to Strava» manda una corsa salvata sul profilo Strava di chi ha
+collegato il suo atleta (`API.md`, «Send to Strava»; ADR-0156). Serve
+un'**applicazione Strava dell'utente**: senza, Strava è spento e l'app non
+mostra niente. Finché Strava non l'ha approvata può collegarsi **un solo
+atleta**, chi l'ha creata; per gli altri l'utente chiede la revisione a
+Strava, dalla stessa pagina.
+
+1. Su <https://www.strava.com/settings/api> (lo fa l'utente) crea
+   l'applicazione: nome «Sgrava», un sito qualunque suo, un'icona, e in
+   **Authorization Callback Domain** il dominio dell'API, senza `https://`
+   e senza percorso: `188-245-9-220.sslip.io`. La pagina mostra il
+   **Client ID** (un numero, non è un segreto) e il **Client Secret**.
+2. Sul server, in `deploy/.env`. Il Client ID si può scrivere com'è; il
+   secret lo scrive l'utente, con un comando che non lo mostra e non lo
+   lascia nella cronologia della shell:
+
+   ```bash
+   cd /root/shaperoute/deploy
+   echo "STRAVA_CLIENT_ID=il-numero-di-strava" >> .env
+   read -rs -p "Strava Client Secret: " S && printf 'STRAVA_CLIENT_SECRET=%s\n' "$S" >> .env; unset S
+   grep -q '^SHAPEROUTE_DOMAIN=.' .env || echo "SHAPEROUTE_DOMAIN=188-245-9-220.sslip.io" >> .env
+   ```
+
+   `SHAPEROUTE_DOMAIN` è il dominio a cui Strava rimanda il browser
+   (`https://<dominio>/strava/callback`): deve essere quello scritto al
+   punto 1. Serve solo se `.env` non l'ha già; con il Caddy di apt (F.12)
+   non accende niente d'altro, perché il Caddy di `compose.yaml` parte solo
+   con `COMPOSE_PROFILES=public`.
+3. L'API nuova, che al primo avvio applica la migrazione `0004`
+   (`DATABASE.md`), come ogni aggiornamento del server:
+
+   ```bash
+   cd /root/shaperoute && git pull
+   cd deploy && docker compose up -d --build
+   docker compose logs api | grep Accounts
+   ```
+
+   La riga «Accounts in PostgreSQL» elenca `0004_strava` fra le migrazioni
+   applicate.
+4. La prova: nell'app, entrati con un account, «Connect with Strava»; poi
+   una corsa salvata con «Send to Strava». Da riga di comando, con la
+   chiave dell'API e il token di un account, `GET /me/strava` risponde
+   `"available": true`.
+
+Per spegnere Strava basta togliere una delle due righe da `deploy/.env` e
+`docker compose up -d`: i token già salvati restano nel database finché
+ogni atleta non si scollega (o l'account non si cancella), ma l'API non li
+usa. Sul Mac le due variabili vanno in `.env` alla radice, come la chiave
+di Geoapify; lì Strava rimanda il browser all'indirizzo a cui l'app ha
+chiamato l'API, e accetta solo `localhost` oltre al dominio del punto 1.
+
+Il secret, come ogni chiave, mai in un file del repository o in una chat.
+Se finisce dove non deve, dalla pagina del punto 1 se ne genera uno nuovo
+e si riscrive la riga in `deploy/.env`: gli atleti collegati restano.
 
 ## Il registro delle richieste e le posizioni
 
@@ -403,7 +525,8 @@ Caddy installato con apt, pubblico da subito su un nome `sslip.io`,
 senza dominio comprato (F.8). Misurato lì: un cuore da 5 km a Trento in
 18,7 s con la zona in cache, una stella in 3,2 s, l'API in circa 0,56 GB
 di RAM; e Overpass, che rifiuta il Mac, dal server risponde. Come
-portarlo su `deploy/compose.yaml`: F.12.
+portarlo su `deploy/compose.yaml`: F.12. Dal 2026-10-08 ha anche un nome
+dell'utente, `api.getmuw.app`: F.14.
 
 ### F.1 Quale server
 
@@ -529,15 +652,18 @@ git clone https://github.com/rockydalbianco/shaperoute.git
 cd shaperoute
 cp .env.example deploy/.env
 openssl rand -base64 32
+openssl rand -hex 24
 nano deploy/.env
 ```
 
-`openssl` stampa una chiave nuova per l'API (sezione «La chiave
-dell'API»). In `nano` scrivi:
+Il primo `openssl` stampa una chiave nuova per l'API (sezione «La chiave
+dell'API»), il secondo la password del database (TASK-122, F.13): solo
+lettere e cifre, perché finisce dentro un indirizzo. In `nano` scrivi:
 
 ```
 SHAPEROUTE_API_KEY=la-chiave-appena-stampata
 GEOAPIFY_API_KEY=la-chiave-di-geoapify
+POSTGRES_PASSWORD=la-password-appena-stampata
 ```
 
 La chiave di Geoapify è quella che il Mac ha già nel suo `.env`. Salva
@@ -588,12 +714,13 @@ docker compose ps
 curl http://127.0.0.1:8000/health
 ```
 
-`api` deve essere `Up (healthy)`, dopo una ventina di secondi, e `/health`
-rispondere `{"status":"ok"}`. Cosa dice l'API, all'avvio e a ogni
+`db` e `api` devono essere `Up (healthy)`, dopo una ventina di secondi,
+`backup` e `offsite` `Up`, e `/health` rispondere `{"status":"ok"}`. Cosa dice l'API, all'avvio e a ogni
 richiesta: `docker compose logs -f api` (esci con `Ctrl+C`). All'avvio
 deve dire «API key required in the X-API-Key header», «Places suggested
-by Geoapify» e «… recommended routes from catalog/seed», con un numero
-più grande di zero.
+by Geoapify», «… recommended routes from catalog/seed», con un numero
+più grande di zero, e «Accounts in PostgreSQL» con le migrazioni applicate
+(la prima volta `0001_users_sessions`, poi «schema up to date»).
 
 Docker riavvia l'API se si ferma e quando il server si riaccende. La porta
 8000 è aperta solo verso il server stesso (`127.0.0.1`): da internet non
@@ -731,12 +858,11 @@ Sul server, da `~/shaperoute/deploy`:
 | Togliere le immagini vecchie | `docker image prune` |
 | Spegnere l'AI | togli `ai` da `COMPOSE_PROFILES`, poi `docker compose stop ollama` |
 
-- **Copie di sicurezza**: OVHcloud fa da sé il backup giornaliero; su
-  Hetzner si accende il *Backup* (+20%) o si fa uno *Snapshot* dal
-  pannello prima di un aggiornamento grosso. Da salvare ci sono
-  `data/insights/` (quello che l'app impara dalle ricerche, TASK-130) e le
-  zone; il resto si riprende da GitHub. Con il database (TASK-122) le
-  copie diventano obbligatorie.
+- **Copie di sicurezza**: il database si copia da solo ogni notte, e le
+  copie e gli eventi delle ricerche vanno nello Storage Box (F.13). Le zone si
+  riprendono dal Mac (F.5), il resto da GitHub. Prima di un aggiornamento
+  grosso, una copia subito: `docker compose exec backup bash /backup.sh
+  now`.
 - **Sapere se si ferma**: con l'indirizzo pubblico di F.8, un servizio
   gratuito che chiama `/health` ogni pochi minuti e manda un'email se non
   risponde (ad esempio UptimeRobot).
@@ -804,17 +930,19 @@ Quanto costa, a gradini (2026-10-01, IVA compresa, indicativo):
 
 Per il server di oggi (`sgrava-api`), quando si decide di spostarlo: la
 stessa API, gli stessi dati e lo stesso indirizzo, quindi l'app non
-cambia. Due minuti di API ferma. Sul server, come `root`:
+cambia; in più il database degli account e le sue copie (TASK-122, F.13).
+Due minuti di API ferma. Sul server, come `root`:
 
-1. Il codice e i segreti:
+1. Il codice e i segreti, con la password nuova del database:
 
    ```bash
    cd /root/shaperoute && git pull
    cp /srv/shaperoute/shaperoute.env deploy/.env
+   echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" >> deploy/.env
    ```
 
    Il file ha già la chiave, Geoapify e il limite; `COMPOSE_PROFILES`
-   manca, cioè solo l'API.
+   manca, cioè solo l'API (con il database, che c'è sempre).
 2. Il container vecchio fuori, i dati dentro `data/` (stesso disco: è uno
    spostamento, non una copia):
 
@@ -824,11 +952,15 @@ cambia. Due minuti di API ferma. Sul server, come `root`:
    mv /srv/shaperoute/cache /srv/shaperoute/insights /srv/shaperoute/requests data/
    ```
 
-3. Avviare e controllare (F.6):
+3. Avviare e controllare (F.6), poi la prima copia e la prova che si
+   ripristina (F.13):
 
    ```bash
    cd deploy && docker compose up -d --build
    curl http://127.0.0.1:8000/health
+   docker compose logs api | grep Accounts
+   docker compose exec backup bash /backup.sh now
+   docker compose exec backup bash /backup.sh check
    ```
 
 4. **Caddy resta quello di apt**: il suo `reverse_proxy` va ancora a
@@ -840,9 +972,251 @@ cambia. Due minuti di API ferma. Sul server, come `root`:
    nome `sslip.io` di oggi e `COMPOSE_PROFILES=public`, e `docker compose
    up -d`.
 5. Dall'iPhone, un percorso: l'app non cambia indirizzo né chiave.
+6. Le copie fuori dal server: lo Storage Box (F.13), quando c'è.
 
 Se qualcosa va storto si torna indietro: `docker compose down`, le tre
-cartelle di nuovo in `/srv/shaperoute/`, e il `docker run` di prima.
+cartelle di nuovo in `/srv/shaperoute/`, e il `docker run` di prima. Il
+database resta nel volume `shaperoute_db` per un altro tentativo.
+
+### F.13 Il database e le sue copie
+
+TASK-122, ADR-0123. Gli account (TASK-114, `DATABASE.md`) stanno nel
+servizio `db` di `compose.yaml`: PostgreSQL 16 con PostGIS, i dati nel
+volume Docker `shaperoute_db` (non in `data/`: sono di PostgreSQL, che li
+vuole suoi). Nessuna porta verso fuori: lo raggiungono solo gli altri
+servizi. L'API lo trova con l'indirizzo che `compose.yaml` compone da
+`POSTGRES_PASSWORD`, e all'avvio applica le migrazioni.
+
+**La copia notturna.** Il servizio `backup` fa un `pg_dump` ogni giorno
+alle 02:00 UTC (`BACKUP_AT` in `deploy/.env`) in
+`data/backups/shaperoute-<data>.dump`, leggibile solo da `root`, e
+cancella le copie con più di 13 giorni: un account cancellato oggi è
+fuori da ogni copia entro 14 (ADR-0114, punto 7). Una copia si scrive con
+un nome nascosto e prende il suo solo quando è intera.
+
+| Cosa | Comando, da `~/shaperoute/deploy` |
+|---|---|
+| Una copia adesso | `docker compose exec backup bash /backup.sh now` |
+| Le copie allo Storage Box adesso | `docker compose exec offsite bash /backup.sh push` |
+| Provare che una copia si ripristina | `docker compose exec backup bash /backup.sh check` |
+| Le copie | `ls -l ../data/backups` |
+| Cosa ha fatto stanotte | `docker compose logs backup offsite` |
+
+`check` ripristina la copia più recente (o `check /backups/<nome>`) in un
+database a parte, `restore_check`, conta gli account e le migrazioni, poi
+lo cancella: quello vero non si tocca.
+
+**Le copie nello Storage Box** (scelta dell'utente, 2026-10-02, ADR-0123).
+Lo Storage Box è un disco di Hetzner separato dal server. Ogni notte alle
+02:30 UTC (`PUSH_AT`), mezz'ora dopo la copia, il servizio `offsite` ci
+manda con `rsync`, sopra SSH sulla porta 23, le copie del database in
+`sgrava-db/` (le stesse del server: quelle
+con più di 13 giorni spariscono anche lì) e gli eventi delle ricerche in
+`sgrava-insights/` (che si aggiungono soltanto). Finché lo Storage Box non
+c'è, le copie restano sul server e `push` lo dice.
+
+1. **La chiave, sul server** (una volta; fatto il 2026-10-02):
+
+   ```bash
+   install -d -m 700 /root/.ssh/storagebox
+   ssh-keygen -t ed25519 -N "" -C "sgrava-api backups to Storage Box" -f /root/.ssh/storagebox/id_ed25519
+   cat /root/.ssh/storagebox/id_ed25519.pub
+   ```
+
+   La chiave privata resta lì, fuori dal repository; la riga stampata è la
+   parte pubblica, da incollare al punto 2.
+2. **Lo Storage Box, lo crea l'utente** nella Hetzner Console:
+   *Storage Boxes* → *Create Storage Box*; posizione **Falkenstein (FSN1)**,
+   come il server; tipo **BX11**, il più piccolo (1 TB); in *SSH keys* la
+   riga del punto 1; accesso **SSH** acceso (Samba e WebDAV non servono).
+   Nome utente e indirizzo (`u123456`, `u123456.your-storagebox.de`) sono
+   nella pagina dello Storage Box: non sono segreti. Una password, se il
+   pannello la chiede, la tiene l'utente: alle copie non serve.
+3. **Sul server**, la chiave dello Storage Box fra quelle conosciute, le
+   due variabili in `deploy/.env` e il servizio ricostruito:
+
+   ```bash
+   ssh-keyscan -p 23 u123456.your-storagebox.de > /root/.ssh/storagebox/known_hosts
+   cd ~/shaperoute/deploy && nano .env    # STORAGEBOX_HOST=u123456.your-storagebox.de, STORAGEBOX_USER=u123456
+   docker compose up -d --build offsite
+   docker compose exec offsite bash /backup.sh push
+   ```
+
+   `push` deve dire «… copies and the search events to
+   u123456.your-storagebox.de»; da lì ogni notte, dopo la copia. Un `push`
+   fallito resta nel log (`docker compose logs offsite`) e si riprova la
+   notte dopo, con le copie ancora sul server.
+
+**Ripristinare davvero** (sostituisce il database di adesso):
+
+```bash
+cd ~/shaperoute/deploy
+docker compose exec backup bash /backup.sh now
+docker compose stop api
+docker compose exec backup dropdb shaperoute
+docker compose exec backup createdb shaperoute
+docker compose exec backup pg_restore --no-owner --exit-on-error -d shaperoute /backups/shaperoute-<data>.dump
+docker compose start api
+```
+
+La prima riga è la copia di adesso, per tornare indietro. Una copia che
+c'è solo nello Storage Box va prima nella cartella del server:
+`rsync -a -e "ssh -p 23 -i /root/.ssh/storagebox/id_ed25519" u123456@u123456.your-storagebox.de:sgrava-db/shaperoute-<data>.dump ~/shaperoute/data/backups/`.
+All'avvio l'API riapplica le migrazioni più nuove della copia.
+
+### F.14 Il dominio getmuw.app (TASK-265)
+
+Il 2026-10-08 l'utente ha comprato **`getmuw.app`** su Porkbun
+(registrato fino al 2027-10-08, server DNS di Porkbun) ed è rimasto su
+questo server (ADR-0234). L'API risponde anche su `api.getmuw.app`;
+`188-245-9-220.sslip.io` resta acceso per le app che hanno ancora il
+vecchio indirizzo e per il ritorno da Strava (`SHAPEROUTE_DOMAIN`, sotto).
+`getmuw.app` e `www.getmuw.app` sono per il sito (TASK-237, `SITO.md`).
+
+Sul server Caddy è quello di apt (F.12, punto 4): `caddy.service` in
+systemd, la configurazione in `/etc/caddy/Caddyfile`, l'API dietro su
+`127.0.0.1:8000`. Il `deploy/Caddyfile` del repository non c'entra.
+
+1. **Il DNS**, nel pannello di Porkbun (lo fa l'utente): via i due record
+   di parcheggio verso `pixie.porkbun.com` (un `ALIAS` senza nome e un
+   `CNAME` `*`), poi tre record `A`, TTL 600:
+
+   | Host | Valore |
+   |---|---|
+   | *(vuoto)* | `188.245.9.220` |
+   | `www` | `188.245.9.220` |
+   | `api` | `188.245.9.220` |
+
+   Niente `AAAA`: il server ha anche l'IPv6 `2a01:4f8:c016:7ef0::1` e
+   `ufw` apre 80 e 443 anche lì, quindi si può aggiungere in seguito, ma
+   senza l'app funziona uguale. Il controllo, dal Mac:
+
+   ```bash
+   dig +short api.getmuw.app @1.1.1.1
+   ```
+
+   deve rispondere `188.245.9.220`. Un dominio `.app` appena comprato
+   arriva nel registro di Google da qualche minuto a un'ora dopo; prima
+   `dig` non risponde niente. Senza quella risposta non si va avanti:
+   Caddy chiederebbe il certificato a vuoto.
+2. **Il Caddyfile**, sul server. Prima una copia, poi un solo cambio,
+   l'indirizzo in più nella riga del sito:
+
+   ```diff
+   -188-245-9-220.sslip.io {
+   +188-245-9-220.sslip.io, api.getmuw.app {
+    	reverse_proxy 127.0.0.1:8000
+    }
+   ```
+
+   ```bash
+   cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.before-task265
+   sed -i 's/^188-245-9-220\.sslip\.io {$/188-245-9-220.sslip.io, api.getmuw.app {/' /etc/caddy/Caddyfile
+   caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+   systemctl reload caddy
+   ```
+
+   `reload` cambia la configurazione senza fermare Caddy: chi usa
+   `sslip.io` non se ne accorge. Caddy chiede subito il certificato di
+   `api.getmuw.app` a Let's Encrypt e poi lo rinnova da solo; com'è
+   andata:
+
+   ```bash
+   journalctl -u caddy --since "10 min ago" | grep -i -E "api.getmuw.app|error"
+   ```
+
+   cerca una riga «certificate obtained successfully» per
+   `api.getmuw.app`.
+3. **La prova, dal Mac**:
+
+   ```bash
+   curl -s https://api.getmuw.app/health
+   curl -s -o /dev/null -w '%{http_code}\n' https://api.getmuw.app/docs
+   curl -s -o /dev/null -w '%{http_code}\n' https://188-245-9-220.sslip.io/health
+   ```
+
+   rispondono `{"status":"ok"}`, `401` (senza chiave l'API resta chiusa)
+   e `200` (il vecchio indirizzo va ancora). `curl` si ferma da solo se
+   il certificato non è valido.
+4. **L'app**: dopo la prova, con l'ok dell'utente, `EXPO_PUBLIC_API_URL`
+   di `preview` su EAS diventa `https://api.getmuw.app` (F.8, punto 6) e
+   si pubblica. La chiave non cambia. Le app che non hanno ancora scaricato
+   l'aggiornamento continuano su `sslip.io`, per questo il vecchio nome
+   resta nel Caddyfile.
+
+**Tornare indietro**: `cp /etc/caddy/Caddyfile.before-task265
+/etc/caddy/Caddyfile && systemctl reload caddy`. Se l'app era già
+passata ad `api.getmuw.app`, prima si ripubblica con l'indirizzo
+`sslip.io`.
+
+**Il sito su `getmuw.app`** (TASK-237, parte B): dopo che il sito con il
+nome MuW è in `main` e con il sì dell'utente sulla pubblicazione. Il sito
+è statico, senza build (`SITO.md`): Caddy serve una copia dei soli file
+che la pagina carica, in `/srv/getmuw-site`. Restano fuori `tests/`,
+`tools/`, `package.json` e il merch spento (`merch.*`, `products.js`,
+`prints/`). La copia non viene da `/root/shaperoute`: Caddy gira come
+utente `caddy` e non entra in `/root`.
+
+1. **I file**, sul server. `git fetch` aggiorna solo `origin/main`, non i
+   file da cui si costruisce l'API; `git archive` prende l'elenco
+   esplicito da lì. La copia nuova si prepara a parte e prende il posto
+   della vecchia in un colpo, che resta in `/srv/getmuw-site.old`:
+
+   ```bash
+   cd /root/shaperoute
+   git fetch origin main
+   rm -rf /srv/getmuw-site.new && mkdir -p /srv/getmuw-site.new
+   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets | tar -x -C /srv/getmuw-site.new --strip-components=1
+   chmod -R a+rX /srv/getmuw-site.new
+   rm -rf /srv/getmuw-site.old
+   if [ -d /srv/getmuw-site ]; then mv /srv/getmuw-site /srv/getmuw-site.old; fi
+   mv /srv/getmuw-site.new /srv/getmuw-site
+   ```
+
+   Gli stessi comandi, dopo ogni merge che cambia il sito, lo
+   aggiornano; Caddy non va toccato. Se la pagina carica un file nuovo
+   fuori da quell'elenco, l'elenco cambia qui. Tornare alla copia di
+   prima: `rm -rf /srv/getmuw-site && mv /srv/getmuw-site.old
+   /srv/getmuw-site`.
+2. **Il Caddyfile**, una volta: due blocchi in fondo, con la copia prima
+   come al punto 2 sopra (`Caddyfile.before-task237b`). `www` rimanda al
+   nome senza `www`, così l'indirizzo è uno solo:
+
+   ```
+   getmuw.app {
+   	root * /srv/getmuw-site
+   	encode gzip
+   	file_server
+   }
+
+   www.getmuw.app {
+   	redir https://getmuw.app{uri} permanent
+   }
+   ```
+
+   poi `caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile`
+   e `systemctl reload caddy`. Caddy chiede i certificati dei due nomi.
+3. **La prova, dal Mac**:
+
+   ```bash
+   curl -s -o /dev/null -w '%{http_code} %{content_type}\n' https://getmuw.app/
+   curl -s -o /dev/null -w '%{http_code} %{content_type}\n' https://getmuw.app/main.js
+   curl -s -o /dev/null -w '%{http_code}\n' https://getmuw.app/package.json
+   curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' https://www.getmuw.app/
+   ```
+
+   rispondono `200 text/html…`, `200 text/javascript…` (gli script
+   sono moduli ES e il browser li vuole con questo tipo: Caddy lo dà da
+   solo dall'estensione), `404`, e `301 https://getmuw.app/`. Poi la
+   pagina in un browser: «Try it» disegna un percorso.
+
+**Strava resta su `sslip.io`.** `SHAPEROUTE_DOMAIN` in `deploy/.env` è
+solo l'indirizzo a cui Strava rimanda il browser dopo «Connect with
+Strava», e deve essere uguale alla «Authorization Callback Domain»
+dell'applicazione Strava dell'utente. Per spostarlo su `api.getmuw.app`
+vanno cambiati tutti e due insieme (l'utente su
+<https://www.strava.com/settings/api>, poi `.env` e `docker compose up
+-d`): non fa parte di TASK-265.
 
 ---
 

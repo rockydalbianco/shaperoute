@@ -1,7 +1,15 @@
 import type { LatLon } from "@shaperoute/shared-types";
-import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { decimal, t } from "../i18n";
 
 import {
   color,
@@ -12,19 +20,38 @@ import {
   space,
 } from "../theme/tokens";
 import {
+  distanceLabel,
+  nearDistanceLabel,
+  wholeDistanceLabel,
+  withPoint,
+} from "../units/format";
+import { type Units, appUnits } from "../units/units";
+import { useUnits } from "../units/useUnits";
+import {
   cityName,
   fetchRecommended,
   NEAR_RADIUS_M,
   type RecommendedRoute,
   routeTitle,
 } from "./recommendedRoutes";
+import { HeartBadge } from "../intro/HeartBadge";
 import type { Place } from "../places/photon";
 import { AskForRoute } from "./AskForRoute";
-import { useCityExamples } from "./exampleRoutes";
+import {
+  addedExamples,
+  cityKey,
+  firstExamples,
+  shapesOf,
+  useCityExamples,
+} from "./exampleRoutes";
 import { CityExamples } from "./CityExamples";
 import { CityPicker } from "./ExploreTools";
-import { RouteThumb } from "./RouteThumb";
+import { NearbyTowns } from "./NearbyTowns";
+import { byPlace, OWN_RADIUS_M } from "./ownRoutes";
+import { cityShort } from "./presets";
+import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 import type { ThemedRequest } from "./themedRoutes";
+import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
 
 type ListState =
   | { status: "loading" }
@@ -35,7 +62,9 @@ type Props = {
   apiUrl: string | null;
   /** Where the routes should start near: the start of the first screen. */
   near: LatLon | null;
-  onBack: () => void;
+  /** A way back, when the screen is not a page beside the others
+   * (TASK-154): there the names in the header are the way. */
+  onBack?: () => void;
   onOpen: (route: RecommendedRoute) => void;
   /** A city searched for (TASK-129): the list and the request start there. */
   city?: Place | null;
@@ -46,40 +75,37 @@ type Props = {
   onAsk?: (request: ThemedRequest) => void;
 };
 
-const ALL = "all";
 const NO_ROUTES: RecommendedRoute[] = [];
-
-/** The chips of one filter: "All" first, then what the list has. */
-export function filterOptions(values: string[]): string[] {
-  return [ALL, ...Array.from(new Set(values))];
-}
-
-/** The routes a filter keeps, in the order the API gave them. */
-export function filtered(
-  routes: RecommendedRoute[],
-  what: string,
-  km: string,
-): RecommendedRoute[] {
-  return routes.filter(
-    (r) =>
-      (what === ALL || routeTitle(r) === what) &&
-      (km === ALL || kmLabel(r.distance_m) === km),
+/**
+ * The name the city's own routes give it: the catalog says "milano" where
+ * the search says "Milan". From the route starting nearest the centre;
+ * none when even that one starts in another town.
+ */
+export function ownCityName(routes: RecommendedRoute[]): string | undefined {
+  const nearest = routes.reduce<RecommendedRoute | undefined>(
+    (best, route) => (best === undefined || route.away_m < best.away_m ? route : best),
+    undefined,
   );
+  return nearest !== undefined && nearest.away_m <= OWN_RADIUS_M
+    ? nearest.city
+    : undefined;
 }
 
+/** "21 km", in the app's units (TASK-182: "13 mi"). */
 export function kmLabel(distanceM: number): string {
-  return `${Math.round(distanceM / 1000)} km`;
+  return wholeDistanceLabel(distanceM);
 }
 
+/** "640 m away", "1.4 km away"; with miles, "650 ft away", "0.9 mi away". */
 export function awayText(awayM: number): string {
-  return awayM < 1000
-    ? `${Math.round(awayM / 10) * 10} m away`
-    : `${(awayM / 1000).toFixed(1)} km away`;
+  // With a point, as the rest of this page: its texts are still in English.
+  return `${nearDistanceLabel(awayM, appUnits(), withPoint)} away`;
 }
 
 /**
  * "Explore" (TASK-092 variant C, TASK-126): the best routes already planned
- * near the start, by shape or word and by distance. A route opens on the map.
+ * near the start, all of them, the best first: nothing to filter (TASK-176).
+ * A route opens on the map.
  */
 export function ExploreScreen({
   apiUrl,
@@ -94,10 +120,18 @@ export function ExploreScreen({
   // A city searched for takes the place of the start (TASK-129).
   const near = city?.point ?? start;
   const insets = useSafeAreaInsets();
+  // The cards are written again when «Settings» changes the units (TASK-182).
+  const units = useUnits();
+  // What the page has between its side margins: two cards side by side.
+  const { width } = useWindowDimensions();
+  const contentWidth = width - 2 * space.lg;
+  const card = cardWidth(contentWidth);
   // The answer for one start: another start shows "loading" until its own.
   const [answer, setAnswer] = useState<{ key: string; list: ListState } | null>(null);
-  const [what, setWhat] = useState(ALL);
-  const [km, setKm] = useState(ALL);
+  // "Ask for a route" waits closed at the foot of the page (TASK-157).
+  const [asking, setAsking] = useState(false);
+  const page = useRef<ScrollView>(null);
+  const shownAsking = useRef(false);
   const lat = near?.[0];
   const lon = near?.[1];
   const key =
@@ -139,42 +173,97 @@ export function ExploreScreen({
         : NO_ROUTES,
     [answer, key],
   );
-  const whats = useMemo(() => filterOptions(routes.map(routeTitle)), [routes]);
-  const kms = useMemo(
-    () =>
-      filterOptions(
-        [...routes]
-          .sort((a, b) => a.distance_m - b.distance_m)
-          .map((r) => kmLabel(r.distance_m)),
-      ),
-    [routes],
+  // Near a chosen city, its own routes and its neighbours' (TASK-192):
+  // Caldonazzo has Levico's within "near you", and none starting in it.
+  // Near the start they are all one list.
+  const chosen = city !== null;
+  const { own, nearby } = useMemo(
+    () => (chosen ? byPlace(routes) : { own: routes, nearby: NO_ROUTES }),
+    [chosen, routes],
   );
-  const shown = filtered(routes, what, km);
-  // A chosen city without recommended routes: examples, drawn at once
-  // (TASK-143). They go on while a route is open on the map.
-  const examplesCity =
-    city !== null && list.status === "done" && routes.length === 0 ? city : null;
-  const { examples, retry } = useCityExamples(apiUrl, examplesCity);
+  // A chosen city has shapes drawn at once, and they go on while a route is
+  // open on the map. Without routes of its own they are its examples
+  // (TASK-143); with them, the shapes it has none of, added to its cards
+  // while those are looked at (TASK-176).
+  const drawnCity = city !== null && list.status === "done" ? city : null;
+  const has = useMemo(() => (own.length === 0 ? undefined : shapesOf(own)), [own]);
+  const { examples, retry } = useCityExamples(apiUrl, drawnCity, { has });
+  const examplesCity = has === undefined ? drawnCity : null;
+  const added =
+    has === undefined || examples === null ? [] : addedExamples(examples, has);
+  // The city's routes, then the shapes drawn for it now: the same cards,
+  // and the same name for the city, on the card and then on the map.
+  const ownName = useMemo(() => ownCityName(own), [own]);
+  const cards = [
+    ...own,
+    ...added.flatMap((example) =>
+      example.status === "ready"
+        ? [ownName === undefined ? example.route : { ...example.route, city: ownName }]
+        : [],
+    ),
+  ];
+  // While the first are drawn, drawings of «Feed» to look at (TASK-163): the
+  // other shapes arrive when there is already something to choose.
+  const examplesKey = examplesCity === null ? null : cityKey(examplesCity.point);
+  const drawing = stillDrawing(examples === null ? null : firstExamples(examples));
+  // With the neighbours' routes under the examples there is already
+  // something to look at: the feed stays out.
+  const waited = useWaited(nearby.length > 0 ? null : examplesKey, drawing);
+  // The examples' section has the maps' credit once one of them is ready.
+  const credited =
+    examplesCity !== null &&
+    examples !== null &&
+    examples.some((example) => example.status === "ready");
+  const routeCard = (route: RecommendedRoute) => (
+    <RouteCard
+      key={route.id}
+      width={card}
+      line={route.preview}
+      rotationDeg={route.rotation_deg}
+      title={`${capitalised(routeTitle(route))} · ${distanceLabel(route.route_m, units, withPoint)}`}
+      detail={`${cityName(route.city)} · ${awayText(route.away_m)}`}
+      match={route.similarity}
+      map
+      onPress={() => onOpen(route)}
+      accessibilityLabel={`${routeTitle(route)}, ${kmLabel(route.route_m)}, ${awayText(route.away_m)}`}
+    />
+  );
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.screen]}>
       <View style={[styles.header, { paddingTop: insets.top + space.sm }]}>
-        <Pressable
-          style={styles.back}
-          onPress={onBack}
-          accessibilityRole="button"
-          accessibilityLabel="Back"
-        >
-          <Text style={styles.backText}>←</Text>
-        </Pressable>
+        {onBack && (
+          <Pressable
+            style={styles.back}
+            onPress={onBack}
+            accessibilityRole="button"
+            accessibilityLabel={t("Back")}
+          >
+            <Text style={styles.backText}>←</Text>
+          </Pressable>
+        )}
         <View style={styles.titles}>
-          <Text style={styles.title}>Best near you</Text>
+          <Text style={styles.title}>{t("Best near you")}</Text>
           <Text style={styles.subtitle}>
-            {`Starting within ${NEAR_RADIUS_M / 1000} km of ${city?.label ?? "your start"}`}
+            {t("Starting within {distance} of {place}", {
+              distance: kmOrMiles(NEAR_RADIUS_M, units),
+              place: city?.label ?? t("your start"),
+            })}
           </Text>
         </View>
+        {/* The sign of Sgrava, under the button of «Profile» and as wide
+            (TASK-222, ADR-0184): a picture, not a button. */}
+        <HeartBadge size={MIN_TAP_SIZE} />
       </View>
       <ScrollView
+        ref={page}
+        // Opened, "Ask for a route" is below the fold: the page goes to it.
+        onContentSizeChange={() => {
+          if (asking && !shownAsking.current) {
+            shownAsking.current = true;
+            page.current?.scrollToEnd({ animated: true });
+          }
+        }}
         contentContainerStyle={[
           styles.list,
           { paddingBottom: insets.bottom + space.lg },
@@ -184,33 +273,37 @@ export function ExploreScreen({
         {onCity && (
           <CityPicker apiUrl={apiUrl} city={city} onCity={onCity} recent={recent} />
         )}
+        {/* Under «Near me», the towns around the start (TASK-236); the page
+            has the maps' credit when it has routes. */}
+        {onCity && city === null && (
+          <NearbyTowns
+            apiUrl={apiUrl}
+            near={start}
+            width={contentWidth}
+            onCity={onCity}
+            credit={routes.length === 0}
+          />
+        )}
         {examplesCity !== null && examples !== null && (
           <CityExamples
             city={examplesCity}
             examples={examples}
             onOpen={onOpen}
             onRetry={retry}
+            width={contentWidth}
           />
         )}
-        {onAsk && (
-          <AskForRoute
-            city={city}
-            where={city?.label ?? "your start"}
-            onAsk={(text) => onAsk({ text, centre: near, city: city?.label ?? null })}
-          />
+        {examplesKey !== null && waited && (
+          <WhileDrawing cityKey={examplesKey} drawing={drawing} />
         )}
-        {list.status === "done" && routes.length > 0 && (
-          <View style={styles.filters}>
-            <Chips options={whats} value={what} onChange={setWhat} />
-            <Chips options={kms} value={km} onChange={setKm} />
-          </View>
+        {list.status === "loading" && (
+          <Text style={styles.note}>{t("Loading routes…")}</Text>
         )}
-        {list.status === "loading" && <Text style={styles.note}>Loading routes…</Text>}
         {list.status === "failed" && (
           <Text style={styles.note}>
             {near === null
-              ? "Choose a start first: the routes are the ones near it."
-              : "The routes could not load. Check the connection and try again."}
+              ? t("Choose a start first: the routes are the ones near it.")
+              : t("The routes could not load. Check the connection and try again.")}
           </Text>
         )}
         {list.status === "done" && routes.length === 0 && examplesCity === null && (
@@ -219,26 +312,55 @@ export function ExploreScreen({
             up here.
           </Text>
         )}
-        {shown.map((route) => (
-          <Pressable
-            key={route.id}
-            style={styles.row}
-            onPress={() => onOpen(route)}
-            accessibilityRole="button"
-            accessibilityLabel={`${routeTitle(route)}, ${kmLabel(route.route_m)}, ${awayText(route.away_m)}`}
-          >
-            <RouteThumb line={route.preview} width={72} height={60} />
-            <View style={styles.rowText}>
-              <Text style={styles.rowTitle}>
-                {`${capitalised(routeTitle(route))} · ${(route.route_m / 1000).toFixed(1)} km`}
-              </Text>
-              <Text style={styles.rowLine}>
-                {`${cityName(route.city)} · ${awayText(route.away_m)}`}
-              </Text>
-            </View>
-            <Text style={styles.match}>{`${Math.round(route.similarity * 100)}%`}</Text>
-          </Pressable>
-        ))}
+        {/* Above the cards: there it is read without scrolling to their end. */}
+        {routes.length > 0 && !credited && <CardMapsCredit />}
+        {/* The drawing first: two cards side by side (TASK-167). */}
+        {own.length > 0 && (
+          <View style={styles.grid}>
+            {cards.map(routeCard)}
+            {/* The shape being drawn for the city: the next card, on its way. */}
+            {added.map(
+              (example) =>
+                example.status === "drawing" && (
+                  <RouteCard
+                    key={example.shape}
+                    width={card}
+                    line={null}
+                    title={capitalised(
+                      routeTitle({ shape: example.shape, word: null }),
+                    )}
+                    detail={t("Drawing…")}
+                  />
+                ),
+            )}
+          </View>
+        )}
+        {/* The neighbours' routes, under the city's own: alternatives a short
+            run away (TASK-192). */}
+        {city !== null && nearby.length > 0 && (
+          <Text style={styles.label}>
+            {t("NEAR {city}", { city: cityShort(city.label).toUpperCase() })}
+          </Text>
+        )}
+        {nearby.length > 0 && <View style={styles.grid}>{nearby.map(routeCard)}</View>}
+        {/* Under the routes already there, and closed: the page is for looking
+            first (TASK-157). */}
+        {onAsk &&
+          (asking ? (
+            <AskForRoute
+              city={city}
+              where={city?.label ?? "your start"}
+              onAsk={(text) => onAsk({ text, centre: near, city: city?.label ?? null })}
+            />
+          ) : (
+            <Pressable
+              style={styles.ask}
+              onPress={() => setAsking(true)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.askText}>{t("Ask for a route")}</Text>
+            </Pressable>
+          ))}
       </ScrollView>
     </View>
   );
@@ -246,39 +368,6 @@ export function ExploreScreen({
 
 function capitalised(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-function Chips({
-  options,
-  value,
-  onChange,
-}: {
-  options: string[];
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <View style={styles.chips}>
-        {options.map((option) => {
-          const on = option === value;
-          return (
-            <Pressable
-              key={option}
-              style={[styles.chip, on && styles.chipOn]}
-              onPress={() => onChange(option)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: on }}
-            >
-              <Text style={[styles.chipText, on && styles.chipTextOn]}>
-                {option === ALL ? "All" : capitalised(option)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </ScrollView>
-  );
 }
 
 const styles = StyleSheet.create({
@@ -318,35 +407,6 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.small,
   },
-  filters: {
-    gap: space.sm,
-    paddingVertical: space.sm,
-  },
-  chips: {
-    flexDirection: "row",
-    gap: space.sm,
-    paddingRight: space.lg,
-  },
-  chip: {
-    minHeight: MIN_TAP_SIZE,
-    paddingHorizontal: space.md,
-    borderRadius: radius.pill,
-    justifyContent: "center",
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-  },
-  chipOn: {
-    backgroundColor: color.text,
-    borderColor: color.text,
-  },
-  chipText: {
-    color: color.text,
-    fontSize: fontSize.body,
-  },
-  chipTextOn: {
-    color: color.background,
-  },
   list: {
     paddingHorizontal: space.lg,
     gap: space.sm,
@@ -356,34 +416,38 @@ const styles = StyleSheet.create({
     fontSize: fontSize.body,
     paddingVertical: space.lg,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    padding: space.sm,
-    minHeight: 76,
-    borderRadius: radius.md,
-    backgroundColor: color.surface,
-    borderWidth: 1,
-    borderColor: color.border,
-  },
-  rowText: {
-    flex: 1,
-    gap: 2,
-  },
-  rowTitle: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
-  },
-  rowLine: {
+  // As the label of the examples' section (CityExamples).
+  label: {
     color: color.textMuted,
-    fontSize: fontSize.detail,
-  },
-  match: {
-    color: color.text,
-    fontSize: fontSize.body,
+    fontSize: fontSize.label,
     fontWeight: fontWeight.semibold,
-    paddingRight: space.xs,
+    letterSpacing: 1.2,
+    marginTop: space.sm,
+  },
+  // Quiet on purpose: a line of text at the foot of the page, not a card.
+  ask: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    alignSelf: "flex-start",
+    marginTop: space.lg,
+  },
+  askText: {
+    color: color.textMuted,
+    fontSize: fontSize.body,
+    textDecorationLine: "underline",
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: space.md,
   },
 });
+
+/** "5 km", "2.5 km" (with the language's comma); with miles, "3.1 mi". */
+export function kmOrMiles(metres: number, units: Units): string {
+  if (units === "mi") {
+    return distanceLabel(metres, "mi", withPoint);
+  }
+  const km = metres / 1000;
+  return `${decimal(km, Number.isInteger(km) ? 0 : 1)} km`;
+}

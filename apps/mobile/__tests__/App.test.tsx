@@ -61,7 +61,7 @@ function lastScript(): string | undefined {
 
 const API = "http://192.168.1.23:8000";
 const GPX = '<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1"></gpx>';
-const GPX_FILE = "shaperoute-heart-5km-2026-09-23.gpx";
+const GPX_FILE = "sgrava-heart-5km-2026-09-23.gpx";
 
 let fetchSpy: jest.SpiedFunction<typeof fetch>;
 /** How the AI on the PC answers POST /shape-readings in the next test. */
@@ -114,9 +114,9 @@ function lastRouteRequest(): unknown {
   return JSON.parse(String(posts.at(-1)?.[1]?.body));
 }
 
-/** Lets the app poll the API once. */
+/** Lets the app poll the API once: the first asks come every 500 ms. */
 async function nextPoll() {
-  await act(() => jest.advanceTimersByTimeAsync(2000));
+  await act(() => jest.advanceTimersByTimeAsync(500));
 }
 
 async function atTrento() {
@@ -145,7 +145,7 @@ afterEach(() => {
 test("opens on the choice, with the app name and a heart", async () => {
   requestPermission.mockReturnValue(new Promise(() => {}));
   await render(<App />);
-  expect(screen.getByText("Sgrava")).toBeOnTheScreen();
+  expect(screen.getByText("MuW")).toBeOnTheScreen();
   expect(
     screen.getByRole("button", { name: "heart", selected: true }),
   ).toBeOnTheScreen();
@@ -171,7 +171,12 @@ test("without permission, a searched place becomes the start", async () => {
   fetchSpy.mockImplementation(async () => Response.json(response));
   await render(<App />);
   await mapIsReady();
-  expect(await screen.findByText(/Location is off for ShapeRoute/)).toBeOnTheScreen();
+  // By the name under the icon: that is what Settings lists (TASK-160).
+  expect(
+    await screen.findByText(
+      "Location is off for MuW. Allow it in Settings, or search for a place to start from.",
+    ),
+  ).toBeOnTheScreen();
   expect(screen.getByText("Open Settings")).toBeOnTheScreen();
   expect(injectJavaScript).not.toHaveBeenCalled();
 
@@ -224,9 +229,16 @@ test("a map that cannot load says so", async () => {
   await fireEvent(screen.getByTestId("map"), "message", {
     nativeEvent: { data: '{"type":"error","message":"MapLibre GL JS did not load"}' },
   });
-  expect(
-    screen.getByText(/The map could not load \(MapLibre GL JS did not load\)/),
-  ).toBeOnTheScreen();
+  // On the map, and in the line under «Draw», where the map is hidden: the
+  // same words, without the reason (TASK-259).
+  const words = "The map could not be loaded. Check the network.";
+  expect(screen.getAllByText(words)).toHaveLength(2);
+  expect(screen.queryByText(/MapLibre/)).toBeNull();
+  // The «Retry» of «Draw», the last on the screen, mounts the map again.
+  const retries = screen.getAllByRole("button", { name: "Retry" });
+  await fireEvent.press(retries[retries.length - 1]);
+  expect(screen.queryByText(words)).toBeNull();
+  expect(screen.getByTestId("map")).toBeOnTheScreen();
 });
 
 test("Draw route is off until there is a start", async () => {
@@ -372,17 +384,17 @@ test("Try N km draws again at the distance the shape fits", async () => {
   jest.useRealTimers();
 });
 
-test("an API that does not answer says where it was looked for", async () => {
+test("an API that does not answer says so for the runner, and where it was looked for underneath", async () => {
   requestPermission.mockResolvedValue(permission(true));
   getPosition.mockResolvedValue(positionAt(46.0671, 11.1214));
   fetchSpy.mockRejectedValue(new TypeError("Network request failed"));
   await render(<App />);
   await fireEvent.press(await screen.findByText("Draw route"));
   expect(
-    await screen.findByText(
-      `Cannot reach the API at ${API}. Check that it is running (on the PC: with --lan) and that the phone can reach it: same Wi-Fi, Tailscale on, or the server address in apps/mobile/.env (docs/DEPLOY.md).`,
-    ),
+    await screen.findByText("No connection. Check the network and try again."),
   ).toBeOnTheScreen();
+  // For the developer, under jest as in a development build (TASK-256).
+  expect(screen.getByText(`Cannot reach the API at ${API}.`)).toBeOnTheScreen();
 });
 
 test("a new start takes the old route away", async () => {
@@ -498,7 +510,7 @@ test("an unknown word turns Draw route off until the AI has read it", async () =
   await fireEvent.changeText(screen.getByLabelText("Shape"), "");
   expect(
     screen.getByText(
-      "Unknown shape. Try: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree.",
+      "Unknown shape. Try: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
@@ -578,7 +590,7 @@ test("when the AI is off the app says so, and asks again next time", async () =>
   await fireEvent(field, "endEditing");
   expect(
     await screen.findByText(
-      "The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree.",
+      "This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
@@ -797,6 +809,8 @@ test("a word is sent as `word`, and named while waiting and on the result", asyn
     start: [46.0671, 11.1214],
     word: "CIAO",
     style: "round",
+    // The pen is lifted between the letters unless switched off (TASK-202).
+    pen_up: true,
     distance_m: 12000,
     activity: "running",
   });

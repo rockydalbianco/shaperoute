@@ -1,5 +1,6 @@
-# ShapeRoute on a server: the API, and when wanted the AI and HTTPS
-# (TASK-144, ADR-0111). docs/DEPLOY.md, road F, says how to use it.
+# ShapeRoute on a server: the API with its database and the nightly copy
+# of it, and when wanted the AI and HTTPS (TASK-144, ADR-0111; TASK-122,
+# ADR-0123). docs/DEPLOY.md, road F, says how to use it.
 #
 #   cd deploy
 #   docker compose up -d --build                     # the API
@@ -7,9 +8,11 @@
 #   docker compose --profile public up -d --build    # + Caddy, HTTPS
 #
 # The secrets come from deploy/.env, a copy of .env.example that never
-# enters the repository. Zones, search events and the request log stay in
-# data/ at the root of the checkout: plain folders, so rsync can fill them
-# from the Mac, and they outlive every new image.
+# enters the repository: POSTGRES_PASSWORD at least. Zones, search events,
+# the request log and the database copies stay in data/ at the root of the
+# checkout: plain folders, so rsync can fill them from the Mac or take the
+# copies to it, and they outlive every new image. The database itself is
+# in the volume db, owned by PostgreSQL's own user.
 
 name: shaperoute
 
@@ -28,9 +31,74 @@ services:
     command:
       - sh
       - -c
-      - mkdir -p /data/cache /data/insights /data/requests && chown -R 10001:10001 /data
+      - mkdir -p /data/cache /data/insights /data/requests /data/backups && chown -R 10001:10001 /data
     volumes:
       - ../data:/data
+    logging: *logging
+
+  # The accounts (TASK-114, docs/DATABASE.md): PostgreSQL 16 with PostGIS,
+  # reached only by the other services, never from outside the server.
+  db:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shaperoute
+      POSTGRES_USER: shaperoute
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "shaperoute", "-d", "shaperoute"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    logging: *logging
+
+  # A pg_dump of the database every night into data/backups, the last 13
+  # days kept: an account deleted today is out of every copy within 14
+  # (ADR-0114). The offsite service then takes them to the Storage Box.
+  backup:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    depends_on:
+      data-owner:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: shaperoute
+      PGDATABASE: shaperoute
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      BACKUP_AT: ${BACKUP_AT:-02:00}
+      BACKUP_KEEP_DAYS: "13"
+    entrypoint: ["bash", "/backup.sh"]
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ../data/backups:/backups
+    logging: *logging
+
+  # The copies and the search events to the Hetzner Storage Box, every
+  # night after the copy (ADR-0123, update of 2026-10-02; DEPLOY.md F.13).
+  # Without STORAGEBOX_HOST it says so and the copies stay on the server.
+  offsite:
+    build: ./offsite
+    image: shaperoute-offsite
+    restart: unless-stopped
+    depends_on:
+      data-owner:
+        condition: service_completed_successfully
+    environment:
+      PUSH_AT: ${PUSH_AT:-02:30}
+      STORAGEBOX_HOST: ${STORAGEBOX_HOST:-}
+      STORAGEBOX_USER: ${STORAGEBOX_USER:-}
+    entrypoint: ["bash", "/backup.sh", "push-nightly"]
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ../data/backups:/backups:ro
+      - ../data/insights:/insights:ro
+      # The Storage Box key and its host key, outside the repository.
+      - ${STORAGEBOX_SSH_DIR:-/root/.ssh/storagebox}:/storagebox:ro
     logging: *logging
 
   api:
@@ -41,8 +109,12 @@ services:
     depends_on:
       data-owner:
         condition: service_completed_successfully
+      db:
+        condition: service_healthy
     env_file: .env
     environment:
+      # The API applies the migrations when it starts (TASK-114).
+      SHAPEROUTE_DATABASE_URL: postgresql://shaperoute:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}@db:5432/shaperoute
       # Caddy puts the phone's address in X-Forwarded-For: trusting it
       # keeps the rate limit per phone, not one for everybody. Nothing
       # else reaches the API: its port is on 127.0.0.1 only.
@@ -95,6 +167,7 @@ services:
     logging: *logging
 
 volumes:
+  db:
   ollama:
   caddy-data:
   caddy-config:

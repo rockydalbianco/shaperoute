@@ -3,9 +3,17 @@ import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
 
-import { FREE_ROUTE, kmAnnouncement, wholeKm } from "./freeRun";
+import { activityOf, loadSport } from "../settings/sport";
+import { appUnits } from "../units/units";
+import { loadVoices, speaking } from "../voice/voiceChoice";
+import { FREE_ROUTE, kmAnnouncement, wholeUnits } from "./freeRun";
+import { kmComparison } from "./kmCompare";
+import { isPaddle, paddleAnnouncement } from "./paddle";
+import { type RunAway, watchAway } from "./runAway";
+import { controlRun, type RunSession } from "./runControl";
+import { type RunWatch, watchRunPosition } from "./runPosition";
 import { emptyTrack, type Track } from "./trackRecorder";
-import { type RunRecorder, startRun } from "./trackStore";
+import { startRun } from "./trackStore";
 import { FIX_EVERY_M, play } from "./useNavigation";
 
 export type FreeRunState =
@@ -18,7 +26,13 @@ export type FreeRunState =
  * Records a run without a route while `active` (TASK-149): the phone's
  * position, with the screen on or in pocket mode, into the run file of
  * TASK-112. No directions: the voice says each kilometre, with the time
- * and the pace. The position never leaves the phone.
+ * and the pace, and from the second how it went against the one before
+ * (TASK-217); with miles each mile, in the units «Settings» has when the
+ * voice speaks (TASK-182). With «Paddle» in «Settings» the pace said is of
+ * 500 m (TASK-251). The countdown, «Pause» and the pause by standing still are
+ * runControl's (TASK-169). With the phone locked, or another app in front,
+ * the GPS goes on where the app can (TASK-261, `runPosition`). The position
+ * never leaves the phone.
  */
 export function useFreeRun(active: boolean): FreeRunState {
   const [state, setState] = useState<FreeRunState>({ status: "starting" });
@@ -28,54 +42,114 @@ export function useFreeRun(active: boolean): FreeRunState {
       return;
     }
     let stopped = false;
-    let subscription: Location.LocationSubscription | null = null;
-    let run: RunRecorder | null = null;
+    let subscription: RunWatch | null = null;
+    let run: RunSession | null = null;
+    let stopRecording: (() => void) | null = null;
+    let away: RunAway | null = null;
+    // The phone's voices, before the first kilometre (TASK-209).
+    void loadVoices();
+    // The phone refusing the position altogether (its services off) is a
+    // rejection, not a denial: it is one all the same (TASK-253).
     void (async () => {
-      const permission = await Location.requestForegroundPermissionsAsync();
-      if (stopped) {
-        return;
-      }
-      if (!permission.granted) {
-        setState({ status: "denied" });
-        return;
-      }
-      // A free run stopped lately goes on with its track (trackStore).
-      const recorder = startRun(FREE_ROUTE, Date.now());
-      run = recorder;
-      // A run that goes on does not say again the kilometres it has said.
-      let saidKm = wholeKm(recorder.track());
-      setState({ status: "running", track: recorder.track(), position: null });
-      subscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.BestForNavigation,
-          distanceInterval: FIX_EVERY_M,
-        },
-        ({ coords, timestamp }) => {
-          if (stopped) {
-            return;
-          }
-          const fix: LatLon = [coords.latitude, coords.longitude];
-          recorder.onFix(
-            { point: fix, timeMs: timestamp, accuracyM: coords.accuracy },
-            false,
-          );
-          const track = recorder.track();
-          const km = wholeKm(track);
-          if (km > saidKm) {
-            saidKm = km;
-            play([{ say: kmAnnouncement(km, track), vibrate: false }]);
-          }
-          setState({ status: "running", track, position: fix });
-        },
-      );
-      if (stopped) {
-        subscription.remove();
+      try {
+        const permission = await Location.requestForegroundPermissionsAsync();
+        if (stopped) {
+          return;
+        }
+        if (!permission.granted) {
+          setState({ status: "denied" });
+          return;
+        }
+        // A free run stopped lately goes on with its track (trackStore).
+        // On the water the pace is a paddler's (TASK-251): the sport is the
+        // one «Settings» has when the outing starts, kept in the run's file.
+        const sport = activityOf(loadSport());
+        const activity = isPaddle(sport) ? sport : undefined;
+        const recorder = startRun(FREE_ROUTE, Date.now(), undefined, [], activity);
+        stopRecording = recorder.stop;
+        // A run that goes on does not say again the kilometres it has said;
+        // with miles, the miles (TASK-182).
+        let saidUnits = appUnits();
+        let saidKm = wholeUnits(recorder.track(), saidUnits);
+        let position: LatLon | null = null;
+        const session = controlRun(recorder, {
+          // «Pause» and «Resume» change the track between two fixes.
+          onChange: () => {
+            if (!stopped) {
+              setState({ status: "running", track: recorder.track(), position });
+            }
+          },
+          say: (text) => play([{ say: text, vibrate: false }]),
+        });
+        run = session;
+        setState({ status: "running", track: recorder.track(), position });
+        // With the phone locked too, where the app can (TASK-261).
+        subscription = await watchRunPosition(
+          {
+            accuracy: Location.Accuracy.BestForNavigation,
+            distanceInterval: FIX_EVERY_M,
+          },
+          ({ coords, timestamp }) => {
+            if (stopped) {
+              return;
+            }
+            away?.beforeFix();
+            const fix: LatLon = [coords.latitude, coords.longitude];
+            position = fix;
+            session.onFix(
+              {
+                point: fix,
+                timeMs: timestamp,
+                accuracyM: coords.accuracy,
+                altitudeM: coords.altitude,
+              },
+              false,
+            );
+            const track = recorder.track();
+            const units = appUnits();
+            if (units !== saidUnits) {
+              // «Settings» changed the units during the run: those behind
+              // are not said again, the next one is.
+              saidUnits = units;
+              saidKm = wholeUnits(track, units);
+            }
+            const km = wholeUnits(track, units);
+            if (km > saidKm) {
+              saidKm = km;
+              const { language } = speaking();
+              const said = isPaddle(activity)
+                ? paddleAnnouncement(km, track, language, units)
+                : kmAnnouncement(km, track, language, units);
+              play([{ say: said, vibrate: false }]);
+              // Then how it went against the one before (TASK-217).
+              const compared = kmComparison(km, track, language, units);
+              if (compared !== null) {
+                play([{ say: compared, vibrate: false }]);
+              }
+            }
+            setState({ status: "running", track, position: fix });
+          },
+        );
+        if (stopped) {
+          subscription.remove();
+          return;
+        }
+        // The app behind another, or the phone locked: where the GPS stops
+        // with it, a long absence is a pause of the phone's (TASK-255,
+        // TASK-261).
+        away = watchAway(recorder, { background: subscription.background });
+      } catch {
+        if (!stopped) {
+          setState({ status: "denied" });
+        }
       }
     })();
     return () => {
       stopped = true;
       subscription?.remove();
-      run?.stop();
+      away?.remove();
+      run?.end();
+      stopRecording?.();
       void Speech.stop();
       setState({ status: "starting" });
     };

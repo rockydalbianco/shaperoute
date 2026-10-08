@@ -17,7 +17,6 @@ from pathlib import Path
 
 import psycopg
 import uvicorn
-from route_engine.network import OsmnxSource
 from route_engine.shapes import SUPPORTED_SHAPES
 from shaperoute_ai.ollama import DEFAULT_MODEL, DEFAULT_URL, OllamaModel
 from shaperoute_ai.reading import ShapeReader
@@ -26,10 +25,10 @@ from shaperoute_ai.theme_reading import ThemeReader
 from shaperoute_api.access import KEY_HEADER, KEY_VARIABLE, Access, AccessConfigError
 from shaperoute_api.access_log import hide_query_strings
 from shaperoute_api.accounts import Accounts
+from shaperoute_api.activity_graphs import ActivityGraphs
 from shaperoute_api.app import create_app
 from shaperoute_api.cities import CitySearch
 from shaperoute_api.db import DATABASE_VARIABLE, Database, MigrationError
-from shaperoute_api.graphs import ZoneGraphs
 from shaperoute_api.insights import Insights
 from shaperoute_api.insights.events import DEFAULT_DIR as INSIGHTS_DIR
 from shaperoute_api.insights.events import OFF_VARIABLE as INSIGHTS_OFF
@@ -37,11 +36,14 @@ from shaperoute_api.insights.events import EventLog
 from shaperoute_api.insights.events import wanted as insights_wanted
 from shaperoute_api.insights.vocabulary import DEFAULT_PATH as VOCABULARY
 from shaperoute_api.insights.vocabulary import Vocabulary
+from shaperoute_api.nearby_cities import NearbyCities, install_nearby_cities
+from shaperoute_api.phone_zone_api import install_phone_zones
 from shaperoute_api.places import KEY_VARIABLE as PLACES_KEY
 from shaperoute_api.places import PlaceSearch
 from shaperoute_api.recommended import DEFAULT_DIR as CATALOG_DIR
 from shaperoute_api.recommended import RecommendedCatalog
 from shaperoute_api.request_log import DEFAULT_DIR, ON_VARIABLE, RequestLog, wanted
+from shaperoute_api.route_store import STORE_FOLDER, RouteStore
 from shaperoute_api.themed import StopFinder, ThemedJobs
 
 DEFAULT_PORT = 8000
@@ -87,6 +89,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         type=Path,
         default=DEFAULT_DIR,
         help=f"where the request log is written (default: {DEFAULT_DIR})",
+    )
+    parser.add_argument(
+        "--no-route-store",
+        action="store_true",
+        help=(
+            f"draw a city's examples each time, instead of keeping them in "
+            f"{STORE_FOLDER}/ of the cache folder for the next to ask"
+        ),
     )
     parser.add_argument(
         "--catalog-dir",
@@ -152,8 +162,14 @@ def main(argv: Sequence[str] | None = None) -> None:
     request_log = RequestLog(args.request_log_dir) if wanted(args.request_log) else None
     places = PlaceSearch.from_env()
     recommended = RecommendedCatalog.from_dir(args.catalog_dir)
-    source = ZoneGraphs(OsmnxSource(args.cache_dir))
+    # The zones of each activity's network, foot and bike (TASK-190).
+    graphs = ActivityGraphs.from_cache(args.cache_dir)
+    source = graphs.for_activity("running")
     cities = CitySearch(places.key)
+    # A city's examples, kept once drawn (ADR-0136): beside the zones.
+    route_store = (
+        None if args.no_route_store else RouteStore(args.cache_dir / STORE_FOLDER)
+    )
     # Search events, on by default (the user's choice, ADR-0101), and the
     # learned vocabulary: tables, then it, then the AI.
     insights = Insights(
@@ -170,7 +186,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         ai=ThemeReader(OllamaModel(args.ai_model, args.ai_url)),
     )
     app = create_app(
-        source,
+        graphs,
         reader=reader,
         request_log=request_log,
         places=places,
@@ -179,7 +195,12 @@ def main(argv: Sequence[str] | None = None) -> None:
         cities=cities,
         insights=insights,
         accounts=accounts,
+        route_store=route_store,
     )
+    # The towns near the user, under "Near me" in "Explore" (TASK-236).
+    install_nearby_cities(app, NearbyCities(places.key), route_store)
+    # The cached zones, for the phone that draws on them (TASK-214).
+    install_phone_zones(app, args.cache_dir)
     host = "0.0.0.0" if args.lan else "127.0.0.1"
     here = f"http://127.0.0.1:{args.port}"
     print(f"API docs on this PC: {here}/docs")
@@ -211,6 +232,11 @@ def main(argv: Sequence[str] | None = None) -> None:
         print("Route requests are not recorded (--request-log records them)")
     else:
         print(f"Route requests recorded, start included, in {request_log.path}")
+    if route_store is None:
+        print("A city's examples are drawn each time (--no-route-store)")
+    else:
+        folder = args.cache_dir / STORE_FOLDER
+        print(f"A city's examples are kept once drawn: {len(route_store)} in {folder}")
     if args.lan:
         address = lan_address() or "<this PC's address>"
         print(f"From the phone, same Wi-Fi: http://{address}:{args.port}/health")

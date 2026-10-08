@@ -1,0 +1,24 @@
+{
+  "reactions": {
+    "counts": {
+      "super_like": 3,
+      "fire": 2,
+      "clap": 1,
+      "strong": 0,
+      "laugh": 0,
+      "wow": 1
+    },
+    "total": 7,
+    "mine": "super_like"
+  },
+  "comment": {
+    "id": "5a3c9e17-8d2b-4f60-b1e4-0c7f92a6d385",
+    "author": {
+      "public_id": "4d6b1e90-2c7f-4a35-8e1d-93f0b5a7c624",
+      "username": "other_runner"
+    },
+    "text": "What a heart! See you at the bridge on Sunday.",
+    "created_at": "2026-10-04T18:05:00Z",
+    "deletable": true
+  }
+}

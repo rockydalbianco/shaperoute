@@ -1,1 +1,63 @@
-{"city": "trento", "centre": [46.067, 11.1215], "min_similarity": 0.88, "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright", "routes": [{"shape": "star", "distance_m": 5000, "route_m": 5120, "similarity": 0.996, "planned_at": "2026-10-01T10:00:00Z", "points": [[46.067, 11.1215], [46.07, 11.123], [46.071, 11.126], [46.068, 11.127], [46.067, 11.1215]]}, {"shape": "heart", "distance_m": 10000, "route_m": 10240, "similarity": 0.93, "planned_at": "2026-10-01T10:01:00Z", "points": [[46.0672, 11.1219], [46.075, 11.13], [46.08, 11.12], [46.0672, 11.1219]]}, {"shape": "heart", "distance_m": 21000, "route_m": 21300, "similarity": 0.93, "planned_at": "2026-10-01T10:02:00Z", "points": [[46.09, 11.15], [46.1, 11.16], [46.095, 11.17], [46.09, 11.15]]}, {"word": "CIAO", "style": "block", "distance_m": 15000, "route_m": 15200, "similarity": 0.9, "planned_at": "2026-10-01T10:03:00Z", "points": [[46.0675, 11.122], [46.07, 11.13], [46.072, 11.125], [46.0675, 11.122]]}]}
+{
+  "city": "trento",
+  "centre": [46.067, 11.1215],
+  "min_similarity": 0.88,
+  "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
+  "routes": [
+    {
+      "shape": "star",
+      "distance_m": 5000,
+      "route_m": 5120,
+      "similarity": 0.996,
+      "planned_at": "2026-10-01T10:00:00Z",
+      "rotation_deg": -30,
+      "points": [
+        [46.067, 11.1215],
+        [46.07, 11.123],
+        [46.071, 11.126],
+        [46.068, 11.127],
+        [46.067, 11.1215]
+      ]
+    },
+    {
+      "shape": "heart",
+      "distance_m": 10000,
+      "route_m": 10240,
+      "similarity": 0.93,
+      "planned_at": "2026-10-01T10:01:00Z",
+      "points": [
+        [46.0672, 11.1219],
+        [46.075, 11.13],
+        [46.08, 11.12],
+        [46.0672, 11.1219]
+      ]
+    },
+    {
+      "shape": "heart",
+      "distance_m": 21000,
+      "route_m": 21300,
+      "similarity": 0.93,
+      "planned_at": "2026-10-01T10:02:00Z",
+      "points": [
+        [46.09, 11.15],
+        [46.1, 11.16],
+        [46.095, 11.17],
+        [46.09, 11.15]
+      ]
+    },
+    {
+      "word": "CIAO",
+      "style": "block",
+      "distance_m": 15000,
+      "route_m": 15200,
+      "similarity": 0.9,
+      "planned_at": "2026-10-01T10:03:00Z",
+      "points": [
+        [46.0675, 11.122],
+        [46.07, 11.13],
+        [46.072, 11.125],
+        [46.0675, 11.122]
+      ]
+    }
+  ]
+}

@@ -16,15 +16,16 @@ import urllib.parse
 import urllib.request
 import uuid
 import weakref
-from collections.abc import Collection, Iterator, Sequence
+from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeVar
 
 import networkx as nx
 import numpy as np
 
+from route_engine.errors import NoRoadsError
 from route_engine.geo import (
     LatLon,
     latlon_to_local,
@@ -86,6 +87,84 @@ FOOT_FILTER = (
     '["sidewalk:right"!~"separate"]'
 )
 
+# The bike network (TASK-190, ADR-0153): roads and cycleways, and the paths
+# and pedestrian streets open to bikes; never steps, trunk roads or
+# motorways. Its graphs keep one-way streets one way. Since TASK-206
+# (ADR-0167) they also hold the ways a rider may walk with the bike on foot
+# (`walkable`, `on_foot_edge`), which cost WALK_COST times their length.
+BIKE_NETWORK_NAME = "bike"
+# Ways a bike rides unless a tag says otherwise (`rideable`).
+BIKE_ROADS = frozenset(
+    {
+        "cycleway",
+        "primary",
+        "primary_link",
+        "secondary",
+        "secondary_link",
+        "tertiary",
+        "tertiary_link",
+        "unclassified",
+        "residential",
+        "living_street",
+        "service",
+        "road",
+        "track",
+    }
+)
+# Ways for walking, ridden only where marked as a cycle path.
+BIKE_PATHS = frozenset({"path", "footway", "bridleway"})
+# Ways the rider may walk along with the bike on foot where riding is not
+# allowed (TASK-206, ADR-0167); steps never: a bike is not carried.
+WALK_WAYS = BIKE_PATHS | {"pedestrian"}
+# A metre with the bike on foot costs as much as WALK_COST metres ridden:
+# the route walks only where the shape gains a lot from it. At Trento, 10 km
+# routes walked 0.7-1.1 km with it, 1.2-2.6 km at 3 times; the user chose
+# "a little" (ADR-0167).
+WALK_COST = 6.0
+# Two Overpass filters, one request each: the roads, and the paths, footways
+# and pedestrian streets, ridden where their tags let bikes on and walked
+# with the bike on foot elsewhere (TASK-206; before it, only those open to
+# bikes). Wider than `rideable` and `walkable`, which decide on the tags
+# kept, save the roads with `access=private`, left out as on foot even when
+# a `bicycle` tag would open them.
+BIKE_FILTER = [
+    f'["highway"~"^({"|".join(sorted(BIKE_ROADS))})$"]["area"!~"yes"]'
+    '["access"!~"private"]["service"!~"private"]',
+    '["highway"~"^(bridleway|footway|path|pedestrian)$"]["area"!~"yes"]',
+]
+# The tags `rideable`, `bike_direction` and the checks (validation.py) read,
+# kept on the edges of a bike graph besides OSMnx's own.
+BIKE_TAGS = (
+    "bicycle",
+    "vehicle",
+    "motorroad",
+    "oneway:bicycle",
+    "cycleway",
+    "cycleway:both",
+    "cycleway:left",
+    "cycleway:right",
+    "cycleway:left:oneway",
+    "cycleway:right:oneway",
+    "surface",
+    "tracktype",
+    "foot",
+)
+BIKE_ALLOWED = frozenset({"yes", "designated", "permissive", "destination"})
+BIKE_BANNED = frozenset({"no", "private", "dismount", "use_sidepath"})
+NO_ENTRY = frozenset({"no", "private", "agricultural", "forestry"})
+ONE_WAY_FORWARD = frozenset({"yes", "true", "1"})
+ONE_WAY_BACKWARD = frozenset({"-1", "reverse"})
+
+# The network each activity is drawn on, by its name in the cache.
+NETWORKS: dict[str, str] = {
+    "running": FOOT_NETWORK_NAME,
+    "cycling": BIKE_NETWORK_NAME,
+}
+FILTERS: dict[str, str | list[str]] = {
+    FOOT_NETWORK_NAME: FOOT_FILTER,
+    BIKE_NETWORK_NAME: BIKE_FILTER,
+}
+
 # The named roads FOOT_FILTER leaves out because their sidewalks are drawn
 # apart: only to name those sidewalks (sidewalks.py, ADR-0054), never walked.
 NAMED_ROADS_QUERY = (
@@ -117,17 +196,25 @@ class FileSource:
 
 
 class OsmnxSource:
-    """Foot network from OpenStreetMap, cached as GraphML in `cache_dir`."""
+    """Foot network from OpenStreetMap, cached as GraphML in `cache_dir`;
+    the bike network with `network_name` BIKE_NETWORK_NAME (`for_activity`).
+    Each network has its own files: `<network_name>_<area>.graphml`."""
 
     def __init__(
         self,
         cache_dir: Path,
         network_name: str = FOOT_NETWORK_NAME,
-        custom_filter: str = FOOT_FILTER,
+        custom_filter: str | list[str] = FOOT_FILTER,
     ) -> None:
         self.cache_dir = cache_dir
         self.network_name = network_name
         self.custom_filter = custom_filter
+
+    @classmethod
+    def for_activity(cls, cache_dir: Path, activity: str) -> OsmnxSource:
+        """The source of the network `activity` is drawn on (NETWORKS)."""
+        name = NETWORKS[activity]
+        return cls(cache_dir, name, FILTERS[name])
 
     def cache_path(self, bbox: BBox) -> Path:
         south, west, north, east = bbox
@@ -190,29 +277,41 @@ class OsmnxSource:
 
         A crop is never saved (TASK-136, ADR-0108): it is 3 to 170 MB for
         each new start, and it is made again from its zone without the
-        network. The API does the same (ADR-0030)."""
+        network. The API does the same (ADR-0030).
+
+        The file of a zone holds every connected piece of its roads
+        (TASK-180, ADR-0148); what is returned is one piece, the largest of
+        the area asked, as before."""
         import osmnx as ox
 
         path = self.cache_path(bbox)
         if path.exists():
-            return read_graph(path)
+            return largest_piece(read_graph(path))
         covering = self.covering_path(bbox)
         if covering is not None:
             return crop(read_graph(covering), bbox)
         ox.settings.cache_folder = str(self.cache_dir / "http")
         south, west, north, east = bbox
-        # network_type="walk" keeps every edge two-way: one-way streets do
-        # not bind pedestrians. The filter picks the ways.
         # Through an address of Overpass that answers (TASK-127, ADR-0100).
         with reachable(ox.settings.overpass_url):
-            graph = ox.graph_from_bbox(
-                bbox=(west, south, east, north),
-                network_type="walk",
-                custom_filter=self.custom_filter,
-            )
+            if self.network_name == BIKE_NETWORK_NAME:
+                graph = download_bike_graph(bbox, self.custom_filter)
+            else:
+                # network_type="walk" keeps every edge two-way: one-way
+                # streets do not bind pedestrians. The filter picks the ways.
+                graph = ox.graph_from_bbox(
+                    bbox=(west, south, east, north),
+                    network_type="walk",
+                    custom_filter=self.custom_filter,
+                    # Without it OSMnx keeps the largest piece of the whole
+                    # zone, and an island with fewer roads than the mainland
+                    # beside it is left with none: Venice (ADR-0148). The
+                    # largest piece is chosen area by area, in `crop`.
+                    retain_all=True,
+                )
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         _write_graph(graph, path)
-        return graph
+        return largest_piece(graph)
 
 
 def read_graph(path: Path) -> Graph:
@@ -272,6 +371,249 @@ def _whole(path: Path) -> Iterator[Path]:
         os.replace(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
+
+
+class WrongNetworkError(ValueError):
+    """A route asked for one activity on the graph of another network: a
+    bug of the caller, which handed the wrong source (ADR-0153)."""
+
+
+def network_of(graph: Graph) -> str:
+    """The network a graph was built for: what its `network` attribute says,
+    set on bike graphs; foot graphs, also those cached before, have none."""
+    return str(graph.graph.get("network", FOOT_NETWORK_NAME))
+
+
+def one_way_streets(graph: Graph) -> bool:
+    """Whether `graph` keeps one-way streets one way, as the bike network
+    does; on foot every road goes both ways."""
+    return network_of(graph) == BIKE_NETWORK_NAME
+
+
+def check_network(graph: Graph, activity: str) -> None:
+    """Raise unless `graph` is of the network `activity` is drawn on: a
+    cycling route on the foot network would take steps and go against
+    one-way streets."""
+    wanted, found = NETWORKS[activity], network_of(graph)
+    if found != wanted:
+        raise WrongNetworkError(
+            f"a {activity} route is drawn on the {wanted} network, "
+            f"not on the {found} one"
+        )
+
+
+@contextmanager
+def _way_tags(extra: Sequence[str]) -> Iterator[None]:
+    """OSMnx keeps the `extra` tags of the ways too, for the block."""
+    import osmnx as ox
+
+    saved = list(ox.settings.useful_tags_way)
+    ox.settings.useful_tags_way = saved + [t for t in extra if t not in saved]
+    try:
+        yield
+    finally:
+        ox.settings.useful_tags_way = saved
+
+
+def download_bike_graph(bbox: BBox, custom_filter: str | list[str]) -> Graph:
+    """The bike network of `bbox` from Overpass, every piece of it.
+
+    network_type="bike" makes OSMnx keep one-way streets one way. The graph
+    comes unsimplified, one edge for each stretch of a way, so `bike_ways`
+    can drop ways and turn directions with each way's own tags before the
+    ways are joined into roads."""
+    import osmnx as ox
+
+    south, west, north, east = bbox
+    with _way_tags(BIKE_TAGS):
+        graph = ox.graph_from_bbox(
+            bbox=(west, south, east, north),
+            network_type="bike",
+            custom_filter=custom_filter,
+            retain_all=True,
+            simplify=False,
+        )
+    return bike_ways(graph)
+
+
+def rideable(tags: Mapping[str, Any]) -> bool:
+    """Whether a bike may ride a way with these tags (ADR-0153).
+
+    Roads and cycleways unless closed to bikes (`bicycle=no`, `dismount`,
+    `use_sidepath`, a road for motor vehicles only) or to every vehicle
+    (`access`, `vehicle`); an explicit `bicycle=yes` opens them. Paths,
+    footways and bridleways only when marked as cycle paths
+    (`bicycle=designated`), pedestrian streets when open to bikes. Steps,
+    trunk roads and motorways never."""
+    highway, bicycle = tags.get("highway"), tags.get("bicycle")
+    if highway in BIKE_PATHS:
+        return bicycle == "designated"
+    if highway == "pedestrian":
+        return bicycle in BIKE_ALLOWED
+    if highway not in BIKE_ROADS:
+        return False
+    if bicycle in BIKE_ALLOWED:
+        return True
+    if bicycle in BIKE_BANNED:
+        return False
+    return not (
+        tags.get("motorroad") == "yes"
+        or tags.get("vehicle") in NO_ENTRY
+        or tags.get("access") in NO_ENTRY
+    )
+
+
+def walkable(tags: Mapping[str, Any]) -> bool:
+    """Whether a rider may walk a way with the bike on foot, where `rideable`
+    says no (TASK-206, ADR-0167): footways, paths, bridleways and
+    pedestrian streets, and any way that says to get off the bike
+    (`bicycle=dismount`), unless closed to people on foot. Never steps."""
+    highway = tags.get("highway")
+    if highway == "steps":
+        return False
+    if highway not in WALK_WAYS and not (
+        tags.get("bicycle") == "dismount" and highway in BIKE_ROADS
+    ):
+        return False
+    foot = tags.get("foot")
+    if foot in NO_ENTRY:
+        return False
+    return foot in BIKE_ALLOWED or tags.get("access") not in NO_ENTRY
+
+
+def on_foot_edge(data: Mapping[str, Any]) -> bool:
+    """Whether an edge of the bike network is walked with the bike on foot:
+    `walk` is True in a graph made here, "True" in one read from GraphML."""
+    return str(data.get("walk")) == "True"
+
+
+def step_cost(u: Any, v: Any, edges: Mapping[Any, Mapping[str, Any]]) -> float:
+    """A networkx weight: the cheapest u→v edge, an edge walked with the
+    bike on foot costing WALK_COST times its length. On foot, and on a bike
+    graph cached before TASK-206, the length."""
+    return min(
+        float(d["length"]) * (WALK_COST if on_foot_edge(d) else 1.0)
+        for d in edges.values()
+    )
+
+
+def bike_direction(tags: Mapping[str, Any]) -> str | None:
+    """Which way a bike may ride a way, when its tags say so apart from
+    `oneway`: "both" on a one-way street open to bikes against the traffic
+    (`oneway:bicycle=no`, a `cycleway=opposite*`, a cycle lane the other way
+    on one side), "forward" or "backward" on a two-way road one-way for
+    bikes (`oneway:bicycle`). None: as `oneway` says, as for cars."""
+    oneway = tags.get("oneway:bicycle")
+    if oneway == "no":
+        return "both"
+    if oneway in ONE_WAY_FORWARD:
+        return "forward"
+    if oneway in ONE_WAY_BACKWARD:
+        return "backward"
+    for key in ("cycleway", "cycleway:both", "cycleway:left", "cycleway:right"):
+        if str(tags.get(key, "")).startswith("opposite"):
+            return "both"
+    for side in ("left", "right"):
+        lane = tags.get(f"cycleway:{side}")
+        if tags.get(f"cycleway:{side}:oneway") in {"-1", "no"} and lane not in {
+            None,
+            "no",
+            "separate",
+        }:
+            return "both"
+    return None
+
+
+def bike_ways(graph: Graph) -> Graph:
+    """An unsimplified OSMnx graph made with network_type="bike" turned
+    into the bike network: the ways a bike may not ride dropped, the one-way
+    streets open to bikes the other way joined both ways, and the two-way
+    roads one-way for bikes made one-way; then simplified as OSMnx does,
+    and marked as a bike graph (`one_way_streets`).
+
+    Since TASK-206 (ADR-0167) the ways a bike may not ride but its rider
+    may walk (`walkable`) stay, both ways, marked `walk`; so does the other
+    way of each one-way street, on foot. A walked edge beside a ridden one
+    between the same two nodes, the same way, is dropped: there the bike is
+    ridden. Simplifying never joins a walked stretch to a ridden one."""
+    import osmnx as ox
+
+    edges = graph.edges(keys=True, data=True)
+    dropped = []
+    for u, v, k, data in edges:
+        if rideable(data):
+            continue
+        if walkable(data):
+            data["walk"] = True
+        else:
+            dropped.append((u, v, k))
+    graph.remove_edges_from(dropped)
+    added: list[tuple[Any, Any, dict[str, Any]]] = []
+    removed: list[tuple[Any, Any, Any]] = []
+    for u, v, k, data in graph.edges(keys=True, data=True):
+        if data.get("walk"):
+            if data.get("oneway"):  # on foot every way goes both ways
+                data["oneway"] = False
+                added.append((v, u, {**data, "reversed": not data.get("reversed")}))
+            continue
+        way = bike_direction(data)
+        if way == "both" and data.get("oneway"):
+            data["oneway"] = False
+            added.append((v, u, {**data, "reversed": not data.get("reversed")}))
+        elif way in ("forward", "backward") and not data.get("oneway"):
+            if bool(data.get("reversed")) == (way == "forward"):
+                removed.append((u, v, k))
+            else:
+                data["oneway"] = True
+    graph.remove_edges_from(removed)
+    for u, v, data in added:
+        graph.add_edge(u, v, **data)
+    graph.remove_nodes_from(list(nx.isolates(graph)))
+    # Counted on the ways downloaded, footways too: simplify_graph counts
+    # them again on the bike network.
+    for _, node in graph.nodes(data=True):
+        node.pop("street_count", None)
+    graph = ox.simplify_graph(graph, edge_attrs_differ=["walk"])
+    # After simplifying: in it, a node of a one-way street with the other
+    # way on foot beside would have had walked and ridden edges, and ended
+    # every edge there.
+    against = [
+        (v, u, {**data, "walk": True, "oneway": False, "reversed": _flip(data)})
+        for u, v, data in graph.edges(data=True)
+        if data.get("oneway") and not data.get("walk") and walkable_beside(data)
+    ]
+    for u, v, data in against:
+        graph.add_edge(u, v, **data)
+    ridden = {(u, v) for u, v, data in graph.edges(data=True) if not data.get("walk")}
+    graph.remove_edges_from(
+        [
+            (u, v, k)
+            for u, v, k, data in graph.edges(keys=True, data=True)
+            if data.get("walk") and (u, v) in ridden
+        ]
+    )
+    graph.graph["network"] = BIKE_NETWORK_NAME
+    graph.graph["on_foot"] = True
+    return graph
+
+
+def _flip(data: Mapping[str, Any]) -> Any:
+    """`reversed` of an edge run the other way; OSMnx keeps a list for the
+    ways of a simplified edge."""
+    value = data.get("reversed")
+    if isinstance(value, list):
+        return [not v for v in value]
+    return not value
+
+
+def walkable_beside(tags: Mapping[str, Any]) -> bool:
+    """Whether the other way of a one-way street a bike rides may be walked
+    with the bike on foot: on its sidewalk, unless the street is closed to
+    people on foot. A simplified edge joins ways, and OSMnx keeps a list of
+    their values: closed on one of them is closed."""
+    foot = tags.get("foot")
+    values = set(foot) if isinstance(foot, list) else {foot}
+    return not values & NO_ENTRY
 
 
 def area_around(points: Sequence[LatLon], margin_m: float = AREA_MARGIN_M) -> BBox:
@@ -385,8 +727,10 @@ def _overpass(query: str) -> dict[str, Any]:
 def crop(graph: Graph, bbox: BBox) -> Graph:
     """Nodes inside `bbox`, the edges between them, largest connected piece.
 
-    Close to what downloading `bbox` gives: OSMnx also keeps only the
-    largest piece, but simplifies the ways before cutting them at the border.
+    Close to what downloading `bbox` alone gives: there too only the largest
+    piece is kept (`largest_piece`), but OSMnx simplifies the ways before
+    cutting them at the border. With no node inside there is no piece to
+    keep: NoRoadsError (TASK-180).
     """
     south, west, north, east = bbox
     inside = [
@@ -394,8 +738,32 @@ def crop(graph: Graph, bbox: BBox) -> Graph:
         for n, d in graph.nodes(data=True)
         if south <= d["y"] <= north and west <= d["x"] <= east
     ]
-    pieces = nx.weakly_connected_components(graph.subgraph(inside))
+    if not inside:
+        raise NoRoadsError()
+    pieces = _pieces(graph.subgraph(inside))
     return graph.subgraph(max(pieces, key=len)).copy()
+
+
+def largest_piece(graph: Graph) -> Graph:
+    """`graph` itself when its roads are all joined, as in every zone saved
+    before TASK-180; else a copy of its largest connected piece, which is
+    what OSMnx kept of a download until then (ADR-0148)."""
+    pieces = _pieces(graph)
+    largest = max(pieces, key=len, default=set())
+    if len(largest) == len(graph):
+        return graph
+    return graph.subgraph(largest).copy()
+
+
+def _pieces(graph: Graph) -> Iterator[set[Any]]:
+    """The connected pieces of `graph`. With one-way streets (the bike
+    network) a piece is one where every node is reached from every other:
+    a route that rides into a one-way dead end never comes back
+    (ADR-0153). On foot every road goes both ways, and that is any piece
+    whose roads are joined."""
+    if one_way_streets(graph):
+        return iter(nx.strongly_connected_components(graph))
+    return iter(nx.weakly_connected_components(graph))
 
 
 @dataclass
@@ -405,6 +773,9 @@ class NetworkRoute:
     warnings: list[str] = field(default_factory=list)
     waypoints: list[Any] = field(default_factory=list)  # node reached per zone
     nodes: list[Any] = field(default_factory=list)  # graph nodes, in order
+    # A word with the pen up (TASK-197): [from, to] indices into `points`,
+    # each the stretch walked from one letter to the next, not drawn.
+    walks: list[tuple[int, int]] = field(default_factory=list)
 
 
 def nearest_nodes(
@@ -412,10 +783,8 @@ def nearest_nodes(
 ) -> tuple[list[Any], list[float]]:
     """Nearest graph node for each point, and its distance in metres."""
     origin = points[0]
-    node_ids = list(graph.nodes)
-    local = latlon_to_local_array(
-        origin, np.array([(graph.nodes[n]["y"], graph.nodes[n]["x"]) for n in node_ids])
-    )
+    node_ids, latlon = _node_table(graph)
+    local = latlon_to_local_array(origin, latlon)
     nearest: list[Any] = []
     distances: list[float] = []
     for point in points:
@@ -610,10 +979,35 @@ def _edge_coords(graph: Graph, u: Any, v: Any, data: dict[str, Any]) -> list[Lat
     return coords
 
 
+def _shortest_edge(graph: Graph, u: Any, v: Any) -> dict[str, Any]:
+    """The data of the shortest u→v edge: the one a route's points follow."""
+    data: dict[str, Any] = min(graph[u][v].values(), key=lambda d: float(d["length"]))
+    return data
+
+
 def _edge_points(graph: Graph, u: Any, v: Any) -> list[LatLon]:
     """Points of the shortest u→v edge, from u to v, excluding u itself."""
-    data = min(graph[u][v].values(), key=lambda d: float(d["length"]))
-    return _edge_coords(graph, u, v, data)[1:]
+    return _edge_coords(graph, u, v, _shortest_edge(graph, u, v))[1:]
+
+
+def on_foot_stretches(graph: Graph, nodes: Sequence[Any]) -> list[tuple[int, int]]:
+    """Where a route walks with the bike on foot (TASK-206, ADR-0167):
+    [from, to] indices into its points, both included, one for each run of
+    edges in a row that `on_foot_edge`, in order. The points are those of
+    `nodes` as every route makes them: the first node, then `_edge_points`
+    of each edge. Empty on foot, and on a bike graph made before TASK-206."""
+    stretches: list[tuple[int, int]] = []
+    index = 0
+    for u, v in zip(nodes, nodes[1:], strict=False):
+        data = _shortest_edge(graph, u, v)
+        end = index + len(_edge_coords(graph, u, v, data)) - 1
+        if on_foot_edge(data):
+            if stretches and stretches[-1][1] == index:
+                stretches[-1] = (stretches[-1][0], end)
+            else:
+                stretches.append((index, end))
+        index = end
+    return stretches
 
 
 def _corridor_costs(
@@ -645,10 +1039,79 @@ def _corridor_costs(
     return dict(zip(steps, cheapest.tolist(), strict=True))
 
 
-# Edge samples per graph, kept while its edges stay the same (zone graphs
-# are traced up to 20 times). A weak mapping, so nothing outlives the graph
-# or ends up in a GraphML file.
-_samples_cache: weakref.WeakKeyDictionary[Graph, tuple[int, np.ndarray]] = (
+# What the engine works out once per graph and keeps while the graph stays
+# as it is (TASK-203, ADR-0162): a graph is traced up to 20 times a
+# search, and its edge samples, its u→v steps (TASK-063), its node ids and
+# their coordinates are the same every time. NetworkX empties a graph's
+# `__networkx_cache__` whenever it adds or removes a node or an edge, so a
+# mark kept there says the graph is still the one the data was worked out
+# for. Counting its edges to know it, as before, walked every node: 7-12 ms
+# on a zone, twice a trace. Weak mappings, so nothing outlives the graph or
+# ends up in a GraphML file. A change made to the attributes of an edge in
+# place is not seen, as it was not before.
+_MARK = "route_engine"
+
+_T = TypeVar("_T")
+
+
+def _mark(graph: Graph) -> object | None:
+    """The mark of `graph` as it is now: a new one after every change
+    NetworkX makes to it. None for a view of another graph, which changes
+    with it unseen: nothing is kept for a view."""
+    if hasattr(graph, "_graph"):  # a subgraph or reverse view
+        return None
+    cache: dict[str, Any] | None = getattr(graph, "__networkx_cache__", None)
+    if cache is None:  # a graph pickled by a NetworkX before 3.3
+        cache = {}
+        graph.__networkx_cache__ = cache
+    mark = cache.get(_MARK)
+    if mark is None:
+        mark = cache[_MARK] = object()
+    return mark
+
+
+def _kept(
+    store: weakref.WeakKeyDictionary[Graph, tuple[object, _T]],
+    graph: Graph,
+    work_out: Callable[[Graph], _T],
+) -> _T:
+    """`work_out(graph)`, kept in `store` while `graph` keeps its mark."""
+    mark = _mark(graph)
+    if mark is not None:
+        cached = store.get(graph)
+        if cached is not None and cached[0] is mark:
+            return cached[1]
+    value = work_out(graph)
+    if mark is not None:
+        store[graph] = (mark, value)
+    return value
+
+
+def _same_graph(graph: Graph, mark: object | None) -> None:
+    """Gives `graph` its `mark` back after a change undone, like the sink of
+    `_route_through_zones`: the graph is the one the kept data was worked
+    out for, node for node and edge for edge, in the same order."""
+    if mark is not None:
+        graph.__networkx_cache__[_MARK] = mark
+
+
+_nodes_kept: weakref.WeakKeyDictionary[
+    Graph, tuple[object, tuple[list[Any], np.ndarray]]
+] = weakref.WeakKeyDictionary()
+
+
+def _node_table(graph: Graph) -> tuple[list[Any], np.ndarray]:
+    """The node ids of `graph` in its order, and their (lat, lon) rows; not
+    to be changed by the caller."""
+    return _kept(_nodes_kept, graph, _work_out_nodes)
+
+
+def _work_out_nodes(graph: Graph) -> tuple[list[Any], np.ndarray]:
+    ids = list(graph.nodes)
+    return ids, np.array([_node_latlon(graph, n) for n in ids])
+
+
+_samples_kept: weakref.WeakKeyDictionary[Graph, tuple[object, np.ndarray]] = (
     weakref.WeakKeyDictionary()
 )
 
@@ -656,58 +1119,59 @@ _samples_cache: weakref.WeakKeyDictionary[Graph, tuple[int, np.ndarray]] = (
 def _edge_samples(graph: Graph) -> np.ndarray:
     """(lat, lon) of both ends and the middle point of every edge, three rows
     per edge in `graph.edges()` order."""
-    cached = _samples_cache.get(graph)
-    if cached is not None and cached[0] == graph.number_of_edges():
-        return cached[1]
+    return _kept(_samples_kept, graph, _work_out_samples)
+
+
+def _work_out_samples(graph: Graph) -> np.ndarray:
     samples = []
     for u, v, data in graph.edges(data=True):
         coords = _edge_coords(graph, u, v, data)
         samples.extend((coords[0], coords[len(coords) // 2], coords[-1]))
-    array = np.array(samples).reshape(-1, 2)
-    _samples_cache[graph] = (graph.number_of_edges(), array)
-    return array
+    return np.array(samples).reshape(-1, 2)
 
 
-_distinct_cache: weakref.WeakKeyDictionary[
-    Graph, tuple[int, np.ndarray, np.ndarray]
+_distinct_kept: weakref.WeakKeyDictionary[
+    Graph, tuple[object, tuple[np.ndarray, np.ndarray]]
 ] = weakref.WeakKeyDictionary()
 
 
 def _distinct_samples(graph: Graph) -> tuple[np.ndarray, np.ndarray]:
     """The distinct points of `_edge_samples`, and for each sample its row
     among them."""
-    cached = _distinct_cache.get(graph)
-    if cached is not None and cached[0] == graph.number_of_edges():
-        return cached[1], cached[2]
+    return _kept(_distinct_kept, graph, _work_out_distinct)
+
+
+def _work_out_distinct(graph: Graph) -> tuple[np.ndarray, np.ndarray]:
     points, rows = np.unique(_edge_samples(graph), axis=0, return_inverse=True)
-    rows = rows.reshape(-1)
-    _distinct_cache[graph] = (graph.number_of_edges(), points, rows)
-    return points, rows
+    return points, rows.reshape(-1)
 
 
-# The u→v steps of each graph, kept like its edge samples (TASK-063): a zone
-# has 100 000 edges and more, and listing them in Python took most of the
-# time of the corridor, trace after trace.
-_steps_cache: weakref.WeakKeyDictionary[
-    Graph, tuple[int, list[tuple[Any, Any]], np.ndarray, np.ndarray]
+# The u→v steps of each graph (TASK-063): a zone has 100 000 edges and
+# more, and listing them in Python took most of the time of the corridor,
+# trace after trace.
+_steps_kept: weakref.WeakKeyDictionary[
+    Graph, tuple[object, tuple[list[tuple[Any, Any]], np.ndarray, np.ndarray]]
 ] = weakref.WeakKeyDictionary()
 
 
 def _edge_steps(graph: Graph) -> tuple[list[tuple[Any, Any]], np.ndarray, np.ndarray]:
     """The distinct u→v steps of `graph`, the step of each edge in
-    `graph.edges()` order, and the length of each edge."""
-    cached = _steps_cache.get(graph)
-    if cached is not None and cached[0] == graph.number_of_edges():
-        return cached[1], cached[2], cached[3]
+    `graph.edges()` order, and the cost of each edge: its length, WALK_COST
+    times it with the bike on foot (TASK-206)."""
+    return _kept(_steps_kept, graph, _work_out_steps)
+
+
+def _work_out_steps(
+    graph: Graph,
+) -> tuple[list[tuple[Any, Any]], np.ndarray, np.ndarray]:
     index: dict[tuple[Any, Any], int] = {}
     which, lengths = [], []
-    for u, v, length in graph.edges(data="length"):
+    for u, v, data in graph.edges(data=True):
         which.append(index.setdefault((u, v), len(index)))
-        lengths.append(float(length))
-    steps = list(index)
-    entry = (graph.number_of_edges(), steps, np.array(which), np.array(lengths))
-    _steps_cache[graph] = entry
-    return steps, entry[2], entry[3]
+        # A metre with the bike on foot costs WALK_COST (TASK-206).
+        walked = WALK_COST if on_foot_edge(data) else 1.0
+        lengths.append(float(data["length"]) * walked)
+    return list(index), np.array(which), np.array(lengths)
 
 
 def _distance_to_outline(
@@ -739,8 +1203,10 @@ def _route_through_zones(
     corners: Collection[int] = frozenset(),
     twice: Collection[int] = frozenset(),
     retrace: float = 1.0,
+    closed: bool = True,
 ) -> tuple[list[Any], list[Any], list[int], set[Any]]:
-    """Closed route from `first` through a zone around each anchor, back to `first`.
+    """Closed route from `first` through a zone around each anchor, back to `first`;
+    not `closed`, it ends in the zone of the last anchor (TASK-197).
 
     A zone is every node within `radius_m` of its anchor, or the nearest
     one if none is that close. Reaching a zone node costs, on top of the
@@ -757,10 +1223,9 @@ def _route_through_zones(
     nodes reached for the anchors listed in `corners` (1-based, like the
     indices of the unreached ones).
     """
-    node_ids = list(graph.nodes)
-    xy = latlon_to_local_array(
-        origin, np.array([_node_latlon(graph, n) for n in node_ids])
-    )
+    node_ids, latlon = _node_table(graph)
+    xy = latlon_to_local_array(origin, latlon)
+    mark = _mark(graph)
     used: set[frozenset[Any]] = set()
     penalty = reuse_penalty
 
@@ -797,11 +1262,14 @@ def _route_through_zones(
             graph.remove_node(_SINK)
             for i in zone:
                 costs.pop((node_ids[i], _SINK), None)
+            _same_graph(graph, mark)
         walk(path[:-1])
         if index in corners:
             corner_nodes.add(path[-2])
         if path[-2] != reached[-1]:
             reached.append(path[-2])
+    if not closed:
+        return route_nodes, reached, skipped, corner_nodes
     penalty = retrace if 0 in twice else reuse_penalty
     try:
         walk(nx.shortest_path(graph, route_nodes[-1], first, weight=weight))
@@ -851,6 +1319,7 @@ def snap_to_network(
     corridor: float = CORRIDOR_WEIGHT,
     band: float = CORRIDOR_BAND,
     retrace: float = 1.0,
+    closed: bool = True,
 ) -> NetworkRoute:
     """Turn a projected shape into a closed route on the road network.
 
@@ -861,6 +1330,10 @@ def snap_to_network(
     the shape perimeter, so they scale with the requested distance. Where
     the shape goes back along itself, used roads cost `retrace` times as
     much (_route_through_zones).
+
+    Not `closed`, the points are an open line, like a letter written with
+    the pen up (TASK-197): the route ends in the zone of the last point
+    instead of coming back, and the perimeter is the line's own length.
     """
     warnings: list[str] = []
     nodes, distances = nearest_nodes(graph, shape_points)
@@ -881,21 +1354,25 @@ def snap_to_network(
 
     origin = shape_points[0]
     outline = latlon_to_local_array(origin, np.array(shape_points))
-    if not np.allclose(outline[0], outline[-1]):
+    if closed and not np.allclose(outline[0], outline[-1]):
         outline = np.vstack([outline, outline[:1]])
     drawn_twice = twice_drawn(outline)
     # Strokes have small details: finer zones and corridor (ADR-0039).
     fine = STROKE_DETAIL if drawn_twice.any() else 1.0
     perimeter = fine * float(np.hypot(*np.diff(outline, axis=0).T).sum())
     anchors = list(shape_points[1:])
-    if anchors and anchors[-1] == shape_points[0]:
+    if closed and anchors and anchors[-1] == shape_points[0]:
         anchors.pop()
 
     costs = _corridor_costs(graph, origin, outline, corridor, band * perimeter)
-    corners = set(corner_indices(outline[:-1]))
     # Side i - 1 of the outline leads to anchor i; the last one leads home.
     sides = len(outline) - 1
-    twice = {(i + 1) % sides for i in np.flatnonzero(drawn_twice)}
+    if closed:
+        corners = set(corner_indices(outline[:-1]))
+        twice = {(i + 1) % sides for i in np.flatnonzero(drawn_twice)}
+    else:  # no way home, and the two ends turn nowhere
+        corners = {i for i in corner_indices(outline) if 0 < i < sides}
+        twice = {int(i) + 1 for i in np.flatnonzero(drawn_twice)}
     route_nodes, reached, skipped, corner_nodes = _route_through_zones(
         graph,
         origin,
@@ -907,6 +1384,7 @@ def snap_to_network(
         corners,
         twice,
         retrace,
+        closed,
     )
     for index in skipped:
         warnings.append(f"no road path to shape point {index}; skipped")

@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "comment_rejected",
+    "message": "You can't write negative comments in this app. Try another app.",
+    "suggested_distance_m": null,
+    "reason": "negative"
+  }
+}

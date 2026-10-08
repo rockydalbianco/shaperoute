@@ -58,6 +58,13 @@ function shownRoute(): string | undefined {
     .findLast((s) => s.includes('"type":"showRoute"'));
 }
 
+/** The grey lines the map shows last: the routes not chosen (TASK-155). */
+function shownOthers(): string | undefined {
+  return injectJavaScript.mock.calls
+    .map(([script]) => String(script))
+    .findLast((s) => s.includes('"type":"showOthers"'));
+}
+
 function lineStart([lat, lon]: number[]): string {
   return `"coordinates":[[${lon},${lat}]`;
 }
@@ -113,6 +120,8 @@ test("an example of a city: A · B to choose, and Start on the one chosen", asyn
   expect(screen.getByTestId("route-A")).toBeSelected();
   expect(shownRoute()).toContain(lineStart(jobDone.result.points[0]));
   expect(shownRoute()).toContain(JSON.stringify(jobDone.result.points[1].toReversed()));
+  // The other route is grey under it.
+  expect(shownOthers()).toContain(JSON.stringify(other.points[1].toReversed()));
 
   // B: the card and the map are about it.
   await fireEvent.press(screen.getByTestId("route-B"));
@@ -120,6 +129,9 @@ test("an example of a city: A · B to choose, and Start on the one chosen", asyn
   expect(screen.getByText("4.2 km")).toBeOnTheScreen();
   expect(screen.getByText(/looks 88% like it/)).toBeOnTheScreen();
   expect(shownRoute()).toContain(JSON.stringify(other.points[1].toReversed()));
+  expect(shownOthers()).toContain(
+    JSON.stringify(jobDone.result.points[1].toReversed()),
+  );
 
   // Start asks for the directions of B, and follows it.
   await fireEvent.press(screen.getByText("Start"));
@@ -128,4 +140,15 @@ test("an example of a city: A · B to choose, and Start on the one chosen", asyn
     fetchSpy.mock.calls.find(([url]) => String(url) === `${API}/route-directions`) ??
     [];
   expect(JSON.parse(String(init?.body))).toEqual({ points: other.points });
+  // Running, one route is the route: no grey lines.
+  expect(shownOthers()).toContain('"lines":[]');
+
+  // Back to the list: the grey lines do not stay on the map.
+  await fireEvent.press(screen.getByText("Stop"));
+  await screen.findByText("Back to the list");
+  expect(shownOthers()).toContain(
+    JSON.stringify(jobDone.result.points[1].toReversed()),
+  );
+  await fireEvent.press(screen.getByText("Back to the list"));
+  expect(shownOthers()).toContain('"lines":[]');
 });

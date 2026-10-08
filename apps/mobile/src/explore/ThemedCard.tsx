@@ -1,8 +1,9 @@
 import { type RouteResult, type Shape, SHAPES } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { t } from "../i18n";
+import { shapeWord } from "../i18n/shapeNames";
 
 import type { ExportState } from "../route/useGpxExport";
-import { RunWithStrava } from "../strava/RunWithStrava";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
 import {
   color,
@@ -12,6 +13,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { distanceLabel, withPoint } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import { ExploreStart } from "./ExploreStart";
 import type { ThemedResult } from "./themedRoutes";
 import type { StartView } from "./useStartDirections";
@@ -52,9 +55,19 @@ export function passedText(result: ThemedResult): string {
   const passed = result.stops.filter((s) => s.passed).length;
   const found = result.stops.length;
   if (passed === 0) {
-    return `It passes by none of the ${found} ${result.theme_label} found: the shape did not fit near them.`;
+    return t(
+      "It passes by none of the {found} {theme} found: the shape did not fit near them.",
+      {
+        found,
+        theme: result.theme_label,
+      },
+    );
   }
-  return `Passes by ${passed} of the ${found} ${result.theme_label} found:`;
+  return t("Passes by {passed} of the {found} {theme} found:", {
+    passed,
+    found,
+    theme: result.theme_label,
+  });
 }
 
 type Props = {
@@ -76,6 +89,9 @@ export function ThemedCard({
   start,
   onStart,
 }: Props) {
+  // Written again when «Settings» changes the units (TASK-182); with a
+  // point, as the texts here, still in English.
+  const units = useUnits();
   if (state.status === "idle") {
     return null;
   }
@@ -90,7 +106,7 @@ export function ThemedCard({
           onPress={onCancel}
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryText}>Cancel</Text>
+          <Text style={styles.secondaryText}>{t("Cancel")}</Text>
         </Pressable>
       </View>
     );
@@ -104,7 +120,7 @@ export function ThemedCard({
           onPress={onCancel}
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryText}>Back to Explore</Text>
+          <Text style={styles.secondaryText}>{t("Back to Explore")}</Text>
         </Pressable>
       </View>
     );
@@ -114,11 +130,15 @@ export function ThemedCard({
   return (
     <View style={styles.panel}>
       <View>
-        <Text
-          style={styles.result}
-        >{`${(result.distance_m / 1000).toFixed(1)} km`}</Text>
+        <Text style={styles.result}>
+          {distanceLabel(result.distance_m, units, withPoint)}
+        </Text>
         <Text style={styles.target}>
-          {`${result.shape.replace(/_/g, " ")} · ${result.city ?? "here"} · looks ${Math.round(result.similarity * 100)}% like it`}
+          {t("{title} · {city} · looks {percent}% like it", {
+            title: shapeWord(result.shape),
+            city: result.city ?? t("here"),
+            percent: Math.round(result.similarity * 100),
+          })}
         </Text>
       </View>
       <Text style={styles.body}>{passedText(result)}</Text>
@@ -133,16 +153,14 @@ export function ThemedCard({
         accessibilityRole="button"
       >
         <Text style={styles.secondaryText}>
-          {exporting.status === "preparing" ? "Preparing GPX…" : "Export GPX"}
+          {exporting.status === "preparing" ? t("Preparing GPX…") : t("Export GPX")}
         </Text>
       </Pressable>
       {exporting.status === "failed" && (
-        <Text style={styles.error}>The GPX could not be made. Try again.</Text>
+        <Text style={styles.error}>{t("The GPX could not be made. Try again.")}</Text>
       )}
-      {/* Strava's official flow: a GPX imported there (TASK-135). */}
-      <RunWithStrava exporting={exporting} onExport={onExport} />
       <Pressable style={styles.secondary} onPress={onCancel} accessibilityRole="button">
-        <Text style={styles.secondaryText}>Back to Explore</Text>
+        <Text style={styles.secondaryText}>{t("Back to Explore")}</Text>
       </Pressable>
     </View>
   );

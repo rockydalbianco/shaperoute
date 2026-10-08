@@ -1,67 +1,160 @@
-# TASK-117 — Salvare un disegno, e i miei disegni
+# TASK-117 — Pubblicare una corsa salvata: i disegni
 
-**Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-117-save-drawing`
-**Dipende da**: TASK-113, TASK-116
+**Stato**: Done — parte A (API) in `main` (PR #232); parte B (app)
+in `main` (PR #242, 2026-10-03); sul server (migrazione `0009`) e su
+`preview` dal 2026-10-06; aperti per l'utente i quattro testi e la
+prova sull'iPhone
+**Fase**: 4 · **Branch**: `feat/TASK-117-publish-runs` (parte A),
+`feat/TASK-117-publish-app` (parte B)
+**Dipende da**: TASK-113, TASK-116, TASK-172 · **ADR**: ADR-0159
 
 ## Obiettivo
 
-A fine corsa chi ha un account salva il disegno con il suo punteggio, lo
-ritrova nel profilo e sceglie se pubblicarlo.
+Chi ha un account dà un titolo a una corsa salvata e sceglie se
+pubblicarla. Pubblicata, gli altri iscritti la vedono come disegno nel suo
+profilo e dal suo id, tagliata: senza i primi e gli ultimi 200 m.
+
+## Com'è cambiato (2026-10-03)
+
+Il task era scritto prima di TASK-172: voleva `POST /drawings` per salvare
+un disegno a fine corsa. Salvare c'è già («My activities», ADR-0140), con
+km, tempo e punteggio contati dall'API, e «Save» a fine corsa. Resta
+pubblicare. L'app della fine corsa (`RunEnd.tsx`, `outbox.ts`) e la scheda
+della corsa sono di TASK-187 (app); `App.tsx` e `src/api/activities.ts`
+di TASK-200. **Scelta dell'utente**: due PR, l'API adesso e l'app dopo che
+TASK-187 (app) e TASK-200 sono in `main`.
+
+Due **scelte dell'utente** del 2026-10-03: gli altri vedono il punteggio;
+una corsa senza percorso si pubblica anche lei, senza punteggio.
 
 ## Contesto da leggere
 
-- `docs/DATABASE.md` (disegni), `docs/PRODUCT.md` (parte social)
-- `docs/API.md` `/track-scores`
-- `docs/UI.md` «Finish» (TASK-113), profilo (TASK-116)
+- `docs/DECISIONS.md` ADR-0114 (punto 4), ADR-0140, ADR-0159
+- `docs/API.md` «My activities», «Profile», «Drawings»
+- `docs/DATABASE.md` `runs`, `drawings`
+- `docs/UI.md` «My activities», profilo (TASK-116)
 
-## Cosa fare
+## Parte A — l'API (fatta, in `main` con la PR #232)
 
-1. API: `POST /drawings` — traccia, percorso pianificato, forma o parola,
-   distanza, durata, data, titolo facoltativo (al più 60 caratteri).
-   **Il punteggio lo ricalcola l'API** con `track_score`: quello mandato
-   dall'app non si usa.
-2. `GET /me/drawings`, `GET /drawings/{id}`, `PATCH /drawings/{id}`
-   (titolo, pubblico sì/no), `DELETE /drawings/{id}`. Solo il proprietario
-   modifica e cancella; un disegno privato lo vede solo lui.
-3. La traccia mostrata agli altri è senza i primi e gli ultimi 200 m (o la
-   misura scelta in TASK-110): si taglia nell'API, non nell'app. Il
-   proprietario la vede intera.
-4. App: «Save drawing» nella schermata «Finish», con titolo e
-   l'interruttore «Public»; senza account, l'invito a iscriversi e la
-   traccia resta sul telefono. Nel profilo la griglia dei propri disegni
-   (miniatura della traccia, punteggio); toccando, il disegno sulla mappa.
-5. Test di API e app; `API.md`, `DATABASE.md`, `UI.md`, ADR.
+1. `GET` e `PUT /me/activities/{key}/drawing` (titolo al più 60
+   caratteri, «Public»), `GET /me/drawings`, `GET
+   /users/{public_id}/drawings` (a pagine), `GET /drawings/{id}`.
+2. La traccia per gli altri senza i primi e gli ultimi 200 m lungo di lei,
+   tagliata nell'API; mai il percorso pianificato, gli orari, le pause.
+3. `PublicProfile.drawings` conta i disegni pubblici.
+4. Migrazione nuova, test, `API.md`, `DATABASE.md`, ADR-0159.
+
+## Parte B — l'app (da fare)
+
+1. «Public» e il titolo: a fine corsa accanto a «Save» (`RunEnd.tsx`) e
+   nella scheda di una corsa in «My activities»; senza account l'invito a
+   iscriversi, e la corsa resta sul telefono come oggi.
+2. Pubblicare senza rete: la scelta si rimanda (il `PUT` è la scelta
+   intera), come la corsa nella coda di `outbox.ts`.
+3. Nel profilo di un altro (`UserProfilePage.tsx`) e nel proprio la
+   griglia dei disegni pubblici (miniatura della traccia tagliata,
+   punteggio); toccando, il disegno sulla mappa.
+4. In «My activities» un segno sulle corse pubbliche (`GET /me/drawings`).
+5. Test, `UI.md`, i testi nuovi da far vedere all'utente.
+
+Da chiedere all'utente prima della parte B: dove sta «Public» (a fine
+corsa, nella scheda, o tutti e due), e i testi.
+
+**Risposte dell'utente** (2026-10-03):
+
+1. **«Public» in tutti e due i posti**: a fine corsa sopra «Save», e
+   nella scheda di una corsa aperta da «My activities», per pubblicarla
+   dopo, cambiarle il titolo o toglierla. L'interruttore parte **spento a
+   ogni corsa** (non ricorda la volta prima).
+2. **I testi**, come proposti, con **un solo campo «Title» a fine
+   corsa**: dà il nome al disegno e, con «Send to Strava» acceso, anche
+   alla corsa su Strava (a fine corsa prende il posto di «Name on
+   Strava»; ok del coordinatore a toccare `StravaRunEnd.tsx`). Nella
+   scheda di una corsa aperta il campo di Strava resta com'è.
+   - Fine corsa, con account: «Public» (Off / On); acceso, «Others see it
+     in your profile, without the first and last 200 m.»; «Title», col
+     suggerimento «Give it a name»; senza rete, «Saved on the phone. It
+     goes public when you are back online.»
+   - Fine corsa, senza account: «Sign up or log in to keep your runs and
+     share them as drawings.»
+   - Scheda in «My activities»: «Public» (Off / On), «Title»; acceso,
+     «Public in your profile, without the first and last 200 m.»
+   - Elenco «My activities»: «Public» accanto a una corsa pubblica.
+   - Profilo, il proprio e quello di un altro: «Drawings»; vuoto, il
+     proprio «No public drawings yet. Make a run public in My
+     activities.», di un altro «No drawings yet.»; un disegno aperto ha
+     il titolo (senza titolo, la data), la data, i km, «82 out of 100».
+
+Dal coordinatore: la griglia nel profilo di un altro
+(`UserProfilePage.tsx`) non ha ancora un ingresso nell'app («da dove si
+apre» è una domanda aperta di TASK-116): non se ne aggiunge uno. Nessuna
+pubblicazione: l'app con «Public» va sul telefono dopo l'aggiornamento del
+server con la migrazione `0009`, con l'ok dell'utente.
 
 ## Criteri di accettazione
 
-- [ ] Il punteggio salvato è quello calcolato dall'API, anche se l'app ne
-      manda un altro.
-- [ ] Un disegno privato dà «non trovato» a chiunque altro.
-- [ ] La traccia di un disegno pubblico, chiesta da un altro utente, non ha
-      punti entro 200 m di percorso dalla partenza e dall'arrivo.
-- [ ] Cancellato un disegno, non compare più in nessun elenco.
-- [ ] Salvataggio fallito senza rete: l'app lo riprova, la traccia non si perde.
-- [ ] Test verdi; prova sull'iPhone.
+- [x] Il punteggio di un disegno è quello calcolato dall'API, anche se
+      l'app ne manda un altro (`422` per un campo in più; test).
+- [x] Un disegno privato dà «non trovato» a chiunque altro (test).
+- [x] La traccia di un disegno pubblico, chiesta da un altro utente, non ha
+      punti entro 200 m di percorso dalla partenza e dall'arrivo (test).
+- [x] Cancellata la corsa, il disegno non compare più in nessun elenco
+      (test, anche con l'account cancellato).
+- [x] Salvataggio fallito senza rete: l'app lo riprova, la scelta non si
+      perde (parte B; test in `drawingOutbox.test.ts` e
+      `AppDrawings.test.tsx`).
+- [x] Test verdi dell'API (parte A).
+- [x] Test dell'app (parte B: 1333 verdi).
+- [ ] Prova sull'iPhone (parte B): dopo l'aggiornamento del server con la
+      migrazione `0009` e la pubblicazione, con l'ok dell'utente.
 
 ## File toccati
 
+Parte A:
+
 ```
+services/api/migrations/0009_drawings.sql
 services/api/shaperoute_api/drawings.py
 services/api/shaperoute_api/app.py
-services/api/shaperoute_api/schemas.py
-services/api/migrations/
+services/api/shaperoute_api/profiles.py
 services/api/tests/test_drawings.py
+services/api/tests/test_favorites.py   (una riga: la 0008 non è più l'ultima; ok dell'utente)
 packages/shared-types/src/index.ts
-apps/mobile/src/api/drawings.ts
-apps/mobile/src/api/drawings.test.ts
-apps/mobile/src/screens/FinishScreen.tsx
-apps/mobile/src/screens/ProfileScreen.tsx
-apps/mobile/src/screens/DrawingScreen.tsx
-apps/mobile/src/screens/DrawingScreen.test.tsx
-apps/mobile/src/social/TrackThumbnail.tsx
+packages/shared-types/fixtures/drawing-request.json
+packages/shared-types/fixtures/my-drawing.json
+packages/shared-types/fixtures/drawings.json
+packages/shared-types/fixtures/drawing.json
+packages/shared-types/test/drawings.test.ts
 docs/API.md
 docs/DATABASE.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-117.md
+```
+
+Parte B (ok del coordinatore per `StravaRunEnd.tsx` e per `App.tsx`,
+che tocca anche TASK-205 in un altro punto):
+
+```
+apps/mobile/src/api/drawings.ts                (nuovo)
+apps/mobile/src/api/drawings.test.ts           (nuovo)
+apps/mobile/src/social/                        (nuovi: la coda senza rete,
+                                                la porta dei disegni, la riga
+                                                «Public», la griglia, la
+                                                scheda del disegno, i test)
+apps/mobile/__tests__/AppDrawings.test.tsx     (nuovo)
+apps/mobile/src/activities/RunEnd.tsx
+apps/mobile/src/activities/outbox.ts
+apps/mobile/src/activities/activitiesDoor.ts
+apps/mobile/src/activities/activityText.ts     (il giorno senza l'ora)
+apps/mobile/src/activities/ActivityCard.tsx
+apps/mobile/src/activities/ActivitiesList.tsx
+apps/mobile/src/strava/StravaRunEnd.tsx
+apps/mobile/src/profile/ProfileHome.tsx
+apps/mobile/src/profile/UserProfilePage.tsx
+apps/mobile/src/screens/ProfileLayer.tsx       (il provider)
+apps/mobile/App.tsx                            (il disegno aperto sulla mappa)
+apps/mobile/__tests__/AppStrava.test.tsx       (il campo «Title»)
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -70,8 +163,74 @@ docs/tasks/TASK-117.md
 
 ## Fuori scope
 
-- Vedere i disegni degli altri (TASK-118).
-- Caricare un GPX da Strava o Garmin.
-- Foto della corsa.
+- Vedere i disegni degli altri in un feed (TASK-118).
+- Rifare la forma di un disegno di un altro («Start» da un disegno).
+- Caricare un GPX da Strava o Garmin; foto della corsa.
+- Like, commenti, segnalare (TASK-119–121).
 
 ## Esito
+
+**Parte A** (2026-10-03): API dei disegni in `drawings.py`, tabella
+`drawings` (migrazione `0009`: la `0008` è di TASK-200, entrata prima),
+ADR-0159. Il taglio è lungo la traccia, come dice ADR-0114;
+uno in linea d'aria è annotato nell'ADR come proposta per l'utente. Un
+disegno privato lo vede il suo autore, tagliato come lo vedrebbero gli
+altri. Test: 26 in `test_drawings.py`, tutta la suite dell'API verde
+dopo il merge di `main` con TASK-200 (792); `shared-types` verde. Entra in
+`main` dopo TASK-200 (coordinatore: `app.py`, `shared-types`, migrazioni):
+TASK-200 è entrato prima, con la `0008`. Il suo `test_favorites.py` voleva
+la `0008` ultima: una riga cambiata, con l'ok dell'utente.
+
+Seguiti:
+
+- **Parte B, l'app**, con le due domande sopra.
+- **TASK-116**: il profilo conta solo i disegni pubblici (ADR-0128 punto
+  6, ADR-0159 punto 8); contare anche le corse private resta una scelta
+  dell'utente aperta in TASK-116.
+- **Il server**: la migrazione e gli endpoint arrivano con il prossimo
+  aggiornamento, con l'ok dell'utente.
+
+**Parte B** (2026-10-03, PR #242, in `main` come `18f6d5c`, ADR-0166),
+con le risposte dell'utente sopra:
+
+- **Fine corsa**: «Public» (spento a ogni corsa) e «Title» sopra Strava;
+  il titolo è anche il nome su Strava («Name on Strava» tolto dalla fine
+  corsa). Con «Save» la scelta viaggia con la corsa
+  (`activities-outbox.json`, campo `drawing`) e, appena l'API ha la
+  corsa, passa a `drawings-outbox.json` e parte (`PUT
+  /me/activities/{key}/drawing`), dopo Strava. Senza account la riga dice
+  «… and share them as drawings.».
+- **Una corsa aperta di «My activities»**: «Public» e «Title» come li ha
+  l'API (`social/PublicRow.tsx`), l'interruttore manda subito, il titolo a
+  tastiera chiusa; senza rete la scelta aspetta e lo dice; un `422` dice
+  il motivo dell'API; un'API senza disegni non mostra niente.
+- **L'elenco**: il segno «Public» sulle corse pubbliche (`GET
+  /me/drawings`); la riga «Saved on the phone. It goes public …» per una
+  corsa che aspetta.
+- **Profilo**: «Drawings» in fondo a «Profile» e sotto il profilo di un
+  altro (`social/DrawingsGrid.tsx`), tre per riga, «Show more»; un tocco
+  apre il disegno sulla mappa grande, giallo, inquadrato, con la scheda
+  (`social/DrawingCard.tsx`) e «Back to the profile». Il profilo di un
+  altro resta senza ingresso (TASK-116).
+- **Test**: `api/drawings.test.ts` (10), `social/drawingOutbox.test.ts`
+  (10), `social/DrawingsGrid.test.tsx` (7), `__tests__/AppDrawings.test.tsx`
+  (12), due di `AppStrava.test.tsx` passati al campo «Title»; tutta l'app
+  verde (150 file, 1333 test), `tsc`, `expo lint`, `prettier`.
+
+Seguiti:
+
+- **Testi nuovi da far vedere all'utente**, oltre a quelli scelti:
+  «Saved on the phone. It is sent when you are back online.» (un titolo o
+  un «Off» senza rete), «This drawing is no longer public.», «Back to the
+  profile», «Score 87» sotto un disegno della griglia.
+- **Il server**: l'app con «Public» va sul telefono solo dopo
+  l'aggiornamento del server con la migrazione `0009`, con l'ok
+  dell'utente; poi la prova sull'iPhone.
+- Da dove si apre il profilo di un altro (TASK-116), e i disegni degli
+  altri nel feed (TASK-118).
+
+**Chiusura (2026-10-06, pulizia dei task file).** Il server è su `main`
+`d7b490f1` con le migrazioni fino alla `0019`, quindi con la `0009` e
+gli endpoint dei disegni; l'app con «Public» e «Drawings» è su `preview`
+(gruppo `f062e005` e seguenti). Restano dell'utente i quattro testi
+elencati sopra e la prova sull'iPhone.

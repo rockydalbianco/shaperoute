@@ -1,5 +1,5 @@
 import type { Session } from "@shaperoute/shared-types";
-import { useState } from "react";
+import { useEffect } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,8 +11,18 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AboutScreen } from "../about/AboutScreen";
+import { ABOUT_IDS, type AboutId, isAboutId } from "../about/documents";
 import { SESSION_ENDED } from "../account/messages";
 import type { Account, SignedOutNotice } from "../account/useAccount";
+import { ActivitiesList } from "../activities/ActivitiesList";
+import { useActivitiesDoor } from "../activities/activitiesDoor";
+import { FavoritesList } from "../favorites/FavoritesList";
+import { useFavoritesDoor } from "../favorites/favoritesDoor";
+import { t, tLater } from "../i18n";
+import { EditProfile } from "../profile/EditProfile";
+import { ProfileHome } from "../profile/ProfileHome";
+import { SettingsPage } from "../profile/SettingsPage";
 import {
   color,
   fontSize,
@@ -23,28 +33,83 @@ import {
 } from "../theme/tokens";
 import { SignInScreen } from "./SignInScreen";
 
-const NOTICES: Record<SignedOutNotice, { text: string; tone: "warning" | "muted" }> = {
+type Notice = { text: string; tone: "warning" | "muted" };
+
+/** In English: `noticeOf` says them in the app's language (TASK-210). */
+const NOTICES: Record<SignedOutNotice, Notice> = {
   ended: { text: SESSION_ENDED, tone: "warning" },
   deleted: {
-    text: "Your account and everything that was yours have been deleted.",
+    text: tLater("Your account and everything that was yours have been deleted."),
     tone: "muted",
   },
-  loggedOut: { text: "You are logged out on this phone.", tone: "muted" },
+  loggedOut: { text: tLater("You are logged out on this phone."), tone: "muted" },
+};
+
+function noticeOf(notice: SignedOutNotice): Notice {
+  const { text, tone } = NOTICES[notice];
+  return { text: t(text), tone };
+}
+
+/** The pages of «Profile»: the account, the routes it keeps (TASK-171), the
+ * runs it recorded (TASK-172), its settings (TASK-177), its username and
+ * bio (TASK-116), and the texts of «ABOUT», over «Settings» (TASK-184). */
+export type ProfilePage =
+  "account" | "favorites" | "activities" | "settings" | "edit" | AboutId;
+
+/** In English: shown with `t()` (TASK-210). A text of «ABOUT» has its own
+ * title, on its own screen. */
+const TITLES: Record<Exclude<ProfilePage, AboutId>, string> = {
+  account: tLater("Profile"),
+  favorites: tLater("Favorites"),
+  activities: tLater("My activities"),
+  settings: tLater("Settings"),
+  edit: tLater("Edit profile"),
+};
+
+/** Pages of the account itself: who signs in again does not land there. */
+const ACCOUNT_PAGES: ProfilePage[] = ["settings", "edit", ...ABOUT_IDS];
+
+type Props = {
+  account: Account;
+  /** The page on screen; without an account, always sign up or log in. */
+  page: ProfilePage;
+  onPage: (page: ProfilePage) => void;
+  /** Why «Profile» opened on its own, said over «Sign up»; null when it
+   * was opened by hand. */
+  hint: string | null;
+  /** Back to the app underneath, as it was left. */
+  onBack: () => void;
 };
 
 /**
- * The «Profile» tab (TASK-115): for now, sign up or log in, log out, and
- * delete the account. Over the «Draw» tab, which stays as it was.
+ * «Profile» (TASK-115): sign up or log in; with an account, who it is, its
+ * favorites (TASK-171), its runs (TASK-172) and «Settings», where it logs
+ * out and deletes the account (TASK-177). Over the app, which stays as it
+ * was; it opens from the header of the pages (TASK-154).
  */
-export function ProfileScreen({ account }: { account: Account }) {
+export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
   const insets = useSafeAreaInsets();
   const { state } = account;
+  // A page of the account is one step into «Profile»: back goes to it first.
+  const inside = state.status === "signedIn" && page !== "account";
+  const signedOut = state.status !== "signedIn";
+  // A text of «ABOUT» opens over «Settings», which stays under it as it was.
+  const about = inside && isAboutId(page) ? page : null;
+  const under = isAboutId(page) ? "settings" : page;
+  // Out of the account from «Settings» or «Edit profile»: who comes back in
+  // finds «Profile».
+  useEffect(() => {
+    if (signedOut && ACCOUNT_PAGES.includes(page)) {
+      onPage("account");
+    }
+  }, [signedOut, page, onPage]);
   return (
     <KeyboardAvoidingView
       style={[StyleSheet.absoluteFill, styles.screen]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
+        style={about !== null && styles.hidden}
         contentContainerStyle={[
           styles.content,
           {
@@ -54,9 +119,39 @@ export function ProfileScreen({ account }: { account: Account }) {
         ]}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Profile</Text>
-        {state.status === "signedIn" ? (
-          <SignedIn session={state.session} account={account} />
+        <View style={styles.titleRow}>
+          <Pressable
+            style={styles.back}
+            onPress={inside ? () => onPage("account") : onBack}
+            accessibilityRole="button"
+            accessibilityLabel={t("Back")}
+          >
+            <Text style={styles.backText}>←</Text>
+          </Pressable>
+          <Text style={styles.title} accessibilityRole="header">
+            {t(TITLES[inside ? under : "account"])}
+          </Text>
+        </View>
+        {inside ? (
+          under === "activities" ? (
+            <ActivitiesList />
+          ) : under === "settings" ? (
+            <SettingsPage
+              user={state.session.user}
+              account={account}
+              onAbout={onPage}
+            />
+          ) : under === "edit" ? (
+            <EditProfile
+              user={state.session.user}
+              account={account}
+              onDone={() => onPage("account")}
+            />
+          ) : (
+            <FavoritesList margin={space.lg} />
+          )
+        ) : state.status === "signedIn" ? (
+          <SignedIn session={state.session} onPage={onPage} />
         ) : (
           <SignInScreen
             // A new form after each way out: no password left in it.
@@ -70,76 +165,42 @@ export function ProfileScreen({ account }: { account: Account }) {
             }
             busy={account.busy === "signUp" || account.busy === "signIn"}
             problem={account.problem}
-            notice={state.notice === null ? null : NOTICES[state.notice]}
+            notice={
+              state.notice !== null
+                ? noticeOf(state.notice)
+                : hint !== null
+                  ? { text: hint, tone: "muted" }
+                  : null
+            }
             onSignUp={account.signUp}
             onLogIn={account.signIn}
             onMode={account.clearProblem}
           />
         )}
       </ScrollView>
+      {about !== null && <AboutScreen id={about} onBack={() => onPage("settings")} />}
     </KeyboardAvoidingView>
   );
 }
 
-function SignedIn({ session, account }: { session: Session; account: Account }) {
-  // «Delete account» asks first, on the screen (ADR-0120: the API does not).
-  const [confirming, setConfirming] = useState(false);
-  const deleting = account.busy === "delete";
+/** The first page with an account: who it is, and the ways to its pages. */
+function SignedIn({
+  session,
+  onPage,
+}: {
+  session: Session;
+  onPage: (page: ProfilePage) => void;
+}) {
+  const favorites = useFavoritesDoor();
+  const activities = useActivitiesDoor();
   return (
-    <View style={styles.signedIn}>
-      <View style={styles.card}>
-        <Text style={styles.label}>LOGGED IN AS</Text>
-        <Text style={styles.username}>{session.user.username}</Text>
-        <Text style={styles.email}>{session.user.email}</Text>
-      </View>
-      <Pressable
-        style={styles.button}
-        onPress={account.signOut}
-        disabled={deleting}
-        accessibilityRole="button"
-      >
-        <Text style={styles.buttonText}>Log out</Text>
-      </Pressable>
-      {confirming ? (
-        <View style={styles.confirm}>
-          <Text style={styles.confirmText}>
-            Delete your account? Everything that is yours goes with it, at once. It
-            cannot be undone.
-          </Text>
-          <Pressable
-            style={[styles.button, styles.danger, deleting && styles.busy]}
-            onPress={account.deleteAccount}
-            disabled={deleting}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: deleting, busy: deleting }}
-          >
-            <Text style={[styles.buttonText, styles.dangerText]}>
-              {deleting ? "Deleting…" : "Delete my account"}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.button}
-            onPress={() => {
-              setConfirming(false);
-              account.clearProblem();
-            }}
-            disabled={deleting}
-            accessibilityRole="button"
-          >
-            <Text style={styles.buttonText}>Keep my account</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <Pressable
-          style={styles.quiet}
-          onPress={() => setConfirming(true)}
-          accessibilityRole="button"
-        >
-          <Text style={styles.dangerText}>Delete account</Text>
-        </Pressable>
-      )}
-      {account.problem && <Text style={styles.problem}>{account.problem}</Text>}
-    </View>
+    <ProfileHome
+      user={session.user}
+      favorites={favorites.status === "ready" ? favorites.list.length : null}
+      activities={activities.total}
+      onOpen={onPage}
+      onEdit={() => onPage("edit")}
+    />
   );
 }
 
@@ -147,42 +208,22 @@ const styles = StyleSheet.create({
   screen: {
     backgroundColor: color.background,
   },
+  // Under a text of «ABOUT»: there, but not seen nor read.
+  hidden: {
+    display: "none",
+  },
   content: {
     paddingHorizontal: space.lg,
     gap: space.xl,
   },
-  title: {
-    color: color.text,
-    fontSize: fontSize.title,
-    fontWeight: fontWeight.bold,
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
   },
-  signedIn: {
-    gap: space.lg,
-  },
-  card: {
-    gap: space.xs,
-    padding: space.md,
-    borderRadius: radius.lg,
-    backgroundColor: color.surface,
-  },
-  label: {
-    color: color.textMuted,
-    fontSize: fontSize.label,
-    fontWeight: fontWeight.semibold,
-    letterSpacing: 1.2,
-  },
-  username: {
-    color: color.text,
-    fontSize: fontSize.title,
-    fontWeight: fontWeight.semibold,
-  },
-  email: {
-    color: color.textMuted,
-    fontSize: fontSize.body,
-  },
-  // Neutral: the yellow belongs to the route (docs/UI.md, «Il tema»).
-  button: {
-    minHeight: MIN_TAP_SIZE,
+  back: {
+    width: MIN_TAP_SIZE,
+    height: MIN_TAP_SIZE,
     borderRadius: radius.pill,
     alignItems: "center",
     justifyContent: "center",
@@ -190,41 +231,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.borderStrong,
   },
-  buttonText: {
+  backText: {
     color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.title,
   },
-  quiet: {
-    minHeight: MIN_TAP_SIZE,
-    justifyContent: "center",
-    alignSelf: "flex-start",
-  },
-  confirm: {
-    gap: space.md,
-    padding: space.md,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: color.error,
-    backgroundColor: color.surface,
-  },
-  confirmText: {
+  title: {
     color: color.text,
-    fontSize: fontSize.body,
-  },
-  danger: {
-    borderColor: color.error,
-  },
-  dangerText: {
-    color: color.error,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
-  },
-  busy: {
-    opacity: 0.6,
-  },
-  problem: {
-    color: color.error,
-    fontSize: fontSize.body,
+    fontSize: fontSize.title,
+    fontWeight: fontWeight.bold,
   },
 });

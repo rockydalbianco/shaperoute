@@ -1,15 +1,20 @@
-import { color } from "../theme/tokens";
+import { color, onFoot, walk } from "../theme/tokens";
 import {
   buildMapPage,
   FOLLOW_ZOOM,
+  HEADING_ARROW_SVG,
   isExternalUrl,
   MAP_BACKGROUND,
   MAP_STYLE,
+  mapStyle,
   MAPLIBRE_CSS_SRI,
   MAPLIBRE_CSS_URL,
   MAPLIBRE_JS_SRI,
   MAPLIBRE_JS_URL,
   MAPLIBRE_VERSION,
+  ON_FOOT_COLOR,
+  ON_FOOT_DASH,
+  ON_FOOT_WIDTH,
   POSITION_COLOR,
   OTHER_ROUTE_COLOR,
   OTHER_ROUTE_WIDTH,
@@ -18,6 +23,9 @@ import {
   START_HERE_COLOR,
   START_HERE_LABEL,
   TRACK_WIDTH,
+  WALK_COLOR,
+  WALK_DASH,
+  WALK_WIDTH,
 } from "./mapPage";
 
 const page = buildMapPage();
@@ -39,6 +47,8 @@ test("loads a pinned MapLibre GL JS with SRI hashes", () => {
 });
 
 test("writes the dark style into the page, and no key", () => {
+  // In the app's language, English under jest; the Feed's maps take it too.
+  expect(MAP_STYLE).toEqual(mapStyle("en"));
   expect(page).toContain(
     `style: ${JSON.stringify(MAP_STYLE).replace(/</g, "\\u003c")}`,
   );
@@ -77,6 +87,12 @@ test("tells the app once the first tiles are drawn", () => {
 
 test("keeps the attribution expanded", () => {
   expect(page).toContain("new maplibregl.AttributionControl({ compact: false })");
+});
+
+test("has no zoom buttons: the fingers zoom the map", () => {
+  expect(page).not.toContain("NavigationControl");
+  // MapLibre's pinch is on unless the page turns it off.
+  expect(page).not.toContain("touchZoomRotate");
 });
 
 test("starts on Italy, with the bounds in MapLibre order", () => {
@@ -127,6 +143,35 @@ test("the page follows the runner close up, without framing the route again", ()
   expect(handler.slice(0, handler.indexOf("clearRoute"))).not.toContain("fitBounds");
 });
 
+test("while running the marker is an arrow turned to the heading (TASK-164)", () => {
+  // In the marker's colour, with a dark edge to stand on the yellow route.
+  expect(HEADING_ARROW_SVG).toContain(`fill="${POSITION_COLOR}"`);
+  expect(HEADING_ARROW_SVG).toContain(`stroke="${color.map.background}"`);
+  // In the page with no "<" that could close the script.
+  expect(page).toContain(JSON.stringify(HEADING_ARROW_SVG).replace(/</g, "\\u003c"));
+  // Turned with the map, so north of the arrow is north of the map.
+  expect(page).toContain('rotationAlignment: "map"');
+  expect(page).toContain("arrow.setRotation(heading)");
+  const handler = page.slice(page.indexOf('message.type === "follow"'));
+  const follow = handler.slice(0, handler.indexOf('message.type === "stopFollow"'));
+  expect(follow).toContain("showArrow(message.lngLat, message.heading)");
+  // Without a heading yet, the pin as before.
+  expect(follow).toContain("showPin(message.lngLat)");
+});
+
+test("after the run the arrow is the position marker again", () => {
+  const handler = page.slice(page.indexOf('message.type === "stopFollow"'));
+  const stop = handler.slice(0, handler.indexOf('message.type === "showTrack"'));
+  expect(stop).toContain("showPin(arrow.getLngLat())");
+  expect(stop).not.toContain("fitBounds");
+  // A new start is a pin too, never a stale arrow.
+  const setPosition = page.slice(
+    page.indexOf('message.type === "setPosition"'),
+    page.indexOf('message.type === "showRoute"'),
+  );
+  expect(setPosition).toContain("showPin(message.lngLat)");
+});
+
 test("the run is a line of its own, over the route and thinner", () => {
   const page = buildMapPage();
   expect(page).toContain('message.type === "showTrack"');
@@ -146,4 +191,47 @@ test("the other routes are thin and grey, under the route (TASK-093)", () => {
   expect(OTHER_ROUTE_COLOR).not.toBe(ROUTE_COLOR);
   const handler = page.slice(page.indexOf('message.type === "showOthers"'));
   expect(handler.slice(0, handler.indexOf("clearTrack"))).not.toContain("fitBounds");
+});
+
+test("the walks of a word with the pen up are dashed, under the route (TASK-198)", () => {
+  const page = buildMapPage();
+  expect(WALK_COLOR).toBe(walk.color);
+  expect(tokenColours.has(WALK_COLOR)).toBe(true);
+  // Not yellow: only the letters are the drawing.
+  expect(WALK_COLOR).not.toBe(ROUTE_COLOR);
+  expect(WALK_WIDTH).toBeLessThan(ROUTE_WIDTH);
+  expect(page).toContain('map.addSource("walks"');
+  expect(page).toContain(`"line-dasharray": ${JSON.stringify(WALK_DASH)}`);
+  expect(page.indexOf('id: "others"')).toBeLessThan(page.indexOf('id: "walks"'));
+  expect(page.indexOf('id: "walks"')).toBeLessThan(page.indexOf('id: "route"'));
+  // With walks the route is its letters; without, one line as before.
+  const handler = page.slice(page.indexOf('message.type === "showRoute"'));
+  const shown = handler.slice(0, handler.indexOf('message.type === "follow"'));
+  expect(shown).toContain('{ type: "MultiLineString", coordinates: message.letters }');
+  expect(shown).toContain('{ type: "LineString", coordinates: points }');
+  expect(shown).toContain("setWalks(");
+  const cleared = page.slice(page.indexOf('message.type === "clearRoute"'));
+  expect(cleared).toContain("setWalks(noRoute)");
+});
+
+test("the stretches with the bike on foot are dashed over the route (TASK-206)", () => {
+  const page = buildMapPage();
+  expect(ON_FOOT_COLOR).toBe(onFoot.color);
+  expect(tokenColours.has(ON_FOOT_COLOR)).toBe(true);
+  // Not yellow, which stays under them whole, nor the grey of the walks.
+  expect(ON_FOOT_COLOR).not.toBe(ROUTE_COLOR);
+  expect(ON_FOOT_COLOR).not.toBe(WALK_COLOR);
+  expect(ON_FOOT_WIDTH).toBeLessThan(ROUTE_WIDTH);
+  expect(page).toContain('map.addSource("on-foot"');
+  expect(page).toContain(`"line-dasharray": ${JSON.stringify(ON_FOOT_DASH)}`);
+  // Over the route, under the places of a themed route and the run.
+  expect(page.indexOf('id: "route"')).toBeLessThan(page.indexOf('id: "on-foot"'));
+  expect(page.indexOf('id: "on-foot"')).toBeLessThan(page.indexOf('id: "stops"'));
+  expect(page.indexOf('id: "on-foot"')).toBeLessThan(page.indexOf('id: "track"'));
+  const handler = page.slice(page.indexOf('message.type === "showRoute"'));
+  const shown = handler.slice(0, handler.indexOf('message.type === "follow"'));
+  expect(shown).toContain("setOnFoot(");
+  expect(shown).toContain('{ type: "MultiLineString", coordinates: message.onFoot }');
+  const cleared = page.slice(page.indexOf('message.type === "clearRoute"'));
+  expect(cleared).toContain("setOnFoot(noRoute)");
 });

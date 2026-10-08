@@ -1,6 +1,6 @@
 # TASK-065 — Gli animali approvati nel catalogo (parole, AI, app)
 
-**Stato**: In corso
+**Stato**: Done — in `main` (PR #95, `59c8623b`, 2026-09-26)
 **Fase**: 4 · **Branch**: `feat/TASK-065-animal-catalog` (parte da `main`,
 che contiene TASK-073; unito poi `main` con TASK-077 e TASK-078)
 
@@ -187,4 +187,17 @@ Da raccogliere per ogni caso: va / non va, con quello che si vede.
 
 ## Esito
 
-*(a fine task)*
+In `main` con la PR #95 (`59c8623b`, 2026-09-26). Motore: `butterfly`,
+`snail`, `dog_head` e `rabbit_head` in `SHAPES`; il test del catalogo
+ammette più di 64 vertici per le forme con i tratti (lumaca 72, testa di
+cane 69, testa di coniglio 81). Contratto: i quattro nomi in `SHAPES` di
+`shared-types` e in `contract.json`. App: parole nuove nella tabella,
+tessere 🦋 🐌 🐶 🐰, «dog head» e «rabbit head» sullo schermo
+(`shapeName`). AI: una riga per forma in `OUTLINES`, «cane» e «farfalla»
+fuori dalle liste di prova. Le quattro forme a 15 km a Trento, Levico e
+Milano danno gli stessi percorsi, punto per punto, dei 12 campioni
+giudicati. Documenti: `UI.md`, `AI.md`, `ROUTE_ENGINE.md` §2, ADR-0061.
+
+Chiuso il 2026-10-06 dalla pulizia dei task file: la prova sull'iPhone
+con l'utente e la nuova misura dell'AI con `qwen3:4b` non risultano
+fatte.

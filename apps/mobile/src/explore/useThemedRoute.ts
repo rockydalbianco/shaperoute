@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t, tLater } from "../i18n";
 
+import { MAX_POLL_FAILURES } from "../api/routes";
 import {
   getThemed,
   postThemed,
@@ -18,7 +20,9 @@ export type ThemedState =
   | { status: "done"; request: ThemedRequest; result: ThemedResult }
   | { status: "failed"; request: ThemedRequest; message: string };
 
-const UNREACHABLE = "The API did not answer. Check the connection and try again.";
+const UNREACHABLE = tLater(
+  "The API did not answer. Check the connection and try again.",
+);
 
 /** Asks for a themed route and follows its job until it ends (TASK-129). */
 export function useThemedRoute(
@@ -46,13 +50,16 @@ export function useThemedRoute(
       run.current = controller;
       const { signal } = controller;
       if (apiUrl === null) {
-        setState({ status: "failed", request, message: UNREACHABLE });
+        setState({ status: "failed", request, message: t(UNREACHABLE) });
         return;
       }
       setState({ status: "waiting", request });
       void (async () => {
         const began = Date.now();
         let job = await postThemed(apiUrl, request, { fetchFn, signal });
+        // Asks that fail in a row (TASK-254): forgiven as requestRoute
+        // forgives them, the engine is still at work on the job.
+        let failures = 0;
         while (job !== null && (job.status === "queued" || job.status === "running")) {
           if (Date.now() - began > GIVE_UP_MS) {
             job = null;
@@ -62,7 +69,16 @@ export function useThemedRoute(
           if (signal.aborted) {
             return;
           }
-          job = await getThemed(apiUrl, job.job_id, { fetchFn, signal });
+          const asked = await getThemed(apiUrl, job.job_id, { fetchFn, signal });
+          if (asked === null) {
+            failures += 1;
+            if (failures >= MAX_POLL_FAILURES) {
+              job = null;
+            }
+            continue;
+          }
+          failures = 0;
+          job = asked;
         }
         if (signal.aborted) {
           return;
@@ -73,7 +89,7 @@ export function useThemedRoute(
           setState({
             status: "failed",
             request,
-            message: job?.error?.message ?? UNREACHABLE,
+            message: job?.error?.message ?? t(UNREACHABLE),
           });
         }
       })();

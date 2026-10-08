@@ -1,6 +1,7 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { Activity, LatLon, Walk } from "@shaperoute/shared-types";
 
 import { apiKey, keyHeaders } from "../api/apiUrl";
+import { shapeWord } from "../i18n/shapeNames";
 
 /**
  * The best routes already planned near a point, for "Explore" (TASK-126,
@@ -28,6 +29,18 @@ export type RecommendedRoute = {
   /** From the point asked about to the start, in a straight line. */
   away_m: number;
   preview: LatLon[];
+  /**
+   * The points of `preview` the route comes to without drawing: a card
+   * draws no segment that ends at one (an example drawn in pieces on the
+   * water, TASK-226). Absent for a route in one line.
+   */
+  gaps?: number[];
+  /**
+   * How far its shape is turned, as RouteResult.rotation_deg (TASK-232): the
+   * card draws it turned back. Absent for a route that does not say, which
+   * stays north up.
+   */
+  rotation_deg?: number;
 };
 
 /** One route whole, to show on the map and export. */
@@ -42,7 +55,36 @@ export type RecommendedRouteDetail = {
   similarity: number;
   points: LatLon[];
   license: string;
+  /**
+   * What it was drawn for, when not a run: an example drawn on the phone on
+   * the water (TASK-191). The API's routes are runs and do not say.
+   */
+  activity?: Activity;
+  /**
+   * The stretches with the pen up of a shape drawn in pieces on the water
+   * (TASK-226), as RouteResult.walks: an example's only, when it has some.
+   */
+  walks?: Walk[];
+  /**
+   * How far its shape is turned, as RouteResult.rotation_deg (TASK-232): the
+   * map turns the other way, also while it is run. Absent for a route that
+   * does not say, which stays north up.
+   */
+  rotation_deg?: number;
 };
+
+/**
+ * The turn of a route to keep with it: none for a route that does not say,
+ * or that is upright. What does not read as degrees is as none.
+ */
+export function turnOf(route: {
+  rotation_deg?: unknown;
+}): Pick<RecommendedRouteDetail, "rotation_deg"> {
+  const turn = route.rotation_deg;
+  return typeof turn === "number" && Number.isFinite(turn) && turn !== 0
+    ? { rotation_deg: turn }
+    : {};
+}
 
 /** "Near you" (TASK-092, variant C): a start a short run away. */
 export const NEAR_RADIUS_M = 5000;
@@ -166,18 +208,24 @@ export function isRecommendedDetail(body: unknown): body is RecommendedRouteDeta
   return hasRouteFields(r) && isLine(r.points, 2) && typeof r.license === "string";
 }
 
-/** What a route draws, as the user reads it: "heart", "CIAO". */
+/**
+ * What a route draws, as the user reads it: "heart", "CIAO"; the shape in
+ * the app's language, «Herz» (TASK-210 F).
+ */
 export function routeTitle(route: {
   shape: string | null;
   word: string | null;
 }): string {
-  return route.word ?? (route.shape ?? "").replace(/_/g, " ");
+  return route.word ?? shapeWord(route.shape ?? "");
 }
+
+/** The cities of the catalogue whose name is two words: its files have one. */
+const TWO_WORDS: Record<string, string> = {
+  newyork: "New York",
+  sanfrancisco: "San Francisco",
+};
 
 /** The city as the user reads it: "milano" → "Milano", "newyork" → "New York". */
 export function cityName(city: string): string {
-  if (city === "newyork") {
-    return "New York";
-  }
-  return city.charAt(0).toUpperCase() + city.slice(1);
+  return TWO_WORDS[city] ?? city.charAt(0).toUpperCase() + city.slice(1);
 }

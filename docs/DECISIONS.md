@@ -8212,8 +8212,9 @@ e «Privacy» tradotti come bozze, con gli stessi segnaposto `[name]`,
 `[contact email]`, `[governing law]`; la nota delle basi giuridiche è
 tradotta come in italiano); non si ricade più sull'inglese e VoiceOver
 legge ogni testo nella lingua dell'app. I nomi dei pulsanti sono quelli
-che l'app mostra oggi in ogni lingua; le tre pagine restano «Feed»,
-«Draw», «Explore» fino alla parte G. (5) Quattro
+che l'app mostra in ogni lingua; le tre pagine hanno i titoli della
+parte G (#437: «Disegna», «Zeichnen», «Fil»…), anche se una delle due PR
+entra qualche minuto prima dell'altra. (5) Quattro
 testi nuovi in fondo alle tabelle (dopo il merge della parte E):
 «{list} or {last}», «Start here», «NEAR {city}», «here».
 

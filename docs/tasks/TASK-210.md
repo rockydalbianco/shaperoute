@@ -403,20 +403,21 @@ sessione «Traduzioni TASK-210» (`out/task-210-forme-testi.md`), tranne
 «Tannenbaum», «sapin», «Krapfen», «beignet», «pescado», «chatte».
 «Help» in italiano ora nomina i pulsanti tradotti dalle
 parti B e D («Disegna il percorso», «Esporta GPX», «Parti», «Pausa»,
-«Riprendi», «Scarta»). **4 testi nuovi** in fondo alle tabelle: «{list}
+«Riprendi», «Scarta»), e i testi delle quattro lingue chiamano le pagine
+come i titoli della parte G (#437, su richiesta del coordinatore): it
+«Feed», «Disegna», «Esplora»; de «Feed», «Zeichnen», «Entdecken»; es
+«Feed», «Dibuja», «Explora»; fr «Fil», «Dessiner», «Explorer». **4 testi nuovi** in fondo alle tabelle: «{list}
 or {last}», «Start here», «NEAR {city}», «here»; più «Help», «Terms» e
 «Privacy» in tre lingue. Test: `route/ShapeNamesLanguages.test.tsx`,
 `explore/ExploreShapeNames.test.tsx`, `map/MapViewLanguage.test.tsx`, e
 in `shapeWords.test.ts`, `mapStyle.test.ts`, `documents.test.ts`,
 `AboutPage.test.tsx`.
 
-**Seguiti notati nella parte F, fuori dai suoi file**: «NEAR YOUR START»
-in `paddle/PaddleExplore.tsx` è ancora inglese; in francese «near your
-start» è «près de vous» mentre il resto dell'app dà del «tu»; la bozza
-italiana di «Privacy» cita ancora «Discard» (testo legale, dell'utente).
+**Seguiti notati nella parte F**: in francese «near your start» è «près
+de vous» mentre il resto dell'app dà del «tu»; la bozza italiana di
+«Privacy» cita ancora «Discard» (testo legale, dell'utente). «NEAR YOUR
+START» della canoa è già tradotto (`t("Near your start")` in maiuscolo).
 
 **Dopo la parte F restano** (parte G): i titoli delle pagine in
-`App.tsx` (dopo TASK-182 parte E), il nome della forma e «Paddle ·» nel
-Feed (`feed/*`, dopo TASK-118), le mappe del Feed che seguono un cambio
-di lingua, e «Feed», «Draw», «Explore» dentro «Help» quando quei titoli
-saranno tradotti.
+`App.tsx` (#437), il nome della forma e «Paddle ·» nel Feed (`feed/*`,
+dopo TASK-118), le mappe del Feed che seguono un cambio di lingua.

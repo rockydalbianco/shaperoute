@@ -3,8 +3,8 @@ import type { AboutContent, AboutDocument } from "../documents";
 /**
  * «Help», «Terms» and «Privacy» in German (TASK-210 F): the same sections
  * as `en.ts`, in the same order (a test compares them). The names of
- * buttons are the ones the app shows in German; the three pages are still
- * «Feed», «Draw» and «Explore» until TASK-210 G. «Terms» and «Privacy» are
+ * buttons are the ones the app shows in German; the pages as
+ * TASK-210 G names them: «Feed», «Zeichnen», «Entdecken». «Terms» and «Privacy» are
  * drafts, as in English, with the same places to fill (the user's choice
  * of 2026-10-07).
  */
@@ -20,7 +20,7 @@ const help: AboutDocument = {
       heading: "Was MuW ist",
       blocks: [
         "MuW zeichnet echte Routen, die auf der Karte eine Form ergeben. Du wählst die Form, die Distanz und den Start; du bekommst eine Route auf echten Straßen, mit ihrer GPX-Datei.",
-        "Die App hat drei Seiten nebeneinander, «Feed», «Draw» und «Explore»: Wische nach links oder rechts oder tippe oben auf einen Namen. «Profil» öffnet sich über den Kreis oben.",
+        "Die App hat drei Seiten nebeneinander, «Feed», «Zeichnen» und «Entdecken»: Wische nach links oder rechts oder tippe oben auf einen Namen. «Profil» öffnet sich über den Kreis oben.",
       ],
     },
     {
@@ -38,7 +38,7 @@ const help: AboutDocument = {
       ],
     },
     {
-      heading: "Explore",
+      heading: "Entdecken",
       blocks: [
         "Routen, die in deiner Stadt schon gezeichnet sind, startklar: kein Warten, wähle einfach eine.",
         "Wähle «In meiner Nähe», einen Ort in der Nähe oder suche eine Stadt, dann tippe auf eine Route, um sie auf der Karte zu sehen.",

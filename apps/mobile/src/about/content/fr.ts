@@ -3,8 +3,8 @@ import type { AboutContent, AboutDocument } from "../documents";
 /**
  * «Help», «Terms» and «Privacy» in French (TASK-210 F): the same sections
  * as `en.ts`, in the same order (a test compares them). The names of
- * buttons are the ones the app shows in French; the three pages are still
- * «Feed», «Draw» and «Explore» until TASK-210 G. «Terms» and «Privacy» are
+ * buttons are the ones the app shows in French; the pages as
+ * TASK-210 G names them: «Fil», «Dessiner», «Explorer». «Terms» and «Privacy» are
  * drafts, as in English, with the same places to fill (the user's choice
  * of 2026-10-07).
  */
@@ -20,7 +20,7 @@ const help: AboutDocument = {
       heading: "Ce qu'est MuW",
       blocks: [
         "MuW dessine de vrais parcours qui tracent une forme sur la carte. Tu choisis la forme, la distance et le point de départ ; tu obtiens un parcours sur de vraies rues, avec son fichier GPX.",
-        "L'app a trois pages côte à côte, «Feed», «Draw» et «Explore» : glisse vers la gauche ou la droite, ou touche un nom en haut. «Profil» s'ouvre depuis le cercle en haut.",
+        "L'app a trois pages côte à côte, «Fil», «Dessiner» et «Explorer» : glisse vers la gauche ou la droite, ou touche un nom en haut. «Profil» s'ouvre depuis le cercle en haut.",
       ],
     },
     {
@@ -38,7 +38,7 @@ const help: AboutDocument = {
       ],
     },
     {
-      heading: "Explore",
+      heading: "Explorer",
       blocks: [
         "Des parcours déjà dessinés dans ta ville, prêts à partir : pas d'attente, il suffit d'en choisir un.",
         "Choisis «Près de moi», une ville proche ou cherche une ville, puis touche un parcours pour le voir sur la carte.",
@@ -74,10 +74,10 @@ const help: AboutDocument = {
       ],
     },
     {
-      heading: "Feed et amis",
+      heading: "Fil et amis",
       blocks: [
-        "«Feed» montre des dessins pour trouver des idées : touches-en un pour ouvrir son parcours et le démarrer.",
-        "La loupe en haut de «Feed» trouve les autres membres par leur nom. Sur un profil, tu peux toucher «Suivre» ; tes demandes, tes abonnés et les personnes que tu suis sont dans «Profil».",
+        "«Fil» montre des dessins pour trouver des idées : touches-en un pour ouvrir son parcours et le démarrer.",
+        "La loupe en haut de «Fil» trouve les autres membres par leur nom. Sur un profil, tu peux toucher «Suivre» ; tes demandes, tes abonnés et les personnes que tu suis sont dans «Profil».",
         "Sur le dessin public d'un membre, tu peux réagir avec un emoji, envoyer un super like et écrire un commentaire. Les commentaires négatifs ne sont pas acceptés.",
       ],
     },
@@ -207,7 +207,7 @@ const terms: AboutDocument = {
     {
       heading: "Publicité",
       blocks: [
-        "MuW affiche de la publicité, fournie par Google AdMob, parmi les dessins de «Feed», marquée «Sponsorisé». Une annonce ouvre ce que l'annonceur indique : son contenu n'est pas le nôtre.",
+        "MuW affiche de la publicité, fournie par Google AdMob, parmi les dessins de «Fil», marquée «Sponsorisé». Une annonce ouvre ce que l'annonceur indique : son contenu n'est pas le nôtre.",
       ],
     },
     {
@@ -336,7 +336,7 @@ const privacy: AboutDocument = {
     {
       heading: "Publicité",
       blocks: [
-        "MuW affiche des annonces de Google AdMob parmi les dessins de «Feed». La première fois que tu ouvres «Feed», le formulaire de consentement de Google te demande ton choix là où il en faut un ; tant que des annonces ne peuvent pas être demandées, aucune n'est affichée. Sur iPhone, l'app ne demande pas à te suivre à travers d'autres apps et les annonces sont demandées sans l'identifiant publicitaire.",
+        "MuW affiche des annonces de Google AdMob parmi les dessins de «Fil». La première fois que tu ouvres «Fil», le formulaire de consentement de Google te demande ton choix là où il en faut un ; tant que des annonces ne peuvent pas être demandées, aucune n'est affichée. Sur iPhone, l'app ne demande pas à te suivre à travers d'autres apps et les annonces sont demandées sans l'identifiant publicitaire.",
         "Google traite ce que son logiciel publicitaire collecte selon sa propre politique de confidentialité.",
       ],
     },

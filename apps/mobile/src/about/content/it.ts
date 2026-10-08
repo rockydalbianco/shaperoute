@@ -3,8 +3,8 @@ import type { AboutContent, AboutDocument } from "../documents";
 /**
  * «Help», «Terms» and «Privacy» in Italian (TASK-184, ADR-0205): the same
  * sections as `en.ts`, in the same order (a test compares them). The names
- * of pages and buttons are the ones the app shows in Italian today: the
- * three pages are still «Feed», «Draw» and «Explore» until TASK-210 G.
+ * of pages and buttons are the ones the app shows in Italian, the pages'
+ * as TASK-210 G names them: «Feed», «Disegna», «Esplora».
  */
 
 const UPDATED = "5 ottobre 2026";
@@ -18,7 +18,7 @@ const help: AboutDocument = {
       heading: "Che cos'è MuW",
       blocks: [
         "MuW disegna percorsi veri che sulla mappa tracciano una forma. Scegli la forma, la distanza e da dove partire: ottieni un percorso su strade vere, con il suo file GPX.",
-        "L'app ha tre pagine affiancate, «Feed», «Draw» ed «Explore»: scorri a destra o a sinistra, oppure tocca un nome in alto. «Profilo» si apre dal cerchio in alto.",
+        "L'app ha tre pagine affiancate, «Feed», «Disegna» ed «Esplora»: scorri a destra o a sinistra, oppure tocca un nome in alto. «Profilo» si apre dal cerchio in alto.",
       ],
     },
     {
@@ -36,7 +36,7 @@ const help: AboutDocument = {
       ],
     },
     {
-      heading: "Explore",
+      heading: "Esplora",
       blocks: [
         "Percorsi già disegnati nella tua città, pronti da correre: niente attesa, basta sceglierne uno.",
         "Scegli «Vicino a me», un paese vicino o cerca una città, poi tocca un percorso per vederlo sulla mappa.",

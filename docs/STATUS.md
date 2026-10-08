@@ -785,11 +785,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   («Phone units», «Share») esce con la prossima pubblicazione, del
   coordinatore. Provato nel simulatore con il telefono sugli Stati Uniti
   («Phone units — Miles», `out/task182/`). **Da fare sull'iPhone**:
-  ascoltare la voce in miglia; un iPhone vero con le miglia. **Seguiti**:
-  tenere la distanza di «Draw» in metri dentro `App.tsx` (oggi il testo
-  del campo porta la sua unità); una parola di corsa in miglia ha al più
-  6 lettere; «within 1 km of the shore» e l'avviso sull'acqua restano in
-  km per scelta. `tasks/TASK-182.md`.
+  ascoltare la voce in miglia; un iPhone vero con le miglia. **Parte E**
+  (2026-10-07, PR #436, branch `feat/TASK-182-e-draw-metres`, ADR-0149
+  «aggiornamento (parte E)»): la distanza di «Draw» la tiene `App.tsx`
+  con `useDrawDistance` (`src/units/`), come testo scritto o metri scelti
+  dall'app («Try», lago piccolo), sempre nell'unità dell'app, e
+  `useUnits()` è alla radice; a vista niente cambia (il campo mostrava già
+  le miglia), il cambio di unità vale anche con «Draw» fuori dallo
+  schermo; provata nel simulatore («0.9 mi» per un lago di 1,5 km).
+  **Seguiti**: togliere l'effetto di cambio unità di `RouteChoice` quando
+  `src/route/` è libero; una parola di corsa in miglia ha al più 6
+  lettere; «within 1 km of the shore» e l'avviso sull'acqua restano in km
+  per scelta. `tasks/TASK-182.md`.
 
 - **API e app** — TASK-185: i due interruttori delle notifiche (ADR-0206;
   chiesto dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha

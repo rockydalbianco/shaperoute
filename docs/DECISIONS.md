@@ -11715,6 +11715,61 @@ di partenza» finché non c'era la seconda parte; con le parti B e C in
   miglia non è stata ascoltata.
 - Chi aveva scelto «Kilometres» o «Miles» a mano tiene la sua scelta.
 
+## ADR-0149 — aggiornamento (parte E): la distanza di «Draw» la tiene `App.tsx`, come testo scritto o metri scelti dall'app
+**Stato**: Attiva · 2026-10-07 · deciso dall'agente su delega dell'utente
+(TASK-182, parte E, assegnata dal coordinatore). Il seguito scritto con la
+parte B: «quando `App.tsx` è libero, la distanza in metri nello stato e
+`useUnits()` alla radice».
+
+**Contesto**: con la parte B `App.tsx` (allora di altri task) teneva il
+testo del campo e ci scriveva da sé dei km (`String(metri / 1000)`) dopo un
+«Try» e per un lago piccolo. Il campo li mostrava già in miglia
+(`shownNumber`) e `toDistanceM` ne prendeva i metri esatti (punto 5 della
+parte B), ma il testo che girava era in km anche con «Miles», e il cambio
+di unità lo faceva solo `RouteChoice` quando era montato.
+
+**Decisione**:
+
+1. La distanza di «Draw» la tiene `useDrawDistance(sport)`
+   (`src/units/useDrawDistance.ts`; le funzioni pure in
+   `src/units/drawDistance.ts`), chiamato da `App.tsx`: o il **testo**
+   scritto nel campo (anche −, + e «Use N mi»), o i **metri** che l'app
+   sceglie da sé («Try», lago piccolo). L'app non scrive più testi in km
+   mentre è in miglia.
+2. Al campo va il testo nell'unità dell'app: quello scritto com'è; i metri
+   dell'app in km come prima («1.5», «12»), in miglia al decimo («0.9 mi»,
+   «7 mi»). La richiesta prende i metri così come sono, dentro i limiti in
+   km dello sport: un «Try» e un lago chiedono quello che chiedevano.
+3. `useUnits()` alla radice (`App`, accanto a `useLanguage()`) e nel
+   gancio: a un cambio di unità il gancio riscrive subito la distanza, che
+   «Draw» sia sullo schermo o no, con la regola della parte B (punto 4: la
+   stessa distanza al km o al miglio intero dentro i limiti), anche per i
+   metri dell'app, calcolata dai metri e non dal decimo mostrato. L'effetto
+   di `RouteChoice` trova poi il testo già nell'unità nuova e lo lascia
+   com'è.
+4. Un cambio di sport passa da `distanceForSport` come prima: per i metri
+   dell'app dal loro testo in km, con lo stesso risultato di prima.
+
+**Alternative scartate**: solo metri in `App.tsx`, senza testo (il campo
+deve tenere quello che si sta scrivendo, «4,», e `RouteChoice` e
+`DistanceStepper`, in `src/route/`, vogliono un testo); scrivere i metri
+dell'app come testo in miglia e rileggerlo (i 1500 m di un lago
+diventerebbero «0.9 mi», cioè 1448 m, rifiutati sotto il miglio); tenere i
+metri dell'app anche a un cambio di unità (con «Draw» sullo schermo
+l'effetto di `RouteChoice` li arrotonderebbe comunque: due comportamenti).
+
+**Conseguenze**:
+
+- A vista niente cambia: il «Try» e il lago si mostravano già in miglia.
+  Cambia dove vive la distanza, e il cambio di unità vale anche con «Draw»
+  smontato (nell'app di oggi «Settings» si apre solo con «Draw» montato
+  sotto, quindi in pratica è una garanzia).
+- Con «Kilometres» testi e richieste sono quelli di prima: i test
+  esistenti passano senza modifiche.
+- Seguito: togliere l'effetto di cambio unità da `RouteChoice`
+  (`src/route/RoutePanel.tsx`) quando `src/route/` è libero.
+- Solo app: nessuna dipendenza, nessun testo nuovo, niente server.
+
 
 ## ADR-0210 — aggiornamento (parte B): una parola comune scritta sceglie fra i nomi trovati
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente

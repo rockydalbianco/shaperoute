@@ -544,4 +544,95 @@ parte B #368 (`0703d25`), ultimo passo #374 (`3ad0c22`). Il testo «Phone
 units» è confermato dall'utente («continua va bene»). Parti A, B e C su
 `preview`; l'ultimo passo esce con la prossima pubblicazione, del
 coordinatore. Restano, fuori dal task: ascoltare la voce in miglia
-sull'iPhone; la distanza di «Draw» in metri dentro `App.tsx`.
+sull'iPhone; la distanza di «Draw» in metri dentro `App.tsx` (fatta con
+la parte E, sotto).
+
+### Parte E — la distanza di «Draw» tenuta in `App.tsx` (2026-10-07)
+
+**Stato**: Done (in revisione fino al merge) · PR #436, branch
+`feat/TASK-182-e-draw-metres`, da `main` `aea84e4` · ADR-0149
+«aggiornamento (parte E)». Assegnata dal coordinatore il 2026-10-07, senza
+numero nuovo, in parallelo con TASK-210 parte E (file diversi).
+
+**Obiettivo** (dal coordinatore): con «Miles» ogni distanza del campo di
+«Draw» si mostra in miglia, anche quelle che `App.tsx` scrive da sé (un
+«Try», un lago piccolo, il cambio di sport); con «Kilometres» niente
+cambia; all'API metri interi come prima; motore e API non toccati.
+
+**Criteri di accettazione**:
+
+- [x] Con «Miles» un «Try» si mostra in miglia e chiede i suoi metri
+      («Try 7 mi» → «7», 11 265 m; «Try 3.1 mi» → «3.1», 4989 m).
+      Test: `units/DrawDistanceMiles.test.tsx`, `units/drawDistance.test.ts`.
+- [x] Con «Miles» un lago piccolo si mostra in miglia e chiede i suoi
+      metri («0.9», 1500 m, nessun rifiuto sotto il miglio). Stessi test, e
+      nel simulatore (sotto).
+- [x] Un cambio di unità con una distanza scritta dà la stessa distanza al
+      km o al miglio intero dentro i limiti, anche con «Draw» fuori dallo
+      schermo e anche per i metri scelti dall'app. Test:
+      `units/DrawDistanceMiles.test.tsx`, `units/DrawDistanceApp.test.tsx`
+      (l'app intera).
+- [x] Con «Kilometres» tutto come prima: i test che c'erano passano senza
+      modifiche (337 suite, 2756 test), e i nuovi lo dicono («12», «1.5»).
+- [x] Solo `App.tsx`, `src/units/` e test; nessun testo nuovo, nessuna
+      dipendenza.
+
+**Esito**: fatta; nessuna differenza a vista, la distanza vive in
+`App.tsx` come testo o metri nell'unità dell'app (dettagli sotto).
+
+- `src/units/useDrawDistance.ts` (nuovo): la distanza di «Draw» la tiene
+  un gancio che `App.tsx` chiama alla radice: il testo scritto nel campo
+  (anche −, + e «Use N mi»), oppure i **metri** che l'app sceglie da sé
+  («Try», lago piccolo, con `choose`). Al campo va il testo nell'unità
+  dell'app: i metri dell'app in km come prima («1.5», «12»), in miglia al
+  decimo («0.9 mi», «7 mi»); la richiesta prende i metri così come sono.
+  Le funzioni pure sono in `src/units/drawDistance.ts` (nuovo).
+- `App.tsx`: non scrive più `String(metri / 1000)`; chiama `useUnits()`
+  alla radice, accanto a `useLanguage()`, e il gancio riscrive la distanza
+  appena cambiano l'unità o lo sport, che «Draw» sia sullo schermo o no.
+- Provato nel simulatore (iPhone 17e, Expo Go, il branch servito da un
+  clone): con «Miles» la canoa parte da «1 mi», «Diga sul Lordo» (1,5 km)
+  dà «0.9 mi» con «Draw route» attivo; tornando a «Phone units» (km) il
+  campo dice «2 km». Lo screenshot del lago è nella scratchpad della
+  sessione, non nel repository. Il «Try» non è stato visto nel simulatore
+  (l'API sul Mac era spenta): è nei test.
+
+**Dove il codice non era come il task lo descriveva**:
+
+- **A vista non cambia niente.** Già dalla parte B il campo mostrava in
+  miglia anche quello che `App.tsx` scriveva in km (`shownNumber`: «1.5»
+  si leggeva «0.9», «4.828» si leggeva «3»), e `toDistanceM` ne prendeva
+  i metri esatti. La parte E sposta dove vive la distanza (metri o testo
+  nell'unità dell'app, dentro `App.tsx`), non quello che si vede.
+- L'unico comportamento nuovo è il cambio di unità con «Draw» fuori dallo
+  schermo: prima lo faceva solo `RouteChoice` (in `src/route/RoutePanel.tsx`)
+  quando è montato. Nell'app di oggi non ho trovato un modo di aprire
+  «Settings» con «Draw» smontato (la pagina resta montata sotto «Profile»),
+  quindi in pratica è una garanzia, non una correzione.
+
+**Da sapere**:
+
+- Un lago piccolo scelto e poi un cambio di unità: il campo va al km o al
+  miglio intero (1,5 km → «2 km» o «1 mi»), come prima della parte E;
+  è la regola della parte B, e `RouteChoice` la applica comunque quando è
+  sullo schermo.
+
+**Seguiti** (file non di questa parte):
+
+- `src/route/RoutePanel.tsx`: l'effetto di `RouteChoice` che riscrive la
+  distanza al cambio di unità ora trova il testo già nell'unità nuova e lo
+  lascia com'è; si può togliere quando `src/route/` è libero.
+
+**File toccati** (parte E):
+
+```
+apps/mobile/App.tsx
+apps/mobile/src/units/drawDistance.ts             (nuovo)
+apps/mobile/src/units/useDrawDistance.ts          (nuovo)
+apps/mobile/src/units/drawDistance.test.ts        (nuovo)
+apps/mobile/src/units/DrawDistanceMiles.test.tsx  (nuovo)
+apps/mobile/src/units/DrawDistanceApp.test.tsx    (nuovo)
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-182.md
+```

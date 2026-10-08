@@ -6,9 +6,16 @@ import { useState } from "react";
 import { saveLanguageChoice } from "../i18n/language";
 import { NotificationsSetting } from "./NotificationsSetting";
 
+jest.mock("expo-notifications");
+
+type Phone = typeof import("../../__mocks__/expo-notifications");
+const phone = jest.requireMock<Phone>("expo-notifications");
+
 const off = session.user as User;
 const NOTE =
-  "MuW does not send notifications yet. Your choice is kept for when it does.";
+  "Push notifications tell you about follow requests, reactions, comments and tags. MuW does not send emails yet: your choice is kept for when it does.";
+const REFUSED =
+  "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.";
 const NO_ENDPOINT = "Notifications are not available on this API yet.";
 
 type Change = (request: NotificationsRequest) => Promise<string | null>;
@@ -43,11 +50,13 @@ function push() {
   return screen.getByRole("switch", { name: "Push notifications" });
 }
 
+beforeEach(() => phone.resetPhone());
+
 afterEach(async () => {
   await act(async () => saveLanguageChoice("phone"));
 });
 
-test("two switches, both off, and the note that nothing is sent yet", async () => {
+test("two switches, both off, and the note of what push tells", async () => {
   await show();
   expect(screen.getAllByRole("switch")).toHaveLength(2);
   expect(email()).not.toBeChecked();
@@ -156,4 +165,51 @@ test("the rows and the note follow the app's language", async () => {
   expect(screen.getByRole("switch", { name: "Notifiche email" })).toBeOnTheScreen();
   expect(screen.getByRole("switch", { name: "Notifiche push" })).toBeOnTheScreen();
   expect(screen.queryByText(NOTE)).toBeNull();
+});
+
+test("turning push on asks the phone first, then keeps the choice (TASK-262)", async () => {
+  const change = await show();
+  expect(phone.requestPermissionsAsync).not.toHaveBeenCalled();
+  await fireEvent.press(push());
+  expect(phone.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+  expect(change).toHaveBeenLastCalledWith({ push: true });
+  expect(push()).toBeChecked();
+  // Off, and the email switch, never ask.
+  await fireEvent.press(push());
+  await fireEvent.press(email());
+  expect(phone.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+  expect(change).toHaveBeenCalledTimes(3);
+});
+
+test("the phone refusing keeps the switch off, and says where to allow it", async () => {
+  phone.phone.answer = "denied";
+  const change = await show();
+  await fireEvent.press(push());
+  expect(change).not.toHaveBeenCalled();
+  expect(push()).not.toBeChecked();
+  expect(screen.getByText(REFUSED)).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Open Settings" })).toBeOnTheScreen();
+  // The email switch still works, and takes the reason away.
+  await fireEvent.press(email());
+  expect(change).toHaveBeenLastCalledWith({ email: true });
+  expect(screen.queryByText(REFUSED)).toBeNull();
+  expect(screen.queryByRole("button", { name: "Open Settings" })).toBeNull();
+});
+
+test("while the phone asks, the switch shows on and busy", async () => {
+  let answer: (value: unknown) => void = () => {};
+  phone.requestPermissionsAsync.mockImplementationOnce(
+    () => new Promise((resolve) => (answer = resolve)),
+  );
+  const change = await show();
+  await fireEvent.press(push());
+  expect(push()).toBeChecked();
+  expect(push()).toBeBusy();
+  await fireEvent.press(email());
+  expect(change).not.toHaveBeenCalled();
+  await act(async () =>
+    answer({ status: "granted", granted: true, canAskAgain: true, expires: "never" }),
+  );
+  expect(change).toHaveBeenCalledWith({ push: true });
+  expect(push()).toBeChecked();
 });

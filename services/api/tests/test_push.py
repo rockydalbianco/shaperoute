@@ -10,6 +10,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 import pytest
 from argon2 import PasswordHasher
@@ -28,6 +29,7 @@ from shaperoute_api.push import (
     Pusher,
     PushEvent,
     PushTokenRequestBody,
+    data_of,
     quoted,
     text_of,
 )
@@ -201,6 +203,14 @@ def test_the_example_of_shared_types_is_the_contract() -> None:
     assert set(request) == set(PushTokenRequestBody.model_fields)
     body = PushTokenRequestBody.model_validate(request)
     assert body.platform in ("ios", "android")
+
+
+def test_the_data_of_a_notification_is_the_contract() -> None:
+    drawing, profile = _load("push-data.json")
+    who = UUID(profile["public_id"])
+    comment = PushEvent("comment", 1, 2, drawing_id=UUID(drawing["drawing_id"]))
+    assert data_of(comment, who, "ada") == drawing
+    assert data_of(PushEvent("follow_request", 1, 2), who, "ada") == profile
 
 
 def test_every_text_is_in_the_five_languages_with_the_same_marks() -> None:

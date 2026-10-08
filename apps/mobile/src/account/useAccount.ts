@@ -22,6 +22,8 @@ import {
 } from "../api/contact";
 import { changeNotifications as notificationsRequest } from "../api/notifications";
 import { editProfile as editRequest } from "../api/profiles";
+import { forgetPushToken } from "../api/pushToken";
+import { forgetPushSent, loadPushSent } from "../notifications/pushSent";
 import { forgetOutboxOf } from "../activities/outbox";
 import { t } from "../i18n";
 import { profileProblem } from "../profile/profileFields";
@@ -80,8 +82,8 @@ export type Account = {
   changePhone: (request: ChangePhoneRequest) => Promise<string | null>;
   /**
    * PUT /me/notifications (TASK-185): the notification switches that
-   * change. Nothing is sent yet: the choice is kept. Resolves as
-   * `editProfile` does.
+   * change. With «Push notifications» on, the API sends push notifications
+   * (TASK-262); no email yet. Resolves as `editProfile` does.
    */
   changeNotifications: (request: NotificationsRequest) => Promise<string | null>;
   clearProblem: () => void;
@@ -221,8 +223,18 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     void forgetSession();
     setProblem(null);
     put({ status: "signedOut", notice: "loggedOut" });
+    // This phone's push token first (TASK-262): its session is still open,
+    // and the account is notified here no more.
+    const sent = loadPushSent();
+    void forgetPushSent();
     if (baseUrl !== null) {
-      void signOutRequest(baseUrl, now.session.token, { fetchFn, key });
+      const { token, user } = now.session;
+      void (async () => {
+        if (sent !== null && sent.userId === user.id) {
+          await forgetPushToken(baseUrl, token, sent.token, { fetchFn, key });
+        }
+        await signOutRequest(baseUrl, token, { fetchFn, key });
+      })();
     }
   }, [baseUrl, fetchFn, key, put]);
 
@@ -251,6 +263,8 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
       forgetOutboxOf(user.id);
       forgetStravaOf(user.id);
       forgetDrawingsOf(user.id);
+      // The API deleted its push tokens with it (TASK-262).
+      await forgetPushSent();
       await forgetSession();
       put({ status: "signedOut", notice: "deleted" });
     } else if (sessionEnded(outcome)) {

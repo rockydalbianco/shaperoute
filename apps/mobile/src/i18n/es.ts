@@ -330,8 +330,6 @@ export const ES: Table = {
   "Another account has this email.": "Otra cuenta tiene este correo.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts
-  "MuW does not send notifications yet. Your choice is kept for when it does.":
-    "MuW todavía no envía notificaciones. Tu elección queda guardada para cuando lo haga.",
   "Notifications are not available on this API yet.":
     "En esta API todavía no hay notificaciones.",
 
@@ -1093,4 +1091,10 @@ export const ES: Table = {
 
   // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
   "{user}: {title}. {facts}.": "{user}: {title}. {facts}.",
+
+  // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
+  "Push notifications tell you about follow requests, reactions, comments and tags. MuW does not send emails yet: your choice is kept for when it does.":
+    "Las notificaciones push te avisan de solicitudes para seguirte, reacciones, comentarios y etiquetas. MuW todavía no envía correos: tu elección queda guardada para cuando lo haga.",
+  "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
+    "Las notificaciones de MuW están desactivadas en este teléfono. Permítelas en Ajustes para activarlas.",
 };

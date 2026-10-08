@@ -123,8 +123,9 @@ cancellati dai biglietti e dalle ricevute.
 - [x] Una ricevuta `DeviceNotRegistered` cancella il token.
 - [x] L'app chiede il permesso solo all'interruttore e manda il token una
       volta per telefono.
-- [ ] Testi nuovi mostrati all'utente nelle cinque lingue, prima del
-      merge.
+- [x] Testi nuovi mostrati all'utente nelle cinque lingue, prima del
+      merge: confermati il 2026-10-08 («i testi vanno bene»); fra questi
+      c'è «{name} accepted your follow request.» per il nuovo follower.
 - [ ] Test verdi in API e app.
 
 ### File toccati (parte A)

@@ -1694,6 +1694,59 @@ database, `503 accounts_unavailable`. Tipi in `shared-types`
 - **Un'API precedente** non ha questi endpoint: `404 http_error`, e l'app
   non mostra le reazioni.
 
+### Feed (TASK-118, ADR-0227)
+
+Il feed dei disegni pubblicati, letto da chi ha un account: una pagina
+alla volta, dei disegni che chi chiede **può vedere** (la stessa domanda
+del profilo, `drawings.shown_sql`). Vuole il token: senza, `401
+not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
+`shared-types` (`FeedPost`, `FeedPage`, `FEED_PAGE_SIZE`, `FEED_NEAR_M`),
+esempio in `fixtures/feed.json`; il codice in `feed.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /feed?limit=20&cursor=…&lat=…&lon=…` | una pagina dei disegni che chi chiede può vedere | `200` `FeedPage` |
+
+- **L'ordine** (scelta dell'utente del 2026-10-07: «ok va bene questo
+  semplice»): tre gruppi, uno dopo l'altro: **i propri**, poi quelli di
+  **chi si segue** con la richiesta accettata («Follow», sopra), poi
+  **gli altri**; dentro ogni gruppo dal più recente per `published_at`
+  (l'ultima pubblicazione, non l'inizio della corsa), a parità l'id.
+  Nessun filtro e nessun'altra classifica.
+- **Chi vede cosa**: `everyone` lo vedono tutti; `followers` chi segue il
+  proprietario con la richiesta accettata, e il proprietario; `only_me`
+  **nessuno, nemmeno il proprietario**: il feed è ciò che è pubblicato.
+  Una corsa senza disegno non c'è. Tornato `only_me`, o cancellata la
+  corsa, il disegno sparisce subito; smettere di seguire toglie subito i
+  `followers`.
+- **Un post** è il `Drawing` dell'elenco del profilo («Drawings», sopra:
+  `track_preview` di al più 64 punti della traccia tagliata, mai la
+  traccia intera, mai il percorso pianificato) più **`author`**
+  (`public_id` e `username`, mai l'email). Per aprirlo intero, con le sue
+  reazioni e i suoi commenti, `GET /drawings/{id}`.
+- **I vicini**: con `lat` e `lon`, dove sta il telefono, il terzo gruppo
+  tiene solo i disegni la cui traccia tagliata passa entro **50 km**
+  (`FEED_NEAR_M`; `ST_DWithin` in geografia) dal punto; i propri e quelli
+  di chi si segue ci sono ovunque siano. **Senza il punto, niente è
+  lontano**: il terzo gruppo è di tutti. Uno solo dei due: `422
+  invalid_request` «Say where the phone is with both lat and lon, or
+  with neither.»; fuori dalla terra, `422`.
+- **Le pagine**: `limit` da 1 a 50, 20 se non detto; `next` è il
+  `cursor` della pagina dopo, `null` all'ultima. Il cursore è
+  `gruppo-microsecondi-id` (`^[0-2]-\d{1,17}-[0-9a-f]{32}$`; un altro,
+  `422`): la pagina dopo riparte da lì, nel gruppo e sotto il momento. Un
+  disegno pubblicato **fra due pagine** va in cima al suo gruppo, sopra il
+  cursore: la pagina dopo **non ripete e non salta** nessuno; il nuovo si
+  vede alla lettura dopo, dall'alto. L'app manda lo stesso punto a ogni
+  pagina di una lettura. Chi comincia a seguire qualcuno fra due pagine
+  sposta i suoi disegni di gruppo, e può rivederli o perderli fino alla
+  lettura dopo: accettato, è il prezzo del cursore semplice.
+- **Il peso**: una pagina di 20 disegni da 21 km, ognuno con una
+  descrizione di 500 caratteri e due tag, sta sotto i 200 kB
+  (`tests/test_feed.py`): nell'elenco viaggia l'anteprima, non la traccia.
+- **Un'API precedente** non ha l'endpoint (`404 http_error`): l'app
+  mostra i disegni d'esempio.
+
 ### Send to Strava (TASK-187, ADR-0156)
 
 Una corsa salvata va sul profilo Strava di chi ha collegato il suo atleta,

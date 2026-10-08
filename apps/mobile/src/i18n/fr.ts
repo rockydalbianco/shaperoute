@@ -1085,4 +1085,7 @@ export const FR: Table = {
   Feed: "Fil",
   Draw: "Dessiner",
   Explore: "Explorer",
+
+  // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
+  "{user}: {title}. {facts}.": "{user} : {title}. {facts}.",
 };

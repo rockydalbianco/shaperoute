@@ -374,7 +374,25 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
 - L'app si apre su «Draw». Forma, parola, distanza e partenza restano come
   erano dopo un giro sulle altre pagine.
 - **«Feed»** è la pagina dei disegni che gli iscritti pubblicano
-  (TASK-118). Finché non ci sono mostra **quindici disegni di esempio**
+  (TASK-118, ADR-0227; l'ordine è scelta dell'utente del 2026-10-07): con
+  un account, appena la pagina è sullo schermo, legge dall'API i disegni
+  che l'account può vedere, **i propri** prima, poi quelli **di chi
+  segue**, poi **i vicini** (entro 50 km da dove parte «Draw»; tutti,
+  senza posizione), dal più recente in ogni gruppo; tirando in giù si
+  rilegge dall'alto, arrivati in fondo si caricano gli altri, venti alla
+  volta. La scheda è quella degli esempi: nome di chi ha corso e luogo
+  (senza luogo, solo il nome), la linea gialla sulla mappa, il titolo o,
+  senza titolo, il giorno della corsa, e «Star · 4.0 km · 19 min»; una
+  parola o il titolo del percorso al posto della forma, niente per una
+  corsa senza percorso; in bici «Bike · …», in canoa «Paddle · …». **Un
+  tocco apre il disegno intero sulla mappa**, con foto, racconto, tag,
+  reazioni e commenti, come dal profilo (TASK-117, 119, 120); «←» torna
+  a «Feed» com'era, senza rileggere, e «Profile» resta chiuso; se nel
+  frattempo è sparito, sopra l'elenco: «This drawing is no longer
+  public.». Mentre la prima pagina arriva, una rotella e niente altro.
+  **Senza account, e finché nessuno ha pubblicato qualcosa che si può
+  vedere** (o l'API non risponde, o è di prima del feed), mostra
+  **quindici disegni di esempio**
   (TASK-156, ADR-0127, chiesto dall'utente). Niente sulla pagina dice che
   sono esempi: scelta dell'utente. Ogni scheda ha l'iniziale e il nome di
   chi ha corso, la
@@ -411,8 +429,9 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   «Feed». Il percorso è quello del catalogo da cui il disegno è nato: se
   nel catalogo non c'è più, la scheda dice «The route could not load. Try
   again.» e non mostra un altro percorso al suo posto. Un dito che scorre
-  sopra una scheda non la apre. Like, commenti e il profilo di chi ha corso
-  arrivano con TASK-118.
+  sopra una scheda non la apre. I disegni veri (TASK-118) non aprono un
+  percorso: aprono il disegno, con reazioni e commenti; il profilo di chi
+  ha corso si raggiunge da «Find friends» o dai nomi taggati.
   **In cima, sopra i disegni, a destra, la lente** (TASK-215, ADR-0178;
   TASK-219, ADR-0182: solo la lente, scelta dell'utente): un cerchio come
   quello di «Profile», con una lente disegnata e nessun testo, sotto il

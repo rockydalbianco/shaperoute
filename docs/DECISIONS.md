@@ -12747,3 +12747,72 @@ alla voce di MuW, compare la scelta della lingua. iOS può comunque
 sospendere l'app (lo dice Apple): allora vale il punto 4. Il task di
 expo-task-manager resta registrato fino allo stop, anche se l'app viene
 chiusa a metà: lo ferma la prima posizione senza corsa.
+
+## ADR-0227 — Il feed vero, versione semplice
+**Stato**: Attiva · 2026-10-08 · l'ordine è scelta dell'utente del
+2026-10-07 («ok va bene questo semplice»); il resto deciso dall'agente su
+delega dell'utente (TASK-118).
+
+**Contesto**: «Feed» mostrava quindici disegni d'esempio (ADR-0127).
+Dall'API esistono i disegni pubblicati (ADR-0159, ADR-0170), chi segue
+chi (ADR-0173), reazioni e commenti (ADR-0193, ADR-0175). Serviva il feed
+di quei disegni, senza inventare una classifica.
+
+**Decisione**:
+
+1. **Un endpoint, `GET /feed`**, in un modulo nuovo (`feed.py`), che
+   riusa i corpi e la domanda «chi vede cosa» dei disegni
+   (`drawings.shown_sql`): mai un `only_me`, nemmeno al proprietario; mai
+   una traccia non tagliata. Ogni post è il `Drawing` dell'elenco del
+   profilo più l'autore: l'app lo apre intero con `GET /drawings/{id}`,
+   e reazioni e commenti restano dove sono (sul disegno aperto).
+2. **Tre gruppi in ordine fisso**: i propri, quelli di chi si segue con
+   la richiesta accettata, gli altri; dentro ogni gruppo il pubblicato
+   per ultimo prima (`published_at`, non l'inizio della corsa: un feed
+   dice cosa è nuovo). Nessun filtro, nessun punteggio.
+3. **«Vicini» è il terzo gruppo entro 50 km** dalla posizione del
+   telefono (`FEED_NEAR_M`, il raggio delle città lontane di «Near me»),
+   misurato sulla traccia tagliata con `ST_DWithin`; **senza posizione
+   niente è lontano**: chi nega la posizione vede tutti. Deciso
+   dall'agente: un feed vuoto per chi non segue nessuno e non dà la
+   posizione sarebbe stato peggio di uno lontano.
+4. **Cursore a chiave** `gruppo-microsecondi-id`, mai un offset: un
+   disegno nuovo va sopra il cursore, e due pagine consecutive non
+   ripetono né saltano. L'app manda lo stesso punto a ogni pagina di una
+   lettura. Chi comincia a seguire fra due pagine può vedere un disegno
+   due volte o perderlo fino alla lettura dopo: accettato.
+5. **Nessuna migrazione**: le tabelle bastano; un indice si aggiunge
+   quando i numeri lo chiedono.
+6. **Nell'app** la scheda resta quella degli esempi (`FeedPost`, mappe,
+   un annuncio ogni cinque): un disegno vero è convertito nei suoi campi
+   (`feedPosts.ts`) e porta con sé il `Drawing` da aprire. Il feed si
+   legge solo quando la pagina è sullo schermo (`useFeed.ts`), con tira
+   per aggiornare e la pagina dopo in fondo. **Gli esempi restano come
+   riempitivo** quando non c'è account, il feed è vuoto, l'API è di
+   prima o non risponde; mentre la prima pagina arriva, niente.
+
+**Alternative scartate**:
+
+- *Un feed di tutti dal più recente, senza gruppi*: i propri e quelli
+  degli amici finirebbero sotto gli sconosciuti.
+- *Il terzo gruppo vuoto senza posizione*: feed vuoto per molti nuovi
+  iscritti.
+- *Ordinare per `started_at` come il profilo*: una corsa vecchia
+  pubblicata oggi non si vedrebbe mai in cima.
+- *Un offset invece del cursore*: salta o ripete quando arriva un post.
+- *Mischiare esempi e disegni veri*: un iscritto non capirebbe quali
+  sono finti.
+
+**Conseguenze**:
+
+- Il server va aggiornato (`feed.py`), senza migrazioni; l'app va
+  pubblicata.
+- Due file fuori dall'elenco del task, concessi dal coordinatore:
+  `App.tsx` passa a «Feed» la partenza come a «Explore» (una riga);
+  `ProfileLayer.tsx` ricorda che il disegno è stato aperto con «Profile»
+  chiuso, e «←» torna al Feed invece di aprire «Profile».
+- Finché il server non ha `/feed` (404) il Feed mostra gli esempi senza
+  nessun avviso: l'app esce prima dell'aggiornamento del server.
+- Seguiti: un indice su `drawings (published_at)` quando servirà; la
+  foto dell'autore sulla scheda (oggi l'iniziale, come gli esempi); il
+  nome dell'autore che apre il suo profilo.

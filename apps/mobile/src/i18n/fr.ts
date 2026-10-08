@@ -1059,4 +1059,41 @@ export const FR: Table = {
   "e.g. a romantic heart, famous places, food 8 km":
     "ex. un cœur romantique, lieux célèbres, gastronomie 8 km",
   "e.g. a romantic heart in {city}, 8 km": "ex. un cœur romantique à {city}, 8 km",
+  // «Sport»: src/settings/{SportSetting,SportButton}.tsx, sport.ts, and the voice
+  // of «Data»: src/voice/VoiceSetting.tsx (TASK-210, parte E)
+  SPORT: "SPORT",
+  Soon: "Bientôt",
+  "{sport}, coming soon": "{sport}, bientôt disponible",
+  "Sport, {sport}": "Sport, {sport}",
+  "Changes the sport": "Change le sport",
+  Sport: "Sport",
+  Default: "Par défaut",
+  "Voice language and voice: {language}, {voice}":
+    "Langue et voix : {language}, {voice}",
+  "Changes the language and the voice": "Change la langue et la voix",
+  Listen: "Écouter",
+  "Says a turn with this voice": "Annonce un virage avec cette voix",
+  "Turn on Voice to listen": "Active « Voix » pour écouter",
+  "App language": "Langue de l'app",
+  "This phone did not list its voices: its own voice speaks.":
+    "Ce téléphone n'a pas listé ses voix : c'est sa propre voix qui parle.",
+  "This phone has no {language} voice: the voice speaks English.":
+    "Ce téléphone n'a pas de voix pour {language} : la voix parle anglais.",
+  "{language} · Enhanced": "{language} · Améliorée",
+
+  // The titles of the three pages: src/screens/pageTitles.ts (TASK-210, parte G)
+  Feed: "Fil",
+  Draw: "Dessiner",
+  Explore: "Explorer",
+
+  // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
+  "{user}: {title}. {facts}.": "{user} : {title}. {facts}.",
+
+  // The shapes' names, the map and «Explore»: src/route/shapeWords.ts,
+  // src/map/mapPage.ts, src/explore/{ExploreScreen,ThemedCard}.tsx
+  // (TASK-210, parte F)
+  "{list} or {last}": "{list} ou {last}",
+  "Start here": "Départ ici",
+  "NEAR {city}": "PRÈS DE {city}",
+  here: "ici",
 };

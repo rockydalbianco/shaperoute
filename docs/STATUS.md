@@ -13,8 +13,8 @@
 
 MuW (già «Sgrava», TASK-260) gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
 Hetzner, in HTTPS e sempre accesa, con il database degli account; il Mac
-serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (per ora
-disegni d'esempio), «Draw» ed «Explore», e «Profile» per iscriversi ed
+serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (i disegni
+pubblicati dagli iscritti, TASK-118; esempi finché non ce ne sono), «Draw» ed «Explore», e «Profile» per iscriversi ed
 entrare, con i preferiti e le corse salvate («My activities»). In «Draw» si sceglie una forma del catalogo (cerchio, cuore,
 stella, cavallo, luna, gatto, pesce, farfalla, lumaca, testa di cane,
 testa di coniglio, zucca, albero di Natale, faccina, fantasmino,
@@ -479,8 +479,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   parola, la foto e il contorno, 101 testi nuovi
   (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`; testi
   approvati dall'utente il 2026-10-06, PR #421 (merge `438c019`); C e D in
-  `main` e su «preview» (gruppo `65620103`). Restano la fine corsa,
-  «Sport», `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). L'utente ha
+  `main` e su «preview» (gruppo `65620103`). **Parte E — la fine corsa,
+  «Sport» e la voce di «Dati»** fatta il 2026-10-07 (branch
+  `feat/TASK-210-e-run-end-sport`, PR #433): i messaggi di `api/drawings.ts` in
+  `t()`, i nomi degli sport con `tLater` e mostrati tradotti, la riga e il
+  foglio della voce, 16 testi nuovi, test
+  `settings/SportVoiceItalian.test.tsx`; testi approvati dall'utente il
+  2026-10-07. **Parte G — i titoli delle pagine** fatta il 2026-10-08
+  (branch `feat/TASK-210-g-page-titles`): «Feed», «Draw», «Explore» in alto
+  passano da `screens/pageTitles.ts` (it «Feed», «Disegna», «Esplora»; fr
+  «Fil», «Dessiner», «Explorer»), tre testi nuovi, test
+  `screens/pageTitles.test.ts`. Restano i nomi delle forme, i nomi sulla
+  mappa e «Start here», «Help» in de/es/fr (parte F, altra sessione),
+  «Paddle ·» nel feed dopo TASK-118 (`tasks/TASK-210.md`). **Parte F — i
+  nomi delle forme, la mappa e «Help»** fatta il 2026-10-08 (branch
+  `feat/TASK-210-f-shape-names`): i nomi delle forme in «Draw» e sulle
+  schede di «Explore» nella lingua dell'app, `shapeWords.ts` che legge le
+  cinque lingue, i luoghi sulla mappa e «Start here» nella lingua
+  dell'app, «NEAR TRENTO», «Help» in de/es/fr e, per scelta dell'utente,
+  «Terms» e «Privacy» tradotti restando bozze, con le pagine chiamate come
+  i titoli della parte G; 4 testi nuovi in fondo alle tabelle. Dopo F e G
+  resta il Feed (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:
@@ -547,6 +566,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   B»). Test nuovo `test_far_search_skipped.py`, due impronte aggiornate in
   `test_kept_per_graph.py`, `engine.zip` rifatto. PR #440 (2026-10-08). **Resta**: server e `draw_examples` (circa 40 minuti) con
   l'ok dell'utente.
+- **API e app** — TASK-118: il feed vero, versione semplice (ADR-0227;
+  l'ordine è scelta dell'utente del 2026-10-07). `GET /feed`: i propri
+  disegni, poi quelli di chi si segue, poi i vicini (50 km dal telefono;
+  tutti senza posizione), dal più recente, a pagine con cursore, mai un
+  privato né una traccia non tagliata; una pagina di venti sotto i 200
+  kB. «Feed» li mostra sulle schede degli esempi, un tocco apre il
+  disegno con reazioni e commenti; gli esempi restano senza account o
+  con il feed vuoto. Fatto il 2026-10-08: server da aggiornare (senza
+  migrazioni), app da pubblicare.
 - **Motore, API e app** — TASK-191: percorsi in canoa e paddle (ADR-0154,
   ADR-0161, ADR-0164, ADR-0169; chiesto dall'utente il 2026-10-02).
   **A1** PR #216 (l'acqua e la fascia entro 1 km dalla riva), **A2** PR
@@ -797,11 +825,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   («Phone units», «Share») esce con la prossima pubblicazione, del
   coordinatore. Provato nel simulatore con il telefono sugli Stati Uniti
   («Phone units — Miles», `out/task182/`). **Da fare sull'iPhone**:
-  ascoltare la voce in miglia; un iPhone vero con le miglia. **Seguiti**:
-  tenere la distanza di «Draw» in metri dentro `App.tsx` (oggi il testo
-  del campo porta la sua unità); una parola di corsa in miglia ha al più
-  6 lettere; «within 1 km of the shore» e l'avviso sull'acqua restano in
-  km per scelta. `tasks/TASK-182.md`.
+  ascoltare la voce in miglia; un iPhone vero con le miglia. **Parte E**
+  (2026-10-07, PR #436, branch `feat/TASK-182-e-draw-metres`, ADR-0149
+  «aggiornamento (parte E)»): la distanza di «Draw» la tiene `App.tsx`
+  con `useDrawDistance` (`src/units/`), come testo scritto o metri scelti
+  dall'app («Try», lago piccolo), sempre nell'unità dell'app, e
+  `useUnits()` è alla radice; a vista niente cambia (il campo mostrava già
+  le miglia), il cambio di unità vale anche con «Draw» fuori dallo
+  schermo; provata nel simulatore («0.9 mi» per un lago di 1,5 km).
+  **Seguiti**: togliere l'effetto di cambio unità di `RouteChoice` quando
+  `src/route/` è libero; una parola di corsa in miglia ha al più 6
+  lettere; «within 1 km of the shore» e l'avviso sull'acqua restano in km
+  per scelta. `tasks/TASK-182.md`.
 
 - **API e app** — TASK-185: i due interruttori delle notifiche (ADR-0206;
   chiesto dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha

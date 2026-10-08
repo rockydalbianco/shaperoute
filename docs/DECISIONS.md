@@ -8167,6 +8167,57 @@ in de/es/fr il segnaposto suggerisce parole («Herz, Stern, Pferd…») che
 aquí», fr «Départ ici»): la parte di `mapPage.ts` chiamerà così «Start
 here».
 
+**Aggiunta** (2026-10-07, TASK-210 parte E, la fine corsa, «Sport» e la
+voce; deciso dall'agente su delega dell'utente): (1) i nomi degli sport
+restano inglesi in `SPORTS` (`sport.ts`), marcati con `tLater`, e si
+traducono dove si mostrano, con le stesse chiavi delle schede «Activity»
+della fine corsa: lo sport di «Settings» e quello del post si chiamano
+allo stesso modo («Corsa», «Bici», «Pagaia»). Chi legge `name` senza
+`t()` (oggi `FeedPost`, «Paddle ·») vede l'inglese, come prima. (2) Nel
+foglio della voce i nomi delle lingue restano ognuno nel suo, anche
+dentro una frase tradotta («non ha una voce per Deutsch»): sono gli
+stessi nomi delle righe da toccare. «Enhanced» si traduce con la parola
+di iOS in quella lingua; i nomi delle voci e i codici («it-IT») restano
+come li dà il telefono. (3) I messaggi di `drawingProblem` passano da
+`t()`, compresa la sessione scaduta (`t(SESSION_ENDED)`, come in
+`account/messages.ts`); il messaggio `invalid_request` resta quello
+dell'API, in inglese.
+
+**Aggiunta** (2026-10-08, TASK-210 parte F, i nomi delle forme, la mappa
+e «Help»; deciso dall'agente su delega dell'utente, i quattro punti fuori
+dalla lista approvati dal coordinatore il 2026-10-07): (1) **Un nome solo
+per forma**: il nome dentro una frase e nel campo di «Draw»
+(`shapeWord`, «Hundekopf», «testa di cane», «cabeza de perro», «tête de
+chien») si ricava dal nome con la maiuscola della parte A (`shapeName`),
+senza la maiuscola tranne in tedesco, che la vuole su ogni nome; in
+inglese restano le parole della forma di prima («dog head»), byte per
+byte. Nessuna tabella nuova di nomi. (2) **`shapeWords.ts` conosce le
+cinque lingue** quale che sia quella dell'app (chi scrive «cuore» con
+l'app in tedesco ha il cuore), con singolare, plurale e qualche
+diminutivo; le parole si scrivono con accenti e maiuscole e si leggono
+senza («Kürbis» = «kurbis», «œ» = «oe»); gli articoli delle cinque lingue
+si saltano («ein Herz», «l'étoile»). Un albero o un abete da soli non
+sono l'albero di Natale (ADR-0084). (3) **La mappa nomina i luoghi nella
+lingua dell'app** (`name:de`, `name:fr`…, poi il nome del posto), non più
+sempre in italiano: anche in inglese («Munich», non più «Monaco di
+Baviera»). Provata nel browser con le tile vere: «Mailand», «Neapel» in
+tedesco, «Gênes», «Trente» e «Départ ici» in francese. La pagina si costruisce con la lingua; `MapView` la rifà
+quando la lingua cambia e la mappa si ricarica come con «Retry»,
+ricevendo di nuovo partenza e percorso. Le mappe piccole del Feed
+(`MAP_STYLE`, file di TASK-118) prendono la lingua dell'apertura
+dell'app: seguono un cambio con la parte G. (4) **«Help», «Terms» e
+«Privacy»** hanno un file per lingua in `about/content/`, anche in
+tedesco, spagnolo e francese (scelta dell'utente del 2026-10-07: «Terms»
+e «Privacy» tradotti come bozze, con gli stessi segnaposto `[name]`,
+`[contact email]`, `[governing law]`; la nota delle basi giuridiche è
+tradotta come in italiano); non si ricade più sull'inglese e VoiceOver
+legge ogni testo nella lingua dell'app. I nomi dei pulsanti sono quelli
+che l'app mostra in ogni lingua; le tre pagine hanno i titoli della
+parte G (#437: «Disegna», «Zeichnen», «Fil»…), anche se una delle due PR
+entra qualche minuto prima dell'altra. (5) Quattro
+testi nuovi in fondo alle tabelle (dopo il merge della parte E):
+«{list} or {last}», «Start here», «NEAR {city}», «here».
+
 ## ADR-0173 — Seguire con richiesta, l'API: una tabella `follows` con due stati, la ricerca per nome, gli elenchi solo propri
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-211, parte A), dentro due **scelte dell'utente** del 2026-10-03:
@@ -11699,6 +11750,61 @@ di partenza» finché non c'era la seconda parte; con le parti B e C in
   miglia non è stata ascoltata.
 - Chi aveva scelto «Kilometres» o «Miles» a mano tiene la sua scelta.
 
+## ADR-0149 — aggiornamento (parte E): la distanza di «Draw» la tiene `App.tsx`, come testo scritto o metri scelti dall'app
+**Stato**: Attiva · 2026-10-07 · deciso dall'agente su delega dell'utente
+(TASK-182, parte E, assegnata dal coordinatore). Il seguito scritto con la
+parte B: «quando `App.tsx` è libero, la distanza in metri nello stato e
+`useUnits()` alla radice».
+
+**Contesto**: con la parte B `App.tsx` (allora di altri task) teneva il
+testo del campo e ci scriveva da sé dei km (`String(metri / 1000)`) dopo un
+«Try» e per un lago piccolo. Il campo li mostrava già in miglia
+(`shownNumber`) e `toDistanceM` ne prendeva i metri esatti (punto 5 della
+parte B), ma il testo che girava era in km anche con «Miles», e il cambio
+di unità lo faceva solo `RouteChoice` quando era montato.
+
+**Decisione**:
+
+1. La distanza di «Draw» la tiene `useDrawDistance(sport)`
+   (`src/units/useDrawDistance.ts`; le funzioni pure in
+   `src/units/drawDistance.ts`), chiamato da `App.tsx`: o il **testo**
+   scritto nel campo (anche −, + e «Use N mi»), o i **metri** che l'app
+   sceglie da sé («Try», lago piccolo). L'app non scrive più testi in km
+   mentre è in miglia.
+2. Al campo va il testo nell'unità dell'app: quello scritto com'è; i metri
+   dell'app in km come prima («1.5», «12»), in miglia al decimo («0.9 mi»,
+   «7 mi»). La richiesta prende i metri così come sono, dentro i limiti in
+   km dello sport: un «Try» e un lago chiedono quello che chiedevano.
+3. `useUnits()` alla radice (`App`, accanto a `useLanguage()`) e nel
+   gancio: a un cambio di unità il gancio riscrive subito la distanza, che
+   «Draw» sia sullo schermo o no, con la regola della parte B (punto 4: la
+   stessa distanza al km o al miglio intero dentro i limiti), anche per i
+   metri dell'app, calcolata dai metri e non dal decimo mostrato. L'effetto
+   di `RouteChoice` trova poi il testo già nell'unità nuova e lo lascia
+   com'è.
+4. Un cambio di sport passa da `distanceForSport` come prima: per i metri
+   dell'app dal loro testo in km, con lo stesso risultato di prima.
+
+**Alternative scartate**: solo metri in `App.tsx`, senza testo (il campo
+deve tenere quello che si sta scrivendo, «4,», e `RouteChoice` e
+`DistanceStepper`, in `src/route/`, vogliono un testo); scrivere i metri
+dell'app come testo in miglia e rileggerlo (i 1500 m di un lago
+diventerebbero «0.9 mi», cioè 1448 m, rifiutati sotto il miglio); tenere i
+metri dell'app anche a un cambio di unità (con «Draw» sullo schermo
+l'effetto di `RouteChoice` li arrotonderebbe comunque: due comportamenti).
+
+**Conseguenze**:
+
+- A vista niente cambia: il «Try» e il lago si mostravano già in miglia.
+  Cambia dove vive la distanza, e il cambio di unità vale anche con «Draw»
+  smontato (nell'app di oggi «Settings» si apre solo con «Draw» montato
+  sotto, quindi in pratica è una garanzia).
+- Con «Kilometres» testi e richieste sono quelli di prima: i test
+  esistenti passano senza modifiche.
+- Seguito: togliere l'effetto di cambio unità da `RouteChoice`
+  (`src/route/RoutePanel.tsx`) quando `src/route/` è libero.
+- Solo app: nessuna dipendenza, nessun testo nuovo, niente server.
+
 
 ## ADR-0210 — aggiornamento (parte B): una parola comune scritta sceglie fra i nomi trovati
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
@@ -12603,6 +12709,75 @@ splash iOS mostra «MuW», quello Android il cuore. I PNG li genera
 `docs/brand/make_brand.py` con Pillow, a mano, dai punti del cuore e dai
 token dell'app: non è in `tools/`, dove la CI ha solo la libreria
 standard. I vecchi `sgrava-*.svg` sono tolti (restano nella storia).
+
+## ADR-0227 — Il feed vero, versione semplice
+**Stato**: Attiva · 2026-10-08 · l'ordine è scelta dell'utente del
+2026-10-07 («ok va bene questo semplice»); il resto deciso dall'agente su
+delega dell'utente (TASK-118).
+
+**Contesto**: «Feed» mostrava quindici disegni d'esempio (ADR-0127).
+Dall'API esistono i disegni pubblicati (ADR-0159, ADR-0170), chi segue
+chi (ADR-0173), reazioni e commenti (ADR-0193, ADR-0175). Serviva il feed
+di quei disegni, senza inventare una classifica.
+
+**Decisione**:
+
+1. **Un endpoint, `GET /feed`**, in un modulo nuovo (`feed.py`), che
+   riusa i corpi e la domanda «chi vede cosa» dei disegni
+   (`drawings.shown_sql`): mai un `only_me`, nemmeno al proprietario; mai
+   una traccia non tagliata. Ogni post è il `Drawing` dell'elenco del
+   profilo più l'autore: l'app lo apre intero con `GET /drawings/{id}`,
+   e reazioni e commenti restano dove sono (sul disegno aperto).
+2. **Tre gruppi in ordine fisso**: i propri, quelli di chi si segue con
+   la richiesta accettata, gli altri; dentro ogni gruppo il pubblicato
+   per ultimo prima (`published_at`, non l'inizio della corsa: un feed
+   dice cosa è nuovo). Nessun filtro, nessun punteggio.
+3. **«Vicini» è il terzo gruppo entro 50 km** dalla posizione del
+   telefono (`FEED_NEAR_M`, il raggio delle città lontane di «Near me»),
+   misurato sulla traccia tagliata con `ST_DWithin`; **senza posizione
+   niente è lontano**: chi nega la posizione vede tutti. Deciso
+   dall'agente: un feed vuoto per chi non segue nessuno e non dà la
+   posizione sarebbe stato peggio di uno lontano.
+4. **Cursore a chiave** `gruppo-microsecondi-id`, mai un offset: un
+   disegno nuovo va sopra il cursore, e due pagine consecutive non
+   ripetono né saltano. L'app manda lo stesso punto a ogni pagina di una
+   lettura. Chi comincia a seguire fra due pagine può vedere un disegno
+   due volte o perderlo fino alla lettura dopo: accettato.
+5. **Nessuna migrazione**: le tabelle bastano; un indice si aggiunge
+   quando i numeri lo chiedono.
+6. **Nell'app** la scheda resta quella degli esempi (`FeedPost`, mappe,
+   un annuncio ogni cinque): un disegno vero è convertito nei suoi campi
+   (`feedPosts.ts`) e porta con sé il `Drawing` da aprire. Il feed si
+   legge solo quando la pagina è sullo schermo (`useFeed.ts`), con tira
+   per aggiornare e la pagina dopo in fondo. **Gli esempi restano come
+   riempitivo** quando non c'è account, il feed è vuoto, l'API è di
+   prima o non risponde; mentre la prima pagina arriva, niente.
+
+**Alternative scartate**:
+
+- *Un feed di tutti dal più recente, senza gruppi*: i propri e quelli
+  degli amici finirebbero sotto gli sconosciuti.
+- *Il terzo gruppo vuoto senza posizione*: feed vuoto per molti nuovi
+  iscritti.
+- *Ordinare per `started_at` come il profilo*: una corsa vecchia
+  pubblicata oggi non si vedrebbe mai in cima.
+- *Un offset invece del cursore*: salta o ripete quando arriva un post.
+- *Mischiare esempi e disegni veri*: un iscritto non capirebbe quali
+  sono finti.
+
+**Conseguenze**:
+
+- Il server va aggiornato (`feed.py`), senza migrazioni; l'app va
+  pubblicata.
+- Due file fuori dall'elenco del task, concessi dal coordinatore:
+  `App.tsx` passa a «Feed» la partenza come a «Explore» (una riga);
+  `ProfileLayer.tsx` ricorda che il disegno è stato aperto con «Profile»
+  chiuso, e «←» torna al Feed invece di aprire «Profile».
+- Finché il server non ha `/feed` (404) il Feed mostra gli esempi senza
+  nessun avviso: l'app esce prima dell'aggiornamento del server.
+- Seguiti: un indice su `drawings (published_at)` quando servirà; la
+  foto dell'autore sulla scheda (oggi l'iniziale, come gli esempi); il
+  nome dell'autore che apre il suo profilo.
 
 ## ADR-0230 — La ricerca lontana parte solo dove vicino non si disegna niente
 **Stato**: Attiva · 2026-10-08 · scelta dell'utente (2026-10-07: «ok» a

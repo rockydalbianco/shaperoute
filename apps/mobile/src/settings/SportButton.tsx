@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -69,8 +70,8 @@ export function SportButton({ sports = SPORTS }: Props) {
         style={styles.button}
         onPress={openMenu}
         accessibilityRole="button"
-        accessibilityLabel={`Sport, ${current.name}`}
-        accessibilityHint="Changes the sport"
+        accessibilityLabel={t("Sport, {sport}", { sport: t(current.name) })}
+        accessibilityHint={t("Changes the sport")}
         accessibilityState={{ expanded: open }}
       >
         <Text style={styles.buttonEmoji}>{current.emoji}</Text>
@@ -87,12 +88,12 @@ export function SportButton({ sports = SPORTS }: Props) {
           style={StyleSheet.absoluteFill}
           onPress={() => setOpen(false)}
           accessibilityRole="button"
-          accessibilityLabel="Close"
+          accessibilityLabel={t("Close")}
         />
         <View
           style={[styles.menu, hang]}
           accessibilityRole="radiogroup"
-          accessibilityLabel="Sport"
+          accessibilityLabel={t("Sport")}
         >
           {sports.map((option, at) => (
             <View key={option.id}>
@@ -103,22 +104,24 @@ export function SportButton({ sports = SPORTS }: Props) {
                   onPress={() => choose(option.id)}
                   accessibilityRole="radio"
                   // One name for the row: the emoji is not read on its own.
-                  accessibilityLabel={option.name}
+                  accessibilityLabel={t(option.name)}
                   accessibilityState={{ checked: option.id === sport }}
                 >
                   <Text style={styles.emoji}>{option.emoji}</Text>
-                  <Text style={styles.rowText}>{option.name}</Text>
+                  <Text style={styles.rowText}>{t(option.name)}</Text>
                   {option.id === sport && <Text style={styles.check}>✓</Text>}
                 </Pressable>
               ) : (
                 <View
                   style={styles.row}
                   accessible
-                  accessibilityLabel={`${option.name}, coming soon`}
+                  accessibilityLabel={t("{sport}, coming soon", {
+                    sport: t(option.name),
+                  })}
                 >
                   <Text style={styles.emoji}>{option.emoji}</Text>
-                  <Text style={styles.rowText}>{option.name}</Text>
-                  <Text style={styles.soon}>Soon</Text>
+                  <Text style={styles.rowText}>{t(option.name)}</Text>
+                  <Text style={styles.soon}>{t("Soon")}</Text>
                 </View>
               )}
             </View>

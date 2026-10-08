@@ -1,7 +1,7 @@
 import type { Activity } from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 
-import { t } from "../i18n";
+import { t, tLater } from "../i18n";
 
 /** What a route is for: a run, a bike ride since TASK-190, or paddling on a
  * lake or the sea since TASK-191 (a canoe, a kayak, a SUP). */
@@ -10,6 +10,7 @@ export type Sport = "run" | "bike" | "paddle";
 export type SportOption = {
   id: Sport;
   emoji: string;
+  /** In English: where it is shown, `t(name)` (TASK-210). */
   name: string;
   /**
    * False until the Route Engine draws routes for it: «Settings» shows it
@@ -21,9 +22,9 @@ export type SportOption = {
 
 /** The sports of «Settings», in the order they are shown. */
 export const SPORTS: readonly SportOption[] = [
-  { id: "run", emoji: "🏃‍♂️", name: "Run", ready: true },
-  { id: "bike", emoji: "🚴", name: "Bike", ready: true },
-  { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
+  { id: "run", emoji: "🏃‍♂️", name: tLater("Run"), ready: true },
+  { id: "bike", emoji: "🚴", name: tLater("Bike"), ready: true },
+  { id: "paddle", emoji: "🛶", name: tLater("Paddle"), ready: true },
 ];
 
 export const DEFAULT_SPORT: Sport = "run";

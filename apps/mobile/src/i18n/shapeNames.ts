@@ -1,3 +1,4 @@
+import { appLanguage } from "./language";
 import { t, tLater } from "./translate";
 
 /** The catalogue's shapes as people read them, in English (TASK-210). */
@@ -33,4 +34,20 @@ export function shapeName(shape: string): string {
   }
   const words = shape.replace(/_/g, " ");
   return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * A shape's name inside a sentence, and in «Draw»'s field (TASK-210 F):
+ * "dog head", «Hundekopf», «testa di cane», «cabeza de perro», «tête de
+ * chien». The name above without its capital, except in German, which
+ * writes every noun with one. English keeps the shape's own words, and so
+ * does a shape the app does not know yet.
+ */
+export function shapeWord(shape: string): string {
+  const language = appLanguage();
+  if (language === "en" || SHAPE_NAMES[shape] === undefined) {
+    return shape.replace(/_/g, " ");
+  }
+  const name = shapeName(shape);
+  return language === "de" ? name : name.charAt(0).toLowerCase() + name.slice(1);
 }

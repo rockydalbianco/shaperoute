@@ -1065,4 +1065,40 @@ export const ES: Table = {
     "p. ej. un corazón romántico, lugares famosos, comida 8 km",
   "e.g. a romantic heart in {city}, 8 km":
     "p. ej. un corazón romántico en {city}, 8 km",
+  // «Sport»: src/settings/{SportSetting,SportButton}.tsx, sport.ts, and the voice
+  // of «Data»: src/voice/VoiceSetting.tsx (TASK-210, parte E)
+  SPORT: "DEPORTE",
+  Soon: "Próximamente",
+  "{sport}, coming soon": "{sport}, próximamente",
+  "Sport, {sport}": "Deporte, {sport}",
+  "Changes the sport": "Cambia el deporte",
+  Sport: "Deporte",
+  Default: "Predeterminada",
+  "Voice language and voice: {language}, {voice}": "Idioma y voz: {language}, {voice}",
+  "Changes the language and the voice": "Cambia el idioma y la voz",
+  Listen: "Escuchar",
+  "Says a turn with this voice": "Anuncia un giro con esta voz",
+  "Turn on Voice to listen": "Activa «Voz» para escuchar",
+  "App language": "Idioma de la app",
+  "This phone did not list its voices: its own voice speaks.":
+    "Este teléfono no ha mostrado sus voces: habla su propia voz.",
+  "This phone has no {language} voice: the voice speaks English.":
+    "Este teléfono no tiene voz para {language}: la voz habla inglés.",
+  "{language} · Enhanced": "{language} · Mejorada",
+
+  // The titles of the three pages: src/screens/pageTitles.ts (TASK-210, parte G)
+  Feed: "Feed",
+  Draw: "Dibuja",
+  Explore: "Explora",
+
+  // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
+  "{user}: {title}. {facts}.": "{user}: {title}. {facts}.",
+
+  // The shapes' names, the map and «Explore»: src/route/shapeWords.ts,
+  // src/map/mapPage.ts, src/explore/{ExploreScreen,ThemedCard}.tsx
+  // (TASK-210, parte F)
+  "{list} or {last}": "{list} o {last}",
+  "Start here": "Empieza aquí",
+  "NEAR {city}": "CERCA DE {city}",
+  here: "aquí",
 };

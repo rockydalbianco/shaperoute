@@ -3,7 +3,10 @@
 **Stato**: In corso
 **Fase**: 4 · **Branch**: `feat/TASK-210-app-language` (parte A),
 `feat/TASK-210-run-screens` (parte B, la corsa), `feat/TASK-210-explore`
-(parte C, «Explore»), `feat/TASK-210-draw` (parte D, «Draw»)
+(parte C, «Explore»), `feat/TASK-210-draw` (parte D, «Draw»),
+`feat/TASK-210-e-run-end-sport` (parte E, la fine corsa, «Sport» e la
+voce), `feat/TASK-210-f-shape-names` (parte F, i nomi delle forme, la
+mappa e «Help»)
 
 ## Obiettivo
 
@@ -168,6 +171,53 @@ docs/DECISIONS.md
 docs/STATUS.md
 ```
 
+Parte E (la fine corsa, «Sport», la voce di «Dati»):
+
+```
+apps/mobile/src/i18n/de.ts, it.ts, es.ts, fr.ts   (voci aggiunte in fondo)
+apps/mobile/src/api/drawings.ts
+apps/mobile/src/settings/SportSetting.tsx
+apps/mobile/src/settings/SportButton.tsx
+apps/mobile/src/settings/sport.ts
+apps/mobile/src/settings/SportVoiceItalian.test.tsx   (nuovo)
+apps/mobile/src/voice/VoiceSetting.tsx
+docs/tasks/TASK-210.md
+docs/DECISIONS.md
+docs/STATUS.md
+```
+
+Parte F (i nomi delle forme, la mappa, «Help»; `MapView.tsx` e
+`RoutePanel.tsx` aggiunti dal coordinatore il 2026-10-07):
+
+```
+apps/mobile/src/i18n/de.ts, it.ts, es.ts, fr.ts   (voci aggiunte in fondo)
+apps/mobile/src/i18n/shapeNames.ts
+apps/mobile/src/route/shapeWords.ts
+apps/mobile/src/route/shapeWords.test.ts
+apps/mobile/src/route/RoutePanel.tsx              (una riga in ShapeNote)
+apps/mobile/src/route/ShapeNamesLanguages.test.tsx   (nuovo)
+apps/mobile/src/explore/recommendedRoutes.ts
+apps/mobile/src/explore/ExploreScreen.tsx
+apps/mobile/src/explore/ThemedCard.tsx
+apps/mobile/src/explore/CityExamples.tsx
+apps/mobile/src/explore/ExploreShapeNames.test.tsx   (nuovo)
+apps/mobile/src/map/mapStyle.ts
+apps/mobile/src/map/mapStyle.test.ts
+apps/mobile/src/map/mapPage.ts
+apps/mobile/src/map/mapPage.test.ts
+apps/mobile/src/map/MapView.tsx
+apps/mobile/src/map/MapViewLanguage.test.tsx      (nuovo)
+apps/mobile/src/about/documents.ts
+apps/mobile/src/about/documents.test.ts
+apps/mobile/src/about/AboutPage.tsx
+apps/mobile/src/about/AboutPage.test.tsx
+apps/mobile/src/about/content/it.ts
+apps/mobile/src/about/content/de.ts, es.ts, fr.ts   (nuovi)
+docs/tasks/TASK-210.md
+docs/DECISIONS.md
+docs/STATUS.md
+```
+
 ## Fuori scope
 
 - Le frasi dette dalla voce: TASK-209.
@@ -263,3 +313,113 @@ fine corsa di TASK-208 (`RunEnd.tsx`,
 inglese e italiano: «Herz», «cœur» vanno all'AI), i nomi sulla mappa
 forzati in italiano (`mapStyle.ts`) e «Start here» nella pagina della
 mappa (`mapPage.ts`), «Help» in de/es/fr.
+
+**Parte E — la fine corsa, «Sport» e la voce** (2026-10-07, assegnata
+dal coordinatore con `main` a `aea84e4`; branch
+`feat/TASK-210-e-run-end-sport`, PR #433, in parallelo con TASK-182 parte E, che
+tiene `App.tsx`). **La fine corsa** era già quasi tutta in `t()`:
+TASK-208 B (#425) aveva scritto i suoi testi di `RunEnd`, `PublicParts`
+e `PublicRow` già tradotti. Restavano i messaggi di `api/drawings.ts`
+(nessuna connessione, la sessione scaduta, la corsa non più fra le
+attività): ora passano da `t()`, con traduzioni che c'erano già (quelle
+di Strava). **«Sport»** (`SportSetting`, `SportButton`, `sport.ts`): i
+nomi degli sport restano inglesi in `SPORTS`, marcati con `tLater`, e si
+mostrano con `t(name)`, con le parole delle schede «Activity» della fine
+corsa («Corsa», «Bici», «Pagaia»); tradotti anche l'etichetta «SPORT»,
+«Soon», quello che legge VoiceOver sul pulsante dello sport e sul suo
+menu. **La voce di «Dati»** (`voice/VoiceSetting.tsx`): la riga, «Listen»,
+il foglio con «Language», «App language», «Voice», «Default», le due note
+(telefono senza voci, lingua senza voce), «Enhanced» con il nome che usa
+iOS in ogni lingua («Migliorata», «Erweitert», «Mejorada», «Améliorée»),
+«Done». I nomi delle lingue restano ognuno nel suo («Deutsch» anche
+nella frase italiana), i nomi delle voci come li dà il telefono. **16
+testi nuovi** nelle quattro tabelle, in fondo; «Run», «Bike», «Paddle»,
+«Close», «Language», «Voice», «Done» e i tre messaggi di `drawings.ts`
+erano già tradotti. Test: `settings/SportVoiceItalian.test.tsx` («Sport»
+in «Settings» e nel menu, «In arrivo», la voce di «Dati» con «Voce» spenta
+e accesa, i messaggi di `drawingProblem`). **Non tradotti, di
+proposito**: il messaggio `invalid_request` dell'API (le parole del
+server, fuori scope) e «Paddle ·» dei post d'esempio del feed
+(`feed/FeedPost.tsx`, `PADDLE`), che legge il nome inglese di `SPORTS`:
+fuori dai file di questa parte, resta un seguito. **Testi approvati
+dall'utente** il 2026-10-07 («va bene procedi»); la pubblicazione su
+«preview» è del coordinatore.
+
+**Parte G — i titoli delle pagine** (2026-10-08, branch
+`feat/TASK-210-g-page-titles`, su `main` dopo TASK-182 parte E, che
+teneva `App.tsx`; via del coordinatore «parti con la G»): i tre nomi in
+alto, quelli che si toccano per cambiare pagina, escono da un file nuovo,
+`screens/pageTitles.ts` (`pageTitle("feed" | "draw" | "explore")`, i nomi
+inglesi con `tLater`), e `App.tsx` li chiama al posto delle tre stringhe.
+«Feed» resta «Feed» in it/de/es, «Fil» in fr; «Disegna», «Zeichnen»,
+«Dibuja», «Dessiner»; «Esplora», «Entdecken», «Explora», «Explorer»: le
+stesse parole di «DISEGNA» e di «Esplora» già dentro l'app. Tre testi
+nuovi in fondo alle quattro tabelle (`out/task-210-titoli-testi.md` sul
+Mac per l'occhio dell'utente). Test: `screens/pageTitles.test.ts` (le
+cinque lingue). **Non in questa parte**: «Paddle ·» e il nome della forma
+in `feed/FeedPost.tsx`, che TASK-118 tiene: dopo il suo merge, come
+secondo commit se la PR è ancora aperta, altrimenti seguito; la guida
+«Help» in italiano chiama ancora le pagine «Draw» ed «Explore»
+(`about/content/it.ts`): un rigo per la parte «Help», che tiene quei file.
+
+**Dopo la parte G restano**: i nomi delle forme in «Draw» e sulle schede
+di «Explore», i nomi sulla mappa (`mapStyle.ts`) e «Start here»
+(`mapPage.ts`), «Help» in de/es/fr (parte F, in corso in un'altra
+sessione), «Paddle ·» nel feed dopo TASK-118.
+
+**Parte F — i nomi delle forme, la mappa e «Help»** (2026-10-07/08,
+chiesta dall'utente e approvata dal coordinatore; branch
+`feat/TASK-210-f-shape-names` da `main` `aea84e4`, portato su `5a22f2d`
+dopo la parte E). **I nomi delle forme**: `shapeWord()` in
+`i18n/shapeNames.ts` dà il nome dentro una frase dal nome con la
+maiuscola della parte A («Hundekopf», «testa di cane», «cabeza de
+perro», «tête de chien»; in inglese «dog head» come prima). Lo usano le
+schede di «Explore» (`routeTitle`, anche «Drawing a 2 km heart» e «heart
+· Trento · looks 87% like it»), il percorso a tema (`ThemedCard`, che
+scriveva tutta la riga in inglese) e «Draw»: le tessere, il campo, «→
+Herz» sotto il campo (confronto senza maiuscole in `RoutePanel`), la
+lista di «Unknown shape. Try: …» con la «o» della lingua.
+`CityExamples` prende il nome da `i18n/shapeNames` e non più da
+`feed/FeedPost`. **`shapeWords.ts`** conosce le parole delle forme nelle
+cinque lingue, qualunque sia quella dell'app, con gli articoli («ein
+Herz», «l'étoile», «el sol»), gli accenti e la «œ» letti senza
+differenza: «Herz» e «cœur» non vanno più all'AI, e il segnaposto
+«Herz, Stern, Pferd…» della parte D ora nomina forme che il campo
+conosce. **La mappa**: i luoghi nella lingua dell'app (`name:xx`, poi il
+nome del posto; prima sempre `name:it`), «Start here» come «Hier
+starten», «Parti da qui», «Empieza aquí», «Départ ici» (le parole già
+approvate nella parte D); `MapView` rifà la pagina quando la lingua
+cambia. Provata nel browser con le tile vere di OpenFreeMap: «Mailand»,
+«Rom», «Neapel» in tedesco, «Milan», «Gênes», «Trente» e il cartello
+«Départ ici» in francese. Le mappe del Feed (`MAP_STYLE`) prendono la
+lingua dell'apertura. **«NEAR TRENTO»** sopra i percorsi dei vicini, rimasto
+inglese dalla parte C, ora tradotto. **«Help», «Terms» e «Privacy»** in
+tedesco, spagnolo e francese (`about/content/{de,es,fr}.ts`, stesse
+sezioni dell'inglese, con i nomi dei pulsanti che l'app mostra in quella
+lingua); per scelta dell'utente del 2026-10-07 «Terms» e «Privacy» sono
+tradotti e restano **bozze**, con gli stessi segnaposto da riempire.
+Le parole delle forme tengono anche quelle della lista preparata dalla
+sessione «Traduzioni TASK-210» (`out/task-210-forme-testi.md`), tranne
+«Tannenbaum», «sapin», «Krapfen», «beignet», «pescado», «chatte».
+«Help» in italiano ora nomina i pulsanti tradotti dalle
+parti B e D («Disegna il percorso», «Esporta GPX», «Parti», «Pausa»,
+«Riprendi», «Scarta»), e i testi delle quattro lingue chiamano le pagine
+come i titoli della parte G (#437, su richiesta del coordinatore): it
+«Feed», «Disegna», «Esplora»; de «Feed», «Zeichnen», «Entdecken»; es
+«Feed», «Dibuja», «Explora»; fr «Fil», «Dessiner», «Explorer». **4 testi nuovi** in fondo alle tabelle: «{list}
+or {last}», «Start here», «NEAR {city}», «here»; più «Help», «Terms» e
+«Privacy» in tre lingue. Test: `route/ShapeNamesLanguages.test.tsx`,
+`explore/ExploreShapeNames.test.tsx`, `map/MapViewLanguage.test.tsx`, e
+in `shapeWords.test.ts`, `mapStyle.test.ts`, `documents.test.ts`,
+`AboutPage.test.tsx`. **Testi approvati dall'utente** il 2026-10-08 («va
+bene procedi», su `out/task-210-f-testi.md`); PR #438, la pubblicazione su
+«preview» è del coordinatore.
+
+**Seguiti notati nella parte F**: in francese «near your start» è «près
+de vous» mentre il resto dell'app dà del «tu»; la bozza italiana di
+«Privacy» cita ancora «Discard» (testo legale, dell'utente). «NEAR YOUR
+START» della canoa è già tradotto (`t("Near your start")` in maiuscolo).
+
+**Dopo le parti F e G restano**: il nome della forma e «Paddle ·» nel
+Feed (`feed/*`, ora che TASK-118 è in `main` con la #439), le mappe del
+Feed che seguono un cambio di lingua.

@@ -1,0 +1,80 @@
+{
+  "posts": [
+    {
+      "id": "3f9d2c71-8a4b-4e06-b5d1-c27e9a40f815",
+      "title": "Sunday heart by the river",
+      "started_at": "2026-09-20T07:13:20Z",
+      "published_at": "2026-10-02T21:40:00Z",
+      "place": "Trento",
+      "shape": "star",
+      "word": null,
+      "style": null,
+      "route_title": null,
+      "distance_m": 4004,
+      "duration_s": 1140,
+      "score": 87,
+      "fidelity": 0.83,
+      "visibility": "followers",
+      "description": "Legs heavy after the bridge.\nThe heart came out round all the same.",
+      "activity": "running",
+      "tags": [
+        {
+          "public_id": "3b9d2e10-7c4a-4f8e-a1d6-5e2f9c0b7a44",
+          "username": "adam.trento"
+        }
+      ],
+      "photos": [
+        {
+          "n": 1,
+          "url": "/drawings/3f9d2c71-8a4b-4e06-b5d1-c27e9a40f815/photos/1?v=1790027100000000",
+          "width": 1080,
+          "height": 810
+        }
+      ],
+      "rotation_deg": -30,
+      "track_preview": [
+        [46.0671, 11.12399],
+        [46.0671, 11.1344],
+        [46.0761, 11.1344],
+        [46.0761, 11.1214],
+        [46.0689, 11.1214]
+      ],
+      "author": {
+        "public_id": "8c1f7a52-3d4e-4b9a-9f61-2a7c0e5d9b13",
+        "username": "Ada_runs"
+      }
+    },
+    {
+      "id": "a71c4e02-5b3d-4f8e-9c21-7d0b6e3f1a58",
+      "title": null,
+      "started_at": "2026-10-01T06:02:10Z",
+      "published_at": "2026-10-01T07:15:00Z",
+      "place": "Rovereto",
+      "shape": null,
+      "word": "ciao",
+      "style": "round",
+      "route_title": null,
+      "distance_m": 6120,
+      "duration_s": 2010,
+      "score": null,
+      "fidelity": null,
+      "visibility": "everyone",
+      "description": null,
+      "activity": "cycling",
+      "tags": [],
+      "photos": [],
+      "rotation_deg": null,
+      "track_preview": [
+        [45.8903, 11.0399],
+        [45.8903, 11.0472],
+        [45.8958, 11.0472],
+        [45.8958, 11.0399]
+      ],
+      "author": {
+        "public_id": "3b9d2e10-7c4a-4f8e-a1d6-5e2f9c0b7a44",
+        "username": "adam.trento"
+      }
+    }
+  ],
+  "next": "2-1790027100000000-a71c4e025b3d4f8e9c217d0b6e3f1a58"
+}

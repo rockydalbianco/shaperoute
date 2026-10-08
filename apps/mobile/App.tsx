@@ -72,7 +72,6 @@ import { trackOf, useFreeRun } from "./src/navigation/useFreeRun";
 import { trackOfNavigation, useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
-import { distanceForSport, toDistanceM } from "./src/route/distance";
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
 import { shapeAsked } from "./src/route/penUpShapes";
@@ -100,6 +99,7 @@ import {
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { Pager } from "./src/screens/Pager";
+import { pageTitle } from "./src/screens/pageTitles";
 import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
 import { PaddleExplore } from "./src/paddle/PaddleExplore";
 import { MoveShape } from "./src/paddle/MoveShape";
@@ -115,6 +115,8 @@ import { DrawingCard } from "./src/social/DrawingCard";
 import { drawingDoubleTapped } from "./src/social/DrawingReactions";
 import { useDrawingsDoor } from "./src/social/drawingsDoor";
 import { color, space } from "./src/theme/tokens";
+import { useDrawDistance } from "./src/units/useDrawDistance";
+import { useUnits } from "./src/units/useUnits";
 
 /** A route without directions: one list, so navigation does not restart. */
 const NO_DIRECTIONS: Direction[] = [];
@@ -192,6 +194,8 @@ function leftFreeRun(): FreeFinished | null {
 export default function App() {
   // A new language from «Settings» renders the whole app again in it (TASK-210).
   useLanguage();
+  // And so do new units (TASK-182 part E).
+  useUnits();
   return (
     <SafeAreaProvider>
       {/* The account, and «Profile» over the app (TASK-115, TASK-154). */}
@@ -291,16 +295,10 @@ function MuW() {
   // (TASK-191).
   const sport = useSport();
   const sportActivity = activityOf(sport);
-  const [distanceText, setDistanceText] = useState(() =>
-    distanceForSport("5", sportActivity),
-  );
-  // A sport just chosen brings the distance within its limits.
-  const [distanceActivity, setDistanceActivity] = useState(sportActivity);
-  if (distanceActivity !== sportActivity) {
-    setDistanceActivity(sportActivity);
-    setDistanceText(distanceForSport(distanceText, sportActivity));
-  }
-  const distanceM = toDistanceM(distanceText, sportActivity);
+  // The distance typed, or the metres the app chose (TASK-182 part E): in
+  // the app's units, brought within the limits of a sport just chosen.
+  const distance = useDrawDistance(sportActivity);
+  const distanceM = distance.metres;
   const [wordText, setWordText] = useState("");
   const wordCheck = checkWord(wordText, distanceM, sportActivity);
   const [letterStyle, setLetterStyle] = useState<LetterStyle>("round");
@@ -998,7 +996,7 @@ function MuW() {
               }
             }}
             onTryDistance={(distance_m) => {
-              setDistanceText(String(distance_m / 1000));
+              distance.choose(distance_m);
               if (request) {
                 draw({ ...request, distance_m });
               }
@@ -1044,10 +1042,12 @@ function MuW() {
           }
           pages={[
             {
-              title: "Feed",
+              title: pageTitle("feed"),
               render: () => (
                 <FeedScreen
                   active={screen === "feed"}
+                  // For the drawings nearby (TASK-118), as «Explore».
+                  near={start?.point ?? null}
                   onOpen={(post) => {
                     closeExplore();
                     openExplored(postRoute(post), fetchPostRoute(post));
@@ -1058,7 +1058,7 @@ function MuW() {
               ),
             },
             {
-              title: "Draw",
+              title: pageTitle("draw"),
               render: () => (
                 <ChooseScreen
                   status={statusText(startMode, position, start)}
@@ -1077,7 +1077,7 @@ function MuW() {
                     // A small lake's shapes fit at less than 2 km (TASK-240).
                     const fits = distanceOnSpot(chosen, distanceM);
                     if (fits !== null) {
-                      setDistanceText(String(fits / 1000));
+                      distance.choose(fits);
                     }
                   }}
                   near={
@@ -1127,9 +1127,9 @@ function MuW() {
                       onPenUp={setPenUp}
                       image={image.state}
                       onChooseImage={image.choose}
-                      distanceText={distanceText}
+                      distanceText={distance.text}
                       distanceM={distanceM}
-                      onDistanceText={setDistanceText}
+                      onDistanceText={distance.type}
                       activity={sportActivity}
                     />
                   </ImageEditsContext.Provider>
@@ -1137,7 +1137,7 @@ function MuW() {
               ),
             },
             {
-              title: "Explore",
+              title: pageTitle("explore"),
               // It asks the API for its routes as it opens: not before.
               lazy: true,
               render: () =>

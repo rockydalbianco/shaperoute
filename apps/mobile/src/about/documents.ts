@@ -1,5 +1,8 @@
 import type { Language } from "../i18n/languages";
+import { DE } from "./content/de";
 import { EN } from "./content/en";
+import { ES } from "./content/es";
+import { FR } from "./content/fr";
 import { IT } from "./content/it";
 
 /**
@@ -51,17 +54,21 @@ export const PLACEHOLDER = {
 /** Anything between square brackets is still to fill: the page marks it. */
 export const PLACEHOLDER_PATTERN = /(\[[^\]]+\])/;
 
-/** German, Spanish and French come after the drafts are approved. */
-const CONTENT: Partial<Record<Language, AboutContent>> = { en: EN, it: IT };
+/**
+ * The three texts in the five languages (TASK-210 F): «Terms» and
+ * «Privacy» are drafts in each of them, with the same places to fill.
+ */
+const CONTENT: Readonly<Record<Language, AboutContent>> = {
+  en: EN,
+  de: DE,
+  it: IT,
+  es: ES,
+  fr: FR,
+};
 
-/** The language the texts are read in with the app in `language`. */
-export function aboutLanguage(language: Language): Language {
-  return CONTENT[language] === undefined ? "en" : language;
-}
-
-/** The text `id` in `language`, or in English when the language has none. */
+/** The text `id` in `language`. */
 export function aboutDocument(id: AboutId, language: Language): AboutDocument {
-  return (CONTENT[language] ?? EN)[id];
+  return CONTENT[language][id];
 }
 
 export function isAboutId(value: string): value is AboutId {

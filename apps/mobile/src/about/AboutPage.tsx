@@ -8,7 +8,6 @@ import {
   type AboutBlock,
   type AboutId,
   aboutDocument,
-  aboutLanguage,
   PLACEHOLDER_PATTERN,
 } from "./documents";
 
@@ -26,13 +25,13 @@ type Props = {
  * texts are not final until the user approves them. What is still to fill
  * is written in square brackets and stands out.
  *
- * With the app in a language the texts are not written in yet, they are in
- * English, and VoiceOver is told so.
+ * The texts are written in each of the app's languages (TASK-210 F), and
+ * VoiceOver is told which one it reads.
  */
 export function AboutPage({ id }: Props) {
   const language = useLanguage();
   const text = aboutDocument(id, language);
-  const speech = languageOption(aboutLanguage(language)).speech;
+  const speech = languageOption(language).speech;
   return (
     <View style={styles.page}>
       {text.draft && (

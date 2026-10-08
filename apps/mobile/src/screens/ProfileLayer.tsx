@@ -4,6 +4,7 @@ import {
   type ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -88,8 +89,14 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // A member touched in the lists of «Profile» (TASK-211): «Find friends»
   // opens on their profile, and back comes to «Profile».
   const [member, setMember] = useState<Person | null>(null);
-  // Where the drawing on the map was opened: back goes there.
-  const drawingFrom = useRef<"profile" | "people">("profile");
+  // Where the drawing on the map was opened: back goes there. From «Feed»
+  // (TASK-118), with «Profile» closed, back is the page under the map.
+  const drawingFrom = useRef<"profile" | "people" | "feed">("profile");
+  // The page as the doors of the drawings, made once, see it.
+  const pageAt = useRef<ProfilePage | null>(null);
+  useEffect(() => {
+    pageAt.current = page;
+  }, [page]);
   const shown = page !== null || people === "shown";
   const account = useAccount(apiUrl);
   const { state } = account;
@@ -132,24 +139,25 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   const strava = useStravaOf(apiUrl, account);
   // The drawings (TASK-117): one opened from a profile leaves «Profile» for
   // the map, and comes back to it; one opened from a member found by
-  // «Find friends» comes back there (TASK-215).
+  // «Find friends» comes back there (TASK-215); one opened from «Feed»,
+  // with «Profile» closed, comes back to «Feed» (TASK-118).
   const drawingDoors = useMemo(
     () => ({
       onOpened: () => {
-        setPage(null);
         if (peopleAt.current === "shown") {
           drawingFrom.current = "people";
           setPeople("behind");
         } else {
-          drawingFrom.current = "profile";
+          drawingFrom.current = pageAt.current === null ? "feed" : "profile";
           setPeople(null);
         }
+        setPage(null);
       },
       onBack: () => {
         setHint(null);
         if (drawingFrom.current === "people" && peopleAt.current !== null) {
           setPeople("shown");
-        } else {
+        } else if (drawingFrom.current === "profile") {
           setPage("account");
         }
       },

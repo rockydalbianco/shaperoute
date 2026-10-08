@@ -1,0 +1,5 @@
+{
+  "ios": {
+    "NSLocationWhenInUseUsageDescription": "MuW uses your location to draw routes near you and to record your activities. During an activity it keeps recording with the phone locked, and iOS shows the blue bar."
+  }
+}

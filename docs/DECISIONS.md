@@ -12710,6 +12710,79 @@ splash iOS mostra «MuW», quello Android il cuore. I PNG li genera
 token dell'app: non è in `tools/`, dove la CI ha solo la libreria
 standard. I vecchi `sgrava-*.svg` sono tolti (restano nella storia).
 
+## ADR-0225 — La corsa registra anche a telefono bloccato: «While using», la pillola blu, e la linea si taglia solo se iOS congela l'app
+**Stato**: Attiva · 2026-10-08 · **scelte dell'utente** del 2026-10-07 e
+del 2026-10-08 (la dipendenza, il permesso, la prova, la voce fuori); il
+modo deciso dall'agente su delega dell'utente (TASK-261). Numero assegnato
+dal coordinatore. Aggiorna ADR-0219.
+
+**Contesto**: il GPS della corsa era seguito con `watchPositionAsync`,
+solo in primo piano (expo-location mette `allowsBackgroundLocationUpdates
+= false`); a telefono bloccato registrazione, voce e pausa automatica si
+fermavano. ADR-0219 teneva lo schermo acceso e, dopo 60 s in secondo
+piano, metteva la corsa in pausa. Apple consente gli aggiornamenti in
+background a un'app con il solo permesso «While using», se partono con
+l'app in primo piano e l'app dichiara `UIBackgroundModes` `location`; iOS
+mostra allora la pillola blu. expo-location li dà con
+`startLocationUpdatesAsync`, che su iOS controlla solo il permesso in
+primo piano, e li consegna a un task di expo-task-manager. In Expo Go su
+iOS il background non c'è.
+
+**Decisione**:
+
+1. **`expo-task-manager`** (~57.0.19) è la dipendenza nuova (**scelta
+   dell'utente**): senza, expo-location non dà posizioni in background.
+2. **Il permesso resta «While using»** (**scelta dell'utente**: niente
+   «Always»). `app.json`: il plugin `expo-location` con
+   `isIosBackgroundLocationEnabled` (`UIBackgroundModes` `location`;
+   expo-task-manager aggiunge `fetch`) e un testo nuovo del permesso, in
+   cinque lingue con `locales` e `CFBundleAllowMixedLocalizations` (la
+   guida Expo). Android resta com'era (**scelta dell'utente**).
+3. **`watchRunPosition`** (`runPosition.ts`; deciso dall'agente): su iOS,
+   se il modo background c'è, `startLocationUpdatesAsync` sul task
+   `muw-run-location` per tutta la corsa, anche in primo piano (in
+   background non si può farlo partire), con `activityType` Fitness,
+   `pausesUpdatesAutomatically: false` (il consumatore nativo lo metteva
+   a `true`: a un semaforo iOS avrebbe spento il GPS e non l'avrebbe più
+   riacceso) e `showsBackgroundLocationIndicator: true`. Se manca o il
+   telefono rifiuta (Expo Go, Android, una build senza il modo),
+   `watchPositionAsync` come prima. Il task è definito quando l'app si
+   carica; una corsa alla volta; start e stop in fila, così lo stop di una
+   corsa finita non arriva mai dopo lo start della successiva; posizioni
+   senza corsa (app chiusa a metà, task ripreso da iOS al riavvio) fermano
+   il task, che costa batteria.
+4. **Il taglio della linea** (`runAway.ts`; deciso dall'agente; la regola
+   dei 60 s di ADR-0219, scelta dell'utente, non cambia): col GPS in
+   background uscire dal primo piano non ferma più niente, e un corridore
+   fermo a un semaforo non dà posizioni (una ogni 5 m) proprio come un GPS
+   fermo. Il GPS si è fermato davvero solo se iOS ha **congelato l'app**:
+   un battito dell'orologio JS ogni secondo che arriva con più di 15 s di
+   ritardo (`FROZEN_AFTER_MS`), controllato anche prima di ogni posizione,
+   lo dice al registratore (`RunRecorder.leave` dall'ultimo battito);
+   la posizione dopo, se arriva più di 60 s dopo l'ultima, comincia un
+   tratto nuovo, senza metri né tempo di mezzo. Fermi a un semaforo a
+   telefono bloccato vale quindi la pausa automatica come in primo piano,
+   e sotto una galleria la linea dritta come in primo piano: le due cose
+   per cui ADR-0219 aveva scartato la regola del silenzio GPS. Col GPS
+   solo in primo piano resta l'ascolto di `AppState` di ADR-0219, e conta
+   anche il congelamento: una posizione arrivata subito dopo l'uscita, e
+   prima che iOS congeli l'app, non nasconde più il buco che segue.
+   `trackStore.ts` non cambia.
+5. **La voce a telefono bloccato fuori da questo task** (**scelta
+   dell'utente**): con la sessione audio di partenza iOS la zittisce; i km
+   detti in secondo piano contano comunque, e al ritorno non si ripetono.
+   Un task suo con expo-audio e `UIBackgroundModes` `audio`, dopo la prova
+   sull'iPhone.
+
+**Conseguenze**: in Expo Go nulla cambia; il GPS in background si vede
+solo in una build nativa (simulatore, Xcode sull'iPhone, TestFlight). La
+pillola blu durante un'attività con l'app in secondo piano; il GPS acceso
+come prima, lo schermo spento consuma meno. Nelle Impostazioni di iOS,
+alla voce di MuW, compare la scelta della lingua. iOS può comunque
+sospendere l'app (lo dice Apple): allora vale il punto 4. Il task di
+expo-task-manager resta registrato fino allo stop, anche se l'app viene
+chiusa a metà: lo ferma la prima posizione senza corsa.
+
 ## ADR-0227 — Il feed vero, versione semplice
 **Stato**: Attiva · 2026-10-08 · l'ordine è scelta dell'utente del
 2026-10-07 («ok va bene questo semplice»); il resto deciso dall'agente su

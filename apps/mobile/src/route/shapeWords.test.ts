@@ -59,6 +59,33 @@ test.each([
   ["a doughnut", "donut"],
   ["il sole", "sun"],
   ["the sun", "sun"],
+  // German, Spanish and French (TASK-210 F), whatever the app's language.
+  ["Herz", "heart"],
+  ["ein Herz", "heart"],
+  ["das Pferd", "horse"],
+  ["Hundekopf", "dog_head"],
+  ["der Hund", "dog_head"],
+  ["Kürbis", "pumpkin"],
+  ["kurbis", "pumpkin"],
+  ["ein Weihnachtsbaum", "christmas_tree"],
+  ["die Sonne", "sun"],
+  ["corazón", "heart"],
+  ["un corazon", "heart"],
+  ["la estrella", "star"],
+  ["cabeza de perro", "dog_head"],
+  ["el árbol de Navidad", "christmas_tree"],
+  ["dónut", "donut"],
+  ["el sol", "sun"],
+  ["cœur", "heart"],
+  ["Coeur", "heart"],
+  ["un cœur", "heart"],
+  ["l'étoile", "star"],
+  ["l’étoile", "star"],
+  ["une etoile", "star"],
+  ["tête de chien", "dog_head"],
+  ["le sapin de Noël", "christmas_tree"],
+  ["les escargots", "snail"],
+  ["fantôme", "ghost"],
 ])("%j is a %s", (text, shape) => {
   expect(toShape(text)).toBe(shape);
 });
@@ -76,24 +103,35 @@ test.each([
   ["albero", "a plain tree is not the Christmas tree (ADR-0084)"],
   ["tree", "a plain tree is not the Christmas tree (ADR-0084)"],
   ["natale", "a feast, not a drawing: the AI's job"],
+  ["Baum", "a plain tree is not the Christmas tree (ADR-0084)"],
+  ["sapin", "a fir is not the Christmas tree (ADR-0084)"],
+  ["árbol", "a plain tree is not the Christmas tree (ADR-0084)"],
+  ["Vogel", "an animal the user left out (ADR-0061)"],
+  ["ein", "an article alone"],
 ])("%j is no shape: %s", (text) => {
   expect(toShape(text)).toBeNull();
 });
 
-test("every shape of the contract has English and Italian words", () => {
+const LANGUAGES = ["en", "de", "it", "es", "fr"] as const;
+
+test("every shape of the contract has words in the five languages", () => {
   for (const shape of SHAPES) {
-    expect(SHAPE_WORDS[shape].en.length).toBeGreaterThan(0);
-    expect(SHAPE_WORDS[shape].it.length).toBeGreaterThan(0);
+    for (const language of LANGUAGES) {
+      expect(SHAPE_WORDS[shape][language].length).toBeGreaterThan(0);
+    }
   }
 });
 
-test("every word names its own shape, and no word is used twice", () => {
-  const seen = new Set<string>();
+test("every word names its own shape, and no word is used twice in a language", () => {
+  // A word under two shapes would name only one of them: «luna», Italian
+  // and Spanish, is the same moon.
   for (const shape of SHAPES) {
-    for (const word of [...SHAPE_WORDS[shape].en, ...SHAPE_WORDS[shape].it]) {
-      expect(seen.has(word)).toBe(false);
-      seen.add(word);
-      expect(toShape(word)).toBe(shape);
+    for (const language of LANGUAGES) {
+      const words = SHAPE_WORDS[shape][language];
+      expect(new Set(words.map((word) => word.toLowerCase())).size).toBe(words.length);
+      for (const word of words) {
+        expect(toShape(word)).toBe(shape);
+      }
     }
   }
 });

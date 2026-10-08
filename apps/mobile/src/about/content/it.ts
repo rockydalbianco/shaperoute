@@ -3,8 +3,8 @@ import type { AboutContent, AboutDocument } from "../documents";
 /**
  * «Help», «Terms» and «Privacy» in Italian (TASK-184, ADR-0205): the same
  * sections as `en.ts`, in the same order (a test compares them). The names
- * of pages and buttons are the ones the app shows in Italian today: some
- * are still in English there (TASK-210).
+ * of pages and buttons are the ones the app shows in Italian today: the
+ * three pages are still «Feed», «Draw» and «Explore» until TASK-210 G.
  */
 
 const UPDATED = "5 ottobre 2026";
@@ -28,8 +28,8 @@ const help: AboutDocument = {
           bullets: [
             "Scegli una forma: un cuore, una stella, un gatto e altre, una parola dalla A alla Z, o il contorno di una tua foto.",
             "Scegli la distanza: fino a 21 km a piedi, partendo da dove sei o da un luogo che cerchi.",
-            "Tocca «Draw route». MuW disegna fino a tre percorsi su strade vere, A, B e C: tieni quello che ti piace.",
-            "«Export GPX» ti dà il file per l'orologio o per un'altra app.",
+            "Tocca «Disegna il percorso». MuW disegna fino a tre percorsi su strade vere, A, B e C: tieni quello che ti piace.",
+            "«Esporta GPX» ti dà il file per l'orologio o per un'altra app.",
           ],
         },
         "Un percorso di solito arriva in pochi secondi; i più lunghi possono chiedere fino a un minuto.",
@@ -47,9 +47,9 @@ const help: AboutDocument = {
       blocks: [
         {
           bullets: [
-            "«Start» fa partire la corsa dopo un breve conto alla rovescia.",
+            "«Parti» fa partire la corsa dopo un breve conto alla rovescia.",
             "Una voce ti dice ogni svolta in anticipo. La mappa mostra il tratto già corso e quello ancora davanti.",
-            "«Pause» ferma il tempo e «Resume» lo fa ripartire.",
+            "«Pausa» ferma il tempo e «Riprendi» lo fa ripartire.",
             "Per finire la corsa tieni premuto il pulsante di stop: un tocco breve non la chiude.",
           ],
         },
@@ -60,7 +60,7 @@ const help: AboutDocument = {
     {
       heading: "Tenere corse e percorsi",
       blocks: [
-        "Con un account, «Salva» a fine corsa la tiene in «Le mie attività», in «Profilo»; «Discard» la butta via. Senza rete la corsa aspetta sul telefono e parte dopo.",
+        "Con un account, «Salva» a fine corsa la tiene in «Le mie attività», in «Profilo»; «Scarta» la butta via. Senza rete la corsa aspetta sul telefono e parte dopo.",
         "Il cuore su un percorso sulla mappa lo tiene fra i «Preferiti».",
       ],
     },
@@ -85,9 +85,9 @@ const help: AboutDocument = {
         "Scegli lo sport con il pulsante accanto al profilo, o in «Impostazioni».",
         {
           bullets: [
-            "Corsa («Run»): fino a 21 km su strade vere, con la voce svolta per svolta.",
-            "Bici («Bike»): da 10 a 30 km, su ciclabili e strade aperte alle bici. Le svolte sono dette in anticipo e lo schermo mostra la velocità.",
-            "Canoa («Paddle»): da 1 a 5 km su laghi e mare, vicino alla riva, in canoa, kayak o SUP. Segui la linea sulla mappa.",
+            "Corsa: fino a 21 km su strade vere, con la voce svolta per svolta.",
+            "Bici: da 10 a 30 km, su ciclabili e strade aperte alle bici. Le svolte sono dette in anticipo e lo schermo mostra la velocità.",
+            "Canoa: da 1 a 5 km su laghi e mare, vicino alla riva, in canoa, kayak o SUP. Segui la linea sulla mappa.",
           ],
         },
         "Sull'acqua leggi l'avviso di sicurezza prima di partire: indossa il giubbotto salvagente, controlla il meteo e il vento, rispetta le regole del posto. Il percorso resta entro 1 km dalla riva: questo non lo rende sicuro né permesso.",

@@ -25,7 +25,7 @@
 
 ## Il tema
 
-Uno solo, scuro, con il nome «MuW» (ADR-0046; «Sgrava» fino a ADR-0224). Tutti i valori stanno in
+Scuro, con il nome «MuW» (ADR-0046; «Sgrava» fino a ADR-0224), e dal TASK-263 anche chiaro, ognuno in cinque passi di luminosità (sotto, «Il tono e la luminosità»). Tutti i valori stanno in
 `apps/mobile/src/theme/tokens.ts`: colori, spaziature a passi di 4, raggi,
 corpi del testo, la linea del percorso (gialla, larga 5) e `MIN_TAP_SIZE`,
 44, l'altezza minima di ogni cosa da toccare. **Nessun colore scritto a
@@ -76,6 +76,32 @@ Quattro regole:
    mostra fondo, acqua, verde, edifici, strade e i nomi di città, paesi e
    villaggi; non i nomi delle vie, i numeri civici e i punti d'interesse.
    Nessuno strato della mappa usa il giallo.
+
+### Il tono e la luminosità (TASK-263, ADR-0231)
+
+In «Settings», sezione «PREFERENCES», la riga «Tone» dopo «Units» dice
+il tono dell'app («Dark» o «Light») e si apre come «Units»: i due toni,
+«Brightness» con cinque passi da «Darker» a «Brighter», un'anteprima e
+«Apply». Ogni tono ricorda il suo passo: scuro parte dal passo 1, i colori
+della tabella sopra; chiaro dal passo 5, il bianco. L'anteprima disegna
+nel tono provato il fondo, una scheda con i suoi testi, un comando neutro
+e quello giallo, e un angolo di mappa con acqua, verde, due strade e il
+percorso. «Apply» compare solo se l'app cambierebbe aspetto; salva la
+scelta e riapre l'app, che si ricarica nel tono nuovo («MuW opens again
+in the new tone.»). Chiudendo la riga senza «Apply» la prova si perde.
+
+I colori dei due toni a ogni passo stanno in `tokens.ts` (`SHADES`, i due
+estremi di ogni tono, mescolati per i passi in mezzo); il giallo, il testo
+sul giallo, il rosso dei numeri e i colori di Strava sono gli stessi in
+tutti. Nel tono chiaro:
+
+- avvisi, errori e «Start here» sono più scuri (arancio bruciato, rosso
+  scuro, blu petrolio), per leggersi sul chiaro;
+- **il percorso ha un bordo scuro** sotto la linea gialla, il nero del
+  testo sul giallo: sulla mappa chiara il giallo da solo non si vede;
+- la barra di stato è scura;
+- restano scure le tastiere e bianco il logo «Compatible with Strava»
+  (parte B).
 
 ## Il logo e l'icona (TASK-159, ADR-0129; «MuW» da TASK-260, ADR-0224)
 

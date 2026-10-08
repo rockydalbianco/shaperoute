@@ -101,4 +101,19 @@ docs/STATUS.md
 
 ## Esito
 
-*(da compilare)*
+1. **Documentazione** (questa PR): task file, ADR-0234, `DEPLOY.md` F.14
+   (l'API e, su richiesta del Coordinatore, come Caddy servirà il sito),
+   la riga in `STATUS.md`. Il DNS l'ha scritto l'utente su Porkbun il
+   2026-10-08: tre record `A` verso `188.245.9.220`, tolti i due di
+   parcheggio.
+2. **Il Caddyfile sul server**, applicato dal Coordinatore il
+   2026-10-08 con l'ok dell'utente («ok server dominio»): la riga del
+   sito è diventata `188-245-9-220.sslip.io, api.getmuw.app {`, copia in
+   `/etc/caddy/Caddyfile.before-task265`, `caddy validate` senza errori,
+   `systemctl reload caddy`, Caddy attivo. Certificato Let's Encrypt
+   `CN=api.getmuw.app` (`YE1`), valido fino al 2027-01-06. `/health`
+   risponde 200 su `api.getmuw.app` e su `sslip.io`, `/docs` senza chiave
+   401 (prove dal Mac).
+3. **Restano**, ciascuno con l'ok dell'utente: `EXPO_PUBLIC_API_URL` di
+   `preview` → `https://api.getmuw.app` (il Coordinatore), e il sito su
+   `getmuw.app` e `www` dopo il merge della #443 (TASK-237 B).

@@ -3,9 +3,8 @@
 
 PUT /me/notifications keeps «Email notifications» and «Push notifications»
 of «Settings»: only what is sent changes. Both are off until their owner
-turns them on. **Nothing is sent yet**: this server has no mail service and
-no push, and no code reads the switches to act on them. They are a choice
-kept for when it does.
+turns them on. push.py reads «Push notifications» before sending a push
+(TASK-262); no email is sent yet: this server has no mail service.
 
 Only its owner reads them, in GET /me: never a profile, a search or a list.
 """
@@ -46,7 +45,7 @@ class NotificationsRequestBody(BaseModel):
 
 @dataclass
 class Notifications:
-    """What an account chose about being notified. Kept, never acted on."""
+    """What an account chose about being notified (push.py reads it)."""
 
     accounts: Accounts
 

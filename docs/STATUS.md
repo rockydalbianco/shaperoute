@@ -130,10 +130,15 @@ In coda, dopo o accanto:
   a Tenna il cuore e a Calceranica il cerchio non si disegnano). Zone del
   telefono: 528 file. Acqua della canoa: 248 file (Ledro dal 2026-10-06,
   TASK-250; l'elenco dei laghi vive nell'app, `lake_catalog.py` è un
-  comando offline: il server non ha bisogno di altro). **App** su `preview` da `main`
-  `873de53` (gruppo `9585ffac`, 2026-10-06 ~19:57Z): tutto `main`, fino
-  al nome e alla scritta «MuW» (TASK-260; icona e splash con una build
-  nativa), alla fine corsa stile Strava (TASK-208 B), a «Draw» ed
+  comando offline). **Manca sul server** `/feed` (TASK-118, #439, senza
+  migrazione) e, dopo il merge della #440, il motore nuovo (TASK-203 B,
+  poi `draw_examples` ~40 min): aspettano l'ok dell'utente. **App** su
+  `preview` da `main` `f3e584b` (gruppo `35156595`, 2026-10-08 ~15:45Z):
+  tutto `main`, fino al Feed vero (TASK-118: gli esempi finché il server
+  non ha `/feed`), ai titoli delle pagine (TASK-210 G), alla distanza di
+  «Draw» in metri (TASK-182 E), alla fine corsa, «Sport» e voce in
+  italiano (TASK-210 E), al nome e alla scritta «MuW» (TASK-260; icona e
+  splash con una build nativa), alla fine corsa stile Strava (TASK-208 B), a «Draw» ed
   «Explore» in italiano (TASK-210 C, D), a «Location is off»
   in corsa (TASK-259 B), alla corsa in italiano (TASK-210 B), al post che
   resta sul server

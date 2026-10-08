@@ -2,7 +2,6 @@ import type { LatLon } from "@shaperoute/shared-types";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
-import { AppState } from "react-native";
 
 import { activityOf, loadSport } from "../settings/sport";
 import { appUnits } from "../units/units";
@@ -10,7 +9,9 @@ import { loadVoices, speaking } from "../voice/voiceChoice";
 import { FREE_ROUTE, kmAnnouncement, wholeUnits } from "./freeRun";
 import { kmComparison } from "./kmCompare";
 import { isPaddle, paddleAnnouncement } from "./paddle";
+import { type RunAway, watchAway } from "./runAway";
 import { controlRun, type RunSession } from "./runControl";
+import { type RunWatch, watchRunPosition } from "./runPosition";
 import { emptyTrack, type Track } from "./trackRecorder";
 import { startRun } from "./trackStore";
 import { FIX_EVERY_M, play } from "./useNavigation";
@@ -29,7 +30,9 @@ export type FreeRunState =
  * (TASK-217); with miles each mile, in the units «Settings» has when the
  * voice speaks (TASK-182). With «Paddle» in «Settings» the pace said is of
  * 500 m (TASK-251). The countdown, «Pause» and the pause by standing still are
- * runControl's (TASK-169). The position never leaves the phone.
+ * runControl's (TASK-169). With the phone locked, or another app in front,
+ * the GPS goes on where the app can (TASK-261, `runPosition`). The position
+ * never leaves the phone.
  */
 export function useFreeRun(active: boolean): FreeRunState {
   const [state, setState] = useState<FreeRunState>({ status: "starting" });
@@ -39,10 +42,10 @@ export function useFreeRun(active: boolean): FreeRunState {
       return;
     }
     let stopped = false;
-    let subscription: Location.LocationSubscription | null = null;
+    let subscription: RunWatch | null = null;
     let run: RunSession | null = null;
     let stopRecording: (() => void) | null = null;
-    let leaving: { remove(): void } | null = null;
+    let away: RunAway | null = null;
     // The phone's voices, before the first kilometre (TASK-209).
     void loadVoices();
     // The phone refusing the position altogether (its services off) is a
@@ -79,15 +82,9 @@ export function useFreeRun(active: boolean): FreeRunState {
           say: (text) => play([{ say: text, vibrate: false }]),
         });
         run = session;
-        // The app behind another, or the phone locked: the GPS stops with
-        // it, and so does the run, until the next fix (TASK-255).
-        leaving = AppState.addEventListener("change", (next) => {
-          if (next === "background") {
-            recorder.leave(Date.now());
-          }
-        });
         setState({ status: "running", track: recorder.track(), position });
-        subscription = await Location.watchPositionAsync(
+        // With the phone locked too, where the app can (TASK-261).
+        subscription = await watchRunPosition(
           {
             accuracy: Location.Accuracy.BestForNavigation,
             distanceInterval: FIX_EVERY_M,
@@ -96,6 +93,7 @@ export function useFreeRun(active: boolean): FreeRunState {
             if (stopped) {
               return;
             }
+            away?.beforeFix();
             const fix: LatLon = [coords.latitude, coords.longitude];
             position = fix;
             session.onFix(
@@ -134,7 +132,12 @@ export function useFreeRun(active: boolean): FreeRunState {
         );
         if (stopped) {
           subscription.remove();
+          return;
         }
+        // The app behind another, or the phone locked: where the GPS stops
+        // with it, a long absence is a pause of the phone's (TASK-255,
+        // TASK-261).
+        away = watchAway(recorder, { background: subscription.background });
       } catch {
         if (!stopped) {
           setState({ status: "denied" });
@@ -144,7 +147,7 @@ export function useFreeRun(active: boolean): FreeRunState {
     return () => {
       stopped = true;
       subscription?.remove();
-      leaving?.remove();
+      away?.remove();
       run?.end();
       stopRecording?.();
       void Speech.stop();

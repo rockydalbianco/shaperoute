@@ -10435,6 +10435,15 @@ migliori, una decina»):
    è `map.water`); i toni intermedi si mescolano con `color-mix`, senza
    colori nuovi. Nessun font scaricato: quelli del sistema.
 
+**Aggiornamento del 2026-10-08** (deciso dall'agente su delega, dentro la
+richiesta dell'utente «fai il sito web per il nuovo nome» e la scelta del
+logo di ADR-0224): il sito dice **MuW**. In alto il segno (il cuore su
+giallo, `docs/brand/muw-mark.svg`) accanto alla scritta di
+`docs/brand/muw-logo.svg`, ridisegnata da `make_prints.py` nel colore
+`text` perché nera non si leggerebbe sul fondo scuro; il segno è anche
+l'icona della scheda. I testi della guida seguono l'app di oggi: niente
+punteggio (TASK-241), «Feed» fra le pagine (TASK-118).
+
 ## ADR-0200 — I paesi vicini sotto «Near me»: quattro paesi e i due posti più vicini, dal Places di Geoapify, con i campioni chiesti dal telefono
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-236 ·
@@ -12710,6 +12719,79 @@ splash iOS mostra «MuW», quello Android il cuore. I PNG li genera
 token dell'app: non è in `tools/`, dove la CI ha solo la libreria
 standard. I vecchi `sgrava-*.svg` sono tolti (restano nella storia).
 
+## ADR-0225 — La corsa registra anche a telefono bloccato: «While using», la pillola blu, e la linea si taglia solo se iOS congela l'app
+**Stato**: Attiva · 2026-10-08 · **scelte dell'utente** del 2026-10-07 e
+del 2026-10-08 (la dipendenza, il permesso, la prova, la voce fuori); il
+modo deciso dall'agente su delega dell'utente (TASK-261). Numero assegnato
+dal coordinatore. Aggiorna ADR-0219.
+
+**Contesto**: il GPS della corsa era seguito con `watchPositionAsync`,
+solo in primo piano (expo-location mette `allowsBackgroundLocationUpdates
+= false`); a telefono bloccato registrazione, voce e pausa automatica si
+fermavano. ADR-0219 teneva lo schermo acceso e, dopo 60 s in secondo
+piano, metteva la corsa in pausa. Apple consente gli aggiornamenti in
+background a un'app con il solo permesso «While using», se partono con
+l'app in primo piano e l'app dichiara `UIBackgroundModes` `location`; iOS
+mostra allora la pillola blu. expo-location li dà con
+`startLocationUpdatesAsync`, che su iOS controlla solo il permesso in
+primo piano, e li consegna a un task di expo-task-manager. In Expo Go su
+iOS il background non c'è.
+
+**Decisione**:
+
+1. **`expo-task-manager`** (~57.0.19) è la dipendenza nuova (**scelta
+   dell'utente**): senza, expo-location non dà posizioni in background.
+2. **Il permesso resta «While using»** (**scelta dell'utente**: niente
+   «Always»). `app.json`: il plugin `expo-location` con
+   `isIosBackgroundLocationEnabled` (`UIBackgroundModes` `location`;
+   expo-task-manager aggiunge `fetch`) e un testo nuovo del permesso, in
+   cinque lingue con `locales` e `CFBundleAllowMixedLocalizations` (la
+   guida Expo). Android resta com'era (**scelta dell'utente**).
+3. **`watchRunPosition`** (`runPosition.ts`; deciso dall'agente): su iOS,
+   se il modo background c'è, `startLocationUpdatesAsync` sul task
+   `muw-run-location` per tutta la corsa, anche in primo piano (in
+   background non si può farlo partire), con `activityType` Fitness,
+   `pausesUpdatesAutomatically: false` (il consumatore nativo lo metteva
+   a `true`: a un semaforo iOS avrebbe spento il GPS e non l'avrebbe più
+   riacceso) e `showsBackgroundLocationIndicator: true`. Se manca o il
+   telefono rifiuta (Expo Go, Android, una build senza il modo),
+   `watchPositionAsync` come prima. Il task è definito quando l'app si
+   carica; una corsa alla volta; start e stop in fila, così lo stop di una
+   corsa finita non arriva mai dopo lo start della successiva; posizioni
+   senza corsa (app chiusa a metà, task ripreso da iOS al riavvio) fermano
+   il task, che costa batteria.
+4. **Il taglio della linea** (`runAway.ts`; deciso dall'agente; la regola
+   dei 60 s di ADR-0219, scelta dell'utente, non cambia): col GPS in
+   background uscire dal primo piano non ferma più niente, e un corridore
+   fermo a un semaforo non dà posizioni (una ogni 5 m) proprio come un GPS
+   fermo. Il GPS si è fermato davvero solo se iOS ha **congelato l'app**:
+   un battito dell'orologio JS ogni secondo che arriva con più di 15 s di
+   ritardo (`FROZEN_AFTER_MS`), controllato anche prima di ogni posizione,
+   lo dice al registratore (`RunRecorder.leave` dall'ultimo battito);
+   la posizione dopo, se arriva più di 60 s dopo l'ultima, comincia un
+   tratto nuovo, senza metri né tempo di mezzo. Fermi a un semaforo a
+   telefono bloccato vale quindi la pausa automatica come in primo piano,
+   e sotto una galleria la linea dritta come in primo piano: le due cose
+   per cui ADR-0219 aveva scartato la regola del silenzio GPS. Col GPS
+   solo in primo piano resta l'ascolto di `AppState` di ADR-0219, e conta
+   anche il congelamento: una posizione arrivata subito dopo l'uscita, e
+   prima che iOS congeli l'app, non nasconde più il buco che segue.
+   `trackStore.ts` non cambia.
+5. **La voce a telefono bloccato fuori da questo task** (**scelta
+   dell'utente**): con la sessione audio di partenza iOS la zittisce; i km
+   detti in secondo piano contano comunque, e al ritorno non si ripetono.
+   Un task suo con expo-audio e `UIBackgroundModes` `audio`, dopo la prova
+   sull'iPhone.
+
+**Conseguenze**: in Expo Go nulla cambia; il GPS in background si vede
+solo in una build nativa (simulatore, Xcode sull'iPhone, TestFlight). La
+pillola blu durante un'attività con l'app in secondo piano; il GPS acceso
+come prima, lo schermo spento consuma meno. Nelle Impostazioni di iOS,
+alla voce di MuW, compare la scelta della lingua. iOS può comunque
+sospendere l'app (lo dice Apple): allora vale il punto 4. Il task di
+expo-task-manager resta registrato fino allo stop, anche se l'app viene
+chiusa a metà: lo ferma la prima posizione senza corsa.
+
 ## ADR-0227 — Il feed vero, versione semplice
 **Stato**: Attiva · 2026-10-08 · l'ordine è scelta dell'utente del
 2026-10-07 («ok va bene questo semplice»); il resto deciso dall'agente su
@@ -12865,3 +12947,230 @@ i disegni pubblicati con le reazioni (TASK-117, TASK-119) e i preferiti
 - Seguito (coordinatore, 2026-10-08): quando c'è TASK-121, le reazioni di
   chi l'utente ha bloccato non contano per lui (l'aiuto di
   `moderation.py`).
+
+## ADR-0230 — La ricerca lontana parte solo dove vicino non si disegna niente
+**Stato**: Attiva · 2026-10-08 · scelta dell'utente (2026-10-07: «ok» a
+percorsi più veloci anche se diversi da quelli di oggi) e dell'agente su
+delega dell'utente (quale delle due proposte (B) di TASK-203).
+
+**Contesto**: dal TASK-038 (ADR-0040) la ricerca riparte da 1–2 km
+(«Start here») appena quella attorno alla partenza non trova un percorso
+**buono** (somiglianza ≥ 0,90 e distanza ±10%), anche se ne ha uno
+disegnabile da 0,85. TASK-203 ha misurato che è metà del piano di una
+richiesta lunga. Le due proposte (B) del task, che cambiano i percorsi,
+erano dell'utente: saltare o dimezzare la ricerca lontana, e aspettare le
+vicine 1 s invece di 3 quando la partenza è già buona. TASK-203 B le ha
+misurate sul Mac, senza rete, per la strada dell'API (`plan_nearby`, tre
+partenze vicine in processi), su 15 richieste in sei città in cache
+(Trento ×5, Bologna ×3, Palermo ×2, Verona ×2, Levico ×2, Milano ×1),
+a caldo e a freddo, 3 giri, le varianti alternate a ogni giro (load
+average 4,5–16, mediana 6,7: altre sessioni al lavoro). La ricerca lontana
+è partita in 6 richieste su 15 e ha vinto in 2: il cerchio da 15 km di
+Trento (0,925 a 1 km, ma vince una partenza vicina con 0,970 e il lontano
+resta seconda alternativa) e il cerchio da 15 km di Bologna (0,917 a 1 km
+contro 0,884 dalla partenza). Nelle altre 4 ha bruciato 16–19
+tracciamenti per niente. Nella città finta di `test_kept_per_graph.py`
+(parchi, fiume, un terzo delle strade tolte) vince 2 volte su 5, e di
+molto (cuore 0,912 contro 0,819, stella 0,935 contro 0,831).
+
+**Decisione**:
+
+1. **La ricerca lontana parte solo se vicino non c'è nessun percorso
+   disegnabile** (`optimizer.plan_shape`: `_drawable` della ricerca
+   dritta, come prima di TASK-232; somiglianza sotto 0,60 o oltre ±2 km
+   dal target). Un percorso vicino disegnabile ma non buono si tiene, e la
+   forma resta dove l'utente è. Quando parte, è come prima: 20
+   tracciamenti, e il suo percorso sostituisce quello vicino se è buono o
+   almeno disegnabile.
+2. **`FAR_TRACES` resta 20** e **`NEARBY_GOOD_GRACE_S` resta 3 s**
+   (sotto, le alternative scartate).
+3. I percorsi nuovi sono fissati da `tests/test_far_search_skipped.py`
+   (la ricerca lontana non parte con un percorso vicino disegnabile e il
+   grafo grande non si legge; parte ancora dove non si disegna niente;
+   le impronte dei due casi della città finta che cambiano) e da
+   `test_kept_per_graph.py`, le cui due impronte cambiate sono aggiornate.
+
+**Misure** (secondi, mediana di 3 giri a caldo, zona in memoria; fra
+parentesi a freddo, processo nuovo; prima → dopo):
+
+| Richiesta | Prima | Dopo | Percorso |
+|---|---|---|---|
+| Trento cuore 10 km | 4,07 (4,48) | 2,73 (3,50) | uguale, 0,915 (vicina), stesse alternative |
+| Trento cerchio 15 km | 4,86 (5,30) | 2,92 (3,38) | uguale, 0,970 (vicina); perde la seconda alternativa (quella lontana, 0,924) |
+| Trento «CIAO» 12 km tondo | 12,6 (10,1) | 6,05 (6,49) | uguale, 0,919 (vicina), stessa alternativa |
+| Bologna cerchio 15 km | 4,48 (5,26) | 2,70 (3,22) | **diverso**: 0,884 dalla partenza (14,8 km) invece di 0,917 a 1 km (14,3 km) |
+| Levico cuore 10 km | 1,84 (2,12) | 1,07 (1,63) | uguale, 0,839, stesse alternative |
+| Levico cerchio 15 km | 2,63 (3,35) | 1,25 (1,83) | uguale, 0,906 (vicina), stesse alternative |
+
+Nelle altre 9 richieste (stella 5 km, cuore 10 km e cerchio 15 km dove la
+partenza è già buona, «CIAO» con la penna alzata, Milano) la ricerca
+lontana non partiva e niente cambia. I tempi di «dopo» qui sono della
+variante provata fuori dal motore; quelli del codice vero sono nel task
+file, «Parte B».
+
+**Alternative scartate**:
+
+- *`FAR_TRACES` 20 → 10*: nessun percorso cambia nei 15 casi e nei 7 del
+  test (dove la ricerca lontana vince, converge in 7–12 tracciamenti), ma
+  guadagna solo 0,1–0,4 s sulle forme (cuore 4,07 → 3,93, cerchio 4,86 →
+  4,70, Levico cuore 1,84 → 1,45) e 1,6–4 s sulla parola tonda: il costo
+  fisso della ricerca lontana (ritaglio del grafo grande, `RoadMask`,
+  conteggio delle strade da 36 partenze) resta tutto. Scelta sicura ma da
+  poco; resta disponibile se l'utente preferisce non perdere mai uno
+  «Start here».
+- *Saltarla solo se vicino la somiglianza è ≥ 0,85*: salva i due casi
+  della città finta (0,739 e 0,831 vicino) ma non Bologna (0,884), e fra i
+  casi veri guadagna solo sul cuore di Trento.
+- *`NEARBY_GOOD_GRACE_S` 3 → 1 s*: conta solo quando la partenza è già
+  buona e le vicine sono lente, cioè le parole con la penna alzata
+  («CIAO» 12 km: 6,47 → 4,55 a caldo, 4,59 → 3,31 a freddo), e lì toglie
+  tutte le alternative; sulle forme le vicine finiscono entro 1–2 s e il
+  guadagno è ≤ 0,1 s. Sul server, più lento del Mac, 1 s toglierebbe le
+  alternative quasi sempre: l'attesa che l'utente ha scelto in TASK-093
+  resta.
+
+**Conseguenze**:
+
+- Un percorso disegnabile ma sotto 0,90 vicino alla partenza non viene
+  più sostituito da uno migliore a 1–2 km: a Bologna il cerchio da 15 km
+  passa da 92% a 88%; nei posti con buchi (fiumi, parchi, campi) la
+  perdita può essere più grande (la città finta: −0,09 e −0,10).
+- Cambia l'impronta del motore: dopo l'aggiornamento del server va
+  rilanciato `draw_examples` (circa 40 minuti, `AGENTI.md` regola 11), con
+  l'ok dell'utente; `apps/mobile/assets/engine/engine.zip` è rifatto.
+- `docs/ROUTE_ENGINE.md` §5, «Trova dove la forma ci sta», descrive la
+  regola nuova.
+
+## ADR-0233 — La build dello store ha il runtime dal fingerprint, Expo Go resta su `exposdk:57.0.0`
+**Stato**: Attiva · 2026-10-08 · TASK-152 parte A · deciso dall'agente su
+delega dell'utente (l'utente ha chiesto il profilo `production` e il
+`fingerprint` prima dell'App Store; come farli convivere con Expo Go è
+dell'agente).
+
+**Contesto**: `eas.json` aveva solo `preview`. `runtimeVersion` in
+`app.json` è `exposdk:57.0.0`: cambia solo con l'SDK. Per una build
+dello store vuol dire che un `eas update` fatto dopo una libreria nativa
+nuova (stesso SDK) arriverebbe a telefoni che quella libreria non ce
+l'hanno, e l'app si chiuderebbe all'avvio. Il rimedio di Expo è la
+politica `fingerprint`: il runtime è un'impronta del codice nativo. Ma
+Expo Go apre un update solo se il runtime è `exposdk:<sdk>` (ADR-0078):
+passare tutto a `fingerprint` spegnerebbe il canale `preview` sull'iPhone.
+
+**Decisione**:
+
+1. `app.json` non cambia: `exposdk:57.0.0` per Expo Go, per il canale
+   `preview` e per le build `preview`.
+2. Un nuovo `apps/mobile/app.config.ts` riprende `app.json` e, solo con
+   `APP_VARIANT=production`, mette `runtimeVersion: {policy:
+   "fingerprint"}`.
+3. Profilo `production` in `eas.json`: canale `production`, ambiente
+   EAS `production`, `autoIncrement` del numero di build (le versioni
+   stanno su EAS, `appVersionSource: remote`), `APP_VARIANT=production`
+   in `env`.
+4. Gli update per lo store si pubblicano con la stessa variabile:
+   `APP_VARIANT=production npx eas-cli update --channel production ...`
+   (`DEPLOY.md` A.7).
+5. `apps/mobile/fingerprint.config.js` toglie dall'impronta la versione,
+   il numero di build ed `eas.json`, oltre a quello che Expo toglie già
+   (gli script `ios`/`android` di `package.json`, la cartella `ios/`
+   locale, ignorata da git).
+
+**Provato sul Mac** (`expo-updates runtimeversion:resolve`, iOS):
+senza variabile il runtime resta `exposdk:57.0.0`; con la variabile è un
+hash di 40 caratteri, uguale due volte di fila. Non cambia con: versione
+1.0.0 e build 7, una sezione `submit` in `eas.json`, una riga in
+`App.tsx`, una cartella `ios/` locale. Cambia con: `supportsTablet`
+falso, un plugin nativo in più (`expo-location`). Android ha un'impronta
+sua. Nell'impronta entra anche il percorso dei pacchetti: un worktree con
+`node_modules` collegati dalla cartella principale dà un altro hash di un
+checkout con `npm install` (le prove sopra confrontano sempre lo stesso
+worktree).
+
+**Alternative scartate**:
+
+- *`fingerprint` in `app.json` per tutti*: Expo Go non apre più gli
+  update di `preview` (ADR-0078), e il criterio di TASK-152 «Expo Go
+  funziona come prima» cade.
+- *`exposdk:57.0.0` anche per lo store, solo canali separati*: niente
+  ferma un update con codice nativo nuovo verso le build vecchie; il
+  controllo resterebbe a memoria.
+- *`appVersion` (il runtime è la versione dell'app)*: va ricordato di
+  alzarla a ogni cambio nativo; lo stesso errore, spostato.
+- *Lasciare `eas.json` nell'impronta (il default di Expo)*: la sezione
+  `submit` che TASK-152 aggiunge dopo la prima build cambierebbe il
+  runtime, e gli update smetterebbero di arrivare in silenzio.
+- *`EAS_BUILD_PROFILE` invece di `APP_VARIANT`*: esiste solo durante
+  `eas build`, non in `eas update`.
+
+**Conseguenze**:
+
+- Un errore con la variabile non rompe niente: un update per lo store
+  pubblicato senza `APP_VARIANT` ha il runtime di Expo Go e nessuna
+  build dello store lo prende; uno per `preview` con la variabile non
+  lo prende Expo Go. In tutti e due i casi `eas update` stampa il
+  runtime: va controllato.
+- Ogni cambio nativo (libreria, plugin, permesso, icona, splash, SDK)
+  vuole una build nuova e la revisione di Apple: gli update per lo store
+  arrivano solo alle build con la stessa impronta.
+- L'impronta calcolata sul Mac e quella della build su EAS non sono
+  ancora state confrontate: si fa alla prima build `production`
+  (`DEPLOY.md` A.7, punto 4).
+- L'ambiente EAS `production` deve avere `EXPO_PUBLIC_API_URL` e
+  `EXPO_PUBLIC_API_KEY` prima della prima build: oggi ci sono solo in
+  `preview`.
+
+## ADR-0234 — Il dominio getmuw.app: si resta su Hetzner, l'API anche su api.getmuw.app
+**Stato**: Attiva · 2026-10-08 · scelta dell'utente (restare sul server,
+il nome); il modo deciso dall'agente su delega dell'utente e diviso dal
+Coordinatore (TASK-265).
+
+**Contesto**: l'utente voleva «spostare il sito» su un'azienda tedesca
+(«Zeda Server», forse Zade Servers). Il sito (`site/`, TASK-237) non era
+online da nessuna parte; sul server Hetzner CX33 di Falkenstein gira
+l'API, raggiunta dall'app su `188-245-9-220.sslip.io`, un nome che
+contiene l'IP e cambia con il server. Hetzner è già un'azienda tedesca.
+Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
+`getmuw.app`, preso da lui su Porkbun il 2026-10-08 (liberi anche
+`muw.run`, `muwrun.com`, `muw.club`; già presi `muw.com`, `muw.app`,
+`muw.it`, `muwapp.com`, `getmuw.com`).
+
+**Decisione**:
+
+1. Il server resta quello di Hetzner. Nessun trasloco.
+2. L'API risponde su `api.getmuw.app` **e** su `188-245-9-220.sslip.io`:
+   un indirizzo in più nella riga del Caddyfile di apt, un `reload` senza
+   fermare niente. Il vecchio nome resta per le app che non hanno ancora
+   l'aggiornamento con l'indirizzo nuovo.
+3. `getmuw.app` e `www.getmuw.app` sono per il sito (TASK-237), sullo
+   stesso Caddy: una copia dei soli file che la pagina carica in
+   `/srv/getmuw-site`, presa da `origin/main` con `git archive` e un
+   elenco esplicito, rifatta a mano dopo ogni merge che cambia il sito;
+   `www` rimanda a `getmuw.app`.
+4. Tre record `A` verso l'IPv4 del server, nessun `AAAA` per ora.
+5. Il ritorno da Strava (`SHAPEROUTE_DOMAIN`) resta su `sslip.io`.
+6. Chi fa cosa: la documentazione TASK-265; il Caddyfile sul server e
+   `EXPO_PUBLIC_API_URL` di `preview` il Coordinatore, ciascuno con l'ok
+   dell'utente; il sito la sessione di TASK-237. Come si fa:
+   `DEPLOY.md`, F.14.
+
+**Alternative scartate**:
+
+- *Spostare tutto su un altro provider tedesco*: un trasloco (30 GB di
+  zone, il database, una pubblicazione dell'app) per arrivare dove si è
+  già, in Germania; il dominio rende invisibile all'app un trasloco
+  futuro, se un giorno servirà.
+- *Sostituire `sslip.io` con `api.getmuw.app`*: le app che non hanno
+  ancora scaricato l'aggiornamento resterebbero senza API.
+- *Passare al Caddy di `deploy/compose.yaml`* (F.12, punto 4): due
+  cambi insieme dove ne basta uno.
+- *DNS su Cloudflare con il proxy acceso*: Caddy e Let's Encrypt
+  lavorano già da soli; un intermediario in più da configurare.
+
+**Conseguenze**:
+
+- Un nome che resta se cambia il server, e che serve anche agli store
+  (la pagina della privacy, F.10).
+- Il dominio va rinnovato ogni anno (Porkbun, l'utente); `.app` vuole
+  sempre HTTPS, che Caddy dà da solo.
+- Spostare il ritorno da Strava su `api.getmuw.app` richiede di cambiare
+  anche l'applicazione Strava dell'utente: un passo a parte.

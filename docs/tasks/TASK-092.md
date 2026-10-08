@@ -1,6 +1,6 @@
 # TASK-092 — Percorsi consigliati: tutti salvati, i migliori proposti
 
-**Stato**: In lavorazione
+**Stato**: Done (questa parte: la riga «Recommended»; PR #445)
 **Fase**: 4 · **Branch**: `feat/TASK-092-recommended-routes`
 
 Chiesto dall'utente il 2026-10-01: «salvali tutti… per ripopolare anche
@@ -48,16 +48,16 @@ ordinati dall'API col criterio di ADR-0229.
 
 ## Criteri di accettazione
 
-- [ ] Un test deterministico mostra l'ordine su una fixture piccola: la
+- [x] Un test deterministico mostra l'ordine su una fixture piccola: la
       somiglianza batte le reazioni, le reazioni battono le corse, a
       parità restano tutti e due.
-- [ ] La riga non rompe niente: senza catalogo, senza rete, senza
+- [x] La riga non rompe niente: senza catalogo, senza rete, senza
       account si nasconde.
-- [ ] La risposta per una riga di 10 percorsi con le anteprime pesa meno
+- [x] La risposta per una riga di 10 percorsi con le anteprime pesa meno
       di 100 kB.
-- [ ] Test verdi nell'API e nell'app.
-- [ ] `API.md` e `UI.md` aggiornati; ADR-0229.
-- [ ] I testi nuovi nelle cinque lingue visti dall'utente.
+- [x] Test verdi nell'API e nell'app.
+- [x] `API.md` e `UI.md` aggiornati; ADR-0229.
+- [x] I testi nuovi nelle cinque lingue visti dall'utente.
 
 ## File toccati
 
@@ -84,3 +84,20 @@ ordinati dall'API col criterio di ADR-0229.
   `profiles.py` (TASK-121 in parallelo), `App.tsx`.
 
 ## Esito
+
+2026-10-08, PR #445. **API**: `GET /recommended` (`best_routes.py`,
+token obbligatorio, nessuna migrazione, una riga in `app.py`) ordina i
+percorsi del catalogo entro 5 km come dice ADR-0229; una corsa o un
+preferito è di un percorso quando la sua linea ha la stessa chiave di
+`favoriteKey`. Una riga di 10 pesa circa 14 kB (Milano, catalogo vero).
+**App**: la riga «RECOMMENDED» sopra le schede di «Explore», solo con un
+account; senza catalogo, rete, token o endpoint non c'è, e «Explore» resta
+com'è. Testo nelle cinque lingue confermato dall'utente il 2026-10-08.
+Test: API 1346 verdi in locale (i nuovi con PostgreSQL), app 350 file di
+test verdi, typecheck e format verdi.
+
+**Dopo il merge**: il server con `best_routes.py` (ok dell'utente,
+coordinatore); la pubblicazione dell'app può venire prima.
+**Seguiti**: con TASK-121 le reazioni di chi l'utente ha bloccato non
+contano per lui; restano fuori scope il salvataggio di ogni percorso
+generato (ADR-0086, punto 1) e l'esportazione per i social.

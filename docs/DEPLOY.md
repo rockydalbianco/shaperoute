@@ -189,6 +189,71 @@ riaprila).
 - Una build propria (TestFlight) resta fuori: serve l'account Apple
   Developer.
 
+### A.7 La build dello store e il canale `production` (TASK-152)
+
+Due canali, ognuno con il suo runtime (ADR-0233):
+
+| Canale | Chi lo apre | Runtime |
+|---|---|---|
+| `preview` | Expo Go, le build `preview` | `exposdk:57.0.0`, da `app.json` |
+| `production` | le build dell'App Store | un'impronta del codice nativo (`fingerprint`) |
+
+Il runtime dello store lo mette `apps/mobile/app.config.ts`, solo quando
+c'è `APP_VARIANT=production`: il profilo `production` di `eas.json` la
+imposta da solo, `eas update` no. Un update arriva solo ai telefoni con
+lo stesso runtime: uno fatto dopo un cambio nativo non può far chiudere
+le build vecchie, semplicemente non le raggiunge.
+
+1. **Prima della prima build**: l'ambiente EAS `production` è vuoto. Da
+   `apps/mobile`, come in A.6 punto 2 ma con `production`:
+
+   ```
+   npx eas-cli env:set production --name EXPO_PUBLIC_API_URL --value https://INDIRIZZO-DELL-API --visibility plaintext
+   ```
+
+   La chiave, `EXPO_PUBLIC_API_KEY`, dalla pagina del progetto su
+   expo.dev, ambiente `production`, visibilità *Sensitive*.
+2. **La build** (serve l'account Apple Developer, lo fa l'utente con le
+   sue credenziali):
+
+   ```
+   npx eas-cli build --platform ios --profile production
+   ```
+
+   Il numero di build sale da solo (`autoIncrement`, le versioni stanno
+   su EAS).
+3. **Un update per lo store**: prima su `preview` e provato sull'iPhone
+   (A.6), poi la **stessa commit**, da un worktree pulito di `main`:
+
+   ```
+   APP_VARIANT=production npx eas-cli update --channel production --environment production --message "cosa è cambiato"
+   ```
+
+   Nell'output, «Runtime version» deve essere un hash di 40 caratteri.
+   Se dice `exposdk:57.0.0` manca la variabile: l'update è andato sul
+   canale ma nessuna build dello store lo prende; si ripubblica con la
+   variabile.
+4. **L'update raggiunge la build?** Il runtime che avrebbe un update di
+   adesso:
+
+   ```
+   APP_VARIANT=production npx expo-updates runtimeversion:resolve --platform ios --workflow managed
+   ```
+
+   va confrontato con quello della build sulla sua pagina su expo.dev.
+   Si lancia nel worktree del punto 3, dopo un `npm install` vero:
+   nell'impronta conta anche il percorso dei pacchetti, e con
+   `node_modules` collegati da un'altra cartella esce un altro hash.
+   Uguali: l'update arriva. Diversi: dalla build è cambiato qualcosa di
+   nativo (una libreria, un plugin, un permesso, l'icona, lo splash,
+   l'SDK) e serve una build nuova, con la revisione di Apple. **Alla
+   prima build va fatto comunque**: l'impronta calcolata sul Mac e
+   quella di EAS non sono ancora state confrontate.
+
+L'impronta non guarda la versione, il numero di build né `eas.json`
+(`apps/mobile/fingerprint.config.js`): alzarli non separa gli update.
+Una modifica solo JavaScript non la cambia mai.
+
 ---
 
 ## La chiave dell'API
@@ -460,7 +525,8 @@ Caddy installato con apt, pubblico da subito su un nome `sslip.io`,
 senza dominio comprato (F.8). Misurato lì: un cuore da 5 km a Trento in
 18,7 s con la zona in cache, una stella in 3,2 s, l'API in circa 0,56 GB
 di RAM; e Overpass, che rifiuta il Mac, dal server risponde. Come
-portarlo su `deploy/compose.yaml`: F.12.
+portarlo su `deploy/compose.yaml`: F.12. Dal 2026-10-08 ha anche un nome
+dell'utente, `api.getmuw.app`: F.14.
 
 ### F.1 Quale server
 
@@ -997,6 +1063,160 @@ La prima riga è la copia di adesso, per tornare indietro. Una copia che
 c'è solo nello Storage Box va prima nella cartella del server:
 `rsync -a -e "ssh -p 23 -i /root/.ssh/storagebox/id_ed25519" u123456@u123456.your-storagebox.de:sgrava-db/shaperoute-<data>.dump ~/shaperoute/data/backups/`.
 All'avvio l'API riapplica le migrazioni più nuove della copia.
+
+### F.14 Il dominio getmuw.app (TASK-265)
+
+Il 2026-10-08 l'utente ha comprato **`getmuw.app`** su Porkbun
+(registrato fino al 2027-10-08, server DNS di Porkbun) ed è rimasto su
+questo server (ADR-0234). L'API risponde anche su `api.getmuw.app`;
+`188-245-9-220.sslip.io` resta acceso per le app che hanno ancora il
+vecchio indirizzo e per il ritorno da Strava (`SHAPEROUTE_DOMAIN`, sotto).
+`getmuw.app` e `www.getmuw.app` sono per il sito (TASK-237, `SITO.md`).
+
+Sul server Caddy è quello di apt (F.12, punto 4): `caddy.service` in
+systemd, la configurazione in `/etc/caddy/Caddyfile`, l'API dietro su
+`127.0.0.1:8000`. Il `deploy/Caddyfile` del repository non c'entra.
+
+1. **Il DNS**, nel pannello di Porkbun (lo fa l'utente): via i due record
+   di parcheggio verso `pixie.porkbun.com` (un `ALIAS` senza nome e un
+   `CNAME` `*`), poi tre record `A`, TTL 600:
+
+   | Host | Valore |
+   |---|---|
+   | *(vuoto)* | `188.245.9.220` |
+   | `www` | `188.245.9.220` |
+   | `api` | `188.245.9.220` |
+
+   Niente `AAAA`: il server ha anche l'IPv6 `2a01:4f8:c016:7ef0::1` e
+   `ufw` apre 80 e 443 anche lì, quindi si può aggiungere in seguito, ma
+   senza l'app funziona uguale. Il controllo, dal Mac:
+
+   ```bash
+   dig +short api.getmuw.app @1.1.1.1
+   ```
+
+   deve rispondere `188.245.9.220`. Un dominio `.app` appena comprato
+   arriva nel registro di Google da qualche minuto a un'ora dopo; prima
+   `dig` non risponde niente. Senza quella risposta non si va avanti:
+   Caddy chiederebbe il certificato a vuoto.
+2. **Il Caddyfile**, sul server. Prima una copia, poi un solo cambio,
+   l'indirizzo in più nella riga del sito:
+
+   ```diff
+   -188-245-9-220.sslip.io {
+   +188-245-9-220.sslip.io, api.getmuw.app {
+    	reverse_proxy 127.0.0.1:8000
+    }
+   ```
+
+   ```bash
+   cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.before-task265
+   sed -i 's/^188-245-9-220\.sslip\.io {$/188-245-9-220.sslip.io, api.getmuw.app {/' /etc/caddy/Caddyfile
+   caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+   systemctl reload caddy
+   ```
+
+   `reload` cambia la configurazione senza fermare Caddy: chi usa
+   `sslip.io` non se ne accorge. Caddy chiede subito il certificato di
+   `api.getmuw.app` a Let's Encrypt e poi lo rinnova da solo; com'è
+   andata:
+
+   ```bash
+   journalctl -u caddy --since "10 min ago" | grep -i -E "api.getmuw.app|error"
+   ```
+
+   cerca una riga «certificate obtained successfully» per
+   `api.getmuw.app`.
+3. **La prova, dal Mac**:
+
+   ```bash
+   curl -s https://api.getmuw.app/health
+   curl -s -o /dev/null -w '%{http_code}\n' https://api.getmuw.app/docs
+   curl -s -o /dev/null -w '%{http_code}\n' https://188-245-9-220.sslip.io/health
+   ```
+
+   rispondono `{"status":"ok"}`, `401` (senza chiave l'API resta chiusa)
+   e `200` (il vecchio indirizzo va ancora). `curl` si ferma da solo se
+   il certificato non è valido.
+4. **L'app**: dopo la prova, con l'ok dell'utente, `EXPO_PUBLIC_API_URL`
+   di `preview` su EAS diventa `https://api.getmuw.app` (F.8, punto 6) e
+   si pubblica. La chiave non cambia. Le app che non hanno ancora scaricato
+   l'aggiornamento continuano su `sslip.io`, per questo il vecchio nome
+   resta nel Caddyfile.
+
+**Tornare indietro**: `cp /etc/caddy/Caddyfile.before-task265
+/etc/caddy/Caddyfile && systemctl reload caddy`. Se l'app era già
+passata ad `api.getmuw.app`, prima si ripubblica con l'indirizzo
+`sslip.io`.
+
+**Il sito su `getmuw.app`** (TASK-237, parte B): dopo che il sito con il
+nome MuW è in `main` e con il sì dell'utente sulla pubblicazione. Il sito
+è statico, senza build (`SITO.md`): Caddy serve una copia dei soli file
+che la pagina carica, in `/srv/getmuw-site`. Restano fuori `tests/`,
+`tools/`, `package.json` e il merch spento (`merch.*`, `products.js`,
+`prints/`). La copia non viene da `/root/shaperoute`: Caddy gira come
+utente `caddy` e non entra in `/root`.
+
+1. **I file**, sul server. `git fetch` aggiorna solo `origin/main`, non i
+   file da cui si costruisce l'API; `git archive` prende l'elenco
+   esplicito da lì. La copia nuova si prepara a parte e prende il posto
+   della vecchia in un colpo, che resta in `/srv/getmuw-site.old`:
+
+   ```bash
+   cd /root/shaperoute
+   git fetch origin main
+   rm -rf /srv/getmuw-site.new && mkdir -p /srv/getmuw-site.new
+   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets | tar -x -C /srv/getmuw-site.new --strip-components=1
+   chmod -R a+rX /srv/getmuw-site.new
+   rm -rf /srv/getmuw-site.old
+   if [ -d /srv/getmuw-site ]; then mv /srv/getmuw-site /srv/getmuw-site.old; fi
+   mv /srv/getmuw-site.new /srv/getmuw-site
+   ```
+
+   Gli stessi comandi, dopo ogni merge che cambia il sito, lo
+   aggiornano; Caddy non va toccato. Se la pagina carica un file nuovo
+   fuori da quell'elenco, l'elenco cambia qui. Tornare alla copia di
+   prima: `rm -rf /srv/getmuw-site && mv /srv/getmuw-site.old
+   /srv/getmuw-site`.
+2. **Il Caddyfile**, una volta: due blocchi in fondo, con la copia prima
+   come al punto 2 sopra (`Caddyfile.before-task237b`). `www` rimanda al
+   nome senza `www`, così l'indirizzo è uno solo:
+
+   ```
+   getmuw.app {
+   	root * /srv/getmuw-site
+   	encode gzip
+   	file_server
+   }
+
+   www.getmuw.app {
+   	redir https://getmuw.app{uri} permanent
+   }
+   ```
+
+   poi `caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile`
+   e `systemctl reload caddy`. Caddy chiede i certificati dei due nomi.
+3. **La prova, dal Mac**:
+
+   ```bash
+   curl -s -o /dev/null -w '%{http_code} %{content_type}\n' https://getmuw.app/
+   curl -s -o /dev/null -w '%{http_code} %{content_type}\n' https://getmuw.app/main.js
+   curl -s -o /dev/null -w '%{http_code}\n' https://getmuw.app/package.json
+   curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' https://www.getmuw.app/
+   ```
+
+   rispondono `200 text/html…`, `200 text/javascript…` (gli script
+   sono moduli ES e il browser li vuole con questo tipo: Caddy lo dà da
+   solo dall'estensione), `404`, e `301 https://getmuw.app/`. Poi la
+   pagina in un browser: «Try it» disegna un percorso.
+
+**Strava resta su `sslip.io`.** `SHAPEROUTE_DOMAIN` in `deploy/.env` è
+solo l'indirizzo a cui Strava rimanda il browser dopo «Connect with
+Strava», e deve essere uguale alla «Authorization Callback Domain»
+dell'applicazione Strava dell'utente. Per spostarlo su `api.getmuw.app`
+vanno cambiati tutti e due insieme (l'utente su
+<https://www.strava.com/settings/api>, poi `.env` e `docker compose up
+-d`): non fa parte di TASK-265.
 
 ---
 

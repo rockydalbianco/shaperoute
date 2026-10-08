@@ -1,10 +1,8 @@
 # TASK-237 — Il sito web, con la sezione «Merch» per le magliette
 
-**Stato**: In corso — parte A (la pagina e la vetrina) in `main` (PR
-#325, `f8e68b6`, 2026-10-05); parte A2 (la pagina diventa la guida
-dell'app, il merch messo da parte) in `main` (PR #335, `8f23ff4`,
-2026-10-05); il link per
-scaricare, la pubblicazione e il merch aspettano l'utente
+**Stato**: In corso — il sito è **online su https://getmuw.app** dal
+2026-10-08 (parti A, A2, A3 e C fatte); restano dell'utente il link per
+scaricare l'app (dopo l'App Store) e il merch (parte B, messo da parte)
 **Fase**: 4 · **Branch**: `feat/TASK-237-website-merch`
 **ADR**: ADR-0201
 
@@ -43,6 +41,12 @@ Letta così; l'utente ha poi confermato lo sport e i disegni (2026-10-05:
    era «sport», confermato), e una forma e una distanza da provare.
 5. **I dieci post migliori**: dieci disegni presi da quelli dell'app.
 
+## La terza richiesta dell'utente (2026-10-08)
+
+«Fai il sito web per il nuovo nome, grazie, e aiutami a metterlo online.»
+Il nuovo nome è **MuW** (ADR-0224, TASK-260), con il logo scelto
+dall'utente il 2026-10-06: il cuore su giallo e la scritta «MuW».
+
 ## Contesto da leggere
 
 - `docs/SITO.md`
@@ -69,6 +73,16 @@ Letta così; l'utente ha poi confermato lo sport e i disegni (2026-10-05:
 5. «Get the app»: segnaposto, e `site/config.js` per il link.
 6. L'aspetto: griglia da mappa, etichette a spaziatura fissa, la linea
    gialla che brilla.
+
+**Parte A3 — il nome MuW** (terza PR):
+
+1. Nome, segno e scritta di MuW nella pagina, nell'icona della scheda e
+   in fondo; nessun «Sgrava» nei testi del sito.
+2. I testi allineati all'app di oggi: niente punteggio a fine corsa
+   (TASK-241), «Feed» fra le pagine dell'app (TASK-118).
+
+**Parte C — metterlo online** (fatta): sul server Hetzner, dal Caddy, su
+`getmuw.app` (scelta dell'utente, 2026-10-08; Caddy e DNS di TASK-265).
 
 **Parte B — aprire il negozio e pubblicare** (dopo le scelte dell'utente):
 
@@ -107,6 +121,16 @@ Parte A2:
 - [x] Nessuno scorrimento orizzontale a 1280 e a 390 px; nessun errore
       nella console.
 - [x] `cd site && npm test` è verde; i due script rifanno gli stessi file.
+
+Parte A3:
+
+- [x] Titolo, logo, icona della scheda e piede dicono «MuW»; nessun file
+      del sito che la pagina carica contiene «Sgrava» (lo controlla un
+      test).
+- [x] I testi della guida non promettono il punteggio; le pagine
+      dell'app sono quattro, con «Feed».
+- [x] Nessuno scorrimento orizzontale a 1280 e a 390 px; nessun errore
+      nella console; `cd site && npm test` verde.
 
 Parte B: da scrivere con le scelte dell'utente.
 
@@ -151,10 +175,33 @@ checkout principale e la modifica è stata bloccata dai permessi. Nei
 punteggi, che nell'app sono inventati: solo titolo, luogo e km. Nessun
 disegno in bici: i dati dell'app non ne hanno. **Confermati dall'utente** il 2026-10-05 («sì
 intendevo sport, i disegni vanno bene così»): la scelta dello sport e i
-dieci disegni come sono, senza nomi, minuti e punteggi. **Da confermare
-con l'utente**: i testi nuovi (`content.js`, i titoli delle sezioni).
+dieci disegni come sono, senza nomi, minuti e punteggi. I testi sono stati
+confermati poi, con la parte A3 (2026-10-08).
+
+**Parte A3** (2026-10-08): il sito dice MuW, con il segno (il cuore su
+giallo) accanto alla scritta in alto, nell'icona della scheda e in fondo;
+la scritta è quella di `docs/brand/muw-logo.svg` nel colore del testo. Via
+il punteggio dalla corsa, aggiunto «Feed». Provato in Chrome senza
+finestra a 1280 e 390 px; 27 test verdi. **I testi del sito sono
+confermati dall'utente** (2026-10-08: «i testi vanno bene così»).
+**Parte C, online**: l'utente ha scelto il server Hetzner con il dominio
+`getmuw.app` (in un'altra sessione, 2026-10-08); Caddy e DNS sono di
+TASK-265, sul server applica il Coordinatore.
 
 **Aspettano l'utente** (parte B, il merch, messo da parte): il servizio di stampa e l'account; magliette,
 nomi, colori e prezzi; i testi della pagina («Runs that draw a shape on
 the map.», i tre passi, «Sgrava is in preview on iPhone, not yet on the
 App Store.»); dominio e pubblicazione.
+
+**Parte C** (2026-10-08): il sito è **online su https://getmuw.app**, con
+l'ok dell'utente alla pubblicazione; eseguito dalla sessione di TASK-265 al
+via del Coordinatore. Sul server: i 9 file pubblici di `site/` da `main`
+`d7f53269` in `/srv/getmuw-site`, serviti dal Caddy; `www.getmuw.app` →
+301 su `getmuw.app`; `package.json` e il merch spento non sono serviti
+(404). Il Caddyfile di prima è `Caddyfile.before-task237b`. Ricontrollato
+da questa sessione: pagina, script e logo rispondono 200 con i tipi giusti,
+e in Chrome senza finestra i tasti di sport, forma, distanza e filtro
+funzionano, i dieci disegni ci sono, nessun errore, nessuno scorrimento
+orizzontale a 1280 e 390 px. **Il sito non si aggiorna da solo**: dopo un
+merge che cambia `site/` va ripetuta la copia di `DEPLOY.md` F.14
+(scritta da TASK-265).

@@ -7,8 +7,7 @@ import type { Person } from "@shaperoute/shared-types";
  * acted for a follow request or a request accepted. Anything else: nothing.
  */
 export type TapTarget =
-  | { kind: "drawing"; id: string }
-  | { kind: "profile"; person: Person };
+  { kind: "drawing"; id: string } | { kind: "profile"; person: Person };
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

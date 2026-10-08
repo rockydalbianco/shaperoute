@@ -67,7 +67,8 @@ export function usePushNotifications(
       deviceToken: () => devicePushToken(),
       platform: pushPlatform(),
       keep: (request) => keepPushToken(baseUrl, token, request, { fetchFn, key }),
-      forget: (pushToken) => forgetPushToken(baseUrl, token, pushToken, { fetchFn, key }),
+      forget: (pushToken) =>
+        forgetPushToken(baseUrl, token, pushToken, { fetchFn, key }),
       sent: loadPushSent,
       save: savePushSent,
       clear: forgetPushSent,

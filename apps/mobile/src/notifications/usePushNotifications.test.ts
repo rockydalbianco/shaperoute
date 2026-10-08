@@ -13,7 +13,9 @@ jest.mock("expo-notifications");
 jest.mock("expo-constants", () => ({
   __esModule: true,
   default: {
-    expoConfig: { extra: { eas: { projectId: "47bc672d-5824-4e77-84c4-b44132c6e87f" } } },
+    expoConfig: {
+      extra: { eas: { projectId: "47bc672d-5824-4e77-84c4-b44132c6e87f" } },
+    },
   },
 }));
 jest.mock("expo-secure-store", () =>
@@ -84,7 +86,7 @@ test("on, with the phone allowing it, the token goes once in the app's language"
   const fetchFn = answers({ status: 204 });
   const { rerender } = await hook(fetchFn, { token: "one", push: true });
   expect(calls(fetchFn)).toEqual(["PUT http://api/me/push-token"]);
-  expect(JSON.parse(fetchFn.mock.calls[0][1].body)).toEqual({
+  expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual({
     token: PHONE,
     platform: "ios",
     language: "it",

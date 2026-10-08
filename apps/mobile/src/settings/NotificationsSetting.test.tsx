@@ -197,9 +197,10 @@ test("the phone refusing keeps the switch off, and says where to allow it", asyn
 });
 
 test("while the phone asks, the switch shows on and busy", async () => {
-  let answer: (value: unknown) => void = () => {};
+  type Asked = Awaited<ReturnType<typeof phone.requestPermissionsAsync>>;
+  let answer: (value: Asked) => void = () => {};
   phone.requestPermissionsAsync.mockImplementationOnce(
-    () => new Promise((resolve) => (answer = resolve)),
+    () => new Promise<Asked>((resolve) => (answer = resolve)),
   );
   const change = await show();
   await fireEvent.press(push());

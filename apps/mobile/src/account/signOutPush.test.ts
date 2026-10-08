@@ -43,7 +43,9 @@ test("the push token goes before the session, and the phone forgets it", async (
   const result = await signedIn(fetchFn);
   await act(async () => result.current.signOut());
   await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(3));
-  const asked = fetchFn.mock.calls.slice(1).map(([url, init]) => `${init.method} ${url}`);
+  const asked = fetchFn.mock.calls
+    .slice(1)
+    .map(([url, init]) => `${init?.method} ${url}`);
   expect(asked).toEqual([
     `DELETE ${URL}/me/push-token/${encodeURIComponent(PHONE)}`,
     `DELETE ${URL}/session`,

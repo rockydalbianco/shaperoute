@@ -150,12 +150,20 @@ test("«Help» and «Privacy» say what push sends, and that no email is sent (A
     expect(text).toMatch(/spent[ie] finché non l[ie] accendi/);
     expect(text).toMatch(/MuW non manda ancora email/);
   }
-  expect(all(EN.help)).toMatch(/follow requests, accepted requests, reactions, comments and tags/);
-  expect(all(IT.help)).toMatch(/richieste di follow, richieste accettate, reazioni, commenti e tag/);
+  expect(all(EN.help)).toMatch(
+    /follow requests, accepted requests, reactions, comments and tags/,
+  );
+  expect(all(IT.help)).toMatch(
+    /richieste di follow, richieste accettate, reazioni, commenti e tag/,
+  );
   // Who gets the token, and when it goes.
-  expect(all(EN.privacy)).toMatch(/Expo's push service, which hands them to Apple or Google/);
+  expect(all(EN.privacy)).toMatch(
+    /Expo's push service, which hands them to Apple or Google/,
+  );
   expect(all(EN.privacy)).toMatch(/turn push off, log out or delete your account/);
-  expect(all(IT.privacy)).toMatch(/servizio push di Expo, che le passa ad Apple o a Google/);
+  expect(all(IT.privacy)).toMatch(
+    /servizio push di Expo, che le passa ad Apple o a Google/,
+  );
 });
 
 test("«Privacy» says how the account is deleted and what goes with it", () => {

@@ -1030,11 +1030,7 @@ export interface PushTokenRequest {
 
 /** What a push notification tells of (TASK-262). */
 export type PushKind =
-  | "follow_request"
-  | "follow_accepted"
-  | "reaction"
-  | "comment"
-  | "tag";
+  "follow_request" | "follow_accepted" | "reaction" | "comment" | "tag";
 
 /**
  * The `data` of a push notification (TASK-262): what the app opens when it

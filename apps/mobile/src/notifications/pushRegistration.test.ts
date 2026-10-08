@@ -93,12 +93,14 @@ test("offline the token is taken back later; an API of before never had it", asy
   forget.mockResolvedValueOnce(OFFLINE);
   expect(await takeBackPushToken(7, deps)).toBe(false);
   expect(kept()).not.toBeNull();
-  forget.mockResolvedValueOnce({
+  const notFound: AccountOutcome<null> = {
     kind: "api_error",
     code: "http_error",
     message: "Not Found",
+    suggested_distance_m: null,
     retryAfterS: null,
-  });
+  };
+  forget.mockResolvedValueOnce(notFound);
   expect(await takeBackPushToken(7, deps)).toBe(true);
   expect(kept()).toBeNull();
 });

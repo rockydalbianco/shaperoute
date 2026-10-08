@@ -418,6 +418,6 @@ de vous» mentre il resto dell'app dà del «tu»; la bozza italiana di
 «Privacy» cita ancora «Discard» (testo legale, dell'utente). «NEAR YOUR
 START» della canoa è già tradotto (`t("Near your start")` in maiuscolo).
 
-**Dopo la parte F restano** (parte G): i titoli delle pagine in
-`App.tsx` (#437), il nome della forma e «Paddle ·» nel Feed (`feed/*`,
-dopo TASK-118), le mappe del Feed che seguono un cambio di lingua.
+**Dopo le parti F e G restano**: il nome della forma e «Paddle ·» nel
+Feed (`feed/*`, ora che TASK-118 è in `main` con la #439), le mappe del
+Feed che seguono un cambio di lingua.

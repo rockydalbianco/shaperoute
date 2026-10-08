@@ -1075,4 +1075,9 @@ export const IT: Table = {
   "This phone has no {language} voice: the voice speaks English.":
     "Questo telefono non ha una voce per {language}: la voce parla inglese.",
   "{language} · Enhanced": "{language} · Migliorata",
+
+  // The titles of the three pages: src/screens/pageTitles.ts (TASK-210, parte G)
+  Feed: "Feed",
+  Draw: "Disegna",
+  Explore: "Esplora",
 };

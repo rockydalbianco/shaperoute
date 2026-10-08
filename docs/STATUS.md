@@ -492,9 +492,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `t()`, i nomi degli sport con `tLater` e mostrati tradotti, la riga e il
   foglio della voce, 16 testi nuovi, test
   `settings/SportVoiceItalian.test.tsx`; testi approvati dall'utente il
-  2026-10-07. Restano i titoli in `App.tsx`, i
-  nomi delle forme, i nomi sulla mappa e «Start here», «Help» in de/es/fr,
-  «Paddle ·» nel feed (`tasks/TASK-210.md`). L'utente ha
+  2026-10-07. **Parte G — i titoli delle pagine** fatta il 2026-10-08
+  (branch `feat/TASK-210-g-page-titles`): «Feed», «Draw», «Explore» in alto
+  passano da `screens/pageTitles.ts` (it «Feed», «Disegna», «Esplora»; fr
+  «Fil», «Dessiner», «Explorer»), tre testi nuovi, test
+  `screens/pageTitles.test.ts`. Restano i nomi delle forme, i nomi sulla
+  mappa e «Start here», «Help» in de/es/fr (parte F, altra sessione),
+  «Paddle ·» nel feed dopo TASK-118 (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:

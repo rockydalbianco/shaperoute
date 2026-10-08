@@ -102,7 +102,9 @@ docs/tasks/TASK-152.md
 *(si compila a fine task)*
 
 **Parte A — il profilo `production` (2026-10-08, ADR-0233)**. Chiesta
-dall'utente prima dell'App Store; numero e ADR dal Coordinatore.
+dall'utente prima dell'App Store; numero e ADR dal Coordinatore. In
+`main` con la PR #446 (merge `9dcacbf4`); niente da pubblicare, `preview`
+non cambia.
 
 - `eas.json`: profilo `production` (canale `production`, ambiente EAS
   `production`, `autoIncrement`, `APP_VARIANT=production`).

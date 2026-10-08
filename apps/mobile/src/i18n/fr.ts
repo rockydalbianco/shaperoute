@@ -1080,4 +1080,7 @@ export const FR: Table = {
   "This phone has no {language} voice: the voice speaks English.":
     "Ce téléphone n'a pas de voix pour {language} : la voix parle anglais.",
   "{language} · Enhanced": "{language} · Améliorée",
+
+  // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
+  "{user}: {title}. {facts}.": "{user} : {title}. {facts}.",
 };

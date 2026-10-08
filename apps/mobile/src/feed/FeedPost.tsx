@@ -64,17 +64,30 @@ export function shapeLabel(shape: string): string {
   return shapeName(shape);
 }
 
-/** The sport's name, as its button says it: the same in every language. */
+/** The sports' names, as their buttons say them: the same in every language. */
 const PADDLE = SPORTS.find((sport) => sport.id === "paddle")?.name ?? "Paddle";
+const BIKE = SPORTS.find((sport) => sport.id === "bike")?.name ?? "Bike";
 
 /**
  * "Moon · 4.9 km · 27 min": what was drawn, how far, how long. A drawing on
- * the water says so first, "Paddle · Moon · 2.0 km · 24 min" (TASK-228). In
- * the app's units (TASK-182): "Moon · 3.0 mi · 27 min".
+ * the water says so first, "Paddle · Moon · 2.0 km · 24 min" (TASK-228), one
+ * on a bike "Bike · …" (TASK-118). In the app's units (TASK-182): "Moon ·
+ * 3.0 mi · 27 min". A member's drawing says what it draws in its own
+ * words, a word or a route's title, and a run without a route says only
+ * how far and how long.
  */
 export function postFacts(post: SamplePost): string {
-  const facts = `${shapeLabel(post.shape)} · ${distanceLabel(post.route_m)} · ${durationLabel(post.minutes * 60_000)}`;
-  return post.activity === "paddling" ? `${PADDLE} · ${facts}` : facts;
+  const what = post.what === undefined ? shapeLabel(post.shape) : post.what;
+  const facts = [
+    what,
+    distanceLabel(post.route_m),
+    durationLabel(post.minutes * 60_000),
+  ]
+    .filter((fact): fact is string => fact !== null)
+    .join(" · ");
+  const sport =
+    post.activity === "paddling" ? PADDLE : post.activity === "cycling" ? BIKE : null;
+  return sport === null ? facts : `${sport} · ${facts}`;
 }
 
 /**
@@ -86,7 +99,9 @@ export function postFacts(post: SamplePost): string {
  * (TASK-162). With `onOpen` a tap opens its route on the map, to keep among
  * the favorites or to run (TASK-188). A drawing on the water is drawn the
  * same, in pieces when its shape is (TASK-228). A figure the engine turned
- * is drawn turned back, line and map, so it reads upright (TASK-232).
+ * is drawn turned back, line and map, so it reads upright (TASK-232). A
+ * drawing a member published is shown the same (TASK-118): its tap opens
+ * it whole, with its reactions and comments, as from a profile.
  */
 export function FeedPost({ post, width, onOpen }: Props) {
   // The line of facts is written again when «Settings» changes the units
@@ -125,12 +140,20 @@ export function FeedPost({ post, width, onOpen }: Props) {
       onOpen?.();
     }
   }
-  const label = t("{user} in {city}: {title}. {facts}.", {
-    user: post.user,
-    city,
-    title: post.title,
-    facts: postFacts(post),
-  });
+  // A member's run may have no place found (TASK-118): then none is read.
+  const label =
+    city === ""
+      ? t("{user}: {title}. {facts}.", {
+          user: post.user,
+          title: post.title,
+          facts: postFacts(post),
+        })
+      : t("{user} in {city}: {title}. {facts}.", {
+          user: post.user,
+          city,
+          title: post.title,
+          facts: postFacts(post),
+        });
   const body = (
     <>
       <View style={styles.who}>
@@ -139,7 +162,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
         </View>
         <View style={styles.names}>
           <Text style={styles.user}>{post.user}</Text>
-          <Text style={styles.city}>{city}</Text>
+          {city !== "" && <Text style={styles.city}>{city}</Text>}
         </View>
       </View>
       <View style={[styles.drawing, { width, height }]} testID="feed-drawing">

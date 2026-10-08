@@ -1,8 +1,15 @@
 # TASK-118 — Il feed: i disegni degli altri
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-118-feed`
 **Dipende da**: TASK-117
+
+> Fatto il 2026-10-08 nella versione semplice chiesta dall'utente il
+> 2026-10-07 («ok va bene questo semplice»): ADR-0227. Questo piano è
+> quello di prima; dove differisce vale il brief del coordinatore: niente
+> `GET /users/{id}/drawings` (c'è già, TASK-117), niente punteggio
+> (TASK-241), il feed va in `screens/FeedScreen.tsx` e in `src/feed/*`,
+> l'API in `feed.py`.
 
 ## Obiettivo
 
@@ -29,11 +36,17 @@ recente, e da lì si arriva al disegno e al profilo di chi l'ha fatto.
 
 ## Criteri di accettazione
 
-- [ ] Il feed non contiene mai disegni privati né tracce non tagliate.
-- [ ] Due pagine consecutive non ripetono e non saltano disegni, anche se
-      nel frattempo ne arriva uno nuovo.
-- [ ] La risposta di una pagina pesa meno di 200 kB con 20 disegni da 21 km.
-- [ ] Test verdi; prova sull'iPhone con due account.
+- [x] Il feed non contiene mai disegni privati né tracce non tagliate
+      (`test_feed.py`: `only_me` mai, nemmeno al proprietario; `followers`
+      solo con la richiesta accettata; nell'elenco solo `track_preview`).
+- [x] Due pagine consecutive non ripetono e non saltano disegni, anche se
+      nel frattempo ne arriva uno nuovo (cursore a chiave
+      `gruppo-microsecondi-id`; test con due disegni nuovi fra le pagine).
+- [x] La risposta di una pagina pesa meno di 200 kB con 20 disegni da 21 km
+      (test con descrizione di 500 caratteri e due tag per disegno).
+- [x] Test verdi in API e app.
+- [ ] Prova sull'iPhone con due account: dell'utente, dopo il server e la
+      pubblicazione.
 
 ## File toccati
 
@@ -64,3 +77,19 @@ docs/tasks/TASK-118.md
 - «Corri anche tu questo disegno»: annotare come idea.
 
 ## Esito
+
+Fatto il 2026-10-08 (ADR-0227). API: `GET /feed?limit&cursor&lat&lon` in
+`feed.py`, registrato in `app.py`; i propri disegni, poi quelli di chi si
+segue, poi i vicini (50 km; tutti senza posizione), dal più recente per
+`published_at`; ogni post è il `Drawing` del profilo più `author`;
+nessuna migrazione. App: `src/api/feed.ts`, `src/feed/useFeed.ts`
+(lettura quando la pagina è sullo schermo, tira per aggiornare, pagina
+dopo in fondo), `src/feed/feedPosts.ts` (il disegno sulla scheda degli
+esempi), `FeedScreen` con i disegni veri e gli esempi come riempitivo; un
+tocco apre il disegno intero con reazioni e commenti. Testo nuovo solo
+per VoiceOver, «{user}: {title}. {facts}.», nelle cinque lingue. File
+fuori dall'elenco, con il coordinatore: una riga in `App.tsx` (la
+posizione) e `ProfileLayer.tsx` («←» dal disegno aperto dal Feed).
+Restano: il server (senza migrazioni) e la pubblicazione, la prova
+sull'iPhone con due account; seguiti in ADR-0227 (indice su
+`published_at`, foto dell'autore, il nome che apre il profilo).

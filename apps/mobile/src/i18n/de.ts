@@ -1089,4 +1089,7 @@ export const DE: Table = {
   "This phone has no {language} voice: the voice speaks English.":
     "Dieses Handy hat keine Stimme für {language}: Die Stimme spricht Englisch.",
   "{language} · Enhanced": "{language} · Erweitert",
+
+  // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
+  "{user}: {title}. {facts}.": "{user}: {title}. {facts}.",
 };

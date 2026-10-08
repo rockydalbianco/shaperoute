@@ -976,3 +976,34 @@ export interface Session {
   token: string;
   user: User;
 }
+
+/** Posts a page of GET /feed holds unless `limit` says (TASK-118). */
+export const FEED_PAGE_SIZE = 20;
+
+/**
+ * How far from the phone a drawing of someone the reader does not follow
+ * is still in its feed, in metres (TASK-118, ADR-0227).
+ */
+export const FEED_NEAR_M = 50_000;
+
+/**
+ * One post of GET /feed (TASK-118): a drawing as a profile lists it, with
+ * who published it. Opened whole with GET /drawings/{id}.
+ */
+export interface FeedPost extends Drawing {
+  author: DrawingAuthor;
+}
+
+/**
+ * GET /feed?limit=20&cursor=…&lat=…&lon=…: the drawings the reader may
+ * see, its own first, then those of the people it follows, then the
+ * others' near the point sent (all of them without one), the last
+ * published first in each group. Never a private one. The pages follow
+ * the cursor: a drawing published between two pages goes above it, and
+ * the next page neither repeats nor skips one.
+ */
+export interface FeedPage {
+  posts: FeedPost[];
+  /** The `cursor` of the next page; null on the last one. */
+  next: string | null;
+}

@@ -13,8 +13,8 @@
 
 MuW (già «Sgrava», TASK-260) gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
 Hetzner, in HTTPS e sempre accesa, con il database degli account; il Mac
-serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (per ora
-disegni d'esempio), «Draw» ed «Explore», e «Profile» per iscriversi ed
+serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (i disegni
+pubblicati dagli iscritti, TASK-118; esempi finché non ce ne sono), «Draw» ed «Explore», e «Profile» per iscriversi ed
 entrare, con i preferiti e le corse salvate («My activities»). In «Draw» si sceglie una forma del catalogo (cerchio, cuore,
 stella, cavallo, luna, gatto, pesce, farfalla, lumaca, testa di cane,
 testa di coniglio, zucca, albero di Natale, faccina, fantasmino,
@@ -535,6 +535,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-118: il feed vero, versione semplice (ADR-0227;
+  l'ordine è scelta dell'utente del 2026-10-07). `GET /feed`: i propri
+  disegni, poi quelli di chi si segue, poi i vicini (50 km dal telefono;
+  tutti senza posizione), dal più recente, a pagine con cursore, mai un
+  privato né una traccia non tagliata; una pagina di venti sotto i 200
+  kB. «Feed» li mostra sulle schede degli esempi, un tocco apre il
+  disegno con reazioni e commenti; gli esempi restano senza account o
+  con il feed vuoto. Fatto il 2026-10-08: server da aggiornare (senza
+  migrazioni), app da pubblicare.
 - **Motore, API e app** — TASK-191: percorsi in canoa e paddle (ADR-0154,
   ADR-0161, ADR-0164, ADR-0169; chiesto dall'utente il 2026-10-02).
   **A1** PR #216 (l'acqua e la fascia entro 1 km dalla riva), **A2** PR

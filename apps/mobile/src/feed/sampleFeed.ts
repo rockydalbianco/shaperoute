@@ -1,4 +1,4 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { Activity, LatLon } from "@shaperoute/shared-types";
 
 import { withPaddle } from "./paddlePosts";
 import posts from "./sampleFeed.json";
@@ -23,8 +23,13 @@ export type SamplePost = {
   /** From 0 to 100, as the score of a run (ADR-0090). */
   score: number;
   line: LatLon[];
-  /** A drawing on the water (TASK-228); a run's does not say it. */
-  activity?: "paddling";
+  /** A drawing on the water (TASK-228), or on a bike (a member's, TASK-118);
+   * a run's does not say it. */
+  activity?: Activity;
+  /** What was drawn, when `shape` does not say it: a word, a route's title;
+   * null for a run without a route. Only a member's drawing has it
+   * (TASK-118); an example's shape is in the catalogue. */
+  what?: string | null;
   /** The points of `line` the pen comes to without drawing: a shape in
    * pieces (TASK-226). */
   gaps?: number[];

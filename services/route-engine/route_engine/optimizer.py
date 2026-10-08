@@ -98,9 +98,12 @@ SCALE_RANGE = (0.4, 1.1)
 START_OFFSET_M = 500.0
 START_RINGS_M = (250.0, 500.0)
 START_BEARINGS = 8
-# When no route there is good, or the shape cannot be drawn there, a second
-# search looks for a place up to FAR_OFFSET_M away, on these rings, with its
-# own budget of traces (TASK-038, ADR-0040).
+# When the shape cannot be drawn there at all, a second search looks for a
+# place up to FAR_OFFSET_M away, on these rings, with its own budget of
+# traces (TASK-038, ADR-0040). It used to start whenever no route there was
+# good: half the time of a long request, for a better route in a case out
+# of six, so a drawable route near the start now keeps it out (TASK-203 B,
+# ADR-0230).
 FAR_OFFSET_M = 2000.0
 FAR_RINGS_M = (1000.0, 1500.0, 2000.0)
 FAR_BEARINGS = 12
@@ -1170,8 +1173,13 @@ def plan_shape(
             word=word,
             doubled=doubled_weight(name),
         )
-        if not found.converged:
-            # Not good here: look for a place farther away (ADR-0040).
+        # Only when nothing here can be drawn: look for a place farther away
+        # (ADR-0040). A route here that is drawable but not good is kept
+        # instead (ADR-0230): the far search took half the time of a long
+        # request and gave a better route in a case out of six. Judged on
+        # the upright search, as before TASK-232: a drawable route found
+        # tilted does not keep the far search out.
+        if not _drawable(found.upright_best, planned_m, kept):
             far_graph = source.load(
                 zone_area(shape, start, planned_m, FAR_OFFSET_M, word)
             )
@@ -1192,13 +1200,10 @@ def plan_shape(
                 # where the user is, and the time stays within bounds.
                 tilted_traces=0,
             )
-            # As before TASK-232, on the upright search: a tilted route
-            # near the start that is drawable but not good does not keep
-            # the far one out.
-            if far.converged or (
-                not _drawable(found.upright_best, planned_m, kept)
-                and _drawable(far.best, planned_m, kept)
-            ):
+            # The far route when it is good, or drawable where nothing
+            # upright near the start was (a tilted one may have been: as
+            # before TASK-232, it does not keep the far one out).
+            if far.converged or _drawable(far.best, planned_m, kept):
                 found, graph = far, far_graph
         best = found.best
         what = f"a {distance_m / 1000:g} km {name} cannot be drawn here"

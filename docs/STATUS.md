@@ -146,13 +146,28 @@ In coda, dopo o accanto:
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
   2–3,7 s in meno nei casi lunghi; `NEARBY_GOOD_GRACE_S` 3→1, 1,5 s in
-  meno con meno alternative (`tasks/TASK-203.md`).
+  meno con meno alternative (`tasks/TASK-203.md`). **Fatto il
+  2026-10-08 (parte B, ADR-0230)**: la ricerca lontana parte solo dove
+  vicino non si disegna niente; `FAR_TRACES` e `NEARBY_GOOD_GRACE_S` non
+  cambiano. **Resta**: aggiornamento del server e `draw_examples` (circa
+  40 minuti) con l'ok dell'utente.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
+- **TASK-261 — La corsa registra anche a telefono bloccato** (ADR-0225;
+  chiesto dall'utente il 2026-10-07). Branch
+  `feat/TASK-261-background-gps`. Su iOS, nell'app costruita, il GPS va
+  avanti in background con il solo permesso «While using» e la pillola
+  blu (expo-task-manager, `UIBackgroundModes` `location`); la linea si
+  taglia solo se iOS congela l'app; in Expo Go e su Android tutto come
+  prima. Testo nuovo del permesso in cinque lingue (`apps/mobile/locales/`),
+  **da mostrare all'utente prima del merge**. Per vederlo serve una
+  **build nativa**. Fuori: la voce a telefono bloccato (un task suo, scelta
+  dell'utente) e Android in background. Da dove riprendere:
+  `tasks/TASK-261.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -491,7 +506,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Fil», «Dessiner», «Explorer»), tre testi nuovi, test
   `screens/pageTitles.test.ts`. Restano i nomi delle forme, i nomi sulla
   mappa e «Start here», «Help» in de/es/fr (parte F, altra sessione),
-  «Paddle ·» nel feed dopo TASK-118 (`tasks/TASK-210.md`). L'utente ha
+  «Paddle ·» nel feed dopo TASK-118 (`tasks/TASK-210.md`). **Parte F — i
+  nomi delle forme, la mappa e «Help»** fatta il 2026-10-08 (branch
+  `feat/TASK-210-f-shape-names`): i nomi delle forme in «Draw» e sulle
+  schede di «Explore» nella lingua dell'app, `shapeWords.ts` che legge le
+  cinque lingue, i luoghi sulla mappa e «Start here» nella lingua
+  dell'app, «NEAR TRENTO», «Help» in de/es/fr e, per scelta dell'utente,
+  «Terms» e «Privacy» tradotti restando bozze, con le pagine chiamate come
+  i titoli della parte G; 4 testi nuovi in fondo alle tabelle. Dopo F e G
+  resta il Feed (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:
@@ -543,6 +566,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore** — TASK-203 parte B: la ricerca lontana («Start here» a 1–2
+  km, ADR-0040) parte solo dove vicino alla partenza non si disegna
+  niente, non più appena il percorso vicino non è buono (ADR-0230; «ok»
+  dell'utente del 2026-10-07 a percorsi più veloci anche se diversi, la
+  scelta fra le due (B) dell'agente su delega). Misurato sul Mac senza
+  rete su 15 richieste in sei città, a caldo e a freddo: −1,3…−1,9 s sui
+  cuori e cerchi lunghi (Trento, Bologna, Levico), −3,6…−6,5 s su una
+  parola tonda; 14 percorsi scelti su 15 uguali, il cerchio da 15 km di
+  Bologna passa da 0,917 a 1 km a 0,884 dalla partenza, il cerchio di
+  Trento perde la seconda alternativa. `FAR_TRACES` 10 (nessun percorso
+  cambia, 0,1–0,4 s) e l'attesa a 1 s (solo parole con la penna alzata,
+  senza alternative) scartati con i numeri (`tasks/TASK-203.md`, «Parte
+  B»). Test nuovo `test_far_search_skipped.py`, due impronte aggiornate in
+  `test_kept_per_graph.py`, `engine.zip` rifatto. PR #440 (2026-10-08). **Resta**: server e `draw_examples` (circa 40 minuti) con
+  l'ok dell'utente.
 - **API e app** — TASK-118: il feed vero, versione semplice (ADR-0227;
   l'ordine è scelta dell'utente del 2026-10-07). `GET /feed`: i propri
   disegni, poi quelli di chi si segue, poi i vicini (50 km dal telefono;

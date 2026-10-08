@@ -1,0 +1,5 @@
+{
+  "ios": {
+    "NSLocationWhenInUseUsageDescription": "MuW usa tu ubicación para dibujar rutas cerca de ti y registrar tus actividades. Durante una actividad sigue registrando también con el teléfono bloqueado, y iOS muestra la barra azul."
+  }
+}

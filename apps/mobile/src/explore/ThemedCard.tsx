@@ -1,6 +1,7 @@
 import { type RouteResult, type Shape, SHAPES } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { t } from "../i18n";
+import { shapeWord } from "../i18n/shapeNames";
 
 import type { ExportState } from "../route/useGpxExport";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
@@ -133,7 +134,11 @@ export function ThemedCard({
           {distanceLabel(result.distance_m, units, withPoint)}
         </Text>
         <Text style={styles.target}>
-          {`${result.shape.replace(/_/g, " ")} · ${result.city ?? "here"} · looks ${Math.round(result.similarity * 100)}% like it`}
+          {t("{title} · {city} · looks {percent}% like it", {
+            title: shapeWord(result.shape),
+            city: result.city ?? t("here"),
+            percent: Math.round(result.similarity * 100),
+          })}
         </Text>
       </View>
       <Text style={styles.body}>{passedText(result)}</Text>

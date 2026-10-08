@@ -13,6 +13,7 @@ import {
 import { WebView } from "react-native-webview";
 
 import { t } from "../i18n";
+import { useLanguage } from "../i18n/useLanguage";
 import { usePocketOn } from "../navigation/pocketOn";
 import { cumulative } from "../navigation/progress";
 import { MapLoadingBar } from "../route/LoadingBar";
@@ -48,7 +49,6 @@ import {
 import { doneMetres, splitRoute } from "./routeSplit";
 import type { Turn } from "./turnedMap";
 
-const MAP_PAGE = buildMapPage();
 /** One empty list, so the map is not told again and again of no routes. */
 const NO_OTHERS: LatLon[][] = [];
 
@@ -126,6 +126,10 @@ export function MapView({
 }: Props) {
   const webView = useRef<WebView>(null);
   const [ready, setReady] = useState(false);
+  // The names on the map in the app's language: a new language loads the
+  // page again, as «Retry» does, and the map is told everything again.
+  const language = useLanguage();
+  const page = useMemo(() => buildMapPage(language), [language]);
   // Until the first tiles are drawn, a bar over the map (TASK-058); an error
   // takes its place.
   const [loading, setLoading] = useState(true);
@@ -314,7 +318,7 @@ export function MapView({
         ref={webView}
         testID="map"
         style={styles.page}
-        source={{ html: MAP_PAGE }}
+        source={{ html: page }}
         originWhitelist={["*"]}
         onLoadStart={() => {
           setReady(false);

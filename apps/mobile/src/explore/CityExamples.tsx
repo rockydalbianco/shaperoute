@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { t, tLater } from "../i18n";
 
-import { shapeLabel } from "../feed/FeedPost";
+import { shapeName } from "../i18n/shapeNames";
 import type { Place } from "../places/photon";
 import {
   color,
@@ -69,7 +69,7 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
       </Text>
       <View style={styles.grid}>
         {shown.map((example) => {
-          const name = shapeLabel(example.shape);
+          const name = shapeName(example.shape);
           if (example.status === "ready") {
             const { route } = example;
             // With a point: the texts here are still in English.

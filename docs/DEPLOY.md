@@ -189,6 +189,71 @@ riaprila).
 - Una build propria (TestFlight) resta fuori: serve l'account Apple
   Developer.
 
+### A.7 La build dello store e il canale `production` (TASK-152)
+
+Due canali, ognuno con il suo runtime (ADR-0233):
+
+| Canale | Chi lo apre | Runtime |
+|---|---|---|
+| `preview` | Expo Go, le build `preview` | `exposdk:57.0.0`, da `app.json` |
+| `production` | le build dell'App Store | un'impronta del codice nativo (`fingerprint`) |
+
+Il runtime dello store lo mette `apps/mobile/app.config.ts`, solo quando
+c'è `APP_VARIANT=production`: il profilo `production` di `eas.json` la
+imposta da solo, `eas update` no. Un update arriva solo ai telefoni con
+lo stesso runtime: uno fatto dopo un cambio nativo non può far chiudere
+le build vecchie, semplicemente non le raggiunge.
+
+1. **Prima della prima build**: l'ambiente EAS `production` è vuoto. Da
+   `apps/mobile`, come in A.6 punto 2 ma con `production`:
+
+   ```
+   npx eas-cli env:set production --name EXPO_PUBLIC_API_URL --value https://INDIRIZZO-DELL-API --visibility plaintext
+   ```
+
+   La chiave, `EXPO_PUBLIC_API_KEY`, dalla pagina del progetto su
+   expo.dev, ambiente `production`, visibilità *Sensitive*.
+2. **La build** (serve l'account Apple Developer, lo fa l'utente con le
+   sue credenziali):
+
+   ```
+   npx eas-cli build --platform ios --profile production
+   ```
+
+   Il numero di build sale da solo (`autoIncrement`, le versioni stanno
+   su EAS).
+3. **Un update per lo store**: prima su `preview` e provato sull'iPhone
+   (A.6), poi la **stessa commit**, da un worktree pulito di `main`:
+
+   ```
+   APP_VARIANT=production npx eas-cli update --channel production --environment production --message "cosa è cambiato"
+   ```
+
+   Nell'output, «Runtime version» deve essere un hash di 40 caratteri.
+   Se dice `exposdk:57.0.0` manca la variabile: l'update è andato sul
+   canale ma nessuna build dello store lo prende; si ripubblica con la
+   variabile.
+4. **L'update raggiunge la build?** Il runtime che avrebbe un update di
+   adesso:
+
+   ```
+   APP_VARIANT=production npx expo-updates runtimeversion:resolve --platform ios --workflow managed
+   ```
+
+   va confrontato con quello della build sulla sua pagina su expo.dev.
+   Si lancia nel worktree del punto 3, dopo un `npm install` vero:
+   nell'impronta conta anche il percorso dei pacchetti, e con
+   `node_modules` collegati da un'altra cartella esce un altro hash.
+   Uguali: l'update arriva. Diversi: dalla build è cambiato qualcosa di
+   nativo (una libreria, un plugin, un permesso, l'icona, lo splash,
+   l'SDK) e serve una build nuova, con la revisione di Apple. **Alla
+   prima build va fatto comunque**: l'impronta calcolata sul Mac e
+   quella di EAS non sono ancora state confrontate.
+
+L'impronta non guarda la versione, il numero di build né `eas.json`
+(`apps/mobile/fingerprint.config.js`): alzarli non separa gli update.
+Una modifica solo JavaScript non la cambia mai.
+
 ---
 
 ## La chiave dell'API

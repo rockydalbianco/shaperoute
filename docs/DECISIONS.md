@@ -10435,6 +10435,15 @@ migliori, una decina»):
    è `map.water`); i toni intermedi si mescolano con `color-mix`, senza
    colori nuovi. Nessun font scaricato: quelli del sistema.
 
+**Aggiornamento del 2026-10-08** (deciso dall'agente su delega, dentro la
+richiesta dell'utente «fai il sito web per il nuovo nome» e la scelta del
+logo di ADR-0224): il sito dice **MuW**. In alto il segno (il cuore su
+giallo, `docs/brand/muw-mark.svg`) accanto alla scritta di
+`docs/brand/muw-logo.svg`, ridisegnata da `make_prints.py` nel colore
+`text` perché nera non si leggerebbe sul fondo scuro; il segno è anche
+l'icona della scheda. I testi della guida seguono l'app di oggi: niente
+punteggio (TASK-241), «Feed» fra le pagine (TASK-118).
+
 ## ADR-0200 — I paesi vicini sotto «Near me»: quattro paesi e i due posti più vicini, dal Places di Geoapify, con i campioni chiesti dal telefono
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-236 ·
@@ -12944,6 +12953,84 @@ file, «Parte B».
   l'ok dell'utente; `apps/mobile/assets/engine/engine.zip` è rifatto.
 - `docs/ROUTE_ENGINE.md` §5, «Trova dove la forma ci sta», descrive la
   regola nuova.
+
+## ADR-0233 — La build dello store ha il runtime dal fingerprint, Expo Go resta su `exposdk:57.0.0`
+**Stato**: Attiva · 2026-10-08 · TASK-152 parte A · deciso dall'agente su
+delega dell'utente (l'utente ha chiesto il profilo `production` e il
+`fingerprint` prima dell'App Store; come farli convivere con Expo Go è
+dell'agente).
+
+**Contesto**: `eas.json` aveva solo `preview`. `runtimeVersion` in
+`app.json` è `exposdk:57.0.0`: cambia solo con l'SDK. Per una build
+dello store vuol dire che un `eas update` fatto dopo una libreria nativa
+nuova (stesso SDK) arriverebbe a telefoni che quella libreria non ce
+l'hanno, e l'app si chiuderebbe all'avvio. Il rimedio di Expo è la
+politica `fingerprint`: il runtime è un'impronta del codice nativo. Ma
+Expo Go apre un update solo se il runtime è `exposdk:<sdk>` (ADR-0078):
+passare tutto a `fingerprint` spegnerebbe il canale `preview` sull'iPhone.
+
+**Decisione**:
+
+1. `app.json` non cambia: `exposdk:57.0.0` per Expo Go, per il canale
+   `preview` e per le build `preview`.
+2. Un nuovo `apps/mobile/app.config.ts` riprende `app.json` e, solo con
+   `APP_VARIANT=production`, mette `runtimeVersion: {policy:
+   "fingerprint"}`.
+3. Profilo `production` in `eas.json`: canale `production`, ambiente
+   EAS `production`, `autoIncrement` del numero di build (le versioni
+   stanno su EAS, `appVersionSource: remote`), `APP_VARIANT=production`
+   in `env`.
+4. Gli update per lo store si pubblicano con la stessa variabile:
+   `APP_VARIANT=production npx eas-cli update --channel production ...`
+   (`DEPLOY.md` A.7).
+5. `apps/mobile/fingerprint.config.js` toglie dall'impronta la versione,
+   il numero di build ed `eas.json`, oltre a quello che Expo toglie già
+   (gli script `ios`/`android` di `package.json`, la cartella `ios/`
+   locale, ignorata da git).
+
+**Provato sul Mac** (`expo-updates runtimeversion:resolve`, iOS):
+senza variabile il runtime resta `exposdk:57.0.0`; con la variabile è un
+hash di 40 caratteri, uguale due volte di fila. Non cambia con: versione
+1.0.0 e build 7, una sezione `submit` in `eas.json`, una riga in
+`App.tsx`, una cartella `ios/` locale. Cambia con: `supportsTablet`
+falso, un plugin nativo in più (`expo-location`). Android ha un'impronta
+sua. Nell'impronta entra anche il percorso dei pacchetti: un worktree con
+`node_modules` collegati dalla cartella principale dà un altro hash di un
+checkout con `npm install` (le prove sopra confrontano sempre lo stesso
+worktree).
+
+**Alternative scartate**:
+
+- *`fingerprint` in `app.json` per tutti*: Expo Go non apre più gli
+  update di `preview` (ADR-0078), e il criterio di TASK-152 «Expo Go
+  funziona come prima» cade.
+- *`exposdk:57.0.0` anche per lo store, solo canali separati*: niente
+  ferma un update con codice nativo nuovo verso le build vecchie; il
+  controllo resterebbe a memoria.
+- *`appVersion` (il runtime è la versione dell'app)*: va ricordato di
+  alzarla a ogni cambio nativo; lo stesso errore, spostato.
+- *Lasciare `eas.json` nell'impronta (il default di Expo)*: la sezione
+  `submit` che TASK-152 aggiunge dopo la prima build cambierebbe il
+  runtime, e gli update smetterebbero di arrivare in silenzio.
+- *`EAS_BUILD_PROFILE` invece di `APP_VARIANT`*: esiste solo durante
+  `eas build`, non in `eas update`.
+
+**Conseguenze**:
+
+- Un errore con la variabile non rompe niente: un update per lo store
+  pubblicato senza `APP_VARIANT` ha il runtime di Expo Go e nessuna
+  build dello store lo prende; uno per `preview` con la variabile non
+  lo prende Expo Go. In tutti e due i casi `eas update` stampa il
+  runtime: va controllato.
+- Ogni cambio nativo (libreria, plugin, permesso, icona, splash, SDK)
+  vuole una build nuova e la revisione di Apple: gli update per lo store
+  arrivano solo alle build con la stessa impronta.
+- L'impronta calcolata sul Mac e quella della build su EAS non sono
+  ancora state confrontate: si fa alla prima build `production`
+  (`DEPLOY.md` A.7, punto 4).
+- L'ambiente EAS `production` deve avere `EXPO_PUBLIC_API_URL` e
+  `EXPO_PUBLIC_API_KEY` prima della prima build: oggi ci sono solo in
+  `preview`.
 
 ## ADR-0234 — Il dominio getmuw.app: si resta su Hetzner, l'API anche su api.getmuw.app
 **Stato**: Attiva · 2026-10-08 · scelta dell'utente (restare sul server,

@@ -32,6 +32,21 @@ const LOADING: FeedShown = { kind: "loading" };
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
+/** What was read, with the token it was read with: another account's
+ * feed is not this one's. */
+type Read = { token: string; shown: FeedShown };
+
+// The last read, kept while the app is open: «Feed» is built again after a
+// drawing on the map, and shows what it had without asking again.
+let kept: Read | null = null;
+let keptPoint: LatLon | null = null;
+
+/** Forgets the read kept: for the tests. */
+export function forgetFeed(): void {
+  kept = null;
+  keptPoint = null;
+}
+
 /**
  * The feed of the account (TASK-118, ADR-0227): the drawings it may see,
  * its own first, then those of the people it follows, then the others'
@@ -50,17 +65,19 @@ export function useFeed(
   const { state, sessionEnded: endSession } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
   const { fetchFn, key } = options;
-  // What was read, with the token it was read with: another account's
-  // feed is not this one's.
-  const [read, setRead] = useState<{ token: string; shown: FeedShown } | null>(null);
+  const [read, setRead] = useState<Read | null>(kept);
   const [refreshing, setRefreshing] = useState(false);
   // The point the pages of this read are asked from.
-  const point = useRef<LatLon | null>(null);
+  const point = useRef<LatLon | null>(keptPoint);
   // The request on its way: its answer is the only one kept.
   const asking = useRef(0);
   const loadingMore = useRef(false);
   // The token the first page was asked for: once per account.
-  const askedFor = useRef<string | null>(null);
+  const askedFor = useRef<string | null>(kept === null ? null : kept.token);
+  useEffect(() => {
+    kept = read;
+    keptPoint = point.current;
+  }, [read]);
 
   const first = useCallback(
     (of: string, url: string, from: LatLon | null, pull: boolean) => {

@@ -7,7 +7,9 @@ import type { ReactNode } from "react";
 import type { AccountState } from "../account/useAccount";
 import { answers, apiError, held } from "../account/testing";
 import { FollowsContext } from "../social/followsDoor";
-import { useFeed } from "./useFeed";
+import { forgetFeed, useFeed } from "./useFeed";
+
+beforeEach(forgetFeed);
 
 const API = "http://api";
 const SESSION = session as Session;
@@ -176,6 +178,8 @@ test("an older API, or no network at the start, leaves the feed off; a pull asks
   const { result } = await feedHook(older);
   await waitFor(() => expect(result.current.shown).toEqual({ kind: "off" }));
   expect(older).toHaveBeenCalledTimes(1);
+  // Another opening of the app, offline this time.
+  forgetFeed();
   const offline = answers(new TypeError("Network request failed"), {
     status: 200,
     body: page,

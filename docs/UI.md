@@ -386,7 +386,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   parola o il titolo del percorso al posto della forma, niente per una
   corsa senza percorso; in bici «Bike · …», in canoa «Paddle · …». **Un
   tocco apre il disegno intero sulla mappa**, con foto, racconto, tag,
-  reazioni e commenti, come dal profilo (TASK-117, 119, 120); se nel
+  reazioni e commenti, come dal profilo (TASK-117, 119, 120); «←» torna
+  a «Feed» com'era, senza rileggere, e «Profile» resta chiuso; se nel
   frattempo è sparito, sopra l'elenco: «This drawing is no longer
   public.». Mentre la prima pagina arriva, una rotella e niente altro.
   **Senza account, e finché nessuno ha pubblicato qualcosa che si può

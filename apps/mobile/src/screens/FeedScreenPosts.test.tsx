@@ -14,6 +14,7 @@ import type { ReactNode } from "react";
 import type { AccountState } from "../account/useAccount";
 import { apiError } from "../account/testing";
 import { SAMPLE_FEED } from "../feed/sampleFeed";
+import { forgetFeed } from "../feed/useFeed";
 import { DrawingsContext, useDrawingsDoor } from "../social/drawingsDoor";
 import { FollowsContext } from "../social/followsDoor";
 import { FeedScreen } from "./FeedScreen";
@@ -62,6 +63,7 @@ function Around({
 }
 
 beforeEach(() => {
+  forgetFeed();
   feedAnswer = () => Response.json(page);
   fetchSpy = jest.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const url = String(input);

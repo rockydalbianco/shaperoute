@@ -12734,8 +12734,12 @@ di quei disegni, senza inventare una classifica.
 
 - Il server va aggiornato (`feed.py`), senza migrazioni; l'app va
   pubblicata.
-- `App.tsx` passa a «Feed» la partenza come a «Explore»; «←» da un
-  disegno aperto dal Feed torna al Feed (`ProfileLayer.tsx`).
+- Due file fuori dall'elenco del task, concessi dal coordinatore:
+  `App.tsx` passa a «Feed» la partenza come a «Explore» (una riga);
+  `ProfileLayer.tsx` ricorda che il disegno è stato aperto con «Profile»
+  chiuso, e «←» torna al Feed invece di aprire «Profile».
+- Finché il server non ha `/feed` (404) il Feed mostra gli esempi senza
+  nessun avviso: l'app esce prima dell'aggiornamento del server.
 - Seguiti: un indice su `drawings (published_at)` quando servirà; la
   foto dell'autore sulla scheda (oggi l'iniziale, come gli esempi); il
   nome dell'autore che apre il suo profilo.

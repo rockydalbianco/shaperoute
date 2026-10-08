@@ -70,6 +70,16 @@ docs/STATUS.md
 docs/tasks/TASK-118.md
 ```
 
+Toccati davvero (2026-10-08): `feed.py`, `app.py` (una riga), `test_feed.py`;
+`packages/shared-types/src/index.ts` e `fixtures/feed.json`;
+`apps/mobile/src/api/feed.ts` (+ test), `src/feed/useFeed.ts` (+ test),
+`src/feed/feedPosts.ts` (+ test), `src/feed/FeedPost.tsx`,
+`src/feed/sampleFeed.ts`, `src/screens/FeedScreen.tsx`,
+`src/screens/FeedScreenPosts.test.tsx`, `__tests__/AppFeedDrawing.test.tsx`,
+`i18n/{it,de,es,fr}.ts` (una riga in fondo); con il sì del coordinatore
+`App.tsx` (una riga) e `src/screens/ProfileLayer.tsx` (le porte dei
+disegni); `docs/API.md`, `UI.md`, `DECISIONS.md`, `STATUS.md`.
+
 ## Fuori scope
 
 - Like e commenti (TASK-119, TASK-120).

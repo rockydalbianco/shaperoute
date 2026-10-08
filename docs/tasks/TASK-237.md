@@ -176,15 +176,18 @@ checkout principale e la modifica è stata bloccata dai permessi. Nei
 punteggi, che nell'app sono inventati: solo titolo, luogo e km. Nessun
 disegno in bici: i dati dell'app non ne hanno. **Confermati dall'utente** il 2026-10-05 («sì
 intendevo sport, i disegni vanno bene così»): la scelta dello sport e i
-dieci disegni come sono, senza nomi, minuti e punteggi. **Da confermare
-con l'utente**: i testi nuovi (`content.js`, i titoli delle sezioni).
+dieci disegni come sono, senza nomi, minuti e punteggi. I testi sono stati
+confermati poi, con la parte A3 (2026-10-08).
 
 **Parte A3** (2026-10-08): il sito dice MuW, con il segno (il cuore su
 giallo) accanto alla scritta in alto, nell'icona della scheda e in fondo;
 la scritta è quella di `docs/brand/muw-logo.svg` nel colore del testo. Via
 il punteggio dalla corsa, aggiunto «Feed». Provato in Chrome senza
-finestra a 1280 e 390 px; 27 test verdi. **Parte C, online**: aspetta la
-scelta dell'utente su dove.
+finestra a 1280 e 390 px; 27 test verdi. **I testi del sito sono
+confermati dall'utente** (2026-10-08: «i testi vanno bene così»).
+**Parte C, online**: l'utente ha scelto il server Hetzner con il dominio
+`getmuw.app` (in un'altra sessione, 2026-10-08); Caddy e DNS sono di
+TASK-265, sul server applica il Coordinatore.
 
 **Aspettano l'utente** (parte B, il merch, messo da parte): il servizio di stampa e l'account; magliette,
 nomi, colori e prezzi; i testi della pagina («Runs that draw a shape on

@@ -119,6 +119,8 @@ vendita quando ha `buyUrl` (`https`) e `priceEur` in `products.js`, e
 
 ## Non ancora deciso (dell'utente)
 
-I testi della pagina (i dieci disegni e la scelta dello sport sono
-confermati, 2026-10-05); il dominio e dove pubblicare il sito; quando rimettere il merch, con quale servizio, quali magliette e
+Testi, dieci disegni e scelta dello sport sono confermati (2026-10-05 e
+2026-10-08). Il sito andrà su `getmuw.app`, dal Caddy del server Hetzner
+(scelta dell'utente, 2026-10-08; la configurazione è di TASK-265). Restano
+dell'utente: quando rimettere il merch, con quale servizio, quali magliette e
 quali prezzi. Finché non è pubblicato, il sito esiste solo nel repository.

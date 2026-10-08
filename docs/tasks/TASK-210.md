@@ -312,7 +312,24 @@ fuori dai file di questa parte, resta un seguito. **Testi approvati
 dall'utente** il 2026-10-07 («va bene procedi»); la pubblicazione su
 «preview» è del coordinatore.
 
-**Dopo la parte E restano**: i titoli delle pagine in `App.tsx` (dopo
-TASK-182 parte E), i nomi delle forme in «Draw» e sulle schede di
-«Explore», i nomi sulla mappa (`mapStyle.ts`) e «Start here»
-(`mapPage.ts`), «Help» in de/es/fr, «Paddle ·» nel feed.
+**Parte G — i titoli delle pagine** (2026-10-08, branch
+`feat/TASK-210-g-page-titles`, su `main` dopo TASK-182 parte E, che
+teneva `App.tsx`; via del coordinatore «parti con la G»): i tre nomi in
+alto, quelli che si toccano per cambiare pagina, escono da un file nuovo,
+`screens/pageTitles.ts` (`pageTitle("feed" | "draw" | "explore")`, i nomi
+inglesi con `tLater`), e `App.tsx` li chiama al posto delle tre stringhe.
+«Feed» resta «Feed» in it/de/es, «Fil» in fr; «Disegna», «Zeichnen»,
+«Dibuja», «Dessiner»; «Esplora», «Entdecken», «Explora», «Explorer»: le
+stesse parole di «DISEGNA» e di «Esplora» già dentro l'app. Tre testi
+nuovi in fondo alle quattro tabelle (`out/task-210-titoli-testi.md` sul
+Mac per l'occhio dell'utente). Test: `screens/pageTitles.test.ts` (le
+cinque lingue). **Non in questa parte**: «Paddle ·» e il nome della forma
+in `feed/FeedPost.tsx`, che TASK-118 tiene: dopo il suo merge, come
+secondo commit se la PR è ancora aperta, altrimenti seguito; la guida
+«Help» in italiano chiama ancora le pagine «Draw» ed «Explore»
+(`about/content/it.ts`): un rigo per la parte «Help», che tiene quei file.
+
+**Dopo la parte G restano**: i nomi delle forme in «Draw» e sulle schede
+di «Explore», i nomi sulla mappa (`mapStyle.ts`) e «Start here»
+(`mapPage.ts`), «Help» in de/es/fr (parte F, in corso in un'altra
+sessione), «Paddle ·» nel feed dopo TASK-118.

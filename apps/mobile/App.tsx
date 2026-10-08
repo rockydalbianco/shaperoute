@@ -99,6 +99,7 @@ import {
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { Pager } from "./src/screens/Pager";
+import { pageTitle } from "./src/screens/pageTitles";
 import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
 import { PaddleExplore } from "./src/paddle/PaddleExplore";
 import { MoveShape } from "./src/paddle/MoveShape";
@@ -1041,7 +1042,7 @@ function MuW() {
           }
           pages={[
             {
-              title: "Feed",
+              title: pageTitle("feed"),
               render: () => (
                 <FeedScreen
                   active={screen === "feed"}
@@ -1057,7 +1058,7 @@ function MuW() {
               ),
             },
             {
-              title: "Draw",
+              title: pageTitle("draw"),
               render: () => (
                 <ChooseScreen
                   status={statusText(startMode, position, start)}
@@ -1136,7 +1137,7 @@ function MuW() {
               ),
             },
             {
-              title: "Explore",
+              title: pageTitle("explore"),
               // It asks the API for its routes as it opens: not before.
               lazy: true,
               render: () =>

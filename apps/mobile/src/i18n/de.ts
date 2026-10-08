@@ -1090,6 +1090,11 @@ export const DE: Table = {
     "Dieses Handy hat keine Stimme für {language}: Die Stimme spricht Englisch.",
   "{language} · Enhanced": "{language} · Erweitert",
 
+  // The titles of the three pages: src/screens/pageTitles.ts (TASK-210, parte G)
+  Feed: "Feed",
+  Draw: "Zeichnen",
+  Explore: "Entdecken",
+
   // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
   "{user}: {title}. {facts}.": "{user}: {title}. {facts}.",
 };

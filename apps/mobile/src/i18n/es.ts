@@ -1086,6 +1086,11 @@ export const ES: Table = {
     "Este teléfono no tiene voz para {language}: la voz habla inglés.",
   "{language} · Enhanced": "{language} · Mejorada",
 
+  // The titles of the three pages: src/screens/pageTitles.ts (TASK-210, parte G)
+  Feed: "Feed",
+  Draw: "Dibuja",
+  Explore: "Explora",
+
   // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
   "{user}: {title}. {facts}.": "{user}: {title}. {facts}.",
 };

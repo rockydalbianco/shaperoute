@@ -726,6 +726,12 @@ Per VoiceOver i titoli sono intestazioni.
   sotto, e `DATABASE.md`): quando cambia cosa l'app manda o tiene, cambia
   anche `src/about/content/`. I punti ancora aperti sono in
   `tasks/TASK-184.md`, «Esito».
+- **Dal 2026-10-08 «Privacy» è definitiva** (TASK-237 D, scelte
+  dell'utente): niente riquadro della bozza né parentesi quadre; in cima,
+  grigio, solo «Last updated: 8 October 2026» (nelle cinque lingue). Il
+  titolare è Luca Pallaoro e l'indirizzo muw2610@gmail.com. «Terms»
+  resta una bozza come descritto sopra. Lo stesso testo è sul sito,
+  `getmuw.app/privacy/` (`SITO.md`).
 
 **«Change email»** (✉️, TASK-183, ADR-0150): un tocco apre sotto la riga
 «NEW EMAIL» e «PASSWORD» (la password dell'account, nascosta) e «Save»; un

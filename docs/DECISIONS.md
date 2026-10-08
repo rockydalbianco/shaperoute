@@ -12895,7 +12895,10 @@ Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
    fermare niente. Il vecchio nome resta per le app che non hanno ancora
    l'aggiornamento con l'indirizzo nuovo.
 3. `getmuw.app` e `www.getmuw.app` sono per il sito (TASK-237), sullo
-   stesso Caddy.
+   stesso Caddy: una copia dei soli file che la pagina carica in
+   `/srv/getmuw-site`, presa da `origin/main` con `git archive` e un
+   elenco esplicito, rifatta a mano dopo ogni merge che cambia il sito;
+   `www` rimanda a `getmuw.app`.
 4. Tre record `A` verso l'IPv4 del server, nessun `AAAA` per ora.
 5. Il ritorno da Strava (`SHAPEROUTE_DOMAIN`) resta su `sslip.io`.
 6. Chi fa cosa: la documentazione TASK-265; il Caddyfile sul server e

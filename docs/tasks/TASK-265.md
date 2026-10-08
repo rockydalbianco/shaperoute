@@ -45,7 +45,15 @@ Divisione decisa dal Coordinatore (2026-10-08):
    e con l'ok dell'utente.
 4. **Il sito** su `getmuw.app` e `www.getmuw.app` è di TASK-237 (parte B,
    sessione «SITO WEB»), dopo il merge della #443 e con il sì
-   dell'utente sulla pubblicazione, sullo stesso Caddy.
+   dell'utente sulla pubblicazione, sullo stesso Caddy. Proposta, chiesta
+   dal Coordinatore e scritta in `DEPLOY.md`, F.14, «Il sito su
+   `getmuw.app`»: Caddy serve `/srv/getmuw-site`, una copia dei soli file
+   che la pagina carica (`index.html`, `styles.css`, `main.js`,
+   `render.js`, `content.js`, `config.js`, `data/`, `assets/`; controllati
+   sugli `src`, `href` e `import` della #443), presa da `origin/main` con
+   `git fetch` e `git archive` senza toccare i file dell'API, e rifatta
+   con gli stessi comandi dopo ogni merge del sito; `www` rimanda a
+   `getmuw.app`.
 
 I record DNS li scrive l'utente nel pannello di Porkbun: tolti i due
 record di parcheggio verso `pixie.porkbun.com`, tre record `A` (`@`,

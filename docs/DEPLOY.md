@@ -1084,6 +1084,67 @@ systemd, la configurazione in `/etc/caddy/Caddyfile`, l'API dietro su
 passata ad `api.getmuw.app`, prima si ripubblica con l'indirizzo
 `sslip.io`.
 
+**Il sito su `getmuw.app`** (TASK-237, parte B): dopo che il sito con il
+nome MuW è in `main` e con il sì dell'utente sulla pubblicazione. Il sito
+è statico, senza build (`SITO.md`): Caddy serve una copia dei soli file
+che la pagina carica, in `/srv/getmuw-site`. Restano fuori `tests/`,
+`tools/`, `package.json` e il merch spento (`merch.*`, `products.js`,
+`prints/`). La copia non viene da `/root/shaperoute`: Caddy gira come
+utente `caddy` e non entra in `/root`.
+
+1. **I file**, sul server. `git fetch` aggiorna solo `origin/main`, non i
+   file da cui si costruisce l'API; `git archive` prende l'elenco
+   esplicito da lì. La copia nuova si prepara a parte e prende il posto
+   della vecchia in un colpo, che resta in `/srv/getmuw-site.old`:
+
+   ```bash
+   cd /root/shaperoute
+   git fetch origin main
+   rm -rf /srv/getmuw-site.new && mkdir -p /srv/getmuw-site.new
+   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets | tar -x -C /srv/getmuw-site.new --strip-components=1
+   chmod -R a+rX /srv/getmuw-site.new
+   rm -rf /srv/getmuw-site.old
+   if [ -d /srv/getmuw-site ]; then mv /srv/getmuw-site /srv/getmuw-site.old; fi
+   mv /srv/getmuw-site.new /srv/getmuw-site
+   ```
+
+   Gli stessi comandi, dopo ogni merge che cambia il sito, lo
+   aggiornano; Caddy non va toccato. Se la pagina carica un file nuovo
+   fuori da quell'elenco, l'elenco cambia qui. Tornare alla copia di
+   prima: `rm -rf /srv/getmuw-site && mv /srv/getmuw-site.old
+   /srv/getmuw-site`.
+2. **Il Caddyfile**, una volta: due blocchi in fondo, con la copia prima
+   come al punto 2 sopra (`Caddyfile.before-task237b`). `www` rimanda al
+   nome senza `www`, così l'indirizzo è uno solo:
+
+   ```
+   getmuw.app {
+   	root * /srv/getmuw-site
+   	encode gzip
+   	file_server
+   }
+
+   www.getmuw.app {
+   	redir https://getmuw.app{uri} permanent
+   }
+   ```
+
+   poi `caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile`
+   e `systemctl reload caddy`. Caddy chiede i certificati dei due nomi.
+3. **La prova, dal Mac**:
+
+   ```bash
+   curl -s -o /dev/null -w '%{http_code} %{content_type}\n' https://getmuw.app/
+   curl -s -o /dev/null -w '%{http_code} %{content_type}\n' https://getmuw.app/main.js
+   curl -s -o /dev/null -w '%{http_code}\n' https://getmuw.app/package.json
+   curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' https://www.getmuw.app/
+   ```
+
+   rispondono `200 text/html…`, `200 text/javascript…` (gli script
+   sono moduli ES e il browser li vuole con questo tipo: Caddy lo dà da
+   solo dall'estensione), `404`, e `301 https://getmuw.app/`. Poi la
+   pagina in un browser: «Try it» disegna un percorso.
+
 **Strava resta su `sslip.io`.** `SHAPEROUTE_DOMAIN` in `deploy/.env` è
 solo l'indirizzo a cui Strava rimanda il browser dopo «Connect with
 Strava», e deve essere uguale alla «Authorization Callback Domain»

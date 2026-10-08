@@ -1090,4 +1090,7 @@ export const ES: Table = {
   Feed: "Feed",
   Draw: "Dibuja",
   Explore: "Explora",
+
+  // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
+  "{user}: {title}. {facts}.": "{user}: {title}. {facts}.",
 };

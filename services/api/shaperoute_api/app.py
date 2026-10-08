@@ -55,6 +55,7 @@ from shaperoute_api.drawing_photos import install_drawing_photos
 from shaperoute_api.drawings import install_drawings
 from shaperoute_api.errors import error_of
 from shaperoute_api.favorites import install_favorites
+from shaperoute_api.feed import install_feed
 from shaperoute_api.follows import install_follows
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import (
@@ -319,6 +320,9 @@ def create_app(
     # What the members leave under a drawing with one tap, the super like
     # with a comment (TASK-119); they need a token.
     install_reactions(app)
+    # The drawings the members publish, read by whoever is signed in
+    # (TASK-118); it needs a token.
+    install_feed(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

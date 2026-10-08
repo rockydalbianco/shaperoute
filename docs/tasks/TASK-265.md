@@ -118,7 +118,8 @@ docs/STATUS.md
 3. **L'app**, dal Coordinatore il 2026-10-08 con l'ok dell'utente («ok,
    passa l'app su api.getmuw.app»): `EXPO_PUBLIC_API_URL` di `preview`
    → `https://api.getmuw.app`, la chiave non toccata, poi `main`
-   `08793f41` pubblicato come gruppo `a39c9509`. Le app ancora su gruppi
+   `08793f41` pubblicato come gruppo
+   `a39c9509-7d06-4cab-9def-1abb5cd8c2ca`. Le app ancora su gruppi
    più vecchi continuano su `sslip.io`, che resta nel Caddyfile.
 4. **Fuori da questo task**: il sito su `getmuw.app` e `www`, dopo il
    merge della #443 e il sì dell'utente sulla pubblicazione (TASK-237 B,

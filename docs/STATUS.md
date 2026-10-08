@@ -157,6 +157,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** fatta il
+  2026-10-08 (chiesta dall'utente): profilo `production` in `eas.json`,
+  canale `production`. Solo la build dello store ha il runtime dal
+  `fingerprint` (`app.config.ts` con `APP_VARIANT=production`): un update
+  fatto dopo un cambio nativo non le arriva. Expo Go e `preview` restano
+  su `exposdk:57.0.0`, `app.json` non cambia. Come pubblicare per lo
+  store: `DEPLOY.md` A.7. **Aspettano l'utente**: l'account Apple
+  Developer e le cinque domande del task; prima della prima build, le
+  variabili dell'ambiente EAS `production` (oggi vuoto). Da dove
+  riprendere: `tasks/TASK-152.md`, «Esito».
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

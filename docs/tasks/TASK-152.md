@@ -1,7 +1,8 @@
 # TASK-152 — Sgrava sull'App Store
 
-**Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-152-app-store`
+**Stato**: Todo · parte A fatta (profilo `production`, ADR-0233)
+**Fase**: 4 · **Branch**: `feat/TASK-152-app-store` (parte A:
+`feat/TASK-152-a-production-profile`)
 **Dipende da**: TASK-132 (AdMob nell'app), API raggiungibile con HTTPS
 (server Hetzner, TASK-122) · **Serve prima di**: TASK-153 · In parallelo
 con TASK-150
@@ -48,7 +49,7 @@ privacy, così AdMob può verificare l'app (TASK-153).
 3. **Build per lo store**: profilo `production` in `eas.json`. Prima di
    toccare `runtimeVersion` e canali, decidere come convivono Expo Go
    (canale `preview`, ADR-0078) e la build dello store, e scriverlo in
-   un ADR.
+   un ADR. **Fatto nella parte A** (ADR-0233, `DEPLOY.md` A.7).
 4. **SDK richiesto da Apple**: controllare quale Xcode accetta oggi App
    Store Connect. Se serve l'SDK iOS 27, fare il seguito UIScene di
    TASK-132 (`ExpoAppSceneDelegate`) con un config plugin, non a mano.
@@ -78,6 +79,9 @@ privacy, così AdMob può verificare l'app (TASK-153).
 ```
 apps/mobile/app.json
 apps/mobile/eas.json
+apps/mobile/app.config.ts          (nuovo, parte A)
+apps/mobile/fingerprint.config.js  (nuovo, parte A)
+apps/mobile/__tests__/appConfig.test.ts  (nuovo, parte A)
 site/                  (nuovo: privacy, contatti, posto per app-ads.txt)
 docs/DEPLOY.md
 docs/DECISIONS.md
@@ -96,3 +100,25 @@ docs/tasks/TASK-152.md
 ## Esito
 
 *(si compila a fine task)*
+
+**Parte A — il profilo `production` (2026-10-08, ADR-0233)**. Chiesta
+dall'utente prima dell'App Store; numero e ADR dal Coordinatore.
+
+- `eas.json`: profilo `production` (canale `production`, ambiente EAS
+  `production`, `autoIncrement`, `APP_VARIANT=production`).
+- `app.config.ts` (nuovo): con `APP_VARIANT=production` il runtime è
+  `{policy: "fingerprint"}`; senza resta quello di `app.json`,
+  `exposdk:57.0.0`. `app.json` non cambia, così Expo Go e `preview`
+  restano come prima e non c'è conflitto con TASK-261 (#441), che
+  tocca `app.json`.
+- `fingerprint.config.js` (nuovo): fuori dall'impronta versione, numero
+  di build ed `eas.json`.
+- `__tests__/appConfig.test.ts` (nuovo): `app.json` resta `exposdk:`,
+  la variante `production` cambia solo il runtime, `APP_VARIANT` solo nel
+  profilo `production`. Provato anche sul Mac con `expo-updates
+  runtimeversion:resolve` (i casi sono in ADR-0233). Nessuna build e nessun `eas update`: servono
+  l'account Apple e le variabili dell'ambiente EAS `production`, oggi
+  vuoto (`DEPLOY.md` A.7, punti 1–2).
+- **Resta per la parte che fa la prima build**: confrontare l'impronta
+  della build con quella del Mac (`DEPLOY.md` A.7, punto 4); poi i passi
+  1–2 e 4–9 di «Cosa fare» e le cinque domande.

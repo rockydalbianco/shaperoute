@@ -87,9 +87,10 @@ apps/mobile/src/theme/palettes.test.ts        (nuovo)
 apps/mobile/src/settings/ToneSetting.tsx      (nuovo)
 apps/mobile/src/settings/ToneSetting.test.tsx (nuovo)
 apps/mobile/src/profile/SettingsPage.tsx      (una riga, condivisa con TASK-262 A)
+apps/mobile/src/profile/SettingsPage.test.tsx (la riga «Tone» fra i pulsanti)
 apps/mobile/App.tsx                           (la barra di stato, una riga)
 apps/mobile/src/map/mapPage.ts                (il bordo del percorso, dopo #438)
-apps/mobile/src/map/mapPage*.test.ts          (il bordo del percorso)
+apps/mobile/src/map/mapPageTone.test.ts       (nuovo: la mappa nei due toni)
 apps/mobile/src/i18n/{de,es,fr,it}.ts         (i testi di «Tone», dopo #438)
 docs/tasks/TASK-263.md
 docs/DECISIONS.md

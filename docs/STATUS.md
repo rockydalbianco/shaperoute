@@ -153,6 +153,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-263 — Tono scuro o chiaro, e la luminosità** (ADR-0231;
+  chiesto dall'utente il 2026-10-08). In «Settings», «PREFERENCES», la
+  riga «Tone»: «Dark» o «Light», «Brightness» in cinque passi, un'anteprima
+  nei colori scelti e «Apply», che salva e riapre l'app nel tono nuovo.
+  Senza scelta l'app è quella di prima (scuro, passo 1); il chiaro parte
+  dal bianco, con la mappa chiara, il percorso giallo su un bordo scuro e
+  la barra di stato scura. Branch `feat/TASK-263-tone`, PR da aprire;
+  **i testi in cinque lingue aspettano il sì dell'utente**. Restano per
+  una parte B le tastiere, ancora scure nel tono chiaro, e il logo bianco
+  «Compatible with Strava». Da dove riprendere: `tasks/TASK-263.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

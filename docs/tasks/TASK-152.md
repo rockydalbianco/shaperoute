@@ -168,3 +168,11 @@ non cambia.
 - La pagina della privacy non è ancora online: `getmuw.app/privacy` dà
   404 e la home non la collega (2026-10-08). Serve per la scheda, non
   per TestFlight.
+- Primo tentativo di build `production` (2026-10-08 sera, lanciato
+  dall'utente dal worktree pulito): login Apple e codice a due fattori
+  riusciti, poi «You have no team associated with your Apple account»,
+  cioè l'iscrizione non è ancora attiva. Nessuna build creata. Effetti
+  rimasti, innocui: `buildNumber` su EAS passato da 1 a 2; canale e branch
+  `production` creati su EAS. La build era partita senza
+  `EXPO_PUBLIC_API_KEY` (non ancora nell'ambiente): al prossimo tentativo
+  controllare che la riga «Environment variables … loaded» la elenchi.

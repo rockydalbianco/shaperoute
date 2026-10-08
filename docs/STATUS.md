@@ -545,8 +545,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   cambia, 0,1–0,4 s) e l'attesa a 1 s (solo parole con la penna alzata,
   senza alternative) scartati con i numeri (`tasks/TASK-203.md`, «Parte
   B»). Test nuovo `test_far_search_skipped.py`, due impronte aggiornate in
-  `test_kept_per_graph.py`, `engine.zip` rifatto. PR #PR_B, in `main` dal
-  2026-10-08. **Resta**: server e `draw_examples` (circa 40 minuti) con
+  `test_kept_per_graph.py`, `engine.zip` rifatto. PR #440 (2026-10-08). **Resta**: server e `draw_examples` (circa 40 minuti) con
   l'ok dell'utente.
 - **Motore, API e app** — TASK-191: percorsi in canoa e paddle (ADR-0154,
   ADR-0161, ADR-0164, ADR-0169; chiesto dall'utente il 2026-10-02).

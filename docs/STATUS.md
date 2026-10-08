@@ -157,6 +157,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
+  all'agente dall'utente il 2026-10-07). Branch
+  `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:
+  `GET /recommended` (`best_routes.py`, token obbligatorio, nessuna
+  migrazione) ordina i percorsi del catalogo entro 5 km: somiglianza come
+  la scheda la scrive, poi reazioni dei disegni pubblicati, poi corse e
+  preferiti; a parità tutti. In «Explore» la riga «RECOMMENDED» sopra le
+  schede, solo con un account. Il testo nuovo nelle cinque lingue è
+  **confermato dall'utente** (2026-10-08, «ok continua»; es
+  «RECOMENDADAS» al femminile come «rutas»). PR #445. **Aspetta**: la coda
+  dei merge; dopo il merge il server (`best_routes.py`, ok dell'utente,
+  coordinatore) e la pubblicazione dell'app, che può uscire prima: senza
+  `/recommended` la riga non c'è e «Explore» resta com'è.
+  File: `tasks/TASK-092.md`, «File toccati».
 - **TASK-265 — Il dominio getmuw.app** (ADR-0234; scelta dell'utente del
   2026-10-08). L'utente voleva spostare «il sito» su un'azienda tedesca;
   saputo che il sito non era online e che Hetzner è già tedesca, è

@@ -49,6 +49,7 @@ import { CityPicker } from "./ExploreTools";
 import { NearbyTowns } from "./NearbyTowns";
 import { byPlace, OWN_RADIUS_M } from "./ownRoutes";
 import { cityShort } from "./presets";
+import { RecommendedRow } from "./RecommendedRow";
 import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 import type { ThemedRequest } from "./themedRoutes";
 import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
@@ -214,10 +215,10 @@ export function ExploreScreen({
     examplesCity !== null &&
     examples !== null &&
     examples.some((example) => example.status === "ready");
-  const routeCard = (route: RecommendedRoute) => (
+  const routeCard = (route: RecommendedRoute, width: number = card) => (
     <RouteCard
       key={route.id}
-      width={card}
+      width={width}
       line={route.preview}
       rotationDeg={route.rotation_deg}
       title={`${capitalised(routeTitle(route))} · ${distanceLabel(route.route_m, units, withPoint)}`}
@@ -314,10 +315,20 @@ export function ExploreScreen({
         )}
         {/* Above the cards: there it is read without scrolling to their end. */}
         {routes.length > 0 && !credited && <CardMapsCredit />}
+        {/* The ones the API recommends, in a row above all of them
+            (TASK-092, ADR-0229); only with an account, else nothing. */}
+        {list.status === "done" && routes.length > 0 && (
+          <RecommendedRow
+            apiUrl={apiUrl}
+            near={near}
+            width={contentWidth}
+            card={routeCard}
+          />
+        )}
         {/* The drawing first: two cards side by side (TASK-167). */}
         {own.length > 0 && (
           <View style={styles.grid}>
-            {cards.map(routeCard)}
+            {cards.map((route) => routeCard(route))}
             {/* The shape being drawn for the city: the next card, on its way. */}
             {added.map(
               (example) =>
@@ -342,7 +353,9 @@ export function ExploreScreen({
             {t("NEAR {city}", { city: cityShort(city.label).toUpperCase() })}
           </Text>
         )}
-        {nearby.length > 0 && <View style={styles.grid}>{nearby.map(routeCard)}</View>}
+        {nearby.length > 0 && (
+          <View style={styles.grid}>{nearby.map((route) => routeCard(route))}</View>
+        )}
         {/* Under the routes already there, and closed: the page is for looking
             first (TASK-157). */}
         {onAsk &&

@@ -15,7 +15,17 @@
       "bundleIdentifier": "com.lppl1316.sgrava",
       "config": {
         "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
       }
+    },
+    "locales": {
+      "en": "./locales/en.json",
+      "it": "./locales/it.json",
+      "de": "./locales/de.json",
+      "es": "./locales/es.json",
+      "fr": "./locales/fr.json"
     },
     "android": {
       "adaptiveIcon": {
@@ -40,6 +50,13 @@
         }
       ],
       "expo-sharing",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MuW uses your location to draw routes near you and to record your activities. During an activity it keeps recording with the phone locked, and iOS shows the blue bar.",
+          "isIosBackgroundLocationEnabled": true
+        }
+      ],
       [
         "expo-image-picker",
         {

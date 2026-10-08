@@ -160,6 +160,23 @@ docs/DECISIONS.md                (ADR-0201)
 docs/INDEX.md                    (una riga per SITO.md)
 ```
 
+Parte D, con il sì del Coordinatore (2026-10-08):
+
+```
+apps/mobile/src/about/content/*.ts      (solo «Privacy»: i dati
+                                         dell'utente, la data, la frase
+                                         della posizione a telefono bloccato)
+apps/mobile/src/about/AboutPage.tsx     (la data su un testo definitivo)
+apps/mobile/src/about/*.test.ts(x)      (Privacy definitiva, Terms bozza)
+docs/DEPLOY.md                          (F.14: solo `site/privacy`
+                                         nella riga `git archive`)
+docs/UI.md                              (una riga: Privacy definitiva)
+```
+
+TASK-262 A (le notifiche push) tocca gli stessi `about/content/*.ts` e
+`about/documents.test.ts` per la frase sul token push: chi entra secondo
+riallinea, ognuno solo i suoi paragrafi.
+
 ## Fuori scope
 
 - Pagamenti, carrello, ordini o dati dei clienti sul sito: li tiene il

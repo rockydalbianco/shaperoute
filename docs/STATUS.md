@@ -169,8 +169,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `DEPLOY.md`, F.14. Il ritorno da Strava resta su `sslip.io`.
   `tasks/TASK-265.md`. **Done** il 2026-10-08: l'app di `preview` chiama
   `https://api.getmuw.app` dal gruppo `a39c9509` (vedi «Completato»).
-- **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** fatta il
-  2026-10-08 (chiesta dall'utente): profilo `production` in `eas.json`,
+- **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** in `main`
+  il 2026-10-08 (PR #446, merge `9dcacbf4`; chiesta dall'utente): profilo `production` in `eas.json`,
   canale `production`. Solo la build dello store ha il runtime dal
   `fingerprint` (`app.config.ts` con `APP_VARIANT=production`): un update
   fatto dopo un cambio nativo non le arriva. Expo Go e `preview` restano
@@ -215,6 +215,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Poi, lo stesso giorno: **testi confermati dall'utente** («i testi
   vanno bene così»); online sul server Hetzner con `getmuw.app`, scelta
   dell'utente: Caddy e DNS di TASK-265, sul server il Coordinatore.
+  **Online su https://getmuw.app dal 2026-10-08** (parte A3 in `main`
+  con la #443, `d7f53269`; copia sul server di `DEPLOY.md` F.14, ok
+  dell'utente): da ripetere dopo ogni merge che cambia `site/`. Restano
+  dell'utente il link per scaricare l'app (dopo l'App Store, TASK-152) e
+  il merch.
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,

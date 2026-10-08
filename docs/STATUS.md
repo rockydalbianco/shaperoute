@@ -157,8 +157,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** fatta il
-  2026-10-08 (chiesta dall'utente): profilo `production` in `eas.json`,
+- **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** in `main`
+  il 2026-10-08 (PR #446, merge `9dcacbf4`; chiesta dall'utente): profilo `production` in `eas.json`,
   canale `production`. Solo la build dello store ha il runtime dal
   `fingerprint` (`app.config.ts` con `APP_VARIANT=production`): un update
   fatto dopo un cambio nativo non le arriva. Expo Go e `preview` restano

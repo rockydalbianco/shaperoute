@@ -10400,6 +10400,15 @@ migliori, una decina»):
    è `map.water`); i toni intermedi si mescolano con `color-mix`, senza
    colori nuovi. Nessun font scaricato: quelli del sistema.
 
+**Aggiornamento del 2026-10-08** (deciso dall'agente su delega, dentro la
+richiesta dell'utente «fai il sito web per il nuovo nome» e la scelta del
+logo di ADR-0224): il sito dice **MuW**. In alto il segno (il cuore su
+giallo, `docs/brand/muw-mark.svg`) accanto alla scritta di
+`docs/brand/muw-logo.svg`, ridisegnata da `make_prints.py` nel colore
+`text` perché nera non si leggerebbe sul fondo scuro; il segno è anche
+l'icona della scheda. I testi della guida seguono l'app di oggi: niente
+punteggio (TASK-241), «Feed» fra le pagine (TASK-118).
+
 ## ADR-0200 — I paesi vicini sotto «Near me»: quattro paesi e i due posti più vicini, dal Places di Geoapify, con i campioni chiesti dal telefono
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-236 ·

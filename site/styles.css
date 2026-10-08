@@ -1,5 +1,5 @@
 /*
- * The Sgrava site. Every colour is declared once, here, and mirrors the app's
+ * The MuW site. Every colour is declared once, here, and mirrors the app's
  * `apps/mobile/src/theme/tokens.ts`: change a colour there, change it here.
  * Lighter and fainter tones are mixed from these, never written by hand.
  */
@@ -203,10 +203,22 @@ main > section,
   padding-block: 22px;
 }
 
-.top__logo img {
-  height: 24px;
+.top__logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top__mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  box-shadow: 0 0 22px -4px var(--glow);
+}
+
+.top__word {
+  height: 22px;
   width: auto;
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 35%, transparent));
 }
 
 .top__nav {
@@ -546,7 +558,7 @@ main > section,
 
 .pages {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-top: 14px;
 }
@@ -666,13 +678,15 @@ main > section,
 
 .foot img {
   height: 24px;
-  width: auto;
+  width: 24px;
+  border-radius: 6px;
 }
 
 /* Narrower screens */
 
 @media (max-width: 1000px) {
-  .steps {
+  .steps,
+  .pages {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

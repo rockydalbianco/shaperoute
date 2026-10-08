@@ -1,6 +1,7 @@
 # SITO — Il sito web
 
-> Cosa c'è nel sito di Sgrava, come si cambia e come si guarda in locale.
+> Cosa c'è nel sito di MuW (già «Sgrava», ADR-0224), come si cambia e come
+> si guarda in locale.
 > Le scelte e i loro perché stanno in `DECISIONS.md` (ADR-0201); lo stato
 > in `STATUS.md`.
 
@@ -18,7 +19,7 @@ Dall'alto in basso:
    a Milano, uno dei percorsi veri del catalogo.
 2. **«How it works»**: si sceglie lo **sport** («Run», «Bike», «Paddle») e
    cambiano i tre fatti (distanze, dove, come guida) e i quattro passi.
-   Sotto, le tre pagine dell'app: «Draw», «Explore», «Profile».
+   Sotto, le quattro pagine dell'app: «Feed», «Draw», «Explore», «Profile».
 3. **«Best drawings»**: dieci disegni, sei corse e quattro uscite in
    canoa, con un filtro («All», «Run», «Paddle»).
 4. **«Get the app»**: per ora «Download — coming soon», in cima e in
@@ -35,7 +36,7 @@ Dall'alto in basso:
 | `site/data/drawings.js` | i disegni di «Try it» e di «Best drawings»; lo scrive `make_drawings.py`, non si tocca a mano |
 | `site/render.js` | costruisce i pezzi della pagina (funzioni pure, provate dai test) |
 | `site/main.js` | collega i tasti alla pagina |
-| `site/assets/` | logo e simbolo, copiati da `docs/brand/` |
+| `site/assets/` | il segno e la scritta di MuW, ricavati da `docs/brand/muw-*.svg` (la scritta nel colore del testo, per lo sfondo scuro) |
 | `site/tools/` | gli script che ricavano i disegni dai percorsi veri |
 | `site/tests/` | i test (`node --test`) |
 
@@ -45,7 +46,7 @@ In `site/config.js`, `downloadUrl`: l'indirizzo `https://…` dell'app
 sull'App Store. Con `null` i due tasti dicono «Download — coming soon»;
 con l'indirizzo diventano «Download the app». Vanno poi cambiati a mano
 il titolo e la frase di «Get the app» in `index.html` («On iPhone, soon.»,
-«Sgrava is in preview on iPhone…»).
+«MuW is in preview on iPhone…»).
 
 ## Cambiare i testi della guida
 
@@ -76,7 +77,8 @@ python3 site/tools/make_drawings.py
 ```
 
 Il primo rifà anche il cuore scritto dentro `index.html` (quello che si
-vede prima che parta JavaScript). Quali forme, quali città e quali dieci
+vede prima che parta JavaScript) e i file del marchio in `site/assets/`:
+dopo un cambio di logo in `docs/brand/` basta rilanciarlo. Quali forme, quali città e quali dieci
 disegni: gli elenchi in cima a `make_drawings.py`.
 
 Il credito «© OpenStreetMap contributors» in fondo alla pagina deve

@@ -40,8 +40,8 @@ export const products = [
   },
   {
     id: "logo",
-    name: "Sgrava Logo Tee",
-    description: "The Sgrava logo, black on yellow.",
+    name: "MuW Logo Tee",
+    description: "The MuW logo, black on yellow.",
     tee: "yellow",
     print: "prints/logo-black.svg",
     priceEur: null,

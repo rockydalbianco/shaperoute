@@ -21,11 +21,11 @@ export const sports = [
       },
       {
         title: "Choose your route",
-        text: "Sgrava draws up to three routes on real streets. Keep the one you like.",
+        text: "MuW draws up to three routes on real streets. Keep the one you like.",
       },
       {
         title: "Run it",
-        text: "Follow the voice turn by turn, or take the GPX file to your watch. At the end, a score tells how close you drew it.",
+        text: "Follow the voice turn by turn, or take the GPX file to your watch. At the end, save the run and share the drawing.",
       },
     ],
   },
@@ -44,7 +44,7 @@ export const sports = [
       },
       {
         title: "Choose your route",
-        text: "Sgrava keeps to one-way streets and stays off stairs and roads closed to bikes.",
+        text: "MuW keeps to one-way streets and stays off stairs and roads closed to bikes.",
       },
       {
         title: "Ride it",
@@ -79,6 +79,10 @@ export const sports = [
 
 /** The app's pages, as the cards under the steps. */
 export const pages = [
+  {
+    name: "Feed",
+    text: "Drawings published by you, by the people you follow and by runners nearby.",
+  },
   {
     name: "Draw",
     text: "Your shape, your distance, your start. The route is yours to keep or change.",

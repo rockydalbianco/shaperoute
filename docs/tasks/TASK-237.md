@@ -43,6 +43,12 @@ Letta così; l'utente ha poi confermato lo sport e i disegni (2026-10-05:
    era «sport», confermato), e una forma e una distanza da provare.
 5. **I dieci post migliori**: dieci disegni presi da quelli dell'app.
 
+## La terza richiesta dell'utente (2026-10-08)
+
+«Fai il sito web per il nuovo nome, grazie, e aiutami a metterlo online.»
+Il nuovo nome è **MuW** (ADR-0224, TASK-260), con il logo scelto
+dall'utente il 2026-10-06: il cuore su giallo e la scritta «MuW».
+
 ## Contesto da leggere
 
 - `docs/SITO.md`
@@ -69,6 +75,15 @@ Letta così; l'utente ha poi confermato lo sport e i disegni (2026-10-05:
 5. «Get the app»: segnaposto, e `site/config.js` per il link.
 6. L'aspetto: griglia da mappa, etichette a spaziatura fissa, la linea
    gialla che brilla.
+
+**Parte A3 — il nome MuW** (terza PR):
+
+1. Nome, segno e scritta di MuW nella pagina, nell'icona della scheda e
+   in fondo; nessun «Sgrava» nei testi del sito.
+2. I testi allineati all'app di oggi: niente punteggio a fine corsa
+   (TASK-241), «Feed» fra le pagine dell'app (TASK-118).
+
+**Parte C — metterlo online** (dopo la scelta dell'utente su dove).
 
 **Parte B — aprire il negozio e pubblicare** (dopo le scelte dell'utente):
 
@@ -107,6 +122,16 @@ Parte A2:
 - [x] Nessuno scorrimento orizzontale a 1280 e a 390 px; nessun errore
       nella console.
 - [x] `cd site && npm test` è verde; i due script rifanno gli stessi file.
+
+Parte A3:
+
+- [x] Titolo, logo, icona della scheda e piede dicono «MuW»; nessun file
+      del sito che la pagina carica contiene «Sgrava» (lo controlla un
+      test).
+- [x] I testi della guida non promettono il punteggio; le pagine
+      dell'app sono quattro, con «Feed».
+- [x] Nessuno scorrimento orizzontale a 1280 e a 390 px; nessun errore
+      nella console; `cd site && npm test` verde.
 
 Parte B: da scrivere con le scelte dell'utente.
 
@@ -153,6 +178,13 @@ disegno in bici: i dati dell'app non ne hanno. **Confermati dall'utente** il 202
 intendevo sport, i disegni vanno bene così»): la scelta dello sport e i
 dieci disegni come sono, senza nomi, minuti e punteggi. **Da confermare
 con l'utente**: i testi nuovi (`content.js`, i titoli delle sezioni).
+
+**Parte A3** (2026-10-08): il sito dice MuW, con il segno (il cuore su
+giallo) accanto alla scritta in alto, nell'icona della scheda e in fondo;
+la scritta è quella di `docs/brand/muw-logo.svg` nel colore del testo. Via
+il punteggio dalla corsa, aggiunto «Feed». Provato in Chrome senza
+finestra a 1280 e 390 px; 27 test verdi. **Parte C, online**: aspetta la
+scelta dell'utente su dove.
 
 **Aspettano l'utente** (parte B, il merch, messo da parte): il servizio di stampa e l'account; magliette,
 nomi, colori e prezzi; i testi della pagina («Runs that draw a shape on

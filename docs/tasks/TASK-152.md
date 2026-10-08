@@ -99,7 +99,6 @@ apps/mobile/eas.json
 apps/mobile/app.config.ts          (nuovo, parte A)
 apps/mobile/fingerprint.config.js  (nuovo, parte A)
 apps/mobile/__tests__/appConfig.test.ts  (nuovo, parte A)
-site/                  (nuovo: privacy, contatti, posto per app-ads.txt)
 docs/DEPLOY.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -166,8 +165,16 @@ non cambia.
   confrontata con quella della prima build sulla sua pagina di expo.dev
   (`DEPLOY.md` A.7, punto 4); la build parte dallo stesso worktree.
 - La pagina della privacy non è ancora online: `getmuw.app/privacy` dà
-  404 e la home non la collega (2026-10-08). Serve per la scheda, non
-  per TestFlight.
+  404 e la home non la collega (2026-10-08). Serve per la scheda e per
+  il link pubblico di TestFlight. **La fa TASK-237 parte D** (sessione
+  «SITO WEB», dalla bozza dell'app con i segnaposto compilati
+  dall'utente), su decisione del Coordinatore del 2026-10-08: `site/`
+  esce dai «File toccati» di questo task; l'URL arriva da lì e il
+  Coordinatore avvisa quando è online.
+- Il link di download del sito sarà il **link pubblico di TestFlight**
+  (scelta dell'utente del 2026-10-08): appena esiste va scritto al
+  Coordinatore, che lo passa a TASK-237. Vuole un gruppo di tester
+  esterni e la Beta App Review della prima build.
 - Primo tentativo di build `production` (2026-10-08 sera, lanciato
   dall'utente dal worktree pulito): login Apple e codice a due fattori
   riusciti, poi «You have no team associated with your Apple account»,

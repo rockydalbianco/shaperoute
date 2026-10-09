@@ -187,7 +187,7 @@ TEXTS: dict[str, dict[str, str]] = {
     "follow_accepted": {
         "en": "{name} accepted your follow request.",
         "de": "{name} hat deine Folgeanfrage angenommen.",
-        "it": "{name} ha accettato la tua richiesta di seguirlo.",
+        "it": "{name} ha accettato la tua richiesta di follow.",
         "es": "{name} ha aceptado tu solicitud para seguirle.",
         "fr": "{name} a accepté ta demande de suivi.",
     },

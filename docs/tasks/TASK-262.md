@@ -126,6 +126,14 @@ cancellati dai biglietti e dalle ricevute.
 - [x] Testi nuovi mostrati all'utente nelle cinque lingue, prima del
       merge: confermati il 2026-10-08 («i testi vanno bene»); fra questi
       c'è «{name} accepted your follow request.» per il nuovo follower.
+      Il 2026-10-09 l'utente li ha riletti nella sessione «Scelte prodotto
+      prioritarie» e li ha approvati con una modifica, in italiano e neutra
+      rispetto al genere: «{name} ha accettato la tua richiesta di
+      follow.» al posto di «… di seguirlo.» (fatta in `push.py`).
+      Le righe di «Help» e «Privacy» in tedesco, spagnolo e francese sono
+      traduzioni dell'agente dell'inglese approvato, aggiunte al
+      riallineamento con `main` dopo la #453: non erano nel file letto
+      dall'utente.
 - [ ] Test verdi in API e app.
 
 ### File toccati (parte A)
@@ -159,7 +167,10 @@ apps/mobile/src/screens/ProfileLayer.tsx          (una chiamata)
 apps/mobile/src/social/drawingsDoor.ts            (open vuole solo l'id)
 apps/mobile/src/screens/FeedScreenPosts.test.tsx  (il tipo di open finto)
 apps/mobile/src/profile/SettingsPage.test.tsx     (la nota nuova, il telefono finto)
-apps/mobile/src/about/content/en.ts, it.ts        (le righe delle notifiche)
+apps/mobile/src/about/content/en.ts, it.ts, de.ts, es.ts, fr.ts
+                                                  (solo le righe delle notifiche)
+site/privacy/index.html, it/, de/, es/, fr/index.html
+                                                  (rifatte con site/tools/make_privacy.mjs)
 apps/mobile/src/about/documents.test.ts
 apps/mobile/src/i18n/de.ts, es.ts, fr.ts, it.ts
 docs/API.md, docs/DATABASE.md, docs/UI.md

@@ -165,6 +165,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nessun testo nuovo. La voce resta quella della corsa (da decidere
   dall'utente). Solo app: pubblica il coordinatore.
   File: `tasks/TASK-251.md`, «File toccati», parte C.
+  **Done** il 2026-10-09: in `main` con la #458 (`fb27b50d`), vedi
+  «Completato».
 - **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
   all'agente dall'utente il 2026-10-07). Branch
   `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:
@@ -620,6 +622,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-251 parte C: in bici senza percorso la velocità
+  (aggiornamento di ADR-0215, scelta dell'utente del 2026-10-08). In `main`
+  con la #458 (`fb27b50d`, 2026-10-09). Con «Bike» in «Settings» «Ride
+  without a route» mostra «Speed now», «Avg speed», «Last km» e i km in
+  km/h (mph con le miglia), sulla scheda e a fine corsa, come un percorso
+  in bici; nessun testo nuovo; corsa e «Paddle» come prima. **Da fare**:
+  la pubblicazione su `preview` (coordinatore), la prova sull'iPhone, e la
+  scelta dell'utente sulla voce (oggi ogni km col passo, come una corsa).
+  `tasks/TASK-251.md`.
 - **App** — TASK-263: tono scuro o chiaro, con la luminosità in cinque
   passi (ADR-0231; chiesto dall'utente il 2026-10-08). PR #444. In
   «Settings», «PREFERENCES», la riga «Tone»: «Dark» o «Light»,

@@ -13283,3 +13283,60 @@ percorso il passo al km, segnalandolo. L'utente ha scelto la velocità.
 **Alternative scartate**: un componente proprio per la pedalata senza
 percorso (due modi di mostrare la stessa cosa); cambiare anche la voce
 (non chiesto: una scelta dell'utente).
+
+## ADR-0235 — Il tour del primo avvio sulle schermate vere, e «Guide» in «Profile»
+**Stato**: Attiva · 2026-10-09 · **scelta dell'utente** (un tutorial alla
+prima apertura, saltabile ma non nei primi 5 secondi; una guida d'uso;
+fra tre proposte, il tour sulle schermate vere); il come è **deciso
+dall'agente su delega dell'utente** (TASK-266).
+
+**Contesto**: l'app non mostrava a chi la apre la prima volta come si
+usa. «How MuW works» (TASK-184) c'era, ma solo da «Settings», quindi solo
+con un account.
+
+**Decisione**:
+
+1. Dopo l'animazione all'avvio, alla prima apertura, un tour sopra l'app
+   (`src/tour/`, montato in `intro/Root.tsx`): il resto dello schermo
+   scuro, una parte vera nella luce, poche parole accanto, «Next». Otto
+   passi, in ordine: benvenuto, «START», le forme, la distanza, il fondo
+   di «Draw» con «Draw route», sport e «Profile», la pagina «Explore», la
+   pagina «Feed»; finisce su «Draw». La corsa non ha un passo: non si
+   mostra senza un percorso disegnato, la dice il passo di «Draw route».
+2. **Le parti si trovano per nome**: le schermate danno al tour le loro
+   viste (`TourPartView`, `tourPart`, `useTourPart`), il tour le misura
+   (`measureInWindow`) e le unisce. Una parte sotto il bordo di «Draw» è
+   portata in vista (`TourScrollView`); una pagina si cambia come
+   toccandone il nome (`useTourPager`). Il tour rimisura ogni 150 ms
+   finché le parti sono tutte sullo schermo e ferme, al più 1,5 s: una
+   pagina che entra scorrendo non è misurata a metà. Una parte che non
+   c'è lascia le parole al centro, senza luce. Niente librerie nuove.
+3. **«Skip»** c'è da subito ma per `SKIP_LOCK_S` = 5 secondi non si
+   tocca e conta alla rovescia («Skip (5)»); il conto è del tour, non del
+   passo, e si ferma mentre il telefono chiede qualcosa sopra l'app
+   (`AppState` non attivo: la posizione, alla prima apertura). «Next» si
+   tocca subito.
+4. Visto fino in fondo o saltato, il telefono lo ricorda in
+   `tour-seen.json` (come l'avviso di «Paddle», ADR-0169). Senza le
+   pagine sullo schermo (una corsa lasciata aperta) il tour non parte e
+   non conta come visto.
+5. **«Guide»** sulla prima pagina di «Profile», con e senza account,
+   apre «How MuW works» (il testo di «Help», che non cambia) con sopra
+   «Watch the tour»: chiude «Profile» e rifà il tour, con «Skip» subito.
+   Anche «Help» in «Settings» ha «Watch the tour».
+6. Il buio è un colore fisso nuovo, `scrim`, con opacità 0,82, e il bordo
+   della luce `onScrim`: scuro nei due toni di ADR-0231, mai giallo (il
+   giallo è del percorso).
+7. I testi sono in `tour/tourTexts.ts` nelle cinque lingue, non in
+   `i18n/`; i nomi dei pulsanti che citano sono quelli di `i18n/`, e un
+   test lo controlla. Con «Paddle» il passo delle forme ha il suo testo.
+
+**Alternative scartate**: animazioni disegnate o immagini delle schermate
+(proposte, l'utente ha scelto il tour vero); una libreria di tour (una
+dipendenza per poche centinaia di righe); il conto alla rovescia per ogni
+passo (5 secondi a passo sono un tutorial lungo, non breve).
+
+**Conseguenze**: chi aggiorna l'app vede il tour una volta, come chi la
+scarica (nessun modo di distinguerli senza un dato in più). Una parte
+nuova da mostrare è un nome in `TOUR_PART`, una vista con quel nome e un
+passo in `TOUR_STEPS`.

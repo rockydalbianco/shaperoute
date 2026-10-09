@@ -23,6 +23,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { pageName, tabName, tourPart, useTourPager } from "../tour/tourParts";
+import { TOUR_PART } from "../tour/tourSteps";
 
 export type PagerPage = {
   /** Its name in the header: what is touched to go there. */
@@ -96,6 +98,9 @@ export function Pager({ pages, page, onPage, action }: Props) {
   const [height, setHeight] = useState<number | null>(null);
   // The header keeps the top edge: the pages start under it.
   const under = useMemo(() => ({ ...insets, top: 0 }), [insets]);
+  // The tour of the first opening moves between the pages (TASK-266).
+  const titles = useMemo(() => pages.map((each) => each.title), [pages]);
+  useTourPager(titles, page, onPage);
 
   useEffect(() => {
     const turned = laidOut.current !== width;
@@ -153,6 +158,7 @@ export function Pager({ pages, page, onPage, action }: Props) {
             return (
               <Pressable
                 key={each.title}
+                ref={tourPart(tabName(each.title))}
                 style={styles.name}
                 onPress={() => onPage(index)}
                 accessibilityRole="tab"
@@ -167,7 +173,12 @@ export function Pager({ pages, page, onPage, action }: Props) {
             );
           })}
         </View>
-        {action}
+        {action && (
+          // The sport and «Profile», shown by the tour together.
+          <View ref={tourPart(TOUR_PART.header)} collapsable={false}>
+            {action}
+          </View>
+        )}
       </View>
       <ScrollView
         ref={scroller}
@@ -194,6 +205,8 @@ export function Pager({ pages, page, onPage, action }: Props) {
             return (
               <View
                 key={each.title}
+                ref={tourPart(pageName(each.title))}
+                collapsable={false}
                 style={[{ width }, height !== null && { height }]}
                 // A page out of sight is out of the screen reader's too.
                 accessibilityElementsHidden={!onScreen}

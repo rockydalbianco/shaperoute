@@ -617,6 +617,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `7a9506a`: il telefono disegna da sé. **Resta D**, la prova
   sull'iPhone, che è dell'utente e fissa i limiti di distanza. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
+- **TASK-266 — Il tour del primo avvio e la guida in «Profile»**
+  (ADR-0235; richiesta dell'utente del 2026-10-09, che fra tre proposte ha
+  scelto il tour sulle schermate vere). Branch
+  `feat/TASK-266-first-run-tour`. Dopo l'animazione all'avvio, la prima
+  volta, otto passi sopra l'app vera: una parte nella luce, il resto
+  scuro; «Skip» conta 5 secondi prima di potersi toccare. «Guide» sulla
+  prima pagina di «Profile», anche senza account, con «Watch the tour».
+  Solo app, nessun server. **Aspetta**: il sì dell'utente sui testi
+  (cinque lingue) e la coda dei merge. `tasks/TASK-266.md`.
 
 ## Completato
 

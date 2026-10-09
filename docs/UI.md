@@ -157,6 +157,28 @@ titolo. È solo un'immagine: il lettore di schermo legge il nome accanto.
 Un componente solo, `src/intro/HeartBadge.tsx` (`size`), per ogni posto
 dove il cuore su giallo compare.
 
+**Il tour della prima apertura** (TASK-266, ADR-0235): finita
+l'animazione, la prima volta, il resto dello schermo si scurisce
+(`scrim`, opacità 0,82, in entrambi i toni) e una parte vera dell'app
+resta nella luce, con un bordo `onScrim` di 2 punti; sotto o sopra, in una
+scheda `surface`, un titolo, una o due righe e in fondo otto puntini,
+«Skip» e «Next» (chiaro su scuro, mai giallo). Otto passi: benvenuto (senza
+luce, la scheda al centro), «START», le forme (con «Paddle» un testo suo),
+la distanza, il fondo di «Draw» con «Draw route», sport e «Profile», poi
+il tour va su «Explore» e su «Feed», che restano nella luce sopra la
+scheda, e finisce su «Draw» con «Let's go». Una parte sotto il bordo viene
+portata in vista scorrendo, e alla fine «Draw» torna in cima. «Skip» per i
+primi 5 secondi del tour non si tocca e dice i secondi che mancano,
+«Skip (5)»; il conto si ferma mentre il telefono chiede la posizione. I
+tocchi sull'app aspettano la fine del tour. Il tour non torna, salvo
+«Watch the tour» nella guida (qui «Skip» si tocca subito).
+
+**«Guide»** (TASK-266): l'ultima riga della prima pagina di «Profile»,
+con e senza account, ❓ come le righe di «ABOUT». Apre «How MuW works» con
+il nome «Guide» e sopra il testo «Watch the tour», che chiude «Profile» e
+rifà il tour; «←» torna a «Profile». «Help» in «Settings» resta, con lo
+stesso pulsante.
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La

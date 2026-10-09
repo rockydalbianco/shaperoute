@@ -1,6 +1,6 @@
 # TASK-153 — AdMob dagli annunci di prova a quelli veri
 
-**Stato**: Fermo (2026-10-09): la 1.0 esce senza pubblicità (TASK-267); si riprende quando l'utente lo chiede
+**Stato**: Fermo (2026-10-09): gli annunci veri aspettano la società dell'utente (TASK-267 per la 1.0)
 **Fase**: 4 · **Branch**: `feat/TASK-153-admob-live`
 **Dipende da**: TASK-150 (account AdMob e pagamenti), TASK-152 (app
 sull'App Store, sito dello sviluppatore)
@@ -114,6 +114,14 @@ fb27b50d):
   annunci), testi «Privacy options», «Opzioni privacy»,
   «Datenschutzoptionen», «Opciones de privacidad», «Options de
   confidentialité». Va richiesta di nuovo.
+
+**Quando si riprende**: l'utente ha precisato il 2026-10-09 «la pubblicità
+la inseriamo quando facciamo la società». Non alla prossima build: alla
+società. Allora va verificato prima di tutto l'account AdMob: oggi è
+**individuale** e Google non ne cambia il tipo, quindi forse servirà un
+account della società, con un ID dell'app nuovo (in `app.json`) e un ID
+publisher nuovo (in `site/app-ads.txt`), e un nuovo profilo pagamenti.
+Anche lo spegnimento di TASK-267 (ADR-0237) va tolto.
 
 Da rifare alla ripresa: aggiornare il branch da main; se l'account AdMob
 cambia (società: il tipo di account non si cambia), cambiano anche l'ID

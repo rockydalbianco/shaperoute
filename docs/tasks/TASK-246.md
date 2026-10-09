@@ -1,7 +1,7 @@
 # TASK-246 — Le figure «Paddle» dei posti vicini già sul telefono
 
 **Stato**: Done — in `main` dalla #369 (`2fcf6b5`, 2026-10-05); figure dei tre posti più vicini già sul telefono, prova sull'iPhone dell'utente dopo la pubblicazione
-**Parte B**: In lavorazione — il server tiene le figure dei laghi e delle spiagge (sotto, «Parte B»)
+**Parte B**: Done — in `main` dalla #462 (`589fdece`, 2026-10-09); il server tiene le figure dei laghi e delle spiagge, server e `draw_examples --water` del coordinatore (sotto, «Parte B»)
 **Fase**: 4 · **Branch**: `feat/TASK-246-paddle-shapes-ahead`
 **Dipende da**: TASK-214 (le mappe della zona al primo avvio, ADR-0177),
 TASK-227 e TASK-233 (gli esempi sull'acqua di «Explore»)
@@ -140,7 +140,7 @@ dell'utente dopo la pubblicazione (aprire l'app, aspettare tre minuti, poi
 
 ## Parte B — Il server tiene le figure dei laghi e delle spiagge
 
-**Stato**: In lavorazione · **Branch**: `feat/TASK-246-b-water-shapes-kept`
+**Stato**: Done — in `main` dalla #462 (`589fdece`, 2026-10-09) · **Branch**: `feat/TASK-246-b-water-shapes-kept`
 · aggiunta ad ADR-0211 · via del coordinatore il 2026-10-09, dopo il #440
 (TASK-203 B) e il suo `draw_examples`. PR #462: non aspetta TASK-245 C
 (senza `draw_examples --water` il server disegna come prima e tiene per

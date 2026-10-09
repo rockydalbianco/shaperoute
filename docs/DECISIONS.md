@@ -13056,6 +13056,71 @@ file, «Parte B».
 - `docs/ROUTE_ENGINE.md` §5, «Trova dove la forma ci sta», descrive la
   regola nuova.
 
+## ADR-0231 — Tono scuro o chiaro, con la luminosità in cinque passi
+**Stato**: Attiva · 2026-10-08 · la richiesta e il significato di
+«luminosità» sono scelte dell'utente («dai la possibilità di cambiare tono
+scuro chiaro, e la luminosità, nel tono»; poi «più chiaro o più scuro il
+tono», con l'app che si riapre al cambio); colori e meccanismo decisi
+dall'agente su delega dell'utente (TASK-263). Supera ADR-0046 nel punto
+«un solo tema, scuro».
+
+**Contesto**: l'app aveva un solo tono, scuro (ADR-0046), con tutti i
+colori in `tokens.ts`. Gli stili leggono i colori quando il loro file si
+carica: 101 `StyleSheet.create` e la mappa nella WebView, scritta una
+volta come testo. Cambiare tono mentre l'app è aperta voleva dire
+riscriverli tutti con un hook, toccando i file di ogni altro task.
+
+**Decisione**:
+
+1. **Due toni, cinque passi ciascuno.** Ogni tono ha due estremi in
+   `tokens.ts` (`SHADES`): il più scuro e il più chiaro; i tre passi in
+   mezzo sono mescolati colore per colore. Scuro va dai colori di sempre
+   (identici, passo 0) all'antracite; chiaro dal grigio chiaro al bianco.
+   Anche la mappa ha i suoi colori in ogni tono.
+2. **Non cambiano mai** il giallo e il testo sul giallo, il rosso dei
+   numeri e i colori di Strava. Nel tono chiaro avvisi, errori e «Start
+   here» sono più scuri, per leggersi sul chiaro.
+3. **I contrasti sono un test** (`palettes.test.ts`), per ogni tono a
+   ogni passo: testo ≥ 7:1 su fondo, scheda e comando; testi secondari,
+   avvisi ed errori ≥ 4,5:1; bordo dei comandi ≥ 3:1; nomi dei luoghi
+   ≥ 4,5:1 sul loro alone.
+4. **Il percorso sulla mappa chiara ha un bordo scuro** (`routeCasing`):
+   il giallo è chiaro quanto le strade e da solo non si vede. Sulla mappa
+   scura nessun bordo, come prima.
+5. **La scelta resta sul telefono** (`tone.json`, `src/theme/tone.ts`),
+   letta in modo sincrono all'avvio come lingua e unità; ogni tono ricorda
+   il suo passo. Senza scelta: scuro, passo 0, cioè l'app di prima. Il
+   chiaro parte dal bianco.
+6. **Cambiare tono riapre l'app** (`reloadAppAsync` di `expo`): `color` si
+   riempie una volta, quando `tokens.ts` si carica, e nessuno dei file che
+   lo usano cambia. In «Settings» un'anteprima disegnata nei colori scelti
+   (fondo, scheda, testi, comando, mappa e percorso) fa provare toni e
+   passi senza riaprire a ogni tocco; «Apply» compare solo se l'app
+   cambierebbe aspetto, salva e riapre.
+7. **La barra di stato** segue il tono: chiara sullo scuro, scura sul
+   chiaro (`statusBarStyle`).
+
+**Alternative scartate**:
+
+- *Un tema dinamico con un hook in ogni schermata*: cambio istantaneo, ma
+  un centinaio di file da riscrivere, quasi tutti di altri task.
+- *Riaprire l'app a ogni tocco di un passo*: cinque riaperture per
+  provare cinque passi.
+- *La luminosità dello schermo* (`expo-brightness`): proposta, scartata
+  dall'utente.
+- *Seguire il tono del telefono*: non chiesto.
+
+**Conseguenze**:
+
+- Riaprendosi, l'app rifà l'animazione di apertura e torna alla prima
+  pagina.
+- Restano scure nel tono chiaro le tastiere (`keyboardAppearance="dark"`
+  in una decina di file di altri task) e il logo bianco «Compatible with
+  Strava» (TASK-218) va sostituito, sul chiaro, dalla versione scura del
+  pacchetto di Strava: una parte B di TASK-263.
+- Un colore nuovo si aggiunge a tutti e quattro gli estremi di `SHADES`,
+  o a `FIXED` se non cambia col tono.
+
 ## ADR-0233 — La build dello store ha il runtime dal fingerprint, Expo Go resta su `exposdk:57.0.0`
 **Stato**: Attiva · 2026-10-08 · TASK-152 parte A · deciso dall'agente su
 delega dell'utente (l'utente ha chiesto il profilo `production` e il

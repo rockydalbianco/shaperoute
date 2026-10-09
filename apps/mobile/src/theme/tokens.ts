@@ -8,7 +8,16 @@
  * Adding a token is cheap; hard-coding a colour somewhere else is not.
  */
 
-export const color = {
+import {
+  BRIGHTNESS_STEPS,
+  loadToneChoice,
+  stepOf,
+  type Tone,
+  type ToneChoice,
+} from "./tone";
+
+/** The colours that stay the same in every tone (TASK-263, ADR-0231). */
+const FIXED = {
   /**
    * The brand yellow. In the app it means one thing only: the route, and the
    * control that produces it. Anything else that needs attention uses
@@ -22,35 +31,6 @@ export const color = {
    */
   onAccent: "#0A0A0B",
 
-  /** The app background: neutral black, not blue-black. */
-  background: "#0A0A0B",
-  /** Cards, fields, the sheet over the map. */
-  surface: "#141416",
-  /** A surface that must sit above another one: the fill of a control. */
-  surfaceRaised: "#2B2B31",
-
-  border: "#3D3D44",
-  /**
-   * Borders that carry a control, not just a division: 4.3:1 on
-   * `background`, so a button is seen as one in sunlight (TASK-086).
-   */
-  borderStrong: "#74747E",
-
-  text: "#F5F5F4",
-  /** Labels and secondary lines; 7:1 on `background`. */
-  textMuted: "#9B9B9F",
-  /** The faintest readable text; 5.6:1 on `background`. Not for body copy. */
-  textFaint: "#8A8A90",
-
-  /**
-   * Something the user should know about the route that was produced — a
-   * stretch without a pavement, a distance off target. Deliberately not
-   * yellow, which already means "route".
-   */
-  warning: "#FF7A59",
-  /** A request that failed. */
-  error: "#FF6B6B",
-
   /**
    * Someone waits for the user's answer: the number on the way to «Profile»
    * and on «Requests» (TASK-239). Red by the user's choice; nothing else is.
@@ -58,9 +38,6 @@ export const color = {
   badge: "#E02D2D",
   /** The number on `badge`: 4.6:1. */
   onBadge: "#FFFFFF",
-
-  /** Where a moved route begins (ADR-0040). Cyan, so it never reads as route. */
-  startHere: "#4DD2FF",
 
   /**
    * Strava's orange, for «Connect with Strava» only (TASK-187): Strava's
@@ -70,28 +47,241 @@ export const color = {
   strava: "#FC5200",
   /** Text on `strava`: white, as Strava's own button; semibold, 3:1. */
   onStrava: "#FFFFFF",
-
-  map: {
-    background: "#0D0E10",
-    water: "#101F29",
-    waterLine: "#1D3C4E",
-    /** Parks, wood, grass: present but quiet. */
-    green: "#121A13",
-    /** Built-up land, a shade off the background. */
-    builtUp: "#101012",
-    building: "#17181B",
-    /** Service roads and paths. */
-    roadFaint: "#1C1D21",
-    /** Residential streets: most of what a route runs on. */
-    roadMinor: "#26272C",
-    /** Secondary and tertiary. */
-    roadMedium: "#303238",
-    /** Trunk, primary, motorway. */
-    roadMajor: "#3A3D45",
-    label: "#8A8A90",
-    labelHalo: "#0D0E10",
-  },
 } as const;
+
+/**
+ * The colours a tone gives, and its brightness moves. The contrasts written
+ * here are the dark tone's at its darkest; every tone at every step keeps
+ * the minimums `palettes.test.ts` checks.
+ */
+export type Shade = {
+  /** The app background: neutral, not blue. */
+  readonly background: string;
+  /** Cards, fields, the sheet over the map. */
+  readonly surface: string;
+  /** A surface that must sit above another one: the fill of a control. */
+  readonly surfaceRaised: string;
+
+  readonly border: string;
+  /**
+   * Borders that carry a control, not just a division: 4.3:1 on
+   * `background`, so a button is seen as one in sunlight (TASK-086).
+   */
+  readonly borderStrong: string;
+
+  readonly text: string;
+  /** Labels and secondary lines; 7:1 on `background`. */
+  readonly textMuted: string;
+  /** The faintest readable text; 5.6:1 on `background`. Not for body copy. */
+  readonly textFaint: string;
+
+  /**
+   * Something the user should know about the route that was produced — a
+   * stretch without a pavement, a distance off target. Deliberately not
+   * yellow, which already means "route".
+   */
+  readonly warning: string;
+  /** A request that failed. */
+  readonly error: string;
+
+  /** Where a moved route begins (ADR-0040). Cyan, so it never reads as route. */
+  readonly startHere: string;
+
+  readonly map: {
+    readonly background: string;
+    readonly water: string;
+    readonly waterLine: string;
+    /** Parks, wood, grass: present but quiet. */
+    readonly green: string;
+    /** Built-up land, a shade off the background. */
+    readonly builtUp: string;
+    readonly building: string;
+    /** Service roads and paths. */
+    readonly roadFaint: string;
+    /** Residential streets: most of what a route runs on. */
+    readonly roadMinor: string;
+    /** Secondary and tertiary. */
+    readonly roadMedium: string;
+    /** Trunk, primary, motorway. */
+    readonly roadMajor: string;
+    readonly label: string;
+    readonly labelHalo: string;
+  };
+};
+
+/** Every colour of the app, in the tone chosen. */
+export type Palette = typeof FIXED & Shade;
+
+/**
+ * Each tone at its darkest step and at its brightest (TASK-263, ADR-0231);
+ * the steps between are mixed from the two, colour by colour. The dark
+ * tone at its darkest is the app as it always was (ADR-0046); at its
+ * brightest, anthracite. The light tone goes from a light grey to white;
+ * its warnings, errors and «Start here» are darker, to read on it.
+ */
+export const SHADES: Readonly<
+  Record<Tone, { readonly darkest: Shade; readonly brightest: Shade }>
+> = {
+  dark: {
+    darkest: {
+      background: "#0A0A0B",
+      surface: "#141416",
+      surfaceRaised: "#2B2B31",
+      border: "#3D3D44",
+      borderStrong: "#74747E",
+      text: "#F5F5F4",
+      textMuted: "#9B9B9F",
+      textFaint: "#8A8A90",
+      warning: "#FF7A59",
+      error: "#FF6B6B",
+      startHere: "#4DD2FF",
+      map: {
+        background: "#0D0E10",
+        water: "#101F29",
+        waterLine: "#1D3C4E",
+        green: "#121A13",
+        builtUp: "#101012",
+        building: "#17181B",
+        roadFaint: "#1C1D21",
+        roadMinor: "#26272C",
+        roadMedium: "#303238",
+        roadMajor: "#3A3D45",
+        label: "#8A8A90",
+        labelHalo: "#0D0E10",
+      },
+    },
+    brightest: {
+      background: "#2C2D31",
+      surface: "#37383D",
+      surfaceRaised: "#4C4D55",
+      border: "#5C5D66",
+      borderStrong: "#9A9BA5",
+      text: "#F5F5F4",
+      textMuted: "#C4C4C8",
+      textFaint: "#B6B6BB",
+      warning: "#FF9478",
+      error: "#FF8A8A",
+      startHere: "#6EDBFF",
+      map: {
+        background: "#2A2B2F",
+        water: "#1F3A4B",
+        waterLine: "#30586E",
+        green: "#26332A",
+        builtUp: "#2D2E32",
+        building: "#36373C",
+        roadFaint: "#3B3C42",
+        roadMinor: "#46484F",
+        roadMedium: "#52555D",
+        roadMajor: "#5E626C",
+        label: "#B6B6BB",
+        labelHalo: "#2A2B2F",
+      },
+    },
+  },
+  light: {
+    darkest: {
+      background: "#DCDCD8",
+      surface: "#D0D0CC",
+      surfaceRaised: "#C2C2C0",
+      border: "#ABABAA",
+      borderStrong: "#66666D",
+      text: "#0A0A0B",
+      textMuted: "#45454B",
+      textFaint: "#505057",
+      warning: "#9A330A",
+      error: "#A1221B",
+      startHere: "#006E94",
+      map: {
+        background: "#D9D7D0",
+        water: "#9CC2D8",
+        waterLine: "#6E9FBD",
+        green: "#C6D6BC",
+        builtUp: "#D2D0C9",
+        building: "#C6C3BB",
+        roadFaint: "#C9C7C0",
+        roadMinor: "#BDBAB2",
+        roadMedium: "#AFACA4",
+        roadMajor: "#A19E95",
+        label: "#55555B",
+        labelHalo: "#D9D7D0",
+      },
+    },
+    brightest: {
+      background: "#FFFFFF",
+      surface: "#F3F3F1",
+      surfaceRaised: "#E6E6E8",
+      border: "#D2D2D6",
+      borderStrong: "#75757D",
+      text: "#0A0A0B",
+      textMuted: "#55555B",
+      textFaint: "#626269",
+      warning: "#B23C0B",
+      error: "#B3261E",
+      startHere: "#007BA3",
+      map: {
+        background: "#F5F4F0",
+        water: "#B5D6E8",
+        waterLine: "#86B6D2",
+        green: "#DDE9D4",
+        builtUp: "#EEEDE8",
+        building: "#E2E0D9",
+        roadFaint: "#E3E1DB",
+        roadMinor: "#D6D4CD",
+        roadMedium: "#C9C6BE",
+        roadMajor: "#BBB8AF",
+        label: "#626269",
+        labelHalo: "#F5F4F0",
+      },
+    },
+  },
+};
+
+/** `from` and `to` mixed: 0 is `from`, 1 is `to`. */
+function mixHex(from: string, to: string, share: number): string {
+  const channel = (at: number) =>
+    Math.round(
+      parseInt(from.slice(at, at + 2), 16) * (1 - share) +
+        parseInt(to.slice(at, at + 2), 16) * share,
+    )
+      .toString(16)
+      .padStart(2, "0")
+      .toUpperCase();
+  return `#${channel(1)}${channel(3)}${channel(5)}`;
+}
+
+function mixShade(from: Shade, to: Shade, share: number): Shade {
+  const mixed = {} as Record<string, unknown>;
+  for (const key of Object.keys(from) as (keyof Shade)[]) {
+    const [a, b] = [from[key], to[key]];
+    mixed[key] =
+      typeof a === "string" && typeof b === "string"
+        ? mixHex(a, b, share)
+        : mixShade(a as unknown as Shade, b as unknown as Shade, share);
+  }
+  return mixed as Shade;
+}
+
+/** Every colour of the app in `choice`'s tone, at its step. */
+export function paletteOf(choice: ToneChoice): Palette {
+  const { darkest, brightest } = SHADES[choice.tone];
+  const share = stepOf(choice) / (BRIGHTNESS_STEPS - 1);
+  return { ...FIXED, ...mixShade(darkest, brightest, share) };
+}
+
+/**
+ * The tone chosen in «Settings», read once as the app loads: the styles
+ * take their colours when their files load, so a new choice shows when the
+ * app is opened again (`../settings/ToneSetting`).
+ */
+export const tone: ToneChoice = loadToneChoice();
+
+export const color: Palette = paletteOf(tone);
+
+/**
+ * The phone's status bar: light on the dark tone, dark on the light one, so
+ * the clock and the battery read.
+ */
+export const statusBarStyle: "light" | "dark" = tone.tone === "dark" ? "light" : "dark";
 
 /** Spacing, in the 4 px steps the layouts are built on. */
 export const space = {
@@ -173,6 +363,27 @@ export const route = {
   width: 5,
   opacity: 0.95,
 } as const;
+
+/** A dark line under the route's, wider, so it shows as an edge. */
+export type RouteCasing = {
+  readonly color: string;
+  readonly width: number;
+  readonly opacity: number;
+};
+
+/**
+ * The route's edge in a tone (TASK-263, ADR-0231): on the light map the
+ * yellow is as light as the streets and does not read alone, so it runs
+ * on a dark edge, the dark of text on yellow. The dark map needs none.
+ */
+export function routeCasingOf(shown: Tone): RouteCasing | null {
+  return shown === "light"
+    ? { color: color.onAccent, width: route.width + 3, opacity: 0.85 }
+    : null;
+}
+
+/** The route's edge in the tone the app is shown in. */
+export const routeCasing = routeCasingOf(tone.tone);
 
 /** The route still to run while running it (TASK-224): the route's yellow
  * and width, dashed, blinking in steps between bright and dim. Never off,

@@ -607,6 +607,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-263: tono scuro o chiaro, con la luminosità in cinque
+  passi (ADR-0231; chiesto dall'utente il 2026-10-08). PR #444. In
+  «Settings», «PREFERENCES», la riga «Tone»: «Dark» o «Light»,
+  «Brightness» in cinque passi, un'anteprima nei colori scelti e «Apply»,
+  che salva la scelta (`tone.json`) e riapre l'app (`reloadAppAsync`) nel
+  tono nuovo. Senza scelta l'app è quella di prima (scuro, passo 1); il
+  chiaro parte dal bianco, con la mappa chiara, il percorso giallo su un
+  bordo scuro e la barra di stato scura. I contrasti di ogni tono a ogni
+  passo sono un test. Testi in cinque lingue approvati dall'utente il
+  2026-10-09; provata nel simulatore in Expo Go. Solo app: va pubblicata
+  su `preview`, il server non cambia. **Parte B**, da aprire: le tastiere,
+  ancora scure nel tono chiaro, e il logo bianco «Compatible with Strava»
+  sul fondo chiaro.
 - **App** — TASK-261 parte A: la corsa registra anche a telefono bloccato
   (ADR-0225; chiesto dall'utente il 2026-10-07). In `main` con la #441
   (`08793f4`, 2026-10-08). Nell'app costruita il GPS va avanti in

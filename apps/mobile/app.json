@@ -71,6 +71,12 @@
           "androidAppId": "ca-app-pub-3940256099942544~3347511713",
           "iosAppId": "ca-app-pub-1288129622991398~9808900733"
         }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "MuW reads only the phone numbers of your contacts, when you tap «Find friends in your contacts», to find friends who are on MuW. The numbers leave the phone coded and the server keeps none."
+        }
       ]
     ],
     "extra": {

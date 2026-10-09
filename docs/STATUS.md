@@ -697,6 +697,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'utente, coordinatore); l'app può uscire prima, la riga non c'è
   finché manca. Seguito: con TASK-121 le reazioni di chi l'utente ha
   bloccato non contano.
+  **Sul server dal 2026-10-09 ~12:20Z** (ok dell'utente, fatto dal
+  coordinatore): `main` `fb27b50d`, copia del database
+  `shaperoute-2026-10-09T1220Z.dump`, immagine di prima
+  `shaperoute-api:before-task092`, migrazioni ancora fino a 0019;
+  `/recommended` risponde `401 not_signed_in` senza token, quindi c'è.
+  Con un account la riga «RECOMMENDED» ora si vede.
 - **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
   è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
   2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.

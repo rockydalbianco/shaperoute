@@ -13259,6 +13259,63 @@ Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
 - Spostare il ritorno da Strava su `api.getmuw.app` richiede di cambiare
   anche l'applicazione Strava dell'utente: un passo a parte.
 
+## ADR-0211 — aggiornamento (parte B): il server tiene le figure «Paddle» dei laghi e delle spiagge
+**Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
+(TASK-246 parte B); task e via dal coordinatore, nessun numero nuovo.
+
+**Contesto**: con ADR-0211 ogni telefono chiede le otto forme dei tre
+posti più vicini, dal punto delle liste `lakes.json` e `beaches.json`
+dell'app. `route_store.py` (ADR-0136) teneva solo i percorsi dal centro di
+una città: il server ridisegnava le stesse 24 forme per ogni telefono
+nuovo della stessa zona: a Levico 11 s di motore sul Mac, tre-cinque
+volte tanto sul server, per ogni telefono, e una coda quando ne arrivano
+molti insieme.
+
+**Decisione**:
+
+1. I punti delle due liste sono **centri anche loro**, dati all'avvio
+   (`RouteStore(water=…)`, letti da `water_spots.py`): un percorso dallo
+   stesso quadrato di 10 m si tiene come quello dal centro di una città,
+   con la stessa chiave (forma, distanza, attività, penna alzata,
+   motore). Non si imparano e non si scrivono in `city-centres.txt`.
+2. **Una cartella e un limite loro**: `routes/water/`, 10 000 percorsi
+   (circa 8 kB l'uno). I 6 400 percorsi delle liste non spingono fuori
+   gli esempi delle città, e viceversa.
+3. Le liste restano **quelle dell'app**: il `Dockerfile` e
+   `.dockerignore` copiano i due file nell'immagine allo stesso percorso
+   del repository. Una lista assente vale vuota.
+4. `draw_examples --water` (e `--water-name`) fa il primo telefono per
+   ogni punto: le otto forme nell'ordine dell'app, a pezzi con la penna
+   alzata come la chiede l'app; un punto senza acqua sul server si salta
+   alla prima forma.
+5. L'app non cambia: chiede le stesse richieste, che arrivano già
+   `done`. I 6 s fra una richiesta e l'altra di `aheadExamples.ts`
+   restano: servono al limite di 30 POST al minuto, che conta anche le
+   risposte tenute.
+
+**Alternative scartate**:
+
+- *Una copia delle liste dentro `services/api/`*: due file da tenere
+  uguali, e TASK-245 C sta già cambiando quello delle spiagge.
+- *`learn` dei punti in `city-centres.txt`*: si dimenticherebbero con i
+  centri più vecchi (`MAX_CENTRES`) e il file crescerebbe a ogni avvio.
+- *Tenere ogni percorso `paddling`, da qualunque partenza*: la partenza è
+  la posizione di chi chiede (ADR-0085, ADR-0092).
+- *Lo stesso limite di 3000 delle città*: `draw_examples --water` lo
+  riempirebbe da solo.
+
+**Conseguenze**:
+
+- Un telefono nuovo in una zona già chiesta, o disegnata prima, ha le sue
+  24 forme senza motore (0 s sul Mac invece di 11 s); il giro sul
+  telefono dura sempre circa due minuti e mezzo, per i 6 s fra le
+  richieste: il guadagno è del server, non del tempo che vede l'utente.
+- Ogni cambio di `route_engine` le fa ridisegnare tutte, come gli esempi
+  delle città; `draw_examples --water` è molto più lungo di quello delle
+  città (stima in `tasks/TASK-246.md`, «Esito parte B»).
+- Su disco circa 50 MB per tutti i punti, 80 MB al più, in
+  `data/cache/routes/water/`.
+
 ## ADR-0215 — aggiornamento (parte C): in bici senza percorso, la velocità
 **Stato**: Attiva · 2026-10-09 · **scelta dell'utente** del 2026-10-08
 (la velocità, non il passo al km); il come è **deciso dall'agente su
@@ -13284,3 +13341,32 @@ percorso il passo al km, segnalandolo. L'utente ha scelto la velocità.
 **Alternative scartate**: un componente proprio per la pedalata senza
 percorso (due modi di mostrare la stessa cosa); cambiare anche la voce
 (non chiesto: una scelta dell'utente).
+
+## ADR-0197, aggiunta — Il «Try» della riga si conta come `better_distance`
+**Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
+(TASK-234 parte C), dentro la **scelta dell'utente** del 2026-10-08
+(«Tutti e due»: contare i tocchi su «Try N km» e un segno visibile mentre
+il percorso nuovo si calcola). Aggiunta ad ADR-0197, senza numero nuovo,
+d'accordo con il coordinatore.
+
+**Decisione**:
+
+1. «Try N km» della riga sotto un percorso riuscito manda `hint_taken`
+   con un `hint` nuovo, `better_distance`, con `distance_m` (quella
+   disegnata) e `to_m` (quella provata). Un valore nuovo di un segnale
+   che c'è, non un `kind` nuovo: il report delle ricerche lo conta già fra
+   gli `hints`, a parte dai `try_distance` degli errori; la proposta
+   `review_distance` resta dei soli errori.
+2. Additivo: l'API nuova registra i corpi di prima come prima; un'API di
+   prima risponde 422 al `hint` nuovo e l'app, che manda i segnali senza
+   aspettarli, non se ne accorge. Il corpo nuovo è in un fixture suo,
+   `signal-better-distance.json`, per non cambiare `signals.json` che i
+   test di TASK-142 leggono per posizione.
+3. Nessun indicatore nuovo sul pulsante: il «Try» fa partire un disegno
+   nuovo e il pannello dell'attesa (testo, «Cancel», barra) prende subito
+   il posto del percorso e della riga. Un secondo indicatore sopra
+   sarebbe lo stesso segno detto due volte.
+
+**Alternative scartate**: un `kind` nuovo (`better_taken`): un modello e
+un conteggio in più nell'API per la stessa cosa, un «Try»; uno spinner
+nel pulsante: il pulsante non resta sullo schermo mentre si calcola.

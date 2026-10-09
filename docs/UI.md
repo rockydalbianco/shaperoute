@@ -1581,7 +1581,10 @@ chiesta; e dopo un «Try» non propone di tornare alla distanza appena
 lasciata, per lo stesso disegno dalla stessa partenza. «This shape» e non
 «This heart»: il nome della forma cambierebbe genere nelle altre lingue
 («Questa forma viene meglio a circa 8 km.»). Testi nelle cinque lingue
-(`src/route/betterDistance.ts`).
+(`src/route/betterDistance.ts`). Il tocco su «Try» si conta
+(`hint_taken` con `better_distance`, TASK-234 C) e, come ogni nuovo
+disegno, lascia subito il posto al pannello dell'attesa con la barra e
+«Cancel»: è il segno che il percorso nuovo si sta calcolando.
 
 **La mappa girata e la freccia del nord** (TASK-232 parte B, ADR-0195;
 la mappa girata, la freccia e i suoi due tocchi sono scelte dell'utente

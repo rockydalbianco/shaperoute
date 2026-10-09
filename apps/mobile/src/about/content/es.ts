@@ -10,6 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "5 de octubre de 2026";
+/** «Privacy» is final since the user approved it on this day (TASK-237 D). */
+const PRIVACY_UPDATED = "8 de octubre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -250,13 +252,13 @@ const terms: AboutDocument = {
 
 const privacy: AboutDocument = {
   title: "Política de privacidad",
-  draft: true,
-  updated: UPDATED,
+  draft: false,
+  updated: PRIVACY_UPDATED,
   sections: [
     {
       heading: "Quién es responsable de tus datos",
       blocks: [
-        "El responsable del tratamiento de tus datos personales es [name]. Para cualquier cosa sobre tus datos, escribe a [contact email].",
+        "El responsable del tratamiento de tus datos personales es Luca Pallaoro. Para cualquier cosa sobre tus datos, escribe a muw2610@gmail.com.",
         "Este texto dice qué datos trata MuW, para qué, dónde se guardan y durante cuánto tiempo, y qué puedes hacer al respecto.",
       ],
     },
@@ -329,6 +331,7 @@ const privacy: AboutDocument = {
       heading: "Tu posición",
       blocks: [
         "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor como inicio de una ruta que pides, dentro de una carrera que guardas, y con la búsqueda de un lugar, para poner primero los lugares cercanos.",
+        "En iPhone, durante una carrera que has empezado, la app sigue tu posición también con el teléfono bloqueado o con otra app abierta, hasta que detienes la carrera; el iPhone lo muestra con una marca azul en la parte de arriba de la pantalla. MuW pide la posición solo mientras usas la app, nunca «Siempre».",
         "Como cualquier servicio de internet, nuestro servidor ve la dirección de internet (IP) de la que viene una petición mientras la responde. El registro del servidor no escribe posiciones, y la base de datos no guarda direcciones IP.",
         "Existe un registro de las peticiones de rutas, con su inicio, para reproducir un fallo. Está apagado en nuestro servidor; encendido, guarda como máximo 10 MB, y después se pierden las líneas más antiguas.",
       ],
@@ -380,7 +383,14 @@ const privacy: AboutDocument = {
     {
       heading: "Por qué podemos usar tus datos",
       blocks: [
-        "[bases jurídicas: por completar antes de que este texto sea definitivo]",
+        {
+          bullets: [
+            "Para darte el servicio que pides (contrato): tu cuenta, tu perfil, las rutas que pides, y las carreras, favoritos, comentarios, reacciones y seguimientos que guardas.",
+            "Nuestro interés legítimo en que MuW funcione, sea segura y mejore: los registros breves del servidor, los recuentos que limitan las descargas de mapas y los eventos de búsqueda, que no dicen nada de quién eres.",
+            "Tu consentimiento: el número de teléfono que decides añadir, la conexión con Strava y los anuncios donde el formulario de Google lo pide. Puedes retirar un consentimiento en cualquier momento; lo que se hizo antes sigue siendo lícito.",
+            "Una obligación legal, cuando una ley nos pide conservar o entregar datos.",
+          ],
+        },
       ],
     },
     {
@@ -396,7 +406,7 @@ const privacy: AboutDocument = {
             "presentar una reclamación ante la autoridad de protección de datos de tu país (en Italia, el Garante per la protezione dei dati personali).",
           ],
         },
-        "Para lo que no puedas hacer desde la app, escribe a [contact email].",
+        "Para lo que no puedas hacer desde la app, escribe a muw2610@gmail.com.",
       ],
     },
     {
@@ -413,7 +423,7 @@ const privacy: AboutDocument = {
     },
     {
       heading: "Contacto",
-      blocks: ["[name] · [contact email]"],
+      blocks: ["Luca Pallaoro · muw2610@gmail.com"],
     },
   ],
 };

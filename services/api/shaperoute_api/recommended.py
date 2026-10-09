@@ -168,6 +168,24 @@ def turn_of(route: dict[str, Any]) -> float:
     return float(turn) if math.isfinite(turn) and -180 <= turn <= 180 else 0.0
 
 
+def listed(route: CatalogRoute, away: float) -> RecommendedRouteBody:
+    """One route of a list, `away` metres from the point asked about."""
+    return RecommendedRouteBody(
+        id=route.id,
+        city=route.city,
+        shape=route.shape,
+        word=route.word,
+        style=route.style,
+        distance_m=route.distance_m,
+        route_m=route.route_m,
+        similarity=route.similarity,
+        start=route.start,
+        away_m=round(away),
+        preview=preview(route.points),
+        rotation_deg=route.rotation_deg,
+    )
+
+
 class RecommendedCatalog:
     def __init__(self, routes: Iterable[CatalogRoute]) -> None:
         self.routes = {r.id: r for r in routes}
@@ -208,23 +226,7 @@ class RecommendedCatalog:
             if away <= radius_m:
                 found.append((r, away))
         found.sort(key=lambda f: (-f[0].similarity, f[1], f[0].id))
-        return [
-            RecommendedRouteBody(
-                id=r.id,
-                city=r.city,
-                shape=r.shape,
-                word=r.word,
-                style=r.style,
-                distance_m=r.distance_m,
-                route_m=r.route_m,
-                similarity=r.similarity,
-                start=r.start,
-                away_m=round(away),
-                preview=preview(r.points),
-                rotation_deg=r.rotation_deg,
-            )
-            for r, away in found[:limit]
-        ]
+        return [listed(r, away) for r, away in found[:limit]]
 
     def get(self, route_id: str) -> RecommendedRouteDetailBody | None:
         r = self.routes.get(route_id)

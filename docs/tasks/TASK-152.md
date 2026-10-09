@@ -48,13 +48,15 @@ privacy, così AdMob può verificare l'app (TASK-153).
    società (gratuito, da Dun & Bradstreet); Apple può chiedere documenti
    e la verifica dura fino a circa tre settimane. L'app resta nello
    stesso account, cambia solo il nome del venditore.
-2. **Commerciante («trader») UE: da richiedere.** Il 2026-10-09 l'utente
-   aveva risposto «sì commerciante» perché voleva gli annunci veri da
-   subito (gli era stato detto che indirizzo, telefono ed email diventano
-   pubblici sull'App Store nell'UE); poco dopo ha cambiato idea: **lancio
-   senza pubblicità**, gli annunci dopo. La domanda va rifatta con questo
-   quadro. La società la apre dopo i primi ~300 € di guadagno: allora si
-   aggiornano i dati e l'account passa a organizzazione (risposta 1).
+2. **Non commerciante («non-trader») UE, per ora** (2026-10-09). Prima
+   l'utente aveva detto «sì commerciante» perché voleva gli annunci veri
+   da subito; poi ha scelto di **lanciare senza pubblicità** e, richiesto
+   esplicitamente con il nuovo quadro (app gratuita e senza annunci,
+   nessun dato personale pubblico sullo store), ha risposto «sì, non
+   commerciante per ora». Quando arrivano gli annunci (TASK-153) si passa
+   a commerciante su App Store Connect, Business → Digital Services Act;
+   con la società, con i dati della società (risposta 1). La società la
+   apre dopo i primi ~300 € di guadagno.
 3. **`getmuw.app`**, dominio proprio (TASK-265, ADR-0234): il sito è
    online lì, l'API su `api.getmuw.app`.
 4. **«MuW»** (TASK-260, ADR-0224). Se il nome è già preso sull'App

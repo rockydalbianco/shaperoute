@@ -8183,6 +8183,41 @@ come li dà il telefono. (3) I messaggi di `drawingProblem` passano da
 `account/messages.ts`); il messaggio `invalid_request` resta quello
 dell'API, in inglese.
 
+**Aggiunta** (2026-10-08, TASK-210 parte F, i nomi delle forme, la mappa
+e «Help»; deciso dall'agente su delega dell'utente, i quattro punti fuori
+dalla lista approvati dal coordinatore il 2026-10-07): (1) **Un nome solo
+per forma**: il nome dentro una frase e nel campo di «Draw»
+(`shapeWord`, «Hundekopf», «testa di cane», «cabeza de perro», «tête de
+chien») si ricava dal nome con la maiuscola della parte A (`shapeName`),
+senza la maiuscola tranne in tedesco, che la vuole su ogni nome; in
+inglese restano le parole della forma di prima («dog head»), byte per
+byte. Nessuna tabella nuova di nomi. (2) **`shapeWords.ts` conosce le
+cinque lingue** quale che sia quella dell'app (chi scrive «cuore» con
+l'app in tedesco ha il cuore), con singolare, plurale e qualche
+diminutivo; le parole si scrivono con accenti e maiuscole e si leggono
+senza («Kürbis» = «kurbis», «œ» = «oe»); gli articoli delle cinque lingue
+si saltano («ein Herz», «l'étoile»). Un albero o un abete da soli non
+sono l'albero di Natale (ADR-0084). (3) **La mappa nomina i luoghi nella
+lingua dell'app** (`name:de`, `name:fr`…, poi il nome del posto), non più
+sempre in italiano: anche in inglese («Munich», non più «Monaco di
+Baviera»). Provata nel browser con le tile vere: «Mailand», «Neapel» in
+tedesco, «Gênes», «Trente» e «Départ ici» in francese. La pagina si costruisce con la lingua; `MapView` la rifà
+quando la lingua cambia e la mappa si ricarica come con «Retry»,
+ricevendo di nuovo partenza e percorso. Le mappe piccole del Feed
+(`MAP_STYLE`, file di TASK-118) prendono la lingua dell'apertura
+dell'app: seguono un cambio con la parte G. (4) **«Help», «Terms» e
+«Privacy»** hanno un file per lingua in `about/content/`, anche in
+tedesco, spagnolo e francese (scelta dell'utente del 2026-10-07: «Terms»
+e «Privacy» tradotti come bozze, con gli stessi segnaposto `[name]`,
+`[contact email]`, `[governing law]`; la nota delle basi giuridiche è
+tradotta come in italiano); non si ricade più sull'inglese e VoiceOver
+legge ogni testo nella lingua dell'app. I nomi dei pulsanti sono quelli
+che l'app mostra in ogni lingua; le tre pagine hanno i titoli della
+parte G (#437: «Disegna», «Zeichnen», «Fil»…), anche se una delle due PR
+entra qualche minuto prima dell'altra. (5) Quattro
+testi nuovi in fondo alle tabelle (dopo il merge della parte E):
+«{list} or {last}», «Start here», «NEAR {city}», «here».
+
 ## ADR-0173 — Seguire con richiesta, l'API: una tabella `follows` con due stati, la ricerca per nome, gli elenchi solo propri
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-211, parte A), dentro due **scelte dell'utente** del 2026-10-03:

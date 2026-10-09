@@ -338,9 +338,9 @@ export function ExploreScreen({
         {/* The neighbours' routes, under the city's own: alternatives a short
             run away (TASK-192). */}
         {city !== null && nearby.length > 0 && (
-          <Text
-            style={styles.label}
-          >{`NEAR ${cityShort(city.label).toUpperCase()}`}</Text>
+          <Text style={styles.label}>
+            {t("NEAR {city}", { city: cityShort(city.label).toUpperCase() })}
+          </Text>
         )}
         {nearby.length > 0 && <View style={styles.grid}>{nearby.map(routeCard)}</View>}
         {/* Under the routes already there, and closed: the page is for looking

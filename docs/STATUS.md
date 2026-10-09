@@ -487,7 +487,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Fil», «Dessiner», «Explorer»), tre testi nuovi, test
   `screens/pageTitles.test.ts`. Restano i nomi delle forme, i nomi sulla
   mappa e «Start here», «Help» in de/es/fr (parte F, altra sessione),
-  «Paddle ·» nel feed dopo TASK-118 (`tasks/TASK-210.md`). L'utente ha
+  «Paddle ·» nel feed dopo TASK-118 (`tasks/TASK-210.md`). **Parte F — i
+  nomi delle forme, la mappa e «Help»** fatta il 2026-10-08 (branch
+  `feat/TASK-210-f-shape-names`): i nomi delle forme in «Draw» e sulle
+  schede di «Explore» nella lingua dell'app, `shapeWords.ts` che legge le
+  cinque lingue, i luoghi sulla mappa e «Start here» nella lingua
+  dell'app, «NEAR TRENTO», «Help» in de/es/fr e, per scelta dell'utente,
+  «Terms» e «Privacy» tradotti restando bozze, con le pagine chiamate come
+  i titoli della parte G; 4 testi nuovi in fondo alle tabelle. Dopo F e G
+  resta il Feed (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:

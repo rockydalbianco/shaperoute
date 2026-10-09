@@ -1,5 +1,9 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
+import { tLater } from "../i18n";
+import { appLanguage } from "../i18n/language";
+import type { Language } from "../i18n/languages";
+import { translate } from "../i18n/translate";
 import {
   color,
   onFoot,
@@ -12,7 +16,7 @@ import {
 } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
 import { kindLayers, PITCH_3D, TERRAIN_SPEC, withKinds } from "./mapKindStyle";
-import { LABEL_FONT, sgravaDarkStyle } from "./mapStyle";
+import { darkMapStyle, LABEL_FONT } from "./mapStyle";
 
 /**
  * The map page shown in the WebView (ADR-0029): MapLibre GL JS from a CDN,
@@ -30,8 +34,20 @@ export const MAPLIBRE_CSS_URL = `https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSIO
 export const MAPLIBRE_CSS_SRI =
   "sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK";
 
-/** The style, written into the page: nothing to fetch, colours from the tokens. */
-export const MAP_STYLE = sgravaDarkStyle;
+/**
+ * The style, written into the page: nothing to fetch, colours from the
+ * tokens, the places named in the app's language (TASK-210 F).
+ */
+export function mapStyle(language: Language) {
+  return darkMapStyle(language);
+}
+
+/**
+ * The style of the Feed's maps (`feed/feedMapPage.ts`), in the app's
+ * language when the app opened: the Feed follows a new language with
+ * TASK-210's part G.
+ */
+export const MAP_STYLE = mapStyle(appLanguage());
 
 /** What the map shows before a start is known: the whole of Italy. */
 export const ITALY_BOUNDS: [southWest: LatLon, northEast: LatLon] = [
@@ -121,9 +137,13 @@ export const HEADING_ARROW_SVG =
   `<path d="M18 5 L27.5 28 L18 23 L8.5 28 Z" fill="${POSITION_COLOR}" stroke="${color.map.background}" stroke-width="1.5" stroke-linejoin="round"/>` +
   `</svg>`;
 
-/** Where a moved route begins (ADR-0040): a cyan marker and its label. */
+/**
+ * Where a moved route begins (ADR-0040): a cyan marker and its label,
+ * written in the page's language: «Hier starten» (TASK-210 F), the words
+ * the moved-start warning sends the runner to (`route/warnings.ts`).
+ */
 export const START_HERE_COLOR = color.startHere;
-export const START_HERE_LABEL = "Start here";
+export const START_HERE_LABEL = tLater("Start here");
 
 /** Behind the map while it loads, so the page never flashes white. */
 export const MAP_BACKGROUND = color.map.background;
@@ -144,10 +164,11 @@ export function isExternalUrl(url: string): boolean {
   return /^https?:\/\//i.test(url);
 }
 
-export function buildMapPage(): string {
+/** The page, with the map's names and «Start here» in `language`. */
+export function buildMapPage(language: Language = appLanguage()): string {
   const bounds = JSON.stringify(ITALY_BOUNDS.map(toLngLat));
   // With the photos and the hills in it, hidden (TASK-264).
-  const style = withKinds(MAP_STYLE);
+  const style = withKinds(mapStyle(language));
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -395,7 +416,7 @@ export function buildMapPage(): string {
       }
       if (lngLat) {
         var label = new maplibregl.Popup({ closeButton: false, closeOnClick: false })
-          .setText(${JSON.stringify(START_HERE_LABEL)});
+          .setText(${toScript(translate(language, START_HERE_LABEL))});
         startHere = new maplibregl.Marker({ color: ${toScript(START_HERE_COLOR)} })
           .setLngLat(lngLat)
           .setPopup(label)

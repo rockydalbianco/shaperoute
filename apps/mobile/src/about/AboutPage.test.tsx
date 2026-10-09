@@ -54,16 +54,34 @@ test("with the app in Italian the text and the notice are in Italian", async () 
   expect(screen.queryByText("Privacy policy")).toBeNull();
 });
 
-test("with the app in German the text is in English, the notice in German", async () => {
+test("with the app in German the draft is German, and still a draft (TASK-210 F)", async () => {
   await act(async () => saveLanguageChoice("de"));
   await render(<AboutPage id="terms" />);
-  const title = screen.getByRole("header", { name: "Terms of use" });
+  const title = screen.getByRole("header", { name: "Nutzungsbedingungen" });
   expect(title).toBeOnTheScreen();
-  // VoiceOver is told the text is English, not German.
-  expect(title.props.accessibilityLanguage).toBe("en-US");
+  // VoiceOver is told the text is German.
+  expect(title.props.accessibilityLanguage).toBe("de-DE");
   expect(screen.getByText("Entwurf – noch nicht endgültig.")).toBeOnTheScreen();
-  expect(screen.getByText("Zuletzt aktualisiert: 5 October 2026")).toBeOnTheScreen();
+  expect(screen.getByText("Zuletzt aktualisiert: 5. Oktober 2026")).toBeOnTheScreen();
+  // The places to fill are the same as in English, and stand out.
+  expect(screen.getAllByText("[name]").length).toBeGreaterThan(0);
+  expect(screen.getAllByText("[governing law]").length).toBeGreaterThan(0);
+  expect(screen.queryByText("Terms of use")).toBeNull();
 });
+
+test.each([
+  ["es", "Política de privacidad", "Última actualización: 5 de octubre de 2026"],
+  ["fr", "Politique de confidentialité", "Dernière mise à jour : 5 octobre 2026"],
+] as const)(
+  "with the app in «%s» «Privacy» is a draft in it",
+  async (language, name, day) => {
+    await act(async () => saveLanguageChoice(language));
+    await render(<AboutPage id="privacy" />);
+    expect(screen.getByRole("header", { name })).toBeOnTheScreen();
+    expect(screen.getByText(day)).toBeOnTheScreen();
+    expect(screen.getAllByText("[contact email]").length).toBeGreaterThan(0);
+  },
+);
 
 test("the page turns with the language while it is open", async () => {
   await render(<AboutPage id="help" />);
@@ -71,3 +89,19 @@ test("the page turns with the language while it is open", async () => {
   await act(async () => saveLanguageChoice("it"));
   expect(screen.getByRole("header", { name: "Come funziona MuW" })).toBeOnTheScreen();
 });
+
+test.each([
+  ["de", "So funktioniert MuW", "de-DE", /^Tippe auf «Route zeichnen»/],
+  ["es", "Cómo funciona MuW", "es-ES", /^Toca «Dibujar la ruta»/],
+  ["fr", "Comment fonctionne MuW", "fr-FR", /^Touche «Dessiner le parcours»/],
+] as const)(
+  "with the app in «%s» «Help» is in it, and VoiceOver is told so (TASK-210 F)",
+  async (language, name, speech, button) => {
+    await act(async () => saveLanguageChoice(language));
+    await render(<AboutPage id="help" />);
+    const title = screen.getByRole("header", { name });
+    expect(title.props.accessibilityLanguage).toBe(speech);
+    expect(screen.getByText(button)).toBeOnTheScreen();
+    expect(screen.queryByText(/^Tap «Draw route»/)).toBeNull();
+  },
+);

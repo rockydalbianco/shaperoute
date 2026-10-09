@@ -243,4 +243,6 @@ Branch `feat/TASK-234-c-try-signal`.
   e il pannello del percorso, riga e pulsante compresi, lascia il posto
   a quello dell'attesa, con il testo, «Cancel» e la barra di
   `LoadingBar`. Nessun secondo indicatore sopra; un test lo fissa.
+  **Confermato dall'utente** il 2026-10-09: «sì, il pannello d'attesa
+  basta».
 - Nessun testo nuovo sullo schermo; `App.tsx` non è servito.

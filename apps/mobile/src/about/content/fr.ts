@@ -10,6 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "5 octobre 2026";
+/** «Privacy» is final since the user approved it on this day (TASK-237 D). */
+const PRIVACY_UPDATED = "8 octobre 2026";
 
 const help: AboutDocument = {
   title: "Comment fonctionne MuW",
@@ -250,13 +252,13 @@ const terms: AboutDocument = {
 
 const privacy: AboutDocument = {
   title: "Politique de confidentialité",
-  draft: true,
-  updated: UPDATED,
+  draft: false,
+  updated: PRIVACY_UPDATED,
   sections: [
     {
       heading: "Qui est responsable de tes données",
       blocks: [
-        "Le responsable du traitement de tes données personnelles est [name]. Pour tout ce qui concerne tes données, écris à [contact email].",
+        "Le responsable du traitement de tes données personnelles est Luca Pallaoro. Pour tout ce qui concerne tes données, écris à muw2610@gmail.com.",
         "Ce texte dit quelles données MuW traite, pourquoi, où elles sont gardées et combien de temps, et ce que tu peux faire à ce sujet.",
       ],
     },
@@ -329,6 +331,7 @@ const privacy: AboutDocument = {
       heading: "Ta position",
       blocks: [
         "La position du téléphone est utilisée sur le téléphone, pour commencer un parcours là où tu es et pour suivre ta course. Elle va vers notre serveur comme départ d'un parcours que tu demandes, dans une course que tu enregistres, et avec la recherche d'un lieu, pour montrer d'abord les lieux près de toi.",
+        "Sur iPhone, pendant une course que tu as lancée, l'app continue de suivre ta position même téléphone verrouillé ou avec une autre app ouverte, jusqu'à ce que tu arrêtes la course ; l'iPhone l'indique par une marque bleue en haut de l'écran. MuW demande la position seulement pendant que tu utilises l'app, jamais « Toujours ».",
         "Comme tout service internet, notre serveur voit l'adresse internet (IP) d'où vient une requête pendant qu'il y répond. Le journal du serveur n'écrit pas de positions, et la base de données ne contient aucune adresse IP.",
         "Un registre des demandes de parcours, avec leur départ, existe pour reproduire un défaut. Il est éteint sur notre serveur ; allumé, il contient 10 Mo au plus, puis les lignes les plus anciennes sont perdues.",
       ],
@@ -379,7 +382,16 @@ const privacy: AboutDocument = {
     },
     {
       heading: "Pourquoi nous pouvons utiliser tes données",
-      blocks: ["[bases légales : à compléter avant que ce texte soit définitif]"],
+      blocks: [
+        {
+          bullets: [
+            "Pour te fournir le service que tu demandes (contrat) : ton compte, ton profil, les parcours que tu demandes, et les courses, favoris, commentaires, réactions et abonnements que tu enregistres.",
+            "Notre intérêt légitime à faire fonctionner MuW, à la garder sûre et à l'améliorer : les courts journaux du serveur, les comptages qui limitent les téléchargements de cartes et les événements de recherche, qui ne disent rien de qui tu es.",
+            "Ton consentement : le numéro de téléphone que tu choisis d'ajouter, la connexion à Strava et les publicités là où le formulaire de Google le demande. Tu peux retirer un consentement à tout moment ; ce qui a été fait avant reste licite.",
+            "Une obligation légale, quand une loi nous demande de conserver ou de remettre des données.",
+          ],
+        },
+      ],
     },
     {
       heading: "Tes droits",
@@ -394,7 +406,7 @@ const privacy: AboutDocument = {
             "porter plainte auprès de l'autorité de protection des données de ton pays (en Italie, le Garante per la protezione dei dati personali).",
           ],
         },
-        "Pour tout ce que tu ne peux pas faire depuis l'app, écris à [contact email].",
+        "Pour tout ce que tu ne peux pas faire depuis l'app, écris à muw2610@gmail.com.",
       ],
     },
     {
@@ -411,7 +423,7 @@ const privacy: AboutDocument = {
     },
     {
       heading: "Contact",
-      blocks: ["[name] · [contact email]"],
+      blocks: ["Luca Pallaoro · muw2610@gmail.com"],
     },
   ],
 };

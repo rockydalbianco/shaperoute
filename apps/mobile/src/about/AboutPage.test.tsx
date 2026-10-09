@@ -27,20 +27,28 @@ test("«Help» is not a draft: no notice, no day", async () => {
   expect(screen.queryByText(/^Last updated/)).toBeNull();
 });
 
-test.each(["terms", "privacy"] as const)(
-  "«%s» says it is a draft before anything else, with its day",
-  async (id) => {
-    await render(<AboutPage id={id} />);
-    expect(screen.getByText("Draft — not final yet.")).toBeOnTheScreen();
-    expect(screen.getByText("Last updated: 5 October 2026")).toBeOnTheScreen();
-    expect(screen.getByRole("header", { name: EN[id].title })).toBeOnTheScreen();
-    // What the user still has to fill stands out, as it is written.
-    expect(screen.getAllByText("[name]").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("[contact email]").length).toBeGreaterThan(0);
-  },
-);
+test("«Terms» says it is a draft before anything else, with its day", async () => {
+  await render(<AboutPage id="terms" />);
+  expect(screen.getByText("Draft — not final yet.")).toBeOnTheScreen();
+  expect(screen.getByText("Last updated: 5 October 2026")).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: EN.terms.title })).toBeOnTheScreen();
+  // What the user still has to fill stands out, as it is written.
+  expect(screen.getAllByText("[name]").length).toBeGreaterThan(0);
+  expect(screen.getAllByText("[contact email]").length).toBeGreaterThan(0);
+});
 
-test("with the app in Italian the text and the notice are in Italian", async () => {
+test("«Privacy» is final: its day, no draft notice, nothing left to fill (TASK-237 D)", async () => {
+  await render(<AboutPage id="privacy" />);
+  expect(screen.queryByText("Draft — not final yet.")).toBeNull();
+  expect(screen.getByText("Last updated: 8 October 2026")).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: EN.privacy.title })).toBeOnTheScreen();
+  expect(
+    screen.getByText(/controller of your personal data is Luca Pallaoro/),
+  ).toBeOnTheScreen();
+  expect(screen.queryByText(/\[[^\]]+\]/)).toBeNull();
+});
+
+test("with the app in Italian the text and its day are in Italian", async () => {
   await act(async () => saveLanguageChoice("it"));
   await render(<AboutPage id="privacy" />);
   expect(
@@ -49,8 +57,8 @@ test("with the app in Italian the text and the notice are in Italian", async () 
   expect(
     screen.getByRole("header", { name: IT.privacy.sections[0].heading }),
   ).toBeOnTheScreen();
-  expect(screen.getByText("Bozza — non ancora definitiva.")).toBeOnTheScreen();
-  expect(screen.getByText("Ultimo aggiornamento: 5 ottobre 2026")).toBeOnTheScreen();
+  expect(screen.queryByText("Bozza — non ancora definitiva.")).toBeNull();
+  expect(screen.getByText("Ultimo aggiornamento: 8 ottobre 2026")).toBeOnTheScreen();
   expect(screen.queryByText("Privacy policy")).toBeNull();
 });
 
@@ -70,16 +78,18 @@ test("with the app in German the draft is German, and still a draft (TASK-210 F)
 });
 
 test.each([
-  ["es", "Política de privacidad", "Última actualización: 5 de octubre de 2026"],
-  ["fr", "Politique de confidentialité", "Dernière mise à jour : 5 octobre 2026"],
+  ["es", "Política de privacidad", "Última actualización: 8 de octubre de 2026"],
+  ["fr", "Politique de confidentialité", "Dernière mise à jour : 8 octobre 2026"],
+  ["de", "Datenschutzerklärung", "Zuletzt aktualisiert: 8. Oktober 2026"],
 ] as const)(
-  "with the app in «%s» «Privacy» is a draft in it",
+  "with the app in «%s» «Privacy» is final in it",
   async (language, name, day) => {
     await act(async () => saveLanguageChoice(language));
     await render(<AboutPage id="privacy" />);
     expect(screen.getByRole("header", { name })).toBeOnTheScreen();
     expect(screen.getByText(day)).toBeOnTheScreen();
-    expect(screen.getAllByText("[contact email]").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/muw2610@gmail\.com/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/\[[^\]]+\]/)).toBeNull();
   },
 );
 

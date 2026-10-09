@@ -23,7 +23,8 @@ type Props = {
  *
  * A draft says so first, before its name is read as a promise: the legal
  * texts are not final until the user approves them. What is still to fill
- * is written in square brackets and stands out.
+ * is written in square brackets and stands out. An approved text («Privacy»
+ * since TASK-237 D) shows only its day.
  *
  * The texts are written in each of the app's languages (TASK-210 F), and
  * VoiceOver is told which one it reads.
@@ -34,7 +35,7 @@ export function AboutPage({ id }: Props) {
   const speech = languageOption(language).speech;
   return (
     <View style={styles.page}>
-      {text.draft && (
+      {text.draft ? (
         // One thing to hear, not two lines to find.
         <View style={styles.draft} accessible>
           <Text style={styles.draftText}>{t("Draft — not final yet.")}</Text>
@@ -44,6 +45,13 @@ export function AboutPage({ id }: Props) {
             </Text>
           )}
         </View>
+      ) : (
+        // A final legal text still says from when it applies (TASK-237 D).
+        text.updated !== null && (
+          <Text style={styles.updated}>
+            {t("Last updated: {date}", { date: text.updated })}
+          </Text>
+        )
       )}
       <Text
         style={styles.title}

@@ -1,7 +1,9 @@
 # TASK-261 — Registrare la corsa con l'app in secondo piano
 
-**Stato**: In corso
-**Fase**: 4 · **Branch**: `feat/TASK-261-background-gps`
+**Stato**: Done per la parte A (#441, 2026-10-08) · parte B Todo, dopo la
+prova sull'iPhone
+**Fase**: 4 · **Branch**: `feat/TASK-261-background-gps` (cancellato dopo
+il merge)
 
 ## Obiettivo
 
@@ -259,4 +261,16 @@ prova sull'iPhone della parte A**, non adesso. La parte A non la aspetta.
 
 ## Esito
 
-*(da compilare)*
+**Parte A** fatta il 2026-10-08: in `main` con la #441 (merge `08793f4`,
+mergiata dal Coordinatore 2 al suo turno, dopo la #438 e la #440).
+Nell'app costruita la corsa registra a telefono bloccato o con un'altra
+app davanti, con il solo «While using» e la pillola blu; la pausa
+automatica va come in primo piano; la linea si taglia solo se iOS congela
+l'app; in Expo Go e su Android tutto come prima. I testi del permesso in
+cinque lingue sono approvati dall'utente. In locale lint, typecheck,
+Prettier e test verdi (347 suite, 2818 test, dopo l'ultimo
+riallineamento); CI verde. Provato nel simulatore con una build nativa
+(sopra). Restano: **la prova sull'iPhone**, con una build nativa
+installata (Xcode e cavo, o TestFlight con TASK-152); **la parte B** dopo
+quella prova; Android in background, senza numero. Nel checkout
+principale serve `npm install` per `expo-task-manager`.

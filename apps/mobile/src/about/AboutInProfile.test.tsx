@@ -87,12 +87,15 @@ test.each([
   expect(screen.getAllByRole("button")).toHaveLength(1);
 });
 
-test("only the two legal texts say they are drafts", async () => {
+test("only «Terms» still says it is a draft (TASK-237 D)", async () => {
   await showSettings();
   await fireEvent.press(screen.getByRole("button", { name: "Help" }));
   expect(screen.queryByText("Draft — not final yet.")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   await fireEvent.press(screen.getByRole("button", { name: "Privacy" }));
+  expect(screen.queryByText("Draft — not final yet.")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Terms" }));
   expect(screen.getByText("Draft — not final yet.")).toBeOnTheScreen();
 });
 

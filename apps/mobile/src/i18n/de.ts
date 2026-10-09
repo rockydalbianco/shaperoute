@@ -1104,6 +1104,9 @@ export const DE: Table = {
   "NEAR {city}": "IN DER NÄHE VON {city}",
   here: "hier",
 
+  // src/explore/RecommendedRow.tsx (TASK-092)
+  RECOMMENDED: "EMPFOHLEN",
+
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you about follow requests, reactions, comments and tags. MuW does not send emails yet: your choice is kept for when it does.":
     "Push-Benachrichtigungen melden dir Folgeanfragen, Reaktionen, Kommentare und Markierungen. MuW verschickt noch keine E-Mails: Deine Auswahl bleibt gespeichert, bis es so weit ist.",

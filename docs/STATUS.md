@@ -157,6 +157,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
+  all'agente dall'utente il 2026-10-07). Branch
+  `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:
+  `GET /recommended` (`best_routes.py`, token obbligatorio, nessuna
+  migrazione) ordina i percorsi del catalogo entro 5 km: somiglianza come
+  la scheda la scrive, poi reazioni dei disegni pubblicati, poi corse e
+  preferiti; a parità tutti. In «Explore» la riga «RECOMMENDED» sopra le
+  schede, solo con un account. Il testo nuovo nelle cinque lingue è
+  **confermato dall'utente** (2026-10-08, «ok continua»; es
+  «RECOMENDADAS» al femminile come «rutas»). PR #445. **Aspetta**: la coda
+  dei merge; dopo il merge il server (`best_routes.py`, ok dell'utente,
+  coordinatore) e la pubblicazione dell'app, che può uscire prima: senza
+  `/recommended` la riga non c'è e «Explore» resta com'è.
+  File: `tasks/TASK-092.md`, «File toccati».
 - **TASK-265 — Il dominio getmuw.app** (ADR-0234; scelta dell'utente del
   2026-10-08). L'utente voleva spostare «il sito» su un'azienda tedesca;
   saputo che il sito non era online e che Hetzner è già tedesca, è
@@ -192,17 +206,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Developer e le cinque domande del task; prima della prima build, le
   variabili dell'ambiente EAS `production` (oggi vuoto). Da dove
   riprendere: `tasks/TASK-152.md`, «Esito».
-- **TASK-261 — La corsa registra anche a telefono bloccato** (ADR-0225;
-  chiesto dall'utente il 2026-10-07). Branch
-  `feat/TASK-261-background-gps`. Su iOS, nell'app costruita, il GPS va
-  avanti in background con il solo permesso «While using» e la pillola
-  blu (expo-task-manager, `UIBackgroundModes` `location`); la linea si
-  taglia solo se iOS congela l'app; in Expo Go e su Android tutto come
-  prima. Testo nuovo del permesso in cinque lingue (`apps/mobile/locales/`),
-  **da mostrare all'utente prima del merge**. Per vederlo serve una
-  **build nativa**. Fuori: la voce a telefono bloccato (un task suo, scelta
-  dell'utente) e Android in background. Da dove riprendere:
-  `tasks/TASK-261.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -233,6 +236,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'utente): da ripetere dopo ogni merge che cambia `site/`. Restano
   dell'utente il link per scaricare l'app (dopo l'App Store, TASK-152) e
   il merch.
+  **Parte D** in PR (2026-10-08): la pagina della privacy,
+  `getmuw.app/privacy/` in cinque lingue, scritta dal testo «Privacy»
+  dell'app, ora **definitivo** con le scelte dell'utente (titolare Luca
+  Pallaoro, email muw2610@gmail.com, basi giuridiche, 8 ottobre 2026) e
+  la frase sulla posizione a telefono bloccato (TASK-261). Il link per
+  scaricare arriva con la prima build TestFlight (scelta dell'utente).
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
@@ -609,6 +618,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-261 parte A: la corsa registra anche a telefono bloccato
+  (ADR-0225; chiesto dall'utente il 2026-10-07). In `main` con la #441
+  (`08793f4`, 2026-10-08). Nell'app costruita il GPS va avanti in
+  background con il solo permesso «While using» e la pillola blu di iOS
+  (dipendenza nuova `expo-task-manager`, `UIBackgroundModes` `location`);
+  la pausa automatica funziona come in primo piano; la linea si taglia
+  solo se iOS congela l'app. In Expo Go e su Android tutto come prima,
+  quindi la pubblicazione su `preview` non cambia niente. Testo nuovo del
+  permesso in cinque lingue (`apps/mobile/locales/`), approvato
+  dall'utente. Provato nel simulatore con una build nativa; **la prova
+  sull'iPhone vuole una build nativa** ed è dell'utente. Dopo la prova: la
+  **parte B**, la voce a telefono bloccato (expo-audio, da chiedere), e
+  Android in background, senza numero. Nel checkout principale serve
+  `npm install` per la dipendenza nuova. `tasks/TASK-261.md`.
+- **Pubblicità** — TASK-150: l'utente ha l'account AdMob **da persona**
+  (la partita IVA quando arrivano i guadagni, scelta del 2026-10-02) e ha
+  completato il profilo pagamenti (2026-10-08). La guida è
+  `docs/PUBBLICITA.md`: come e quando paga Google (soglia 70 €, bonifico
+  intorno al 21), i passi, le domande per il commercialista. Prossimi:
+  TASK-152 (App Store) e TASK-153 (annunci veri, unità **nativa** per il
+  Feed). Chiesti dall'utente il 2026-10-08: annunci anche sul sito.
 - **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
   è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
   2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.

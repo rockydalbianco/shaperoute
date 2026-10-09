@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { FreeRun } from "../navigation/freeRun";
-import { isPaddle } from "../navigation/paddle";
+import { freeRunActivity } from "../navigation/freeSport";
 import { t } from "../i18n";
 import { LocationOff } from "../location/LocationOff";
 import { distanceLabel } from "../navigation/phrases";
@@ -131,8 +131,8 @@ export function FreeRunCard({
   track?: Track;
   onStop: () => void;
 }) {
-  // With «Paddle» in «Settings» the numbers are a paddler's (TASK-251); a
-  // run, and a ride without a route, as before.
+  // With «Paddle» in «Settings» the numbers are a paddler's (TASK-251),
+  // with «Bike» speeds, as along a route (TASK-251 C); a run's as before.
   const sport = activityOf(useSport());
   return (
     <RunCard
@@ -140,7 +140,7 @@ export function FreeRunCard({
       live={running}
       heading={<StartPointer track={running ? track : null} flat />}
       onStop={onStop}
-      activity={isPaddle(sport) ? sport : undefined}
+      activity={freeRunActivity(sport)}
     />
   );
 }

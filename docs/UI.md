@@ -2390,6 +2390,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   appariranno qui.» (dell'agente, **da confermare**, come tedesco, spagnolo
   e francese). «My activities» mostra ancora il passo al km (parte B).
   `src/navigation/paddle.ts`.
+  In bici senza percorso la velocità è quella di un percorso in bici
+  (TASK-251 parte C, «Correre senza percorso»).
 - **«Move the shape»** (TASK-238, ADR-0202; trascinare col dito è una
   scelta dell'utente del 2026-10-05): sotto «Start», quando il percorso
   disegnato è sull'acqua e la risposta dice dov'è la forma (`centre`; con
@@ -2586,6 +2588,19 @@ dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.
 Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
 minuti). Anche in modalità tasca; niente vibrazione, che in navigazione
 vuol dire una svolta. «Keep running» non ripete i km già detti.
+
+**In bici senza percorso** («Ride without a route», TASK-251 parte C,
+ADR-0215; scelta dell'utente del 2026-10-08) la scheda e la fine della
+corsa mostrano i numeri di un percorso in bici («In bici», sopra), con lo
+stesso componente: sotto la mappa «Speed now» in km/h; su «Data», in pausa
+e a fine corsa «Speed now», «Avg speed», «Time», «Last km» (in km/h),
+«Elev. gain», senza «Calories»; i km uno per uno in km/h con la
+differenza. Con le miglia mph. Lo sport è quello di «Settings» alla
+partenza, tenuto nel file della corsa. La voce resta quella della corsa
+senza percorso (ogni km, col passo medio), il post scrive il passo al km
+come una pedalata con un percorso, e «My activities» come prima (il passo
+al km: lì solo «Paddle» ha numeri suoi). Una corsa senza percorso e
+«Paddle without a route» restano come prima.
 
 **Il confronto col km precedente** (TASK-217, ADR-0180; chiesto e scelto
 dall'utente il 2026-10-03: «ad ogni km di' anche se ha fatto meglio o

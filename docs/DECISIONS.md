@@ -13189,3 +13189,28 @@ Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
   sempre HTTPS, che Caddy dà da solo.
 - Spostare il ritorno da Strava su `api.getmuw.app` richiede di cambiare
   anche l'applicazione Strava dell'utente: un passo a parte.
+
+## ADR-0215 — aggiornamento (parte C): in bici senza percorso, la velocità
+**Stato**: Attiva · 2026-10-09 · **scelta dell'utente** del 2026-10-08
+(la velocità, non il passo al km); il come è **deciso dall'agente su
+delega dell'utente** (TASK-251, parte C).
+
+**Contesto**: il punto 7 di ADR-0215 lasciava a una pedalata senza
+percorso il passo al km, segnalandolo. L'utente ha scelto la velocità.
+
+**Decisione**:
+
+1. Senza percorso lo sport di «Settings» alla partenza va nel file della
+   corsa anche quando è `cycling` (`navigation/freeSport.ts`,
+   `freeRunActivity`): la scheda e la fine della corsa passano dallo
+   stesso `useRunNumbers` di un percorso in bici (TASK-216), con gli
+   stessi testi. Una corsa non ha sport nel file, come prima.
+2. **La voce non cambia**: ogni km col passo medio, come una corsa senza
+   percorso. Con un percorso la bici dice ogni 10 km la velocità media
+   (ADR-0179): non chiesto, segnalato all'utente.
+3. Il post scrive il passo al km e «My activities» non cambia: è quello
+   che fa già una pedalata con un percorso.
+
+**Alternative scartate**: un componente proprio per la pedalata senza
+percorso (due modi di mostrare la stessa cosa); cambiare anche la voce
+(non chiesto: una scelta dell'utente).

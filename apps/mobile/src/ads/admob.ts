@@ -1,6 +1,11 @@
 import { Platform, TurboModuleRegistry } from "react-native";
 
 import { type AdSdk, createFeedAds, type FeedAds, NO_FEED_ADS } from "./feedAds";
+import {
+  createPrivacyOptions,
+  NO_PRIVACY_OPTIONS,
+  type PrivacyOptions,
+} from "./privacyOptions";
 
 type GoogleMobileAds = typeof import("react-native-google-mobile-ads");
 
@@ -8,18 +13,24 @@ type GoogleMobileAds = typeof import("react-native-google-mobile-ads");
  * Google AdMob (ADR-0102, ADR-0198). Only in a build of the app: Expo Go
  * has no AdMob native code, so there the module is not even loaded.
  */
-function admobSdk(): AdSdk | null {
+function googleMobileAds(): GoogleMobileAds | null {
   if (
     Platform.OS === "web" ||
     TurboModuleRegistry.get("RNGoogleMobileAdsModule") === null
   ) {
     return null;
   }
-  let ads: GoogleMobileAds;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    ads = require("react-native-google-mobile-ads") as GoogleMobileAds;
+    return require("react-native-google-mobile-ads") as GoogleMobileAds;
   } catch {
+    return null;
+  }
+}
+
+function admobSdk(): AdSdk | null {
+  const ads = googleMobileAds();
+  if (ads === null) {
     return null;
   }
   const {
@@ -67,4 +78,15 @@ export function feedAds(): FeedAds {
     shared = sdk ? createFeedAds(sdk) : NO_FEED_ADS;
   }
   return shared;
+}
+
+let sharedOptions: PrivacyOptions | null = null;
+
+/** Google's «Privacy options» (TASK-153), from the same SDK as the ads. */
+export function privacyOptions(): PrivacyOptions {
+  if (sharedOptions === null) {
+    const ads = googleMobileAds();
+    sharedOptions = ads ? createPrivacyOptions(ads.AdsConsent) : NO_PRIVACY_OPTIONS;
+  }
+  return sharedOptions;
 }

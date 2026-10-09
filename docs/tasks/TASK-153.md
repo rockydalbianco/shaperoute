@@ -1,6 +1,6 @@
 # TASK-153 — AdMob dagli annunci di prova a quelli veri
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 4 · **Branch**: `feat/TASK-153-admob-live`
 **Dipende da**: TASK-150 (account AdMob e pagamenti), TASK-152 (app
 sull'App Store, sito dello sviluppatore)
@@ -23,10 +23,12 @@ quello di Google e l'utente può cambiarlo dall'app.
 ## Cosa fare
 
 1. **In AdMob** (lo fa l'utente, o l'agente con l'utente davanti): l'app
-   iOS collegata alla scheda dell'App Store, un'unità interstitial.
+   iOS collegata alla scheda dell'App Store, un'unità **nativa** («Nativo
+   avanzato»): da TASK-235 (ADR-0198) gli annunci sono nativi nel Feed,
+   non più interstitial.
 2. **ID veri nell'app**: l'ID dell'app nel plugin
    `react-native-google-mobile-ads` di `app.json` (si legge alla build) e
-   `EXPO_PUBLIC_ADMOB_INTERSTITIAL_IOS` nell'ambiente EAS della build dello
+   `EXPO_PUBLIC_ADMOB_NATIVE_IOS` nell'ambiente EAS della build dello
    store. Le build di prova e lo sviluppo restano con gli ID di prova di
    Google. L'iPhone dell'utente si registra in AdMob come dispositivo di
    prova: **mai toccare i propri annunci veri**, Google lo considera
@@ -69,6 +71,7 @@ apps/mobile/src/ads/
 apps/mobile/App.tsx (o la schermata scelta per «Privacy options»)
 .env.example
 site/app-ads.txt
+docs/DEPLOY.md (solo site/app-ads.txt nell'elenco di F.14, dal coordinatore)
 docs/DECISIONS.md
 docs/PUBBLICITA.md
 docs/STATUS.md

@@ -213,6 +213,17 @@ le build vecchie, semplicemente non le raggiunge.
 
    La chiave, `EXPO_PUBLIC_API_KEY`, dalla pagina del progetto su
    expo.dev, ambiente `production`, visibilità *Sensitive*.
+
+   **Annunci spenti** (TASK-267, ADR-0237): finché l'utente non li vuole
+   nello store, anche questa, prima della build:
+
+   ```
+   npx eas-cli env:set production --name EXPO_PUBLIC_ADS --value off --visibility plaintext
+   ```
+
+   Entra nella build e negli update fatti con `--environment production`
+   (punto 4). Per riaccenderli: `env:delete` e una build o un update
+   nuovi (TASK-153).
 2. **La build** (serve l'account Apple Developer, lo fa l'utente con le
    sue credenziali):
 

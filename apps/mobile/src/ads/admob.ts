@@ -5,11 +5,23 @@ import { type AdSdk, createFeedAds, type FeedAds, NO_FEED_ADS } from "./feedAds"
 type GoogleMobileAds = typeof import("react-native-google-mobile-ads");
 
 /**
+ * The App Store build has no ads for now (TASK-267, ADR-0237): its EAS
+ * environment `production` sets EXPO_PUBLIC_ADS=off, which goes into the
+ * JS bundle of the build and of its updates. Read as written: Expo
+ * replaces `process.env.EXPO_PUBLIC_…` when it makes the bundle.
+ */
+export function adsTurnedOff(value: string | undefined = process.env.EXPO_PUBLIC_ADS) {
+  return value?.trim().toLowerCase() === "off";
+}
+
+/**
  * Google AdMob (ADR-0102, ADR-0198). Only in a build of the app: Expo Go
- * has no AdMob native code, so there the module is not even loaded.
+ * has no AdMob native code, so there the module is not even loaded. Nor
+ * where ads are turned off: no SDK started, no consent asked, no ad.
  */
 function admobSdk(): AdSdk | null {
   if (
+    adsTurnedOff() ||
     Platform.OS === "web" ||
     TurboModuleRegistry.get("RNGoogleMobileAdsModule") === null
   ) {

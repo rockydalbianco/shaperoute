@@ -166,9 +166,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   --water` li disegna prima. L'app non cambia. Sul Mac le 24 forme di un
   telefono nuovo a Levico: 11 s di motore la prima volta, 0 s dopo; il
   giro di tutti i punti sul server, stimato, 4–8 ore.
-  **Aspetta**: la coda dei merge, allineata dal coordinatore con TASK-245
-  C; poi server e `draw_examples --water` con l'ok dell'utente.
+  PR #462, merge chiesto dall'utente al verde (2026-10-09), non aspetta
+  TASK-245 C. **Resta**: server e `draw_examples --water` con l'ok
+  dell'utente, dal coordinatore.
   File: `tasks/TASK-246.md`, «File toccati (parte B)».
+- **TASK-251 parte C — In bici senza percorso, la velocità** (aggiornamento
+  di ADR-0215; scelta dell'utente del 2026-10-08). Branch
+  `feat/TASK-251-c-free-ride-speed`. Con «Bike» in «Settings» «Ride without
+  a route» mostra «Speed now», «Avg speed», «Last km» e i km in km/h (mph
+  con le miglia), sulla scheda e a fine corsa, come un percorso in bici;
+  nessun testo nuovo. La voce resta quella della corsa (da decidere
+  dall'utente). Solo app: pubblica il coordinatore.
+  File: `tasks/TASK-251.md`, «File toccati», parte C.
 - **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
   all'agente dall'utente il 2026-10-07). Branch
   `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:

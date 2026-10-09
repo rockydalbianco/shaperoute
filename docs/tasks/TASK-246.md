@@ -142,9 +142,9 @@ dell'utente dopo la pubblicazione (aprire l'app, aspettare tre minuti, poi
 
 **Stato**: In lavorazione · **Branch**: `feat/TASK-246-b-water-shapes-kept`
 · aggiunta ad ADR-0211 · via del coordinatore il 2026-10-09, dopo il #440
-(TASK-203 B) e il suo `draw_examples`. Il merge lo allinea il coordinatore
-con TASK-245 C (le spiagge nuove), così server e `draw_examples` si fanno
-una volta sola.
+(TASK-203 B) e il suo `draw_examples`. PR #462: non aspetta TASK-245 C
+(senza `draw_examples --water` il server disegna come prima e tiene per
+i telefoni dopo); merge chiesto dall'utente al verde.
 
 ### Obiettivo
 

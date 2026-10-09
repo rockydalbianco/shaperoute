@@ -7,6 +7,7 @@ import { activityOf, loadSport } from "../settings/sport";
 import { appUnits } from "../units/units";
 import { loadVoices, speaking } from "../voice/voiceChoice";
 import { FREE_ROUTE, kmAnnouncement, wholeUnits } from "./freeRun";
+import { freeRunActivity } from "./freeSport";
 import { kmComparison } from "./kmCompare";
 import { isPaddle, paddleAnnouncement } from "./paddle";
 import { type RunAway, watchAway } from "./runAway";
@@ -61,10 +62,10 @@ export function useFreeRun(active: boolean): FreeRunState {
           return;
         }
         // A free run stopped lately goes on with its track (trackStore).
-        // On the water the pace is a paddler's (TASK-251): the sport is the
-        // one «Settings» has when the outing starts, kept in the run's file.
-        const sport = activityOf(loadSport());
-        const activity = isPaddle(sport) ? sport : undefined;
+        // On the water the pace is a paddler's (TASK-251), on a bike the
+        // numbers are speeds (TASK-251 C): the sport is the one «Settings»
+        // has when the outing starts, kept in the run's file.
+        const activity = freeRunActivity(activityOf(loadSport()));
         const recorder = startRun(FREE_ROUTE, Date.now(), undefined, [], activity);
         stopRecording = recorder.stop;
         // A run that goes on does not say again the kilometres it has said;

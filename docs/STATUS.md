@@ -641,7 +641,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   barra e «Cancel» prende subito il posto della riga. Nessun testo nuovo,
   nessuna migrazione. Dopo il merge: il server (`signals.py`, ok
   dell'utente, coordinatore) e la pubblicazione dell'app. File:
-  `tasks/TASK-234.md`, «File toccati».
+  `tasks/TASK-234.md`, «File toccati». In `main` dalla #459
+  (`5f028e8d`, 2026-10-09); l'utente ha confermato che il pannello
+  d'attesa basta e ha dato l'ok per il server dopo il merge.
 - **App** — TASK-263: tono scuro o chiaro, con la luminosità in cinque
   passi (ADR-0231; chiesto dall'utente il 2026-10-08). PR #444. In
   «Settings», «PREFERENCES», la riga «Tone»: «Dark» o «Light»,

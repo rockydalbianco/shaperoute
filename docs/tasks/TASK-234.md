@@ -3,9 +3,11 @@
 **Stato**: Done — 2026-10-05: parte A (motore e API) dalla #327
 (`784cc03`), parte B (app) dalla #336 (`db2c30e`). «Draw» offre la
 distanza dove la forma viene meglio, con «Try N km»; scatta in circa il 6%
-dei percorsi (`MAPS.md`)
+dei percorsi (`MAPS.md`). 2026-10-09: parte C (il «Try» della riga
+contato come `better_distance`) dalla #459 (`5f028e8d`); il server con
+`signals.py` lo aggiorna il coordinatore, con l'ok dell'utente già dato
 **Fase**: 4 · **Branch**: `feat/TASK-234-better-distance` (A),
-`feat/TASK-234-better-distance-app` (B)
+`feat/TASK-234-better-distance-app` (B), `feat/TASK-234-c-try-signal` (C)
 **ADR**: ADR-0197 (estende ADR-0041)
 
 ## Obiettivo

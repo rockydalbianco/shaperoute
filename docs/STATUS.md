@@ -605,6 +605,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-121: segnalare e bloccare (ADR-0228; brief del
+  coordinatore del 2026-10-07/08). Branch `feat/TASK-121-report-block`,
+  migrazione `0020_moderation.sql` (`blocks`, `reports`). Un blocco tiene
+  lontani i due nei due sensi in feed, commenti, reazioni, ricerca,
+  follow e profilo, e chiude ogni follow fra loro; `PUT`/`DELETE
+  /users/{id}/block`, `GET /me/blocked`, `POST /reports` (disegno,
+  commento o persona, con un motivo di cinque). Nessun endpoint legge le
+  segnalazioni. Nell'app il «…» sul post e sul profilo di un altro, il
+  foglio con «Report» e «Block», «Blocked people» in «Profile»; 21 testi
+  nuovi nelle cinque lingue, **da confermare dall'utente**. Restano: il
+  disegno per id e i disegni del profilo (`drawings.py`, fuori dal
+  brief), la migrazione sul server (ok dell'utente, coordinatore), la
+  prova con due account. `tasks/TASK-121.md`.
+
 - **App** — TASK-261 parte A: la corsa registra anche a telefono bloccato
   (ADR-0225; chiesto dall'utente il 2026-10-07). In `main` con la #441
   (`08793f4`, 2026-10-08). Nell'app costruita il GPS va avanti in

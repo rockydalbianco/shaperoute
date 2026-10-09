@@ -1,6 +1,7 @@
 # TASK-152 — Sgrava sull'App Store
 
-**Stato**: Todo · parte A fatta (profilo `production`, ADR-0233)
+**Stato**: In lavorazione · parte A fatta (profilo `production`, ADR-0233);
+parte B (ambiente `production`, prima build) in corso
 **Fase**: 4 · **Branch**: `feat/TASK-152-app-store` (parte A:
 `feat/TASK-152-a-production-profile`)
 **Dipende da**: TASK-132 (AdMob nell'app), API raggiungibile con HTTPS
@@ -37,6 +38,22 @@ privacy, così AdMob può verificare l'app (TASK-153).
    `app.json` dice «ShapeRoute» e l'app mostra «Sgrava».
 5. **Solo iPhone o anche Android?** Google Play costa 25 $ una volta. Se sì,
    Android diventa un task a parte.
+
+**Risposte** (2026-10-08):
+
+1. **Persona fisica**, come AdMob (TASK-150). L'utente si è iscritto con
+   il suo Apple ID il 2026-10-08. Quando aprirà una società vuole passare
+   a organizzazione: si fa da developer.apple.com/account, «Membership» →
+   «Switch to organization membership», con il numero D-U-N-S della
+   società (gratuito, da Dun & Bradstreet); Apple può chiedere documenti
+   e la verifica dura fino a circa tre settimane. L'app resta nello
+   stesso account, cambia solo il nome del venditore.
+2. *Aperta.*
+3. **`getmuw.app`**, dominio proprio (TASK-265, ADR-0234): il sito è
+   online lì, l'API su `api.getmuw.app`.
+4. **«MuW»** (TASK-260, ADR-0224). Se il nome è già preso sull'App
+   Store lo si scopre quando si crea la scheda.
+5. *Aperta.*
 
 ## Cosa fare
 
@@ -82,7 +99,6 @@ apps/mobile/eas.json
 apps/mobile/app.config.ts          (nuovo, parte A)
 apps/mobile/fingerprint.config.js  (nuovo, parte A)
 apps/mobile/__tests__/appConfig.test.ts  (nuovo, parte A)
-site/                  (nuovo: privacy, contatti, posto per app-ads.txt)
 docs/DEPLOY.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -133,3 +149,52 @@ non cambia.
   2. confrontare l'impronta della build con quella del Mac (`DEPLOY.md`
      A.7, punto 4);
   3. i passi 1–2 e 4–9 di «Cosa fare» e le cinque domande.
+
+**Parte B — l'ambiente `production` e la prima build** (in corso, dal
+2026-10-08). Data dal Coordinatore a una sessione nuova dopo la parte A.
+
+- Iscrizione all'Apple Developer Program fatta dall'utente il
+  2026-10-08, come persona fisica (risposta 1 sopra).
+- Ambiente EAS `production`: `EXPO_PUBLIC_API_URL=https://api.getmuw.app`
+  (plaintext) messo dall'agente il 2026-10-08 con il sì esplicito
+  dell'utente. `EXPO_PUBLIC_API_KEY` la scrive l'utente, visibilità
+  *Sensitive*; l'agente non la legge.
+- Impronta calcolata sul Mac in un worktree pulito di `main` `d2ba47c6`
+  dopo un `npm ci` vero: `97c9f355eb92df016e1222cfffa8f869ff391471`
+  (uguale due volte; senza variabile resta `exposdk:57.0.0`). Va
+  confrontata con quella della prima build sulla sua pagina di expo.dev
+  (`DEPLOY.md` A.7, punto 4); la build parte dallo stesso worktree.
+- La pagina della privacy non è ancora online: `getmuw.app/privacy` dà
+  404 e la home non la collega (2026-10-08). Serve per la scheda e per
+  il link pubblico di TestFlight. **La fa TASK-237 parte D** (sessione
+  «SITO WEB», dalla bozza dell'app con i segnaposto compilati
+  dall'utente), su decisione del Coordinatore del 2026-10-08: `site/`
+  esce dai «File toccati» di questo task; l'URL arriva da lì e il
+  Coordinatore avvisa quando è online.
+- Il link di download del sito sarà il **link pubblico di TestFlight**
+  (scelta dell'utente del 2026-10-08): appena esiste va scritto al
+  Coordinatore, che lo passa a TASK-237. Vuole un gruppo di tester
+  esterni e la Beta App Review della prima build.
+- Primo tentativo di build `production` (2026-10-08 sera, lanciato
+  dall'utente dal worktree pulito): login Apple e codice a due fattori
+  riusciti, poi «You have no team associated with your Apple account»,
+  cioè l'iscrizione non è ancora attiva. Nessuna build creata. Effetti
+  rimasti, innocui: `buildNumber` su EAS passato da 1 a 2; canale e branch
+  `production` creati su EAS. La build era partita senza
+  `EXPO_PUBLIC_API_KEY` (non ancora nell'ambiente): al prossimo tentativo
+  controllare che la riga «Environment variables … loaded» la elenchi.
+- **Prima build `production` riuscita** il 2026-10-09 (build EAS
+  `4455655b-154b-4a91-98e4-fd26b3dfc8dc`, `buildNumber` 3, commit
+  `d2ba47c6`, team Apple «LUCA PALLAORO (Individual)», credenziali iOS
+  create da EAS). **Impronta uguale a quella del Mac**:
+  `97c9f355eb92df016e1222cfffa8f869ff391471`, quindi il controllo di
+  `DEPLOY.md` A.7 punto 4 alla prima build è fatto. La build però non
+  ha `EXPO_PUBLIC_API_KEY` (non era ancora nell'ambiente `production`):
+  senza chiave l'API risponde 401 a tutto, quindi **non va mandata a
+  TestFlight**; se ne fa un'altra con la chiave.
+- Versione dell'app da `0.0.0` a **`1.0.0`** in `app.json`, prima della
+  build per TestFlight: è il numero che Apple mostra sullo store e che
+  la versione in App Store Connect deve uguagliare. L'impronta non lo
+  guarda (`fingerprint.config.js`, provato in ADR-0233) e il runtime di
+  Expo Go resta `exposdk:57.0.0`. Deciso dall'agente su delega
+  dell'utente.

@@ -636,3 +636,10 @@ docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-182.md
 ```
+
+### La voce in miglia sull'iPhone (2026-10-09)
+
+L'utente ha ascoltato la voce in miglia sull'iPhone durante una corsa:
+«ascoltata va bene». È chiuso l'ultimo punto aperto del task. Restano
+solo i seguiti scritti sopra, fuori dal task: l'effetto di cambio unità
+di `RouteChoice` e i limiti sull'acqua in km per scelta.

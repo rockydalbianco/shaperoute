@@ -934,7 +934,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Seguiti**: togliere l'effetto di cambio unità di `RouteChoice` quando
   `src/route/` è libero; una parola di corsa in miglia ha al più 6
   lettere; «within 1 km of the shore» e l'avviso sull'acqua restano in km
-  per scelta. `tasks/TASK-182.md`.
+  per scelta. `tasks/TASK-182.md`. **Voce in miglia ascoltata
+  dall'utente sull'iPhone il 2026-10-09: va bene.**
 
 - **API e app** — TASK-185: i due interruttori delle notifiche (ADR-0206;
   chiesto dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha

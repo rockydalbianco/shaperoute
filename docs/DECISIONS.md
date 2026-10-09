@@ -13133,6 +13133,10 @@ worktree).
 - L'ambiente EAS `production` deve avere `EXPO_PUBLIC_API_URL` e
   `EXPO_PUBLIC_API_KEY` prima della prima build: oggi ci sono solo in
   `preview`.
+- *Aggiunta del 2026-10-09 (TASK-152 parte B)*: la prima versione per lo
+  store è `1.0.0` (prima `0.0.0`); `version` resta fuori dall'impronta.
+  Alla prima build `production` (EAS `4455655b`) l'impronta è risultata
+  uguale a quella del Mac, `97c9f355…`.
 
 ## ADR-0234 — Il dominio getmuw.app: si resta su Hetzner, l'API anche su api.getmuw.app
 **Stato**: Attiva · 2026-10-08 · scelta dell'utente (restare sul server,

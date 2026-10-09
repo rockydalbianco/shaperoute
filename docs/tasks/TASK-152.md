@@ -48,14 +48,13 @@ privacy, così AdMob può verificare l'app (TASK-153).
    società (gratuito, da Dun & Bradstreet); Apple può chiedere documenti
    e la verifica dura fino a circa tre settimane. L'app resta nello
    stesso account, cambia solo il nome del venditore.
-2. **Commerciante («trader») UE: sì**, come persona fisica, con i suoi
-   dati (2026-10-09). Domanda fatta esplicitamente, dicendo che indirizzo,
-   telefono ed email diventano pubblici sull'App Store nell'UE; risposta
-   dell'utente: «vorrei attivare da subito gli annunci pubblicitari quindi
-   sì commerciante». La società la apre più avanti, dopo i primi ~300 € di
-   guadagno: allora si aggiornano i dati del trader e l'account passa a
-   organizzazione (risposta 1). Lo stato si imposta su App Store Connect,
-   Business → Digital Services Act (lo fa l'utente).
+2. **Commerciante («trader») UE: da richiedere.** Il 2026-10-09 l'utente
+   aveva risposto «sì commerciante» perché voleva gli annunci veri da
+   subito (gli era stato detto che indirizzo, telefono ed email diventano
+   pubblici sull'App Store nell'UE); poco dopo ha cambiato idea: **lancio
+   senza pubblicità**, gli annunci dopo. La domanda va rifatta con questo
+   quadro. La società la apre dopo i primi ~300 € di guadagno: allora si
+   aggiornano i dati e l'account passa a organizzazione (risposta 1).
 3. **`getmuw.app`**, dominio proprio (TASK-265, ADR-0234): il sito è
    online lì, l'API su `api.getmuw.app`.
 4. **«MuW»** (TASK-260, ADR-0224). Se il nome è già preso sull'App
@@ -229,3 +228,7 @@ non cambia.
   nativa) → TASK-153 (annunci veri, `app-ads.txt`; sessione «PUBBLICITA»).
   TASK-262 C (rubrica) solo se pronta in tempo, altrimenti 1.0.1. **Niente
   build 5 né invio in revisione senza il via del Coordinatore.**
+- **Cambio dell'utente, 2026-10-09: si lancia senza pubblicità**, gli
+  annunci si fanno dopo. TASK-153 esce dalla build 5; la build dello
+  store non deve mostrare l'annuncio di prova di Google che oggi compare
+  a ogni ricerca (TASK-166): chi lo spegne lo decide il Coordinatore.

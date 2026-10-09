@@ -248,7 +248,10 @@ con il consiglio di farle rileggere a un esperto; il testo è
 segnaposto. Aggiunta in cinque lingue la frase sulla posizione a
 telefono bloccato (TASK-261, ADR-0225). Verificato nel codice: il server
 salva ancora il punteggio di una corsa (`activities.py`) e l'evento
-`run_scored`, quindi quelle frasi sono esatte. Un test del sito controlla
+`run_scored`: la frase resta, precisata («a score of how closely the
+track follows the route (worked out by our server and not shown in the
+app)»). Le due frasi nuove le ha approvate l'utente il 2026-10-09 («Sì,
+vanno bene»). Un test del sito controlla
 che la copia di `DEPLOY.md` F.14 prenda ogni file che le pagine
 caricano. Dopo il merge: la copia sul server al via del Coordinatore,
 con il sì dell'utente alla pubblicazione; l'indirizzo per Apple è
@@ -260,3 +263,14 @@ soon» fino alla prima build su TestFlight (TASK-152 B); allora
 `site/config.js` `downloadUrl` diventa il link pubblico di TestFlight e
 si ricopia il sito (F.14). Il link di Expo Go è scartato. Il merch
 (parte B), messo da parte.
+
+**Parte D online** (2026-10-09): la #453 è entrata in `main` come
+`89287a0a`, ma sul commit prima dell'ultimo: la frase precisata sul
+punteggio, approvata dall'utente, era rimasta fuori. La copia F.14 da
+`89287a0a` (ok dell'utente: «Sì, pubblicala» a questa sessione, «ok
+privacy online» al Coordinatore) ha messo online
+https://getmuw.app/privacy/ in cinque lingue, con titolare, email e
+data; l'app con il testo definitivo è su `preview` (gruppo `20590b72`).
+La frase del punteggio entra con la PR `fix/TASK-237-privacy-score`;
+dopo il suo merge servono di nuovo la copia F.14 e una pubblicazione
+dell'app, che sono del Coordinatore.

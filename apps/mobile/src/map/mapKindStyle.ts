@@ -1,4 +1,5 @@
-import { color } from "../theme/tokens";
+import type { Tone } from "../theme/tone";
+import { color, type Palette, tone } from "../theme/tokens";
 import type { MapKind } from "./mapKind";
 
 /**
@@ -87,6 +88,21 @@ export function satelliteTiles(
     : SATELLITE_TILES_URL;
 }
 
+/**
+ * The hills' shading in a tone (TASK-263): the shadow is the darker of
+ * the tone's ends and the light the lighter, so the hills are not lit from
+ * below on the light map.
+ */
+export function hillshadeOf(shown: Tone, palette: Palette = color) {
+  const light = shown === "light";
+  return {
+    "hillshade-shadow-color": light ? palette.borderStrong : palette.background,
+    "hillshade-highlight-color": light ? palette.background : palette.borderStrong,
+    "hillshade-accent-color": palette.map.background,
+    "hillshade-exaggeration": 0.7,
+  };
+}
+
 function hidden<T extends Layer>(layer: T): T {
   return { ...layer, layout: { ...layer.layout, visibility: "none" } };
 }
@@ -132,12 +148,7 @@ export function withKinds<S extends Style>(
       id: HILLSHADE,
       type: "hillshade",
       source: HILLSHADE,
-      paint: {
-        "hillshade-shadow-color": color.background,
-        "hillshade-highlight-color": color.borderStrong,
-        "hillshade-accent-color": color.map.background,
-        "hillshade-exaggeration": 0.7,
-      },
+      paint: hillshadeOf(tone.tone),
     }),
   );
   // Two sources of the same heights: MapLibre draws the shading poorly from

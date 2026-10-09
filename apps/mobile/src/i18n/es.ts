@@ -706,6 +706,22 @@ export const ES: Table = {
   Miles: "Millas",
   "Phone units": "Unidades del teléfono",
 
+  // src/settings/ToneSetting.tsx
+  Tone: "Tono",
+  Dark: "Oscuro",
+  Light: "Claro",
+  Brightness: "Brillo",
+  "Brightness {step} of {count}": "Brillo {step} de {count}",
+  Darker: "Más oscuro",
+  Brighter: "Más claro",
+  "Preview of the tone": "Vista previa del tono",
+  Apply: "Aplicar",
+  "MuW opens again in the new tone.": "MuW se vuelve a abrir con el nuevo tono.",
+  "The phone did not keep the tone. Try again.":
+    "El teléfono no ha guardado el tono. Inténtalo de nuevo.",
+  "Close MuW and open it again to see the new tone.":
+    "Cierra MuW y vuelve a abrirla para ver el nuevo tono.",
+
   // src/settings/sport.ts
   "Ride without a route": "Rodar sin ruta",
   "Paddle without a route": "Remar sin ruta",

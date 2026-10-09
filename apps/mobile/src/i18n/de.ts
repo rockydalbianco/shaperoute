@@ -710,6 +710,22 @@ export const DE: Table = {
   Miles: "Meilen",
   "Phone units": "Einheiten des Handys",
 
+  // src/settings/ToneSetting.tsx
+  Tone: "Darstellung",
+  Dark: "Dunkel",
+  Light: "Hell",
+  Brightness: "Helligkeit",
+  "Brightness {step} of {count}": "Helligkeit {step} von {count}",
+  Darker: "Dunkler",
+  Brighter: "Heller",
+  "Preview of the tone": "Vorschau der Darstellung",
+  Apply: "Übernehmen",
+  "MuW opens again in the new tone.": "MuW öffnet sich neu in der neuen Darstellung.",
+  "The phone did not keep the tone. Try again.":
+    "Das Handy hat die Darstellung nicht gespeichert. Versuche es noch einmal.",
+  "Close MuW and open it again to see the new tone.":
+    "Schließe MuW und öffne die App erneut, um die neue Darstellung zu sehen.",
+
   // src/settings/sport.ts
   "Ride without a route": "Ohne Route fahren",
   "Paddle without a route": "Ohne Route paddeln",

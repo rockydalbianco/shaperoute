@@ -1,7 +1,9 @@
-import { color } from "../theme/tokens";
+import { DEFAULT_TONE, type Tone } from "../theme/tone";
+import { color, paletteOf } from "../theme/tokens";
 import { MAP_KINDS } from "./mapKind";
 import {
   HILLSHADE,
+  hillshadeOf,
   kindLayers,
   ON_PHOTOS,
   SATELLITE,
@@ -151,4 +153,25 @@ test("nothing added is the route's yellow", () => {
   );
   expect(added).toHaveLength(3);
   expect(JSON.stringify(added)).not.toContain(color.accent);
+});
+
+/** How light a colour is, 0 to 255: enough to say which of two is darker. */
+function lightness(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+test.each(["dark", "light"] as const)(
+  "on the %s map the hills are shaded dark and lit light, never the other way",
+  (shown: Tone) => {
+    const palette = paletteOf({ ...DEFAULT_TONE, tone: shown });
+    const paint = hillshadeOf(shown, palette);
+    expect(lightness(paint["hillshade-shadow-color"])).toBeLessThan(
+      lightness(paint["hillshade-highlight-color"]),
+    );
+  },
+);
+
+test("the style carries the shading of the tone the app is in", () => {
+  expect(layer(HILLSHADE)).toHaveProperty("paint", hillshadeOf("dark"));
 });

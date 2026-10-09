@@ -11,7 +11,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "5. Oktober 2026";
 /** «Privacy» is final since the user approved it on this day (TASK-237 D). */
-const PRIVACY_UPDATED = "8. Oktober 2026";
+const PRIVACY_UPDATED = "9. Oktober 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -287,8 +287,17 @@ const privacy: AboutDocument = {
       heading: "Deine Telefonnummer (freiwillig)",
       blocks: [
         "Du kannst in «Einstellungen» eine Telefonnummer hinzufügen. Sie ist freiwillig: Die App funktioniert ohne sie genauso.",
-        "Sie ist privat: Nur du siehst sie. Sie steht nie auf deinem Profil, in der Suche oder in einer Liste. Sie ist dafür da, dass Freunde, die deine Nummer schon haben, dein Konto finden können, mit einer Suche aus den Kontakten des Handys, die es noch nicht gibt.",
+        "Sie ist privat: Nur du siehst sie. Sie steht nie auf deinem Profil, in der Suche oder in einer Liste. Sie ist dafür da, dass Freunde, die deine Nummer in den Kontakten ihres Handys haben, dein Konto finden können (siehe «Freunde aus deinen Kontakten»).",
         "Wir prüfen die Nummer nicht und senden keine Nachrichten an sie. Du kannst sie jederzeit in «Einstellungen» entfernen; sie wird mit dem Konto gelöscht.",
+      ],
+    },
+    {
+      heading: "Freunde aus deinen Kontakten",
+      blocks: [
+        "Unter der Lupe oben in «Feed» sucht «Freunde in deinen Kontakten finden» die Mitglieder, deren Nummer in den Kontakten deines Handys steht. Die App fragt das Handy erst nach den Kontakten, wenn du darauf tippst, und liest nur die Telefonnummern: nie Namen, E-Mails oder Bilder.",
+        "Jede Nummer verlässt das Handy verschlüsselt: mit Ländervorwahl geschrieben und in einen Hash (SHA-256) umgewandelt. Unser Server vergleicht die Codes mit denen der Nummern, die Mitglieder hinzugefügt haben, antwortet mit den gefundenen Mitgliedern und behält nichts von dem, was er erhalten hat: weder in der Datenbank noch in einem Protokoll.",
+        "Ein Hash einer Telefonnummer ist kein Geheimnis: Wer die Codes hätte, könnte die Nummern wiederfinden, indem er alle möglichen Nummern ausprobiert. Deshalb ist der eigentliche Schutz, dass unser Server keinen davon behält; sie gehen nur über die verschlüsselte Verbindung.",
+        "Die Nummern deiner Kontakte sind Daten anderer Menschen: Sie werden einmal verglichen, um Konten zu finden, und dann vergessen. Damit niemand Nummern einzeln ausprobiert, zählt der Server die Suchen jedes Kontos in einer Stunde, nur im Arbeitsspeicher. Gefunden wird nur, wer seine Nummer hinzugefügt hat, und nie jemand, den du blockiert hast oder der dich blockiert hat.",
       ],
     },
     {
@@ -386,7 +395,7 @@ const privacy: AboutDocument = {
         {
           bullets: [
             "Um dir den Dienst zu geben, um den du bittest (Vertrag): dein Konto, dein Profil, die Routen, die du anfragst, und die Läufe, Favoriten, Kommentare, Reaktionen und das Folgen, die du speicherst.",
-            "Unser berechtigtes Interesse, MuW funktionsfähig, sicher und besser zu halten: die kurzen Protokolle des Servers, die Zählungen, die die Kartendownloads begrenzen, und die Suchereignisse, die nichts darüber sagen, wer du bist.",
+            "Unser berechtigtes Interesse, MuW funktionsfähig, sicher und besser zu halten: die kurzen Protokolle des Servers, die Zählungen, die die Kartendownloads begrenzen, und die Suchereignisse, die nichts darüber sagen, wer du bist; der Abgleich der Nummern deiner Kontakte, von denen keine behalten wird.",
             "Deine Einwilligung: die Telefonnummer, die du hinzufügst, die Verbindung mit Strava und die Werbung, wo das Formular von Google danach fragt. Du kannst eine Einwilligung jederzeit widerrufen; was vorher geschah, bleibt rechtmäßig.",
             "Eine rechtliche Pflicht, wenn ein Gesetz von uns verlangt, Daten aufzubewahren oder herauszugeben.",
           ],

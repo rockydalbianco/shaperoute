@@ -200,4 +200,43 @@ docs/DECISIONS.md
 
 ### Esito parte B
 
-ESITO-DA-SCRIVERE
+Fatto nel codice dell'API, con dieci test nuovi in
+`test_route_store.py`, `test_draw_examples.py` e `test_water_spots.py`.
+Tutta la suite dell'API sul Mac: 949 passati, nessun fallimento; i 407
+test con PostgreSQL non sono partiti (il database di prova locale chiudeva
+le connessioni), e nessuno tocca questi file: li fa girare la CI.
+L'app non cambia: `aheadExamples.ts` chiede dal punto stesso della
+lista (`requestOf`), con la stessa chiave che usa l'API.
+
+**Misurato sul Mac** (2026-10-09, API di questo branch sulla porta 8046,
+acqua dei laghi d'Italia e delle spiagge in cache, `SHAPEROUTE_RATE_LIMIT=0`):
+
+| | prima volta | seconda volta |
+|---|---|---|
+| 24 forme di un telefono nuovo a Levico Terme (Levico, Caldonazzo, Serraia) | 11 s di motore | 0 s, tutte `done` nel `POST` |
+| 15 punti a caso (12 laghi, 3 spiagge), `draw_examples` | 77 s di motore, 245 s in tutto | — |
+
+Per forma: mediana 0,6 s, massimo 2,4 s; per punto 5 s di motore in
+media (1–11 s), 16 s con le attese di 2 s fra una domanda di
+`draw_examples` e l'altra. Un percorso tenuto pesa circa 8 kB. Una prima
+misura, fatta con il Mac carico (load average 261 per altre sessioni e la
+suite dei test), dava 207 s a Levico e fino a 110 s per una forma: era il
+Mac, non il motore.
+
+**Stima per il server** (tre-cinque volte il Mac, `F.1`): circa 817 punti
+(787 di oggi più le spiagge di TASK-245 C), 2–4 s a forma con le attese,
+cioè **4–8 ore** per `draw_examples --water`, una domanda alla volta;
+il limite di 30 POST al minuto non si raggiunge. Circa 50 MB in
+`data/cache/routes/water/`. Un punto la cui acqua il server non ha si
+salta alla prima forma. Come gli esempi delle città, va rifatto dopo ogni
+cambio di `route_engine`: senza, i telefoni ridisegnano e tengono per i
+successivi, come prima di questa parte. Se 4–8 ore sono troppe, basta
+`--water-name` per i posti più chiesti, e il resto lo fanno i telefoni.
+
+Per un telefono il giro resta di circa due minuti e mezzo (i 6 s fra le
+richieste di `aheadExamples.ts`, per il limite di 30 POST al minuto): il
+guadagno è il motore del server, che non lavora più per ogni telefono
+nuovo della stessa zona.
+
+**Resta**: server e `draw_examples --water` con l'ok dell'utente, dal
+coordinatore, insieme a TASK-245 C.

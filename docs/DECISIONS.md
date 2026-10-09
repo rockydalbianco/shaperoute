@@ -13198,9 +13198,9 @@ Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
 posti più vicini, dal punto delle liste `lakes.json` e `beaches.json`
 dell'app. `route_store.py` (ADR-0136) teneva solo i percorsi dal centro di
 una città: il server ridisegnava le stesse 24 forme per ogni telefono
-nuovo della stessa zona. Sul Mac sono 207 s di motore a Levico, molto più
-del mezzo secondo a forma misurato il 2026-10-05: le forme a pezzi sui
-laghi grandi, dopo TASK-226/232/242, arrivano a 40–60 s l'una.
+nuovo della stessa zona: a Levico 11 s di motore sul Mac, tre-cinque
+volte tanto sul server, per ogni telefono, e una coda quando ne arrivano
+molti insieme.
 
 **Decisione**:
 
@@ -13238,10 +13238,11 @@ laghi grandi, dopo TASK-226/232/242, arrivano a 40–60 s l'una.
 **Conseguenze**:
 
 - Un telefono nuovo in una zona già chiesta, o disegnata prima, ha le sue
-  24 forme senza motore (1 s di API sul Mac invece di 207 s); il giro
-  sul telefono dura sempre circa due minuti e mezzo, per i 6 s fra le
-  richieste.
+  24 forme senza motore (0 s sul Mac invece di 11 s); il giro sul
+  telefono dura sempre circa due minuti e mezzo, per i 6 s fra le
+  richieste: il guadagno è del server, non del tempo che vede l'utente.
 - Ogni cambio di `route_engine` le fa ridisegnare tutte, come gli esempi
   delle città; `draw_examples --water` è molto più lungo di quello delle
   città (stima in `tasks/TASK-246.md`, «Esito parte B»).
-- Su disco fino a 80 MB in più in `data/cache/routes/water/`.
+- Su disco circa 50 MB per tutti i punti, 80 MB al più, in
+  `data/cache/routes/water/`.

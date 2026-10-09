@@ -240,13 +240,13 @@ un punto senza acqua sul disco dell'API si salta alla prima forma
 (`map_data_unavailable`), come fa il telefono. Una forma che non ci sta
 (`shape_not_drawable`) resta scritta nella riga e non ferma il punto.
 
-**Tempi** (2026-10-09, Mac, motore di `main` a `89287a0a`, acqua dei
-laghi d'Italia in cache): le 24 forme di un telefono nuovo a Levico Terme
-(Lago di Levico, Lago di Caldonazzo, Lago della Serraia) costano **207 s
-di motore** la prima volta e **1 s** la seconda, tutte tenute. Le forme a
-pezzi sui laghi grandi sono le più lente (Caldonazzo: la lumaca 60 s, la
-testa di cane 42 s). Il giro di tutti i punti: vedi
-`tasks/TASK-246.md`, «Esito parte B».
+**Tempi** (2026-10-09, Mac scarico, motore di `main` a `89287a0a`, acqua
+dei laghi d'Italia in cache): le 24 forme di un telefono nuovo a Levico
+Terme (Lago di Levico, Lago di Caldonazzo, Lago della Serraia) costano
+**11 s di motore** la prima volta e **0 s** la seconda, tutte tenute. Su
+15 punti a caso (12 laghi, 3 spiagge) 5 s di motore a punto, 16 s di
+`draw_examples` con le attese fra una domanda e l'altra. Il giro di tutti
+i punti sul server: `tasks/TASK-246.md`, «Esito parte B».
 
 Misurato sul Mac il 2026-10-02 (Trento, zona in cache, il Mac occupato da
 altri lavori): i tre esempi 10–14 s la prima volta, **0,0 s** la seconda,

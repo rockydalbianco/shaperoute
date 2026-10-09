@@ -164,7 +164,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   copiati nell'immagine dal `Dockerfile`) e tiene i percorsi dal punto
   stesso in `routes/water/` (limite suo di 10 000); `draw_examples
   --water` li disegna prima. L'app non cambia. Sul Mac le 24 forme di un
-  telefono nuovo a Levico: 207 s di motore la prima volta, 1 s dopo.
+  telefono nuovo a Levico: 11 s di motore la prima volta, 0 s dopo; il
+  giro di tutti i punti sul server, stimato, 4–8 ore.
   **Aspetta**: la coda dei merge, allineata dal coordinatore con TASK-245
   C; poi server e `draw_examples --water` con l'ok dell'utente.
   File: `tasks/TASK-246.md`, «File toccati (parte B)».

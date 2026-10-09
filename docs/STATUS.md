@@ -261,6 +261,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `getmuw.app/support/` in cinque lingue (come scriverci e tre domande),
   per il Support URL dell'App Store; testi approvati dall'utente («Sì,
   va bene»).
+  **Online dal 2026-10-09** (#467, `b19ab890`, copia F.14): restano
+  dell'utente solo il link TestFlight e il merch.
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,

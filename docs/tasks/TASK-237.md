@@ -1,8 +1,10 @@
 # TASK-237 — Il sito web, con la sezione «Merch» per le magliette
 
-**Stato**: In corso — il sito è **online su https://getmuw.app** dal
-2026-10-08 (parti A, A2, A3 e C fatte); restano dell'utente il link per
-scaricare l'app (dopo l'App Store) e il merch (parte B, messo da parte)
+**Stato**: In corso — il sito è **online su https://getmuw.app** con
+la guida, la privacy (`/privacy/`) e l'assistenza (`/support/`), in
+cinque lingue (parti A, A2, A3, C, D, E fatte, 2026-10-05/09); restano
+dell'utente il link per scaricare l'app (alla prima build TestFlight) e
+il merch (parte B, messo da parte)
 **Fase**: 4 · **Branch**: `feat/TASK-237-website-merch`
 **ADR**: ADR-0201
 
@@ -305,3 +307,9 @@ dell'app, che sono del Coordinatore.
 lingue dicono lo stesso). Dopo il merge: la copia F.14, del
 Coordinatore; l'indirizzo per la scheda dell'App Store è
 `https://getmuw.app/support/`.
+
+**Parte E online** (2026-10-09): #467 in `main` come `b19ab890` (sull'head
+approvato), copia F.14 del Coordinatore. `/support/` e le altre quattro
+lingue rispondono 200 con l'indirizzo, la home ha il link «Support»;
+ricontrollato da questa sessione. L'URL è passato alla sessione «App Store
+submission».

@@ -179,6 +179,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nessun testo nuovo. La voce resta quella della corsa (da decidere
   dall'utente). Solo app: pubblica il coordinatore.
   File: `tasks/TASK-251.md`, «File toccati», parte C.
+  **Done** il 2026-10-09: in `main` con la #458 (`fb27b50d`), vedi
+  «Completato».
 - **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
   all'agente dall'utente il 2026-10-07). Branch
   `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:
@@ -262,6 +264,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `getmuw.app/support/` in cinque lingue (come scriverci e tre domande),
   per il Support URL dell'App Store; testi approvati dall'utente («Sì,
   va bene»).
+  **Online dal 2026-10-09** (#467, `b19ab890`, copia F.14): restano
+  dell'utente solo il link TestFlight e il merch.
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
@@ -648,6 +652,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   aggiornamento e `draw_examples --water` (stimato 4–8 ore, circa 50 MB)
   del coordinatore, con l'ok dell'utente; senza, il server disegna come
   prima e tiene per i telefoni dopo. `tasks/TASK-246.md`, «Parte B».
+- **App** — TASK-251 parte C: in bici senza percorso la velocità
+  (aggiornamento di ADR-0215, scelta dell'utente del 2026-10-08). In `main`
+  con la #458 (`fb27b50d`, 2026-10-09). Con «Bike» in «Settings» «Ride
+  without a route» mostra «Speed now», «Avg speed», «Last km» e i km in
+  km/h (mph con le miglia), sulla scheda e a fine corsa, come un percorso
+  in bici; nessun testo nuovo; corsa e «Paddle» come prima. **Da fare**:
+  la pubblicazione su `preview` (coordinatore) e la prova sull'iPhone. La
+  voce resta ogni km col passo, come una corsa: scelta dell'utente del
+  2026-10-09.
+  `tasks/TASK-251.md`.
 - **App** — TASK-264: **il tipo di mappa** (ADR-0232; chiesto
   dall'utente il 2026-10-08). Un pulsante in alto a destra sulla mappa
   sceglie **Standard**, **Satellite** (foto Esri, i nomi dei paesi in

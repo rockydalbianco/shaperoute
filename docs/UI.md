@@ -160,6 +160,19 @@ pagine»):
    sempre visibile in basso, per intero; i suoi link si aprono nel browser
    del telefono.
 
+   **Il tipo di mappa** (TASK-264, ADR-0232, chiesto dall'utente): in alto
+   a destra, di fronte a «←», un pulsante tondo con due fogli; mentre si
+   corre sta sotto la barra delle svolte. Toccato, sotto compaiono
+   «Standard», «Satellite» e «3D», con la spunta su quello mostrato.
+   **Standard** è la mappa scura di sempre. **Satellite** sono le foto
+   aeree di Esri, con i nomi dei paesi in chiaro sopra e il credito
+   «Powered by Esri». **3D** è la mappa scura inclinata a 55° con il
+   rilievo vero e la sua ombreggiatura, come in Strava e komoot; niente
+   edifici in piedi, che coprivano il percorso. Il cambio non ricarica la
+   mappa: percorso, segni e inquadratura restano, e un percorso inquadrato
+   si inquadra di nuovo con la nuova inclinazione. La scelta resta per la
+   volta dopo. Le mappe piccole di «Feed» ed «Explore» restano standard.
+
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
    migliori che partono entro 5 km dalla partenza scelta, tutti, i migliori
@@ -2724,6 +2737,9 @@ c'è anche l'errore.
   Da TASK-174 anche le zone dei percorsi mostrati in «Explore», quando si
   apre la pagina o si sceglie una città: sono attorno alla partenza o alla
   città scelta, come la mappa grande quando si apre un percorso.
+  Da TASK-264, con «Satellite» le foto vengono da Esri e con «3D» le
+  altezze dalle Terrain Tiles di AWS: anche loro vedono la zona guardata,
+  e solo con quel tipo scelto.
 - **La ricerca**: il testo cercato e la posizione (per mettere prima i
   luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo

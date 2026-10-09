@@ -605,6 +605,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-264: **il tipo di mappa** (ADR-0232; chiesto
+  dall'utente il 2026-10-08). Un pulsante in alto a destra sulla mappa
+  sceglie **Standard**, **Satellite** (foto Esri, i nomi dei paesi in
+  chiaro) e **3D** (il rilievo con l'ombreggiatura, mappa inclinata a
+  55°, come Strava e komoot); la scelta resta sul telefono. Lo stile non
+  si ricarica: percorso e inquadratura restano. Gli edifici in 3D sono
+  stati provati e tolti perché coprivano il percorso. Testi nelle cinque
+  lingue approvati dall'utente (2026-10-09). Solo app: dopo il merge si
+  pubblica, niente server. **Resta**: la chiave gratuita ArcGIS
+  (`EXPO_PUBLIC_ARCGIS_API_KEY`), quando l'utente crea l'account; senza,
+  le foto vengono dall'indirizzo pubblico di Esri. `tasks/TASK-264.md`.
 - **App** — TASK-261 parte A: la corsa registra anche a telefono bloccato
   (ADR-0225; chiesto dall'utente il 2026-10-07). In `main` con la #441
   (`08793f4`, 2026-10-08). Nell'app costruita il GPS va avanti in

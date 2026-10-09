@@ -13193,3 +13193,74 @@ Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
   sempre HTTPS, che Caddy dà da solo.
 - Spostare il ritorno da Strava su `api.getmuw.app` richiede di cambiare
   anche l'applicazione Strava dell'utente: un passo a parte.
+
+## ADR-0232 — Il tipo di mappa: Standard, Satellite, 3D in un solo stile
+
+**Stato**: Attiva · 2026-10-09 · il pulsante e i tre tipi sono richiesta
+dell'utente del 2026-10-08; Esri per le foto è scelta dell'utente
+(«Esri, chiave dopo»); il resto deciso dall'agente su delega dell'utente
+(TASK-264).
+
+**Contesto**: la mappa era solo lo stile scuro dell'app (ADR-0046) nella
+pagina MapLibre della WebView (ADR-0029). L'utente ha chiesto di poter
+scegliere fra mappa normale, satellitare e 3D. Le foto aeree buone e
+gratuite sono quelle di Esri (World Imagery, fino a circa un metro in
+Italia): senza account Esri l'uso in un'app con pubblicità è una zona
+grigia delle loro condizioni, con un account gratuito ArcGIS Location
+Platform (chiave nell'app, 2 milioni di tasselli al mese) è in regola.
+
+**Decisione**:
+
+1. **Un solo stile per tre tipi** (`map/mapKindStyle.ts`): lo stile
+   scuro con dentro, nascosti, le foto (sopra lo sfondo), una copia dei
+   nomi in chiaro per le foto (`-on-photos`, testo `text` su alone
+   `background`) e l'ombreggiatura del rilievo (sopra il terreno, sotto
+   strade e nomi). Il tipo mostra e nasconde strati con
+   `setLayoutProperty`: lo stile non si ricarica, e percorso, segni e
+   inquadratura restano. Uno strato nascosto non scarica tasselli.
+2. **Satellite** = sfondo, foto, nomi chiari; niente strade scure sopra.
+   Credito «Powered by Esri» con le fonti del servizio. Con
+   `EXPO_PUBLIC_ARCGIS_API_KEY` le foto vengono da `ibasemaps-api.arcgis.com`
+   con il token; senza, da `server.arcgisonline.com`.
+3. **3D = il rilievo, come in Strava e komoot**: lo stile scuro più
+   l'ombreggiatura, il terreno (`setTerrain`, esagerazione 1,3) e la mappa
+   inclinata a 55°. Le altezze sono le Terrain Tiles del registro AWS
+   (codifica terrarium), gratuite e senza chiave; due fonti uguali per
+   terreno e ombreggiatura, come chiede MapLibre.
+4. **L'inquadratura non cambia**: inclinata, una forma inquadrata come
+   piatta occupa meno schermo, mai di più (misurato nel browser, una
+   forma alta e stretta compresa). Cambiando tipo con il percorso
+   inquadrato, la mappa lo inquadra di nuovo con la nuova inclinazione;
+   altrimenti si inclina dov'è.
+5. **La scelta resta sul telefono** (`map-kind.json`, come le unità);
+   «Standard» non scrive niente. `MapView` la manda alla pagina appena è
+   pronta e a ogni cambio; una pagina nuova parte standard.
+6. **Il pulsante** è tondo come «←» e la freccia del nord, con due fogli
+   disegnati (l'app non ha icone), in alto a destra; mentre si corre la
+   barra delle svolte prende la riga e il pulsante sta sotto. Il menu si
+   apre sotto il pulsante, dentro la colonna e non sovrapposto, perché su
+   Android un tocco fuori dai bordi del genitore non arriva.
+
+**Alternative scartate**:
+
+- *Edifici in 3D* (`fill-extrusion` dai tasselli OpenMapTiles): provati.
+  Con il rilievo acceso il percorso è steso sul terreno e gli edifici lo
+  coprono strada dopo strada, anche semitrasparenti; senza rilievo si
+  perdono le montagne, che in Trentino sono il 3D che conta.
+- *Un `setStyle` per tipo*: toglie gli strati che la pagina aggiunge (il
+  percorso, i segni) e va rifatto tutto.
+- *MapTiler o Mapbox per le foto*: chiave obbligatoria, e per un'app con
+  pubblicità MapTiler è a pagamento.
+- *Sentinel-2 (EOX)*: libero, ma 10 m per pixel: alle vie non serve.
+- *Allontanare l'inquadratura in 3D*: non serve, vedi il punto 4.
+
+**Conseguenze**:
+
+- Solo app: nessun server, nessuna migrazione. Esri e AWS vedono la zona
+  guardata, come OpenFreeMap (`UI.md`, «Cosa esce dal telefono»).
+- La chiave ArcGIS è facoltativa: quando l'utente crea l'account va in
+  `apps/mobile/.env` e nelle variabili di EAS (`preview`, poi
+  `production`). Fino ad allora le foto vengono dall'indirizzo pubblico.
+- Le mappe sotto i disegni di «Feed» ed «Explore» restano standard.
+- Seguiti possibili, da chiedere: satellite e 3D insieme (le foto sul
+  rilievo).

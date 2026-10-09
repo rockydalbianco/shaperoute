@@ -210,4 +210,43 @@ dell'utente.
 
 ## Esito
 
-(Parte A in lavorazione.)
+**Parte A in lavorazione**, sessione chiusa il 2026-10-09 su richiesta
+dell'utente. Dove si è arrivati:
+
+- PR #451 in **bozza** sul branch `feat/TASK-262-a-push` (worktree
+  `.claude/worktrees/TASK-262`), allineata a `main` del 2026-10-09
+  (merge `43d05a4f`), tutto spinto. API, app, contratto e documenti sono
+  fatti; testi approvati dall'utente nelle cinque lingue (sopra).
+- In locale verdi: tutta la parte JS (358 suite), `test_push.py`,
+  `test_expo_push.py`, `test_notifications.py`, `test_accounts.py`,
+  `test_contract.py`, i test del sito.
+
+**Da dove riprendere**, dopo il «121 in main» del coordinatore (TASK-121
+è la PR #457, con la migrazione `0020_moderation.sql`):
+
+1. Unire `origin/main`; rinominare `0020_push_tokens.sql` al primo numero
+   libero (probabilmente `0021`) e aggiornare `DATABASE.md`, `API.md` e
+   questo file; i test trovano la migrazione per nome.
+2. I ganci, come funzioni nuove in fondo ai moduli e chiamate dopo la
+   scrittura, con `push.notify(request, PushEvent(...))`: `follows.py`
+   (`ask` quando la risposta è `requested` → `follow_request` a chi è
+   chiesto; `accept` → `follow_accepted` a chi aveva chiesto),
+   `reactions.py` (`leave` → `reaction` al proprietario, con il commento
+   del super like), `comments.py` (`add` → `comment`, `key` = id del
+   commento), `drawings.py` (`keep` → `tag` a ogni taggato nuovo). Le
+   rotte prendono `request: Request` per arrivare a `app.state.pusher`.
+3. `Pusher.blocked` collegato alla tabella dei blocchi di TASK-121, con un
+   test vero (oggi è `nobody_blocked`).
+4. Test dei ganci con Expo finto: un invio per evento, nessuno con
+   l'interruttore spento, fra bloccati, a chi ha agito; la suite intera
+   dell'API va alla CI.
+5. PR fuori bozza; al verde «#451 pronta» al coordinatore, ricordando che
+   la prova vera è solo con una build nativa; merge solo dopo il suo
+   «merge 451». Poi il server (migrazione) è del coordinatore, con l'ok
+   dell'utente.
+
+In locale il worktree ha in `node_modules` cartelle vere per
+`expo-notifications`, `expo-application`, `badgin`,
+`expo-image-manipulator`, `expo-task-manager`, `unimodules-app-loader`,
+che il checkout principale non ha ancora; dopo il merge serve `npm
+install` nel checkout principale.

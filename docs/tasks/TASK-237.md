@@ -98,6 +98,18 @@ dall'utente il 2026-10-06: il cuore su giallo e la scritta «MuW».
    ed evento «run_scored» sono ancora salvati dal server, quindi restano.
 4. `site/privacy` nell'elenco della copia di `DEPLOY.md` F.14.
 
+**Parte E — la pagina di assistenza** (chiesta dal Coordinatore il
+2026-10-09: Apple vuole un Support URL con un contatto):
+
+1. `getmuw.app/support/` più `it/`, `de/`, `fr/`, `es/`, scritte da
+   `site/tools/make_support.mjs` dai testi di `support_text.mjs`: come
+   scriverci (l'indirizzo già pubblico nella privacy) e tre domande.
+2. Risposte verificate nel codice: fino a tre percorsi
+   (`MAX_ALTERNATIVES = 2`, più il primo), «Try 12 km» (TASK-234,
+   `betterDistance.ts`), «Delete account» in «Settings»
+   (`SettingsPage.tsx`), con i nomi dei tasti di ogni lingua.
+3. `site/support` nella riga `git archive` di `DEPLOY.md` F.14.
+
 **Parte B — aprire il negozio e pubblicare** (dopo le scelte dell'utente):
 
 1. L'utente sceglie il servizio di stampa e apre l'account (un agente non
@@ -172,6 +184,19 @@ docs/DEPLOY.md                          (F.14: solo `site/privacy`
                                          nella riga `git archive`)
 docs/UI.md                              (una riga: Privacy definitiva)
 ```
+
+Parte E (2026-10-09):
+
+```
+site/support/**                         (nuova)
+site/tools/make_support.mjs, support_text.mjs, site/tests/support.test.mjs (nuovi)
+site/index.html                         (il link «Support» in fondo)
+site/styles.css                         (tre regole per la pagina)
+docs/DEPLOY.md                          (F.14: `site/support` nella riga `git archive`)
+```
+
+`site/privacy/**` e `site/tests/privacy.test.mjs` sono di TASK-262 C
+dal 2026-10-09: la parte E non li tocca.
 
 TASK-262 A (le notifiche push) tocca gli stessi `about/content/*.ts` e
 `about/documents.test.ts` per la frase sul token push: chi entra secondo

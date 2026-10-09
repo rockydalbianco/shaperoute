@@ -244,6 +244,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `20590b72`). La frase precisata sul punteggio, approvata dall'utente,
   era rimasta fuori dal merge: entra con una PR a parte, poi di nuovo
   copia F.14 e pubblicazione.
+  **Parte E** in PR (2026-10-09): la pagina di assistenza
+  `getmuw.app/support/` in cinque lingue (come scriverci e tre domande),
+  per il Support URL dell'App Store; testi da approvare dall'utente.
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,

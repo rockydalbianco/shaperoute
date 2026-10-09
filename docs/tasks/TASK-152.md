@@ -183,3 +183,18 @@ non cambia.
   `production` creati su EAS. La build era partita senza
   `EXPO_PUBLIC_API_KEY` (non ancora nell'ambiente): al prossimo tentativo
   controllare che la riga «Environment variables … loaded» la elenchi.
+- **Prima build `production` riuscita** il 2026-10-09 (build EAS
+  `4455655b-154b-4a91-98e4-fd26b3dfc8dc`, `buildNumber` 3, commit
+  `d2ba47c6`, team Apple «LUCA PALLAORO (Individual)», credenziali iOS
+  create da EAS). **Impronta uguale a quella del Mac**:
+  `97c9f355eb92df016e1222cfffa8f869ff391471`, quindi il controllo di
+  `DEPLOY.md` A.7 punto 4 alla prima build è fatto. La build però non
+  ha `EXPO_PUBLIC_API_KEY` (non era ancora nell'ambiente `production`):
+  senza chiave l'API risponde 401 a tutto, quindi **non va mandata a
+  TestFlight**; se ne fa un'altra con la chiave.
+- Versione dell'app da `0.0.0` a **`1.0.0`** in `app.json`, prima della
+  build per TestFlight: è il numero che Apple mostra sullo store e che
+  la versione in App Store Connect deve uguagliare. L'impronta non lo
+  guarda (`fingerprint.config.js`, provato in ADR-0233) e il runtime di
+  Expo Go resta `exposdk:57.0.0`. Deciso dall'agente su delega
+  dell'utente.

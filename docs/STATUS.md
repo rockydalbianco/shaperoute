@@ -628,8 +628,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   without a route» mostra «Speed now», «Avg speed», «Last km» e i km in
   km/h (mph con le miglia), sulla scheda e a fine corsa, come un percorso
   in bici; nessun testo nuovo; corsa e «Paddle» come prima. **Da fare**:
-  la pubblicazione su `preview` (coordinatore), la prova sull'iPhone, e la
-  scelta dell'utente sulla voce (oggi ogni km col passo, come una corsa).
+  la pubblicazione su `preview` (coordinatore) e la prova sull'iPhone. La
+  voce resta ogni km col passo, come una corsa: scelta dell'utente del
+  2026-10-09.
   `tasks/TASK-251.md`.
 - **App** — TASK-263: tono scuro o chiaro, con la luminosità in cinque
   passi (ADR-0231; chiesto dall'utente il 2026-10-08). PR #444. In

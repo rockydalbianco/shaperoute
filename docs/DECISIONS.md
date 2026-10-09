@@ -13276,7 +13276,8 @@ percorso il passo al km, segnalandolo. L'utente ha scelto la velocità.
    stessi testi. Una corsa non ha sport nel file, come prima.
 2. **La voce non cambia**: ogni km col passo medio, come una corsa senza
    percorso. Con un percorso la bici dice ogni 10 km la velocità media
-   (ADR-0179): non chiesto, segnalato all'utente.
+   (ADR-0179): non chiesto, segnalato all'utente, che il 2026-10-09 ha
+   scelto di lasciarla così.
 3. Il post scrive il passo al km e «My activities» non cambia: è quello
    che fa già una pedalata con un percorso.
 

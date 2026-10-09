@@ -166,6 +166,7 @@ docs/UI.md
 - Parte C: **la voce** di una pedalata senza percorso dice ancora ogni km
   col passo medio, mentre con un percorso dice ogni 10 km la velocità
   media (ADR-0179). Non chiesto, non toccato: da decidere.
+  → **Deciso dall'utente il 2026-10-09**: «la voce lasciala così».
 
 ## Esito
 
@@ -197,5 +198,5 @@ km. Provata solo dai test; la pubblicazione è del coordinatore.
 **Parte C chiusa (2026-10-09).** In `main` con la #458 (`fb27b50d`),
 mergiata da Coordinatore 2 alla CI 5/5 verde, dopo la #444 e la #460.
 Restano: la pubblicazione su `preview` (coordinatore), la prova
-sull'iPhone pedalando senza percorso, e la scelta dell'utente sulla voce
-di una pedalata senza percorso («Da confermare»).
+sull'iPhone pedalando senza percorso. La voce resta com'è: scelta
+dell'utente del 2026-10-09 («la voce lasciala così»).

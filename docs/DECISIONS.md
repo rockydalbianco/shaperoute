@@ -13284,10 +13284,11 @@ percorso il passo al km, segnalandolo. L'utente ha scelto la velocità.
 percorso (due modi di mostrare la stessa cosa); cambiare anche la voce
 (non chiesto: una scelta dell'utente).
 
-## ADR-0237 — La build dello store senza annunci: EXPO_PUBLIC_ADS=off
+## ADR-0237 — La build dello store senza AdMob: niente codice nativo con APP_VARIANT=production
 **Stato**: Attiva · 2026-10-09 · «la lanciamo senza pubblicità, faremo
-poi»: scelta dell'utente; il come deciso dall'agente su delega dell'utente
-(TASK-267)
+poi», e poi «la pubblicità la inseriamo quando facciamo la società»:
+scelte dell'utente; il come deciso dall'agente su delega dell'utente
+(TASK-267), su indicazione del coordinatore di togliere il codice nativo
 
 **Contesto**: la 1.0 va in revisione da Apple senza annunci; gli annunci
 veri aspettano la società dell'utente (TASK-153 fermo). Il codice degli
@@ -13295,29 +13296,33 @@ annunci nativi del Feed (ADR-0198) resta: preview, Expo Go e le build di
 prova come oggi.
 
 **Decisione**:
-- Una variabile `EXPO_PUBLIC_ADS`: con `off` il codice degli annunci non
-  carica nemmeno il pacchetto di AdMob (`adsTurnedOff()` in
-  `src/ads/admob.ts`, prima del controllo di Expo Go). Quindi l'SDK non
-  parte, il consenso di Google non si chiede e il Feed ha solo i post,
-  senza spazi vuoti (un posto senza annuncio non entra nella lista,
-  `feedWithAds`).
-- Il valore sta nell'ambiente EAS `production` (`DEPLOY.md` A.7, punto
-  1): la build dello store usa `environment: production`, e gli update
-  del canale `production` si fanno con `--environment production`. Come
-  ogni `EXPO_PUBLIC_`, va nel bundle JS: non cambia il fingerprint nativo.
-- Vuota o diversa da `off`: annunci come prima (preview, build di prova).
+- `apps/mobile/react-native.config.js` (file nuovo) toglie
+  `react-native-google-mobile-ads` dall'autolinking, iOS e Android, quando
+  `APP_VARIANT=production`, la variabile che `eas.json` dà al profilo
+  `production` (come per il runtime di `app.config.ts`, TASK-152). Nella
+  build dello store non entrano né l'SDK di AdMob né quello del consenso di
+  Google (UMP), né i loro manifesti della privacy.
+- Il JS non cambia: senza il modulo nativo `src/ads/admob.ts` non carica il
+  pacchetto e dà «nessun annuncio», come in Expo Go. Il Feed ha solo i
+  post, senza spazi vuoti (un posto senza annuncio non entra nella lista,
+  `feedWithAds`). Un test controlla che fuori da `admob.ts` il pacchetto
+  sia importato solo come tipo.
+- Gli update del canale `production` girano sulla build senza il modulo:
+  anche loro senza annunci, qualunque cosa ci sia nel JS.
 
-**Alternative scartate**: `env` in `eas.json` (la usa la build ma non un
-update fatto senza: gli annunci tornerebbero al primo update); togliere il
-plugin di AdMob dalla build dello store (cambia il codice nativo e il
-fingerprint di TASK-152, e `app.json`/`app.config.ts` non sono di questo
-task); spegnere gli annunci ovunque (preview resta come oggi, chiesto dal
-coordinatore).
+**Alternative scartate**: una variabile `EXPO_PUBLIC_ADS=off` che lascia
+l'SDK nell'app, fermo (fatta e poi tolta: il manifesto della privacy di
+Google, che dichiara l'ID del dispositivo per il tracciamento, finiva
+comunque nel pacchetto); togliere il plugin da `app.json` o da
+`app.config.ts` (file di altri task; il plugin da solo scrive solo chiavi
+in `Info.plist`); spegnere gli annunci ovunque (preview resta come oggi).
 
-**Conseguenza**: l'SDK di AdMob resta nell'app installata, fermo: il suo
-manifesto della privacy (che dichiara, fra l'altro, l'ID del dispositivo
-per il tracciamento) è nel pacchetto che Apple vede; le risposte sulla
-privacy in App Store Connect si danno sull'app com'è (nessun annuncio).
-I testi «Termini» e «Privacy» dell'app e del sito dicono ancora che ci
-sono annunci: si correggono nei loro task. Per riaccendere gli annunci:
-togliere la variabile e fare una build o un update (TASK-153).
+**Conseguenza**: l'impronta della build `production` cambia (il file
+entra nell'impronta e cambia l'autolinking): la build 5 è comunque nuova.
+Si ricontrolla come in `DEPLOY.md` A.7 punto 4, sempre con
+`APP_VARIANT=production`. In `Info.plist` resta la chiave
+`GADApplicationIdentifier` scritta dal plugin di `app.json`: senza l'SDK
+non fa nulla. I testi «Termini» e «Privacy» dell'app e del sito dicono
+ancora che ci sono annunci: si correggono nei loro task. Per riaccendere
+gli annunci (TASK-153): togliere la condizione da `react-native.config.js`
+e fare una build nuova; un update non basta.

@@ -159,9 +159,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
-  scelta dell'utente del 2026-10-09. Con `EXPO_PUBLIC_ADS=off`
-  nell'ambiente EAS `production` AdMob non parte e il Feed ha solo i post;
-  preview ed Expo Go come prima. TASK-153 (annunci veri) è fermo.
+  scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice
+  nativo di AdMob non entra nella build (`react-native.config.js`); il Feed
+  ha solo i post. Preview ed Expo Go come prima. TASK-153 (annunci veri)
+  aspetta la società dell'utente.
 - **TASK-251 parte C — In bici senza percorso, la velocità** (aggiornamento
   di ADR-0215; scelta dell'utente del 2026-10-08). Branch
   `feat/TASK-251-c-free-ride-speed`. Con «Bike» in «Settings» «Ride without

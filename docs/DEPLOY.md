@@ -213,26 +213,23 @@ le build vecchie, semplicemente non le raggiunge.
 
    La chiave, `EXPO_PUBLIC_API_KEY`, dalla pagina del progetto su
    expo.dev, ambiente `production`, visibilità *Sensitive*.
-
-   **Annunci spenti** (TASK-267, ADR-0237): finché l'utente non li vuole
-   nello store, anche questa, prima della build:
-
-   ```
-   npx eas-cli env:set production --name EXPO_PUBLIC_ADS --value off --visibility plaintext
-   ```
-
-   Entra nella build e negli update fatti con `--environment production`
-   (punto 4). Per riaccenderli: `env:delete` e una build o un update
-   nuovi (TASK-153).
 2. **La build** (serve l'account Apple Developer, lo fa l'utente con le
    sue credenziali):
 
    ```
-   npx eas-cli build --platform ios --profile production
+   npx eas-cli build --platform ios --profile production --auto-submit
    ```
 
    Il numero di build sale da solo (`autoIncrement`, le versioni stanno
-   su EAS).
+   su EAS). Con `--auto-submit`, a build finita EAS la carica su App
+   Store Connect, nell'app «MuW» (`submit.production.ios.ascAppId` in
+   `eas.json`, con la chiave API di App Store Connect salvata su EAS), e
+   dopo l'elaborazione di Apple compare in TestFlight. Senza quel profilo
+   la build si fa ma l'invio fallisce («Missing submit profile»); una
+   build già fatta si invia con
+   `npx eas-cli submit --platform ios --id ID-DELLA-BUILD`. `eas.json`
+   non entra nell'impronta, quindi il profilo `submit` non cambia il
+   runtime.
 3. **Un update per lo store**: prima su `preview` e provato sull'iPhone
    (A.6), poi la **stessa commit**, da un worktree pulito di `main`:
 

@@ -12,6 +12,7 @@ import { LanguageSetting } from "../settings/LanguageSetting";
 import { NotificationsSetting } from "../settings/NotificationsSetting";
 import { PhoneSetting } from "../settings/PhoneSetting";
 import { SportSetting } from "../settings/SportSetting";
+import { ToneSetting } from "../settings/ToneSetting";
 import { UnitsSetting } from "../settings/UnitsSetting";
 import { StravaSetting } from "../strava/StravaSetting";
 import {
@@ -70,6 +71,7 @@ export function SettingsPage({ user, account, onAbout }: Props) {
         <LanguageSetting />
         <OfflineMapsSetting />
         <UnitsSetting />
+        <ToneSetting />
       </Section>
       {/* Kept in the account; nothing is sent yet (TASK-185). */}
       <Section label={t("NOTIFICATIONS")}>

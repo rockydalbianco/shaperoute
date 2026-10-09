@@ -114,7 +114,7 @@ import { useSport } from "./src/settings/useSport";
 import { DrawingCard } from "./src/social/DrawingCard";
 import { drawingDoubleTapped } from "./src/social/DrawingReactions";
 import { useDrawingsDoor } from "./src/social/drawingsDoor";
-import { color, space } from "./src/theme/tokens";
+import { color, space, statusBarStyle } from "./src/theme/tokens";
 import { useDrawDistance } from "./src/units/useDrawDistance";
 import { useUnits } from "./src/units/useUnits";
 
@@ -202,8 +202,9 @@ export default function App() {
       <ProfileLayer apiUrl={API_URL}>
         <MuW />
       </ProfileLayer>
-      {/* The app is dark: light status bar text on any phone setting. */}
-      <StatusBar style="light" />
+      {/* Light on the dark tone, dark on the light one, on any phone
+          setting (TASK-263). */}
+      <StatusBar style={statusBarStyle} />
       {/* Routes drawn on the phone, out of sight (TASK-214). */}
       <PhoneEngineView />
     </SafeAreaProvider>

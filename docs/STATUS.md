@@ -186,6 +186,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   coordinatore) e la pubblicazione dell'app, che può uscire prima: senza
   `/recommended` la riga non c'è e «Explore» resta com'è.
   File: `tasks/TASK-092.md`, «File toccati».
+  **Chiuso**: in `main` con la #445 (`48ba5912`, 2026-10-08); vedi
+  «Completato».
 - **TASK-265 — Il dominio getmuw.app** (ADR-0234; scelta dell'utente del
   2026-10-08). L'utente voleva spostare «il sito» su un'azienda tedesca;
   saputo che il sito non era online e che Hetzner è già tedesca, è
@@ -244,6 +246,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Pallaoro, email muw2610@gmail.com, basi giuridiche, 8 ottobre 2026) e
   la frase sulla posizione a telefono bloccato (TASK-261). Il link per
   scaricare arriva con la prima build TestFlight (scelta dell'utente).
+  **Online dal 2026-10-09**: https://getmuw.app/privacy/ (copia F.14 da
+  `main` `89287a0a`, ok dell'utente), app su `preview` (gruppo
+  `20590b72`). La frase precisata sul punteggio, approvata dall'utente,
+  era rimasta fuori dal merge: entra con una PR a parte, poi di nuovo
+  copia F.14 e pubblicazione.
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
@@ -620,6 +627,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-263: tono scuro o chiaro, con la luminosità in cinque
+  passi (ADR-0231; chiesto dall'utente il 2026-10-08). PR #444. In
+  «Settings», «PREFERENCES», la riga «Tone»: «Dark» o «Light»,
+  «Brightness» in cinque passi, un'anteprima nei colori scelti e «Apply»,
+  che salva la scelta (`tone.json`) e riapre l'app (`reloadAppAsync`) nel
+  tono nuovo. Senza scelta l'app è quella di prima (scuro, passo 1); il
+  chiaro parte dal bianco, con la mappa chiara, il percorso giallo su un
+  bordo scuro e la barra di stato scura. I contrasti di ogni tono a ogni
+  passo sono un test. Testi in cinque lingue approvati dall'utente il
+  2026-10-09; provata nel simulatore in Expo Go. Solo app: va pubblicata
+  su `preview`, il server non cambia. **Parte B**, da aprire: le tastiere,
+  ancora scure nel tono chiaro, e il logo bianco «Compatible with Strava»
+  sul fondo chiaro.
 - **App** — TASK-261 parte A: la corsa registra anche a telefono bloccato
   (ADR-0225; chiesto dall'utente il 2026-10-07). In `main` con la #441
   (`08793f4`, 2026-10-08). Nell'app costruita il GPS va avanti in
@@ -634,6 +654,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **parte B**, la voce a telefono bloccato (expo-audio, da chiedere), e
   Android in background, senza numero. Nel checkout principale serve
   `npm install` per la dipendenza nuova. `tasks/TASK-261.md`.
+- **Pubblicità** — TASK-150: l'utente ha l'account AdMob **da persona**
+  (la partita IVA quando arrivano i guadagni, scelta del 2026-10-02) e ha
+  completato il profilo pagamenti (2026-10-08). La guida è
+  `docs/PUBBLICITA.md`: come e quando paga Google (soglia 70 €, bonifico
+  intorno al 21), i passi, le domande per il commercialista. Prossimi:
+  TASK-152 (App Store) e TASK-153 (annunci veri, unità **nativa** per il
+  Feed). Chiesti dall'utente il 2026-10-08: annunci anche sul sito.
+- **App e API** — TASK-092: la riga **«RECOMMENDED»** in «Explore»
+  (ADR-0229), in `main` con la #445 (`48ba5912`, 2026-10-08). Con un
+  account, sopra le schede dei percorsi vicini, al più 10 percorsi del
+  catalogo ordinati da `GET /recommended`: prima il disegno venuto
+  meglio, poi le reazioni dei disegni pubblicati, poi corse e preferiti; a
+  parità tutti. Testo confermato dall'utente nelle cinque lingue. **Non
+  ancora sul server** (`best_routes.py`, nessuna migrazione: ok
+  dell'utente, coordinatore); l'app può uscire prima, la riga non c'è
+  finché manca. Seguito: con TASK-121 le reazioni di chi l'utente ha
+  bloccato non contano.
 - **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
   è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
   2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.
@@ -930,7 +967,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Seguiti**: togliere l'effetto di cambio unità di `RouteChoice` quando
   `src/route/` è libero; una parola di corsa in miglia ha al più 6
   lettere; «within 1 km of the shore» e l'avviso sull'acqua restano in km
-  per scelta. `tasks/TASK-182.md`.
+  per scelta. `tasks/TASK-182.md`. **Voce in miglia ascoltata
+  dall'utente sull'iPhone il 2026-10-09: va bene.**
 
 - **API e app** — TASK-185: i due interruttori delle notifiche (ADR-0206;
   chiesto dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha

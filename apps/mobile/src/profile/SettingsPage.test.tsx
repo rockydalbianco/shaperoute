@@ -60,14 +60,15 @@ test("every row works: none says «Soon» any more", async () => {
   expect(screen.queryByText("Soon")).toBeNull();
   expect(screen.queryByLabelText(/coming soon$/)).toBeNull();
   // The picture (TASK-178), the email and the phone number (TASK-183), the
-  // language (TASK-210), the units (TASK-182), the three texts of «ABOUT»
-  // (TASK-184) and the ways out are buttons.
-  expect(screen.getAllByRole("button")).toHaveLength(10);
+  // language (TASK-210), the units (TASK-182), the tone (TASK-263), the
+  // three texts of «ABOUT» (TASK-184) and the ways out are buttons.
+  expect(screen.getAllByRole("button")).toHaveLength(11);
   expect(screen.getByRole("button", { name: "Profile picture" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Change email" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Phone number, Add" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Language, English" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Units, Kilometres" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Tone, Dark" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Log out" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Delete account" })).toBeOnTheScreen();
 });

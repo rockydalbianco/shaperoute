@@ -13209,10 +13209,14 @@ di `DELETE /me`: il brief li lascia fuori.
    bloccato, quando) e `reports` (chi segnala, cosa, l'id, il motivo,
    quando). Tutte e due cadono con l'account di chi blocca o segnala.
 2. **Un blocco vale nei due sensi**: basta una riga perché nessuno dei due
-   veda l'altro. Una sola condizione SQL, `follows.apart_sql`, letta da
-   feed, commenti (lettura, scrittura, conteggio), reazioni (conteggio,
-   lettura, scrittura), ricerca per nome, richiesta di follow e profilo
-   pubblico. Sta in `follows.py`, accanto a `follows_sql`, e non in
+   veda l'altro. Una sola condizione SQL, `follows.apart_sql`. Entra in
+   `drawings.drawing_seen_sql` e `shown_sql` (con il sì del coordinatore
+   del 2026-10-09), e da lì nel disegno aperto per id, nelle sue foto, nei
+   suoi commenti e nelle sue reazioni, nel feed e nei disegni di un
+   profilo. In più la leggono i commenti di un lettore bloccato sotto il
+   disegno di un terzo, il conteggio delle reazioni, la ricerca per nome,
+   la richiesta di follow, il profilo pubblico e i disegni di un profilo
+   (`404`). Sta in `follows.py`, accanto a `follows_sql`, e non in
    `moderation.py`: `moderation.py` usa i corpi di `follows.py`, e il
    contrario sarebbe un import circolare. Un profilo bloccato risponde
    `404` come per nessuno: niente dice all'altro che è stato bloccato.
@@ -13237,12 +13241,8 @@ di `DELETE /me`: il brief li lascia fuori.
    `key` che cambia a ogni blocco). «Blocked people» in «Profile» elenca i
    bloccati con «Unblock».
 
-**Fuori, per ora**: `GET /drawings/{id}` e `GET /users/{id}/drawings`
-stanno in `drawings.py`, che il brief non elenca: un disegno di chi si è
-bloccato si apre ancora per id (l'app non ci arriva più: feed e profilo
-non lo mostrano). Restano fuori anche i tag in un disegno, «Recommended»
-(TASK-092) e le notifiche vecchie. Il seguito è aggiungere `apart_sql` a
-`drawings.drawing_seen_sql` e `shown_sql` (proposto al coordinatore).
+**Fuori, per ora**: i tag in un disegno, «Recommended» (TASK-092, che non
+passa da `shown_sql`) e le notifiche vecchie.
 
 **Conseguenze**: ogni lettura social fa una sottoquery in più su `blocks`,
 con la chiave e un indice su `blocked_id`: trascurabile ai numeri di oggi.

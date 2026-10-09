@@ -1786,11 +1786,13 @@ Tipi in `shared-types` (`ReportRequest`, `ReportKind`, `REPORT_KINDS`,
 - **Cosa nasconde un blocco**, fatto da uno dei due, a tutti e due: il
   feed (`feed.py`), i commenti di uno sotto qualsiasi disegno (né letti,
   né contati in `total`), le reazioni (non contate), la ricerca per nome
-  (`GET /users?q=`), il profilo (`GET /users/{id}`: `404` come per
-  nessuno). Il disegno dell'altro non si apre più da commenti e reazioni:
-  `GET`/`POST /drawings/{id}/comments`, `GET`/`PUT`/`DELETE
+  (`GET /users?q=`), il profilo e i suoi disegni (`GET /users/{id}` e
+  `GET /users/{id}/drawings`: `404` come per nessuno). Il disegno
+  dell'altro non si apre più in nessun modo: `GET /drawings/{id}`, le sue
+  foto, `GET`/`POST /drawings/{id}/comments`, `GET`/`PUT`/`DELETE
   /drawings/{id}/reaction(s)` rispondono `404`, come per un id che non
-  c'è. Nessuno dei due viene avvisato.
+  c'è (`drawings.drawing_seen_sql` e `shown_sql`). Nessuno dei due viene
+  avvisato.
 - **I follow**: bloccare cancella ogni riga di `follows` fra i due, nei
   due sensi, richieste in attesa comprese; chiedere di seguire attraverso
   un blocco è `404` «No profile with this id.». Sbloccare non rimette

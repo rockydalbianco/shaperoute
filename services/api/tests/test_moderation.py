@@ -112,8 +112,8 @@ def report(
     )
 
 
-def rows(database: Database, query: str, *values: Any) -> list[dict[str, Any]]:
-    with database.connect() as conn:
+def rows(db: Database, query: str, *values: Any) -> list[dict[str, Any]]:
+    with db.connect() as conn:
         return [dict(row) for row in conn.execute(query, values).fetchall()]
 
 
@@ -281,6 +281,37 @@ def test_the_profile_is_not_there_either_side(
     unblock(client, who, whom)
     answer = client.get(f"/users/{public_id(client, you)}", headers=me)
     assert answer.status_code == 200
+
+
+@pytest.mark.parametrize("blocker", ["owner", "reader"])
+def test_the_drawing_and_the_profiles_drawings_are_not_there_either_side(
+    client: TestClient, blocker: str  # noqa: F811
+) -> None:
+    owner = signed_up(client)
+    reader = other(client)
+    drawing_id = post_of(client, owner)
+    owner_id = public_id(client, owner)
+    assert client.get(f"/drawings/{drawing_id}", headers=reader).status_code == 200
+    page = client.get(f"/users/{owner_id}/drawings", headers=reader).json()
+    assert page["total"] == 1
+    who, whom = (owner, reader) if blocker == "owner" else (reader, owner)
+    block(client, who, whom)
+    # As for an id that is not there, whoever made the block.
+    assert client.get(f"/drawings/{drawing_id}", headers=reader).status_code == 404
+    answer = client.get(f"/users/{owner_id}/drawings", headers=reader)
+    assert answer.status_code == 404
+    # The owner keeps its own, and its profile lists it.
+    assert client.get(f"/drawings/{drawing_id}", headers=owner).status_code == 200
+    page = client.get(f"/users/{owner_id}/drawings", headers=owner).json()
+    assert page["total"] == 1
+    # The reader's own profile is not there for the owner either.
+    reader_id = public_id(client, reader)
+    answer = client.get(f"/users/{reader_id}/drawings", headers=owner)
+    assert answer.status_code == 404
+    unblock(client, who, whom)
+    assert client.get(f"/drawings/{drawing_id}", headers=reader).status_code == 200
+    page = client.get(f"/users/{owner_id}/drawings", headers=reader).json()
+    assert page["total"] == 1
 
 
 def test_a_block_ends_every_follow_both_ways(

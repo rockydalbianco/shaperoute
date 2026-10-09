@@ -14,7 +14,7 @@ accepted (follows.py) and the owner see one for `followers`, nobody
 reads one for `only_me`, not even its owner: the feed holds what was
 published, never a private run, and never a track that is not cut. Nor
 the drawings of a member the reader blocked or that blocked the reader
-(TASK-121, moderation.py).
+(TASK-121): shown_sql leaves them out.
 
 The pages follow a cursor made of the group, the moment of publication
 and the random id of the last drawing of the page: a drawing published
@@ -55,7 +55,7 @@ from shaperoute_api.drawings import (
     _seen,
     shown_sql,
 )
-from shaperoute_api.follows import apart_sql, follows_sql
+from shaperoute_api.follows import follows_sql
 from shaperoute_api.recommended import preview
 
 PAGE_SIZE = 20
@@ -160,9 +160,7 @@ class Feed:
                 f" {tier_sql('%(viewer)s')} AS tier, {near_sql(point)} AS nearby"
                 " FROM drawings d JOIN runs r ON r.id = d.run_id"
                 " JOIN users u ON u.id = r.user_id"
-                f" WHERE {shown_sql('%(viewer)s')}"
-                # Never across a block, either way (TASK-121).
-                f" AND NOT {apart_sql('%(viewer)s', 'r.user_id')}) feed"
+                f" WHERE {shown_sql('%(viewer)s')}) feed"
                 f" WHERE {where}"
                 " ORDER BY tier, published_at DESC, id DESC LIMIT %(limit)s",
                 values,

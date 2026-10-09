@@ -69,6 +69,7 @@ services/api/shaperoute_api/comments.py
 services/api/shaperoute_api/reactions.py
 services/api/shaperoute_api/follows.py
 services/api/shaperoute_api/profiles.py
+services/api/shaperoute_api/drawings.py (sì del coordinatore, 2026-10-09)
 services/api/tests/test_moderation.py
 packages/shared-types/src/index.ts
 packages/shared-types/fixtures/report-request.json
@@ -111,8 +112,9 @@ Migrazione `0020_moderation.sql` con `blocks` e `reports`. Un blocco, fatto
 da uno dei due, li tiene lontani nei due sensi: feed, commenti (né letti,
 né scritti, né contati), reazioni (non contate; il disegno dell'altro non
 si apre da commenti e reazioni), ricerca per nome, richiesta di follow e
-profilo (`404`); chiude ogni follow fra i due. La condizione è una,
-`follows.apart_sql`. `POST /reports` tiene una riga per chi segnala e per
+profilo (`404`), disegno aperto per id e disegni di un profilo (`404`,
+in `drawings.py` con il sì del coordinatore del 2026-10-09); chiude ogni
+follow fra i due. La condizione è una, `follows.apart_sql`. `POST /reports` tiene una riga per chi segnala e per
 cosa (disegno, commento, persona) con uno di cinque motivi; nessun
 endpoint le legge. Nell'app: il «…» sul post di un altro in «Feed» e sul
 profilo di un altro, il foglio con «Report» (cinque motivi, poi un grazie)
@@ -125,15 +127,13 @@ PostgreSQL); app 350 suite verdi (le sei più grandi rilanciate da sole
 dopo il timeout del giro completo), typecheck e Prettier puliti. In
 locale `expo lint` e 44 suite falliscono solo perché il checkout
 principale non ha `expo-image-manipulator` (manca un `npm install`, non è
-di questo task).
+di questo task). Il test dei due `GET` di `drawings.py`, aggiunto dopo,
+gira solo in CI: il Mac era troppo carico per avviare PostgreSQL.
 
 Restano:
 
-- **Da `drawings.py`**, che il brief non elenca: `GET /drawings/{id}` e
-  `GET /users/{id}/drawings` mostrano ancora i disegni di chi si è
-  bloccato a chi ha l'id. Il seguito è una riga in
-  `drawing_seen_sql` e `shown_sql` (chiesto al coordinatore). Fuori anche
-  i tag, «Recommended» (TASK-092) e le notifiche vecchie.
+- Fuori: i tag in un disegno, «Recommended» (TASK-092) e le notifiche
+  vecchie.
 - I testi nuovi aspettano il sì dell'utente.
 - La migrazione sul server (ok dell'utente, coordinatore) e la prova
   sull'iPhone con due account.

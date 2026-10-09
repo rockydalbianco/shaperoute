@@ -53,7 +53,7 @@ Adattati dal brief:
 - [x] Senza token `401`, senza database `503`.
 - [x] Il menu, la conferma e «Blocked people» hanno i loro test.
 - [x] Test deterministici verdi nell'API e nell'app.
-- [ ] I testi nuovi confermati dall'utente nelle cinque lingue.
+- [x] I testi nuovi confermati dall'utente nelle cinque lingue (2026-10-09).
 - [ ] Prova sull'iPhone con due account (dopo la migrazione sul server).
 
 ~~Contenuto nascosto da un admin, endpoint `/admin`: fuori dal brief.~~
@@ -134,6 +134,6 @@ Restano:
 
 - Fuori: i tag in un disegno, «Recommended» (TASK-092) e le notifiche
   vecchie.
-- I testi nuovi aspettano il sì dell'utente.
+- I testi nuovi sono confermati dall'utente (2026-10-09, «ok i testi vanno bene»).
 - La migrazione sul server (ok dell'utente, coordinatore) e la prova
   sull'iPhone con due account.

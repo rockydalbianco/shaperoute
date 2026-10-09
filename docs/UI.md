@@ -885,7 +885,7 @@ scritta «Requested» (o «Following», se l'altro ti aveva già accettato). Se
 lo segui già, o hai già chiesto, la riga lo dice subito e il tasto non
 c'è. Venti per volta, poi «Show more». Con un server senza gli elenchi i tre riquadri non ci sono.
 
-**Segnalare e bloccare** (TASK-121, ADR-0228; testi **da confermare**).
+**Segnalare e bloccare** (TASK-121, ADR-0228; testi **confermati dall'utente** il 2026-10-09).
 Sulla scheda di un disegno di un altro in «Feed», a destra del nome, e sul
 profilo di un altro, a destra sotto «Follow», un **«…»** grigio (VoiceOver:
 «More», «Report or block»). Non c'è sui propri disegni, sul proprio

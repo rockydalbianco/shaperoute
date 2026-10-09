@@ -615,7 +615,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   commento o persona, con un motivo di cinque). Nessun endpoint legge le
   segnalazioni. Nell'app il «…» sul post e sul profilo di un altro, il
   foglio con «Report» e «Block», «Blocked people» in «Profile»; 21 testi
-  nuovi nelle cinque lingue, **da confermare dall'utente**. Restano la
+  nuovi nelle cinque lingue, **confermati dall'utente** il 2026-10-09. Restano la
   migrazione sul server (ok dell'utente, coordinatore) e la prova con due
   account. `tasks/TASK-121.md`.
 

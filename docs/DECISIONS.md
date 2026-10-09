@@ -13198,7 +13198,7 @@ Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
 **Stato**: Attiva · 2026-10-09 · il perimetro è del brief del coordinatore
 (2026-10-07/08) e dell'ok dell'utente a segnalare e bloccare; il resto
 deciso dall'agente su delega dell'utente (TASK-121). I testi dell'app
-aspettano il sì dell'utente.
+sono confermati dall'utente il 2026-10-09.
 
 **Contesto**: con il feed vero (ADR-0227) i disegni di chiunque arrivano a
 chiunque. Serviva un modo per non vedere più una persona e per dire a chi

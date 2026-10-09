@@ -1,10 +1,12 @@
 # TASK-092 — Percorsi consigliati: tutti salvati, i migliori proposti
 
-**Stato**: Todo
+**Stato**: Done (questa parte: la riga «Recommended»; PR #445)
 **Fase**: 4 · **Branch**: `feat/TASK-092-recommended-routes`
 
 Chiesto dall'utente il 2026-10-01: «salvali tutti… per ripopolare anche
 strade non visitate solitamente». Decisione di prodotto in ADR-0086.
+Il criterio dei migliori lo ha lasciato all'agente il 2026-10-07:
+«consiglia tu i migliori disegni» (ADR-0229).
 
 ## Obiettivo
 
@@ -12,56 +14,90 @@ Ogni percorso generato dall'API resta salvato nel database; l'app propone
 a chi cerca un percorso quelli migliori già fatti nella sua zona, e i
 migliori si possono usare sui social del progetto.
 
+Questa parte (brief del coordinatore, 2026-10-07/08): una riga
+**«Recommended»** in «Explore», con i percorsi del catalogo vicini,
+ordinati dall'API col criterio di ADR-0229.
+
 ## Dipende da
 
-- **TASK-110** (scelte social): privacy, hosting, database.
-- **TASK-114** (database e account) e **TASK-122** (API e database sempre
-  accesi): senza, i percorsi degli altri utenti non arrivano da nessuna
-  parte.
+- TASK-110, TASK-114, TASK-122 (database, account, API sempre accesa):
+  in `main`.
+- TASK-117, TASK-119, TASK-171, TASK-172 (disegni pubblicati, reazioni,
+  preferiti, corse salvate): in `main`.
+- PR #438 (TASK-210 F, i nomi delle forme in «Explore»): la parte app
+  parte quando è in `main`, perché tocca anche `src/explore/*`.
 
 ## Contesto da leggere
 
-- `docs/DECISIONS.md` ADR-0086, ADR-0085 (registro delle richieste)
-- `docs/tasks/TASK-110.md`, punti 5 e 6
-- `docs/DATABASE.md` (dopo TASK-110)
+- `docs/DECISIONS.md` ADR-0086, ADR-0098, ADR-0229
+- `docs/API.md`, `GET /recommended-routes` e `GET /recommended`
+- `docs/UI.md`, «Explore»
 
 ## Cosa fare
 
-Da precisare quando le dipendenze sono in `main`; oggi i punti sono questi.
-
-1. **Salvare**: ogni percorso finito dell'API (forma, parola o immagine)
-   va nel database con la richiesta, i punti, la distanza e la
-   somiglianza, la zona e la data. Lo fa l'API, non l'app.
-2. **Scegliere i migliori**: per zona e per forma, la somiglianza più alta;
-   da decidere con l'utente se contano anche like (TASK-119) e corse fatte
-   (punteggio di TASK-113).
-3. **A parità di qualità si tengono e si propongono tutti** (scelta
-   dell'utente, 2026-10-01): nessun percorso ne scarta un altro altrettanto
-   buono, anche se passano dalle stesse strade. Così si propongono anche
-   strade di solito poco frequentate, accanto a quelle già note.
-4. **Proporli nell'app**: scelta dell'utente (2026-10-01), sul mockup
-   «Recommended routes» (tre varianti): la **variante C**, una schermata
-   «Explore» a parte, «Best near you»: i percorsi entro qualche km dalla
-   partenza, filtri per forma e per distanza, ognuno con miniatura, km,
-   somiglianza e distanza da chi guarda. È una terza schermata (oggi sono
-   due, TASK-051). Il seme del catalogo, 13 città, è TASK-125 (ADR-0097).
-5. **Social**: come si esportano i migliori (immagine della mappa, GPX) per
-   i canali del progetto.
-6. Privacy secondo quanto deciso in TASK-110.
+1. **API**: `GET /recommended` in un modulo nuovo, sul catalogo: i
+   percorsi entro 5 km dal punto, al più 10, nell'ordine di ADR-0229
+   (somiglianza come la scheda la scrive, poi le reazioni dei disegni
+   pubblicati delle corse su quel percorso, poi corse salvate e
+   preferiti; a parità tutti, il più vicino prima). Token obbligatorio.
+2. **App**: una riga «Recommended» in «Explore» con le schede che
+   «Explore» usa già (`RouteCard`), ognuna apre il suo percorso come le
+   altre righe, con «Start». Si nasconde senza catalogo, senza rete,
+   senza account.
+3. Testi nuovi nelle cinque lingue, mostrati all'utente prima del merge.
 
 ## Criteri di accettazione
 
-Da scrivere prima di iniziare, dopo TASK-110: oggi dipenderebbero da
-scelte non ancora prese.
+- [x] Un test deterministico mostra l'ordine su una fixture piccola: la
+      somiglianza batte le reazioni, le reazioni battono le corse, a
+      parità restano tutti e due.
+- [x] La riga non rompe niente: senza catalogo, senza rete, senza
+      account si nasconde.
+- [x] La risposta per una riga di 10 percorsi con le anteprime pesa meno
+      di 100 kB.
+- [x] Test verdi nell'API e nell'app.
+- [x] `API.md` e `UI.md` aggiornati; ADR-0229.
+- [x] I testi nuovi nelle cinque lingue visti dall'utente.
 
 ## File toccati
 
-Da scrivere prima di iniziare.
+- `services/api/shaperoute_api/best_routes.py` (nuovo),
+  `services/api/tests/test_best_routes.py` (nuovo)
+- `services/api/shaperoute_api/recommended.py` (la funzione `listed`,
+  usata da tutti e due gli elenchi)
+- `services/api/shaperoute_api/app.py` (una riga `install_best_routes`)
+- `apps/mobile/src/explore/*` (un componente nuovo, `ExploreScreen.tsx`,
+  i test)
+- `apps/mobile/src/api/recommended.ts` (nuovo) e il suo test
+- `apps/mobile/src/i18n/*` (righe nuove in fondo)
+- `docs/API.md`, `docs/UI.md`, `docs/DECISIONS.md`, `docs/STATUS.md`,
+  questo file
 
 ## Fuori scope
 
-- Salvare i percorsi del Mac di oggi in un database: il registro delle
-  richieste (ADR-0085) basta finché l'API è solo sul Mac.
-- Classifiche e sfide fra utenti (fuori scope anche in TASK-110).
+- Salvare nel database ogni percorso generato (punto 1 di ADR-0086): qui
+  si consiglia il catalogo.
+- I percorsi disegnati sul telefono e gli esempi delle città.
+- Filtri nuovi (ADR-0144), classifiche e sfide fra utenti.
+- Esportare i migliori per i social del progetto.
+- `src/feed/*`, `feed.py`, `moderation.py`, `comments.py`, `follows.py`,
+  `profiles.py` (TASK-121 in parallelo), `App.tsx`.
 
 ## Esito
+
+2026-10-08, PR #445. **API**: `GET /recommended` (`best_routes.py`,
+token obbligatorio, nessuna migrazione, una riga in `app.py`) ordina i
+percorsi del catalogo entro 5 km come dice ADR-0229; una corsa o un
+preferito è di un percorso quando la sua linea ha la stessa chiave di
+`favoriteKey`. Una riga di 10 pesa circa 14 kB (Milano, catalogo vero).
+**App**: la riga «RECOMMENDED» sopra le schede di «Explore», solo con un
+account; senza catalogo, rete, token o endpoint non c'è, e «Explore» resta
+com'è. Testo nelle cinque lingue confermato dall'utente il 2026-10-08.
+Test: API 1346 verdi in locale (i nuovi con PostgreSQL), app 350 file di
+test verdi, typecheck e format verdi.
+
+**Dopo il merge**: il server con `best_routes.py` (ok dell'utente,
+coordinatore); la pubblicazione dell'app può venire prima.
+**Seguiti**: con TASK-121 le reazioni di chi l'utente ha bloccato non
+contano per lui; restano fuori scope il salvataggio di ogni percorso
+generato (ADR-0086, punto 1) e l'esportazione per i social.

@@ -191,6 +191,20 @@ pagine»):
    vale per ogni scheda di questo tipo: i percorsi di «Best near you», gli
    esempi di una città, i preferiti in «Profile».
 
+   **«RECOMMENDED»** (TASK-092, ADR-0229): sopra le schede dei percorsi
+   vicini, con un account, una riga che scorre di lato con al più 10
+   percorsi consigliati dall'API (`GET /recommended`): prima i disegni
+   venuti meglio, a pari percento i più apprezzati (reazioni ai disegni
+   pubblicati) e poi i più corsi e tenuti fra i preferiti. Le schede sono
+   quelle di «Best near you», larghe come quelle di «NEARBY TOWNS» (due e
+   il bordo della terza); un tocco apre il percorso sulla mappa come le
+   altre, con «Start». Etichetta grigia in maiuscolo come «NEARBY TOWNS»
+   (it «CONSIGLIATI», de «EMPFOHLEN», es «RECOMENDADAS», fr
+   «RECOMMANDÉS»). **Senza account, senza percorsi vicini, senza rete o
+   con un'API che non la conosce la riga non c'è**, e la pagina è come
+   prima. Il token si legge dal portachiavi a ogni nuovo punto: chi entra
+   con la pagina già aperta vede la riga al punto o alla città dopo.
+
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
    centro, «Change» torna alla partenza). **In fondo alla pagina**, sotto
@@ -726,6 +740,12 @@ Per VoiceOver i titoli sono intestazioni.
   sotto, e `DATABASE.md`): quando cambia cosa l'app manda o tiene, cambia
   anche `src/about/content/`. I punti ancora aperti sono in
   `tasks/TASK-184.md`, «Esito».
+- **Dal 2026-10-08 «Privacy» è definitiva** (TASK-237 D, scelte
+  dell'utente): niente riquadro della bozza né parentesi quadre; in cima,
+  grigio, solo «Last updated: 8 October 2026» (nelle cinque lingue). Il
+  titolare è Luca Pallaoro e l'indirizzo muw2610@gmail.com. «Terms»
+  resta una bozza come descritto sopra. Lo stesso testo è sul sito,
+  `getmuw.app/privacy/` (`SITO.md`).
 
 **«Change email»** (✉️, TASK-183, ADR-0150): un tocco apre sotto la riga
 «NEW EMAIL» e «PASSWORD» (la password dell'account, nascosta) e «Save»; un

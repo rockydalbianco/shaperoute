@@ -84,6 +84,32 @@ disegni: gli elenchi in cima a `make_drawings.py`.
 Il credito «© OpenStreetMap contributors» in fondo alla pagina deve
 restare (lo controlla un test).
 
+## La pagina della privacy
+
+`getmuw.app/privacy/` (inglese) e `privacy/it/`, `de/`, `fr/`, `es/`: il
+testo «Privacy» dell'app, lo stesso parola per parola, che Apple chiede a
+un indirizzo pubblico. **Non si scrive a mano**: il testo sta in
+`apps/mobile/src/about/content/*.ts`, e le pagine le scrive
+
+```bash
+node site/tools/make_privacy.mjs
+```
+
+Dopo un cambio del testo nell'app si rilancia: un test del sito confronta
+le pagine con l'app e fallisce finché non sono uguali (la CI del sito gira
+anche quando cambiano i testi dell'app). Il piede della pagina
+principale porta a `privacy/`.
+
+## Online
+
+Il sito è su **https://getmuw.app** dal 2026-10-08, servito dal Caddy del
+server Hetzner (`www.getmuw.app` rimanda lì). Sul server stanno solo i file
+pubblici, copiati da `main` in `/srv/getmuw-site`: non i test, gli script,
+`package.json` e il merch spento. **Non si aggiorna da solo**: dopo un
+merge che cambia `site/` si ripete la copia di `DEPLOY.md` F.14 (il
+server è del Coordinatore, con l'ok dell'utente). Un file pubblico nuovo
+va aggiunto anche all'elenco di F.14.
+
 ## Guardarlo in locale
 
 Da un terminale nella radice del repository, poi `http://127.0.0.1:8237`:
@@ -123,4 +149,4 @@ Testi, dieci disegni e scelta dello sport sono confermati (2026-10-05 e
 2026-10-08). Il sito andrà su `getmuw.app`, dal Caddy del server Hetzner
 (scelta dell'utente, 2026-10-08; la configurazione è di TASK-265). Restano
 dell'utente: quando rimettere il merch, con quale servizio, quali magliette e
-quali prezzi. Finché non è pubblicato, il sito esiste solo nel repository.
+quali prezzi. Il link per scaricare l'app arriva con l'App Store (TASK-152).

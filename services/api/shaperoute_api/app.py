@@ -48,6 +48,7 @@ from shaperoute_api.activity_graphs import (
     ground_for,
     source_for,
 )
+from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.comments import install_comments
 from shaperoute_api.contact import install_contact
@@ -425,6 +426,9 @@ def create_app(
     # The best routes already planned near a point, for "Explore" (TASK-126,
     # ADR-0098). The point is in the query: not in the access log (ADR-0096).
     catalog = recommended or RecommendedCatalog([])
+    # The «Recommended» row: the same routes, the best drawn first, then the
+    # most liked and run (TASK-092, ADR-0229); it needs a token.
+    install_best_routes(app, catalog)
 
     @app.get("/recommended-routes")
     def list_recommended_routes(

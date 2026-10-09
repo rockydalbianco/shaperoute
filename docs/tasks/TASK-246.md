@@ -1,6 +1,7 @@
 # TASK-246 — Le figure «Paddle» dei posti vicini già sul telefono
 
 **Stato**: Done — in `main` dalla #369 (`2fcf6b5`, 2026-10-05); figure dei tre posti più vicini già sul telefono, prova sull'iPhone dell'utente dopo la pubblicazione
+**Parte B**: In lavorazione — il server tiene le figure dei laghi e delle spiagge (sotto, «Parte B»)
 **Fase**: 4 · **Branch**: `feat/TASK-246-paddle-shapes-ahead`
 **Dipende da**: TASK-214 (le mappe della zona al primo avvio, ADR-0177),
 TASK-227 e TASK-233 (gli esempi sull'acqua di «Explore»)
@@ -99,7 +100,8 @@ docs/UI.md
 
 ## Seguiti
 
-- **Il server non tiene le figure dei laghi.** `route_store.py` tiene solo
+- **Il server non tiene le figure dei laghi** (è la parte B, sotto).
+  `route_store.py` tiene solo
   i percorsi dai centri delle città: ogni telefono nuovo fa disegnare al
   server fino a 24 figure (tre posti, otto forme), anche se un altro
   telefono le ha già chieste dallo stesso punto. Con pochi telefoni non è
@@ -135,3 +137,67 @@ piano (paletto del coordinatore). La pubblica il coordinatore.
 dell'utente dopo la pubblicazione (aprire l'app, aspettare tre minuti, poi
 «Explore» con «Paddle»: le otto forme del lago vicino devono esserci senza
 «Drawing…», e così i due posti dopo). Nessun cambiamento al server.
+
+## Parte B — Il server tiene le figure dei laghi e delle spiagge
+
+**Stato**: In lavorazione · **Branch**: `feat/TASK-246-b-water-shapes-kept`
+· aggiunta ad ADR-0211 · via del coordinatore il 2026-10-09, dopo il #440
+(TASK-203 B) e il suo `draw_examples`. Il merge lo allinea il coordinatore
+con TASK-245 C (le spiagge nuove), così server e `draw_examples` si fanno
+una volta sola.
+
+### Obiettivo
+
+Il seguito sopra: l'API tiene le figure «Paddle» chieste dai punti di
+`lakes.json` e `beaches.json` come tiene quelle dal centro di una città
+(ADR-0136), e `draw_examples` le può disegnare prima. Un telefono nuovo
+dove un altro ha già chiesto non fa lavorare il motore.
+
+### Cosa fare
+
+1. `water_spots.py` (nuovo): i punti delle due liste dell'app.
+2. `route_store.py`: i punti sull'acqua come centri dati all'avvio, in
+   `routes/water/` con un limite loro.
+3. `__main__.py`: il `RouteStore` con i punti; una riga all'avvio.
+4. `draw_examples.py`: `--water` e `--water-name`, le otto forme di ogni
+   punto come le chiede il telefono.
+5. `Dockerfile` e `.dockerignore`: i due file delle liste nell'immagine.
+6. L'app: niente, se le stesse richieste tornano più in fretta
+   (controllato: `aheadExamples.ts` chiede dal punto stesso).
+
+### Criteri di accettazione
+
+- [x] La stessa richiesta dallo stesso punto delle liste torna `done`
+      nella risposta al `POST`, anche dopo un riavvio dell'API; da 10 m
+      più in là, o con la forma spostata (`near`), non si tiene.
+- [x] I percorsi sull'acqua non spingono fuori gli esempi delle città.
+- [x] `draw_examples --water` chiede le otto forme nell'ordine dell'app,
+      con la penna alzata per le forme a pezzi, e salta un punto senza
+      acqua alla prima forma; `--water-name` sceglie i punti per nome.
+- [x] Test deterministici senza rete; tutti i test dell'API verdi.
+- [x] Misurato sul Mac: le 24 forme di un telefono nuovo prima e dopo; il
+      giro di tutti i punti stimato per il server.
+- [ ] Server aggiornato e `draw_examples --water` lanciato: del
+      coordinatore, con l'ok dell'utente.
+
+### File toccati (parte B)
+
+```
+services/api/shaperoute_api/water_spots.py      (nuovo)
+services/api/shaperoute_api/route_store.py
+services/api/shaperoute_api/__main__.py         (righe: RouteStore, avvio)
+services/api/shaperoute_api/draw_examples.py
+services/api/tests/test_water_spots.py          (nuovo)
+services/api/tests/test_route_store.py
+services/api/tests/test_draw_examples.py
+Dockerfile                                      (una COPY)
+.dockerignore                                   (due righe)
+docs/API.md
+docs/tasks/TASK-246.md
+docs/STATUS.md
+docs/DECISIONS.md
+```
+
+### Esito parte B
+
+ESITO-DA-SCRIVERE

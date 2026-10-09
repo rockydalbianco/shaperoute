@@ -157,6 +157,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-246 parte B — Il server tiene le figure «Paddle» dei laghi e
+  delle spiagge** (aggiunta ad ADR-0211; via del coordinatore il
+  2026-10-09). Branch `feat/TASK-246-b-water-shapes-kept`. L'API legge
+  all'avvio i punti di `lakes.json` e `beaches.json` (`water_spots.py`,
+  copiati nell'immagine dal `Dockerfile`) e tiene i percorsi dal punto
+  stesso in `routes/water/` (limite suo di 10 000); `draw_examples
+  --water` li disegna prima. L'app non cambia. Sul Mac le 24 forme di un
+  telefono nuovo a Levico: 207 s di motore la prima volta, 1 s dopo.
+  **Aspetta**: la coda dei merge, allineata dal coordinatore con TASK-245
+  C; poi server e `draw_examples --water` con l'ok dell'utente.
+  File: `tasks/TASK-246.md`, «File toccati (parte B)».
 - **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
   all'agente dall'utente il 2026-10-07). Branch
   `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:

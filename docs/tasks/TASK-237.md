@@ -248,7 +248,10 @@ con il consiglio di farle rileggere a un esperto; il testo è
 segnaposto. Aggiunta in cinque lingue la frase sulla posizione a
 telefono bloccato (TASK-261, ADR-0225). Verificato nel codice: il server
 salva ancora il punteggio di una corsa (`activities.py`) e l'evento
-`run_scored`, quindi quelle frasi sono esatte. Un test del sito controlla
+`run_scored`: la frase resta, precisata («a score of how closely the
+track follows the route (worked out by our server and not shown in the
+app)»). Le due frasi nuove le ha approvate l'utente il 2026-10-09 («Sì,
+vanno bene»). Un test del sito controlla
 che la copia di `DEPLOY.md` F.14 prenda ogni file che le pagine
 caricano. Dopo il merge: la copia sul server al via del Coordinatore,
 con il sì dell'utente alla pubblicazione; l'indirizzo per Apple è

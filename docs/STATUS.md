@@ -605,6 +605,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-234 parte C: il «Try N km» della riga «comes out
+  better» si conta (scelta dell'utente del 2026-10-08, aggiunta ad
+  ADR-0197). PR #459: `hint_taken` con `hint: "better_distance"`,
+  additivo (un'API di prima risponde 422 e l'app lo ignora). Il segno
+  visibile mentre si calcola c'era già: il pannello dell'attesa con la
+  barra e «Cancel» prende subito il posto della riga. Nessun testo nuovo,
+  nessuna migrazione. Dopo il merge: il server (`signals.py`, ok
+  dell'utente, coordinatore) e la pubblicazione dell'app. File:
+  `tasks/TASK-234.md`, «File toccati».
+
 - **App** — TASK-261 parte A: la corsa registra anche a telefono bloccato
   (ADR-0225; chiesto dall'utente il 2026-10-07). In `main` con la #441
   (`08793f4`, 2026-10-08). Nell'app costruita il GPS va avanti in

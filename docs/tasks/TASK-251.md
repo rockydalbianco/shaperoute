@@ -1,6 +1,6 @@
 # TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m
 
-**Stato**: Done — parte A (l'uscita in corso e la sua fine) in `main` dalla #383 (`bf859e0`, 2026-10-06), pubblicata su `preview` (gruppo `1924575c`); parte B («My activities») in `main` dalla #394 (`c99b8c8`, 2026-10-06), sul server (`d7b490f1`) e su `preview` dal 2026-10-06; aperti per l'utente i tre punti di «Da confermare» e la prova sull'iPhone; parte C (in bici senza percorso, la velocità) nel branch `feat/TASK-251-c-free-ride-speed`
+**Stato**: Done — parte A (l'uscita in corso e la sua fine) in `main` dalla #383 (`bf859e0`, 2026-10-06), pubblicata su `preview` (gruppo `1924575c`); parte B («My activities») in `main` dalla #394 (`c99b8c8`, 2026-10-06), sul server (`d7b490f1`) e su `preview` dal 2026-10-06; aperti per l'utente i tre punti di «Da confermare» e la prova sull'iPhone; parte C (in bici senza percorso, la velocità) in `main` dalla #458 (`fb27b50d`, 2026-10-09), da pubblicare su `preview` (coordinatore)
 **Fase**: 4 · **Branch**: `feat/TASK-251-paddle-speed-pace`
 **Dipende da**: TASK-191 (i percorsi sull'acqua), TASK-216 (la velocità
 in bici, `navigation/ride.ts`), TASK-182 (km o miglia)
@@ -166,6 +166,7 @@ docs/UI.md
 - Parte C: **la voce** di una pedalata senza percorso dice ancora ogni km
   col passo medio, mentre con un percorso dice ogni 10 km la velocità
   media (ADR-0179). Non chiesto, non toccato: da decidere.
+  → **Deciso dall'utente il 2026-10-09**: «la voce lasciala così».
 
 ## Esito
 
@@ -193,3 +194,9 @@ non manda lo sport quando salva una corsa (lo sceglie il modulo di
 pubblicazione, TASK-208), e lì solo `paddling` ha numeri suoi, quindi una
 pedalata senza percorso si legge come una con il percorso, col passo al
 km. Provata solo dai test; la pubblicazione è del coordinatore.
+
+**Parte C chiusa (2026-10-09).** In `main` con la #458 (`fb27b50d`),
+mergiata da Coordinatore 2 alla CI 5/5 verde, dopo la #444 e la #460.
+Restano: la pubblicazione su `preview` (coordinatore), la prova
+sull'iPhone pedalando senza percorso. La voce resta com'è: scelta
+dell'utente del 2026-10-09 («la voce lasciala così»).

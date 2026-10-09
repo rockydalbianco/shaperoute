@@ -133,7 +133,10 @@ cancellati dai biglietti e dalle ricevute.
       Le righe di «Help» e «Privacy» in tedesco, spagnolo e francese sono
       traduzioni dell'agente dell'inglese approvato, aggiunte al
       riallineamento con `main` dopo la #453: non erano nel file letto
-      dall'utente.
+      dall'utente. La sessione «Scelte prodotto prioritarie» gliele ha
+      mostrate così come sono su #451, e l'utente le ha approvate il
+      2026-10-09 («Sì, vanno bene»). **Tutti i testi della parte A sono
+      approvati dall'utente, nelle cinque lingue.**
 - [ ] Test verdi in API e app.
 
 ### File toccati (parte A)

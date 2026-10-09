@@ -228,6 +228,12 @@ export const ES: Table = {
   "Turns the map north up": "Pone el norte arriba",
   "Turns the map like the drawing": "Gira el mapa como el dibujo",
 
+  // src/map/MapKindButton.tsx
+  "Map type": "Tipo de mapa",
+  Standard: "Estándar",
+  Satellite: "Satélite",
+  "3D": "3D",
+
   // src/paddle/PaddleExplore.tsx
   Next: "A continuación",
   "Drawing…": "Dibujando…",

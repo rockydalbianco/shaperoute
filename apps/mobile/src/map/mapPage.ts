@@ -10,6 +10,7 @@ import {
   otherRoute,
   route,
   routeAhead,
+  routeCasing,
   stop,
   track,
   walk,
@@ -64,6 +65,13 @@ export const FOLLOW_ZOOM = 17;
 export const ROUTE_COLOR = route.color;
 export const ROUTE_WIDTH = route.width;
 export const ROUTE_OPACITY = route.opacity;
+
+/**
+ * The route's dark edge, on the light map only (TASK-263, ADR-0231): a
+ * wider dark line under the route and under the part left, since the
+ * yellow alone does not show on light streets. None on the dark map.
+ */
+export const ROUTE_CASING = routeCasing;
 
 /**
  * While running the route, the part left (TASK-224): dashed, under the part
@@ -151,6 +159,24 @@ export const MAP_BACKGROUND = color.map.background;
  * A value as a JavaScript literal inside the page's `<script>`. `<` is escaped
  * so that no string in it (the attribution has links) can close the script.
  */
+/** The script that draws the route's edge under `source`'s line; none on the dark map. */
+function casingScript(source: string): string {
+  if (ROUTE_CASING === null) {
+    return "";
+  }
+  return `map.addLayer({
+        id: ${toScript(`${source}-casing`)},
+        type: "line",
+        source: ${toScript(source)},
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(ROUTE_CASING.color)},
+          "line-width": ${ROUTE_CASING.width},
+          "line-opacity": ${ROUTE_CASING.opacity},
+        },
+      });`;
+}
+
 function toScript(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
@@ -265,6 +291,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       // While running the route, the part left: dashed, under the part run
       // (TASK-224). Its one line has id 0, and its beat is its "dim" state.
       map.addSource("route-ahead", { type: "geojson", data: ahead, generateId: true });
+      ${casingScript("route-ahead")}
       map.addLayer({
         id: "route-ahead",
         type: "line",
@@ -285,6 +312,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       setAheadOpacity();
       // A route that arrived before the style is drawn now.
       map.addSource("route", { type: "geojson", data: route });
+      ${casingScript("route")}
       map.addLayer({
         id: "route",
         type: "line",

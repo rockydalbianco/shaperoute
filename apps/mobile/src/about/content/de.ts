@@ -300,7 +300,7 @@ const privacy: AboutDocument = {
     {
       heading: "Deine Läufe und ihre GPS-Spuren",
       blocks: [
-        "Mit einem Konto geht der ganze Lauf an unseren Server, wenn du am Ende eines Laufs auf «Speichern» tippst: jede Position mit ihrer Uhrzeit, die Pausen, die Route, der du gefolgt bist, Distanz, Dauer, Punktzahl und der Name des Ortes. Mit «Verwerfen» wird nichts gesendet.",
+        "Mit einem Konto geht der ganze Lauf an unseren Server, wenn du am Ende eines Laufs auf «Speichern» tippst: jede Position mit ihrer Uhrzeit, die Pausen, die Route, der du gefolgt bist, Distanz, Dauer, eine Punktzahl dafür, wie genau die Spur der Route folgt (von unserem Server berechnet und in der App nicht angezeigt), und der Name des Ortes. Mit «Verwerfen» wird nichts gesendet.",
         "Ein gespeicherter Lauf ist privat: Nur dein Konto sieht ihn. Er bleibt, bis du ihn in «Meine Aktivitäten» löschst oder dein Konto löschst.",
         "Ein Lauf beginnt und endet oft an deiner Haustür. Deshalb wird ein Lauf für die anderen Mitglieder erst sichtbar, wenn du «Öffentlich» einschaltest, und dann sehen sie die Spur ohne ihre ersten und letzten 200 m, mit dem Titel, den du ihr gegeben hast, und ohne Zeiten, Pausen oder die geplante Route.",
       ],

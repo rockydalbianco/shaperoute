@@ -258,6 +258,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `20590b72`). La frase precisata sul punteggio, approvata dall'utente,
   era rimasta fuori dal merge: entra con una PR a parte, poi di nuovo
   copia F.14 e pubblicazione.
+  **Parte E** in PR (2026-10-09): la pagina di assistenza
+  `getmuw.app/support/` in cinque lingue (come scriverci e tre domande),
+  per il Support URL dell'App Store; testi approvati dall'utente («Sì,
+  va bene»).
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
@@ -644,6 +648,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   aggiornamento e `draw_examples --water` (stimato 4–8 ore, circa 50 MB)
   del coordinatore, con l'ok dell'utente; senza, il server disegna come
   prima e tiene per i telefoni dopo. `tasks/TASK-246.md`, «Parte B».
+- **App** — TASK-264: **il tipo di mappa** (ADR-0232; chiesto
+  dall'utente il 2026-10-08). Un pulsante in alto a destra sulla mappa
+  sceglie **Standard**, **Satellite** (foto Esri, i nomi dei paesi in
+  chiaro) e **3D** (il rilievo con l'ombreggiatura, mappa inclinata a
+  55°, come Strava e komoot); la scelta resta sul telefono. Lo stile non
+  si ricarica: percorso e inquadratura restano. Gli edifici in 3D sono
+  stati provati e tolti perché coprivano il percorso. Testi nelle cinque
+  lingue approvati dall'utente (2026-10-09). Solo app: dopo il merge si
+  pubblica, niente server. **Resta**: la chiave gratuita ArcGIS
+  (`EXPO_PUBLIC_ARCGIS_API_KEY`), quando l'utente crea l'account; senza,
+  le foto vengono dall'indirizzo pubblico di Esri. `tasks/TASK-264.md`.
 - **API e app** — TASK-234 parte C: il «Try N km» della riga «comes out
   better» si conta (scelta dell'utente del 2026-10-08, aggiunta ad
   ADR-0197). PR #459: `hint_taken` con `hint: "better_distance"`,
@@ -697,6 +712,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'utente, coordinatore); l'app può uscire prima, la riga non c'è
   finché manca. Seguito: con TASK-121 le reazioni di chi l'utente ha
   bloccato non contano.
+  **Sul server dal 2026-10-09 ~12:20Z** (ok dell'utente, fatto dal
+  coordinatore): `main` `fb27b50d`, copia del database
+  `shaperoute-2026-10-09T1220Z.dump`, immagine di prima
+  `shaperoute-api:before-task092`, migrazioni ancora fino a 0019;
+  `/recommended` risponde `401 not_signed_in` senza token, quindi c'è.
+  Con un account la riga «RECOMMENDED» ora si vede.
 - **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
   è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
   2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.

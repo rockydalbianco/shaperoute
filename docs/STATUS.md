@@ -633,6 +633,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-264: **il tipo di mappa** (ADR-0232; chiesto
+  dall'utente il 2026-10-08). Un pulsante in alto a destra sulla mappa
+  sceglie **Standard**, **Satellite** (foto Esri, i nomi dei paesi in
+  chiaro) e **3D** (il rilievo con l'ombreggiatura, mappa inclinata a
+  55°, come Strava e komoot); la scelta resta sul telefono. Lo stile non
+  si ricarica: percorso e inquadratura restano. Gli edifici in 3D sono
+  stati provati e tolti perché coprivano il percorso. Testi nelle cinque
+  lingue approvati dall'utente (2026-10-09). Solo app: dopo il merge si
+  pubblica, niente server. **Resta**: la chiave gratuita ArcGIS
+  (`EXPO_PUBLIC_ARCGIS_API_KEY`), quando l'utente crea l'account; senza,
+  le foto vengono dall'indirizzo pubblico di Esri. `tasks/TASK-264.md`.
 - **API e app** — TASK-234 parte C: il «Try N km» della riga «comes out
   better» si conta (scelta dell'utente del 2026-10-08, aggiunta ad
   ADR-0197). PR #459: `hint_taken` con `hint: "better_distance"`,

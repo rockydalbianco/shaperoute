@@ -171,6 +171,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   coordinatore) e la pubblicazione dell'app, che può uscire prima: senza
   `/recommended` la riga non c'è e «Explore» resta com'è.
   File: `tasks/TASK-092.md`, «File toccati».
+  **Chiuso**: in `main` con la #445 (`48ba5912`, 2026-10-08); vedi
+  «Completato».
 - **TASK-265 — Il dominio getmuw.app** (ADR-0234; scelta dell'utente del
   2026-10-08). L'utente voleva spostare «il sito» su un'azienda tedesca;
   saputo che il sito non era online e che Hetzner è già tedesca, è
@@ -626,6 +628,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   intorno al 21), i passi, le domande per il commercialista. Prossimi:
   TASK-152 (App Store) e TASK-153 (annunci veri, unità **nativa** per il
   Feed). Chiesti dall'utente il 2026-10-08: annunci anche sul sito.
+- **App e API** — TASK-092: la riga **«RECOMMENDED»** in «Explore»
+  (ADR-0229), in `main` con la #445 (`48ba5912`, 2026-10-08). Con un
+  account, sopra le schede dei percorsi vicini, al più 10 percorsi del
+  catalogo ordinati da `GET /recommended`: prima il disegno venuto
+  meglio, poi le reazioni dei disegni pubblicati, poi corse e preferiti; a
+  parità tutti. Testo confermato dall'utente nelle cinque lingue. **Non
+  ancora sul server** (`best_routes.py`, nessuna migrazione: ok
+  dell'utente, coordinatore); l'app può uscire prima, la riga non c'è
+  finché manca. Seguito: con TASK-121 le reazioni di chi l'utente ha
+  bloccato non contano.
 - **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
   è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
   2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.

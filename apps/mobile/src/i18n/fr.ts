@@ -1088,4 +1088,30 @@ export const FR: Table = {
 
   // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
   "{user}: {title}. {facts}.": "{user} : {title}. {facts}.",
+
+  // src/social/ReportMenu.tsx, BlockedPeople.tsx (TASK-121: report and block)
+  More: "Plus",
+  "Report or block": "Signaler ou bloquer",
+  Report: "Signaler",
+  "Block {user}": "Bloquer {user}",
+  "Why are you reporting this?": "Pourquoi signales-tu ceci ?",
+  Spam: "Spam",
+  "Offensive or hateful": "Offensant ou haineux",
+  "Harassment or bullying": "Harcèlement ou intimidation",
+  "Nudity or sexual content": "Nudité ou contenu sexuel",
+  "Something else": "Autre chose",
+  "Thanks for telling us. We will look at it.":
+    "Merci de nous l'avoir signalé. Nous allons vérifier.",
+  "Block {user}?": "Bloquer {user} ?",
+  "You will not see each other's drawings, comments or profile, and any follow between you ends. They are not told.":
+    "Vous ne verrez plus les dessins, commentaires ni le profil l'un de l'autre, et tout abonnement entre vous prend fin. La personne n'est pas prévenue.",
+  Block: "Bloquer",
+  "Sending…": "Envoi…",
+  "This is not available any more.": "Ce n'est plus disponible.",
+  "Blocked people": "Personnes bloquées",
+  "You have not blocked anyone.": "Tu n'as bloqué personne.",
+  Unblock: "Débloquer",
+  "Unblock {name}": "Débloquer {name}",
+  "You blocked {user}. Unblock them from Blocked people in your profile.":
+    "Tu as bloqué {user}. Tu peux le débloquer dans Personnes bloquées de ton profil.",
 };

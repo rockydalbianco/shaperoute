@@ -73,6 +73,7 @@ from shaperoute_api.line_directions import (
     RouteDirectionsRequestBody,
     directions_of,
 )
+from shaperoute_api.moderation import install_moderation
 from shaperoute_api.notifications import install_notifications
 from shaperoute_api.outline_edits import edit_outline
 from shaperoute_api.places import (
@@ -323,6 +324,8 @@ def create_app(
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)
+    # Blocking and reporting (TASK-121); they need a token.
+    install_moderation(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

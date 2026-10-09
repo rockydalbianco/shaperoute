@@ -1747,6 +1747,62 @@ esempio in `fixtures/feed.json`; il codice in `feed.py`.
 - **Un'API precedente** non ha l'endpoint (`404 http_error`): l'app
   mostra i disegni d'esempio.
 
+### Block and report (TASK-121, ADR-0228)
+
+Bloccare tiene **due iscritti lontani, nei due sensi**; segnalare lascia
+una riga per chi gestisce l'app. Tutti gli endpoint vogliono il token:
+senza, `401 not_signed_in`; senza database, `503 accounts_unavailable`.
+Tipi in `shared-types` (`ReportRequest`, `ReportKind`, `REPORT_KINDS`,
+`ReportReason`, `REPORT_REASONS`; l'elenco dei bloccati è un
+`PeoplePage`), esempio in `fixtures/report-request.json`; il codice in
+`moderation.py`, la condizione SQL in `follows.apart_sql`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /users/{public_id}/block` | blocca l'iscritto, e chiude ogni follow fra i due | `204` |
+| `DELETE /users/{public_id}/block` | lo sblocca | `204` |
+| `GET /me/blocked?limit=20&cursor=…` | gli iscritti bloccati, l'ultimo per primo | `200` `PeoplePage` |
+| `POST /reports` | segnala un disegno, un commento o un iscritto | `204` |
+
+- **Cosa nasconde un blocco**, fatto da uno dei due, a tutti e due: il
+  feed (`feed.py`), i commenti di uno sotto qualsiasi disegno (né letti,
+  né contati in `total`), le reazioni (non contate), la ricerca per nome
+  (`GET /users?q=`), il profilo (`GET /users/{id}`: `404` come per
+  nessuno). Il disegno dell'altro non si apre più da commenti e reazioni:
+  `GET`/`POST /drawings/{id}/comments`, `GET`/`PUT`/`DELETE
+  /drawings/{id}/reaction(s)` rispondono `404`, come per un id che non
+  c'è. Nessuno dei due viene avvisato.
+- **I follow**: bloccare cancella ogni riga di `follows` fra i due, nei
+  due sensi, richieste in attesa comprese; chiedere di seguire attraverso
+  un blocco è `404` «No profile with this id.». Sbloccare non rimette
+  niente.
+- **Fatto due volte non cambia niente**: un secondo blocco tiene la riga
+  com'è; sbloccare chi non è bloccato è `204`. Sbloccare toglie solo il
+  proprio blocco: se anche l'altro ha bloccato, restano lontani.
+  Bloccare se stessi: `422 invalid_request`; un id che non c'è, o non è
+  un id: `404 http_error`.
+- **`GET /me/blocked`**: pagine come gli elenchi di «Follow» (`limit` da 1
+  a 50, cursore `microsecondi-public_id`), con `total`; ogni iscritto con
+  nome e foto piccola, mai l'email.
+- **`POST /reports`**: `{"kind", "id", "reason"}`. `kind` è `drawing`
+  (un post del feed), `comment` o `user`; `id` è l'id del disegno, del
+  commento o il `public_id` dell'iscritto; `reason` è uno di `spam`,
+  `offensive`, `harassment`, `sexual`, `other`, in quest'ordine (l'app
+  li mostra così). **Una riga per chi segnala e per cosa**: segnalato di
+  nuovo, la riga prende il motivo e l'ora nuovi. Niente con quell'id:
+  `404` «Nothing to report with this id.»; se stessi, il proprio disegno o
+  il proprio commento: `422` «You cannot report yourself or what you
+  wrote.»; un `kind` o un `reason` fuori elenco: `422`. Si può segnalare
+  anche chi si è già bloccato.
+- **Nessun endpoint legge le segnalazioni**: restano nella tabella
+  `reports` per chi gestisce l'app (ADR-0228: niente pannello e niente
+  endpoint `/admin` per ora).
+- **`DELETE /me`** cancella i blocchi dell'account, fatti e ricevuti, e le
+  sue segnalazioni (`ON DELETE CASCADE`); le segnalazioni degli altri su
+  di lui restano.
+- **Un'API precedente** non ha questi endpoint (`404 http_error`): l'app
+  dice «This is not available any more.».
+
 ### Send to Strava (TASK-187, ADR-0156)
 
 Una corsa salvata va sul profilo Strava di chi ha collegato il suo atleta,

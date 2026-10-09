@@ -299,3 +299,9 @@ data; l'app con il testo definitivo è su `preview` (gruppo `20590b72`).
 La frase del punteggio entra con la PR `fix/TASK-237-privacy-score`;
 dopo il suo merge servono di nuovo la copia F.14 e una pubblicazione
 dell'app, che sono del Coordinatore.
+
+**Parte E** (2026-10-09): la pagina di assistenza, PR #467. Testi
+**approvati dall'utente** («Sì, va bene», sul testo italiano; le altre
+lingue dicono lo stesso). Dopo il merge: la copia F.14, del
+Coordinatore; l'indirizzo per la scheda dell'App Store è
+`https://getmuw.app/support/`.

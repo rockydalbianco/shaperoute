@@ -30,6 +30,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Test, fixture, criteri di accettazione | `TESTING.md` |
 | Il sito web, il merch, le magliette | `SITO.md` |
 | Branch, PR, review, rilasci | `TEAM_WORKFLOW.md` |
+| Pubblicità, account AdMob, pagamenti | `PUBBLICITA.md`, `DECISIONS.md` ADR-0198 |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 ## Stato dei documenti
@@ -54,6 +55,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | `AI.md` | pieno | — |
 | `DATABASE.md` | pieno | — |
 | `SITO.md` | pieno | — |
+| `PUBBLICITA.md` | pieno per account e pagamenti | annunci veri con TASK-153 |
 
 Uno stub si riempie **quando arriva il suo task**, non prima: scrivere oggi
 un `DATABASE.md` dettagliato significa documentare decisioni non ancora prese.

@@ -619,6 +619,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **parte B**, la voce a telefono bloccato (expo-audio, da chiedere), e
   Android in background, senza numero. Nel checkout principale serve
   `npm install` per la dipendenza nuova. `tasks/TASK-261.md`.
+- **Pubblicità** — TASK-150: l'utente ha l'account AdMob **da persona**
+  (la partita IVA quando arrivano i guadagni, scelta del 2026-10-02) e ha
+  completato il profilo pagamenti (2026-10-08). La guida è
+  `docs/PUBBLICITA.md`: come e quando paga Google (soglia 70 €, bonifico
+  intorno al 21), i passi, le domande per il commercialista. Prossimi:
+  TASK-152 (App Store) e TASK-153 (annunci veri, unità **nativa** per il
+  Feed). Chiesti dall'utente il 2026-10-08: annunci anche sul sito.
 - **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
   è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
   2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.

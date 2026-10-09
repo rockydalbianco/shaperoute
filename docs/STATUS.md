@@ -157,6 +157,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-246 parte B — Il server tiene le figure «Paddle» dei laghi e
+  delle spiagge** (aggiunta ad ADR-0211; via del coordinatore il
+  2026-10-09). Branch `feat/TASK-246-b-water-shapes-kept`. L'API legge
+  all'avvio i punti di `lakes.json` e `beaches.json` (`water_spots.py`,
+  copiati nell'immagine dal `Dockerfile`) e tiene i percorsi dal punto
+  stesso in `routes/water/` (limite suo di 10 000); `draw_examples
+  --water` li disegna prima. L'app non cambia. Sul Mac le 24 forme di un
+  telefono nuovo a Levico: 11 s di motore la prima volta, 0 s dopo; il
+  giro di tutti i punti sul server, stimato, 4–8 ore.
+  PR #462, merge chiesto dall'utente al verde (2026-10-09), non aspetta
+  TASK-245 C. **Resta**: server e `draw_examples --water` con l'ok
+  dell'utente, dal coordinatore.
+  File: `tasks/TASK-246.md`, «File toccati (parte B)».
 - **TASK-251 parte C — In bici senza percorso, la velocità** (aggiornamento
   di ADR-0215; scelta dell'utente del 2026-10-08). Branch
   `feat/TASK-251-c-free-ride-speed`. Con «Bike» in «Settings» «Ride without
@@ -631,6 +644,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pubblica, niente server. **Resta**: la chiave gratuita ArcGIS
   (`EXPO_PUBLIC_ARCGIS_API_KEY`), quando l'utente crea l'account; senza,
   le foto vengono dall'indirizzo pubblico di Esri. `tasks/TASK-264.md`.
+- **API e app** — TASK-234 parte C: il «Try N km» della riga «comes out
+  better» si conta (scelta dell'utente del 2026-10-08, aggiunta ad
+  ADR-0197). PR #459: `hint_taken` con `hint: "better_distance"`,
+  additivo (un'API di prima risponde 422 e l'app lo ignora). Il segno
+  visibile mentre si calcola c'era già: il pannello dell'attesa con la
+  barra e «Cancel» prende subito il posto della riga. Nessun testo nuovo,
+  nessuna migrazione. Dopo il merge: il server (`signals.py`, ok
+  dell'utente, coordinatore) e la pubblicazione dell'app. File:
+  `tasks/TASK-234.md`, «File toccati».
 - **App** — TASK-263: tono scuro o chiaro, con la luminosità in cinque
   passi (ADR-0231; chiesto dall'utente il 2026-10-08). PR #444. In
   «Settings», «PREFERENCES», la riga «Tone»: «Dark» o «Light»,

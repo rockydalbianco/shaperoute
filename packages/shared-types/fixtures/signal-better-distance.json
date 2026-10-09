@@ -1,0 +1,7 @@
+{
+  "kind": "hint_taken",
+  "shape": "horse",
+  "hint": "better_distance",
+  "distance_m": 10000,
+  "to_m": 8000
+}

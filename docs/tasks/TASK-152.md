@@ -48,7 +48,15 @@ privacy, così AdMob può verificare l'app (TASK-153).
    società (gratuito, da Dun & Bradstreet); Apple può chiedere documenti
    e la verifica dura fino a circa tre settimane. L'app resta nello
    stesso account, cambia solo il nome del venditore.
-2. *Aperta.*
+2. **Non commerciante («non-trader») UE, per ora** (2026-10-09). Prima
+   l'utente aveva detto «sì commerciante» perché voleva gli annunci veri
+   da subito; poi ha scelto di **lanciare senza pubblicità** e, richiesto
+   esplicitamente con il nuovo quadro (app gratuita e senza annunci,
+   nessun dato personale pubblico sullo store), ha risposto «sì, non
+   commerciante per ora». Quando arrivano gli annunci (TASK-153) si passa
+   a commerciante su App Store Connect, Business → Digital Services Act;
+   con la società, con i dati della società (risposta 1). La società la
+   apre dopo i primi ~300 € di guadagno.
 3. **`getmuw.app`**, dominio proprio (TASK-265, ADR-0234): il sito è
    online lì, l'API su `api.getmuw.app`.
 4. **«MuW»** (TASK-260, ADR-0224). Se il nome è già preso sull'App
@@ -198,3 +206,31 @@ non cambia.
   guarda (`fingerprint.config.js`, provato in ADR-0233) e il runtime di
   Expo Go resta `exposdk:57.0.0`. Deciso dall'agente su delega
   dell'utente.
+- **Seconda build `production`**, la prima per TestFlight (2026-10-09):
+  build EAS `e1166bc0-842c-46d2-b39b-9180a20e9133`, versione `1.0.0`,
+  build 4, commit `9295d17a`, runtime `97c9f355…` (uguale), con
+  `EXPO_PUBLIC_API_KEY` (copiata dall'utente da `preview` a `production`
+  con un suo comando `env:get | env:set`; l'agente non l'ha letta).
+  `--auto-submit` è fallito con «Missing submit profile in eas.json:
+  production» (con `--auto-submit` il profilo si cerca per nome; `eas
+  submit` senza `--profile` usa quello predefinito): inviata a parte con
+  `eas submit --platform ios --id e1166bc0…`. EAS ha creato su App Store
+  Connect l'app **«MuW»** (il nome era libero; ASC App ID `6820961883`),
+  il gruppo TestFlight interno «Team (Expo)» con l'utente e la chiave API
+  di App Store Connect (salvata su EAS). La dichiarazione sulla
+  crittografia non è stata chiesta (`usesNonExemptEncryption: false` in
+  `app.json`). **L'utente l'ha installata da TestFlight: «sembra
+  funzionare».**
+- `eas.json`: profilo `submit.production` con l'`ascAppId`, così la
+  prossima build va da sola su TestFlight con `--auto-submit` (`DEPLOY.md`
+  A.7 punto 2); fuori dall'impronta. Test in `appConfig.test.ts`.
+- **Ordine per la build 5, quella per la revisione** (Coordinatore,
+  2026-10-09): #457 (TASK-121, segnala e blocca: lo chiede la Guideline
+  1.2 di Apple per i contenuti degli utenti) → #451 (notifiche push,
+  nativa) → TASK-153 (annunci veri, `app-ads.txt`; sessione «PUBBLICITA»).
+  TASK-262 C (rubrica) solo se pronta in tempo, altrimenti 1.0.1. **Niente
+  build 5 né invio in revisione senza il via del Coordinatore.**
+- **Cambio dell'utente, 2026-10-09: si lancia senza pubblicità**, gli
+  annunci si fanno dopo. TASK-153 esce dalla build 5; la build dello
+  store non deve mostrare l'annuncio di prova di Google che oggi compare
+  a ogni ricerca (TASK-166): chi lo spegne lo decide il Coordinatore.

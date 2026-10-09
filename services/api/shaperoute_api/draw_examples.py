@@ -15,6 +15,16 @@ Run again, it goes through the cities already kept in a moment. The API's
 key, when it asks for one, comes from SHAPEROUTE_API_KEY. A city whose zone
 is not on the API's disk is downloaded by it, as for a phone: see
 prefetch_zones.py for the zones of many cities at once.
+
+With --water it is also the first phone on the water (TASK-246 part B): for
+each point of the app's lists of lakes and beaches (water_spots.py) the
+eight «Paddle» shapes a phone asks from it, at the point's distance, the
+shapes in pieces with the pen up, as the app asks them. A point whose water
+is not on the API's disk is skipped after its first shape, as the phone
+does. --water-name only the points of a lake or beach.
+
+    python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 --water
+    python -m shaperoute_api.draw_examples --api ... --water-name "Lago di Levico"
 """
 
 from __future__ import annotations
@@ -31,10 +41,21 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from shaperoute_api.access import KEY_HEADER, KEY_VARIABLE
+from shaperoute_api.paddle_examples import ACTIVITY as WATER_ACTIVITY
+from shaperoute_api.paddle_examples import SHAPES as WATER_SHAPES
+from shaperoute_api.paddle_examples import apart_on_water
 from shaperoute_api.prefetch_zones import EXAMPLE_DISTANCE_M, EXAMPLE_SHAPES, PRESETS
+from shaperoute_api.route_store import cell
+from shaperoute_api.water_spots import WaterSpot, read_spots
 
 # Method, path and body in; status and JSON body out.
 Call = Callable[[str, str, dict[str, Any] | None], tuple[int, Any]]
+
+# The app's DRAW_ORDER on the water: the first shapes, then the others.
+WATER_ORDER = (
+    *EXAMPLE_SHAPES,
+    *(shape for shape in WATER_SHAPES if shape not in EXAMPLE_SHAPES),
+)
 
 POLL_S = 2.0
 # A zone to download and three plans: the app waits as long (routes.ts).
@@ -118,6 +139,47 @@ def draw_city(
     return drawn
 
 
+def draw_spot(
+    spot: WaterSpot,
+    call: Call,
+    sleep: Callable[[float], None] = time.sleep,
+    clock: Callable[[], float] = time.monotonic,
+) -> Drawn:
+    """The eight shapes of a point on the water, as a phone asks them
+    (aheadExamples.ts): from the point, at its distance, on the water."""
+    began = clock()
+    drawn = Drawn(spot.name, label=f"{spot.name} ({cell(spot.point)})")
+    for shape in WATER_ORDER:
+        asked: dict[str, Any] = {
+            "shape": shape,
+            "distance_m": spot.distance_m,
+            "start": list(spot.point),
+            "activity": WATER_ACTIVITY,
+        }
+        if apart_on_water(shape):
+            asked["pen_up"] = True
+        drawn.shapes[shape] = _draw(asked, call, sleep, clock)
+        if drawn.shapes[shape] == "map_data_unavailable":
+            break  # no water of this point on the API's disk: the next point
+    drawn.seconds = clock() - began
+    return drawn
+
+
+def water_spots(names: Sequence[str] = ()) -> list[WaterSpot]:
+    """The points of the lists, one a square of 10 m, only those named
+    `names` when there are some."""
+    wanted = {name.casefold() for name in names}
+    seen: set[str] = set()
+    spots: list[WaterSpot] = []
+    for spot in read_spots():
+        if wanted and spot.name.casefold() not in wanted:
+            continue
+        if cell(spot.point) not in seen:
+            seen.add(cell(spot.point))
+            spots.append(spot)
+    return spots
+
+
 def _draw(
     asked: dict[str, Any],
     call: Call,
@@ -164,25 +226,49 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("cities", nargs="*", help="city names, as typed in the app")
     parser.add_argument("--preset", choices=sorted(PRESETS), action="append")
     parser.add_argument("--api", required=True, help="where the API answers")
+    parser.add_argument(
+        "--water",
+        action="store_true",
+        help="also the Paddle shapes of every point of the lakes and beaches",
+    )
+    parser.add_argument(
+        "--water-name",
+        action="append",
+        default=[],
+        help="only the points of this lake or beach (repeat); implies --water",
+    )
     args = parser.parse_args(argv)
     cities = list(args.cities)
     for preset in args.preset or []:
         cities += [c for c in PRESETS[preset] if c not in cities]
-    if not cities:
-        parser.error("name some cities, or a --preset")
+    spots = water_spots(args.water_name) if args.water or args.water_name else []
+    if not cities and not spots:
+        parser.error("name some cities, a --preset, or --water")
     call = http_call(args.api, os.environ.get(KEY_VARIABLE, "").strip() or None)
-    ready = 0
-    for city in cities:
+    ready = {"cities": 0, "points on the water": 0}
+    jobs: list[tuple[str, str, Callable[[], Drawn]]] = [
+        ("cities", city, lambda city=city: draw_city(city, call)) for city in cities
+    ] + [
+        ("points on the water", spot.name, lambda spot=spot: draw_spot(spot, call))
+        for spot in spots
+    ]
+    for kind, name, job in jobs:
         try:
-            drawn = draw_city(city, call)
+            drawn = job()
         except OSError as exc:
-            # The API is not there: no city after this one would do better.
-            print(f"{city}: the API did not answer ({type(exc).__name__})")
+            # The API is not there: no place after this one would do better.
+            print(f"{name}: the API did not answer ({type(exc).__name__})")
             return 1
         print(drawn.line(), flush=True)
-        ready += drawn.ready
-    print(f"{ready} of {len(cities)} cities have their examples")
-    return 0 if ready == len(cities) else 1
+        ready[kind] += drawn.ready
+    if cities:
+        print(f"{ready['cities']} of {len(cities)} cities have their examples")
+    if spots:
+        print(
+            f"{ready['points on the water']} of {len(spots)} points on the water "
+            "have their shapes"
+        )
+    return 0 if sum(ready.values()) == len(jobs) else 1
 
 
 if __name__ == "__main__":

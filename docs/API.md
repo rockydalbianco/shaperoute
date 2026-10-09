@@ -532,11 +532,13 @@ Cosa ha fatto l'app con una ricerca, per gli eventi delle ricerche
 |---|---|---|
 | `city_chosen` | `label`, `point`, `place` (facoltativo), `via`: `suggestion`, `recent`, `featured`, `typed` | una città o un luogo scelto in «Explore» |
 | `route_chosen` | `shape` (o `"image"`) o `word`; `index` (0 è A), `of` (1–3), `via`: `start`, `gpx` | il primo uso di un percorso fra quelli offerti |
-| `hint_taken` | `shape` o `word`; `hint`: `try_distance` (con `to_m`) o `catalog_shape`; `distance_m` | «Try N km», o una forma del catalogo dopo un percorso fallito |
+| `hint_taken` | `shape` o `word`; `hint`: `try_distance` (con `to_m`), `catalog_shape` o `better_distance` (con `to_m`, TASK-234 C); `distance_m` | «Try N km», o una forma del catalogo dopo un percorso fallito; `better_distance`: «Try N km» della riga sotto un percorso riuscito |
 
 Risponde sempre `204` a un corpo valido, anche con gli eventi spenti; un
 campo in più, una forma fuori catalogo, un indice fuori dai percorsi offerti
-o una posizione fuori dalla Terra: `422 invalid_request`. Oltre 60 segnali
+o una posizione fuori dalla Terra: `422 invalid_request` (un'app più nuova
+dell'API riceve 422 per un `hint` che l'API non conosce ancora, e lo
+ignora). Oltre 60 segnali
 al minuto, tutti i client insieme, il segnale non si registra (avviso nel
 log). Il `point` si registra come cella di ~1 km; la partenza non c'è mai.
 

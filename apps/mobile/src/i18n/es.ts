@@ -1107,4 +1107,7 @@ export const ES: Table = {
   "Start here": "Empieza aquí",
   "NEAR {city}": "CERCA DE {city}",
   here: "aquí",
+
+  // src/explore/RecommendedRow.tsx (TASK-092)
+  RECOMMENDED: "RECOMENDADAS",
 };

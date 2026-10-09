@@ -1,8 +1,8 @@
 # TASK-203 — Dove va il tempo del piano dalla partenza
 
-**Stato**: Done — A1 e A2 nel motore, stessi percorsi; le (B) all'utente (2026-10-03)
-**Fase**: 4 · **Branch**: `feat/TASK-203-start-plan-time`
-**ADR**: ADR-0162 (ciò che il motore tiene per grafo)
+**Stato**: Done — A1 e A2 nel motore, stessi percorsi (2026-10-03); **parte B**, la ricerca lontana solo dove vicino non si disegna niente (2026-10-08)
+**Fase**: 4 · **Branch**: `feat/TASK-203-start-plan-time`; parte B `feat/TASK-203-b-faster-routes`
+**ADR**: ADR-0162 (ciò che il motore tiene per grafo); ADR-0230 (parte B)
 **Dipende da**: TASK-201 («Seguito»: il tempo è nel piano della partenza)
 
 ## Obiettivo
@@ -65,6 +65,18 @@ Assegnato dal coordinatore il 2026-10-03 su delega dell'utente.
 `docs/ROUTE_ENGINE.md` non descrive queste cache: non cambia. Gli script di
 misura stanno fuori dal repository (scratchpad della sessione), come in
 TASK-201; il modo di rifarli è qui sotto.
+
+**Parte B** (2026-10-08):
+
+- `services/route-engine/route_engine/optimizer.py` (quando parte la
+  ricerca lontana)
+- `services/route-engine/tests/test_far_search_skipped.py` (nuovo)
+- `services/route-engine/tests/test_kept_per_graph.py` (le due impronte
+  cambiate) e `tests/test_optimizer.py` (il test della regola vecchia,
+  tolto): due file fuori dall'elenco del coordinatore, segnalati
+- `apps/mobile/assets/engine/engine.zip` (rifatto)
+- `docs/ROUTE_ENGINE.md` §5, `docs/DECISIONS.md` (ADR-0230),
+  `docs/STATUS.md`, questo file
 
 ## Fuori scope
 
@@ -469,7 +481,134 @@ come dopo). In tutto 98 s prima, 85 dopo.
   l'impronta.
 - Niente da migrare, nessuna variabile nuova, niente nell'app.
 
+## Parte B — la ricerca lontana solo dove vicino non si disegna niente
+
+Il 2026-10-07 l'utente ha detto «ok» a percorsi più veloci anche se
+diversi da quelli di oggi; quale delle due (B) è scelta dall'agente su
+delega (ADR-0230). Fatta il 2026-10-08 sul branch
+`feat/TASK-203-b-faster-routes`.
+
+**Come è misurato.** Stesso Mac (M4, 10 core), Python 3.12.14, NetworkX
+3.7, NumPy 2.5, `main` a `f77f19d1`, senza rete (proxy su una porta
+chiusa, sorgente che rifiuta ogni download), zone della cache del checkout
+principale lette e mai scritte. Lo script (`out/task-203-b/bench.py`, fuori
+dal repository) fa la strada dell'API: `ZoneGraphs` su `OsmnxSource`,
+`plan_nearby(ShapeJob.of_request(richiesta), …)` con 3 partenze vicine in
+processi `spawn`; niente indicazioni né GPX (0,1–0,3 s, uguali prima e
+dopo). Le varianti sono applicate nel processo della richiesta (dove
+stanno la ricerca lontana e l'attesa): `FAR_TRACES` 10; ricerca lontana
+saltata quando il percorso vicino dritto è disegnabile (ADR-0230, provata
+prima con un involucro di `optimizer.search` che restituisce una ricerca
+vuota, poi con il codice vero); `good_grace_s=1`. **Caldo**: un processo,
+zone in memoria, 3 giri e a ogni giro le quattro varianti una dopo l'altra,
+così il carico del Mac pesa su tutte allo stesso modo (load average
+4,5–16, mediana 6,7: altre sessioni al lavoro). **Freddo**: un processo
+nuovo per richiesta. 15 richieste: i cinque casi di Trento (cuore 10 km,
+cerchio 15, «CIAO» 12 tondo, stella 5, «CIAO» 12 con la penna alzata),
+poi dal centro delle zone in cache cuore 10 km, cerchio 15 e stella 5 a
+Bologna, cuore e cerchio a Palermo, cuore e stella a Verona, cuore e
+cerchio a Levico, cuore a Milano (55 746 nodi: senza partenze vicine).
+Tabella completa in `out/task-203-b/report.md` sul Mac.
+
+**Dove la ricerca lontana parte.** In 6 richieste su 15: cuore, cerchio e
+«CIAO» tondo di Trento, cerchio di Bologna, cuore e cerchio di Levico.
+Vince in 2: il cerchio di Trento (0,925 a 1 km; ma vince una partenza
+vicina con 0,970 e quello lontano resta seconda alternativa) e il cerchio
+di Bologna (0,917 a 1 km contro 0,884 dalla partenza, l'unico percorso
+scelto che cambia). Nelle altre 4 brucia 16–19 tracciamenti. Dove vince
+converge presto (7 e 12 tracciamenti): per questo `FAR_TRACES` 10 non
+cambia nessun percorso. Nei 7 casi della città finta di
+`test_kept_per_graph.py` vince 2 volte su 5, di molto: cuore 0,912 contro
+0,819 vicino, stella 0,935 contro 0,831.
+
+**Tempi** (secondi; mediana di 3 giri a caldo, fra parentesi a freddo).
+«Lontana saltata» è la variante provata con l'involucro, che è il codice
+di questo branch più il ritaglio inutile del grafo grande (0,06–0,09 s):
+i suoi tempi sono «dopo», per difetto. Il codice vero, rifatto sui sei
+casi dove la lontana partiva, dà gli stessi percorsi e le stesse
+alternative della variante; i suoi tempi, presi con il Mac a load
+average 20–230 per altre sessioni, non sono confrontabili e non sono
+riportati.
+
+| Caso | nodi | base | `FAR_TRACES` 10 | lontana saltata | attesa 1 s |
+|---|---|---|---|---|---|
+| Trento cuore 10 km | 17 479 | 4,07 (4,48) | 3,93 (4,62) | 2,73 (3,50) | 4,08 (4,68) |
+| Trento cerchio 15 km | 22 617 | 4,86 (5,30) | 4,70 (5,22) | 2,92 (3,38) | 4,91 (5,64) |
+| Trento «CIAO» 12 km tondo | 14 927 | 12,6 (10,1) | 8,44 (8,43) | 6,05 (6,49) | 10,7 (9,48) |
+| Trento stella 5 km | 10 870 | 2,07 (1,34) | 2,67 (1,40) | 1,91 (1,55) | 2,17 (1,43) |
+| Trento «CIAO» penna alzata | 21 474 | 6,47 (4,59) | 6,80 (4,55) | 6,89 (4,62) | 4,55 (3,31) |
+| Bologna cuore 10 km | 22 989 | 1,76 (2,67) | 1,81 (2,70) | 1,62 (2,66) | 1,79 (2,63) |
+| Bologna cerchio 15 km | 32 488 | 4,48 (5,26) | 4,49 (5,24) | 2,70 (3,22) | 4,72 (5,22) |
+| Bologna stella 5 km | 11 324 | 1,06 (1,59) | 1,20 (1,60) | 1,08 (1,61) | 1,27 (1,58) |
+| Palermo cuore 10 km | 13 019 | 1,22 (1,64) | 1,15 (1,76) | 1,04 (1,64) | 1,19 (1,67) |
+| Palermo cerchio 15 km | 17 447 | 1,57 (2,07) | 1,36 (2,08) | 1,58 (2,11) | 1,38 (2,48) |
+| Verona cuore 10 km | 16 442 | 1,25 (2,40) | 1,25 (2,58) | 1,52 (2,25) | 1,52 (2,07) |
+| Verona stella 5 km | 8 762 | 1,14 (1,51) | 0,92 (1,46) | 1,25 (1,48) | 0,93 (1,50) |
+| Levico cuore 10 km | 3 244 | 1,84 (2,12) | 1,45 (1,94) | 1,07 (1,63) | 1,73 (2,19) |
+| Levico cerchio 15 km | 6 813 | 2,63 (3,35) | 2,52 (3,03) | 1,25 (1,83) | 2,87 (3,35) |
+| Milano cuore 10 km | 55 746 | 2,17 (4,24) | 1,98 (3,92) | 1,97 (3,89) | 2,00 (4,00) |
+
+Le differenze sotto 0,3 s fra base e una variante che non cambia niente
+(stella, Palermo, Verona, Milano) sono rumore del carico. La parola tonda
+a caldo oscilla fra 9 e 14 s a base: a freddo (10,1 → 6,5) il dato è più
+pulito. La lettura della zona a freddo aggiunge 0,15–0,5 s in tutti i
+casi, uguale prima e dopo.
+
+**Quali percorsi cambiano** (impronte `request_log.fingerprint`, a caldo,
+uguali a freddo e a ogni giro salvo dove detto):
+
+| Caso | Scelto prima → dopo | Alternative prima → dopo |
+|---|---|---|
+| Trento cuore 10 km | `930707587f852be7` 0,915 (vicina 3, girato 30°) → uguale | `6dbbbd687ce732f6` 0,888 · `2fa18375ca97d9fa` 0,906 → uguali |
+| Trento cerchio 15 km | `78255caddef6e01e` 0,970 (vicina 1) → uguale | `596b462eddebd6d4` 0,937 · `15ed4e9c6ec49d30` 0,924 (quella lontana) → solo la prima |
+| Trento «CIAO» 12 km tondo | `ff71678d47d9f5ce` 0,919 (vicina 2) → uguale | `989ed78b890c461e` 0,854 → uguale |
+| Bologna cerchio 15 km | `92f410723ba86d48` **0,917** a 1 km, 14 341 m → `ea73234980bfba34` **0,884** dalla partenza, 14 800 m | nessuna → nessuna |
+| Levico cuore 10 km | `401b8845618e5ddf` 0,839 (partenza) → uguale | `a8ba06ce4dd6cc33` 0,821 · `51f2083befda6aa4` 0,833 → uguali |
+| Levico cerchio 15 km | `26e0dab6cfcebf6c` 0,906 (vicina 1) → uguale | `09fa7f7b6fada75b` 0,855 · `a8fca2b08fd822be` 0,821 → uguali |
+| le altre 9 | uguali | uguali |
+| città finta, cuore 8 km | `9441bb1743c10811` 0,912 (spostato dalla lontana) → `dc04f92323c0ab6f` 0,819 (vicina 1) | — |
+| città finta, stella 5 km | `7f7106f7b85e4a4a` 0,935 (spostato) → `7f04b4996a3ec2d2` 0,831 (partenza) | — |
+
+Con l'attesa a 1 s cambiano solo le alternative delle parole con la penna
+alzata («CIAO» di Trento: una → nessuna); le alternative della penna
+alzata oscillano già oggi fra i giri, perché le vicine finiscono proprio
+attorno ai 3 s. I cinque casi di Trento di «Misure» non sono più quelli
+del 2026-10-03: dal TASK-232 il cuore e «CIAO» sono girati (30°) e
+scelgono una partenza vicina.
+
+**Scelta** (ADR-0230): la ricerca lontana parte solo se vicino non c'è
+nessun percorso disegnabile. `FAR_TRACES` resta 20 (dimezzarla non cambia
+percorsi ma guadagna solo 0,1–0,4 s sulle forme: il costo fisso resta) e
+`NEARBY_GOOD_GRACE_S` resta 3 s (guadagna solo sulle parole con la penna
+alzata, e toglie loro le alternative; sul server le toglierebbe quasi
+sempre). Le alternative e i numeri sono nell'ADR.
+
+**Test.** `tests/test_far_search_skipped.py` (nuovo): la ricerca lontana
+non parte con un percorso vicino disegnabile e non buono (griglia da
+700 m a est: 0,76, il grafo grande non si legge), parte ancora dove
+vicino non si disegna niente (griglia da 1 km: 1,00 a 1 km), e le
+impronte dei due casi della città finta. In `test_kept_per_graph.py` le
+due impronte sono aggiornate; in `test_optimizer.py` il test della regola
+vecchia (la lontana vince solo se buona, quando vicino non è buono) è
+tolto. `pytest -m "not network"`: motore 1573 passati (2026-10-08, sul
+Mac); `tools/phone_engine/test_phone_engine.py` e
+`services/api/tests/test_paddle_examples.py` verdi (l'impronta degli
+esempi in canoa non copre `optimizer.py`: `paddle_examples.json` non
+cambia).
+
+**Deploy.** Cambia l'impronta del motore: dopo l'aggiornamento del server
+`draw_examples` (circa 40 minuti, con l'ok dell'utente); `engine.zip`
+dell'app rifatto (`tools/phone_engine/phone_engine.py engine`).
+
 ## Esito
+
+**Parte B, 2026-10-08.** La ricerca lontana parte solo dove vicino non
+si disegna niente (ADR-0230): −1,3…−1,9 s sui cuori e cerchi lunghi,
+−3,6…−6,5 s su una parola tonda; 14 percorsi su 15 uguali, il cerchio da
+15 km di Bologna passa da 0,917 (a 1 km) a 0,884 (dalla partenza), due
+casi della città finta perdono 0,09–0,10. `FAR_TRACES` e
+`NEARBY_GOOD_GRACE_S` non cambiano. Dopo il merge: server e
+`draw_examples` con l'ok dell'utente (coordinatore).
 
 Fatto il 2026-10-03. Il tempo del piano dalla partenza è misurato e diviso
 per fase: metà dei casi lunghi è la ricerca lontana, il resto quasi tutto

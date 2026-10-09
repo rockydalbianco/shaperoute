@@ -146,13 +146,53 @@ In coda, dopo o accanto:
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
   2–3,7 s in meno nei casi lunghi; `NEARBY_GOOD_GRACE_S` 3→1, 1,5 s in
-  meno con meno alternative (`tasks/TASK-203.md`).
+  meno con meno alternative (`tasks/TASK-203.md`). **Fatto il
+  2026-10-08 (parte B, ADR-0230)**: la ricerca lontana parte solo dove
+  vicino non si disegna niente; `FAR_TRACES` e `NEARBY_GOOD_GRACE_S` non
+  cambiano. **Resta**: aggiornamento del server e `draw_examples` (circa
+  40 minuti) con l'ok dell'utente.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
+- **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
+  all'agente dall'utente il 2026-10-07). Branch
+  `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:
+  `GET /recommended` (`best_routes.py`, token obbligatorio, nessuna
+  migrazione) ordina i percorsi del catalogo entro 5 km: somiglianza come
+  la scheda la scrive, poi reazioni dei disegni pubblicati, poi corse e
+  preferiti; a parità tutti. In «Explore» la riga «RECOMMENDED» sopra le
+  schede, solo con un account. Il testo nuovo nelle cinque lingue è
+  **confermato dall'utente** (2026-10-08, «ok continua»; es
+  «RECOMENDADAS» al femminile come «rutas»). PR #445. **Aspetta**: la coda
+  dei merge; dopo il merge il server (`best_routes.py`, ok dell'utente,
+  coordinatore) e la pubblicazione dell'app, che può uscire prima: senza
+  `/recommended` la riga non c'è e «Explore» resta com'è.
+  File: `tasks/TASK-092.md`, «File toccati».
+- **TASK-265 — Il dominio getmuw.app** (ADR-0234; scelta dell'utente del
+  2026-10-08). L'utente voleva spostare «il sito» su un'azienda tedesca;
+  saputo che il sito non era online e che Hetzner è già tedesca, è
+  **rimasto su questo server** e ha **comprato `getmuw.app`** su Porkbun.
+  I tre record `A` (`@`, `www`, `api`) puntano al server. **L'API risponde
+  su `https://api.getmuw.app`** dal 2026-10-08 (Caddyfile applicato dal
+  Coordinatore con l'ok dell'utente; certificato Let's Encrypt fino al
+  2027-01-06, si rinnova da solo) accanto a `sslip.io`, che resta.
+  `getmuw.app` e `www` sono per il sito (TASK-237). Come si fa:
+  `DEPLOY.md`, F.14. Il ritorno da Strava resta su `sslip.io`.
+  `tasks/TASK-265.md`. **Done** il 2026-10-08: l'app di `preview` chiama
+  `https://api.getmuw.app` dal gruppo `a39c9509` (vedi «Completato»).
+- **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** in `main`
+  il 2026-10-08 (PR #446, merge `9dcacbf4`; chiesta dall'utente): profilo `production` in `eas.json`,
+  canale `production`. Solo la build dello store ha il runtime dal
+  `fingerprint` (`app.config.ts` con `APP_VARIANT=production`): un update
+  fatto dopo un cambio nativo non le arriva. Expo Go e `preview` restano
+  su `exposdk:57.0.0`, `app.json` non cambia. Come pubblicare per lo
+  store: `DEPLOY.md` A.7. **Aspettano l'utente**: l'account Apple
+  Developer e le cinque domande del task; prima della prima build, le
+  variabili dell'ambiente EAS `production` (oggi vuoto). Da dove
+  riprendere: `tasks/TASK-152.md`, «Esito».
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -171,6 +211,24 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (TASK-152), dominio e pubblicazione, e per il merch il servizio di
   stampa, magliette e prezzi. Come si cambia e come si guarda:
   `SITO.md`. Da dove riprendere: `tasks/TASK-237.md`, «Esito».
+  **Parte A3** in PR (2026-10-08, «fai il sito web per il nuovo nome e
+  aiutami a metterlo online»): il sito dice **MuW**, con il cuore su
+  giallo e la scritta nuova; via il punteggio, aggiunto «Feed». **Messa
+  online** (parte C): aspetta la scelta dell'utente su dove.
+  Poi, lo stesso giorno: **testi confermati dall'utente** («i testi
+  vanno bene così»); online sul server Hetzner con `getmuw.app`, scelta
+  dell'utente: Caddy e DNS di TASK-265, sul server il Coordinatore.
+  **Online su https://getmuw.app dal 2026-10-08** (parte A3 in `main`
+  con la #443, `d7f53269`; copia sul server di `DEPLOY.md` F.14, ok
+  dell'utente): da ripetere dopo ogni merge che cambia `site/`. Restano
+  dell'utente il link per scaricare l'app (dopo l'App Store, TASK-152) e
+  il merch.
+  **Parte D** in PR (2026-10-08): la pagina della privacy,
+  `getmuw.app/privacy/` in cinque lingue, scritta dal testo «Privacy»
+  dell'app, ora **definitivo** con le scelte dell'utente (titolare Luca
+  Pallaoro, email muw2610@gmail.com, basi giuridiche, 8 ottobre 2026) e
+  la frase sulla posizione a telefono bloccato (TASK-261). Il link per
+  scaricare arriva con la prima build TestFlight (scelta dell'utente).
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
@@ -547,6 +605,53 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-261 parte A: la corsa registra anche a telefono bloccato
+  (ADR-0225; chiesto dall'utente il 2026-10-07). In `main` con la #441
+  (`08793f4`, 2026-10-08). Nell'app costruita il GPS va avanti in
+  background con il solo permesso «While using» e la pillola blu di iOS
+  (dipendenza nuova `expo-task-manager`, `UIBackgroundModes` `location`);
+  la pausa automatica funziona come in primo piano; la linea si taglia
+  solo se iOS congela l'app. In Expo Go e su Android tutto come prima,
+  quindi la pubblicazione su `preview` non cambia niente. Testo nuovo del
+  permesso in cinque lingue (`apps/mobile/locales/`), approvato
+  dall'utente. Provato nel simulatore con una build nativa; **la prova
+  sull'iPhone vuole una build nativa** ed è dell'utente. Dopo la prova: la
+  **parte B**, la voce a telefono bloccato (expo-audio, da chiedere), e
+  Android in background, senza numero. Nel checkout principale serve
+  `npm install` per la dipendenza nuova. `tasks/TASK-261.md`.
+- **Pubblicità** — TASK-150: l'utente ha l'account AdMob **da persona**
+  (la partita IVA quando arrivano i guadagni, scelta del 2026-10-02) e ha
+  completato il profilo pagamenti (2026-10-08). La guida è
+  `docs/PUBBLICITA.md`: come e quando paga Google (soglia 70 €, bonifico
+  intorno al 21), i passi, le domande per il commercialista. Prossimi:
+  TASK-152 (App Store) e TASK-153 (annunci veri, unità **nativa** per il
+  Feed). Chiesti dall'utente il 2026-10-08: annunci anche sul sito.
+- **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
+  è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
+  2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.
+  Caddy di apt serve l'API su `https://api.getmuw.app` accanto a
+  `188-245-9-220.sslip.io`, che resta per le app su gruppi vecchi e per il
+  ritorno da Strava; certificato Let's Encrypt fino al 2027-01-06, si
+  rinnova da solo. L'app di `preview` usa il nome nuovo da `main`
+  `08793f41`, gruppo `a39c9509`. Caddyfile e pubblicazione del
+  Coordinatore, ciascuno con l'ok dell'utente. **Resta** il sito su
+  `getmuw.app` e `www` (TASK-237 B, dopo la #443): come si fa in
+  `DEPLOY.md`, F.14. `tasks/TASK-265.md`.
+- **Motore** — TASK-203 parte B: la ricerca lontana («Start here» a 1–2
+  km, ADR-0040) parte solo dove vicino alla partenza non si disegna
+  niente, non più appena il percorso vicino non è buono (ADR-0230; «ok»
+  dell'utente del 2026-10-07 a percorsi più veloci anche se diversi, la
+  scelta fra le due (B) dell'agente su delega). Misurato sul Mac senza
+  rete su 15 richieste in sei città, a caldo e a freddo: −1,3…−1,9 s sui
+  cuori e cerchi lunghi (Trento, Bologna, Levico), −3,6…−6,5 s su una
+  parola tonda; 14 percorsi scelti su 15 uguali, il cerchio da 15 km di
+  Bologna passa da 0,917 a 1 km a 0,884 dalla partenza, il cerchio di
+  Trento perde la seconda alternativa. `FAR_TRACES` 10 (nessun percorso
+  cambia, 0,1–0,4 s) e l'attesa a 1 s (solo parole con la penna alzata,
+  senza alternative) scartati con i numeri (`tasks/TASK-203.md`, «Parte
+  B»). Test nuovo `test_far_search_skipped.py`, due impronte aggiornate in
+  `test_kept_per_graph.py`, `engine.zip` rifatto. PR #440 (2026-10-08). **Resta**: server e `draw_examples` (circa 40 minuti) con
+  l'ok dell'utente.
 - **API e app** — TASK-118: il feed vero, versione semplice (ADR-0227;
   l'ordine è scelta dell'utente del 2026-10-07). `GET /feed`: i propri
   disegni, poi quelli di chi si segue, poi i vicini (50 km dal telefono;

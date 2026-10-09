@@ -49,7 +49,10 @@ test("each sport has its facts and four steps", () => {
       assert.ok(step.title.trim() && step.text.trim());
     }
   }
-  assert.equal(pages.length, 3);
+  assert.deepEqual(
+    pages.map((page) => page.name),
+    ["Feed", "Draw", "Explore", "Profile"],
+  );
 });
 
 test("the steps of a sport are numbered and escaped", () => {
@@ -212,4 +215,19 @@ test("the page has a place for everything main.js fills", () => {
 test("the shop is parked: the page does not load it", () => {
   const html = readFileSync(join(SITE, "index.html"), "utf8");
   assert.doesNotMatch(html, /merch|products\.js/i);
+});
+
+test("the site carries the app's name, MuW, and never the old one", () => {
+  const html = readFileSync(join(SITE, "index.html"), "utf8");
+  assert.match(html, /<title>MuW — /);
+  assert.match(html, /<img class="top__word" src="assets\/muw-logo.svg" alt="MuW"/);
+  assert.match(html, /<link rel="icon" href="assets\/muw-mark.svg"/);
+  for (const file of ["index.html", "content.js", "config.js", "products.js", "styles.css"]) {
+    assert.doesNotMatch(readFileSync(join(SITE, file), "utf8"), /sgrava/i, file);
+  }
+});
+
+test("the guide makes no promise the app dropped: no score", () => {
+  const texts = JSON.stringify({ sports, pages });
+  assert.doesNotMatch(texts, /score/i);
 });

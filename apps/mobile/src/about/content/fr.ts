@@ -1,0 +1,431 @@
+import type { AboutContent, AboutDocument } from "../documents";
+
+/**
+ * «Help», «Terms» and «Privacy» in French (TASK-210 F): the same sections
+ * as `en.ts`, in the same order (a test compares them). The names of
+ * buttons are the ones the app shows in French; the pages as
+ * TASK-210 G names them: «Fil», «Dessiner», «Explorer». «Terms» and «Privacy» are
+ * drafts, as in English, with the same places to fill (the user's choice
+ * of 2026-10-07).
+ */
+
+const UPDATED = "5 octobre 2026";
+/** «Privacy» is final since the user approved it on this day (TASK-237 D). */
+const PRIVACY_UPDATED = "8 octobre 2026";
+
+const help: AboutDocument = {
+  title: "Comment fonctionne MuW",
+  draft: false,
+  updated: null,
+  sections: [
+    {
+      heading: "Ce qu'est MuW",
+      blocks: [
+        "MuW dessine de vrais parcours qui tracent une forme sur la carte. Tu choisis la forme, la distance et le point de départ ; tu obtiens un parcours sur de vraies rues, avec son fichier GPX.",
+        "L'app a trois pages côte à côte, «Fil», «Dessiner» et «Explorer» : glisse vers la gauche ou la droite, ou touche un nom en haut. «Profil» s'ouvre depuis le cercle en haut.",
+      ],
+    },
+    {
+      heading: "Dessiner un parcours",
+      blocks: [
+        {
+          bullets: [
+            "Choisis une forme : un cœur, une étoile, un chat et d'autres, un mot de A à Z, ou le contour de ta propre photo.",
+            "Règle la distance : jusqu'à 21 km à pied, en partant d'où tu es ou d'un lieu que tu cherches.",
+            "Touche «Dessiner le parcours». MuW dessine jusqu'à trois parcours sur de vraies rues, A, B et C : garde celui qui te plaît.",
+            "«Exporter le GPX» te donne le fichier pour ta montre ou pour une autre app.",
+          ],
+        },
+        "Un parcours prend en général quelques secondes ; les plus longs peuvent prendre jusqu'à une minute.",
+      ],
+    },
+    {
+      heading: "Explorer",
+      blocks: [
+        "Des parcours déjà dessinés dans ta ville, prêts à partir : pas d'attente, il suffit d'en choisir un.",
+        "Choisis «Près de moi», une ville proche ou cherche une ville, puis touche un parcours pour le voir sur la carte.",
+      ],
+    },
+    {
+      heading: "Courir un parcours",
+      blocks: [
+        {
+          bullets: [
+            "«Démarrer» lance la course après un court compte à rebours.",
+            "Une voix t'annonce chaque virage à l'avance. La carte montre la partie déjà courue et celle qui reste devant toi.",
+            "«Pause» arrête le chrono et «Reprendre» le relance.",
+            "Pour terminer la course, maintiens le bouton stop : un appui court ne la termine pas.",
+          ],
+        },
+        "«Courir sans parcours» enregistre quand même ta course, sans forme à suivre.",
+        "Un parcours est une suggestion tirée des données de la carte : garde les yeux sur la route et respecte le code de la route.",
+      ],
+    },
+    {
+      heading: "Garder tes courses et tes parcours",
+      blocks: [
+        "Avec un compte, «Enregistrer» à la fin d'une course la garde dans «Mes activités», dans «Profil» ; «Ignorer» la jette. Sans connexion, la course attend sur le téléphone et part plus tard.",
+        "Le cœur sur un parcours de la carte le garde dans «Favoris».",
+      ],
+    },
+    {
+      heading: "Publier et partager",
+      blocks: [
+        "Une course enregistrée est privée : toi seul la vois. Active «Publique», à la fin de la course ou sur une course de «Mes activités», et les autres membres la voient comme un dessin sur ton profil, sans ses 200 premiers et 200 derniers mètres.",
+        "«Partager» crée une image de ta course à envoyer où tu veux.",
+      ],
+    },
+    {
+      heading: "Fil et amis",
+      blocks: [
+        "«Fil» montre des dessins pour trouver des idées : touches-en un pour ouvrir son parcours et le démarrer.",
+        "La loupe en haut de «Fil» trouve les autres membres par leur nom. Sur un profil, tu peux toucher «Suivre» ; tes demandes, tes abonnés et les personnes que tu suis sont dans «Profil».",
+        "Sur le dessin public d'un membre, tu peux réagir avec un emoji, envoyer un super like et écrire un commentaire. Les commentaires négatifs ne sont pas acceptés.",
+      ],
+    },
+    {
+      heading: "Course, vélo, pagaie",
+      blocks: [
+        "Choisis ton sport avec le bouton à côté de ton profil, ou dans «Réglages».",
+        {
+          bullets: [
+            "Course : jusqu'à 21 km sur de vraies rues, avec la voix virage par virage.",
+            "Vélo : de 10 à 30 km, sur les pistes cyclables et les rues ouvertes aux vélos. Les virages sont annoncés à l'avance et l'écran montre ta vitesse.",
+            "Pagaie : de 1 à 5 km sur les lacs et la mer, près du rivage, pour ton canoë, ton kayak ou ta planche. Tu suis la ligne sur la carte.",
+          ],
+        },
+        "Sur l'eau, lis l'avis de sécurité avant de partir : porte un gilet de sauvetage, vérifie la météo et le vent, respecte les règles locales. Le parcours reste à moins de 1 km du rivage : cela ne le rend ni sûr ni autorisé.",
+      ],
+    },
+    {
+      heading: "Réglages",
+      blocks: [
+        {
+          bullets: [
+            "Photo de profil, e-mail et numéro de téléphone. Le numéro est facultatif et toi seul le vois.",
+            "Langue : English, Deutsch, Italiano, Español ou Français. La voix la suit.",
+            "Cartes hors ligne : le téléphone garde les cartes autour de toi et dessine les parcours tout seul ; «Supprimer» libère l'espace.",
+            "Unités : celles de ton téléphone, kilomètres ou miles. Avec les miles, les distances, l'allure et la voix suivent : une annonce à chaque mile, les virages en pieds.",
+            "Notifications : deux interrupteurs, e-mail et push, éteints jusqu'à ce que tu les allumes. MuW n'envoie pas encore de notifications : ton choix est gardé avec ton compte pour le jour où il le fera.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Ton compte",
+      blocks: [
+        "Tu t'inscris avec un e-mail, un nom d'utilisateur et un mot de passe. Tu dois avoir au moins 16 ans.",
+        "Il n'est pas encore possible de réinitialiser un mot de passe oublié : garde bien le tien.",
+        "«Se déconnecter» et «Supprimer le compte» sont en bas de «Réglages». Supprimer le compte supprime tout ce qui est à toi, tout de suite, et ne peut pas être annulé.",
+      ],
+    },
+    {
+      heading: "Questions",
+      blocks: ["Écris à [contact email]."],
+    },
+  ],
+};
+
+const terms: AboutDocument = {
+  title: "Conditions d'utilisation",
+  draft: true,
+  updated: UPDATED,
+  sections: [
+    {
+      heading: "Qui fournit MuW",
+      blocks: [
+        "MuW est fournie par [name] («nous»). Tu peux nous écrire à [contact email].",
+        "Ces conditions sont l'accord entre toi et nous pour l'utilisation de l'app MuW. En créant un compte ou en utilisant l'app, tu les acceptes.",
+      ],
+    },
+    {
+      heading: "Ce qu'est MuW",
+      blocks: [
+        "MuW dessine des parcours qui tracent une forme sur la carte, pour courir, rouler ou pagayer ; elle enregistre ton activité pendant que tu les suis ; et elle permet aux membres de publier leurs dessins, de se suivre, de réagir et de commenter.",
+      ],
+    },
+    {
+      heading: "Qui peut l'utiliser",
+      blocks: [
+        "Tu dois avoir au moins 16 ans pour créer un compte. Dessiner un parcours ne demande pas de compte.",
+      ],
+    },
+    {
+      heading: "Ton compte",
+      blocks: [
+        {
+          bullets: [
+            "Tu t'inscris avec une adresse e-mail, un nom d'utilisateur et un mot de passe. Le compte est à toi seul : n'utilise pas le compte d'une autre personne et ne te fais pas passer pour quelqu'un d'autre.",
+            "Garde ton mot de passe secret. Tu es responsable de ce qui est fait avec ton compte. Il n'est pas encore possible de réinitialiser un mot de passe oublié.",
+            "Si tu ajoutes un numéro de téléphone, ajoute seulement un numéro qui est le tien.",
+            "Tu peux te déconnecter ou supprimer ton compte à tout moment depuis «Réglages».",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Comment utiliser MuW",
+      blocks: [
+        "Utilise l'app dans le respect de la loi et des autres membres. En particulier, tu ne dois pas :",
+        {
+          bullets: [
+            "publier de contenu offensant, haineux, menaçant ou harcelant, ni dans ton nom d'utilisateur, ta bio, ta photo, tes titres ou tes commentaires ;",
+            "publier de contenu que tu n'as pas le droit de publier, ni les données personnelles d'autres personnes sans leur permission ;",
+            "essayer de casser, de surcharger ou de contourner le service, ni collecter des données sur ses membres par des moyens automatisés.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Ce que tu publies",
+      blocks: [
+        "Tes courses, tes dessins, leurs titres, ton profil et tes commentaires restent à toi.",
+        "En les publiant, tu nous permets de les garder et de les montrer dans l'app aux autres membres, seulement pour faire fonctionner le service : une autorisation gratuite et non exclusive qui prend fin quand tu supprimes le contenu ou ton compte.",
+        "L'app n'accepte pas les commentaires contenant des mots offensants : un filtre automatique de mots les refuse. Nous pouvons retirer un contenu contraire à ces conditions. Pour nous signaler un contenu qui ne devrait pas être là, écris à [contact email].",
+      ],
+    },
+    {
+      heading: "Sécurité",
+      blocks: [
+        "Un parcours est une suggestion calculée à partir des données de la carte. Personne ne l'a parcouru pour toi, et la carte peut être incomplète ou dépassée : une rue peut être fermée, privée, sans trottoir ou dangereuse.",
+        {
+          bullets: [
+            "Tu es responsable de l'endroit où tu vas. Respecte le code de la route et la signalisation, même quand le parcours ou la voix disent autre chose.",
+            "Vérifie les conditions avant et pendant ton activité : circulation, lumière, météo, le terrain, ta propre santé et ta forme.",
+            "Ne regarde pas le téléphone quand tu te déplaces dans la circulation.",
+            "Sur l'eau, sois encore plus prudent : porte un gilet de sauvetage, vérifie la météo et le vent, respecte les règles locales (zones de baignade, chenaux, ports). MuW ne les connaît pas. Un parcours près du rivage n'est pas pour autant sûr ni autorisé.",
+          ],
+        },
+        "Les distances, les temps et la vitesse viennent du GPS du téléphone et sont des estimations.",
+      ],
+    },
+    {
+      heading: "Pas de garantie, et les limites de notre responsabilité",
+      blocks: [
+        "Nous travaillons pour que MuW fonctionne et que ses parcours soient bons, mais l'app est fournie telle quelle : nous ne promettons pas qu'elle soit toujours disponible ou sans erreurs, qu'un parcours puisse être terminé, ni que ses mesures soient exactes.",
+        "Dans la mesure où la loi le permet, nous ne sommes pas responsables des dommages qui découlent de l'utilisation de l'app ou de ses parcours. Rien dans ces conditions ne limite une responsabilité que la loi ne permet pas de limiter, ni les droits que tu as en tant que consommateur.",
+      ],
+    },
+    {
+      heading: "Publicité",
+      blocks: [
+        "MuW affiche de la publicité, fournie par Google AdMob, parmi les dessins de «Fil», marquée «Sponsorisé». Une annonce ouvre ce que l'annonceur indique : son contenu n'est pas le nôtre.",
+      ],
+    },
+    {
+      heading: "Services d'autres",
+      blocks: [
+        {
+          bullets: [
+            "Les cartes viennent d'OpenFreeMap et des données d'OpenStreetMap (© contributeurs d'OpenStreetMap).",
+            "Les lieux sont recherchés avec Geoapify.",
+            "Si tu connectes Strava, les courses que tu y envoies suivent les conditions et les réglages de confidentialité de Strava.",
+            "Une image que tu partages sort par le menu de partage du téléphone : l'app qui la reçoit a ses propres conditions.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Modifications",
+      blocks: [
+        "Nous pouvons modifier l'app, et ajouter ou retirer ce qu'elle fait. Quand nous modifions ces conditions, nous changeons la date en haut ; si une modification est importante, nous la ferons connaître avant qu'elle s'applique.",
+      ],
+    },
+    {
+      heading: "Fermer le compte",
+      blocks: [
+        "Tu peux arrêter d'utiliser MuW et supprimer ton compte à tout moment : «Confidentialité» dit ce qui est supprimé et quand. Nous pouvons suspendre ou fermer un compte contraire à ces conditions.",
+      ],
+    },
+    {
+      heading: "Droit applicable",
+      blocks: [
+        "Ces conditions sont régies par [governing law]. Si tu es un consommateur, tu gardes les protections que la loi du pays où tu vis ne permet pas d'écarter.",
+      ],
+    },
+    {
+      heading: "Contact",
+      blocks: ["[name] · [contact email]"],
+    },
+  ],
+};
+
+const privacy: AboutDocument = {
+  title: "Politique de confidentialité",
+  draft: false,
+  updated: PRIVACY_UPDATED,
+  sections: [
+    {
+      heading: "Qui est responsable de tes données",
+      blocks: [
+        "Le responsable du traitement de tes données personnelles est Luca Pallaoro. Pour tout ce qui concerne tes données, écris à muw2610@gmail.com.",
+        "Ce texte dit quelles données MuW traite, pourquoi, où elles sont gardées et combien de temps, et ce que tu peux faire à ce sujet.",
+      ],
+    },
+    {
+      heading: "Sans compte",
+      blocks: [
+        "Tu peux dessiner des parcours, explorer et courir sans compte. La course elle-même ne quitte alors pas le téléphone. Ce qui quitte quand même le téléphone est décrit sous «Les parcours que tu demandes», «Ta position» et «Les autres qui reçoivent des données».",
+      ],
+    },
+    {
+      heading: "Ton compte",
+      blocks: [
+        {
+          bullets: [
+            "Ton adresse e-mail et ton nom d'utilisateur, pour te laisser entrer et distinguer les comptes.",
+            "Ton mot de passe, gardé seulement sous forme de hash (Argon2id) : nous ne gardons ni ne voyons jamais le mot de passe lui-même.",
+            "Le jour de ton inscription et le moment où tu as confirmé avoir au moins 16 ans.",
+            "La session de chaque téléphone depuis lequel tu t'es connecté : le téléphone garde un jeton dans son stockage sécurisé, le serveur n'en garde qu'un hash. Une session prend fin 90 jours après sa dernière utilisation, ou quand tu te déconnectes.",
+            "Tes deux choix de notifications dans «Réglages», e-mail et push : les deux sont éteints jusqu'à ce que tu les allumes, et MuW n'envoie pas encore de notifications.",
+          ],
+        },
+        "Ton adresse e-mail n'est jamais montrée aux autres membres.",
+      ],
+    },
+    {
+      heading: "Ton numéro de téléphone (facultatif)",
+      blocks: [
+        "Tu peux ajouter un numéro de téléphone dans «Réglages». Il est facultatif : l'app fonctionne de la même façon sans lui.",
+        "Il est privé : toi seul le vois. Il n'est jamais sur ton profil, dans la recherche ni dans aucune liste. Il sert à ce que les amis qui ont déjà ton numéro puissent trouver ton compte, avec une recherche depuis les contacts du téléphone qui n'existe pas encore.",
+        "Nous ne vérifions pas le numéro et nous n'y envoyons aucun message. Tu peux le retirer à tout moment depuis «Réglages» ; il est supprimé avec le compte.",
+      ],
+    },
+    {
+      heading: "Ton profil",
+      blocks: [
+        "Ton nom d'utilisateur, ta bio et ta photo de profil sont ce que les autres membres voient de toi. La photo est gardée sous forme d'une petite image carrée, sans les données que l'appareil photo y ajoute. Toute personne ayant un compte peut chercher les membres par nom d'utilisateur.",
+      ],
+    },
+    {
+      heading: "Tes courses et leurs traces GPS",
+      blocks: [
+        "Avec un compte, quand tu touches «Enregistrer» à la fin d'une course, toute la course part vers notre serveur : chaque position avec son heure, les pauses, le parcours suivi, la distance, la durée, le score et le nom du lieu. Avec «Ignorer», rien n'est envoyé.",
+        "Une course enregistrée est privée : seul ton compte la voit. Elle reste jusqu'à ce que tu la supprimes de «Mes activités» ou que tu supprimes ton compte.",
+        "Une course commence et finit souvent devant ta porte. C'est pourquoi une course ne devient visible pour les autres membres que si tu actives «Publique», et ils voient alors la trace sans ses 200 premiers et 200 derniers mètres, avec le titre que tu lui as donné, et sans les temps, les pauses ni le parcours prévu.",
+      ],
+    },
+    {
+      heading: "Favoris, commentaires, réactions et abonnements",
+      blocks: [
+        {
+          bullets: [
+            "Un parcours que tu gardes dans «Favoris» est enregistré en entier, avec sa ligne, qui commence souvent près de chez toi. Seul ton compte le voit, jusqu'à ce que tu le retires ou que tu supprimes le compte.",
+            "Tes commentaires et tes réactions sous un dessin sont vus par les membres qui voient ce dessin. Tu peux supprimer tes propres commentaires.",
+            "Les personnes que tu suis, celles qui te suivent et les demandes d'abonnement sont gardées avec ton compte.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Les parcours que tu demandes",
+      blocks: [
+        "Pour dessiner un parcours, l'app envoie à notre serveur le départ, la forme ou le mot et la distance. Quand le téléphone a la carte hors ligne de la zone, il dessine le parcours tout seul.",
+        "Les cartes hors ligne viennent de notre serveur : celle autour de toi et, à l'avance, celles des villes proches. Pour plafonner ces téléchargements, le serveur les compte par jour, selon un numéro anonyme que l'app crée pour le téléphone ; ce compte n'est gardé qu'en mémoire.",
+        "Les mots qui décrivent une forme sont lus sur notre serveur et ne sont envoyés à aucun service d'IA externe.",
+        "Une photo que tu choisis pour un dessin va une fois vers notre serveur, pour en trouver le contour : le serveur ne la garde pas et ne l'inscrit pas dans ses journaux.",
+        "Pour améliorer la recherche, nous gardons un événement pour chaque recherche et pour quelques utilisations de l'app (un parcours choisi, un fichier GPX exporté, une course notée) : le texte en minuscules, 200 caractères au plus, avec les e-mails et les longs numéros masqués ; les positions seulement sous forme de carrés d'environ 1 km ; rien qui dise qui tu es ni de quel téléphone il s'agissait. Ces événements sont gardés sans limite de temps.",
+      ],
+    },
+    {
+      heading: "Ta position",
+      blocks: [
+        "La position du téléphone est utilisée sur le téléphone, pour commencer un parcours là où tu es et pour suivre ta course. Elle va vers notre serveur comme départ d'un parcours que tu demandes, dans une course que tu enregistres, et avec la recherche d'un lieu, pour montrer d'abord les lieux près de toi.",
+        "Sur iPhone, pendant une course que tu as lancée, l'app continue de suivre ta position même téléphone verrouillé ou avec une autre app ouverte, jusqu'à ce que tu arrêtes la course ; l'iPhone l'indique par une marque bleue en haut de l'écran. MuW demande la position seulement pendant que tu utilises l'app, jamais « Toujours ».",
+        "Comme tout service internet, notre serveur voit l'adresse internet (IP) d'où vient une requête pendant qu'il y répond. Le journal du serveur n'écrit pas de positions, et la base de données ne contient aucune adresse IP.",
+        "Un registre des demandes de parcours, avec leur départ, existe pour reproduire un défaut. Il est éteint sur notre serveur ; allumé, il contient 10 Mo au plus, puis les lignes les plus anciennes sont perdues.",
+      ],
+    },
+    {
+      heading: "Publicité",
+      blocks: [
+        "MuW affiche des annonces de Google AdMob parmi les dessins de «Fil». La première fois que tu ouvres «Fil», le formulaire de consentement de Google te demande ton choix là où il en faut un ; tant que des annonces ne peuvent pas être demandées, aucune n'est affichée. Sur iPhone, l'app ne demande pas à te suivre à travers d'autres apps et les annonces sont demandées sans l'identifiant publicitaire.",
+        "Google traite ce que son logiciel publicitaire collecte selon sa propre politique de confidentialité.",
+      ],
+    },
+    {
+      heading: "Strava",
+      blocks: [
+        "Une course ne va vers Strava que quand tu le demandes, et seulement après que tu as connecté ton profil Strava. Tant qu'il est connecté, notre serveur garde ton nom Strava et les clés que Strava nous a données pour ton profil. Nous envoyons alors à Strava la trace avec ses temps, le nom et une ligne de description. Nous demandons à Strava seulement l'autorisation d'ajouter des activités, jamais de lire les tiennes. Sur Strava, l'activité suit tes réglages de confidentialité Strava, pas ceux de MuW.",
+      ],
+    },
+    {
+      heading: "Les autres qui reçoivent des données",
+      blocks: [
+        {
+          bullets: [
+            "Hetzner héberge notre serveur et ses sauvegardes, en Allemagne.",
+            "Geoapify reçoit les recherches de lieux et des villes près de toi, avec la position, et, pour nommer le lieu d'une course enregistrée, son départ arrondi à environ 1 km : jamais ta porte, la course ni qui tu es. Si notre serveur ne répond pas, une recherche de lieu va à Photon (komoot) à la place.",
+            "OpenFreeMap fournit la carte : comme tout service de cartes, il voit quelle zone tu regardes.",
+            "Le service Overpass des données OpenStreetMap est interrogé par notre serveur pour la carte d'une zone qu'il n'a pas encore : il voit quelle zone, pas qui a demandé.",
+            "unpkg fournit la bibliothèque de la carte au démarrage de l'app.",
+            "Expo fournit les mises à jour de l'app.",
+            "Google AdMob et Strava, comme dit plus haut.",
+          ],
+        },
+        "Une image de ta course faite avec «Partager» est créée sur le téléphone et ne le quitte que par le menu de partage, vers l'endroit où tu l'envoies.",
+      ],
+    },
+    {
+      heading: "Où sont tes données et pour combien de temps",
+      blocks: [
+        {
+          bullets: [
+            "Sur notre serveur en Allemagne, tant que tu as le compte.",
+            "Quand tu supprimes ton compte, tout ce qui est à toi est supprimé tout de suite : profil, photo, numéro de téléphone, courses, dessins, favoris, commentaires, réactions et abonnements.",
+            "Une sauvegarde de la base de données est faite chaque nuit et gardée 13 jours : un compte supprimé sort de toutes les sauvegardes en 14 jours au plus.",
+            "Sur ton téléphone : la session, tes choix (langue, sport), les cartes hors ligne et les courses qui attendent encore d'être envoyées.",
+          ],
+        },
+        "La connexion entre l'app et notre serveur est chiffrée (HTTPS).",
+      ],
+    },
+    {
+      heading: "Pourquoi nous pouvons utiliser tes données",
+      blocks: [
+        {
+          bullets: [
+            "Pour te fournir le service que tu demandes (contrat) : ton compte, ton profil, les parcours que tu demandes, et les courses, favoris, commentaires, réactions et abonnements que tu enregistres.",
+            "Notre intérêt légitime à faire fonctionner MuW, à la garder sûre et à l'améliorer : les courts journaux du serveur, les comptages qui limitent les téléchargements de cartes et les événements de recherche, qui ne disent rien de qui tu es.",
+            "Ton consentement : le numéro de téléphone que tu choisis d'ajouter, la connexion à Strava et les publicités là où le formulaire de Google le demande. Tu peux retirer un consentement à tout moment ; ce qui a été fait avant reste licite.",
+            "Une obligation légale, quand une loi nous demande de conserver ou de remettre des données.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Tes droits",
+      blocks: [
+        "Tu peux, à tout moment :",
+        {
+          bullets: [
+            "voir et corriger tes données : nom d'utilisateur, bio et photo dans «Profil», e-mail et numéro de téléphone dans «Réglages» ;",
+            "supprimer une course de «Mes activités», un favori, un commentaire, ou le compte entier depuis «Réglages», «Supprimer le compte» ;",
+            "nous demander une copie de tes données, ou d'arrêter ou de limiter une utilisation ;",
+            "retirer un consentement que tu as donné ;",
+            "porter plainte auprès de l'autorité de protection des données de ton pays (en Italie, le Garante per la protezione dei dati personali).",
+          ],
+        },
+        "Pour tout ce que tu ne peux pas faire depuis l'app, écris à muw2610@gmail.com.",
+      ],
+    },
+    {
+      heading: "Enfants",
+      blocks: [
+        "Les comptes MuW sont pour les personnes d'au moins 16 ans. Si tu penses qu'une personne plus jeune a un compte, écris-nous et nous le supprimerons.",
+      ],
+    },
+    {
+      heading: "Modifications de ce texte",
+      blocks: [
+        "Quand ce texte change, nous changeons la date en haut ; si une modification est importante, nous la ferons connaître avant qu'elle s'applique.",
+      ],
+    },
+    {
+      heading: "Contact",
+      blocks: ["Luca Pallaoro · muw2610@gmail.com"],
+    },
+  ],
+};
+
+export const FR: AboutContent = { help, terms, privacy };

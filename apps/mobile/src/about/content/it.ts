@@ -3,11 +3,13 @@ import type { AboutContent, AboutDocument } from "../documents";
 /**
  * «Help», «Terms» and «Privacy» in Italian (TASK-184, ADR-0205): the same
  * sections as `en.ts`, in the same order (a test compares them). The names
- * of pages and buttons are the ones the app shows in Italian today: some
- * are still in English there (TASK-210).
+ * of pages and buttons are the ones the app shows in Italian, the pages'
+ * as TASK-210 G names them: «Feed», «Disegna», «Esplora».
  */
 
 const UPDATED = "5 ottobre 2026";
+/** «Privacy» is final since the user approved it on this day (TASK-237 D). */
+const PRIVACY_UPDATED = "8 ottobre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -18,7 +20,7 @@ const help: AboutDocument = {
       heading: "Che cos'è MuW",
       blocks: [
         "MuW disegna percorsi veri che sulla mappa tracciano una forma. Scegli la forma, la distanza e da dove partire: ottieni un percorso su strade vere, con il suo file GPX.",
-        "L'app ha tre pagine affiancate, «Feed», «Draw» ed «Explore»: scorri a destra o a sinistra, oppure tocca un nome in alto. «Profilo» si apre dal cerchio in alto.",
+        "L'app ha tre pagine affiancate, «Feed», «Disegna» ed «Esplora»: scorri a destra o a sinistra, oppure tocca un nome in alto. «Profilo» si apre dal cerchio in alto.",
       ],
     },
     {
@@ -28,15 +30,15 @@ const help: AboutDocument = {
           bullets: [
             "Scegli una forma: un cuore, una stella, un gatto e altre, una parola dalla A alla Z, o il contorno di una tua foto.",
             "Scegli la distanza: fino a 21 km a piedi, partendo da dove sei o da un luogo che cerchi.",
-            "Tocca «Draw route». MuW disegna fino a tre percorsi su strade vere, A, B e C: tieni quello che ti piace.",
-            "«Export GPX» ti dà il file per l'orologio o per un'altra app.",
+            "Tocca «Disegna il percorso». MuW disegna fino a tre percorsi su strade vere, A, B e C: tieni quello che ti piace.",
+            "«Esporta GPX» ti dà il file per l'orologio o per un'altra app.",
           ],
         },
         "Un percorso di solito arriva in pochi secondi; i più lunghi possono chiedere fino a un minuto.",
       ],
     },
     {
-      heading: "Explore",
+      heading: "Esplora",
       blocks: [
         "Percorsi già disegnati nella tua città, pronti da correre: niente attesa, basta sceglierne uno.",
         "Scegli «Vicino a me», un paese vicino o cerca una città, poi tocca un percorso per vederlo sulla mappa.",
@@ -47,9 +49,9 @@ const help: AboutDocument = {
       blocks: [
         {
           bullets: [
-            "«Start» fa partire la corsa dopo un breve conto alla rovescia.",
+            "«Parti» fa partire la corsa dopo un breve conto alla rovescia.",
             "Una voce ti dice ogni svolta in anticipo. La mappa mostra il tratto già corso e quello ancora davanti.",
-            "«Pause» ferma il tempo e «Resume» lo fa ripartire.",
+            "«Pausa» ferma il tempo e «Riprendi» lo fa ripartire.",
             "Per finire la corsa tieni premuto il pulsante di stop: un tocco breve non la chiude.",
           ],
         },
@@ -60,7 +62,7 @@ const help: AboutDocument = {
     {
       heading: "Tenere corse e percorsi",
       blocks: [
-        "Con un account, «Salva» a fine corsa la tiene in «Le mie attività», in «Profilo»; «Discard» la butta via. Senza rete la corsa aspetta sul telefono e parte dopo.",
+        "Con un account, «Salva» a fine corsa la tiene in «Le mie attività», in «Profilo»; «Scarta» la butta via. Senza rete la corsa aspetta sul telefono e parte dopo.",
         "Il cuore su un percorso sulla mappa lo tiene fra i «Preferiti».",
       ],
     },
@@ -85,9 +87,9 @@ const help: AboutDocument = {
         "Scegli lo sport con il pulsante accanto al profilo, o in «Impostazioni».",
         {
           bullets: [
-            "Corsa («Run»): fino a 21 km su strade vere, con la voce svolta per svolta.",
-            "Bici («Bike»): da 10 a 30 km, su ciclabili e strade aperte alle bici. Le svolte sono dette in anticipo e lo schermo mostra la velocità.",
-            "Canoa («Paddle»): da 1 a 5 km su laghi e mare, vicino alla riva, in canoa, kayak o SUP. Segui la linea sulla mappa.",
+            "Corsa: fino a 21 km su strade vere, con la voce svolta per svolta.",
+            "Bici: da 10 a 30 km, su ciclabili e strade aperte alle bici. Le svolte sono dette in anticipo e lo schermo mostra la velocità.",
+            "Canoa: da 1 a 5 km su laghi e mare, vicino alla riva, in canoa, kayak o SUP. Segui la linea sulla mappa.",
           ],
         },
         "Sull'acqua leggi l'avviso di sicurezza prima di partire: indossa il giubbotto salvagente, controlla il meteo e il vento, rispetta le regole del posto. Il percorso resta entro 1 km dalla riva: questo non lo rende sicuro né permesso.",
@@ -248,13 +250,13 @@ const terms: AboutDocument = {
 
 const privacy: AboutDocument = {
   title: "Informativa sulla privacy",
-  draft: true,
-  updated: UPDATED,
+  draft: false,
+  updated: PRIVACY_UPDATED,
   sections: [
     {
       heading: "Chi è responsabile dei tuoi dati",
       blocks: [
-        "Il titolare del trattamento dei tuoi dati personali è [name]. Per tutto ciò che riguarda i tuoi dati, scrivi a [contact email].",
+        "Il titolare del trattamento dei tuoi dati personali è Luca Pallaoro. Per tutto ciò che riguarda i tuoi dati, scrivi a muw2610@gmail.com.",
         "Questo testo dice quali dati tratta MuW, perché, dove stanno e per quanto tempo, e che cosa puoi fare.",
       ],
     },
@@ -327,6 +329,7 @@ const privacy: AboutDocument = {
       heading: "La tua posizione",
       blocks: [
         "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server come partenza di un percorso che chiedi, dentro una corsa che salvi, e con la ricerca di un luogo, per mettere prima i luoghi vicini a te.",
+        "Su iPhone, durante una corsa che hai fatto partire, l'app continua a seguire la tua posizione anche a telefono bloccato o con un'altra app aperta, finché non fermi la corsa; l'iPhone lo mostra con un segno blu in cima allo schermo. MuW chiede la posizione solo mentre usi l'app, mai «Sempre».",
         "Come ogni servizio su internet, il nostro server vede l'indirizzo internet (IP) da cui arriva una richiesta mentre le risponde. Il log del server non scrive posizioni, e nel database non ci sono indirizzi IP.",
         "Un registro delle richieste di percorso, con la loro partenza, esiste per riprodurre un difetto. Sul nostro server è spento; acceso, tiene al massimo 10 MB, poi le righe più vecchie si perdono.",
       ],
@@ -378,7 +381,14 @@ const privacy: AboutDocument = {
     {
       heading: "Perché possiamo usare i tuoi dati",
       blocks: [
-        "[basi giuridiche: da completare prima che questo testo sia definitivo]",
+        {
+          bullets: [
+            "Per darti il servizio che chiedi (contratto): il tuo account, il tuo profilo, i percorsi che chiedi, e le corse, i preferiti, i commenti, le reazioni e i follow che salvi.",
+            "Il nostro legittimo interesse a far funzionare MuW, a tenerla sicura e a migliorarla: i brevi registri del server, i conteggi che limitano gli scaricamenti delle mappe e gli eventi delle ricerche, che non dicono nulla di chi sei.",
+            "Il tuo consenso: il numero di telefono che scegli di aggiungere, il collegamento a Strava e la pubblicità dove il modulo di Google lo chiede. Puoi ritirare un consenso in qualsiasi momento; quello che è stato fatto prima resta lecito.",
+            "Un obbligo di legge, quando una legge ci chiede di conservare o di consegnare dei dati.",
+          ],
+        },
       ],
     },
     {
@@ -394,7 +404,7 @@ const privacy: AboutDocument = {
             "fare reclamo all'autorità per la protezione dei dati del tuo paese (in Italia, il Garante per la protezione dei dati personali).",
           ],
         },
-        "Per tutto ciò che non puoi fare dall'app, scrivi a [contact email].",
+        "Per tutto ciò che non puoi fare dall'app, scrivi a muw2610@gmail.com.",
       ],
     },
     {
@@ -411,7 +421,7 @@ const privacy: AboutDocument = {
     },
     {
       heading: "Contatti",
-      blocks: ["[name] · [contact email]"],
+      blocks: ["Luca Pallaoro · muw2610@gmail.com"],
     },
   ],
 };

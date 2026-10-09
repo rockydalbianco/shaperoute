@@ -1,10 +1,8 @@
 # TASK-237 — Il sito web, con la sezione «Merch» per le magliette
 
-**Stato**: In corso — parte A (la pagina e la vetrina) in `main` (PR
-#325, `f8e68b6`, 2026-10-05); parte A2 (la pagina diventa la guida
-dell'app, il merch messo da parte) in `main` (PR #335, `8f23ff4`,
-2026-10-05); il link per
-scaricare, la pubblicazione e il merch aspettano l'utente
+**Stato**: In corso — il sito è **online su https://getmuw.app** dal
+2026-10-08 (parti A, A2, A3 e C fatte); restano dell'utente il link per
+scaricare l'app (dopo l'App Store) e il merch (parte B, messo da parte)
 **Fase**: 4 · **Branch**: `feat/TASK-237-website-merch`
 **ADR**: ADR-0201
 
@@ -43,6 +41,12 @@ Letta così; l'utente ha poi confermato lo sport e i disegni (2026-10-05:
    era «sport», confermato), e una forma e una distanza da provare.
 5. **I dieci post migliori**: dieci disegni presi da quelli dell'app.
 
+## La terza richiesta dell'utente (2026-10-08)
+
+«Fai il sito web per il nuovo nome, grazie, e aiutami a metterlo online.»
+Il nuovo nome è **MuW** (ADR-0224, TASK-260), con il logo scelto
+dall'utente il 2026-10-06: il cuore su giallo e la scritta «MuW».
+
 ## Contesto da leggere
 
 - `docs/SITO.md`
@@ -69,6 +73,30 @@ Letta così; l'utente ha poi confermato lo sport e i disegni (2026-10-05:
 5. «Get the app»: segnaposto, e `site/config.js` per il link.
 6. L'aspetto: griglia da mappa, etichette a spaziatura fissa, la linea
    gialla che brilla.
+
+**Parte A3 — il nome MuW** (terza PR):
+
+1. Nome, segno e scritta di MuW nella pagina, nell'icona della scheda e
+   in fondo; nessun «Sgrava» nei testi del sito.
+2. I testi allineati all'app di oggi: niente punteggio a fine corsa
+   (TASK-241), «Feed» fra le pagine dell'app (TASK-118).
+
+**Parte C — metterlo online** (fatta): sul server Hetzner, dal Caddy, su
+`getmuw.app` (scelta dell'utente, 2026-10-08; Caddy e DNS di TASK-265).
+
+**Parte D — la pagina della privacy** (chiesta dal Coordinatore il
+2026-10-08: Apple la vuole per TestFlight esterno, TASK-152 B):
+
+1. `getmuw.app/privacy/` in inglese, più `it/`, `de/`, `fr/`, `es/`,
+   scritte da `site/tools/make_privacy.mjs` dal testo «Privacy»
+   dell'app, senza copiarlo a mano; un test le confronta.
+2. I dati che mancavano, chiesti all'utente uno per volta: titolare,
+   email, basi giuridiche, data e stato. Scritti una volta sola nel testo
+   dell'app (decisione del Coordinatore), quindi uguali in app e sito.
+3. Il testo verificato contro il codice: la posizione a telefono
+   bloccato durante la corsa (TASK-261) mancava ed è aggiunta; punteggio
+   ed evento «run_scored» sono ancora salvati dal server, quindi restano.
+4. `site/privacy` nell'elenco della copia di `DEPLOY.md` F.14.
 
 **Parte B — aprire il negozio e pubblicare** (dopo le scelte dell'utente):
 
@@ -108,6 +136,16 @@ Parte A2:
       nella console.
 - [x] `cd site && npm test` è verde; i due script rifanno gli stessi file.
 
+Parte A3:
+
+- [x] Titolo, logo, icona della scheda e piede dicono «MuW»; nessun file
+      del sito che la pagina carica contiene «Sgrava» (lo controlla un
+      test).
+- [x] I testi della guida non promettono il punteggio; le pagine
+      dell'app sono quattro, con «Feed».
+- [x] Nessuno scorrimento orizzontale a 1280 e a 390 px; nessun errore
+      nella console; `cd site && npm test` verde.
+
 Parte B: da scrivere con le scelte dell'utente.
 
 ## File toccati
@@ -121,6 +159,23 @@ docs/STATUS.md                   (le righe di TASK-237)
 docs/DECISIONS.md                (ADR-0201)
 docs/INDEX.md                    (una riga per SITO.md)
 ```
+
+Parte D, con il sì del Coordinatore (2026-10-08):
+
+```
+apps/mobile/src/about/content/*.ts      (solo «Privacy»: i dati
+                                         dell'utente, la data, la frase
+                                         della posizione a telefono bloccato)
+apps/mobile/src/about/AboutPage.tsx     (la data su un testo definitivo)
+apps/mobile/src/about/*.test.ts(x)      (Privacy definitiva, Terms bozza)
+docs/DEPLOY.md                          (F.14: solo `site/privacy`
+                                         nella riga `git archive`)
+docs/UI.md                              (una riga: Privacy definitiva)
+```
+
+TASK-262 A (le notifiche push) tocca gli stessi `about/content/*.ts` e
+`about/documents.test.ts` per la frase sul token push: chi entra secondo
+riallinea, ognuno solo i suoi paragrafi.
 
 ## Fuori scope
 
@@ -151,10 +206,57 @@ checkout principale e la modifica è stata bloccata dai permessi. Nei
 punteggi, che nell'app sono inventati: solo titolo, luogo e km. Nessun
 disegno in bici: i dati dell'app non ne hanno. **Confermati dall'utente** il 2026-10-05 («sì
 intendevo sport, i disegni vanno bene così»): la scelta dello sport e i
-dieci disegni come sono, senza nomi, minuti e punteggi. **Da confermare
-con l'utente**: i testi nuovi (`content.js`, i titoli delle sezioni).
+dieci disegni come sono, senza nomi, minuti e punteggi. I testi sono stati
+confermati poi, con la parte A3 (2026-10-08).
+
+**Parte A3** (2026-10-08): il sito dice MuW, con il segno (il cuore su
+giallo) accanto alla scritta in alto, nell'icona della scheda e in fondo;
+la scritta è quella di `docs/brand/muw-logo.svg` nel colore del testo. Via
+il punteggio dalla corsa, aggiunto «Feed». Provato in Chrome senza
+finestra a 1280 e 390 px; 27 test verdi. **I testi del sito sono
+confermati dall'utente** (2026-10-08: «i testi vanno bene così»).
+**Parte C, online**: l'utente ha scelto il server Hetzner con il dominio
+`getmuw.app` (in un'altra sessione, 2026-10-08); Caddy e DNS sono di
+TASK-265, sul server applica il Coordinatore.
 
 **Aspettano l'utente** (parte B, il merch, messo da parte): il servizio di stampa e l'account; magliette,
 nomi, colori e prezzi; i testi della pagina («Runs that draw a shape on
 the map.», i tre passi, «Sgrava is in preview on iPhone, not yet on the
 App Store.»); dominio e pubblicazione.
+
+**Parte C** (2026-10-08): il sito è **online su https://getmuw.app**, con
+l'ok dell'utente alla pubblicazione; eseguito dalla sessione di TASK-265 al
+via del Coordinatore. Sul server: i 9 file pubblici di `site/` da `main`
+`d7f53269` in `/srv/getmuw-site`, serviti dal Caddy; `www.getmuw.app` →
+301 su `getmuw.app`; `package.json` e il merch spento non sono serviti
+(404). Il Caddyfile di prima è `Caddyfile.before-task237b`. Ricontrollato
+da questa sessione: pagina, script e logo rispondono 200 con i tipi giusti,
+e in Chrome senza finestra i tasti di sport, forma, distanza e filtro
+funzionano, i dieci disegni ci sono, nessun errore, nessuno scorrimento
+orizzontale a 1280 e 390 px. **Il sito non si aggiorna da solo**: dopo un
+merge che cambia `site/` va ripetuta la copia di `DEPLOY.md` F.14
+(scritta da TASK-265).
+
+**Parte D** (2026-10-08): la pagina della privacy, in PR. **Scelte
+dell'utente**, una domanda per volta: titolare **Luca Pallaoro**; email
+**muw2610@gmail.com** (scelta al posto di un indirizzo di `getmuw.app`);
+le basi giuridiche proposte dall'agente (contratto, legittimo interesse,
+consenso, obbligo di legge), accettate così («Sì, usa questo testo»),
+con il consiglio di farle rileggere a un esperto; il testo è
+**definitivo**, data **8 ottobre 2026**. Nell'app «Privacy» non dice più
+«Draft» e mostra la data; «Terms» resta una bozza con i suoi
+segnaposto. Aggiunta in cinque lingue la frase sulla posizione a
+telefono bloccato (TASK-261, ADR-0225). Verificato nel codice: il server
+salva ancora il punteggio di una corsa (`activities.py`) e l'evento
+`run_scored`, quindi quelle frasi sono esatte. Un test del sito controlla
+che la copia di `DEPLOY.md` F.14 prenda ogni file che le pagine
+caricano. Dopo il merge: la copia sul server al via del Coordinatore,
+con il sì dell'utente alla pubblicazione; l'indirizzo per Apple è
+`https://getmuw.app/privacy/`.
+
+**Aperti, dell'utente**: il link per scaricare l'app. Scelta del
+2026-10-08, raccolta dalla sessione di TASK-265: resta «Download — coming
+soon» fino alla prima build su TestFlight (TASK-152 B); allora
+`site/config.js` `downloadUrl` diventa il link pubblico di TestFlight e
+si ricopia il sito (F.14). Il link di Expo Go è scartato. Il merch
+(parte B), messo da parte.

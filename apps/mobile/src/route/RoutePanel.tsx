@@ -635,7 +635,8 @@ function ShapeNote({
 }) {
   if (shape !== null) {
     const name = shapeName(shape);
-    return text.trim().toLowerCase() === name ? null : (
+    // German writes «Herz» with a capital (TASK-210 F).
+    return text.trim().toLowerCase() === name.toLowerCase() ? null : (
       <Text style={styles.note}>→ {name}</Text>
     );
   }

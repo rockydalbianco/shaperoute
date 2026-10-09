@@ -1089,6 +1089,17 @@ export const FR: Table = {
   // src/feed/FeedPost.tsx (TASK-118: a member's drawing without a place)
   "{user}: {title}. {facts}.": "{user} : {title}. {facts}.",
 
+  // The shapes' names, the map and «Explore»: src/route/shapeWords.ts,
+  // src/map/mapPage.ts, src/explore/{ExploreScreen,ThemedCard}.tsx
+  // (TASK-210, parte F)
+  "{list} or {last}": "{list} ou {last}",
+  "Start here": "Départ ici",
+  "NEAR {city}": "PRÈS DE {city}",
+  here: "ici",
+
+  // src/explore/RecommendedRow.tsx (TASK-092)
+  RECOMMENDED: "RECOMMANDÉS",
+
   // src/social/ReportMenu.tsx, BlockedPeople.tsx (TASK-121: report and block)
   More: "Plus",
   "Report or block": "Signaler ou bloquer",

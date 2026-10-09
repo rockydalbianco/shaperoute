@@ -8,7 +8,7 @@ import type {
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useRef, useState } from "react";
-import { AppState, Vibration } from "react-native";
+import { Vibration } from "react-native";
 
 import { onFootOf } from "../route/onFoot";
 import { walksOf } from "../route/walks";
@@ -23,7 +23,9 @@ import { isPaddle, paddleAnnouncement } from "./paddle";
 import { movePen, startPen } from "./penUp";
 import { resumeFollowing } from "./resume";
 import { announceMOf, isRide, rideAnnouncement, saidKmOf } from "./ride";
+import { type RunAway, watchAway } from "./runAway";
 import { controlRun, runControl, type RunSession } from "./runControl";
+import { type RunWatch, watchRunPosition } from "./runPosition";
 import { emptyTrack, type Track } from "./trackRecorder";
 import { startRun } from "./trackStore";
 
@@ -77,7 +79,9 @@ export function play(cues: Cue[]): void {
  * Each fix is said in the voice's language of that moment (TASK-209), so a
  * change on «Data» is heard at once, and in the units «Settings» has at
  * that moment (TASK-182): with miles each mile, on a bike every
- * RIDE_MI_EVERY, and the turns in feet. The position never leaves the phone.
+ * RIDE_MI_EVERY, and the turns in feet. With the phone locked, or another app
+ * in front, the GPS goes on where the app can (TASK-261, `runPosition`). The
+ * position never leaves the phone.
  */
 export function useNavigation(
   points: LatLon[] | null,
@@ -112,10 +116,10 @@ export function useNavigation(
       return;
     }
     let stopped = false;
-    let subscription: Location.LocationSubscription | null = null;
+    let subscription: RunWatch | null = null;
     let run: RunSession | null = null;
     let stopRecording: (() => void) | null = null;
-    let leaving: { remove(): void } | null = null;
+    let away: RunAway | null = null;
     // The phone's voices, before the first words: a chosen one is used only
     // once it is known to be there.
     void loadVoices();
@@ -180,13 +184,6 @@ export function useNavigation(
           say: (text) => play([{ say: text, vibrate: false }]),
         });
         run = session;
-        // The app behind another, or the phone locked: the GPS stops with
-        // it, and so does the run, until the next fix (TASK-255).
-        leaving = AppState.addEventListener("change", (next) => {
-          if (next === "background") {
-            recorder.leave(Date.now());
-          }
-        });
         setState({
           status: "following",
           navigation: resumed.navigation,
@@ -197,7 +194,8 @@ export function useNavigation(
         if (recorder.track().fixes.length === 0) {
           play(started.cues);
         }
-        subscription = await Location.watchPositionAsync(
+        // With the phone locked too, where the app can (TASK-261).
+        subscription = await watchRunPosition(
           {
             accuracy: Location.Accuracy.BestForNavigation,
             distanceInterval: FIX_EVERY_M,
@@ -206,6 +204,7 @@ export function useNavigation(
             if (stopped || navigation.current === null) {
               return;
             }
+            away?.beforeFix();
             const fix: LatLon = [coords.latitude, coords.longitude];
             position = fix;
             const { language } = speaking();
@@ -286,7 +285,12 @@ export function useNavigation(
         );
         if (stopped) {
           subscription.remove();
+          return;
         }
+        // The app behind another, or the phone locked: where the GPS stops
+        // with it, a long absence is a pause of the phone's (TASK-255,
+        // TASK-261).
+        away = watchAway(recorder, { background: subscription.background });
       } catch {
         if (!stopped) {
           setState({ status: "denied" });
@@ -296,7 +300,7 @@ export function useNavigation(
     return () => {
       stopped = true;
       subscription?.remove();
-      leaving?.remove();
+      away?.remove();
       run?.end();
       stopRecording?.();
       void Speech.stop();

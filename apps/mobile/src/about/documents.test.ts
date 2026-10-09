@@ -1,4 +1,8 @@
+import type { Language } from "../i18n/languages";
+import { DE } from "./content/de";
 import { EN } from "./content/en";
+import { ES } from "./content/es";
+import { FR } from "./content/fr";
 import { IT } from "./content/it";
 import {
   ABOUT_IDS,
@@ -6,15 +10,18 @@ import {
   type AboutContent,
   type AboutDocument,
   aboutDocument,
-  aboutLanguage,
   isAboutId,
   PLACEHOLDER,
   PLACEHOLDER_PATTERN,
 } from "./documents";
 
-const CONTENTS: [string, AboutContent][] = [
+/** The five languages (TASK-210 F). */
+const CONTENTS: [Language, AboutContent][] = [
   ["en", EN],
+  ["de", DE],
   ["it", IT],
+  ["es", ES],
+  ["fr", FR],
 ];
 
 /** Every paragraph and point of a text, with its title and headings. */
@@ -34,19 +41,26 @@ function all(text: AboutDocument): string {
   return lines(text).join("\n");
 }
 
+/** Who controls the data and where to write, given by the user (TASK-237 D). */
+const CONTROLLER = "Luca Pallaoro";
+const CONTACT = "muw2610@gmail.com";
+
 /** A paragraph, or how many points: what two languages must share. */
 function shape(block: AboutBlock): string {
   return typeof block === "string" ? "paragraph" : `${block.bullets.length} points`;
 }
 
 describe.each(ABOUT_IDS)("«%s»", (id) => {
-  test("Italian has the sections of English, block by block", () => {
-    const english = EN[id].sections.map((section) => section.blocks.map(shape));
-    const italian = IT[id].sections.map((section) => section.blocks.map(shape));
-    expect(italian).toEqual(english);
-    expect(IT[id].draft).toBe(EN[id].draft);
-    expect(IT[id].updated === null).toBe(EN[id].updated === null);
-  });
+  test.each(CONTENTS)(
+    "in «%s» has the sections of English, block by block",
+    (_, content) => {
+      const english = EN[id].sections.map((section) => section.blocks.map(shape));
+      const other = content[id].sections.map((section) => section.blocks.map(shape));
+      expect(other).toEqual(english);
+      expect(content[id].draft).toBe(EN[id].draft);
+      expect(content[id].updated === null).toBe(EN[id].updated === null);
+    },
+  );
 
   test.each(CONTENTS)(
     "in «%s» no text is empty, and no heading comes twice",
@@ -62,7 +76,8 @@ describe.each(ABOUT_IDS)("«%s»", (id) => {
   );
 
   test.each(CONTENTS)("in «%s» there is no address and no link", (_, content) => {
-    const text = all(content[id]);
+    // The only address is where to write about one's data.
+    const text = all(content[id]).replaceAll(CONTACT, "");
     // An email address, a web address, a phone number: none is decided yet.
     expect(text).not.toMatch(/[^\s@[]+@[^\s@]+\.[a-z]{2,}/i);
     expect(text).not.toMatch(/https?:|www\./i);
@@ -70,54 +85,102 @@ describe.each(ABOUT_IDS)("«%s»", (id) => {
   });
 });
 
-test("«Help» has around ten short sections and is not a draft", () => {
-  for (const [, content] of CONTENTS) {
+test.each(CONTENTS)(
+  "«Help» in «%s» has around ten short sections and is not a draft",
+  (_, content) => {
     expect(content.help.draft).toBe(false);
     expect(content.help.updated).toBeNull();
     expect(content.help.sections.length).toBeGreaterThanOrEqual(8);
     expect(content.help.sections.length).toBeLessThanOrEqual(12);
     // Where to write is still to fill.
     expect(all(content.help)).toContain(PLACEHOLDER.contact);
-  }
+  },
+);
+
+test("«Help» in Italian names the buttons as the app shows them now", () => {
+  // «Draw» and the run are in Italian since TASK-210 B and D.
+  const text = all(IT.help);
+  expect(text).not.toMatch(/«(Draw route|Export GPX|Start|Pause|Resume|Discard)»/);
+  expect(text).toContain("«Disegna il percorso»");
+  expect(text).toContain("«Pausa» ferma il tempo e «Riprendi»");
 });
 
-describe.each(["terms", "privacy"] as const)("«%s» is a draft", (id) => {
+describe("«Terms» is a draft", () => {
   test.each(CONTENTS)("in «%s», with its day", (_, content) => {
-    expect(content[id].draft).toBe(true);
-    expect(content[id].updated).toMatch(/^5 (October|ottobre) 2026$/);
+    expect(content.terms.draft).toBe(true);
+    expect(content.terms.updated).toMatch(
+      /^5 (October|ottobre) 2026$|^5\. Oktober 2026$|^5 de octubre de 2026$|^5 octobre 2026$/,
+    );
   });
 
   test.each(CONTENTS)(
     "in «%s» who runs MuW and where to write are to fill",
     (_, content) => {
-      const text = all(content[id]);
+      const text = all(content.terms);
       expect(text).toContain(PLACEHOLDER.name);
       expect(text).toContain(PLACEHOLDER.contact);
     },
   );
 });
 
-test("who provides MuW and who controls the data is never a name", () => {
+describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
+  test.each(CONTENTS)("in «%s», with the day of the approval", (_, content) => {
+    expect(content.privacy.draft).toBe(false);
+    expect(content.privacy.updated).toMatch(
+      /^8 (October|ottobre) 2026$|^8\. Oktober 2026$|^8 de octubre de 2026$|^8 octobre 2026$/,
+    );
+  });
+
+  test.each(CONTENTS)(
+    "in «%s» nothing is left to fill: the controller, where to write, the legal bases",
+    (_, content) => {
+      const text = all(content.privacy);
+      expect(text).not.toMatch(PLACEHOLDER_PATTERN);
+      expect(text).toContain(CONTROLLER);
+      expect(text).toContain(CONTACT);
+      const bases =
+        content.privacy.sections[
+          EN.privacy.sections.findIndex(
+            (section) => section.heading === "Why we may use your data",
+          )
+        ];
+      expect(bases.blocks).toHaveLength(1);
+      expect(shape(bases.blocks[0])).toBe("4 points");
+    },
+  );
+});
+
+test("who provides MuW is still to fill; who controls the data is the user (TASK-237 D)", () => {
   expect(all(EN.terms)).toMatch(/provided by \[name\]/);
   expect(all(IT.terms)).toMatch(/offerta da \[name\]/);
-  expect(all(EN.privacy)).toMatch(/controller of your personal data is \[name\]/);
+  expect(all(EN.privacy)).toMatch(/controller of your personal data is Luca Pallaoro/);
   expect(all(IT.privacy)).toMatch(
-    /titolare del trattamento dei tuoi dati personali è \[name\]/,
+    /titolare del trattamento dei tuoi dati personali è Luca Pallaoro/,
   );
-  // «write to» is always followed by the place to fill, or by «us».
+  expect(all(DE.terms)).toMatch(/von \[name\] angeboten/);
+  expect(all(ES.terms)).toMatch(/la ofrece \[name\]/);
+  expect(all(FR.terms)).toMatch(/fournie par \[name\]/);
+  expect(all(DE.privacy)).toMatch(/personenbezogenen Daten ist Luca Pallaoro/);
+  expect(all(ES.privacy)).toMatch(/tus datos personales es Luca Pallaoro/);
+  expect(all(FR.privacy)).toMatch(/tes données personnelles est Luca Pallaoro/);
+  // «write to» is followed by the place to fill, by «us», or by the address.
   for (const [, content] of CONTENTS) {
     for (const id of ABOUT_IDS) {
-      const after = [...all(content[id]).matchAll(/(?:write to|scrivi a) (\S+)/gi)];
+      const after = [
+        ...all(content[id]).matchAll(
+          // A whole word: not the «escribe a» of "describe a shape".
+          /(?<!\p{L})(?:write to|scrivi a|schreib an|escribe a|écris à) (\S+)/giu,
+        ),
+      ];
       for (const match of after) {
-        expect(["[contact", "us"]).toContain(match[1].replace(/[.,]$/, ""));
+        expect(["[contact", "us", CONTACT]).toContain(match[1].replace(/[.,]$/, ""));
       }
     }
   }
 });
 
-test("the law of the terms is an open point, in both languages", () => {
-  expect(all(EN.terms)).toContain(PLACEHOLDER.law);
-  expect(all(IT.terms)).toContain(PLACEHOLDER.law);
+test.each(CONTENTS)("the law of the terms is an open point in «%s»", (_, content) => {
+  expect(all(content.terms)).toContain(PLACEHOLDER.law);
 });
 
 test("the places to fill are found by the page's pattern", () => {
@@ -181,17 +244,12 @@ test("«Terms» says the route is a suggestion and who answers for the way", () 
   expect(all(IT.terms)).toMatch(/Sei tu responsabile di dove vai/);
 });
 
-test("Italian reads Italian; the languages to come read English", () => {
-  expect(aboutDocument("privacy", "it")).toBe(IT.privacy);
-  expect(aboutDocument("privacy", "en")).toBe(EN.privacy);
-  for (const language of ["de", "es", "fr"] as const) {
-    expect(aboutLanguage(language)).toBe("en");
+test("each language reads its own texts (TASK-210 F)", () => {
+  for (const [language, content] of CONTENTS) {
     for (const id of ABOUT_IDS) {
-      expect(aboutDocument(id, language)).toBe(EN[id]);
+      expect(aboutDocument(id, language)).toBe(content[id]);
     }
   }
-  expect(aboutLanguage("it")).toBe("it");
-  expect(aboutLanguage("en")).toBe("en");
 });
 
 test("the three texts are told from the other pages of «Profile»", () => {

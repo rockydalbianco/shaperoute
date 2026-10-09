@@ -13189,3 +13189,32 @@ Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
   sempre HTTPS, che Caddy dà da solo.
 - Spostare il ritorno da Strava su `api.getmuw.app` richiede di cambiare
   anche l'applicazione Strava dell'utente: un passo a parte.
+
+## ADR-0197, aggiunta — Il «Try» della riga si conta come `better_distance`
+**Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
+(TASK-234 parte C), dentro la **scelta dell'utente** del 2026-10-08
+(«Tutti e due»: contare i tocchi su «Try N km» e un segno visibile mentre
+il percorso nuovo si calcola). Aggiunta ad ADR-0197, senza numero nuovo,
+d'accordo con il coordinatore.
+
+**Decisione**:
+
+1. «Try N km» della riga sotto un percorso riuscito manda `hint_taken`
+   con un `hint` nuovo, `better_distance`, con `distance_m` (quella
+   disegnata) e `to_m` (quella provata). Un valore nuovo di un segnale
+   che c'è, non un `kind` nuovo: il report delle ricerche lo conta già fra
+   gli `hints`, a parte dai `try_distance` degli errori; la proposta
+   `review_distance` resta dei soli errori.
+2. Additivo: l'API nuova registra i corpi di prima come prima; un'API di
+   prima risponde 422 al `hint` nuovo e l'app, che manda i segnali senza
+   aspettarli, non se ne accorge. Il corpo nuovo è in un fixture suo,
+   `signal-better-distance.json`, per non cambiare `signals.json` che i
+   test di TASK-142 leggono per posizione.
+3. Nessun indicatore nuovo sul pulsante: il «Try» fa partire un disegno
+   nuovo e il pannello dell'attesa (testo, «Cancel», barra) prende subito
+   il posto del percorso e della riga. Un secondo indicatore sopra
+   sarebbe lo stesso segno detto due volte.
+
+**Alternative scartate**: un `kind` nuovo (`better_taken`): un modello e
+un conteggio in più nell'API per la stessa cosa, un «Try»; uno spinner
+nel pulsante: il pulsante non resta sullo schermo mentre si calcola.

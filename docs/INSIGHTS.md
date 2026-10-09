@@ -45,7 +45,8 @@ dell'app ─┘    mai cancellati)                 cosa manca)        validato) 
    la città si perdeva (dal vivo: Vercelli, vuota 3 volte, mai proposta).
    `route_chosen`: il percorso usato (Start, Export GPX) fra A, B e
    C, una volta per percorso. `hint_taken`: «Try N km», o una forma del
-   catalogo dopo un percorso fallito.
+   catalogo dopo un percorso fallito; `better_distance` è il «Try N km»
+   della riga sotto un percorso riuscito (TASK-234 C).
 2. **Analisi** (`report`): metriche totali e per versione; cosa si chiede di
    più (lingue, città, forme, parole); le richieste che vanno quasi sempre
    bene, da suggerire come esempi, e quelle che falliscono più volte, cioè

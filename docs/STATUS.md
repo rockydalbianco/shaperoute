@@ -193,17 +193,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Developer e le cinque domande del task; prima della prima build, le
   variabili dell'ambiente EAS `production` (oggi vuoto). Da dove
   riprendere: `tasks/TASK-152.md`, «Esito».
-- **TASK-261 — La corsa registra anche a telefono bloccato** (ADR-0225;
-  chiesto dall'utente il 2026-10-07). Branch
-  `feat/TASK-261-background-gps`. Su iOS, nell'app costruita, il GPS va
-  avanti in background con il solo permesso «While using» e la pillola
-  blu (expo-task-manager, `UIBackgroundModes` `location`); la linea si
-  taglia solo se iOS congela l'app; in Expo Go e su Android tutto come
-  prima. Testo nuovo del permesso in cinque lingue (`apps/mobile/locales/`),
-  **da mostrare all'utente prima del merge**. Per vederlo serve una
-  **build nativa**. Fuori: la voce a telefono bloccato (un task suo, scelta
-  dell'utente) e Android in background. Da dove riprendere:
-  `tasks/TASK-261.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -610,6 +599,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-261 parte A: la corsa registra anche a telefono bloccato
+  (ADR-0225; chiesto dall'utente il 2026-10-07). In `main` con la #441
+  (`08793f4`, 2026-10-08). Nell'app costruita il GPS va avanti in
+  background con il solo permesso «While using» e la pillola blu di iOS
+  (dipendenza nuova `expo-task-manager`, `UIBackgroundModes` `location`);
+  la pausa automatica funziona come in primo piano; la linea si taglia
+  solo se iOS congela l'app. In Expo Go e su Android tutto come prima,
+  quindi la pubblicazione su `preview` non cambia niente. Testo nuovo del
+  permesso in cinque lingue (`apps/mobile/locales/`), approvato
+  dall'utente. Provato nel simulatore con una build nativa; **la prova
+  sull'iPhone vuole una build nativa** ed è dell'utente. Dopo la prova: la
+  **parte B**, la voce a telefono bloccato (expo-audio, da chiedere), e
+  Android in background, senza numero. Nel checkout principale serve
+  `npm install` per la dipendenza nuova. `tasks/TASK-261.md`.
 - **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
   è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
   2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.

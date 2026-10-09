@@ -1112,4 +1112,7 @@ export const FR: Table = {
   "Start here": "Départ ici",
   "NEAR {city}": "PRÈS DE {city}",
   here: "ici",
+
+  // src/explore/RecommendedRow.tsx (TASK-092)
+  RECOMMENDED: "RECOMMANDÉS",
 };

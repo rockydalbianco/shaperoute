@@ -41,9 +41,10 @@ export type Pause = {
    * at the end of a letter, and the start of the next one ends it. Like the
    * runner's own, nothing in it is of the run. Absent otherwise. */
   pen?: true;
-  /** The app left the front (TASK-255): the phone locked, or another app
-   * over it. The GPS is followed in the foreground only, so nothing in it
-   * is of the run, wherever the runner went: the next fix ends it and
+  /** The GPS stopped with the app (TASK-255): the phone locked, or another
+   * app over it, where the GPS is followed in the foreground only; or iOS
+   * froze the app, where it goes on in the background (TASK-261). Nothing
+   * in it is of the run, wherever the runner went: the next fix ends it and
    * starts a new stretch of the line. Absent otherwise. */
   away?: true;
 };

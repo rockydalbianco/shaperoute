@@ -322,6 +322,25 @@ I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
 `--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
 nuovo vuole un riavvio dell'API.
 
+### `GET /recommended` (TASK-092, ADR-0229)
+
+La riga «Recommended» di «Explore»: gli stessi percorsi del catalogo di
+`/recommended-routes`, nello stesso corpo (`recommended-routes.json`), ma
+in un altro ordine e al più `limit` (1–20, default 10). `?lat=…&lon=…`,
+facoltativo `radius_m` (100–50 000, default 5000). **Vuole il token**
+(`Authorization: Bearer …`), come `/feed`: senza, `401 not_signed_in`;
+senza database `503`.
+
+L'ordine: prima la somiglianza **come la scheda la scrive** (il percento
+intero); a pari percento le **reazioni** sui disegni pubblicati delle
+corse fatte su quel percorso; poi le **corse salvate** più i **preferiti**
+di quel percorso; a parità di tutto il più vicino, poi l'`id`. Nessuno è
+tolto perché passa dalle stesse strade di un altro (ADR-0086). Una corsa o
+un preferito è di un percorso quando la sua linea è quella del percorso:
+la stessa chiave di `favoriteKey` nell'app (`best_routes.line_key`). I
+conteggi non sono nella risposta. Dieci percorsi con l'anteprima pesano
+circa 15 kB (il test vuole meno di 100 kB).
+
 ### `GET /cities` (TASK-129, ADR-0099)
 
 Le città di tutto il mondo per nome, `?q=…`, al più 5, ognuna col suo

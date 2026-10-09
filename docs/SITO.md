@@ -1,6 +1,7 @@
 # SITO — Il sito web
 
-> Cosa c'è nel sito di Sgrava, come si cambia e come si guarda in locale.
+> Cosa c'è nel sito di MuW (già «Sgrava», ADR-0224), come si cambia e come
+> si guarda in locale.
 > Le scelte e i loro perché stanno in `DECISIONS.md` (ADR-0201); lo stato
 > in `STATUS.md`.
 
@@ -18,7 +19,7 @@ Dall'alto in basso:
    a Milano, uno dei percorsi veri del catalogo.
 2. **«How it works»**: si sceglie lo **sport** («Run», «Bike», «Paddle») e
    cambiano i tre fatti (distanze, dove, come guida) e i quattro passi.
-   Sotto, le tre pagine dell'app: «Draw», «Explore», «Profile».
+   Sotto, le quattro pagine dell'app: «Feed», «Draw», «Explore», «Profile».
 3. **«Best drawings»**: dieci disegni, sei corse e quattro uscite in
    canoa, con un filtro («All», «Run», «Paddle»).
 4. **«Get the app»**: per ora «Download — coming soon», in cima e in
@@ -35,7 +36,7 @@ Dall'alto in basso:
 | `site/data/drawings.js` | i disegni di «Try it» e di «Best drawings»; lo scrive `make_drawings.py`, non si tocca a mano |
 | `site/render.js` | costruisce i pezzi della pagina (funzioni pure, provate dai test) |
 | `site/main.js` | collega i tasti alla pagina |
-| `site/assets/` | logo e simbolo, copiati da `docs/brand/` |
+| `site/assets/` | il segno e la scritta di MuW, ricavati da `docs/brand/muw-*.svg` (la scritta nel colore del testo, per lo sfondo scuro) |
 | `site/tools/` | gli script che ricavano i disegni dai percorsi veri |
 | `site/tests/` | i test (`node --test`) |
 
@@ -45,7 +46,7 @@ In `site/config.js`, `downloadUrl`: l'indirizzo `https://…` dell'app
 sull'App Store. Con `null` i due tasti dicono «Download — coming soon»;
 con l'indirizzo diventano «Download the app». Vanno poi cambiati a mano
 il titolo e la frase di «Get the app» in `index.html` («On iPhone, soon.»,
-«Sgrava is in preview on iPhone…»).
+«MuW is in preview on iPhone…»).
 
 ## Cambiare i testi della guida
 
@@ -76,11 +77,38 @@ python3 site/tools/make_drawings.py
 ```
 
 Il primo rifà anche il cuore scritto dentro `index.html` (quello che si
-vede prima che parta JavaScript). Quali forme, quali città e quali dieci
+vede prima che parta JavaScript) e i file del marchio in `site/assets/`:
+dopo un cambio di logo in `docs/brand/` basta rilanciarlo. Quali forme, quali città e quali dieci
 disegni: gli elenchi in cima a `make_drawings.py`.
 
 Il credito «© OpenStreetMap contributors» in fondo alla pagina deve
 restare (lo controlla un test).
+
+## La pagina della privacy
+
+`getmuw.app/privacy/` (inglese) e `privacy/it/`, `de/`, `fr/`, `es/`: il
+testo «Privacy» dell'app, lo stesso parola per parola, che Apple chiede a
+un indirizzo pubblico. **Non si scrive a mano**: il testo sta in
+`apps/mobile/src/about/content/*.ts`, e le pagine le scrive
+
+```bash
+node site/tools/make_privacy.mjs
+```
+
+Dopo un cambio del testo nell'app si rilancia: un test del sito confronta
+le pagine con l'app e fallisce finché non sono uguali (la CI del sito gira
+anche quando cambiano i testi dell'app). Il piede della pagina
+principale porta a `privacy/`.
+
+## Online
+
+Il sito è su **https://getmuw.app** dal 2026-10-08, servito dal Caddy del
+server Hetzner (`www.getmuw.app` rimanda lì). Sul server stanno solo i file
+pubblici, copiati da `main` in `/srv/getmuw-site`: non i test, gli script,
+`package.json` e il merch spento. **Non si aggiorna da solo**: dopo un
+merge che cambia `site/` si ripete la copia di `DEPLOY.md` F.14 (il
+server è del Coordinatore, con l'ok dell'utente). Un file pubblico nuovo
+va aggiunto anche all'elenco di F.14.
 
 ## Guardarlo in locale
 
@@ -117,6 +145,8 @@ vendita quando ha `buyUrl` (`https`) e `priceEur` in `products.js`, e
 
 ## Non ancora deciso (dell'utente)
 
-I testi della pagina (i dieci disegni e la scelta dello sport sono
-confermati, 2026-10-05); il dominio e dove pubblicare il sito; quando rimettere il merch, con quale servizio, quali magliette e
-quali prezzi. Finché non è pubblicato, il sito esiste solo nel repository.
+Testi, dieci disegni e scelta dello sport sono confermati (2026-10-05 e
+2026-10-08). Il sito andrà su `getmuw.app`, dal Caddy del server Hetzner
+(scelta dell'utente, 2026-10-08; la configurazione è di TASK-265). Restano
+dell'utente: quando rimettere il merch, con quale servizio, quali magliette e
+quali prezzi. Il link per scaricare l'app arriva con l'App Store (TASK-152).

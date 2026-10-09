@@ -1,6 +1,6 @@
 # TASK-263 — Tono scuro o chiaro, e la sua luminosità
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-263-tone` · **ADR**: ADR-0231
 
 ## Obiettivo
@@ -61,21 +61,22 @@ Scartata la luminosità dello schermo del telefono.
 
 ## Criteri di accettazione
 
-- [ ] Senza scelta l'app ha esattamente i colori di oggi (test: la
+- [x] Senza scelta l'app ha esattamente i colori di oggi (test: la
       tavolozza scura al passo 0 è uguale ai valori di ADR-0046).
-- [ ] Ogni tono a ogni passo rispetta i contrasti: testo ≥ 7:1 su fondo,
+- [x] Ogni tono a ogni passo rispetta i contrasti: testo ≥ 7:1 su fondo,
       scheda e comando; testi secondari ≥ 4,5:1 su fondo e scheda; bordo
       dei comandi ≥ 3:1 sul fondo; avvisi ed errori ≥ 4,5:1 sul fondo
       (test).
-- [ ] Il passo scelto e il tono restano dopo la riapertura (test su
+- [x] Il passo scelto e il tono restano dopo la riapertura (test su
       `tone.json`); un file rotto vale come nessuna scelta.
-- [ ] In «Settings» si sceglie tono e passo, l'anteprima cambia subito,
+- [x] In «Settings» si sceglie tono e passo, l'anteprima cambia subito,
       «Apply» compare solo se qualcosa è cambiato e salva e riapre l'app
       (test).
-- [ ] Nel tono chiaro la barra di stato è scura e il percorso ha il bordo
+- [x] Nel tono chiaro la barra di stato è scura e il percorso ha il bordo
       scuro; nel tono scuro tutto come oggi.
-- [ ] Testi approvati dall'utente in cinque lingue.
-- [ ] Lint, typecheck, format e test verdi.
+- [x] Testi approvati dall'utente in cinque lingue («sì vanno bene,
+      procedi», 2026-10-09).
+- [x] Lint, typecheck, format e test verdi.
 
 ## File toccati
 
@@ -113,4 +114,11 @@ docs/STATUS.md
 
 ## Esito
 
-_(a fine task)_
+Fatto (PR #444): due toni, cinque passi ciascuno, la riga «Tone» in
+«Settings» con anteprima e «Apply», la mappa chiara con il bordo del
+percorso, la barra di stato che segue il tono. Testi approvati
+dall'utente il 2026-10-09. Provato nel simulatore in Expo Go: il primo
+`Updates.reloadAsync` non riapriva l'app in sviluppo, sostituito da
+`reloadAppAsync` di `expo`, che funziona sia in Expo Go sia nelle build.
+Rimandati a una parte B (da aprire col coordinatore): le tastiere scure
+nel tono chiaro e il logo bianco «Compatible with Strava».

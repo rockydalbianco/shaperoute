@@ -13259,6 +13259,63 @@ Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
 - Spostare il ritorno da Strava su `api.getmuw.app` richiede di cambiare
   anche l'applicazione Strava dell'utente: un passo a parte.
 
+## ADR-0211 — aggiornamento (parte B): il server tiene le figure «Paddle» dei laghi e delle spiagge
+**Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
+(TASK-246 parte B); task e via dal coordinatore, nessun numero nuovo.
+
+**Contesto**: con ADR-0211 ogni telefono chiede le otto forme dei tre
+posti più vicini, dal punto delle liste `lakes.json` e `beaches.json`
+dell'app. `route_store.py` (ADR-0136) teneva solo i percorsi dal centro di
+una città: il server ridisegnava le stesse 24 forme per ogni telefono
+nuovo della stessa zona: a Levico 11 s di motore sul Mac, tre-cinque
+volte tanto sul server, per ogni telefono, e una coda quando ne arrivano
+molti insieme.
+
+**Decisione**:
+
+1. I punti delle due liste sono **centri anche loro**, dati all'avvio
+   (`RouteStore(water=…)`, letti da `water_spots.py`): un percorso dallo
+   stesso quadrato di 10 m si tiene come quello dal centro di una città,
+   con la stessa chiave (forma, distanza, attività, penna alzata,
+   motore). Non si imparano e non si scrivono in `city-centres.txt`.
+2. **Una cartella e un limite loro**: `routes/water/`, 10 000 percorsi
+   (circa 8 kB l'uno). I 6 400 percorsi delle liste non spingono fuori
+   gli esempi delle città, e viceversa.
+3. Le liste restano **quelle dell'app**: il `Dockerfile` e
+   `.dockerignore` copiano i due file nell'immagine allo stesso percorso
+   del repository. Una lista assente vale vuota.
+4. `draw_examples --water` (e `--water-name`) fa il primo telefono per
+   ogni punto: le otto forme nell'ordine dell'app, a pezzi con la penna
+   alzata come la chiede l'app; un punto senza acqua sul server si salta
+   alla prima forma.
+5. L'app non cambia: chiede le stesse richieste, che arrivano già
+   `done`. I 6 s fra una richiesta e l'altra di `aheadExamples.ts`
+   restano: servono al limite di 30 POST al minuto, che conta anche le
+   risposte tenute.
+
+**Alternative scartate**:
+
+- *Una copia delle liste dentro `services/api/`*: due file da tenere
+  uguali, e TASK-245 C sta già cambiando quello delle spiagge.
+- *`learn` dei punti in `city-centres.txt`*: si dimenticherebbero con i
+  centri più vecchi (`MAX_CENTRES`) e il file crescerebbe a ogni avvio.
+- *Tenere ogni percorso `paddling`, da qualunque partenza*: la partenza è
+  la posizione di chi chiede (ADR-0085, ADR-0092).
+- *Lo stesso limite di 3000 delle città*: `draw_examples --water` lo
+  riempirebbe da solo.
+
+**Conseguenze**:
+
+- Un telefono nuovo in una zona già chiesta, o disegnata prima, ha le sue
+  24 forme senza motore (0 s sul Mac invece di 11 s); il giro sul
+  telefono dura sempre circa due minuti e mezzo, per i 6 s fra le
+  richieste: il guadagno è del server, non del tempo che vede l'utente.
+- Ogni cambio di `route_engine` le fa ridisegnare tutte, come gli esempi
+  delle città; `draw_examples --water` è molto più lungo di quello delle
+  città (stima in `tasks/TASK-246.md`, «Esito parte B»).
+- Su disco circa 50 MB per tutti i punti, 80 MB al più, in
+  `data/cache/routes/water/`.
+
 ## ADR-0215 — aggiornamento (parte C): in bici senza percorso, la velocità
 **Stato**: Attiva · 2026-10-09 · **scelta dell'utente** del 2026-10-08
 (la velocità, non il passo al km); il come è **deciso dall'agente su

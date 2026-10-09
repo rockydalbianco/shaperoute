@@ -10,7 +10,8 @@ field:
 - route_chosen: the route started or exported, among A, B and C (0 is A, the
   engine's first);
 - hint_taken: a way out of a failed route taken: "Try N km", or a shape of
-  the catalogue.
+  the catalogue; or the "Try N km" of the line under a route done, where
+  its shape comes out better (better_distance, TASK-234 C, ADR-0197).
 
 Never a person: the place chosen is a public name and a ~1 km cell, never the
 letters typed nor the start. A signal never fails the app: past
@@ -93,14 +94,17 @@ class RouteChosenBody(_Drawn):
 
 class HintTakenBody(_Drawn):
     kind: Literal["hint_taken"]
-    hint: Literal["try_distance", "catalog_shape"]
-    distance_m: int = Field(ge=0, le=MAX_DISTANCE_M, description="The one that failed.")
+    hint: Literal["try_distance", "catalog_shape", "better_distance"]
+    distance_m: int = Field(
+        ge=0, le=MAX_DISTANCE_M, description="The one that failed, or was drawn."
+    )
     to_m: int | None = Field(default=None, ge=0, le=MAX_DISTANCE_M)
 
     @model_validator(mode="after")
     def _distance_tried(self) -> HintTakenBody:
-        if (self.hint == "try_distance") != (self.to_m is not None):
-            raise ValueError("to_m: the distance tried, for try_distance only")
+        tried = self.hint in ("try_distance", "better_distance")
+        if tried != (self.to_m is not None):
+            raise ValueError("to_m: the distance tried, for a «Try» only")
         return self
 
 

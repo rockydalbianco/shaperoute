@@ -1,6 +1,6 @@
 # TASK-153 — AdMob dagli annunci di prova a quelli veri
 
-**Stato**: In corso
+**Stato**: Fermo (2026-10-09): la 1.0 esce senza pubblicità (TASK-267); si riprende quando l'utente lo chiede
 **Fase**: 4 · **Branch**: `feat/TASK-153-admob-live`
 **Dipende da**: TASK-150 (account AdMob e pagamenti), TASK-152 (app
 sull'App Store, sito dello sviluppatore)
@@ -86,4 +86,37 @@ docs/tasks/TASK-153.md
 
 ## Esito
 
-*(si compila a fine task)*
+**Fermo il 2026-10-09**, su decisione dell'utente («la lanciamo senza
+pubblicità, faremo poi»; gli annunci veri quando ci sarà la società). La
+1.0 dello store esce con gli annunci spenti: TASK-267, ADR-0237. ADR-0236
+resta riservato a questo task. Branch e worktree tenuti, nessuna PR.
+
+Già fatto sul branch `feat/TASK-153-admob-live` (commit b90d841c, da main
+fb27b50d):
+
+- **Annunci nativi, non interstitial.** Da TASK-235 (ADR-0198) l'app usa
+  solo annunci nativi nel Feed: in AdMob va creata un'unità «Nativo
+  avanzato», e la variabile di EAS è `EXPO_PUBLIC_ADMOB_NATIVE_IOS`.
+  Corretto sopra.
+- **SKAdNetwork**: `skAdNetworkItems` con i 50 identificativi di Google
+  (letti con `curl` dalle pagine «quick-start» e «3p-skadnetworks», uguali
+  fra loro; Google per primo) nel plugin `react-native-google-mobile-ads`
+  di `app.json`. `expo config --type introspect` li mette tutti e 50 in
+  `Info.plist`.
+- **`site/app-ads.txt`** con l'ID publisher dell'utente, e nell'elenco di
+  `git archive` di `DEPLOY.md` F.14.
+- **«Privacy options»** nel codice: `src/ads/privacyOptions.ts`
+  (`required()` chiede a Google se serve, `open()` mostra il suo modulo) e
+  `usePrivacyOptions`, con test. Nascosto in Expo Go. Manca il punto dello
+  schermo: proposta all'utente, senza risposta prima dello stop: una riga
+  in Impostazioni → INFO sotto «Privacy» e un link piccolo sotto ogni
+  annuncio «Sponsored» del Feed (anche chi non ha un account vede gli
+  annunci), testi «Privacy options», «Opzioni privacy»,
+  «Datenschutzoptionen», «Opciones de privacidad», «Options de
+  confidentialité». Va richiesta di nuovo.
+
+Da rifare alla ripresa: aggiornare il branch da main; se l'account AdMob
+cambia (società: il tipo di account non si cambia), cambiano anche l'ID
+dell'app in `app.json` e l'ID publisher in `site/app-ads.txt`; i passi
+nella console AdMob (scheda App Store, unità nativa, messaggio GDPR,
+verifica di `app-ads.txt`) sono ancora tutti da fare.

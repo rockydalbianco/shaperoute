@@ -41,6 +41,10 @@ function all(text: AboutDocument): string {
   return lines(text).join("\n");
 }
 
+/** Who controls the data and where to write, given by the user (TASK-237 D). */
+const CONTROLLER = "Luca Pallaoro";
+const CONTACT = "muw2610@gmail.com";
+
 /** A paragraph, or how many points: what two languages must share. */
 function shape(block: AboutBlock): string {
   return typeof block === "string" ? "paragraph" : `${block.bullets.length} points`;
@@ -72,7 +76,8 @@ describe.each(ABOUT_IDS)("«%s»", (id) => {
   );
 
   test.each(CONTENTS)("in «%s» there is no address and no link", (_, content) => {
-    const text = all(content[id]);
+    // The only address is where to write about one's data.
+    const text = all(content[id]).replaceAll(CONTACT, "");
     // An email address, a web address, a phone number: none is decided yet.
     expect(text).not.toMatch(/[^\s@[]+@[^\s@]+\.[a-z]{2,}/i);
     expect(text).not.toMatch(/https?:|www\./i);
@@ -100,10 +105,10 @@ test("«Help» in Italian names the buttons as the app shows them now", () => {
   expect(text).toContain("«Pausa» ferma il tempo e «Riprendi»");
 });
 
-describe.each(["terms", "privacy"] as const)("«%s» is a draft", (id) => {
+describe("«Terms» is a draft", () => {
   test.each(CONTENTS)("in «%s», with its day", (_, content) => {
-    expect(content[id].draft).toBe(true);
-    expect(content[id].updated).toMatch(
+    expect(content.terms.draft).toBe(true);
+    expect(content.terms.updated).toMatch(
       /^5 (October|ottobre) 2026$|^5\. Oktober 2026$|^5 de octubre de 2026$|^5 octobre 2026$/,
     );
   });
@@ -111,27 +116,54 @@ describe.each(["terms", "privacy"] as const)("«%s» is a draft", (id) => {
   test.each(CONTENTS)(
     "in «%s» who runs MuW and where to write are to fill",
     (_, content) => {
-      const text = all(content[id]);
+      const text = all(content.terms);
       expect(text).toContain(PLACEHOLDER.name);
       expect(text).toContain(PLACEHOLDER.contact);
     },
   );
 });
 
-test("who provides MuW and who controls the data is never a name", () => {
+describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
+  test.each(CONTENTS)("in «%s», with the day of the approval", (_, content) => {
+    expect(content.privacy.draft).toBe(false);
+    expect(content.privacy.updated).toMatch(
+      /^8 (October|ottobre) 2026$|^8\. Oktober 2026$|^8 de octubre de 2026$|^8 octobre 2026$/,
+    );
+  });
+
+  test.each(CONTENTS)(
+    "in «%s» nothing is left to fill: the controller, where to write, the legal bases",
+    (_, content) => {
+      const text = all(content.privacy);
+      expect(text).not.toMatch(PLACEHOLDER_PATTERN);
+      expect(text).toContain(CONTROLLER);
+      expect(text).toContain(CONTACT);
+      const bases =
+        content.privacy.sections[
+          EN.privacy.sections.findIndex(
+            (section) => section.heading === "Why we may use your data",
+          )
+        ];
+      expect(bases.blocks).toHaveLength(1);
+      expect(shape(bases.blocks[0])).toBe("4 points");
+    },
+  );
+});
+
+test("who provides MuW is still to fill; who controls the data is the user (TASK-237 D)", () => {
   expect(all(EN.terms)).toMatch(/provided by \[name\]/);
   expect(all(IT.terms)).toMatch(/offerta da \[name\]/);
-  expect(all(EN.privacy)).toMatch(/controller of your personal data is \[name\]/);
+  expect(all(EN.privacy)).toMatch(/controller of your personal data is Luca Pallaoro/);
   expect(all(IT.privacy)).toMatch(
-    /titolare del trattamento dei tuoi dati personali è \[name\]/,
+    /titolare del trattamento dei tuoi dati personali è Luca Pallaoro/,
   );
   expect(all(DE.terms)).toMatch(/von \[name\] angeboten/);
   expect(all(ES.terms)).toMatch(/la ofrece \[name\]/);
   expect(all(FR.terms)).toMatch(/fournie par \[name\]/);
-  expect(all(DE.privacy)).toMatch(/personenbezogenen Daten ist \[name\]/);
-  expect(all(ES.privacy)).toMatch(/tus datos personales es \[name\]/);
-  expect(all(FR.privacy)).toMatch(/tes données personnelles est \[name\]/);
-  // «write to» is always followed by the place to fill, or by «us».
+  expect(all(DE.privacy)).toMatch(/personenbezogenen Daten ist Luca Pallaoro/);
+  expect(all(ES.privacy)).toMatch(/tus datos personales es Luca Pallaoro/);
+  expect(all(FR.privacy)).toMatch(/tes données personnelles est Luca Pallaoro/);
+  // «write to» is followed by the place to fill, by «us», or by the address.
   for (const [, content] of CONTENTS) {
     for (const id of ABOUT_IDS) {
       const after = [
@@ -141,7 +173,7 @@ test("who provides MuW and who controls the data is never a name", () => {
         ),
       ];
       for (const match of after) {
-        expect(["[contact", "us"]).toContain(match[1].replace(/[.,]$/, ""));
+        expect(["[contact", "us", CONTACT]).toContain(match[1].replace(/[.,]$/, ""));
       }
     }
   }

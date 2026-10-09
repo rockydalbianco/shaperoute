@@ -223,6 +223,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'utente): da ripetere dopo ogni merge che cambia `site/`. Restano
   dell'utente il link per scaricare l'app (dopo l'App Store, TASK-152) e
   il merch.
+  **Parte D** in PR (2026-10-08): la pagina della privacy,
+  `getmuw.app/privacy/` in cinque lingue, scritta dal testo «Privacy»
+  dell'app, ora **definitivo** con le scelte dell'utente (titolare Luca
+  Pallaoro, email muw2610@gmail.com, basi giuridiche, 8 ottobre 2026) e
+  la frase sulla posizione a telefono bloccato (TASK-261). Il link per
+  scaricare arriva con la prima build TestFlight (scelta dell'utente).
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,

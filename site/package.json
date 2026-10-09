@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test \"tests/*.test.mjs\""
+    "test": "NODE_NO_WARNINGS=1 node --test \"tests/*.test.mjs\""
   }
 }

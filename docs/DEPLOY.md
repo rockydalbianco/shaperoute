@@ -217,19 +217,11 @@ le build vecchie, semplicemente non le raggiunge.
    sue credenziali):
 
    ```
-   npx eas-cli build --platform ios --profile production --auto-submit
+   npx eas-cli build --platform ios --profile production
    ```
 
    Il numero di build sale da solo (`autoIncrement`, le versioni stanno
-   su EAS). Con `--auto-submit`, a build finita EAS la carica su App
-   Store Connect, nell'app «MuW» (`submit.production.ios.ascAppId` in
-   `eas.json`, con la chiave API di App Store Connect salvata su EAS), e
-   dopo l'elaborazione di Apple compare in TestFlight. Senza quel profilo
-   la build si fa ma l'invio fallisce («Missing submit profile»); una
-   build già fatta si invia con
-   `npx eas-cli submit --platform ios --id ID-DELLA-BUILD`. `eas.json`
-   non entra nell'impronta, quindi il profilo `submit` non cambia il
-   runtime.
+   su EAS).
 3. **Un update per lo store**: prima su `preview` e provato sull'iPhone
    (A.6), poi la **stessa commit**, da un worktree pulito di `main`:
 

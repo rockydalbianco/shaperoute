@@ -75,3 +75,9 @@ it("sets the variant only in the production build profile", () => {
   expect(preview).toMatchObject({ channel: "preview" });
   expect(preview).not.toHaveProperty("env");
 });
+
+it("submits the production build to the MuW app on App Store Connect", () => {
+  // `eas build --auto-submit` needs a submit profile named like the build
+  // profile; without it the build runs and the upload fails (TASK-152).
+  expect(easJson.submit.production.ios.ascAppId).toBe("6820961883");
+});

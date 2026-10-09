@@ -22,5 +22,12 @@
         "APP_VARIANT": "production"
       }
     }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6820961883"
+      }
+    }
   }
 }

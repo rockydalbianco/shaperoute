@@ -644,6 +644,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   aggiornamento e `draw_examples --water` (stimato 4–8 ore, circa 50 MB)
   del coordinatore, con l'ok dell'utente; senza, il server disegna come
   prima e tiene per i telefoni dopo. `tasks/TASK-246.md`, «Parte B».
+- **API e app** — TASK-234 parte C: il «Try N km» della riga «comes out
+  better» si conta (scelta dell'utente del 2026-10-08, aggiunta ad
+  ADR-0197). PR #459: `hint_taken` con `hint: "better_distance"`,
+  additivo (un'API di prima risponde 422 e l'app lo ignora). Il segno
+  visibile mentre si calcola c'era già: il pannello dell'attesa con la
+  barra e «Cancel» prende subito il posto della riga. Nessun testo nuovo,
+  nessuna migrazione. Dopo il merge: il server (`signals.py`, ok
+  dell'utente, coordinatore) e la pubblicazione dell'app. File:
+  `tasks/TASK-234.md`, «File toccati».
 - **App** — TASK-263: tono scuro o chiaro, con la luminosità in cinque
   passi (ADR-0231; chiesto dall'utente il 2026-10-08). PR #444. In
   «Settings», «PREFERENCES», la riga «Tone»: «Dark» o «Light»,

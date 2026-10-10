@@ -706,8 +706,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   prima pagina di «Profile», anche senza account, con «Watch the tour».
   Solo app, nessun server. **Aspetta**: il sì dell'utente sui testi
   (cinque lingue) e la coda dei merge. `tasks/TASK-266.md`.
+  **Chiuso**: in `main` con la #479 (`1f64621e`, 2026-10-10); vedi
+  «Completato».
 
 ## Completato
+
+- **App** — TASK-266: il tour del primo avvio e «Guide» in «Profile»
+  (ADR-0235; richiesta dell'utente del 2026-10-09, che ha scelto il tour
+  sulle schermate vere). In `main` con la #479 (`1f64621e`, 2026-10-10).
+  Dopo l'animazione all'avvio, la prima volta, otto passi sopra l'app
+  vera (benvenuto, «START», forme, distanza, «Draw route», sport e
+  «Profile», pagine «Explore» e «Feed»), il resto scuro con il colore
+  fisso `scrim`; «Skip» non si tocca per 5 secondi e conta alla rovescia.
+  «Guide» subito sotto «Settings» con un account, in fondo senza; apre «How
+  MuW works» con «Watch the tour». Testi nelle cinque lingue **approvati
+  dall'utente** il 2026-10-10. Provato nel simulatore. Solo app: su
+  `preview` dal 2026-10-10 nel gruppo `ab5706fc` (da `1f64621e`, prima
+  delle push di TASK-262 A). `tasks/TASK-266.md`.
 
 - **App** — TASK-261 parte B (aggiunta ad ADR-0225): durante la corsa la
   voce parla a telefono bloccato e con l'interruttore silenzioso, e

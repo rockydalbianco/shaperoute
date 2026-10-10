@@ -4,9 +4,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Account } from "../account/useAccount";
 import { t, tLater } from "../i18n";
+import { askPushPermission } from "../notifications/pushDevice";
+import { OpenSettings } from "../permissions/OpenSettings";
 import { color, fontSize, radius, space } from "../theme/tokens";
 import { contactStyles } from "./ContactField";
-import { notificationsOf } from "./notificationFields";
+import { notificationsOf, PUSH_NOT_ALLOWED } from "./notificationFields";
 
 type Props = {
   user: User;
@@ -24,17 +26,22 @@ const SWITCHES: { which: Which; emoji: string; name: string }[] = [
 /**
  * «NOTIFICATIONS» in «Settings» (TASK-185, ADR-0206): «Email notifications»
  * and «Push notifications», each a switch kept in the account, both off
- * until turned on. MuW sends nothing yet, and the note under the rows
- * says so: turning «Push notifications» on only keeps the choice, the phone
- * is asked for no permission. A switch shows its new value at once and goes
- * back if the API refuses, with the reason under the rows; while one answer
- * is on its way, a second tap sends nothing.
+ * until turned on. Turning «Push notifications» on asks the phone for its
+ * permission, here and nowhere else (TASK-262, ADR-0226); refused, the
+ * switch stays off and says where to allow it. With the switch on the phone
+ * gets push notifications (`../notifications/usePushNotifications`); no
+ * email is sent yet, and the note under the rows says so. A switch shows
+ * its new value at once and goes back if the phone or the API refuses, with
+ * the reason under the rows; while one answer is on its way, a second tap
+ * sends nothing.
  */
 export function NotificationsSetting({ user, account }: Props) {
   const kept = notificationsOf(user);
   // The switch tapped, as it will be once the API has kept it.
   const [sending, setSending] = useState<{ which: Which; on: boolean } | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  // The phone refused notifications: the way to its settings, under the reason.
+  const [refused, setRefused] = useState(false);
   const busyNow = useRef(false);
   const shown: Notifications =
     sending === null ? kept : { ...kept, [sending.which]: sending.on };
@@ -46,6 +53,16 @@ export function NotificationsSetting({ user, account }: Props) {
     busyNow.current = true;
     setSending({ which, on });
     setProblem(null);
+    setRefused(false);
+    // The phone first: a switch on with notifications refused would send
+    // nothing (TASK-262).
+    if (which === "push" && on && (await askPushPermission()) !== "granted") {
+      busyNow.current = false;
+      setSending(null);
+      setProblem(t(PUSH_NOT_ALLOWED));
+      setRefused(true);
+      return;
+    }
     // Only the switch that changes: the other stays as the API has it.
     const failed = await account.changeNotifications(
       which === "email" ? { email: on } : { push: on },
@@ -87,10 +104,15 @@ export function NotificationsSetting({ user, account }: Props) {
       </View>
       <Text style={styles.note}>
         {t(
-          "MuW does not send notifications yet. Your choice is kept for when it does.",
+          "Push notifications tell you about follow requests, reactions, comments and tags. MuW does not send emails yet: your choice is kept for when it does.",
         )}
       </Text>
       {problem !== null && <Text style={styles.problem}>{problem}</Text>}
+      {refused && (
+        <View style={styles.open}>
+          <OpenSettings />
+        </View>
+      )}
     </View>
   );
 }
@@ -134,5 +156,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.md,
     color: color.error,
     fontSize: fontSize.body,
+  },
+  open: {
+    paddingHorizontal: space.md,
   },
 });

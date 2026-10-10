@@ -349,9 +349,10 @@ primo libero in `main` al merge):
   `DEFAULT` li riempie senza toccare le righe. Li legge solo il
   proprietario (`GET /me`, dove sono l'oggetto `notifications`) e li
   cambia `PUT /me/notifications`.
-- **Nessun codice li legge per mandare qualcosa**: l'invio (posta, push)
-  non c'è ancora. Chi lo farà parte da queste due colonne. Nessun indice:
-  lo chiederà l'invio, quando ci sarà.
+- `notify_push` lo legge l'invio delle push (TASK-262, migrazione
+  `push_tokens` sotto) prima di ogni notifica; `notify_email` aspetta
+  l'email (TASK-262, parte B). Nessun indice: si leggono per un account
+  alla volta.
 
 Migrazione `0018_route_rotation.sql` (TASK-232, parte C, ADR-0195; il
 numero è il primo libero in `main` al merge):
@@ -402,6 +403,24 @@ libero in `main` al merge):
   database.
 - Cancellare un account cancella i suoi blocchi, fatti e ricevuti, e le
   sue segnalazioni; le segnalazioni degli altri su di lui restano.
+
+Migrazione `0021_push_tokens.sql` (TASK-262 parte A, ADR-0226; il numero
+è il primo libero in `main` al merge):
+
+- `push_tokens`: `token` (il token Expo, `ExponentPushToken[…]`, chiave),
+  `user_id` (`ON DELETE CASCADE` su `users`), `platform` (`ios` o
+  `android`), `language` (`en`, `de`, `it`, `es`, `fr`, o `NULL`: le
+  notifiche in inglese), `updated_at` (l'ultima volta che l'app l'ha
+  mandato). Un indice su `user_id`: i telefoni di un destinatario.
+- **Una riga per token, un account per token**: il token è la chiave, e
+  un altro account che lo manda (il telefono ha cambiato mano) prende la
+  riga (`ON CONFLICT … DO UPDATE`). Un account ha tante righe quanti
+  telefoni.
+- Si cancella con `DELETE /me/push-token/{token}` (interruttore spento,
+  uscita dall'account), quando Expo dice il token morto
+  (`DeviceNotRegistered`) e con l'account. È **l'unico dato che lascia il
+  server per un terzo**: il token, con il testo della notifica, va al
+  servizio push di Expo, che lo passa ad Apple o a Google.
 
 ## Come si memorizza una traccia
 

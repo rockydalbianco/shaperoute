@@ -111,5 +111,6 @@ Emerso: la regola `react-hooks/refs` del lint scambia per un ref ogni
 oggetto passato a un hook il cui risultato fa da ref, per questo lo
 scorrimento è un componente di classe (`TourScrollView`); una pagina che
 entra scorrendo va misurata finché è ferma, non dopo un tempo fisso.
-Chi aggiorna l'app vedrà il tour una volta, come chi la scarica. Resta
-la pubblicazione su `preview`, del coordinatore.
+Chi aggiorna l'app vedrà il tour una volta, come chi la scarica. Su
+`preview` dal 2026-10-10 nel gruppo `ab5706fc` (da `1f64621e`), pubblicato
+dal coordinatore su richiesta dell'utente.

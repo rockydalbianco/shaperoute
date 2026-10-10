@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Annotated, Literal, get_args
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from psycopg import Connection
 from psycopg import errors as pg_errors
 from psycopg.rows import DictRow
@@ -53,6 +53,7 @@ from shaperoute_api.comments import (
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import NO_DRAWING, AuthorBody
 from shaperoute_api.follows import apart_sql
+from shaperoute_api.push import notify_owner
 from shaperoute_api.schemas import ErrorBody
 
 ReactionKind = Literal["super_like", "fire", "clap", "strong", "laugh", "wow"]
@@ -296,6 +297,7 @@ def reaction_routes() -> APIRouter:
         body: ReactionRequestBody,
         reactions: Annotated[Reactions, Depends(reactions_of)],
         user: Annotated[UserBody, Depends(current_user)],
+        request: Request,
     ) -> ReactionResultBody:
         _within(changed, user, TOO_MANY_REACTIONS)
         if body.kind == "super_like":
@@ -303,6 +305,7 @@ def reaction_routes() -> APIRouter:
         left = reactions.leave(user, drawing_id, body.kind, body.comment)
         if left is None:
             raise HTTPException(404, NO_DRAWING)
+        pushed_reaction(request, user, drawing_id, body)
         return left
 
     @router.delete(
@@ -326,3 +329,17 @@ def install_reactions(app: FastAPI) -> None:
     """The reactions under the drawings; after install_comments, whose
     handler answers a negative super like comment."""
     app.include_router(reaction_routes())
+
+
+# --- Push notifications (TASK-262, ADR-0226) ---
+
+
+def pushed_reaction(
+    request: Request, user: UserBody, drawing_id: str, body: ReactionRequestBody
+) -> None:
+    """After a reaction is kept: the drawing's owner is told (push.py), with
+    the beginning of a super like's comment. Another kind later is the same
+    news: not told again the same day."""
+    notify_owner(
+        request, "reaction", user.id, drawing_id, reaction=body.kind, text=body.comment
+    )

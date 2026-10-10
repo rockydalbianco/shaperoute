@@ -35,7 +35,7 @@ from typing import Annotated, Any, Literal
 from uuid import UUID
 
 import psycopg
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from psycopg import errors as pg_errors
 from psycopg.rows import DictRow
 from pydantic import BaseModel, ConfigDict, Field
@@ -64,6 +64,7 @@ from shaperoute_api.activities import (
 )
 from shaperoute_api.db import Database
 from shaperoute_api.follows import apart_sql, follows_sql
+from shaperoute_api.push import notify_tagged, tagged_before
 from shaperoute_api.recommended import preview
 from shaperoute_api.schemas import ErrorBody
 
@@ -807,10 +808,13 @@ def drawing_routes() -> APIRouter:
         body: DrawingRequestBody,
         drawings: Annotated[Drawings, Depends(drawings_of)],
         user: Annotated[UserBody, Depends(current_user)],
+        request: Request,
     ) -> MyDrawingBody:
+        before = tagged_before(request, user.id, key)
         kept = drawings.keep(user.id, key, body)
         if kept is None:
             raise HTTPException(404, UNKNOWN_ACTIVITY)
+        pushed_tags(request, user, kept, before)
         return kept
 
     @router.get("/users/{public_id}/drawings", responses={404: {"model": ErrorBody}})
@@ -844,3 +848,15 @@ def install_drawings(app: FastAPI) -> None:
     """The drawings of the accounts; after install_accounts, which sets the
     database and the errors."""
     app.include_router(drawing_routes())
+
+
+# --- Push notifications (TASK-262, ADR-0226) ---
+
+
+def pushed_tags(
+    request: Request, user: UserBody, kept: MyDrawingBody, before: frozenset[int]
+) -> None:
+    """After a drawing is kept: each member tagged in it now, and not before,
+    is told (push.py), when they may see it."""
+    if kept.id is not None:
+        notify_tagged(request, user.id, kept.id, before)

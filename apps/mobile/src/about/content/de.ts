@@ -371,7 +371,7 @@ const privacy: AboutDocument = {
             "Auf unserem Server in Deutschland, solange du das Konto hast.",
             "Wenn du dein Konto löschst, wird alles, was dir gehört, sofort gelöscht: Profil, Bild, Telefonnummer, Läufe, Zeichnungen, Favoriten, Kommentare, Reaktionen und Folgen.",
             "Jede Nacht wird eine Sicherungskopie der Datenbank gemacht und 13 Tage aufbewahrt: Ein gelöschtes Konto ist nach höchstens 14 Tagen aus jeder Sicherungskopie verschwunden.",
-            "Auf deinem Handy: die Sitzung, deine Einstellungen (Sprache, Sport), die Offline-Karten und die Läufe, die noch darauf warten, gesendet zu werden.",
+            "Auf deinem Handy: die Sitzung, deine Einstellungen (Sprache, Sport, Seen oder Meer), die Offline-Karten, die Läufe, die noch darauf warten, gesendet zu werden, und mit einem Konto die Gegend, in der deine Aktivitäten meist beginnen, um dir Seen und Meer in der Nähe vorzuschlagen; sie wird gelöscht, wenn du dich abmeldest.",
           ],
         },
         "Die Verbindung zwischen der App und unserem Server ist verschlüsselt (HTTPS).",

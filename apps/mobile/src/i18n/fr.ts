@@ -1151,4 +1151,11 @@ export const FR: Table = {
     "Les notifications push te préviennent des demandes de suivi, des réactions, des commentaires et des identifications. MuW n'envoie pas encore d'e-mails : ton choix est gardé pour quand ce sera le cas.",
   "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
     "Les notifications de MuW sont désactivées sur ce téléphone. Autorise-les dans Réglages pour les activer.",
+
+  // src/paddle/PaddleExplore.tsx (TASK-269)
+  Lakes: "Lacs",
+  Sea: "Mer",
+  "Suggested near {place}": "Suggérés près de {place}",
+  "Suggested near where you usually start": "Suggérés près de ton départ habituel",
+  "Suggested near your start": "Suggérés près de ton départ",
 };

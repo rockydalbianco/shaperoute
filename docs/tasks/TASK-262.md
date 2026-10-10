@@ -1,6 +1,6 @@
 # TASK-262 — Le notifiche inviate davvero: push, email, amici dalla rubrica
 
-**Stato**: In lavorazione (parte A) · B e C Todo
+**Stato**: Parte A Done (2026-10-10, PR #451) · B e C Todo
 **Fase**: 4 · **Branch**: `feat/TASK-262-a-push` (parte A)
 **Dipende da**: TASK-185 (i due interruttori), TASK-211 (follow),
 TASK-119 (reazioni), TASK-120 (commenti), TASK-208 (tag), TASK-121
@@ -211,6 +211,24 @@ la sa solo dai token push), il mittente e il dominio (`getmuw.app`).
 dell'utente.
 
 ## Esito
+
+**Parte A fatta il 2026-10-10**: PR #451, in `main` con il merge
+`578c2f7e` (dopo TASK-121, #457, e #475). Le push partono: tabella
+`push_tokens` (migrazione `0021_push_tokens.sql`), `PUT`/`DELETE
+/me/push-token`, invio con Expo fuori dalla richiesta, i cinque eventi
+dai loro moduli con i blocchi di TASK-121, i token morti cancellati;
+nell'app `expo-notifications`, il permesso solo all'interruttore, il
+token una volta per telefono, il tocco che apre il disegno o il
+profilo. Testi approvati dall'utente nelle cinque lingue. In locale
+verdi tutta la parte JS, i test del sito e i test dell'API senza
+database; quelli con il database (`test_push_hooks.py` compreso) sono
+passati in locale prima che il disco di Docker si riempisse, e nella CI.
+**Restano**: il server con la `0021` e la pubblicazione (del
+coordinatore, con l'ok dell'utente); la prova vera con una build nativa
+sull'iPhone (Expo Go non riceve push); `npm install` nel checkout
+principale (`expo-notifications` non c'è ancora). Parti B e C Todo.
+
+Quanto segue è il diario della parte A mentre aspettava TASK-121.
 
 **Parte A in lavorazione**, sessione chiusa il 2026-10-09 su richiesta
 dell'utente. Dove si è arrivati:

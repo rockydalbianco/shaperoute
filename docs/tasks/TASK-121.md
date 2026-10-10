@@ -54,7 +54,7 @@ Adattati dal brief:
 - [x] Il menu, la conferma e «Blocked people» hanno i loro test.
 - [x] Test deterministici verdi nell'API e nell'app.
 - [x] I testi nuovi confermati dall'utente nelle cinque lingue (2026-10-09).
-- [ ] Prova sull'iPhone con due account (dopo la migrazione sul server).
+- [x] Prova sull'iPhone con due account (2026-10-10, dall'utente).
 
 ~~Contenuto nascosto da un admin, endpoint `/admin`: fuori dal brief.~~
 
@@ -107,7 +107,8 @@ in `moderation.py`, come i corpi degli altri moduli.
 
 ## Esito
 
-Fatto il 2026-10-09 (branch `feat/TASK-121-report-block`, ADR-0228).
+Fatto il 2026-10-09 (branch `feat/TASK-121-report-block`, ADR-0228), in
+`main` con la #457 (`a66341aa`) il 2026-10-10.
 Migrazione `0020_moderation.sql` con `blocks` e `reports`. Un blocco, fatto
 da uno dei due, li tiene lontani nei due sensi: feed, commenti (né letti,
 né scritti, né contati), reazioni (non contate; il disegno dell'altro non
@@ -135,5 +136,6 @@ Restano:
 - Fuori: i tag in un disegno, «Recommended» (TASK-092) e le notifiche
   vecchie.
 - I testi nuovi sono confermati dall'utente (2026-10-09, «ok i testi vanno bene»).
-- La migrazione sul server (ok dell'utente, coordinatore) e la prova
-  sull'iPhone con due account.
+- La migrazione è sul server dalle 04:25Z del 2026-10-10 (coordinatore,
+  con l'ok dell'utente); l'app su preview nel gruppo `872cd266`. Provata
+  dall'utente sull'iPhone con due account il 2026-10-10: funziona.

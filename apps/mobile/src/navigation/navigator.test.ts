@@ -6,6 +6,7 @@ import {
   BACK_FIXES,
   chainFrom,
   type Cue,
+  GAP_MS,
   type Navigation,
   OFF_SECONDS,
   onFix,
@@ -314,4 +315,128 @@ test("a route that passes near its own end arrives only at the end (TASK-253)", 
 test("a chain is the direction and the joined ones after it", () => {
   expect(chainFrom(DIRECTIONS, 1).map((d) => d.turn)).toEqual(["left", "right"]);
   expect(chainFrom(DIRECTIONS, 3).map((d) => d.turn)).toEqual(["u-turn"]);
+});
+
+/** Fixes on the way out every 6 m and FIX_S, from `fromM` to `toM`, the
+ * first at `startMs`, with a good accuracy. */
+function outward(
+  fromM: number,
+  toM: number,
+  startMs: number,
+): { at: LatLon; reading: Reading }[] {
+  const fixes: { at: LatLon; reading: Reading }[] = [];
+  for (let m = fromM, i = 0; m <= toM; m += 6, i += 1) {
+    fixes.push({
+      at: east(m),
+      reading: { accuracyM: 8, timeMs: startMs + i * FIX_S * 1000 },
+    });
+  }
+  return fixes;
+}
+
+/** Fix by fix from `navigation`, with the readings given. */
+function follow(
+  navigation: Navigation,
+  fixes: { at: LatLon; reading: Reading }[],
+): { navigation: Navigation; cues: Cue[] } {
+  const cues: Cue[] = [];
+  for (const { at, reading } of fixes) {
+    const result = onFix(navigation, at, reading);
+    navigation = result.navigation;
+    cues.push(...result.cues);
+  }
+  return { navigation, cues };
+}
+
+test("after a gap the runner is found further ahead than locate looks (TASK-270)", () => {
+  const start = startNavigation(POINTS, DIRECTIONS).navigation;
+  const before = follow(start, outward(20, 296, 0));
+  expect(before.navigation.alongM).toBeCloseTo(296, -1);
+  const lastMs = before.navigation.lastFixMs ?? 0;
+  // Three minutes with the app behind another: the runner went on to 800 m
+  // out, past the turns at 400 m, and 800 m out is the way back at 1200 m too.
+  const after = follow(before.navigation, outward(800, 812, lastMs + 3 * 60_000));
+  expect(GAP_MS).toBe(20_000);
+  expect(after.navigation.alongM).toBeCloseTo(812, -1);
+  expect(after.navigation.offRoute).toBe(false);
+  expect(after.navigation.lost).toBe(false);
+  // Nothing said for the turns behind, nor about being off the route.
+  expect(after.cues).toEqual([]);
+  // The way goes on from there: the U-turn at 1000 m is said ahead of it.
+  const on = follow(after.navigation, outward(818, 956, lastMs + 3 * 60_000 + 6000));
+  expect(on.cues).toHaveLength(1);
+  expect(on.cues[0].say).toContain("U-turn");
+});
+
+test("without a gap, a fix beyond where locate looks is off the route, as before", () => {
+  const start = startNavigation(POINTS, DIRECTIONS).navigation;
+  const before = follow(start, outward(20, 296, 0));
+  const lastMs = before.navigation.lastFixMs ?? 0;
+  const jump = Array.from({ length: 8 }, (_, i) => ({
+    at: east(800 + 6 * i),
+    reading: { accuracyM: 8, timeMs: lastMs + (i + 1) * FIX_S * 1000 },
+  }));
+  const after = follow(before.navigation, jump);
+  expect(after.cues).toEqual([OFF_CUE]);
+  expect(after.navigation.alongM).toBeCloseTo(296, -1);
+});
+
+test("after a gap, one fix ahead is not enough, and a poor one counts for nothing", () => {
+  const start = startNavigation(POINTS, DIRECTIONS).navigation;
+  const before = follow(start, outward(20, 296, 0));
+  const backMs = (before.navigation.lastFixMs ?? 0) + 2 * 60_000;
+  const poor = onFix(before.navigation, east(800), { accuracyM: 80, timeMs: backMs });
+  expect(poor.navigation.lost).toBe(true);
+  expect(poor.navigation.alongM).toBeCloseTo(296, -1);
+  const first = onFix(poor.navigation, east(806), {
+    accuracyM: 8,
+    timeMs: backMs + 2000,
+  });
+  expect(first.navigation.found?.fixes).toBe(1);
+  expect(first.navigation.alongM).toBeCloseTo(296, -1);
+  const second = onFix(first.navigation, east(812), {
+    accuracyM: 8,
+    timeMs: backMs + 4000,
+  });
+  expect(second.navigation.alongM).toBeCloseTo(812, -1);
+  expect(second.cues).toEqual([]);
+});
+
+test("after a gap the runner is looked for where they stopped first", () => {
+  const start = startNavigation(POINTS, DIRECTIONS).navigation;
+  const before = follow(start, outward(20, 296, 0));
+  // A minute at a light, then on along the route.
+  const lastMs = before.navigation.lastFixMs ?? 0;
+  const after = follow(before.navigation, outward(302, 314, lastMs + 60_000));
+  expect(after.navigation.alongM).toBeCloseTo(314, -1);
+  expect(after.navigation.lost).toBe(false);
+  expect(after.cues).toEqual([]);
+});
+
+test("off the route before a gap, the runner is back on it further ahead", () => {
+  const start = startNavigation(POINTS, DIRECTIONS).navigation;
+  const before = follow(start, outward(20, 296, 0));
+  const lastMs = before.navigation.lastFixMs ?? 0;
+  const off = follow(
+    before.navigation,
+    Array.from({ length: 10 }, (_, i) => ({
+      at: north(OFF_ROUTE_M + 20, east(300 + 6 * i)),
+      reading: { accuracyM: 8, timeMs: lastMs + (i + 1) * FIX_S * 1000 },
+    })),
+  );
+  expect(off.navigation.offRoute).toBe(true);
+  const backMs = (off.navigation.lastFixMs ?? 0) + 2 * 60_000;
+  const back = follow(off.navigation, outward(700, 706, backMs));
+  expect(back.navigation.offRoute).toBe(false);
+  expect(back.navigation.alongM).toBeCloseTo(706, -1);
+  expect(back.cues).toEqual([BACK_CUE]);
+});
+
+test("a runner never on the route yet is not looked for further on", () => {
+  const start = startNavigation(POINTS, DIRECTIONS).navigation;
+  // Waiting 300 m from the start, then a walk along the route at 800 m.
+  const waiting = onFix(start, north(300, east(0)), { accuracyM: 8, timeMs: 0 });
+  const walk = follow(waiting.navigation, outward(800, 836, 60_000));
+  expect(walk.navigation.alongM).toBe(0);
+  expect(walk.cues).toEqual([OFF_CUE]);
 });

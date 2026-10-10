@@ -369,7 +369,7 @@ const privacy: AboutDocument = {
             "Sul nostro server in Germania, finché hai l'account.",
             "Quando elimini l'account, tutto quello che è tuo si cancella subito: profilo, foto, numero di telefono, corse, disegni, preferiti, commenti, reazioni e follow.",
             "Una copia di sicurezza del database si fa ogni notte e si tiene 13 giorni: un account eliminato è fuori da ogni copia entro 14 giorni.",
-            "Sul tuo telefono: la sessione, le tue scelte (lingua, sport), le mappe offline e le corse che aspettano ancora di partire.",
+            "Sul tuo telefono: la sessione, le tue scelte (lingua, sport, laghi o mare), le mappe offline, le corse che aspettano ancora di partire e, con un account, la zona da cui partono di solito le tue attività, per suggerirti laghi e mare vicini; si cancella quando esci dall'account.",
           ],
         },
         "Il collegamento fra l'app e il nostro server è cifrato (HTTPS).",

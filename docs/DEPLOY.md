@@ -258,6 +258,20 @@ le build vecchie, semplicemente non le raggiunge.
    prima build va fatto comunque**: l'impronta calcolata sul Mac e
    quella di EAS non sono ancora state confrontate.
 
+5. **Testi e screenshot della scheda** (TASK-152): stanno in
+   `apps/mobile/store.config.json` e `apps/mobile/store/screenshots/`.
+   Da `apps/mobile`, con le credenziali Apple dell'utente:
+
+   ```
+   npx eas-cli metadata:push
+   ```
+
+   Carica titolo, sottotitolo, descrizione, parole chiave, link,
+   categorie e screenshot nella versione in preparazione su App Store
+   Connect. `npx eas-cli metadata:lint` controlla il file senza
+   caricarlo. Privacy, età, prezzo e account di prova si compilano a mano
+   su App Store Connect.
+
 L'impronta non guarda la versione, il numero di build né `eas.json`
 (`apps/mobile/fingerprint.config.js`): alzarli non separa gli update.
 Una modifica solo JavaScript non la cambia mai.

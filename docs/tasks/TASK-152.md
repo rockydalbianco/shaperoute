@@ -61,7 +61,10 @@ privacy, così AdMob può verificare l'app (TASK-153).
    online lì, l'API su `api.getmuw.app`.
 4. **«MuW»** (TASK-260, ADR-0224). Se il nome è già preso sull'App
    Store lo si scopre quando si crea la scheda.
-5. *Aperta.*
+5. **Solo iPhone per ora; Android dopo**, come task a parte (2026-10-10,
+   «per ora per iphone poi pubblichiamo per google»). Anche niente iPad:
+   `supportsTablet: false`, così su iPad l'app gira come app per iPhone e
+   Apple non chiede screenshot né prove su iPad.
 
 ## Cosa fare
 
@@ -107,6 +110,8 @@ apps/mobile/eas.json
 apps/mobile/app.config.ts          (nuovo, parte A)
 apps/mobile/fingerprint.config.js  (nuovo, parte A)
 apps/mobile/__tests__/appConfig.test.ts  (nuovo, parte A)
+apps/mobile/store.config.json      (nuovo, parte B: testi della scheda)
+apps/mobile/store/                 (nuovo, parte B: screenshot della scheda)
 docs/DEPLOY.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -234,3 +239,44 @@ non cambia.
   annunci si fanno dopo. TASK-153 esce dalla build 5; la build dello
   store non deve mostrare l'annuncio di prova di Google che oggi compare
   a ogni ricerca (TASK-166): chi lo spegne lo decide il Coordinatore.
+- **Scheda dell'App Store** (parte B, 2026-10-09/10): testi in inglese
+  (en-US) **approvati dall'utente** il 2026-10-09 («testi ok») e 5
+  screenshot iPhone 6,9″ (1320×2868) **approvati** il 2026-10-10
+  («screeenshoot si»), in `apps/mobile/store.config.json` e
+  `apps/mobile/store/screenshots/` (JPEG). Si caricano con `eas
+  metadata:push` (`DEPLOY.md` A.7, punto 5). Titolo «MuW», sottotitolo
+  «Draw a shape, then run it», categorie Salute e fitness + Navigazione,
+  copyright «2026 Luca Pallaoro», sito `https://getmuw.app`, assistenza
+  `https://getmuw.app/support/` (pagina di TASK-237), privacy
+  `https://getmuw.app/privacy/`; uscita manuale dopo l'approvazione.
+  Screenshot dall'app vera (`preview` in Expo Go, senza il pulsante di
+  Expo Go, ora 9:41) su un simulatore iPhone 18 Pro Max, a Trento: cuore
+  di 5 km, corsa con la navigazione (posizione simulata lungo lo stesso
+  percorso chiesto all'API locale), Explore, Feed, Draw.
+- **Zona di Cupertino** sul server di produzione dal 2026-10-10 03:11Z
+  (Coordinatore): copre Apple Park; un cuore di 5 km da lì risponde in
+  ~14 s. Rischio «il revisore negli USA non riesce a disegnare» chiuso.
+- **Fa l'utente su App Store Connect** (con le sue credenziali), prima
+  dell'invio: Digital Services Act → non-trader; prezzo gratis, tutti i
+  paesi; Age Rating (tutto «No» tranne contenuti degli utenti) con
+  l'età alzata a 16+, come i termini; Content Rights (mappe
+  OpenStreetMap); App Privacy senza tracciamento né dati pubblicitari
+  (AdMob tolto dalla build, TASK-267): email, telefono, nome Strava,
+  dati di fitness, posizione precisa, foto, contenuti degli utenti, User
+  ID e Device ID (push) collegati alla persona per il funzionamento;
+  posizione approssimativa, ricerche e interazioni non collegate, per
+  statistiche; un account di prova per il revisore in «App Review
+  Information».
+- **Note per il revisore** (da incollare in App Store Connect):
+  «MuW draws a route in the shape you choose on real streets. To try it:
+  open Draw, keep "My position" or pick "Another place", choose a shape
+  (e.g. heart) and 5 km, tap "Draw route", then "Start". Near Apple Park
+  a 5 km heart takes about 15 seconds. Location: the app asks for
+  location only while in use; during a run the user started, it keeps
+  recording the track with the screen locked (blue indicator) until the
+  run is stopped. Background audio: turn-by-turn voice guidance during a
+  run or ride, with the screen locked. Feed, comments and profile need an
+  account: use the demo account below. Users can report a drawing or a
+  comment and block a person.» La riga sull'audio vale
+  solo se TASK-261 B entra nella build 5; quella su segnala e blocca
+  quando #457 è in main.

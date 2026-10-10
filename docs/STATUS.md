@@ -167,6 +167,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `.claude/worktrees/TASK-245-C/out/task245c-beaches/new/water/` sul Mac);
   poi il merge, un solo `draw_examples --water` e la pubblicazione
   dell'app, mai prima dell'acqua. File: `tasks/TASK-245.md`, «parte C».
+  **2026-10-10: l'acqua è sul server** (38 file, 20,3 MB, SHA-256 uguali,
+  provata nel container; ok dell'utente). Aspetta il merge della #480.
 - **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
   all'agente dall'utente il 2026-10-07). Branch
   `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:

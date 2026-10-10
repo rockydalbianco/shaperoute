@@ -319,6 +319,8 @@ lontano dal mare, il nodo della frazione sul mare (tra parentesi).
   dal nodo del paese.
 - Tempi: 29 minuti per scrivere l'acqua (pyosmium, `cuts.py` di
   TASK-233), qualche minuto per le prove a 2 km.
+- **Tutte e otto le forme** di «Explore» (chieste come le chiede l'app)
+  in **67 posti su 67** (`eight.log`).
 
 **Fatto**: `PLACES` (67, in ordine), il test del numero dei posti,
 `beaches.json` scritto dal comando (67 righe; Prettier), un test nuovo in
@@ -330,3 +332,25 @@ in «Another place» ed è il posto di «Near me» dalla sua riva).
 del server di TASK-245 e i 38 nuovi; le prove sono fatte lì),
 **`new/water/` (i 38 file da copiare)** con `new-sha256.txt`, `list.log`,
 `eight.log`, `scripts/run.sh` (`boxes`, `cut`, `list`) ed `eight.py`.
+
+### 2026-10-10, l'acqua sul server
+
+Ok dell'utente in questa sessione («ok, copia l'acqua e aggiorna il
+server», che vale anche per l'aggiornamento del server dopo il merge) e via
+del coordinatore, che ha detto chi copia (questa sessione) e come.
+
+- **38 file, 20,3 MB** copiati con `rsync --ignore-existing` in
+  `/root/shaperoute/data/cache/water/` (da stamattina su un Volume montato
+  in bind, stesso percorso): 38 trasferiti, nessuno già presente, nessuno
+  sovrascritto; poi `chown 10001:10001` e `chmod 644` come gli altri. La
+  cartella aveva 253 file (100 MB), ora **291 (119 MB)**. Nessun riavvio;
+  il lavoro delle zone europee girava in un'altra cartella.
+- **Le impronte coincidono**: lo SHA-256 dei 38 file sul server è quello
+  dei file del Mac su cui il motore ha provato i posti.
+- **Provato dentro il container dell'API** (il container vede 291 file):
+  un cuore da 2 km sull'acqua con `plan_water` da Positano (3,0 s),
+  Lampedusa (7,1 s) e Grado (9,7 s), tutti riusciti.
+- **Resta** (del coordinatore): dopo il merge l'aggiornamento del server
+  (`beach_catalog.py`, ok dell'utente già dato), la pubblicazione dell'app
+  (`beaches.json`) e un solo `draw_examples --water` (TASK-246 B), con l'ok
+  dell'utente, finito il lavoro delle zone europee.

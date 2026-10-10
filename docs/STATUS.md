@@ -157,12 +157,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-261 parte B — La voce a telefono bloccato** (aggiunta ad
+  ADR-0225; scelte dell'utente del 2026-10-10). Branch
+  `feat/TASK-261-b-voice-background`. Durante la corsa la voce parla a
+  telefono bloccato e col silenzioso e abbassa Spotify mentre parla
+  (`runAudio.ts`, dipendenza nuova `expo-audio`, `UIBackgroundModes`
+  `audio`). PR #475. Serve una build nativa nuova (obiettivo: build 5);
+  il testo nuovo del microfono approvato dall'utente il 2026-10-10.
+  File: `tasks/TASK-261.md`, «File toccati (parte B)».
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
   scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice
   nativo di AdMob non entra nella build (`react-native.config.js`); il Feed
   ha solo i post. Preview ed Expo Go come prima. TASK-153 (annunci veri)
   aspetta la società dell'utente.
+  **Chiuso il 2026-10-10** (#469, #474): voce in «Completato».
 - **TASK-268 — Su «Data» «Map» e «Pause» restano sullo schermo**
   (aggiunta ad ADR-0137; dalla corsa su strada dell'utente del
   2026-10-09). Branch `fix/TASK-268-run-data-page`. Con l'indicazione in
@@ -669,6 +678,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-121: segnalare e bloccare (ADR-0228; brief del
+  coordinatore del 2026-10-07/08). Branch `feat/TASK-121-report-block`,
+  migrazione `0020_moderation.sql` (`blocks`, `reports`). Un blocco tiene
+  lontani i due nei due sensi in feed, commenti, reazioni, ricerca,
+  follow, profilo e disegni (anche aperti per id), e chiude ogni follow
+  fra loro; `PUT`/`DELETE
+  /users/{id}/block`, `GET /me/blocked`, `POST /reports` (disegno,
+  commento o persona, con un motivo di cinque). Nessun endpoint legge le
+  segnalazioni. Nell'app il «…» sul post e sul profilo di un altro, il
+  foglio con «Report» e «Block», «Blocked people» in «Profile»; 21 testi
+  nuovi nelle cinque lingue, **confermati dall'utente** il 2026-10-09. Restano la
+  migrazione sul server (ok dell'utente, coordinatore) e la prova con due
+  account. `tasks/TASK-121.md`.
+
+- **App e sito** — TASK-267 (ADR-0237): la 1.0 dell'App Store **senza
+  pubblicità**, scelta dell'utente del 2026-10-09 (gli annunci con la
+  società). Con `APP_VARIANT=production` il codice nativo di AdMob non
+  entra nella build (#469); «Termini» e «Privacy» dicono che MuW non mostra
+  pubblicità, nell'app e su `getmuw.app/privacy` (#474, testi approvati).
+  Preview ed Expo Go come prima. La verifica sulla build 5 è della sessione
+  «App Store submission». TASK-153 (annunci veri) aspetta la società.
 - **API** — TASK-246 parte B: il server tiene le figure «Paddle» dei
   laghi e delle spiagge (aggiunta ad ADR-0211). In `main` dalla #462
   (`589fdece`, 2026-10-09, merge chiesto dall'utente al verde). Le figure

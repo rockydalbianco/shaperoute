@@ -1115,6 +1115,32 @@ export const IT: Table = {
   // src/explore/RecommendedRow.tsx (TASK-092)
   RECOMMENDED: "CONSIGLIATI",
 
+  // src/social/ReportMenu.tsx, BlockedPeople.tsx (TASK-121: report and block)
+  More: "Altro",
+  "Report or block": "Segnala o blocca",
+  Report: "Segnala",
+  "Block {user}": "Blocca {user}",
+  "Why are you reporting this?": "Perché lo segnali?",
+  Spam: "Spam",
+  "Offensive or hateful": "Offensivo o d'odio",
+  "Harassment or bullying": "Molestie o bullismo",
+  "Nudity or sexual content": "Nudità o contenuti sessuali",
+  "Something else": "Altro motivo",
+  "Thanks for telling us. We will look at it.":
+    "Grazie per avercelo detto. Lo controlleremo.",
+  "Block {user}?": "Bloccare {user}?",
+  "You will not see each other's drawings, comments or profile, and any follow between you ends. They are not told.":
+    "Non vedrete più i disegni, i commenti e il profilo l'uno dell'altro, e ogni follow fra voi finisce. Non riceverà alcun avviso.",
+  Block: "Blocca",
+  "Sending…": "Invio…",
+  "This is not available any more.": "Non è più disponibile.",
+  "Blocked people": "Persone bloccate",
+  "You have not blocked anyone.": "Non hai bloccato nessuno.",
+  Unblock: "Sblocca",
+  "Unblock {name}": "Sblocca {name}",
+  "You blocked {user}. Unblock them from Blocked people in your profile.":
+    "Hai bloccato {user}. Puoi sbloccarlo da Persone bloccate nel tuo profilo.",
+
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you about follow requests, reactions, comments and tags. MuW does not send emails yet: your choice is kept for when it does.":
     "Le notifiche push ti avvisano di richieste di follow, reazioni, commenti e tag. MuW non manda ancora email: la tua scelta resta salvata per quando lo farà.",

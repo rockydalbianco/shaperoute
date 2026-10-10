@@ -41,8 +41,8 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `drawing_tags` | gli iscritti taggati in un disegno, in ordine, al più 10 | TASK-208 |
 | `reactions` | disegno, chi reagisce (coppia unica: una a testa), quale delle sei, data | TASK-119 |
 | `comments` | disegno, autore, testo (1–500), data | TASK-120 |
-| `reports` | chi segnala, cosa (corsa, commento, utente), motivo, data, gestita da e quando | TASK-121 |
-| `blocks` | chi blocca, chi è bloccato | TASK-121 |
+| `reports` | chi segnala, cosa (disegno, commento, utente) e il suo id, motivo da un elenco corto, data; una riga per chi segnala e per cosa | TASK-121 |
+| `blocks` | chi blocca, chi è bloccato, data; una riga tiene lontani i due nei due sensi | TASK-121 |
 
 Tutte le tabelle legate a un utente hanno `ON DELETE CASCADE`: cancellare
 la riga di `users` cancella tutto il resto, anche i suoi
@@ -381,6 +381,28 @@ libero in `main` al merge):
 - **Assente** per ogni corsa di prima e per una corsa mai condivisa: si
   legge `null`. Nessun indice: non si cerca per post. Cade con la corsa
   (è una colonna sua) e con l'account.
+
+Migrazione `0020_moderation.sql` (TASK-121, ADR-0228; il numero è il primo
+libero in `main` al merge):
+
+- `blocks`: `blocker_id` e `blocked_id` (tutti e due `ON DELETE CASCADE`
+  su `users`, chiave la coppia, mai sé stessi), `created_at`. Una riga per
+  coppia, in un senso: **basta una delle due righe** perché i due non si
+  vedano (`follows.apart_sql` la cerca nei due sensi; un indice su
+  `blocked_id` per il senso inverso). Sbloccare cancella la riga.
+- `reports`: `id` (uuid casuale), `reporter_id` (`ON DELETE CASCADE`),
+  `kind` (`drawing`, `comment` o `user`), `target_id` (l'id del disegno o
+  del commento, il `public_id` dell'iscritto), `reason` (`spam`,
+  `offensive`, `harassment`, `sexual`, `other`; lo stesso elenco del
+  codice e di `shared-types`), `created_at`. **Unica la terna**
+  `(reporter_id, kind, target_id)`: segnalato di nuovo, la riga prende il
+  motivo e l'ora nuovi. **Nessuna chiave esterna** su `target_id`: la
+  segnalazione resta anche se il disegno, il commento o l'account
+  spariscono. Indice su `(kind, target_id)` per leggere le segnalazioni
+  di una cosa. Nessun endpoint le legge (ADR-0228): si leggono nel
+  database.
+- Cancellare un account cancella i suoi blocchi, fatti e ricevuti, e le
+  sue segnalazioni; le segnalazioni degli altri su di lui restano.
 
 Migrazione `0020_push_tokens.sql` (TASK-262 parte A, ADR-0226; il numero
 è il primo libero in `main` al merge):

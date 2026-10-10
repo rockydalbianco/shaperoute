@@ -1009,6 +1009,38 @@ export interface FeedPage {
   next: string | null;
 }
 
+/**
+ * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
+ * (a post of the feed), a comment, or a member.
+ */
+export const REPORT_KINDS = ["drawing", "comment", "user"] as const;
+export type ReportKind = (typeof REPORT_KINDS)[number];
+
+/**
+ * The short list of reasons, in the order the app shows them. Codes, never
+ * the words: the app says them in its language.
+ */
+export const REPORT_REASONS = [
+  "spam",
+  "offensive",
+  "harassment",
+  "sexual",
+  "other",
+] as const;
+export type ReportReason = (typeof REPORT_REASONS)[number];
+
+/**
+ * POST /reports: kept once for each reporter and thing, the latest reason
+ * kept; 204. `id` is the drawing's id, the comment's id or the member's
+ * public_id. PUT and DELETE /users/{public_id}/block keep two members
+ * apart both ways, and GET /me/blocked is a PeoplePage of those blocked.
+ */
+export interface ReportRequest {
+  kind: ReportKind;
+  id: string;
+  reason: ReportReason;
+}
+
 /** The platform of a phone, as the push service names it (TASK-262). */
 export type PushPlatform = "ios" | "android";
 

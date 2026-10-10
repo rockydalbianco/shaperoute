@@ -670,7 +670,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuovi nelle cinque lingue, **confermati dall'utente** il 2026-10-09. Restano la
   migrazione sul server (ok dell'utente, coordinatore) e la prova con due
   account. `tasks/TASK-121.md`. **In `main`** con la #457 (`a66341aa`,
-  2026-10-10): chiuso; da qui partono TASK-262 A e C.
+  2026-10-10): chiuso; da qui partono TASK-262 A e C. **Sul server** dalle
+  04:25Z del 2026-10-10 (migrazione 0020, ok dell'utente; copia
+  `shaperoute-2026-10-10T0421Z.dump`, immagine `before-task121`). Resta la
+  prova sull'iPhone con due account.
 
 - **App e sito** — TASK-267 (ADR-0237): la 1.0 dell'App Store **senza
   pubblicità**, scelta dell'utente del 2026-10-09 (gli annunci con la

@@ -136,5 +136,5 @@ Restano:
 - Fuori: i tag in un disegno, «Recommended» (TASK-092) e le notifiche
   vecchie.
 - I testi nuovi sono confermati dall'utente (2026-10-09, «ok i testi vanno bene»).
-- La migrazione sul server (ok dell'utente, coordinatore) e la prova
-  sull'iPhone con due account.
+- La prova sull'iPhone con due account. La migrazione è sul server dalle
+  04:25Z del 2026-10-10 (coordinatore, con l'ok dell'utente).

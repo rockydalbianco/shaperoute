@@ -177,6 +177,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'app, mai prima dell'acqua. File: `tasks/TASK-245.md`, «parte C».
   **2026-10-10: l'acqua è sul server** (38 file, 20,3 MB, SHA-256 uguali,
   provata nel container; ok dell'utente). Aspetta il merge della #480.
+  **Chiusa** il 2026-10-10: #480 mergiata (`793fa11`); vedi «Completato».
 - **TASK-261 parte B — La voce a telefono bloccato** (aggiunta ad
   ADR-0225; scelte dell'utente del 2026-10-10). Branch
   `feat/TASK-261-b-voice-background`. Durante la corsa la voce parla a
@@ -753,6 +754,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   stessa zona. Frase nuova nella privacy, app e sito. Richiesta
   dell'utente del 2026-10-09, il come deciso dall'agente su delega; testi
   approvati. Copia del sito e pubblicazione: del coordinatore.
+- **App e API** — TASK-245 parte C (ADR-0210, aggiornamento): **38 posti
+  di mare in più** per «Paddle», scelti dall'utente il 2026-10-09 sulla
+  proposta dell'agente, sulle coste che ne avevano meno: `PLACES` e
+  `beaches.json` da 29 a 67, **tutti a 2 km** e con le otto forme, nessuno
+  scartato. L'acqua (38 file, 20,3 MB) è sul server dal 2026-10-10, prima
+  del merge, con l'ok dell'utente; SHA-256 uguali, provata nel container.
+  PR **#480** mergiata (`793fa11`, 05:00Z) col via del coordinatore.
+  **Del coordinatore**: l'aggiornamento del server (`beach_catalog.py`, ok
+  dell'utente già dato), la pubblicazione dell'app e un solo
+  `draw_examples --water`, con l'ok dell'utente, finito il lavoro delle
+  zone europee. Poi la prova sull'iPhone. `tasks/TASK-245.md`, «parte C».
+  **Fatto dal coordinatore**: server con `beach_catalog.py` (67 posti) dal
+  2026-10-10 05:11Z (main `55b990be`), su `preview` nel gruppo `999502dd`
+  e nella build 5 (`793fa112`). Il `draw_examples --water` aspetta
+  l'approvazione di Apple della 1.0 e l'ok dell'utente.
 - **App** — TASK-261 parte B (aggiunta ad ADR-0225): durante la corsa la
   voce parla a telefono bloccato e con l'interruttore silenzioso, e
   abbassa la musica di un'altra app mentre parla (scelte dell'utente del

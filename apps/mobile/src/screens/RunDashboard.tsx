@@ -466,6 +466,13 @@ function DataPage({
         duration: SLIDE_MS,
         useNativeDriver: true,
       }).start(onClose);
+    /** The page slides back where it was: a swipe too short, or taken. */
+    const stay = () =>
+      Animated.timing(x, {
+        toValue: 0,
+        duration: SLIDE_MS,
+        useNativeDriver: true,
+      }).start();
     return {
       close,
       pan: PanResponder.create({
@@ -476,13 +483,13 @@ function DataPage({
           if (swipedTo(dx, dy) === "map") {
             close();
           } else {
-            Animated.timing(x, {
-              toValue: 0,
-              duration: SLIDE_MS,
-              useNativeDriver: true,
-            }).start();
+            stay();
           }
         },
+        // A swipe under way is not given to the numbers that scroll under
+        // it (TASK-268); taken all the same, the page is not left halfway.
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderTerminate: stay,
       }),
     };
   }, [onClose, width, x]);
@@ -505,26 +512,39 @@ function DataPage({
           },
         ]}
         {...toMap.pan.panHandlers}
+        testID="data-page"
       >
         {heading}
-        <Kilometres numbers={numbers} hero />
-        {route && <RouteBar route={route} numbers={numbers} />}
-        <RunGrid numbers={numbers} />
-        <Splits
-          track={track}
-          ride={numbers.ride}
-          paddle={numbers.paddle}
-          units={numbers.units}
-        />
-        <View style={styles.switches}>
-          <Switch
-            label={t("Auto-pause")}
-            on={control.autoPause}
-            onChange={setAutoPause}
+        {/* Between the turn and the buttons, the numbers scroll: a turn
+            that grows, or a long run, never pushes «Map» and «Pause» off
+            the screen (TASK-268). */}
+        <ScrollView
+          testID="data-numbers"
+          style={styles.numbers}
+          contentContainerStyle={styles.numbersContent}
+          // A swipe sideways is the page's, not a scroll.
+          directionalLockEnabled
+          showsVerticalScrollIndicator={false}
+        >
+          <Kilometres numbers={numbers} hero />
+          {route && <RouteBar route={route} numbers={numbers} />}
+          <RunGrid numbers={numbers} />
+          <Splits
+            track={track}
+            ride={numbers.ride}
+            paddle={numbers.paddle}
+            units={numbers.units}
           />
-          <Switch label={t("Voice")} on={control.voice} onChange={setVoice} />
-        </View>
-        <VoiceSetting />
+          <View style={styles.switches}>
+            <Switch
+              label={t("Auto-pause")}
+              on={control.autoPause}
+              onChange={setAutoPause}
+            />
+            <Switch label={t("Voice")} on={control.voice} onChange={setVoice} />
+          </View>
+          <VoiceSetting />
+        </ScrollView>
         {buttons}
         <PageTabs page="data" onPage={(page) => page === "map" && toMap.close()} />
         {dark}
@@ -628,7 +648,8 @@ function Splits({
               : t("Your first kilometre will show here.")}
         </Text>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        // In the page's scroll, not one of their own (TASK-268).
+        <>
           {/* The last one first: it is the one just run. */}
           {[...rows].reverse().map((row) => (
             <View
@@ -663,7 +684,7 @@ function Splits({
               </Text>
             </View>
           ))}
-        </ScrollView>
+        </>
       )}
     </View>
   );
@@ -918,8 +939,14 @@ const styles = StyleSheet.create({
   tabTextSelected: {
     color: color.text,
   },
-  splits: {
+  // What is left between the turn and the buttons: the numbers scroll in it.
+  numbers: {
     flex: 1,
+  },
+  numbersContent: {
+    gap: space.md,
+  },
+  splits: {
     minHeight: MIN_TAP_SIZE * 2,
   },
   splitRow: {

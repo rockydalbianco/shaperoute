@@ -78,6 +78,22 @@ test("a new beach is found by its name in «Explore» and in «Another place»",
   expect(nearestSpot(WATER_SPOTS, beach.point as LatLon)?.spot.name).toBe(beach.name);
 });
 
+test("every beach is found by its whole name, the ones added in TASK-245 C too", () => {
+  const names = beaches.beaches.map((beach) => beach.name);
+  for (const name of ["Positano", "Lampedusa", "Porto Cervo", "Santa Maria di Leuca"]) {
+    expect(names).toContain(name);
+  }
+  for (const beach of beaches.beaches) {
+    expect(
+      searchSpots(WATER_SPOTS, beach.name, null).map(({ spot }) => spot.name),
+    ).toContain(beach.name);
+    expect(spotPlaces(beach.name, null).map((place) => place.label)).toContain(
+      beach.name,
+    );
+    expect(nearestSpot(WATER_SPOTS, beach.point as LatLon)?.spot.name).toBe(beach.name);
+  }
+});
+
 test("the places chosen by hand come first, and the list does not double them", () => {
   expect(WATER_SPOTS.slice(0, 4).map((spot) => spot.name)).toEqual(
     WATER_PLACES.map((place) => place.name),

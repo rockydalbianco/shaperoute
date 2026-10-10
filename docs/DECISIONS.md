@@ -11862,6 +11862,40 @@ d'Iseo».
 cambia, e nemmeno il motore o l'API. Chi scrive «lago» prima del nome di
 una spiaggia la trova lo stesso, perché nessun nome trovato ha «lago».
 
+## ADR-0210 — aggiornamento (parte C): 38 posti di mare in più
+**Stato**: Attiva · 2026-10-09 · i posti sono **scelta dell'utente**
+(«Proponi tu altri posti» il 2026-10-08, poi la lista dell'agente più le
+sette alternative il 2026-10-09); il punto del paese, le frazioni sul mare
+e il metodo sono **deciso dall'agente su delega dell'utente** (TASK-245,
+parte C).
+
+**Contesto**: dopo TASK-245 i posti di mare di «Paddle» erano 29 più
+Jesolo e Riccione, e alcune coste ne avevano pochi o nessuno (Campania,
+Basilicata, Molise, le isole toscane, Trieste).
+
+**Decisione**: `PLACES` di `beach_catalog.py` passa da 29 a 67 paesi; il
+metodo di TASK-245 non cambia (il punto della riva dai dati, un riquadro
+d'acqua a paese, le prove del motore a 2, 1,5 e 1 km). Dove il nodo
+`place` del comune è lontano dal mare o in collina si prende quello della
+frazione sul mare, col nome che la gente usa: «Ischia» è Ischia Porto,
+«Soverato» Soverato Marina, «Vasto» Marina di Vasto, «Trieste» Barcola.
+Un file d'acqua per paese anche dove due paesi sono vicini (Positano e
+Amalfi), come prima: un riquadro unito cambierebbe il nome dei file e il
+modo di rifarli.
+
+**Alternative scartate**:
+
+- *Il nodo del comune per tutti*: la spiaggia di Vasto sta a circa 3 km
+  dal centro, al limite di `REACH_M`; a Trieste la riva vicina al centro è
+  il porto. Maratea invece tiene il nodo del comune: il punto della riva
+  trovato sta a 1,7 km.
+- *Tutta la costa d'Italia*: già scartata in TASK-245 (0,3–1,7 GB).
+
+**Conseguenze**: 38 file d'acqua nuovi sul server (20,3 MB), da copiare
+prima della pubblicazione dell'app, senza sovrascrivere; poi un solo
+`draw_examples --water` (TASK-246 B), col via del coordinatore. Il motore
+e `paddleExamples.json` non cambiano.
+
 ## ADR-0209 — Con la penna alzata, sul contorno si camminano solo i baffi
 **Stato**: Attiva · 2026-10-05 · **deciso dall'agente su delega
 dell'utente** (TASK-243): la regola, le soglie e il tetto. Che la penna si

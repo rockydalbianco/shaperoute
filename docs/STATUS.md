@@ -157,6 +157,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-267 — Annunci spenti nella build dello store**
+  (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
+  scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice
+  nativo di AdMob non entra nella build (`react-native.config.js`); il Feed
+  ha solo i post. Preview ed Expo Go come prima. TASK-153 (annunci veri)
+  aspetta la società dell'utente.
 - **TASK-268 — Su «Data» «Map» e «Pause» restano sullo schermo**
   (aggiunta ad ADR-0137; dalla corsa su strada dell'utente del
   2026-10-09). Branch `fix/TASK-268-run-data-page`. Con l'indicazione in

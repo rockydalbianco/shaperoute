@@ -10,9 +10,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * fill, and nothing here may be made up to fill them.
  */
 
-const UPDATED = "5 October 2026";
-/** «Privacy» is final since the user approved it on this day (TASK-237 D). */
-const PRIVACY_UPDATED = "8 October 2026";
+const UPDATED = "10 October 2026";
+/** «Privacy» is final since the user approved it on this day (TASK-237 D; without ads, TASK-267 B). */
+const PRIVACY_UPDATED = "10 October 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -209,9 +209,7 @@ const terms: AboutDocument = {
     },
     {
       heading: "Advertising",
-      blocks: [
-        "MuW shows advertising, provided by Google AdMob, among the drawings of «Feed» and marked «Sponsored». An advert opens what the advertiser says: its content is not ours.",
-      ],
+      blocks: ["MuW shows no advertising."],
     },
     {
       heading: "Services of others",
@@ -340,8 +338,7 @@ const privacy: AboutDocument = {
     {
       heading: "Advertising",
       blocks: [
-        "MuW shows adverts from Google AdMob among the drawings of «Feed». The first time you open «Feed», Google's consent form asks for your choice where one is needed; until adverts may be requested, none are shown. On iPhone the app does not ask to track you across other apps and adverts are requested without the advertising identifier.",
-        "Google handles what its advertising software collects under its own privacy policy.",
+        "MuW shows no adverts and uses no advertising service: nothing about you goes to an advertising network, and the app never asks to track you across other apps.",
       ],
     },
     {
@@ -361,7 +358,7 @@ const privacy: AboutDocument = {
             "The Overpass service of OpenStreetMap data is asked by our server for the map of an area it does not have yet: it sees which area, not who asked.",
             "unpkg serves the map library when the app starts.",
             "Expo serves the app's updates.",
-            "Google AdMob and Strava, as said above.",
+            "Strava, as said above.",
           ],
         },
         "A picture of your run made with «Share» is made on the phone and leaves it only through the share sheet, where you send it.",
@@ -388,7 +385,7 @@ const privacy: AboutDocument = {
           bullets: [
             "To give you the service you ask for (contract): your account, your profile, the routes you ask for, the runs, favorites, comments, reactions and follows you save.",
             "Our legitimate interest in keeping MuW working, safe and better: the server's short logs, the counts that cap the map downloads, and the search events, which say nothing about who you are.",
-            "Your consent: the phone number you choose to add, the connection to Strava, and the adverts where Google's form asks for it. You can take a consent back at any time; what was done before stays lawful.",
+            "Your consent: the phone number you choose to add and the connection to Strava. You can take a consent back at any time; what was done before stays lawful.",
             "A legal obligation, when a law asks us to keep or hand over data.",
           ],
         },

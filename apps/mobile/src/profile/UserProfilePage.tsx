@@ -9,6 +9,7 @@ import { fetchProfile, profilePhotoUri } from "../api/profiles";
 import { t, tLater, tPlural } from "../i18n";
 import { DrawingsGrid } from "../social/DrawingsGrid";
 import { FollowButton } from "../social/FollowButton";
+import { ReportMenu } from "../social/ReportMenu";
 import { color, fontSize, space } from "../theme/tokens";
 import { ProfileHeader } from "./ProfileHeader";
 
@@ -74,7 +75,9 @@ export function profileViewProblem(failed: Failed): string {
  * the drawings (TASK-117). Never the email: the API does not send it.
  * It opens from the search of «Feed» (TASK-215) and from the lists of who
  * follows (TASK-211). Under the name, how many follow it and the button to
- * follow it, which asks: the other accepts or declines (ADR-0173).
+ * follow it, which asks: the other accepts or declines (ADR-0173). Its
+ * «…» reports the member or blocks it (TASK-121, ADR-0228); blocked, the
+ * page says so and shows the profile no more.
  */
 export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: Props) {
   const { state, sessionEnded: onSessionEnded } = account;
@@ -85,6 +88,8 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
   const [changed, setChanged] = useState<{ asked: string; follow: FollowState } | null>(
     null,
   );
+  // The profile just blocked from its «…» (TASK-121): it shows no more.
+  const [blocked, setBlocked] = useState<string | null>(null);
 
   useEffect(() => {
     if (token === null || apiUrl === null) {
@@ -128,6 +133,15 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
     return <Text style={[styles.message, styles.problem]}>{shown.problem}</Text>;
   }
   const { profile } = shown;
+  if (blocked === asked) {
+    return (
+      <Text style={styles.message} accessibilityLiveRegion="polite">
+        {t("You blocked {user}. Unblock them from Blocked people in your profile.", {
+          user: profile.username,
+        })}
+      </Text>
+    );
+  }
   const follow =
     changed !== null && changed.asked === asked ? changed.follow : profile.follow;
   // Who stops following is one follower less, before the API is asked again.
@@ -163,6 +177,21 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
             apiKey={apiKey}
           />
         )}
+        {/* An API older than following is older than blocking too. */}
+        {follow !== undefined && !own && (
+          <View style={styles.menu}>
+            <ReportMenu
+              apiUrl={apiUrl}
+              token={token}
+              target={{ kind: "user", id: profile.public_id }}
+              person={profile}
+              onBlocked={() => setBlocked(asked)}
+              onSessionEnded={onSessionEnded}
+              fetchFn={fetchFn}
+              apiKey={apiKey}
+            />
+          </View>
+        )}
       </View>
       <DrawingsGrid publicId={profile.public_id} own={false} />
     </View>
@@ -176,6 +205,10 @@ const styles = StyleSheet.create({
   // As the top of one's own «Profile» (ProfileHome.tsx).
   top: {
     gap: space.md,
+  },
+  // The «…» of the profile (TASK-121), at the right under the button.
+  menu: {
+    alignItems: "flex-end",
   },
   message: {
     color: color.textMuted,

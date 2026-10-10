@@ -30,7 +30,7 @@ test("«Help» is not a draft: no notice, no day", async () => {
 test("«Terms» says it is a draft before anything else, with its day", async () => {
   await render(<AboutPage id="terms" />);
   expect(screen.getByText("Draft — not final yet.")).toBeOnTheScreen();
-  expect(screen.getByText("Last updated: 5 October 2026")).toBeOnTheScreen();
+  expect(screen.getByText("Last updated: 10 October 2026")).toBeOnTheScreen();
   expect(screen.getByRole("header", { name: EN.terms.title })).toBeOnTheScreen();
   // What the user still has to fill stands out, as it is written.
   expect(screen.getAllByText("[name]").length).toBeGreaterThan(0);
@@ -40,7 +40,7 @@ test("«Terms» says it is a draft before anything else, with its day", async ()
 test("«Privacy» is final: its day, no draft notice, nothing left to fill (TASK-237 D)", async () => {
   await render(<AboutPage id="privacy" />);
   expect(screen.queryByText("Draft — not final yet.")).toBeNull();
-  expect(screen.getByText("Last updated: 8 October 2026")).toBeOnTheScreen();
+  expect(screen.getByText("Last updated: 10 October 2026")).toBeOnTheScreen();
   expect(screen.getByRole("header", { name: EN.privacy.title })).toBeOnTheScreen();
   expect(
     screen.getByText(/controller of your personal data is Luca Pallaoro/),
@@ -58,7 +58,7 @@ test("with the app in Italian the text and its day are in Italian", async () => 
     screen.getByRole("header", { name: IT.privacy.sections[0].heading }),
   ).toBeOnTheScreen();
   expect(screen.queryByText("Bozza — non ancora definitiva.")).toBeNull();
-  expect(screen.getByText("Ultimo aggiornamento: 8 ottobre 2026")).toBeOnTheScreen();
+  expect(screen.getByText("Ultimo aggiornamento: 10 ottobre 2026")).toBeOnTheScreen();
   expect(screen.queryByText("Privacy policy")).toBeNull();
 });
 
@@ -70,7 +70,7 @@ test("with the app in German the draft is German, and still a draft (TASK-210 F)
   // VoiceOver is told the text is German.
   expect(title.props.accessibilityLanguage).toBe("de-DE");
   expect(screen.getByText("Entwurf – noch nicht endgültig.")).toBeOnTheScreen();
-  expect(screen.getByText("Zuletzt aktualisiert: 5. Oktober 2026")).toBeOnTheScreen();
+  expect(screen.getByText("Zuletzt aktualisiert: 10. Oktober 2026")).toBeOnTheScreen();
   // The places to fill are the same as in English, and stand out.
   expect(screen.getAllByText("[name]").length).toBeGreaterThan(0);
   expect(screen.getAllByText("[governing law]").length).toBeGreaterThan(0);
@@ -78,9 +78,9 @@ test("with the app in German the draft is German, and still a draft (TASK-210 F)
 });
 
 test.each([
-  ["es", "Política de privacidad", "Última actualización: 8 de octubre de 2026"],
-  ["fr", "Politique de confidentialité", "Dernière mise à jour : 8 octobre 2026"],
-  ["de", "Datenschutzerklärung", "Zuletzt aktualisiert: 8. Oktober 2026"],
+  ["es", "Política de privacidad", "Última actualización: 10 de octubre de 2026"],
+  ["fr", "Politique de confidentialité", "Dernière mise à jour : 10 octobre 2026"],
+  ["de", "Datenschutzerklärung", "Zuletzt aktualisiert: 10. Oktober 2026"],
 ] as const)(
   "with the app in «%s» «Privacy» is final in it",
   async (language, name, day) => {

@@ -13445,6 +13445,134 @@ d'accordo con il coordinatore.
 un conteggio in più nell'API per la stessa cosa, un «Try»; uno spinner
 nel pulsante: il pulsante non resta sullo schermo mentre si calcola.
 
+## ADR-0137, aggiunta — Su «Data» scorrono solo i numeri
+**Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
+(TASK-268), dopo la corsa su strada dell'utente dello stesso giorno («se
+compaiono le indicazioni si sposta tutto in basso e non si riesce più a
+cliccare»). Aggiunta ad ADR-0137, senza numero nuovo.
+
+**Decisione**:
+
+1. La pagina «Data» ha tre parti: in alto l'indicazione (o la via verso la
+   partenza), fissa; in mezzo una sola `ScrollView` che prende lo spazio
+   che resta, con i km grandi, la barra del percorso, i numeri, i km uno
+   per uno, gli interruttori e la voce; in fondo i pulsanti della corsa e
+   «Map» / «Data», fissi. Prima la pagina era una colonna fissa: con
+   l'indicazione in alto i pulsanti e «Map» uscivano dallo schermo, e il
+   tocco dove stava «Map» cadeva sugli interruttori.
+2. I km uno per uno non hanno più uno scorrimento loro: due scorrimenti
+   verticali uno dentro l'altro si contendono il dito.
+3. Lo swipe verso la mappa resta della pagina: lo scorrimento ha
+   `directionalLockEnabled`, la pagina non cede uno swipe iniziato, e se
+   le viene tolto torna al suo posto invece di restare a metà.
+
+**Alternative scartate**: rimpicciolire i km grandi o togliere righe
+(cambia quello che l'utente vede, e una corsa lunga esce dallo schermo lo
+stesso); mettere anche l'indicazione nello scorrimento (la svolta è il
+motivo per cui si guarda la pagina correndo).
+
+## ADR-0237 — La build dello store senza AdMob: niente codice nativo con APP_VARIANT=production
+**Stato**: Attiva · 2026-10-09 · «la lanciamo senza pubblicità, faremo
+poi», e poi «la pubblicità la inseriamo quando facciamo la società»:
+scelte dell'utente; il come deciso dall'agente su delega dell'utente
+(TASK-267), su indicazione del coordinatore di togliere il codice nativo
+
+**Contesto**: la 1.0 va in revisione da Apple senza annunci; gli annunci
+veri aspettano la società dell'utente (TASK-153 fermo). Il codice degli
+annunci nativi del Feed (ADR-0198) resta: preview, Expo Go e le build di
+prova come oggi.
+
+**Decisione**:
+- `apps/mobile/react-native.config.js` (file nuovo) toglie
+  `react-native-google-mobile-ads` dall'autolinking, iOS e Android, quando
+  `APP_VARIANT=production`, la variabile che `eas.json` dà al profilo
+  `production` (come per il runtime di `app.config.ts`, TASK-152). Nella
+  build dello store non entrano né l'SDK di AdMob né quello del consenso di
+  Google (UMP), né i loro manifesti della privacy.
+- Il JS non cambia: senza il modulo nativo `src/ads/admob.ts` non carica il
+  pacchetto e dà «nessun annuncio», come in Expo Go. Il Feed ha solo i
+  post, senza spazi vuoti (un posto senza annuncio non entra nella lista,
+  `feedWithAds`). Un test controlla che fuori da `admob.ts` il pacchetto
+  sia importato solo come tipo.
+- Gli update del canale `production` girano sulla build senza il modulo:
+  anche loro senza annunci, qualunque cosa ci sia nel JS.
+
+**Alternative scartate**: una variabile `EXPO_PUBLIC_ADS=off` che lascia
+l'SDK nell'app, fermo (fatta e poi tolta: il manifesto della privacy di
+Google, che dichiara l'ID del dispositivo per il tracciamento, finiva
+comunque nel pacchetto); togliere il plugin da `app.json` o da
+`app.config.ts` (file di altri task; il plugin da solo scrive solo chiavi
+in `Info.plist`); spegnere gli annunci ovunque (preview resta come oggi).
+
+**Conseguenza**: l'impronta della build `production` cambia (il file
+entra nell'impronta e cambia l'autolinking): la build 5 è comunque nuova.
+Si ricontrolla come in `DEPLOY.md` A.7 punto 4, sempre con
+`APP_VARIANT=production`. In `Info.plist` resta la chiave
+`GADApplicationIdentifier` scritta dal plugin di `app.json`: senza l'SDK
+non fa nulla. I testi «Termini» e «Privacy» dell'app e del sito dicono
+ancora che ci sono annunci: si correggono nei loro task. Per riaccendere
+gli annunci (TASK-153): togliere la condizione da `react-native.config.js`
+e fare una build nuova; un update non basta.
+
+## ADR-0228 — Segnalare e bloccare: due tabelle, un blocco nei due sensi, nessun pannello
+**Stato**: Attiva · 2026-10-09 · il perimetro è del brief del coordinatore
+(2026-10-07/08) e dell'ok dell'utente a segnalare e bloccare; il resto
+deciso dall'agente su delega dell'utente (TASK-121). I testi dell'app
+sono confermati dall'utente il 2026-10-09.
+
+**Contesto**: con il feed vero (ADR-0227) i disegni di chiunque arrivano a
+chiunque. Serviva un modo per non vedere più una persona e per dire a chi
+gestisce l'app che qualcosa non va. Il vecchio piano di TASK-121 aveva
+anche gli endpoint `/admin`, le regole al primo accesso e il rifacimento
+di `DELETE /me`: il brief li lascia fuori.
+
+**Decisione**:
+
+1. **Due tabelle nuove** in una migrazione nuova (`0020_moderation.sql`,
+   il numero è il primo libero al merge): `blocks` (chi blocca, chi è
+   bloccato, quando) e `reports` (chi segnala, cosa, l'id, il motivo,
+   quando). Tutte e due cadono con l'account di chi blocca o segnala.
+2. **Un blocco vale nei due sensi**: basta una riga perché nessuno dei due
+   veda l'altro. Una sola condizione SQL, `follows.apart_sql`. Entra in
+   `drawings.drawing_seen_sql` e `shown_sql` (con il sì del coordinatore
+   del 2026-10-09), e da lì nel disegno aperto per id, nelle sue foto, nei
+   suoi commenti e nelle sue reazioni, nel feed e nei disegni di un
+   profilo. In più la leggono i commenti di un lettore bloccato sotto il
+   disegno di un terzo, il conteggio delle reazioni, la ricerca per nome,
+   la richiesta di follow, il profilo pubblico e i disegni di un profilo
+   (`404`). Sta in `follows.py`, accanto a `follows_sql`, e non in
+   `moderation.py`: `moderation.py` usa i corpi di `follows.py`, e il
+   contrario sarebbe un import circolare. Un profilo bloccato risponde
+   `404` come per nessuno: niente dice all'altro che è stato bloccato.
+3. **Bloccare chiude ogni follow** fra i due, nei due sensi, richieste
+   comprese, nella stessa transazione; sbloccare non rimette niente.
+   Bloccare due volte, o sbloccare chi non è bloccato, non cambia niente.
+4. **Una segnalazione per chi segnala e per cosa**: la seconda aggiorna
+   motivo e ora. `target_id` **senza chiave esterna**: la segnalazione
+   resta anche quando la cosa segnalata sparisce. Motivi da un elenco
+   corto (`spam`, `offensive`, `harassment`, `sexual`, `other`), codici e
+   mai parole: l'app li dice nella sua lingua. Si segnala solo ciò che
+   esiste e non è proprio.
+5. **Nessun endpoint legge le segnalazioni** e nessun ruolo admin entra in
+   gioco: si leggono nel database finché non servirà un pannello.
+6. **Nell'app** un «…» sulla scheda di un disegno di un altro e sul
+   profilo di un altro apre un foglio con «Report» (i cinque motivi, poi
+   un grazie) e «Block» (chiede prima, dicendo cosa fa). Dopo un blocco
+   le schede di quella persona spariscono subito da «Feed» grazie a un
+   piccolo registro in memoria (`social/blockedNow.ts`), senza toccare
+   `FeedScreen.tsx` né `useFeed.ts`; la lettura dopo del feed non le ha
+   comunque. Gli elenchi di chi segue si rileggono (`FollowLists` con una
+   `key` che cambia a ogni blocco). «Blocked people» in «Profile» elenca i
+   bloccati con «Unblock».
+
+**Fuori, per ora**: i tag in un disegno, «Recommended» (TASK-092, che non
+passa da `shown_sql`) e le notifiche vecchie.
+
+**Conseguenze**: ogni lettura social fa una sottoquery in più su `blocks`,
+con la chiave e un indice su `blocked_id`: trascurabile ai numeri di oggi.
+Chi aggiunge un endpoint che mostra persone o contenuti di altri deve
+aggiungere `apart_sql`.
+
 ## ADR-0225, aggiunta — La voce parla a telefono bloccato, col silenzioso, e abbassa la musica
 **Stato**: Attiva · 2026-10-10 · **scelte dell'utente** del 2026-10-10 (la
 dipendenza `expo-audio`, la musica che si abbassa, la voce anche col

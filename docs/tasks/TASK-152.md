@@ -286,3 +286,8 @@ non cambia.
   numero della build (Apple accetta per una versione solo le build con
   quel numero). Il test in `appConfig.test.ts` la tiene uguale a
   `app.json`: a ogni nuova versione si cambiano tutti e due.
+- 2026-10-10: su richiesta dell'utente («falla generica») la descrizione
+  diventa una versione più corta e generica degli stessi testi (487
+  caratteri, stesse funzioni, niente numeri di chilometri); parole chiave
+  invariate. L'utente ha pubblicato le etichette App Privacy su App Store
+  Connect (12 tipi di dati, nessun tracciamento).

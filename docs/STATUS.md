@@ -172,6 +172,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   fissi. Solo app, nessun testo nuovo. La voce che si ferma a telefono
   bloccato o con Spotify davanti è TASK-261 parte B.
   File: `tasks/TASK-268.md`, «File toccati».
+  **Chiuso il 2026-10-10**: #472 in `main` (`0a07f757`); vedi «Completato».
 - **TASK-246 parte B — Il server tiene le figure «Paddle» dei laghi e
   delle spiagge** (aggiunta ad ADR-0211; via del coordinatore il
   2026-10-09). Branch `feat/TASK-246-b-water-shapes-kept`. L'API legge
@@ -657,6 +658,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-268 (aggiunta ad ADR-0137): sulla pagina «Data» della
+  corsa l'indicazione resta in alto, «Pause» e «Map» / «Data» in fondo, e
+  scorrono solo i numeri in mezzo. Prima, con l'indicazione in alto,
+  «Map» finiva sotto il bordo (corsa su strada dell'utente del
+  2026-10-09). PR #472, merge `0a07f757` il 2026-10-10; nessun testo
+  nuovo. Resta lo swipe col dito sull'iPhone. File: `tasks/TASK-268.md`.
 - **App e sito** — TASK-267 (ADR-0237): la 1.0 dell'App Store **senza
   pubblicità**, scelta dell'utente del 2026-10-09 (gli annunci con la
   società). Con `APP_VARIANT=production` il codice nativo di AdMob non

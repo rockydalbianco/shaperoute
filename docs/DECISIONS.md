@@ -13667,3 +13667,78 @@ chiedere se parla ancora si corregge da solo al giro dopo; `enableBackgroundPlay
 del plugin: su Android aggiunge un servizio e due permessi che non
 servono.
 
+## ADR-0226 — Le notifiche push partono: Expo, un token per telefono, il permesso solo dall'interruttore
+**Stato**: Attiva · 2026-10-08 · i canali, il loro ordine, Expo, Resend
+e la lista di cosa si notifica sono scelte dell'utente del 2026-10-07; il
+resto deciso dall'agente su delega dell'utente (TASK-262, parte A).
+
+**Contesto**: TASK-185 (ADR-0206) ha messo in «Settings» due interruttori
+che non mandavano niente. L'utente ha scelto tre parti: A le push con
+`expo-notifications` e il servizio push di Expo, B l'email con Resend, C
+gli amici dalla rubrica; cinque notizie, le stesse per ogni canale: una
+richiesta di follow, un nuovo follower, una reazione, un commento, un tag.
+
+**Decisione** (parte A):
+
+1. **Il servizio push di Expo**, chiamato dall'API con `urllib` come
+   Strava (`expo_push.py`): nessuna dipendenza Python nuova, nessun
+   certificato Apple o chiave Firebase sul server (li tiene EAS). Niente
+   token di accesso di Expo finché la «enhanced push security» è spenta.
+2. **Una tabella `push_tokens`, una riga per token**, con account,
+   piattaforma, lingua e data. Il token è la chiave: un telefono è
+   dell'ultimo account che l'ha mandato, così chi esce e lascia il
+   telefono a un altro non riceve le sue notifiche.
+3. **L'invio fuori dalla richiesta, la lettura dentro**: la richiesta che
+   scrive l'evento legge con una query chi avvisare (interruttore acceso,
+   non chi ha agito, nessun blocco, il disegno visto) e passa a un thread
+   solo la rete. Una richiesta che non avvisa nessuno non costa thread né
+   rete; un errore non cambia mai la risposta. Le ricevute di Expo si
+   leggono 15 minuti dopo; un token `DeviceNotRegistered` si cancella.
+4. **Lo stesso evento al più una volta al giorno**, in memoria: una
+   richiesta rifatta o una reazione cambiata non notificano di nuovo; ogni
+   commento sì.
+5. **«Un nuovo follower» è la richiesta accettata**, mandata a chi aveva
+   chiesto: ogni follow passa da una richiesta (ADR-0173), e chi accetta
+   lo sa già. Da confermare con l'utente insieme ai testi.
+6. **La lingua delle notifiche la manda l'app con il token**: l'API non
+   la sapeva (ADR-0172, la lingua sta sul telefono). Senza, inglese.
+7. **Il permesso del telefono solo all'accensione di «Push
+   notifications»**, mai all'avvio; negato, l'interruttore resta spento
+   con «Open Settings». L'app manda il token **una volta per telefono**
+   (ricorda nel portachiavi token, account e lingua), lo ritira allo
+   spegnimento e all'uscita (prima di `DELETE /session`).
+8. **Il tocco apre il disegno o il profilo** con le porte che `Profile`
+   ha già; `open` dei disegni vuole solo l'id.
+9. **I ganci** nei moduli degli eventi (`follows.py`, `reactions.py`,
+   `comments.py`, `drawings.py` per i tag: il tag si scrive lì, non in
+   `activities.py`) sono entrati dopo TASK-121, che tocca gli stessi file
+   (condizione del coordinatore), con il controllo dei blocchi sulla sua
+   tabella (`follows.apart_sql`). Un tag si notifica solo a chi è taggato
+   per la prima volta in quel disegno: i taggati di prima si leggono prima
+   del salvataggio.
+
+**Alternative scartate**:
+
+- *APNs e FCM direttamente*: certificati e chiavi da tenere sul server, e
+  due protocolli; Expo li nasconde, ed EAS ha già le credenziali.
+- *L'SDK Python di Expo (`exponent_server_sdk`)*: una dipendenza per due
+  POST.
+- *Il token legato alla sessione*: più preciso all'uscita senza rete, ma
+  una migrazione su `sessions` e un'API più larga; accettato il caso raro
+  (il token resta finché un altro entra o Expo lo dice morto).
+- *Chiedere il permesso all'avvio*: contro la regola di TASK-185.
+- *Una coda nel database per gli invii*: niente perso a un riavvio, ma
+  un worker e una tabella in più per notifiche che possono perdersi.
+
+**Conseguenze**:
+
+- Il server va aggiornato (migrazione `push_tokens`) prima che l'app
+  pubblicata mandi i token: con l'API di prima il `PUT` è `404` e l'app
+  non dice niente.
+- Le push si vedono solo in una **build dell'app**: Expo Go non le riceve
+  dall'SDK 53.
+- Il token e il testo della notifica (con l'inizio di un commento) vanno
+  a Expo e da lì ad Apple o a Google: lo dice la bozza della privacy.
+- Seguiti: la parte B (email, Resend, la lingua delle email), la parte C
+  (rubrica), il token di accesso di Expo se si accende la «enhanced push
+  security», ritentare gli invii falliti.

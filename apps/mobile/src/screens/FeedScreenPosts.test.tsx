@@ -43,7 +43,7 @@ function Around({
   openProblem = null,
 }: {
   children: ReactNode;
-  open?: (drawing: Drawing) => void;
+  open?: (drawing: Pick<Drawing, "id">) => void;
   openProblem?: string | null;
 }) {
   const doors = useDrawingsDoor();

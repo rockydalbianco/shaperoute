@@ -1401,9 +1401,10 @@ il codice in `contact.py`.
 ### Notifications (TASK-185, ADR-0206)
 
 I due interruttori delle notifiche di un account, «Email notifications» e
-«Push notifications», cambiati dal proprietario. **L'API non manda
-niente**: non ha un servizio di posta né le push, e nessun codice legge i
-due valori per agire. Sono una scelta tenuta per quando l'invio ci sarà.
+«Push notifications», cambiati dal proprietario. Con «Push notifications»
+acceso l'API manda le push ai telefoni dell'account (TASK-262, sotto,
+«Push notifications»); **l'email non parte ancora** (TASK-262, parte B):
+quell'interruttore resta una scelta tenuta per quando ci sarà.
 Vuole il token: senza, `401 not_signed_in`; senza database, `503
 accounts_unavailable`. Tipi in `shared-types` (`Notifications`,
 `NotificationsRequest`, `User.notifications`), esempio in
@@ -1430,6 +1431,72 @@ accounts_unavailable`. Tipi in `shared-types` (`Notifications`,
   non ha `notifications`: l'app nuova lo legge come «tutti e due spenti» e
   al tocco dice «Notifications are not available on this API yet.». L'app
   pubblicata ignora il campo in più.
+
+### Push notifications (TASK-262, ADR-0226)
+
+I telefoni di un account e le notifiche push che ricevono, attraverso il
+servizio push di Expo. Tutti e due gli endpoint vogliono il token: senza,
+`401 not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
+`shared-types` (`PushTokenRequest`, `PushData`, `PushKind`), esempi in
+`fixtures/push-token-request.json` e `push-data.json`; il codice in
+`push.py` (cosa e a chi) ed `expo_push.py` (il filo verso Expo).
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/push-token` | il token Expo di questo telefono: `token`, `platform` (`ios`, `android`), `language` (`en`, `de`, `it`, `es`, `fr`, facoltativa) | `204` |
+| `DELETE /me/push-token/{token}` | questo telefono non riceve più | `204` |
+
+- **Il token** è `ExponentPushToken[…]` (o `ExpoPushToken[…]`), al più 200
+  caratteri; un altro testo, una piattaforma o una lingua fuori elenco o
+  un campo in più: `422 invalid_request`. **Un token è di un account alla
+  volta**: mandato da un altro account (il telefono ha cambiato mano)
+  passa a lui. Rimandato, la riga resta una, con piattaforma, lingua e
+  data di adesso. Il `DELETE` toglie solo un token dell'account che lo
+  chiede, ed è `204` anche quando non c'era. `DELETE /me` cancella i
+  token con l'account.
+- **Cosa si notifica** (scelta dell'utente, la stessa lista per ogni
+  canale), una notifica per ogni telefono del destinatario:
+
+  | `kind` | Quando | A chi | Apre |
+  |---|---|---|---|
+  | `follow_request` | qualcuno chiede di seguire | chi è chiesto | il profilo di chi chiede |
+  | `follow_accepted` | una richiesta è accettata | chi aveva chiesto | il profilo di chi accetta |
+  | `reaction` | una reazione a un disegno (il super like con l'inizio del suo commento) | il proprietario | il disegno |
+  | `comment` | un commento a un disegno, con il suo inizio | il proprietario | il disegno |
+  | `tag` | un tag in un disegno | chi è taggato | il disegno |
+
+  «Un nuovo follower» è `follow_accepted`: ogni follow passa da una
+  richiesta (TASK-211), e chi accetta lo sa già.
+- **Si manda solo se** il destinatario ha «Push notifications» acceso,
+  non è chi ha agito, nessuno dei due ha bloccato l'altro (TASK-121) e,
+  per un disegno, il destinatario lo vede (`drawing_seen_sql`). **Lo
+  stesso evento** (stesso tipo, stesse due persone, stesso disegno; un
+  commento è sempre nuovo) **al più una volta al giorno**: una richiesta
+  rifatta o una reazione cambiata non notificano di nuovo. Tenuto in
+  memoria: un riavvio lo dimentica.
+- **I testi** sono nella lingua mandata con il token, in inglese senza:
+  «ada asked to follow you.», «ada accepted your follow request.», «ada
+  reacted 🔥 to your post.», «ada gave your post a MuW heart: …», «ada
+  commented on your post: …», «ada tagged you in a post.». Un commento
+  entra su una riga, al più 100 caratteri. Nessun titolo (iOS mostra il
+  nome dell'app), suono quello del telefono.
+- **`data`** (`PushData`) dice all'app cosa aprire: `{ kind, drawing_id }`
+  per un disegno, `{ kind, public_id, username }` per un profilo.
+- **Fuori dalla richiesta**: la richiesta che scrive l'evento legge con
+  una query a chi mandare cosa; la rete la fa un thread, e la risposta non
+  aspetta Expo. Qualunque errore delle notifiche va nel log e non cambia
+  la risposta. **I token morti** (`DeviceNotRegistered`, nel biglietto
+  subito o nella ricevuta letta 15 minuti dopo) si cancellano. Un invio
+  che Expo non prende (rete, `5xx`) non si ritenta.
+- **Un'API precedente** non ha questi endpoint (`404 http_error`): l'app
+  non manda il token e non dice niente.
+- **I ganci** sono in fondo ai moduli che scrivono gli eventi e
+  partono dopo la scrittura: `POST /users/{public_id}/follow` (solo quando
+  la risposta è `requested`), `POST /me/follow-requests/{public_id}/accept`,
+  `PUT /drawings/{id}/reaction`, `POST /drawings/{id}/comments`, `PUT
+  /me/activities/{key}/drawing` (solo i taggati nuovi rispetto a prima del
+  salvataggio). Un blocco (TASK-121, `follows.apart_sql`) in uno dei due
+  versi ferma ogni notifica fra i due.
 
 ### Drawings (TASK-117, ADR-0159; TASK-208, ADR-0170)
 

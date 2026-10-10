@@ -337,8 +337,6 @@ export const FR: Table = {
   "Another account has this email.": "Un autre compte a cet e-mail.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts
-  "MuW does not send notifications yet. Your choice is kept for when it does.":
-    "MuW n'envoie pas encore de notifications. Ton choix est gardé pour quand ce sera le cas.",
   "Notifications are not available on this API yet.":
     "Sur cette API, il n'y a pas encore de notifications.",
 
@@ -1147,4 +1145,10 @@ export const FR: Table = {
   "Unblock {name}": "Débloquer {name}",
   "You blocked {user}. Unblock them from Blocked people in your profile.":
     "Tu as bloqué {user}. Tu peux le débloquer dans Personnes bloquées de ton profil.",
+
+  // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
+  "Push notifications tell you about follow requests, reactions, comments and tags. MuW does not send emails yet: your choice is kept for when it does.":
+    "Les notifications push te préviennent des demandes de suivi, des réactions, des commentaires et des identifications. MuW n'envoie pas encore d'e-mails : ton choix est gardé pour quand ce sera le cas.",
+  "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
+    "Les notifications de MuW sont désactivées sur ce téléphone. Autorise-les dans Réglages pour les activer.",
 };

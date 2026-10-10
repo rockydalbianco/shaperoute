@@ -104,7 +104,7 @@ class NoWater:
 
 
 def test_the_places_are_the_user_s_choice_each_once_in_italy() -> None:
-    assert len(PLACES) == 29
+    assert len(PLACES) == 67
     names = [place.name for place in PLACES]
     assert names == sorted(set(names))
     for place in PLACES:

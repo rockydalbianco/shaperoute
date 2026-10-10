@@ -269,3 +269,88 @@ Dopo il «continua va bene» dell'utente, il seguito qui sopra (branch
   dell'app.
 - **Chiusa**: PR **#376** mergiata in `main` (`1c8366e`, 15:23Z) al
   «merge 376» del coordinatore, con la CI 5/5 verde.
+
+### 2026-10-09, parte C: altri posti di mare
+
+Dopo la scelta dell'utente del 2026-10-08 («Proponi tu altri posti»), con
+il via del coordinatore (branch `feat/TASK-245-c-more-beaches`; ADR-0210,
+aggiornamento). File toccati: `services/api/shaperoute_api/beach_catalog.py`
+(`PLACES`) e `services/api/tests/test_beach_catalog.py` (il numero dei
+posti), dati dal coordinatore il 2026-10-09; `apps/mobile/src/paddle/beaches.json`
+(e `paddleExamples.json` se la CI lo chiede) e `waterSpots.test.ts`; `docs/MAPS.md`,
+`docs/DECISIONS.md`, `docs/STATUS.md` (solo le righe di questa parte),
+questo file. Il motore non cambia.
+
+**La lista approvata** (2026-10-09). L'agente ha proposto in chat una
+tabella pesata sulle coste con meno posti, con sette alternative;
+l'utente ha scelto «sì, più qualcuno» senza nominarne (nella sessione
+«Scelte prodotto prioritarie», che l'ha riferito): la lista più tutte e
+sette le alternative. La tabella aveva 31 posti, non 30 come scritto
+dall'agente: **38 posti nuovi**.
+
+| Costa | Posti nuovi |
+|---|---|
+| Friuli-Venezia Giulia | Grado, Trieste (Barcola) |
+| Marche | Sirolo, Pesaro |
+| Abruzzo e Molise | Vasto (Marina di Vasto), Termoli |
+| Puglia | Polignano a Mare, Monopoli, Porto Cesareo, Santa Maria di Leuca, Peschici |
+| Basilicata | Maratea |
+| Calabria | Scilla, Pizzo, Soverato (Soverato Marina) |
+| Sicilia | Giardini Naxos, Siracusa, Marzamemi, Favignana, Lampedusa |
+| Sardegna | Cala Gonone, La Maddalena, Stintino, Chia, Porto Cervo |
+| Campania | Sorrento, Positano, Amalfi, Ischia (Ischia Porto), Palinuro |
+| Lazio | Gaeta, Sabaudia |
+| Toscana e isole | Portoferraio, Marina di Campo, Porto Santo Stefano |
+| Liguria | Finale Ligure, Camogli, Lerici |
+
+Il punto di ogni paese è il suo nodo `place` di OpenStreetMap, letto una
+volta da Photon come in TASK-245; dove il paese è in collina o il nodo è
+lontano dal mare, il nodo della frazione sul mare (tra parentesi).
+
+**I numeri** (2026-10-09/10, sul Mac, `italy-260930-water.osm.pbf`):
+
+- **67 posti su 67** tengono cuore, cerchio e stella a **2 km**: i 38
+  nuovi e i 29 di prima, che restano identici (stesso punto, stessa
+  distanza). **Nessuno scartato**, nemmeno sulle coste ripide (Positano,
+  Scilla, Camogli, Maratea).
+- **L'acqua nuova: 38 file, 20,3 MB**, uno a paese, da 0,1 MB (Soverato) a
+  1,7 MB (Grado); nessun paese nuovo sta in un file che il server ha già.
+- Il punto della riva: da 60 m (Amalfi) a 1,7 km (Maratea, in collina)
+  dal nodo del paese.
+- Tempi: 29 minuti per scrivere l'acqua (pyosmium, `cuts.py` di
+  TASK-233), qualche minuto per le prove a 2 km.
+- **Tutte e otto le forme** di «Explore» (chieste come le chiede l'app)
+  in **67 posti su 67** (`eight.log`).
+
+**Fatto**: `PLACES` (67, in ordine), il test del numero dei posti,
+`beaches.json` scritto dal comando (67 righe; Prettier), un test nuovo in
+`waterSpots.test.ts` (ogni spiaggia si trova col suo nome in «Explore» e
+in «Another place» ed è il posto di «Near me» dalla sua riva).
+
+**Sul Mac**, fuori dal repository: `out/task245c-beaches/` nel worktree
+(`.claude/worktrees/TASK-245-C`): `boxes-new.tsv`, `cache/` (i 29 file
+del server di TASK-245 e i 38 nuovi; le prove sono fatte lì),
+**`new/water/` (i 38 file da copiare)** con `new-sha256.txt`, `list.log`,
+`eight.log`, `scripts/run.sh` (`boxes`, `cut`, `list`) ed `eight.py`.
+
+### 2026-10-10, l'acqua sul server
+
+Ok dell'utente in questa sessione («ok, copia l'acqua e aggiorna il
+server», che vale anche per l'aggiornamento del server dopo il merge) e via
+del coordinatore, che ha detto chi copia (questa sessione) e come.
+
+- **38 file, 20,3 MB** copiati con `rsync --ignore-existing` in
+  `/root/shaperoute/data/cache/water/` (da stamattina su un Volume montato
+  in bind, stesso percorso): 38 trasferiti, nessuno già presente, nessuno
+  sovrascritto; poi `chown 10001:10001` e `chmod 644` come gli altri. La
+  cartella aveva 253 file (100 MB), ora **291 (119 MB)**. Nessun riavvio;
+  il lavoro delle zone europee girava in un'altra cartella.
+- **Le impronte coincidono**: lo SHA-256 dei 38 file sul server è quello
+  dei file del Mac su cui il motore ha provato i posti.
+- **Provato dentro il container dell'API** (il container vede 291 file):
+  un cuore da 2 km sull'acqua con `plan_water` da Positano (3,0 s),
+  Lampedusa (7,1 s) e Grado (9,7 s), tutti riusciti.
+- **Resta** (del coordinatore): dopo il merge l'aggiornamento del server
+  (`beach_catalog.py`, ok dell'utente già dato), la pubblicazione dell'app
+  (`beaches.json`) e un solo `draw_examples --water` (TASK-246 B), con l'ok
+  dell'utente, finito il lavoro delle zone europee.

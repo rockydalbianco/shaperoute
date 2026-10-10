@@ -1,0 +1,147 @@
+# TASK-273 — Una forma chiusa si comincia da qualunque punto
+
+**Stato**: In corso
+**Fase**: 4 · **Branch**: `feat/TASK-273-start-anywhere`
+
+## Obiettivo
+
+Lungo una forma chiusa (cuore, cerchio, stella…: il percorso finisce dove
+comincia) il corridore preme «Start» dove vuole: la corsa comincia nel punto
+della forma dove la raggiunge, fa tutto il giro e finisce quando torna lì,
+con le svolte dette da quel punto. Parole e forme aperte partono dalla loro
+partenza come oggi.
+
+## Contesto
+
+Dalla prima recensione di un tester (2026-10-10): al secondo tentativo ha
+cominciato il cuore da un'altra parte («ho iniziato da una parte diversa …
+non ci ho fatto, funziona un po' a tentoni»). Oggi il navigatore
+(`navigator.ts`, ADR-0052) aspetta il corridore al primo metro: `locate`
+(`progress.ts`) guarda solo da 50 m dietro a 300 m avanti all'ultimo punto,
+e chi entra a metà forma resta «fuori percorso». TASK-270 cerca su tutto il
+percorso avanti, ma solo dopo un'assenza del GPS e solo per chi era già sul
+percorso: apposta non per chi va verso la partenza, perché una forma può
+ripassare vicino alla partenza molto dopo (aggiunta ad ADR-0052).
+
+**Scelta dell'utente** (2026-10-10, chiesta in chat con le opzioni, da non
+richiedere): «Automatico, dove la tocchi». Si preme «Start» dove si vuole;
+la corsa comincia dove si raggiunge la forma, fa tutto il giro e finisce
+quando si torna lì. La voce dà le svolte da quel punto. Solo per le forme
+chiuse; parole e forme aperte partono dalla loro partenza come oggi.
+
+**Condizioni del Coordinatore** (sessione `local_e57a8224`, 2026-10-10):
+
+- Si parte solo dopo «486 in main» (PR #486, TASK-270): il branch nasce da
+  `origin/main` con la #486 dentro (`066d10e8`).
+- Tocca `navigator.ts`, `progress.ts` e `useNavigation.ts`, come TASK-272
+  (riaprire una corsa interrotta). Chi entra secondo fa il rebase; l'ordine
+  lo dà il Coordinatore quando sono pronti tutti e due.
+- Testi nuovi visibili solo col sì dell'utente (mostrati in en/it/de/es/fr
+  prima del merge); meglio nessuno.
+- Non nella 1.0 per Apple (build 5): esce con un aggiornamento. Solo app;
+  pubblica il Coordinatore.
+- A verde «#NNN pronta» al Coordinatore; merge solo al suo «merge NNN»
+  esplicito, con `--match-head-commit`.
+
+## Contesto da leggere
+
+- `docs/DECISIONS.md`: ADR-0052 e la sua aggiunta (TASK-270), ADR-0070
+  (fuori percorso), ADR-0167 (la bici a mano)
+- `apps/mobile/src/navigation/navigator.ts`, `progress.ts`, `resume.ts`,
+  `onFootVoice.ts`, `useNavigation.ts`
+- `services/route-engine/route_engine/directions.py` (le soglie delle
+  svolte, da rifare uguali sul telefono per l'incrocio della partenza)
+
+## Cosa fare
+
+1. **Quando una forma è chiusa** (`startsAnywhere`, file nuovo
+   `startAnywhere.ts`): l'ultimo punto entro `ARRIVE_M` (25 m) dal primo,
+   nessuna parola (`word`), nessuna camminata a penna alzata. Vale anche in
+   bici e sull'acqua.
+2. **Prima della corsa**: per una forma chiusa «Head out on …» non si dice
+   allo «Start» (non si sa ancora dove comincia); finché il corridore non è
+   sulla forma, una posizione si cerca su **tutta** la forma, col punto più
+   vicino. Lontano dalla forma vale «Off the route» come oggi per chi va
+   verso la partenza.
+3. **L'ingresso**: il corridore è sulla forma dopo `JOIN_FIXES` (3)
+   posizioni di fila entro `OFF_ROUTE_M`, ognuna vicino alla precedente,
+   che si sono spostate di almeno `JOIN_M` (20 m) lungo la forma. Una
+   posizione storta vicino a un passaggio lontano non basta; nemmeno
+   attraversare la forma di traverso. Una posizione povera (oltre 40 m
+   d'errore) non conta né azzera. La serie parte su ogni passaggio vicino
+   alla prima posizione (le vie ripassate, ADR-0039) e vince quello
+   percorso nel verso del percorso. Il punto d'ingresso è la prima
+   posizione della serie.
+4. **Il giro dal punto d'ingresso**: il percorso del navigatore è la stessa
+   forma ruotata, dal punto d'ingresso a sé stesso (`joinLoop`); le
+   indicazioni seguono con le distanze nuove; all'incrocio della vecchia
+   partenza, dove il motore non dice niente, la svolta si ricava dalla
+   geometria (direzione d'arrivo e di partenza a 20 m, le soglie di
+   `directions.py`), solo se è un incrocio (`branches` ≥ 3) e si gira o
+   cambia via. Un ingresso entro 25 m dalla partenza è la partenza: il
+   percorso resta com'è.
+5. **All'ingresso** si dice «Head out on …» con la via del punto
+   d'ingresso (testo che c'è già), preceduto da «Back on the route» se si
+   era detto «Off the route»; poi le svolte come sempre. L'arrivo
+   (`ARRIVE_M`, `ARRIVE_FIXES`) è al punto d'ingresso.
+6. **Mappa**: la parte corsa e quella che resta (TASK-224) si tagliano sulla
+   linea del navigatore, così la linea gialla parte dal punto d'ingresso e
+   la forma resta intera.
+7. **Bici a mano** (TASK-206): i tratti si ruotano con il percorso; un
+   tratto a cavallo del punto d'ingresso si divide in due
+   (`joinOnFoot.ts`, file nuovo); prima dell'ingresso non si dicono.
+8. **Corsa ripresa** (`resume.ts`, TASK-253): la corsa riparte passando le
+   posizioni registrate nel navigatore, che rientra nello stesso punto;
+   nessun campo nuovo in `SavedRun`. Per TASK-272: chi ricostruisce la
+   navigazione deve passare a `startNavigation` la stessa scelta
+   (`startsAnywhere`).
+9. Test deterministici; prova nel simulatore iOS con una corsa simulata.
+
+## Criteri di accettazione
+
+- [ ] Entrare a metà di un giro: le svolte da lì, compresa quella alla
+      vecchia partenza, e l'arrivo al punto d'ingresso (test).
+- [ ] Una posizione storta vicino a un passaggio lontano, e attraversare
+      la forma di traverso, non scelgono l'ingresso (test).
+- [ ] Forme aperte e parole come prima: «Head out on …» allo «Start», la
+      partenza al primo metro (test).
+- [ ] Partire dalla partenza di una forma chiusa: le svolte come prima,
+      «Head out on …» all'ingresso (test).
+- [ ] La parte corsa sulla mappa parte dal punto d'ingresso (test).
+- [ ] I tratti con la bici a mano dopo l'ingresso si dicono (test).
+- [ ] Una corsa ripresa rientra nello stesso punto (test).
+- [ ] Nessun testo nuovo.
+- [ ] Corsa simulata nel simulatore iOS, entrando a metà di una forma.
+- [ ] `npm run lint`, `typecheck`, `test`, `format:check` verdi (CI).
+
+## File toccati
+
+```
+apps/mobile/src/navigation/startAnywhere.ts            (nuovo)
+apps/mobile/src/navigation/startAnywhere.test.ts       (nuovo)
+apps/mobile/src/navigation/joinOnFoot.ts               (nuovo)
+apps/mobile/src/navigation/navigator.ts
+apps/mobile/src/navigation/progress.ts
+apps/mobile/src/navigation/useNavigation.ts
+apps/mobile/src/navigation/useNavigation.test.ts
+apps/mobile/src/navigation/resume.ts
+apps/mobile/src/map/MapView.tsx
+apps/mobile/src/map/MapView.test.tsx
+apps/mobile/__tests__/AppExploreStart.test.tsx        («Head out» della stella d'esempio, chiusa: ora all'ingresso)
+docs/tasks/TASK-273.md
+docs/STATUS.md, docs/DECISIONS.md                     (le righe di questo task)
+```
+
+## Fuori scope
+
+- Correre la forma al contrario: la direzione resta quella del percorso
+  (in bici i sensi unici e i tratti a mano valgono in un verso solo).
+  Sarebbe una scelta di prodotto.
+- Spostare il segnaposto della partenza sulla mappa al punto d'ingresso.
+- Le parole e le forme aperte.
+- La svolta indietro a un vicolo cieco (TASK-271, motore).
+- Riaprire una corsa interrotta in pausa (TASK-272).
+
+## Esito
+
+*(si compila a fine task)*

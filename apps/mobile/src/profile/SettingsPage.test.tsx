@@ -8,6 +8,9 @@ import { saveLanguageChoice } from "../i18n/language";
 import { useLanguage } from "../i18n/useLanguage";
 import { SettingsPage } from "./SettingsPage";
 
+// «Push notifications» asks the phone first (TASK-262): the phone faked.
+jest.mock("expo-notifications");
+
 const signedIn = session as Session;
 
 /** The page under a root that follows the language, as in the app (TASK-210). */
@@ -93,12 +96,13 @@ test("the notifications are two switches kept in the account, off at first (TASK
   expect(screen.getAllByRole("switch")).toHaveLength(2);
   expect(email).not.toBeChecked();
   expect(push).not.toBeChecked();
-  // The page says nothing is sent yet.
+  // The page says what push tells, and that no email is sent yet (TASK-262).
   expect(
     screen.getByText(
-      "MuW does not send notifications yet. Your choice is kept for when it does.",
+      "Push notifications tell you about follow requests, reactions, comments and tags. MuW does not send emails yet: your choice is kept for when it does.",
     ),
   ).toBeOnTheScreen();
+  // The phone allows them when asked (the mock of expo-notifications).
   await fireEvent.press(push);
   expect(account.changeNotifications).toHaveBeenCalledWith({ push: true });
   await fireEvent.press(email);

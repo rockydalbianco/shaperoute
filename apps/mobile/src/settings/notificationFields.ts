@@ -16,6 +16,12 @@ export const NO_NOTIFICATIONS = tLater(
   "Notifications are not available on this API yet.",
 );
 
+/** «Push notifications» turned on, and the phone refuses them (TASK-262).
+ * Shown with `t()`, above «Open Settings». */
+export const PUSH_NOT_ALLOWED = tLater(
+  "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.",
+);
+
 /** Both off: an account that never touched its switches. */
 const OFF: Notifications = { email: false, push: false };
 

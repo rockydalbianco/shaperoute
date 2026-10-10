@@ -17,7 +17,8 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "CFBundleAllowMixedLocalizations": true
+        "CFBundleAllowMixedLocalizations": true,
+        "UIBackgroundModes": ["audio"]
       }
     },
     "locales": {
@@ -58,6 +59,14 @@
         }
       ],
       [
+        "expo-audio",
+        {
+          "microphonePermission": "MuW never records sound: during your activity it only speaks the directions.",
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": false
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "MuW uses the picture you choose to trace the outline your route will draw.",
@@ -70,6 +79,13 @@
         {
           "androidAppId": "ca-app-pub-3940256099942544~3347511713",
           "iosAppId": "ca-app-pub-1288129622991398~9808900733"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#FFD02B"
         }
       ],
       [

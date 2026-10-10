@@ -172,6 +172,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «merge NNN»; il server con l'ok dell'utente, dal coordinatore.
   File: la PR, «File toccati» (la sezione C di `tasks/TASK-262.md` dopo
   il merge di A).
+- **TASK-245 parte C — 38 posti di mare in più per «Paddle»** (ADR-0210,
+  aggiornamento; posti scelti dall'utente il 2026-10-09 sulla proposta
+  dell'agente). Branch `feat/TASK-245-c-more-beaches`. `PLACES` da 29 a 67
+  paesi, `beaches.json` da 29 a 67 righe: **tutti a 2 km**, nessuno
+  scartato. **Aspetta**: l'ok dell'utente e il via del coordinatore per i
+  **38 file d'acqua nuovi (20,3 MB)** sul server, in
+  `data/cache/water/` senza sovrascrivere (ora in
+  `.claude/worktrees/TASK-245-C/out/task245c-beaches/new/water/` sul Mac);
+  poi il merge, un solo `draw_examples --water` e la pubblicazione
+  dell'app, mai prima dell'acqua. File: `tasks/TASK-245.md`, «parte C».
+  **2026-10-10: l'acqua è sul server** (38 file, 20,3 MB, SHA-256 uguali,
+  provata nel container; ok dell'utente). Aspetta il merge della #480.
+- **TASK-261 parte B — La voce a telefono bloccato** (aggiunta ad
+  ADR-0225; scelte dell'utente del 2026-10-10). Branch
+  `feat/TASK-261-b-voice-background`. Durante la corsa la voce parla a
+  telefono bloccato e col silenzioso e abbassa Spotify mentre parla
+  (`runAudio.ts`, dipendenza nuova `expo-audio`, `UIBackgroundModes`
+  `audio`). PR #475. Serve una build nativa nuova (obiettivo: build 5);
+  il testo nuovo del microfono approvato dall'utente il 2026-10-10.
+  File: `tasks/TASK-261.md`, «File toccati (parte B)».
+  **Chiuso il 2026-10-10**: #475 in `main` (`d10df4a5`); vedi «Completato».
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
   scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice
@@ -187,6 +208,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   fissi. Solo app, nessun testo nuovo. La voce che si ferma a telefono
   bloccato o con Spotify davanti è TASK-261 parte B.
   File: `tasks/TASK-268.md`, «File toccati».
+  **Chiuso il 2026-10-10**: #472 in `main` (`0a07f757`); vedi «Completato».
 - **TASK-246 parte B — Il server tiene le figure «Paddle» dei laghi e
   delle spiagge** (aggiunta ad ADR-0211; via del coordinatore il
   2026-10-09). Branch `feat/TASK-246-b-water-shapes-kept`. L'API legge
@@ -239,6 +261,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `DEPLOY.md`, F.14. Il ritorno da Strava resta su `sslip.io`.
   `tasks/TASK-265.md`. **Done** il 2026-10-08: l'app di `preview` chiama
   `https://api.getmuw.app` dal gruppo `a39c9509` (vedi «Completato»).
+
+- **TASK-262 — Le notifiche inviate davvero** (ADR-0226; scelte
+  dell'utente del 2026-10-07). **Parte A, le push**, branch
+  `feat/TASK-262-a-push`: tabella `push_tokens` (migrazione `0021` al
+  merge), `PUT`/`DELETE /me/push-token`, invio con Expo fuori dalla
+  richiesta, token morti cancellati; nell'app `expo-notifications`
+  (dipendenza nuova), il permesso solo all'interruttore, il token una
+  volta per telefono, il tocco che apre disegno o profilo; i ganci in
+  `follows.py`, `reactions.py`, `comments.py`, `drawings.py` e i blocchi
+  di TASK-121. Testi approvati dall'utente nelle cinque lingue. Le push
+  si vedono solo con una build nativa. Parti B (email, Resend) e C
+  (rubrica, con un nuovo sì) Todo. Da dove riprendere:
+  `tasks/TASK-262.md`.
 - **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** in `main`
   il 2026-10-08 (PR #446, merge `9dcacbf4`; chiesta dall'utente): profilo `production` in `eas.json`,
   canale `production`. Solo la build dello store ha il runtime dal
@@ -669,9 +704,33 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `7a9506a`: il telefono disegna da sé. **Resta D**, la prova
   sull'iPhone, che è dell'utente e fissa i limiti di distanza. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
+- **TASK-266 — Il tour del primo avvio e la guida in «Profile»**
+  (ADR-0235; richiesta dell'utente del 2026-10-09, che fra tre proposte ha
+  scelto il tour sulle schermate vere). Branch
+  `feat/TASK-266-first-run-tour`. Dopo l'animazione all'avvio, la prima
+  volta, otto passi sopra l'app vera: una parte nella luce, il resto
+  scuro; «Skip» conta 5 secondi prima di potersi toccare. «Guide» sulla
+  prima pagina di «Profile», anche senza account, con «Watch the tour».
+  Solo app, nessun server. **Aspetta**: il sì dell'utente sui testi
+  (cinque lingue) e la coda dei merge. `tasks/TASK-266.md`.
 
 ## Completato
 
+- **App** — TASK-261 parte B (aggiunta ad ADR-0225): durante la corsa la
+  voce parla a telefono bloccato e con l'interruttore silenzioso, e
+  abbassa la musica di un'altra app mentre parla (scelte dell'utente del
+  2026-10-10). Dipendenza nuova `expo-audio`, `UIBackgroundModes` `audio`,
+  `src/voice/runAudio.ts`; testo del microfono approvato. PR #475, merge
+  `d10df4a5`. Serve una build nativa nuova (obiettivo del coordinatore:
+  build 5); con Expo Go e la build 4 la voce resta come prima. Dopo il
+  merge, `npm install` nel checkout principale. Resta la prova
+  sull'iPhone. File: `tasks/TASK-261.md`, «File toccati (parte B)».
+- **App** — TASK-268 (aggiunta ad ADR-0137): sulla pagina «Data» della
+  corsa l'indicazione resta in alto, «Pause» e «Map» / «Data» in fondo, e
+  scorrono solo i numeri in mezzo. Prima, con l'indicazione in alto,
+  «Map» finiva sotto il bordo (corsa su strada dell'utente del
+  2026-10-09). PR #472, merge `0a07f757` il 2026-10-10; nessun testo
+  nuovo. Resta lo swipe col dito sull'iPhone. File: `tasks/TASK-268.md`.
 - **API e app** — TASK-121: segnalare e bloccare (ADR-0228; brief del
   coordinatore del 2026-10-07/08). Branch `feat/TASK-121-report-block`,
   migrazione `0020_moderation.sql` (`blocks`, `reports`). Un blocco tiene

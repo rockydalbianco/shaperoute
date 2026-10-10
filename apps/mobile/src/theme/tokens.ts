@@ -40,6 +40,15 @@ const FIXED = {
   onBadge: "#FFFFFF",
 
   /**
+   * The dark laid over the app around the part the tour shows (TASK-266),
+   * with an opacity: dark in both tones, so the part in the light stands
+   * out on a light screen too.
+   */
+  scrim: "#0A0A0B",
+  /** The edge of the light on `scrim`. */
+  onScrim: "#FFFFFF",
+
+  /**
    * Strava's orange, for «Connect with Strava» only (TASK-187): Strava's
    * brand rules ask for it, and the user chose it. Nothing else of the app
    * is orange-filled.

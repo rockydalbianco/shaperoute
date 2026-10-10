@@ -1,5 +1,5 @@
 import type { Session } from "@shaperoute/shared-types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -31,6 +31,9 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { GuideRow } from "../tour/GuideRow";
+import { tourTexts } from "../tour/tourTexts";
+import { askTour } from "../tour/useTour";
 import { SignInScreen } from "./SignInScreen";
 
 type Notice = { text: string; tone: "warning" | "muted" };
@@ -66,8 +69,13 @@ const TITLES: Record<Exclude<ProfilePage, AboutId>, string> = {
   edit: tLater("Edit profile"),
 };
 
-/** Pages of the account itself: who signs in again does not land there. */
-const ACCOUNT_PAGES: ProfilePage[] = ["settings", "edit", ...ABOUT_IDS];
+/** Pages of the account itself: who signs in again does not land there.
+ * Not «Help»: «Guide» opens it without an account too (TASK-266). */
+const ACCOUNT_PAGES: ProfilePage[] = [
+  "settings",
+  "edit",
+  ...ABOUT_IDS.filter((id) => id !== "help"),
+];
 
 type Props = {
   account: Account;
@@ -90,12 +98,16 @@ type Props = {
 export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
   const insets = useSafeAreaInsets();
   const { state } = account;
-  // A page of the account is one step into «Profile»: back goes to it first.
-  const inside = state.status === "signedIn" && page !== "account";
   const signedOut = state.status !== "signedIn";
-  // A text of «ABOUT» opens over «Settings», which stays under it as it was.
-  const about = inside && isAboutId(page) ? page : null;
-  const under = isAboutId(page) ? "settings" : page;
+  // Where «Help» was opened: its row in «Settings», or «Guide» on the first
+  // page, with an account or without (TASK-266).
+  const [helpFrom, setHelpFrom] = useState<"settings" | "account">("settings");
+  // A text of «ABOUT» opens over the page it was opened from, which stays
+  // under it as it was.
+  const about = isAboutId(page) && (!signedOut || page === "help") ? page : null;
+  const under = isAboutId(page) ? (page === "help" ? helpFrom : "settings") : page;
+  // A page of the account is one step into «Profile»: back goes to it first.
+  const inside = !signedOut && under !== "account";
   // Out of the account from «Settings» or «Edit profile»: who comes back in
   // finds «Profile».
   useEffect(() => {
@@ -139,7 +151,10 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             <SettingsPage
               user={state.session.user}
               account={account}
-              onAbout={onPage}
+              onAbout={(id) => {
+                setHelpFrom("settings");
+                onPage(id);
+              }}
             />
           ) : under === "edit" ? (
             <EditProfile
@@ -151,7 +166,14 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             <FavoritesList margin={space.lg} />
           )
         ) : state.status === "signedIn" ? (
-          <SignedIn session={state.session} onPage={onPage} />
+          <SignedIn
+            session={state.session}
+            onPage={onPage}
+            onGuide={() => {
+              setHelpFrom("account");
+              onPage("help");
+            }}
+          />
         ) : (
           <SignInScreen
             // A new form after each way out: no password left in it.
@@ -177,8 +199,35 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             onMode={account.clearProblem}
           />
         )}
+        {/* With an account «Guide» is under «Settings» (ProfileHome). */}
+        {signedOut && (
+          <GuideRow
+            onOpen={() => {
+              setHelpFrom("account");
+              onPage("help");
+            }}
+          />
+        )}
       </ScrollView>
-      {about !== null && <AboutScreen id={about} onBack={() => onPage("settings")} />}
+      {about !== null && (
+        <AboutScreen
+          id={about}
+          onBack={() => onPage(about === "help" ? helpFrom : "settings")}
+          // Named as the row that opened it.
+          name={
+            about === "help" && helpFrom === "account" ? tourTexts().guide : undefined
+          }
+          // The tour on «Draw», «Profile» closed (TASK-266).
+          onTour={
+            about === "help"
+              ? () => {
+                  onBack();
+                  askTour();
+                }
+              : undefined
+          }
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -187,9 +236,11 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
 function SignedIn({
   session,
   onPage,
+  onGuide,
 }: {
   session: Session;
   onPage: (page: ProfilePage) => void;
+  onGuide: () => void;
 }) {
   const favorites = useFavoritesDoor();
   const activities = useActivitiesDoor();
@@ -200,6 +251,7 @@ function SignedIn({
       activities={activities.total}
       onOpen={onPage}
       onEdit={() => onPage("edit")}
+      onGuide={onGuide}
     />
   );
 }

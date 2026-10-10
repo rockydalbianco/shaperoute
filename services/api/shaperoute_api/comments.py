@@ -62,6 +62,7 @@ from shaperoute_api.drawings import (
     drawing_seen_sql,
 )
 from shaperoute_api.follows import apart_sql
+from shaperoute_api.push import notify_owner
 from shaperoute_api.schemas import ErrorBody, ErrorDetail
 
 MAX_COMMENT_LENGTH = 500
@@ -334,6 +335,7 @@ def comment_routes() -> APIRouter:
         body: CommentRequestBody,
         comments: Annotated[Comments, Depends(comments_of)],
         user: Annotated[UserBody, Depends(current_user)],
+        request: Request,
     ) -> CommentBody:
         wait = written.wait_s(str(user.id))
         if wait > 0:
@@ -343,6 +345,7 @@ def comment_routes() -> APIRouter:
         added = comments.add(user, drawing_id, body.text)
         if added is None:
             raise HTTPException(404, NO_DRAWING)
+        pushed_comment(request, user, drawing_id, added)
         return added
 
     @router.delete(
@@ -370,3 +373,16 @@ def install_comments(app: FastAPI) -> None:
     the database and the errors."""
     app.add_exception_handler(CommentRejected, rejected_answer)
     app.include_router(comment_routes())
+
+
+# --- Push notifications (TASK-262, ADR-0226) ---
+
+
+def pushed_comment(
+    request: Request, user: UserBody, drawing_id: str, added: CommentBody
+) -> None:
+    """After a comment is kept: the drawing's owner is told (push.py), with
+    its beginning. Each comment is news of its own."""
+    notify_owner(
+        request, "comment", user.id, drawing_id, text=added.text, key=str(added.id)
+    )

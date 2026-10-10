@@ -202,6 +202,14 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   stesso giorno (Rimini e
   Cavallino stanno nei file di Riccione e di Jesolo, TASK-225); 4 minuti
   per scrivere l'acqua e 1 per le prove, sul Mac.
+  Il 2026-10-09 (TASK-245 parte C, stesso estratto) **38 paesi in più**,
+  scelti dall'utente sulle coste che ne avevano meno (Campania, Basilicata,
+  Calabria, Sicilia, Sardegna, Puglia, Molise, Friuli, Marche, Liguria, le
+  isole toscane): `PLACES` ne ha 67, e **67 su 67 tengono cuore, cerchio e
+  stella a 2 km**, nessuno scartato. 38 file d'acqua nuovi per 20,3 MB, da
+  0,1 MB (Soverato) a 1,7 MB (Grado); il punto della riva sta da 60 m
+  (Amalfi) a 1,7 km (Maratea, che è in collina) dal paese. Sul Mac 29
+  minuti per scrivere l'acqua con pyosmium.
   **Overpass e i laghi**: la prima risposta vera alla query (dal server,
   2026-10-04, 184 s) dava le relazioni senza membri, perché `out tags
   geom` non li scrive: un lago disegnato come multipoligono mancava.

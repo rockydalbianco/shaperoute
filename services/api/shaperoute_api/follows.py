@@ -34,7 +34,7 @@ from typing import Annotated, Any, Literal
 from uuid import UUID
 
 import psycopg
-from fastapi import APIRouter, Depends, FastAPI, Query, Response
+from fastapi import APIRouter, Depends, FastAPI, Query, Request, Response
 from PIL import Image
 from psycopg import errors as pg_errors
 from psycopg.rows import DictRow
@@ -51,6 +51,7 @@ from shaperoute_api.accounts import (
 from shaperoute_api.activities import EPOCH, MICROSECOND
 from shaperoute_api.db import Database
 from shaperoute_api.profile_photos import JPEG_QUALITY, PHOTO_SIDE
+from shaperoute_api.push import notify_account
 from shaperoute_api.schemas import ErrorBody
 
 MIN_QUERY_LENGTH = 2
@@ -449,8 +450,10 @@ def follow_routes() -> APIRouter:
         return follows.search(user.id, q)
 
     @router.post("/users/{public_id}/follow", responses=NOT_FOUND)
-    def ask(public_id: str, follows: Them, user: Me) -> FollowBody:
-        return follows.ask(user.id, public_id)
+    def ask(public_id: str, follows: Them, user: Me, request: Request) -> FollowBody:
+        asked = follows.ask(user.id, public_id)
+        pushed_follow_request(request, user, public_id, asked)
+        return asked
 
     # Withdraws a request or stops following: the same for the one who asks.
     @router.delete("/users/{public_id}/follow", status_code=204, responses=NOT_FOUND)
@@ -467,8 +470,9 @@ def follow_routes() -> APIRouter:
     @router.post(
         "/me/follow-requests/{public_id}/accept", status_code=204, responses=NOT_FOUND
     )
-    def accept(public_id: str, follows: Them, user: Me) -> Response:
+    def accept(public_id: str, follows: Them, user: Me, request: Request) -> Response:
         follows.accept(user.id, public_id)
+        pushed_follow_accepted(request, user, public_id)
         return Response(status_code=204)
 
     @router.post(
@@ -502,3 +506,21 @@ def install_follows(app: FastAPI) -> None:
     """Following and the search of the members; after install_accounts,
     which sets the database and the errors."""
     app.include_router(follow_routes())
+
+
+# --- Push notifications (TASK-262, ADR-0226) ---
+
+
+def pushed_follow_request(
+    request: Request, user: UserBody, public_id: str, asked: FollowBody
+) -> None:
+    """After a request is kept: the one asked is told (push.py), not when
+    the answer is «following» already."""
+    if asked.follow == "requested":
+        notify_account(request, "follow_request", user.id, public_id)
+
+
+def pushed_follow_accepted(request: Request, user: UserBody, public_id: str) -> None:
+    """After a request is accepted: the one who asked is told (push.py), the
+    «new follower» of the user's list."""
+    notify_account(request, "follow_accepted", user.id, public_id)

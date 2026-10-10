@@ -585,7 +585,8 @@ export interface User {
 
 /**
  * What an account chose about being notified (TASK-185): both off until
- * turned on. Sgrava sends nothing yet; the choice is kept for when it does.
+ * turned on. With «Push notifications» on the API sends push notifications
+ * to the phones of the account (TASK-262); no email is sent yet.
  */
 export interface Notifications {
   email: boolean;
@@ -1039,6 +1040,38 @@ export interface ReportRequest {
   id: string;
   reason: ReportReason;
 }
+
+/** The platform of a phone, as the push service names it (TASK-262). */
+export type PushPlatform = "ios" | "android";
+
+/** The languages a push notification is written in (TASK-262). */
+export type PushLanguage = "en" | "de" | "it" | "es" | "fr";
+
+/**
+ * PUT /me/push-token (TASK-262): this phone's Expo push token, sent once the
+ * phone allowed notifications and «Push notifications» is on. `language`
+ * is the app's on this phone: the notifications are written in it, in
+ * English without it. Taken back with DELETE /me/push-token/{token}. Both
+ * answer 204.
+ */
+export interface PushTokenRequest {
+  token: string;
+  platform: PushPlatform;
+  language?: PushLanguage | null;
+}
+
+/** What a push notification tells of (TASK-262). */
+export type PushKind =
+  "follow_request" | "follow_accepted" | "reaction" | "comment" | "tag";
+
+/**
+ * The `data` of a push notification (TASK-262): what the app opens when it
+ * is touched. A drawing for a reaction, a comment or a tag; the profile of
+ * who acted for a follow request or a request accepted.
+ */
+export type PushData =
+  | { kind: PushKind; drawing_id: string }
+  | { kind: PushKind; public_id: string; username: string };
 
 /** The most hashes one POST /people/from-contacts takes (TASK-262 C). */
 export const CONTACT_HASHES_MAX = 500;

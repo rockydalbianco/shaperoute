@@ -247,15 +247,29 @@ describe("«Privacy» says honestly what the search from the contacts sends (TAS
   });
 });
 
-test("«Help» and «Privacy» say the notification choices are kept, and nothing is sent (ADR-0206)", () => {
+test("«Help» and «Privacy» say what push sends, and that no email is sent (ADR-0206, ADR-0226)", () => {
   for (const text of [all(EN.help), all(EN.privacy)]) {
     expect(text).toMatch(/off until you turn them on/);
-    expect(text).toMatch(/MuW sends no notifications yet/);
+    expect(text).toMatch(/MuW sends no emails yet/);
   }
   for (const text of [all(IT.help), all(IT.privacy)]) {
     expect(text).toMatch(/spent[ie] finché non l[ie] accendi/);
-    expect(text).toMatch(/MuW non manda ancora notifiche/);
+    expect(text).toMatch(/MuW non manda ancora email/);
   }
+  expect(all(EN.help)).toMatch(
+    /follow requests, accepted requests, reactions, comments and tags/,
+  );
+  expect(all(IT.help)).toMatch(
+    /richieste di follow, richieste accettate, reazioni, commenti e tag/,
+  );
+  // Who gets the token, and when it goes.
+  expect(all(EN.privacy)).toMatch(
+    /Expo's push service, which hands them to Apple or Google/,
+  );
+  expect(all(EN.privacy)).toMatch(/turn push off, log out or delete your account/);
+  expect(all(IT.privacy)).toMatch(
+    /servizio push di Expo, che le passa ad Apple o a Google/,
+  );
 });
 
 test("«Privacy» says how the account is deleted and what goes with it", () => {

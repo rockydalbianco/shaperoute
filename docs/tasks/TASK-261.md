@@ -1,7 +1,8 @@
 # TASK-261 — Registrare la corsa con l'app in secondo piano
 
-**Stato**: Done per la parte A (#441, 2026-10-08) · parte B Todo, dopo la
-prova sull'iPhone
+**Stato**: Done per la parte A (#441, 2026-10-08) e per la parte B
+(#475, `d10df4a5`, 2026-10-10); resta la prova sull'iPhone con una build
+nativa nuova
 **Fase**: 4 · **Branch**: `feat/TASK-261-background-gps` (cancellato dopo
 il merge)
 
@@ -229,7 +230,7 @@ docs/tasks/TASK-261.md
 docs/UI.md, docs/STATUS.md, docs/DECISIONS.md           (le righe di questo task)
 ```
 
-## Parte B — La voce a telefono bloccato (da fare dopo)
+## Parte B — La voce a telefono bloccato
 
 Il nome «parte B» è del coordinatore (2026-10-08). L'utente l'ha già
 scelta il 2026-10-08, rispondendo alla domanda con la proposta: **dopo la
@@ -247,6 +248,81 @@ prova sull'iPhone della parte A**, non adesso. La parte A non la aspetta.
   Spotify (abbassarlo mentre parla, o mischiarsi), e se parlare anche con
   l'interruttore silenzioso. Si prova solo sull'iPhone.
 - **Prima di partire**: chiedere la dipendenza `expo-audio` (CLAUDE.md).
+
+### Scelte dell'utente (2026-10-10)
+
+Dopo la corsa su strada del 2026-10-09 («a una certa ha smesso di darmi
+indicazioni vocali») l'utente ha chiesto la parte B («e la voce? fai anche
+la parte B») e ha risposto alle tre domande con le proposte:
+
+- **sì** alla dipendenza `expo-audio` (~57.0.5);
+- con Spotify la musica **si abbassa mentre la voce parla e poi risale**
+  (`duckOthers`);
+- la voce parla **anche con l'interruttore silenzioso** (`playback`).
+
+### Cosa fa
+
+- `src/voice/runAudio.ts` (nuovo): `startRunAudio()` alla partenza della
+  corsa (`useNavigation`, `useFreeRun`) mette la sessione audio di iOS in
+  `playback` con `duckOthers` (`setAudioModeAsync`, senza attivarla);
+  `endRunAudio()` alla fine la rimette `ambient` mescolabile e la rilascia.
+  `say()` prende il posto di `Speech.speak` nella corsa e in «Listen»:
+  durante una corsa, finché la voce ha parole chiede ogni secondo
+  `Speech.isSpeakingAsync()` e, quando ha finito, rilascia la sessione
+  (`setIsAudioActiveAsync(false)`, che avvisa le altre app): senza, iOS
+  terrebbe Spotify basso per tutta la corsa. Solo iOS; il modulo nativo
+  `ExpoAudio` è chiesto con `requireOptionalNativeModule`, così un'app
+  costruita prima di expo-audio parla come prima invece di fallire.
+- `app.json`: `UIBackgroundModes` `audio` in `ios.infoPlist` (con
+  `location` e `fetch` della parte A); il plugin `expo-audio` con
+  `enableBackgroundPlayback: false` (su Android niente servizio né permessi
+  in più, salvo `MODIFY_AUDIO_SETTINGS`) e `recordAudioAndroid: false`.
+- **Microfono**: expo-audio contiene anche il codice per registrare, e
+  per un pacchetto così senza `NSMicrophoneUsageDescription` Apple
+  segnala ITMS-90683 e può rifiutarlo. Il testo è «MuW never records
+  sound: during your activity it only speaks the directions.», tradotto in
+  `locales/*.json`; l'app non chiede mai il microfono. Il plugin di
+  expo-image-picker ha `microphonePermission: false`, che cancella la
+  chiave: expo-audio sta **prima** di lui nella lista, perché Expo applica
+  le modifiche a Info.plist dall'ultimo plugin al primo (lo fissa
+  `__tests__/runAudioConfig.test.ts`). La riga del picker non cambia.
+  **Testo nuovo, approvato dall'utente in chat il 2026-10-10** (le cinque
+  lingue).
+- `app.json` tocca solo `ios.infoPlist` e la voce `expo-audio` della lista
+  dei plugin (indicazione del coordinatore, 2026-10-10): le #451 e #461
+  aggiungono i loro plugin in fondo alla lista, lontano da queste righe.
+- Serve una **build nativa nuova** (TestFlight): con Expo Go e con la
+  build 4 la voce resta come prima. Obiettivo del coordinatore: la build
+  5, la 1.0 per Apple.
+- **Per le note al revisore Apple** (`UIBackgroundModes` `audio`): «MuW
+  gives spoken turn-by-turn directions and distance updates during a run
+  or ride. The audio background mode lets these voice prompts continue
+  while the phone is locked or another app, such as a music app, is in
+  front; MuW plays no other audio in the background.»
+
+### Prova
+
+`expo config --type introspect`: `UIBackgroundModes` `audio`, `fetch`,
+`location`; `NSMicrophoneUsageDescription` col testo nuovo. Test nuovi in
+`runAudio.test.ts` e `__tests__/runAudioConfig.test.ts`; i 3064 test
+dell'app, lint e typecheck verdi in locale. Il telefono bloccato, Spotify
+che si abbassa e
+l'interruttore silenzioso si provano solo sull'iPhone dell'utente.
+
+### File toccati (parte B)
+
+```
+apps/mobile/src/voice/runAudio.ts                       (nuovo, + test)
+apps/mobile/src/navigation/useNavigation.ts
+apps/mobile/src/navigation/useFreeRun.ts
+apps/mobile/src/voice/VoiceSetting.tsx                  («Listen» con say)
+apps/mobile/__tests__/runAudioConfig.test.ts            (nuovo)
+apps/mobile/app.json                                    (ios.infoPlist e il plugin expo-audio)
+apps/mobile/locales/en.json, it.json, de.json, es.json, fr.json
+apps/mobile/package.json, package-lock.json             (expo-audio)
+docs/tasks/TASK-261.md
+docs/STATUS.md, docs/DECISIONS.md                       (le righe di questa parte)
+```
 
 ## Fuori scope
 

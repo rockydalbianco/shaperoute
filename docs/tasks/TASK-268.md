@@ -1,6 +1,6 @@
 # TASK-268 — «Data» con l'indicazione: «Map» e «Pause» restano sullo schermo
 
-**Stato**: In corso
+**Stato**: Done (#472, 2026-10-10)
 **Fase**: 4 · **Branch**: `fix/TASK-268-run-data-page`
 
 ## Obiettivo
@@ -55,7 +55,8 @@ i pulsanti e «Map» finiscono sotto il bordo e il tocco dove prima c'era
 - [ ] Lo swipe verso destra riporta alla mappa anche sopra i numeri
       (nel codice e nel test; il dito vero è sull'iPhone dell'utente).
 - [x] Nessun testo nuovo; nessun colore scritto a mano.
-- [ ] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
+- [x] `npm run lint`, `typecheck`, `test`, `format:check` verdi (CI
+      5/5 della #472).
 
 ## File toccati
 
@@ -90,4 +91,8 @@ La voce che si ferma: la logica delle indicazioni (`navigator.ts`) non
 si interrompe da sola; le cause verosimili sono l'interruttore «Voice»
 toccato per sbaglio dove prima stava «Map» (questo task) e il telefono
 bloccato o Spotify davanti, dove iOS zittisce la sintesi vocale con la
-sessione audio di partenza (TASK-261 parte B, da fare).
+sessione audio di partenza (TASK-261 parte B, PR #475).
+
+Merge della #472 il 2026-10-10 (`0a07f757`, Coordinatore 2), CI 5/5.
+Solo app: la pubblicazione su preview è del coordinatore. Resta la prova
+dello swipe col dito sull'iPhone dell'utente.

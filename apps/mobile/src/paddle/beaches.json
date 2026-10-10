@@ -12,8 +12,23 @@
       "distance_m": 2000
     },
     {
+      "name": "Amalfi",
+      "point": [40.63313, 14.60252],
+      "distance_m": 2000
+    },
+    {
       "name": "Bibione",
       "point": [45.63129, 13.05729],
+      "distance_m": 2000
+    },
+    {
+      "name": "Cala Gonone",
+      "point": [40.28165, 9.63609],
+      "distance_m": 2000
+    },
+    {
+      "name": "Camogli",
+      "point": [44.35005, 9.15232],
       "distance_m": 2000
     },
     {
@@ -47,8 +62,28 @@
       "distance_m": 2000
     },
     {
+      "name": "Chia",
+      "point": [38.90101, 8.89337],
+      "distance_m": 2000
+    },
+    {
+      "name": "Favignana",
+      "point": [37.92975, 12.32593],
+      "distance_m": 2000
+    },
+    {
+      "name": "Finale Ligure",
+      "point": [44.16799, 8.34432],
+      "distance_m": 2000
+    },
+    {
       "name": "Forte dei Marmi",
       "point": [43.95694, 10.16523],
+      "distance_m": 2000
+    },
+    {
+      "name": "Gaeta",
+      "point": [41.21091, 13.55951],
       "distance_m": 2000
     },
     {
@@ -57,13 +92,63 @@
       "distance_m": 2000
     },
     {
+      "name": "Giardini Naxos",
+      "point": [37.83518, 15.27256],
+      "distance_m": 2000
+    },
+    {
+      "name": "Grado",
+      "point": [45.67612, 13.39808],
+      "distance_m": 2000
+    },
+    {
+      "name": "Ischia",
+      "point": [40.7447, 13.94588],
+      "distance_m": 2000
+    },
+    {
+      "name": "La Maddalena",
+      "point": [41.21123, 9.3858],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lampedusa",
+      "point": [35.50262, 12.60491],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lerici",
+      "point": [44.07219, 9.90854],
+      "distance_m": 2000
+    },
+    {
       "name": "Lignano Sabbiadoro",
       "point": [45.6871, 13.14479],
       "distance_m": 2000
     },
     {
+      "name": "Maratea",
+      "point": [39.9911, 15.70316],
+      "distance_m": 2000
+    },
+    {
+      "name": "Marina di Campo",
+      "point": [42.74566, 10.2357],
+      "distance_m": 2000
+    },
+    {
+      "name": "Marzamemi",
+      "point": [36.74111, 15.11752],
+      "distance_m": 2000
+    },
+    {
       "name": "Mondello",
       "point": [38.20605, 13.3257],
+      "distance_m": 2000
+    },
+    {
+      "name": "Monopoli",
+      "point": [40.95127, 17.30555],
       "distance_m": 2000
     },
     {
@@ -77,13 +162,68 @@
       "distance_m": 2000
     },
     {
+      "name": "Palinuro",
+      "point": [40.03474, 15.28552],
+      "distance_m": 2000
+    },
+    {
+      "name": "Pesaro",
+      "point": [43.91443, 12.91935],
+      "distance_m": 2000
+    },
+    {
       "name": "Pescara",
       "point": [42.47484, 14.21216],
       "distance_m": 2000
     },
     {
+      "name": "Peschici",
+      "point": [41.94813, 16.01752],
+      "distance_m": 2000
+    },
+    {
+      "name": "Pizzo",
+      "point": [38.73772, 16.16247],
+      "distance_m": 2000
+    },
+    {
+      "name": "Polignano a Mare",
+      "point": [40.99657, 17.21855],
+      "distance_m": 2000
+    },
+    {
+      "name": "Porto Cervo",
+      "point": [41.13675, 9.53008],
+      "distance_m": 2000
+    },
+    {
+      "name": "Porto Cesareo",
+      "point": [40.25944, 17.89708],
+      "distance_m": 2000
+    },
+    {
+      "name": "Porto Santo Stefano",
+      "point": [42.43736, 11.12699],
+      "distance_m": 2000
+    },
+    {
+      "name": "Portoferraio",
+      "point": [42.81289, 10.33221],
+      "distance_m": 2000
+    },
+    {
+      "name": "Positano",
+      "point": [40.62734, 14.48629],
+      "distance_m": 2000
+    },
+    {
       "name": "Rimini",
       "point": [44.06805, 12.58585],
+      "distance_m": 2000
+    },
+    {
+      "name": "Sabaudia",
+      "point": [41.29585, 13.01107],
       "distance_m": 2000
     },
     {
@@ -107,6 +247,16 @@
       "distance_m": 2000
     },
     {
+      "name": "Santa Maria di Leuca",
+      "point": [39.79576, 18.35405],
+      "distance_m": 2000
+    },
+    {
+      "name": "Scilla",
+      "point": [38.25344, 15.72488],
+      "distance_m": 2000
+    },
+    {
       "name": "Senigallia",
       "point": [43.71825, 13.22347],
       "distance_m": 2000
@@ -117,8 +267,28 @@
       "distance_m": 2000
     },
     {
+      "name": "Siracusa",
+      "point": [37.06945, 15.29271],
+      "distance_m": 2000
+    },
+    {
+      "name": "Sirolo",
+      "point": [43.52614, 13.62236],
+      "distance_m": 2000
+    },
+    {
+      "name": "Sorrento",
+      "point": [40.62841, 14.37299],
+      "distance_m": 2000
+    },
+    {
       "name": "Sottomarina",
       "point": [45.21479, 12.29965],
+      "distance_m": 2000
+    },
+    {
+      "name": "Soverato",
+      "point": [38.68893, 16.55622],
       "distance_m": 2000
     },
     {
@@ -127,8 +297,28 @@
       "distance_m": 2000
     },
     {
+      "name": "Stintino",
+      "point": [40.93812, 8.22926],
+      "distance_m": 2000
+    },
+    {
+      "name": "Termoli",
+      "point": [41.99833, 15.00033],
+      "distance_m": 2000
+    },
+    {
+      "name": "Trieste",
+      "point": [45.67935, 13.75356],
+      "distance_m": 2000
+    },
+    {
       "name": "Tropea",
       "point": [38.67799, 15.89217],
+      "distance_m": 2000
+    },
+    {
+      "name": "Vasto",
+      "point": [42.09927, 14.72406],
       "distance_m": 2000
     },
     {

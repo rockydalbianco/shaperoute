@@ -12,7 +12,9 @@ Who may see a drawing is the question of the profiles (drawings.shown_sql):
 every member sees one for `everyone`, the followers with the request
 accepted (follows.py) and the owner see one for `followers`, nobody
 reads one for `only_me`, not even its owner: the feed holds what was
-published, never a private run, and never a track that is not cut.
+published, never a private run, and never a track that is not cut. Nor
+the drawings of a member the reader blocked or that blocked the reader
+(TASK-121): shown_sql leaves them out.
 
 The pages follow a cursor made of the group, the moment of publication
 and the random id of the last drawing of the page: a drawing published

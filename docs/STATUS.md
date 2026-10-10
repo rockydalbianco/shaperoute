@@ -664,6 +664,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Map» finiva sotto il bordo (corsa su strada dell'utente del
   2026-10-09). PR #472, merge `0a07f757` il 2026-10-10; nessun testo
   nuovo. Resta lo swipe col dito sull'iPhone. File: `tasks/TASK-268.md`.
+- **API e app** — TASK-121: segnalare e bloccare (ADR-0228; brief del
+  coordinatore del 2026-10-07/08). Branch `feat/TASK-121-report-block`,
+  migrazione `0020_moderation.sql` (`blocks`, `reports`). Un blocco tiene
+  lontani i due nei due sensi in feed, commenti, reazioni, ricerca,
+  follow, profilo e disegni (anche aperti per id), e chiude ogni follow
+  fra loro; `PUT`/`DELETE
+  /users/{id}/block`, `GET /me/blocked`, `POST /reports` (disegno,
+  commento o persona, con un motivo di cinque). Nessun endpoint legge le
+  segnalazioni. Nell'app il «…» sul post e sul profilo di un altro, il
+  foglio con «Report» e «Block», «Blocked people» in «Profile»; 21 testi
+  nuovi nelle cinque lingue, **confermati dall'utente** il 2026-10-09. Restano la
+  migrazione sul server (ok dell'utente, coordinatore) e la prova con due
+  account. `tasks/TASK-121.md`.
+
 - **App e sito** — TASK-267 (ADR-0237): la 1.0 dell'App Store **senza
   pubblicità**, scelta dell'utente del 2026-10-09 (gli annunci con la
   società). Con `APP_VARIANT=production` il codice nativo di AdMob non

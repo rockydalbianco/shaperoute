@@ -157,6 +157,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-269 — «Paddle»: laghi e mare vicino a dove si vive, con
+  «Lakes» / «Sea»** (`feat/TASK-269-paddle-places-near-home`, ADR-0239;
+  richiesta dell'utente del 2026-10-09, il come deciso dall'agente su
+  delega). La fila dei posti parte dalla zona di casa calcolata sul
+  telefono dalle attività, con «Show more» e la riga «Suggested near …»;
+  due chip filtrano laghi o mare; le forme già sul telefono seguono la
+  stessa zona. Solo app, non nella 1.0. Testi nuovi da approvare.
+  File: `tasks/TASK-269.md`, «File toccati».
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
   scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice

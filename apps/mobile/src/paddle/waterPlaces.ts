@@ -3,10 +3,14 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { tLater } from "../i18n";
 import type { Place } from "../places/photon";
 
+/** A lake, or the sea: the filter of «LAKES AND SEA» (TASK-269). */
+export type WaterKind = "lake" | "sea";
+
 /** A place of «Explore» with «Paddle» (TASK-191): a lake or a stretch of
  * sea, and the point of its shore its examples start from. */
 export type WaterPlace = {
   name: string;
+  kind: WaterKind;
   /** Where on its shore, for the line over the examples: an English text
    * to show with `t` (TASK-210). */
   from: string;
@@ -23,12 +27,28 @@ export type WaterPlace = {
 export const WATER_PLACES: readonly WaterPlace[] = [
   {
     name: "Lago di Garda",
+    kind: "lake",
     from: tLater("from Riva del Garda"),
     point: [45.88114, 10.84559],
   },
-  { name: "Lago di Como", from: tLater("from Como"), point: [45.8132, 9.08029] },
-  { name: "Jesolo", from: tLater("from the beach"), point: [45.50137, 12.63925] },
-  { name: "Riccione", from: tLater("from the beach"), point: [44.00355, 12.66338] },
+  {
+    name: "Lago di Como",
+    kind: "lake",
+    from: tLater("from Como"),
+    point: [45.8132, 9.08029],
+  },
+  {
+    name: "Jesolo",
+    kind: "sea",
+    from: tLater("from the beach"),
+    point: [45.50137, 12.63925],
+  },
+  {
+    name: "Riccione",
+    kind: "sea",
+    from: tLater("from the beach"),
+    point: [44.00355, 12.66338],
+  },
 ];
 
 /** As a place of «Explore»: its examples are known by its point. */

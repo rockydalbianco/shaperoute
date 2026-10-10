@@ -1126,4 +1126,11 @@ export const ES: Table = {
 
   // src/explore/RecommendedRow.tsx (TASK-092)
   RECOMMENDED: "RECOMENDADAS",
+
+  // src/paddle/PaddleExplore.tsx (TASK-269)
+  Lakes: "Lagos",
+  Sea: "Mar",
+  "Suggested near {place}": "Sugeridos cerca de {place}",
+  "Suggested near where you usually start": "Sugeridos cerca de donde sueles salir",
+  "Suggested near your start": "Sugeridos cerca de tu salida",
 };

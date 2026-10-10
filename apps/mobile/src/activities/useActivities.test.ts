@@ -3,6 +3,7 @@ import { act, renderHook } from "@testing-library/react-native";
 
 import { answers, apiError, held } from "../account/testing";
 import type { ActivitiesPage, Activity } from "../api/activities";
+import * as homeArea from "../paddle/homeArea";
 import { useActivities } from "./useActivities";
 
 const URL = "http://api";
@@ -263,4 +264,29 @@ test("without an API the list fails, and nothing is asked", async () => {
   );
   expect(result.current.status).toBe("failed");
   expect(fetchFn).not.toHaveBeenCalled();
+});
+
+test("the first page says where the account's activities start, on the phone only (TASK-269)", async () => {
+  const noted = jest
+    .spyOn(homeArea, "noteHomeArea")
+    .mockImplementation(() => undefined);
+  try {
+    const first = held();
+    const fetchFn = jest.fn(async (url: string, init?: RequestInit) => {
+      const auth = (init?.headers as Record<string, string>).Authorization;
+      return auth === "Bearer one"
+        ? first.fetchFn(url, init)
+        : Response.json(page([FREE]));
+    });
+    const { rerender } = await hook(fetchFn);
+    await rerender({ token: "two" });
+    expect(noted.mock.calls).toEqual([[[FREE]]]);
+    // The answer of an account signed out since says nothing.
+    await act(async () => first.answer(200, page([STAR])));
+    expect(noted.mock.calls).toEqual([[[FREE]]]);
+    // Only the list is read: nothing else is asked of the API.
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  } finally {
+    noted.mockRestore();
+  }
 });

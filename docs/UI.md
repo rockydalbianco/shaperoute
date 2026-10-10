@@ -2562,6 +2562,34 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     sport di «Settings», senza avvisi, anche con i dati mobili. La pagina
     le mostra subito, come quelle venute con l'app; quello che manca
     ancora lo chiede lei come prima.
+  - **Vicino a dove si vive, con un filtro** (TASK-269, ADR-0239; richiesta
+    dell'utente del 2026-10-09, il come deciso dall'agente su delega
+    dell'utente):
+    - **La zona di casa**, calcolata sul telefono: il centro della zona
+      (10 km) da cui partono più attività fra le 20 più recenti di «My
+      activities», qualunque sport; a pari merito la più recente. Senza
+      attività, la partenza da cui è partito «Near me». Resta in
+      `Documents/home-area.json`: niente permessi nuovi, niente indirizzo,
+      niente di nuovo all'API o sull'account; una lista vuota la toglie.
+    - **I posti da toccare** sono quelli più vicini alla zona di casa, otto
+      alla volta; in fondo alla fila «Show more» ne aggiunge altri otto.
+      Sotto la fila una riga dice da dove: «Suggested near Trento» (il
+      paese più frequente che l'API ha dato alle attività della zona),
+      «Suggested near where you usually start» senza paese, «Suggested
+      near your start» senza attività; senza partenza né attività nessuna
+      riga, e i quattro posti scelti a mano come prima. **«Near me»** resta
+      com'era: il lago più vicino alla partenza, anche in viaggio.
+    - **«Lakes» e «Sea»**, due chip a destra di «LAKES AND SEA», accesi
+      tutti e due. Toccarne uno mostra solo quel tipo, toccarlo di nuovo li
+      riaccende, toccare l'altro passa all'altro; la scelta resta sul
+      telefono (`Documents/water-filter.json`). Vale per la fila, non per
+      «Near me» né per «Type a lake or a beach». Lago o mare lo dice
+      l'elenco da cui viene il posto (`lakes.json`, `beaches.json`; Garda e
+      Como laghi, Jesolo e Riccione mare).
+    - **Le forme già sul telefono** (sopra) sono quelle dei tre posti più
+      vicini alla zona di casa, quando c'è.
+    - Testi nuovi **da confermare con l'utente**, nelle cinque lingue
+      (`tasks/TASK-269.md`): «Lakes», «Sea», «Suggested near …».
 - **I pezzi staccati sull'acqua** (TASK-226, ADR-0188; scelta dell'utente
   sui campioni): con «Paddle» gatto, pesce, testa di cane, testa di
   coniglio, zucca, faccina, fantasmino e ciambella si chiedono **sempre**

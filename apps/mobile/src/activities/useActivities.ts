@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { accountProblem, sessionEnded } from "../account/messages";
 import type { AccountOutcome } from "../api/accounts";
 import { type Activity, fetchActivities, removeActivity } from "../api/activities";
+import { noteHomeArea } from "../paddle/homeArea";
 
 /**
  * The runs of who is signed in (TASK-172): the list of the API, a page at a
@@ -115,6 +116,11 @@ export function useActivities(
           return;
         }
         if (outcome.kind === "ok") {
+          // Where the latest ones start, on the phone only: the lakes and
+          // the sea «Explore» suggests (TASK-269).
+          if (tokenNow.current === of) {
+            noteHomeArea(outcome.value.activities);
+          }
           change(of, () => ({
             status: "ready",
             list: outcome.value.activities,

@@ -92,6 +92,19 @@ docs/DECISIONS.md
 - Le descrizioni «junction» di `DirectionBody` (API) e di `Direction`
   (`packages/shared-types`): `branches` sotto 3 c'era già, nella partenza.
 
+## Dove siamo (2026-10-10)
+
+Codice, test e documenti fatti; PR #489 aperta (in locale: motore 1581
+passati, test API sulle indicazioni 67, ruff/black puliti; i 3 test nuovi
+falliscono su `main`). Il Coordinatore la tiene ferma con un **veto fino
+all'approvazione di Apple della 1.0**; poi chiede all'utente l'ok per
+server, `draw_examples` e motore sul telefono e scrive «merge 489». La
+sessione che l'ha aperta è archiviata su richiesta dell'utente: chi
+riprende tiene la PR verde, la riallinea a `main` se va in conflitto su
+STATUS o DECISIONS (tenendo tutte le voci), la mergia al «merge 489» e poi
+chiude il task (questo «Esito», riga di chiusura e voce «Completato» in
+STATUS) con una PR di documenti da `origin/main`.
+
 ## Esito
 
 *(si compila a fine task)*

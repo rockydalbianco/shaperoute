@@ -285,7 +285,8 @@ la parte B») e ha risposto alle tre domande con le proposte:
   chiave: expo-audio sta **prima** di lui nella lista, perché Expo applica
   le modifiche a Info.plist dall'ultimo plugin al primo (lo fissa
   `__tests__/runAudioConfig.test.ts`). La riga del picker non cambia.
-  **Testo nuovo: da approvare dall'utente prima del merge.**
+  **Testo nuovo, approvato dall'utente in chat il 2026-10-10** (le cinque
+  lingue).
 - `app.json` tocca solo `ios.infoPlist` e la voce `expo-audio` della lista
   dei plugin (indicazione del coordinatore, 2026-10-10): le #451 e #461
   aggiungono i loro plugin in fondo alla lista, lontano da queste righe.

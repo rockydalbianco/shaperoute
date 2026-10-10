@@ -162,8 +162,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `feat/TASK-261-b-voice-background`. Durante la corsa la voce parla a
   telefono bloccato e col silenzioso e abbassa Spotify mentre parla
   (`runAudio.ts`, dipendenza nuova `expo-audio`, `UIBackgroundModes`
-  `audio`). Serve una build nativa nuova; un testo nuovo (il microfono)
-  da approvare. File: `tasks/TASK-261.md`, «File toccati (parte B)».
+  `audio`). PR #475. Serve una build nativa nuova (obiettivo: build 5);
+  il testo nuovo del microfono approvato dall'utente il 2026-10-10.
+  File: `tasks/TASK-261.md`, «File toccati (parte B)».
 - **TASK-246 parte B — Il server tiene le figure «Paddle» dei laghi e
   delle spiagge** (aggiunta ad ADR-0211; via del coordinatore il
   2026-10-09). Branch `feat/TASK-246-b-water-shapes-kept`. L'API legge

@@ -9,7 +9,8 @@ neither, after the same checks and the same filter as every comment
 like back leaves the comment, deleting the comment leaves the super like.
 
 Whoever sees a drawing (drawings.drawing_seen_sql) reacts to it and reads
-how many of each kind it has; never who left them. Deleting the drawing
+how many of each kind it has; never who left them, and never those of a
+member a block keeps apart (TASK-121, moderation.py). Deleting the drawing
 (with its run), or the account that reacted, deletes them (ON DELETE
 CASCADE).
 """
@@ -51,6 +52,7 @@ from shaperoute_api.comments import (
 )
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import NO_DRAWING, AuthorBody
+from shaperoute_api.follows import apart_sql
 from shaperoute_api.schemas import ErrorBody
 
 ReactionKind = Literal["super_like", "fire", "clap", "strong", "laugh", "wow"]
@@ -155,8 +157,10 @@ def _summary(
 ) -> ReactionsBody:
     rows = conn.execute(
         "SELECT kind, count(*) AS n, bool_or(user_id = %s) AS mine"
-        " FROM reactions WHERE drawing_id = %s GROUP BY kind",
-        (viewer_id, drawing_id),
+        " FROM reactions WHERE drawing_id = %s"
+        # None of a member a block keeps apart from who asks (TASK-121).
+        f" AND NOT {apart_sql('%s', 'user_id')} GROUP BY kind",
+        (viewer_id, drawing_id, viewer_id),
     ).fetchall()
     counts: dict[ReactionKind, int] = dict.fromkeys(REACTION_KINDS, 0)
     mine: ReactionKind | None = None

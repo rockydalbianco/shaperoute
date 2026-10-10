@@ -17,6 +17,10 @@ Who follows whom is read only by its own account (GET /me/followers,
 profile. A list or a search gives the name, the public id and a small
 picture of each member, never the email. Deleting an account deletes its
 rows (ON DELETE CASCADE): it leaves every list and every number.
+
+A block (TASK-121, moderation.py) ends every follow between the two and
+keeps them apart: the search does not find the other, and asking to follow
+across it is 404, as for nobody.
 """
 
 from __future__ import annotations
@@ -86,6 +90,21 @@ def follows_sql(follower: str, followed: str) -> str:
         f" WHERE follow_row.follower_id = {follower}"
         f" AND follow_row.followed_id = {followed}"
         " AND follow_row.status = 'accepted')"
+    )
+
+
+def apart_sql(viewer: str, other: str) -> str:
+    """An SQL condition: a block stands between `viewer` and `other`, made
+    by either (TASK-121, ADR-0228): then neither sees the other. `viewer`
+    is a column or a placeholder holding a users.id, read once; `other` is
+    a column."""
+    return (
+        "EXISTS (SELECT 1 FROM (SELECT "
+        f"{viewer}::bigint AS id) apart_viewer, blocks block_row"
+        " WHERE (block_row.blocker_id = apart_viewer.id"
+        f" AND block_row.blocked_id = {other})"
+        f" OR (block_row.blocker_id = {other}"
+        " AND block_row.blocked_id = apart_viewer.id))"
     )
 
 
@@ -272,10 +291,12 @@ class Follows:
                 f"SELECT {PERSON_COLUMNS} FROM users u"
                 " LEFT JOIN profile_photos p ON p.user_id = u.id"
                 " WHERE u.id <> %s AND lower(u.username) LIKE %s"
+                # Nobody on either side of a block (TASK-121).
+                f" AND NOT {apart_sql('%s', 'u.id')}"
                 # Usernames are unique in lower case: always the same order.
                 " ORDER BY lower(u.username) LIKE %s DESC, length(u.username),"
                 " lower(u.username) LIMIT %s",
-                (user_id, holds, begins, MAX_FOUND),
+                (user_id, holds, user_id, begins, MAX_FOUND),
             ).fetchall()
         return PeopleBody(people=[_person(row) for row in rows])
 
@@ -286,6 +307,9 @@ class Follows:
                 other = _account(conn, public_id)
                 if other == user_id:
                     raise AccountError(422, "invalid_request", NOT_YOURSELF)
+                if _apart(conn, user_id, other):
+                    # Across a block the other is not there (TASK-121).
+                    raise AccountError(404, "http_error", NO_PROFILE)
                 row = conn.execute(
                     "INSERT INTO follows (follower_id, followed_id, status, asked_at)"
                     " VALUES (%s, %s, 'pending', %s)"
@@ -392,6 +416,17 @@ def _account(conn: psycopg.Connection[DictRow], public_id: str) -> int:
         raise AccountError(404, "http_error", NO_PROFILE)
     user_id: int = row["id"]
     return user_id
+
+
+def _apart(conn: psycopg.Connection[DictRow], user_id: int, other: int) -> bool:
+    """Whether a block stands between the two accounts, made by either."""
+    row = conn.execute(
+        f"SELECT {apart_sql('%s', 'other_row.id')} AS apart"
+        " FROM (SELECT %s::bigint AS id) other_row",
+        (user_id, other),
+    ).fetchone()
+    assert row is not None
+    return bool(row["apart"])
 
 
 def follows_of(accounts: Annotated[Accounts, Depends(accounts_of)]) -> Follows:

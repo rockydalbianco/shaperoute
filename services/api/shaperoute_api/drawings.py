@@ -63,7 +63,7 @@ from shaperoute_api.activities import (
     turn_kept,
 )
 from shaperoute_api.db import Database
-from shaperoute_api.follows import follows_sql
+from shaperoute_api.follows import apart_sql, follows_sql
 from shaperoute_api.recommended import preview
 from shaperoute_api.schemas import ErrorBody
 
@@ -126,12 +126,14 @@ def drawing_seen_sql(viewer: str) -> str:
     a placeholder holding a users.id, read once: one value for a `%s`.
 
     The question every reader of a drawing asks: its photos, and its
-    comments (TASK-120), are seen by whoever sees it."""
+    comments (TASK-120), are seen by whoever sees it. Never across a block,
+    either way (TASK-121, ADR-0228): as for an id that is not there."""
     return (
         f"EXISTS (SELECT 1 FROM (SELECT {viewer}::bigint AS id) seer"
-        " WHERE seer.id = r.user_id OR d.visibility = 'everyone'"
+        " WHERE (seer.id = r.user_id OR d.visibility = 'everyone'"
         " OR (d.visibility = 'followers'"
         f" AND {follows_sql('seer.id', 'r.user_id')}))"
+        f" AND NOT {apart_sql('seer.id', 'r.user_id')})"
     )
 
 
@@ -139,11 +141,13 @@ def shown_sql(viewer: str) -> str:
     """An SQL condition, as drawing_seen_sql: the drawing `d` is on its
     owner's profile for `viewer`. Only the published ones, also to the owner
     (ADR-0159, point 8): for everyone, or for the followers and `viewer` is
-    one of them or the owner."""
+    one of them or the owner. Never across a block (TASK-121): the feed and
+    the profiles leave those drawings out."""
     return (
         f"EXISTS (SELECT 1 FROM (SELECT {viewer}::bigint AS id) seer"
-        " WHERE d.visibility = 'everyone' OR (d.visibility = 'followers'"
+        " WHERE (d.visibility = 'everyone' OR (d.visibility = 'followers'"
         f" AND (seer.id = r.user_id OR {follows_sql('seer.id', 'r.user_id')})))"
+        f" AND NOT {apart_sql('seer.id', 'r.user_id')})"
     )
 
 
@@ -701,14 +705,17 @@ class Drawings:
         cursor: str | None = None,
     ) -> DrawingsBody | None:
         """A page of the drawings of a profile that `viewer_id` sees, the
-        latest run first; None: no such profile."""
+        latest run first; None: no such profile, or one a block keeps apart
+        from `viewer_id` (TASK-121), as its profile."""
         try:
             wanted = UUID(public_id)
         except ValueError:
             return None
         with self.database.connect() as conn:
             user = conn.execute(
-                "SELECT id FROM users WHERE public_id = %s", (wanted,)
+                "SELECT u.id FROM users u WHERE u.public_id = %s"
+                f" AND NOT {apart_sql('%s', 'u.id')}",
+                (wanted, viewer_id),
             ).fetchone()
             if user is None:
                 return None

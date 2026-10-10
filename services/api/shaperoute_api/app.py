@@ -52,6 +52,7 @@ from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.comments import install_comments
 from shaperoute_api.contact import install_contact
+from shaperoute_api.contact_people import install_contact_people
 from shaperoute_api.drawing_photos import install_drawing_photos
 from shaperoute_api.drawings import install_drawings
 from shaperoute_api.errors import error_of
@@ -327,6 +328,9 @@ def create_app(
     install_feed(app)
     # Blocking and reporting (TASK-121); they need a token.
     install_moderation(app)
+    # The members found from the phone's contacts, by the hashes of their
+    # numbers (TASK-262 C); it needs a token.
+    install_contact_people(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

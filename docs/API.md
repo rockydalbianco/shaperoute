@@ -1490,9 +1490,13 @@ servizio push di Expo. Tutti e due gli endpoint vogliono il token: senza,
   che Expo non prende (rete, `5xx`) non si ritenta.
 - **Un'API precedente** non ha questi endpoint (`404 http_error`): l'app
   non manda il token e non dice niente.
-- **I ganci** nei moduli che scrivono gli eventi (`follows.py`,
-  `reactions.py`, `comments.py`, `drawings.py` per i tag) entrano dopo
-  TASK-121 (`tasks/TASK-262.md`).
+- **I ganci** sono in fondo ai moduli che scrivono gli eventi e
+  partono dopo la scrittura: `POST /users/{public_id}/follow` (solo quando
+  la risposta è `requested`), `POST /me/follow-requests/{public_id}/accept`,
+  `PUT /drawings/{id}/reaction`, `POST /drawings/{id}/comments`, `PUT
+  /me/activities/{key}/drawing` (solo i taggati nuovi rispetto a prima del
+  salvataggio). Un blocco (TASK-121, `follows.apart_sql`) in uno dei due
+  versi ferma ogni notifica fra i due.
 
 ### Drawings (TASK-117, ADR-0159; TASK-208, ADR-0170)
 

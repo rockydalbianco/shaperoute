@@ -41,7 +41,7 @@ notifications» lo sarà per l'email.
 ### API
 
 1. Migrazione `NNNN_push_tokens.sql` (numero: il primo libero in `main` al
-   merge; oggi `0020`, i test la trovano per nome): tabella `push_tokens`,
+   merge; oggi `0021`, dopo `0020_moderation` di TASK-121, i test la trovano per nome): tabella `push_tokens`,
    una riga per token, con l'account, la piattaforma, la lingua dell'app e
    la data.
 2. `push.py` (nuovo): `PUT /me/push-token {token, platform, language?}` e
@@ -118,8 +118,9 @@ cancellati dai biglietti e dalle ricevute.
 - [x] Una richiesta di follow, una richiesta accettata, una reazione, un
       commento e un tag producono **un solo invio** al destinatario con
       `notify_push` acceso; nessuno spento, nessuno fra bloccati, nessuno a
-      chi ha agito (test con Expo finto). — Per evento in `push.py`; i
-      ganci nei moduli con l'ultimo commit dopo TASK-121.
+      chi ha agito (test con Expo finto): `test_push.py` per evento,
+      `test_push_hooks.py` attraverso le rotte vere, con il blocco vero di
+      TASK-121.
 - [x] Una ricevuta `DeviceNotRegistered` cancella il token.
 - [x] L'app chiede il permesso solo all'interruttore e manda il token una
       volta per telefono.
@@ -142,13 +143,14 @@ cancellati dai biglietti e dalle ricevute.
 ### File toccati (parte A)
 
 ```
-services/api/migrations/0020_push_tokens.sql      (nuovo; numero al merge)
+services/api/migrations/0021_push_tokens.sql      (nuovo; numero al merge)
 services/api/shaperoute_api/push.py               (nuovo)
 services/api/shaperoute_api/expo_push.py          (nuovo)
 services/api/shaperoute_api/app.py                (install_push)
 services/api/shaperoute_api/notifications.py      (docstring: le push partono)
 services/api/tests/test_push.py                   (nuovo)
 services/api/tests/test_expo_push.py              (nuovo)
+services/api/tests/test_push_hooks.py             (nuovo, i cinque eventi dalle rotte)
 services/api/shaperoute_api/follows.py            (ganci, dopo TASK-121)
 services/api/shaperoute_api/reactions.py          (gancio, dopo TASK-121)
 services/api/shaperoute_api/comments.py           (gancio, dopo TASK-121)
@@ -224,28 +226,23 @@ dell'utente. Dove si è arrivati:
 **Da dove riprendere**, dopo il «121 in main» del coordinatore (TASK-121
 è la PR #457, con la migrazione `0020_moderation.sql`):
 
-1. Unire `origin/main`; rinominare `0020_push_tokens.sql` al primo numero
-   libero (probabilmente `0021`) e aggiornare `DATABASE.md`, `API.md` e
-   questo file; i test trovano la migrazione per nome.
-2. I ganci. Gli aiuti sono già in `push.py`, con i loro test (fatti il
-   2026-10-10 mentre si aspettava TASK-121): `notify_account` (per
-   `public_id`), `notify_owner` (il proprietario di un disegno),
-   `tagged_before` + `notify_tagged` (solo i taggati nuovi). Nei moduli
-   resta una chiamata dopo la scrittura, con `request: Request` nella
-   rotta: `follows.py` (`ask` quando la risposta è `requested` →
-   `notify_account(…, "follow_request", …)`; `accept` →
-   `"follow_accepted"`), `reactions.py` (`leave_reaction` →
-   `notify_owner(…, "reaction", …, reaction=body.kind, text=body.comment)`),
-   `comments.py` (`add_comment` → `notify_owner(…, "comment", …,
-   text=added.text, key=str(added.id))`), `drawings.py` (`keep_drawing`:
-   `tagged_before` prima di `keep`, `notify_tagged` dopo).
-3. `Pusher.blocked` collegato alla tabella dei blocchi di TASK-121, con un
-   test vero (oggi è `nobody_blocked`): nella #457 c'è
-   `follows.apart_sql(viewer, other)`, un blocco in uno dei due versi.
-4. Test dei ganci con Expo finto: un invio per evento, nessuno con
-   l'interruttore spento, fra bloccati, a chi ha agito; la suite intera
-   dell'API va alla CI.
-5. PR fuori bozza; al verde «#451 pronta» al coordinatore, ricordando che
+1. **Già fatto il 2026-10-10**, su un branch **locale** `local/262-hooks`
+   del worktree (non spinto: dentro c'è la #457 unita a mano): la
+   migrazione rinominata `0021_push_tokens.sql`; i ganci in fondo a
+   `follows.py`, `reactions.py`, `comments.py`, `drawings.py`, chiamati
+   dopo la scrittura (gli aiuti `notify_account`, `notify_owner`,
+   `tagged_before`, `notify_tagged` in `push.py`); `Pusher.blocked` =
+   `blocked_between` con `follows.apart_sql`; `test_push_hooks.py` (sei
+   test attraverso le rotte, il blocco vero compreso); i documenti.
+2. Al «121 in main»: `git switch feat/TASK-262-a-push`, unire
+   `origin/main`, poi portare l'ultimo commit di `local/262-hooks` (quello
+   dei ganci) con `git cherry-pick`; ricontrollare che `0021` sia ancora il
+   primo numero libero dopo `0020_moderation`.
+3. Test: i file dell'API toccati (`test_push*`, `test_follows`,
+   `test_reactions`, `test_comments`, `test_drawings`, `test_moderation`,
+   `test_feed`, `test_contract`), tutta la parte JS, i test del sito; la
+   suite intera dell'API va alla CI.
+4. PR fuori bozza; al verde «#451 pronta» al coordinatore, ricordando che
    la prova vera è solo con una build nativa; merge solo dopo il suo
    «merge 451». Poi il server (migrazione) è del coordinatore, con l'ok
    dell'utente.

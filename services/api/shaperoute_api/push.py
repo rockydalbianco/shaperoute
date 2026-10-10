@@ -55,7 +55,6 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.db import Database
-from shaperoute_api.drawings import drawing_seen_sql
 from shaperoute_api.expo_push import (
     DEVICE_NOT_REGISTERED,
     Expo,
@@ -257,9 +256,16 @@ def data_of(event: PushEvent, actor_public_id: UUID, actor_name: str) -> dict[st
 Blocked = Callable[[Connection[DictRow], int, int], bool]
 
 
-def nobody_blocked(_conn: Connection[DictRow], _a: int, _b: int) -> bool:
-    """Until blocking exists (TASK-121)."""
-    return False
+def blocked_between(conn: Connection[DictRow], a: int, b: int) -> bool:
+    """Whether either account blocked the other (TASK-121, ADR-0228)."""
+    # Here, not at the top: follows.py calls this module's hooks.
+    from shaperoute_api.follows import apart_sql
+
+    row = conn.execute(
+        f"SELECT {apart_sql('%s', 'u.id')} AS apart FROM users u WHERE u.id = %s",
+        (a, b),
+    ).fetchone()
+    return row is not None and bool(row["apart"])
 
 
 Run = Callable[[Callable[[], None]], object]
@@ -291,7 +297,7 @@ class Pusher:
     # How the receipts are asked for later; the tests call check_receipts.
     later: Later = _later
     clock: Callable[[], float] = time.monotonic
-    blocked: Blocked = nobody_blocked
+    blocked: Blocked = blocked_between
 
     def __post_init__(self) -> None:
         self._lock = threading.Lock()
@@ -425,6 +431,9 @@ class Pusher:
 
 
 def _sees(conn: Connection[DictRow], viewer_id: int, drawing_id: UUID) -> bool:
+    # Here, not at the top: drawings.py calls this module's hooks.
+    from shaperoute_api.drawings import drawing_seen_sql
+
     row = conn.execute(
         "SELECT 1 FROM drawings d JOIN runs r ON r.id = d.run_id"
         f" WHERE d.id = %s AND {drawing_seen_sql('%s')}",

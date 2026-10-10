@@ -13653,9 +13653,11 @@ richiesta di follow, un nuovo follower, una reazione, un commento, un tag.
    ha già; `open` dei disegni vuole solo l'id.
 9. **I ganci** nei moduli degli eventi (`follows.py`, `reactions.py`,
    `comments.py`, `drawings.py` per i tag: il tag si scrive lì, non in
-   `activities.py`) entrano dopo TASK-121, che tocca gli stessi file
+   `activities.py`) sono entrati dopo TASK-121, che tocca gli stessi file
    (condizione del coordinatore), con il controllo dei blocchi sulla sua
-   tabella.
+   tabella (`follows.apart_sql`). Un tag si notifica solo a chi è taggato
+   per la prima volta in quel disegno: i taggati di prima si leggono prima
+   del salvataggio.
 
 **Alternative scartate**:
 

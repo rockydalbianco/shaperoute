@@ -404,7 +404,7 @@ libero in `main` al merge):
 - Cancellare un account cancella i suoi blocchi, fatti e ricevuti, e le
   sue segnalazioni; le segnalazioni degli altri su di lui restano.
 
-Migrazione `0020_push_tokens.sql` (TASK-262 parte A, ADR-0226; il numero
+Migrazione `0021_push_tokens.sql` (TASK-262 parte A, ADR-0226; il numero
 è il primo libero in `main` al merge):
 
 - `push_tokens`: `token` (il token Expo, `ExponentPushToken[…]`, chiave),

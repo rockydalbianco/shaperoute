@@ -82,7 +82,7 @@ dicono lo stesso):
    consenso in qualsiasi momento; quello che è stato fatto prima resta
    lecito.»
 
-Approvazione dell'utente: *(in attesa)*
+Approvazione dell'utente: **sì**, il 2026-10-10 («si va bene»). Fatta nella PR #474.
 
 ## Come ricontrollare l'impronta
 
@@ -97,6 +97,9 @@ worktree, non quelli della build).
 ## File toccati
 
 ```
+Parte A (#469):
+
+```
 apps/mobile/react-native.config.js            (nuovo)
 apps/mobile/__tests__/storeWithoutAds.test.ts (nuovo)
 docs/DECISIONS.md
@@ -104,11 +107,26 @@ docs/STATUS.md
 docs/tasks/TASK-267.md
 ```
 
+Parte B (#474):
+
+```
+apps/mobile/src/about/content/en.ts
+apps/mobile/src/about/content/it.ts
+apps/mobile/src/about/content/de.ts
+apps/mobile/src/about/content/es.ts
+apps/mobile/src/about/content/fr.ts
+apps/mobile/src/about/documents.test.ts
+apps/mobile/src/about/AboutPage.test.tsx
+site/privacy/**                               (rigenerata con make_privacy.mjs)
+site/tests/privacy.test.mjs
+```
+
 ## Fuori scope
 
 - `app.json` e `app.config.ts` (il plugin di AdMob resta: scrive solo
   chiavi in `Info.plist`).
-- I testi di «Termini» e «Privacy» (app: TASK-262 A e C; sito: TASK-237).
+- Il resto di «Termini» e «Privacy»: la parte B cambia solo le frasi sulla
+  pubblicità e le date.
 - Gli annunci veri: TASK-153, fermo fino alla società.
 
 ## Esito

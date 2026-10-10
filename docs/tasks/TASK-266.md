@@ -40,21 +40,23 @@ sulle schermate vere**.
    «How MuW works» (il testo di «Help») con sopra «Watch the tour», che
    chiude «Profile» e rifà il tour, con «Skip» subito.
 5. I testi nuovi in en/it/de/es/fr, approvati dall'utente prima del merge.
+   **Approvati dall'utente il 2026-10-10** («sì vanno bene, procedi»),
+   nelle cinque lingue.
 
 ## Criteri di accettazione
 
-- [ ] Alla prima apertura, finita l'animazione, il tour parte su «Draw».
-- [ ] Nei primi 5 secondi «Skip» non si tocca e mostra i secondi che
+- [x] Alla prima apertura, finita l'animazione, il tour parte su «Draw».
+- [x] Nei primi 5 secondi «Skip» non si tocca e mostra i secondi che
       mancano; dopo chiude il tour.
-- [ ] Ogni passo mette nella luce la parte vera che descrive; una parte
+- [x] Ogni passo mette nella luce la parte vera che descrive; una parte
       sotto il bordo viene portata in vista scorrendo.
-- [ ] «Explore» e «Feed» si vedono davvero; il tour finisce su «Draw».
-- [ ] Alla seconda apertura il tour non c'è.
-- [ ] «Guide» in «Profile» apre la guida anche senza account; «←» torna a
+- [x] «Explore» e «Feed» si vedono davvero; il tour finisce su «Draw».
+- [x] Alla seconda apertura il tour non c'è.
+- [x] «Guide» in «Profile» apre la guida anche senza account; «←» torna a
       «Profile»; «Watch the tour» rifà il tour.
-- [ ] Test deterministici del tour, del ricordo e della guida; tutti i
+- [x] Test deterministici del tour, del ricordo e della guida; tutti i
       controlli dell'app verdi.
-- [ ] Testi approvati dall'utente; provato nel simulatore.
+- [x] Testi approvati dall'utente; provato nel simulatore.
 
 ## File toccati
 

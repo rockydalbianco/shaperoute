@@ -723,6 +723,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Test** — TASK-274 (aggiunta ad ADR-0120): il database dei test
+  dell'API si chiude con `docker rm -f -v`, quindi se ne va anche il
+  volume anonimo dei dati. Prima ogni giro ne lasciava uno: il 2026-10-10
+  il disco di Colima sul Mac era pieno (168 volumi, 17,6 GB) e i test del
+  database fallivano. `tasks/TASK-274.md`.
 - **App** — TASK-266: il tour del primo avvio e «Guide» in «Profile»
   (ADR-0235; richiesta dell'utente del 2026-10-09, che ha scelto il tour
   sulle schermate vere). In `main` con la #479 (`1f64621e`, 2026-10-10).

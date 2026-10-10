@@ -13869,3 +13869,23 @@ permesso nuovo); un riquadro di filtri come la vecchia `RouteFilters`
 il lago del viaggio; chi non ha attività vede la fila di prima. Un seguito
 possibile, fuori da questo task: la stessa zona di casa in «Explore» della
 corsa.
+
+## ADR-0120, aggiunta — Il database dei test se ne va col suo volume
+
+**Stato**: Attiva · 2026-10-10 · deciso dall'agente su delega dell'utente
+(TASK-274). Aggiunta ad ADR-0120 («Test»), senza numero nuovo.
+
+**Decisione**: alla fine del giro `conftest.py` toglie il container di
+`postgis/postgis:16-3.4` con `docker rm -f -v`: con il container va via
+anche il volume anonimo di `PGDATA`. `--rm` resta per il container che si
+ferma da solo, che toglie già il suo volume.
+
+**Motivo**: `docker rm` senza `-v` lascia il volume anonimo che l'immagine
+dichiara. Ogni giro ne lasciava uno: il 2026-10-10 il disco di Colima sul
+Mac (20 GB) era pieno di 168 volumi (17,6 GB), PostgreSQL non partiva più
+e tutti i test del database fallivano.
+
+**Alternative scartate**: un `docker volume prune` alla fine del giro
+(toglierebbe anche i volumi di altri container e di altre sessioni); un
+volume `tmpfs` per `PGDATA` (cambia l'avvio e la memoria usata, per un
+problema che `-v` risolve da solo).

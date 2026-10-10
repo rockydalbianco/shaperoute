@@ -1130,4 +1130,30 @@ export const DE: Table = {
 
   // src/explore/RecommendedRow.tsx (TASK-092)
   RECOMMENDED: "EMPFOHLEN",
+
+  // src/social/ReportMenu.tsx, BlockedPeople.tsx (TASK-121: report and block)
+  More: "Mehr",
+  "Report or block": "Melden oder blockieren",
+  Report: "Melden",
+  "Block {user}": "{user} blockieren",
+  "Why are you reporting this?": "Warum meldest du das?",
+  Spam: "Spam",
+  "Offensive or hateful": "Beleidigend oder hasserfüllt",
+  "Harassment or bullying": "Belästigung oder Mobbing",
+  "Nudity or sexual content": "Nacktheit oder sexuelle Inhalte",
+  "Something else": "Etwas anderes",
+  "Thanks for telling us. We will look at it.":
+    "Danke für den Hinweis. Wir sehen es uns an.",
+  "Block {user}?": "{user} blockieren?",
+  "You will not see each other's drawings, comments or profile, and any follow between you ends. They are not told.":
+    "Ihr seht gegenseitig keine Zeichnungen, Kommentare oder Profile mehr, und jedes Folgen zwischen euch endet. Die Person erfährt es nicht.",
+  Block: "Blockieren",
+  "Sending…": "Wird gesendet…",
+  "This is not available any more.": "Das ist nicht mehr verfügbar.",
+  "Blocked people": "Blockierte Personen",
+  "You have not blocked anyone.": "Du hast niemanden blockiert.",
+  Unblock: "Freigeben",
+  "Unblock {name}": "{name} freigeben",
+  "You blocked {user}. Unblock them from Blocked people in your profile.":
+    "Du hast {user} blockiert. Freigeben kannst du unter Blockierte Personen in deinem Profil.",
 };

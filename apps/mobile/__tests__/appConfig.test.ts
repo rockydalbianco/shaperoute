@@ -4,6 +4,7 @@ import path from "path";
 import appConfig from "../app.config";
 import appJson from "../app.json";
 import easJson from "../eas.json";
+import storeConfig from "../store.config.json";
 
 /**
  * Expo Go opens only updates made for "exposdk:<sdk>" (ADR-0078); the App
@@ -82,4 +83,10 @@ it("submits the production build to the MuW app on App Store Connect", () => {
   // `eas build --auto-submit` needs a submit profile named like the build
   // profile; without it the build runs and the upload fails (TASK-152).
   expect(easJson.submit.production.ios.ascAppId).toBe("6820961883");
+});
+
+it("puts the store texts on the App Store version of the build", () => {
+  // `eas metadata:push` edits this App Store Connect version; Apple only
+  // takes builds whose version matches it (TASK-152).
+  expect(storeConfig.apple.version).toBe(appJson.expo.version);
 });

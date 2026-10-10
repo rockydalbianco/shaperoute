@@ -1,6 +1,7 @@
 {
   "configVersion": 0,
   "apple": {
+    "version": "1.0.0",
     "copyright": "2026 Luca Pallaoro",
     "categories": ["HEALTH_AND_FITNESS", "NAVIGATION"],
     "info": {
@@ -8,7 +9,7 @@
         "title": "MuW",
         "subtitle": "Draw a shape, then run it",
         "promoText": "Pick a heart, a star or a word, set the distance, and MuW draws it on the real streets around you. Then run it, ride it or paddle it.",
-        "description": "Draw a shape on the map, then run it.\n\nMuW turns a shape into a real route on the streets around you. Pick a heart, a star, a cat, a word from A to Z or the outline of your own photo, set the distance, and MuW draws up to three routes on real streets. Keep the one you like and go.\n\nRUN, RIDE OR PADDLE\n• Run: up to 21 km on real streets, with voice directions turn by turn.\n• Bike: 10 to 30 km on cycle paths and streets open to bikes, with your speed on screen.\n• Paddle: 1 to 5 km on lakes and the sea, with shapes that stay within reach of the shore.\n\nEXPLORE\nRoutes already drawn in your city, ready to start: no waiting, just pick one.\n\nFEED\nDrawings published by you, by the people you follow and by runners nearby. Follow friends, react and comment.\n\nPROFILE\nYour saved runs, your favourite routes and the drawings you chose to publish.\n\nALSO\n• Start from where you are or from any place you search.\n• Take the GPX file to your watch.\n• Kilometres or miles.\n• In English, Italian, German, Spanish and French.\n\nMap data © OpenStreetMap contributors.\nRecording a run with the screen locked uses GPS in the background, which uses more battery.",
+        "description": "Draw a shape on the map, then run it.\n\nMuW turns a shape into a real route on the streets around you. Pick a shape, a word or your own photo, set the distance, and MuW draws the route for you. Run it, ride it or paddle it, with voice directions turn by turn.\n\nExplore routes already drawn near you, share your drawings in the Feed and follow your friends.\n\nMap data © OpenStreetMap contributors.\nRecording a run with the screen locked uses GPS in the background, which uses more battery.",
         "keywords": [
           "gps art",
           "route planner",

@@ -506,7 +506,10 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   again.» e non mostra un altro percorso al suo posto. Un dito che scorre
   sopra una scheda non la apre. I disegni veri (TASK-118) non aprono un
   percorso: aprono il disegno, con reazioni e commenti; il profilo di chi
-  ha corso si raggiunge da «Find friends» o dai nomi taggati.
+  ha corso si raggiunge da «Find friends» o dai nomi taggati. Su un
+  disegno vero di un altro, il «…» a destra del nome segnala il disegno o
+  blocca chi l'ha corso (TASK-121, sotto in «Profile», «Segnalare e
+  bloccare»).
   **In cima, sopra i disegni, a destra, la lente** (TASK-215, ADR-0178;
   TASK-219, ADR-0182: solo la lente, scelta dell'utente): un cerchio come
   quello di «Profile», con una lente disegnata e nessun testo, sotto il
@@ -942,6 +945,31 @@ tasti c'è **«Follow back»**, che manda la tua richiesta e diventa la
 scritta «Requested» (o «Following», se l'altro ti aveva già accettato). Se
 lo segui già, o hai già chiesto, la riga lo dice subito e il tasto non
 c'è. Venti per volta, poi «Show more». Con un server senza gli elenchi i tre riquadri non ci sono.
+
+**Segnalare e bloccare** (TASK-121, ADR-0228; testi **confermati dall'utente** il 2026-10-09).
+Sulla scheda di un disegno di un altro in «Feed», a destra del nome, e sul
+profilo di un altro, a destra sotto «Follow», un **«…»** grigio (VoiceOver:
+«More», «Report or block»). Non c'è sui propri disegni, sul proprio
+profilo, sugli esempi né senza account. Toccato, apre in basso un
+foglio con due tasti e «Cancel»:
+
+| Tasto | Cosa fa |
+|---|---|
+| «Report» | chiede «Why are you reporting this?» con cinque tasti: «Spam», «Offensive or hateful», «Harassment or bullying», «Nudity or sexual content», «Something else»; toccato uno, «Sending…», poi «Thanks for telling us. We will look at it.» e «Close». Dal feed segnala il disegno, dal profilo la persona |
+| «Block {name}», rosso | chiede «Block {name}?» con «You will not see each other's drawings, comments or profile, and any follow between you ends. They are not told.», il tasto rosso «Block» e «Cancel» |
+
+Bloccato, il foglio si chiude da solo: **le schede di quella persona
+spariscono subito da «Feed»**, e alla lettura dopo l'API non le manda più;
+il suo profilo dice «You blocked {name}. Unblock them from Blocked people in
+your profile.»; gli elenchi di chi segue in «Profile» si rileggono (il
+blocco chiude ogni follow). Se la richiesta non va, il foglio dice perché
+(«This is not available any more.» per un'API di prima o una persona
+sparita). In «Profile», sotto «Settings», la riga **«Blocked people»**:
+toccata apre sotto l'elenco dei bloccati, l'ultimo per primo, con foto e
+nome e il tasto **«Unblock»** (VoiceOver: «Unblock {name}»); vuoto, «You
+have not blocked anyone.»; venti per volta, poi «Show more». Sbloccato,
+esce dall'elenco e torna in «Feed» alla lettura dopo; il follow non
+torna. Un profilo bloccato non si apre dall'elenco.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale

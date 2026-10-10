@@ -280,3 +280,14 @@ non cambia.
   comment and block a person.» La riga sull'audio vale
   solo se TASK-261 B entra nella build 5; quella su segnala e blocca
   quando #457 è in main.
+- `store.config.json` ha anche `"version": "1.0.0"`: senza, `eas metadata:push`
+  manderebbe ad Apple un numero di versione vuoto insieme al copyright;
+  con, la versione in preparazione su App Store Connect prende lo stesso
+  numero della build (Apple accetta per una versione solo le build con
+  quel numero). Il test in `appConfig.test.ts` la tiene uguale a
+  `app.json`: a ogni nuova versione si cambiano tutti e due.
+- 2026-10-10: su richiesta dell'utente («falla generica») la descrizione
+  diventa una versione più corta e generica degli stessi testi (487
+  caratteri, stesse funzioni, niente numeri di chilometri); parole chiave
+  invariate. L'utente ha pubblicato le etichette App Privacy su App Store
+  Connect (12 tipi di dati, nessun tracciamento).

@@ -117,6 +117,26 @@ docs/tasks/TASK-272.md                              (nuovo)
 - Salvare da sé una corsa interrotta, o mandarla all'API senza «Save».
 - Il GPS in background e la voce a telefono bloccato (TASK-261).
 
+## Verifica nel simulatore (2026-10-10)
+
+Expo Go 57 su un simulatore proprio (iPhone 17, iOS 27), Metro dal
+worktree, API locale solo per il percorso: un cuore di 3,9 km da Trento
+(`POST /routes`) con le sue 79 indicazioni (`POST /route-directions`).
+Nel file della corsa dell'app una corsa `running` a 1,2 km, l'ultima
+posizione 4 minuti prima; poi l'app riaperta:
+
+- si apre la corsa **in pausa**: il percorso sulla mappa con la parte
+  corsa, «30% drawn», la svolta davanti nel banner, 1.20 km, «Time 6:00»
+  (i 4 minuti chiusa non contano), «Paused», «Stop» e «Resume»;
+- «Resume» (senza tocchi: un `setTimeout` provvisorio in `index.ts`, tolto)
+  con il GPS simulato 600 m più avanti sul percorso: la corsa riparte,
+  il navigatore ritrova chi corre più avanti («52% drawn», «1.9 km to go»),
+  1.31 km e «Time 6:42»; nel file una pausa di 282 s dall'ultima posizione
+  a «Resume», `gap: true` sulla prima posizione dopo, le 79 indicazioni.
+
+«Stop» tenuto e «Your run» non provati nel simulatore (nessun tocco:
+l'accesso al pannello non è stato dato); li coprono i test dell'app.
+
 ## Esito
 
 *(a fine task)*

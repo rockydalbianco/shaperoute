@@ -9,6 +9,7 @@ import json
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 from uuid import UUID
 
@@ -30,7 +31,11 @@ from shaperoute_api.push import (
     PushEvent,
     PushTokenRequestBody,
     data_of,
+    notify_account,
+    notify_owner,
+    notify_tagged,
     quoted,
+    tagged_before,
     text_of,
 )
 from shaperoute_api.strava_client import Call, Reply
@@ -528,3 +533,101 @@ def test_a_receipt_not_ready_is_asked_again_until_expo_forgets_it(
     assert expo.asked == ["ticket-1", "ticket-1"]
     # Expo keeps a receipt a day: then it is given up.
     assert later == []
+
+
+# --- What the modules of the events call (the hooks come after TASK-121) ---
+
+KEY = "7c2e91a4b05d3f68"
+
+
+def request_of(pusher: Pusher) -> Any:
+    """What a route hands the helpers: the app's state, with the pusher."""
+    return SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(pusher=pusher)))
+
+
+def public_id(client: TestClient, headers: dict[str, str]) -> str:
+    return str(client.get("/me", headers=headers).json()["public_id"])
+
+
+def drawing_of(
+    client: TestClient,
+    headers: dict[str, str],
+    visibility: str = "everyone",
+    tags: list[str] | None = None,
+) -> str:
+    """The example run saved and kept as a drawing: its id."""
+    run = _load("activity-request.json")
+    client.put(f"/me/activities/{KEY}", json=run, headers=headers)
+    body: dict[str, Any] = {"title": "Sunday heart", "visibility": visibility}
+    if tags is not None:
+        body["tags"] = tags
+    answer = client.put(f"/me/activities/{KEY}/drawing", json=body, headers=headers)
+    assert answer.status_code == 200, answer.text
+    return str(answer.json()["id"])
+
+
+def test_a_follow_event_finds_its_account_by_public_id(
+    client: TestClient, pusher: Pusher, expo: FakeExpo
+) -> None:
+    _, ada_id, bob, _ = two(client)
+    push_on(client, bob)
+    request = request_of(pusher)
+    notify_account(request, "follow_request", ada_id, public_id(client, bob))
+    assert [m["body"] for m in expo.sent] == ["ada asked to follow you."]
+    # A public id that is nobody's, or not one: nothing, nothing raised.
+    nobody = "00000000-0000-0000-0000-000000000000"
+    notify_account(request, "follow_accepted", ada_id, nobody)
+    notify_account(request, "follow_accepted", ada_id, "not-an-id")
+    assert len(expo.sent) == 1
+
+
+def test_a_reaction_and_a_comment_go_to_the_drawing_s_owner(
+    client: TestClient, pusher: Pusher, expo: FakeExpo
+) -> None:
+    _, ada_id, bob, bob_id = two(client)
+    push_on(client, bob)
+    drawing = drawing_of(client, bob)
+    request = request_of(pusher)
+    notify_owner(request, "reaction", ada_id, drawing, reaction="clap")
+    notify_owner(request, "comment", ada_id, drawing, text="Great run", key="c1")
+    assert [m["body"] for m in expo.sent] == [
+        "ada reacted 👏 to your post.",
+        "ada commented on your post: Great run",
+    ]
+    assert expo.sent[0]["data"] == {"kind": "reaction", "drawing_id": drawing}
+    # The owner reacting to their own drawing is told nothing.
+    notify_owner(request, "reaction", bob_id, drawing, reaction="fire")
+    assert len(expo.sent) == 2
+
+
+def test_only_the_members_tagged_now_for_the_first_time_are_told(
+    client: TestClient, pusher: Pusher, expo: FakeExpo
+) -> None:
+    ada, ada_id, bob, _ = two(client)
+    push_on(client, bob)
+    request = request_of(pusher)
+    before = tagged_before(request, ada_id, KEY)
+    assert before == frozenset()
+    drawing = drawing_of(client, ada, tags=[public_id(client, bob)])
+    notify_tagged(request, ada_id, UUID(drawing), before)
+    assert [m["body"] for m in expo.sent] == ["ada tagged you in a post."]
+    # Kept again with the same tag: not told again, even by a pusher that
+    # remembers nothing (a restart, another day).
+    fresh = Pusher(
+        pusher.database, pusher.expo, run=lambda task: task(), later=lambda *_: None
+    )
+    again = tagged_before(request_of(fresh), ada_id, KEY)
+    drawing_of(client, ada, tags=[public_id(client, bob)])
+    notify_tagged(request_of(fresh), ada_id, UUID(drawing), again)
+    assert len(expo.sent) == 1
+
+
+def test_a_tag_in_a_drawing_the_tagged_cannot_see_is_not_told(
+    client: TestClient, pusher: Pusher, expo: FakeExpo
+) -> None:
+    ada, ada_id, bob, _ = two(client)
+    push_on(client, bob)
+    drawing = drawing_of(client, ada, "followers", tags=[public_id(client, bob)])
+    notify_tagged(request_of(pusher), ada_id, UUID(drawing), frozenset())
+    # Bob does not follow Ada: the drawing is not his to see.
+    assert expo.sent == []

@@ -441,6 +441,107 @@ def notify(request: Request, event: PushEvent) -> None:
         pusher.notify(event)
 
 
+def _pusher(request: Request) -> Pusher | None:
+    pusher: Pusher | None = getattr(request.app.state, "pusher", None)
+    return pusher
+
+
+def _one(pusher: Pusher, sql: str, params: tuple[object, ...]) -> int | None:
+    """The `id` of the row `sql` finds; None when none, or on any error."""
+    try:
+        with pusher.database.connect() as conn:
+            row = conn.execute(sql, params).fetchone()
+    except Exception:
+        log.exception("push: the recipient was not found")
+        return None
+    return None if row is None else int(row["id"])
+
+
+def _as_uuid(value: str) -> UUID | None:
+    try:
+        return UUID(value)
+    except ValueError:
+        return None
+
+
+def notify_account(request: Request, kind: Kind, actor_id: int, public_id: str) -> None:
+    """A follow event (follows.py): the account of `public_id` is told.
+    After the write; never raises."""
+    pusher, wanted = _pusher(request), _as_uuid(public_id)
+    if pusher is None or wanted is None:
+        return
+    recipient = _one(pusher, "SELECT id FROM users WHERE public_id = %s", (wanted,))
+    if recipient is not None:
+        pusher.notify(PushEvent(kind, actor_id, recipient))
+
+
+def notify_owner(
+    request: Request,
+    kind: Kind,
+    actor_id: int,
+    drawing_id: str,
+    reaction: str | None = None,
+    text: str | None = None,
+    key: str = "",
+) -> None:
+    """A reaction or a comment (reactions.py, comments.py): the owner of the
+    drawing is told. After the write; never raises."""
+    pusher, wanted = _pusher(request), _as_uuid(drawing_id)
+    if pusher is None or wanted is None:
+        return
+    owner = _one(
+        pusher,
+        "SELECT r.user_id AS id FROM drawings d JOIN runs r ON r.id = d.run_id"
+        " WHERE d.id = %s",
+        (wanted,),
+    )
+    if owner is not None:
+        pusher.notify(PushEvent(kind, actor_id, owner, wanted, reaction, text, key))
+
+
+def tagged_before(request: Request, user_id: int, key: str) -> frozenset[int]:
+    """Who is tagged in the drawing of the run `key` before it is kept again
+    (drawings.py): only the ones tagged now for the first time are told."""
+    pusher = _pusher(request)
+    if pusher is None:
+        return frozenset()
+    try:
+        with pusher.database.connect() as conn:
+            rows = conn.execute(
+                "SELECT t.user_id FROM drawing_tags t"
+                " JOIN drawings d ON d.id = t.drawing_id"
+                " JOIN runs r ON r.id = d.run_id"
+                " WHERE r.user_id = %s AND r.key = %s",
+                (user_id, key),
+            ).fetchall()
+    except Exception:
+        log.exception("push: the tags of before were not read")
+        return frozenset()
+    return frozenset(int(row["user_id"]) for row in rows)
+
+
+def notify_tagged(
+    request: Request, actor_id: int, drawing_id: UUID, before: frozenset[int]
+) -> None:
+    """A drawing kept with its tags (drawings.py): each member tagged now and
+    not before is told. After the write; never raises."""
+    pusher = _pusher(request)
+    if pusher is None:
+        return
+    try:
+        with pusher.database.connect() as conn:
+            rows = conn.execute(
+                "SELECT user_id FROM drawing_tags WHERE drawing_id = %s",
+                (drawing_id,),
+            ).fetchall()
+    except Exception:
+        log.exception("push: the tags were not read")
+        return
+    for row in rows:
+        if int(row["user_id"]) not in before:
+            pusher.notify(PushEvent("tag", actor_id, int(row["user_id"]), drawing_id))
+
+
 # --- The endpoints ---
 
 

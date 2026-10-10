@@ -227,16 +227,21 @@ dell'utente. Dove si è arrivati:
 1. Unire `origin/main`; rinominare `0020_push_tokens.sql` al primo numero
    libero (probabilmente `0021`) e aggiornare `DATABASE.md`, `API.md` e
    questo file; i test trovano la migrazione per nome.
-2. I ganci, come funzioni nuove in fondo ai moduli e chiamate dopo la
-   scrittura, con `push.notify(request, PushEvent(...))`: `follows.py`
-   (`ask` quando la risposta è `requested` → `follow_request` a chi è
-   chiesto; `accept` → `follow_accepted` a chi aveva chiesto),
-   `reactions.py` (`leave` → `reaction` al proprietario, con il commento
-   del super like), `comments.py` (`add` → `comment`, `key` = id del
-   commento), `drawings.py` (`keep` → `tag` a ogni taggato nuovo). Le
-   rotte prendono `request: Request` per arrivare a `app.state.pusher`.
+2. I ganci. Gli aiuti sono già in `push.py`, con i loro test (fatti il
+   2026-10-10 mentre si aspettava TASK-121): `notify_account` (per
+   `public_id`), `notify_owner` (il proprietario di un disegno),
+   `tagged_before` + `notify_tagged` (solo i taggati nuovi). Nei moduli
+   resta una chiamata dopo la scrittura, con `request: Request` nella
+   rotta: `follows.py` (`ask` quando la risposta è `requested` →
+   `notify_account(…, "follow_request", …)`; `accept` →
+   `"follow_accepted"`), `reactions.py` (`leave_reaction` →
+   `notify_owner(…, "reaction", …, reaction=body.kind, text=body.comment)`),
+   `comments.py` (`add_comment` → `notify_owner(…, "comment", …,
+   text=added.text, key=str(added.id))`), `drawings.py` (`keep_drawing`:
+   `tagged_before` prima di `keep`, `notify_tagged` dopo).
 3. `Pusher.blocked` collegato alla tabella dei blocchi di TASK-121, con un
-   test vero (oggi è `nobody_blocked`).
+   test vero (oggi è `nobody_blocked`): nella #457 c'è
+   `follows.apart_sql(viewer, other)`, un blocco in uno dei due versi.
 4. Test dei ganci con Expo finto: un invio per evento, nessuno con
    l'interruttore spento, fra bloccati, a chi ha agito; la suite intera
    dell'API va alla CI.

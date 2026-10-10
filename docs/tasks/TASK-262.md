@@ -213,7 +213,9 @@ scelto C (e non B per ora), che è il suo **sì esplicito alla dipendenza
 `expo-contacts` e alla ricerca dalla rubrica**; il **2026-10-09** «i
 testi vanno bene, interesse legittimo ok»: i nove testi nelle cinque
 lingue, la domanda di iOS solo in inglese e la privacy con il confronto
-dei numeri sotto l'interesse legittimo. La **1.0 dello store esce senza
+dei numeri sotto l'interesse legittimo; il **2026-10-10** «sì, va bene il
+10 ottobre»: la privacy finale con la data del 10 ottobre 2026, unita ai
+testi di TASK-267 B, della parte A e di TASK-269. La **1.0 dello store esce senza
 rubrica** (scelta dell'utente del 2026-10-09): la PR entra dopo che la
 build 5 è partita, poi va su preview; su production con una 1.0.1.
 

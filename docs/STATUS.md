@@ -169,6 +169,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   PR #462, merge chiesto dall'utente al verde (2026-10-09), non aspetta
   TASK-245 C. **Resta**: server e `draw_examples --water` con l'ok
   dell'utente, dal coordinatore.
+  **Chiuso** il 2026-10-09: in `main` dalla #462 (vedi «Completato»).
   File: `tasks/TASK-246.md`, «File toccati (parte B)».
 - **TASK-251 parte C — In bici senza percorso, la velocità** (aggiornamento
   di ADR-0215; scelta dell'utente del 2026-10-08). Branch
@@ -641,6 +642,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API** — TASK-246 parte B: il server tiene le figure «Paddle» dei
+  laghi e delle spiagge (aggiunta ad ADR-0211). In `main` dalla #462
+  (`589fdece`, 2026-10-09, merge chiesto dall'utente al verde). Le figure
+  chieste dai punti di `lakes.json` e `beaches.json` restano in
+  `routes/water/`: un telefono nuovo dove un altro ha già chiesto non fa
+  lavorare il motore (a Levico, sul Mac, 11 s → 0 s); `draw_examples
+  --water` le disegna prima. App invariata. **Non ancora sul server**:
+  aggiornamento e `draw_examples --water` (stimato 4–8 ore, circa 50 MB)
+  del coordinatore, con l'ok dell'utente; senza, il server disegna come
+  prima e tiene per i telefoni dopo. `tasks/TASK-246.md`, «Parte B».
 - **App** — TASK-251 parte C: in bici senza percorso la velocità
   (aggiornamento di ADR-0215, scelta dell'utente del 2026-10-08). In `main`
   con la #458 (`fb27b50d`, 2026-10-09). Con «Bike» in «Settings» «Ride

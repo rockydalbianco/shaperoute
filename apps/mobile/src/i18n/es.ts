@@ -1157,6 +1157,13 @@ export const ES: Table = {
   "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
     "Las notificaciones de MuW están desactivadas en este teléfono. Permítelas en Ajustes para activarlas.",
 
+  // src/paddle/PaddleExplore.tsx (TASK-269)
+  Lakes: "Lagos",
+  Sea: "Mar",
+  "Suggested near {place}": "Sugeridos cerca de {place}",
+  "Suggested near where you usually start": "Sugeridos cerca de donde sueles salir",
+  "Suggested near your start": "Sugeridos cerca de tu salida",
+
   // src/social/ContactsFriends.tsx (TASK-262 C)
   "FROM YOUR CONTACTS": "DE TUS CONTACTOS",
   "Find friends in your contacts": "Buscar amigos en tus contactos",

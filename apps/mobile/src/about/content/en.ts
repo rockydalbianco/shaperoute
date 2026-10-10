@@ -381,7 +381,7 @@ const privacy: AboutDocument = {
             "On our server in Germany, for as long as you have the account.",
             "When you delete your account, everything that is yours is deleted at once: profile, picture, phone number, runs, drawings, favorites, comments, reactions and follows.",
             "A backup of the database is made every night and kept for 13 days: a deleted account is out of every backup within 14 days.",
-            "On your phone: the session, your choices (language, sport), the offline maps and the runs still waiting to be sent.",
+            "On your phone: the session, your choices (language, sport, lakes or sea), the offline maps, the runs still waiting to be sent and, with an account, the area your activities usually start from, to suggest lakes and the sea near it; it is deleted when you log out.",
           ],
         },
         "The connection between the app and our server is encrypted (HTTPS).",

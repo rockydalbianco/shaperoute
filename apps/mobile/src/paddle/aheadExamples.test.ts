@@ -192,6 +192,34 @@ test("the next opening asks nothing", async () => {
   expect(second.asked).toEqual([]);
 });
 
+test("with a home area, the places nearest it: those «Explore» suggests (TASK-269)", async () => {
+  const { request, asked } = api(() => ({ kind: "unreachable", url: "https://api" }));
+  // The phone is near Como, on a trip; home is by Levico.
+  await drawShapesAhead("https://api", FAR.point, {
+    request,
+    storage: memory(),
+    spots: SPOTS,
+    home: () => ({ point: LEVICO_TERME, place: "Levico Terme" }),
+    ...clock(),
+    active: () => true,
+  });
+  expect(asked.map((a) => a.start)).toEqual([LEVICO.point]);
+  // A home area kept by «My activities» is read from the phone.
+  files.set(
+    "file:///documents/home-area.json",
+    JSON.stringify({ point: FAR.point, place: "Como" }),
+  );
+  const fromFile = api(() => ({ kind: "unreachable", url: "https://api" }));
+  await drawShapesAhead("https://api", LEVICO_TERME, {
+    request: fromFile.request,
+    storage: memory(),
+    spots: SPOTS,
+    ...clock(),
+    active: () => true,
+  });
+  expect(fromFile.asked.map((a) => a.start)).toEqual([FAR.point]);
+});
+
 test("«Explore» shows the shapes drawn ahead at once, without the API", async () => {
   await drawShapesAhead("https://api", LEVICO_TERME, {
     request: api().request,

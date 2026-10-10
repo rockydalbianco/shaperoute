@@ -3,6 +3,7 @@ import { act, renderHook } from "@testing-library/react-native";
 
 import { answers, apiError, held } from "../account/testing";
 import type { ActivitiesPage, Activity } from "../api/activities";
+import * as homeArea from "../paddle/homeArea";
 import { useActivities } from "./useActivities";
 
 const URL = "http://api";
@@ -263,4 +264,45 @@ test("without an API the list fails, and nothing is asked", async () => {
   );
   expect(result.current.status).toBe("failed");
   expect(fetchFn).not.toHaveBeenCalled();
+});
+
+test("the first page says where the account's activities start, on the phone only (TASK-269)", async () => {
+  const noted = jest
+    .spyOn(homeArea, "noteHomeArea")
+    .mockImplementation(() => undefined);
+  try {
+    const first = held();
+    const fetchFn = jest.fn(async (url: string, init?: RequestInit) => {
+      const auth = (init?.headers as Record<string, string>).Authorization;
+      return auth === "Bearer one"
+        ? first.fetchFn(url, init)
+        : Response.json(page([FREE]));
+    });
+    const { rerender } = await hook(fetchFn);
+    await rerender({ token: "two" });
+    expect(noted.mock.calls).toEqual([[[FREE]]]);
+    // The answer of an account signed out since says nothing.
+    await act(async () => first.answer(200, page([STAR])));
+    expect(noted.mock.calls).toEqual([[[FREE]]]);
+    // Only the list is read: nothing else is asked of the API.
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  } finally {
+    noted.mockRestore();
+  }
+});
+
+test("signed out, the home area leaves the phone (TASK-269)", async () => {
+  const forgot = jest
+    .spyOn(homeArea, "forgetHomeArea")
+    .mockImplementation(() => undefined);
+  try {
+    const { rerender } = await hook(answers({ status: 200, body: page([STAR]) }));
+    expect(forgot).not.toHaveBeenCalled();
+    // Signing out, a session that ended and a deleted account all leave
+    // nobody signed in.
+    await rerender({ token: null });
+    expect(forgot).toHaveBeenCalledTimes(1);
+  } finally {
+    forgot.mockRestore();
+  }
 });

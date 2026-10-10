@@ -380,7 +380,7 @@ const privacy: AboutDocument = {
             "Sur notre serveur en Allemagne, tant que tu as le compte.",
             "Quand tu supprimes ton compte, tout ce qui est à toi est supprimé tout de suite : profil, photo, numéro de téléphone, courses, dessins, favoris, commentaires, réactions et abonnements.",
             "Une sauvegarde de la base de données est faite chaque nuit et gardée 13 jours : un compte supprimé sort de toutes les sauvegardes en 14 jours au plus.",
-            "Sur ton téléphone : la session, tes choix (langue, sport), les cartes hors ligne et les courses qui attendent encore d'être envoyées.",
+            "Sur ton téléphone : la session, tes choix (langue, sport, lacs ou mer), les cartes hors ligne, les courses qui attendent encore d'être envoyées et, avec un compte, la zone d'où partent d'habitude tes activités, pour te suggérer des lacs et la mer à proximité ; elle est effacée quand tu te déconnectes.",
           ],
         },
         "La connexion entre l'app et notre serveur est chiffrée (HTTPS).",

@@ -13445,6 +13445,32 @@ d'accordo con il coordinatore.
 un conteggio in più nell'API per la stessa cosa, un «Try»; uno spinner
 nel pulsante: il pulsante non resta sullo schermo mentre si calcola.
 
+## ADR-0137, aggiunta — Su «Data» scorrono solo i numeri
+**Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
+(TASK-268), dopo la corsa su strada dell'utente dello stesso giorno («se
+compaiono le indicazioni si sposta tutto in basso e non si riesce più a
+cliccare»). Aggiunta ad ADR-0137, senza numero nuovo.
+
+**Decisione**:
+
+1. La pagina «Data» ha tre parti: in alto l'indicazione (o la via verso la
+   partenza), fissa; in mezzo una sola `ScrollView` che prende lo spazio
+   che resta, con i km grandi, la barra del percorso, i numeri, i km uno
+   per uno, gli interruttori e la voce; in fondo i pulsanti della corsa e
+   «Map» / «Data», fissi. Prima la pagina era una colonna fissa: con
+   l'indicazione in alto i pulsanti e «Map» uscivano dallo schermo, e il
+   tocco dove stava «Map» cadeva sugli interruttori.
+2. I km uno per uno non hanno più uno scorrimento loro: due scorrimenti
+   verticali uno dentro l'altro si contendono il dito.
+3. Lo swipe verso la mappa resta della pagina: lo scorrimento ha
+   `directionalLockEnabled`, la pagina non cede uno swipe iniziato, e se
+   le viene tolto torna al suo posto invece di restare a metà.
+
+**Alternative scartate**: rimpicciolire i km grandi o togliere righe
+(cambia quello che l'utente vede, e una corsa lunga esce dallo schermo lo
+stesso); mettere anche l'indicazione nello scorrimento (la svolta è il
+motivo per cui si guarda la pagina correndo).
+
 ## ADR-0237 — La build dello store senza AdMob: niente codice nativo con APP_VARIANT=production
 **Stato**: Attiva · 2026-10-09 · «la lanciamo senza pubblicità, faremo
 poi», e poi «la pubblicità la inseriamo quando facciamo la società»:

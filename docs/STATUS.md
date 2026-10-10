@@ -163,6 +163,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nativo di AdMob non entra nella build (`react-native.config.js`); il Feed
   ha solo i post. Preview ed Expo Go come prima. TASK-153 (annunci veri)
   aspetta la società dell'utente.
+  **Chiuso il 2026-10-10** (#469, #474): voce in «Completato».
 - **TASK-268 — Su «Data» «Map» e «Pause» restano sullo schermo**
   (aggiunta ad ADR-0137; dalla corsa su strada dell'utente del
   2026-10-09). Branch `fix/TASK-268-run-data-page`. Con l'indicazione in
@@ -656,6 +657,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App e sito** — TASK-267 (ADR-0237): la 1.0 dell'App Store **senza
+  pubblicità**, scelta dell'utente del 2026-10-09 (gli annunci con la
+  società). Con `APP_VARIANT=production` il codice nativo di AdMob non
+  entra nella build (#469); «Termini» e «Privacy» dicono che MuW non mostra
+  pubblicità, nell'app e su `getmuw.app/privacy` (#474, testi approvati).
+  Preview ed Expo Go come prima. La verifica sulla build 5 è della sessione
+  «App Store submission». TASK-153 (annunci veri) aspetta la società.
 - **API** — TASK-246 parte B: il server tiene le figure «Paddle» dei
   laghi e delle spiagge (aggiunta ad ADR-0211). In `main` dalla #462
   (`589fdece`, 2026-10-09, merge chiesto dall'utente al verde). Le figure

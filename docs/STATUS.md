@@ -163,7 +163,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   delega). La fila dei posti parte dalla zona di casa calcolata sul
   telefono dalle attività, con «Show more» e la riga «Suggested near …»;
   due chip filtrano laghi o mare; le forme già sul telefono seguono la
-  stessa zona. Solo app, non nella 1.0. Testi nuovi da approvare.
+  stessa zona. Solo app, non nella 1.0. Testi approvati dall'utente il
+  2026-10-10; manca la frase della privacy, dopo «451 in main».
   File: `tasks/TASK-269.md`, «File toccati».
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,

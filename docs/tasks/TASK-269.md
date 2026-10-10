@@ -83,7 +83,10 @@ Fuori: «Explore» della corsa (ha già «Near me», «NEARBY TOWNS» e
 - [x] Il giro delle forme già sul telefono parte dalla zona di casa (test).
 - [x] Nessuna richiesta in più all'API: la zona di casa viene dalla lista
       che l'app chiede già (test).
-- [ ] Testi nuovi approvati dall'utente nelle cinque lingue.
+- [x] Testi nuovi approvati dall'utente nelle cinque lingue (2026-10-10,
+      «sì, vanno bene tutti»: i cinque testi e la frase della privacy).
+- [ ] La frase della privacy nell'app e su `getmuw.app/privacy`, dopo «451
+      in main» (indicazione del coordinatore).
 
 ## File toccati
 
@@ -123,7 +126,7 @@ Non toccati: `App.tsx`, `src/feed/*`, `beaches.json`, `beach_catalog.py`.
   quindi serve una riga. Proposta al coordinatore, che decide prima di
   toccare `src/about/content/*` (non in questo task).
 
-## Testi nuovi (da approvare dall'utente)
+## Testi nuovi (approvati dall'utente il 2026-10-10)
 
 | en | it | de | es | fr |
 |---|---|---|---|---|

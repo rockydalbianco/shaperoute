@@ -13577,7 +13577,8 @@ aggiungere `apart_sql`.
 **Stato**: Attiva · 2026-10-10 · richiesta dell'utente del 2026-10-09
 («consiglia alle persone i posti in base a dove vivono, o fai una sezione
 filtro e decidi tu come suggerire le cose»); il disegno è **deciso
-dall'agente su delega dell'utente** (TASK-269). Testi nuovi da approvare.
+dall'agente su delega dell'utente** (TASK-269). Testi nuovi e frase della
+privacy approvati dall'utente il 2026-10-10.
 
 **Contesto**: in «Explore» con «Paddle» (ADR-0196) la fila dei posti era
 quella più vicina alla partenza di «Draw», e senza partenza i quattro scelti

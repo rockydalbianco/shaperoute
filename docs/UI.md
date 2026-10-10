@@ -2617,8 +2617,9 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
       Como laghi, Jesolo e Riccione mare).
     - **Le forme già sul telefono** (sopra) sono quelle dei tre posti più
       vicini alla zona di casa, quando c'è.
-    - Testi nuovi **da confermare con l'utente**, nelle cinque lingue
-      (`tasks/TASK-269.md`): «Lakes», «Sea», «Suggested near …».
+    - Testi **confermati dall'utente** il 2026-10-10, nelle cinque lingue
+      (`tasks/TASK-269.md`): «Lakes», «Sea», «Suggested near …», e la
+      frase della privacy sulla zona di casa.
 - **I pezzi staccati sull'acqua** (TASK-226, ADR-0188; scelta dell'utente
   sui campioni): con «Paddle» gatto, pesce, testa di cane, testa di
   coniglio, zucca, faccina, fantasmino e ciambella si chiedono **sempre**

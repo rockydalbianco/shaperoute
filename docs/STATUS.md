@@ -245,6 +245,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   si vedono solo con una build nativa. Parti B (email, Resend) e C
   (rubrica, con un nuovo sì) Todo. Da dove riprendere:
   `tasks/TASK-262.md`.
+  **Parte A chiusa il 2026-10-10** (PR #451, merge `578c2f7e`): vedi
+  «Completato». Restano B e C.
 - **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** in `main`
   il 2026-10-08 (PR #446, merge `9dcacbf4`; chiesta dall'utente): profilo `production` in `eas.json`,
   canale `production`. Solo la build dello store ha il runtime dal
@@ -687,6 +689,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-262 parte A: le notifiche push partono (ADR-0226;
+  scelte dell'utente del 2026-10-07). PR #451, merge `578c2f7e` del
+  2026-10-10. Tabella `push_tokens` (migrazione `0021`), `PUT`/`DELETE
+  /me/push-token`, invio con il servizio push di Expo fuori dalla
+  richiesta; richiesta di follow, richiesta accettata, reazione, commento
+  e tag notificati una volta a chi ha «Push notifications» acceso, mai
+  fra bloccati (TASK-121) né a chi ha agito. Nell'app
+  `expo-notifications`, il permesso chiesto solo dall'interruttore, il
+  tocco che apre il disegno o il profilo. **Da fare**: la `0021` sul
+  server e la pubblicazione (coordinatore, con l'ok dell'utente), la
+  prova con una build nativa, `npm install` nel checkout principale.
+  `tasks/TASK-262.md`.
 - **API e app** — TASK-121: segnalare e bloccare (ADR-0228; brief del
   coordinatore del 2026-10-07/08). Branch `feat/TASK-121-report-block`,
   migrazione `0020_moderation.sql` (`blocks`, `reports`). Un blocco tiene

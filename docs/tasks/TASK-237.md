@@ -1,8 +1,10 @@
 # TASK-237 — Il sito web, con la sezione «Merch» per le magliette
 
-**Stato**: In corso — il sito è **online su https://getmuw.app** dal
-2026-10-08 (parti A, A2, A3 e C fatte); restano dell'utente il link per
-scaricare l'app (dopo l'App Store) e il merch (parte B, messo da parte)
+**Stato**: In corso — il sito è **online su https://getmuw.app** con
+la guida, la privacy (`/privacy/`) e l'assistenza (`/support/`), in
+cinque lingue (parti A, A2, A3, C, D, E fatte, 2026-10-05/09); restano
+dell'utente il link per scaricare l'app (alla prima build TestFlight) e
+il merch (parte B, messo da parte)
 **Fase**: 4 · **Branch**: `feat/TASK-237-website-merch`
 **ADR**: ADR-0201
 
@@ -98,6 +100,18 @@ dall'utente il 2026-10-06: il cuore su giallo e la scritta «MuW».
    ed evento «run_scored» sono ancora salvati dal server, quindi restano.
 4. `site/privacy` nell'elenco della copia di `DEPLOY.md` F.14.
 
+**Parte E — la pagina di assistenza** (chiesta dal Coordinatore il
+2026-10-09: Apple vuole un Support URL con un contatto):
+
+1. `getmuw.app/support/` più `it/`, `de/`, `fr/`, `es/`, scritte da
+   `site/tools/make_support.mjs` dai testi di `support_text.mjs`: come
+   scriverci (l'indirizzo già pubblico nella privacy) e tre domande.
+2. Risposte verificate nel codice: fino a tre percorsi
+   (`MAX_ALTERNATIVES = 2`, più il primo), «Try 12 km» (TASK-234,
+   `betterDistance.ts`), «Delete account» in «Settings»
+   (`SettingsPage.tsx`), con i nomi dei tasti di ogni lingua.
+3. `site/support` nella riga `git archive` di `DEPLOY.md` F.14.
+
 **Parte B — aprire il negozio e pubblicare** (dopo le scelte dell'utente):
 
 1. L'utente sceglie il servizio di stampa e apre l'account (un agente non
@@ -172,6 +186,19 @@ docs/DEPLOY.md                          (F.14: solo `site/privacy`
                                          nella riga `git archive`)
 docs/UI.md                              (una riga: Privacy definitiva)
 ```
+
+Parte E (2026-10-09):
+
+```
+site/support/**                         (nuova)
+site/tools/make_support.mjs, support_text.mjs, site/tests/support.test.mjs (nuovi)
+site/index.html                         (il link «Support» in fondo)
+site/styles.css                         (tre regole per la pagina)
+docs/DEPLOY.md                          (F.14: `site/support` nella riga `git archive`)
+```
+
+`site/privacy/**` e `site/tests/privacy.test.mjs` sono di TASK-262 C
+dal 2026-10-09: la parte E non li tocca.
 
 TASK-262 A (le notifiche push) tocca gli stessi `about/content/*.ts` e
 `about/documents.test.ts` per la frase sul token push: chi entra secondo
@@ -248,7 +275,10 @@ con il consiglio di farle rileggere a un esperto; il testo è
 segnaposto. Aggiunta in cinque lingue la frase sulla posizione a
 telefono bloccato (TASK-261, ADR-0225). Verificato nel codice: il server
 salva ancora il punteggio di una corsa (`activities.py`) e l'evento
-`run_scored`, quindi quelle frasi sono esatte. Un test del sito controlla
+`run_scored`: la frase resta, precisata («a score of how closely the
+track follows the route (worked out by our server and not shown in the
+app)»). Le due frasi nuove le ha approvate l'utente il 2026-10-09 («Sì,
+vanno bene»). Un test del sito controlla
 che la copia di `DEPLOY.md` F.14 prenda ogni file che le pagine
 caricano. Dopo il merge: la copia sul server al via del Coordinatore,
 con il sì dell'utente alla pubblicazione; l'indirizzo per Apple è
@@ -260,3 +290,26 @@ soon» fino alla prima build su TestFlight (TASK-152 B); allora
 `site/config.js` `downloadUrl` diventa il link pubblico di TestFlight e
 si ricopia il sito (F.14). Il link di Expo Go è scartato. Il merch
 (parte B), messo da parte.
+
+**Parte D online** (2026-10-09): la #453 è entrata in `main` come
+`89287a0a`, ma sul commit prima dell'ultimo: la frase precisata sul
+punteggio, approvata dall'utente, era rimasta fuori. La copia F.14 da
+`89287a0a` (ok dell'utente: «Sì, pubblicala» a questa sessione, «ok
+privacy online» al Coordinatore) ha messo online
+https://getmuw.app/privacy/ in cinque lingue, con titolare, email e
+data; l'app con il testo definitivo è su `preview` (gruppo `20590b72`).
+La frase del punteggio entra con la PR `fix/TASK-237-privacy-score`;
+dopo il suo merge servono di nuovo la copia F.14 e una pubblicazione
+dell'app, che sono del Coordinatore.
+
+**Parte E** (2026-10-09): la pagina di assistenza, PR #467. Testi
+**approvati dall'utente** («Sì, va bene», sul testo italiano; le altre
+lingue dicono lo stesso). Dopo il merge: la copia F.14, del
+Coordinatore; l'indirizzo per la scheda dell'App Store è
+`https://getmuw.app/support/`.
+
+**Parte E online** (2026-10-09): #467 in `main` come `b19ab890` (sull'head
+approvato), copia F.14 del Coordinatore. `/support/` e le altre quattro
+lingue rispondono 200 con l'indirizzo, la home ha il link «Support»;
+ricontrollato da questa sessione. L'URL è passato alla sessione «App Store
+submission».

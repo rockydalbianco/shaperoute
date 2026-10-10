@@ -227,6 +227,12 @@ export const IT: Table = {
   "Turns the map north up": "Mette il nord in alto",
   "Turns the map like the drawing": "Gira la mappa come il disegno",
 
+  // src/map/MapKindButton.tsx
+  "Map type": "Tipo di mappa",
+  Standard: "Normale",
+  Satellite: "Satellite",
+  "3D": "3D",
+
   // src/paddle/PaddleExplore.tsx
   Next: "A seguire",
   "Drawing…": "Disegno in corso…",
@@ -693,6 +699,22 @@ export const IT: Table = {
   Kilometres: "Chilometri",
   Miles: "Miglia",
   "Phone units": "Unità del telefono",
+
+  // src/settings/ToneSetting.tsx
+  Tone: "Tono",
+  Dark: "Scuro",
+  Light: "Chiaro",
+  Brightness: "Luminosità",
+  "Brightness {step} of {count}": "Luminosità {step} di {count}",
+  Darker: "Più scuro",
+  Brighter: "Più chiaro",
+  "Preview of the tone": "Anteprima del tono",
+  Apply: "Applica",
+  "MuW opens again in the new tone.": "MuW si riapre con il nuovo tono.",
+  "The phone did not keep the tone. Try again.":
+    "Il telefono non ha salvato il tono. Riprova.",
+  "Close MuW and open it again to see the new tone.":
+    "Chiudi MuW e riaprila per vedere il nuovo tono.",
 
   // src/settings/sport.ts
   "Ride without a route": "Pedala senza percorso",

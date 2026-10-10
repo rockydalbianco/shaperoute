@@ -157,6 +157,44 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-267 — Annunci spenti nella build dello store**
+  (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
+  scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice
+  nativo di AdMob non entra nella build (`react-native.config.js`); il Feed
+  ha solo i post. Preview ed Expo Go come prima. TASK-153 (annunci veri)
+  aspetta la società dell'utente.
+- **TASK-268 — Su «Data» «Map» e «Pause» restano sullo schermo**
+  (aggiunta ad ADR-0137; dalla corsa su strada dell'utente del
+  2026-10-09). Branch `fix/TASK-268-run-data-page`. Con l'indicazione in
+  alto la pagina «Data», che non scorreva, spingeva pulsanti e «Map» sotto
+  il bordo. Ora scorrono solo i numeri, fra l'indicazione e i pulsanti
+  fissi. Solo app, nessun testo nuovo. La voce che si ferma a telefono
+  bloccato o con Spotify davanti è TASK-261 parte B.
+  File: `tasks/TASK-268.md`, «File toccati».
+- **TASK-246 parte B — Il server tiene le figure «Paddle» dei laghi e
+  delle spiagge** (aggiunta ad ADR-0211; via del coordinatore il
+  2026-10-09). Branch `feat/TASK-246-b-water-shapes-kept`. L'API legge
+  all'avvio i punti di `lakes.json` e `beaches.json` (`water_spots.py`,
+  copiati nell'immagine dal `Dockerfile`) e tiene i percorsi dal punto
+  stesso in `routes/water/` (limite suo di 10 000); `draw_examples
+  --water` li disegna prima. L'app non cambia. Sul Mac le 24 forme di un
+  telefono nuovo a Levico: 11 s di motore la prima volta, 0 s dopo; il
+  giro di tutti i punti sul server, stimato, 4–8 ore.
+  PR #462, merge chiesto dall'utente al verde (2026-10-09), non aspetta
+  TASK-245 C. **Resta**: server e `draw_examples --water` con l'ok
+  dell'utente, dal coordinatore.
+  **Chiuso** il 2026-10-09: in `main` dalla #462 (vedi «Completato»).
+  File: `tasks/TASK-246.md`, «File toccati (parte B)».
+- **TASK-251 parte C — In bici senza percorso, la velocità** (aggiornamento
+  di ADR-0215; scelta dell'utente del 2026-10-08). Branch
+  `feat/TASK-251-c-free-ride-speed`. Con «Bike» in «Settings» «Ride without
+  a route» mostra «Speed now», «Avg speed», «Last km» e i km in km/h (mph
+  con le miglia), sulla scheda e a fine corsa, come un percorso in bici;
+  nessun testo nuovo. La voce resta quella della corsa (da decidere
+  dall'utente). Solo app: pubblica il coordinatore.
+  File: `tasks/TASK-251.md`, «File toccati», parte C.
+  **Done** il 2026-10-09: in `main` con la #458 (`fb27b50d`), vedi
+  «Completato».
 - **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
   all'agente dall'utente il 2026-10-07). Branch
   `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:
@@ -171,6 +209,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   coordinatore) e la pubblicazione dell'app, che può uscire prima: senza
   `/recommended` la riga non c'è e «Explore» resta com'è.
   File: `tasks/TASK-092.md`, «File toccati».
+  **Chiuso**: in `main` con la #445 (`48ba5912`, 2026-10-08); vedi
+  «Completato».
 - **TASK-265 — Il dominio getmuw.app** (ADR-0234; scelta dell'utente del
   2026-10-08). L'utente voleva spostare «il sito» su un'azienda tedesca;
   saputo che il sito non era online e che Hetzner è già tedesca, è
@@ -242,6 +282,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Pallaoro, email muw2610@gmail.com, basi giuridiche, 8 ottobre 2026) e
   la frase sulla posizione a telefono bloccato (TASK-261). Il link per
   scaricare arriva con la prima build TestFlight (scelta dell'utente).
+  **Online dal 2026-10-09**: https://getmuw.app/privacy/ (copia F.14 da
+  `main` `89287a0a`, ok dell'utente), app su `preview` (gruppo
+  `20590b72`). La frase precisata sul punteggio, approvata dall'utente,
+  era rimasta fuori dal merge: entra con una PR a parte, poi di nuovo
+  copia F.14 e pubblicazione.
+  **Parte E** in PR (2026-10-09): la pagina di assistenza
+  `getmuw.app/support/` in cinque lingue (come scriverci e tre domande),
+  per il Support URL dell'App Store; testi approvati dall'utente («Sì,
+  va bene»).
+  **Online dal 2026-10-09** (#467, `b19ab890`, copia F.14): restano
+  dell'utente solo il link TestFlight e il merch.
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
@@ -618,6 +669,61 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API** — TASK-246 parte B: il server tiene le figure «Paddle» dei
+  laghi e delle spiagge (aggiunta ad ADR-0211). In `main` dalla #462
+  (`589fdece`, 2026-10-09, merge chiesto dall'utente al verde). Le figure
+  chieste dai punti di `lakes.json` e `beaches.json` restano in
+  `routes/water/`: un telefono nuovo dove un altro ha già chiesto non fa
+  lavorare il motore (a Levico, sul Mac, 11 s → 0 s); `draw_examples
+  --water` le disegna prima. App invariata. **Non ancora sul server**:
+  aggiornamento e `draw_examples --water` (stimato 4–8 ore, circa 50 MB)
+  del coordinatore, con l'ok dell'utente; senza, il server disegna come
+  prima e tiene per i telefoni dopo. `tasks/TASK-246.md`, «Parte B».
+- **App** — TASK-251 parte C: in bici senza percorso la velocità
+  (aggiornamento di ADR-0215, scelta dell'utente del 2026-10-08). In `main`
+  con la #458 (`fb27b50d`, 2026-10-09). Con «Bike» in «Settings» «Ride
+  without a route» mostra «Speed now», «Avg speed», «Last km» e i km in
+  km/h (mph con le miglia), sulla scheda e a fine corsa, come un percorso
+  in bici; nessun testo nuovo; corsa e «Paddle» come prima. **Da fare**:
+  la pubblicazione su `preview` (coordinatore) e la prova sull'iPhone. La
+  voce resta ogni km col passo, come una corsa: scelta dell'utente del
+  2026-10-09.
+  `tasks/TASK-251.md`.
+- **App** — TASK-264: **il tipo di mappa** (ADR-0232; chiesto
+  dall'utente il 2026-10-08). Un pulsante in alto a destra sulla mappa
+  sceglie **Standard**, **Satellite** (foto Esri, i nomi dei paesi in
+  chiaro) e **3D** (il rilievo con l'ombreggiatura, mappa inclinata a
+  55°, come Strava e komoot); la scelta resta sul telefono. Lo stile non
+  si ricarica: percorso e inquadratura restano. Gli edifici in 3D sono
+  stati provati e tolti perché coprivano il percorso. Testi nelle cinque
+  lingue approvati dall'utente (2026-10-09). Solo app: dopo il merge si
+  pubblica, niente server. **Resta**: la chiave gratuita ArcGIS
+  (`EXPO_PUBLIC_ARCGIS_API_KEY`), quando l'utente crea l'account; senza,
+  le foto vengono dall'indirizzo pubblico di Esri. `tasks/TASK-264.md`.
+- **API e app** — TASK-234 parte C: il «Try N km» della riga «comes out
+  better» si conta (scelta dell'utente del 2026-10-08, aggiunta ad
+  ADR-0197). PR #459: `hint_taken` con `hint: "better_distance"`,
+  additivo (un'API di prima risponde 422 e l'app lo ignora). Il segno
+  visibile mentre si calcola c'era già: il pannello dell'attesa con la
+  barra e «Cancel» prende subito il posto della riga. Nessun testo nuovo,
+  nessuna migrazione. Dopo il merge: il server (`signals.py`, ok
+  dell'utente, coordinatore) e la pubblicazione dell'app. File:
+  `tasks/TASK-234.md`, «File toccati». In `main` dalla #459
+  (`5f028e8d`, 2026-10-09); l'utente ha confermato che il pannello
+  d'attesa basta e ha dato l'ok per il server dopo il merge.
+- **App** — TASK-263: tono scuro o chiaro, con la luminosità in cinque
+  passi (ADR-0231; chiesto dall'utente il 2026-10-08). PR #444. In
+  «Settings», «PREFERENCES», la riga «Tone»: «Dark» o «Light»,
+  «Brightness» in cinque passi, un'anteprima nei colori scelti e «Apply»,
+  che salva la scelta (`tone.json`) e riapre l'app (`reloadAppAsync`) nel
+  tono nuovo. Senza scelta l'app è quella di prima (scuro, passo 1); il
+  chiaro parte dal bianco, con la mappa chiara, il percorso giallo su un
+  bordo scuro e la barra di stato scura. I contrasti di ogni tono a ogni
+  passo sono un test. Testi in cinque lingue approvati dall'utente il
+  2026-10-09; provata nel simulatore in Expo Go. Solo app: va pubblicata
+  su `preview`, il server non cambia. **Parte B**, da aprire: le tastiere,
+  ancora scure nel tono chiaro, e il logo bianco «Compatible with Strava»
+  sul fondo chiaro.
 - **App** — TASK-261 parte A: la corsa registra anche a telefono bloccato
   (ADR-0225; chiesto dall'utente il 2026-10-07). In `main` con la #441
   (`08793f4`, 2026-10-08). Nell'app costruita il GPS va avanti in
@@ -639,6 +745,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   intorno al 21), i passi, le domande per il commercialista. Prossimi:
   TASK-152 (App Store) e TASK-153 (annunci veri, unità **nativa** per il
   Feed). Chiesti dall'utente il 2026-10-08: annunci anche sul sito.
+- **App e API** — TASK-092: la riga **«RECOMMENDED»** in «Explore»
+  (ADR-0229), in `main` con la #445 (`48ba5912`, 2026-10-08). Con un
+  account, sopra le schede dei percorsi vicini, al più 10 percorsi del
+  catalogo ordinati da `GET /recommended`: prima il disegno venuto
+  meglio, poi le reazioni dei disegni pubblicati, poi corse e preferiti; a
+  parità tutti. Testo confermato dall'utente nelle cinque lingue. **Non
+  ancora sul server** (`best_routes.py`, nessuna migrazione: ok
+  dell'utente, coordinatore); l'app può uscire prima, la riga non c'è
+  finché manca. Seguito: con TASK-121 le reazioni di chi l'utente ha
+  bloccato non contano.
+  **Sul server dal 2026-10-09 ~12:20Z** (ok dell'utente, fatto dal
+  coordinatore): `main` `fb27b50d`, copia del database
+  `shaperoute-2026-10-09T1220Z.dump`, immagine di prima
+  `shaperoute-api:before-task092`, migrazioni ancora fino a 0019;
+  `/recommended` risponde `401 not_signed_in` senza token, quindi c'è.
+  Con un account la riga «RECOMMENDED» ora si vede.
 - **Server** — TASK-265: il dominio **`getmuw.app`** (ADR-0234). L'utente
   è rimasto sul server Hetzner e ha comprato il dominio su Porkbun il
   2026-10-08; tre record `A` (`@`, `www`, `api`) verso `188.245.9.220`.
@@ -935,7 +1057,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Seguiti**: togliere l'effetto di cambio unità di `RouteChoice` quando
   `src/route/` è libero; una parola di corsa in miglia ha al più 6
   lettere; «within 1 km of the shore» e l'avviso sull'acqua restano in km
-  per scelta. `tasks/TASK-182.md`.
+  per scelta. `tasks/TASK-182.md`. **Voce in miglia ascoltata
+  dall'utente sull'iPhone il 2026-10-09: va bene.**
 
 - **API e app** — TASK-185: i due interruttori delle notifiche (ADR-0206;
   chiesto dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha

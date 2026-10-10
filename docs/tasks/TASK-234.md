@@ -3,9 +3,11 @@
 **Stato**: Done — 2026-10-05: parte A (motore e API) dalla #327
 (`784cc03`), parte B (app) dalla #336 (`db2c30e`). «Draw» offre la
 distanza dove la forma viene meglio, con «Try N km»; scatta in circa il 6%
-dei percorsi (`MAPS.md`)
+dei percorsi (`MAPS.md`). 2026-10-09: parte C (il «Try» della riga
+contato come `better_distance`) dalla #459 (`5f028e8d`); il server con
+`signals.py` lo aggiorna il coordinatore, con l'ok dell'utente già dato
 **Fase**: 4 · **Branch**: `feat/TASK-234-better-distance` (A),
-`feat/TASK-234-better-distance-app` (B)
+`feat/TASK-234-better-distance-app` (B), `feat/TASK-234-c-try-signal` (C)
 **ADR**: ADR-0197 (estende ADR-0041)
 
 ## Obiettivo
@@ -158,6 +160,12 @@ docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-234.md
+docs/INSIGHTS.md                                            (parte C)
+services/api/shaperoute_api/signals.py                      (parte C)
+services/api/tests/test_signals_better_distance.py          (parte C, nuovo)
+packages/shared-types/src/signals.ts                        (parte C)
+packages/shared-types/fixtures/signal-better-distance.json  (parte C, nuovo)
+apps/mobile/src/route/RoutePanelBetterSignal.test.tsx       (parte C, nuovo)
 ```
 
 ## Fuori scope
@@ -216,4 +224,27 @@ passo 2 resta da valutare dopo.
   in italiano «Questa forma viene meglio a circa 7 km.» con «Prova 7 km».
 - Seguito, non fatto: un segnale per sapere quante volte si tocca il
   «Try» della riga (oggi `hint_taken` dice solo i «Try» degli errori;
-  un `hint` nuovo tocca `shared-types` e l'API).
+  un `hint` nuovo tocca `shared-types` e l'API). Fatto nella parte C.
+
+**Parte C, il segnale del «Try» della riga** (scelta dell'utente del
+2026-10-08, «Tutti e due»: contare i tocchi e un segno visibile mentre
+calcola; via del coordinatore il 2026-10-09, aggiunta ad ADR-0197).
+Branch `feat/TASK-234-c-try-signal`.
+
+- **Il segnale**: «Try N km» della riga manda `hint_taken` con `hint:
+  "better_distance"`, `distance_m` (quella disegnata) e `to_m` (quella
+  provata), come il `try_distance` degli errori ma contato a parte
+  (`shared-types/fixtures/signal-better-distance.json`). Il report delle
+  ricerche lo conta da solo fra gli `hints`; la proposta
+  `review_distance` resta dei soli errori. Additivo: un'API di prima
+  risponde 422 e `sendSignal` lo ignora, il percorso si ridisegna lo
+  stesso; i corpi di un'app di prima l'API nuova li registra come
+  prima (test in tutte e due).
+- **Il segno visibile c'era già**: il tocco chiama `onTryDistance` di
+  `App.tsx`, che fa partire `draw()`; lo stato passa subito a «waiting»
+  e il pannello del percorso, riga e pulsante compresi, lascia il posto
+  a quello dell'attesa, con il testo, «Cancel» e la barra di
+  `LoadingBar`. Nessun secondo indicatore sopra; un test lo fissa.
+  **Confermato dall'utente** il 2026-10-09: «sì, il pannello d'attesa
+  basta».
+- Nessun testo nuovo sullo schermo; `App.tsx` non è servito.

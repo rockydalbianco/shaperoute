@@ -25,7 +25,7 @@
 
 ## Il tema
 
-Uno solo, scuro, con il nome «MuW» (ADR-0046; «Sgrava» fino a ADR-0224). Tutti i valori stanno in
+Scuro, con il nome «MuW» (ADR-0046; «Sgrava» fino a ADR-0224), e dal TASK-263 anche chiaro, ognuno in cinque passi di luminosità (sotto, «Il tono e la luminosità»). Tutti i valori stanno in
 `apps/mobile/src/theme/tokens.ts`: colori, spaziature a passi di 4, raggi,
 corpi del testo, la linea del percorso (gialla, larga 5) e `MIN_TAP_SIZE`,
 44, l'altezza minima di ogni cosa da toccare. **Nessun colore scritto a
@@ -76,6 +76,32 @@ Quattro regole:
    mostra fondo, acqua, verde, edifici, strade e i nomi di città, paesi e
    villaggi; non i nomi delle vie, i numeri civici e i punti d'interesse.
    Nessuno strato della mappa usa il giallo.
+
+### Il tono e la luminosità (TASK-263, ADR-0231)
+
+In «Settings», sezione «PREFERENCES», la riga «Tone» dopo «Units» dice
+il tono dell'app («Dark» o «Light») e si apre come «Units»: i due toni,
+«Brightness» con cinque passi da «Darker» a «Brighter», un'anteprima e
+«Apply». Ogni tono ricorda il suo passo: scuro parte dal passo 1, i colori
+della tabella sopra; chiaro dal passo 5, il bianco. L'anteprima disegna
+nel tono provato il fondo, una scheda con i suoi testi, un comando neutro
+e quello giallo, e un angolo di mappa con acqua, verde, due strade e il
+percorso. «Apply» compare solo se l'app cambierebbe aspetto; salva la
+scelta e riapre l'app, che si ricarica nel tono nuovo («MuW opens again
+in the new tone.»). Chiudendo la riga senza «Apply» la prova si perde.
+
+I colori dei due toni a ogni passo stanno in `tokens.ts` (`SHADES`, i due
+estremi di ogni tono, mescolati per i passi in mezzo); il giallo, il testo
+sul giallo, il rosso dei numeri e i colori di Strava sono gli stessi in
+tutti. Nel tono chiaro:
+
+- avvisi, errori e «Start here» sono più scuri (arancio bruciato, rosso
+  scuro, blu petrolio), per leggersi sul chiaro;
+- **il percorso ha un bordo scuro** sotto la linea gialla, il nero del
+  testo sul giallo: sulla mappa chiara il giallo da solo non si vede;
+- la barra di stato è scura;
+- restano scure le tastiere e bianco il logo «Compatible with Strava»
+  (parte B).
 
 ## Il logo e l'icona (TASK-159, ADR-0129; «MuW» da TASK-260, ADR-0224)
 
@@ -159,6 +185,19 @@ pagine»):
    ci sono più (TASK-175, chiesto dall'utente). L'attribuzione dei dati è
    sempre visibile in basso, per intero; i suoi link si aprono nel browser
    del telefono.
+
+   **Il tipo di mappa** (TASK-264, ADR-0232, chiesto dall'utente): in alto
+   a destra, di fronte a «←», un pulsante tondo con due fogli; mentre si
+   corre sta sotto la barra delle svolte. Toccato, sotto compaiono
+   «Standard», «Satellite» e «3D», con la spunta su quello mostrato.
+   **Standard** è la mappa scura di sempre. **Satellite** sono le foto
+   aeree di Esri, con i nomi dei paesi in chiaro sopra e il credito
+   «Powered by Esri». **3D** è la mappa scura inclinata a 55° con il
+   rilievo vero e la sua ombreggiatura, come in Strava e komoot; niente
+   edifici in piedi, che coprivano il percorso. Il cambio non ricarica la
+   mappa: percorso, segni e inquadratura restano, e un percorso inquadrato
+   si inquadra di nuovo con la nuova inclinazione. La scelta resta per la
+   volta dopo. Le mappe piccole di «Feed» ed «Explore» restano standard.
 
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
@@ -1576,7 +1615,10 @@ chiesta; e dopo un «Try» non propone di tornare alla distanza appena
 lasciata, per lo stesso disegno dalla stessa partenza. «This shape» e non
 «This heart»: il nome della forma cambierebbe genere nelle altre lingue
 («Questa forma viene meglio a circa 8 km.»). Testi nelle cinque lingue
-(`src/route/betterDistance.ts`).
+(`src/route/betterDistance.ts`). Il tocco su «Try» si conta
+(`hint_taken` con `better_distance`, TASK-234 C) e, come ogni nuovo
+disegno, lascia subito il posto al pannello dell'attesa con la barra e
+«Cancel»: è il segno che il percorso nuovo si sta calcolando.
 
 **La mappa girata e la freccia del nord** (TASK-232 parte B, ADR-0195;
 la mappa girata, la freccia e i suoi due tocchi sono scelte dell'utente
@@ -2411,6 +2453,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   appariranno qui.» (dell'agente, **da confermare**, come tedesco, spagnolo
   e francese). «My activities» mostra ancora il passo al km (parte B).
   `src/navigation/paddle.ts`.
+  In bici senza percorso la velocità è quella di un percorso in bici
+  (TASK-251 parte C, «Correre senza percorso»).
 - **«Move the shape»** (TASK-238, ADR-0202; trascinare col dito è una
   scelta dell'utente del 2026-10-05): sotto «Start», quando il percorso
   disegnato è sull'acqua e la risposta dice dov'è la forma (`centre`; con
@@ -2608,6 +2652,19 @@ Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
 minuti). Anche in modalità tasca; niente vibrazione, che in navigazione
 vuol dire una svolta. «Keep running» non ripete i km già detti.
 
+**In bici senza percorso** («Ride without a route», TASK-251 parte C,
+ADR-0215; scelta dell'utente del 2026-10-08) la scheda e la fine della
+corsa mostrano i numeri di un percorso in bici («In bici», sopra), con lo
+stesso componente: sotto la mappa «Speed now» in km/h; su «Data», in pausa
+e a fine corsa «Speed now», «Avg speed», «Time», «Last km» (in km/h),
+«Elev. gain», senza «Calories»; i km uno per uno in km/h con la
+differenza. Con le miglia mph. Lo sport è quello di «Settings» alla
+partenza, tenuto nel file della corsa. La voce resta quella della corsa
+senza percorso (ogni km, col passo medio), il post scrive il passo al km
+come una pedalata con un percorso, e «My activities» come prima (il passo
+al km: lì solo «Paddle» ha numeri suoi). Una corsa senza percorso e
+«Paddle without a route» restano come prima.
+
 **Il confronto col km precedente** (TASK-217, ADR-0180; chiesto e scelto
 dall'utente il 2026-10-03: «ad ogni km di' anche se ha fatto meglio o
 peggio rispetto al km precedente»). Dal secondo km, subito dopo la frase
@@ -2745,6 +2802,9 @@ c'è anche l'errore.
   Da TASK-174 anche le zone dei percorsi mostrati in «Explore», quando si
   apre la pagina o si sceglie una città: sono attorno alla partenza o alla
   città scelta, come la mappa grande quando si apre un percorso.
+  Da TASK-264, con «Satellite» le foto vengono da Esri e con «3D» le
+  altezze dalle Terrain Tiles di AWS: anche loro vedono la zona guardata,
+  e solo con quel tipo scelto.
 - **La ricerca**: il testo cercato e la posizione (per mettere prima i
   luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo

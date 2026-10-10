@@ -7,9 +7,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * as TASK-210 G names them: «Feed», «Disegna», «Esplora».
  */
 
-const UPDATED = "5 ottobre 2026";
-/** «Privacy» is final since the user approved it on this day (TASK-237 D). */
-const PRIVACY_UPDATED = "8 ottobre 2026";
+const UPDATED = "10 ottobre 2026";
+/** «Privacy» is final since the user approved it on this day (TASK-237 D; without ads, TASK-267 B). */
+const PRIVACY_UPDATED = "10 ottobre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -206,9 +206,7 @@ const terms: AboutDocument = {
     },
     {
       heading: "Pubblicità",
-      blocks: [
-        "MuW mostra pubblicità, fornita da Google AdMob, fra i disegni di «Feed» e segnata «Sponsorizzato». Un annuncio apre quello che dice l'inserzionista: il suo contenuto non è nostro.",
-      ],
+      blocks: ["MuW non mostra pubblicità."],
     },
     {
       heading: "Servizi di altri",
@@ -298,7 +296,7 @@ const privacy: AboutDocument = {
     {
       heading: "Le tue corse e le loro tracce GPS",
       blocks: [
-        "Con un account, quando tocchi «Salva» a fine corsa la corsa intera va al nostro server: ogni posizione con il suo orario, le pause, il percorso seguito, distanza, durata, punteggio e il nome del luogo. Con «Discard» non parte niente.",
+        "Con un account, quando tocchi «Salva» a fine corsa la corsa intera va al nostro server: ogni posizione con il suo orario, le pause, il percorso seguito, distanza, durata, un punteggio di quanto la traccia segue il percorso (calcolato dal nostro server e non mostrato nell'app) e il nome del luogo. Con «Discard» non parte niente.",
         "Una corsa salvata è privata: la vede solo il tuo account. Resta finché non la elimini da «Le mie attività» o elimini l'account.",
         "Una corsa spesso parte e finisce davanti a casa. Per questo diventa visibile agli altri iscritti solo quando accendi «Pubblica», e allora vedono la traccia senza i primi e gli ultimi 200 m, con il titolo che le hai dato, e senza orari, pause né il percorso pianificato.",
       ],
@@ -337,8 +335,7 @@ const privacy: AboutDocument = {
     {
       heading: "Pubblicità",
       blocks: [
-        "MuW mostra annunci di Google AdMob fra i disegni di «Feed». La prima volta che apri «Feed», il modulo di consenso di Google chiede la tua scelta dove serve; finché gli annunci non si possono chiedere, non se ne mostrano. Su iPhone l'app non chiede di tracciarti nelle altre app e gli annunci sono chiesti senza l'identificativo pubblicitario.",
-        "Google tratta ciò che il suo software pubblicitario raccoglie secondo la propria informativa sulla privacy.",
+        "MuW non mostra annunci e non usa servizi pubblicitari: nessun dato su di te va a una rete pubblicitaria, e l'app non chiede mai di tracciarti nelle altre app.",
       ],
     },
     {
@@ -358,7 +355,7 @@ const privacy: AboutDocument = {
             "Il servizio Overpass dei dati di OpenStreetMap riceve dal nostro server la richiesta della mappa di una zona che non ha ancora: vede quale zona, non chi l'ha chiesta.",
             "unpkg serve la libreria della mappa all'avvio dell'app.",
             "Expo serve gli aggiornamenti dell'app.",
-            "Google AdMob e Strava, come detto sopra.",
+            "Strava, come detto sopra.",
           ],
         },
         "Un'immagine della tua corsa creata con «Condividi» si fa sul telefono ed esce solo dal foglio di condivisione, dove la mandi tu.",
@@ -385,7 +382,7 @@ const privacy: AboutDocument = {
           bullets: [
             "Per darti il servizio che chiedi (contratto): il tuo account, il tuo profilo, i percorsi che chiedi, e le corse, i preferiti, i commenti, le reazioni e i follow che salvi.",
             "Il nostro legittimo interesse a far funzionare MuW, a tenerla sicura e a migliorarla: i brevi registri del server, i conteggi che limitano gli scaricamenti delle mappe e gli eventi delle ricerche, che non dicono nulla di chi sei.",
-            "Il tuo consenso: il numero di telefono che scegli di aggiungere, il collegamento a Strava e la pubblicità dove il modulo di Google lo chiede. Puoi ritirare un consenso in qualsiasi momento; quello che è stato fatto prima resta lecito.",
+            "Il tuo consenso: il numero di telefono che scegli di aggiungere e il collegamento a Strava. Puoi ritirare un consenso in qualsiasi momento; quello che è stato fatto prima resta lecito.",
             "Un obbligo di legge, quando una legge ci chiede di conservare o di consegnare dei dati.",
           ],
         },

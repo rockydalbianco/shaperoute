@@ -821,3 +821,26 @@ main > section,
 .foot__link {
   color: var(--text-muted);
 }
+
+/* The support pages (support/), written by tools/make_support.mjs */
+
+.legal h3 {
+  margin-top: 26px;
+  font-size: 1.05rem;
+}
+
+.legal .support__mail {
+  margin-block: 4px;
+  color: var(--on-accent);
+  text-decoration: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.support__privacy {
+  margin-top: 40px;
+}
+
+.support__privacy a {
+  color: var(--text);
+}

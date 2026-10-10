@@ -217,11 +217,19 @@ le build vecchie, semplicemente non le raggiunge.
    sue credenziali):
 
    ```
-   npx eas-cli build --platform ios --profile production
+   npx eas-cli build --platform ios --profile production --auto-submit
    ```
 
    Il numero di build sale da solo (`autoIncrement`, le versioni stanno
-   su EAS).
+   su EAS). Con `--auto-submit`, a build finita EAS la carica su App
+   Store Connect, nell'app «MuW» (`submit.production.ios.ascAppId` in
+   `eas.json`, con la chiave API di App Store Connect salvata su EAS), e
+   dopo l'elaborazione di Apple compare in TestFlight. Senza quel profilo
+   la build si fa ma l'invio fallisce («Missing submit profile»); una
+   build già fatta si invia con
+   `npx eas-cli submit --platform ios --id ID-DELLA-BUILD`. `eas.json`
+   non entra nell'impronta, quindi il profilo `submit` non cambia il
+   runtime.
 3. **Un update per lo store**: prima su `preview` e provato sull'iPhone
    (A.6), poi la **stessa commit**, da un worktree pulito di `main`:
 
@@ -1166,7 +1174,7 @@ utente `caddy` e non entra in `/root`.
    cd /root/shaperoute
    git fetch origin main
    rm -rf /srv/getmuw-site.new && mkdir -p /srv/getmuw-site.new
-   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy | tar -x -C /srv/getmuw-site.new --strip-components=1
+   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy site/support | tar -x -C /srv/getmuw-site.new --strip-components=1
    chmod -R a+rX /srv/getmuw-site.new
    rm -rf /srv/getmuw-site.old
    if [ -d /srv/getmuw-site ]; then mv /srv/getmuw-site /srv/getmuw-site.old; fi

@@ -14,9 +14,10 @@ from route_engine.optimizer import GraphLoader, Plan
 from shaperoute_api import draw_examples
 from shaperoute_api.app import create_app
 from shaperoute_api.cities import CitySearch
-from shaperoute_api.draw_examples import Call, Drawn, draw_city
+from shaperoute_api.draw_examples import Call, Drawn, draw_city, draw_spot
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.route_store import RouteStore
+from shaperoute_api.water_spots import WaterSpot
 
 ROVERETO = {
     "name": "Rovereto",
@@ -138,3 +139,94 @@ def test_the_command_counts_the_cities_ready(
     assert "Rovereto: heart timeout (0 s)" in out
     assert "1 of 2 cities have their examples" in out
     assert "a-key-only-for-this-test" not in out
+
+
+LAKE = WaterSpot("Lago di Levico", (46.00869, 11.27722), 1500)
+
+
+def test_a_point_on_the_water_asks_the_eight_shapes_as_a_phone() -> None:
+    bodies: list[dict[str, Any]] = []
+
+    def call(method: str, path: str, body: dict[str, Any] | None) -> tuple[int, Any]:
+        assert (method, path) == ("POST", "/route-jobs") and body is not None
+        bodies.append(body)
+        if body["shape"] == "horse":
+            return 422, {"error": {"code": "shape_not_drawable"}}
+        return 202, {"job_id": "j", "status": "done"}
+
+    drawn = draw_spot(LAKE, call, sleep=lambda s: None)
+    assert drawn.label == "Lago di Levico (46.0087,11.2772)"
+    # The app's DRAW_ORDER, the point's distance, on the water.
+    assert [b["shape"] for b in bodies] == [
+        "circle",
+        "heart",
+        "star",
+        "moon",
+        "horse",
+        "snail",
+        "dog_head",
+        "rabbit_head",
+    ]
+    assert all(b["distance_m"] == 1500 for b in bodies)
+    assert all(b["start"] == [46.00869, 11.27722] for b in bodies)
+    assert all(b["activity"] == "paddling" for b in bodies)
+    # The shapes in pieces with the pen up, as the app asks them.
+    assert [b["shape"] for b in bodies if b.get("pen_up")] == [
+        "dog_head",
+        "rabbit_head",
+    ]
+    assert drawn.shapes["horse"] == "shape_not_drawable"
+    assert not drawn.ready
+
+
+def test_a_point_without_water_on_the_api_stops_at_its_first_shape() -> None:
+    asked: list[str] = []
+
+    def call(method: str, path: str, body: dict[str, Any] | None) -> tuple[int, Any]:
+        assert body is not None
+        asked.append(body["shape"])
+        return 503, {"error": {"code": "map_data_unavailable"}}
+
+    drawn = draw_spot(LAKE, call, sleep=lambda s: None)
+    assert asked == ["circle"]
+    assert drawn.shapes == {"circle": "map_data_unavailable"}
+
+
+def test_the_points_on_the_water_are_one_a_square_and_by_name(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spots = [
+        WaterSpot("Lago di Levico", (46.00869, 11.27722), 2000),
+        WaterSpot("Lago di Levico", (46.008691, 11.277221), 2000),
+        WaterSpot("Lago di Caldonazzo", (46.0213, 11.2442), 2000),
+    ]
+    monkeypatch.setattr(draw_examples, "read_spots", lambda: spots)
+    assert draw_examples.water_spots() == [spots[0], spots[2]]
+    assert draw_examples.water_spots(["lago di caldonazzo"]) == [spots[2]]
+
+
+def test_the_command_draws_cities_and_points_on_the_water(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(draw_examples, "http_call", lambda api, key: None)
+    monkeypatch.setattr(draw_examples, "read_spots", lambda: [LAKE])
+    monkeypatch.setattr(
+        draw_examples,
+        "draw_city",
+        lambda city, call: Drawn(city, label=city, shapes={"heart": "kept"}),
+    )
+    monkeypatch.setattr(
+        draw_examples,
+        "draw_spot",
+        lambda spot, call: Drawn(spot.name, label=spot.name, shapes={"moon": "drawn"}),
+    )
+    assert draw_examples.main(["--api", "http://api", "Rome", "--water"]) == 0
+    assert capsys.readouterr().out.splitlines() == [
+        "Rome: heart kept (0 s)",
+        "Lago di Levico: moon drawn (0 s)",
+        "1 of 1 cities have their examples",
+        "1 of 1 points on the water have their shapes",
+    ]
+    # A name that is not in the lists: nothing to draw.
+    with pytest.raises(SystemExit):
+        draw_examples.main(["--api", "http://api", "--water-name", "Garda"])

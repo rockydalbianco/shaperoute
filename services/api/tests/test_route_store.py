@@ -14,6 +14,7 @@ from shaperoute_api.images import ImageRequest
 from shaperoute_api.route_store import (
     CENTRES_FILE,
     KEEP_S,
+    WATER_FOLDER,
     RouteStore,
     cell,
     engine_fingerprint,
@@ -242,3 +243,64 @@ def test_a_folder_that_cannot_be_written_keeps_nothing(tmp_path: Path) -> None:
     kept.learn([ROVERETO])  # known until the API stops, not written
     assert kept.put(HEART, RESULT) is False
     assert kept.get(HEART) is None
+
+
+# A point of the app's list of lakes (TASK-246 part B).
+LEVICO_LAKE = (46.00869, 11.27722)
+ON_THE_LAKE = RouteRequest(
+    start=LEVICO_LAKE,
+    shape="dog_head",
+    distance_m=2000,
+    activity="paddling",
+    pen_up=True,
+)
+PADDLED = RouteResult(
+    points=[LEVICO_LAKE, (46.0095, 11.2790), LEVICO_LAKE],
+    distance_m=2010.0,
+    similarity=0.95,
+    shape="dog_head",
+    walks=[(1, 2)],
+    centre=(46.0091, 11.2781),
+    rotation_deg=30.0,
+)
+
+
+def test_a_route_from_a_point_on_the_water_is_kept_apart(tmp_path: Path) -> None:
+    kept = store(tmp_path, water=[LEVICO_LAKE])
+    assert kept.water_points == 1
+    # Nothing learned: the point is a centre from the start.
+    assert kept.put(ON_THE_LAKE, PADDLED) is True
+    assert kept.get(ON_THE_LAKE) == PADDLED
+    assert store(tmp_path, water=[LEVICO_LAKE]).get(ON_THE_LAKE) == PADDLED
+    # In its own folder, never among the city centres.
+    assert len(kept) == 0 and kept.kept_on_water() == 1
+    assert len(list((tmp_path / WATER_FOLDER).glob("*.json"))) == 1
+    assert not (tmp_path / CENTRES_FILE).exists()
+    # Ten metres away is someone's position: not kept.
+    away = replace(ON_THE_LAKE, start=(46.0089, 11.2774))
+    assert kept.put(away, PADDLED) is False
+    # Nor without the lists.
+    assert store(tmp_path / "other").put(ON_THE_LAKE, PADDLED) is False
+
+
+def test_the_shapes_on_the_water_never_push_a_city_out(tmp_path: Path) -> None:
+    points = [(46.0 + i / 100, 11.0) for i in range(4)]
+    kept = store(tmp_path, max_routes=1, max_water_routes=2, water=points)
+    kept.learn([ROVERETO])
+    assert kept.put(HEART, RESULT) is True
+    for age, point in enumerate(points):
+        assert kept.put(replace(ON_THE_LAKE, start=point), PADDLED) is True
+        for path in (tmp_path / WATER_FOLDER).glob("*.json"):
+            if os.stat(path).st_mtime > 100:
+                os.utime(path, (age + 1, age + 1))
+    assert kept.get(HEART) == RESULT
+    assert kept.kept_on_water() == 2
+    assert kept.get(replace(ON_THE_LAKE, start=points[0])) is None
+    assert kept.get(replace(ON_THE_LAKE, start=points[3])) == PADDLED
+
+
+def test_a_shape_moved_on_the_water_is_the_users_own(tmp_path: Path) -> None:
+    kept = store(tmp_path, water=[LEVICO_LAKE])
+    moved = replace(ON_THE_LAKE, near=(46.0100, 11.2800))
+    assert kept.put(moved, PADDLED) is False
+    assert kept.get(moved) is None

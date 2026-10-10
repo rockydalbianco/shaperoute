@@ -100,6 +100,20 @@ le pagine con l'app e fallisce finché non sono uguali (la CI del sito gira
 anche quando cambiano i testi dell'app). Il piede della pagina
 principale porta a `privacy/`.
 
+## La pagina di assistenza
+
+`getmuw.app/support/` (inglese) e `support/it/`, `de/`, `fr/`, `es/`: come
+scriverci (`muw2610@gmail.com`, lo stesso indirizzo della privacy) e tre
+domande frequenti, per il Support URL dell'App Store. I testi stanno in
+`site/tools/support_text.mjs`; dopo un cambio:
+
+```bash
+node site/tools/make_support.mjs
+```
+
+Le risposte nominano i tasti come li mostra l'app in ogni lingua (un test
+lo controlla): se l'app cambia un nome, cambia anche qui.
+
 ## Online
 
 Il sito è su **https://getmuw.app** dal 2026-10-08, servito dal Caddy del

@@ -11,6 +11,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { BlockedPeople } from "../social/BlockedPeople";
+import { useBlocksVersion } from "../social/blockedNow";
 import { DrawingsGrid } from "../social/DrawingsGrid";
 import { FollowLists } from "../social/FollowLists";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
@@ -46,9 +48,12 @@ type Props = {
  * number, the way to «Settings», and the drawings it made public
  * (TASK-117), as the others see them. A tap on the circle opens the ways
  * to change the picture under it, as the row of «Settings» (TASK-207).
+ * Under «Settings», «Blocked people», to unblock (TASK-121); after a block
+ * the lists of who follows are read again: a block ends every follow.
  */
 export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Props) {
   const photo = useProfilePhoto();
+  const blocks = useBlocksVersion();
   const [photoOpen, setPhotoOpen] = useState(false);
   const busyText = photoBusyText(photo.busy);
   return (
@@ -84,7 +89,8 @@ export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Pro
           <Text style={styles.editText}>{t("Edit profile")}</Text>
         </Pressable>
       </View>
-      <FollowLists />
+      {/* Built again at every block and unblock: it reads its lists anew. */}
+      <FollowLists key={blocks} />
       <View style={styles.tiles}>
         <Tile
           emoji={SECTION_EMOJI.favorites}
@@ -111,6 +117,7 @@ export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Pro
         <Text style={styles.rowText}>{t("Settings")}</Text>
         <Text style={styles.rowArrow}>›</Text>
       </Pressable>
+      <BlockedPeople />
       <DrawingsGrid publicId={user.public_id ?? null} own />
     </View>
   );

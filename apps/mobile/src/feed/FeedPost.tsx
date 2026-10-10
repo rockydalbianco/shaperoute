@@ -15,6 +15,9 @@ import { shapeName } from "../i18n/shapeNames";
 import { bearingOf } from "../map/turnedMap";
 import { durationLabel } from "../screens/FinishScreen";
 import { SPORTS } from "../settings/sport";
+import { useBlockedNow } from "../social/blockedNow";
+import { useFollowsDoor } from "../social/followsDoor";
+import { ReportMenu } from "../social/ReportMenu";
 import {
   color,
   fontSize,
@@ -27,6 +30,7 @@ import {
 import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { useFeedMap } from "./FeedMaps";
+import { isShown } from "./feedPosts";
 import type { SamplePost } from "./sampleFeed";
 import { turnedLine } from "./turnedLine";
 
@@ -101,12 +105,17 @@ export function postFacts(post: SamplePost): string {
  * same, in pieces when its shape is (TASK-228). A figure the engine turned
  * is drawn turned back, line and map, so it reads upright (TASK-232). A
  * drawing a member published is shown the same (TASK-118): its tap opens
- * it whole, with its reactions and comments, as from a profile.
+ * it whole, with its reactions and comments, as from a profile. On a
+ * member's drawing, but not on one's own, a «…» reports the drawing or
+ * blocks its author (TASK-121): once blocked, the card goes away at once.
  */
 export function FeedPost({ post, width, onOpen }: Props) {
   // The line of facts is written again when «Settings» changes the units
   // (TASK-182).
   useUnits();
+  const { apiUrl, account } = useFollowsDoor();
+  const author = isShown(post) ? post.drawing.author : null;
+  const blocked = useBlockedNow(author === null ? null : author.public_id);
   const height = drawingHeight(width);
   const bearing = bearingOf(post.rotation_deg);
   const segments = useMemo(
@@ -140,6 +149,24 @@ export function FeedPost({ post, width, onOpen }: Props) {
       onOpen?.();
     }
   }
+  if (blocked) {
+    return null;
+  }
+  const { state } = account;
+  const menu =
+    isShown(post) &&
+    author !== null &&
+    apiUrl !== null &&
+    state.status === "signedIn" &&
+    state.session.user.public_id !== author.public_id ? (
+      <ReportMenu
+        apiUrl={apiUrl}
+        token={state.session.token}
+        target={{ kind: "drawing", id: post.drawing.id }}
+        person={author}
+        onSessionEnded={account.sessionEnded}
+      />
+    ) : null;
   // A member's run may have no place found (TASK-118): then none is read.
   const label =
     city === ""
@@ -164,6 +191,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
           <Text style={styles.user}>{post.user}</Text>
           {city !== "" && <Text style={styles.city}>{city}</Text>}
         </View>
+        {menu}
       </View>
       <View style={[styles.drawing, { width, height }]} testID="feed-drawing">
         {map !== null && (

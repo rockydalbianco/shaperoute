@@ -13444,3 +13444,40 @@ d'accordo con il coordinatore.
 **Alternative scartate**: un `kind` nuovo (`better_taken`): un modello e
 un conteggio in più nell'API per la stessa cosa, un «Try»; uno spinner
 nel pulsante: il pulsante non resta sullo schermo mentre si calcola.
+
+## ADR-0225, aggiunta — La voce parla a telefono bloccato, col silenzioso, e abbassa la musica
+**Stato**: Attiva · 2026-10-10 · **scelte dell'utente** del 2026-10-10 (la
+dipendenza `expo-audio`, la musica che si abbassa, la voce anche col
+silenzioso); il modo deciso dall'agente su delega dell'utente (TASK-261
+parte B). Aggiunta ad ADR-0225, senza numero nuovo.
+
+**Decisione**:
+
+1. Durante una corsa (con e senza percorso) la sessione audio di iOS è
+   `playback` con `duckOthers`: la voce parla a telefono bloccato (con
+   `UIBackgroundModes` `audio`) e con l'interruttore silenzioso, e la
+   musica di un'altra app si abbassa mentre parla. Fuori dalla corsa
+   torna `ambient` mescolabile.
+2. La sessione si attiva quando la sintesi vocale parla e l'app la
+   rilascia quando la voce non ha più parole (`isSpeakingAsync` ogni
+   secondo, solo mentre parla): iOS altrimenti terrebbe la musica bassa
+   per tutta la corsa. La musica torna su al più un secondo dopo
+   l'ultima parola.
+3. Il modulo nativo di expo-audio si chiede con
+   `requireOptionalNativeModule`: un'app costruita senza parla come
+   prima. Solo iOS; Android come prima.
+4. `NSMicrophoneUsageDescription` c'è, con un testo che dice che l'app
+   non registra: expo-audio porta con sé il codice per registrare, e per
+   un pacchetto così senza la chiave Apple segnala ITMS-90683 e può
+   rifiutarlo.
+
+**Alternative scartate**: `useApplicationAudioSession: false` di
+expo-speech (una sessione del sistema per la sola voce, senza dipendenze):
+Apple non dice se parla a telefono bloccato e col silenzioso, e non si
+prova senza un iPhone; `onDone` di `Speech.speak` per sapere quando la voce
+ha finito: cambia ogni chiamata a `Speech.speak` (e i test che la
+guardano), e un `onDone` che non arriva lascerebbe la musica bassa;
+chiedere se parla ancora si corregge da solo al giro dopo; `enableBackgroundPlayback`
+del plugin: su Android aggiunge un servizio e due permessi che non
+servono.
+

@@ -157,6 +157,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-268 — Su «Data» «Map» e «Pause» restano sullo schermo**
+  (aggiunta ad ADR-0137; dalla corsa su strada dell'utente del
+  2026-10-09). Branch `fix/TASK-268-run-data-page`. Con l'indicazione in
+  alto la pagina «Data», che non scorreva, spingeva pulsanti e «Map» sotto
+  il bordo. Ora scorrono solo i numeri, fra l'indicazione e i pulsanti
+  fissi. Solo app, nessun testo nuovo. La voce che si ferma a telefono
+  bloccato o con Spotify davanti è TASK-261 parte B.
+  File: `tasks/TASK-268.md`, «File toccati».
 - **TASK-246 parte B — Il server tiene le figure «Paddle» dei laghi e
   delle spiagge** (aggiunta ad ADR-0211; via del coordinatore il
   2026-10-09). Branch `feat/TASK-246-b-water-shapes-kept`. L'API legge

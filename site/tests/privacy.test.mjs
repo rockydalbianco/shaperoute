@@ -51,19 +51,25 @@ test("every page points at files that exist and loads nothing from elsewhere", (
   }
 });
 
-test("the policy is final: its day, no draft notice, nothing left to fill (TASK-237 D)", () => {
+test("the policy is final: its day, no draft notice, nothing left to fill (TASK-237 D, TASK-267 B)", () => {
   const days = {
-    "privacy/index.html": "Last updated: 8 October 2026",
-    "privacy/it/index.html": "Ultimo aggiornamento: 8 ottobre 2026",
-    "privacy/de/index.html": "Zuletzt aktualisiert: 8. Oktober 2026",
-    "privacy/fr/index.html": "Dernière mise à jour : 8 octobre 2026",
-    "privacy/es/index.html": "Última actualización: 8 de octubre de 2026",
+    "privacy/index.html": "Last updated: 10 October 2026",
+    "privacy/it/index.html": "Ultimo aggiornamento: 10 ottobre 2026",
+    "privacy/de/index.html": "Zuletzt aktualisiert: 10. Oktober 2026",
+    "privacy/fr/index.html": "Dernière mise à jour : 10 octobre 2026",
+    "privacy/es/index.html": "Última actualización: 10 de octubre de 2026",
   };
   for (const [path, html] of Object.entries(pages)) {
     assert.ok(html.includes(`<p class="legal__updated">${days[path]}</p>`), path);
     assert.doesNotMatch(html, /legal__draft|class="placeholder"/, path);
     assert.ok(html.includes("Luca Pallaoro") && html.includes("muw2610@gmail.com"), path);
     assert.doesNotMatch(html.replace(/<!--[\s\S]*?-->/, ""), /\[[^\]]+\]/, path);
+  }
+});
+
+test("the policy says MuW has no ads: no AdMob, no ad network (TASK-267 B)", () => {
+  for (const [path, html] of Object.entries(pages)) {
+    assert.doesNotMatch(html, /AdMob/i, path);
   }
 });
 

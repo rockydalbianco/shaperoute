@@ -1,7 +1,8 @@
 # TASK-261 — Registrare la corsa con l'app in secondo piano
 
-**Stato**: Done per la parte A (#441, 2026-10-08) · parte B In corso
-(branch `feat/TASK-261-b-voice-background`)
+**Stato**: Done per la parte A (#441, 2026-10-08) e per la parte B
+(#475, `d10df4a5`, 2026-10-10); resta la prova sull'iPhone con una build
+nativa nuova
 **Fase**: 4 · **Branch**: `feat/TASK-261-background-gps` (cancellato dopo
 il merge)
 

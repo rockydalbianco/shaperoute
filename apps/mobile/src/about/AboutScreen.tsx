@@ -10,14 +10,19 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { WatchTourButton } from "../tour/GuideRow";
 import { AboutPage } from "./AboutPage";
 import { aboutName } from "./AboutRows";
 import type { AboutId } from "./documents";
 
 type Props = {
   id: AboutId;
-  /** Back to «Settings», as it was left. */
+  /** Back to the page it was opened from, as it was left. */
   onBack: () => void;
+  /** Its name over it, when not its row's in «Settings»: «Guide». */
+  name?: string;
+  /** «Watch the tour» over the text (TASK-266); none when absent. */
+  onTour?: () => void;
 };
 
 /**
@@ -26,7 +31,7 @@ type Props = {
  * it as it was left, the rows near the foot still on screen at the way
  * back: one scroll for both would open the text at its end.
  */
-export function AboutScreen({ id, onBack }: Props) {
+export function AboutScreen({ id, onBack, name, onTour }: Props) {
   const insets = useSafeAreaInsets();
   return (
     <ScrollView
@@ -49,9 +54,10 @@ export function AboutScreen({ id, onBack }: Props) {
           <Text style={styles.backText}>←</Text>
         </Pressable>
         <Text style={styles.title} accessibilityRole="header">
-          {t(aboutName(id))}
+          {name ?? t(aboutName(id))}
         </Text>
       </View>
+      {onTour && <WatchTourButton onWatch={onTour} />}
       <AboutPage id={id} />
     </ScrollView>
   );

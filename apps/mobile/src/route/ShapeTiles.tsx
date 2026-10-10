@@ -1,6 +1,6 @@
 import { type Shape, SHAPES } from "@shaperoute/shared-types";
 import { useEffect, useRef } from "react";
-import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import {
   color,
@@ -10,6 +10,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useTourPart } from "../tour/tourParts";
+import { TOUR_PART } from "../tour/tourSteps";
 import { shapeName } from "./shapeWords";
 
 /**
@@ -50,6 +52,8 @@ type Props = {
  */
 export function ShapeTiles({ chosen, onPick }: Props) {
   const row = useRef<ScrollView>(null);
+  // Shown by the tour of the first opening (TASK-266).
+  const tourRef = useTourPart(TOUR_PART.shapes);
   const places = useRef(new Map<Shape, number>());
 
   useEffect(() => {
@@ -60,36 +64,40 @@ export function ShapeTiles({ chosen, onPick }: Props) {
   }, [chosen]);
 
   return (
-    <ScrollView
-      ref={row}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
-      testID="shape-tiles"
-    >
-      {SHAPES.map((shape) => {
-        const selected = shape === chosen;
-        return (
-          <Pressable
-            key={shape}
-            style={[styles.tile, selected && styles.selected]}
-            onPress={() => onPick(shapeName(shape))}
-            onLayout={(event) => places.current.set(shape, event.nativeEvent.layout.x)}
-            accessibilityRole="button"
-            accessibilityLabel={shapeName(shape)}
-            accessibilityState={{ selected }}
-          >
-            <Text style={styles.sign}>{SHAPE_SIGNS[shape]}</Text>
-            <Text
-              style={[styles.name, selected && styles.selectedName]}
-              numberOfLines={2}
+    <View ref={tourRef} collapsable={false}>
+      <ScrollView
+        ref={row}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
+        testID="shape-tiles"
+      >
+        {SHAPES.map((shape) => {
+          const selected = shape === chosen;
+          return (
+            <Pressable
+              key={shape}
+              style={[styles.tile, selected && styles.selected]}
+              onPress={() => onPick(shapeName(shape))}
+              onLayout={(event) =>
+                places.current.set(shape, event.nativeEvent.layout.x)
+              }
+              accessibilityRole="button"
+              accessibilityLabel={shapeName(shape)}
+              accessibilityState={{ selected }}
             >
-              {shapeName(shape)}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
+              <Text style={styles.sign}>{SHAPE_SIGNS[shape]}</Text>
+              <Text
+                style={[styles.name, selected && styles.selectedName]}
+                numberOfLines={2}
+              >
+                {shapeName(shape)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 }
 

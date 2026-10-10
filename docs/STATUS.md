@@ -157,6 +157,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-261 parte B — La voce a telefono bloccato** (aggiunta ad
+  ADR-0225; scelte dell'utente del 2026-10-10). Branch
+  `feat/TASK-261-b-voice-background`. Durante la corsa la voce parla a
+  telefono bloccato e col silenzioso e abbassa Spotify mentre parla
+  (`runAudio.ts`, dipendenza nuova `expo-audio`, `UIBackgroundModes`
+  `audio`). PR #475. Serve una build nativa nuova (obiettivo: build 5);
+  il testo nuovo del microfono approvato dall'utente il 2026-10-10.
+  File: `tasks/TASK-261.md`, «File toccati (parte B)».
+
 - **TASK-269 — «Paddle»: laghi e mare vicino a dove si vive, con
   «Lakes» / «Sea»** (`feat/TASK-269-paddle-places-near-home`, ADR-0239;
   richiesta dell'utente del 2026-10-09, il come deciso dall'agente su
@@ -164,7 +173,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   telefono dalle attività, con «Show more» e la riga «Suggested near …»;
   due chip filtrano laghi o mare; le forme già sul telefono seguono la
   stessa zona. Solo app, non nella 1.0. Testi approvati dall'utente il
-  2026-10-10; manca la frase della privacy, dopo «451 in main».
+  2026-10-10; la frase della privacy sulla zona di casa è nell'app e in
+  `site/privacy/` (dopo «451 in main»). Dopo il merge: copia del sito
+  (F.14) e pubblicazione del coordinatore.
   File: `tasks/TASK-269.md`, «File toccati».
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
@@ -233,6 +244,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `DEPLOY.md`, F.14. Il ritorno da Strava resta su `sslip.io`.
   `tasks/TASK-265.md`. **Done** il 2026-10-08: l'app di `preview` chiama
   `https://api.getmuw.app` dal gruppo `a39c9509` (vedi «Completato»).
+
+- **TASK-262 — Le notifiche inviate davvero** (ADR-0226; scelte
+  dell'utente del 2026-10-07). **Parte A, le push**, branch
+  `feat/TASK-262-a-push`: tabella `push_tokens` (migrazione `0021` al
+  merge), `PUT`/`DELETE /me/push-token`, invio con Expo fuori dalla
+  richiesta, token morti cancellati; nell'app `expo-notifications`
+  (dipendenza nuova), il permesso solo all'interruttore, il token una
+  volta per telefono, il tocco che apre disegno o profilo; i ganci in
+  `follows.py`, `reactions.py`, `comments.py`, `drawings.py` e i blocchi
+  di TASK-121. Testi approvati dall'utente nelle cinque lingue. Le push
+  si vedono solo con una build nativa. Parti B (email, Resend) e C
+  (rubrica, con un nuovo sì) Todo. Da dove riprendere:
+  `tasks/TASK-262.md`.
 - **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** in `main`
   il 2026-10-08 (PR #446, merge `9dcacbf4`; chiesta dall'utente): profilo `production` in `eas.json`,
   canale `production`. Solo la build dello store ha il runtime dal
@@ -663,6 +687,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `7a9506a`: il telefono disegna da sé. **Resta D**, la prova
   sull'iPhone, che è dell'utente e fissa i limiti di distanza. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
+- **TASK-266 — Il tour del primo avvio e la guida in «Profile»**
+  (ADR-0235; richiesta dell'utente del 2026-10-09, che fra tre proposte ha
+  scelto il tour sulle schermate vere). Branch
+  `feat/TASK-266-first-run-tour`. Dopo l'animazione all'avvio, la prima
+  volta, otto passi sopra l'app vera: una parte nella luce, il resto
+  scuro; «Skip» conta 5 secondi prima di potersi toccare. «Guide» sulla
+  prima pagina di «Profile», anche senza account, con «Watch the tour».
+  Solo app, nessun server. **Aspetta**: il sì dell'utente sui testi
+  (cinque lingue) e la coda dei merge. `tasks/TASK-266.md`.
 
 ## Completato
 

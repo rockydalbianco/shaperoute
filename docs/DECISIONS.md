@@ -13416,6 +13416,64 @@ percorso il passo al km, segnalandolo. L'utente ha scelto la velocità.
 percorso (due modi di mostrare la stessa cosa); cambiare anche la voce
 (non chiesto: una scelta dell'utente).
 
+## ADR-0235 — Il tour del primo avvio sulle schermate vere, e «Guide» in «Profile»
+**Stato**: Attiva · 2026-10-09 · **scelta dell'utente** (un tutorial alla
+prima apertura, saltabile ma non nei primi 5 secondi; una guida d'uso;
+fra tre proposte, il tour sulle schermate vere); il come è **deciso
+dall'agente su delega dell'utente** (TASK-266).
+
+**Contesto**: l'app non mostrava a chi la apre la prima volta come si
+usa. «How MuW works» (TASK-184) c'era, ma solo da «Settings», quindi solo
+con un account.
+
+**Decisione**:
+
+1. Dopo l'animazione all'avvio, alla prima apertura, un tour sopra l'app
+   (`src/tour/`, montato in `intro/Root.tsx`): il resto dello schermo
+   scuro, una parte vera nella luce, poche parole accanto, «Next». Otto
+   passi, in ordine: benvenuto, «START», le forme, la distanza, il fondo
+   di «Draw» con «Draw route», sport e «Profile», la pagina «Explore», la
+   pagina «Feed»; finisce su «Draw». La corsa non ha un passo: non si
+   mostra senza un percorso disegnato, la dice il passo di «Draw route».
+2. **Le parti si trovano per nome**: le schermate danno al tour le loro
+   viste (`TourPartView`, `tourPart`, `useTourPart`), il tour le misura
+   (`measureInWindow`) e le unisce. Una parte sotto il bordo di «Draw» è
+   portata in vista (`TourScrollView`); una pagina si cambia come
+   toccandone il nome (`useTourPager`). Il tour rimisura ogni 150 ms
+   finché le parti sono tutte sullo schermo e ferme, al più 1,5 s: una
+   pagina che entra scorrendo non è misurata a metà. Una parte che non
+   c'è lascia le parole al centro, senza luce. Niente librerie nuove.
+3. **«Skip»** c'è da subito ma per `SKIP_LOCK_S` = 5 secondi non si
+   tocca e conta alla rovescia («Skip (5)»); il conto è del tour, non del
+   passo, e si ferma mentre il telefono chiede qualcosa sopra l'app
+   (`AppState` non attivo: la posizione, alla prima apertura). «Next» si
+   tocca subito.
+4. Visto fino in fondo o saltato, il telefono lo ricorda in
+   `tour-seen.json` (come l'avviso di «Paddle», ADR-0169). Senza le
+   pagine sullo schermo (una corsa lasciata aperta) il tour non parte e
+   non conta come visto.
+5. **«Guide»** sulla prima pagina di «Profile», con e senza account (con
+   un account subito sotto «Settings», su richiesta dell'utente del
+   2026-10-10; senza, in fondo), apre «How MuW works» (il testo di «Help», che non cambia) con sopra
+   «Watch the tour»: chiude «Profile» e rifà il tour, con «Skip» subito.
+   Anche «Help» in «Settings» ha «Watch the tour».
+6. Il buio è un colore fisso nuovo, `scrim`, con opacità 0,82, e il bordo
+   della luce `onScrim`: scuro nei due toni di ADR-0231, mai giallo (il
+   giallo è del percorso).
+7. I testi sono in `tour/tourTexts.ts` nelle cinque lingue, non in
+   `i18n/`; i nomi dei pulsanti che citano sono quelli di `i18n/`, e un
+   test lo controlla. Con «Paddle» il passo delle forme ha il suo testo.
+
+**Alternative scartate**: animazioni disegnate o immagini delle schermate
+(proposte, l'utente ha scelto il tour vero); una libreria di tour (una
+dipendenza per poche centinaia di righe); il conto alla rovescia per ogni
+passo (5 secondi a passo sono un tutorial lungo, non breve).
+
+**Conseguenze**: chi aggiorna l'app vede il tour una volta, come chi la
+scarica (nessun modo di distinguerli senza un dato in più). Una parte
+nuova da mostrare è un nome in `TOUR_PART`, una vista con quel nome e un
+passo in `TOUR_STEPS`.
+
 ## ADR-0197, aggiunta — Il «Try» della riga si conta come `better_distance`
 **Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
 (TASK-234 parte C), dentro la **scelta dell'utente** del 2026-10-08
@@ -13572,6 +13630,118 @@ passa da `shown_sql`) e le notifiche vecchie.
 con la chiave e un indice su `blocked_id`: trascurabile ai numeri di oggi.
 Chi aggiunge un endpoint che mostra persone o contenuti di altri deve
 aggiungere `apart_sql`.
+
+## ADR-0225, aggiunta — La voce parla a telefono bloccato, col silenzioso, e abbassa la musica
+**Stato**: Attiva · 2026-10-10 · **scelte dell'utente** del 2026-10-10 (la
+dipendenza `expo-audio`, la musica che si abbassa, la voce anche col
+silenzioso); il modo deciso dall'agente su delega dell'utente (TASK-261
+parte B). Aggiunta ad ADR-0225, senza numero nuovo.
+
+**Decisione**:
+
+1. Durante una corsa (con e senza percorso) la sessione audio di iOS è
+   `playback` con `duckOthers`: la voce parla a telefono bloccato (con
+   `UIBackgroundModes` `audio`) e con l'interruttore silenzioso, e la
+   musica di un'altra app si abbassa mentre parla. Fuori dalla corsa
+   torna `ambient` mescolabile.
+2. La sessione si attiva quando la sintesi vocale parla e l'app la
+   rilascia quando la voce non ha più parole (`isSpeakingAsync` ogni
+   secondo, solo mentre parla): iOS altrimenti terrebbe la musica bassa
+   per tutta la corsa. La musica torna su al più un secondo dopo
+   l'ultima parola.
+3. Il modulo nativo di expo-audio si chiede con
+   `requireOptionalNativeModule`: un'app costruita senza parla come
+   prima. Solo iOS; Android come prima.
+4. `NSMicrophoneUsageDescription` c'è, con un testo che dice che l'app
+   non registra: expo-audio porta con sé il codice per registrare, e per
+   un pacchetto così senza la chiave Apple segnala ITMS-90683 e può
+   rifiutarlo.
+
+**Alternative scartate**: `useApplicationAudioSession: false` di
+expo-speech (una sessione del sistema per la sola voce, senza dipendenze):
+Apple non dice se parla a telefono bloccato e col silenzioso, e non si
+prova senza un iPhone; `onDone` di `Speech.speak` per sapere quando la voce
+ha finito: cambia ogni chiamata a `Speech.speak` (e i test che la
+guardano), e un `onDone` che non arriva lascerebbe la musica bassa;
+chiedere se parla ancora si corregge da solo al giro dopo; `enableBackgroundPlayback`
+del plugin: su Android aggiunge un servizio e due permessi che non
+servono.
+
+## ADR-0226 — Le notifiche push partono: Expo, un token per telefono, il permesso solo dall'interruttore
+**Stato**: Attiva · 2026-10-08 · i canali, il loro ordine, Expo, Resend
+e la lista di cosa si notifica sono scelte dell'utente del 2026-10-07; il
+resto deciso dall'agente su delega dell'utente (TASK-262, parte A).
+
+**Contesto**: TASK-185 (ADR-0206) ha messo in «Settings» due interruttori
+che non mandavano niente. L'utente ha scelto tre parti: A le push con
+`expo-notifications` e il servizio push di Expo, B l'email con Resend, C
+gli amici dalla rubrica; cinque notizie, le stesse per ogni canale: una
+richiesta di follow, un nuovo follower, una reazione, un commento, un tag.
+
+**Decisione** (parte A):
+
+1. **Il servizio push di Expo**, chiamato dall'API con `urllib` come
+   Strava (`expo_push.py`): nessuna dipendenza Python nuova, nessun
+   certificato Apple o chiave Firebase sul server (li tiene EAS). Niente
+   token di accesso di Expo finché la «enhanced push security» è spenta.
+2. **Una tabella `push_tokens`, una riga per token**, con account,
+   piattaforma, lingua e data. Il token è la chiave: un telefono è
+   dell'ultimo account che l'ha mandato, così chi esce e lascia il
+   telefono a un altro non riceve le sue notifiche.
+3. **L'invio fuori dalla richiesta, la lettura dentro**: la richiesta che
+   scrive l'evento legge con una query chi avvisare (interruttore acceso,
+   non chi ha agito, nessun blocco, il disegno visto) e passa a un thread
+   solo la rete. Una richiesta che non avvisa nessuno non costa thread né
+   rete; un errore non cambia mai la risposta. Le ricevute di Expo si
+   leggono 15 minuti dopo; un token `DeviceNotRegistered` si cancella.
+4. **Lo stesso evento al più una volta al giorno**, in memoria: una
+   richiesta rifatta o una reazione cambiata non notificano di nuovo; ogni
+   commento sì.
+5. **«Un nuovo follower» è la richiesta accettata**, mandata a chi aveva
+   chiesto: ogni follow passa da una richiesta (ADR-0173), e chi accetta
+   lo sa già. Da confermare con l'utente insieme ai testi.
+6. **La lingua delle notifiche la manda l'app con il token**: l'API non
+   la sapeva (ADR-0172, la lingua sta sul telefono). Senza, inglese.
+7. **Il permesso del telefono solo all'accensione di «Push
+   notifications»**, mai all'avvio; negato, l'interruttore resta spento
+   con «Open Settings». L'app manda il token **una volta per telefono**
+   (ricorda nel portachiavi token, account e lingua), lo ritira allo
+   spegnimento e all'uscita (prima di `DELETE /session`).
+8. **Il tocco apre il disegno o il profilo** con le porte che `Profile`
+   ha già; `open` dei disegni vuole solo l'id.
+9. **I ganci** nei moduli degli eventi (`follows.py`, `reactions.py`,
+   `comments.py`, `drawings.py` per i tag: il tag si scrive lì, non in
+   `activities.py`) sono entrati dopo TASK-121, che tocca gli stessi file
+   (condizione del coordinatore), con il controllo dei blocchi sulla sua
+   tabella (`follows.apart_sql`). Un tag si notifica solo a chi è taggato
+   per la prima volta in quel disegno: i taggati di prima si leggono prima
+   del salvataggio.
+
+**Alternative scartate**:
+
+- *APNs e FCM direttamente*: certificati e chiavi da tenere sul server, e
+  due protocolli; Expo li nasconde, ed EAS ha già le credenziali.
+- *L'SDK Python di Expo (`exponent_server_sdk`)*: una dipendenza per due
+  POST.
+- *Il token legato alla sessione*: più preciso all'uscita senza rete, ma
+  una migrazione su `sessions` e un'API più larga; accettato il caso raro
+  (il token resta finché un altro entra o Expo lo dice morto).
+- *Chiedere il permesso all'avvio*: contro la regola di TASK-185.
+- *Una coda nel database per gli invii*: niente perso a un riavvio, ma
+  un worker e una tabella in più per notifiche che possono perdersi.
+
+**Conseguenze**:
+
+- Il server va aggiornato (migrazione `push_tokens`) prima che l'app
+  pubblicata mandi i token: con l'API di prima il `PUT` è `404` e l'app
+  non dice niente.
+- Le push si vedono solo in una **build dell'app**: Expo Go non le riceve
+  dall'SDK 53.
+- Il token e il testo della notifica (con l'inizio di un commento) vanno
+  a Expo e da lì ad Apple o a Google: lo dice la bozza della privacy.
+- Seguiti: la parte B (email, Resend, la lingua delle email), la parte C
+  (rubrica), il token di accesso di Expo se si accende la «enhanced push
+  security», ritentare gli invii falliti.
 
 ## ADR-0239 — «Paddle»: i posti suggeriti dalla zona di casa, calcolata sul telefono, e il filtro «Lakes» / «Sea»
 **Stato**: Attiva · 2026-10-10 · richiesta dell'utente del 2026-10-09

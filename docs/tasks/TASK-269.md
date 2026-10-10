@@ -85,7 +85,8 @@ Fuori: «Explore» della corsa (ha già «Near me», «NEARBY TOWNS» e
       che l'app chiede già (test).
 - [x] Testi nuovi approvati dall'utente nelle cinque lingue (2026-10-10,
       «sì, vanno bene tutti»: i cinque testi e la frase della privacy).
-- [ ] La frase della privacy nell'app e su `getmuw.app/privacy`, dopo «451
+- [x] La frase della privacy nell'app e su `getmuw.app/privacy` (nei file
+      del sito; la copia sul server la fa il coordinatore, F.14), dopo «451
       in main» (indicazione del coordinatore).
 
 ## File toccati
@@ -99,6 +100,10 @@ Fuori: «Explore» della corsa (ha già «Near me», «NEARBY TOWNS» e
 - `apps/mobile/src/paddle/aheadExamples.ts`, `aheadExamples.test.ts`
 - `apps/mobile/src/activities/useActivities.ts`, `useActivities.test.ts`
 - `apps/mobile/src/i18n/{it,de,es,fr}.ts` (righe nuove in fondo)
+- `apps/mobile/src/about/content/{en,it,de,es,fr}.ts` (solo la frase della
+  privacy «On your phone: …»; la data della privacy era già il 10 ottobre
+  2026) e `site/privacy/**` rigenerato con `node site/tools/make_privacy.mjs`
+  (indicazione del coordinatore dopo «451 in main»)
 - `docs/UI.md`, `docs/DECISIONS.md` (ADR-0239), `docs/STATUS.md`,
   `docs/tasks/TASK-269.md`
 

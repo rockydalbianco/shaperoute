@@ -10,6 +10,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useTourPart } from "../tour/tourParts";
+import { TOUR_PART } from "../tour/tourSteps";
 import { shownNumber, writeDistance } from "../units/distanceInput";
 import { useUnits } from "../units/useUnits";
 import { stepDistance } from "./distance";
@@ -36,8 +38,14 @@ export function DistanceStepper({
   activity = "running",
 }: Props) {
   const units = useUnits();
+  // Shown by the tour of the first opening (TASK-266).
+  const tourRef = useTourPart(TOUR_PART.distance);
   return (
-    <View style={[styles.row, !editable && styles.off]}>
+    <View
+      ref={tourRef}
+      collapsable={false}
+      style={[styles.row, !editable && styles.off]}
+    >
       <Step
         label="−"
         name={t("Shorter")}

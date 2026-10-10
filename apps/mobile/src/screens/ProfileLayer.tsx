@@ -15,6 +15,7 @@ import { useAccount } from "../account/useAccount";
 import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { t, tPlural } from "../i18n";
+import { usePushNotifications } from "../notifications/usePushNotifications";
 import { ProfilePhotoContext, useProfilePhotoOf } from "../profile/useProfilePhoto";
 import { CommentsContext, useCommentsOf } from "../social/commentsDoor";
 import { DrawingsContext, useDrawingsOf } from "../social/drawingsDoor";
@@ -212,6 +213,12 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     }),
     [account, apiUrl, onRequests, requests, setPeople],
   );
+  // Push notifications (TASK-262): this phone's token on the API while the
+  // switch is on; a notification touched opens its drawing or a profile.
+  usePushNotifications(apiUrl, account, {
+    openDrawing: (id) => drawings.open({ id }),
+    openProfile: followsDoor.openProfile,
+  });
   const door = useMemo(
     () => ({
       open: () => {

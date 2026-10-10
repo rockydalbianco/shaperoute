@@ -1,5 +1,6 @@
 {
   "ios": {
-    "NSLocationWhenInUseUsageDescription": "MuW utilise ta position pour dessiner des parcours près de toi et enregistrer tes activités. Pendant une activité, MuW continue d'enregistrer même téléphone verrouillé, et iOS affiche la barre bleue."
+    "NSLocationWhenInUseUsageDescription": "MuW utilise ta position pour dessiner des parcours près de toi et enregistrer tes activités. Pendant une activité, MuW continue d'enregistrer même téléphone verrouillé, et iOS affiche la barre bleue.",
+    "NSMicrophoneUsageDescription": "MuW n'enregistre jamais de son : pendant ton activité, MuW annonce seulement les indications."
   }
 }

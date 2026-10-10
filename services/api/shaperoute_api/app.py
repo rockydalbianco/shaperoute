@@ -86,6 +86,7 @@ from shaperoute_api.places import (
 )
 from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.profiles import install_profiles
+from shaperoute_api.push import install_push
 from shaperoute_api.reactions import install_reactions
 from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
@@ -305,9 +306,12 @@ def create_app(
     # The email and the phone number of an account, changed by their owner
     # (TASK-183); both need a token.
     install_contact(app)
-    # The two notification switches of an account, kept and never acted on:
-    # nothing is sent yet (TASK-185); they need a token.
+    # The two notification switches of an account (TASK-185); push.py reads
+    # «Push notifications» before sending; they need a token.
     install_notifications(app)
+    # The phones of an account, and the push notifications sent to them
+    # (TASK-262); the tokens need a token.
+    install_push(app)
     # The runs an account publishes as drawings, cut for the others
     # (TASK-117); they need a token.
     install_drawings(app)

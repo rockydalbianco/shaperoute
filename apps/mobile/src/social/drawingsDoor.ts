@@ -102,7 +102,7 @@ export type DrawingsDoor = {
   /** Why the last drawing asked for did not open; null when it did. */
   openProblem: string | null;
   /** Fetches the drawing whole and shows it on the map. */
-  open: (drawing: Drawing) => void;
+  open: (drawing: Pick<Drawing, "id">) => void;
   /** The drawing on the map; null when none. */
   opened: DrawingDetail | null;
   /** From the map back to «Profile», where it was opened. */
@@ -381,7 +381,7 @@ export function useDrawingsOf(
   // The last drawing asked for wins.
   const asked = useRef<string | null>(null);
   const open = useCallback(
-    (drawing: Drawing) => {
+    (drawing: Pick<Drawing, "id">) => {
       if (token === null || baseUrl === null) {
         return;
       }

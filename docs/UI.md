@@ -157,6 +157,30 @@ titolo. È solo un'immagine: il lettore di schermo legge il nome accanto.
 Un componente solo, `src/intro/HeartBadge.tsx` (`size`), per ogni posto
 dove il cuore su giallo compare.
 
+**Il tour della prima apertura** (TASK-266, ADR-0235): finita
+l'animazione, la prima volta, il resto dello schermo si scurisce
+(`scrim`, opacità 0,82, in entrambi i toni) e una parte vera dell'app
+resta nella luce, con un bordo `onScrim` di 2 punti; sotto o sopra, in una
+scheda `surface`, un titolo, una o due righe e in fondo otto puntini,
+«Skip» e «Next» (chiaro su scuro, mai giallo). Otto passi: benvenuto (senza
+luce, la scheda al centro), «START», le forme (con «Paddle» un testo suo),
+la distanza, il fondo di «Draw» con «Draw route», sport e «Profile», poi
+il tour va su «Explore» e su «Feed», che restano nella luce sopra la
+scheda, e finisce su «Draw» con «Let's go». Una parte sotto il bordo viene
+portata in vista scorrendo, e alla fine «Draw» torna in cima. «Skip» per i
+primi 5 secondi del tour non si tocca e dice i secondi che mancano,
+«Skip (5)»; il conto si ferma mentre il telefono chiede la posizione. I
+tocchi sull'app aspettano la fine del tour. Il tour non torna, salvo
+«Watch the tour» nella guida (qui «Skip» si tocca subito).
+
+**«Guide»** (TASK-266): con un account è la riga subito sotto
+«Settings» sulla prima pagina di «Profile», ❓ nel cerchio come «Settings»
+(richiesta dell'utente del 2026-10-10); senza account è l'ultima riga,
+sotto il modulo, come le righe di «ABOUT». Apre «How MuW works» con
+il nome «Guide» e sopra il testo «Watch the tour», che chiude «Profile» e
+rifà il tour; «←» torna a «Profile». «Help» in «Settings» resta, con lo
+stesso pulsante.
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La
@@ -730,10 +754,31 @@ notifications» (📧) e «Push notifications» (🔔), ognuna con il suo
 interruttore in fondo, disegnato come quelli della corsa (una pista con il
 pomello a destra e bianca quando è acceso; mai gialla). **Tutti e due
 spenti** finché non si accendono (scelta dell'utente). Sotto il riquadro,
-piccolo e grigio come la nota di «Offline maps», sempre: «Sgrava does not
-send notifications yet. Your choice is kept for when it does.». **Non si
-manda niente**: la scelta resta nell'account per quando l'invio ci sarà, e
-accendere «Push notifications» non chiede nessun permesso al telefono.
+piccolo e grigio come la nota di «Offline maps», sempre: «Push
+notifications tell you about follow requests, reactions, comments and
+tags. MuW does not send emails yet: your choice is kept for when it
+does.» (TASK-262). **Le push partono, l'email no** (fino alla parte B di
+TASK-262).
+
+- **Accendere «Push notifications» chiede il permesso al telefono**, qui
+  e in nessun altro posto, mai all'avvio (TASK-262, ADR-0226). Mentre il
+  telefono chiede, l'interruttore è già acceso e occupato. Permesso dato:
+  la scelta va all'API, e il telefono manda il suo token (una volta, e di
+  nuovo solo per un altro account, un altro token o un'altra lingua
+  dell'app). Negato, o negato prima: l'interruttore torna spento e sotto
+  la nota, in rosso, «Notifications are off for MuW on this phone. Allow
+  them in Settings to turn this on.», con «Open Settings» (TASK-259).
+  Spegnere, ed «Email notifications», non chiedono niente al telefono.
+- Spento l'interruttore, o usciti dall'account, il telefono riprende il
+  suo token dall'API e non riceve più.
+- **Toccare una notifica** apre il disegno (una reazione, un commento, un
+  tag) sulla mappa, come dal «Feed», o il profilo di chi ha chiesto o
+  accettato di seguire, come da «Find friends»; anche quando è la
+  notifica ad aprire l'app. Senza account non apre niente. Con l'app
+  aperta una notifica arriva come banner, senza suono.
+- **In Expo Go le push non arrivano** (dall'SDK 53): l'interruttore si
+  accende, il token non viene e niente lo dice. Si provano con una build
+  dell'app.
 
 - Un tocco su una riga gira il suo interruttore **subito** e manda all'API
   solo quello; se l'API rifiuta torna com'era, e sotto la nota, in rosso,
@@ -909,7 +954,7 @@ all'apertura, ogni minuto mentre è sullo schermo e quando ci torna: una
 richiesta nuova si vede da sola, senza aprire «Profile». Sparisce quando
 ogni richiesta ha avuto «Accept» o «Decline»: guardarle non basta. Ad app
 chiusa non arriva niente: le notifiche del telefono non ci sono ancora
-(TASK-185 salva solo la scelta in «Settings»; l'invio è un task da aprire).
+(TASK-185 salva la scelta in «Settings»; le push partono con TASK-262, l'email con la sua parte B).
 
 | Elenco | Tasti della riga | Vuoto |
 |---|---|---|

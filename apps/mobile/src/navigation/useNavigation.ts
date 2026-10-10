@@ -13,6 +13,7 @@ import { Vibration } from "react-native";
 import { onFootOf } from "../route/onFoot";
 import { walksOf } from "../route/walks";
 import { appUnits } from "../units/units";
+import { endRunAudio, say, startRunAudio } from "../voice/runAudio";
 import { loadVoices, speaking } from "../voice/voiceChoice";
 import { wordsOf } from "../voice/words";
 import { kmAnnouncement } from "./freeRun";
@@ -56,7 +57,7 @@ export function play(cues: Cue[]): void {
     }
     if (runControl().voice) {
       // Each cue after the last one: a turn is never cut by the next.
-      Speech.speak(cue.say, options);
+      say(cue.say, options);
     }
   }
 }
@@ -80,8 +81,9 @@ export function play(cues: Cue[]): void {
  * change on «Data» is heard at once, and in the units «Settings» has at
  * that moment (TASK-182): with miles each mile, on a bike every
  * RIDE_MI_EVERY, and the turns in feet. With the phone locked, or another app
- * in front, the GPS goes on where the app can (TASK-261, `runPosition`). The
- * position never leaves the phone.
+ * in front, the GPS goes on where the app can (TASK-261, `runPosition`) and
+ * the voice speaks, over the music (part B, `runAudio`). The position never
+ * leaves the phone.
  */
 export function useNavigation(
   points: LatLon[] | null,
@@ -123,6 +125,8 @@ export function useNavigation(
     // The phone's voices, before the first words: a chosen one is used only
     // once it is known to be there.
     void loadVoices();
+    // The voice with the phone locked, and over the music (TASK-261 B).
+    startRunAudio();
     // The phone refusing the position altogether (its services off) is a
     // rejection, not a denial: it is one all the same (TASK-253).
     void (async () => {
@@ -304,6 +308,7 @@ export function useNavigation(
       run?.end();
       stopRecording?.();
       void Speech.stop();
+      endRunAudio();
       setState({ status: "starting" });
     };
   }, [

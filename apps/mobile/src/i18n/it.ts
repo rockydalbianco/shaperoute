@@ -336,8 +336,6 @@ export const IT: Table = {
   "Another account has this email.": "Un altro account ha questa email.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts
-  "MuW does not send notifications yet. Your choice is kept for when it does.":
-    "MuW non manda ancora notifiche. La tua scelta resta salvata per quando lo farà.",
   "Notifications are not available on this API yet.":
     "Su questa API le notifiche non ci sono ancora.",
 
@@ -1142,6 +1140,12 @@ export const IT: Table = {
   "Unblock {name}": "Sblocca {name}",
   "You blocked {user}. Unblock them from Blocked people in your profile.":
     "Hai bloccato {user}. Puoi sbloccarlo da Persone bloccate nel tuo profilo.",
+
+  // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
+  "Push notifications tell you about follow requests, reactions, comments and tags. MuW does not send emails yet: your choice is kept for when it does.":
+    "Le notifiche push ti avvisano di richieste di follow, reazioni, commenti e tag. MuW non manda ancora email: la tua scelta resta salvata per quando lo farà.",
+  "Notifications are off for MuW on this phone. Allow them in Settings to turn this on.":
+    "Le notifiche di MuW sono spente su questo telefono. Consentile nelle Impostazioni per attivarle.",
 
   // src/paddle/PaddleExplore.tsx (TASK-269)
   Lakes: "Laghi",

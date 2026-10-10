@@ -289,6 +289,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Developer e le cinque domande del task; prima della prima build, le
   variabili dell'ambiente EAS `production` (oggi vuoto). Da dove
   riprendere: `tasks/TASK-152.md`, «Esito».
+  **Parte B** (2026-10-10): build 5 (1.0.0, `793fa112`, runtime
+  `83793e26…`) inviata in revisione ad Apple dall'utente; scheda, screenshot
+  e privacy su App Store Connect. Resta l'esito di Apple e l'uscita
+  manuale.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

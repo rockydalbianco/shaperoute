@@ -24,6 +24,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { say } from "./runAudio";
 import {
   knownVoices,
   loadVoices,
@@ -88,7 +89,8 @@ export function VoiceSetting() {
   const summary = `${nameOf(now.language)} · ${voiceName}`;
 
   function listen() {
-    Speech.speak(wordsOf(now.language).announcement([SAMPLE_TURN], 50), now.options);
+    // As the run speaks: during a run, the music comes back up after it.
+    say(wordsOf(now.language).announcement([SAMPLE_TURN], 50), now.options);
   }
 
   return (

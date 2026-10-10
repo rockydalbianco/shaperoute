@@ -157,6 +157,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-261 parte B — La voce a telefono bloccato** (aggiunta ad
+  ADR-0225; scelte dell'utente del 2026-10-10). Branch
+  `feat/TASK-261-b-voice-background`. Durante la corsa la voce parla a
+  telefono bloccato e col silenzioso e abbassa Spotify mentre parla
+  (`runAudio.ts`, dipendenza nuova `expo-audio`, `UIBackgroundModes`
+  `audio`). PR #475. Serve una build nativa nuova (obiettivo: build 5);
+  il testo nuovo del microfono approvato dall'utente il 2026-10-10.
+  File: `tasks/TASK-261.md`, «File toccati (parte B)».
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
   scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice

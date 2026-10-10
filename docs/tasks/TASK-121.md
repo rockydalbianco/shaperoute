@@ -107,7 +107,8 @@ in `moderation.py`, come i corpi degli altri moduli.
 
 ## Esito
 
-Fatto il 2026-10-09 (branch `feat/TASK-121-report-block`, ADR-0228).
+Fatto il 2026-10-09 (branch `feat/TASK-121-report-block`, ADR-0228), in
+`main` con la #457 (`a66341aa`) il 2026-10-10.
 Migrazione `0020_moderation.sql` con `blocks` e `reports`. Un blocco, fatto
 da uno dei due, li tiene lontani nei due sensi: feed, commenti (né letti,
 né scritti, né contati), reazioni (non contate; il disegno dell'altro non

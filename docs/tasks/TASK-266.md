@@ -1,6 +1,6 @@
 # TASK-266 — Il tour del primo avvio e la guida in «Profile»
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: app · **Branch**: `feat/TASK-266-first-run-tour` · **ADR**: ADR-0235
 
 ## Obiettivo
@@ -99,4 +99,17 @@ stanno in `tour/tourTexts.ts`.
 
 ## Esito
 
-*(a fine task)*
+In `main` con la #479 (`1f64621e`, 2026-10-10). Alla prima apertura il
+tour parte dopo l'animazione: otto passi sulle schermate vere, «Skip»
+bloccato per 5 secondi con il conto alla rovescia, poi non torna più.
+«Guide» è subito sotto «Settings» con un account (spostata lì su richiesta
+dell'utente del 2026-10-10, dopo il merge di TASK-121) e in fondo senza;
+«Watch the tour» rifà il tour. Testi approvati dall'utente, provato nel
+simulatore (iPhone 17e, tono chiaro, «Paddle»), jest 3135/3135.
+
+Emerso: la regola `react-hooks/refs` del lint scambia per un ref ogni
+oggetto passato a un hook il cui risultato fa da ref, per questo lo
+scorrimento è un componente di classe (`TourScrollView`); una pagina che
+entra scorrendo va misurata finché è ferma, non dopo un tempo fisso.
+Chi aggiorna l'app vedrà il tour una volta, come chi la scarica. Resta
+la pubblicazione su `preview`, del coordinatore.

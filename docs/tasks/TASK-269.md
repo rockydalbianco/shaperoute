@@ -101,6 +101,28 @@ Fuori: «Explore» della corsa (ha già «Near me», «NEARBY TOWNS» e
 
 Non toccati: `App.tsx`, `src/feed/*`, `beaches.json`, `beach_catalog.py`.
 
+## Cosa resta sul telefono, e quando se ne va
+
+- `Documents/home-area.json`: **un punto** (il centro della zona di casa,
+  lat/lon) e **il nome di un paese** (o niente). Non le partenze delle
+  singole attività: quelle si leggono dalla lista che l'app ha già e si
+  buttano. Scritto a ogni prima pagina di «My activities» (all'apertura
+  dell'app con un account, e a ogni «refresh»).
+- Se ne va: al **logout**, quando la **sessione finisce**, quando
+  l'**account è cancellato** (in tutti e tre i casi nessuno è più entrato,
+  e `useActivities` cancella il file), e quando la lista arriva vuota
+  (attività tutte cancellate). Senza account il file non c'è mai.
+- `Documents/water-filter.json`: solo la scelta del filtro (`all`,
+  `lake`, `sea`), come le altre scelte dell'app.
+- Niente va al server: il giro delle forme già sul telefono chiede le
+  forme dei posti dell'elenco (punti pubblici sulla riva), non la zona di
+  casa.
+- **Privacy**: il testo dice cosa resta sul telefono («the session, your
+  choices (language, sport), the offline maps and the runs still waiting
+  to be sent»); il punto della zona di casa è un dato di posizione nuovo,
+  quindi serve una riga. Proposta al coordinatore, che decide prima di
+  toccare `src/about/content/*` (non in questo task).
+
 ## Testi nuovi (da approvare dall'utente)
 
 | en | it | de | es | fr |

@@ -5,6 +5,7 @@ import type { Activity } from "../api/activities";
 import { files } from "../engine/memoryFiles";
 import { metresBetween } from "../map/coordinates";
 import {
+  forgetHomeArea,
   HOME_AREA_FILE,
   HOME_RADIUS_M,
   homeAreaOf,
@@ -96,6 +97,15 @@ test("the home area is kept on the phone, and read back", () => {
   ]);
   expect(Array.from(files.keys())).toEqual([`file:///documents/${HOME_AREA_FILE}`]);
   expect(loadHomeArea()?.place).toBe("Trento");
+});
+
+test("forgotten, the file leaves the phone", () => {
+  noteHomeArea([TRENTO_RUN]);
+  forgetHomeArea();
+  expect(files.size).toBe(0);
+  expect(loadHomeArea()).toBeNull();
+  // Nothing to forget is no trouble.
+  forgetHomeArea();
 });
 
 test("no activities leave no home area, and a broken file reads as none", () => {

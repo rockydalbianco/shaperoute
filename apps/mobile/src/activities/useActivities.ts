@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { accountProblem, sessionEnded } from "../account/messages";
 import type { AccountOutcome } from "../api/accounts";
 import { type Activity, fetchActivities, removeActivity } from "../api/activities";
-import { noteHomeArea } from "../paddle/homeArea";
+import { forgetHomeArea, noteHomeArea } from "../paddle/homeArea";
 
 /**
  * The runs of who is signed in (TASK-172): the list of the API, a page at a
@@ -149,6 +149,10 @@ export function useActivities(
     tokenNow.current = token;
     if (token !== null) {
       load(token);
+    } else {
+      // Signed out, the session ended or the account deleted: where its
+      // activities started leaves the phone too (TASK-269).
+      forgetHomeArea();
     }
   }, [token, load]);
 

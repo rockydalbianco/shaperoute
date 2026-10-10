@@ -104,6 +104,19 @@ export function loadHomeArea(): HomeArea | null {
   }
 }
 
+/** No home area on the phone any more: nobody is signed in (signed out,
+ * the session ended, the account deleted). */
+export function forgetHomeArea(): void {
+  try {
+    const file = new File(Paths.document, HOME_AREA_FILE);
+    if (file.exists) {
+      file.delete();
+    }
+  } catch {
+    // Nothing to forget, or the phone refuses: it is read as none on error.
+  }
+}
+
 /**
  * The home area of the activities the API listed, kept on the phone: the
  * latest first, as «My activities» has them. An empty list leaves none:

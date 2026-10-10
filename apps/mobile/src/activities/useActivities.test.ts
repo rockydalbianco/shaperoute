@@ -290,3 +290,19 @@ test("the first page says where the account's activities start, on the phone onl
     noted.mockRestore();
   }
 });
+
+test("signed out, the home area leaves the phone (TASK-269)", async () => {
+  const forgot = jest
+    .spyOn(homeArea, "forgetHomeArea")
+    .mockImplementation(() => undefined);
+  try {
+    const { rerender } = await hook(answers({ status: 200, body: page([STAR]) }));
+    expect(forgot).not.toHaveBeenCalled();
+    // Signing out, a session that ended and a deleted account all leave
+    // nobody signed in.
+    await rerender({ token: null });
+    expect(forgot).toHaveBeenCalledTimes(1);
+  } finally {
+    forgot.mockRestore();
+  }
+});

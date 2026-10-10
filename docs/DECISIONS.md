@@ -13870,6 +13870,77 @@ il lago del viaggio; chi non ha attività vede la fila di prima. Un seguito
 possibile, fuori da questo task: la stessa zona di casa in «Explore» della
 corsa.
 
+## ADR-0226, aggiunta — Gli amici dalla rubrica: hash dei numeri, confrontati e mai tenuti
+**Stato**: Attiva · 2026-10-10 · **scelte dell'utente**: la parte C con
+`expo-contacts` e i numeri confrontati come hash (2026-10-07), il sì alla
+dipendenza e alla ricerca (2026-10-08), i testi e la privacy con il
+confronto sotto l'interesse legittimo (2026-10-09). Il resto deciso
+dall'agente su delega dell'utente (TASK-262 parte C). Aggiunta ad
+ADR-0226, senza numero nuovo.
+
+**Decisione** (parte C):
+
+1. **Il permesso della rubrica solo al tocco** di «Find friends in your
+   contacts», in «Find friends» sotto la ricerca per nome; mai
+   all'apertura. iOS 18 «limitato» vale come sì. Negato per sempre:
+   «Open Settings» (TASK-259).
+2. **Dal telefono escono solo hash**: l'app legge solo i numeri dei
+   contatti (mai nomi, email, foto), li scrive in E.164 e ne fa lo
+   SHA-256 in esadecimale minuscolo, ognuno una volta. Un numero senza
+   prefisso prende quello della **regione del telefono** (`AppleLocale`,
+   poi il locale): l'Italia tiene lo 0 dei fissi, altrove si toglie il
+   prefisso nazionale («0», «1», «8», «06»); in una regione che l'app non
+   conosce si leggono solo i numeri con «+» o «00».
+3. **E.164 e SHA-256 scritti nell'app**, senza `libphonenumber` né
+   `expo-crypto`: l'utente ha detto sì a una dipendenza sola. Lo SHA-256
+   è provato con i valori dello standard e contro quello di Node.
+4. **500 hash per richiesta, al più 10 richieste a tocco** (5000
+   numeri); l'API ne accetta **30 all'ora per account**, contate in
+   memoria, oltre al limite di tutti i `POST`.
+5. **Il server confronta in una query** `sha256(users.phone)` con gli
+   hash ricevuti e **non scrive niente di ciò che riceve**: né tabella,
+   né log, né registro delle richieste, né messaggio di errore (un test
+   lo prova sul database vero e sui log). Mai chi chiede, mai fra
+   bloccati nei due versi (`follows.apart_sql`, TASK-121), solo account
+   che hanno salvato un numero.
+6. **La risposta porta `follow`** di chi chiede verso ognuno: la lista
+   ha «Follow» come un profilo, senza una richiesta per persona.
+7. **Solo in un'app costruita con `expo-contacts`**: il modulo si carica
+   al primo uso, dopo `requireOptionalNativeModule("ExpoContactsNext")`,
+   come AdMob (`ads/admob.ts`); senza il modulo nativo (la 1.0 dello
+   store) «FROM YOUR CONTACTS» non si vede e niente si rompe. Expo Go lo
+   ha.
+
+**Alternative scartate**:
+
+- *Il numero in chiaro*: più semplice, ma il server vedrebbe i numeri di
+  persone che non sono iscritte.
+- *Un hash con sale o un protocollo di intersezione privata*: con un
+  sale segreto del server il telefono non sa fare l'hash; un sale
+  pubblico non cambia niente contro chi prova tutti i numeri; un PSI vero
+  è una dipendenza e un protocollo per un caso che il «non tenere niente»
+  copre già.
+- *`libphonenumber-js`*: più esatto per ogni paese, ma una dipendenza in
+  più che l'utente non ha approvato.
+- *Una colonna con l'hash in `users`*: veloce con molti account, ma una
+  migrazione; oggi la query fa lo SHA-256 di ogni numero salvato a ogni
+  richiesta, e va bene finché gli account sono pochi.
+
+**Conseguenze**:
+
+- **L'hash da solo protegge poco**: un numero ha al più 15 cifre e si
+  ritrova provando tutti i numeri. La garanzia è che il server non tiene
+  niente e che gli hash viaggiano solo in HTTPS; la privacy lo dice così
+  nelle cinque lingue.
+- I limiti rallentano chi provasse i numeri uno a uno per sapere chi ha
+  un account, non lo impediscono: la risposta è un nome, già visibile
+  nella ricerca per nome.
+- `expo-contacts` cambia l'impronta nativa: la rubrica non arriva agli
+  iPhone con la 1.0 per aggiornamento, serve una 1.0.1 con la revisione
+  di Apple (la 1.0 esce senza, scelta dell'utente del 2026-10-09).
+- Seguiti: la colonna con l'hash quando gli account crescono; la domanda
+  di iOS solo in inglese (come quelle di posizione e foto).
+
 ## ADR-0120, aggiunta — Il database dei test se ne va col suo volume
 
 **Stato**: Attiva · 2026-10-10 · deciso dall'agente su delega dell'utente

@@ -13811,3 +13811,61 @@ storta vicino a un passaggio successivo farebbe saltare metà forma);
 cercare più avanti anche dopo un «Off the route» senza assenza (chi va
 verso la partenza o sbaglia strada verrebbe spostato su un passaggio
 successivo e la forma resterebbe a metà).
+
+## ADR-0239 — «Paddle»: i posti suggeriti dalla zona di casa, calcolata sul telefono, e il filtro «Lakes» / «Sea»
+**Stato**: Attiva · 2026-10-10 · richiesta dell'utente del 2026-10-09
+(«consiglia alle persone i posti in base a dove vivono, o fai una sezione
+filtro e decidi tu come suggerire le cose»); il disegno è **deciso
+dall'agente su delega dell'utente** (TASK-269). Testi nuovi e frase della
+privacy approvati dall'utente il 2026-10-10.
+
+**Contesto**: in «Explore» con «Paddle» (ADR-0196) la fila dei posti era
+quella più vicina alla partenza di «Draw», e senza partenza i quattro scelti
+a mano. Con 760 punti di lago e 29 (presto 66, TASK-245 C) di mare, chi
+vive a Trento e apre l'app in viaggio vedeva i posti del viaggio; e nessuno
+poteva chiedere solo il mare. In «Explore» della corsa l'utente aveva
+tolto i filtri (TASK-176): questa è una richiesta nuova, solo per l'acqua.
+
+**Decisione**:
+- **La zona di casa** è il centro delle partenze della zona (10 km) da cui
+  partono più attività fra le 20 della prima pagina di «My activities»,
+  qualunque sport; a pari merito vince la zona dell'attività più recente.
+  La partenza di un'attività è il primo punto della traccia, se no del
+  percorso. Il nome è il paese più frequente fra quelle attività
+  (`Activity.place`, che l'API scrive già). Senza attività, la partenza da
+  cui è partito «Near me».
+- **Solo sul telefono**: `useActivities` la annota in
+  `Documents/home-area.json` quando arriva la prima pagina, che l'app chiede
+  già; nessuna richiesta nuova, niente al server, niente sull'account,
+  nessun permesso, nessun indirizzo. Il file tiene solo il centro e il
+  nome del paese; se ne va quando nessuno è più entrato (logout, sessione
+  finita, account cancellato) e con una lista vuota. La lista
+  delle attività vive in `App.tsx`, che è di altri: per questo il file e
+  non una prop.
+- **La fila** è in ordine di distanza dalla zona di casa, otto posti come
+  prima (`SPOTS_SHOWN`), più «Show more» in fondo alla fila che scorre:
+  altri otto, senza pagine nuove. Sotto la fila «Suggested near {place}»,
+  «Suggested near where you usually start» (senza paese) o «Suggested near
+  your start» (senza attività). «Near me» resta sulla partenza.
+- **Il filtro**: «Lakes» e «Sea» a destra di «LAKES AND SEA», tre stati
+  (tutti e due, solo laghi, solo mare: mai nessuno), in
+  `Documents/water-filter.json`. Vale per la fila, non per «Near me» né per
+  la ricerca per nome: chi scrive un nome lo vuole trovare. Il tipo viene
+  dall'elenco da cui è letto il posto (`lakes.json`, `beaches.json`, e
+  `kind` in `WATER_PLACES`), mai da una copia: i posti nuovi di TASK-245 C
+  entrano da soli.
+- **Le forme già sul telefono** (ADR-0211) partono dalla zona di casa
+  quando c'è, così i posti suggeriti si aprono subito; senza, dal telefono
+  come prima.
+
+**Alternative scartate**: chiedere la città o l'indirizzo di casa (un dato
+nuovo da tenere e un campo da riempire); tenere la zona sull'account (un
+dato personale nuovo sul server); la posizione GPS in sottofondo (un
+permesso nuovo); un riquadro di filtri come la vecchia `RouteFilters`
+(l'utente non li voleva nella corsa); il filtro anche su «Near me» (un
+«Near me» che salta il lago sotto casa non è più «vicino a me»).
+
+**Conseguenza**: in viaggio la fila resta vicino a casa e «Near me» mostra
+il lago del viaggio; chi non ha attività vede la fila di prima. Un seguito
+possibile, fuori da questo task: la stessa zona di casa in «Explore» della
+corsa.

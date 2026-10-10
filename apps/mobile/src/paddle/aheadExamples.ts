@@ -14,6 +14,7 @@ import {
 } from "../explore/exampleRoutes";
 import type { Place } from "../places/photon";
 import { readAheadFile, writeAheadFile } from "./aheadStore";
+import { type HomeArea, loadHomeArea } from "./homeArea";
 import {
   byName,
   examplesAt,
@@ -111,9 +112,11 @@ function leaveOut(key: string, shape: Shape, at: number): void {
 let running = false;
 
 /**
- * One round of shapes ahead from `here`; never throws. A shape the page of
- * «Explore» drew meanwhile is not asked again: the phone's files are read
- * before each request.
+ * One round of shapes ahead; never throws. The places are those nearest
+ * the home area the phone keeps (TASK-269), as «Explore» suggests them;
+ * without one, those nearest `here`. A shape the page of «Explore» drew
+ * meanwhile is not asked again: the phone's files are read before each
+ * request.
  */
 export async function drawShapesAhead(
   apiUrl: string,
@@ -122,6 +125,7 @@ export async function drawShapesAhead(
     request = requestRoute,
     storage = fileStorage,
     spots = WATER_SPOTS,
+    home = loadHomeArea,
     now = Date.now,
     wait = pause,
     active = inFront,
@@ -129,6 +133,7 @@ export async function drawShapesAhead(
     request?: typeof requestRoute;
     storage?: Storage;
     spots?: readonly WaterSpot[];
+    home?: () => HomeArea | null;
     now?: () => number;
     wait?: (ms: number) => Promise<void>;
     active?: () => boolean;
@@ -140,7 +145,8 @@ export async function drawShapesAhead(
   running = true;
   try {
     let lastAsked: number | null = null;
-    for (const spot of placesAhead(here, spots)) {
+    const from = home()?.point ?? here;
+    for (const spot of placesAhead(from, spots)) {
       const set = examplesAt(spot.distance_m);
       const key = examplesKey(spot.point, set);
       const place: Place = { label: spot.name, point: spot.point };

@@ -33,6 +33,15 @@ export const OFF_SECONDS = 8;
 export const BACK_FIXES = 2;
 /** A fix less accurate than this, in metres, says nothing about being off. */
 export const POOR_FIX_M = 40;
+/**
+ * No fix for this long, in milliseconds, is a gap (TASK-270): the app
+ * was behind another, frozen by the phone, or closed, and the runner may
+ * have gone on further than `locate` looks. Until the runner is placed on
+ * the route again, a fix off it is looked for along all the route ahead,
+ * and taken after BACK_FIXES fixes in a row there. Standing at a light
+ * gives no fixes either: the runner is then found where they stopped.
+ */
+export const GAP_MS = 20_000;
 
 /** What the phone says about a fix besides where it is. */
 export type Reading = {
@@ -44,6 +53,10 @@ export type Reading = {
 
 /** Fixes in a row beyond OFF_ROUTE_M, not yet said. */
 type OffStreak = { fixes: number; sinceMs: number | null };
+
+/** After a gap, where on the route ahead the fixes were placed, and how
+ * many in a row. */
+type Found = { alongM: number; fixes: number };
 
 export type Navigation = {
   points: LatLon[];
@@ -62,6 +75,15 @@ export type Navigation = {
   backFixes: number;
   /** Fixes in a row at the end of the route; absent before TASK-253. */
   endFixes?: number;
+  /** When the last fix was taken, if the phone said; absent before
+   * TASK-270. */
+  lastFixMs?: number | null;
+  /** A gap was seen and the runner is not placed on the route since: a
+   * fix is looked for along all the route ahead (GAP_MS). */
+  lost?: boolean;
+  /** Fixes placed beyond where `locate` looks, while `lost`; null when
+   * none. */
+  found?: Found | null;
   arrived: boolean;
   /** How far ahead a turn is said: ANNOUNCE_M when absent, further on a
    * bike (TASK-216, `ride.ts`). */
@@ -109,22 +131,41 @@ export function onFix(
   if (navigation.arrived) {
     return { navigation, cues: [] };
   }
-  const { alongM, offM } = locate(
+  const accuracyM = reading.accuracyM ?? null;
+  const poor = accuracyM !== null && accuracyM > POOR_FIX_M;
+  const timeMs = reading.timeMs ?? null;
+  let { alongM, offM } = locate(
     navigation.points,
     navigation.along,
     fix,
     navigation.alongM,
   );
-  const accuracyM = reading.accuracyM ?? null;
-  const poor = accuracyM !== null && accuracyM > POOR_FIX_M;
-  const timeMs = reading.timeMs ?? null;
+  // After a gap the runner may be anywhere ahead (TASK-270).
+  const lost = navigation.lost === true || gapBefore(navigation, timeMs);
+  let found: Found | null = null;
+  if (offM > OFF_ROUTE_M && lost) {
+    // A poor fix neither ends nor extends the fixes found ahead.
+    found = poor ? (navigation.found ?? null) : foundAhead(navigation, fix);
+  }
+  const rejoined = found !== null && found.fixes >= BACK_FIXES;
+  if (found !== null && rejoined) {
+    alongM = found.alongM;
+    offM = 0;
+  }
+  // What this fix changes, whatever it says about the route.
+  const seen: Navigation = {
+    ...navigation,
+    lastFixMs: timeMs ?? navigation.lastFixMs ?? null,
+    lost,
+    found,
+  };
   if (offM > OFF_ROUTE_M) {
     // Where the runner was stays the reference, to find the route again.
     if (poor) {
-      return { navigation, cues: [] };
+      return { navigation: seen, cues: [] };
     }
     if (navigation.offRoute) {
-      return { navigation: { ...navigation, backFixes: 0 }, cues: [] };
+      return { navigation: { ...seen, backFixes: 0 }, cues: [] };
     }
     const streak: OffStreak = {
       fixes: (navigation.offStreak?.fixes ?? 0) + 1,
@@ -136,27 +177,30 @@ export function onFix(
       timeMs === null ||
       timeMs - streak.sinceMs >= OFF_SECONDS * 1000;
     if (streak.fixes < OFF_FIXES || !lasted) {
-      return { navigation: { ...navigation, offStreak: streak }, cues: [] };
+      return { navigation: { ...seen, offStreak: streak }, cues: [] };
     }
     return {
-      navigation: { ...navigation, offRoute: true, offStreak: null, backFixes: 0 },
+      navigation: { ...seen, offRoute: true, offStreak: null, backFixes: 0 },
       cues: [{ say: words.offRoute, vibrate: true }],
     };
   }
-  if (navigation.offRoute) {
+  // Fixes found ahead after a gap were BACK_FIXES on the route already.
+  if (navigation.offRoute && !rejoined) {
     if (poor) {
-      return { navigation, cues: [] };
+      return { navigation: seen, cues: [] };
     }
     const backFixes = navigation.backFixes + 1;
     if (backFixes < BACK_FIXES) {
-      return { navigation: { ...navigation, backFixes }, cues: [] };
+      return { navigation: { ...seen, backFixes }, cues: [] };
     }
   }
   const cues: Cue[] = navigation.offRoute
     ? [{ say: words.backOnRoute, vibrate: false }]
     : [];
-  // A poor fix on the route neither ends nor extends a streak off it.
+  // A poor fix on the route neither ends nor extends a streak off it, nor
+  // places a runner lost after a gap.
   const offStreak = poor ? navigation.offStreak : null;
+  const placed: Navigation = { ...seen, lost: poor && lost, found: null };
   const { directions } = navigation;
   let next = navigation.next;
   while (next < directions.length && directions[next].distance_m + PASS_M <= alongM) {
@@ -175,7 +219,7 @@ export function onFix(
     cues.push({ say: words.arrived, vibrate: true });
     return {
       navigation: {
-        ...navigation,
+        ...placed,
         alongM,
         next,
         saidUpTo,
@@ -200,7 +244,7 @@ export function onFix(
   }
   return {
     navigation: {
-      ...navigation,
+      ...placed,
       alongM,
       next,
       saidUpTo,
@@ -211,6 +255,38 @@ export function onFix(
     },
     cues,
   };
+}
+
+/** Whether a fix taken at `timeMs` comes GAP_MS or more after the last one,
+ * for a runner placed on the route before: one never on it yet, walking to
+ * the start, is not looked for further on. */
+function gapBefore(navigation: Navigation, timeMs: number | null): boolean {
+  const lastMs = navigation.lastFixMs ?? null;
+  return (
+    timeMs !== null &&
+    lastMs !== null &&
+    timeMs - lastMs >= GAP_MS &&
+    navigation.alongM > 0
+  );
+}
+
+/**
+ * A fix off the route near where the runner was, placed on the route ahead
+ * after a gap: near where the fix before was found, one more in a row, or
+ * else anywhere from where the runner was to the end, the first in a row.
+ * `locate`'s cost picks the nearest pass ahead, as near where the runner
+ * was. Null when the fix is off the route there too.
+ */
+function foundAhead(navigation: Navigation, fix: LatLon): Found | null {
+  const { points, along, found } = navigation;
+  if (found !== null && found !== undefined) {
+    const near = locate(points, along, fix, found.alongM);
+    if (near.offM <= OFF_ROUTE_M) {
+      return { alongM: near.alongM, fixes: found.fixes + 1 };
+    }
+  }
+  const far = locate(points, along, fix, navigation.alongM, Infinity);
+  return far.offM <= OFF_ROUTE_M ? { alongM: far.alongM, fixes: 1 } : null;
 }
 
 /** The direction at `index` and the ones joined to it (read together). */

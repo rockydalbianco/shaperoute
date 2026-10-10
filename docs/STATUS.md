@@ -157,6 +157,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-270 — Dopo un'assenza del GPS il navigatore ritrova il percorso**
+  (aggiunta ad ADR-0052; dalla prima recensione di un tester del
+  2026-10-10). Branch `fix/TASK-270-navigator-rejoin`. Prima, con l'app
+  dietro un'altra per più di 300 m di corsa, il navigatore restava «fuori
+  percorso» fino alla fine. Ora, dopo 20 s senza posizioni, il corridore
+  si cerca su tutto il percorso avanti e si riprende da lì dopo due
+  posizioni. Solo app, nessun testo nuovo.
+  File: `tasks/TASK-270.md`, «File toccati».
 - **TASK-245 parte C — 38 posti di mare in più per «Paddle»** (ADR-0210,
   aggiornamento; posti scelti dall'utente il 2026-10-09 sulla proposta
   dell'agente). Branch `feat/TASK-245-c-more-beaches`. `PLACES` da 29 a 67

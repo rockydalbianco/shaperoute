@@ -45,6 +45,9 @@ test("with no choice the app has the colours it always had (ADR-0046)", () => {
     error: "#FF6B6B",
     badge: "#E02D2D",
     onBadge: "#FFFFFF",
+    // The tour's dark and the edge of its light (TASK-266).
+    scrim: "#0A0A0B",
+    onScrim: "#FFFFFF",
     startHere: "#4DD2FF",
     strava: "#FC5200",
     onStrava: "#FFFFFF",

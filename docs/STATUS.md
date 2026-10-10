@@ -169,6 +169,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'app, mai prima dell'acqua. File: `tasks/TASK-245.md`, «parte C».
   **2026-10-10: l'acqua è sul server** (38 file, 20,3 MB, SHA-256 uguali,
   provata nel container; ok dell'utente). Aspetta il merge della #480.
+- **TASK-261 parte B — La voce a telefono bloccato** (aggiunta ad
+  ADR-0225; scelte dell'utente del 2026-10-10). Branch
+  `feat/TASK-261-b-voice-background`. Durante la corsa la voce parla a
+  telefono bloccato e col silenzioso e abbassa Spotify mentre parla
+  (`runAudio.ts`, dipendenza nuova `expo-audio`, `UIBackgroundModes`
+  `audio`). PR #475. Serve una build nativa nuova (obiettivo: build 5);
+  il testo nuovo del microfono approvato dall'utente il 2026-10-10.
+  File: `tasks/TASK-261.md`, «File toccati (parte B)».
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
   scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice
@@ -666,6 +674,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `7a9506a`: il telefono disegna da sé. **Resta D**, la prova
   sull'iPhone, che è dell'utente e fissa i limiti di distanza. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
+- **TASK-266 — Il tour del primo avvio e la guida in «Profile»**
+  (ADR-0235; richiesta dell'utente del 2026-10-09, che fra tre proposte ha
+  scelto il tour sulle schermate vere). Branch
+  `feat/TASK-266-first-run-tour`. Dopo l'animazione all'avvio, la prima
+  volta, otto passi sopra l'app vera: una parte nella luce, il resto
+  scuro; «Skip» conta 5 secondi prima di potersi toccare. «Guide» sulla
+  prima pagina di «Profile», anche senza account, con «Watch the tour».
+  Solo app, nessun server. **Aspetta**: il sì dell'utente sui testi
+  (cinque lingue) e la coda dei merge. `tasks/TASK-266.md`.
 
 ## Completato
 

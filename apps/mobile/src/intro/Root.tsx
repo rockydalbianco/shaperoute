@@ -3,6 +3,8 @@ import { StyleSheet, View } from "react-native";
 
 import App from "../../App";
 import { color } from "../theme/tokens";
+import { Tour } from "../tour/Tour";
+import { useTour } from "../tour/useTour";
 import { AppBoundary } from "./AppBoundary";
 import { LaunchIntro } from "./LaunchIntro";
 import { SavedLogoLayer } from "./SavedLogo";
@@ -13,15 +15,20 @@ import { SavedLogoLayer } from "./SavedLogo";
  * requests run while the heart is drawn. Over the app, under the animation,
  * the logo that comes up after «Save» (TASK-212). Around it all, the screen
  * for a component that throws (TASK-256): «Try again» there starts the app
- * anew, without the animation again.
+ * anew, without the animation again. After the animation, the first time
+ * and whenever the guide asks, the tour of the app (TASK-266).
  */
 export function Root() {
   const [intro, setIntro] = useState(true);
+  const tour = useTour();
   return (
     <View style={styles.root}>
       <AppBoundary>
         <App />
         <SavedLogoLayer />
+        {!intro && tour.on !== null ? (
+          <Tour key={tour.on.key} lockSeconds={tour.on.lockSeconds} onEnd={tour.end} />
+        ) : null}
         {intro ? <LaunchIntro onDone={() => setIntro(false)} /> : null}
       </AppBoundary>
     </View>

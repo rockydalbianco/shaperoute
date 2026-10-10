@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { activityOf, loadSport } from "../settings/sport";
 import { appUnits } from "../units/units";
+import { endRunAudio, startRunAudio } from "../voice/runAudio";
 import { loadVoices, speaking } from "../voice/voiceChoice";
 import { FREE_ROUTE, kmAnnouncement, wholeUnits } from "./freeRun";
 import { freeRunActivity } from "./freeSport";
@@ -32,8 +33,9 @@ export type FreeRunState =
  * voice speaks (TASK-182). With «Paddle» in «Settings» the pace said is of
  * 500 m (TASK-251). The countdown, «Pause» and the pause by standing still are
  * runControl's (TASK-169). With the phone locked, or another app in front,
- * the GPS goes on where the app can (TASK-261, `runPosition`). The position
- * never leaves the phone.
+ * the GPS goes on where the app can (TASK-261, `runPosition`) and the voice
+ * speaks, over the music (part B, `runAudio`). The position never leaves the
+ * phone.
  */
 export function useFreeRun(active: boolean): FreeRunState {
   const [state, setState] = useState<FreeRunState>({ status: "starting" });
@@ -49,6 +51,8 @@ export function useFreeRun(active: boolean): FreeRunState {
     let away: RunAway | null = null;
     // The phone's voices, before the first kilometre (TASK-209).
     void loadVoices();
+    // The voice with the phone locked, and over the music (TASK-261 B).
+    startRunAudio();
     // The phone refusing the position altogether (its services off) is a
     // rejection, not a denial: it is one all the same (TASK-253).
     void (async () => {
@@ -152,6 +156,7 @@ export function useFreeRun(active: boolean): FreeRunState {
       run?.end();
       stopRecording?.();
       void Speech.stop();
+      endRunAudio();
       setState({ status: "starting" });
     };
   }, [active]);

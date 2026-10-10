@@ -70,10 +70,11 @@ afterEach(async () => {
 });
 
 test.each([
-  ["Help", "help", "How MuW works"],
-  ["Terms", "terms", "Terms of use"],
-  ["Privacy", "privacy", "Privacy policy"],
-] as const)("«%s» in «Settings» opens its page", async (row, page, title) => {
+  // «Help» has «Watch the tour» over its text (TASK-266).
+  ["Help", "help", "How MuW works", 2],
+  ["Terms", "terms", "Terms of use", 1],
+  ["Privacy", "privacy", "Privacy policy", 1],
+] as const)("«%s» in «Settings» opens its page", async (row, page, title, buttons) => {
   await showSettings();
   expect(screen.getByRole("header", { name: "Settings" })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: row }));
@@ -84,7 +85,7 @@ test.each([
   // «Settings» is under it: not seen, not read, not pressed.
   expect(screen.queryByText("ACCOUNT")).toBeNull();
   expect(screen.queryByRole("button", { name: "Log out" })).toBeNull();
-  expect(screen.getAllByRole("button")).toHaveLength(1);
+  expect(screen.getAllByRole("button")).toHaveLength(buttons);
 });
 
 test("only «Terms» still says it is a draft (TASK-237 D)", async () => {

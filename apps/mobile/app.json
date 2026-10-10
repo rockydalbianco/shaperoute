@@ -17,7 +17,8 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "CFBundleAllowMixedLocalizations": true
+        "CFBundleAllowMixedLocalizations": true,
+        "UIBackgroundModes": ["audio"]
       }
     },
     "locales": {
@@ -55,6 +56,14 @@
         {
           "locationWhenInUsePermission": "MuW uses your location to draw routes near you and to record your activities. During an activity it keeps recording with the phone locked, and iOS shows the blue bar.",
           "isIosBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "MuW never records sound: during your activity it only speaks the directions.",
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": false
         }
       ],
       [

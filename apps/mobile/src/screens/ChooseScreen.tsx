@@ -3,7 +3,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -26,6 +25,9 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { TourPartView } from "../tour/TourPartView";
+import { TourScrollView } from "../tour/TourScrollView";
+import { TOUR_PART } from "../tour/tourSteps";
 import { Segmented } from "./Segmented";
 
 /** "My position" also asks the GPS again, as the old button did, so it works
@@ -98,7 +100,8 @@ export function ChooseScreen({
       style={[StyleSheet.absoluteFill, styles.screen]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView
+      {/* The tour of the first opening scrolls it to its parts (TASK-266). */}
+      <TourScrollView
         contentContainerStyle={[styles.content, { paddingTop: insets.top + space.lg }]}
         keyboardShouldPersistTaps="handled"
       >
@@ -123,7 +126,7 @@ export function ChooseScreen({
             )}
           </View>
         </View>
-        <View style={styles.startCard}>
+        <TourPartView name={TOUR_PART.start} style={styles.startCard}>
           <Text style={styles.label}>START</Text>
           <Segmented options={START_MODES} value={mode} onChange={onMode} />
           <Text style={styles.status}>{status}</Text>
@@ -136,13 +139,16 @@ export function ChooseScreen({
               placeholder={searchHint}
             />
           )}
-        </View>
+        </TourPartView>
         {mapError && <MapError onRetry={onMapRetry} />}
         {children}
-      </ScrollView>
-      <View style={[styles.footer, { paddingBottom: insets.bottom + space.sm }]}>
+      </TourScrollView>
+      <TourPartView
+        name={TOUR_PART.draw}
+        style={[styles.footer, { paddingBottom: insets.bottom + space.sm }]}
+      >
         {footer}
-      </View>
+      </TourPartView>
     </KeyboardAvoidingView>
   );
 }

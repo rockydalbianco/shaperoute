@@ -11,6 +11,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { tourTexts } from "../tour/tourTexts";
 import { BlockedPeople } from "../social/BlockedPeople";
 import { useBlocksVersion } from "../social/blockedNow";
 import { DrawingsGrid } from "../social/DrawingsGrid";
@@ -39,6 +40,8 @@ type Props = {
   onOpen: (section: ProfileSection) => void;
   /** «Edit profile»: username and bio (TASK-116). */
   onEdit: () => void;
+  /** «Guide», under «Settings»: how the app works and its tour (TASK-266). */
+  onGuide?: () => void;
 };
 
 /**
@@ -48,10 +51,18 @@ type Props = {
  * number, the way to «Settings», and the drawings it made public
  * (TASK-117), as the others see them. A tap on the circle opens the ways
  * to change the picture under it, as the row of «Settings» (TASK-207).
- * Under «Settings», «Blocked people», to unblock (TASK-121); after a block
- * the lists of who follows are read again: a block ends every follow.
+ * Under «Settings», «Guide» (TASK-266), then «Blocked people», to unblock
+ * (TASK-121); after a block the lists of who follows are read again: a
+ * block ends every follow.
  */
-export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Props) {
+export function ProfileHome({
+  user,
+  favorites,
+  activities,
+  onOpen,
+  onEdit,
+  onGuide,
+}: Props) {
   const photo = useProfilePhoto();
   const blocks = useBlocksVersion();
   const [photoOpen, setPhotoOpen] = useState(false);
@@ -105,18 +116,12 @@ export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Pro
           onPress={() => onOpen("activities")}
         />
       </View>
-      <Pressable
-        style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      <SectionRow
+        emoji={SECTION_EMOJI.settings}
+        name={t("Settings")}
         onPress={() => onOpen("settings")}
-        accessibilityRole="button"
-        accessibilityLabel={t("Settings")}
-      >
-        <View style={styles.badge}>
-          <Text style={styles.emoji}>{SECTION_EMOJI.settings}</Text>
-        </View>
-        <Text style={styles.rowText}>{t("Settings")}</Text>
-        <Text style={styles.rowArrow}>›</Text>
-      </Pressable>
+      />
+      {onGuide && <SectionRow emoji="❓" name={tourTexts().guide} onPress={onGuide} />}
       <BlockedPeople />
       <DrawingsGrid publicId={user.public_id ?? null} own />
     </View>
@@ -152,6 +157,32 @@ function Tile({
         {count !== null ? String(count) : "–"}
       </Text>
       <Text style={styles.tileName}>{name}</Text>
+    </Pressable>
+  );
+}
+
+/** A row of the first page that opens a page: «Settings», «Guide». */
+function SectionRow({
+  emoji,
+  name,
+  onPress,
+}: {
+  emoji: string;
+  name: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={name}
+    >
+      <View style={styles.badge}>
+        <Text style={styles.emoji}>{emoji}</Text>
+      </View>
+      <Text style={styles.rowText}>{name}</Text>
+      <Text style={styles.rowArrow}>›</Text>
     </Pressable>
   );
 }

@@ -13450,6 +13450,64 @@ percorso il passo al km, segnalandolo. L'utente ha scelto la velocità.
 percorso (due modi di mostrare la stessa cosa); cambiare anche la voce
 (non chiesto: una scelta dell'utente).
 
+## ADR-0235 — Il tour del primo avvio sulle schermate vere, e «Guide» in «Profile»
+**Stato**: Attiva · 2026-10-09 · **scelta dell'utente** (un tutorial alla
+prima apertura, saltabile ma non nei primi 5 secondi; una guida d'uso;
+fra tre proposte, il tour sulle schermate vere); il come è **deciso
+dall'agente su delega dell'utente** (TASK-266).
+
+**Contesto**: l'app non mostrava a chi la apre la prima volta come si
+usa. «How MuW works» (TASK-184) c'era, ma solo da «Settings», quindi solo
+con un account.
+
+**Decisione**:
+
+1. Dopo l'animazione all'avvio, alla prima apertura, un tour sopra l'app
+   (`src/tour/`, montato in `intro/Root.tsx`): il resto dello schermo
+   scuro, una parte vera nella luce, poche parole accanto, «Next». Otto
+   passi, in ordine: benvenuto, «START», le forme, la distanza, il fondo
+   di «Draw» con «Draw route», sport e «Profile», la pagina «Explore», la
+   pagina «Feed»; finisce su «Draw». La corsa non ha un passo: non si
+   mostra senza un percorso disegnato, la dice il passo di «Draw route».
+2. **Le parti si trovano per nome**: le schermate danno al tour le loro
+   viste (`TourPartView`, `tourPart`, `useTourPart`), il tour le misura
+   (`measureInWindow`) e le unisce. Una parte sotto il bordo di «Draw» è
+   portata in vista (`TourScrollView`); una pagina si cambia come
+   toccandone il nome (`useTourPager`). Il tour rimisura ogni 150 ms
+   finché le parti sono tutte sullo schermo e ferme, al più 1,5 s: una
+   pagina che entra scorrendo non è misurata a metà. Una parte che non
+   c'è lascia le parole al centro, senza luce. Niente librerie nuove.
+3. **«Skip»** c'è da subito ma per `SKIP_LOCK_S` = 5 secondi non si
+   tocca e conta alla rovescia («Skip (5)»); il conto è del tour, non del
+   passo, e si ferma mentre il telefono chiede qualcosa sopra l'app
+   (`AppState` non attivo: la posizione, alla prima apertura). «Next» si
+   tocca subito.
+4. Visto fino in fondo o saltato, il telefono lo ricorda in
+   `tour-seen.json` (come l'avviso di «Paddle», ADR-0169). Senza le
+   pagine sullo schermo (una corsa lasciata aperta) il tour non parte e
+   non conta come visto.
+5. **«Guide»** sulla prima pagina di «Profile», con e senza account (con
+   un account subito sotto «Settings», su richiesta dell'utente del
+   2026-10-10; senza, in fondo), apre «How MuW works» (il testo di «Help», che non cambia) con sopra
+   «Watch the tour»: chiude «Profile» e rifà il tour, con «Skip» subito.
+   Anche «Help» in «Settings» ha «Watch the tour».
+6. Il buio è un colore fisso nuovo, `scrim`, con opacità 0,82, e il bordo
+   della luce `onScrim`: scuro nei due toni di ADR-0231, mai giallo (il
+   giallo è del percorso).
+7. I testi sono in `tour/tourTexts.ts` nelle cinque lingue, non in
+   `i18n/`; i nomi dei pulsanti che citano sono quelli di `i18n/`, e un
+   test lo controlla. Con «Paddle» il passo delle forme ha il suo testo.
+
+**Alternative scartate**: animazioni disegnate o immagini delle schermate
+(proposte, l'utente ha scelto il tour vero); una libreria di tour (una
+dipendenza per poche centinaia di righe); il conto alla rovescia per ogni
+passo (5 secondi a passo sono un tutorial lungo, non breve).
+
+**Conseguenze**: chi aggiorna l'app vede il tour una volta, come chi la
+scarica (nessun modo di distinguerli senza un dato in più). Una parte
+nuova da mostrare è un nome in `TOUR_PART`, una vista con quel nome e un
+passo in `TOUR_STEPS`.
+
 ## ADR-0197, aggiunta — Il «Try» della riga si conta come `better_distance`
 **Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
 (TASK-234 parte C), dentro la **scelta dell'utente** del 2026-10-08
@@ -13606,3 +13664,40 @@ passa da `shown_sql`) e le notifiche vecchie.
 con la chiave e un indice su `blocked_id`: trascurabile ai numeri di oggi.
 Chi aggiunge un endpoint che mostra persone o contenuti di altri deve
 aggiungere `apart_sql`.
+
+## ADR-0225, aggiunta — La voce parla a telefono bloccato, col silenzioso, e abbassa la musica
+**Stato**: Attiva · 2026-10-10 · **scelte dell'utente** del 2026-10-10 (la
+dipendenza `expo-audio`, la musica che si abbassa, la voce anche col
+silenzioso); il modo deciso dall'agente su delega dell'utente (TASK-261
+parte B). Aggiunta ad ADR-0225, senza numero nuovo.
+
+**Decisione**:
+
+1. Durante una corsa (con e senza percorso) la sessione audio di iOS è
+   `playback` con `duckOthers`: la voce parla a telefono bloccato (con
+   `UIBackgroundModes` `audio`) e con l'interruttore silenzioso, e la
+   musica di un'altra app si abbassa mentre parla. Fuori dalla corsa
+   torna `ambient` mescolabile.
+2. La sessione si attiva quando la sintesi vocale parla e l'app la
+   rilascia quando la voce non ha più parole (`isSpeakingAsync` ogni
+   secondo, solo mentre parla): iOS altrimenti terrebbe la musica bassa
+   per tutta la corsa. La musica torna su al più un secondo dopo
+   l'ultima parola.
+3. Il modulo nativo di expo-audio si chiede con
+   `requireOptionalNativeModule`: un'app costruita senza parla come
+   prima. Solo iOS; Android come prima.
+4. `NSMicrophoneUsageDescription` c'è, con un testo che dice che l'app
+   non registra: expo-audio porta con sé il codice per registrare, e per
+   un pacchetto così senza la chiave Apple segnala ITMS-90683 e può
+   rifiutarlo.
+
+**Alternative scartate**: `useApplicationAudioSession: false` di
+expo-speech (una sessione del sistema per la sola voce, senza dipendenze):
+Apple non dice se parla a telefono bloccato e col silenzioso, e non si
+prova senza un iPhone; `onDone` di `Speech.speak` per sapere quando la voce
+ha finito: cambia ogni chiamata a `Speech.speak` (e i test che la
+guardano), e un `onDone` che non arriva lascerebbe la musica bassa;
+chiedere se parla ancora si corregge da solo al giro dopo; `enableBackgroundPlayback`
+del plugin: su Android aggiunge un servizio e due permessi che non
+servono.
+

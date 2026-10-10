@@ -189,6 +189,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `site/privacy/` (dopo «451 in main»). Dopo il merge: copia del sito
   (F.14) e pubblicazione del coordinatore.
   File: `tasks/TASK-269.md`, «File toccati».
+  **Chiuso il 2026-10-10**: #482 in `main`; vedi «Completato».
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
   scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice
@@ -712,6 +713,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-269 (ADR-0239): in «Explore» con «Paddle» laghi e mare
+  suggeriti vicino alla zona di casa, calcolata sul telefono dalle
+  attività e cancellata al logout, con «Show more», la riga «Suggested
+  near …» e i chip «Lakes» / «Sea»; le forme già sul telefono seguono la
+  stessa zona. Frase nuova nella privacy, app e sito. Richiesta
+  dell'utente del 2026-10-09, il come deciso dall'agente su delega; testi
+  approvati. Copia del sito e pubblicazione: del coordinatore.
 - **App** — TASK-261 parte B (aggiunta ad ADR-0225): durante la corsa la
   voce parla a telefono bloccato e con l'interruttore silenzioso, e
   abbassa la musica di un'altra app mentre parla (scelte dell'utente del

@@ -1,6 +1,7 @@
 # TASK-269 — «Paddle»: laghi e mare suggeriti vicino a dove si vive, con un piccolo filtro
 
-**Stato**: In lavorazione (2026-10-10)
+**Stato**: Done (2026-10-10, PR #482) — esce con la prossima pubblicazione
+del coordinatore, non nella 1.0
 **Fase**: 4 · **Branch**: `feat/TASK-269-paddle-places-near-home`
 **Dipende da**: TASK-233 («Explore» con «Paddle», «Near me», ADR-0196),
 TASK-245 (le spiagge), TASK-246 (le forme dei tre posti più vicini già sul
@@ -155,4 +156,16 @@ Non toccati: `App.tsx`, `src/feed/*`, `beaches.json`, `beach_catalog.py`.
 
 ## Esito
 
-(da scrivere alla chiusura)
+2026-10-10, PR #482. In «Explore» con «Paddle» la fila dei laghi e del mare
+parte dalla zona di casa calcolata sul telefono dalle attività (o dalla
+partenza di «Near me»), otto alla volta con «Show more», con la riga
+«Suggested near …»; «Lakes» e «Sea» filtrano la fila e la scelta resta sul
+telefono; le forme già sul telefono seguono la stessa zona. La zona se ne
+va al logout, a sessione finita e con l'account cancellato; la privacy lo
+dice, nell'app e in `site/privacy/`. Testi e frase approvati dall'utente.
+Test: 392 suite, 3203 test e i 43 del sito verdi in locale. I 67 posti di
+mare di TASK-245 C sono «Sea» senza altro lavoro.
+
+Dopo il merge, del coordinatore: la copia del sito (F.14) e la
+pubblicazione su «preview». Seguito possibile, non aperto: la stessa zona
+di casa in «Explore» della corsa.

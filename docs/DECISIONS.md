@@ -13812,6 +13812,11 @@ ADR-0226, senza numero nuovo.
    che hanno salvato un numero.
 6. **La risposta porta `follow`** di chi chiede verso ognuno: la lista
    ha «Follow» come un profilo, senza una richiesta per persona.
+7. **Solo in un'app costruita con `expo-contacts`**: il modulo si carica
+   al primo uso, dopo `requireOptionalNativeModule("ExpoContactsNext")`,
+   come AdMob (`ads/admob.ts`); senza il modulo nativo (la 1.0 dello
+   store) «FROM YOUR CONTACTS» non si vede e niente si rompe. Expo Go lo
+   ha.
 
 **Alternative scartate**:
 

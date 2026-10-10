@@ -224,7 +224,10 @@ build 5 è partita, poi va su preview; su production con una 1.0.1.
   rubrica si chiede **solo a quel tocco**. L'app legge solo i numeri, li
   scrive in E.164 con il prefisso della regione del telefono, ne fa lo
   SHA-256 e li manda 500 per volta (al più 10 richieste); gli iscritti
-  trovati hanno foto, nome (apre il profilo) e «Follow». `UI.md`.
+  trovati hanno foto, nome (apre il profilo) e «Follow». In un'app
+  costruita senza `expo-contacts` (la 1.0 dello store) la sezione non si
+  vede: il modulo si carica solo al primo uso e solo se il binario lo ha
+  (richiesta del coordinatore del 2026-10-10). `UI.md`.
 - **API**: `POST /people/from-contacts {hashes}` (`contact_people.py`):
   confronto con lo SHA-256 di `users.phone`, mai chi chiede, mai fra
   bloccati nei due versi, solo chi ha salvato un numero; 30 richieste

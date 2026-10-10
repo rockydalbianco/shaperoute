@@ -552,7 +552,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   Settings» (TASK-259). Un server senza l'endpoint: «This server cannot
   look in your contacts yet.»; un errore di lettura della rubrica: «The
   contacts could not be read.». Senza account non si vede: la ricerca
-  sopra dice già «Log in to find your friends.».
+  sopra dice già «Log in to find your friends.». In un'app costruita senza
+  `expo-contacts` (la 1.0 dello store) la sezione non c'è.
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina

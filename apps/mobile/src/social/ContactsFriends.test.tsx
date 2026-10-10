@@ -33,7 +33,8 @@ async function show(
   {
     state = signedIn,
     onPick = jest.fn(),
-  }: { state?: AccountState; onPick?: jest.Mock } = {},
+    built = true,
+  }: { state?: AccountState; onPick?: jest.Mock; built?: boolean } = {},
 ) {
   const sessionEnded = jest.fn();
   await render(
@@ -42,6 +43,7 @@ async function show(
       account={{ state, sessionEnded }}
       onPick={onPick}
       region={() => "IT"}
+      available={() => built}
       fetchFn={fetchFn}
       apiKey={null}
     />,
@@ -175,4 +177,14 @@ test("an ended session is told to the account", async () => {
 test("nobody signed in: nothing, the search says to log in", async () => {
   await show(answers(), { state: { status: "signedOut", notice: null } });
   expect(screen.queryByText(FIND)).toBeNull();
+});
+
+test("an app built without expo-contacts (the store's 1.0) shows nothing of it", async () => {
+  const fetchFn = answers();
+  await show(fetchFn, { built: false });
+  expect(screen.queryByText("FROM YOUR CONTACTS")).toBeNull();
+  expect(screen.queryByText(FIND)).toBeNull();
+  expect(phone.asked).toBe(0);
+  expect(phone.read).toBe(0);
+  expect(fetchFn).not.toHaveBeenCalled();
 });

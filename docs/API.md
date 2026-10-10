@@ -166,7 +166,8 @@ cinque non le disegna, e restano dal primo telefono che le chiede.
   /cities` e, per le sole città, con `GET /city-suggestions`; una partenza
   è un centro quando cade nello stesso quadrato di circa 10 m (4 decimali,
   come `cityKey` dell'app). Un percorso da qualsiasi altra partenza non
-  viene mai scritto, e il contorno di un'immagine nemmeno.
+  viene mai scritto, e il contorno di un'immagine nemmeno. Dal TASK-246
+  parte B anche i punti dei laghi e delle spiagge dell'app (sotto).
 - **La stessa richiesta**: stessa forma o parola, stile, distanza,
   attività, la penna alzata o no (TASK-197), stesso centro, **stesso
   motore**. Il nome del file viene da
@@ -198,6 +199,54 @@ alla volta; la chiave dell'API, se serve, da `SHAPEROUTE_API_KEY`. Rifatto,
 passa in un attimo sulle città già tenute. Una città senza la zona sul
 disco dell'API la fa scaricare, come un telefono: per le zone di molte
 città c'è `prefetch_zones` (ADR-0119).
+
+#### Le figure «Paddle» dei laghi e delle spiagge (TASK-246 parte B)
+
+Ogni telefono, dopo le mappe della zona, chiede le otto forme «Paddle» dei
+tre posti più vicini (ADR-0211): dal **punto stesso** delle liste
+dell'app, `lakes.json` e `beaches.json` (`apps/mobile/src/paddle/`), alla
+distanza del punto (2 km, meno su un lago piccolo), le forme a pezzi con
+la penna alzata. Dalla parte B l'API tiene anche questi percorsi, come
+quelli dal centro di una città: il secondo telefono che chiede la stessa
+forma dallo stesso punto riceve il job già `done`. L'app non cambia.
+
+- **I punti** li legge l'API all'avvio (`water_spots.py`) dai due file
+  dell'app, che il `Dockerfile` copia nell'immagine allo stesso posto. Non
+  si imparano e non si scrivono in `city-centres.txt`: valgono finché
+  sono nelle liste. Un punto delle liste non è la posizione di nessuno,
+  come il centro di una città. Una partenza a 10 m dal punto, o la forma
+  spostata dall'utente (`near`, TASK-238), non si tiene mai.
+- **Dove**: `routes/water/`, a parte, con un limite suo di 10 000
+  percorsi (circa 8 kB l'uno, senza alternative né indicazioni: 80 MB al
+  massimo). Le otto forme di circa 800 punti sono 6 400 percorsi:
+  insieme a quelli delle città, con un limite solo, spingerebbero fuori
+  gli esempi delle città.
+- La stessa richiesta, i 30 giorni e l'impronta del motore come sopra:
+  ogni cambio di `route_engine` le fa ridisegnare.
+- All'avvio una riga dice quanti punti e quanti percorsi tenuti:
+  `Paddle shapes kept from 787 points on the water: 24`.
+
+Per disegnarle prima di ogni telefono, `draw_examples --water` (tutti i
+punti, uno per quadrato di 10 m) o `--water-name` (solo i punti di un lago
+o di una spiaggia, ripetibile):
+
+```
+python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 --water
+python -m shaperoute_api.draw_examples --api … --water-name "Lago di Levico"
+```
+
+Le forme nell'ordine dell'app (cerchio, cuore, stella, poi le altre);
+un punto senza acqua sul disco dell'API si salta alla prima forma
+(`map_data_unavailable`), come fa il telefono. Una forma che non ci sta
+(`shape_not_drawable`) resta scritta nella riga e non ferma il punto.
+
+**Tempi** (2026-10-09, Mac scarico, motore di `main` a `89287a0a`, acqua
+dei laghi d'Italia in cache): le 24 forme di un telefono nuovo a Levico
+Terme (Lago di Levico, Lago di Caldonazzo, Lago della Serraia) costano
+**11 s di motore** la prima volta e **0 s** la seconda, tutte tenute. Su
+15 punti a caso (12 laghi, 3 spiagge) 5 s di motore a punto, 16 s di
+`draw_examples` con le attese fra una domanda e l'altra. Il giro di tutti
+i punti sul server: `tasks/TASK-246.md`, «Esito parte B».
 
 Misurato sul Mac il 2026-10-02 (Trento, zona in cache, il Mac occupato da
 altri lavori): i tre esempi 10–14 s la prima volta, **0,0 s** la seconda,
@@ -483,11 +532,13 @@ Cosa ha fatto l'app con una ricerca, per gli eventi delle ricerche
 |---|---|---|
 | `city_chosen` | `label`, `point`, `place` (facoltativo), `via`: `suggestion`, `recent`, `featured`, `typed` | una città o un luogo scelto in «Explore» |
 | `route_chosen` | `shape` (o `"image"`) o `word`; `index` (0 è A), `of` (1–3), `via`: `start`, `gpx` | il primo uso di un percorso fra quelli offerti |
-| `hint_taken` | `shape` o `word`; `hint`: `try_distance` (con `to_m`) o `catalog_shape`; `distance_m` | «Try N km», o una forma del catalogo dopo un percorso fallito |
+| `hint_taken` | `shape` o `word`; `hint`: `try_distance` (con `to_m`), `catalog_shape` o `better_distance` (con `to_m`, TASK-234 C); `distance_m` | «Try N km», o una forma del catalogo dopo un percorso fallito; `better_distance`: «Try N km» della riga sotto un percorso riuscito |
 
 Risponde sempre `204` a un corpo valido, anche con gli eventi spenti; un
 campo in più, una forma fuori catalogo, un indice fuori dai percorsi offerti
-o una posizione fuori dalla Terra: `422 invalid_request`. Oltre 60 segnali
+o una posizione fuori dalla Terra: `422 invalid_request` (un'app più nuova
+dell'API riceve 422 per un `hint` che l'API non conosce ancora, e lo
+ignora). Oltre 60 segnali
 al minuto, tutti i client insieme, il segnale non si registra (avviso nel
 log). Il `point` si registra come cella di ~1 km; la partenza non c'è mai.
 
@@ -723,9 +774,10 @@ motore.)
   L'app non le deve chiedere: il percorso sull'acqua ha già `directions`
   vuoto.
 - **I preferiti** tengono `paddling` (migrazione `0010`, «Favorites»); gli
-  **esempi tenuti** distinguono l'attività, come la bici. `draw_examples`
-  non disegna la canoa: dove stanno laghi e mare in «Explore» lo decide
-  l'utente (TASK-191, parte C).
+  **esempi tenuti** distinguono l'attività, come la bici. Dalla parte B di
+  TASK-246 l'API tiene anche le figure dai punti dei laghi e delle
+  spiagge dell'app, e `draw_examples --water` le disegna prima (sopra,
+  «Le figure «Paddle» dei laghi e delle spiagge»).
 - **Tempi** sulle fixture del motore: 0,1–1 s un piano, l'acqua letta
   dalla cache in un attimo; un download Overpass non è mai stato misurato
   (task file).

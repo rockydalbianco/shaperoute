@@ -13259,6 +13259,137 @@ Saputo questo, l'utente ha scelto di restare e di comprare un dominio:
 - Spostare il ritorno da Strava su `api.getmuw.app` richiede di cambiare
   anche l'applicazione Strava dell'utente: un passo a parte.
 
+## ADR-0232 — Il tipo di mappa: Standard, Satellite, 3D in un solo stile
+
+**Stato**: Attiva · 2026-10-09 · il pulsante e i tre tipi sono richiesta
+dell'utente del 2026-10-08; Esri per le foto è scelta dell'utente
+(«Esri, chiave dopo»); il resto deciso dall'agente su delega dell'utente
+(TASK-264).
+
+**Contesto**: la mappa era solo lo stile scuro dell'app (ADR-0046) nella
+pagina MapLibre della WebView (ADR-0029). L'utente ha chiesto di poter
+scegliere fra mappa normale, satellitare e 3D. Le foto aeree buone e
+gratuite sono quelle di Esri (World Imagery, fino a circa un metro in
+Italia): senza account Esri l'uso in un'app con pubblicità è una zona
+grigia delle loro condizioni, con un account gratuito ArcGIS Location
+Platform (chiave nell'app, 2 milioni di tasselli al mese) è in regola.
+
+**Decisione**:
+
+1. **Un solo stile per tre tipi** (`map/mapKindStyle.ts`): lo stile
+   scuro con dentro, nascosti, le foto (sopra lo sfondo), una copia dei
+   nomi in chiaro per le foto (`-on-photos`, testo `text` su alone
+   `background`) e l'ombreggiatura del rilievo (sopra il terreno, sotto
+   strade e nomi). Il tipo mostra e nasconde strati con
+   `setLayoutProperty`: lo stile non si ricarica, e percorso, segni e
+   inquadratura restano. Uno strato nascosto non scarica tasselli.
+2. **Satellite** = sfondo, foto, nomi chiari; niente strade scure sopra.
+   Credito «Powered by Esri» con le fonti del servizio. Con
+   `EXPO_PUBLIC_ARCGIS_API_KEY` le foto vengono da `ibasemaps-api.arcgis.com`
+   con il token; senza, da `server.arcgisonline.com`.
+3. **3D = il rilievo, come in Strava e komoot**: lo stile scuro più
+   l'ombreggiatura, il terreno (`setTerrain`, esagerazione 1,3) e la mappa
+   inclinata a 55°. Le altezze sono le Terrain Tiles del registro AWS
+   (codifica terrarium), gratuite e senza chiave; due fonti uguali per
+   terreno e ombreggiatura, come chiede MapLibre.
+4. **L'inquadratura non cambia**: inclinata, una forma inquadrata come
+   piatta occupa meno schermo, mai di più (misurato nel browser, una
+   forma alta e stretta compresa). Cambiando tipo con il percorso
+   inquadrato, la mappa lo inquadra di nuovo con la nuova inclinazione;
+   altrimenti si inclina dov'è.
+5. **La scelta resta sul telefono** (`map-kind.json`, come le unità);
+   «Standard» non scrive niente. `MapView` la manda alla pagina appena è
+   pronta e a ogni cambio; una pagina nuova parte standard.
+6. **Il pulsante** è tondo come «←» e la freccia del nord, con due fogli
+   disegnati (l'app non ha icone), in alto a destra; mentre si corre la
+   barra delle svolte prende la riga e il pulsante sta sotto. Il menu si
+   apre sotto il pulsante, dentro la colonna e non sovrapposto, perché su
+   Android un tocco fuori dai bordi del genitore non arriva.
+
+**Alternative scartate**:
+
+- *Edifici in 3D* (`fill-extrusion` dai tasselli OpenMapTiles): provati.
+  Con il rilievo acceso il percorso è steso sul terreno e gli edifici lo
+  coprono strada dopo strada, anche semitrasparenti; senza rilievo si
+  perdono le montagne, che in Trentino sono il 3D che conta.
+- *Un `setStyle` per tipo*: toglie gli strati che la pagina aggiunge (il
+  percorso, i segni) e va rifatto tutto.
+- *MapTiler o Mapbox per le foto*: chiave obbligatoria, e per un'app con
+  pubblicità MapTiler è a pagamento.
+- *Sentinel-2 (EOX)*: libero, ma 10 m per pixel: alle vie non serve.
+- *Allontanare l'inquadratura in 3D*: non serve, vedi il punto 4.
+
+**Conseguenze**:
+
+- Solo app: nessun server, nessuna migrazione. Esri e AWS vedono la zona
+  guardata, come OpenFreeMap (`UI.md`, «Cosa esce dal telefono»).
+- La chiave ArcGIS è facoltativa: quando l'utente crea l'account va in
+  `apps/mobile/.env` e nelle variabili di EAS (`preview`, poi
+  `production`). Fino ad allora le foto vengono dall'indirizzo pubblico.
+- Le mappe sotto i disegni di «Feed» ed «Explore» restano standard.
+- Nel tono chiaro (TASK-263, ADR-0231) l'ombreggiatura prende l'ombra
+  scura e la luce chiara di quel tono (`hillshadeOf`); i nomi sulle foto
+  sono il testo del tono sul suo fondo, scuri su alone chiaro.
+- Seguiti possibili, da chiedere: satellite e 3D insieme (le foto sul
+  rilievo).
+
+## ADR-0211 — aggiornamento (parte B): il server tiene le figure «Paddle» dei laghi e delle spiagge
+**Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
+(TASK-246 parte B); task e via dal coordinatore, nessun numero nuovo.
+
+**Contesto**: con ADR-0211 ogni telefono chiede le otto forme dei tre
+posti più vicini, dal punto delle liste `lakes.json` e `beaches.json`
+dell'app. `route_store.py` (ADR-0136) teneva solo i percorsi dal centro di
+una città: il server ridisegnava le stesse 24 forme per ogni telefono
+nuovo della stessa zona: a Levico 11 s di motore sul Mac, tre-cinque
+volte tanto sul server, per ogni telefono, e una coda quando ne arrivano
+molti insieme.
+
+**Decisione**:
+
+1. I punti delle due liste sono **centri anche loro**, dati all'avvio
+   (`RouteStore(water=…)`, letti da `water_spots.py`): un percorso dallo
+   stesso quadrato di 10 m si tiene come quello dal centro di una città,
+   con la stessa chiave (forma, distanza, attività, penna alzata,
+   motore). Non si imparano e non si scrivono in `city-centres.txt`.
+2. **Una cartella e un limite loro**: `routes/water/`, 10 000 percorsi
+   (circa 8 kB l'uno). I 6 400 percorsi delle liste non spingono fuori
+   gli esempi delle città, e viceversa.
+3. Le liste restano **quelle dell'app**: il `Dockerfile` e
+   `.dockerignore` copiano i due file nell'immagine allo stesso percorso
+   del repository. Una lista assente vale vuota.
+4. `draw_examples --water` (e `--water-name`) fa il primo telefono per
+   ogni punto: le otto forme nell'ordine dell'app, a pezzi con la penna
+   alzata come la chiede l'app; un punto senza acqua sul server si salta
+   alla prima forma.
+5. L'app non cambia: chiede le stesse richieste, che arrivano già
+   `done`. I 6 s fra una richiesta e l'altra di `aheadExamples.ts`
+   restano: servono al limite di 30 POST al minuto, che conta anche le
+   risposte tenute.
+
+**Alternative scartate**:
+
+- *Una copia delle liste dentro `services/api/`*: due file da tenere
+  uguali, e TASK-245 C sta già cambiando quello delle spiagge.
+- *`learn` dei punti in `city-centres.txt`*: si dimenticherebbero con i
+  centri più vecchi (`MAX_CENTRES`) e il file crescerebbe a ogni avvio.
+- *Tenere ogni percorso `paddling`, da qualunque partenza*: la partenza è
+  la posizione di chi chiede (ADR-0085, ADR-0092).
+- *Lo stesso limite di 3000 delle città*: `draw_examples --water` lo
+  riempirebbe da solo.
+
+**Conseguenze**:
+
+- Un telefono nuovo in una zona già chiesta, o disegnata prima, ha le sue
+  24 forme senza motore (0 s sul Mac invece di 11 s); il giro sul
+  telefono dura sempre circa due minuti e mezzo, per i 6 s fra le
+  richieste: il guadagno è del server, non del tempo che vede l'utente.
+- Ogni cambio di `route_engine` le fa ridisegnare tutte, come gli esempi
+  delle città; `draw_examples --water` è molto più lungo di quello delle
+  città (stima in `tasks/TASK-246.md`, «Esito parte B»).
+- Su disco circa 50 MB per tutti i punti, 80 MB al più, in
+  `data/cache/routes/water/`.
+
 ## ADR-0215 — aggiornamento (parte C): in bici senza percorso, la velocità
 **Stato**: Attiva · 2026-10-09 · **scelta dell'utente** del 2026-10-08
 (la velocità, non il passo al km); il come è **deciso dall'agente su
@@ -13276,13 +13407,112 @@ percorso il passo al km, segnalandolo. L'utente ha scelto la velocità.
    stessi testi. Una corsa non ha sport nel file, come prima.
 2. **La voce non cambia**: ogni km col passo medio, come una corsa senza
    percorso. Con un percorso la bici dice ogni 10 km la velocità media
-   (ADR-0179): non chiesto, segnalato all'utente.
+   (ADR-0179): non chiesto, segnalato all'utente, che il 2026-10-09 ha
+   scelto di lasciarla così.
 3. Il post scrive il passo al km e «My activities» non cambia: è quello
    che fa già una pedalata con un percorso.
 
 **Alternative scartate**: un componente proprio per la pedalata senza
 percorso (due modi di mostrare la stessa cosa); cambiare anche la voce
 (non chiesto: una scelta dell'utente).
+
+## ADR-0197, aggiunta — Il «Try» della riga si conta come `better_distance`
+**Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
+(TASK-234 parte C), dentro la **scelta dell'utente** del 2026-10-08
+(«Tutti e due»: contare i tocchi su «Try N km» e un segno visibile mentre
+il percorso nuovo si calcola). Aggiunta ad ADR-0197, senza numero nuovo,
+d'accordo con il coordinatore.
+
+**Decisione**:
+
+1. «Try N km» della riga sotto un percorso riuscito manda `hint_taken`
+   con un `hint` nuovo, `better_distance`, con `distance_m` (quella
+   disegnata) e `to_m` (quella provata). Un valore nuovo di un segnale
+   che c'è, non un `kind` nuovo: il report delle ricerche lo conta già fra
+   gli `hints`, a parte dai `try_distance` degli errori; la proposta
+   `review_distance` resta dei soli errori.
+2. Additivo: l'API nuova registra i corpi di prima come prima; un'API di
+   prima risponde 422 al `hint` nuovo e l'app, che manda i segnali senza
+   aspettarli, non se ne accorge. Il corpo nuovo è in un fixture suo,
+   `signal-better-distance.json`, per non cambiare `signals.json` che i
+   test di TASK-142 leggono per posizione.
+3. Nessun indicatore nuovo sul pulsante: il «Try» fa partire un disegno
+   nuovo e il pannello dell'attesa (testo, «Cancel», barra) prende subito
+   il posto del percorso e della riga. Un secondo indicatore sopra
+   sarebbe lo stesso segno detto due volte.
+
+**Alternative scartate**: un `kind` nuovo (`better_taken`): un modello e
+un conteggio in più nell'API per la stessa cosa, un «Try»; uno spinner
+nel pulsante: il pulsante non resta sullo schermo mentre si calcola.
+
+## ADR-0137, aggiunta — Su «Data» scorrono solo i numeri
+**Stato**: Attiva · 2026-10-09 · deciso dall'agente su delega dell'utente
+(TASK-268), dopo la corsa su strada dell'utente dello stesso giorno («se
+compaiono le indicazioni si sposta tutto in basso e non si riesce più a
+cliccare»). Aggiunta ad ADR-0137, senza numero nuovo.
+
+**Decisione**:
+
+1. La pagina «Data» ha tre parti: in alto l'indicazione (o la via verso la
+   partenza), fissa; in mezzo una sola `ScrollView` che prende lo spazio
+   che resta, con i km grandi, la barra del percorso, i numeri, i km uno
+   per uno, gli interruttori e la voce; in fondo i pulsanti della corsa e
+   «Map» / «Data», fissi. Prima la pagina era una colonna fissa: con
+   l'indicazione in alto i pulsanti e «Map» uscivano dallo schermo, e il
+   tocco dove stava «Map» cadeva sugli interruttori.
+2. I km uno per uno non hanno più uno scorrimento loro: due scorrimenti
+   verticali uno dentro l'altro si contendono il dito.
+3. Lo swipe verso la mappa resta della pagina: lo scorrimento ha
+   `directionalLockEnabled`, la pagina non cede uno swipe iniziato, e se
+   le viene tolto torna al suo posto invece di restare a metà.
+
+**Alternative scartate**: rimpicciolire i km grandi o togliere righe
+(cambia quello che l'utente vede, e una corsa lunga esce dallo schermo lo
+stesso); mettere anche l'indicazione nello scorrimento (la svolta è il
+motivo per cui si guarda la pagina correndo).
+
+## ADR-0237 — La build dello store senza AdMob: niente codice nativo con APP_VARIANT=production
+**Stato**: Attiva · 2026-10-09 · «la lanciamo senza pubblicità, faremo
+poi», e poi «la pubblicità la inseriamo quando facciamo la società»:
+scelte dell'utente; il come deciso dall'agente su delega dell'utente
+(TASK-267), su indicazione del coordinatore di togliere il codice nativo
+
+**Contesto**: la 1.0 va in revisione da Apple senza annunci; gli annunci
+veri aspettano la società dell'utente (TASK-153 fermo). Il codice degli
+annunci nativi del Feed (ADR-0198) resta: preview, Expo Go e le build di
+prova come oggi.
+
+**Decisione**:
+- `apps/mobile/react-native.config.js` (file nuovo) toglie
+  `react-native-google-mobile-ads` dall'autolinking, iOS e Android, quando
+  `APP_VARIANT=production`, la variabile che `eas.json` dà al profilo
+  `production` (come per il runtime di `app.config.ts`, TASK-152). Nella
+  build dello store non entrano né l'SDK di AdMob né quello del consenso di
+  Google (UMP), né i loro manifesti della privacy.
+- Il JS non cambia: senza il modulo nativo `src/ads/admob.ts` non carica il
+  pacchetto e dà «nessun annuncio», come in Expo Go. Il Feed ha solo i
+  post, senza spazi vuoti (un posto senza annuncio non entra nella lista,
+  `feedWithAds`). Un test controlla che fuori da `admob.ts` il pacchetto
+  sia importato solo come tipo.
+- Gli update del canale `production` girano sulla build senza il modulo:
+  anche loro senza annunci, qualunque cosa ci sia nel JS.
+
+**Alternative scartate**: una variabile `EXPO_PUBLIC_ADS=off` che lascia
+l'SDK nell'app, fermo (fatta e poi tolta: il manifesto della privacy di
+Google, che dichiara l'ID del dispositivo per il tracciamento, finiva
+comunque nel pacchetto); togliere il plugin da `app.json` o da
+`app.config.ts` (file di altri task; il plugin da solo scrive solo chiavi
+in `Info.plist`); spegnere gli annunci ovunque (preview resta come oggi).
+
+**Conseguenza**: l'impronta della build `production` cambia (il file
+entra nell'impronta e cambia l'autolinking): la build 5 è comunque nuova.
+Si ricontrolla come in `DEPLOY.md` A.7 punto 4, sempre con
+`APP_VARIANT=production`. In `Info.plist` resta la chiave
+`GADApplicationIdentifier` scritta dal plugin di `app.json`: senza l'SDK
+non fa nulla. I testi «Termini» e «Privacy» dell'app e del sito dicono
+ancora che ci sono annunci: si correggono nei loro task. Per riaccendere
+gli annunci (TASK-153): togliere la condizione da `react-native.config.js`
+e fare una build nuova; un update non basta.
 
 ## ADR-0228 — Segnalare e bloccare: due tabelle, un blocco nei due sensi, nessun pannello
 **Stato**: Attiva · 2026-10-09 · il perimetro è del brief del coordinatore

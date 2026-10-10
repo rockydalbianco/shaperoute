@@ -51,6 +51,8 @@ it("loads app.config.ts with the Expo Go runtime and every plugin of app.json", 
   expect(exp.version).toBe("1.0.0");
   expect(exp.runtimeVersion).toBe("exposdk:57.0.0");
   expect(exp.runtimeVersion).toBe(appJson.expo.runtimeVersion);
+  // iPhone only for the App Store (TASK-152): an iPad runs it as an iPhone app.
+  expect(exp.ios?.supportsTablet).toBe(false);
   expect(exp.plugins).toEqual(appJson.expo.plugins);
 });
 
@@ -74,4 +76,10 @@ it("sets the variant only in the production build profile", () => {
   });
   expect(preview).toMatchObject({ channel: "preview" });
   expect(preview).not.toHaveProperty("env");
+});
+
+it("submits the production build to the MuW app on App Store Connect", () => {
+  // `eas build --auto-submit` needs a submit profile named like the build
+  // profile; without it the build runs and the upload fails (TASK-152).
+  expect(easJson.submit.production.ios.ascAppId).toBe("6820961883");
 });

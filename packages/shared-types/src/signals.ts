@@ -34,10 +34,18 @@ export type RouteChosenSignal = Drawn & {
 };
 
 /** A way out of a failed route taken (TASK-031): "Try N km", or a shape of
- * the catalogue, which is then the one drawn. */
+ * the catalogue, which is then the one drawn. Or the "Try N km" of the line
+ * under a route done, where its shape comes out better (TASK-234 C,
+ * fixtures/signal-better-distance.json): an API before it answers 422,
+ * which the app ignores. */
 export type HintTakenSignal = Drawn &
   (
-    | { kind: "hint_taken"; hint: "try_distance"; distance_m: number; to_m: number }
+    | {
+        kind: "hint_taken";
+        hint: "try_distance" | "better_distance";
+        distance_m: number;
+        to_m: number;
+      }
     | { kind: "hint_taken"; hint: "catalog_shape"; distance_m: number }
   );
 

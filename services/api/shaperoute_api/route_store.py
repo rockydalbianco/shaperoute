@@ -23,6 +23,14 @@ The same request: the same shape or word, style, distance and activity, the
 pen up or not, from the same centre, drawn by the same engine. A route is
 drawn again after KEEP_S, for the roads that changed, and at once when the
 engine's code is another: its fingerprint is part of the name of the file.
+
+On the water (TASK-246 part B): the points of the app's lists of lakes and
+beaches (water_spots.py) are centres too, given when the API starts. A
+phone asks the eight shapes of the three points nearest it from the points
+themselves, and a point of a list is no one's position. Their routes are in
+a folder of their own with a limit of its own: the lists' eight shapes are
+many more routes than the cities', and much lighter, and drawing them all
+must not push a city's examples out.
 """
 
 from __future__ import annotations
@@ -49,10 +57,15 @@ LatLon = tuple[float, float]
 # kept is a cache as they are, and their file names never match (`foot_*`).
 STORE_FOLDER = "routes"
 CENTRES_FILE = "city-centres.txt"
+# Inside STORE_FOLDER: the routes from a point on the water.
+WATER_FOLDER = "water"
 # After this a route is drawn again: the zone may be newer than the route.
 KEEP_S = 30 * 24 * 3600.0
 # About 100 kB each with its alternatives: 300 MB at most.
 MAX_ROUTES = 3000
+# About 10 kB each, no alternatives and no directions: eight shapes of
+# about 800 points of the lists, with room for more, 100 MB at most.
+MAX_WATER_ROUTES = 10_000
 # Six centres for each few letters typed (GET /city-suggestions): the oldest
 # are forgotten, and found again when someone types that city.
 MAX_CENTRES = 50_000
@@ -125,6 +138,8 @@ class RouteStore:
         max_routes: int = MAX_ROUTES,
         max_centres: int = MAX_CENTRES,
         clock: Callable[[], float] = time.time,
+        water: Iterable[LatLon] = (),
+        max_water_routes: int = MAX_WATER_ROUTES,
     ) -> None:
         self._directory = directory
         self._engine = engine_fingerprint() if engine is None else engine
@@ -135,9 +150,22 @@ class RouteStore:
         self._lock = threading.Lock()
         # In the order they were learned: a dict keeps it, a set does not.
         self._centres: dict[str, None] = dict.fromkeys(self._read_centres())
+        # The points on the water: never written, never forgotten.
+        self._water = frozenset(map(cell, water))
+        self._max_water_routes = max_water_routes
 
     def __len__(self) -> int:
+        """The routes kept from a city's centre."""
         return sum(1 for _ in self._directory.glob("*.json"))
+
+    @property
+    def water_points(self) -> int:
+        """The points on the water a route may be kept from."""
+        return len(self._water)
+
+    def kept_on_water(self) -> int:
+        """The routes kept from a point on the water."""
+        return sum(1 for _ in self._water_directory.glob("*.json"))
 
     def learn(self, centres: Iterable[LatLon]) -> None:
         """Centres the API gave for a city: a route from one may be kept."""
@@ -164,7 +192,8 @@ class RouteStore:
 
     def get(self, request: object) -> RouteResult | None:
         """The route kept for `request`, or None: never asked, from no
-        city's centre, too old, drawn by another engine, or not readable."""
+        city's centre nor point on the water, too old, drawn by another
+        engine, or not readable."""
         path = self._path(request)
         if path is None:
             return None
@@ -183,14 +212,15 @@ class RouteStore:
         return None
 
     def put(self, request: object, result: RouteResult) -> bool:
-        """Keeps `result` when `request` starts from a city's centre; says
-        whether it did. Never raises: without the file the route is drawn
-        again."""
+        """Keeps `result` when `request` starts from a city's centre or a
+        point on the water; says whether it did. Never raises: without the
+        file the route is drawn again."""
         path = self._path(request)
         if path is None or not isinstance(request, RouteRequest):
             return False
+        on_water = cell(request.start) in self._water
         with self._lock:
-            if cell(request.start) not in self._centres:
+            if not on_water and cell(request.start) not in self._centres:
                 return False
         kept = {
             "saved_at": self._clock(),
@@ -199,16 +229,23 @@ class RouteStore:
             "result": asdict(result),
         }
         try:
-            self._directory.mkdir(parents=True, exist_ok=True)
+            path.parent.mkdir(parents=True, exist_ok=True)
             # Whole or not at all: a reader never finds half a file.
             draft = path.with_suffix(f".{threading.get_ident()}.tmp")
             draft.write_text(json.dumps(kept, separators=(",", ":")))
             draft.replace(path)
-            self._forget_oldest()
+            if on_water:
+                self._forget_oldest(self._water_directory, self._max_water_routes)
+            else:
+                self._forget_oldest(self._directory, self._max_routes)
         except (OSError, TypeError, ValueError) as exc:
             log.warning("route not kept: %s", type(exc).__name__)
             return False
         return True
+
+    @property
+    def _water_directory(self) -> Path:
+        return self._directory / WATER_FOLDER
 
     @property
     def _centres_path(self) -> Path:
@@ -242,11 +279,13 @@ class RouteStore:
             return None  # a shape moved by the user (TASK-238): theirs too
         same = json.dumps([self._engine, self._same(request)], sort_keys=True)
         name = hashlib.sha256(same.encode()).hexdigest()[:24]
-        return self._directory / f"{name}.json"
+        on_water = cell(request.start) in self._water
+        folder = self._water_directory if on_water else self._directory
+        return folder / f"{name}.json"
 
-    def _forget_oldest(self) -> None:
-        paths = list(self._directory.glob("*.json"))
-        if len(paths) <= self._max_routes:
+    def _forget_oldest(self, folder: Path, most: int) -> None:
+        paths = list(folder.glob("*.json"))
+        if len(paths) <= most:
             return
 
         def written(path: Path) -> float:
@@ -255,5 +294,5 @@ class RouteStore:
             except OSError:
                 return 0.0
 
-        for path in sorted(paths, key=written)[: len(paths) - self._max_routes]:
+        for path in sorted(paths, key=written)[: len(paths) - most]:
             path.unlink(missing_ok=True)

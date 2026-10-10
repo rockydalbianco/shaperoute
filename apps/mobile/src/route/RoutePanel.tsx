@@ -425,6 +425,15 @@ export function RouteOutcome({
               text={betterDistanceText(kindOf(view.request), better, units)}
               tryLabel={tryText(better, units)}
               onTry={() => {
+                // How often the line is taken (TASK-234 C): an API before
+                // it refuses the hint, and the app never knows.
+                onSignal({
+                  kind: "hint_taken",
+                  ...drawnOf(view.request),
+                  hint: "better_distance",
+                  distance_m: view.request.distance_m,
+                  to_m: better,
+                });
                 setLeft({ from: view.request, to: better });
                 onTryDistance(better);
               }}

@@ -11,6 +11,9 @@ it, deletes it too (ON DELETE CASCADE).
 A comment is plain text: the API keeps it as written, the app shows it as
 text, never as a link or as HTML (docs/UI.md). A negative one is never kept:
 comment_filter.py says which (TASK-213, ADR-0176).
+
+A block keeps two members apart (TASK-121, moderation.py): neither reads,
+writes or counts the comments of the other, nor opens the other's drawing.
 """
 
 from __future__ import annotations
@@ -58,6 +61,7 @@ from shaperoute_api.drawings import (
     AuthorBody,
     drawing_seen_sql,
 )
+from shaperoute_api.follows import apart_sql
 from shaperoute_api.schemas import ErrorBody, ErrorDetail
 
 MAX_COMMENT_LENGTH = 500
@@ -150,8 +154,11 @@ class CommentsBody(BaseModel):
 
 # --- The comments in the database ---
 
-# A drawing `viewer` may see, as drawings.py asks it (TASK-208).
+# A drawing `viewer` may see, as drawings.py asks it (TASK-208): never one
+# whose owner a block keeps apart from `viewer` (TASK-121).
 SEEN_BY = f"d.id = %s AND {drawing_seen_sql('%s')}"
+# The comments `viewer` reads: none of a member a block keeps apart.
+NOT_APART = f"NOT {apart_sql('%s', 'c.user_id')}"
 
 
 def _cursor(row: DictRow) -> str:
@@ -201,8 +208,8 @@ class Comments:
             ).fetchone()
             if drawing is None:
                 return None
-            where = "c.drawing_id = %s"
-            values: list[Any] = [wanted]
+            where = f"c.drawing_id = %s AND {NOT_APART}"
+            values: list[Any] = [wanted, viewer_id]
             if cursor is not None:
                 where += " AND (c.created_at, c.id) > (%s, %s)"
                 values += _after_cursor(cursor)
@@ -213,7 +220,9 @@ class Comments:
                 (*values, limit + 1),
             ).fetchall()
             count = conn.execute(
-                "SELECT count(*) AS n FROM comments WHERE drawing_id = %s", (wanted,)
+                f"SELECT count(*) AS n FROM comments c WHERE c.drawing_id = %s"
+                f" AND {NOT_APART}",
+                (wanted, viewer_id),
             ).fetchone()
         assert count is not None
         page, more = rows[:limit], len(rows) > limit

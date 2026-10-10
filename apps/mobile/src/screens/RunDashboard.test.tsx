@@ -1,5 +1,12 @@
 import type { LatLon } from "@shaperoute/shared-types";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import { useEffect, useState } from "react";
 import { Linking, Text } from "react-native";
 
@@ -276,6 +283,31 @@ test("Data is the page with every number, the turn and the kilometres one by one
     jest.advanceTimersByTime(1000);
   });
   await waitFor(() => expect(screen.queryByText("Next turn")).toBeNull());
+});
+
+test("on Data only the numbers scroll: the turn, Pause and Map stay on screen (TASK-268)", async () => {
+  await render(<LiveRun fixes={north(2300)} />);
+  await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+  const page = screen.getByTestId("data-page");
+  const numbers = within(page).getByTestId("data-numbers");
+  // Whatever is left between the turn and the buttons, and no more.
+  expect(numbers).toHaveStyle({ flex: 1 });
+  // The kilometres one by one and the switches scroll, in the one scroll.
+  expect(within(numbers).getByLabelText("Distance: 2.30 km")).toBeOnTheScreen();
+  expect(within(numbers).getByLabelText("Kilometre 2: 5:00, 0:00")).toBeOnTheScreen();
+  expect(within(numbers).getByRole("switch", { name: "Voice" })).toBeOnTheScreen();
+  expect(within(numbers).getByLabelText("Listen")).toBeOnTheScreen();
+  // The turn at the top, «Pause» and «Map» at the foot do not: a turn that
+  // grows cannot push them off the screen.
+  expect(within(numbers).queryByText("Next turn")).toBeNull();
+  expect(within(numbers).queryByLabelText("Pause")).toBeNull();
+  expect(within(numbers).queryByRole("tab")).toBeNull();
+  expect(within(page).getByText("Next turn")).toBeOnTheScreen();
+  expect(within(page).getByLabelText("Pause")).toBeOnTheScreen();
+  expect(within(page).getByRole("tab", { name: "Map" })).toBeOnTheScreen();
+  // A swipe back to the map is the page's: the scroll does not take it.
+  expect(numbers.props.directionalLockEnabled).toBe(true);
+  expect(page.props.onResponderTerminationRequest()).toBe(false);
 });
 
 test("each kilometre has a bar, longer the faster it was, the fastest light", async () => {

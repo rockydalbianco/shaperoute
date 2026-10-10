@@ -227,6 +227,8 @@ test("without a route, with «Paddle» the kilometre is said with the pace of 50
 });
 
 test("without a route, a run and a ride say a kilometre's pace, as before", async () => {
+  // A ride's file keeps its sport since TASK-251 part C: its numbers are speeds.
+  const kept = { run: undefined, bike: "cycling" } as const;
   for (const sport of ["run", "bike"] as const) {
     saveSport(sport);
     clearRun();
@@ -239,7 +241,7 @@ test("without a route, a run and a ride say a kilometre's pace, as before", asyn
       expect(said().filter((words) => /kilometre/.test(words))).toEqual([
         "1 kilometre. Time: 12 minutes. Average pace: 12 minutes per kilometre.",
       ]);
-      expect(loadRun()).not.toHaveProperty("activity");
+      expect(loadRun()?.activity).toBe(kept[sport]);
       await unmount();
     } finally {
       saveSport("run");

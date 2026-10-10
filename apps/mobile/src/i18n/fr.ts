@@ -228,6 +228,12 @@ export const FR: Table = {
   "Turns the map north up": "Met le nord en haut",
   "Turns the map like the drawing": "Tourne la carte comme le dessin",
 
+  // src/map/MapKindButton.tsx
+  "Map type": "Type de carte",
+  Standard: "Standard",
+  Satellite: "Satellite",
+  "3D": "3D",
+
   // src/paddle/PaddleExplore.tsx
   Next: "À suivre",
   "Drawing…": "Dessin en cours…",
@@ -697,6 +703,22 @@ export const FR: Table = {
   Miles: "Miles",
   "Phone units": "Unités du téléphone",
 
+  // src/settings/ToneSetting.tsx
+  Tone: "Apparence",
+  Dark: "Sombre",
+  Light: "Clair",
+  Brightness: "Luminosité",
+  "Brightness {step} of {count}": "Luminosité {step} sur {count}",
+  Darker: "Plus sombre",
+  Brighter: "Plus clair",
+  "Preview of the tone": "Aperçu de l'apparence",
+  Apply: "Appliquer",
+  "MuW opens again in the new tone.": "MuW se rouvre avec la nouvelle apparence.",
+  "The phone did not keep the tone. Try again.":
+    "Le téléphone n'a pas enregistré l'apparence. Réessaie.",
+  "Close MuW and open it again to see the new tone.":
+    "Ferme MuW et rouvre-la pour voir la nouvelle apparence.",
+
   // src/settings/sport.ts
   "Ride without a route": "Rouler sans parcours",
   "Paddle without a route": "Pagayer sans parcours",
@@ -1099,4 +1121,30 @@ export const FR: Table = {
 
   // src/explore/RecommendedRow.tsx (TASK-092)
   RECOMMENDED: "RECOMMANDÉS",
+
+  // src/social/ReportMenu.tsx, BlockedPeople.tsx (TASK-121: report and block)
+  More: "Plus",
+  "Report or block": "Signaler ou bloquer",
+  Report: "Signaler",
+  "Block {user}": "Bloquer {user}",
+  "Why are you reporting this?": "Pourquoi signales-tu ceci ?",
+  Spam: "Spam",
+  "Offensive or hateful": "Offensant ou haineux",
+  "Harassment or bullying": "Harcèlement ou intimidation",
+  "Nudity or sexual content": "Nudité ou contenu sexuel",
+  "Something else": "Autre chose",
+  "Thanks for telling us. We will look at it.":
+    "Merci de nous l'avoir signalé. Nous allons vérifier.",
+  "Block {user}?": "Bloquer {user} ?",
+  "You will not see each other's drawings, comments or profile, and any follow between you ends. They are not told.":
+    "Vous ne verrez plus les dessins, commentaires ni le profil l'un de l'autre, et tout abonnement entre vous prend fin. La personne n'est pas prévenue.",
+  Block: "Bloquer",
+  "Sending…": "Envoi…",
+  "This is not available any more.": "Ce n'est plus disponible.",
+  "Blocked people": "Personnes bloquées",
+  "You have not blocked anyone.": "Tu n'as bloqué personne.",
+  Unblock: "Débloquer",
+  "Unblock {name}": "Débloquer {name}",
+  "You blocked {user}. Unblock them from Blocked people in your profile.":
+    "Tu as bloqué {user}. Tu peux le débloquer dans Personnes bloquées de ton profil.",
 };

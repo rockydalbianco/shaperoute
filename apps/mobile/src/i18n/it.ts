@@ -227,6 +227,12 @@ export const IT: Table = {
   "Turns the map north up": "Mette il nord in alto",
   "Turns the map like the drawing": "Gira la mappa come il disegno",
 
+  // src/map/MapKindButton.tsx
+  "Map type": "Tipo di mappa",
+  Standard: "Normale",
+  Satellite: "Satellite",
+  "3D": "3D",
+
   // src/paddle/PaddleExplore.tsx
   Next: "A seguire",
   "Drawing…": "Disegno in corso…",
@@ -696,6 +702,22 @@ export const IT: Table = {
   Miles: "Miglia",
   "Phone units": "Unità del telefono",
 
+  // src/settings/ToneSetting.tsx
+  Tone: "Tono",
+  Dark: "Scuro",
+  Light: "Chiaro",
+  Brightness: "Luminosità",
+  "Brightness {step} of {count}": "Luminosità {step} di {count}",
+  Darker: "Più scuro",
+  Brighter: "Più chiaro",
+  "Preview of the tone": "Anteprima del tono",
+  Apply: "Applica",
+  "MuW opens again in the new tone.": "MuW si riapre con il nuovo tono.",
+  "The phone did not keep the tone. Try again.":
+    "Il telefono non ha salvato il tono. Riprova.",
+  "Close MuW and open it again to see the new tone.":
+    "Chiudi MuW e riaprila per vedere il nuovo tono.",
+
   // src/settings/sport.ts
   "Ride without a route": "Pedala senza percorso",
   "Paddle without a route": "Pagaia senza percorso",
@@ -1094,4 +1116,30 @@ export const IT: Table = {
 
   // src/explore/RecommendedRow.tsx (TASK-092)
   RECOMMENDED: "CONSIGLIATI",
+
+  // src/social/ReportMenu.tsx, BlockedPeople.tsx (TASK-121: report and block)
+  More: "Altro",
+  "Report or block": "Segnala o blocca",
+  Report: "Segnala",
+  "Block {user}": "Blocca {user}",
+  "Why are you reporting this?": "Perché lo segnali?",
+  Spam: "Spam",
+  "Offensive or hateful": "Offensivo o d'odio",
+  "Harassment or bullying": "Molestie o bullismo",
+  "Nudity or sexual content": "Nudità o contenuti sessuali",
+  "Something else": "Altro motivo",
+  "Thanks for telling us. We will look at it.":
+    "Grazie per avercelo detto. Lo controlleremo.",
+  "Block {user}?": "Bloccare {user}?",
+  "You will not see each other's drawings, comments or profile, and any follow between you ends. They are not told.":
+    "Non vedrete più i disegni, i commenti e il profilo l'uno dell'altro, e ogni follow fra voi finisce. Non riceverà alcun avviso.",
+  Block: "Blocca",
+  "Sending…": "Invio…",
+  "This is not available any more.": "Non è più disponibile.",
+  "Blocked people": "Persone bloccate",
+  "You have not blocked anyone.": "Non hai bloccato nessuno.",
+  Unblock: "Sblocca",
+  "Unblock {name}": "Sblocca {name}",
+  "You blocked {user}. Unblock them from Blocked people in your profile.":
+    "Hai bloccato {user}. Puoi sbloccarlo da Persone bloccate nel tuo profilo.",
 };

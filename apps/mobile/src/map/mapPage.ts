@@ -10,11 +10,13 @@ import {
   otherRoute,
   route,
   routeAhead,
+  routeCasing,
   stop,
   track,
   walk,
 } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
+import { kindLayers, PITCH_3D, TERRAIN_SPEC, withKinds } from "./mapKindStyle";
 import { darkMapStyle, LABEL_FONT } from "./mapStyle";
 
 /**
@@ -64,6 +66,13 @@ export const FOLLOW_ZOOM = 17;
 export const ROUTE_COLOR = route.color;
 export const ROUTE_WIDTH = route.width;
 export const ROUTE_OPACITY = route.opacity;
+
+/**
+ * The route's dark edge, on the light map only (TASK-263, ADR-0231): a
+ * wider dark line under the route and under the part left, since the
+ * yellow alone does not show on light streets. None on the dark map.
+ */
+export const ROUTE_CASING = routeCasing;
 
 /**
  * While running the route, the part left (TASK-224): dashed, under the part
@@ -151,6 +160,24 @@ export const MAP_BACKGROUND = color.map.background;
  * A value as a JavaScript literal inside the page's `<script>`. `<` is escaped
  * so that no string in it (the attribution has links) can close the script.
  */
+/** The script that draws the route's edge under `source`'s line; none on the dark map. */
+function casingScript(source: string): string {
+  if (ROUTE_CASING === null) {
+    return "";
+  }
+  return `map.addLayer({
+        id: ${toScript(`${source}-casing`)},
+        type: "line",
+        source: ${toScript(source)},
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(ROUTE_CASING.color)},
+          "line-width": ${ROUTE_CASING.width},
+          "line-opacity": ${ROUTE_CASING.opacity},
+        },
+      });`;
+}
+
 function toScript(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
@@ -166,6 +193,8 @@ export function isExternalUrl(url: string): boolean {
 /** The page, with the map's names and «Start here» in `language`. */
 export function buildMapPage(language: Language = appLanguage()): string {
   const bounds = JSON.stringify(ITALY_BOUNDS.map(toLngLat));
+  // With the photos and the hills in it, hidden (TASK-264).
+  const style = withKinds(mapStyle(language));
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -223,9 +252,14 @@ export function buildMapPage(language: Language = appLanguage()): string {
     var inFrame = false;
     var following = false;
     var toldBearing = 0;
+    // The map's kind (TASK-264): standard until the app says another, and
+    // the layers of the style each kind shows.
+    var kind = "standard";
+    var KIND_LAYERS = ${toScript(kindLayers(style))};
+    var STYLE_LAYERS = ${toScript(style.layers.map((layer) => layer.id))};
     var map = new maplibregl.Map({
       container: "map",
-      style: ${toScript(mapStyle(language))},
+      style: ${toScript(style)},
       bounds: ${bounds},
       fitBoundsOptions: { padding: 16 },
       attributionControl: false,
@@ -265,6 +299,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       // While running the route, the part left: dashed, under the part run
       // (TASK-224). Its one line has id 0, and its beat is its "dim" state.
       map.addSource("route-ahead", { type: "geojson", data: ahead, generateId: true });
+      ${casingScript("route-ahead")}
       map.addLayer({
         id: "route-ahead",
         type: "line",
@@ -285,6 +320,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       setAheadOpacity();
       // A route that arrived before the style is drawn now.
       map.addSource("route", { type: "geojson", data: route });
+      ${casingScript("route")}
       map.addLayer({
         id: "route",
         type: "line",
@@ -361,6 +397,10 @@ export function buildMapPage(language: Language = appLanguage()): string {
           "line-opacity": ${TRACK_OPACITY},
         },
       });
+      // A kind told before the style was drawn shows now.
+      if (kind !== "standard") {
+        showKind();
+      }
     });
     // The position: a pin, or while running an arrow turned to the heading.
     function showPin(lngLat) {
@@ -531,6 +571,33 @@ export function buildMapPage(language: Language = appLanguage()): string {
     function frame() {
       inFrame = true;
       map.fitBounds(framed, { padding: 40, bearing: wanted });
+    }
+    // The map's kind (TASK-264, ADR-0232): the layers of the style it shows,
+    // the hills under the 3D map, and how far the map leans. The route and
+    // its marks are not in the style: they show over every kind.
+    function showKind() {
+      var shown = KIND_LAYERS[kind] || KIND_LAYERS.standard;
+      STYLE_LAYERS.forEach(function (id) {
+        map.setLayoutProperty(id, "visibility", shown.indexOf(id) >= 0 ? "visible" : "none");
+      });
+      map.setTerrain(kind === "3d" ? ${toScript(TERRAIN_SPEC)} : null);
+      var pitch = kind === "3d" ? ${PITCH_3D} : 0;
+      if (framed && inFrame && !following) {
+        // Framed on its route, it is framed again, leaning or flat.
+        map.fitBounds(framed, { padding: 40, bearing: wanted, pitch: pitch });
+      } else {
+        map.easeTo({ pitch: pitch, duration: 600 });
+      }
+    }
+    // Told before the style is drawn, the kind waits for it.
+    function setKind(next) {
+      if (next === kind || !KIND_LAYERS[next]) {
+        return;
+      }
+      kind = next;
+      if (styleLoaded) {
+        showKind();
+      }
     }
     // The north arrow (TASK-232): the map turns where the app asks. Still
     // framed on its route, it frames it again as turned; moved by the user
@@ -865,6 +932,8 @@ export function buildMapPage(language: Language = appLanguage()): string {
           }
         } else if (message.type === "turn") {
           turnTo(message.bearing);
+        } else if (message.type === "setKind") {
+          setKind(message.kind);
         }
       },
     };

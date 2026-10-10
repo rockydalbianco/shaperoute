@@ -274,24 +274,14 @@ test("without a route, «Paddle» in «Settings» makes the numbers a paddler's"
   }
 });
 
-test("without a route, a run and a ride show a kilometre's pace, as before", async () => {
+// A ride without a route shows speeds since TASK-251 part C: RunFreeRide.test.tsx.
+test("without a route, a run shows a kilometre's pace, as before", async () => {
   const track = slowingDown().reduce(addFix, emptyTrack());
-  for (const sport of ["run", "bike"] as const) {
-    await act(async () => {
-      saveSport(sport);
-    });
-    try {
-      const { unmount } = await render(
-        <FreeRunCard running={false} track={track} onStop={() => {}} />,
-      );
-      expect(screen.getByLabelText("Pace now: 12:00 /km")).toBeOnTheScreen();
-      await unmount();
-    } finally {
-      await act(async () => {
-        saveSport("run");
-      });
-    }
-  }
+  await act(async () => {
+    saveSport("run");
+  });
+  await render(<FreeRunCard running={false} track={track} onStop={() => {}} />);
+  expect(screen.getByLabelText("Pace now: 12:00 /km")).toBeOnTheScreen();
 });
 
 test("the end of an outing without a route: a paddler's numbers and post", async () => {

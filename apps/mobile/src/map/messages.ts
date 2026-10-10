@@ -3,6 +3,7 @@ import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
 import { onFootLines } from "../route/onFoot";
 import { piecesOf, walksOf } from "../route/walks";
 import { type LngLat, metresBetween, toLngLat } from "./coordinates";
+import type { MapKind } from "./mapKind";
 import type { RouteSplit } from "./routeSplit";
 
 /**
@@ -55,7 +56,9 @@ export type ToPage =
   | { type: "setMove"; on: boolean }
   /** The north arrow (TASK-232): the map turns to `bearing`, in degrees
    * clockwise from north; 0 is north up. */
-  | { type: "turn"; bearing: number };
+  | { type: "turn"; bearing: number }
+  /** The map's kind (TASK-264): standard, the aerial photos, or 3D. */
+  | { type: "setKind"; kind: MapKind };
 
 /** A place of a themed route on the map (TASK-129). */
 export type StopFeature = { name: string; lngLat: LngLat; passed: boolean };
@@ -219,6 +222,15 @@ export function setMove(on: boolean): ToPage {
  */
 export function turn(bearing: number): ToPage {
   return { type: "turn", bearing };
+}
+
+/**
+ * Shows the map as `kind` (TASK-264): the photos with the names over them,
+ * or the 3D map leaning, with its hills and buildings. The route, the
+ * camera and the marks stay as they are.
+ */
+export function setKind(kind: MapKind): ToPage {
+  return { type: "setKind", kind };
 }
 
 /** JavaScript that hands a message to the page (see `mapPage.ts`). */

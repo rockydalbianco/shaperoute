@@ -227,6 +227,12 @@ export const IT: Table = {
   "Turns the map north up": "Mette il nord in alto",
   "Turns the map like the drawing": "Gira la mappa come il disegno",
 
+  // src/map/MapKindButton.tsx
+  "Map type": "Tipo di mappa",
+  Standard: "Normale",
+  Satellite: "Satellite",
+  "3D": "3D",
+
   // src/paddle/PaddleExplore.tsx
   Next: "A seguire",
   "Drawing…": "Disegno in corso…",

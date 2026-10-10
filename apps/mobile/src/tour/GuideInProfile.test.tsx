@@ -87,6 +87,23 @@ test.each([
   },
 );
 
+test("with an account «Guide» is the row right under «Settings»", async () => {
+  await render(<Profile of={SIGNED_IN} first="account" />);
+  const names = screen
+    .getAllByRole("button")
+    .map((button) => button.props.accessibilityLabel as string | undefined);
+  expect(names.indexOf("Guide")).toBe(names.indexOf("Settings") + 1);
+  expect(screen.getAllByRole("button", { name: "Guide" })).toHaveLength(1);
+});
+
+test("without an account «Guide» is the last row, under the form", async () => {
+  await render(<Profile of={SIGNED_OUT} first="account" />);
+  const names = screen
+    .getAllByRole("button")
+    .map((button) => button.props.accessibilityLabel as string | undefined);
+  expect(names[names.length - 1]).toBe("Guide");
+});
+
 test("«Watch the tour» closes «Profile» and asks for the tour", async () => {
   await render(<Profile of={SIGNED_OUT} first="account" />);
   await fireEvent.press(screen.getByRole("button", { name: "Guide" }));

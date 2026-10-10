@@ -36,7 +36,8 @@ sulle schermate vere**.
    chiede qualcosa sopra l'app (la posizione).
 3. Visto fino in fondo o saltato, il telefono lo ricorda
    (`tour-seen.json`): non torna alle aperture dopo.
-4. «Guide» sulla prima pagina di «Profile», con e senza account: apre
+4. «Guide» sulla prima pagina di «Profile», con e senza account (con un
+   account subito sotto «Settings»): apre
    «How MuW works» (il testo di «Help») con sopra «Watch the tour», che
    chiude «Profile» e rifà il tour, con «Skip» subito.
 5. I testi nuovi in en/it/de/es/fr, approvati dall'utente prima del merge.
@@ -69,6 +70,9 @@ apps/mobile/src/intro/Root.tsx
 apps/mobile/src/screens/Pager.tsx
 apps/mobile/src/screens/ChooseScreen.tsx
 apps/mobile/src/screens/ProfileScreen.tsx
+apps/mobile/src/profile/ProfileHome.tsx     («Guide» sotto «Settings»,
+                                            richiesta dell'utente del 2026-10-10,
+                                            dopo il merge di TASK-121)
 apps/mobile/src/route/ShapeTiles.tsx
 apps/mobile/src/route/DistanceStepper.tsx
 apps/mobile/src/about/AboutScreen.tsx

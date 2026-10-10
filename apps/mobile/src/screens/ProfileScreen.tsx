@@ -166,7 +166,14 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             <FavoritesList margin={space.lg} />
           )
         ) : state.status === "signedIn" ? (
-          <SignedIn session={state.session} onPage={onPage} />
+          <SignedIn
+            session={state.session}
+            onPage={onPage}
+            onGuide={() => {
+              setHelpFrom("account");
+              onPage("help");
+            }}
+          />
         ) : (
           <SignInScreen
             // A new form after each way out: no password left in it.
@@ -192,7 +199,8 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             onMode={account.clearProblem}
           />
         )}
-        {!inside && (
+        {/* With an account «Guide» is under «Settings» (ProfileHome). */}
+        {signedOut && (
           <GuideRow
             onOpen={() => {
               setHelpFrom("account");
@@ -228,9 +236,11 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
 function SignedIn({
   session,
   onPage,
+  onGuide,
 }: {
   session: Session;
   onPage: (page: ProfilePage) => void;
+  onGuide: () => void;
 }) {
   const favorites = useFavoritesDoor();
   const activities = useActivitiesDoor();
@@ -241,6 +251,7 @@ function SignedIn({
       activities={activities.total}
       onOpen={onPage}
       onEdit={() => onPage("edit")}
+      onGuide={onGuide}
     />
   );
 }

@@ -173,8 +173,10 @@ primi 5 secondi del tour non si tocca e dice i secondi che mancano,
 tocchi sull'app aspettano la fine del tour. Il tour non torna, salvo
 «Watch the tour» nella guida (qui «Skip» si tocca subito).
 
-**«Guide»** (TASK-266): l'ultima riga della prima pagina di «Profile»,
-con e senza account, ❓ come le righe di «ABOUT». Apre «How MuW works» con
+**«Guide»** (TASK-266): con un account è la riga subito sotto
+«Settings» sulla prima pagina di «Profile», ❓ nel cerchio come «Settings»
+(richiesta dell'utente del 2026-10-10); senza account è l'ultima riga,
+sotto il modulo, come le righe di «ABOUT». Apre «How MuW works» con
 il nome «Guide» e sopra il testo «Watch the tour», che chiude «Profile» e
 rifà il tour; «←» torna a «Profile». «Help» in «Settings» resta, con lo
 stesso pulsante.

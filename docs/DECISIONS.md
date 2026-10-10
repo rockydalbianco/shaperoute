@@ -13452,8 +13452,9 @@ con un account.
    `tour-seen.json` (come l'avviso di «Paddle», ADR-0169). Senza le
    pagine sullo schermo (una corsa lasciata aperta) il tour non parte e
    non conta come visto.
-5. **«Guide»** sulla prima pagina di «Profile», con e senza account,
-   apre «How MuW works» (il testo di «Help», che non cambia) con sopra
+5. **«Guide»** sulla prima pagina di «Profile», con e senza account (con
+   un account subito sotto «Settings», su richiesta dell'utente del
+   2026-10-10; senza, in fondo), apre «How MuW works» (il testo di «Help», che non cambia) con sopra
    «Watch the tour»: chiude «Profile» e rifà il tour, con «Skip» subito.
    Anche «Help» in «Settings» ha «Watch the tour».
 6. Il buio è un colore fisso nuovo, `scrim`, con opacità 0,82, e il bordo

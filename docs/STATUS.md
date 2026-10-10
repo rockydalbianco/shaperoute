@@ -157,6 +157,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-245 parte C — 38 posti di mare in più per «Paddle»** (ADR-0210,
+  aggiornamento; posti scelti dall'utente il 2026-10-09 sulla proposta
+  dell'agente). Branch `feat/TASK-245-c-more-beaches`. `PLACES` da 29 a 67
+  paesi, `beaches.json` da 29 a 67 righe: **tutti a 2 km**, nessuno
+  scartato. **Aspetta**: l'ok dell'utente e il via del coordinatore per i
+  **38 file d'acqua nuovi (20,3 MB)** sul server, in
+  `data/cache/water/` senza sovrascrivere (ora in
+  `.claude/worktrees/TASK-245-C/out/task245c-beaches/new/water/` sul Mac);
+  poi il merge, un solo `draw_examples --water` e la pubblicazione
+  dell'app, mai prima dell'acqua. File: `tasks/TASK-245.md`, «parte C».
 - **TASK-092 — «Recommended» in «Explore»** (ADR-0229; criterio lasciato
   all'agente dall'utente il 2026-10-07). Branch
   `feat/TASK-092-recommended-routes`. **API e app fatte** nel branch:

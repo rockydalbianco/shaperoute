@@ -13777,6 +13777,41 @@ richiesta di follow, un nuovo follower, una reazione, un commento, un tag.
   (rubrica), il token di accesso di Expo se si accende la «enhanced push
   security», ritentare gli invii falliti.
 
+## ADR-0052, aggiunta — Dopo un'assenza del GPS il corridore si cerca su tutto il percorso avanti
+**Stato**: Attiva · 2026-10-10 · deciso dall'agente su delega dell'utente
+(TASK-270), dalla prima recensione di un tester («sono uscito
+dall'applicazione, sono rientrato, però il GPS non mi è più andato
+avanti»). Aggiunta ad ADR-0052, senza numero nuovo.
+
+**Decisione**:
+
+1. Il navigatore ricorda l'ora dell'ultima posizione. Una posizione che
+   arriva 20 s o più dopo la precedente (`GAP_MS`), per un corridore già
+   messo sul percorso, è un'assenza: l'app era dietro un'altra, congelata
+   da iOS o chiusa, e il corridore può essere ovunque più avanti.
+2. Finché non lo si rimette sul percorso, una posizione fuori dalla
+   finestra di sempre (da 50 m dietro a 300 m avanti) si cerca su tutto il
+   percorso avanti, con lo stesso costo: vince il passaggio più vicino
+   avanti. Il punto si prende dopo 2 posizioni di fila lì (`BACK_FIXES`);
+   una posizione con più di 40 m d'errore non conta.
+3. Le svolte saltate non si dicono. Se si era già detto «Off the route»,
+   si dice «Back on the route».
+4. Senza assenza nulla cambia: oltre la finestra si è fuori percorso. Chi
+   non è mai stato sul percorso (va verso la partenza) non si cerca più
+   avanti, perché una forma può passare vicino alla partenza molto dopo.
+
+**Motivo**: la finestra stretta serve contro i passaggi ripetuti di una
+forma, ma senza posizioni per più di 300 m il corridore usciva dalla
+finestra e restava fuori percorso fino alla fine. 20 s sono meno di
+quanto serve per fare 300 m anche in bici, e più dell'intervallo fra due
+posizioni in movimento (5 m): il caso di sempre resta com'era.
+
+**Alternative scartate**: allargare la finestra sempre (una posizione
+storta vicino a un passaggio successivo farebbe saltare metà forma);
+cercare più avanti anche dopo un «Off the route» senza assenza (chi va
+verso la partenza o sbaglia strada verrebbe spostato su un passaggio
+successivo e la forma resterebbe a metà).
+
 ## ADR-0239 — «Paddle»: i posti suggeriti dalla zona di casa, calcolata sul telefono, e il filtro «Lakes» / «Sea»
 **Stato**: Attiva · 2026-10-10 · richiesta dell'utente del 2026-10-09
 («consiglia alle persone i posti in base a dove vivono, o fai una sezione

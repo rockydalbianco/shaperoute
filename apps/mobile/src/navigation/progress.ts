@@ -44,7 +44,9 @@ export function cumulative(points: LatLon[]): number[] {
 }
 
 /**
- * The fix placed on the route, near `fromM` (where the runner last was).
+ * The fix placed on the route, near `fromM` (where the runner last was):
+ * up to `aheadM` ahead, AHEAD_M unless the navigator looks further, after a
+ * gap in the fixes (TASK-270).
  * Works in metres on the plane tangent at the fix: segments are short.
  */
 export function locate(
@@ -52,6 +54,7 @@ export function locate(
   along: number[],
   fix: LatLon,
   fromM: number,
+  aheadM: number = AHEAD_M,
 ): Located {
   // The cheapest place on the route, and the nearest off it.
   let onRoute: Located | null = null;
@@ -61,7 +64,7 @@ export function locate(
     if (along[i] < fromM - BACK_M) {
       continue;
     }
-    if (along[i - 1] > fromM + AHEAD_M) {
+    if (along[i - 1] > fromM + aheadM) {
       break;
     }
     const [ax, ay] = toPlane(fix, points[i - 1]);

@@ -371,7 +371,7 @@ const privacy: AboutDocument = {
             "En nuestro servidor en Alemania, mientras tengas la cuenta.",
             "Cuando eliminas tu cuenta, todo lo que es tuyo se elimina al momento: perfil, foto, número de teléfono, carreras, dibujos, favoritos, comentarios, reacciones y seguimientos.",
             "Cada noche se hace una copia de seguridad de la base de datos y se guarda 13 días: una cuenta eliminada sale de todas las copias en 14 días como máximo.",
-            "En tu teléfono: la sesión, tus elecciones (idioma, deporte), los mapas sin conexión y las carreras que aún esperan para enviarse.",
+            "En tu teléfono: la sesión, tus elecciones (idioma, deporte, lagos o mar), los mapas sin conexión, las carreras que aún esperan para enviarse y, con una cuenta, la zona desde la que suelen empezar tus actividades, para sugerirte lagos y mar cerca; se borra al cerrar sesión.",
           ],
         },
         "La conexión entre la app y nuestro servidor está cifrada (HTTPS).",

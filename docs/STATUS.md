@@ -157,6 +157,26 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-270 — Dopo un'assenza del GPS il navigatore ritrova il percorso**
+  (aggiunta ad ADR-0052; dalla prima recensione di un tester del
+  2026-10-10). Branch `fix/TASK-270-navigator-rejoin`. Prima, con l'app
+  dietro un'altra per più di 300 m di corsa, il navigatore restava «fuori
+  percorso» fino alla fine. Ora, dopo 20 s senza posizioni, il corridore
+  si cerca su tutto il percorso avanti e si riprende da lì dopo due
+  posizioni. Solo app, nessun testo nuovo.
+  File: `tasks/TASK-270.md`, «File toccati».
+- **TASK-245 parte C — 38 posti di mare in più per «Paddle»** (ADR-0210,
+  aggiornamento; posti scelti dall'utente il 2026-10-09 sulla proposta
+  dell'agente). Branch `feat/TASK-245-c-more-beaches`. `PLACES` da 29 a 67
+  paesi, `beaches.json` da 29 a 67 righe: **tutti a 2 km**, nessuno
+  scartato. **Aspetta**: l'ok dell'utente e il via del coordinatore per i
+  **38 file d'acqua nuovi (20,3 MB)** sul server, in
+  `data/cache/water/` senza sovrascrivere (ora in
+  `.claude/worktrees/TASK-245-C/out/task245c-beaches/new/water/` sul Mac);
+  poi il merge, un solo `draw_examples --water` e la pubblicazione
+  dell'app, mai prima dell'acqua. File: `tasks/TASK-245.md`, «parte C».
+  **2026-10-10: l'acqua è sul server** (38 file, 20,3 MB, SHA-256 uguali,
+  provata nel container; ok dell'utente). Aspetta il merge della #480.
 - **TASK-261 parte B — La voce a telefono bloccato** (aggiunta ad
   ADR-0225; scelte dell'utente del 2026-10-10). Branch
   `feat/TASK-261-b-voice-background`. Durante la corsa la voce parla a
@@ -165,6 +185,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `audio`). PR #475. Serve una build nativa nuova (obiettivo: build 5);
   il testo nuovo del microfono approvato dall'utente il 2026-10-10.
   File: `tasks/TASK-261.md`, «File toccati (parte B)».
+  **Chiuso il 2026-10-10**: #475 in `main` (`d10df4a5`); vedi «Completato».
+- **TASK-269 — «Paddle»: laghi e mare vicino a dove si vive, con
+  «Lakes» / «Sea»** (`feat/TASK-269-paddle-places-near-home`, ADR-0239;
+  richiesta dell'utente del 2026-10-09, il come deciso dall'agente su
+  delega). La fila dei posti parte dalla zona di casa calcolata sul
+  telefono dalle attività, con «Show more» e la riga «Suggested near …»;
+  due chip filtrano laghi o mare; le forme già sul telefono seguono la
+  stessa zona. Solo app, non nella 1.0. Testi approvati dall'utente il
+  2026-10-10; la frase della privacy sulla zona di casa è nell'app e in
+  `site/privacy/` (dopo «451 in main»). Dopo il merge: copia del sito
+  (F.14) e pubblicazione del coordinatore.
+  File: `tasks/TASK-269.md`, «File toccati».
+  **Chiuso il 2026-10-10**: #482 in `main`; vedi «Completato».
 - **TASK-267 — Annunci spenti nella build dello store**
   (`feat/TASK-267-store-without-ads`, ADR-0237): la 1.0 senza pubblicità,
   scelta dell'utente del 2026-10-09. Con `APP_VARIANT=production` il codice
@@ -180,6 +213,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   fissi. Solo app, nessun testo nuovo. La voce che si ferma a telefono
   bloccato o con Spotify davanti è TASK-261 parte B.
   File: `tasks/TASK-268.md`, «File toccati».
+  **Chiuso il 2026-10-10**: #472 in `main` (`0a07f757`); vedi «Completato».
 - **TASK-246 parte B — Il server tiene le figure «Paddle» dei laghi e
   delle spiagge** (aggiunta ad ADR-0211; via del coordinatore il
   2026-10-09). Branch `feat/TASK-246-b-water-shapes-kept`. L'API legge
@@ -686,9 +720,45 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   prima pagina di «Profile», anche senza account, con «Watch the tour».
   Solo app, nessun server. **Aspetta**: il sì dell'utente sui testi
   (cinque lingue) e la coda dei merge. `tasks/TASK-266.md`.
+  **Chiuso**: in `main` con la #479 (`1f64621e`, 2026-10-10); vedi
+  «Completato».
 
 ## Completato
 
+- **App** — TASK-266: il tour del primo avvio e «Guide» in «Profile»
+  (ADR-0235; richiesta dell'utente del 2026-10-09, che ha scelto il tour
+  sulle schermate vere). In `main` con la #479 (`1f64621e`, 2026-10-10).
+  Dopo l'animazione all'avvio, la prima volta, otto passi sopra l'app
+  vera (benvenuto, «START», forme, distanza, «Draw route», sport e
+  «Profile», pagine «Explore» e «Feed»), il resto scuro con il colore
+  fisso `scrim`; «Skip» non si tocca per 5 secondi e conta alla rovescia.
+  «Guide» subito sotto «Settings» con un account, in fondo senza; apre «How
+  MuW works» con «Watch the tour». Testi nelle cinque lingue **approvati
+  dall'utente** il 2026-10-10. Provato nel simulatore. Solo app: su
+  `preview` dal 2026-10-10 nel gruppo `ab5706fc` (da `1f64621e`, prima
+  delle push di TASK-262 A). `tasks/TASK-266.md`.
+- **App** — TASK-269 (ADR-0239): in «Explore» con «Paddle» laghi e mare
+  suggeriti vicino alla zona di casa, calcolata sul telefono dalle
+  attività e cancellata al logout, con «Show more», la riga «Suggested
+  near …» e i chip «Lakes» / «Sea»; le forme già sul telefono seguono la
+  stessa zona. Frase nuova nella privacy, app e sito. Richiesta
+  dell'utente del 2026-10-09, il come deciso dall'agente su delega; testi
+  approvati. Copia del sito e pubblicazione: del coordinatore.
+- **App** — TASK-261 parte B (aggiunta ad ADR-0225): durante la corsa la
+  voce parla a telefono bloccato e con l'interruttore silenzioso, e
+  abbassa la musica di un'altra app mentre parla (scelte dell'utente del
+  2026-10-10). Dipendenza nuova `expo-audio`, `UIBackgroundModes` `audio`,
+  `src/voice/runAudio.ts`; testo del microfono approvato. PR #475, merge
+  `d10df4a5`. Serve una build nativa nuova (obiettivo del coordinatore:
+  build 5); con Expo Go e la build 4 la voce resta come prima. Dopo il
+  merge, `npm install` nel checkout principale. Resta la prova
+  sull'iPhone. File: `tasks/TASK-261.md`, «File toccati (parte B)».
+- **App** — TASK-268 (aggiunta ad ADR-0137): sulla pagina «Data» della
+  corsa l'indicazione resta in alto, «Pause» e «Map» / «Data» in fondo, e
+  scorrono solo i numeri in mezzo. Prima, con l'indicazione in alto,
+  «Map» finiva sotto il bordo (corsa su strada dell'utente del
+  2026-10-09). PR #472, merge `0a07f757` il 2026-10-10; nessun testo
+  nuovo. Resta lo swipe col dito sull'iPhone. File: `tasks/TASK-268.md`.
 - **API e app** — TASK-262 parte A: le notifiche push partono (ADR-0226;
   scelte dell'utente del 2026-10-07). PR #451, merge `578c2f7e` del
   2026-10-10. Tabella `push_tokens` (migrazione `0021`), `PUT`/`DELETE
@@ -700,7 +770,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   tocco che apre il disegno o il profilo. **Da fare**: la `0021` sul
   server e la pubblicazione (coordinatore, con l'ok dell'utente), la
   prova con una build nativa, `npm install` nel checkout principale.
-  `tasks/TASK-262.md`.
+  `tasks/TASK-262.md`. **Fatto dal coordinatore**: la `0021` è sul
+  server dal 2026-10-10 05:11Z (main `55b990be`, ok dell'utente), su
+  `preview` nel gruppo `999502dd` e nella build 5 (`793fa112`).
 - **API e app** — TASK-121: segnalare e bloccare (ADR-0228; brief del
   coordinatore del 2026-10-07/08). Branch `feat/TASK-121-report-block`,
   migrazione `0020_moderation.sql` (`blocks`, `reports`). Un blocco tiene
@@ -713,7 +785,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   foglio con «Report» e «Block», «Blocked people» in «Profile»; 21 testi
   nuovi nelle cinque lingue, **confermati dall'utente** il 2026-10-09. Restano la
   migrazione sul server (ok dell'utente, coordinatore) e la prova con due
-  account. `tasks/TASK-121.md`.
+  account. `tasks/TASK-121.md`. **In `main`** con la #457 (`a66341aa`,
+  2026-10-10): chiuso; da qui partono TASK-262 A e C. **Sul server** dalle
+  04:25Z del 2026-10-10 (migrazione 0020, ok dell'utente; copia
+  `shaperoute-2026-10-10T0421Z.dump`, immagine `before-task121`). Su
+  preview nel gruppo `872cd266`; **provato dall'utente sull'iPhone con due
+  account** il 2026-10-10 («ok ci sono funzionano»).
 
 - **App e sito** — TASK-267 (ADR-0237): la 1.0 dell'App Store **senza
   pubblicità**, scelta dell'utente del 2026-10-09 (gli annunci con la

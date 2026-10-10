@@ -31,9 +31,19 @@ import {
 import { distanceLabel, inUnits } from "../units/format";
 import { appUnits } from "../units/units";
 import { useUnits } from "../units/useUnits";
+import { type HomeArea, loadHomeArea } from "./homeArea";
+import {
+  loadWaterFilter,
+  saveWaterFilter,
+  shows,
+  tapped,
+  type WaterFilter,
+} from "./waterKinds";
+import type { WaterKind } from "./waterPlaces";
 import {
   byName,
   examplesAt,
+  kindOf,
   nearestSpot,
   searchSpots,
   type SpotAway,
@@ -77,6 +87,22 @@ const STATUS: Record<"waiting" | "drawing", string> = {
   drawing: tLater("Drawing…"),
 };
 
+/** The chips of the filter, in their order (TASK-269). */
+const KINDS: readonly { kind: WaterKind; label: string }[] = [
+  { kind: "lake", label: tLater("Lakes") },
+  { kind: "sea", label: tLater("Sea") },
+];
+
+/** Where the places to tap are suggested from, in words (TASK-269). */
+function suggestedText(home: HomeArea | null): string {
+  if (home === null) {
+    return t("Suggested near your start");
+  }
+  return home.place === null
+    ? t("Suggested near where you usually start")
+    : t("Suggested near {place}", { place: home.place });
+}
+
 type Props = {
   apiUrl: string | null;
   /** The start of «Draw», for «Near me». */
@@ -95,6 +121,11 @@ type Props = {
  * as a city's examples. A ready one opens on the map as a route of
  * «Explore». The routes of the runs are not here while «Paddle» is the
  * sport.
+ *
+ * The places to tap are suggested near where the person usually starts
+ * (TASK-269, ADR-0239): the home area the phone worked out from «My
+ * activities», else the start «Near me» began from. «Lakes» and «Sea» show
+ * one kind alone, and «Show more» the next places.
  */
 export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
   // The places say how far in the app's units, at once (TASK-182).
@@ -134,16 +165,29 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
   const { examples, retry } = useCityExamples(apiUrl, place, {
     set: examplesAt(spot?.distance_m ?? USUAL_DISTANCE_M),
   });
-  // To tap: the places nearest the start, or those chosen by hand without
-  // one. The lake of «Near me» is under «Near me»; a place found by name is
-  // the first, so that what is on is always in sight.
+  // Read once as the page opens: the activities note it as they come.
+  const [home] = useState(loadHomeArea);
+  const [filter, setFilter] = useState<WaterFilter>(loadWaterFilter);
+  const [shownCount, setShownCount] = useState(SPOTS_SHOWN);
+  const filterBy = (kind: WaterKind) => {
+    const next = tapped(filter, kind);
+    saveWaterFilter(next);
+    setFilter(next);
+    setShownCount(SPOTS_SHOWN);
+  };
+  // To tap: the places nearest the home area, else the start, of the kinds
+  // of the filter; those chosen by hand without either. The lake of «Near
+  // me» is under «Near me»; a place found by name is the first, so that
+  // what is on is always in sight.
+  const suggestFrom = home?.point ?? started;
   const nearName = started === null ? null : nearestSpot(WATER_SPOTS, started);
-  const offered = byName(WATER_SPOTS, near)
-    .filter(
-      ({ spot: s }) =>
-        (near !== null || s.from !== undefined) && s.name !== nearName?.spot.name,
-    )
-    .slice(0, SPOTS_SHOWN);
+  const suggested = byName(WATER_SPOTS, suggestFrom).filter(
+    ({ spot: s }) =>
+      (suggestFrom !== null || s.from !== undefined) &&
+      s.name !== nearName?.spot.name &&
+      shows(filter, kindOf(s)),
+  );
+  const offered = suggested.slice(0, shownCount);
   const chips: WaterSpot[] = [
     ...(shown?.kind === "spot" && !offered.some(({ spot: s }) => s.name === spot?.name)
       ? [shown.spot]
@@ -175,7 +219,17 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.section}>
-          <Text style={styles.label}>{t("LAKES AND SEA")}</Text>
+          <View style={styles.labelRow}>
+            <Text style={[styles.label, styles.labelText]}>{t("LAKES AND SEA")}</Text>
+            {KINDS.map(({ kind, label }) => (
+              <PlaceChip
+                key={kind}
+                label={t(label)}
+                on={shows(filter, kind)}
+                onPress={() => filterBy(kind)}
+              />
+            ))}
+          </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.chips}>
               <PlaceChip
@@ -192,8 +246,18 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
                   onPress={() => choose({ kind: "spot", spot: water })}
                 />
               ))}
+              {suggested.length > offered.length && (
+                <PlaceChip
+                  label={t("Show more")}
+                  on={false}
+                  onPress={() => setShownCount((count) => count + SPOTS_SHOWN)}
+                />
+              )}
             </View>
           </ScrollView>
+          {suggestFrom !== null && (
+            <Text style={styles.hint}>{suggestedText(home)}</Text>
+          )}
           <TextInput
             style={styles.input}
             value={query}
@@ -441,6 +505,15 @@ const styles = StyleSheet.create({
     fontSize: fontSize.label,
     fontWeight: fontWeight.semibold,
     letterSpacing: 1.2,
+  },
+  // «LAKES AND SEA» with the chips of the filter at its right (TASK-269).
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+  },
+  labelText: {
+    flex: 1,
   },
   note: {
     color: color.textMuted,

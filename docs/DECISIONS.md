@@ -11862,6 +11862,40 @@ d'Iseo».
 cambia, e nemmeno il motore o l'API. Chi scrive «lago» prima del nome di
 una spiaggia la trova lo stesso, perché nessun nome trovato ha «lago».
 
+## ADR-0210 — aggiornamento (parte C): 38 posti di mare in più
+**Stato**: Attiva · 2026-10-09 · i posti sono **scelta dell'utente**
+(«Proponi tu altri posti» il 2026-10-08, poi la lista dell'agente più le
+sette alternative il 2026-10-09); il punto del paese, le frazioni sul mare
+e il metodo sono **deciso dall'agente su delega dell'utente** (TASK-245,
+parte C).
+
+**Contesto**: dopo TASK-245 i posti di mare di «Paddle» erano 29 più
+Jesolo e Riccione, e alcune coste ne avevano pochi o nessuno (Campania,
+Basilicata, Molise, le isole toscane, Trieste).
+
+**Decisione**: `PLACES` di `beach_catalog.py` passa da 29 a 67 paesi; il
+metodo di TASK-245 non cambia (il punto della riva dai dati, un riquadro
+d'acqua a paese, le prove del motore a 2, 1,5 e 1 km). Dove il nodo
+`place` del comune è lontano dal mare o in collina si prende quello della
+frazione sul mare, col nome che la gente usa: «Ischia» è Ischia Porto,
+«Soverato» Soverato Marina, «Vasto» Marina di Vasto, «Trieste» Barcola.
+Un file d'acqua per paese anche dove due paesi sono vicini (Positano e
+Amalfi), come prima: un riquadro unito cambierebbe il nome dei file e il
+modo di rifarli.
+
+**Alternative scartate**:
+
+- *Il nodo del comune per tutti*: la spiaggia di Vasto sta a circa 3 km
+  dal centro, al limite di `REACH_M`; a Trieste la riva vicina al centro è
+  il porto. Maratea invece tiene il nodo del comune: il punto della riva
+  trovato sta a 1,7 km.
+- *Tutta la costa d'Italia*: già scartata in TASK-245 (0,3–1,7 GB).
+
+**Conseguenze**: 38 file d'acqua nuovi sul server (20,3 MB), da copiare
+prima della pubblicazione dell'app, senza sovrascrivere; poi un solo
+`draw_examples --water` (TASK-246 B), col via del coordinatore. Il motore
+e `paddleExamples.json` non cambiano.
+
 ## ADR-0209 — Con la penna alzata, sul contorno si camminano solo i baffi
 **Stato**: Attiva · 2026-10-05 · **deciso dall'agente su delega
 dell'utente** (TASK-243): la regola, le soglie e il tetto. Che la penna si
@@ -13742,3 +13776,96 @@ richiesta di follow, un nuovo follower, una reazione, un commento, un tag.
 - Seguiti: la parte B (email, Resend, la lingua delle email), la parte C
   (rubrica), il token di accesso di Expo se si accende la «enhanced push
   security», ritentare gli invii falliti.
+
+## ADR-0052, aggiunta — Dopo un'assenza del GPS il corridore si cerca su tutto il percorso avanti
+**Stato**: Attiva · 2026-10-10 · deciso dall'agente su delega dell'utente
+(TASK-270), dalla prima recensione di un tester («sono uscito
+dall'applicazione, sono rientrato, però il GPS non mi è più andato
+avanti»). Aggiunta ad ADR-0052, senza numero nuovo.
+
+**Decisione**:
+
+1. Il navigatore ricorda l'ora dell'ultima posizione. Una posizione che
+   arriva 20 s o più dopo la precedente (`GAP_MS`), per un corridore già
+   messo sul percorso, è un'assenza: l'app era dietro un'altra, congelata
+   da iOS o chiusa, e il corridore può essere ovunque più avanti.
+2. Finché non lo si rimette sul percorso, una posizione fuori dalla
+   finestra di sempre (da 50 m dietro a 300 m avanti) si cerca su tutto il
+   percorso avanti, con lo stesso costo: vince il passaggio più vicino
+   avanti. Il punto si prende dopo 2 posizioni di fila lì (`BACK_FIXES`);
+   una posizione con più di 40 m d'errore non conta.
+3. Le svolte saltate non si dicono. Se si era già detto «Off the route»,
+   si dice «Back on the route».
+4. Senza assenza nulla cambia: oltre la finestra si è fuori percorso. Chi
+   non è mai stato sul percorso (va verso la partenza) non si cerca più
+   avanti, perché una forma può passare vicino alla partenza molto dopo.
+
+**Motivo**: la finestra stretta serve contro i passaggi ripetuti di una
+forma, ma senza posizioni per più di 300 m il corridore usciva dalla
+finestra e restava fuori percorso fino alla fine. 20 s sono meno di
+quanto serve per fare 300 m anche in bici, e più dell'intervallo fra due
+posizioni in movimento (5 m): il caso di sempre resta com'era.
+
+**Alternative scartate**: allargare la finestra sempre (una posizione
+storta vicino a un passaggio successivo farebbe saltare metà forma);
+cercare più avanti anche dopo un «Off the route» senza assenza (chi va
+verso la partenza o sbaglia strada verrebbe spostato su un passaggio
+successivo e la forma resterebbe a metà).
+
+## ADR-0239 — «Paddle»: i posti suggeriti dalla zona di casa, calcolata sul telefono, e il filtro «Lakes» / «Sea»
+**Stato**: Attiva · 2026-10-10 · richiesta dell'utente del 2026-10-09
+(«consiglia alle persone i posti in base a dove vivono, o fai una sezione
+filtro e decidi tu come suggerire le cose»); il disegno è **deciso
+dall'agente su delega dell'utente** (TASK-269). Testi nuovi e frase della
+privacy approvati dall'utente il 2026-10-10.
+
+**Contesto**: in «Explore» con «Paddle» (ADR-0196) la fila dei posti era
+quella più vicina alla partenza di «Draw», e senza partenza i quattro scelti
+a mano. Con 760 punti di lago e 29 (presto 66, TASK-245 C) di mare, chi
+vive a Trento e apre l'app in viaggio vedeva i posti del viaggio; e nessuno
+poteva chiedere solo il mare. In «Explore» della corsa l'utente aveva
+tolto i filtri (TASK-176): questa è una richiesta nuova, solo per l'acqua.
+
+**Decisione**:
+- **La zona di casa** è il centro delle partenze della zona (10 km) da cui
+  partono più attività fra le 20 della prima pagina di «My activities»,
+  qualunque sport; a pari merito vince la zona dell'attività più recente.
+  La partenza di un'attività è il primo punto della traccia, se no del
+  percorso. Il nome è il paese più frequente fra quelle attività
+  (`Activity.place`, che l'API scrive già). Senza attività, la partenza da
+  cui è partito «Near me».
+- **Solo sul telefono**: `useActivities` la annota in
+  `Documents/home-area.json` quando arriva la prima pagina, che l'app chiede
+  già; nessuna richiesta nuova, niente al server, niente sull'account,
+  nessun permesso, nessun indirizzo. Il file tiene solo il centro e il
+  nome del paese; se ne va quando nessuno è più entrato (logout, sessione
+  finita, account cancellato) e con una lista vuota. La lista
+  delle attività vive in `App.tsx`, che è di altri: per questo il file e
+  non una prop.
+- **La fila** è in ordine di distanza dalla zona di casa, otto posti come
+  prima (`SPOTS_SHOWN`), più «Show more» in fondo alla fila che scorre:
+  altri otto, senza pagine nuove. Sotto la fila «Suggested near {place}»,
+  «Suggested near where you usually start» (senza paese) o «Suggested near
+  your start» (senza attività). «Near me» resta sulla partenza.
+- **Il filtro**: «Lakes» e «Sea» a destra di «LAKES AND SEA», tre stati
+  (tutti e due, solo laghi, solo mare: mai nessuno), in
+  `Documents/water-filter.json`. Vale per la fila, non per «Near me» né per
+  la ricerca per nome: chi scrive un nome lo vuole trovare. Il tipo viene
+  dall'elenco da cui è letto il posto (`lakes.json`, `beaches.json`, e
+  `kind` in `WATER_PLACES`), mai da una copia: i posti nuovi di TASK-245 C
+  entrano da soli.
+- **Le forme già sul telefono** (ADR-0211) partono dalla zona di casa
+  quando c'è, così i posti suggeriti si aprono subito; senza, dal telefono
+  come prima.
+
+**Alternative scartate**: chiedere la città o l'indirizzo di casa (un dato
+nuovo da tenere e un campo da riempire); tenere la zona sull'account (un
+dato personale nuovo sul server); la posizione GPS in sottofondo (un
+permesso nuovo); un riquadro di filtri come la vecchia `RouteFilters`
+(l'utente non li voleva nella corsa); il filtro anche su «Near me» (un
+«Near me» che salta il lago sotto casa non è più «vicino a me»).
+
+**Conseguenza**: in viaggio la fila resta vicino a casa e «Near me» mostra
+il lago del viaggio; chi non ha attività vede la fila di prima. Un seguito
+possibile, fuori da questo task: la stessa zona di casa in «Explore» della
+corsa.

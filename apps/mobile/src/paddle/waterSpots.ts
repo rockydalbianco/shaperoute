@@ -8,7 +8,7 @@ import {
 import { metresBetween } from "../map/coordinates";
 import beaches from "./beaches.json";
 import lakes from "./lakes.json";
-import { WATER_PLACES } from "./waterPlaces";
+import { type WaterKind, WATER_PLACES } from "./waterPlaces";
 
 /**
  * A point on the shore of a lake or of the sea that examples start from
@@ -24,6 +24,9 @@ export type WaterSpot = {
   /** Where on the shore, for a place chosen by hand: an English text to
    * show with `t`. */
   from?: string;
+  /** A lake or the sea, for the filter of «LAKES AND SEA» (TASK-269): the
+   * list it comes from. A lake when it is not said. */
+  kind?: WaterKind;
 };
 
 /** A spot and how far it is from where one asks. */
@@ -48,6 +51,7 @@ const FEATURED: readonly WaterSpot[] = WATER_PLACES.map((place) => ({
   point: place.point,
   distance_m: USUAL_DISTANCE_M,
   from: place.from,
+  kind: place.kind,
 }));
 
 function isSpot(value: unknown): value is WaterSpot {
@@ -64,18 +68,23 @@ function isSpot(value: unknown): value is WaterSpot {
   );
 }
 
-/** The places chosen by hand, then the lakes' list without their doubles. */
-export function allSpots(listed: readonly unknown[]): WaterSpot[] {
-  const found = listed
-    .filter(isSpot)
-    .filter(
-      (lake) =>
-        !FEATURED.some(
-          (place) =>
-            place.name === lake.name &&
-            metresBetween(place.point, lake.point) < SAME_PLACE_M,
-        ),
-    );
+/** The places chosen by hand, then the lakes' list and the beaches', each
+ * spot with its kind, without the doubles of the places chosen by hand. */
+export function allSpots(
+  lakesListed: readonly unknown[],
+  beachesListed: readonly unknown[] = [],
+): WaterSpot[] {
+  const found = [
+    ...lakesListed.filter(isSpot).map((spot) => ({ ...spot, kind: "lake" as const })),
+    ...beachesListed.filter(isSpot).map((spot) => ({ ...spot, kind: "sea" as const })),
+  ].filter(
+    (lake) =>
+      !FEATURED.some(
+        (place) =>
+          place.name === lake.name &&
+          metresBetween(place.point, lake.point) < SAME_PLACE_M,
+      ),
+  );
   return [...FEATURED, ...found];
 }
 
@@ -83,10 +92,12 @@ export function allSpots(listed: readonly unknown[]): WaterSpot[] {
  * -m shaperoute_api.lake_catalog` (TASK-233), the beaches by
  * `shaperoute_api.beach_catalog` (TASK-245): a seaside place has one point,
  * on its shore. */
-export const WATER_SPOTS: readonly WaterSpot[] = allSpots([
-  ...lakes.lakes,
-  ...beaches.beaches,
-]);
+export const WATER_SPOTS: readonly WaterSpot[] = allSpots(lakes.lakes, beaches.beaches);
+
+/** A lake or the sea: a spot that does not say is a lake. */
+export function kindOf(spot: WaterSpot): WaterKind {
+  return spot.kind ?? "lake";
+}
 
 /**
  * One spot a name: the nearest to `from`, the nearest name first. Without

@@ -9,6 +9,7 @@ import {
   allSpots,
   byName,
   examplesAt,
+  kindOf,
   NEAR_ME_M,
   nearestSpot,
   searchSpots,
@@ -49,8 +50,11 @@ test("the beaches are the seaside places the command wrote, one point each", () 
   // Jesolo and Riccione are chosen by hand, with their examples in the app.
   expect(names).not.toContain("Jesolo");
   expect(names).not.toContain("Riccione");
-  // Every beach is a spot, after the lakes, as the command wrote it.
-  expect(WATER_SPOTS.slice(-names.length)).toEqual(beaches.beaches);
+  // Every beach is a spot of the sea, after the lakes, as the command wrote
+  // it (TASK-269: its kind for the filter).
+  expect(WATER_SPOTS.slice(-names.length)).toEqual(
+    beaches.beaches.map((beach) => ({ ...beach, kind: "sea" })),
+  );
   expect(WATER_SPOTS).toHaveLength(allSpots(lakes.lakes).length + names.length);
 });
 
@@ -60,9 +64,10 @@ test("a new beach is found by its name in «Explore» and in «Another place»",
   expect(
     searchSpots(WATER_SPOTS, beach.name, null).map(({ spot }) => spot.name),
   ).toContain(beach.name);
-  expect(searchSpots(WATER_SPOTS, word, null).map(({ spot }) => spot)).toContainEqual(
-    beach,
-  );
+  expect(searchSpots(WATER_SPOTS, word, null).map(({ spot }) => spot)).toContainEqual({
+    ...beach,
+    kind: "sea",
+  });
   // «Another place» reads the text as an address (TASK-240).
   expect(spotPlaces(`spiaggia di ${beach.name}`, null)).toContainEqual({
     label: beach.name,
@@ -71,6 +76,22 @@ test("a new beach is found by its name in «Explore» and in «Another place»",
   });
   // From its own shore it is the spot of «Near me».
   expect(nearestSpot(WATER_SPOTS, beach.point as LatLon)?.spot.name).toBe(beach.name);
+});
+
+test("every beach is found by its whole name, the ones added in TASK-245 C too", () => {
+  const names = beaches.beaches.map((beach) => beach.name);
+  for (const name of ["Positano", "Lampedusa", "Porto Cervo", "Santa Maria di Leuca"]) {
+    expect(names).toContain(name);
+  }
+  for (const beach of beaches.beaches) {
+    expect(
+      searchSpots(WATER_SPOTS, beach.name, null).map(({ spot }) => spot.name),
+    ).toContain(beach.name);
+    expect(spotPlaces(beach.name, null).map((place) => place.label)).toContain(
+      beach.name,
+    );
+    expect(nearestSpot(WATER_SPOTS, beach.point as LatLon)?.spot.name).toBe(beach.name);
+  }
 });
 
 test("the places chosen by hand come first, and the list does not double them", () => {
@@ -92,6 +113,19 @@ test("the places chosen by hand come first, and the list does not double them", 
     ["Lago di Garda", 45.6],
     ["Lago di Tenno", RIVA[0] + 0.01],
   ]);
+});
+
+test("each spot is a lake or the sea, by the list it comes from (TASK-269)", () => {
+  expect(WATER_SPOTS.slice(0, 4).map(kindOf)).toEqual(["lake", "lake", "sea", "sea"]);
+  const kinds = new Map(WATER_SPOTS.slice(4).map((spot) => [spot.name, kindOf(spot)]));
+  for (const lake of lakes.lakes) {
+    expect(kinds.get(lake.name)).toBe("lake");
+  }
+  for (const beach of beaches.beaches) {
+    expect(kinds.get(beach.name)).toBe("sea");
+  }
+  // A spot that does not say is a lake.
+  expect(kindOf(SPOTS[2])).toBe("lake");
 });
 
 test("a name is one spot: the nearest to the start, the nearest name first", () => {

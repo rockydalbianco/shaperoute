@@ -1,6 +1,6 @@
 # TASK-267 — Annunci spenti nella build dello store
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-267-store-without-ads`
 **Dipende da**: TASK-235 (annunci nel Feed), TASK-152 (build `production`)
 
@@ -47,6 +47,8 @@ di prova arriva ad Apple. Preview ed Expo Go come oggi.
       `ump_` o `IABTCF` salvata).
 - [x] Fuori da `admob.ts` il pacchetto è solo importato come tipo (test).
 - [ ] Nella build 5: stessa verifica sul telefono, e impronta controllata.
+      Passata alla sessione «App Store submission» (TASK-152), che fa la
+      build 5: come in «Come ricontrollare l'impronta» qui sotto.
 
 ## Parte B — I testi senza pubblicità (proposta, da approvare)
 
@@ -131,4 +133,17 @@ site/tests/privacy.test.mjs
 
 ## Esito
 
-*(si compila a fine task)*
+**Done (2026-10-10).** Parte A, #469 (`2c5f98a1`): con
+`APP_VARIANT=production` (`eas.json`) `react-native.config.js` toglie
+AdMob dall'autolinking. La build dello store non ha l'SDK di AdMob, quello
+del consenso di Google, né i loro manifesti della privacy; il Feed ha solo
+i post. Preview ed Expo Go come prima. Provato con una build come quella
+dello store nel simulatore. Parte B, #474 (`7d9a8f6f`): «Termini» e
+«Privacy» senza pubblicità nell'app (5 lingue) e su `getmuw.app/privacy`,
+testi approvati dall'utente il 2026-10-10; la copia del sito (F.14) è del
+coordinatore.
+
+Resta fuori dal task: la verifica sulla build 5 (sopra). Per riaccendere
+gli annunci, alla società (TASK-153): togliere la condizione da
+`react-native.config.js`, rimettere le frasi sulla pubblicità e fare una
+build nuova; un update non basta.

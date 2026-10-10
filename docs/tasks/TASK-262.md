@@ -302,6 +302,30 @@ docs/API.md, docs/UI.md, docs/STATUS.md, docs/DECISIONS.md (ADR-0226, aggiunta)
 docs/tasks/TASK-262.md                              (questa sezione)
 ```
 
+### Dove si è (2026-10-10)
+
+PR #461 **pronta** (CI 6/6, CLEAN, allineata a `main` dopo la #482), ma
+**ferma per scelta del coordinatore fino all'approvazione di Apple della
+1.0** (1–2 giorni): l'app chiamerebbe un endpoint che il server non ha
+ancora, e il server e la privacy pubblica non si toccano durante la
+revisione. Dopo l'approvazione: il coordinatore chiede all'utente l'ok
+per il server → «merge 461» → server (`contact_people.py`, nessuna
+migrazione), copia F.14 del sito, pubblicazione su preview; più avanti la
+1.0.1 nativa con `expo-contacts`.
+
+Per chi riprende:
+
+1. Se `main` mette la PR in conflitto: unire `origin/main` tenendo tutte
+   le voci (le righe nuove di `i18n/*` dopo quelle di `main`, le voci di
+   STATUS e DECISIONS di tutti), poi `node site/tools/make_privacy.mjs`.
+2. **La data della privacy** è quella del merge: l'utente ha approvato il
+   10 ottobre 2026. Se il merge è un altro giorno, cambiare le cinque
+   `PRIVACY_UPDATED` di `about/content/*.ts`, `AboutPage.test.tsx`,
+   `documents.test.ts` e `site/tests/privacy.test.mjs`, rigenerare
+   `site/privacy/` e **richiedere il sì dell'utente su quella data**.
+3. Merge solo dopo il «merge 461» del coordinatore, poi questa parte a
+   Done, la voce in «Completato» di STATUS e «TASK-262 C fatto».
+
 ### Fuori scope della parte C
 
 - La domanda di iOS nelle cinque lingue (oggi solo inglese, come le

@@ -172,6 +172,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «merge NNN»; il server con l'ok dell'utente, dal coordinatore.
   File: la PR, «File toccati» (la sezione C di `tasks/TASK-262.md` dopo
   il merge di A).
+  **Aggiornamento 2026-10-10**: API in (dopo 121), provata nel simulatore,
+  ADR-0226 aggiunta e sezione C del task file scritte, privacy del 10
+  ottobre approvata dall'utente. **PR #461 pronta e ferma** per scelta del
+  coordinatore fino all'approvazione di Apple della 1.0; poi «merge 461»,
+  server, sito, preview, e la 1.0.1 nativa. Come riprendere: «Dove si è»
+  in `tasks/TASK-262.md`, parte C.
 - **TASK-270 — Dopo un'assenza del GPS il navigatore ritrova il percorso**
   (aggiunta ad ADR-0052; dalla prima recensione di un tester del
   2026-10-10). Branch `fix/TASK-270-navigator-rejoin`. Prima, con l'app

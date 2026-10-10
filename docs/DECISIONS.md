@@ -13597,7 +13597,9 @@ tolto i filtri (TASK-176): questa è una richiesta nuova, solo per l'acqua.
 - **Solo sul telefono**: `useActivities` la annota in
   `Documents/home-area.json` quando arriva la prima pagina, che l'app chiede
   già; nessuna richiesta nuova, niente al server, niente sull'account,
-  nessun permesso, nessun indirizzo. Una lista vuota la toglie. La lista
+  nessun permesso, nessun indirizzo. Il file tiene solo il centro e il
+  nome del paese; se ne va quando nessuno è più entrato (logout, sessione
+  finita, account cancellato) e con una lista vuota. La lista
   delle attività vive in `App.tsx`, che è di altri: per questo il file e
   non una prop.
 - **La fila** è in ordine di distanza dalla zona di casa, otto posti come

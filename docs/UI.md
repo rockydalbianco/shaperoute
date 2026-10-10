@@ -2598,7 +2598,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
       activities», qualunque sport; a pari merito la più recente. Senza
       attività, la partenza da cui è partito «Near me». Resta in
       `Documents/home-area.json`: niente permessi nuovi, niente indirizzo,
-      niente di nuovo all'API o sull'account; una lista vuota la toglie.
+      niente di nuovo all'API o sull'account. Se ne va al logout, a
+      sessione finita, con l'account cancellato e con una lista vuota.
     - **I posti da toccare** sono quelli più vicini alla zona di casa, otto
       alla volta; in fondo alla fila «Show more» ne aggiunge altri otto.
       Sotto la fila una riga dice da dove: «Suggested near Trento» (il

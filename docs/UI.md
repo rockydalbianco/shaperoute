@@ -186,6 +186,19 @@ pagine»):
    sempre visibile in basso, per intero; i suoi link si aprono nel browser
    del telefono.
 
+   **Il tipo di mappa** (TASK-264, ADR-0232, chiesto dall'utente): in alto
+   a destra, di fronte a «←», un pulsante tondo con due fogli; mentre si
+   corre sta sotto la barra delle svolte. Toccato, sotto compaiono
+   «Standard», «Satellite» e «3D», con la spunta su quello mostrato.
+   **Standard** è la mappa scura di sempre. **Satellite** sono le foto
+   aeree di Esri, con i nomi dei paesi in chiaro sopra e il credito
+   «Powered by Esri». **3D** è la mappa scura inclinata a 55° con il
+   rilievo vero e la sua ombreggiatura, come in Strava e komoot; niente
+   edifici in piedi, che coprivano il percorso. Il cambio non ricarica la
+   mappa: percorso, segni e inquadratura restano, e un percorso inquadrato
+   si inquadra di nuovo con la nuova inclinazione. La scelta resta per la
+   volta dopo. Le mappe piccole di «Feed» ed «Explore» restano standard.
+
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
    migliori che partono entro 5 km dalla partenza scelta, tutti, i migliori
@@ -471,7 +484,10 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   again.» e non mostra un altro percorso al suo posto. Un dito che scorre
   sopra una scheda non la apre. I disegni veri (TASK-118) non aprono un
   percorso: aprono il disegno, con reazioni e commenti; il profilo di chi
-  ha corso si raggiunge da «Find friends» o dai nomi taggati.
+  ha corso si raggiunge da «Find friends» o dai nomi taggati. Su un
+  disegno vero di un altro, il «…» a destra del nome segnala il disegno o
+  blocca chi l'ha corso (TASK-121, sotto in «Profile», «Segnalare e
+  bloccare»).
   **In cima, sopra i disegni, a destra, la lente** (TASK-215, ADR-0178;
   TASK-219, ADR-0182: solo la lente, scelta dell'utente): un cerchio come
   quello di «Profile», con una lente disegnata e nessun testo, sotto il
@@ -927,6 +943,31 @@ tasti c'è **«Follow back»**, che manda la tua richiesta e diventa la
 scritta «Requested» (o «Following», se l'altro ti aveva già accettato). Se
 lo segui già, o hai già chiesto, la riga lo dice subito e il tasto non
 c'è. Venti per volta, poi «Show more». Con un server senza gli elenchi i tre riquadri non ci sono.
+
+**Segnalare e bloccare** (TASK-121, ADR-0228; testi **confermati dall'utente** il 2026-10-09).
+Sulla scheda di un disegno di un altro in «Feed», a destra del nome, e sul
+profilo di un altro, a destra sotto «Follow», un **«…»** grigio (VoiceOver:
+«More», «Report or block»). Non c'è sui propri disegni, sul proprio
+profilo, sugli esempi né senza account. Toccato, apre in basso un
+foglio con due tasti e «Cancel»:
+
+| Tasto | Cosa fa |
+|---|---|
+| «Report» | chiede «Why are you reporting this?» con cinque tasti: «Spam», «Offensive or hateful», «Harassment or bullying», «Nudity or sexual content», «Something else»; toccato uno, «Sending…», poi «Thanks for telling us. We will look at it.» e «Close». Dal feed segnala il disegno, dal profilo la persona |
+| «Block {name}», rosso | chiede «Block {name}?» con «You will not see each other's drawings, comments or profile, and any follow between you ends. They are not told.», il tasto rosso «Block» e «Cancel» |
+
+Bloccato, il foglio si chiude da solo: **le schede di quella persona
+spariscono subito da «Feed»**, e alla lettura dopo l'API non le manda più;
+il suo profilo dice «You blocked {name}. Unblock them from Blocked people in
+your profile.»; gli elenchi di chi segue in «Profile» si rileggono (il
+blocco chiude ogni follow). Se la richiesta non va, il foglio dice perché
+(«This is not available any more.» per un'API di prima o una persona
+sparita). In «Profile», sotto «Settings», la riga **«Blocked people»**:
+toccata apre sotto l'elenco dei bloccati, l'ultimo per primo, con foto e
+nome e il tasto **«Unblock»** (VoiceOver: «Unblock {name}»); vuoto, «You
+have not blocked anyone.»; venti per volta, poi «Show more». Sbloccato,
+esce dall'elenco e torna in «Feed» alla lettura dopo; il follow non
+torna. Un profilo bloccato non si apre dall'elenco.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -1601,7 +1642,10 @@ chiesta; e dopo un «Try» non propone di tornare alla distanza appena
 lasciata, per lo stesso disegno dalla stessa partenza. «This shape» e non
 «This heart»: il nome della forma cambierebbe genere nelle altre lingue
 («Questa forma viene meglio a circa 8 km.»). Testi nelle cinque lingue
-(`src/route/betterDistance.ts`).
+(`src/route/betterDistance.ts`). Il tocco su «Try» si conta
+(`hint_taken` con `better_distance`, TASK-234 C) e, come ogni nuovo
+disegno, lascia subito il posto al pannello dell'attesa con la barra e
+«Cancel»: è il segno che il percorso nuovo si sta calcolando.
 
 **La mappa girata e la freccia del nord** (TASK-232 parte B, ADR-0195;
 la mappa girata, la freccia e i suoi due tocchi sono scelte dell'utente
@@ -2436,6 +2480,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   appariranno qui.» (dell'agente, **da confermare**, come tedesco, spagnolo
   e francese). «My activities» mostra ancora il passo al km (parte B).
   `src/navigation/paddle.ts`.
+  In bici senza percorso la velocità è quella di un percorso in bici
+  (TASK-251 parte C, «Correre senza percorso»).
 - **«Move the shape»** (TASK-238, ADR-0202; trascinare col dito è una
   scelta dell'utente del 2026-10-05): sotto «Start», quando il percorso
   disegnato è sull'acqua e la risposta dice dov'è la forma (`centre`; con
@@ -2633,6 +2679,19 @@ Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
 minuti). Anche in modalità tasca; niente vibrazione, che in navigazione
 vuol dire una svolta. «Keep running» non ripete i km già detti.
 
+**In bici senza percorso** («Ride without a route», TASK-251 parte C,
+ADR-0215; scelta dell'utente del 2026-10-08) la scheda e la fine della
+corsa mostrano i numeri di un percorso in bici («In bici», sopra), con lo
+stesso componente: sotto la mappa «Speed now» in km/h; su «Data», in pausa
+e a fine corsa «Speed now», «Avg speed», «Time», «Last km» (in km/h),
+«Elev. gain», senza «Calories»; i km uno per uno in km/h con la
+differenza. Con le miglia mph. Lo sport è quello di «Settings» alla
+partenza, tenuto nel file della corsa. La voce resta quella della corsa
+senza percorso (ogni km, col passo medio), il post scrive il passo al km
+come una pedalata con un percorso, e «My activities» come prima (il passo
+al km: lì solo «Paddle» ha numeri suoi). Una corsa senza percorso e
+«Paddle without a route» restano come prima.
+
 **Il confronto col km precedente** (TASK-217, ADR-0180; chiesto e scelto
 dall'utente il 2026-10-03: «ad ogni km di' anche se ha fatto meglio o
 peggio rispetto al km precedente»). Dal secondo km, subito dopo la frase
@@ -2770,6 +2829,9 @@ c'è anche l'errore.
   Da TASK-174 anche le zone dei percorsi mostrati in «Explore», quando si
   apre la pagina o si sceglie una città: sono attorno alla partenza o alla
   città scelta, come la mappa grande quando si apre un percorso.
+  Da TASK-264, con «Satellite» le foto vengono da Esri e con «3D» le
+  altezze dalle Terrain Tiles di AWS: anche loro vedono la zona guardata,
+  e solo con quel tipo scelto.
 - **La ricerca**: il testo cercato e la posizione (per mettere prima i
   luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo

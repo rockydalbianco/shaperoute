@@ -44,6 +44,9 @@ RUN pip install -r /tmp/requirements.txt
 COPY services/route-engine services/route-engine
 COPY services/ai services/ai
 COPY services/api services/api
+# The app's lists of lakes and beaches, where the repository has them: the
+# API keeps the Paddle shapes drawn from their points (TASK-246 part B).
+COPY apps/mobile/src/paddle/lakes.json apps/mobile/src/paddle/beaches.json apps/mobile/src/paddle/
 ENV PYTHONPATH=/app/services/route-engine:/app/services/ai:/app/services/api
 
 # Not root: the API only needs its cache folder.

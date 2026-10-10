@@ -12,7 +12,8 @@ who asks stands towards it (follows.py). Never the email, the role, the
 internal id or when the account was made. It needs the token of an account:
 what members share is for members, as the feed (ADR-0114, point 4). The id
 is the random `public_id` of the account, not `id`: a sequence would let
-anyone walk every profile and count the accounts.
+anyone walk every profile and count the accounts. Between two members a
+block keeps apart (TASK-121, moderation.py) it is 404, as for nobody.
 """
 
 from __future__ import annotations
@@ -44,6 +45,7 @@ from shaperoute_api.db import Database
 from shaperoute_api.drawings import published_count_sql
 from shaperoute_api.follows import (
     FollowState,
+    apart_sql,
     follow_state_sql,
     followers_count_sql,
     following_count_sql,
@@ -154,8 +156,10 @@ class Profiles:
                 f" {following_count_sql('u.id')} AS following,"
                 f" {follow_state_sql('%s', 'u.id')} AS follow"
                 " FROM users u LEFT JOIN profile_photos p ON p.user_id = u.id"
-                " WHERE u.public_id = %s",
-                (viewer_id, viewer_id, wanted),
+                " WHERE u.public_id = %s"
+                # Across a block the profile is not there (TASK-121).
+                f" AND NOT {apart_sql('%s', 'u.id')}",
+                (viewer_id, viewer_id, wanted, viewer_id),
             ).fetchone()
         if row is None:
             return None

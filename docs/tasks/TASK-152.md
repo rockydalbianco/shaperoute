@@ -48,12 +48,23 @@ privacy, così AdMob può verificare l'app (TASK-153).
    società (gratuito, da Dun & Bradstreet); Apple può chiedere documenti
    e la verifica dura fino a circa tre settimane. L'app resta nello
    stesso account, cambia solo il nome del venditore.
-2. *Aperta.*
+2. **Non commerciante («non-trader») UE, per ora** (2026-10-09). Prima
+   l'utente aveva detto «sì commerciante» perché voleva gli annunci veri
+   da subito; poi ha scelto di **lanciare senza pubblicità** e, richiesto
+   esplicitamente con il nuovo quadro (app gratuita e senza annunci,
+   nessun dato personale pubblico sullo store), ha risposto «sì, non
+   commerciante per ora». Quando arrivano gli annunci (TASK-153) si passa
+   a commerciante su App Store Connect, Business → Digital Services Act;
+   con la società, con i dati della società (risposta 1). La società la
+   apre dopo i primi ~300 € di guadagno.
 3. **`getmuw.app`**, dominio proprio (TASK-265, ADR-0234): il sito è
    online lì, l'API su `api.getmuw.app`.
 4. **«MuW»** (TASK-260, ADR-0224). Se il nome è già preso sull'App
    Store lo si scopre quando si crea la scheda.
-5. *Aperta.*
+5. **Solo iPhone per ora; Android dopo**, come task a parte (2026-10-10,
+   «per ora per iphone poi pubblichiamo per google»). Anche niente iPad:
+   `supportsTablet: false`, così su iPad l'app gira come app per iPhone e
+   Apple non chiede screenshot né prove su iPad.
 
 ## Cosa fare
 
@@ -99,6 +110,8 @@ apps/mobile/eas.json
 apps/mobile/app.config.ts          (nuovo, parte A)
 apps/mobile/fingerprint.config.js  (nuovo, parte A)
 apps/mobile/__tests__/appConfig.test.ts  (nuovo, parte A)
+apps/mobile/store.config.json      (nuovo, parte B: testi della scheda)
+apps/mobile/store/                 (nuovo, parte B: screenshot della scheda)
 docs/DEPLOY.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -198,3 +211,83 @@ non cambia.
   guarda (`fingerprint.config.js`, provato in ADR-0233) e il runtime di
   Expo Go resta `exposdk:57.0.0`. Deciso dall'agente su delega
   dell'utente.
+- **Seconda build `production`**, la prima per TestFlight (2026-10-09):
+  build EAS `e1166bc0-842c-46d2-b39b-9180a20e9133`, versione `1.0.0`,
+  build 4, commit `9295d17a`, runtime `97c9f355…` (uguale), con
+  `EXPO_PUBLIC_API_KEY` (copiata dall'utente da `preview` a `production`
+  con un suo comando `env:get | env:set`; l'agente non l'ha letta).
+  `--auto-submit` è fallito con «Missing submit profile in eas.json:
+  production» (con `--auto-submit` il profilo si cerca per nome; `eas
+  submit` senza `--profile` usa quello predefinito): inviata a parte con
+  `eas submit --platform ios --id e1166bc0…`. EAS ha creato su App Store
+  Connect l'app **«MuW»** (il nome era libero; ASC App ID `6820961883`),
+  il gruppo TestFlight interno «Team (Expo)» con l'utente e la chiave API
+  di App Store Connect (salvata su EAS). La dichiarazione sulla
+  crittografia non è stata chiesta (`usesNonExemptEncryption: false` in
+  `app.json`). **L'utente l'ha installata da TestFlight: «sembra
+  funzionare».**
+- `eas.json`: profilo `submit.production` con l'`ascAppId`, così la
+  prossima build va da sola su TestFlight con `--auto-submit` (`DEPLOY.md`
+  A.7 punto 2); fuori dall'impronta. Test in `appConfig.test.ts`.
+- **Ordine per la build 5, quella per la revisione** (Coordinatore,
+  2026-10-09): #457 (TASK-121, segnala e blocca: lo chiede la Guideline
+  1.2 di Apple per i contenuti degli utenti) → #451 (notifiche push,
+  nativa) → TASK-153 (annunci veri, `app-ads.txt`; sessione «PUBBLICITA»).
+  TASK-262 C (rubrica) solo se pronta in tempo, altrimenti 1.0.1. **Niente
+  build 5 né invio in revisione senza il via del Coordinatore.**
+- **Cambio dell'utente, 2026-10-09: si lancia senza pubblicità**, gli
+  annunci si fanno dopo. TASK-153 esce dalla build 5; la build dello
+  store non deve mostrare l'annuncio di prova di Google che oggi compare
+  a ogni ricerca (TASK-166): chi lo spegne lo decide il Coordinatore.
+- **Scheda dell'App Store** (parte B, 2026-10-09/10): testi in inglese
+  (en-US) **approvati dall'utente** il 2026-10-09 («testi ok») e 5
+  screenshot iPhone 6,9″ (1320×2868) **approvati** il 2026-10-10
+  («screeenshoot si»), in `apps/mobile/store.config.json` e
+  `apps/mobile/store/screenshots/` (JPEG). Si caricano con `eas
+  metadata:push` (`DEPLOY.md` A.7, punto 5). Titolo «MuW», sottotitolo
+  «Draw a shape, then run it», categorie Salute e fitness + Navigazione,
+  copyright «2026 Luca Pallaoro», sito `https://getmuw.app`, assistenza
+  `https://getmuw.app/support/` (pagina di TASK-237), privacy
+  `https://getmuw.app/privacy/`; uscita manuale dopo l'approvazione.
+  Screenshot dall'app vera (`preview` in Expo Go, senza il pulsante di
+  Expo Go, ora 9:41) su un simulatore iPhone 18 Pro Max, a Trento: cuore
+  di 5 km, corsa con la navigazione (posizione simulata lungo lo stesso
+  percorso chiesto all'API locale), Explore, Feed, Draw.
+- **Zona di Cupertino** sul server di produzione dal 2026-10-10 03:11Z
+  (Coordinatore): copre Apple Park; un cuore di 5 km da lì risponde in
+  ~14 s. Rischio «il revisore negli USA non riesce a disegnare» chiuso.
+- **Fa l'utente su App Store Connect** (con le sue credenziali), prima
+  dell'invio: Digital Services Act → non-trader; prezzo gratis, tutti i
+  paesi; Age Rating (tutto «No» tranne contenuti degli utenti) con
+  l'età alzata a 16+, come i termini; Content Rights (mappe
+  OpenStreetMap); App Privacy senza tracciamento né dati pubblicitari
+  (AdMob tolto dalla build, TASK-267): email, telefono, nome Strava,
+  dati di fitness, posizione precisa, foto, contenuti degli utenti, User
+  ID e Device ID (push) collegati alla persona per il funzionamento;
+  posizione approssimativa, ricerche e interazioni non collegate, per
+  statistiche; un account di prova per il revisore in «App Review
+  Information».
+- **Note per il revisore** (da incollare in App Store Connect):
+  «MuW draws a route in the shape you choose on real streets. To try it:
+  open Draw, keep "My position" or pick "Another place", choose a shape
+  (e.g. heart) and 5 km, tap "Draw route", then "Start". Near Apple Park
+  a 5 km heart takes about 15 seconds. Location: the app asks for
+  location only while in use; during a run the user started, it keeps
+  recording the track with the screen locked (blue indicator) until the
+  run is stopped. Background audio: turn-by-turn voice guidance during a
+  run or ride, with the screen locked. Feed, comments and profile need an
+  account: use the demo account below. Users can report a drawing or a
+  comment and block a person.» La riga sull'audio vale
+  solo se TASK-261 B entra nella build 5; quella su segnala e blocca
+  quando #457 è in main.
+- `store.config.json` ha anche `"version": "1.0.0"`: senza, `eas metadata:push`
+  manderebbe ad Apple un numero di versione vuoto insieme al copyright;
+  con, la versione in preparazione su App Store Connect prende lo stesso
+  numero della build (Apple accetta per una versione solo le build con
+  quel numero). Il test in `appConfig.test.ts` la tiene uguale a
+  `app.json`: a ogni nuova versione si cambiano tutti e due.
+- 2026-10-10: su richiesta dell'utente («falla generica») la descrizione
+  diventa una versione più corta e generica degli stessi testi (487
+  caratteri, stesse funzioni, niente numeri di chilometri); parole chiave
+  invariate. L'utente ha pubblicato le etichette App Privacy su App Store
+  Connect (12 tipi di dati, nessun tracciamento).

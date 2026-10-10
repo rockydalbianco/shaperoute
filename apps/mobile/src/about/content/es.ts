@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "5 de octubre de 2026";
-/** «Privacy» is final since the user approved it on this day (TASK-237 D). */
-const PRIVACY_UPDATED = "9 de octubre de 2026";
+const UPDATED = "10 de octubre de 2026";
+/** «Privacy» is final since the user approved it on this day (TASK-237 D; without ads, TASK-267 B). */
+const PRIVACY_UPDATED = "10 de octubre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -208,9 +208,7 @@ const terms: AboutDocument = {
     },
     {
       heading: "Publicidad",
-      blocks: [
-        "MuW muestra publicidad, ofrecida por Google AdMob, entre los dibujos de «Feed» y marcada como «Patrocinado». Un anuncio abre lo que indica el anunciante: su contenido no es nuestro.",
-      ],
+      blocks: ["MuW no muestra publicidad."],
     },
     {
       heading: "Servicios de otros",
@@ -348,8 +346,7 @@ const privacy: AboutDocument = {
     {
       heading: "Publicidad",
       blocks: [
-        "MuW muestra anuncios de Google AdMob entre los dibujos de «Feed». La primera vez que abres «Feed», el formulario de consentimiento de Google te pide tu elección donde hace falta; mientras no se puedan pedir anuncios, no se muestra ninguno. En el iPhone la app no pide rastrearte a través de otras apps y los anuncios se piden sin el identificador de publicidad.",
-        "Google trata lo que recoge su software de publicidad según su propia política de privacidad.",
+        "MuW no muestra anuncios ni usa ningún servicio de publicidad: nada sobre ti va a una red publicitaria, y la app nunca pide rastrearte a través de otras apps.",
       ],
     },
     {
@@ -369,7 +366,7 @@ const privacy: AboutDocument = {
             "Nuestro servidor pide al servicio Overpass de datos de OpenStreetMap el mapa de una zona que aún no tiene: ve qué zona, no quién la pidió.",
             "unpkg sirve la biblioteca del mapa cuando arranca la app.",
             "Expo sirve las actualizaciones de la app.",
-            "Google AdMob y Strava, como se ha dicho arriba.",
+            "Strava, como se ha dicho arriba.",
           ],
         },
         "Una imagen de tu carrera hecha con «Compartir» se crea en el teléfono y solo sale de él por el menú de compartir, hacia donde la envíes.",
@@ -396,7 +393,7 @@ const privacy: AboutDocument = {
           bullets: [
             "Para darte el servicio que pides (contrato): tu cuenta, tu perfil, las rutas que pides, y las carreras, favoritos, comentarios, reacciones y seguimientos que guardas.",
             "Nuestro interés legítimo en que MuW funcione, sea segura y mejore: los registros breves del servidor, los recuentos que limitan las descargas de mapas y los eventos de búsqueda, que no dicen nada de quién eres; la comparación de los números de tus contactos, que no conserva ninguno.",
-            "Tu consentimiento: el número de teléfono que decides añadir, la conexión con Strava y los anuncios donde el formulario de Google lo pide. Puedes retirar un consentimiento en cualquier momento; lo que se hizo antes sigue siendo lícito.",
+            "Tu consentimiento: el número de teléfono que decides añadir y la conexión con Strava. Puedes retirar un consentimiento en cualquier momento; lo que se hizo antes sigue siendo lícito.",
             "Una obligación legal, cuando una ley nos pide conservar o entregar datos.",
           ],
         },

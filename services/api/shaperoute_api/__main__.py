@@ -45,6 +45,7 @@ from shaperoute_api.recommended import RecommendedCatalog
 from shaperoute_api.request_log import DEFAULT_DIR, ON_VARIABLE, RequestLog, wanted
 from shaperoute_api.route_store import STORE_FOLDER, RouteStore
 from shaperoute_api.themed import StopFinder, ThemedJobs
+from shaperoute_api.water_spots import read_spots
 
 DEFAULT_PORT = 8000
 
@@ -166,9 +167,15 @@ def main(argv: Sequence[str] | None = None) -> None:
     graphs = ActivityGraphs.from_cache(args.cache_dir)
     source = graphs.for_activity("running")
     cities = CitySearch(places.key)
-    # A city's examples, kept once drawn (ADR-0136): beside the zones.
+    # A city's examples, kept once drawn (ADR-0136): beside the zones. And
+    # the «Paddle» shapes of the lakes' and beaches' points (TASK-246 B).
     route_store = (
-        None if args.no_route_store else RouteStore(args.cache_dir / STORE_FOLDER)
+        None
+        if args.no_route_store
+        else RouteStore(
+            args.cache_dir / STORE_FOLDER,
+            water=[spot.point for spot in read_spots()],
+        )
     )
     # Search events, on by default (the user's choice, ADR-0101), and the
     # learned vocabulary: tables, then it, then the AI.
@@ -237,6 +244,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     else:
         folder = args.cache_dir / STORE_FOLDER
         print(f"A city's examples are kept once drawn: {len(route_store)} in {folder}")
+        print(
+            f"Paddle shapes kept from {route_store.water_points} points on the "
+            f"water: {route_store.kept_on_water()}"
+        )
     if args.lan:
         address = lan_address() or "<this PC's address>"
         print(f"From the phone, same Wi-Fi: http://{address}:{args.port}/health")

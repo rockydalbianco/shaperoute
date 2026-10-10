@@ -1,5 +1,6 @@
-# Only services/ goes into the API image (Dockerfile): nothing else is sent
-# to Docker, above all no .env and no downloaded road graphs.
+# Only services/ goes into the API image (Dockerfile), and two lists of the
+# app: nothing else is sent to Docker, above all no .env and no downloaded
+# road graphs.
 *
 !services/route-engine/pyproject.toml
 !services/route-engine/route_engine/
@@ -9,6 +10,10 @@
 !services/api/shaperoute_api/
 # The SQL the API applies when it starts (TASK-114, TASK-122).
 !services/api/migrations/
+# The app's lists of lakes and beaches: the API keeps the Paddle shapes drawn
+# from their points (water_spots.py, TASK-246 part B).
+!apps/mobile/src/paddle/lakes.json
+!apps/mobile/src/paddle/beaches.json
 **/__pycache__
 **/*.py[cod]
 **/.env

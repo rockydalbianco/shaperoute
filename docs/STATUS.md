@@ -165,6 +165,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   si cerca su tutto il percorso avanti e si riprende da lì dopo due
   posizioni. Solo app, nessun testo nuovo.
   File: `tasks/TASK-270.md`, «File toccati».
+  **Chiuso il 2026-10-10**: #486 in `main` (`0a589ddd`); vedi «Completato».
 - **TASK-245 parte C — 38 posti di mare in più per «Paddle»** (ADR-0210,
   aggiornamento; posti scelti dall'utente il 2026-10-09 sulla proposta
   dell'agente). Branch `feat/TASK-245-c-more-beaches`. `PLACES` da 29 a 67
@@ -730,6 +731,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-270 (aggiunta ad ADR-0052, dalla prima recensione di un
+  tester del 2026-10-10): dopo 20 s senza posizioni (app dietro un'altra,
+  congelata da iOS, corsa ripresa) il navigatore cerca il corridore su
+  tutto il percorso avanti e riprende da lì dopo due posizioni, senza
+  ridire le svolte saltate. Prima, oltre 300 m d'assenza, restava «fuori
+  percorso» fino alla fine. PR #486, merge `0a589ddd`. Solo app, nessun
+  testo nuovo; non è nella build 5: su `preview` dal 2026-10-10 nel gruppo
+  `cd929227` (da `066d10e8`), poi con un aggiornamento della 1.0. Resta la
+  prova correndo. Dalla stessa recensione: TASK-271 (inversione a U nei
+  vicoli ciechi), TASK-272 (corsa interrotta riaperta in pausa), TASK-273
+  (partire da qualsiasi punto di una forma chiusa). File:
+  `tasks/TASK-270.md`, «File toccati».
 - **Test** — TASK-274 (aggiunta ad ADR-0120): il database dei test
   dell'API si chiude con `docker rm -f -v`, quindi se ne va anche il
   volume anonimo dei dati. Prima ogni giro ne lasciava uno: il 2026-10-10

@@ -186,6 +186,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   si cerca su tutto il percorso avanti e si riprende da lì dopo due
   posizioni. Solo app, nessun testo nuovo.
   File: `tasks/TASK-270.md`, «File toccati».
+  **Chiuso il 2026-10-10**: #486 in `main` (`0a589ddd`); vedi «Completato».
 - **TASK-245 parte C — 38 posti di mare in più per «Paddle»** (ADR-0210,
   aggiornamento; posti scelti dall'utente il 2026-10-09 sulla proposta
   dell'agente). Branch `feat/TASK-245-c-more-beaches`. `PLACES` da 29 a 67
@@ -198,6 +199,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'app, mai prima dell'acqua. File: `tasks/TASK-245.md`, «parte C».
   **2026-10-10: l'acqua è sul server** (38 file, 20,3 MB, SHA-256 uguali,
   provata nel container; ok dell'utente). Aspetta il merge della #480.
+  **Chiusa** il 2026-10-10: #480 mergiata (`793fa11`); vedi «Completato».
 - **TASK-261 parte B — La voce a telefono bloccato** (aggiunta ad
   ADR-0225; scelte dell'utente del 2026-10-10). Branch
   `feat/TASK-261-b-voice-background`. Durante la corsa la voce parla a
@@ -300,6 +302,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   si vedono solo con una build nativa. Parti B (email, Resend) e C
   (rubrica, con un nuovo sì) Todo. Da dove riprendere:
   `tasks/TASK-262.md`.
+  **Parte A chiusa il 2026-10-10** (PR #451, merge `578c2f7e`): vedi
+  «Completato». Restano B e C.
 - **TASK-152 — MuW sull'App Store** (ADR-0233). **Parte A** in `main`
   il 2026-10-08 (PR #446, merge `9dcacbf4`; chiesta dall'utente): profilo `production` in `eas.json`,
   canale `production`. Solo la build dello store ha il runtime dal
@@ -310,6 +314,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Developer e le cinque domande del task; prima della prima build, le
   variabili dell'ambiente EAS `production` (oggi vuoto). Da dove
   riprendere: `tasks/TASK-152.md`, «Esito».
+  **Parte B** (2026-10-10): build 5 (1.0.0, `793fa112`, runtime
+  `83793e26…`) inviata in revisione ad Apple dall'utente; scheda, screenshot
+  e privacy su App Store Connect. Resta l'esito di Apple e l'uscita
+  manuale.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -744,6 +752,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-270 (aggiunta ad ADR-0052, dalla prima recensione di un
+  tester del 2026-10-10): dopo 20 s senza posizioni (app dietro un'altra,
+  congelata da iOS, corsa ripresa) il navigatore cerca il corridore su
+  tutto il percorso avanti e riprende da lì dopo due posizioni, senza
+  ridire le svolte saltate. Prima, oltre 300 m d'assenza, restava «fuori
+  percorso» fino alla fine. PR #486, merge `0a589ddd`. Solo app, nessun
+  testo nuovo; non è nella build 5: su `preview` dal 2026-10-10 nel gruppo
+  `cd929227` (da `066d10e8`), poi con un aggiornamento della 1.0. Resta la
+  prova correndo. Dalla stessa recensione: TASK-271 (inversione a U nei
+  vicoli ciechi), TASK-272 (corsa interrotta riaperta in pausa), TASK-273
+  (partire da qualsiasi punto di una forma chiusa). File:
+  `tasks/TASK-270.md`, «File toccati».
+- **Test** — TASK-274 (aggiunta ad ADR-0120): il database dei test
+  dell'API si chiude con `docker rm -f -v`, quindi se ne va anche il
+  volume anonimo dei dati. Prima ogni giro ne lasciava uno: il 2026-10-10
+  il disco di Colima sul Mac era pieno (168 volumi, 17,6 GB) e i test del
+  database fallivano. `tasks/TASK-274.md`.
 - **App** — TASK-266: il tour del primo avvio e «Guide» in «Profile»
   (ADR-0235; richiesta dell'utente del 2026-10-09, che ha scelto il tour
   sulle schermate vere). In `main` con la #479 (`1f64621e`, 2026-10-10).
@@ -763,6 +788,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   stessa zona. Frase nuova nella privacy, app e sito. Richiesta
   dell'utente del 2026-10-09, il come deciso dall'agente su delega; testi
   approvati. Copia del sito e pubblicazione: del coordinatore.
+- **App e API** — TASK-245 parte C (ADR-0210, aggiornamento): **38 posti
+  di mare in più** per «Paddle», scelti dall'utente il 2026-10-09 sulla
+  proposta dell'agente, sulle coste che ne avevano meno: `PLACES` e
+  `beaches.json` da 29 a 67, **tutti a 2 km** e con le otto forme, nessuno
+  scartato. L'acqua (38 file, 20,3 MB) è sul server dal 2026-10-10, prima
+  del merge, con l'ok dell'utente; SHA-256 uguali, provata nel container.
+  PR **#480** mergiata (`793fa11`, 05:00Z) col via del coordinatore.
+  **Del coordinatore**: l'aggiornamento del server (`beach_catalog.py`, ok
+  dell'utente già dato), la pubblicazione dell'app e un solo
+  `draw_examples --water`, con l'ok dell'utente, finito il lavoro delle
+  zone europee. Poi la prova sull'iPhone. `tasks/TASK-245.md`, «parte C».
+  **Fatto dal coordinatore**: server con `beach_catalog.py` (67 posti) dal
+  2026-10-10 05:11Z (main `55b990be`), su `preview` nel gruppo `999502dd`
+  e nella build 5 (`793fa112`). Il `draw_examples --water` aspetta
+  l'approvazione di Apple della 1.0 e l'ok dell'utente.
 - **App** — TASK-261 parte B (aggiunta ad ADR-0225): durante la corsa la
   voce parla a telefono bloccato e con l'interruttore silenzioso, e
   abbassa la musica di un'altra app mentre parla (scelte dell'utente del
@@ -778,6 +818,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Map» finiva sotto il bordo (corsa su strada dell'utente del
   2026-10-09). PR #472, merge `0a07f757` il 2026-10-10; nessun testo
   nuovo. Resta lo swipe col dito sull'iPhone. File: `tasks/TASK-268.md`.
+- **API e app** — TASK-262 parte A: le notifiche push partono (ADR-0226;
+  scelte dell'utente del 2026-10-07). PR #451, merge `578c2f7e` del
+  2026-10-10. Tabella `push_tokens` (migrazione `0021`), `PUT`/`DELETE
+  /me/push-token`, invio con il servizio push di Expo fuori dalla
+  richiesta; richiesta di follow, richiesta accettata, reazione, commento
+  e tag notificati una volta a chi ha «Push notifications» acceso, mai
+  fra bloccati (TASK-121) né a chi ha agito. Nell'app
+  `expo-notifications`, il permesso chiesto solo dall'interruttore, il
+  tocco che apre il disegno o il profilo. **Da fare**: la `0021` sul
+  server e la pubblicazione (coordinatore, con l'ok dell'utente), la
+  prova con una build nativa, `npm install` nel checkout principale.
+  `tasks/TASK-262.md`. **Fatto dal coordinatore**: la `0021` è sul
+  server dal 2026-10-10 05:11Z (main `55b990be`, ok dell'utente), su
+  `preview` nel gruppo `999502dd` e nella build 5 (`793fa112`).
 - **API e app** — TASK-121: segnalare e bloccare (ADR-0228; brief del
   coordinatore del 2026-10-07/08). Branch `feat/TASK-121-report-block`,
   migrazione `0020_moderation.sql` (`blocks`, `reports`). Un blocco tiene

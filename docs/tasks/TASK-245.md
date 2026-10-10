@@ -354,3 +354,17 @@ del coordinatore, che ha detto chi copia (questa sessione) e come.
   (`beach_catalog.py`, ok dell'utente già dato), la pubblicazione dell'app
   (`beaches.json`) e un solo `draw_examples --water` (TASK-246 B), con l'ok
   dell'utente, finito il lavoro delle zone europee.
+
+### 2026-10-10, parte C chiusa
+
+PR **#480** mergiata in `main` (`793fa11`, 05:00Z) al via del coordinatore
+(«ok 480»), con la CI 5/5 verde dopo due aggiornamenti da `main` (solo
+conflitti in `STATUS.md`, tenute tutte le voci).
+
+**Seguiti** (del coordinatore): l'aggiornamento del server e la
+pubblicazione dell'app; un solo `draw_examples --water` (TASK-246 B) con
+l'ok dell'utente, finito il lavoro delle zone europee; poi la prova
+sull'iPhone dell'utente (per esempio Positano, Lampedusa o Grado in
+«Explore» con «Paddle»). I file d'acqua e gli script restano in
+`.claude/worktrees/TASK-245-C/out/task245c-beaches/` finché il worktree
+c'è; l'acqua vera è sul server.

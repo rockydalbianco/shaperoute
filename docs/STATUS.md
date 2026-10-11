@@ -157,6 +157,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-272 — La corsa interrotta si riapre in pausa** (ADR-0240; dalla
+  prima recensione di un tester del 2026-10-10, scelta dell'utente «Riapre
+  la corsa in pausa»). Branch `feat/TASK-272-reopen-interrupted-run`. Se
+  l'app si chiude durante una corsa, riaprendola entro 2 ore si apre la
+  corsa in pausa, sullo stesso percorso con la traccia fin lì: «Resume» o
+  «Stop» tenuto; il tempo chiusa è una pausa. Il file della corsa tiene
+  ora anche indicazioni, parola e tratti a piedi. Anche la corsa senza
+  percorso. Più vecchia di 2 ore, la fine della corsa come prima. Solo
+  app, nessun testo nuovo; pubblica il coordinatore.
+  File: `tasks/TASK-272.md`, «File toccati».
 - **TASK-270 — Dopo un'assenza del GPS il navigatore ritrova il percorso**
   (aggiunta ad ADR-0052; dalla prima recensione di un tester del
   2026-10-10). Branch `fix/TASK-270-navigator-rejoin`. Prima, con l'app

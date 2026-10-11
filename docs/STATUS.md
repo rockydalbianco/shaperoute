@@ -157,6 +157,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-271 — «Make a U-turn» anche fuori dagli incroci** (aggiunta ad
+  ADR-0045; dalla prima recensione di un tester del 2026-10-10). Branch
+  `fix/TASK-271-dead-end-u-turn`. Prima, tornando indietro in fondo a un
+  vicolo cieco o su un nodo con due strade, la voce taceva: `directions()`
+  saltava ogni nodo con meno di 3 strade. Ora lì si dice `"u-turn"` quando
+  il percorso torna al nodo da cui è arrivato; le altre curve fuori dagli
+  incroci restano in silenzio. Solo motore, nessun testo nuovo. Dopo il
+  merge, con l'ok dell'utente: server, `draw_examples`, motore sul
+  telefono; i percorsi già in cache tengono le indicazioni vecchie. Non
+  nella 1.0. File: `tasks/TASK-271.md`, «File toccati».
 - **TASK-270 — Dopo un'assenza del GPS il navigatore ritrova il percorso**
   (aggiunta ad ADR-0052; dalla prima recensione di un tester del
   2026-10-10). Branch `fix/TASK-270-navigator-rejoin`. Prima, con l'app

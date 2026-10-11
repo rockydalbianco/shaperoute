@@ -99,20 +99,24 @@ chiuse; parole e forme aperte partono dalla loro partenza come oggi.
 
 ## Criteri di accettazione
 
-- [ ] Entrare a metà di un giro: le svolte da lì, compresa quella alla
+- [x] Entrare a metà di un giro: le svolte da lì, compresa quella alla
       vecchia partenza, e l'arrivo al punto d'ingresso (test).
-- [ ] Una posizione storta vicino a un passaggio lontano, e attraversare
+- [x] Una posizione storta vicino a un passaggio lontano, e attraversare
       la forma di traverso, non scelgono l'ingresso (test).
-- [ ] Forme aperte e parole come prima: «Head out on …» allo «Start», la
+- [x] Su una via che la forma percorre due volte vince il passaggio
+      percorso nel verso del percorso (test).
+- [x] Forme aperte e parole come prima: «Head out on …» allo «Start», la
       partenza al primo metro (test).
-- [ ] Partire dalla partenza di una forma chiusa: le svolte come prima,
+- [x] Partire dalla partenza di una forma chiusa: le svolte come prima,
       «Head out on …» all'ingresso (test).
-- [ ] La parte corsa sulla mappa parte dal punto d'ingresso (test).
-- [ ] I tratti con la bici a mano dopo l'ingresso si dicono (test).
-- [ ] Una corsa ripresa rientra nello stesso punto (test).
-- [ ] Nessun testo nuovo.
-- [ ] Corsa simulata nel simulatore iOS, entrando a metà di una forma.
-- [ ] `npm run lint`, `typecheck`, `test`, `format:check` verdi (CI).
+- [x] La parte corsa sulla mappa parte dal punto d'ingresso (test).
+- [x] I tratti con la bici a mano dopo l'ingresso si dicono (test).
+- [x] Una corsa ripresa rientra nello stesso punto (test, anche con il
+      file della corsa vero in `useNavigation.test.ts`).
+- [x] Nessun testo nuovo.
+- [x] Corsa simulata nel simulatore iOS, entrando a metà di una forma.
+- [ ] `npm run lint`, `typecheck`, `test`, `format:check` verdi (CI;
+      in locale verdi).
 
 ## File toccati
 
@@ -144,4 +148,21 @@ docs/STATUS.md, docs/DECISIONS.md                     (le righe di questo task)
 
 ## Esito
 
-*(si compila a fine task)*
+*(in corso: si completa dopo il merge)*
+
+**Prova nel simulatore** (2026-10-10, iPhone 17e con Expo Go, l'API del
+worktree sulla cache delle mappe del Mac): un cuore vero di 3,9 km a Trento
+(79 indicazioni), la posizione simulata da `simctl location start` a partire
+da 2,8 km, l'app sulla schermata della corsa con un'impalcatura temporanea
+(tolta). Allo «Start» nessuna frase; dopo una ventina di metri «Head out on
+Largo Giosuè Carducci / Via Oriola» e «In 30 metres, turn right onto Piazza
+Cesare Battisti / Via del Simonino»; la linea gialla parte dal punto
+d'ingresso, «3.9 km to go». Alla vecchia partenza la voce ha detto «turn
+left onto Via Giuseppe Verdi», poi la svolta ricavata sul telefono («make a
+U-turn onto Via Giuseppe Verdi»: il percorso va per 33 m fino al punto di
+partenza disegnato e torna), poi «turn right onto Vicolo Terlago»; nessun
+«Off the route», nessun arrivo lì. Alla fine «In 50 metres, turn right onto
+Largo Giosuè Carducci / Via Oriola» e «You have arrived.» al punto
+d'ingresso, con tutta la forma gialla. La riproduzione della posizione del
+simulatore si è fermata più volte (Mac in pausa): ripresa per gli ultimi
+600 m.

@@ -43,6 +43,15 @@ chiuse; parole e forme aperte partono dalla loro partenza come oggi.
 - A verde «#NNN pronta» al Coordinatore; merge solo al suo «merge NNN»
   esplicito, con `--match-head-commit`.
 
+**Ordine del Coordinatore** (2026-10-11, sulla PR #493): prima la #492
+(TASK-272), poi la #493. Tutte e due ferme finché non si taglia la build 6
+per Apple (TASK-275): niente altro in quella build. Dopo il suo «merge
+492», e con la #492 in `main`: riallineare la #493 su `main` e collegare la
+ripresa di TASK-272 a questa scelta (chi ricostruisce la navigazione passa
+`startsAnywhere(points, {word, walks})` a `startNavigation`), con un test;
+poi «#493 pronta» e merge solo al suo «merge 493». Intanto la #493 resta
+verde.
+
 ## Contesto da leggere
 
 - `docs/DECISIONS.md`: ADR-0052 e la sua aggiunta (TASK-270), ADR-0070

@@ -69,7 +69,17 @@ services/route-engine/tests/test_directions.py
 docs/tasks/TASK-271.md
 docs/STATUS.md
 docs/DECISIONS.md
+apps/mobile/assets/engine/engine.zip
+apps/mobile/src/paddle/paddleExamples.json
 ```
+
+Gli ultimi due li ha approvati il Coordinatore (`local_e57a8224`) il
+2026-10-10, per la regola di `AGENTI.md` su chi cambia il motore: lo zip del
+motore sul telefono (`python tools/phone_engine/phone_engine.py engine`) e
+gli esempi di «Paddle» dentro l'app
+(`python -m shaperoute_api.paddle_examples --cache-dir <cache>`, TASK-227)
+seguono `directions.py`, altrimenti i due test che li legano al motore
+falliscono. Nessun altro task li tiene adesso.
 
 ## Condizioni del Coordinatore
 
@@ -104,6 +114,14 @@ riprende tiene la PR verde, la riallinea a `main` se va in conflitto su
 STATUS o DECISIONS (tenendo tutte le voci), la mergia al «merge 489» e poi
 chiude il task (questo «Esito», riga di chiusura e voce «Completato» in
 STATUS) con una PR di documenti da `origin/main`.
+
+2026-10-11: PR riallineata a `main` (conflitto solo in fondo a
+`DECISIONS.md`, tenute tutte e due le voci) e rimessa verde: la CI chiedeva
+i due file del motore. `engine.zip` rifatto (dentro cambia solo
+`route_engine/directions.py`); `paddleExamples.json` ridisegnato sull'acqua
+del server copiata in sola lettura sul Mac (292 file): cambia solo
+l'impronta `engine` (`15bb981f9359` → `bf3ab4e15853`), i 32 esempi sono
+identici.
 
 ## Esito
 

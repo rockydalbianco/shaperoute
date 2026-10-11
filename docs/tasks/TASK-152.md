@@ -291,3 +291,27 @@ non cambia.
   caratteri, stesse funzioni, niente numeri di chilometri); parole chiave
   invariate. L'utente ha pubblicato le etichette App Privacy su App Store
   Connect (12 tipi di dati, nessun tracciamento).
+- **`eas metadata:push` fatto dall'utente** (2026-10-10, da main
+  `87bddb62`): versione su App Store Connect rinominata 1.0.0, testi
+  en-US, categorie e i 5 screenshot caricati (chiave API di EAS, nessun
+  login). Età, privacy e dati per la revisione inseriti a mano.
+- **Build 5, quella per la revisione** (2026-10-10, lanciata dalla
+  sessione «Indicazioni durante la corsa» su richiesta dell'utente, via
+  del Coordinatore): build EAS `e449944f-bcf4-4b4f-94c2-81a21a1e5318`,
+  versione 1.0.0, build 5, commit `793fa112` (worktree pulito con
+  `npm ci`), runtime `83793e26fc0da7cdc7d8c7f7b1b7ad09e6f823b3`, uguale
+  all'impronta del Mac. Contiene segnala e blocca, notifiche push, voce a
+  telefono bloccato, tour iniziale, niente AdMob, solo iPhone. Con il
+  login Apple dell'utente: capability Push Notifications sull'App ID,
+  profilo `XHB94SGSJ9` aggiornato, chiave APNs creata da EAS. Caricata
+  da sola su TestFlight (`--auto-submit`). Server pronto: migrazioni
+  0020 e 0021 con l'ok dell'utente, zona di Cupertino.
+- **L'utente l'ha provata da TestFlight** («provata, funziona tutto»), il
+  Coordinatore ha dato l'ok, e l'utente l'ha **inviata in revisione** il
+  2026-10-10: build 5 nella versione 1.0.0, note per il revisore (Apple
+  Park, posizione e audio in background, push da attivare in Settings,
+  account di prova che segue un account con disegni pubblicati),
+  dichiarazione «non è un dispositivo medico», uscita manuale dopo
+  l'approvazione. **Resta**: l'esito di Apple (si scrive qui), poi
+  «Release This Version» dell'utente; nessun `eas update` sul canale
+  `production` senza il via del Coordinatore.

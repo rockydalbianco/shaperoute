@@ -54,7 +54,14 @@ def _docker_server() -> Iterator[str]:
         _wait_for(url)
         yield url
     finally:
-        subprocess.run(["docker", "rm", "-f", container], capture_output=True)
+        subprocess.run(_removal(container), capture_output=True)
+
+
+def _removal(container: str) -> list[str]:
+    # -v drops the image's anonymous PGDATA volume too: without it every run
+    # left one behind and filled the Mac's docker disk (TASK-274). --rm does
+    # the same only when the container stops on its own.
+    return ["docker", "rm", "-f", "-v", container]
 
 
 def _wait_for(url: str) -> None:

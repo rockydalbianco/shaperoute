@@ -1,6 +1,6 @@
 # TASK-270 — Dopo un'assenza del GPS il navigatore ritrova il percorso più avanti
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `fix/TASK-270-navigator-rejoin`
 
 ## Obiettivo
@@ -65,7 +65,7 @@ Lo stesso succede a una corsa ripresa dopo che l'app è stata chiusa
       the route» (test).
 - [x] Chi non è mai stato sul percorso non viene cercato più avanti (test).
 - [x] Nessun testo nuovo.
-- [ ] `npm run lint`, `typecheck`, `test`, `format:check` verdi (CI).
+- [x] `npm run lint`, `typecheck`, `test`, `format:check` verdi (CI).
 
 ## File toccati
 
@@ -90,4 +90,17 @@ docs/STATUS.md, docs/DECISIONS.md                     (le righe di questo task)
   «per ora si può lasciare così».
 
 ## Esito
+
+Merge della #486 il 2026-10-10 (`0a589ddd`), CI 5/5 verde. Dopo 20 s
+senza posizioni, per un corridore già sul percorso, il navigatore lo cerca
+su tutto il percorso avanti (`GAP_MS`, `lost`, `found`) e lo riprende dopo
+due posizioni di fila lì; le svolte saltate non si dicono. Senza assenza
+tutto come prima. Sei test nuovi in `navigator.test.ts`, che sul codice di
+prima (finestra fissa di 300 m) fallirebbero nel primo, nel terzo e nel
+quinto caso. Aggiunta ad ADR-0052.
+
+Non è nella build 5 per Apple (tagliata prima): arriva su preview e con un
+aggiornamento della 1.0, pubblica il coordinatore. Resta la prova correndo,
+uscendo dall'app per qualche minuto. I «Fuori scope» sono diventati
+TASK-271, TASK-272 e TASK-273; le svolte da 3 m restano come sono.
 

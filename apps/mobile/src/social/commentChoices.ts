@@ -35,15 +35,17 @@ export type CommentChoices = {
  * alerts, as «Delete this comment?» in the same sheet: the comments are a
  * sheet already, and a second one would sit on it. The report is kept for
  * whoever runs the app; a block takes the author's cards out of «Feed» at
- * once. Null with nobody signed in, or without the API: then a comment
- * offers only «Delete», as before.
+ * once. Null with nobody signed in, without the API, or with a session
+ * kept before the public id (one's own comments would not be told apart):
+ * then a comment offers only «Delete», as before.
  */
 export function useCommentChoices(): CommentChoices | null {
   const { apiUrl, account } = useFollowsDoor();
   const { state, sessionEnded: endSession } = account;
   const session = state.status === "signedIn" ? state.session : null;
   return useMemo(() => {
-    if (apiUrl === null || session === null) {
+    const me = session?.user.public_id;
+    if (apiUrl === null || session === null || me === undefined) {
       return null;
     }
     const { token } = session;
@@ -60,7 +62,7 @@ export function useCommentChoices(): CommentChoices | null {
     }
 
     return {
-      me: session.user.public_id,
+      me,
       report: (comment) => {
         const send = (reason: ReportReason) => {
           void report(apiUrl, token, "comment", comment.id, reason).then((outcome) =>

@@ -741,6 +741,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-275 (aggiunta ad ADR-0228, per la risposta ad Apple del
+  2026-10-11, «Guideline 2.1 – Information Needed»): tenendo premuto il
+  commento di un altro, «Report» (i cinque motivi) e «Block» chi l'ha
+  scritto; sotto il proprio disegno anche «Delete», il proprio commento
+  solo «Delete». Alert nativi, le stesse scelte come azioni di VoiceOver.
+  Nessun testo nuovo, niente server (l'API accettava già
+  `kind: "comment"`). Entra nella **build 6**, quella su cui l'utente
+  registra il video chiesto da Apple; via della build dal Coordinatore.
+  `tasks/TASK-275.md`.
 - **App** — TASK-270 (aggiunta ad ADR-0052, dalla prima recensione di un
   tester del 2026-10-10): dopo 20 s senza posizioni (app dietro un'altra,
   congelata da iOS, corsa ripresa) il navigatore cerca il corridore su

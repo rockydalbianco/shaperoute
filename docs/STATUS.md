@@ -157,6 +157,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-291 — Ogni segnalazione arriva per email, con un link che
+  nasconde** (ADR-0251; chiesto dall'utente il 2026-10-17 dopo la mail di
+  Apple sulla regola 1.2). Solo API: a ogni segnalazione nuova un'email a
+  chi gestisce MuW con il link «Hide» (firmato, 7 giorni, una volta, con
+  «Undo»); disegni, commenti e iscritti nascosti agli altri, non
+  all'autore. Migrazione `0024_hidden_content.sql`. Entra **dopo la
+  #502**, poi usa il suo `resend_email.py`; server dopo Apple, con la
+  privacy della parte B di TASK-284. File: `tasks/TASK-291.md`.
 - **TASK-288 parte B — Il pool di connessioni** (aggiunta ad ADR-0249;
   sì dell'utente del 2026-10-16 al Coordinatore: «sì, aggiungi il pool di
   connessioni»). Branch `feat/TASK-288-b-connection-pool`. Dipendenza

@@ -1754,6 +1754,9 @@ servizio push di Expo. Tutti e due gli endpoint vogliono il token: senza,
   | `challenge_done` | la squadra ha completato la forma (TASK-296 C) | tutti gli iscritti, anche chi ha corso | la sfida |
   | `challenge_ending` | manca un giorno alla scadenza e manca almeno un pezzo (TASK-296 C) | tutti gli iscritti | la sfida |
   | `contest_won` | il comando `close` ha proclamato il suo post vincitore del concorso (TASK-299) | chi ha vinto | il disegno |
+  | `contest_open` | il comando `open --theme` ha aperto una sfida del mese (TASK-343) | ogni account con le push accese, un telefono, non nascosto | la pagina della sfida |
+  | `contest_last_days` | mancano 3 giorni alla fine di una sfida del mese, una volta sola (TASK-343, `contest_clock.py`) | chi ha pubblicato almeno un disegno per tutti e non ne ha iscritto nessuno | la pagina della sfida |
+  | `contest_results` | il comando `close` ha chiuso una sfida del mese (TASK-343) | chi ha partecipato, tranne il vincitore (che ha `contest_won`) | la pagina della sfida |
   | `group_run_soon`, `group_run_changed`, `group_run_cancelled` | una corsa di gruppo comincia entro un'ora, cambia ora o luogo, è annullata (TASK-309, «Group runs») | chi va; il promemoria anche all'organizzatore | la corsa di gruppo |
   | `message` | un messaggio privato, fuori da una richiesta (TASK-319): «{name}: {text}», con l'inizio | chi lo riceve | la conversazione, dal profilo di chi scrive |
   | `message_request` | una richiesta di messaggio, al più una al giorno per chi scrive (TASK-319), senza il testo | chi la riceve | la conversazione, dal profilo di chi scrive |
@@ -1778,7 +1781,10 @@ servizio push di Expo. Tutti e due gli endpoint vogliono il token: senza,
   entra su una riga, al più 100 caratteri. Nessun titolo (iOS mostra il
   nome dell'app), suono quello del telefono.
 - **`data`** (`PushData`) dice all'app cosa aprire: `{ kind, drawing_id }`
-  per un disegno, `{ kind, public_id, username }` per un profilo.
+  per un disegno, `{ kind, public_id, username }` per un profilo, `{ kind,
+  contest_id }` per una sfida del mese (`ContestPushData`, TASK-343). I
+  testi delle tre push delle sfide hanno il titolo del tema nella lingua
+  del telefono (`CONCORSI.md` §15).
 - **Fuori dalla richiesta**: la richiesta che scrive l'evento legge con
   una query a chi mandare cosa; la rete la fa un thread, e la risposta non
   aspetta Expo. Qualunque errore delle notifiche va nel log e non cambia
@@ -2843,6 +2849,62 @@ push a chi ha vinto. Le regole sono in `CONCORSI.md`; il codice in
 - **Un'API precedente** non ha l'endpoint (`404 http_error`): l'app non
   mostra la scheda, come con `no_contest`.
 
+#### Le sfide del mese (TASK-343, ADR-0296)
+
+Un concorso aperto con `open --theme FILE.json` è una **sfida del mese**:
+ha un tema, e partecipano **solo i disegni iscritti** dai loro
+proprietari, quanti ne vogliono, con tutte le regole di sopra. Un concorso
+senza tema risponde esattamente come prima. Le regole sono in
+`CONCORSI.md` §15; il codice in `contests.py`, `contest_entries.py` e
+`contest_clock.py`. Tipi in `shared-types` (`ThemedContest`,
+`ContestTheme`, `ContestEntriesPage`, `PastContestsPage`,
+`ContestPushKind`), esempi in `fixtures/contest-themed.json` e
+`contest-entries.json` (`gallery` e `archive`).
+
+| Endpoint | Account | Cosa | Risposta |
+|---|---|---|---|
+| `GET /contests/current` | no (il token aggiunge `mine`, `entered`) | per una sfida, anche `theme`, `entrants`, `entered` | `200` `ThemedContest` |
+| `PUT /contests/{id}/entries/{drawing_id}` | sì | iscrive il proprio disegno; di nuovo, niente cambia | `204`, `404 no_contest`, `409 contest_closed`, `409 not_entrant` |
+| `DELETE /contests/{id}/entries/{drawing_id}` | sì | ritira il disegno; uno non iscritto, o di un altro, resta com'è | `204`, `404 no_contest`, `409 contest_closed` |
+| `GET /contests/{id}/entries?order=top\|new&cursor=` | no | la galleria: la classifica intera, 30 per pagina | `200` `ContestEntriesPage`, `404 no_contest` |
+| `GET /contests?state=closed&cursor=` | no | l'archivio: i concorsi chiusi, dal più recente, 10 per pagina | `200` `PastContestsPage` |
+
+- **`theme`**: titolo (1–60 caratteri) e descrizione (1–500) per lingua,
+  `{ "en": { "title", "description" }, "de": …, "it": …, "es": …, "fr": …
+  }`, tutte e cinque dal comando; l'app mostra la sua, `en` se manca.
+  **`entrants`**: gli account con almeno un disegno in gara. **`entered`**,
+  solo con un token: gli id dei propri disegni iscritti, dal primo
+  iscritto, che partecipino ancora o no (per l'interruttore dell'app).
+  Senza tema i tre campi **non ci sono**.
+- **Iscriversi**: solo il proprietario, solo a sfida aperta (`closed_at`
+  nullo) e prima di `ends_at`, solo un disegno che partecipa
+  (`PARTICIPATES_SQL`: per tutti, nel periodo, corsa registrata
+  dall'app, non nascosto). `409 contest_closed` «This contest takes no
+  entries now.» a sfida finita o chiusa, o per un concorso senza tema (il
+  ritiro anche); `409 not_entrant` «This drawing cannot take part: it
+  must be yours, for everyone, recorded with MuW and published during the
+  challenge.» per un disegno di un altro, che non c'è, per i follower o
+  privato, importato, pubblicato fuori dal periodo, nascosto. Un disegno
+  iscritto che smette di partecipare (reso privato, nascosto) esce dalla
+  classifica da solo; la sua iscrizione resta.
+- **La galleria** vale per ogni concorso, aperto o chiuso, con tema o
+  senza: ogni voce è `{ rank, reactions, drawing }` come in `top`.
+  `order=top` (il default) per posto, `order=new` dal pubblicato più
+  recente; il `cursor` è `next` della pagina prima, dello stesso ordine
+  (uno dell'altro ordine: `422 invalid_request` «This cursor is of the
+  other order.»). Con un token i post attraverso un blocco con chi chiede
+  non ci sono, e gli altri tengono il loro `rank`.
+- **L'archivio**: ogni concorso chiuso con `id`, le date, `closed_at`,
+  `theme` (`null` senza), `entrants`, `top` (i primi tre, come in
+  `Contest`) e `winner`. `state` è obbligatorio e vale solo `closed`.
+- **Le push** `contest_open`, `contest_last_days`, `contest_results`
+  (sopra, «Push notifications»); il vincitore ha ancora `contest_won`.
+  Un concorso senza tema non ne manda nessuna delle tre.
+- **I comandi**: `open … --theme FILE.json` controlla il file prima di
+  aprire (le cinque lingue, le lunghezze, nessun campo in più; altrimenti
+  esce con 2) e dice quanti account ha avvisato; `standings` scrive prima
+  il tema e le iscrizioni.
+
 ### Group runs (TASK-309, ADR-0269)
 
 Le corse di gruppo: un iscritto pubblica un percorso con giorno, ora e
@@ -3256,7 +3318,9 @@ motore, in una parola.
 | Account: nessun token, o uno di una sessione chiusa | 401 | `not_signed_in` |
 | Account: sessione non usata da 90 giorni | 401 | `session_expired` |
 | Account: l'API non ha un database (`SHAPEROUTE_DATABASE_URL`) | 503 | `accounts_unavailable` |
-| Concorso: nessun concorso aperto né chiuso da meno di 7 giorni (TASK-299) | 404 | `no_contest` |
+| Concorso: nessun concorso aperto né chiuso da meno di 7 giorni (TASK-299); un id che non c'è, «There is no such contest.» (TASK-343) | 404 | `no_contest` |
+| Sfida del mese: iscrizione o ritiro a sfida finita o chiusa, o per un concorso senza tema (TASK-343) | 409 | `contest_closed` |
+| Sfida del mese: un disegno che non può partecipare, o di un altro (TASK-343) | 409 | `not_entrant` |
 | Strava: il server non ha la sua app Strava (`STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`) | 503 | `http_error` |
 | Strava: l'account non ha un atleta collegato, o l'atleta ha tolto l'accesso | 409 | `http_error` |
 | Strava: la corsa viene da un file di un'altra app (`source` `file`, TASK-312) | 409 | `imported_run` |

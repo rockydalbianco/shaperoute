@@ -237,8 +237,10 @@ test("a member's drawing of a picture puts the track it ran on the map, then «D
   expect(String(sent[0][0])).toBe(`${API}/image-route-jobs`);
   expectDrawingRequest(JSON.parse(String(sent[0][1]?.body)), 6300);
 
-  // Under the route, «Edit the drawing» goes back to the figure on the map.
-  await fireEvent.press(screen.getByRole("button", { name: "Edit the drawing" }));
+  // Under the route, no «Edit the drawing» (TASK-340): «←» goes back to the
+  // figure on the map.
+  expect(screen.queryByRole("button", { name: "Edit the drawing" })).toBeNull();
+  await fireEvent.press(screen.getByLabelText("Back"));
   expect(screen.getByText("≈ 6.3 km")).toBeOnTheScreen();
 });
 

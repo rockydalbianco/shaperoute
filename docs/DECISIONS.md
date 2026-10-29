@@ -19860,3 +19860,38 @@ Il server va aggiornato prima dell'OTA dell'app che usa la ricerca, col sì
 dell'utente; un server precedente risponde `404` e l'app cerca solo negli
 esempi. `shared-types` ha `DrawingSearchPage`, `DRAWING_SORTS`,
 `DRAWING_COMPLEXITIES` e le due soglie.
+
+## ADR-0288 — aggiunta (TASK-340): «Freehand» prima di «Shape | Word | Image», niente «Edit the drawing» in «Draw»
+
+**Stato**: Attiva · 2026-10-29 · **scelta dell'utente** del 2026-10-29:
+«TOGLI LA FUNZIONE MODIFICA IL DISEGNO IN DRAW, TIENI SOLO LA FUNZIONE
+DISEGNA A MANO L'IBERA SU MAPPA E METTILA PER PRUMA TRA FORMA PAROLA ED
+IMMAGINE». Il come è **deciso dall'agente su delega dell'utente**
+(TASK-340). Aggiunta ad ADR-0288, senza numero nuovo (Coordinatore).
+
+**Contesto**: dopo il TASK-331 il disegno a mano stava sotto
+«Shape | Word | Image», nel tasto «Draw on the map», e sotto il risultato
+di «Draw» c'era «Edit the drawing», che metteva la figura sulla mappa.
+
+**Decisione**:
+
+1. **«Freehand» è la prima scelta** dell'interruttore di «Draw»:
+   «Freehand | Shape | Word | Image». Un tocco apre subito la mappa della
+   partenza, come faceva il tasto, e l'interruttore resta sulla scelta di
+   prima: la mappa ha la sua pagina, il suo «Draw route» e il suo «←».
+   Con «Paddle» non c'è, come non c'era il tasto.
+2. L'etichetta è **«Freehand»**, con le traduzioni già approvate
+   dall'utente per il TASK-320 il 2026-10-28: «Draw on the map» non sta in
+   un quarto dell'interruttore. Il testo «Draw on the map» esce dall'app.
+3. **Sotto il risultato di «Draw» non c'è più «Edit the drawing»** (punto
+   3 di ADR-0288): dal risultato della mappa si torna alla figura con «←»,
+   come già si poteva. Sulle schede di «Explore» e del Feed resta: l'utente
+   ha detto «in Draw».
+
+**Alternative scartate**: una scelta «Freehand» che resta accesa e mostra
+sotto di sé il tasto della mappa: un tocco in più per la stessa pagina.
+Togliere «Edit the drawing» anche dalle schede: non chiesto.
+
+**Conseguenze**: escono `MapDrawButton.tsx` ed `EditDrawingButton.tsx`;
+`RouteChoice` prende `onFreehand` al posto di `underKinds`. Niente cambia
+nel contratto, nell'API, nel motore, nella privacy e nel nativo.

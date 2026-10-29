@@ -2022,6 +2022,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-340 (aggiunta ad ADR-0288; scelta dell'utente del 2026-10-29: «TOGLI LA FUNZIONE MODIFICA IL DISEGNO IN DRAW, TIENI SOLO LA FUNZIONE DISEGNA A MANO L'IBERA SU MAPPA E METTILA PER PRUMA TRA FORMA PAROLA ED IMMAGINE»): in «Draw» l'interruttore è «Freehand | Shape | Word | Image» e «Freehand» apre subito la mappa per disegnare a mano (prima il tasto «Draw on the map» sotto l'interruttore); sotto il risultato di «Draw» non c'è più «Edit the drawing», che resta sulle schede di «Explore» e del Feed. Solo app, nessun testo nuovo («Freehand» con le traduzioni approvate per il TASK-320). Visto sul simulatore; manca la prova sull'iPhone con la prossima preview. `tasks/TASK-340.md`, «Esito».
 - **App** — TASK-337 (aggiunta ad ADR-0048; richiesta dell'utente del 2026-10-29 con uno screenshot: «a volte le scritte rosse… sono troppe… che poi non si visualizza più l'immagine»): sotto il percorso di «Draw» due note del motore alla volta, prima quelle a cui fare attenzione; le altre con «Show more» (già tradotto), mai tolte. Scale, traffico, gallerie e bici a mano sempre in vista (condizione del Coordinatore). Un altro percorso, o l'altro fra A e B, riparte da due. Solo JS dell'app (OTA), nessun testo nuovo, nessuna dipendenza, impronta iOS invariata. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-337.md`.
 - **App** — TASK-331 (ADR-0288 con l'aggiunta della parte B; richieste
   dell'utente del 2026-10-29, «Tutto sulla mappa» e poi «fallo più

@@ -19507,3 +19507,48 @@ privacy, nelle dipendenze e nel nativo. I messaggi tra app e pagina della
 mappa hanno `metresPerPx`, `bent`, `links`, `bendable` e `marks` (pagina e
 app vanno sempre insieme). Il nuovo `mapdraw/tools.ts` contiene gli
 strumenti; `erasedAt` esce da `edit.ts`.
+
+## ADR-0301 — Il compositore del post: fino a 10 elementi in ordine, i layout appiattiti a «Publish», l'editor nativo dalla 1.0.2
+
+**Stato**: Proposta · 2026-10-30 · TASK-348. La richiesta è dell'utente
+(2026-10-30, «Vai con la proposta»); le scelte di prodotto (quanti video,
+i layout, il disegno spostabile, appiattire, cosa c'è nell'editor, testi e
+privacy) sono da chiedere all'utente e si scrivono in TASK-348; i punti
+tecnici sono decisi dall'agente su delega dell'utente. Numeri dati dal
+Coordinatore. Estende ADR-0170 (le foto dei post), ADR-0275 (la striscia
+del Feed) e ADR-0292 (il video nei post); usa ADR-0254 (il video della
+corsa).
+
+**Contesto**: l'utente vuole mettere in primo piano le sue foto e i suoi
+video, con il disegno GPS come secondo piano, in un post a carosello fino a
+10 elementi riordinabili, con un editor foto e video integrato. Oggi un
+post ha la mappa e al più 3 foto in posti fissi (`DRAWING_MAX_PHOTOS`); il
+video nei post (ADR-0292) è uno solo e arriva con `expo-video` nella 1.0.2.
+L'app non ha gesti nativi né una libreria grafica; la 1.0.1 tiene
+l'impronta iOS `83793e26`.
+
+**Decisione** (proposta):
+
+1. Un post è una lista ordinata di elementi, al più 10: il disegno (sempre
+   uno, la mappa viva), foto, video, il video della corsa.
+2. Le modifiche sono non distruttive (un JSON sul telefono accanto
+   all'originale) fino a «Publish», che **appiattisce**: JPEG 1080 × 1350
+   per le foto, MP4 nei limiti di ADR-0292 per i video. Il server riceve
+   file normali e non conosce l'editor.
+3. Il layout è una funzione pura, la stessa per anteprima ed esportazione.
+4. API: fino a 10 foto e un ordine riscrivibile; un'app vecchia vede le
+   foto in ordine.
+5. Parte A via OTA senza dipendenze nuove (`PanResponder` + `Animated`,
+   `react-native-view-shot`); dalla 1.0.2 `react-native-gesture-handler`,
+   `react-native-reanimated`, `@shopify/react-native-skia`, `expo-video` e
+   un modulo Expo nostro per esportare i video (AVFoundation, Media3
+   Transformer), ognuno col sì dell'utente.
+6. Scartati ffmpeg-kit (ritirato, GPL, peso) e WebCodecs nella WebView per i
+   video dell'utente (demuxer, lentezza, Android).
+
+**Conseguenze**: un post pesa fino a circa 2,5 MB di foto invece di 0,75;
+più video per post riempiono prima il tetto di ADR-0292, da ricalcolare se
+l'utente li vuole. `FeedPost.tsx`, `PublicParts.tsx` e `drawingsDoor.ts`
+sono anche di TASK-336: le parti si accordano con quella sessione.
+
+---

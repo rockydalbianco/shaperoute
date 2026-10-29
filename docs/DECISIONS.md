@@ -19507,3 +19507,49 @@ privacy, nelle dipendenze e nel nativo. I messaggi tra app e pagina della
 mappa hanno `metresPerPx`, `bent`, `links`, `bendable` e `marks` (pagina e
 app vanno sempre insieme). Il nuovo `mapdraw/tools.ts` contiene gli
 strumenti; `erasedAt` esce da `edit.ts`.
+
+## ADR-0299 — «Edit the drawing» su un disegno del Feed: la traccia sulla mappa dov'è stata corsa
+
+**Stato**: Accettata · 2026-10-29 · TASK-346. La scelta di prodotto è
+dell'utente («Traccia dov'è», 2026-10-29); i punti tecnici sono decisi
+dall'agente su delega dell'utente. Numero dato dal Coordinatore. Cambia
+ADR-0288 (TASK-331) per la sola scheda di un disegno di un membro.
+
+**Contesto**: l'utente il 2026-10-29: «nel Feed quando premo modifica il
+disegno devo poter modificare la traccia sulla mappa, non il disegno in
+sé». Fino ad allora la scheda del disegno metteva la traccia corsa,
+raddrizzata e chiusa, nel mezzo della partenza di «Draw» e lunga quanto la
+sceglierebbe «Draw it near me»: un disegno spostato altrove, non la traccia.
+Fra «Traccia dov'è», «Traccia vicino a me» e «Trascinare il percorso» (un
+punto tenuto e il tratto ricalcolato sulle vie, che vuole una funzione
+nuova nel motore) l'utente ha scelto la prima.
+
+**Decisione**:
+
+1. Su un disegno di un membro «Edit the drawing» mette la traccia su «Draw
+   on the map» **dove è stata corsa e grande com'è**: il contorno nel
+   riquadro della figura, il suo mezzo e i metri di un'unità calcolati in
+   metri sul piano tangente (`mapdraw/plane.ts`, mai in gradi), così ogni
+   punto torna dov'era (`figureLines.trackInPlace`). Il contorno resta
+   quello di prima: al più `MAX_OUTLINE_POINTS` punti distribuiti, il primo
+   è la partenza della corsa, chiuso; `drawingOf` lo raddrizza come ogni
+   disegno.
+2. Il disegno resta dentro le distanze di «Draw» come ogni figura della
+   mappa (`withinLimits`): una traccia più lunga del massimo dello sport si
+   rimpicciolisce attorno al suo mezzo.
+3. Si modifica con gli strumenti di ADR-0288; «Draw route» lo chiede come
+   ogni disegno della mappa, quindi dal primo punto della corsa. Per
+   portarlo vicino a sé resta «Draw it near me».
+4. La scheda di «Explore» e il risultato di «Draw» restano come prima
+   (la figura nel mezzo della partenza): la richiesta parla solo del Feed.
+
+**Alternative scartate**: la traccia vicino all'utente (un disegno di un
+altro posto, come prima, solo non raddrizzato); trascinare il percorso sulle
+vie come Google Maps (un percorso fra punti nel motore e sul telefono,
+lavoro molto più grande); un campo nuovo nel contratto per la traccia
+(il disegno della mappa basta).
+
+**Conseguenze**: niente cambia nel contratto, nell'API, nel motore, nei
+testi, nelle dipendenze e nel nativo; arriva con un OTA. `useMapCanvas`
+ha `editInPlace` accanto a `edit`; `figureLines.drawingLines` diventa
+`drawingTrack`.

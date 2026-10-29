@@ -845,6 +845,13 @@ percorso (libera o importata da un'altra app), un post di sole foto, una
 forma che l'app non
 conosce, né con «Paddle». Nessun testo nuovo.
 
+**Su un disegno, la traccia dov'è** (TASK-346, ADR-0299, scelta
+dell'utente del 2026-10-29, «Traccia dov'è»): sulla scheda di un disegno di
+un membro la traccia corsa non va più nel mezzo della partenza di «Draw»:
+resta **dove è stata corsa e grande com'è** (dentro le distanze di
+«Draw»), e «Draw route» parte dal suo primo punto. Per portarla vicino a
+sé c'è «Draw it near me». La scheda di «Explore» resta come sopra.
+
 **I commenti di un disegno** (TASK-120, ADR-0175, scelta dell'utente del
 2026-10-03: subito sotto le corse vere, non sugli esempi di «Feed»): nella
 scheda di un disegno aperto, fra i numeri e «Back to the profile», un
@@ -2491,6 +2498,11 @@ schede), scelta dell'utente del 2026-10-29: «non la modifica delle emoji
 perché non serve a nulla»; né per una parola, né sull'acqua. Il percorso di
 un disegno sulla mappa si chiama «Drawing» («Disegno»), come quello della
 tavola.
+
+Dal TASK-346 (ADR-0299) la scheda di un disegno di un membro mette la sua
+traccia sulla mappa dove è stata corsa e alla sua grandezza, non nel mezzo
+della partenza di «Draw»: l'utente il 2026-10-29, «devo poter modificare la
+traccia sulla mappa, non il disegno in sé».
 
 Quello che segue è la tavola del TASK-320, tolta dal TASK-331: resta come
 storia delle scelte approvate allora.

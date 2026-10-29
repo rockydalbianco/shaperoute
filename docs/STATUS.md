@@ -160,6 +160,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-346 — «Edit the drawing» nel Feed: la traccia sulla mappa dov'è
+  stata corsa** (ADR-0299; richiesta dell'utente del 2026-10-29, «nel Feed
+  quando premo modifica il disegno devo poter modificare la traccia sulla
+  mappa, non il disegno in sé»; scelta «Traccia dov'è»; numeri dal
+  Coordinatore). Branch `feat/TASK-346-edit-track-in-place`. Sulla scheda di
+  un disegno di un membro la traccia va su «Draw on the map» dove è stata
+  corsa e grande com'è (`figureLines.trackInPlace`,
+  `useMapCanvas.editInPlace`), non più nel mezzo della partenza di «Draw»;
+  «Draw route» parte dal primo punto della corsa. «Explore» e il risultato
+  di «Draw» invariati. Solo JS dell'app (OTA), nessun testo nuovo, contratto
+  e motore invariati. **Resta**: il merge del Coordinatore e la prova sul
+  telefono. File `tasks/TASK-346.md`.
 - **TASK-336 — Un video nei post: il video della corsa di MuW o uno
   proprio** (ADR-0292, proposta; richiesta dell'utente del 2026-10-29,
   approvata con «Yes, write it up»; numeri dal Coordinatore). Branch

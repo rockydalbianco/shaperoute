@@ -30,6 +30,7 @@ import { profileProblem } from "../profile/profileFields";
 import { contactProblem } from "../settings/contactFields";
 import { notificationsProblem } from "../settings/notificationFields";
 import { forgetDrawingsOf } from "../social/drawingOutbox";
+import { forgetVisibilityOf } from "../social/visibilityChoice";
 import { forgetStravaOf } from "../strava/stravaOutbox";
 import {
   type Checked,
@@ -272,6 +273,7 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
       forgetOutboxOf(user.id);
       forgetStravaOf(user.id);
       forgetDrawingsOf(user.id);
+      forgetVisibilityOf(user.id);
       // The API deleted its push tokens with it (TASK-262).
       await forgetPushSent();
       await forgetSession();

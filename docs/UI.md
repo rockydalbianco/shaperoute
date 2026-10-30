@@ -166,8 +166,13 @@ https://claude.ai/artifact/XRMFiZ9BWbWnKkdJ9Udtjf. Sei regole, tutte in
    `src/ui/outlines.ts`; le altre sagome vengono dal catalogo.
 
 Arriva in parti, una PR ciascuna (`tasks/TASK-339.md`): A le fondamenta
-e i tre nomi in alto; B Feed ed Explore; C stati vuoti e divisioni; D
-Profile, Settings e i fogli; E «Draw» e il risultato.
+e i tre nomi in alto (in `main` dal 2026-10-30); B Feed ed Explore (in PR
+dal 2026-10-30: `FeedPost`, `RouteCard`, `ThemedCard`, `ExploredCard` e
+`DrawingCard` col raggio `xl` e senza bordo, le parole di «Feed» sulla
+foto su `Scrim` in `heading`, sotto i disegni in `cardTitle`, i nomi
+medium, `Tap` al posto dell'opacità, `Hairline` prima delle azioni, la
+distanza delle schede di «Explore» in `display`); C stati vuoti e
+divisioni; D Profile, Settings e i fogli; E «Draw» e il risultato.
 
 ## Il logo e l'icona (TASK-159, ADR-0129; «MuW» da TASK-260, ADR-0224)
 
@@ -915,6 +920,13 @@ percorso (libera o importata da un'altra app), un post di sole foto, una
 forma che l'app non
 conosce, né con «Paddle». Nessun testo nuovo.
 
+**Su un disegno, la traccia dov'è** (TASK-346, ADR-0299, scelta
+dell'utente del 2026-10-29, «Traccia dov'è»): sulla scheda di un disegno di
+un membro la traccia corsa non va più nel mezzo della partenza di «Draw»:
+resta **dove è stata corsa e grande com'è** (dentro le distanze di
+«Draw»), e «Draw route» parte dal suo primo punto. Per portarla vicino a
+sé c'è «Draw it near me». La scheda di «Explore» resta come sopra.
+
 **I commenti di un disegno** (TASK-120, ADR-0175, scelta dell'utente del
 2026-10-03: subito sotto le corse vere, non sugli esempi di «Feed»): nella
 scheda di un disegno aperto, fra i numeri e «Back to the profile», un
@@ -1339,14 +1351,20 @@ l'app, come «Find friends»:
 
 - **«Messages»**: in cima la riga «Message requests» con il loro numero;
   sotto le conversazioni, l'ultimo messaggio per prima, con foto, nome,
-  l'ultimo messaggio su una riga («You: …» se è proprio) e un pallino rosso
-  se l'altro ha scritto dopo l'ultima lettura. Vuota: «No messages yet. Open
+  l'ultimo messaggio su una riga («You: …» se è proprio), a destra quando è
+  stato scritto («08:12», «Yesterday», «2 Oct» o, di un altro anno, la data
+  intera) e sotto il numero rosso dei messaggi nuovi, fino a «9+» (TASK-353).
+  Con un server che non dà il numero, un pallino rosso. Vuota: «No messages yet. Open
   someone's profile and tap Message to write to them.»; le richieste vuote:
   «No message requests.». Venti per volta, poi «Show more».
 - **La conversazione**: titolo con foto e nome e il «…» di «Report or
   block» della persona; i messaggi dal basso, i propri a destra su
   `surfaceRaised`, quelli dell'altro a sinistra su `surface` con il bordo
-  (il giallo resta del percorso); «Show earlier messages» in cima. Sotto,
+  (il giallo resta del percorso), ognuno con il suo orario in basso a
+  destra e sopra il primo di ogni giorno il titolo «Today», «Yesterday» o la
+  data intera («Fri 2 Oct 2026»), sull'orologio del telefono (TASK-353). I
+  vecchi arrivano scorrendo verso l'alto, con «Loading…»; «Show earlier
+  messages» resta per quando il caricamento fallisce. Sotto,
   secondo lo `state` dell'API: la casella «Write a message…» con «Send»
   («Sending…»); per il primo messaggio a chi non ci segue, sopra la
   casella «{name} gets this as a message request. You can send one message
@@ -2562,6 +2580,11 @@ perché non serve a nulla»; né per una parola, né sull'acqua. Il percorso di
 un disegno sulla mappa si chiama «Drawing» («Disegno»), come quello della
 tavola.
 
+Dal TASK-346 (ADR-0299) la scheda di un disegno di un membro mette la sua
+traccia sulla mappa dove è stata corsa e alla sua grandezza, non nel mezzo
+della partenza di «Draw»: l'utente il 2026-10-29, «devo poter modificare la
+traccia sulla mappa, non il disegno in sé».
+
 Quello che segue è la tavola del TASK-320, tolta dal TASK-331: resta come
 storia delle scelte approvate allora.
 
@@ -3562,8 +3585,12 @@ mostra le lettere unite da linee dritte sulla base.
   5. **«Activity»**: «Run», «Bike», «Paddle», **scelta in partenza dallo
      sport di «Settings»**; va anche a Strava come tipo (`Run`, `Ride`,
      `StandUpPaddling`); non cambia il punteggio;
-  6. **«Who can see it»**: «Everyone», «Followers», «Only me», **«Only me»
-     a ogni corsa** (scelta dell'utente: non ricorda la volta prima); sotto,
+  6. **«Who can see it»**: «Everyone», «Followers», «Only me». **Parte da
+     «Only me» finché l'account non salva un'altra scelta, poi dall'ultima
+     salvata** (scelta dell'utente, ADR-0304; una per account, sul telefono;
+     le attività da file partono sempre da «Only me» e non la cambiano). Se
+     parte da «Everyone» o «Followers», le parole della scelta stanno anche
+     sopra «Save», perché il modulo scorre; sotto,
      con «Everyone», «Every member sees it in your profile, without the
      first and last 200 m.», con «Followers» «Your followers see it in
      your profile, without the first and last 200 m.»; con «Only me» e
@@ -4220,8 +4247,8 @@ c'è anche l'errore.
   `MuW-run.mp4`.
 - **Un disegno che altri vedono** (TASK-117, TASK-208): una corsa diventa
   visibile agli altri iscritti **solo con «Everyone» o «Followers»**
-  scelto dall'utente, a fine corsa o su una corsa aperta; «Only me» a ogni
-  corsa. Il telefono manda all'API la chiave della corsa, il titolo, la
+  scelto dall'utente, a fine corsa o su una corsa aperta; a fine corsa
+  parte da «Only me», poi dall'ultima scelta salvata (ADR-0304). Il telefono manda all'API la chiave della corsa, il titolo, la
   descrizione, l'attività, i `public_id` dei taggati e «Who can see it»;
   la traccia la taglia l'API (mai i primi e gli ultimi 200 m, mai il
   percorso pianificato né gli orari, ADR-0159). Senza rete la scelta

@@ -1,10 +1,10 @@
 /**
- * «Edit the drawing» on the cards (TASK-320 part B, TASK-331): the figure
- * of a member's drawing goes on the map of «Draw on the map» at once, in
- * the middle of «Draw»'s start, at the distance «Draw it near me» would
- * choose, and nothing is asked before «Draw route». A shape of the
- * catalogue — an emoji — has no «Edit the drawing» (ADR-0288). What a
- * drawing puts on the map is in src/route/figureLines.test.ts.
+ * «Edit the drawing» on the cards (TASK-320 part B, TASK-331): the track
+ * of a member's drawing goes on the map of «Draw on the map» at once,
+ * where it was run and as big (TASK-346, ADR-0299), and nothing is asked
+ * before «Draw route». A shape of the catalogue — an emoji — has no «Edit
+ * the drawing» (ADR-0288). What a drawing puts on the map is in
+ * src/route/figureLines.test.ts.
  */
 import drawing from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import imported from "@shaperoute/shared-types/fixtures/drawing-details-imported.json";
@@ -80,6 +80,18 @@ const RING: [number, number][] = Array.from({ length: 50 }, (_, i) => {
   return [46.0671 + 0.004 * Math.sin(a), 11.1214 + 0.006 * Math.cos(a)];
 });
 
+/** The same loop run in Rovereto, 20 km from where «Draw» starts. */
+const ROVERETO_RING: [number, number][] = RING.map(([lat, lon]) => [
+  lat - 0.177,
+  lon - 0.084,
+]);
+
+/** Metres between two points, near enough at this scale. */
+function metresApart([lat1, lon1]: [number, number], [lat2, lon2]: [number, number]) {
+  const k = Math.cos((lat1 * Math.PI) / 180);
+  return Math.hypot((lat2 - lat1) * 111_195, (lon2 - lon1) * 111_195 * k);
+}
+
 let fetchSpy: jest.SpiedFunction<typeof fetch>;
 /** What the API has under the id of the sample post. */
 let underItsId: () => Response;
@@ -116,12 +128,16 @@ async function onDrawing() {
 }
 
 /** What the API checks of an outline sent (ADR-0069), as a drawing's: the
- * route starts on the figure, put around «Draw»'s start. */
-function expectDrawingRequest(body: Record<string, unknown>, distanceM: number) {
+ * route starts on the figure, where the run started (TASK-346). */
+function expectDrawingRequest(
+  body: Record<string, unknown>,
+  distanceM: number,
+  runStart: [number, number],
+) {
   expect(body).toMatchObject({ distance_m: distanceM, activity: "running" });
-  const [lat, lon] = body.start as [number, number];
-  expect(Math.abs(lat - HERE[0])).toBeLessThan(0.02);
-  expect(Math.abs(lon - HERE[1])).toBeLessThan(0.03);
+  const start = body.start as [number, number];
+  expect(metresApart(start, runStart)).toBeLessThan(5);
+  expect(metresApart(start, HERE)).toBeGreaterThan(15_000);
   expect(body).not.toHaveProperty("shape");
   const outline = body.outline as [number, number][];
   expect(outline.length).toBeGreaterThanOrEqual(4);
@@ -192,7 +208,7 @@ test("a route of «Explore» of an emoji has «Draw it near me» but no «Edit t
   expect(screen.queryByRole("button", { name: "Edit the drawing" })).toBeNull();
 });
 
-test("a member's drawing of a picture puts the track it ran on the map, then «Draw route» asks for it as a drawing", async () => {
+test("a member's drawing of a picture puts the track it ran on the map where it was run, then «Draw route» asks for it there as a drawing", async () => {
   theDrawing = () =>
     Response.json({
       ...drawing,
@@ -201,7 +217,7 @@ test("a member's drawing of a picture puts the track it ran on the map, then «D
       style: null,
       route_title: "Drawing",
       distance_m: 6260,
-      track: RING,
+      track: ROVERETO_RING,
     });
   await onDrawing();
   expect(screen.queryByRole("button", { name: "Draw it near me" })).toBeNull();
@@ -209,10 +225,11 @@ test("a member's drawing of a picture puts the track it ran on the map, then «D
 
   await fireEvent.press(screen.getByRole("button", { name: "Edit the drawing" }));
 
-  // The map of «Draw on the map» at once, with the figure: 6260 m to the
-  // tenth of a km, ready to draw on.
+  // The map of «Draw on the map» at once, with the track where it was run,
+  // as big as the loop is: not the 6.3 km of «Draw it near me» around the
+  // start of «Draw». Ready to draw on.
   expect(screen.getByText("Undo")).toBeOnTheScreen();
-  expect(screen.getByText("≈ 6.3 km")).toBeOnTheScreen();
+  expect(screen.getByText("≈ 2.9 km")).toBeOnTheScreen();
   expect(
     screen.getByText("Each new line joins the drawing. Two fingers move the map."),
   ).toBeOnTheScreen();
@@ -223,11 +240,11 @@ test("a member's drawing of a picture puts the track it ran on the map, then «D
   expect(asked("POST", "/route-directions")).toHaveLength(0);
   expect(fetchSpy.mock.calls.length).toBe(before);
 
-  // «Draw route»: the figure goes as a drawing, from where it is.
+  // «Draw route»: the figure goes as a drawing, from where the run started.
   await fireEvent.press(screen.getByRole("button", { name: "Draw route" }));
   expect(
     await screen.findByText(
-      "Drawing · on roads · target 6.3 km",
+      "Drawing · on roads · target 2.9 km",
       {},
       { timeout: 3000 },
     ),
@@ -235,11 +252,11 @@ test("a member's drawing of a picture puts the track it ran on the map, then «D
   const sent = posted();
   expect(sent).toHaveLength(1);
   expect(String(sent[0][0])).toBe(`${API}/image-route-jobs`);
-  expectDrawingRequest(JSON.parse(String(sent[0][1]?.body)), 6300);
+  expectDrawingRequest(JSON.parse(String(sent[0][1]?.body)), 2900, ROVERETO_RING[0]);
 
   // Under the route, «Edit the drawing» goes back to the figure on the map.
   await fireEvent.press(screen.getByRole("button", { name: "Edit the drawing" }));
-  expect(screen.getByText("≈ 6.3 km")).toBeOnTheScreen();
+  expect(screen.getByText("≈ 2.9 km")).toBeOnTheScreen();
 });
 
 test("a word of «Explore» has «Draw it near me» but no «Edit the drawing»", async () => {

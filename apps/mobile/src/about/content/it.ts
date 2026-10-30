@@ -9,7 +9,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "10 ottobre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts entered (TASK-262 C). */
-const PRIVACY_UPDATED = "29 ottobre 2026";
+const PRIVACY_UPDATED = "30 ottobre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -69,7 +69,7 @@ const help: AboutDocument = {
     {
       heading: "Pubblicare e condividere",
       blocks: [
-        "Una corsa salvata è privata: la vedi solo tu. Gli altri iscritti vedono sul tuo profilo solo i totali di tutte le tue corse salvate, distanza e dislivello, mai le corse. Accendi «Pubblica», a fine corsa o su una corsa di «Le mie attività», e gli altri iscritti la vedono come disegno sul tuo profilo, senza i primi e gli ultimi 200 m.",
+        "Una corsa salvata è privata: la vedi solo tu. Gli altri iscritti vedono sul tuo profilo solo i totali di tutte le tue corse salvate, distanza e dislivello, mai le corse. Scegli «Tutti» o «Follower» sotto «Chi può vederla», a fine corsa o su una corsa di «Le mie attività», e la vedono come disegno sul tuo profilo, senza i primi e gli ultimi 200 m. La prossima corsa che finisci parte dall'ultima scelta che hai salvato: la vedi prima di «Salva» e puoi cambiarla. Un'attività aggiunta da un file parte sempre da «Solo io».",
         "«Condividi» crea un'immagine della tua corsa da mandare dove vuoi.",
       ],
     },
@@ -329,9 +329,9 @@ const privacy: AboutDocument = {
       heading: "Le tue corse e le loro tracce GPS",
       blocks: [
         "Con un account, quando tocchi «Salva» a fine corsa la corsa intera va al nostro server: ogni posizione con il suo orario e la sua altezza, le pause, il percorso seguito, distanza, durata, un punteggio di quanto la traccia segue il percorso (calcolato dal nostro server e non mostrato nell'app) e il nome del luogo. Con «Discard» non parte niente.",
-        "Una corsa salvata è privata: la vede solo il tuo account. Gli altri iscritti vedono sul tuo profilo solo i totali di tutte le tue corse salvate, distanza e dislivello, mai le corse. Resta finché non la elimini da «Le mie attività» o elimini l'account.",
+        "Una corsa salvata è privata, se non scegli diversamente: la vede solo il tuo account. Gli altri iscritti vedono sul tuo profilo solo i totali di tutte le tue corse salvate, distanza e dislivello, mai le corse. Resta finché non la elimini da «Le mie attività» o elimini l'account.",
         "Se aggiungi un'attività passata da un file, ne teniamo la traccia e gli orari come per una corsa registrata con MuW. Il file non lo teniamo.",
-        "Una corsa spesso parte e finisce davanti a casa. Per questo diventa visibile agli altri iscritti solo quando accendi «Pubblica», e allora vedono la traccia senza i primi e gli ultimi 200 m, con il titolo che le hai dato, e senza orari, pause né il percorso pianificato.",
+        "Una corsa spesso parte e finisce davanti a casa. Per questo diventa visibile agli altri iscritti solo dopo che hai scelto «Tutti» o «Follower» sotto «Chi può vederla», e allora vedono la traccia senza i primi e gli ultimi 200 m, con il titolo che le hai dato, e senza orari, pause né il percorso pianificato. La tua scelta resta su questo telefono per la corsa successiva: parte dall'ultima che hai salvato, la vedi prima di «Salva» e puoi cambiarla. Un'attività aggiunta da un file parte sempre da «Solo io».",
         "Chi può vedere una tua corsa può anche seguirla con «Parti» e salvarne la stessa traccia come file GPX: sempre senza i primi e gli ultimi 200 m e senza orari.",
       ],
     },

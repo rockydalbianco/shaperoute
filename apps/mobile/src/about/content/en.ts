@@ -12,7 +12,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "10 October 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320) and the activities added from a file (TASK-312 B) entered. */
-const PRIVACY_UPDATED = "29 October 2026";
+const PRIVACY_UPDATED = "30 October 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -72,7 +72,7 @@ const help: AboutDocument = {
     {
       heading: "Publish and share",
       blocks: [
-        "A saved run is private: only you see it. Other members see on your profile only the totals of all your saved runs, distance and elevation gain, never the runs themselves. Turn on «Public», at the end of the run or on a run in «My activities», and the other members see it as a drawing on your profile, without its first and last 200 m.",
+        "A saved run is private: only you see it. Other members see on your profile only the totals of all your saved runs, distance and elevation gain, never the runs themselves. Choose «Everyone» or «Followers» under «Who can see it», at the end of the run or on a run in «My activities», and they see it as a drawing on your profile, without its first and last 200 m. The next run you finish starts from the last choice you saved: you see it before «Save» and can change it. An activity added from a file always starts on «Only me».",
         "«Share» makes a picture of your run to send wherever you like.",
       ],
     },
@@ -332,9 +332,9 @@ const privacy: AboutDocument = {
       heading: "Your runs and their GPS tracks",
       blocks: [
         "With an account, when you tap «Save» at the end of a run the whole run goes to our server: every position with its time and height, the pauses, the route you followed, distance, duration, a score of how closely the track follows the route (worked out by our server and not shown in the app) and the name of the place. With «Discard», nothing is sent.",
-        "A saved run is private: only your account sees it. Other members see on your profile only the totals of all your saved runs, distance and elevation gain, never the runs themselves. It stays until you delete it from «My activities» or delete your account.",
+        "A saved run is private unless you choose otherwise: only your account sees it. Other members see on your profile only the totals of all your saved runs, distance and elevation gain, never the runs themselves. It stays until you delete it from «My activities» or delete your account.",
         "If you add a past activity from a file, we keep its track and times like a run recorded with MuW. We do not keep the file.",
-        "A run often starts and ends at your door. This is why a run becomes visible to the other members only when you turn on «Public», and then they see the track without its first and last 200 m, with the title you gave it, and without times, pauses or the planned route.",
+        "A run often starts and ends at your door. This is why a run becomes visible to the other members only after you choose «Everyone» or «Followers» under «Who can see it», and then they see the track without its first and last 200 m, with the title you gave it, and without times, pauses or the planned route. Your choice is kept on this phone for your next run: it starts from the last one you saved, you see it before «Save», and you can change it. An activity added from a file always starts on «Only me».",
         "Whoever can see one of your runs can also follow it with «Start» and save that same track as a GPX file: still without its first and last 200 m and without times.",
       ],
     },

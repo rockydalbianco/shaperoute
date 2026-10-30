@@ -526,10 +526,12 @@ riceve gli update da `main`.
     l'etichetta «Imported». Non provati su questo giro TCX e FIT reali.
 - **Restano, prima dell'invio**: sull'iPhone dell'utente l'anello Movimento,
   la rubrica vera (`tasks/TASK-152.md` lo chiede prima di Apple) e «From a
-  file» con un GPX di Strava, un TCX e un FIT di Garmin. Build, «Health» in
-  App Privacy, invio e update di `production` li chiede il Coordinatore
-  all'utente, uno per volta. Per la frase della privacy decide l'utente: fino
-  ad allora «MuW never reads your health data» resta com'è.
+  file» con un GPX di Strava, un TCX e un FIT di Garmin. Build, invio e update
+  di `production` li chiede il Coordinatore all'utente, uno per volta.
+- **Scelta dell'utente** (2026-10-30, nella chat del Coordinatore, opzione «Con
+  la lettura del battito»): «Health» su App Privacy e la frase nuova della
+  privacy entrano insieme all'update che accende TASK-345 C, non nella 1.0.1.
+  Quindi nella #620 «MuW never reads your health data» resta com'è.
 - **Android**: togliere l'esclusione vale anche lì, quindi con il merge la sua
   impronta si muove. `WRITE_CONTACTS`, che il plugin aggiunge e MuW non usa, è
   in `android.blockedPermissions`: senza, `expo-contacts` chiede solo la

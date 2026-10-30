@@ -361,8 +361,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   iOS `67253126…`, Android `8aac71c3…`; `main` resta `83793e26…` fino al merge,
   che arriva dopo l'approvazione di Apple: la build si fa dal branch. Provate
   sul simulatore con la build nativa scrittura, lettura, contatti e selettore.
-  Prossimo: build, «Health» in App Privacy, invio, ognuno col sì dell'utente
-  chiesto dal Coordinatore; prima, sull'iPhone, l'anello Movimento, la rubrica
+  Prossimo: build e invio, ognuno col sì dell'utente chiesto dal Coordinatore
+  («Health» in App Privacy e la frase nuova della privacy vanno con l'update
+  che accende TASK-345 C, scelta dell'utente); prima, sull'iPhone, l'anello Movimento, la rubrica
   e «From a file». Dettagli in `tasks/TASK-321.md`.
 - **TASK-323 — Nuoto in acque libere, «Open water swim»** (ADR-0283,
   proposta; richiesta dell'utente del 2026-10-28, «parti proprio con il

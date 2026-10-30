@@ -13,6 +13,12 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { type Account, useAccount } from "../account/useAccount";
 import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor";
+import {
+  closeContestPage,
+  openContestPage,
+  useAskedContest,
+} from "../contest/contestDoor";
+import { ContestPageHost } from "../contest/ContestPage";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { t, tPlural } from "../i18n";
 import { MessagesContext, useMessagesOf } from "../messages/messagesDoor";
@@ -164,6 +170,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       setPeople(null);
       setHint(null);
       setPage(null);
+      closeContestPage();
       setAsked((last) => ({ n: last.n + 1, hint: why }));
     },
     [setPeople],
@@ -249,10 +256,12 @@ export function ProfileLayer({ apiUrl, children }: Props) {
           setPage(home.current === "page" ? null : "account");
         }
       },
-      // «Draw it near me» (TASK-313): to «Draw», «Find friends» let go too.
+      // «Draw it near me» (TASK-313): to «Draw», «Find friends» let go too,
+      // and the page of a monthly challenge (TASK-343).
       onLeave: () => {
         setHint(null);
         setPeople(null);
+        closeContestPage();
       },
     }),
     [setPeople],
@@ -379,7 +388,12 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     // A challenge's notification (TASK-296 part D): «Play» on the challenge.
     openChallenge,
     openConversation: messages.openConversation,
+    // A monthly challenge's notification (TASK-343): its page.
+    openContest: openContestPage,
   });
+  // The page of a monthly challenge over the app (TASK-343): out of the way
+  // while a drawing opened from it is on the map.
+  const contestOver = useAskedContest() !== null && drawings.opened === null;
   const door = useMemo(
     () => ({
       open: () => {
@@ -407,9 +421,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                       <View
                         style={styles.app}
                         // Under «Profile» the app is out of the screen reader's sight too.
-                        accessibilityElementsHidden={shown}
+                        accessibilityElementsHidden={shown || contestOver}
                         importantForAccessibility={
-                          shown ? "no-hide-descendants" : "auto"
+                          shown || contestOver ? "no-hide-descendants" : "auto"
                         }
                       >
                         <CommentsContext.Provider value={comments}>
@@ -424,6 +438,11 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                           </ReactionsContext.Provider>
                         </CommentsContext.Provider>
                       </View>
+                      {/* Under «Find friends» and «Profile»: a name in its
+                        gallery opens over it, and back comes to it. */}
+                      <FollowsContext.Provider value={followsDoor}>
+                        <ContestPageHost />
+                      </FollowsContext.Provider>
                       {people !== null && (
                         <PeopleScreen
                           // A member of the lists, or the search: not the same page.

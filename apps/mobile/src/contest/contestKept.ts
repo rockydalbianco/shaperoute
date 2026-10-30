@@ -1,8 +1,8 @@
-import type { Contest } from "@shaperoute/shared-types";
+import type { Contest, ThemedContest } from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 import { useSyncExternalStore } from "react";
 
-import { fetchContest, isContest, noContest } from "./contestApi";
+import { fetchContest, isContest, noContest, themedOf } from "./contestApi";
 
 /**
  * The contest on this phone (TASK-299 part B, ADR-0260; docs/CONCORSI.md
@@ -114,6 +114,38 @@ export function winnerDrawingId(kept: KeptContest | null): string | null {
 /** The winning drawing's id, and a new render when the contest changes. */
 export function useWinnerDrawingId(): string | null {
   return useSyncExternalStore(subscribeContest, () => winnerDrawingId(keptContest()));
+}
+
+/**
+ * The account's drawings entered in the monthly challenge kept on the phone
+ * (TASK-343 part B): empty for anyone else, or without a challenge. Like
+ * `mine`, they are of the account the answer was asked for.
+ */
+export function enteredIn(kept: KeptContest | null, account: string | null): string[] {
+  if (kept === null || account === null || kept.account !== account) {
+    return [];
+  }
+  return themedOf(kept.contest)?.entered ?? [];
+}
+
+/** The API took an entry or a withdrawal: shown at once, before it is asked
+ * again. Anything but the challenge kept is left as it is. */
+export function markEntered(
+  contestId: string,
+  drawingId: string,
+  entered: boolean,
+): void {
+  const kept = keptContest();
+  const themed = kept === null ? null : themedOf(kept.contest);
+  if (kept === null || themed === null || themed.id !== contestId) {
+    return;
+  }
+  const others = (themed.entered ?? []).filter((id) => id !== drawingId);
+  const contest: ThemedContest = {
+    ...themed,
+    entered: entered ? [...others, drawingId] : others,
+  };
+  setContest({ account: kept.account, contest });
 }
 
 // The request on its way: its answer is the only one kept.

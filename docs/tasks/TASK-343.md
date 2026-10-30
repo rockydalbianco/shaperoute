@@ -168,12 +168,61 @@ apps/mobile/src/i18n/de.ts
 apps/mobile/src/i18n/es.ts
 apps/mobile/src/i18n/fr.ts
 apps/mobile/src/i18n/it.ts
+apps/mobile/src/contest/contestDoor.ts            (nuovo)
+apps/mobile/src/contest/sendEntry.ts              (nuovo)
+apps/mobile/src/contest/FeedContest.tsx
+apps/mobile/src/contest/contestKept.ts
+apps/mobile/src/screens/ProfileLayer.tsx          (monta ContestPage, ok del Coordinatore 2026-10-30)
+apps/mobile/src/notifications/usePushNotifications.ts
+apps/mobile/src/social/drawingsDoor.ts
+apps/mobile/src/social/PublicRow.tsx
+apps/mobile/src/activities/RunEnd.tsx
+apps/mobile/src/activities/ActivityCard.tsx
 (e i test accanto a ogni file)
 # Tutte e due
 docs/STATUS.md
 docs/DECISIONS.md
 docs/tasks/TASK-343.md
 ```
+
+## Parte B: dove si è fermata (2026-10-30)
+
+Pausa chiesta dal Coordinatore (l'utente stacca internet, si riprende alla
+sua parola). Branch `feat/TASK-343-b-themed-contest-app`, commit di lavoro,
+**nessuna PR ancora**. Il codice non è finito: lint e typecheck sono rossi.
+
+Scritti: `contestApi`, `contestDoor`, `sendEntry`, `ContestPage`,
+`ContestGallery`, `PastContests`, `EnterSwitch`, `ContestRules`, `ContestCard`,
+`FeedContest`, `notificationTap`, `usePushNotifications`, `ProfileLayer`,
+`drawingsDoor`, `drawingOutbox`, `PublicRow`, i testi delle quattro lingue, i
+test (`contest/themedContest.test.tsx` e quelli accanto ai file).
+
+Da fare, in ordine:
+
+1. **Lint**: `react-hooks/purity` per `Date.now()` in `ContestPage.tsx` e
+   `EnterSwitch.tsx` (due punti); `react-hooks/set-state-in-effect` per `ask`
+   nell'effetto di `ContestGallery.tsx` e `PastContests.tsx`.
+2. **Typecheck**: in `themedContest.test.tsx` il finto `api_error` deve avere
+   `retryAfterS` e `suggested_distance_m`.
+3. **Suite intera**: l'ultima corsa non è finita in 10 minuti ed è stata
+   fermata, quindi non dice niente. Le aree toccate (`src/contest`,
+   `src/social`, `src/notifications`, `src/i18n`, `src/activities`) erano
+   verdi prima degli ultimi test aggiunti; rifarla con `CI=true`.
+4. **`DrawingCard.tsx` non si tocca per ora**: è di TASK-339 B (Coordinatore,
+   2026-10-30). Spostare `PostEntry` da `EnterSwitch.tsx` a un file nuovo
+   `contest/EnterOnPost.tsx` con i suoi test; la riga che lo monta in
+   `DrawingCard` va per ultima, dopo che 339 B è in `main` e su parola del
+   Coordinatore. La PR può andare senza quella riga solo se il modulo di «My
+   activities» copre già iscrizione e ritiro: lo fa con l'interruttore in
+   `PublicRow`, da dire al Coordinatore.
+5. `FeedPost.tsx` resta intatto. In `ProfileLayer.tsx` le modifiche restano
+   piccole: TASK-344 B viene dopo.
+6. Impronta iOS su copia pulita (`83793e26…`), `STATUS`, `DECISIONS`,
+   `CONCORSI` (§7, §8, §14, §15) con righe aggiunte; PR con i testi nelle
+   cinque lingue e il regolamento da approvare; «#NNN pronta» al Coordinatore.
+   Il merge solo su sua parola.
+
+Mai provato su un simulatore: solo test con API finte.
 
 ## Fuori scope
 

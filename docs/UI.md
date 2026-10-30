@@ -590,7 +590,9 @@ disegni si rileggono, come quando «Profile» si apriva.
   (senza luogo, solo il nome), la linea gialla sulla mappa, il titolo o,
   senza titolo, il giorno della corsa, e «Star · 4.0 km · 19 min»; una
   parola o il titolo del percorso al posto della forma, niente per una
-  corsa senza percorso; in bici «Bike · …», in canoa «Paddle · …». **Un
+  corsa senza percorso; in bici «Bike · …», in canoa «Paddle · …». Una
+  corsa finisce con le calorie, contate dalla distanza come nella schermata
+  della corsa: «… · 4:45 /km · 290 kcal» (TASK-345, ADR-0298). **Un
   tocco apre il disegno intero sulla mappa**, con foto, racconto, tag,
   reazioni e commenti, come dal profilo (TASK-117, 119, 120); «←» torna
   a «Feed» com'era, senza rileggere, e «Profile» resta chiuso; se nel

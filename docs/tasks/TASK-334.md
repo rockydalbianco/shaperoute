@@ -185,6 +185,11 @@ telefono e 20 per il server, mai mentre l'API disegna percorsi (il giro
 di notte di `draw_examples`) né con `data/cache/places.pause`. Impronta
 iOS invariata (`83793e26…`): l'app va in OTA.
 
+- **Pubblicato il 2026-10-30**: `preview` del gruppo `4ed4e1df-c68d-41bb-b605-de3241941f1b`
+  (da `main` `c7a83347`, impronta `83793e26`) e server a `c7a83347` dalle
+  07:20Z: `POST /phone-zones/foot/places` su Trento risponde `200` con
+  `ready`. Sì dell'utente per entrambi. L'OTA di produzione resta da lanciare
+  a mano. Una zona nuova non è ancora stata preparata in produzione.
 - **Da pubblicare, col sì dell'utente**: il server (l'endpoint nuovo,
   nessuna migrazione) e l'OTA. In qualunque ordine: con il server di oggi
   l'app scarica subito i posti di cui il server ha già la zona, gli altri

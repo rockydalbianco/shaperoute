@@ -70,11 +70,11 @@ const POST: SamplePost = {
 test("a «Feed» post says its miles, at once", async () => {
   await render(<FeedPost post={POST} width={358} />);
   expect(
-    screen.getByText("Dog head · 10.5 km · 1 h 04 min · 6:05 /km"),
+    screen.getByText("Dog head · 10.5 km · 1 h 04 min · 6:05 /km · 762 kcal"),
   ).toBeOnTheScreen();
   await act(async () => saveUnitsChoice("mi"));
   expect(
-    screen.getByText("Dog head · 6.5 mi · 1 h 04 min · 9:48 /mi"),
+    screen.getByText("Dog head · 6.5 mi · 1 h 04 min · 9:48 /mi · 762 kcal"),
   ).toBeOnTheScreen();
   expect(screen.queryByText(/ km /)).toBeNull();
   // On the water, the sport first; with the comma where the language has it.

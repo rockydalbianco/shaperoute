@@ -44,7 +44,10 @@ Partecipa un **disegno**:
    ADR-0272): un'attività aggiunta dal file di un'altra app, con
    «Imported», non partecipa, qualunque reazione abbia. La regola sta nella
    query di `contests.py` (`PARTICIPATES_SQL`), quindi vale per
-   `GET /contests/current`, per `standings` e per `close`.
+   `GET /contests/current`, per `standings` e per `close`;
+6. in una **sfida del mese** (un concorso con un tema, §15), **iscritto**
+   dal suo proprietario (`contest_entries`). Senza tema il punto non c'è:
+   partecipano tutti i post del periodo, come sopra.
 
 Conta una **reazione**:
 
@@ -123,6 +126,12 @@ che non ha mai sentito il server non mostra niente.
 **La push** arriva solo al vincitore; toccata apre il suo post. Gli altri
 vedono la scheda.
 
+**In una sfida del mese** (§15) la scheda ha il titolo del tema e apre la
+pagina della sfida: tema, date, partecipanti, premio, la galleria «Top» |
+«New» e l'archivio «Past challenges»; chi pubblica sceglie di iscrivere il
+disegno. Tre push in più: la sfida nuova, gli ultimi 3 giorni, i
+risultati. È la parte B di TASK-343.
+
 ## 8. Il regolamento ufficiale
 
 L'App Store (linea guida 5.3: i concorsi dentro un'app sono del
@@ -153,6 +162,19 @@ Migrazione `00NN_contests.sql` (il numero è il primo libero al merge, da
 Un indice unico parziale su `(closed_at) WHERE closed_at IS NULL` tiene
 **un solo concorso aperto** alla volta. `contest_wins` di un account è
 `count(*)` dei concorsi con `winner_user_id` suo.
+
+Le sfide del mese (TASK-343, `0039_contest_themes.sql`) aggiungono due
+colonne e una tabella:
+
+| Colonna | Che cos'è |
+|---|---|
+| `contests.theme jsonb` | il tema per lingua, `{"en": {"title", "description"}, …}`, `en` obbligatoria; nullo: il concorso di ADR-0260 |
+| `contests.reminded_at timestamptz` | quando è partita la push degli ultimi 3 giorni; nullo finché no |
+| `contest_entries (contest_id, drawing_id, user_id, created_at)` | i disegni iscritti, chiave `(contest_id, drawing_id)`, `ON DELETE CASCADE` su concorso, disegno e account |
+
+Nessuna colonna su `drawings` e `reactions`: l'iscrizione dice solo che il
+proprietario ha scelto il tema; se il disegno partecipa lo rilegge la
+query (§3).
 
 ## 10. API
 
@@ -192,10 +214,17 @@ Risposta `200 Contest`:
 Tipi in `shared-types` (`Contest`, `ContestEntry`, `ContestMine`,
 `PushKind`), esempi in `fixtures/contest.json` e `contest-closed.json`.
 
+Le sfide del mese hanno in più (§15, `API.md` «Le sfide del mese»):
+`theme`, `entrants` ed `entered` in `GET /contests/current`; `PUT` e
+`DELETE /contests/{id}/entries/{drawing_id}`; la galleria `GET
+/contests/{id}/entries?order=top|new&cursor=`; l'archivio `GET
+/contests?state=closed&cursor=`; le push `contest_open`,
+`contest_last_days`, `contest_results` con `data` `{ kind, contest_id }`.
+
 ## 11. Comandi (sul server, chi lo gestisce)
 
 ```
-python -m shaperoute_api.contests open --from 2026-11-02T00:00+01:00 --to 2026-11-15T23:59:59+01:00
+python -m shaperoute_api.contests open --from 2026-11-02T00:00+01:00 --to 2026-11-15T23:59:59+01:00 [--theme FILE.json]
 python -m shaperoute_api.contests standings
 python -m shaperoute_api.contests close [--exclude <drawing_id> …] [--dry-run]
 ```
@@ -207,6 +236,13 @@ python -m shaperoute_api.contests close [--exclude <drawing_id> …] [--dry-run]
   cui da account più giovani del concorso, cuori MuW.
 - `close` proclama una volta (§6); `--dry-run` stampa chi vincerebbe e
   non scrive.
+- `--theme FILE.json` apre una **sfida del mese** (§15): il file ha il
+  titolo (1–60 caratteri) e la descrizione (1–500) in `en`, `de`, `it`,
+  `es` e `fr`, nient'altro; è controllato **prima** di aprire (altrimenti
+  esce con 2 e dice che cosa manca). Aperta la sfida, la push
+  `contest_open` parte dal comando e il comando dice a quanti account.
+  `standings` di una sfida scrive prima il tema e quanti disegni sono
+  iscritti, da quanti account.
 
 Sul server il concorso arriva **dopo l'approvazione di Apple e con l'ok
 dell'utente**: migrazione, deploy, `open`.
@@ -295,3 +331,77 @@ in §7. Questi dettagli li ha decisi l'agente su delega dell'utente
 - Il badge e la fascia sono lo stesso componente (`WinnerBadge.tsx`),
   neutro: il giallo è del percorso, il rosso di chi aspetta una risposta;
   la coppa è un emoji.
+
+## 15. Le sfide del mese (TASK-343, ADR-0296)
+
+Il concorso con un **tema**. La richiesta dell'utente del 2026-10-29 (una
+sezione «Challenge» con il tema del mese, la galleria, l'archivio, le
+notifiche) e la proposta approvata con «Yes, as proposed»: il tema sta sul
+concorso, si partecipa **iscrivendosi**, il voto resta la reazione (§3).
+Quanti disegni per account: **nessun limite** (scelta dell'utente del
+2026-10-30, «No limit»).
+
+- **Senza tema niente cambia**: `GET /contests/current` risponde con gli
+  stessi campi, partecipano tutti i post del periodo, nessuna push nuova.
+- **Con un tema** partecipa solo un disegno **iscritto** (§3, punto 6),
+  con tutte le altre regole. Il proprietario lo iscrive e lo ritira finché
+  la sfida è aperta e prima di `ends_at`; dopo, la classifica è ferma per
+  `close`. Si iscrive solo un disegno che partecipa già (per tutti, nel
+  periodo, registrato dall'app, non nascosto): un rifiuto ha il suo codice
+  (`contest_closed`, `not_entrant`). Un disegno iscritto che smette di
+  partecipare esce dalla classifica da solo, l'iscrizione resta: se torna
+  per tutti, torna in gara. Nessun controllo del tema: chi chiude esclude
+  a mano con `--exclude` (§5).
+- **La galleria** è la classifica intera (`RANKED_SQL`, una regola sola
+  per chi è davanti), per posto o dal più recente; **l'archivio** i
+  concorsi chiusi, con o senza tema, dal più recente, con vincitore e
+  primi tre. Un blocco toglie il post a chi chiede, i posti restano.
+- **Tre push**, con l'interruttore «Push notifications» e un telefono, mai
+  a un account nascosto, il titolo del tema nella lingua del telefono
+  (inglese se il tema non ce l'ha); toccate aprono la pagina della sfida:
+  - `contest_open`, quando `open --theme` apre la sfida: a tutti;
+  - `contest_last_days`, quando mancano **3 giorni** a `ends_at`, una
+    volta sola: a chi ha pubblicato almeno un disegno per tutti e non ne
+    ha iscritto nessuno;
+  - `contest_results`, quando `close` chiude la sfida: a chi aveva un
+    disegno in gara, tranne il vincitore, che riceve `contest_won`.
+
+Questi dettagli li ha decisi l'agente su delega dell'utente
+(2026-10-30):
+
+- `GET /contests/current` di una sfida è `ThemedContestBody`, un
+  `ContestBody` con `theme`, `entrants` ed `entered`: un concorso senza
+  tema ha lo stesso corpo di prima, senza campi nulli in più, e l'app
+  riconosce la sfida dal campo `theme`.
+- `entrants` conta gli account con un disegno che partecipa **oggi**;
+  `entered` gli id iscritti, che partecipino ancora o no (l'interruttore
+  dell'app deve poter ritirare anche quelli).
+- Iscriversi a un **concorso senza tema** è `409 contest_closed`: quel
+  concorso non prende iscrizioni. Un id di concorso che non c'è è `404
+  no_contest` «There is no such contest.». Iscrivere di nuovo, o ritirare
+  un disegno non iscritto, è `204`: le due chiamate sono idempotenti.
+  L'iscrizione tiene la riga del concorso `FOR SHARE`: non s'incrocia con
+  `close`.
+- Il tema dal comando ha tutte e cinque le lingue; nel database basta
+  `en` (un `CHECK`), perché l'app sceglie la sua e ripiega sull'inglese.
+  Titolo al più 60 caratteri, descrizione al più 500.
+- La galleria e l'archivio rispondono **anche senza token**, come
+  `/contests/current`; 30 voci per pagina la galleria, 10 l'archivio. Il
+  `cursor` della galleria per posto è il posto dell'ultima voce (se la
+  classifica cambia fra due pagine una voce può ripetersi o saltare: è
+  una galleria, non la classifica ufficiale, che è `standings`); dal più
+  recente e nell'archivio è il momento e l'id dell'ultima voce.
+- **Gli ultimi 3 giorni**: un orologio nel processo dell'API
+  (`ContestClock` in `contest_clock.py`, ogni 10 minuti), come
+  `GroupRunClock`: un `UPDATE … SET reminded_at` marca la sfida prima di
+  avvisare, così due processi non la mandano due volte. Parte se la sfida
+  è cominciata, aperta, con tema, e `ends_at` è fra adesso e 3 giorni; un
+  server spento in quel momento la manda alla ripartenza, purché prima
+  della fine. «Ha pubblicato almeno un disegno» vuol dire un disegno per
+  tutti, non nascosto, di qualunque giorno.
+- **I risultati** vanno a chi ha un disegno in gara alla chiusura, anche
+  se escluso con `--exclude`; partono dal comando `close` dopo il commit,
+  come `contest_won`. `contest_open` parte dal comando `open`, con le
+  push mandate una per volta prima che il comando esca.
+- Le tre push sono in `OWN_KINDS`: ognuno ne è l'«autore», perché non le
+  manda nessuno; la chiave del «stesso evento» è l'id della sfida.

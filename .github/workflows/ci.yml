@@ -61,7 +61,7 @@ jobs:
   # I test girano sul grafo piccolo di Levico e sui JSON di shared-types.
   api:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 

@@ -67,9 +67,24 @@ Una alla volta, con le sue parole.
    TASK-362 non cambia questo. ADR-0127 non si tocca.
 5. **I nomi e i testi.** Proposta: «All» (già approvato) e «Following», con i
    messaggi degli stati vuoti; «Try again» c'è già. La scheda vuole una chiave
-   propria: `Following` è già il pulsante, in italiano «Segui già». Testi
-   esatti da approvare prima del codice.
-   — *Risposta:* aperta.
+   propria: `Following` è già il pulsante, in italiano «Segui già». In inglese,
+   italiano, tedesco, francese e spagnolo:
+   - scheda: Following; Seguiti; Folge ich; Suivis; Siguiendo;
+   - nessun follow: Follow people to see their drawings here.; Segui qualcuno
+     per vedere qui i suoi disegni.; Folge anderen, um ihre Zeichnungen hier zu
+     sehen.; Suis des personnes pour voir leurs dessins ici.; Sigue a otras
+     personas para ver aquí sus dibujos.;
+   - pulsante: Find people to follow; Trova persone da seguire; Personen zum
+     Folgen finden; Trouver des personnes à suivre; Buscar personas a las que
+     seguir;
+   - nessun post: The people you follow have not published anything yet.; Chi
+     segui non ha ancora pubblicato nulla.; Die Personen, denen du folgst, haben
+     noch nichts veröffentlicht.; Les personnes que tu suis n'ont encore rien
+     publié.; Las personas a las que sigues aún no han publicado nada.;
+   - errore: Couldn't load the Feed.; Non è stato possibile caricare il Feed.;
+     Der Feed konnte nicht geladen werden.; Impossible de charger le Feed.; No
+     se pudo cargar el Feed.
+   — *Risposta:* «Sì, approvo».
 6. **«Seguiti» senza account.** La proposta era una scheda che chiede il login;
    l'utente vuole solo «Tutti»: senza account il selettore non c'è, si vedono
    gli esempi come oggi, e un «Seguiti» ricordato si riapre come «Tutti».

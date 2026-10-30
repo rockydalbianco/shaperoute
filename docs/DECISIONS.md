@@ -18246,6 +18246,47 @@ piccola».
 distanza non torna, o cambia: la distanza è dell'utente); i giri oltre 5
 senza dirlo all'utente.
 
+## ADR-0283 — aggiunta, parte A2: le curve dove si gira davvero, il posto con un nome più vicino, i waypoint
+
+**Stato**: Attiva · 2026-10-29 · deciso dall'agente su delega dell'utente
+(TASK-323 parte A2; l'utente ha scelto di fare A2 prima di B). Aggiunta ad
+ADR-0283.
+
+**Contesto**: il punto 3 della proposta vuole le curve con un nome a riva,
+da OpenStreetMap, entro 300 m. A2 è nel motore; l'estratto dei nomi sul
+server è di B. Come A1, le impronte non devono cambiare.
+
+**Decisione**:
+
+1. **Una curva è dove si gira davvero**: la direzione 15 m prima e 15 m
+   dopo il punto differisce di più di 45°, e di una fila di punti così si
+   tiene il più stretto. Su un contorno di 128 punti il cambio da un punto
+   all'altro è piccolo anche sulle punte: la finestra le trova, e lascia
+   fuori la curva di un cerchio. Dove il tratto dalla riva arriva sulla
+   forma e prosegue quasi dritto non c'è curva.
+2. **«La riva di fronte» è il posto più vicino**: la fascia sta entro 150 m
+   dalla riva, quindi il posto con un nome più vicino alla curva, entro 300
+   m, è su quella riva. A pari distanza il primo per nome, così il
+   risultato non dipende dall'ordine del file. Con il posto, il tipo e la
+   direzione in cui guardarlo.
+3. **Il formato dei file dei nomi** lo fissa A2, perché B lo scriva:
+   `<cache>/shore_names/*.json` con `bbox` e `places` (`name`, `kind`,
+   `lat`, `lon`). Si leggono i file la cui area tocca quella del nuoto. Un
+   file che non si legge si salta: i nomi aiutano, non devono fermare un
+   nuoto.
+4. **Le curve stanno in `SwimPlan`**, non in `RouteResult`, e i waypoint li
+   aggiunge `swim_turns.with_turns` al GPX di `export_gpx.to_gpx`: toccare
+   `models.py` o `export_gpx.py` cambierebbe le impronte, e B li tocca
+   comunque. I due file nuovi sono in `route_store.SWIM_ONLY`; impronte
+   come in `main`.
+5. **Nel GPX solo le curve del primo giro**: i giri dopo girano negli
+   stessi posti, e un waypoint ripetuto cinque volte non aiuta nessuno.
+
+**Scartate**: le curve come vertici della linea semplificata
+(Douglas-Peucker): danno curve finte ogni 60° su un cerchio; i posti
+pesati per tipo (un faro prima di un bar), da riprendere coi posti veri se
+servirà.
+
 ## ADR-0281 — L'attività finita anche in Apple Salute e in Health Connect: un allenamento con il percorso, scritto sul telefono a ogni «Save» dopo il primo sì
 
 **Stato**: Proposta · 2026-10-28 · automatico, calorie solo per la corsa,
@@ -19507,6 +19548,60 @@ privacy, nelle dipendenze e nel nativo. I messaggi tra app e pagina della
 mappa hanno `metresPerPx`, `bent`, `links`, `bendable` e `marks` (pagina e
 app vanno sempre insieme). Il nuovo `mapdraw/tools.ts` contiene gli
 strumenti; `erasedAt` esce da `edit.ts`.
+
+## ADR-0296 — Le sfide del mese: un tema sul concorso, l'iscrizione esplicita, la galleria, l'archivio, tre push
+
+**Stato**: Proposta · 2026-10-29 · TASK-343. Estende ADR-0260 (il primo
+concorso), che resta valido per i concorsi senza tema. Il tema,
+l'iscrizione esplicita e il voto che resta la reazione sono dell'utente
+(richiesta del 2026-10-29, proposta approvata con «Yes, as proposed»);
+quanti disegni per account è dell'utente (2026-10-30, «No limit»:
+nessun limite);
+i punti tecnici sono decisi dall'agente su delega dell'utente. Numero dato
+dal Coordinatore.
+
+**Contesto**: l'utente il 2026-10-29, in un testo incollato su «GPS Art e
+challenge mensili»: una sezione «Challenge» con il tema del mese, la
+pagina con regole, date, premi e partecipanti, la galleria per più votati
+e più recenti, un voto per disegno senza autovoto, la classifica e il
+badge per i vincitori, l'archivio, le notifiche per la nuova sfida, gli
+ultimi 3 giorni e i risultati. Il concorso di TASK-299 ha già la
+classifica, il voto (la reazione: una per account, mai la propria), il
+badge «Winner», il premio senza valore e una push al vincitore; non ha un
+tema, un'iscrizione, una galleria, un archivio, le altre push.
+
+**Decisione** (proposta):
+
+1. **Il tema sta sul concorso**: `contests.theme`, titolo e descrizione
+   nelle cinque lingue, scritti da chi lo apre (`open --theme`). Resta un
+   solo concorso aperto alla volta; il premio resta senza valore
+   (CONCORSI §12). Senza tema il concorso è quello di ADR-0260.
+2. **Con un tema si partecipa iscrivendosi**: l'interruttore nel modulo
+   di pubblicazione, o dal post già pubblicato; tabella
+   `contest_entries`, nessuna colonna su `drawings` e `reactions`. Il
+   tema conta solo se chi pubblica lo sceglie; nessun controllo
+   automatico del tema: chi chiude esclude a mano, come oggi. Un account
+   iscrive quanti disegni vuole (scelta dell'utente). Valgono
+   tutte le regole di ADR-0260 su chi partecipa (per tutti, nel periodo,
+   registrato dall'app, non nascosto).
+3. **Il voto resta la reazione** di ADR-0260: nessun «mi piace» nuovo.
+4. **La galleria e l'archivio** sono letture nuove sulla stessa query
+   della classifica (`RANKED_SQL`): una regola sola per chi è davanti.
+5. **Tre push nuove**: nuova sfida a chi ha le push accese; gli ultimi 3
+   giorni una volta sola, a chi ha pubblicato almeno un disegno e non è
+   iscritto (un orologio nel processo dell'API, come `GroupRunClock`);
+   i risultati a chi ha partecipato. Il vincitore riceve ancora
+   `contest_won`.
+
+**Alternative scartate**: tutti i post del periodo in gara anche con un
+tema (il tema non varrebbe niente); un voto separato dalle reazioni (due
+gesti per la stessa cosa); un cron sul server per gli ultimi 3 giorni
+(l'API ha già i suoi orologi, nessun pezzo nuovo da far partire).
+
+**Conseguenze**: una migrazione; tre tipi di push e i loro testi; il
+regolamento ufficiale cambia e va riapprovato. «Challenge» è già una
+parola del gioco «Play» (TASK-296): i testi dell'app devono tenerle
+distinte.
 
 ## ADR-0299 — «Edit the drawing» su un disegno del Feed: la traccia sulla mappa dov'è stata corsa
 

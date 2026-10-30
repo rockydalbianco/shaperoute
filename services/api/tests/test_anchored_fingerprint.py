@@ -6,6 +6,7 @@ them."""
 
 from __future__ import annotations
 
+import ast
 import shutil
 from pathlib import Path
 
@@ -18,9 +19,25 @@ from shaperoute_api.route_store import (
     SWIM_ONLY,
     engine_fingerprint,
 )
-from tests.test_swim_fingerprint import _imported
 
 ENGINE = Path(route_engine.__file__).parent
+
+
+def _imported(path: Path) -> set[str]:
+    """The modules of route_engine that `path` imports (as
+    test_swim_fingerprint reads them; not imported from there: in CI the
+    tests folder is not a package)."""
+    found: set[str] = set()
+    for node in ast.walk(ast.parse(path.read_text("utf-8"))):
+        if isinstance(node, ast.Import):
+            found.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            if node.level > 0:
+                module = f"route_engine.{module}".rstrip(".")
+            found.add(module)
+            found.update(f"{module}.{alias.name}" for alias in node.names)
+    return found
 
 
 def _copy(to: Path) -> Path:

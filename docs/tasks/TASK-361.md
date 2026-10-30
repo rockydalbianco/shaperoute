@@ -1,4 +1,4 @@
-# TASK-356 — «Draw» si capisce in 3 secondi: partenza, cosa disegni, quanto corri, «Draw»
+# TASK-361 — «Draw» si capisce in 3 secondi: partenza, cosa disegni, quanto corri, «Draw»
 
 **Stato**: In lavorazione · **parte A in PR** (i pezzi nuovi e
 `ChooseScreen`); la parte B aspetta il merge della #661 (TASK-340)
@@ -6,10 +6,10 @@
 lo impone la sessione cloud, non segue la convenzione `feat/`) · **ADR**:
 ADR-0307
 
-Numero preso dall'agente senza Coordinatore raggiungibile (nessuna
-sessione attiva il 2026-10-30). Prima TASK-351 e ADR-0303, già presi da
-altre sessioni (#669, run video): rinumerato al primo libero nei branch
-remoti, TASK-356 e ADR-0307. **Da confermare al Coordinatore.**
+Numeri dal Coordinatore (2026-10-30, sulla #675): **TASK-361**, **ADR-0307**
+confermato. Prima l'agente, senza Coordinatore raggiungibile, aveva preso
+TASK-351 e poi TASK-356, già assegnati ad altri task (il video della
+corsa, #669; la posizione del Feed).
 
 ## Obiettivo
 
@@ -151,7 +151,7 @@ apps/mobile/src/route/OtherShapeField.tsx (nuovo, con test)
 apps/mobile/src/screens/ChooseScreen.tsx
 apps/mobile/src/screens/ChooseScreen.test.tsx
 apps/mobile/src/i18n/{it,de,es,fr}.ts    (solo righe aggiunte in fondo)
-docs/tasks/TASK-356.md
+docs/tasks/TASK-361.md
 docs/DECISIONS.md                        (ADR-0307)
 docs/STATUS.md                           (una riga in «In lavorazione»)
 ```

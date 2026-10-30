@@ -1,7 +1,7 @@
 import { requireOptionalNativeModule } from "expo";
 
 /**
- * A light touch of the phone under the finger (TASK-356): a shape picked in
+ * A light touch of the phone under the finger (TASK-361): a shape picked in
  * «Draw», a step of the distance. expo-haptics is loaded only when it is
  * used, and only in an app built with it, as expo-contacts is
  * (`contacts/phoneContacts.ts`): Expo Go has it, the store's 1.0 does not,

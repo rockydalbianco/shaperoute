@@ -31,7 +31,7 @@ export function sizeLabel(widthM: number, heightM: number, units: Units): string
 }
 
 /**
- * The shape chosen, drawn to scale on a piece of map (TASK-356): its
+ * The shape chosen, drawn to scale on a piece of map (TASK-361): its
  * outline, a scale bar and its size on the ground. It follows the shape
  * and the distance as they change; a still picture, no map loaded.
  */

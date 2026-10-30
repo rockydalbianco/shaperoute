@@ -1628,32 +1628,32 @@ export const FR: Table = {
   "{distance} drawing": "Dessin de {distance}",
   "Not earned yet: {badge}": "Pas encore obtenu : {badge}",
 
-  // src/route/runTime.ts (TASK-356: the time under the distance of «Draw»)
+  // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} à {pace}",
   "≈ {time} at {pace} (a usual pace)": "≈ {time} à {pace} (une allure habituelle)",
 
-  // src/route/ShapePreview.tsx (TASK-356: the shape to scale)
+  // src/route/ShapePreview.tsx (TASK-361: the shape to scale)
   "{name}, about {size} on the map": "{name}, environ {size} sur la carte",
 
-  // src/route/ShapeGrid.tsx (TASK-356: the shapes in two rows)
+  // src/route/ShapeGrid.tsx (TASK-361: the shapes in two rows)
   "Show fewer shapes": "Afficher moins de formes",
   "See all {count} shapes": "Voir les {count} formes",
   "Show fewer": "Moins",
   "See all": "Tout voir",
 
-  // src/route/DistanceDial.tsx (TASK-356: the distance by half a km)
+  // src/route/DistanceDial.tsx (TASK-361: the distance by half a km)
   "Tap to type the distance": "Touchez pour saisir la distance",
 
-  // src/screens/RunNoRouteButton.tsx (TASK-356)
+  // src/screens/RunNoRouteButton.tsx (TASK-361)
   "Records the run without drawing a route first":
     "Enregistre la course sans dessiner d'abord un parcours",
 
-  // src/route/drawLabel.ts (TASK-356: the words of «Draw route»)
+  // src/route/drawLabel.ts (TASK-361: the words of «Draw route»)
   "Draw a {distance} {name}": "Dessiner : {name} de {distance}",
   "Draw “{word}”, {distance}": "Dessiner « {word} », {distance}",
   "Draw the picture, {distance}": "Dessiner l'image, {distance}",
 
-  // src/route/OtherShapeField.tsx (TASK-356: «Type another shape»)
+  // src/route/OtherShapeField.tsx (TASK-361: «Type another shape»)
   "Type another shape": "Saisir une autre forme",
   "Write a shape that is not among the tiles":
     "Écrire une forme qui n'est pas parmi les vignettes",

@@ -6,7 +6,7 @@ import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
 const NUMBER_SIZE = 22;
 
 /**
- * A section of «Draw» as a step (TASK-356): «1 START», «2 WHAT YOU DRAW»,
+ * A section of «Draw» as a step (TASK-361): «1 START», «2 WHAT YOU DRAW»,
  * «3 DISTANCE», so the screen reads in order, top to bottom. A header for
  * a screen reader, with its number.
  */

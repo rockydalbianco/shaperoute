@@ -4,7 +4,7 @@ import { steppedDistance } from "../units/distanceInput";
 import { appUnits, type Units } from "../units/units";
 import { distanceLimits } from "./distance";
 
-/** What − and + add in the redesigned «Draw» (TASK-356): half a km, or
+/** What − and + add in the redesigned «Draw» (TASK-361): half a km, or
  * half a mile with «Miles». */
 export const HALF_STEP = 0.5;
 

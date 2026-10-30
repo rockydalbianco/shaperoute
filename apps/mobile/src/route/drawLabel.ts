@@ -13,7 +13,7 @@ export type DrawWhat =
   | { kind: "none" };
 
 /**
- * The words of the yellow button at the foot of «Draw» (TASK-356): what
+ * The words of the yellow button at the foot of «Draw» (TASK-361): what
  * will be drawn and how far, «Draw a 7.8 km circle», so the last look
  * before the tap checks the choice. Without a choice or a valid distance,
  * «Draw route» as before.

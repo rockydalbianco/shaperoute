@@ -3,7 +3,7 @@ import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
 
 /**
- * The start of «Draw» by the name of its street (TASK-356): «Via Roma,
+ * The start of «Draw» by the name of its street (TASK-361): «Via Roma,
  * Levico Terme» in place of «Starting from your position.». The phone's own
  * geocoder answers (Apple's on an iPhone, Google's on Android), through
  * expo-location, which the app already has: no key, no service of ours.

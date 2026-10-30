@@ -4,7 +4,7 @@ import { paceLabel } from "../units/format";
 import type { Units } from "../units/units";
 
 /**
- * How long the route will take (TASK-356): under the distance of «Draw»,
+ * How long the route will take (TASK-361): under the distance of «Draw»,
  * from the runner's own pace, or a usual one before there is any.
  */
 

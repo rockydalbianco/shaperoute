@@ -1,6 +1,6 @@
 /**
  * The first screen's run button: yellow by the user's choice (TASK-220,
- * ADR-0183) until TASK-356, which leaves the yellow to the route's button
+ * ADR-0183) until TASK-361, which leaves the yellow to the route's button
  * alone: outlined, with the runner beside its words.
  */
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
@@ -56,7 +56,7 @@ test("«Run without a route» is outlined, not yellow: the yellow is the route's
   expect(button).not.toHaveStyle({ backgroundColor: color.accent });
   expect(button).toHaveStyle({ borderColor: color.borderStrong });
   expect(screen.getByText("Run without a route")).toHaveStyle({ color: color.text });
-  // The runner and the words are one button (TASK-356).
+  // The runner and the words are one button (TASK-361).
   expect(screen.getByText("🏃")).toBeOnTheScreen();
 });
 
@@ -97,7 +97,7 @@ test("the position refused: «Open Settings» opens the app's settings", async (
   openSettings.mockRestore();
 });
 
-describe("the start by its street (TASK-356)", () => {
+describe("the start by its street (TASK-361)", () => {
   async function onGps(more: { mode?: "gps" | "place"; denied?: boolean } = {}) {
     await render(
       <ChooseScreen
@@ -144,7 +144,7 @@ describe("the start by its street (TASK-356)", () => {
   });
 });
 
-test("the page ends below the button at its foot (TASK-356)", async () => {
+test("the page ends below the button at its foot (TASK-361)", async () => {
   await choose();
   const padded = () => JSON.stringify(screen.toJSON()).includes('"paddingBottom":144');
   expect(padded()).toBe(false);

@@ -20099,10 +20099,10 @@ Nessun testo nuovo, nessuna dipendenza, niente di nativo, server non toccato.
 ## ADR-0307 — «Draw» in tre secondi: un solo giallo, la via della partenza, la forma in scala, mezzo km per passo, la vibrazione solo dove c'è
 
 **Stato**: Accettata · 2026-10-30 · la richiesta è **dell'utente**
-(TASK-356, «Obiettivo»: i sette problemi e i miglioramenti, parola per
+(TASK-361, «Obiettivo»: i sette problemi e i miglioramenti, parola per
 parola); l'ordine dei lavori è **dell'utente** («Dopo la #661»); i punti
-tecnici sono **decisi dall'agente su delega dell'utente**. Numero preso
-dall'agente senza Coordinatore raggiungibile, da confermare.
+tecnici sono **decisi dall'agente su delega dell'utente**. Numeri dal
+Coordinatore (TASK-361, ADR-0307 confermato, 2026-10-30).
 
 **Contesto**: «Draw» aveva due pulsanti gialli («Run without a route» in
 alto, ADR-0183, e «Draw route» in basso), una fila di forme tagliata a

@@ -76,7 +76,7 @@ type Props = {
   onRun?: () => void;
   /** Its button's words: «Bike» has its own (TASK-190). */
   runLabel?: string;
-  /** Its button's sign beside the words (TASK-356): a bike rides. */
+  /** Its button's sign beside the words (TASK-361): a bike rides. */
   runIcon?: string;
 };
 
@@ -104,12 +104,12 @@ export function ChooseScreen({
   runIcon,
 }: Props) {
   const insets = useSafeAreaInsets();
-  // The start by its street (TASK-356): only while the GPS is the start and
+  // The start by its street (TASK-361): only while the GPS is the start and
   // answers; any other line (searching, refused, a place) says more.
   const onGps = mode === "gps" && !searching && !denied;
   const address = useStartAddress(onGps ? near : null);
   // The button at the foot covers the end of the page: the page ends that
-  // much lower, so its last card scrolls into sight (TASK-356).
+  // much lower, so its last card scrolls into sight (TASK-361).
   const [footerHeight, setFooterHeight] = useState(0);
   return (
     // The km field is low on the screen: the content shrinks so the keyboard
@@ -144,7 +144,7 @@ export function ChooseScreen({
             <View style={styles.titleButtons}>
               {/* The whole of it: "Run" alone read as running the route
                 drawn below (TASK-158). Outlined: the yellow is the
-                route's (TASK-356). */}
+                route's (TASK-361). */}
               {onRun && (
                 <RunNoRouteButton label={runLabel} icon={runIcon} onPress={onRun} />
               )}

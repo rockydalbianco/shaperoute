@@ -174,18 +174,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `Tap`), D (Profile, Settings, i fogli), E («Draw» e il risultato, dopo
   TASK-311 B, 331 e 335). Niente di nativo: la vibrazione al tocco solo
   con una build, col sì dell'utente. File `tasks/TASK-339.md`.
-- **TASK-356 — «Draw» in tre secondi** (ADR-0307; richiesta dell'utente
-  del 2026-10-30; numero preso dall'agente senza Coordinatore, da
-  confermare). Un solo giallo («Run without a route» con contorno e 🏃),
+- **TASK-361 — «Draw» in tre secondi** (ADR-0307; richiesta dell'utente
+  del 2026-10-30; numeri dal Coordinatore). Un solo giallo («Run without a route» con contorno e 🏃),
   la via della partenza, la griglia a due righe, la forma in scala, mezzo
   km per passo col tempo stimato, il testo del pulsante, la vibrazione
   solo dove c'è il nativo (`expo-haptics` escluso dall'autolinking,
-  impronta iOS `83793e26` invariata). **Parte A in PR** (branch
-  `claude/muw-draw-screen-redesign-n6gh3x`): i pezzi in file nuovi e
-  `ChooseScreen`. **Parte B** (`RoutePanel`, `App.tsx`) dopo il merge
-  della #661 (TASK-340), scelta dell'utente. Prende il posto della parte E
+  impronta iOS `83793e26` invariata). **Parte A in PR, #675**, bozza
+  (branch `feat/TASK-356-draw-redesign`, nome rimasto dal numero di
+  prima): i pezzi in file nuovi e `ChooseScreen`. **Parte B** (`RoutePanel`,
+  `App.tsx`) dopo il merge della #661 (TASK-340) e col via del
+  Coordinatore. Prende il posto della parte E
   di TASK-339. Privacy da aggiornare col sì dell'utente (la posizione al
-  geocoder del telefono). `tasks/TASK-356.md`.
+  geocoder del telefono). `tasks/TASK-361.md`.
 - **TASK-343 — Le sfide del mese: un tema sul concorso, l'iscrizione,
   la galleria, l'archivio** (ADR-0296, estende ADR-0260; richiesta
   dell'utente del 2026-10-29, proposta approvata con «Yes, as proposed»;

@@ -38,7 +38,7 @@ type Props = {
 };
 
 /**
- * In «Shape», under the grid (TASK-356, the user's choice of 2026-10-30):
+ * In «Shape», under the grid (TASK-361, the user's choice of 2026-10-30):
  * the field for a shape out of the catalogue, which the AI reads («prancing
  * horse»), behind «Type another shape». The tiles say the shape chosen, so
  * the field no longer repeats it; it opens with a tap, or by itself when

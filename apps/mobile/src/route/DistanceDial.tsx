@@ -29,7 +29,7 @@ type Props = {
 };
 
 /**
- * The distance of «Draw» (TASK-356), in place of `DistanceStepper`: − and +
+ * The distance of «Draw» (TASK-361), in place of `DistanceStepper`: − and +
  * by half a km (or mile), held down they run on, faster and faster; the
  * number is a field, a tap types it. Each step is felt (`haptics`). For a
  * screen reader the number is adjustable: swipe up and down.

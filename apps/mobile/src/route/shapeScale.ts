@@ -4,7 +4,7 @@ import { lookOf } from "../mapdraw/figure";
 
 /**
  * How big a shape of the catalogue comes out on the ground at a distance
- * (TASK-356), for the preview of «Draw»: the engine's own outline
+ * (TASK-361), for the preview of «Draw»: the engine's own outline
  * (`catalogueShapes.json`, as «Draw on the map» places it), sized so its
  * length is the distance. The route follows streets, so the real one is
  * close to this, never exactly it.

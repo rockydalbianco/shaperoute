@@ -23,7 +23,7 @@ export const PER_ROW = 4;
 export const SHOWN_CLOSED = PER_ROW * 2 - 1;
 
 /**
- * The shapes the grid shows (TASK-356): all of them when open; closed,
+ * The shapes the grid shows (TASK-361): all of them when open; closed,
  * the first seven, with the chosen one in the last place when it is not
  * among them, so the shape chosen is always in sight.
  */
@@ -50,7 +50,7 @@ type Props = {
 };
 
 /**
- * The shapes of the catalogue in a grid of two rows (TASK-356), in place of
+ * The shapes of the catalogue in a grid of two rows (TASK-361), in place of
  * the row that slid sideways and was cut at the edge (ADR-0084): nothing
  * hides. The last tile, «See all», opens every shape; «Show fewer» closes.
  */

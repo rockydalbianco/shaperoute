@@ -18,6 +18,7 @@
   "source": "file",
   "tags": [],
   "photos": [],
+  "order": null,
   "rotation_deg": null,
   "author": {
     "public_id": "4f0c8bfb-a590-4b16-8802-9225862ece3a",

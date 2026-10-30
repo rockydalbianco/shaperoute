@@ -26,6 +26,7 @@ import { dayLabel, startedLabel } from "../src/activities/activityText";
 import { loadOutbox, saveOutbox, type Waiting } from "../src/activities/outbox";
 import { clearRun, type SavedRun, saveRun } from "../src/navigation/trackStore";
 import { loadDrawingOutbox } from "../src/social/drawingOutbox";
+import { saveVisibility } from "../src/social/visibilityChoice";
 import { loadStravaOutbox } from "../src/strava/stravaOutbox";
 
 // Every test renders the whole app, and the first one loads it cold.
@@ -313,6 +314,26 @@ test("«Who can see it» starts at «Only me»; «Everyone», and «Save» publi
     choice({ title: "Sunday heart", visibility: "everyone" }),
   );
   await waitFor(() => expect(loadDrawingOutbox()).toEqual([]));
+  expect(loadOutbox()).toEqual([]);
+});
+
+test("a remembered «Everyone» publishes nothing without «Save»: the app closed and opened again", async () => {
+  signedIn();
+  saveVisibility(session.user.id, "everyone");
+  api(ACCOUNT);
+  saveRun(ENDED);
+  const first = await render(<App />);
+  await screen.findByText("Your run");
+  expect(
+    await screen.findByRole("radio", { name: "Everyone", checked: true }),
+  ).toBeOnTheScreen();
+  await first.unmount();
+  // Killed on the form: the run is still only on the phone.
+  await render(<App />);
+  await screen.findByText("Your run");
+  await screen.findByRole("radio", { name: "Everyone", checked: true });
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
+  expect(calls("PUT", RUN_DRAWING)).toHaveLength(0);
   expect(loadOutbox()).toEqual([]);
 });
 

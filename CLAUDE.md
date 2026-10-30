@@ -106,8 +106,10 @@ Più agenti lavorano sullo stesso repository nello stesso momento.
 
 ## Convenzioni
 
-- **Lingua**: documentazione in italiano; codice, nomi, commenti, commit,
-  PR e testi dell'interfaccia in inglese.
+- **Lingua**: con l'utente si scrive **sempre in italiano** (risposte,
+  domande, riepiloghi), in ogni sessione, anche quelle aperte da un'altra
+  sessione o con un brief in inglese. Documentazione in italiano; codice,
+  nomi, commenti, commit, PR e testi dell'interfaccia in inglese.
 - **Commit**: `TASK-012: add shape projection to WGS84` — imperativo,
   una riga, prefisso del task.
 - **Python**: 3.11+, type hints obbligatori, `ruff` + `black`, `pytest`.

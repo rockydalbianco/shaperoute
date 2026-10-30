@@ -36,6 +36,7 @@ import { distanceLabel, paceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { useFeedMap } from "./FeedMaps";
 import { isImportedPost, isShown } from "./feedPosts";
+import { postEnergy } from "./postEnergy";
 import type { SamplePost } from "./sampleFeed";
 import { turnedLine } from "./turnedLine";
 
@@ -90,7 +91,7 @@ const BIKE = SPORTS.find((sport) => sport.id === "bike")?.name ?? tLater("Bike")
  * words, a word or a route's title, and a run without a route says only
  * how far, how long and how fast. A run too short has no pace. An activity
  * added from a file of another app says so before all, "Imported · 4.9 km ·
- * 27 min" (TASK-312).
+ * 27 min" (TASK-312). A run ends with its energy, "· 355 kcal" (TASK-345).
  */
 export function postFacts(post: SamplePost): string {
   const what = post.what === undefined ? shapeLabel(post.shape) : post.what;
@@ -103,6 +104,7 @@ export function postFacts(post: SamplePost): string {
     post.activity === "paddling"
       ? paddlePaceLabel(post.route_m, ms)
       : paceLabel(post.route_m, ms),
+    postEnergy(post),
   ]
     .filter((fact): fact is string => fact !== null)
     .join(" · ");

@@ -1,6 +1,15 @@
 import type { LatLon } from "@shaperoute/shared-types";
-import { useMemo } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import {
+  Image,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { t } from "../i18n";
 
 import { type Camera, lineCamera } from "../feed/feedMapPage";
@@ -25,6 +34,9 @@ const DRAWING_RATIO = 0.66;
 const LINE_WIDTH = 3;
 /** Clear around the line, on every side. */
 const DRAWING_PAD = space.md;
+
+/** The dots saying whether the drawing or the photo is shown. */
+const DOT_SIDE = 5;
 
 /** No line: nothing to lay a map under. */
 const NO_LINE: LatLon[] = [];
@@ -101,9 +113,9 @@ type Props = {
   /** Lays the map of its streets under the line, as in «Feed» (TASK-174). */
   map?: boolean;
   /**
-   * A photo in the place of the drawing, line and map (TASK-283): a town's,
-   * with the credit its licence asks for written small on it. `onError`
-   * when it cannot be shown.
+   * A town's photo, with the credit its licence asks for written small on
+   * it (TASK-283): one swipe after the drawing, or alone on a card with no
+   * line. `onError` when it cannot be shown.
    */
   photo?: CardPhoto;
   /**
@@ -131,7 +143,8 @@ type Props = {
  * `CardMapsCredit` beside them. A finger that slides over a card has not
  * touched it (TASK-196, `useTapNotSwipe`). A route whose shape is turned is
  * drawn turned back, as the map shows it once opened (TASK-232). With
- * `photo`, a photo fills the drawing's place instead (TASK-283).
+ * `photo`, the drawing comes first and the photo a swipe after it, two dots
+ * saying which is shown (TASK-350).
  */
 export function RouteCard({
   width,
@@ -148,9 +161,7 @@ export function RouteCard({
 }: Props) {
   const height = cardDrawingHeight(width);
   const bearing = bearingOf(rotationDeg);
-  // A photo takes the drawing's place: no line, no map taken for it.
-  const drawn = photo === undefined ? line : null;
-  const mapped = map && drawn !== null ? drawn : NO_LINE;
+  const mapped = map && line !== null ? line : NO_LINE;
   const framing = useMemo(
     () => framingName(lineCamera(mapped, width, height, DRAWING_PAD, bearing)),
     [mapped, width, height, bearing],
@@ -158,66 +169,122 @@ export function RouteCard({
   const picture = useFeedMap(framing, mapped, width, height, DRAWING_PAD, bearing);
   const segments = useMemo(
     () =>
-      drawn === null
+      line === null
         ? []
-        : thumbSegments(turnedLine(drawn, bearing), width, height, DRAWING_PAD, gaps),
-    [drawn, bearing, width, height, gaps],
+        : thumbSegments(turnedLine(line, bearing), width, height, DRAWING_PAD, gaps),
+    [line, bearing, width, height, gaps],
   );
   const tap = useTapNotSwipe(onPress);
+  const [page, setPage] = useState(0);
+  const onPageScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) =>
+    setPage(Math.round(nativeEvent.contentOffset.x / Math.max(1, width)));
+  const drawingPage = (
+    <>
+      {picture !== null && (
+        <Image
+          testID="route-card-map"
+          style={StyleSheet.absoluteFill}
+          source={{ uri: picture }}
+          accessible={false}
+        />
+      )}
+      {segments.map((s, i) => (
+        <View
+          key={i}
+          style={[
+            styles.segment,
+            {
+              left: s.left,
+              top: s.top - LINE_WIDTH / 2,
+              width: s.length + LINE_WIDTH / 2,
+              transform: [{ rotate: `${s.angle}deg` }],
+            },
+          ]}
+        />
+      ))}
+    </>
+  );
+  const photoPage = photo !== undefined && (
+    <>
+      <Image
+        testID="route-card-photo"
+        style={StyleSheet.absoluteFill}
+        source={photo.source}
+        resizeMode="cover"
+        onError={photo.onError}
+        accessible={false}
+      />
+      {photo.credit !== null && (
+        <View style={styles.photoCredit} pointerEvents="none">
+          <View style={[StyleSheet.absoluteFill, styles.photoCreditShade]} />
+          {creditParts(photo.credit).map((part, i) => (
+            <Text
+              key={i}
+              style={[
+                styles.photoCreditText,
+                i === 0 ? styles.photoCreditWho : styles.photoCreditLicence,
+              ]}
+              numberOfLines={1}
+            >
+              {part}
+            </Text>
+          ))}
+        </View>
+      )}
+    </>
+  );
   const body = (
     <>
       <View style={[styles.drawing, { width, height }]} testID="route-card-drawing">
-        {picture !== null && (
-          <Image
-            testID="route-card-map"
-            style={StyleSheet.absoluteFill}
-            source={{ uri: picture }}
-            accessible={false}
-          />
-        )}
-        {photo !== undefined && (
+        {photo !== undefined && line !== null ? (
           <>
-            <Image
-              testID="route-card-photo"
-              style={StyleSheet.absoluteFill}
-              source={photo.source}
-              resizeMode="cover"
-              onError={photo.onError}
-              accessible={false}
-            />
-            {photo.credit !== null && (
-              <View style={styles.photoCredit} pointerEvents="none">
-                <View style={[StyleSheet.absoluteFill, styles.photoCreditShade]} />
-                {creditParts(photo.credit).map((part, i) => (
-                  <Text
-                    key={i}
-                    style={[
-                      styles.photoCreditText,
-                      i === 0 ? styles.photoCreditWho : styles.photoCreditLicence,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {part}
-                  </Text>
-                ))}
-              </View>
-            )}
+            <ScrollView
+              horizontal
+              pagingEnabled
+              bounces={false}
+              nestedScrollEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={onPageScroll}
+              scrollEventThrottle={32}
+              testID="route-card-pages"
+            >
+              {/* The touch is taken inside the pages, as in «Feed»: a card
+                  taking it around them would stop them from sliding. */}
+              <Pressable
+                style={({ pressed }) => [{ width, height }, pressed && styles.pressed]}
+                onPressIn={tap.onPressIn}
+                onPress={tap.onPress}
+                accessible={false}
+                testID="route-card-first-page"
+              >
+                {drawingPage}
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [{ width, height }, pressed && styles.pressed]}
+                onPressIn={tap.onPressIn}
+                onPress={tap.onPress}
+                accessible={false}
+                testID="route-card-second-page"
+              >
+                {photoPage}
+              </Pressable>
+            </ScrollView>
+            <View style={styles.dots} pointerEvents="none" testID="route-card-dots">
+              <View style={[StyleSheet.absoluteFill, styles.photoCreditShade]} />
+              {[0, 1].map((i) => (
+                <View
+                  key={i}
+                  style={[styles.dot, i !== page && styles.dotOff]}
+                  testID={`route-card-dot-${i}`}
+                />
+              ))}
+            </View>
           </>
+        ) : photo !== undefined ? (
+          photoPage
+        ) : (
+          drawingPage
         )}
-        {segments.map((s, i) => (
-          <View
-            key={i}
-            style={[
-              styles.segment,
-              {
-                left: s.left,
-                top: s.top - LINE_WIDTH / 2,
-                width: s.length + LINE_WIDTH / 2,
-                transform: [{ rotate: `${s.angle}deg` }],
-              },
-            ]}
-          />
-        ))}
         {match !== undefined && (
           <View style={styles.match}>
             <Text style={styles.matchText}>{`${Math.round(match * 100)}%`}</Text>
@@ -326,6 +393,27 @@ const styles = StyleSheet.create({
   },
   photoCreditLicence: {
     marginLeft: space.xs,
+  },
+  // Which page is shown: at the top, where a photo's credit is not, on the
+  // credit's shade so it reads on any photo.
+  dots: {
+    position: "absolute",
+    top: space.xs,
+    alignSelf: "center",
+    flexDirection: "row",
+    gap: space.xs,
+    padding: space.xs,
+    borderRadius: radius.pill,
+    overflow: "hidden",
+  },
+  dot: {
+    width: DOT_SIDE,
+    height: DOT_SIDE,
+    borderRadius: DOT_SIDE / 2,
+    backgroundColor: color.onScrim,
+  },
+  dotOff: {
+    opacity: 0.4,
   },
   words: {
     gap: 2,

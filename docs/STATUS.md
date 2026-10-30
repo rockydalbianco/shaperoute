@@ -2095,6 +2095,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-358 — Nei messaggi «Photo» e «Video» aprono la galleria** (2026-10-30; numero dal
+  Coordinatore; bloccava l'update `production`). Su iOS la galleria presentata mentre il
+  foglio del «+» si chiudeva non compariva: ora parte da `onDismiss`. Provato nel simulatore
+  fino alla foto nella chat; sul telefono con la preview. Solo app, nessun testo nuovo.
+  File: `tasks/TASK-358.md`.
 - **App** — TASK-350 (ADR-0302; richiesta dell'utente del 2026-10-30): nelle schede di «Explore» con una foto, in «NEARBY TOWNS» e «IDEAS FROM EUROPE», prima il disegno sulla mappa e con uno swipe la foto col credito; due pallini dicono quale si vede, un tocco su tutte e due apre la scheda. Provato nel simulatore; Android no. Solo app, nessun testo nuovo, impronta iOS 83793e26. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-350.md`.
 - **App** — TASK-352 (ADR-0304; richiesta dell'utente del 2026-10-30, «Dopo la
   prima scelta»): «Who can see it» parte da «Only me» finché l'account non

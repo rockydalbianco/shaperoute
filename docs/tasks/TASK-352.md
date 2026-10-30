@@ -55,6 +55,7 @@ apps/mobile/src/about/documents.test.ts
 apps/mobile/src/about/AboutPage.test.tsx
 site/privacy/index.html
 site/privacy/{it,de,fr,es}/index.html
+site/tests/privacy.test.mjs
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md

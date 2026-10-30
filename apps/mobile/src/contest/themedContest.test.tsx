@@ -524,8 +524,8 @@ describe("entering", () => {
     const on = screen.getByRole("switch", {
       name: `Enter “${THEMED.theme.en.title}”`,
     });
-    expect(on.props.value).toBe(false);
-    await fireEvent(on, "valueChange", true);
+    expect(on.props.accessibilityState.checked).toBe(false);
+    await fireEvent.press(on);
     expect(onEntry).toHaveBeenCalledWith({ contest: THEMED.id, entered: true });
   });
 

@@ -1,10 +1,17 @@
 import type { ThemedContest } from "@shaperoute/shared-types";
-import { StyleSheet, Switch, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 import type { DrawingEntry } from "../api/drawings";
 import { t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
-import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
+import {
+  color,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "../theme/tokens";
 import { themedOf, themeText } from "./contestApi";
 import { type KeptContest, useContestKept } from "./contestKept";
 import { useClock } from "./useClock";
@@ -59,7 +66,11 @@ export function EnterSwitch({ entry, onEntry, disabled }: Props) {
   );
 }
 
-/** The switch and what it says, in the form and on a post. */
+/**
+ * On or off, in the form and on a post, as the other switches of the app are
+ * (`StravaSwitch`, RoutePanel's pen). Not the phone's own: in the simulator
+ * (TASK-343 part B) a tap turned it on and never off.
+ */
 export function SwitchRow({
   label,
   on,
@@ -72,30 +83,53 @@ export function SwitchRow({
   disabled?: boolean;
 }) {
   return (
-    <View style={styles.row}>
+    <Pressable
+      style={[styles.switch, on && styles.switchOn, disabled && styles.busy]}
+      onPress={() => onChange(!on)}
+      disabled={disabled}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: on, disabled }}
+      accessibilityLabel={label}
+    >
       <Text style={styles.label}>{label}</Text>
-      <Switch
-        value={on}
-        onValueChange={onChange}
-        disabled={disabled}
-        accessibilityLabel={label}
-      />
-    </View>
+      <Text style={[styles.state, on && styles.stateOn]}>{t(on ? "On" : "Off")}</Text>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
+  switch: {
+    minHeight: MIN_TAP_SIZE,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: space.md,
-    minHeight: MIN_TAP_SIZE,
+    gap: space.sm,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface,
+  },
+  // A stronger border, not the yellow: that is the route's.
+  switchOn: {
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  busy: {
+    opacity: 0.6,
   },
   label: {
     flex: 1,
     color: color.text,
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,
+  },
+  state: {
+    color: color.textFaint,
+    fontWeight: fontWeight.semibold,
+  },
+  stateOn: {
+    color: color.text,
   },
 });

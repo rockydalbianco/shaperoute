@@ -8,7 +8,7 @@ import { useLanguage } from "../i18n/useLanguage";
 import { useFollowsDoor } from "../social/followsDoor";
 import { color, fontSize, space } from "../theme/tokens";
 import { entryProblem, setContestEntry, themeText } from "./contestApi";
-import { enteredIn, markEntered, useContestKept } from "./contestKept";
+import { enteredIn, tellEntered, useContestKept } from "./contestKept";
 import { enterable, SwitchRow } from "./EnterSwitch";
 import { useClock } from "./useClock";
 
@@ -57,7 +57,7 @@ export function EnterOnPost({ drawing }: { drawing: DrawingDetail }) {
     );
     setBusy(false);
     if (outcome.kind === "ok") {
-      markEntered(contestId, drawing.id, entered);
+      tellEntered(baseUrl, token, contestId, drawing.id, entered);
     } else if (sessionEnded(outcome)) {
       account.sessionEnded(token);
     } else {

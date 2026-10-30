@@ -17,7 +17,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 
 import { apiError } from "../account/testing";
 import { FollowsContext } from "../social/followsDoor";
-import { forgetContest, setContest } from "./contestKept";
+import { forgetContest, keptContest, setContest } from "./contestKept";
 import { EnterOnPost } from "./EnterOnPost";
 
 jest.mock("expo-file-system", () => {
@@ -69,8 +69,11 @@ const NAME = `Enter “${THEMED.theme.en.title}”`;
 let answer: () => Response;
 let fetchSpy: jest.SpiedFunction<typeof fetch>;
 
+/** The calls of the entry, without the challenge asked for again after them. */
 function asked(): RequestInit[] {
-  return fetchSpy.mock.calls.map(([, init]) => init ?? {});
+  return fetchSpy.mock.calls
+    .filter(([url]) => String(url).includes("/entries/"))
+    .map(([, init]) => init ?? {});
 }
 
 async function show(drawing: DrawingDetail, status: "in" | "out" = "in") {
@@ -106,30 +109,49 @@ afterEach(() => {
 test("it enters and withdraws at once", async () => {
   setContest({ account: ACCOUNT, contest: THEMED });
   await show(POST);
-  await fireEvent(screen.getByRole("switch", { name: NAME }), "valueChange", true);
+  await fireEvent.press(screen.getByRole("switch", { name: NAME }));
   await waitFor(() =>
-    expect(screen.getByRole("switch", { name: NAME }).props.value).toBe(true),
+    expect(
+      screen.getByRole("switch", { name: NAME }).props.accessibilityState.checked,
+    ).toBe(true),
   );
   expect(String(fetchSpy.mock.calls[0][0])).toBe(
     `${API}/contests/${THEMED.id}/entries/own-post`,
   );
   expect(asked()[0].method).toBe("PUT");
-  await fireEvent(screen.getByRole("switch", { name: NAME }), "valueChange", false);
+  await fireEvent.press(screen.getByRole("switch", { name: NAME }));
   await waitFor(() =>
-    expect(screen.getByRole("switch", { name: NAME }).props.value).toBe(false),
+    expect(
+      screen.getByRole("switch", { name: NAME }).props.accessibilityState.checked,
+    ).toBe(false),
   );
   expect(asked()[1].method).toBe("DELETE");
+});
+
+test("after an entry the challenge is asked for again: the card shows the new place", async () => {
+  setContest({ account: ACCOUNT, contest: THEMED });
+  const mine = { drawing_id: "own-post", rank: 1, reactions: 0 };
+  fetchSpy.mockImplementation(async (url) =>
+    String(url).endsWith("/contests/current")
+      ? Response.json({ ...THEMED, mine, entered: ["own-post"] })
+      : new Response(null, { status: 204 }),
+  );
+  await show(POST);
+  await fireEvent.press(screen.getByRole("switch", { name: NAME }));
+  await waitFor(() => expect(keptContest()?.contest.mine).toEqual(mine));
 });
 
 test("a refusal says why, and the switch stays", async () => {
   setContest({ account: ACCOUNT, contest: THEMED });
   answer = () => Response.json(apiError("contest_closed", "No."), { status: 409 });
   await show(POST);
-  await fireEvent(screen.getByRole("switch", { name: NAME }), "valueChange", true);
+  await fireEvent.press(screen.getByRole("switch", { name: NAME }));
   expect(
     await screen.findByText("This challenge takes no entries now."),
   ).toBeOnTheScreen();
-  expect(screen.getByRole("switch", { name: NAME }).props.value).toBe(false);
+  expect(
+    screen.getByRole("switch", { name: NAME }).props.accessibilityState.checked,
+  ).toBe(false);
 });
 
 test.each([

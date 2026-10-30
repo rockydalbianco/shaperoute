@@ -182,6 +182,26 @@ export async function refreshContest(
   }
 }
 
+/**
+ * The API took an entry or a withdrawal (TASK-343 part B): shown at once, and
+ * the challenge asked for again, because the first three, `mine` and how many
+ * take part change with it. Nothing is asked for a challenge not kept here.
+ */
+export function tellEntered(
+  baseUrl: string,
+  token: string,
+  contestId: string,
+  drawingId: string,
+  entered: boolean,
+  options: Options = {},
+): void {
+  markEntered(contestId, drawingId, entered);
+  const kept = keptContest();
+  if (kept !== null && kept.contest.id === contestId) {
+    void refreshContest(baseUrl, token, kept.account, options);
+  }
+}
+
 /** As `refreshContest`, once per account while the app is open: «Feed» is
  * built again after a drawing on the map, and asks nothing new. */
 export function askContestOnce(

@@ -1,7 +1,7 @@
 import { sessionEnded } from "../account/messages";
 import { type DrawingChoice, entryToSend, worthAgain } from "../api/drawings";
 import { entryProblem, setContestEntry } from "./contestApi";
-import { markEntered } from "./contestKept";
+import { tellEntered } from "./contestKept";
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
@@ -41,7 +41,7 @@ export async function sendEntry(
     options,
   );
   if (outcome.kind === "ok") {
-    markEntered(entry.contest, drawingId, entry.entered);
+    tellEntered(baseUrl, token, entry.contest, drawingId, entry.entered, options);
     return { kind: "done" };
   }
   if (sessionEnded(outcome)) {

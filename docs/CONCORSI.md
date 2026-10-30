@@ -442,7 +442,16 @@ delega dell'utente (2026-10-30):
 - **Sul post già pubblicato**: dal modulo di «My activities», che parte acceso
   se il disegno è fra gli `entered` dell'account. L'interruttore sul post aperto
   è `EnterOnPost.tsx`, si monta in `DrawingCard` dopo TASK-339 B.
-- **L'interruttore usa la sfida tenuta sul telefono**: chi non ha aperto «Feed»
-  né toccato una push da quando la sfida è aperta non lo vede ancora.
+- **L'interruttore usa la sfida tenuta sul telefono**: `ProfileLayer` la chiede
+  una volta per account appena c'è un accesso, così il modulo la conosce anche
+  senza aver aperto «Feed». Una sfida aperta mentre l'app è già aperta si vede
+  alla prossima apertura, o con un pull del Feed.
+- **L'interruttore è quello dell'app** (`SwitchRow`, come `StravaSwitch`, «On» o
+  «Off»), non quello del telefono: nel simulatore il tocco sul nativo accendeva
+  e non spegneva, e un ritiro così non si poteva fare (trovato nella prova del
+  2026-10-30).
+- **Dopo un'iscrizione o un ritiro** la sfida si richiede (`tellEntered`): i
+  primi tre, `mine` e quanti partecipano cambiano, e la scheda li mostra senza
+  pull.
 - **I testi** dicono «Monthly challenge», mai solo «Challenges» come la scheda di
   «Play»; nelle altre lingue «del mese» sta anche in «Past challenges».

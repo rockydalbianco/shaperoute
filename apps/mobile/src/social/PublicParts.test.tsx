@@ -217,8 +217,10 @@ describe("«Enter “{theme}”» (TASK-343 part B)", () => {
     const onChoice = jest.fn();
     await form(FOR_EVERYONE, onChoice);
     const name = "Enter “Animals”";
-    expect(screen.getByRole("switch", { name }).props.value).toBe(false);
-    await fireEvent(screen.getByRole("switch", { name }), "valueChange", true);
+    expect(screen.getByRole("switch", { name }).props.accessibilityState.checked).toBe(
+      false,
+    );
+    await fireEvent.press(screen.getByRole("switch", { name }));
     expect(onChoice).toHaveBeenLastCalledWith({
       ...FOR_EVERYONE,
       entry: { contest: THEME.id, entered: true },

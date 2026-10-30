@@ -161,16 +161,18 @@ describe("«Enter “{theme}”» on a run of «My activities» (TASK-343 part B
       [`PUT ${ENTRY}`]: () => new Response(null, { status: 204 }),
     });
     await render(<Row fetchFn={fetchFn} />);
-    await fireEvent(
-      await screen.findByRole("switch", { name: NAME }),
-      "valueChange",
-      true,
+    await fireEvent.press(await screen.findByRole("switch", { name: NAME }));
+    await waitFor(() =>
+      expect(names().slice(0, 3)).toEqual([
+        `GET ${DRAWING}`,
+        `PUT ${DRAWING}`,
+        `PUT ${ENTRY}`,
+      ]),
     );
     await waitFor(() =>
-      expect(names()).toEqual([`GET ${DRAWING}`, `PUT ${DRAWING}`, `PUT ${ENTRY}`]),
-    );
-    await waitFor(() =>
-      expect(screen.getByRole("switch", { name: NAME }).props.value).toBe(true),
+      expect(
+        screen.getByRole("switch", { name: NAME }).props.accessibilityState.checked,
+      ).toBe(true),
     );
   });
 
@@ -186,8 +188,8 @@ describe("«Enter “{theme}”» on a run of «My activities» (TASK-343 part B
     });
     await render(<Row fetchFn={fetchFn} />);
     const on = await screen.findByRole("switch", { name: NAME });
-    expect(on.props.value).toBe(true);
-    await fireEvent(on, "valueChange", false);
+    expect(on.props.accessibilityState.checked).toBe(true);
+    await fireEvent.press(on);
     await waitFor(() => expect(names()).toContain(`DELETE ${ENTRY}`));
   });
 
@@ -200,14 +202,12 @@ describe("«Enter “{theme}”» on a run of «My activities» (TASK-343 part B
         Response.json(apiError("not_entrant", "No."), { status: 409 }),
     });
     await render(<Row fetchFn={fetchFn} />);
-    await fireEvent(
-      await screen.findByRole("switch", { name: NAME }),
-      "valueChange",
-      true,
-    );
+    await fireEvent.press(await screen.findByRole("switch", { name: NAME }));
     expect(await screen.findByText(/This run cannot take part/)).toBeTruthy();
     await waitFor(() =>
-      expect(screen.getByRole("switch", { name: NAME }).props.value).toBe(false),
+      expect(
+        screen.getByRole("switch", { name: NAME }).props.accessibilityState.checked,
+      ).toBe(false),
     );
   });
 

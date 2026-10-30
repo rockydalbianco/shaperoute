@@ -18,6 +18,7 @@ import {
   openContestPage,
   useAskedContest,
 } from "../contest/contestDoor";
+import { askContestOnce } from "../contest/contestKept";
 import { ContestPageHost } from "../contest/ContestPage";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { t, tPlural } from "../i18n";
@@ -305,6 +306,14 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // notification (TASK-262): their profile over the app, «←» back to the
   // app as it was; the account's own, the fourth page (TASK-278 part B).
   const ownId = signedIn ? (state.session.user.public_id ?? null) : null;
+  // The contest for who signs in, once (TASK-343): the form of a run needs
+  // its theme and what they entered, and «Feed» may not have been opened.
+  const contestToken = signedIn ? state.session.token : null;
+  useEffect(() => {
+    if (contestToken !== null) {
+      void askContestOnce(apiUrl, contestToken, ownId);
+    }
+  }, [apiUrl, contestToken, ownId]);
   const { opened: drawingOpened, back: closeDrawing } = drawings;
   const openSomeone = useCallback(
     (person: Person) => {

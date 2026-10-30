@@ -173,6 +173,7 @@ apps/mobile/src/contest/sendEntry.ts              (nuovo)
 apps/mobile/src/contest/FeedContest.tsx
 apps/mobile/src/contest/contestKept.ts
 apps/mobile/src/contest/useClock.ts               (nuovo)
+apps/mobile/src/screens/ProfileLayerContest.test.tsx (nuovo)
 apps/mobile/src/contest/EnterOnPost.tsx           (nuovo)
 apps/mobile/src/social/DrawingCard.tsx            (una riga, dopo TASK-339 B, su parola del Coordinatore: non in questa PR)
 docs/CONCORSI.md
@@ -208,9 +209,34 @@ rispondono 404. I dettagli sono in `CONCORSI.md` §15.
 2. la riga che monta `EnterOnPost` in `DrawingCard`: dopo TASK-339 B, su parola
    del Coordinatore. Il componente ha i suoi test ma oggi nessuno lo mostra;
    sul post già pubblicato si iscrive e si ritira da «My activities»;
-3. il server con la migrazione 0039: lo decide l'utente, insieme a questa parte;
-4. mai provato su un simulatore né con un'API vera con un tema: solo test con
-   API finte.
+3. il server con la migrazione 0039: lo decide l'utente, insieme a questa parte.
+
+**Prova nel simulatore** (2026-10-30, chiesta dal Coordinatore; iPhone Air, Expo
+Go, API vera in locale su un database usa e getta):
+
+- **Con un tema** (API del branch, `open --theme`, sfida «Animals», due account):
+  la scheda del Feed ha il titolo; la pagina si apre con date, partecipanti,
+  premio, regolamento e galleria «Top» | «New»; un post aperto dalla galleria
+  torna alla pagina com'era, e «Start» non resta sotto la pagina. Da «My
+  activities» e dal modulo di fine corsa (corsa col GPS simulato) iscrizione e
+  ritiro arrivano all'API (`entered`, `entrants`, galleria letti dall'API).
+- **Col server di oggi** (API di c7a83347, migrazioni fino alla 0038, il
+  concorso senza tema aperto e prima di aprirlo): niente di nuovo. Prima del
+  concorso nessuna scheda; dopo «MuW contest», «How it works» e il regolamento
+  di prima; nessun interruttore nel modulo; nessuna richiesta di galleria o
+  archivio.
+
+**La prova ha trovato tre difetti, corretti**: l'interruttore nativo si accendeva
+e non si spegneva (ora è `SwitchRow`, con «On» e «Off», testi già approvati);
+il modulo non conosceva la sfida se «Feed» non era stato aperto (`ProfileLayer`
+la chiede all'accesso); dopo un'iscrizione la scheda restava vecchia fino al pull
+(`tellEntered`). I testi approvati non sono cambiati.
+
+**Non provato**: il tocco sulle tre push (Expo Go non riceve push: solo test) e
+l'interruttore sul post aperto, che non è montato. **Difetto di prima, non
+corretto qui**: il regolamento aperto dalla scheda del Feed sta sotto la barra
+di stato, perché il Pager azzera il margine in alto; col tema si apre dalla
+pagina e il problema non c'è.
 
 ## Fuori scope
 

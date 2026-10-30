@@ -19732,7 +19732,12 @@ sfida si riconosce solo da un `theme` leggibile, altrimenti è un concorso come
 prima. Sul post già pubblicato si iscrive e si ritira dal modulo di «My
 activities»; l'interruttore sul post aperto (`EnterOnPost`) è pronto e si monta
 in `DrawingCard` dopo TASK-339 B, su parola del Coordinatore. `FeedPost` non
-cambia: il suo «…» c'è solo sui post degli altri.
+cambia: il suo «…» c'è solo sui post degli altri. Dopo la prova nel simulatore
+(2026-10-30), sempre su delega: l'interruttore è quello dell'app e non il nativo
+(il tocco spegneva solo con un trascinamento), `ProfileLayer` chiede la sfida
+all'accesso (il modulo deve conoscerla senza «Feed»: una richiesta in più per
+ogni apertura con un account, un 404 finché il server non ha un concorso), e
+dopo un'iscrizione la sfida si richiede.
 
 **Conseguenze**: una migrazione; tre tipi di push e i loro testi; il
 regolamento ufficiale cambia e va riapprovato. «Challenge» è già una

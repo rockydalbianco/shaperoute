@@ -267,7 +267,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   privacy). Poi A (fino a 10
   foto in ordine e i layout, con un OTA), B (editor foto, 1.0.2), C (video,
   1.0.2, dopo TASK-336), D (rifiniture). Impronta iOS `83793e26` invariata
-  fino a B. File `tasks/TASK-348.md`.
+  fino a B. File `tasks/TASK-348.md`. Limite scelto dall'utente il
+  2026-10-30: 10 elementi col disegno. Parte A, API: #665 (migrazione 0041,
+  server non aggiornato); la parte app aspetta il via del Coordinatore.
 - **TASK-336 — Un video nei post: il video della corsa di MuW o uno
   proprio** (ADR-0292, proposta; richiesta dell'utente del 2026-10-29,
   approvata con «Yes, write it up»; numeri dal Coordinatore). Branch

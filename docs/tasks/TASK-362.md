@@ -94,7 +94,7 @@ Una alla volta, con le sue parole.
    le app già installate. Proposta: toglierla in un secondo tempo, col sì
    dell'utente, quando le versioni vecchie non contano più. TASK-356 non si
    tocca.
-   — *Risposta:* aperta.
+   — *Risposta:* «Sì, più avanti».
 
 ## Cosa fare
 

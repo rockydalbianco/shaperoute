@@ -59,12 +59,16 @@ Una alla volta, con le sue parole.
    — *Risposta:* «Sì, solo lì», poi cambiata dall'utente lo stesso giorno: «non
    farli sparire quando compaiono i nuovi post tienili tutti ed inventa anche
    passo medio calorie tutte le informazioni, aggiungi anche in canoa con delle
-   sbavature [...] ed anche in bici... tutti finti ma tienili nel feed». Da
-   decidere con l'utente se portano un'etichetta (segnalato il rischio di
-   post finti mescolati a quelli veri).
-5. **I nomi e i testi.** Proposta: «Tutti» e «Seguiti», con i messaggi degli
-   stati vuoti e «Retry», in cinque lingue. Testi esatti da approvare prima del
-   codice.
+   sbavature [...] ed anche in bici... tutti finti ma tienili nel feed».
+   Etichetta «MuW» proposta e rifiutata: «No, nessuna etichetta». L'utente sa
+   che post finti e senza etichetta si mescolano a quelli veri, e che può
+   creare problemi con le revisioni degli store e le norme UE: da controllare
+   prima della produzione. Un esempio ogni 5 post veri, solo in «Tutti». Dati,
+   bici e sbavature sono un task a parte, dopo le schede.
+5. **I nomi e i testi.** Proposta: «All» (già approvato) e «Following», con i
+   messaggi degli stati vuoti; «Try again» c'è già. La scheda vuole una chiave
+   propria: `Following` è già il pulsante, in italiano «Segui già». Testi
+   esatti da approvare prima del codice.
    — *Risposta:* aperta.
 6. **«Seguiti» senza account.** La proposta era una scheda che chiede il login;
    l'utente vuole solo «Tutti»: senza account il selettore non c'è, si vedono

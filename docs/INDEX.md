@@ -38,6 +38,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Le corse di gruppo, «Group runs», «I'm going» | `EVENTI.md`, `tasks/TASK-309.md` |
 | Attività da altre app (GPX, TCX, FIT), post di sole foto, «Imported» | `IMPORTAZIONI.md`, `tasks/TASK-312.md` |
 | Un video nei post: il video della corsa o uno proprio, la pagina nel Feed, `expo-video` | `tasks/TASK-336.md`, `DECISIONS.md` ADR-0292 e ADR-0289, `API.md` «Drawings» |
+| Il compositore del post: fino a 10 foto, video e disegno, i layout, l'editor | `tasks/TASK-348.md`, `DECISIONS.md` ADR-0301 e ADR-0292, `API.md` «Drawings» |
 | Disegnare a mano in «Draw» («Freehand»), «Edit the drawing» sulle figure proposte | `UI.md`, `tasks/TASK-320.md` |
 | A mano solo sulla mappa: la linea aperta, «Erase», «Edit the drawing» sulla mappa, niente per le emoji | `UI.md` «Disegnare sulla mappa», `tasks/TASK-331.md`, `DECISIONS.md` ADR-0288 |
 | Il disegno libero ancorato alle strade: map matching per tratto col nostro motore, fantasma e punteggio, strumenti da professionista, guide | `tasks/TASK-347.md`, `DECISIONS.md` ADR-0300, `ROUTE_ENGINE.md` §4 («Il disegno ancorato e i tratti») e §5, `API.md` («Stroke matches») |

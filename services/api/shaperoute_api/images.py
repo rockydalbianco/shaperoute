@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import binascii
 import io
+import logging
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
@@ -53,6 +54,8 @@ from shaperoute_api.schemas import (
     RouteRequestBody,
     RouteResultBody,
 )
+
+log = logging.getLogger(__name__)
 
 # What an image route is called in names and messages, like "heart".
 IMAGE_NAME = "image"
@@ -352,18 +355,25 @@ def placed_outline_of(plan: Plan, request: AnyRequest) -> list[list[LatLon]]:
     """The drawing as the engine placed it, as RouteResult.placed_outline of
     the contract (TASK-347): where an anchored plan traced it, or where the
     search put the chosen route (`plan.search.best.shape`); one line per
-    letter or piece with the pen up. Empty from the archive, and on the
-    water: there is no plan, or no roads."""
+    letter or piece with the pen up. Empty from the archive, on the water
+    (there is no plan, or no roads), and from a plan that does not say: the
+    ghost is a help for the eye, never a reason for a route to fail."""
     if isinstance(plan, AnchoredPlan):
-        placed = plan.placed
+        placed: Sequence[LatLon] = plan.placed
     elif plan.search is not None:
-        placed = plan.search.best.shape
+        placed = getattr(getattr(plan.search, "best", None), "shape", None) or []
     else:
         return []
-    word = _word_of(request)
-    if word is not None and word.pen_up and len(placed) != len(word.points):
-        word = None  # placed otherwise than as the letters: one line
-    return placed_lines(word, placed)
+    if not placed:
+        return []
+    try:
+        word = _word_of(request)
+        if word is not None and word.pen_up and len(placed) != len(word.points):
+            word = None  # placed otherwise than as the letters: one line
+        return placed_lines(word, placed)
+    except Exception:
+        log.warning("the placed outline of %s is left out", request.name, exc_info=True)
+        return []
 
 
 def placed_outlines(plan: Plan, request: AnyRequest) -> list[list[list[LatLon]]]:

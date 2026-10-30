@@ -20157,9 +20157,10 @@ Nessun testo nuovo, nessuna dipendenza, niente di nativo, server non toccato.
 **Stato**: Proposta · 2026-10-30 · TASK-351. La richiesta è dell'utente
 (2026-10-30: «fai anche lo restyle del video post corsa con questo stile
 aggiungendo la mappa sotto, magari la mappa in 3d come strava... e la
-possibilità di avere 3 stili per il video»); i nomi degli stili e la
-scelta sulla privacy (la mappa nel video mostra dove si è corso) sono
-dell'utente, da chiedere (`tasks/TASK-351.md`, scelte 1 e 5); il giallo
+possibilità di avere 3 stili per il video»); la scelta sulla privacy (la
+mappa nel video mostra dove si è corso) e i nomi degli stili sono
+dell'utente («Sì, va bene» e «Sì, questi», 2026-10-30; `tasks/TASK-351.md`,
+scelte 5 e 1); il giallo
 che sparisce, il 3D sulla mappa scura, la camera che gira e il credito
 sono la raccomandazione, accettata su delega dell'utente del 2026-10-29,
 da rivedere; il giallo come riserva senza mappa è una condizione del
@@ -20247,7 +20248,8 @@ l'app in Expo Go, in `tasks/TASK-351.md`; sul telefono da rifare.
    nemmeno lo scatto inclinato regge, la parte D cade, con i numeri.
 8. **La privacy**: la mappa nel video mostra dove si è corso, e il file
    esce dall'app dal foglio di condivisione; è una scelta esplicita
-   dell'utente (TASK-351, scelta 5), prima del codice. Le estremità
+   dell'utente, fatta prima del codice (TASK-351, scelta 5, 2026-10-30:
+   «Sì, va bene»). Le estremità
    restano tagliate di 200 m come nel post e nel Feed, e il taglio è
    verificato sulla linea del video; la regola è una sola per ogni corsa,
    anche «Only me» o non salvata: il video lo fa e lo manda solo chi ha
@@ -20308,8 +20310,8 @@ posizione non arrotondata, cosa che «Your position» non dice.
 **Decisione** (proposta):
 
 1. **Due parti.** A solo app, piccola, senza `FeedScreen.tsx`; B con
-   l'API (campi e `filter` facoltativi). I conteggi non si chiedono card per
-   card, e i filtri non si fanno sul telefono: le liste sarebbero incomplete.
+   l'API (campi facoltativi). I conteggi non si chiedono card per card. I
+   filtri li sostituiscono le schede di TASK-362 (scelta dell'utente).
 2. **Dove il brief e ADR-0293 divergono decide l'utente**, voce per voce: ha
    scelto ogni volta il canvas (avatar grigio, segni neutri, riga di testo).
 3. **Il contatore delle slide è di TASK-348 A**, che riscrive il carosello

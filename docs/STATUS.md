@@ -175,9 +175,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   e la fattibilità del 3D misurata nel simulatore e nel WebView nascosto
   dell'app (la mappa può stare nella pagina del video: uno scatto a
   `idle`, la linea sopra; la camera che gira costa una resa per
-  fotogramma; sul telefono da rimisurare con l'utente). Aspettano
-  l'utente: la scelta sulla privacy (la mappa nel video mostra dove si è
-  corso) e i nomi degli stili nelle cinque lingue. Senza mappa il video
+  fotogramma; sul telefono da rimisurare con l'utente). La scelta
+  sulla privacy (la mappa nel video mostra dove si è corso) è dell'utente
+  («Sì, va bene», 2026-10-30); i nomi degli stili sono
+  suoi («Sì, questi», 2026-10-30). La B è la PR #679. Senza mappa il video
   esce sul giallo di oggi (condizione del Coordinatore). Poi B (la mappa
   sotto e il look premium, Night), C (i tre stili e la riga «Style»), D
   (il 3D), una PR ciascuna da `main` con la #658 e col via del
@@ -222,6 +223,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   merge resta una riga: montare `EnterOnPost` in `DrawingCard`, dopo TASK-339 B e
   su parola del Coordinatore.
   Il server con la 0039 lo decide l'utente, insieme a questa parte.
+  **Parte B in `main` dal 2026-10-30** con la #677 (`4faeceb2`, 23:16 CET,
+  mergiata al verde: tutte le 557 suite dell'app verdi anche nella copia
+  pulita). Poi C.
 - **TASK-343 — Le sfide del mese: un tema sul concorso, l'iscrizione,
   la galleria, l'archivio** (ADR-0296, estende ADR-0260; richiesta
   dell'utente del 2026-10-29, proposta approvata con «Yes, as proposed»;

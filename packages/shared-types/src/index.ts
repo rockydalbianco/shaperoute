@@ -311,6 +311,16 @@ export const API_ERROR_CODES = [
   "comment_rejected",
   /** No contest open, nor one closed less than a week ago (TASK-299). */
   "no_contest",
+  /**
+   * An entry in a monthly challenge, 409 (TASK-343): the contest takes no
+   * entries now (ended, closed, or without a theme).
+   */
+  "contest_closed",
+  /**
+   * An entry in a monthly challenge, 409 (TASK-343): the drawing cannot take
+   * part (another's, not for everyone, imported, outside the period, hidden).
+   */
+  "not_entrant",
   /** «Send to Strava» of a run added from another app's file, 409 (TASK-312). */
   "imported_run",
   /**
@@ -1572,6 +1582,90 @@ export interface Contest {
   top: ContestEntry[];
   mine?: ContestMine | null;
   winner: ContestWinner | null;
+}
+
+// --- The monthly challenges (TASK-343, ADR-0296; docs/CONCORSI.md §15) ---
+
+/** A theme in one language. */
+export interface ContestThemeText {
+  /** 1 to 60 characters. */
+  title: string;
+  /** 1 to 500 characters. */
+  description: string;
+}
+
+/**
+ * The theme of a monthly challenge, by language: the app shows its own,
+ * English when it is missing.
+ */
+export interface ContestTheme {
+  en: ContestThemeText;
+  de?: ContestThemeText | null;
+  it?: ContestThemeText | null;
+  es?: ContestThemeText | null;
+  fr?: ContestThemeText | null;
+}
+
+/**
+ * GET /contests/current for a monthly challenge: a `Contest` with its theme.
+ * Only the drawings entered take part, so `top`, `mine` and `winner` are of
+ * those. `entrants` counts the accounts with a drawing that takes part;
+ * `entered`, only with a token, the drawings of who asks entered, whether
+ * they still take part or not. A contest without a theme has none of these
+ * three fields.
+ */
+export interface ThemedContest extends Contest {
+  theme: ContestTheme;
+  entrants: number;
+  entered?: string[];
+}
+
+/** The orders of the gallery: by place, or the latest published first. */
+export type ContestGalleryOrder = "top" | "new";
+
+/**
+ * GET /contests/{id}/entries?order=top|new&cursor=: a page of 30 of the
+ * whole standings of a contest. With a token a post across a block with who
+ * asks is left out, and the others keep their `rank`.
+ */
+export interface ContestEntriesPage {
+  entries: ContestEntry[];
+  /** The `cursor` of the next page, of the same order; null on the last. */
+  next: string | null;
+}
+
+/** A contest closed, in the archive. */
+export interface PastContest {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  closed_at: string;
+  /** Null for a contest without a theme. */
+  theme: ContestTheme | null;
+  entrants: number;
+  /** The first three, as in `Contest`. */
+  top: ContestEntry[];
+  winner: ContestWinner;
+}
+
+/** GET /contests?state=closed&cursor=: a page of 10, the latest closed first. */
+export interface PastContestsPage {
+  contests: PastContest[];
+  next: string | null;
+}
+
+/**
+ * The push notifications of a monthly challenge, beside `PushKind`: a new
+ * one opened, its last 3 days, its results. Their `data` is
+ * `{ kind, contest_id }`, and the app opens the page of the challenge. The
+ * winner still hears `contest_won`.
+ */
+export type ContestPushKind = "contest_open" | "contest_last_days" | "contest_results";
+
+/** The `data` of a monthly challenge's notification. */
+export interface ContestPushData {
+  kind: ContestPushKind;
+  contest_id: string;
 }
 
 /** The longest message «Send feedback» takes (TASK-308). */

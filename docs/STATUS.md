@@ -183,7 +183,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   challenges», interruttore nel modulo di pubblicazione). Disegni per
   account: nessun limite (scelta dell'utente del 2026-10-30, «No limit»).
   Testi, regolamento, server e push con il sì dell'utente. File
-  `tasks/TASK-343.md`.
+  `tasks/TASK-343.md`. **A in `main`** (#657, `5303a198`, 2026-10-30, migrazione
+  0039): **il server non è aggiornato**, serve la 0039 e lo decide l'utente.
+  I testi delle tre push: sì dell'autopilota, «accettati su delega
+  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B da
+  fare**, i file prima al Coordinatore (TASK-339 B).
 - **TASK-341 — I badge sul profilo: primo disegno, 10 disegni, 30 km**
   (ADR-0294; richiesta dell'utente del 2026-10-29, proposta approvata con
   «Yes, as proposed»; numeri dal Coordinatore). Branch

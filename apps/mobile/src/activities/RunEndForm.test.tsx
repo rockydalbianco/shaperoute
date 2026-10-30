@@ -4,6 +4,11 @@ import { NOT_CHOSEN } from "../api/drawings";
 import type { PickedDrawingPhoto } from "../social/pickDrawingPhoto";
 import { ONLY_ME_PHOTOS } from "../social/PublicParts";
 import {
+  forgetVisibilityOf,
+  loadVisibility,
+  saveVisibility,
+} from "../social/visibilityChoice";
+import {
   ActivitiesContext,
   type ActivitiesDoor,
   useActivitiesDoor,
@@ -13,7 +18,37 @@ import { RunEnd } from "./RunEnd";
 // The form at the end of a run (TASK-208): «Only me» and the sport of
 // «Settings» at every run; what is chosen goes with «Save», the photos too.
 
-jest.mock("expo-file-system");
+jest.mock("expo-file-system", () => {
+  const files = new Map<string, string>();
+  class File {
+    uri: string;
+    constructor(directory: { uri: string }, name: string) {
+      this.uri = `${directory.uri}${name}`;
+    }
+    get exists(): boolean {
+      return files.has(this.uri);
+    }
+    create(): void {
+      files.set(this.uri, "");
+    }
+    write(text: string): void {
+      files.set(this.uri, text);
+    }
+    textSync(): string {
+      return files.get(this.uri) ?? "";
+    }
+    delete(): void {
+      files.delete(this.uri);
+    }
+  }
+  return {
+    File,
+    Paths: {
+      document: { uri: "file:///documents/" },
+      cache: { uri: "file:///cache/" },
+    },
+  };
+});
 jest.mock(
   "react-native-safe-area-context",
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
@@ -29,11 +64,19 @@ const picked = jest.fn(async (): Promise<PickedDrawingPhoto> => ({
   height: 810,
 }));
 
-function WithDoor({ door }: { door: Partial<ActivitiesDoor> }) {
+function WithDoor({
+  door,
+  onSave = () => true,
+  imported,
+}: {
+  door: Partial<ActivitiesDoor>;
+  onSave?: () => boolean;
+  imported?: { sport: null };
+}) {
   const nothing = useActivitiesDoor();
   return (
     <ActivitiesContext.Provider value={{ ...nothing, signedIn: true, ...door }}>
-      <RunEnd onSave={() => true} onDiscard={jest.fn()} pick={picked} />
+      <RunEnd onSave={onSave} onDiscard={jest.fn()} pick={picked} imported={imported} />
     </ActivitiesContext.Provider>
   );
 }
@@ -46,8 +89,77 @@ async function save() {
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
 }
 
+const OWNER = 7;
+const EVERY_MEMBER =
+  "Every member sees it in your profile, without the first and last 200 m.";
+
 beforeEach(() => {
   mockSport = "run";
+  forgetVisibilityOf(OWNER);
+});
+
+// «Who can see it» starts from the last choice saved (TASK-352, ADR-0304).
+
+test("«Everyone» saved once: the next run starts there, and says so over «Save»", async () => {
+  const door = { ...spies(), owner: OWNER };
+  const first = await render(<WithDoor door={door} />);
+  expect(screen.getByRole("radio", { name: "Only me", checked: true })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("radio", { name: "Everyone" }));
+  // Chosen here, in the form: its words under the chips are enough.
+  expect(screen.getAllByText(EVERY_MEMBER)).toHaveLength(1);
+  await save();
+  await first.unmount();
+
+  const next = { ...spies(), owner: OWNER };
+  await render(<WithDoor door={next} />);
+  expect(screen.getByRole("radio", { name: "Everyone", checked: true })).toBeTruthy();
+  expect(screen.getAllByText(EVERY_MEMBER)).toHaveLength(2);
+  // Nothing goes until «Save»: closing here publishes nothing.
+  expect(next.toDrawing).not.toHaveBeenCalled();
+  await save();
+  expect(next.toDrawing).toHaveBeenCalledWith({
+    ...NOT_CHOSEN,
+    visibility: "everyone",
+  });
+});
+
+test("taken off, it stays off for the next run", async () => {
+  saveVisibility(OWNER, "everyone");
+  const door = { ...spies(), owner: OWNER };
+  const first = await render(<WithDoor door={door} />);
+  await fireEvent.press(screen.getByRole("radio", { name: "Only me" }));
+  expect(screen.queryByText(EVERY_MEMBER)).toBeNull();
+  await save();
+  expect(door.toDrawing).toHaveBeenCalledWith(null);
+  await first.unmount();
+  await render(<WithDoor door={{ ...spies(), owner: OWNER }} />);
+  expect(screen.getByRole("radio", { name: "Only me", checked: true })).toBeTruthy();
+});
+
+test("only a run kept remembers: not a touch, nor a «Save» that failed", async () => {
+  const door = { ...spies(), owner: OWNER };
+  await render(<WithDoor door={door} onSave={() => false} />);
+  await fireEvent.press(screen.getByRole("radio", { name: "Everyone" }));
+  expect(loadVisibility(OWNER)).toBe("only_me");
+  await save();
+  expect(loadVisibility(OWNER)).toBe("only_me");
+});
+
+test("an activity from a file starts «Only me» and leaves the choice alone", async () => {
+  saveVisibility(OWNER, "everyone");
+  const door = { ...spies(), owner: OWNER };
+  await render(<WithDoor door={door} imported={{ sport: null }} />);
+  expect(screen.getByRole("radio", { name: "Only me", checked: true })).toBeTruthy();
+  expect(screen.queryByText(EVERY_MEMBER)).toBeNull();
+  await save();
+  expect(door.toDrawing).toHaveBeenCalledWith(null);
+  expect(loadVisibility(OWNER)).toBe("everyone");
+});
+
+test("another account does not start from this one's choice", async () => {
+  saveVisibility(OWNER, "everyone");
+  await render(<WithDoor door={{ ...spies(), owner: OWNER + 1 }} />);
+  expect(screen.getByRole("radio", { name: "Only me", checked: true })).toBeTruthy();
 });
 
 test("nothing chosen: «Only me», the run a run, and «Save» sends no drawing", async () => {

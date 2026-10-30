@@ -900,8 +900,14 @@ export type Visibility = (typeof VISIBILITIES)[number];
 /** The limits of a drawing, checked by the API too (TASK-208). */
 export const DRAWING_DESCRIPTION_MAX_LENGTH = 500;
 export const DRAWING_MAX_TAGS = 10;
-/** Besides the map, the first picture of a drawing. */
+/**
+ * Besides the map, what the app offers today. It goes to
+ * DRAWING_PHOTO_PLACES with TASK-348's app part: a phone on a server not yet
+ * updated must not ask for a place the server refuses.
+ */
 export const DRAWING_MAX_PHOTOS = 3;
+/** The places of the photos of a drawing on the API (TASK-348, ADR-0301). */
+export const DRAWING_PHOTO_PLACES = 10;
 
 /**
  * PUT /me/activities/{key}/drawing (TASK-117, TASK-208): a saved run's
@@ -933,6 +939,16 @@ export interface DrawingPhotoRequest {
   image: string;
 }
 
+/**
+ * PUT /me/activities/{key}/drawing/order (TASK-348, ADR-0301): where each
+ * stands in the post. The map once, `drawing`, and the photos by place,
+ * `photo:2`, each once; it may name a photo not sent yet. The answer is a
+ * MyDrawing.
+ */
+export interface DrawingOrderRequest {
+  order: string[];
+}
+
 /** A member tagged in a drawing: never the email. */
 export interface DrawingTag {
   public_id: string;
@@ -941,7 +957,10 @@ export interface DrawingTag {
 
 /** A photo of a drawing, besides its map (TASK-208). */
 export interface DrawingPhoto {
-  /** Its place, 1 to DRAWING_MAX_PHOTOS: a place emptied stays empty. */
+  /**
+   * Its place, 1 to DRAWING_PHOTO_PLACES: a place emptied stays empty, and a
+   * place says which photo, not where it stands (`order`).
+   */
   n: number;
   /** A JPEG on the API, read with the token; it changes with the photo. */
   url: string;
@@ -971,6 +990,12 @@ export interface MyDrawing {
   source?: RunSource;
   tags?: DrawingTag[];
   photos?: DrawingPhoto[];
+  /**
+   * The post's order, the map among the photos: `drawing`, `photo:2`
+   * (TASK-348, ADR-0301); `photos` comes in it. Null or missing: never
+   * ordered or an older server, the map first and the photos by place.
+   */
+  order?: string[] | null;
 }
 
 /** GET /me/drawings: the runs with a title or made public, latest first. */
@@ -1013,6 +1038,12 @@ interface DrawingFields {
   source?: RunSource;
   tags?: DrawingTag[];
   photos?: DrawingPhoto[];
+  /**
+   * The post's order, the map among the photos: `drawing`, `photo:2`
+   * (TASK-348, ADR-0301); `photos` comes in it. Null or missing: never
+   * ordered or an older server, the map first and the photos by place.
+   */
+  order?: string[] | null;
   /**
    * How far the planned route's shape is turned, as RouteResult.rotation_deg
    * (TASK-232, ADR-0195): the drawing is shown turned back, so it reads

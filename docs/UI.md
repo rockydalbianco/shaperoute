@@ -915,6 +915,13 @@ percorso (libera o importata da un'altra app), un post di sole foto, una
 forma che l'app non
 conosce, né con «Paddle». Nessun testo nuovo.
 
+**Su un disegno, la traccia dov'è** (TASK-346, ADR-0299, scelta
+dell'utente del 2026-10-29, «Traccia dov'è»): sulla scheda di un disegno di
+un membro la traccia corsa non va più nel mezzo della partenza di «Draw»:
+resta **dove è stata corsa e grande com'è** (dentro le distanze di
+«Draw»), e «Draw route» parte dal suo primo punto. Per portarla vicino a
+sé c'è «Draw it near me». La scheda di «Explore» resta come sopra.
+
 **I commenti di un disegno** (TASK-120, ADR-0175, scelta dell'utente del
 2026-10-03: subito sotto le corse vere, non sugli esempi di «Feed»): nella
 scheda di un disegno aperto, fra i numeri e «Back to the profile», un
@@ -2570,6 +2577,11 @@ perché non serve a nulla»; né per una parola, né sull'acqua. Il percorso di
 un disegno sulla mappa si chiama «Drawing» («Disegno»), come quello della
 tavola.
 
+Dal TASK-346 (ADR-0299) la scheda di un disegno di un membro mette la sua
+traccia sulla mappa dove è stata corsa e alla sua grandezza, non nel mezzo
+della partenza di «Draw»: l'utente il 2026-10-29, «devo poter modificare la
+traccia sulla mappa, non il disegno in sé».
+
 Quello che segue è la tavola del TASK-320, tolta dal TASK-331: resta come
 storia delle scelte approvate allora.
 
@@ -3570,8 +3582,12 @@ mostra le lettere unite da linee dritte sulla base.
   5. **«Activity»**: «Run», «Bike», «Paddle», **scelta in partenza dallo
      sport di «Settings»**; va anche a Strava come tipo (`Run`, `Ride`,
      `StandUpPaddling`); non cambia il punteggio;
-  6. **«Who can see it»**: «Everyone», «Followers», «Only me», **«Only me»
-     a ogni corsa** (scelta dell'utente: non ricorda la volta prima); sotto,
+  6. **«Who can see it»**: «Everyone», «Followers», «Only me». **Parte da
+     «Only me» finché l'account non salva un'altra scelta, poi dall'ultima
+     salvata** (scelta dell'utente, ADR-0304; una per account, sul telefono;
+     le attività da file partono sempre da «Only me» e non la cambiano). Se
+     parte da «Everyone» o «Followers», le parole della scelta stanno anche
+     sopra «Save», perché il modulo scorre; sotto,
      con «Everyone», «Every member sees it in your profile, without the
      first and last 200 m.», con «Followers» «Your followers see it in
      your profile, without the first and last 200 m.»; con «Only me» e
@@ -4216,8 +4232,8 @@ c'è anche l'errore.
   `MuW-run.mp4`.
 - **Un disegno che altri vedono** (TASK-117, TASK-208): una corsa diventa
   visibile agli altri iscritti **solo con «Everyone» o «Followers»**
-  scelto dall'utente, a fine corsa o su una corsa aperta; «Only me» a ogni
-  corsa. Il telefono manda all'API la chiave della corsa, il titolo, la
+  scelto dall'utente, a fine corsa o su una corsa aperta; a fine corsa
+  parte da «Only me», poi dall'ultima scelta salvata (ADR-0304). Il telefono manda all'API la chiave della corsa, il titolo, la
   descrizione, l'attività, i `public_id` dei taggati e «Who can see it»;
   la traccia la taglia l'API (mai i primi e gli ultimi 200 m, mai il
   percorso pianificato né gli orari, ADR-0159). Senza rete la scelta

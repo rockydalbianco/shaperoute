@@ -4550,6 +4550,10 @@ corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
   (ADR-0027).
 - **TASK-001** — Repository pubblico, `main` protetto da PR obbligatoria.
 
+- **CI** — TASK-349 (2026-10-30): il job `api` ha 40 minuti invece di 25,
+  perché con molte PR aperte veniva cancellato senza test falliti. File
+  `tasks/TASK-349.md`.
+
 ## Bloccato
 
 Niente.

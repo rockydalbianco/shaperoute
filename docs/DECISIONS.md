@@ -19895,3 +19895,88 @@ Togliere «Edit the drawing» anche dalle schede: non chiesto.
 **Conseguenze**: escono `MapDrawButton.tsx` ed `EditDrawingButton.tsx`;
 `RouteChoice` prende `onFreehand` al posto di `underKinds`. Niente cambia
 nel contratto, nell'API, nel motore, nella privacy e nel nativo.
+
+---
+
+## ADR-0301 — Il compositore del post: fino a 10 elementi in ordine, i layout appiattiti a «Publish», l'editor nativo dalla 1.0.2
+
+**Stato**: Proposta · 2026-10-30 · TASK-348. La richiesta è dell'utente
+(2026-10-30, «Vai con la proposta»); le scelte di prodotto (quanti video,
+i layout, il disegno spostabile, appiattire, cosa c'è nell'editor, testi e
+privacy) le ha fatte l'utente il 2026-10-30 e sono in TASK-348; i punti
+tecnici sono decisi dall'agente su delega dell'utente. Numeri dati dal
+Coordinatore. Estende ADR-0170 (le foto dei post), ADR-0275 (la striscia
+del Feed) e ADR-0292 (il video nei post); usa ADR-0254 (il video della
+corsa).
+
+**Contesto**: l'utente vuole mettere in primo piano le sue foto e i suoi
+video, con il disegno GPS come secondo piano, in un post a carosello fino a
+10 elementi riordinabili, con un editor foto e video integrato. Oggi un
+post ha la mappa e al più 3 foto in posti fissi (`DRAWING_MAX_PHOTOS`); il
+video nei post (ADR-0292) è uno solo e arriva con `expo-video` nella 1.0.2.
+L'app non ha gesti nativi né una libreria grafica; la 1.0.1 tiene
+l'impronta iOS `83793e26`.
+
+**Decisione** (proposta):
+
+1. Un post è una lista ordinata di elementi, al più 10: il disegno (sempre
+   uno, la mappa viva), foto, e al più 3 video tra propri e video della
+   corsa (scelta dell'utente, «Sì, al più 3»; vedi «ADR-0292, aggiunta»).
+2. Le modifiche sono non distruttive (un JSON sul telefono accanto
+   all'originale) fino a «Publish», che **appiattisce**: JPEG 1080 × 1350
+   per le foto, MP4 nei limiti di ADR-0292 per i video. Il server riceve
+   file normali e non conosce l'editor.
+3. Il layout è una funzione pura, la stessa per anteprima ed esportazione.
+   Il disegno dentro la foto è sempre la linea già tagliata del Feed: una
+   foto appiattita non si può tagliare dopo.
+4. API: fino a 10 foto e un ordine riscrivibile; un'app vecchia vede le
+   foto in ordine.
+5. Parte A via OTA senza dipendenze nuove (`PanResponder` + `Animated`,
+   `react-native-view-shot`); dalla 1.0.2 `react-native-gesture-handler`,
+   `react-native-reanimated`, `@shopify/react-native-skia`, `expo-video` e
+   un modulo Expo nostro per esportare i video (AVFoundation, Media3
+   Transformer), ognuno col sì dell'utente.
+6. Scartati ffmpeg-kit (ritirato, GPL, peso) e WebCodecs nella WebView per i
+   video dell'utente (demuxer, lentezza, Android).
+
+**Conseguenze**: un post pesa fino a circa 2,5 MB di foto invece di 0,75;
+più video per post riempiono prima il tetto di ADR-0292 (stima in «ADR-0292,
+aggiunta»). `FeedPost.tsx`, `PublicParts.tsx` e `drawingsDoor.ts`
+sono anche di TASK-336: le parti si accordano con quella sessione.
+
+---
+
+## ADR-0292, aggiunta — Fino a 3 video per post: il tetto resta, si raggiunge prima
+
+**Stato**: Proposta · 2026-10-30 · TASK-348, ADR-0301. Scelta dell'utente
+del 2026-10-30: «Sì, al più 3». Le altre regole di ADR-0292 e ADR-0289 non
+cambiano; la modifica esplicita l'ha chiesta il Coordinatore.
+
+**Decisione** (cambia i punti 1 e 13):
+
+1. **Punto 1**: al posto di un video per post, **al più 3**, propri o il
+   video della corsa (che conta come uno). Ognuno resta nei limiti del
+   punto 11: 30 s, 40 MB, 960 × 540 sull'iPhone.
+2. **Punto 13**, la stima per 1000 iscritti, stesse ipotesi e video medio
+   di 7 MB:
+
+   | Ipotesi | Post con video a settimana | Al mese, 1 video (oggi) | Al mese, 1,5 video | Al mese, 3 video | In un anno, 3 video |
+   |---|---|---|---|---|---|
+   | Bassa | 50 | 1,5 GB | 2,3 GB | 4,5 GB | 54 GB |
+   | Media | 125 | 3,8 GB | 5,7 GB | 11,4 GB | 135 GB |
+   | Alta | 667 | 20 GB | 30 GB | 60 GB | 720 GB |
+
+   «3 video» è il caso peggiore, con ogni post che arriva al massimo; la
+   media vera sta in mezzo, e 1,5 è un'ipotesi. Con l'ipotesi media il tetto
+   di 15 GB si raggiunge in **5–10 settimane** invece che in circa quattro
+   mesi.
+3. **Il tetto resta 15 GB**, scelta dell'utente («Server disk, 15 GB cap»),
+   e resta l'avviso del log all'80 %: arriva prima, e con lui la scelta di
+   allargare. Lo spazio libero misurato il 2026-10-29 (57 GB su `/`) non
+   cambia il conto del punto 13.
+4. **Il contratto**: un video per post non è più una riga per disegno e un
+   solo percorso. La parte che arriva prima in `main` tra TASK-336 A e
+   TASK-348 C dà a ogni video il suo posto; l'ordine lo decide il
+   Coordinatore. Finché TASK-348 C non c'è, l'app ne manda uno.
+
+---

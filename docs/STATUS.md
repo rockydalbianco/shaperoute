@@ -214,6 +214,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `cardTitle` e i nomi medium, `Tap` al posto dell'opacità, `Hairline`
   prima delle azioni, la distanza delle schede di «Explore» in `display`;
   prima/dopo in `tasks/TASK-339/b-*.jpg`. Poi C.
+  **Parte B in `main` dal 2026-10-30** con la #677 (`4faeceb2`, 23:16 CET,
+  mergiata al verde: tutte le 557 suite dell'app verdi anche nella copia
+  pulita). Poi C.
 - **TASK-361 — «Draw» in tre secondi** (ADR-0307; richiesta dell'utente
   del 2026-10-30; numeri dal Coordinatore). Un solo giallo («Run without a route» con contorno e 🏃),
   la via della partenza, la griglia a due righe, la forma in scala, mezzo

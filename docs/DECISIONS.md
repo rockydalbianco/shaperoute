@@ -19885,7 +19885,8 @@ l'impronta iOS `83793e26`.
 **Decisione** (proposta):
 
 1. Un post è una lista ordinata di elementi, al più 10: il disegno (sempre
-   uno, la mappa viva), foto, video, il video della corsa.
+   uno, la mappa viva), foto, e al più 3 video tra propri e video della
+   corsa (scelta dell'utente, «Sì, al più 3»; vedi «ADR-0292, aggiunta»).
 2. Le modifiche sono non distruttive (un JSON sul telefono accanto
    all'originale) fino a «Publish», che **appiattisce**: JPEG 1080 × 1350
    per le foto, MP4 nei limiti di ADR-0292 per i video. Il server riceve
@@ -19902,8 +19903,43 @@ l'impronta iOS `83793e26`.
    video dell'utente (demuxer, lentezza, Android).
 
 **Conseguenze**: un post pesa fino a circa 2,5 MB di foto invece di 0,75;
-più video per post riempiono prima il tetto di ADR-0292, da ricalcolare se
-l'utente li vuole. `FeedPost.tsx`, `PublicParts.tsx` e `drawingsDoor.ts`
+più video per post riempiono prima il tetto di ADR-0292 (stima in «ADR-0292,
+aggiunta»). `FeedPost.tsx`, `PublicParts.tsx` e `drawingsDoor.ts`
 sono anche di TASK-336: le parti si accordano con quella sessione.
+
+---
+
+## ADR-0292, aggiunta — Fino a 3 video per post: il tetto resta, si raggiunge prima
+
+**Stato**: Proposta · 2026-10-30 · TASK-348, ADR-0301. Scelta dell'utente
+del 2026-10-30: «Sì, al più 3». Le altre regole di ADR-0292 e ADR-0289 non
+cambiano; la modifica esplicita l'ha chiesta il Coordinatore.
+
+**Decisione** (cambia i punti 1 e 13):
+
+1. **Punto 1**: al posto di un video per post, **al più 3**, propri o il
+   video della corsa (che conta come uno). Ognuno resta nei limiti del
+   punto 11: 30 s, 40 MB, 960 × 540 sull'iPhone.
+2. **Punto 13**, la stima per 1000 iscritti, stesse ipotesi e video medio
+   di 7 MB:
+
+   | Ipotesi | Post con video a settimana | Al mese, 1 video (oggi) | Al mese, 1,5 video | Al mese, 3 video | In un anno, 3 video |
+   |---|---|---|---|---|---|
+   | Bassa | 50 | 1,5 GB | 2,3 GB | 4,5 GB | 54 GB |
+   | Media | 125 | 3,8 GB | 5,7 GB | 11,4 GB | 135 GB |
+   | Alta | 667 | 20 GB | 30 GB | 60 GB | 720 GB |
+
+   «3 video» è il caso peggiore, con ogni post che arriva al massimo; la
+   media vera sta in mezzo, e 1,5 è un'ipotesi. Con l'ipotesi media il tetto
+   di 15 GB si raggiunge in **5–10 settimane** invece che in circa quattro
+   mesi.
+3. **Il tetto resta 15 GB**, scelta dell'utente («Server disk, 15 GB cap»),
+   e resta l'avviso del log all'80 %: arriva prima, e con lui la scelta di
+   allargare. Lo spazio libero misurato il 2026-10-29 (57 GB su `/`) non
+   cambia il conto del punto 13.
+4. **Il contratto**: un video per post non è più una riga per disegno e un
+   solo percorso. La parte che arriva prima in `main` tra TASK-336 A e
+   TASK-348 C dà a ogni video il suo posto; l'ordine lo decide il
+   Coordinatore. Finché TASK-348 C non c'è, l'app ne manda uno.
 
 ---

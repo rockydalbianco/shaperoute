@@ -115,7 +115,11 @@ risposte si scrivono qui.
    elementi, al più 3 video da 30 s; il tetto di 15 GB si riempie circa
    tre volte più in fretta. Se l'utente dice sì: una modifica esplicita
    ad ADR-0292 con la stima dello spazio rifatta.
-   — *Risposta:* da chiedere.
+   — *Risposta (2026-10-30):* «Sì, al più 3». Fino a 10 elementi, al più
+   3 video da 30 s l'uno (il video della corsa conta come uno). La modifica
+   è «ADR-0292, aggiunta» in `DECISIONS.md`: il tetto di 15 GB non cambia,
+   e con l'ipotesi media si raggiunge in 5–10 settimane invece di circa
+   quattro mesi.
 3. **I layout.** Proposta, quattro: foto a tutto schermo con il disegno in
    un riquadro d'angolo; la linea del disegno sopra la foto, trasparente;
    metà foto e metà disegno; disegno grande con la foto nell'angolo.

@@ -1671,4 +1671,9 @@ export const DE: Table = {
   "10 drawings": "10 Zeichnungen",
   "{distance} drawing": "{distance}-Zeichnung",
   "Not earned yet: {badge}": "Noch nicht erreicht: {badge}",
+  // src/messages/messageTime.ts, ConversationList.tsx (TASK-353: times in the chat)
+  Today: "Heute",
+  Yesterday: "Gestern",
+  "{day} {month}": "{day}. {month}",
+  "{name}, {count} new messages: {text}": "{name}, {count} neue Nachrichten: {text}",
 };

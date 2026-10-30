@@ -126,7 +126,7 @@ risposte si scrivono qui.
    — *Risposta (2026-10-30):* «Sì, i quattro».
 4. **Il disegno nel carosello.** Proposta: spostabile; la scheda del Feed
    mostra come copertina il primo elemento.
-   — *Risposta:* da chiedere.
+   — *Risposta (2026-10-30):* «Sì, spostabile».
 5. **Appiattire o no.** Proposta: appiattire (foto con il disegno dentro).
    Alternativa: il layout ricostruito nel Feed, con la linea nitida, ma
    un'app vecchia vedrebbe solo la foto nuda.

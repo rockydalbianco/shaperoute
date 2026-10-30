@@ -45,6 +45,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Apple Salute e Fitness, Health Connect: l'attività finita scritta sul telefono | `tasks/TASK-321.md`, `DECISIONS.md` ADR-0281 |
 | Allegati nei messaggi privati: disegni, foto, video | `tasks/TASK-333.md`, `DECISIONS.md` ADR-0279 e ADR-0289, `API.md` «Messages» |
 | Calorie e battito nei post del Feed, «Show heart rate» | `tasks/TASK-345.md`, `DECISIONS.md` ADR-0298 |
+| Il video della corsa con la mappa sotto, i tre stili, il 3D | `tasks/TASK-351.md`, `DECISIONS.md` ADR-0303, ADR-0254 e ADR-0262, `UI.md` «Il post da condividere» |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 ## Stato dei documenti

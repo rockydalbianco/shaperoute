@@ -160,6 +160,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-351 — Il video della corsa con la mappa sotto: il look premium,
+  il 3D e tre stili** (ADR-0303, proposta; richiesta dell'utente del
+  2026-10-30; numeri e condizioni dal Coordinatore). Branch
+  `docs/TASK-351-video-map-styles` (worktree `TASK-351-docs`): i
+  documenti, il canvas https://claude.ai/artifact/MEGmg4FJp4mBKKFJriFkMV
+  e la fattibilità del 3D misurata nel simulatore e nel WebView nascosto
+  dell'app (la mappa può stare nella pagina del video: uno scatto a
+  `idle`, la linea sopra; la camera che gira costa una resa per
+  fotogramma; sul telefono da rimisurare con l'utente). Aspettano
+  l'utente: la scelta sulla privacy (la mappa nel video mostra dove si è
+  corso) e i nomi degli stili nelle cinque lingue. Senza mappa il video
+  esce sul giallo di oggi (condizione del Coordinatore). Poi B (la mappa
+  sotto e il look premium, Night), C (i tre stili e la riga «Style»), D
+  (il 3D), una PR ciascuna da `main` con la #658 e col via del
+  Coordinatore. Solo app, impronta iOS `83793e26` invariata. File
+  `tasks/TASK-351.md`.
 - **TASK-343 — Le sfide del mese: un tema sul concorso, l'iscrizione,
   la galleria, l'archivio** (ADR-0296, estende ADR-0260; richiesta
   dell'utente del 2026-10-29, proposta approvata con «Yes, as proposed»;

@@ -16,7 +16,13 @@ import {
   type VideoOutcome,
 } from "./videoFile";
 import { type Music, musicTrack } from "./videoMusic";
-import { makeCall, prepareMapCall, VIDEO_PAGE, VIDEO_PAGE_BASE } from "./videoPage";
+import {
+  makeCall,
+  type PageTimes,
+  prepareMapCall,
+  VIDEO_PAGE,
+  VIDEO_PAGE_BASE,
+} from "./videoPage";
 import type { VideoScene } from "./videoScene";
 
 type Props = {
@@ -30,6 +36,9 @@ type Props = {
   onProgress: (share: number) => void;
   /** Once, when the share sheet closes or the video could not be made. */
   onEnd: (outcome: VideoOutcome) => void;
+  /** How long the page's steps took, in milliseconds, once the pictures are
+   * all made: the map, its picture, the encoding (TASK-351's measures). */
+  onTimes?: (ms: PageTimes) => void;
 };
 
 /**
@@ -43,7 +52,14 @@ type Props = {
  * look the page draws the map first (TASK-351); when it cannot, within its
  * own time, the `fallback` scene is made instead.
  */
-export function RunVideo({ scene, fallback, music, onProgress, onEnd }: Props) {
+export function RunVideo({
+  scene,
+  fallback,
+  music,
+  onProgress,
+  onEnd,
+  onTimes,
+}: Props) {
   const webView = useRef<WebView>(null);
   const avcC = useRef<Uint8Array | null>(null);
   const samples = useRef<VideoSample[]>([]);
@@ -61,9 +77,9 @@ export function RunVideo({ scene, fallback, music, onProgress, onEnd }: Props) {
     music === null ? null : musicTrack(music).catch(() => null),
   );
   // The latest callbacks, for the timer and the page's messages.
-  const callbacks = useRef({ onProgress, onEnd });
+  const callbacks = useRef({ onProgress, onEnd, onTimes });
   useEffect(() => {
-    callbacks.current = { onProgress, onEnd };
+    callbacks.current = { onProgress, onEnd, onTimes };
   });
 
   function end(outcome: VideoOutcome) {
@@ -176,6 +192,7 @@ export function RunVideo({ scene, fallback, music, onProgress, onEnd }: Props) {
           break;
         case "done":
           callbacks.current.onProgress(1);
+          callbacks.current.onTimes?.(message.ms);
           void share();
           break;
         case "failed":

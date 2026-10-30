@@ -20160,6 +20160,6 @@ dentro la #620 o tutto nella 1.0.2.
 4. **La build dal branch, il merge dopo Apple**: finché è in revisione, `main`
    continua a raggiungere la 1.0.0 (7).
 
-**Conseguenze**: impronta iOS `f10c31a4…`, Android `b1c4750f…` al merge. Fino
+**Conseguenze**: impronta iOS `67253126…`, Android `8aac71c3…` al merge. Fino
 al merge chi ha la 1.0.1 non riceve gli update da `main`. Sul simulatore
 scrittura, lettura, contatti e selettore funzionano con la build Release.

@@ -358,7 +358,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   su `main` `477bdb68`): Apple Salute, contatti e selettore di file, senza
   l'accesso con Apple e Google (scelta dell'utente), più il testo per leggere
   il battito di TASK-345 C, approvato dall'utente nelle cinque lingue. Impronta
-  iOS `f10c31a4…`, Android `b1c4750f…`; `main` resta `83793e26…` fino al merge,
+  iOS `67253126…`, Android `8aac71c3…`; `main` resta `83793e26…` fino al merge,
   che arriva dopo l'approvazione di Apple: la build si fa dal branch. Provate
   sul simulatore con la build nativa scrittura, lettura, contatti e selettore.
   Prossimo: build, «Health» in App Privacy, invio, ognuno col sì dell'utente

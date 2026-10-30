@@ -377,6 +377,8 @@ apps/mobile/locales/{en,it,de,es,fr}.json     (i due testi NSHealth…)
 apps/mobile/package.json                      (al taglio: contatti e selettore fuori da autolinking.exclude)
 apps/mobile/store.config.json                 (al taglio: versione 1.0.1)
 apps/mobile/__tests__/appConfig.test.ts       (al taglio: versione 1.0.1)
+apps/mobile/__tests__/androidFingerprint.test.ts  (al taglio: i permessi dei contatti, col sì del Coordinatore)
+docs/tasks/TASK-294.md                        (al taglio: una riga aggiunta, col sì del Coordinatore)
 apps/mobile/react-native.config.js            (le librerie iOS dentro, solo su iOS)
 apps/mobile/src/about/content/{en,it,de,es,fr}.ts  (la sezione della privacy, la data)
 apps/mobile/src/about/{AboutPage,documents}.test.*  (la data nuova)
@@ -464,6 +466,9 @@ riceve gli update da `main`.
 
 - **Riallineata** su `main` `477bdb68`. Data della privacy:
   30 ottobre 2026, il giorno del taglio, con `site/privacy/` rifatto.
+- **La riga dello store**, «Saves your activities to Apple Health.», è nella
+  descrizione di `store.config.json`, che ha solo l'inglese: il sì dell'utente
+  del 2026-10-29 la copre, e niente da tradurre.
 - **Versione 1.0.1** in `app.json` e `store.config.json`. Il numero di build
   non è nel repository: `appVersionSource` è `remote` e il profilo
   `production` ha `autoIncrement`, lo assegna EAS alla build.
@@ -496,9 +501,11 @@ riceve gli update da `main`.
   TASK-345 C a runtime, nei suoi file. Senza questa chiave la richiesta
   chiude l'app, quindi C resta spenta sulla 1.0.0 (7), con un test suo.
 - **Le impronte** (copia pulita, `npm ci`, `APP_VARIANT=production`): iOS
-  `f10c31a4834678c7d6c2be89958567963e03f17e`, Android
-  `b1c4750f0c515829e0bbea01fd269f8f56089a9c`. Quella di `main` non cambia
-  fino al merge.
+  `672531263738861d26b6d724234458a95be95aff`, Android
+  `8aac71c30d004d989635aeba8e3c13cec3f1b34a`. Quella di `main` non cambia
+  fino al merge. `android.blockedPermissions` conta anche nell'impronta iOS
+  (era `f10c31a4…`): il codice nativo dell'iPhone è lo stesso, e aggiungerlo
+  dopo la build avrebbe tagliato fuori dagli update chi ha la 1.0.1.
 - **Sul simulatore** (Xcode 27, iOS 27, build Release 1.0.1 con
   `APP_VARIANT=production`; un'API finta locale per le chiamate, e una
   richiesta di lettura aggiunta solo nella copia di prova):
@@ -519,13 +526,15 @@ riceve gli update da `main`.
     l'etichetta «Imported». Non provati su questo giro TCX e FIT reali.
 - **Restano, prima dell'invio**: sull'iPhone dell'utente l'anello Movimento,
   la rubrica vera (`tasks/TASK-152.md` lo chiede prima di Apple) e «From a
-  file» con un GPX di Strava, un TCX e un FIT di Garmin. La riga dello store
-  approvata, «Saves your activities to Apple Health.», non è ancora in
-  `store.config.json`. Build, «Health» in App Privacy, invio e update di
-  `production` li chiede il Coordinatore all'utente, uno per volta.
+  file» con un GPX di Strava, un TCX e un FIT di Garmin. Build, «Health» in
+  App Privacy, invio e update di `production` li chiede il Coordinatore
+  all'utente, uno per volta. Per la frase della privacy decide l'utente: fino
+  ad allora «MuW never reads your health data» resta com'è.
 - **Android**: togliere l'esclusione vale anche lì, quindi con il merge la sua
-  impronta si muove e il plugin aggiunge `READ_CONTACTS` e `WRITE_CONTACTS`.
-  Serve la sua build; questo taglio è solo iOS.
+  impronta si muove. `WRITE_CONTACTS`, che il plugin aggiunge e MuW non usa, è
+  in `android.blockedPermissions`: senza, `expo-contacts` chiede solo la
+  lettura. **Passi a parte dell'utente, nessuna azione ora**: la build Android
+  e la dichiarazione dei contatti in «Sicurezza dei dati» della Play Console.
 
 ### C — La build Android con Health Connect
 

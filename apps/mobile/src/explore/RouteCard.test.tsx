@@ -1,5 +1,5 @@
 import type { LatLon } from "@shaperoute/shared-types";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
 
 import { lineCamera } from "../feed/feedMapPage";
 import { FeedMapShooter, forgetFeedMaps } from "../feed/FeedMaps";
@@ -36,7 +36,60 @@ test("two cards stand side by side in the width they are given", () => {
   expect(cardDrawingHeight(173)).toBe(114);
 });
 
-test("a photo takes the drawing's place, with its credit in two (TASK-283)", async () => {
+test("a swipe moves the lit dot to the photo", async () => {
+  await render(
+    <RouteCard
+      width={173}
+      line={SQUARE}
+      photo={{ source: { uri: "http://api.test/city-photos/Q1.jpg" }, credit: null }}
+      title="Viana"
+    />,
+  );
+  expect(screen.getByTestId("route-card-dot-1")).toHaveStyle({ opacity: 0.4 });
+  await fireEvent.scroll(screen.getByTestId("route-card-pages"), {
+    nativeEvent: { contentOffset: { x: 173, y: 0 } },
+  });
+  expect(screen.getByTestId("route-card-dot-0")).toHaveStyle({ opacity: 0.4 });
+  expect(screen.getByTestId("route-card-dot-1")).not.toHaveStyle({ opacity: 0.4 });
+});
+
+test("a tap on either page opens the route, a slide does not", async () => {
+  const onPress = jest.fn();
+  await render(
+    <RouteCard
+      width={173}
+      line={SQUARE}
+      photo={{ source: { uri: "http://api.test/city-photos/Q1.jpg" }, credit: null }}
+      title="Viana"
+      onPress={onPress}
+    />,
+  );
+  await fireEvent.press(screen.getByTestId("route-card-first-page"));
+  await fireEvent.press(screen.getByTestId("route-card-second-page"));
+  expect(onPress).toHaveBeenCalledTimes(2);
+  const page = screen.getByTestId("route-card-second-page");
+  await fireEvent(page, "pressIn", { nativeEvent: { pageX: 100, pageY: 10 } });
+  await fireEvent.press(page, {
+    nativeEvent: { pageX: 100 + TAP_SLOP + 1, pageY: 10 },
+  });
+  expect(onPress).toHaveBeenCalledTimes(2);
+});
+
+test("with no line the photo is alone, with no pages", async () => {
+  await render(
+    <RouteCard
+      width={173}
+      line={null}
+      photo={{ source: { uri: "http://api.test/city-photos/Q1.jpg" }, credit: null }}
+      title="Viana"
+    />,
+  );
+  expect(screen.getByTestId("route-card-photo")).toBeOnTheScreen();
+  expect(screen.queryByTestId("route-card-pages")).toBeNull();
+  expect(screen.queryByTestId("route-card-dots")).toBeNull();
+});
+
+test("the photo comes a swipe after the drawing, its credit in two (TASK-350)", async () => {
   await render(
     <RouteCard
       width={173}
@@ -50,10 +103,15 @@ test("a photo takes the drawing's place, with its credit in two (TASK-283)", asy
   expect(screen.getByTestId("route-card-photo").props.source).toEqual({
     uri: "http://api.test/city-photos/Q1.jpg",
   });
-  // No line, no map; a licence that asks for nothing, nothing written.
-  const drawing = screen.getByTestId("route-card-drawing");
-  expect(drawing.children).toHaveLength(1);
-  expect(screen.queryByTestId("route-card-map")).toBeNull();
+  // The line first, the photo on the second page, two dots to say so; a
+  // licence that asks for nothing, nothing written.
+  const first = screen.getByTestId("route-card-first-page");
+  const second = screen.getByTestId("route-card-second-page");
+  expect(first.children.length).toBeGreaterThan(0);
+  expect(within(first).queryByTestId("route-card-photo")).toBeNull();
+  expect(within(second).getByTestId("route-card-photo")).toBeOnTheScreen();
+  expect(second.children).toHaveLength(1);
+  expect(screen.getByTestId("route-card-dots")).toBeOnTheScreen();
   expect(creditParts("© LBM1948 · CC BY-SA 4.0")).toEqual([
     "© LBM1948 ·",
     "CC BY-SA 4.0",

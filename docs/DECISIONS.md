@@ -20384,8 +20384,9 @@ pulsante fisso.
    Photon e Geoapify (scartati già da ADR-0252 per il punto sulla
    mappa: rete in più, un servizio terzo che vede la posizione; il
    geocoder del telefono non vuole chiavi). **Conseguenza**:
-   la posizione va ad Apple o Google; la privacy si aggiorna col sì
-   dell'utente prima della pubblicazione.
+   la posizione va ad Apple o Google; una riga nuova nella privacy
+   («Others who receive data»), nell'app e sul sito, approvata dall'utente
+   il 2026-10-30 (TASK-361, «Le risposte dell'utente»).
 3. **La forma in scala** senza SVG: il contorno del catalogo
    (`catalogueShapes.json`, lo stesso di «Draw on the map») misurato con
    `lookOf`, la sua lunghezza = la distanza; disegnato coi segmenti di

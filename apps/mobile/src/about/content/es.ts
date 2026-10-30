@@ -424,6 +424,7 @@ const privacy: AboutDocument = {
             "Hetzner aloja nuestro servidor y sus copias de seguridad, en Alemania.",
             "Geoapify recibe las búsquedas de lugares y de los pueblos cercanos, con la posición, y, para nombrar el lugar de una carrera guardada, su inicio redondeado a alrededor de 1 km: nunca tu puerta, la carrera ni quién eres. Si nuestro servidor no responde, la búsqueda de un lugar va entonces a Photon (komoot).",
             "OpenFreeMap sirve el mapa: como cualquier servicio de mapas, ve qué zona miras.",
+            "Apple en el iPhone, o Google en Android, a través del servicio de direcciones del teléfono, recibe la posición desde la que empieza «Dibuja», para escribir el nombre de la calle. MuW no le envía nada más y no guarda el nombre.",
             "Nuestro servidor pide al servicio Overpass de datos de OpenStreetMap el mapa de una zona que aún no tiene: ve qué zona, no quién la pidió.",
             "unpkg sirve la biblioteca del mapa cuando arranca la app.",
             "Expo sirve las actualizaciones de la app.",

@@ -57,12 +57,64 @@ minimo 44 pt, grigi WCAG AA, `accessibilityLabel` su ogni pulsante.
 - **La via** dal geocoder del telefono (`expo-location`,
   `reverseGeocodeAsync`): Apple su iPhone, Google su Android; niente
   chiavi né servizi nostri. **Il punto GPS va al geocoder del telefono**:
-  la privacy va aggiornata col sì dell'utente prima della pubblicazione.
+  una riga nuova nella privacy, sotto (risposta 1).
 - **`expo-haptics`** (chiesta dall'utente): dipendenza nuova, esclusa
   dall'autolinking e caricata solo se il modulo nativo c'è, come
   `expo-contacts`: vibra in Expo Go e nella prossima build nativa, nella
   1.0 dello Store non fa niente. Impronta iOS `83793e26` invariata.
 - Il resto deciso dall'agente su delega dell'utente: ADR-0307.
+
+## Le risposte dell'utente (2026-10-30)
+
+Chieste su richiesta del Coordinatore (sulla #675) prima di togliere la
+bozza: 1) il sì alla riga di privacy sul geocoder del telefono, nelle cinque
+lingue, col testo esatto; 2) il sì alla lista completa dei testi nuovi
+(`out/TASK-361/testi-da-approvare.md`, ricopiata qui sotto per la parte che
+resta). La risposta dell'utente, parola per parola:
+
+> sì 1 e sì 2
+
+**1. La riga di privacy**, in «Others who receive data», dopo OpenFreeMap,
+nell'app (`about/content/*.ts`) e sul sito (`site/privacy/`, rifatto con
+`site/tools/make_privacy.mjs`). La data resta il 30 ottobre 2026, già messa
+da TASK-352 lo stesso giorno. Se TASK-356 (la posizione del Feed) cambia la
+privacy dopo, chi arriva secondo riallinea.
+
+- en: «Apple on an iPhone, or Google on Android, through the phone's own
+  address service, receives the position «Draw» starts from, to write the
+  name of its street. MuW sends it nothing else and does not keep the name.»
+- it: «Apple su iPhone, o Google su Android, tramite il servizio di
+  indirizzi del telefono, riceve la posizione da cui parte «Disegna», per
+  scrivere il nome della via. MuW non gli manda nient'altro e non conserva
+  il nome.»
+- de: «Apple auf dem iPhone oder Google auf Android erhält über den
+  Adressdienst des Telefons die Position, von der «Zeichnen» startet, um den
+  Namen der Straße anzuzeigen. MuW sendet sonst nichts und speichert den
+  Namen nicht.»
+- es: «Apple en el iPhone, o Google en Android, a través del servicio de
+  direcciones del teléfono, recibe la posición desde la que empieza
+  «Dibuja», para escribir el nombre de la calle. MuW no le envía nada más y
+  no guarda el nombre.»
+- fr: «Apple sur iPhone, ou Google sur Android, via le service d'adresses
+  du téléphone, reçoit la position d'où part «Dessiner», pour écrire le nom
+  de la rue. MuW ne lui envoie rien d'autre et ne garde pas le nom.»
+
+Una correzione dopo il sì: nel testo approvato la pagina era «Draw» in
+tutte le lingue; nell'app si chiama «Disegna», «Zeichnen», «Dibuja»,
+«Dessiner» (TASK-210 G), e così è scritta sopra. **Da confermare
+dall'utente.**
+
+**2. I testi nuovi** (parte A, tutti già nelle tabelle `i18n/*.ts`):
+«≈ {time} at {pace}», «≈ {time} at {pace} (a usual pace)», «{name}, about
+{size} on the map», «See all», «See all {count} shapes», «Show fewer»,
+«Show fewer shapes», «Tap to type the distance», «Records the run without
+drawing a route first», «Draw a {distance} {name}», «Draw “{word}”,
+{distance}», «Draw the picture, {distance}», «Type another shape», «Write
+a shape that is not among the tiles», con le traduzioni approvate. Per la
+parte B, approvati anche: «WHAT YOU DRAW» (COSA DISEGNI, WAS DU ZEICHNEST,
+QUÉ DIBUJAS, CE QUE TU DESSINES) e «Write a word, e.g. CIAO» (Scrivi una
+parola, es. CIAO; Schreib ein Wort, z. B. CIAO; Escribe una palabra, p. ej.
+CIAO; Écris un mot, par ex. CIAO).
 
 ## Cosa fare
 
@@ -151,6 +203,8 @@ apps/mobile/src/route/OtherShapeField.tsx (nuovo, con test)
 apps/mobile/src/screens/ChooseScreen.tsx
 apps/mobile/src/screens/ChooseScreen.test.tsx
 apps/mobile/src/i18n/{it,de,es,fr}.ts    (solo righe aggiunte in fondo)
+apps/mobile/src/about/content/{en,it,de,es,fr}.ts (la riga di privacy)
+site/privacy/**/index.html               (rifatte da make_privacy.mjs)
 docs/tasks/TASK-361.md
 docs/DECISIONS.md                        (ADR-0307)
 docs/STATUS.md                           (una riga in «In lavorazione»)

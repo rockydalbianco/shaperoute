@@ -37,8 +37,9 @@ Nessuno diventa pubblico senza averlo scelto.
 - [x] Un altro account sullo stesso telefono parte da «Only me»; un account
       cancellato lascia la sua scelta.
 - [x] Taglio di 200 m ai due capi invariato (l'API non è toccata).
-- [ ] Sì dell'utente ai testi di Help e Privacy nelle cinque lingue.
-- [ ] Impronta iOS 83793e26 su copia pulita.
+- [x] Sì dell'utente ai testi di Help e Privacy nelle cinque lingue («Sì,
+      approvo», mostrati in italiano).
+- [x] Impronta iOS 83793e26 su copia pulita.
 
 ## File toccati
 

@@ -19897,7 +19897,8 @@ chiesto all'inizio, scartato dall'utente con la risposta sopra); ricordare solo
 al tocco (una scelta provata e non salvata resterebbe).
 
 **Conseguenze**: Help e Privacy cambiano nelle cinque lingue, con il sito
-rigenerato. App Privacy e Data safety non cambiano: i dati raccolti e il loro
+rigenerato: testi mostrati all'utente in italiano, che ha risposto «Sì,
+approvo». App Privacy e Data safety non cambiano: i dati raccolti e il loro
 uso sono gli stessi, la pubblicazione resta una scelta di chi corre.
 
 ---

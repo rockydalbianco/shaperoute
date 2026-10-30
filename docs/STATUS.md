@@ -176,6 +176,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (il 3D), una PR ciascuna da `main` con la #658 e col via del
   Coordinatore. Solo app, impronta iOS `83793e26` invariata. File
   `tasks/TASK-351.md`.
+- **TASK-355 — Una scheda del Feed che si capisce in un colpo d'occhio**
+  (ADR-0306, estende ADR-0293; richiesta dell'utente del 2026-10-30, numeri
+  dal Coordinatore). Branch `docs/TASK-355-feed-clarity` (documenti). Parte
+  A solo app, dopo 339 B e prima di 348 A; parte B API e app, dopo 344 B e
+  prima di 309 B. Otto scelte dell'utente aperte. Il Feed manda già la
+  posizione e «Your position» non lo dice: si chiude con la parte A.
+  `tasks/TASK-355.md`.
 - **TASK-339 — L'interfaccia premium ed elegante** (ADR-0293, proposta;
   brief dell'utente del 2026-10-29; il canvas della proposta, 16 tavole,
   visto e approvato a voce la sera stessa, «BELLISSIMO»:

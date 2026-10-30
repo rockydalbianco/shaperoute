@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import drawingDetails from "../fixtures/drawing-details.json" with { type: "json" };
+import orderRequest from "../fixtures/drawing-order-request.json" with { type: "json" };
 import photoRequest from "../fixtures/drawing-photo-request.json" with { type: "json" };
 import requestDetails from "../fixtures/drawing-request-details.json" with { type: "json" };
 import drawingRequest from "../fixtures/drawing-request.json" with { type: "json" };
@@ -13,9 +14,10 @@ import {
   ACTIVITIES,
   type Activity,
   DRAWING_DESCRIPTION_MAX_LENGTH,
-  DRAWING_MAX_PHOTOS,
+  DRAWING_PHOTO_PLACES,
   DRAWING_MAX_TAGS,
   type DrawingDetail,
+  type DrawingOrderRequest,
   type DrawingPhotoRequest,
   type DrawingRequest,
   type DrawingsPage,
@@ -70,6 +72,7 @@ const page: DrawingsPage = {
   })),
 };
 const photo: DrawingPhotoRequest = photoRequest;
+const order: DrawingOrderRequest = orderRequest;
 
 test("the request says who can see it once, and keeps the API's limits", () => {
   assert.equal(asked.public, undefined);
@@ -105,7 +108,7 @@ test("a drawing has its tags by name and its photos by address, never the email"
       assert.deepEqual(Object.keys(tag).sort(), ["public_id", "username"]);
     }
     for (const shown of seen.photos ?? []) {
-      assert.ok(shown.n >= 1 && shown.n <= DRAWING_MAX_PHOTOS);
+      assert.ok(shown.n >= 1 && shown.n <= DRAWING_PHOTO_PLACES);
       assert.match(
         shown.url,
         new RegExp(`^/drawings/${seen.id}/photos/${shown.n}\\?v=\\d+$`),
@@ -114,6 +117,14 @@ test("a drawing has its tags by name and its photos by address, never the email"
     assert.ok(!JSON.stringify(seen).includes("email"));
   }
   assert.equal(whole.public, whole.visibility === "everyone");
+});
+
+test("an order has the map once and each photo by its place", () => {
+  assert.equal(new Set(order.order).size, order.order.length);
+  assert.ok(order.order.includes("drawing"));
+  for (const item of order.order) {
+    assert.match(item, /^(drawing|photo:\d+)$/);
+  }
 });
 
 test("a photo is sent as base64", () => {

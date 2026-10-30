@@ -51,11 +51,11 @@ test("the light map has the light colours, and the route its dark edge", () => {
   expect(page).toContain(`"line-color": "${tokens.color.onAccent}"`);
 });
 
-test("the dark map is as it was: no edge under the yellow", () => {
+test("the dark map keeps no edge under the yellow; its background is the warm one (TASK-339)", () => {
   const { page, mapPage, tokens } = openedIn(DARK);
   expect(mapPage.ROUTE_CASING).toBeNull();
   expect(page).not.toContain("-casing");
-  expect(mapPage.MAP_BACKGROUND).toBe("#0D0E10");
+  expect(mapPage.MAP_BACKGROUND).toBe("#100F0C");
   expect(tokens.statusBarStyle).toBe("light");
 });
 

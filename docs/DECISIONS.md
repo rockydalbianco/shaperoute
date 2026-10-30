@@ -19549,6 +19549,112 @@ mappa hanno `metresPerPx`, `bent`, `links`, `bendable` e `marks` (pagina e
 app vanno sempre insieme). Il nuovo `mapdraw/tools.ts` contiene gli
 strumenti; `erasedAt` esce da `edit.ts`.
 
+## ADR-0293 — Il look premium: titoli grandi e leggeri, grigi caldi, immagini a tutta scheda, un solo feedback al tocco, divisioni a filo, pagine vuote disegnate
+
+**Stato**: Proposta · 2026-10-29 · TASK-339. La richiesta è dell'utente
+(2026-10-29, il brief incollato in `tasks/TASK-339.md`); la direzione
+visiva lasciata aperta dal brief — grigi caldi, titoli leggeri — è la
+raccomandazione dell'agente, accettata su delega dell'utente del
+2026-10-29, da rivedere; il canvas della proposta l'utente l'ha visto la
+sera stessa, verso mezzanotte («BELLISSIMO»), e ha chiesto le schede
+interne, aggiunte. Numeri dati dal Coordinatore il 2026-10-30, con le sue
+condizioni per la parte A (`tasks/TASK-339.md`, «Condizioni del
+Coordinatore»). Estende ADR-0046 (il tema scuro), ADR-0231 (i toni e la
+luminosità), ADR-0081 (i bordi dei comandi) e ADR-0183 (il giallo di «Run
+without a route»); non tocca ADR-0124 (le pagine affiancate).
+
+**Contesto**: l'app ha una disciplina rara: 176 file leggono
+`tokens.ts`, nessun colore è scritto a mano, un accento solo (il giallo
+del percorso), due toni in cinque passi. Ma i titoli sono a 25 in
+grassetto, 180 testi sono semibold e 101 bold, i separatori sono 167
+bordi pieni a 1 pt, il tocco è un'opacità secca a 0,6 in 66 punti, le
+foto stanno dentro schede bordate con le parole sotto, le pagine vuote
+sono una riga di testo. Il brief chiede un prodotto «curato da uno studio
+di design, non un template», senza stravolgere lo stile. Vincoli: niente
+di nativo prima del taglio della 1.0.1 (l'impronta iOS `83793e26` deve
+restare), quindi niente `expo-linear-gradient`, `react-native-svg`,
+`reanimated`, `expo-haptics`, nessun carattere nuovo; sei task hanno in
+mano schermate dell'app in questo momento.
+
+**Decisione** (proposta):
+
+1. **Tipografia dal font di sistema**, con una scala in `tokens.ts`
+   (`font`): `display` 44 light, tracking −1, interlinea 50; `title` 30
+   regular, −0,6, 36; `heading` 20 medium, −0,3, 26; `cardTitle` 17
+   medium, −0,2, 22; `body` 15/22; `small` 13/18; `detail` 12/16; `label`
+   11 semibold, +1,2, maiuscolo dov'è scritto. Il grassetto resta ai
+   comandi gialli e agli 88 px della corsa (`fontSize.hero`), letti a
+   braccio teso. I numeri che devono allinearsi aggiungono
+   `fontVariant: ["tabular-nums"]`. `fontSize.title` resta 25 finché le
+   schermate non passano a `font.title`, una parte alla volta: alzarlo
+   per tutti renderebbe 53 titoli in grassetto più pesanti, non più
+   leggeri.
+2. **Grigi caldi, un accento solo.** I quattro estremi di `SHADES` si
+   spostano di poco verso il giallo (scuro: fondo `#0B0A08`, superficie
+   `#161411`, rilievo `#2C2924`, bordo dei comandi `#7B746B`, testo
+   `#F6F3EC`, secondario `#A49D93`, tenue `#908980`; chiaro: superficie
+   `#F4F2ED`, rilievo `#EAE7E1`, secondario `#5C564F`, tenue `#68625A`;
+   anche la mappa, non l'acqua); `onAccent` e `scrim` diventano
+   `#0B0A08`. Tutti i minimi di contrasto di `palettes.test.ts` restano
+   (7:1 testo, 4,5:1 secondario e avvisi, 3:1 bordi dei comandi, 3:1
+   giallo sulle strade). Il giallo resta il percorso e il comando che lo
+   produce, una volta per scheda; il rosso resta ai numeri che aspettano
+   una risposta; nient'altro ha colore.
+3. **Immagini protagoniste.** Le schede con una foto o un disegno
+   passano a `radius.xl` (20) e perdono il bordo; sulle foto le parole
+   stanno sopra, su `Scrim`: un'immagine di una colonna di 128 pixel,
+   trasparente in cima e `scrim` all'82 % in fondo lungo una curva dolce,
+   stirata sulla scheda (`assets/ui/scrim.png`, da `tools/ui_scrim.py`).
+   Nessuna libreria di gradienti. Sui disegni le parole restano sotto: la
+   figura non si copre.
+4. **Movimento breve e uguale ovunque** (`motion`): il tocco porta un
+   comando a 0,97 e all'85 % in 120 ms e lo riporta in 180 (`Tap`, un
+   Pressable animato sul driver nativo, al posto dell'opacità 0,6); ciò
+   che compare arriva in dissolvenza in 220 ms salendo di 6 pt; i fogli
+   salgono in 280 ms con una curva che rallenta alla fine. Mai rimbalzi.
+   La vibrazione al tocco vuole `expo-haptics`: solo con una build nativa
+   e il sì dell'utente.
+5. **I due toni disegnati, non invertiti**: la scala dei grigi è pensata
+   due volte (il chiaro era già caldo, ora lo è lo scuro); `Scrim` è
+   scuro in tutti e due, perché le parole su una foto sono chiare
+   comunque; la linea gialla tiene il bordo scuro sul chiaro
+   (ADR-0231). Un tono «di sistema» che segue il telefono non si
+   introduce qui: è una scelta di prodotto da chiedere.
+6. **Dettagli**: `color.hairline`, il testo al 20 % (`#RRGGBBAA`, l'unico
+   colore traslucido; la mappa non lo usa), disegnato da `Hairline` a un
+   pixel fisico: le divisioni si sentono, i comandi tengono il bordo a
+   1 pt `borderStrong` (TASK-086) e si trovano anche al sole. Le pagine
+   vuote hanno `EmptyState`: una sagoma del catalogo in `border`, i
+   primi strokes in giallo come una corsa appena cominciata, un titolo
+   `heading`, una frase `body` in `textMuted`, al più un'azione; niente
+   scatole né punti esclamativi. Il cuore, che il catalogo tiene come
+   formula, sta in `src/ui/outlines.ts`.
+7. **In parti, una PR ciascuna**, perché sei task tengono schermate
+   aperte: A le fondamenta (token, `src/ui/`, i tre nomi
+   dell'intestazione a 30 regular); B Feed ed Explore; C stati vuoti,
+   divisioni e la migrazione dei `pressed` a `Tap`; D Profile, Settings e
+   i fogli; E «Draw» e il risultato, per ultima. Una schermata in mano a
+   un task in lavorazione aspetta che quel task entri in `main`.
+
+**Alternative scartate**: un carattere proprio (un file in più, una
+licenza, e cambia il marchio: il font di sistema ha già i pesi leggeri);
+le librerie native per gradienti, SVG, animazioni e vibrazione
+(l'impronta della 1.0.1); grigi senza tinta (accanto al giallo leggono
+freddi: il tono chiaro era già caldo); alzare `fontSize.title` per tutti
+(punto 1); una PR unica (i conflitti con i sei task aperti); illustrazioni
+disegnate apposta per i vuoti (le sagome del catalogo sono già il
+linguaggio dell'app e non costano asset).
+
+**Conseguenze**: `tokens.ts` guadagna `font`, `tracking`, `motion`,
+`radius.xl`, `fontSize.heading`, `fontWeight.light` e `color.hairline`;
+il cambio di `SHADES` sposta ogni schermata e la mappa di un passo verso
+il caldo in una volta, con la parte A, via OTA; nessuna dipendenza,
+nessun file nativo, l'impronta non cambia (solo JS e un PNG). Il test dei
+toni ha i valori nuovi e gli stessi minimi. Le parti B–E cambiano le
+schermate una alla volta; i testi nuovi degli stati vuoti vanno approvati
+dall'utente nelle cinque lingue. `docs/UI.md` («Il tema», «Il look
+premium») è la fonte dei valori.
+
 ## ADR-0048 — aggiunta (TASK-337): due avvisi alla volta sotto il percorso, mai quelli di sicurezza dietro «Show more»
 
 **Stato**: Attiva · 2026-10-29 · richiesta dell'utente dello stesso giorno
@@ -19568,7 +19674,8 @@ quello delle scale) e una frase nuova «2 more notes» (da tradurre, mentre
 
 ## ADR-0296 — Le sfide del mese: un tema sul concorso, l'iscrizione esplicita, la galleria, l'archivio, tre push
 
-**Stato**: Proposta · 2026-10-29 · TASK-343. Estende ADR-0260 (il primo
+**Stato**: Accettata · 2026-10-29, parte A in `main` il 2026-10-30 ·
+TASK-343. Estende ADR-0260 (il primo
 concorso), che resta valido per i concorsi senza tema. Il tema,
 l'iscrizione esplicita e il voto che resta la reazione sono dell'utente
 (richiesta del 2026-10-29, proposta approvata con «Yes, as proposed»);
@@ -19619,6 +19726,19 @@ gesti per la stessa cosa); un cron sul server per gli ultimi 3 giorni
 regolamento ufficiale cambia e va riapprovato. «Challenge» è già una
 parola del gioco «Play» (TASK-296): i testi dell'app devono tenerle
 distinte.
+
+**Aggiunta, parte A** (2026-10-30, #657, migrazione 0039). Decise dall'agente
+su delega dell'utente, descritte in `CONCORSI.md` §15: un concorso senza tema
+non prende iscrizioni e non manda le tre push; «3 days left» a chi ha
+pubblicato almeno un disegno per tutti, di qualunque data, e non ne ha
+iscritto nessuno; i risultati a chi ha un disegno in classifica alla chiusura,
+anche escluso con `--exclude`, tranne il vincitore; galleria e archivio anche
+senza token, 30 voci e 10 sfide per pagina. I testi delle tre push:
+«accettati su delega dell'utente del 2026-10-29, da rivedere» (sì
+dell'autopilota, riferito dal Coordinatore). Da rivedere: «Corri il tuo
+disegno» e «pubblica una corsa» parlano solo di corsa, da cambiare se una
+sfida vale anche per bici o canoa. Il server non è aggiornato: la migrazione
+0039 la decide l'utente.
 
 ## ADR-0294 — I badge sul profilo: primo disegno, 10 disegni, 30 km, decisi dal server
 
@@ -19985,3 +20105,31 @@ cambiano; la modifica esplicita l'ha chiesta il Coordinatore.
    Coordinatore. Finché TASK-348 C non c'è, l'app ne manda uno.
 
 ---
+
+## ADR-0302 — Nelle schede di «Explore» prima il disegno, la foto a uno swipe
+
+**Data**: 2026-10-30 · **Stato**: accettata · **Task**: TASK-350. L'ordine è
+una scelta dell'utente («prima l'immagine e poi swipe destra e vedi la foto
+della città»); il modo è deciso dall'agente su delega dell'utente.
+
+**Contesto**: da ADR-0243 la foto di un paese prendeva il posto di disegno e
+mappa, e da ADR-0287 quella di un'idea aveva sopra la forma in piccolo.
+L'app si riconosce dal disegno: l'utente vuole vedere prima quello.
+
+**Decisione**: `RouteCard`, con `photo` e una linea, ha due pagine da
+scorrere: il disegno sulla mappa, poi la foto col credito, con due pallini in
+alto. Senza linea mostra la sola foto: serve a un paese il cui disegno è
+fallito. In `NearbyTowns` la foto aspetta il disegno, così una scheda non
+passa dalla foto al disegno sotto gli occhi. Il tocco sta dentro le pagine,
+come in `FeedPost`: una `Pressable` attorno a uno `ScrollView` diventa
+responder e ne ferma lo scorrimento nativo, mentre la fila, che è fuori,
+scorre. `bounces={false}` fa passare lo swipe alla fila dall'ultima pagina.
+
+**Alternative scartate**: la foto subito e il disegno quando arriva (la
+scheda cambierebbe da sola); una freccia da toccare al posto dello swipe (non
+è quello chiesto).
+
+**Conseguenze**: uno swipe su una scheda con foto cambia pagina invece di far
+scorrere la fila, che si scorre dalla seconda pagina o da nome e distanza. Le
+mappe si prendono anche per le schede con foto, una alla volta come le altre.
+Nessun testo nuovo, nessuna dipendenza, niente di nativo, server non toccato.

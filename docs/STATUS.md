@@ -259,6 +259,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (`83793e26…`). I due testi nuovi («Trying again later», «Up to {count}
   places.») approvati dall'utente lo stesso giorno. Dopo il merge, il
   server e l'OTA col sì dell'utente. File `tasks/TASK-334.md`.
+  Server a `c7a83347` dal 2026-10-30 07:20Z (migrazione 0038), `preview`
+  `4ed4e1df`; l'OTA di produzione resta da lanciare a mano. La sfida del
+  concorso (TASK-299) si apre il 2026-11-16 poco prima delle 09:00 ora
+  italiana, come ha scelto l'utente: `python -m shaperoute_api.contests open
+  --from 2026-11-16T09:00+01:00 --to 2026-11-29T23:00+01:00`.
 - **TASK-329 — «Ask for a route» sempre aperto, con le nostre idee in
   Europa e poi le foto vere dei posti** (ADR-0287; richiesta a voce
   dell'utente del 2026-10-29, proposta approvata con «Sì, così»; numeri
@@ -290,6 +295,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   il sì dell'utente sulla riga della privacy (invariata), la PR al
   Coordinatore, poi il server col sì dell'utente; senza il server l'app
   mostra i posti col solo nome.
+  **Chiuso il 2026-10-30**: B in `main` (#633), server da `5910bcfa`, privacy
+  sul sito da `c7a83347` (F.14, lanciata dall'utente alle 07:27Z).
 
 - **TASK-321 — L'attività finita anche in Apple Salute e in Health
   Connect, perché compaia in Fitness** (ADR-0281, proposta; domanda
@@ -4561,6 +4568,10 @@ corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
   campioni su mappa (ADR-0024). Cancello superato con la valle sospesa
   (ADR-0027).
 - **TASK-001** — Repository pubblico, `main` protetto da PR obbligatoria.
+
+- **CI** — TASK-349 (2026-10-30): il job `api` ha 40 minuti invece di 25,
+  perché con molte PR aperte veniva cancellato senza test falliti. File
+  `tasks/TASK-349.md`.
 
 ## Bloccato
 

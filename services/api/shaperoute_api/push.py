@@ -15,7 +15,9 @@ teams' (part C): a piece finished, a challenge complete, a day left; three
 a group run's, to who goes (TASK-309, group_runs.py): it starts soon, its
 time or place changed, it was cancelled; two the private messages'
 (TASK-319, messages.py): a message, and a message request once a day for
-each writer. Each to one recipient, and only when:
+each writer; three the monthly challenges' (TASK-343, contests.py and
+contest_clock.py): a new one opened, its last days, its results. Each to
+one recipient, and only when:
 
 - the recipient has «Push notifications» on (users.notify_push);
 - the recipient is not the one who acted, but for OWN_KINDS;
@@ -88,6 +90,9 @@ Kind = Literal[
     "challenge_done",
     "challenge_ending",
     "contest_won",
+    "contest_open",
+    "contest_last_days",
+    "contest_results",
     "group_run_soon",
     "group_run_changed",
     "group_run_cancelled",
@@ -96,13 +101,17 @@ Kind = Literal[
 ]
 # The events of what one did oneself, or of nobody's doing: told to
 # oneself too (the shape game, TASK-296; the contest won, TASK-299; the
-# reminder of a group run, to its organiser too, TASK-309).
+# reminder of a group run, to its organiser too, TASK-309; the monthly
+# challenges, TASK-343, where the one told is also the "actor").
 OWN_KINDS: frozenset[str] = frozenset(
     {
         "shape_unlocked",
         "challenge_done",
         "challenge_ending",
         "contest_won",
+        "contest_open",
+        "contest_last_days",
+        "contest_results",
         "group_run_soon",
     }
 )
@@ -200,6 +209,9 @@ class PushEvent:
     names: Mapping[str, str] | None = None
     # A group run (TASK-309): the app opens it; its title is `text`.
     group_run_id: UUID | None = None
+    # A monthly challenge (TASK-343): the app opens its page; the theme's
+    # title, by language, is in `names`.
+    contest_id: UUID | None = None
     # What a private message carries (TASK-333): "photo", "video",
     # "drawing"; its text, if any, is `text`.
     attachment: str | None = None
@@ -315,6 +327,42 @@ TEXTS: dict[str, dict[str, str]] = {
         "fr": "Tu as gagné le concours MuW ! Ta publication a reçu le plus de"
         " réactions.",
     },
+    # The monthly challenges (TASK-343, CONCORSI.md §15): {theme} is the
+    # theme's title in the phone's language; the app opens the page of the
+    # challenge. A new one, to whoever has the pushes on; its last 3 days,
+    # to who published a drawing and entered none; the results, to who
+    # took part (the winner hears contest_won).
+    "contest_open": {
+        "en": "New MuW challenge: “{theme}”. Run your drawing and enter it"
+        " when you publish.",
+        "de": "Neue MuW-Challenge: „{theme}“. Lauf deine Zeichnung und melde sie"
+        " beim Veröffentlichen an.",
+        "it": "Nuova sfida MuW: «{theme}». Corri il tuo disegno e iscrivilo quando"
+        " lo pubblichi.",
+        "es": "Nuevo reto MuW: «{theme}». Corre tu dibujo e inscríbelo al"
+        " publicarlo.",
+        "fr": "Nouveau défi MuW : « {theme} ». Cours ton dessin et inscris-le en"
+        " le publiant.",
+    },
+    "contest_last_days": {
+        "en": "3 days left for the MuW challenge “{theme}”: publish a run and"
+        " enter it!",
+        "de": "Noch 3 Tage für die MuW-Challenge „{theme}“: veröffentliche einen"
+        " Lauf und melde ihn an!",
+        "it": "Mancano 3 giorni alla sfida MuW «{theme}»: pubblica una corsa e"
+        " iscrivila!",
+        "es": "Quedan 3 días para el reto MuW «{theme}»: ¡publica una carrera e"
+        " inscríbela!",
+        "fr": "Plus que 3 jours pour le défi MuW « {theme} » : publie une course"
+        " et inscris-la !",
+    },
+    "contest_results": {
+        "en": "The MuW challenge “{theme}” is over: see who won!",
+        "de": "Die MuW-Challenge „{theme}“ ist vorbei: sieh nach, wer gewonnen" " hat!",
+        "it": "La sfida MuW «{theme}» è finita: guarda chi ha vinto!",
+        "es": "El reto MuW «{theme}» ha terminado: ¡mira quién ha ganado!",
+        "fr": "Le défi MuW « {theme} » est terminé : découvre qui a gagné !",
+    },
     # Group runs (TASK-309, docs/EVENTI.md §8): {title} is the group run's,
     # {name} its organiser. No time: the server does not know the phone's.
     "group_run_soon": {
@@ -408,19 +456,24 @@ def text_of(event: PushEvent, name: str, language: str | None) -> str:
     texts = TEXTS[which]
     template = texts.get(language or "en", texts["en"])
     names = event.names or {}
+    named = names.get(language or "en") or names.get("en", "")
     return template.format(
         name=name,
         emoji=REACTION_EMOJI.get(event.reaction or "", ""),
         text=quoted(event.text),
         title=quoted(event.text),
-        shape=names.get(language or "en") or names.get("en", ""),
+        shape=named,
+        theme=named,
         n="" if event.number is None else event.number,
     )
 
 
 def data_of(event: PushEvent, actor_public_id: UUID, actor_name: str) -> dict[str, str]:
-    """What the app opens when the notification is touched: the group run,
-    the challenge, the drawing, or the profile of who acted."""
+    """What the app opens when the notification is touched: the monthly
+    challenge, the group run, the challenge of the game, the drawing, or
+    the profile of who acted."""
+    if event.contest_id is not None:
+        return {"kind": event.kind, "contest_id": str(event.contest_id)}
     if event.group_run_id is not None:
         return {"kind": event.kind, "group_run_id": str(event.group_run_id)}
     if event.challenge_id is not None:

@@ -56,7 +56,12 @@ Una alla volta, con le sue parole.
 4. **I post di MuW in «Tutti».** Proposta: gli esempi restano solo a «Tutti»
    vuoto o senza account (non hanno una data vera). Un account MuW che
    pubblica sul server è un lavoro a parte.
-   — *Risposta:* «Sì, solo lì».
+   — *Risposta:* «Sì, solo lì», poi cambiata dall'utente lo stesso giorno: «non
+   farli sparire quando compaiono i nuovi post tienili tutti ed inventa anche
+   passo medio calorie tutte le informazioni, aggiungi anche in canoa con delle
+   sbavature [...] ed anche in bici... tutti finti ma tienili nel feed». Da
+   decidere con l'utente se portano un'etichetta (segnalato il rischio di
+   post finti mescolati a quelli veri).
 5. **I nomi e i testi.** Proposta: «Tutti» e «Seguiti», con i messaggi degli
    stati vuoti e «Retry», in cinque lingue. Testi esatti da approvare prima del
    codice.

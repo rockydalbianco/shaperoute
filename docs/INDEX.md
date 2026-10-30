@@ -38,12 +38,14 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Le corse di gruppo, «Group runs», «I'm going» | `EVENTI.md`, `tasks/TASK-309.md` |
 | Attività da altre app (GPX, TCX, FIT), post di sole foto, «Imported» | `IMPORTAZIONI.md`, `tasks/TASK-312.md` |
 | Un video nei post: il video della corsa o uno proprio, la pagina nel Feed, `expo-video` | `tasks/TASK-336.md`, `DECISIONS.md` ADR-0292 e ADR-0289, `API.md` «Drawings» |
+| Il compositore del post: fino a 10 foto, video e disegno, i layout, l'editor | `tasks/TASK-348.md`, `DECISIONS.md` ADR-0301 e ADR-0292, `API.md` «Drawings» |
 | Disegnare a mano in «Draw» («Freehand»), «Edit the drawing» sulle figure proposte | `UI.md`, `tasks/TASK-320.md` |
 | A mano solo sulla mappa: la linea aperta, «Erase», «Edit the drawing» sulla mappa, niente per le emoji | `UI.md` «Disegnare sulla mappa», `tasks/TASK-331.md`, `DECISIONS.md` ADR-0288 |
 | Il disegno libero ancorato alle strade: map matching per tratto col nostro motore, fantasma e punteggio, strumenti da professionista, guide | `tasks/TASK-347.md`, `DECISIONS.md` ADR-0300, `ROUTE_ENGINE.md` §4–5 |
 | Il nuoto in acque libere, «Open water swim», la guida con l'Apple Watch | `tasks/TASK-323.md`, `ROUTE_ENGINE.md` §8 |
 | Apple Salute e Fitness, Health Connect: l'attività finita scritta sul telefono | `tasks/TASK-321.md`, `DECISIONS.md` ADR-0281 |
 | Allegati nei messaggi privati: disegni, foto, video | `tasks/TASK-333.md`, `DECISIONS.md` ADR-0279 e ADR-0289, `API.md` «Messages» |
+| Il look premium: la scala del testo (`font`), i grigi caldi, `src/ui/` (Tap, Hairline, Scrim, EmptyState), le pagine vuote | `UI.md` «Il tema» e «Il look premium», `tasks/TASK-339.md`, `DECISIONS.md` ADR-0293 |
 | Calorie e battito nei post del Feed, «Show heart rate» | `tasks/TASK-345.md`, `DECISIONS.md` ADR-0298 |
 | Il video della corsa con la mappa sotto, i tre stili, il 3D | `tasks/TASK-351.md`, `DECISIONS.md` ADR-0303, ADR-0254 e ADR-0262, `UI.md` «Il post da condividere» |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |

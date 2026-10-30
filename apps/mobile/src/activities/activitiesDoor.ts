@@ -64,6 +64,8 @@ export type RefusedRun = {
 export type ActivitiesDoor = ActivitiesState & {
   /** Somebody is signed in: a run that ends can be saved. */
   signedIn: boolean;
+  /** The account's id; null signed out. */
+  owner: number | null;
   /**
    * «Save» on a run that ended: it goes to the API, now or when there is a
    * network. `drawn` is what its route draws. True once the run is safe on
@@ -150,6 +152,7 @@ const NOTHING: ActivitiesDoor = {
   remove: () => {},
   clearProblem: () => {},
   signedIn: false,
+  owner: null,
   record: () => false,
   recordImported: () => false,
   alreadyKept: () => Promise.resolve(false),
@@ -628,6 +631,7 @@ export function useActivitiesOf(
       problem: activities.problem ?? openProblem,
       clearProblem,
       signedIn: owner !== null,
+      owner,
       record,
       recordImported,
       alreadyKept,

@@ -2,7 +2,7 @@ import type { Activity } from "@shaperoute/shared-types";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
-import { type DrawingChoice, isChosen, NOT_CHOSEN } from "../api/drawings";
+import { type DrawingChoice, isChosen, isSeen, NOT_CHOSEN } from "../api/drawings";
 import { loadHealthOn } from "../health/healthChoice";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
@@ -21,7 +21,9 @@ import {
   FormScroll,
   nextPlace,
   type PickPhoto,
+  seenText,
 } from "../social/PublicParts";
+import { loadVisibility, saveVisibility } from "../social/visibilityChoice";
 import { loadSendToStrava, saveSendToStrava } from "../strava/stravaChoice";
 import { StravaRunEnd } from "../strava/StravaRunEnd";
 import { useStrava } from "../strava/useStrava";
@@ -73,7 +75,8 @@ type Chosen = { n: number; base64: string };
  * runs. Over the buttons the form of the drawing, as Strava's (TASK-208,
  * ADR-0170): up to three photos, the title, «How did it go?», the people
  * tagged, what the run was (from the sport of «Settings») and who can see
- * it («Only me» at every run, the user's choice); then «Send to Strava»
+ * it («Only me» until the account saves another choice, then the last one
+ * saved, the user's choice, ADR-0304); then «Send to Strava»
  * with Strava connected (TASK-187), and «Save to Apple Health» (or to
  * Health Connect) where the phone's build has it (TASK-321). With «Save»
  * the choice and the photos go with the run: to the API once it has the
@@ -90,8 +93,17 @@ export function RunEnd({
   health: phoneHealth = healthPhone(),
   imported,
 }: Props) {
-  const { signedIn, signIn, toStrava, toDrawing, toPhotos, full, waiting, refused } =
-    useActivitiesDoor();
+  const {
+    signedIn,
+    owner,
+    signIn,
+    toStrava,
+    toDrawing,
+    toPhotos,
+    full,
+    waiting,
+    refused,
+  } = useActivitiesDoor();
   const strava = useStrava();
   const health = imported === undefined ? phoneHealth : null;
   const healthState = useHealth(health);
@@ -102,13 +114,18 @@ export function RunEnd({
   const [failed, setFailed] = useState(false);
   // As it was left at the end of the last run (the user's choice).
   const [send, setSend] = useState(loadSendToStrava);
-  // «Only me» at every run, whatever the last one chose (the user's
-  // choice): publishing by mistake costs more than forgetting to. The
-  // activity is the sport chosen in «Settings», or the one the file says.
+  // «Only me» until the account saves another choice, then the last one
+  // saved (the user's choice, ADR-0304): nobody is public without having
+  // chosen it. An activity added from a file is an old one: always «Only me».
+  // The activity is the sport chosen in «Settings», or the one the file says.
   const [choice, setChoice] = useState<DrawingChoice>(() => ({
     ...NOT_CHOSEN,
     activity: imported?.sport ?? activityOf(sport),
+    visibility: imported === undefined ? loadVisibility(owner) : "only_me",
   }));
+  // Started from a remembered «Everyone» or «Followers»: the form scrolls, so
+  // its words stay over «Save» too, seen before the run goes public.
+  const [startedSeen] = useState(() => isSeen(choice.visibility));
   const [photos, setPhotos] = useState<Chosen[]>([]);
 
   function save() {
@@ -126,6 +143,9 @@ export function RunEnd({
     const kept = onSave();
     setFailed(!kept);
     if (kept) {
+      if (imported === undefined && owner !== null) {
+        saveVisibility(owner, choice.visibility);
+      }
       // The Sgrava logo, over the app, says the run is kept (TASK-212).
       showSavedLogo();
       if (run !== null) {
@@ -222,6 +242,9 @@ export function RunEnd({
           )}
         </View>
       </FormScroll>
+      {startedSeen && isSeen(choice.visibility) && (
+        <Text style={styles.note}>{seenText(choice.visibility)}</Text>
+      )}
       {failed && (
         <Text style={styles.problem} accessibilityRole="alert">
           {!full

@@ -117,7 +117,7 @@ import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { shapeName, toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import { useImageOutline } from "./src/route/useImageOutline";
-import { drawingLines, requestLines } from "./src/route/figureLines";
+import { drawingTrack, requestLines, type TrackInPlace } from "./src/route/figureLines";
 import { EditDrawingButton } from "./src/route/EditDrawingButton";
 import { NearYou } from "./src/route/NearYou";
 import { useNearYou } from "./src/route/nearYouShapes";
@@ -621,10 +621,14 @@ function MuW() {
         : null,
     [explored, sportActivity],
   );
-  const drawingFigure = useMemo(
-    () => (drawing !== null ? cardFigure(drawingLines(drawing), sportActivity) : null),
-    [drawing, sportActivity],
-  );
+  // A member's drawing gives its track, where it was run and as big
+  // (TASK-346, ADR-0299).
+  const drawingTrackInPlace = useMemo(() => {
+    const track = drawing !== null ? drawingTrack(drawing) : null;
+    return track !== null && cardFigure(track.lines, sportActivity) !== null
+      ? track
+      : null;
+  }, [drawing, sportActivity]);
   const others = useMemo(
     () =>
       choices.length < 2
@@ -1054,9 +1058,26 @@ function MuW() {
     }
   }
 
-  /** «Edit the drawing» on a card: the figure of the route of «Explore» or
-   * of the drawing, at the distance «Draw it near me» would choose; the
-   * route or the drawing is left as «Draw it near me» leaves it. */
+  /** «Edit the drawing» on a member's drawing (TASK-346, ADR-0299): its
+   * track on the map where it was run and as big, to change there; the
+   * drawing is left as «Draw it near me» leaves it. */
+  function editTrackOf(track: TrackInPlace | null): (() => void) | undefined {
+    if (track === null) {
+      return undefined;
+    }
+    return () => {
+      Keyboard.dismiss();
+      closeExplore();
+      leaveDrawing();
+      if (mapDraw.editInPlace(track.lines, track.centre, track.unitM)) {
+        setScreen("canvas");
+      }
+    };
+  }
+
+  /** «Edit the drawing» on a card: the figure of the route of «Explore», at
+   * the distance «Draw it near me» would choose; the route is left as «Draw
+   * it near me» leaves it. */
   function onEditCard(lines: FigureLines, distanceM: number) {
     closeExplore();
     leaveDrawing();
@@ -1443,7 +1464,7 @@ function MuW() {
             onBack={backFromDrawing}
             onStart={onStartDrawing}
             onDrawAgain={drawAgainOf(againOfDrawing(drawing))}
-            onEditDrawing={editCardOf(drawingFigure, drawing.distance_m)}
+            onEditDrawing={editTrackOf(drawingTrackInPlace)}
           />
         ) : (finishing || freeFinishing) && stretchAsked ? (
           // «Stretch» opens the exercises (part B) over «Your run», where

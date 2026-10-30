@@ -19868,7 +19868,7 @@ esempi. `shared-types` ha `DrawingSearchPage`, `DRAWING_SORTS`,
 **Stato**: Proposta · 2026-10-30 · TASK-348. La richiesta è dell'utente
 (2026-10-30, «Vai con la proposta»); le scelte di prodotto (quanti video,
 i layout, il disegno spostabile, appiattire, cosa c'è nell'editor, testi e
-privacy) sono da chiedere all'utente e si scrivono in TASK-348; i punti
+privacy) le ha fatte l'utente il 2026-10-30 e sono in TASK-348; i punti
 tecnici sono decisi dall'agente su delega dell'utente. Numeri dati dal
 Coordinatore. Estende ADR-0170 (le foto dei post), ADR-0275 (la striscia
 del Feed) e ADR-0292 (il video nei post); usa ADR-0254 (il video della

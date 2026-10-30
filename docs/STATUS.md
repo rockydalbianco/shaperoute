@@ -220,9 +220,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **TASK-348 — Il compositore del post: foto e video in primo piano, il
   disegno GPS, un editor** (ADR-0301, proposta; richiesta dell'utente del
   2026-10-30, «Vai con la proposta»; numeri dal Coordinatore). Branch
-  `docs/TASK-348-post-composer`: solo i documenti, con le scelte da
-  chiedere all'utente una per volta (quanti video, i layout, il disegno
-  spostabile, appiattire, l'editor, testi e privacy). Poi A (fino a 10
+  `docs/TASK-348-post-composer`: solo i documenti, con le scelte fatte
+  dall'utente il 2026-10-30, una per volta (al più 3 video per post, i
+  quattro layout, il disegno spostabile, appiattire, l'editor, testi e
+  privacy). Poi A (fino a 10
   foto in ordine e i layout, con un OTA), B (editor foto, 1.0.2), C (video,
   1.0.2, dopo TASK-336), D (rifiniture). Impronta iOS `83793e26` invariata
   fino a B. File `tasks/TASK-348.md`.

@@ -1,7 +1,7 @@
 # TASK-348 — Il compositore del post: foto e video in primo piano, il disegno GPS, un editor
 
-**Stato**: Proposta · 2026-10-30 · le scelte di prodotto sono da chiedere
-all'utente una per volta; nulla di nativo prima del taglio della 1.0.2
+**Stato**: Proposta · 2026-10-30 · le scelte di prodotto fatte dall'utente
+il 2026-10-30; nulla di nativo prima del taglio della 1.0.2
 **Fase**: 4 · **Branch**: `docs/TASK-348-post-composer` (documenti), poi
 una PR per parte
 **ADR**: ADR-0301 (proposta), che estende ADR-0170 (le foto dei post),
@@ -143,7 +143,8 @@ risposte si scrivono qui.
    — *Risposta (2026-10-30):* «Sì, tutte».
 7. **I testi e la privacy**: in inglese da approvare, la privacy nelle
    cinque lingue se cambia (10 foto invece di 3, più video).
-   — *Risposta:* da chiedere.
+   — *Risposta (2026-10-30):* «Approvo così», i testi e la privacy di «I
+   testi» qui sotto. I testi dell'editor no: li portano le parti B e C.
 
 ## I testi
 
@@ -201,7 +202,7 @@ Ogni parte ha la sua PR e parte da `main` solo col via del Coordinatore.
 
 ## Criteri di accettazione
 
-- [ ] Le scelte 2–7 hanno una risposta dell'utente scritta qui.
+- [x] Le scelte 2–7 hanno una risposta dell'utente scritta qui.
 - [ ] Ogni dipendenza nuova ha il sì dell'utente scritto qui.
 - [ ] Parte A: un post con 10 foto e il disegno, riordinato, si pubblica e
       si vede nel Feed nello stesso ordine; un'app vecchia vede le foto.

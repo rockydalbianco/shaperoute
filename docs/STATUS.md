@@ -224,6 +224,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `cardTitle` e i nomi medium, `Tap` al posto dell'opacità, `Hairline`
   prima delle azioni, la distanza delle schede di «Explore» in `display`;
   prima/dopo in `tasks/TASK-339/b-*.jpg`. Poi C.
+- **TASK-343 B — Le sfide del mese nell'app** (branch
+  `feat/TASK-343-b-themed-contest-app`): scheda, pagina, galleria, «Past
+  challenges», interruttore nel modulo, tocco delle tre push, regolamento. Con
+  l'API di oggi (c7a83347, senza 0039) l'app resta com'è. Testi e regolamento
+  approvati dall'utente (2026-10-30, «Approve them all» e «sì testi 667»); provata
+  nel simulatore con un tema e col server di oggi (esito nel task file). Dopo il
+  merge resta una riga: montare `EnterOnPost` in `DrawingCard`, dopo TASK-339 B e
+  su parola del Coordinatore.
+  Il server con la 0039 lo decide l'utente, insieme a questa parte.
   **Parte B in `main` dal 2026-10-30** con la #677 (`4faeceb2`, 23:16 CET,
   mergiata al verde: tutte le 557 suite dell'app verdi anche nella copia
   pulita). Poi C.
@@ -239,8 +248,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `tasks/TASK-343.md`. **A in `main`** (#657, `5303a198`, 2026-10-30, migrazione
   0039): **il server non è aggiornato**, serve la 0039 e lo decide l'utente.
   I testi delle tre push: sì dell'autopilota, «accettati su delega
-  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B da
-  fare**, i file prima al Coordinatore (TASK-339 B).
+  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B nella
+  PR #667**, la voce sopra.
 - **TASK-341 — I badge sul profilo: primo disegno, 10 disegni, 30 km**
   (ADR-0294; richiesta dell'utente del 2026-10-29, proposta approvata con
   «Yes, as proposed»; numeri dal Coordinatore). Branch

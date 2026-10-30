@@ -19722,6 +19722,24 @@ tema (il tema non varrebbe niente); un voto separato dalle reazioni (due
 gesti per la stessa cosa); un cron sul server per gli ultimi 3 giorni
 (l'API ha già i suoi orologi, nessun pezzo nuovo da far partire).
 
+**Aggiunta, parte B** (2026-10-30). Decise dall'agente su delega dell'utente,
+descritte in `CONCORSI.md` §15: la pagina della sfida sta sopra l'app, montata
+da `ProfileLayer` accanto a «Find friends» (`contestDoor`, nessun cambio in
+`App.tsx`), perché «Feed» viene smontato quando la mappa prende lo schermo;
+l'iscrizione è un campo della scelta del disegno (`DrawingChoice.entry`), che
+non va nel corpo del disegno e parte dopo il suo salvataggio; senza rete
+aspetta con la scelta, rifiutata se ne va e il disegno resta pubblicato; una
+sfida si riconosce solo da un `theme` leggibile, altrimenti è un concorso come
+prima. Sul post già pubblicato si iscrive e si ritira dal modulo di «My
+activities»; l'interruttore sul post aperto (`EnterOnPost`) è pronto e si monta
+in `DrawingCard` dopo TASK-339 B, su parola del Coordinatore. `FeedPost` non
+cambia: il suo «…» c'è solo sui post degli altri. Dopo la prova nel simulatore
+(2026-10-30), sempre su delega: l'interruttore è quello dell'app e non il nativo
+(il tocco spegneva solo con un trascinamento), `ProfileLayer` chiede la sfida
+all'accesso (il modulo deve conoscerla senza «Feed»: una richiesta in più per
+ogni apertura con un account, un 404 finché il server non ha un concorso), e
+dopo un'iscrizione la sfida si richiede.
+
 **Conseguenze**: una migrazione; tre tipi di push e i loro testi; il
 regolamento ufficiale cambia e va riapprovato. «Challenge» è già una
 parola del gioco «Play» (TASK-296): i testi dell'app devono tenerle

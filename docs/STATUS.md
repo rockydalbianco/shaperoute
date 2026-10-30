@@ -283,8 +283,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   il sì dell'utente sulla riga della privacy (invariata), la PR al
   Coordinatore, poi il server col sì dell'utente; senza il server l'app
   mostra i posti col solo nome.
-  **Chiuso il 2026-10-30**: B in `main` (#633), server da `5910bcfa`; resta
-  la copia della privacy sul sito (F.14), che lancia l'utente.
+  **Chiuso il 2026-10-30**: B in `main` (#633), server da `5910bcfa`, privacy
+  sul sito da `c7a83347` (F.14, lanciata dall'utente alle 07:27Z).
 
 - **TASK-321 — L'attività finita anche in Apple Salute e in Health
   Connect, perché compaia in Fitness** (ADR-0281, proposta; domanda

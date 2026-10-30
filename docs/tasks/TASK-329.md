@@ -235,6 +235,5 @@ e rifà i test di `map/` e `mapdraw/`; nei file della mappa solo aggiunte.
   server.
 - **Server**: `GET /place-photos` in servizio da `5910bcfa`, 2026-10-29
   ~20:55Z, col sì dell'utente anche sulla privacy. Task chiuso dal
-  Coordinatore il 2026-10-30. La copia della privacy sul sito è ancora quella
-  di `1e2bd6e6`: la lancia l'utente (F.14), il rifiuto è del controllo dei
-  permessi.
+  Coordinatore il 2026-10-30. La privacy sul sito è quella di `c7a83347` dal
+  2026-10-30 07:27Z (F.14, lanciata dall'utente).

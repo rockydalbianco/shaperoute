@@ -192,7 +192,7 @@ test("a photo goes first, then its message with what was written", async () => {
   // The box is back, and the photo is in the conversation.
   expect(screen.queryByPlaceholderText("Add a message…")).toBeNull();
   expect(
-    screen.getByRole("button", { name: "You: Photo, The river" }),
+    screen.getByRole("button", { name: /^You: Photo, The river, \d\d:\d\d$/ }),
   ).toBeOnTheScreen();
 });
 
@@ -264,10 +264,10 @@ test("a photo opens on the whole screen, and a video expired says so", async () 
   // The expired one cannot be opened.
   expect(
     screen.queryByRole("button", {
-      name: "You: This video has expired., Last month's sunrise",
+      name: /^You: This video has expired\., Last month's sunrise, \d\d:\d\d$/,
     }),
   ).toBeNull();
-  await fireEvent.press(screen.getByRole("button", { name: "Photo" }));
+  await fireEvent.press(screen.getByRole("button", { name: /^Photo, \d\d:\d\d$/ }));
   expect(screen.getByRole("button", { name: "Share" })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Close" }));
   expect(screen.queryByRole("button", { name: "Share" })).toBeNull();

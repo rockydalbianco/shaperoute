@@ -2633,7 +2633,11 @@ endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
 - **Un messaggio** ha `id`, `text`, `created_at` e `mine` (l'ha scritto
   chi chiede, che lo può cancellare). **Nessuna conferma di lettura**:
   `read_at` serve solo al pallino di chi riceve (`unread` nella lista,
-  `GET /me/conversations/unread`); scrivere segna letto.
+  `GET /me/conversations/unread`); scrivere segna letto. Nella lista
+  `unread_count` dice quanti messaggi nuovi ha la conversazione, fino a 10
+  (`CONVERSATION_UNREAD_COUNT_MAX`; TASK-353, ADR-0305): `unread` è
+  `unread_count > 0`. Un server di prima non lo manda, e l'app mostra il
+  pallino.
 - **Le pagine**: i messaggi **dall'ultimo**, `limit` da 1 a 50, `next`
   porta ai più vecchi; le conversazioni dall'ultimo messaggio, con `next` e
   `total`. Cursore `microsecondi-uuid`, come gli elenchi di «Follow». Prima

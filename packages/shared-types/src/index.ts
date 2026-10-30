@@ -1924,12 +1924,20 @@ export interface MessagesPage {
   attachments?: AttachmentsAllowed | null;
 }
 
+/** The most `unread_count` counts: beyond it the app says «9+» anyway. */
+export const CONVERSATION_UNREAD_COUNT_MAX = 10;
+
 /** One conversation in a list: who with, and its latest message. */
 export interface Conversation {
   person: Person;
   last: Message;
   /** The other wrote since who asks last read it (PUT …/read). */
   unread: boolean;
+  /**
+   * How many it wrote since, up to CONVERSATION_UNREAD_COUNT_MAX (TASK-353);
+   * missing on a server of before.
+   */
+  unread_count?: number;
 }
 
 /**

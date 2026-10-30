@@ -42,7 +42,7 @@ nell'elenco quanti ce ne sono di nuovi. Piano confermato dall'utente il
 - [x] Scorrendo si chiede la pagina una volta sola; se fallisce il tasto
       resta e richiede (`ChatLook.test.tsx`).
 - [ ] Testi nuovi approvati dall'utente, in cinque lingue.
-- [ ] Impronta iOS `83793e26` su una copia pulita.
+- [x] Impronta iOS `83793e26` su una copia pulita (664687ad, con `npm ci`).
 - [ ] Provato sul telefono: l'aspetto delle bolle e dell'elenco e lo
       scorrimento vero non sono coperti dai test.
 

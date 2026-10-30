@@ -18,6 +18,8 @@ import pytest
 from argon2 import PasswordHasher
 from fastapi.testclient import TestClient
 from route_engine.network import FileSource
+from test_push import FakeExpo, push_on, put_token
+
 from shaperoute_api.accounts import Accounts
 from shaperoute_api.activities import PlaceNames
 from shaperoute_api.app import create_app
@@ -47,7 +49,6 @@ from shaperoute_api.messages import (
 )
 from shaperoute_api.push import Pusher
 from shaperoute_api.report_email import reported
-from test_push import FakeExpo, push_on, put_token
 
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = REPO / "packages" / "shared-types" / "fixtures"

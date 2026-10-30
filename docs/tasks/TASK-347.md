@@ -316,9 +316,11 @@ Le altre: B `apps/mobile/src/engine/`; C–F `apps/mobile/src/mapdraw/`,
 ## Fuori scope
 
 - **Modificare i nodi della traccia vera** (il percorso registrato o
-  calcolato): è del TASK-346 («Edit the drawing» sulla traccia vera,
-  sessione local_e2f58775). Qui si modificano i tratti **disegnati** e si
-  riaggancia; non si tocca una traccia corsa.
+  calcolato): non è in nessun task. TASK-346 (#655) non ha nodi: l'utente ha
+  scelto «Traccia dov'è» e scartato «Trascinare il percorso» (precisazione
+  del Coordinatore, 2026-10-30; in `DECISIONS.md` in fondo). Qui si
+  modificano i tratti **disegnati** e si riaggancia; non si tocca una
+  traccia corsa.
 - Un servizio esterno di map matching, per le ragioni sopra.
 - Dipendenze native (Skia, gesture-handler, haptics, svg): alla build
   successiva, se mai.

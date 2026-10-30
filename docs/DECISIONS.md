@@ -19981,3 +19981,16 @@ cambiano; la modifica esplicita l'ha chiesta il Coordinatore.
    Coordinatore. Finché TASK-348 C non c'è, l'app ne manda uno.
 
 ---
+
+## ADR-0300, precisazione — Modificare i nodi della traccia vera non è in nessun task
+
+**Stato**: Attiva · 2026-10-30 · precisazione del Coordinatore, registrata
+dalla sessione della parte A di TASK-347. ADR-0300 (punto 7) e
+`tasks/TASK-347.md` dicevano che modificare i nodi di una traccia vera (il
+percorso registrato o calcolato) è del TASK-346. Non è così: la #655 di
+TASK-346 non ha nodi, perché l'utente ha scelto «Traccia dov'è» e ha
+scartato «Trascinare il percorso». Quel lavoro **non è in nessun task**; se
+servirà, lo chiede l'utente. TASK-347 modifica solo i tratti disegnati e li
+riaggancia, come ADR-0300 dice. ADR-0300 resta com'è.
+
+---

@@ -33,9 +33,9 @@ test("a shape is written as it is read", () => {
 });
 
 test("the facts of a drawing: what, how far, how long", () => {
-  expect(postFacts(POST)).toBe("Dog head · 10.5 km · 1 h 04 min · 6:05 /km");
+  expect(postFacts(POST)).toBe("Dog head · 10.5 km · 1 h 04 min · 6:05 /km · 762 kcal");
   expect(postFacts({ ...POST, shape: "moon", route_m: 4884, minutes: 27 })).toBe(
-    "Moon · 4.9 km · 27 min · 5:32 /km",
+    "Moon · 4.9 km · 27 min · 5:32 /km · 354 kcal",
   );
 });
 
@@ -46,7 +46,7 @@ test("shows who ran it and where, the title and the facts", async () => {
   expect(screen.getByText("Firenze")).toBeOnTheScreen();
   expect(screen.getByText("Dog walk, without the dog")).toBeOnTheScreen();
   expect(
-    screen.getByText("Dog head · 10.5 km · 1 h 04 min · 6:05 /km"),
+    screen.getByText("Dog head · 10.5 km · 1 h 04 min · 6:05 /km · 762 kcal"),
   ).toBeOnTheScreen();
 });
 
@@ -109,7 +109,7 @@ test("a screen reader hears the drawing as one thing", async () => {
   await render(<FeedPost post={POST} width={358} />);
   expect(
     screen.getByLabelText(
-      "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min · 6:05 /km.",
+      "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min · 6:05 /km · 762 kcal.",
     ),
   ).toBeOnTheScreen();
 });
@@ -123,7 +123,7 @@ test("a tap opens its route, and a screen reader hears where it leads", async ()
   const onOpen = jest.fn();
   await render(<FeedPost post={POST} width={358} onOpen={onOpen} />);
   const card = screen.getByRole("button", {
-    name: "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min · 6:05 /km.",
+    name: "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min · 6:05 /km · 762 kcal.",
   });
   expect(card).toHaveProp("accessibilityHint", "Opens the route on the map");
   await fireEvent.press(card);

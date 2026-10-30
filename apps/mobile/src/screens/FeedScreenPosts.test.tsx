@@ -94,7 +94,9 @@ test("signed in, the page shows the drawings the members published", async () =>
   expect(await screen.findByText("Ada_runs")).toBeOnTheScreen();
   expect(screen.getByText("Sunday heart by the river")).toBeOnTheScreen();
   expect(screen.getByText("Trento")).toBeOnTheScreen();
-  expect(screen.getByText("Star · 4.0 km · 19 min · 4:45 /km")).toBeOnTheScreen();
+  expect(
+    screen.getByText("Star · 4.0 km · 19 min · 4:45 /km · 290 kcal"),
+  ).toBeOnTheScreen();
   // The second, a word on a bike without a title, named by its day.
   expect(screen.getByText("adam.trento")).toBeOnTheScreen();
   expect(

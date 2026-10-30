@@ -1,4 +1,5 @@
 import type {
+  ContestEntriesPage,
   ContestEntry,
   ContestGalleryOrder,
   FeedPost as Post,
@@ -7,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { sessionEnded } from "../account/messages";
+import type { AccountOutcome } from "../api/accounts";
 import { FeedPost } from "../feed/FeedPost";
 import { shownPost } from "../feed/feedPosts";
 import { t, tPlural } from "../i18n";
@@ -48,24 +50,8 @@ export function useContestGallery(contestId: string, options: Options = {}): Gal
   const asking = useRef(0);
   const busy = useRef(false);
 
-  const ask = useCallback(
-    async (wanted: ContestGalleryOrder, cursor: string | null) => {
-      if (apiUrl === null) {
-        return;
-      }
-      const request = ++asking.current;
-      busy.current = true;
-      const outcome = await fetchContestEntries(
-        apiUrl,
-        token,
-        contestId,
-        wanted,
-        cursor,
-        { fetchFn, key },
-      );
-      if (request !== asking.current) {
-        return;
-      }
+  const take = useCallback(
+    (cursor: string | null, outcome: AccountOutcome<ContestEntriesPage>) => {
       busy.current = false;
       if (outcome.kind === "ok") {
         next.current = outcome.value.next;
@@ -81,11 +67,30 @@ export function useContestGallery(contestId: string, options: Options = {}): Gal
       }
       setStatus(noContest(outcome) ? "ready" : "failed");
     },
-    [apiUrl, contestId, endSession, fetchFn, key, token],
+    [endSession, token],
+  );
+
+  const ask = useCallback(
+    (wanted: ContestGalleryOrder, cursor: string | null) => {
+      if (apiUrl === null) {
+        return;
+      }
+      const request = ++asking.current;
+      busy.current = true;
+      void fetchContestEntries(apiUrl, token, contestId, wanted, cursor, {
+        fetchFn,
+        key,
+      }).then((outcome) => {
+        if (request === asking.current) {
+          take(cursor, outcome);
+        }
+      });
+    },
+    [apiUrl, contestId, fetchFn, key, take, token],
   );
 
   useEffect(() => {
-    void ask(order, null);
+    ask(order, null);
   }, [ask, order]);
 
   const setOrder = useCallback((wanted: ContestGalleryOrder) => {
@@ -96,12 +101,12 @@ export function useContestGallery(contestId: string, options: Options = {}): Gal
   }, []);
   const more = useCallback(() => {
     if (next.current !== null && !busy.current) {
-      void ask(order, next.current);
+      ask(order, next.current);
     }
   }, [ask, order]);
   const again = useCallback(() => {
     setStatus("loading");
-    void ask(order, null);
+    ask(order, null);
   }, [ask, order]);
   return { order, setOrder, entries, status, more, again };
 }

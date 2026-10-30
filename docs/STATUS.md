@@ -160,6 +160,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-343 B — Le sfide del mese nell'app** (branch
+  `feat/TASK-343-b-themed-contest-app`): scheda, pagina, galleria, «Past
+  challenges», interruttore nel modulo, tocco delle tre push, regolamento. Con
+  l'API di oggi (c7a83347, senza 0039) l'app resta com'è. **Testi e regolamento
+  aspettano il sì dell'utente**; dopo il merge resta una riga: montare
+  `EnterOnPost` in `DrawingCard`, dopo TASK-339 B e su parola del Coordinatore.
+  Il server con la 0039 lo decide l'utente, insieme a questa parte.
 - **TASK-343 — Le sfide del mese: un tema sul concorso, l'iscrizione,
   la galleria, l'archivio** (ADR-0296, estende ADR-0260; richiesta
   dell'utente del 2026-10-29, proposta approvata con «Yes, as proposed»;

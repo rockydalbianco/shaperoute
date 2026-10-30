@@ -37,6 +37,7 @@ import {
 import { ContestRules } from "./ContestRules";
 import { daysLeftText } from "./daysLeft";
 import { PastContests } from "./PastContests";
+import { useClock } from "./useClock";
 
 /** A challenge as its page shows it: the one kept, or one of the archive. */
 type Shown =
@@ -75,6 +76,7 @@ export function ContestPage({
   const insets = useSafeAreaInsets();
   const window = useWindowDimensions();
   const language = useLanguage();
+  const now = useClock();
   const { apiUrl, account } = useFollowsDoor();
   const { open, openProblem } = useDrawingsDoor();
   const { state } = account;
@@ -196,7 +198,7 @@ export function ContestPage({
               </Text>
               <Text style={styles.facts}>
                 {contest.closed_at === null
-                  ? daysLeftText(contest.ends_at, Date.now())
+                  ? daysLeftText(contest.ends_at, now)
                   : t("Ended")}
               </Text>
               <Text style={styles.facts}>

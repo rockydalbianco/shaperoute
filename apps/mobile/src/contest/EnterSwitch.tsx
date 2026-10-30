@@ -1,20 +1,13 @@
-import type { DrawingDetail, ThemedContest } from "@shaperoute/shared-types";
-import { useState } from "react";
+import type { ThemedContest } from "@shaperoute/shared-types";
 import { StyleSheet, Switch, Text, View } from "react-native";
 
-import { sessionEnded } from "../account/messages";
 import type { DrawingEntry } from "../api/drawings";
 import { t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
-import { useFollowsDoor } from "../social/followsDoor";
 import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
-import { entryProblem, setContestEntry, themedOf, themeText } from "./contestApi";
-import {
-  enteredIn,
-  type KeptContest,
-  markEntered,
-  useContestKept,
-} from "./contestKept";
+import { themedOf, themeText } from "./contestApi";
+import { type KeptContest, useContestKept } from "./contestKept";
+import { useClock } from "./useClock";
 
 /**
  * The monthly challenge that takes entries now on the phone's clock: begun,
@@ -52,7 +45,7 @@ type Props = {
 export function EnterSwitch({ entry, onEntry, disabled }: Props) {
   const kept = useContestKept();
   const language = useLanguage();
-  const contest = enterable(kept, Date.now());
+  const contest = enterable(kept, useClock());
   if (contest === null) {
     return null;
   }
@@ -66,76 +59,8 @@ export function EnterSwitch({ entry, onEntry, disabled }: Props) {
   );
 }
 
-/**
- * The same switch on the account's own post, opened whole (TASK-343 part B):
- * it enters or withdraws at once. Only a drawing that can take part has it:
- * for everyone, recorded by the app, published during the challenge.
- */
-export function PostEntry({ drawing }: { drawing: DrawingDetail }) {
-  const { apiUrl, account } = useFollowsDoor();
-  const kept = useContestKept();
-  const language = useLanguage();
-  const [busy, setBusy] = useState(false);
-  const [problem, setProblem] = useState<string | null>(null);
-  const { state } = account;
-  const session = state.status === "signedIn" ? state.session : null;
-  const publicId = session?.user.public_id ?? null;
-  const contest = enterable(kept, Date.now());
-  if (
-    contest === null ||
-    apiUrl === null ||
-    session === null ||
-    publicId !== drawing.author.public_id ||
-    drawing.visibility !== "everyone" ||
-    (drawing.source !== undefined && drawing.source !== "muw") ||
-    drawing.published_at === null ||
-    Date.parse(drawing.published_at) < Date.parse(contest.starts_at) ||
-    Date.parse(drawing.published_at) > Date.parse(contest.ends_at)
-  ) {
-    return null;
-  }
-  const { id: contestId } = contest;
-  const { token } = session;
-  const baseUrl = apiUrl;
-  async function change(entered: boolean) {
-    setBusy(true);
-    setProblem(null);
-    const outcome = await setContestEntry(
-      baseUrl,
-      token,
-      contestId,
-      drawing.id,
-      entered,
-    );
-    setBusy(false);
-    if (outcome.kind === "ok") {
-      markEntered(contestId, drawing.id, entered);
-    } else if (sessionEnded(outcome)) {
-      account.sessionEnded(token);
-    } else {
-      setProblem(entryProblem(outcome));
-    }
-  }
-  return (
-    <View style={styles.block}>
-      <SwitchRow
-        label={t("Enter “{theme}”", {
-          theme: themeText(contest.theme, language).title,
-        })}
-        on={enteredIn(kept, publicId).includes(drawing.id)}
-        onChange={(entered) => void change(entered)}
-        disabled={busy}
-      />
-      {problem !== null && (
-        <Text style={styles.problem} accessibilityRole="alert">
-          {problem}
-        </Text>
-      )}
-    </View>
-  );
-}
-
-function SwitchRow({
+/** The switch and what it says, in the form and on a post. */
+export function SwitchRow({
   label,
   on,
   onChange,
@@ -160,9 +85,6 @@ function SwitchRow({
 }
 
 const styles = StyleSheet.create({
-  block: {
-    gap: space.xs,
-  },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -175,9 +97,5 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,
-  },
-  problem: {
-    color: color.error,
-    fontSize: fontSize.small,
   },
 });

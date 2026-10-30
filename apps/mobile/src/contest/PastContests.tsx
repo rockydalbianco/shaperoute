@@ -54,32 +54,33 @@ export function PastContests({
   const next = useRef<string | null>(null);
   const busy = useRef(false);
   const ask = useCallback(
-    async (cursor: string | null) => {
+    (cursor: string | null) => {
       if (apiUrl === null || busy.current) {
         return;
       }
       busy.current = true;
-      const outcome = await fetchPastContests(apiUrl, token, cursor, {
+      void fetchPastContests(apiUrl, token, cursor, {
         fetchFn,
         key: apiKey,
+      }).then((outcome) => {
+        busy.current = false;
+        if (outcome.kind === "ok") {
+          next.current = outcome.value.next;
+          setContests((was) =>
+            cursor === null
+              ? outcome.value.contests
+              : [...was, ...outcome.value.contests],
+          );
+          setStatus("ready");
+        } else {
+          setStatus(noContest(outcome) ? "ready" : "failed");
+        }
       });
-      busy.current = false;
-      if (outcome.kind === "ok") {
-        next.current = outcome.value.next;
-        setContests((was) =>
-          cursor === null
-            ? outcome.value.contests
-            : [...was, ...outcome.value.contests],
-        );
-        setStatus("ready");
-      } else {
-        setStatus(noContest(outcome) ? "ready" : "failed");
-      }
     },
     [apiKey, apiUrl, fetchFn, token],
   );
   useEffect(() => {
-    void ask(null);
+    ask(null);
   }, [ask]);
   return (
     <FlatList<PastContest>
@@ -90,7 +91,7 @@ export function PastContests({
       renderItem={({ item }) => <PastCard contest={item} onOpen={onOpen} />}
       onEndReached={() => {
         if (next.current !== null) {
-          void ask(next.current);
+          ask(next.current);
         }
       }}
       ListHeaderComponent={
@@ -118,7 +119,7 @@ export function PastContests({
               style={styles.again}
               onPress={() => {
                 setStatus("loading");
-                void ask(null);
+                ask(null);
               }}
               accessibilityRole="button"
             >

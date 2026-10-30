@@ -18,6 +18,7 @@ import type { ReactNode } from "react";
 
 import type { AccountState } from "../account/useAccount";
 import { apiError } from "../account/testing";
+import type { AccountOutcome } from "../api/accounts";
 import { DrawingsContext, useDrawingsDoor } from "../social/drawingsDoor";
 import { FollowsContext } from "../social/followsDoor";
 import { forgetBlocked } from "../social/blockedNow";
@@ -41,7 +42,7 @@ import {
 } from "./contestKept";
 import { ContestPage, ContestPageHost } from "./ContestPage";
 import { ContestRules, RULES, THEMED_RULES } from "./ContestRules";
-import { enterable, EnterSwitch, PostEntry } from "./EnterSwitch";
+import { enterable, EnterSwitch } from "./EnterSwitch";
 import { FeedContest } from "./FeedContest";
 import { sendEntry } from "./sendEntry";
 
@@ -221,7 +222,13 @@ describe("what the API says", () => {
 
   test("a refused entry has words of its own", () => {
     const refused = (code: string) =>
-      ({ kind: "api_error", code, message: "server words", status: 409 }) as const;
+      ({
+        kind: "api_error",
+        code,
+        message: "server words",
+        suggested_distance_m: null,
+        retryAfterS: null,
+      }) as AccountOutcome<unknown>;
     expect(entryProblem(refused("not_entrant"))).toMatch(/cannot take part/);
     expect(entryProblem(refused("contest_closed"))).toBe(
       "This challenge takes no entries now.",
@@ -594,86 +601,5 @@ describe("entering", () => {
     setContest({ account: "another-account", contest: THEMED });
     expect(enteredIn(keptContest(), ACCOUNT)).toEqual([]);
     expect(enteredIn(keptContest(), "another-account")).toEqual(THEMED.entered);
-  });
-
-  describe("on the account's own post", () => {
-    const POST = {
-      ...GALLERY.entries[0].drawing,
-      id: "own-post",
-      public: true,
-      track: [],
-      visibility: "everyone",
-      published_at: "2500-01-01T00:00:00Z",
-      author: { public_id: ACCOUNT, username: "me" },
-    } as unknown as DrawingDetail;
-
-    test("it enters and withdraws at once", async () => {
-      setContest({
-        account: ACCOUNT,
-        contest: { ...THEMED, entered: [] } as ThemedContest,
-      });
-      answers["/entries"] = () => new Response(null, { status: 204 });
-      await render(
-        <Around>
-          <PostEntry drawing={POST} />
-        </Around>,
-      );
-      const name = `Enter “${THEMED.theme.en.title}”`;
-      await fireEvent(screen.getByRole("switch", { name }), "valueChange", true);
-      await waitFor(() =>
-        expect(screen.getByRole("switch", { name }).props.value).toBe(true),
-      );
-      expect(asked("/entries/own-post")[0].method).toBe("PUT");
-      await fireEvent(screen.getByRole("switch", { name }), "valueChange", false);
-      await waitFor(() =>
-        expect(screen.getByRole("switch", { name }).props.value).toBe(false),
-      );
-      expect(asked("/entries/own-post")[1].method).toBe("DELETE");
-    });
-
-    test("a refusal says why, and the switch stays", async () => {
-      setContest({
-        account: ACCOUNT,
-        contest: { ...THEMED, entered: [] } as ThemedContest,
-      });
-      answers["/entries"] = () =>
-        Response.json(apiError("contest_closed", "No."), { status: 409 });
-      await render(
-        <Around>
-          <PostEntry drawing={POST} />
-        </Around>,
-      );
-      const name = `Enter “${THEMED.theme.en.title}”`;
-      await fireEvent(screen.getByRole("switch", { name }), "valueChange", true);
-      expect(
-        await screen.findByText("This challenge takes no entries now."),
-      ).toBeOnTheScreen();
-      expect(screen.getByRole("switch", { name }).props.value).toBe(false);
-    });
-
-    test.each([
-      ["somebody else's", { author: { public_id: "other", username: "o" } }],
-      ["for followers", { visibility: "followers" }],
-      ["imported", { source: "file" }],
-      ["published before the challenge", { published_at: "2019-01-01T00:00:00Z" }],
-    ])("a post %s has no switch", async (_name, change) => {
-      setContest({ account: ACCOUNT, contest: THEMED });
-      await render(
-        <Around>
-          <PostEntry drawing={{ ...POST, ...change } as DrawingDetail} />
-        </Around>,
-      );
-      expect(screen.queryByRole("switch")).toBeNull();
-    });
-
-    test("with an API without themes there is no switch", async () => {
-      setContest({ account: ACCOUNT, contest: PLAIN });
-      await render(
-        <Around>
-          <PostEntry drawing={POST} />
-        </Around>,
-      );
-      expect(screen.queryByRole("switch")).toBeNull();
-    });
   });
 });

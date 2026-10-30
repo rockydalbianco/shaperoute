@@ -4,7 +4,7 @@ import type {
   ContestMine,
   FeedPost,
 } from "@shaperoute/shared-types";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { RouteThumb } from "../explore/RouteThumb";
@@ -25,13 +25,11 @@ import { themedOf, themeText } from "./contestApi";
 import { openContestPage } from "./contestDoor";
 import { ContestRules } from "./ContestRules";
 import { contestTime, daysLeftText } from "./daysLeft";
+import { useClock } from "./useClock";
 
 /** The drawing of one of the first three, small. */
 const THUMB_WIDTH = 64;
 const THUMB_HEIGHT = 40;
-/** How often the phone's clock is read again: the last day turns into
- * «Ends today», and the end into «Ended», while the card is on the screen. */
-const CLOCK_MS = 60_000;
 
 type Props = {
   contest: Contest;
@@ -137,16 +135,6 @@ export function SeeChallenge({ contestId }: { contestId: string }) {
       <Text style={styles.howText}>{t("See the challenge")}</Text>
     </Pressable>
   );
-}
-
-/** The phone's clock, read again every minute. */
-function useClock(): number {
-  const [now, setNow] = useState(Date.now);
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), CLOCK_MS);
-    return () => clearInterval(timer);
-  }, []);
-  return now;
 }
 
 /** One of the first three: its place, its drawing, who ran it, its

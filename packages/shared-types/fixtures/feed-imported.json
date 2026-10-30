@@ -20,6 +20,7 @@
       "source": "file",
       "tags": [],
       "photos": [],
+      "order": null,
       "rotation_deg": null,
       "track_preview": [
         [46.0718, 11.11],

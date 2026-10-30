@@ -4,7 +4,7 @@ import { test } from "node:test";
 import publicProfile from "../fixtures/public-profile.json" with { type: "json" };
 import userPhotos from "../fixtures/user-photos.json" with { type: "json" };
 import {
-  DRAWING_MAX_PHOTOS,
+  DRAWING_PHOTO_PLACES,
   type PublicProfile,
   type UserPhotosPage,
 } from "../src/index.ts";
@@ -24,7 +24,7 @@ test("a photo of a profile names its drawing and where to read it", () => {
       "url",
       "width",
     ]);
-    assert.ok(photo.n >= 1 && photo.n <= DRAWING_MAX_PHOTOS);
+    assert.ok(photo.n >= 1 && photo.n <= DRAWING_PHOTO_PLACES);
     assert.ok(photo.url.startsWith(`/drawings/${photo.drawing_id}/photos/${photo.n}?`));
   }
 });

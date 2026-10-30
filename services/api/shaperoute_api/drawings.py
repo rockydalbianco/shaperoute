@@ -2,7 +2,7 @@
 TASK-208, docs/API.md, «Drawings»).
 
 A run saved in My activities (activities.py) is private. Its owner may give
-it a title, a description, the members it tags, up to three photos
+it a title, a description, the members it tags, up to ten photos
 (drawing_photos.py), and say who can see it (ADR-0170): every member, the
 members who follow it with the request accepted (follows.py), or only
 itself. The photos are kept here only while others can see the drawing:
@@ -79,7 +79,10 @@ MAX_TITLE_LENGTH = 60
 MAX_DESCRIPTION_LENGTH = 500
 MAX_TAGS = 10
 # Besides the map, which is the first picture of a drawing (TASK-208).
-MAX_PHOTOS = 3
+MAX_PHOTOS = 10
+# In `item_order` (ADR-0301): the map, and a photo by its place.
+ORDER_DRAWING = "drawing"
+ORDER_PHOTO = "photo:"
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 50
 # Where a page ended: the start of its last run, in microseconds, and the id
@@ -298,7 +301,8 @@ class PhotoBody(BaseModel):
     from `url` (GET /drawings/{id}/photos/{n})."""
 
     n: int
-    """Its place, 1 to MAX_PHOTOS: a place emptied stays empty."""
+    """Its place, 1 to MAX_PHOTOS: a place emptied stays empty, and a place
+    says which photo, not where it stands (`order`, ADR-0301)."""
     url: str
     """On this API; it changes when the photo does."""
     width: int
@@ -332,6 +336,12 @@ class MyDrawingBody(BaseModel):
     examples written before."""
     tags: list[TagBody]
     photos: list[PhotoBody]
+    """In the post's order, for an app that does not read `order`."""
+    order: list[str] | None = None
+    """The post's order, the map among the photos: `drawing`, `photo:2`
+    (TASK-348, ADR-0301). Null: never ordered, the map first and the photos
+    by place. Always answered; the default is for the examples written
+    before."""
 
 
 class MyDrawingsBody(BaseModel):
@@ -377,6 +387,9 @@ class SeenFields(BaseModel):
     written before."""
     tags: list[TagBody]
     photos: list[PhotoBody]
+    """In the post's order, for an app that does not read `order`."""
+    order: list[str] | None = None
+    """As in MyDrawingBody (TASK-348, ADR-0301)."""
     rotation_deg: float | None = None
     """How far the planned route's shape is turned (TASK-232, ADR-0195),
     as My activities has it: the drawing is shown turned back, so it reads
@@ -462,16 +475,31 @@ def photo_url(drawing_id: UUID, n: int, updated_at: datetime) -> str:
 
 @dataclass(frozen=True)
 class Details:
-    """The tags and the photos of some drawings, by id."""
+    """The tags, the photos and the order of some drawings, by id."""
 
     tags: dict[UUID, list[TagBody]]
     photos: dict[UUID, list[PhotoBody]]
+    orders: dict[UUID, list[str]]
+
+
+def in_order(
+    item_order: Sequence[str], photos: Sequence[PhotoBody]
+) -> tuple[list[PhotoBody], list[str]]:
+    """The photos in the order chosen, and that order as it stands now: a
+    place emptied leaves it, and a photo it does not name comes last, by
+    place. An order may name a photo not sent yet: the phone sends the order
+    and the photos one by one, in any order, without network in between."""
+    by_item = {f"{ORDER_PHOTO}{photo.n}": photo for photo in photos}
+    order = [item for item in item_order if item == ORDER_DRAWING or item in by_item]
+    order += [item for item in by_item if item not in order]
+    return [by_item[item] for item in order if item in by_item], order
 
 
 def _details(conn: Connection, ids: Sequence[UUID]) -> Details:
-    """In two reads for a page, never the bytes of a photo."""
+    """In three reads for a page, never the bytes of a photo."""
     tags: dict[UUID, list[TagBody]] = defaultdict(list)
     photos: dict[UUID, list[PhotoBody]] = defaultdict(list)
+    orders: dict[UUID, list[str]] = {}
     if ids:
         for row in conn.execute(
             "SELECT t.drawing_id, u.public_id, u.username FROM drawing_tags t"
@@ -495,7 +523,16 @@ def _details(conn: Connection, ids: Sequence[UUID]) -> Details:
                     height=row["height"],
                 )
             )
-    return Details(tags, photos)
+        for row in conn.execute(
+            "SELECT id, item_order FROM drawings"
+            " WHERE id = ANY(%s) AND item_order IS NOT NULL",
+            (list(ids),),
+        ):
+            drawing_id = row["id"]
+            photos[drawing_id], orders[drawing_id] = in_order(
+                row["item_order"], photos[drawing_id]
+            )
+    return Details(tags, photos, orders)
 
 
 def _seen(row: DictRow, details: Details) -> dict[str, Any]:
@@ -521,6 +558,7 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         "source": row["source"],
         "tags": details.tags.get(row["id"], []),
         "photos": details.photos.get(row["id"], []),
+        "order": details.orders.get(row["id"]),
         # The run's, as My activities answers it (activities._turn).
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
     }
@@ -552,6 +590,7 @@ def _mine(conn: Connection, rows: Sequence[DictRow]) -> list[MyDrawingBody]:
             source=row["source"],
             tags=details.tags.get(row["id"], []),
             photos=details.photos.get(row["id"], []),
+            order=details.orders.get(row["id"]),
         )
         for row in rows
     ]
@@ -693,9 +732,14 @@ class Drawings:
                 ).fetchone()
                 assert drawing is not None
                 if visibility == "only_me":
-                    # Seen by its owner only, its photos are the phone's.
+                    # Seen by its owner only, its photos are the phone's,
+                    # and their order.
                     conn.execute(
                         "DELETE FROM drawing_photos WHERE drawing_id = %s",
+                        (drawing["id"],),
+                    )
+                    conn.execute(
+                        "UPDATE drawings SET item_order = NULL WHERE id = %s",
                         (drawing["id"],),
                     )
                 if body.activity is not None:

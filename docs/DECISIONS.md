@@ -19981,6 +19981,46 @@ dell'utente; un server precedente risponde `404` e l'app cerca solo negli
 esempi. `shared-types` ha `DrawingSearchPage`, `DRAWING_SORTS`,
 `DRAWING_COMPLEXITIES` e le due soglie.
 
+## ADR-0304 — «Who can see it» parte da «Only me», poi dall'ultima scelta salvata
+**Stato**: Attiva · 2026-10-30 · **scelta dell'utente**; i dettagli sono
+decisi dall'agente su delega dell'utente (TASK-352). Sostituisce, per la fine
+della corsa, «Only me a ogni corsa» di ADR-0170.
+
+**Contesto**: l'utente ha chiesto: «quando un utente finisce un attività in
+autotatico metti l'impostazione di pubblicarla di defoult se invece non vuole
+un utente può toglierla poi». Il coordinatore ha segnalato che una traccia GPS
+pubblica per impostazione predefinita è un rischio con il GDPR, art. 25 (la
+protezione dei dati per impostazione predefinita), e ha proposto l'alternativa.
+All'utente sono state spiegate le due strade; ha risposto: «Dopo la prima
+scelta». La riga non è stata vista da un legale.
+
+**Decisione**:
+
+1. La prima attività di un account parte da «Only me». Poi parte dall'ultima
+   scelta con cui l'account ha **salvato** una corsa: «Everyone», «Followers»
+   o «Only me». Chi toglie la pubblicazione riparte da privato.
+2. La scelta si tiene solo con «Save» riuscito: toccare un'opzione, «Discard»
+   o un «Save» fallito non cambiano niente.
+3. Una scelta per account, in `drawing-visibility.json` sul telefono: un altro
+   account sullo stesso telefono parte da «Only me». Cancellare l'account la
+   toglie; uscire no.
+4. Le attività da file partono sempre da «Only me» e non cambiano la scelta.
+5. Si pubblica solo col gesto di «Save». Se il modulo parte da «Everyone» o
+   «Followers», la frase che lo dice sta anche sopra «Save», fuori dalla parte
+   che scorre, con un testo già tradotto: la scelta si vede prima del gesto.
+6. Nessun cambio all'API: il taglio di 200 m ai due capi resta. Le corse già
+   salvate non cambiano. Niente migrazione né dipendenze.
+
+**Alternative scartate**: «Everyone» sempre, fin dalla prima attività (quello
+chiesto all'inizio, scartato dall'utente con la risposta sopra); ricordare solo
+«Everyone» (chi sceglie «Followers» dovrebbe rifarlo a ogni corsa); ricordare
+al tocco (una scelta provata e non salvata resterebbe).
+
+**Conseguenze**: Help e Privacy cambiano nelle cinque lingue, con il sito
+rigenerato: testi mostrati all'utente in italiano, che ha risposto «Sì,
+approvo». App Privacy e Data safety non cambiano: i dati raccolti e il loro
+uso sono gli stessi, la pubblicazione resta una scelta di chi corre.
+
 ---
 
 ## ADR-0301 — Il compositore del post: fino a 10 elementi in ordine, i layout appiattiti a «Publish», l'editor nativo dalla 1.0.2
@@ -20093,6 +20133,7 @@ scheda cambierebbe da sola); una freccia da toccare al posto dello swipe (non
 scorrere la fila, che si scorre dalla seconda pagina o da nome e distanza. Le
 mappe si prendono anche per le schede con foto, una alla volta come le altre.
 Nessun testo nuovo, nessuna dipendenza, niente di nativo, server non toccato.
+
 ## ADR-0303 — Il video della corsa con la mappa sotto: la mappa nella pagina del video, uno scatto e la linea sopra, il giallo come riserva, tre stili dai token, il 3D proiettato dalla pagina
 
 **Stato**: Proposta · 2026-10-30 · TASK-351. La richiesta è dell'utente
@@ -20232,3 +20273,88 @@ fondo alle tabelle (la riga e i tre nomi) e una riga di privacy estesa,
 col sì dell'utente; TASK-336 B (il video nei post a 540 × 960) prende
 questo video con lo stile scelto; `docs/UI.md` («Il post da condividere»)
 descrive il video nuovo con la parte B.
+
+## ADR-0306 — La scheda del Feed: due parti, il look di ADR-0293 prima del brief, la posizione arrotondata e detta
+
+**Stato**: Proposta · 2026-10-30 · TASK-355. La richiesta e il piano sono
+dell'utente («Sì, procedi», 2026-10-30); numeri dal Coordinatore; le scelte
+di prodotto sono dell'utente, con le sue parole in `tasks/TASK-355.md`. Il
+resto è deciso dall'agente su delega dell'utente. Estende ADR-0293; non tocca ADR-0127,
+ADR-0193, ADR-0207.
+
+**Contesto**: il brief chiede una scheda più chiara «senza cambiare le
+API». Ma `GET /feed` non manda foto dell'autore, conteggi né filtri; varie
+voci esistono già altrove (TASK-119, 120, 178, 307, 313, 315); alcune
+contraddicono scelte già fatte: il punteggio, il colore unico del canvas
+approvato, il cuore che vuole un commento. E il Feed manda già la
+posizione non arrotondata, cosa che «Your position» non dice.
+
+**Decisione** (proposta):
+
+1. **Due parti.** A solo app, piccola, senza `FeedScreen.tsx`; B con
+   l'API (campi e `filter` facoltativi). I conteggi non si chiedono card per
+   card, e i filtri non si fanno sul telefono: le liste sarebbero incomplete.
+2. **Dove il brief e ADR-0293 divergono decide l'utente**, voce per voce: ha
+   scelto ogni volta il canvas (avatar grigio, segni neutri, riga di testo).
+3. **Il contatore delle slide è di TASK-348 A**, che riscrive il carosello
+   (confermato dal Coordinatore).
+4. **La posizione nel Feed**: arrotondata a due decimali dall'app (circa
+   1 km; il raggio è di 50 km) e scritta in «Your position». È un task a sé,
+   TASK-356, perché il testo è incompleto già oggi; testo approvato
+   dall'utente il 2026-10-30.
+5. **Niente `expo-blur`**: l'header è già opaco e sopra le pagine, basta un
+   filo; l'impronta iOS `83793e26` resta.
+
+**Conseguenze**: `FeedPost` si accorcia (`RouteMap`, `ActionBar`), a favore
+di 348 A e 336 B. Il `GET /feed` di B pesa di più: la PR misura tempo e
+peso, e se 20 foto da 128 px sono troppe si passa a una rotta per la foto.
+Un'app di prima continua a mandare il punto intero fino all'aggiornamento:
+il server lo accetta come oggi e non lo tiene.
+
+---
+
+## ADR-0299 — «Edit the drawing» su un disegno del Feed: la traccia sulla mappa dov'è stata corsa
+
+**Stato**: Accettata · 2026-10-29 · TASK-346. La scelta di prodotto è
+dell'utente («Traccia dov'è», 2026-10-29); i punti tecnici sono decisi
+dall'agente su delega dell'utente. Numero dato dal Coordinatore. Cambia
+ADR-0288 (TASK-331) per la sola scheda di un disegno di un membro.
+
+**Contesto**: l'utente il 2026-10-29: «nel Feed quando premo modifica il
+disegno devo poter modificare la traccia sulla mappa, non il disegno in
+sé». Fino ad allora la scheda del disegno metteva la traccia corsa,
+raddrizzata e chiusa, nel mezzo della partenza di «Draw» e lunga quanto la
+sceglierebbe «Draw it near me»: un disegno spostato altrove, non la traccia.
+Fra «Traccia dov'è», «Traccia vicino a me» e «Trascinare il percorso» (un
+punto tenuto e il tratto ricalcolato sulle vie, che vuole una funzione
+nuova nel motore) l'utente ha scelto la prima.
+
+**Decisione**:
+
+1. Su un disegno di un membro «Edit the drawing» mette la traccia su «Draw
+   on the map» **dove è stata corsa e grande com'è**: il contorno nel
+   riquadro della figura, il suo mezzo e i metri di un'unità calcolati in
+   metri sul piano tangente (`mapdraw/plane.ts`, mai in gradi), così ogni
+   punto torna dov'era (`figureLines.trackInPlace`). Il contorno resta
+   quello di prima: al più `MAX_OUTLINE_POINTS` punti distribuiti, il primo
+   è la partenza della corsa, chiuso; `drawingOf` lo raddrizza come ogni
+   disegno.
+2. Il disegno resta dentro le distanze di «Draw» come ogni figura della
+   mappa (`withinLimits`): una traccia più lunga del massimo dello sport si
+   rimpicciolisce attorno al suo mezzo.
+3. Si modifica con gli strumenti di ADR-0288; «Draw route» lo chiede come
+   ogni disegno della mappa, quindi dal primo punto della corsa. Per
+   portarlo vicino a sé resta «Draw it near me».
+4. La scheda di «Explore» e il risultato di «Draw» restano come prima
+   (la figura nel mezzo della partenza): la richiesta parla solo del Feed.
+
+**Alternative scartate**: la traccia vicino all'utente (un disegno di un
+altro posto, come prima, solo non raddrizzato); trascinare il percorso sulle
+vie come Google Maps (un percorso fra punti nel motore e sul telefono,
+lavoro molto più grande); un campo nuovo nel contratto per la traccia
+(il disegno della mappa basta).
+
+**Conseguenze**: niente cambia nel contratto, nell'API, nel motore, nei
+testi, nelle dipendenze e nel nativo; arriva con un OTA. `useMapCanvas`
+ha `editInPlace` accanto a `edit`; `figureLines.drawingLines` diventa
+`drawingTrack`.

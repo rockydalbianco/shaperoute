@@ -49,6 +49,9 @@ La proposta di partenza, con l'analisi del codice, è in
 - **`FeedPost.tsx`** lo toccano anche TASK-336 B, TASK-339 B (il nuovo
   aspetto) e TASK-345 A (una riga): prima del codice si chiede l'ordine al
   Coordinatore.
+  Ordine dato dal Coordinatore per la parte app: TASK-339 B, TASK-355 A,
+  TASK-348 A, TASK-336 B. Il contatore delle pagine del carosello è di
+  questa parte (decisione con TASK-355, #670).
 - **Parte A** con `react-native-view-shot` e `PanResponder`, nessuna
   dipendenza nuova, impronta iOS `83793e26` invariata.
   `react-native-view-shot` 5.1.0 è già in `apps/mobile/package.json` e lo
@@ -88,7 +91,9 @@ dalla build 1.0.2 (l'impronta iOS `83793e26` resta per la 1.0.1).
    (`withoutEnds` e `POST_CUT_M` = 200 m, `share/postRun.ts`): non si
    riapre la porta di casa di chi corre. Una foto appiattita non si può tagliare dopo, quindi questo si
    controlla con un test.
-5. **API**: `DRAWING_MAX_PHOTOS` da 3 a 10 e un ordine riscrivibile degli
+5. **API**: 10 posti per le foto (`DRAWING_PHOTO_PLACES`; `DRAWING_MAX_PHOTOS`
+   resta 3 finché l'app non passa al limite nuovo, nella parte A app) e un
+   ordine riscrivibile degli
    elementi (oggi «un posto svuotato resta vuoto»); un'app vecchia continua
    a vedere le foto in ordine.
 6. **Librerie** (ognuna è una dipendenza nuova e va chiesta all'utente):
@@ -146,6 +151,12 @@ risposte si scrivono qui.
    — *Risposta (2026-10-30):* «Approvo così», i testi e la privacy di «I
    testi» qui sotto. I testi dell'editor no: li portano le parti B e C.
 
+8. **Il limite: 10 con il disegno o 10 più il disegno.** Il testo di Help
+   approvato diceva «up to 10 photos and the drawing» (11 elementi), la
+   richiesta 10 elementi tra foto, video e disegno. Proposta: 10 in tutto.
+   — *Risposta (2026-10-30):* «10 col disegno». Al più 9 tra foto e video
+   più il disegno. Il limite lo mette l'app; l'API tiene 10 posti.
+
 ## I testi
 
 In inglese, da approvare (scelta 7). Le traduzioni dei testi dell'app le fa
@@ -159,10 +170,10 @@ PR, col sì dell'utente.
 «Half and half», «Photo in the corner»; «Up to 10 in a post.»; «Could not
 prepare this photo. Try again.». Parte C: «Up to 3 videos in a post.».
 
-**Help**, in «Publish and share» (parte A): «A run you publish can have up
-to 10 photos and the drawing. Hold one and drag it to change the order: the
+**Help**, in «Publish and share» (parte A; il numero cambiato dalla scelta
+8): «A run you publish can have up to 9 photos and the drawing. Hold one and drag it to change the order: the
 first is what people see in the Feed. Choose a layout to put the drawing on
-a photo.». Parte C, al posto di «up to 10 photos and the drawing»: «up to 10
+a photo.». Parte C, al posto di «up to 9 photos and the drawing»: «up to 10
 items: photos, up to 3 videos of up to 30 seconds each, and the drawing».
 
 **Privacy**, in «Your runs and their GPS tracks», un paragrafo nuovo (parte
@@ -202,9 +213,9 @@ Ogni parte ha la sua PR e parte da `main` solo col via del Coordinatore.
 
 ## Criteri di accettazione
 
-- [x] Le scelte 2–7 hanno una risposta dell'utente scritta qui.
+- [x] Le scelte 2–8 hanno una risposta dell'utente scritta qui.
 - [ ] Ogni dipendenza nuova ha il sì dell'utente scritto qui.
-- [ ] Parte A: un post con 10 foto e il disegno, riordinato, si pubblica e
+- [ ] Parte A: un post con 9 foto e il disegno, riordinato, si pubblica e
       si vede nel Feed nello stesso ordine; un'app vecchia vede le foto.
 - [ ] Parte A: un test dimostra che il disegno nella foto usa la linea tagliata del Feed.
 - [ ] Parte A: `layoutFrame` ha test deterministici per ogni layout.
@@ -220,6 +231,27 @@ docs/tasks/TASK-348.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/INDEX.md
+```
+
+Parte A, API (#665):
+
+```
+docs/API.md
+docs/STATUS.md
+docs/tasks/TASK-348.md
+packages/shared-types/fixtures/drawing-details-imported.json
+packages/shared-types/fixtures/drawing-order-request.json
+packages/shared-types/fixtures/feed-imported.json
+packages/shared-types/fixtures/my-drawing-imported.json
+packages/shared-types/src/index.ts
+packages/shared-types/test/drawing-details.test.ts
+packages/shared-types/test/userPhotos.test.ts
+services/api/migrations/0041_drawing_item_order.sql
+services/api/shaperoute_api/drawing_photos.py
+services/api/shaperoute_api/drawings.py
+services/api/tests/test_drawing_photos.py
+services/api/tests/test_drawings.py
+services/api/tests/test_feed.py
 ```
 
 Le parti elencano i loro file prima del codice e li mandano al

@@ -163,6 +163,7 @@ apps/mobile/src/ui/EmptyState.tsx, EmptyState.test.tsx   (nuovi)
 apps/mobile/src/ui/outlines.ts                           (nuovo)
 apps/mobile/assets/ui/scrim.png                          (nuovo)
 apps/mobile/src/screens/Pager.tsx
+apps/mobile/src/map/mapPageTone.test.ts                 (il fondo scuro della mappa, caldo anch'esso; col via del Coordinatore del 2026-10-30)
 tools/ui_scrim.py                                        (nuovo)
 docs/UI.md, docs/DECISIONS.md, docs/STATUS.md, docs/INDEX.md, docs/tasks/TASK-339.md
 docs/tasks/TASK-339/*.jpg                                (12 schermate prima/dopo dal simulatore, nuove)

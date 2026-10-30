@@ -52,7 +52,7 @@ Una alla volta, con le sue parole.
    disegni entro 50 km, e nessuno più lontano. Con «Tutti» cronologico vede
    gli ultimi pubblicati nel mondo, spesso lontani. Proposta: accettarlo, come
    chiede il brief.
-   — *Risposta:* aperta.
+   — *Risposta:* «Sì, cronologico».
 4. **I post di MuW in «Tutti».** Proposta: gli esempi restano solo a «Tutti»
    vuoto o senza account (non hanno una data vera). Un account MuW che
    pubblica sul server è un lavoro a parte.

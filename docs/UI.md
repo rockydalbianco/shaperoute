@@ -1893,12 +1893,13 @@ la via**, con il segnaposto fermo al centro della mappa.
 
 ## Forma e distanza
 
-Sopra, un interruttore **«Shape | Word | Image»** (TASK-057, ADR-0053;
-«Image» dal TASK-073; la quarta scelta «Freehand» del TASK-320 è tolta dal
-TASK-331: a mano si disegna solo sulla mappa, sotto in «Disegnare sulla
-mappa»): il percorso disegna una forma del catalogo, una parola **oppure**
-il contorno di un'immagine, mai due insieme, e l'interruttore mostra quale.
-Di partenza «Shape».
+Sopra, un interruttore **«Freehand | Shape | Word | Image»** (TASK-057,
+ADR-0053; «Image» dal TASK-073; la «Freehand» del TASK-320, una tavola
+bianca, è tolta dal TASK-331; dal TASK-340 «Freehand» è la prima scelta e
+apre la mappa per disegnare a mano, sotto in «Disegnare sulla mappa»,
+senza che l'interruttore resti su di lei): il percorso disegna una forma
+del catalogo, una parola **oppure** il contorno di un'immagine, mai due
+insieme, e l'interruttore mostra quale. Di partenza «Shape».
 Passare dall'uno all'altro non cancella quanto scritto o scelto negli altri.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
@@ -2405,9 +2406,11 @@ I testi nuovi, nelle cinque lingue («Drawing…» c'era già):
 
 ### Disegnare sulla mappa: «Draw on the map» (TASK-281, ADR-0245)
 
-Sotto «Shape | Word | Image», largo quanto l'interruttore, il tasto
-**«Draw on the map»** (scelta dell'utente del 2026-10-13; con «Paddle»
-non c'è). Apre a tutto schermo la mappa della partenza di «Draw»,
+La prima scelta dell'interruttore di «Draw», **«Freehand»** (TASK-340,
+scelta dell'utente del 2026-10-29: «METTILA PER PRUMA TRA FORMA PAROLA
+ED IMMAGINE»; prima era il tasto «Draw on the map» sotto l'interruttore,
+scelta del 2026-10-13; con «Paddle» non c'è). Un tocco apre a tutto
+schermo la mappa della partenza di «Draw»,
 inquadrata sul paese intorno (zoom 13): in alto «←», che torna a «Draw»,
 e il nome del luogo se la partenza è un luogo cercato; il segnaposto
 della partenza resta. Sotto la mappa:
@@ -2561,6 +2564,10 @@ nelle quattro lingue):
 
 «Cancel» c'era già.
 
+Il TASK-340 ha tolto *Draw on the map* (il tasto non c'è più) e rimesso
+**«Freehand»** con le traduzioni approvate per il TASK-320 il 2026-10-28:
+A mano libera, Freihand, A mano alzada, À main levée.
+
 ### «Edit the drawing»: la figura sulla mappa (TASK-320, TASK-331, ADR-0288)
 
 Dal TASK-331 la tavola bianca di «Draw» non c'è più: **«Edit the
@@ -2570,10 +2577,11 @@ quanto il percorso (sulle schede, la distanza di «Draw it near me»); la
 mappa si inquadra su di lei, l'interruttore è su «Draw», e «Undo» la
 toglie. «←» torna a «Draw». Niente parte dal telefono prima di «Draw
 route», che la chiede come ogni disegno della mappa (la partenza è il suo
-primo punto). Il tasto c'è **sotto il risultato** di un'immagine, di una
-foto o di un disegno (dal risultato di «Draw on the map» torna alla figura
-com'era) e **sulle schede** di un disegno senza forma né parola (sopra, in
-«La figura da cambiare»). **Non c'è mai per una forma del catalogo**
+primo punto). Il tasto c'è solo **sulle schede** di un disegno senza forma
+né parola (sopra, in «La figura da cambiare»): dal TASK-340 non c'è più
+sotto il risultato di «Draw» (scelta dell'utente del 2026-10-29: «TOGLI LA
+FUNZIONE MODIFICA IL DISEGNO IN DRAW»); dal risultato della mappa «←»
+torna alla figura com'era. **Non c'è mai per una forma del catalogo**
 (un'emoji: sotto la forma scelta in «Draw», sul suo risultato, sulle
 schede), scelta dell'utente del 2026-10-29: «non la modifica delle emoji
 perché non serve a nulla»; né per una parola, né sull'acqua. Il percorso di

@@ -2119,6 +2119,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-340 (aggiunta ad ADR-0288; scelta dell'utente del 2026-10-29: «TOGLI LA FUNZIONE MODIFICA IL DISEGNO IN DRAW, TIENI SOLO LA FUNZIONE DISEGNA A MANO L'IBERA SU MAPPA E METTILA PER PRUMA TRA FORMA PAROLA ED IMMAGINE»): in «Draw» l'interruttore è «Freehand | Shape | Word | Image» e «Freehand» apre subito la mappa per disegnare a mano (prima il tasto «Draw on the map» sotto l'interruttore); sotto il risultato di «Draw» non c'è più «Edit the drawing», che resta sulle schede di «Explore» e del Feed. Solo app, nessun testo nuovo («Freehand» con le traduzioni approvate per il TASK-320). Visto sul simulatore; manca la prova sull'iPhone con la prossima preview. `tasks/TASK-340.md`, «Esito».
 - **TASK-358 — Nei messaggi «Photo» e «Video» aprono la galleria** (2026-10-30; numero dal
   Coordinatore; bloccava l'update `production`). Su iOS la galleria presentata mentre il
   foglio del «+» si chiudeva non compariva: ora parte da `onDismiss`. Provato nel simulatore

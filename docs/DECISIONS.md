@@ -20374,8 +20374,8 @@ domanda se le schede li sostituissero l'utente ha risposto «Sì, sostituiscono�
 1. `GET /feed` prende un `filter` facoltativo, `all` o `following`. Senza, la
    risposta è quella di oggi: le app già installate non cambiano.
 2. Con `filter`, solo `published_at DESC, id DESC`, e `lat` e `lon` non contano.
-   `all` è `everyone`; `following` è chi si segue con la richiesta accettata,
-   `everyone` e `followers`. Entrambi passano da `shown_sql`, quindi blocchi e
+   `all` è `everyone`; `following` sono i propri e chi si segue con la richiesta
+   accettata («No, includili»), `everyone` e `followers`. Entrambi passano da `shown_sql`, quindi blocchi e
    disegni nascosti restano fuori.
 3. Nell'app una lettura e un cursore per scheda e due `FlatList` montate:
    cambiare scheda non rilegge e non perde la posizione.

@@ -45,9 +45,9 @@ Una alla volta, con le sue parole.
    Mine di TASK-355 B. Li toglie la sessione di TASK-355, avvisata dal
    Coordinatore.
    — *Risposta:* «Sì, sostituiscono».
-2. **I propri post in «Seguiti».** Proposta: esclusi; la scheda mostra solo gli
-   altri e un proprio post pubblico compare in cima a «Tutti».
-   — *Risposta:* aperta.
+2. **I propri post in «Seguiti».** La proposta era escluderli; l'utente li
+   vuole dentro: «Seguiti» mostra chi si segue e i propri post.
+   — *Risposta:* «No, includili».
 3. **«Tutti» senza il criterio «vicino».** Oggi chi non segue nessuno vede i
    disegni entro 50 km, e nessuno più lontano. Con «Tutti» cronologico vede
    gli ultimi pubblicati nel mondo, spesso lontani. Proposta: accettarlo, come
@@ -80,8 +80,8 @@ Il codice parte col via del Coordinatore. Coda su `FeedScreen.tsx`: **362**,
    risposta resta quella di oggi, per le app già installate. Con `filter`
    l'ordine è solo `published_at DESC, id DESC`; `lat` e `lon` sono ignorati.
    - `all`: `visibility = 'everyone'`, più `shown_sql`.
-   - `following`: autori con la richiesta accettata, `everyone` e `followers`,
-     più `shown_sql`.
+   - `following`: i propri e gli autori con la richiesta accettata, `everyone`
+     e `followers`, più `shown_sql`.
 2. `EXPLAIN` su 10.000 disegni per entrambi i filtri, scritto nella PR. Una
    migrazione solo se serve: numero dal Coordinatore (0040 e 0041 sono prese).
 3. `shared-types`, fixture, `docs/API.md`.
@@ -94,7 +94,7 @@ Il codice parte col via del Coordinatore. Coda su `FeedScreen.tsx`: **362**,
    scheda non rilegge e non perde la posizione. Pull e pagine per scheda.
 7. Stati, con `ui/EmptyState` (dalla TASK-339 A, in `main`):
    - «Seguiti» senza follow: messaggio e «Find people to follow», verso «Find
-     friends» (TASK-215);
+     friends» (TASK-215), anche sopra i propri post se ce ne sono;
    - follow senza post: messaggio proprio;
    - senza account: scelta 6;
    - errore di rete in una delle due schede, con un account: messaggio e
@@ -105,7 +105,7 @@ Il codice parte col via del Coordinatore. Coda su `FeedScreen.tsx`: **362**,
 - [ ] Senza `filter`, `GET /feed` risponde come prima: test sull'ordine a tre
       gruppi e con `lat`, `lon`.
 - [ ] `following`: con follow, senza follow, richiesta solo in attesa, dopo aver
-      smesso di seguire, un blocco, un `followers`, un `only_me`.
+      smesso di seguire, un blocco, un `followers`, un `only_me`, i propri post.
 - [ ] `all`: niente `followers` né `only_me`, solo cronologico, nessun repeat
       fra le pagine.
 - [ ] Il filtro è sul server: una pagina è piena anche con pochi seguiti.

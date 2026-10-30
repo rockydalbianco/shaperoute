@@ -15,14 +15,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import {
-  color,
-  fontSize,
-  fontWeight,
-  MIN_TAP_SIZE,
-  radius,
-  space,
-} from "../theme/tokens";
+import { color, font, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { pageName, tabName, tourPart, useTourPager } from "../tour/tourParts";
 import { TOUR_PART } from "../tour/tourSteps";
 
@@ -255,18 +248,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: space.xs,
   },
+  // Large and light, not bold (TASK-339): the other pages' names step back
+  // to the faintest text, so the one on screen stands out by light alone.
   nameText: {
-    color: color.textMuted,
-    fontSize: fontSize.title,
-    fontWeight: fontWeight.bold,
+    ...font.title,
+    color: color.textFaint,
   },
   // The page on screen is told by light, not by yellow: that is the route's.
   nameTextSelected: {
     color: color.text,
   },
   mark: {
-    width: space.xl,
-    height: 3,
+    width: space.lg + space.xs,
+    height: 2,
     borderRadius: radius.pill,
   },
   markSelected: {

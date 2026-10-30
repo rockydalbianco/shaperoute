@@ -175,9 +175,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   e la fattibilità del 3D misurata nel simulatore e nel WebView nascosto
   dell'app (la mappa può stare nella pagina del video: uno scatto a
   `idle`, la linea sopra; la camera che gira costa una resa per
-  fotogramma; sul telefono da rimisurare con l'utente). Aspettano
-  l'utente: la scelta sulla privacy (la mappa nel video mostra dove si è
-  corso) e i nomi degli stili nelle cinque lingue. Senza mappa il video
+  fotogramma; sul telefono da rimisurare con l'utente). La scelta
+  sulla privacy (la mappa nel video mostra dove si è corso) è dell'utente
+  («Sì, va bene», 2026-10-30); i nomi degli stili sono
+  suoi («Sì, questi», 2026-10-30). La B è la PR #679. Senza mappa il video
   esce sul giallo di oggi (condizione del Coordinatore). Poi B (la mappa
   sotto e il look premium, Night), C (i tre stili e la riga «Style»), D
   (il 3D), una PR ciascuna da `main` con la #658 e col via del
@@ -205,6 +206,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `Tap`), D (Profile, Settings, i fogli), E («Draw» e il risultato, dopo
   TASK-311 B, 331 e 335). Niente di nativo: la vibrazione al tocco solo
   con una build, col sì dell'utente. File `tasks/TASK-339.md`.
+  **Parte B in PR dal 2026-10-30**, branch `feat/TASK-339-premium-look-b`
+  (via del Coordinatore del 2026-10-30, dopo la #658 e la #666 di
+  TASK-350 in `main`): le schede di «Feed» ed «Explore» (`FeedPost`,
+  `RouteCard`, `ThemedCard`, `ExploredCard`, `DrawingCard`) col raggio
+  20 e senza bordo, le parole di «Feed» sulla foto su `Scrim`, i titoli
+  `cardTitle` e i nomi medium, `Tap` al posto dell'opacità, `Hairline`
+  prima delle azioni, la distanza delle schede di «Explore» in `display`;
+  prima/dopo in `tasks/TASK-339/b-*.jpg`. Poi C.
 - **TASK-361 — «Draw» in tre secondi** (ADR-0307; richiesta dell'utente
   del 2026-10-30; numeri dal Coordinatore). Un solo giallo («Run without a route» con contorno e 🏃),
   la via della partenza, la griglia a due righe, la forma in scala, mezzo
@@ -2116,6 +2125,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-358 — Nei messaggi «Photo» e «Video» aprono la galleria** (2026-10-30; numero dal
+  Coordinatore; bloccava l'update `production`). Su iOS la galleria presentata mentre il
+  foglio del «+» si chiudeva non compariva: ora parte da `onDismiss`. Provato nel simulatore
+  fino alla foto nella chat; sul telefono con la preview. Solo app, nessun testo nuovo.
+  File: `tasks/TASK-358.md`.
 - **App** — TASK-350 (ADR-0302; richiesta dell'utente del 2026-10-30): nelle schede di «Explore» con una foto, in «NEARBY TOWNS» e «IDEAS FROM EUROPE», prima il disegno sulla mappa e con uno swipe la foto col credito; due pallini dicono quale si vede, un tocco su tutte e due apre la scheda. Provato nel simulatore; Android no. Solo app, nessun testo nuovo, impronta iOS 83793e26. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-350.md`.
 - **App** — TASK-352 (ADR-0304; richiesta dell'utente del 2026-10-30, «Dopo la
   prima scelta»): «Who can see it» parte da «Only me» finché l'account non

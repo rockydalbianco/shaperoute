@@ -20292,8 +20292,8 @@ posizione non arrotondata, cosa che «Your position» non dice.
 **Decisione** (proposta):
 
 1. **Due parti.** A solo app, piccola, senza `FeedScreen.tsx`; B con
-   l'API (campi e `filter` facoltativi). I conteggi non si chiedono card per
-   card, e i filtri non si fanno sul telefono: le liste sarebbero incomplete.
+   l'API (campi facoltativi). I conteggi non si chiedono card per card. I
+   filtri li sostituiscono le schede di TASK-362 (scelta dell'utente).
 2. **Dove il brief e ADR-0293 divergono decide l'utente**, voce per voce: ha
    scelto ogni volta il canvas (avatar grigio, segni neutri, riga di testo).
 3. **Il contatore delle slide è di TASK-348 A**, che riscrive il carosello

@@ -36,6 +36,7 @@ import {
   clearRejoin,
   clearRoute,
   clearStops,
+  focus as focusMap,
   clearTrack,
   follow,
   pageScript,
@@ -65,6 +66,12 @@ const NO_OTHERS: LatLon[][] = [];
 export type MapCanvas = {
   mode: CanvasMode;
   lines: LatLon[][];
+  /** Line by line, whether its first side is a link, dashed (TASK-331
+   * part B); the lines a finger may bend; the points of a straight line
+   * being tapped. */
+  links: boolean[];
+  bendable: number[];
+  marks: LatLon[];
   centre: LatLon | null;
   /** How much two fingers may shrink and grow the figure. */
   shrink: number;
@@ -76,7 +83,8 @@ export type MapCanvas = {
 
 /** What the page of «Draw on the map» tells the app (TASK-281). */
 export type CanvasEvent =
-  | { type: "drawn"; line: LatLon[] }
+  | { type: "drawn"; line: LatLon[]; metresPerPx: number }
+  | { type: "bent"; from: LatLon; to: LatLon; metresPerPx: number }
   | { type: "figure"; centre: LatLon; factor: number; done: boolean }
   | { type: "centre"; point: LatLon };
 
@@ -116,6 +124,9 @@ type Props = {
   } | null;
   /** The places of a themed route (TASK-129), or null for none. */
   stops?: { name: string; point: LatLon; passed: boolean }[] | null;
+  /** A place of a themed route tapped under the map (TASK-329): the map
+   * goes there. A new one for each tap; the same one is not asked twice. */
+  focus?: { point: LatLon } | null;
   /** With it, a double tap on the map calls it and no longer zooms
    * (TASK-119); two fingers still do. Without, the map is as before. */
   onDoubleTap?: () => void;
@@ -163,6 +174,7 @@ export function MapView({
   heading = null,
   progress = null,
   stops = null,
+  focus = null,
   onDoubleTap,
   moving = false,
   onMoved,
@@ -207,6 +219,7 @@ export function MapView({
   const doubleTapAsked = useRef(false);
   const moveAsked = useRef(false);
   const turnAsked = useRef<Turn | null>(null);
+  const focusAsked = useRef<{ point: LatLon } | null>(null);
   // The figure the page was told of last, and the framing it was asked.
   const canvasShown = useRef(false);
   const framed = useRef<number | null>(null);
@@ -408,6 +421,14 @@ export function MapView({
     turnAsked.current = turn;
   }, [ready, turn]);
 
+  // A place tapped under the map: asked of the map once, as the north arrow.
+  useEffect(() => {
+    if (ready && focus !== null && focus !== focusAsked.current) {
+      webView.current?.injectJavaScript(pageScript(focusMap(focus.point)));
+    }
+    focusAsked.current = focus;
+  }, [ready, focus]);
+
   // After the route, which a figure takes the place of: told each new
   // figure, framed once for each new `framing`, and again when the page
   // loads again.
@@ -422,6 +443,9 @@ export function MapView({
           setCanvas({
             mode: canvas.mode,
             lines: canvas.lines,
+            links: canvas.links,
+            bendable: canvas.bendable,
+            marks: canvas.marks,
             centre: canvas.centre,
             shrink: canvas.shrink,
             grow: canvas.grow,
@@ -496,7 +520,18 @@ export function MapView({
           } else if (message?.type === "turned") {
             onTurned?.(message.bearing);
           } else if (message?.type === "drawn") {
-            onCanvas?.({ type: "drawn", line: message.line.map(fromLngLat) });
+            onCanvas?.({
+              type: "drawn",
+              line: message.line.map(fromLngLat),
+              metresPerPx: message.metresPerPx,
+            });
+          } else if (message?.type === "bent") {
+            onCanvas?.({
+              type: "bent",
+              from: fromLngLat(message.from),
+              to: fromLngLat(message.to),
+              metresPerPx: message.metresPerPx,
+            });
           } else if (message?.type === "figure") {
             onCanvas?.({
               type: "figure",

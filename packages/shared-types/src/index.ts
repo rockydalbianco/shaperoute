@@ -311,6 +311,16 @@ export const API_ERROR_CODES = [
   "comment_rejected",
   /** No contest open, nor one closed less than a week ago (TASK-299). */
   "no_contest",
+  /**
+   * An entry in a monthly challenge, 409 (TASK-343): the contest takes no
+   * entries now (ended, closed, or without a theme).
+   */
+  "contest_closed",
+  /**
+   * An entry in a monthly challenge, 409 (TASK-343): the drawing cannot take
+   * part (another's, not for everyone, imported, outside the period, hidden).
+   */
+  "not_entrant",
   /** «Send to Strava» of a run added from another app's file, 409 (TASK-312). */
   "imported_run",
   /**
@@ -799,7 +809,24 @@ export interface PublicProfile {
   distance_m?: number;
   climb_m?: number;
   reactions?: number;
+  /**
+   * The badges it earned (TASK-341, ADR-0294), in the order of
+   * PROFILE_BADGES, decided by the API on the drawings the one who asks
+   * sees. «Winner» is `contest_wins`. Missing from an API older than TASK-341.
+   */
+  badges?: ProfileBadge[];
 }
+
+/**
+ * The badges of a profile (TASK-341): a first drawing, ten drawings, a
+ * drawing of 30 km or more, of runs recorded by the app.
+ */
+export const PROFILE_BADGES = [
+  "first_drawing",
+  "ten_drawings",
+  "long_drawing",
+] as const;
+export type ProfileBadge = (typeof PROFILE_BADGES)[number];
 
 /**
  * Where a member stands towards a profile (TASK-211): it asked and waits
@@ -1158,6 +1185,37 @@ export interface FeedPage {
   /** The `cursor` of the next page; null on the last one. */
   next: string | null;
 }
+
+/** The orders of GET /search/drawings (TASK-344, ADR-0297): the last
+ * published, the longest, the one with the most reactions first. */
+export const DRAWING_SORTS = ["recent", "longest", "popular"] as const;
+export type DrawingSort = (typeof DRAWING_SORTS)[number];
+
+/** How complex a drawing's line is, a filter of GET /search/drawings. */
+export const DRAWING_COMPLEXITIES = ["simple", "medium", "complex"] as const;
+export type DrawingComplexity = (typeof DRAWING_COMPLEXITIES)[number];
+
+/**
+ * How complex a line is: its length over the diagonal of the rectangle it
+ * fits in, on at most 64 of its points. Below the first, simple; below the
+ * second, medium; complex above. The same on the server
+ * (drawing_search.py) and for the examples on the phone.
+ */
+export const DRAWING_SIMPLE_BELOW = 3.6;
+export const DRAWING_MEDIUM_BELOW = 4.5;
+
+/** Posts a page of GET /search/drawings holds unless `limit` says. */
+export const DRAWING_SEARCH_PAGE_SIZE = 20;
+
+/**
+ * GET /search/drawings?q=…&named=…&shape=…&activity=…&min_m=…&max_m=…
+ * &place=…&complexity=…&sort=…&limit=20&cursor=… (TASK-344): the drawings
+ * the reader may see that hold every word of `q`, capitals and accents
+ * aside, or are of a shape in `named`, and pass every filter. A list
+ * filter is sent once for each value. Never a private one. A page is the
+ * feed's.
+ */
+export type DrawingSearchPage = FeedPage;
 
 /**
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
@@ -1526,6 +1584,90 @@ export interface Contest {
   winner: ContestWinner | null;
 }
 
+// --- The monthly challenges (TASK-343, ADR-0296; docs/CONCORSI.md §15) ---
+
+/** A theme in one language. */
+export interface ContestThemeText {
+  /** 1 to 60 characters. */
+  title: string;
+  /** 1 to 500 characters. */
+  description: string;
+}
+
+/**
+ * The theme of a monthly challenge, by language: the app shows its own,
+ * English when it is missing.
+ */
+export interface ContestTheme {
+  en: ContestThemeText;
+  de?: ContestThemeText | null;
+  it?: ContestThemeText | null;
+  es?: ContestThemeText | null;
+  fr?: ContestThemeText | null;
+}
+
+/**
+ * GET /contests/current for a monthly challenge: a `Contest` with its theme.
+ * Only the drawings entered take part, so `top`, `mine` and `winner` are of
+ * those. `entrants` counts the accounts with a drawing that takes part;
+ * `entered`, only with a token, the drawings of who asks entered, whether
+ * they still take part or not. A contest without a theme has none of these
+ * three fields.
+ */
+export interface ThemedContest extends Contest {
+  theme: ContestTheme;
+  entrants: number;
+  entered?: string[];
+}
+
+/** The orders of the gallery: by place, or the latest published first. */
+export type ContestGalleryOrder = "top" | "new";
+
+/**
+ * GET /contests/{id}/entries?order=top|new&cursor=: a page of 30 of the
+ * whole standings of a contest. With a token a post across a block with who
+ * asks is left out, and the others keep their `rank`.
+ */
+export interface ContestEntriesPage {
+  entries: ContestEntry[];
+  /** The `cursor` of the next page, of the same order; null on the last. */
+  next: string | null;
+}
+
+/** A contest closed, in the archive. */
+export interface PastContest {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  closed_at: string;
+  /** Null for a contest without a theme. */
+  theme: ContestTheme | null;
+  entrants: number;
+  /** The first three, as in `Contest`. */
+  top: ContestEntry[];
+  winner: ContestWinner;
+}
+
+/** GET /contests?state=closed&cursor=: a page of 10, the latest closed first. */
+export interface PastContestsPage {
+  contests: PastContest[];
+  next: string | null;
+}
+
+/**
+ * The push notifications of a monthly challenge, beside `PushKind`: a new
+ * one opened, its last 3 days, its results. Their `data` is
+ * `{ kind, contest_id }`, and the app opens the page of the challenge. The
+ * winner still hears `contest_won`.
+ */
+export type ContestPushKind = "contest_open" | "contest_last_days" | "contest_results";
+
+/** The `data` of a monthly challenge's notification. */
+export interface ContestPushData {
+  kind: ContestPushKind;
+  contest_id: string;
+}
+
 /** The longest message «Send feedback» takes (TASK-308). */
 export const MAX_FEEDBACK_LENGTH = 2000;
 
@@ -1738,19 +1880,29 @@ export type ConversationBox = "inbox" | "requests";
  * MESSAGE_MAX_LENGTH characters once the spaces at either end are gone; new
  * lines are kept. The answer is the Message (201). The one message of a
  * request is refused as a comment ("comment_rejected") when negative.
+ * With an attachment (TASK-333) the text may be empty; outside an "open"
+ * conversation an attachment is 409.
  */
 export interface MessageRequest {
   text: string;
+  attachment?: MessageAttachmentRequest;
 }
 
 /** One message, as who asks sees it. */
 export interface Message {
   id: string;
-  /** Plain text: shown as text, never as a link or HTML. */
+  /**
+   * Plain text: shown as text, never as a link or HTML. Asked without
+   * `?with=attachments`, a message with an attachment says «[Photo]»,
+   * «[Video]» or «[Drawing]» before it, for an app of before.
+   */
   text: string;
   created_at: string;
   /** Who asks wrote it, and may delete it (DELETE /messages/{id}). */
   mine: boolean;
+  /** What it carries besides its text; null: nothing. Missing from an API
+   * before TASK-333. */
+  attachment?: MessageAttachment | null;
 }
 
 /**
@@ -1765,6 +1917,11 @@ export interface MessagesPage {
   messages: Message[];
   /** The `cursor` of the page of older ones; null on the oldest. */
   next: string | null;
+  /**
+   * What who asks may attach now (TASK-333): null outside an "open"
+   * conversation. Missing from an API before it: then no «+».
+   */
+  attachments?: AttachmentsAllowed | null;
 }
 
 /** One conversation in a list: who with, and its latest message. */
@@ -1810,6 +1967,105 @@ export interface MessagePushData {
   kind: MessagePushKind;
   public_id: string;
   username: string;
+}
+
+// --- Attachments of the private messages (TASK-333, ADR-0289) ---
+
+/** What a message may carry besides its text. */
+export const MESSAGE_ATTACHMENT_KINDS = ["photo", "video", "drawing"] as const;
+export type MessageAttachmentKind = (typeof MESSAGE_ATTACHMENT_KINDS)[number];
+/** The user's limits of 2026-10-29, checked by the API too. */
+export const MESSAGE_VIDEO_MAX_S = 60;
+export const MESSAGE_VIDEO_MAX_BYTES = 40_000_000;
+/** A video is kept this long after its message, then `expired`. */
+export const MESSAGE_VIDEO_DAYS = 30;
+/** Ask the pages and POST with this, `?with=attachments`, to read the
+ * attachments: without, the text says «[Photo]» and the like. */
+export const WITH_ATTACHMENTS = "attachments";
+
+/**
+ * A drawing sent in a message: a copy of the route, the body PUT
+ * /me/favorites/{key} takes (the app's FavoriteRequest). A run of who sends
+ * it goes cut as in the Feed; a route planned goes whole, with its start.
+ * GET /messages/{id}/drawing answers it.
+ */
+export interface MessageDrawing {
+  city: string;
+  shape: string | null;
+  word: string | null;
+  style: LetterStyle | null;
+  title: string | null;
+  distance_m: number;
+  route_m: number;
+  similarity: number;
+  points: LatLon[];
+  walks?: Walk[];
+  activity?: Activity;
+  on_foot?: Stretch[];
+  rotation_deg?: number | null;
+}
+
+/**
+ * A message's attachment: a photo or video sent first with POST
+ * /me/message-media (the file's bytes as the body, Content-Type image/jpeg,
+ * image/png, video/mp4 or video/quicktime), or a drawing. One of the two.
+ */
+export type MessageAttachmentRequest =
+  | { media_id: string; drawing?: undefined }
+  | { drawing: MessageDrawing; media_id?: undefined };
+
+/** POST /me/message-media (201): the file kept, to send within the hour. */
+export interface MessageMedia {
+  id: string;
+  kind: "photo" | "video";
+  /** As shown: a photo at most 1080 px on its longer side. */
+  width: number | null;
+  height: number | null;
+  /** A video's length. */
+  duration_ms: number | null;
+  bytes: number;
+}
+
+/** A drawing as the conversation shows it; GET /messages/{id}/drawing has
+ * it whole, as a MessageDrawing. */
+export interface MessageDrawingCard {
+  title: string | null;
+  shape: string | null;
+  word: string | null;
+  style: LetterStyle | null;
+  distance_m: number;
+  route_m: number;
+  activity: string;
+  rotation_deg: number | null;
+  /** At most 64 points of its line. */
+  preview: LatLon[];
+}
+
+/** What a message carries besides its text. */
+export interface MessageAttachment {
+  kind: MessageAttachmentKind;
+  /** A photo's or a video's: GET /message-media/{media_id}, with the key
+   * and the token. Null for a drawing and a video expired. */
+  media_id: string | null;
+  width: number | null;
+  height: number | null;
+  duration_ms: number | null;
+  /** A video's first picture: GET /message-media/{media_id}/poster. */
+  poster: boolean;
+  /** A video MESSAGE_VIDEO_DAYS after its message: «This video has expired.» */
+  expired: boolean;
+  drawing: MessageDrawingCard | null;
+}
+
+/**
+ * What may be attached in a conversation now. "video" leaves while the
+ * server is full of them (POST /me/message-media is then 507).
+ */
+export interface AttachmentsAllowed {
+  kinds: MessageAttachmentKind[];
+  video_max_s: number;
+  video_max_bytes: number;
+  photo_max_bytes: number;
 }
 /**
  * A photo of a drawing on a profile (TASK-324): GET /users/{public_id}/photos.

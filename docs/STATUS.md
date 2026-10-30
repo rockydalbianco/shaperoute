@@ -160,6 +160,29 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-351 — Il video della corsa con la mappa sotto: il look premium,
+  il 3D e tre stili** (ADR-0303, proposta; richiesta dell'utente del
+  2026-10-30; numeri e condizioni dal Coordinatore). Branch
+  `docs/TASK-351-video-map-styles` (worktree `TASK-351-docs`): i
+  documenti, il canvas https://claude.ai/artifact/MEGmg4FJp4mBKKFJriFkMV
+  e la fattibilità del 3D misurata nel simulatore e nel WebView nascosto
+  dell'app (la mappa può stare nella pagina del video: uno scatto a
+  `idle`, la linea sopra; la camera che gira costa una resa per
+  fotogramma; sul telefono da rimisurare con l'utente). Aspettano
+  l'utente: la scelta sulla privacy (la mappa nel video mostra dove si è
+  corso) e i nomi degli stili nelle cinque lingue. Senza mappa il video
+  esce sul giallo di oggi (condizione del Coordinatore). Poi B (la mappa
+  sotto e il look premium, Night), C (i tre stili e la riga «Style»), D
+  (il 3D), una PR ciascuna da `main` con la #658 e col via del
+  Coordinatore. Solo app, impronta iOS `83793e26` invariata. File
+  `tasks/TASK-351.md`.
+- **TASK-355 — Una scheda del Feed che si capisce in un colpo d'occhio**
+  (ADR-0306, estende ADR-0293; richiesta dell'utente del 2026-10-30, numeri
+  dal Coordinatore). Branch `docs/TASK-355-feed-clarity` (documenti). Parte
+  A solo app, dopo 339 B e prima di 348 A; parte B API e app, dopo 344 B e
+  prima di 309 B. Otto scelte dell'utente aperte. Il Feed manda già la
+  posizione e «Your position» non lo dice: si chiude con la parte A.
+  `tasks/TASK-355.md`.
 - **TASK-339 — L'interfaccia premium ed elegante** (ADR-0293, proposta;
   brief dell'utente del 2026-10-29; il canvas della proposta, 16 tavole,
   visto e approvato a voce la sera stessa, «BELLISSIMO»:
@@ -244,7 +267,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   privacy). Poi A (fino a 10
   foto in ordine e i layout, con un OTA), B (editor foto, 1.0.2), C (video,
   1.0.2, dopo TASK-336), D (rifiniture). Impronta iOS `83793e26` invariata
+  fino a B. File `tasks/TASK-348.md`. Limite scelto dall'utente il
+  2026-10-30: 10 elementi col disegno. Parte A, API: #665 (migrazione 0041,
+  server non aggiornato); la parte app aspetta il via del Coordinatore.
   fino a B. File `tasks/TASK-348.md`.
+- **TASK-346 — «Edit the drawing» nel Feed: la traccia sulla mappa dov'è
+  stata corsa** (ADR-0299; richiesta dell'utente del 2026-10-29, «nel Feed
+  quando premo modifica il disegno devo poter modificare la traccia sulla
+  mappa, non il disegno in sé»; scelta «Traccia dov'è»; numeri dal
+  Coordinatore). Branch `feat/TASK-346-edit-track-in-place`. Sulla scheda di
+  un disegno di un membro la traccia va su «Draw on the map» dove è stata
+  corsa e grande com'è (`figureLines.trackInPlace`,
+  `useMapCanvas.editInPlace`), non più nel mezzo della partenza di «Draw»;
+  «Draw route» parte dal primo punto della corsa. «Explore» e il risultato
+  di «Draw» invariati. Solo JS dell'app (OTA), nessun testo nuovo, contratto
+  e motore invariati. **Resta**: il merge del Coordinatore e la prova sul
+  telefono. File `tasks/TASK-346.md`.
 - **TASK-336 — Un video nei post: il video della corsa di MuW o uno
   proprio** (ADR-0292, proposta; richiesta dell'utente del 2026-10-29,
   approvata con «Yes, write it up»; numeri dal Coordinatore). Branch
@@ -2058,6 +2096,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## Completato
 
 - **App** — TASK-350 (ADR-0302; richiesta dell'utente del 2026-10-30): nelle schede di «Explore» con una foto, in «NEARBY TOWNS» e «IDEAS FROM EUROPE», prima il disegno sulla mappa e con uno swipe la foto col credito; due pallini dicono quale si vede, un tocco su tutte e due apre la scheda. Provato nel simulatore; Android no. Solo app, nessun testo nuovo, impronta iOS 83793e26. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-350.md`.
+- **App** — TASK-352 (ADR-0304; richiesta dell'utente del 2026-10-30, «Dopo la
+  prima scelta»): «Who can see it» parte da «Only me» finché l'account non
+  salva un'altra scelta, poi dall'ultima salvata; le attività da file partono
+  sempre da «Only me». Help e Privacy aggiornate in cinque lingue. Da fare, col
+  sì dell'utente: OTA e pubblicazione del sito.
 - **App** — TASK-337 (aggiunta ad ADR-0048; richiesta dell'utente del 2026-10-29 con uno screenshot: «a volte le scritte rosse… sono troppe… che poi non si visualizza più l'immagine»): sotto il percorso di «Draw» due note del motore alla volta, prima quelle a cui fare attenzione; le altre con «Show more» (già tradotto), mai tolte. Scale, traffico, gallerie e bici a mano sempre in vista (condizione del Coordinatore). Un altro percorso, o l'altro fra A e B, riparte da due. Solo JS dell'app (OTA), nessun testo nuovo, nessuna dipendenza, impronta iOS invariata. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-337.md`.
 - **App** — TASK-331 (ADR-0288 con l'aggiunta della parte B; richieste
   dell'utente del 2026-10-29, «Tutto sulla mappa» e poi «fallo più

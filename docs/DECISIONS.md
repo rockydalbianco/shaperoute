@@ -20276,8 +20276,8 @@ descrive il video nuovo con la parte B.
 
 **Stato**: Proposta · 2026-10-30 · TASK-355. La richiesta e il piano sono
 dell'utente («Sì, procedi», 2026-10-30); numeri dal Coordinatore; le scelte
-di prodotto restano aperte in `tasks/TASK-355.md`. Il resto è deciso
-dall'agente su delega dell'utente. Estende ADR-0293; non tocca ADR-0127,
+di prodotto sono dell'utente, con le sue parole in `tasks/TASK-355.md`. Il
+resto è deciso dall'agente su delega dell'utente. Estende ADR-0293; non tocca ADR-0127,
 ADR-0193, ADR-0207.
 
 **Contesto**: il brief chiede una scheda più chiara «senza cambiare le
@@ -20292,12 +20292,14 @@ posizione non arrotondata, cosa che «Your position» non dice.
 1. **Due parti.** A solo app, piccola, senza `FeedScreen.tsx`; B con
    l'API (campi e `filter` facoltativi). I conteggi non si chiedono card per
    card, e i filtri non si fanno sul telefono: le liste sarebbero incomplete.
-2. **Dove il brief e ADR-0293 divergono decide l'utente**, voce per voce,
-   con la proposta di restare sul canvas.
-3. **Il contatore delle slide è di TASK-348 A**, che riscrive il carosello.
+2. **Dove il brief e ADR-0293 divergono decide l'utente**, voce per voce: ha
+   scelto ogni volta il canvas (avatar grigio, segni neutri, riga di testo).
+3. **Il contatore delle slide è di TASK-348 A**, che riscrive il carosello
+   (confermato dal Coordinatore).
 4. **La posizione nel Feed**: arrotondata a due decimali dall'app (circa
-   1 km; il raggio è di 50 km) e scritta in «Your position». Si chiude con
-   la parte A, non con la B, perché il testo è incompleto già oggi.
+   1 km; il raggio è di 50 km) e scritta in «Your position». È un task a sé,
+   TASK-356, perché il testo è incompleto già oggi; testo approvato
+   dall'utente il 2026-10-30.
 5. **Niente `expo-blur`**: l'header è già opaco e sopra le pagine, basta un
    filo; l'impronta iOS `83793e26` resta.
 
@@ -20354,3 +20356,43 @@ lavoro molto più grande); un campo nuovo nel contratto per la traccia
 testi, nelle dipendenze e nel nativo; arriva con un OTA. `useMapCanvas`
 ha `editInPlace` accanto a `edit`; `figureLines.drawingLines` diventa
 `drawingTrack`.
+
+## ADR-0305 — Quanti messaggi nuovi: un numero dall'API fermato a 10, contato a parte solo sulla pagina
+
+**Stato**: Accepted · 2026-10-30 · deciso dall'agente su delega dell'utente
+per la parte tecnica (TASK-353). Estende ADR-0279. Il piano l'ha confermato
+l'utente, «Sì, passi 1 e 2».
+
+**Contesto**: l'elenco delle conversazioni aveva solo un pallino (`unread`).
+L'utente vuole il numero dei messaggi nuovi. `read_at` c'è già, quindi non
+serve una migrazione, ma il conteggio non deve rallentare l'elenco. Il server
+si aggiorna solo con il sì dell'utente, e l'app esce prima o dopo di lui.
+
+**Decisione**:
+
+1. `unread_count` in ogni conversazione di `GET /me/conversations`, **fino a
+   10**: l'app da dieci in su dice «9+», come la riga «Messages». Così ogni
+   conversazione legge al più dieci righe, qualunque sia la sua lunghezza.
+2. **Una query a parte, solo per la pagina**, invece di una colonna nella
+   query dell'elenco. Quella query legge tutte le conversazioni della casella
+   per ordinarle: con il conteggio dentro, su 2000 conversazioni, la mediana
+   passava da 125 a 647 ms; a parte è 211 ms contro i 173 di prima con tutto
+   non letto, 143 contro 178 con tutto letto (`tasks/TASK-353.md`).
+3. `unread` resta, uguale a `unread_count > 0`. Il campo è facoltativo in
+   `shared-types`: con un server di prima l'app mostra il pallino.
+4. Il tempo si scrive con i testi che l'app ha già (`DAYS`, `MONTHS`,
+   `dayLabel` di `activityText.ts`), a 24 ore come in «My activities», non
+   con `Intl`, che l'app finora non usa da nessuna parte.
+5. I messaggi vecchi arrivano con `onEndReached` della lista invertita;
+   «Show earlier messages» resta per quando il caricamento fallisce, perché
+   la lista non lo richiede da sola finché il contenuto non cambia.
+
+**Alternative scartate**: un conteggio senza limite (costa di più proprio su
+chi ha più messaggi non letti, e l'app non lo mostra oltre «9+»); una colonna
+di contatore da aggiornare a ogni messaggio (migrazione e un dato in più da
+tenere allineato); togliere del tutto il tasto (un caricamento fallito
+lascerebbe la chat ferma).
+
+**Conseguenze**: nessuna migrazione, nessuna dipendenza, niente di nativo. Il
+numero si vede solo dopo l'aggiornamento del server, col sì dell'utente;
+fino ad allora orari, giorni e scorrimento funzionano con il pallino.

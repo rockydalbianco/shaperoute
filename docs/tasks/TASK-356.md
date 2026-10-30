@@ -48,6 +48,7 @@ merge.
 apps/mobile/src/api/feed.ts, feed.test.ts
 apps/mobile/src/feed/useFeed.test.tsx
 apps/mobile/src/screens/FeedScreenPosts.test.tsx
+apps/mobile/__tests__/App{DrawAgain,DrawingStart,EditDrawing,FeedDrawing}.test.tsx
 apps/mobile/src/about/content/{en,it,de,fr,es}.ts
 site/privacy/index.html, {it,de,fr,es}/index.html
 docs/API.md, docs/STATUS.md, docs/tasks/TASK-356.md

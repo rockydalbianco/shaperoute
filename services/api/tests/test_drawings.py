@@ -86,6 +86,9 @@ NEW_FIELDS |= {"rotation_deg"}
 # *-imported.json (test_imported_runs.py).
 SOURCE = {"source"}
 NEW_FIELDS |= SOURCE
+# The post's order (TASK-348): every fixture written before was never ordered.
+NEW_FIELDS |= {"order"}
+SOURCE |= {"order"}
 THIRD_EMAIL = "third@example.com"
 
 
@@ -367,6 +370,7 @@ def test_a_run_is_private_until_published(client: TestClient) -> None:
         "source": "muw",
         "tags": [],
         "photos": [],
+        "order": None,
     }
     assert client.get("/me/drawings", headers=me).json() == {"drawings": []}
     mine = public_id(client, me)

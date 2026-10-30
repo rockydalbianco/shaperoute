@@ -101,6 +101,11 @@ export type MapCanvasState = {
    * `distanceM`, to draw on; «Undo» takes it away. False when they make no
    * drawing. */
   edit: (lines: FigureLines, distanceM: number) => boolean;
+  /** «Edit the drawing» on a member's drawing (TASK-346, ADR-0299): its
+   * track on the map where it was run and as big — `centre` the middle of
+   * the lines, `unitM` the metres of one unit — to draw on, within the
+   * distances; «Undo» takes it away. False when they make no drawing. */
+  editInPlace: (lines: FigureLines, centre: LatLon, unitM: number) => boolean;
   /** «Try 8 km» on the route of the figure: the figure that size, and the
    * request for it, to draw at once. */
   sizeTo: (distanceM: number) => AnyRouteRequest | null;
@@ -553,6 +558,17 @@ export function useMapCanvas({
 
   const open = useCallback(() => setFraming((n) => n + 1), []);
 
+  /** The drawing put on the map to edit, framed, ready to draw on. */
+  const putToEdit = useCallback(
+    (next: Placed) => {
+      setProblem(null);
+      // Drawing on it is what comes next.
+      setModeState("draw");
+      change(within(next), "put");
+      setFraming((n) => n + 1);
+    },
+    [within, change],
+  );
   const edit = useCallback(
     (lines: FigureLines, metres: number) => {
       const drawing = drawingOf(lines);
@@ -560,14 +576,21 @@ export function useMapCanvas({
       if (drawing === null || middle === null) {
         return false;
       }
-      setProblem(null);
-      // Drawing on it is what comes next.
-      setModeState("draw");
-      change(within(placeAt(drawing, middle, metres)), "put");
-      setFraming((n) => n + 1);
+      putToEdit(placeAt(drawing, middle, metres));
       return true;
     },
-    [start, within, change],
+    [start, putToEdit],
+  );
+  const editInPlace = useCallback(
+    (lines: FigureLines, middle: LatLon, unitM: number) => {
+      const drawing = drawingOf(lines);
+      if (drawing === null) {
+        return false;
+      }
+      putToEdit({ figure: drawing, centre: middle, unitM });
+      return true;
+    },
+    [putToEdit],
   );
 
   const sizeTo = useCallback(
@@ -617,6 +640,7 @@ export function useMapCanvas({
     tapping: straight !== null,
     open,
     edit,
+    editInPlace,
     sizeTo,
     changeTo,
   };

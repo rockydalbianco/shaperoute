@@ -4,9 +4,10 @@ import { act, renderHook } from "@testing-library/react-native";
 import { requestImageOutline } from "../api/imageOutlines";
 import { isImageRequest } from "../api/routes";
 import { metresBetween } from "../map/coordinates";
+import { trackInPlace } from "../route/figureLines";
 import type { Picked } from "../route/pickImage";
 import { SAMPLE_PICTURES } from "../route/samplePictures";
-import { lookOf } from "./figure";
+import { lookOf, placedLines, placedStart } from "./figure";
 import { fromPlane } from "./plane";
 import { type MapCanvasOptions, useMapCanvas } from "./useMapCanvas";
 
@@ -326,6 +327,66 @@ test("«Edit the drawing» puts the lines on the map at the start, as long as as
   });
   expect(put).toBe(false);
   await act(async () => result.current.undo());
+  expect(result.current.placed).toBeNull();
+});
+
+test("«Edit the drawing» on a member's drawing puts its track where it was run, as big, ready to draw on", async () => {
+  // Away from the start of «Draw»: the track stays where it is (TASK-346).
+  const track = roundLine(700);
+  const { lines, centre, unitM } = trackInPlace(track);
+  const { result } = await setUp();
+  await act(async () => result.current.setMode("move"));
+  const framing = result.current.canvas.framing;
+  let put = false;
+  await act(async () => {
+    put = result.current.editInPlace(lines, centre, unitM);
+  });
+  expect(put).toBe(true);
+  const placed = result.current.placed;
+  expect(placed?.figure.kind).toBe("drawing");
+  expect(placed?.centre).toEqual(centre);
+  expect(placed?.unitM).toBe(unitM);
+  expect(metresBetween(centre, MIDDLE)).toBeLessThan(25);
+  // Its lines lie on the track, and its route starts where the run did.
+  for (const point of placedLines(placed!)[0]) {
+    expect(Math.min(...track.map((p) => metresBetween(p, point)))).toBeLessThan(25);
+  }
+  expect(metresBetween(placedStart(placed!), track[0])).toBeLessThan(1);
+  expect(result.current.request?.start).toBeDefined();
+  expect(metresBetween(result.current.request!.start, track[0])).toBeLessThan(1);
+  expect(result.current.mode).toBe("draw");
+  expect(result.current.canvas.framing).toBe(framing + 1);
+  await act(async () => result.current.undo());
+  expect(result.current.placed).toBeNull();
+});
+
+test("«Edit the drawing» in place keeps a track longer than «Draw» offers within its distances", async () => {
+  const { result } = await setUp({ limitsM: [1000, 3000] });
+  const { lines, centre, unitM } = trackInPlace(roundLine(1500));
+  await act(async () => {
+    result.current.editInPlace(lines, centre, unitM);
+  });
+  expect(result.current.placed?.centre).toEqual(centre);
+  expect(result.current.distanceM).toBeCloseTo(3000);
+});
+
+test("lines that make no drawing put nothing in place", async () => {
+  const { result } = await setUp();
+  let put = true;
+  await act(async () => {
+    put = result.current.editInPlace(
+      {
+        outline: [
+          [-1, 0],
+          [1, 0],
+        ],
+        details: [],
+      },
+      MIDDLE,
+      500,
+    );
+  });
+  expect(put).toBe(false);
   expect(result.current.placed).toBeNull();
 });
 

@@ -1641,4 +1641,34 @@ export const DE: Table = {
   "10 drawings": "10 Zeichnungen",
   "{distance} drawing": "{distance}-Zeichnung",
   "Not earned yet: {badge}": "Noch nicht erreicht: {badge}",
+
+  // src/route/runTime.ts (TASK-356: the time under the distance of «Draw»)
+  "≈ {time} at {pace}": "≈ {time} bei {pace}",
+  "≈ {time} at {pace} (a usual pace)": "≈ {time} bei {pace} (ein übliches Tempo)",
+
+  // src/route/ShapePreview.tsx (TASK-356: the shape to scale)
+  "{name}, about {size} on the map": "{name}, etwa {size} auf der Karte",
+
+  // src/route/ShapeGrid.tsx (TASK-356: the shapes in two rows)
+  "Show fewer shapes": "Weniger Formen zeigen",
+  "See all {count} shapes": "Alle {count} Formen ansehen",
+  "Show fewer": "Weniger",
+  "See all": "Alle ansehen",
+
+  // src/route/DistanceDial.tsx (TASK-356: the distance by half a km)
+  "Tap to type the distance": "Tippen, um die Distanz einzugeben",
+
+  // src/screens/RunNoRouteButton.tsx (TASK-356)
+  "Records the run without drawing a route first":
+    "Zeichnet den Lauf auf, ohne vorher eine Route zu zeichnen",
+
+  // src/route/drawLabel.ts (TASK-356: the words of «Draw route»)
+  "Draw a {distance} {name}": "Zeichnen: {name}, {distance}",
+  "Draw “{word}”, {distance}": "„{word}“ zeichnen, {distance}",
+  "Draw the picture, {distance}": "Das Bild zeichnen, {distance}",
+
+  // src/route/OtherShapeField.tsx (TASK-356: «Type another shape»)
+  "Type another shape": "Andere Form eingeben",
+  "Write a shape that is not among the tiles":
+    "Eine Form schreiben, die nicht unter den Kacheln ist",
 };

@@ -61,9 +61,10 @@ Una alla volta, con le sue parole.
    stati vuoti e «Retry», in cinque lingue. Testi esatti da approvare prima del
    codice.
    — *Risposta:* aperta.
-6. **«Seguiti» senza account.** Proposta: la scheda c'è e chiede il login;
-   «Tutti» mostra gli esempi, come oggi.
-   — *Risposta:* aperta.
+6. **«Seguiti» senza account.** La proposta era una scheda che chiede il login;
+   l'utente vuole solo «Tutti»: senza account il selettore non c'è, si vedono
+   gli esempi come oggi, e un «Seguiti» ricordato si riapre come «Tutti».
+   — *Risposta:* «No, solo "Tutti"».
 7. **La riga di privacy.** Se le schede non mandano più la posizione, la frase
    di TASK-356 «to show you drawings nearby in the Feed» resta vera solo per
    le app già installate. Proposta: toglierla in un secondo tempo, col sì
@@ -96,7 +97,7 @@ Il codice parte col via del Coordinatore. Coda su `FeedScreen.tsx`: **362**,
    - «Seguiti» senza follow: messaggio e «Find people to follow», verso «Find
      friends» (TASK-215), anche sopra i propri post se ce ne sono;
    - follow senza post: messaggio proprio;
-   - senza account: scelta 6;
+   - senza account: nessun selettore, solo «Tutti» con gli esempi (scelta 6);
    - errore di rete in una delle due schede, con un account: messaggio e
      «Retry», senza gli esempi al posto del Feed.
 
@@ -110,7 +111,8 @@ Il codice parte col via del Coordinatore. Coda su `FeedScreen.tsx`: **362**,
       fra le pagine.
 - [ ] Il filtro è sul server: una pagina è piena anche con pochi seguiti.
 - [ ] Cambiare scheda non fa richieste già fatte e tiene la posizione: test.
-- [ ] La scheda scelta si riapre al riavvio; una scelta illeggibile dà «Tutti».
+- [ ] La scheda scelta si riapre al riavvio; una scelta illeggibile, o nessun
+      account, dà «Tutti».
 - [ ] Pull e pagina successiva toccano solo la scheda aperta.
 - [ ] L'EXPLAIN su 10.000 disegni è nella PR.
 - [ ] Testi approvati in cinque lingue, nessun colore a mano, `Tap` ed

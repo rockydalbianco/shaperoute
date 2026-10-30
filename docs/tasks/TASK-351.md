@@ -3,9 +3,9 @@
 **Stato**: Proposta · 2026-10-30 · la richiesta è dell'utente (2026-10-30);
 le scelte 2, 3, 4 e 6 qui sotto sono la raccomandazione, accettata su
 delega dell'utente del 2026-10-29, da rivedere; la scelta sulla privacy (5)
-è dell'utente («Sì, va bene», 2026-10-30); i nomi degli stili (1)
-aspettano l'utente; i punti tecnici sono decisi dall'agente su delega
-dell'utente
+è dell'utente («Sì, va bene», 2026-10-30), come i nomi degli stili
+(«Sì, questi», 2026-10-30); i punti tecnici sono decisi dall'agente su
+delega dell'utente
 **Fase**: 4 · **Branch**: `docs/TASK-351-video-map-styles` (i documenti,
 worktree `.claude/worktrees/TASK-351-docs`: il nome `TASK-351` è occupato
 dal branch di TASK-352), poi uno per parte · **ADR**: ADR-0303 (estende
@@ -116,7 +116,11 @@ qui con le parole dell'utente.
    and leaves it only through the share sheet, where you send it.» che
    dica «A picture or a video of your run…» (in tutte le lingue): il
    video esiste da TASK-295 e la riga non lo nomina.
-   — *Risposta:* **da chiedere** (l'utente torna la sera del 30).
+   — *Risposta (2026-10-30, nella chat di questo task, alla domanda «Vanno
+   bene i nomi Style · Night · Day · 3D (Stile · Notte · Giorno · 3D, e
+   così nelle altre lingue)?»):* **«Sì, questi»**: i nomi della tabella
+   valgono nelle cinque lingue. La riga della privacy estesa al video non
+   era nella domanda: resta da chiedere, con la parte che la cambia.
 2. **Il giallo di oggi sparisce dal video.** Proposta: sì; la foto per
    Instagram (il post di TASK-231) resta gialla, e il giallo resta solo
    come riserva quando la mappa non arriva. Alternativa: il giallo come
@@ -301,8 +305,8 @@ terreno col sì dell'utente.
 Della proposta (parte A):
 
 - [x] Il canvas fatto; le scelte 2, 3, 4 e 6 con la raccomandazione,
-      accettata su delega e da rivedere; la 5 (privacy) con le parole
-      dell'utente; la 1 (i nomi) da chiedere, con la proposta pronta.
+      accettata su delega e da rivedere; la 5 (privacy) e la 1 (i nomi)
+      con le parole dell'utente.
 - [x] La fattibilità del 3D misurata nel simulatore e nel WebView nascosto
       dell'app, scritta qui; il bench fuori dal repository (`out/`).
 - [ ] La misura sul telefono dell'utente scritta qui (condizione 1).
@@ -421,6 +425,12 @@ bench» (spento), il worktree staccato `.claude/worktrees/video-bench` con
 il harness (file temporanei, mai da committare), il bench in
 `out/video-restyle/`.
 
-Aspettano: l'utente per la scelta 1 (i nomi) e per la misura sul
-telefono; il via del Coordinatore per la B (la #658 è in `main` dal
-2026-10-30). La scelta 5 (privacy) è arrivata: «Sì, va bene».
+Arrivate le scelte 5 (privacy, «Sì, va bene») e 1 (i nomi, «Sì,
+questi»). La B ha il via del Coordinatore ed è la PR #679
+(`feat/TASK-351-b-video-map`, worktree `TASK-351-b`): la mappa sotto nel
+look Night, la riserva gialla, provata in Expo Go; le sue righe qui e in
+STATUS arrivano quando questa PR è in `main`. Resta la misura sul
+telefono: l'iPhone dell'utente ha Expo Go SDK 58, che non apre i progetti
+SDK 57, quindi il video vero si prova dalla preview dopo il merge, e i
+numeri di MapLibre per il 3D si prendono con la pagina del bench in
+Safari sulla rete locale.

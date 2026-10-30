@@ -20140,8 +20140,8 @@ Nessun testo nuovo, nessuna dipendenza, niente di nativo, server non toccato.
 (2026-10-30: «fai anche lo restyle del video post corsa con questo stile
 aggiungendo la mappa sotto, magari la mappa in 3d come strava... e la
 possibilità di avere 3 stili per il video»); la scelta sulla privacy (la
-mappa nel video mostra dove si è corso) è dell'utente («Sì, va bene»,
-2026-10-30) e i nomi degli stili sono da chiedere (`tasks/TASK-351.md`,
+mappa nel video mostra dove si è corso) e i nomi degli stili sono
+dell'utente («Sì, va bene» e «Sì, questi», 2026-10-30; `tasks/TASK-351.md`,
 scelte 5 e 1); il giallo
 che sparisce, il 3D sulla mappa scura, la camera che gira e il credito
 sono la raccomandazione, accettata su delega dell'utente del 2026-10-29,

@@ -372,8 +372,11 @@ File toccati (detti al Coordinatore prima del codice, 2026-10-29), branch
 B, al posto di `chore/TASK-321-b-ios-health-build`):
 
 ```
-apps/mobile/app.json                          (ios.entitlements, NSHealthUpdateUsageDescription)
-apps/mobile/locales/{en,it,de,es,fr}.json     (NSHealthUpdateUsageDescription)
+apps/mobile/app.json                          (ios.entitlements, i due testi NSHealth…, versione, plugin expo-contacts)
+apps/mobile/locales/{en,it,de,es,fr}.json     (i due testi NSHealth…)
+apps/mobile/package.json                      (al taglio: contatti e selettore fuori da autolinking.exclude)
+apps/mobile/store.config.json                 (al taglio: versione 1.0.1)
+apps/mobile/__tests__/appConfig.test.ts       (al taglio: versione 1.0.1)
 apps/mobile/react-native.config.js            (le librerie iOS dentro, solo su iOS)
 apps/mobile/src/about/content/{en,it,de,es,fr}.ts  (la sezione della privacy, la data)
 apps/mobile/src/about/{AboutPage,documents}.test.*  (la data nuova)
@@ -448,6 +451,81 @@ non arrivano più alla 1.0.0 (7).
   l'utente con il suo account Apple (`DEPLOY.md` A.7); la capability la
   allinea EAS alla build o, se non lo fa, l'utente a mano in
   developer.apple.com.
+
+#### Il taglio della 1.0.1 (2026-10-30)
+
+Ordine del Coordinatore, dopo la scelta dell'utente («Sì, separa», nella
+sessione `local_e5f5a96d`): **la 1.0.1 è Apple Salute, contatti e selettore
+di file; l'accesso con Apple e Google va nella 1.0.2**. La build si fa dal
+branch della #620, che resta in bozza: il merge arriva solo dopo
+l'approvazione di Apple, così nel frattempo `main` continua a raggiungere la
+1.0.0 (7) con gli update. Finché la #620 non è in `main`, chi ha la 1.0.1 non
+riceve gli update da `main`.
+
+- **Riallineata** su `main` `477bdb68`. Data della privacy:
+  30 ottobre 2026, il giorno del taglio, con `site/privacy/` rifatto.
+- **Versione 1.0.1** in `app.json` e `store.config.json`. Il numero di build
+  non è nel repository: `appVersionSource` è `remote` e il profilo
+  `production` ha `autoIncrement`, lo assegna EAS alla build.
+- **Contatti e selettore accesi**: restano fuori da
+  `expo.autolinking.exclude`, dove rimane solo `react-native-health-connect`.
+  Il promemoria di `tasks/TASK-262.md` vuole anche il plugin `expo-contacts`
+  con il suo testo, già approvato il 2026-10-09: senza, iOS chiuderebbe l'app
+  alla domanda. Il testo resta solo in inglese, come deciso allora. Nessun
+  pacchetto di TASK-322.
+- **Lettura del battito** (TASK-345 C): `NSHealthShareUsageDescription` in
+  `app.json` e nelle `locales`. **Il sì dell'utente** (2026-10-30, in questa
+  sessione): «Approvo così» a questo testo, nelle cinque lingue:
+  - en: «MuW reads your heart rate from Apple Health during each activity, to
+    show it with the activity and in your post. You can hide it before you
+    publish.»
+  - it: «MuW legge il tuo battito da Apple Salute durante ogni attività, per
+    mostrarlo con l'attività e nel tuo post. Puoi nasconderlo prima di
+    pubblicare.»
+  - de: «MuW liest deine Herzfrequenz aus Apple Health während jeder
+    Aktivität, um sie mit der Aktivität und in deinem Beitrag zu zeigen. Du
+    kannst sie vor dem Veröffentlichen ausblenden.»
+  - fr: «MuW lit ta fréquence cardiaque dans Apple Santé pendant chaque
+    activité, pour l'afficher avec l'activité et dans ta publication. Tu peux
+    la masquer avant de publier.»
+  - es: «MuW lee tu frecuencia cardíaca de Apple Salud durante cada actividad,
+    para mostrarla con la actividad y en tu publicación. Puedes ocultarla
+    antes de publicar.»
+
+  Il tipo `HKQuantityTypeIdentifierHeartRate` non è nel nativo: lo chiede
+  TASK-345 C a runtime, nei suoi file. Senza questa chiave la richiesta
+  chiude l'app, quindi C resta spenta sulla 1.0.0 (7), con un test suo.
+- **Le impronte** (copia pulita, `npm ci`, `APP_VARIANT=production`): iOS
+  `f10c31a4834678c7d6c2be89958567963e03f17e`, Android
+  `b1c4750f0c515829e0bbea01fd269f8f56089a9c`. Quella di `main` non cambia
+  fino al merge.
+- **Sul simulatore** (Xcode 27, iOS 27, build Release 1.0.1 con
+  `APP_VARIANT=production`; un'API finta locale per le chiamate, e una
+  richiesta di lettura aggiunta solo nella copia di prova):
+  - **Salute**: «Save to Apple Health» apre il foglio «Write Access», con il
+    testo approvato e sei voci; dopo «Allow» e «Save», in Fitness ci sono i
+    3,01 km e la sessione di MuW. La mappa è quella provata il 29 ottobre, con
+    lo stesso codice.
+  - **Lettura**: il foglio dice «Read Access», con il testo approvato e la
+    sola voce «Heart Rate»; iOS 27 aggiunge una seconda pagina, «How much data
+    would you like to share», che chiede quanto passato condividere. Dopo
+    «Allow» la lettura risponde senza errori, con zero campioni perché il
+    simulatore non ne ha: il valore vero lo prova TASK-345 C.
+  - **Contatti**: «FROM YOUR CONTACTS» si vede, la domanda di iOS ha il testo
+    approvato, all'API vanno 11 hash SHA-256 dei numeri dei sei contatti del
+    simulatore e torna la persona trovata, con «Follow».
+  - **Selettore**: «Add past activity» → «From a file» apre il selettore di
+    iOS; un GPX scelto da «On My iPhone» dà la data giusta, la forma e
+    l'etichetta «Imported». Non provati su questo giro TCX e FIT reali.
+- **Restano, prima dell'invio**: sull'iPhone dell'utente l'anello Movimento,
+  la rubrica vera (`tasks/TASK-152.md` lo chiede prima di Apple) e «From a
+  file» con un GPX di Strava, un TCX e un FIT di Garmin. La riga dello store
+  approvata, «Saves your activities to Apple Health.», non è ancora in
+  `store.config.json`. Build, «Health» in App Privacy, invio e update di
+  `production` li chiede il Coordinatore all'utente, uno per volta.
+- **Android**: togliere l'esclusione vale anche lì, quindi con il merge la sua
+  impronta si muove e il plugin aggiunge `READ_CONTACTS` e `WRITE_CONTACTS`.
+  Serve la sua build; questo taglio è solo iOS.
 
 ### C — La build Android con Health Connect
 

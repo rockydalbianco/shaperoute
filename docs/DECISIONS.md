@@ -20136,3 +20136,30 @@ no, perché Android ha comunque la sua build 1.0.1 (contatti, document
 picker, accesso con Google) e la sua impronta si muove con quella iOS.
 Sul simulatore, dopo «Save», l'allenamento è in Fitness con la mappa, il
 tempo, la distanza e le calorie di MuW.
+
+## ADR-0281 — aggiunta, il taglio della 1.0.1: Apple Salute con contatti e selettore, e il testo per leggere il battito
+
+**Stato**: Accettata · **Data**: 2026-10-30 · **Deciso**: dall'utente (la
+separazione dall'accesso con Apple e Google, il testo), dal Coordinatore (la
+build dal branch), dall'agente su delega per il resto (TASK-321 parte B,
+TASK-345 C). Aggiunta ad ADR-0281, senza numero nuovo.
+
+**Contesto**: la parte B era di sola scrittura e diceva che MuW non chiede di
+leggere. TASK-345 C vuole leggere il battito, e una sola modifica nativa:
+dentro la #620 o tutto nella 1.0.2.
+
+**Decisione**:
+
+1. **La chiave entra nella 1.0.1**, il codice no. Nel binario c'è
+   `NSHealthShareUsageDescription`; il tipo si chiede a runtime, quindi C può
+   arrivare dopo con un update sulla 1.0.1. Gli entitlements non cambiano.
+2. **La privacy della #620 non cambia**: «MuW never reads your health data»
+   resta vera finché C non legge. La frase nuova va con C.
+3. **`expo-contacts` col suo plugin**, come chiede il promemoria di TASK-262:
+   togliere l'esclusione da sola lascerebbe l'app senza il testo della domanda.
+4. **La build dal branch, il merge dopo Apple**: finché è in revisione, `main`
+   continua a raggiungere la 1.0.0 (7).
+
+**Conseguenze**: impronta iOS `f10c31a4…`, Android `b1c4750f…` al merge. Fino
+al merge chi ha la 1.0.1 non riceve gli update da `main`. Sul simulatore
+scrittura, lettura, contatti e selettore funzionano con la build Release.

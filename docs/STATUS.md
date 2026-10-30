@@ -354,6 +354,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Movimento sull'iPhone. Il 2026-10-29 l'utente ha detto sì anche a
   capability HealthKit, build, invio ad Apple e riga dell'App Store: valgono
   al taglio della 1.0.1.
+  **Pronta per il taglio della 1.0.1** (2026-10-30, #620 in bozza, riallineata
+  su `main` `477bdb68`): Apple Salute, contatti e selettore di file, senza
+  l'accesso con Apple e Google (scelta dell'utente), più il testo per leggere
+  il battito di TASK-345 C, approvato dall'utente nelle cinque lingue. Impronta
+  iOS `f10c31a4…`, Android `b1c4750f…`; `main` resta `83793e26…` fino al merge,
+  che arriva dopo l'approvazione di Apple: la build si fa dal branch. Provate
+  sul simulatore con la build nativa scrittura, lettura, contatti e selettore.
+  Prossimo: build, «Health» in App Privacy, invio, ognuno col sì dell'utente
+  chiesto dal Coordinatore; prima, sull'iPhone, l'anello Movimento, la rubrica
+  e «From a file». Dettagli in `tasks/TASK-321.md`.
 - **TASK-323 — Nuoto in acque libere, «Open water swim»** (ADR-0283,
   proposta; richiesta dell'utente del 2026-10-28, «parti proprio con il
   progetto secondo me funziona»; numeri e condizioni dal Coordinatore).

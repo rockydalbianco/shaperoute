@@ -166,8 +166,13 @@ https://claude.ai/artifact/XRMFiZ9BWbWnKkdJ9Udtjf. Sei regole, tutte in
    `src/ui/outlines.ts`; le altre sagome vengono dal catalogo.
 
 Arriva in parti, una PR ciascuna (`tasks/TASK-339.md`): A le fondamenta
-e i tre nomi in alto; B Feed ed Explore; C stati vuoti e divisioni; D
-Profile, Settings e i fogli; E «Draw» e il risultato.
+e i tre nomi in alto (in `main` dal 2026-10-30); B Feed ed Explore (in PR
+dal 2026-10-30: `FeedPost`, `RouteCard`, `ThemedCard`, `ExploredCard` e
+`DrawingCard` col raggio `xl` e senza bordo, le parole di «Feed» sulla
+foto su `Scrim` in `heading`, sotto i disegni in `cardTitle`, i nomi
+medium, `Tap` al posto dell'opacità, `Hairline` prima delle azioni, la
+distanza delle schede di «Explore» in `display`); C stati vuoti e
+divisioni; D Profile, Settings e i fogli; E «Draw» e il risultato.
 
 ## Il logo e l'icona (TASK-159, ADR-0129; «MuW» da TASK-260, ADR-0224)
 

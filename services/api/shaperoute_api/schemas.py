@@ -10,12 +10,12 @@ from dataclasses import asdict
 from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from route_engine.anchored import PLACEMENTS
 from route_engine.directions import GROUP_M, Turn
 from route_engine.image_outline import MAX_POINTS as MAX_OUTLINE_POINTS
 from route_engine.models import (
     DISTANCE_LIMITS_M,
     MAX_DISTANCE_M,
-    PLACEMENTS,
     SUPPORTED_ACTIVITIES,
     RouteResult,
 )

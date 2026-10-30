@@ -1,5 +1,7 @@
 """A stroke drawn on the map, anchored to the roads (TASK-347 part A,
-ADR-0300): POST /stroke-matches, and the probe GET /stroke-matches.
+ADR-0300): the bodies of POST /stroke-matches and the match itself. The
+route and its probe are in stroke_matches_api.py: this module also runs in
+Pyodide, on the phone (on_phone.match_json), where there is no FastAPI.
 
 The app draws by hand on the map (TASK-331) and, as the finger lifts, sends
 each stroke here, or to the engine on the phone first (part B): the engine's
@@ -14,16 +16,11 @@ server of before TASK-347, and the app asks only after that.
 
 from __future__ import annotations
 
-import logging
-import time
-
-from fastapi import APIRouter, FastAPI, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from route_engine.models import (
     InvalidRequestError,
     check_activity,
     check_drawn_on_land,
-    check_fit,
     check_start,
 )
 from route_engine.network import AREA_MARGIN_M, area_around, nearest_nodes
@@ -31,14 +28,13 @@ from route_engine.optimizer import GraphLoader
 from route_engine.stroke_match import (
     DEFAULT_FIT,
     StrokeMatch,
+    check_fit,
     snap_stroke,
     stroke_length_m,
 )
 
-from shaperoute_api.activity_graphs import Graphs, check_supported, source_for
-from shaperoute_api.schemas import ACTIVITY_DESCRIPTION, ErrorBody
-
-log = logging.getLogger(__name__)
+from shaperoute_api.activity_graphs import check_supported
+from shaperoute_api.schemas import ACTIVITY_DESCRIPTION
 
 # The most points of one stroke: the app simplifies the finger's line before
 # sending it (Douglas-Peucker at 1% of the drawing), and the engine traces
@@ -54,11 +50,6 @@ MAX_STROKE_M = 10_000
 DIGITS = 6
 
 TOO_LONG = f"the stroke is longer than {MAX_STROKE_M // 1000} km along its points"
-
-RESPONSES = {
-    422: {"model": ErrorBody, "description": "invalid_request or shape_not_drawable"},
-    503: {"model": ErrorBody, "description": "map_data_unavailable"},
-}
 
 
 class StrokeMatchRequestBody(BaseModel):
@@ -160,34 +151,3 @@ def match_stroke(body: StrokeMatchRequestBody, roads: GraphLoader) -> StrokeMatc
     if body.from_ is not None:
         [start_node], _ = nearest_nodes(graph, [body.from_])
     return snap_stroke(list(body.line), graph, body.activity, body.fit, start_node)
-
-
-def stroke_router(graphs: Graphs) -> APIRouter:
-    router = APIRouter()
-
-    # The probe of the app: 204 here, 404 on an API of before TASK-347.
-    @router.get("/stroke-matches", status_code=204)
-    def matches_strokes() -> Response:
-        return Response(status_code=204)
-
-    # A plain def: FastAPI runs it in a thread, like POST /routes.
-    @router.post("/stroke-matches", responses=RESPONSES)
-    def match(body: StrokeMatchRequestBody) -> StrokeMatchBody:
-        started = time.perf_counter()
-        found = match_stroke(body, source_for(graphs, body.activity))
-        log.info(
-            "stroke of %d points, %.0f m: %d route points in %.2f s%s",
-            len(body.line),
-            stroke_length_m(body.line),
-            len(found.points),
-            time.perf_counter() - started,
-            ", off the roads" if found.off_roads else "",
-        )
-        return StrokeMatchBody.of(found)
-
-    return router
-
-
-def install_stroke_matches(app: FastAPI, graphs: Graphs) -> None:
-    """POST /stroke-matches and its probe, on the graphs of each activity."""
-    app.include_router(stroke_router(graphs))

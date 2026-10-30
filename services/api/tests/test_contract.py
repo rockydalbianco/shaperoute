@@ -87,8 +87,8 @@ PLACED = {"placed_outline"}
 
 def _with_no_walks(result: dict[str, Any]) -> dict[str, Any]:
     """An older API's result as this one answers it: `walks` and `on_foot`
-    empty, no better distance, no centre and upright, in the alternatives
-    too."""
+    empty, no better distance, no centre and upright, nothing placed
+    (TASK-347), in the alternatives too."""
     others = [_with_no_walks(other) for other in result.get("alternatives", [])]
     return {
         **result,
@@ -98,6 +98,7 @@ def _with_no_walks(result: dict[str, Any]) -> dict[str, Any]:
         "better_distance_m": None,
         "centre": None,
         "rotation_deg": 0.0,
+        "placed_outline": [],
     }
 
 
@@ -111,12 +112,18 @@ def _with_no_better(result: dict[str, Any]) -> dict[str, Any]:
         "better_distance_m": None,
         "centre": None,
         "rotation_deg": 0.0,
+        "placed_outline": [],
     }
 
 
 def test_bodies_have_the_fields_of_the_dataclasses() -> None:
-    assert _names(RouteRequestBody) == {f.name for f in fields(RouteRequest)}
-    assert _names(RouteResultBody) == {f.name for f in fields(RouteResult)}
+    # The placement and its magnet, and where the drawing was placed, are
+    # the API's own fields (TASK-347, ADR-0300): the engine's request and
+    # result know nothing of them, so its fingerprint stays (ANCHORED_ONLY).
+    assert (
+        _names(RouteRequestBody) == {f.name for f in fields(RouteRequest)} | PLACEMENT
+    )
+    assert _names(RouteResultBody) == {f.name for f in fields(RouteResult)} | PLACED
     assert _names(DirectionBody) == {f.name for f in fields(Direction)}
 
 
@@ -296,6 +303,7 @@ def test_the_api_passes_the_pen_up_on_and_answers_its_walks() -> None:
         "better_distance_m": None,
         "centre": None,
         "rotation_deg": 0.0,
+        "placed_outline": [],
     }
     assert asked[0].pen_up and asked[0].word == "io"
 
@@ -431,7 +439,8 @@ def test_a_moved_shape_and_its_centre_are_in_the_contract() -> None:
     )
     assert response.status_code == 200, response.json()
     assert asked[0].near == body.near
-    assert response.json() == {**data, "rotation_deg": 0.0}  # upright
+    # Upright, and nothing placed on the water (TASK-347).
+    assert response.json() == {**data, "rotation_deg": 0.0, "placed_outline": []}
 
 
 def test_image_fixtures_are_valid_bodies() -> None:
@@ -480,7 +489,7 @@ def test_an_image_route_request_is_a_route_request_with_an_outline() -> None:
         "style",
         "near",
     }
-    assert _names(ImageRouteRequestBody) == engine | {"outline", "strokes"}
+    assert _names(ImageRouteRequestBody) == engine | {"outline", "strokes"} | PLACEMENT
 
 
 def test_image_reasons_and_limits_match_shared_types() -> None:

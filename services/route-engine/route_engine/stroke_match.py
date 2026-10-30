@@ -11,12 +11,18 @@ join along the roads by themselves.
 The strength of the magnet is `fit`, in [0, 1]: the radius of the zones and
 the band of the corridor are a share of the stroke's length between
 TIGHT_SHARE (0, faithful to the drawing) and LOOSE_SHARE (1, the values of
-today's tracing). The same share serves `plan_shape` for a whole drawing
-placed `anchored` (optimizer.py).
+today's tracing). The same share serves a whole drawing placed `anchored`
+(anchored.py).
+
+A new module, not a change to the engine's own: with anchored.py it is left
+out of the API's fingerprint of the engine (route_store.ANCHORED_ONLY), so
+the routes the server keeps stay valid. Strokes and anchored drawings are
+never kept there.
 """
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
@@ -25,7 +31,7 @@ import numpy as np
 
 from route_engine.errors import CollapsedShapeError
 from route_engine.geo import LatLon, latlon_to_local_array, path_length_m
-from route_engine.models import InvalidRequestError, check_fit
+from route_engine.models import InvalidRequestError
 from route_engine.network import (
     CORRIDOR_BAND,
     CORRIDOR_WEIGHT,
@@ -91,6 +97,12 @@ class StrokeMatch:
     nodes: list[Any] = field(default_factory=list)
 
 
+def check_fit(fit: float) -> None:
+    """The magnet of an anchored drawing is a number in [0, 1] (TASK-347)."""
+    if not (isinstance(fit, int | float) and math.isfinite(fit) and 0.0 <= fit <= 1.0):
+        raise InvalidRequestError(f"fit must be between 0 and 1, got {fit!r}")
+
+
 def magnet_share(fit: float) -> float:
     """The radius of the zones and the band of the corridor as a share of
     the drawing's length, for the magnet `fit` in [0, 1]."""
@@ -106,7 +118,7 @@ def magnet_m(fit: float, length_m: float) -> float:
 
 def anchored_share(fit: float | None, length_m: float) -> float:
     """What `snap_to_network` takes for a whole drawing placed anchored
-    (optimizer.plan_shape): the share of its `length_m` the zones and the
+    (anchored.plan_anchored): the share of its `length_m` the zones and the
     band take, `magnet_share` of `fit` (DEFAULT_FIT when None), at least
     FLOOR_M of that length."""
     magnet = DEFAULT_FIT if fit is None else fit

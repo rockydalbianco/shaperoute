@@ -37,17 +37,11 @@ from route_engine.metrics import (
     coverage,
     precision,
 )
-from route_engine.models import (
-    DISTANCE_LIMITS_M,
-    PLACEMENTS,
-    RouteRequest,
-    RouteResult,
-)
+from route_engine.models import DISTANCE_LIMITS_M, RouteRequest, RouteResult
 from route_engine.network import (
     AREA_MARGIN_M,
     CORRIDOR_BAND,
     EDGE_REUSE_PENALTY,
-    ZONE_RADIUS,
     BBox,
     Graph,
     NetworkRoute,
@@ -71,7 +65,6 @@ from route_engine.projection import (
 from route_engine.retracing import extra_doubled_share
 from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.street_grid import StreetDirections
-from route_engine.stroke_match import anchored_share
 from route_engine.validation import check_closed, measure, validate
 from route_engine.words import (
     LETTER_DISTANCE_M,
@@ -1111,19 +1104,6 @@ class Plan:
     far: Search | None = None  # the second search, when there was one
     # Other plans to choose from, best first (TASK-093, alternatives.py).
     alternatives: list[Plan] = field(default_factory=list)
-    # The graph nodes of the route when it was traced without a search
-    # (anchored, TASK-347): what the directions are read from, as
-    # `search.best.route.nodes` are after a search. Empty after one.
-    nodes: list[Any] = field(default_factory=list)
-
-
-def placed_lines(word: Word | None, placed: Sequence[LatLon]) -> list[list[LatLon]]:
-    """The drawing as placed, as the lines of RouteResult.placed_outline
-    (TASK-347): one closed line, or one per letter or piece drawn with the
-    pen up, which the route walks between."""
-    if word is not None and word.pen_up:
-        return pen_up.letter_lines(word, placed)
-    return [list(placed)]
 
 
 def plan_route(
@@ -1136,27 +1116,21 @@ def plan_route(
     *,
     first: Placement | None = None,
     first_scale_m: float | None = None,
-    fit: float | None = None,
 ) -> Plan:
     """RouteRequest in, RouteResult out (docs/ARCHITECTURE.md §3).
 
     With `optimize` the shape is rotated, moved and rescaled to fit the
     roads (`search`); without, it is traced once at its initial placement,
-    as in TASK-017. So is a request whose `placement` is "anchored"
-    (TASK-347, ADR-0300): where it was drawn, with the magnet of its `fit`,
-    or of `fit` here, or the engine's (stroke_match.DEFAULT_FIT); its
-    distance is checked and not corrected. A word is written one letter at
-    a time (TASK-050), in the letters of `style` (TASK-077), the request's
-    when None (TASK-080), and comes back with `word` instead of `shape`
-    (TASK-056). `top_joins` says whether its letters may be
+    as in TASK-017. A word is written one letter at a time (TASK-050), in
+    the letters of `style` (TASK-077), the request's when None (TASK-080),
+    and comes back with `word` instead
+    of `shape` (TASK-056). `top_joins` says whether its letters may be
     joined along the top line too (TASK-067), words.TOP_JOINS when None.
     With the request's `pen_up` each letter is drawn on its own, and the
     result says where the route walks between them (TASK-197); so each
     piece of a shape in pieces (TASK-223), and the result keeps the shape.
     `first` and `first_scale_m` go to the search (plan_shape).
     """
-    if request.fit is not None:
-        fit = request.fit
     if request.word is not None:
         word = compose(
             request.word,
@@ -1177,8 +1151,6 @@ def plan_route(
             activity=request.activity,
             first=first,
             first_scale_m=first_scale_m,
-            placement=request.placement,
-            fit=fit,
         )
         result = replace(plan.result, shape=None, word=word.text)
         return replace(plan, result=result)
@@ -1198,8 +1170,6 @@ def plan_route(
             activity=request.activity,
             first=first,
             first_scale_m=first_scale_m,
-            placement=request.placement,
-            fit=fit,
         )
     return plan_shape(
         get_shape(request.shape)(SHAPE_POINTS),
@@ -1213,8 +1183,6 @@ def plan_route(
         activity=request.activity,
         first=first,
         first_scale_m=first_scale_m,
-        placement=request.placement,
-        fit=fit,
     )
 
 
@@ -1245,8 +1213,6 @@ def plan_shape(
     *,
     first: Placement | None = None,
     first_scale_m: float | None = None,
-    placement: str = "free",
-    fit: float | None = None,
 ) -> Plan:
     """plan_route for any normalized shape, also an outline read from a file
     (TASK-032). `name` only labels the result and its messages; start and
@@ -1254,17 +1220,6 @@ def plan_shape(
     tilts at most MAX_TILT_DEG unless told otherwise (ADR-0195), and the
     result says how far it turned (`shown_rotation`). The graphs `source`
     gives must be of the network of `activity` (network.check_network).
-
-    `placement` "anchored" (TASK-347, ADR-0300) is `optimize` False with
-    the magnet `fit` (stroke_match.anchored_share: zones and corridor band
-    as a share of the drawing's length; the engine's default when None):
-    the shape is traced once where its first point is `start`, upright and
-    at the scale of `distance_m`, as the finger drew it. Its distance is
-    not corrected: when the roads make it more than DISTANCE_TOLERANCE off
-    the target, a warning says so, and the route is still returned. With
-    the pen up the pieces are traced with their own zones (pen_up.trace).
-    In both placements the result says where the drawing was placed
-    (`placed_outline`, placed_lines).
 
     A `one_way` shape is drawn out and back (Outline.one_way): it is planned
     as a closed shape twice `distance_m` long, entered at its first point,
@@ -1292,10 +1247,6 @@ def plan_shape(
             f"the first placement is {first.offset_m:.0f} m from the start, "
             f"at most {START_OFFSET_M:.0f} m"
         )
-    if placement not in PLACEMENTS:
-        raise ValueError(f"unknown placement {placement!r}")
-    anchored = placement == "anchored"
-    optimize = optimize and not anchored
     similarity = SIMILARITIES[SIMILARITY]
     planned_m = planned_distance(distance_m, one_way)
     kept = 0.5 if one_way else 1.0  # of the planned route
@@ -1413,32 +1364,12 @@ def plan_shape(
         found = None
         projected = project_shape(shape, start, initial_scale(shape, planned_m))
         retrace = 1.0 if word is None else WORD_RETRACE
-        zone_radius, band = ZONE_RADIUS, CORRIDOR_BAND
-        if anchored:  # the magnet: one share for zones and band
-            zone_radius = band = anchored_share(fit, planned_m)
-        route = snap_to_network(
-            graph,
-            projected,
-            reuse_penalty,
-            retrace=retrace,
-            zone_radius=zone_radius,
-            band=band,
-        )
+        route = snap_to_network(graph, projected, reuse_penalty, retrace=retrace)
         sim, warnings = similarity(route.points, projected), list(route.warnings)
         if word is not None:
             height_m = initial_scale(shape, planned_m) * word.height
             sim = word_similarity(word, 0, route.points, projected, height_m)
         placed, chosen_start = projected, start
-    if anchored:
-        drawn_m = drawn_distance(route) * kept
-        gap = drawn_m - distance_m
-        if abs(gap) > DISTANCE_TOLERANCE * distance_m:
-            longer = "longer" if gap > 0 else "shorter"
-            warnings.append(
-                f"on the roads the drawing is {drawn_m / 1000:.1f} km, "
-                f"{abs(gap) / distance_m:.0%} {longer} than the "
-                f"{distance_m / 1000:g} km drawn; anchored, it is not rescaled"
-            )
     [first], _ = nearest_nodes(graph, [chosen_start])
     # A word with the pen up ends at its last letter: only where it begins.
     check = pen_up.check_begins if word is not None and word.pen_up else check_closed
@@ -1481,10 +1412,8 @@ def plan_shape(
         rotation_deg=(
             0.0 if found is None else shown_rotation(best.rotation_deg, max_tilt_deg)
         ),
-        placed_outline=placed_lines(word, placed),
     )
-    nodes = [] if found is not None else list(route.nodes)
-    return Plan(result, found, measures, far, nodes=nodes)
+    return Plan(result, found, measures, far)
 
 
 def _drawable(best: Attempt, distance_m: float, kept: float = 1.0) -> bool:

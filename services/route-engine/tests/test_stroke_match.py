@@ -157,17 +157,20 @@ def test_a_stroke_after_the_first_starts_at_the_given_node() -> None:
 
 
 def test_a_tight_magnet_follows_the_finger_a_loose_one_takes_the_road() -> None:
-    # A zigzag one row high, 100 m a step, along the row j = 5 for 4 km: at
-    # fit 1 the zones are 2% of 5.6 km, 113 m, and the straight road at
-    # j = 5 is within every one of them; at fit 0 they are 28 m, and the
-    # route must climb to each peak at j = 6.
-    corners = [_at(2 + k, 5 + (k % 2)) for k in range(41)]
+    # A zigzag along the row j = 5, 100 m a step, its peaks 60 m up between
+    # the rows, 4.7 km long. At fit 1 the zones are 2% of it, 93 m: the
+    # road at j = 5 is 60 m from every peak, within them, and cheaper than
+    # climbing to j = 6 (40 m away) and back. At fit 0 they are 23 m: no node
+    # is that close to a peak, the nearest one, at j = 6, is taken, and the
+    # route climbs to each.
+    wide = _grid(12, 50)  # 4.7 km of zigzag need 45 columns
+    corners = [_at(2 + k, 5 + 0.6 * (k % 2)) for k in range(41)]
     line = _dense(corners, 4)
-    loose = snap_stroke(line, GRID, fit=1.0)
-    tight = snap_stroke(line, GRID, fit=0.0)
+    loose = snap_stroke(line, wide, fit=1.0)
+    tight = snap_stroke(line, wide, fit=0.0)
     assert not any(j == 6 for _, j in loose.nodes)
     assert sum(1 for _, j in tight.nodes if j == 6) >= 15
-    assert max(loose.away_m) == pytest.approx(SPACING_M)
+    assert max(loose.away_m) == pytest.approx(60.0, abs=0.5)
     assert max(tight.away_m) < max(loose.away_m)
     assert len(tight.points) > len(loose.points)
 
@@ -186,7 +189,10 @@ def test_a_stroke_going_back_on_itself_comes_back_on_the_same_road() -> None:
 def test_a_stroke_in_the_fields_is_off_the_roads() -> None:
     # 600 m north of the top row: every point is far from a road, the route
     # runs along the nearest roads anyway, and off_roads says so.
-    line = [local_to_latlon(LEVICO, x, 11 * SPACING_M + 600.0) for x in range(200, 2001, 600)]
+    line = [
+        local_to_latlon(LEVICO, x, 11 * SPACING_M + 600.0)
+        for x in range(200, 2001, 600)
+    ]
     match = snap_stroke(line, GRID)
     assert match.off_roads
     assert all(j == 11 for _, j in match.nodes)

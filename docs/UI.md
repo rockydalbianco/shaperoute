@@ -1346,14 +1346,20 @@ l'app, come «Find friends»:
 
 - **«Messages»**: in cima la riga «Message requests» con il loro numero;
   sotto le conversazioni, l'ultimo messaggio per prima, con foto, nome,
-  l'ultimo messaggio su una riga («You: …» se è proprio) e un pallino rosso
-  se l'altro ha scritto dopo l'ultima lettura. Vuota: «No messages yet. Open
+  l'ultimo messaggio su una riga («You: …» se è proprio), a destra quando è
+  stato scritto («08:12», «Yesterday», «2 Oct» o, di un altro anno, la data
+  intera) e sotto il numero rosso dei messaggi nuovi, fino a «9+» (TASK-353).
+  Con un server che non dà il numero, un pallino rosso. Vuota: «No messages yet. Open
   someone's profile and tap Message to write to them.»; le richieste vuote:
   «No message requests.». Venti per volta, poi «Show more».
 - **La conversazione**: titolo con foto e nome e il «…» di «Report or
   block» della persona; i messaggi dal basso, i propri a destra su
   `surfaceRaised`, quelli dell'altro a sinistra su `surface` con il bordo
-  (il giallo resta del percorso); «Show earlier messages» in cima. Sotto,
+  (il giallo resta del percorso), ognuno con il suo orario in basso a
+  destra e sopra il primo di ogni giorno il titolo «Today», «Yesterday» o la
+  data intera («Fri 2 Oct 2026»), sull'orologio del telefono (TASK-353). I
+  vecchi arrivano scorrendo verso l'alto, con «Loading…»; «Show earlier
+  messages» resta per quando il caricamento fallisce. Sotto,
   secondo lo `state` dell'API: la casella «Write a message…» con «Send»
   («Sending…»); per il primo messaggio a chi non ci segue, sopra la
   casella «{name} gets this as a message request. You can send one message

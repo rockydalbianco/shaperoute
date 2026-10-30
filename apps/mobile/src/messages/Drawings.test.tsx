@@ -407,7 +407,7 @@ test("a drawing touched opens on the map, and «←» comes back", async () => {
     </SafeAreaProvider>,
   );
   await fireEvent.press(
-    await screen.findByRole("button", { name: "Drawing: Heart, 5.1 km" }),
+    await screen.findByRole("button", { name: /^Drawing: Heart, 5.1 km, \d\d:\d\d$/ }),
   );
   await waitFor(() => expect(show).toHaveBeenCalled());
   const [detail, back] = show.mock.calls[0] as [FavoriteDetail, () => void];

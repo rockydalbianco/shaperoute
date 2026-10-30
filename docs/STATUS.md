@@ -160,6 +160,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-353 — La chat: orari, giorni, quanti messaggi nuovi, i vecchi
+  scorrendo** (ADR-0305; piano confermato dall'utente il 2026-10-30, «Sì,
+  passi 1 e 2»; numeri dal Coordinatore). Branch `feat/TASK-353-chat-look`.
+  `unread_count` nella lista dell'API, senza migrazione; l'app funziona
+  anche con il server di oggi, con il pallino. Testi da approvare. Dopo il
+  merge, TASK-354 (invio ottimistico, coda offline). File
+  `tasks/TASK-353.md`.
 - **TASK-351 — Il video della corsa con la mappa sotto: il look premium,
   il 3D e tre stili** (ADR-0303, proposta; richiesta dell'utente del
   2026-10-30; numeri e condizioni dal Coordinatore). Branch

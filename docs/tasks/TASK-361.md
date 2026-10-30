@@ -101,8 +101,8 @@ privacy dopo, chi arriva secondo riallinea.
 
 Una correzione dopo il sì: nel testo approvato la pagina era «Draw» in
 tutte le lingue; nell'app si chiama «Disegna», «Zeichnen», «Dibuja»,
-«Dessiner» (TASK-210 G), e così è scritta sopra. **Da confermare
-dall'utente.**
+«Dessiner» (TASK-210 G), e così è scritta sopra. Confermata
+dall'utente lo stesso giorno, parola per parola: «sì, Disegna».
 
 **2. I testi nuovi** (parte A, tutti già nelle tabelle `i18n/*.ts`):
 «≈ {time} at {pace}», «≈ {time} at {pace} (a usual pace)», «{name}, about

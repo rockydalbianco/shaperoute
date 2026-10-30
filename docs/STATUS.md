@@ -160,6 +160,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-339 — L'interfaccia premium ed elegante** (ADR-0293, proposta;
+  brief dell'utente del 2026-10-29; il canvas della proposta, 16 tavole,
+  visto e approvato a voce la sera stessa, «BELLISSIMO»:
+  https://claude.ai/artifact/XRMFiZ9BWbWnKkdJ9Udtjf; numeri e condizioni
+  dal Coordinatore il 2026-10-30). **Parte A in corso**, branch `feat/TASK-339-premium-look-a`, worktree
+  `.claude/worktrees/premium-look-a`: `tokens.ts` (la scala `font` con
+  tracking e interlinea, i grigi caldi nei due toni con gli stessi
+  contrasti, `radius.xl`, `motion`, `color.hairline`), `src/ui/` (`Tap`,
+  `Hairline`, `Scrim` con `assets/ui/scrim.png`, `EmptyState`, il cuore),
+  i tre nomi dell'intestazione a 30 regular. Poi B (Feed ed Explore, le
+  immagini protagoniste), C (stati vuoti e divisioni, i `pressed` a
+  `Tap`), D (Profile, Settings, i fogli), E («Draw» e il risultato, dopo
+  TASK-311 B, 331 e 335). Niente di nativo: la vibrazione al tocco solo
+  con una build, col sì dell'utente. File `tasks/TASK-339.md`.
 - **TASK-343 — Le sfide del mese: un tema sul concorso, l'iscrizione,
   la galleria, l'archivio** (ADR-0296, estende ADR-0260; richiesta
   dell'utente del 2026-10-29, proposta approvata con «Yes, as proposed»;
@@ -169,7 +183,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   challenges», interruttore nel modulo di pubblicazione). Disegni per
   account: nessun limite (scelta dell'utente del 2026-10-30, «No limit»).
   Testi, regolamento, server e push con il sì dell'utente. File
-  `tasks/TASK-343.md`.
+  `tasks/TASK-343.md`. **A in `main`** (#657, `5303a198`, 2026-10-30, migrazione
+  0039): **il server non è aggiornato**, serve la 0039 e lo decide l'utente.
+  I testi delle tre push: sì dell'autopilota, «accettati su delega
+  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B da
+  fare**, i file prima al Coordinatore (TASK-339 B).
 - **TASK-341 — I badge sul profilo: primo disegno, 10 disegni, 30 km**
   (ADR-0294; richiesta dell'utente del 2026-10-29, proposta approvata con
   «Yes, as proposed»; numeri dal Coordinatore). Branch
@@ -217,6 +235,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   si aggiorna solo col sì dell'utente. Poi parte B, l'app (`src/search/`,
   la lente apre la ricerca; testi da approvare). File `tasks/TASK-344.md`.
 
+- **TASK-348 — Il compositore del post: foto e video in primo piano, il
+  disegno GPS, un editor** (ADR-0301, proposta; richiesta dell'utente del
+  2026-10-30, «Vai con la proposta»; numeri dal Coordinatore). Branch
+  `docs/TASK-348-post-composer`: solo i documenti, con le scelte fatte
+  dall'utente il 2026-10-30, una per volta (al più 3 video per post, i
+  quattro layout, il disegno spostabile, appiattire, l'editor, testi e
+  privacy). Poi A (fino a 10
+  foto in ordine e i layout, con un OTA), B (editor foto, 1.0.2), C (video,
+  1.0.2, dopo TASK-336), D (rifiniture). Impronta iOS `83793e26` invariata
+  fino a B. File `tasks/TASK-348.md`.
 - **TASK-336 — Un video nei post: il video della corsa di MuW o uno
   proprio** (ADR-0292, proposta; richiesta dell'utente del 2026-10-29,
   approvata con «Yes, write it up»; numeri dal Coordinatore). Branch
@@ -2044,6 +2072,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-350 (ADR-0302; richiesta dell'utente del 2026-10-30): nelle schede di «Explore» con una foto, in «NEARBY TOWNS» e «IDEAS FROM EUROPE», prima il disegno sulla mappa e con uno swipe la foto col credito; due pallini dicono quale si vede, un tocco su tutte e due apre la scheda. Provato nel simulatore; Android no. Solo app, nessun testo nuovo, impronta iOS 83793e26. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-350.md`.
 - **App** — TASK-337 (aggiunta ad ADR-0048; richiesta dell'utente del 2026-10-29 con uno screenshot: «a volte le scritte rosse… sono troppe… che poi non si visualizza più l'immagine»): sotto il percorso di «Draw» due note del motore alla volta, prima quelle a cui fare attenzione; le altre con «Show more» (già tradotto), mai tolte. Scale, traffico, gallerie e bici a mano sempre in vista (condizione del Coordinatore). Un altro percorso, o l'altro fra A e B, riparte da due. Solo JS dell'app (OTA), nessun testo nuovo, nessuna dipendenza, impronta iOS invariata. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-337.md`.
 - **App** — TASK-331 (ADR-0288 con l'aggiunta della parte B; richieste
   dell'utente del 2026-10-29, «Tutto sulla mappa» e poi «fallo più

@@ -24,6 +24,11 @@ import { MessagesContext, type MessagesDoor } from "./messagesDoor";
 import type { PickedMessageFile } from "./pickMessageMedia";
 import { VideoPoster } from "./VideoPoster";
 
+jest.mock("react-native/Libraries/Modal/Modal", () => ({
+  __esModule: true,
+  default: jest.requireActual("./dismissingModal").default,
+}));
+
 // Photos and videos in a conversation (TASK-333, ADR-0289): the «+» only
 // when the page says what may go (never on a server before, never in a
 // request); a file sent first, then its message; a send that failed tried

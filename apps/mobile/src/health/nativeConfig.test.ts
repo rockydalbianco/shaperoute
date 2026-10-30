@@ -7,11 +7,13 @@ import it from "../../locales/it.json";
 import packageJson from "../../package.json";
 
 /**
- * The native side of Apple Health in the iPhone build 1.0.1 (TASK-321 part
- * B, ADR-0281): the HealthKit entitlement and the text of the permission to
- * write, straight in app.json, not through the library's config plugin,
- * which would also add a text to read and background delivery. The iPhone's
- * libraries are linked on iOS only; Health Connect waits for part C.
+ * The native side of the iPhone build 1.0.1 (TASK-321 part B, ADR-0281): the
+ * HealthKit entitlement and the texts of the permissions to write and to
+ * read the heart rate (TASK-345 C), straight in app.json, not through the
+ * library's config plugin, which would also add background delivery. The
+ * iPhone's libraries are linked on iOS only; Health Connect waits for part C.
+ * The contacts (TASK-262 C) and the file picker (TASK-312 B) are switched on
+ * with this build.
  */
 
 type Dependency = { platforms: Record<string, null> };
@@ -34,6 +36,29 @@ function linking(variant: string | undefined): Record<string, Dependency> {
 const APPROVED =
   "MuW saves your finished activities to Apple Health, with their time, distance, route and, for runs, estimated calories, so they also appear in the Fitness app.";
 
+const APPROVED_READ: [Record<string, Record<string, string>>, string][] = [
+  [
+    en,
+    "MuW reads your heart rate from Apple Health during each activity, to show it with the activity and in your post. You can hide it before you publish.",
+  ],
+  [
+    it,
+    "MuW legge il tuo battito da Apple Salute durante ogni attività, per mostrarlo con l'attività e nel tuo post. Puoi nasconderlo prima di pubblicare.",
+  ],
+  [
+    de,
+    "MuW liest deine Herzfrequenz aus Apple Health während jeder Aktivität, um sie mit der Aktivität und in deinem Beitrag zu zeigen. Du kannst sie vor dem Veröffentlichen ausblenden.",
+  ],
+  [
+    fr,
+    "MuW lit ta fréquence cardiaque dans Apple Santé pendant chaque activité, pour l'afficher avec l'activité et dans ta publication. Tu peux la masquer avant de publier.",
+  ],
+  [
+    es,
+    "MuW lee tu frecuencia cardíaca de Apple Salud durante cada actividad, para mostrarla con la actividad y en tu publicación. Puedes ocultarla antes de publicar.",
+  ],
+];
+
 const IPHONE_LIBRARIES = [
   "@kingstinct/react-native-healthkit",
   "@react-native-healthkit/core",
@@ -46,6 +71,12 @@ const ios = appJson.expo.ios as {
   entitlements?: Record<string, unknown>;
   infoPlist: Record<string, unknown>;
 };
+
+function plugins(): string[] {
+  return (appJson.expo.plugins as Plugin[]).map((plugin) =>
+    typeof plugin === "string" ? plugin : plugin[0],
+  );
+}
 
 test("the build has HealthKit, without clinical records nor background delivery", () => {
   expect(ios.entitlements).toEqual({
@@ -74,16 +105,25 @@ test("the permission text is in every language, with the Health and Fitness name
   }
 });
 
-test("MuW never asks to read health data, and the library's plugin is not used", () => {
-  expect(ios.infoPlist).not.toHaveProperty("NSHealthShareUsageDescription");
-  for (const locale of [en, it, de, es, fr]) {
-    expect(locale.ios).not.toHaveProperty("NSHealthShareUsageDescription");
+test("the permission to read has the text the user approved, in every language", () => {
+  expect(ios.infoPlist.NSHealthShareUsageDescription).toBe(APPROVED_READ[0][1]);
+  for (const [locale, text] of APPROVED_READ) {
+    expect(locale.ios.NSHealthShareUsageDescription).toBe(text);
   }
-  const plugins = (appJson.expo.plugins as Plugin[]).map((plugin) =>
-    typeof plugin === "string" ? plugin : plugin[0],
-  );
-  expect(plugins).not.toContain("@kingstinct/react-native-healthkit");
+});
+
+test("the library's plugin is not used, and nothing runs in the background for Health", () => {
+  expect(plugins()).not.toContain("@kingstinct/react-native-healthkit");
   expect(ios.infoPlist.UIBackgroundModes).toEqual(["audio"]);
+});
+
+test("the contacts and the file picker are in the 1.0.1, the contacts with their text", () => {
+  expect(packageJson.expo.autolinking.exclude).toEqual(["react-native-health-connect"]);
+  expect(plugins()).toContain("expo-contacts");
+  const contacts = (appJson.expo.plugins as Plugin[]).find(
+    (plugin) => typeof plugin !== "string" && plugin[0] === "expo-contacts",
+  ) as [string, Record<string, unknown>];
+  expect(contacts[1].contactsPermission).toMatch(/^MuW reads only the phone numbers/);
 });
 
 test("the iPhone's libraries are linked on iOS only, in every build", () => {

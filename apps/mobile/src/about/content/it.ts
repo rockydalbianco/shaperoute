@@ -9,7 +9,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "10 ottobre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B). */
-const PRIVACY_UPDATED = "29 ottobre 2026";
+const PRIVACY_UPDATED = "30 ottobre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",

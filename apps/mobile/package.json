@@ -62,8 +62,6 @@
   "expo": {
     "autolinking": {
       "exclude": [
-        "expo-contacts",
-        "expo-document-picker",
         "react-native-health-connect"
       ]
     }

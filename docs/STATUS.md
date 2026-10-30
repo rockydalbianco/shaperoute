@@ -4637,6 +4637,10 @@ corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
   sessione scrive in italiano (`CLAUDE.md`, «Convenzioni»). File
   `tasks/TASK-357.md`.
 
+- **Lavoro in parallelo** — TASK-359 (2026-10-30): `STATUS.md`, `DECISIONS.md` e
+  `INDEX.md` si uniscono con `merge=union`, per non far ripartire la CI a ogni
+  aggiunta. File `tasks/TASK-359.md`.
+
 ## Bloccato
 
 Niente.

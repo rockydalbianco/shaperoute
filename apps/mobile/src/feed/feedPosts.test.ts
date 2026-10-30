@@ -26,7 +26,7 @@ test("a member's drawing is shown as the examples are, and keeps itself to open"
   });
   expect(isShown(post)).toBe(true);
   expect(isShown(SAMPLE_FEED[0])).toBe(false);
-  expect(postFacts(post)).toBe("Star · 4.0 km · 19 min · 4:45 /km");
+  expect(postFacts(post)).toBe("Star · 4.0 km · 19 min · 4:45 /km · 290 kcal");
 });
 
 test("without a title the day it was run names it; a word is written as it is", () => {
@@ -50,13 +50,13 @@ test("what was drawn: the shape, the word, the route's title, or nothing", () =>
   const bare = shownPost({ ...WORD, word: null, place: null, activity: "running" });
   expect(bare.what).toBeNull();
   expect(bare.city).toBe("");
-  expect(postFacts(bare)).toBe("6.1 km · 34 min · 5:28 /km");
+  expect(postFacts(bare)).toBe("6.1 km · 34 min · 5:28 /km · 444 kcal");
 });
 
 test("a member's pace is of the seconds run, not of the minutes shown", () => {
   // 5000 m in 25 min 29 s: shown as 25 min, a pace of 5:06 and not 5:00.
   const post = shownPost({ ...STAR, distance_m: 5000, duration_s: 1529 });
-  expect(postFacts(post)).toBe("Star · 5.0 km · 25 min · 5:06 /km");
+  expect(postFacts(post)).toBe("Star · 5.0 km · 25 min · 5:06 /km · 363 kcal");
   // On the water, a paddler's pace.
   const paddled = shownPost({
     ...STAR,
@@ -67,5 +67,5 @@ test("a member's pace is of the seconds run, not of the minutes shown", () => {
   expect(postFacts(paddled)).toBe("Paddle · Star · 2.0 km · 25 min · 6:15 /500 m");
   // A run too short for a pace has none.
   const short = shownPost({ ...STAR, distance_m: 80, duration_s: 30 });
-  expect(postFacts(short)).toBe("Star · 0.1 km · 1 min");
+  expect(postFacts(short)).toBe("Star · 0.1 km · 1 min · 6 kcal");
 });

@@ -30,15 +30,28 @@ with the commands of docs/CONCORSI.md §11:
 closed_at IS NULL): run twice, the second time changes nothing and says
 so; before ends_at it refuses. The push leaves after the commit, with
 push.py's Pusher and its switches.
+
+The monthly challenges (TASK-343, ADR-0296, CONCORSI.md §15): a contest
+opened with `open --theme FILE.json` has a theme, its title and
+description in the five languages. Then only the drawings their owners
+entered take part (contest_entries.py: PUT and DELETE
+/contests/{id}/entries/{drawing_id}, any number per account), with every
+rule above; GET /contests/current says the theme, how many accounts take
+part and, with a token, the drawings of who asks entered. Three pushes: a
+new challenge, to whoever has the pushes on, when `open` opens it; its last
+days (contest_clock.py); its results at the close, to who took part. A
+contest without a theme is the one of ADR-0260, untouched.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Annotated, Any, TextIO
 from uuid import UUID
 
@@ -46,7 +59,8 @@ from fastapi import APIRouter, Depends, FastAPI
 from psycopg import Connection
 from psycopg import errors as pg_errors
 from psycopg.rows import DictRow
-from pydantic import BaseModel, Field
+from psycopg.types.json import Jsonb
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from shaperoute_api.accounts import (
     ACCOUNT_ERRORS,
@@ -60,7 +74,7 @@ from shaperoute_api.db import Database
 from shaperoute_api.drawings import LISTED_COLUMNS, AuthorBody, _details, _line, _seen
 from shaperoute_api.feed import FeedPostBody
 from shaperoute_api.follows import apart_sql
-from shaperoute_api.push import Pusher, PushEvent
+from shaperoute_api.push import Kind, Pusher, PushEvent
 from shaperoute_api.recommended import preview
 from shaperoute_api.schemas import ErrorBody
 
@@ -76,6 +90,10 @@ NOT_A_PERIOD = "the contest must end after it starts"
 ONE_OPEN = "a contest is open already: close it first"
 NO_OPEN = "no contest is open"
 NO_OFFSET = "give the moment with its offset, like 2026-11-02T00:00+01:00"
+# The languages a theme is written in by `open --theme`: the app's.
+THEME_LANGUAGES = ("en", "de", "it", "es", "fr")
+MAX_THEME_TITLE = 60
+MAX_THEME_DESCRIPTION = 500
 
 
 # --- The bodies ---
@@ -109,9 +127,32 @@ class ContestWinnerBody(BaseModel):
     )
 
 
+class ThemeTextBody(BaseModel):
+    """A theme in one language."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1, max_length=MAX_THEME_TITLE)
+    description: str = Field(min_length=1, max_length=MAX_THEME_DESCRIPTION)
+
+
+class ThemeBody(BaseModel):
+    """The theme of a monthly challenge, by language: the app shows its
+    own, English when it is missing. `open --theme` asks for all five."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    en: ThemeTextBody
+    de: ThemeTextBody | None = None
+    it: ThemeTextBody | None = None
+    es: ThemeTextBody | None = None
+    fr: ThemeTextBody | None = None
+
+
 class ContestBody(BaseModel):
     """GET /contests/current: the contest open, or closed less than a week
-    ago: packages/shared-types/fixtures/contest.json and contest-closed.json."""
+    ago: packages/shared-types/fixtures/contest.json and contest-closed.json.
+    A contest with a theme is a ThemedContestBody."""
 
     id: UUID
     starts_at: datetime
@@ -129,6 +170,24 @@ class ContestBody(BaseModel):
     )
     winner: ContestWinnerBody | None = Field(
         description="After the close; null while open."
+    )
+
+
+class ThemedContestBody(ContestBody):
+    """GET /contests/current for a monthly challenge (TASK-343): the
+    contest with its theme, packages/shared-types/fixtures/contest-themed.json.
+    Only the drawings entered take part, so `top`, `mine` and `winner` are
+    of those."""
+
+    theme: ThemeBody
+    entrants: int = Field(
+        description="The accounts with at least one drawing that takes part."
+    )
+    entered: list[UUID] | None = Field(
+        default=None,
+        description="Only with a token: the drawings of who asks entered,"
+        " the first entered first, whether they still take part or not."
+        " Absent without a token.",
     )
 
 
@@ -166,9 +225,17 @@ PARTICIPATES_SQL = (
     " AND NOT (d.id = ANY(%(excluded)s::uuid[]))"
 )
 
+# In a contest with a theme only the drawings entered take part (TASK-343):
+# the placeholder `entered_in` is its id; NULL for a contest without one.
+ENTERED_SQL = (
+    "(%(entered_in)s::uuid IS NULL OR EXISTS (SELECT 1 FROM contest_entries ce"
+    " WHERE ce.contest_id = %(entered_in)s::uuid AND ce.drawing_id = d.id))"
+)
+
 # The standings: every drawing that takes part, as the feed lists it, with
 # what counts and its place. The one query of the endpoint and the commands
-# (ADR-0260, point 1). Placeholders: starts_at, ends_at, excluded.
+# (ADR-0260, point 1), of the gallery and the archive too (ADR-0296, point
+# 4). Placeholders: starts_at, ends_at, excluded, entered_in.
 RANKED_SQL = (
     "WITH entries AS ("
     f"SELECT {LISTED_COLUMNS}, r.user_id, u.public_id, u.username,"
@@ -176,14 +243,16 @@ RANKED_SQL = (
     f" {counted_sql(YOUNG)} AS young"
     " FROM drawings d JOIN runs r ON r.id = d.run_id"
     " JOIN users u ON u.id = r.user_id"
-    f" WHERE {PARTICIPATES_SQL}),"
+    f" WHERE {PARTICIPATES_SQL} AND {ENTERED_SQL}),"
     " ranked AS (SELECT entries.*, row_number() OVER"
     # `standing`, not `place`: `place` is the run's town (LISTED_COLUMNS).
     " (ORDER BY reactions DESC, hearts DESC, published_at, id) AS standing"
     " FROM entries)"
 )
 
-CONTEST_COLUMNS = "id, starts_at, ends_at, winner_drawing_id, winner_user_id, closed_at"
+CONTEST_COLUMNS = (
+    "id, starts_at, ends_at, winner_drawing_id, winner_user_id, closed_at, theme"
+)
 
 
 @dataclass(frozen=True)
@@ -196,6 +265,25 @@ class Contest:
     winner_drawing_id: UUID | None
     winner_user_id: int | None
     closed_at: datetime | None
+    theme: dict[str, Any] | None = None
+    """The theme as the table keeps it (ThemeBody); None: no theme."""
+
+    def ranked_values(self, excluded: Sequence[UUID] = ()) -> dict[str, Any]:
+        """The placeholders of RANKED_SQL for this contest."""
+        return {
+            "starts_at": self.starts_at,
+            "ends_at": self.ends_at,
+            "excluded": list(excluded),
+            "entered_in": None if self.theme is None else self.id,
+        }
+
+    def titles(self) -> dict[str, str]:
+        """The theme's title by language, for the pushes; empty without."""
+        return {
+            language: text["title"]
+            for language, text in (self.theme or {}).items()
+            if text is not None
+        }
 
 
 @dataclass(frozen=True)
@@ -231,6 +319,7 @@ def _contest(row: DictRow) -> Contest:
         row["winner_drawing_id"],
         row["winner_user_id"],
         row["closed_at"],
+        row["theme"],
     )
 
 
@@ -259,24 +348,92 @@ def _ranked(
     """The first `top` of the standings, who asks' posts and the winner's,
     by place. `in_top` says whether a row is one of the first `top` that
     `viewer_id` may see: across a block the post is left out, and the
-    places keep their numbers."""
+    places keep their numbers. `entrants` is how many accounts take part."""
     apart = "FALSE" if viewer_id is None else apart_sql("%(viewer)s", "ranked.user_id")
     return conn.execute(
         f"{RANKED_SQL} SELECT ranked.*,"
         f" (standing <= %(top)s AND NOT {apart}) AS in_top,"
         " (user_id = %(viewer)s::bigint) AS is_mine,"
-        " (id = %(winner)s::uuid) AS is_winner"
+        " (id = %(winner)s::uuid) AS is_winner,"
+        " (SELECT count(DISTINCT everyone.user_id) FROM ranked everyone)"
+        " AS entrants"
         " FROM ranked WHERE standing <= %(top)s OR user_id = %(viewer)s::bigint"
         " OR id = %(winner)s::uuid ORDER BY standing",
         {
-            "starts_at": contest.starts_at,
-            "ends_at": contest.ends_at,
-            "excluded": list(excluded),
+            **contest.ranked_values(excluded),
             "top": top,
             "viewer": viewer_id,
             "winner": winner_id,
         },
     ).fetchall()
+
+
+def entrants_of(rows: Sequence[DictRow]) -> int:
+    """How many accounts take part, from rows of _ranked: when anyone takes
+    part, the first place is among them."""
+    return int(rows[0]["entrants"]) if rows else 0
+
+
+def leaders(
+    conn: Connection[DictRow], contest: Contest, viewer_id: int | None
+) -> tuple[list[DictRow], dict[str, Any]]:
+    """The rows of _ranked for `viewer_id`, and the fields `top` and
+    `winner` of the contest's bodies (the winner only once closed)."""
+    rows = _ranked(
+        conn, contest, viewer_id=viewer_id, winner_id=contest.winner_drawing_id
+    )
+    details = _details(conn, [r["id"] for r in rows])
+    fields: dict[str, Any] = {
+        "top": [
+            ContestEntryBody(
+                rank=r["standing"],
+                reactions=r["reactions"],
+                drawing=_post(r, details),
+            )
+            for r in rows
+            if r["in_top"]
+        ],
+        "winner": None,
+    }
+    if contest.closed_at is not None:
+        won = next((r for r in rows if r["is_winner"]), None)
+        fields["winner"] = ContestWinnerBody(
+            reactions=0 if won is None else won["reactions"],
+            drawing=None if won is None else _post(won, details),
+        )
+    return rows, fields
+
+
+def told_everyone(
+    pusher: Pusher | None,
+    kind: Kind,
+    contest: Contest,
+    recipients: Sequence[int],
+) -> None:
+    """One push of a monthly challenge to each of `recipients`; each is its
+    own "actor" (push.OWN_KINDS). Never raises (Pusher.notify)."""
+    if pusher is None:
+        return
+    titles = contest.titles()
+    for recipient in recipients:
+        pusher.notify(
+            PushEvent(
+                kind,
+                recipient,
+                recipient,
+                key=str(contest.id),
+                contest_id=contest.id,
+                names=titles,
+            )
+        )
+
+
+# Who may be told of a monthly challenge: the pushes on, a phone, not
+# hidden (TASK-291). The column is `u.id`.
+PUSHABLE_SQL = (
+    "u.notify_push AND u.hidden_at IS NULL"
+    " AND EXISTS (SELECT 1 FROM push_tokens t WHERE t.user_id = u.id)"
+)
 
 
 def _post(row: DictRow, details: Any) -> FeedPostBody:
@@ -309,32 +466,24 @@ class Contests:
             if row is None:
                 return None
             contest = _contest(row)
-            rows = _ranked(
-                conn, contest, viewer_id=viewer_id, winner_id=contest.winner_drawing_id
-            )
-            details = _details(conn, [r["id"] for r in rows])
-        fields: dict[str, Any] = {
-            "id": contest.id,
-            "starts_at": contest.starts_at,
-            "ends_at": contest.ends_at,
-            "closed_at": contest.closed_at,
-            "top": [
-                ContestEntryBody(
-                    rank=r["standing"],
-                    reactions=r["reactions"],
-                    drawing=_post(r, details),
-                )
-                for r in rows
-                if r["in_top"]
-            ],
-            "winner": None,
-        }
-        if contest.closed_at is not None:
-            won = next((r for r in rows if r["is_winner"]), None)
-            fields["winner"] = ContestWinnerBody(
-                reactions=0 if won is None else won["reactions"],
-                drawing=None if won is None else _post(won, details),
-            )
+            rows, fields = leaders(conn, contest, viewer_id)
+            entered: list[UUID] = []
+            if contest.theme is not None and viewer_id is not None:
+                entered = [
+                    e["drawing_id"]
+                    for e in conn.execute(
+                        "SELECT drawing_id FROM contest_entries"
+                        " WHERE contest_id = %s AND user_id = %s"
+                        " ORDER BY created_at, drawing_id",
+                        (contest.id, viewer_id),
+                    )
+                ]
+        fields.update(
+            id=contest.id,
+            starts_at=contest.starts_at,
+            ends_at=contest.ends_at,
+            closed_at=contest.closed_at,
+        )
         if viewer_id is not None:
             mine = next((r for r in rows if r["is_mine"]), None)
             fields["mine"] = (
@@ -346,24 +495,66 @@ class Contests:
                     reactions=mine["reactions"],
                 )
             )
-        return ContestBody(**fields)
+        if contest.theme is None:
+            return ContestBody(**fields)
+        fields.update(theme=contest.theme, entrants=entrants_of(rows))
+        if viewer_id is not None:
+            fields["entered"] = entered
+        return ThemedContestBody(**fields)
 
-    def open(self, starts_at: datetime, ends_at: datetime) -> Contest:
-        """A contest opened for the period; ValueError when another is open
-        or `ends_at` is not after `starts_at`."""
+    def open(
+        self, starts_at: datetime, ends_at: datetime, theme: ThemeBody | None = None
+    ) -> Contest:
+        """A contest opened for the period, with `theme` a monthly
+        challenge; ValueError when another is open or `ends_at` is not
+        after `starts_at`."""
         if ends_at <= starts_at:
             raise ValueError(NOT_A_PERIOD)
+        kept = None if theme is None else Jsonb(theme.model_dump(exclude_none=True))
         try:
             with self.database.connect() as conn:
                 row = conn.execute(
-                    "INSERT INTO contests (starts_at, ends_at, created_at)"
-                    f" VALUES (%s, %s, %s) RETURNING {CONTEST_COLUMNS}",
-                    (starts_at, ends_at, self.now()),
+                    "INSERT INTO contests (starts_at, ends_at, created_at, theme)"
+                    f" VALUES (%s, %s, %s, %s) RETURNING {CONTEST_COLUMNS}",
+                    (starts_at, ends_at, self.now(), kept),
                 ).fetchone()
         except pg_errors.UniqueViolation:
             raise ValueError(ONE_OPEN) from None
         assert row is not None
         return _contest(row)
+
+    def announce(self, contest: Contest, pusher: Pusher | None) -> int:
+        """The push of a new monthly challenge (contest_open) to every
+        account that may be told (PUSHABLE_SQL); how many. Nobody for a
+        contest without a theme."""
+        if contest.theme is None:
+            return 0
+        with self.database.connect() as conn:
+            recipients = [
+                int(r["id"])
+                for r in conn.execute(
+                    f"SELECT u.id FROM users u WHERE {PUSHABLE_SQL} ORDER BY u.id"
+                )
+            ]
+        told_everyone(pusher, "contest_open", contest, recipients)
+        return len(recipients)
+
+    def theme_line(self) -> str | None:
+        """For `standings`: the theme of the open contest and its entries;
+        None without a theme, or without an open contest."""
+        with self.database.connect() as conn:
+            row = conn.execute(
+                "SELECT c.theme, count(e.drawing_id) AS entries,"
+                " count(DISTINCT e.user_id) AS accounts FROM contests c"
+                " LEFT JOIN contest_entries e ON e.contest_id = c.id"
+                " WHERE c.closed_at IS NULL GROUP BY c.id"
+            ).fetchone()
+        if row is None or row["theme"] is None:
+            return None
+        return (
+            f"contests: the theme is «{row['theme']['en']['title']}»;"
+            f" {row['entries']} drawing(s) entered by {row['accounts']} account(s)"
+        )
 
     def standings(self, limit: int = STANDINGS) -> list[Standing] | None:
         """The first `limit` of the open contest; None without one."""
@@ -402,6 +593,20 @@ class Contests:
                 )
             rows = _ranked(conn, contest, top=1, excluded=exclude)
             won = _standing(rows[0]) if rows else None
+            # The results of a monthly challenge: to who took part, the
+            # posts left out with --exclude too; the winner hears
+            # contest_won.
+            took_part: list[int] = []
+            if contest.theme is not None:
+                took_part = [
+                    int(r["user_id"])
+                    for r in conn.execute(
+                        f"{RANKED_SQL} SELECT DISTINCT user_id FROM ranked"
+                        " ORDER BY user_id",
+                        contest.ranked_values(),
+                    )
+                    if won is None or int(r["user_id"]) != won.user_id
+                ]
             if dry_run:
                 return Closing(contest, won, False)
             updated = conn.execute(
@@ -425,6 +630,7 @@ class Contests:
             pusher.notify(
                 PushEvent("contest_won", won.user_id, won.user_id, won.drawing_id)
             )
+        told_everyone(pusher, "contest_results", closed, took_part)
         return Closing(closed, won, True)
 
 
@@ -440,6 +646,30 @@ def _moment(text: str) -> datetime:
     if moment.tzinfo is None:
         raise argparse.ArgumentTypeError(NO_OFFSET)
     return moment
+
+
+def theme_of(path: Path) -> ThemeBody:
+    """The theme of `open --theme`: a JSON file with the title and the
+    description in each of THEME_LANGUAGES. ValueError says what is wrong,
+    before anything is opened."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise ValueError(f"the theme {path} is not a JSON file: {error}") from None
+    try:
+        theme = ThemeBody.model_validate(data)
+    except ValidationError as error:
+        problems = "; ".join(
+            f"{'.'.join(str(part) for part in e['loc'])}: {e['msg']}"
+            for e in error.errors()
+        )
+        raise ValueError(f"the theme {path} is not one: {problems}") from None
+    missing = [
+        language for language in THEME_LANGUAGES if getattr(theme, language) is None
+    ]
+    if missing:
+        raise ValueError(f"the theme {path} has no {', '.join(missing)}")
+    return theme
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -465,6 +695,14 @@ def _parser() -> argparse.ArgumentParser:
         type=_moment,
         metavar="MOMENT",
         help="when it ends, after --from: 2026-11-15T23:59:59+01:00",
+    )
+    opening.add_argument(
+        "--theme",
+        type=Path,
+        metavar="FILE.json",
+        help="a monthly challenge: its title and description in en, de, it,"
+        ' es and fr, {"en": {"title": …, "description": …}, …}; only the'
+        " drawings entered take part, and whoever has the pushes on is told",
     )
     commands.add_parser("standings", help=f"the first {STANDINGS} of the open contest")
     closing = commands.add_parser(
@@ -498,18 +736,29 @@ def _run(
     contests: Contests, args: argparse.Namespace, pusher: Pusher, out: TextIO
 ) -> int:
     if args.command == "open":
-        contest = contests.open(args.starts_at, args.ends_at)
+        theme = None if args.theme is None else theme_of(args.theme)
+        contest = contests.open(args.starts_at, args.ends_at, theme)
+        told = contests.announce(contest, pusher)
         print(
             f"contests: opened {contest.id}, from {contest.starts_at.isoformat()}"
             f" to {contest.ends_at.isoformat()}",
             file=out,
         )
+        if theme is not None:
+            print(
+                f"contests: the theme is «{theme.en.title}»; {told} account(s)"
+                " told with a push",
+                file=out,
+            )
         return 0
     if args.command == "standings":
         standings = contests.standings()
         if standings is None:
             print(f"contests: {NO_OPEN}", file=out)
             return 1
+        theme_line = contests.theme_line()
+        if theme_line is not None:
+            print(theme_line, file=out)
         print(f"contests: the first {STANDINGS}", file=out)
         for standing in standings:
             print(_line_of(standing), file=out)
@@ -583,10 +832,13 @@ def viewer_of(
 def contest_routes() -> APIRouter:
     router = APIRouter(tags=["contest"], responses=ACCOUNT_ERRORS)
 
-    # `mine` is left out without a token: exclude_unset.
+    # `mine` and `entered` are left out without a token: exclude_unset. A
+    # monthly challenge has its theme (TASK-343); a contest without one is
+    # answered as before it.
     @router.get(
         "/contests/current",
         responses={404: {"model": ErrorBody}},
+        response_model=ThemedContestBody | ContestBody,
         response_model_exclude_unset=True,
     )
     def current_contest(
@@ -602,10 +854,19 @@ def contest_routes() -> APIRouter:
 
 
 def install_contests(app: FastAPI) -> None:
-    """The contest for anyone with the API's key, `mine` with a token; after
-    install_accounts, which sets the database and the errors, and
-    install_drawings, whose bodies it reads."""
+    """The contest for anyone with the API's key, `mine` with a token; the
+    entries, the gallery and the archive of the monthly challenges
+    (contest_entries.py); the clock of their last days (contest_clock.py),
+    which runs only while the app does. After install_accounts, which sets
+    the database and the errors, install_push, whose pusher the clock reads,
+    and install_drawings, whose bodies it reads."""
+    # Here, not at the top: they read this module.
+    from shaperoute_api.contest_clock import install_contest_clock
+    from shaperoute_api.contest_entries import entry_routes
+
     app.include_router(contest_routes())
+    app.include_router(entry_routes())
+    install_contest_clock(app)
 
 
 if __name__ == "__main__":

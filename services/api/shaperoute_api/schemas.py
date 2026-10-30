@@ -321,6 +321,12 @@ ErrorCode = Literal[
     "comment_rejected",
     # No contest open, nor one closed less than a week ago (TASK-299).
     "no_contest",
+    # An entry in a monthly challenge refused (TASK-343, ADR-0296): the
+    # contest takes no entries (ended, closed, or without a theme); the
+    # drawing cannot take part (another's, not for everyone, imported,
+    # published outside the period, hidden).
+    "contest_closed",
+    "not_entrant",
     # A run added from a file is not sent to Strava (TASK-312, ADR-0272).
     "imported_run",
     # Signing in with Apple or Google (TASK-322, ADR-0282): no account yet

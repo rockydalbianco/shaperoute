@@ -160,6 +160,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-353 — La chat: orari, giorni, quanti messaggi nuovi, i vecchi
+  scorrendo** (ADR-0305; piano confermato dall'utente il 2026-10-30, «Sì,
+  passi 1 e 2»; numeri dal Coordinatore). Branch `feat/TASK-353-chat-look`.
+  `unread_count` nella lista dell'API, senza migrazione; l'app funziona
+  anche con il server di oggi, con il pallino. Testi da approvare. Dopo il
+  merge, TASK-354 (invio ottimistico, coda offline). File
+  `tasks/TASK-353.md`.
 - **TASK-351 — Il video della corsa con la mappa sotto: il look premium,
   il 3D e tre stili** (ADR-0303, proposta; richiesta dell'utente del
   2026-10-30; numeri e condizioni dal Coordinatore). Branch
@@ -180,9 +187,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (ADR-0306, estende ADR-0293; richiesta dell'utente del 2026-10-30, numeri
   dal Coordinatore). Branch `docs/TASK-355-feed-clarity` (documenti). Parte
   A solo app, dopo 339 B e prima di 348 A; parte B API e app, dopo 344 B e
-  prima di 309 B. Otto scelte dell'utente aperte. Il Feed manda già la
-  posizione e «Your position» non lo dice: si chiude con la parte A.
-  `tasks/TASK-355.md`.
+  prima di 309 B. Scelte dell'utente chiuse il 2026-10-30. Il Feed manda
+  già la posizione e «Your position» non lo dice: lo chiude TASK-356, dopo
+  la #668, con il testo già approvato; sito e OTA di produzione con il suo
+  sì. `tasks/TASK-355.md`.
 - **TASK-339 — L'interfaccia premium ed elegante** (ADR-0293, proposta;
   brief dell'utente del 2026-10-29; il canvas della proposta, 16 tavole,
   visto e approvato a voce la sera stessa, «BELLISSIMO»:
@@ -4649,6 +4657,10 @@ corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
 - **Regole** — TASK-357 (2026-10-30, richiesta dell'utente): con l'utente ogni
   sessione scrive in italiano (`CLAUDE.md`, «Convenzioni»). File
   `tasks/TASK-357.md`.
+
+- **Lavoro in parallelo** — TASK-359 (2026-10-30): `STATUS.md`, `DECISIONS.md` e
+  `INDEX.md` si uniscono con `merge=union`, per non far ripartire la CI a ogni
+  aggiunta. File `tasks/TASK-359.md`.
 
 ## Bloccato
 

@@ -1627,6 +1627,11 @@ export const FR: Table = {
   "10 drawings": "10 dessins",
   "{distance} drawing": "Dessin de {distance}",
   "Not earned yet: {badge}": "Pas encore obtenu : {badge}",
+  // src/messages/messageTime.ts, ConversationList.tsx (TASK-353: times in the chat)
+  Today: "Aujourd’hui",
+  Yesterday: "Hier",
+  "{day} {month}": "{day} {month}",
+  "{name}, {count} new messages: {text}": "{name}, {count} nouveaux messages : {text}",
 
   // src/route/runTime.ts (TASK-361: the time under the distance of «Draw»)
   "≈ {time} at {pace}": "≈ {time} à {pace}",

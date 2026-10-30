@@ -3562,8 +3562,12 @@ mostra le lettere unite da linee dritte sulla base.
   5. **«Activity»**: «Run», «Bike», «Paddle», **scelta in partenza dallo
      sport di «Settings»**; va anche a Strava come tipo (`Run`, `Ride`,
      `StandUpPaddling`); non cambia il punteggio;
-  6. **«Who can see it»**: «Everyone», «Followers», «Only me», **«Only me»
-     a ogni corsa** (scelta dell'utente: non ricorda la volta prima); sotto,
+  6. **«Who can see it»**: «Everyone», «Followers», «Only me». **Parte da
+     «Only me» finché l'account non salva un'altra scelta, poi dall'ultima
+     salvata** (scelta dell'utente, ADR-0304; una per account, sul telefono;
+     le attività da file partono sempre da «Only me» e non la cambiano). Se
+     parte da «Everyone» o «Followers», le parole della scelta stanno anche
+     sopra «Save», perché il modulo scorre; sotto,
      con «Everyone», «Every member sees it in your profile, without the
      first and last 200 m.», con «Followers» «Your followers see it in
      your profile, without the first and last 200 m.»; con «Only me» e
@@ -4208,8 +4212,8 @@ c'è anche l'errore.
   `MuW-run.mp4`.
 - **Un disegno che altri vedono** (TASK-117, TASK-208): una corsa diventa
   visibile agli altri iscritti **solo con «Everyone» o «Followers»**
-  scelto dall'utente, a fine corsa o su una corsa aperta; «Only me» a ogni
-  corsa. Il telefono manda all'API la chiave della corsa, il titolo, la
+  scelto dall'utente, a fine corsa o su una corsa aperta; a fine corsa
+  parte da «Only me», poi dall'ultima scelta salvata (ADR-0304). Il telefono manda all'API la chiave della corsa, il titolo, la
   descrizione, l'attività, i `public_id` dei taggati e «Who can see it»;
   la traccia la taglia l'API (mai i primi e gli ultimi 200 m, mai il
   percorso pianificato né gli orari, ADR-0159). Senza rete la scelta

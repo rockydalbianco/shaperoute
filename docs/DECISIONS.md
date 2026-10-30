@@ -19981,6 +19981,46 @@ dell'utente; un server precedente risponde `404` e l'app cerca solo negli
 esempi. `shared-types` ha `DrawingSearchPage`, `DRAWING_SORTS`,
 `DRAWING_COMPLEXITIES` e le due soglie.
 
+## ADR-0304 — «Who can see it» parte da «Only me», poi dall'ultima scelta salvata
+**Stato**: Attiva · 2026-10-30 · **scelta dell'utente**; i dettagli sono
+decisi dall'agente su delega dell'utente (TASK-352). Sostituisce, per la fine
+della corsa, «Only me a ogni corsa» di ADR-0170.
+
+**Contesto**: l'utente ha chiesto: «quando un utente finisce un attività in
+autotatico metti l'impostazione di pubblicarla di defoult se invece non vuole
+un utente può toglierla poi». Il coordinatore ha segnalato che una traccia GPS
+pubblica per impostazione predefinita è un rischio con il GDPR, art. 25 (la
+protezione dei dati per impostazione predefinita), e ha proposto l'alternativa.
+All'utente sono state spiegate le due strade; ha risposto: «Dopo la prima
+scelta». La riga non è stata vista da un legale.
+
+**Decisione**:
+
+1. La prima attività di un account parte da «Only me». Poi parte dall'ultima
+   scelta con cui l'account ha **salvato** una corsa: «Everyone», «Followers»
+   o «Only me». Chi toglie la pubblicazione riparte da privato.
+2. La scelta si tiene solo con «Save» riuscito: toccare un'opzione, «Discard»
+   o un «Save» fallito non cambiano niente.
+3. Una scelta per account, in `drawing-visibility.json` sul telefono: un altro
+   account sullo stesso telefono parte da «Only me». Cancellare l'account la
+   toglie; uscire no.
+4. Le attività da file partono sempre da «Only me» e non cambiano la scelta.
+5. Si pubblica solo col gesto di «Save». Se il modulo parte da «Everyone» o
+   «Followers», la frase che lo dice sta anche sopra «Save», fuori dalla parte
+   che scorre, con un testo già tradotto: la scelta si vede prima del gesto.
+6. Nessun cambio all'API: il taglio di 200 m ai due capi resta. Le corse già
+   salvate non cambiano. Niente migrazione né dipendenze.
+
+**Alternative scartate**: «Everyone» sempre, fin dalla prima attività (quello
+chiesto all'inizio, scartato dall'utente con la risposta sopra); ricordare solo
+«Everyone» (chi sceglie «Followers» dovrebbe rifarlo a ogni corsa); ricordare
+al tocco (una scelta provata e non salvata resterebbe).
+
+**Conseguenze**: Help e Privacy cambiano nelle cinque lingue, con il sito
+rigenerato: testi mostrati all'utente in italiano, che ha risposto «Sì,
+approvo». App Privacy e Data safety non cambiano: i dati raccolti e il loro
+uso sono gli stessi, la pubblicazione resta una scelta di chi corre.
+
 ---
 
 ## ADR-0301 — Il compositore del post: fino a 10 elementi in ordine, i layout appiattiti a «Publish», l'editor nativo dalla 1.0.2

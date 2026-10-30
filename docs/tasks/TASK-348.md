@@ -84,6 +84,10 @@ dalla build 1.0.2 (l'impronta iOS `83793e26` resta per la 1.0.1).
 4. **«Publish» appiattisce**: ogni foto diventa un JPEG 1080 × 1350 (4:5)
    con disegno e modifiche dentro, ogni video un MP4 con i limiti di
    TASK-336. Il server riceve file normali e non sa nulla dell'editor.
+   Il disegno dentro la foto è **sempre la linea già tagliata del Feed**
+   (inizio e fine nascosti, `feedRoute.ts`): non si riapre la casa di chi
+   corre. Una foto appiattita non si può tagliare dopo, quindi questo si
+   controlla con un test.
 5. **API**: `DRAWING_MAX_PHOTOS` da 3 a 10 e un ordine riscrivibile degli
    elementi (oggi «un posto svuotato resta vuoto»); un'app vecchia continua
    a vedere le foto in ordine.
@@ -136,10 +140,50 @@ risposte si scrivono qui.
    vignettatura, grana), testo, adesivi, prima/dopo, annulla e ripeti,
    «applica a tutte»; per i video taglio di inizio e fine, ritaglio 4:5 o
    9:16, filtri, il disegno sopra.
-   — *Risposta:* da chiedere.
+   — *Risposta (2026-10-30):* «Sì, tutte».
 7. **I testi e la privacy**: in inglese da approvare, la privacy nelle
    cinque lingue se cambia (10 foto invece di 3, più video).
    — *Risposta:* da chiedere.
+
+## I testi
+
+In inglese, da approvare (scelta 7). Le traduzioni dei testi dell'app le fa
+l'agente nelle parti; la privacy è qui nelle cinque lingue. Le parti B e C
+portano i testi dell'editor (nomi dei filtri e degli strumenti) nella loro
+PR, col sì dell'utente.
+
+**Il compositore** (parte A): «Your post»; «Hold and drag to reorder»;
+«Move left» e «Move right» (VoiceOver, chi non può trascinare); «Drawing»;
+«Layout»; i quattro layout: «Drawing in the corner», «Line on the photo»,
+«Half and half», «Photo in the corner»; «Up to 10 in a post.»; «Could not
+prepare this photo. Try again.». Parte C: «Up to 3 videos in a post.».
+
+**Help**, in «Publish and share» (parte A): «A run you publish can have up
+to 10 photos and the drawing. Hold one and drag it to change the order: the
+first is what people see in the Feed. Choose a layout to put the drawing on
+a photo.». Parte C, al posto di «up to 10 photos and the drawing»: «up to 10
+items: photos, up to 3 videos of up to 30 seconds each, and the drawing».
+
+**Privacy**, in «Your runs and their GPS tracks», un paragrafo nuovo (parte
+A), con la data del giorno del merge:
+
+- en: «A photo you publish can have the drawing of your run inside the
+  picture. It is the same drawing the Feed shows, cut at its start and end.»
+- it: «Una foto che pubblichi può avere dentro l'immagine il disegno della
+  tua corsa. È lo stesso disegno che mostra il Feed, tagliato all'inizio e
+  alla fine.»
+- es: «Una foto que publiques puede llevar dentro de la imagen el dibujo de
+  tu carrera. Es el mismo dibujo que muestra el Feed, cortado al principio
+  y al final.»
+- fr: «Une photo que tu publies peut contenir le dessin de ta course dans
+  l'image. C'est le même dessin que celui du Feed, coupé au début et à la
+  fin.»
+- de: «Ein Foto, das du veröffentlichst, kann die Zeichnung deines Laufs im
+  Bild enthalten. Es ist dieselbe Zeichnung wie im Feed, am Anfang und am
+  Ende gekürzt.»
+
+Parte C: il testo di TASK-336 «one video of up to 30 seconds» diventa «up
+to three videos of up to 30 seconds each» (e così nelle altre lingue).
 
 ## Cosa fare (le parti)
 
@@ -161,6 +205,7 @@ Ogni parte ha la sua PR e parte da `main` solo col via del Coordinatore.
 - [ ] Ogni dipendenza nuova ha il sì dell'utente scritto qui.
 - [ ] Parte A: un post con 10 foto e il disegno, riordinato, si pubblica e
       si vede nel Feed nello stesso ordine; un'app vecchia vede le foto.
+- [ ] Parte A: un test dimostra che il disegno nella foto usa la linea tagliata del Feed.
 - [ ] Parte A: `layoutFrame` ha test deterministici per ogni layout.
 - [ ] Parte A: l'impronta iOS resta `83793e26` su una copia pulita.
 - [ ] Parti B e C: entrano solo nella build 1.0.2.

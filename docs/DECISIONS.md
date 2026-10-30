@@ -19892,6 +19892,8 @@ l'impronta iOS `83793e26`.
    per le foto, MP4 nei limiti di ADR-0292 per i video. Il server riceve
    file normali e non conosce l'editor.
 3. Il layout è una funzione pura, la stessa per anteprima ed esportazione.
+   Il disegno dentro la foto è sempre la linea già tagliata del Feed: una
+   foto appiattita non si può tagliare dopo.
 4. API: fino a 10 foto e un ordine riscrivibile; un'app vecchia vede le
    foto in ordine.
 5. Parte A via OTA senza dipendenze nuove (`PanResponder` + `Animated`,

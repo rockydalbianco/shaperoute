@@ -19674,7 +19674,8 @@ quello delle scale) e una frase nuova «2 more notes» (da tradurre, mentre
 
 ## ADR-0296 — Le sfide del mese: un tema sul concorso, l'iscrizione esplicita, la galleria, l'archivio, tre push
 
-**Stato**: Proposta · 2026-10-29 · TASK-343. Estende ADR-0260 (il primo
+**Stato**: Accettata · 2026-10-29, parte A in `main` il 2026-10-30 ·
+TASK-343. Estende ADR-0260 (il primo
 concorso), che resta valido per i concorsi senza tema. Il tema,
 l'iscrizione esplicita e il voto che resta la reazione sono dell'utente
 (richiesta del 2026-10-29, proposta approvata con «Yes, as proposed»);
@@ -19725,6 +19726,19 @@ gesti per la stessa cosa); un cron sul server per gli ultimi 3 giorni
 regolamento ufficiale cambia e va riapprovato. «Challenge» è già una
 parola del gioco «Play» (TASK-296): i testi dell'app devono tenerle
 distinte.
+
+**Aggiunta, parte A** (2026-10-30, #657, migrazione 0039). Decise dall'agente
+su delega dell'utente, descritte in `CONCORSI.md` §15: un concorso senza tema
+non prende iscrizioni e non manda le tre push; «3 days left» a chi ha
+pubblicato almeno un disegno per tutti, di qualunque data, e non ne ha
+iscritto nessuno; i risultati a chi ha un disegno in classifica alla chiusura,
+anche escluso con `--exclude`, tranne il vincitore; galleria e archivio anche
+senza token, 30 voci e 10 sfide per pagina. I testi delle tre push:
+«accettati su delega dell'utente del 2026-10-29, da rivedere» (sì
+dell'autopilota, riferito dal Coordinatore). Da rivedere: «Corri il tuo
+disegno» e «pubblica una corsa» parlano solo di corsa, da cambiare se una
+sfida vale anche per bici o canoa. Il server non è aggiornato: la migrazione
+0039 la decide l'utente.
 
 ## ADR-0294 — I badge sul profilo: primo disegno, 10 disegni, 30 km, decisi dal server
 

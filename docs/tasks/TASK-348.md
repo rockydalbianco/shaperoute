@@ -64,7 +64,7 @@ La proposta di partenza, con l'analisi del codice, è in
 | Carosello del Feed | `feed/FeedPost.tsx` (TASK-315, TASK-330) | Lettore del carosello; `Pressable` dentro lo `ScrollView` |
 | Video della corsa | `share/videoScene.ts`, `videoPage.ts`, `mp4.ts`, `videoMusic.ts` | Un elemento del carosello con un tocco |
 | Immagine composta | `share/PostImage.tsx`, `sharePicture.ts`, `react-native-view-shot` | I layout delle foto nella parte A senza nulla di nativo |
-| Linea del disegno | `feed/feedRoute.ts`, `turnedLine.ts` | La linea sopra la foto |
+| Linea del disegno | `share/postRun.ts` (`withoutEnds`), `feed/turnedLine.ts` | La linea sopra la foto, già tagliata |
 | Video nei post | TASK-336, `media_files.py` | Caricamento, lettura con `Range`, tetto, lettore |
 
 Nell'app mancano `react-native-gesture-handler`, `react-native-reanimated`,
@@ -85,8 +85,8 @@ dalla build 1.0.2 (l'impronta iOS `83793e26` resta per la 1.0.1).
    con disegno e modifiche dentro, ogni video un MP4 con i limiti di
    TASK-336. Il server riceve file normali e non sa nulla dell'editor.
    Il disegno dentro la foto è **sempre la linea già tagliata del Feed**
-   (inizio e fine nascosti, `feedRoute.ts`): non si riapre la casa di chi
-   corre. Una foto appiattita non si può tagliare dopo, quindi questo si
+   (`withoutEnds` e `POST_CUT_M` = 200 m, `share/postRun.ts`): non si
+   riapre la porta di casa di chi corre. Una foto appiattita non si può tagliare dopo, quindi questo si
    controlla con un test.
 5. **API**: `DRAWING_MAX_PHOTOS` da 3 a 10 e un ordine riscrivibile degli
    elementi (oggi «un posto svuotato resta vuoto»); un'app vecchia continua

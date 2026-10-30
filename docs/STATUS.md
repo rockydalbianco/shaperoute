@@ -160,6 +160,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-363 — Dove va la posizione del telefono: la verifica e il testo**
+  (ADR-0306, punto 4; numero dal Coordinatore). Verifica fatta, proposta
+  unica all'utente; codice solo col suo sì. Branch
+  `docs/TASK-363-position-audit`. `tasks/TASK-363.md`.
 - **TASK-353 — La chat: orari, giorni, quanti messaggi nuovi, i vecchi
   scorrendo** (ADR-0305; piano confermato dall'utente il 2026-10-30, «Sì,
   passi 1 e 2»; numeri dal Coordinatore). Branch `feat/TASK-353-chat-look`.

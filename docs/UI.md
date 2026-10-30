@@ -931,7 +931,11 @@ campo resta com'è e sopra c'è il motivo dell'API (troppi in un minuto,
 vuoto, troppo lungo); senza rete «No connection. Try again when you are
 online.». **Tenere premuto** un commento che si può cancellare (il proprio,
 o qualsiasi sotto il proprio disegno) chiede «Delete this comment?» con
-«Cancel» e «Delete»; per VoiceOver è l'azione «Delete» della riga. **Il
+«Cancel» e «Delete»; per VoiceOver è l'azione «Delete» della riga. **Un
+tocco sulla foto di chi ha scritto** chiude il foglio e apre il suo
+profilo, come un nome taggato (il proprio porta alla propria pagina); per
+VoiceOver è l'azione «{name}'s profile» della riga. Un autore appena
+bloccato non apre niente (TASK-338). **Il
 testo è sempre solo testo**: un link non si tocca, un tag HTML si legge
 com'è scritto, e il commento non entra mai nella WebView della mappa.
 
@@ -2844,7 +2848,14 @@ striscia arancio (`warning`) per quelli a cui fare attenzione (scale,
 strade principali, gallerie, forma poco fedele, pochi tratti di strada) e
 grigia per quelli da sapere (partenza spostata, distanza diversa da quella
 chiesta, strade ripercorse); prima quelli a cui fare attenzione, e la
-stessa frase una volta sola. Un testo che l'app non conosce resta com'è,
+stessa frase una volta sola. Se ne vedono **due alla volta** (TASK-337,
+richiesta dell'utente: di più spingevano la mappa fuori dallo schermo):
+sotto, una riga grigia «Show more» apre gli altri; un altro percorso, o
+l'altro fra A e B, riparte da due. Quelli di sicurezza (scale, strade
+principali, gallerie, bici a mano) si vedono sempre, anche se sono più di
+due. Restano fuori dal conto la riga della
+forma spostata («The shape does not fit there…») e quelle con un pulsante.
+Un testo che l'app non conosce resta com'è,
 in inglese. La somiglianza non si mostra come
 numero, tranne nelle tessere dei percorsi alternativi, dove serve a
 confrontarli (TASK-093, scelta dell'utente): la forma la giudica l'occhio

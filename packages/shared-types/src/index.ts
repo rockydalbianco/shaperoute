@@ -799,7 +799,24 @@ export interface PublicProfile {
   distance_m?: number;
   climb_m?: number;
   reactions?: number;
+  /**
+   * The badges it earned (TASK-341, ADR-0294), in the order of
+   * PROFILE_BADGES, decided by the API on the drawings the one who asks
+   * sees. «Winner» is `contest_wins`. Missing from an API older than TASK-341.
+   */
+  badges?: ProfileBadge[];
 }
+
+/**
+ * The badges of a profile (TASK-341): a first drawing, ten drawings, a
+ * drawing of 30 km or more, of runs recorded by the app.
+ */
+export const PROFILE_BADGES = [
+  "first_drawing",
+  "ten_drawings",
+  "long_drawing",
+] as const;
+export type ProfileBadge = (typeof PROFILE_BADGES)[number];
 
 /**
  * Where a member stands towards a profile (TASK-211): it asked and waits
@@ -1158,6 +1175,37 @@ export interface FeedPage {
   /** The `cursor` of the next page; null on the last one. */
   next: string | null;
 }
+
+/** The orders of GET /search/drawings (TASK-344, ADR-0297): the last
+ * published, the longest, the one with the most reactions first. */
+export const DRAWING_SORTS = ["recent", "longest", "popular"] as const;
+export type DrawingSort = (typeof DRAWING_SORTS)[number];
+
+/** How complex a drawing's line is, a filter of GET /search/drawings. */
+export const DRAWING_COMPLEXITIES = ["simple", "medium", "complex"] as const;
+export type DrawingComplexity = (typeof DRAWING_COMPLEXITIES)[number];
+
+/**
+ * How complex a line is: its length over the diagonal of the rectangle it
+ * fits in, on at most 64 of its points. Below the first, simple; below the
+ * second, medium; complex above. The same on the server
+ * (drawing_search.py) and for the examples on the phone.
+ */
+export const DRAWING_SIMPLE_BELOW = 3.6;
+export const DRAWING_MEDIUM_BELOW = 4.5;
+
+/** Posts a page of GET /search/drawings holds unless `limit` says. */
+export const DRAWING_SEARCH_PAGE_SIZE = 20;
+
+/**
+ * GET /search/drawings?q=…&named=…&shape=…&activity=…&min_m=…&max_m=…
+ * &place=…&complexity=…&sort=…&limit=20&cursor=… (TASK-344): the drawings
+ * the reader may see that hold every word of `q`, capitals and accents
+ * aside, or are of a shape in `named`, and pass every filter. A list
+ * filter is sent once for each value. Never a private one. A page is the
+ * feed's.
+ */
+export type DrawingSearchPage = FeedPage;
 
 /**
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing

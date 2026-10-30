@@ -164,8 +164,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `feat/TASK-343-b-themed-contest-app`): scheda, pagina, galleria, «Past
   challenges», interruttore nel modulo, tocco delle tre push, regolamento. Con
   l'API di oggi (c7a83347, senza 0039) l'app resta com'è. Testi e regolamento
-  approvati dall'utente (2026-10-30, «Approve them all»); dopo il merge resta una riga: montare
-  `EnterOnPost` in `DrawingCard`, dopo TASK-339 B e su parola del Coordinatore.
+  approvati dall'utente (2026-10-30, «Approve them all» e «sì testi 667»); provata
+  nel simulatore con un tema e col server di oggi (esito nel task file). Dopo il
+  merge resta una riga: montare `EnterOnPost` in `DrawingCard`, dopo TASK-339 B e
+  su parola del Coordinatore.
   Il server con la 0039 lo decide l'utente, insieme a questa parte.
 - **TASK-339 — L'interfaccia premium ed elegante** (ADR-0293, proposta;
   brief dell'utente del 2026-10-29; il canvas della proposta, 16 tavole,
@@ -193,8 +195,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `tasks/TASK-343.md`. **A in `main`** (#657, `5303a198`, 2026-10-30, migrazione
   0039): **il server non è aggiornato**, serve la 0039 e lo decide l'utente.
   I testi delle tre push: sì dell'autopilota, «accettati su delega
-  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B da
-  fare**, i file prima al Coordinatore (TASK-339 B).
+  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B nella
+  PR #667**, la voce sopra.
 - **TASK-341 — I badge sul profilo: primo disegno, 10 disegni, 30 km**
   (ADR-0294; richiesta dell'utente del 2026-10-29, proposta approvata con
   «Yes, as proposed»; numeri dal Coordinatore). Branch

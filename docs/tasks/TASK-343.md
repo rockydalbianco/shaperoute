@@ -1,7 +1,7 @@
 # TASK-343 — Le sfide del mese: un tema per concorso, l'iscrizione, la galleria, l'archivio
 
 **Stato**: In lavorazione — documenti in `main` (#648), parte A in `main`
-(#657, `5303a198`), parte B da fare
+(#657, `5303a198`), parte B nella PR #667
 **Fase**: 4 · **Branch**: `feat/TASK-343-a-themed-contest-api` (A),
 `feat/TASK-343-b-themed-contest-app` (B)
 **ADR**: ADR-0296 (estende ADR-0260) · **Migrazione**: una, in A; il
@@ -127,11 +127,11 @@ Notifiche: nuova challenge, ultimi 3 giorni, risultati». La proposta
       pagina con `cursor`; l'archivio dà i concorsi chiusi.
 - [x] Ognuna delle tre push parte una volta sola e solo a chi deve
       (test con un `pusher` finto e l'orologio finto).
-- [ ] App: scheda con il tema, pagina, galleria nei due ordini,
+- [x] App: scheda con il tema, pagina, galleria nei due ordini,
       archivio, interruttore solo quando vale, tocco della push; con
       un'API senza tema tutto come oggi.
 - [ ] Testi e regolamento approvati dall'utente; server e push solo con
-      il sì dell'utente.
+      il sì dell'utente. (Testi e regolamento sì; server e push no.)
 
 ## File toccati
 
@@ -300,5 +300,4 @@ dentro lo zip.
 
 ### Parte B
 
-Da fare, in una sessione nuova: i file vanno mandati prima al Coordinatore,
-`FeedPost` e `PublicParts` potrebbero essere occupati da TASK-339 B.
+Nella PR #667: vedi «Parte B: esito della PR», sopra.

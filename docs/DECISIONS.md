@@ -19945,3 +19945,40 @@ cambiano; la modifica esplicita l'ha chiesta il Coordinatore.
    Coordinatore. Finché TASK-348 C non c'è, l'app ne manda uno.
 
 ---
+
+## ADR-0306 — La scheda del Feed: due parti, il look di ADR-0293 prima del brief, la posizione arrotondata e detta
+
+**Stato**: Proposta · 2026-10-30 · TASK-355. La richiesta e il piano sono
+dell'utente («Sì, procedi», 2026-10-30); numeri dal Coordinatore; le scelte
+di prodotto restano aperte in `tasks/TASK-355.md`. Il resto è deciso
+dall'agente su delega dell'utente. Estende ADR-0293; non tocca ADR-0127,
+ADR-0193, ADR-0207.
+
+**Contesto**: il brief chiede una scheda più chiara «senza cambiare le
+API». Ma `GET /feed` non manda foto dell'autore, conteggi né filtri; varie
+voci esistono già altrove (TASK-119, 120, 178, 307, 313, 315); alcune
+contraddicono scelte già fatte: il punteggio, il colore unico del canvas
+approvato, il cuore che vuole un commento. E il Feed manda già la
+posizione non arrotondata, cosa che «Your position» non dice.
+
+**Decisione** (proposta):
+
+1. **Due parti.** A solo app, piccola, senza `FeedScreen.tsx`; B con
+   l'API (campi e `filter` facoltativi). I conteggi non si chiedono card per
+   card, e i filtri non si fanno sul telefono: le liste sarebbero incomplete.
+2. **Dove il brief e ADR-0293 divergono decide l'utente**, voce per voce,
+   con la proposta di restare sul canvas.
+3. **Il contatore delle slide è di TASK-348 A**, che riscrive il carosello.
+4. **La posizione nel Feed**: arrotondata a due decimali dall'app (circa
+   1 km; il raggio è di 50 km) e scritta in «Your position». Si chiude con
+   la parte A, non con la B, perché il testo è incompleto già oggi.
+5. **Niente `expo-blur`**: l'header è già opaco e sopra le pagine, basta un
+   filo; l'impronta iOS `83793e26` resta.
+
+**Conseguenze**: `FeedPost` si accorcia (`RouteMap`, `ActionBar`), a favore
+di 348 A e 336 B. Il `GET /feed` di B pesa di più: la PR misura tempo e
+peso, e se 20 foto da 128 px sono troppe si passa a una rotta per la foto.
+Un'app di prima continua a mandare il punto intero fino all'aggiornamento:
+il server lo accetta come oggi e non lo tiene.
+
+---

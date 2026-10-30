@@ -160,6 +160,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-355 — Una scheda del Feed che si capisce in un colpo d'occhio**
+  (ADR-0306, estende ADR-0293; richiesta dell'utente del 2026-10-30, numeri
+  dal Coordinatore). Branch `docs/TASK-355-feed-clarity` (documenti). Parte
+  A solo app, dopo 339 B e prima di 348 A; parte B API e app, dopo 344 B e
+  prima di 309 B. Otto scelte dell'utente aperte. Il Feed manda già la
+  posizione e «Your position» non lo dice: si chiude con la parte A.
+  `tasks/TASK-355.md`.
 - **TASK-343 — Le sfide del mese: un tema sul concorso, l'iscrizione,
   la galleria, l'archivio** (ADR-0296, estende ADR-0260; richiesta
   dell'utente del 2026-10-29, proposta approvata con «Yes, as proposed»;

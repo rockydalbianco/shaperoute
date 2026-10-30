@@ -160,6 +160,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-339 — L'interfaccia premium ed elegante** (ADR-0293, proposta;
+  brief dell'utente del 2026-10-29; il canvas della proposta, 16 tavole,
+  visto e approvato a voce la sera stessa, «BELLISSIMO»:
+  https://claude.ai/artifact/XRMFiZ9BWbWnKkdJ9Udtjf; numeri e condizioni
+  dal Coordinatore il 2026-10-30). **Parte A in corso**, branch `feat/TASK-339-premium-look-a`, worktree
+  `.claude/worktrees/premium-look-a`: `tokens.ts` (la scala `font` con
+  tracking e interlinea, i grigi caldi nei due toni con gli stessi
+  contrasti, `radius.xl`, `motion`, `color.hairline`), `src/ui/` (`Tap`,
+  `Hairline`, `Scrim` con `assets/ui/scrim.png`, `EmptyState`, il cuore),
+  i tre nomi dell'intestazione a 30 regular. Poi B (Feed ed Explore, le
+  immagini protagoniste), C (stati vuoti e divisioni, i `pressed` a
+  `Tap`), D (Profile, Settings, i fogli), E («Draw» e il risultato, dopo
+  TASK-311 B, 331 e 335). Niente di nativo: la vibrazione al tocco solo
+  con una build, col sì dell'utente. File `tasks/TASK-339.md`.
 - **TASK-343 — Le sfide del mese: un tema sul concorso, l'iscrizione,
   la galleria, l'archivio** (ADR-0296, estende ADR-0260; richiesta
   dell'utente del 2026-10-29, proposta approvata con «Yes, as proposed»;

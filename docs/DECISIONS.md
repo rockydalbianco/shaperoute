@@ -19981,6 +19981,46 @@ dell'utente; un server precedente risponde `404` e l'app cerca solo negli
 esempi. `shared-types` ha `DrawingSearchPage`, `DRAWING_SORTS`,
 `DRAWING_COMPLEXITIES` e le due soglie.
 
+## ADR-0304 — «Who can see it» parte da «Only me», poi dall'ultima scelta salvata
+**Stato**: Attiva · 2026-10-30 · **scelta dell'utente**; i dettagli sono
+decisi dall'agente su delega dell'utente (TASK-352). Sostituisce, per la fine
+della corsa, «Only me a ogni corsa» di ADR-0170.
+
+**Contesto**: l'utente ha chiesto: «quando un utente finisce un attività in
+autotatico metti l'impostazione di pubblicarla di defoult se invece non vuole
+un utente può toglierla poi». Il coordinatore ha segnalato che una traccia GPS
+pubblica per impostazione predefinita è un rischio con il GDPR, art. 25 (la
+protezione dei dati per impostazione predefinita), e ha proposto l'alternativa.
+All'utente sono state spiegate le due strade; ha risposto: «Dopo la prima
+scelta». La riga non è stata vista da un legale.
+
+**Decisione**:
+
+1. La prima attività di un account parte da «Only me». Poi parte dall'ultima
+   scelta con cui l'account ha **salvato** una corsa: «Everyone», «Followers»
+   o «Only me». Chi toglie la pubblicazione riparte da privato.
+2. La scelta si tiene solo con «Save» riuscito: toccare un'opzione, «Discard»
+   o un «Save» fallito non cambiano niente.
+3. Una scelta per account, in `drawing-visibility.json` sul telefono: un altro
+   account sullo stesso telefono parte da «Only me». Cancellare l'account la
+   toglie; uscire no.
+4. Le attività da file partono sempre da «Only me» e non cambiano la scelta.
+5. Si pubblica solo col gesto di «Save». Se il modulo parte da «Everyone» o
+   «Followers», la frase che lo dice sta anche sopra «Save», fuori dalla parte
+   che scorre, con un testo già tradotto: la scelta si vede prima del gesto.
+6. Nessun cambio all'API: il taglio di 200 m ai due capi resta. Le corse già
+   salvate non cambiano. Niente migrazione né dipendenze.
+
+**Alternative scartate**: «Everyone» sempre, fin dalla prima attività (quello
+chiesto all'inizio, scartato dall'utente con la risposta sopra); ricordare solo
+«Everyone» (chi sceglie «Followers» dovrebbe rifarlo a ogni corsa); ricordare
+al tocco (una scelta provata e non salvata resterebbe).
+
+**Conseguenze**: Help e Privacy cambiano nelle cinque lingue, con il sito
+rigenerato: testi mostrati all'utente in italiano, che ha risposto «Sì,
+approvo». App Privacy e Data safety non cambiano: i dati raccolti e il loro
+uso sono gli stessi, la pubblicazione resta una scelta di chi corre.
+
 ---
 
 ## ADR-0301 — Il compositore del post: fino a 10 elementi in ordine, i layout appiattiti a «Publish», l'editor nativo dalla 1.0.2
@@ -20066,6 +20106,172 @@ cambiano; la modifica esplicita l'ha chiesta il Coordinatore.
 
 ---
 
+## ADR-0302 — Nelle schede di «Explore» prima il disegno, la foto a uno swipe
+
+**Data**: 2026-10-30 · **Stato**: accettata · **Task**: TASK-350. L'ordine è
+una scelta dell'utente («prima l'immagine e poi swipe destra e vedi la foto
+della città»); il modo è deciso dall'agente su delega dell'utente.
+
+**Contesto**: da ADR-0243 la foto di un paese prendeva il posto di disegno e
+mappa, e da ADR-0287 quella di un'idea aveva sopra la forma in piccolo.
+L'app si riconosce dal disegno: l'utente vuole vedere prima quello.
+
+**Decisione**: `RouteCard`, con `photo` e una linea, ha due pagine da
+scorrere: il disegno sulla mappa, poi la foto col credito, con due pallini in
+alto. Senza linea mostra la sola foto: serve a un paese il cui disegno è
+fallito. In `NearbyTowns` la foto aspetta il disegno, così una scheda non
+passa dalla foto al disegno sotto gli occhi. Il tocco sta dentro le pagine,
+come in `FeedPost`: una `Pressable` attorno a uno `ScrollView` diventa
+responder e ne ferma lo scorrimento nativo, mentre la fila, che è fuori,
+scorre. `bounces={false}` fa passare lo swipe alla fila dall'ultima pagina.
+
+**Alternative scartate**: la foto subito e il disegno quando arriva (la
+scheda cambierebbe da sola); una freccia da toccare al posto dello swipe (non
+è quello chiesto).
+
+**Conseguenze**: uno swipe su una scheda con foto cambia pagina invece di far
+scorrere la fila, che si scorre dalla seconda pagina o da nome e distanza. Le
+mappe si prendono anche per le schede con foto, una alla volta come le altre.
+Nessun testo nuovo, nessuna dipendenza, niente di nativo, server non toccato.
+
+## ADR-0303 — Il video della corsa con la mappa sotto: la mappa nella pagina del video, uno scatto e la linea sopra, il giallo come riserva, tre stili dai token, il 3D proiettato dalla pagina
+
+**Stato**: Proposta · 2026-10-30 · TASK-351. La richiesta è dell'utente
+(2026-10-30: «fai anche lo restyle del video post corsa con questo stile
+aggiungendo la mappa sotto, magari la mappa in 3d come strava... e la
+possibilità di avere 3 stili per il video»); i nomi degli stili e la
+scelta sulla privacy (la mappa nel video mostra dove si è corso) sono
+dell'utente, da chiedere (`tasks/TASK-351.md`, scelte 1 e 5); il giallo
+che sparisce, il 3D sulla mappa scura, la camera che gira e il credito
+sono la raccomandazione, accettata su delega dell'utente del 2026-10-29,
+da rivedere; il giallo come riserva senza mappa è una condizione del
+Coordinatore; i punti tecnici sono decisi dall'agente su delega
+dell'utente. Estende ADR-0254 (il video) e ADR-0262 (la musica), che
+restano validi per tutto quello che non cambia; sostituisce il punto 1 di
+ADR-0254 solo per «sul giallo del post». Usa ADR-0293 (il look premium),
+ADR-0231 (il bordo della linea sul chiaro), ADR-0232 (la mappa 3D:
+terreno e colline) e ADR-0131 (la mappa sotto un disegno del Feed).
+
+**Contesto**: il video di «Export video» è il post sul giallo che prende
+vita: 360 fotogrammi decisi dall'app (`videoScene.ts`) e disegnati su un
+canvas 2D nel WebView nascosto (`videoPage.ts`), codificati con WebCodecs,
+scritti dall'app in un MP4. L'utente vuole la mappa sotto, in 3D come
+Strava, e tre stili. Il Feed scatta già una mappa nascosta con MapLibre
+(`feed/feedMapPage.ts`); la pagina della mappa ha la specie 3D (terreno
+Terrarium, colline, inclinazione 55°). Vincoli: niente di nativo e nessuna
+dipendenza (impronta iOS `83793e26` fino al taglio della 1.0.x); nessun
+colore a mano; durata e memoria del video che non dipendono dalla corsa
+(ADR-0254, punto 9). Misure del 2026-10-30, nel simulatore e dentro
+l'app in Expo Go, in `tasks/TASK-351.md`; sul telefono da rifare.
+
+**Decisione**:
+
+1. **La mappa sta nella pagina del video**, non in un'altra. `videoPage.ts`
+   carica MapLibre GL JS dal CDN con lo stesso indirizzo e la stessa
+   impronta SRI di `mapPage.ts`, con lo stile dei token (`darkMapStyle`,
+   con le specie di `withKinds` per il terreno e le colline), in un
+   contenitore di 360 × 640 pt a `pixelRatio` 3: un canvas 1080 × 1920
+   come il video, i nomi grandi come sullo schermo di un telefono.
+   `preserveDrawingBuffer`, `interactive: false`, `fadeDuration: 0`,
+   nessun controllo. La pagina resta a `https://video.muw.invalid/`
+   (WebCodecs vuole un contesto sicuro): il CDN e le tegole sono https e
+   arrivano con CORS, così il canvas resta pulito e diventa un
+   `VideoFrame`. Misurato nel WebView nascosto dell'app (1 × 1, opacità
+   0, dentro il Modal): `requestAnimationFrame` va a circa 18 al secondo,
+   la mappa si disegna e arriva a `idle` da sola.
+2. **Uno scatto, poi 360 fotogrammi in 2D.** Al primo `idle` (ogni tegola
+   in vista disegnata o fallita) la pagina copia il canvas della mappa in
+   un'immagine di sfondo; ogni fotogramma è sfondo, velo, linea fino alla
+   quota del fotogramma, punta, logo, titolo, numeri, emoji, credito:
+   0,1–0,3 ms l'uno, il video costa come oggi più le tegole (0,5–0,8 s in
+   cache, qualche secondo a freddo).
+3. **Senza mappa, il giallo di oggi** (condizione del Coordinatore): se
+   MapLibre non arriva dal CDN o la mappa non dice `idle` entro 15 s, la
+   pagina fa il video sul giallo del post com'è oggi, senza avvisi e senza
+   testi nuovi: l'export non fallisce mai per la mappa. La scena gialla
+   resta nel codice come riserva.
+4. **Che cosa disegnare lo decide l'app; dove sta la linea lo sa la
+   mappa.** `videoScene.ts` dà lo stile, la camera (centro, zoom,
+   rotazione, inclinazione), la traccia (al più 2000 punti, le estremità
+   tagliate di `POST_CUT_M` con `withoutEnds`, testato) e, per
+   fotogramma, la quota della linea da 0 a 1 (`share`, al posto dei pixel
+   `upTo`); la pagina proietta la traccia con `map.project` (sul 3D con il
+   terreno) e disegna linea e punta in quei pixel. Sulle mappe piatte la
+   camera è quella di `lineCamera` del Feed (ADR-0131): la linea sta nella
+   banda 20–70 % come il post; sul 3D la pagina chiede `fitBounds` con
+   l'inclinazione. Tutto il resto resta in pixel decisi e testati
+   nell'app. La misura del video resta un parametro della pagina, per il
+   video dei post (TASK-336 B).
+5. **Tre stili, tutti dai token** (`videoStyle.ts`): Night, la mappa del
+   tono scuro al suo passo più scuro; Day, la mappa del tono chiaro al suo
+   passo più chiaro (`paletteOf`), qualunque tono abbia l'app, perché il
+   video è per chi lo guarda; 3D, Night con `setTerrain` (×1,3), le
+   colline di `hillshadeOf` e `PITCH_3D`. Lo stile della mappa per una
+   palette data è una funzione nuova accanto a `darkMapStyle`, che non
+   cambia. La linea `route.color`, sul chiaro con il bordo di
+   `routeCasingOf("light")`. Il velo è la curva di `tools/ui_scrim.py`
+   (0 → 82 % di `scrim`) come gradiente del canvas; su Day
+   `map.background` chiaro 0 → 94 %, perché le parole scure sulla mappa
+   chiara restano scure. Le scritte usano le quote di `font` sulla
+   larghezza del telefono (display 44/390, title 30/390, label 11/390,
+   con il tracking disegnato lettera per lettera) e il font di sistema
+   della pagina, come oggi.
+6. **La riga «Style»** in «Share your run», sopra «Music»: tre tessere
+   9:16 (`StyleRow.tsx`) con il disegno della corsa nei colori dello stile
+   (lo stesso `fitLines` del post), «Night» all'apertura; la scelta non
+   si salva col post, come la musica.
+7. **La camera che gira nel 3D** (parte D): la pagina rende la mappa a
+   ogni fotogramma (`jumpTo` e `redraw`, sincroni, senza aspettare
+   `requestAnimationFrame`) dopo un giro a vuoto che carica le tegole di
+   tutte le rotazioni; nel giro a vuoto misura il costo di un fotogramma,
+   e sopra i 25 ms resta lo scatto fermo con uno zoom lento (1,00 → 1,06).
+   Il peso del video sale (8,6 MB contro 4,4 a 6 Mbit/s). Se sul telefono
+   nemmeno lo scatto inclinato regge, la parte D cade, con i numeri.
+8. **La privacy**: la mappa nel video mostra dove si è corso, e il file
+   esce dall'app dal foglio di condivisione; è una scelta esplicita
+   dell'utente (TASK-351, scelta 5), prima del codice. Le estremità
+   restano tagliate di 200 m come nel post e nel Feed, e il taglio è
+   verificato sulla linea del video; la regola è una sola per ogni corsa,
+   anche «Only me» o non salvata: il video lo fa e lo manda solo chi ha
+   corso, come l'immagine (ADR-0194, ADR-0254). La riga della privacy su
+   OpenFreeMap («it sees which area you look at») copre le tegole del
+   video, che sono quelle della zona già guardata; la riga sull'immagine
+   di «Share» va estesa al video (un testo di privacy, col sì
+   dell'utente); le tegole del terreno (Amazon S3) e le foto aeree (Esri),
+   già scaricate dalla mappa 3D e satellite di oggi, non sono nominate:
+   una riga da proporre a parte prima della parte D.
+9. **Il credito** in fondo al video, 0,0065 della larghezza in
+   `textFaint`: «© OpenStreetMap contributors · OpenFreeMap» (ODbL e
+   CC-BY), e «Terrain Tiles» sul 3D.
+10. **I limiti** di ADR-0254 restano (360 fotogrammi, 2000 punti, una
+    ventina di cose per fotogramma, 6 Mbit/s); in più una sola mappa
+    1080 × 1920 e il suo scatto, circa 8 MB in memoria ciascuno; le tegole
+    sono quelle in vista, una ventina. Il tempo di export si misura a ogni
+    parte (la pagina dice all'app i tempi delle tegole, dello scatto e
+    della codifica); se raddoppia, lo si scrive.
+
+**Alternative scartate**: la mappa scattata da `feedMapPage` e passata
+all'app in base64 (due WebView, 450 KB di testo attraverso l'app, e il 3D
+con la linea in prospettiva non si fa); la linea come layer di MapLibre
+aggiornato a ogni fotogramma (una resa della mappa per fotogramma anche
+sulle mappe piatte); le foto aeree di Esri nel 3D (un credito in più e, al
+primo giro, 27 fotogrammi su 60 con tegole mancanti); un testo d'errore
+senza mappa (il video deve uscire comunque); un video sul server o un
+modulo nativo (ADR-0254); il giallo come quarto stile (la richiesta dice
+«aggiungendo la mappa sotto»); `letterSpacing` del canvas (manca su
+iOS 16).
+
+**Conseguenze**: solo app, via OTA; nessuna dipendenza, nessun file nativo,
+impronta iOS `83793e26fc0da7cdc7d8c7f7b1b7ad09e6f823b3` invariata; la
+pagina del video carica circa 1 MB di MapLibre dal CDN (in cache dopo la
+prima volta) e le tegole della zona; il video mostra dove si è corso, con
+le estremità tagliate di 200 m, per scelta esplicita dell'utente (il Feed
+mostra già la mappa sotto i disegni pubblicati); quattro testi nuovi in
+fondo alle tabelle (la riga e i tre nomi) e una riga di privacy estesa,
+col sì dell'utente; TASK-336 B (il video nei post a 540 × 960) prende
+questo video con lo stile scelto; `docs/UI.md` («Il post da condividere»)
+descrive il video nuovo con la parte B.
+
 ## ADR-0306 — La scheda del Feed: due parti, il look di ADR-0293 prima del brief, la posizione arrotondata e detta
 
 **Stato**: Proposta · 2026-10-30 · TASK-355. La richiesta e il piano sono
@@ -20105,30 +20311,48 @@ il server lo accetta come oggi e non lo tiene.
 
 ---
 
-## ADR-0302 — Nelle schede di «Explore» prima il disegno, la foto a uno swipe
+## ADR-0299 — «Edit the drawing» su un disegno del Feed: la traccia sulla mappa dov'è stata corsa
 
-**Data**: 2026-10-30 · **Stato**: accettata · **Task**: TASK-350. L'ordine è
-una scelta dell'utente («prima l'immagine e poi swipe destra e vedi la foto
-della città»); il modo è deciso dall'agente su delega dell'utente.
+**Stato**: Accettata · 2026-10-29 · TASK-346. La scelta di prodotto è
+dell'utente («Traccia dov'è», 2026-10-29); i punti tecnici sono decisi
+dall'agente su delega dell'utente. Numero dato dal Coordinatore. Cambia
+ADR-0288 (TASK-331) per la sola scheda di un disegno di un membro.
 
-**Contesto**: da ADR-0243 la foto di un paese prendeva il posto di disegno e
-mappa, e da ADR-0287 quella di un'idea aveva sopra la forma in piccolo.
-L'app si riconosce dal disegno: l'utente vuole vedere prima quello.
+**Contesto**: l'utente il 2026-10-29: «nel Feed quando premo modifica il
+disegno devo poter modificare la traccia sulla mappa, non il disegno in
+sé». Fino ad allora la scheda del disegno metteva la traccia corsa,
+raddrizzata e chiusa, nel mezzo della partenza di «Draw» e lunga quanto la
+sceglierebbe «Draw it near me»: un disegno spostato altrove, non la traccia.
+Fra «Traccia dov'è», «Traccia vicino a me» e «Trascinare il percorso» (un
+punto tenuto e il tratto ricalcolato sulle vie, che vuole una funzione
+nuova nel motore) l'utente ha scelto la prima.
 
-**Decisione**: `RouteCard`, con `photo` e una linea, ha due pagine da
-scorrere: il disegno sulla mappa, poi la foto col credito, con due pallini in
-alto. Senza linea mostra la sola foto: serve a un paese il cui disegno è
-fallito. In `NearbyTowns` la foto aspetta il disegno, così una scheda non
-passa dalla foto al disegno sotto gli occhi. Il tocco sta dentro le pagine,
-come in `FeedPost`: una `Pressable` attorno a uno `ScrollView` diventa
-responder e ne ferma lo scorrimento nativo, mentre la fila, che è fuori,
-scorre. `bounces={false}` fa passare lo swipe alla fila dall'ultima pagina.
+**Decisione**:
 
-**Alternative scartate**: la foto subito e il disegno quando arriva (la
-scheda cambierebbe da sola); una freccia da toccare al posto dello swipe (non
-è quello chiesto).
+1. Su un disegno di un membro «Edit the drawing» mette la traccia su «Draw
+   on the map» **dove è stata corsa e grande com'è**: il contorno nel
+   riquadro della figura, il suo mezzo e i metri di un'unità calcolati in
+   metri sul piano tangente (`mapdraw/plane.ts`, mai in gradi), così ogni
+   punto torna dov'era (`figureLines.trackInPlace`). Il contorno resta
+   quello di prima: al più `MAX_OUTLINE_POINTS` punti distribuiti, il primo
+   è la partenza della corsa, chiuso; `drawingOf` lo raddrizza come ogni
+   disegno.
+2. Il disegno resta dentro le distanze di «Draw» come ogni figura della
+   mappa (`withinLimits`): una traccia più lunga del massimo dello sport si
+   rimpicciolisce attorno al suo mezzo.
+3. Si modifica con gli strumenti di ADR-0288; «Draw route» lo chiede come
+   ogni disegno della mappa, quindi dal primo punto della corsa. Per
+   portarlo vicino a sé resta «Draw it near me».
+4. La scheda di «Explore» e il risultato di «Draw» restano come prima
+   (la figura nel mezzo della partenza): la richiesta parla solo del Feed.
 
-**Conseguenze**: uno swipe su una scheda con foto cambia pagina invece di far
-scorrere la fila, che si scorre dalla seconda pagina o da nome e distanza. Le
-mappe si prendono anche per le schede con foto, una alla volta come le altre.
-Nessun testo nuovo, nessuna dipendenza, niente di nativo, server non toccato.
+**Alternative scartate**: la traccia vicino all'utente (un disegno di un
+altro posto, come prima, solo non raddrizzato); trascinare il percorso sulle
+vie come Google Maps (un percorso fra punti nel motore e sul telefono,
+lavoro molto più grande); un campo nuovo nel contratto per la traccia
+(il disegno della mappa basta).
+
+**Conseguenze**: niente cambia nel contratto, nell'API, nel motore, nei
+testi, nelle dipendenze e nel nativo; arriva con un OTA. `useMapCanvas`
+ha `editInPlace` accanto a `edit`; `figureLines.drawingLines` diventa
+`drawingTrack`.

@@ -2008,8 +2008,9 @@ nuovi. Il codice in `drawings.py` e `drawing_photos.py`.
 |---|---|---|
 | `GET /me/activities/{key}/drawing` | cosa ha scelto il proprietario per una sua corsa | `200` `MyDrawing`, o `404 http_error` |
 | `PUT /me/activities/{key}/drawing` | titolo, chi lo vede, descrizione, attività, tag | `200` `MyDrawing`, o `404 http_error` |
-| `PUT /me/activities/{key}/drawing/photos/{n}` | la foto nel posto `n` (1–3) | `200` `MyDrawing`, o `404 http_error` |
+| `PUT /me/activities/{key}/drawing/photos/{n}` | la foto nel posto `n` (1–10) | `200` `MyDrawing`, o `404 http_error` |
 | `DELETE /me/activities/{key}/drawing/photos/{n}` | svuotare il posto `n` | `204`, anche se era vuoto; `404` senza la corsa |
+| `PUT /me/activities/{key}/drawing/order` | l'ordine del post (TASK-348) | `200` `MyDrawing`, `404 http_error`, `409 http_error` finché lo vede solo il proprietario, o `422 invalid_request` |
 | `GET /me/drawings` | le proprie corse con un disegno, dalla più recente | `200` `{ "drawings": [MyDrawing, …] }` |
 | `GET /users/{public_id}/drawings` | una pagina dei disegni di un profilo che chi chiede può vedere | `200` `DrawingsPage`, o `404 http_error` |
 | `GET /drawings/{id}` | un disegno intero | `200` `DrawingDetail`, o `404 http_error` |
@@ -2071,6 +2072,17 @@ nuovi. Il codice in `drawings.py` e `drawing_photos.py`.
   è il momento nuovo. L'`id` non cambia mai. Una corsa senza disegno ha
   `visibility` `only_me`, `tags` e `photos` vuoti, e l'`activity` della
   corsa.
+- **L'ordine del post** (TASK-348, ADR-0301): `MyDrawing`, il disegno
+  dell'elenco, quello intero e il post del Feed hanno **sempre** `order`,
+  la mappa tra le foto: `["photo:3", "drawing", "photo:1"]`. `null`: mai
+  ordinato, la mappa prima e le foto per posto. `photos` arriva già in
+  quest'ordine, per l'app di prima, che continua a mostrare la mappa per
+  prima. Il posto `n` dice quale foto, non dove sta: cambiare l'ordine non
+  cambia gli indirizzi. Il `PUT` vuole `drawing` una volta e ogni foto al più
+  una volta, anche una non ancora mandata, che nella risposta manca finché
+  non arriva; un posto svuotato esce dall'ordine e una foto che l'ordine non
+  nomina viene per ultima. Tornato `only_me`, l'ordine si cancella con le
+  foto. `fixtures/drawing-order-request.json`.
 - **L'inclinazione** (TASK-232, parte C): il disegno dell'elenco e quello
   intero hanno **sempre** `rotation_deg`, quello della corsa in «My
   activities» (`runs.route_rotation_deg`): `null` senza percorso, per un

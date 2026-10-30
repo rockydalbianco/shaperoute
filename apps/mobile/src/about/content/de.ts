@@ -398,7 +398,7 @@ const privacy: AboutDocument = {
     {
       heading: "Dein Standort",
       blocks: [
-        "Der Standort des Handys wird auf dem Handy genutzt, um eine Route dort zu beginnen, wo du bist, und um deinem Lauf zu folgen. Er geht an unseren Server als Start einer Route, die du anforderst, innerhalb eines Laufs, den du speicherst, und mit der Suche nach einem Ort, um die Orte in deiner Nähe zuerst zu zeigen.",
+        "Der Standort des Handys wird auf dem Handy genutzt, um eine Route dort zu beginnen, wo du bist, und um deinem Lauf zu folgen. Er geht an unseren Server als Start einer Route, die du anforderst, innerhalb eines Laufs, den du speicherst, mit der Suche nach einem Ort, um die Orte in deiner Nähe zuerst zu zeigen, und, auf etwa 1 km gerundet, um dir Zeichnungen in deiner Nähe im Feed zu zeigen.",
         "Auf dem iPhone folgt die App während eines Laufs, den du gestartet hast, deinem Standort auch bei gesperrtem Handy oder wenn eine andere App offen ist, bis du den Lauf beendest; das iPhone zeigt das mit einer blauen Markierung oben auf dem Bildschirm. MuW fragt nur nach dem Standort, während du die App benutzt, nie «Immer».",
         "Wie jeder Internetdienst sieht unser Server die Internetadresse (IP), von der eine Anfrage kommt, während er sie beantwortet. Das Protokoll des Servers schreibt keine Positionen, und die Datenbank enthält keine IP-Adressen.",
         "Ein Register der Routenanfragen mit ihrem Start gibt es, um einen Fehler nachzustellen. Auf unserem Server ist es ausgeschaltet; eingeschaltet fasst es höchstens 10 MB, dann gehen die ältesten Zeilen verloren.",

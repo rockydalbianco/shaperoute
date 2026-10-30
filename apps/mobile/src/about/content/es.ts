@@ -398,7 +398,7 @@ const privacy: AboutDocument = {
     {
       heading: "Tu posición",
       blocks: [
-        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor como inicio de una ruta que pides, dentro de una carrera que guardas, y con la búsqueda de un lugar, para poner primero los lugares cercanos.",
+        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor como inicio de una ruta que pides, dentro de una carrera que guardas, con la búsqueda de un lugar, para poner primero los lugares cercanos, y, redondeada a cerca de 1 km, para mostrarte los dibujos cercanos en el Feed.",
         "En iPhone, durante una carrera que has empezado, la app sigue tu posición también con el teléfono bloqueado o con otra app abierta, hasta que detienes la carrera; el iPhone lo muestra con una marca azul en la parte de arriba de la pantalla. MuW pide la posición solo mientras usas la app, nunca «Siempre».",
         "Como cualquier servicio de internet, nuestro servidor ve la dirección de internet (IP) de la que viene una petición mientras la responde. El registro del servidor no escribe posiciones, y la base de datos no guarda direcciones IP.",
         "Existe un registro de las peticiones de rutas, con su inicio, para reproducir un fallo. Está apagado en nuestro servidor; encendido, guarda como máximo 10 MB, y después se pierden las líneas más antiguas.",

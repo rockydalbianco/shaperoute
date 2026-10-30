@@ -160,6 +160,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-356 — La posizione nel Feed: arrotondata, e detta nella privacy**
+  (ADR-0306, punto 4; testo approvato dall'utente il 2026-10-30). Branch
+  `fix/TASK-356-feed-position`. Sito e OTA di produzione con il suo sì.
+  `tasks/TASK-356.md`.
 - **TASK-351 — Il video della corsa con la mappa sotto: il look premium,
   il 3D e tre stili** (ADR-0303, proposta; richiesta dell'utente del
   2026-10-30; numeri e condizioni dal Coordinatore). Branch

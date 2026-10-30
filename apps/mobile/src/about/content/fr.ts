@@ -398,7 +398,7 @@ const privacy: AboutDocument = {
     {
       heading: "Ta position",
       blocks: [
-        "La position du téléphone est utilisée sur le téléphone, pour commencer un parcours là où tu es et pour suivre ta course. Elle va vers notre serveur comme départ d'un parcours que tu demandes, dans une course que tu enregistres, et avec la recherche d'un lieu, pour montrer d'abord les lieux près de toi.",
+        "La position du téléphone est utilisée sur le téléphone, pour commencer un parcours là où tu es et pour suivre ta course. Elle va vers notre serveur comme départ d'un parcours que tu demandes, dans une course que tu enregistres, avec la recherche d'un lieu, pour montrer d'abord les lieux près de toi, et, arrondie à environ 1 km, pour te montrer les dessins proches dans le Feed.",
         "Sur iPhone, pendant une course que tu as lancée, l'app continue de suivre ta position même téléphone verrouillé ou avec une autre app ouverte, jusqu'à ce que tu arrêtes la course ; l'iPhone l'indique par une marque bleue en haut de l'écran. MuW demande la position seulement pendant que tu utilises l'app, jamais « Toujours ».",
         "Comme tout service internet, notre serveur voit l'adresse internet (IP) d'où vient une requête pendant qu'il y répond. Le journal du serveur n'écrit pas de positions, et la base de données ne contient aucune adresse IP.",
         "Un registre des demandes de parcours, avec leur départ, existe pour reproduire un défaut. Il est éteint sur notre serveur ; allumé, il contient 10 Mo au plus, puis les lignes les plus anciennes sont perdues.",

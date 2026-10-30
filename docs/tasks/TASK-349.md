@@ -12,7 +12,7 @@ Il job `api` non deve più fermarsi a metà quando più PR girano insieme.
 
 Il limite è di 25 minuti (TASK-248). Con 6–7 PR aperte il job ci arriva e
 GitHub lo cancella senza che un test sia fallito: è successo alla #632 il
-2026-10-29 e alla #655 il 2026-10-30 (cancellato a 25 min, al 20% dei test).
+2026-10-29 e alla #655 il 2026-10-30 (cancellato a 25 minuti).
 Da solo il job dura 17–22 minuti.
 
 ## File toccati

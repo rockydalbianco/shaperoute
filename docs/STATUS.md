@@ -4590,6 +4590,10 @@ corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
   perché con molte PR aperte veniva cancellato senza test falliti. File
   `tasks/TASK-349.md`.
 
+- **Regole** — TASK-357 (2026-10-30, richiesta dell'utente): con l'utente ogni
+  sessione scrive in italiano (`CLAUDE.md`, «Convenzioni»). File
+  `tasks/TASK-357.md`.
+
 ## Bloccato
 
 Niente.

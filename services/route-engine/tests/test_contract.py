@@ -48,6 +48,10 @@ CENTRE = {"centre"}
 # Added by TASK-232 (ADR-0195), optional too: the fixtures written before
 # are what an older API answers and an older app sends back.
 ROTATION = {"rotation_deg"}
+# Added by TASK-347 part A (ADR-0300), all optional: the fixtures written
+# before are what an older app sends and an older API answers.
+PLACEMENT = {"placement", "fit"}
+PLACED = {"placed_outline"}
 
 
 def test_request_fixtures_are_valid_requests() -> None:
@@ -57,7 +61,7 @@ def test_request_fixtures_are_valid_requests() -> None:
         ("route-request-word.json", "CIAO"),
     ):
         data = _load(name)
-        assert set(data) == _names(RouteRequest) - PEN_UP - NEAR
+        assert set(data) == _names(RouteRequest) - PEN_UP - NEAR - PLACEMENT
         request = RouteRequest(**{**data, "start": tuple(data["start"])})
         assert request.start == (46.0671, 11.1214)
         assert request.name == drawn
@@ -69,7 +73,7 @@ def test_result_fixtures_have_the_result_fields() -> None:
         data = _load(name)
         assert (
             set(data)
-            == _names(RouteResult) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION
+            == _names(RouteResult) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION - PLACED
         )
         points = [tuple(p) for p in data["points"]]
         result = RouteResult(**{**data, "points": points})
@@ -81,16 +85,16 @@ def test_result_fixtures_have_the_result_fields() -> None:
 
 def test_a_word_with_the_pen_up_and_its_walks_are_in_the_contract() -> None:
     data = _load("route-request-pen-up.json")
-    assert set(data) == _names(RouteRequest) - NEAR
+    assert set(data) == _names(RouteRequest) - NEAR - PLACEMENT
     request = RouteRequest(**{**data, "start": tuple(data["start"])})
     assert request.pen_up and request.name == "IO"
     # A shape in pieces with the pen up too (TASK-223).
     data = _load("route-request-pen-up-shape.json")
-    assert set(data) == _names(RouteRequest) - NEAR
+    assert set(data) == _names(RouteRequest) - NEAR - PLACEMENT
     request = RouteRequest(**{**data, "start": tuple(data["start"])})
     assert request.pen_up and request.shape == "smiley"
     data = _load("route-result-pen-up.json")
-    assert set(data) == _names(RouteResult) - ON_FOOT - BETTER - CENTRE - ROTATION
+    assert set(data) == _names(RouteResult) - ON_FOOT - BETTER - CENTRE - ROTATION - PLACED
     points = [tuple(p) for p in data["points"]]
     walks = [tuple(w) for w in data["walks"]]
     result = RouteResult(**{**data, "points": points, "walks": walks})
@@ -126,7 +130,7 @@ def test_shapes_activities_and_limits_match() -> None:
 def test_a_cycling_request_is_a_request_with_the_bike_limits() -> None:
     # TASK-190: the same fields, another activity, within its own limits.
     data = _load("route-request-cycling.json")
-    assert set(data) == _names(RouteRequest) - PEN_UP - NEAR
+    assert set(data) == _names(RouteRequest) - PEN_UP - NEAR - PLACEMENT
     request = RouteRequest(**{**data, "start": tuple(data["start"])})
     assert request.activity == "cycling"
     low, high = DISTANCE_LIMITS_M["cycling"]
@@ -138,7 +142,7 @@ def test_alternatives_have_the_engine_limit_and_the_result_fields() -> None:
     for other in _load("route-result.json")["alternatives"]:
         assert (
             set(other)
-            == _names(RouteResult) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION
+            == _names(RouteResult) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION - PLACED
         )
         assert other["alternatives"] == []
 
@@ -160,7 +164,7 @@ def test_a_bike_route_and_where_it_is_walked_are_in_the_contract() -> None:
     # points like the walks, in the alternatives too.
     data = _load("route-result-cycling.json")
     for fields_of in (data, *data["alternatives"]):
-        assert set(fields_of) == _names(RouteResult) - BETTER - CENTRE - ROTATION
+        assert set(fields_of) == _names(RouteResult) - BETTER - CENTRE - ROTATION - PLACED
     result = _result(data)
     for each in (result, *result.alternatives):
         assert each.on_foot and each.walks == []
@@ -173,13 +177,13 @@ def test_a_moved_shape_and_its_centre_are_in_the_contract() -> None:
     # TASK-238: on the water, a request may say near where the shape is
     # wanted, and the result says where its centre is.
     data = _load("route-request-paddling-near.json")
-    assert set(data) == _names(RouteRequest)
+    assert set(data) == _names(RouteRequest) - PLACEMENT
     request = RouteRequest(
         **{**data, "start": tuple(data["start"]), "near": tuple(data["near"])}
     )
     assert request.activity == "paddling" and request.near is not None
     result = _load("route-result-paddling.json")
-    assert set(result) == _names(RouteResult) - ROTATION  # of its day
+    assert set(result) == _names(RouteResult) - ROTATION - PLACED  # of its day
     lat, lon = result["centre"]
     lats = [p[0] for p in result["points"]]
     lons = [p[1] for p in result["points"]]

@@ -79,6 +79,10 @@ CENTRE = {"centre"}
 # Added by TASK-232 (ADR-0195), optional too: the fixtures written before
 # are what an older API answers and an older app sends back.
 ROTATION = {"rotation_deg"}
+# Added by TASK-347 part A (ADR-0300), all optional: the fixtures written
+# before are what an older app sends and an older API answers.
+PLACEMENT = {"placement", "fit"}
+PLACED = {"placed_outline"}
 
 
 def _with_no_walks(result: dict[str, Any]) -> dict[str, Any]:
@@ -118,7 +122,7 @@ def test_bodies_have_the_fields_of_the_dataclasses() -> None:
 
 def test_request_fixture_is_a_valid_body() -> None:
     data = _load("route-request.json")
-    assert set(data) == _names(RouteRequestBody) - PEN_UP - NEAR
+    assert set(data) == _names(RouteRequestBody) - PEN_UP - NEAR - PLACEMENT
     body = RouteRequestBody.model_validate(data)
     assert body.start == (46.0671, 11.1214)
     assert not body.pen_up
@@ -128,7 +132,13 @@ def test_result_fixture_is_a_valid_body() -> None:
     data = _load("route-result.json")
     assert (
         set(data)
-        == _names(RouteResultBody) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION
+        == _names(RouteResultBody)
+        - WALKS
+        - ON_FOOT
+        - BETTER
+        - CENTRE
+        - ROTATION
+        - PLACED
     )
     body = RouteResultBody.model_validate(data)
     assert body.points[0] == body.points[-1]
@@ -139,14 +149,17 @@ def test_result_fixture_is_a_valid_body() -> None:
 def test_pen_up_fixtures_are_valid_bodies() -> None:
     # TASK-197: a word with the pen up, and its route with the walks.
     request = _load("route-request-pen-up.json")
-    assert set(request) == _names(RouteRequestBody) - NEAR
+    assert set(request) == _names(RouteRequestBody) - NEAR - PLACEMENT
     assert RouteRequestBody.model_validate(request).pen_up
     # TASK-223: a shape in pieces with the pen up.
     request = _load("route-request-pen-up-shape.json")
-    assert set(request) == _names(RouteRequestBody) - NEAR
+    assert set(request) == _names(RouteRequestBody) - NEAR - PLACEMENT
     assert RouteRequestBody.model_validate(request).pen_up
     result = _load("route-result-pen-up.json")
-    assert set(result) == _names(RouteResultBody) - ON_FOOT - BETTER - CENTRE - ROTATION
+    assert (
+        set(result)
+        == _names(RouteResultBody) - ON_FOOT - BETTER - CENTRE - ROTATION - PLACED
+    )
     body = RouteResultBody.model_validate(result)
     assert body.word is not None and len(body.walks) == len(body.word) - 1
     assert body.points[0] != body.points[-1]
@@ -201,8 +214,10 @@ def test_job_statuses_match_shared_types() -> None:
 def test_gpx_request_fixture_is_a_valid_body() -> None:
     data = _load("gpx-request.json")
     assert set(data) == _names(GpxRequestBody)
-    assert set(data["request"]) == _names(RouteRequestBody) - PEN_UP - NEAR
-    older = _names(RouteResultBody) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION
+    assert set(data["request"]) == _names(RouteRequestBody) - PEN_UP - NEAR - PLACEMENT
+    older = (
+        _names(RouteResultBody) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION - PLACED
+    )
     assert set(data["result"]) == older
     GpxRequestBody.model_validate(data)
 
@@ -224,12 +239,18 @@ def test_shape_text_limit_matches_shared_types() -> None:
 def test_word_fixtures_are_valid_bodies() -> None:
     # A word instead of a shape, the other null (TASK-056).
     request = _load("route-request-word.json")
-    assert set(request) == _names(RouteRequestBody) - PEN_UP - NEAR
+    assert set(request) == _names(RouteRequestBody) - PEN_UP - NEAR - PLACEMENT
     assert RouteRequestBody.model_validate(request).word == "ciao"
     result = _load("route-result-word.json")
     assert (
         set(result)
-        == _names(RouteResultBody) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION
+        == _names(RouteResultBody)
+        - WALKS
+        - ON_FOOT
+        - BETTER
+        - CENTRE
+        - ROTATION
+        - PLACED
     )
     body = RouteResultBody.model_validate(result)
     assert body.shape is None
@@ -282,7 +303,7 @@ def test_the_api_passes_the_pen_up_on_and_answers_its_walks() -> None:
 def test_the_api_passes_a_cycling_request_on_to_the_engine() -> None:
     # TASK-190: the same fields as a run, "cycling" for the activity.
     request = _load("route-request-cycling.json")
-    assert set(request) == _names(RouteRequestBody) - PEN_UP - NEAR
+    assert set(request) == _names(RouteRequestBody) - PEN_UP - NEAR - PLACEMENT
     assert RouteRequestBody.model_validate(request).activity == "cycling"
     data = _load("route-result.json")
     result = RouteResult(
@@ -317,7 +338,10 @@ def test_the_bike_result_fixture_is_a_valid_body() -> None:
     # TASK-206: where the bike is walked, in the alternatives too.
     data = _load("route-result-cycling.json")
     for fields_of in (data, *data["alternatives"]):
-        assert set(fields_of) == _names(RouteResultBody) - BETTER - CENTRE - ROTATION
+        assert (
+            set(fields_of)
+            == _names(RouteResultBody) - BETTER - CENTRE - ROTATION - PLACED
+        )
     body = RouteResultBody.model_validate(data)
     assert body.on_foot == [(2, 3)] and body.walks == []
     assert [other.on_foot for other in body.alternatives] == [[(2, 3)]]
@@ -354,7 +378,7 @@ def test_the_api_passes_a_paddling_request_on_to_the_engine() -> None:
     # TASK-191: the same fields again, "paddling" for the activity, planned
     # on the water the API has, not on a graph (test_paddling.py).
     request = _load("route-request-paddling.json")
-    assert set(request) == _names(RouteRequestBody) - PEN_UP - NEAR
+    assert set(request) == _names(RouteRequestBody) - PEN_UP - NEAR - PLACEMENT
     assert RouteRequestBody.model_validate(request).activity == "paddling"
     data = _load("route-result.json")
     result = RouteResult(
@@ -381,11 +405,11 @@ def test_a_moved_shape_and_its_centre_are_in_the_contract() -> None:
     # TASK-238: every field of the request and of the result; the request
     # asks for the shape near the result's centre, moved.
     request = _load("route-request-paddling-near.json")
-    assert set(request) == _names(RouteRequestBody)
+    assert set(request) == _names(RouteRequestBody) - PLACEMENT
     body = RouteRequestBody.model_validate(request)
     assert body.activity == "paddling" and body.near is not None
     data = _load("route-result-paddling.json")
-    assert set(data) == _names(RouteResultBody) - ROTATION  # of its day
+    assert set(data) == _names(RouteResultBody) - ROTATION - PLACED  # of its day
     answered = RouteResultBody.model_validate(data)
     assert answered.centre is not None and answered.centre != body.near
     result = RouteResult(
@@ -422,14 +446,22 @@ def test_image_fixtures_are_valid_bodies() -> None:
     route = _load("image-route-request.json")
     # As an app older than TASK-079 sends it: no details; nor the pen up,
     # which an image refuses anyway (TASK-197).
-    assert set(route) == _names(ImageRouteRequestBody) - {"strokes"} - PEN_UP
+    assert (
+        set(route) == _names(ImageRouteRequestBody) - {"strokes"} - PEN_UP - PLACEMENT
+    )
     assert ImageRouteRequestBody.model_validate(route).outline == [
         tuple(p) for p in outline["points"]
     ]
     result = _load("route-result-image.json")
     assert (
         set(result)
-        == _names(RouteResultBody) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION
+        == _names(RouteResultBody)
+        - WALKS
+        - ON_FOOT
+        - BETTER
+        - CENTRE
+        - ROTATION
+        - PLACED
     )
     body = RouteResultBody.model_validate(result)
     assert body.shape is None and body.word is None

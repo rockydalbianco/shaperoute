@@ -130,6 +130,7 @@ from shaperoute_api.sign_in_providers import (
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
+from shaperoute_api.stroke_matches import install_stroke_matches
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
 from shaperoute_api.track_scores import score_run
 from shaperoute_api.user_photos import install_user_photos
@@ -198,6 +199,8 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
             outline=outline_of(body.outline, body.strokes),
             distance_m=body.distance_m,
             activity=body.activity,
+            placement=body.placement,  # type: ignore[arg-type]  # checked there
+            fit=body.fit,
         )
     return RouteRequest(
         start=body.start,
@@ -208,6 +211,8 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
         style=body.style,  # type: ignore[arg-type]  # RouteRequest checks it
         pen_up=body.pen_up,
         near=body.near,
+        placement=body.placement,  # type: ignore[arg-type]  # RouteRequest checks it
+        fit=body.fit,
     )
 
 
@@ -390,6 +395,9 @@ def create_app(
     # Group runs on a route, «I'm going» and the reminder an hour before
     # (TASK-309); they need a token.
     install_group_runs(app)
+    # A stroke drawn on the map, anchored to the roads as the finger lifts
+    # (TASK-347 A), and the probe that says this server does it.
+    install_stroke_matches(app, source)
 
     @app.get("/health")
     def health() -> dict[str, str]:

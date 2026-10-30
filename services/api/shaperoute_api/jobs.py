@@ -444,14 +444,15 @@ def with_directions(
 ) -> RouteResult:
     """The plan's result with its directions (TASK-048), computed on the
     graph the route was traced on: the last one loaded when the route comes
-    from the search farther away (ADR-0040), else the first. A route that
-    was not searched has no nodes, and no directions. Unnamed roads get the
-    street they run along (`along`, ADR-0057), also from `named_roads`."""
-    if plan.search is None or not graphs:
+    from the search farther away (ADR-0040), else the first. A route traced
+    without a search, anchored where it was drawn (TASK-347), has its nodes
+    in `plan.nodes`; one with neither has no directions. Unnamed roads get
+    the street they run along (`along`, ADR-0057), also from `named_roads`."""
+    nodes = plan.nodes if plan.search is None else plan.search.best.route.nodes
+    if not nodes or not graphs:
         return plan.result
     graph = (
         graphs[-1] if plan.far is not None and plan.search is plan.far else graphs[0]
     )
-    nodes = plan.search.best.route.nodes
     directions = with_alongs(graph, nodes, guidance(graph, nodes), named_roads)
     return replace(plan.result, directions=directions)

@@ -15,7 +15,10 @@ of a lake or the sea, from a start on the shore; the water is cached in
 `<cache-dir>/water/` (TASK-191). With `--pen-up` a shape in pieces is drawn
 piece by piece there too, the pen up between them (TASK-226). `--near
 LAT,LON` asks for the shape on the water near that point, where its centre
-is wanted (TASK-238).
+is wanted (TASK-238). `--anchored` leaves the shape where it is drawn, traced
+once with the magnet `--fit` (TASK-347, ADR-0300); `--stroke FILE` anchors
+one stroke drawn on the map, a JSON line of [lat, lon] points, from the road
+node nearest to `--from`, and prints the match as JSON.
 """
 
 from __future__ import annotations
@@ -33,15 +36,19 @@ from route_engine.geo import haversine_m, path_length_m
 from route_engine.image_outline import InvalidImageError, outline_data
 from route_engine.models import (
     ACTIVITIES,
+    ANCHORED_ON_LAND_ONLY,
     DISTANCE_LIMITS_M,
+    FIT_WITH_ANCHORED_ONLY,
     NEAR_ON_WATER_ONLY,
     PEN_UP_WITHOUT_WORD,
     WATER_ACTIVITIES,
     InvalidRequestError,
+    Placement,
     RouteRequest,
     check_activity,
     check_distance,
     check_drawn_on_land,
+    check_fit,
     check_start,
 )
 from route_engine.nearby_starts import (
@@ -51,11 +58,14 @@ from route_engine.nearby_starts import (
     plan_nearby,
 )
 from route_engine.network import (
+    AREA_MARGIN_M,
     BIKE_FILTER,
     BIKE_NETWORK_NAME,
     EDGE_REUSE_PENALTY,
     NETWORKS,
     OsmnxSource,
+    area_around,
+    nearest_nodes,
 )
 from route_engine.optimizer import (
     SHAPE_POINTS,
@@ -77,6 +87,7 @@ from route_engine.shapes.outline import (
     parse_outline,
     read_outline,
 )
+from route_engine.stroke_match import DEFAULT_FIT, snap_stroke
 from route_engine.track_score import (
     TrackNotScorableError,
     TrackPoint,
@@ -99,6 +110,9 @@ class OutlineRequest:
     outline: Outline
     distance_m: int
     activity: str = "running"
+    # Where the outline goes (TASK-347): searched for, or left where drawn.
+    placement: Placement = "free"
+    fit: float | None = None
 
     def __post_init__(self) -> None:
         check_start(self.start)
@@ -119,6 +133,8 @@ class WordRequest:
     word: Word
     distance_m: int
     activity: str = "running"
+    placement: Placement = "free"
+    fit: float | None = None
 
     def __post_init__(self) -> None:
         check_start(self.start)
@@ -128,6 +144,63 @@ class WordRequest:
     @property
     def shape(self) -> str:
         return self.word.text
+
+
+@dataclass(frozen=True)
+class StrokeRequest:
+    """One stroke drawn on the map, to anchor to the roads (TASK-347 A):
+    what POST /stroke-matches takes, read from a JSON file. `start` is the
+    stroke's first point, where its graph is looked for."""
+
+    line: tuple[tuple[float, float], ...]
+    activity: str = "running"
+    fit: float | None = None
+    # Where the stroke before ended: the route starts at the road node
+    # nearest to it.
+    from_: tuple[float, float] | None = None
+
+    def __post_init__(self) -> None:
+        if len(self.line) < 2:
+            raise InvalidRequestError("a stroke has at least 2 points")
+        for point in self.line:
+            check_start(point)
+        check_drawn_on_land(self.activity, "a stroke")
+        check_activity(self.activity)
+        if self.fit is not None:
+            check_fit(self.fit)
+        if self.from_ is not None:
+            check_start(self.from_)
+
+    @property
+    def start(self) -> tuple[float, float]:
+        return self.line[0]
+
+    @property
+    def shape(self) -> str:
+        return "stroke"
+
+
+def read_stroke(path: Path) -> list[tuple[float, float]]:
+    """The points of a stroke from a JSON file: a list of [lat, lon] pairs,
+    or an object with them in "line", as a StrokeMatchRequest."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
+        raise InvalidRequestError(f"cannot read the stroke: {exc}") from None
+    if isinstance(data, dict):
+        data = data.get("line")
+    if not isinstance(data, list):
+        raise InvalidRequestError("a stroke is a JSON list of [lat, lon] points")
+    points: list[tuple[float, float]] = []
+    for raw in data:
+        if not (
+            isinstance(raw, list)
+            and len(raw) == 2
+            and all(isinstance(v, int | float) for v in raw)
+        ):
+            raise InvalidRequestError(f"not a [lat, lon] point: {raw!r}")
+        points.append((float(raw[0]), float(raw[1])))
+    return points
 
 
 def _km(limits: tuple[int, int]) -> str:
@@ -183,6 +256,38 @@ def _build_parser() -> argparse.ArgumentParser:
         metavar="TEXT",
         help="a word written one letter at a time, e.g. CIAO",
     )
+    what.add_argument(
+        "--stroke",
+        type=Path,
+        metavar="FILE",
+        help="one stroke drawn on the map, a JSON list of [lat, lon] points, "
+        "anchored to the roads where it is and printed as JSON (TASK-347); "
+        "with --from, --fit, --activity and --cache-dir only",
+    )
+    parser.add_argument(
+        "--from",
+        dest="from_",
+        type=_parse_start,
+        metavar="LAT,LON",
+        help="with --stroke: where the stroke before ended; the route starts "
+        "at the road node nearest to it",
+    )
+    parser.add_argument(
+        "--anchored",
+        action="store_true",
+        help="leave the shape where it is drawn: its first point on --start, "
+        "upright, at the scale of --distance, traced once with the magnet "
+        "--fit and never rescaled (TASK-347); the distance is checked, not "
+        "corrected",
+    )
+    parser.add_argument(
+        "--fit",
+        type=float,
+        metavar="F",
+        help="with --anchored or --stroke: the magnet, from 0 (faithful to "
+        "the drawing, tight zones and band) to 1 (today's values, wide); "
+        f"default {DEFAULT_FIT:g}",
+    )
     parser.add_argument(
         "--pen-up",
         action="store_true",
@@ -192,12 +297,10 @@ def _build_parser() -> argparse.ArgumentParser:
         "piece on its own, walking between them; with an --image, its other "
         "subjects and its holes are the pieces",
     )
-    parser.add_argument(
-        "--distance", required=True, type=int, help="target distance in metres"
-    )
+    # Required but for --stroke, which has neither: checked in parse_args.
+    parser.add_argument("--distance", type=int, help="target distance in metres")
     parser.add_argument(
         "--start",
-        required=True,
         type=_parse_start,
         metavar="LAT,LON",
         help="start point in WGS84, e.g. 46.0122,11.2986; "
@@ -266,7 +369,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-Request = RouteRequest | OutlineRequest | WordRequest
+Request = RouteRequest | OutlineRequest | WordRequest | StrokeRequest
 
 
 def parse_args(
@@ -278,12 +381,32 @@ def parse_args(
     """
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if args.stroke is not None:
+        return _parse_stroke(parser, args), args
+    if args.distance is None or args.start is None:
+        missing = [
+            flag
+            for flag, value in (("--distance", args.distance), ("--start", args.start))
+            if value is None
+        ]
+        parser.error(f"the following arguments are required: {', '.join(missing)}")
+    if args.from_ is not None:
+        parser.error("--from is for --stroke")
     if args.out is not None and args.out.exists():
         parser.error(f"{args.out} already exists; samples are never overwritten")
     if args.nearby < 0:
         parser.error("--nearby must be 0 or more")
     if args.nearby and args.no_optimize:
         parser.error("--nearby needs the search: drop --no-optimize")
+    if args.nearby and args.anchored:
+        parser.error("--nearby needs the search: drop --anchored")
+    if args.fit is not None and not args.anchored:
+        parser.error(f"--fit: {FIT_WITH_ANCHORED_ONLY}: add --anchored")
+    if args.fit is not None:
+        try:
+            check_fit(args.fit)
+        except InvalidRequestError as exc:
+            parser.error(f"--fit: {exc}")
     if args.activity in WATER_ACTIVITIES:
         if args.nearby:
             parser.error(
@@ -295,8 +418,11 @@ def parse_args(
                 "--no-optimize is for roads: on the water the shape is placed "
                 "where it fits"
             )
+        if args.anchored:
+            parser.error(f"--anchored: {ANCHORED_ON_LAND_ONLY}")
     elif args.near is not None:
         parser.error(f"--near: {NEAR_ON_WATER_ONLY}")
+    placement: Placement = "anchored" if args.anchored else "free"
     if args.save_outline is not None:
         if args.image is None:
             parser.error("--save-outline needs --image")
@@ -327,6 +453,8 @@ def parse_args(
                 word=compose(args.word, pen_up=args.pen_up),
                 distance_m=args.distance,
                 activity=args.activity,
+                placement=placement,
+                fit=args.fit,
             )
         elif args.image is not None:
             args.traced = outline_data(
@@ -340,6 +468,8 @@ def parse_args(
                 outline=parse_outline(args.traced),
                 distance_m=args.distance,
                 activity=args.activity,
+                placement=placement,
+                fit=args.fit,
             )
         elif args.outline is None:
             request = RouteRequest(
@@ -351,6 +481,8 @@ def parse_args(
                 # pieces are composed below, as a word's letters.
                 pen_up=args.pen_up and args.activity in WATER_ACTIVITIES,
                 near=args.near,
+                placement=placement,
+                fit=args.fit,
             )
         else:
             request = OutlineRequest(
@@ -358,6 +490,8 @@ def parse_args(
                 outline=read_outline(args.outline),
                 distance_m=args.distance,
                 activity=args.activity,
+                placement=placement,
+                fit=args.fit,
             )
     except InvalidImageError as exc:
         parser.error(f"{args.image}: {exc}")
@@ -384,12 +518,48 @@ def parse_args(
     return request, args
 
 
+def _parse_stroke(
+    parser: argparse.ArgumentParser, args: argparse.Namespace
+) -> StrokeRequest:
+    """The request of --stroke: the line of the file, --from, --fit and
+    --activity; a flag of a route with it is an error."""
+    for flag, value in (
+        ("--distance", args.distance),
+        ("--start", args.start),
+        ("--out", args.out),
+        ("--near", args.near),
+        ("--save-outline", args.save_outline),
+        ("--score-track", args.score_track),
+    ):
+        if value is not None:
+            parser.error(f"{flag} is not for --stroke, which prints the match")
+    for flag, on in (
+        ("--pen-up", args.pen_up),
+        ("--anchored", args.anchored),
+        ("--no-optimize", args.no_optimize),
+        ("--nearby", args.nearby),
+    ):
+        if on:
+            parser.error(f"{flag} is not for --stroke, which prints the match")
+    try:
+        return StrokeRequest(
+            line=tuple(read_stroke(args.stroke)),
+            activity=args.activity,
+            fit=args.fit,
+            from_=args.from_,
+        )
+    except InvalidRequestError as exc:
+        parser.error(f"--stroke {args.stroke}: {exc}")
+
+
 def parse_request(argv: Sequence[str] | None = None) -> Request:
     return parse_args(argv)[0]
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     request, args = parse_args(argv)
+    if isinstance(request, StrokeRequest):
+        return _main_stroke(request, args)
     lat, lon = request.start
     print("Route request:")
     if isinstance(request, OutlineRequest) and args.traced is not None:
@@ -420,6 +590,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"  distance: {request.distance_m} m")
     print(f"  start:    {lat}, {lon}")
     print(f"  activity: {request.activity}")
+    if request.placement == "anchored":
+        magnet = DEFAULT_FIT if request.fit is None else request.fit
+        print(
+            f"  placement: anchored, magnet {magnet:g}: the drawing where it is, "
+            "traced once, never rescaled"
+        )
     if args.save_outline is not None:
         text = json.dumps(args.traced, indent=1)
         args.save_outline.write_text(text + "\n", encoding="utf-8")
@@ -430,7 +606,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         assert isinstance(request, RouteRequest)  # words, outlines refused
         return _main_on_water(request, args)
 
-    optimize = not args.no_optimize
+    optimize = not args.no_optimize and request.placement == "free"
     source = _source(args.cache_dir, request.activity)
     one_way = isinstance(request, OutlineRequest) and request.outline.one_way
     word = request.word if isinstance(request, WordRequest) else args.pieces
@@ -468,6 +644,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 one_way=one_way,
                 word=word,
                 activity=request.activity,
+                placement=request.placement,
+                fit=request.fit,
             )
     except ShapeNotDrawableError as exc:
         print(f"No route: {exc}", file=sys.stderr)
@@ -518,6 +696,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_nearby(nearby)
     measure_name = SIMILARITY if word is None else f"{word.kind}s"
     print(f"  similarity: {route.similarity:.2f} ({measure_name})")
+    placed_points = sum(len(line) for line in route.placed_outline)
+    print(
+        f"  placed:     {len(route.placed_outline)} line(s), {placed_points} points "
+        "as the drawing was placed"
+    )
     if route.walks:
         _print_walks(
             route.points,
@@ -547,6 +730,38 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _print_track_score(
             args.track, route.points, route.similarity, route.walks
         )
+    return 0
+
+
+def _main_stroke(request: StrokeRequest, args: argparse.Namespace) -> int:
+    """One stroke anchored to the roads (TASK-347 A): the match printed as
+    JSON on stdout, as POST /stroke-matches answers it; the rest on stderr.
+    A stroke the roads cannot draw (every point on one road node) is 1."""
+    source = _source(args.cache_dir, request.activity)
+    around = [*request.line, *([request.from_] if request.from_ else [])]
+    bbox = area_around(around, AREA_MARGIN_M)
+    where = "from the cache" if source.is_cached(bbox) else "downloading..."
+    print(f"Road graph: {where}", file=sys.stderr)
+    graph = source.load(bbox)
+    start_node = None
+    if request.from_ is not None:
+        [start_node], _ = nearest_nodes(graph, [request.from_])
+    try:
+        match = snap_stroke(
+            list(request.line), graph, request.activity, request.fit, start_node
+        )
+    except ShapeNotDrawableError as exc:
+        print(f"No route: {exc}", file=sys.stderr)
+        return 1
+    print(
+        json.dumps(
+            {
+                "points": [[round(lat, 6), round(lon, 6)] for lat, lon in match.points],
+                "away_m": [round(d, 1) for d in match.away_m],
+                "off_roads": match.off_roads,
+            }
+        )
+    )
     return 0
 
 

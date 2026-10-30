@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
+from typing import Literal
 
 from route_engine.directions import Direction
 from route_engine.shapes import SUPPORTED_SHAPES, in_pieces
@@ -60,6 +62,20 @@ PEN_UP_WITHOUT_PIECES = f"{PEN_UP_WITHOUT_WORD}, or the pieces of a shape"
 # decides where it fits.
 NEAR_ON_WATER_ONLY = "a shape is placed near a point only on the water"
 
+# Where the shape goes (TASK-347, ADR-0300): "free", the search of today
+# turns, scales and moves it to where the roads draw it best; "anchored",
+# it stays where and as it was drawn, traced once, and the roads follow it
+# as closely as the magnet `fit` asks. The app's free drawing is anchored;
+# packages/shared-types mirrors the two.
+PLACEMENTS: tuple[str, ...] = ("free", "anchored")
+Placement = Literal["free", "anchored"]
+# The magnet `fit` is in [0, 1] (stroke_match.magnet_share), and only an
+# anchored drawing has one: the search has its own zones and band.
+FIT_WITH_ANCHORED_ONLY = "fit is the magnet of an anchored placement"
+# On the water there are no roads to anchor to: the shape is placed where
+# it fits (ADR-0154).
+ANCHORED_ON_LAND_ONLY = "a shape is anchored to the roads only, not on the water"
+
 
 class InvalidRequestError(ValueError):
     """A RouteRequest field is outside its allowed range."""
@@ -85,10 +101,18 @@ class RouteRequest:
     # `centre` of a route before, moved. The engine places the shape at the
     # nearest place to it where it fits.
     near: tuple[float, float] | None = None
+    # Where the shape goes (TASK-347 A, ADR-0300): searched for ("free", as
+    # before) or left where it was drawn ("anchored"). An app of before
+    # TASK-347 sends neither.
+    placement: Placement = "free"
+    # The magnet of an anchored drawing, in [0, 1]: how closely the roads
+    # follow it (stroke_match.magnet_share). None: the default of the engine.
+    fit: float | None = None
 
     def __post_init__(self) -> None:
         check_start(self.start)
         check_distance(self.distance_m, self.activity)
+        check_placement(self.placement, self.fit, self.activity)
         if (self.shape is None) == (self.word is None):
             raise InvalidRequestError("give either a shape or a word, one of the two")
         if self.word is not None:
@@ -183,6 +207,27 @@ def check_drawn_on_land(activity: str, what: str) -> None:
         raise InvalidRequestError(f"{ON_WATER_SHAPES_ONLY}, not {what}")
 
 
+def check_fit(fit: float) -> None:
+    """The magnet of an anchored drawing is a number in [0, 1] (TASK-347)."""
+    if not (isinstance(fit, int | float) and math.isfinite(fit) and 0.0 <= fit <= 1.0):
+        raise InvalidRequestError(f"fit must be between 0 and 1, got {fit!r}")
+
+
+def check_placement(placement: str, fit: float | None, activity: str) -> None:
+    """One of PLACEMENTS; `fit` only with "anchored", and anchored only on
+    the roads (TASK-347, ADR-0300)."""
+    if placement not in PLACEMENTS:
+        raise InvalidRequestError(
+            f"unknown placement {placement!r}; choose one of: {', '.join(PLACEMENTS)}"
+        )
+    if placement == "anchored" and activity in WATER_ACTIVITIES:
+        raise InvalidRequestError(ANCHORED_ON_LAND_ONLY)
+    if fit is not None:
+        if placement != "anchored":
+            raise InvalidRequestError(FIT_WITH_ANCHORED_ONLY)
+        check_fit(fit)
+
+
 @dataclass(frozen=True)
 class RouteResult:
     points: list[tuple[float, float]]
@@ -220,3 +265,10 @@ class RouteResult:
     # upright (optimizer.shown_rotation, TASK-232, ADR-0195). 0 for a shape
     # that turns freely, like the circle, and without a search.
     rotation_deg: float = 0.0
+    # The drawing as the engine placed it, in WGS84 (TASK-347 A, ADR-0300):
+    # the lines the route was traced along, turned, scaled and moved by the
+    # search in "free", left where it was drawn in "anchored"; one closed
+    # line for a shape, one open line per letter or piece with the pen up.
+    # The app draws it as a ghost under the route. Empty on the water, and
+    # from an API of before TASK-347.
+    placed_outline: list[list[tuple[float, float]]] = field(default_factory=list)

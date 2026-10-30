@@ -22,10 +22,12 @@ from route_engine.image_outline import ANALYSIS_SIDE, MAX_POINTS, outline_data
 from route_engine.models import (
     WATER_ACTIVITIES,
     InvalidRequestError,
+    Placement,
     RouteRequest,
     check_activity,
     check_distance,
     check_drawn_on_land,
+    check_placement,
     check_start,
 )
 from route_engine.nearby_starts import ShapeJob, plan_nearby
@@ -33,6 +35,8 @@ from route_engine.optimizer import (
     SHAPE_POINTS,
     GraphLoader,
     Plan,
+    plan_route,
+    plan_shape,
     tilt_limit,
 )
 from route_engine.outline_edits import MAX_DETAIL_POINTS, travelled_points
@@ -68,6 +72,11 @@ class ImageRequest:
     # the image, one at a time, walking between them (TASK-297, ADR-0258);
     # an outline without pieces is drawn as without it.
     pen_up: bool = False
+    # Where the outline goes (TASK-347, ADR-0300): searched for, or left
+    # where it was drawn, with the magnet `fit`; models.RouteRequest has the
+    # same two.
+    placement: Placement = "free"
+    fit: float | None = None
 
     def __post_init__(self) -> None:
         check_start(self.start)
@@ -77,6 +86,7 @@ class ImageRequest:
         # The limits of its activity: 10-30 km by bike (TASK-190).
         check_distance(self.distance_m, self.activity)
         check_activity(self.activity)
+        check_placement(self.placement, self.fit, self.activity)
 
     @property
     def name(self) -> str:
@@ -214,12 +224,17 @@ def plan_request(request: AnyRequest, source: GraphLoader | WaterSource) -> Plan
     """The API's planner: a shape, a word or an image, also from a few road
     nodes near the start, keeping the best (TASK-076, ADR-0071) and the
     others worth choosing (TASK-093, ADR-0087). A shape on the water is
-    placed on the water `source` gives (TASK-191): there are no roads."""
+    placed on the water `source` gives (TASK-191): there are no roads. An
+    anchored request (TASK-347, ADR-0300) is traced once where it was drawn,
+    from its own start, with no search, no nearby starts and no
+    alternatives: `plan_anchored`."""
     if request.activity in WATER_ACTIVITIES:
         # ImageRequest and the words of RouteRequest refuse the water.
         assert isinstance(request, RouteRequest)
         return plan_water(request, cast(WaterSource, source))
     roads = cast(GraphLoader, source)
+    if request.placement == "anchored":
+        return plan_anchored(request, roads)
     # The job's source keeps how the nearby starts went, for its times.
     if isinstance(request, ImageRequest):
         plan = noted(source, plan_nearby(image_job(request), request.start, roads))
@@ -228,6 +243,27 @@ def plan_request(request: AnyRequest, source: GraphLoader | WaterSource) -> Plan
         )
     job = ShapeJob.of_request(request)
     return noted(source, plan_nearby(job, request.start, roads))
+
+
+def plan_anchored(request: AnyRequest, roads: GraphLoader) -> Plan:
+    """The route of a drawing left where it was drawn (TASK-347 A): the
+    engine's `plan_route` for a shape or a word, `plan_shape` for an image's
+    outline, both with `placement` anchored and the magnet `fit`. The job's
+    times keep nothing of it: there is no search to tell of."""
+    if isinstance(request, RouteRequest):
+        return plan_route(request, roads)
+    plan = plan_shape(
+        request.outline(SHAPE_POINTS),
+        IMAGE_NAME,
+        request.start,
+        request.distance_m,
+        roads,
+        max_tilt_deg=tilt_limit(IMAGE_NAME),
+        activity=request.activity,
+        placement=request.placement,
+        fit=request.fit,
+    )
+    return _unnamed(plan)
 
 
 def _unnamed(plan: Plan) -> Plan:

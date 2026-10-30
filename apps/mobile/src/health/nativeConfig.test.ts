@@ -124,6 +124,10 @@ test("the contacts and the file picker are in the 1.0.1, the contacts with their
     (plugin) => typeof plugin !== "string" && plugin[0] === "expo-contacts",
   ) as [string, Record<string, unknown>];
   expect(contacts[1].contactsPermission).toMatch(/^MuW reads only the phone numbers/);
+  // The plugin also asks to write them on Android: MuW only reads.
+  expect(appJson.expo.android.blockedPermissions).toEqual([
+    "android.permission.WRITE_CONTACTS",
+  ]);
 });
 
 test("the iPhone's libraries are linked on iOS only, in every build", () => {

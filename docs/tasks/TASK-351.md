@@ -3,8 +3,9 @@
 **Stato**: Proposta · 2026-10-30 · la richiesta è dell'utente (2026-10-30);
 le scelte 2, 3, 4 e 6 qui sotto sono la raccomandazione, accettata su
 delega dell'utente del 2026-10-29, da rivedere; la scelta sulla privacy (5)
-e i nomi degli stili (1) aspettano l'utente, che torna la sera del 30; i
-punti tecnici sono decisi dall'agente su delega dell'utente
+è dell'utente («Sì, va bene», 2026-10-30); i nomi degli stili (1)
+aspettano l'utente; i punti tecnici sono decisi dall'agente su delega
+dell'utente
 **Fase**: 4 · **Branch**: `docs/TASK-351-video-map-styles` (i documenti,
 worktree `.claude/worktrees/TASK-351-docs`: il nome `TASK-351` è occupato
 dal branch di TASK-352), poi uno per parte · **ADR**: ADR-0303 (estende
@@ -144,7 +145,11 @@ qui con le parole dell'utente.
    «Only me» o non salvata: il video lo fa e lo manda solo chi ha corso.
    Alternative: la mappa solo per le corse pubblicate (chi corre dovrebbe
    capire perché a volte il video è giallo); una scelta in «Settings».
-   — *Risposta:* **da chiedere** (l'utente torna la sera del 30).
+   — *Risposta (2026-10-30, nella chat di questo task, alla domanda «La
+   mappa nel video mostra dove hai corso, con le estremità tagliate di
+   200 m: va bene?»):* **«Sì, va bene»**. Vale la proposta: la mappa in
+   ogni video, le estremità tagliate di 200 m, la stessa regola per ogni
+   corsa.
 6. **Il credito nel video.** Proposta: sì, 0,0065 della larghezza (7 px su
    1080) in `textFaint`, in fondo; sul 3D anche «Terrain Tiles».
    — *Risposta:* accettata su delega dell'utente del 2026-10-29, da
@@ -296,8 +301,8 @@ terreno col sì dell'utente.
 Della proposta (parte A):
 
 - [x] Il canvas fatto; le scelte 2, 3, 4 e 6 con la raccomandazione,
-      accettata su delega e da rivedere; 1 e 5 segnate da chiedere
-      all'utente, con la proposta pronta.
+      accettata su delega e da rivedere; la 5 (privacy) con le parole
+      dell'utente; la 1 (i nomi) da chiedere, con la proposta pronta.
 - [x] La fattibilità del 3D misurata nel simulatore e nel WebView nascosto
       dell'app, scritta qui; il bench fuori dal repository (`out/`).
 - [ ] La misura sul telefono dell'utente scritta qui (condizione 1).
@@ -416,5 +421,6 @@ bench» (spento), il worktree staccato `.claude/worktrees/video-bench` con
 il harness (file temporanei, mai da committare), il bench in
 `out/video-restyle/`.
 
-Aspettano: l'utente per le scelte 1 (nomi) e 5 (privacy) e per la misura
-sul telefono; il merge della #658 e il via del Coordinatore per la B.
+Aspettano: l'utente per la scelta 1 (i nomi) e per la misura sul
+telefono; il via del Coordinatore per la B (la #658 è in `main` dal
+2026-10-30). La scelta 5 (privacy) è arrivata: «Sì, va bene».

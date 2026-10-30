@@ -20396,3 +20396,43 @@ nuova, e il file basta).
 Chi non segue nessuno e apre «Tutti» non vede più prima i vicini, ma gli ultimi
 pubblicati (scelta 3 del task). Il codice arriva col via del Coordinatore;
 server solo col sì dell'utente.
+
+## ADR-0305 — Quanti messaggi nuovi: un numero dall'API fermato a 10, contato a parte solo sulla pagina
+
+**Stato**: Accepted · 2026-10-30 · deciso dall'agente su delega dell'utente
+per la parte tecnica (TASK-353). Estende ADR-0279. Il piano l'ha confermato
+l'utente, «Sì, passi 1 e 2».
+
+**Contesto**: l'elenco delle conversazioni aveva solo un pallino (`unread`).
+L'utente vuole il numero dei messaggi nuovi. `read_at` c'è già, quindi non
+serve una migrazione, ma il conteggio non deve rallentare l'elenco. Il server
+si aggiorna solo con il sì dell'utente, e l'app esce prima o dopo di lui.
+
+**Decisione**:
+
+1. `unread_count` in ogni conversazione di `GET /me/conversations`, **fino a
+   10**: l'app da dieci in su dice «9+», come la riga «Messages». Così ogni
+   conversazione legge al più dieci righe, qualunque sia la sua lunghezza.
+2. **Una query a parte, solo per la pagina**, invece di una colonna nella
+   query dell'elenco. Quella query legge tutte le conversazioni della casella
+   per ordinarle: con il conteggio dentro, su 2000 conversazioni, la mediana
+   passava da 125 a 647 ms; a parte è 211 ms contro i 173 di prima con tutto
+   non letto, 143 contro 178 con tutto letto (`tasks/TASK-353.md`).
+3. `unread` resta, uguale a `unread_count > 0`. Il campo è facoltativo in
+   `shared-types`: con un server di prima l'app mostra il pallino.
+4. Il tempo si scrive con i testi che l'app ha già (`DAYS`, `MONTHS`,
+   `dayLabel` di `activityText.ts`), a 24 ore come in «My activities», non
+   con `Intl`, che l'app finora non usa da nessuna parte.
+5. I messaggi vecchi arrivano con `onEndReached` della lista invertita;
+   «Show earlier messages» resta per quando il caricamento fallisce, perché
+   la lista non lo richiede da sola finché il contenuto non cambia.
+
+**Alternative scartate**: un conteggio senza limite (costa di più proprio su
+chi ha più messaggi non letti, e l'app non lo mostra oltre «9+»); una colonna
+di contatore da aggiornare a ogni messaggio (migrazione e un dato in più da
+tenere allineato); togliere del tutto il tasto (un caricamento fallito
+lascerebbe la chat ferma).
+
+**Conseguenze**: nessuna migrazione, nessuna dipendenza, niente di nativo. Il
+numero si vede solo dopo l'aggiornamento del server, col sì dell'utente;
+fino ad allora orari, giorni e scorrimento funzionano con il pallino.

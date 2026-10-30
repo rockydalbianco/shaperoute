@@ -166,6 +166,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   («Sì, sostituiscono»). Le scelte dell'utente stanno nel task file; il codice parte col via
   del Coordinatore, primo nella coda su `FeedScreen.tsx`. `tasks/TASK-362.md`.
 
+- **TASK-353 — La chat: orari, giorni, quanti messaggi nuovi, i vecchi
+  scorrendo** (ADR-0305; piano confermato dall'utente il 2026-10-30, «Sì,
+  passi 1 e 2»; numeri dal Coordinatore). Branch `feat/TASK-353-chat-look`.
+  `unread_count` nella lista dell'API, senza migrazione; l'app funziona
+  anche con il server di oggi, con il pallino. Testi da approvare. Dopo il
+  merge, TASK-354 (invio ottimistico, coda offline). File
+  `tasks/TASK-353.md`.
 - **TASK-351 — Il video della corsa con la mappa sotto: il look premium,
   il 3D e tre stili** (ADR-0303, proposta; richiesta dell'utente del
   2026-10-30; numeri e condizioni dal Coordinatore). Branch
@@ -204,6 +211,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `Tap`), D (Profile, Settings, i fogli), E («Draw» e il risultato, dopo
   TASK-311 B, 331 e 335). Niente di nativo: la vibrazione al tocco solo
   con una build, col sì dell'utente. File `tasks/TASK-339.md`.
+  **Parte B in PR dal 2026-10-30**, branch `feat/TASK-339-premium-look-b`
+  (via del Coordinatore del 2026-10-30, dopo la #658 e la #666 di
+  TASK-350 in `main`): le schede di «Feed» ed «Explore» (`FeedPost`,
+  `RouteCard`, `ThemedCard`, `ExploredCard`, `DrawingCard`) col raggio
+  20 e senza bordo, le parole di «Feed» sulla foto su `Scrim`, i titoli
+  `cardTitle` e i nomi medium, `Tap` al posto dell'opacità, `Hairline`
+  prima delle azioni, la distanza delle schede di «Explore» in `display`;
+  prima/dopo in `tasks/TASK-339/b-*.jpg`. Poi C.
 - **TASK-343 — Le sfide del mese: un tema sul concorso, l'iscrizione,
   la galleria, l'archivio** (ADR-0296, estende ADR-0260; richiesta
   dell'utente del 2026-10-29, proposta approvata con «Yes, as proposed»;
@@ -2102,6 +2117,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-358 — Nei messaggi «Photo» e «Video» aprono la galleria** (2026-10-30; numero dal
+  Coordinatore; bloccava l'update `production`). Su iOS la galleria presentata mentre il
+  foglio del «+» si chiudeva non compariva: ora parte da `onDismiss`. Provato nel simulatore
+  fino alla foto nella chat; sul telefono con la preview. Solo app, nessun testo nuovo.
+  File: `tasks/TASK-358.md`.
 - **App** — TASK-350 (ADR-0302; richiesta dell'utente del 2026-10-30): nelle schede di «Explore» con una foto, in «NEARBY TOWNS» e «IDEAS FROM EUROPE», prima il disegno sulla mappa e con uno swipe la foto col credito; due pallini dicono quale si vede, un tocco su tutte e due apre la scheda. Provato nel simulatore; Android no. Solo app, nessun testo nuovo, impronta iOS 83793e26. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-350.md`.
 - **App** — TASK-352 (ADR-0304; richiesta dell'utente del 2026-10-30, «Dopo la
   prima scelta»): «Who can see it» parte da «Only me» finché l'account non
@@ -4643,6 +4663,10 @@ corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
 - **Regole** — TASK-357 (2026-10-30, richiesta dell'utente): con l'utente ogni
   sessione scrive in italiano (`CLAUDE.md`, «Convenzioni»). File
   `tasks/TASK-357.md`.
+
+- **Lavoro in parallelo** — TASK-359 (2026-10-30): `STATUS.md`, `DECISIONS.md` e
+  `INDEX.md` si uniscono con `merge=union`, per non far ripartire la CI a ogni
+  aggiunta. File `tasks/TASK-359.md`.
 
 ## Bloccato
 

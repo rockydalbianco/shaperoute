@@ -130,7 +130,7 @@ risposte si scrivono qui.
 5. **Appiattire o no.** Proposta: appiattire (foto con il disegno dentro).
    Alternativa: il layout ricostruito nel Feed, con la linea nitida, ma
    un'app vecchia vedrebbe solo la foto nuda.
-   — *Risposta:* da chiedere.
+   — *Risposta (2026-10-30):* «Sì, appiattire».
 6. **Cosa c'è nell'editor.** Proposta: ritaglio e raddrizza, 12–15 filtri,
    regolazioni (esposizione, contrasto, saturazione, calore, ombre e luci,
    vignettatura, grana), testo, adesivi, prima/dopo, annulla e ripeti,

@@ -53,11 +53,10 @@ Letto il codice di `main` e la testa di TASK-339 B il 2026-10-30.
 | Tocco minimo, etichette | `MIN_TAP_SIZE` e `Tap` ci sono | Le voci nuove, e il «…» | A |
 | `expo-blur` | Non installato, nativo | **No**: impronta `83793e26` | — |
 
-**Il contatore delle slide lo fa TASK-348 A, non questo task.** Quella
-parte riscrive il carosello fino a 10 pagine, dove dieci pallini non
-reggono, e può far sparire il disegno dalla prima posizione. Farlo qui
-vorrebbe dire riscriverlo una settimana dopo, e la parte A deve restare
-piccola. Proposta del 2026-10-30, da confermare dal Coordinatore.
+**Il contatore delle slide lo fa TASK-348 A, non questo task** (confermato
+dal Coordinatore il 2026-10-30). Quella parte riscrive il carosello fino a
+10 pagine, dove dieci pallini non reggono, e può far sparire il disegno
+dalla prima posizione.
 
 ## Scoperto strada facendo: la posizione nel Feed
 
@@ -67,41 +66,53 @@ degli accessi toglie la query (`access_log.py`, ADR-0096) e il server non
 la tiene. Ma «Your position» in `about/content/*.ts` elenca tre casi (la
 partenza di un percorso, una corsa salvata, la ricerca di un posto) e
 **il Feed non c'è**. Il testo pubblicato è incompleto oggi, a prescindere
-da questo task. La parte A lo chiude, senza aspettare la B: scelta 7.
+da questo task. Lo chiude **TASK-356**, una PR a sé dopo la #668, deciso dal
+Coordinatore: scelta 7.
 
 ## Scelte dell'utente
 
-Una alla volta. Ogni risposta si scrive qui, con le sue parole.
+Chiuse il 2026-10-30, una alla volta, con le sue parole.
 
 1. **Colore dell'avatar.** Il brief vuole un colore per utente; ADR-0293
    dice «nient'altro ha colore» e il canvas ha il grigio. Proposta: grigio
    con l'iniziale, la foto quando c'è.
+   — *Risposta:* «Grigio, come il canvas».
 2. **Inizio e fine.** Il brief vuole un pallino verde e una bandierina;
    ADR-0293 tiene un accento solo. Proposta: pallino e bandierina nel
    colore del testo, con il bordo scuro, distinti dalla forma e non dal
    colore. Segnano gli estremi della traccia tagliata, mai quelli reali:
    nessun testo li chiama «partenza» o «arrivo».
+   — *Risposta:* «Segni neutri».
 3. **Il cuore.** Il cuore è il super like e vuole un commento (ADR-0193):
    un «mi piace» con un tocco non esiste. Proposta: il pulsante mostra il
    totale e apre la scelta fra le sei reazioni, come nella scheda aperta.
+   — *Risposta:* «Apre le sei reazioni».
 4. **Il pulsante giallo.** Il brief chiede di aprire «Draw» con la stessa
    forma, cioè «Draw it near me»; il canvas ha «Start», che parte sulla
    traccia dell'altro, spesso lontana. Proposta: «Draw it near me», già
    tradotto, giallo una volta per scheda come vuole ADR-0293.
+   — *Risposta:* «Draw it near me».
 5. **Condividere il disegno di un altro.** TASK-231 lo escludeva. Proposta:
    «Share» solo sui propri disegni in questo task; quelli degli altri, se
    li vuoi, con un consenso da decidere a parte.
+   — *Risposta:* «Solo i miei».
 6. **Chip o riga.** Il brief vuole chip con icone; il canvas una riga,
    «9.8 km · 58 min · run». Proposta: la riga del canvas, senza chip; i
-   decimali secondo la lingua, da verificare in `distanceLabel` con la
-   parte A.
-7. **La riga di privacy.** Proposta: aggiungere a «Your position», in
-   cinque lingue e con la data: «and, rounded to about 1 km, to show you
-   drawings nearby in the Feed»; l'app arrotonda il punto a due decimali
-   prima di mandarlo (50 km di raggio non chiedono di più). Vale anche per
-   il filtro «Near me».
-8. **I testi nuovi**, in cinque lingue, prima del codice che li usa: la
-   data relativa, le etichette dei pulsanti, i filtri.
+   decimali restano quelli di `distanceLabel`, già secondo la lingua.
+   — *Risposta:* «Riga come il canvas».
+7. **La riga di privacy** (TASK-356). In «Your position», in cinque lingue e
+   con la data: «It goes to our server as the start of a route you ask for,
+   inside a run you save, with a search for a place, to put the places near
+   you first, and, rounded to about 1 km, to show you drawings nearby in the
+   Feed.» L'app arrotonda il punto a due decimali prima di mandarlo. Vale
+   anche per il filtro «Near me». Sito e OTA di produzione: due sì a parte.
+   — *Risposta:* «Sì, approvo».
+8. **I testi nuovi.** La data riusa l'età dei commenti («{count} h ago»; in
+   italiano «2 h fa»). Quattro testi, in inglese, italiano, tedesco, francese
+   e spagnolo: All, Tutti, Alle, Tous, Todos; Friends, Amici, Freunde, Amis,
+   Amigos; Mine, Le mie, Meine, Les miennes, Las mías; Reactions, Reazioni,
+   Reaktionen, Réactions, Reacciones.
+   — *Risposta:* «Sì, approvo».
 
 ## Cosa fare
 
@@ -117,13 +128,11 @@ riservata, 0041 di TASK-348 A).
 1. `feed/RouteMap.tsx` (nuovo): mappa, linea, estremi, attribuzione, tolti
    da `FeedPost`; così 348 A e 336 B trovano `FeedPost` più corto.
 2. `feed/ActionBar.tsx` (nuovo): commenti e reazioni aprono il disegno;
-   «Draw it near me» dal `drawingsDoor`, senza passare da `FeedScreen`; sugli
-   esempi nessuna barra.
-3. `FeedPost`: un titolo solo, «Caldonazzo · 2 ore fa», la miniatura sulle
+   «Share» solo sui propri; «Draw it near me» dal `drawingsDoor`, senza
+   passare da `FeedScreen`; sugli esempi nessuna barra.
+3. `FeedPost`: un titolo solo, «Caldonazzo · 2 h fa», la miniatura sulle
    foto, le etichette.
-4. `Pager`: `Hairline` sotto i nomi.
-5. `api/feed.ts`: il punto arrotondato; `about/content/*.ts`: la riga,
-   con la data.
+4. `Pager`: `Hairline` sotto i nomi, quella riga sola.
 
 **B — Conteggi, foto, filtri, API e app.**
 
@@ -146,8 +155,6 @@ Parte A:
       mandato o letto.
 - [ ] L'attribuzione non è più di una riga, con contrasto AA, e il
       margine `DRAWING_PAD` la tiene fuori dal tracciato.
-- [ ] `feedPath` non scrive mai più di due decimali: test.
-- [ ] «Your position» dice del Feed, in cinque lingue, con la data nuova.
 - [ ] Ogni pulsante nuovo ha almeno `MIN_TAP_SIZE`, `Tap` ed etichetta.
 - [ ] Nessun colore a mano, nessuna dipendenza nuova, impronta `83793e26`
       su una copia pulita.
@@ -181,8 +188,6 @@ apps/mobile/src/feed/RouteMap.tsx, RouteMap.test.tsx      (nuovi)
 apps/mobile/src/feed/ActionBar.tsx, ActionBar.test.tsx    (nuovi)
 apps/mobile/src/feed/FeedPost.tsx, FeedPost*.test.tsx
 apps/mobile/src/screens/Pager.tsx
-apps/mobile/src/api/feed.ts, feed.test.ts
-apps/mobile/src/about/content/*.ts
 apps/mobile/src/i18n/*.ts
 docs/UI.md, docs/STATUS.md, docs/tasks/TASK-355.md
 ```

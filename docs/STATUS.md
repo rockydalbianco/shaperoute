@@ -164,9 +164,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (ADR-0306, estende ADR-0293; richiesta dell'utente del 2026-10-30, numeri
   dal Coordinatore). Branch `docs/TASK-355-feed-clarity` (documenti). Parte
   A solo app, dopo 339 B e prima di 348 A; parte B API e app, dopo 344 B e
-  prima di 309 B. Otto scelte dell'utente aperte. Il Feed manda già la
-  posizione e «Your position» non lo dice: si chiude con la parte A.
-  `tasks/TASK-355.md`.
+  prima di 309 B. Scelte dell'utente chiuse il 2026-10-30. Il Feed manda
+  già la posizione e «Your position» non lo dice: lo chiude TASK-356, dopo
+  la #668, con il testo già approvato; sito e OTA di produzione con il suo
+  sì. `tasks/TASK-355.md`.
 - **TASK-339 — L'interfaccia premium ed elegante** (ADR-0293, proposta;
   brief dell'utente del 2026-10-29; il canvas della proposta, 16 tavole,
   visto e approvato a voce la sera stessa, «BELLISSIMO»:
@@ -2064,6 +2065,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-350 (ADR-0302; richiesta dell'utente del 2026-10-30): nelle schede di «Explore» con una foto, in «NEARBY TOWNS» e «IDEAS FROM EUROPE», prima il disegno sulla mappa e con uno swipe la foto col credito; due pallini dicono quale si vede, un tocco su tutte e due apre la scheda. Provato nel simulatore; Android no. Solo app, nessun testo nuovo, impronta iOS 83793e26. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-350.md`.
 - **App** — TASK-337 (aggiunta ad ADR-0048; richiesta dell'utente del 2026-10-29 con uno screenshot: «a volte le scritte rosse… sono troppe… che poi non si visualizza più l'immagine»): sotto il percorso di «Draw» due note del motore alla volta, prima quelle a cui fare attenzione; le altre con «Show more» (già tradotto), mai tolte. Scale, traffico, gallerie e bici a mano sempre in vista (condizione del Coordinatore). Un altro percorso, o l'altro fra A e B, riparte da due. Solo JS dell'app (OTA), nessun testo nuovo, nessuna dipendenza, impronta iOS invariata. **Da vedere sull'iPhone** con la prossima preview. `tasks/TASK-337.md`.
 - **App** — TASK-331 (ADR-0288 con l'aggiunta della parte B; richieste
   dell'utente del 2026-10-29, «Tutto sulla mappa» e poi «fallo più

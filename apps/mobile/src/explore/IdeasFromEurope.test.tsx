@@ -174,14 +174,14 @@ test("an idea whose place has a photo shows it, credited, with its shape small o
   });
   expect(within(rome).getByText("CC BY 4.0")).toBeOnTheScreen();
   expect(within(rome).getByText("Rome · Star")).toBeOnTheScreen();
-  expect(screen.getAllByTestId("idea-shape")).toHaveLength(1);
+  expect(within(rome).getByTestId("route-card-pages")).toBeOnTheScreen();
   // No free photo: the map card, as before.
   expect(within(paris).queryByTestId("route-card-photo")).toBeNull();
 
   // A photo that does not load: back to the map.
   await fireEvent(within(rome).getByTestId("route-card-photo"), "error");
   expect(screen.queryByTestId("route-card-photo")).toBeNull();
-  expect(screen.queryByTestId("idea-shape")).toBeNull();
+  expect(screen.queryByTestId("route-card-pages")).toBeNull();
 });
 
 test("an API without the photos keeps the cards as they were", async () => {

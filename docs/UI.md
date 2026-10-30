@@ -461,17 +461,19 @@ pagine»):
    «NEARBY TOWNS», «{km} km away», «{town}, {km} km away» (VoiceOver).
 
    **Da TASK-283** (ADR-0243, chiesto dall'utente: «aggiungere foto delle
-   città»; le tre scelte sono sue): la scheda di un paese che ha una foto
-   mostra **solo la foto**, al posto di mappa e disegno, e sotto il nome
-   solo la distanza (niente «Drawing…»). In basso a destra sulla foto, in
+   città»; le scelte sono sue, l'ordine è cambiato con **TASK-350**,
+   ADR-0302): la scheda di un paese che ha una foto mostra **prima il
+   disegno sulla mappa**, e con uno swipe la foto; due pallini in alto
+   dicono quale si vede. Dall'ultima pagina lo swipe passa alla fila. Finché
+   il disegno non c'è, la scheda è vuota con «Drawing…»; un paese il cui
+   disegno fallisce mostra la sola foto. In basso a destra sulla foto, in
    piccolo, bianco su una fascia scura in tutti e due i toni, il credito
    che la licenza chiede: «© LBM1948 · CC BY-SA 4.0»; su una scheda
    stretta si accorcia l'autore, mai la licenza. Una foto di pubblico
    dominio o CC0 non ha scritte. Un paese **senza foto**, o la cui foto non
-   si carica, ha la scheda di prima, con mappa e campione. I campioni si
-   disegnano lo stesso per tutti: il paese si apre con le forme pronte. Il
-   credito delle mappe sotto la fila c'è solo se una scheda mostra una
-   mappa. Nessun testo nuovo: autori e licenze sono quelli di Wikimedia
+   si carica, ha solo la pagina con mappa e campione. Il credito delle mappe
+   sotto la fila c'è solo se una scheda mostra una mappa. Nessun testo
+   nuovo: autori e licenze sono quelli di Wikimedia
    Commons.
 
    **Da TASK-163**, chiesto dall'utente: finché uno dei primi tre esempi è
@@ -2330,10 +2332,10 @@ foto non si carica, ha la scheda col **solo nome**. **Un tocco porta la
 mappa lì**, vicina come una strada (zoom 16, mai più lontana di com'era),
 girata com'è.
 
-Le schede di **«IDEAS FROM EUROPE»** mostrano la foto del primo posto
-toccato che ha un elemento Wikidata, con la **forma in piccolo** sopra,
-nell'angolo in alto a sinistra; per quella scheda la mappa non si prende.
-Una scheda senza foto, o la cui foto non si carica, resta con la mappa.
+Le schede di **«IDEAS FROM EUROPE»** mostrano prima la linea sulla mappa e,
+con uno swipe, la foto del primo posto toccato che ha un elemento Wikidata
+(TASK-350, ADR-0302). Una scheda senza foto, o la cui foto non si carica,
+resta con la sola mappa.
 
 Le foto le dà sempre la nostra API (`/city-photos/{item}.jpg`), mai
 Wikimedia: un percorso chiesto le ha nella risposta, le idee le chiedono

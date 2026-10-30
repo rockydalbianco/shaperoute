@@ -20066,6 +20066,34 @@ cambiano; la modifica esplicita l'ha chiesta il Coordinatore.
 
 ---
 
+## ADR-0302 — Nelle schede di «Explore» prima il disegno, la foto a uno swipe
+
+**Data**: 2026-10-30 · **Stato**: accettata · **Task**: TASK-350. L'ordine è
+una scelta dell'utente («prima l'immagine e poi swipe destra e vedi la foto
+della città»); il modo è deciso dall'agente su delega dell'utente.
+
+**Contesto**: da ADR-0243 la foto di un paese prendeva il posto di disegno e
+mappa, e da ADR-0287 quella di un'idea aveva sopra la forma in piccolo.
+L'app si riconosce dal disegno: l'utente vuole vedere prima quello.
+
+**Decisione**: `RouteCard`, con `photo` e una linea, ha due pagine da
+scorrere: il disegno sulla mappa, poi la foto col credito, con due pallini in
+alto. Senza linea mostra la sola foto: serve a un paese il cui disegno è
+fallito. In `NearbyTowns` la foto aspetta il disegno, così una scheda non
+passa dalla foto al disegno sotto gli occhi. Il tocco sta dentro le pagine,
+come in `FeedPost`: una `Pressable` attorno a uno `ScrollView` diventa
+responder e ne ferma lo scorrimento nativo, mentre la fila, che è fuori,
+scorre. `bounces={false}` fa passare lo swipe alla fila dall'ultima pagina.
+
+**Alternative scartate**: la foto subito e il disegno quando arriva (la
+scheda cambierebbe da sola); una freccia da toccare al posto dello swipe (non
+è quello chiesto).
+
+**Conseguenze**: uno swipe su una scheda con foto cambia pagina invece di far
+scorrere la fila, che si scorre dalla seconda pagina o da nome e distanza. Le
+mappe si prendono anche per le schede con foto, una alla volta come le altre.
+Nessun testo nuovo, nessuna dipendenza, niente di nativo, server non toccato.
+
 ## ADR-0305 — Quanti messaggi nuovi: un numero dall'API fermato a 10, contato a parte solo sulla pagina
 
 **Stato**: Accepted · 2026-10-30 · deciso dall'agente su delega dell'utente

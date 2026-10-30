@@ -8,21 +8,13 @@ import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { usePlacePhotos } from "./placePhotos";
-import {
-  type CardPhoto,
-  CardMapsCredit,
-  cardDrawingHeight,
-  RouteCard,
-} from "./RouteCard";
-import { RouteThumb } from "./RouteThumb";
+import { type CardPhoto, CardMapsCredit, RouteCard } from "./RouteCard";
 import { THEMED_IDEAS, type ThemedIdea } from "./themedIdeas";
 
 /** A card's share of the page: the next one peeks in, as «NEARBY TOWNS». */
 const CARD_SHARE = 0.42;
 /** The cards seen before the row slides: two and the one that peeks in. */
 export const SEEN_AT_FIRST = 3;
-/** The drawing of the shape over a card's photo: this share of its height. */
-const SHAPE_SHARE = 0.45;
 
 /** The Wikidata item of the first place the idea passes by that has one:
  * its card shows that place's photo (TASK-329). */
@@ -60,9 +52,9 @@ type Props = {
  * cities of Europe, in a row that slides sideways, each on the map of its
  * streets. A tap opens it on the map, as a route asked for. Under the row,
  * whose the maps are, and whose the places and roads. A card whose first
- * place passed by has a free photo shows it, with its credit and the shape
- * drawn small over it (TASK-329); its map is not taken. One whose photo
- * does not load goes back to its map.
+ * place passed by has a free photo shows it a swipe after the map, with its
+ * credit (TASK-329, TASK-350). One whose photo does not load keeps the map
+ * alone.
  */
 export function IdeasFromEurope({
   width,
@@ -77,7 +69,7 @@ export function IdeasFromEurope({
   const [slid, setSlid] = useState(false);
   const items = useMemo(() => ideas.flatMap((idea) => ideaItem(idea) ?? []), [ideas]);
   const photos = usePlacePhotos(apiUrl, items, fetchFn);
-  // The photos that did not load: their cards go back to the map.
+  // The photos that did not load: their cards keep the map alone.
   const [broken, setBroken] = useState<ReadonlySet<string>>(new Set());
   // One source a photo, as long as the photos are the same: a new one
   // would have the photo read again.
@@ -94,7 +86,6 @@ export function IdeasFromEurope({
     return null;
   }
   const card = Math.round(width * CARD_SHARE);
-  const shape = Math.round(cardDrawingHeight(card) * SHAPE_SHARE);
   const photoOf = (idea: ThemedIdea): CardPhoto | undefined => {
     const item = ideaItem(idea);
     const photo = item === null ? undefined : photos.get(item);
@@ -124,25 +115,18 @@ export function IdeasFromEurope({
             const name = shapeName(idea.result.shape);
             const category = t(idea.category);
             const distance = distanceLabel(idea.result.distance_m, units);
-            const photo = photoOf(idea);
             return (
-              <View key={idea.id}>
-                <RouteCard
-                  width={card}
-                  line={idea.preview}
-                  title={`${city} · ${name}`}
-                  detail={`${category} · ${distance}`}
-                  map={wantsMap(index, maps, slid)}
-                  photo={photo}
-                  onPress={() => onIdea(idea)}
-                  accessibilityLabel={`${city}, ${name}, ${category}, ${distance}`}
-                />
-                {photo !== undefined && (
-                  <View style={styles.shape} pointerEvents="none" testID="idea-shape">
-                    <RouteThumb line={idea.preview} width={shape} height={shape} />
-                  </View>
-                )}
-              </View>
+              <RouteCard
+                key={idea.id}
+                width={card}
+                line={idea.preview}
+                title={`${city} · ${name}`}
+                detail={`${category} · ${distance}`}
+                map={wantsMap(index, maps, slid)}
+                photo={photoOf(idea)}
+                onPress={() => onIdea(idea)}
+                accessibilityLabel={`${city}, ${name}, ${category}, ${distance}`}
+              />
             );
           })}
         </View>
@@ -168,12 +152,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     gap: space.md,
-  },
-  // The shape small in the photo's corner, inside the card's border.
-  shape: {
-    position: "absolute",
-    top: 1 + space.xs,
-    left: 1 + space.xs,
   },
   // As the maps' credit above it.
   credit: {

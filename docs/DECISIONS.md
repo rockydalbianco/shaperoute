@@ -19674,7 +19674,8 @@ quello delle scale) e una frase nuova «2 more notes» (da tradurre, mentre
 
 ## ADR-0296 — Le sfide del mese: un tema sul concorso, l'iscrizione esplicita, la galleria, l'archivio, tre push
 
-**Stato**: Proposta · 2026-10-29 · TASK-343. Estende ADR-0260 (il primo
+**Stato**: Accettata · 2026-10-29, parte A in `main` il 2026-10-30 ·
+TASK-343. Estende ADR-0260 (il primo
 concorso), che resta valido per i concorsi senza tema. Il tema,
 l'iscrizione esplicita e il voto che resta la reazione sono dell'utente
 (richiesta del 2026-10-29, proposta approvata con «Yes, as proposed»);
@@ -19725,6 +19726,19 @@ gesti per la stessa cosa); un cron sul server per gli ultimi 3 giorni
 regolamento ufficiale cambia e va riapprovato. «Challenge» è già una
 parola del gioco «Play» (TASK-296): i testi dell'app devono tenerle
 distinte.
+
+**Aggiunta, parte A** (2026-10-30, #657, migrazione 0039). Decise dall'agente
+su delega dell'utente, descritte in `CONCORSI.md` §15: un concorso senza tema
+non prende iscrizioni e non manda le tre push; «3 days left» a chi ha
+pubblicato almeno un disegno per tutti, di qualunque data, e non ne ha
+iscritto nessuno; i risultati a chi ha un disegno in classifica alla chiusura,
+anche escluso con `--exclude`, tranne il vincitore; galleria e archivio anche
+senza token, 30 voci e 10 sfide per pagina. I testi delle tre push:
+«accettati su delega dell'utente del 2026-10-29, da rivedere» (sì
+dell'autopilota, riferito dal Coordinatore). Da rivedere: «Corri il tuo
+disegno» e «pubblica una corsa» parlano solo di corsa, da cambiare se una
+sfida vale anche per bici o canoa. Il server non è aggiornato: la migrazione
+0039 la decide l'utente.
 
 ## ADR-0294 — I badge sul profilo: primo disegno, 10 disegni, 30 km, decisi dal server
 
@@ -20051,6 +20065,34 @@ cambiano; la modifica esplicita l'ha chiesta il Coordinatore.
    Coordinatore. Finché TASK-348 C non c'è, l'app ne manda uno.
 
 ---
+
+## ADR-0302 — Nelle schede di «Explore» prima il disegno, la foto a uno swipe
+
+**Data**: 2026-10-30 · **Stato**: accettata · **Task**: TASK-350. L'ordine è
+una scelta dell'utente («prima l'immagine e poi swipe destra e vedi la foto
+della città»); il modo è deciso dall'agente su delega dell'utente.
+
+**Contesto**: da ADR-0243 la foto di un paese prendeva il posto di disegno e
+mappa, e da ADR-0287 quella di un'idea aveva sopra la forma in piccolo.
+L'app si riconosce dal disegno: l'utente vuole vedere prima quello.
+
+**Decisione**: `RouteCard`, con `photo` e una linea, ha due pagine da
+scorrere: il disegno sulla mappa, poi la foto col credito, con due pallini in
+alto. Senza linea mostra la sola foto: serve a un paese il cui disegno è
+fallito. In `NearbyTowns` la foto aspetta il disegno, così una scheda non
+passa dalla foto al disegno sotto gli occhi. Il tocco sta dentro le pagine,
+come in `FeedPost`: una `Pressable` attorno a uno `ScrollView` diventa
+responder e ne ferma lo scorrimento nativo, mentre la fila, che è fuori,
+scorre. `bounces={false}` fa passare lo swipe alla fila dall'ultima pagina.
+
+**Alternative scartate**: la foto subito e il disegno quando arriva (la
+scheda cambierebbe da sola); una freccia da toccare al posto dello swipe (non
+è quello chiesto).
+
+**Conseguenze**: uno swipe su una scheda con foto cambia pagina invece di far
+scorrere la fila, che si scorre dalla seconda pagina o da nome e distanza. Le
+mappe si prendono anche per le schede con foto, una alla volta come le altre.
+Nessun testo nuovo, nessuna dipendenza, niente di nativo, server non toccato.
 ## ADR-0303 — Il video della corsa con la mappa sotto: la mappa nella pagina del video, uno scatto e la linea sopra, il giallo come riserva, tre stili dai token, il 3D proiettato dalla pagina
 
 **Stato**: Proposta · 2026-10-30 · TASK-351. La richiesta è dell'utente

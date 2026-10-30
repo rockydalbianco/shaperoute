@@ -123,7 +123,7 @@ risposte si scrivono qui.
 3. **I layout.** Proposta, quattro: foto a tutto schermo con il disegno in
    un riquadro d'angolo; la linea del disegno sopra la foto, trasparente;
    metà foto e metà disegno; disegno grande con la foto nell'angolo.
-   — *Risposta:* da chiedere.
+   — *Risposta (2026-10-30):* «Sì, i quattro».
 4. **Il disegno nel carosello.** Proposta: spostabile; la scheda del Feed
    mostra come copertina il primo elemento.
    — *Risposta:* da chiedere.

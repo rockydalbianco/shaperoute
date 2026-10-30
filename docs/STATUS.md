@@ -178,7 +178,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   fotogramma; sul telefono da rimisurare con l'utente). La scelta
   sulla privacy (la mappa nel video mostra dove si è corso) è dell'utente
   («Sì, va bene», 2026-10-30); i nomi degli stili sono
-  suoi («Sì, questi», 2026-10-30). La B è la PR #679. Senza mappa il video
+  suoi («Sì, questi», 2026-10-30). La B è la PR #679 (testa
+  `a6d8cf1d (il codice; poi la privacy e i documenti)`): la mappa sotto nel look Night, la riserva gialla senza mappa,
+  provata in Expo Go, impronta `83793e26` invariata; prima dell'OTA di
+  produzione l'utente esporta un video vero sull'iPhone dalla preview e
+  vede la mappa (condizione del Coordinatore). Senza mappa il video
   esce sul giallo di oggi (condizione del Coordinatore). Poi B (la mappa
   sotto e il look premium, Night), C (i tre stili e la riga «Style»), D
   (il 3D), una PR ciascuna da `main` con la #658 e col via del

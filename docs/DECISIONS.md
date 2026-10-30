@@ -20252,6 +20252,24 @@ l'app in Expo Go, in `tasks/TASK-351.md`; sul telefono da rifare.
     parte (la pagina dice all'app i tempi delle tegole, dello scatto e
     della codifica); se raddoppia, lo si scrive.
 
+**Aggiunta (parte B, 2026-10-30, decisa dall'agente su delega
+dell'utente)**: sulle mappe piatte la linea resta quella che l'app calcola
+con `fitLines`, e la mappa è messa sotto con la camera di `lineCamera` e il
+`padding` del riquadro del disegno, come il Feed (ADR-0131): la differenza
+fra la proiezione piatta e quella di Mercatore è sotto il pixel su pochi
+chilometri; la proiezione dalla pagina (`map.project`) arriva con la D,
+dove l'inclinazione la rende necessaria, e il punto 4 vale da lì. Il
+credito è a 0,02 della larghezza (22 px su 1080), non 0,0065, perché si
+legga su un telefono. Il canvas non ha le cifre tabulari: i numeri sono
+allineati a sinistra e il tremolio mentre salgono è piccolo; le lettere
+spaziate usano `letterSpacing` del canvas dove c'è (iOS 17) e una lettera
+per volta prima. Mentre le tegole arrivano l'app mostra lo stato di attesa
+che c'è già («Making the video… 0%»), senza testi nuovi; a tegole fredde
+l'export può raddoppiare (misure in `tasks/TASK-351.md`). La B non va
+nell'OTA di produzione finché l'utente non ha esportato un video vero
+sull'iPhone e visto la mappa (condizione del Coordinatore): il rischio da
+guardare è un telefono che ricade sul giallo in silenzio.
+
 **Alternative scartate**: la mappa scattata da `feedMapPage` e passata
 all'app in base64 (due WebView, 450 KB di testo attraverso l'app, e il 3D
 con la linea in prospettiva non si fa); la linea come layer di MapLibre

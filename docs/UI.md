@@ -3664,16 +3664,28 @@ run», con «Close» in alto a sinistra:
   Instagram in the list: Story, Feed or Messages.». Errori: «This phone
   cannot open the share sheet.», «The picture could not be made. Try
   again.».
-- **«Export video»**, accanto a «Instagram» (TASK-295, ADR-0254; scelta
-  dell'utente): fa un video di 12 s, 9:16, del post che prende vita. Sul
-  giallo entrano il logo e il titolo; la linea della corsa si disegna da
-  sola, con la punta della penna, mentre distanza e tempo salgono; alla
-  fine il disegno intero, i risultati accesi e le emoji del post, che
-  entrano una dopo l'altra. Niente musica. Mentre lo fa il pulsante dice
-  «Making the video… 42%» e i due pulsanti non si toccano; poi si apre il
-  foglio di condivisione con il video («Save Video» lo tiene in Foto).
-  Errori: «This phone cannot make the video.», «The video could not be
-  made. Try again.», «This phone cannot open the share sheet.».
+- **«Export video»**, accanto a «Instagram» (TASK-295, ADR-0254; TASK-351,
+  ADR-0303; scelte dell'utente): fa un video di 12 s, 9:16, della corsa
+  **sulla sua mappa**. La mappa scura dell'app (il tono scuro al suo passo
+  più scuro, qualunque tono abbia l'app, con i nomi nella lingua
+  dell'app) riempie il video e entra in dissolvenza con il logo, sul suo
+  quadrato giallo, e con il titolo (`font.title`); la linea della corsa,
+  gialla come un percorso, si disegna da sola con la punta della penna
+  mentre distanza e tempo salgono (le etichette in `font.label`,
+  maiuscole; i numeri in `font.display`, su un velo scuro che sale dal
+  basso, la curva di `Scrim`); alla fine il disegno intero, i risultati
+  accesi e le emoji del post, che entrano una dopo l'altra; in fondo,
+  piccolo, «© OpenStreetMap contributors · OpenFreeMap». Le estremità
+  della corsa restano fuori (200 m), come nel post e nel Feed: la mappa
+  mostra dove si è corso, per scelta dell'utente (TASK-351). Se la mappa
+  non arriva (niente rete, MapLibre o una tegola che manca entro 15 s) il
+  video esce lo stesso, sul giallo del post com'era prima, senza avvisi.
+  Mentre lo fa il pulsante dice «Making the video… 42%» e i due pulsanti
+  non si toccano; poi si apre il foglio di condivisione con il video
+  («Save Video» lo tiene in Foto). Errori: «This phone cannot make the
+  video.», «The video could not be made. Try again.», «This phone cannot
+  open the share sheet.». I tre stili fra cui scegliere (Night, Day, 3D)
+  arrivano con le parti C e D di TASK-351.
 - **«Music»**, sopra «Instagram» ed «Export video» (TASK-301,
   ADR-0262; scelte dell'utente, al posto del «Niente musica» qui sopra):
   «None» e dieci brani nostri, «Energy», «Chill», «Epic», «Sprint»,

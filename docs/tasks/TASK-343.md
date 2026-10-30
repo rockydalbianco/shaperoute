@@ -1,7 +1,7 @@
 # TASK-343 — Le sfide del mese: un tema per concorso, l'iscrizione, la galleria, l'archivio
 
-**Stato**: Todo — documenti nella PR `docs/TASK-343-monthly-challenges`;
-il codice parte dopo il loro merge
+**Stato**: In lavorazione — documenti in `main` (#648), parte A in `main`
+(#657, `5303a198`), parte B da fare
 **Fase**: 4 · **Branch**: `feat/TASK-343-a-themed-contest-api` (A),
 `feat/TASK-343-b-themed-contest-app` (B)
 **ADR**: ADR-0296 (estende ADR-0260) · **Migrazione**: una, in A; il
@@ -115,17 +115,17 @@ Notifiche: nuova challenge, ultimi 3 giorni, risultati». La proposta
 
 ## Criteri di accettazione
 
-- [ ] Un concorso senza tema si comporta esattamente come oggi (i test
+- [x] Un concorso senza tema si comporta esattamente come oggi (i test
       di `test_contests.py` passano senza cambiarli).
-- [ ] In un concorso con tema un disegno non iscritto non è in
+- [x] In un concorso con tema un disegno non iscritto non è in
       classifica; iscritto sì; ritirato no.
-- [ ] L'iscrizione è rifiutata a concorso chiuso o senza tema, per un
+- [x] L'iscrizione è rifiutata a concorso chiuso o senza tema, per un
       disegno di un altro, privato, per i soli follower, importato o
       pubblicato fuori dal periodo.
-- [ ] `GET /contests/current` dà `theme`, `entrants`, e `entered` solo
+- [x] `GET /contests/current` dà `theme`, `entrants`, e `entered` solo
       con il token; la galleria ordina per classifica e per data e
       pagina con `cursor`; l'archivio dà i concorsi chiusi.
-- [ ] Ognuna delle tre push parte una volta sola e solo a chi deve
+- [x] Ognuna delle tre push parte una volta sola e solo a chi deve
       (test con un `pusher` finto e l'orologio finto).
 - [ ] App: scheda con il tema, pagina, galleria nei due ordini,
       archivio, interruttore solo quando vale, tocco della push; con
@@ -198,4 +198,44 @@ docs/tasks/TASK-343.md
 
 ## Esito
 
-*(a fine task)*
+### Parte A — in `main` (#657, `5303a198`, 2026-10-30)
+
+Migrazione `0039_contest_themes.sql` (numero confermato dal Coordinatore),
+iscrizioni, galleria, archivio, le tre push, `open --theme`, `standings` col
+tema. CI verde. In locale: `test_contest_themes.py`,
+`test_contest_entries.py`, `test_contests.py` (invariato), `test_push.py`,
+`test_imported_runs.py`; la suite intera dell'API solo in CI. Le regole sono
+in `CONCORSI.md` §15, gli endpoint in `API.md` «Le sfide del mese».
+
+**Il server non è aggiornato**: serve la migrazione 0039 e lo decide
+l'utente. Nessun concorso con tema è stato aperto, nessuna delle tre push è
+mai partita.
+
+**I testi delle tre push**: sì dell'autopilota nelle cinque lingue,
+«accettati su delega dell'utente del 2026-10-29, da rivedere» (riferito dal
+Coordinatore: vale la delega scritta dall'utente fino alle 17:15 del
+2026-10-30). **Da rivedere**: «Corri il tuo disegno» e «pubblica una corsa»
+parlano solo di corsa, da cambiare se una sfida vale anche per bici o canoa.
+
+**Quattro scelte dell'agente** su delega dell'utente, da guardare con i
+testi:
+
+1. un concorso senza tema non prende iscrizioni e non manda nessuna delle tre
+   push (`409 contest_closed`, il corpo di `GET /contests/current` resta
+   quello di prima);
+2. «3 days left» va a chi ha pubblicato almeno un disegno per tutti, di
+   qualunque data, e non ne ha iscritto nessuno in questa sfida;
+3. i risultati vanno a chi ha un disegno in classifica alla chiusura, anche
+   escluso con `--exclude`, tranne il vincitore (che ha `contest_won`);
+4. galleria e archivio rispondono anche senza token: 30 voci per pagina la
+   galleria, 10 sfide l'archivio.
+
+**Rispetto ai «File toccati»**: `__main__.py` non è servito (l'orologio parte
+da `install_contests`, attorno al lifespan dell'app, come `GroupRunClock`);
+`engine.zip` è rifatto perché contiene `schemas.py`, l'unico file cambiato
+dentro lo zip.
+
+### Parte B
+
+Da fare, in una sessione nuova: i file vanno mandati prima al Coordinatore,
+`FeedPost` e `PublicParts` potrebbero essere occupati da TASK-339 B.

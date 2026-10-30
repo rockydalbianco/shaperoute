@@ -160,6 +160,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-362 — Le schede del Feed: «Tutti» e «Seguiti»** (ADR-0308, proposta;
+  richiesta dell'utente del 2026-10-30; numeri dal Coordinatore). Branch
+  `docs/TASK-362-feed-tabs` (documenti). Sostituiscono i filtri di TASK-355 B
+  («Sì, sostituiscono»). Aspettano l'utente sei scelte; il codice parte col via
+  del Coordinatore, primo nella coda su `FeedScreen.tsx`. `tasks/TASK-362.md`.
+
 - **TASK-351 — Il video della corsa con la mappa sotto: il look premium,
   il 3D e tre stili** (ADR-0303, proposta; richiesta dell'utente del
   2026-10-30; numeri e condizioni dal Coordinatore). Branch

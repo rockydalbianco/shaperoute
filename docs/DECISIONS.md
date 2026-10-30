@@ -19549,6 +19549,112 @@ mappa hanno `metresPerPx`, `bent`, `links`, `bendable` e `marks` (pagina e
 app vanno sempre insieme). Il nuovo `mapdraw/tools.ts` contiene gli
 strumenti; `erasedAt` esce da `edit.ts`.
 
+## ADR-0293 — Il look premium: titoli grandi e leggeri, grigi caldi, immagini a tutta scheda, un solo feedback al tocco, divisioni a filo, pagine vuote disegnate
+
+**Stato**: Proposta · 2026-10-29 · TASK-339. La richiesta è dell'utente
+(2026-10-29, il brief incollato in `tasks/TASK-339.md`); la direzione
+visiva lasciata aperta dal brief — grigi caldi, titoli leggeri — è la
+raccomandazione dell'agente, accettata su delega dell'utente del
+2026-10-29, da rivedere; il canvas della proposta l'utente l'ha visto la
+sera stessa, verso mezzanotte («BELLISSIMO»), e ha chiesto le schede
+interne, aggiunte. Numeri dati dal Coordinatore il 2026-10-30, con le sue
+condizioni per la parte A (`tasks/TASK-339.md`, «Condizioni del
+Coordinatore»). Estende ADR-0046 (il tema scuro), ADR-0231 (i toni e la
+luminosità), ADR-0081 (i bordi dei comandi) e ADR-0183 (il giallo di «Run
+without a route»); non tocca ADR-0124 (le pagine affiancate).
+
+**Contesto**: l'app ha una disciplina rara: 176 file leggono
+`tokens.ts`, nessun colore è scritto a mano, un accento solo (il giallo
+del percorso), due toni in cinque passi. Ma i titoli sono a 25 in
+grassetto, 180 testi sono semibold e 101 bold, i separatori sono 167
+bordi pieni a 1 pt, il tocco è un'opacità secca a 0,6 in 66 punti, le
+foto stanno dentro schede bordate con le parole sotto, le pagine vuote
+sono una riga di testo. Il brief chiede un prodotto «curato da uno studio
+di design, non un template», senza stravolgere lo stile. Vincoli: niente
+di nativo prima del taglio della 1.0.1 (l'impronta iOS `83793e26` deve
+restare), quindi niente `expo-linear-gradient`, `react-native-svg`,
+`reanimated`, `expo-haptics`, nessun carattere nuovo; sei task hanno in
+mano schermate dell'app in questo momento.
+
+**Decisione** (proposta):
+
+1. **Tipografia dal font di sistema**, con una scala in `tokens.ts`
+   (`font`): `display` 44 light, tracking −1, interlinea 50; `title` 30
+   regular, −0,6, 36; `heading` 20 medium, −0,3, 26; `cardTitle` 17
+   medium, −0,2, 22; `body` 15/22; `small` 13/18; `detail` 12/16; `label`
+   11 semibold, +1,2, maiuscolo dov'è scritto. Il grassetto resta ai
+   comandi gialli e agli 88 px della corsa (`fontSize.hero`), letti a
+   braccio teso. I numeri che devono allinearsi aggiungono
+   `fontVariant: ["tabular-nums"]`. `fontSize.title` resta 25 finché le
+   schermate non passano a `font.title`, una parte alla volta: alzarlo
+   per tutti renderebbe 53 titoli in grassetto più pesanti, non più
+   leggeri.
+2. **Grigi caldi, un accento solo.** I quattro estremi di `SHADES` si
+   spostano di poco verso il giallo (scuro: fondo `#0B0A08`, superficie
+   `#161411`, rilievo `#2C2924`, bordo dei comandi `#7B746B`, testo
+   `#F6F3EC`, secondario `#A49D93`, tenue `#908980`; chiaro: superficie
+   `#F4F2ED`, rilievo `#EAE7E1`, secondario `#5C564F`, tenue `#68625A`;
+   anche la mappa, non l'acqua); `onAccent` e `scrim` diventano
+   `#0B0A08`. Tutti i minimi di contrasto di `palettes.test.ts` restano
+   (7:1 testo, 4,5:1 secondario e avvisi, 3:1 bordi dei comandi, 3:1
+   giallo sulle strade). Il giallo resta il percorso e il comando che lo
+   produce, una volta per scheda; il rosso resta ai numeri che aspettano
+   una risposta; nient'altro ha colore.
+3. **Immagini protagoniste.** Le schede con una foto o un disegno
+   passano a `radius.xl` (20) e perdono il bordo; sulle foto le parole
+   stanno sopra, su `Scrim`: un'immagine di una colonna di 128 pixel,
+   trasparente in cima e `scrim` all'82 % in fondo lungo una curva dolce,
+   stirata sulla scheda (`assets/ui/scrim.png`, da `tools/ui_scrim.py`).
+   Nessuna libreria di gradienti. Sui disegni le parole restano sotto: la
+   figura non si copre.
+4. **Movimento breve e uguale ovunque** (`motion`): il tocco porta un
+   comando a 0,97 e all'85 % in 120 ms e lo riporta in 180 (`Tap`, un
+   Pressable animato sul driver nativo, al posto dell'opacità 0,6); ciò
+   che compare arriva in dissolvenza in 220 ms salendo di 6 pt; i fogli
+   salgono in 280 ms con una curva che rallenta alla fine. Mai rimbalzi.
+   La vibrazione al tocco vuole `expo-haptics`: solo con una build nativa
+   e il sì dell'utente.
+5. **I due toni disegnati, non invertiti**: la scala dei grigi è pensata
+   due volte (il chiaro era già caldo, ora lo è lo scuro); `Scrim` è
+   scuro in tutti e due, perché le parole su una foto sono chiare
+   comunque; la linea gialla tiene il bordo scuro sul chiaro
+   (ADR-0231). Un tono «di sistema» che segue il telefono non si
+   introduce qui: è una scelta di prodotto da chiedere.
+6. **Dettagli**: `color.hairline`, il testo al 20 % (`#RRGGBBAA`, l'unico
+   colore traslucido; la mappa non lo usa), disegnato da `Hairline` a un
+   pixel fisico: le divisioni si sentono, i comandi tengono il bordo a
+   1 pt `borderStrong` (TASK-086) e si trovano anche al sole. Le pagine
+   vuote hanno `EmptyState`: una sagoma del catalogo in `border`, i
+   primi strokes in giallo come una corsa appena cominciata, un titolo
+   `heading`, una frase `body` in `textMuted`, al più un'azione; niente
+   scatole né punti esclamativi. Il cuore, che il catalogo tiene come
+   formula, sta in `src/ui/outlines.ts`.
+7. **In parti, una PR ciascuna**, perché sei task tengono schermate
+   aperte: A le fondamenta (token, `src/ui/`, i tre nomi
+   dell'intestazione a 30 regular); B Feed ed Explore; C stati vuoti,
+   divisioni e la migrazione dei `pressed` a `Tap`; D Profile, Settings e
+   i fogli; E «Draw» e il risultato, per ultima. Una schermata in mano a
+   un task in lavorazione aspetta che quel task entri in `main`.
+
+**Alternative scartate**: un carattere proprio (un file in più, una
+licenza, e cambia il marchio: il font di sistema ha già i pesi leggeri);
+le librerie native per gradienti, SVG, animazioni e vibrazione
+(l'impronta della 1.0.1); grigi senza tinta (accanto al giallo leggono
+freddi: il tono chiaro era già caldo); alzare `fontSize.title` per tutti
+(punto 1); una PR unica (i conflitti con i sei task aperti); illustrazioni
+disegnate apposta per i vuoti (le sagome del catalogo sono già il
+linguaggio dell'app e non costano asset).
+
+**Conseguenze**: `tokens.ts` guadagna `font`, `tracking`, `motion`,
+`radius.xl`, `fontSize.heading`, `fontWeight.light` e `color.hairline`;
+il cambio di `SHADES` sposta ogni schermata e la mappa di un passo verso
+il caldo in una volta, con la parte A, via OTA; nessuna dipendenza,
+nessun file nativo, l'impronta non cambia (solo JS e un PNG). Il test dei
+toni ha i valori nuovi e gli stessi minimi. Le parti B–E cambiano le
+schermate una alla volta; i testi nuovi degli stati vuoti vanno approvati
+dall'utente nelle cinque lingue. `docs/UI.md` («Il tema», «Il look
+premium») è la fonte dei valori.
+
 ## ADR-0048 — aggiunta (TASK-337): due avvisi alla volta sotto il percorso, mai quelli di sicurezza dietro «Show more»
 
 **Stato**: Attiva · 2026-10-29 · richiesta dell'utente dello stesso giorno
@@ -19860,6 +19966,91 @@ Il server va aggiornato prima dell'OTA dell'app che usa la ricerca, col sì
 dell'utente; un server precedente risponde `404` e l'app cerca solo negli
 esempi. `shared-types` ha `DrawingSearchPage`, `DRAWING_SORTS`,
 `DRAWING_COMPLEXITIES` e le due soglie.
+
+---
+
+## ADR-0301 — Il compositore del post: fino a 10 elementi in ordine, i layout appiattiti a «Publish», l'editor nativo dalla 1.0.2
+
+**Stato**: Proposta · 2026-10-30 · TASK-348. La richiesta è dell'utente
+(2026-10-30, «Vai con la proposta»); le scelte di prodotto (quanti video,
+i layout, il disegno spostabile, appiattire, cosa c'è nell'editor, testi e
+privacy) le ha fatte l'utente il 2026-10-30 e sono in TASK-348; i punti
+tecnici sono decisi dall'agente su delega dell'utente. Numeri dati dal
+Coordinatore. Estende ADR-0170 (le foto dei post), ADR-0275 (la striscia
+del Feed) e ADR-0292 (il video nei post); usa ADR-0254 (il video della
+corsa).
+
+**Contesto**: l'utente vuole mettere in primo piano le sue foto e i suoi
+video, con il disegno GPS come secondo piano, in un post a carosello fino a
+10 elementi riordinabili, con un editor foto e video integrato. Oggi un
+post ha la mappa e al più 3 foto in posti fissi (`DRAWING_MAX_PHOTOS`); il
+video nei post (ADR-0292) è uno solo e arriva con `expo-video` nella 1.0.2.
+L'app non ha gesti nativi né una libreria grafica; la 1.0.1 tiene
+l'impronta iOS `83793e26`.
+
+**Decisione** (proposta):
+
+1. Un post è una lista ordinata di elementi, al più 10: il disegno (sempre
+   uno, la mappa viva), foto, e al più 3 video tra propri e video della
+   corsa (scelta dell'utente, «Sì, al più 3»; vedi «ADR-0292, aggiunta»).
+2. Le modifiche sono non distruttive (un JSON sul telefono accanto
+   all'originale) fino a «Publish», che **appiattisce**: JPEG 1080 × 1350
+   per le foto, MP4 nei limiti di ADR-0292 per i video. Il server riceve
+   file normali e non conosce l'editor.
+3. Il layout è una funzione pura, la stessa per anteprima ed esportazione.
+   Il disegno dentro la foto è sempre la linea già tagliata del Feed: una
+   foto appiattita non si può tagliare dopo.
+4. API: fino a 10 foto e un ordine riscrivibile; un'app vecchia vede le
+   foto in ordine.
+5. Parte A via OTA senza dipendenze nuove (`PanResponder` + `Animated`,
+   `react-native-view-shot`); dalla 1.0.2 `react-native-gesture-handler`,
+   `react-native-reanimated`, `@shopify/react-native-skia`, `expo-video` e
+   un modulo Expo nostro per esportare i video (AVFoundation, Media3
+   Transformer), ognuno col sì dell'utente.
+6. Scartati ffmpeg-kit (ritirato, GPL, peso) e WebCodecs nella WebView per i
+   video dell'utente (demuxer, lentezza, Android).
+
+**Conseguenze**: un post pesa fino a circa 2,5 MB di foto invece di 0,75;
+più video per post riempiono prima il tetto di ADR-0292 (stima in «ADR-0292,
+aggiunta»). `FeedPost.tsx`, `PublicParts.tsx` e `drawingsDoor.ts`
+sono anche di TASK-336: le parti si accordano con quella sessione.
+
+---
+
+## ADR-0292, aggiunta — Fino a 3 video per post: il tetto resta, si raggiunge prima
+
+**Stato**: Proposta · 2026-10-30 · TASK-348, ADR-0301. Scelta dell'utente
+del 2026-10-30: «Sì, al più 3». Le altre regole di ADR-0292 e ADR-0289 non
+cambiano; la modifica esplicita l'ha chiesta il Coordinatore.
+
+**Decisione** (cambia i punti 1 e 13):
+
+1. **Punto 1**: al posto di un video per post, **al più 3**, propri o il
+   video della corsa (che conta come uno). Ognuno resta nei limiti del
+   punto 11: 30 s, 40 MB, 960 × 540 sull'iPhone.
+2. **Punto 13**, la stima per 1000 iscritti, stesse ipotesi e video medio
+   di 7 MB:
+
+   | Ipotesi | Post con video a settimana | Al mese, 1 video (oggi) | Al mese, 1,5 video | Al mese, 3 video | In un anno, 3 video |
+   |---|---|---|---|---|---|
+   | Bassa | 50 | 1,5 GB | 2,3 GB | 4,5 GB | 54 GB |
+   | Media | 125 | 3,8 GB | 5,7 GB | 11,4 GB | 135 GB |
+   | Alta | 667 | 20 GB | 30 GB | 60 GB | 720 GB |
+
+   «3 video» è il caso peggiore, con ogni post che arriva al massimo; la
+   media vera sta in mezzo, e 1,5 è un'ipotesi. Con l'ipotesi media il tetto
+   di 15 GB si raggiunge in **5–10 settimane** invece che in circa quattro
+   mesi.
+3. **Il tetto resta 15 GB**, scelta dell'utente («Server disk, 15 GB cap»),
+   e resta l'avviso del log all'80 %: arriva prima, e con lui la scelta di
+   allargare. Lo spazio libero misurato il 2026-10-29 (57 GB su `/`) non
+   cambia il conto del punto 13.
+4. **Il contratto**: un video per post non è più una riga per disegno e un
+   solo percorso. La parte che arriva prima in `main` tra TASK-336 A e
+   TASK-348 C dà a ogni video il suo posto; l'ordine lo decide il
+   Coordinatore. Finché TASK-348 C non c'è, l'app ne manda uno.
+
+---
 
 ## ADR-0299 — «Edit the drawing» su un disegno del Feed: la traccia sulla mappa dov'è stata corsa
 

@@ -43,19 +43,25 @@ ciano di «Start here».
 | Token | Colore | Per cosa |
 |---|---|---|
 | `accent` | `#FFD02B` | il percorso e il comando che lo produce, «Draw route» |
-| `onAccent` | `#0A0A0B` | testo e icone sul giallo |
-| `background` | `#0A0A0B` | il fondo dell'app, nero neutro |
-| `surface`, `surfaceRaised` | `#141416`, `#2B2B31` | campi, schede, il pannello sopra la mappa; una superficie sopra un'altra |
-| `border`, `borderStrong` | `#3D3D44`, `#74747E` | divisioni; bordi dei comandi (4,3:1 sul fondo, TASK-086) |
-| `text` | `#F5F5F4` | il testo |
-| `textMuted` | `#9B9B9F` | etichette e righe secondarie (7,2:1 sul fondo) |
-| `textFaint` | `#8A8A90` | il testo più tenue ancora leggibile (5,8:1), non per il corpo |
+| `onAccent` | `#0B0A08` | testo e icone sul giallo |
+| `background` | `#0B0A08` | il fondo dell'app, nero caldo (dal TASK-339; era `#0A0A0B`, neutro) |
+| `surface`, `surfaceRaised` | `#161411`, `#2C2924` | campi, schede, il pannello sopra la mappa; una superficie sopra un'altra |
+| `border`, `borderStrong` | `#3D3934`, `#7B746B` | divisioni a 1 pt (dove non c'è ancora `Hairline`); bordi dei comandi (4,3:1 sul fondo, TASK-086) |
+| `hairline` | `#F6F3EC33` | il testo al 20 %: le divisioni a filo di `Hairline` (TASK-339); l'unico colore traslucido, la mappa non lo usa |
+| `text` | `#F6F3EC` | il testo |
+| `textMuted` | `#A49D93` | etichette e righe secondarie (7,4:1 sul fondo) |
+| `textFaint` | `#908980` | il testo più tenue ancora leggibile (5,7:1), non per il corpo; i nomi delle altre pagine in alto |
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
+| `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
 | `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
-| `map.*` | dal `#0D0E10` al `#3A3D45` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
+| `map.*` | dal `#100F0C` al `#3F3B34` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
+
+I grigi sono quelli del TASK-339 (ADR-0293): gli stessi di prima spostati
+di poco verso il giallo, nei due toni, con gli stessi minimi di contrasto
+(sotto, «Il look premium»).
 
 Quattro regole:
 
@@ -102,6 +108,66 @@ tutti. Nel tono chiaro:
 - la barra di stato è scura;
 - restano scure le tastiere e bianco il logo «Compatible with Strava»
   (parte B).
+
+### Il look premium (TASK-339, ADR-0293)
+
+Richiesta dell'utente del 2026-10-29: un'app «curata da uno studio di
+design, non un template», senza stravolgere lo stile. La proposta, 16
+tavole prima/dopo e le schede interne, sta sul canvas
+https://claude.ai/artifact/XRMFiZ9BWbWnKkdJ9Udtjf. Sei regole, tutte in
+`tokens.ts` e in `src/ui/`; niente di nativo, niente dipendenze.
+
+1. **La scala del testo** (`font`), dal font di sistema. Una schermata
+   spande uno stile e aggiunge il colore:
+
+   | Stile | Corpo | Peso | Tracking | Interlinea | Dove |
+   |---|---|---|---|---|---|
+   | `display` | 44 | light (300) | −1 | 50 | la distanza sul risultato, i numeri del profilo e di fine corsa, con `fontVariant: ["tabular-nums"]` |
+   | `title` | 30 | regular | −0,6 | 36 | i tre nomi in alto, il titolo di una sotto-pagina |
+   | `heading` | 20 | medium | −0,3 | 26 | il titolo sopra una foto, la prima riga di una pagina vuota |
+   | `cardTitle` | 17 | medium | −0,2 | 22 | il titolo di una scheda |
+   | `body` | 15 | regular | 0 | 22 | il corpo |
+   | `small` | 13 | regular | 0 | 18 | le righe secondarie |
+   | `detail` | 12 | regular | 0 | 16 | i dettagli |
+   | `label` | 11 | semibold | +1,2 | 14 | le etichette di sezione, maiuscole dove sono scritte |
+
+   Il grassetto resta ai comandi gialli («Draw route», «Start») e agli
+   88 px della corsa, letti a braccio teso. `fontSize.title` resta 25
+   finché ogni schermata non passa a `font.title`, una parte alla volta.
+2. **Un accento, grigi caldi.** La tabella sopra: i grigi hanno una punta
+   di giallo in tutti e due i toni (un grigio senza tinta legge freddo
+   accanto al giallo); il giallo è il percorso e il comando che lo
+   produce, una volta per scheda; il rosso i numeri che aspettano una
+   risposta. L'acqua della mappa non cambia.
+3. **Immagini protagoniste.** Le schede con una foto o un disegno hanno
+   il raggio `xl` (20) e nessun bordo. Sulle foto le parole stanno sopra,
+   su `Scrim`: un'immagine di una colonna di 128 pixel, trasparente in
+   cima e `scrim` all'82 % in fondo lungo una curva dolce, stirata sulla
+   scheda (`assets/ui/scrim.png`, disegnata da `tools/ui_scrim.py`); le
+   parole sopra sono chiare in tutti e due i toni. Sui disegni le parole
+   restano sotto, per non coprire la figura.
+4. **Il movimento** (`motion`): un comando toccato scende a 0,97 e
+   all'85 % in 120 ms e torna in 180 (`Tap`, un Pressable animato sul
+   driver nativo: al posto dell'opacità 0,6 di prima); ciò che compare
+   arriva in dissolvenza in 220 ms salendo di 6 pt; i fogli salgono in
+   280 ms e rallentano alla fine. Niente rimbalzi. La vibrazione al tocco
+   vuole `expo-haptics`, nativo: con una build e il sì dell'utente.
+5. **I due toni disegnati**, non invertiti: la scala dei grigi è pensata
+   due volte; `Scrim` è scuro in tutti e due; la linea gialla tiene il
+   bordo scuro sul chiaro. Un tono «di sistema» che segue il telefono
+   non c'è: è una scelta di prodotto ancora da chiedere.
+6. **I dettagli.** Le divisioni sono `Hairline`: un pixel fisico di
+   `hairline`, il testo al 20 %; i comandi tengono il bordo a 1 pt
+   `borderStrong`, per trovarsi al sole (TASK-086). Una pagina vuota è
+   `EmptyState`: una sagoma del catalogo in `border`, i primi tratti in
+   giallo come una corsa appena cominciata, un titolo `heading`, una
+   frase `body` in `textMuted` e al più un'azione; niente scatole né
+   punti esclamativi. Il cuore (per «Favorites») sta in
+   `src/ui/outlines.ts`; le altre sagome vengono dal catalogo.
+
+Arriva in parti, una PR ciascuna (`tasks/TASK-339.md`): A le fondamenta
+e i tre nomi in alto; B Feed ed Explore; C stati vuoti e divisioni; D
+Profile, Settings e i fogli; E «Draw» e il risultato.
 
 ## Il logo e l'icona (TASK-159, ADR-0129; «MuW» da TASK-260, ADR-0224)
 
@@ -524,7 +590,9 @@ disegni si rileggono, come quando «Profile» si apriva.
   (senza luogo, solo il nome), la linea gialla sulla mappa, il titolo o,
   senza titolo, il giorno della corsa, e «Star · 4.0 km · 19 min»; una
   parola o il titolo del percorso al posto della forma, niente per una
-  corsa senza percorso; in bici «Bike · …», in canoa «Paddle · …». **Un
+  corsa senza percorso; in bici «Bike · …», in canoa «Paddle · …». Una
+  corsa finisce con le calorie, contate dalla distanza come nella schermata
+  della corsa: «… · 4:45 /km · 290 kcal» (TASK-345, ADR-0298). **Un
   tocco apre il disegno intero sulla mappa**, con foto, racconto, tag,
   reazioni e commenti, come dal profilo (TASK-117, 119, 120); «←» torna
   a «Feed» com'era, senza rileggere, e «Profile» resta chiuso; se nel

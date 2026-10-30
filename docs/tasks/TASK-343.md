@@ -200,8 +200,8 @@ rispondono 404. I dettagli sono in `CONCORSI.md` §15.
 
 **Resta aperto, il task non è `Done`:**
 
-1. i testi nelle cinque lingue e il regolamento: elencati nella PR, serve il sì
-   dell'utente prima del merge;
+1. ~~i testi nelle cinque lingue e il regolamento~~: **approvati dall'utente il
+   2026-10-30** con «Approve them all», sull'elenco nella PR #667;
 2. la riga che monta `EnterOnPost` in `DrawingCard`: dopo TASK-339 B, su parola
    del Coordinatore. Il componente ha i suoi test ma oggi nessuno lo mostra;
    sul post già pubblicato si iscrive e si ritira da «My activities»;

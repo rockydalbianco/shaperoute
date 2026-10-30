@@ -149,8 +149,9 @@ Una **sfida del mese** ha il suo regolamento (`THEMED_RULES` in
 `ContestRules.tsx`): in più dice il tema, come ci si iscrive, che i disegni
 iscritti non hanno limite e si ritirano fino alla fine, che vince fra quelli in
 gara e che MuW può escludere un post fuori tema. Premio e frase su Apple e
-Google restano quelli di sopra. Il testo è da approvare (TASK-343, PR della
-parte B). Un concorso senza tema mostra il regolamento di prima, senza cambi.
+Google restano quelli di sopra. Il testo è approvato dall'utente (2026-10-30,
+«Approve them all», PR #667). Un concorso senza tema mostra il regolamento di
+prima, senza cambi.
 
 ## 9. Dati
 

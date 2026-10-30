@@ -41,7 +41,8 @@ nell'elenco quanti ce ne sono di nuovi. Piano confermato dall'utente il
       (sotto).
 - [x] Scorrendo si chiede la pagina una volta sola; se fallisce il tasto
       resta e richiede (`ChatLook.test.tsx`).
-- [ ] Testi nuovi approvati dall'utente, in cinque lingue.
+- [x] Testi nuovi approvati dall'utente, in cinque lingue: «Approvo»
+      (2026-10-30, tabella sotto).
 - [x] Impronta iOS `83793e26` su una copia pulita (664687ad, con `npm ci`).
 - [ ] Provato sul telefono: l'aspetto delle bolle e dell'elenco e lo
       scorrimento vero non sono coperti dai test.
@@ -83,7 +84,7 @@ services/api/tests/test_messages.py
   3–5 del piano, ancora senza task.
 - Conferme di lettura: ADR-0279 dice di no, e lo promette la privacy.
 
-## Testi nuovi, da approvare
+## Testi nuovi, approvati
 
 | Inglese | Italiano | Tedesco | Francese | Spagnolo |
 |---|---|---|---|---|

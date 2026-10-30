@@ -19805,6 +19805,42 @@ modalità ancorata. La somiglianza di un disegno ancorato sarà per
 costruzione più bassa di quella della ricerca: il numero va spiegato, non
 dato come voto.
 
+**Aggiunta — parte A** (2026-10-30, deciso dall'agente su delega
+dell'utente; la condizione sull'impronta è del Coordinatore):
+
+1. **Nessun file del motore di prima cambia.** La modalità ancorata sta in
+   due moduli nuovi, `stroke_match.py` e `anchored.py`, esclusi
+   dall'impronta del motore dell'API (`route_store.ANCHORED_ONLY`, come
+   `SWIM_ONLY`): l'impronta resta `abaea5bb82b3` e gli esempi tenuti sul
+   server restano validi. È lecito perché niente di ancorato viene mai
+   tenuto: `route_store` e `route_archive` lasciano fuori un disegno
+   ancorato come il contorno di una foto. Di conseguenza `placement`,
+   `fit` e `placed_outline` sono campi **dell'API** (`AnchoredRouteRequest`,
+   un `RouteRequest` del motore con il magnete; `ImageRequest`;
+   `RouteResultBody`), non di `models.py`; `plan_anchored` ripete i passi di
+   `plan_shape` dopo il tracciamento, come già `ShapeJob.here` (ADR-0071);
+   la riga di comando è `python -m route_engine.anchored`, non flag di
+   `__main__`. Scartato: i campi in `models.py` e il ramo in `plan_shape`
+   (fatto e tolto: cambiava l'impronta, ore di `draw_examples` sul server).
+2. **Il magnete**: zone e fascia una stessa quota della lunghezza del
+   disegno, dallo **0,5 %** (`fit` 0) al **2 %** (`fit` 1, i valori di
+   oggi), mai sotto **10 m**; default 1. Le ancore di un tratto sono i
+   vertici di Douglas-Peucker entro un quarto della fascia, al più **64**.
+3. **La sonda** è `GET /stroke-matches` → `204` (come `GET /feedback`), e
+   copre anche `placement`, `fit` e `placed_outline`: una rotta nuova dice
+   da sola che il server è nuovo; un `POST` vuoto come sonda avrebbe speso
+   una richiesta del limite al minuto.
+4. **I limiti** di un tratto: 500 punti e 10 km, per ogni attività; oltre,
+   l'app spezza (ADR-0300, «tratto lungo»). `fit` con `free` è un `422`,
+   come `style` con una forma: un campo che non fa nulla è un errore
+   dell'app, non va ignorato.
+5. **Le indicazioni** di un percorso ancorato vengono dai nodi del piano
+   (`AnchoredPlan.nodes`), non da `/route-directions`: «Start» le vuole
+   subito come per ogni percorso.
+6. **Il piazzamento in `free`** lo dà l'API da `plan.search.best.shape`:
+   il motore non cambia, l'app ha il fantasma anche per le forme cercate
+   (TASK-282 assorbito).
+
 ## ADR-0297 — Cercare i disegni dalla lente del Feed: `GET /search/drawings`, le parole senza accenti, la complessità dalla linea
 
 **Stato**: Attiva · 2026-10-29 · TASK-344. La richiesta e le scelte di

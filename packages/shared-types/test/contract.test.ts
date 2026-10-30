@@ -117,7 +117,12 @@ type OlderRequest = RouteRequest extends infer R
   : never;
 type OlderResult = Omit<
   RouteResult,
-  "walks" | "on_foot" | "better_distance_m" | "centre" | "rotation_deg" | "placed_outline"
+  | "walks"
+  | "on_foot"
+  | "better_distance_m"
+  | "centre"
+  | "rotation_deg"
+  | "placed_outline"
 >;
 const requestFields: Same<keyof typeof request, keyof OlderRequest> = true;
 const resultFields: Same<keyof typeof result, keyof OlderResult> = true;

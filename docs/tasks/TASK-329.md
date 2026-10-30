@@ -1,6 +1,6 @@
 # TASK-329 — «Ask for a route» sempre aperto, con le nostre idee in Europa e le foto vere dei posti
 
-**Stato**: In corso
+**Stato**: Done — A #630, B #633 in `main`, server dal 2026-10-29
 **Fase**: 2 · **Branch**: `feat/TASK-329-explore-ideas` (parte A, #630 in
 `main`), `feat/TASK-329-b-place-photos` (parte B)
 **ADR**: ADR-0287 · numeri dati dal Coordinatore il 2026-10-29
@@ -165,10 +165,10 @@ Condizione del Coordinatore: `App.tsx` entra dopo il merge di TASK-327
       forma in piccolo; senza foto, o con un'API più vecchia, la mappa.
 - [x] Nessun testo nuovo, nessuna dipendenza nuova, `jobs.py` e
       `engine.zip` invariati.
-- [ ] Test verdi: API (pytest), strumento (`pytest tools`), app (jest, tsc,
+- [x] Test verdi: API (pytest), strumento (`pytest tools`), app (jest, tsc,
       lint, format); impronta iOS `83793e26` su una copia pulita.
-- [ ] Riga della privacy di TASK-283 ricontrollata con l'utente.
-- [ ] Server aggiornato, col sì dell'utente.
+- [x] Riga della privacy di TASK-283 ricontrollata con l'utente.
+- [x] Server aggiornato, col sì dell'utente.
 
 ## File toccati (parte B)
 
@@ -233,3 +233,7 @@ e rifà i test di `map/` e `mapdraw/`; nei file della mappa solo aggiunte.
   hanno un elemento (88 diversi nella lista dell'API); gli altri 8 restano
   col solo nome. Restano il sì dell'utente sulla privacy (invariata) e il
   server.
+- **Server**: `GET /place-photos` in servizio da `5910bcfa`, 2026-10-29
+  ~20:55Z, col sì dell'utente anche sulla privacy. Task chiuso dal
+  Coordinatore il 2026-10-30. La privacy sul sito è quella di `c7a83347` dal
+  2026-10-30 07:27Z (F.14, lanciata dall'utente).

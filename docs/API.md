@@ -2421,7 +2421,8 @@ esempio in `fixtures/feed.json`; il codice in `feed.py`.
   traccia intera, mai il percorso pianificato) più **`author`**
   (`public_id` e `username`, mai l'email). Per aprirlo intero, con le sue
   reazioni e i suoi commenti, `GET /drawings/{id}`.
-- **I vicini**: con `lat` e `lon`, dove sta il telefono, il terzo gruppo
+- **I vicini**: con `lat` e `lon`, dove sta il telefono (l'app li manda con
+  due decimali, circa 1 km: TASK-356), il terzo gruppo
   tiene solo i disegni la cui traccia tagliata passa entro **50 km**
   (`FEED_NEAR_M`; `ST_DWithin` in geografia) dal punto; i propri e quelli
   di chi si segue ci sono ovunque siano. **Senza il punto, niente è

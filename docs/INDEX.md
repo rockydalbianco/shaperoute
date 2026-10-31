@@ -41,7 +41,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Il compositore del post: fino a 10 foto, video e disegno, i layout, l'editor | `tasks/TASK-348.md`, `DECISIONS.md` ADR-0301 e ADR-0292, `API.md` «Drawings» |
 | Disegnare a mano in «Draw» («Freehand»), «Edit the drawing» sulle figure proposte | `UI.md`, `tasks/TASK-320.md` |
 | A mano solo sulla mappa: la linea aperta, «Erase», «Edit the drawing» sulla mappa, niente per le emoji | `UI.md` «Disegnare sulla mappa», `tasks/TASK-331.md`, `DECISIONS.md` ADR-0288 |
-| Il disegno libero ancorato alle strade: map matching per tratto col nostro motore, fantasma e punteggio, strumenti da professionista, guide | `tasks/TASK-347.md`, `DECISIONS.md` ADR-0300, `ROUTE_ENGINE.md` §4–5 |
+| Il disegno libero ancorato alle strade: map matching per tratto col nostro motore, fantasma e punteggio, strumenti da professionista, guide | `tasks/TASK-347.md`, `DECISIONS.md` ADR-0300, `ROUTE_ENGINE.md` §4 («Il disegno ancorato e i tratti») e §5, `API.md` («Stroke matches») |
 | «Edit the drawing» su un disegno del Feed: la traccia dov'è stata corsa | `UI.md` «Edit the drawing: la figura sulla mappa», `tasks/TASK-346.md`, `DECISIONS.md` ADR-0299 |
 | Il nuoto in acque libere, «Open water swim», la guida con l'Apple Watch | `tasks/TASK-323.md`, `ROUTE_ENGINE.md` §8 |
 | Apple Salute e Fitness, Health Connect: l'attività finita scritta sul telefono | `tasks/TASK-321.md`, `DECISIONS.md` ADR-0281 |

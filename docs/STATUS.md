@@ -294,6 +294,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Resta**: il merge dei documenti, poi la parte A nella sua sessione.
   Non si sovrappone a TASK-346 (i nodi della traccia vera). File
   `tasks/TASK-347.md`.
+  **Parte A** (branch `feat/TASK-347-a-engine-anchored`, 2026-10-30): nel
+  motore due moduli nuovi e nessun file di prima toccato, così l'impronta
+  del motore e gli esempi tenuti restano (`route_store.ANCHORED_ONLY`,
+  condizione del Coordinatore): `stroke_match.snap_stroke` (zone e corridoio
+  su un tratto aperto, magnete `fit` fra lo 0,5 % e il 2 % della lunghezza,
+  64 ancore, `away_m`, `off_roads`) e `anchored.plan_anchored` (il disegno
+  dov'è, tracciato una volta, distanza controllata e non corretta,
+  `placed_outline`), con `python -m route_engine.anchored`. API: `POST` e la
+  sonda `GET /stroke-matches`, `placement`/`fit` sulle richieste e
+  `placed_outline` sui risultati (campi dell'API: `AnchoredRouteRequest`,
+  `ImageRequest`), indicazioni anche senza ricerca, `on_phone.match_json`
+  per la parte B; l'archivio non tiene un disegno ancorato. Contratto e
+  fixture in `shared-types`; `engine.zip` rifatto. Tempi in
+  `tasks/TASK-347.md`. **Prossimo**: parte B (il telefono).
 - **TASK-344 — Cercare i disegni dalla lente del Feed** (ADR-0297;
   richiesta dell'utente del 2026-10-29, sei scelte approvate con «Sì,
   vai»; numeri dal Coordinatore). Prima questa PR dei documenti

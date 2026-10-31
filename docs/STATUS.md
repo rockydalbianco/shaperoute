@@ -160,6 +160,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-362 — Le schede del Feed: «Tutti» e «Seguiti»** (ADR-0308, proposta;
+  richiesta dell'utente del 2026-10-30; numeri dal Coordinatore). Branch
+  `docs/TASK-362-feed-tabs` (documenti). Sostituiscono i filtri di TASK-355 B
+  («Sì, sostituiscono»). Le scelte dell'utente stanno nel task file; il codice parte col via
+  del Coordinatore, primo nella coda su `FeedScreen.tsx`. `tasks/TASK-362.md`.
+
 - **TASK-353 — La chat: orari, giorni, quanti messaggi nuovi, i vecchi
   scorrendo** (ADR-0305; piano confermato dall'utente il 2026-10-30, «Sì,
   passi 1 e 2»; numeri dal Coordinatore). Branch `feat/TASK-353-chat-look`.
@@ -178,7 +184,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   fotogramma; sul telefono da rimisurare con l'utente). La scelta
   sulla privacy (la mappa nel video mostra dove si è corso) è dell'utente
   («Sì, va bene», 2026-10-30); i nomi degli stili sono
-  suoi («Sì, questi», 2026-10-30). La B è la PR #679. Senza mappa il video
+  suoi («Sì, questi», 2026-10-30). La B è la PR #679 (testa
+  `a6d8cf1d (il codice; poi la privacy e i documenti)`): la mappa sotto nel look Night, la riserva gialla senza mappa,
+  provata in Expo Go, impronta `83793e26` invariata; prima dell'OTA di
+  produzione l'utente esporta un video vero sull'iPhone dalla preview e
+  vede la mappa (condizione del Coordinatore). Senza mappa il video
   esce sul giallo di oggi (condizione del Coordinatore). Poi B (la mappa
   sotto e il look premium, Night), C (i tre stili e la riga «Style»), D
   (il 3D), una PR ciascuna da `main` con la #658 e col via del
@@ -214,6 +224,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `cardTitle` e i nomi medium, `Tap` al posto dell'opacità, `Hairline`
   prima delle azioni, la distanza delle schede di «Explore» in `display`;
   prima/dopo in `tasks/TASK-339/b-*.jpg`. Poi C.
+- **TASK-343 B — Le sfide del mese nell'app** (branch
+  `feat/TASK-343-b-themed-contest-app`): scheda, pagina, galleria, «Past
+  challenges», interruttore nel modulo, tocco delle tre push, regolamento. Con
+  l'API di oggi (c7a83347, senza 0039) l'app resta com'è. Testi e regolamento
+  approvati dall'utente (2026-10-30, «Approve them all» e «sì testi 667»); provata
+  nel simulatore con un tema e col server di oggi (esito nel task file). Dopo il
+  merge resta una riga: montare `EnterOnPost` in `DrawingCard`, dopo TASK-339 B e
+  su parola del Coordinatore.
+  Il server con la 0039 lo decide l'utente, insieme a questa parte.
   **Parte B in `main` dal 2026-10-30** con la #677 (`4faeceb2`, 23:16 CET,
   mergiata al verde: tutte le 557 suite dell'app verdi anche nella copia
   pulita). Poi C.
@@ -229,8 +248,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `tasks/TASK-343.md`. **A in `main`** (#657, `5303a198`, 2026-10-30, migrazione
   0039): **il server non è aggiornato**, serve la 0039 e lo decide l'utente.
   I testi delle tre push: sì dell'autopilota, «accettati su delega
-  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B da
-  fare**, i file prima al Coordinatore (TASK-339 B).
+  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B nella
+  PR #667**, la voce sopra.
 - **TASK-341 — I badge sul profilo: primo disegno, 10 disegni, 30 km**
   (ADR-0294; richiesta dell'utente del 2026-10-29, proposta approvata con
   «Yes, as proposed»; numeri dal Coordinatore). Branch
@@ -2115,6 +2134,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-340 (aggiunta ad ADR-0288; scelta dell'utente del 2026-10-29: «TOGLI LA FUNZIONE MODIFICA IL DISEGNO IN DRAW, TIENI SOLO LA FUNZIONE DISEGNA A MANO L'IBERA SU MAPPA E METTILA PER PRUMA TRA FORMA PAROLA ED IMMAGINE»): in «Draw» l'interruttore è «Freehand | Shape | Word | Image» e «Freehand» apre subito la mappa per disegnare a mano (prima il tasto «Draw on the map» sotto l'interruttore); sotto il risultato di «Draw» non c'è più «Edit the drawing», che resta sulle schede di «Explore» e del Feed. Solo app, nessun testo nuovo («Freehand» con le traduzioni approvate per il TASK-320). Visto sul simulatore; manca la prova sull'iPhone con la prossima preview. `tasks/TASK-340.md`, «Esito».
 - **TASK-358 — Nei messaggi «Photo» e «Video» aprono la galleria** (2026-10-30; numero dal
   Coordinatore; bloccava l'update `production`). Su iOS la galleria presentata mentre il
   foglio del «+» si chiudeva non compariva: ora parte da `onDismiss`. Provato nel simulatore

@@ -1,6 +1,6 @@
 # TASK-363 — Dove va la posizione del telefono: la verifica e il testo
 
-**Stato**: In corso — verifica fatta, proposta all'utente, codice solo col suo sì
+**Stato**: In corso — proposta approvata dall'utente il 2026-10-30 con «Sì, approvo tutto», codice nella PR
 **Fase**: 4 · **Branch**: `docs/TASK-363-position-audit` (documenti),
 `fix/TASK-363-position` (codice) · numero dal Coordinatore (2026-10-30),
 decisione in ADR-0306, punto 4
@@ -156,13 +156,29 @@ Due voci nuove nell'elenco dei terzi:
   Amazon Web Services da las alturas: como cualquier servicio de mapas, ven qué zona
   miras.
 
+## Scoperto nel codice
+
+Due eccezioni a «`GET /phone-zones`», decise dall'agente su delega
+dell'utente, senza effetto sul testo approvato:
+
+- **Un posto tenuto resta esatto.** Il server prepara la sua zona attorno a
+  quel punto, con il margine pieno: chiederla da un punto spostato di 700 m
+  non la troverebbe.
+- **Un paese scaricato in anticipo resta esatto.** È il centro di un paese,
+  non dice dove sta il telefono.
+
+**Il log del server**, prima e dopo: il riquadro di un posto tenuto (`place zone
+foot (46.01, 11.07, 46.12, 11.17) queued`) diventa `place zone foot queued`;
+`GET /city-photos/Q3415.jpg` diventa `GET /city-photos/`. L'indirizzo IP
+resta nella riga come oggi.
+
 ## Criteri di accettazione
 
-- [ ] Nessuna delle quattro richieste scrive più di due decimali: test.
-- [ ] `away_m` ricalcolato sul telefono: test.
-- [ ] A Geoapify non arriva mai più di due decimali: test.
-- [ ] Il log non scrive il riquadro né `/city-photos`: test.
-- [ ] Il testo nelle cinque lingue, nell'app e in `site/privacy`, con la data.
+- [x] Nessuna delle quattro richieste scrive più di due decimali: test.
+- [x] `away_m` ricalcolato sul telefono: test.
+- [x] A Geoapify non arriva mai più di due decimali: test.
+- [x] Il log non scrive il riquadro né `/city-photos`: test.
+- [x] Il testo nelle cinque lingue, nell'app e in `site/privacy`, con la data.
 - [ ] Suite mobile completa, CI verde, impronta `83793e26` su una copia pulita.
 
 ## File toccati
@@ -173,11 +189,13 @@ Il codice, se l'utente dice sì:
 
 ```
 apps/mobile/src/engine/zones.ts, zones.test.ts
-apps/mobile/src/explore/recommendedRoutes.ts, i test, ExploreScreen.tsx
+apps/mobile/src/explore/recommendedRoutes.ts, recommendedRoutes.test.ts
+apps/mobile/src/explore/RecommendedRow.test.tsx, ExploreOwnRoutes.test.tsx, ExploreMoreShapes.test.tsx
+apps/mobile/src/feed/feedRoute.test.ts
 apps/mobile/src/api/recommended.ts, recommended.test.ts
-apps/mobile/src/places/placeFinder.ts, placeFinder.test.ts
+apps/mobile/src/places/placeFinder.ts
 apps/mobile/src/about/content/{en,it,de,fr,es}.ts
-apps/mobile/__tests__/ con il punto esatto
+apps/mobile/__tests__/AppFeed.test.tsx
 site/privacy/index.html, {it,de,fr,es}/index.html
 services/api/shaperoute_api/themed.py, phone_zone_places.py, access_log.py, i test
 docs/API.md, docs/STATUS.md, docs/tasks/TASK-363.md

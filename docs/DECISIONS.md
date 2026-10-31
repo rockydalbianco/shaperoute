@@ -19722,6 +19722,24 @@ tema (il tema non varrebbe niente); un voto separato dalle reazioni (due
 gesti per la stessa cosa); un cron sul server per gli ultimi 3 giorni
 (l'API ha già i suoi orologi, nessun pezzo nuovo da far partire).
 
+**Aggiunta, parte B** (2026-10-30). Decise dall'agente su delega dell'utente,
+descritte in `CONCORSI.md` §15: la pagina della sfida sta sopra l'app, montata
+da `ProfileLayer` accanto a «Find friends» (`contestDoor`, nessun cambio in
+`App.tsx`), perché «Feed» viene smontato quando la mappa prende lo schermo;
+l'iscrizione è un campo della scelta del disegno (`DrawingChoice.entry`), che
+non va nel corpo del disegno e parte dopo il suo salvataggio; senza rete
+aspetta con la scelta, rifiutata se ne va e il disegno resta pubblicato; una
+sfida si riconosce solo da un `theme` leggibile, altrimenti è un concorso come
+prima. Sul post già pubblicato si iscrive e si ritira dal modulo di «My
+activities»; l'interruttore sul post aperto (`EnterOnPost`) è pronto e si monta
+in `DrawingCard` dopo TASK-339 B, su parola del Coordinatore. `FeedPost` non
+cambia: il suo «…» c'è solo sui post degli altri. Dopo la prova nel simulatore
+(2026-10-30), sempre su delega: l'interruttore è quello dell'app e non il nativo
+(il tocco spegneva solo con un trascinamento), `ProfileLayer` chiede la sfida
+all'accesso (il modulo deve conoscerla senza «Feed»: una richiesta in più per
+ogni apertura con un account, un 404 finché il server non ha un concorso), e
+dopo un'iscrizione la sfida si richiede.
+
 **Conseguenze**: una migrazione; tre tipi di push e i loro testi; il
 regolamento ufficiale cambia e va riapprovato. «Challenge» è già una
 parola del gioco «Play» (TASK-296): i testi dell'app devono tenerle
@@ -19924,6 +19942,42 @@ server si aggiorna col sì dell'utente prima dell'OTA; l'app resta OTA
 modalità ancorata. La somiglianza di un disegno ancorato sarà per
 costruzione più bassa di quella della ricerca: il numero va spiegato, non
 dato come voto.
+
+**Aggiunta — parte A** (2026-10-30, deciso dall'agente su delega
+dell'utente; la condizione sull'impronta è del Coordinatore):
+
+1. **Nessun file del motore di prima cambia.** La modalità ancorata sta in
+   due moduli nuovi, `stroke_match.py` e `anchored.py`, esclusi
+   dall'impronta del motore dell'API (`route_store.ANCHORED_ONLY`, come
+   `SWIM_ONLY`): l'impronta resta `abaea5bb82b3` e gli esempi tenuti sul
+   server restano validi. È lecito perché niente di ancorato viene mai
+   tenuto: `route_store` e `route_archive` lasciano fuori un disegno
+   ancorato come il contorno di una foto. Di conseguenza `placement`,
+   `fit` e `placed_outline` sono campi **dell'API** (`AnchoredRouteRequest`,
+   un `RouteRequest` del motore con il magnete; `ImageRequest`;
+   `RouteResultBody`), non di `models.py`; `plan_anchored` ripete i passi di
+   `plan_shape` dopo il tracciamento, come già `ShapeJob.here` (ADR-0071);
+   la riga di comando è `python -m route_engine.anchored`, non flag di
+   `__main__`. Scartato: i campi in `models.py` e il ramo in `plan_shape`
+   (fatto e tolto: cambiava l'impronta, ore di `draw_examples` sul server).
+2. **Il magnete**: zone e fascia una stessa quota della lunghezza del
+   disegno, dallo **0,5 %** (`fit` 0) al **2 %** (`fit` 1, i valori di
+   oggi), mai sotto **10 m**; default 1. Le ancore di un tratto sono i
+   vertici di Douglas-Peucker entro un quarto della fascia, al più **64**.
+3. **La sonda** è `GET /stroke-matches` → `204` (come `GET /feedback`), e
+   copre anche `placement`, `fit` e `placed_outline`: una rotta nuova dice
+   da sola che il server è nuovo; un `POST` vuoto come sonda avrebbe speso
+   una richiesta del limite al minuto.
+4. **I limiti** di un tratto: 500 punti e 10 km, per ogni attività; oltre,
+   l'app spezza (ADR-0300, «tratto lungo»). `fit` con `free` è un `422`,
+   come `style` con una forma: un campo che non fa nulla è un errore
+   dell'app, non va ignorato.
+5. **Le indicazioni** di un percorso ancorato vengono dai nodi del piano
+   (`AnchoredPlan.nodes`), non da `/route-directions`: «Start» le vuole
+   subito come per ogni percorso.
+6. **Il piazzamento in `free`** lo dà l'API da `plan.search.best.shape`:
+   il motore non cambia, l'app ha il fantasma anche per le forme cercate
+   (TASK-282 assorbito).
 
 ## ADR-0297 — Cercare i disegni dalla lente del Feed: `GET /search/drawings`, le parole senza accenti, la complessità dalla linea
 
@@ -20567,3 +20621,18 @@ pulsante fisso.
 **Conseguenza**: testi nuovi nelle cinque lingue (righe aggiunte in fondo
 alle tabelle); solo app, OTA; motore, API e contratti invariati. Il
 collegamento in `RoutePanel` e `App.tsx` (parte B) aspetta la #661.
+
+---
+
+## ADR-0300, precisazione — Modificare i nodi della traccia vera non è in nessun task
+
+**Stato**: Attiva · 2026-10-30 · precisazione del Coordinatore, registrata
+dalla sessione della parte A di TASK-347. ADR-0300 (punto 7) e
+`tasks/TASK-347.md` dicevano che modificare i nodi di una traccia vera (il
+percorso registrato o calcolato) è del TASK-346. Non è così: la #655 di
+TASK-346 non ha nodi, perché l'utente ha scelto «Traccia dov'è» e ha
+scartato «Trascinare il percorso». Quel lavoro **non è in nessun task**; se
+servirà, lo chiede l'utente. TASK-347 modifica solo i tratti disegnati e li
+riaggancia, come ADR-0300 dice. ADR-0300 resta com'è.
+
+---

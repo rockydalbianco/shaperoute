@@ -164,6 +164,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (ADR-0306, punto 4; numero dal Coordinatore). Verifica fatta, proposta
   unica all'utente; codice solo col suo sì. Branch
   `docs/TASK-363-position-audit`. `tasks/TASK-363.md`.
+- **TASK-356 — La posizione nel Feed: arrotondata, e detta nella privacy**
+  (ADR-0306, punto 4; testo approvato dall'utente il 2026-10-30). Branch
+  `fix/TASK-356-feed-position`. Sito e OTA di produzione con il suo sì.
+  `tasks/TASK-356.md`.
 - **TASK-362 — Le schede del Feed: «Tutti» e «Seguiti»** (ADR-0308, proposta;
   richiesta dell'utente del 2026-10-30; numeri dal Coordinatore). Branch
   `docs/TASK-362-feed-tabs` (documenti). Sostituiscono i filtri di TASK-355 B
@@ -228,6 +232,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `cardTitle` e i nomi medium, `Tap` al posto dell'opacità, `Hairline`
   prima delle azioni, la distanza delle schede di «Explore» in `display`;
   prima/dopo in `tasks/TASK-339/b-*.jpg`. Poi C.
+- **TASK-343 B — Le sfide del mese nell'app** (branch
+  `feat/TASK-343-b-themed-contest-app`): scheda, pagina, galleria, «Past
+  challenges», interruttore nel modulo, tocco delle tre push, regolamento. Con
+  l'API di oggi (c7a83347, senza 0039) l'app resta com'è. Testi e regolamento
+  approvati dall'utente (2026-10-30, «Approve them all» e «sì testi 667»); provata
+  nel simulatore con un tema e col server di oggi (esito nel task file). Dopo il
+  merge resta una riga: montare `EnterOnPost` in `DrawingCard`, dopo TASK-339 B e
+  su parola del Coordinatore.
+  Il server con la 0039 lo decide l'utente, insieme a questa parte.
   **Parte B in `main` dal 2026-10-30** con la #677 (`4faeceb2`, 23:16 CET,
   mergiata al verde: tutte le 557 suite dell'app verdi anche nella copia
   pulita). Poi C.
@@ -243,8 +256,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `tasks/TASK-343.md`. **A in `main`** (#657, `5303a198`, 2026-10-30, migrazione
   0039): **il server non è aggiornato**, serve la 0039 e lo decide l'utente.
   I testi delle tre push: sì dell'autopilota, «accettati su delega
-  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B da
-  fare**, i file prima al Coordinatore (TASK-339 B).
+  dell'utente del 2026-10-29, da rivedere»; parlano solo di corsa. **B nella
+  PR #667**, la voce sopra.
 - **TASK-341 — I badge sul profilo: primo disegno, 10 disegni, 30 km**
   (ADR-0294; richiesta dell'utente del 2026-10-29, proposta approvata con
   «Yes, as proposed»; numeri dal Coordinatore). Branch
@@ -281,6 +294,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Resta**: il merge dei documenti, poi la parte A nella sua sessione.
   Non si sovrappone a TASK-346 (i nodi della traccia vera). File
   `tasks/TASK-347.md`.
+  **Parte A** (branch `feat/TASK-347-a-engine-anchored`, 2026-10-30): nel
+  motore due moduli nuovi e nessun file di prima toccato, così l'impronta
+  del motore e gli esempi tenuti restano (`route_store.ANCHORED_ONLY`,
+  condizione del Coordinatore): `stroke_match.snap_stroke` (zone e corridoio
+  su un tratto aperto, magnete `fit` fra lo 0,5 % e il 2 % della lunghezza,
+  64 ancore, `away_m`, `off_roads`) e `anchored.plan_anchored` (il disegno
+  dov'è, tracciato una volta, distanza controllata e non corretta,
+  `placed_outline`), con `python -m route_engine.anchored`. API: `POST` e la
+  sonda `GET /stroke-matches`, `placement`/`fit` sulle richieste e
+  `placed_outline` sui risultati (campi dell'API: `AnchoredRouteRequest`,
+  `ImageRequest`), indicazioni anche senza ricerca, `on_phone.match_json`
+  per la parte B; l'archivio non tiene un disegno ancorato. Contratto e
+  fixture in `shared-types`; `engine.zip` rifatto. Tempi in
+  `tasks/TASK-347.md`. **Prossimo**: parte B (il telefono).
 - **TASK-344 — Cercare i disegni dalla lente del Feed** (ADR-0297;
   richiesta dell'utente del 2026-10-29, sei scelte approvate con «Sì,
   vai»; numeri dal Coordinatore). Prima questa PR dei documenti

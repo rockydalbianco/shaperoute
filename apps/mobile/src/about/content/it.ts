@@ -422,6 +422,7 @@ const privacy: AboutDocument = {
             "Hetzner ospita il nostro server e le sue copie di sicurezza, in Germania.",
             "Geoapify riceve le ricerche dei luoghi e dei paesi vicini a te, con la posizione, e, per dare un nome al luogo di una corsa salvata, la sua partenza arrotondata a circa 1 km: mai la tua porta, la corsa o chi sei. Se il nostro server non risponde, la ricerca di un luogo va invece a Photon (komoot).",
             "OpenFreeMap serve la mappa: come ogni servizio di mappe, vede quale zona guardi.",
+            "Apple su iPhone, o Google su Android, tramite il servizio di indirizzi del telefono, riceve la posizione da cui parte «Disegna», per scrivere il nome della via. MuW non gli manda nient'altro e non conserva il nome.",
             "Il servizio Overpass dei dati di OpenStreetMap riceve dal nostro server la richiesta della mappa di una zona che non ha ancora: vede quale zona, non chi l'ha chiesta.",
             "unpkg serve la libreria della mappa all'avvio dell'app.",
             "Expo serve gli aggiornamenti dell'app.",

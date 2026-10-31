@@ -198,7 +198,7 @@ apps/mobile/src/about/content/{en,it,de,fr,es}.ts
 apps/mobile/__tests__/AppFeed.test.tsx
 site/privacy/index.html, {it,de,fr,es}/index.html
 services/api/shaperoute_api/themed.py, phone_zone_places.py, access_log.py, i test
-docs/API.md, docs/STATUS.md, docs/tasks/TASK-363.md
+docs/STATUS.md, docs/tasks/TASK-356.md, docs/tasks/TASK-363.md
 ```
 
 ## Fuori scope

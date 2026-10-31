@@ -20585,7 +20585,7 @@ su un `runs`, con utente, `started_at` e `duration_s` obbligatori, senza stato
    fuori dal repository finché l'utente non la approva. Togliere un percorso è
    togliere un file.
 3. **Le linee vengono dal motore** (`plan_nearby`, `activity: cycling`), mai
-   scritte a mano. Sono mie solo le sagome di partenza, che non entrano nel
+   scritte a mano. Fatte a mano sono solo le sagome di partenza, che non entrano nel
    catalogo delle forme (ADR-0036).
 4. **Nessun account «MuW»**, salvo scelta dell'utente. Quindi sul post: niente
    reazioni né commenti (non c'è un `drawings` a cui attaccarli), niente profilo,

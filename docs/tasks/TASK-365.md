@@ -45,6 +45,9 @@ Una alla volta, con le sue parole. **Tutte aperte.**
 1. **Quali percorsi.** Proposta: si parte dai sette giudicati buoni a occhio,
    senza i tre di Halloween, fuori stagione dal 1° novembre, e senza quelli
    sopra i 500 m di galleria finché non sono controllati o rigenerati.
+   **Oggi restano solo due**, Autumn Mushroom e GO: l'albero e la freccia tornano
+   controllati i tunnel, gli altri cinque sono discreti a occhio e li giudica
+   l'utente. Sono anche fra i cinque che TASK-364 propone per Explore (scelta 2).
 2. **Chi pubblica cosa con TASK-364.** Proposta di questo task: un percorso sta
    in Explore **o** nel Feed, mai doppio senza motivo. TASK-364 propone cinque
    bozze per Explore; l'elenco si decide con quella sessione (`local_ef39e13c`)

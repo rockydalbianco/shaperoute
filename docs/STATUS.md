@@ -160,6 +160,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-356 — La posizione nel Feed: arrotondata, e detta nella privacy**
+  (ADR-0306, punto 4; testo approvato dall'utente il 2026-10-30). Branch
+  `fix/TASK-356-feed-position`. Sito e OTA di produzione con il suo sì.
+  `tasks/TASK-356.md`.
 - **TASK-362 — Le schede del Feed: «Tutti» e «Seguiti»** (ADR-0308, proposta;
   richiesta dell'utente del 2026-10-30; numeri dal Coordinatore). Branch
   `docs/TASK-362-feed-tabs` (documenti). Sostituiscono i filtri di TASK-355 B

@@ -151,7 +151,7 @@ tiene il Coordinatore con l'utente.
 1. `navigation/lockNotice.ts` + test: quando parte, cosa dice, che si
    sostituisce, che si toglie a fine corsa e con l'app davanti, che col
    permesso rifiutato non fa niente.
-2. Il collegamento in `NavigateScreen.tsx` dove la voce dice la svolta.
+2. Il collegamento in `useNavigation.ts`, dove la voce dice la svolta.
 3. I testi in `locales/*.json`.
 4. Prova nel simulatore a schermo bloccato con la corsa simulata.
 
@@ -195,14 +195,26 @@ docs/DECISIONS.md
 docs/STATUS.md
 ```
 
-Parte A (previsti):
+Parte A (lista per il Coordinatore, 2026-11-05):
 
 ```
 apps/mobile/src/navigation/lockNotice.ts          (nuovo)
 apps/mobile/src/navigation/lockNotice.test.ts     (nuovo)
-apps/mobile/src/screens/NavigateScreen.tsx
+apps/mobile/src/navigation/useNavigation.ts
+apps/mobile/src/notifications/pushDevice.ts       (una riga)
 apps/mobile/locales/{en,it,de,fr,es}.json
 ```
+
+Cosa si riusa, senza toccarlo: `askPushPermission` e `pushPermission` di
+`notifications/pushDevice.ts` (il permesso, come `restAlert.ts` di TASK-385
+B) e lo schema di `PHONE_NOTIFIER` (una notifica locale con un tipo nei
+`data`); `restAlert.ts` non si modifica. In `pushDevice.ts` una riga sola:
+il tipo nuovo `run_directions` in `QUIET_WHILE_OPEN`, così una notifica
+arrivata mentre l'app torna davanti non compare come banner. Il punto
+d'aggancio è `useNavigation.ts`, dove `onFix` restituisce le frasi che la
+voce dice (`cue`): lì, con l'app dietro, la stessa frase va anche a
+`lockNotice`. `NavigateScreen.tsx` non si tocca (`doneOf` e `remainingM`
+si calcolano dalla `Navigation`, che `useNavigation` ha già).
 
 Parte B (previsti, con il via del Coordinatore):
 

@@ -73,9 +73,11 @@ come la voce e la vibrazione.
   sostituisce quella di prima invece di accumularle.
 - **Senza suono**: parla già la voce; la notifica si vede e basta (su
   Android un canale suo «Directions», importanza bassa).
-- **Cosa dice** (testi da approvare): titolo con la freccia e la svolta,
-  «↱ Turn right in 50 m»; sotto il nome della via, se c'è, e
-  «42% drawn».
+- **Cosa dice** (scelta dell'utente del 2026-11-05, «Frase della voce +
+  %»): il titolo è **la stessa frase che dice la voce** in quel momento,
+  con la freccia davanti («↱ In 50 m, turn right onto Via Roma»); fuori
+  rotta «⚠ Off the route». Sotto, sempre: «42% drawn · 3.1 km left». Unico
+  testo nuovo «{distance} left».
 - **Il permesso** è quello delle notifiche push, chiesto come per il
   recupero della palestra; rifiutato, resta la voce come oggi.
 - Limite: una notifica non si aggiorna da sola metro per metro; mostra i
@@ -121,6 +123,25 @@ aggiunge `targets/watch/` accanto, senza toccare quella della Live Activity.
 Versione e posto del plugin si concordano con la sessione di TASK-370
 prima di scrivere codice; la lista dei file va al Coordinatore.
 
+**Accordo con TASK-370** (sessione «Apple Watch app status», 2026-11-05;
+scritto anche in `tasks/TASK-370.md` con la loro PR #849, che qui non si
+tocca):
+
+1. TASK-401 B mette nella 1.0.2 `@bacons/apple-targets` **5.0.0**, il
+   plugin in `app.json` (una sola config) e `apps/mobile/targets/
+   live-activity/`.
+2. Il plugin va con **`"match": "live-activity"`**. Senza opzioni la 5.0.0
+   costruisce ogni `targets/*/expo-target.config.js` (`match = "*"`): il
+   target dell'orologio entrerebbe nella 1.0.2 appena TASK-370 A2 mette
+   `targets/watch/expo-target.config.js` in `main`. `targets/watch/Core/`
+   (A1, già in `main`) non ha quel file e non conta.
+3. TASK-370 A2 mette `targets/watch/` accanto e non tocca `live-activity/`;
+   con `MUW_WATCH=1` il loro `app.config.ts` allarga `match` a
+   `{live-activity,watch}`; il loro A-flip, alla 1.1, allarga `match` in
+   `app.json`.
+4. La PR della parte B scrive l'impronta iOS della 1.0.2 che ne esce: è il
+   nuovo riferimento di TASK-370.
+
 La 1.0.2 è già condivisa (video nei messaggi 333 E; testo della chiave di
 Salute 374 C, 345 C, 397 C; accesso con Apple e Google 322): l'ordine lo
 tiene il Coordinatore con l'utente.
@@ -128,8 +149,11 @@ tiene il Coordinatore con l'utente.
 ### Le scelte ancora aperte (una alla volta, all'utente)
 
 1. ~~Notifica, Live Activity o tutte e due~~ → tutte e due (2026-11-05).
-2. **Parte A, i testi** della notifica (svolta, fuori rotta, rientro) in
-   cinque lingue.
+2. ~~Parte A, i testi~~ → **«Frase della voce + %»** (2026-11-05, contro
+   «Corta, stile navigatore»): il titolo è la frase che dice la voce, già
+   approvata e tradotta; fuori rotta «Off the route», che c'è già; sotto
+   «42% drawn · 3.1 km left». Unico testo nuovo «{distance} left», con la
+   distanza nelle unità scelte (km o mi), da tradurre in cinque lingue.
 3. **Parte B, cosa mostra** il riquadro e l'isola compatta; e senza percorso
    («Run without a route»): niente Live Activity, o tempo, distanza e passo.
 4. **Parte B, la fine**: il riquadro sparisce a fine corsa o resta qualche
@@ -142,12 +166,12 @@ tiene il Coordinatore con l'utente.
 **Parte 0 (questa PR)**: questo file, ADR-0335 «Proposto», le righe in
 `STATUS.md`.
 
-**Parte A** (dopo la scelta 2):
+**Parte A** (scelta 2 fatta; parte col via del Coordinatore):
 1. `navigation/lockNotice.ts` + test: quando parte, cosa dice, che si
    sostituisce, che si toglie a fine corsa e con l'app davanti, che col
    permesso rifiutato non fa niente.
-2. Il collegamento in `NavigateScreen.tsx` dove la voce dice la svolta.
-3. I testi in `locales/*.json`.
+2. Il collegamento in `useNavigation.ts`, dove la voce dice la svolta.
+3. Il testo nuovo in `src/i18n/{it,de,fr,es}.ts`.
 4. Prova nel simulatore a schermo bloccato con la corsa simulata.
 
 **Parte B** (dopo le scelte 3–5, nella 1.0.2):
@@ -190,14 +214,32 @@ docs/DECISIONS.md
 docs/STATUS.md
 ```
 
-Parte A (previsti):
+Parte A (lista per il Coordinatore, 2026-11-05):
 
 ```
 apps/mobile/src/navigation/lockNotice.ts          (nuovo)
 apps/mobile/src/navigation/lockNotice.test.ts     (nuovo)
-apps/mobile/src/screens/NavigateScreen.tsx
-apps/mobile/locales/{en,it,de,fr,es}.json
+apps/mobile/src/navigation/useNavigation.ts
+apps/mobile/src/notifications/pushDevice.ts       (una riga)
+apps/mobile/src/i18n/{it,de,fr,es}.ts
 ```
+
+`apps/mobile/locales/*.json` **non si tocca** (Coordinatore, 2026-11-05):
+sono i testi nativi dei permessi iOS che `app.json` carica, e cambiarli
+muove l'impronta iOS. «{distance} left» va nelle tabelle dell'app
+`src/i18n/`, con l'inglese come chiave. L'impronta iOS va misurata su una
+copia staccata e deve restare `6f8bba4c`.
+
+Cosa si riusa, senza toccarlo: `askPushPermission` e `pushPermission` di
+`notifications/pushDevice.ts` (il permesso, come `restAlert.ts` di TASK-385
+B) e lo schema di `PHONE_NOTIFIER` (una notifica locale con un tipo nei
+`data`); `restAlert.ts` non si modifica. In `pushDevice.ts` una riga sola:
+il tipo nuovo `run_directions` in `QUIET_WHILE_OPEN`, così una notifica
+arrivata mentre l'app torna davanti non compare come banner. Il punto
+d'aggancio è `useNavigation.ts`, dove `onFix` restituisce le frasi che la
+voce dice (`cue`): lì, con l'app dietro, la stessa frase va anche a
+`lockNotice`. `NavigateScreen.tsx` non si tocca (`doneOf` e `remainingM`
+si calcolano dalla `Navigation`, che `useNavigation` ha già).
 
 Parte B (previsti, con il via del Coordinatore):
 

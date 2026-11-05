@@ -21871,7 +21871,8 @@ o due con lo sci di fondo è dell'utente.
 
 ## ADR-0320 — Il registro degli sport: ogni sport nei suoi file, un banco di misura comune
 
-**Stato**: Proposto · 2026-11-04 · TASK-376 (sessione «Coordinatore Sport»).
+**Stato**: Accettato · 2026-11-05, alla chiusura di TASK-376 (proposto il
+2026-11-04) · TASK-376 (sessione «Coordinatore Sport»).
 Le scelte tecniche sono dell'agente su delega dell'utente; il ridisegno
 degli esempi (punto 3) vuole il sì dell'utente al momento del server, come
 ogni aggiornamento
@@ -21967,6 +21968,26 @@ ridisegnano, col sì dell'utente. Così il server si può aggiornare da `main`
 quando serve. Il primo sport della fase 1 cambia l'impronta con il suo
 codice nuovo: se può avere anche lui una riga (nessun percorso di prima
 cambia) o se serve la notte di esempi, si decide allora col Coordinatore.
+
+**Aggiornamento 2026-11-05, chiusura di TASK-376 (deciso dall'agente su
+delega dell'utente, col Coordinatore).** Com'è andata rispetto alla
+decisione:
+
+- **Punto 1.** I registri ci sono nei quattro strati. Il profilo dell'app
+  non ha `ready` né i testi: `ready` resta in `settings/sport.ts`, perché
+  accendere uno sport è una scelta dell'utente presa lì. I testi restano
+  nelle tabelle `i18n`, col file dello sport che tiene la chiave inglese
+  (approvato in B3).
+- **Punto 3.** Il primo sport della fase 1, Hike, ha tenuto le impronte con
+  `SAME_ROUTES_AS` e la sua prova (precisazione di ADR-0321): nessuna notte
+  di esempi finora.
+- **Punto 5 non vale più.** Ogni sport scrive le sue righe di registro
+  nella sua PR, con la lista dei file approvata prima dal Coordinatore:
+  le PR per strato sono piccole, e una PR di integrazione a fine fase
+  avrebbe tenuto fermi gli sport.
+- **Il pilota** ha toccato file nuovi, righe di registro, i punti fissi e
+  le liste dei test «di prima». Le sue deroghe ora sono passi di
+  `docs/sports/COME-AGGIUNGERE.md`, segnati «(pilota)».
 ## ADR-0319 — Gli sport «Record only»: si registrano senza forma, il motore non li vede
 
 **Stato**: Proposto · 2026-11-04 · TASK-375. Scelte dell'utente lo stesso

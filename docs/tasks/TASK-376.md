@@ -1,8 +1,10 @@
 # TASK-376 — Fase 0 degli sport: il registro, il banco condiviso, la ricetta
 
-**Stato**: In corso — parte A in `main` (#736); parte B in `main` (B1 #763,
-B2 #798, B3a #806, B3b #814, B3c #818 e la seconda metà, `settings/sport.ts`);
-parte C: C1 in `main` (#820), poi la chiusura col pilota TASK-377
+**Stato**: Done (2026-11-05) — parte A in `main` (#736); parte B in `main`
+(B1 #763, B2 #798, B3a #806, B3b #814, B3c #818 e #843); parte C: C1 (#820)
+e la chiusura col pilota Hike (TASK-377, #838 e #861). **Esito:** ogni
+sport sta nei suoi file in motore, contratto, API e app; Hike è entrato
+seguendo la ricetta, e le sue deroghe ora ne sono passi.
 **Fase**: 4 · **Branch**: `feat/TASK-376-a-sport-bench` (parte A),
 `feat/TASK-376-b-sport-registry` (parte B) · **ADR**: ADR-0320 · numeri dal
 Coordinatore (2026-11-04) · sessione «Coordinatore Sport»
@@ -110,13 +112,20 @@ meno a lungo: **B1** il motore, **B2** contratto e API, **B3** l'app.
       che tocca il motore, con `compare --same` senza differenze. L'impronta
       iOS è `6f8bba4c`, misurata su B2 (la riga del tsconfig); B3 è solo
       JavaScript.
-- [ ] B: aggiungere uno sport di prova tocca solo file nuovi più una riga per
+- [x] B: aggiungere uno sport di prova tocca solo file nuovi più una riga per
       punto di registrazione (test che lo dimostra). I registri ci sono in
       motore, contratto, API e app. Restano scritti a mano, e vanno allungati
       di un nome: i `Literal` di Python e il «Settings» dell'app
       (`settings/sport.ts`, dopo la #765). Il test arriva con la parte C:
       la ricetta lo chiede al pilota.
-- [ ] C: ricetta definitiva; il pilota la segue senza deroghe.
+      **Chiuso col diff del pilota**, non con un test automatico: le PR di
+      Hike (#838, #861) toccano file nuovi, righe di registro, i punti
+      fissi e le liste dei test «di prima», più le deroghe scritte in
+      `CONDIVISO.md`. «Impostazioni» vuole righe in `Sport`, `ACTIVITY` e
+      `ALL_SPORTS` (#843).
+- [x] C: ricetta definitiva; il pilota la segue senza deroghe.
+      Il pilota ha avuto deroghe, approvate dal Coordinatore: sono entrate
+      nella ricetta come passi «(pilota)», così il prossimo sport non ne ha.
 
 ## File toccati
 
@@ -268,7 +277,8 @@ apps/mobile/src/settings/sport.ts              (dopo la #765, che aspetta a lung
 ```
 
 Più `docs/tasks/TASK-376.md`, `docs/STATUS.md` (righe proprie) e
-`docs/sports/CONDIVISO.md`. Il Coordinatore segnala due file dove passeranno
+`docs/sports/CONDIVISO.md`. Alla chiusura anche `docs/sports/COME-AGGIUNGERE.md`
+e ADR-0320 in `docs/DECISIONS.md`. Il Coordinatore segnala due file dove passeranno
 altri: `FeedPost.tsx` e `MuwPost.tsx`, con TASK-384 B e l'ultimo passo di
 TASK-365. Chi arriva secondo si riallinea. Restano fuori, apposta, i
 controlli che valgono per una funzione sola della canoa o del nuoto:
@@ -392,3 +402,21 @@ Uno sport nuovo in «Impostazioni» vuole quindi tre cose:
 Il testo «… without a route» resta nello `switch` di `withoutRouteLabel`.
 La ricetta (`COME-AGGIUNGERE.md`, sezione 4) si corregge con la chiusura
 del pilota.
+
+2026-11-05, chiusura. Il pilota Hike è in `main`: A (#838) e B (#861). Ho
+confrontato i loro diff con la ricetta. Le deroghe scritte in
+`CONDIVISO.md` sono diventate passi di `COME-AGGIUNGERE.md`, segnati
+«(pilota)»:
+
+- il profilo dell'app entra già con la parte A, nascosto;
+- le liste dei test «di prima»;
+- le fixture del contratto;
+- le zone di una rete nuova e l'ordine di `NEWER_ACTIVITIES`;
+- le righe di «Impostazioni», con `OFFERED_WHEN_READY`;
+- il campo `caution`;
+- l'emoji di `RunNoRouteButton.tsx`.
+
+ADR-0320 è accettato, con un aggiornamento: il punto 5 non vale più, perché
+ogni sport scrive le sue righe di registro nella sua PR. Task chiuso. Gli
+sport seguenti, Gravel/MTB (TASK-378) e Roller (TASK-380), partono dalla
+ricetta corretta.

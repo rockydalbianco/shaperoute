@@ -29,7 +29,7 @@ test("GPX's and TCX's swimming is a swim", () => {
   expect(sportOfWord("Swim")).toBe("swimming");
   expect(sportOfWord("open_water_swimming")).toBe("swimming");
   // As before: what MuW has not got stays for the form to choose.
-  expect(sportOfWord("hiking")).toBeNull();
+  expect(sportOfWord("yoga")).toBeNull();
 });
 
 test("a FIT file of a swim in open water is a swim, with its positions", () => {

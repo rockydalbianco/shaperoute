@@ -863,6 +863,7 @@ export const ES: Table = {
   "Ride without a route": "Rodar sin ruta",
   "Paddle without a route": "Remar sin ruta",
   "Walk without a route": "Caminar sin ruta",
+  "Hike without a route": "Senderismo sin ruta",
   "Record your day": "Registra tu jornada",
   "Run without a route": "Correr sin ruta",
 
@@ -1146,6 +1147,10 @@ export const ES: Table = {
   Bike: "Bici",
   Paddle: "Remo",
   Walk: "Caminata",
+  // src/sports/hiking.ts (TASK-377 part B), approved on 2026-11-05
+  Hike: "Senderismo",
+  "Trails can be demanding: check the route and the weather before you set off.":
+    "Los senderos pueden ser exigentes: revisa la ruta y el tiempo antes de salir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Esquí",
   "Cross-country ski": "Esquí de fondo",

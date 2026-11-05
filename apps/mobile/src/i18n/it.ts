@@ -859,6 +859,7 @@ export const IT: Table = {
   "Ride without a route": "Pedala senza percorso",
   "Paddle without a route": "Pagaia senza percorso",
   "Walk without a route": "Cammina senza percorso",
+  "Hike without a route": "Escursione senza percorso",
   "Record your day": "Registra la giornata",
   "Run without a route": "Corri senza percorso",
 
@@ -1142,6 +1143,10 @@ export const IT: Table = {
   Bike: "Bici",
   Paddle: "Pagaia",
   Walk: "Camminata",
+  // src/sports/hiking.ts (TASK-377 part B), approved on 2026-11-05
+  Hike: "Escursione",
+  "Trails can be demanding: check the route and the weather before you set off.":
+    "I sentieri possono essere impegnativi: controlla il percorso e il meteo prima di partire.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Sci",
   "Cross-country ski": "Sci di fondo",

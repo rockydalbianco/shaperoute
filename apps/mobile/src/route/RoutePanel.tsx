@@ -534,6 +534,7 @@ export function RouteOutcome({
               }}
             />
           )}
+          <SportCaution activity={view.request.activity} />
           {figures}
           {/* Only with directions: a route traced without them has no turns.
               On the water there are none to follow: the line is the way. */}
@@ -970,6 +971,15 @@ function NoteRow({ note }: { note: Note }) {
     >
       <Text style={styles.noteText}>{note.text}</Text>
     </View>
+  );
+}
+
+/** What the sport tells under every route (TASK-377): a hike's trails can
+ * be demanding. Nothing for a sport whose profile says nothing. */
+function SportCaution({ activity }: { activity: Activity }) {
+  const { caution } = profileOf(activity);
+  return caution === undefined ? null : (
+    <NoteRow note={{ tone: "caution", text: t(caution) }} />
   );
 }
 

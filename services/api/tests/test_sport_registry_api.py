@@ -46,6 +46,16 @@ BEFORE_SPORT_TYPES = {
 BEFORE_RECORD_ACTIVITIES = ("skiing", "xc_skiing")
 BEFORE_GPX_TYPES = {"walking": "walking"}
 BEFORE_STREET_NAMES = {"running": True, "cycling": False}
+# Added since, each by a file of sports/ and a line of its register: a hike
+# (TASK-377), planned before the walk in the order of the contract.
+SINCE = "hiking"
+SINCE_SPORT_TYPE = "Hike"
+SINCE_GPX_TYPE = "hiking"
+
+
+def _without_since(table: dict[str, object]) -> list[tuple[str, object]]:
+    """The items of `table` but the sport added since, in their order."""
+    return [(name, value) for name, value in table.items() if name != SINCE]
 
 
 def test_the_sports_are_those_of_the_contract_in_its_order() -> None:
@@ -61,12 +71,14 @@ def test_the_sports_are_those_of_the_contract_in_its_order() -> None:
 
 
 def test_the_tables_are_those_of_before_in_their_order() -> None:
-    assert list(SPORT_TYPES.items()) == list(BEFORE_SPORT_TYPES.items())
+    assert _without_since(SPORT_TYPES) == list(BEFORE_SPORT_TYPES.items())
+    assert SPORT_TYPES[SINCE] == SINCE_SPORT_TYPE
+    assert list(SPORT_TYPES).index(SINCE) == list(SPORT_TYPES).index("walking") - 1
     assert RECORD_ACTIVITIES == BEFORE_RECORD_ACTIVITIES
-    assert GPX_TYPES == BEFORE_GPX_TYPES
+    assert GPX_TYPES == {SINCE: SINCE_GPX_TYPE, **BEFORE_GPX_TYPES}
     assert list(SPORTS.items()) == [("running", ON_FOOT), ("cycling", BY_BIKE)]
     assert list(SPORTS) == list(get_args(Sport))
-    assert prefetch_zones.STREET_NAMES == BEFORE_STREET_NAMES
+    assert prefetch_zones.STREET_NAMES == {**BEFORE_STREET_NAMES, SINCE: True}
 
 
 def test_the_bests_of_before_are_read_where_they_were() -> None:
@@ -96,8 +108,9 @@ def test_the_bests_of_before_are_read_where_they_were() -> None:
 
 def test_the_zone_boxes_are_those_of_before() -> None:
     boxes = prefetch_zones.ZONE_BOXES
-    assert list(boxes) == ["running", "cycling"]
+    assert list(boxes) == ["running", "cycling", SINCE]
     assert boxes["running"] is prefetch_zones.zone_box
+    assert boxes[SINCE] is prefetch_zones.zone_box
     assert boxes["cycling"] is prefetch_zones.bike_zone_box
 
 
@@ -136,12 +149,14 @@ def test_the_sports_import_nothing_but_the_sports() -> None:
 
 
 def test_the_zones_in_memory_and_the_description_are_those_of_before() -> None:
-    assert ZONES_IN_MEMORY == {"running": MAX_ZONES, "cycling": 1}
+    assert ZONES_IN_MEMORY == {"running": MAX_ZONES, "cycling": 1, SINCE: 1}
     assert ACTIVITY_DESCRIPTION == (
         f"One of: {', '.join(API_ACTIVITIES)}; cycling is drawn on the "
         f"roads a bike may ride, one-way streets kept (TASK-190); paddling on a "
         f"lake or the sea within 1 km of the shore, from a start on the shore, "
         f"a shape of the catalogue only (TASK-191); swimming 20-150 m from the "
         f"shore, lap after lap, a shape of the catalogue or a drawing (TASK-323); "
+        f"hiking on the trails and quiet roads of its own network, no roads cars "
+        f"use, no trails beyond sac_scale T3 (TASK-377); "
         f"walking on the foot network of a run (TASK-371)."
     )

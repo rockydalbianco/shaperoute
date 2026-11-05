@@ -181,11 +181,12 @@ def test_the_migration_keeps_the_walk_of_0043(
     migrated = Database(database_url)
     migrated.migrate(tmp_path)
     before = re.findall(r"'([a-z_]+)'", _runs_check(migrated))
-    assert before == list(API_ACTIVITIES)
+    # A hike comes with 0051 (TASK-377).
+    assert before == [a for a in API_ACTIVITIES if a != "hiking"]
     shutil.copy(record[0], tmp_path / MIGRATION)
     assert migrated.migrate(tmp_path) == [MIGRATION.removesuffix(".sql")]
     after = re.findall(r"'([a-z_]+)'", _runs_check(migrated))
     # Each name once, in the order of RunActivity: the walk kept, then the
-    # snow; the gym comes with 0047 (TASK-385).
-    gym = set(TRACKLESS_ACTIVITIES)
-    assert after == [a for a in get_args(RunActivity) if a not in gym]
+    # snow; the gym comes with 0047 (TASK-385), a hike with 0051 (TASK-377).
+    later = {*TRACKLESS_ACTIVITIES, "hiking"}
+    assert after == [a for a in get_args(RunActivity) if a not in later]

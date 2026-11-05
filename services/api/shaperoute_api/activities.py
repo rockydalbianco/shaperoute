@@ -137,6 +137,7 @@ RunActivity = Literal[
     "cycling",
     "paddling",
     "swimming",
+    "hiking",
     "walking",
     "skiing",
     "xc_skiing",

@@ -92,6 +92,7 @@ from shaperoute_api.moderation import install_moderation
 from shaperoute_api.muw_routes import MuwRouteCatalog, install_muw_routes
 from shaperoute_api.notification_list import install_notification_list
 from shaperoute_api.notifications import install_notifications
+from shaperoute_api.outfit_tags import install_outfit_tags
 from shaperoute_api.outline_edits import edit_outline
 from shaperoute_api.places import (
     MAX_QUERY_LENGTH,
@@ -791,5 +792,8 @@ def create_app(
     # MuW Style (TASK-384, ADR-0326): our posts with an AI photo and shop
     # links, apart from GET /feed; the Awin ids from the environment.
     install_style_posts(app)
+    # Items tagged on the photos of members' posts (TASK-394, ADR-0333): their
+    # links checked with Web Risk, the key from the environment.
+    install_outfit_tags(app)
 
     return app

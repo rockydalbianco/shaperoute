@@ -21,5 +21,6 @@
   "not_entrant",
   "imported_run",
   "new_account",
-  "provider_unavailable"
+  "provider_unavailable",
+  "outfit_tag_rejected"
 ]

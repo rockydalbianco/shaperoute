@@ -152,7 +152,7 @@ tiene il Coordinatore con l'utente.
    sostituisce, che si toglie a fine corsa e con l'app davanti, che col
    permesso rifiutato non fa niente.
 2. Il collegamento in `useNavigation.ts`, dove la voce dice la svolta.
-3. I testi in `locales/*.json`.
+3. Il testo nuovo in `src/i18n/{it,de,fr,es}.ts`.
 4. Prova nel simulatore a schermo bloccato con la corsa simulata.
 
 **Parte B** (dopo le scelte 3–5, nella 1.0.2):
@@ -202,8 +202,14 @@ apps/mobile/src/navigation/lockNotice.ts          (nuovo)
 apps/mobile/src/navigation/lockNotice.test.ts     (nuovo)
 apps/mobile/src/navigation/useNavigation.ts
 apps/mobile/src/notifications/pushDevice.ts       (una riga)
-apps/mobile/locales/{en,it,de,fr,es}.json
+apps/mobile/src/i18n/{it,de,fr,es}.ts
 ```
+
+`apps/mobile/locales/*.json` **non si tocca** (Coordinatore, 2026-11-05):
+sono i testi nativi dei permessi iOS che `app.json` carica, e cambiarli
+muove l'impronta iOS. «{distance} left» va nelle tabelle dell'app
+`src/i18n/`, con l'inglese come chiave. L'impronta iOS va misurata su una
+copia staccata e deve restare `6f8bba4c`.
 
 Cosa si riusa, senza toccarlo: `askPushPermission` e `pushPermission` di
 `notifications/pushDevice.ts` (il permesso, come `restAlert.ts` di TASK-385

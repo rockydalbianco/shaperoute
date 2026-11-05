@@ -269,7 +269,7 @@ function Turn({ deg, onTurn }: { deg: number; onTurn: (deg: number) => void }) {
               autoFocus
               testID="turn-typed"
             />
-            <Text style={styles.typed}>°</Text>
+            <Text style={styles.degree}>°</Text>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -358,6 +358,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center",
   },
+  degree: {
+    color: color.text,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.bold,
+  },
   typingBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -370,7 +375,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.surfaceRaised,
   },
   typed: {
-    minWidth: 24,
+    minWidth: 64,
     color: color.text,
     fontSize: fontSize.input,
     fontWeight: fontWeight.bold,

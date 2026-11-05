@@ -1,8 +1,8 @@
 # TASK-402 — Ruotare il disegno di quanti gradi si vuole, e aggiungere pezzi da spostare sulla mappa
 
-**Stato**: Proposto · 2026-11-05 · solo documenti; i cinque testi approvati
-dall'utente lo stesso giorno; nessun codice prima del via del Coordinatore
-sulla lista dei file della parte A
+**Stato**: In corso · 2026-11-05 · i cinque testi approvati dall'utente lo
+stesso giorno; **parte A pronta** (branch `feat/TASK-402-a-turn`, §«Avanzamento»);
+la B è la prossima
 **Fase**: 5 · **Branch**: `docs/TASK-402-freehand-pieces` (documenti); poi
 `feat/TASK-402-a-turn` e `feat/TASK-402-b-pieces` · **ADR**: ADR-0336
 
@@ -166,7 +166,15 @@ apps/mobile/src/mapdraw/useMapCanvas.ts
 apps/mobile/src/mapdraw/DrawOnMap.tsx
 apps/mobile/src/mapdraw/DrawOnMapApp.test.tsx
 apps/mobile/src/mapdraw/canvasRequest.ts        (una forma girata mandata come contorno)
+apps/mobile/src/mapdraw/figure.ts               (Placed.turnDeg, onMap, unitsOn; via 2026-11-05)
+apps/mobile/src/mapdraw/tools.ts                (unitsOf girato; via 2026-11-05)
+apps/mobile/src/mapdraw/drawing.ts              (withDetail girato; via 2026-11-05, condiviso con TASK-404)
+apps/mobile/src/mapdraw/mapPageCanvas.test.ts   (due test del giro a due dita; via 2026-11-05)
 apps/mobile/src/map/mapPage.ts
+apps/mobile/src/map/messages.ts                 (`turn` nel messaggio «figure»; via 2026-11-05)
+apps/mobile/src/map/messages.test.ts
+apps/mobile/src/map/MapView.tsx                 (passa `turn` all'app; via 2026-11-05)
+apps/mobile/App.tsx                             (una riga, `onTurn={mapDraw.turnTo}`; via 2026-11-05)
 apps/mobile/src/i18n/*.ts                       (i testi 1 e 2)
 docs/UI.md, docs/INDEX.md, docs/STATUS.md, docs/tasks/TASK-402.md
 ```
@@ -207,6 +215,34 @@ dell'utente).
       dall'utente nelle lingue dell'app.
 - [ ] Prova sul simulatore: girare, aggiungere un cuore a un disegno,
       spostarlo, girarlo, «Draw route».
+
+## Avanzamento
+
+**Parte A, 2026-11-05** (branch `feat/TASK-402-a-turn`, da `main` a
+`0ffada6b` più #850/#853):
+
+- `mapdraw/turn.ts`: `normalDeg`, `turnedTo`/`turnedBy`, `shapeOutline`
+  (la linea a penna giù semplificata a ≤100 punti), `shownFigure`.
+  L'angolo sta in `Placed.turnDeg`, non nelle unità: `onMap` gira, e
+  `unitsOn` (in `figure.ts`) gira indietro, così gomma, linea, piega e i
+  tratti nuovi lavorano nelle unità di sempre.
+- `canvasRequest`: una forma girata è un contorno; i contorni si mandano
+  girati, uno per angolo nella cache (`sameRequest` resta).
+- `useMapCanvas`: `turnDeg`, `turnBy`, `turnTo`; ogni giro è un passo
+  «put» di «Undo»; il giro a due dita è un passo, il solo
+  ridimensionamento no (come prima); «Try 8 km» e le tessere tengono
+  l'angolo.
+- `mapPage`: nel gesto «size» l'angolo fra le dita, sullo schermo in pixel
+  (`heldPoint`); sotto `MIN_TURN_DEG` (3°) niente giro; `turn` nel
+  messaggio solo se diverso da 0.
+- `DrawOnMap`: la riga «−15° · angolo · +15°» con «Move» e una figura;
+  l'angolo si tocca e si scrive (`typedDegrees`).
+- Test: `turn.test.ts` (8), due in `mapPageCanvas.test.ts`, uno in
+  `messages.test.ts`, uno in `DrawOnMapApp.test.tsx`; `src/mapdraw`,
+  `src/map` e `src/i18n` verdi in locale (412), `tsc` pulito. Impronta iOS
+  (copia pulita, `APP_VARIANT=production`): `6f8bba4c`, invariata.
+- Non provato sul simulatore né sul telefono: il gesto a due dita vero va
+  visto a mano.
 
 ## Note
 

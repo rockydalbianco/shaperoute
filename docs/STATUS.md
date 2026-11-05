@@ -176,6 +176,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Solo JS, con un OTA. Branch `docs/TASK-402-freehand-pieces` (PR #850), solo proposta; i cinque
   testi approvati dall'utente il 2026-11-05. Prossimo: la lista dei file della parte A al
   Coordinatore, poi il codice. `tasks/TASK-402.md`.
+  **Parte A pronta il 2026-11-05** (branch `feat/TASK-402-a-turn`): «−15°», l'angolo da scrivere
+  e «+15°» con «Move», due dita che girano, «Undo»; una forma girata va come contorno; impronta
+  iOS 6f8bba4c invariata. Prossimo: la parte B (i pezzi), con la sua lista al Coordinatore.
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi

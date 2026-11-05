@@ -123,6 +123,25 @@ aggiunge `targets/watch/` accanto, senza toccare quella della Live Activity.
 Versione e posto del plugin si concordano con la sessione di TASK-370
 prima di scrivere codice; la lista dei file va al Coordinatore.
 
+**Accordo con TASK-370** (sessione «Apple Watch app status», 2026-11-05;
+scritto anche in `tasks/TASK-370.md` con la loro PR #849, che qui non si
+tocca):
+
+1. TASK-401 B mette nella 1.0.2 `@bacons/apple-targets` **5.0.0**, il
+   plugin in `app.json` (una sola config) e `apps/mobile/targets/
+   live-activity/`.
+2. Il plugin va con **`"match": "live-activity"`**. Senza opzioni la 5.0.0
+   costruisce ogni `targets/*/expo-target.config.js` (`match = "*"`): il
+   target dell'orologio entrerebbe nella 1.0.2 appena TASK-370 A2 mette
+   `targets/watch/expo-target.config.js` in `main`. `targets/watch/Core/`
+   (A1, già in `main`) non ha quel file e non conta.
+3. TASK-370 A2 mette `targets/watch/` accanto e non tocca `live-activity/`;
+   con `MUW_WATCH=1` il loro `app.config.ts` allarga `match` a
+   `{live-activity,watch}`; il loro A-flip, alla 1.1, allarga `match` in
+   `app.json`.
+4. La PR della parte B scrive l'impronta iOS della 1.0.2 che ne esce: è il
+   nuovo riferimento di TASK-370.
+
 La 1.0.2 è già condivisa (video nei messaggi 333 E; testo della chiave di
 Salute 374 C, 345 C, 397 C; accesso con Apple e Google 322): l'ordine lo
 tiene il Coordinatore con l'utente.

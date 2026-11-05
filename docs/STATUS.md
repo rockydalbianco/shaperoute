@@ -515,6 +515,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   Server (migrazione 0051 e deploy) solo col sì dell'utente.
   Prossimo: la parte B (app), dopo la #765.
+  **Parte A in `main`** (#838, `48bc58c8`). Prossimo: la parte B in una
+  sessione nuova (lista al Coordinatore; le note sono in
+  `tasks/TASK-377.md`), poi il server con la 0051 col sì dell'utente.
   **B3c, seconda metà, in PR** (2026-11-05, dopo la #765): «Impostazioni»
   legge emoji, nome e «Record only» dal profilo dello sport; `activityOf` e
   `runActivityOf` leggono l'attività di ogni riga invece di due `switch`.

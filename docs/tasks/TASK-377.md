@@ -1,7 +1,7 @@
 # TASK-377 — L'escursionismo, il pilota della struttura degli sport
 
-**Stato**: In corso — parte 0: misura dei sentieri e proposta. Le scelte
-di prodotto vanno all'utente una alla volta, prima del codice.
+**Stato**: In corso — parti 0 e A in `main` (#821, #838). Prossimo: la
+parte B (l'app), poi il server con la 0051, col sì dell'utente.
 **Fase**: 4 · **Branch**: `docs/TASK-377-0-hike` (parte 0), poi
 `feat/TASK-377-a-hike-engine-api`, `feat/TASK-377-b-hike-app` ·
 **ADR**: ADR-0321 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -267,3 +267,40 @@ metà di un percorso sta sui sentieri: le misure sono in `hike.md`.
 Server (0051 e deploy) col sì dell'utente.
 
 Prossimo: la parte B, dopo la #765.
+
+2026-11-05, **parte A in `main`** (#838, `48bc58c8`), unita dal
+Coordinatore dopo l'OTA di produzione della sera. Dopo la lista
+definitiva, la CI ha chiesto altri file, tutti approvati dal Coordinatore:
+
+- otto test che usavano `hiking` come attività sconosciuta o ne
+  congelavano le liste: quattro dell'app e quattro dell'API;
+- `ACTIVITY_MIGRATIONS` di `test_favorites.py` ora contiene anche la 0051;
+- il file degli sport dell'orologio, `targets/watch/…/sports.json`,
+  rigenerato con `scripts/watch-sports.sh` (la hike vi ha
+  `onWatch: true`; l'orologio non è in nessuna build).
+
+`__main__.py` sceglie la rete a piedi con `OsmnxSource(cache_dir)`, come
+prima: lì i test mettono i loro grafi finti. Le altre reti passano per
+`OsmnxSource.for_activity`. Impronte finali: engine 9be259696402 →
+e13ded92b52d, swims 822413512e24 → db4ee081c4a4, paddle 05b33f547d79 →
+fb16815e3876. L'impronta iOS resta `6f8bba4c`.
+
+Il server non ha ancora la parte A: migrazione 0051 e deploy, col sì
+dell'utente. Un giro di esempi solo hike per Explore, se serve, è a
+parte.
+
+**Per la parte B** (la #765 e la #843 sono in `main`):
+
+- `settings/sport.ts`: la riga `fromProfile("hike", false)`, `activityOf`,
+  e la hike in `activityOffered`. Poi via la riga di `searchFilters.ts`
+  che la tiene fuori dalla ricerca.
+- `sports/hiking.ts`: il nome con `tLater("Hike")` e i testi nelle
+  quattro lingue (scelta 6). L'avviso sui sentieri in
+  `route/RoutePanel.tsx`.
+- Se la hike va tenuta fuori dall'orologio finché non è pronta:
+  `NOT_ON_WATCH` in `src/watch/watchSports.ts` (TASK-370).
+- **Da proporre all'utente** (il Coordinatore): in montagna circa metà
+  di un percorso Hike sta su strade secondarie (`hike.md`, «Quanto di un
+  percorso sta sui sentieri»). L'alternativa è pesare gli archi, come dice
+  ADR-0321.
+- `ready: true` solo dopo il server con la 0051 (scelta 7).

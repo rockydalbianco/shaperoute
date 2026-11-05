@@ -177,6 +177,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuovo. Branch `fix/TASK-399-feed-author-profile`; la unisce il Coordinatore a CI verde; in
   produzione col prossimo OTA. `tasks/TASK-399.md`.
   **Chiuso il 2026-11-05**: #830, chiusura nella stessa PR; vedi «Completato».
+- **TASK-370 A1 — Il nucleo dell'orologio, senza nativo** (2026-11-05; parte A1 del piano
+  in `tasks/TASK-370.md`, ADR-0314 «precisazione A1»). Solo file nuovi: il pacchetto Swift
+  puro `apps/mobile/targets/watch/Core/` (`WatchCore`: lo stato dell'allenamento, i
+  messaggi telefono↔orologio con la versione, la tabella degli sport; 18 XCTest con
+  `swift test`), `src/watch/watchMessages.ts` e `watchSports.ts` con i loro jest sugli
+  stessi fixture JSON, `scripts/watch-sports.sh` che riscrive `sports.json`, il workflow
+  `watch.yml` (macOS, solo sui file dell'orologio). Nessun `package.json`/`app.json`/
+  `app.config.ts`; impronta iOS `6f8bba4c` su copia pulita, uguale a `main`. Branch
+  `feat/TASK-370-a1-watch-core`; la unisce il Coordinatore a CI verde. **Prossimo**: A2,
+  l'app SwiftUI dell'orologio (in A2 va verificato che `@bacons/apple-targets` non metta
+  `Core/Tests` nel target dell'orologio).
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
   anche le vecchie»; testi nuovi approvati il 2026-11-05. Parte A (API +

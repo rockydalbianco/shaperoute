@@ -29,7 +29,7 @@ struct RunLiveActivity: Widget {
           Sign(colors: colors, state: state, size: 44)
         }
         DynamicIslandExpandedRegion(.trailing) {
-          Text(state.distance)
+          Text(compactTrailing(state))
             .font(.title2.weight(.bold))
             .foregroundColor(Color(hex: colors.accent))
         }
@@ -41,13 +41,15 @@ struct RunLiveActivity: Widget {
               .lineLimit(2)
             Progress(colors: colors, state: state, onDark: true)
           }
+          // Off the island's round corners.
+          .padding(.horizontal, 8)
         }
       } compactLeading: {
         Text(state.sign)
           .font(.headline.weight(.bold))
           .foregroundColor(signColor(colors, state))
       } compactTrailing: {
-        Text(state.distance)
+        Text(compactTrailing(state))
           .font(.headline.weight(.semibold))
           .foregroundColor(Color(hex: colors.accent))
       } minimal: {
@@ -58,6 +60,11 @@ struct RunLiveActivity: Widget {
       .keylineTint(Color(hex: colors.accent))
     }
   }
+}
+
+/// The way to the turn; with no turn ahead, how much is drawn ("62%").
+func compactTrailing(_ state: MuWRunAttributes.ContentState) -> String {
+  return state.distance.isEmpty ? "\(Int((state.done * 100).rounded()))%" : state.distance
 }
 
 /// Off the route the sign is a warning; on it, the route's yellow.

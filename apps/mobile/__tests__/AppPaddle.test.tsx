@@ -1,6 +1,6 @@
 /**
  * The app with «Paddle» (TASK-191): «Draw» asks for `activity: "paddling"`
- * at 1–5 km, from 2 km, a shape only; the route says it is on the water and
+ * at 1–5 km, from 2 km, a shape or a drawing by hand (TASK-396); the route says it is on the water and
  * «Start» follows it without directions, through the safety notice the
  * first time; «Explore» has the lakes and the beaches. The panel is in
  * src/route/RoutePanelPaddle.test.tsx, «Explore» on the water in
@@ -159,13 +159,17 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("with «Paddle», «Draw» starts at 2 km, a shape only, and asks for paddling", async () => {
+test("with «Paddle», «Draw» starts at 2 km, a shape or a drawing, and asks for paddling", async () => {
   apiAnswers(waterDone);
   await atRiccione();
   expect(distanceField()).toHaveDisplayValue("2");
   expect(
     screen.getByRole("button", { name: "Paddle without a route" }),
   ).toBeOnTheScreen();
+  expect(
+    screen.getByText("On the water, the drawing goes where it fits near the start."),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Freehand" })).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: "Word" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Image" })).toBeNull();
   await draw();
@@ -173,6 +177,37 @@ test("with «Paddle», «Draw» starts at 2 km, a shape only, and asks for paddl
     { start: RICCIONE, shape: "heart", distance_m: 2000, activity: "paddling" },
   ]);
   expect(screen.getByText("heart · on the water · target 2 km")).toBeOnTheScreen();
+});
+
+test("«Freehand» on the water: the drawing is asked for paddling (TASK-396)", async () => {
+  apiAnswers(waterDone);
+  await atRiccione();
+  await fireEvent.press(screen.getByRole("button", { name: "Freehand" }));
+  expect(screen.getByText("Undo")).toBeOnTheScreen();
+  // A square by hand off the shore, [lon, lat] as the map page sends it.
+  const [lat, lon] = RICCIONE;
+  const line = [
+    [lon + 0.002, lat],
+    [lon + 0.006, lat],
+    [lon + 0.006, lat + 0.004],
+    [lon + 0.002, lat + 0.004],
+    [lon + 0.002, lat],
+  ];
+  await fireEvent(screen.getByTestId("map"), "message", {
+    nativeEvent: { data: JSON.stringify({ type: "drawn", line, metresPerPx: 2 }) },
+  });
+  await fireEvent.press(screen.getByText("Draw route"));
+  await act(() => jest.advanceTimersByTimeAsync(500));
+  // A drawing is an image's job, as on the roads (ADR-0161).
+  expect(routeBodies()).toEqual([]);
+  const [asked] = fetchSpy.mock.calls
+    .filter(([input]) => String(input) === `${API}/image-route-jobs`)
+    .map(([, init]) => JSON.parse(String(init?.body)) as Record<string, unknown>);
+  // From the drawing's own start, where the line begins.
+  expect(asked).toMatchObject({ activity: "paddling" });
+  expect(asked).toHaveProperty("outline");
+  expect(asked).not.toHaveProperty("shape");
+  expect(asked).not.toHaveProperty("word");
 });
 
 test("on the water the distances are 1 to 5 km", async () => {

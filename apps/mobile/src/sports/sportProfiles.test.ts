@@ -221,8 +221,11 @@ it("gives the screens what they told apart before (part B3b)", () => {
     swimming: "swim",
   });
   expect(tableOf((sport) => sport.onWater)).toEqual({ paddling: true, swimming: true });
-  expect(tableOf((sport) => sport.shapesOnly)).toEqual({ paddling: true });
-  expect(tableOf((sport) => sport.noWords)).toEqual({ swimming: true });
+  expect(tableOf((sport) => sport.noWords)).toEqual({ paddling: true, swimming: true });
+  expect(tableOf((sport) => sport.noImages)).toEqual({ paddling: true });
+  expect(tableOf((sport) => sport.drawNote)).toEqual({
+    paddling: "On the water, the drawing goes where it fits near the start.",
+  });
   expect(tableOf((sport) => sport.laps)).toEqual({ swimming: true });
   expect(tableOf((sport) => sport.timeAt)).toEqual({
     running: "runner",

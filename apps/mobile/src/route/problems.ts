@@ -167,6 +167,7 @@ export function problemText(
               problem.message,
               fitsAtM(problem.suggested_distance_m, activity, units, asked, true),
               units,
+              kind,
             );
           }
           // Offered only within the distances «Draw» offers for it.
@@ -263,7 +264,7 @@ export function problemText(
           // does not fit, with no «Try again», which would ask it again.
           if (problem.message.startsWith(OUTLINE_REFUSED)) {
             if (isOnWater(activity)) {
-              return waterProblemText(problem.message, null, units);
+              return waterProblemText(problem.message, null, units, kind);
             }
             return {
               text: t(
@@ -328,6 +329,7 @@ function waterProblemText(
   message: string,
   fits: number | null,
   units: Units,
+  kind: ChoiceKind,
 ): ProblemText {
   if (message.includes(NO_WATER)) {
     return {
@@ -342,6 +344,31 @@ function waterProblemText(
             ),
       detail: devDetail(message),
     };
+  }
+  // A drawing, by hand or from a picture (TASK-396): its own words, and no
+  // shapes of the catalogue to choose instead.
+  if (kind === "image") {
+    return fits !== null
+      ? {
+          text:
+            units === "mi"
+              ? t(
+                  "This drawing does not fit on the water here at this distance. It fits at about {mi} mi.",
+                  { mi: unitsNumber(fits, "mi") },
+                )
+              : t(
+                  "This drawing does not fit on the water here at this distance. It fits at about {km} km.",
+                  { km: fits / 1000 },
+                ),
+          detail: devDetail(message),
+          tryDistanceM: fits,
+        }
+      : {
+          text: t(
+            "This drawing does not fit on the water near this start. Try a shorter distance, or another start.",
+          ),
+          detail: devDetail(message),
+        };
   }
   if (fits !== null) {
     return {

@@ -3014,6 +3014,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-404 — Disegno a mano: un primo tratto piccolo non blocca i tratti dopo** (2026-11-05;
+  segnalazione dell'utente dal nuoto, vale per ogni sport). Ogni tratto aggiunto si raddrizza
+  sull'1% della grandezza del disegno che forma, non di quello di prima: dopo un puntino un
+  tratto grande non tiene più il tremolio del dito e non si prende i 200 punti, e il tratto
+  dopo non dà più «That is too much for one route». Solo JS (`mapdraw/drawing.ts`), impronta
+  `6f8bba4c`; OTA col sì dell'utente. `tasks/TASK-404.md`.
 - **TASK-323 — Nuoto in acque libere, «Open water swim»** (2026-11-05;
   ADR-0283). Parti A–D in main, E il piano (#744); il nuoto si sceglie in
   ogni build: in preview con la #800, per tutti con la #765 (`b30bda0c`),

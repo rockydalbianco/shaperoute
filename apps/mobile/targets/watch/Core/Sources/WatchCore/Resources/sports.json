@@ -46,6 +46,17 @@
       "onWatch": false
     },
     {
+      "activity": "hiking",
+      "name": "Hike",
+      "emoji": "⛰️",
+      "appleWorkout": 24,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
       "activity": "walking",
       "name": "Walk",
       "emoji": "🚶",

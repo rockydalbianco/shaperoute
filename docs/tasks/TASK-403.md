@@ -1,7 +1,9 @@
 # TASK-403 — «Edit the drawing» sotto le opzioni A, B e C del risultato di «Draw»
 
-**Stato**: In corso · 2026-11-05 · prima i documenti, poi il codice col via
-del Coordinatore sulla lista dei file
+**Stato**: Done · 2026-11-05 · documenti nella #854, codice nella PR di
+`feat/TASK-403-edit-under-choices` (via del Coordinatore sulla lista dei
+file). Esito: il tasto è tornato sotto A, B e C e apre la linea
+dell'opzione scelta; test toccati, `tsc` e lint verdi in locale.
 **Fase**: 5 · **Branch**: `docs/TASK-403-edit-under-choices` (documenti); poi
 `feat/TASK-403-edit-under-choices` · **ADR**: ADR-0337
 
@@ -94,10 +96,10 @@ Com'è oggi (`main` a `d81b3c52`, dal codice):
 
 ## Criteri di accettazione
 
-- [ ] Sotto il risultato di «Draw» c'è «Edit the drawing» quando la linea
+- [x] Sotto il risultato di «Draw» c'è «Edit the drawing» quando la linea
       dell'opzione scelta fa un disegno.
-- [ ] Il tocco apre la mappa di «Draw on the map» con la linea dell'opzione
+- [x] Il tocco apre la mappa di «Draw on the map» con la linea dell'opzione
       scelta (A, B o C), dov'è e grande com'è, e niente parte verso l'API
       prima di «Draw route».
-- [ ] Test deterministici verdi in locale per i file toccati, `tsc` verde.
-- [ ] Impronta iOS invariata (nessun file nativo né dipendenza).
+- [x] Test deterministici verdi in locale per i file toccati, `tsc` verde.
+- [x] Impronta iOS invariata (nessun file nativo né dipendenza).

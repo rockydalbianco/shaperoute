@@ -1934,4 +1934,14 @@ export const DE: Table = {
   "Notifications, {count} new": "Benachrichtigungen, {count} neu",
   "No notifications yet. Reactions, comments, follows and tags will show up here.":
     "Noch keine Benachrichtigungen. Reaktionen, Kommentare, Follows und Markierungen erscheinen hier.",
+  // src/profile/Vo2MaxRow.tsx, OwnVo2Max.tsx, settings/Vo2MaxSetting.tsx (TASK-397 part B: the VO₂ max, texts approved)
+  "VO₂ max": "VO₂max",
+  "Estimate from your {distance}": "Schätzung aus deinem {distance}",
+  "Estimate from their {distance}": "Schätzung aus dem {distance}",
+  "Show your VO₂ max?": "Deine VO₂max zeigen?",
+  "Everyone who can see your profile will see it. You can turn it off in Settings.":
+    "Alle, die dein Profil sehen können, sehen sie. Du kannst sie in den Einstellungen ausschalten.",
+  "Show it": "Zeigen",
+  "Only you see this": "Nur du siehst das",
+  "Show VO₂ max on my profile": "VO₂max in meinem Profil zeigen",
 };

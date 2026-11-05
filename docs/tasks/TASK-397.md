@@ -1,9 +1,10 @@
 # TASK-397 — Il VO₂ max nel profilo pubblico
 
 **Stato**: In lavorazione · proposta in main (#810), testi e informativa
-della parte A approvati (#824); parte A (API) in PR; B, C, D dopo
+della parte A approvati (#824); parte A (API) in main (#832); parte B (app)
+in PR; C, D dopo
 **Fase**: 5 · **Branch**: `docs/TASK-397-vo2max-proposal` (documenti);
-`feat/TASK-397-a-vo2max-api` (parte A)
+`feat/TASK-397-a-vo2max-api` (parte A); `feat/TASK-397-b-vo2max-app` (parte B)
 **Dipende da**: TASK-368 (i record, chiuso) per la stima; la #806 (TASK-376
 B3a) per `health/`; TASK-374 C e TASK-345 C per il giro di Salute della
 1.0.2; TASK-321 C per Android
@@ -128,6 +129,11 @@ l'orologio vede la stima, chi ce l'ha la vede finché arriva la 1.0.2.
 - Impostazioni, sotto «Body»: «Show VO₂ max on my profile».
 - Sul proprio profilo, prima del sì, nessuna riga per gli altri; per sé la
   riga con «Only you see this» e il bottone «Show it».
+- **«your» e «their»** (scelta dell'utente del 2026-11-05, «"their" per gli
+  altri», portata dal Coordinatore): sul proprio profilo «Estimate from your
+  10K» (IT «Stima dal tuo 10K»), su quello degli altri «Estimate from their
+  10K» (IT «Stima dal suo 10K»). In tedesco, dove «suo» vorrebbe un genere,
+  per gli altri «Schätzung aus dem 10K»; fr «son», es «su».
 
 ## File toccati
 
@@ -149,16 +155,39 @@ ora:
   `docs/API.md` («Profile» e «VO₂ max»), `docs/DATABASE.md` (la `0049`),
   `docs/DECISIONS.md` (precisazione di ADR-0332), `docs/STATUS.md`, questo
   file.
-- **B**: `apps/mobile/src/profile/ProfileVo2Max.tsx` e il suo test (nuovi);
-  righe in `ProfileHome.tsx`, `UserProfilePage.tsx`, `SettingsPage.tsx`,
-  `api/profiles.ts`; `locales/*.json` (righe aggiunte); l'informativa
-  approvata in `apps/mobile/src/about/content/*.ts` (cinque lingue), con
-  `site/privacy` rigenerato e `PRIVACY_UPDATED`.
+- **B** (approvata dal Coordinatore il 2026-11-05): nuovi, ognuno col suo
+  test, `apps/mobile/src/api/vo2max.ts`, `src/profile/Vo2MaxRow.tsx` (la
+  riga), `src/profile/OwnVo2Max.tsx` (sul proprio profilo),
+  `src/settings/Vo2MaxSetting.tsx` (l'interruttore); righe in
+  `ProfileHome.tsx`, `UserProfilePage.tsx`, `SettingsPage.tsx`; le
+  traduzioni in `apps/mobile/src/i18n/{it,de,fr,es}.ts` (non `locales/*.json`,
+  che non esiste); l'informativa approvata in
+  `apps/mobile/src/about/content/*.ts` (cinque lingue), con `site/privacy`
+  rigenerato; `PRIVACY_UPDATED` era già al 5 novembre 2026.
 - **C**: `apps/mobile/src/health/vo2max.ts` e test (nuovi); righe in
   `health/appleHealth.ts` (dopo la #806), `app.json` (il testo, nel giro
   della 1.0.2).
 - **D**: `apps/mobile/src/health/healthConnectVo2max.ts` (nuovo); righe in
   `health/healthConnect.ts`.
+
+## Esito della parte B (2026-11-05)
+
+App: solo la stima del server, niente Salute. Sul profilo degli altri la
+riga «VO₂ max» compare quando `PublicProfile.vo2max` non è `null` (cioè dopo
+il sì). Sul proprio profilo `OwnVo2Max` legge `GET /me/vo2max`, solo se il
+profilo porta il campo `vo2max` (un'API precedente non viene interrogata):
+col sì la riga come la vedono gli altri; senza, la prima volta la domanda,
+poi la riga con «Only you see this» e «Show it». In Impostazioni, sotto
+«Body», l'interruttore, solo se `GET /me/vo2max` risponde.
+
+Decisioni tecniche, prese dall'agente su delega dell'utente (qui e non in
+`DECISIONS.md`, che non è fra i file della parte):
+- **«Una volta sola»** si tiene sul telefono, in `vo2max-asked.json`
+  (come la scelta di MuW Style): dopo «Not now» o «Show it» la domanda non
+  torna. Un telefono nuovo la rifà una volta: il sì resta dell'utente.
+- **Il giorno** di Salute si legge da `measured_on` come scritto, senza
+  passare per un `Date`: un fuso non lo sposta.
+- Nessuna riga senza valore: con `vo2max: null` niente domanda né riga.
 
 ## Criteri di accettazione
 

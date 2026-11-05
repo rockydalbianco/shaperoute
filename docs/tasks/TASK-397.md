@@ -2,7 +2,7 @@
 
 **Stato**: In lavorazione · proposta in main (#810), testi e informativa
 della parte A approvati (#824); parte A (API) in main (#832); parte B (app)
-in PR; C, D dopo
+in main (#835, 2026-11-05); C (Salute) con la 1.0.2, D dopo
 **Fase**: 5 · **Branch**: `docs/TASK-397-vo2max-proposal` (documenti);
 `feat/TASK-397-a-vo2max-api` (parte A); `feat/TASK-397-b-vo2max-app` (parte B)
 **Dipende da**: TASK-368 (i record, chiuso) per la stima; la #806 (TASK-376
@@ -171,6 +171,12 @@ ora:
   `health/healthConnect.ts`.
 
 ## Esito della parte B (2026-11-05)
+
+**In main** con la #835 (merge `077394df`), dopo l'OTA di produzione del
+2026-11-05. Il rilascio lo fa il Coordinatore con l'utente, in quest'ordine:
+server con la `0049`, privacy nuova sul sito, poi l'OTA che porta la parte B.
+Resta da fare: la parte C (Apple Salute) nella 1.0.2 e la D (Health
+Connect) dopo.
 
 App: solo la stima del server, niente Salute. Sul profilo degli altri la
 riga «VO₂ max» compare quando `PublicProfile.vo2max` non è `null` (cioè dopo

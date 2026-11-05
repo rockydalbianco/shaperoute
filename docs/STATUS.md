@@ -2974,6 +2974,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `site/privacy` rigenerato. In PR da `feat/TASK-397-b-vo2max-app`; la unisce
   il Coordinatore. Poi, ognuno col sì dell'utente: server 0049, privacy sul
   sito, OTA. Prossimo: la parte C con la 1.0.2.
+  **2026-11-05**: parte B in main (#835, `077394df`). Rilascio del
+  Coordinatore con l'utente: server 0049, privacy sul sito, poi OTA. Il task
+  resta aperto per la C (Salute, 1.0.2) e la D (Health Connect).
 
 - **TASK-395 — La ricerca non divide più per zero quando un percorso non
   disegna niente** (2026-11-05; numero dal Coordinatore; seguito di TASK-297

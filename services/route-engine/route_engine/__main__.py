@@ -54,9 +54,8 @@ from route_engine.nearby_starts import (
     plan_nearby,
 )
 from route_engine.network import (
-    BIKE_FILTER,
-    BIKE_NETWORK_NAME,
     EDGE_REUSE_PENALTY,
+    FOOT_NETWORK_NAME,
     NETWORKS,
     OsmnxSource,
 )
@@ -142,11 +141,13 @@ def _km(limits: tuple[int, int]) -> str:
 
 
 def _source(cache_dir: Path, activity: str) -> OsmnxSource:
-    """The graphs of the network `activity` is drawn on (network.NETWORKS):
-    the foot network as before TASK-190, the bike network in its own files."""
-    if NETWORKS[activity] == BIKE_NETWORK_NAME:
-        return OsmnxSource(cache_dir, BIKE_NETWORK_NAME, BIKE_FILTER)
-    return OsmnxSource(cache_dir)
+    """The graphs of the network `activity` is drawn on (network.NETWORKS),
+    each network in its own files: as OsmnxSource.for_activity, but the foot
+    network's is `OsmnxSource(cache_dir)` as before, where the tests stand
+    in for the graphs."""
+    if NETWORKS[activity] == FOOT_NETWORK_NAME:
+        return OsmnxSource(cache_dir)
+    return OsmnxSource.for_activity(cache_dir, activity)
 
 
 def _parse_start(value: str) -> tuple[float, float]:

@@ -110,6 +110,11 @@ SAME_ROUTES_AS: dict[str, str] = {
     # TASK-395: a trace that draws nothing is passed over, not divided by.
     "e13ded92b52d": "c9702b94404d",  # every route but a swim
     "db4ee081c4a4": "11647a97e632",  # the swims
+    # TASK-377: a hike, an activity with no route kept, on a network of its
+    # own; every route of before drawn the same (ADR-0321).
+    "9be259696402": "e13ded92b52d",  # every route but a swim
+    "822413512e24": "db4ee081c4a4",  # the swims
+    "05b33f547d79": "fb16815e3876",  # the app's paddling examples
 }
 
 

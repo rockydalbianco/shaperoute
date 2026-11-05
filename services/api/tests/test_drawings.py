@@ -938,14 +938,14 @@ def test_the_activity(client: TestClient) -> None:
     assert published(client, me)["activity"] == "paddling"
     answer = client.put(
         f"/me/activities/{KEY}/drawing",
-        json={"visibility": "everyone", "activity": "hiking"},
+        json={"visibility": "everyone", "activity": "climbing"},
         headers=me,
     )
     assert answer.status_code == 422
     assert code(answer) == "invalid_request"
     refused = client.put(
         f"/me/activities/{OTHER_KEY}",
-        json={**run(), "activity": "hiking"},
+        json={**run(), "activity": "climbing"},
         headers=me,
     )
     assert refused.status_code == 422

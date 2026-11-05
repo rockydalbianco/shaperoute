@@ -27,22 +27,37 @@ const BEFORE_LIMITS = {
   swimming: [500, 3_000],
   walking: [1_000, 30_000],
 };
+// Added since, each by a line of sports/index.ts: a hike (TASK-377), planned
+// before the walk, in the order of the route engine.
+const SINCE = "hiking";
+const SINCE_LIMITS: readonly [number, number] = [1_000, 30_000];
+const NOW_ACTIVITIES = [...BEFORE_ACTIVITIES.slice(0, 4), SINCE, "walking"];
 
 test("the activities are those of before, in their order", () => {
-  assert.deepEqual([...ACTIVITIES], BEFORE_ACTIVITIES);
-  assert.deepEqual([...API_ACTIVITIES], BEFORE_ACTIVITIES);
+  assert.deepEqual([...ACTIVITIES], NOW_ACTIVITIES);
+  assert.deepEqual([...API_ACTIVITIES], NOW_ACTIVITIES);
   assert.deepEqual([...RECORD_ACTIVITIES], BEFORE_RECORD_ACTIVITIES);
   // Then a workout at the gym, saved without a track (TASK-385 B0).
   assert.deepEqual(
     [...RUN_ACTIVITIES],
-    [...BEFORE_ACTIVITIES, ...BEFORE_RECORD_ACTIVITIES, "gym"],
+    [...NOW_ACTIVITIES, ...BEFORE_RECORD_ACTIVITIES, "gym"],
+  );
+  assert.deepEqual(
+    NOW_ACTIVITIES.filter((a) => a !== SINCE),
+    BEFORE_ACTIVITIES,
   );
 });
 
 test("the distances are those of before, in their order", () => {
+  const limits = Object.entries(DISTANCE_LIMITS_M).map(([a, l]) => [a, [...l]]);
   assert.deepEqual(
-    Object.entries(DISTANCE_LIMITS_M).map(([a, l]) => [a, [...l]]),
+    limits.filter(([a]) => a !== SINCE),
     Object.entries(BEFORE_LIMITS),
+  );
+  assert.deepEqual(DISTANCE_LIMITS_M[SINCE], SINCE_LIMITS);
+  assert.deepEqual(
+    limits.map(([a]) => a),
+    NOW_ACTIVITIES,
   );
   assert.deepEqual([MIN_DISTANCE_M, MAX_DISTANCE_M], [1_000, 50_000]);
 });
@@ -63,7 +78,7 @@ test("the types are the literals of before", () => {
   assert.equal(run, "running");
   assert.equal(ski, "xc_skiing");
   const exact: Activity extends
-    "running" | "cycling" | "paddling" | "swimming" | "walking"
+    "running" | "cycling" | "paddling" | "swimming" | "hiking" | "walking"
     ? true
     : false = true;
   assert.ok(exact);

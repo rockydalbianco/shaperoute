@@ -1148,6 +1148,33 @@ export const FR: Table = {
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Ski",
   "Cross-country ski": "Ski de fond",
+  // src/sports/gym.ts, src/gym/ (TASK-385 B0: a workout at the gym)
+  Gym: "Salle de sport",
+  "{n} exercises · {s} sets": "{n} exercices · {s} séries",
+  "{n} rests · avg {time} · {total} resting":
+    "{n} récups · moy. {time} · {total} de récup",
+  // src/gym/ (TASK-385 part B), approved on 2026-11-04
+  "Start workout": "Commencer la séance",
+  "No route in the gym: MuW times your workout.":
+    "Pas de parcours en salle : MuW chronomètre ta séance.",
+  "+ Exercise": "+ Exercice",
+  "Search exercises": "Rechercher un exercice",
+  "Add “{name}”": "Ajouter « {name} »",
+  "Set {n}": "Série {n}",
+  Reps: "Répétitions",
+  "Added weight": "Lest",
+  Incline: "Inclinaison",
+  Level: "Niveau",
+  Floors: "Étages",
+  "Log set": "Noter la série",
+  "Same again": "Même chose",
+  Rest: "Récup",
+  Custom: "Personnalisé",
+  "Next: {exercise} · set {n}": "Ensuite : {exercise} · série {n}",
+  "Rest over — next set": "Récup terminée : série suivante",
+  "Still training?": "Tu t'entraînes encore ?",
+  "Yes, keep going": "Oui, je continue",
+  "Finish workout": "Terminer la séance",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":
     "Pas de formes sur les pistes : MuW enregistre ta journée.",

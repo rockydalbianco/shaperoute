@@ -7,15 +7,24 @@ import { t, tLater } from "../i18n";
 /** What a route is for: a run, a bike ride since TASK-190, paddling on a
  * lake or the sea since TASK-191 (a canoe, a kayak, a SUP), a walk on the
  * foot network of a run (TASK-371 part B, ADR-0315), «Soon» until the server
- * walks, or swimming in open water (TASK-323 part C, ADR-0283), on in Expo
- * Go and `preview` first (`preview`), in the store builds once the server
- * keeps swims from the apps that cannot read them (TASK-387).
+ * walks, or swimming in open water (TASK-323, ADR-0283) since the server
+ * swims.
  * Paragliding (TASK-305 D0, ADR-0265) is only «Soon» for now: never chosen,
  * so never a route, and wherever the sports are told apart it goes as a
  * run. A day of alpine skiing («Ski») or of cross-country skiing is
- * recorded without a shape (TASK-375, ADR-0319): `recordOnly`. */
+ * recorded without a shape (TASK-375, ADR-0319): `recordOnly`. A workout
+ * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
+ * «Draw» offers only «Start workout». */
 export type Sport =
-  "run" | "bike" | "paddle" | "walk" | "swim" | "ski" | "xc_ski" | "paragliding";
+  | "run"
+  | "bike"
+  | "paddle"
+  | "walk"
+  | "swim"
+  | "ski"
+  | "xc_ski"
+  | "gym"
+  | "paragliding";
 
 export type SportOption = {
   id: Sport;
@@ -37,8 +46,8 @@ export type SportOption = {
   /**
    * On in Expo Go and `preview` while `ready` is still false: tried there
    * before the store builds have it, which leave it out as any sport not
-   * ready (shownSports). The swim, until TASK-387 is on the server
-   * (TASK-323, ADR-0283).
+   * ready (shownSports). The swim went this way until TASK-387 was on the
+   * server (TASK-323, ADR-0283); no sport does now.
    */
   preview?: boolean;
 };
@@ -48,22 +57,16 @@ export const ALL_SPORTS: readonly SportOption[] = [
   { id: "run", emoji: "🏃‍♂️", name: tLater("Run"), ready: true },
   { id: "bike", emoji: "🚴", name: tLater("Bike"), ready: true },
   { id: "paddle", emoji: "🛶", name: tLater("Paddle"), ready: true },
-  // Asked as "swimming" since TASK-323 C2 (activityOf); on in Expo Go and
-  // `preview` since the server swims, in the store builds with TASK-387.
-  {
-    id: "swim",
-    emoji: "🏊",
-    name: tLater("Open water swim"),
-    ready: false,
-    preview: true,
-  },
+  // Asked as "swimming" since TASK-323 C2 (activityOf); on since the server
+  // swims (TASK-323, 2026-11-04), in the store builds too.
+  { id: "swim", emoji: "🏊", name: tLater("Open water swim"), ready: true },
   // Asked as "walking" (activityOf), 1-30 km; on once the server has
   // TASK-371 part A and its migration 0043.
   { id: "walk", emoji: "🚶", name: tLater("Walk"), ready: false },
-  // Saved as "skiing" and "xc_skiing" (runActivityOf); on once the server
-  // has TASK-375 part A and its migration 0044, and the day has its numbers
-  // (part C).
-  { id: "ski", emoji: "⛷️", name: tLater("Ski"), ready: false, recordOnly: true },
+  // Saved as "skiing" and "xc_skiing" (runActivityOf). The alpine ski is on
+  // since TASK-375 D4: the server has parts A-D (migrations 0044 and 0048)
+  // and the day its numbers, lifts and pistes. The cross-country ski not yet.
+  { id: "ski", emoji: "⛷️", name: tLater("Ski"), ready: true, recordOnly: true },
   {
     id: "xc_ski",
     emoji: "🎿",
@@ -71,6 +74,10 @@ export const ALL_SPORTS: readonly SportOption[] = [
     ready: false,
     recordOnly: true,
   },
+  // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in
+  // the store builds too, the user's «ok accendi» (2026-11-05): the server
+  // keeps its posts from the apps that cannot read them (X-MuW-Reads).
+  { id: "gym", emoji: "🏋️", name: tLater("Gym"), ready: true },
   { id: "paragliding", emoji: "🪂", name: tLater("Paragliding"), ready: false },
 ];
 
@@ -218,6 +225,8 @@ export function runActivityOf(sport: Sport): RunActivity {
       return "skiing";
     case "xc_ski":
       return "xc_skiing";
+    case "gym":
+      return "gym";
     default:
       return activityOf(sport);
   }
@@ -240,6 +249,9 @@ export function withoutRouteLabel(sport: Sport): string {
     case "xc_ski":
       // No shapes on the slopes (TASK-375): the only way to go.
       return t("Record your day");
+    case "gym":
+      // No route in the gym (TASK-385 part B): the workout's own start.
+      return t("Start workout");
     default:
       return t("Run without a route");
   }

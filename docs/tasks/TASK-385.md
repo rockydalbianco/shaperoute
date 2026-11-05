@@ -173,18 +173,70 @@ Questa PR (documenti): `docs/tasks/TASK-385.md` (nuovo),
   (`tools/phone_engine/phone_engine.py engine`): porta i moduli dell'API che
   il motore del telefono importa, e fra questi il registro degli sport con
   `sports/gym.py`. Solo un file dell'app, non nativo: impronta iOS invariata.
-- **B0**: `apps/mobile/src/api/drawings.ts` (+ test),
-  `apps/mobile/src/api/reads.ts` (`gym` e `trackless` in `READS`, nello
-  stesso OTA della card); `gym` in `RUN_ACTIVITIES` di `shared-types`, con
-  le due mappe di Salute (`health/appleWorkout.ts` 50,
-  `healthConnectWorkout.ts` 70) e `apps/mobile/src/sports/gym.ts` (il
-  profilo di TASK-376 B3); la card e il dettaglio (`feed/FeedPost.tsx`,
-  `social/PublicParts.tsx`); file nuovi `gym/GymPostTile.tsx`,
-  `gym/ExerciseList.tsx`.
-- **B**: `apps/mobile/src/sports/gym.ts` (nuovo, dopo 376 B3), file nuovi in
-  `apps/mobile/src/gym/` (sessione, catalogo, serie, timer di recupero,
-  notifica locale, fine sessione) e i loro test; punti di registrazione:
-  `settings/sport.ts`, `ChooseScreen.tsx`, `RunEnd.tsx`, `i18n/*`.
+- **B0** (lista approvata dal Coordinatore il 2026-11-05; branch
+  `feat/TASK-385-b0-trackless-posts`):
+  - file nuovi: `apps/mobile/src/sports/gym.ts` (🏋️ «Gym», Apple 50
+    `traditionalStrengthTraining`, Health Connect 70 `STRENGTH_TRAINING`,
+    verificati sulle librerie), `gym/catalog.ts` (i 91 esercizi con i nomi),
+    `gym/GymTile.tsx` (il riquadro giallo), `gym/ExerciseList.tsx`,
+    `gym/GymDetail.tsx` (gli esercizi nella scheda del disegno),
+    `api/gym.ts` (`GET /drawings/{id}/exercises`) e i test
+    `gym/catalog.test.ts`, `gym/GymTile.test.tsx`,
+    `gym/ExerciseList.test.tsx`, `api/gym.test.ts`,
+    `feed/tracklessFeed.test.tsx`;
+  - `shared-types`: `src/index.ts` (`RUN_ACTIVITIES` prende
+    `TRACKLESS_ACTIVITIES`), `fixtures/run-activities.json`,
+    `fixtures/reads.json` (`this_app` con `gym,trackless`),
+    `test/runActivities.test.ts`, `test/sportRegistry.test.ts`,
+    `test/gym.test.ts`; nell'API solo i test che leggono le stesse fixture
+    (`test_record_only.py`, `test_sport_registry_api.py`, `test_reads.py`,
+    `test_gym.py`);
+  - righe nell'app: `api/reads.ts` (+ `reads.test.ts`, `accounts.test.ts`),
+    `sports/index.ts`, `sports/sportProfiles.test.ts`,
+    `sports/activityName.test.ts`, `i18n/it.ts`, `de.ts`, `fr.ts`, `es.ts`
+    (tre testi approvati), `activities/snow.ts` (`isTrackless`,
+    `routeActivity`), `social/PublicParts.tsx` (solo il chip «Gym», niente
+    concorso), `feed/FeedPost.tsx` (il riquadro al posto della mappa, la
+    prima foto prima, niente miniatura né km), `social/DrawingCard.tsx`
+    (gli esercizi, il tempo al posto dei km, niente «Draw it near me» né
+    «Edit the drawing»; al posto di `App.tsx`), `social/DrawingsGrid.tsx`,
+    `search/DrawingResultCard.tsx`, `search/ResultsGrid.tsx` (una riga),
+    `activities/ActivitiesList.tsx`, `activities/ActivityCard.tsx` (niente
+    linea, Strava né «Send to a friend»), `share/postRun.ts` (niente
+    distanza per la palestra), `feed/postEnergy.ts` (niente kcal fino alla
+    parte C; aggiunto per tsc, approvato dal Coordinatore);
+  - `contest/ContestCard.tsx` esce: un post di palestra non entra in un
+    concorso. Le mappe di Salute leggono il profilo (TASK-376 B3a): non
+    cambiano.
+- **B** (lista approvata dal Coordinatore il 2026-11-05; branch
+  `feat/TASK-385-b-gym-workout`; «Gym» `ready: true` anche nelle build
+  dello store, col sì dell'utente del 2026-11-05, «ok accendi»):
+  - file nuovi in `apps/mobile/src/gym/`: `workout.ts` (lo stato puro),
+    `workoutStore.ts` (`gym-workout.json`), `useWorkout.ts`, `restTimer.ts`,
+    `restAlert.ts` (vibrazione, `chime()`, notifica locale), `setKinds.ts`
+    (i campi di ogni tipo, i limiti dell'API), `groups.ts` (i gruppi nelle
+    cinque lingue), `gymKey.ts`, `gymOutbox.ts` (`gym-outbox.json`),
+    `useGymOutbox.ts`, `gymStyles.ts`, `WorkoutScreen.tsx`,
+    `ExercisePicker.tsx`, `SetFields.tsx`, `RestPanel.tsx`,
+    `StillTraining.tsx`, `GymEnd.tsx`, `GymWorkoutHost.tsx`; test
+    `restTimer.test.ts`, `setKinds.test.ts`, `workout.test.ts`,
+    `gymKey.test.ts`, `gymFiles.test.ts`, `restAlert.test.tsx`,
+    `GymWorkoutHost.test.tsx`, `GymDraw.test.tsx`;
+  - righe in file esistenti: `api/gym.ts` (+ `gym.test.ts`,
+    `saveGymSession`), `settings/sport.ts` (+ `sport.test.ts`),
+    `screens/ChooseScreen.tsx` (il testo sotto `RecordDay` diventa una
+    prop), `screens/RunNoRouteButton.tsx` (l'icona), `App.tsx` (due import,
+    `<GymWorkoutHost />` e l'`onRun` della palestra), `i18n/it.ts`, `de.ts`,
+    `fr.ts`, `es.ts` (i testi approvati);
+  - i test che contano gli sport, una riga ciascuno (approvati dal
+    Coordinatore dopo la lista): `settings/SportButton.test.tsx`,
+    `SportSetting.test.tsx`, `SportVoiceItalian.test.tsx`,
+    `SportStoreBuild.test.tsx`, `snowSport.test.ts`; `tabs/TabSwipeOwners.test.ts`
+    (`gym/ExercisePicker.tsx` fra gli scroll orizzontali, col rimbalzo di
+    default; ok del Coordinatore dopo la CI);
+  - `RunEnd.tsx` esce: vuole una traccia, la palestra ha `GymEnd.tsx`. In B
+    «Save» salva l'allenamento e lo mette in «My activities»; il post nel
+    Feed è la parte D, le kcal e Salute la parte C.
 - **C**: `apps/mobile/src/gym/gymKcal.ts` (nuovo); punti di registrazione in
   `health/*Workout.ts`.
 - **D–H**: si elencano prima di ciascuna.
@@ -240,3 +292,15 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
 - 2026-11-05: parte A scritta (API, database, tipi; migrazione 0047). Il
   server può andare col sì dell'utente anche prima della B0: l'header tiene
   fuori i post senza traccia. Prossima: B0, l'app che li legge.
+- 2026-11-05: parte B0 scritta: l'app legge i post di palestra (riquadro,
+  esercizi, miniature) e manda `gym,trackless`. OTA di produzione col sì
+  dell'utente, prima della parte B.
+- 2026-11-05: parte B0 in `main` (#822, a02b7959); va nell'OTA di produzione
+  col sì dell'utente, prima della parte B.
+- 2026-11-05: parte B scritta: «Start workout» in «Draw», la schermata
+  dell'allenamento, il catalogo con la ricerca e il nome libero, le serie
+  dei quattro tipi, il recupero con l'avviso, «Pause», «Still training?»,
+  le correzioni alla fine e «Save» (`PUT /me/gym-sessions/{key}`, con la
+  coda sul telefono). L'utente il 2026-11-05: «ok si» all'OTA di produzione
+  con la B0 e «ok accendi» per «Gym» nelle build dello store, subito:
+  `ready: true` nella stessa PR. Prossima: C (kcal e Salute) e D (il post).

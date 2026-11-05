@@ -11,9 +11,11 @@ import {
 } from "react-native";
 
 import { sportPaceLabel } from "../activities/activityText";
+import { isTrackless } from "../activities/snow";
 import { drawingPhotoSource } from "../api/drawings";
 import { cityName } from "../explore/recommendedRoutes";
 import { RouteThumb } from "../explore/RouteThumb";
+import { GymTile } from "../gym/GymTile";
 import { t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
 import { bearingOf } from "../map/turnedMap";
@@ -40,7 +42,7 @@ import { useUnits } from "../units/useUnits";
 import { ActionBar } from "./ActionBar";
 import { isImportedPost, isShown } from "./feedPosts";
 import { postEnergy } from "./postEnergy";
-import { RouteMap } from "./RouteMap";
+import { drawingHeight, RouteMap } from "./RouteMap";
 import type { SamplePost } from "./sampleFeed";
 import { turnedLine } from "./turnedLine";
 
@@ -90,11 +92,13 @@ export function postFacts(post: SamplePost): string {
   const what = named !== null && sameWords(named, post.title) ? null : named;
   // A member's drawing has the seconds; an example only its minutes.
   const ms = isShown(post) ? post.drawing.duration_s * 1000 : post.minutes * 60_000;
+  // A workout at the gym has no distance nor pace: its time (TASK-385 B0).
+  const gym = isTrackless(post.activity);
   const facts = [
     what,
-    distanceLabel(post.route_m),
+    gym ? null : distanceLabel(post.route_m),
     durationLabel(post.minutes * 60_000),
-    sportPaceLabel(post.activity, post.route_m, ms),
+    gym ? null : sportPaceLabel(post.activity, post.route_m, ms),
     postEnergy(post),
   ]
     .filter((fact): fact is string => fact !== null)
@@ -135,13 +139,15 @@ export function postFacts(post: SamplePost): string {
  * the figure small in a corner. A member's drawing says when it was run, as
  * a comment says when it was written, and has its actions under the card
  * (`ActionBar`, TASK-355); the «…» and the actions stay outside the card's
- * button, where a screen reader reaches them.
+ * button, where a screen reader reaches them. So does its author's name with
+ * the initial: a tap on them opens the author's profile, as a tagged name
+ * does (TASK-399).
  */
 export function FeedPost({ post, width, onOpen }: Props) {
   // The line of facts is written again when «Settings» changes the units
   // (TASK-182).
   useUnits();
-  const { apiUrl, account } = useFollowsDoor();
+  const { apiUrl, account, openProfile } = useFollowsDoor();
   // Which of the drawing (0) and its photos is shown, and the furthest
   // reached: the photos up to the one after it are loaded, and stay.
   const [page, setPage] = useState(0);
@@ -159,17 +165,21 @@ export function FeedPost({ post, width, onOpen }: Props) {
   function onPressIn({ nativeEvent }: GestureResponderEvent) {
     down.current = { x: nativeEvent.pageX, y: nativeEvent.pageY };
   }
-  function onPress({ nativeEvent }: GestureResponderEvent) {
-    const from = down.current;
-    down.current = null;
-    const moved =
-      from === null
-        ? 0
-        : Math.hypot(nativeEvent.pageX - from.x, nativeEvent.pageY - from.y);
-    if (moved <= TAP_SLOP) {
-      onOpen?.();
-    }
+  // A tap, not the end of a swipe, does what it is for.
+  function tapped(action: () => void) {
+    return ({ nativeEvent }: GestureResponderEvent) => {
+      const from = down.current;
+      down.current = null;
+      const moved =
+        from === null
+          ? 0
+          : Math.hypot(nativeEvent.pageX - from.x, nativeEvent.pageY - from.y);
+      if (moved <= TAP_SLOP) {
+        action();
+      }
+    };
   }
+  const onPress = tapped(() => onOpen?.());
   if (blocked) {
     return null;
   }
@@ -196,15 +206,25 @@ export function FeedPost({ post, width, onOpen }: Props) {
           source: drawingPhotoSource(apiUrl, state.session.token, photo),
         }))
       : [];
+  // A workout at the gym has no line: its tile in place of the map, and
+  // never ordered, its first photo first (the user's choice, TASK-385).
+  const gym = isTrackless(post.activity);
   // The pages in the post's order, the map among the photos (TASK-348,
   // ADR-0301); never ordered, the map first.
+  const order = isShown(post) ? post.drawing.order : null;
+  const ordered = itemsOf(
+    order,
+    photos.map((photo) => photo.n),
+  );
   const pages =
     photos.length === 0
       ? []
-      : itemsOf(
-          isShown(post) ? post.drawing.order : null,
-          photos.map((photo) => photo.n),
-        );
+      : gym && (order === null || order === undefined)
+        ? [
+            ...ordered.filter((item) => item.kind !== "drawing"),
+            { kind: "drawing" as const },
+          ]
+        : ordered;
   // Each page of the photos takes a tap itself (TASK-330): were the card
   // the one touched, iOS would not let the photos scroll inside it, and the
   // swipe would turn the app's page to «Draw» instead. A page is as wide as
@@ -250,7 +270,13 @@ export function FeedPost({ post, width, onOpen }: Props) {
           title: post.title,
           facts: heard,
         });
-  const drawing = (
+  const drawing = gym ? (
+    <GymTile
+      width={width}
+      height={drawingHeight(width)}
+      durationS={isShown(post) ? post.drawing.duration_s : post.minutes * 60}
+    />
+  ) : (
     <RouteMap
       id={post.id}
       line={post.line}
@@ -273,15 +299,18 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const wordsOnPhoto = (
     <>
       <Scrim height={SCRIM_HEIGHT} />
-      <View
-        style={styles.thumb}
-        pointerEvents="none"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        testID="feed-photo-thumb"
-      >
-        <RouteThumb line={upright} width={THUMB} height={THUMB} />
-      </View>
+      {/* No figure in the corner of a workout at the gym: it has none. */}
+      {!gym && (
+        <View
+          style={styles.thumb}
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          testID="feed-photo-thumb"
+        >
+          <RouteThumb line={upright} width={THUMB} height={THUMB} />
+        </View>
+      )}
       <View
         style={styles.wordsOnPhoto}
         pointerEvents="none"
@@ -294,28 +323,55 @@ export function FeedPost({ post, width, onOpen }: Props) {
       </View>
     </>
   );
+  const whoBody = (
+    <>
+      <View style={styles.avatar}>
+        <Text style={styles.initial}>{post.user.charAt(0).toUpperCase()}</Text>
+      </View>
+      <View style={styles.names}>
+        <Text style={styles.user}>{post.user}</Text>
+        {(city !== "" || ago !== "") && (
+          <View style={styles.whereWhen}>
+            {city !== "" && (
+              <Text style={styles.city} numberOfLines={1}>
+                {city}
+              </Text>
+            )}
+            {ago !== "" && (
+              <Text style={styles.when}>{city === "" ? ago : `· ${ago}`}</Text>
+            )}
+          </View>
+        )}
+      </View>
+    </>
+  );
+  // A member's name opens their profile (TASK-399): a button of its own,
+  // outside the card's, or the tap would open the route. An example's
+  // name is only words.
+  const who =
+    author === null ? (
+      <View style={styles.who}>{whoBody}</View>
+    ) : (
+      <Tap
+        style={styles.who}
+        onPressIn={onPressIn}
+        onPress={tapped(() =>
+          openProfile({
+            public_id: author.public_id,
+            username: author.username,
+            photo: null,
+          }),
+        )}
+        accessibilityRole="button"
+        accessibilityLabel={t("{name}'s profile", { name: author.username })}
+        testID="feed-author"
+      >
+        {whoBody}
+      </Tap>
+    );
   const body = (
     <>
-      <View style={styles.who}>
-        <View style={styles.avatar}>
-          <Text style={styles.initial}>{post.user.charAt(0).toUpperCase()}</Text>
-        </View>
-        <View style={styles.names}>
-          <Text style={styles.user}>{post.user}</Text>
-          {(city !== "" || ago !== "") && (
-            <View style={styles.whereWhen}>
-              {city !== "" && (
-                <Text style={styles.city} numberOfLines={1}>
-                  {city}
-                </Text>
-              )}
-              {ago !== "" && (
-                <Text style={styles.when}>{city === "" ? ago : `· ${ago}`}</Text>
-              )}
-            </View>
-          )}
-        </View>
-      </View>
+      {author === null && who}
       {photos.length === 0 ? (
         <>
           {drawing}
@@ -397,7 +453,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const card =
     onOpen === undefined ? (
       <View
-        style={styles.card}
+        style={[styles.card, author !== null && styles.under]}
         testID="feed-post"
         accessible
         accessibilityLabel={label}
@@ -406,7 +462,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
       </View>
     ) : (
       <Tap
-        style={styles.card}
+        style={[styles.card, author !== null && styles.under]}
         onPressIn={onPressIn}
         onPress={onPress}
         testID="feed-post"
@@ -422,6 +478,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
   }
   return (
     <View style={styles.card}>
+      {who}
       {card}
       {menu !== null && <View style={styles.menu}>{menu}</View>}
       {onOpen !== undefined && <ActionBar post={post} onOpen={onOpen} />}
@@ -435,6 +492,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     backgroundColor: color.surface,
     overflow: "hidden",
+  },
+  // Under the author's name: the corners above are the post's.
+  under: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
   },
   who: {
     flexDirection: "row",

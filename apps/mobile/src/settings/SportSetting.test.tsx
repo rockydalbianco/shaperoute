@@ -19,20 +19,23 @@ beforeEach(() => {
   jest.mocked(saveSport).mockClear();
 });
 
-test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191) and, in Expo Go, «Open water swim» (TASK-323) can be", async () => {
+test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191), «Open water swim» (TASK-323) and «Ski» (TASK-375) can be", async () => {
   await render(<SportSetting />);
   expect(screen.getByText("SPORT")).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
   expect(screen.getByRole("radio", { name: "Bike" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Paddle" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Open water swim" })).not.toBeChecked();
-  expect(screen.getAllByRole("radio")).toHaveLength(4);
-  // «Walk» (TASK-371), «Ski» and «Cross-country ski» (TASK-375) and
-  // «Paragliding» (TASK-305 D0) say «Soon».
-  expect(screen.getAllByText("Soon")).toHaveLength(4);
+  expect(screen.getByRole("radio", { name: "Ski" })).not.toBeChecked();
+  // And «Gym» (TASK-385 B), on in Expo Go and preview.
+  expect(screen.getAllByRole("radio")).toHaveLength(6);
+  // «Walk» (TASK-371), «Cross-country ski» (TASK-375) and «Paragliding»
+  // (TASK-305 D0) say «Soon».
+  expect(screen.getAllByText("Soon")).toHaveLength(3);
+  expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
 });
 
-test("in Expo Go and preview «Open water swim» 🏊 is chosen with a tap, and kept (TASK-323)", async () => {
+test("«Open water swim» 🏊 is chosen with a tap, and kept (TASK-323)", async () => {
   await render(<SportSetting />);
   expect(screen.getByText("🏊")).toBeOnTheScreen();
   expect(screen.queryByLabelText("Open water swim, coming soon")).toBeNull();
@@ -57,9 +60,9 @@ test("a sport not ready says «Soon» and takes no tap", async () => {
   await render(<SportSetting sports={RUN_ONLY} />);
   expect(screen.getAllByRole("radio")).toHaveLength(1);
   expect(screen.getByLabelText("Bike, coming soon")).toBeOnTheScreen();
-  // Bike, Paddle, Open water swim (TASK-323 C), Walk (TASK-371), Ski and
-  // Cross-country ski (TASK-375) and Paragliding (TASK-305 D0).
-  expect(screen.getAllByText("Soon")).toHaveLength(7);
+  // Bike, Paddle, Open water swim (TASK-323), Walk (TASK-371), Ski and
+  // Cross-country ski (TASK-375), Gym (TASK-385 B) and Paragliding (TASK-305 D0).
+  expect(screen.getAllByText("Soon")).toHaveLength(8);
 });
 
 test("a sport that is ready is chosen with a tap, and kept", async () => {

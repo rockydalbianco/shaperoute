@@ -83,17 +83,21 @@ export type ApiActivity = (typeof API_ACTIVITIES)[number];
 export const RECORD_ACTIVITIES = activitiesOf(RECORDED_SPORTS);
 export type RecordActivity = (typeof RECORD_ACTIVITIES)[number];
 
-/** What a saved run was (PUT /me/activities/{key}): an activity of the API,
- * or one recorded without a shape. */
-export const RUN_ACTIVITIES = [...API_ACTIVITIES, ...RECORD_ACTIVITIES] as const;
-export type RunActivity = (typeof RUN_ACTIVITIES)[number];
-
 /** The activities saved without a track (TASK-385, ADR-0327): a workout at
- * the gym, PUT /me/gym-sessions/{key}. Not yet in RUN_ACTIVITIES: the app
- * takes them there with the screens that show a post without a line (part
- * B0), and with them `gym,trackless` in its X-MuW-Reads (api/reads.ts). */
+ * the gym, PUT /me/gym-sessions/{key}. The app reads them since part B0,
+ * which shows a post without a line. */
 export const TRACKLESS_ACTIVITIES = activitiesOf(TRACKLESS_SPORTS);
 export type TracklessActivity = (typeof TRACKLESS_ACTIVITIES)[number];
+
+/** What a saved run was: an activity of the API, one recorded without a
+ * shape (PUT /me/activities/{key}), or one saved without a track
+ * (PUT /me/gym-sessions/{key}). */
+export const RUN_ACTIVITIES = [
+  ...API_ACTIVITIES,
+  ...RECORD_ACTIVITIES,
+  ...TRACKLESS_ACTIVITIES,
+] as const;
+export type RunActivity = (typeof RUN_ACTIVITIES)[number];
 
 /** Where a saved run comes from (TASK-312, ADR-0272): "muw", recorded by
  * the app; "file", a GPX, TCX or FIT file of another app, read on the phone
@@ -996,6 +1000,54 @@ export interface PublicProfile {
    * older than TASK-368.
    */
   personal_bests?: PersonalBest[];
+  /**
+   * The VO₂ max (TASK-397, ADR-0332): null without its owner's yes, or
+   * without a value of Health of the last 365 days and without a running
+   * best to estimate it from. Missing from an API older than TASK-397.
+   */
+  vo2max?: Vo2Max | null;
+}
+
+/** Where a VO₂ max comes from (TASK-397). */
+export type Vo2MaxSource = "apple_health" | "health_connect" | "estimate";
+
+/**
+ * A VO₂ max as the profile shows it (TASK-397): of Apple Health or Health
+ * Connect if measured in the last 365 days, else MuW's estimate from the
+ * running bests of the last 365 days (Daniels's VDOT).
+ */
+export interface Vo2Max {
+  /** Millilitres of oxygen per kg per minute, rounded. */
+  value: number;
+  source: Vo2MaxSource;
+  /** YYYY-MM-DD: the day it was measured; for the estimate, of the run. */
+  measured_on: string;
+  /** The best the estimate comes from (5k … marathon); null for Health. */
+  from_distance: (typeof RUNNING_BEST_DISTANCES)[number] | null;
+}
+
+/**
+ * GET and PUT /me/vo2max (TASK-397): the owner's yes, off until given,
+ * and what the others see with it (null when there is none).
+ */
+export interface Vo2MaxSettings {
+  show: boolean;
+  vo2max: Vo2Max | null;
+}
+
+/** PUT /me/vo2max: the yes, or its end (the value of Health goes too). */
+export interface Vo2MaxSettingsRequest {
+  show: boolean;
+}
+
+/**
+ * PUT /me/vo2max/reading (TASK-397): the last value of Health, only after
+ * the yes (409 without), between 10 and 90; the day, never the hour.
+ */
+export interface Vo2MaxReadingRequest {
+  value: number;
+  measured_on: string;
+  source: Exclude<Vo2MaxSource, "estimate">;
 }
 
 /** The distances of the personal bests on foot (TASK-368), in their order. */

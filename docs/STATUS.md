@@ -160,6 +160,37 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono**
+  (2026-11-05; numeri riservati dal Coordinatore il 2026-11-04, ADR-0314 «Proposto»;
+  richiesta dell'utente «l'app per apple watch completa per tutti gli sport», scelta
+  «Subito anche senza telefono»). App SwiftUI come target dell'app, la guida riscritta in
+  Swift con gli stessi fixture del TypeScript, GPS e Salute dall'orologio, traccia al
+  telefono al rientro; l'orologio non disegna percorsi. Assorbe TASK-323 E e il battito in
+  tempo reale (169/374). Parti A (fondamenta), B (senza telefono), C (sport per sport,
+  nuoto spento fino alla prova in acqua), D (testi, privacy, build). Branch
+  `docs/TASK-370-apple-watch`, solo proposta; build sua, la 1.1, dopo la 1.0.2 (scelta
+  dell'utente). Prossima domanda: l'Apple Watch per le prove. `tasks/TASK-370.md`.
+- **TASK-399 — Nel Feed il nome di chi ha pubblicato apre il suo profilo** (2026-11-05;
+  numero dal Coordinatore; richiesta dell'utente). In `FeedPost` la riga del nome era dentro il
+  pulsante della card e apriva il disegno; ora sul disegno di un iscritto è un pulsante a sé che
+  chiama `openProfile`, come i tag (TASK-208) e i commenti (TASK-338). Solo app, nessun testo
+  nuovo. Branch `fix/TASK-399-feed-author-profile`; la unisce il Coordinatore a CI verde; in
+  produzione col prossimo OTA. `tasks/TASK-399.md`.
+  **Chiuso il 2026-11-05**: #830, chiusura nella stessa PR; vedi «Completato».
+- **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
+  ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
+  reti di prova.
+  - `gravel` dà i percorsi della bici di oggi: 54 su 54, sterrato 22,7%
+    contro 23,3%.
+  - `mtb` pedala i sentieri fino a `mtb:scale` 2: 49 su 54, 24 buoni, e
+    a piedi con la bici scende dal 4,9% all'1,4%.
+  - Lo sterrato lo decide il posto (35–45% in montagna, 3–13% in città e
+    in pianura), non la rete.
+
+  Proposta: Gravel sulla rete della bici, MTB con una rete sua. Prossimo:
+  le scelte dell'utente, una alla volta (`tasks/TASK-378.md`,
+  `sports/gravel.md`).
+
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
   anche le vecchie»; testi nuovi approvati il 2026-11-05. Parte A (API +
@@ -238,6 +269,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   campanella, commenti, risultati della ricerca entrano una riga dopo
   l'altra). Impronta 6f8bba4c. Video in `out/TASK-388/c-*`; merge del
   Coordinatore dopo l'ok dell'utente.
+  **C in `main`** (#803, fed77512, 2026-11-05). **C2** (branch
+  `fix/TASK-388-c2-sheet-scrim`): lo sfondo scuro dei filtri della ricerca
+  sfuma sul posto invece di salire con il foglio (`SheetModal` `dim`).
+  **C2 in `main`** (#811, 62b1a952, 2026-11-05). **C3** (branch
+  `fix/TASK-388-c3-style-sheet`): il foglio del prodotto di «Style»
+  (`StyleProductSheet`, TASK-384 B) passa a `SheetModal` e sale sulla stessa
+  molla degli altri fogli; video approvato dall'utente il 2026-11-05 («Sì,
+  approvo»). Righe scritte dal Coordinatore.
 - **TASK-383 — «Body»: l'unità di peso e altezza dentro il riquadro**
   (2026-11-04; numero dal Coordinatore; seguito di TASK-374 A). L'utente:
   «aggiungi i cm nel altezza ed i kg». L'unità c'era già, piccola e grigia
@@ -315,6 +354,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'header di TASK-387 (`gym` + `trackless`), niente filtro proprio.
   Parte A (API e database, migrazione 0047) in PR da
   `feat/TASK-385-a-gym-api`; server col sì dell'utente.
+  Parte A in `main` (#812). Parte B0 (l'app legge i post senza traccia) in
+  PR da `feat/TASK-385-b0-trackless-posts`; OTA col sì, prima di B.
+  Parte B0 in `main` (#822, a02b7959); OTA di produzione col sì
+  dell'utente.
+  Parte B (l'app registra l'allenamento: esercizi, serie, recupero,
+  «Pause», «Still training?», fine e «Save») in PR da
+  `feat/TASK-385-b-gym-workout`; «Gym» accesa anche nelle build dello store
+  col sì dell'utente («ok accendi», 2026-11-05).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo
@@ -371,6 +418,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   delle auto riesce 46 volte su 54 sulle sei zone; solo sentieri, 3 su 9 a
   Trento. Scritti `hike.md` e ADR-0321 come proposto. Prossimo: le scelte
   dell'utente, una alla volta (`tasks/TASK-377.md`).
+  **Parte 0 in `main`** (#821). **Scelte dell'utente** (2026-11-05):
+  - «Hike» ⛰️;
+  - la rete a piedi senza strade delle auto;
+  - da 1 a 30 km;
+  - sentieri fino a T3;
+  - nel gioco come la camminata;
+  - tre testi approvati in cinque lingue;
+  - acceso appena pronto.
+
+  ADR-0321 accettato. Prossimo: 377-A, motore, contratto e API, dopo la
+  lista al Coordinatore.
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il
@@ -434,6 +492,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
     Finché il server non ha la rotta, l'elenco non si vede. Lo sci resta
     `ready: false`. Prossimo: la parte E, la prova sulla neve.
+  - 2026-11-05: D3 in `main` (#817); il server è a 9c617cb5, con la 0048 e
+    la privacy sul sito. **D4**: lo sci alpino è acceso (`ready: true`),
+    anche nelle build dello store, perché l'utente vuole provarlo dall'app
+    pubblicata. Il fondo resta «Soon». Solo JavaScript, impronta 6f8bba4c.
+    Prossimo: l'OTA di produzione col sì dell'utente, gli estratti delle
+    Alpi (o del mondo, se l'utente dice sì), poi la parte E.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta
@@ -1094,12 +1158,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `paddleExamples.json` a ridisegno finito; il codice di E (Apple Watch,
   ora che TASK-321 B è in `main`, sul Mac con Xcode); la prova in acqua
   (primavera 2027).
+  **Acceso per tutti** (2026-11-04, scelta dell'utente, «Subito per
+  tutti»): branch `feat/TASK-323-swim-ready`, `ready: true` e i test che lo
+  davano «Soon». Entra **dopo TASK-375 B1**, che tocca gli stessi file
+  («Dopo lo sci»), con `main` unito dentro; prima dell'OTA,
+  `draw_examples --swim` sul server. Le curve senza nome a riva finché non
+  gira `shore_extract`. Aggiunta ad ADR-0283.
   **Prima in preview** (2026-11-05, scelta dell'utente, «Subito in
   preview»): branch `feat/TASK-323-swim-preview`, il nuoto acceso in Expo Go
   e `preview` (`preview: true` in `sport.ts`), lo store ancora senza fino
   alla #765 (ferma per TASK-387). Poi un OTA della sola `preview`. Niente
   nuoti pubblicati nel Feed finché TASK-387 non è sul server. Aggiunta ad
   ADR-0283.
+  **Chiuso il 2026-11-05**: #800 (preview) e #765 (per tutti, `b30bda0c`)
+  in main; vedi «Completato».
 - **TASK-317 — L'attesa in «Draw»: un testo da corridore e i disegni del
   Feed** (ADR-0277; richiesta e scelta dell'utente del 2026-10-28, numero e
   condizioni dal Coordinatore). Branch `feat/TASK-317-draw-waiting`. Prima
@@ -2821,6 +2893,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `tasks/TASK-394.md`; Termini e Privacy cambiano con la parte B. Prossimo:
   la parte A (API), con l'ADR e la lista dei file al Coordinatore prima del
   codice. Prerequisito dell'utente: Google Cloud con Web Risk.
+  **Scelte e testi in `main`** (#808, 507e45dd); parte A con ADR-0333 e
+  migrazione 0050, in una sessione nuova. Approvata anche la frase della
+  Privacy «Pubblicità» per una parte B prima di Style (2026-11-05, «SI
+  APPROVO», `tasks/TASK-394.md` D.2b). Sì anticipato sul nome della società
+  di Google per Web Risk (2026-11-05, «OK SI»): si copia dal contratto quando
+  l'utente lo attiva. Nessun testo di TASK-394 aspetta più un sì.
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,
@@ -2832,6 +2910,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `docs/TASK-397-vo2max-proposal`; la unisce il Coordinatore. Prossimo: il sì
   dell'utente sui testi, poi la lista dei file della parte A al Coordinatore.
   `tasks/TASK-397.md`.
+  **2026-11-05**: testi e informativa della parte A approvati (#824); parte A
+  (API, migrazione `0049_vo2max.sql`, `GET`/`PUT /me/vo2max`, `PUT`/`DELETE
+  /me/vo2max/reading`, `vo2max` nel profilo) in PR da
+  `feat/TASK-397-a-vo2max-api`; server col «CONFERMO» dell'utente dopo il
+  merge. Prossimo: la parte B (app e informativa nelle cinque lingue).
 
 - **TASK-395 — La ricerca non divide più per zero quando un percorso non
   disegna niente** (2026-11-05; numero dal Coordinatore; seguito di TASK-297
@@ -2851,7 +2934,42 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ridisegno sul server.
   **Chiuso il 2026-11-05**: #807 in main (`325f7d56`); vedi «Completato».
 
+- **TASK-398 — «town cat 5000» rosso in CI: l'immagine ubuntu-26.04, non la
+  ricerca** (2026-11-05; numero dal Coordinatore). Il test cadeva su main e su
+  ogni PR con `d080e87a95000aa5`: dalle 16:00Z `ubuntu-latest` è ubuntu-26.04,
+  e lì lo stesso codice, con lo stesso Python e le stesse librerie, dà un altro
+  digest (42/42 run verdi su 24.04, 3/3 rossi su 26.04). Niente budget a tempo
+  (è un numero di tracce), niente ordine di hash. Il digest di 26.04 entra
+  nella tupla di «town cat 5000», come per «town heart 5000»; `route_engine`
+  non si tocca, impronta ferma. Rischio da guardare, senza azione: il server
+  su un Ubuntu più nuovo potrebbe disegnare di un soffio diverso. Branch
+  `fix/TASK-398-flaky-cat-search`; la unisce il Coordinatore a CI verde.
+  `tasks/TASK-398.md`.
+  **Chiuso il 2026-11-05**: #827 in main (`42e0433a`); vedi «Completato».
+
 ## Completato
+
+- **TASK-323 — Nuoto in acque libere, «Open water swim»** (2026-11-05;
+  ADR-0283). Parti A–D in main, E il piano (#744); il nuoto si sceglie in
+  ogni build: in preview con la #800, per tutti con la #765 (`b30bda0c`),
+  in produzione con l'OTA che l'utente approva. Il server tiene i nuoti
+  lontani dalle app che non li leggono (TASK-387). Resta, ognuno col sì
+  dell'utente: `draw_examples --swim` sul server (dopo gli estratti dello
+  sci, i comandi dal Coordinatore), `shore_extract` (le curve senza nome a
+  riva fino ad allora), il controllo di `paddleExamples.json`, il codice
+  dell'orologio (E, sul Mac con Xcode), la prova in acqua (primavera
+  2027). `tasks/TASK-323.md`.
+- **TASK-399 — Nel Feed il nome di chi ha pubblicato apre il suo profilo** (2026-11-05;
+  richiesta dell'utente). #830: sul disegno di un iscritto la riga dell'iniziale e del nome è un
+  pulsante a sé, fuori da quello della card, e apre il profilo come i tag (TASK-208) e i commenti
+  (TASK-338); il resto della card apre il disegno, un esempio resta testo. Solo JS, nessun testo
+  nuovo. Prossimo, col sì dell'utente: il telefono con il prossimo OTA. `tasks/TASK-399.md`.
+- **TASK-398 — «town cat 5000» rosso in CI: l'immagine ubuntu-26.04**
+  (2026-11-05). #827 in main (`42e0433a`): dalle 16:00Z `ubuntu-latest` è
+  ubuntu-26.04 e la ricerca del gatto del paese finto dà un altro digest con
+  lo stesso codice; il test accetta i due, come «town heart 5000». Motore e
+  impronta invariati. Rischio da guardare: prima di aggiornare il sistema del
+  server, rifare `tests/test_same_routes.py` sulla macchina nuova.
 
 - **TASK-395 — La ricerca non divide più per zero quando un percorso non disegna niente**
   (2026-11-05; seguito di TASK-297 C). #807 in main (`325f7d56`): in `optimizer.search` un

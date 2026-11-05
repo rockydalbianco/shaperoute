@@ -23115,5 +23115,10 @@ un'attività nel contratto entra subito anche nelle liste dell'app.
    servono, e la RAM del server cresce di una zona sola.
 4. **Il gioco**: una hike conta come una camminata. `RULES_VERSION` resta
    2, perché nessuna corsa salvata prima della 0051 può essere una hike.
+5. **Niente vie ferrate.** La rete «foot» tiene `highway=via_ferrata`. Il
+   primo banco ne ha trovati 2,6 km a Trento e 3,0 km a Fiemme, anche
+   senza `sac_scale`. Una via ferrata è un'arrampicata con l'imbrago,
+   oltre i sentieri fino a T3 scelti dall'utente: la rete `hike` la
+   toglie.
 
 **Server**: migrazione 0051 e deploy, col sì dell'utente.

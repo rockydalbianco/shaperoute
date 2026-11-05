@@ -48,6 +48,7 @@ from route_engine.networks import NETWORKS_BY_NAME
 from route_engine.networks.hike import (
     ALPINE,
     CAR_ROADS,
+    CLIMBS,
     HIKE_FILTER,
     HIKE_NETWORK_NAME,
 )
@@ -70,11 +71,13 @@ COLUMN_TAGS: dict[int, dict[str, str]] = {
     14: {"highway": "path", "sac_scale": "alpine_hiking"},  # T4
     16: {"highway": "path", "sac_scale": "demanding_alpine_hiking"},  # T5
     18: {"highway": "path", "sac_scale": "difficult_alpine_hiking"},  # T6
+    28: {"highway": "via_ferrata"},
     20: {"highway": "track"},
     22: {"highway": "footway"},
 }
 CAR_WAYS = {"trunk", "primary", "primary_link", "secondary", "tertiary"}
-ALPINE_COLUMNS = {14, 16, 18}
+# Beyond T3, and a via ferrata.
+CLIMB_COLUMNS = {14, 16, 18, 28}
 HIKED_COLUMNS = {8, 10, 12, 20, 22}
 
 _CONDITION = re.compile(r'\["([^"]+)"(?:(=|!=|~|!~)"([^"]*)")?\]')
@@ -250,7 +253,7 @@ def test_the_source_of_a_hike_is_the_hike_network_in_its_own_files() -> None:
 def test_the_hike_filter_is_the_foot_filter_without_car_roads_and_alpine_paths() -> (
     None
 ):
-    foot = FOOT_FILTER.replace('|services"]', f'|services|{CAR_ROADS}"]')
+    foot = FOOT_FILTER.replace('|services"]', f'|services|{CAR_ROADS}|{CLIMBS}"]')
     assert HIKE_FILTER == foot + f'["sac_scale"!~"{ALPINE}"]'
 
 
@@ -282,6 +285,8 @@ def test_the_hike_filter_is_the_foot_filter_without_car_roads_and_alpine_paths()
         ({"highway": "tertiary"}, False),
         ({"highway": "tertiary_link"}, False),
         ({"highway": "motorway"}, False),
+        ({"highway": "via_ferrata"}, False),
+        ({"highway": "via_ferrata", "sac_scale": "mountain_hiking"}, False),
         ({"highway": "path", "foot": "no"}, False),
         ({"highway": "track", "access": "private"}, False),
         ({"highway": "residential", "sidewalk": "separate"}, False),
@@ -298,6 +303,7 @@ def test_the_foot_filter_still_keeps_the_car_roads_and_alpine_paths() -> None:
     keep = _keeps(FOOT_FILTER)
     assert keep({"highway": "tertiary"})
     assert keep({"highway": "path", "sac_scale": "difficult_alpine_hiking"})
+    assert keep({"highway": "via_ferrata"})
 
 
 # --- the graph ---
@@ -312,7 +318,7 @@ def test_the_hike_graph_is_named_two_way_and_without_left_out_ways(
     ways = _osm_ways(hike_town)
     assert {_column_way(c) for c in HIKED_COLUMNS} <= ways
     left_out = {c for c, tags in COLUMN_TAGS.items() if tags["highway"] in CAR_WAYS}
-    assert not {_column_way(c) for c in left_out | ALPINE_COLUMNS} & ways
+    assert not {_column_way(c) for c in left_out | CLIMB_COLUMNS} & ways
     # A one-way street is walked both ways.
     east = {
         hike_town.nodes[v]["x"] > hike_town.nodes[u]["x"]
@@ -368,7 +374,7 @@ def test_a_hike_is_closed_and_stays_on_the_hike_network(
     zone = read_graph(next(tmp_path.glob(f"{HIKE_NETWORK_NAME}_*.graphml")))
     for data in _steps(zone, route.nodes):
         assert not _ways(data, "highway") & CAR_WAYS
-        assert not {_column_way(c) for c in ALPINE_COLUMNS} & _ways(data, "osmid")
+        assert not {_column_way(c) for c in CLIMB_COLUMNS} & _ways(data, "osmid")
     assert all(f == HIKE_FILTER for _, f in downloads)
 
 

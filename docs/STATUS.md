@@ -523,6 +523,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     (`SAME_ROUTES_AS`), quindi niente notte di esempi.
 
   Server (migrazione 0051 e deploy) solo col sì dell'utente.
+  **Parte B in PR** (2026-11-05, `feat/TASK-377-b-hike-app`): «Hike» ⛰️ ha
+  la sua riga in «Settings», ancora «Soon»; i tre testi in cinque lingue,
+  l'avviso sui sentieri sotto i percorsi, FIT/GPX/Strava «hike» negli
+  import; ricerca e modulo la offrono appena è pronta. L'utente tiene la
+  rete di oggi (circa metà sui sentieri in montagna). Prossimo: «ready»
+  con una riga, dopo il server con la 0051, col sì dell'utente.
   Prossimo: la parte B (app), dopo la #765.
   **B3c, seconda metà, in PR** (2026-11-05, dopo la #765): «Impostazioni»
   legge emoji, nome e «Record only» dal profilo dello sport; `activityOf` e

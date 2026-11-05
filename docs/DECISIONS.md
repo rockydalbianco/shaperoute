@@ -23638,3 +23638,31 @@ dell'arrivo sparisce subito (scelta dell'utente «Riepilogo per qualche
 minuto», contro «Sparisce subito»).
 L'utente dà il sì a `@bacons/apple-targets` 5.0.0 e al modulo locale in
 Swift nella build 1.0.2 («Sì, nella 1.0.2»).
+
+## ADR-0321, precisazione — La parte B: Hike nell'app, «Soon» fino al server
+
+**Stato**: Accettato · 2026-11-05 · TASK-377 parte B. Lista dei file
+approvata dal Coordinatore; le scelte tecniche sono decise dall'agente su
+delega dell'utente.
+
+1. **«Hike» sta dopo «Walk» in «Settings»**, `ready: false` finché il
+   server non ha la parte A (0051 e deploy). Si accende con una riga, col
+   sì dell'utente.
+2. **Offerta quando è pronta.** `activityOffered` legge una tabella,
+   `OFFERED_WHEN_READY` (camminata → «Walk», hike → «Hike»): la ricerca e
+   il modulo per pubblicare non offrono la hike prima della sua riga, così
+   l'API non risponde 422 a un filtro che l'app mostra.
+3. **L'avviso sui sentieri è un campo del profilo**, `caution`, letto in un
+   punto solo: `RoutePanel.tsx` lo mostra sotto ogni percorso dello sport,
+   col bordo «caution», fuori dalle due note del motore di TASK-337.
+4. **Il tempo stimato** usa il passo delle camminate (`timeAt: "walker"`,
+   12:00/km senza camminate). Le hike non entrano nel passo: dipende dalla
+   salita e piegherebbe la stima della camminata.
+5. **Gli import**: FIT `sport` 17 (hiking), GPX/TCX con «hik…», il numero
+   4 di Strava. Prima «hiking» era nessuno sport.
+6. **L'orologio** tiene la hike come la camminata: non entra in
+   `NOT_ON_WATCH`. Se TASK-370 la vuole fuori, è una riga sua.
+7. **La rete resta quella di A** (domanda all'utente, 2026-11-05: «Va bene
+   così»): in montagna circa metà di un'escursione sta su strade
+   secondarie tranquille. Pesare gli archi, l'alternativa di ADR-0321, è un
+   task a parte del motore, dopo le prime escursioni vere.

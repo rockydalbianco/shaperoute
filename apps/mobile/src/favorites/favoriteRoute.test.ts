@@ -530,7 +530,7 @@ test("a favorite of before, or of an activity unknown here, opens as a run", () 
   for (const kept of [
     favorite as FavoriteDetail,
     { ...BIKE, activity: "running" },
-    { ...BIKE, activity: "hiking" },
+    { ...BIKE, activity: "climbing" },
   ]) {
     const opened = openedFavorite(kept);
     expect(opened.request.activity).toBe("running");

@@ -132,7 +132,7 @@ def points_of(result: dict[str, Any]) -> list[LatLon]:
 
 def test_paddling_is_offered_and_has_water_not_zones(tmp_path: Path) -> None:
     check_supported("paddling")
-    assert ROAD_ACTIVITIES == ("running", "cycling")
+    assert ROAD_ACTIVITIES == ("running", "cycling", "hiking")
     graphs = ActivityGraphs.from_cache(tmp_path)
     assert isinstance(graphs.water, ServerWater)
     assert graphs.water.folder == tmp_path / "water"  # beside the zones

@@ -859,6 +859,7 @@ export const IT: Table = {
   "Ride without a route": "Pedala senza percorso",
   "Paddle without a route": "Pagaia senza percorso",
   "Walk without a route": "Cammina senza percorso",
+  "Hike without a route": "Escursione senza percorso",
   "Record your day": "Registra la giornata",
   "Run without a route": "Corri senza percorso",
 
@@ -1142,6 +1143,10 @@ export const IT: Table = {
   Bike: "Bici",
   Paddle: "Pagaia",
   Walk: "Camminata",
+  // src/sports/hiking.ts (TASK-377 part B), approved on 2026-11-05
+  Hike: "Escursione",
+  "Trails can be demanding: check the route and the weather before you set off.":
+    "I sentieri possono essere impegnativi: controlla il percorso e il meteo prima di partire.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Sci",
   "Cross-country ski": "Sci di fondo",
@@ -1406,8 +1411,13 @@ export const IT: Table = {
     "Disegna con un dito. Finisci dove hai iniziato per chiuderla. Con due dita sposti la mappa.",
   "Each new line joins the drawing. Two fingers move the map.":
     "Ogni nuova linea si unisce al disegno. Con due dita sposti la mappa.",
-  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize.":
-    "Trascina la figura o la mappa. Tieni fermo il dito su una linea, poi trascina per piegarla. Con due dita la ridimensioni.",
+  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize and turn it.":
+    "Trascina la figura o la mappa. Tieni fermo il dito su una linea, poi trascina per piegarla. Con due dita la ridimensioni e la ruoti.",
+  // src/mapdraw/DrawOnMap.tsx (TASK-402)
+  "Turn left 15 degrees": "Ruota a sinistra di 15 gradi",
+  "Turn right 15 degrees": "Ruota a destra di 15 gradi",
+  "Angle, {deg} degrees. Double tap to type it":
+    "Angolo, {deg} gradi. Tocca due volte per scriverlo",
   Line: "Linea",
   "Tap point after point. Tap the first point to close it, the last one to finish.":
     "Tocca un punto dopo l'altro. Tocca il primo punto per chiuderla, l'ultimo per finire.",

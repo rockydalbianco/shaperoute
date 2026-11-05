@@ -862,6 +862,7 @@ export const FR: Table = {
   "Ride without a route": "Rouler sans parcours",
   "Paddle without a route": "Pagayer sans parcours",
   "Walk without a route": "Marcher sans parcours",
+  "Hike without a route": "Randonner sans parcours",
   "Record your day": "Enregistrer la journée",
   "Run without a route": "Courir sans parcours",
 
@@ -1145,6 +1146,10 @@ export const FR: Table = {
   Bike: "Vélo",
   Paddle: "Pagaie",
   Walk: "Marche",
+  // src/sports/hiking.ts (TASK-377 part B), approved on 2026-11-05
+  Hike: "Randonnée",
+  "Trails can be demanding: check the route and the weather before you set off.":
+    "Les sentiers peuvent être exigeants : vérifie le parcours et la météo avant de partir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Ski",
   "Cross-country ski": "Ski de fond",
@@ -1412,8 +1417,13 @@ export const FR: Table = {
     "Dessine avec un doigt. Termine là où tu as commencé pour la fermer. Deux doigts déplacent la carte.",
   "Each new line joins the drawing. Two fingers move the map.":
     "Chaque nouvelle ligne rejoint le dessin. Deux doigts déplacent la carte.",
-  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize.":
-    "Fais glisser la figure ou la carte. Garde le doigt immobile sur une ligne, puis fais glisser pour la plier. Deux doigts changent la taille.",
+  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize and turn it.":
+    "Fais glisser la figure ou la carte. Garde le doigt immobile sur une ligne, puis fais glisser pour la plier. Deux doigts changent la taille et la font tourner.",
+  // src/mapdraw/DrawOnMap.tsx (TASK-402)
+  "Turn left 15 degrees": "Tourner de 15 degrés vers la gauche",
+  "Turn right 15 degrees": "Tourner de 15 degrés vers la droite",
+  "Angle, {deg} degrees. Double tap to type it":
+    "Angle, {deg} degrés. Touchez deux fois pour le saisir",
   Line: "Ligne",
   "Tap point after point. Tap the first point to close it, the last one to finish.":
     "Touche point après point. Touche le premier point pour la fermer, le dernier pour terminer.",

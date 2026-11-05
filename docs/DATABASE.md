@@ -970,6 +970,38 @@ precisazione, `API.md` «VO₂ max»; il numero è del Coordinatore):
 - Nessun indice oltre la chiave; nessuna riga di prima cambia, nessun
   backfill. Test in `test_vo2max.py`.
 
+Migrazione `0050_outfit_tags.sql` (TASK-394 parte A, ADR-0333, `API.md`
+«Outfit tags»; il numero è del Coordinatore). Tabelle sue, fuori da quelle
+di Style (`0046`): un post di MuW e uno di un iscritto hanno regole
+diverse.
+
+- **`drawing_outfit_tags`**: i capi su una foto. `id` (`uuid`),
+  `drawing_id` e `n` con la chiave esterna su `drawing_photos` (`ON DELETE
+  CASCADE`: **il capo segue la foto**, e se ne va con lei, con il disegno
+  tornato `only_me` che toglie le foto dal server, con la corsa e con
+  l'account), `position` (0–4, l'ordine mandato), `x` e `y` (0–1),
+  `item` (la lista fissa), `brand` (1–40), `product_name` (1–80,
+  facoltativo), `url` (`https://`, al più 1000, già pulito) e `store` (il
+  nome che «Shop on» dice), tutti e due presenti o tutti e due `NULL`,
+  `hidden_at` (nascosto da una segnalazione: lo vede solo il
+  proprietario), `created_at`. Indice `(drawing_id, n, position)`.
+- **Il trigger `drawing_photo_replaced`**: quando il JPEG di una foto
+  cambia nello stesso posto (`UPDATE OF jpeg`, con `OLD.jpeg IS DISTINCT
+  FROM NEW.jpeg`), i capi di quel posto si cancellano: è un'altra foto. La
+  stessa foto rimandata dall'app li tiene. Un trigger perché
+  `drawing_photos.py` non cambi.
+- **`outfit_tag_clicks`**: `(tag_id, day)` chiave, `opens` e `shops`, `ON
+  DELETE CASCADE` sul capo. Solo numeri per capo e per giorno: **nessun
+  account, nessun indirizzo, nessun telefono** (`test_outfit_tags.py`,
+  `test_nothing_personal_is_kept`, lo controlla sulle colonne).
+- **`outfit_blocked_domains`**: l'elenco di MuW, `domain` chiave (minuscolo,
+  ASCII), `note`, `created_at`. Un dominio blocca anche gli host sotto di
+  lui. Si scrive a mano sul server, dopo una segnalazione.
+- **`reports`**: `outfit_tag` entra nel CHECK dei tipi
+  (`reports_kind_check`, letto dalla `0033` e allargato).
+- Nessuna riga di prima cambia, nessun backfill. Test in
+  `test_outfit_tags.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

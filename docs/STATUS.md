@@ -165,8 +165,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   coniglio poi mi dai le tre opzioni AB e C però lì non c'è la possibilità di modificare
   l'immagine», poi «Sì, rimettilo»). Il tasto torna sotto il risultato di «Draw» e mette la
   linea dell'opzione scelta sulla mappa, dov'è. Rovescia TASK-340 per il solo risultato. Solo
-  JS, con un OTA. Branch `docs/TASK-403-edit-under-choices`; poi il codice col via del
-  Coordinatore. `tasks/TASK-403.md`.
+  JS, con un OTA. Documenti #854; codice in `feat/TASK-403-edit-under-choices`, chiuso nella
+  stessa PR (Done). Resta: l'OTA di produzione col sì dell'utente. `tasks/TASK-403.md`.
 - **TASK-402 — Ruotare il disegno e aggiungere pezzi sulla mappa** (2026-11-05; numeri dal
   Coordinatore, ADR-0336 «Proposto»; richiesta dell'utente «ruotare il disegno di tot gradi e
   dai anche un elenco interno da poter selezionare e muovere sulla mappa», scelta «Aggiungere
@@ -176,6 +176,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Solo JS, con un OTA. Branch `docs/TASK-402-freehand-pieces` (PR #850), solo proposta; i cinque
   testi approvati dall'utente il 2026-11-05. Prossimo: la lista dei file della parte A al
   Coordinatore, poi il codice. `tasks/TASK-402.md`.
+  **Parte A pronta il 2026-11-05** (branch `feat/TASK-402-a-turn`): «−15°», l'angolo da scrivere
+  e «+15°» con «Move», due dita che girano, «Undo»; una forma girata va come contorno; impronta
+  iOS 6f8bba4c invariata. Prossimo: la parte B (i pezzi), con la sua lista al Coordinatore.
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
@@ -188,6 +191,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **2026-11-05**: testi scelti dall'utente, «Frase della voce + %» (la frase della voce come
   titolo, sotto «42% drawn · 3.1 km left»; unico testo nuovo «{distance} left»). Parte A
   aspetta il via del Coordinatore sulla lista dei file. PR #847.
+  **2026-11-05, parte A in `main`** (#851, b7c1c8cb): la notifica a schermo bloccato solo su
+  iOS, impronta iOS `6f8bba4c` invariata; vista nel simulatore (Expo Go, corsa simulata,
+  telefono bloccato: compare alla svolta, sparisce riaprendo l'app; iOS taglia il titolo a
+  una riga). Va nella prossima anteprima; prima della produzione il Coordinatore chiede
+  all'utente la prova su una corsa vera. Parte B: scelta dell'utente «Solo la guida» per la
+  Live Activity (freccia, metri, svolta, via, barra con % e distanza che manca); restano
+  il via del Coordinatore sulla lista (sì dell'utente alla dipendenza nella 1.0.2 dato). Senza percorso niente Live Activity
+  («No, solo con percorso»); all'arrivo riepilogo per 5 minuti, con «Stop» sparisce subito
+  («Riepilogo per qualche minuto»).
 - **TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono**
   (2026-11-05; numeri riservati dal Coordinatore il 2026-11-04, ADR-0314 «Proposto»;
   richiesta dell'utente «l'app per apple watch completa per tutti gli sport», scelta
@@ -514,6 +526,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     (`SAME_ROUTES_AS`), quindi niente notte di esempi.
 
   Server (migrazione 0051 e deploy) solo col sì dell'utente.
+  **Parte B in PR** (2026-11-05, `feat/TASK-377-b-hike-app`): «Hike» ⛰️ ha
+  la sua riga in «Settings», ancora «Soon»; i tre testi in cinque lingue,
+  l'avviso sui sentieri sotto i percorsi, FIT/GPX/Strava «hike» negli
+  import; ricerca e modulo la offrono appena è pronta. L'utente tiene la
+  rete di oggi (circa metà sui sentieri in montagna). Prossimo: «ready»
+  con una riga, dopo il server con la 0051, col sì dell'utente.
   Prossimo: la parte B (app), dopo la #765.
   **Parte A in `main`** (#838, `48bc58c8`). Prossimo: la parte B in una
   sessione nuova (lista al Coordinatore; le note sono in
@@ -2995,6 +3013,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   APPROVO», `tasks/TASK-394.md` D.2b). Sì anticipato sul nome della società
   di Google per Web Risk (2026-11-05, «OK SI»): si copia dal contratto quando
   l'utente lo attiva. Nessun testo di TASK-394 aspetta più un sì.
+  **Parte A (API) in PR** (2026-11-05, branch
+  `feat/TASK-394-a-outfit-tags-api`, ADR-0333, migrazione `0050`): `PUT
+  …/drawing/photos/{n}/tags`, `POST /outfit-tags/{id}/open` e `/shop`,
+  `outfit_tags` in ogni foto (link e totali solo al proprietario),
+  `outfit_tag` nelle segnalazioni e nell'email, il link pulito e controllato
+  con Web Risk «Update API» (a Google solo prefissi di impronte). Senza
+  `SHAPEROUTE_WEB_RISK_KEY` si aprono solo i negozi di Style. La unisce il
+  Coordinatore; migrazione sul server e chiave di Web Risk col sì
+  dell'utente. Prossimo: la parte B (app), dopo TASK-384 B.
+  **Parte A in `main`** (#844, c7d63400, 2026-11-05; con `engine.zip` rifatto,
+  perché il motore del telefono porta dentro `schemas.py`). La `0050` va sul
+  server con la `0049` e la `0051`, col sì dell'utente; la chiave di Web Risk
+  dopo, quando l'utente avrà il progetto Google Cloud. Prossimo: la parte B
+  (app), con la lista dei file al Coordinatore.
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,
@@ -3055,6 +3087,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-404 — Disegno a mano: un primo tratto piccolo non blocca i tratti dopo** (2026-11-05;
+  segnalazione dell'utente dal nuoto, vale per ogni sport). Ogni tratto aggiunto si raddrizza
+  sull'1% della grandezza del disegno che forma, non di quello di prima: dopo un puntino un
+  tratto grande non tiene più il tremolio del dito e non si prende i 200 punti, e il tratto
+  dopo non dà più «That is too much for one route». Solo JS (`mapdraw/drawing.ts`), impronta
+  `6f8bba4c`; OTA col sì dell'utente. `tasks/TASK-404.md`.
 - **TASK-323 — Nuoto in acque libere, «Open water swim»** (2026-11-05;
   ADR-0283). Parti A–D in main, E il piano (#744); il nuoto si sceglie in
   ogni build: in preview con la #800, per tutti con la #765 (`b30bda0c`),

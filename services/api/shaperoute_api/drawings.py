@@ -65,6 +65,7 @@ from shaperoute_api.activities import (
 )
 from shaperoute_api.db import Database
 from shaperoute_api.follows import apart_sql, follows_sql
+from shaperoute_api.outfit_tags import OutfitTagBody, tags_on_photos
 from shaperoute_api.push import notify_tagged, tagged_before
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.recommended import preview
@@ -285,6 +286,9 @@ class PhotoBody(BaseModel):
     """On this API; it changes when the photo does."""
     width: int
     height: int
+    outfit_tags: list[OutfitTagBody] = Field(default_factory=list)
+    """What its owner wears in it (TASK-394, outfit_tags.py): to whoever
+    sees the photo; the link and the totals to its owner only."""
 
 
 class MyDrawingBody(BaseModel):
@@ -421,7 +425,7 @@ SEEN_COLUMNS = f"{_SEEN_FIELDS}, ST_AsGeoJSON(d.track, 15) AS track"
 LISTED_COLUMNS = f"{_SEEN_FIELDS}, ST_AsGeoJSON(d.preview, 15) AS track"
 MINE_COLUMNS = (
     "r.key, r.activity, r.source, d.id, d.title, d.visibility, d.description,"
-    " d.published_at"
+    " d.published_at, r.user_id"
 )
 # The run of a drawing, locked while its drawing changes.
 RUN_TO_DRAW = (
@@ -473,8 +477,12 @@ def in_order(
     return [by_item[item] for item in order if item in by_item], order
 
 
-def _details(conn: Connection, ids: Sequence[UUID]) -> Details:
-    """In three reads for a page, never the bytes of a photo."""
+def _details(
+    conn: Connection, ids: Sequence[UUID], viewer_id: int | None = None
+) -> Details:
+    """In four reads for a page, never the bytes of a photo. The items on
+    the photos as `viewer_id` sees them (outfit_tags.tags_on_photos): None,
+    as anyone but their owner."""
     tags: dict[UUID, list[TagBody]] = defaultdict(list)
     photos: dict[UUID, list[PhotoBody]] = defaultdict(list)
     orders: dict[UUID, list[str]] = {}
@@ -488,6 +496,7 @@ def _details(conn: Connection, ids: Sequence[UUID]) -> Details:
             tags[row["drawing_id"]].append(
                 TagBody(public_id=row["public_id"], username=row["username"])
             )
+        outfits = tags_on_photos(conn, ids, viewer_id)
         for row in conn.execute(
             "SELECT drawing_id, n, width, height, updated_at FROM drawing_photos"
             " WHERE drawing_id = ANY(%s) ORDER BY n",
@@ -499,6 +508,7 @@ def _details(conn: Connection, ids: Sequence[UUID]) -> Details:
                     url=photo_url(row["drawing_id"], row["n"], row["updated_at"]),
                     width=row["width"],
                     height=row["height"],
+                    outfit_tags=outfits.get((row["drawing_id"], row["n"]), []),
                 )
             )
         for row in conn.execute(
@@ -553,7 +563,11 @@ def _after_cursor(cursor: str) -> tuple[datetime, UUID]:
 
 
 def _mine(conn: Connection, rows: Sequence[DictRow]) -> list[MyDrawingBody]:
-    details = _details(conn, [row["id"] for row in rows if row["id"] is not None])
+    # The runs of one account, which sees all of its items (TASK-394).
+    owner = rows[0]["user_id"] if rows else None
+    details = _details(
+        conn, [row["id"] for row in rows if row["id"] is not None], owner
+    )
     return [
         MyDrawingBody(
             key=row["key"],
@@ -800,7 +814,7 @@ class Drawings:
                 (user["id"], viewer_id),
             ).fetchone()
             page, more = rows[:limit], len(rows) > limit
-            details = _details(conn, [row["id"] for row in page])
+            details = _details(conn, [row["id"] for row in page], viewer_id)
         assert count is not None
         return DrawingsBody(
             drawings=[
@@ -833,7 +847,7 @@ class Drawings:
             ).fetchone()
             if row is None:
                 return None
-            details = _details(conn, [row["id"]])
+            details = _details(conn, [row["id"]], viewer_id)
         return DrawingDetailBody(
             **_seen(row, details),
             author=AuthorBody(public_id=row["public_id"], username=row["username"]),

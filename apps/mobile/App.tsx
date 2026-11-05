@@ -124,6 +124,7 @@ import { shapeName, toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import { useImageOutline } from "./src/route/useImageOutline";
 import { drawingTrack, routeTrack, type TrackInPlace } from "./src/route/figureLines";
+import { EditDrawingButton } from "./src/route/EditDrawingButton";
 import { NearYou } from "./src/route/NearYou";
 import { useNearYou } from "./src/route/nearYouShapes";
 import { samplePicture } from "./src/route/samplePictures";
@@ -639,6 +640,15 @@ function MuW() {
   const drawingTrackInPlace = useMemo(
     () => cardTrack(drawing !== null ? drawingTrack(drawing) : null),
     [drawing],
+  );
+  // «Edit the drawing» under A, B and C (TASK-403, ADR-0337): the line of
+  // the route chosen, where it is.
+  const resultTrack = useMemo(
+    () =>
+      view.status === "done" && chosen !== null
+        ? cardTrack(routeTrack(chosen.points))
+        : null,
+    [view.status, chosen],
   );
   const others = useMemo(
     () =>
@@ -1457,6 +1467,7 @@ function MuW() {
             distanceM={mapDraw.distanceM}
             problem={mapDraw.problem}
             onDraw={mapDraw.request === null ? null : onDrawCanvas}
+            onTurn={mapDraw.turnTo}
           />
         ) : reviewing && activity !== null ? (
           <ActivityCard
@@ -1655,13 +1666,16 @@ function MuW() {
             chosen={chosenIndex}
             onChoose={(index) => answer && setPicked({ of: answer, index })}
             figures={
-              <FigureTiles
-                chosen={resultTile}
-                onChoose={onChangeFigure}
-                // On the water only the shapes, as in «Draw».
-                pictures={sportActivity !== "paddling"}
-                testID="result-figures"
-              />
+              <>
+                <FigureTiles
+                  chosen={resultTile}
+                  onChoose={onChangeFigure}
+                  // On the water only the shapes, as in «Draw».
+                  pictures={sportActivity !== "paddling"}
+                  testID="result-figures"
+                />
+                <EditDrawingButton onPress={editTrackOf(resultTrack)} />
+              </>
             }
           />
         )}

@@ -57,11 +57,11 @@ export const COMPLEXITY_LABELS: Readonly<Record<DrawingComplexity, string>> = {
   complex: tLater("Complex"),
 };
 
-/** The sports the sheet offers: a walk once «Walk» is ready, so the API
- * never answers 422 to a filter the app shows (TASK-371); never a hike
- * before «Settings» has it (TASK-377 part B moves it to `activityOffered`). */
-export const SEARCH_ACTIVITIES: readonly Activity[] = ACTIVITIES.filter(
-  (activity) => activity !== "hiking" && activityOffered(activity),
+/** The sports the sheet offers: a walk once «Walk» is ready, a hike once
+ * «Hike» is (TASK-377), so the API never answers 422 to a filter the app
+ * shows (TASK-371). */
+export const SEARCH_ACTIVITIES: readonly Activity[] = ACTIVITIES.filter((activity) =>
+  activityOffered(activity),
 );
 
 /** The name of each sport the sheet may offer (src/sports, TASK-376 B3). */

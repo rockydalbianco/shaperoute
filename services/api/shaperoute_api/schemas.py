@@ -407,6 +407,9 @@ ErrorCode = Literal[
     # server has no keys for that provider.
     "new_account",
     "provider_unavailable",
+    # An item tagged on a photo refused (TASK-394, ADR-0333): `reason` says
+    # why, for the app's words.
+    "outfit_tag_rejected",
 ]
 
 # Why an image gives no outline: InvalidImageError.reason in
@@ -434,6 +437,21 @@ EditReason = Literal[
 # ADR-0176).
 CommentReason = Literal["negative"]
 
+# Why an item tagged on a photo was refused: outfit_tags.py and
+# outfit_links.py (TASK-394, ADR-0333). Not an https page on a domain name,
+# a shortener, a link MuW cannot open (its list, or Web Risk), an address
+# written in the brand or the model, more than 5 on the photo or 10 in the
+# post, words of the filter (comment_filter.py).
+OutfitTagReason = Literal[
+    "not_https",
+    "shortened",
+    "blocked",
+    "link_in_text",
+    "too_many_on_photo",
+    "too_many_in_post",
+    "words",
+]
+
 
 class ErrorDetail(BaseModel):
     code: ErrorCode
@@ -443,8 +461,9 @@ class ErrorDetail(BaseModel):
     suggested_distance_m: int | None = None
     # Only with image_not_usable: why the engine found no outline (TASK-073);
     # with outline_edit_rejected, why the drawing was refused (TASK-079);
-    # with comment_rejected, why the comment was (TASK-120).
-    reason: ImageReason | EditReason | CommentReason | None = None
+    # with comment_rejected, why the comment was (TASK-120); with
+    # outfit_tag_rejected, why the item was (TASK-394).
+    reason: ImageReason | EditReason | CommentReason | OutfitTagReason | None = None
 
 
 class ErrorBody(BaseModel):

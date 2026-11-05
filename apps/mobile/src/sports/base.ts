@@ -86,4 +86,7 @@ export interface SportProfile {
   /** What a MuW route of the sport says on its card (TASK-365); a ride's
    * when not said. */
   muwLabel?: string;
+  /** What «Draw» tells under every route of the sport, as a caution, in
+   * English (TASK-377): a hike's trails can be demanding. */
+  caution?: string;
 }

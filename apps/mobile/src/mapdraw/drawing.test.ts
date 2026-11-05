@@ -286,3 +286,34 @@ test("a tap on a drawing adds nothing, and too many details are refused", () => 
   ).toEqual({ problem: "too_much" });
   expect(travelledPoints(wiggly.figure.details)).toBeLessThanOrEqual(MAX_DETAIL_POINTS);
 });
+
+test("a small first line leaves room for the big lines drawn after it", () => {
+  // A finger's line: a circle with the hand's tremble of under a metre.
+  const shaky = (radius: number, centre: P): P[] =>
+    circle(radius, 1, 0, centre).map(([x, y], i) => [
+      x + 0.4 * Math.sin(i * 2.1),
+      y + 0.4 * Math.cos(i * 1.7),
+    ]);
+  // A short line first: on its own a drawing of ten metres.
+  let placed = placedOf(
+    newDrawing(
+      onMap([
+        [0, 0],
+        [0, -10],
+      ]),
+    ),
+  );
+  // Then three circles twenty times as big: each straightened as much as
+  // the drawing it makes, not as the short line, so the tremble goes and
+  // most of what a route runs is left for the lines after (TASK-404).
+  for (const centre of [
+    [-100, -100],
+    [100, -100],
+    [0, 100],
+  ] as P[]) {
+    placed = placedOf(withDetail(placed, onMap(shaky(100, centre))));
+  }
+  if (placed.figure.kind !== "drawing") throw new Error(placed.figure.kind);
+  expect(placed.figure.details).toHaveLength(4);
+  expect(travelledPoints(placed.figure.details)).toBeLessThan(80);
+});

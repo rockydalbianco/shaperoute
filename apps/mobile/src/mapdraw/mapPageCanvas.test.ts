@@ -563,3 +563,33 @@ test("with «Move» a line held still, then dragged, bends there and is told; a 
   expect(only(page.told(), "bent")).toHaveLength(1);
   expect(only(page.told(), "figure")).toHaveLength(1);
 });
+
+test("two fingers on the figure turn it too, clockwise, and the app is told by how much (TASK-402)", () => {
+  const page = runPage();
+  page.send(canvas("move"));
+  page.down(180, 300, 220, 300);
+  // A quarter turn clockwise, as far apart.
+  page.to(200, 280, 200, 320);
+  // The corner at the bottom left goes to the top left.
+  const shown = page.drawn("canvas") as number[][][];
+  expect(shown[0][0][0]).toBeCloseTo(10.995, 9);
+  expect(shown[0][0][1]).toBeCloseTo(46.005, 9);
+  page.up();
+  const [done] = only(page.told(), "figure").filter((m) => m.done);
+  expect(done.turn).toBeCloseTo(90, 9);
+  expect(done.factor).toBe(1);
+  // About the figure's middle, which stays where it was.
+  expect(done.centre[0]).toBeCloseTo(11, 9);
+  expect(done.centre[1]).toBeCloseTo(46, 9);
+});
+
+test("two fingers that barely turn size the figure without turning it (TASK-402)", () => {
+  const page = runPage();
+  page.send(canvas("move"));
+  page.down(180, 300, 220, 300);
+  page.to(170, 301, 230, 299); // under 3°
+  page.up();
+  const [done] = only(page.told(), "figure").filter((m) => m.done);
+  expect(done.factor).toBeCloseTo(1.5, 2);
+  expect(done).not.toHaveProperty("turn");
+});

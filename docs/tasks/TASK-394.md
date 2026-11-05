@@ -1,8 +1,9 @@
 # TASK-394 — I capi che indossi: tag sui propri post con il link al negozio
 
-**Stato**: Todo — proposta approvata dall'utente (2026-11-05, «Sì,
-approvo»), con le cinque scelte, e testi approvati lo stesso giorno;
-prossimo: la parte A, con l'ADR dal Coordinatore. Le scelte
+**Stato**: In lavorazione — proposta approvata dall'utente (2026-11-05, «Sì,
+approvo»), con le cinque scelte, e testi approvati lo stesso giorno. Parte A
+(API, ADR-0333, migrazione `0050`) in `main` (#844, 2026-11-05); prossimo: la
+parte B (app), dopo TASK-384 B. Le scelte
 di prodotto sono dell'utente (sotto, «Le scelte dell'utente»); il resto è
 deciso dall'agente su delega dell'utente
 **Fase**: 4 · **Branch**: `docs/TASK-394-member-outfit-tags` (proposta,
@@ -541,30 +542,94 @@ Questa PR:
 
 Le parti (scritti ora, controllati con loro):
 
-- [ ] A: un link `http`, con utente, porta o IP, un accorciatore, un dominio
+- [x] A: un link `http`, con utente, porta o IP, un accorciatore, un dominio
       bloccato, un link che Web Risk (finto nei test) dà per pericoloso, o un
       indirizzo nella marca → `422`; il frammento e i parametri di
       tracciamento e affiliazione noti si tolgono, il resto della query resta.
-- [ ] A: a Web Risk non arriva mai un link intero (un test sul finto).
-- [ ] A: chi non vede la foto non vede i suoi capi; un capo nascosto lo vede
+      (`test_outfit_tags.py`, `test_outfit_links.py`)
+- [x] A: a Web Risk non arriva mai un link intero (un test sul finto).
+      (`test_web_risk.py::test_only_prefixes_reach_google`,
+      `test_outfit_tags.py::test_web_risk_gets_hash_prefixes_only`)
+- [x] A: chi non vede la foto non vede i suoi capi; un capo nascosto lo vede
       solo l'autore; una foto sostituita o tolta perde i suoi capi.
-- [ ] A: i conteggi non tengono account, indirizzo o telefono (un test come
+- [x] A: i conteggi non tengono account, indirizzo o telefono (un test come
       `test_nothing_personal_is_kept` di Style).
 - [ ] B: un capo segnato nel compositore si vede nel Feed sulla stessa foto e
       nello stesso punto, anche dopo aver riordinato le foto.
 - [ ] B: «Shop on {store}» apre il browser di sistema col link pulito.
-- [ ] A: i totali dei conteggi arrivano solo all'autore; aggiornare i capi
+- [x] A: i totali dei conteggi arrivano solo all'autore; aggiornare i capi
       tiene i conteggi di quelli che restano.
 - [ ] B: l'autore vede i totali sul suo post e nella scheda dei suoi capi,
       gli altri no; i tocchi dell'autore sui suoi capi non si contano.
 - [ ] B: l'impronta iOS resta quella di `main`.
 
-## File toccati (questa PR)
+## File toccati
+
+Proposta, scelte e testi (#805, #808):
 
 ```
 docs/tasks/TASK-394.md
 docs/STATUS.md
 ```
+
+Parte A (`feat/TASK-394-a-outfit-tags-api`; lista data al Coordinatore e
+approvata il 2026-11-05, con `schemas.py` in più; `test_moderation.py`,
+`moderation.test.ts` e `api-error-codes.json` aggiunti dopo, perché i loro
+controlli leggono l'ultimo elenco dei tipi di segnalazione e dei codici
+d'errore; `engine.zip`, approvato dal Coordinatore, perché il motore del
+telefono porta dentro `schemas.py` e va rifatto per ultimo con
+`python tools/phone_engine/phone_engine.py engine`):
+
+```
+services/api/migrations/0050_outfit_tags.sql            (nuovo)
+services/api/shaperoute_api/outfit_tags.py              (nuovo)
+services/api/shaperoute_api/outfit_links.py             (nuovo)
+services/api/shaperoute_api/web_risk.py                 (nuovo)
+services/api/shaperoute_api/app.py                      (install in fondo)
+services/api/shaperoute_api/drawings.py                 (PhotoBody.outfit_tags, _details con viewer_id)
+services/api/shaperoute_api/feed.py                     (viewer_id a _details)
+services/api/shaperoute_api/moderation.py               (kind outfit_tag)
+services/api/shaperoute_api/report_email.py             (l'email e «Hide» del capo)
+services/api/shaperoute_api/schemas.py                  (outfit_tag_rejected e OutfitTagReason)
+services/api/tests/test_outfit_tags.py                  (nuovo)
+services/api/tests/test_outfit_links.py                 (nuovo)
+services/api/tests/test_web_risk.py                     (nuovo)
+services/api/tests/test_moderation.py                   (l'ultimo CHECK dei tipi è della 0050)
+packages/shared-types/src/index.ts                      (i tipi in fondo; il codice, il reason, REPORT_KINDS e DrawingPhoto.outfit_tags al loro posto)
+packages/shared-types/fixtures/api-error-codes.json     (outfit_tag_rejected)
+packages/shared-types/fixtures/outfit-tags-request.json (nuovo)
+packages/shared-types/test/outfit-tags.test.ts          (nuovo)
+packages/shared-types/test/moderation.test.ts           (outfit_tag fra i tipi)
+apps/mobile/assets/engine/engine.zip                    (rifatto: porta dentro schemas.py)
+.env.example                                            (SHAPEROUTE_WEB_RISK_KEY)
+docs/API.md
+docs/DATABASE.md
+docs/DECISIONS.md                                       (ADR-0333)
+docs/tasks/TASK-394.md
+docs/STATUS.md
+```
+
+### Dove si è, parte A (2026-11-05)
+
+- API fatta: `PUT …/photos/{n}/tags`, `POST /outfit-tags/{id}/open` e
+  `/shop`, `outfit_tags` in ogni foto, `outfit_tag` nelle segnalazioni e
+  nell'email, Web Risk «Update API» senza mai mandare il link. Scelte
+  tecniche in ADR-0333; contratto in `API.md` «Outfit tags».
+- Scelto dall'agente, oltre la proposta: la colonna si chiama `store` (il
+  nome che «Shop on» dice) e non `retailer`; senza `url` né totali per gli
+  altri, che chiedono il link a `/shop`; un'etichetta non latina resta in
+  punycode (non solo quella che mescola alfabeti); i tocchi del
+  proprietario non si contano nemmeno sul server.
+- **Prerequisiti dell'utente, col suo sì**: la migrazione `0050` sul
+  server; il progetto Google Cloud con Web Risk e `SHAPEROUTE_WEB_RISK_KEY`
+  nel `.env` del server. Senza la chiave si aprono solo i negozi di Style.
+- Prossimo: la parte B (app), dopo TASK-384 B, con la lista dei file al
+  Coordinatore.
+- **In `main`** (#844, c7d63400, 2026-11-05), unita dal Coordinatore. Prima
+  del merge, due volte main unito senza rebase e `engine.zip` rifatto per
+  ultimo dai sorgenti uniti (dopo la #838, Hike, che lo rifà anche lei).
+  Server: la `0050` con la `0049` e la `0051`, col sì dell'utente; la chiave di
+  Web Risk quando l'utente avrà il progetto Google Cloud.
 
 ## Fuori scope
 

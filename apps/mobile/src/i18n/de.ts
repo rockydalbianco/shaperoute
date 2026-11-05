@@ -870,6 +870,7 @@ export const DE: Table = {
   "Ride without a route": "Ohne Route fahren",
   "Paddle without a route": "Ohne Route paddeln",
   "Walk without a route": "Ohne Route gehen",
+  "Hike without a route": "Ohne Route wandern",
   "Record your day": "Tag aufzeichnen",
   "Run without a route": "Ohne Route laufen",
 
@@ -1155,6 +1156,10 @@ export const DE: Table = {
   Bike: "Rad",
   Paddle: "Paddeln",
   Walk: "Gehen",
+  // src/sports/hiking.ts (TASK-377 part B), approved on 2026-11-05
+  Hike: "Wandern",
+  "Trails can be demanding: check the route and the weather before you set off.":
+    "Wege können anspruchsvoll sein: Prüf Route und Wetter, bevor du losgehst.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Ski",
   "Cross-country ski": "Langlauf",
@@ -1424,8 +1429,13 @@ export const DE: Table = {
     "Zeichne mit einem Finger. Ende, wo du begonnen hast, um sie zu schließen. Zwei Finger bewegen die Karte.",
   "Each new line joins the drawing. Two fingers move the map.":
     "Jede neue Linie wird mit der Zeichnung verbunden. Zwei Finger bewegen die Karte.",
-  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize.":
-    "Ziehe die Figur oder die Karte. Halte eine Linie still und ziehe dann, um sie zu biegen. Zwei Finger ändern die Größe.",
+  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize and turn it.":
+    "Ziehe die Figur oder die Karte. Halte eine Linie still und ziehe dann, um sie zu biegen. Zwei Finger ändern die Größe und drehen sie.",
+  // src/mapdraw/DrawOnMap.tsx (TASK-402)
+  "Turn left 15 degrees": "Um 15 Grad nach links drehen",
+  "Turn right 15 degrees": "Um 15 Grad nach rechts drehen",
+  "Angle, {deg} degrees. Double tap to type it":
+    "Winkel, {deg} Grad. Zum Eingeben doppeltippen",
   Line: "Linie",
   "Tap point after point. Tap the first point to close it, the last one to finish.":
     "Tippe Punkt für Punkt. Tippe auf den ersten Punkt, um sie zu schließen, auf den letzten, um fertig zu sein.",

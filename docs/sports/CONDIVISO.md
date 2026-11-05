@@ -127,6 +127,20 @@ tutto: è corto apposta.
   tipo `Limits` e `./base`, mai una schermata: lo prova
   `sportProfiles.test.ts`. I testi restano nelle tabelle `i18n` di oggi; il
   file dello sport ne tiene la chiave inglese.
+- **2026-11-05, TASK-377 B — il pilota contro la ricetta, nell'app: le
+  deroghe.** Oltre ai punti fissi del §4 di `COME-AGGIUNGERE.md`:
+  - **`sports/base.ts`**: un campo nuovo del profilo, `caution`, l'avviso
+    che «Disegna» mostra sotto ogni percorso dello sport (i sentieri di una
+    hike). Il prossimo sport con un avviso non tocca più `base.ts`;
+  - **`screens/RunNoRouteButton.tsx`**: l'emoji accanto a «… without a
+    route» è ancora un `switch` scritto a mano, non letto dal profilo;
+  - **`settings/sport.ts`**: oltre alla riga, `activityOffered` ora legge
+    una tabella (`OFFERED_WHEN_READY`): uno sport che non va offerto nella
+    ricerca e nel modulo prima di essere pronto vi aggiunge una voce;
+  - **i test che dicono «hiking» = nessuno sport** (`readers.test.ts`,
+    `swimImport.test.ts`, `walkImport.test.ts`) usano ora `yoga`;
+  - le tabelle «di prima» di `sportRows.test.ts` e `sport.test.ts`, come in
+    A.
 
 ## Il banco e Overpass
 

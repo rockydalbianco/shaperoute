@@ -160,6 +160,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-403 — «Edit the drawing» sotto A, B e C** (2026-11-05; numeri dal Coordinatore,
+  ADR-0337 «Proposto»; richiesta dell'utente «quando fai tu il calcolo del disegno tipo il
+  coniglio poi mi dai le tre opzioni AB e C però lì non c'è la possibilità di modificare
+  l'immagine», poi «Sì, rimettilo»). Il tasto torna sotto il risultato di «Draw» e mette la
+  linea dell'opzione scelta sulla mappa, dov'è. Rovescia TASK-340 per il solo risultato. Solo
+  JS, con un OTA. Branch `docs/TASK-403-edit-under-choices`; poi il codice col via del
+  Coordinatore. `tasks/TASK-403.md`.
 - **TASK-402 — Ruotare il disegno e aggiungere pezzi sulla mappa** (2026-11-05; numeri dal
   Coordinatore, ADR-0336 «Proposto»; richiesta dell'utente «ruotare il disegno di tot gradi e
   dai anche un elenco interno da poter selezionare e muovere sulla mappa», scelta «Aggiungere

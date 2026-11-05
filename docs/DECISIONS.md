@@ -23485,3 +23485,44 @@ mappa». La parte D di TASK-347 (ADR-0300) prevedeva già «seleziona / sposta
 - **Girare in lng/lat sulla pagina della mappa**, come oggi il
   ridimensionamento: lontano dall'equatore storce la figura (un grado di
   longitudine è più corto di uno di latitudine).
+
+## ADR-0337 — «Edit the drawing» torna sotto le opzioni A, B e C del risultato di «Draw»
+
+**Stato**: Proposto · 2026-11-05 · TASK-403. Scelta di prodotto
+dell'utente; il come deciso dall'agente su delega dell'utente.
+
+**Contesto**: il tasto «Edit the drawing» sotto il risultato di «Draw» era
+stato tolto su richiesta dell'utente il 2026-10-29 (TASK-340, aggiunta ad
+ADR-0288), e il 2026-11-04 l'utente aveva confermato «No, resta tolto»
+(TASK-369, scelta 7 di ADR-0313). Il 2026-11-05 l'utente ha chiesto:
+«Possibilità di di modificare anche quando seleziono quando fai tu il
+calcolo del disegno tipo il coniglio poi mi dai le tre opzioni AB e C però
+lì non c'è la possibilità di modificare l'immagine». Ricordati i due «no»,
+alla proposta di rimettere il tasto ha risposto «Sì, rimettilo».
+
+**Decisione**:
+
+1. Sotto il risultato di «Draw», dopo «Another figure» e sopra «Start»,
+   c'è di nuovo «Edit the drawing» (testo già tradotto, nessun testo nuovo).
+2. Il tasto mette sulla mappa di «Draw on the map» la **linea dell'opzione
+   scelta** (A, B o C), dov'è e grande com'è: lo stesso `editTrackOf` /
+   `trackInPlace` delle schede (TASK-346, ADR-0299; TASK-369, ADR-0313).
+   Per un'emoji o una parola si modifica la linea del percorso, non la
+   figura chiesta; anche dal risultato di un disegno a mano si apre la linea
+   dell'opzione scelta.
+3. Niente parte verso l'API prima di «Draw route». Solo JS: contratto,
+   motore, API e impronta iOS invariati.
+4. Vale in ogni sport che arriva al risultato, sull'acqua e a nuoto
+   compresi, come per le schede.
+
+Questa decisione supera, per il solo risultato di «Draw», l'aggiunta di
+ADR-0288 (TASK-340) e la scelta 7 di ADR-0313, che restano scritte com'erano.
+
+**Alternative**:
+
+- **La figura chiesta** (l'emoji o il disegno di partenza) invece della
+  linea dell'opzione: scartata, perché A, B e C sono linee diverse e
+  l'utente vuole modificare quella che ha davanti; per un'emoji, poi, la
+  figura non si modifica (ADR-0288).
+- **Tornare al disegno di partenza**, come faceva il tasto prima di
+  TASK-340 dal risultato di «Freehand»: lo fa già «←».

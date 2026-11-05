@@ -169,8 +169,9 @@ tiene il Coordinatore con l'utente.
    arrived.» (il testo che la schermata ha già) e la barra al 100%, e
    sparisce da solo dopo 5 minuti (`dismissalPolicy: .after`); con «Stop»
    prima dell'arrivo sparisce subito.
-5. **La dipendenza** `@bacons/apple-targets` nella 1.0.2 (sì dell'utente e
-   via del Coordinatore), e il modulo locale in Swift.
+5. ~~La dipendenza~~ → **«Sì, nella 1.0.2»** (2026-11-05): l'utente dà il
+   sì a `@bacons/apple-targets` 5.0.0 e al modulo locale in Swift nella
+   build 1.0.2. Manca il via del Coordinatore sulla lista dei file.
 
 ## Cosa fare
 
@@ -252,18 +253,27 @@ voce dice (`cue`): lì, con l'app dietro, la stessa frase va anche a
 `lockNotice`. `NavigateScreen.tsx` non si tocca (`doneOf` e `remainingM`
 si calcolano dalla `Navigation`, che `useNavigation` ha già).
 
-Parte B (previsti, con il via del Coordinatore):
+Parte B (lista per il Coordinatore, 2026-11-05):
 
 ```
-apps/mobile/package.json, package-lock.json
-apps/mobile/app.json
-apps/mobile/targets/live-activity/**              (nuovo)
-apps/mobile/modules/live-activity/**              (nuovo)
+apps/mobile/package.json                          (@bacons/apple-targets 5.0.0)
+package-lock.json
+apps/mobile/app.json                              (plugin con "match": "live-activity",
+                                                   NSSupportsLiveActivities)
+apps/mobile/targets/live-activity/**              (nuovo: expo-target.config.js, widget SwiftUI)
+apps/mobile/modules/live-activity/**              (nuovo: modulo Expo locale, Swift +
+                                                   index.ts; start, update, end)
 apps/mobile/src/navigation/liveActivity.ts        (nuovo)
 apps/mobile/src/navigation/liveActivity.test.ts   (nuovo)
-apps/mobile/src/screens/NavigateScreen.tsx
-apps/mobile/fingerprint.config.js (se serve)
+apps/mobile/src/navigation/useNavigation.ts       (parte con un percorso; la notifica
+                                                   della parte A solo senza modulo)
+apps/mobile/src/i18n/{it,de,fr,es}.ts             (solo se servono testi brevi nuovi)
 ```
+
+Il tipo degli attributi della Live Activity (`ActivityAttributes`) sta sia
+nel modulo sia nel target, uguale: i due binari non condividono codice.
+Niente `targets/_shared/`, perché con l'orologio entrerebbe anche nel suo
+target. `NavigateScreen.tsx` e `lockNotice.ts` non si toccano.
 
 ## Fuori scope
 

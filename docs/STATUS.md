@@ -194,7 +194,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   una riga). Va nella prossima anteprima; prima della produzione il Coordinatore chiede
   all'utente la prova su una corsa vera. Parte B: scelta dell'utente «Solo la guida» per la
   Live Activity (freccia, metri, svolta, via, barra con % e distanza che manca); restano
-  il sì alla dipendenza, poi la lista al Coordinatore. Senza percorso niente Live Activity
+  il via del Coordinatore sulla lista (sì dell'utente alla dipendenza nella 1.0.2 dato). Senza percorso niente Live Activity
   («No, solo con percorso»); all'arrivo riepilogo per 5 minuti, con «Stop» sparisce subito
   («Riepilogo per qualche minuto»).
 - **TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono**

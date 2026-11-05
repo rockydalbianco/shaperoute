@@ -23591,3 +23591,5 @@ A fine corsa, all'arrivo, il riquadro mostra «You have arrived.» con la
 barra al 100% e sparisce da solo dopo 5 minuti; con «Stop» prima
 dell'arrivo sparisce subito (scelta dell'utente «Riepilogo per qualche
 minuto», contro «Sparisce subito»).
+L'utente dà il sì a `@bacons/apple-targets` 5.0.0 e al modulo locale in
+Swift nella build 1.0.2 («Sì, nella 1.0.2»).

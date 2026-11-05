@@ -116,6 +116,7 @@ apps/mobile/src/search/searchFilters.ts                     (una riga: niente ch
 apps/mobile/src/feed/hikeFeed.test.tsx                      (nuovo: card e dettaglio)
 apps/mobile/src/favorites/favoriteRoute.test.ts, src/api/favorites.test.ts,
 apps/mobile/src/api/accounts.test.ts, src/route/distanceMiles.test.ts  (liste e attività sconosciuta, dopo la CI)
+services/api/tests/test_favorites.py, test_drawings.py, test_drawing_search.py, test_paddling.py  (idem, dopo la CI)
 services/api/shaperoute_api/route_store.py                  (tre righe in SAME_ROUTES_AS)
 services/api/tests/fixtures/same_routes/9be259696402.json   (nuovo: la prova)
 docs/DECISIONS.md                                           (precisazione di ADR-0321)

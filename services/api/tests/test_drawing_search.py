@@ -273,8 +273,9 @@ def test_wrong_filters_are_refused(client: TestClient) -> None:  # noqa: F811
         assert code(answer) == "invalid_request"
         assert answer.json()["error"]["message"] == text
     for query in [
-        # Walking is an activity since TASK-371: hiking is not.
-        {"activity": ["hiking"]},
+        # Walking is an activity since TASK-371, hiking since TASK-377:
+        # climbing is not.
+        {"activity": ["climbing"]},
         {"complexity": ["hard"]},
         {"sort": "oldest"},
         {"min_m": -1},

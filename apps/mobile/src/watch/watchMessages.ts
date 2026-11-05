@@ -1,0 +1,185 @@
+/**
+ * The messages between the phone and the Apple Watch (TASK-370 part A1,
+ * ADR-0314), as WatchConnectivity carries them: an object of JSON values.
+ * The watch reads and writes the same ones in Swift
+ * (targets/watch/Core/Sources/WatchCore/WatchMessage.swift), and both are
+ * tested on targets/watch/Core/Fixtures/messages.json. Pure: no native code.
+ *
+ * Every message says its version `v`. A side reads the versions up to its
+ * own and refuses a newer one, since the watch app is not updated by an
+ * OTA; a later version only adds fields, and the ones a side does not know
+ * are left out. Times are milliseconds since 1970, distances metres.
+ */
+
+export const WATCH_PROTOCOL_VERSION = 1;
+
+/** Where a workout is, in the order it goes through them: the phases of the
+ * watch's state machine (targets/watch/Core/Fixtures/transitions.json). */
+export const WATCH_PHASES = [
+  "ready",
+  "countdown",
+  "running",
+  "paused",
+  "finished",
+] as const;
+export type WatchPhase = (typeof WATCH_PHASES)[number];
+
+/** What either side asks of the workout. */
+export const WATCH_COMMANDS = ["start", "pause", "resume", "end"] as const;
+export type WatchCommand = (typeof WATCH_COMMANDS)[number];
+
+export type WatchSide = "phone" | "watch";
+
+export type WatchMessage =
+  /** A start says the sport: an activity of the app, which a watch older
+   * than the phone may not know. */
+  | { type: "command"; command: "start"; activity: string; from: WatchSide; at: number }
+  | {
+      type: "command";
+      command: Exclude<WatchCommand, "start">;
+      from: WatchSide;
+      at: number;
+    }
+  /** Where the workout of `from` is, sent at each change and now and then. */
+  | {
+      type: "state";
+      phase: WatchPhase;
+      activity: string;
+      from: WatchSide;
+      at: number;
+      movingMs: number;
+      distanceM: number;
+    }
+  /** The heart rate the watch measures, beats per minute. */
+  | { type: "heartRate"; bpm: number; at: number };
+
+/** Why a message was not read: the same codes as the watch's. */
+export type WatchMessageError =
+  "notAnObject" | "unsupportedVersion" | "unknownType" | "invalidField";
+
+export type WatchRead =
+  { ok: true; message: WatchMessage } | { ok: false; error: WatchMessageError };
+
+type Fields = Record<string, unknown>;
+
+/** Thrown inside decodeWatchMessage only, for a field that is not right. */
+class InvalidField extends Error {}
+
+function isInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value);
+}
+
+function time(value: unknown): number {
+  if (!isInteger(value) || value < 0) {
+    throw new InvalidField();
+  }
+  return value;
+}
+
+function side(value: unknown): WatchSide {
+  if (value !== "phone" && value !== "watch") {
+    throw new InvalidField();
+  }
+  return value;
+}
+
+function activity(value: unknown): string {
+  if (typeof value !== "string" || value === "") {
+    throw new InvalidField();
+  }
+  return value;
+}
+
+function oneOf<T extends string>(names: readonly T[], value: unknown): T {
+  const found = names.find((name) => name === value);
+  if (found === undefined) {
+    throw new InvalidField();
+  }
+  return found;
+}
+
+function read(fields: Fields): WatchMessage | "unknownType" {
+  switch (fields.type) {
+    case "command": {
+      const from = side(fields.from);
+      const at = time(fields.at);
+      const command = oneOf(WATCH_COMMANDS, fields.command);
+      if (command === "start") {
+        return {
+          type: "command",
+          command,
+          activity: activity(fields.activity),
+          from,
+          at,
+        };
+      }
+      return { type: "command", command, from, at };
+    }
+    case "state": {
+      const phase = oneOf(WATCH_PHASES, fields.phase);
+      const { movingMs, distanceM } = fields;
+      if (!isInteger(movingMs) || movingMs < 0) {
+        throw new InvalidField();
+      }
+      if (
+        typeof distanceM !== "number" ||
+        !Number.isFinite(distanceM) ||
+        distanceM < 0
+      ) {
+        throw new InvalidField();
+      }
+      return {
+        type: "state",
+        phase,
+        activity: activity(fields.activity),
+        from: side(fields.from),
+        at: time(fields.at),
+        movingMs,
+        distanceM,
+      };
+    }
+    case "heartRate": {
+      const { bpm } = fields;
+      if (!isInteger(bpm) || bpm <= 0 || bpm > 300) {
+        throw new InvalidField();
+      }
+      return { type: "heartRate", bpm, at: time(fields.at) };
+    }
+    default:
+      if (typeof fields.type !== "string") {
+        throw new InvalidField();
+      }
+      return "unknownType";
+  }
+}
+
+/** The message in `value`, as WatchConnectivity or JSON.parse gives it. */
+export function decodeWatchMessage(value: unknown): WatchRead {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return { ok: false, error: "notAnObject" };
+  }
+  const fields = value as Fields;
+  const version = fields.v;
+  if (!isInteger(version) || version < 1) {
+    return { ok: false, error: "invalidField" };
+  }
+  if (version > WATCH_PROTOCOL_VERSION) {
+    return { ok: false, error: "unsupportedVersion" };
+  }
+  try {
+    const message = read(fields);
+    return message === "unknownType"
+      ? { ok: false, error: message }
+      : { ok: true, message };
+  } catch (error) {
+    if (error instanceof InvalidField) {
+      return { ok: false, error: "invalidField" };
+    }
+    throw error;
+  }
+}
+
+/** `message` as an object of JSON values, for WatchConnectivity. */
+export function encodeWatchMessage(message: WatchMessage): Record<string, unknown> {
+  return { v: WATCH_PROTOCOL_VERSION, ...message };
+}

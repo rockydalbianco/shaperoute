@@ -23226,12 +23226,89 @@ l'App Store; serve un Apple Watch vero per le prove.
 
 ---
 
+## ADR-0314, precisazione — La parte A1: il nucleo Swift, i messaggi e la tabella degli sport
+
+**Stato**: Attiva · 2026-11-05 · TASK-370 parte A1, deciso dall'agente su
+delega dell'utente; piano della parte A approvato dal Coordinatore.
+
+**Decisione**:
+
+1. **Un pacchetto Swift puro**, `apps/mobile/targets/watch/Core/`
+   (`WatchCore`), senza HealthKit, WatchConnectivity né schermate: si prova
+   con `swift test` su qualsiasi Mac, senza progetto Xcode né `prebuild`.
+   L'app dell'orologio di A2 lo userà come pacchetto locale.
+2. **Lo stato dell'allenamento**: pronto → conto alla rovescia → in corso ⇄
+   in pausa → finito → pronto. Un comando che non vale nella fase in cui si
+   è (una pausa già in pausa) non cambia niente: lo stesso comando arrivato
+   due volte, dal polso e dal telefono, conta una volta. «Fine» durante il
+   conto alla rovescia lo annulla e non registra niente. Il tempo in
+   movimento lascia fuori le pause; l'ora la dà chi chiama, così i test non
+   usano il tempo vero.
+3. **I messaggi** sono oggetti di valori JSON, come li porta
+   WatchConnectivity: `command` (start con lo sport, pause, resume, end),
+   `state` (fase, sport, tempo in movimento, metri) e `heartRate`. Ognuno ha
+   la versione `v`: un lato legge le versioni fino alla sua e rifiuta una
+   più nuova (l'orologio non si aggiorna con un OTA); una versione dopo
+   aggiunge solo campi, e quelli che un lato non conosce restano fuori. Gli
+   errori hanno gli stessi codici nei due lati (`notAnObject`,
+   `unsupportedVersion`, `unknownType`, `invalidField`). Lo sport di uno
+   start non è controllato sulla tabella: un telefono più nuovo può avere
+   uno sport che l'orologio non conosce, e decide A2 cosa mostrare.
+4. **Gli stessi fixture** in `targets/watch/Core/Fixtures/`
+   (`messages.json`, `transitions.json`): XCTest li legge dal percorso del
+   file di test, jest con `fs`. Se uno dei due lati cambia e l'altro no, un
+   test diventa rosso.
+5. **La tabella degli sport** viene da `src/sports/`: sport, nome inglese,
+   emoji, `appleWorkout`, il passo (`km`, `paddle`, `swim`), sull'acqua,
+   `guided` (l'app disegna percorsi: c'è `drawKm`), `gps`, `onWatch`. Quello
+   che il registro non dice sta in `watchSports.ts`: al chiuso senza GPS
+   solo la palestra; non offerto sull'orologio solo il nuoto, fino alla
+   prova in acqua. La bici per ora ha il passo per km come nell'app; la
+   velocità è della parte C. Quali sport il telefono offre davvero (la
+   camminata e il fondo sono ancora «Soon») non sta nella tabella: lo dirà
+   il telefono all'orologio in A2/A3.
+6. **`sports.json` si riscrive** con `apps/mobile/scripts/watch-sports.sh`,
+   che fa girare il test jest con `WRITE_WATCH_SPORTS=1`: niente script nel
+   `package.json` (A1 non lo tocca) e niente dipendenze nuove. Il test
+   confronta anche il testo, così il file è sempre quello dello script.
+7. **`watch.yml`** gira su `macos-15` solo quando cambiano
+   `apps/mobile/targets/watch/**` o il workflow; `timeout-minutes: 15`,
+   gruppo `watch-` che cancella i giri vecchi come `ci.yml`. Non è un
+   check obbligatorio del ruleset, quindi il filtro in `on:` non lascia
+   check «Expected».
+
+**Alternative**:
+- **`Codable` per i messaggi**: più breve, ma WatchConnectivity dà
+  dizionari, e i codici d'errore uguali al TypeScript sarebbero più
+  difficili; scartata.
+- **La tabella degli sport generata al `prebuild`**: richiede il plugin, che
+  entra solo con A-flip; il file nel repository con il test che lo tiene
+  uguale funziona da subito.
+
+**Conseguenze**: l'impronta iOS di `main` resta `6f8bba4c` (misurata su una
+copia pulita con `APP_VARIANT=production`). In A2 va verificato che
+`@bacons/apple-targets` non compili `Core/Tests` dentro il target
+dell'orologio: il pacchetto va collegato come pacchetto locale.
+
+---
 ## ADR-0322 — Gravel e MTB: la bici di oggi per il gravel, una rete sua per la MTB
 
-**Stato**: Proposto · 2026-11-05 · TASK-378. Numeri dal Coordinatore
-(2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
-`tasks/TASK-378.md`. I punti tecnici qui sotto sono decisi dall'agente su
-delega dell'utente, e restano proposti finché le scelte non ci sono.
+**Stato**: Accettato · 2026-11-05 · TASK-378. Le scelte dell'utente, il
+2026-11-05, sono in `tasks/TASK-378.md`:
+
+- due sport, «Gravel» 🚲 sulla rete bike e «MTB» 🚵 sulla rete `mtb`;
+- 10–30 km per tutte e due;
+- sentieri MTB fino a `mtb:scale` S2 (senza scala, `sac_scale` T2);
+- fuori dal gioco come la bici, con record personali propri;
+- i testi approvati;
+- accesi appena pronti.
+
+Le attività del contratto si chiamano `gravel_biking` e `mountain_biking`
+(deciso dall'agente su delega dell'utente).
+
+Numeri dal Coordinatore (2026-11-04). Le scelte di prodotto sono
+dell'utente, una alla volta, in `tasks/TASK-378.md`. I punti tecnici qui
+sotto sono decisi dall'agente su delega dell'utente.
 
 **Contesto**: la bici (`cycling`, ADR-0153, ADR-0167) pedala già ogni
 `track`. Un `path` lo pedala solo con `bicycle=designated`: negli altri casi
@@ -23420,3 +23497,52 @@ le liste nel database (un processo solo: non serve, e sarebbero qualche MB
 da riscrivere a ogni aggiornamento); visitare il link per vedere dove
 porta (il server non fa richieste ai negozi a nome di chi scrive); lasciar
 passare un link non controllato quando Web Risk non risponde.
+## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
+
+**Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
+dell'utente (punto 1); il resto deciso dall'agente su delega dell'utente,
+da confermare con le scelte ancora aperte del task.
+
+**Contesto**: a schermo bloccato la corsa registra e la voce dice le svolte
+(ADR-0225), ma sul lock screen non si vede niente. L'utente vuole vedere
+«quella percentuale, svolta a destra, sinistra» senza sbloccare. Una
+notifica locale è solo JavaScript (`expo-notifications` è già nella build
+1.0.1) e arriva con un OTA; una Live Activity vuole un widget extension e
+un modulo nativo, cioè una build per l'App Store.
+
+**Decisione**:
+
+1. **Tutte e due, in quest'ordine** (utente, «Live Activity, poi anche
+   OTA»): parte A, una notifica locale con un OTA; parte B, la Live
+   Activity (lock screen e Dynamic Island) nella build 1.0.2.
+2. **Una sola uscita in più del navigatore**: notifica e Live Activity
+   mostrano la stessa indicazione della voce, dallo stesso `onFix`; nessuna
+   logica di guida nuova.
+3. **La notifica**: solo con l'app dietro, senza suono, sempre con lo
+   stesso identificativo (una alla volta), alla svolta annunciata, al fuori
+   rotta e al rientro; si toglie a fine corsa e con l'app davanti. Permesso
+   delle notifiche push, come il recupero della palestra (ADR-0327).
+4. **La Live Activity si aggiorna dal telefono** quando cambia ciò che si
+   vede, al massimo una volta al secondo; niente push di ActivityKit,
+   niente server. Con la Live Activity attiva la notifica non parte.
+5. **Il nativo**: widget extension SwiftUI in `apps/mobile/targets/
+   live-activity/` con `@bacons/apple-targets`, più un modulo Expo locale
+   (`start`, `update`, `end`). Il JavaScript controlla che il modulo ci sia:
+   sulla 1.0.1 resta la notifica.
+6. **La dipendenza con TASK-370**: `@bacons/apple-targets` arriva con la
+   1.0.2 e la aggiunge TASK-401 B; TASK-370 (build 1.1) mette `targets/watch/`
+   accanto. Versione e plugin si concordano con la sua sessione; la
+   dipendenza e il codice nativo partono solo col sì dell'utente e il via
+   del Coordinatore sulla lista dei file.
+
+**Alternative**:
+
+- **Solo la notifica**: arriva subito, ma non conta i metri e non c'è nella
+  Dynamic Island. Scartata dall'utente come unica strada.
+- **Solo la Live Activity**: niente fino alla revisione della 1.0.2.
+  Scartata dall'utente.
+- **Una libreria Live Activity già fatta** (per esempio `expo-live-activity`):
+  porta il suo target e un aspetto a modello fisso; due sistemi di target
+  nell'app quando arriva l'orologio. Meglio un solo `@bacons/apple-targets`.
+- **Aggiornare la notifica fissa del servizio su Android**: expo-location
+  non la cambia senza riavviare il GPS. Su Android la parte A manda la sua.

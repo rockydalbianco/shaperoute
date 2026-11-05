@@ -160,6 +160,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
+  Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
+  percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
+  anche OTA»). Parte A: una notifica locale senza suono, una alla volta, alla svolta
+  annunciata dalla voce (freccia, metri, «% drawn»), con un OTA. Parte B: la Live Activity
+  sul lock screen e nella Dynamic Island, nella 1.0.2, con `@bacons/apple-targets`
+  (la aggiunge 401 B, TASK-370 la riusa nella 1.1). Branch
+  `docs/TASK-401-lock-screen-directions`, solo proposta. Prossima domanda all'utente: i
+  testi della notifica. `tasks/TASK-401.md`.
 - **TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono**
   (2026-11-05; numeri riservati dal Coordinatore il 2026-11-04, ADR-0314 «Proposto»;
   richiesta dell'utente «l'app per apple watch completa per tutti gli sport», scelta
@@ -170,6 +179,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuoto spento fino alla prova in acqua), D (testi, privacy, build). Branch
   `docs/TASK-370-apple-watch`, solo proposta; build sua, la 1.1, dopo la 1.0.2 (scelta
   dell'utente). Prossima domanda: l'Apple Watch per le prove. `tasks/TASK-370.md`.
+  **2026-11-05, dopo #836**: l'utente ha un Apple Watch Series 6 o più nuovo. Piano della
+  parte A in `tasks/TASK-370.md` (A1 nucleo Swift + jest, A2 app dell'orologio, A3 il
+  telefono, A-flip l'interruttore nativo solo alla build 1.1): l'impronta iOS di `main` non
+  si muove fino ad A-flip. Lista dei file al Coordinatore; niente codice prima del suo sì.
 - **TASK-399 — Nel Feed il nome di chi ha pubblicato apre il suo profilo** (2026-11-05;
   numero dal Coordinatore; richiesta dell'utente). In `FeedPost` la riga del nome era dentro il
   pulsante della card e apriva il disegno; ora sul disegno di un iscritto è un pulsante a sé che
@@ -177,6 +190,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuovo. Branch `fix/TASK-399-feed-author-profile`; la unisce il Coordinatore a CI verde; in
   produzione col prossimo OTA. `tasks/TASK-399.md`.
   **Chiuso il 2026-11-05**: #830, chiusura nella stessa PR; vedi «Completato».
+- **TASK-370 A1 — Il nucleo dell'orologio, senza nativo** (2026-11-05; parte A1 del piano
+  in `tasks/TASK-370.md`, ADR-0314 «precisazione A1»). Solo file nuovi: il pacchetto Swift
+  puro `apps/mobile/targets/watch/Core/` (`WatchCore`: lo stato dell'allenamento, i
+  messaggi telefono↔orologio con la versione, la tabella degli sport; 18 XCTest con
+  `swift test`), `src/watch/watchMessages.ts` e `watchSports.ts` con i loro jest sugli
+  stessi fixture JSON, `scripts/watch-sports.sh` che riscrive `sports.json`, il workflow
+  `watch.yml` (macOS, solo sui file dell'orologio). Nessun `package.json`/`app.json`/
+  `app.config.ts`; impronta iOS `6f8bba4c` su copia pulita, uguale a `main`. Branch
+  `feat/TASK-370-a1-watch-core`; la unisce il Coordinatore a CI verde. **Prossimo**: A2,
+  l'app SwiftUI dell'orologio (in A2 va verificato che `@bacons/apple-targets` non metta
+  `Core/Tests` nel target dell'orologio).
+  **A1 in `main` il 2026-11-05** (#839, `76be330e`; CI verde, impronta `6f8bba4c`). A2 in
+  una sessione nuova, con la lista dei file al Coordinatore prima del codice; se TASK-401
+  aggiunge `@bacons/apple-targets` nella 1.0.2, chi lo aggiunge si concorda con loro.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.
@@ -190,6 +217,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Proposta: Gravel sulla rete della bici, MTB con una rete sua. Prossimo:
   le scelte dell'utente, una alla volta (`tasks/TASK-378.md`,
   `sports/gravel.md`).
+  **Parte 0 in `main`** (#840). **Scelte dell'utente** (2026-11-05):
+  - due sport, «Gravel» 🚲 sulla rete della bici e «MTB» 🚵 su una rete
+    sua;
+  - da 10 a 30 km;
+  - sentieri MTB fino a S2;
+  - fuori dal gioco come la bici, con record propri;
+  - i testi approvati in cinque lingue;
+  - accesi appena pronti.
+
+  ADR-0322 accettato. Prossimo: 378-A, motore, contratto e API, dopo la
+  #838 e la lista al Coordinatore con il numero della migrazione.
+  **Scelte in `main`** (#841). Lista della parte A approvata dal
+  Coordinatore, con la migrazione 0052 e i profili dell'app perché `main`
+  resti pubblicabile. Prossimo: 378-A in una sessione nuova, dopo la #838.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

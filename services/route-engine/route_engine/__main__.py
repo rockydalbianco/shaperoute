@@ -55,6 +55,8 @@ from route_engine.nearby_starts import (
 )
 from route_engine.network import (
     EDGE_REUSE_PENALTY,
+    FOOT_NETWORK_NAME,
+    NETWORKS,
     OsmnxSource,
 )
 from route_engine.optimizer import (
@@ -136,6 +138,16 @@ class WordRequest:
 def _km(limits: tuple[int, int]) -> str:
     low, high = limits
     return f"{low / 1000:g}-{high / 1000:g}"
+
+
+def _source(cache_dir: Path, activity: str) -> OsmnxSource:
+    """The graphs of the network `activity` is drawn on (network.NETWORKS),
+    each network in its own files: as OsmnxSource.for_activity, but the foot
+    network's is `OsmnxSource(cache_dir)` as before, where the tests stand
+    in for the graphs."""
+    if NETWORKS[activity] == FOOT_NETWORK_NAME:
+        return OsmnxSource(cache_dir)
+    return OsmnxSource.for_activity(cache_dir, activity)
 
 
 def _parse_start(value: str) -> tuple[float, float]:
@@ -438,9 +450,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _main_on_water(request, args)
 
     optimize = not args.no_optimize
-    # The graphs of the network the activity is drawn on, each in its own
-    # files (network.NETWORKS).
-    source = OsmnxSource.for_activity(args.cache_dir, request.activity)
+    source = _source(args.cache_dir, request.activity)
     one_way = isinstance(request, OutlineRequest) and request.outline.one_way
     word = request.word if isinstance(request, WordRequest) else args.pieces
     planned_m = planned_distance(request.distance_m, one_way)

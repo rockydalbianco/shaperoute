@@ -23120,7 +23120,7 @@ un'attività nel contratto entra subito anche nelle liste dell'app.
 
 **Decisione**:
 
-1. **L'impronta resta quella di prima** (`SAME_ROUTES_AS`): b97b372a9841 →
+1. **L'impronta resta quella di prima** (`SAME_ROUTES_AS`): 9be259696402 →
    e13ded92b52d, e lo stesso per i nuoti e gli esempi di canoa
    dell'app. La regola di ADR-0320 protegge i percorsi tenuti. Qui il
    comportamento nuovo è solo un'attività che non ha percorsi tenuti. I

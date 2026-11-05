@@ -112,8 +112,8 @@ SAME_ROUTES_AS: dict[str, str] = {
     "db4ee081c4a4": "11647a97e632",  # the swims
     # TASK-377: a hike, an activity with no route kept, on a network of its
     # own; every route of before drawn the same (ADR-0321).
-    "b97b372a9841": "e13ded92b52d",  # every route but a swim
-    "de8fd5fd0099": "db4ee081c4a4",  # the swims
+    "9be259696402": "e13ded92b52d",  # every route but a swim
+    "822413512e24": "db4ee081c4a4",  # the swims
     "05b33f547d79": "fb16815e3876",  # the app's paddling examples
 }
 

@@ -138,10 +138,6 @@ class _GridSource:
     def __init__(self, cache_dir: Path) -> None:
         self.graph = _grid()
 
-    @classmethod
-    def for_activity(cls, cache_dir: Path, activity: str) -> "_GridSource":
-        return cls(cache_dir)
-
     def is_cached(self, bbox: tuple[float, float, float, float]) -> bool:
         return True
 

@@ -115,7 +115,7 @@ apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts
 apps/mobile/src/search/searchFilters.ts                     (una riga: niente chip «Hike»)
 apps/mobile/src/feed/hikeFeed.test.tsx                      (nuovo: card e dettaglio)
 services/api/shaperoute_api/route_store.py                  (tre righe in SAME_ROUTES_AS)
-services/api/tests/fixtures/same_routes/b97b372a9841.json   (nuovo: la prova)
+services/api/tests/fixtures/same_routes/9be259696402.json   (nuovo: la prova)
 docs/DECISIONS.md                                           (precisazione di ADR-0321)
 ```
 

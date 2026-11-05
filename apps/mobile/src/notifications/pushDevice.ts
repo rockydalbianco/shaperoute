@@ -96,8 +96,9 @@ export function pushPlatform(): PushPlatform {
 }
 
 /** The kinds not shown while the app is open: a shape of the game unlocked
- * (TASK-296) has its card after «Save» already. */
-const QUIET_WHILE_OPEN: readonly string[] = ["shape_unlocked"];
+ * (TASK-296) has its card after «Save» already; the run's screen shows the
+ * turn of a notice with the phone locked (TASK-401). */
+const QUIET_WHILE_OPEN: readonly string[] = ["shape_unlocked", "run_directions"];
 
 /** Whether a notification arriving with the app open is shown. */
 export function shownWhileOpen(data: unknown): boolean {

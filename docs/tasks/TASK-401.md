@@ -154,8 +154,15 @@ tiene il Coordinatore con l'utente.
    approvata e tradotta; fuori rotta «Off the route», che c'è già; sotto
    «42% drawn · 3.1 km left». Unico testo nuovo «{distance} left», con la
    distanza nelle unità scelte (km o mi), da tradurre in cinque lingue.
-3. **Parte B, cosa mostra** il riquadro e l'isola compatta; e senza percorso
-   («Run without a route»): niente Live Activity, o tempo, distanza e passo.
+3. ~~Parte B, cosa mostra~~ → **«Solo la guida»** (2026-11-05, contro
+   «Guida + numeri della corsa»): sul lock screen freccia, metri alla
+   svolta che scendono, la svolta in breve («Turn right») e la via; sotto
+   una barra con la % disegnata e la distanza che manca. Nell'isola
+   compatta la freccia a sinistra e i metri a destra; espansa come il
+   riquadro. Fuori rotta «⚠» e i metri per rientrare. Niente tempo, passo
+   o distanza fatta.
+3b. ~~Senza percorso~~ → **«No, solo con percorso»** (2026-11-05, contro
+   «Sì, con i numeri»): nelle corse senza percorso nessuna Live Activity.
 4. **Parte B, la fine**: il riquadro sparisce a fine corsa o resta qualche
    minuto col riepilogo.
 5. **La dipendenza** `@bacons/apple-targets` nella 1.0.2 (sì dell'utente e

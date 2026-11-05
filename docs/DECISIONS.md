@@ -23526,3 +23526,18 @@ ADR-0288 (TASK-340) e la scelta 7 di ADR-0313, che restano scritte com'erano.
   figura non si modifica (ADR-0288).
 - **Tornare al disegno di partenza**, come faceva il tasto prima di
   TASK-340 dal risultato di «Freehand»: lo fa già «←».
+
+## ADR-0335, aggiunta 2 — La Live Activity mostra solo la guida
+
+**Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
+dell'utente.
+
+Alla domanda «Cosa mostra la Live Activity durante una corsa con
+percorso?» l'utente ha scelto **«Solo la guida»** (contro «Guida + numeri
+della corsa»): freccia, metri alla svolta, la svolta in breve e la via; una
+barra con la percentuale disegnata e la distanza che manca. Nella Dynamic
+Island compatta la freccia e i metri. Fuori rotta il segno «⚠» e i metri
+per rientrare. Tempo, passo e distanza fatta restano sulla schermata della
+corsa.
+Senza percorso nessuna Live Activity (scelta dell'utente «No, solo con
+percorso», contro «Sì, con i numeri»).

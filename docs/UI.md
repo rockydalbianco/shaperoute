@@ -2678,7 +2678,8 @@ della partenza resta. Sotto la mappa:
   niente), anche sopra la figura, che non si muove. Con «Move» un dito che
   parte sulla figura (il suo riquadro, con un margine per il dito) la
   trascina, altrove sposta la mappa; due dita col punto di mezzo sulla
-  figura la ingrandiscono o la rimpiccioliscono, altrove fanno lo zoom
+  figura la ingrandiscono o la rimpiccioliscono e la girano (TASK-402,
+  sotto «Girare la figura»), altrove fanno lo zoom
   della mappa. Con «Line» e con «Erase» un dito tocca o strofina, e due
   dita spostano la mappa. Sotto, in grigio: *Draw with one
   finger. End where you started to close it. Two fingers move the map.*
@@ -2749,6 +2750,22 @@ si incrocerebbe resta com'era, con *The outline cannot cross itself. Bend
 it less.* in rosso. Un dito che trascina subito sposta la figura, come
 prima; le emoji non si piegano.
 
+**Girare la figura** (TASK-402 parte A, ADR-0336): con «Move» e una
+figura sulla mappa, sopra la riga grigia, **«−15°»**, l'angolo della figura
+(«0°», «30°», «−45°», da −179° a 180°) e **«+15°»**. I due pulsanti la
+girano di 15° in senso antiorario e orario attorno al suo mezzo; un tocco
+sull'angolo lo fa scrivere (si accettano «−30», «-30», «30°», «30,5»,
+arrotondati al grado; 270 diventa −90). Due dita sulla figura la girano
+mentre la ridimensionano, di quanto girano le dita sullo schermo; sotto i
+3° non gira, così ridimensionarla non la storce. Ogni giro è un passo di
+«Undo»; una tessera cambia la figura e tiene l'angolo, come «Try 8 km».
+Girata, una forma del catalogo si chiede come contorno (le sue linee a
+penna giù, al più 100 punti); a 0° torna la forma per nome. Il motore
+parte da quell'angolo e per trovare le strade può girarla ancora fino a
+±45° (TASK-232): l'angolo esatto arriva col disegno ancorato di TASK-347.
+VoiceOver legge *Turn left 15 degrees*, *Turn right 15 degrees* e *Angle,
+30 degrees. Double tap to type it*.
+
 **Grandezza**: dentro i limiti di «Draw» per lo sport (1–21 km a piedi,
 10–30 in bici): oltre, la figura non cresce e non cala più. Una figura
 cresciuta oltre lo schermo fa allontanare la mappa, che la mostra intera.
@@ -2759,7 +2776,8 @@ l'ultima cancellatura, l'ultimo punto tappato o l'ultima piega.
 **«Redo»** rimette quello che «Undo» ha tolto, finché non si cambia altro.
 **«Clear all»** chiede *Clear the whole drawing?* («Cancel» o «Clear all»)
 e toglie la figura; «Undo» la rimette.
-Spostare e ridimensionare non si annullano. Spenti finché non c'è niente.
+Spostare e ridimensionare non si annullano; girare sì (TASK-402). Spenti
+finché non c'è niente.
 
 **«Draw route»** chiede il percorso della figura dov'è, senza niente di
 nuovo nel contratto: una forma come in «Draw» (con la penna alzata se
@@ -2797,6 +2815,19 @@ again without crossing it.*, e aggiunto (**approvati dall'utente** il
 |---|---|---|---|---|
 | Draw with one finger. End where you started to close it. Two fingers move the map. | Disegna con un dito. Finisci dove hai iniziato per chiuderla. Con due dita sposti la mappa. | Zeichne mit einem Finger. Ende, wo du begonnen hast, um sie zu schließen. Zwei Finger bewegen die Karte. | Dibuja con un dedo. Termina donde empezaste para cerrarla. Con dos dedos mueves el mapa. | Dessine avec un doigt. Termine là où tu as commencé pour la fermer. Deux doigts déplacent la carte. |
 | Each new line joins the drawing. Two fingers move the map. | Ogni nuova linea si unisce al disegno. Con due dita sposti la mappa. | Jede neue Linie wird mit der Zeichnung verbunden. Zwei Finger bewegen die Karte. | Cada línea nueva se une al dibujo. Con dos dedos mueves el mapa. | Chaque nouvelle ligne rejoint le dessin. Deux doigts déplacent la carte. |
+
+Il TASK-402 parte A ha cambiato il testo di «Move» in *Drag the figure or
+the map. Hold a line still, then drag to bend it. Two fingers resize and
+turn it.* e aggiunto le voci per VoiceOver dei comandi del giro
+(**approvati dall'utente** il 2026-11-05, in inglese; le traduzioni
+dall'agente):
+
+| English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|
+| Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize and turn it. | Trascina la figura o la mappa. Tieni fermo il dito su una linea, poi trascina per piegarla. Con due dita la ridimensioni e la ruoti. | Ziehe die Figur oder die Karte. Halte eine Linie still und ziehe dann, um sie zu biegen. Zwei Finger ändern die Größe und drehen sie. | Arrastra la figura o el mapa. Mantén el dedo quieto en una línea y arrastra para doblarla. Con dos dedos cambias el tamaño y la giras. | Fais glisser la figure ou la carte. Garde le doigt immobile sur une ligne, puis fais glisser pour la plier. Deux doigts changent la taille et la font tourner. |
+| Turn left 15 degrees | Ruota a sinistra di 15 gradi | Um 15 Grad nach links drehen | Girar 15 grados a la izquierda | Tourner de 15 degrés vers la gauche |
+| Turn right 15 degrees | Ruota a destra di 15 gradi | Um 15 Grad nach rechts drehen | Girar 15 grados a la derecha | Tourner de 15 degrés vers la droite |
+| Angle, {deg} degrees. Double tap to type it | Angolo, {deg} gradi. Tocca due volte per scriverlo | Winkel, {deg} Grad. Zum Eingeben doppeltippen | Ángulo, {deg} grados. Toca dos veces para escribirlo | Angle, {deg} degrés. Touchez deux fois pour le saisir |
 
 «Erase» e *Tap a line to erase it. The outline takes its details with it.*
 vengono dalla tavola del TASK-320, già approvati.

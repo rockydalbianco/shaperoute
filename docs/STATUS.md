@@ -498,6 +498,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   Server (migrazione 0051 e deploy) solo col sì dell'utente.
   Prossimo: la parte B (app), dopo la #765.
+  **B3c, seconda metà, in PR** (2026-11-05, dopo la #765): «Impostazioni»
+  legge emoji, nome e «Record only» dal profilo dello sport; `activityOf` e
+  `runActivityOf` leggono l'attività di ogni riga invece di due `switch`.
+  Stesse righe e stesse attività, provate da `settings/sportRows.test.ts`.
+  Con questa la parte B è tutta in `main`. Prossimo: la chiusura del
+  pilota (377-A #838, poi 377-B), che chiude il criterio aperto di B e la
+  parte C.
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il

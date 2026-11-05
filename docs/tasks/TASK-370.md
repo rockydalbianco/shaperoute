@@ -1,7 +1,7 @@
 # TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono
 
-**Stato**: Todo · proposta (parte 0) in PR; nessun codice prima delle scelte
-dell'utente
+**Stato**: In lavorazione · proposta e piano della parte A in `main`; A1 in
+`main` (#839, 2026-11-05); prossimo A2
 **Fase**: 5 · **Branch**: `docs/TASK-370-apple-watch` (documenti); il codice
 `feat/TASK-370-a-…`, `feat/TASK-370-b-…`, …
 **Dipende da**: TASK-321 B (HealthKit nella build, in `main`), TASK-376 B3 (il
@@ -198,6 +198,14 @@ il Coordinatore fissano la 1.1.
 - `.github/workflows/watch.yml` (nuova): `swift test` su un runner macOS,
   solo quando cambia `apps/mobile/targets/watch/` (i minuti macOS costano
   di più: per questo il filtro sui percorsi).
+
+**Esito A1** (2026-11-05): in `main` con #839 (`76be330e`). `WatchCore` con 18
+XCTest, `src/watch/` con 40 jest sugli stessi fixture, `watch.yml` verde in
+43 s; impronta iOS `6f8bba4c` invariata. Le scelte prese sono in ADR-0314,
+«precisazione — La parte A1». Per A2: il pacchetto `Core/` va collegato al
+target come pacchetto locale, senza compilare `Core/Tests` nell'app; se
+TASK-401 (Live Activity) porta `@bacons/apple-targets` già nella 1.0.2, chi
+lo aggiunge si decide con TASK-401 e il Coordinatore.
 
 **A2 — L'app dell'orologio** (in `main`, impronta invariata finché il
 plugin non è in `app.json`):

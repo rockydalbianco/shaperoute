@@ -1,8 +1,14 @@
-import type { Activity, RunActivity } from "@shaperoute/shared-types";
+import {
+  ACTIVITIES,
+  type Activity,
+  RECORD_ACTIVITIES,
+  type RunActivity,
+} from "@shaperoute/shared-types";
 import Constants from "expo-constants";
 import { File, Paths } from "expo-file-system";
 
 import { t, tLater } from "../i18n";
+import { profileOf } from "../sports";
 
 /** What a route is for: a run, a bike ride since TASK-190, paddling on a
  * lake or the sea since TASK-191 (a canoe, a kayak, a SUP), a walk on the
@@ -52,32 +58,58 @@ export type SportOption = {
   preview?: boolean;
 };
 
+/**
+ * What a run of each sport is saved as (TASK-375, ADR-0319), and what «Draw»
+ * asks the API for when it is one of the activities of the API (activityOf).
+ * Paragliding has none yet: wherever the sports are told apart it goes as a
+ * run.
+ */
+const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
+  run: "running",
+  bike: "cycling",
+  paddle: "paddling",
+  swim: "swimming",
+  walk: "walking",
+  ski: "skiing",
+  xc_ski: "xc_skiing",
+  gym: "gym",
+};
+
+/** A sport of «Settings» as its profile says it (TASK-376 part B3c,
+ * ADR-0320): emoji and name, and recorded without a shape when its activity
+ * is one of those. «Settings» says only whether it is ready. */
+function fromProfile(id: Sport, ready: boolean): SportOption {
+  const activity = ACTIVITY[id];
+  if (activity === undefined) {
+    throw new Error(`no activity for ${id}`);
+  }
+  const { emoji, name } = profileOf(activity);
+  const recordOnly = (RECORD_ACTIVITIES as readonly RunActivity[]).includes(activity);
+  return recordOnly
+    ? { id, emoji, name, ready, recordOnly }
+    : { id, emoji, name, ready };
+}
+
 /** Every sport, in the order they are shown; the ones not ready included. */
 export const ALL_SPORTS: readonly SportOption[] = [
-  { id: "run", emoji: "🏃‍♂️", name: tLater("Run"), ready: true },
-  { id: "bike", emoji: "🚴", name: tLater("Bike"), ready: true },
-  { id: "paddle", emoji: "🛶", name: tLater("Paddle"), ready: true },
+  fromProfile("run", true),
+  fromProfile("bike", true),
+  fromProfile("paddle", true),
   // Asked as "swimming" since TASK-323 C2 (activityOf); on since the server
   // swims (TASK-323, 2026-11-04), in the store builds too.
-  { id: "swim", emoji: "🏊", name: tLater("Open water swim"), ready: true },
+  fromProfile("swim", true),
   // Asked as "walking" (activityOf), 1-30 km; on once the server has
   // TASK-371 part A and its migration 0043.
-  { id: "walk", emoji: "🚶", name: tLater("Walk"), ready: false },
+  fromProfile("walk", false),
   // Saved as "skiing" and "xc_skiing" (runActivityOf). The alpine ski is on
   // since TASK-375 D4: the server has parts A-D (migrations 0044 and 0048)
   // and the day its numbers, lifts and pistes. The cross-country ski not yet.
-  { id: "ski", emoji: "⛷️", name: tLater("Ski"), ready: true, recordOnly: true },
-  {
-    id: "xc_ski",
-    emoji: "🎿",
-    name: tLater("Cross-country ski"),
-    ready: false,
-    recordOnly: true,
-  },
+  fromProfile("ski", true),
+  fromProfile("xc_ski", false),
   // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in
   // the store builds too, the user's «ok accendi» (2026-11-05): the server
   // keeps its posts from the apps that cannot read them (X-MuW-Reads).
-  { id: "gym", emoji: "🏋️", name: tLater("Gym"), ready: true },
+  fromProfile("gym", true),
   { id: "paragliding", emoji: "🪂", name: tLater("Paragliding"), ready: false },
 ];
 
@@ -188,21 +220,16 @@ export function saveSport(sport: Sport): void {
  * What «Draw» asks the API for (TASK-190, ADR-0153): a route on the roads a
  * bike may ride for «Bike», a shape on the water for «Paddle» (TASK-191,
  * ADR-0164), a swim within 150 m of the shore for «Open water swim»
- * (TASK-323), a run for «Run».
+ * (TASK-323), a run for «Run»: the sport's activity when the API draws it
+ * (TASK-376 part B3c), a run for every other.
  */
 export function activityOf(sport: Sport): Activity {
-  switch (sport) {
-    case "bike":
-      return "cycling";
-    case "paddle":
-      return "paddling";
-    case "walk":
-      return "walking";
-    case "swim":
-      return "swimming";
-    default:
-      return "running";
-  }
+  const activity = ACTIVITY[sport];
+  return isPlanned(activity) ? activity : "running";
+}
+
+function isPlanned(activity: RunActivity | undefined): activity is Activity {
+  return (ACTIVITIES as readonly (RunActivity | undefined)[]).includes(activity);
 }
 
 /** True when `sport` is recorded without a shape (TASK-375): «Draw» shows
@@ -215,21 +242,12 @@ export function isRecordOnly(
 }
 
 /**
- * What a run of `sport` is saved as (TASK-375, ADR-0319): a day on the snow
- * as "skiing" or "xc_skiing", which no route asks; every other sport as the
- * route it would ask (activityOf), a walk as "walking".
+ * What a run of `sport` is saved as (TASK-375, ADR-0319): its activity, so
+ * a day on the snow as "skiing" or "xc_skiing", which no route asks, a
+ * workout as "gym", a walk as "walking"; a sport without one as a run.
  */
 export function runActivityOf(sport: Sport): RunActivity {
-  switch (sport) {
-    case "ski":
-      return "skiing";
-    case "xc_ski":
-      return "xc_skiing";
-    case "gym":
-      return "gym";
-    default:
-      return activityOf(sport);
-  }
+  return ACTIVITY[sport] ?? "running";
 }
 
 /** The way out of «Draw» with the track only (TASK-149), in the sport's

@@ -115,9 +115,7 @@ function notifier(): LockNotifier & {
 }
 
 /** A phone whose app is `state`, changed by `move`. */
-function phone(
-  os = "ios",
-): LockPhone & {
+function phone(os = "ios"): LockPhone & {
   now: AppStateStatus;
   move: (s: AppStateStatus) => void;
   listening: number;

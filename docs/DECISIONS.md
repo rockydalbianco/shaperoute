@@ -23076,3 +23076,44 @@ motore (`docs/sports/hike.md`):
   strade**: cambierebbe la ricerca del motore per tutti. Se serve, si
   valuta dopo la parte A, misurando quanto di ogni percorso sta su `track`
   e `path`.
+
+## ADR-0321, precisazione — La parte A: l'impronta del motore resta, il profilo dell'app entra nascosto
+
+**Stato**: Accettato · 2026-11-05 · TASK-377 parte A. Scelte del
+Coordinatore; le scelte tecniche sono decise dall'agente su delega
+dell'utente.
+
+**Contesto**: la parte A aggiunge al motore l'attività `hiking` e la rete
+`hike`. Questo cambia l'impronta del motore, e ADR-0320 dice che
+`SAME_ROUTES_AS` non vale «mai per un cambiamento di comportamento». Poi,
+un'attività nel contratto entra subito anche nelle liste dell'app.
+
+**Decisione**:
+
+1. **L'impronta resta quella di prima** (`SAME_ROUTES_AS`): b0107b18d440 →
+   e13ded92b52d, e lo stesso per i nuoti e gli esempi di canoa
+   dell'app. La regola di ADR-0320 protegge i percorsi tenuti. Qui il
+   comportamento nuovo è solo un'attività che non ha percorsi tenuti. I
+   percorsi di prima sono provati uguali:
+   - i nove percorsi fissi di `test_same_routes.py` (darwin-arm64);
+   - il banco su sei zone: corsa 54/54, bici 54/54, canoa 27/27, identici
+     punto per punto.
+
+   Così non serve una notte di esempi. Gli esempi di Explore per la hike,
+   se servono, sono un giro a parte, solo hike, col sì dell'utente.
+2. **Il profilo Hike dell'app entra con la parte A, nascosto.** Senza il
+   profilo l'app non partirebbe (`search/searchFilters.ts` chiama
+   `profileOf` per ogni attività). `main` resta pubblicabile a ogni merge:
+   - nessuna riga in «Settings»;
+   - nessun chip nella ricerca;
+   - il nome senza `tLater` fino alla parte B, che porta i testi.
+
+   L'header `X-MuW-Reads` dice `hiking`, e una hike salvata altrove si
+   vede come una camminata (`hikeFeed.test.tsx`).
+3. **Le zone della hike nell'API**: `explore`, con i nomi delle strade,
+   una sola in memoria. La rete è sua, quindi le zone della corsa non
+   servono, e la RAM del server cresce di una zona sola.
+4. **Il gioco**: una hike conta come una camminata. `RULES_VERSION` resta
+   2, perché nessuna corsa salvata prima della 0051 può essere una hike.
+
+**Server**: migrazione 0051 e deploy, col sì dell'utente.

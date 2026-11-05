@@ -392,9 +392,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     zone sue, nel gioco come la camminata; migrazione `0051_hiking.sql`;
   - l'app ha già il profilo Hike, nascosto: nessuna riga in «Settings»,
     nessun chip nella ricerca;
-  - al banco corsa, bici e canoa sono identiche punto per punto.
+  - al banco corsa, bici e canoa sono identiche punto per punto, e così
+    i nove percorsi fissi: l'impronta del motore resta quella di prima
+    (`SAME_ROUTES_AS`), quindi niente notte di esempi.
 
-  Server, migrazione 0051 e notte degli esempi solo col sì dell'utente.
+  Server (migrazione 0051 e deploy) solo col sì dell'utente.
   Prossimo: la parte B (app), dopo la #765.
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo

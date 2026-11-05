@@ -114,7 +114,15 @@ apps/mobile/src/sports/index.ts                             (una riga)
 apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts
 apps/mobile/src/search/searchFilters.ts                     (una riga: niente chip «Hike»)
 apps/mobile/src/feed/hikeFeed.test.tsx                      (nuovo: card e dettaglio)
+services/api/shaperoute_api/route_store.py                  (tre righe in SAME_ROUTES_AS)
+services/api/tests/fixtures/same_routes/b0107b18d440.json   (nuovo: la prova)
+docs/DECISIONS.md                                           (precisazione di ADR-0321)
 ```
+
+**L'impronta del motore resta** (Coordinatore, 2026-11-05): i percorsi di
+prima sono provati uguali, quindi `SAME_ROUTES_AS` tiene le impronte di
+prima e non serve una notte di esempi. Il perché è nella precisazione di
+ADR-0321.
 
 ### Parte B — app (dopo A e dopo la #765, che tiene `settings/sport.ts`)
 

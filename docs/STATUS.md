@@ -315,6 +315,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'header di TASK-387 (`gym` + `trackless`), niente filtro proprio.
   Parte A (API e database, migrazione 0047) in PR da
   `feat/TASK-385-a-gym-api`; server col sì dell'utente.
+  Parte A in `main` (#812). Parte B0 (l'app legge i post senza traccia) in
+  PR da `feat/TASK-385-b0-trackless-posts`; OTA col sì, prima di B.
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo
@@ -457,6 +459,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
     Finché il server non ha la rotta, l'elenco non si vede. Lo sci resta
     `ready: false`. Prossimo: la parte E, la prova sulla neve.
+  - 2026-11-05: D3 in `main` (#817); il server è a 9c617cb5, con la 0048 e
+    la privacy sul sito. **D4**: lo sci alpino è acceso (`ready: true`),
+    anche nelle build dello store, perché l'utente vuole provarlo dall'app
+    pubblicata. Il fondo resta «Soon». Solo JavaScript, impronta 6f8bba4c.
+    Prossimo: l'OTA di produzione col sì dell'utente, gli estratti delle
+    Alpi (o del mondo, se l'utente dice sì), poi la parte E.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta
@@ -2847,7 +2855,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Scelte e testi in `main`** (#808, 507e45dd); parte A con ADR-0333 e
   migrazione 0050, in una sessione nuova. Approvata anche la frase della
   Privacy «Pubblicità» per una parte B prima di Style (2026-11-05, «SI
-  APPROVO», `tasks/TASK-394.md` D.2b).
+  APPROVO», `tasks/TASK-394.md` D.2b). Sì anticipato sul nome della società
+  di Google per Web Risk (2026-11-05, «OK SI»): si copia dal contratto quando
+  l'utente lo attiva. Nessun testo di TASK-394 aspetta più un sì.
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,
@@ -2878,7 +2888,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ridisegno sul server.
   **Chiuso il 2026-11-05**: #807 in main (`325f7d56`); vedi «Completato».
 
+- **TASK-398 — «town cat 5000» rosso in CI: l'immagine ubuntu-26.04, non la
+  ricerca** (2026-11-05; numero dal Coordinatore). Il test cadeva su main e su
+  ogni PR con `d080e87a95000aa5`: dalle 16:00Z `ubuntu-latest` è ubuntu-26.04,
+  e lì lo stesso codice, con lo stesso Python e le stesse librerie, dà un altro
+  digest (42/42 run verdi su 24.04, 3/3 rossi su 26.04). Niente budget a tempo
+  (è un numero di tracce), niente ordine di hash. Il digest di 26.04 entra
+  nella tupla di «town cat 5000», come per «town heart 5000»; `route_engine`
+  non si tocca, impronta ferma. Rischio da guardare, senza azione: il server
+  su un Ubuntu più nuovo potrebbe disegnare di un soffio diverso. Branch
+  `fix/TASK-398-flaky-cat-search`; la unisce il Coordinatore a CI verde.
+  `tasks/TASK-398.md`.
+  **Chiuso il 2026-11-05**: #827 in main (`42e0433a`); vedi «Completato».
+
 ## Completato
+
+- **TASK-398 — «town cat 5000» rosso in CI: l'immagine ubuntu-26.04**
+  (2026-11-05). #827 in main (`42e0433a`): dalle 16:00Z `ubuntu-latest` è
+  ubuntu-26.04 e la ricerca del gatto del paese finto dà un altro digest con
+  lo stesso codice; il test accetta i due, come «town heart 5000». Motore e
+  impronta invariati. Rischio da guardare: prima di aggiornare il sistema del
+  server, rifare `tests/test_same_routes.py` sulla macchina nuova.
 
 - **TASK-395 — La ricerca non divide più per zero quando un percorso non disegna niente**
   (2026-11-05; seguito di TASK-297 C). #807 in main (`325f7d56`): in `optimizer.search` un

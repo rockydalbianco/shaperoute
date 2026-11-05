@@ -78,6 +78,7 @@ test("run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, TASK-1
     "bike",
     "paddle",
     "swim",
+    "hike",
     "ski",
     "gym",
   ]);

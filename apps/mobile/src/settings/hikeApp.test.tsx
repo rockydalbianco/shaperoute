@@ -1,7 +1,7 @@
 /**
  * «Hike» ⛰️ in the app (TASK-377 part B, ADR-0321): its row in «Settings»,
- * «Soon» until the server hikes; offered in the search and the form to
- * publish once ready; the caution under its routes in «Draw»; the files of
+ * on since the server hikes; offered in the search and the form to
+ * publish; the caution under its routes in «Draw»; the files of
  * other apps that say a hike.
  */
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
@@ -30,16 +30,16 @@ jest.mock("expo-file-system");
 const CAUTION =
   "Trails can be demanding: check the route and the weather before you set off.";
 
-test("«Hike» ⛰️ comes after «Walk», «Soon» until the server hikes", () => {
+test("«Hike» ⛰️ comes after «Walk», on since the server hikes", () => {
   const index = ALL_SPORTS.findIndex((option) => option.id === "hike");
   expect(ALL_SPORTS[index - 1]?.id).toBe("walk");
   expect(ALL_SPORTS[index]).toEqual({
     id: "hike",
     emoji: "⛰️",
     name: "Hike",
-    ready: false,
+    ready: true,
   });
-  expect(canChoose("hike", ALL_SPORTS)).toBe(false);
+  expect(canChoose("hike", ALL_SPORTS)).toBe(true);
   // Asked, and saved, as a hike, in its own words and sign.
   expect(activityOf("hike")).toBe("hiking");
   expect(runActivityOf("hike")).toBe("hiking");
@@ -47,16 +47,16 @@ test("«Hike» ⛰️ comes after «Walk», «Soon» until the server hikes", ()
   expect(withoutRouteIcon("hike")).toBe("⛰️");
 });
 
-test("a hike is offered to search and publish once «Hike» is ready", () => {
-  expect(activityOffered("hiking")).toBe(false);
-  expect(SEARCH_ACTIVITIES).not.toContain("hiking");
-  const ready: SportOption[] = ALL_SPORTS.map((option) =>
-    option.id === "hike" ? { ...option, ready: true } : option,
+test("a hike is offered to search and publish while «Hike» is ready", () => {
+  expect(activityOffered("hiking")).toBe(true);
+  expect(SEARCH_ACTIVITIES).toContain("hiking");
+  const soon: SportOption[] = ALL_SPORTS.map((option) =>
+    option.id === "hike" ? { ...option, ready: false } : option,
   );
-  expect(activityOffered("hiking", ready)).toBe(true);
+  expect(activityOffered("hiking", soon)).toBe(false);
   // The walk keeps to its own row.
-  expect(activityOffered("walking", ready)).toBe(false);
-  expect(activityOffered("running", ready)).toBe(true);
+  expect(activityOffered("walking")).toBe(false);
+  expect(activityOffered("running", soon)).toBe(true);
 });
 
 const hikeHeart: RouteRequest = {

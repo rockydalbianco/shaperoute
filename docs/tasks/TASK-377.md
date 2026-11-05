@@ -291,3 +291,9 @@ a parte del motore, dopo le prime escursioni vere.
 
 Prossimo: «ready» a vero con una riga in `settings/sport.ts`, dopo che il
 server ha la parte A (0051 e deploy), col sì dell'utente.
+
+2026-11-05, «ready» (`feat/TASK-377-c-hike-ready`, sopra la parte B), su
+richiesta del Coordinatore: `fromProfile("hike", true)` e i test che
+contano le righe pronte e i «Soon» (Hike pronta in «Settings», nel menu di
+«Disegna», nelle build dello store, nella ricerca). Si unisce solo dopo il
+server con la 0051 e col sì dell'utente, e va nello stesso OTA della B.

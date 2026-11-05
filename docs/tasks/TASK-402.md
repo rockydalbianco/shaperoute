@@ -248,7 +248,8 @@ dell'utente).
   aggiungeva al vecchio; ora è una casella sopra la tastiera, vuota con
   l'angolo come suggerimento (`841a943d`, `fb7ab849`). Un giro a due dita
   che porta la figura oltre lo schermo fa reinquadrare la mappa, come già
-  il ridimensionamento. Non ancora provato sul telefono.
+  il ridimensionamento. **Approvato dall'utente** il 2026-11-05 («Sì,
+  approvo»). Non ancora provato sul telefono.
 
 ## Note
 

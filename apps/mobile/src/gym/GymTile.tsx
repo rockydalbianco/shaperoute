@@ -11,17 +11,21 @@ type Props = {
   /** The workout's seconds; none, the tile shows only what it is (a
    * thumbnail). */
   durationS?: number;
+  /** Its main exercises, by name (mainExercises; TASK-385 part D): none
+   * when they are hidden or not here yet. */
+  exercises?: readonly string[];
 };
 
 /**
  * What a workout at the gym shows in place of the line (TASK-385 B0,
  * ADR-0327): the MuW yellow made by the app, with 🏋️, «Gym» and its time.
  * The yellow is the user's choice for this tile («Prima foto, se no
- * riquadro», 2026-11-04), the text on it `onAccent`. The parts after B0
- * add the energy, the heart rate and the main exercises. A screen reader
- * hears the card's words, not the tile's.
+ * riquadro», 2026-11-04), the text on it `onAccent`. Part D adds the main
+ * exercises, and it is the picture of the post shared too; parts C and G
+ * add the energy and the heart rate. A screen reader hears the card's
+ * words, not the tile's.
  */
-export function GymTile({ width, height, durationS }: Props) {
+export function GymTile({ width, height, durationS, exercises = [] }: Props) {
   const small = durationS === undefined;
   return (
     <View
@@ -35,6 +39,15 @@ export function GymTile({ width, height, durationS }: Props) {
         <>
           <Text style={styles.name}>{t(GYM.name)}</Text>
           <Text style={styles.time}>{durationLabel(durationS * 1000)}</Text>
+          {exercises.length > 0 && (
+            <Text
+              style={styles.exercises}
+              numberOfLines={3}
+              testID="gym-tile-exercises"
+            >
+              {exercises.join("\n")}
+            </Text>
+          )}
         </>
       )}
     </View>
@@ -62,5 +75,12 @@ const styles = StyleSheet.create({
     ...font.title,
     color: color.onAccent,
     fontWeight: fontWeight.medium,
+  },
+  exercises: {
+    ...font.label,
+    color: color.onAccent,
+    textAlign: "center",
+    paddingHorizontal: space.md,
+    paddingTop: space.xs,
   },
 });

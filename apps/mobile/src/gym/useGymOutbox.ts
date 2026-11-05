@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
-import { saveGymSession } from "../api/gym";
+import { saveGymSession, showGymExercises } from "../api/gym";
+import { keepForDrawing, sendWaitingDrawings } from "../social/drawingOutbox";
+import { keepOrder } from "../social/drawingOrder";
+import { keepPhotos } from "../social/drawingPhotos";
 import { useFollowsDoor } from "../social/followsDoor";
+import { saveVisibility } from "../social/visibilityChoice";
 import {
   type GymKept,
   gymToSend,
@@ -10,6 +14,7 @@ import {
   refuseGymWaiting,
   stopGymWaiting,
 } from "./gymOutbox";
+import { type GymPost, postPhotos } from "./GymPostForm";
 import { sessionRequest, type Workout } from "./workout";
 
 /** What «Save» did with a workout: as a run's, or nobody signed in, or
@@ -21,10 +26,12 @@ export type GymSaved = GymKept | "signed_out" | "nothing";
  * the phone, then to the API, now or when there is a network; once the API
  * has it, «My activities» asks for its list again. A workout the API will
  * not take (422, or 409 for a key of a run) stays on the phone and is not
- * sent again. `fetchFn` is for the tests.
+ * sent again. Its post (TASK-385 part D) goes after it: «Show exercises»
+ * turned off first, then the drawing's choice with its photos and their
+ * order, through the drawings' own file. `fetchFn` is for the tests.
  */
 export function useGymOutbox(fetchFn?: typeof fetch): {
-  save: (workout: Workout) => GymSaved;
+  save: (workout: Workout, post?: GymPost) => GymSaved;
 } {
   const { apiUrl, account } = useFollowsDoor();
   const { owner, refresh } = useActivitiesDoor();
@@ -44,12 +51,36 @@ export function useGymOutbox(fetchFn?: typeof fetch): {
     }
     sending.current = true;
     let sent = false;
+    let posts = false;
+    const options = { fetchFn: latest.current.fetchFn };
     try {
       for (const waiting of gymToSend(who)) {
-        const outcome = await saveGymSession(url, key, waiting.key, waiting.request, {
-          fetchFn: latest.current.fetchFn,
-        });
+        const outcome = await saveGymSession(
+          url,
+          key,
+          waiting.key,
+          waiting.request,
+          options,
+        );
         if (outcome.kind === "ok") {
+          // Hidden before anybody sees the post: with no network it waits,
+          // and the workout is sent again, the same.
+          if (waiting.show === false) {
+            const hidden = await showGymExercises(
+              url,
+              key,
+              waiting.key,
+              false,
+              options,
+            );
+            if (hidden.kind === "unreachable" || hidden.kind === "bad_answer") {
+              break;
+            }
+          }
+          if (waiting.drawing !== undefined) {
+            keepForDrawing({ owner: who, key: waiting.key, ...waiting.drawing });
+            posts = true;
+          }
           stopGymWaiting(who, waiting.key);
           sent = true;
         } else if (
@@ -65,6 +96,9 @@ export function useGymOutbox(fetchFn?: typeof fetch): {
           break;
         }
       }
+      if (posts) {
+        await sendWaitingDrawings(url, key, who, options);
+      }
     } finally {
       sending.current = false;
       if (sent) {
@@ -79,7 +113,7 @@ export function useGymOutbox(fetchFn?: typeof fetch): {
   }, [send, token, owner]);
 
   const save = useCallback(
-    (workout: Workout): GymSaved => {
+    (workout: Workout, post?: GymPost): GymSaved => {
       const who = latest.current.owner;
       if (who === null) {
         return "signed_out";
@@ -88,8 +122,24 @@ export function useGymOutbox(fetchFn?: typeof fetch): {
       if (request === null) {
         return "nothing";
       }
-      const kept = keepGymWaiting({ owner: who, key: workout.key, request });
+      const kept = keepGymWaiting({
+        owner: who,
+        key: workout.key,
+        request,
+        ...(post === undefined
+          ? {}
+          : { drawing: post.choice, ...(post.show ? {} : { show: false }) }),
+      });
       if (kept === "kept") {
+        if (post !== undefined) {
+          // The photos take the places of the post's order, as a run's.
+          const { photos, order } = postPhotos(post);
+          keepPhotos(who, workout.key, photos);
+          if (order !== null) {
+            keepOrder(who, workout.key, order);
+          }
+          saveVisibility(who, post.choice.visibility);
+        }
         void send();
       }
       return kept;

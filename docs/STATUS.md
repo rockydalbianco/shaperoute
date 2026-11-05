@@ -433,6 +433,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Pause», «Still training?», fine e «Save») in PR da
   `feat/TASK-385-b-gym-workout`; «Gym» accesa anche nelle build dello store
   col sì dell'utente («ok accendi», 2026-11-05).
+  Parte B in `main` (#833, 02effa84).
+  Parte D (il post senza disegno) in PR da `feat/TASK-385-d-gym-post`:
+  fino a 10 foto col riquadro giallo fra le pagine (ultimo se non lo si
+  sposta), gli esercizi principali nel riquadro del Feed e
+  nell'immagine condivisa, «Show exercises» a fine allenamento e in «My
+  activities», il modulo del post a fine allenamento come a fine corsa;
+  nella condivisione niente video né Strava. Scelte dell'utente del
+  2026-11-05: «10 foto», «Sì, anche alla fine». Impronta iOS 6f8bba4c
+  invariata; OTA col sì. Prossima: C (kcal e Salute), E (traguardi).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo

@@ -1169,6 +1169,7 @@ export const IT: Table = {
   Custom: "Personalizzato",
   "Next: {exercise} · set {n}": "Dopo: {exercise} · serie {n}",
   "Rest over — next set": "Recupero finito: prossima serie",
+  "Show exercises": "Mostra gli esercizi",
   "Still training?": "Ti stai ancora allenando?",
   "Yes, keep going": "Sì, continuo",
   "Finish workout": "Termina l'allenamento",

@@ -6,7 +6,7 @@ import type {
   MyDrawing,
   SkiNames,
 } from "@shaperoute/shared-types";
-import { DRAWING_MAX_PHOTOS } from "@shaperoute/shared-types";
+import { DRAWING_PHOTO_PLACES } from "@shaperoute/shared-types";
 import {
   createContext,
   useCallback,
@@ -403,7 +403,9 @@ export function useDrawingsOf(
           .map((item) => item.n),
       );
       const shown: PhotoShown[] = [];
-      for (let n = 1; n <= DRAWING_MAX_PHOTOS; n += 1) {
+      // Every place the API keeps: a workout at the gym has one photo more
+      // than a run (TASK-385 part D).
+      for (let n = 1; n <= DRAWING_PHOTO_PLACES; n += 1) {
         const mine = onPhone.find((photo) => photo.n === n);
         if (mine !== undefined) {
           shown.push({ n, source: { uri: phonePhotoUri(mine.base64) }, onPhone: true });

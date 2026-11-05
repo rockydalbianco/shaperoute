@@ -1,5 +1,16 @@
 import type { Shape } from "@shaperoute/shared-types";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { t, tLater } from "../i18n";
 import type { CanvasMode } from "../map/messages";
@@ -21,6 +32,7 @@ import type { Placed } from "./figure";
 import { FigureTiles } from "./FigureTiles";
 import { placedTile } from "./resultFigure";
 import type { ToolProblem } from "./tools";
+import { normalDeg, TURN_STEP_DEG, turnOf } from "./turn";
 
 // Translated where shown, with t().
 const MODES = [
@@ -44,7 +56,7 @@ const HINTS: Record<CanvasMode, string> = {
     "Rub a line to erase that piece. A piece cut off joins the drawing with a dash.",
   ),
   move: tLater(
-    "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize.",
+    "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize and turn it.",
   ),
 };
 const ON_FIGURE = tLater("Each new line joins the drawing. Two fingers move the map.");
@@ -76,6 +88,9 @@ type Props = {
   problem: ToolProblem | null;
   /** «Draw route»: on with a figure. */
   onDraw: (() => void) | null;
+  /** The figure turned to so many degrees (TASK-402): with «Move», «−15°»,
+   * «+15°» and the angle typed. None leaves them out. */
+  onTurn?: (deg: number) => void;
 };
 
 /**
@@ -84,7 +99,8 @@ type Props = {
  * the fingers do, a row of tiles that put a figure on the map or change it
  * where it is («+ photo» first, then the shapes of the catalogue and the
  * ready-made pictures of «Draw»), the distance the figure would make, and
- * «Draw route».
+ * «Draw route». With «Move», the figure's angle between «−15°» and «+15°»
+ * (TASK-402).
  */
 export function DrawOnMap({
   mode,
@@ -102,6 +118,7 @@ export function DrawOnMap({
   distanceM,
   problem,
   onDraw,
+  onTurn,
 }: Props) {
   const askClear = () =>
     Alert.alert(t("Clear the whole drawing?"), undefined, [
@@ -121,6 +138,9 @@ export function DrawOnMap({
         <View style={styles.gap} />
         <Step label={t("Clear all")} onPress={askClear} enabled={placed !== null} />
       </View>
+      {mode === "move" && placed !== null && onTurn !== undefined ? (
+        <Turn deg={turnOf(placed)} onTurn={onTurn} />
+      ) : null}
       <Note
         mode={mode}
         // A line joins a drawing or a photo; on a shape it is a new drawing.
@@ -176,6 +196,96 @@ function Step({
   );
 }
 
+/** An angle as shown: «30°», «−15°», with a true minus. */
+export function degreesLabel(deg: number): string {
+  return `${deg < 0 ? "\u2212" : ""}${Math.abs(deg)}°`;
+}
+
+/** The degrees typed, «−30», «30°» or «-30,5», as a whole angle within
+ * (−180°, 180°]; null for anything else. */
+export function typedDegrees(text: string): number | null {
+  const plain = text.replace("\u2212", "-").replace(",", ".").replace("°", "").trim();
+  const deg = plain === "" ? NaN : Number(plain);
+  return Number.isFinite(deg) ? normalDeg(deg) : null;
+}
+
+/** «−15°», the figure's angle, «+15°» (TASK-402): a tap on the angle types
+ * it, in a box over the keyboard, empty with the angle as a hint; «Done» or
+ * a tap around it turns the figure to it. */
+function Turn({ deg, onTurn }: { deg: number; onTurn: (deg: number) => void }) {
+  const [typing, setTyping] = useState<string | null>(null);
+  const done = () => {
+    const typed = typing === null ? null : typedDegrees(typing);
+    setTyping(null);
+    if (typed !== null) {
+      onTurn(typed);
+    }
+  };
+  return (
+    <View style={styles.turn}>
+      <Pressable
+        style={styles.step}
+        onPress={() => onTurn(deg - TURN_STEP_DEG)}
+        accessibilityRole="button"
+        accessibilityLabel={t("Turn left 15 degrees")}
+        testID="turn-left"
+      >
+        <Text style={styles.stepText}>{degreesLabel(-TURN_STEP_DEG)}</Text>
+      </Pressable>
+      <Pressable
+        style={styles.angle}
+        onPress={() => setTyping("")}
+        accessibilityRole="button"
+        accessibilityLabel={t("Angle, {deg} degrees. Double tap to type it", { deg })}
+        testID="turn-angle"
+      >
+        <Text style={styles.angleText}>{degreesLabel(deg)}</Text>
+      </Pressable>
+      <Modal
+        transparent
+        visible={typing !== null}
+        animationType="fade"
+        onRequestClose={done}
+      >
+        <KeyboardAvoidingView
+          style={styles.typingRoom}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={done}
+            accessible={false}
+          />
+          <View style={styles.typingBox}>
+            <TextInput
+              style={styles.typed}
+              value={typing ?? ""}
+              onChangeText={setTyping}
+              onSubmitEditing={done}
+              placeholder={degreesLabel(deg).slice(0, -1)}
+              placeholderTextColor={color.textMuted}
+              keyboardType="numbers-and-punctuation"
+              returnKeyType="done"
+              autoFocus
+              testID="turn-typed"
+            />
+            <Text style={styles.degree}>°</Text>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+      <Pressable
+        style={styles.step}
+        onPress={() => onTurn(deg + TURN_STEP_DEG)}
+        accessibilityRole="button"
+        accessibilityLabel={t("Turn right 15 degrees")}
+        testID="turn-right"
+      >
+        <Text style={styles.stepText}>+{degreesLabel(TURN_STEP_DEG)}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 /** One line: why the last line, tool or photo gave nothing, the photo
  * being traced, or what the fingers do; with «Draw» on a figure, that a
  * line joins it. */
@@ -224,6 +334,52 @@ const styles = StyleSheet.create({
   },
   gap: {
     flex: 1,
+  },
+  turn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+  },
+  angle: {
+    minWidth: 88,
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    paddingHorizontal: space.md,
+  },
+  angleText: {
+    color: color.text,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.bold,
+    textAlign: "center",
+  },
+  typingRoom: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  degree: {
+    color: color.text,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.bold,
+  },
+  typingBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: space.lg,
+    paddingHorizontal: space.xl,
+    minHeight: MIN_TAP_SIZE,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  typed: {
+    minWidth: 64,
+    color: color.text,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.bold,
+    textAlign: "right",
   },
   step: {
     minHeight: MIN_TAP_SIZE,

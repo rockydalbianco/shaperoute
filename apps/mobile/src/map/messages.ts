@@ -134,9 +134,10 @@ export type FromPage =
    * held to where the finger left it. */
   | { type: "bent"; from: LngLat; to: LngLat; metresPerPx: number }
   /** The figure moved or sized by the fingers: the middle of its frame
-   * now, and how many times bigger. While two fingers still size it
-   * `done` is false, for the distance on screen. */
-  | { type: "figure"; centre: LngLat; factor: number; done: boolean }
+   * now, and how many times bigger; `turn`, how many degrees two fingers
+   * turned it, clockwise (TASK-402), none as 0. While two fingers still
+   * size it `done` is false, for the distance on screen. */
+  | { type: "figure"; centre: LngLat; factor: number; done: boolean; turn?: number }
   /** The middle of the map, where a figure is put (TASK-281), or the
    * point chosen as the start (TASK-292). */
   | { type: "centre"; lngLat: LngLat }
@@ -454,12 +455,21 @@ export function parsePageMessage(data: string): FromPage | null {
     "done" in message
   ) {
     const { centre, factor, done } = message;
+    const turn = "turn" in message ? message.turn : 0;
     return isLngLat(centre) &&
       typeof factor === "number" &&
       Number.isFinite(factor) &&
       factor > 0 &&
-      typeof done === "boolean"
-      ? { type: "figure", centre: [centre[0], centre[1]], factor, done }
+      typeof done === "boolean" &&
+      typeof turn === "number" &&
+      Number.isFinite(turn)
+      ? {
+          type: "figure",
+          centre: [centre[0], centre[1]],
+          factor,
+          done,
+          ...(turn !== 0 ? { turn } : {}),
+        }
       : null;
   }
   if (message.type === "centre" && "lngLat" in message) {

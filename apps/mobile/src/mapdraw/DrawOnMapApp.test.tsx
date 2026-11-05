@@ -264,3 +264,40 @@ test("«Freehand» comes first and opens the map; on the water there is none", a
   expect(screen.getByRole("button", { name: "Shape" })).toBeSelected();
   expect(screen.getByRole("button", { name: "Freehand" })).not.toBeSelected();
 });
+
+test("with «Move» the figure turns by 15°, by the degrees typed, and is asked turned (TASK-402)", async () => {
+  await render(<App />);
+  await pagePosts('{"type":"ready"}');
+  await pagePosts('{"type":"centre","lngLat":[11.13,46.07]}');
+  await fireEvent.press(screen.getByText("Freehand"));
+  // No figure, no angle.
+  expect(screen.queryByTestId("turn-angle")).toBeNull();
+
+  await fireEvent.press(screen.getByLabelText("heart"));
+  expect(screen.getByText("0°")).toBeOnTheScreen();
+  const straight = sent("setCanvas").at(-1)?.lines;
+  await fireEvent.press(screen.getByLabelText("Turn right 15 degrees"));
+  expect(
+    screen.getByLabelText("Angle, 15 degrees. Double tap to type it"),
+  ).toBeOnTheScreen();
+  expect(sent("setCanvas").at(-1)?.lines).not.toEqual(straight);
+  await fireEvent.press(screen.getByLabelText("Turn left 15 degrees"));
+  await fireEvent.press(screen.getByLabelText("Turn left 15 degrees"));
+  expect(
+    screen.getByLabelText("Angle, -15 degrees. Double tap to type it"),
+  ).toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByTestId("turn-angle"));
+  await fireEvent.changeText(screen.getByTestId("turn-typed"), "90");
+  await fireEvent(screen.getByTestId("turn-typed"), "submitEditing");
+  expect(screen.getByText("90°")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByText("Undo"));
+  expect(screen.getByTestId("turn-angle")).toHaveTextContent("\u221215°");
+  await fireEvent.press(screen.getByText("Redo"));
+
+  // Turned, the heart is asked by its outline.
+  await act(async () => fireEvent.press(screen.getByText("Draw route")));
+  const [, asked] = jest.mocked(requestRouteOnPhoneFirst).mock.calls.at(-1) ?? [];
+  expect(asked).toHaveProperty("outline");
+  expect(asked).not.toHaveProperty("shape");
+});

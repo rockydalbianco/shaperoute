@@ -157,7 +157,10 @@ CANONICAL = [
     ("http://notrailingslash.com", "http://notrailingslash.com/"),
     ("  http://www.google.com/  ", "http://www.google.com/"),
     ("http://www.google.com/blah/..", "http://www.google.com/"),
-    ("http://host.com//twoslashes?more//slashes", "http://host.com/twoslashes?more//slashes"),
+    (
+        "http://host.com//twoslashes?more//slashes",
+        "http://host.com/twoslashes?more//slashes",
+    ),
     ("http://host.com/ab%23cd", "http://host.com/ab%23cd"),
 ]
 
@@ -210,7 +213,9 @@ def _answer(prefixes: list[bytes], kind: str = "RESET", **more: Any) -> dict[str
     body = sorted(prefixes)
     return {
         "responseType": kind,
-        "additions": {"rawHashes": [{"prefixSize": 4, "rawHashes": b64(b"".join(body))}]},
+        "additions": {
+            "rawHashes": [{"prefixSize": 4, "rawHashes": b64(b"".join(body))}]
+        },
         "newVersionToken": "dG9rZW4=",
         "checksum": {"sha256": b64(hashlib.sha256(b"".join(body)).digest())},
         **more,

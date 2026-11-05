@@ -398,9 +398,7 @@ class OutfitTags:
                 values,
             )
 
-    def _seen(
-        self, conn: Connection[DictRow], viewer_id: int, tag_id: UUID
-    ) -> DictRow:
+    def _seen(self, conn: Connection[DictRow], viewer_id: int, tag_id: UUID) -> DictRow:
         """The item, when `viewer_id` sees its photo; else 404, as for an id
         that is not there."""
         # drawings.py imports this module.

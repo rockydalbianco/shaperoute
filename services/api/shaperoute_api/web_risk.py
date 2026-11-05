@@ -375,7 +375,7 @@ class WebRisk:
         return None
 
     def verdict(self, url: str) -> Verdict:
-        """"unsafe" when a hash of the link is on a list; "safe" when none
+        """ "unsafe" when a hash of the link is on a list; "safe" when none
         is; "unknown" when that cannot be said (no key, old lists, Google
         not answering). Only prefixes leave the server."""
         if not self.ready():

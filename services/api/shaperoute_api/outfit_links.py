@@ -148,7 +148,16 @@ TRACKING = frozenset(
 # Amazon's own: the associate's tag and what goes with it.
 AMAZON_AFFILIATE_PREFIXES = ("pd_rd_", "pf_rd_")
 AMAZON_AFFILIATE = frozenset(
-    {"tag", "ascsubtag", "linkcode", "linkid", "creative", "creativeasin", "camp", "ref_"}
+    {
+        "tag",
+        "ascsubtag",
+        "linkcode",
+        "linkid",
+        "creative",
+        "creativeasin",
+        "camp",
+        "ref_",
+    }
 )
 
 _LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?")

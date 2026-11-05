@@ -2899,6 +2899,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   APPROVO», `tasks/TASK-394.md` D.2b). Sì anticipato sul nome della società
   di Google per Web Risk (2026-11-05, «OK SI»): si copia dal contratto quando
   l'utente lo attiva. Nessun testo di TASK-394 aspetta più un sì.
+  **Parte A (API) in PR** (2026-11-05, branch
+  `feat/TASK-394-a-outfit-tags-api`, ADR-0333, migrazione `0050`): `PUT
+  …/drawing/photos/{n}/tags`, `POST /outfit-tags/{id}/open` e `/shop`,
+  `outfit_tags` in ogni foto (link e totali solo al proprietario),
+  `outfit_tag` nelle segnalazioni e nell'email, il link pulito e controllato
+  con Web Risk «Update API» (a Google solo prefissi di impronte). Senza
+  `SHAPEROUTE_WEB_RISK_KEY` si aprono solo i negozi di Style. La unisce il
+  Coordinatore; migrazione sul server e chiave di Web Risk col sì
+  dell'utente. Prossimo: la parte B (app), dopo TASK-384 B.
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,

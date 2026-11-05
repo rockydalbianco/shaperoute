@@ -13,8 +13,9 @@ GET /me/blocked lists the members blocked, the last first, to unblock them.
 POST /reports keeps what a member reports, a drawing, a comment, a
 member, a group run (TASK-309), a private message (TASK-319: only the
 other member of its conversation reports it) or an item tagged on a photo
-(TASK-394, outfit_tags.py), with a reason from a short list: one row for each reporter and thing, the latest reason kept. No
-endpoint reads them (ADR-0228): a new report is emailed to whoever runs
+(TASK-394, outfit_tags.py), with a reason from a short list: one row for
+each reporter and thing, the latest reason kept. No endpoint reads them
+(ADR-0228): a new report is emailed to whoever runs
 the app, with a link that hides the thing (report_email.py, TASK-291,
 ADR-0251); the same member reporting it again with another reason sends
 nothing.
@@ -62,9 +63,7 @@ from shaperoute_api.follows import (
 from shaperoute_api.report_email import notify_report
 from shaperoute_api.schemas import ErrorBody
 
-ReportKind = Literal[
-    "drawing", "comment", "user", "group_run", "message", "outfit_tag"
-]
+ReportKind = Literal["drawing", "comment", "user", "group_run", "message", "outfit_tag"]
 """What is reported: a drawing (a post of the feed), a comment, a member, a
 group run (TASK-309), a private message (messages.py), an item tagged on a
 photo (outfit_tags.py)."""

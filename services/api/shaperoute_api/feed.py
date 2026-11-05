@@ -222,7 +222,7 @@ class Feed:
                 values,
             ).fetchall()
             page, more = rows[:limit], len(rows) > limit
-            details = _details(conn, [row["id"] for row in page])
+            details = _details(conn, [row["id"] for row in page], viewer_id)
             follows_anyone = feed_filter == "following" and bool(
                 conn.execute(
                     "SELECT EXISTS (SELECT 1 FROM follows WHERE follower_id = %s"

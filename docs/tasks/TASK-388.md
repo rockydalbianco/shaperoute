@@ -1,6 +1,6 @@
 # TASK-388 — Movimenti stile Apple: molle condivise, la barra in basso, l'«isola», fogli e liste
 
-**Stato**: In corso — parte A in `main` (#770, 0d7819c4, 2026-11-05); A2 in `main` (#780, 07d5833c); parte B in `main` (#786, dde301bd); parte C, fogli e liste, in PR
+**Stato**: In corso — parte A in `main` (#770, 0d7819c4, 2026-11-05); A2 in `main` (#780, 07d5833c); parte B in `main` (#786, dde301bd); parte C in `main` (#803, fed77512); C2, lo sfondo che sfuma, in PR
 **Fase**: 4 · **Branch**: `feat/TASK-388-a-springs-tab-bar` (parte A) ·
 **ADR**: ADR-0329 · numeri dal Coordinatore (2026-11-04)
 
@@ -372,6 +372,54 @@ banco di prova: i filtri della ricerca salgono in ~0,35 s e si fermano sul
 posto, si chiudono scendendo; i risultati «Hearts» entrano uno dopo l'altro
 (`c-sheet-frames.jpg`, `c-cascade-frames.jpg`). Approvato dall'utente il
 2026-11-05 («Sì, approvo»); merge del Coordinatore a CI verde.
+**C in `main`** il 2026-11-05 (#803, fed77512).
+
+## C2 — Lo sfondo che sfuma (2026-11-05)
+
+L'utente, alla proposta di far sfumare lo sfondo scuro invece di farlo salire
+con il foglio: «VA BENE». Branch `fix/TASK-388-c2-sheet-scrim` da `main`
+(fed77512); lista dei file approvata dal Coordinatore. Dei sette fogli solo i
+filtri della ricerca hanno uno sfondo scuro; gli altri sei sono trasparenti e
+non cambiano.
+
+- `SheetModal` ha `dim`: dietro il foglio uno strato `color.scrim` che resta
+  fermo e si scurisce fino a `SHEET_DIM_OPACITY` (0,5, il valore che aveva
+  `FilterSheet`) con la stessa molla del foglio, e si schiarisce quando
+  scende. Non prende tocchi.
+- `FilterSheet` passa `dim`; il suo `backdrop` resta solo per il tocco che
+  chiude, senza colore.
+
+### Criteri di accettazione (C2)
+
+- [x] Senza `dim` nessuno strato; con `dim` lo strato non scorre, cresce
+      solo mentre il foglio sale, mai oltre 0,5, e se ne va con il foglio
+      (`SheetModal.test.tsx`).
+- [x] Lo strato non prende tocchi: il tocco fuori dal foglio lo chiude
+      ancora.
+- [x] Solo JS, impronta `6f8bba4c` invariata; nessun colore a mano.
+- [x] Video in `out/TASK-388/c2-*` e l'ok dell'utente: «Sì, approvo»,
+      2026-11-05.
+
+### File toccati (C2)
+
+```
+apps/mobile/src/ui/SheetModal.tsx
+apps/mobile/src/ui/SheetModal.test.tsx
+apps/mobile/src/search/FilterSheet.tsx
+docs/tasks/TASK-388.md
+docs/DECISIONS.md   (righe aggiunte in ADR-0329)
+docs/STATUS.md      (righe aggiunte)
+docs/UI.md
+```
+
+### Esito C2
+
+`SheetModal.test.tsx` 8 (3 nuovi sullo strato), `src/search` verde, `tsc` ed
+eslint puliti. Video `out/TASK-388/c2-scrim.mov` sull'app vera (ricerca, i
+filtri): lo schermo si scurisce in alto e in basso nello stesso momento, cioè
+sul posto, mentre il foglio sale (`c2-scrim-frames.jpg`); chiuso, schiarisce
+in ~0,4 s. L'utente l'ha approvato il 2026-11-05 («Sì, approvo»); merge del
+Coordinatore a CI verde.
 
 ## Fuori scope
 
@@ -379,3 +427,47 @@ posto, si chiudono scendendo; i risultati «Hearts» entrano uno dopo l'altro
   all'utente con il costo (una build nativa nuova).
 - Dove usare l'«isola» oltre al primo punto: lo decide l'utente.
 - Un OTA di produzione: col sì dell'utente.
+
+## C3 — Il foglio dei prodotti Style (2026-11-05)
+
+Dopo la parte C è arrivato in `main` il foglio di un prodotto dei post Style
+(TASK-384 B, #809), ancora con la `Modal` «slide» di sistema. Lista dei file
+approvata dal Coordinatore («via sulla lista»); `StyleProductSheet` e
+`StylePost.test` sono di TASK-384, chiuso per la parte B, e nessuna PR aperta
+li tocca. Branch `fix/TASK-388-c3-style-sheet` da `main`.
+
+- `StyleProductSheet` passa a `SheetModal`, come `MessageSheet`: tiene il suo
+  `open`; il tocco fuori e il «indietro» di Android chiudono, e il post
+  sente `onClose` solo quando il foglio è giù (`onHidden`). Niente `dim`: lo
+  sfondo resta trasparente, com'era.
+
+### Criteri di accettazione (C3)
+
+- [x] Il foglio sale e scende sulla molla `smooth` dei fogli; con «Riduci
+      movimento» sfuma.
+- [x] Il tocco fuori chiude; il post lo sa a foglio giù
+      (`StylePost.test.tsx`).
+- [x] Solo JS, impronta `6f8bba4c` invariata; testi invariati.
+- [x] Video in `out/TASK-388/c3-*` e l'ok dell'utente: «Sì, approvo»,
+      2026-11-05.
+
+### File toccati (C3)
+
+```
+apps/mobile/src/feed/StyleProductSheet.tsx
+apps/mobile/src/feed/StylePost.test.tsx
+docs/tasks/TASK-388.md
+docs/STATUS.md      (righe aggiunte, dopo la #811)
+docs/UI.md
+```
+
+### Esito C3
+
+`StylePost.test.tsx` 8 (il tocco fuori ora aspetta il foglio giù) e
+`SheetModal.test.tsx` verdi, `tsc`, eslint e prettier puliti. Video
+`out/TASK-388/c3-style-sheet.mov` nella copia del simulatore, con un post
+Style di prova sulla ricerca (solo nella copia, tolto dopo: il Feed lì non
+carica senza API): il foglio sale in ~0,35 s e si ferma senza rimbalzo, il
+tocco fuori lo fa scendere (`c3-open-frames.jpg`, `c3-close-frames.jpg`).
+Approvato dall'utente il 2026-11-05 («Sì, approvo»); merge del Coordinatore
+a CI verde, dopo la #811.

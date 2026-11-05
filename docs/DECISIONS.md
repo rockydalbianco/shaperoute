@@ -18061,7 +18061,8 @@ suo sì.
 
 ## ADR-0283 — Il nuoto in acque libere: l'acqua della canoa con la fascia dei bagnanti, le curve con un nome a riva, l'orologio in due fasi
 
-**Stato**: Proposto · 2026-10-28 (TASK-323). Scelta dell'utente dello stesso
+**Stato**: Accettato · 2026-11-05, il nuoto acceso per tutti (#765).
+Proposto il 2026-10-28 (TASK-323). Scelta dell'utente dello stesso
 giorno: «parti proprio con il progetto secondo me funziona», dopo la
 proposta in chat. Fascia e distanze si confermano coi campioni di A1;
 nome, testi e avviso di sicurezza con la parte C; dipendenza e build
@@ -18583,6 +18584,31 @@ delle vibrazioni, i testi e la riga della privacy si chiedono all'utente
 quando E parte; la build e l'invio ad Apple col suo sì, dopo la prova in
 acqua.
 
+## ADR-0283 — aggiunta, il nuoto acceso: per tutti, anche nelle build dello store
+
+**Stato**: Attiva · 2026-11-04 · scelta dell'utente («Subito per tutti»,
+alla domanda su come accendere il nuoto; poi «Dopo lo sci» sull'ordine).
+Aggiunta ad ADR-0283.
+
+**Contesto**: B, C1, C2, C4, D ed E in `main` e il server con la `0040`
+il 2026-11-04. La riga del nuoto era ancora `ready: false`: «Soon» in Expo
+Go e in preview, nascosta nelle build dello store (TASK-318). Le strade
+erano tre: prima solo in preview per la prova in acqua, subito per tutti,
+oppure aspettare i nomi a riva.
+
+**Decisione dell'utente**:
+
+1. **Subito per tutti**: `ready: true` in `sport.ts`, con il prossimo OTA
+   anche nelle build dello store, senza prima la prova in acqua.
+2. **Dopo lo sci**: la riga tocca gli stessi file di TASK-375 B1, in
+   lavorazione; la PR del nuoto entra dopo quella, con `main` unito dentro.
+3. Prima dell'OTA, sul server, `draw_examples --swim`: gli esempi di
+   «Explore» a nuoto.
+
+**Conseguenze**: le curve restano senza il nome del posto a riva finché
+`shore_extract` non gira sul server: «Turn left», non «Turn left · Bagno
+54». Il codice lo regge già (`swim/turns.ts`). La prova in acqua resta per
+la primavera 2027, con l'utente.
 ## ADR-0283 — aggiunta, il nuoto prima in preview: acceso in Expo Go e `preview`, lo store dopo TASK-387
 
 **Stato**: Attiva · 2026-11-05 · scelta dell'utente («Subito in preview»,
@@ -22560,6 +22586,10 @@ dell'utente)**:
    prime 6 righe; una riga che arriva dopo (una pagina in più) entra da
    sola. Su conversazioni, campanella, commenti e risultati della ricerca;
    non su «Feed» (riga di TASK-365 in sospeso).
+5. **C2, lo sfondo che sfuma** (l'utente: «VA BENE», 2026-11-05): il punto
+   2 non resta per dopo. `SheetModal` ha `dim`, uno strato `color.scrim`
+   fermo dietro il foglio che segue la stessa molla del foglio fino a 0,5;
+   oggi lo usa solo `FilterSheet`, l'unico foglio con lo sfondo scuro.
 ## ADR-0245, precisazione — Il contorno di «Draw route» si controlla come parte
 
 **Stato**: Attiva · 2026-11-04 · deciso dall'agente su delega dell'utente
@@ -23122,3 +23152,83 @@ un'attività nel contratto entra subito anche nelle liste dell'app.
    toglie.
 
 **Server**: migrazione 0051 e deploy, col sì dell'utente.
+## ADR-0332, precisazione — Il sì e il valore di Salute in una tabella loro, `vo2max`
+
+**Stato**: Attiva · 2026-11-05 · TASK-397 parte A, decisa dall'agente su
+delega dell'utente; file approvati dal Coordinatore. Cambia i punti 1, 2 e
+5 di ADR-0332, non le scelte dell'utente.
+
+**Contesto**: il punto 1 metteva il sì in una colonna degli account, con
+`PATCH /me` e `GET /me`. La tabella è `users` e la forma di `User` sta in
+`accounts.py` (`USER_COLUMNS`, `UserBody`), che la parte A non tocca:
+cambiarla avrebbe allargato il task a un file di tutti.
+
+**Decisione**:
+1. **Una tabella sua**, `vo2max` (migrazione `0049`): `user_id`, `show`,
+   `value`, `source`, `measured_on`, con `CHECK` che vogliono i tre campi
+   del valore insieme e solo col sì.
+2. **Endpoint suoi** in `vo2max.py`: `GET` e `PUT /me/vo2max` (`{"show"}`)
+   al posto di `GET /me` e `PATCH /me`; `PUT` e `DELETE
+   /me/vo2max/reading` per il valore di Salute. La risposta,
+   `Vo2MaxSettings`, dà anche a sì spento il `Vo2Max` che si vedrebbe: è
+   quello che l'app mostra al titolare con «Only you see this».
+3. **Il giorno della stima** è quello della corsa da cui viene, così
+   `measured_on` c'è sempre.
+4. **L'esempio del profilo** in `fixtures/public-profile.json` ha `vo2max:
+   null`: con un oggetto, il JSON letto da TypeScript avrebbe `source:
+   string` e i test dell'app che lo usano come `PublicProfile` non
+   compilerebbero più. La forma intera sta in `fixtures/vo2max-settings.json`.
+
+**Conseguenze**: `accounts.py` non cambia; il profilo prende il campo con
+una sottoquery (`vo2max_sql`) e l'orologio degli account (`Profiles.now`).
+
+---
+
+## ADR-0314 — L'app per Apple Watch: Swift nativo, tutti gli sport, anche senza telefono
+
+**Stato**: Proposto · 2026-11-05 · TASK-370. Scelta di prodotto
+dell'utente (punto 1); il resto deciso dall'agente su delega dell'utente,
+da confermare con le scelte ancora aperte del task.
+
+**Contesto**: l'utente vuole un'app per Apple Watch «completa per tutti gli
+sport» e, alla domanda sulla prima versione, ha scelto «Subito anche senza
+telefono». Oggi la guida (svolte, fuori rotta, rientro) è JavaScript sul
+telefono; React Native non gira su watchOS; un OTA non arriva al codice
+dell'orologio.
+
+**Decisione**:
+1. **Prima versione anche senza telefono** (utente): l'orologio porta
+   percorsi già decisi, li segue, registra col suo GPS e salva in Salute; la
+   traccia passa al telefono quando torna vicino.
+2. **L'orologio non disegna percorsi**: il Route Engine resta sul telefono e
+   sul server. Disegnare dall'orologio (cellular + API) è fuori dalla prima
+   versione.
+3. **App nativa SwiftUI** (watchOS 10+) come target dell'app con
+   `@bacons/apple-targets`; il ponte con `react-native-watch-connectivity`.
+   Le due dipendenze hanno il sì dell'utente del 2026-10-30 (TASK-323 E).
+4. **La guida riscritta in Swift** (`WatchGuide`, puro) e tenuta uguale al
+   TypeScript con gli stessi fixture JSON di `navigation/fixtures/`, verdi
+   in jest e in XCTest.
+5. **Un'attività, un allenamento** (TASK-321): se registra l'orologio, è lui
+   a salvare l'allenamento in Salute; il telefono non lo riscrive. Il
+   battito in tempo reale arriva al telefono col mirroring di
+   `HKWorkoutSession`.
+6. **Gli sport dell'orologio vengono dal registro** `src/sports/`, con un
+   test che tiene uguali le due liste.
+7. **Assorbe TASK-323 E** e il battito in tempo reale rimandato da TASK-169
+   e TASK-374.
+8. **La build**: una sua, la **1.1**, dopo la 1.0.2 (scelta dell'utente del
+   2026-11-05, «Build sua, la 1.1»).
+
+**Alternative**:
+- **Prima col telefono, poi da solo**: meno lavoro all'inizio, scartata
+  dall'utente.
+- **Solo battito e comandi**: troppo poco rispetto a «completa».
+- **Guida calcolata sul telefono e mandata all'orologio**: non funziona
+  senza telefono.
+
+**Conseguenze**: due copie della logica di guida (TypeScript e Swift),
+legate dai fixture; ogni correzione all'orologio richiede una build per
+l'App Store; serve un Apple Watch vero per le prove.
+
+---

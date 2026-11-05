@@ -160,6 +160,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono**
+  (2026-11-05; numeri riservati dal Coordinatore il 2026-11-04, ADR-0314 «Proposto»;
+  richiesta dell'utente «l'app per apple watch completa per tutti gli sport», scelta
+  «Subito anche senza telefono»). App SwiftUI come target dell'app, la guida riscritta in
+  Swift con gli stessi fixture del TypeScript, GPS e Salute dall'orologio, traccia al
+  telefono al rientro; l'orologio non disegna percorsi. Assorbe TASK-323 E e il battito in
+  tempo reale (169/374). Parti A (fondamenta), B (senza telefono), C (sport per sport,
+  nuoto spento fino alla prova in acqua), D (testi, privacy, build). Branch
+  `docs/TASK-370-apple-watch`, solo proposta; build sua, la 1.1, dopo la 1.0.2 (scelta
+  dell'utente). Prossima domanda: l'Apple Watch per le prove. `tasks/TASK-370.md`.
+- **TASK-399 — Nel Feed il nome di chi ha pubblicato apre il suo profilo** (2026-11-05;
+  numero dal Coordinatore; richiesta dell'utente). In `FeedPost` la riga del nome era dentro il
+  pulsante della card e apriva il disegno; ora sul disegno di un iscritto è un pulsante a sé che
+  chiama `openProfile`, come i tag (TASK-208) e i commenti (TASK-338). Solo app, nessun testo
+  nuovo. Branch `fix/TASK-399-feed-author-profile`; la unisce il Coordinatore a CI verde; in
+  produzione col prossimo OTA. `tasks/TASK-399.md`.
+  **Chiuso il 2026-11-05**: #830, chiusura nella stessa PR; vedi «Completato».
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
   anche le vecchie»; testi nuovi approvati il 2026-11-05. Parte A (API +
@@ -238,6 +255,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   campanella, commenti, risultati della ricerca entrano una riga dopo
   l'altra). Impronta 6f8bba4c. Video in `out/TASK-388/c-*`; merge del
   Coordinatore dopo l'ok dell'utente.
+  **C in `main`** (#803, fed77512, 2026-11-05). **C2** (branch
+  `fix/TASK-388-c2-sheet-scrim`): lo sfondo scuro dei filtri della ricerca
+  sfuma sul posto invece di salire con il foglio (`SheetModal` `dim`).
+  **C2 in `main`** (#811, 62b1a952, 2026-11-05). **C3** (branch
+  `fix/TASK-388-c3-style-sheet`): il foglio del prodotto di «Style»
+  (`StyleProductSheet`, TASK-384 B) passa a `SheetModal` e sale sulla stessa
+  molla degli altri fogli; video approvato dall'utente il 2026-11-05 («Sì,
+  approvo»). Righe scritte dal Coordinatore.
 - **TASK-383 — «Body»: l'unità di peso e altezza dentro il riquadro**
   (2026-11-04; numero dal Coordinatore; seguito di TASK-374 A). L'utente:
   «aggiungi i cm nel altezza ed i kg». L'unità c'era già, piccola e grigia
@@ -1127,12 +1152,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `paddleExamples.json` a ridisegno finito; il codice di E (Apple Watch,
   ora che TASK-321 B è in `main`, sul Mac con Xcode); la prova in acqua
   (primavera 2027).
+  **Acceso per tutti** (2026-11-04, scelta dell'utente, «Subito per
+  tutti»): branch `feat/TASK-323-swim-ready`, `ready: true` e i test che lo
+  davano «Soon». Entra **dopo TASK-375 B1**, che tocca gli stessi file
+  («Dopo lo sci»), con `main` unito dentro; prima dell'OTA,
+  `draw_examples --swim` sul server. Le curve senza nome a riva finché non
+  gira `shore_extract`. Aggiunta ad ADR-0283.
   **Prima in preview** (2026-11-05, scelta dell'utente, «Subito in
   preview»): branch `feat/TASK-323-swim-preview`, il nuoto acceso in Expo Go
   e `preview` (`preview: true` in `sport.ts`), lo store ancora senza fino
   alla #765 (ferma per TASK-387). Poi un OTA della sola `preview`. Niente
   nuoti pubblicati nel Feed finché TASK-387 non è sul server. Aggiunta ad
   ADR-0283.
+  **Chiuso il 2026-11-05**: #800 (preview) e #765 (per tutti, `b30bda0c`)
+  in main; vedi «Completato».
 - **TASK-317 — L'attesa in «Draw»: un testo da corridore e i disegni del
   Feed** (ADR-0277; richiesta e scelta dell'utente del 2026-10-28, numero e
   condizioni dal Coordinatore). Branch `feat/TASK-317-draw-waiting`. Prima
@@ -2871,6 +2904,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `docs/TASK-397-vo2max-proposal`; la unisce il Coordinatore. Prossimo: il sì
   dell'utente sui testi, poi la lista dei file della parte A al Coordinatore.
   `tasks/TASK-397.md`.
+  **2026-11-05**: testi e informativa della parte A approvati (#824); parte A
+  (API, migrazione `0049_vo2max.sql`, `GET`/`PUT /me/vo2max`, `PUT`/`DELETE
+  /me/vo2max/reading`, `vo2max` nel profilo) in PR da
+  `feat/TASK-397-a-vo2max-api`; server col «CONFERMO» dell'utente dopo il
+  merge. Prossimo: la parte B (app e informativa nelle cinque lingue).
 
 - **TASK-395 — La ricerca non divide più per zero quando un percorso non
   disegna niente** (2026-11-05; numero dal Coordinatore; seguito di TASK-297
@@ -2905,6 +2943,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-323 — Nuoto in acque libere, «Open water swim»** (2026-11-05;
+  ADR-0283). Parti A–D in main, E il piano (#744); il nuoto si sceglie in
+  ogni build: in preview con la #800, per tutti con la #765 (`b30bda0c`),
+  in produzione con l'OTA che l'utente approva. Il server tiene i nuoti
+  lontani dalle app che non li leggono (TASK-387). Resta, ognuno col sì
+  dell'utente: `draw_examples --swim` sul server (dopo gli estratti dello
+  sci, i comandi dal Coordinatore), `shore_extract` (le curve senza nome a
+  riva fino ad allora), il controllo di `paddleExamples.json`, il codice
+  dell'orologio (E, sul Mac con Xcode), la prova in acqua (primavera
+  2027). `tasks/TASK-323.md`.
+- **TASK-399 — Nel Feed il nome di chi ha pubblicato apre il suo profilo** (2026-11-05;
+  richiesta dell'utente). #830: sul disegno di un iscritto la riga dell'iniziale e del nome è un
+  pulsante a sé, fuori da quello della card, e apre il profilo come i tag (TASK-208) e i commenti
+  (TASK-338); il resto della card apre il disegno, un esempio resta testo. Solo JS, nessun testo
+  nuovo. Prossimo, col sì dell'utente: il telefono con il prossimo OTA. `tasks/TASK-399.md`.
 - **TASK-398 — «town cat 5000» rosso in CI: l'immagine ubuntu-26.04**
   (2026-11-05). #827 in main (`42e0433a`): dalle 16:00Z `ubuntu-latest` è
   ubuntu-26.04 e la ricerca del gatto del paese finto dà un altro digest con

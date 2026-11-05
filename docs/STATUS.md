@@ -160,6 +160,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-403 — «Edit the drawing» sotto A, B e C** (2026-11-05; numeri dal Coordinatore,
+  ADR-0337 «Proposto»; richiesta dell'utente «quando fai tu il calcolo del disegno tipo il
+  coniglio poi mi dai le tre opzioni AB e C però lì non c'è la possibilità di modificare
+  l'immagine», poi «Sì, rimettilo»). Il tasto torna sotto il risultato di «Draw» e mette la
+  linea dell'opzione scelta sulla mappa, dov'è. Rovescia TASK-340 per il solo risultato. Solo
+  JS, con un OTA. Branch `docs/TASK-403-edit-under-choices`; poi il codice col via del
+  Coordinatore. `tasks/TASK-403.md`.
+- **TASK-402 — Ruotare il disegno e aggiungere pezzi sulla mappa** (2026-11-05; numeri dal
+  Coordinatore, ADR-0336 «Proposto»; richiesta dell'utente «ruotare il disegno di tot gradi e
+  dai anche un elenco interno da poter selezionare e muovere sulla mappa», scelta «Aggiungere
+  pezzi»). Parte A: in «Move» la figura gira di 15° per tocco, del numero scritto e con due
+  dita. Parte B: con «Add» una tessera aggiunge un pezzo; ogni pezzo si seleziona, si sposta,
+  si gira e si toglie; un solo percorso, contratto uguale. Assorbe la parte D di TASK-347.
+  Solo JS, con un OTA. Branch `docs/TASK-402-freehand-pieces` (PR #850), solo proposta; i cinque
+  testi approvati dall'utente il 2026-11-05. Prossimo: la lista dei file della parte A al
+  Coordinatore, poi il codice. `tasks/TASK-402.md`.
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
@@ -169,6 +185,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (la aggiunge 401 B, TASK-370 la riusa nella 1.1). Branch
   `docs/TASK-401-lock-screen-directions`, solo proposta. Prossima domanda all'utente: i
   testi della notifica. `tasks/TASK-401.md`.
+  **2026-11-05**: testi scelti dall'utente, «Frase della voce + %» (la frase della voce come
+  titolo, sotto «42% drawn · 3.1 km left»; unico testo nuovo «{distance} left»). Parte A
+  aspetta il via del Coordinatore sulla lista dei file. PR #847.
 - **TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono**
   (2026-11-05; numeri riservati dal Coordinatore il 2026-11-04, ADR-0314 «Proposto»;
   richiesta dell'utente «l'app per apple watch completa per tutti gli sport», scelta
@@ -183,6 +202,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   parte A in `tasks/TASK-370.md` (A1 nucleo Swift + jest, A2 app dell'orologio, A3 il
   telefono, A-flip l'interruttore nativo solo alla build 1.1): l'impronta iOS di `main` non
   si muove fino ad A-flip. Lista dei file al Coordinatore; niente codice prima del suo sì.
+  **2026-11-05, accordo con TASK-401 B**: `@bacons/apple-targets` 5.0.0 e il plugin entrano
+  nella 1.0.2 con la Live Activity, con `"match": "live-activity"`; A2 mette `targets/watch/`
+  accanto e A-flip allarga `match`. Dettagli in `tasks/TASK-370.md`.
 - **TASK-399 — Nel Feed il nome di chi ha pubblicato apre il suo profilo** (2026-11-05;
   numero dal Coordinatore; richiesta dell'utente). In `FeedPost` la riga del nome era dentro il
   pulsante della card e apriva il disegno; ora sul disegno di un iscritto è un pulsante a sé che
@@ -403,6 +425,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Pause», «Still training?», fine e «Save») in PR da
   `feat/TASK-385-b-gym-workout`; «Gym» accesa anche nelle build dello store
   col sì dell'utente («ok accendi», 2026-11-05).
+  Parte B in `main` (#833, 02effa84).
+  Parte D (il post senza disegno) in PR da `feat/TASK-385-d-gym-post`:
+  fino a 10 foto col riquadro giallo fra le pagine (ultimo se non lo si
+  sposta), gli esercizi principali nel riquadro del Feed e
+  nell'immagine condivisa, «Show exercises» a fine allenamento e in «My
+  activities», il modulo del post a fine allenamento come a fine corsa;
+  nella condivisione niente video né Strava. Scelte dell'utente del
+  2026-11-05: «10 foto», «Sì, anche alla fine». Impronta iOS 6f8bba4c
+  invariata; OTA col sì. Prossima: C (kcal e Salute), E (traguardi).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo
@@ -470,6 +501,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   ADR-0321 accettato. Prossimo: 377-A, motore, contratto e API, dopo la
   lista al Coordinatore.
+  **B3c, seconda metà, in PR** (2026-11-05, dopo la #765): «Impostazioni»
+  legge emoji, nome e «Record only» dal profilo dello sport; `activityOf` e
+  `runActivityOf` leggono l'attività di ogni riga invece di due `switch`.
+  Stesse righe e stesse attività, provate da `settings/sportRows.test.ts`.
+  Con questa la parte B è tutta in `main`. Prossimo: la chiusura del
+  pilota (377-A #838, poi 377-B), che chiude il criterio aperto di B e la
+  parte C.
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il
@@ -2965,6 +3003,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   /me/vo2max/reading`, `vo2max` nel profilo) in PR da
   `feat/TASK-397-a-vo2max-api`; server col «CONFERMO» dell'utente dopo il
   merge. Prossimo: la parte B (app e informativa nelle cinque lingue).
+  **2026-11-05, parte B**: app (solo la stima del server): la riga sul profilo
+  degli altri (`Vo2MaxRow`, «their»), il proprio (`OwnVo2Max`: la domanda una
+  volta, poi «Only you see this» + «Show it»), l'interruttore in Impostazioni
+  (`Vo2MaxSetting`), le traduzioni, l'informativa in cinque lingue e
+  `site/privacy` rigenerato. In PR da `feat/TASK-397-b-vo2max-app`; la unisce
+  il Coordinatore. Poi, ognuno col sì dell'utente: server 0049, privacy sul
+  sito, OTA. Prossimo: la parte C con la 1.0.2.
+  **2026-11-05**: parte B in main (#835, `077394df`). Rilascio del
+  Coordinatore con l'utente: server 0049, privacy sul sito, poi OTA. Il task
+  resta aperto per la C (Salute, 1.0.2) e la D (Health Connect).
 
 - **TASK-395 — La ricerca non divide più per zero quando un percorso non
   disegna niente** (2026-11-05; numero dal Coordinatore; seguito di TASK-297

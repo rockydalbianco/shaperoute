@@ -23497,6 +23497,50 @@ le liste nel database (un processo solo: non serve, e sarebbero qualche MB
 da riscrivere a ogni aggiornamento); visitare il link per vedere dove
 porta (il server non fa richieste ai negozi a nome di chi scrive); lasciar
 passare un link non controllato quando Web Risk non risponde.
+## ADR-0327, precisazione — La parte D: il post di palestra nel Feed
+
+**Stato**: Attiva · 2026-11-05 · TASK-385 parte D, decisa dall'agente su
+delega dell'utente dentro le sue scelte («Prima foto, se no riquadro»,
+«Visibili, nascondibili», e del 2026-11-05 «10 foto», «Sì, anche alla
+fine»); lista dei file approvata dal Coordinatore. Usa solo la parte A di
+TASK-348 (ADR-0301), già in `main`.
+
+**Decisione**:
+
+1. **Il riquadro è il «disegno» dell'ordine**: l'ordine del post vuole
+   `drawing` una volta, e per la palestra quella pagina è il riquadro.
+   Con 10 foto (`GYM_MAX_PHOTOS` = `DRAWING_PHOTO_PLACES`) il post ha fino
+   a 11 pagine; l'API ne tiene già 11 nell'ordine e 10 posti per le foto.
+   `photosOf` legge tutti i posti dell'API; per le corse il decimo resta
+   vuoto.
+2. **Mai riordinato, il riquadro è l'ultimo** (come la B0 nel Feed): il
+   compositore mette le foto nuove prima del riquadro, e l'ordine si manda
+   solo se il riquadro non è l'ultimo. Il contrario delle corse, dove la
+   mappa è prima.
+3. **Gli esercizi principali** sono i tre con più serie, a pari serie il
+   primo fatto (`gym/mainExercises.ts`). Nel Feed il riquadro li chiede con
+   `GET /drawings/{id}/exercises`, una volta per post mentre l'app è
+   aperta, la stessa risposta per la scheda; solo i post di palestra
+   chiedono. Nascosti (404), il riquadro ha il solo tempo.
+4. **Il modulo a fine allenamento passa dalla coda della palestra**: la
+   scelta e «Show exercises» spento stanno nell'attesa di
+   `gym-outbox.json`, foto e ordine nei file dei disegni da «Save». Quando
+   l'API ha l'allenamento: prima `PUT …/show-exercises` (senza rete
+   l'allenamento si rimanda, uguale), poi la scelta nella coda dei disegni
+   e `sendWaitingDrawings`, come per una corsa. Così gli esercizi non si
+   vedono mai prima di essere nascosti.
+5. **«Show exercises» in «My activities»** legge `GET
+   /me/gym-sessions/{key}` e scrive subito; non preso, torna com'era con le
+   parole del modulo del disegno.
+6. **Condividere**: l'immagine è il riquadro (`GymSharePicture`), con gli
+   esercizi principali letti dall'allenamento; niente risultati, emoji,
+   «Style», «Music», «Export video», Strava; il titolo del foglio è
+   «Share»; nessun `RunPost` salvato.
+
+**Conseguenze**: un testo nuovo nelle tabelle, «Show exercises», già
+approvato il 2026-11-04. Nessuna dipendenza, niente nativo, niente server:
+impronta iOS 6f8bba4c invariata. «Up to 10 in a post.» resta anche per la
+palestra: dice le foto, non le pagine.
 ## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
 
 **Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
@@ -23546,3 +23590,105 @@ un modulo nativo, cioè una build per l'App Store.
   nell'app quando arriva l'orologio. Meglio un solo `@bacons/apple-targets`.
 - **Aggiornare la notifica fissa del servizio su Android**: expo-location
   non la cambia senza riavviare il GPS. Su Android la parte A manda la sua.
+
+## ADR-0335, aggiunta — Il testo della notifica è la frase della voce
+
+**Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
+dell'utente.
+
+Alla domanda «Cosa scrive la notifica a schermo bloccato?» l'utente ha
+scelto **«Frase della voce + %»** (contro «Corta, stile navigatore»): il
+titolo della notifica è la frase che la voce dice in quel momento, con la
+freccia davanti; fuori rotta «Off the route»; sotto «{percent}% drawn ·
+{distance} left». Le frasi della voce sono già approvate e tradotte in
+cinque lingue; l'unico testo nuovo è «{distance} left», nelle unità scelte.
+## ADR-0336 — Ruotare il disegno sulla mappa e aggiungere pezzi da tessere, tutto sul telefono
+
+**Stato**: Proposto · 2026-11-05 · TASK-402. Scelta di prodotto
+dell'utente («Aggiungere pezzi», punto 2); il resto deciso dall'agente su
+delega dell'utente; confine con TASK-347 deciso dal Coordinatore.
+
+**Contesto**: in «Draw on the map» (TASK-281, TASK-331) la figura si
+sposta e si ridimensiona ma non si ruota, e una tessera sostituisce il
+disegno invece di aggiungersi. L'utente vuole «ruotare il disegno di tot
+gradi» e un elenco interno di figure «da poter selezionare e muovere sulla
+mappa». La parte D di TASK-347 (ADR-0300) prevedeva già «seleziona / sposta
+/ ruota (due dita) / ridimensiona», mai partita.
+
+**Decisione**:
+
+1. **Il giro è dell'app**: la figura gira in unità attorno al mezzo del suo
+   riquadro (`mapdraw/turn.ts`), di 15° per tocco, del numero di gradi
+   scritto o con due dita insieme al ridimensionamento (sullo schermo in
+   pixel, non in lng/lat; sotto i 3° non gira). Niente campo nuovo nel
+   contratto, niente motore toccato.
+2. **I pezzi** (scelta dell'utente, «Aggiungere pezzi»): con «Add» una
+   tessera aggiunge una forma o un'immagine sopra il disegno; ogni pezzo si
+   seleziona con un tocco in «Move» e si sposta, si ridimensiona, si gira e
+   si toglie da solo. Il primo pezzo dà il contorno, gli altri sono dettagli
+   appesi col collegamento tratteggiato di TASK-331 parte B: la richiesta è
+   l'`ImageOutline` di oggi. Al massimo 6 pezzi, e mai oltre
+   `MAX_OUTLINE_POINTS`/`MAX_DETAIL_POINTS`.
+3. **Una forma del catalogo girata, o unita ad altri pezzi, si manda come
+   contorno** (le sue linee `down`), perché una forma mandata per nome non
+   ha angolo; da sola e a 0° resta la forma per nome, come oggi.
+4. **L'angolo è il punto di partenza del motore**: per le strade il motore
+   può ancora girarla fino a ±45° (TASK-232, `MAX_TILT_DEG`). L'angolo
+   esatto arriva con il disegno `anchored` di TASK-347.
+5. **Confine** (Coordinatore): la parte D di TASK-347 passa a TASK-402;
+   magnete, penna a punti, nodi, righello, blocco della mappa e cronologia
+   restano a TASK-347 con le parti B, C ed E.
+
+**Alternative**:
+
+- **«Elenco delle parti»**: un elenco delle linee già disegnate, da cui
+  sceglierne una e muoverla. Scartata dall'utente.
+- **Solo la rotazione**, con la fila di tessere di oggi. Scartata
+  dall'utente.
+- **Un campo `rotation_deg` nella richiesta**, rispettato dal motore: vuole
+  contratto, motore e la prova degli stessi percorsi; lo fa meglio il
+  disegno `anchored` di TASK-347.
+- **Girare in lng/lat sulla pagina della mappa**, come oggi il
+  ridimensionamento: lontano dall'equatore storce la figura (un grado di
+  longitudine è più corto di uno di latitudine).
+
+## ADR-0337 — «Edit the drawing» torna sotto le opzioni A, B e C del risultato di «Draw»
+
+**Stato**: Proposto · 2026-11-05 · TASK-403. Scelta di prodotto
+dell'utente; il come deciso dall'agente su delega dell'utente.
+
+**Contesto**: il tasto «Edit the drawing» sotto il risultato di «Draw» era
+stato tolto su richiesta dell'utente il 2026-10-29 (TASK-340, aggiunta ad
+ADR-0288), e il 2026-11-04 l'utente aveva confermato «No, resta tolto»
+(TASK-369, scelta 7 di ADR-0313). Il 2026-11-05 l'utente ha chiesto:
+«Possibilità di di modificare anche quando seleziono quando fai tu il
+calcolo del disegno tipo il coniglio poi mi dai le tre opzioni AB e C però
+lì non c'è la possibilità di modificare l'immagine». Ricordati i due «no»,
+alla proposta di rimettere il tasto ha risposto «Sì, rimettilo».
+
+**Decisione**:
+
+1. Sotto il risultato di «Draw», dopo «Another figure» e sopra «Start»,
+   c'è di nuovo «Edit the drawing» (testo già tradotto, nessun testo nuovo).
+2. Il tasto mette sulla mappa di «Draw on the map» la **linea dell'opzione
+   scelta** (A, B o C), dov'è e grande com'è: lo stesso `editTrackOf` /
+   `trackInPlace` delle schede (TASK-346, ADR-0299; TASK-369, ADR-0313).
+   Per un'emoji o una parola si modifica la linea del percorso, non la
+   figura chiesta; anche dal risultato di un disegno a mano si apre la linea
+   dell'opzione scelta.
+3. Niente parte verso l'API prima di «Draw route». Solo JS: contratto,
+   motore, API e impronta iOS invariati.
+4. Vale in ogni sport che arriva al risultato, sull'acqua e a nuoto
+   compresi, come per le schede.
+
+Questa decisione supera, per il solo risultato di «Draw», l'aggiunta di
+ADR-0288 (TASK-340) e la scelta 7 di ADR-0313, che restano scritte com'erano.
+
+**Alternative**:
+
+- **La figura chiesta** (l'emoji o il disegno di partenza) invece della
+  linea dell'opzione: scartata, perché A, B e C sono linee diverse e
+  l'utente vuole modificare quella che ha davanti; per un'emoji, poi, la
+  figura non si modifica (ADR-0288).
+- **Tornare al disegno di partenza**, come faceva il tasto prima di
+  TASK-340 dal risultato di «Freehand»: lo fa già «←».

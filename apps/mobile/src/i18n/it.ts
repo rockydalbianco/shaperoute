@@ -1169,6 +1169,7 @@ export const IT: Table = {
   Custom: "Personalizzato",
   "Next: {exercise} · set {n}": "Dopo: {exercise} · serie {n}",
   "Rest over — next set": "Recupero finito: prossima serie",
+  "Show exercises": "Mostra gli esercizi",
   "Still training?": "Ti stai ancora allenando?",
   "Yes, keep going": "Sì, continuo",
   "Finish workout": "Termina l'allenamento",
@@ -1448,6 +1449,9 @@ export const IT: Table = {
   "MuW is recording your activity": "MuW sta registrando la tua attività",
   "It keeps going with the screen locked, voice included.":
     "Continua anche a schermo bloccato, voce compresa.",
+
+  // src/navigation/lockNotice.ts, the notice with the phone locked (TASK-401)
+  "{distance} left": "mancano {distance}",
 
   // src/location/startStatus.ts, src/screens/ChooseScreen.tsx,
   // src/explore/ExploreScreen.tsx, ThemedCard.tsx, src/screens/NavigateScreen.tsx,
@@ -1903,4 +1907,14 @@ export const IT: Table = {
   "Notifications, {count} new": "Notifiche, {count} nuove",
   "No notifications yet. Reactions, comments, follows and tags will show up here.":
     "Ancora nessuna notifica. Qui arriveranno reazioni, commenti, follow e tag.",
+  // src/profile/Vo2MaxRow.tsx, OwnVo2Max.tsx, settings/Vo2MaxSetting.tsx (TASK-397 part B: the VO₂ max, texts approved)
+  "VO₂ max": "VO₂ max",
+  "Estimate from your {distance}": "Stima dal tuo {distance}",
+  "Estimate from their {distance}": "Stima dal suo {distance}",
+  "Show your VO₂ max?": "Mostrare il tuo VO₂ max?",
+  "Everyone who can see your profile will see it. You can turn it off in Settings.":
+    "Lo vedrà chiunque possa vedere il tuo profilo. Puoi spegnerlo in Impostazioni.",
+  "Show it": "Mostralo",
+  "Only you see this": "Lo vedi solo tu",
+  "Show VO₂ max on my profile": "Mostra il VO₂ max sul mio profilo",
 };

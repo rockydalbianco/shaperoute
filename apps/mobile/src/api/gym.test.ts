@@ -5,10 +5,12 @@ import type { GymSessionRequest } from "@shaperoute/shared-types";
 
 import {
   fetchGymExercises,
+  fetchGymSession,
   isGymExercises,
   isGymSession,
   isGymSet,
   saveGymSession,
+  showGymExercises,
 } from "./gym";
 
 const URL = "http://api";
@@ -109,4 +111,37 @@ test("a body the API will not take is its error", async () => {
     options(fetchFn),
   );
   expect(outcome).toMatchObject({ kind: "api_error", code: "invalid_request" });
+});
+
+// TASK-385 part D: «Show exercises».
+
+test("the owner reads the workout by its key, «Show exercises» with it", async () => {
+  const fetchFn = answers({ status: 200, body: { ...SAVED, show_exercises: false } });
+  const outcome = await fetchGymSession(URL, TOKEN, "key12345", options(fetchFn));
+  expect(outcome).toEqual({ kind: "ok", value: { ...SAVED, show_exercises: false } });
+  const [url, init] = fetchFn.mock.calls[0];
+  expect(url).toBe("http://api/me/gym-sessions/key12345");
+  expect(init?.method).toBe("GET");
+});
+
+test("the switch is PUT as {show}, and its 204 is a yes", async () => {
+  const fetchFn = answers({ status: 204 });
+  const outcome = await showGymExercises(
+    URL,
+    TOKEN,
+    "key12345",
+    false,
+    options(fetchFn),
+  );
+  expect(outcome).toEqual({ kind: "ok", value: null });
+  const [url, init] = fetchFn.mock.calls[0];
+  expect(url).toBe("http://api/me/gym-sessions/key12345/show-exercises");
+  expect(init?.method).toBe("PUT");
+  expect(JSON.parse(init?.body as string)).toEqual({ show: false });
+});
+
+test("a key that is no workout is the API's 404", async () => {
+  const fetchFn = answers({ status: 404, body: apiError("http_error") });
+  const outcome = await showGymExercises(URL, TOKEN, "nope", true, options(fetchFn));
+  expect(outcome).toMatchObject({ kind: "api_error", code: "http_error" });
 });

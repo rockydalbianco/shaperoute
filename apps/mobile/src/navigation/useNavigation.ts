@@ -19,6 +19,7 @@ import { wordsOf } from "../voice/words";
 import { kmAnnouncement } from "./freeRun";
 import { comparisonOf } from "./kmCompare";
 import { moveOnFootJoined } from "./joinOnFoot";
+import { type LockNoticeRun, startLockNotice } from "./lockNotice";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
 import { startOnFoot } from "./onFootVoice";
 import { isPaddle, paddleAnnouncement } from "./paddle";
@@ -87,8 +88,9 @@ export function play(cues: Cue[]): void {
  * that moment (TASK-182): with miles each mile, on a bike every
  * RIDE_MI_EVERY, and the turns in feet. With the phone locked, or another app
  * in front, the GPS goes on where the app can (TASK-261, `runPosition`) and
- * the voice speaks, over the music (part B, `runAudio`). The position never
- * leaves the phone.
+ * the voice speaks, over the music (part B, `runAudio`); on iOS what the
+ * navigator says is also written in a notification (TASK-401,
+ * `lockNotice`). The position never leaves the phone.
  */
 export function useNavigation(
   points: LatLon[] | null,
@@ -127,6 +129,7 @@ export function useNavigation(
     let run: RunSession | null = null;
     let stopRecording: (() => void) | null = null;
     let away: RunAway | null = null;
+    let notice: LockNoticeRun | null = null;
     // The phone's voices, before the first words: a chosen one is used only
     // once it is known to be there.
     void loadVoices();
@@ -193,6 +196,9 @@ export function useNavigation(
             play(cues);
           }
         };
+        // What the navigator says, written on the locked phone too
+        // (TASK-401); not on a swim, with the phone in the buoy.
+        notice = swim ? null : startLockNotice();
         const session = controlRun(recorder, {
           // «Pause» and «Resume» change the track between two fixes.
           onChange: () => {
@@ -275,6 +281,7 @@ export function useNavigation(
             // The pen first: what the runner does next depends on it.
             cue(drawing.cues);
             cue(next.cues);
+            notice?.said(next.cues, next.navigation);
             // After the turn, which may be the way onto the stretch; from
             // where the run joined a closed route (TASK-273).
             const walking = moveOnFootJoined(
@@ -329,6 +336,7 @@ export function useNavigation(
       stopped = true;
       subscription?.remove();
       away?.remove();
+      notice?.end();
       run?.end();
       stopRecording?.();
       void Speech.stop();

@@ -23129,6 +23129,89 @@ motore (`docs/sports/hike.md`):
   valuta dopo la parte A, misurando quanto di ogni percorso sta su `track`
   e `path`.
 
+## ADR-0321, precisazione — La parte A: l'impronta del motore resta, il profilo dell'app entra nascosto
+
+**Stato**: Accettato · 2026-11-05 · TASK-377 parte A. Scelte del
+Coordinatore; le scelte tecniche sono decise dall'agente su delega
+dell'utente.
+
+**Contesto**: la parte A aggiunge al motore l'attività `hiking` e la rete
+`hike`. Questo cambia l'impronta del motore, e ADR-0320 dice che
+`SAME_ROUTES_AS` non vale «mai per un cambiamento di comportamento». Poi,
+un'attività nel contratto entra subito anche nelle liste dell'app.
+
+**Decisione**:
+
+1. **L'impronta resta quella di prima** (`SAME_ROUTES_AS`): 9be259696402 →
+   e13ded92b52d, e lo stesso per i nuoti e gli esempi di canoa
+   dell'app. La regola di ADR-0320 protegge i percorsi tenuti. Qui il
+   comportamento nuovo è solo un'attività che non ha percorsi tenuti. I
+   percorsi di prima sono provati uguali:
+   - i nove percorsi fissi di `test_same_routes.py` (darwin-arm64);
+   - il banco su sei zone: corsa 54/54, bici 54/54, canoa 27/27, identici
+     punto per punto.
+
+   Così non serve una notte di esempi. Gli esempi di Explore per la hike,
+   se servono, sono un giro a parte, solo hike, col sì dell'utente.
+2. **Il profilo Hike dell'app entra con la parte A, nascosto.** Senza il
+   profilo l'app non partirebbe (`search/searchFilters.ts` chiama
+   `profileOf` per ogni attività). `main` resta pubblicabile a ogni merge:
+   - nessuna riga in «Settings»;
+   - nessun chip nella ricerca;
+   - il nome senza `tLater` fino alla parte B, che porta i testi.
+
+   L'header `X-MuW-Reads` dice `hiking`, e una hike salvata altrove si
+   vede come una camminata (`hikeFeed.test.tsx`).
+3. **Le zone della hike nell'API**: `explore`, con i nomi delle strade,
+   una sola in memoria. La rete è sua, quindi le zone della corsa non
+   servono, e la RAM del server cresce di una zona sola.
+4. **Il gioco**: una hike conta come una camminata. `RULES_VERSION` resta
+   2, perché nessuna corsa salvata prima della 0051 può essere una hike.
+5. **Niente vie ferrate.** La rete «foot» tiene `highway=via_ferrata`. Il
+   primo banco ne ha trovati 2,6 km a Trento e 3,0 km a Fiemme, anche
+   senza `sac_scale`. Una via ferrata è un'arrampicata con l'imbrago,
+   oltre i sentieri fino a T3 scelti dall'utente: la rete `hike` la
+   toglie.
+
+**Server**: migrazione 0051 e deploy, col sì dell'utente.
+## ADR-0327, precisazione — La parte B: come il telefono registra un allenamento senza GPS
+
+**Stato**: Attiva · 2026-11-05 · TASK-385 parte B, deciso dall'agente su
+delega dell'utente; la lista dei file l'ha approvata il Coordinatore.
+
+1. **Lo stato è un valore solo**, in `gym/workout.ts`: inizio, pause, l'esercizio
+   in corso, le serie, il recupero (inizio e fine), i recuperi contati, l'ultima
+   cosa fatta. Ogni azione dà un valore nuovo, scritto subito in
+   `gym-workout.json` (`keptList`): l'app chiusa a metà riapre sull'allenamento.
+   Il tempo è quello dell'orologio, senza GPS né modalità in background.
+2. **Il recupero conta da solo**: finito mentre nessuno guarda, vale fino alla
+   sua fine; interrotto da una serie, da «Skip» o da «Pause», vale quanto è
+   durato. Una serie o un recupero chiudono una «Pause». «Still training?» dopo
+   30 minuti senza niente; senza risposta per altri 5 minuti l'allenamento si
+   chiude all'ultima serie scritta (o all'ultima cosa fatta, senza serie). I 5
+   minuti sono dell'agente.
+3. **L'avviso del recupero**: con l'app aperta vibrazione e `chime()`, e un
+   tocco leggero 10 s prima; una notifica locale si programma solo quando l'app
+   va in background e si toglie quando torna, così con l'app aperta non suona
+   due volte. Il permesso è `askPushPermission`, chiesto al primo recupero.
+4. **«Save» passa da una coda sua**, `gym-outbox.json`: quella delle corse vuole
+   una traccia. 422 e 409 restano sul telefono e non si rimandano, come per le
+   corse. La chiave è l'inizio in base 36 più otto caratteri a caso.
+5. **Un tempo scritto senza «:»** vale secondi per una serie a tempo e minuti
+   per un blocco cardio. Le serie aggiunte alla fine non sono `live` e hanno
+   l'ora della fine.
+6. **Testi**: solo quelli approvati e parole già nell'app («Pause», «Resume»,
+   «Save», «Discard», «Keep it», «Delete», «Done», «Stop»). I gruppi del
+   catalogo stanno in `gym/groups.ts` nelle cinque lingue, non in `t()`: «Back»
+   è già «Indietro». Il tipo di un esercizio col nome libero si sceglie con le
+   parole dei campi: «Weight», «Reps», «Time», «Cardio». Tre parole che altre
+   schermate usano già restano come sono: «Geschw.» (non «Geschwindigkeit»),
+   «Temps» (non «Durée»), «Omitir» (non «Saltar»). Il messaggio di un salvataggio
+   fallito sul telefono è quello delle corse.
+7. **«Gym» è `ready: true`, anche nelle build dello store**: l'utente ha
+   detto «ok accendi» il 2026-11-05, insieme al sì all'OTA di produzione con
+   la B0, invece di aspettare qualche giorno. Le app senza la B0 non vedono
+   comunque i post di palestra: il server li tiene fuori (`X-MuW-Reads`).
 ## ADR-0332, precisazione — Il sì e il valore di Salute in una tabella loro, `vo2max`
 
 **Stato**: Attiva · 2026-11-05 · TASK-397 parte A, decisa dall'agente su
@@ -23160,3 +23243,420 @@ cambiarla avrebbe allargato il task a un file di tutti.
 una sottoquery (`vo2max_sql`) e l'orologio degli account (`Profiles.now`).
 
 ---
+
+## ADR-0314 — L'app per Apple Watch: Swift nativo, tutti gli sport, anche senza telefono
+
+**Stato**: Proposto · 2026-11-05 · TASK-370. Scelta di prodotto
+dell'utente (punto 1); il resto deciso dall'agente su delega dell'utente,
+da confermare con le scelte ancora aperte del task.
+
+**Contesto**: l'utente vuole un'app per Apple Watch «completa per tutti gli
+sport» e, alla domanda sulla prima versione, ha scelto «Subito anche senza
+telefono». Oggi la guida (svolte, fuori rotta, rientro) è JavaScript sul
+telefono; React Native non gira su watchOS; un OTA non arriva al codice
+dell'orologio.
+
+**Decisione**:
+1. **Prima versione anche senza telefono** (utente): l'orologio porta
+   percorsi già decisi, li segue, registra col suo GPS e salva in Salute; la
+   traccia passa al telefono quando torna vicino.
+2. **L'orologio non disegna percorsi**: il Route Engine resta sul telefono e
+   sul server. Disegnare dall'orologio (cellular + API) è fuori dalla prima
+   versione.
+3. **App nativa SwiftUI** (watchOS 10+) come target dell'app con
+   `@bacons/apple-targets`; il ponte con `react-native-watch-connectivity`.
+   Le due dipendenze hanno il sì dell'utente del 2026-10-30 (TASK-323 E).
+4. **La guida riscritta in Swift** (`WatchGuide`, puro) e tenuta uguale al
+   TypeScript con gli stessi fixture JSON di `navigation/fixtures/`, verdi
+   in jest e in XCTest.
+5. **Un'attività, un allenamento** (TASK-321): se registra l'orologio, è lui
+   a salvare l'allenamento in Salute; il telefono non lo riscrive. Il
+   battito in tempo reale arriva al telefono col mirroring di
+   `HKWorkoutSession`.
+6. **Gli sport dell'orologio vengono dal registro** `src/sports/`, con un
+   test che tiene uguali le due liste.
+7. **Assorbe TASK-323 E** e il battito in tempo reale rimandato da TASK-169
+   e TASK-374.
+8. **La build**: una sua, la **1.1**, dopo la 1.0.2 (scelta dell'utente del
+   2026-11-05, «Build sua, la 1.1»).
+
+**Alternative**:
+- **Prima col telefono, poi da solo**: meno lavoro all'inizio, scartata
+  dall'utente.
+- **Solo battito e comandi**: troppo poco rispetto a «completa».
+- **Guida calcolata sul telefono e mandata all'orologio**: non funziona
+  senza telefono.
+
+**Conseguenze**: due copie della logica di guida (TypeScript e Swift),
+legate dai fixture; ogni correzione all'orologio richiede una build per
+l'App Store; serve un Apple Watch vero per le prove.
+
+---
+
+## ADR-0314, precisazione — La parte A1: il nucleo Swift, i messaggi e la tabella degli sport
+
+**Stato**: Attiva · 2026-11-05 · TASK-370 parte A1, deciso dall'agente su
+delega dell'utente; piano della parte A approvato dal Coordinatore.
+
+**Decisione**:
+
+1. **Un pacchetto Swift puro**, `apps/mobile/targets/watch/Core/`
+   (`WatchCore`), senza HealthKit, WatchConnectivity né schermate: si prova
+   con `swift test` su qualsiasi Mac, senza progetto Xcode né `prebuild`.
+   L'app dell'orologio di A2 lo userà come pacchetto locale.
+2. **Lo stato dell'allenamento**: pronto → conto alla rovescia → in corso ⇄
+   in pausa → finito → pronto. Un comando che non vale nella fase in cui si
+   è (una pausa già in pausa) non cambia niente: lo stesso comando arrivato
+   due volte, dal polso e dal telefono, conta una volta. «Fine» durante il
+   conto alla rovescia lo annulla e non registra niente. Il tempo in
+   movimento lascia fuori le pause; l'ora la dà chi chiama, così i test non
+   usano il tempo vero.
+3. **I messaggi** sono oggetti di valori JSON, come li porta
+   WatchConnectivity: `command` (start con lo sport, pause, resume, end),
+   `state` (fase, sport, tempo in movimento, metri) e `heartRate`. Ognuno ha
+   la versione `v`: un lato legge le versioni fino alla sua e rifiuta una
+   più nuova (l'orologio non si aggiorna con un OTA); una versione dopo
+   aggiunge solo campi, e quelli che un lato non conosce restano fuori. Gli
+   errori hanno gli stessi codici nei due lati (`notAnObject`,
+   `unsupportedVersion`, `unknownType`, `invalidField`). Lo sport di uno
+   start non è controllato sulla tabella: un telefono più nuovo può avere
+   uno sport che l'orologio non conosce, e decide A2 cosa mostrare.
+4. **Gli stessi fixture** in `targets/watch/Core/Fixtures/`
+   (`messages.json`, `transitions.json`): XCTest li legge dal percorso del
+   file di test, jest con `fs`. Se uno dei due lati cambia e l'altro no, un
+   test diventa rosso.
+5. **La tabella degli sport** viene da `src/sports/`: sport, nome inglese,
+   emoji, `appleWorkout`, il passo (`km`, `paddle`, `swim`), sull'acqua,
+   `guided` (l'app disegna percorsi: c'è `drawKm`), `gps`, `onWatch`. Quello
+   che il registro non dice sta in `watchSports.ts`: al chiuso senza GPS
+   solo la palestra; non offerto sull'orologio solo il nuoto, fino alla
+   prova in acqua. La bici per ora ha il passo per km come nell'app; la
+   velocità è della parte C. Quali sport il telefono offre davvero (la
+   camminata e il fondo sono ancora «Soon») non sta nella tabella: lo dirà
+   il telefono all'orologio in A2/A3.
+6. **`sports.json` si riscrive** con `apps/mobile/scripts/watch-sports.sh`,
+   che fa girare il test jest con `WRITE_WATCH_SPORTS=1`: niente script nel
+   `package.json` (A1 non lo tocca) e niente dipendenze nuove. Il test
+   confronta anche il testo, così il file è sempre quello dello script.
+7. **`watch.yml`** gira su `macos-15` solo quando cambiano
+   `apps/mobile/targets/watch/**` o il workflow; `timeout-minutes: 15`,
+   gruppo `watch-` che cancella i giri vecchi come `ci.yml`. Non è un
+   check obbligatorio del ruleset, quindi il filtro in `on:` non lascia
+   check «Expected».
+
+**Alternative**:
+- **`Codable` per i messaggi**: più breve, ma WatchConnectivity dà
+  dizionari, e i codici d'errore uguali al TypeScript sarebbero più
+  difficili; scartata.
+- **La tabella degli sport generata al `prebuild`**: richiede il plugin, che
+  entra solo con A-flip; il file nel repository con il test che lo tiene
+  uguale funziona da subito.
+
+**Conseguenze**: l'impronta iOS di `main` resta `6f8bba4c` (misurata su una
+copia pulita con `APP_VARIANT=production`). In A2 va verificato che
+`@bacons/apple-targets` non compili `Core/Tests` dentro il target
+dell'orologio: il pacchetto va collegato come pacchetto locale.
+
+---
+## ADR-0322 — Gravel e MTB: la bici di oggi per il gravel, una rete sua per la MTB
+
+**Stato**: Accettato · 2026-11-05 · TASK-378. Le scelte dell'utente, il
+2026-11-05, sono in `tasks/TASK-378.md`:
+
+- due sport, «Gravel» 🚲 sulla rete bike e «MTB» 🚵 sulla rete `mtb`;
+- 10–30 km per tutte e due;
+- sentieri MTB fino a `mtb:scale` S2 (senza scala, `sac_scale` T2);
+- fuori dal gioco come la bici, con record personali propri;
+- i testi approvati;
+- accesi appena pronti.
+
+Le attività del contratto si chiamano `gravel_biking` e `mountain_biking`
+(deciso dall'agente su delega dell'utente).
+
+Numeri dal Coordinatore (2026-11-04). Le scelte di prodotto sono
+dell'utente, una alla volta, in `tasks/TASK-378.md`. I punti tecnici qui
+sotto sono decisi dall'agente su delega dell'utente.
+
+**Contesto**: la bici (`cycling`, ADR-0153, ADR-0167) pedala già ogni
+`track`. Un `path` lo pedala solo con `bicycle=designated`: negli altri casi
+lo fa a piedi con la bici, a 6 volte il costo. Il banco ha provato due reti
+senza toccare il motore (`docs/sports/gravel.md`):
+
+- **`gravel`** (`track` fino a grade3, sentieri con la bici ammessa fino a
+  `mtb:scale` 1): 54 percorsi su 54, come la bici. Lo sterrato è lo stesso,
+  22,7% contro 23,3%: i percorsi non cambiano.
+- **`mtb`** (in più ogni `track` e i sentieri non chiusi alle bici fino a
+  `mtb:scale` 2, o `sac_scale` T2 se non lo dicono): 49 su 54, 24 buoni
+  (la bici 23). A piedi con la bici scende dal 4,9% all'1,4% dei km. In
+  montagna si pedala il 24–39% di rete in più. Le 5 mancate sono a 30 km,
+  quattro stelle e un cuore, e sbagliano la distanza di 2,0–2,8 km.
+- **Lo sterrato lo decide il posto**: 35–45% a Fiemme e ad Asiago, 3–13% a
+  Milano e in pianura, con tutte le reti. Un metro d'asfalto che costa 2 o
+  4 volte lo alza di pochi punti (prova a Trento).
+
+**Decisione (proposta)**:
+
+1. **Gravel si disegna come la bici**, sulla rete bike, come la camminata
+   si disegna come una corsa (ADR-0315): l'API offre l'attività e chiede al
+   motore una bici. Nessuna rete nuova e nessun file nel motore fuori
+   dall'impronta. Le distanze e i nomi sono suoi.
+2. **MTB ha una rete nuova `mtb`** (`route_engine/networks/mtb.py`): la
+   rete bike con le regole di `mtb` qui sopra. I file di cache sono suoi
+   (`mtb_*`) e il grafo dice `network: mtb`. Un'attività nuova in
+   `activities/`, nei file nuovi di ogni strato, con una riga per registro
+   (`docs/sports/COME-AGGIUNGERE.md`).
+3. **La rete `mtb` tiene i sensi unici e i tratti a piedi come la bici.**
+   Oggi `network.one_way_streets` e i controlli di `validation.usability`
+   riconoscono solo il nome `bike`: la parte A li porta a una proprietà
+   della rete. È una deroga alla ricetta, da scrivere in `CONDIVISO.md`.
+4. **L'impronta del motore cambia** con la rete `mtb`: server, migrazione
+   (numero dal Coordinatore) e notte degli esempi solo col sì dell'utente.
+   Se arriva dopo 377-A, che porta già `__main__.py` e `anchored.py` a
+   `OsmnxSource.for_activity`, quel punto non si ripete.
+5. **Sul telefono**: un `SportProfile` per sport, con Apple `.cycling` (13)
+   e Health Connect `EXERCISE_TYPE_BIKING` (8), perché nessuno dei due ha
+   un tipo gravel o MTB (da verificare sulle librerie). Strava
+   `GravelRide` e `MountainBikeRide`. L'energia segue il Compendium, come
+   la bici. Solo JavaScript: l'impronta iOS non si muove.
+6. **Niente preferenza per lo sterrato nel costo**: cambierebbe la ricerca
+   del motore per poco sterrato in più.
+
+**Restano all'utente**:
+
+- uno sport o due;
+- nome ed emoji;
+- la rete;
+- le distanze (il banco ha provato 10–30 km);
+- il limite `mtb:scale`;
+- se conta nel gioco e nei record;
+- i testi;
+- quando si accende.
+
+**Alternative**:
+
+- **Una rete `gravel` sua**: misurata, dà i percorsi della bici. Costerebbe
+  un'altra cache e un altro download per zona, senza nulla in più.
+- **Gravel senza strade principali** (via `primary` e `secondary`): a
+  Trento a piedi con la bici sale al 10,3%, e la somiglianza scende.
+- **Preferire lo sterrato col costo degli archi**: vedi il punto 6.
+- **Un solo sport «Gravel/MTB» sulla rete `mtb`**: possibile, è la prima
+  domanda all'utente.
+
+---
+
+## ADR-0327, precisazione — La parte D: il post di palestra nel Feed
+
+**Stato**: Attiva · 2026-11-05 · TASK-385 parte D, decisa dall'agente su
+delega dell'utente dentro le sue scelte («Prima foto, se no riquadro»,
+«Visibili, nascondibili», e del 2026-11-05 «10 foto», «Sì, anche alla
+fine»); lista dei file approvata dal Coordinatore. Usa solo la parte A di
+TASK-348 (ADR-0301), già in `main`.
+
+**Decisione**:
+
+1. **Il riquadro è il «disegno» dell'ordine**: l'ordine del post vuole
+   `drawing` una volta, e per la palestra quella pagina è il riquadro.
+   Con 10 foto (`GYM_MAX_PHOTOS` = `DRAWING_PHOTO_PLACES`) il post ha fino
+   a 11 pagine; l'API ne tiene già 11 nell'ordine e 10 posti per le foto.
+   `photosOf` legge tutti i posti dell'API; per le corse il decimo resta
+   vuoto.
+2. **Mai riordinato, il riquadro è l'ultimo** (come la B0 nel Feed): il
+   compositore mette le foto nuove prima del riquadro, e l'ordine si manda
+   solo se il riquadro non è l'ultimo. Il contrario delle corse, dove la
+   mappa è prima.
+3. **Gli esercizi principali** sono i tre con più serie, a pari serie il
+   primo fatto (`gym/mainExercises.ts`). Nel Feed il riquadro li chiede con
+   `GET /drawings/{id}/exercises`, una volta per post mentre l'app è
+   aperta, la stessa risposta per la scheda; solo i post di palestra
+   chiedono. Nascosti (404), il riquadro ha il solo tempo.
+4. **Il modulo a fine allenamento passa dalla coda della palestra**: la
+   scelta e «Show exercises» spento stanno nell'attesa di
+   `gym-outbox.json`, foto e ordine nei file dei disegni da «Save». Quando
+   l'API ha l'allenamento: prima `PUT …/show-exercises` (senza rete
+   l'allenamento si rimanda, uguale), poi la scelta nella coda dei disegni
+   e `sendWaitingDrawings`, come per una corsa. Così gli esercizi non si
+   vedono mai prima di essere nascosti.
+5. **«Show exercises» in «My activities»** legge `GET
+   /me/gym-sessions/{key}` e scrive subito; non preso, torna com'era con le
+   parole del modulo del disegno.
+6. **Condividere**: l'immagine è il riquadro (`GymSharePicture`), con gli
+   esercizi principali letti dall'allenamento; niente risultati, emoji,
+   «Style», «Music», «Export video», Strava; il titolo del foglio è
+   «Share»; nessun `RunPost` salvato.
+
+**Conseguenze**: un testo nuovo nelle tabelle, «Show exercises», già
+approvato il 2026-11-04. Nessuna dipendenza, niente nativo, niente server:
+impronta iOS 6f8bba4c invariata. «Up to 10 in a post.» resta anche per la
+palestra: dice le foto, non le pagine.
+## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
+
+**Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
+dell'utente (punto 1); il resto deciso dall'agente su delega dell'utente,
+da confermare con le scelte ancora aperte del task.
+
+**Contesto**: a schermo bloccato la corsa registra e la voce dice le svolte
+(ADR-0225), ma sul lock screen non si vede niente. L'utente vuole vedere
+«quella percentuale, svolta a destra, sinistra» senza sbloccare. Una
+notifica locale è solo JavaScript (`expo-notifications` è già nella build
+1.0.1) e arriva con un OTA; una Live Activity vuole un widget extension e
+un modulo nativo, cioè una build per l'App Store.
+
+**Decisione**:
+
+1. **Tutte e due, in quest'ordine** (utente, «Live Activity, poi anche
+   OTA»): parte A, una notifica locale con un OTA; parte B, la Live
+   Activity (lock screen e Dynamic Island) nella build 1.0.2.
+2. **Una sola uscita in più del navigatore**: notifica e Live Activity
+   mostrano la stessa indicazione della voce, dallo stesso `onFix`; nessuna
+   logica di guida nuova.
+3. **La notifica**: solo con l'app dietro, senza suono, sempre con lo
+   stesso identificativo (una alla volta), alla svolta annunciata, al fuori
+   rotta e al rientro; si toglie a fine corsa e con l'app davanti. Permesso
+   delle notifiche push, come il recupero della palestra (ADR-0327).
+4. **La Live Activity si aggiorna dal telefono** quando cambia ciò che si
+   vede, al massimo una volta al secondo; niente push di ActivityKit,
+   niente server. Con la Live Activity attiva la notifica non parte.
+5. **Il nativo**: widget extension SwiftUI in `apps/mobile/targets/
+   live-activity/` con `@bacons/apple-targets`, più un modulo Expo locale
+   (`start`, `update`, `end`). Il JavaScript controlla che il modulo ci sia:
+   sulla 1.0.1 resta la notifica.
+6. **La dipendenza con TASK-370**: `@bacons/apple-targets` arriva con la
+   1.0.2 e la aggiunge TASK-401 B; TASK-370 (build 1.1) mette `targets/watch/`
+   accanto. Versione e plugin si concordano con la sua sessione; la
+   dipendenza e il codice nativo partono solo col sì dell'utente e il via
+   del Coordinatore sulla lista dei file.
+
+**Alternative**:
+
+- **Solo la notifica**: arriva subito, ma non conta i metri e non c'è nella
+  Dynamic Island. Scartata dall'utente come unica strada.
+- **Solo la Live Activity**: niente fino alla revisione della 1.0.2.
+  Scartata dall'utente.
+- **Una libreria Live Activity già fatta** (per esempio `expo-live-activity`):
+  porta il suo target e un aspetto a modello fisso; due sistemi di target
+  nell'app quando arriva l'orologio. Meglio un solo `@bacons/apple-targets`.
+- **Aggiornare la notifica fissa del servizio su Android**: expo-location
+  non la cambia senza riavviare il GPS. Su Android la parte A manda la sua.
+
+## ADR-0335, aggiunta — Il testo della notifica è la frase della voce
+
+**Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
+dell'utente.
+
+Alla domanda «Cosa scrive la notifica a schermo bloccato?» l'utente ha
+scelto **«Frase della voce + %»** (contro «Corta, stile navigatore»): il
+titolo della notifica è la frase che la voce dice in quel momento, con la
+freccia davanti; fuori rotta «Off the route»; sotto «{percent}% drawn ·
+{distance} left». Le frasi della voce sono già approvate e tradotte in
+cinque lingue; l'unico testo nuovo è «{distance} left», nelle unità scelte.
+## ADR-0336 — Ruotare il disegno sulla mappa e aggiungere pezzi da tessere, tutto sul telefono
+
+**Stato**: Proposto · 2026-11-05 · TASK-402. Scelta di prodotto
+dell'utente («Aggiungere pezzi», punto 2); il resto deciso dall'agente su
+delega dell'utente; confine con TASK-347 deciso dal Coordinatore.
+
+**Contesto**: in «Draw on the map» (TASK-281, TASK-331) la figura si
+sposta e si ridimensiona ma non si ruota, e una tessera sostituisce il
+disegno invece di aggiungersi. L'utente vuole «ruotare il disegno di tot
+gradi» e un elenco interno di figure «da poter selezionare e muovere sulla
+mappa». La parte D di TASK-347 (ADR-0300) prevedeva già «seleziona / sposta
+/ ruota (due dita) / ridimensiona», mai partita.
+
+**Decisione**:
+
+1. **Il giro è dell'app**: la figura gira in unità attorno al mezzo del suo
+   riquadro (`mapdraw/turn.ts`), di 15° per tocco, del numero di gradi
+   scritto o con due dita insieme al ridimensionamento (sullo schermo in
+   pixel, non in lng/lat; sotto i 3° non gira). Niente campo nuovo nel
+   contratto, niente motore toccato.
+2. **I pezzi** (scelta dell'utente, «Aggiungere pezzi»): con «Add» una
+   tessera aggiunge una forma o un'immagine sopra il disegno; ogni pezzo si
+   seleziona con un tocco in «Move» e si sposta, si ridimensiona, si gira e
+   si toglie da solo. Il primo pezzo dà il contorno, gli altri sono dettagli
+   appesi col collegamento tratteggiato di TASK-331 parte B: la richiesta è
+   l'`ImageOutline` di oggi. Al massimo 6 pezzi, e mai oltre
+   `MAX_OUTLINE_POINTS`/`MAX_DETAIL_POINTS`.
+3. **Una forma del catalogo girata, o unita ad altri pezzi, si manda come
+   contorno** (le sue linee `down`), perché una forma mandata per nome non
+   ha angolo; da sola e a 0° resta la forma per nome, come oggi.
+4. **L'angolo è il punto di partenza del motore**: per le strade il motore
+   può ancora girarla fino a ±45° (TASK-232, `MAX_TILT_DEG`). L'angolo
+   esatto arriva con il disegno `anchored` di TASK-347.
+5. **Confine** (Coordinatore): la parte D di TASK-347 passa a TASK-402;
+   magnete, penna a punti, nodi, righello, blocco della mappa e cronologia
+   restano a TASK-347 con le parti B, C ed E.
+
+**Alternative**:
+
+- **«Elenco delle parti»**: un elenco delle linee già disegnate, da cui
+  sceglierne una e muoverla. Scartata dall'utente.
+- **Solo la rotazione**, con la fila di tessere di oggi. Scartata
+  dall'utente.
+- **Un campo `rotation_deg` nella richiesta**, rispettato dal motore: vuole
+  contratto, motore e la prova degli stessi percorsi; lo fa meglio il
+  disegno `anchored` di TASK-347.
+- **Girare in lng/lat sulla pagina della mappa**, come oggi il
+  ridimensionamento: lontano dall'equatore storce la figura (un grado di
+  longitudine è più corto di uno di latitudine).
+
+## ADR-0337 — «Edit the drawing» torna sotto le opzioni A, B e C del risultato di «Draw»
+
+**Stato**: Proposto · 2026-11-05 · TASK-403. Scelta di prodotto
+dell'utente; il come deciso dall'agente su delega dell'utente.
+
+**Contesto**: il tasto «Edit the drawing» sotto il risultato di «Draw» era
+stato tolto su richiesta dell'utente il 2026-10-29 (TASK-340, aggiunta ad
+ADR-0288), e il 2026-11-04 l'utente aveva confermato «No, resta tolto»
+(TASK-369, scelta 7 di ADR-0313). Il 2026-11-05 l'utente ha chiesto:
+«Possibilità di di modificare anche quando seleziono quando fai tu il
+calcolo del disegno tipo il coniglio poi mi dai le tre opzioni AB e C però
+lì non c'è la possibilità di modificare l'immagine». Ricordati i due «no»,
+alla proposta di rimettere il tasto ha risposto «Sì, rimettilo».
+
+**Decisione**:
+
+1. Sotto il risultato di «Draw», dopo «Another figure» e sopra «Start»,
+   c'è di nuovo «Edit the drawing» (testo già tradotto, nessun testo nuovo).
+2. Il tasto mette sulla mappa di «Draw on the map» la **linea dell'opzione
+   scelta** (A, B o C), dov'è e grande com'è: lo stesso `editTrackOf` /
+   `trackInPlace` delle schede (TASK-346, ADR-0299; TASK-369, ADR-0313).
+   Per un'emoji o una parola si modifica la linea del percorso, non la
+   figura chiesta; anche dal risultato di un disegno a mano si apre la linea
+   dell'opzione scelta.
+3. Niente parte verso l'API prima di «Draw route». Solo JS: contratto,
+   motore, API e impronta iOS invariati.
+4. Vale in ogni sport che arriva al risultato, sull'acqua e a nuoto
+   compresi, come per le schede.
+
+Questa decisione supera, per il solo risultato di «Draw», l'aggiunta di
+ADR-0288 (TASK-340) e la scelta 7 di ADR-0313, che restano scritte com'erano.
+
+**Alternative**:
+
+- **La figura chiesta** (l'emoji o il disegno di partenza) invece della
+  linea dell'opzione: scartata, perché A, B e C sono linee diverse e
+  l'utente vuole modificare quella che ha davanti; per un'emoji, poi, la
+  figura non si modifica (ADR-0288).
+- **Tornare al disegno di partenza**, come faceva il tasto prima di
+  TASK-340 dal risultato di «Freehand»: lo fa già «←».
+
+## ADR-0335, aggiunta 2 — La Live Activity mostra solo la guida
+
+**Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
+dell'utente.
+
+Alla domanda «Cosa mostra la Live Activity durante una corsa con
+percorso?» l'utente ha scelto **«Solo la guida»** (contro «Guida + numeri
+della corsa»): freccia, metri alla svolta, la svolta in breve e la via; una
+barra con la percentuale disegnata e la distanza che manca. Nella Dynamic
+Island compatta la freccia e i metri. Fuori rotta il segno «⚠» e i metri
+per rientrare. Tempo, passo e distanza fatta restano sulla schermata della
+corsa.
+Senza percorso nessuna Live Activity (scelta dell'utente «No, solo con
+percorso», contro «Sì, con i numeri»).
+A fine corsa, all'arrivo, il riquadro mostra «You have arrived.» con la
+barra al 100% e sparisce da solo dopo 5 minuti; con «Stop» prima
+dell'arrivo sparisce subito (scelta dell'utente «Riepilogo per qualche
+minuto», contro «Sparisce subito»).
+L'utente dà il sì a `@bacons/apple-targets` 5.0.0 e al modulo locale in
+Swift nella build 1.0.2 («Sì, nella 1.0.2»).

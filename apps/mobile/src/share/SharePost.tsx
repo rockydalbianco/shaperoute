@@ -16,6 +16,8 @@ import {
 } from "react-native-safe-area-context";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
+import { isTrackless } from "../activities/snow";
+import { GymSharePicture } from "../gym/GymSharePicture";
 import { t } from "../i18n";
 import {
   color,
@@ -72,7 +74,9 @@ type Props = {
  * opens as it was the next time. «Export video» shares the same post as a
  * short video of the run drawing itself over the map of the run (TASK-295,
  * TASK-351), in the style chosen in «Style», with the track chosen in
- * «Music» (TASK-301).
+ * «Music» (TASK-301). A workout at the gym shares its yellow tile alone
+ * (TASK-385 part D): no line to draw, so no results, emoji, video nor
+ * Strava.
  */
 export function SharePost({ run, onClose }: Props) {
   return (
@@ -99,6 +103,7 @@ function SharePage({ run, onClose }: Props) {
     (window.height * POST_HEIGHT_SHARE) / POST_RATIO,
   );
   const results = useMemo(() => resultsOf(run), [run]);
+  const gym = isTrackless(run.activity);
   const { keepPost } = useActivitiesDoor();
   const kept = run.post ?? null;
   // Every result the run has, on: the runner turns off what they keep. A
@@ -139,7 +144,8 @@ function SharePage({ run, onClose }: Props) {
 
   /** The post as it is now, to the API with its run; nothing before «Save». */
   function keep() {
-    if (run.key !== null) {
+    // A workout's post has nothing of a run's to keep (TASK-385 part D).
+    if (run.key !== null && !gym) {
       keepPost(run.key, postRequestOf(run, shown, placedOf(stickers)));
     }
   }
@@ -198,7 +204,7 @@ function SharePage({ run, onClose }: Props) {
           <Text style={styles.link}>{t("Close")}</Text>
         </Pressable>
         <Text style={styles.title} accessibilityRole="header">
-          {t("Share your run")}
+          {t(gym ? "Share" : "Share your run")}
         </Text>
       </View>
       <ScrollView
@@ -208,17 +214,27 @@ function SharePage({ run, onClose }: Props) {
         ]}
       >
         <View style={styles.center}>
-          <PostImage
-            ref={post}
-            run={run}
-            shown={shown}
-            stickers={stickers}
-            width={postWidth}
-            onMoveSticker={(id, x, y) =>
-              setStickers((now) => moveSticker(now, id, x, y))
-            }
-            onRemoveSticker={(id) => setStickers((now) => removeSticker(now, id))}
-          />
+          {gym ? (
+            <GymSharePicture
+              ref={post}
+              gymKey={run.key}
+              durationS={Math.round(run.durationMs / 1000)}
+              width={postWidth}
+              height={postWidth * POST_RATIO}
+            />
+          ) : (
+            <PostImage
+              ref={post}
+              run={run}
+              shown={shown}
+              stickers={stickers}
+              width={postWidth}
+              onMoveSticker={(id, x, y) =>
+                setStickers((now) => moveSticker(now, id, x, y))
+              }
+              onRemoveSticker={(id) => setStickers((now) => removeSticker(now, id))}
+            />
+          )}
         </View>
         {stickers.length > 0 && (
           <Text style={styles.hint}>
@@ -226,7 +242,7 @@ function SharePage({ run, onClose }: Props) {
           </Text>
         )}
 
-        {results.length > 0 && (
+        {!gym && results.length > 0 && (
           <>
             <Text style={styles.label}>{t("Results")}</Text>
             <View style={styles.chips}>
@@ -250,30 +266,34 @@ function SharePage({ run, onClose }: Props) {
           </>
         )}
 
-        <Text style={styles.label}>{t("Add emoji")}</Text>
-        <View style={styles.emojiRow}>
-          {POST_EMOJI.map((emoji) => (
-            <Pressable
-              key={emoji}
-              style={styles.emoji}
-              onPress={() => setStickers((now) => addSticker(now, emoji))}
-              accessibilityRole="button"
-              accessibilityLabel={t("Add {emoji}", { emoji })}
-            >
-              <Text style={styles.emojiText}>{emoji}</Text>
-            </Pressable>
-          ))}
-        </View>
-        {stickers.length >= MAX_STICKERS && (
-          <Text style={styles.hint}>
-            {t("Up to {count} emoji: tap one on the post to take it off.", {
-              count: MAX_STICKERS,
-            })}
-          </Text>
-        )}
+        {!gym && (
+          <>
+            <Text style={styles.label}>{t("Add emoji")}</Text>
+            <View style={styles.emojiRow}>
+              {POST_EMOJI.map((emoji) => (
+                <Pressable
+                  key={emoji}
+                  style={styles.emoji}
+                  onPress={() => setStickers((now) => addSticker(now, emoji))}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("Add {emoji}", { emoji })}
+                >
+                  <Text style={styles.emojiText}>{emoji}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {stickers.length >= MAX_STICKERS && (
+              <Text style={styles.hint}>
+                {t("Up to {count} emoji: tap one on the post to take it off.", {
+                  count: MAX_STICKERS,
+                })}
+              </Text>
+            )}
 
-        <StyleRow run={run} style={style} onChange={setStyle} />
-        <MusicRow music={music} onChange={setMusic} />
+            <StyleRow run={run} style={style} onChange={setStyle} />
+            <MusicRow music={music} onChange={setMusic} />
+          </>
+        )}
 
         <View style={styles.actions}>
           <View style={styles.buttons}>
@@ -283,17 +303,19 @@ function SharePage({ run, onClose }: Props) {
               busy={busy}
               main
             />
-            <PostButton
-              text={
-                video === null
-                  ? t("Export video")
-                  : t("Making the video… {percent}%", {
-                      percent: Math.round(made * 100),
-                    })
-              }
-              onPress={() => void exportVideo()}
-              busy={busy}
-            />
+            {!gym && (
+              <PostButton
+                text={
+                  video === null
+                    ? t("Export video")
+                    : t("Making the video… {percent}%", {
+                        percent: Math.round(made * 100),
+                      })
+                }
+                onPress={() => void exportVideo()}
+                busy={busy}
+              />
+            )}
           </View>
           <Text style={styles.hint}>
             {t("Pick Instagram in the list: Story, Feed or Messages.")}
@@ -303,7 +325,7 @@ function SharePage({ run, onClose }: Props) {
               {problem}
             </Text>
           )}
-          <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />
+          {!gym && <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />}
         </View>
       </ScrollView>
     </View>

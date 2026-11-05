@@ -1162,6 +1162,29 @@ export const ES: Table = {
   "{n} exercises · {s} sets": "{n} ejercicios · {s} series",
   "{n} rests · avg {time} · {total} resting":
     "{n} descansos · media {time} · {total} descansando",
+  // src/gym/ (TASK-385 part B), approved on 2026-11-04
+  "Start workout": "Empezar entrenamiento",
+  "No route in the gym: MuW times your workout.":
+    "En el gimnasio no hay ruta: MuW cronometra tu entrenamiento.",
+  "+ Exercise": "+ Ejercicio",
+  "Search exercises": "Buscar ejercicios",
+  "Add “{name}”": "Añadir «{name}»",
+  "Set {n}": "Serie {n}",
+  Reps: "Repeticiones",
+  "Added weight": "Lastre",
+  Incline: "Inclinación",
+  Level: "Nivel",
+  Floors: "Pisos",
+  "Log set": "Anotar serie",
+  "Same again": "Otra igual",
+  Rest: "Descanso",
+  Custom: "Personalizado",
+  "Next: {exercise} · set {n}": "Siguiente: {exercise} · serie {n}",
+  "Rest over — next set": "Descanso terminado: siguiente serie",
+  "Show exercises": "Mostrar ejercicios",
+  "Still training?": "¿Sigues entrenando?",
+  "Yes, keep going": "Sí, sigo",
+  "Finish workout": "Terminar entrenamiento",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":
     "Sin formas en las pistas: MuW registra tu jornada.",
@@ -1443,6 +1466,9 @@ export const ES: Table = {
   "MuW is recording your activity": "MuW está registrando tu actividad",
   "It keeps going with the screen locked, voice included.":
     "Sigue con la pantalla bloqueada, voz incluida.",
+
+  // src/navigation/lockNotice.ts, the notice with the phone locked (TASK-401)
+  "{distance} left": "quedan {distance}",
 
   // src/location/startStatus.ts, src/screens/ChooseScreen.tsx,
   // src/explore/ExploreScreen.tsx, ThemedCard.tsx, src/screens/NavigateScreen.tsx,
@@ -1905,4 +1931,14 @@ export const ES: Table = {
   "Notifications, {count} new": "Notificaciones, {count} nuevas",
   "No notifications yet. Reactions, comments, follows and tags will show up here.":
     "Aún no hay notificaciones. Aquí aparecerán reacciones, comentarios, seguimientos y etiquetas.",
+  // src/profile/Vo2MaxRow.tsx, OwnVo2Max.tsx, settings/Vo2MaxSetting.tsx (TASK-397 part B: the VO₂ max, texts approved)
+  "VO₂ max": "VO₂ máx",
+  "Estimate from your {distance}": "Estimación a partir de tu {distance}",
+  "Estimate from their {distance}": "Estimación a partir de su {distance}",
+  "Show your VO₂ max?": "¿Mostrar tu VO₂ máx?",
+  "Everyone who can see your profile will see it. You can turn it off in Settings.":
+    "Lo verá cualquiera que pueda ver tu perfil. Puedes desactivarlo en Ajustes.",
+  "Show it": "Mostrarlo",
+  "Only you see this": "Solo lo ves tú",
+  "Show VO₂ max on my profile": "Mostrar el VO₂ máx en mi perfil",
 };

@@ -1161,6 +1161,29 @@ export const FR: Table = {
   "{n} exercises · {s} sets": "{n} exercices · {s} séries",
   "{n} rests · avg {time} · {total} resting":
     "{n} récups · moy. {time} · {total} de récup",
+  // src/gym/ (TASK-385 part B), approved on 2026-11-04
+  "Start workout": "Commencer la séance",
+  "No route in the gym: MuW times your workout.":
+    "Pas de parcours en salle : MuW chronomètre ta séance.",
+  "+ Exercise": "+ Exercice",
+  "Search exercises": "Rechercher un exercice",
+  "Add “{name}”": "Ajouter « {name} »",
+  "Set {n}": "Série {n}",
+  Reps: "Répétitions",
+  "Added weight": "Lest",
+  Incline: "Inclinaison",
+  Level: "Niveau",
+  Floors: "Étages",
+  "Log set": "Noter la série",
+  "Same again": "Même chose",
+  Rest: "Récup",
+  Custom: "Personnalisé",
+  "Next: {exercise} · set {n}": "Ensuite : {exercise} · série {n}",
+  "Rest over — next set": "Récup terminée : série suivante",
+  "Show exercises": "Afficher les exercices",
+  "Still training?": "Tu t'entraînes encore ?",
+  "Yes, keep going": "Oui, je continue",
+  "Finish workout": "Terminer la séance",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":
     "Pas de formes sur les pistes : MuW enregistre ta journée.",
@@ -1440,6 +1463,9 @@ export const FR: Table = {
   "MuW is recording your activity": "MuW enregistre ton activité",
   "It keeps going with the screen locked, voice included.":
     "Ça continue écran verrouillé, voix comprise.",
+
+  // src/navigation/lockNotice.ts, the notice with the phone locked (TASK-401)
+  "{distance} left": "encore {distance}",
 
   // src/location/startStatus.ts, src/screens/ChooseScreen.tsx,
   // src/explore/ExploreScreen.tsx, ThemedCard.tsx, src/screens/NavigateScreen.tsx,
@@ -1901,4 +1927,14 @@ export const FR: Table = {
   "Notifications, {count} new": "Notifications, {count} nouvelles",
   "No notifications yet. Reactions, comments, follows and tags will show up here.":
     "Pas encore de notifications. Les réactions, commentaires, abonnements et identifications apparaîtront ici.",
+  // src/profile/Vo2MaxRow.tsx, OwnVo2Max.tsx, settings/Vo2MaxSetting.tsx (TASK-397 part B: the VO₂ max, texts approved)
+  "VO₂ max": "VO₂ max",
+  "Estimate from your {distance}": "Estimation d'après ton {distance}",
+  "Estimate from their {distance}": "Estimation d'après son {distance}",
+  "Show your VO₂ max?": "Afficher ta VO₂ max ?",
+  "Everyone who can see your profile will see it. You can turn it off in Settings.":
+    "Toutes les personnes qui peuvent voir ton profil la verront. Tu peux la désactiver dans Réglages.",
+  "Show it": "L'afficher",
+  "Only you see this": "Visible par toi seulement",
+  "Show VO₂ max on my profile": "Afficher la VO₂ max sur mon profil",
 };

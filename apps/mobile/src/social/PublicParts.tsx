@@ -83,10 +83,14 @@ export function activityName(activity: RunActivity): string {
   return t(profileOf(activity).name);
 }
 
-/** The first empty place for a photo, 1 to DRAWING_MAX_PHOTOS; null when
- * every place is taken. */
-export function nextPlace(photos: readonly { n: number }[]): number | null {
-  for (let n = 1; n <= DRAWING_MAX_PHOTOS; n += 1) {
+/** The first empty place for a photo, 1 to `max` (DRAWING_MAX_PHOTOS;
+ * GYM_MAX_PHOTOS for a workout, TASK-385 part D); null when every place is
+ * taken. */
+export function nextPlace(
+  photos: readonly { n: number }[],
+  max: number = DRAWING_MAX_PHOTOS,
+): number | null {
+  for (let n = 1; n <= max; n += 1) {
     if (!photos.some((photo) => photo.n === n)) {
       return n;
     }
@@ -379,6 +383,9 @@ export type DrawingFormProps = {
   disabled?: boolean;
   /** A run from a file of another app: it cannot enter a monthly challenge. */
   imported?: boolean;
+  /** Under who can see it, on a workout at the gym: «Show exercises»
+   * (TASK-385 part D). */
+  extra?: ReactNode;
   /** The fakes of the tests. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
@@ -406,6 +413,7 @@ export function DrawingForm({
   onLayout,
   disabled,
   imported = false,
+  extra,
   pick,
   fetchFn,
   apiKey,
@@ -427,6 +435,7 @@ export function DrawingForm({
         onLayout={onLayout}
         disabled={disabled}
         pick={pick === undefined ? undefined : oneAtATime(pick)}
+        gym={isTrackless(choice.activity)}
       />
       <DrawingTitle
         value={title}
@@ -463,6 +472,7 @@ export function DrawingForm({
         onChange={(visibility) => onChoice({ ...choice, visibility })}
         disabled={disabled}
       />
+      {extra}
       {/* A workout at the gym draws nothing for the contest (TASK-385 B0). */}
       {choice.visibility === "everyone" &&
         !imported &&

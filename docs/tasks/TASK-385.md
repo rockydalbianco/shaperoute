@@ -108,6 +108,14 @@ Apple Salute / Health Connect come allenamento di forza.
 12. **Testi**: «Sì, approvo tutto» — l'interfaccia (sotto), i 91 esercizi,
     le sette figure e le scale di `docs/sports/gym.md`.
 
+13. **Foto nel post** (parte D, 2026-11-05): «10 foto». Fino a 10 foto e
+    il riquadro sempre fra le pagine (ultimo se non lo si sposta): fino a 11
+    pagine, una più delle corse.
+14. **Il post a fine allenamento** (parte D, 2026-11-05): «Sì, anche alla
+    fine». Il modulo del post (foto, titolo, chi lo vede, «Show exercises»)
+    sta sopra «Save», come a fine corsa; resta modificabile da «My
+    activities».
+
 ## Domande aperte
 
 - **Privacy**: la riga per esercizi, pesi e classifica, con la parte A.
@@ -208,13 +216,55 @@ Questa PR (documenti): `docs/tasks/TASK-385.md` (nuovo),
   - `contest/ContestCard.tsx` esce: un post di palestra non entra in un
     concorso. Le mappe di Salute leggono il profilo (TASK-376 B3a): non
     cambiano.
-- **B**: `apps/mobile/src/sports/gym.ts` (nuovo, dopo 376 B3), file nuovi in
-  `apps/mobile/src/gym/` (sessione, catalogo, serie, timer di recupero,
-  notifica locale, fine sessione) e i loro test; punti di registrazione:
-  `settings/sport.ts`, `ChooseScreen.tsx`, `RunEnd.tsx`, `i18n/*`.
+- **B** (lista approvata dal Coordinatore il 2026-11-05; branch
+  `feat/TASK-385-b-gym-workout`; «Gym» `ready: true` anche nelle build
+  dello store, col sì dell'utente del 2026-11-05, «ok accendi»):
+  - file nuovi in `apps/mobile/src/gym/`: `workout.ts` (lo stato puro),
+    `workoutStore.ts` (`gym-workout.json`), `useWorkout.ts`, `restTimer.ts`,
+    `restAlert.ts` (vibrazione, `chime()`, notifica locale), `setKinds.ts`
+    (i campi di ogni tipo, i limiti dell'API), `groups.ts` (i gruppi nelle
+    cinque lingue), `gymKey.ts`, `gymOutbox.ts` (`gym-outbox.json`),
+    `useGymOutbox.ts`, `gymStyles.ts`, `WorkoutScreen.tsx`,
+    `ExercisePicker.tsx`, `SetFields.tsx`, `RestPanel.tsx`,
+    `StillTraining.tsx`, `GymEnd.tsx`, `GymWorkoutHost.tsx`; test
+    `restTimer.test.ts`, `setKinds.test.ts`, `workout.test.ts`,
+    `gymKey.test.ts`, `gymFiles.test.ts`, `restAlert.test.tsx`,
+    `GymWorkoutHost.test.tsx`, `GymDraw.test.tsx`;
+  - righe in file esistenti: `api/gym.ts` (+ `gym.test.ts`,
+    `saveGymSession`), `settings/sport.ts` (+ `sport.test.ts`),
+    `screens/ChooseScreen.tsx` (il testo sotto `RecordDay` diventa una
+    prop), `screens/RunNoRouteButton.tsx` (l'icona), `App.tsx` (due import,
+    `<GymWorkoutHost />` e l'`onRun` della palestra), `i18n/it.ts`, `de.ts`,
+    `fr.ts`, `es.ts` (i testi approvati);
+  - i test che contano gli sport, una riga ciascuno (approvati dal
+    Coordinatore dopo la lista): `settings/SportButton.test.tsx`,
+    `SportSetting.test.tsx`, `SportVoiceItalian.test.tsx`,
+    `SportStoreBuild.test.tsx`, `snowSport.test.ts`; `tabs/TabSwipeOwners.test.ts`
+    (`gym/ExercisePicker.tsx` fra gli scroll orizzontali, col rimbalzo di
+    default; ok del Coordinatore dopo la CI);
+  - `RunEnd.tsx` esce: vuole una traccia, la palestra ha `GymEnd.tsx`. In B
+    «Save» salva l'allenamento e lo mette in «My activities»; il post nel
+    Feed è la parte D, le kcal e Salute la parte C.
 - **C**: `apps/mobile/src/gym/gymKcal.ts` (nuovo); punti di registrazione in
   `health/*Workout.ts`.
-- **D–H**: si elencano prima di ciascuna.
+- **D** (lista approvata dal Coordinatore il 2026-11-05; branch
+  `feat/TASK-385-d-gym-post`):
+  - file nuovi in `apps/mobile/src/gym/`: `mainExercises.ts`,
+    `useGymExercises.ts`, `ShowExercises.tsx`, `GymPostForm.tsx`,
+    `GymSharePicture.tsx` (l'immagine condivisa, aggiunto scrivendo il
+    codice: un file nuovo); test
+    `mainExercises.test.ts`, `ShowExercises.test.tsx`,
+    `GymPostForm.test.tsx`, `GymFeedTile.test.tsx`, `GymShare.test.tsx`;
+  - righe in file esistenti: `gym/GymTile.tsx` (+ `GymTile.test.tsx`),
+    `GymDetail.tsx`, `GymEnd.tsx`, `gymOutbox.ts` (+ `gymFiles.test.ts`),
+    `useGymOutbox.ts`, `sports/gym.ts`; `api/gym.ts` (+ `gym.test.ts`);
+    `feed/FeedPost.tsx`; `social/PublicParts.tsx`, `PublicRow.tsx`,
+    `composer/PostComposer.tsx`, `drawingsDoor.ts` (una riga);
+    `share/SharePost.tsx`; `i18n/it.ts`, `de.ts`, `fr.ts`, `es.ts` (solo
+    «Show exercises», approvato);
+  - documenti: questo file, `docs/DECISIONS.md` (precisazione),
+    `docs/STATUS.md` (righe proprie), `docs/sports/gym.md`.
+- **E–H**: si elencano prima di ciascuna.
 
 ## Testi dell'interfaccia (approvati il 2026-11-04)
 
@@ -270,3 +320,18 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
 - 2026-11-05: parte B0 scritta: l'app legge i post di palestra (riquadro,
   esercizi, miniature) e manda `gym,trackless`. OTA di produzione col sì
   dell'utente, prima della parte B.
+- 2026-11-05: parte B0 in `main` (#822, a02b7959); va nell'OTA di produzione
+  col sì dell'utente, prima della parte B.
+- 2026-11-05: parte B scritta: «Start workout» in «Draw», la schermata
+  dell'allenamento, il catalogo con la ricerca e il nome libero, le serie
+  dei quattro tipi, il recupero con l'avviso, «Pause», «Still training?»,
+  le correzioni alla fine e «Save» (`PUT /me/gym-sessions/{key}`, con la
+  coda sul telefono). L'utente il 2026-11-05: «ok si» all'OTA di produzione
+  con la B0 e «ok accendi» per «Gym» nelle build dello store, subito:
+  `ready: true` nella stessa PR. Prossima: C (kcal e Salute) e D (il post).
+- 2026-11-05: parte B in `main` (#833, 02effa84).
+- 2026-11-05: parte D scritta (ADR-0327, precisazione D): il riquadro fra
+  le pagine con fino a 10 foto, gli esercizi principali, «Show exercises»,
+  il modulo del post a fine allenamento, la condivisione col riquadro.
+  Scelte dell'utente: «10 foto», «Sì, anche alla fine». Impronta iOS
+  6f8bba4c invariata su copia pulita. OTA col sì. Prossima: C, poi E.

@@ -1,0 +1,14 @@
+{
+  "phases": ["ready", "countdown", "running", "paused", "finished"],
+  "events": ["start", "countdownDone", "cancel", "pause", "resume", "end", "reset"],
+  "allowed": [
+    { "from": "ready", "event": "start", "to": "countdown" },
+    { "from": "countdown", "event": "countdownDone", "to": "running" },
+    { "from": "countdown", "event": "cancel", "to": "ready" },
+    { "from": "running", "event": "pause", "to": "paused" },
+    { "from": "paused", "event": "resume", "to": "running" },
+    { "from": "running", "event": "end", "to": "finished" },
+    { "from": "paused", "event": "end", "to": "finished" },
+    { "from": "finished", "event": "reset", "to": "ready" }
+  ]
+}

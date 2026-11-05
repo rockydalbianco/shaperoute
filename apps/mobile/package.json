@@ -12,6 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@bacons/apple-targets": "5.0.0",
     "@kingstinct/react-native-healthkit": "16.2.0",
     "@shaperoute/shared-types": "*",
     "expo": "~57.0.24",

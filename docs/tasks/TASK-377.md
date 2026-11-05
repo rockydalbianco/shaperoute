@@ -200,8 +200,10 @@ Le scelte toccano le liste di A e B in tre punti:
 - [x] 0: le misure delle reti sono in `hike.md`; ADR-0321 è proposto.
       `trails` è misurata solo a Trento, perché lì non regge.
 - [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-05).
-- [ ] A: un percorso d'escursione sul grafo di prova sta sui sentieri; test
+- [x] A: un percorso d'escursione sul grafo di prova sta sui sentieri; test
       deterministici; corsa, bici e canoa invariate al banco (`compare`).
+      Corsa 54/54, bici 54/54 e canoa 27/27 identiche punto per punto;
+      `test_hiking.py` e `test_hiking_api.py`.
 - [ ] B: l'escursione si sceglie, si cammina, si salva e va in Salute; i
       testi sono in cinque lingue.
 - [ ] Il diff di A e B confrontato con la ricetta: ogni deroga è in
@@ -246,3 +248,19 @@ la prima domanda all'utente, il nome e l'emoji.
 
 Prossimo: la lista di 377-A al Coordinatore, con `game_rules.py` in più e
 il numero della migrazione, prima del codice.
+
+2026-11-05, parte A (`feat/TASK-377-a-hike-engine-api`):
+
+- il motore disegna `hiking` sulla rete `hike`. Rispetto al banco della
+  parte 0 il filtro tiene le esclusioni dei marciapiedi di «foot» e toglie
+  anche le vie ferrate;
+- il contratto e l'API offrono `hiking`, con la migrazione `0051_hiking.sql`;
+- l'app ha il profilo Hike, nascosto;
+- l'impronta del motore resta, con `SAME_ROUTES_AS`, scelta del
+  Coordinatore e precisazione di ADR-0321.
+
+Al banco la hike riesce 73 volte su 90, da 5 a 30 km. In montagna circa
+metà di un percorso sta sui sentieri: le misure sono in `hike.md`.
+Server (0051 e deploy) col sì dell'utente.
+
+Prossimo: la parte B, dopo la #765.

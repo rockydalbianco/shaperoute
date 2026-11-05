@@ -1,0 +1,43 @@
+name: Watch
+
+# The core of the Apple Watch app (TASK-370 part A1, ADR-0314): `swift test`
+# on the pure Swift package of apps/mobile/targets/watch/Core, with no Xcode
+# project and no prebuild. The phone's side of the same fixtures runs in the
+# "mobile" job of ci.yml (src/watch/).
+# A macOS runner costs more minutes than an Ubuntu one: the workflow runs
+# only when the watch's files or this file change. It is not one of the
+# checks the ruleset of main asks for, so the filter in `on:` leaves no
+# check «Expected».
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/targets/watch/**"
+      - ".github/workflows/watch.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/targets/watch/**"
+      - ".github/workflows/watch.yml"
+
+# As in ci.yml: a new push on a PR cancels the run still going on the same
+# PR; on main each run has a group of its own. The groups are repo-wide,
+# hence «watch-».
+concurrency:
+  group: watch-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  watch-core:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Swift
+        run: swift --version
+
+      - name: Test
+        working-directory: apps/mobile/targets/watch/Core
+        run: swift test

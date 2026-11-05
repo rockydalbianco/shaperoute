@@ -23226,6 +23226,71 @@ l'App Store; serve un Apple Watch vero per le prove.
 
 ---
 
+## ADR-0314, precisazione — La parte A1: il nucleo Swift, i messaggi e la tabella degli sport
+
+**Stato**: Attiva · 2026-11-05 · TASK-370 parte A1, deciso dall'agente su
+delega dell'utente; piano della parte A approvato dal Coordinatore.
+
+**Decisione**:
+
+1. **Un pacchetto Swift puro**, `apps/mobile/targets/watch/Core/`
+   (`WatchCore`), senza HealthKit, WatchConnectivity né schermate: si prova
+   con `swift test` su qualsiasi Mac, senza progetto Xcode né `prebuild`.
+   L'app dell'orologio di A2 lo userà come pacchetto locale.
+2. **Lo stato dell'allenamento**: pronto → conto alla rovescia → in corso ⇄
+   in pausa → finito → pronto. Un comando che non vale nella fase in cui si
+   è (una pausa già in pausa) non cambia niente: lo stesso comando arrivato
+   due volte, dal polso e dal telefono, conta una volta. «Fine» durante il
+   conto alla rovescia lo annulla e non registra niente. Il tempo in
+   movimento lascia fuori le pause; l'ora la dà chi chiama, così i test non
+   usano il tempo vero.
+3. **I messaggi** sono oggetti di valori JSON, come li porta
+   WatchConnectivity: `command` (start con lo sport, pause, resume, end),
+   `state` (fase, sport, tempo in movimento, metri) e `heartRate`. Ognuno ha
+   la versione `v`: un lato legge le versioni fino alla sua e rifiuta una
+   più nuova (l'orologio non si aggiorna con un OTA); una versione dopo
+   aggiunge solo campi, e quelli che un lato non conosce restano fuori. Gli
+   errori hanno gli stessi codici nei due lati (`notAnObject`,
+   `unsupportedVersion`, `unknownType`, `invalidField`). Lo sport di uno
+   start non è controllato sulla tabella: un telefono più nuovo può avere
+   uno sport che l'orologio non conosce, e decide A2 cosa mostrare.
+4. **Gli stessi fixture** in `targets/watch/Core/Fixtures/`
+   (`messages.json`, `transitions.json`): XCTest li legge dal percorso del
+   file di test, jest con `fs`. Se uno dei due lati cambia e l'altro no, un
+   test diventa rosso.
+5. **La tabella degli sport** viene da `src/sports/`: sport, nome inglese,
+   emoji, `appleWorkout`, il passo (`km`, `paddle`, `swim`), sull'acqua,
+   `guided` (l'app disegna percorsi: c'è `drawKm`), `gps`, `onWatch`. Quello
+   che il registro non dice sta in `watchSports.ts`: al chiuso senza GPS
+   solo la palestra; non offerto sull'orologio solo il nuoto, fino alla
+   prova in acqua. La bici per ora ha il passo per km come nell'app; la
+   velocità è della parte C. Quali sport il telefono offre davvero (la
+   camminata e il fondo sono ancora «Soon») non sta nella tabella: lo dirà
+   il telefono all'orologio in A2/A3.
+6. **`sports.json` si riscrive** con `apps/mobile/scripts/watch-sports.sh`,
+   che fa girare il test jest con `WRITE_WATCH_SPORTS=1`: niente script nel
+   `package.json` (A1 non lo tocca) e niente dipendenze nuove. Il test
+   confronta anche il testo, così il file è sempre quello dello script.
+7. **`watch.yml`** gira su `macos-15` solo quando cambiano
+   `apps/mobile/targets/watch/**` o il workflow; `timeout-minutes: 15`,
+   gruppo `watch-` che cancella i giri vecchi come `ci.yml`. Non è un
+   check obbligatorio del ruleset, quindi il filtro in `on:` non lascia
+   check «Expected».
+
+**Alternative**:
+- **`Codable` per i messaggi**: più breve, ma WatchConnectivity dà
+  dizionari, e i codici d'errore uguali al TypeScript sarebbero più
+  difficili; scartata.
+- **La tabella degli sport generata al `prebuild`**: richiede il plugin, che
+  entra solo con A-flip; il file nel repository con il test che lo tiene
+  uguale funziona da subito.
+
+**Conseguenze**: l'impronta iOS di `main` resta `6f8bba4c` (misurata su una
+copia pulita con `APP_VARIANT=production`). In A2 va verificato che
+`@bacons/apple-targets` non compili `Core/Tests` dentro il target
+dell'orologio: il pacchetto va collegato come pacchetto locale.
+
+---
 ## ADR-0322 — Gravel e MTB: la bici di oggi per il gravel, una rete sua per la MTB
 
 **Stato**: Accettato · 2026-11-05 · TASK-378. Le scelte dell'utente, il

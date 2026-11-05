@@ -241,8 +241,14 @@ dell'utente).
   `messages.test.ts`, uno in `DrawOnMapApp.test.tsx`; `src/mapdraw`,
   `src/map` e `src/i18n` verdi in locale (412), `tsc` pulito. Impronta iOS
   (copia pulita, `APP_VARIANT=production`): `6f8bba4c`, invariata.
-- Non provato sul simulatore né sul telefono: il gesto a due dita vero va
-  visto a mano.
+- Simulatore (iPhone 17e, Expo Go, 2026-11-05): «+15°», «−15°», l'angolo
+  scritto e il giro a due dita funzionano, «Undo» lo toglie; video
+  `out/TASK-402/a-turn.mov` (locale). La prova ha corretto la casella dei
+  gradi: era nella riga, sotto la tastiera, e il numero scritto si
+  aggiungeva al vecchio; ora è una casella sopra la tastiera, vuota con
+  l'angolo come suggerimento (`841a943d`, `fb7ab849`). Un giro a due dita
+  che porta la figura oltre lo schermo fa reinquadrare la mappa, come già
+  il ridimensionamento. Non ancora provato sul telefono.
 
 ## Note
 

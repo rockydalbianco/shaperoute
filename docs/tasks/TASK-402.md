@@ -1,7 +1,8 @@
 # TASK-402 — Ruotare il disegno di quanti gradi si vuole, e aggiungere pezzi da spostare sulla mappa
 
-**Stato**: Proposto · 2026-11-05 · solo documenti; nessun codice prima del
-sì dell'utente sui testi e del via del Coordinatore sulla lista dei file
+**Stato**: Proposto · 2026-11-05 · solo documenti; i cinque testi approvati
+dall'utente lo stesso giorno; nessun codice prima del via del Coordinatore
+sulla lista dei file della parte A
 **Fase**: 5 · **Branch**: `docs/TASK-402-freehand-pieces` (documenti); poi
 `feat/TASK-402-a-turn` e `feat/TASK-402-b-pieces` · **ADR**: ADR-0336
 
@@ -137,7 +138,8 @@ Deciso dal Coordinatore il 2026-11-05:
 
 Nuovi testi dell'interfaccia, in inglese e nelle lingue dell'app
 (`i18n/*.ts`); l'utente li approva **uno alla volta**, prima del codice
-della parte che li usa:
+della parte che li usa. **Tutti e cinque approvati dall'utente il
+2026-11-05**, uno alla volta, così come sono scritti qui:
 
 1. (A) I comandi del giro: «−15°», «+15°», l'angolo («30°») e per
    VoiceOver «Turn left 15 degrees», «Turn right 15 degrees», «Angle, 30
@@ -163,8 +165,9 @@ apps/mobile/src/mapdraw/turn.test.ts            (nuovo)
 apps/mobile/src/mapdraw/useMapCanvas.ts
 apps/mobile/src/mapdraw/DrawOnMap.tsx
 apps/mobile/src/mapdraw/DrawOnMapApp.test.tsx
+apps/mobile/src/mapdraw/canvasRequest.ts        (una forma girata mandata come contorno)
 apps/mobile/src/map/mapPage.ts
-apps/mobile/src/i18n/*.ts                       (i testi approvati)
+apps/mobile/src/i18n/*.ts                       (i testi 1 e 2)
 docs/UI.md, docs/INDEX.md, docs/STATUS.md, docs/tasks/TASK-402.md
 ```
 

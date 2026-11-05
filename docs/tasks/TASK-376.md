@@ -1,8 +1,8 @@
 # TASK-376 — Fase 0 degli sport: il registro, il banco condiviso, la ricetta
 
 **Stato**: In corso — parte A in `main` (#736); parte B in `main` (B1 #763,
-B2 #798, B3a #806, B3b #814, B3c #818) tranne `settings/sport.ts`, che
-aspetta la #765; parte C: C1, la ricetta, in PR, poi il pilota TASK-377
+B2 #798, B3a #806, B3b #814, B3c #818 e la seconda metà, `settings/sport.ts`);
+parte C: C1 in `main` (#820), poi la chiusura col pilota TASK-377
 **Fase**: 4 · **Branch**: `feat/TASK-376-a-sport-bench` (parte A),
 `feat/TASK-376-b-sport-registry` (parte B) · **ADR**: ADR-0320 · numeri dal
 Coordinatore (2026-11-04) · sessione «Coordinatore Sport»
@@ -370,3 +370,25 @@ La chiusura di uno sport confronta il diff con la ricetta, e ogni deroga va
 in `CONDIVISO.md`. Il Coordinatore ha approvato il piano di C e del pilota
 il 2026-11-05. Prossimo: 377-0, cioè TASK-377.md, `hike.md`, ADR-0321
 proposto e la misura dei sentieri col banco, dopo il merge di C1.
+
+2026-11-05, B3c, seconda metà (dopo la #765): `settings/sport.ts` legge
+dal profilo dello sport l'emoji, il nome e «Record only», quando l'attività
+è fra `RECORD_ACTIVITIES`. «Impostazioni» tiene a mano solo tre cose:
+
+- l'id;
+- `ready`;
+- l'attività di ogni sport, in `ACTIVITY`.
+
+`activityOf` e `runActivityOf` la leggono invece di due `switch`. Il
+parapendio resta scritto a mano, perché non ha un profilo. Le righe e le
+attività sono quelle di prima: lo prova `settings/sportRows.test.ts`.
+
+Uno sport nuovo in «Impostazioni» vuole quindi tre cose:
+
+- il nome nel tipo `Sport`;
+- una voce in `ACTIVITY`;
+- una riga `fromProfile(id, ready)`.
+
+Il testo «… without a route» resta nello `switch` di `withoutRouteLabel`.
+La ricetta (`COME-AGGIUNGERE.md`, sezione 4) si corregge con la chiusura
+del pilota.

@@ -160,14 +160,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-403 — «Edit the drawing» sotto A, B e C** (2026-11-05; numeri dal Coordinatore,
+  ADR-0337 «Proposto»; richiesta dell'utente «quando fai tu il calcolo del disegno tipo il
+  coniglio poi mi dai le tre opzioni AB e C però lì non c'è la possibilità di modificare
+  l'immagine», poi «Sì, rimettilo»). Il tasto torna sotto il risultato di «Draw» e mette la
+  linea dell'opzione scelta sulla mappa, dov'è. Rovescia TASK-340 per il solo risultato. Solo
+  JS, con un OTA. Branch `docs/TASK-403-edit-under-choices`; poi il codice col via del
+  Coordinatore. `tasks/TASK-403.md`.
 - **TASK-402 — Ruotare il disegno e aggiungere pezzi sulla mappa** (2026-11-05; numeri dal
   Coordinatore, ADR-0336 «Proposto»; richiesta dell'utente «ruotare il disegno di tot gradi e
   dai anche un elenco interno da poter selezionare e muovere sulla mappa», scelta «Aggiungere
   pezzi»). Parte A: in «Move» la figura gira di 15° per tocco, del numero scritto e con due
   dita. Parte B: con «Add» una tessera aggiunge un pezzo; ogni pezzo si seleziona, si sposta,
   si gira e si toglie; un solo percorso, contratto uguale. Assorbe la parte D di TASK-347.
-  Solo JS, con un OTA. Branch `docs/TASK-402-freehand-pieces`, solo proposta. Prossima
-  domanda all'utente: il testo 1 (i comandi del giro). `tasks/TASK-402.md`.
+  Solo JS, con un OTA. Branch `docs/TASK-402-freehand-pieces` (PR #850), solo proposta; i cinque
+  testi approvati dall'utente il 2026-11-05. Prossimo: la lista dei file della parte A al
+  Coordinatore, poi il codice. `tasks/TASK-402.md`.
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
@@ -484,6 +492,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   ADR-0321 accettato. Prossimo: 377-A, motore, contratto e API, dopo la
   lista al Coordinatore.
+  **B3c, seconda metà, in PR** (2026-11-05, dopo la #765): «Impostazioni»
+  legge emoji, nome e «Record only» dal profilo dello sport; `activityOf` e
+  `runActivityOf` leggono l'attività di ogni riga invece di due `switch`.
+  Stesse righe e stesse attività, provate da `settings/sportRows.test.ts`.
+  Con questa la parte B è tutta in `main`. Prossimo: la chiusura del
+  pilota (377-A #838, poi 377-B), che chiude il criterio aperto di B e la
+  parte C.
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il

@@ -108,6 +108,14 @@ Apple Salute / Health Connect come allenamento di forza.
 12. **Testi**: «Sì, approvo tutto» — l'interfaccia (sotto), i 91 esercizi,
     le sette figure e le scale di `docs/sports/gym.md`.
 
+13. **Foto nel post** (parte D, 2026-11-05): «10 foto». Fino a 10 foto e
+    il riquadro sempre fra le pagine (ultimo se non lo si sposta): fino a 11
+    pagine, una più delle corse.
+14. **Il post a fine allenamento** (parte D, 2026-11-05): «Sì, anche alla
+    fine». Il modulo del post (foto, titolo, chi lo vede, «Show exercises»)
+    sta sopra «Save», come a fine corsa; resta modificabile da «My
+    activities».
+
 ## Domande aperte
 
 - **Privacy**: la riga per esercizi, pesi e classifica, con la parte A.
@@ -239,7 +247,22 @@ Questa PR (documenti): `docs/tasks/TASK-385.md` (nuovo),
     Feed è la parte D, le kcal e Salute la parte C.
 - **C**: `apps/mobile/src/gym/gymKcal.ts` (nuovo); punti di registrazione in
   `health/*Workout.ts`.
-- **D–H**: si elencano prima di ciascuna.
+- **D** (lista approvata dal Coordinatore il 2026-11-05; branch
+  `feat/TASK-385-d-gym-post`):
+  - file nuovi in `apps/mobile/src/gym/`: `mainExercises.ts`,
+    `useGymExercises.ts`, `ShowExercises.tsx`, `GymPostForm.tsx`; test
+    `mainExercises.test.ts`, `ShowExercises.test.tsx`,
+    `GymPostForm.test.tsx`, `GymFeedTile.test.tsx`, `GymShare.test.tsx`;
+  - righe in file esistenti: `gym/GymTile.tsx` (+ `GymTile.test.tsx`),
+    `GymDetail.tsx`, `GymEnd.tsx`, `gymOutbox.ts` (+ `gymFiles.test.ts`),
+    `useGymOutbox.ts`, `sports/gym.ts`; `api/gym.ts` (+ `gym.test.ts`);
+    `feed/FeedPost.tsx`; `social/PublicParts.tsx`, `PublicRow.tsx`,
+    `composer/PostComposer.tsx`, `drawingsDoor.ts` (una riga);
+    `share/SharePost.tsx`; `i18n/it.ts`, `de.ts`, `fr.ts`, `es.ts` (solo
+    «Show exercises», approvato);
+  - documenti: questo file, `docs/DECISIONS.md` (precisazione),
+    `docs/STATUS.md` (righe proprie), `docs/sports/gym.md`.
+- **E–H**: si elencano prima di ciascuna.
 
 ## Testi dell'interfaccia (approvati il 2026-11-04)
 

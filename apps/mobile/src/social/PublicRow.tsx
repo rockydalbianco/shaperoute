@@ -2,13 +2,17 @@ import type { DrawingPhoto, LatLon } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 
+import { isTrackless } from "../activities/snow";
 import {
   choiceOf as choiceOfDrawing,
   type DrawingChoice,
   isSeen,
   sameChoice,
 } from "../api/drawings";
+import { tileLast } from "../gym/GymPostForm";
+import { ShowExercises } from "../gym/ShowExercises";
 import { t } from "../i18n";
+import { GYM_MAX_PHOTOS } from "../sports/gym";
 import { space } from "../theme/tokens";
 import type { PostLayout } from "./composer/layoutFrame";
 import type { ComposerPhoto } from "./composer/PostComposer";
@@ -106,14 +110,20 @@ export function PublicRow({
     [activityKey, apiPhotos, changed, loaded, photosOf],
   );
   const items: PostItem[] = useMemo(
-    () =>
-      itemsOf(
-        orderOf(activityKey, apiOrder),
+    () => {
+      const order = orderOf(activityKey, apiOrder);
+      const pages = itemsOf(
+        order,
         photos.map((photo) => photo.n),
-      ),
+      );
+      // A workout never ordered has its tile last (TASK-385 part D).
+      return order === null && choice !== null && isTrackless(choice.activity)
+        ? tileLast(pages)
+        : pages;
+    },
     // `changed` says the files changed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activityKey, apiOrder, changed, orderOf, photos],
+    [activityKey, apiOrder, changed, orderOf, photos, choice?.activity],
   );
 
   useEffect(() => {
@@ -198,6 +208,8 @@ export function PublicRow({
 
   const current = choice;
   const last = kept;
+  // A workout at the gym (TASK-385 part D): ten photos, and its switch.
+  const gym = isTrackless(current.activity);
 
   /** A change of the chips or the tags goes at once; the text when typing
    * is over. */
@@ -264,7 +276,7 @@ export function PublicRow({
             const kept = new Map(taken);
             let refused = false;
             for (const base64 of added) {
-              const n = nextPlace(places);
+              const n = nextPlace(places, gym ? GYM_MAX_PHOTOS : undefined);
               if (n === null) {
                 break;
               }
@@ -318,6 +330,15 @@ export function PublicRow({
           }}
           disabled={busy > 0}
           imported={imported}
+          extra={
+            gym ? (
+              <ShowExercises
+                gymKey={activityKey}
+                disabled={busy > 0}
+                fetchFn={fetchFn}
+              />
+            ) : undefined
+          }
           pick={pick}
           fetchFn={fetchFn}
           apiKey={apiKey}

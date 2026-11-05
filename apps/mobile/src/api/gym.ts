@@ -109,3 +109,42 @@ export function saveGymSession(
     options,
   );
 }
+
+/** GET /me/gym-sessions/{key} (TASK-385 part D): the workout as its owner
+ * sees it, «Show exercises» too; 404 for a key that is not one. */
+export function fetchGymSession(
+  baseUrl: string,
+  token: string,
+  key: string,
+  options: Options = {},
+): Promise<AccountOutcome<GymSession>> {
+  return ask(
+    baseUrl,
+    `/me/gym-sessions/${encodeURIComponent(key)}`,
+    { method: "GET", token },
+    isGymSession,
+    options,
+  );
+}
+
+function isNoBody(body: unknown, status: number): body is null {
+  return status === 204 && body === null;
+}
+
+/** PUT /me/gym-sessions/{key}/show-exercises (TASK-385 part D): whether
+ * the post shows the exercises; 204, the same again changes nothing. */
+export function showGymExercises(
+  baseUrl: string,
+  token: string,
+  key: string,
+  show: boolean,
+  options: Options = {},
+): Promise<AccountOutcome<null>> {
+  return ask(
+    baseUrl,
+    `/me/gym-sessions/${encodeURIComponent(key)}/show-exercises`,
+    { method: "PUT", body: { show }, token },
+    isNoBody,
+    options,
+  );
+}

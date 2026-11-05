@@ -160,6 +160,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-402 — Ruotare il disegno e aggiungere pezzi sulla mappa** (2026-11-05; numeri dal
+  Coordinatore, ADR-0336 «Proposto»; richiesta dell'utente «ruotare il disegno di tot gradi e
+  dai anche un elenco interno da poter selezionare e muovere sulla mappa», scelta «Aggiungere
+  pezzi»). Parte A: in «Move» la figura gira di 15° per tocco, del numero scritto e con due
+  dita. Parte B: con «Add» una tessera aggiunge un pezzo; ogni pezzo si seleziona, si sposta,
+  si gira e si toglie; un solo percorso, contratto uguale. Assorbe la parte D di TASK-347.
+  Solo JS, con un OTA. Branch `docs/TASK-402-freehand-pieces`, solo proposta. Prossima
+  domanda all'utente: il testo 1 (i comandi del giro). `tasks/TASK-402.md`.
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
@@ -183,6 +191,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   parte A in `tasks/TASK-370.md` (A1 nucleo Swift + jest, A2 app dell'orologio, A3 il
   telefono, A-flip l'interruttore nativo solo alla build 1.1): l'impronta iOS di `main` non
   si muove fino ad A-flip. Lista dei file al Coordinatore; niente codice prima del suo sì.
+  **2026-11-05, accordo con TASK-401 B**: `@bacons/apple-targets` 5.0.0 e il plugin entrano
+  nella 1.0.2 con la Live Activity, con `"match": "live-activity"`; A2 mette `targets/watch/`
+  accanto e A-flip allarga `match`. Dettagli in `tasks/TASK-370.md`.
 - **TASK-399 — Nel Feed il nome di chi ha pubblicato apre il suo profilo** (2026-11-05;
   numero dal Coordinatore; richiesta dell'utente). In `FeedPost` la riga del nome era dentro il
   pulsante della card e apriva il disegno; ora sul disegno di un iscritto è un pulsante a sé che
@@ -2965,6 +2976,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   /me/vo2max/reading`, `vo2max` nel profilo) in PR da
   `feat/TASK-397-a-vo2max-api`; server col «CONFERMO» dell'utente dopo il
   merge. Prossimo: la parte B (app e informativa nelle cinque lingue).
+  **2026-11-05, parte B**: app (solo la stima del server): la riga sul profilo
+  degli altri (`Vo2MaxRow`, «their»), il proprio (`OwnVo2Max`: la domanda una
+  volta, poi «Only you see this» + «Show it»), l'interruttore in Impostazioni
+  (`Vo2MaxSetting`), le traduzioni, l'informativa in cinque lingue e
+  `site/privacy` rigenerato. In PR da `feat/TASK-397-b-vo2max-app`; la unisce
+  il Coordinatore. Poi, ognuno col sì dell'utente: server 0049, privacy sul
+  sito, OTA. Prossimo: la parte C con la 1.0.2.
 
 - **TASK-395 — La ricerca non divide più per zero quando un percorso non
   disegna niente** (2026-11-05; numero dal Coordinatore; seguito di TASK-297

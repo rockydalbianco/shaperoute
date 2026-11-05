@@ -166,8 +166,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pezzi»). Parte A: in «Move» la figura gira di 15° per tocco, del numero scritto e con due
   dita. Parte B: con «Add» una tessera aggiunge un pezzo; ogni pezzo si seleziona, si sposta,
   si gira e si toglie; un solo percorso, contratto uguale. Assorbe la parte D di TASK-347.
-  Solo JS, con un OTA. Branch `docs/TASK-402-freehand-pieces`, solo proposta. Prossima
-  domanda all'utente: il testo 1 (i comandi del giro). `tasks/TASK-402.md`.
+  Solo JS, con un OTA. Branch `docs/TASK-402-freehand-pieces` (PR #850), solo proposta; i cinque
+  testi approvati dall'utente il 2026-11-05. Prossimo: la lista dei file della parte A al
+  Coordinatore, poi il codice. `tasks/TASK-402.md`.
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi

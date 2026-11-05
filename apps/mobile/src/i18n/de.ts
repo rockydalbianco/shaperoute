@@ -1467,6 +1467,9 @@ export const DE: Table = {
   "It keeps going with the screen locked, voice included.":
     "Läuft auch bei gesperrtem Bildschirm weiter, mit Sprachansagen.",
 
+  // src/navigation/lockNotice.ts, the notice with the phone locked (TASK-401)
+  "{distance} left": "noch {distance}",
+
   // src/location/startStatus.ts, src/screens/ChooseScreen.tsx,
   // src/explore/ExploreScreen.tsx, ThemedCard.tsx, src/screens/NavigateScreen.tsx,
   // RunPanel.tsx, src/navigation/runStats.ts, src/intro/SavedLogo.tsx

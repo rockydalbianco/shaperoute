@@ -1449,6 +1449,9 @@ export const IT: Table = {
   "It keeps going with the screen locked, voice included.":
     "Continua anche a schermo bloccato, voce compresa.",
 
+  // src/navigation/lockNotice.ts, the notice with the phone locked (TASK-401)
+  "{distance} left": "mancano {distance}",
+
   // src/location/startStatus.ts, src/screens/ChooseScreen.tsx,
   // src/explore/ExploreScreen.tsx, ThemedCard.tsx, src/screens/NavigateScreen.tsx,
   // RunPanel.tsx, src/navigation/runStats.ts, src/intro/SavedLogo.tsx

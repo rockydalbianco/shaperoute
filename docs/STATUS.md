@@ -540,6 +540,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Con questa la parte B è tutta in `main`. Prossimo: la chiusura del
   pilota (377-A #838, poi 377-B), che chiude il criterio aperto di B e la
   parte C.
+  **TASK-376 chiuso** (2026-11-05): B3c in `main` (#843); il pilota Hike
+  in `main` (#838, #861). Le sue deroghe sono passi della ricetta
+  (`COME-AGGIUNGERE.md`, «(pilota)»), ADR-0320 accettato. Prossimo per gli
+  sport: Gravel/MTB parte A (TASK-378), poi il Roller (TASK-380).
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il

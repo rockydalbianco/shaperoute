@@ -141,6 +141,9 @@ tutto: è corto apposta.
     `swimImport.test.ts`, `walkImport.test.ts`) usano ora `yoga`;
   - le tabelle «di prima» di `sportRows.test.ts` e `sport.test.ts`, come in
     A.
+- **2026-11-05, chiusura di TASK-376.** Le deroghe di A e B sono diventate
+  passi della ricetta (`COME-AGGIUNGERE.md`, segnati «(pilota)»). Gravel/MTB
+  e Roller partono dalla ricetta corretta.
 
 ## Il banco e Overpass
 

@@ -253,6 +253,28 @@ plugin `@bacons/apple-targets`), `apps/mobile/package.json` e
 - A-flip solo alla build 1.1, col sì dell'utente.
 - A1 parte in una sessione nuova.
 
+**Il plugin condiviso con TASK-401 B** (accordo del 2026-11-05, chiesto
+dal Coordinatore; ADR-0335): la Live Activity di TASK-401 B esce nella 1.0.2,
+prima della 1.1, con la stessa dipendenza `@bacons/apple-targets`.
+- **TASK-401 B** aggiunge nella 1.0.2 la dipendenza (**5.0.0**, la versione
+  di questo piano), il plugin in `app.json` (una sola config) e
+  `apps/mobile/targets/live-activity/`. Il sì dell'utente alla dipendenza
+  nella 1.0.2 lo chiede TASK-401.
+- **Il plugin prende solo le cartelle che gli si dicono**: senza opzioni
+  costruisce ogni `targets/*/expo-target.config.js` (`match = "*"`, letto in
+  `build/config-plugin.js` della 5.0.0). Nella 1.0.2 va quindi con
+  `"match": "live-activity"`; altrimenti il target dell'orologio entrerebbe
+  nella 1.0.2 appena A2 mette `targets/watch/expo-target.config.js` in
+  `main`. `targets/watch/Core/` (A1) non ha quel file e non conta.
+- **A2** mette `targets/watch/` accanto, senza toccare `live-activity/`;
+  `MUW_WATCH=1` in `app.config.ts` allarga `match` a
+  `"{live-activity,watch}"` invece di aggiungere il plugin.
+- **A-flip** non aggiunge più dipendenza né plugin: allarga `match` in
+  `app.json` e aggiunge `react-native-watch-connectivity`.
+- **L'impronta di riferimento**: `6f8bba4c` finché TASK-401 B non è in
+  `main`; dopo, quella della 1.0.2. Ogni PR di A la misura senza
+  `MUW_WATCH`.
+
 ## File toccati
 
 Parte 0 (questa proposta):

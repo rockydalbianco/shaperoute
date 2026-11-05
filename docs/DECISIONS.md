@@ -23436,3 +23436,52 @@ titolo della notifica è la frase che la voce dice in quel momento, con la
 freccia davanti; fuori rotta «Off the route»; sotto «{percent}% drawn ·
 {distance} left». Le frasi della voce sono già approvate e tradotte in
 cinque lingue; l'unico testo nuovo è «{distance} left», nelle unità scelte.
+## ADR-0336 — Ruotare il disegno sulla mappa e aggiungere pezzi da tessere, tutto sul telefono
+
+**Stato**: Proposto · 2026-11-05 · TASK-402. Scelta di prodotto
+dell'utente («Aggiungere pezzi», punto 2); il resto deciso dall'agente su
+delega dell'utente; confine con TASK-347 deciso dal Coordinatore.
+
+**Contesto**: in «Draw on the map» (TASK-281, TASK-331) la figura si
+sposta e si ridimensiona ma non si ruota, e una tessera sostituisce il
+disegno invece di aggiungersi. L'utente vuole «ruotare il disegno di tot
+gradi» e un elenco interno di figure «da poter selezionare e muovere sulla
+mappa». La parte D di TASK-347 (ADR-0300) prevedeva già «seleziona / sposta
+/ ruota (due dita) / ridimensiona», mai partita.
+
+**Decisione**:
+
+1. **Il giro è dell'app**: la figura gira in unità attorno al mezzo del suo
+   riquadro (`mapdraw/turn.ts`), di 15° per tocco, del numero di gradi
+   scritto o con due dita insieme al ridimensionamento (sullo schermo in
+   pixel, non in lng/lat; sotto i 3° non gira). Niente campo nuovo nel
+   contratto, niente motore toccato.
+2. **I pezzi** (scelta dell'utente, «Aggiungere pezzi»): con «Add» una
+   tessera aggiunge una forma o un'immagine sopra il disegno; ogni pezzo si
+   seleziona con un tocco in «Move» e si sposta, si ridimensiona, si gira e
+   si toglie da solo. Il primo pezzo dà il contorno, gli altri sono dettagli
+   appesi col collegamento tratteggiato di TASK-331 parte B: la richiesta è
+   l'`ImageOutline` di oggi. Al massimo 6 pezzi, e mai oltre
+   `MAX_OUTLINE_POINTS`/`MAX_DETAIL_POINTS`.
+3. **Una forma del catalogo girata, o unita ad altri pezzi, si manda come
+   contorno** (le sue linee `down`), perché una forma mandata per nome non
+   ha angolo; da sola e a 0° resta la forma per nome, come oggi.
+4. **L'angolo è il punto di partenza del motore**: per le strade il motore
+   può ancora girarla fino a ±45° (TASK-232, `MAX_TILT_DEG`). L'angolo
+   esatto arriva con il disegno `anchored` di TASK-347.
+5. **Confine** (Coordinatore): la parte D di TASK-347 passa a TASK-402;
+   magnete, penna a punti, nodi, righello, blocco della mappa e cronologia
+   restano a TASK-347 con le parti B, C ed E.
+
+**Alternative**:
+
+- **«Elenco delle parti»**: un elenco delle linee già disegnate, da cui
+  sceglierne una e muoverla. Scartata dall'utente.
+- **Solo la rotazione**, con la fila di tessere di oggi. Scartata
+  dall'utente.
+- **Un campo `rotation_deg` nella richiesta**, rispettato dal motore: vuole
+  contratto, motore e la prova degli stessi percorsi; lo fa meglio il
+  disegno `anchored` di TASK-347.
+- **Girare in lng/lat sulla pagina della mappa**, come oggi il
+  ridimensionamento: lontano dall'equatore storce la figura (un grado di
+  longitudine è più corto di uno di latitudine).

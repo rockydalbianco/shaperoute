@@ -18,6 +18,7 @@ import { SportSetting } from "../settings/SportSetting";
 import { StyleSetting } from "../settings/StyleSetting";
 import { ToneSetting } from "../settings/ToneSetting";
 import { UnitsSetting } from "../settings/UnitsSetting";
+import { Vo2MaxSetting } from "../settings/Vo2MaxSetting";
 import { useFeedbackService } from "../settings/useFeedbackService";
 import { StravaSetting } from "../strava/StravaSetting";
 import {
@@ -90,6 +91,8 @@ export function SettingsPage({
         <OfflineMapsSetting />
         <UnitsSetting />
         <BodySetting />
+        {/* The yes of the VO₂ max on the profile, kept by the API (TASK-397). */}
+        <Vo2MaxSetting account={account} />
         <ToneSetting />
         {/* MuW Style is advertising: it can be turned off (TASK-384). */}
         <StyleSetting />

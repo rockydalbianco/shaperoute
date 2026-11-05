@@ -15,6 +15,7 @@ import { ProfileGallery } from "./ProfileGallery";
 import { ProfileHeader } from "./ProfileHeader";
 import { PersonalBests } from "./PersonalBests";
 import { ProfileStats, totalsOf } from "./ProfileStats";
+import { Vo2MaxRow } from "./Vo2MaxRow";
 
 type Failed = Exclude<AccountOutcome<unknown>, { kind: "ok" }>;
 
@@ -214,6 +215,8 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
       {totals !== null && <ProfileStats totals={totals} />}
       {/* The personal bests (TASK-368): none from an older API. */}
       {profile.personal_bests && <PersonalBests bests={profile.personal_bests} />}
+      {/* The VO₂ max (TASK-397): only after its owner's yes. */}
+      {profile.vo2max && <Vo2MaxRow vo2max={profile.vo2max} own={own} />}
       <ProfileGallery
         publicId={profile.public_id}
         own={false}

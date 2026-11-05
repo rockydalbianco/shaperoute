@@ -382,6 +382,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   ADR-0321 accettato. Prossimo: 377-A, motore, contratto e API, dopo la
   lista al Coordinatore.
+  **Parte A in PR** (2026-11-05, `feat/TASK-377-a-hike-engine-api`):
+  - il motore disegna `hiking` sulla rete nuova `hike`, con file di cache
+    suoi; `__main__.py` e `anchored.py` scelgono la rete con
+    `OsmnxSource.for_activity`;
+  - il contratto e l'API offrono `hiking`: Strava «Hike», GPX `hiking`,
+    zone sue, nel gioco come la camminata; migrazione `0051_hiking.sql`;
+  - l'app ha già il profilo Hike, nascosto: nessuna riga in «Settings»,
+    nessun chip nella ricerca;
+  - al banco corsa, bici e canoa sono identiche punto per punto.
+
+  Server, migrazione 0051 e notte degli esempi solo col sì dell'utente.
+  Prossimo: la parte B (app), dopo la #765.
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il

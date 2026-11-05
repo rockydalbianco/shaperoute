@@ -165,8 +165,9 @@ apps/mobile/src/mapdraw/turn.test.ts            (nuovo)
 apps/mobile/src/mapdraw/useMapCanvas.ts
 apps/mobile/src/mapdraw/DrawOnMap.tsx
 apps/mobile/src/mapdraw/DrawOnMapApp.test.tsx
+apps/mobile/src/mapdraw/canvasRequest.ts        (una forma girata mandata come contorno)
 apps/mobile/src/map/mapPage.ts
-apps/mobile/src/i18n/*.ts                       (i testi approvati)
+apps/mobile/src/i18n/*.ts                       (i testi 1 e 2)
 docs/UI.md, docs/INDEX.md, docs/STATUS.md, docs/tasks/TASK-402.md
 ```
 

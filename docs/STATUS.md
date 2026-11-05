@@ -3030,6 +3030,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   delle 45 forme a 0,90, il cerchio mai sopra 0,49. Nessuna rete `nordic`,
   nessun codice. L'utente ha scelto «Record only»: `xc_skiing` entra con
   TASK-375 insieme a `skiing`. `tasks/TASK-372.md`.
+- **TASK-396 — «Freehand» in «Draw» anche con «Paddle»** (precisazione di
+  ADR-0313, 2026-11-05; numero dal Coordinatore): con la canoa «Freehand ·
+  Shape» e la nota «On the water, the drawing goes where it fits near the
+  start.»; il disegno a mano va al motore sull'acqua di TASK-369 B, già sul
+  server. Un disegno che non sta sull'acqua lo dice con parole sue. Solo
+  JavaScript, impronta iOS 6f8bba4c. Restano gli OTA, col sì dell'utente.
+  `tasks/TASK-396.md`.
 - **TASK-369 — «Edit the drawing» su ogni disegno** (ADR-0313; 2026-11-04;
   numeri dal Coordinatore): documenti #712, parte A #719 (`3e7c7d28`), parte
   B #722 (`bacd7c7b`). Il tasto c'è su ogni disegno con una linea, anche

@@ -21725,6 +21725,28 @@ contratto, testi); la Pagaia nella parte A (l'API la rifiuta); cambiare
 dipendenze né nativo: arriva con un OTA, impronta iOS 6f8bba4c. La parte B
 cambia il comportamento dell'API (accetta quello che rifiutava), non la forma
 del contratto, e vuole l'aggiornamento del server col sì dell'utente.
+## ADR-0313, precisazione — «Freehand» anche sull'acqua con «Paddle» (TASK-396)
+
+**Data**: 2026-11-05 · **Stato**: Accettata
+
+Cambia la scelta 4 di ADR-0313 («niente "Freehand" sull'acqua in "Draw"») e
+i criteri di TASK-320 e TASK-340, per scelta dell'utente del 2026-11-05: «Dai
+le possibilità di disegnare a mano libera anche nella sezione draw con la
+canoa sui laghi e Mari», confermata con «Sì, confermo: Freehand con la canoa
+accanto alle forme, niente Word e niente Image».
+
+- Con «Paddle», in «Draw», «Freehand · Shape»; il disegno va al motore
+  sull'acqua di TASK-369 B, dove c'è posto vicino alla partenza. Niente
+  «Word» (l'API la rifiuta sull'acqua) e niente «Image» (scelta dell'utente).
+- Sopra il selettore la nota «On the water, the drawing goes where it fits
+  near the start.», approvata dall'utente.
+- Un disegno che non sta sull'acqua (canoa e nuoto) dice «This drawing…» e
+  non offre le forme del catalogo; testi approvati dall'utente.
+- Deciso dall'agente su delega dell'utente: la scelta sta nel profilo dello
+  sport (`noWords`, `noImages`, `drawNote` in `sports/`), non in un confronto
+  sull'attività in `RoutePanel.tsx`; `shapesOnly` è tolto perché nessuno sport
+  lo usa più. Solo JavaScript: impronta iOS `6f8bba4c`.
+
 ## ADR-0297, aggiunta — La schermata della ricerca (TASK-344 parte B)
 
 **Stato**: Attiva · 2026-11-04 · TASK-344 parte B. Deciso dall'agente su

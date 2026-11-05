@@ -23297,3 +23297,50 @@ senza toccare il motore (`docs/sports/gravel.md`):
 - **Preferire lo sterrato col costo degli archi**: vedi il punto 6.
 - **Un solo sport «Gravel/MTB» sulla rete `mtb`**: possibile, è la prima
   domanda all'utente.
+
+---
+
+## ADR-0327, precisazione — La parte D: il post di palestra nel Feed
+
+**Stato**: Attiva · 2026-11-05 · TASK-385 parte D, decisa dall'agente su
+delega dell'utente dentro le sue scelte («Prima foto, se no riquadro»,
+«Visibili, nascondibili», e del 2026-11-05 «10 foto», «Sì, anche alla
+fine»); lista dei file approvata dal Coordinatore. Usa solo la parte A di
+TASK-348 (ADR-0301), già in `main`.
+
+**Decisione**:
+
+1. **Il riquadro è il «disegno» dell'ordine**: l'ordine del post vuole
+   `drawing` una volta, e per la palestra quella pagina è il riquadro.
+   Con 10 foto (`GYM_MAX_PHOTOS` = `DRAWING_PHOTO_PLACES`) il post ha fino
+   a 11 pagine; l'API ne tiene già 11 nell'ordine e 10 posti per le foto.
+   `photosOf` legge tutti i posti dell'API; per le corse il decimo resta
+   vuoto.
+2. **Mai riordinato, il riquadro è l'ultimo** (come la B0 nel Feed): il
+   compositore mette le foto nuove prima del riquadro, e l'ordine si manda
+   solo se il riquadro non è l'ultimo. Il contrario delle corse, dove la
+   mappa è prima.
+3. **Gli esercizi principali** sono i tre con più serie, a pari serie il
+   primo fatto (`gym/mainExercises.ts`). Nel Feed il riquadro li chiede con
+   `GET /drawings/{id}/exercises`, una volta per post mentre l'app è
+   aperta, la stessa risposta per la scheda; solo i post di palestra
+   chiedono. Nascosti (404), il riquadro ha il solo tempo.
+4. **Il modulo a fine allenamento passa dalla coda della palestra**: la
+   scelta e «Show exercises» spento stanno nell'attesa di
+   `gym-outbox.json`, foto e ordine nei file dei disegni da «Save». Quando
+   l'API ha l'allenamento: prima `PUT …/show-exercises` (senza rete
+   l'allenamento si rimanda, uguale), poi la scelta nella coda dei disegni
+   e `sendWaitingDrawings`, come per una corsa. Così gli esercizi non si
+   vedono mai prima di essere nascosti.
+5. **«Show exercises» in «My activities»** legge `GET
+   /me/gym-sessions/{key}` e scrive subito; non preso, torna com'era con le
+   parole del modulo del disegno.
+6. **Condividere**: l'immagine è il riquadro (`GymSharePicture`), con gli
+   esercizi principali letti dall'allenamento; niente risultati, emoji,
+   «Style», «Music», «Export video», Strava; il titolo del foglio è
+   «Share»; nessun `RunPost` salvato.
+
+**Conseguenze**: un testo nuovo nelle tabelle, «Show exercises», già
+approvato il 2026-11-04. Nessuna dipendenza, niente nativo, niente server:
+impronta iOS 6f8bba4c invariata. «Up to 10 in a post.» resta anche per la
+palestra: dice le foto, non le pagine.

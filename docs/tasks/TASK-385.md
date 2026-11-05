@@ -327,3 +327,9 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
   coda sul telefono). L'utente il 2026-11-05: «ok si» all'OTA di produzione
   con la B0 e «ok accendi» per «Gym» nelle build dello store, subito:
   `ready: true` nella stessa PR. Prossima: C (kcal e Salute) e D (il post).
+- 2026-11-05: parte B in `main` (#833, 02effa84).
+- 2026-11-05: parte D scritta (ADR-0327, precisazione D): il riquadro fra
+  le pagine con fino a 10 foto, gli esercizi principali, «Show exercises»,
+  il modulo del post a fine allenamento, la condivisione col riquadro.
+  Scelte dell'utente: «10 foto», «Sì, anche alla fine». Impronta iOS
+  6f8bba4c invariata su copia pulita. OTA col sì. Prossima: C, poi E.

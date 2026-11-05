@@ -183,6 +183,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   parte A in `tasks/TASK-370.md` (A1 nucleo Swift + jest, A2 app dell'orologio, A3 il
   telefono, A-flip l'interruttore nativo solo alla build 1.1): l'impronta iOS di `main` non
   si muove fino ad A-flip. Lista dei file al Coordinatore; niente codice prima del suo sì.
+  **2026-11-05, accordo con TASK-401 B**: `@bacons/apple-targets` 5.0.0 e il plugin entrano
+  nella 1.0.2 con la Live Activity, con `"match": "live-activity"`; A2 mette `targets/watch/`
+  accanto e A-flip allarga `match`. Dettagli in `tasks/TASK-370.md`.
 - **TASK-399 — Nel Feed il nome di chi ha pubblicato apre il suo profilo** (2026-11-05;
   numero dal Coordinatore; richiesta dell'utente). In `FeedPost` la riga del nome era dentro il
   pulsante della card e apriva il disegno; ora sul disegno di un iscritto è un pulsante a sé che

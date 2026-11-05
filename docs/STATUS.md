@@ -2967,6 +2967,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   /me/vo2max/reading`, `vo2max` nel profilo) in PR da
   `feat/TASK-397-a-vo2max-api`; server col «CONFERMO» dell'utente dopo il
   merge. Prossimo: la parte B (app e informativa nelle cinque lingue).
+  **2026-11-05, parte B**: app (solo la stima del server): la riga sul profilo
+  degli altri (`Vo2MaxRow`, «their»), il proprio (`OwnVo2Max`: la domanda una
+  volta, poi «Only you see this» + «Show it»), l'interruttore in Impostazioni
+  (`Vo2MaxSetting`), le traduzioni, l'informativa in cinque lingue e
+  `site/privacy` rigenerato. In PR da `feat/TASK-397-b-vo2max-app`; la unisce
+  il Coordinatore. Poi, ognuno col sì dell'utente: server 0049, privacy sul
+  sito, OTA. Prossimo: la parte C con la 1.0.2.
 
 - **TASK-395 — La ricerca non divide più per zero quando un percorso non
   disegna niente** (2026-11-05; numero dal Coordinatore; seguito di TASK-297

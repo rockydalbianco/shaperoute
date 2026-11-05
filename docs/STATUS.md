@@ -188,6 +188,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **2026-11-05**: testi scelti dall'utente, «Frase della voce + %» (la frase della voce come
   titolo, sotto «42% drawn · 3.1 km left»; unico testo nuovo «{distance} left»). Parte A
   aspetta il via del Coordinatore sulla lista dei file. PR #847.
+  **2026-11-05, parte A in `main`** (#851, b7c1c8cb): la notifica a schermo bloccato solo su
+  iOS, impronta iOS `6f8bba4c` invariata; vista nel simulatore (Expo Go, corsa simulata,
+  telefono bloccato: compare alla svolta, sparisce riaprendo l'app; iOS taglia il titolo a
+  una riga). Va nella prossima anteprima; prima della produzione il Coordinatore chiede
+  all'utente la prova su una corsa vera. Parte B: scelta dell'utente «Solo la guida» per la
+  Live Activity (freccia, metri, svolta, via, barra con % e distanza che manca); restano
+  il via del Coordinatore sulla lista (sì dell'utente alla dipendenza nella 1.0.2 dato). Senza percorso niente Live Activity
+  («No, solo con percorso»); all'arrivo riepilogo per 5 minuti, con «Stop» sparisce subito
+  («Riepilogo per qualche minuto»).
 - **TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono**
   (2026-11-05; numeri riservati dal Coordinatore il 2026-11-04, ADR-0314 «Proposto»;
   richiesta dell'utente «l'app per apple watch completa per tutti gli sport», scelta

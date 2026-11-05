@@ -276,3 +276,22 @@ test("showProgress sends the part run and the part left in MapLibre order (TASK-
   expect(showProgress(split, false)).toMatchObject({ blink: false });
   expect(clearProgress()).toEqual({ type: "clearProgress" });
 });
+
+test("parsePageMessage reads how far two fingers turned the figure (TASK-402)", () => {
+  expect(
+    parsePageMessage(
+      '{"type":"figure","centre":[11,46],"factor":1,"done":true,"turn":-30}',
+    ),
+  ).toEqual({ type: "figure", centre: [11, 46], factor: 1, done: true, turn: -30 });
+  // None, or 0, is no turn.
+  expect(
+    parsePageMessage(
+      '{"type":"figure","centre":[11,46],"factor":1,"done":true,"turn":0}',
+    ),
+  ).toEqual({ type: "figure", centre: [11, 46], factor: 1, done: true });
+  expect(
+    parsePageMessage(
+      '{"type":"figure","centre":[11,46],"factor":1,"done":true,"turn":"x"}',
+    ),
+  ).toBeNull();
+});

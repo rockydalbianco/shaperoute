@@ -2,8 +2,8 @@
 
 **Stato**: In lavorazione — proposta approvata dall'utente (2026-11-05, «Sì,
 approvo»), con le cinque scelte, e testi approvati lo stesso giorno. Parte A
-(API, ADR-0333, migrazione `0050`) in PR; prossimo: la parte B (app), dopo
-TASK-384 B. Le scelte
+(API, ADR-0333, migrazione `0050`) in `main` (#844, 2026-11-05); prossimo: la
+parte B (app), dopo TASK-384 B. Le scelte
 di prodotto sono dell'utente (sotto, «Le scelte dell'utente»); il resto è
 deciso dall'agente su delega dell'utente
 **Fase**: 4 · **Branch**: `docs/TASK-394-member-outfit-tags` (proposta,
@@ -625,6 +625,11 @@ docs/STATUS.md
   nel `.env` del server. Senza la chiave si aprono solo i negozi di Style.
 - Prossimo: la parte B (app), dopo TASK-384 B, con la lista dei file al
   Coordinatore.
+- **In `main`** (#844, c7d63400, 2026-11-05), unita dal Coordinatore. Prima
+  del merge, due volte main unito senza rebase e `engine.zip` rifatto per
+  ultimo dai sorgenti uniti (dopo la #838, Hike, che lo rifà anche lei).
+  Server: la `0050` con la `0049` e la `0051`, col sì dell'utente; la chiave di
+  Web Risk quando l'utente avrà il progetto Google Cloud.
 
 ## Fuori scope
 

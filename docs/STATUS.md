@@ -3010,6 +3010,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `SHAPEROUTE_WEB_RISK_KEY` si aprono solo i negozi di Style. La unisce il
   Coordinatore; migrazione sul server e chiave di Web Risk col sì
   dell'utente. Prossimo: la parte B (app), dopo TASK-384 B.
+  **Parte A in `main`** (#844, c7d63400, 2026-11-05; con `engine.zip` rifatto,
+  perché il motore del telefono porta dentro `schemas.py`). La `0050` va sul
+  server con la `0049` e la `0051`, col sì dell'utente; la chiave di Web Risk
+  dopo, quando l'utente avrà il progetto Google Cloud. Prossimo: la parte B
+  (app), con la lista dei file al Coordinatore.
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,

@@ -16,7 +16,7 @@ import {
   travelledPoints,
 } from "./drawing";
 import { awayFrom, type Drawing, ON_LINE } from "./edit";
-import type { Placed, Unit } from "./figure";
+import { type Placed, type Unit, unitsOn } from "./figure";
 import {
   boxOf,
   dist,
@@ -49,10 +49,10 @@ export const CORNER_SHARE = 0.5;
  * would cross itself. */
 export type ToolProblem = DrawingProblem | "crosses";
 
-/** `point` of the map in the units of `placed`. */
+/** `point` of the map in the units of `placed`, turned back with it
+ * (TASK-402). */
 export function unitsOf(placed: Placed, point: LatLon): Unit {
-  const [x, y] = toPlane(placed.centre, point);
-  return [x / placed.unitM, y / placed.unitM];
+  return unitsOn(placed, point);
 }
 
 /** Whether `line` ends on one of its own points: a loop, run once. */

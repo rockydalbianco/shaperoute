@@ -176,6 +176,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Solo JS, con un OTA. Branch `docs/TASK-402-freehand-pieces` (PR #850), solo proposta; i cinque
   testi approvati dall'utente il 2026-11-05. Prossimo: la lista dei file della parte A al
   Coordinatore, poi il codice. `tasks/TASK-402.md`.
+  **Parte A pronta il 2026-11-05** (branch `feat/TASK-402-a-turn`): «−15°», l'angolo da scrivere
+  e «+15°» con «Move», due dita che girano, «Undo»; una forma girata va come contorno; impronta
+  iOS 6f8bba4c invariata. Prossimo: la parte B (i pezzi), con la sua lista al Coordinatore.
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
@@ -3009,6 +3012,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   APPROVO», `tasks/TASK-394.md` D.2b). Sì anticipato sul nome della società
   di Google per Web Risk (2026-11-05, «OK SI»): si copia dal contratto quando
   l'utente lo attiva. Nessun testo di TASK-394 aspetta più un sì.
+  **Parte A (API) in PR** (2026-11-05, branch
+  `feat/TASK-394-a-outfit-tags-api`, ADR-0333, migrazione `0050`): `PUT
+  …/drawing/photos/{n}/tags`, `POST /outfit-tags/{id}/open` e `/shop`,
+  `outfit_tags` in ogni foto (link e totali solo al proprietario),
+  `outfit_tag` nelle segnalazioni e nell'email, il link pulito e controllato
+  con Web Risk «Update API» (a Google solo prefissi di impronte). Senza
+  `SHAPEROUTE_WEB_RISK_KEY` si aprono solo i negozi di Style. La unisce il
+  Coordinatore; migrazione sul server e chiave di Web Risk col sì
+  dell'utente. Prossimo: la parte B (app), dopo TASK-384 B.
+  **Parte A in `main`** (#844, c7d63400, 2026-11-05; con `engine.zip` rifatto,
+  perché il motore del telefono porta dentro `schemas.py`). La `0050` va sul
+  server con la `0049` e la `0051`, col sì dell'utente; la chiave di Web Risk
+  dopo, quando l'utente avrà il progetto Google Cloud. Prossimo: la parte B
+  (app), con la lista dei file al Coordinatore.
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,

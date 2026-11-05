@@ -1420,8 +1420,13 @@ export const ES: Table = {
     "Dibuja con un dedo. Termina donde empezaste para cerrarla. Con dos dedos mueves el mapa.",
   "Each new line joins the drawing. Two fingers move the map.":
     "Cada línea nueva se une al dibujo. Con dos dedos mueves el mapa.",
-  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize.":
-    "Arrastra la figura o el mapa. Mantén el dedo quieto en una línea y arrastra para doblarla. Con dos dedos cambias el tamaño.",
+  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize and turn it.":
+    "Arrastra la figura o el mapa. Mantén el dedo quieto en una línea y arrastra para doblarla. Con dos dedos cambias el tamaño y la giras.",
+  // src/mapdraw/DrawOnMap.tsx (TASK-402)
+  "Turn left 15 degrees": "Girar 15 grados a la izquierda",
+  "Turn right 15 degrees": "Girar 15 grados a la derecha",
+  "Angle, {deg} degrees. Double tap to type it":
+    "Ángulo, {deg} grados. Toca dos veces para escribirlo",
   Line: "Línea",
   "Tap point after point. Tap the first point to close it, the last one to finish.":
     "Toca punto tras punto. Toca el primer punto para cerrarla, el último para terminar.",

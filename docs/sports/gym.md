@@ -171,6 +171,26 @@ il 2026-11-04 («Sì, approvo tutto»).
 tipo scelto da chi lo scrive. Le aggiunte al catalogo dopo il task sono righe
 nuove qui e nel file del catalogo dell'app.
 
+## Il post nel Feed (parte D)
+
+- **Fino a 10 foto** e il riquadro giallo fra le pagine (scelta
+  dell'utente del 2026-11-05, «10 foto»): fino a 11 pagine, una più di
+  una corsa. Mai riordinato, il post mostra prima le foto e il riquadro
+  per ultimo; spostato il riquadro, l'ordine va al server come per le
+  corse.
+- **Il riquadro** ha 🏋️, «Gym», il tempo e gli esercizi principali: i tre
+  con più serie, a pari serie quello fatto prima. Le kcal e il battito
+  vengono con le parti C e G. È anche l'immagine condivisa.
+- **«Show exercises»**, acceso finché lo si spegne: alla fine
+  dell'allenamento, nel modulo del post, e sulla scheda in «My
+  activities». Spento, il post non mostra l'elenco né gli esercizi nel
+  riquadro.
+- **Il modulo del post a fine allenamento** (scelta dell'utente del
+  2026-11-05, «Sì, anche alla fine»): foto, titolo, «How did it go?», le
+  persone taggate, chi lo vede e «Show exercises», sopra «Save». Partono
+  dopo l'allenamento, anche senza rete.
+- **Condividere**: il riquadro, senza risultati, emoji, video né Strava.
+
 ## Le calorie dei blocchi cardio (parte C)
 
 - Tapis roulant: ACSM della corsa/camminata con velocità e pendenza

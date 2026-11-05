@@ -12,9 +12,11 @@ import {
   View,
 } from "react-native";
 
+import { GymTile } from "../../gym/GymTile";
 import { t } from "../../i18n";
 import { OpenSettings } from "../../permissions/OpenSettings";
 import type { ImageSource } from "../../route/pickImage";
+import { GYM_MAX_PHOTOS } from "../../sports/gym";
 import {
   color,
   fontSize,
@@ -73,6 +75,9 @@ type Props = {
   onLayout?: (n: number, layout: PostLayout | null, made: Flattened | null) => void;
   disabled?: boolean;
   pick?: PickMany;
+  /** A workout at the gym (TASK-385 part D): its tile in place of the map,
+   * and GYM_MAX_PHOTOS photos beside it. */
+  gym?: boolean;
   /** The fake of the tests. */
   flatten?: typeof flattenPhoto;
 };
@@ -96,6 +101,7 @@ export function PostComposer({
   onLayout,
   disabled,
   pick = pickPhotos,
+  gym = false,
   flatten = flattenPhoto,
 }: Props) {
   const [choosing, setChoosing] = useState(false);
@@ -138,7 +144,7 @@ export function PostComposer({
     }
   }
 
-  const room = POST_MAX_ITEMS - items.length;
+  const room = (gym ? GYM_MAX_PHOTOS + 1 : POST_MAX_ITEMS) - items.length;
   const busy = disabled === true || picking || making !== null;
 
   async function choose(source: ImageSource) {
@@ -215,7 +221,11 @@ export function PostComposer({
             items.slice(0, i + 1).filter((other) => other.kind === "photo").length,
           );
           const label =
-            item.kind === "drawing" ? t("Drawing") : t("Photo {n}", { n: number });
+            item.kind === "photo"
+              ? t("Photo {n}", { n: number })
+              : gym
+                ? t("Gym")
+                : t("Drawing");
           return (
             <Animated.View
               key={item.kind === "drawing" ? "drawing" : `photo-${item.n}`}
@@ -254,7 +264,11 @@ export function PostComposer({
                   item.kind === "drawing" ? "tile-drawing" : `tile-photo-${item.n}`
                 }
               >
-                {photo === undefined ? (
+                {photo === undefined && gym ? (
+                  <View style={[styles.thumb, styles.gymTile]} testID="tile-gym">
+                    <GymTile width={TILE} height={TILE} />
+                  </View>
+                ) : photo === undefined ? (
                   <View style={[styles.thumb, styles.drawingTile]}>
                     <Text style={styles.drawingText}>{t("Drawing")}</Text>
                   </View>
@@ -421,6 +435,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: color.accent,
+  },
+  // The tile's corners, rounded as a photo's.
+  gymTile: {
+    overflow: "hidden",
   },
   drawingText: {
     color: color.onAccent,

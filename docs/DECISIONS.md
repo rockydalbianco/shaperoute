@@ -23107,6 +23107,51 @@ motore (`docs/sports/hike.md`):
   valuta dopo la parte A, misurando quanto di ogni percorso sta su `track`
   e `path`.
 
+## ADR-0321, precisazione — La parte A: l'impronta del motore resta, il profilo dell'app entra nascosto
+
+**Stato**: Accettato · 2026-11-05 · TASK-377 parte A. Scelte del
+Coordinatore; le scelte tecniche sono decise dall'agente su delega
+dell'utente.
+
+**Contesto**: la parte A aggiunge al motore l'attività `hiking` e la rete
+`hike`. Questo cambia l'impronta del motore, e ADR-0320 dice che
+`SAME_ROUTES_AS` non vale «mai per un cambiamento di comportamento». Poi,
+un'attività nel contratto entra subito anche nelle liste dell'app.
+
+**Decisione**:
+
+1. **L'impronta resta quella di prima** (`SAME_ROUTES_AS`): 9be259696402 →
+   e13ded92b52d, e lo stesso per i nuoti e gli esempi di canoa
+   dell'app. La regola di ADR-0320 protegge i percorsi tenuti. Qui il
+   comportamento nuovo è solo un'attività che non ha percorsi tenuti. I
+   percorsi di prima sono provati uguali:
+   - i nove percorsi fissi di `test_same_routes.py` (darwin-arm64);
+   - il banco su sei zone: corsa 54/54, bici 54/54, canoa 27/27, identici
+     punto per punto.
+
+   Così non serve una notte di esempi. Gli esempi di Explore per la hike,
+   se servono, sono un giro a parte, solo hike, col sì dell'utente.
+2. **Il profilo Hike dell'app entra con la parte A, nascosto.** Senza il
+   profilo l'app non partirebbe (`search/searchFilters.ts` chiama
+   `profileOf` per ogni attività). `main` resta pubblicabile a ogni merge:
+   - nessuna riga in «Settings»;
+   - nessun chip nella ricerca;
+   - il nome senza `tLater` fino alla parte B, che porta i testi.
+
+   L'header `X-MuW-Reads` dice `hiking`, e una hike salvata altrove si
+   vede come una camminata (`hikeFeed.test.tsx`).
+3. **Le zone della hike nell'API**: `explore`, con i nomi delle strade,
+   una sola in memoria. La rete è sua, quindi le zone della corsa non
+   servono, e la RAM del server cresce di una zona sola.
+4. **Il gioco**: una hike conta come una camminata. `RULES_VERSION` resta
+   2, perché nessuna corsa salvata prima della 0051 può essere una hike.
+5. **Niente vie ferrate.** La rete «foot» tiene `highway=via_ferrata`. Il
+   primo banco ne ha trovati 2,6 km a Trento e 3,0 km a Fiemme, anche
+   senza `sac_scale`. Una via ferrata è un'arrampicata con l'imbrago,
+   oltre i sentieri fino a T3 scelti dall'utente: la rete `hike` la
+   toglie.
+
+**Server**: migrazione 0051 e deploy, col sì dell'utente.
 ## ADR-0327, precisazione — La parte B: come il telefono registra un allenamento senza GPS
 
 **Stato**: Attiva · 2026-11-05 · TASK-385 parte B, deciso dall'agente su
@@ -23375,6 +23420,52 @@ senza toccare il motore (`docs/sports/gravel.md`):
 - **Un solo sport «Gravel/MTB» sulla rete `mtb`**: possibile, è la prima
   domanda all'utente.
 
+---
+
+## ADR-0327, precisazione — La parte D: il post di palestra nel Feed
+
+**Stato**: Attiva · 2026-11-05 · TASK-385 parte D, decisa dall'agente su
+delega dell'utente dentro le sue scelte («Prima foto, se no riquadro»,
+«Visibili, nascondibili», e del 2026-11-05 «10 foto», «Sì, anche alla
+fine»); lista dei file approvata dal Coordinatore. Usa solo la parte A di
+TASK-348 (ADR-0301), già in `main`.
+
+**Decisione**:
+
+1. **Il riquadro è il «disegno» dell'ordine**: l'ordine del post vuole
+   `drawing` una volta, e per la palestra quella pagina è il riquadro.
+   Con 10 foto (`GYM_MAX_PHOTOS` = `DRAWING_PHOTO_PLACES`) il post ha fino
+   a 11 pagine; l'API ne tiene già 11 nell'ordine e 10 posti per le foto.
+   `photosOf` legge tutti i posti dell'API; per le corse il decimo resta
+   vuoto.
+2. **Mai riordinato, il riquadro è l'ultimo** (come la B0 nel Feed): il
+   compositore mette le foto nuove prima del riquadro, e l'ordine si manda
+   solo se il riquadro non è l'ultimo. Il contrario delle corse, dove la
+   mappa è prima.
+3. **Gli esercizi principali** sono i tre con più serie, a pari serie il
+   primo fatto (`gym/mainExercises.ts`). Nel Feed il riquadro li chiede con
+   `GET /drawings/{id}/exercises`, una volta per post mentre l'app è
+   aperta, la stessa risposta per la scheda; solo i post di palestra
+   chiedono. Nascosti (404), il riquadro ha il solo tempo.
+4. **Il modulo a fine allenamento passa dalla coda della palestra**: la
+   scelta e «Show exercises» spento stanno nell'attesa di
+   `gym-outbox.json`, foto e ordine nei file dei disegni da «Save». Quando
+   l'API ha l'allenamento: prima `PUT …/show-exercises` (senza rete
+   l'allenamento si rimanda, uguale), poi la scelta nella coda dei disegni
+   e `sendWaitingDrawings`, come per una corsa. Così gli esercizi non si
+   vedono mai prima di essere nascosti.
+5. **«Show exercises» in «My activities»** legge `GET
+   /me/gym-sessions/{key}` e scrive subito; non preso, torna com'era con le
+   parole del modulo del disegno.
+6. **Condividere**: l'immagine è il riquadro (`GymSharePicture`), con gli
+   esercizi principali letti dall'allenamento; niente risultati, emoji,
+   «Style», «Music», «Export video», Strava; il titolo del foglio è
+   «Share»; nessun `RunPost` salvato.
+
+**Conseguenze**: un testo nuovo nelle tabelle, «Show exercises», già
+approvato il 2026-11-04. Nessuna dipendenza, niente nativo, niente server:
+impronta iOS 6f8bba4c invariata. «Up to 10 in a post.» resta anche per la
+palestra: dice le foto, non le pagine.
 ## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
 
 **Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto

@@ -89,13 +89,53 @@ docs/tasks/TASK-377.md, docs/STATUS.md, docs/sports/CONDIVISO.md, docs/sports/hi
 L'impronta del motore cambia: server, migrazione e notte degli esempi si
 fanno solo col sì dell'utente.
 
-### Parte B — app (dopo A e dopo la #765, che tiene `settings/sport.ts`)
+**Lista definitiva di A** (Coordinatore, 2026-11-05), con la migrazione
+`0051_hiking.sql`. La lista sopra non bastava, per due motivi:
+
+- **L'app.** Un'attività nel contratto entra anche nelle liste dell'app.
+  Senza il suo profilo l'app non partirebbe: `search/searchFilters.ts` lo
+  chiede al caricamento per ogni attività. Il Coordinatore ha scelto che `main`
+  resti pubblicabile a ogni merge: A prende il profilo dell'app, nascosto
+  («Settings» non ha la riga), invece di essere mergiata insieme a B.
+- **Le tabelle «di prima».** I test di TASK-376 le congelano: ora dicono
+  «quelle di prima, più quelle aggiunte da allora».
+
+In più rispetto alla lista sopra:
 
 ```
-apps/mobile/src/sports/hiking.ts                 (nuovo)
-apps/mobile/src/sports/index.ts                  (una riga)
-apps/mobile/src/sports/hikingProfile.test.ts     (nuovo)
-apps/mobile/src/settings/sport.ts                (una riga in ALL_SPORTS, activityOf)
+services/route-engine/tests/test_sport_registry.py, test_bike_network.py, test_cli.py
+packages/shared-types/fixtures/contract.json, run-activities.json, reads.json
+packages/shared-types/test/sportRegistry.test.ts
+packages/shared-types/test/hiking.test.ts                   (nuovo)
+services/api/shaperoute_api/game_rules.py                   (una hike conta come una camminata)
+services/api/tests/test_sport_registry_api.py, test_cycling.py, test_record_only.py
+apps/mobile/src/sports/hiking.ts                            (nuovo: il profilo, nascosto)
+apps/mobile/src/sports/index.ts                             (una riga)
+apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts
+apps/mobile/src/search/searchFilters.ts                     (una riga: niente chip «Hike»)
+apps/mobile/src/feed/hikeFeed.test.tsx                      (nuovo: card e dettaglio)
+apps/mobile/src/favorites/favoriteRoute.test.ts, src/api/favorites.test.ts,
+apps/mobile/src/api/accounts.test.ts, src/route/distanceMiles.test.ts  (liste e attività sconosciuta, dopo la CI)
+services/api/tests/test_favorites.py, test_drawings.py, test_drawing_search.py, test_paddling.py  (idem, dopo la CI)
+services/api/shaperoute_api/route_store.py                  (tre righe in SAME_ROUTES_AS)
+services/api/tests/fixtures/same_routes/9be259696402.json   (nuovo: la prova)
+docs/DECISIONS.md                                           (precisazione di ADR-0321)
+```
+
+**L'impronta del motore resta** (Coordinatore, 2026-11-05): i percorsi di
+prima sono provati uguali, quindi `SAME_ROUTES_AS` tiene le impronte di
+prima e non serve una notte di esempi. Il perché è nella precisazione di
+ADR-0321.
+
+### Parte B — app (dopo A e dopo la #765, che tiene `settings/sport.ts`)
+
+Il profilo e la sua riga sono già in A. B li completa: il nome con
+`tLater` e i testi, la riga in «Settings», la ricerca in `activityOffered`.
+
+```
+apps/mobile/src/sports/hiking.ts                 (il nome con tLater)
+apps/mobile/src/search/searchFilters.ts          (via la riga di A: la hike in activityOffered)
+apps/mobile/src/settings/sport.ts                (una riga in ALL_SPORTS, activityOf, activityOffered)
 apps/mobile/src/imports/fit.ts, imports/fileTrack.ts
 apps/mobile/src/route/runTime.ts                 (se il tempo usa il passo a piedi)
 apps/mobile/src/social/PublicParts.tsx           (la lista degli sport pubblicabili)
@@ -163,8 +203,10 @@ Le scelte toccano le liste di A e B in tre punti:
 - [x] 0: le misure delle reti sono in `hike.md`; ADR-0321 è proposto.
       `trails` è misurata solo a Trento, perché lì non regge.
 - [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-05).
-- [ ] A: un percorso d'escursione sul grafo di prova sta sui sentieri; test
+- [x] A: un percorso d'escursione sul grafo di prova sta sui sentieri; test
       deterministici; corsa, bici e canoa invariate al banco (`compare`).
+      Corsa 54/54, bici 54/54 e canoa 27/27 identiche punto per punto;
+      `test_hiking.py` e `test_hiking_api.py`.
 - [ ] B: l'escursione si sceglie, si cammina, si salva e va in Salute; i
       testi sono in cinque lingue.
 - [ ] Il diff di A e B confrontato con la ricetta: ogni deroga è in
@@ -209,3 +251,19 @@ la prima domanda all'utente, il nome e l'emoji.
 
 Prossimo: la lista di 377-A al Coordinatore, con `game_rules.py` in più e
 il numero della migrazione, prima del codice.
+
+2026-11-05, parte A (`feat/TASK-377-a-hike-engine-api`):
+
+- il motore disegna `hiking` sulla rete `hike`. Rispetto al banco della
+  parte 0 il filtro tiene le esclusioni dei marciapiedi di «foot» e toglie
+  anche le vie ferrate;
+- il contratto e l'API offrono `hiking`, con la migrazione `0051_hiking.sql`;
+- l'app ha il profilo Hike, nascosto;
+- l'impronta del motore resta, con `SAME_ROUTES_AS`, scelta del
+  Coordinatore e precisazione di ADR-0321.
+
+Al banco la hike riesce 73 volte su 90, da 5 a 30 km. In montagna circa
+metà di un percorso sta sui sentieri: le misure sono in `hike.md`.
+Server (0051 e deploy) col sì dell'utente.
+
+Prossimo: la parte B, dopo la #765.

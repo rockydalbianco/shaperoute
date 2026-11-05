@@ -1172,6 +1172,7 @@ export const FR: Table = {
   Custom: "Personnalisé",
   "Next: {exercise} · set {n}": "Ensuite : {exercise} · série {n}",
   "Rest over — next set": "Récup terminée : série suivante",
+  "Show exercises": "Afficher les exercices",
   "Still training?": "Tu t'entraînes encore ?",
   "Yes, keep going": "Oui, je continue",
   "Finish workout": "Terminer la séance",
@@ -1459,6 +1460,9 @@ export const FR: Table = {
   "MuW is recording your activity": "MuW enregistre ton activité",
   "It keeps going with the screen locked, voice included.":
     "Ça continue écran verrouillé, voix comprise.",
+
+  // src/navigation/lockNotice.ts, the notice with the phone locked (TASK-401)
+  "{distance} left": "encore {distance}",
 
   // src/location/startStatus.ts, src/screens/ChooseScreen.tsx,
   // src/explore/ExploreScreen.tsx, ThemedCard.tsx, src/screens/NavigateScreen.tsx,

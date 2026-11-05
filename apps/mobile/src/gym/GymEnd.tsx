@@ -10,8 +10,10 @@ import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
 import { restsLabel, rowsOf, setLabel } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
+import { type GymPost, GymPostForm, newGymPost } from "./GymPostForm";
 import { gymStyles } from "./gymStyles";
 import { SetFields, type SetTexts, textsOf, valuesOfTexts } from "./SetFields";
+import type { PickPhoto } from "../social/PublicParts";
 import { entryOf, type Entry, setOf, valuesOf } from "./setKinds";
 import type { GymSaved } from "./useGymOutbox";
 import { changeWorkout, endGymWorkout } from "./useWorkout";
@@ -33,19 +35,29 @@ type Editing = { kind: "set"; n: number; entry: Entry } | { kind: "new"; entry: 
  * The workout ended (TASK-385 part B): its time, its exercises and sets and
  * its rests; every set can be corrected or taken away, and one forgotten
  * added, before «Save» (the user's «Sì, così»); a set added now is not
- * «live». «Save» keeps it on the phone and sends it; «Discard» asks first.
- * Signed out, it says to sign in, as the end of a run does.
+ * «live». Under them the form of its post (TASK-385 part D, the user's
+ * «Sì, anche alla fine»), as at the end of a run. «Save» keeps it on the
+ * phone and sends it, its post after it; «Discard» asks first. Signed out,
+ * it says to sign in, as the end of a run does.
  */
 export function GymEnd({
   workout,
   onSave,
+  pick,
+  fetchFn,
+  apiKey,
 }: {
   workout: Workout;
-  onSave: (workout: Workout) => GymSaved;
+  onSave: (workout: Workout, post?: GymPost) => GymSaved;
+  /** The fakes of the tests: the photo picker, the fetch of the tag search. */
+  pick?: PickPhoto;
+  fetchFn?: typeof fetch;
+  apiKey?: string | null;
 }) {
   const insets = useSafeAreaInsets();
   const units = useUnits();
-  const { signedIn, signIn } = useActivitiesDoor();
+  const { signedIn, signIn, owner } = useActivitiesDoor();
+  const [post, setPost] = useState<GymPost>(() => newGymPost(owner));
   const [editing, setEditing] = useState<Editing | null>(null);
   const [texts, setTexts] = useState<SetTexts>({});
   const [picking, setPicking] = useState(false);
@@ -75,7 +87,7 @@ export function GymEnd({
   }
 
   function save() {
-    const saved = onSave(workout);
+    const saved = onSave(workout, post);
     if (saved === "kept") {
       endGymWorkout();
     } else {
@@ -200,6 +212,15 @@ export function GymEnd({
             >
               <Text style={gymStyles.buttonText}>{t("+ Exercise")}</Text>
             </Pressable>
+            {signedIn && (
+              <GymPostForm
+                post={post}
+                onPost={setPost}
+                pick={pick}
+                fetchFn={fetchFn}
+                apiKey={apiKey}
+              />
+            )}
           </>
         )}
         {problem && (

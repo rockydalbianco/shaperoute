@@ -16,8 +16,11 @@ import { drawingPhotoSource } from "../api/drawings";
 import { cityName } from "../explore/recommendedRoutes";
 import { RouteThumb } from "../explore/RouteThumb";
 import { GymTile } from "../gym/GymTile";
+import { mainExercises } from "../gym/mainExercises";
+import { useGymExercises } from "../gym/useGymExercises";
 import { t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
+import { useLanguage } from "../i18n/useLanguage";
 import { bearingOf } from "../map/turnedMap";
 import { durationLabel } from "../screens/FinishScreen";
 import { useBlockedNow } from "../social/blockedNow";
@@ -158,6 +161,12 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const upright = useMemo(() => turnedLine(post.line, bearing), [post.line, bearing]);
   const city = cityName(post.city);
   const ago = isShown(post) ? agoLabel(post.drawing.started_at) : "";
+  // A member's workout at the gym names its main exercises on its tile,
+  // unless its owner hides them (TASK-385 part D).
+  const language = useLanguage();
+  const exercises = useGymExercises(isShown(post) ? post.drawing.id : post.id, {
+    on: isShown(post) && isTrackless(post.activity),
+  });
   // Where the finger came down. «Feed» is the first page: a swipe towards
   // it moves nothing, so nothing takes the touch away, and it would end as
   // a tap on the card it crossed.
@@ -275,6 +284,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
       width={width}
       height={drawingHeight(width)}
       durationS={isShown(post) ? post.drawing.duration_s : post.minutes * 60}
+      exercises={exercises === null ? [] : mainExercises(exercises.sets, language)}
     />
   ) : (
     <RouteMap

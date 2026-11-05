@@ -18,3 +18,26 @@ test("a thumbnail's tile has the figure only", async () => {
   expect(screen.getByText("🏋️", { includeHiddenElements: true })).toBeTruthy();
   expect(screen.queryByText("Gym", { includeHiddenElements: true })).toBeNull();
 });
+
+// TASK-385 part D: the main exercises on the tile.
+
+test("the main exercises are written under the time, one a line", async () => {
+  await render(
+    <GymTile
+      width={320}
+      height={256}
+      durationS={600}
+      exercises={["Bench press", "Squat"]}
+    />,
+  );
+  expect(
+    screen.getByTestId("gym-tile-exercises", { includeHiddenElements: true }),
+  ).toHaveTextContent("Bench press\nSquat");
+});
+
+test("without exercises the tile writes none", async () => {
+  await render(<GymTile width={320} height={256} durationS={600} exercises={[]} />);
+  expect(
+    screen.queryByTestId("gym-tile-exercises", { includeHiddenElements: true }),
+  ).toBeNull();
+});

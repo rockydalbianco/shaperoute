@@ -345,7 +345,11 @@ export function detailOf(
   const hung = fromEnd.away < fromStart.away ? fromEnd : fromStart;
   const linked = hung.away > SNAP_SHARE * size;
   const stroke: P[] = linked ? [hung.at, ...oriented] : [hung.at, ...oriented.slice(1)];
-  const detail = fitted(stroke, size, MAX_DETAIL_POINTS - travelledPoints(details));
+  // Straightened as much as the drawing it makes, line and all: by the size
+  // of a small first line, a big one would keep every tremble of the finger
+  // and leave no room for the next (TASK-404).
+  const whole = boxOf([...lines, stroke]).size;
+  const detail = fitted(stroke, whole, MAX_DETAIL_POINTS - travelledPoints(details));
   return "problem" in detail ? detail : { detail, linked };
 }
 

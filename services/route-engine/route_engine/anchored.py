@@ -56,10 +56,7 @@ from route_engine.models import (
 )
 from route_engine.network import (
     AREA_MARGIN_M,
-    BIKE_FILTER,
-    BIKE_NETWORK_NAME,
     EDGE_REUSE_PENALTY,
-    NETWORKS,
     OsmnxSource,
     area_around,
     check_network,
@@ -390,12 +387,6 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _source(cache_dir: Path, activity: str) -> OsmnxSource:
-    if NETWORKS[activity] == BIKE_NETWORK_NAME:
-        return OsmnxSource(cache_dir, BIKE_NETWORK_NAME, BIKE_FILTER)
-    return OsmnxSource(cache_dir)
-
-
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -446,7 +437,7 @@ def _main_stroke(line: list[LatLon], args: argparse.Namespace) -> int:
     """One stroke anchored to the roads: the match printed as JSON on
     stdout, as POST /stroke-matches answers it; the rest on stderr. A
     stroke the roads cannot draw (every point on one road node) is 1."""
-    source = _source(args.cache_dir, args.activity)
+    source = OsmnxSource.for_activity(args.cache_dir, args.activity)
     around = [*line, *([args.from_] if args.from_ is not None else [])]
     bbox = area_around(around, AREA_MARGIN_M)
     where = "from the cache" if source.is_cached(bbox) else "downloading..."
@@ -478,7 +469,7 @@ def _main_shape(
     """A shape or an outline traced where it is: a short report, the GPX
     with --out, the result as JSON with --json."""
     report = sys.stderr if args.json else sys.stdout
-    source = _source(args.cache_dir, args.activity)
+    source = OsmnxSource.for_activity(args.cache_dir, args.activity)
     planned_m = planned_distance(args.distance, one_way)
     where = (
         "from the cache"

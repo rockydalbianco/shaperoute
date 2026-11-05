@@ -33,7 +33,9 @@ import {
 } from "./index";
 
 // TASK-376 part B3 (ADR-0320): the tables of the app, read from the sports,
-// are the ones written by hand before, value for value and in order.
+// are the ones written by hand before, value for value and in order, with
+// the sports added since, each by a file and a line of index.ts: a hike
+// (TASK-377), before the walk.
 
 const MPH_KMH = 1.609344;
 
@@ -58,6 +60,7 @@ it("gives «Draw» the distances of before", () => {
       "swimming",
       [DISTANCE_LIMITS_M.swimming[0] / 1000, DISTANCE_LIMITS_M.swimming[1] / 1000],
     ],
+    ["hiking", [1, 30]],
     [
       "walking",
       [DISTANCE_LIMITS_M.walking[0] / 1000, DISTANCE_LIMITS_M.walking[1] / 1000],
@@ -68,10 +71,11 @@ it("gives «Draw» the distances of before", () => {
     ["cycling", [7, 18]],
     ["paddling", [1, 3]],
     ["swimming", [0.5, 1.5]],
+    ["hiking", [1, 18]],
     ["walking", [1, 18]],
   ]);
   expect(ACTIVITIES.map((activity) => distanceStep(activity))).toEqual([
-    1, 1, 1, 0.5, 1,
+    1, 1, 1, 0.5, 1, 1,
   ]);
   expect(distanceForSport("7", "paddling", "km")).toBe("2");
   expect(distanceForSport("7", "swimming", "km")).toBe("1");
@@ -85,6 +89,7 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     cycling: 13,
     paddling: 31,
     swimming: 46,
+    hiking: 24,
     walking: 52,
     skiing: 61,
     xc_skiing: 60,
@@ -96,6 +101,7 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     ["cycling", "HKQuantityTypeIdentifierDistanceCycling"],
     ["paddling", "HKQuantityTypeIdentifierDistancePaddleSports"],
     ["swimming", "HKQuantityTypeIdentifierDistanceSwimming"],
+    ["hiking", "HKQuantityTypeIdentifierDistanceWalkingRunning"],
     ["walking", "HKQuantityTypeIdentifierDistanceWalkingRunning"],
   ]);
   expect(tableOf((sport) => sport.healthConnect)).toEqual({
@@ -103,6 +109,7 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     cycling: 8,
     paddling: 46,
     swimming: 73,
+    hiking: 37,
     walking: 79,
     skiing: 61,
     xc_skiing: 61,
@@ -117,6 +124,7 @@ it("names the sports, and draws on the phone the ones of before", () => {
     ["cycling", "Bike"],
     ["paddling", "Paddle"],
     ["swimming", "Open water swim"],
+    ["hiking", "Hike"],
     ["walking", "Walk"],
   ]);
   expect(Object.entries(NETWORKS)).toEqual([
@@ -131,8 +139,10 @@ it("counts the energy as before", () => {
     running: "oxygen",
     cycling: "met",
     paddling: "met",
+    hiking: "oxygen",
     walking: "oxygen",
   });
+  expect(profileOf("hiking").energy).toEqual(profileOf("walking").energy);
   expect(profileOf("running").energy).toEqual({
     kind: "oxygen",
     mlKgPerM: 0.2,
@@ -171,6 +181,7 @@ it("starts a run without a route and labels a MuW route as before", () => {
     "cycling",
     "paddling",
     "swimming",
+    "hiking",
     "walking",
     "cycling",
     undefined,
@@ -211,6 +222,7 @@ it("gives the screens what they told apart before (part B3b)", () => {
     cycling: "🚴",
     paddling: "🛶",
     swimming: "🏊",
+    hiking: "⛰️",
     walking: "🚶",
     skiing: "⛷️",
     xc_skiing: "🎿",
@@ -226,6 +238,7 @@ it("gives the screens what they told apart before (part B3b)", () => {
   expect(tableOf((sport) => sport.laps)).toEqual({ swimming: true });
   expect(tableOf((sport) => sport.timeAt)).toEqual({
     running: "runner",
+    hiking: "walker",
     walking: "walker",
   });
   expect(tableOf((sport) => sport.skied)).toEqual({ skiing: true });
@@ -243,7 +256,7 @@ it("gives the screens what they told apart before (part B3b)", () => {
     running: "{letters} mi of letters + {between} mi walking between them",
     cycling: "{letters} mi of letters + {between} mi riding between them",
   });
-  expect(findProfile("hiking")).toBeUndefined();
+  expect(findProfile("climbing")).toBeUndefined();
   expect(findProfile(undefined)).toBeUndefined();
 });
 

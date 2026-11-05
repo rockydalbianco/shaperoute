@@ -49,6 +49,7 @@ ACTIVITY_MIGRATIONS = (
     "_favorite_paddling.sql",
     "_swimming.sql",
     "_walking.sql",
+    "_hiking.sql",
 )
 # Added by TASK-206 part B: the fixtures written before are what an older
 # app sends and an older API answers.
@@ -421,7 +422,7 @@ def test_every_activity_offered_is_kept(client: TestClient, activity: str) -> No
     assert whole["activity"] == activity
 
 
-@pytest.mark.parametrize("activity", ["hiking", "Cycling", "", None, 1])
+@pytest.mark.parametrize("activity", ["climbing", "Cycling", "", None, 1])
 def test_an_activity_the_api_does_not_offer_is_refused(
     client: TestClient, activity: Any
 ) -> None:
@@ -455,7 +456,7 @@ def test_the_database_keeps_only_the_activities_offered(
                 " similarity, line, created_at, activity) VALUES (%s, %s, '',"
                 " 5000, 5120, 0.9, ST_GeomFromText("
                 "'LINESTRING(11.1215 46.067,11.123 46.07)', 4326), now(),"
-                " 'hiking')",
+                " 'climbing')",
                 (user["id"], KEY),
             )
 

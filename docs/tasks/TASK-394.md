@@ -576,7 +576,9 @@ Parte A (`feat/TASK-394-a-outfit-tags-api`; lista data al Coordinatore e
 approvata il 2026-11-05, con `schemas.py` in più; `test_moderation.py`,
 `moderation.test.ts` e `api-error-codes.json` aggiunti dopo, perché i loro
 controlli leggono l'ultimo elenco dei tipi di segnalazione e dei codici
-d'errore):
+d'errore; `engine.zip`, approvato dal Coordinatore, perché il motore del
+telefono porta dentro `schemas.py` e va rifatto per ultimo con
+`python tools/phone_engine/phone_engine.py engine`):
 
 ```
 services/api/migrations/0050_outfit_tags.sql            (nuovo)
@@ -598,6 +600,7 @@ packages/shared-types/fixtures/api-error-codes.json     (outfit_tag_rejected)
 packages/shared-types/fixtures/outfit-tags-request.json (nuovo)
 packages/shared-types/test/outfit-tags.test.ts          (nuovo)
 packages/shared-types/test/moderation.test.ts           (outfit_tag fra i tipi)
+apps/mobile/assets/engine/engine.zip                    (rifatto: porta dentro schemas.py)
 .env.example                                            (SHAPEROUTE_WEB_RISK_KEY)
 docs/API.md
 docs/DATABASE.md

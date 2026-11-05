@@ -1,0 +1,283 @@
+{
+  "valid": [
+    {
+      "name": "start from the phone",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "start",
+        "activity": "running",
+        "from": "phone",
+        "at": 1762358400000
+      }
+    },
+    {
+      "name": "pause from the wrist",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "pause",
+        "from": "watch",
+        "at": 1762358460000
+      }
+    },
+    {
+      "name": "resume from the phone",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "resume",
+        "from": "phone",
+        "at": 1762358470000
+      }
+    },
+    {
+      "name": "end from the wrist",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "end",
+        "from": "watch",
+        "at": 1762360200000
+      }
+    },
+    {
+      "name": "state of a running workout",
+      "json": {
+        "v": 1,
+        "type": "state",
+        "phase": "running",
+        "activity": "cycling",
+        "from": "watch",
+        "at": 1762358520000,
+        "movingMs": 110000,
+        "distanceM": 812.5
+      }
+    },
+    {
+      "name": "state before the start",
+      "json": {
+        "v": 1,
+        "type": "state",
+        "phase": "ready",
+        "activity": "gym",
+        "from": "phone",
+        "at": 1762358400000,
+        "movingMs": 0,
+        "distanceM": 0
+      }
+    },
+    {
+      "name": "heart rate",
+      "json": { "v": 1, "type": "heartRate", "bpm": 142, "at": 1762358521000 }
+    },
+    {
+      "name": "a sport this side does not know is still read",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "start",
+        "activity": "paragliding",
+        "from": "phone",
+        "at": 1762358400000
+      }
+    },
+    {
+      "name": "fields of a later version are left out",
+      "json": {
+        "v": 1,
+        "type": "heartRate",
+        "bpm": 150,
+        "at": 1762358522000,
+        "zone": 3
+      },
+      "encoded": { "v": 1, "type": "heartRate", "bpm": 150, "at": 1762358522000 }
+    },
+    {
+      "name": "an activity on a pause is not one of its fields",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "pause",
+        "activity": "running",
+        "from": "phone",
+        "at": 1762358460000
+      },
+      "encoded": {
+        "v": 1,
+        "type": "command",
+        "command": "pause",
+        "from": "phone",
+        "at": 1762358460000
+      }
+    }
+  ],
+  "invalid": [
+    { "name": "not an object", "json": [1, 2], "error": "notAnObject" },
+    { "name": "a string", "json": "pause", "error": "notAnObject" },
+    {
+      "name": "a newer version",
+      "json": { "v": 2, "type": "heartRate", "bpm": 142, "at": 1762358521000 },
+      "error": "unsupportedVersion"
+    },
+    {
+      "name": "no version",
+      "json": { "type": "heartRate", "bpm": 142, "at": 1762358521000 },
+      "error": "invalidField"
+    },
+    {
+      "name": "version zero",
+      "json": { "v": 0, "type": "heartRate", "bpm": 142, "at": 1762358521000 },
+      "error": "invalidField"
+    },
+    {
+      "name": "a version as text",
+      "json": { "v": "1", "type": "heartRate", "bpm": 142, "at": 1762358521000 },
+      "error": "invalidField"
+    },
+    {
+      "name": "an unknown type",
+      "json": { "v": 1, "type": "route", "at": 1762358521000 },
+      "error": "unknownType"
+    },
+    {
+      "name": "no type",
+      "json": { "v": 1, "at": 1762358521000 },
+      "error": "invalidField"
+    },
+    {
+      "name": "an unknown command",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "lap",
+        "from": "watch",
+        "at": 1762358521000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a start without its sport",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "start",
+        "from": "phone",
+        "at": 1762358400000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a start with an empty sport",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "start",
+        "activity": "",
+        "from": "phone",
+        "at": 1762358400000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "an unknown side",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "pause",
+        "from": "ipad",
+        "at": 1762358460000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a time with a fraction",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "pause",
+        "from": "watch",
+        "at": 1762358460000.5
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a negative time",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "pause",
+        "from": "watch",
+        "at": -1
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a time as true",
+      "json": {
+        "v": 1,
+        "type": "command",
+        "command": "pause",
+        "from": "watch",
+        "at": true
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "an unknown phase",
+      "json": {
+        "v": 1,
+        "type": "state",
+        "phase": "lapping",
+        "activity": "running",
+        "from": "watch",
+        "at": 1762358520000,
+        "movingMs": 110000,
+        "distanceM": 812.5
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a negative distance",
+      "json": {
+        "v": 1,
+        "type": "state",
+        "phase": "running",
+        "activity": "running",
+        "from": "watch",
+        "at": 1762358520000,
+        "movingMs": 110000,
+        "distanceM": -3
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a state without its distance",
+      "json": {
+        "v": 1,
+        "type": "state",
+        "phase": "running",
+        "activity": "running",
+        "from": "watch",
+        "at": 1762358520000,
+        "movingMs": 110000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a heart rate of zero",
+      "json": { "v": 1, "type": "heartRate", "bpm": 0, "at": 1762358521000 },
+      "error": "invalidField"
+    },
+    {
+      "name": "a heart rate past 300",
+      "json": { "v": 1, "type": "heartRate", "bpm": 301, "at": 1762358521000 },
+      "error": "invalidField"
+    },
+    {
+      "name": "a heart rate with a fraction",
+      "json": { "v": 1, "type": "heartRate", "bpm": 142.5, "at": 1762358521000 },
+      "error": "invalidField"
+    }
+  ]
+}

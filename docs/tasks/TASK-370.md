@@ -1,7 +1,7 @@
 # TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono
 
-**Stato**: Todo · proposta (parte 0) in PR; nessun codice prima delle scelte
-dell'utente
+**Stato**: In lavorazione · proposta e piano della parte A in `main`; A1 in
+`main` (#839, 2026-11-05); prossimo A2
 **Fase**: 5 · **Branch**: `docs/TASK-370-apple-watch` (documenti); il codice
 `feat/TASK-370-a-…`, `feat/TASK-370-b-…`, …
 **Dipende da**: TASK-321 B (HealthKit nella build, in `main`), TASK-376 B3 (il
@@ -165,11 +165,115 @@ provato, senza tenere ferme le altre cose.
 2. **La build** (2026-11-05): «Build sua, la 1.1» — dopo la 1.0.2, che
    esce senza aspettare l'orologio.
 
+3. **L'Apple Watch per provare** (2026-11-05): «Sì, Series 6 o più nuovo»,
+   con watchOS 10 o più: basta per battito, vibrazioni, GPS e uscite senza
+   telefono.
+
 **Da chiedere, una per volta** (con una proposta pronta):
-3. L'Apple Watch per provare: c'è, e quale modello / watchOS.
 4. Gli schemi delle vibrazioni (alle prime prove al polso).
 5. I testi nelle cinque lingue.
 6. La riga della privacy e l'etichetta App Privacy.
+
+## Parte A, il piano (2026-11-05)
+
+**Il vincolo della build**: la 1.1 è una build sua, dopo la 1.0.2, e gli
+OTA di `main` devono continuare ad arrivare alla 1.0.1 e alla 1.0.2. Quindi
+**fino alla build 1.1 l'impronta iOS di `main` non si muove**: ogni PR della
+parte A la controlla (`ios-fingerprint` su una copia pulita con
+`APP_VARIANT=production`, prima e dopo uguali). Le dipendenze native e il
+plugin entrano in `main` solo con l'ultima PR, **A-flip**, quando l'utente e
+il Coordinatore fissano la 1.1.
+
+**A1 — Il nucleo, senza nativo** (in `main` subito, impronta invariata):
+- `apps/mobile/targets/watch/Core/` (nuova): un pacchetto Swift puro
+  (`Package.swift`, `WatchCore`): lo stato dell'allenamento (pronto, conto
+  alla rovescia, in corso, in pausa, finito) e le sue transizioni, i
+  messaggi telefono↔orologio con la versione, la tabella degli sport;
+  XCTest con `swift test`, senza Xcode project né `prebuild`.
+- `apps/mobile/src/watch/` (nuova): `watchMessages.ts` (puro: gli stessi
+  messaggi, con dei fixture JSON letti anche da XCTest), `watchSports.ts`
+  (puro: la tabella degli sport dell'orologio dal registro `src/sports/`;
+  un test jest la confronta con `targets/watch/Core/.../sports.json`, che
+  si rigenera con uno script), test jest.
+- `.github/workflows/watch.yml` (nuova): `swift test` su un runner macOS,
+  solo quando cambia `apps/mobile/targets/watch/` (i minuti macOS costano
+  di più: per questo il filtro sui percorsi).
+
+**Esito A1** (2026-11-05): in `main` con #839 (`76be330e`). `WatchCore` con 18
+XCTest, `src/watch/` con 40 jest sugli stessi fixture, `watch.yml` verde in
+43 s; impronta iOS `6f8bba4c` invariata. Le scelte prese sono in ADR-0314,
+«precisazione — La parte A1». Per A2: il pacchetto `Core/` va collegato al
+target come pacchetto locale, senza compilare `Core/Tests` nell'app; se
+TASK-401 (Live Activity) porta `@bacons/apple-targets` già nella 1.0.2, chi
+lo aggiunge si decide con TASK-401 e il Coordinatore.
+
+**A2 — L'app dell'orologio** (in `main`, impronta invariata finché il
+plugin non è in `app.json`):
+- `apps/mobile/targets/watch/` (nuova): `expo-target.config.js`
+  (`type: "watch"`, bundle `.watchkitapp`, entitlement HealthKit), l'app
+  SwiftUI (scelta dello sport, avvio, numeri, pausa, ripresa, fine),
+  `HKWorkoutSession` + `HKLiveWorkoutBuilder`, il mirroring al telefono,
+  `WCSession`. I testi dell'orologio, in A, sono solo quelli che l'app ha
+  già, con le loro traduzioni.
+- Le prove nel simulatore di watchOS e sull'orologio dell'utente con un
+  `prebuild` locale che aggiunge il plugin solo con una variabile
+  d'ambiente (`MUW_WATCH=1` in `app.config.ts`); senza, la config di `main`
+  è quella di oggi.
+
+**A3 — Il telefono** (in `main`, solo JavaScript, il modulo nativo caricato
+solo se c'è, come `haptics/haptics.ts`):
+- `src/watch/watchLink.ts` (il ponte su `react-native-watch-connectivity`,
+  niente in un'app senza), `src/watch/useWatch.ts` (manda lo stato della
+  corsa da `runControl`, riceve pausa, ripresa e fine dal polso, e il
+  battito), `src/watch/WatchHeart.tsx` (il battito con la zona),
+  `__mocks__/react-native-watch-connectivity.ts`, test.
+- File esistenti, una riga o poche: `src/screens/RunDashboard.tsx` (e
+  `FreeRunScreen.tsx` se non la usa) per montare `useWatch` e mostrare il
+  battito; `src/health/HealthRunEnd.tsx` o `workout.ts` per non riscrivere
+  in Salute l'allenamento che l'orologio ha già salvato.
+
+**A-flip — L'interruttore nativo** (solo alla build 1.1): `app.json` (il
+plugin `@bacons/apple-targets`), `apps/mobile/package.json` e
+`package-lock.json` (le due dipendenze), `app.config.ts` (via la variabile
+`MUW_WATCH`). Qui l'impronta iOS cambia, ed è voluto.
+
+**Le condizioni del Coordinatore** (2026-11-05, piano approvato):
+- `RunDashboard.tsx`, `FreeRunScreen.tsx`, `src/health/` e `app.config.ts`
+  oggi non li tiene nessuna PR. `src/health/` però è in fila per la 1.0.2
+  (374 C, 345 C, 397 C, la lettura da Salute) e forse per TASK-400 (nuoto
+  in piscina): le righe lì vanno in A3, il più tardi possibile; chi arriva
+  secondo unisce `main`.
+- `app.config.ts` con `MUW_WATCH=1` va bene se senza la variabile
+  l'impronta iOS resta **`6f8bba4c`**: misurarla in ogni PR su una copia
+  staccata e scriverla nella PR.
+- `watch.yml`: filtro sui percorsi (solo `apps/mobile/targets/watch/**` e
+  il workflow stesso), `timeout-minutes: 15`, `concurrency` che cancella i
+  giri vecchi come in `ci.yml`. Dei minuti macOS parla il Coordinatore
+  all'utente.
+- A-flip solo alla build 1.1, col sì dell'utente.
+- A1 parte in una sessione nuova.
+
+**Il plugin condiviso con TASK-401 B** (accordo del 2026-11-05, chiesto
+dal Coordinatore; ADR-0335): la Live Activity di TASK-401 B esce nella 1.0.2,
+prima della 1.1, con la stessa dipendenza `@bacons/apple-targets`.
+- **TASK-401 B** aggiunge nella 1.0.2 la dipendenza (**5.0.0**, la versione
+  di questo piano), il plugin in `app.json` (una sola config) e
+  `apps/mobile/targets/live-activity/`. Il sì dell'utente alla dipendenza
+  nella 1.0.2 lo chiede TASK-401.
+- **Il plugin prende solo le cartelle che gli si dicono**: senza opzioni
+  costruisce ogni `targets/*/expo-target.config.js` (`match = "*"`, letto in
+  `build/config-plugin.js` della 5.0.0). Nella 1.0.2 va quindi con
+  `"match": "live-activity"`; altrimenti il target dell'orologio entrerebbe
+  nella 1.0.2 appena A2 mette `targets/watch/expo-target.config.js` in
+  `main`. `targets/watch/Core/` (A1) non ha quel file e non conta.
+- **A2** mette `targets/watch/` accanto, senza toccare `live-activity/`;
+  `MUW_WATCH=1` in `app.config.ts` allarga `match` a
+  `"{live-activity,watch}"` invece di aggiungere il plugin.
+- **A-flip** non aggiunge più dipendenza né plugin: allarga `match` in
+  `app.json` e aggiunge `react-native-watch-connectivity`.
+- **L'impronta di riferimento**: `6f8bba4c` finché TASK-401 B non è in
+  `main`; dopo, quella della 1.0.2. Ogni PR di A la misura senza
+  `MUW_WATCH`.
 
 ## File toccati
 
@@ -181,8 +285,9 @@ docs/DECISIONS.md (ADR-0314, aggiunta)
 docs/STATUS.md (aggiunta)
 ```
 
-Parti A–D (previsti, ognuno con la sua lista al Coordinatore prima di
-partire):
+Parte A: vedi «Parte A, il piano» sopra (lista mandata al Coordinatore
+il 2026-11-05). Parti B–D (previsti, ognuno con la sua lista al
+Coordinatore prima di partire):
 
 ```
 apps/mobile/targets/watch/ (nuova: target, Swift, XCTest)

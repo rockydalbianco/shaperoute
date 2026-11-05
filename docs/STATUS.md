@@ -192,6 +192,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `feat/TASK-370-a1-watch-core`; la unisce il Coordinatore a CI verde. **Prossimo**: A2,
   l'app SwiftUI dell'orologio (in A2 va verificato che `@bacons/apple-targets` non metta
   `Core/Tests` nel target dell'orologio).
+  **A1 in `main` il 2026-11-05** (#839, `76be330e`; CI verde, impronta `6f8bba4c`). A2 in
+  una sessione nuova, con la lista dei file al Coordinatore prima del codice; se TASK-401
+  aggiunge `@bacons/apple-targets` nella 1.0.2, chi lo aggiunge si concorda con loro.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.

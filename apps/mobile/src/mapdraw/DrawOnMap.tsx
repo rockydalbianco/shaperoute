@@ -1,6 +1,16 @@
 import type { Shape } from "@shaperoute/shared-types";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { t, tLater } from "../i18n";
 import type { CanvasMode } from "../map/messages";
@@ -200,7 +210,8 @@ export function typedDegrees(text: string): number | null {
 }
 
 /** «−15°», the figure's angle, «+15°» (TASK-402): a tap on the angle types
- * it. */
+ * it, in a box over the keyboard, empty with the angle as a hint; «Done» or
+ * a tap around it turns the figure to it. */
 function Turn({ deg, onTurn }: { deg: number; onTurn: (deg: number) => void }) {
   const [typing, setTyping] = useState<string | null>(null);
   const done = () => {
@@ -221,30 +232,47 @@ function Turn({ deg, onTurn }: { deg: number; onTurn: (deg: number) => void }) {
       >
         <Text style={styles.stepText}>{degreesLabel(-TURN_STEP_DEG)}</Text>
       </Pressable>
-      {typing === null ? (
-        <Pressable
-          style={styles.angle}
-          onPress={() => setTyping(String(deg))}
-          accessibilityRole="button"
-          accessibilityLabel={t("Angle, {deg} degrees. Double tap to type it", { deg })}
-          testID="turn-angle"
+      <Pressable
+        style={styles.angle}
+        onPress={() => setTyping("")}
+        accessibilityRole="button"
+        accessibilityLabel={t("Angle, {deg} degrees. Double tap to type it", { deg })}
+        testID="turn-angle"
+      >
+        <Text style={styles.angleText}>{degreesLabel(deg)}</Text>
+      </Pressable>
+      <Modal
+        transparent
+        visible={typing !== null}
+        animationType="fade"
+        onRequestClose={done}
+      >
+        <KeyboardAvoidingView
+          style={styles.typingRoom}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <Text style={styles.angleText}>{degreesLabel(deg)}</Text>
-        </Pressable>
-      ) : (
-        <TextInput
-          style={[styles.angle, styles.angleText]}
-          value={typing}
-          onChangeText={setTyping}
-          onSubmitEditing={done}
-          onBlur={done}
-          keyboardType="numbers-and-punctuation"
-          returnKeyType="done"
-          autoFocus
-          selectTextOnFocus
-          testID="turn-typed"
-        />
-      )}
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={done}
+            accessible={false}
+          />
+          <View style={styles.typingBox}>
+            <TextInput
+              style={styles.typed}
+              value={typing ?? ""}
+              onChangeText={setTyping}
+              onSubmitEditing={done}
+              placeholder={degreesLabel(deg).slice(0, -1)}
+              placeholderTextColor={color.textMuted}
+              keyboardType="numbers-and-punctuation"
+              returnKeyType="done"
+              autoFocus
+              testID="turn-typed"
+            />
+            <Text style={styles.typed}>°</Text>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
       <Pressable
         style={styles.step}
         onPress={() => onTurn(deg + TURN_STEP_DEG)}
@@ -324,6 +352,29 @@ const styles = StyleSheet.create({
     fontSize: fontSize.input,
     fontWeight: fontWeight.bold,
     textAlign: "center",
+  },
+  typingRoom: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  typingBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: space.lg,
+    paddingHorizontal: space.xl,
+    minHeight: MIN_TAP_SIZE,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  typed: {
+    minWidth: 24,
+    color: color.text,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.bold,
+    textAlign: "right",
   },
   step: {
     minHeight: MIN_TAP_SIZE,

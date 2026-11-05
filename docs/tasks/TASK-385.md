@@ -250,7 +250,9 @@ Questa PR (documenti): `docs/tasks/TASK-385.md` (nuovo),
 - **D** (lista approvata dal Coordinatore il 2026-11-05; branch
   `feat/TASK-385-d-gym-post`):
   - file nuovi in `apps/mobile/src/gym/`: `mainExercises.ts`,
-    `useGymExercises.ts`, `ShowExercises.tsx`, `GymPostForm.tsx`; test
+    `useGymExercises.ts`, `ShowExercises.tsx`, `GymPostForm.tsx`,
+    `GymSharePicture.tsx` (l'immagine condivisa, aggiunto scrivendo il
+    codice: un file nuovo); test
     `mainExercises.test.ts`, `ShowExercises.test.tsx`,
     `GymPostForm.test.tsx`, `GymFeedTile.test.tsx`, `GymShare.test.tsx`;
   - righe in file esistenti: `gym/GymTile.tsx` (+ `GymTile.test.tsx`),

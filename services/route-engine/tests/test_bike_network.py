@@ -454,10 +454,17 @@ def test_each_activity_has_a_network_and_distance_limits() -> None:
     assert set(DISTANCE_LIMITS_M) == set(ACTIVITIES)
     assert set(NETWORKS) | WATER_ACTIVITIES == set(ACTIVITIES)
     assert not set(NETWORKS) & WATER_ACTIVITIES
-    assert NETWORKS == {"running": "foot", "cycling": "bike"}
+    assert NETWORKS == {"running": "foot", "cycling": "bike", "hiking": "hike"}
     # The contract offers cycling since the API's part (TASK-190, ADR-0153),
-    # paddling since its own (TASK-191), swimming since TASK-323 part B.
-    assert SUPPORTED_ACTIVITIES == ("running", "cycling", "paddling", "swimming")
+    # paddling since its own (TASK-191), swimming since TASK-323 part B,
+    # hiking since TASK-377 part A.
+    assert SUPPORTED_ACTIVITIES == (
+        "running",
+        "cycling",
+        "paddling",
+        "swimming",
+        "hiking",
+    )
 
 
 # --- the Overpass filters ---
@@ -593,10 +600,10 @@ def test_running_keeps_its_limits_and_messages() -> None:
     assert str(error.value) == "distance must be between 1000 and 50000 metres, got 500"
     # An activity the engine does not draw: the distance first, as before.
     with pytest.raises(InvalidRequestError) as error:
-        RouteRequest(start=TOWN, shape="heart", distance_m=500, activity="hiking")
+        RouteRequest(start=TOWN, shape="heart", distance_m=500, activity="skating")
     assert str(error.value) == "distance must be between 1000 and 50000 metres, got 500"
     with pytest.raises(InvalidRequestError, match="choose one of: running, cycling"):
-        RouteRequest(start=TOWN, shape="heart", distance_m=5_000, activity="hiking")
+        RouteRequest(start=TOWN, shape="heart", distance_m=5_000, activity="skating")
 
 
 def test_the_cli_takes_cycling_and_states_its_limits(

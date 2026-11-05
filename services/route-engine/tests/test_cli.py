@@ -56,7 +56,7 @@ def test_boundary_coordinates_are_accepted() -> None:
         ({"distance": "500000"}, "distance must be between"),
         ({"distance": "5km"}, "invalid int value"),
         ({"shape": "triangle"}, "unknown shape 'triangle'"),
-        ({"activity": "hiking"}, "unsupported activity 'hiking'"),
+        ({"activity": "skating"}, "unsupported activity 'skating'"),
     ],
 )
 def test_invalid_arguments_exit_with_readable_error(
@@ -137,6 +137,10 @@ def _grid(spacing_m: float = 50.0, half_m: float = 2000.0) -> nx.MultiDiGraph:
 class _GridSource:
     def __init__(self, cache_dir: Path) -> None:
         self.graph = _grid()
+
+    @classmethod
+    def for_activity(cls, cache_dir: Path, activity: str) -> "_GridSource":
+        return cls(cache_dir)
 
     def is_cached(self, bbox: tuple[float, float, float, float]) -> bool:
         return True

@@ -54,10 +54,7 @@ from route_engine.nearby_starts import (
     plan_nearby,
 )
 from route_engine.network import (
-    BIKE_FILTER,
-    BIKE_NETWORK_NAME,
     EDGE_REUSE_PENALTY,
-    NETWORKS,
     OsmnxSource,
 )
 from route_engine.optimizer import (
@@ -139,14 +136,6 @@ class WordRequest:
 def _km(limits: tuple[int, int]) -> str:
     low, high = limits
     return f"{low / 1000:g}-{high / 1000:g}"
-
-
-def _source(cache_dir: Path, activity: str) -> OsmnxSource:
-    """The graphs of the network `activity` is drawn on (network.NETWORKS):
-    the foot network as before TASK-190, the bike network in its own files."""
-    if NETWORKS[activity] == BIKE_NETWORK_NAME:
-        return OsmnxSource(cache_dir, BIKE_NETWORK_NAME, BIKE_FILTER)
-    return OsmnxSource(cache_dir)
 
 
 def _parse_start(value: str) -> tuple[float, float]:
@@ -449,7 +438,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _main_on_water(request, args)
 
     optimize = not args.no_optimize
-    source = _source(args.cache_dir, request.activity)
+    # The graphs of the network the activity is drawn on, each in its own
+    # files (network.NETWORKS).
+    source = OsmnxSource.for_activity(args.cache_dir, request.activity)
     one_way = isinstance(request, OutlineRequest) and request.outline.one_way
     word = request.word if isinstance(request, WordRequest) else args.pieces
     planned_m = planned_distance(request.distance_m, one_way)

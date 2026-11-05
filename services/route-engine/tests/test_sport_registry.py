@@ -11,7 +11,7 @@ from pathlib import Path
 import route_engine
 from route_engine import models, network
 from route_engine.activities import ENGINE_ACTIVITIES
-from route_engine.networks import NETWORKS_BY_NAME, bike, foot
+from route_engine.networks import NETWORKS_BY_NAME, bike, foot, hike
 
 ENGINE = Path(route_engine.__file__).parent
 
@@ -24,22 +24,33 @@ BEFORE_LIMITS = {
     "swimming": (500, 3_000),
 }
 BEFORE_NETWORKS = {"running": "foot", "cycling": "bike"}
+# Added since, each by a line of its register: a hike (TASK-377).
+SINCE_SUPPORTED = ("hiking",)
+SINCE_LIMITS = {"hiking": (1_000, 30_000)}
+SINCE_NETWORKS = {"hiking": "hike"}
 
 
 def test_the_activities_are_those_of_before_in_their_order() -> None:
-    assert models.SUPPORTED_ACTIVITIES == BEFORE_SUPPORTED
-    assert models.ACTIVITIES == BEFORE_SUPPORTED
-    assert list(models.DISTANCE_LIMITS_M.items()) == list(BEFORE_LIMITS.items())
+    assert models.SUPPORTED_ACTIVITIES == BEFORE_SUPPORTED + SINCE_SUPPORTED
+    assert models.ACTIVITIES == BEFORE_SUPPORTED + SINCE_SUPPORTED
+    assert list(models.DISTANCE_LIMITS_M.items()) == [
+        *BEFORE_LIMITS.items(),
+        *SINCE_LIMITS.items(),
+    ]
     assert (models.MIN_DISTANCE_M, models.MAX_DISTANCE_M) == (1_000, 50_000)
     assert models.WATER_ACTIVITIES == {"paddling", "swimming"}
     assert models.DRAWN_ON_WATER == {"swimming"}
 
 
 def test_the_networks_are_those_of_before() -> None:
-    assert list(network.NETWORKS.items()) == list(BEFORE_NETWORKS.items())
+    assert list(network.NETWORKS.items()) == [
+        *BEFORE_NETWORKS.items(),
+        *SINCE_NETWORKS.items(),
+    ]
     assert network.FILTERS == {
         "foot": network.FOOT_FILTER,
         "bike": network.BIKE_FILTER,
+        "hike": hike.HIKE_FILTER,
     }
     assert network.FOOT_NETWORK_NAME == "foot"
     assert network.BIKE_NETWORK_NAME == "bike"
@@ -60,7 +71,11 @@ def test_every_activity_is_on_a_network_of_the_register_or_on_the_water() -> Non
 
 
 def test_every_network_is_registered_under_its_own_name() -> None:
-    assert NETWORKS_BY_NAME == {"foot": foot.NETWORK, "bike": bike.NETWORK}
+    assert NETWORKS_BY_NAME == {
+        "foot": foot.NETWORK,
+        "bike": bike.NETWORK,
+        "hike": hike.NETWORK,
+    }
     for name, registered in NETWORKS_BY_NAME.items():
         assert registered.name == name
 

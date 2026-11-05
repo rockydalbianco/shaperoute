@@ -85,6 +85,27 @@ tutto: è corto apposta.
   un tipo non si ricava da una tupla in Python. Uno sport nuovo li allunga di
   un nome; `test_sport_registry_api.py` dice quando non coincidono.
 
+- **2026-11-05, TASK-377 A — il pilota contro la ricetta: le deroghe.**
+  Uno sport che si disegna non entra con «file nuovi più una riga»:
+  - **le tabelle «di prima» sono congelate nei test** di TASK-376 (motore,
+    contratto, API, app). Ogni sport nuovo le tocca: ora dicono «quelle di
+    prima più quelle aggiunte da allora», e il prossimo sport aggiunge una
+    voce alla lista «da allora»;
+  - **le fixture del contratto** `contract.json`, `run-activities.json`,
+    `reads.json` elencano le attività: tre righe;
+  - **un'attività nel contratto è subito nell'app**: senza il suo
+    `SportProfile` l'app non parte (`search/searchFilters.ts` chiama
+    `profileOf` al caricamento). Lo sport entra nell'app già con la parte A,
+    nascosto: nessuna riga in «Settings», nessun chip nella ricerca
+    (`searchFilters.ts`, finché `activityOffered` non lo sa);
+  - **una rete nuova vuole le sue zone nell'API** (`Zones` nel file dello
+    sport): `test_every_sport_on_roads_has_zones_and_no_other`;
+  - `reads.NEWER_ACTIVITIES` va nell'ordine di `RunActivity`, non in fondo;
+  - il finto `_GridSource` di `test_cli.py` ora ha `for_activity`, e i test
+    che usavano `hiking` come attività sconosciuta usano `skating` o
+    `climbing`.
+  Dettagli in `tasks/TASK-377.md`, «Lista definitiva di A».
+
 ## L'app
 
 - **2026-11-05, TASK-376 B3a — il profilo di ogni sport.** Uno sport è un

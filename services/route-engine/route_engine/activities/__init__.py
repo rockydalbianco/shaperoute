@@ -7,7 +7,7 @@ models.py and network.py read their tables from it.
 
 from __future__ import annotations
 
-from route_engine.activities import cycling, paddling, running, swimming
+from route_engine.activities import cycling, hiking, paddling, running, swimming
 from route_engine.activities.base import Activity
 
 ENGINE_ACTIVITIES: tuple[Activity, ...] = (
@@ -15,4 +15,5 @@ ENGINE_ACTIVITIES: tuple[Activity, ...] = (
     cycling.ACTIVITY,
     paddling.ACTIVITY,
     swimming.ACTIVITY,
+    hiking.ACTIVITY,
 )

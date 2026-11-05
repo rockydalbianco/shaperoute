@@ -6,6 +6,7 @@
  */
 import { CYCLING } from "./cycling.ts";
 import { GYM } from "./gym.ts";
+import { HIKING } from "./hiking.ts";
 import { PADDLING } from "./paddling.ts";
 import { RUNNING } from "./running.ts";
 import { SKIING } from "./skiing.ts";
@@ -19,8 +20,25 @@ export {
   type RecordedSport,
   type TracklessSport,
 } from "./base.ts";
-export { CYCLING, GYM, PADDLING, RUNNING, SKIING, SWIMMING, WALKING, XC_SKIING };
+export {
+  CYCLING,
+  GYM,
+  HIKING,
+  PADDLING,
+  RUNNING,
+  SKIING,
+  SWIMMING,
+  WALKING,
+  XC_SKIING,
+};
 
-export const PLANNED_SPORTS = [RUNNING, CYCLING, PADDLING, SWIMMING, WALKING] as const;
+export const PLANNED_SPORTS = [
+  RUNNING,
+  CYCLING,
+  PADDLING,
+  SWIMMING,
+  HIKING,
+  WALKING,
+] as const;
 export const RECORDED_SPORTS = [SKIING, XC_SKIING] as const;
 export const TRACKLESS_SPORTS = [GYM] as const;

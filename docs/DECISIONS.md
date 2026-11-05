@@ -23587,3 +23587,7 @@ per rientrare. Tempo, passo e distanza fatta restano sulla schermata della
 corsa.
 Senza percorso nessuna Live Activity (scelta dell'utente «No, solo con
 percorso», contro «Sì, con i numeri»).
+A fine corsa, all'arrivo, il riquadro mostra «You have arrived.» con la
+barra al 100% e sparisce da solo dopo 5 minuti; con «Stop» prima
+dell'arrivo sparisce subito (scelta dell'utente «Riepilogo per qualche
+minuto», contro «Sparisce subito»).

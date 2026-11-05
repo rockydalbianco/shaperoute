@@ -194,8 +194,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   una riga). Va nella prossima anteprima; prima della produzione il Coordinatore chiede
   all'utente la prova su una corsa vera. Parte B: scelta dell'utente «Solo la guida» per la
   Live Activity (freccia, metri, svolta, via, barra con % e distanza che manca); restano
-  la fine e il sì alla dipendenza, poi la lista al Coordinatore. Senza percorso niente Live
-  Activity (scelta dell'utente «No, solo con percorso»).
+  il sì alla dipendenza, poi la lista al Coordinatore. Senza percorso niente Live Activity
+  («No, solo con percorso»); all'arrivo riepilogo per 5 minuti, con «Stop» sparisce subito
+  («Riepilogo per qualche minuto»).
 - **TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono**
   (2026-11-05; numeri riservati dal Coordinatore il 2026-11-04, ADR-0314 «Proposto»;
   richiesta dell'utente «l'app per apple watch completa per tutti gli sport», scelta

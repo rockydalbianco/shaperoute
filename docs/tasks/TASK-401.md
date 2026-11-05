@@ -95,9 +95,10 @@ come la voce e la vibrazione.
   chiama `update` quando cambia qualcosa che si vede (i metri arrotondati a
   10, la percentuale intera, la svolta, il fuori rotta), al massimo una volta
   al secondo. Nessuna push di ActivityKit, nessun server toccato.
-- **Parte** con «Start» della corsa e **finisce** a fine corsa (resta
-  qualche minuto col riepilogo, da decidere), o si chiude da sola se l'app
-  viene chiusa a mano.
+- **Parte** con «Start» di una corsa **con percorso** (senza percorso
+  niente, scelta 3b) e **finisce** a fine corsa: all'arrivo resta 5 minuti
+  col riepilogo, con «Stop» sparisce subito (scelta 4); si chiude da sola
+  se l'app viene chiusa a mano.
 - **Con la Live Activity attiva, la notifica della parte A non si manda**:
   una cosa sola sul lock screen.
 - **Il nativo**: un widget extension SwiftUI (`ActivityConfiguration`) in
@@ -163,8 +164,11 @@ tiene il Coordinatore con l'utente.
    o distanza fatta.
 3b. ~~Senza percorso~~ → **«No, solo con percorso»** (2026-11-05, contro
    «Sì, con i numeri»): nelle corse senza percorso nessuna Live Activity.
-4. **Parte B, la fine**: il riquadro sparisce a fine corsa o resta qualche
-   minuto col riepilogo.
+4. ~~Parte B, la fine~~ → **«Riepilogo per qualche minuto»** (2026-11-05,
+   contro «Sparisce subito»): all'arrivo il riquadro mostra «✓ You have
+   arrived.» (il testo che la schermata ha già) e la barra al 100%, e
+   sparisce da solo dopo 5 minuti (`dismissalPolicy: .after`); con «Stop»
+   prima dell'arrivo sparisce subito.
 5. **La dipendenza** `@bacons/apple-targets` nella 1.0.2 (sì dell'utente e
    via del Coordinatore), e il modulo locale in Swift.
 

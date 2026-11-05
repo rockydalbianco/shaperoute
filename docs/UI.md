@@ -2868,6 +2868,15 @@ esattamente dov'era. Un disegno di un altro si modifica
 sempre in una copia propria: il suo post non cambia, e la copia non dice da
 chi viene.
 
+**Sotto A, B e C, dal TASK-403** (ADR-0337, scelta dell'utente del
+2026-11-05: «Sì, rimettilo»): sotto il risultato di «Draw», dopo «Another
+figure» e sopra «Start», «Edit the drawing» c'è di nuovo e mette la **linea
+dell'opzione scelta** (A, B o C) sulla mappa, dov'è e grande com'è, come
+sulle schede: anche per un'emoji, una parola e il risultato di un disegno a
+mano, e sull'acqua. Quello che sopra dice «non c'è più sotto il risultato di
+"Draw"» (TASK-340) non vale più; «←» dal risultato della mappa torna ancora
+alla figura com'era.
+
 Quello che segue è la tavola del TASK-320, tolta dal TASK-331: resta come
 storia delle scelte approvate allora.
 

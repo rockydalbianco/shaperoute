@@ -1,5 +1,6 @@
 import type { GymSessionRequest } from "@shaperoute/shared-types";
 
+import type { DrawingChoice } from "../api/drawings";
 import { keptList } from "../storage/keptList";
 
 /**
@@ -19,6 +20,12 @@ export type GymWaiting = {
   owner: number;
   key: string;
   request: GymSessionRequest;
+  /** Its post, as the end of the workout chose it (TASK-385 part D): it
+   * goes once the API has the workout, as a run's drawing. Its photos and
+   * their order wait in their own files. */
+  drawing?: DrawingChoice;
+  /** «Show exercises» turned off at the end: told once the API has it. */
+  show?: boolean;
   /** The API will not take it (422, or 409 for a key of a run): it is not
    * sent again. */
   refused?: { code: string; message: string };

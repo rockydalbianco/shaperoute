@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import {
@@ -22,7 +22,8 @@ type Props = {
 
 /**
  * One of the two emoji rows of «Edit video» (TASK-408, ADR-0339): «—» for
- * none, then the video's emoji, one of them chosen. Along the way it pops
+ * none, then the video's emoji, one of them chosen, in a row that scrolls
+ * sideways as «Character» does. Along the way it pops
  * where the line passes; at the end it bursts around the whole drawing.
  */
 export function VideoEmojiRow({ title, emoji, onChange, testID }: Props) {
@@ -30,8 +31,10 @@ export function VideoEmojiRow({ title, emoji, onChange, testID }: Props) {
   return (
     <View style={styles.block}>
       <Text style={styles.title}>{title}</Text>
-      <View
-        style={styles.row}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
         accessibilityRole="radiogroup"
         accessibilityLabel={title}
       >
@@ -53,7 +56,7 @@ export function VideoEmojiRow({ title, emoji, onChange, testID }: Props) {
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -67,8 +70,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.small,
   },
   row: {
-    flexDirection: "row",
-    flexWrap: "wrap",
     gap: space.xs,
   },
   tile: {

@@ -77,16 +77,18 @@ const EMOJI_STEP_S = 0.15;
 const EMOJI_POP_S = 0.35;
 /** The emoji of the way and of the end (TASK-408, part C1): their size as a
  * share of the width; where those of the end burst, as shares of the width
- * and of the height, around the drawing and clear of the numbers; the step
- * between them. */
+ * and of the height, at the corners of the drawing and halfway down its
+ * sides, clear of the title, the logo and the numbers; the step between
+ * them. */
 const ALONG_EMOJI = 0.09;
 const END_EMOJI = 0.12;
 const END_SPOTS: readonly [number, number][] = [
-  [0.5, 0.17],
-  [0.16, 0.26],
-  [0.84, 0.28],
-  [0.22, 0.6],
-  [0.78, 0.58],
+  [0.14, 0.21],
+  [0.86, 0.21],
+  [0.07, 0.46],
+  [0.93, 0.46],
+  [0.1, 0.69],
+  [0.9, 0.69],
 ];
 const END_STEP_S = 0.12;
 

@@ -706,15 +706,17 @@ describe("videoScene, as «Edit video» makes it (TASK-408 C1)", () => {
     expect(emoji(last, "🔥").map((op) => op.share)).toEqual([0.25, 0.5, 0.75]);
   });
 
-  it("bursts the emoji of the end around the drawing once it is whole, five of them", () => {
+  it("bursts the emoji of the end around the drawing once it is whole, six of them", () => {
     const end = videoScene(RUN, POST_RESULTS, [], "night", { end: "🎆" });
     expect(emoji(end.frames[8 * VIDEO_FPS], "🎆")).toHaveLength(0);
     const last = emoji(end.frames[end.frames.length - 1], "🎆");
-    expect(last).toHaveLength(5);
+    expect(last).toHaveLength(6);
     for (const op of last) {
       expect(op.scale).toBe(1);
       expect(op.size).toBeCloseTo(VIDEO_WIDTH * 0.12, 1);
-      expect(op.y).toBeLessThan(VIDEO_HEIGHT * 0.65);
+      // Under the title, over the numbers.
+      expect(op.y).toBeGreaterThan(VIDEO_HEIGHT * 0.2);
+      expect(op.y).toBeLessThan(VIDEO_HEIGHT * 0.7);
     }
   });
 

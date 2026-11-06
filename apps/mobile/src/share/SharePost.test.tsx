@@ -119,6 +119,19 @@ describe("the post", () => {
     await screen.findByText("Send to Strava");
   });
 
+  it("offers the animals in «Character», none chosen when the post opens (TASK-408)", async () => {
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
+    expect(screen.getByText("Character")).toBeOnTheScreen();
+    expect(screen.getByRole("radio", { name: "No animal" })).toBeChecked();
+    for (const name of ["Horse", "White horse", "Stag", "Fox", "Shiba Inu", "Alpaca"]) {
+      expect(screen.getByRole("radio", { name })).not.toBeChecked();
+    }
+    await fireEvent.press(screen.getByRole("radio", { name: "Fox" }));
+    expect(screen.getByRole("radio", { name: "Fox" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "No animal" })).not.toBeChecked();
+    await screen.findByText("Send to Strava");
+  });
+
   it("offers no score, and writes none on the picture", async () => {
     await shown(<SharePost run={RUN} onClose={() => {}} />);
     expect(screen.queryByRole("checkbox", { name: "Score" })).toBeNull();

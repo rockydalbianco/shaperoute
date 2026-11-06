@@ -297,7 +297,15 @@ c'è già in «Share your run», quindi niente «Export video».
 
 - **A — la proposta** (questa PR): il task file, ADR-0339, la tavola.
 - **B — il personaggio 3D**: three.js e i modelli nella pagina del video,
-  la riga «Personaggio», la camera che segue, la misura sul telefono.
+  la riga «Personaggio», la camera che segue, la misura sul telefono. In
+  due PR (ADR-0339, precisazione B):
+  - **B1** (branch `feat/TASK-408-b-character`): i 12 animali di Quaternius
+    sulla punta della linea, in ogni stile, la riga «Character», il video
+    che esce anche senza rete. Lista approvata dal Coordinatore il
+    2026-11-06, con `SharePostVideo.test.tsx` aggiunto lo stesso giorno.
+  - **B2**: l'elefante (il file lo scarica l'utente da Sketchfab, che chiede
+    un account), la riga dei crediti nei Termini (`about/content/*.ts`,
+    dopo la #908), la camera dietro l'animale sul 3D.
 - **C — l'editor**: il foglio «Edit video», colori, emoji lungo il
   percorso, scene, finale, lo stile 2D.
 - **D — il prompt**: la tabella di parole nell'app e il riquadro; niente
@@ -325,6 +333,18 @@ Questa PR (documenti): `docs/tasks/TASK-408.md` (nuovo), `docs/DECISIONS.md`
 (ADR-0339), `docs/STATUS.md` (una voce), `docs/INDEX.md` (una riga).
 
 Parti B–E: si elencano prima di ciascuna.
+
+Parte B1: `apps/mobile/assets/characters/*.zip` (12, nuovi),
+`apps/mobile/src/share/videoCharacter.ts` e `.test.ts` (nuovi),
+`CharacterRow.tsx` (nuovo), `videoPage.ts` e `.test.ts`, `videoScene.ts` e
+`.test.ts`, `RunVideo.tsx`, `SharePost.tsx` e `.test.tsx`,
+`SharePostVideo.test.tsx` (aggiunto dal Coordinatore il 2026-11-06),
+`apps/mobile/src/tabs/TabSwipeOwners.test.ts` (una riga in `ROWS`, aggiunto
+dal Coordinatore il 2026-11-06),
+`apps/mobile/src/i18n/{it,de,es,fr}.ts`, `docs/tasks/TASK-408.md`,
+`docs/STATUS.md`, `docs/DECISIONS.md`. Fuori dal repository:
+`out/TASK-408/` (i glTF scaricati, `shrink.mjs`, i .glb, la pagina di prova
+per il browser).
 
 ## Criteri di accettazione
 

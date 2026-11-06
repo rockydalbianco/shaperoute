@@ -1631,6 +1631,21 @@ export const IT: Table = {
   Retro: "Retrò",
   Fiesta: "Festa",
   "Tap a track to hear it.": "Tocca un brano per sentirlo.",
+
+  // src/share/CharacterRow.tsx, videoCharacter.ts (TASK-408: the animal of
+  // the video; «Horse», «Fox», «Wolf» are above)
+  Character: "Personaggio",
+  "No animal": "Nessun animale",
+  "White horse": "Cavallo bianco",
+  Stag: "Cervo",
+  Deer: "Capriolo",
+  Husky: "Husky",
+  "Shiba Inu": "Shiba Inu",
+  Cow: "Mucca",
+  Bull: "Toro",
+  Donkey: "Asino",
+  Alpaca: "Alpaca",
+
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concorso MuW",
   "The post with the most reactions wins.": "Vince il post con più reazioni.",

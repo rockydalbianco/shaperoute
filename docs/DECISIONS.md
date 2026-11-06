@@ -24706,6 +24706,46 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
 - **I modelli 3D nel layer di MapLibre senza three.js**: MapLibre GL JS non
   carica glTF da solo.
 
+## ADR-0339, precisazione B — L'animale disegnato a parte e posato sul fotogramma, three.js r159, i modelli in uno zip
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-06), con i
+vincoli del Coordinatore sulla lista della parte B.
+
+1. **three.js 0.159.0**, `build/three.min.js` da unpkg con l'hash SRI, come
+   MapLibre. È l'ultima versione con una build per uno script semplice:
+   dalla r160 three.js è solo un modulo ES, e un modulo importato da un
+   altro non si controlla con l'SRI sui telefoni di oggi. La pagina lo
+   carica **solo quando c'è un animale**, con un tag creato al momento.
+2. **Senza rete il video esce lo stesso** (vincolo del Coordinatore): se
+   three.js o il modello non arrivano entro 10 secondi, la pagina risponde
+   `character` con `ok: false` e il perché, l'app va avanti come prima e la
+   pagina salta gli op `character`; sotto l'animale c'era già la punta della
+   penna, che resta. Test: `videoPage.test.ts`, «the video page, with an
+   animal».
+3. **L'animale si disegna in un canvas suo** (WebGL, 512 × 512, camera
+   ortografica) e si posa sul fotogramma 2D alla punta della linea, girato
+   nella direzione da cui arriva. Non è un «custom layer» di MapLibre come
+   diceva il punto 1 di ADR-0339: così funziona uguale su carta, Notte,
+   Giorno e 3D, anche quando la mappa è una foto ferma o manca. Sul 3D la
+   camera dell'animale è alta quanto quella della mappa (90° − `PITCH_3D`).
+4. **Un lettore glTF piccolo nella pagina**, non il GLTFLoader di three.js,
+   che esiste solo come modulo ES. Legge quello che i nostri modelli hanno:
+   nodi, mesh con skin, colori piatti, animazioni lineari; niente texture,
+   niente compressione, ogni attributo nel suo array.
+5. **I modelli**: i 12 glTF di Quaternius ridotti al galoppo («Gallop») e
+   al riposo («Idle») da `out/TASK-408/shrink.mjs` (gltf-transform,
+   installato a parte, non dipendenza del repository): da 1,4–3,6 MB a
+   266–358 KB l'uno, 3,5 MB in tutto. Ogni `.glb` sta in uno `.zip` **non
+   compresso** (`zip -0`): Metro impacchetta gli `.zip` tra i suoi asset di
+   sempre e non i `.glb`, e aggiungere `glb` agli `assetExts` vorrebbe dire
+   un `metro.config.js` nuovo, che entra nell'impronta iOS. Così l'impronta
+   resta ferma e l'animale arriva con un OTA. Non compresso perché l'app
+   lo apre da sola, in poche righe (`storedFileOf`), senza una libreria
+   per lo zip; poi lo passa alla pagina in base64.
+6. **La parte B si fa in due PR**: B1 l'animale sulla linea, in tutti gli
+   stili, con la riga «Character»; B2 l'elefante (dal file che scarica
+   l'utente), la riga dei crediti nei Termini, che lo nomina, e la camera
+   che segue l'animale sul 3D.
 ## ADR-0274, precisazione B — Lo schermo di corsa: la strada nel ciclo delle posizioni, nessun testo nuovo, il server a telefono bloccato
 
 **Stato**: Accettato · **Data**: 2026-11-06 · **Task**: TASK-314 parte B

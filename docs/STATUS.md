@@ -775,6 +775,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   tabella di parole (scelta 9); i testi in cinque lingue (scelta 10).
   Domande finite. Prossimo: la parte B (il personaggio 3D), con la lista
   dei file al Coordinatore (`tasks/TASK-408.md`).
+  **Parte B1** (2026-11-06, branch `feat/TASK-408-b-character`): i 12
+  animali di Quaternius (CC0, 266–358 KB l'uno, 3,5 MB in tutto) corrono
+  sulla punta della linea in ogni stile; riga «Character» in «Share your
+  run», «No animal» all'apertura; three.js 0.159.0 con SRI caricato solo con
+  un animale, e senza rete il video esce senza (ADR-0339, precisazione B).
+  Prossimo: B2, l'elefante dall'utente, i crediti, la camera dietro.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

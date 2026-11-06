@@ -29,6 +29,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { CharacterRow } from "./CharacterRow";
 import { MusicRow } from "./MusicRow";
 import { PostButton } from "./PostButton";
 import { POST_RATIO, PostImage } from "./PostImage";
@@ -54,6 +55,7 @@ import {
 } from "./stickers";
 import { StravaPostRow } from "./StravaPostRow";
 import { StyleRow } from "./StyleRow";
+import type { Character } from "./videoCharacter";
 import { type VideoOutcome, videoProblem } from "./videoFile";
 import { hearMusic, type Music } from "./videoMusic";
 import { type VideoScene, videoScene } from "./videoScene";
@@ -76,7 +78,8 @@ type Props = {
  * opens as it was the next time. «Export video» shares the same post as a
  * short video of the run drawing itself over the map of the run (TASK-295,
  * TASK-351), in the style chosen in «Style», with the track chosen in
- * «Music» (TASK-301). A workout at the gym shares its yellow tile alone
+ * «Music» (TASK-301), with the animal chosen in «Character» running the
+ * line (TASK-408). A workout at the gym shares its yellow tile alone
  * (TASK-385 part D): no line to draw, so no results, emoji, video nor
  * Strava. A swim in a pool shares its tile alone too (TASK-400 part C).
  */
@@ -124,6 +127,8 @@ function SharePage({ run, onClose }: Props) {
   const [music, setMusic] = useState<Music | null>(null);
   // The video's style, «Night» when the post opens (TASK-351).
   const [style, setStyle] = useState<VideoStyle>("night");
+  // The animal that runs the line, none when the post opens (TASK-408).
+  const [character, setCharacter] = useState<Character | null>(null);
   // The video being made, with its music, and how much of it is (TASK-295);
   // the map under it, and the post on yellow for when the map does not
   // come (TASK-351).
@@ -175,8 +180,8 @@ function SharePage({ run, onClose }: Props) {
     hearMusic(null);
     setMade(0);
     setVideo({
-      scene: videoScene(run, shown, stickers, style),
-      fallback: videoScene(run, shown, stickers, "paper"),
+      scene: videoScene(run, shown, stickers, style, character),
+      fallback: videoScene(run, shown, stickers, "paper", character),
       music,
     });
   }
@@ -305,6 +310,7 @@ function SharePage({ run, onClose }: Props) {
             )}
 
             <StyleRow run={run} style={style} onChange={setStyle} />
+            <CharacterRow character={character} onChange={setCharacter} />
             <MusicRow music={music} onChange={setMusic} />
           </>
         )}

@@ -17,10 +17,12 @@ import {
   VIDEO_SILENCE_MS,
   type VideoOutcome,
 } from "./videoFile";
+import { base64OfBytes, characterModel } from "./videoCharacter";
 import { type Music, musicTrack } from "./videoMusic";
 import {
   makeCall,
   type PageTimes,
+  prepareCharacterCall,
   prepareMapCall,
   VIDEO_PAGE,
   VIDEO_PAGE_BASE,
@@ -59,7 +61,10 @@ type Props = {
  * draws the map first (TASK-351); when it cannot, within its own time, the
  * `fallback` scene is made instead. On the testers' preview channel only
  * (`isPreview`), a line at its foot says why, while the cause on the phone
- * is looked for: the stores' build never shows it.
+ * is looked for: the stores' build never shows it. With an animal
+ * (TASK-408) the page first loads three.js and the animal's model, read
+ * from the app's file of it; when either does not come, the video is made
+ * without the animal.
  */
 export function RunVideo({
   scene,
@@ -83,6 +88,15 @@ export function RunVideo({
   // they could not be read.
   const [audio] = useState<Promise<AudioTrack | null> | null>(() =>
     music === null ? null : musicTrack(music).catch(() => null),
+  );
+  // The animal's model, in base64 for the page (TASK-408), read once; null
+  // when it could not be read: the video then comes without the animal.
+  const [model] = useState<Promise<string | null> | null>(() =>
+    scene.character === null
+      ? null
+      : characterModel(scene.character)
+          .then(base64OfBytes)
+          .catch(() => null),
   );
   // The latest callbacks, for the timer and the page's messages.
   const callbacks = useRef({ onProgress, onEnd, onTimes });
@@ -161,6 +175,15 @@ export function RunVideo({
     end("shared");
   }
 
+  /** After the animal: the map first on the map looks, else the video. */
+  function next() {
+    if (mapJson === null) {
+      webView.current?.injectJavaScript(makeCall(sceneJson));
+    } else {
+      webView.current?.injectJavaScript(prepareMapCall(mapJson));
+    }
+  }
+
   function receive(data: string) {
     if (ended.current) {
       return;
@@ -175,11 +198,24 @@ export function RunVideo({
         case "ready":
           if (message.codec === null) {
             end("unsupported");
-          } else if (mapJson === null) {
-            webView.current?.injectJavaScript(makeCall(sceneJson));
+          } else if (model === null) {
+            next();
           } else {
-            webView.current?.injectJavaScript(prepareMapCall(mapJson));
+            void model.then((base64) => {
+              if (ended.current) {
+                return;
+              }
+              if (base64 === null) {
+                next();
+              } else {
+                webView.current?.injectJavaScript(prepareCharacterCall(base64));
+              }
+            });
           }
+          break;
+        case "character":
+          // Ready or not, the video goes on: without it, the pen's tip.
+          next();
           break;
         case "waiting":
           // Tiles still coming: the page is alive.

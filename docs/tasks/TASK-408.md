@@ -304,6 +304,14 @@ c'è già in «Share your run», quindi niente «Export video».
     che esce anche senza rete. Lista approvata dal Coordinatore il
     2026-11-06, con `SharePostVideo.test.tsx` aggiunto lo stesso giorno.
     **In main** il 2026-11-06 (#911, 32cbb012), impronta iOS invariata.
+    Video del simulatore per l'utente il 2026-11-06 (cavallo Notte, volpe
+    Giorno, cervo 3D, lupo Notte; `out/TASK-408/sim/`, fuori dal
+    repository). **Limite noto:** sul 3D, con le tessere del rilievo non
+    ancora in cache, la mappa può non arrivare entro i 15 s di
+    `MAP_WAIT_MS` e il video esce giallo, di riserva, con l'animale sopra
+    (simulatore: prima prova 15,0 s e giallo, seconda 6,8 s con la mappa).
+    È il comportamento di TASK-351, non nuovo di B1; la misura sul telefono
+    è della parte E.
   - **B2**: l'elefante (il file lo scarica l'utente da Sketchfab, che chiede
     un account), la riga dei crediti nei Termini (`about/content/*.ts`,
     dopo la #908), la camera dietro l'animale sul 3D.

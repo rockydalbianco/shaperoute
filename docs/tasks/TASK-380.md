@@ -1,6 +1,6 @@
 # TASK-380 — Roller: i pattini in linea sull'asfalto liscio
 
-**Stato**: In corso — parte 0 (misure e proposta) in PR.
+**Stato**: In corso — parte 0: misure in `main` (#886), scelte in PR.
 **Fase**: 4 · **Branch**: `docs/TASK-380-0-roller` (parte 0), poi
 `feat/TASK-380-a-roller-engine-api`, `feat/TASK-380-b-roller-app` ·
 **ADR**: ADR-0324 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -61,31 +61,138 @@ Da leggere: `docs/sports/COME-AGGIUNGERE.md`, `docs/sports/CONDIVISO.md`,
    «ready». Le risposte qui sotto; ADR-0324 «Accettato».
 6. La lista della parte A al Coordinatore, con il numero della migrazione.
 
+### Parte A — motore, contratto, API (dopo le scelte, in una sessione sua)
+
+Lista proposta al Coordinatore il 2026-11-06, da approvare prima del
+codice, con il numero della migrazione da chiedere. È fatta sul diff della
+378-A (#875), che ha toccato gli stessi registri:
+
+```
+services/route-engine/route_engine/networks/roller.py           (nuovo: filtro, regole di roller.md, ogni via nei due sensi)
+services/route-engine/route_engine/networks/__init__.py         (una riga)
+services/route-engine/route_engine/activities/inline_skating.py (nuovo: 5–30 km, rete roller)
+services/route-engine/route_engine/activities/__init__.py       (una riga)
+services/route-engine/tests/test_inline_skating.py              (nuovo)
+services/route-engine/tests/test_sport_registry.py, test_bike_network.py, test_hiking.py,
+    test_walking.py, test_mountain_biking.py, test_gravel_biking.py  (le liste «aggiunte da allora» e l'ordine)
+packages/shared-types/src/sports/inline_skating.ts              (nuovo)
+packages/shared-types/src/sports/index.ts                       (una riga)
+packages/shared-types/fixtures/route-request-inline_skating.json (nuovo)
+packages/shared-types/fixtures/contract.json, reads.json, run-activities.json
+packages/shared-types/test/inlineSkating.test.ts                (nuovo)
+packages/shared-types/test/sportRegistry.test.ts, hiking.test.ts, gravelMtb.test.ts
+services/api/shaperoute_api/sports/inline_skating.py            (nuovo: InlineSkate, zone, SportBests 5/10/21,1/42,2 km, GPX)
+services/api/shaperoute_api/sports/__init__.py                  (una riga)
+services/api/shaperoute_api/activities.py                       (un nome nel Literal)
+services/api/shaperoute_api/personal_bests.py                   (un nome nel Literal Sport)
+services/api/shaperoute_api/reads.py                            (una riga)
+services/api/shaperoute_api/game_rules.py                       (il Roller con chi va a piedi: scelta 4)
+services/api/migrations/00NN_inline_skating.sql                 (nuovo: CHECK di runs, favorites, group_runs, run_bests)
+services/api/tests/test_inline_skating_api.py                   (nuovo)
+services/api/tests/test_sport_registry_api.py, test_personal_bests.py, test_hiking_api.py,
+    test_walking_api.py, test_cycling.py, test_record_only.py, test_favorites.py,
+    test_paddling.py, test_gravel_mtb_api.py, test_game_rules.py (le liste)
+services/api/shaperoute_api/route_store.py                      (una riga in SAME_ROUTES_AS, se la prova regge)
+services/api/tests/fixtures/same_routes/<impronta>.json         (nuovo: la prova)
+apps/mobile/src/sports/inline_skating.ts                        (nuovo: il profilo, nascosto)
+apps/mobile/src/sports/index.ts                                 (una riga)
+apps/mobile/src/search/searchFilters.ts                         (l'esclusione, se serve ancora, come in 378-A)
+apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts,
+    src/route/distanceMiles.test.ts, src/api/accounts.test.ts   (le liste)
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json  (da scripts/watch-sports.sh)
+apps/mobile/assets/engine/engine.zip                            (rifatto, ultimo commit)
+docs/tasks/TASK-380.md, docs/STATUS.md, docs/sports/CONDIVISO.md, docs/sports/roller.md,
+    docs/DECISIONS.md (precisazione di ADR-0324)
+```
+
+- **L'impronta del motore**: `networks/roller.py` è un file nuovo nel
+  motore. Se i nove percorsi fissi di `test_same_routes.py` restano
+  identici, si tiene con `SAME_ROUTES_AS`, come Hike e MTB; altrimenti
+  serve una notte di esempi, col sì dell'utente.
+- **Una zona `roller` in memoria sul server**: la parte A misura quanto
+  pesa (`activity_graphs.ZONES_IN_MEMORY`), come la MTB.
+- **Il banco sul motore vero**: la rete `roller` scaricata col suo filtro,
+  sulle zone intere, contro le misure di `roller.md`; corsa, bici e canoa
+  identiche (`compare --same`).
+- **Il controllo «veicolo»** del gioco: vedi sotto, nelle scelte.
+
+### Parte B — app (dopo A)
+
+Il profilo completo (`settings/sport.ts`, l'emoji in
+`screens/RunNoRouteButton.tsx`, i tipi nei file importati, `PublicParts`,
+i testi in `i18n`, l'avviso `caution`), con la sua lista al Coordinatore
+prima del codice. Apple `.skatingSports` (39) e Health Connect
+`EXERCISE_TYPE_SKATING` (60), da verificare sulle librerie. Solo
+JavaScript: l'impronta iOS non si muove.
+
 ## Scelte dell'utente
 
-Da fare, una alla volta. Le proposte dell'agente, dalle misure di
-`roller.md`:
+Una alla volta, ciascuna con la proposta dell'agente, il 2026-11-06. Tutte
+come la proposta, tranne la quarta:
 
 1. **Nome ed emoji**: «Roller» 🛼. In tedesco «Inline», perché «Roller» è
    il monopattino; in spagnolo «Patines».
-2. **La rete**: `roller` di `roller.md`, cioè asfalto e cemento lisci,
-   ciclabili, marciapiedi, aree pedonali e strade fino alle terziarie;
-   niente sterrato, ciottoli, porfido, strade principali e secondarie; ogni
-   via nei due sensi. Si promette la città e la pianura: in montagna il
-   motore spesso dice che la forma non si disegna (Fiemme e Asiago 2 su 9).
-3. **Le distanze**: da 5 a 30 km (a 5 km 13 su 18, a 10–30 km 34 su 54).
-4. **Gioco e record**: come la bici. Fuori dal gioco delle forme, perché
-   su ruote; record personali propri su 5, 10, 21,1 e 42,2 km (le
-   maratone sui pattini esistono).
-5. **I testi** in en/it/de/fr/es: il nome, «… without a route», e un
-   avviso sotto il percorso in «Disegna» su traffico e discese.
-6. **Quando si accende**: appena pronto, come Hike, Gravel e MTB: server
-   con la parte A e app con la parte B, ciascun passo col sì dell'utente.
+2. **La rete**: `roller` di `roller.md`.
+   - Dentro: asfalto e cemento lisci, ciclabili, marciapiedi, aree
+     pedonali e strade fino alle terziarie.
+   - Fuori: sterrato, ciottoli, porfido, strade principali e secondarie.
+   - Ogni via va nei due sensi.
+
+   Si promettono la città e la pianura: in montagna il motore spesso dice
+   che la forma non si disegna (Fiemme e Asiago 2 su 9 al banco).
+3. **Le distanze**: da 5 a 30 km (al banco a 5 km 13 su 18, a 10–30 km 34
+   su 54).
+4. **Gioco e record**: nel gioco, con record personali propri. La
+   proposta era «come la bici», fuori dal gioco perché su ruote. I metri
+   del Roller contano nel gioco come quelli di una corsa, con gli stessi
+   controlli. I record personali sono suoi, su 5, 10, 21,1 e 42,2 km,
+   separati da quelli della corsa.
+5. **I testi**, approvati come proposti. Il tono è quello dell'app («tu»,
+   in tedesco «du»).
+
+   | en | it | de | fr | es |
+   |---|---|---|---|---|
+   | Roller | Roller | Inline | Roller | Patines |
+   | Skate without a route | Pattina senza percorso | Ohne Route skaten | Rouler sans parcours | Patinar sin ruta |
+   | Watch for traffic and steep descents: check the route before you set off. | Attento al traffico e alle discese ripide: controlla il percorso prima di partire. | Achte auf Verkehr und steile Abfahrten: Prüf die Route, bevor du losfährst. | Attention à la circulation et aux descentes raides : vérifie le parcours avant de partir. | Cuidado con el tráfico y las bajadas pronunciadas: revisa la ruta antes de salir. |
+
+   - «Roller» è il nome in «Impostazioni», nella ricerca e nei post.
+   - «Skate without a route» è il pulsante per partire senza percorso.
+   - L'avviso sta sotto ogni percorso del Roller in «Disegna» (il campo
+     `caution` del profilo, come Hike).
+6. **Quando si accende**: appena pronto. «ready» diventa vero quando il
+   server ha la parte A e l'app ha la parte B. Server, migrazione, notte
+   degli esempi (se serve) e aggiornamento di produzione restano ciascuno
+   col sì dell'utente.
+
+**Deciso dall'agente su delega dell'utente**:
+
+- L'attività nel contratto si chiama `inline_skating`, con la forma in
+  «-ing» di quelle di oggi. Non `skating`, che alcuni test usano come
+  attività sconosciuta.
+- Nel gioco il Roller fa come la camminata e Hike: i metri contano, ma
+  niente tempi migliori del gioco (le forme del passo restano della
+  corsa). I record personali sono a parte, in `personal_bests`.
+
+**Un punto aperto per la parte A**: il controllo «veicolo» del gioco
+(`game_rules.py`) scarta una corsa se più del 10% va oltre i 7 m/s (25
+km/h) su 200 m. Un pattinatore veloce, o in discesa, ci arriva. La parte A
+misura sulle corse vere quanto succede e, se serve, propone una soglia per
+sport. La soglia è una scelta da chiedere all'utente.
+
+Le scelte toccano le liste di A e B in tre punti:
+
+- **Parte A:** `game_rules.py` conta il Roller con la corsa, la camminata e
+  Hike.
+- **Parte A:** i record personali del Roller (`SportBests`) e il CHECK di
+  `run_bests` nella migrazione.
+- **Parte B:** l'avviso è il campo `caution` del profilo; `ready: true` va
+  in `settings/sport.ts` solo dopo che il server ha la parte A.
 
 ## Criteri di accettazione
 
 - [x] 0: le misure delle reti sono in `roller.md`; ADR-0324 è proposto.
-- [ ] 0: le scelte dell'utente sono scritte qui, una per una.
+- [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-06).
 - [ ] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
       della migrazione.
 - [ ] A: un percorso roller sul grafo di prova sta sull'asfalto liscio e
@@ -105,6 +212,8 @@ docs/DECISIONS.md          (solo ADR-0324, in fondo)
 docs/STATUS.md             (righe proprie)
 docs/INDEX.md              (una riga)
 ```
+
+Seconda PR (le scelte): gli stessi file.
 
 ## Dove si è
 
@@ -129,3 +238,17 @@ Prossimo: le scelte dell'utente, una alla volta.
   (`friendly-shirley-762bd1`), ignorato da git: `loader.py`, `mix.py`,
   `elevation.py`, `summ.py`, `tags.py`, `skates_tag.py`, `six.sh`.
 - Le tegole Terrarium scaricate sono in `out/TASK-380/dem`.
+
+2026-11-06: la parte 0 è in `main` (#886). Le scelte dell'utente, una alla
+volta:
+
+1. «Roller» 🛼;
+2. la rete `roller`;
+3. da 5 a 30 km;
+4. nel gioco, con record personali propri (la proposta era fuori dal
+   gioco);
+5. i testi;
+6. acceso appena pronto.
+
+ADR-0324 accettato. Prossimo: la lista della parte A al Coordinatore, col
+numero della migrazione.

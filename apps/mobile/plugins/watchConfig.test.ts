@@ -70,7 +70,13 @@ describe("the watch's target in the config", () => {
     const { plugins: added, ...same } = watched as typeof watched &
       Record<string, unknown>;
     expect(same).toEqual(rest);
-    expect(added).toEqual(expect.arrayContaining(plugins as unknown[]));
-    expect(added).toHaveLength(plugins.length + 2);
+    // With TASK-401 B app.json has the targets already (the Live Activity):
+    // their match is widened in place, and only WatchCore's plugin is new.
+    const isTargets = (plugin: unknown) =>
+      (Array.isArray(plugin) ? plugin[0] : plugin) === APPLE_TARGETS;
+    const hadTargets = (plugins as unknown[]).some(isTargets);
+    const others = (plugins as unknown[]).filter((plugin) => !isTargets(plugin));
+    expect(added).toEqual(expect.arrayContaining(others));
+    expect(added).toHaveLength(plugins.length + (hadTargets ? 1 : 2));
   });
 });

@@ -24212,3 +24212,92 @@ anche gli estratti OSM del mondo sul server.
   terzo la posizione dell'utente e non avrebbe una cache condivisa.
 - **Le stazioni da un servizio esterno**: scartato. Costerebbe, e OSM le ha
   già, nello stesso estratto di impianti e piste.
+## ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi
+
+**Stato**: Proposto · 2026-11-06 · TASK-380. Numeri dal Coordinatore
+(2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
+`tasks/TASK-380.md`. I punti tecnici qui sotto sono decisi dall'agente su
+delega dell'utente.
+
+**Contesto**: il Roller è il terzo sport della fase 1 (TASK-376, scelta
+dell'utente del 2026-11-04: asfalto liscio e `inline_skates=yes`, e prima
+si misura quanta rete resta). Nessuna rete di oggi va bene:
+
+- la rete foot prende sentieri, sterrati, ciottoli e porfido;
+- la rete bike pedala ogni `track` e le strade principali, rispetta i
+  sensi unici e fa i marciapiedi «a piedi con la bici».
+
+Il banco ha provato quattro reti dai download della bici, senza toccare il
+motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
+54, 23 buoni):
+
+- **`roller`**:
+  - cosa prende: ciclabili, marciapiedi, aree pedonali, strade residenziali,
+    `service`, `unclassified` e terziarie, con superficie liscia o non
+    scritta; `path` e `track` solo se dicono una superficie liscia;
+  - cosa lascia fuori: `smoothness` da `bad` in giù, strade principali e
+    secondarie;
+  - i risultati: 34 su 54, 10 buoni. Milano 8 su 9, Trento 9 su 9,
+    pianura 8 su 9; Fiemme e Asiago 2 su 9. Mai su ciottoli, sterrato o
+    strade principali; il 61% dei km su strade con le auto.
+- **`rollersec`** (con le secondarie): 42 su 54, ma il 12,4% dei km su
+  strade secondarie.
+- **`rollerquiet`** (senza terziarie né autobloccanti): 21 su 54.
+- **`rollerflat`** (senza i tratti oltre l'8%): 26 su 54; a Trento la
+  salita scende da 210 a 95 m ogni 10 km.
+- **Il tag `inline_skates`** c'è solo per 4,5 km a Trento, e in nessun'altra
+  zona.
+
+**Decisione (proposta)**:
+
+1. **Una rete nuova `roller`** (`route_engine/networks/roller.py`) con le
+   regole di `roller` qui sopra, scaricata con un suo filtro Overpass
+   (strade fino alle terziarie, ciclabili, marciapiedi, aree pedonali,
+   `path` e `track`), con file di cache suoi (`roller_*`). Il grafo dice
+   `network: roller`.
+2. **Ogni via va nei due sensi** (`by_bike` falso): chi pattina, per il
+   Codice della strada (art. 190), è un pedone. Niente tratti «a piedi»: si
+   pattina o non si passa.
+3. **Il tag `inline_skates`** non fa la rete: `inline_skates=no` toglie una
+   via, `yes` o `designated` la tiene anche se la superficie non lo dice.
+4. **Un'attività nuova** `inline_skating` in `activities/`, nei file nuovi
+   di ogni strato, con una riga per registro
+   (`docs/sports/COME-AGGIUNGERE.md`). Il nome non è `skating`, che alcuni
+   test usano come attività sconosciuta (`CONDIVISO.md`).
+5. **L'impronta del motore**: una rete nuova è un file nuovo nel motore.
+   Se i nove percorsi fissi di `test_same_routes.py` restano identici, una
+   riga in `SAME_ROUTES_AS`, come Hike e MTB; altrimenti una notte di
+   esempi, col sì dell'utente. Server e migrazione (numero dal
+   Coordinatore) col sì dell'utente.
+6. **Niente quote nel motore per ora**: il filtro delle salite vorrebbe le
+   tegole Terrarium dentro il motore, sul server e sul telefono. Si riprende
+   quando la parte G di TASK-347 porta il dislivello (ADR-0300).
+7. **Sul telefono**: un `SportProfile` con:
+   - Apple `.skatingSports` (39) e Health Connect `EXERCISE_TYPE_SKATING`
+     (60), da verificare sulle librerie;
+   - Strava `InlineSkate`;
+   - l'energia dal Compendium («inline skating»);
+   - un passo di circa 15 km/h per il tempo stimato.
+
+   Solo JavaScript: l'impronta iOS non si muove.
+
+**Restano all'utente**:
+
+- nome ed emoji;
+- la rete, e quindi cosa si promette in montagna;
+- le distanze (il banco ha provato 5–30 km);
+- se conta nel gioco e nei record;
+- i testi, con l'avviso su traffico e discese;
+- quando si accende.
+
+**Alternative**:
+
+- **`rollersec`, con le secondarie**: otto forme in più, quasi tutte in
+  montagna, ma un ottavo del percorso su strade veloci, dove coi pattini non
+  si va. Non la propongo.
+- **`rollerquiet`**: più sicura sulla carta, ma regge solo a Milano.
+- **`rollerflat`**: toglie le discese ripide, ma costa forme a Trento e
+  vuole le quote nel motore. Dopo TASK-347 G.
+- **La rete foot o bike così come sono**: porterebbero chi pattina su
+  porfido, sterrato o strade principali.
+- **Una rete fatta col tag `inline_skates`**: 4,5 km in sei zone.

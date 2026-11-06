@@ -800,6 +800,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'OTA un video del simulatore per l'utente, poi il suo sì. B2 parte da
   `origin/main` (la #908 è già dentro) quando l'utente ha scaricato
   l'elefante in `out/TASK-408/`.
+  Video del simulatore mandato all'utente e al Coordinatore il 2026-11-06;
+  limite noto nel task file: 3D a freddo può dare il video giallo di
+  riserva dopo 15 s. L'OTA la pubblica il Coordinatore dopo il sì
+  dell'utente.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

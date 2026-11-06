@@ -1,7 +1,8 @@
 # TASK-378 — Gravel e MTB: la bici fuori dall'asfalto
 
 **Stato**: In corso — parte 0 in `main` (#840, #841); parte A in `main`
-(#875, 2026-11-06); prossimo: la parte B.
+(#875, 2026-11-06); parte B in `main` (#879, 2026-11-06); prossimo:
+l'accensione, col sì dell'utente.
 **Fase**: 4 · **Branch**: `docs/TASK-378-0-gravel` (parte 0), poi
 `feat/TASK-378-a-gravel-engine-api`, `feat/TASK-378-b-gravel-app` ·
 **ADR**: ADR-0322 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -310,3 +311,29 @@ motore resta quella di prima, con `SAME_ROUTES_AS`.
   Coordinatore prima del codice. In più rispetto alla lista sopra servono
   il tipo dei record nel contratto e `profile/PersonalBests.tsx` (vedi
   sopra).
+
+2026-11-06, parte B (`feat/TASK-378-b-gravel-app`), lista mandata al
+Coordinatore prima del codice:
+
+- «Gravel» 🚲 e «MTB» 🚵 hanno le loro righe in «Settings», dopo «Hike»,
+  con `ready` falso finché l'utente non li accende;
+- nomi e avviso MTB nelle cinque lingue, «Ride without a route» della
+  bici;
+- energia dal Compendium (bici; MTB 01009, 8,5 MET), Salute come la bici;
+- record propri nel profilo, e il tipo del contratto allargato;
+- FIT (sub-sport 8, 46, 47), GPX, TCX e Strava li riconoscono;
+- `sportRows`, `SettingsPage` e gli altri test che contano gli sport
+  aggiornati; `gravelMtbProfile.test.ts` nuovo.
+
+Lista approvata dal Coordinatore il 2026-11-06. Precisazione di ADR-0322
+per la parte B. Prossimo: `ready` vero nelle due righe di
+`settings/sport.ts`, col sì dell'utente che il Coordinatore chiede dopo il
+merge.
+
+2026-11-06: la parte B è in `main` (#879, `85625132`). Il Coordinatore ha
+misurato l'impronta iOS: `6f8bba4c`, invariata. Il server è a `cab53f51`
+con la 0052. Gravel e MTB restano «Soon»: l'accensione (`ready` vero nelle
+due righe) è una scelta dell'utente, che il Coordinatore gli chiede; va in
+una riga o PR a parte. Dopo l'accensione resta l'ultimo criterio della
+parte B, da provare sul telefono: lo sport si sceglie, si pedala, si salva
+e va in Salute.

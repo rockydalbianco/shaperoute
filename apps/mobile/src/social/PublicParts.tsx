@@ -232,9 +232,18 @@ function Chips<T extends string>({
 }
 
 // A walk once «Walk» can be chosen (activityOffered, TASK-371), a hike
-// once «Hike» can (TASK-377).
+// once «Hike» can (TASK-377), a gravel or an MTB ride once «Gravel» or
+// «MTB» can (TASK-378).
 const ACTIVITIES_SHOWN: readonly Activity[] = (
-  ["running", "cycling", "paddling", "walking", "hiking"] as const
+  [
+    "running",
+    "cycling",
+    "paddling",
+    "walking",
+    "hiking",
+    "gravel_biking",
+    "mountain_biking",
+  ] as const
 ).filter((activity) => activityOffered(activity));
 
 /** A day on the snow is one or the other (TASK-375): never a run, a ride

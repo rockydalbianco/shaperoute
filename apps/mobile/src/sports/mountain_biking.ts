@@ -5,14 +5,12 @@ import type { SportProfile } from "./base";
 
 /**
  * An MTB ride (TASK-378, ADR-0322): 10–30 km on the trails and the roads of
- * its own network, which only the server draws on. Not offered yet:
- * «Settings» has no row for it until part B, which also gives its name its
- * texts (`tLater`) in the four languages and its energy from the
- * Compendium, and checks its numbers on the libraries.
+ * its own network, which only the server draws on. «Settings» has its row
+ * since part B, «Soon» until the server has part A.
  */
 export const MOUNTAIN_BIKING: SportProfile = {
   activity: "mountain_biking",
-  name: "MTB",
+  name: tLater("MTB"),
   emoji: "🚵",
   // A ride's texts between the parts and the letters (the user's choice 7).
   partsBetween: {
@@ -34,6 +32,10 @@ export const MOUNTAIN_BIKING: SportProfile = {
   appleDistance: "HKQuantityTypeIdentifierDistanceCycling",
   // EXERCISE_TYPE_BIKING: nor has Health Connect.
   healthConnect: 8,
-  // No energy counted until part B.
+  // «Bicycling, mountain, general», Compendium 2024 (01009): 8.5 at any
+  // speed, which on a trail says little of the effort.
+  energy: { kind: "met", bands: [{ belowKmh: Infinity, met: 8.5 }] },
   freeRunAs: "mountain_biking",
+  // Its trails go up to mtb:scale S2 (the user's choice 5).
+  caution: tLater("Trails can be technical: check the route before you set off."),
 };

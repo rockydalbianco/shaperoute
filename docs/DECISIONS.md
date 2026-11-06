@@ -23692,7 +23692,8 @@ freccia davanti; fuori rotta «Off the route»; sotto «{percent}% drawn ·
 cinque lingue; l'unico testo nuovo è «{distance} left», nelle unità scelte.
 ## ADR-0336 — Ruotare il disegno sulla mappa e aggiungere pezzi da tessere, tutto sul telefono
 
-**Stato**: Proposto · 2026-11-05 · TASK-402. Scelta di prodotto
+**Stato**: Accettato · 2026-11-06 (proposto il 2026-11-05) · TASK-402,
+parti A (#857) e B (#873) in `main`. Scelta di prodotto
 dell'utente («Aggiungere pezzi», punto 2); il resto deciso dall'agente su
 delega dell'utente; confine con TASK-347 deciso dal Coordinatore.
 

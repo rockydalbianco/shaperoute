@@ -1,8 +1,12 @@
 # TASK-402 — Ruotare il disegno di quanti gradi si vuole, e aggiungere pezzi da spostare sulla mappa
 
-**Stato**: In corso · 2026-11-05 · i cinque testi approvati dall'utente lo
-stesso giorno; parte A in `main` (#857); **parte B pronta** il 2026-11-06
-(branch `feat/TASK-402-b-pieces`, §«Avanzamento»)
+**Stato**: Done · 2026-11-06 · documenti nelle #850 e #853, parte A nella
+#857 (5fc4d20f), parte B nella #873 (e9960204), unite dal Coordinatore.
+Esito: in «Draw on the map» la figura si gira di 15° per tocco, del numero
+scritto e con due dita; con «Add» le tessere aggiungono pezzi che si
+scelgono, si spostano, si girano e si tolgono, in un solo percorso. Video
+del simulatore approvati dall'utente («Sì, approvo», 2026-11-05 e
+2026-11-06). Resta: l'OTA di produzione col sì dell'utente.
 **Fase**: 5 · **Branch**: `docs/TASK-402-freehand-pieces` (documenti); poi
 `feat/TASK-402-a-turn` e `feat/TASK-402-b-pieces` · **ADR**: ADR-0336
 
@@ -308,6 +312,8 @@ lista, con le aggiunte scritte in «File toccati»):
   Visto lì: due tocchi veloci di seguito su «+15°» ne contano uno, e un
   trascinamento subito dopo un tocco a volte non parte (il simulatore);
   da guardare sul telefono.
+  **Approvato dall'utente** il 2026-11-06 («Sì, approvo»); #873 unita dal
+  Coordinatore (e9960204). Non ancora provato sul telefono.
 
 ## Note
 

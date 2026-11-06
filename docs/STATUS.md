@@ -753,8 +753,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   il 2026-11-06; l'elefante nella prima versione, «Elephant Anim» di
   Shivoahm (Sketchfab, CC BY 4.0, gratis); la riga dei crediti approvata il
   2026-11-06 (scelta 6); tutti i 13 personaggi, i 12 di Quaternius più
-  l'elefante (scelta 7). Prossimo: le scene e il finale (domanda 4,
-  `tasks/TASK-408.md`).
+  l'elefante (scelta 7); 12 secondi in tre pezzi, apertura, corsa e finale,
+  da riordinare o spegnere (scelta 8). Prossimo: il testo del prompt e la
+  prima tabella di parole (domanda 5, `tasks/TASK-408.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

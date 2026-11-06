@@ -143,6 +143,19 @@ oggi:
    14 caselle: la riga «Character» scorre di lato. Il peso dei file e i nomi
    delle animazioni si leggono nella parte B, scaricando la cartella glTF col
    sì dell'utente (nome, fonte, misura).
+8. **Le scene e il finale** (2026-11-06): «Sì, così». Il video resta di
+   **12 secondi**, in tre pezzi:
+   - **Apertura** (0–3 s): il disegno 2D che si traccia sulla mappa piatta
+     (come oggi), il titolo, o niente; poi un taglio o una dissolvenza verso
+     il 3D.
+   - **La corsa** (3–9 s): l'animale in 3D con la camera dietro, la camera
+     che gira intorno al percorso (come oggi), o la linea 2D con l'animale
+     sopra; le emoji spuntano dove passa.
+   - **Finale** (9–12 s): i numeri, il disegno intero, il cuore, o tutti e
+     tre; le emoji della fine; il marchio MuW sempre per ultimo.
+   I pezzi si riordinano o si spengono, almeno uno resta acceso; se uno è
+   spento gli altri si allungano e il video dura sempre 12 secondi. Tutto
+   viene dalla traccia vera.
 
 ## Domande aperte (una alla volta)
 
@@ -170,10 +183,8 @@ oggi:
    Nessun elefante animato CC0 trovato.
 3. ~~Quali personaggi~~: risposta sopra (scelta 7). Era la proposta: sei
    (Horse, l'elefante, Stag, Fox, Wolf, Husky) più «None».
-4. **Le scene e il finale** — la prossima: quali pezzi si offrono, e se la durata resta
-   12 secondi. Proposta: tre pezzi fissi da scegliere e riordinare, 12
-   secondi.
-5. **Il prompt**: cosa si promette nel testo del riquadro, e la prima
+4. ~~Le scene e il finale~~: risposta sopra (scelta 8).
+5. **Il prompt** — la prossima: cosa si promette nel testo del riquadro, e la prima
    tabella di parole. Proposta: «Describe your video: an animal, colours,
    emoji, the ending», con le parole di ogni voce dell'editor.
 6. **I testi** in cinque lingue.

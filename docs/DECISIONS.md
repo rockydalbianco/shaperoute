@@ -24758,6 +24758,30 @@ e nell'API, e il suo profilo nascosto nell'app, come 377-A e 378-A.
 **Server**: migrazione 0055 e deploy, col sì dell'utente. Nessuna notte di
 esempi.
 
+## ADR-0324, seconda precisazione — Le soglie «veicolo» del Roller: 35 km/h su 200 m, 28 di media
+
+**Data**: 2026-11-06 · **Stato**: Accettata (scelta dell'utente, «Sì, 35 e
+28») · **Task**: TASK-380
+
+Il gioco scarta un tratto di 200 m sopra i 25,2 km/h e una corsa con la
+media sopra i 21,6 km/h oltre i 3 km. Con queste soglie, al banco della
+parte A (`sports/roller.md`, «Il controllo veicolo») chi pattina a 20
+km/h è scartato in collina 21 volte su 47, e chi va a 25 km/h sempre.
+
+**Decisione**: il Roller ha soglie sue, **35 km/h** su 200 m e **28 km/h**
+di media oltre i 3 km (`game_rules.speed_limits`). Il resto non cambia:
+corsa, camminata e Hike, il 10% dei tratti, i 3 km. Al banco nessuno che
+pattina tranquillo o allenato è scartato, e chi è veloce lo è 19 volte su 47.
+
+- `RULES_VERSION` resta 2: nessuna attività `inline_skating` è salvata
+  prima della 0055, che va sul server insieme a questa regola.
+- Il prezzo, accettato: una bici a 25–30 km/h salvata come Roller conta.
+  Un'auto su strada aperta resta fuori.
+
+Deciso dall'agente su delega dell'utente: le soglie come una funzione per
+attività in `game_rules.py`, invece di una tabella per sport nel registro.
+Il gioco non legge il registro degli sport.
+
 ## ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono
 
 **Stato**: Proposto · 2026-11-06 · TASK-408. Le scelte di prodotto sono

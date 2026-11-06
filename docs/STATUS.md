@@ -370,6 +370,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   20 km/h; la soglia per il Roller (proposta: 35 km/h su 200 m, 28 di
   media) è una domanda all'utente. Server (0055 e deploy) solo col sì
   dell'utente. Prossimo: la parte B.
+  Parte A in `main` (#912, `f0a6e680`). Il 2026-11-06 l'utente ha risposto
+  sulla soglia: «Sì, 35 e 28». Le soglie del Roller sono in PR
+  (`feat/TASK-380-roller-vehicle-thresholds`, `game_rules.speed_limits`;
+  seconda precisazione di ADR-0324). Vanno sul server con la 0055.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
@@ -1643,6 +1647,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'utente. Per TASK-401 B: la Live Activity legga `navigation.wayBack` (task file,
   «ADR-0274, precisazione B»). Solo JS; impronta iOS dal Coordinatore. Non provata nel
   simulatore. **Chiuso il 2026-11-06** nella PR della parte B; vedi «Completato».
+  **2026-11-06, in `main`** con la #908 (`58c29048`), impronta `6f8bba4c`. Provata nel
+  simulatore sul percorso di Trento Fiere: uscita nel parco, svolte della strada a voce e
+  nel banner, puntini lungo le vie, rientro. Video `out/TASK-314/` per l'utente; OTA e sito
+  (frase della Privacy) dopo il suo ok.
 - **TASK-313 — «Draw it near me»: la stessa forma in un altro posto**
   (ADR-0273; richiesta dell'utente del 2026-10-27, «Sì, così» alla
   proposta; numero e ordine dal Coordinatore, prima di TASK-309 B). Branch

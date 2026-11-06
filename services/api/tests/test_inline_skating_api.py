@@ -2,10 +2,10 @@
 
 An `inline_skating` request is 5-30 km and the engine draws it on the roller
 network, in zones of its own. Its GPX says what it is; saved, it goes to
-Strava as an "InlineSkate", counts in the shape game as a walk, with the
-checks of a run and no best times, and has personal bests of its own over a
-run's distances. The database takes it in the three tables that check the
-activity and in the bests, keeping what was there before.
+Strava as an "InlineSkate", counts in the shape game as a walk, with
+"vehicle" thresholds of its own and no best times, and has personal bests of
+its own over a run's distances. The database takes it in the three tables
+that check the activity and in the bests, keeping what was there before.
 
 No network: the planner is a stand-in that says which network it was given.
 """
@@ -40,10 +40,15 @@ from shaperoute_api.app import create_app
 from shaperoute_api.db import Database, migrations
 from shaperoute_api.game_rules import (
     INLINE_SKATING,
+    MAX_MEAN_SPEED_MPS,
     ON_FOOT,
     RULES_VERSION,
+    SKATE_MAX_MEAN_SPEED_MPS,
+    SKATE_VEHICLE_SPEED_MPS,
     VEHICLE,
+    VEHICLE_SPEED_MPS,
     evaluate,
+    speed_limits,
 )
 from shaperoute_api.graphs import ZoneGraphs
 from shaperoute_api.personal_bests import SPORTS, Sport, bests, run_bests
@@ -186,13 +191,43 @@ def test_a_skate_counts_in_the_shape_game_as_a_walk() -> None:
     assert evaluate(fixes, [], "running").best_s != {}
 
 
-def test_a_skate_has_the_checks_of_a_run() -> None:
-    # 8 km at 27 km/h: past the "vehicle" check of a run (TASK-380, an open
-    # point: a threshold of its own would be the user's choice).
+def test_a_skate_has_vehicle_thresholds_of_its_own() -> None:
+    # The user's choice of 2026-11-06: 35 km/h over 200 m, 28 on average.
+    assert speed_limits(SKATE) == (SKATE_VEHICLE_SPEED_MPS, SKATE_MAX_MEAN_SPEED_MPS)
+    assert round(SKATE_VEHICLE_SPEED_MPS * 3.6, 6) == 35
+    assert round(SKATE_MAX_MEAN_SPEED_MPS * 3.6, 6) == 28
+    # The other sports on foot keep a run's.
+    for activity in ("running", "walking", "hiking"):
+        assert speed_limits(activity) == (VEHICLE_SPEED_MPS, MAX_MEAN_SPEED_MPS)
+
+
+def test_a_fast_skater_counts_where_a_runner_would_not() -> None:
+    # 8 km at 27 km/h: a run's "vehicle", a fast skater's pace.
     fixes = Runner().run(8_000, 7.5).fixes
     skate, run = evaluate(fixes, [], SKATE), evaluate(fixes, [], "running")
-    assert (skate.counted, skate.reason) == (run.counted, run.reason)
-    assert skate.reason == VEHICLE
+    assert skate.counted and skate.reason is None and skate.counted_m > 7_900
+    assert run.reason == VEHICLE
+
+
+def test_a_skate_rolls_down_a_hill_at_34_km_h_and_keeps_its_metres() -> None:
+    # 1 km downhill at 34 km/h in 8 km at 20: none of it is a vehicle's.
+    fixes = Runner().run(3_500, 5.5).run(1_000, 9.4).run(3_500, 5.5).fixes
+    skate, run = evaluate(fixes, [], SKATE), evaluate(fixes, [], "running")
+    assert skate.counted and abs(skate.counted_m - 8_000) <= 1
+    assert run.reason == VEHICLE
+
+
+def test_a_skate_above_35_km_h_for_more_than_a_tenth_does_not_count() -> None:
+    # A kilometre at 41 km/h in 5: a fifth of it.
+    fixes = Runner().run(2_000, 5.0).run(1_000, 11.5).run(2_000, 5.0).fixes
+    game = evaluate(fixes, [], SKATE)
+    assert not game.counted and game.reason == VEHICLE
+
+
+def test_a_skate_above_28_km_h_on_average_does_not_count() -> None:
+    # 4 km at 28.8 km/h: no stretch above 35, but a bike's mean.
+    game = evaluate(Runner().run(4_000, 8.0).fixes, [], SKATE)
+    assert not game.counted and game.reason == VEHICLE
 
 
 # --- the bests --------------------------------------------------------------------

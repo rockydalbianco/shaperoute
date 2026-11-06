@@ -230,6 +230,40 @@ docs/INDEX.md              (una riga)
 
 Seconda PR (le scelte): gli stessi file.
 
+Parte A (`feat/TASK-380-a-roller-engine-api`), la lista approvata qui sopra
+(«Parte A»). Quella definitiva, tutta dentro la lista:
+
+```
+services/route-engine/route_engine/networks/roller.py, networks/__init__.py
+services/route-engine/route_engine/activities/inline_skating.py, activities/__init__.py
+services/route-engine/tests/test_inline_skating.py, test_sport_registry.py, test_bike_network.py
+packages/shared-types/src/sports/inline_skating.ts, src/sports/index.ts
+packages/shared-types/fixtures/route-request-inline_skating.json, contract.json,
+    reads.json, run-activities.json
+packages/shared-types/test/inlineSkating.test.ts, sportRegistry.test.ts
+services/api/shaperoute_api/sports/inline_skating.py, sports/__init__.py
+services/api/shaperoute_api/activities.py, personal_bests.py, reads.py, game_rules.py,
+    route_store.py
+services/api/migrations/0055_inline_skating.sql
+services/api/tests/fixtures/same_routes/66509163156f.json
+services/api/tests/test_inline_skating_api.py, test_sport_registry_api.py,
+    test_personal_bests.py, test_cycling.py, test_record_only.py, test_favorites.py,
+    test_paddling.py, test_gravel_mtb_api.py
+apps/mobile/src/sports/inline_skating.ts, src/sports/index.ts, src/search/searchFilters.ts
+apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts,
+    src/route/distanceMiles.test.ts, src/api/accounts.test.ts
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json
+apps/mobile/assets/engine/engine.zip
+docs/tasks/TASK-380.md, docs/STATUS.md, docs/sports/CONDIVISO.md,
+    docs/sports/roller.md, docs/DECISIONS.md
+```
+
+Della lista approvata non sono serviti: `test_hiking.py`, `test_walking.py`,
+`test_mountain_biking.py`, `test_gravel_biking.py` (motore),
+`hiking.test.ts`, `gravelMtb.test.ts` (contratto), `test_hiking_api.py`,
+`test_walking_api.py`, `test_game_rules.py` (API): i loro controlli
+d'ordine reggono già con il Roller.
+
 ## Dove si è
 
 2026-11-06: misurate col banco quattro reti di prova, dai download

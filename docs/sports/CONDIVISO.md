@@ -126,6 +126,22 @@ tutto: è corto apposta.
   Dettagli in `tasks/TASK-378.md`, «Lista definitiva di A», e nella
   precisazione di ADR-0322.
 
+- **2026-11-06, TASK-380 A — il Roller contro la ricetta.** Solo file
+  nuovi, righe nei registri e le liste dei test «di prima», più i punti
+  già nella ricetta (fixture, profilo nascosto, zone di una rete nuova,
+  CHECK di `run_bests`, `game_rules.py`, `SAME_ROUTES_AS`). Nessuna deroga.
+  Da sapere:
+  - **una rete a piedi con regole sui tag** si scarica con
+    `network_type="walk"` e `simplify=False`, si tolgono le vie che le
+    regole scartano, poi si semplifica (`networks/roller.py`
+    `skate_ways`): ogni via resta nei due sensi senza toccare la bici;
+  - **ogni sport con record propri allunga `run_bests` di ogni corsa**:
+    una corsa a piedi di 5 km ha ora anche il «5k» del Roller. Il profilo
+    legge solo quelli dello sport della corsa;
+  - **il gioco controlla la velocità come per la corsa** (25 km/h su
+    200 m, 21,6 km/h di media): per uno sport più veloce dei piedi la
+    soglia va misurata e scelta dall'utente (`roller.md`).
+
 ## L'app
 
 - **2026-11-05, TASK-376 B3a — il profilo di ogni sport.** Uno sport è un

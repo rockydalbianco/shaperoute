@@ -24519,6 +24519,61 @@ motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
   porfido, sterrato o strade principali.
 - **Una rete fatta col tag `inline_skates`**: 4,5 km in sei zone.
 
+## ADR-0324, precisazione — La parte A: il Roller nel motore, nel contratto e nell'API, l'impronta del motore resta
+
+**Stato**: Accettato · 2026-11-06 · TASK-380 parte A. Lista dei file e
+migrazione (0055): Coordinatore. Le scelte tecniche sono decise
+dall'agente su delega dell'utente.
+
+**Contesto**: la parte A porta `inline_skating` nel motore, nel contratto
+e nell'API, e il suo profilo nascosto nell'app, come 377-A e 378-A.
+
+**Decisione**:
+
+1. **L'ordine del contratto**: running, cycling, paddling, swimming,
+   hiking, mountain_biking, inline_skating, walking, gravel_biking. Il
+   Roller è un'attività del motore, dopo la MTB.
+2. **La rete `roller`** (`networks/roller.py`) ha le regole del banco
+   della parte 0 (`out/TASK-380/loader.py`), più il tag `inline_skates`
+   (punto 3 di ADR-0324: `no` toglie la via, `yes` o `designated` la tiene
+   comunque):
+   - due filtri Overpass come la bici: le strade fino alle terziarie, le
+     ciclabili e le `track`, senza le private; poi `footway`, `path`,
+     `bridleway`, `pedestrian`. Le regole decidono sui tag tenuti
+     (`surface`, `smoothness`, `tracktype`, `foot`, `inline_skates`);
+   - il download con `network_type="walk"`: ogni via nei due sensi, come
+     a piedi; la rete non è `by_bike`, quindi niente sensi unici né tratti
+     a piedi, e i controlli di un percorso sono quelli a piedi.
+3. **L'impronta resta quella di prima** (`SAME_ROUTES_AS`): 66509163156f →
+   54061c20df45, e lo stesso per i nuoti (07f13e87d494 → 25b3163837e8) e
+   gli esempi di canoa (6b1ca82cd4e3 → 1751ee7eca8a). I nove percorsi
+   fissi di `test_same_routes.py` hanno gli stessi hash (darwin-arm64), e
+   al banco corsa, bici e canoa sono identiche punto per punto a `main`.
+4. **Nell'API**:
+   - zone sue, grandi come quelle della bici (`longest`, i 30 km), senza
+     nomi delle strade (il grafo ha già i marciapiedi accanto alle
+     strade), una sola in memoria;
+   - Strava `InlineSkate`; il `<type>` del GPX è `inline_skating`;
+   - i record propri (`ON_SKATES`) su 5, 10, 21,1 e 42,2 km. Il limite è
+     un salto del GPS a 60 km/h, come la bici ha i suoi 90: in discesa coi
+     pattini si va più forte di qualunque gara. `personal_bests` li conta
+     per ogni corsa, come gli altri; la 0055 allarga anche
+     `run_bests_sport_check`;
+   - nel gioco (`game_rules.ON_FOOT`) il Roller conta come la camminata:
+     i metri sì, con gli stessi controlli della corsa, i tempi migliori no.
+     `RULES_VERSION` resta 2: nessuna corsa salvata prima della 0055 può
+     essere un Roller.
+5. **Nell'app**: il profilo entra nascosto (nessuna riga in «Settings»,
+   nessun chip nella ricerca: `searchFilters.ts`), con i numeri di Salute
+   verificati sulle librerie (`.skatingSports` 39, `EXERCISE_TYPE_SKATING`
+   60). Nome senza `tLater`, niente record, energia e avviso fino alla
+   parte B. `sports.json` dell'orologio lo elenca.
+
+{MEASURES}
+
+**Server**: migrazione 0055 e deploy, col sì dell'utente. Nessuna notte di
+esempi.
+
 ## ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono
 
 **Stato**: Proposto · 2026-11-06 · TASK-408. Le scelte di prodotto sono

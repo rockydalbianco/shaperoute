@@ -3245,6 +3245,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   precisazione B); `pool` in `this_app`; la riga in «My activities».
   Entra dopo TASK-378 B. Prossimo: la parte C (il post), poi server, OTA
   e store col sì dell'utente.
+  Parte B in `main` (#880, a178bb18; impronta iOS 6f8bba4c invariata, CI
+  verde col job watch-core). Con lei «Swim» anche nei file dell'orologio
+  (rigenerati con i loro script). Prossimo: la parte C (il post) da
+  `feat/TASK-400-c-pool-post`, dopo TASK-394 B per `FeedPost.tsx`.
 
 ## Completato
 

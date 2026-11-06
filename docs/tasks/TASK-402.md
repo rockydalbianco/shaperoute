@@ -1,8 +1,8 @@
 # TASK-402 — Ruotare il disegno di quanti gradi si vuole, e aggiungere pezzi da spostare sulla mappa
 
 **Stato**: In corso · 2026-11-05 · i cinque testi approvati dall'utente lo
-stesso giorno; **parte A pronta** (branch `feat/TASK-402-a-turn`, §«Avanzamento»);
-la B è la prossima
+stesso giorno; parte A in `main` (#857); **parte B pronta** il 2026-11-06
+(branch `feat/TASK-402-b-pieces`, §«Avanzamento»)
 **Fase**: 5 · **Branch**: `docs/TASK-402-freehand-pieces` (documenti); poi
 `feat/TASK-402-a-turn` e `feat/TASK-402-b-pieces` · **ADR**: ADR-0336
 
@@ -265,6 +265,47 @@ dell'utente).
   che porta la figura oltre lo schermo fa reinquadrare la mappa, come già
   il ridimensionamento. **Approvato dall'utente** il 2026-11-05 («Sì,
   approvo»). Non ancora provato sul telefono.
+
+**Parte B, 2026-11-06** (branch `feat/TASK-402-b-pieces`, da `main` a
+`452598d1`, poi `main` unito a `39da3ce7`; via del Coordinatore sulla
+lista, con le aggiunte scritte in «File toccati»):
+
+- `mapdraw/pieces.ts`: `joinedPieces` (i pezzi in un disegno solo, con
+  `owners` linea per linea), `fitsRoute`, `heldPieces`/`piecesTurnedBy`/
+  `piecesSized`, `addedPiece` (un terzo della figura), `pieceAt` (il tocco),
+  `pieceBox` (il riquadro girato), `pieceDistance`. Le scelte in ADR-0336,
+  «Precisazioni della parte B».
+- `useMapCanvas`: il primo pezzo resta `placed`; gli altri in una lista
+  accanto, ricordata da ogni passo di «Undo»; `change` promuove il pezzo
+  dopo quando il primo sparisce e rifiuta (`too_much`) quello che non sta
+  in un percorso; `pieces` (`count`, `adding`, `chosen`, `deleteChosen`).
+  Un pezzo solo fa la richiesta di prima; più pezzi la chiedono come
+  disegno (`piecesRequest` in `canvasRequest`).
+- Pagina della mappa: `tapped` per un dito fermo con «Move» fra più pezzi;
+  in `setCanvas` `choosing`, `chosen` (le sole linee che le dita muovono),
+  `box`; i pezzi non scelti in un layer più chiaro (`FAINT_OPACITY`), il
+  riquadro sottile (`BOX_WIDTH`).
+- `DrawOnMap`: «Change | Add» sopra le tessere, il suggerimento dei pezzi,
+  «Delete piece» dopo l'angolo, *Up to 6 pieces in one drawing.*; «Change»
+  è `Change@@piece` (il «Change» della corsa in italiano è «Differenza»;
+  `CONTEXT_MARK` in `i18n/translate.ts`).
+- Test: `pieces.test.ts` (8), cinque in `useMapCanvas.test.ts`, due in
+  `mapPageCanvas.test.ts`, uno in `messages.test.ts`, uno in
+  `canvasRequest.test.ts`, uno in `DrawOnMapApp.test.tsx`, uno in
+  `translate.test.ts`; `src/mapdraw`, `src/map`, `src/i18n` verdi in
+  locale (432), `tsc`, eslint e Prettier puliti. Impronta iOS (copia
+  pulita con `npm ci`, `APP_VARIANT=production`, in `apps/mobile`):
+  `6f8bba4c`, invariata.
+- Simulatore (iPhone Air con Expo Go, 2026-11-06; l'iPhone 17e era di
+  un'altra sessione): cuore, «Add», stella scelta col riquadro e il cuore
+  più chiaro, trascinata, «+15°», due dita che la ingrandiscono e girano,
+  «Undo», tocco sulla stella e tocco fuori, figura intera spostata, «Draw
+  route»: l'API locale ha preso la richiesta (`POST /image-route-jobs`
+  202) e ha dato un solo «Drawing» da 7,1 km. Video
+  `out/TASK-402/b-pieces.mov` (locale), mandato all'utente per l'ok.
+  Visto lì: due tocchi veloci di seguito su «+15°» ne contano uno, e un
+  trascinamento subito dopo un tocco a volte non parte (il simulatore);
+  da guardare sul telefono.
 
 ## Note
 

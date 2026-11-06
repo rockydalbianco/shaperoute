@@ -277,3 +277,18 @@ non serviva: i post a piedi c'erano già. Test in `tests/test_walk_game.py`.
 server e `game_backfill`, col sì dell'utente, nel giro delle migrazioni
 0043–0045.
   3. «NEAR YOU» per la camminata: l'utente ha detto «Solo corsa, per ora».
+
+**«Walk» acceso, 2026-11-06.** Su richiesta dell'utente («cosa aspettiamo ad
+attivare sulla preview la sezione Walk?»): `ready: true` in
+`apps/mobile/src/settings/sport.ts`. Il server ha la 0043 da quando ha la
+0051 di Hike e la 0052 di Gravel; l'OTA della 375 B0 è in produzione.
+Nello stesso cambio, sempre su richiesta dell'utente («prima walk poi run,
+bicycle, paddle, swim… un ordine che abbia senso»), gli sport di Settings e
+del menu di Draw vanno per famiglia: a piedi (Walk, Run, Hike), su ruote
+(Bike, Gravel, MTB), sull'acqua (Paddle, Swim), sulla neve (Ski,
+Cross-country ski), poi Gym e Paragliding. «Run» resta lo sport di
+partenza; i filtri della ricerca seguono l'ordine di `ACTIVITIES` e non
+cambiano. Test toccati: `sport.test.ts`, `sportRows.test.ts`,
+`SportSetting.test.tsx`, `SportButton.test.tsx`, `SportStoreBuild.test.tsx`,
+`hikeApp.test.tsx`, `search/walkFilter.test.tsx`,
+`profile/SettingsPage.test.tsx`. Solo JS: impronta iOS invariata.

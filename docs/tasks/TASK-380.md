@@ -64,8 +64,7 @@ Da leggere: `docs/sports/COME-AGGIUNGERE.md`, `docs/sports/CONDIVISO.md`,
 ### Parte A — motore, contratto, API (dopo le scelte, in una sessione sua)
 
 Lista approvata dal Coordinatore il 2026-11-06, con la migrazione 0055.
-È fatta sul diff della
-378-A (#875), che ha toccato gli stessi registri:
+È fatta sul diff della 378-A (#875), che ha toccato gli stessi registri:
 
 ```
 services/route-engine/route_engine/networks/roller.py           (nuovo: filtro, regole di roller.md, ogni via nei due sensi)

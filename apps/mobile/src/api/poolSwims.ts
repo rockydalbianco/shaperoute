@@ -1,4 +1,8 @@
-import type { PoolSwim, PoolSwimRequest } from "@shaperoute/shared-types";
+import type {
+  PoolSwim,
+  PoolSwimFigures,
+  PoolSwimRequest,
+} from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "./accounts";
 
@@ -47,6 +51,54 @@ export function savePoolSwimOnApi(
     `/me/pool-swims/${encodeURIComponent(key)}`,
     { method: "PUT", body: request, token },
     isPoolSwim,
+    options,
+  );
+}
+
+/** GET /me/pool-swims/{key} (TASK-400 part C): the swim as its owner sees
+ * it, for the picture shared; 404 for a key that is not one. */
+export function fetchPoolSwim(
+  baseUrl: string,
+  token: string,
+  key: string,
+  options: Options = {},
+): Promise<AccountOutcome<PoolSwim>> {
+  return ask(
+    baseUrl,
+    `/me/pool-swims/${encodeURIComponent(key)}`,
+    { method: "GET", token },
+    isPoolSwim,
+    options,
+  );
+}
+
+export function isPoolSwimFigures(body: unknown): body is PoolSwimFigures {
+  if (typeof body !== "object" || body === null) {
+    return false;
+  }
+  const { pool_length_m, lengths } = body as Record<string, unknown>;
+  return (
+    typeof pool_length_m === "number" &&
+    Number.isFinite(pool_length_m) &&
+    pool_length_m > 0 &&
+    isCount(lengths)
+  );
+}
+
+/** GET /drawings/{id}/pool-swim (TASK-400 part C): the pool and the
+ * lengths of a post of a swim in a pool, for whoever sees it; 404 for an
+ * app that does not read it. */
+export function fetchPoolFigures(
+  baseUrl: string,
+  token: string,
+  drawingId: string,
+  options: Options = {},
+): Promise<AccountOutcome<PoolSwimFigures>> {
+  return ask(
+    baseUrl,
+    `/drawings/${encodeURIComponent(drawingId)}/pool-swim`,
+    { method: "GET", token },
+    isPoolSwimFigures,
     options,
   );
 }

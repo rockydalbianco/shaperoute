@@ -3,7 +3,7 @@
 **Stato**: In corso · proposta in `main` (#867); parte A (server) in
 `main` (#871, cab53f51), server col sì dell'utente; parte B (app) in
 `main` (#880, a178bb18; impronta iOS 6f8bba4c invariata); prossima la
-parte C (post) da `feat/TASK-400-c-pool-post`;
+parte C (post) in PR da `feat/TASK-400-c-pool-post`, dopo TASK-394 B;
 ogni parte dopo la sua lista dei file al Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-400-pool-swim` (documenti); il codice
 `feat/TASK-400-a-…`, `feat/TASK-400-b-…`
@@ -118,8 +118,10 @@ dei file mandata al Coordinatore.
       sa passare nei metadati (arriverebbe un dizionario e il salvataggio
       fallirebbe). ADR-0334, precisazione B, punto 5; accettato dal
       Coordinatore il 2026-11-06.
-- [ ] Il post senza mappa arriva solo alle app che mandano `pool` e
-      `trackless` in `X-MuW-Reads`.
+- [x] Il post senza mappa arriva solo alle app che mandano `pool` e
+      `trackless` in `X-MuW-Reads`. (A sul server; C nell'app:
+      `pool/PoolFeed.test.tsx`, `pool/PoolPostForm.test.tsx`,
+      `pool/PoolShare.test.tsx`)
 - [ ] Test deterministici per il calcolo, la scelta della vasca, l'header e
       l'endpoint; tsc, lint, Prettier verdi.
 
@@ -194,7 +196,26 @@ in attesa e `keepForDrawing` dopo il `PUT`), con `activity: "swimming"` e
 activities» è `pool/PoolTile.tsx`; un nuoto in piscina si riconosce con
 `isPoolSwimRun`. La riga mostra la distanza in km come ogni corsa.
 
-La parte C: lista dei file al Coordinatore prima del codice. Nella
+Parte C (approvata dal Coordinatore il 2026-11-06; `FeedPost.tsx` dopo
+TASK-385 E e 394 B, `DrawingCard.tsx` e `PostComposer.tsx` dopo 394 B):
+
+```
+apps/mobile/src/pool/PoolPostForm.tsx, PoolPostForm.test.tsx (nuovi)
+apps/mobile/src/pool/usePoolFigures.ts, PoolFigures.tsx (nuovi)
+apps/mobile/src/pool/PoolSharePicture.tsx (nuovo)
+apps/mobile/src/pool/PoolFeed.test.tsx, PoolShare.test.tsx (nuovi)
+apps/mobile/src/pool/PoolSwimEnd.tsx, poolOutbox.ts, usePoolOutbox.ts,
+  PoolTile.tsx
+apps/mobile/src/api/poolSwims.ts, poolSwims.test.ts
+apps/mobile/src/feed/FeedPost.tsx
+apps/mobile/src/social/DrawingCard.tsx, DrawingsGrid.tsx, PublicParts.tsx
+apps/mobile/src/social/composer/PostComposer.tsx
+apps/mobile/src/search/DrawingResultCard.tsx
+apps/mobile/src/share/SharePost.tsx
+docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-400.md
+```
+
+`share/postRun.ts`, nella lista, non è servito. Nella
 lista della B (indicazione del Coordinatore, 2026-11-06) entrano anche
 `packages/shared-types/fixtures/reads.json` (`pool` in `this_app`, con
 `apps/mobile/src/api/reads.ts` e il suo test) e `apps/mobile/src/i18n/`

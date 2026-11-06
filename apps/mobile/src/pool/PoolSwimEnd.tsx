@@ -11,10 +11,12 @@ import { HealthRunEnd } from "../health/HealthRunEnd";
 import { useHealth } from "../health/useHealth";
 import { t } from "../i18n";
 import { clockLabel } from "../navigation/freeRun";
+import type { PickPhoto } from "../social/PublicParts";
 import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { averagePace } from "./poolChoice";
 import { metresLabel } from "./PoolDraw";
 import { savePoolToHealth } from "./poolHealth";
+import { newPoolPost, type PoolPost, PoolPostForm } from "./PoolPostForm";
 import {
   activeMs,
   estimateLengths,
@@ -40,21 +42,30 @@ export function maxLengths(activeS: number, poolLengthM: number): number {
  * writing it; then lengths, metres, time and pace /100 m. Lengths faster
  * than 2.5 m/s, which the API refuses, stay not valid and «Save» waits.
  * «Save» keeps it on the phone and sends it, and writes it to Apple Health
- * or Health Connect after the user's yes; «Discard» asks first. Signed out,
- * it says to sign in, as the end of a workout does.
+ * or Health Connect after the user's yes; «Discard» asks first. Under the
+ * figures the form of its post (TASK-400 part C), as at the end of a
+ * workout. Signed out, it says to sign in, as the end of a workout does.
  */
 export function PoolSwimEnd({
   swim,
   onSave,
   health: phone = healthPhone(),
+  pick,
+  fetchFn,
+  apiKey,
 }: {
   swim: PoolSwim;
-  onSave: (swim: PoolSwim, lengths: number) => PoolSaved;
+  onSave: (swim: PoolSwim, lengths: number, post?: PoolPost) => PoolSaved;
   /** The phone's health data; for the tests, a fake. */
   health?: HealthPhone | null;
+  /** The fakes of the tests: the photo picker, the fetch of the tag search. */
+  pick?: PickPhoto;
+  fetchFn?: typeof fetch;
+  apiKey?: string | null;
 }) {
   const insets = useSafeAreaInsets();
-  const { signedIn, signIn } = useActivitiesDoor();
+  const { signedIn, signIn, owner } = useActivitiesDoor();
+  const [post, setPost] = useState<PoolPost>(() => newPoolPost(owner));
   const healthState = useHealth(phone);
   const activeS = activeMs(swim, swim.endedMs ?? swim.startedMs) / 1000;
   const most = maxLengths(activeS, swim.poolLengthM);
@@ -84,7 +95,7 @@ export function PoolSwimEnd({
     if (lengths === null) {
       return;
     }
-    const saved = onSave(swim, lengths);
+    const saved = onSave(swim, lengths, post);
     if (saved === "kept") {
       // Written there, on the phone, with no network; never fails «Save».
       void savePoolToHealth(phone, swim, lengths);
@@ -166,6 +177,15 @@ export function PoolSwimEnd({
             testID="pool-pace"
           />
         </View>
+        {signedIn && (
+          <PoolPostForm
+            post={post}
+            onPost={setPost}
+            pick={pick}
+            fetchFn={fetchFn}
+            apiKey={apiKey}
+          />
+        )}
         {phone !== null && signedIn && (
           <HealthRunEnd store={phone.store} health={healthState} />
         )}

@@ -134,6 +134,15 @@ oggi:
    Anim" di Shivoahm su Sketchfab (CC BY 4.0), adattato da MuW.» Tedesco,
    spagnolo e francese con la domanda 6. Entra con la parte B, insieme al
    modello.
+7. **Quali personaggi** (2026-11-06): «Tutti i 13». I 12 animali del
+   pacchetto Quaternius «Ultimate Animated Animals» (luglio 2021, CC0, glTF;
+   lista letta il 2026-11-06 nella cartella pubblica linkata da
+   https://quaternius.com/packs/ultimateanimatedanimals.html, senza
+   scaricare): Alpaca, Bull, Cow, Deer, Donkey, Fox, Horse, Horse_White,
+   Husky, ShibaInu, Stag, Wolf; più l'elefante di Shivoahm. Con «None» sono
+   14 caselle: la riga «Character» scorre di lato. Il peso dei file e i nomi
+   delle animazioni si leggono nella parte B, scaricando la cartella glTF col
+   sì dell'utente (nome, fonte, misura).
 
 ## Domande aperte (una alla volta)
 
@@ -159,11 +168,9 @@ oggi:
      ridurre per il telefono. Da comprare l'utente stesso, dopo aver letto
      se la licenza permette un file che l'app scarica nella WebView.
    Nessun elefante animato CC0 trovato.
-3. **Quali personaggi** nella riga, e quanti — la prossima. Prima si
-   legge la lista del pacchetto Quaternius (scaricarlo chiede il sì
-   dell'utente, con nome del file, fonte e misura). Proposta: 5 o 6, scelti dalla
-   tavola dopo aver visto il pacchetto.
-4. **Le scene e il finale**: quali pezzi si offrono, e se la durata resta
+3. ~~Quali personaggi~~: risposta sopra (scelta 7). Era la proposta: sei
+   (Horse, l'elefante, Stag, Fox, Wolf, Husky) più «None».
+4. **Le scene e il finale** — la prossima: quali pezzi si offrono, e se la durata resta
    12 secondi. Proposta: tre pezzi fissi da scegliere e riordinare, 12
    secondi.
 5. **Il prompt**: cosa si promette nel testo del riquadro, e la prima

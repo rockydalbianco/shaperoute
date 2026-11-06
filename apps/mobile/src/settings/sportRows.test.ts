@@ -11,7 +11,7 @@ it("shows the rows of before, in their order", () => {
     { id: "run", emoji: "🏃‍♂️", name: "Run", ready: true },
     { id: "bike", emoji: "🚴", name: "Bike", ready: true },
     { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
-    { id: "swim", emoji: "🏊", name: "Open water swim", ready: true },
+    { id: "swim", emoji: "🏊", name: "Swim", ready: true },
     { id: "walk", emoji: "🚶", name: "Walk", ready: false },
     // Added since: the hike (TASK-377 part B), on since the server hikes.
     { id: "hike", emoji: "⛰️", name: "Hike", ready: true },

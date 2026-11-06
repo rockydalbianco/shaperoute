@@ -345,6 +345,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   ADR-0324 accettato. Prossimo: 380-A, motore, contratto e API, con la
   lista al Coordinatore e il numero della migrazione.
+  Lista della parte A approvata dal Coordinatore, con la migrazione
+  `0055_inline_skating.sql`. Prossimo: 380-A in una sessione nuova, da
+  `origin/main` dopo la #880 (400 B).
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
@@ -526,6 +529,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nella condivisione niente video né Strava. Scelte dell'utente del
   2026-11-05: «10 foto», «Sì, anche alla fine». Impronta iOS 6f8bba4c
   invariata; OTA col sì. Prossima: C (kcal e Salute), E (traguardi).
+  Parte D in `main` (#845, 4d52e439).
+  Parte E (traguardi) in PR da `feat/TASK-385-e-gym-levels`: i livelli
+  per esercizio sul profilo (primi 5, gli altri sotto «Show more») e
+  «New level» nel post, contati dal server a ogni lettura da tutti gli
+  allenamenti, privati compresi. Scelte dell'utente del 2026-11-06:
+  «Tutti», «I primi 5 + altro». Niente migrazione; server col sì. Prossima:
+  C (kcal e Salute), F (classifica).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo
@@ -714,6 +724,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Norway, chiesto dal server. Le parti sono A (stazioni), B (meteo), C
   (ricerca), D (giornata) ed E (prova). Prossimo: la risposta dell'utente
   alla domanda 1, com'è la neve (`tasks/TASK-406.md`).
+  - 2026-11-06: l'utente risponde «Sì, gratis + membri». **Parte A**: le
+    stazioni sciistiche del mondo da OpenSkiData, 4.768 aperte con discesa
+    e un nome, nella tabella `ski_resorts` (migrazione 0054). Si cercano
+    con `GET /ski-resorts`, per nome o per vicinanza, e una alla volta
+    con `GET /ski-resorts/{id}`. Gli estratti OSM non si riscaricano
+    (aggiunta ad ADR-0338). Per andare online, comandi dell'utente col suo
+    sì: il server con la 0054, poi il download del file e l'import.
+    Prossimo: la parte B, il meteo da MET Norway.
 - **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
   percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
   Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un
@@ -722,9 +740,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Scelte: prima il personaggio, poi l'editor, poi il prompt; il prompt senza
   costi, letto dal telefono con una tabella di parole. Proposta: three.js
   nella pagina del video (niente di nativo) e modelli CC0: sì dell'utente
-  il 2026-11-06; l'elefante nella prima versione. Prossimo: quale
-  elefante (domanda 2b, proposta il modello CC BY gratis di Sketchfab;
-  `tasks/TASK-408.md`).
+  il 2026-11-06; l'elefante nella prima versione, «Elephant Anim» di
+  Shivoahm (Sketchfab, CC BY 4.0, gratis). Prossimo: il testo della riga
+  dei crediti (domanda 2c, `tasks/TASK-408.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta
@@ -3221,6 +3239,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Parte A in `main` (#871, cab53f51; impronta iOS 6f8bba4c invariata):
   server e migrazione `0053` dall'utente col comando del Coordinatore,
   quando dice sì. Prossimo: la parte B (app) in una sessione nuova.
+  Parte B (app) da `feat/TASK-400-b-pool-app`: in «Draw» con «Swim» la
+  scelta «Open water / Pool»; in piscina la vasca (25, 50, «Other» 10–100
+  m, ricordata), «Start swim», il cronometro con «Pause», «How many
+  lengths?» con la stima, vasche, metri, tempo e passo; `PUT
+  /me/pool-swims/{key}` col limite di 2,5 m/s controllato prima; Salute
+  come nuoto in piscina (senza la vasca: limite della libreria, ADR-0334
+  precisazione B); `pool` in `this_app`; la riga in «My activities».
+  Entra dopo TASK-378 B. Prossimo: la parte C (il post), poi server, OTA
+  e store col sì dell'utente.
 
 ## Completato
 

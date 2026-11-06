@@ -48,6 +48,9 @@ export type Workout = {
   /** The run's key (`activityKey`): the same run written twice is one
    * workout. */
   syncId: string;
+  /** A swim in a pool (TASK-400 part B, ADR-0334): no route, the pool's
+   * length. Absent for every other workout. */
+  pool?: { lengthM: number };
 };
 
 /** The version of what is written for a run: there is only one so far. */

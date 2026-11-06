@@ -17,6 +17,7 @@ import { cityName } from "../explore/recommendedRoutes";
 import { RouteThumb } from "../explore/RouteThumb";
 import { GymTile } from "../gym/GymTile";
 import { mainExercises } from "../gym/mainExercises";
+import { NewLevels } from "../gym/NewLevels";
 import { useGymExercises } from "../gym/useGymExercises";
 import { t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
@@ -301,6 +302,8 @@ export function FeedPost({ post, width, onOpen }: Props) {
     <View style={styles.words}>
       <Text style={styles.title}>{post.title}</Text>
       <Text style={styles.facts}>{postFacts(post)}</Text>
+      {/* The figures this workout reached first (TASK-385 E). */}
+      {gym && <NewLevels exercises={exercises} />}
     </View>
   );
   // Over a photo, light on the dark that rises from its foot. The same

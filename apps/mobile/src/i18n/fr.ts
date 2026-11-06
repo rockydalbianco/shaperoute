@@ -1195,6 +1195,16 @@ export const FR: Table = {
   "Still training?": "Tu t'entraînes encore ?",
   "Yes, keep going": "Oui, je continue",
   "Finish workout": "Terminer la séance",
+  // src/gym/figures.ts, NewLevels.tsx (TASK-385 part E), approved on 2026-11-04
+  Mouse: "Souris",
+  Rabbit: "Lapin",
+  Fox: "Renard",
+  Wolf: "Loup",
+  Bear: "Ours",
+  Rhino: "Rhinocéros",
+  Gorilla: "Gorille",
+  "New level: {figure} · {exercise} {value}":
+    "Nouveau niveau : {figure} · {exercise} {value}",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":
     "Pas de formes sur les pistes : MuW enregistre ta journée.",
@@ -1720,8 +1730,19 @@ export const FR: Table = {
   FEEDBACK: "AVIS",
   // src/settings/sport.ts (TASK-305 D0: paragliding, «Soon» in «Sport»)
   Paragliding: "Parapente",
-  // src/settings/sport.ts (TASK-323 C: swimming in open water, «Soon» in «Sport»)
-  "Open water swim": "Nage en eau libre",
+  // src/sports/swimming.ts (TASK-400: «Swim», in open water or in a pool)
+  Swim: "Natation",
+  // src/pool/ (TASK-400 part B: a swim in a pool), approved on 2026-11-06
+  "Open water": "Eau libre",
+  Pool: "Piscine",
+  "Pool length": "Longueur du bassin",
+  Other: "Autre",
+  "Length in meters": "Longueur en mètres",
+  "Start swim": "Commencer la nage",
+  "How many lengths?": "Combien de longueurs ?",
+  Lengths: "Longueurs",
+  "Pool swim": "Nage en piscine",
+  "Pace /100 m": "Allure /100 m",
   // src/explore/ExploredCard.tsx, src/social/DrawingCard.tsx (TASK-313)
   "Draw it near me": "La dessiner près de moi",
   // src/route/RoutePanel.tsx (TASK-311 B: a word in one line that did not come out)

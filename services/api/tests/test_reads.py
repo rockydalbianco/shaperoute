@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import replace
 from pathlib import Path
 from typing import Any, get_args
 
@@ -79,9 +78,9 @@ def test_several_lines_of_the_header_add_up() -> None:
 
 def test_the_app_of_today_reads_everything() -> None:
     reads = reads_from([_fixture()["this_app"]])
-    # A workout at the gym and its post without a line too (TASK-385 B0);
-    # not yet a swim in a pool, which comes with TASK-400 B.
-    assert reads == replace(EVERYTHING, pool=False)
+    # A workout at the gym and its post without a line too (TASK-385 B0),
+    # and a swim in a pool since TASK-400 B.
+    assert reads == EVERYTHING
 
 
 def test_shows_asks_the_activity_and_the_track() -> None:

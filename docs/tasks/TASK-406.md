@@ -66,12 +66,15 @@ stile di MuW.
 
 ## Scelte dell'utente
 
-Nessuna per ora.
+- 2026-11-06, domanda 1: «Sì, gratis + membri». Com'è la neve si mostra
+  con meteo e neve fresca prevista da MET Norway, più il tipo di neve
+  segnato dai membri nella stazione nelle ultime 24 ore. Niente bollettino
+  a pagamento.
 
 ## Domande aperte (una alla volta)
 
-1. **Com'è la neve** — la prima, perché decide il costo. Fatta il
-   2026-11-06, si aspetta la risposta.
+1. **Com'è la neve** — la prima, perché decide il costo.
+   **Risposta dell'utente, 2026-11-06: «Sì, gratis + membri».**
    - **Proposta: gratis + membri.** Meteo e neve fresca prevista da MET
      Norway, più il tipo di neve segnato dai membri nella stazione nelle
      ultime 24 ore.
@@ -108,12 +111,32 @@ Nessuna per ora.
 
 Ogni parte manda prima al Coordinatore la sua lista dei file.
 
+**Parte A, 2026-11-06.** Le stazioni sono sul server, da OpenSkiData
+(sotto, nell'aggiunta ad ADR-0338). Si cercano con `GET /ski-resorts`, per
+nome o per vicinanza, e una alla volta con `GET /ski-resorts/{id}`:
+`API.md` «Ski resorts», `DATABASE.md` (0054), `MAPS.md` «Le stazioni
+sciistiche da OpenSkiData». Prossimo: il server con la 0054 e il primo
+import, comandi dell'utente col suo sì. Poi la parte B, il meteo.
+
 ## File toccati
 
 Questa PR (documenti): `docs/tasks/TASK-406.md` (nuovo), `docs/DECISIONS.md`
 (ADR-0338), `docs/STATUS.md` (una voce), `docs/INDEX.md` (una riga).
 
-Parti A–E: si elencano prima di ciascuna.
+Parte A (approvata dal Coordinatore il 2026-11-06, migrazione 0054). La
+fonte è OpenSkiData, approvata dal Coordinatore lo stesso giorno al posto
+delle aree OSM degli estratti. File nuovi:
+- `services/api/migrations/0054_ski_resorts.sql`;
+- `services/api/shaperoute_api/ski_resorts.py`, `ski_resorts_api.py` e
+  `resort_import.py`;
+- `services/api/tests/test_ski_resorts_api.py`, `test_resort_import.py` e
+  `fixtures/ski/ski_areas.geojson`.
+
+File da cambiare: `services/api/shaperoute_api/__main__.py` (una riga),
+`docs/API.md`, `docs/DATABASE.md`, `docs/MAPS.md`, `docs/DECISIONS.md`
+(un'aggiunta ad ADR-0338), `docs/STATUS.md` e questa lista.
+
+Parti B–E: si elencano prima di ciascuna.
 
 ## Criteri di accettazione
 

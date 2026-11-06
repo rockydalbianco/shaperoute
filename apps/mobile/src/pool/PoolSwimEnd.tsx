@@ -1,0 +1,319 @@
+import { POOL_LENGTHS_MAX, POOL_MAX_SPEED_M_S } from "@shaperoute/shared-types";
+import { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { SIGN_IN_TO_KEEP_RUNS, useActivitiesDoor } from "../activities/activitiesDoor";
+import { gymStyles } from "../gym/gymStyles";
+import { healthPhone } from "../health/healthModules";
+import type { HealthPhone } from "../health/healthPhone";
+import { HealthRunEnd } from "../health/HealthRunEnd";
+import { useHealth } from "../health/useHealth";
+import { t } from "../i18n";
+import { clockLabel } from "../navigation/freeRun";
+import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
+import { averagePace } from "./poolChoice";
+import { metresLabel } from "./PoolDraw";
+import { savePoolToHealth } from "./poolHealth";
+import {
+  activeMs,
+  estimateLengths,
+  isTooFast,
+  pacePer100S,
+  parseLengths,
+  poolMetres,
+  type PoolSwim,
+} from "./poolSwim";
+import type { PoolSaved } from "./usePoolOutbox";
+import { endPoolSwim } from "./usePoolSwim";
+
+/** The most lengths of `poolLengthM` in `activeS` the API takes: no faster
+ * than 2.5 m/s, at most 1000. */
+export function maxLengths(activeS: number, poolLengthM: number): number {
+  const fastest = Math.floor((activeS * POOL_MAX_SPEED_M_S) / poolLengthM + 1e-9);
+  return Math.min(POOL_LENGTHS_MAX, fastest);
+}
+
+/**
+ * The swim in a pool ended (TASK-400 part B, ADR-0334, point 3): «How many
+ * lengths?» with the estimate from its time, to correct with − and + or by
+ * writing it; then lengths, metres, time and pace /100 m. Lengths faster
+ * than 2.5 m/s, which the API refuses, stay not valid and «Save» waits.
+ * «Save» keeps it on the phone and sends it, and writes it to Apple Health
+ * or Health Connect after the user's yes; «Discard» asks first. Signed out,
+ * it says to sign in, as the end of a workout does.
+ */
+export function PoolSwimEnd({
+  swim,
+  onSave,
+  health: phone = healthPhone(),
+}: {
+  swim: PoolSwim;
+  onSave: (swim: PoolSwim, lengths: number) => PoolSaved;
+  /** The phone's health data; for the tests, a fake. */
+  health?: HealthPhone | null;
+}) {
+  const insets = useSafeAreaInsets();
+  const { signedIn, signIn } = useActivitiesDoor();
+  const healthState = useHealth(phone);
+  const activeS = activeMs(swim, swim.endedMs ?? swim.startedMs) / 1000;
+  const most = maxLengths(activeS, swim.poolLengthM);
+  const [text, setText] = useState(() =>
+    String(
+      Math.min(
+        Math.max(1, most),
+        estimateLengths(activeS, swim.poolLengthM, averagePace()),
+      ),
+    ),
+  );
+  const [discarding, setDiscarding] = useState(false);
+  const [problem, setProblem] = useState(false);
+
+  const written = parseLengths(text);
+  const metres = written === null ? null : poolMetres(written, swim.poolLengthM);
+  const lengths =
+    written !== null && metres !== null && !isTooFast(activeS, metres) ? written : null;
+  const pace = metres === null ? null : pacePer100S(activeS, metres);
+
+  function step(by: number) {
+    const from = written ?? 0;
+    setText(String(Math.min(Math.max(1, most), Math.max(1, from + by))));
+  }
+
+  function save() {
+    if (lengths === null) {
+      return;
+    }
+    const saved = onSave(swim, lengths);
+    if (saved === "kept") {
+      // Written there, on the phone, with no network; never fails «Save».
+      void savePoolToHealth(phone, swim, lengths);
+      endPoolSwim();
+    } else {
+      setProblem(true);
+    }
+  }
+
+  return (
+    <View style={gymStyles.screen} testID="pool-end">
+      <ScrollView
+        contentContainerStyle={[
+          gymStyles.content,
+          {
+            paddingTop: insets.top + space.lg,
+            paddingBottom: insets.bottom + space.xl,
+          },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.head}>
+          <Text style={gymStyles.muted}>
+            {`🏊 ${t("Pool swim")} · ${metresLabel(swim.poolLengthM)}`}
+          </Text>
+          <Text style={gymStyles.title} accessibilityRole="header">
+            {t("How many lengths?")}
+          </Text>
+        </View>
+        <View style={styles.lengths}>
+          <Pressable
+            style={[styles.step, (written ?? 0) <= 1 && gymStyles.disabled]}
+            disabled={(written ?? 0) <= 1}
+            onPress={() => step(-1)}
+            accessibilityRole="button"
+            accessibilityLabel="−"
+            testID="pool-fewer"
+          >
+            <Text style={styles.stepText}>−</Text>
+          </Pressable>
+          <TextInput
+            style={[styles.count, lengths === null && styles.invalid]}
+            value={text}
+            onChangeText={setText}
+            keyboardType="number-pad"
+            maxLength={4}
+            accessibilityLabel={t("How many lengths?")}
+            testID="pool-lengths"
+          />
+          <Pressable
+            style={[styles.step, (written ?? 0) >= most && gymStyles.disabled]}
+            disabled={(written ?? 0) >= most}
+            onPress={() => step(1)}
+            accessibilityRole="button"
+            accessibilityLabel="+"
+            testID="pool-more"
+          >
+            <Text style={styles.stepText}>+</Text>
+          </Pressable>
+        </View>
+        <View style={styles.figures}>
+          <Figure
+            label={t("Lengths")}
+            value={lengths === null ? "–" : String(lengths)}
+          />
+          <Figure
+            label={t("Distance")}
+            value={lengths === null || metres === null ? "–" : `${metres} m`}
+            testID="pool-metres"
+          />
+          <Figure
+            label={t("Time")}
+            value={clockLabel(activeS * 1000)}
+            testID="pool-time"
+          />
+          <Figure
+            label={t("Pace /100 m")}
+            value={lengths === null || pace === null ? "–" : clockLabel(pace * 1000)}
+            testID="pool-pace"
+          />
+        </View>
+        {phone !== null && signedIn && (
+          <HealthRunEnd store={phone.store} health={healthState} />
+        )}
+        {problem && (
+          <Text style={[gymStyles.muted, gymStyles.danger]}>
+            {t("This run could not be kept on the phone. Try again.")}
+          </Text>
+        )}
+        {!signedIn && (
+          <Pressable onPress={signIn} accessibilityRole="button">
+            <Text style={[gymStyles.text, styles.link]}>{t(SIGN_IN_TO_KEEP_RUNS)}</Text>
+          </Pressable>
+        )}
+        {discarding ? (
+          <View style={gymStyles.row}>
+            <Pressable
+              style={gymStyles.button}
+              onPress={() => setDiscarding(false)}
+              accessibilityRole="button"
+            >
+              <Text style={gymStyles.buttonText}>{t("Keep it")}</Text>
+            </Pressable>
+            <Pressable
+              style={gymStyles.button}
+              onPress={endPoolSwim}
+              accessibilityRole="button"
+              testID="pool-discard-sure"
+            >
+              <Text style={[gymStyles.buttonText, gymStyles.danger]}>
+                {t("Discard")}
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={gymStyles.row}>
+            <Pressable
+              style={gymStyles.button}
+              onPress={() => setDiscarding(true)}
+              accessibilityRole="button"
+              testID="pool-discard"
+            >
+              <Text style={[gymStyles.buttonText, gymStyles.danger]}>
+                {t("Discard")}
+              </Text>
+            </Pressable>
+            {signedIn && (
+              <Pressable
+                style={[
+                  gymStyles.button,
+                  gymStyles.primary,
+                  lengths === null && gymStyles.disabled,
+                ]}
+                disabled={lengths === null}
+                onPress={save}
+                accessibilityRole="button"
+                accessibilityLabel={t("Save to My activities")}
+                testID="pool-save"
+              >
+                <Text style={[gymStyles.buttonText, gymStyles.primaryText]}>
+                  {t("Save")}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
+function Figure({
+  label,
+  value,
+  testID,
+}: {
+  label: string;
+  value: string;
+  testID?: string;
+}) {
+  return (
+    <View style={styles.figure} accessible accessibilityLabel={`${label}: ${value}`}>
+      <Text style={styles.value} testID={testID}>
+        {value}
+      </Text>
+      <Text style={gymStyles.muted}>{label}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  head: {
+    alignItems: "center",
+    gap: space.xs,
+  },
+  lengths: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.md,
+  },
+  step: {
+    width: MIN_TAP_SIZE + space.md,
+    height: MIN_TAP_SIZE + space.md,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: (MIN_TAP_SIZE + space.md) / 2,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  stepText: {
+    color: color.text,
+    fontSize: fontSize.display,
+    fontWeight: fontWeight.bold,
+  },
+  count: {
+    minWidth: 120,
+    minHeight: MIN_TAP_SIZE + space.md,
+    textAlign: "center",
+    borderRadius: space.md,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+    color: color.text,
+    fontSize: fontSize.display,
+    fontWeight: fontWeight.bold,
+    fontVariant: ["tabular-nums"],
+  },
+  invalid: {
+    borderColor: color.error,
+  },
+  figures: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    rowGap: space.md,
+  },
+  figure: {
+    width: "50%",
+    alignItems: "center",
+    gap: space.xs,
+  },
+  value: {
+    color: color.text,
+    fontSize: fontSize.heading,
+    fontWeight: fontWeight.bold,
+    fontVariant: ["tabular-nums"],
+  },
+  link: {
+    textDecorationLine: "underline",
+  },
+});

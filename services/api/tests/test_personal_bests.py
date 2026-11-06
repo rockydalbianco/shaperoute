@@ -136,12 +136,14 @@ def test_a_run_shorter_than_a_distance_has_no_best_of_it() -> None:
     assert bests([TrackPoint(*START, 0.0)], [], "running") == {}
 
 
-def test_a_run_has_its_bests_of_both_sports() -> None:
+def test_a_run_has_its_bests_of_every_sport() -> None:
     # 20 km at 30 km/h: on foot faster than the jump of a step, by bike not.
+    # An MTB and a gravel ride have a ride's, of their own (TASK-378).
     found = run_bests(line((250, 30, 80)), [])
     assert {(b.sport, b.distance) for b in found} == {
-        ("cycling", "10k"),
-        ("cycling", "20k"),
+        (sport, distance)
+        for sport in ("cycling", "mountain_biking", "gravel_biking")
+        for distance in ("10k", "20k")
     }
 
 

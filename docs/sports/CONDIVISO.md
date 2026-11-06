@@ -106,6 +106,26 @@ tutto: è corto apposta.
     `climbing`.
   Dettagli in `tasks/TASK-377.md`, «Lista definitiva di A».
 
+- **2026-11-06, TASK-378 A — Gravel e MTB contro la ricetta.** Le
+  deroghe del pilota, ora passi della ricetta, sono tornate tutte (le
+  tabelle «di prima», le fixture, il profilo nascosto, le zone di una rete
+  nuova). In più:
+  - **una rete per la bici dice di esserlo** (`Network.by_bike`): sensi
+    unici e tratti a piedi con la bici non dipendono più dal nome `bike`.
+    `bike_ways` prende le regole di una rete e il suo nome, e una rete
+    come la MTB è un file di regole su quelle della bici;
+  - **uno sport disegnato come un altro** sta in `walking.py`
+    (`DRAWN_AS`), come la camminata: Gravel è una bici, fuori impronta;
+  - **i test dell'ordine.** Due sport insieme spostano gli indici: i test
+    che dicevano «subito prima della camminata» o «l'ultima è la
+    camminata» ora dicono «prima» e «le ultime»;
+  - **i record personali si contano per ogni sport per ogni corsa**
+    (`personal_bests.run_bests`): uno sport con record nuovi allunga il
+    test di `run_bests` e il CHECK di `run_bests` (0052).
+
+  Dettagli in `tasks/TASK-378.md`, «Lista definitiva di A», e nella
+  precisazione di ADR-0322.
+
 ## L'app
 
 - **2026-11-05, TASK-376 B3a — il profilo di ogni sport.** Uno sport è un

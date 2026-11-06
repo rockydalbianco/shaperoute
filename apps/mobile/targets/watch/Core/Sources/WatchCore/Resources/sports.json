@@ -57,10 +57,32 @@
       "onWatch": true
     },
     {
+      "activity": "mountain_biking",
+      "name": "MTB",
+      "emoji": "🚵",
+      "appleWorkout": 13,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
       "activity": "walking",
       "name": "Walk",
       "emoji": "🚶",
       "appleWorkout": 52,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
+      "activity": "gravel_biking",
+      "name": "Gravel",
+      "emoji": "🚲",
+      "appleWorkout": 13,
       "pace": "km",
       "onWater": false,
       "guided": true,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
 import networkx as nx
@@ -79,24 +79,28 @@ ONE_WAY_BACKWARD = frozenset({"-1", "reverse"})
 
 
 def download_bike_graph(bbox: BBox, custom_filter: Filter) -> Graph:
-    """The bike network of `bbox` from Overpass, every piece of it.
+    """The bike network of `bbox` from Overpass, every piece of it."""
+    return bike_ways(download_ways(bbox, custom_filter, BIKE_TAGS))
+
+
+def download_ways(bbox: BBox, custom_filter: Filter, tags: Sequence[str]) -> Graph:
+    """The ways of `bbox` a network by bike is made of, from Overpass.
 
     network_type="bike" makes OSMnx keep one-way streets one way. The graph
-    comes unsimplified, one edge for each stretch of a way, so `bike_ways`
-    can drop ways and turn directions with each way's own tags before the
-    ways are joined into roads."""
+    comes unsimplified, one edge for each stretch of a way, with the `tags`
+    the rules read, so `bike_ways` can drop ways and turn directions with
+    each way's own tags before the ways are joined into roads."""
     import osmnx as ox
 
     south, west, north, east = bbox
-    with way_tags(BIKE_TAGS):
-        graph = ox.graph_from_bbox(
+    with way_tags(tags):
+        return ox.graph_from_bbox(
             bbox=(west, south, east, north),
             network_type="bike",
             custom_filter=custom_filter,
             retain_all=True,
             simplify=False,
         )
-    return bike_ways(graph)
 
 
 def rideable(tags: Mapping[str, Any]) -> bool:
@@ -171,9 +175,15 @@ def bike_direction(tags: Mapping[str, Any]) -> str | None:
     return None
 
 
-def bike_ways(graph: Graph) -> Graph:
+def bike_ways(
+    graph: Graph,
+    ride: Callable[[Mapping[str, Any]], bool] = rideable,
+    name: str = BIKE_NETWORK_NAME,
+) -> Graph:
     """An unsimplified OSMnx graph made with network_type="bike" turned
-    into the bike network: the ways a bike may not ride dropped, the one-way
+    into the bike network, or into the network `name` whose ways a bike
+    rides where `ride` says so (the MTB one, TASK-378): the ways a bike may
+    not ride dropped, the one-way
     streets open to bikes the other way joined both ways, and the two-way
     roads one-way for bikes made one-way; then simplified as OSMnx does,
     and marked as a bike graph (`one_way_streets`).
@@ -188,7 +198,7 @@ def bike_ways(graph: Graph) -> Graph:
     edges = graph.edges(keys=True, data=True)
     dropped = []
     for u, v, k, data in edges:
-        if rideable(data):
+        if ride(data):
             continue
         if walkable(data):
             data["walk"] = True
@@ -239,7 +249,7 @@ def bike_ways(graph: Graph) -> Graph:
             if data.get("walk") and (u, v) in ridden
         ]
     )
-    graph.graph["network"] = BIKE_NETWORK_NAME
+    graph.graph["network"] = name
     graph.graph["on_foot"] = True
     return graph
 
@@ -263,4 +273,4 @@ def walkable_beside(tags: Mapping[str, Any]) -> bool:
     return not values & NO_ENTRY
 
 
-NETWORK = Network(BIKE_NETWORK_NAME, BIKE_FILTER, download_bike_graph)
+NETWORK = Network(BIKE_NETWORK_NAME, BIKE_FILTER, download_bike_graph, by_bike=True)

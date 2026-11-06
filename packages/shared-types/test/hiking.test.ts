@@ -22,7 +22,8 @@ test("a hike is an activity of the API, 1 to 30 km", () => {
   assert.deepEqual([...DISTANCE_LIMITS_M.hiking], [1_000, 30_000]);
   assert.ok((API_ACTIVITIES as readonly string[]).includes("hiking"));
   assert.ok((RUN_ACTIVITIES as readonly string[]).includes("hiking"));
-  assert.equal(ACTIVITIES.indexOf("hiking"), ACTIVITIES.indexOf("walking") - 1);
+  // Before the walk; an MTB ride between them since TASK-378.
+  assert.ok(ACTIVITIES.indexOf("hiking") < ACTIVITIES.indexOf("walking"));
   assert.deepEqual(contract.distance_limits_m.hiking, [1_000, 30_000]);
 });
 

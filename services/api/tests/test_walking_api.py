@@ -59,7 +59,8 @@ WALK_HEART: dict[str, Any] = {
 
 def test_walking_is_an_activity_of_the_api_with_its_distances() -> None:
     check_supported("walking")
-    assert API_ACTIVITIES[-1] == "walking"
+    # The last of the engine's, then the gravel ride (TASK-378).
+    assert API_ACTIVITIES[-2:] == ("walking", "gravel_biking")
     assert WALK_DISTANCE_M == (1_000, 30_000)
     assert API_DISTANCE_LIMITS_M["walking"] == WALK_DISTANCE_M
     contract = json.loads((CONTRACT / "contract.json").read_text())

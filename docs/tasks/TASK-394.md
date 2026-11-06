@@ -650,8 +650,8 @@ docs/STATUS.md
 Parte B (`feat/TASK-394-b-outfit-app`; lista data al Coordinatore e approvata
 il 2026-11-06). I tre test con la data di Termini e Privacy
 (`documents.test.ts`, `AboutPage.test.tsx`, `site/tests/privacy.test.mjs`)
-non erano nella lista: li cambia la data nuova, e il Coordinatore ne è
-avvisato con la PR.
+non erano nella lista: li cambia la data nuova. Approvati dal Coordinatore il
+2026-11-06, sulla #894.
 
 ```
 apps/mobile/src/social/outfit/outfitWords.ts            (nuovo, + .test.ts)

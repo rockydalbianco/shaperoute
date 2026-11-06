@@ -13,8 +13,8 @@ it("shows the rows of before, in their order", () => {
     { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
     { id: "swim", emoji: "🏊", name: "Open water swim", ready: true },
     { id: "walk", emoji: "🚶", name: "Walk", ready: false },
-    // Added since: the hike (TASK-377 part B).
-    { id: "hike", emoji: "⛰️", name: "Hike", ready: false },
+    // Added since: the hike (TASK-377 part B), on since the server hikes.
+    { id: "hike", emoji: "⛰️", name: "Hike", ready: true },
     { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },
     {
       id: "xc_ski",

@@ -532,6 +532,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   import; ricerca e modulo la offrono appena è pronta. L'utente tiene la
   rete di oggi (circa metà sui sentieri in montagna). Prossimo: «ready»
   con una riga, dopo il server con la 0051, col sì dell'utente.
+  **«ready» pronta** (`feat/TASK-377-c-hike-ready`, PR in bozza sopra la
+  B): si unisce dopo il server con la 0051, col sì dell'utente.
   Prossimo: la parte B (app), dopo la #765.
   **B3c, seconda metà, in PR** (2026-11-05, dopo la #765): «Impostazioni»
   legge emoji, nome e «Record only» dal profilo dello sport; `activityOf` e

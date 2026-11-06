@@ -64,10 +64,10 @@ const DOOR = {
   },
 } as unknown as FollowsDoor;
 
-test("a hike is read, named, and not offered yet", () => {
+test("a hike is read, named, and offered since «Hike» is ready", () => {
   expect(readsHeaders()["X-MuW-Reads"].split(",")).toContain("hiking");
   expect(activityName("hiking")).toBe("Hike");
-  expect(SEARCH_ACTIVITIES).not.toContain("hiking");
+  expect(SEARCH_ACTIVITIES).toContain("hiking");
   expect(isOnSnow("hiking")).toBe(false);
   expect(routeActivity("hiking")).toBe("hiking");
 });

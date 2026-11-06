@@ -11,14 +11,22 @@ export const SWIM_STEP = 0.5;
  * laps of most shapes on a straight coast (ADR-0283). */
 export const SWIMMING_START_KM = 1;
 
+/** HKWorkoutSwimmingLocationType.pool: a swim in a pool in Apple Health
+ * (TASK-400 part B, ADR-0334). */
+export const APPLE_POOL_LOCATION = 1;
+
+/** ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL (TASK-400 part B). */
+export const HEALTH_CONNECT_POOL = 74;
+
 /**
- * A swim in open water (TASK-323): its own limits, 0.5–3 km, by half a km;
+ * A swim (TASK-323), «Swim» since TASK-400 (ADR-0334): in open water, or in
+ * a pool, chosen in «Draw» (src/pool). In open water its own limits, 0.5–3 km, by half a km;
  * with «Miles» by half a mile, 0.5 to 1.5 (0.8 to 2.4 km: 2 mi are past
  * the 3 km). No energy yet (TASK-323 C2).
  */
 export const SWIMMING: SportProfile = {
   activity: "swimming",
-  name: tLater("Open water swim"),
+  name: tLater("Swim"),
   emoji: "🏊",
   pace: "swim",
   onWater: true,
@@ -33,8 +41,8 @@ export const SWIMMING: SportProfile = {
   drawMi: [0.5, 1.5],
   step: SWIM_STEP,
   startKm: SWIMMING_START_KM,
-  // `.swimming`; that it was in open water is TASK-321's to add
-  // (HKMetadataKeySwimmingLocationType), with TASK-323 E.
+  // `.swimming`; a swim in a pool says so (APPLE_POOL_LOCATION), one in
+  // open water not yet (TASK-323 E).
   appleWorkout: 46,
   appleDistance: "HKQuantityTypeIdentifierDistanceSwimming",
   // EXERCISE_TYPE_SWIMMING_OPEN_WATER (TASK-323).

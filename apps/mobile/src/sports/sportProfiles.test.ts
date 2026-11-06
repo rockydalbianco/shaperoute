@@ -134,7 +134,7 @@ it("names the sports, and draws on the phone the ones of before", () => {
     ["running", "Run"],
     ["cycling", "Bike"],
     ["paddling", "Paddle"],
-    ["swimming", "Open water swim"],
+    ["swimming", "Swim"],
     ["hiking", "Hike"],
     ["mountain_biking", "MTB"],
     ["walking", "Walk"],

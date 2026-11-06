@@ -43,6 +43,7 @@ import { PlayOverlay } from "./src/game/PlayOverlay";
 import { PlayRow } from "./src/game/PlayRow";
 import { onOpenPlay } from "./src/game/unlocks";
 import { GymWorkoutHost } from "./src/gym/GymWorkoutHost";
+import { PoolSwimHost } from "./src/pool/PoolSwimHost";
 import { startGymWorkout } from "./src/gym/useWorkout";
 import {
   loadRecentCities,
@@ -1691,6 +1692,8 @@ function MuW() {
         {stretching && <StretchScreen onLeave={() => setStretching(false)} />}
         {/* A workout at the gym, over everything until saved (TASK-385 B). */}
         <GymWorkoutHost />
+        {/* A swim in a pool, over everything until saved (TASK-400 B). */}
+        <PoolSwimHost />
       </MapScreen>
       {/* Over the map, opposite the way back: keep the route shown. */}
       <FavoriteHeart route={onMap} />

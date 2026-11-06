@@ -51,7 +51,7 @@ test("signing up sends the contract's request and gets a session", async () => {
   expect(init.headers).toEqual({
     "Content-Type": "application/json",
     "X-MuW-Reads":
-      "swimming,hiking,mountain_biking,walking,gravel_biking,skiing,xc_skiing,gym,trackless",
+      "swimming,hiking,mountain_biking,walking,gravel_biking,skiing,xc_skiing,gym,trackless,pool",
   });
   expect(JSON.parse(init.body as string)).toEqual(signUpRequest);
 });

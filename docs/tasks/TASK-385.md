@@ -390,3 +390,6 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
   pesi, durante, alla fine, nel post e nel riquadro condiviso; con «Save»
   l'allenamento di forza in Salute. Scelta dell'utente: «Niente kcal» con
   gli esercizi nascosti. Solo JavaScript; OTA col sì. Prossima: F.
+- 2026-11-06: parte C in `main` (#904, 756d6f83); impronta iOS 6f8bba4c
+  misurata dal Coordinatore. Niente server; OTA col sì dell'utente.
+  Prossima: F (classifica mensile), lista prima del codice.

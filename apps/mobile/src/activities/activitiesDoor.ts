@@ -28,6 +28,8 @@ import type { SavedRun } from "../navigation/trackStore";
 import { keepForDrawing, sendWaitingDrawings } from "../social/drawingOutbox";
 import { keepOrder } from "../social/drawingOrder";
 import { forgetPhotosOf, keepPhotos } from "../social/drawingPhotos";
+import { keepOutfits } from "../social/outfit/outfitKept";
+import type { OutfitDraft } from "../social/outfit/outfitTags";
 import { keepForStrava, sendWaitingToStrava } from "../strava/stravaOutbox";
 import {
   keepWaiting,
@@ -108,6 +110,9 @@ export type ActivitiesDoor = ActivitiesState & {
   toPhotos: (photos: readonly string[]) => void;
   /** And where the map stands among them (TASK-348); null: first. */
   toOrder: (order: readonly string[] | null) => void;
+  /** And the items tagged on each of them, in their order (TASK-394 part B);
+   * absent from the fakes of the tests made before it. */
+  toOutfit?: (tags: readonly (readonly OutfitDraft[])[]) => void;
   /** The runs of this account still on the phone, waiting for the API;
    * those it refused too. */
   waiting: number;
@@ -164,6 +169,7 @@ const NOTHING: ActivitiesDoor = {
   toDrawing: () => {},
   toPhotos: () => {},
   toOrder: () => {},
+  toOutfit: () => {},
   waiting: 0,
   full: false,
   refused: [],
@@ -458,6 +464,12 @@ export function useActivitiesOf(
     nextOrder.current = order;
   }, []);
 
+  // And for the items tagged on the photos (TASK-394 part B).
+  const nextOutfit = useRef<readonly (readonly OutfitDraft[])[]>([]);
+  const toOutfit = useCallback((tags: readonly (readonly OutfitDraft[])[]) => {
+    nextOutfit.current = tags;
+  }, []);
+
   // What `record` and `recordImported` share: the run on the phone, with
   // what was told for it just before «Save».
   const keep = useCallback(
@@ -470,6 +482,8 @@ export function useActivitiesOf(
       nextPhotos.current = [];
       const order = nextOrder.current;
       nextOrder.current = null;
+      const outfit = nextOutfit.current;
+      nextOutfit.current = [];
       if (owner === null || recorded === null) {
         return false;
       }
@@ -488,6 +502,7 @@ export function useActivitiesOf(
       // Its photos beside it (TASK-208): with the run safe, a photo the
       // phone will not write is a photo lost, not a run.
       keepPhotos(owner, recorded.id, photos);
+      keepOutfits(owner, recorded.id, outfit);
       if (order !== null) {
         keepOrder(owner, recorded.id, order);
       }
@@ -655,6 +670,7 @@ export function useActivitiesOf(
       toDrawing,
       toPhotos,
       toOrder,
+      toOutfit,
       waiting,
       full: waiting >= MAX_WAITING,
       refused: refusedRuns,
@@ -684,6 +700,7 @@ export function useActivitiesOf(
       toDrawing,
       toPhotos,
       toOrder,
+      toOutfit,
       waiting,
       refusedRuns,
       discard,

@@ -309,6 +309,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Compendium; i record propri nel profilo; i file FIT (sub-sport), GPX e
   Strava che li dicono. Solo JavaScript. Prossimo: `ready` vero nelle due
   righe col sì dell'utente, che il Coordinatore chiede dopo il merge.
+  **Parte B in `main`** (#879, `85625132`, 2026-11-06): impronta iOS
+  `6f8bba4c` invariata, server a `cab53f51` con la 0052. Prossimo:
+  l'accensione col sì dell'utente, in una riga o PR a parte, poi la prova
+  sul telefono (si sceglie, si pedala, si salva, va in Salute).
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

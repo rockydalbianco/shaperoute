@@ -303,6 +303,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `6f8bba4c` invariata, impronta del motore tenuta. Il server con la 0052
   lo aggiorna l'utente col suo sì, col comando del Coordinatore. Prossimo:
   la parte B (app), con la sua lista di file al Coordinatore.
+  **Parte B in PR** (2026-11-06, `feat/TASK-378-b-gravel-app`): «Gravel»
+  🚲 e «MTB» 🚵 in «Settings» dopo «Hike», «Soon» finché l'utente non li
+  accende; i nomi e l'avviso MTB nelle cinque lingue; energia dal
+  Compendium; i record propri nel profilo; i file FIT (sub-sport), GPX e
+  Strava che li dicono. Solo JavaScript. Prossimo: `ready` vero nelle due
+  righe col sì dell'utente, che il Coordinatore chiede dopo il merge.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

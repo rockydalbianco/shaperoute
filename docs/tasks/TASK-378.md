@@ -310,3 +310,21 @@ motore resta quella di prima, con `SAME_ROUTES_AS`.
   Coordinatore prima del codice. In più rispetto alla lista sopra servono
   il tipo dei record nel contratto e `profile/PersonalBests.tsx` (vedi
   sopra).
+
+2026-11-06, parte B (`feat/TASK-378-b-gravel-app`), lista mandata al
+Coordinatore prima del codice:
+
+- «Gravel» 🚲 e «MTB» 🚵 hanno le loro righe in «Settings», dopo «Hike»,
+  con `ready` falso finché l'utente non li accende;
+- nomi e avviso MTB nelle cinque lingue, «Ride without a route» della
+  bici;
+- energia dal Compendium (bici; MTB 01009, 8,5 MET), Salute come la bici;
+- record propri nel profilo, e il tipo del contratto allargato;
+- FIT (sub-sport 8, 46, 47), GPX, TCX e Strava li riconoscono;
+- `sportRows`, `SettingsPage` e gli altri test che contano gli sport
+  aggiornati; `gravelMtbProfile.test.ts` nuovo.
+
+Lista approvata dal Coordinatore il 2026-11-06. Precisazione di ADR-0322
+per la parte B. Prossimo: `ready` vero nelle due righe di
+`settings/sport.ts`, col sì dell'utente che il Coordinatore chiede dopo il
+merge.

@@ -68,6 +68,8 @@ test("run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, TASK-1
     "Open water swim",
     "Walk",
     "Hike",
+    "Gravel",
+    "MTB",
     "Ski",
     "Cross-country ski",
     "Gym",

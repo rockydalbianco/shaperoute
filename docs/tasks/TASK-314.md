@@ -339,6 +339,8 @@ cambia negli stessi punti in cui lo cambia 401 B: conflitto di testo in
       pagine del sito (`privacy.test.mjs` verde).
 - [x] Test toccati verdi in locale; tsc, eslint e prettier puliti. Solo JS:
       l'impronta iOS `6f8bba4c` la misura il Coordinatore.
+- [x] Una corsa simulata nel simulatore iOS esce dal percorso e rientra:
+      voce, banner e mappa come sopra (vedi «Esito — parte B»).
 
 ## Esito — parte B
 
@@ -348,10 +350,28 @@ Fatta il 2026-11-06 nel branch `feat/TASK-314-b-way-back-run`. Test:
 anche i test già esistenti dei file toccati: navigazione, corsa, mappa,
 Privacy (425).
 
-**Non provato**: nel simulatore e su una corsa vera. Restano da vedere
-con gli occhi il motore del telefono dentro Pyodide, i tempi e il server
-con il telefono bloccato. Il percorso del codice è quello della parte A,
-che ha i suoi test.
+**Provata nel simulatore il 2026-11-06**, con Expo Go, un harness
+provvisorio (`useNavigation`, `MapView` e il banner veri) e l'API locale
+(`/way-back` di `main`). Simulatore e harness sono stati tolti dopo.
+- **Il giro**: il percorso vero di Trento Fiere (fixture di TASK-302),
+  dai 280 m; a 650 m il runner esce di 85 m nel parco, poi segue la strada
+  che dà il motore e rientra a 660 m. GPS simulato a 4 m/s.
+- **Voce**, dal log: «You are off the route. Head back to it.», «The route
+  is 80 metres away, to the south-east.», «In 30 metres, turn sharp left
+  onto the cycle path beside Via Marsala» (la strada appena trovata),
+  «In 40 metres, turn right onto the cycle path beside Via Palermo, then
+  turn left onto the service road, then turn left onto Via Palermo», «Back
+  on the route.», poi le svolte del percorso come prima.
+- **Banner**: «Off the route» con la svolta della strada (freccia, metri,
+  via, «Then …»); dopo il rientro, la svolta del percorso.
+- **Mappa**: i puntini lungo le vie fino al percorso; spariti al rientro.
+- **Richieste**: una sola per tutta la deviazione. Il simulatore non aveva
+  zone salvate, quindi ha risposto il server, in 0,03–0,04 s sul Mac.
+- **Video**: `out/TASK-314/way-back-detour.mp4` (110 s, la deviazione) e
+  `way-back-full.mp4` (tutto il giro), nel worktree, ignorati da git.
+
+**Non provato**: il motore del telefono dentro Pyodide (nel simulatore non
+c'erano zone salvate), lo schermo bloccato e una corsa vera.
 
 **Privacy**: la data della Privacy resta «6 November 2026», già quella
 di `main`, quindi i tre test con la data (`documents.test.ts`,

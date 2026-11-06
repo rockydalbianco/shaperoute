@@ -780,6 +780,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ogni 6», «Sì, fra gli esempi»); `feed/feedWithMuw.ts`. Un tocco apre il
   percorso sulla mappa come da «Explore» (`onOpenMuw` in `App.tsx`). Nessun
   testo nuovo. Visto nel simulatore. OTA di produzione col sì dell'utente.
+  **Chiuso il 2026-11-06**: #868 in `main` (`09307022`); vedi «Completato».
 
 - **TASK-356 — La posizione nel Feed: arrotondata, e detta nella privacy**
   (ADR-0306, punto 4; testo approvato dall'utente il 2026-10-30). Branch
@@ -3113,6 +3114,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-365 — I percorsi di MuW nel Feed** (2026-11-06; ADR-0310). I 25 percorsi approvati
+  dall'utente (11 bici, 10 a piedi, 4 canoa) in `catalog/muw_routes/` e sul server
+  (`GET /muw-routes`); #868 in main (`09307022`): nell'app compaiono in «All» come card di
+  MuW, una riga su 6 dal 4° posto, mai accanto a pubblicità o Style, mai in «Following», anche
+  fra gli esempi senza account; un tocco apre il percorso sulla mappa come da «Explore». Un'app
+  già pubblicata non vede niente di nuovo. Prossimo: l'OTA di produzione col sì dell'utente;
+  restano da provare l'export GPX e il `404` nel simulatore (`tasks/TASK-365.md`, criteri;
+  impronta iOS `6f8bba4c` invariata, misurata dal Coordinatore); il «looks 100% like it» del
+  percorso aperto è TASK-405.
 - **TASK-404 — Disegno a mano: un primo tratto piccolo non blocca i tratti dopo** (2026-11-05;
   segnalazione dell'utente dal nuoto, vale per ogni sport). Ogni tratto aggiunto si raddrizza
   sull'1% della grandezza del disegno che forma, non di quello di prima: dopo un puntino un

@@ -13,6 +13,7 @@ import { isPreview } from "../updates/channel";
 import { audioTrackOf } from "./m4a";
 import type { PostRun } from "./postRun";
 import { SharePost } from "./SharePost";
+import { characterModel } from "./videoCharacter";
 import { VIDEO_FILE, VIDEO_SILENCE_MS } from "./videoFile";
 import { musicTrack } from "./videoMusic";
 import { DAY } from "./videoStyle";
@@ -25,6 +26,10 @@ jest.mock("../updates/channel");
 jest.mock("expo-sharing", () => ({
   isAvailableAsync: jest.fn(async () => true),
   shareAsync: jest.fn(async () => {}),
+}));
+jest.mock("./videoCharacter", () => ({
+  ...jest.requireActual<typeof import("./videoCharacter")>("./videoCharacter"),
+  characterModel: jest.fn(),
 }));
 jest.mock("./videoMusic", () => ({
   ...jest.requireActual<typeof import("./videoMusic")>("./videoMusic"),
@@ -50,6 +55,7 @@ const { injectJavaScript: inject } =
 const share = jest.mocked(Sharing.shareAsync);
 const available = jest.mocked(Sharing.isAvailableAsync);
 const track = jest.mocked(musicTrack);
+const model = jest.mocked(characterModel);
 /** Whether this copy is the testers' preview: off, as on the stores' build. */
 const preview = jest.mocked(isPreview);
 /** The app's «Energy», as the phone reads it. */
@@ -126,6 +132,8 @@ beforeEach(() => {
   written.clear();
   track.mockReset();
   track.mockResolvedValue(ENERGY);
+  model.mockReset();
+  model.mockResolvedValue(new Uint8Array([0x67, 0x6c, 0x54, 0x46]));
   Object.values(mockPlayer).forEach((call) => call.mockClear());
 });
 
@@ -158,8 +166,9 @@ describe("Music", () => {
     await shown();
     expect(screen.getByText("Music")).toBeOnTheScreen();
     expect(screen.getByText("Tap a track to hear it.")).toBeOnTheScreen();
-    // «None» and the ten tracks, and the two styles of the video.
-    expect(screen.getAllByRole("radio")).toHaveLength(14);
+    // «None» and the ten tracks, the styles of the video, and «No animal»
+    // and the twelve animals (TASK-408).
+    expect(screen.getAllByRole("radio")).toHaveLength(27);
     expect(screen.getByRole("radio", { name: "None" })).toBeChecked();
     await fireEvent.press(screen.getByRole("radio", { name: "Energy" }));
     expect(screen.getByRole("radio", { name: "Energy" })).toBeChecked();
@@ -439,5 +448,70 @@ describe("Export video", () => {
     expect(
       screen.getByText("This phone cannot open the share sheet."),
     ).toBeOnTheScreen();
+  });
+});
+
+describe("the animal of the video (TASK-408)", () => {
+  it("sends the animal's model to the page first, then the map, then the scene with the animal", async () => {
+    await shown();
+    await fireEvent.press(screen.getByRole("radio", { name: "Fox" }));
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await act(async () => {});
+    expect(model).toHaveBeenCalledWith("fox");
+    expect(inject).toHaveBeenCalledTimes(1);
+    expect(inject.mock.calls[0][0]).toBe(
+      `window.muwVideo.prepareCharacter({"model":"${base64([0x67, 0x6c, 0x54, 0x46])}"}); true;`,
+    );
+    await page({ type: "character", ok: true, why: null, ms: 300 });
+    expect(inject.mock.calls[1][0].startsWith("window.muwVideo.prepareMap({")).toBe(
+      true,
+    );
+    await page({ type: "map", ok: true, why: null, ms: {} });
+    expect(inject.mock.calls[2][0]).toContain('"character":"fox"');
+    expect(inject.mock.calls[2][0]).toContain('"k":"character"');
+  });
+
+  it("goes on without the animal when the page cannot make it ready, as with no network", async () => {
+    await shown();
+    await fireEvent.press(screen.getByRole("radio", { name: "Horse" }));
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await act(async () => {});
+    await page({ type: "character", ok: false, why: "three did not load", ms: 10_000 });
+    expect(inject.mock.calls[1][0].startsWith("window.muwVideo.prepareMap({")).toBe(
+      true,
+    );
+    await page({ type: "map", ok: true, why: null, ms: {} });
+    await page({ type: "config", avcC: base64([1, 0x42, 0xe0, 0x28]) });
+    await page({
+      type: "chunks",
+      list: [{ key: true, time: 0, data: base64([0, 0, 0, 2, 0x65, 0x88]) }],
+    });
+    await page({ type: "done", frames: 360, ms: {} });
+    expect(share).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks the page for no animal when its model cannot be read", async () => {
+    model.mockRejectedValueOnce(new Error("no file"));
+    await shown();
+    await fireEvent.press(screen.getByRole("radio", { name: "Wolf" }));
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await act(async () => {});
+    expect(inject).toHaveBeenCalledTimes(1);
+    expect(inject.mock.calls[0][0].startsWith("window.muwVideo.prepareMap({")).toBe(
+      true,
+    );
+  });
+
+  it("reads no model with «No animal», the video as before", async () => {
+    await shown();
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    expect(model).not.toHaveBeenCalled();
+    expect(inject.mock.calls[0][0].startsWith("window.muwVideo.prepareMap({")).toBe(
+      true,
+    );
   });
 });

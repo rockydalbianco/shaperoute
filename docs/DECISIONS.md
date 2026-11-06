@@ -24736,8 +24736,12 @@ vincoli del Coordinatore sulla lista della parte B.
    al riposo («Idle») da `out/TASK-408/shrink.mjs` (gltf-transform,
    installato a parte, non dipendenza del repository): da 1,4–3,6 MB a
    266–358 KB l'uno, 3,5 MB in tutto. Ogni `.glb` sta in uno `.zip` **non
-   compresso**, perché Metro impacchetta gli `.zip` e non i `.glb`;
-   l'app lo apre con `storedFileOf` e lo passa alla pagina in base64.
+   compresso** (`zip -0`): Metro impacchetta gli `.zip` tra i suoi asset di
+   sempre e non i `.glb`, e aggiungere `glb` agli `assetExts` vorrebbe dire
+   un `metro.config.js` nuovo, che entra nell'impronta iOS. Così l'impronta
+   resta ferma e l'animale arriva con un OTA. Non compresso perché l'app
+   lo apre da sola, in poche righe (`storedFileOf`), senza una libreria
+   per lo zip; poi lo passa alla pagina in base64.
 6. **La parte B si fa in due PR**: B1 l'animale sulla linea, in tutti gli
    stili, con la riga «Character»; B2 l'elefante (dal file che scarica
    l'utente), la riga dei crediti nei Termini, che lo nomina, e la camera

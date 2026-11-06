@@ -302,7 +302,7 @@ c'è già in «Share your run», quindi niente «Export video».
   - **B1** (branch `feat/TASK-408-b-character`): i 12 animali di Quaternius
     sulla punta della linea, in ogni stile, la riga «Character», il video
     che esce anche senza rete. Lista approvata dal Coordinatore il
-    2026-11-06, più `SharePostVideo.test.tsx` se la approva.
+    2026-11-06, con `SharePostVideo.test.tsx` aggiunto lo stesso giorno.
   - **B2**: l'elefante (il file lo scarica l'utente da Sketchfab, che chiede
     un account), la riga dei crediti nei Termini (`about/content/*.ts`,
     dopo la #908), la camera dietro l'animale sul 3D.
@@ -338,7 +338,7 @@ Parte B1: `apps/mobile/assets/characters/*.zip` (12, nuovi),
 `apps/mobile/src/share/videoCharacter.ts` e `.test.ts` (nuovi),
 `CharacterRow.tsx` (nuovo), `videoPage.ts` e `.test.ts`, `videoScene.ts` e
 `.test.ts`, `RunVideo.tsx`, `SharePost.tsx` e `.test.tsx`,
-`SharePostVideo.test.tsx` (se il Coordinatore la approva),
+`SharePostVideo.test.tsx` (aggiunto dal Coordinatore il 2026-11-06),
 `apps/mobile/src/i18n/{it,de,es,fr}.ts`, `docs/tasks/TASK-408.md`,
 `docs/STATUS.md`, `docs/DECISIONS.md`. Fuori dal repository:
 `out/TASK-408/` (i glTF scaricati, `shrink.mjs`, i .glb, la pagina di prova

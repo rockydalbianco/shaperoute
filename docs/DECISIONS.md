@@ -24248,10 +24248,21 @@ anche gli estratti OSM del mondo sul server.
   terzo la posizione dell'utente e non avrebbe una cache condivisa.
 - **Le stazioni da un servizio esterno**: scartato. Costerebbe, e OSM le ha
   già, nello stesso estratto di impianti e piste.
+
 ## ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi
 
-**Stato**: Proposto · 2026-11-06 · TASK-380. Numeri dal Coordinatore
-(2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
+**Stato**: Accettato · 2026-11-06 · TASK-380. Le scelte dell'utente, il
+2026-11-06, sono in `tasks/TASK-380.md`:
+
+- «Roller» 🛼 (in tedesco «Inline», in spagnolo «Patines»);
+- la rete `roller`: città e pianura, non la montagna;
+- 5–30 km;
+- **nel gioco**, come chi va a piedi, con record personali propri su 5,
+  10, 21,1 e 42,2 km (la proposta era fuori dal gioco, come la bici);
+- i testi approvati, con l'avviso su traffico e discese;
+- acceso appena pronto.
+
+Numeri dal Coordinatore (2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
 `tasks/TASK-380.md`. I punti tecnici qui sotto sono decisi dall'agente su
 delega dell'utente.
 
@@ -24284,7 +24295,7 @@ motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
 - **Il tag `inline_skates`** c'è solo per 4,5 km a Trento, e in nessun'altra
   zona.
 
-**Decisione (proposta)**:
+**Decisione**:
 
 1. **Una rete nuova `roller`** (`route_engine/networks/roller.py`) con le
    regole di `roller` qui sopra, scaricata con un suo filtro Overpass
@@ -24317,14 +24328,12 @@ motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
 
    Solo JavaScript: l'impronta iOS non si muove.
 
-**Restano all'utente**:
-
-- nome ed emoji;
-- la rete, e quindi cosa si promette in montagna;
-- le distanze (il banco ha provato 5–30 km);
-- se conta nel gioco e nei record;
-- i testi, con l'avviso su traffico e discese;
-- quando si accende.
+8. **Nel gioco** (scelta dell'utente 4): `game_rules.py` conta il Roller
+   con la corsa, la camminata e Hike, con gli stessi controlli. Come la
+   camminata, niente tempi migliori del gioco; i record personali sono a
+   parte. Il controllo «veicolo» (oltre 25 km/h su 200 m per più del 10%
+   della corsa) può scartare un pattinatore veloce: la parte A lo misura,
+   e una soglia per sport andrebbe chiesta all'utente.
 
 **Alternative**:
 
@@ -24337,3 +24346,55 @@ motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
 - **La rete foot o bike così come sono**: porterebbero chi pattina su
   porfido, sterrato o strade principali.
 - **Una rete fatta col tag `inline_skates`**: 4,5 km in sei zone.
+
+## ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono
+
+**Stato**: Proposto · 2026-11-06 · TASK-408. Le scelte di prodotto sono
+dell'utente (domande aperte in `tasks/TASK-408.md`); il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole un animale (un cavallo, un elefante…) che
+corre il percorso nel video, in 3D, e tante modifiche: il finale, i
+colori, le emoji, il 2D e il 3D, i cambi di scena, anche scritte con un
+prompt, senza un costo per ogni richiesta. Il video di TASK-351 si fa già
+in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
+
+**Decisione (proposta)**:
+
+1. **Il personaggio** è un modello glTF animato, disegnato da **three.js**
+   come «custom layer» di MapLibre nella pagina del video (`videoPage.ts`).
+   three.js si carica come MapLibre: versione fissata e hash SRI. Niente di
+   nativo, quindi l'impronta iOS non cambia e si pubblica con un OTA.
+   three.js è una dipendenza nuova: l'utente ha detto sì il 2026-11-06.
+2. **I modelli** hanno una licenza scritta e nessun personaggio di altri.
+   Il candidato è il pacchetto CC0 di Quaternius (glTF, galoppo e passo).
+   L'elefante non c'è in nessun pacchetto CC0 trovato: l'utente lo vuole
+   nella prima versione (2026-11-06). Si usa solo con una licenza letta e
+   scritta nel task: CC BY con il nome dell'autore nei crediti, o una
+   licenza comprata dall'utente.
+3. **Il percorso non si inventa**: il personaggio sta sul punto della
+   traccia dove arriva la linea in quel fotogramma, girato nella direzione
+   della strada. La camera lo segue; su un telefono lento resta ferma, e
+   senza modello il video esce come oggi.
+4. **L'editor** offre righe chiuse (personaggio, stile, colori dai token,
+   emoji, scene, finale). La scena resta un elenco di cose da disegnare
+   (`VideoScene`), con pezzi in più.
+5. **Il prompt** si legge **sul telefono** con una tabella di parole, come
+   le forme (ADR-0036): niente rete, nessun servizio AI, nessun costo per
+   richiesta (scelta dell'utente). Le parole scelgono solo voci
+   dell'editor, mai coordinate o geometrie (ADR-0001).
+6. Cinque parti: A proposta, B personaggio 3D, C editor, D prompt, E prova
+   sul telefono. Ogni parte ha la sua lista dei file approvata dal
+   Coordinatore.
+
+**Alternative**:
+
+- **Un'AI esterna per il prompt**: scartata dall'utente, per il costo a
+  ogni richiesta.
+- **Animali 2D (emoji o disegni piatti) che scorrono sulla linea**: più
+  leggeri, ma l'utente vuole il 3D. Restano la riserva se three.js non
+  entra.
+- **Un renderer 3D nativo** (SceneKit, Filament): una build nuova e
+  un'impronta nuova per ogni ritocco. La pagina del video ha già WebGL.
+- **I modelli 3D nel layer di MapLibre senza three.js**: MapLibre GL JS non
+  carica glTF da solo.

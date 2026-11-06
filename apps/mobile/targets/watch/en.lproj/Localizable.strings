@@ -23,7 +23,9 @@
 "Paddle" = "Paddle";
 "Open water swim" = "Open water swim";
 "Hike" = "Hike";
+"MTB" = "MTB";
 "Walk" = "Walk";
+"Gravel" = "Gravel";
 "Ski" = "Ski";
 "Cross-country ski" = "Cross-country ski";
 "Gym" = "Gym";

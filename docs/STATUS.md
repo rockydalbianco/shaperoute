@@ -265,6 +265,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Scelte in `main`** (#841). Lista della parte A approvata dal
   Coordinatore, con la migrazione 0052 e i profili dell'app perché `main`
   resti pubblicabile. Prossimo: 378-A in una sessione nuova, dopo la #838.
+  **Parte A in PR** (2026-11-06, `feat/TASK-378-a-gravel-mtb-engine-api`):
+  - il motore disegna `mountain_biking` sulla rete nuova `mtb`, con file di
+    cache suoi; `gravel_biking` è disegnato come `cycling` (`walking.py`);
+  - sensi unici e tratti a piedi sono una proprietà della rete
+    (`Network.by_bike`);
+  - il contratto e l'API offrono i due sport: Strava `MountainBikeRide` e
+    `GravelRide`, record propri, fuori dal gioco; migrazione
+    `0052_gravel_mtb.sql`;
+  - l'app ha i due profili, nascosti;
+  - corsa, bici e canoa identiche al banco, e i nove percorsi fissi:
+    l'impronta del motore resta (`SAME_ROUTES_AS`), niente notte di esempi.
+
+  Server (0052 e deploy) solo col sì dell'utente. Prossimo: la parte B.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

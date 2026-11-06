@@ -315,9 +315,42 @@ Le `track` per `tracktype`, in km:
 | pianura | star | 20 | 18,7 | 0,91 | 1,4 s | buono |
 | pianura | star | 30 | — | — | 2,4 s | ShapeNotDrawableError |
 
+## La parte A sul motore vero (TASK-378 A, 2026-11-06)
+
+Banco sul Mac, branch `feat/TASK-378-a-gravel-mtb-engine-api`, `nice -n
+10`, un comando per volta. JSON in `out/TASK-378-a` (ignorato da git).
+
+- **Corsa, bici e canoa non cambiano.** Contro `main`, con la stessa
+  cache delle sei zone: corsa 54 su 54, bici 54 su 54, canoa 27 su 27,
+  identiche punto per punto (`compare --same`: «Nothing worse»). I nove
+  percorsi fissi di `test_same_routes.py` hanno gli stessi hash: l'impronta
+  del motore resta (precisazione di ADR-0322).
+- **La MTB del motore è quella del banco.** Ho rifatto i grafi `mtb` delle
+  sei zone dai download grezzi della parte 0, con le regole di
+  `networks/mtb.py` e senza Overpass (`out/TASK-378-a/mtb_cache.py`). Poi
+  ho chiesto `--activity mountain_biking` a 10, 20 e 30 km:
+  - 54 percorsi su 54 identici punto per punto a quelli del loader;
+  - 49 riusciti e 24 buoni, come nella parte 0;
+  - le 5 mancate restano a 30 km, quattro stelle e un cuore.
+- **I tempi.** Il massimo è 22,4 s, una stella di 30 km a Milano che non
+  riesce. Il cerchio di 30 km a Fiemme, 106 s nella parte 0 a cache
+  fredda, ora prende 2,8 s.
+- **Quanto pesa una zona `mtb`.** Come una della bici:
+  - sul disco, dallo 0,1 allo 0,6% in più nelle cinque zone che hanno
+    tutte e due le reti;
+  - in memoria, la zona di Trento (26 × 26 km) occupa 150 MB, come quella
+    della bici (`tracemalloc`).
+
+  Il server ne tiene una in memoria accanto a quella della bici
+  (`ZONES_IN_MEMORY`): sono altri 150 MB a Trento, fino a circa 500 MB a
+  Milano.
+- **Il Gravel** si disegna come la bici, con le stesse zone: i suoi
+  percorsi sono quelli della bici al banco.
+
 ## Cosa resta da misurare
 
 - **Il dislivello dei percorsi** (`CONDIVISO.md`, «Le quote»): conta per
   il tempo e le calorie di una MTB in montagna.
-- **Le stelle di 30 km di `mtb`** che sbagliano la distanza di poco: con la
-  parte A, sul motore vero.
+- **Le stelle di 30 km di `mtb`** che sbagliano la distanza di poco: sono
+  le stesse sul motore vero. Il motore propone un'altra distanza, come per
+  la bici (scelta dell'utente 4).

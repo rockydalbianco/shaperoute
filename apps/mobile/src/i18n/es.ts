@@ -1196,6 +1196,16 @@ export const ES: Table = {
   "Still training?": "¿Sigues entrenando?",
   "Yes, keep going": "Sí, sigo",
   "Finish workout": "Terminar entrenamiento",
+  // src/gym/figures.ts, NewLevels.tsx (TASK-385 part E), approved on 2026-11-04
+  Mouse: "Ratón",
+  Rabbit: "Conejo",
+  Fox: "Zorro",
+  Wolf: "Lobo",
+  Bear: "Oso",
+  Rhino: "Rinoceronte",
+  Gorilla: "Gorila",
+  "New level: {figure} · {exercise} {value}":
+    "Nuevo nivel: {figure} · {exercise} {value}",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":
     "Sin formas en las pistas: MuW registra tu jornada.",

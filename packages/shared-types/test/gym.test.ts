@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import catalog from "../fixtures/gym-exercises.json" with { type: "json" };
+import gymLevels from "../fixtures/gym-levels.json" with { type: "json" };
 import runActivities from "../fixtures/run-activities.json" with { type: "json" };
 import session from "../fixtures/gym-session.json" with { type: "json" };
 import {
+  GYM_LEVEL_MEASURES,
   GYM_SET_KINDS,
+  type GymLevel,
   type GymSessionRequest,
   type GymSetKind,
   RUN_ACTIVITIES,
@@ -64,4 +67,29 @@ test("the catalog names each exercise once, of a kind and a scale it has", () =>
       scale.levels,
     );
   }
+});
+
+test("a level on the profile is the one its value reaches on its scale", () => {
+  const levels = gymLevels.gym_levels as GymLevel[];
+  assert.ok(levels.length > 0);
+  const scales: Record<
+    string,
+    { measure: string; levels: number[]; cap: number | null }
+  > = catalog.scales;
+  for (const level of levels) {
+    assert.ok(GYM_LEVEL_MEASURES.includes(level.measure));
+    const exercise = catalog.exercises.find((item) => item.key === level.exercise);
+    assert.ok(exercise?.scale, level.exercise);
+    const scale = scales[exercise.scale];
+    assert.equal(scale.measure, level.measure);
+    const reached = scale.levels.filter((step) => level.value >= step).length;
+    assert.equal(level.level, reached, level.exercise);
+    assert.ok(level.level >= 1 && level.level <= catalog.figures.length);
+  }
+  // The highest level first.
+  const order = levels.map((level) => level.level);
+  assert.deepEqual(
+    order,
+    [...order].sort((a, b) => b - a),
+  );
 });

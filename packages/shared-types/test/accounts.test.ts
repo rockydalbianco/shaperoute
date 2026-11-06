@@ -85,6 +85,7 @@ test("a profile seen by the others has no email, role or internal id", () => {
     "follow",
     "followers",
     "following",
+    "gym_levels",
     "personal_bests",
     "photo",
     "public_id",

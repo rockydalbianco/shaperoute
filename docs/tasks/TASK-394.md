@@ -1,10 +1,10 @@
 # TASK-394 — I capi che indossi: tag sui propri post con il link al negozio
 
-**Stato**: In lavorazione — proposta approvata dall'utente (2026-11-05, «Sì,
-approvo»), con le cinque scelte, e testi approvati lo stesso giorno. Parte A
-(API, ADR-0333, migrazione `0050`) in `main` (#844, 2026-11-05); parte B
-(app) pronta il 2026-11-06 in PR #894 (`feat/TASK-394-b-outfit-app`, «Dove si è,
-parte B»). Le scelte
+**Stato**: Done (2026-11-06) — proposta, scelte e testi approvati
+dall'utente il 2026-11-05; parte A (API, ADR-0333, migrazione `0050`) in
+`main` (#844); parte B (app) in `main` (#894, `fd6a117d`, impronta iOS
+`6f8bba4c` invariata). Restano col sì dell'utente l'OTA, il sito della privacy
+e la chiave di Web Risk («Esito»). Le scelte
 di prodotto sono dell'utente (sotto, «Le scelte dell'utente»); il resto è
 deciso dall'agente su delega dell'utente
 **Fase**: 4 · **Branch**: `docs/TASK-394-member-outfit-tags` (proposta,
@@ -576,8 +576,8 @@ Le parti (scritti ora, controllati con loro):
       gli altri no; i tocchi dell'autore sui suoi capi non si contano
       (`OutfitTagLayer.test.tsx`, `FeedPostOutfit.test.tsx`,
       `DrawingCardOutfit.test.tsx`).
-- [ ] B: l'impronta iOS resta quella di `main` (`6f8bba4c`): solo JS, la
-      misura il Coordinatore nella sua copia.
+- [x] B: l'impronta iOS resta quella di `main` (`6f8bba4c`): solo JS,
+      misurata dal Coordinatore sulla testa della #894 (2026-11-06).
 
 ## File toccati
 
@@ -712,6 +712,9 @@ docs/STATUS.md
 - Prossimo: l'impronta iOS dal Coordinatore, il merge, poi OTA e sito col sì
   dell'utente. Il server ha già la `0050`; senza la chiave di Web Risk si
   aprono solo i negozi di Style.
+- **In `main`** (#894, `fd6a117d`, 2026-11-06), unita dal Coordinatore a CI
+  verde, dopo tre unioni di `main` senza conflitti a mano (#888 di 385 E nel
+  Feed, #880 e #881, #884 della 1.0.2). Impronta iOS `6f8bba4c` invariata.
 
 ## Fuori scope
 
@@ -725,4 +728,21 @@ docs/STATUS.md
 
 ## Esito
 
-*(a fine task)*
+Done il 2026-11-06. Parte A (API, ADR-0333, migrazione `0050` già sul
+server) in `main` con la #844; parte B (app, ADR-0333 «precisazione B») con
+la #894. Un iscritto segna sulle foto dei suoi post i capi che indossa, e chi
+guarda apre il negozio nel browser. Nel Feed i puntini li mostra la gruccia
+(scelta 7 dell'utente). MuW non guadagna niente sui link.
+
+Restano, ognuno col sì dell'utente, che il Coordinatore porta:
+- l'OTA di produzione;
+- la pubblicazione del sito della privacy;
+- la chiave di Web Risk sul server, quando l'utente avrà il progetto Google
+  Cloud: fino ad allora si aprono solo i negozi di Style, e in «Chi altro
+  riceve dati» resta «Google» finché non si copia il nome dal contratto;
+- un ritocco eventuale del testo di Help B, che dice «toccano la foto» mentre
+  nel Feed si tocca la gruccia: sarebbe un testo nuovo da approvare.
+
+Limite scritto: a fine allenamento in palestra (`GymPostForm`) i capi non si
+segnano; si segnano dalla scheda in «My activities». Il seguito lo decide
+l'utente più avanti. Non provato nel simulatore né sul telefono.

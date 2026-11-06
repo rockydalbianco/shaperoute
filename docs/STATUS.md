@@ -3188,6 +3188,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in palestra i capi non si segnano; si segnano dopo, dalla scheda in «My
   activities». Prossimo: il Coordinatore misura l'impronta iOS e unisce la PR;
   poi, col sì dell'utente, l'OTA e il sito.
+  **Chiuso il 2026-11-06**: parte B in `main` (#894, `fd6a117d`), impronta iOS
+  `6f8bba4c` invariata; vedi «Completato».
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,
@@ -3277,6 +3279,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-394 — I capi che indossi: tag sui propri post con il link al negozio**
+  (2026-11-06; idea dell'utente, ADR-0333 e la sua «precisazione B»). Parte A
+  (API, migrazione `0050` già sul server) #844; parte B (app) #894
+  (`fd6a117d`). Cosa fa:
+  - l'iscritto segna sulle foto dei suoi post capo, marca, modello e link,
+    dal compositore a fine corsa o in «My activities»;
+  - chi guarda apre i puntini con la gruccia (nel Feed; nel disegno aperto
+    anche col tocco sulla foto) e da lì il negozio nel browser;
+  - solo l'autore vede i totali.
+
+  Help, Termini e Privacy nelle cinque lingue, datati 6 novembre 2026. Solo JS,
+  impronta `6f8bba4c` invariata. Restano, col sì dell'utente: l'OTA, il sito
+  della privacy e la chiave di Web Risk (fino ad allora si aprono solo i
+  negozi di Style). Limite: a fine allenamento in palestra niente capi.
+  `tasks/TASK-394.md`.
 - **TASK-405 — Un percorso di MuW non dice «looks 100% like it»** (2026-11-06; numero dal
   Coordinatore, trovato con la #868 di TASK-365). Aperto dal Feed, il foglio dice solo titolo e
   città: `muwCardRoute` mette `scored: false` su `RecommendedRoute` e `ExploredCard` lascia

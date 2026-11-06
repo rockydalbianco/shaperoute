@@ -851,6 +851,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scelta dell'utente), con `RULES_VERSION` 2. I concorsi le accettano già.
   Il server e `game_backfill` vanno nel giro delle migrazioni 0043–0045,
   col sì dell'utente.
+  **«Walk» acceso il 2026-11-06** (branch `feat/TASK-371-walk-on-order`,
+  richiesta dell'utente «cosa aspettiamo ad attivare sulla preview la
+  sezione Walk»): `ready: true` in `sport.ts`, il server ha già la 0043
+  (ha la 0051 e la 0052). Nello stesso cambio gli sport vanno per famiglia,
+  «prima walk poi run, bicycle, paddle, swim»: a piedi (Walk, Run, Hike),
+  su ruote (Bike, Gravel, MTB), sull'acqua (Paddle, Swim), sulla neve (Ski,
+  Cross-country ski), poi Gym e Paragliding. «Run» resta lo sport di
+  partenza. Nella preview col prossimo OTA; in produzione solo col sì
+  dell'utente all'OTA di produzione.
 - **TASK-373 — Sci alpino: proposta e misure** (ADR-0317 **proposto**;
   richiesta dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-373-ski-proposal`: solo documenti e misure, **nessun codice**

@@ -2,7 +2,8 @@
 
 **Stato**: In corso — parte 0 in `main` (#840, #841); parte A in `main`
 (#875, 2026-11-06); parte B in `main` (#879, 2026-11-06); parte C
-(accensione, col sì dell'utente) in PR; prossimo: la prova sul telefono.
+(accensione, col sì dell'utente) in `main` (#897, 2026-11-06); prossimo:
+la prova sul telefono.
 **Fase**: 4 · **Branch**: `docs/TASK-378-0-gravel` (parte 0), poi
 `feat/TASK-378-a-gravel-engine-api`, `feat/TASK-378-b-gravel-app` ·
 **ADR**: ADR-0322 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -346,3 +347,10 @@ test che contano «Soon» e le righe dello store; nessun testo nuovo. Lista
 approvata dal Coordinatore; si parte dopo la #880 e la correzione dei testi
 dell'orologio. Prossimo: la prova sul telefono (si sceglie, si pedala, si
 salva, va in Salute), poi la chiusura.
+
+2026-11-06: la parte C è in `main` (#897, `22454109`). Il Coordinatore ha
+fatto la prova di merge su `main` (`tsc` e 194 test verdi) e ha misurato
+l'impronta iOS: `6f8bba4c`, invariata. L'anteprima va all'utente quando la
+CI di `main` è verde; la produzione solo col suo «ok produzione».
+Prossimo: la prova sul telefono (si sceglie, si pedala, si salva, va in
+Salute), poi la chiusura del task.

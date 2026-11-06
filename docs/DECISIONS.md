@@ -24179,3 +24179,53 @@ anche gli estratti OSM del mondo sul server.
   terzo la posizione dell'utente e non avrebbe una cache condivisa.
 - **Le stazioni da un servizio esterno**: scartato. Costerebbe, e OSM le ha
   già, nello stesso estratto di impianti e piste.
+
+## ADR-0338, aggiunta — Le stazioni da OpenSkiData, non dagli estratti
+
+**Stato**: Attiva · 2026-11-06 · TASK-406 parte A. Deciso dall'agente su
+delega dell'utente, con l'approvazione del Coordinatore. La scelta della
+domanda 1 è dell'utente: «Sì, gratis + membri».
+
+**Contesto**: il punto 1 voleva le aree OSM `landuse=winter_sports` dagli
+estratti di TASK-375. Ma quegli estratti erano già stati filtrati senza le
+stazioni, in tutti i continenti, e gli estratti interi erano stati
+cancellati. Riprenderle avrebbe voluto circa 60 GB di download, un paese
+alla volta.
+
+**Decisione**:
+
+1. **La fonte.** Le stazioni vengono da `ski_areas.geojson` di OpenSkiData
+   (openskidata.org): un file da 21 MB, ricavato da OpenStreetMap e
+   Skimap.org.
+   - Licenza ODbL, uso commerciale permesso.
+   - Attribuzione a OpenStreetMap contributors, OpenSkiMap.org, Skimap.org
+     e Who's On First. Il testo nell'app si chiede all'utente con la
+     domanda 5.
+   - Al massimo un download automatico al giorno; il server lo fa a mano,
+     una volta a stagione.
+2. **Cosa si tiene.** Le aree aperte, con piste da discesa e un nome: 4.768
+   il 2026-11-06.
+   - Ognuna in `ski_resorts` (0054) con il centro di OpenSkiMap, il
+     riquadro, gli impianti, i km di piste per difficoltà, le quote e il
+     sito.
+   - Un nome troppo lungo tiene le forme separate da virgole che stanno in
+     120 caratteri.
+   - Una stazione che non si legge resta fuori e viene contata, senza
+     fermare l'import.
+3. **Le rotte.** `GET /ski-resorts` (per nome o per posizione, al più 50) e
+   `GET /ski-resorts/{id}`.
+   - Senza token, perché le stazioni non contengono dati degli utenti; con
+     la chiave dell'API come ogni percorso.
+   - La posizione resta fuori dal registro degli accessi.
+4. **Cosa non cambia.** I riquadri dello sci di TASK-375 restano come sono
+   e servono ancora per gli impianti presi. Il motore, `schemas.py` e le
+   impronte non cambiano.
+
+**Alternative**:
+
+- **Riprendere le aree OSM da tutti gli estratti**, un paese alla volta:
+  scartata, perché vuole circa 60 GB di download per un file che esiste
+  già raggruppato.
+- **Ricostruire le stazioni raggruppando impianti e piste dei riquadri**:
+  scartata, perché in OSM impianti e piste non portano il nome della
+  stazione.

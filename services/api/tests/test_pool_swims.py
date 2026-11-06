@@ -218,6 +218,30 @@ def test_a_drawing_cannot_change_what_a_swim_in_a_pool_was(
     drawn(client, me, KEY, status=422, activity="gym")
 
 
+def test_only_a_swim_in_a_pool_goes_as_an_activity_with_a_track(
+    client: TestClient,  # noqa: F811
+) -> None:
+    # Any other run without a track keeps NOT_TRACKLESS: a workout at the
+    # gym cannot be published as a swim or a run, which an app that reads
+    # only `trackless` could not show.
+    me = signed_up(client)
+    gym = json.loads((FIXTURES / "gym-session.json").read_text(encoding="utf-8"))
+    gym_key = "9a8b7c6d5e4f3021"
+    answer = client.put(
+        f"/me/gym-sessions/{gym_key}",
+        json={
+            **gym,
+            "started_at": "2026-11-05T06:00:00Z",
+            "ended_at": "2026-11-05T07:05:00Z",
+        },
+        headers=me,
+    )
+    assert answer.status_code == 201, answer.text
+    for activity in ("running", "swimming"):
+        drawn(client, me, gym_key, status=422, activity=activity)
+    drawn(client, me, gym_key, activity="gym")
+
+
 def test_a_private_swim_shows_nothing_to_the_others(
     client: TestClient,  # noqa: F811
 ) -> None:

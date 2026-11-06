@@ -23907,10 +23907,13 @@ delega dell'utente; lista dei file e migrazione `0053` dal Coordinatore.
 4. **Il CHECK delle corse senza traccia** si allarga a `swimming`; un CHECK
    non legge `pool_swims`, quindi è l'API che non salva mai un nuoto senza
    traccia fuori da `pool_swims.py`.
-5. **Il disegno lascia a una corsa senza traccia la sua attività**
-   (`drawings.py`): prima voleva un'attività di `TRACKLESS_ACTIVITIES`, e
-   un nuoto in piscina pubblicato con `activity: "swimming"` sarebbe stato
-   `422`. Una corsa con traccia resta una corsa (come prima).
+5. **Il disegno apre solo il caso della piscina** (`drawings.py`, con la
+   condizione del Coordinatore): una corsa con una riga in `pool_swims` si
+   pubblica solo come `swimming`. Ogni altra corsa senza traccia resta col
+   `NOT_TRACKLESS` di prima (solo attività di `TRACKLESS_ACTIVITIES`): una
+   corsa di Salute senza GPS pubblicata come `running` arriverebbe senza
+   mappa ad app che non la sanno mostrare, perché nessun valore di
+   `X-MuW-Reads` la copre.
 6. **`pool` in `X-MuW-Reads`** entra per ultimo in questa parte, dopo
    TASK-378 A, che tiene `reads.py` e `reads.json` (Coordinatore). Fino ad
    allora un nuoto in piscina passa a chi dice `swimming` e `trackless`:

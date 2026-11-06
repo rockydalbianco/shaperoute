@@ -429,7 +429,9 @@ MINE_COLUMNS = (
 )
 # The run of a drawing, locked while its drawing changes.
 RUN_TO_DRAW = (
-    "SELECT id, activity, ST_AsGeoJSON(ST_Force2D(track), 15) AS track FROM runs"
+    "SELECT id, ST_AsGeoJSON(ST_Force2D(track), 15) AS track,"
+    " EXISTS (SELECT 1 FROM pool_swims p WHERE p.run_id = runs.id) AS pool"
+    " FROM runs"
     " WHERE user_id = %s AND key = %s FOR UPDATE"
 )
 
@@ -699,12 +701,13 @@ class Drawings:
                 trackless = run["track"] is None
                 if visibility != "only_me" and not shown and not trackless:
                     raise AccountError(422, "invalid_request", TOO_SHORT)
-                # A run without a track keeps what it was: a workout at the
-                # gym, or a swim in a pool (TASK-400), which is `swimming`.
+                # A swim in a pool (TASK-400) stays `swimming`; no other run
+                # without a track becomes an activity with one: an app that
+                # reads only `trackless` could not show it.
                 if body.activity is not None and (
-                    body.activity != run["activity"]
-                    if trackless
-                    else body.activity in TRACKLESS_ACTIVITIES
+                    body.activity != "swimming"
+                    if run["pool"]
+                    else (body.activity in TRACKLESS_ACTIVITIES) != trackless
                 ):
                     raise AccountError(422, "invalid_request", NOT_TRACKLESS)
                 before = conn.execute(

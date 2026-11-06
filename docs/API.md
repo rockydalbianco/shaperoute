@@ -2962,9 +2962,10 @@ con la vasca e le vasche. Token richiesto; tipi in
   100 m e si tiene al centimetro (33,33 m); le vasche da 1 a 1000. Più
   veloce di 2,5 m/s è `422` (vasche o vasca scritte male).
 - **Pubblicato come ogni corsa**, con `PUT /me/activities/{key}/drawing`:
-  senza linea (`track: []`). Il disegno lascia a una corsa senza traccia la
-  sua attività: `activity` diversa da `swimming` è `422`, come una corsa
-  con traccia che diventa `gym`.
+  senza linea (`track: []`). Il disegno non gli cambia attività:
+  `activity` diversa da `swimming` è `422`. Solo la piscina va come
+  `swimming` senza traccia; ogni altra corsa senza traccia resta fra le
+  attività senza traccia (`422` come prima).
 - **Solo a chi lo sa leggere**: come la palestra, con `X-MuW-Reads` che
   dice `swimming` e `trackless`; il valore `pool` arriva in questa parte,
   dopo TASK-378 A (ADR-0334, punto 5).

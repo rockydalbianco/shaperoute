@@ -79,6 +79,12 @@ export type MapCanvas = {
   /** How much two fingers may shrink and grow the figure. */
   shrink: number;
   grow: number;
+  /** With pieces (TASK-402 part B): whether a tap with «Move» chooses one;
+   * the lines of the piece chosen, which alone the fingers move, the
+   * others faint; and the box drawn round it. None for the whole figure. */
+  choosing?: boolean;
+  chosen?: number[];
+  box?: LatLon[];
   /** A new number frames the map on the figure, or on the start without
    * one; the same one does not frame it again. */
   framing: number;
@@ -89,7 +95,9 @@ export type CanvasEvent =
   | { type: "drawn"; line: LatLon[]; metresPerPx: number }
   | { type: "bent"; from: LatLon; to: LatLon; metresPerPx: number }
   | { type: "figure"; centre: LatLon; factor: number; done: boolean; turn?: number }
-  | { type: "centre"; point: LatLon };
+  | { type: "centre"; point: LatLon }
+  /** A tap with «Move», among pieces (TASK-402 part B). */
+  | { type: "tapped"; point: LatLon; metresPerPx: number };
 
 type Props = {
   /** Where the route will start; the map centres on it with a marker. */
@@ -467,6 +475,9 @@ export function MapView({
             centre: canvas.centre,
             shrink: canvas.shrink,
             grow: canvas.grow,
+            choosing: canvas.choosing,
+            chosen: canvas.chosen,
+            box: canvas.box,
             frame: canvas.framing !== framed.current,
           }),
         ),
@@ -557,6 +568,12 @@ export function MapView({
               factor: message.factor,
               done: message.done,
               ...(message.turn ? { turn: message.turn } : {}),
+            });
+          } else if (message?.type === "tapped") {
+            onCanvas?.({
+              type: "tapped",
+              point: fromLngLat(message.lngLat),
+              metresPerPx: message.metresPerPx,
             });
           } else if (message?.type === "centre") {
             const point = fromLngLat(message.lngLat);

@@ -105,6 +105,13 @@ export type CanvasOnPage = {
    * as big as the distances of «Draw» allow. */
   shrink: number;
   grow: number;
+  /** With pieces (TASK-402 part B): whether a tap with «Move» is told
+   * (`tapped`) to choose one; the lines of the piece chosen, which alone
+   * one finger drags and two size and turn, the others faint; and the box
+   * round it, closed. None chosen: all the lines move, and no box. */
+  choosing?: boolean;
+  chosen?: number[];
+  box?: LngLat[];
   /** Frame the map on the figure, or on the start without one: as the
    * screen opens and as a figure is put on it. */
   frame: boolean;
@@ -141,6 +148,9 @@ export type FromPage =
   /** The middle of the map, where a figure is put (TASK-281), or the
    * point chosen as the start (TASK-292). */
   | { type: "centre"; lngLat: LngLat }
+  /** A tap with «Move» where pieces are chosen (TASK-402 part B): where,
+   * and how many metres a pixel is, for a finger's reach. */
+  | { type: "tapped"; lngLat: LngLat; metresPerPx: number }
   | { type: "error"; message: string };
 
 export function setPosition(point: LatLon): ToPage {
@@ -331,8 +341,8 @@ export function setKind(kind: MapKind): ToPage {
 /**
  * «Draw on the map» (TASK-281): the figure drawn on the map, and what
  * fingers do there. The page tells the app of lines drawn (`drawn`), of
- * lines bent (`bent`), of the figure moved or sized (`figure`) and of where
- * the map is (`centre`).
+ * lines bent (`bent`), of the figure moved or sized (`figure`), of a tap
+ * that chooses a piece (`tapped`) and of where the map is (`centre`).
  */
 export function setCanvas(canvas: {
   mode: CanvasMode;
@@ -343,6 +353,9 @@ export function setCanvas(canvas: {
   centre: LatLon | null;
   shrink: number;
   grow: number;
+  choosing?: boolean;
+  chosen?: number[];
+  box?: LatLon[];
   frame: boolean;
 }): ToPage {
   return {
@@ -351,6 +364,7 @@ export function setCanvas(canvas: {
     lines: canvas.lines.map((line) => line.map(toLngLat)),
     marks: canvas.marks.map(toLngLat),
     centre: canvas.centre === null ? null : toLngLat(canvas.centre),
+    ...(canvas.box === undefined ? {} : { box: canvas.box.map(toLngLat) }),
   };
 }
 
@@ -470,6 +484,12 @@ export function parsePageMessage(data: string): FromPage | null {
           done,
           ...(turn !== 0 ? { turn } : {}),
         }
+      : null;
+  }
+  if (message.type === "tapped" && "lngLat" in message && "metresPerPx" in message) {
+    const { lngLat, metresPerPx } = message;
+    return isLngLat(lngLat) && isScale(metresPerPx)
+      ? { type: "tapped", lngLat: [lngLat[0], lngLat[1]], metresPerPx }
       : null;
   }
   if (message.type === "centre" && "lngLat" in message) {

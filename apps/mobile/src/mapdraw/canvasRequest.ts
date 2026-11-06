@@ -11,6 +11,7 @@ import { nearestTenths, tenthsToM } from "../units/distanceInput";
 import { appUnits, type Units } from "../units/units";
 import { distanceOf, type Figure, type Placed, placedStart } from "./figure";
 import { boxOf } from "./geometry";
+import { joinedPieces } from "./pieces";
 import { sentOutline } from "./sentOutline";
 import { shownFigure, turnedLines, turnOf } from "./turn";
 
@@ -136,4 +137,19 @@ export function canvasRequest(
     ...(strokes.length > 0 ? { strokes } : {}),
   };
   return request;
+}
+
+/**
+ * The request for the pieces on the map (TASK-402 part B, ADR-0336): of one
+ * piece, the request of today; of more, the drawing they make together, by
+ * its outline and its details.
+ */
+export function piecesRequest(
+  pieces: readonly Placed[],
+  penUp: boolean,
+  activity: Activity,
+  units: Units = appUnits(),
+): AnyRouteRequest {
+  const placed = pieces.length === 1 ? pieces[0] : joinedPieces(pieces).placed;
+  return canvasRequest(placed, penUp, activity, units);
 }

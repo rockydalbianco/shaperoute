@@ -1444,6 +1444,12 @@ export const DE: Table = {
   "Turn right 15 degrees": "Um 15 Grad nach rechts drehen",
   "Angle, {deg} degrees. Double tap to type it":
     "Winkel, {deg} Grad. Zum Eingeben doppeltippen",
+  // src/mapdraw/DrawOnMap.tsx (TASK-402 part B)
+  "Change@@piece": "Ändern",
+  "Tap a piece to choose it, then drag, resize or turn it. Tap outside to take them all.":
+    "Tippe auf ein Teil, um es auszuwählen, dann zieh, vergrößere oder drehe es. Tippe daneben, um alle zu nehmen.",
+  "Delete piece": "Teil löschen",
+  "Up to 6 pieces in one drawing.": "Höchstens 6 Teile in einer Zeichnung.",
   Line: "Linie",
   "Tap point after point. Tap the first point to close it, the last one to finish.":
     "Tippe Punkt für Punkt. Tippe auf den ersten Punkt, um sie zu schließen, auf den letzten, um fertig zu sein.",

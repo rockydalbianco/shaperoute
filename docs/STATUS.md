@@ -3114,6 +3114,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-405 — Un percorso di MuW non dice «looks 100% like it»** (2026-11-06; numero dal
+  Coordinatore, trovato con la #868 di TASK-365). Aperto dal Feed, il foglio dice solo titolo e
+  città: `muwCardRoute` mette `scored: false` su `RecommendedRoute` e `ExploredCard` lascia
+  fuori il percento; ogni altro percorso tiene la sua riga. Nessun testo nuovo, solo JS;
+  impronta `6f8bba4c` invariata, OTA col sì dell'utente. «ADR-0310, precisazione»,
+  `tasks/TASK-405.md`.
 - **TASK-365 — I percorsi di MuW nel Feed** (2026-11-06; ADR-0310). I 25 percorsi approvati
   dall'utente (11 bici, 10 a piedi, 4 canoa) in `catalog/muw_routes/` e sul server
   (`GET /muw-routes`); #868 in main (`09307022`): nell'app compaiono in «All» come card di

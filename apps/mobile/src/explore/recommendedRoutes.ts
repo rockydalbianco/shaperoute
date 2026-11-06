@@ -27,6 +27,12 @@ export type RecommendedRoute = {
   /** The distance on the roads. */
   route_m: number;
   similarity: number;
+  /**
+   * False for a route with no likeness to tell: a MuW route (TASK-405),
+   * whose card says its title and city alone. Absent for every other,
+   * which says how much it looks like its figure.
+   */
+  scored?: false;
   start: LatLon;
   /** From the point asked about to the start, in a straight line. */
   away_m: number;

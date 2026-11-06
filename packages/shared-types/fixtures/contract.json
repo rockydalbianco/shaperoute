@@ -29,7 +29,16 @@
     "donut",
     "sun"
   ],
-  "activities": ["running", "cycling", "paddling", "swimming", "hiking", "walking"],
+  "activities": [
+    "running",
+    "cycling",
+    "paddling",
+    "swimming",
+    "hiking",
+    "mountain_biking",
+    "walking",
+    "gravel_biking"
+  ],
   "min_distance_m": 1000,
   "max_distance_m": 50000,
   "distance_limits_m": {
@@ -38,7 +47,9 @@
     "paddling": [1000, 5000],
     "swimming": [500, 3000],
     "hiking": [1000, 30000],
-    "walking": [1000, 30000]
+    "mountain_biking": [10000, 30000],
+    "walking": [1000, 30000],
+    "gravel_biking": [10000, 30000]
   },
   "letters": [
     "A",

@@ -1,8 +1,7 @@
 # TASK-378 — Gravel e MTB: la bici fuori dall'asfalto
 
-**Stato**: In corso — parte 0 in `main` (#840, #841); lista della parte A
-approvata dal Coordinatore, migrazione 0052 (2026-11-05); prossimo: la parte
-A in una sessione sua, dopo la #838.
+**Stato**: In corso — parte 0 in `main` (#840, #841); parte A in PR
+(2026-11-06); prossimo: la parte B.
 **Fase**: 4 · **Branch**: `docs/TASK-378-0-gravel` (parte 0), poi
 `feat/TASK-378-a-gravel-engine-api`, `feat/TASK-378-b-gravel-app` ·
 **ADR**: ADR-0322 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -115,6 +114,28 @@ docs/tasks/TASK-378.md, docs/STATUS.md, docs/sports/CONDIVISO.md, docs/sports/gr
 - **Una zona `mtb` in memoria sul server** si aggiunge a quella della bici:
   la parte A misura quanto pesa (`activity_graphs.ZONES_IN_MEMORY`).
 
+**Lista definitiva di A** (Coordinatore, 2026-11-06), con la migrazione
+`0052_gravel_mtb.sql`. Come per 377-A, la lista sopra non bastava: i test
+di prima congelano l'ordine delle attività e le loro liste, e due sport
+nuovi li toccano. In più rispetto alla lista sopra:
+
+```
+services/route-engine/tests/test_bike_network.py, test_hiking.py, test_walking.py
+packages/shared-types/test/hiking.test.ts
+services/api/tests/test_personal_bests.py, test_hiking_api.py, test_walking_api.py,
+    test_cycling.py, test_record_only.py, test_favorites.py, test_paddling.py
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json  (da scripts/watch-sports.sh)
+apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts,
+    src/route/distanceMiles.test.ts, src/api/accounts.test.ts  (le liste)
+services/api/shaperoute_api/route_store.py                (tre righe in SAME_ROUTES_AS)
+services/api/tests/fixtures/same_routes/54061c20df45.json (nuovo: la prova)
+docs/DECISIONS.md                                         (precisazione di ADR-0322)
+```
+
+**L'impronta del motore resta** (Coordinatore, 2026-11-06), come per
+Hike: i nove percorsi fissi di `test_same_routes.py` sono identici, e al
+banco corsa, bici e canoa sono identiche punto per punto.
+
 ### Parte B — app (dopo A)
 
 ```
@@ -185,9 +206,11 @@ di quelle di oggi (`cycling`, `hiking`).
 - [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-05).
 - [x] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
       della migrazione (approvata, 0052, 2026-11-05).
-- [ ] A: un percorso gravel/MTB sul grafo di prova pedala dove la bici
+- [x] A: un percorso gravel/MTB sul grafo di prova pedala dove la bici
       spinge; test deterministici; corsa, bici e canoa invariate al banco
-      (`compare`).
+      (`compare`). Corsa 54/54, bici 54/54 e canoa 27/27 identiche punto
+      per punto; `test_mountain_biking.py`, `test_gravel_biking.py`,
+      `test_gravel_mtb_api.py`, `gravelMtb.test.ts`.
 - [ ] B: lo sport si sceglie, si pedala, si salva e va in Salute; i testi
       sono in cinque lingue.
 
@@ -245,3 +268,32 @@ dell'utente.
   che è ignorato da git.
 - I download grezzi delle sei zone (`cache/raw_*.pickle`) servono a non
   riscaricare.
+
+2026-11-06, parte A (`feat/TASK-378-a-gravel-mtb-engine-api`):
+
+- il motore disegna `mountain_biking` sulla rete `mtb`, con le regole del
+  banco della parte 0. Sensi unici e tratti a piedi sono ora una proprietà
+  della rete (`Network.by_bike`);
+- `gravel_biking` si disegna come `cycling`, in `walking.py`: fuori
+  impronta;
+- il contratto e l'API offrono i due sport, con la migrazione
+  `0052_gravel_mtb.sql`, che allarga anche il CHECK dei record;
+- l'app ha i due profili, nascosti, e `sports.json` dell'orologio li
+  elenca;
+- l'impronta del motore resta, con `SAME_ROUTES_AS`: precisazione di
+  ADR-0322.
+
+Al banco la MTB del motore dà gli stessi 54 percorsi del loader della
+parte 0, e una zona `mtb` pesa come una della bici: le misure sono in
+`gravel.md`. Server (0052 e deploy) col sì dell'utente.
+
+Prossimo: la parte B (app), con la riga in `settings/sport.ts`.
+Per la parte B:
+
+- l'API ora può mandare record con `sport` `mountain_biking` o
+  `gravel_biking`, ma solo dalle corse di quegli sport, che oggi nessuna
+  app salva. Il tipo del contratto (`packages/shared-types/src/index.ts`,
+  `sport: "running" | "cycling"`) e `profile/PersonalBests.tsx` vanno
+  allargati con la parte B: non sono nella sua lista;
+- l'energia di Gravel e MTB (Compendium) e la rete sul telefono, se
+  serve, vanno nei profili.

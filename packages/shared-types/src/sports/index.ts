@@ -5,8 +5,10 @@
  * line here; index.ts derives its tables.
  */
 import { CYCLING } from "./cycling.ts";
+import { GRAVEL_BIKING } from "./gravel_biking.ts";
 import { GYM } from "./gym.ts";
 import { HIKING } from "./hiking.ts";
+import { MOUNTAIN_BIKING } from "./mountain_biking.ts";
 import { PADDLING } from "./paddling.ts";
 import { RUNNING } from "./running.ts";
 import { SKIING } from "./skiing.ts";
@@ -22,8 +24,10 @@ export {
 } from "./base.ts";
 export {
   CYCLING,
+  GRAVEL_BIKING,
   GYM,
   HIKING,
+  MOUNTAIN_BIKING,
   PADDLING,
   RUNNING,
   SKIING,
@@ -38,7 +42,9 @@ export const PLANNED_SPORTS = [
   PADDLING,
   SWIMMING,
   HIKING,
+  MOUNTAIN_BIKING,
   WALKING,
+  GRAVEL_BIKING,
 ] as const;
 export const RECORDED_SPORTS = [SKIING, XC_SKIING] as const;
 export const TRACKLESS_SPORTS = [GYM] as const;

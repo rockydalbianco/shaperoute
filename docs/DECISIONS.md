@@ -23889,6 +23889,69 @@ Il nome dello sport cambia da «Open water swim» a «Swim» in tutte le lingue
 ogni volta); uno sport nuovo «Pool swim» (scelta dell'utente); le yard (per
 ora); mandare il post a chi dichiara solo `trackless` (lo vedrebbe senza le
 vasche).
+---
+
+## ADR-0322, precisazione — La parte A: Gravel come la bici, MTB con una rete sua, l'impronta del motore resta
+
+**Stato**: Accettato · 2026-11-06 · TASK-378 parte A. Lista dei file e
+impronta: scelte del Coordinatore; le scelte tecniche sono decise
+dall'agente su delega dell'utente.
+
+**Contesto**: la parte A porta `gravel_biking` e `mountain_biking` nel
+motore, nel contratto e nell'API, e i loro profili nascosti nell'app, come
+377-A per la hike (precisazione di ADR-0321).
+
+**Decisione**:
+
+1. **L'ordine del contratto**: running, cycling, paddling, swimming,
+   hiking, mountain_biking, walking, gravel_biking. MTB è un'attività del
+   motore, dopo la hike. Gravel si disegna come una bici in
+   `route_engine/walking.py` (`DRAWN_AS`, accanto alla camminata disegnata
+   come una corsa), e segue la camminata. Così `walking.py` resta fuori
+   dall'impronta (`WALK_ONLY`) e il Gravel non cambia nulla del motore.
+2. **Sensi unici e tratti a piedi sono una proprietà della rete**
+   (`Network.by_bike`, `networks/base.py`): `network.one_way_streets`, e
+   quindi i controlli di `validation.usability` (sterrato, a piedi con la
+   bici), la leggono invece del nome `bike`. `bike_ways` prende le regole
+   di una rete (`ride`) e il suo nome; `download_ways` scarica le vie con i
+   tag che le regole leggono. La bici non cambia.
+3. **La rete `mtb`** (`networks/mtb.py`) ha le regole del banco della
+   parte 0, uguali a `out/TASK-378/loader.py`:
+   - il filtro Overpass della bici, che scarica già i sentieri;
+   - i sentieri aperti alle bici fino a S1;
+   - quelli non chiusi alle bici fino a S2, o fino a T2 se non dicono
+     `mtb:scale`;
+   - il resto come la bici, con le `track` di ogni grado.
+
+   Un sentiero oltre S2 si fa a piedi con la bici anche se è segnato
+   ciclabile: il limite S2 è dell'utente.
+4. **L'impronta resta quella di prima** (`SAME_ROUTES_AS`): 54061c20df45 →
+   9be259696402, e lo stesso per i nuoti e gli esempi di canoa dell'app.
+   Il comportamento nuovo è solo un'attività senza percorsi tenuti, come
+   per la hike. I percorsi di prima sono provati uguali:
+   - i nove percorsi fissi di `test_same_routes.py` (darwin-arm64);
+   - il banco su sei zone, contro `main` con la stessa cache: corsa 54/54,
+     bici 54/54, canoa 27/27, identici punto per punto.
+5. **Nell'API**:
+   - MTB ha zone sue, grandi come quelle della bici (`longest`), senza
+     nomi delle strade, una sola in memoria;
+   - Gravel usa le zone della bici, come la camminata quelle della corsa;
+   - Strava `MountainBikeRide` e `GravelRide`;
+   - il `<type>` del GPX è il nome dell'attività;
+   - i record sono quelli della bici (`BY_BIKE`), separati.
+     `personal_bests` li conta per ogni corsa, come quelli della bici, e il
+     profilo mostra quelli delle corse di quello sport. La 0052 allarga
+     anche `run_bests_sport_check`.
+6. **Nell'app**:
+   - i profili entrano nascosti: nessuna riga in «Settings» e nessun chip
+     nella ricerca (`searchFilters.ts`);
+   - il nome resta senza `tLater` e l'energia non si conta fino alla parte
+     B;
+   - nessuna rete sul telefono: li disegna solo il server;
+   - `sports.json` dell'orologio li elenca, come la hike.
+
+**Server**: migrazione 0052 e deploy, col sì dell'utente. Nessuna notte di
+esempi.
 
 ## ADR-0334, precisazione — La parte A: il nuoto in piscina nel server
 

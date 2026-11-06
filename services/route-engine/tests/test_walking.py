@@ -23,12 +23,14 @@ ARGS = ["--start", "46.0122,11.2986", "--shape", "heart", "--distance", "5000"]
 
 
 def test_a_walk_is_an_activity_of_the_api_not_of_the_engine() -> None:
-    assert walking.API_ACTIVITIES == (*SUPPORTED_ACTIVITIES, "walking")
+    # The gravel ride after it, drawn as a ride since TASK-378.
+    assert walking.API_ACTIVITIES == (*SUPPORTED_ACTIVITIES, "walking", "gravel_biking")
     assert "walking" not in SUPPORTED_ACTIVITIES
     assert "walking" not in DISTANCE_LIMITS_M
     assert walking.API_DISTANCE_LIMITS_M == {
         **DISTANCE_LIMITS_M,
         "walking": (1_000, 30_000),
+        "gravel_biking": (10_000, 30_000),
     }
 
 

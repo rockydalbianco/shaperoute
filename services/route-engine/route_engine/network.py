@@ -142,7 +142,7 @@ class FileSource:
 
 class OsmnxSource:
     """Foot network from OpenStreetMap, cached as GraphML in `cache_dir`;
-    the bike network with `network_name` BIKE_NETWORK_NAME (`for_activity`).
+    another network of networks/ with its `network_name` (`for_activity`).
     Each network has its own files: `<network_name>_<area>.graphml`."""
 
     def __init__(
@@ -319,9 +319,11 @@ def network_of(graph: Graph) -> str:
 
 
 def one_way_streets(graph: Graph) -> bool:
-    """Whether `graph` keeps one-way streets one way, as the bike network
-    does; on foot every road goes both ways."""
-    return network_of(graph) == BIKE_NETWORK_NAME
+    """Whether `graph` keeps one-way streets one way, as the networks ridden
+    by bike do (`Network.by_bike`: the bike one, the MTB one, TASK-378); on
+    foot every road goes both ways."""
+    network = NETWORKS_BY_NAME.get(network_of(graph))
+    return network is not None and network.by_bike
 
 
 def check_network(graph: Graph, activity: str) -> None:

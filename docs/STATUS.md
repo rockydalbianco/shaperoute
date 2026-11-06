@@ -738,6 +738,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     (aggiunta ad ADR-0338). Per andare online, comandi dell'utente col suo
     sì: il server con la 0054, poi il download del file e l'import.
     Prossimo: la parte B, il meteo da MET Norway.
+  - 2026-11-06: A in `main` (#881). **Parte B**: `GET
+    /ski-resorts/{id}/weather` dà il meteo della stazione in valle e in
+    cima per le prossime 24 ore, da MET Norway. La neve fresca è una stima
+    (`snow_estimate: true`). Il server chiede con le coordinate della
+    stazione e la quota, e tiene le risposte in cache fino al loro
+    `Expires` (aggiunta ad ADR-0338). Niente migrazioni. Per andare online:
+    il deploy, e se si vuole `SHAPEROUTE_MET_CONTACT` nel `.env` del server,
+    col sì dell'utente. Prossimo: la domanda 2 (il modello), poi la parte
+    C, la ricerca «Ski» nell'app.
 - **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
   percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
   Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un

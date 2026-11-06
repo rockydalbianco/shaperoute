@@ -24421,6 +24421,53 @@ alla volta.
 - **Ricostruire le stazioni raggruppando impianti e piste dei riquadri**:
   scartata, perché in OSM impianti e piste non portano il nome della
   stazione.
+
+## ADR-0338, aggiunta — Il meteo: due quote, una stima della neve, la cache
+
+**Stato**: Attiva · 2026-11-06 · TASK-406 parte B. Deciso dall'agente su
+delega dell'utente, con la lista dei file approvata dal Coordinatore e tre
+sue richieste: la quota a MET Norway nella chiave della cache, un timeout
+breve, un campo che dica che la neve è una stima.
+
+**Contesto**: la domanda 1 («Sì, gratis + membri») vuole il meteo e la neve
+fresca prevista da MET Norway. In una stazione la valle e la cima hanno
+anche 1.500 m di differenza, e la neve o la pioggia dipendono dalla quota.
+
+**Decisione**:
+
+1. **Due quote.** `GET /ski-resorts/{id}/weather` chiede a MET Norway il
+   centro della stazione due volte: a `min_elevation_m` (`base`) e a
+   `max_elevation_m` (`top`), col parametro `altitude`. Con una quota sola
+   se ne chiede una; senza quote, una senza `altitude`.
+2. **La neve fresca è una stima.** La precipitazione delle prossime 24 ore,
+   contata solo nelle ore a 0,5 °C o meno, 1 mm d'acqua per 1 cm di neve.
+   La risposta lo dice con `snow_estimate: true`. Il testo per l'utente è
+   della parte C, da approvare.
+3. **Le ore** sono solo quelle che MET Norway dà una per una, cioè i primi
+   due giorni circa. I passi da sei ore si lasciano fuori.
+4. **La cache** sta in memoria, nel processo dell'API. La chiave è il centro
+   con 4 decimali più la quota. Una risposta vale fino al suo `Expires`,
+   tenuto fra 1 minuto e 6 ore, oppure 30 minuti se manca. Poi si richiede
+   con `If-Modified-Since`. Al più 4.000 voci: le più vecchie escono per
+   prime.
+5. **Il timeout** è di 4 secondi. Se MET Norway non risponde, si dà
+   l'ultima previsione tenuta con `stale: true`. Se non ce n'è nessuna, la
+   risposta è `503`.
+6. **Il contatto.** `SHAPEROUTE_MET_CONTACT` è facoltativo: se c'è, si
+   aggiunge al User-Agent `MuW/1.0 (https://getmuw.app)`. Sta solo nel
+   `.env` del server; `.env.example` lo ha vuoto. Nessuna dipendenza nuova
+   (urllib) e nessuna migrazione.
+
+**Alternative**:
+
+- **Una quota sola**, a metà: scartata, perché a metà la pioggia in valle e
+  la neve in cima si confondono.
+- **La cima calcolata dalla valle** con il gradiente standard (6,5 °C ogni
+  km): scartata, perché MET Norway corregge già la temperatura per la quota
+  chiesta, e lo fa meglio di una costante.
+- **La cache nel database** o su disco: scartata per ora. Dopo un riavvio
+  si richiede una volta per stazione, e MET Norway regge bene questo
+  carico.
 ## ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi
 
 **Stato**: Accettato · 2026-11-06 · TASK-380. Le scelte dell'utente, il

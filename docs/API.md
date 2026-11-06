@@ -3056,6 +3056,39 @@ serve il token. La chiave dell'API serve come su ogni percorso.
   OpenSkiData»), con `resort_import.py`.
 - I tipi in `packages/shared-types` arrivano con la parte C.
 
+**Il meteo (TASK-406 parte B)**
+- **`GET /ski-resorts/{id}/weather`**: il meteo della stazione da MET
+  Norway (Locationforecast 2.0 compact), in basso e in cima.
+- **La risposta:** `resort_id`, `attribution` (`"MET Norway"`, da mostrare
+  accanto), `stale`, `base` e `top`.
+- **`base` e `top`:** ognuno ha `altitude_m`, `updated_at` (quando l'ha
+  fatto MET Norway), `hours`, `fresh_snow_cm` e `snow_estimate`.
+  - `hours` sono le prossime 24 ore, dall'ora in corso: `time` (UTC),
+    `temperature_c`, `wind_ms`, `symbol` (il `symbol_code` di MET Norway) e
+    `precipitation_mm`.
+  - `fresh_snow_cm` è la neve fresca attesa in quelle ore. È una
+    **stima**, non un bollettino, e per questo `snow_estimate` è sempre
+    `true`: la precipitazione delle ore a 0,5 °C o meno, 1 mm d'acqua per
+    1 cm di neve.
+- **Le quote:** `base` è `min_elevation_m` e `top` è `max_elevation_m`.
+  Con una quota sola, o due uguali, `top` è `null`. Senza quote c'è solo
+  `base`, con `altitude_m` `null`: la quota allora la sceglie MET Norway
+  dal suo terreno.
+- **A MET Norway** va solo il centro della stazione, con 4 decimali, e la
+  quota. Mai la posizione di chi chiede. Lo chiama il server, mai il
+  telefono, con un User-Agent `MuW/1.0 (https://getmuw.app)`, più il
+  contatto di `SHAPEROUTE_MET_CONTACT` se c'è. Aspetta al massimo 4
+  secondi.
+- **La cache:** ogni risposta resta in memoria fino al suo `Expires`, al
+  massimo 6 ore, oppure 30 minuti se l'`Expires` manca. Poi si richiede
+  con `If-Modified-Since`. La chiave è il centro arrotondato più la quota.
+- **`stale: true`:** MET Norway non ha risposto, e si dà l'ultima
+  previsione tenuta. Le ore partono comunque da quella in corso.
+- **Gli errori:** `404` per una stazione che non c'è, senza chiedere
+  niente a MET Norway. `503` «The weather is not available now; try again
+  later.» quando MET Norway non risponde e non c'è niente in cache.
+- **Il codice:** `resort_weather.py`.
+
 ### Drawing search (TASK-344, ADR-0297)
 
 La ricerca dei disegni dalla lente del Feed: le stesse regole del feed su

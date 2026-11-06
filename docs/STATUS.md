@@ -535,6 +535,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **«ready» pronta** (`feat/TASK-377-c-hike-ready`, PR in bozza sopra la
   B): si unisce dopo il server con la 0051, col sì dell'utente.
   Prossimo: la parte B (app), dopo la #765.
+  **Parte A in `main`** (#838, `48bc58c8`). Prossimo: la parte B in una
+  sessione nuova (lista al Coordinatore; le note sono in
+  `tasks/TASK-377.md`), poi il server con la 0051 col sì dell'utente.
   **B3c, seconda metà, in PR** (2026-11-05, dopo la #765): «Impostazioni»
   legge emoji, nome e «Record only» dal profilo dello sport; `activityOf` e
   `runActivityOf` leggono l'attività di ogni riga invece di due `switch`.
@@ -546,6 +549,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in `main` (#838, #861). Le sue deroghe sono passi della ricetta
   (`COME-AGGIUNGERE.md`, «(pilota)»), ADR-0320 accettato. Prossimo per gli
   sport: Gravel/MTB parte A (TASK-378), poi il Roller (TASK-380).
+  **TASK-377 chiuso** (2026-11-06): server con la 0051, «ready» (#864) e
+  documenti (#859) in `main`, OTA di produzione 3ef55853: Hike ⛰️ acceso
+  per tutti con la 1.0.1. Prossimo: Gravel/MTB parte A (TASK-378, in
+  corso).
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il
@@ -3227,8 +3234,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Shape» e la nota «On the water, the drawing goes where it fits near the
   start.»; il disegno a mano va al motore sull'acqua di TASK-369 B, già sul
   server. Un disegno che non sta sull'acqua lo dice con parole sue. Solo
-  JavaScript, impronta iOS 6f8bba4c. Restano gli OTA, col sì dell'utente.
-  `tasks/TASK-396.md`.
+  JavaScript, impronta iOS 6f8bba4c. #860 in main (`452598d1`, 2026-11-06),
+  in produzione con l'OTA `3ef55853`. `tasks/TASK-396.md`.
 - **TASK-369 — «Edit the drawing» su ogni disegno** (ADR-0313; 2026-11-04;
   numeri dal Coordinatore): documenti #712, parte A #719 (`3e7c7d28`), parte
   B #722 (`bacd7c7b`). Il tasto c'è su ogni disegno con una linea, anche

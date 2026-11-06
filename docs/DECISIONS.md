@@ -24212,3 +24212,53 @@ anche gli estratti OSM del mondo sul server.
   terzo la posizione dell'utente e non avrebbe una cache condivisa.
 - **Le stazioni da un servizio esterno**: scartato. Costerebbe, e OSM le ha
   già, nello stesso estratto di impianti e piste.
+
+## ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono
+
+**Stato**: Proposto · 2026-11-06 · TASK-408. Le scelte di prodotto sono
+dell'utente (domande aperte in `tasks/TASK-408.md`); il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole un animale (un cavallo, un elefante…) che
+corre il percorso nel video, in 3D, e tante modifiche: il finale, i
+colori, le emoji, il 2D e il 3D, i cambi di scena, anche scritte con un
+prompt, senza un costo per ogni richiesta. Il video di TASK-351 si fa già
+in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
+
+**Decisione (proposta)**:
+
+1. **Il personaggio** è un modello glTF animato, disegnato da **three.js**
+   come «custom layer» di MapLibre nella pagina del video (`videoPage.ts`).
+   three.js si carica come MapLibre: versione fissata e hash SRI. Niente di
+   nativo, quindi l'impronta iOS non cambia e si pubblica con un OTA.
+   three.js è una dipendenza nuova: entra solo col sì dell'utente.
+2. **I modelli** hanno una licenza scritta e nessun personaggio di altri.
+   Il candidato è il pacchetto CC0 di Quaternius (glTF, galoppo e passo).
+   L'elefante non c'è in nessun pacchetto CC0 trovato: si aggiunge solo con
+   una licenza letta e scritta nel task.
+3. **Il percorso non si inventa**: il personaggio sta sul punto della
+   traccia dove arriva la linea in quel fotogramma, girato nella direzione
+   della strada. La camera lo segue; su un telefono lento resta ferma, e
+   senza modello il video esce come oggi.
+4. **L'editor** offre righe chiuse (personaggio, stile, colori dai token,
+   emoji, scene, finale). La scena resta un elenco di cose da disegnare
+   (`VideoScene`), con pezzi in più.
+5. **Il prompt** si legge **sul telefono** con una tabella di parole, come
+   le forme (ADR-0036): niente rete, nessun servizio AI, nessun costo per
+   richiesta (scelta dell'utente). Le parole scelgono solo voci
+   dell'editor, mai coordinate o geometrie (ADR-0001).
+6. Cinque parti: A proposta, B personaggio 3D, C editor, D prompt, E prova
+   sul telefono. Ogni parte ha la sua lista dei file approvata dal
+   Coordinatore.
+
+**Alternative**:
+
+- **Un'AI esterna per il prompt**: scartata dall'utente, per il costo a
+  ogni richiesta.
+- **Animali 2D (emoji o disegni piatti) che scorrono sulla linea**: più
+  leggeri, ma l'utente vuole il 3D. Restano la riserva se three.js non
+  entra.
+- **Un renderer 3D nativo** (SceneKit, Filament): una build nuova e
+  un'impronta nuova per ogni ritocco. La pagina del video ha già WebGL.
+- **I modelli 3D nel layer di MapLibre senza three.js**: MapLibre GL JS non
+  carica glTF da solo.

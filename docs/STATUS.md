@@ -268,6 +268,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   27 (Series 12 da 42 mm) con un prebuild locale. Branch `feat/TASK-370-a2-watch-app`.
   **Prossimo**: A3, il telefono (`src/watch/watchLink.ts`, `useWatch.ts`, il battito nella
   corsa); la prova sul polso con una build firmata.
+  **A2 in `main` il 2026-11-06** (#866, `6bd49b4c`; CI verde, impronta `6f8bba4c`). Subito
+  dopo `main` era rosso: la #875 (Gravel e MTB) era entrata prima e i `Localizable.strings`
+  dell'orologio non li avevano; corretto con #883 (`e5c6c175`, impronta `6f8bba4c`). Uno
+  sport nuovo o un nome cambiato richiede di rilanciare `scripts/watch-texts.sh` e
+  `scripts/watch-sports.sh`. A3 in una sessione nuova, con la lista dei file al Coordinatore
+  prima del codice.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.

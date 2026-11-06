@@ -3143,8 +3143,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   server con la `0049` e la `0051`, col sì dell'utente; la chiave di Web Risk
   dopo, quando l'utente avrà il progetto Google Cloud. Prossimo: la parte B
   (app), con la lista dei file al Coordinatore.
-  **Parte B (app) pronta il 2026-11-06** (branch `feat/TASK-394-b-outfit-app`,
-  via del Coordinatore sulla lista). Cosa fa:
+  **Parte B (app) pronta il 2026-11-06** (PR #894, branch
+  `feat/TASK-394-b-outfit-app`, via del Coordinatore sulla lista). Cosa fa:
   - «Tag what you wear» sotto la foto scelta nel compositore, a fine corsa e
     nella scheda di «My activities». Un tocco sulla foto mette il punto, poi
     capo, marca, modello e link. Il modulo dice subito quello che l'API

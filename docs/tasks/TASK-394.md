@@ -3,7 +3,7 @@
 **Stato**: In lavorazione — proposta approvata dall'utente (2026-11-05, «Sì,
 approvo»), con le cinque scelte, e testi approvati lo stesso giorno. Parte A
 (API, ADR-0333, migrazione `0050`) in `main` (#844, 2026-11-05); parte B
-(app) pronta in PR il 2026-11-06 (`feat/TASK-394-b-outfit-app`, «Dove si è,
+(app) pronta il 2026-11-06 in PR #894 (`feat/TASK-394-b-outfit-app`, «Dove si è,
 parte B»). Le scelte
 di prodotto sono dell'utente (sotto, «Le scelte dell'utente»); il resto è
 deciso dall'agente su delega dell'utente

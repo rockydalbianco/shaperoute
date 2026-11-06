@@ -138,13 +138,14 @@ def test_a_run_shorter_than_a_distance_has_no_best_of_it() -> None:
 
 def test_a_run_has_its_bests_of_every_sport() -> None:
     # 20 km at 30 km/h: on foot faster than the jump of a step, by bike not.
-    # An MTB and a gravel ride have a ride's, of their own (TASK-378).
+    # An MTB and a gravel ride have a ride's, of their own (TASK-378); a
+    # skate a run's distances, of its own, a GPS jump at 60 km/h (TASK-380).
     found = run_bests(line((250, 30, 80)), [])
     assert {(b.sport, b.distance) for b in found} == {
         (sport, distance)
         for sport in ("cycling", "mountain_biking", "gravel_biking")
         for distance in ("10k", "20k")
-    }
+    } | {("inline_skating", "5k"), ("inline_skating", "10k")}
 
 
 def test_the_example_of_shared_types_is_the_contract() -> None:
@@ -365,14 +366,15 @@ def test_the_backfill_counts_the_runs_saved_before_as_the_save_does(
     saved(client, owner, KEYS[0], five_k(30))
     saved(client, owner, KEYS[1], five_k(27, day=1, source="file"))
     counted = _kept(database)
-    assert len(counted) == 2
+    # A run's 5K and a skate's (TASK-380), for each run.
+    assert len(counted) == 4
     # The runs as they were before part A: no bests kept.
     with database.connect() as conn:
         conn.execute("DELETE FROM run_bests")
     assert bests_seen(client, owner, owner) == []
 
     done = backfill(database)
-    assert (done.runs, done.bests) == (2, 2)
+    assert (done.runs, done.bests) == (2, 4)
     assert _kept(database) == counted
     assert [b["seconds"] for b in bests_seen(client, owner, owner)] == [1_350]
     # Twice, the same.

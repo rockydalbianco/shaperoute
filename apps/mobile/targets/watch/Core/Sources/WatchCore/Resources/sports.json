@@ -68,6 +68,17 @@
       "onWatch": true
     },
     {
+      "activity": "inline_skating",
+      "name": "Roller",
+      "emoji": "🛼",
+      "appleWorkout": 39,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
       "activity": "walking",
       "name": "Walk",
       "emoji": "🚶",

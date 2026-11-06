@@ -5,6 +5,7 @@ import { CYCLING } from "./cycling";
 import { GRAVEL_BIKING } from "./gravel_biking";
 import { GYM } from "./gym";
 import { HIKING } from "./hiking";
+import { INLINE_SKATING } from "./inline_skating";
 import { MOUNTAIN_BIKING } from "./mountain_biking";
 import { PADDLING } from "./paddling";
 import { RUNNING } from "./running";
@@ -26,6 +27,7 @@ export const SPORT_PROFILES: readonly SportProfile[] = [
   SWIMMING,
   HIKING,
   MOUNTAIN_BIKING,
+  INLINE_SKATING,
   WALKING,
   GRAVEL_BIKING,
   SKIING,

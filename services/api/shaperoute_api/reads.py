@@ -2,10 +2,10 @@
 
 An app says in X-MuW-Reads the kinds it reads besides running, cycling and
 paddling, separated by commas: `swimming`, `hiking`, `mountain_biking`,
-`walking`, `gravel_biking`, `skiing`, `xc_skiing`, `gym`, `trackless` for a
-run or a drawing without a track (TASK-385): a workout at the gym, which has
-none, needs both; and `pool` for a swim in a pool (TASK-400), which needs
-`swimming`, `trackless` and `pool`. A request
+`inline_skating`, `walking`, `gravel_biking`, `skiing`, `xc_skiing`, `gym`,
+`trackless` for a run or a drawing without a track (TASK-385): a workout at
+the gym, which has none, needs both; and `pool` for a swim in a pool
+(TASK-400), which needs `swimming`, `trackless` and `pool`. A request
 without it comes from a build of before, which reads those three only, each
 with its track. Every list of runs, drawings, routes or group runs leaves
 out what the request does not read; a drawing or a group run it does not
@@ -35,6 +35,8 @@ NEWER_ACTIVITIES: tuple[str, ...] = (
     "hiking",
     # An MTB ride and a gravel ride (TASK-378), in the same order.
     "mountain_biking",
+    # A skate (TASK-380), in the same order.
+    "inline_skating",
     "walking",
     "gravel_biking",
     "skiing",

@@ -10,6 +10,7 @@ from __future__ import annotations
 from route_engine.activities import (
     cycling,
     hiking,
+    inline_skating,
     mountain_biking,
     paddling,
     running,
@@ -24,4 +25,5 @@ ENGINE_ACTIVITIES: tuple[Activity, ...] = (
     swimming.ACTIVITY,
     hiking.ACTIVITY,
     mountain_biking.ACTIVITY,
+    inline_skating.ACTIVITY,
 )

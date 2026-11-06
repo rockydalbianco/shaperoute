@@ -11,7 +11,7 @@ from pathlib import Path
 import route_engine
 from route_engine import models, network
 from route_engine.activities import ENGINE_ACTIVITIES
-from route_engine.networks import NETWORKS_BY_NAME, bike, foot, hike, mtb
+from route_engine.networks import NETWORKS_BY_NAME, bike, foot, hike, mtb, roller
 
 ENGINE = Path(route_engine.__file__).parent
 
@@ -25,10 +25,18 @@ BEFORE_LIMITS = {
 }
 BEFORE_NETWORKS = {"running": "foot", "cycling": "bike"}
 # Added since, each by a line of its register: a hike (TASK-377), an MTB
-# ride (TASK-378).
-SINCE_SUPPORTED = ("hiking", "mountain_biking")
-SINCE_LIMITS = {"hiking": (1_000, 30_000), "mountain_biking": (10_000, 30_000)}
-SINCE_NETWORKS = {"hiking": "hike", "mountain_biking": "mtb"}
+# ride (TASK-378), a skate (TASK-380).
+SINCE_SUPPORTED = ("hiking", "mountain_biking", "inline_skating")
+SINCE_LIMITS = {
+    "hiking": (1_000, 30_000),
+    "mountain_biking": (10_000, 30_000),
+    "inline_skating": (5_000, 30_000),
+}
+SINCE_NETWORKS = {
+    "hiking": "hike",
+    "mountain_biking": "mtb",
+    "inline_skating": "roller",
+}
 
 
 def test_the_activities_are_those_of_before_in_their_order() -> None:
@@ -53,6 +61,7 @@ def test_the_networks_are_those_of_before() -> None:
         "bike": network.BIKE_FILTER,
         "hike": hike.HIKE_FILTER,
         "mtb": network.BIKE_FILTER,
+        "roller": roller.ROLLER_FILTER,
     }
     assert network.FOOT_NETWORK_NAME == "foot"
     assert network.BIKE_NETWORK_NAME == "bike"
@@ -78,6 +87,7 @@ def test_every_network_is_registered_under_its_own_name() -> None:
         "bike": bike.NETWORK,
         "hike": hike.NETWORK,
         "mtb": mtb.NETWORK,
+        "roller": roller.NETWORK,
     }
     for name, registered in NETWORKS_BY_NAME.items():
         assert registered.name == name
@@ -90,6 +100,11 @@ def test_the_source_of_an_activity_is_its_network_s() -> None:
     assert (source.network_name, source.custom_filter) == ("foot", foot.FOOT_FILTER)
     source = network.OsmnxSource.for_activity(Path("cache"), "mountain_biking")
     assert (source.network_name, source.custom_filter) == ("mtb", bike.BIKE_FILTER)
+    source = network.OsmnxSource.for_activity(Path("cache"), "inline_skating")
+    assert (source.network_name, source.custom_filter) == (
+        "roller",
+        roller.ROLLER_FILTER,
+    )
 
 
 def test_one_way_streets_are_a_property_of_the_network() -> None:
@@ -99,6 +114,7 @@ def test_one_way_streets_are_a_property_of_the_network() -> None:
         "bike": True,
         "hike": False,
         "mtb": True,
+        "roller": False,
     }
     for name, registered in NETWORKS_BY_NAME.items():
         graph = network.Graph(network=name)

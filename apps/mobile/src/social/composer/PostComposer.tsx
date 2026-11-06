@@ -25,6 +25,7 @@ import {
   radius,
   space,
 } from "../../theme/tokens";
+import { TagWhatYouWear } from "../outfit/OutfitTagEditor";
 import { ComposedPhoto } from "./ComposedPhoto";
 import { type Flattened, flattenPhoto } from "./flattenPhoto";
 import {
@@ -365,6 +366,15 @@ export function PostComposer({
             })}
           </View>
         </View>
+      )}
+      {/* The items worn in the photo chosen (TASK-394 part B). */}
+      {chosen !== null && (
+        <TagWhatYouWear
+          n={chosen.n}
+          source={chosen.source}
+          places={photos.map((photo) => photo.n)}
+          disabled={busy}
+        />
       )}
       {problem !== null && (
         <>

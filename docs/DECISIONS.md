@@ -24290,6 +24290,69 @@ anche gli estratti OSM del mondo sul server.
 - **Le stazioni da un servizio esterno**: scartato. Costerebbe, e OSM le ha
   già, nello stesso estratto di impianti e piste.
 
+## ADR-0333, precisazione B — I capi nell'app: testi a parte, un ponte per il compositore, i capi accanto alle foto
+
+**Stato**: Accettato · **Data**: 2026-11-06 · **Task**: TASK-394 parte B
+
+Deciso dall'agente su delega dell'utente, salvo il punto 6, che è una scelta
+dell'utente.
+
+1. **I testi dei capi stanno in `social/outfit/outfitWords.ts`**, nelle
+   cinque lingue, come quelli di Style (`feed/styleWords.ts`), e non nelle
+   tabelle di `t`. Due motivi:
+   - le tabelle vanno per testo inglese, e «Top», «Cap», «Watch», «Other»
+     lì sono già altre parole;
+   - i file `i18n/` erano contesi da TASK-378 B e TASK-400 B.
+
+   «Shop on {store}» è quello di Style. «Done», «Save» e «Report» sono
+   testi che ci sono già.
+2. **Un ponte per il compositore** (`OutfitTagging`, un context): lo danno
+   la fine della corsa e la scheda di «My activities», e `DrawingForm`
+   (`PublicParts.tsx`, conteso) resta com'è. Senza ponte non c'è «Tag what
+   you wear». Così non c'è a fine allenamento in palestra (`GymPostForm`):
+   un limite scritto nel task, il seguito lo decide l'utente.
+3. **I capi sul telefono, accanto alle foto** (`drawing-outfits.json`,
+   per posto della foto).
+   - Vanno al server subito dopo le foto, dentro `syncPhotos`, così la coda
+     dei disegni e la scheda non cambiano.
+   - Una foto rimessa nel suo posto (un layout scelto) rimanda i capi: un
+     JPEG diverso li perde sul server.
+   - Una foto tolta li toglie.
+   - Un rifiuto `outfit_tag_rejected` resta sul telefono col suo motivo, e
+     si vede sotto «Tag what you wear». Non si rimanda finché i capi non
+     cambiano.
+   - Gli altri rifiuti definitivi (404, 409, `invalid_request`) lasciano
+     andare la lista: il server tiene la sua. Senza rete, o col server
+     occupato, i capi aspettano come le foto.
+   - Dopo un sì del server, il telefono tiene i capi con gli `id` del server:
+     rimandati, tengono i loro conteggi.
+4. **I controlli nel modulo** sono solo un aiuto: `https`, niente utente,
+   porta o indirizzo IP, gli accorciatori più comuni, un indirizzo scritto
+   nella marca o nel modello, 5 per foto e 10 per post. L'ultima parola
+   resta all'API (Web Risk, l'elenco dei bloccati, il filtro delle parole).
+5. **La scheda è un componente nuovo** (`OutfitTagSheet`), con lo stesso
+   aspetto di `StyleProductSheet`, che resta com'è.
+   - «Report» è il solito «…» (Report o Block), e solo per gli altri.
+   - L'autore si riconosce dai totali, che il server manda solo a lui. I
+     suoi tocchi non mandano `open` né `shop`, e il suo «Shop» apre il suo
+     link senza passare dal server.
+   - Un capo nascosto dopo una segnalazione, l'autore lo vede sbiadito.
+6. **Nel Feed i puntini li mostra la gruccia** (scelta dell'utente,
+   2026-11-06, «Gruccia nel Feed»): nel Feed un tocco sulla foto apre il
+   disegno (TASK-330), quindi lì apre i puntini la gruccia, sotto il
+   contatore delle pagine. Nel disegno aperto li mostra anche il tocco sulla
+   foto.
+7. **Nel Feed la foto è tagliata per riempire la pagina**: un capo che cade
+   nella parte tagliata non si mostra. Il modulo mostra la foto intera.
+8. **Nel modulo** un capo nuovo si conferma con «Add», uno già messo con
+   «Save». Chiudere il foglio tiene i capi; quello che si stava scrivendo e
+   non è stato aggiunto si perde.
+9. **Termini e Privacy hanno la data del 6 novembre 2026**, il giorno del
+   merge previsto. Se il merge slitta, si cambia la data nei cinque file e
+   nei tre test che la scrivono (`documents.test.ts`, `AboutPage.test.tsx`,
+   `site/tests/privacy.test.mjs`). In «Chi altro riceve dati» resta
+   «Google»; il nome della società si copia dal contratto quando l'utente
+   attiva Web Risk (sì anticipato del 2026-11-05).
 ## TASK-407 — La 1.0.2 esce con il JS dell'ultimo OTA di produzione
 
 **Stato**: Accettato · 2026-11-06 · TASK-407. Deciso dal Coordinatore su

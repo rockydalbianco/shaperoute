@@ -2,6 +2,7 @@ import type { DrawingPhoto, LatLon } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 
+import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { isTrackless } from "../activities/snow";
 import {
   choiceOf as choiceOfDrawing,
@@ -19,6 +20,7 @@ import type { ComposerPhoto } from "./composer/PostComposer";
 import { itemsOf, orderOf as orderOfItems, type PostItem } from "./composer/postOrder";
 import { phonePhotoUri } from "./drawingPhotos";
 import { type ChoiceShown, type PhotoShown, useDrawingsDoor } from "./drawingsDoor";
+import { OutfitTaggingContext, useRunOutfits } from "./outfit/OutfitTagging";
 import {
   DrawingForm,
   FormScroll,
@@ -124,6 +126,10 @@ export function PublicRow({
     // `changed` says the files changed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [activityKey, apiOrder, changed, orderOf, photos, choice?.activity],
+  );
+  // The items tagged on the photos (TASK-394 part B): sent as a photo is.
+  const outfit = useRunOutfits(useActivitiesDoor().owner, activityKey, apiPhotos, () =>
+    photosChanged(),
   );
 
   useEffect(() => {
@@ -255,94 +261,96 @@ export function PublicRow({
   return (
     <View style={styles.block}>
       <FormScroll maxHeight={Math.round(height * CARD_FORM_SHARE)}>
-        <DrawingForm
-          choice={current}
-          onChoice={onChoice}
-          onTextDone={onTextDone}
-          items={items}
-          photos={composed}
-          onOrder={(next) => {
-            if (!keepOrderOf(activityKey, orderOfItems(next))) {
-              setLine({
-                text: t("This photo could not be kept on the phone. Try again."),
-                alert: true,
-              });
-              return;
-            }
-            photosChanged();
-          }}
-          onAddPhotos={(added) => {
-            const places = photos.map((photo) => ({ n: photo.n }));
-            const kept = new Map(taken);
-            let refused = false;
-            for (const base64 of added) {
-              const n = nextPlace(places, gym ? GYM_MAX_PHOTOS : undefined);
-              if (n === null) {
-                break;
+        <OutfitTaggingContext.Provider value={outfit}>
+          <DrawingForm
+            choice={current}
+            onChoice={onChoice}
+            onTextDone={onTextDone}
+            items={items}
+            photos={composed}
+            onOrder={(next) => {
+              if (!keepOrderOf(activityKey, orderOfItems(next))) {
+                setLine({
+                  text: t("This photo could not be kept on the phone. Try again."),
+                  alert: true,
+                });
+                return;
               }
-              if (!keepPhotoOf(activityKey, n, base64)) {
-                refused = true;
-                break;
+              photosChanged();
+            }}
+            onAddPhotos={(added) => {
+              const places = photos.map((photo) => ({ n: photo.n }));
+              const kept = new Map(taken);
+              let refused = false;
+              for (const base64 of added) {
+                const n = nextPlace(places, gym ? GYM_MAX_PHOTOS : undefined);
+                if (n === null) {
+                  break;
+                }
+                if (!keepPhotoOf(activityKey, n, base64)) {
+                  refused = true;
+                  break;
+                }
+                places.push({ n });
+                kept.set(n, base64);
               }
-              places.push({ n });
-              kept.set(n, base64);
-            }
-            setTaken(kept);
-            if (refused) {
-              setLine({
-                text: t("This photo could not be kept on the phone. Try again."),
-                alert: true,
-              });
-            }
-            // While others see the run, the photos go to the API now.
-            photosChanged();
-          }}
-          onRemovePhoto={(n) => {
-            const photo = photos.find((other) => other.n === n);
-            removePhotoOf(activityKey, n, photo !== undefined && !photo.onPhone);
-            setApiPhotos((was) => was.filter((other) => other.n !== n));
-            photosChanged();
-          }}
-          track={track}
-          rotationDeg={rotationDeg}
-          onLayout={(n, layout, made) => {
-            const original = taken.get(n);
-            if (original === undefined) {
-              return;
-            }
-            if (!keepPhotoOf(activityKey, n, made?.base64 ?? original)) {
-              setLine({
-                text: t("This photo could not be kept on the phone. Try again."),
-                alert: true,
-              });
-              return;
-            }
-            setLayouts((was) => {
-              const next = new Map(was);
-              if (made === null || layout === null) {
-                next.delete(n);
-              } else {
-                next.set(n, layout);
+              setTaken(kept);
+              if (refused) {
+                setLine({
+                  text: t("This photo could not be kept on the phone. Try again."),
+                  alert: true,
+                });
               }
-              return next;
-            });
-            photosChanged();
-          }}
-          disabled={busy > 0}
-          imported={imported}
-          extra={
-            gym ? (
-              <ShowExercises
-                gymKey={activityKey}
-                disabled={busy > 0}
-                fetchFn={fetchFn}
-              />
-            ) : undefined
-          }
-          pick={pick}
-          fetchFn={fetchFn}
-          apiKey={apiKey}
-        />
+              // While others see the run, the photos go to the API now.
+              photosChanged();
+            }}
+            onRemovePhoto={(n) => {
+              const photo = photos.find((other) => other.n === n);
+              removePhotoOf(activityKey, n, photo !== undefined && !photo.onPhone);
+              setApiPhotos((was) => was.filter((other) => other.n !== n));
+              photosChanged();
+            }}
+            track={track}
+            rotationDeg={rotationDeg}
+            onLayout={(n, layout, made) => {
+              const original = taken.get(n);
+              if (original === undefined) {
+                return;
+              }
+              if (!keepPhotoOf(activityKey, n, made?.base64 ?? original)) {
+                setLine({
+                  text: t("This photo could not be kept on the phone. Try again."),
+                  alert: true,
+                });
+                return;
+              }
+              setLayouts((was) => {
+                const next = new Map(was);
+                if (made === null || layout === null) {
+                  next.delete(n);
+                } else {
+                  next.set(n, layout);
+                }
+                return next;
+              });
+              photosChanged();
+            }}
+            disabled={busy > 0}
+            imported={imported}
+            extra={
+              gym ? (
+                <ShowExercises
+                  gymKey={activityKey}
+                  disabled={busy > 0}
+                  fetchFn={fetchFn}
+                />
+              ) : undefined
+            }
+            pick={pick}
+            fetchFn={fetchFn}
+            apiKey={apiKey}
+          />
+        </OutfitTaggingContext.Provider>
       </FormScroll>
       {line !== null && <PublicLine text={line.text} alert={line.alert} />}
     </View>

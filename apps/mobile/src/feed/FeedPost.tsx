@@ -28,6 +28,7 @@ import { useBlockedNow } from "../social/blockedNow";
 import { itemsOf } from "../social/composer/postOrder";
 import { useFollowsDoor } from "../social/followsDoor";
 import { agoLabel } from "../social/commentText";
+import { OutfitTagLayer, OutfitTotals } from "../social/outfit/OutfitTagLayer";
 import { ReportMenu } from "../social/ReportMenu";
 import {
   color,
@@ -214,6 +215,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
       ? (post.drawing.photos ?? []).map((photo) => ({
           n: photo.n,
           source: drawingPhotoSource(apiUrl, state.session.token, photo),
+          drawn: photo,
         }))
       : [];
   // A workout at the gym has no line: its tile in place of the map, and
@@ -428,6 +430,14 @@ export function FeedPost({ post, width, onOpen }: Props) {
                         accessible={false}
                       />
                       {wordsOnPhoto}
+                      {/* The items worn, under the page counter (TASK-394). */}
+                      <OutfitTagLayer
+                        photo={photo.drawn}
+                        fit="cover"
+                        toggle="hanger"
+                        author={author}
+                        hangerStyle={{ top: space.xxl + space.sm, left: space.md }}
+                      />
                     </>
                   ) : (
                     <View
@@ -459,6 +469,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
               />
             ))}
           </View>
+          {isShown(post) && <OutfitTotals photos={post.drawing.photos ?? []} />}
         </>
       )}
     </>

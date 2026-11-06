@@ -242,6 +242,27 @@ def test_only_a_swim_in_a_pool_goes_as_an_activity_with_a_track(
     drawn(client, me, gym_key, activity="gym")
 
 
+def test_a_swim_without_a_track_is_in_a_pool_only_when_the_server_says_so(
+    client: TestClient, database: Database  # noqa: F811
+) -> None:
+    # A run of swimming without a track and without its row in pool_swims
+    # (the API never saves one; the database allows it): no pool swim, so
+    # NOT_TRACKLESS, whatever the phone says.
+    me = signed_up(client)
+    kept(client, me)
+    lone_key = "0f1e2d3c4b5a6978"
+    with database.connect() as conn:
+        conn.execute(
+            "INSERT INTO runs (user_id, key, track, started_at, distance_m,"
+            " duration_s, created_at, activity)"
+            " SELECT user_id, %s, NULL, started_at, 500, 600, now(), 'swimming'"
+            " FROM runs WHERE key = %s",
+            (lone_key, POOL_KEY),
+        )
+    drawn(client, me, lone_key, status=422, activity="swimming")
+    drawn(client, me, POOL_KEY, activity="swimming")
+
+
 def test_a_private_swim_shows_nothing_to_the_others(
     client: TestClient,  # noqa: F811
 ) -> None:

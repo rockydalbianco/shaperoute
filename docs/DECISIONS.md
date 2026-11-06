@@ -24949,3 +24949,34 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
 - **Solo il motore del telefono**: niente frase nella Privacy, ma a
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
+
+## ADR-2001 — Le forme candidate fuori dal pacchetto del motore, in `services/route-engine/candidates/`
+
+**Stato**: Attiva · 2026-11-06 · TASK-2001. Deciso dall'agente su delega
+dell'utente, sulla condizione posta dal «Coordinatore (PC di Ricky)».
+
+**Contesto**: `engine.zip`, il motore del telefono
+(`tools/phone_engine/phone_engine.py`), prende tutto il pacchetto
+`route_engine`, compresi i file di `shapes/outlines/`. Un contorno nuovo lì
+dentro fa fallire `tools/phone_engine/test_phone_engine.py` finché lo zip non
+si rifà, e `apps/mobile/assets/engine/engine.zip` è anche nei file di
+TASK-297 C2.
+
+**Decisione**: i contorni ancora da giudicare stanno in
+`services/route-engine/candidates/`, fuori dal pacchetto. La CLI li legge con
+`--outline`, come qualsiasi file (`read_outline(path)`), e
+`tests/test_candidates.py` li controlla come `test_outline.py` controlla quelli
+di `outlines/`. Un contorno passa in `route_engine/shapes/outlines/` solo
+quando entra nel catalogo (parte B, un task a parte), insieme a `SHAPES` e a
+un `engine.zip` rifatto.
+
+**Conseguenza**: questo task aggiunge solo file nuovi, e non tocca
+`engine.zip`, `outlines/` né `SHAPES`. Le candidate di una volta che sono già
+in `outlines/` (`balloon`, `bird`, `dog`…) restano dove sono.
+
+**Alternative**:
+
+- **Lasciarle in `outlines/` e rifare `engine.zip`**: conflitto con TASK-297
+  C2, e il telefono porterebbe 23 contorni che l'app non usa.
+- **`samples/outlines/`**: `samples/` è la cartella dei GPX, con la sua
+  nomenclatura (`samples/README.md`).

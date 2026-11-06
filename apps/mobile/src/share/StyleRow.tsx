@@ -24,9 +24,10 @@ import {
   type VideoStyle,
 } from "./videoStyle";
 
-/** A tile has the video's shape, 9 wide and 16 tall: three fit in a row. */
-const TILE_WIDTH = 104;
-const TILE_HEIGHT = 185;
+/** A tile has the video's shape, 9 wide and 16 tall: four fit in a row
+ * (TASK-408 added «2D»). */
+const TILE_WIDTH = 76;
+const TILE_HEIGHT = 135;
 /** The drawing's place in the tile, as in the video (videoScene): in from
  * the sides, between the title's room and the numbers'. */
 const SIDE = 0.08;
@@ -61,9 +62,10 @@ function placed(s: Segment, thickness: number) {
 }
 
 /**
- * «Style» in «Share your run» (TASK-351, ADR-0303): a tile for each style
- * of the video, with the run's drawing in the style's colours on its map's
- * ground, one of them chosen; «Night» when the post opens. The tiles are
+ * «Style» in «Edit video» (TASK-351, ADR-0303; TASK-408): a tile for each
+ * style of the video, with the run's drawing in the style's colours and the
+ * line's colour on its map's ground, one of them chosen; «Night» when the
+ * post opens. The tiles are
  * the video's shape, so what they show is where the drawing will be; in
  * the «3D» tile the drawing leans as the map will (part D).
  */
@@ -154,7 +156,7 @@ const styles = StyleSheet.create({
   },
   tiles: {
     flexDirection: "row",
-    gap: space.xl,
+    gap: space.md,
   },
   choice: {
     width: TILE_WIDTH,

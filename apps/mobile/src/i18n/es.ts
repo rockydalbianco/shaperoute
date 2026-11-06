@@ -1658,6 +1658,7 @@ export const ES: Table = {
   Alpaca: "Alpaca",
 
   // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
+  "2D": "2D",
   "Edit video": "Editar vídeo",
   "Line colour": "Color de la línea",
   "Along the way": "Por el camino",

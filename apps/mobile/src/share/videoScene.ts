@@ -34,7 +34,7 @@ import {
   type VideoMap,
   videoMap,
 } from "./videoMap";
-import { styleRelief, stylePalette, type VideoStyle } from "./videoStyle";
+import { styleMap, styleRelief, stylePalette, type VideoStyle } from "./videoStyle";
 
 /**
  * The video of a run (TASK-295, ADR-0254; TASK-351, ADR-0303), as what to
@@ -289,6 +289,8 @@ type Look = {
    * the light map (ADR-0231); `extra` is its width beyond the line's, as a
    * share of the width. */
   casing: { extra: number; alpha: number } | null;
+  /** The map under the line: on every map look but «2D» (TASK-408). */
+  map: boolean;
   /** The map leaning on its hills, the line laid on them by the page. */
   relief: boolean;
   /** The yellow square behind the logo's heart. */
@@ -346,6 +348,7 @@ const PAPER: Look = {
   value: { size: 0.075, weight: 700, tracking: 0, lineHeight: LINE_HEIGHT },
   line: { width: 0.02, color: "line" },
   casing: null,
+  map: false,
   relief: false,
   badge: false,
   scrim: false,
@@ -360,12 +363,14 @@ const PAPER: Look = {
  * a regular title, the line in the yellow of a route. By `day` the veil is
  * the light map's own ground, almost whole, and the line runs on its dark
  * edge, as on the light map (ADR-0231). On «3D» (`relief`) the credit
- * names the hills' heights too. */
+ * names the hills' heights too. Without the map («2D», TASK-408) the same
+ * look on the map's bare ground: no veil, no credit. */
 function mapLook(
   palette: Palette,
   day: boolean,
   relief: boolean,
   line: LineColour,
+  map: boolean,
 ): Look {
   const casing = routeCasingOf("light");
   return {
@@ -388,11 +393,12 @@ function mapLook(
       day && casing !== null
         ? { extra: ofPhone(casing.width - route.width), alpha: casing.opacity }
         : null,
+    map,
     relief,
     badge: true,
-    scrim: true,
+    scrim: map,
     scrimPeak: day ? DAY_SCRIM_PEAK : SCRIM_PEAK,
-    credit: relief ? `${MAP_CREDIT} · ${TERRAIN_CREDIT}` : MAP_CREDIT,
+    credit: !map ? null : relief ? `${MAP_CREDIT} · ${TERRAIN_CREDIT}` : MAP_CREDIT,
     resultsBottom: 0.06,
     rowGap: 0.036,
   };
@@ -590,7 +596,7 @@ function layoutOf(
   ]);
   // The same fit, in points of the map, so the map lies under the line.
   const map =
-    palette !== null
+    palette !== null && look.map
       ? videoMap(
           whole,
           {
@@ -979,7 +985,13 @@ export function videoScene(
   const spec =
     look === "paper" || palette === null
       ? PAPER
-      : mapLook(palette, look === "day", styleRelief(look), options.line ?? "yellow");
+      : mapLook(
+          palette,
+          look === "day",
+          styleRelief(look),
+          options.line ?? "yellow",
+          styleMap(look),
+        );
   const language = appLanguage();
   const layout = layoutOf(run, shown, spec, palette, language);
   const count = VIDEO_SECONDS * VIDEO_FPS;

@@ -542,4 +542,15 @@ describe("«Edit video» (TASK-408 C1)", () => {
     expect(scene).toContain('"text":"⭐"');
     expect(scene).toContain('"text":"🎆"');
   });
+
+  it("makes the «2D» video straight away, with no map to wait for", async () => {
+    await shown();
+    await choose("2D");
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    expect(inject).toHaveBeenCalledTimes(1);
+    expect(inject.mock.calls[0][0]).not.toContain("prepareMap");
+    expect(inject.mock.calls[0][0]).toContain('"look":"2d"');
+    expect(inject.mock.calls[0][0]).toContain('"map":null');
+  });
 });

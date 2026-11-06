@@ -722,4 +722,17 @@ describe("videoScene, as «Edit video» makes it (TASK-408 C1)", () => {
     const none = videoScene(RUN, POST_RESULTS, [], "night", { along: null, end: null });
     expect(none.frames).toEqual(night.frames);
   });
+
+  it("draws «2D» on the night's ground with no map, no veil and no credit, the line in its colour", () => {
+    const flat = videoScene(RUN, POST_RESULTS, [], "2d", { line: "light_blue" });
+    expect(flat.map).toBeNull();
+    expect(flat.colors.paper).toBe(NIGHT.map.background);
+    expect(flat.colors.line).toBe(videoLine.lightBlue);
+    const last = flat.frames[flat.frames.length - 1];
+    expect(last.some((op) => op.k === "map" || op.k === "scrim")).toBe(false);
+    expect(words(last)).not.toContain(MAP_CREDIT);
+    expect(flat.paths).toEqual(night.paths);
+    expect(runLine(last)).toMatchObject({ color: "line", width: 17.3 });
+    expect(runLine(last)?.share).toBeUndefined();
+  });
 });

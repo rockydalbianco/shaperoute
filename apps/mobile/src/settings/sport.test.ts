@@ -81,6 +81,8 @@ test("run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, TASK-1
     "paddle",
     "swim",
     "hike",
+    "gravel",
+    "mtb",
     "ski",
     "gym",
   ]);
@@ -89,6 +91,9 @@ test("run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, TASK-1
   expect(canChoose("paddle")).toBe(true);
   expect(canChoose("swim")).toBe(true);
   expect(canChoose("ski")).toBe(true);
+  // And a gravel and an MTB ride (TASK-378 part C).
+  expect(canChoose("gravel")).toBe(true);
+  expect(canChoose("mtb")).toBe(true);
   expect(canChoose("xc_ski")).toBe(false);
   expect(canChoose("golf")).toBe(false);
 });

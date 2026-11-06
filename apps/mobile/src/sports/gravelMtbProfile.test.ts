@@ -1,7 +1,7 @@
 /**
  * «Gravel» 🚲 and «MTB» 🚵 in the app (TASK-378 part B, ADR-0322): their
- * rows in «Settings», «Soon» until the user turns them on; offered in the
- * search and the form to publish once ready; the caution under an MTB
+ * rows in «Settings», on since part C; offered in the search and the form
+ * to publish while ready; the caution under an MTB
  * route; the energy of the Compendium; the files of other apps that say a
  * gravel or an MTB ride.
  */
@@ -27,15 +27,15 @@ import { profileOf } from "./index";
 
 jest.mock("expo-file-system");
 
-test("«Gravel» 🚲 and «MTB» 🚵 come after «Hike», «Soon» until turned on", () => {
+test("«Gravel» 🚲 and «MTB» 🚵 come after «Hike», on since part C", () => {
   const index = ALL_SPORTS.findIndex((option) => option.id === "gravel");
   expect(ALL_SPORTS[index - 1]?.id).toBe("hike");
   expect(ALL_SPORTS.slice(index, index + 2)).toEqual([
-    { id: "gravel", emoji: "🚲", name: "Gravel", ready: false },
-    { id: "mtb", emoji: "🚵", name: "MTB", ready: false },
+    { id: "gravel", emoji: "🚲", name: "Gravel", ready: true },
+    { id: "mtb", emoji: "🚵", name: "MTB", ready: true },
   ]);
-  expect(canChoose("gravel", ALL_SPORTS)).toBe(false);
-  expect(canChoose("mtb", ALL_SPORTS)).toBe(false);
+  expect(canChoose("gravel", ALL_SPORTS)).toBe(true);
+  expect(canChoose("mtb", ALL_SPORTS)).toBe(true);
   // Asked, and saved, as themselves; out with the ride's words.
   expect(activityOf("gravel")).toBe("gravel_biking");
   expect(runActivityOf("gravel")).toBe("gravel_biking");
@@ -47,20 +47,23 @@ test("«Gravel» 🚲 and «MTB» 🚵 come after «Hike», «Soon» until turne
   expect(withoutRouteIcon("mtb")).toBe("🚵");
 });
 
-test("a gravel or an MTB ride is offered to search and publish only once ready", () => {
-  expect(activityOffered("gravel_biking")).toBe(false);
-  expect(activityOffered("mountain_biking")).toBe(false);
-  expect(SEARCH_ACTIVITIES).not.toContain("gravel_biking");
-  expect(SEARCH_ACTIVITIES).not.toContain("mountain_biking");
-  const ready: SportOption[] = ALL_SPORTS.map((option) =>
-    option.id === "gravel" || option.id === "mtb" ? { ...option, ready: true } : option,
+test("a gravel or an MTB ride is offered to search and publish while ready", () => {
+  expect(activityOffered("gravel_biking")).toBe(true);
+  expect(activityOffered("mountain_biking")).toBe(true);
+  expect(SEARCH_ACTIVITIES).toContain("gravel_biking");
+  expect(SEARCH_ACTIVITIES).toContain("mountain_biking");
+  const soon: SportOption[] = ALL_SPORTS.map((option) =>
+    option.id === "gravel" || option.id === "mtb"
+      ? { ...option, ready: false }
+      : option,
   );
-  expect(activityOffered("gravel_biking", ready)).toBe(true);
-  expect(activityOffered("mountain_biking", ready)).toBe(true);
+  expect(activityOffered("gravel_biking", soon)).toBe(false);
+  expect(activityOffered("mountain_biking", soon)).toBe(false);
   // Each keeps to its own row.
   const gravelOnly = ALL_SPORTS.map((option) =>
-    option.id === "gravel" ? { ...option, ready: true } : option,
+    option.id === "mtb" ? { ...option, ready: false } : option,
   );
+  expect(activityOffered("gravel_biking", gravelOnly)).toBe(true);
   expect(activityOffered("mountain_biking", gravelOnly)).toBe(false);
   expect(activityOffered("cycling")).toBe(true);
 });

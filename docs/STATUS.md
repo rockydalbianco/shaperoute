@@ -317,6 +317,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `6f8bba4c` invariata, server a `cab53f51` con la 0052. Prossimo:
   l'accensione col sì dell'utente, in una riga o PR a parte, poi la prova
   sul telefono (si sceglie, si pedala, si salva, va in Salute).
+  **Parte C in PR** (2026-11-06, `feat/TASK-378-c-gravel-mtb-ready`):
+  `ready` vero per Gravel e MTB, col «Sì, accendili» dell'utente; anche
+  nei build dello store, nella ricerca e nel modulo per pubblicare. Solo
+  JavaScript. Prossimo: la prova sul telefono, poi la chiusura.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

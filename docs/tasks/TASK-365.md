@@ -246,10 +246,11 @@ de, es, fr): «SI ETICHETTE».
       come stima e non supera i limiti della scelta 1. *Guardati e approvati
       dall'utente («Buoni e discreti»); la card scrive «↑ 113 m» senza dire che
       è una stima.*
-- [ ] Testi approvati in cinque lingue, nessun colore a mano, nessuna dipendenza
+- [x] Testi approvati in cinque lingue, nessun colore a mano, nessuna dipendenza
       nuova, impronta iOS invariata su una copia pulita. *Testi approvati, colori
-      dai token, nessuna dipendenza; l'impronta su una copia pulita non è stata
-      misurata.*
+      dai token, nessuna dipendenza; impronta misurata dal Coordinatore su copia
+      pulita a `main` `09307022` (con la #868), `APP_VARIANT=production`:
+      `6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`, invariata.*
 - [ ] Prima e dopo dal simulatore, in scuro e in chiaro. Server e OTA solo col
       sì dell'utente. *Dal simulatore in scuro (`out/TASK-365/`); l'app non ha un
       tema chiaro da provare. Server già aggiornato col sì dell'utente; l'OTA

@@ -3120,8 +3120,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   MuW, una riga su 6 dal 4° posto, mai accanto a pubblicità o Style, mai in «Following», anche
   fra gli esempi senza account; un tocco apre il percorso sulla mappa come da «Explore». Un'app
   già pubblicata non vede niente di nuovo. Prossimo: l'OTA di produzione col sì dell'utente;
-  restano da provare l'export GPX, il `404` nel simulatore e l'impronta su copia pulita
-  (`tasks/TASK-365.md`, criteri); il «looks 100% like it» del percorso aperto è TASK-405.
+  restano da provare l'export GPX e il `404` nel simulatore (`tasks/TASK-365.md`, criteri;
+  impronta iOS `6f8bba4c` invariata, misurata dal Coordinatore); il «looks 100% like it» del
+  percorso aperto è TASK-405.
 - **TASK-404 — Disegno a mano: un primo tratto piccolo non blocca i tratti dopo** (2026-11-05;
   segnalazione dell'utente dal nuoto, vale per ogni sport). Ogni tratto aggiunto si raddrizza
   sull'1% della grandezza del disegno che forma, non di quello di prima: dopo un puntino un

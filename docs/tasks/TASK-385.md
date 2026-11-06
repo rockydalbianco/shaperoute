@@ -321,8 +321,9 @@ Questa PR (documenti): `docs/tasks/TASK-385.md` (nuovo),
     `api/gymLeaderboard.ts` (+ test), `gym/Leaderboard.tsx`,
     `gym/Leaderboard.test.tsx`;
   - righe in file esistenti: `app.py` (il router), `profiles.py`
-    («Winner» con la palestra, al posto di `accounts.py`: cambio chiesto al
-    Coordinatore); `shared-types` `src/gym.ts`, `test/gym.test.ts`;
+    («Winner» con la palestra, al posto di `accounts.py`: cambio approvato dal
+    Coordinatore il 2026-11-06, perché `USER_COLUMNS` gira a ogni
+    richiesta col token); `shared-types` `src/gym.ts`, `test/gym.test.ts`;
     nell'app `gym/GymLevels.tsx`, `gym/ExerciseList.tsx`,
     `gym/GymDetail.tsx`, `profile/ProfileHome.tsx` (una riga, «Winner»
     dal profilo), `i18n/it.ts`, `de.ts`, `fr.ts`, `es.ts` (i due testi

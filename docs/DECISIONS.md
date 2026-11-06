@@ -23743,8 +23743,11 @@ testo della privacy approvato); lista dei file approvata dal Coordinatore.
    finito con almeno 3 persone. Si conta nel profilo pubblico
    (`profiles.py`, `contest_wins` = concorsi + palestra), guardando solo i
    mesi e gli esercizi in cui l'account ha serie. Non in `USER_COLUMNS`:
-   lì si calcolerebbe a ogni richiesta con il token. L'app legge «Winner»
-   dal proprio profilo pubblico. Nessuna push.
+   lì si calcolerebbe a ogni richiesta con il token (`current_user`), e
+   `test_notifications` legge quelle colonne dividendole sulle virgole. La
+   lista approvata diceva `accounts.py`: il cambio a `profiles.py` e a una
+   riga di `ProfileHome.tsx` l'ha approvato il Coordinatore. L'app legge
+   «Winner» dal proprio profilo pubblico. Nessuna push.
 7. **Quando servirà una tabella**: quando la classifica di un mese
    supera i 200 ms sul server (il log delle richieste), o quando un mese ha
    più di 50 000 serie dello stesso esercizio. Allora una tabella

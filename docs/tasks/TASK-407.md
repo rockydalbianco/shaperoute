@@ -46,6 +46,8 @@ composer (TASK-348 B–D) e calorie e battito (TASK-374 C/D) passano alla 1.0.3.
 
 ```
 apps/mobile/app.json
+apps/mobile/store.config.json        (la versione dello Store segue app.json)
+apps/mobile/__tests__/appConfig.test.ts   (il test della versione)
 docs/tasks/TASK-407.md
 docs/STATUS.md
 docs/DECISIONS.md

@@ -23977,10 +23977,11 @@ delega dell'utente; lista dei file e migrazione `0053` dal Coordinatore.
    corsa di Salute senza GPS pubblicata come `running` arriverebbe senza
    mappa ad app che non la sanno mostrare, perché nessun valore di
    `X-MuW-Reads` la copre.
-6. **`pool` in `X-MuW-Reads`** entra per ultimo in questa parte, dopo
-   TASK-378 A, che tiene `reads.py` e `reads.json` (Coordinatore). Fino ad
-   allora un nuoto in piscina passa a chi dice `swimming` e `trackless`:
-   nessuna app ne salva ancora, perché l'endpoint lo usa solo la parte B.
+6. **`pool` in `X-MuW-Reads`**, entrato dopo TASK-378 A: `Reads.pool`;
+   chi dice `swimming` e `trackless` ma non `pool` riceve i nuoti con la
+   traccia e non quelli senza (`r.activity <> 'swimming' OR r.track IS NOT
+   NULL` nell'SQL). `this_app` in `reads.json` resta senza `pool` finché
+   l'app non lo dice (parte B).
 
 **Conseguenze**: una migrazione, nessuna dipendenza, nessun testo
 dell'app, impronta iOS e del motore invariate (`pool_swims.py` e

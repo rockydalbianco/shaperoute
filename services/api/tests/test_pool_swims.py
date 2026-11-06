@@ -41,8 +41,9 @@ def swim(**changes: Any) -> dict[str, Any]:
     return {**body, **changes}
 
 
-def reading(headers: Headers) -> Headers:
-    return {**headers, READS_HEADER: THIS_APP}
+def reading(headers: Headers, kinds: str = f"{THIS_APP},pool") -> Headers:
+    """The app of TASK-400 B, which reads a swim in a pool."""
+    return {**headers, READS_HEADER: kinds}
 
 
 @pytest.fixture(autouse=True)
@@ -193,12 +194,17 @@ def test_it_is_published_without_a_line_with_its_pool(
     figures = client.get(f"/drawings/{drawing_id}/pool-swim", headers=reading(reader))
     assert figures.status_code == 200, figures.text
     assert figures.json() == {"pool_length_m": 25.0, "lengths": 60}
-    # An app that reads no swim without a track has neither.
-    assert client.get(f"/drawings/{drawing_id}", headers=reader).status_code == 404
-    assert (
-        client.get(f"/drawings/{drawing_id}/pool-swim", headers=reader).status_code
-        == 404
-    )
+    # An app of before, or one that reads the gym but no pool (the app of
+    # today), has neither.
+    for headers in (reader, reading(reader, THIS_APP)):
+        assert client.get(f"/drawings/{drawing_id}", headers=headers).status_code == 404
+        assert (
+            client.get(f"/drawings/{drawing_id}/pool-swim", headers=headers).status_code
+            == 404
+        )
+        feed = client.get("/feed", headers=headers)
+        assert feed.status_code == 200, feed.text
+        assert feed.json()["posts"] == []
     assert (
         client.get("/drawings/not-an-id/pool-swim", headers=reading(me)).status_code
         == 404

@@ -2966,9 +2966,10 @@ con la vasca e le vasche. Token richiesto; tipi in
   `activity` diversa da `swimming` è `422`. Solo la piscina va come
   `swimming` senza traccia; ogni altra corsa senza traccia resta fra le
   attività senza traccia (`422` come prima).
-- **Solo a chi lo sa leggere**: come la palestra, con `X-MuW-Reads` che
-  dice `swimming` e `trackless`; il valore `pool` arriva in questa parte,
-  dopo TASK-378 A (ADR-0334, punto 5).
+- **Solo a chi lo sa leggere**: `X-MuW-Reads` deve dire `swimming`,
+  `trackless` **e** `pool` (ADR-0334, punto 5). L'app di oggi, che dice
+  `trackless` per la palestra ma non `pool`, non riceve un nuoto senza
+  traccia: niente nel Feed, `404` sul dettaglio e su `/pool-swim`.
 - Nessun punteggio di forma, nessun record di corsa, nessun luogo, niente
   Strava (una corsa senza traccia non si manda). Test in
   `test_pool_swims.py`.

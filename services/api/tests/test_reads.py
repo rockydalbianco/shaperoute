@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, get_args
 
@@ -78,8 +79,9 @@ def test_several_lines_of_the_header_add_up() -> None:
 
 def test_the_app_of_today_reads_everything() -> None:
     reads = reads_from([_fixture()["this_app"]])
-    # A workout at the gym and its post without a line too (TASK-385 B0).
-    assert reads == EVERYTHING
+    # A workout at the gym and its post without a line too (TASK-385 B0);
+    # not yet a swim in a pool, which comes with TASK-400 B.
+    assert reads == replace(EVERYTHING, pool=False)
 
 
 def test_shows_asks_the_activity_and_the_track() -> None:
@@ -103,9 +105,31 @@ def test_the_sql_of_an_app_of_before() -> None:
 
 
 def test_the_sql_of_an_app_that_reads_what_has_no_track() -> None:
-    assert reads_from(["swimming,trackless"]).sql("r.activity", TRACKED) == (
+    assert reads_from(["walking,trackless"]).sql("r.activity", TRACKED) == (
+        "(r.activity IN ('running', 'cycling', 'paddling', 'walking'))"
+    )
+
+
+def test_a_swim_in_a_pool_needs_pool_too() -> None:
+    # A swim without a track is in a pool (TASK-400, ADR-0334): an app that
+    # reads `trackless` but not `pool` would show it without its lengths.
+    gym_app = reads_from(["swimming,gym,trackless"])
+    assert gym_app.sql("r.activity", TRACKED) == (
+        "(r.activity IN ('running', 'cycling', 'paddling', 'swimming', 'gym')"
+        " AND (r.activity <> 'swimming' OR r.track IS NOT NULL))"
+    )
+    assert gym_app.shows("swimming")
+    assert gym_app.shows("gym", tracked=False)
+    assert not gym_app.shows("swimming", tracked=False)
+    pool_app = reads_from(["swimming,trackless,pool"])
+    assert pool_app.pool
+    assert pool_app.shows("swimming", tracked=False)
+    assert pool_app.sql("r.activity", TRACKED) == (
         "(r.activity IN ('running', 'cycling', 'paddling', 'swimming'))"
     )
+    # `pool` without `trackless` or `swimming` shows no swim in a pool.
+    assert not reads_from(["swimming,pool"]).shows("swimming", tracked=False)
+    assert not reads_from(["trackless,pool"]).shows("swimming", tracked=False)
 
 
 def test_the_sql_holds_only_the_fixed_names() -> None:

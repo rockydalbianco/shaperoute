@@ -3110,7 +3110,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Coordinatore, trovato con la #868 di TASK-365). Aperto dal Feed, il foglio dice solo titolo e
   città: `muwCardRoute` mette `scored: false` su `RecommendedRoute` e `ExploredCard` lascia
   fuori il percento; ogni altro percorso tiene la sua riga. Nessun testo nuovo, solo JS;
-  impronta misurata dal Coordinatore, OTA col sì dell'utente. «ADR-0310, precisazione»,
+  impronta `6f8bba4c` invariata, OTA col sì dell'utente. «ADR-0310, precisazione»,
   `tasks/TASK-405.md`.
 - **TASK-404 — Disegno a mano: un primo tratto piccolo non blocca i tratti dopo** (2026-11-05;
   segnalazione dell'utente dal nuoto, vale per ogni sport). Ogni tratto aggiunto si raddrizza

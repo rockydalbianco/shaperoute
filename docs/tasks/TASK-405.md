@@ -56,9 +56,9 @@ invariata (`6f8bba4c`), arriva con un OTA.
 - [x] I test di prima di `ExploredCard`, `muwRoute` e `recommendedRoutes`
       restano verdi (28 su 28 coi nuovi); typecheck, lint e Prettier verdi
       in locale sui file toccati.
-- [ ] Impronta iOS `6f8bba4c` con `APP_VARIANT=production`: la misura il
-      Coordinatore nella copia di pubblicazione (diff solo JS, lockfile
-      uguale).
+- [x] Impronta iOS `6f8bba4c` con `APP_VARIANT=production`, uguale a
+      `main`: misurata dal Coordinatore su copia pulita a `48d2f682`
+      (diff solo JS, lockfile uguale).
 - [ ] CI verde.
 
 ## File toccati
@@ -89,5 +89,4 @@ docs/DECISIONS.md
 Un percorso di MuW aperto dal Feed dice solo «Star · Trento», in
 caricamento e aperto; ogni altro percorso tiene «looks N% like it». Il
 segno è `scored: false` su `RecommendedRoute`, messo da `muwCardRoute`.
-Solo JS; l'impronta la conferma il Coordinatore, l'OTA col sì
-dell'utente.
+Solo JS, impronta iOS `6f8bba4c` invariata; l'OTA col sì dell'utente.

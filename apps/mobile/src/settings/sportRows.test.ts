@@ -15,6 +15,10 @@ it("shows the rows of before, in their order", () => {
     { id: "walk", emoji: "🚶", name: "Walk", ready: false },
     // Added since: the hike (TASK-377 part B), on since the server hikes.
     { id: "hike", emoji: "⛰️", name: "Hike", ready: true },
+    // The gravel and the MTB ride (TASK-378 part B), «Soon» until the user
+    // turns them on.
+    { id: "gravel", emoji: "🚲", name: "Gravel", ready: false },
+    { id: "mtb", emoji: "🚵", name: "MTB", ready: false },
     { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },
     {
       id: "xc_ski",
@@ -41,6 +45,8 @@ it("asks and saves the activities of before", () => {
     "swimming",
     "walking",
     "hiking",
+    "gravel_biking",
+    "mountain_biking",
     "running",
     "running",
     "running",
@@ -53,6 +59,8 @@ it("asks and saves the activities of before", () => {
     "swimming",
     "walking",
     "hiking",
+    "gravel_biking",
+    "mountain_biking",
     "skiing",
     "xc_skiing",
     "gym",

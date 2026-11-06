@@ -24044,3 +24044,36 @@ il tipo vuole un numero.
 
 **Scartato**: riconoscere i percorsi di MuW dall'id (`muw:`) nella card,
 un caso speciale sul nome.
+
+## ADR-0322, precisazione — La parte B: Gravel e MTB nell'app
+
+**Stato**: Accettato · 2026-11-06 · TASK-378 parte B. Testi, ordine dei
+record e «ready» sono scelte dell'utente (TASK-378.md); lista dei file del
+Coordinatore; il resto è deciso dall'agente su delega dell'utente.
+
+1. **In «Settings»** gli sport si chiamano `gravel` e `mtb`, dopo «Hike»,
+   nell'ordine dei profili. `ready` resta falso finché l'utente non li
+   accende (il Coordinatore glielo chiede con la parte B in `main`): nei
+   build dello store non si vedono, in Expo Go dicono «Soon». Ricerca e modulo per pubblicare li offrono solo da
+   pronti (`OFFERED_WHEN_READY`); via la lista `NOT_YET` di
+   `searchFilters.ts`.
+2. **Partire senza percorso** è quello della bici, «Ride without a
+   route», con l'emoji dello sport: nessun testo nuovo.
+3. **L'energia** (Compendium 2024): Gravel con le fasce di velocità della
+   bici, copiate nel suo file perché un file di sport non importa un altro
+   sport; MTB «bicycling, mountain, general» (01009), 8,5 MET a ogni
+   velocità, perché su un sentiero la velocità dice poco della fatica.
+4. **Salute**: Apple `.cycling` (13) e Health Connect `BIKING` (8),
+   controllati sulle librerie dell'app: nessuna delle due ha un tipo
+   gravel o MTB.
+5. **I file importati**: in un FIT il sub-sport di una bici (sport 2)
+   dice `mountain` (8), `gravel_cycling` (46) ed `e_bike_mountain` (47),
+   numeri del profilo dell'SDK Garmin; ogni altro resta una bici. Nei GPX
+   e TCX le parole «gravel», «mountain bike» e «mtb», mai
+   «mountaineering».
+6. **I record**: `PersonalBest.sport` del contratto si allarga ai due
+   sport, e il profilo li mostra dopo quelli della bici, «GRAVEL» e
+   «MTB».
+7. **Nessuna rete sul telefono**: li disegna solo il server, come nella
+   parte A. L'impronta iOS non si muove (solo JavaScript) e `sports.json`
+   dell'orologio non cambia.

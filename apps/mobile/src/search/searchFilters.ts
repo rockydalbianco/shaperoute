@@ -58,12 +58,11 @@ export const COMPLEXITY_LABELS: Readonly<Record<DrawingComplexity, string>> = {
 };
 
 /** The sports the sheet offers: a walk once «Walk» is ready, a hike once
- * «Hike» is (TASK-377), so the API never answers 422 to a filter the app
- * shows (TASK-371); never a gravel nor an MTB ride before «Settings» has
- * them (TASK-378 part B moves them to `activityOffered`). */
-const NOT_YET: readonly Activity[] = ["gravel_biking", "mountain_biking"];
-export const SEARCH_ACTIVITIES: readonly Activity[] = ACTIVITIES.filter(
-  (activity) => !NOT_YET.includes(activity) && activityOffered(activity),
+ * «Hike» is (TASK-377), a gravel or an MTB ride once «Gravel» or «MTB» is
+ * (TASK-378), so the API never answers 422 to a filter the app shows
+ * (TASK-371). */
+export const SEARCH_ACTIVITIES: readonly Activity[] = ACTIVITIES.filter((activity) =>
+  activityOffered(activity),
 );
 
 /** The name of each sport the sheet may offer (src/sports, TASK-376 B3). */

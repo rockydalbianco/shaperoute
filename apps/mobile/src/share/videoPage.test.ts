@@ -8,7 +8,10 @@ import { POST_RESULTS } from "./postRun";
 import { bytesOfBase64, samplesOf } from "./videoFile";
 import {
   makeCall,
+  prepareCharacterCall,
   prepareMapCall,
+  THREE_JS_SRI,
+  THREE_JS_URL,
   VIDEO_CODECS,
   VIDEO_PAGE,
   VIDEO_PAGE_BASE,
@@ -271,6 +274,7 @@ function page(
   VideoEncoder?: unknown,
   VideoFrame: unknown = FakeFrame,
   maplibregl?: ReturnType<typeof fakeMapLibre>,
+  THREE?: unknown,
 ) {
   const posted: VideoPageMessage[] = [];
   const written: string[] = [];
@@ -280,8 +284,18 @@ function page(
       postMessage: (text: string) => posted.push(JSON.parse(text) as VideoPageMessage),
     },
   };
+  // A script the page adds does not load: the phone has no network.
+  const added: Record<string, unknown>[] = [];
   const document = {
-    body: { appendChild: jest.fn(), removeChild: jest.fn() },
+    body: {
+      appendChild: jest.fn((element: Record<string, unknown>) => {
+        added.push(element);
+        if (typeof element.onerror === "function") {
+          setTimeout(element.onerror as () => void, 1);
+        }
+      }),
+      removeChild: jest.fn(),
+    },
     createElement: () => ({
       width: 0,
       height: 0,
@@ -298,13 +312,23 @@ function page(
     "VideoFrame",
     "btoa",
     "maplibregl",
+    "THREE",
     script(),
-  )(window, document, VideoEncoder, VideoFrame, btoa, maplibregl);
+  )(window, document, VideoEncoder, VideoFrame, btoa, maplibregl, THREE);
   const api = window.muwVideo as {
     make: (scene: unknown) => void;
     prepareMap: (map: unknown) => void;
+    prepareCharacter: (spec: unknown) => void;
   };
-  return { posted, written, context, make: api.make, prepareMap: api.prepareMap };
+  return {
+    posted,
+    written,
+    context,
+    added,
+    make: api.make,
+    prepareMap: api.prepareMap,
+    prepareCharacter: api.prepareCharacter,
+  };
 }
 
 /** Until the page says `type`, or three seconds go by. */
@@ -772,5 +796,74 @@ describe("the video page, with a fake map, in 3D", () => {
     expect(Math.max(...zooms)).toBeCloseTo(1.06, 2);
     // About the middle of the drawing's box, in pixels.
     expect(context.translate).toHaveBeenCalledWith(540, 864);
+  });
+});
+
+describe("the video page, with an animal (TASK-408)", () => {
+  const HORSE_SCENE = videoScene(RUN, POST_RESULTS, STICKERS, "paper", "horse");
+
+  it("loads three.js only when an animal is asked, pinned and checked against its hash", () => {
+    expect(THREE_JS_URL).toMatch(
+      /^https:\/\/unpkg\.com\/three@\d+\.\d+\.\d+\/build\/three\.min\.js$/,
+    );
+    expect(THREE_JS_SRI).toMatch(/^sha384-[A-Za-z0-9+/]{64}$/);
+    expect(script()).toContain(JSON.stringify(THREE_JS_URL));
+    expect(script()).toContain(JSON.stringify(THREE_JS_SRI));
+    expect(VIDEO_PAGE).not.toContain(`src="${THREE_JS_URL}"`);
+    expect(prepareCharacterCall("AAAA")).toBe(
+      'window.muwVideo.prepareCharacter({"model":"AAAA"}); true;',
+    );
+  });
+
+  it("says so when three.js does not come, as on a phone with no network, and makes the video without the animal", async () => {
+    const { FakeEncoder, made } = fakeEncoder(VIDEO_CODECS);
+    const p = page(FakeEncoder);
+    await until(p.posted, "ready");
+    p.prepareCharacter({ model: "AAAA" });
+    await until(p.posted, "character");
+    const tag = p.added.find((element) => element.src === THREE_JS_URL);
+    expect(tag?.integrity).toBe(THREE_JS_SRI);
+    expect(tag?.crossOrigin).toBe("anonymous");
+    expect(p.posted.find((m) => m.type === "character")).toMatchObject({
+      type: "character",
+      ok: false,
+      why: "three did not load",
+    });
+    p.make(HORSE_SCENE);
+    await until(p.posted, "done", "failed");
+    expect(p.posted.find((m) => m.type === "done")).toMatchObject({
+      frames: HORSE_SCENE.frames.length,
+    });
+    expect(made[0].count).toBe(HORSE_SCENE.frames.length);
+    // Nothing laid on the pictures for the animal: the pen's tip only.
+    expect(p.context.drawImage).not.toHaveBeenCalled();
+  });
+
+  it("says why when the model cannot be read, and the video still comes", async () => {
+    const { FakeEncoder } = fakeEncoder(VIDEO_CODECS);
+    const p = page(FakeEncoder, FakeFrame, undefined, {});
+    await until(p.posted, "ready");
+    p.prepareCharacter({ model: Buffer.from("not a model at all").toString("base64") });
+    await until(p.posted, "character");
+    expect(p.added).toHaveLength(0);
+    expect(p.posted.find((m) => m.type === "character")).toMatchObject({
+      ok: false,
+      why: "not a glb",
+    });
+    p.make(HORSE_SCENE);
+    await until(p.posted, "done", "failed");
+    expect(p.posted.some((m) => m.type === "done")).toBe(true);
+  });
+
+  it("makes the animal ready once, however often it is asked", async () => {
+    const { FakeEncoder } = fakeEncoder(VIDEO_CODECS);
+    const p = page(FakeEncoder);
+    await until(p.posted, "ready");
+    p.prepareCharacter({ model: "AAAA" });
+    p.prepareCharacter({ model: "AAAA" });
+    await until(p.posted, "character");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(p.posted.filter((m) => m.type === "character")).toHaveLength(1);
+    expect(p.added).toHaveLength(1);
   });
 });

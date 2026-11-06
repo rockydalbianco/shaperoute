@@ -59,7 +59,22 @@ export type VideoPageMessage =
   | { type: "progress"; frames: number }
   /** All the pictures given; `mode` how the map was drawn under them. */
   | { type: "done"; frames: number; ms: PageTimes; mode?: MapMode }
+  /** The animal is ready to be drawn (`ok`), or not and why: the video then
+   * comes without it, the pen's tip on the line as before (TASK-408). */
+  | { type: "character"; ok: boolean; why: string | null; ms: number }
   | { type: "failed"; error: string };
+
+/**
+ * three.js, for the animal of the video (TASK-408, ADR-0339): the last
+ * release with a build for a plain script, pinned, and checked against its
+ * hash as MapLibre is. The page loads it only when an animal is asked; on a
+ * phone with no network it does not come, and the video is made without
+ * the animal.
+ */
+export const THREE_VERSION = "0.159.0";
+export const THREE_JS_URL = `https://unpkg.com/three@${THREE_VERSION}/build/three.min.js`;
+export const THREE_JS_SRI =
+  "sha384-Lwojr+0fOVR25P8bdL6E0T2dv0q0ZT4Yy2Ia1dGOz6b5jLSzWZkdqlw0cKTQYKzT";
 
 /**
  * H.264 Baseline only, at level 4 and up (1080 × 1920 needs it): Baseline
@@ -93,6 +108,17 @@ const DRY_RUN_STEPS = 12;
 /** The dry run's passes, and how long it waits for the tiles between them. */
 const DRY_RUN_PASSES = 2;
 const DRY_RUN_TILES_MS = 2000;
+/** How long the animal may take to be ready, three.js and its model. */
+const CHARACTER_WAIT_MS = 10_000;
+/** The square the animal is drawn in, in pixels, before it is laid on the
+ * picture; how far around it the camera sees, in lengths of the animal; and
+ * how far back along the line its heading is taken, in lengths. */
+const CHARACTER_PX = 512;
+const CHARACTER_VIEW = 1.2;
+const CHARACTER_LOOK_BACK = 0.6;
+/** How far ahead of the line's tip the animal's middle is, in lengths: the
+ * line comes out from under its hind legs. */
+const CHARACTER_AHEAD = 0.25;
 
 /** The app's own font on each phone, then any. */
 const FONT = '-apple-system, system-ui, Roboto, "Helvetica Neue", sans-serif';
@@ -113,6 +139,13 @@ const SCRIPT = String.raw`
   var DRY_RUN_STEPS = ${DRY_RUN_STEPS};
   var DRY_RUN_PASSES = ${DRY_RUN_PASSES};
   var DRY_RUN_TILES_MS = ${DRY_RUN_TILES_MS};
+  var THREE_JS_URL = ${JSON.stringify(THREE_JS_URL)};
+  var THREE_JS_SRI = ${JSON.stringify(THREE_JS_SRI)};
+  var CHARACTER_WAIT_MS = ${CHARACTER_WAIT_MS};
+  var CHARACTER_PX = ${CHARACTER_PX};
+  var CHARACTER_VIEW = ${CHARACTER_VIEW};
+  var CHARACTER_LOOK_BACK = ${CHARACTER_LOOK_BACK};
+  var CHARACTER_AHEAD = ${CHARACTER_AHEAD};
   var FONT = ${JSON.stringify(FONT)};
   var codec = null;
   var started = false;
@@ -129,6 +162,9 @@ const SCRIPT = String.raw`
   var live = null;
   var lineAtRest = null;
   var boxMiddle = null;
+  // The animal, once ready (TASK-408): its model, camera and canvas.
+  var actor = null;
+  var casting = false;
 
   function post(message) {
     window.ReactNativeWebView.postMessage(JSON.stringify(message));
@@ -613,6 +649,296 @@ const SCRIPT = String.raw`
     live = null;
   }
 
+  // three.js, from its pinned address and checked against its hash, once.
+  function loadThree() {
+    return new Promise(function (resolve, reject) {
+      if (typeof THREE !== "undefined") {
+        resolve();
+        return;
+      }
+      var tag = document.createElement("script");
+      tag.integrity = THREE_JS_SRI;
+      tag.crossOrigin = "anonymous";
+      tag.onload = function () {
+        if (typeof THREE !== "undefined") {
+          resolve();
+        } else {
+          reject(new Error("no three"));
+        }
+      };
+      tag.onerror = function () {
+        reject(new Error("three did not load"));
+      };
+      tag.src = THREE_JS_URL;
+      (document.head || document.body).appendChild(tag);
+    });
+  }
+
+  function bytesOfBase64(text) {
+    var binary = atob(text);
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  // A .glb as its JSON and its binary chunk.
+  function glbOf(bytes) {
+    var view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    if (view.getUint32(0, true) !== 0x46546c67) {
+      throw new Error("not a glb");
+    }
+    var jsonLength = view.getUint32(12, true);
+    var json = JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + jsonLength)));
+    var binLength = view.getUint32(20 + jsonLength, true);
+    var binStart = 28 + jsonLength;
+    return { json: json, bin: bytes.subarray(binStart, binStart + binLength) };
+  }
+
+  var COMPONENTS = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4, MAT4: 16 };
+
+  // An accessor's numbers, copied out so they are aligned. The models are
+  // written with each attribute on its own (shrink.mjs): no strides.
+  function numbersOf(glb, index) {
+    var accessor = glb.json.accessors[index];
+    var view = glb.json.bufferViews[accessor.bufferView];
+    var Type = {
+      5120: Int8Array,
+      5121: Uint8Array,
+      5122: Int16Array,
+      5123: Uint16Array,
+      5125: Uint32Array,
+      5126: Float32Array
+    }[accessor.componentType];
+    var count = accessor.count * COMPONENTS[accessor.type];
+    var start = (view.byteOffset || 0) + (accessor.byteOffset || 0);
+    var copy = glb.bin.slice(start, start + count * Type.BYTES_PER_ELEMENT);
+    return { array: new Type(copy.buffer), size: COMPONENTS[accessor.type], normalized: !!accessor.normalized };
+  }
+
+  function attributeOf(glb, index) {
+    var n = numbersOf(glb, index);
+    return new THREE.BufferAttribute(n.array, n.size, n.normalized);
+  }
+
+  // The animal of a .glb as three.js objects: its nodes, its skinned
+  // meshes in their flat colours, and its gallop and rest as clips.
+  function modelOf(glb) {
+    var json = glb.json;
+    var joints = {};
+    (json.skins || []).forEach(function (skin) {
+      skin.joints.forEach(function (j) { joints[j] = true; });
+    });
+    var nodes = json.nodes.map(function (node, i) {
+      var object = joints[i] ? new THREE.Bone() : new THREE.Object3D();
+      object.name = "n" + i;
+      if (node.matrix) {
+        new THREE.Matrix4().fromArray(node.matrix).decompose(object.position, object.quaternion, object.scale);
+      }
+      if (node.translation) {
+        object.position.fromArray(node.translation);
+      }
+      if (node.rotation) {
+        object.quaternion.fromArray(node.rotation);
+      }
+      if (node.scale) {
+        object.scale.fromArray(node.scale);
+      }
+      return object;
+    });
+    json.nodes.forEach(function (node, i) {
+      (node.children || []).forEach(function (child) { nodes[i].add(nodes[child]); });
+    });
+    var root = new THREE.Group();
+    json.scenes[json.scene || 0].nodes.forEach(function (i) { root.add(nodes[i]); });
+    var materials = (json.materials || []).map(function (material) {
+      var factor = (material.pbrMetallicRoughness || {}).baseColorFactor || [1, 1, 1, 1];
+      return new THREE.MeshLambertMaterial({
+        color: new THREE.Color().setRGB(factor[0], factor[1], factor[2]),
+        flatShading: true
+      });
+    });
+    var fallback = new THREE.MeshLambertMaterial({ color: 0x888888, flatShading: true });
+    var skinned = [];
+    json.nodes.forEach(function (node, i) {
+      if (node.mesh === undefined) {
+        return;
+      }
+      json.meshes[node.mesh].primitives.forEach(function (primitive) {
+        var a = primitive.attributes;
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", attributeOf(glb, a.POSITION));
+        if (a.NORMAL !== undefined) {
+          geometry.setAttribute("normal", attributeOf(glb, a.NORMAL));
+        }
+        if (primitive.indices !== undefined) {
+          geometry.setIndex(attributeOf(glb, primitive.indices));
+        }
+        var material = primitive.material === undefined ? fallback : materials[primitive.material];
+        var mesh;
+        if (node.skin !== undefined && a.JOINTS_0 !== undefined) {
+          geometry.setAttribute("skinIndex", attributeOf(glb, a.JOINTS_0));
+          geometry.setAttribute("skinWeight", attributeOf(glb, a.WEIGHTS_0));
+          mesh = new THREE.SkinnedMesh(geometry, material);
+          skinned.push({ mesh: mesh, skin: json.skins[node.skin] });
+        } else {
+          mesh = new THREE.Mesh(geometry, material);
+        }
+        mesh.frustumCulled = false;
+        nodes[i].add(mesh);
+      });
+    });
+    root.updateMatrixWorld(true);
+    skinned.forEach(function (one) {
+      var bones = one.skin.joints.map(function (j) { return nodes[j]; });
+      var inverses = bones.map(function () { return new THREE.Matrix4(); });
+      if (one.skin.inverseBindMatrices !== undefined) {
+        var m = numbersOf(glb, one.skin.inverseBindMatrices).array;
+        inverses = bones.map(function (bone, k) { return new THREE.Matrix4().fromArray(m, k * 16); });
+      }
+      one.mesh.bind(new THREE.Skeleton(bones, inverses), one.mesh.matrixWorld);
+    });
+    var PATHS = { translation: "position", rotation: "quaternion", scale: "scale" };
+    var clips = {};
+    (json.animations || []).forEach(function (animation) {
+      var tracks = [];
+      animation.channels.forEach(function (channel) {
+        var path = PATHS[channel.target.path];
+        if (!path || channel.target.node === undefined) {
+          return;
+        }
+        var sampler = animation.samplers[channel.sampler];
+        var Track = path === "quaternion" ? THREE.QuaternionKeyframeTrack : THREE.VectorKeyframeTrack;
+        tracks.push(new Track(
+          "n" + channel.target.node + "." + path,
+          numbersOf(glb, sampler.input).array,
+          numbersOf(glb, sampler.output).array,
+          sampler.interpolation === "STEP" ? THREE.InterpolateDiscrete : THREE.InterpolateLinear
+        ));
+      });
+      clips[animation.name] = new THREE.AnimationClip(animation.name, -1, tracks);
+    });
+    return { root: root, clips: clips };
+  }
+
+  // The animal ready to draw: one length long, its feet on the ground a
+  // little ahead of the middle, lit from above, seen from a camera that
+  // sees around it.
+  function actorOf(model) {
+    var box = new THREE.Box3().setFromObject(model.root);
+    var size = box.getSize(new THREE.Vector3());
+    var scale = 1 / Math.max(size.x, size.z, 1e-6);
+    var center = box.getCenter(new THREE.Vector3());
+    model.root.scale.setScalar(scale);
+    model.root.position.set(
+      -center.x * scale,
+      -box.min.y * scale,
+      CHARACTER_AHEAD - center.z * scale
+    );
+    var turn = new THREE.Group();
+    turn.add(model.root);
+    var stage = new THREE.Scene();
+    stage.add(turn);
+    stage.add(new THREE.HemisphereLight(0xffffff, 0x6b6b6b, 2.2));
+    var sun = new THREE.DirectionalLight(0xffffff, 2.4);
+    sun.position.set(-1, 3, 2);
+    stage.add(sun);
+    var camera = new THREE.OrthographicCamera(
+      -CHARACTER_VIEW, CHARACTER_VIEW, CHARACTER_VIEW, -CHARACTER_VIEW, 0.1, 20
+    );
+    var canvas = document.createElement("canvas");
+    canvas.width = CHARACTER_PX;
+    canvas.height = CHARACTER_PX;
+    var renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      alpha: true,
+      antialias: true,
+      preserveDrawingBuffer: true
+    });
+    renderer.setPixelRatio(1);
+    renderer.setSize(CHARACTER_PX, CHARACTER_PX, false);
+    renderer.setClearColor(0x000000, 0);
+    var mixer = new THREE.AnimationMixer(model.root);
+    var clips = {
+      run: model.clips.Gallop || null,
+      rest: model.clips.Idle || model.clips.Gallop || null
+    };
+    return {
+      canvas: canvas,
+      turn: turn,
+      stage: stage,
+      camera: camera,
+      renderer: renderer,
+      mixer: mixer,
+      actions: {
+        run: clips.run ? mixer.clipAction(clips.run) : null,
+        rest: clips.rest ? mixer.clipAction(clips.rest) : null
+      },
+      heading: 0
+    };
+  }
+
+  // The animal asked by the app, made ready before the video: three.js,
+  // then its model. Within its time, or not at all.
+  function prepareCharacter(spec) {
+    if (casting || actor !== null) {
+      return;
+    }
+    casting = true;
+    var t0 = now();
+    var settled = false;
+    function finish(ok, why) {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      post({ type: "character", ok: ok, why: why, ms: Math.round(now() - t0) });
+    }
+    var timer = setTimeout(function () { finish(false, "timeout"); }, CHARACTER_WAIT_MS);
+    loadThree().then(function () {
+      if (settled) {
+        return;
+      }
+      clearTimeout(timer);
+      actor = actorOf(modelOf(glbOf(bytesOfBase64(spec.model))));
+      finish(true, null);
+    }).catch(function (error) {
+      clearTimeout(timer);
+      actor = null;
+      finish(false, messageOf(error));
+    });
+  }
+
+  // The animal at upTo pixels along the path, turned along the line as it
+  // came there, in its clip at its time, from the camera's height.
+  function drawCharacter(g, path, upTo, op) {
+    var back = op.size * CHARACTER_LOOK_BACK;
+    var here = pointAlong(path, upTo);
+    var from = pointAlong(path, Math.max(0, upTo - back));
+    var to = pointAlong(path, Math.max(upTo, back));
+    var dx = to[0] - from[0];
+    var dy = to[1] - from[1];
+    var tilt = (op.tilt || 50) * Math.PI / 180;
+    if (Math.hypot(dx, dy) > 0.5) {
+      // A step down the picture is a step towards the camera, shortened.
+      actor.heading = Math.atan2(dx, dy / Math.max(Math.sin(tilt), 0.1));
+    }
+    actor.turn.rotation.y = actor.heading;
+    var action = actor.actions[op.clip] || actor.actions.run;
+    actor.mixer.stopAllAction();
+    if (action !== null) {
+      action.reset();
+      action.play();
+      actor.mixer.setTime(Math.max(0, op.time));
+    }
+    actor.camera.position.set(0, Math.sin(tilt) * 5, Math.cos(tilt) * 5);
+    actor.camera.lookAt(0, 0, 0);
+    actor.renderer.render(actor.stage, actor.camera);
+    var side = 2 * CHARACTER_VIEW * op.size;
+    g.drawImage(actor.canvas, here[0] - side / 2, here[1] - side / 2, side, side);
+  }
+
   // The path from its start to upTo pixels along it.
   function stroke(g, path, upTo) {
     g.beginPath();
@@ -807,6 +1133,12 @@ const SCRIPT = String.raw`
         g.textAlign = "center";
         g.textBaseline = "middle";
         g.fillText(op.text, op.x, op.y);
+      } else if (op.k === "character" && actor !== null) {
+        var onTheHills = typeof op.share === "number" && laid !== null;
+        var track = onTheHills ? laid : scene.paths[op.path];
+        if (track && track.length >= 4) {
+          drawCharacter(g, track, onTheHills ? op.share * lengthOf(track) : op.upTo, op);
+        }
       }
     }
   }
@@ -880,6 +1212,7 @@ const SCRIPT = String.raw`
 
   window.muwVideo = {
     prepareMap: prepareMap,
+    prepareCharacter: prepareCharacter,
     make: function (scene) {
       if (started) {
         return;
@@ -961,6 +1294,12 @@ export const VIDEO_PAGE_BASE = "https://video.muw.invalid/";
 /** What the app asks the page to do: make the video of `sceneJson`. */
 export function makeCall(sceneJson: string): string {
   return `window.muwVideo.make(${sceneJson}); true;`;
+}
+
+/** What the app asks first with an animal: make it ready, from its model
+ * (`modelBase64`, the .glb's bytes). */
+export function prepareCharacterCall(modelBase64: string): string {
+  return `window.muwVideo.prepareCharacter(${JSON.stringify({ model: modelBase64 })}); true;`;
 }
 
 /** What the app asks first, on the map looks: draw the map of `mapJson`. */

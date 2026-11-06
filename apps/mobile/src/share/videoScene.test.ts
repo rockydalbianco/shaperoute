@@ -588,3 +588,55 @@ describe("videoScene, in 3D", () => {
     expect(relief.paths).toEqual(night.paths);
   });
 });
+
+describe("videoScene, with an animal (TASK-408)", () => {
+  type Animal = Extract<VideoOp, { k: "character" }>;
+  function animal(frame: VideoOp[]): Animal | undefined {
+    return frame.find((op): op is Animal => op.k === "character");
+  }
+  const withHorse = videoScene(RUN, POST_RESULTS, STICKERS, "night", "horse");
+
+  it("has no animal unless one is asked", () => {
+    expect(scene.character).toBeNull();
+    expect(scene.frames.some((frame) => animal(frame) !== undefined)).toBe(false);
+  });
+
+  it("puts the animal on the tip of the line, over the pen, from the first stroke to the end", () => {
+    expect(withHorse.character).toBe("horse");
+    withHorse.frames.forEach((frame) => {
+      const line = runLine(frame);
+      const horse = animal(frame);
+      expect(horse === undefined).toBe(line === undefined);
+      if (line !== undefined && horse !== undefined) {
+        expect(horse.path).toBe(line.path);
+        expect(horse.upTo).toBe(line.upTo);
+        expect(frame.indexOf(horse)).toBeGreaterThan(frame.indexOf(line));
+        expect(horse.size).toBeCloseTo(VIDEO_WIDTH * 0.2, 1);
+      }
+    });
+  });
+
+  it("gallops while the line draws, then rests at its end", () => {
+    const middle = animal(withHorse.frames[5 * VIDEO_FPS]);
+    const end = animal(withHorse.frames[withHorse.frames.length - 1]);
+    expect(middle?.clip).toBe("run");
+    expect(middle?.time).toBe(4);
+    expect(end?.clip).toBe("rest");
+    expect(end?.upTo).toBe(
+      runLine(withHorse.frames[withHorse.frames.length - 1])?.upTo,
+    );
+  });
+
+  it("follows the line as the map lays it in 3D", () => {
+    const relief = videoScene(RUN, POST_RESULTS, STICKERS, "3d", "fox");
+    const frame = relief.frames[5 * VIDEO_FPS];
+    expect(animal(frame)?.share).toBe(runLine(frame)?.share);
+  });
+
+  it("leaves the rest of the video as it was", () => {
+    const without = videoScene(RUN, POST_RESULTS, STICKERS, "night");
+    expect(
+      withHorse.frames.map((frame) => frame.filter((op) => op.k !== "character")),
+    ).toEqual(without.frames);
+  });
+});

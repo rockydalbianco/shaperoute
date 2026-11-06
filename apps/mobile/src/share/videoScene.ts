@@ -4,6 +4,7 @@ import { fitLines, type Segment } from "../activities/fitLines";
 import { appLanguage } from "../i18n/language";
 import type { Language } from "../i18n/languages";
 import { HEART_BOX, HEART_POINTS, heartHeight } from "../intro/heartLine";
+import { PITCH_3D } from "../map/mapKindStyle";
 import { bearingOf } from "../map/turnedMap";
 import {
   color,
@@ -22,6 +23,7 @@ import {
   resultValue,
 } from "./postRun";
 import type { Sticker } from "./stickers";
+import type { Character } from "./videoCharacter";
 import {
   MAP_CREDIT,
   MAP_PIXEL_RATIO,
@@ -102,6 +104,11 @@ const DAY_SCRIM_PEAK = 0.94;
 /** The credit's letters and its room from the bottom edge. */
 const CREDIT = 0.02;
 const CREDIT_BOTTOM = 0.012;
+/** The animal's length, as a share of the width (TASK-408). */
+const CHARACTER = 0.2;
+/** How high the animal is seen from, in degrees above the ground, on the
+ * flat looks; on «3D», from as high as the map is. */
+const CHARACTER_TILT = 50;
 
 /** The width of the phone the type scale (`font`) is drawn for, in points:
  * a size in points is that share of the video's width. */
@@ -198,6 +205,23 @@ export type VideoOp =
       size: number;
       scale: number;
       alpha: number;
+    }
+  /** The animal (TASK-408): its feet `upTo` pixels along `path`, on «3D»
+   * at `share` of it as the map lays it, turned along the line by the page;
+   * `size` pixels long, seen from `tilt` degrees above the ground; in its
+   * gallop or its rest, `time` seconds into it.
+   * A page without the animal draws nothing for it: the pen's tip is under
+   * it anyway. */
+  | {
+      k: "character";
+      path: number;
+      upTo: number;
+      size: number;
+      tilt: number;
+      clip: "run" | "rest";
+      time: number;
+      alpha: number;
+      share?: number;
     };
 
 export type VideoScene = {
@@ -210,6 +234,8 @@ export type VideoScene = {
   map: VideoMap | null;
   /** Lines, each as x0, y0, x1, y1, …: the logo's heart, then the run. */
   paths: number[][];
+  /** The animal that runs the line (TASK-408); null for the pen's tip only. */
+  character: Character | null;
   /** What each picture shows, in order. */
   frames: VideoOp[][];
 };
@@ -641,6 +667,7 @@ function frameAt(
   layout: Layout,
   look: Look,
   language: string,
+  character: Character | null,
 ): VideoOp[] {
   const w = VIDEO_WIDTH;
   const h = VIDEO_HEIGHT;
@@ -758,6 +785,22 @@ function frameAt(
         ...(look.relief ? { path: RUN_PATH, share: round3(share) } : {}),
       });
     }
+    // The animal over the tip, galloping while the line draws, then at
+    // rest at the end of it.
+    if (character !== null) {
+      const running = t < HOLD_FROM_S;
+      ops.push({
+        k: "character",
+        path: RUN_PATH,
+        upTo: round(upTo),
+        size: round(w * CHARACTER),
+        tilt: look.relief ? 90 - PITCH_3D : CHARACTER_TILT,
+        clip: running ? "run" : "rest",
+        time: round3(running ? t - INTRO_S : t - HOLD_FROM_S),
+        alpha: 1,
+        ...(look.relief ? { share: round3(share) } : {}),
+      });
+    }
   }
 
   if (look.scrim) {
@@ -836,13 +879,15 @@ function frameAt(
 
 /**
  * The video of `run`'s post as it is now, in `look`: the results on in
- * `shown`, the emoji where the runner put them.
+ * `shown`, the emoji where the runner put them, and `character` running
+ * the line when there is one (TASK-408).
  */
 export function videoScene(
   run: PostRun,
   shown: readonly PostResult[],
   stickers: readonly Sticker[],
   look: VideoLook,
+  character: Character | null = null,
 ): VideoScene {
   const palette = look === "paper" ? null : stylePalette(look);
   const spec =
@@ -860,8 +905,9 @@ export function videoScene(
     colors: spec.colors,
     map: layout.map,
     paths: [layout.heart, layout.track],
+    character,
     frames: Array.from({ length: count }, (_, i) =>
-      frameAt(i / VIDEO_FPS, run, stickers, layout, spec, language),
+      frameAt(i / VIDEO_FPS, run, stickers, layout, spec, language, character),
     ),
   };
 }

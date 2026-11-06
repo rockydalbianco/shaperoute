@@ -482,6 +482,8 @@ export const ES: Table = {
     "{drawn} km de dibujo + {between} km en bici entre las partes",
   "{drawn} km of drawing + {between} km paddling between the parts":
     "{drawn} km de dibujo + {between} km remando entre las partes",
+  "On the water, the drawing goes where it fits near the start.":
+    "En el agua, el dibujo va donde cabe cerca de la salida.",
   "On the water, a shape of the catalogue.": "En el agua, una forma del catálogo.",
   "{name} · on the water · target {km} km": "{name} · en el agua · objetivo {km} km",
   "{name} · on roads · target {km} km": "{name} · por carretera · objetivo {km} km",
@@ -543,6 +545,12 @@ export const ES: Table = {
     "Esta solicitud se ha perdido. Inténtalo de nuevo.",
   "There is no lake or sea near this start. Start from the shore, within 2 km of the water.":
     "No hay ningún lago ni mar cerca de esta salida. Sal desde la orilla, a menos de 2 km del agua.",
+  "This drawing does not fit on the water near this start. Try a shorter distance, or another start.":
+    "Este dibujo no cabe en el agua cerca de esta salida. Prueba una distancia más corta u otra salida.",
+  "This drawing does not fit on the water here at this distance. It fits at about {km} km.":
+    "Este dibujo no cabe en el agua aquí a esta distancia. Cabe a unos {km} km.",
+  "This drawing does not fit on the water here at this distance. It fits at about {mi} mi.":
+    "Este dibujo no cabe en el agua aquí a esta distancia. Cabe a unas {mi} mi.",
   "This shape does not fit on the water here at this distance. It fits at about {km} km.":
     "Esta forma no cabe en el agua aquí a esta distancia. Cabe a unos {km} km.",
   "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:":

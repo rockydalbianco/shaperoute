@@ -40,10 +40,13 @@ export interface SportProfile {
   pace?: "paddle" | "swim";
   /** On a lake or the sea: no climb to speak of. */
   onWater?: boolean;
-  /** «Draw» offers it shapes only, no drawing and no word (TASK-191). */
-  shapesOnly?: boolean;
   /** «Draw» offers it no word (TASK-323): a shape or a drawing. */
   noWords?: boolean;
+  /** «Draw» offers it no image (TASK-396): a shape or a drawing by hand. */
+  noImages?: boolean;
+  /** What «Draw» says over the switch of what it draws, in English: where
+   * it is shown, `t(drawNote)`; none, nothing. */
+  drawNote?: string;
   /** Its route is laps, and «Draw» shows them (TASK-323 C2, SwimResult). */
   laps?: boolean;
   /** Whose pace gives the time under the distance in «Draw» (TASK-361);

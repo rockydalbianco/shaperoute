@@ -179,29 +179,26 @@ export function RouteChoice({
       onDistanceText(switchDistance(distanceText, activity, units));
     }
   }, [units, distanceText, activity, onDistanceText]);
-  // Paddling draws shapes only (TASK-191); a swim a shape or a drawing,
-  // never a word (TASK-323): a word chosen before «Open water swim» waits
-  // for another sport, as App.tsx asks. Each sport says it in src/sports.
-  const { shapesOnly = false, noWords = false, timeAt } = profileOf(activity);
-  const shownKind = noWords && kind === "word" ? "shape" : kind;
-  const kinds = noWords
-    ? DRAW_KINDS.filter((option) => option.value !== "word")
-    : DRAW_KINDS;
+  // A swim draws a shape or a drawing, never a word (TASK-323); paddling
+  // neither a word nor an image (TASK-191, TASK-396): one chosen before
+  // waits for another sport, as App.tsx asks. Each sport says it in src/sports.
+  const { noWords = false, noImages = false, drawNote, timeAt } = profileOf(activity);
+  const left = (value: ChoiceKind) =>
+    (noWords && value === "word") || (noImages && value === "image");
+  const shownKind = left(kind) ? "shape" : kind;
+  const kinds = DRAW_KINDS.filter((option) => !left(option.value));
   return (
     <View style={styles.panel}>
       {/* The steps of «Draw» (TASK-361): «1 START» is the start's card. */}
       <StepTitle number={2} label={t("WHAT YOU DRAW")} />
-      {shapesOnly ? (
-        <Text style={styles.note}>{t("On the water, a shape of the catalogue.")}</Text>
-      ) : (
-        <Segmented<ChoiceKind | "freehand">
-          options={translated(onFreehand ? [FREEHAND, ...kinds] : kinds)}
-          value={shownKind}
-          onChange={(value) => (value === "freehand" ? onFreehand?.() : onKind(value))}
-          style={styles.kinds}
-        />
-      )}
-      {shownKind === "shape" || shapesOnly ? (
+      {drawNote !== undefined && <Text style={styles.note}>{t(drawNote)}</Text>}
+      <Segmented<ChoiceKind | "freehand">
+        options={translated(onFreehand ? [FREEHAND, ...kinds] : kinds)}
+        value={shownKind}
+        onChange={(value) => (value === "freehand" ? onFreehand?.() : onKind(value))}
+        style={styles.kinds}
+      />
+      {shownKind === "shape" ? (
         <>
           {/* Two rows, nothing cut at the edge (TASK-361); the field for a
               shape out of the catalogue behind «Type another shape», the

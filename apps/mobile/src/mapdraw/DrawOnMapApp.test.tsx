@@ -225,7 +225,7 @@ test("the tools under the map: «Line» taps a line, «Clear all» asks first, �
   alert.mockRestore();
 });
 
-test("«Freehand» comes first and opens the map; on the water there is none", async () => {
+test("«Freehand» comes first and opens the map, on the water too", async () => {
   const props = {
     kind: "shape" as const,
     onKind: jest.fn(),
@@ -247,7 +247,12 @@ test("«Freehand» comes first and opens the map; on the water there is none", a
     onFreehand: jest.fn(),
   };
   const { rerender } = await render(<RouteChoice {...props} activity="paddling" />);
-  expect(screen.queryByText("Freehand")).toBeNull();
+  // With «Paddle» no word and no picture (TASK-396).
+  expect(
+    screen
+      .getAllByText(/^(Freehand|Shape|Word|Image)$/)
+      .map((text) => text.props.children as string),
+  ).toEqual(["Freehand", "Shape"]);
   await rerender(<RouteChoice {...props} activity="running" />);
   expect(
     screen

@@ -294,6 +294,58 @@ describe("on the water (TASK-191)", () => {
     }
   });
 
+  test("a drawing says it is a drawing, and offers no shapes (TASK-396)", () => {
+    for (const activity of ["paddling", "swimming"] as const) {
+      expect(
+        problemText(
+          {
+            kind: "api_error",
+            code: "shape_not_drawable",
+            message: TOO_SMALL,
+            suggested_distance_m: null,
+          },
+          "image",
+          activity,
+        ),
+      ).toEqual({
+        text: "This drawing does not fit on the water near this start. Try a shorter distance, or another start.",
+        detail: TOO_SMALL,
+      });
+    }
+    expect(
+      problemText(
+        {
+          kind: "api_error",
+          code: "shape_not_drawable",
+          message: TOO_BIG,
+          suggested_distance_m: 2500,
+        },
+        "image",
+        "paddling",
+      ),
+    ).toEqual({
+      text: "This drawing does not fit on the water here at this distance. It fits at about 2.5 km.",
+      detail: TOO_BIG,
+      tryDistanceM: 2500,
+    });
+    expect(
+      problemText(
+        {
+          kind: "api_error",
+          code: "shape_not_drawable",
+          message: TOO_BIG,
+          suggested_distance_m: 3218.688,
+        },
+        "image",
+        "paddling",
+        null,
+        "mi",
+      ).text,
+    ).toBe(
+      "This drawing does not fit on the water here at this distance. It fits at about 2 mi.",
+    );
+  });
+
   test("the roads' words stay for a run and a bike route", () => {
     for (const activity of ["running", "cycling"] as const) {
       expect(
@@ -428,10 +480,10 @@ test("an outline the engine cannot draw says it does not fit, with no «Try agai
     text: "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.",
     detail: CROSSES,
   });
+  // On the water, a drawing's words (TASK-396).
   expect(problemText(refused, "image", "paddling")).toEqual({
-    text: "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:",
+    text: "This drawing does not fit on the water near this start. Try a shorter distance, or another start.",
     detail: CROSSES,
-    pickShape: true,
   });
   // Any other refusal is still ours to fix.
   expect(

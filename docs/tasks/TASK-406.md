@@ -118,6 +118,20 @@ nome o per vicinanza, e una alla volta con `GET /ski-resorts/{id}`:
 sciistiche da OpenSkiData». Prossimo: il server con la 0054 e il primo
 import, comandi dell'utente col suo sì. Poi la parte B, il meteo.
 
+**Parte B, 2026-11-06.** `GET /ski-resorts/{id}/weather` dà il meteo da
+MET Norway:
+- in valle e in cima, cioè alle quote minima e massima della stazione;
+- le prossime 24 ore e la neve fresca attesa, che è una stima
+  (`snow_estimate: true`);
+- la richiesta parte dal server, con il centro della stazione (4 decimali)
+  e la quota;
+- le risposte restano in cache fino al loro `Expires`, con un timeout di 4
+  secondi;
+- se MET Norway tace, si dà l'ultima previsione con `stale: true`.
+
+Dettagli in `API.md` («Il meteo») e nell'aggiunta ad ADR-0338. Prossimo: il
+deploy col sì dell'utente; poi la domanda 2 e la parte C.
+
 ## File toccati
 
 Questa PR (documenti): `docs/tasks/TASK-406.md` (nuovo), `docs/DECISIONS.md`
@@ -136,7 +150,17 @@ File da cambiare: `services/api/shaperoute_api/__main__.py` (una riga),
 `docs/API.md`, `docs/DATABASE.md`, `docs/MAPS.md`, `docs/DECISIONS.md`
 (un'aggiunta ad ADR-0338), `docs/STATUS.md` e questa lista.
 
-Parti B–E: si elencano prima di ciascuna.
+Parte B (approvata dal Coordinatore il 2026-11-06). File nuovi:
+- `services/api/shaperoute_api/resort_weather.py`;
+- `services/api/tests/test_resort_weather.py` e
+  `fixtures/ski/met_compact.json`.
+
+File da cambiare: `services/api/shaperoute_api/ski_resorts_api.py`,
+`services/api/tests/test_ski_resorts_api.py`, `.env.example`,
+`docs/API.md`, `docs/DECISIONS.md` (un'aggiunta ad ADR-0338),
+`docs/STATUS.md` e questa lista.
+
+Parti C–E: si elencano prima di ciascuna.
 
 ## Criteri di accettazione
 

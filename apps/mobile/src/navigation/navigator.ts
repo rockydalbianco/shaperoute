@@ -14,6 +14,7 @@ import {
 } from "./progress";
 import { type Rejoin, rejoinAheadM, rejoinOf } from "./rejoin";
 import { joinRoute, type Loop, loopOf } from "./startAnywhere";
+import type { WayBackShown } from "./wayBackShown";
 
 /**
  * Turn-by-turn along a route that is already drawn (TASK-049, ADR-0052):
@@ -116,6 +117,11 @@ export type Navigation = {
   /** Off the route, the metres run since it was left: the further on the
    * route is looked for (`rejoinAheadM`). */
   offRunM?: number;
+  /** Off the route, the way back to it on the streets, once the engine
+   * found one (TASK-314 B, `wayBackRun`); null or absent without. The
+   * navigator keeps it from fix to fix and never reads it: where the run
+   * takes the runner back stays its own (ADR-0263). */
+  wayBack?: WayBackShown | null;
   arrived: boolean;
   /** How far ahead a turn is said: ANNOUNCE_M when absent, further on a
    * bike (TASK-216, `ride.ts`). */
@@ -552,15 +558,26 @@ function rejoinFor(
   fix: LatLon,
   offRunM: number,
 ): Rejoin | null {
-  const { points, along, alongM } = navigation;
+  const { fromM, toM } = rejoinWindow(navigation, offRunM);
+  return rejoinOf(navigation.points, navigation.along, fix, fromM, toM);
+}
+
+/** Where along the route a runner off it gets back on it, in metres, after
+ * `offRunM` run off it: the stretch `rejoinFor` looks in, and the way back
+ * on the streets goes to (TASK-314 B). */
+export function rejoinWindow(
+  navigation: Navigation,
+  offRunM: number = navigation.offRunM ?? 0,
+): { fromM: number; toM: number } {
+  const { alongM } = navigation;
   if (waitingToJoin(navigation)) {
-    return rejoinOf(points, along, fix, -Infinity, Infinity);
+    return { fromM: -Infinity, toM: Infinity };
   }
   if (alongM <= 0) {
-    return rejoinOf(points, along, fix, 0, AHEAD_M);
+    return { fromM: 0, toM: AHEAD_M };
   }
   const aheadM = navigation.lost === true ? Infinity : rejoinAheadM(offRunM);
-  return rejoinOf(points, along, fix, alongM, alongM + aheadM);
+  return { fromM: alongM, toM: alongM + aheadM };
 }
 
 /** A fix of a runner still off the route: the metres run since it was

@@ -286,7 +286,13 @@ export function clearProgress(): ToPage {
 /** Off the route (TASK-303): the dotted line from the runner, `from`, to
  * the point of the route to get back to, `to`, in a straight line. */
 export function showRejoin(from: LatLon, to: LatLon): ToPage {
-  return { type: "showRejoin", line: [toLngLat(from), toLngLat(to)] };
+  return showRejoinLine([from, to]);
+}
+
+/** Off the route, the dotted line along the way back on the streets
+ * (TASK-314): from the runner, its first point, to the route, its last. */
+export function showRejoinLine(line: LatLon[]): ToPage {
+  return { type: "showRejoin", line: line.map(toLngLat) };
 }
 
 /** Back on the route, or the run over: no dotted line. */

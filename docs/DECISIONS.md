@@ -24705,3 +24705,73 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
   un'impronta nuova per ogni ritocco. La pagina del video ha già WebGL.
 - **I modelli 3D nel layer di MapLibre senza three.js**: MapLibre GL JS non
   carica glTF da solo.
+
+## ADR-0274, precisazione B — Lo schermo di corsa: la strada nel ciclo delle posizioni, nessun testo nuovo, il server a telefono bloccato
+
+**Stato**: Accettato · **Data**: 2026-11-06 · **Task**: TASK-314 parte B
+
+Deciso dall'agente su delega dell'utente, salvo il punto 6, che è una scelta
+dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
+
+1. **La strada si chiede nel ciclo delle posizioni** (`navigation/
+   wayBackRun.ts`, chiamato da `useNavigation.ts` come `lockNotice`), non
+   da una schermata. Così:
+   - la voce passa dallo stesso `cue()`, dopo le parole del navigatore;
+   - la stessa frase va nella notifica a schermo bloccato (TASK-401 A);
+   - niente dipende da una schermata montata.
+
+   La strada sta in `Navigation.wayBack`. Il navigatore la porta da una
+   posizione all'altra ma non la legge: il rientro resta il suo (ADR-0263).
+   Banner e mappa la leggono da lì, `App.tsx` non cambia.
+2. **Quando**:
+   - alla prima posizione fuori percorso;
+   - poi solo senza strada: nessuna, lasciata dopo `OFF_FIXES` posizioni
+     oltre `OFF_ROUTE_M`, o con il rientro fuori dalla finestra;
+   - al più ogni `WAY_BACK_EVERY_S` = 15 s, una richiesta alla volta, persa
+     dopo 25 s;
+   - mai con una posizione scarsa;
+   - al rientro la richiesta in corso si annulla, e una risposta tardiva
+     non si mostra.
+
+   15 s sono meno della metà delle 6 al minuto che `/way-back` concede a
+   un telefono.
+3. **Con l'app non in primo piano si chiede subito al server**: le zone
+   passate a `wayBackOnPhoneFirst` sono vuote. La pagina del motore,
+   probabilmente sospesa a telefono bloccato, farebbe aspettare 20 s
+   (`WAY_BACK_TIMEOUT_MS`).
+4. **Il tratto mandato** è la finestra di ADR-0263 (`rejoinWindow`,
+   esportata dal navigatore, la stessa di `rejoinFor`), tagliata a 3 km
+   come `MAX_WAY_M`. Su una forma chiusa non ancora agganciata, 3 km
+   intorno al punto dei puntini.
+5. **Nessun testo nuovo**:
+   - il banner tiene «Off the route» e sotto mostra la svolta della strada
+     come quella del percorso;
+   - la voce dice le svolte con `announcement`, a `ANNOUNCE_M`;
+   - «una frase al ricalcolo» è la prossima svolta con i metri, al più una
+     volta al minuto per uscita; se è più lontana di `ANNOUNCE_M`, si ridice
+     vicino;
+   - le svolte passano da `simplifyDirections` come quelle del percorso.
+6. **Privacy** (scelta dell'utente del 2026-11-06, «Sì, aggiungi la
+   frase»):
+   - fuori percorso, la posizione esatta e il tratto davanti vanno al
+     server quando il telefono non trova la strada da solo, e il server non
+     li tiene;
+   - una frase in «Your position», nelle cinque lingue, e le pagine di
+     `site/privacy` rifatte.
+7. **TASK-401 B** (#862, nella 1.0.3): quando unisce `main`, `liveStateOf`
+   fuori percorso legge `navigation.wayBack` (`upcomingOnWay`) invece di
+   `navigation.rejoin`. Altrimenti la Live Activity direbbe «120 m NE»
+   mentre voce, banner e notifica danno la svolta. Lo cambia 401 B nel suo
+   file; il Coordinatore glielo passa.
+
+**Alternative**:
+
+- **Un hook nello schermo** (`NavigateScreen` o `App.tsx`): voce fuori dal
+  ciclo della corsa, notifica non raggiunta, `App.tsx` conteso.
+- **Richiedere ogni 15 s anche con una strada**: più richieste, e svolte
+  che cambiano sotto i piedi.
+- **Una frase nuova al ricalcolo** («Recalculating»): l'utente non l'ha
+  chiesta, e la svolta con i metri dice già dove andare.
+- **Solo il motore del telefono**: niente frase nella Privacy, ma a
+  telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
+  server.

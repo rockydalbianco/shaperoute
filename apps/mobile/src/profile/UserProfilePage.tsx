@@ -13,6 +13,7 @@ import { ReportMenu } from "../social/ReportMenu";
 import { color, fontSize, space } from "../theme/tokens";
 import { ProfileGallery } from "./ProfileGallery";
 import { ProfileHeader } from "./ProfileHeader";
+import { GymLevels } from "../gym/GymLevels";
 import { PersonalBests } from "./PersonalBests";
 import { ProfileStats, totalsOf } from "./ProfileStats";
 import { Vo2MaxRow } from "./Vo2MaxRow";
@@ -217,6 +218,8 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
       {profile.personal_bests && <PersonalBests bests={profile.personal_bests} />}
       {/* The VO₂ max (TASK-397): only after its owner's yes. */}
       {profile.vo2max && <Vo2MaxRow vo2max={profile.vo2max} own={own} />}
+      {/* The levels at the gym (TASK-385 E): none from an older API. */}
+      {profile.gym_levels && <GymLevels levels={profile.gym_levels} />}
       <ProfileGallery
         publicId={profile.public_id}
         own={false}

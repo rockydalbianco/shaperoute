@@ -1,3 +1,4 @@
+import gymLevels from "@shaperoute/shared-types/fixtures/gym-levels.json";
 import session from "@shaperoute/shared-types/fixtures/gym-session.json";
 
 import { answers, apiError } from "../account/testing";
@@ -6,7 +7,9 @@ import type { GymSessionRequest } from "@shaperoute/shared-types";
 import {
   fetchGymExercises,
   fetchGymSession,
+  gymLevelsOf,
   isGymExercises,
+  isGymLevel,
   isGymSession,
   isGymSet,
   saveGymSession,
@@ -144,4 +147,18 @@ test("a key that is no workout is the API's 404", async () => {
   const fetchFn = answers({ status: 404, body: apiError("http_error") });
   const outcome = await showGymExercises(URL, TOKEN, "nope", true, options(fetchFn));
   expect(outcome).toMatchObject({ kind: "api_error", code: "http_error" });
+});
+
+test("the levels of the API are read, one the app cannot read is left out", () => {
+  expect(gymLevels.gym_levels.every(isGymLevel)).toBe(true);
+  expect(gymLevelsOf(gymLevels.gym_levels)).toHaveLength(gymLevels.gym_levels.length);
+  const [bench] = gymLevels.gym_levels;
+  expect(isGymLevel({ ...bench, level: 0 })).toBe(false);
+  expect(isGymLevel({ ...bench, level: 8 })).toBe(false);
+  expect(isGymLevel({ ...bench, measure: "kg" })).toBe(false);
+  expect(gymLevelsOf([{ ...bench, value: "100" }, bench])).toEqual([bench]);
+  // From an API older than TASK-385 E: nothing.
+  expect(gymLevelsOf(undefined)).toEqual([]);
+  // The exercises of a post read the same with the levels it reached first.
+  expect(isGymExercises({ ...EXERCISES, new_levels: gymLevels.gym_levels })).toBe(true);
 });

@@ -63,9 +63,8 @@ Da leggere: `docs/sports/COME-AGGIUNGERE.md`, `docs/sports/CONDIVISO.md`,
 
 ### Parte A — motore, contratto, API (dopo le scelte, in una sessione sua)
 
-Lista proposta al Coordinatore il 2026-11-06, da approvare prima del
-codice, con il numero della migrazione da chiedere. È fatta sul diff della
-378-A (#875), che ha toccato gli stessi registri:
+Lista approvata dal Coordinatore il 2026-11-06, con la migrazione 0055.
+È fatta sul diff della 378-A (#875), che ha toccato gli stessi registri:
 
 ```
 services/route-engine/route_engine/networks/roller.py           (nuovo: filtro, regole di roller.md, ogni via nei due sensi)
@@ -87,7 +86,7 @@ services/api/shaperoute_api/activities.py                       (un nome nel Lit
 services/api/shaperoute_api/personal_bests.py                   (un nome nel Literal Sport)
 services/api/shaperoute_api/reads.py                            (una riga)
 services/api/shaperoute_api/game_rules.py                       (il Roller con chi va a piedi: scelta 4)
-services/api/migrations/00NN_inline_skating.sql                 (nuovo: CHECK di runs, favorites, group_runs, run_bests)
+services/api/migrations/0055_inline_skating.sql                 (nuovo: CHECK di runs, favorites, group_runs, run_bests)
 services/api/tests/test_inline_skating_api.py                   (nuovo)
 services/api/tests/test_sport_registry_api.py, test_personal_bests.py, test_hiking_api.py,
     test_walking_api.py, test_cycling.py, test_record_only.py, test_favorites.py,
@@ -115,6 +114,22 @@ docs/tasks/TASK-380.md, docs/STATUS.md, docs/sports/CONDIVISO.md, docs/sports/ro
   sulle zone intere, contro le misure di `roller.md`; corsa, bici e canoa
   identiche (`compare --same`).
 - **Il controllo «veicolo»** del gioco: vedi sotto, nelle scelte.
+- **Lista approvata dal Coordinatore** (2026-11-06), con la migrazione
+  **`0055_inline_skating.sql`**: la 0054 è di TASK-406 A (`ski_resorts`,
+  #881).
+- **L'ordine**: la #880 (400 B, piscina) tocca file che sono anche in
+  questa lista (`reads.json`, `sports.json` dell'orologio, i test
+  `sportProfiles`, `activityName` e `src/api/accounts.test.ts`). La
+  sessione 380-A parte da `origin/main` solo dopo che la #880 è in `main`.
+  Prima della PR unisce `main` con quello che è entrato nel frattempo:
+  378 C tocca `settings/sport.ts` e i test che contano gli sport, 385 E
+  tocca `packages/shared-types`.
+- **Il motore**: la prova delle stesse rotte (`test_same_routes.py` e
+  `SAME_ROUTES_AS`) è obbligatoria, altrimenti la CI dell'API è rossa.
+  `engine.zip` si rifà nell'ultimo commit. `schemas.py` non si tocca senza
+  dirlo al Coordinatore.
+- Prima del codice, la sessione della parte A conferma la lista al
+  Coordinatore.
 
 ### Parte B — app (dopo A)
 
@@ -193,8 +208,8 @@ Le scelte toccano le liste di A e B in tre punti:
 
 - [x] 0: le misure delle reti sono in `roller.md`; ADR-0324 è proposto.
 - [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-06).
-- [ ] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
-      della migrazione.
+- [x] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
+      della migrazione (approvata, 0055, 2026-11-06).
 - [ ] A: un percorso roller sul grafo di prova sta sull'asfalto liscio e
       lascia fuori sterrato, ciottoli e strade principali; test
       deterministici; corsa, bici e canoa invariate al banco (`compare`).
@@ -250,5 +265,6 @@ volta:
 5. i testi;
 6. acceso appena pronto.
 
-ADR-0324 accettato. Prossimo: la lista della parte A al Coordinatore, col
-numero della migrazione.
+ADR-0324 accettato. Il Coordinatore ha approvato la lista della parte A,
+con la migrazione 0055. Prossimo: la parte A in una sessione nuova, da
+`origin/main` dopo la #880 (400 B).

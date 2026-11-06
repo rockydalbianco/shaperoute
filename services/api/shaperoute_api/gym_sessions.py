@@ -50,6 +50,7 @@ from shaperoute_api.activities import (
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import drawing_seen_sql
 from shaperoute_api.gym_catalog import EXERCISES_BY_KEY, CardioField, SetKind
+from shaperoute_api.gym_levels import GymLevelBody, new_levels
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.schemas import ErrorBody
 
@@ -224,6 +225,11 @@ class GymExercisesBody(BaseModel):
     rests: int
     rest_s: int
     sets: list[GymSetBody]
+    # The milestones (part E): the figures this workout reached first.
+    new_levels: list[GymLevelBody] = Field(
+        default_factory=list,
+        description="The levels it reached first, the highest first; [] without.",
+    )
 
 
 class ShowExercisesRequestBody(BaseModel):
@@ -401,7 +407,10 @@ class GymSessions:
             if row is None:
                 return None
             return GymExercisesBody(
-                rests=row["rests"], rest_s=row["rest_s"], sets=_sets(conn, row["id"])
+                rests=row["rests"],
+                rest_s=row["rest_s"],
+                sets=_sets(conn, row["id"]),
+                new_levels=new_levels(conn, row["id"]),
             )
 
 

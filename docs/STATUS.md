@@ -340,6 +340,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   ADR-0324 accettato. Prossimo: 380-A, motore, contratto e API, con la
   lista al Coordinatore e il numero della migrazione.
+  Lista della parte A approvata dal Coordinatore, con la migrazione
+  `0055_inline_skating.sql`. Prossimo: 380-A in una sessione nuova, da
+  `origin/main` dopo la #880 (400 B).
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
@@ -521,6 +524,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nella condivisione niente video né Strava. Scelte dell'utente del
   2026-11-05: «10 foto», «Sì, anche alla fine». Impronta iOS 6f8bba4c
   invariata; OTA col sì. Prossima: C (kcal e Salute), E (traguardi).
+  Parte D in `main` (#845, 4d52e439).
+  Parte E (traguardi) in PR da `feat/TASK-385-e-gym-levels`: i livelli
+  per esercizio sul profilo (primi 5, gli altri sotto «Show more») e
+  «New level» nel post, contati dal server a ogni lettura da tutti gli
+  allenamenti, privati compresi. Scelte dell'utente del 2026-11-06:
+  «Tutti», «I primi 5 + altro». Niente migrazione; server col sì. Prossima:
+  C (kcal e Salute), F (classifica).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo
@@ -717,9 +727,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Scelte: prima il personaggio, poi l'editor, poi il prompt; il prompt senza
   costi, letto dal telefono con una tabella di parole. Proposta: three.js
   nella pagina del video (niente di nativo) e modelli CC0: sì dell'utente
-  il 2026-11-06; l'elefante nella prima versione. Prossimo: quale
-  elefante (domanda 2b, proposta il modello CC BY gratis di Sketchfab;
-  `tasks/TASK-408.md`).
+  il 2026-11-06; l'elefante nella prima versione, «Elephant Anim» di
+  Shivoahm (Sketchfab, CC BY 4.0, gratis). Prossimo: il testo della riga
+  dei crediti (domanda 2c, `tasks/TASK-408.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

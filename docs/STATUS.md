@@ -165,6 +165,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo
   commit della versione, con impronta `6f8bba4c` come la 1.0.1. La lancia l'utente. Login,
   schermata di blocco, composer, calorie e battito passano alla 1.0.3. `tasks/TASK-407.md`.
+- **TASK-2001 — Nuove forme candidate** (2026-11-06; numero preso dall'agente come primo
+  libero, senza coordinatore in sessione). 23 contorni nuovi solo da CLI, non nel catalogo
+  (cammello, delfino, quercia, fiore, anatra, àncora, canguro, pollice su, banana, tacco,
+  chiave, oca, lama, giraffa, clessidra, cavalluccio marino, cilindro, coniglio intero,
+  foglia d'acero, barboncino, fenicottero, airone, emù), più da rivedere le «quasi» di
+  TASK-223, `arrow`, `bird` e `dog`. Prossimo: i campioni a Trento, Levico e Milano e il
+  giudizio dell'utente. Non tocca `SHAPES` né il contratto. `tasks/TASK-2001.md`.
 - **TASK-403 — «Edit the drawing» sotto A, B e C** (2026-11-05; numeri dal Coordinatore,
   ADR-0337 «Proposto»; richiesta dell'utente «quando fai tu il calcolo del disegno tipo il
   coniglio poi mi dai le tre opzioni AB e C però lì non c'è la possibilità di modificare

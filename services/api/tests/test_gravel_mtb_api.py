@@ -213,7 +213,8 @@ def _ride(km: float, kmh: float) -> list[TrackPoint]:
 
 def test_gravel_and_mtb_have_a_ride_s_bests_of_their_own() -> None:
     sports: tuple[Sport, ...] = get_args(Sport)
-    assert sports == ("running", "cycling", MTB, GRAVEL)
+    # A skate between them since TASK-380.
+    assert sports == ("running", "cycling", MTB, "inline_skating", GRAVEL)
     assert list(SPORTS) == list(sports)
     track = _ride(21, 25.0)
     ride = bests(track, [], "cycling")
@@ -223,7 +224,7 @@ def test_gravel_and_mtb_have_a_ride_s_bests_of_their_own() -> None:
     assert math.isclose(ride["10k"], 10_000 / (25 / 3.6), abs_tol=1)
     # Every run has the bests of each sport, the profile reads its own.
     found = {(b.sport, b.distance) for b in run_bests(track, [])}
-    assert found == {
+    assert {(s, d) for s, d in found if s != "inline_skating"} == {
         (sport, name) for sport in ("cycling", MTB, GRAVEL) for name in ride
     }
 

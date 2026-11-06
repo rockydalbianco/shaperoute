@@ -36,7 +36,8 @@ import {
 // are the ones written by hand before, value for value and in order, with
 // the sports added since, each by a file and a line of index.ts: a hike
 // (TASK-377), before the walk; an MTB ride (TASK-378) after the hike and a
-// gravel ride after the walk, hidden until part B.
+// gravel ride after the walk; a skate (TASK-380) after the MTB ride, hidden
+// until part B.
 
 const MPH_KMH = 1.609344;
 
@@ -63,6 +64,7 @@ it("gives «Draw» the distances of before", () => {
     ],
     ["hiking", [1, 30]],
     ["mountain_biking", [10, 30]],
+    ["inline_skating", [5, 30]],
     [
       "walking",
       [DISTANCE_LIMITS_M.walking[0] / 1000, DISTANCE_LIMITS_M.walking[1] / 1000],
@@ -76,11 +78,12 @@ it("gives «Draw» the distances of before", () => {
     ["swimming", [0.5, 1.5]],
     ["hiking", [1, 18]],
     ["mountain_biking", [7, 18]],
+    ["inline_skating", [4, 18]],
     ["walking", [1, 18]],
     ["gravel_biking", [7, 18]],
   ]);
   expect(ACTIVITIES.map((activity) => distanceStep(activity))).toEqual([
-    1, 1, 1, 0.5, 1, 1, 1, 1,
+    1, 1, 1, 0.5, 1, 1, 1, 1, 1,
   ]);
   expect(distanceForSport("7", "paddling", "km")).toBe("2");
   expect(distanceForSport("7", "swimming", "km")).toBe("1");
@@ -96,6 +99,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     swimming: 46,
     hiking: 24,
     mountain_biking: 13,
+    // `.skatingSports` (TASK-380).
+    inline_skating: 39,
     walking: 52,
     gravel_biking: 13,
     skiing: 61,
@@ -120,6 +125,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     swimming: 73,
     hiking: 37,
     mountain_biking: 8,
+    // EXERCISE_TYPE_SKATING (TASK-380).
+    inline_skating: 60,
     walking: 79,
     gravel_biking: 8,
     skiing: 61,
@@ -137,6 +144,7 @@ it("names the sports, and draws on the phone the ones of before", () => {
     ["swimming", "Swim"],
     ["hiking", "Hike"],
     ["mountain_biking", "MTB"],
+    ["inline_skating", "Roller"],
     ["walking", "Walk"],
     ["gravel_biking", "Gravel"],
   ]);
@@ -199,6 +207,7 @@ it("starts a run without a route and labels a MuW route as before", () => {
     "swimming",
     "hiking",
     "mountain_biking",
+    "inline_skating",
     "walking",
     "gravel_biking",
     "cycling",
@@ -242,6 +251,7 @@ it("gives the screens what they told apart before (part B3b)", () => {
     swimming: "🏊",
     hiking: "⛰️",
     mountain_biking: "🚵",
+    inline_skating: "🛼",
     walking: "🚶",
     gravel_biking: "🚲",
     skiing: "⛷️",

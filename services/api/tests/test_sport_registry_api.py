@@ -21,6 +21,7 @@ from shaperoute_api.run_gpx import GPX_TYPES
 from shaperoute_api.schemas import ACTIVITY_DESCRIPTION
 from shaperoute_api.sports import API_SPORTS, SPORTS_BY_ACTIVITY
 from shaperoute_api.sports.cycling import BY_BIKE
+from shaperoute_api.sports.inline_skating import ON_SKATES
 from shaperoute_api.sports.running import ON_FOOT
 from shaperoute_api.strava import SPORT_TYPES
 
@@ -48,16 +49,19 @@ BEFORE_GPX_TYPES = {"walking": "walking"}
 BEFORE_STREET_NAMES = {"running": True, "cycling": False}
 # Added since, each by a file of sports/ and a line of its register: a hike
 # (TASK-377), planned before the walk in the order of the contract; an MTB
-# ride after it and a gravel ride after the walk (TASK-378).
+# ride after it and a gravel ride after the walk (TASK-378); a skate after
+# the MTB ride (TASK-380).
 SINCE_SPORT_TYPES = {
     "hiking": "Hike",
     "mountain_biking": "MountainBikeRide",
+    "inline_skating": "InlineSkate",
     "gravel_biking": "GravelRide",
 }
 SINCE = tuple(SINCE_SPORT_TYPES)
 SINCE_GPX_TYPES = {
     "hiking": "hiking",
     "mountain_biking": "mountain_biking",
+    "inline_skating": "inline_skating",
     "gravel_biking": "gravel_biking",
 }
 
@@ -82,8 +86,9 @@ def test_the_tables_are_those_of_before_in_their_order() -> None:
     assert _without_since(SPORT_TYPES) == list(BEFORE_SPORT_TYPES.items())
     assert {name: SPORT_TYPES[name] for name in SINCE} == SINCE_SPORT_TYPES
     order = list(SPORT_TYPES)
-    assert order.index("hiking") == order.index("walking") - 2
-    assert order.index("mountain_biking") == order.index("walking") - 1
+    assert order.index("hiking") == order.index("walking") - 3
+    assert order.index("mountain_biking") == order.index("walking") - 2
+    assert order.index("inline_skating") == order.index("walking") - 1
     assert order.index("gravel_biking") == order.index("walking") + 1
     assert RECORD_ACTIVITIES == BEFORE_RECORD_ACTIVITIES
     assert _without_since(GPX_TYPES) == list(BEFORE_GPX_TYPES.items())
@@ -92,6 +97,7 @@ def test_the_tables_are_those_of_before_in_their_order() -> None:
         ("running", ON_FOOT),
         ("cycling", BY_BIKE),
         ("mountain_biking", BY_BIKE),
+        ("inline_skating", ON_SKATES),
         ("gravel_biking", BY_BIKE),
     ]
     assert list(SPORTS) == list(get_args(Sport))
@@ -99,6 +105,7 @@ def test_the_tables_are_those_of_before_in_their_order() -> None:
         **BEFORE_STREET_NAMES,
         "hiking": True,
         "mountain_biking": False,
+        "inline_skating": False,
     }
 
 
@@ -129,13 +136,21 @@ def test_the_bests_of_before_are_read_where_they_were() -> None:
 
 def test_the_zone_boxes_are_those_of_before() -> None:
     boxes = prefetch_zones.ZONE_BOXES
-    assert list(boxes) == ["running", "cycling", "hiking", "mountain_biking"]
+    assert list(boxes) == [
+        "running",
+        "cycling",
+        "hiking",
+        "mountain_biking",
+        "inline_skating",
+    ]
     assert boxes["running"] is prefetch_zones.zone_box
     assert boxes["hiking"] is prefetch_zones.zone_box
     assert boxes["cycling"] is prefetch_zones.bike_zone_box
     # Its own longest route, a ride's 30 km: the box of a ride.
     city = (46.0671, 11.1214)
     assert boxes["mountain_biking"](city) == prefetch_zones.bike_zone_box(city)
+    # A skate's 30 km too (TASK-380).
+    assert boxes["inline_skating"](city) == prefetch_zones.bike_zone_box(city)
 
 
 def test_every_sport_on_roads_has_zones_and_no_other() -> None:
@@ -178,6 +193,7 @@ def test_the_zones_in_memory_and_the_description_are_those_of_before() -> None:
         "cycling": 1,
         "hiking": 1,
         "mountain_biking": 1,
+        "inline_skating": 1,
     }
     assert ACTIVITY_DESCRIPTION == (
         f"One of: {', '.join(API_ACTIVITIES)}; cycling is drawn on the "
@@ -189,6 +205,8 @@ def test_the_zones_in_memory_and_the_description_are_those_of_before() -> None:
         f"use, no trails beyond sac_scale T3 (TASK-377); "
         f"mountain_biking on the bike network with the trails up to mtb:scale "
         f"S2, or sac_scale T2 when they give none (TASK-378); "
+        f"inline_skating on the smooth paved ways of its own network, no primary "
+        f"or secondary roads, every way both ways (TASK-380); "
         f"walking on the foot network of a run (TASK-371); "
         f"gravel_biking is drawn as cycling, on the bike network (TASK-378)."
     )

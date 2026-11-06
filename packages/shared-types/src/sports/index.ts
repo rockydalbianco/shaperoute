@@ -8,6 +8,7 @@ import { CYCLING } from "./cycling.ts";
 import { GRAVEL_BIKING } from "./gravel_biking.ts";
 import { GYM } from "./gym.ts";
 import { HIKING } from "./hiking.ts";
+import { INLINE_SKATING } from "./inline_skating.ts";
 import { MOUNTAIN_BIKING } from "./mountain_biking.ts";
 import { PADDLING } from "./paddling.ts";
 import { RUNNING } from "./running.ts";
@@ -27,6 +28,7 @@ export {
   GRAVEL_BIKING,
   GYM,
   HIKING,
+  INLINE_SKATING,
   MOUNTAIN_BIKING,
   PADDLING,
   RUNNING,
@@ -43,6 +45,7 @@ export const PLANNED_SPORTS = [
   SWIMMING,
   HIKING,
   MOUNTAIN_BIKING,
+  INLINE_SKATING,
   WALKING,
   GRAVEL_BIKING,
 ] as const;

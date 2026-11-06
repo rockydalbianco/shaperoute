@@ -23,7 +23,8 @@ from route_engine.geo import haversine_m
 
 # Raised whenever a rule below changes: game_backfill.py computes the runs
 # again. 2: a walk counts its metres (TASK-371). A hike counts as a walk
-# (TASK-377) and kept 2: no run saved before it could be a hike (0051).
+# (TASK-377) and kept 2: no run saved before it could be a hike (0051); so
+# did a skate (TASK-380, 0055).
 RULES_VERSION = 2
 
 # A stretch of at least VEHICLE_WINDOW_M covered faster than this is not
@@ -60,7 +61,10 @@ RUNNING = "running"
 WALKING = "walking"
 # A hike counts as a walk (TASK-377, ADR-0321, the user's choice 5).
 HIKING = "hiking"
-ON_FOOT = (RUNNING, WALKING, HIKING)
+# A skate counts as a walk too (TASK-380, ADR-0324, the user's choice 4): a
+# skater is a person on foot; the personal bests of a skate are its own.
+INLINE_SKATING = "inline_skating"
+ON_FOOT = (RUNNING, WALKING, HIKING, INLINE_SKATING)
 
 
 @dataclass(frozen=True)
@@ -109,7 +113,7 @@ class _Step:
 def evaluate(
     fixes: Sequence[Fix], pauses: Sequence[RunPause], activity: str
 ) -> RunGame:
-    """The run as the game sees it. Only runs, walks and hikes on foot
+    """The run as the game sees it. Only runs, walks, hikes and skates
     count, and only a run has best times."""
     elapsed_s = fixes[-1].t_s - fixes[0].t_s if fixes else 0.0
     if activity not in ON_FOOT:

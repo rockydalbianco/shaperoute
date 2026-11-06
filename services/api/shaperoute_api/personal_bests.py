@@ -40,7 +40,9 @@ from shaperoute_api.sports.base import Distance, SportBests
 from shaperoute_api.sports.cycling import BY_BIKE, BY_BIKE_KMH  # noqa: F401
 from shaperoute_api.sports.running import ON_FOOT  # noqa: F401
 
-Sport = Literal["running", "cycling", "mountain_biking", "gravel_biking"]
+Sport = Literal[
+    "running", "cycling", "mountain_biking", "inline_skating", "gravel_biking"
+]
 
 # The bests of each sport that has them, in the order of the sports
 # (shaperoute_api/sports, TASK-376): the rules of each are in its file.

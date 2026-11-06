@@ -5,6 +5,7 @@
     "swimming",
     "hiking",
     "mountain_biking",
+    "inline_skating",
     "walking",
     "gravel_biking",
     "skiing",
@@ -13,5 +14,5 @@
     "trackless",
     "pool"
   ],
-  "this_app": "swimming,hiking,mountain_biking,walking,gravel_biking,skiing,xc_skiing,gym,trackless,pool"
+  "this_app": "swimming,hiking,mountain_biking,inline_skating,walking,gravel_biking,skiing,xc_skiing,gym,trackless,pool"
 }

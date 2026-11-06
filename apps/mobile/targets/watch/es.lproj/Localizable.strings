@@ -21,9 +21,11 @@
 "Run" = "Carrera";
 "Bike" = "Bici";
 "Paddle" = "Remo";
-"Open water swim" = "Natación en aguas abiertas";
+"Swim" = "Natación";
 "Hike" = "Senderismo";
+"MTB" = "MTB";
 "Walk" = "Caminata";
+"Gravel" = "Gravel";
 "Ski" = "Esquí";
 "Cross-country ski" = "Esquí de fondo";
 "Gym" = "Gimnasio";

@@ -320,7 +320,10 @@ def test_the_post_shows_its_exercises_until_its_owner_hides_them(
     path = f"/drawings/{drawing_id}/exercises"
     shown = client.get(path, headers=reading(reader))
     assert shown.status_code == 200, shown.text
-    assert shown.json() == {"rests": 6, "rest_s": 540, "sets": workout()["sets"]}
+    body = shown.json()
+    # The levels it reached first are test_gym_levels.py's.
+    assert body.pop("new_levels")
+    assert body == {"rests": 6, "rest_s": 540, "sets": workout()["sets"]}
     hide = client.put(
         f"/me/gym-sessions/{GYM_KEY}/show-exercises", json={"show": False}, headers=me
     )

@@ -21,9 +21,11 @@
 "Run" = "Course";
 "Bike" = "Vélo";
 "Paddle" = "Pagaie";
-"Open water swim" = "Nage en eau libre";
+"Swim" = "Natation";
 "Hike" = "Randonnée";
+"MTB" = "VTT";
 "Walk" = "Marche";
+"Gravel" = "Gravel";
 "Ski" = "Ski";
 "Cross-country ski" = "Ski de fond";
 "Gym" = "Salle de sport";

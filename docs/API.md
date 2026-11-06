@@ -1813,6 +1813,17 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   delle corse cominciate negli ultimi 365 giorni, arrotondato, tenuto fra
   20 e 90; si calcola a ogni lettura. `vo2max.py`, `vo2max_estimate.py`;
   un'API precedente non ha il campo.
+- **I livelli della palestra** (TASK-385 E, ADR-0327): `gym_levels`, per
+  ogni esercizio del catalogo la serie migliore sotto il tetto della sua
+  scala, presa da **tutti** gli allenamenti dell'account, privati compresi
+  (scelta dell'utente del 2026-11-06, come i record personali). Ogni
+  `GymLevel` ha `exercise`, `level` (1–7, la figura: 🐭 → 🦍), `value` e
+  `measure` (`load_kg`, `reps`, `duration_s` o `distance_m`): mai
+  l'allenamento. Solo gli esercizi dal livello 1, prima il livello più
+  alto, poi nell'ordine del catalogo; `[]` senza. Si contano a ogni
+  lettura da `gym_sets`; un esercizio scritto da chi si allena non ha
+  scala. Esempio `fixtures/gym-levels.json`; `gym_levels.py`; un'API
+  precedente non ha il campo.
 - **`GET /users/{public_id}/photos`** (TASK-324): le foto dei disegni che
   chi guarda vede sul profilo, dalla corsa più recente e nello stesso
   disegno per posto; `limit` da 1 a 60 (30), `cursor` dalla pagina prima
@@ -2900,7 +2911,7 @@ database, `503`. Tipi in `shared-types` (`OutfitTag`, `OutfitTagRequest`,
 
 Un allenamento in palestra: una corsa dell'attività `gym` **senza traccia**,
 con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
-(`GymSessionRequest`, `GymSession`, `GymSet`, `GymExercises`), esempio in
+(`GymSessionRequest`, `GymSession`, `GymSet`, `GymExercises`, `GymLevel`), esempio in
 `fixtures/gym-session.json`, catalogo degli esercizi in
 `fixtures/gym-exercises.json` (lo stesso di `gym_catalog.py` e di
 `docs/sports/gym.md`); il codice in `gym_sessions.py`.
@@ -2935,6 +2946,11 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
 - **Gli esercizi del post** si vedono finché il proprietario non li
   nasconde («Show exercises»); il proprietario li vede sempre. Un disegno
   che l'altro non vede è `404`, come uno che non c'è.
+- **I livelli raggiunti per primi** (parte E): `GymExercises.new_levels`,
+  i `GymLevel` che questo allenamento supera rispetto agli allenamenti dello
+  stesso account cominciati prima (anche quelli salvati dopo); prima il
+  livello più alto; `[]` senza. Con gli esercizi: nascosti loro, nascosti
+  anche i livelli.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`
@@ -3002,6 +3018,43 @@ fatte nella giornata di sci del post.
   per un'app che in `X-MuW-Reads` non dice `skiing` (TASK-387).
 - **Due elenchi vuoti:** per un'altra attività e per una giornata senza
   nomi trovati. L'app allora non mostra niente.
+
+### Ski resorts (TASK-406 parte A, ADR-0338)
+
+Le stazioni sciistiche del mondo, per la ricerca «Ski» e per la giornata di
+sci. Sono uguali per tutti e non contengono dati degli utenti, quindi non
+serve il token. La chiave dell'API serve come su ogni percorso.
+
+**Le rotte**
+- **`GET /ski-resorts?q=…`**: le stazioni il cui nome contiene `q`, senza
+  badare a maiuscole e minuscole.
+  - Prima i nomi che cominciano con `q`, poi per numero di impianti, poi
+    per nome.
+  - `q` è lungo al massimo 60 caratteri; `%` e `_` si leggono come testo.
+- **`GET /ski-resorts?lat=…&lon=…`**: le più vicine, dalla più vicina, con
+  `away_m`, i metri fino al centro della stazione. La posizione resta fuori
+  dal registro degli accessi, come ogni query string.
+- **`limit`**: da 1 a 50, 20 se manca. Vale per le due ricerche.
+- **`GET /ski-resorts/{id}`**: una stazione, oppure `404`.
+
+**La forma**
+- Ogni stazione è: `id`, `name`, `country` (ISO 3166-1 alpha-2 o `null`),
+  `region`, `lat`, `lon`, `bbox` (`[south, west, north, east]`), `lifts`,
+  `piste_km`, `piste_km_by_difficulty` (per esempio `{"easy": 35.9}`),
+  `min_elevation_m`, `max_elevation_m`, `website`, `away_m`.
+- `away_m` è `null` tranne nella ricerca per posizione.
+- Le ricerche rispondono `{"resorts": [...]}`.
+- Una stazione data come punto ha come `bbox` il suo centro.
+
+**Gli errori**
+- **`422`:** né `q` né `lat` e `lon`, oppure tutti e due, oppure un valore
+  fuori dai limiti.
+- **`404`:** un id che non c'è.
+
+**Da dove vengono**
+- Le stazioni vengono da OpenSkiData (`MAPS.md`, «Le stazioni sciistiche da
+  OpenSkiData»), con `resort_import.py`.
+- I tipi in `packages/shared-types` arrivano con la parte C.
 
 ### Drawing search (TASK-344, ADR-0297)
 

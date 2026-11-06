@@ -107,7 +107,7 @@ test("«Settings» of a store build has no «Soon» row", async () => {
   expect(screen.queryByText("🪂")).toBeNull();
   // Swimming is a sport of the store builds since the server swims
   // (TASK-323), a row like the others.
-  expect(screen.getByRole("radio", { name: "Open water swim" })).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Swim" })).toBeOnTheScreen();
   expect(screen.getByText("🏊")).toBeOnTheScreen();
 });
 

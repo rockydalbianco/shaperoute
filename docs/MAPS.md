@@ -389,6 +389,47 @@ Restano fuori le stazioni, i piloni, le teleferiche merci, le zip line e le
 piste di fondo. Sul server di produzione questi comandi li lancia
 l'utente.
 
+### Le stazioni sciistiche da OpenSkiData (TASK-406 parte A, ADR-0338)
+
+Le stazioni della ricerca «Ski» vengono da un solo file di OpenSkiData
+([openskidata.org](https://openskidata.org/)): `ski_areas.geojson`, circa
+21 MB. È rifatto ogni notte dalle aree sciistiche di OpenStreetMap e di
+Skimap.org.
+
+**Le condizioni d'uso**
+- Licenza ODbL, anche per uso commerciale.
+- Si citano OpenStreetMap contributors, OpenSkiMap.org, Skimap.org e Who's
+  On First.
+- I download automatici sono al massimo uno al giorno, con un User-Agent
+  di MuW, e le loro tile vettoriali non si usano mai.
+- Il formato non è promesso stabile. Se un campo che serve manca, o è di un
+  altro tipo, l'import si ferma e dice quale campo, senza scrivere niente.
+  La scrittura è una sola transazione: tutte le stazioni o nessuna.
+
+Non serve riscaricare gli estratti OSM: il file ha già le stazioni
+raggruppate, con impianti, km di piste e quote. I riquadri dello sci di
+TASK-375 restano come sono.
+
+**Cosa si tiene**
+- Le aree `operating` con `downhill` fra le attività e con un nome.
+- Il 2026-11-06 erano 4.768 su 12.404, in 73 paesi. Restano fuori quelle
+  chiuse, abbandonate o in progetto, quelle di solo fondo e le 932 senza
+  nome, quasi tutte con uno o due impianti.
+- Ogni stazione tiene:
+  - il centro in cui OpenSkiMap la mostra;
+  - il riquadro del contorno;
+  - gli impianti di ogni tipo;
+  - i km delle piste da discesa per difficoltà;
+  - le quote;
+  - il primo sito che è un indirizzo `http(s)`.
+
+Una volta a stagione, sul server (comando dell'utente):
+
+```bash
+curl -fsSL -A "MuW/1.0 (getmuw.app)" -o ski_areas.geojson https://tiles.openskimap.org/geojson/ski_areas.geojson
+python -m shaperoute_api.resort_import --geojson ski_areas.geojson --clean
+```
+
 ## Dal disegno alla strada
 
 1. La partenza (primo punto della forma) si aggancia al **nodo più

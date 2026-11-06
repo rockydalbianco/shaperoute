@@ -23629,6 +23629,42 @@ TASK-348 (ADR-0301), già in `main`.
 approvato il 2026-11-04. Nessuna dipendenza, niente nativo, niente server:
 impronta iOS 6f8bba4c invariata. «Up to 10 in a post.» resta anche per la
 palestra: dice le foto, non le pagine.
+
+## ADR-0327, precisazione — La parte E: i traguardi della palestra
+
+**Stato**: Attiva · 2026-11-06 · TASK-385 parte E, decisa dall'agente su
+delega dell'utente dentro le sue scelte (la scelta 8, «100 kg di panca
+piana sblocchi quella figura», e del 2026-11-06 «Tutti» e «I primi 5 +
+altro»); lista dei file approvata dal Coordinatore.
+
+**Decisione**:
+
+1. **Si contano a ogni lettura, nessuna tabella**: il livello di un
+   esercizio è la serie migliore sotto il tetto, da `gym_sets`, con la
+   regola di `gym_catalog.measured` e `level_of` scritta in SQL
+   (`gym_levels.py`); un test confronta le due. Niente migrazione: un
+   account ha poche centinaia di serie.
+2. **Contano tutti gli allenamenti, anche i privati** (scelta dell'utente,
+   come i record personali di TASK-368): il profilo mostra figura,
+   esercizio e valore, mai l'allenamento. Le serie aggiunte dopo «Stop»
+   contano: la regola «solo dal vivo» è della classifica (parte F).
+3. **Sul profilo** `gym_levels` in `GET /users/{public_id}`, prima il
+   livello più alto, poi nell'ordine del catalogo. L'app mostra il blocco
+   «🏋️ Gym» dopo i record e il VO₂ max: i primi cinque, gli altri sotto
+   «Show more» (scelta dell'utente). Testi già approvati: «Gym», «Show
+   more» e i sette nomi delle figure.
+4. **Nel post** `new_levels` in `GET /drawings/{id}/exercises`: i livelli
+   che l'allenamento supera rispetto a quelli cominciati prima, anche se
+   salvati dopo. Seguono gli esercizi: nascosti loro, nascosti anche i
+   livelli. L'app scrive «New level: {figure} · {exercise} {value}» sotto
+   il riquadro nel Feed e sopra gli esercizi nella scheda.
+5. **Il valore si legge come una serie del post**: kg o lb come dicono le
+   unità (per mano col manubrio), «×30» per le ripetizioni, il tempo, la
+   distanza.
+
+**Conseguenze**: campi nuovi e facoltativi; le app vecchie li ignorano, e
+il server può andare prima dell'app. Nessuna dipendenza, niente nativo:
+impronta iOS invariata. Il server va col sì dell'utente.
 ## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
 
 **Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
@@ -24110,6 +24146,47 @@ delega dell'utente; lista dei file e migrazione `0053` dal Coordinatore.
 **Conseguenze**: una migrazione, nessuna dipendenza, nessun testo
 dell'app, impronta iOS e del motore invariate (`pool_swims.py` e
 `drawings.py` non sono in `engine.zip`). Server col sì dell'utente.
+
+## ADR-0334, precisazione — La parte B: l'app registra il nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-400 parte B, decisa dall'agente su
+delega dell'utente; lista dei file dal Coordinatore.
+
+1. **Una cartella sua**, `apps/mobile/src/pool/`, sul modello della
+   palestra: la nuotata in corso in un file (un'app riaperta la ritrova),
+   uno schermo sopra l'app dallo «Start swim» al «Save», i nuoti salvati
+   senza rete in un file loro, mandati alla prima rete. La chiave si fa come
+   quella della palestra (`gymKey`): non c'è un primo punto GPS.
+2. **«Open water / Pool» sta in cima a «Draw»** con lo sport «Swim»; in
+   «Pool» spariscono partenza, forma e «Draw route». Scelta, vasca e gli
+   ultimi cinque passi/100 m restano sul telefono (`pool-choice.json`); la
+   stima di «How many lengths?» usa la media di quei passi, o 2:00/100 m.
+3. **Il limite di 2,5 m/s sul telefono**: «+» si ferma all'ultimo numero di
+   vasche sotto il limite, un numero più alto scritto a mano resta non
+   valido (bordo rosso, «Save» spento). Nessun testo nuovo: una frase che
+   spieghi il perché vorrebbe un testo da approvare.
+4. **Salute**: `Workout` ha un campo `pool` facoltativo; con quello
+   `appleWorkout.ts` mette `HKSwimmingLocationType` = piscina e
+   `healthConnectWorkout.ts` il tipo `EXERCISE_TYPE_SWIMMING_POOL`. I
+   numeri stanno nel profilo (`sports/swimming.ts`). Nessuna traccia e
+   nessuna energia, come il nuoto in acque libere.
+5. **La vasca non va in Apple Salute (limite)**: `HKMetadataKeyLapLength`
+   vuole un `HKQuantity`, e `@kingstinct/react-native-healthkit` 16.2.0
+   passa i metadati come `AnyMap`, che arriverebbe a HealthKit come un
+   dizionario: il salvataggio di tutto l'allenamento fallirebbe. Salute
+   riceve il nuoto in piscina con i metri, senza la lunghezza della vasca,
+   finché la libreria non la porta. Accettato dal Coordinatore.
+6. **«My activities»**: una corsa `swimming` senza traccia e senza percorso
+   è un nuoto in piscina; la sua riga mostra la tessera 🏊, «Pool swim»,
+   metri, tempo e passo, e non apre una mappa che non ha. Il post è la
+   parte C.
+7. **`pool` in `this_app`** (`reads.json`, `api/reads.ts`): dalla parte B
+   «My activities» riceve i nuoti in piscina. Nessun post ne arriva prima
+   della parte C, che li pubblica. Tre test dell'API che leggevano
+   `this_app` senza `pool` cambiano con lui.
+
+**Conseguenze**: nessuna dipendenza, nessun permesso nuovo, solo JS; il
+nome dello sport è «Swim» in ogni lingua. OTA e store col sì dell'utente.
 ## ADR-0310, precisazione — Un percorso di MuW non dice quanto somiglia
 
 **Stato**: Accettato · 2026-11-06 · TASK-405. Deciso dall'agente su
@@ -24212,3 +24289,212 @@ anche gli estratti OSM del mondo sul server.
   terzo la posizione dell'utente e non avrebbe una cache condivisa.
 - **Le stazioni da un servizio esterno**: scartato. Costerebbe, e OSM le ha
   già, nello stesso estratto di impianti e piste.
+
+## ADR-0338, aggiunta — Le stazioni da OpenSkiData, non dagli estratti
+
+**Stato**: Attiva · 2026-11-06 · TASK-406 parte A. Deciso dall'agente su
+delega dell'utente, con l'approvazione del Coordinatore. La scelta della
+domanda 1 è dell'utente: «Sì, gratis + membri».
+
+**Contesto**: il punto 1 voleva le aree OSM `landuse=winter_sports` dagli
+estratti di TASK-375. Ma quegli estratti erano già stati filtrati senza le
+stazioni, in tutti i continenti, e gli estratti interi erano stati
+cancellati. Riprenderle avrebbe voluto circa 60 GB di download, un paese
+alla volta.
+
+**Decisione**:
+
+1. **La fonte.** Le stazioni vengono da `ski_areas.geojson` di OpenSkiData
+   (openskidata.org): un file da 21 MB, ricavato da OpenStreetMap e
+   Skimap.org.
+   - Licenza ODbL, uso commerciale permesso.
+   - Attribuzione a OpenStreetMap contributors, OpenSkiMap.org, Skimap.org
+     e Who's On First. Il testo nell'app si chiede all'utente con la
+     domanda 5.
+   - Al massimo un download automatico al giorno; il server lo fa a mano,
+     una volta a stagione.
+2. **Cosa si tiene.** Le aree aperte, con piste da discesa e un nome: 4.768
+   il 2026-11-06.
+   - Ognuna in `ski_resorts` (0054) con il centro di OpenSkiMap, il
+     riquadro, gli impianti, i km di piste per difficoltà, le quote e il
+     sito.
+   - Un nome troppo lungo tiene le forme separate da virgole che stanno in
+     120 caratteri.
+   - Il formato non è promesso stabile. Un campo che serve, se manca o è
+     di un altro tipo, ferma l'import con il nome del campo prima di
+     scrivere qualsiasi cosa. La scrittura è una transazione: tutto o
+     niente.
+3. **Le rotte.** `GET /ski-resorts` (per nome o per posizione, al più 50) e
+   `GET /ski-resorts/{id}`.
+   - Senza token, perché le stazioni non contengono dati degli utenti; con
+     la chiave dell'API come ogni percorso.
+   - La posizione resta fuori dal registro degli accessi.
+4. **Cosa non cambia.** I riquadri dello sci di TASK-375 restano come sono
+   e servono ancora per gli impianti presi. Il motore, `schemas.py` e le
+   impronte non cambiano.
+5. **La licenza.** `ski_resorts` è un database derivato da dati ODbL, con
+   gli stessi obblighi dei dati OSM che il motore usa già.
+   - Mostrare all'app una stazione alla volta, o una ricerca, è un
+     «produced work»: basta l'attribuzione.
+   - Se un giorno la tabella si desse in blocco (un'esportazione, un'API di
+     tutte le stazioni), andrebbe offerta sotto ODbL.
+
+**Alternative**:
+
+- **Riprendere le aree OSM da tutti gli estratti**, un paese alla volta:
+  scartata, perché vuole circa 60 GB di download per un file che esiste
+  già raggruppato.
+- **Ricostruire le stazioni raggruppando impianti e piste dei riquadri**:
+  scartata, perché in OSM impianti e piste non portano il nome della
+  stazione.
+## ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi
+
+**Stato**: Accettato · 2026-11-06 · TASK-380. Le scelte dell'utente, il
+2026-11-06, sono in `tasks/TASK-380.md`:
+
+- «Roller» 🛼 (in tedesco «Inline», in spagnolo «Patines»);
+- la rete `roller`: città e pianura, non la montagna;
+- 5–30 km;
+- **nel gioco**, come chi va a piedi, con record personali propri su 5,
+  10, 21,1 e 42,2 km (la proposta era fuori dal gioco, come la bici);
+- i testi approvati, con l'avviso su traffico e discese;
+- acceso appena pronto.
+
+Numeri dal Coordinatore (2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
+`tasks/TASK-380.md`. I punti tecnici qui sotto sono decisi dall'agente su
+delega dell'utente.
+
+**Contesto**: il Roller è il terzo sport della fase 1 (TASK-376, scelta
+dell'utente del 2026-11-04: asfalto liscio e `inline_skates=yes`, e prima
+si misura quanta rete resta). Nessuna rete di oggi va bene:
+
+- la rete foot prende sentieri, sterrati, ciottoli e porfido;
+- la rete bike pedala ogni `track` e le strade principali, rispetta i
+  sensi unici e fa i marciapiedi «a piedi con la bici».
+
+Il banco ha provato quattro reti dai download della bici, senza toccare il
+motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
+54, 23 buoni):
+
+- **`roller`**:
+  - cosa prende: ciclabili, marciapiedi, aree pedonali, strade residenziali,
+    `service`, `unclassified` e terziarie, con superficie liscia o non
+    scritta; `path` e `track` solo se dicono una superficie liscia;
+  - cosa lascia fuori: `smoothness` da `bad` in giù, strade principali e
+    secondarie;
+  - i risultati: 34 su 54, 10 buoni. Milano 8 su 9, Trento 9 su 9,
+    pianura 8 su 9; Fiemme e Asiago 2 su 9. Mai su ciottoli, sterrato o
+    strade principali; il 61% dei km su strade con le auto.
+- **`rollersec`** (con le secondarie): 42 su 54, ma il 12,4% dei km su
+  strade secondarie.
+- **`rollerquiet`** (senza terziarie né autobloccanti): 21 su 54.
+- **`rollerflat`** (senza i tratti oltre l'8%): 26 su 54; a Trento la
+  salita scende da 210 a 95 m ogni 10 km.
+- **Il tag `inline_skates`** c'è solo per 4,5 km a Trento, e in nessun'altra
+  zona.
+
+**Decisione**:
+
+1. **Una rete nuova `roller`** (`route_engine/networks/roller.py`) con le
+   regole di `roller` qui sopra, scaricata con un suo filtro Overpass
+   (strade fino alle terziarie, ciclabili, marciapiedi, aree pedonali,
+   `path` e `track`), con file di cache suoi (`roller_*`). Il grafo dice
+   `network: roller`.
+2. **Ogni via va nei due sensi** (`by_bike` falso): chi pattina, per il
+   Codice della strada (art. 190), è un pedone. Niente tratti «a piedi»: si
+   pattina o non si passa.
+3. **Il tag `inline_skates`** non fa la rete: `inline_skates=no` toglie una
+   via, `yes` o `designated` la tiene anche se la superficie non lo dice.
+4. **Un'attività nuova** `inline_skating` in `activities/`, nei file nuovi
+   di ogni strato, con una riga per registro
+   (`docs/sports/COME-AGGIUNGERE.md`). Il nome non è `skating`, che alcuni
+   test usano come attività sconosciuta (`CONDIVISO.md`).
+5. **L'impronta del motore**: una rete nuova è un file nuovo nel motore.
+   Se i nove percorsi fissi di `test_same_routes.py` restano identici, una
+   riga in `SAME_ROUTES_AS`, come Hike e MTB; altrimenti una notte di
+   esempi, col sì dell'utente. Server e migrazione (numero dal
+   Coordinatore) col sì dell'utente.
+6. **Niente quote nel motore per ora**: il filtro delle salite vorrebbe le
+   tegole Terrarium dentro il motore, sul server e sul telefono. Si riprende
+   quando la parte G di TASK-347 porta il dislivello (ADR-0300).
+7. **Sul telefono**: un `SportProfile` con:
+   - Apple `.skatingSports` (39) e Health Connect `EXERCISE_TYPE_SKATING`
+     (60), da verificare sulle librerie;
+   - Strava `InlineSkate`;
+   - l'energia dal Compendium («inline skating»);
+   - un passo di circa 15 km/h per il tempo stimato.
+
+   Solo JavaScript: l'impronta iOS non si muove.
+
+8. **Nel gioco** (scelta dell'utente 4): `game_rules.py` conta il Roller
+   con la corsa, la camminata e Hike, con gli stessi controlli. Come la
+   camminata, niente tempi migliori del gioco; i record personali sono a
+   parte. Il controllo «veicolo» (oltre 25 km/h su 200 m per più del 10%
+   della corsa) può scartare un pattinatore veloce: la parte A lo misura,
+   e una soglia per sport andrebbe chiesta all'utente.
+
+**Alternative**:
+
+- **`rollersec`, con le secondarie**: otto forme in più, quasi tutte in
+  montagna, ma un ottavo del percorso su strade veloci, dove coi pattini non
+  si va. Non la propongo.
+- **`rollerquiet`**: più sicura sulla carta, ma regge solo a Milano.
+- **`rollerflat`**: toglie le discese ripide, ma costa forme a Trento e
+  vuole le quote nel motore. Dopo TASK-347 G.
+- **La rete foot o bike così come sono**: porterebbero chi pattina su
+  porfido, sterrato o strade principali.
+- **Una rete fatta col tag `inline_skates`**: 4,5 km in sei zone.
+
+## ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono
+
+**Stato**: Proposto · 2026-11-06 · TASK-408. Le scelte di prodotto sono
+dell'utente (domande aperte in `tasks/TASK-408.md`); il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole un animale (un cavallo, un elefante…) che
+corre il percorso nel video, in 3D, e tante modifiche: il finale, i
+colori, le emoji, il 2D e il 3D, i cambi di scena, anche scritte con un
+prompt, senza un costo per ogni richiesta. Il video di TASK-351 si fa già
+in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
+
+**Decisione (proposta)**:
+
+1. **Il personaggio** è un modello glTF animato, disegnato da **three.js**
+   come «custom layer» di MapLibre nella pagina del video (`videoPage.ts`).
+   three.js si carica come MapLibre: versione fissata e hash SRI. Niente di
+   nativo, quindi l'impronta iOS non cambia e si pubblica con un OTA.
+   three.js è una dipendenza nuova: l'utente ha detto sì il 2026-11-06.
+2. **I modelli** hanno una licenza scritta e nessun personaggio di altri.
+   Il candidato è il pacchetto CC0 di Quaternius (glTF, galoppo e passo).
+   L'elefante non c'è in nessun pacchetto CC0 trovato: l'utente lo vuole
+   nella prima versione (2026-11-06). Si usa solo con una licenza letta e
+   scritta nel task. L'utente ha scelto «Elephant Anim» di Shivoahm
+   (Sketchfab, CC BY 4.0, gratis): titolo, autore, fonte, licenza e «adapted
+   by MuW» in una riga dei crediti dell'app, col testo approvato
+   dall'utente.
+3. **Il percorso non si inventa**: il personaggio sta sul punto della
+   traccia dove arriva la linea in quel fotogramma, girato nella direzione
+   della strada. La camera lo segue; su un telefono lento resta ferma, e
+   senza modello il video esce come oggi.
+4. **L'editor** offre righe chiuse (personaggio, stile, colori dai token,
+   emoji, scene, finale). La scena resta un elenco di cose da disegnare
+   (`VideoScene`), con pezzi in più.
+5. **Il prompt** si legge **sul telefono** con una tabella di parole, come
+   le forme (ADR-0036): niente rete, nessun servizio AI, nessun costo per
+   richiesta (scelta dell'utente). Le parole scelgono solo voci
+   dell'editor, mai coordinate o geometrie (ADR-0001).
+6. Cinque parti: A proposta, B personaggio 3D, C editor, D prompt, E prova
+   sul telefono. Ogni parte ha la sua lista dei file approvata dal
+   Coordinatore.
+
+**Alternative**:
+
+- **Un'AI esterna per il prompt**: scartata dall'utente, per il costo a
+  ogni richiesta.
+- **Animali 2D (emoji o disegni piatti) che scorrono sulla linea**: più
+  leggeri, ma l'utente vuole il 3D. Restano la riserva se three.js non
+  entra.
+- **Un renderer 3D nativo** (SceneKit, Filament): una build nuova e
+  un'impronta nuova per ogni ritocco. La pagina del video ha già WebGL.
+- **I modelli 3D nel layer di MapLibre senza three.js**: MapLibre GL JS non
+  carica glTF da solo.

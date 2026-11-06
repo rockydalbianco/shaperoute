@@ -14,6 +14,7 @@ import {
   RUNNING,
   TRACKLESS_SPORTS,
 } from "./sports/index.ts";
+import type { GymLevel } from "./gym.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -1006,6 +1007,12 @@ export interface PublicProfile {
    * best to estimate it from. Missing from an API older than TASK-397.
    */
   vo2max?: Vo2Max | null;
+  /**
+   * The levels at the gym (TASK-385 E, ADR-0327): of every workout, private
+   * ones too; the highest level first, then as the catalog. Missing from an
+   * API older than TASK-385 E.
+   */
+  gym_levels?: GymLevel[];
 }
 
 /** Where a VO₂ max comes from (TASK-397). */

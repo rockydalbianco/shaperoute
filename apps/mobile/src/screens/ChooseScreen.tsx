@@ -13,6 +13,8 @@ import { t, tLater } from "../i18n";
 import { useStartAddress } from "../location/startAddress";
 import { OpenSettings } from "../permissions/OpenSettings";
 import { PlaceSearch, type SuggestPlaces } from "../places/PlaceSearch";
+import { usePoolChoice } from "../pool/poolChoice";
+import { PoolDraw, SwimPlaceChoice } from "../pool/PoolDraw";
 import type { LatLon } from "@shaperoute/shared-types";
 
 import type { Place } from "../places/photon";
@@ -107,6 +109,11 @@ export function ChooseScreen({
   const sport = useSport();
   const gym = sport === "gym";
   const recordOnly = (isRecordOnly(sport) || gym) && onRun !== undefined;
+  // A swim in open water or in a pool (TASK-400 part B, ADR-0334): in a
+  // pool no start, no shape, no route, the pool and «Start swim».
+  const { place } = usePoolChoice();
+  const swim = sport === "swim" && onRun !== undefined;
+  const pool = swim && place === "pool";
   // The start by its street (TASK-361): only while the GPS is the start and
   // answers; any other line (searching, refused, a place) says more.
   const onGps = mode === "gps" && !searching && !denied;
@@ -144,12 +151,15 @@ export function ChooseScreen({
               {/* The whole of it: "Run" alone read as running the route
                 drawn below (TASK-158). Outlined: the yellow is the
                 route's (TASK-361). */}
-              {onRun && !recordOnly && (
+              {onRun && !recordOnly && !pool && (
                 <RunNoRouteButton label={runLabel} icon={runIcon} onPress={onRun} />
               )}
             </View>
           </View>
-          {recordOnly ? (
+          {swim && <SwimPlaceChoice place={place} />}
+          {pool ? (
+            <PoolDraw />
+          ) : recordOnly ? (
             <RecordDay
               label={runLabel}
               icon={runIcon}
@@ -208,7 +218,7 @@ export function ChooseScreen({
         {/* Docked over the page's foot: the page's own padding keeps its last
           card above it, however tall the button and the notices get. No
           route, no button for it, on the snow. */}
-        {!recordOnly && (
+        {!recordOnly && !pool && (
           <View
             style={styles.footerDock}
             testID="draw-footer"

@@ -33,6 +33,8 @@ FIXTURES = (
 )
 POOL_KEY = "5a4b3c2d1e0f9a8b"
 THIS_APP = json.loads((FIXTURES / "reads.json").read_text(encoding="utf-8"))["this_app"]
+# The app of before TASK-400 B: the gym and its post without a line, no pool.
+GYM_APP = ",".join(kind for kind in THIS_APP.split(",") if kind != "pool")
 Headers = dict[str, str]
 
 
@@ -41,7 +43,7 @@ def swim(**changes: Any) -> dict[str, Any]:
     return {**body, **changes}
 
 
-def reading(headers: Headers, kinds: str = f"{THIS_APP},pool") -> Headers:
+def reading(headers: Headers, kinds: str = THIS_APP) -> Headers:
     """The app of TASK-400 B, which reads a swim in a pool."""
     return {**headers, READS_HEADER: kinds}
 
@@ -195,8 +197,8 @@ def test_it_is_published_without_a_line_with_its_pool(
     assert figures.status_code == 200, figures.text
     assert figures.json() == {"pool_length_m": 25.0, "lengths": 60}
     # An app of before, or one that reads the gym but no pool (the app of
-    # today), has neither.
-    for headers in (reader, reading(reader, THIS_APP)):
+    # before TASK-400 B), has neither.
+    for headers in (reader, reading(reader, GYM_APP)):
         assert client.get(f"/drawings/{drawing_id}", headers=headers).status_code == 404
         assert (
             client.get(f"/drawings/{drawing_id}/pool-swim", headers=headers).status_code

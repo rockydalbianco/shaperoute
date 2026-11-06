@@ -112,13 +112,15 @@ oggi:
 2. **Il prompt senza costi** (2026-11-06): «senza la questione richiesta AI
    con un costo per ogni richiesta». Il prompt si legge sul telefono con una
    tabella di parole.
+3. **three.js e i modelli CC0** (2026-11-06): «Sì, vai». three.js entra
+   nella pagina del video (versione fissata, SRI, niente di nativo); i
+   modelli sono quelli CC0 di Quaternius, con la lista degli animali letta
+   nel pacchetto prima di prometterla.
 
 ## Domande aperte (una alla volta)
 
-1. **three.js e i modelli CC0** — la prossima. Proposta: sì a three.js
-   nella pagina del video (versione fissata, SRI, nessun cambio nativo) e ai
-   modelli CC0 di Quaternius.
-2. **L'elefante**. Proposta: per la prima versione gli animali del
+1. ~~three.js e i modelli CC0~~: risposta sopra (scelta 3).
+2. **L'elefante** — la prossima. Proposta: per la prima versione gli animali del
    pacchetto CC0; l'elefante dopo, con un modello a pagamento di cui si
    legge la licenza, o fatto per MuW.
 3. **Quali personaggi** nella riga, e quanti. Proposta: 5 o 6, scelti dalla

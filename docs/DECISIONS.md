@@ -23953,6 +23953,39 @@ motore, nel contratto e nell'API, e i loro profili nascosti nell'app, come
 **Server**: migrazione 0052 e deploy, col sì dell'utente. Nessuna notte di
 esempi.
 
+## ADR-0334, precisazione — La parte A: il nuoto in piscina nel server
+
+**Stato**: Attiva · 2026-11-06 · TASK-400 parte A, decisa dall'agente su
+delega dell'utente; lista dei file e migrazione `0053` dal Coordinatore.
+
+1. **Un endpoint suo**, `PUT /me/pool-swims/{key}`, come la palestra: la
+   corsa ha `activity` `swimming`, `track` nullo e `distance_m` = vasche ×
+   vasca, al metro. `GET /me/pool-swims/{key}` al proprietario, `GET
+   /drawings/{id}/pool-swim` (vasca e vasche) a chi vede il disegno.
+2. **La vasca al centimetro** (`numeric(5, 2)`, 10–100 m): 33⅓ m si tiene
+   33,33 m e 30 vasche fanno 1000 m. Le vasche da 1 a 1000.
+3. **Un tetto di velocità**, 2,5 m/s (sopra i record del mondo sui 50 m):
+   oltre è `422`, perché vasche o vasca sono scritte male. Il telefono lo
+   controlla prima (parte B).
+4. **Il CHECK delle corse senza traccia** si allarga a `swimming`; un CHECK
+   non legge `pool_swims`, quindi è l'API che non salva mai un nuoto senza
+   traccia fuori da `pool_swims.py`.
+5. **Il disegno apre solo il caso della piscina** (`drawings.py`, con la
+   condizione del Coordinatore): una corsa con una riga in `pool_swims` si
+   pubblica solo come `swimming`. Ogni altra corsa senza traccia resta col
+   `NOT_TRACKLESS` di prima (solo attività di `TRACKLESS_ACTIVITIES`): una
+   corsa di Salute senza GPS pubblicata come `running` arriverebbe senza
+   mappa ad app che non la sanno mostrare, perché nessun valore di
+   `X-MuW-Reads` la copre.
+6. **`pool` in `X-MuW-Reads`**, entrato dopo TASK-378 A: `Reads.pool`;
+   chi dice `swimming` e `trackless` ma non `pool` riceve i nuoti con la
+   traccia e non quelli senza (`r.activity <> 'swimming' OR r.track IS NOT
+   NULL` nell'SQL). `this_app` in `reads.json` resta senza `pool` finché
+   l'app non lo dice (parte B).
+
+**Conseguenze**: una migrazione, nessuna dipendenza, nessun testo
+dell'app, impronta iOS e del motore invariate (`pool_swims.py` e
+`drawings.py` non sono in `engine.zip`). Server col sì dell'utente.
 ## ADR-0310, precisazione — Un percorso di MuW non dice quanto somiglia
 
 **Stato**: Accettato · 2026-11-06 · TASK-405. Deciso dall'agente su

@@ -2942,6 +2942,38 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
 - Cancellare la corsa (`DELETE /me/activities/{key}`) o l'account cancella
   le serie. Senza il database, `503`.
 
+### Pool swim (TASK-400, ADR-0334)
+
+Un nuoto in piscina: una corsa dell'attività `swimming` **senza traccia**,
+con la vasca e le vasche. Token richiesto; tipi in
+`shared-types/src/poolSwim.ts` (`PoolSwimRequest`, `PoolSwim`,
+`PoolSwimFigures`), esempio in `fixtures/pool-swim.json`; il codice in
+`pool_swims.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/pool-swims/{key}` | salva il nuoto: inizio, fine, pause, vasca, vasche | `201` `PoolSwim` la prima volta, poi `200` com'era; `409` se la chiave è di una corsa |
+| `GET /me/pool-swims/{key}` | il nuoto del suo proprietario | `200` `PoolSwim`, o `404` |
+| `GET /drawings/{id}/pool-swim` | vasca e vasche del post, per chi vede il disegno | `200` `PoolSwimFigures`, o `404` |
+
+- **Tempo e metri li conta il server**: il tempo da `started_at` a
+  `ended_at` meno le pause (sovrapposte contate una volta), al più 24 ore;
+  i metri sono `lengths` × `pool_length_m`, al metro. La vasca va da 10 a
+  100 m e si tiene al centimetro (33,33 m); le vasche da 1 a 1000. Più
+  veloce di 2,5 m/s è `422` (vasche o vasca scritte male).
+- **Pubblicato come ogni corsa**, con `PUT /me/activities/{key}/drawing`:
+  senza linea (`track: []`). Il disegno non gli cambia attività:
+  `activity` diversa da `swimming` è `422`. Solo la piscina va come
+  `swimming` senza traccia; ogni altra corsa senza traccia resta fra le
+  attività senza traccia (`422` come prima).
+- **Solo a chi lo sa leggere**: `X-MuW-Reads` deve dire `swimming`,
+  `trackless` **e** `pool` (ADR-0334, punto 5). L'app di oggi, che dice
+  `trackless` per la palestra ma non `pool`, non riceve un nuoto senza
+  traccia: niente nel Feed, `404` sul dettaglio e su `/pool-swim`.
+- Nessun punteggio di forma, nessun record di corsa, nessun luogo, niente
+  Strava (una corsa senza traccia non si manda). Test in
+  `test_pool_swims.py`.
+
 ### Ski names (TASK-375 parte D2, ADR-0319)
 
 `GET /drawings/{id}/ski-names`, con il token: gli impianti presi e le piste

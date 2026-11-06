@@ -3128,6 +3128,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `X-MuW-Reads`); testi approvati. Proposta in PR da
   `docs/TASK-400-pool-swim`; poi A (server), B (app), C (post), ognuna con la
   lista dei file al Coordinatore. `tasks/TASK-400.md`.
+  2026-11-06: proposta in `main` (#867). Parte A (server: `PUT
+  /me/pool-swims/{key}`, migrazione `0053`, `drawings.py`) da
+  `feat/TASK-400-a-pool-api`; il valore `pool` in `X-MuW-Reads` dopo
+  TASK-378 A. Server col sì dell'utente.
 
 ## Completato
 

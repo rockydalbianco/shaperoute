@@ -1,7 +1,7 @@
 # TASK-400 — Nuoto in piscina: la vasca scelta prima di partire
 
-**Stato**: In corso · proposta e scelte dell'utente in questa PR; il codice
-dopo, una parte alla volta, ognuna con la sua lista dei file al Coordinatore
+**Stato**: In corso · proposta in `main` (#867); parte A (server) in PR;
+ogni parte dopo la sua lista dei file al Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-400-pool-swim` (documenti); il codice
 `feat/TASK-400-a-…`, `feat/TASK-400-b-…`
 **Dipende da**: TASK-323 (nuoto in acque libere, chiuso #834), TASK-385
@@ -123,7 +123,30 @@ docs/DECISIONS.md
 docs/STATUS.md
 ```
 
-Le parti A, B e C: lista dei file al Coordinatore prima del codice.
+Parte A (approvata dal Coordinatore il 2026-11-06; `reads.py`,
+`reads.json` e `test_reads.py` solo dopo TASK-378 A):
+
+```
+services/api/migrations/0053_pool_swims.sql
+services/api/shaperoute_api/pool_swims.py
+services/api/shaperoute_api/app.py
+services/api/shaperoute_api/drawings.py
+services/api/shaperoute_api/reads.py
+services/api/tests/test_pool_swims.py
+services/api/tests/test_reads.py
+packages/shared-types/src/poolSwim.ts
+packages/shared-types/src/index.ts
+packages/shared-types/fixtures/pool-swim.json
+packages/shared-types/fixtures/reads.json
+packages/shared-types/test/poolSwim.test.ts
+docs/API.md
+docs/DATABASE.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-400.md
+```
+
+Le parti B e C: lista dei file al Coordinatore prima del codice.
 `settings/sport.ts` è condiviso con TASK-376 B3c e TASK-377 B;
 `health/appleWorkout.ts` e `healthConnectWorkout.ts` con TASK-374 C, 345 C
 e 397 C (1.0.2): dove basta, si passa dal profilo dello sport

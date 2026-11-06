@@ -3291,8 +3291,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scheda, nelle griglie, nella ricerca e nell'immagine condivisa
   (ADR-0334, precisazione C). Entra dopo TASK-394 B. Poi: server (A), OTA
   e store col sì dell'utente.
+  **Chiuso il 2026-11-06**: C in main (#898, 1939b121); vedi «Completato».
 
 ## Completato
+
+- **TASK-400 — Nuoto in piscina** (2026-11-06; ADR-0334 con le precisazioni A, B e C). Lo
+  sport si chiama «Swim»: in «Draw» «Open water» o «Pool»; in piscina la vasca (25, 50 o
+  «Other» 10–100 m), il cronometro con «Pause», «How many lengths?» con la stima, vasche,
+  metri, tempo e passo/100 m; salvato con `PUT /me/pool-swims/{key}`, in Salute come nuoto in
+  piscina (senza la lunghezza della vasca: limite della libreria); il post senza mappa come la
+  palestra, solo alle app che dicono `pool`. A #871 (server già a cab53f51 con `0053`), B #880,
+  C #898 (1939b121); impronta iOS `6f8bba4c` invariata. Preview pubblicata dal Coordinatore
+  (gruppo 71b18ba0). Resta l'OTA di produzione col sì dell'utente. `tasks/TASK-400.md`.
 
 - **TASK-394 — I capi che indossi: tag sui propri post con il link al negozio**
   (2026-11-06; idea dell'utente, ADR-0333 e la sua «precisazione B»). Parte A

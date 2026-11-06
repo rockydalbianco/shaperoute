@@ -781,6 +781,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   run», «No animal» all'apertura; three.js 0.159.0 con SRI caricato solo con
   un animale, e senza rete il video esce senza (ADR-0339, precisazione B).
   Prossimo: B2, l'elefante dall'utente, i crediti, la camera dietro.
+  **B1 in main** il 2026-11-06 (#911, 32cbb012; impronta iOS 6f8bba4c
+  invariata, misurata dal Coordinatore). Non ancora in produzione: prima
+  dell'OTA un video del simulatore per l'utente, poi il suo sì. B2 parte da
+  `origin/main` (la #908 è già dentro) quando l'utente ha scaricato
+  l'elefante in `out/TASK-408/`.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

@@ -303,6 +303,7 @@ c'è già in «Share your run», quindi niente «Export video».
     sulla punta della linea, in ogni stile, la riga «Character», il video
     che esce anche senza rete. Lista approvata dal Coordinatore il
     2026-11-06, con `SharePostVideo.test.tsx` aggiunto lo stesso giorno.
+    **In main** il 2026-11-06 (#911, 32cbb012), impronta iOS invariata.
   - **B2**: l'elefante (il file lo scarica l'utente da Sketchfab, che chiede
     un account), la riga dei crediti nei Termini (`about/content/*.ts`,
     dopo la #908), la camera dietro l'animale sul 3D.

@@ -156,6 +156,28 @@ oggi:
    I pezzi si riordinano o si spengono, almeno uno resta acceso; se uno è
    spento gli altri si allungano e il video dura sempre 12 secondi. Tutto
    viene dalla traccia vera.
+9. **Il prompt** (2026-11-06): «Sì, approvo». Testi approvati, in inglese
+   (le altre lingue con la domanda 6):
+   - titolo del campo: «Describe your video»;
+   - esempio dentro il campo: «a horse at night, fireworks at the end»;
+   - riga sotto: «An animal, colours, emoji, the ending. Read on your
+     phone.»
+   Le parole scelgono solo voci dell'editor, che poi si cambiano a mano;
+   una parola sconosciuta si salta senza errore; niente rete. La prima
+   tabella, in it/en/de/es/fr (esempi in italiano):
+   - **Personaggio**: i 13 nomi con i sinonimi (cavallo, cavallo bianco,
+     elefante, cervo, capriolo, volpe, lupo, cane/husky, shiba, mucca, toro,
+     asino, alpaca); «nessuno» → None.
+   - **Stile**: notte, giorno, 2D/piatto, 3D.
+   - **Colore della linea**: giallo, azzurro, rosa, verde, bianco (i cinque
+     dei token).
+   - **Emoji**: fuochi d'artificio 🎆, stelle ⭐, cuore ❤️, fuoco 🔥, fulmine
+     ⚡, coriandoli 🎉, trofeo 🏆; con «alla fine» al finale, altrimenti lungo
+     il percorso.
+   - **Scene**: «senza apertura»; «da dietro»/«segui» → camera dietro;
+     «gira»/«intorno» → camera che gira.
+   - **Finale**: numeri, disegno, cuore, «tutto».
+   La tabella è un file dell'app: parole nuove arrivano con un OTA.
 
 ## Domande aperte (una alla volta)
 
@@ -184,10 +206,8 @@ oggi:
 3. ~~Quali personaggi~~: risposta sopra (scelta 7). Era la proposta: sei
    (Horse, l'elefante, Stag, Fox, Wolf, Husky) più «None».
 4. ~~Le scene e il finale~~: risposta sopra (scelta 8).
-5. **Il prompt** — la prossima: cosa si promette nel testo del riquadro, e la prima
-   tabella di parole. Proposta: «Describe your video: an animal, colours,
-   emoji, the ending», con le parole di ogni voce dell'editor.
-6. **I testi** in cinque lingue.
+5. ~~Il prompt~~: risposta sopra (scelta 9).
+6. **I testi** in cinque lingue — la prossima.
 
 ## Le parti
 

@@ -24594,7 +24594,8 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
 5. **Il prompt** si legge **sul telefono** con una tabella di parole, come
    le forme (ADR-0036): niente rete, nessun servizio AI, nessun costo per
    richiesta (scelta dell'utente). Le parole scelgono solo voci
-   dell'editor, mai coordinate o geometrie (ADR-0001).
+   dell'editor, mai coordinate o geometrie (ADR-0001). Testo del riquadro e
+   prima tabella approvati il 2026-11-06 (`tasks/TASK-408.md`, scelta 9).
 6. Cinque parti: A proposta, B personaggio 3D, C editor, D prompt, E prova
    sul telefono. Ogni parte ha la sua lista dei file approvata dal
    Coordinatore.

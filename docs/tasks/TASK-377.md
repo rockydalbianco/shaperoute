@@ -1,7 +1,7 @@
 # TASK-377 — L'escursionismo, il pilota della struttura degli sport
 
-**Stato**: In corso — parti 0 e A in `main`, parte B in PR; resta
-«ready», dopo il server con la parte A.
+**Stato**: In corso — parti 0, A e B in `main` (#821, #838, #861); resta
+«ready» (#864, in bozza), dopo il server con la parte A.
 **Fase**: 4 · **Branch**: `docs/TASK-377-0-hike` (parte 0), poi
 `feat/TASK-377-a-hike-engine-api`, `feat/TASK-377-b-hike-app` ·
 **ADR**: ADR-0321 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -267,6 +267,27 @@ metà di un percorso sta sui sentieri: le misure sono in `hike.md`.
 Server (0051 e deploy) col sì dell'utente.
 
 Prossimo: la parte B, dopo la #765.
+
+2026-11-05, **parte A in `main`** (#838, `48bc58c8`), unita dal
+Coordinatore dopo l'OTA di produzione della sera. Dopo la lista
+definitiva, la CI ha chiesto altri file, tutti approvati dal Coordinatore:
+
+- otto test che usavano `hiking` come attività sconosciuta o ne
+  congelavano le liste: quattro dell'app e quattro dell'API;
+- `ACTIVITY_MIGRATIONS` di `test_favorites.py` ora contiene anche la 0051;
+- il file degli sport dell'orologio, `targets/watch/…/sports.json`,
+  rigenerato con `scripts/watch-sports.sh` (la hike vi ha
+  `onWatch: true`; l'orologio non è in nessuna build).
+
+`__main__.py` sceglie la rete a piedi con `OsmnxSource(cache_dir)`, come
+prima: lì i test mettono i loro grafi finti. Le altre reti passano per
+`OsmnxSource.for_activity`. Impronte finali: engine 9be259696402 →
+e13ded92b52d, swims 822413512e24 → db4ee081c4a4, paddle 05b33f547d79 →
+fb16815e3876. L'impronta iOS resta `6f8bba4c`.
+
+Il server non ha ancora la parte A: migrazione 0051 e deploy, col sì
+dell'utente. Un giro di esempi solo hike per Explore, se serve, è a
+parte.
 
 2026-11-05, parte B (`feat/TASK-377-b-hike-app`), lista approvata dal
 Coordinatore con due deroghe (`sports/base.ts` per il campo `caution`,

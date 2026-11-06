@@ -552,6 +552,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   l'allenamento di forza in Salute / Health Connect. Scelta dell'utente
   del 2026-11-06: «Niente kcal» se gli esercizi sono nascosti. Solo
   JavaScript; OTA col sì. Prossima: F (classifica).
+  Parte C in `main` (#904, 756d6f83), impronta iOS 6f8bba4c misurata dal
+  Coordinatore; OTA col sì dell'utente. Prossima: F (classifica).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo
@@ -1603,6 +1605,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dopo Apple, con il sì dell'utente; poi va guardato nei log quello che
   dice il task file. La parte B parte da qui, in una sessione sua, con i
   «File toccati» al Coordinatore prima del codice.
+  **Parte B pronta il 2026-11-06** (branch `feat/TASK-314-b-way-back-run`, lista approvata
+  dal Coordinatore): fuori percorso, a piedi o in bici, la corsa chiede la strada sulle vie
+  (telefono, poi server; a telefono bloccato subito il server), al più ogni 15 s. La mappa
+  mette i puntini lungo le vie, il banner la prossima svolta sotto «Off the route», la voce
+  e la notifica le svolte. Senza strada, i puntini di TASK-303. Nessun testo nuovo
+  nell'app; una frase nella Privacy (cinque lingue e `site/privacy`), approvata
+  dall'utente. Per TASK-401 B: la Live Activity legga `navigation.wayBack` (task file,
+  «ADR-0274, precisazione B»). Solo JS; impronta iOS dal Coordinatore. Non provata nel
+  simulatore. **Chiuso il 2026-11-06** nella PR della parte B; vedi «Completato».
 - **TASK-313 — «Draw it near me»: la stessa forma in un altro posto**
   (ADR-0273; richiesta dell'utente del 2026-10-27, «Sì, così» alla
   proposta; numero e ordine dal Coordinatore, prima di TASK-309 B). Branch
@@ -3320,6 +3331,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-314 — La strada per tornare sul percorso, sulle vie** (2026-11-06; ADR-0274 e la sua
+  «precisazione B»). Parte A #588 (motore, `/way-back`, motore sul telefono); parte B nella
+  sua PR: lo schermo di corsa chiede la strada fuori percorso e la mostra sulla mappa, nel
+  banner, a voce e a schermo bloccato; senza strada i puntini di TASK-303. Una frase nuova
+  nella Privacy, approvata dall'utente. Restano l'OTA e la pubblicazione del sito col sì
+  dell'utente, App Privacy da guardare, la prova su una corsa vera, e in 401 B la Live
+  Activity su `navigation.wayBack`. `tasks/TASK-314.md`.
 - **TASK-400 — Nuoto in piscina** (2026-11-06; ADR-0334 con le precisazioni A, B e C). Lo
   sport si chiama «Swim»: in «Draw» «Open water» o «Pool»; in piscina la vasca (25, 50 o
   «Other» 10–100 m), il cronometro con «Pause», «How many lengths?» con la stima, vasche,

@@ -1,8 +1,9 @@
 # TASK-400 — Nuoto in piscina: la vasca scelta prima di partire
 
 **Stato**: In corso · proposta in `main` (#867); parte A (server) in
-`main` (#871, cab53f51), server col sì dell'utente; parte B (app) in PR da
-`feat/TASK-400-b-pool-app`, dopo TASK-378 B; prossima la parte C (post);
+`main` (#871, cab53f51), server col sì dell'utente; parte B (app) in
+`main` (#880, a178bb18; impronta iOS 6f8bba4c invariata); prossima la
+parte C (post) da `feat/TASK-400-c-pool-post`;
 ogni parte dopo la sua lista dei file al Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-400-pool-swim` (documenti); il codice
 `feat/TASK-400-a-…`, `feat/TASK-400-b-…`

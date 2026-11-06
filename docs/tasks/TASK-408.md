@@ -118,19 +118,33 @@ oggi:
    nel pacchetto prima di prometterla.
 4. **L'elefante subito** (2026-11-06): «Elefante subito». L'elefante è nella
    prima versione, accanto agli animali CC0. Quale modello: domanda 2b.
+5. **Quale elefante** (2026-11-06): «Gratis, CC BY». «Elephant Anim» di
+   Shivoahm su Sketchfab, CC BY 4.0
+   (https://sketchfab.com/3d-models/elephant-anim-766f267ff6bd4a87a45e3d26286b9d27).
+   CC BY chiede il titolo, l'autore, la fonte, la licenza e di dire se il
+   modello è stato cambiato (MuW lo converte e ne riduce le texture): una
+   riga nei crediti dell'app, testo nuovo da approvare (domanda 2c, vincolo
+   del Coordinatore).
 
 ## Domande aperte (una alla volta)
 
 1. ~~three.js e i modelli CC0~~: risposta sopra (scelta 3).
 2. ~~L'elefante~~: risposta sopra (scelta 4).
-2b. **Quale elefante** — la prossima. I candidati trovati il 2026-11-06:
+2b. ~~Quale elefante~~: risposta sopra (scelta 5).
+2c. **La riga dei crediti** — la prossima. Proposta: un punto nuovo in
+   «Terms» › «Services of others» (`about/content/*.ts`, cinque lingue, più
+   la pagina del sito), in inglese: «The 3D animals in the video come from
+   Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm on
+   Sketchfab (CC BY 4.0), adapted by MuW.» I modelli CC0 non chiedono
+   crediti: Quaternius si nomina per cortesia.
+   I due candidati della domanda 2b (2026-11-06), per la storia:
    - **«Elephant Anim» di Shivoahm su Sketchfab**
      (https://sketchfab.com/3d-models/elephant-anim-766f267ff6bd4a87a45e3d26286b9d27):
      gratis, **CC BY 4.0** (uso commerciale permesso, con il nome
      dell'autore nei crediti dell'app), 6k triangoli, animazioni idle, passo,
      corsa e in piedi su due zampe. L'autore lo chiama «realistico»: accanto
      agli animali low-poly di Quaternius può sembrare di un altro stile.
-     **Proposta**, perché non costa e la licenza è chiara.
+     Scelto dall'utente.
    - **«African elephant» su CGTrader**, circa 7 $, licenza «Royalty Free»
      di CGTrader, glTF, circa 6k poligoni, 15 animazioni; texture 8K da
      ridurre per il telefono. Da comprare l'utente stesso, dopo aver letto

@@ -74,6 +74,27 @@ export interface GymExercises {
   rests: number;
   rest_s: number;
   sets: GymSet[];
+  /** The levels this workout reached first (part E), the highest first;
+   * missing from an API older than TASK-385 E. */
+  new_levels?: GymLevel[];
+}
+
+/** What a milestone reads (docs/sports/gym.md «I tipi di serie»): the kg of
+ * a load (per hand for a dumbbell), the reps of a set of the body, the
+ * seconds of a timed set or of a machine without distance, the metres of a
+ * cardio block. */
+export const GYM_LEVEL_MEASURES = ["load_kg", "reps", "duration_s", "distance_m"] as const;
+export type GymLevelMeasure = (typeof GYM_LEVEL_MEASURES)[number];
+
+/** The level of an exercise of the catalog (TASK-385 E, ADR-0327 point 9):
+ * its best set under the cap, of every workout of the account, private ones
+ * too; `level` 1–7 is the figure `figures[level - 1]` of
+ * fixtures/gym-exercises.json. Mirrors gym_levels.py. */
+export interface GymLevel {
+  exercise: string;
+  level: number;
+  value: number;
+  measure: GymLevelMeasure;
 }
 
 /** PUT /me/gym-sessions/{key}/show-exercises. */

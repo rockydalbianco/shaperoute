@@ -68,6 +68,23 @@ I tetti sono sopra i record mondiali noti (le alzate) o sopra quello che una
 macchina carica; servono contro gli errori di battitura e i numeri
 inventati, non a giudicare. Un «Custom» non ha scala né classifica.
 
+## I traguardi sul profilo e nel post (parte E)
+
+- **Contano tutti gli allenamenti**, anche i privati (scelta dell'utente
+  del 2026-11-06, come i record personali): il profilo mostra figura,
+  esercizio e valore, mai l'allenamento. Contano anche le serie aggiunte
+  dopo «Stop»; «solo dal vivo» vale per la classifica.
+- **Sul profilo** il blocco «🏋️ Gym», dopo i record e il VO₂ max: ogni
+  esercizio dal livello 1, prima il livello più alto, con la figura e la
+  serie migliore. I primi cinque, gli altri sotto «Show more» (scelta
+  dell'utente del 2026-11-06).
+- **Nel post** «New level: 🦍 Gorilla · Panca piana 140 kg» per ogni
+  livello che l'allenamento supera rispetto a quelli cominciati prima:
+  sotto il riquadro nel Feed, sopra gli esercizi nella scheda. Spento
+  «Show exercises», niente livelli.
+- Il server li conta a ogni lettura dalle serie salvate: cancellato un
+  allenamento, il livello torna quello degli altri.
+
 ## Il catalogo
 
 Tipo e scala per ogni esercizio; nomi, figure e scale approvati dall'utente

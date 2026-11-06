@@ -23629,6 +23629,42 @@ TASK-348 (ADR-0301), già in `main`.
 approvato il 2026-11-04. Nessuna dipendenza, niente nativo, niente server:
 impronta iOS 6f8bba4c invariata. «Up to 10 in a post.» resta anche per la
 palestra: dice le foto, non le pagine.
+
+## ADR-0327, precisazione — La parte E: i traguardi della palestra
+
+**Stato**: Attiva · 2026-11-06 · TASK-385 parte E, decisa dall'agente su
+delega dell'utente dentro le sue scelte (la scelta 8, «100 kg di panca
+piana sblocchi quella figura», e del 2026-11-06 «Tutti» e «I primi 5 +
+altro»); lista dei file approvata dal Coordinatore.
+
+**Decisione**:
+
+1. **Si contano a ogni lettura, nessuna tabella**: il livello di un
+   esercizio è la serie migliore sotto il tetto, da `gym_sets`, con la
+   regola di `gym_catalog.measured` e `level_of` scritta in SQL
+   (`gym_levels.py`); un test confronta le due. Niente migrazione: un
+   account ha poche centinaia di serie.
+2. **Contano tutti gli allenamenti, anche i privati** (scelta dell'utente,
+   come i record personali di TASK-368): il profilo mostra figura,
+   esercizio e valore, mai l'allenamento. Le serie aggiunte dopo «Stop»
+   contano: la regola «solo dal vivo» è della classifica (parte F).
+3. **Sul profilo** `gym_levels` in `GET /users/{public_id}`, prima il
+   livello più alto, poi nell'ordine del catalogo. L'app mostra il blocco
+   «🏋️ Gym» dopo i record e il VO₂ max: i primi cinque, gli altri sotto
+   «Show more» (scelta dell'utente). Testi già approvati: «Gym», «Show
+   more» e i sette nomi delle figure.
+4. **Nel post** `new_levels` in `GET /drawings/{id}/exercises`: i livelli
+   che l'allenamento supera rispetto a quelli cominciati prima, anche se
+   salvati dopo. Seguono gli esercizi: nascosti loro, nascosti anche i
+   livelli. L'app scrive «New level: {figure} · {exercise} {value}» sotto
+   il riquadro nel Feed e sopra gli esercizi nella scheda.
+5. **Il valore si legge come una serie del post**: kg o lb come dicono le
+   unità (per mano col manubrio), «×30» per le ripetizioni, il tempo, la
+   distanza.
+
+**Conseguenze**: campi nuovi e facoltativi; le app vecchie li ignorano, e
+il server può andare prima dell'app. Nessuna dipendenza, niente nativo:
+impronta iOS invariata. Il server va col sì dell'utente.
 ## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
 
 **Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto

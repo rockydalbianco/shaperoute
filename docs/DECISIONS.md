@@ -23774,7 +23774,9 @@ dell'utente):
 - **«Change» e il «Change» della corsa**: in italiano il secondo è
   «Differenza». Un testo uguale in inglese e diverso altrove si scrive
   `t("Change@@piece")`: `translate` mostra in inglese quello che viene prima
-  di `@@` (`CONTEXT_MARK`), le tabelle hanno la chiave intera.
+  di `@@` (`CONTEXT_MARK`), le tabelle hanno la chiave intera. È una
+  modifica al traduttore di tutta l'app: `apps/mobile/src/i18n/translate.ts`
+  e il suo test `translate.test.ts`; i testi senza `@@` restano come prima.
 
 ## ADR-0337 — «Edit the drawing» torna sotto le opzioni A, B e C del risultato di «Draw»
 

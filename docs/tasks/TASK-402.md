@@ -205,6 +205,8 @@ apps/mobile/src/map/MapView.tsx                 (i tre campi alla pagina, `tappe
 apps/mobile/src/mapdraw/mapPageCanvas.test.ts
 apps/mobile/src/mapdraw/useMapCanvas.test.ts
 apps/mobile/App.tsx                             (una riga, `pieces={mapDraw.pieces}`)
+apps/mobile/src/i18n/translate.ts               (`CONTEXT_MARK` «@@»: cambia il traduttore di tutta l'app)
+apps/mobile/src/i18n/translate.test.ts
 docs/DECISIONS.md                               (precisazioni della parte B in ADR-0336)
 ```
 

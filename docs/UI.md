@@ -2766,6 +2766,31 @@ parte da quell'angolo e per trovare le strade può girarla ancora fino a
 VoiceOver legge *Turn left 15 degrees*, *Turn right 15 degrees* e *Angle,
 30 degrees. Double tap to type it*.
 
+**I pezzi** (TASK-402 parte B, ADR-0336): con una figura sulla mappa,
+sopra le tessere c'è **«Change | Add»**. Con «Change» la tessera cambia la
+figura come prima (o il pezzo scelto, dov'è e grande com'è); con **«Add»**
+mette un **pezzo nuovo** nel mezzo della mappa, grande un terzo della
+figura, già scelto, e passa a «Move». Le linee disegnate col dito restano
+del primo pezzo. Con «Move» e due pezzi o più il suggerimento diventa *Tap
+a piece to choose it, then drag, resize or turn it. Tap outside to take
+them all.*: un tocco su un pezzo lo **sceglie** (le sue linee in giallo
+pieno con un riquadro sottile attorno, girato con lui; gli altri più
+chiari), un tocco fuori dai pezzi torna alla figura intera. Il pezzo
+scelto si trascina con un dito, si ridimensiona e si gira con due, e
+«−15° · angolo · +15°» girano lui; dopo l'angolo c'è **«Delete piece»**,
+che lo toglie (tolto il primo, il contorno passa al pezzo dopo). Senza
+scelta tutto vale per la figura intera, che gira attorno al mezzo di tutti
+i pezzi. Si piegano solo le linee del primo pezzo. Il primo pezzo dà il
+contorno; gli altri si appendono al disegno dal punto più vicino, col
+collegamento tratteggiato del TASK-331 quando non lo toccano, e si
+semplificano come i contorni: «Draw route» chiede **un solo percorso**
+come disegno (contorno e dettagli), senza niente di nuovo nel contratto;
+con un pezzo solo la richiesta è quella di prima. Al massimo **6 pezzi**
+(il settimo dice *Up to 6 pieces in one drawing.* in rosso) e mai oltre i
+punti del contratto (*That is too much for one route…*). Un pezzo non
+scende sotto un sesto della distanza più corta di «Draw»; insieme restano
+dentro i suoi limiti.
+
 **Grandezza**: dentro i limiti di «Draw» per lo sport (1–21 km a piedi,
 10–30 in bici): oltre, la figura non cresce e non cala più. Una figura
 cresciuta oltre lo schermo fa allontanare la mappa, che la mostra intera.
@@ -2776,8 +2801,10 @@ l'ultima cancellatura, l'ultimo punto tappato o l'ultima piega.
 **«Redo»** rimette quello che «Undo» ha tolto, finché non si cambia altro.
 **«Clear all»** chiede *Clear the whole drawing?* («Cancel» o «Clear all»)
 e toglie la figura; «Undo» la rimette.
-Spostare e ridimensionare non si annullano; girare sì (TASK-402). Spenti
-finché non c'è niente.
+Spostare e ridimensionare non si annullano; girare sì (TASK-402). Con più
+pezzi (parte B) ogni pezzo aggiunto, spostato, ridimensionato, girato o
+tolto è un passo, e così spostare la figura intera; «Clear all» li toglie
+tutti. Spenti finché non c'è niente.
 
 **«Draw route»** chiede il percorso della figura dov'è, senza niente di
 nuovo nel contratto: una forma come in «Draw» (con la penna alzata se
@@ -2828,6 +2855,19 @@ dall'agente):
 | Turn left 15 degrees | Ruota a sinistra di 15 gradi | Um 15 Grad nach links drehen | Girar 15 grados a la izquierda | Tourner de 15 degrés vers la gauche |
 | Turn right 15 degrees | Ruota a destra di 15 gradi | Um 15 Grad nach rechts drehen | Girar 15 grados a la derecha | Tourner de 15 degrés vers la droite |
 | Angle, {deg} degrees. Double tap to type it | Angolo, {deg} gradi. Tocca due volte per scriverlo | Winkel, {deg} Grad. Zum Eingeben doppeltippen | Ángulo, {deg} grados. Toca dos veces para escribirlo | Angle, {deg} degrés. Touchez deux fois pour le saisir |
+
+La parte B del TASK-402 ha aggiunto (**approvati dall'utente** il
+2026-11-05, in inglese; le traduzioni dall'agente). «Change» qui è scritto
+`Change@@piece` nel codice: il «Change» dei chilometri della corsa in italiano
+è «Differenza», e `@@` distingue i due (`i18n/translate.ts`). «Add»
+c'era già.
+
+| English | Italiano | Deutsch | Español | Français |
+|---|---|---|---|---|
+| Change | Cambia | Ändern | Cambiar | Changer |
+| Tap a piece to choose it, then drag, resize or turn it. Tap outside to take them all. | Tocca un pezzo per sceglierlo, poi trascinalo, ridimensionalo o ruotalo. Tocca fuori per prenderli tutti. | Tippe auf ein Teil, um es auszuwählen, dann zieh, vergrößere oder drehe es. Tippe daneben, um alle zu nehmen. | Toca una pieza para elegirla y luego arrástrala, cambia su tamaño o gírala. Toca fuera para tomarlas todas. | Touche une pièce pour la choisir, puis fais-la glisser, redimensionne-la ou tourne-la. Touche à côté pour les prendre toutes. |
+| Delete piece | Elimina pezzo | Teil löschen | Eliminar pieza | Supprimer la pièce |
+| Up to 6 pieces in one drawing. | Al massimo 6 pezzi in un disegno. | Höchstens 6 Teile in einer Zeichnung. | Como máximo 6 piezas en un dibujo. | Au plus 6 pièces dans un dessin. |
 
 «Erase» e *Tap a line to erase it. The outline takes its details with it.*
 vengono dalla tavola del TASK-320, già approvati.

@@ -31,8 +31,8 @@ import { distanceLabel } from "../units/format";
 import type { Placed } from "./figure";
 import { FigureTiles } from "./FigureTiles";
 import { placedTile } from "./resultFigure";
-import type { ToolProblem } from "./tools";
 import { normalDeg, TURN_STEP_DEG, turnOf } from "./turn";
+import type { CanvasProblem, PiecesState } from "./useMapCanvas";
 
 // Translated where shown, with t().
 const MODES = [
@@ -60,12 +60,24 @@ const HINTS: Record<CanvasMode, string> = {
   ),
 };
 const ON_FIGURE = tLater("Each new line joins the drawing. Two fingers move the map.");
+/** With «Move» on two pieces or more (TASK-402 part B). */
+const AMONG_PIECES = tLater(
+  "Tap a piece to choose it, then drag, resize or turn it. Tap outside to take them all.",
+);
 
-const PROBLEMS: Record<ToolProblem, string> = {
+/** What a tile does on a figure (TASK-402 part B): change the piece chosen,
+ * or the first, or add a piece. */
+const TILE_MODES = [
+  { value: "change", label: tLater("Change@@piece") },
+  { value: "add", label: tLater("Add") },
+] as const;
+
+const PROBLEMS: Record<CanvasProblem, string> = {
   too_much: tLater(
     "That is too much for one route. Undo something, or draw simpler lines.",
   ),
   crosses: tLater("The outline cannot cross itself. Bend it less."),
+  too_many: tLater("Up to 6 pieces in one drawing."),
 };
 
 type Props = {
@@ -85,12 +97,15 @@ type Props = {
   onClear: () => void;
   /** What the figure would make, in metres; none without a figure. */
   distanceM: number | null;
-  problem: ToolProblem | null;
+  problem: CanvasProblem | null;
   /** «Draw route»: on with a figure. */
   onDraw: (() => void) | null;
   /** The figure turned to so many degrees (TASK-402): with «Move», «−15°»,
    * «+15°» and the angle typed. None leaves them out. */
   onTurn?: (deg: number) => void;
+  /** The pieces of the figure (TASK-402 part B): «Change | Add» over the
+   * tiles, the piece chosen and «Delete piece». None leaves them out. */
+  pieces?: PiecesState;
 };
 
 /**
@@ -100,7 +115,8 @@ type Props = {
  * where it is («+ photo» first, then the shapes of the catalogue and the
  * ready-made pictures of «Draw»), the distance the figure would make, and
  * «Draw route». With «Move», the figure's angle between «−15°» and «+15°»
- * (TASK-402).
+ * (TASK-402). On a figure, «Change | Add» over the tiles, and with a piece
+ * chosen «Delete piece» after its angle (TASK-402 part B).
  */
 export function DrawOnMap({
   mode,
@@ -119,7 +135,11 @@ export function DrawOnMap({
   problem,
   onDraw,
   onTurn,
+  pieces,
 }: Props) {
+  // What the angle and the tiles are of: the piece chosen, or the figure.
+  const chosen = pieces?.chosen ?? null;
+  const target = chosen ?? placed;
   const askClear = () =>
     Alert.alert(t("Clear the whole drawing?"), undefined, [
       { text: t("Cancel"), style: "cancel" },
@@ -138,18 +158,31 @@ export function DrawOnMap({
         <View style={styles.gap} />
         <Step label={t("Clear all")} onPress={askClear} enabled={placed !== null} />
       </View>
-      {mode === "move" && placed !== null && onTurn !== undefined ? (
-        <Turn deg={turnOf(placed)} onTurn={onTurn} />
+      {mode === "move" && target !== null && onTurn !== undefined ? (
+        <Turn
+          deg={turnOf(target)}
+          onTurn={onTurn}
+          onDelete={chosen === null ? null : pieces?.deleteChosen}
+        />
       ) : null}
       <Note
         mode={mode}
         // A line joins a drawing or a photo; on a shape it is a new drawing.
         onFigure={placed !== null && placed.figure.kind !== "shape"}
+        amongPieces={(pieces?.count ?? 0) > 1}
         photo={photo}
         problem={problem}
       />
+      {pieces !== undefined && placed !== null ? (
+        <Segmented
+          options={TILE_MODES.map((option) => ({ ...option, label: t(option.label) }))}
+          value={pieces.adding ? "add" : "change"}
+          onChange={(value) => pieces.setAdding(value === "add")}
+        />
+      ) : null}
       <FigureTiles
-        chosen={placedTile(placed)}
+        // Adding, no tile is the figure's.
+        chosen={placedTile(pieces?.adding === true ? null : target)}
         onChoose={(choice) => {
           if (choice.kind === "shape") {
             onPick(choice.shape);
@@ -211,8 +244,17 @@ export function typedDegrees(text: string): number | null {
 
 /** «−15°», the figure's angle, «+15°» (TASK-402): a tap on the angle types
  * it, in a box over the keyboard, empty with the angle as a hint; «Done» or
- * a tap around it turns the figure to it. */
-function Turn({ deg, onTurn }: { deg: number; onTurn: (deg: number) => void }) {
+ * a tap around it turns the figure to it. With a piece chosen, «Delete
+ * piece» after them (TASK-402 part B). */
+function Turn({
+  deg,
+  onTurn,
+  onDelete,
+}: {
+  deg: number;
+  onTurn: (deg: number) => void;
+  onDelete?: (() => void) | null;
+}) {
   const [typing, setTyping] = useState<string | null>(null);
   const done = () => {
     const typed = typing === null ? null : typedDegrees(typing);
@@ -282,6 +324,7 @@ function Turn({ deg, onTurn }: { deg: number; onTurn: (deg: number) => void }) {
       >
         <Text style={styles.stepText}>+{degreesLabel(TURN_STEP_DEG)}</Text>
       </Pressable>
+      {onDelete ? <Step label={t("Delete piece")} onPress={onDelete} enabled /> : null}
     </View>
   );
 }
@@ -292,13 +335,15 @@ function Turn({ deg, onTurn }: { deg: number; onTurn: (deg: number) => void }) {
 function Note({
   mode,
   onFigure,
+  amongPieces,
   photo,
   problem,
 }: {
   mode: CanvasMode;
   onFigure: boolean;
+  amongPieces: boolean;
   photo: ImageState;
-  problem: ToolProblem | null;
+  problem: CanvasProblem | null;
 }) {
   if (problem !== null) {
     return <Text style={styles.problem}>{t(PROBLEMS[problem])}</Text>;
@@ -315,7 +360,12 @@ function Note({
   if (refused !== null) {
     return <Text style={styles.problem}>{imageProblemText(refused).text}</Text>;
   }
-  const hint = mode === "draw" && onFigure ? ON_FIGURE : HINTS[mode];
+  const hint =
+    mode === "draw" && onFigure
+      ? ON_FIGURE
+      : mode === "move" && amongPieces
+        ? AMONG_PIECES
+        : HINTS[mode];
   return <Text style={styles.note}>{t(hint)}</Text>;
 }
 

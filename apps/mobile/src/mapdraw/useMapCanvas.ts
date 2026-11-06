@@ -9,7 +9,7 @@ import type { ImageSource, Picked } from "../route/pickImage";
 import type { SamplePicture } from "../route/samplePictures";
 import { type ImageState, useImageOutline } from "../route/useImageOutline";
 import { appUnits } from "../units/units";
-import { canvasRequest, figureApart } from "./canvasRequest";
+import { canvasRequest, figureApart, piecesRequest } from "./canvasRequest";
 import { isOpenLine, linkedOf, newDrawing, withDetail } from "./drawing";
 import { asDrawing, drawingOf, type FigureLines, touchesLines } from "./edit";
 import {
@@ -25,6 +25,19 @@ import {
 } from "./figure";
 import { dist } from "./geometry";
 import { toPlane } from "./plane";
+import {
+  addedPiece,
+  fitsRoute,
+  heldPieces,
+  joinedPieces,
+  MAX_PIECES,
+  pieceAt,
+  pieceBox,
+  pieceDistance,
+  type PieceProblem,
+  piecesSized,
+  piecesTurnedBy,
+} from "./pieces";
 import { type FigureChoice, figureOf } from "./resultFigure";
 import {
   bent,
@@ -35,17 +48,38 @@ import {
   type ToolProblem,
   unitsOf,
 } from "./tools";
-import { shownFigure, turnedBy, turnedTo, turnOf } from "./turn";
+import { normalDeg, shownFigure, turnedBy, turnedTo, turnOf } from "./turn";
 
 /** What «Undo» takes back (TASK-281), and «Redo» puts again (TASK-331 part
  * B): a figure put on the map or drawn, or taken away, in place of what was
  * there; a tile, a line, the eraser, a point tapped or a bend that changed
  * the figure where it is, or turned it (TASK-402). With it, the straight
- * line being tapped then. Moving and sizing are not undone. */
+ * line being tapped then, and the pieces after the first as they were
+ * (TASK-402 part B). Moving and sizing a figure alone are not undone; with
+ * pieces, each piece added, moved, turned or taken away is a step. */
 type Step = (
   { kind: "put"; before: Placed | null } | { kind: "swap"; before: Figure }
 ) & {
   straight: Straight | null;
+  rest: Placed[];
+};
+
+/** Why the last line, tool or tile gave nothing. */
+export type CanvasProblem = ToolProblem | PieceProblem;
+
+/** The pieces of the figure (TASK-402 part B, ADR-0336). */
+export type PiecesState = {
+  /** How many there are: none without a figure. */
+  count: number;
+  /** «Change | Add»: whether a tile adds a piece, rather than changing
+   * the one chosen, or the first. */
+  adding: boolean;
+  setAdding: (adding: boolean) => void;
+  /** The piece chosen with «Move»; none for the whole figure. */
+  chosen: Placed | null;
+  /** «Delete piece»: the piece chosen taken away; the first gone, the next
+   * gives the outline. */
+  deleteChosen: () => void;
 };
 
 export type MapCanvasOptions = {
@@ -87,19 +121,24 @@ export type MapCanvasState = {
   /** «Clear all» (TASK-331 part B): the figure off the map; «Undo» puts it
    * back. */
   clear: () => void;
+  /** The pieces of the figure: «Change | Add», the piece chosen and
+   * «Delete piece» (TASK-402 part B). `placed` is the first. */
+  pieces: PiecesState;
   /** What the figure would make, in metres, following two fingers. */
   distanceM: number | null;
-  /** How far the figure is turned on the map, clockwise, in whole degrees
-   * within (−180°, 180°] (TASK-402, ADR-0336); 0 with none. */
+  /** How far the figure, or the piece chosen, is turned on the map,
+   * clockwise, in whole degrees within (−180°, 180°] (TASK-402, ADR-0336);
+   * 0 with none. */
   turnDeg: number;
-  /** «−15°» and «+15°»: the figure turned that much more. */
+  /** «−15°» and «+15°»: the figure, or the piece chosen, turned that much
+   * more. */
   turnBy: (deg: number) => void;
-  /** The degrees typed: the figure turned to them. */
+  /** The degrees typed: the figure, or the piece chosen, turned to them. */
   turnTo: (deg: number) => void;
   /** «Draw route»: the request for the figure where it is. */
   request: AnyRouteRequest | null;
-  /** Why the last line drawn, or the last tool, gave nothing. */
-  problem: ToolProblem | null;
+  /** Why the last line drawn, the last tool or tile gave nothing. */
+  problem: CanvasProblem | null;
   /** Whether a straight line is being tapped: its next point goes on it. */
   tapping: boolean;
   /** The screen opens: the map is framed on the figure, or the start. */
@@ -151,9 +190,13 @@ export function useMapCanvas({
 }: MapCanvasOptions): MapCanvasState {
   const [mode, setModeState] = useState<CanvasMode>("draw");
   const [kept, setKept] = useState<Placed | null>(null);
+  // The pieces after the first (TASK-402 part B): none for a figure alone.
+  const [keptRest, setKeptRest] = useState<Placed[]>([]);
+  const [chosen, setChosen] = useState<number | null>(null);
+  const [adding, setAdding] = useState(false);
   const [steps, setSteps] = useState<Step[]>([]);
   const [undone, setUndone] = useState<Step[]>([]);
-  const [problem, setProblem] = useState<ToolProblem | null>(null);
+  const [problem, setProblem] = useState<CanvasProblem | null>(null);
   const [straight, setStraight] = useState<Straight | null>(null);
   // Two fingers sizing the figure: how many times bigger, so far.
   const [sizing, setSizing] = useState(1);
@@ -188,38 +231,112 @@ export function useMapCanvas({
     [apartOf],
   );
   // Within the distances of now: a sport chosen since may have others.
-  const placed = useMemo(() => (kept === null ? null : within(kept)), [kept, within]);
+  // With pieces, all of them together, grown or shrunk as one.
+  const pieces = useMemo((): Placed[] => {
+    if (kept === null) {
+      return [];
+    }
+    if (keptRest.length === 0) {
+      return [within(kept)];
+    }
+    const all = [kept, ...keptRest];
+    const total = distanceOf(joinedPieces(all).placed);
+    const clamped = Math.min(highest, Math.max(lowest, total));
+    return clamped === total ? all : piecesSized(all, clamped / total);
+  }, [kept, keptRest, within, lowest, highest]);
+  const placed = pieces.length === 0 ? null : pieces[0];
+  const rest = useMemo(() => pieces.slice(1), [pieces]);
+  // The pieces as one drawing, as they are drawn and asked; none alone.
+  const joined = useMemo(
+    () => (pieces.length > 1 ? joinedPieces(pieces) : null),
+    [pieces],
+  );
+  // The piece chosen with «Move», among two or more.
+  const chosenNow =
+    mode === "move" && chosen !== null && chosen < pieces.length && pieces.length > 1
+      ? chosen
+      : null;
 
   /** `next` on the map in place of what is there, a step «Undo» takes back:
    * `put` puts back the whole figure of before, `swap` its lines where the
-   * figure is then. A new change forgets what «Redo» would put again. */
+   * figure is then. A new change forgets what «Redo» would put again. With
+   * pieces (TASK-402 part B), `rest` are those after the first, as they are
+   * if not given; the first taken away, the next gives the outline. Pieces
+   * that would be more than one route runs are not changed: false. */
   const change = useCallback(
     (
       next: Placed | null,
       how: "put" | "swap",
       straightNext: Straight | null = null,
-    ) => {
+      more: { rest?: Placed[]; chosen?: number | null } = {},
+    ): boolean => {
+      let first = next;
+      let others = more.rest ?? rest;
+      let chosenNext = more.chosen === undefined ? chosenNow : more.chosen;
+      if (first === null && others.length > 0) {
+        [first, ...others] = others;
+        chosenNext = null;
+      }
+      if (
+        first !== null &&
+        others.length > 0 &&
+        !fitsRoute(joinedPieces([first, ...others]))
+      ) {
+        setProblem("too_much");
+        return false;
+      }
       const step: Step =
         how === "swap" && placed !== null
-          ? { kind: "swap", before: placed.figure, straight }
-          : { kind: "put", before: placed, straight };
+          ? { kind: "swap", before: placed.figure, straight, rest }
+          : { kind: "put", before: placed, straight, rest };
       setSteps((now) => [...now, step]);
       setUndone([]);
-      setKept(next);
+      setKept(first);
+      setKeptRest(others);
+      setChosen(chosenNext !== null && chosenNext <= others.length ? chosenNext : null);
       setStraight(straightNext);
+      return true;
     },
-    [placed, straight],
+    [placed, rest, straight, chosenNow],
   );
 
   const setMode = useCallback((next: CanvasMode) => {
     setModeState(next);
     setProblem(null);
-    // Another tool finishes the straight line.
+    // Another tool finishes the straight line, and lets the piece go.
     setStraight(null);
+    setChosen(null);
   }, []);
 
+  /** A new piece of `figure` in the middle of the map, a third of the
+   * figure's size, chosen; at most MAX_PIECES (TASK-402 part B). */
+  const addPiece = useCallback(
+    (figure: Figure) => {
+      if (placed === null) {
+        return;
+      }
+      if (pieces.length >= MAX_PIECES) {
+        setProblem("too_many");
+        return;
+      }
+      const piece = addedPiece(pieces, figure, centre.current ?? placed.centre);
+      change(placed, "put", null, { rest: [...rest, piece], chosen: pieces.length });
+    },
+    [placed, pieces, rest, change],
+  );
+
+  /** `next` in place of the piece at `index`, a step. */
+  const changePiece = useCallback(
+    (index: number, next: Placed) => {
+      const all = pieces.map((piece, i) => (i === index ? next : piece));
+      return change(all[0], "put", null, { rest: all.slice(1) });
+    },
+    [pieces, change],
+  );
+
   /** `figure` on the map: in place of the one there, where it is and as
-   * big; or in the middle of the map, as long as the distance of «Draw». */
+   * big — of the piece chosen, with pieces — or in the middle of the map,
+   * as long as the distance of «Draw». With «Add», a new piece. */
   const putFigure = useCallback(
     (figure: Figure) => {
       setProblem(null);
@@ -234,29 +351,56 @@ export function useMapCanvas({
         setFraming((n) => n + 1);
         return;
       }
+      if (adding) {
+        addPiece(figure);
+        return;
+      }
+      if (chosenNow !== null && chosenNow > 0) {
+        changePiece(chosenNow, { ...pieces[chosenNow], figure });
+        return;
+      }
       change({ ...placed, figure }, "swap");
     },
-    [placed, start, distanceM, lowest, apartOf, change],
+    [
+      placed,
+      pieces,
+      adding,
+      chosenNow,
+      start,
+      distanceM,
+      lowest,
+      apartOf,
+      change,
+      addPiece,
+      changePiece,
+    ],
   );
+
+  // What a tile changes: the piece chosen, or the first.
+  const target = chosenNow === null ? placed : pieces[chosenNow];
 
   const pick = useCallback(
     (shape: Shape) => {
-      if (placed?.figure.kind === "shape" && placed.figure.shape === shape) {
+      if (!adding && target?.figure.kind === "shape" && target.figure.shape === shape) {
         return;
       }
       putFigure({ kind: "shape", shape });
     },
-    [placed, putFigure],
+    [adding, target, putFigure],
   );
 
   const pickSample = useCallback(
     (sample: SamplePicture) => {
-      if (placed?.figure.kind === "picture" && placed.figure.sample === sample.id) {
+      if (
+        !adding &&
+        target?.figure.kind === "picture" &&
+        target.figure.sample === sample.id
+      ) {
         return;
       }
       putFigure(figureOf({ kind: "picture", sample }));
     },
-    [placed, putFigure],
+    [adding, target, putFigure],
   );
 
   // A photo traced: its outline is the figure, once.
@@ -412,17 +556,44 @@ export function useMapCanvas({
           return;
         }
         setSizing(1);
+        const turning = event.turn ?? 0;
+        // A piece chosen moves alone; with pieces, the whole figure moved
+        // is a step too (TASK-402 part B).
+        if (chosenNow !== null) {
+          const piece = pieces[chosenNow];
+          changePiece(
+            chosenNow,
+            turnedBy(
+              { ...piece, centre: event.centre, unitM: piece.unitM * event.factor },
+              turning,
+            ),
+          );
+          return;
+        }
+        if (rest.length > 0) {
+          const held = heldPieces(pieces, event.centre, event.factor, turning);
+          change(held[0], "put", null, { rest: held.slice(1) });
+          return;
+        }
         const moved = {
           ...placed,
           centre: event.centre,
           unitM: placed.unitM * event.factor,
         };
         // Turned by two fingers too: a step «Undo» takes back (TASK-402).
-        if (event.turn) {
-          change(within(turnedBy(moved, event.turn)), "put");
+        if (turning !== 0) {
+          change(within(turnedBy(moved, turning)), "put");
           return;
         }
         setKept(moved);
+        return;
+      }
+      // A tap with «Move» chooses the piece under it, or none (TASK-402
+      // part B).
+      if (event.type === "tapped") {
+        if (mode === "move" && pieces.length > 1) {
+          setChosen(pieceAt(pieces, event.point, REACH_PX * event.metresPerPx));
+        }
         return;
       }
       // A line drawn or bent: the page shows it until the app answers,
@@ -464,22 +635,44 @@ export function useMapCanvas({
         placed !== null && drawing !== null ? "swap" : "put",
       );
     },
-    [placed, mode, within, erase, tap, bend, change],
+    [
+      placed,
+      pieces,
+      rest,
+      chosenNow,
+      mode,
+      within,
+      erase,
+      tap,
+      bend,
+      change,
+      changePiece,
+    ],
   );
 
-  /** The figure turned on the map, a step «Undo» takes back (TASK-402). */
+  /** The figure turned on the map, a step «Undo» takes back (TASK-402):
+   * the piece chosen alone, or all the pieces about their middle. */
   const turn = useCallback(
     (next: (placed: Placed) => Placed) => {
       if (placed === null) {
         return;
       }
-      const turned = next(placed);
-      if (turnOf(turned) !== turnOf(placed)) {
-        setProblem(null);
+      const piece = chosenNow === null ? placed : pieces[chosenNow];
+      const turned = next(piece);
+      if (turnOf(turned) === turnOf(piece)) {
+        return;
+      }
+      setProblem(null);
+      if (chosenNow !== null) {
+        changePiece(chosenNow, turned);
+      } else if (rest.length > 0) {
+        const all = piecesTurnedBy(pieces, normalDeg(turnOf(turned) - turnOf(piece)));
+        change(all[0], "put", null, { rest: all.slice(1) });
+      } else {
         change(within(turned), "put");
       }
     },
-    [placed, within, change],
+    [placed, pieces, rest, chosenNow, within, change, changePiece],
   );
   const turnBy = useCallback(
     (deg: number) => turn((placed) => turnedBy(placed, deg)),
@@ -500,6 +693,8 @@ export function useMapCanvas({
       } else if (placed !== null) {
         setKept({ ...placed, figure: step.before });
       }
+      setKeptRest(step.rest);
+      setChosen(null);
       setStraight(mode === "line" ? step.straight : null);
     },
     [placed, mode],
@@ -509,9 +704,9 @@ export function useMapCanvas({
   const stepBack = useCallback(
     (kind: Step["kind"]): Step =>
       kind === "swap" && placed !== null
-        ? { kind: "swap", before: placed.figure, straight }
-        : { kind: "put", before: placed, straight },
-    [placed, straight],
+        ? { kind: "swap", before: placed.figure, straight, rest }
+        : { kind: "put", before: placed, straight, rest },
+    [placed, rest, straight],
   );
 
   const undo = useCallback(() => {
@@ -537,16 +732,36 @@ export function useMapCanvas({
   const clear = useCallback(() => {
     if (placed !== null) {
       setProblem(null);
-      change(null, "put");
+      change(null, "put", null, { rest: [] });
     }
   }, [placed, change]);
 
+  const deleteChosen = useCallback(() => {
+    if (chosenNow === null) {
+      return;
+    }
+    setProblem(null);
+    const left = pieces.filter((_, i) => i !== chosenNow);
+    change(left[0], "put", null, { rest: left.slice(1), chosen: null });
+  }, [pieces, chosenNow, change]);
+
+  const chooseAdding = useCallback((on: boolean) => {
+    setAdding(on);
+    setProblem(null);
+  }, []);
+
   // As it is drawn and asked: a shape turned is its outline (ADR-0336).
+  // With pieces, the drawing they make together (TASK-402 part B).
   const shown = useMemo(
-    () => (placed === null ? null : { ...placed, figure: shownFigure(placed) }),
-    [placed],
+    () =>
+      joined !== null
+        ? joined.placed
+        : placed === null
+          ? null
+          : { ...placed, figure: shownFigure(placed) },
+    [joined, placed],
   );
-  const apart = shown === null ? false : apartOf(shown.figure);
+  const apart = shown === null || joined !== null ? false : apartOf(shown.figure);
   // The points of the straight line being tapped, the first to close it.
   const marks = useMemo(() => {
     if (straight === null) {
@@ -576,6 +791,9 @@ export function useMapCanvas({
         centre: null,
         shrink: 1,
         grow: 1,
+        choosing: false,
+        chosen: [],
+        box: [],
         framing,
       };
     }
@@ -583,34 +801,87 @@ export function useMapCanvas({
     const figure = placed.figure;
     const drawing = figure.kind === "drawing" ? figure : null;
     const open = drawing !== null && isOpenLine(drawing.outline, drawing.details);
-    const [smallest, largest] = unitLimits(shown.figure, [lowest, highest], apart);
+    // Line by line, the piece it is of: all of the first, alone.
+    const owners = joined === null ? lines.map(() => 0) : joined.owners;
+    const shownDrawing = shown.figure.kind === "drawing" ? shown.figure : null;
+    let [shrink, grow] = unitLimits(shown.figure, [lowest, highest], apart).map(
+      (unitM) => unitM / shown.unitM,
+    );
+    if (chosenNow !== null) {
+      // The piece chosen grows and shrinks alone: the others keep their
+      // share of the distance, and it keeps at least its share of the
+      // shortest (TASK-402 part B).
+      const own = pieceDistance(pieces[chosenNow], chosenNow);
+      const others = distanceOf(shown) - own;
+      const smallest = Math.max(lowest - others, lowest / MAX_PIECES);
+      shrink = Math.min(1, smallest / own);
+      grow = Math.max(1, (highest - others) / own);
+    }
     return {
       mode,
       lines,
       // The outline has no link; a detail may.
-      links: drawing === null ? lines.map(() => false) : [false, ...linkedOf(drawing)],
+      links:
+        shownDrawing === null
+          ? lines.map(() => false)
+          : [false, ...linkedOf(shownDrawing)],
       // An emoji is not changed, nor the ring of an open line, which nothing
-      // of shows.
+      // of shows; with pieces, only the first's lines, while it is not
+      // another piece that is chosen.
       bendable:
-        figure.kind === "shape"
+        figure.kind === "shape" || (chosenNow !== null && chosenNow > 0)
           ? []
-          : lines.map((_, i) => i).filter((i) => i > 0 || !open),
+          : lines.map((_, i) => i).filter((i) => owners[i] === 0 && (i > 0 || !open)),
       marks,
-      centre: placed.centre,
-      shrink: smallest / placed.unitM,
-      grow: largest / placed.unitM,
+      centre: chosenNow === null ? placed.centre : pieces[chosenNow].centre,
+      shrink,
+      grow,
+      choosing: pieces.length > 1,
+      chosen:
+        chosenNow === null
+          ? []
+          : owners.flatMap((owner, i) => (owner === chosenNow ? [i] : [])),
+      box: chosenNow === null ? [] : pieceBox(pieces[chosenNow], chosenNow),
       framing,
     };
     // A new answer to a line is a new canvas, so the page clears its ink.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [placed, shown, apart, mode, marks, lowest, highest, framing, answers]);
+  }, [
+    placed,
+    pieces,
+    joined,
+    chosenNow,
+    shown,
+    apart,
+    mode,
+    marks,
+    lowest,
+    highest,
+    framing,
+    answers,
+  ]);
 
   // The app renders again with new units (TASK-182): the request follows.
+  // With pieces, the drawing they make (TASK-402 part B).
   const units = appUnits();
   const request = useMemo(
-    () => (placed === null ? null : canvasRequest(placed, penUp, activity, units)),
-    [placed, penUp, activity, units],
+    () =>
+      placed === null
+        ? null
+        : canvasRequest(joined?.placed ?? placed, penUp, activity, units),
+    [placed, joined, penUp, activity, units],
   );
+
+  // What the figure would make, following two fingers: of a piece chosen,
+  // only its own part grows.
+  let distanceNow: number | null = null;
+  if (shown !== null) {
+    const total = distanceOf(shown, apart);
+    distanceNow =
+      chosenNow === null
+        ? total * sizing
+        : total + (sizing - 1) * pieceDistance(pieces[chosenNow], chosenNow);
+  }
 
   const open = useCallback(() => setFraming((n) => n + 1), []);
 
@@ -620,7 +891,8 @@ export function useMapCanvas({
       setProblem(null);
       // Drawing on it is what comes next.
       setModeState("draw");
-      change(within(next), "put");
+      // One piece: the others come from there (TASK-402 part B).
+      change(within(next), "put", null, { rest: [] });
       setFraming((n) => n + 1);
     },
     [within, change],
@@ -654,13 +926,20 @@ export function useMapCanvas({
       if (placed === null) {
         return null;
       }
+      if (shown !== null && rest.length > 0) {
+        // All the pieces as one (TASK-402 part B).
+        const all = piecesSized(pieces, metres / distanceOf(shown));
+        setKept(all[0]);
+        setKeptRest(all.slice(1));
+        return piecesRequest(all, penUp, activity, units);
+      }
       const sized = within(
         placeTurned(placed.figure, placed.centre, metres, turnOf(placed)),
       );
       setKept(sized);
       return canvasRequest(sized, penUp, activity, units);
     },
-    [placed, within, placeTurned, penUp, activity, units],
+    [placed, pieces, rest, shown, within, placeTurned, penUp, activity, units],
   );
 
   const changeTo = useCallback(
@@ -674,7 +953,8 @@ export function useMapCanvas({
         placeTurned(figure, placed.centre, metres, turnOf(placed)),
       );
       setProblem(null);
-      change(changed, "put");
+      // In place of all the pieces.
+      change(changed, "put", null, { rest: [] });
       return canvasRequest(changed, penUp, activity, units);
     },
     [placed, within, placeTurned, penUp, activity, units, change],
@@ -695,8 +975,15 @@ export function useMapCanvas({
     redo,
     canRedo: undone.length > 0,
     clear,
-    distanceM: shown === null ? null : distanceOf(shown, apart) * sizing,
-    turnDeg: placed === null ? 0 : turnOf(placed),
+    pieces: {
+      count: pieces.length,
+      adding,
+      setAdding: chooseAdding,
+      chosen: chosenNow === null ? null : pieces[chosenNow],
+      deleteChosen,
+    },
+    distanceM: distanceNow,
+    turnDeg: target === null ? 0 : turnOf(target),
     turnBy,
     turnTo,
     request,

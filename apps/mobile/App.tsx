@@ -1468,6 +1468,7 @@ function MuW() {
             problem={mapDraw.problem}
             onDraw={mapDraw.request === null ? null : onDrawCanvas}
             onTurn={mapDraw.turnTo}
+            pieces={mapDraw.pieces}
           />
         ) : reviewing && activity !== null ? (
           <ActivityCard

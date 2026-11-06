@@ -306,3 +306,49 @@ test("with «Move» the figure turns by 15°, by the degrees typed, and is asked
   expect(asked).toHaveProperty("outline");
   expect(asked).not.toHaveProperty("shape");
 });
+
+test("with «Add» a tile adds a piece; «Delete piece» takes it away (TASK-402 part B)", async () => {
+  await render(<App />);
+  await pagePosts('{"type":"ready"}');
+  await pagePosts('{"type":"centre","lngLat":[11.13,46.07]}');
+  await fireEvent.press(screen.getByText("Freehand"));
+  // Nothing to add to yet.
+  expect(screen.queryByText("Add")).toBeNull();
+
+  await fireEvent.press(screen.getByLabelText("heart"));
+  await fireEvent.press(screen.getByText("Add"));
+  await pagePosts('{"type":"centre","lngLat":[11.17,46.07]}');
+  await fireEvent.press(screen.getByLabelText("star"));
+  // The star chosen: it alone moves, its box round it; the hint for pieces.
+  const shown = sent("setCanvas").at(-1);
+  expect(shown).toMatchObject({ mode: "move", choosing: true, chosen: [1] });
+  expect((shown?.box as unknown[]).length).toBe(5);
+  expect(
+    screen.getByText(
+      "Tap a piece to choose it, then drag, resize or turn it. Tap outside to take them all.",
+    ),
+  ).toBeOnTheScreen();
+  expect(screen.getByText("Delete piece")).toBeOnTheScreen();
+
+  // A tap far from both: the whole figure, no piece to delete.
+  await pagePosts('{"type":"tapped","lngLat":[11.5,46.5],"metresPerPx":2}');
+  expect(screen.queryByText("Delete piece")).toBeNull();
+  expect(sent("setCanvas").at(-1)).toMatchObject({ chosen: [] });
+
+  // One route for both: the heart's outline, the star a detail.
+  await act(async () => fireEvent.press(screen.getByText("Draw route")));
+  const [, asked] = jest.mocked(requestRouteOnPhoneFirst).mock.calls.at(-1) ?? [];
+  expect(asked).toHaveProperty("outline");
+  expect(asked).toHaveProperty("strokes");
+  await fireEvent.press(screen.getByLabelText("Back"));
+
+  // The star chosen again by a tap on it, and deleted: the heart alone is
+  // asked by its name, as before.
+  const star = (sent("setCanvas").at(-1)?.lines as number[][][])[1][2];
+  await pagePosts(JSON.stringify({ type: "tapped", lngLat: star, metresPerPx: 2 }));
+  await fireEvent.press(screen.getByText("Delete piece"));
+  expect(sent("setCanvas").at(-1)).toMatchObject({ choosing: false });
+  await act(async () => fireEvent.press(screen.getByText("Draw route")));
+  const [, alone] = jest.mocked(requestRouteOnPhoneFirst).mock.calls.at(-1) ?? [];
+  expect(alone).toMatchObject({ shape: "heart" });
+});

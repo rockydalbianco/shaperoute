@@ -124,6 +124,13 @@ async function exportVideo() {
   await fireEvent.press(screen.getByRole("button", { name: "Export video" }));
 }
 
+/** «Edit video» opened, and `choice` tapped in it, then «Done» (TASK-408). */
+async function choose(choice: string) {
+  await fireEvent.press(screen.getByTestId("edit-video-open"));
+  await fireEvent.press(screen.getByRole("radio", { name: choice }));
+  await fireEvent.press(screen.getByTestId("edit-video-done"));
+}
+
 beforeEach(() => {
   share.mockClear();
   available.mockClear();
@@ -166,9 +173,9 @@ describe("Music", () => {
     await shown();
     expect(screen.getByText("Music")).toBeOnTheScreen();
     expect(screen.getByText("Tap a track to hear it.")).toBeOnTheScreen();
-    // «None» and the ten tracks, the styles of the video, and «No animal»
-    // and the twelve animals (TASK-408).
-    expect(screen.getAllByRole("radio")).toHaveLength(27);
+    // «None» and the ten tracks: the style and the animal are in «Edit
+    // video» (TASK-408).
+    expect(screen.getAllByRole("radio")).toHaveLength(11);
     expect(screen.getByRole("radio", { name: "None" })).toBeChecked();
     await fireEvent.press(screen.getByRole("radio", { name: "Energy" }));
     expect(screen.getByRole("radio", { name: "Energy" })).toBeChecked();
@@ -281,10 +288,12 @@ describe("Export video", () => {
 
   it("makes the video in the style chosen: Day after a tap on its tile", async () => {
     await shown();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
     expect(screen.getByText("Style")).toBeOnTheScreen();
     expect(screen.getByRole("radio", { name: "Night" })).toBeChecked();
     await fireEvent.press(screen.getByRole("radio", { name: "Day" }));
     expect(screen.getByRole("radio", { name: "Day" })).toBeChecked();
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
     await exportVideo();
     await page({ type: "ready", codec: "avc1.42e028" });
     const first = inject.mock.calls[0][0];
@@ -297,7 +306,7 @@ describe("Export video", () => {
 
   it("makes the video in 3D after a tap on its tile: the map leaning on its hills, the turn for the page to try", async () => {
     await shown();
-    await fireEvent.press(screen.getByRole("radio", { name: "3D" }));
+    await choose("3D");
     expect(screen.getByRole("radio", { name: "3D" })).toBeChecked();
     await exportVideo();
     await page({ type: "ready", codec: "avc1.42e028" });
@@ -454,7 +463,7 @@ describe("Export video", () => {
 describe("the animal of the video (TASK-408)", () => {
   it("sends the animal's model to the page first, then the map, then the scene with the animal", async () => {
     await shown();
-    await fireEvent.press(screen.getByRole("radio", { name: "Fox" }));
+    await choose("Fox");
     await exportVideo();
     await page({ type: "ready", codec: "avc1.42e028" });
     await act(async () => {});
@@ -474,7 +483,7 @@ describe("the animal of the video (TASK-408)", () => {
 
   it("goes on without the animal when the page cannot make it ready, as with no network", async () => {
     await shown();
-    await fireEvent.press(screen.getByRole("radio", { name: "Horse" }));
+    await choose("Horse");
     await exportVideo();
     await page({ type: "ready", codec: "avc1.42e028" });
     await act(async () => {});
@@ -495,7 +504,7 @@ describe("the animal of the video (TASK-408)", () => {
   it("asks the page for no animal when its model cannot be read", async () => {
     model.mockRejectedValueOnce(new Error("no file"));
     await shown();
-    await fireEvent.press(screen.getByRole("radio", { name: "Wolf" }));
+    await choose("Wolf");
     await exportVideo();
     await page({ type: "ready", codec: "avc1.42e028" });
     await act(async () => {});
@@ -513,5 +522,24 @@ describe("the animal of the video (TASK-408)", () => {
     expect(inject.mock.calls[0][0].startsWith("window.muwVideo.prepareMap({")).toBe(
       true,
     );
+  });
+});
+
+describe("«Edit video» (TASK-408 C1)", () => {
+  it("makes the video with the line's colour and the emoji chosen in the sheet", async () => {
+    await shown();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
+    await fireEvent.press(screen.getByRole("radio", { name: "Pink" }));
+    await fireEvent.press(screen.getByTestId("along-⭐"));
+    await fireEvent.press(screen.getByTestId("end-🎆"));
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
+    expect(screen.getByText("Night · No animal · ⭐ 🎆")).toBeOnTheScreen();
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    await page({ type: "map", ok: true, why: null, ms: {} });
+    const scene = inject.mock.calls[1][0];
+    expect(scene).toContain('"line":"#FF8FB8"');
+    expect(scene).toContain('"text":"⭐"');
+    expect(scene).toContain('"text":"🎆"');
   });
 });

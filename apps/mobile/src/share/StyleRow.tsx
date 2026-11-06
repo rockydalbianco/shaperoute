@@ -15,6 +15,7 @@ import {
   space,
 } from "../theme/tokens";
 import { postLine, type PostRun } from "./postRun";
+import { type LineColour, lineColourOf } from "./videoEdit";
 import {
   styleName,
   stylePalette,
@@ -42,6 +43,9 @@ type Props = {
   /** The style the video gets. */
   style: VideoStyle;
   onChange: (style: VideoStyle) => void;
+  /** The line's colour chosen in «Edit video» (TASK-408): the tiles draw
+   * the drawing in it; the route's yellow when not given. */
+  line?: LineColour;
 };
 
 /** One straight piece of the drawing, as a turned View (as PostImage). */
@@ -63,7 +67,7 @@ function placed(s: Segment, thickness: number) {
  * the video's shape, so what they show is where the drawing will be; in
  * the «3D» tile the drawing leans as the map will (part D).
  */
-export function StyleRow({ run, style, onChange }: Props) {
+export function StyleRow({ run, style, onChange, line = "yellow" }: Props) {
   const bearing = bearingOf(run.rotationDeg);
   const [segments] = useMemo(
     () =>
@@ -126,7 +130,7 @@ export function StyleRow({ run, style, onChange }: Props) {
                       style={[
                         styles.line,
                         placed(s, LINE),
-                        { backgroundColor: palette.accent },
+                        { backgroundColor: lineColourOf(line, palette) },
                       ]}
                     />
                   ))}

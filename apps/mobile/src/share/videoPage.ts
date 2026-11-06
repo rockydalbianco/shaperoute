@@ -1129,10 +1129,17 @@ const SCRIPT = String.raw`
           g.letterSpacing = "0px";
         }
       } else if (op.k === "emoji") {
+        var ex = op.x;
+        var ey = op.y;
+        if (typeof op.share === "number" && laid !== null && laid.length >= 4) {
+          var on = pointAlong(laid, op.share * lengthOf(laid));
+          ex = on[0];
+          ey = on[1];
+        }
         g.font = op.size * op.scale + "px " + FONT;
         g.textAlign = "center";
         g.textBaseline = "middle";
-        g.fillText(op.text, op.x, op.y);
+        g.fillText(op.text, ex, ey);
       } else if (op.k === "character" && actor !== null) {
         var onTheHills = typeof op.share === "number" && laid !== null;
         var track = onTheHills ? laid : scene.paths[op.path];

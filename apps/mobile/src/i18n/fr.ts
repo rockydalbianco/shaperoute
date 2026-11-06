@@ -1653,6 +1653,18 @@ export const FR: Table = {
   Donkey: "Âne",
   Alpaca: "Alpaga",
 
+  // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
+  "Edit video": "Modifier la vidéo",
+  "Line colour": "Couleur de la ligne",
+  "Along the way": "En chemin",
+  "At the end": "À la fin",
+  Nothing: "Rien",
+  Yellow: "Jaune",
+  "Light blue": "Bleu clair",
+  Pink: "Rose",
+  Green: "Vert",
+  White: "Blanc",
+
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concours MuW",
   "The post with the most reactions wins.":

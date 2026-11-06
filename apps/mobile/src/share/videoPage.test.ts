@@ -800,7 +800,9 @@ describe("the video page, with a fake map, in 3D", () => {
 });
 
 describe("the video page, with an animal (TASK-408)", () => {
-  const HORSE_SCENE = videoScene(RUN, POST_RESULTS, STICKERS, "paper", "horse");
+  const HORSE_SCENE = videoScene(RUN, POST_RESULTS, STICKERS, "paper", {
+    character: "horse",
+  });
 
   it("loads three.js only when an animal is asked, pinned and checked against its hash", () => {
     expect(THREE_JS_URL).toMatch(

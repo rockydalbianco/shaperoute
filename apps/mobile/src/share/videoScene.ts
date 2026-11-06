@@ -24,6 +24,7 @@ import {
 } from "./postRun";
 import type { Sticker } from "./stickers";
 import type { Character } from "./videoCharacter";
+import { ALONG_COUNT, type LineColour, lineColourOf } from "./videoEdit";
 import {
   MAP_CREDIT,
   MAP_PIXEL_RATIO,
@@ -74,6 +75,20 @@ const HOLD_FROM_S = INTRO_S + DRAW_S;
 /** Between one emoji and the next coming in, and how long each takes. */
 const EMOJI_STEP_S = 0.15;
 const EMOJI_POP_S = 0.35;
+/** The emoji of the way and of the end (TASK-408, part C1): their size as a
+ * share of the width; where those of the end burst, as shares of the width
+ * and of the height, around the drawing and clear of the numbers; the step
+ * between them. */
+const ALONG_EMOJI = 0.09;
+const END_EMOJI = 0.12;
+const END_SPOTS: readonly [number, number][] = [
+  [0.5, 0.17],
+  [0.16, 0.26],
+  [0.84, 0.28],
+  [0.22, 0.6],
+  [0.78, 0.58],
+];
+const END_STEP_S = 0.12;
 
 // The post's places (PostImage), as shares of the width and of the height.
 const SIDE = 0.08;
@@ -115,7 +130,8 @@ const CHARACTER_TILT = 50;
 const PHONE_WIDTH = 390;
 
 /** A colour of the look an op is drawn in. */
-export type ColorRole = "ink" | "muted" | "faint" | "accent" | "onAccent" | "dot";
+export type ColorRole =
+  "ink" | "muted" | "faint" | "accent" | "onAccent" | "dot" | "line";
 
 /** The colours of a look, from the tokens: what each role means. */
 export type VideoColors = {
@@ -128,6 +144,9 @@ export type VideoColors = {
   onAccent: string;
   /** The start of the logo's heart. */
   dot: string;
+  /** The run's line and the pen's tip: the colour chosen in «Edit video»
+   * on the map looks (TASK-408), the ink on paper. */
+  line: string;
   /** The dark that rises under the words on the map looks. */
   scrim: string;
 };
@@ -196,7 +215,8 @@ export type VideoOp =
       lines: number;
       alpha: number;
     }
-  /** An emoji, centred on x, y, grown by `scale`. */
+  /** An emoji, centred on x, y, grown by `scale`; on «3D» at `share` of
+   * `path` as the map lays it, instead of at x, y (TASK-408). */
   | {
       k: "emoji";
       text: string;
@@ -205,6 +225,8 @@ export type VideoOp =
       size: number;
       scale: number;
       alpha: number;
+      path?: number;
+      share?: number;
     }
   /** The animal (TASK-408): its feet `upTo` pixels along `path`, on «3D»
    * at `share` of it as the map lays it, turned along the line by the page;
@@ -309,6 +331,7 @@ const PAPER: Look = {
     accent: color.accent,
     onAccent: color.onAccent,
     dot: color.text,
+    line: color.onAccent,
     scrim: color.scrim,
   },
   title: { size: 0.065, weight: 700, tracking: 0, lineHeight: LINE_HEIGHT },
@@ -321,7 +344,7 @@ const PAPER: Look = {
     color: "ink",
   },
   value: { size: 0.075, weight: 700, tracking: 0, lineHeight: LINE_HEIGHT },
-  line: { width: 0.02, color: "ink" },
+  line: { width: 0.02, color: "line" },
   casing: null,
   relief: false,
   badge: false,
@@ -338,7 +361,12 @@ const PAPER: Look = {
  * the light map's own ground, almost whole, and the line runs on its dark
  * edge, as on the light map (ADR-0231). On «3D» (`relief`) the credit
  * names the hills' heights too. */
-function mapLook(palette: Palette, day: boolean, relief: boolean): Look {
+function mapLook(
+  palette: Palette,
+  day: boolean,
+  relief: boolean,
+  line: LineColour,
+): Look {
   const casing = routeCasingOf("light");
   return {
     colors: {
@@ -349,12 +377,13 @@ function mapLook(palette: Palette, day: boolean, relief: boolean): Look {
       accent: palette.accent,
       onAccent: palette.onAccent,
       dot: palette.text,
+      line: lineColourOf(line, palette),
       scrim: day ? palette.map.background : palette.scrim,
     },
     title: textStyle(font.title, tracking.title),
     label: { ...textStyle(font.label, tracking.label), upper: true, color: "muted" },
     value: textStyle(font.display, tracking.display),
-    line: { width: 0.016, color: "accent" },
+    line: { width: 0.016, color: "line" },
     casing:
       day && casing !== null
         ? { extra: ofPhone(casing.width - route.width), alpha: casing.opacity }
@@ -667,8 +696,9 @@ function frameAt(
   layout: Layout,
   look: Look,
   language: string,
-  character: Character | null,
+  options: SceneOptions,
 ): VideoOp[] {
+  const character = options.character ?? null;
   const w = VIDEO_WIDTH;
   const h = VIDEO_HEIGHT;
   const ops: VideoOp[] = [];
@@ -779,11 +809,33 @@ function frameAt(
         y: round(y),
         r: round(layout.line * 1.3),
         ring: round(layout.line * 0.5),
-        fill: "accent",
+        fill: "line",
         ringColor: "onAccent",
         alpha: round3(tip),
         ...(look.relief ? { path: RUN_PATH, share: round3(share) } : {}),
       });
+    }
+    // The emoji of the way, popping as the line reaches each (TASK-408),
+    // under the animal that passes over them.
+    if (options.along) {
+      for (let i = 1; i <= ALONG_COUNT; i += 1) {
+        const at = i / (ALONG_COUNT + 1);
+        const from = drawnAt(at);
+        const pop = ramp(t, from, from + EMOJI_POP_S);
+        if (pop > 0) {
+          const [x, y] = pointAlong(layout.track, layout.trackLength * at);
+          ops.push({
+            k: "emoji",
+            text: options.along,
+            x: round(x),
+            y: round(y),
+            size: round(w * ALONG_EMOJI),
+            scale: round3(easeOutBack(pop)),
+            alpha: round3(Math.min(1, pop * 2)),
+            ...(look.relief ? { path: RUN_PATH, share: round3(at) } : {}),
+          });
+        }
+      }
     }
     // The animal over the tip, galloping while the line draws, then at
     // rest at the end of it.
@@ -874,26 +926,60 @@ function frameAt(
       });
     }
   });
+  // The emoji of the end, bursting around the whole drawing (TASK-408).
+  if (options.end) {
+    END_SPOTS.forEach(([x, y], i) => {
+      const from = HOLD_FROM_S + 0.1 + i * END_STEP_S;
+      const pop = ramp(t, from, from + EMOJI_POP_S);
+      if (pop > 0) {
+        ops.push({
+          k: "emoji",
+          text: options.end as string,
+          x: round(x * w),
+          y: round(y * h),
+          size: round(w * END_EMOJI),
+          scale: round3(easeOutBack(pop)),
+          alpha: round3(Math.min(1, pop * 2)),
+        });
+      }
+    });
+  }
   return ops;
 }
 
+/** When the line has drawn `share` of itself, in seconds: the inverse of
+ * its slow-at-both-ends draw. */
+function drawnAt(share: number): number {
+  return INTRO_S + (DRAW_S * Math.acos(1 - 2 * share)) / Math.PI;
+}
+
+/** What «Edit video» adds to the post's video (TASK-408): the animal, the
+ * line's colour on the map looks, the emoji of the way and of the end. */
+export type SceneOptions = {
+  character?: Character | null;
+  line?: LineColour;
+  along?: string | null;
+  end?: string | null;
+};
+
 /**
  * The video of `run`'s post as it is now, in `look`: the results on in
- * `shown`, the emoji where the runner put them, and `character` running
- * the line when there is one (TASK-408).
+ * `shown`, the emoji where the runner put them, and what «Edit video» chose
+ * in `options` (TASK-408): the animal running the line, the line's colour,
+ * the emoji of the way and of the end.
  */
 export function videoScene(
   run: PostRun,
   shown: readonly PostResult[],
   stickers: readonly Sticker[],
   look: VideoLook,
-  character: Character | null = null,
+  options: SceneOptions = {},
 ): VideoScene {
   const palette = look === "paper" ? null : stylePalette(look);
   const spec =
     look === "paper" || palette === null
       ? PAPER
-      : mapLook(palette, look === "day", styleRelief(look));
+      : mapLook(palette, look === "day", styleRelief(look), options.line ?? "yellow");
   const language = appLanguage();
   const layout = layoutOf(run, shown, spec, palette, language);
   const count = VIDEO_SECONDS * VIDEO_FPS;
@@ -905,9 +991,9 @@ export function videoScene(
     colors: spec.colors,
     map: layout.map,
     paths: [layout.heart, layout.track],
-    character,
+    character: options.character ?? null,
     frames: Array.from({ length: count }, (_, i) =>
-      frameAt(i / VIDEO_FPS, run, stickers, layout, spec, language, character),
+      frameAt(i / VIDEO_FPS, run, stickers, layout, spec, language, options),
     ),
   };
 }

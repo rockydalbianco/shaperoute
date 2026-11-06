@@ -326,6 +326,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `ready` vero per Gravel e MTB, col «Sì, accendili» dell'utente; anche
   nei build dello store, nella ricerca e nel modulo per pubblicare. Solo
   JavaScript. Prossimo: la prova sul telefono, poi la chiusura.
+  **Parte C in `main`** (#897, `22454109`, 2026-11-06): impronta iOS
+  `6f8bba4c` invariata. Anteprima all'utente a CI di `main` verde,
+  produzione col suo «ok produzione». Prossimo: la prova sul telefono
+  (si sceglie, si pedala, si salva, va in Salute), poi la chiusura.
 
 - **TASK-380 — Roller, i pattini in linea** (2026-11-06; numeri dal
   Coordinatore, ADR-0324 **proposto**). Parte 0, solo documenti: misurate

@@ -1,5 +1,7 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
+import { withWatchTarget } from "./plugins/watchConfig";
+
 /**
  * app.json stays the whole config; this file only changes the runtime version
  * of the App Store build (TASK-152) and adds Firebase's file on Android
@@ -23,13 +25,20 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
  * `android.googleServicesFile`. Without the variable (Expo Go, the tests, a
  * checkout) the config is app.json as it is: the file counts in the Android
  * fingerprint only, so the iPhone build's runtime does not move.
+ *
+ * MUW_WATCH=1 adds the Apple Watch app's target (TASK-370 part A2), only for
+ * a local prebuild with @bacons/apple-targets installed by hand: without it
+ * the config is the same, and so is the fingerprint, until the watch's own
+ * build (plugins/watchConfig.js).
  */
 export default ({ config }: ConfigContext): Partial<ExpoConfig> => {
   const googleServices = process.env.GOOGLE_SERVICES_JSON;
   const withFirebase: Partial<ExpoConfig> = googleServices
     ? { ...config, android: { ...config.android, googleServicesFile: googleServices } }
     : config;
+  const withWatch =
+    process.env.MUW_WATCH === "1" ? withWatchTarget(withFirebase) : withFirebase;
   return process.env.APP_VARIANT === "production"
-    ? { ...withFirebase, runtimeVersion: { policy: "fingerprint" } }
-    : withFirebase;
+    ? { ...withWatch, runtimeVersion: { policy: "fingerprint" } }
+    : withWatch;
 };

@@ -1,0 +1,29 @@
+/* The watch's texts (TASK-370), written by apps/mobile/scripts/watch-texts.sh
+   from src/watch/watchTexts.ts: do not change them here. */
+
+"Get ready" = "Get ready";
+"Pause" = "Pause";
+"Resume" = "Resume";
+"Paused" = "Paused";
+"Finish" = "Finish";
+"Time" = "Time";
+"Distance" = "Distance";
+"Pace now" = "Pace now";
+"Avg pace" = "Avg pace";
+"Last km" = "Last km";
+"Last mi" = "Last mi";
+"Avg /500 m" = "Avg /500 m";
+"Last 500 m" = "Last 500 m";
+"Avg /100 m" = "Avg /100 m";
+"Last 100 m" = "Last 100 m";
+"Calories" = "Calories";
+"Done" = "Done";
+"Run" = "Run";
+"Bike" = "Bike";
+"Paddle" = "Paddle";
+"Open water swim" = "Open water swim";
+"Hike" = "Hike";
+"Walk" = "Walk";
+"Ski" = "Ski";
+"Cross-country ski" = "Cross-country ski";
+"Gym" = "Gym";

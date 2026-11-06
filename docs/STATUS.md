@@ -708,6 +708,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     (aggiunta ad ADR-0338). Per andare online, comandi dell'utente col suo
     sì: il server con la 0054, poi il download del file e l'import.
     Prossimo: la parte B, il meteo da MET Norway.
+- **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
+  percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
+  Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un
+  cavallo, un elefante o altri animali che corrono il percorso in 3D; il
+  finale, i colori, le emoji, il 2D e il 3D, i cambi di scena; un prompt.
+  Scelte: prima il personaggio, poi l'editor, poi il prompt; il prompt senza
+  costi, letto dal telefono con una tabella di parole. Proposta: three.js
+  nella pagina del video (niente di nativo) e modelli CC0. Prossimo: la
+  risposta dell'utente alla domanda 1, three.js e i modelli
+  (`tasks/TASK-408.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

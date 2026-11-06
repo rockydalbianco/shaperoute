@@ -369,3 +369,7 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
   esercizio sul profilo e «New level» nel post, contati dal server da tutti
   gli allenamenti. Scelte dell'utente: «Tutti», «I primi 5 + altro». Niente
   migrazione; server col sì. Prossima: C, poi F.
+- 2026-11-06: parte E in `main` (#888, 9cd295b1); impronta iOS 6f8bba4c
+  misurata dal Coordinatore su copia pulita. Il server (`gym_levels`, senza
+  migrazione) va col sì dell'utente, col comando del Coordinatore; poi
+  l'OTA col sì. Prossima: C (kcal e Salute), poi F (classifica).

@@ -531,6 +531,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   allenamenti, privati compresi. Scelte dell'utente del 2026-11-06:
   «Tutti», «I primi 5 + altro». Niente migrazione; server col sì. Prossima:
   C (kcal e Salute), F (classifica).
+  Parte E in `main` (#888, 9cd295b1), impronta iOS 6f8bba4c invariata;
+  server col sì dell'utente (comando dal Coordinatore), poi OTA col sì.
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo

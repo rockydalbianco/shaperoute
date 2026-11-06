@@ -339,6 +339,8 @@ Parte B1: `apps/mobile/assets/characters/*.zip` (12, nuovi),
 `CharacterRow.tsx` (nuovo), `videoPage.ts` e `.test.ts`, `videoScene.ts` e
 `.test.ts`, `RunVideo.tsx`, `SharePost.tsx` e `.test.tsx`,
 `SharePostVideo.test.tsx` (aggiunto dal Coordinatore il 2026-11-06),
+`apps/mobile/src/tabs/TabSwipeOwners.test.ts` (una riga in `ROWS`, aggiunto
+dal Coordinatore il 2026-11-06),
 `apps/mobile/src/i18n/{it,de,es,fr}.ts`, `docs/tasks/TASK-408.md`,
 `docs/STATUS.md`, `docs/DECISIONS.md`. Fuori dal repository:
 `out/TASK-408/` (i glTF scaricati, `shrink.mjs`, i .glb, la pagina di prova

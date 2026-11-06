@@ -42,6 +42,8 @@ const ROWS = [
   // Over the app, in a workout at the gym: the groups of «+ Exercise»
   // (TASK-385 B).
   "gym/ExercisePicker.tsx",
+  // In «Share your run»: the animals of the video (TASK-408).
+  "share/CharacterRow.tsx",
 ];
 
 /** The one that hands the finger on: the drawing, then the photo, of a card

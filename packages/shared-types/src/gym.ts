@@ -83,7 +83,12 @@ export interface GymExercises {
  * a load (per hand for a dumbbell), the reps of a set of the body, the
  * seconds of a timed set or of a machine without distance, the metres of a
  * cardio block. */
-export const GYM_LEVEL_MEASURES = ["load_kg", "reps", "duration_s", "distance_m"] as const;
+export const GYM_LEVEL_MEASURES = [
+  "load_kg",
+  "reps",
+  "duration_s",
+  "distance_m",
+] as const;
 export type GymLevelMeasure = (typeof GYM_LEVEL_MEASURES)[number];
 
 /** The level of an exercise of the catalog (TASK-385 E, ADR-0327 point 9):

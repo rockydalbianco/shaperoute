@@ -72,8 +72,10 @@ test("the catalog names each exercise once, of a kind and a scale it has", () =>
 test("a level on the profile is the one its value reaches on its scale", () => {
   const levels = gymLevels.gym_levels as GymLevel[];
   assert.ok(levels.length > 0);
-  const scales: Record<string, { measure: string; levels: number[]; cap: number | null }> =
-    catalog.scales;
+  const scales: Record<
+    string,
+    { measure: string; levels: number[]; cap: number | null }
+  > = catalog.scales;
   for (const level of levels) {
     assert.ok(GYM_LEVEL_MEASURES.includes(level.measure));
     const exercise = catalog.exercises.find((item) => item.key === level.exercise);
@@ -86,5 +88,8 @@ test("a level on the profile is the one its value reaches on its scale", () => {
   }
   // The highest level first.
   const order = levels.map((level) => level.level);
-  assert.deepEqual(order, [...order].sort((a, b) => b - a));
+  assert.deepEqual(
+    order,
+    [...order].sort((a, b) => b - a),
+  );
 });

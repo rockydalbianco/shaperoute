@@ -299,7 +299,23 @@ docs/STATUS.md (aggiunta)
 ```
 
 Parte A: vedi «Parte A, il piano» sopra (lista mandata al Coordinatore
-il 2026-11-05). Parti B–D (previsti, ognuno con la sua lista al
+il 2026-11-05). Parte A2 (lista approvata dal Coordinatore il
+2026-11-05, con le aggiunte approvate il 2026-11-06):
+
+```
+apps/mobile/targets/watch/expo-target.config.js, Info.plist, .gitignore (nuovi)
+apps/mobile/targets/watch/App/*.swift (nuova: l'app SwiftUI)
+apps/mobile/targets/watch/{en,it,de,es,fr}.lproj/ (nuove: testi generati)
+apps/mobile/targets/watch/Core/Sources/WatchCore/WatchFormat.swift, WatchPaces.swift (nuovi)
+apps/mobile/targets/watch/Core/Tests/WatchCoreTests/WatchFormatTests.swift, WatchPacesTests.swift (nuovi)
+apps/mobile/targets/watch/Core/Fixtures/format.json (nuovo)
+apps/mobile/plugins/withWatchCore.js, watchConfig.js, watchConfig.test.ts (nuovi)
+apps/mobile/src/watch/watchTexts.ts, watchTexts.test.ts, watchFormat.test.ts (nuovi)
+apps/mobile/scripts/watch-texts.sh (nuovo)
+apps/mobile/app.config.ts (poche righe: MUW_WATCH)
+docs/tasks/TASK-370.md, docs/DECISIONS.md, docs/STATUS.md
+```
+ Parti B–D (previsti, ognuno con la sua lista al
 Coordinatore prima di partire):
 
 ```

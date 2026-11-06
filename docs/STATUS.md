@@ -244,6 +244,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **A1 in `main` il 2026-11-05** (#839, `76be330e`; CI verde, impronta `6f8bba4c`). A2 in
   una sessione nuova, con la lista dei file al Coordinatore prima del codice; se TASK-401
   aggiunge `@bacons/apple-targets` nella 1.0.2, chi lo aggiunge si concorda con loro.
+- **TASK-370 A2 — L'app SwiftUI dell'orologio** (2026-11-06; parte A2 del piano in
+  `tasks/TASK-370.md`, ADR-0314 «precisazione A2»; lista dei file approvata dal
+  Coordinatore). `apps/mobile/targets/watch/`: il target `watch` di `@bacons/apple-targets`
+  (`.watchkitapp`, watchOS 10, HealthKit), l'app SwiftUI (sport col logo MuW, conto alla
+  rovescia, tempo, distanza, «Pace now», battito, «Avg pace», «Last km», calorie, pausa,
+  ripresa, fine, riepilogo), `HKWorkoutSession` + `HKLiveWorkoutBuilder` col mirroring,
+  `WCSession` coi messaggi di WatchCore; `WatchFormat` e `WatchPaces` nuovi in WatchCore
+  (XCTest; il formato uguale all'app via `Fixtures/format.json` letto anche da jest); i
+  testi solo quelli dell'app (`src/watch/watchTexts.ts`, `scripts/watch-texts.sh`).
+  `plugins/withWatchCore.js` tiene `Core/` fuori dai file del target e lo collega come
+  pacchetto locale; `MUW_WATCH=1` in `app.config.ts` (via `plugins/watchConfig.js`) solo
+  per le prove locali: la dipendenza la porta TASK-401 B. Provata nel simulatore di watchOS
+  27 (Series 12 da 42 mm) con un prebuild locale. Branch `feat/TASK-370-a2-watch-app`.
+  **Prossimo**: A3, il telefono (`src/watch/watchLink.ts`, `useWatch.ts`, il battito nella
+  corsa); la prova sul polso con una build firmata.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.
@@ -288,6 +303,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `6f8bba4c` invariata, impronta del motore tenuta. Il server con la 0052
   lo aggiorna l'utente col suo sì, col comando del Coordinatore. Prossimo:
   la parte B (app), con la sua lista di file al Coordinatore.
+  **Parte B in PR** (2026-11-06, `feat/TASK-378-b-gravel-app`): «Gravel»
+  🚲 e «MTB» 🚵 in «Settings» dopo «Hike», «Soon» finché l'utente non li
+  accende; i nomi e l'avviso MTB nelle cinque lingue; energia dal
+  Compendium; i record propri nel profilo; i file FIT (sub-sport), GPX e
+  Strava che li dicono. Solo JavaScript. Prossimo: `ready` vero nelle due
+  righe col sì dell'utente, che il Coordinatore chiede dopo il merge.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

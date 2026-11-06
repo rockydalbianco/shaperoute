@@ -153,7 +153,10 @@ it("counts the energy as before", () => {
     cycling: "met",
     paddling: "met",
     hiking: "oxygen",
+    // A gravel and an MTB ride (TASK-378 part B), the Compendium's bicycling.
+    mountain_biking: "met",
     walking: "oxygen",
+    gravel_biking: "met",
   });
   expect(profileOf("hiking").energy).toEqual(profileOf("walking").energy);
   expect(profileOf("running").energy).toEqual({

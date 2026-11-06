@@ -7,8 +7,8 @@ import { type FilePoint, type FileTrack, positionOf } from "./fileTrack";
  * and Polar watches: read from the FIT protocol (the Garmin FIT SDK's
  * «Flexible and Interoperable Data Transfer»), without its SDK. Of all it
  * holds only the `record` messages (their `timestamp`, `position_lat` and
- * `position_long`) and the sport of the `session` or `sport` message are
- * read; the rest is skipped by the sizes its definitions give. A file cut
+ * `position_long`) and the sport and sub-sport of the `session` or `sport`
+ * message are read; the rest is skipped by the sizes its definitions give. A file cut
  * short (a watch that stopped mid-write) gives what came before the cut.
  */
 
@@ -24,12 +24,15 @@ const SESSION = 18;
 const RECORD = 20;
 
 /** The field numbers read: the timestamp of any message, the record's
- * position, the sport of «sport» (0) and of «session» (5). */
+ * position, the sport of «sport» (0) and of «session» (5), and their
+ * sub-sport (1 and 6). */
 const TIMESTAMP = 253;
 const POSITION_LAT = 0;
 const POSITION_LONG = 1;
 const SPORT_OF_SPORT = 0;
 const SPORT_OF_SESSION = 5;
+const SUB_SPORT_OF_SPORT = 1;
+const SUB_SPORT_OF_SESSION = 6;
 
 /** The «invalid» values of the base types read. */
 const INVALID_SINT32 = 0x7fffffff;
@@ -51,6 +54,14 @@ const SPORTS: ReadonlyMap<number, Activity> = new Map([
   [21, "cycling"], // e_biking
   [37, "paddling"], // stand_up_paddleboarding
   [41, "paddling"], // kayaking
+]);
+
+/** The FIT «sub_sport» values of a ride (sport 2) that are one of MuW's
+ * sports of their own (TASK-378): any other is a ride. */
+const CYCLING_SUB_SPORTS: ReadonlyMap<number, Activity> = new Map([
+  [8, "mountain_biking"], // mountain
+  [46, "gravel_biking"], // gravel_cycling
+  [47, "mountain_biking"], // e_bike_mountain
 ]);
 
 type Field = { num: number; size: number; at: number };
@@ -90,6 +101,8 @@ type Reading = {
   lastTime: number | null;
   sessionSport: number | null;
   sportSport: number | null;
+  sessionSubSport: number | null;
+  sportSubSport: number | null;
 };
 
 export function readFit(bytes: Uint8Array): FileTrack {
@@ -101,6 +114,8 @@ export function readFit(bytes: Uint8Array): FileTrack {
     lastTime: null,
     sessionSport: null,
     sportSport: null,
+    sessionSubSport: null,
+    sportSubSport: null,
   };
   // Several FIT files may follow one another in one file («chained»).
   let at = 0;
@@ -114,10 +129,19 @@ export function readFit(bytes: Uint8Array): FileTrack {
     at = end + 2;
   }
   const sport = reading.sessionSport ?? reading.sportSport;
-  return {
-    points: reading.points,
-    sport: sport === null ? null : (SPORTS.get(sport) ?? null),
-  };
+  const subSport =
+    reading.sessionSport === null ? reading.sportSubSport : reading.sessionSubSport;
+  return { points: reading.points, sport: activityOf(sport, subSport) };
+}
+
+/** MuW's sport of a FIT sport and sub-sport; null for one that is none. */
+function activityOf(sport: number | null, subSport: number | null): Activity | null {
+  if (sport === null) {
+    return null;
+  }
+  const ride =
+    sport === 2 && subSport !== null ? CYCLING_SUB_SPORTS.get(subSport) : undefined;
+  return ride ?? SPORTS.get(sport) ?? null;
 }
 
 /** The messages between `start` and `end`, until the end or a cut. */
@@ -235,10 +259,16 @@ function readMessage(
       return;
     }
     case SESSION:
-      reading.sessionSport ??= enumOf(SPORT_OF_SESSION);
+      if (reading.sessionSport === null) {
+        reading.sessionSport = enumOf(SPORT_OF_SESSION);
+        reading.sessionSubSport = enumOf(SUB_SPORT_OF_SESSION);
+      }
       return;
     case SPORT:
-      reading.sportSport ??= enumOf(SPORT_OF_SPORT);
+      if (reading.sportSport === null) {
+        reading.sportSport = enumOf(SPORT_OF_SPORT);
+        reading.sportSubSport = enumOf(SUB_SPORT_OF_SPORT);
+      }
       return;
     default:
       return;

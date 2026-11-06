@@ -23840,6 +23840,91 @@ minuto», contro «Sparisce subito»).
 L'utente dà il sì a `@bacons/apple-targets` 5.0.0 e al modulo locale in
 Swift nella build 1.0.2 («Sì, nella 1.0.2»).
 
+---
+
+## ADR-0314, precisazione — La parte A2: l'app SwiftUI dell'orologio
+
+**Stato**: Attiva · 2026-11-06 · TASK-370 parte A2, deciso dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore; numeri in
+più sullo schermo e logo chiesti dall'utente durante la prova.
+
+**Decisione**:
+
+1. **`targets/watch/`** è il target `type: "watch"` di
+   `@bacons/apple-targets` (bundle `.watchkitapp`, watchOS 10, HealthKit).
+   Lo costruisce solo un `match` che nomina `watch`: oggi solo con
+   `MUW_WATCH=1`, da A-flip in `app.json`. La dipendenza la porta TASK-401 B
+   (confermato dal Coordinatore il 2026-11-05); A2 non tocca
+   `package.json`, `app.json` né il lock.
+2. **`Core/` fuori dai file del target, come pacchetto locale**: il plugin
+   (5.0.0) mette l'intera cartella del target in un
+   `PBXFileSystemSynchronizedRootGroup` ed esclude solo `Info.plist` e
+   `expo-target.config.js`: senza intervento compilerebbe `Package.swift`,
+   `Core/Tests` e `.build`, e `Bundle.module` di WatchCore non esisterebbe.
+   `plugins/withWatchCore.js` aggiunge `Core` (e il `.gitignore`) alle
+   eccezioni e collega `Core/` come `XCLocalSwiftPackageReference` con il
+   prodotto `WatchCore`, con lo stesso mod `xcodeProjectBeta2` del plugin.
+   Va **prima** di `@bacons/apple-targets` nei plugin: Expo esegue le
+   modifiche Xcode in ordine inverso. Verificato: nel build nessun file di
+   `Core/Tests`, `sports.json` nel bundle `WatchCore_WatchCore.bundle`.
+3. **`MUW_WATCH=1`** in `app.config.ts` chiama `plugins/watchConfig.js`:
+   se `app.json` ha già il plugin allarga `match` (`live-activity` →
+   `{live-activity,watch}`), altrimenti lo aggiunge con `match: "watch"`
+   (per le prove prima di 401 B, col pacchetto installato solo in locale).
+   È JavaScript perché Expo legge `app.config.ts` da solo e non risolve un
+   import TypeScript da lì (provato: «Cannot find module»). Si carica con un
+   `require` solo quando la variabile c'è: l'impronta conta ogni file che
+   la config carica (`expoConfigPlugins`), e con un `import` in cima era
+   `c770de78` invece di `6f8bba4c` anche senza `MUW_WATCH` (misurato).
+4. **Lo stato è di WatchCore, la registrazione di HealthKit**:
+   `HKWorkoutSession` + `HKLiveWorkoutBuilder` (salva l'allenamento in
+   Salute alla fine: un'attività, un allenamento), mirroring al telefono
+   avviato a ogni allenamento, `WCSession` coi messaggi di WatchCore: lo
+   stato a ogni cambio e ogni 5 s, il battito ogni 5 s; comandi dal telefono
+   (avvio, pausa, ripresa, fine). Uno sport che l'orologio non offre,
+   mandato da un telefono più nuovo, è lasciato fuori. Pausa e ripresa coi
+   due tasti del sistema passano dallo stesso stato.
+5. **I numeri come il pannello della corsa dell'app** (`RunPanel.tsx`), su
+   richiesta dell'utente durante la prova («andatura, battito, andatura
+   ultimo km… più informazioni»): pagina principale tempo, distanza,
+   «Pace now», battito; seconda pagina «Avg pace», «Last km» («Last mi»,
+   «Last 500 m» in acqua), calorie; in palestra tempo, calorie e battito.
+   «–» dove il numero non c'è ancora, come `NO_NUMBER`. «Pace now» e
+   «Last km» sono in `WatchPaces` (WatchCore, XCTest) con le regole di
+   `runStats.ts` (ultimi 200 m, fermo oltre 20 min/km, 60 nel nuoto; la
+   fine del km in proporzione fra due campioni), ma su distanza e tempo in
+   movimento di Salute invece che sui fix GPS: niente fixture comuni,
+   perché gli ingressi sono diversi. Tempo, distanza e passo invece si
+   scrivono con `WatchFormat`, tenuto uguale a `clockLabel`,
+   `runDistanceLabel`, `paceLabel` e ai passi di pagaia e nuoto da
+   `Fixtures/format.json`, letto da XCTest e da jest (anche i mezzi esatti
+   di `toFixed`, dove `%.2f` arrotonda al pari). La bici resta a passo,
+   come in A1; la velocità è della parte C.
+6. **Il logo** (richiesta dell'utente): in cima alla lista degli sport e
+   nel riepilogo, il cuore dell'icona e il nome di `splash-logo-dark.png`,
+   immagini generate dal plugin a ogni prebuild (`Assets.xcassets` è nel
+   `.gitignore` del target). Nessun colore scritto a mano: colori di
+   sistema e quelli delle immagini.
+7. **I testi** sono solo quelli che l'app ha già, con le sue traduzioni:
+   `src/watch/watchTexts.ts` li elenca, un test controlla che ognuno sia in
+   ogni tabella, `scripts/watch-texts.sh` scrive
+   `<lingua>.lproj/Localizable.strings`; le due frasi di Salute sono quelle
+   dell'iPhone (`app.json`, `locales/*.json`) in `InfoPlist.strings`. Un
+   nome di sport ancora senza traduzione resta inglese, come nell'app.
+8. **Le unità** sono quelle del sistema di misura dell'orologio, come fa
+   l'app finché non se ne sceglie una; la scelta del telefono arriva in A3.
+
+**Alternative**:
+- **Compilare i sorgenti di WatchCore nel target** invece del pacchetto:
+  niente plugin locale, ma `Bundle.module` non c'è fuori da SwiftPM e i
+  test andrebbero esclusi lo stesso; scartata.
+- **Spostare `Core/` fuori da `targets/watch/`**: cambierebbe A1 già in
+  `main` (percorsi di jest e di `watch.yml`); scartata.
+
+**Conseguenze**: senza `MUW_WATCH` la config è quella di prima e
+l'impronta iOS resta quella di `main` (misurata nella PR). La prova sul
+polso aspetta una build firmata con il team dell'utente; watchOS 27 non gira
+più sulla Series 6, ma l'app chiede watchOS 10.
 ## ADR-0321, precisazione — La parte B: Hike nell'app, «Soon» fino al server
 
 **Stato**: Accettato · 2026-11-05 · TASK-377 parte B. Lista dei file
@@ -24086,6 +24171,38 @@ il tipo vuole un numero.
 **Scartato**: riconoscere i percorsi di MuW dall'id (`muw:`) nella card,
 un caso speciale sul nome.
 
+## ADR-0322, precisazione — La parte B: Gravel e MTB nell'app
+
+**Stato**: Accettato · 2026-11-06 · TASK-378 parte B. Testi, ordine dei
+record e «ready» sono scelte dell'utente (TASK-378.md); lista dei file del
+Coordinatore; il resto è deciso dall'agente su delega dell'utente.
+
+1. **In «Settings»** gli sport si chiamano `gravel` e `mtb`, dopo «Hike»,
+   nell'ordine dei profili. `ready` resta falso finché l'utente non li
+   accende (il Coordinatore glielo chiede con la parte B in `main`): nei
+   build dello store non si vedono, in Expo Go dicono «Soon». Ricerca e modulo per pubblicare li offrono solo da
+   pronti (`OFFERED_WHEN_READY`); via la lista `NOT_YET` di
+   `searchFilters.ts`.
+2. **Partire senza percorso** è quello della bici, «Ride without a
+   route», con l'emoji dello sport: nessun testo nuovo.
+3. **L'energia** (Compendium 2024): Gravel con le fasce di velocità della
+   bici, copiate nel suo file perché un file di sport non importa un altro
+   sport; MTB «bicycling, mountain, general» (01009), 8,5 MET a ogni
+   velocità, perché su un sentiero la velocità dice poco della fatica.
+4. **Salute**: Apple `.cycling` (13) e Health Connect `BIKING` (8),
+   controllati sulle librerie dell'app: nessuna delle due ha un tipo
+   gravel o MTB.
+5. **I file importati**: in un FIT il sub-sport di una bici (sport 2)
+   dice `mountain` (8), `gravel_cycling` (46) ed `e_bike_mountain` (47),
+   numeri del profilo dell'SDK Garmin; ogni altro resta una bici. Nei GPX
+   e TCX le parole «gravel», «mountain bike» e «mtb», mai
+   «mountaineering».
+6. **I record**: `PersonalBest.sport` del contratto si allarga ai due
+   sport, e il profilo li mostra dopo quelli della bici, «GRAVEL» e
+   «MTB».
+7. **Nessuna rete sul telefono**: li disegna solo il server, come nella
+   parte A. L'impronta iOS non si muove (solo JavaScript) e `sports.json`
+   dell'orologio non cambia.
 ## ADR-0338 — Le stazioni sciistiche: dati OSM, meteo MET Norway dal server, la giornata completa
 
 **Stato**: Proposto · 2026-11-06 · TASK-406. Le scelte di prodotto sono

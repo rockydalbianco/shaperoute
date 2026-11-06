@@ -69,6 +69,9 @@ export function PersonalBests({ bests }: Props) {
     [
       ["running", t("Run")],
       ["cycling", t("Bike")],
+      // Each with bests of its own (TASK-378, the user's choice 6).
+      ["gravel_biking", t("Gravel")],
+      ["mountain_biking", t("MTB")],
     ] as const
   )
     .map(([sport, name]) => ({ sport, name, bests: ofSport(bests, sport) }))

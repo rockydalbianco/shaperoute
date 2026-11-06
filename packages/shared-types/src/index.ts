@@ -1075,7 +1075,8 @@ export const CYCLING_BEST_DISTANCES = [
  * ones too (TASK-368): moving seconds, the pauses left out.
  */
 export interface PersonalBest {
-  sport: "running" | "cycling";
+  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322). */
+  sport: "running" | "cycling" | "gravel_biking" | "mountain_biking";
   distance:
     (typeof RUNNING_BEST_DISTANCES)[number] | (typeof CYCLING_BEST_DISTANCES)[number];
   distance_m: number;

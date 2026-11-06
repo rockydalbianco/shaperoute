@@ -14,7 +14,9 @@ import { profileOf } from "../sports";
  * lake or the sea since TASK-191 (a canoe, a kayak, a SUP), a walk on the
  * foot network of a run (TASK-371 part B, ADR-0315), «Soon» until the server
  * walks, a hike on the trails of its own network (TASK-377 part B,
- * ADR-0321), «Soon» until the server hikes, or swimming in open water
+ * ADR-0321), «Soon» until the server hikes, a gravel ride on the bike's
+ * network or an MTB ride on the trails of its own (TASK-378 part B,
+ * ADR-0322), «Soon» until the user turns them on, or swimming in open water
  * (TASK-323, ADR-0283) since the server swims.
  * Paragliding (TASK-305 D0, ADR-0265) is only «Soon» for now: never chosen,
  * so never a route, and wherever the sports are told apart it goes as a
@@ -28,6 +30,8 @@ export type Sport =
   | "paddle"
   | "walk"
   | "hike"
+  | "gravel"
+  | "mtb"
   | "swim"
   | "ski"
   | "xc_ski"
@@ -73,6 +77,8 @@ const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
   swim: "swimming",
   walk: "walking",
   hike: "hiking",
+  gravel: "gravel_biking",
+  mtb: "mountain_biking",
   ski: "skiing",
   xc_ski: "xc_skiing",
   gym: "gym",
@@ -108,6 +114,11 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // since the server has TASK-377 part A and its migration 0051, the user's
   // «acceso appena pronto», in the store builds too.
   fromProfile("hike", true),
+  // Asked as "gravel_biking" and "mountain_biking" (activityOf), 10-30 km
+  // each, from the server's TASK-378 part A (migration 0052); on with the
+  // user's yes, once this part B is in main.
+  fromProfile("gravel", false),
+  fromProfile("mtb", false),
   // Saved as "skiing" and "xc_skiing" (runActivityOf). The alpine ski is on
   // since TASK-375 D4: the server has parts A-D (migrations 0044 and 0048)
   // and the day its numbers, lifts and pistes. The cross-country ski not yet.
@@ -124,13 +135,16 @@ export const ALL_SPORTS: readonly SportOption[] = [
 const OFFERED_WHEN_READY: { readonly [A in Activity]?: Sport } = {
   walking: "walk",
   hiking: "hike",
+  gravel_biking: "gravel",
+  mountain_biking: "mtb",
 };
 
 /**
  * Whether `activity` is offered where a run's sport is chosen or looked for
  * (the form to publish, the search's filters): a walk once «Walk» is ready,
  * the server keeping walks (TASK-371), so the two come together, a hike
- * once «Hike» is (TASK-377); every other as before.
+ * once «Hike» is (TASK-377), a gravel or an MTB ride once «Gravel» or «MTB»
+ * is (TASK-378); every other as before.
  */
 export function activityOffered(
   activity: Activity,
@@ -267,10 +281,12 @@ export function runActivityOf(sport: Sport): RunActivity {
 /** The way out of «Draw» with the track only (TASK-149), in the sport's
  * words: «Ride» by bike (TASK-190), «Paddle» on the water (TASK-191),
  * «Walk» on foot (TASK-371), «Hike» on the trails (TASK-377), «Swim» in
- * open water (TASK-323). */
+ * open water (TASK-323). A gravel or an MTB ride is a ride (TASK-378). */
 export function withoutRouteLabel(sport: Sport): string {
   switch (sport) {
     case "bike":
+    case "gravel":
+    case "mtb":
       return t("Ride without a route");
     case "paddle":
       return t("Paddle without a route");

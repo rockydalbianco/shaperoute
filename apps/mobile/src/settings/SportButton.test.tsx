@@ -81,9 +81,9 @@ test("a sport not ready is not a choice in the menu", async () => {
   expect(screen.getAllByRole("radio")).toHaveLength(1);
   expect(screen.getByLabelText("Bike, coming soon")).toBeOnTheScreen();
   // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
-  // (TASK-377), Ski and Cross-country ski (TASK-375), Gym (TASK-385 B) and
-  // Paragliding (TASK-305 D0).
-  expect(screen.getAllByText("Soon")).toHaveLength(9);
+  // (TASK-377), Gravel and MTB (TASK-378), Ski and Cross-country ski
+  // (TASK-375), Gym (TASK-385 B) and Paragliding (TASK-305 D0).
+  expect(screen.getAllByText("Soon")).toHaveLength(11);
 });
 
 test("in the menu «Swim» is a choice like the others (TASK-323)", async () => {

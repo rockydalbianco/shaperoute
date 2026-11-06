@@ -76,7 +76,8 @@ function offsetMs(zone: string | undefined): number {
 
 /**
  * The sport a file names, as one of MuW's: GPX's <type> («running»,
- * «cycling», «walking», «hiking», Strava's «9», «1», «10» and «4»), TCX's Sport
+ * «cycling», «walking», «hiking», Garmin's «gravel_cycling» and
+ * «mountain_biking», Strava's «9», «1», «10» and «4»), TCX's Sport
  * («Running», «Biking»).
  * null for the others: the form starts from the sport of «Settings».
  */
@@ -97,6 +98,15 @@ export function sportOfWord(word: string): Activity | null {
   }
   if (name.includes("run")) {
     return "running";
+  }
+  // A gravel or an MTB ride (TASK-378), before the rides they also are.
+  if (name.includes("gravel")) {
+    return "gravel_biking";
+  }
+  // Garmin's «mountain_biking», Strava's «MountainBikeRide»; never
+  // «mountaineering».
+  if (name.replace(/[\s_-]/g, "").includes("mountainbik") || name.includes("mtb")) {
+    return "mountain_biking";
   }
   if (name.includes("cycl") || name.includes("bik") || name.includes("ride")) {
     return "cycling";

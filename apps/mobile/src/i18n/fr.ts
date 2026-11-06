@@ -1158,6 +1158,12 @@ export const FR: Table = {
   Hike: "Randonnée",
   "Trails can be demanding: check the route and the weather before you set off.":
     "Les sentiers peuvent être exigeants : vérifie le parcours et la météo avant de partir.",
+  // src/sports/gravel_biking.ts, mountain_biking.ts (TASK-378 part B),
+  // approved on 2026-11-05
+  Gravel: "Gravel",
+  MTB: "VTT",
+  "Trails can be technical: check the route before you set off.":
+    "Les sentiers peuvent être techniques : vérifie le parcours avant de partir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Ski",
   "Cross-country ski": "Ski de fond",

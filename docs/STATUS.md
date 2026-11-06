@@ -179,6 +179,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Parte A pronta il 2026-11-05** (branch `feat/TASK-402-a-turn`): «−15°», l'angolo da scrivere
   e «+15°» con «Move», due dita che girano, «Undo»; una forma girata va come contorno; impronta
   iOS 6f8bba4c invariata. Prossimo: la parte B (i pezzi), con la sua lista al Coordinatore.
+  **Parte B pronta il 2026-11-06** (branch `feat/TASK-402-b-pieces`, via del Coordinatore sulla
+  lista): «Change | Add» sopra le tessere; con «Add» una tessera aggiunge un pezzo (al massimo 6),
+  che con «Move» si sceglie con un tocco, si trascina, si ridimensiona, si gira e si toglie
+  («Delete piece»); un solo percorso come disegno, collegamenti tratteggiati, contratto uguale;
+  un pezzo solo chiede quello di prima. Testi 3–5 nelle quattro lingue. Prossimo: il video del
+  simulatore all'utente, la PR, il merge del Coordinatore, poi l'OTA col sì dell'utente.
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi

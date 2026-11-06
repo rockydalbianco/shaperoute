@@ -196,6 +196,21 @@ apps/mobile/src/i18n/*.ts                       (i testi approvati)
 docs/UI.md, docs/INDEX.md, docs/STATUS.md, docs/tasks/TASK-402.md
 ```
 
+Aggiunte della parte B, con il via del Coordinatore del 2026-11-06:
+
+```
+apps/mobile/src/map/messages.ts                 (`tapped`; `choosing`, `chosen`, `box` in setCanvas)
+apps/mobile/src/map/messages.test.ts
+apps/mobile/src/map/MapView.tsx                 (i tre campi alla pagina, `tapped` all'app)
+apps/mobile/src/mapdraw/mapPageCanvas.test.ts
+apps/mobile/src/mapdraw/useMapCanvas.test.ts
+apps/mobile/App.tsx                             (una riga, `pieces={mapDraw.pieces}`)
+docs/DECISIONS.md                               (precisazioni della parte B in ADR-0336)
+```
+
+Niente `apps/mobile/locales/*.json` (testi nativi: sposterebbero
+l'impronta). `figure.ts` e `FigureTiles.tsx` alla fine non sono serviti.
+
 Niente motore, niente API, niente contratto, niente dipendenze nuove,
 niente build nativa: tutte e due le parti arrivano con un OTA (col sì
 dell'utente).

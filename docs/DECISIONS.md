@@ -23740,6 +23740,42 @@ mappa». La parte D di TASK-347 (ADR-0300) prevedeva già «seleziona / sposta
   ridimensionamento: lontano dall'equatore storce la figura (un grado di
   longitudine è più corto di uno di latitudine).
 
+**Precisazioni della parte B** (2026-11-06, decise dall'agente su delega
+dell'utente):
+
+- **I pezzi stanno nell'app** (`mapdraw/pieces.ts`): il primo pezzo resta
+  `placed`, su cui lavorano penna, linea, gomma e piega; gli altri sono una
+  lista accanto. `joinedPieces` li unisce sul piano del primo: il contorno
+  del primo; poi, pezzo per pezzo, il suo contorno come dettaglio chiuso,
+  dal suo angolo più vicino al disegno; entro `SNAP_SHARE` parte sul
+  disegno senza collegamento, più lontano con il collegamento tratteggiato
+  (`linked`), percorso andata e ritorno. I dettagli del pezzo si riattaccano
+  al suo contorno. I pezzi aggiunti si semplificano al 1% della loro
+  grandezza (`SIMPLIFY_SHARE`), il primo no.
+- **Un pezzo solo non passa da `joinedPieces`**: la richiesta è esattamente
+  quella di prima (anche una forma per nome, anche a penna alzata).
+- **«Change» con più pezzi** cambia il pezzo scelto, o il primo senza
+  scelta, dov'è e grande com'è.
+- **Con più pezzi, spostare la figura intera è un passo di «Undo»**, come
+  spostare un pezzo: ogni passo ricorda i pezzi dopo il primo, e un
+  movimento senza passo li farebbe tornare indietro da soli.
+- **Limiti**: il totale dentro i limiti di «Draw» (tutti i pezzi
+  ridimensionati insieme attorno al mezzo del primo); un pezzo scelto non
+  scende sotto un sesto della distanza più corta (`lowest / MAX_PIECES`).
+  Un cambio che porterebbe il disegno oltre i punti del contratto non si
+  fa e dice `too_much`.
+- **Il tocco che sceglie**: la pagina della mappa dice `{type: "tapped",
+  lngLat, metresPerPx}` per un dito che non si muove con «Move», solo
+  quando ci sono pezzi; l'app sceglie il pezzo con la linea più vicina
+  entro la portata del dito, se no il più piccolo nel cui riquadro cade il
+  tocco. In `setCanvas` tre campi facoltativi: `choosing`, `chosen` (le
+  linee del pezzo scelto, le sole che le dita muovono; le altre in un layer
+  più chiaro, `FAINT_OPACITY`) e `box` (il riquadro girato col pezzo).
+- **«Change» e il «Change» della corsa**: in italiano il secondo è
+  «Differenza». Un testo uguale in inglese e diverso altrove si scrive
+  `t("Change@@piece")`: `translate` mostra in inglese quello che viene prima
+  di `@@` (`CONTEXT_MARK`), le tabelle hanno la chiave intera.
+
 ## ADR-0337 — «Edit the drawing» torna sotto le opzioni A, B e C del risultato di «Draw»
 
 **Stato**: Proposto · 2026-11-05 · TASK-403. Scelta di prodotto

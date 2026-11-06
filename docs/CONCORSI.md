@@ -100,6 +100,10 @@ cancellato né nascosto: non vince.
 - Per **7 giorni** dopo `closed_at` il concorso si legge ancora
   (`GET /contests/current`): è il tempo del post in evidenza. Poi 404.
 - Senza partecipanti, `close` chiude senza vincitore e senza push.
+- «Winner» viene anche dalla classifica mensile della palestra (TASK-385
+  F, ADR-0327 precisazione F): il primo di un esercizio a mese finito, con
+  almeno 3 persone, senza push né post in evidenza; si conta a ogni
+  lettura del profilo (`gym_leaderboard.gym_wins_sql`).
 
 ## 7. Che cosa vede chi usa l'app
 

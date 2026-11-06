@@ -651,6 +651,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     pubblicata. Il fondo resta «Soon». Solo JavaScript, impronta 6f8bba4c.
     Prossimo: l'OTA di produzione col sì dell'utente, gli estratti delle
     Alpi (o del mondo, se l'utente dice sì), poi la parte E.
+- **TASK-406 — Le stazioni sciistiche: la ricerca «Ski», la neve, il meteo
+  e la giornata** (ADR-0338 **proposto**; numeri dal Coordinatore il
+  2026-11-06). La richiesta dell'utente è del 2026-11-06:
+  - tutte le stazioni nella ricerca «Ski», con neve e meteo;
+  - in «Record your day»: la stazione, il modello, il tipo di neve, il
+    meteo e i km totali;
+  - «copia Slopes», cioè le sue funzioni, non il nome né la grafica.
+
+  Le stazioni vengono da OSM (gli estratti di TASK-375), il meteo da MET
+  Norway, chiesto dal server. Le parti sono A (stazioni), B (meteo), C
+  (ricerca), D (giornata) ed E (prova). Prossimo: la risposta dell'utente
+  alla domanda 1, com'è la neve (`tasks/TASK-406.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

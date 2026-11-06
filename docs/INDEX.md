@@ -64,6 +64,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Il mio corpo: dati del corpo, kcal di corsa/bici/paddle, zone del battito | `tasks/TASK-374.md`, `DECISIONS.md` ADR-0318 |
 | Lo sci alpino, «Ski»: piste e impianti, le tre opzioni, la giornata registrata | `tasks/TASK-373.md`, `DECISIONS.md` ADR-0317 e ADR-0278 |
 | Gli sport «Record only» senza forma: sci alpino e di fondo, `RECORD_ACTIVITIES`, le metriche della giornata, impianti e piste per nome | `tasks/TASK-375.md`, `DECISIONS.md` ADR-0319 e ADR-0317 |
+| Le stazioni sciistiche: la ricerca «Ski», com'è la neve, il meteo MET Norway dal server, la stazione e il modello nella giornata di sci | `tasks/TASK-406.md`, `DECISIONS.md` ADR-0338, `tasks/TASK-375.md`, `MAPS.md` «Impianti e piste da sci da un estratto» |
 | Le app vecchie e le attività nuove: l'header `X-MuW-Reads`, cosa toglie il server da ogni lista, uno sport nuovo da aggiungere | `tasks/TASK-387.md`, `DECISIONS.md` ADR-0328, `API.md` («Quello che un'app sa leggere») |
 | «Edit the drawing» su ogni disegno: emoji, parole, percorsi a tema, corse libere e importate, sull'acqua; la copia senza legami | `tasks/TASK-369.md`, `DECISIONS.md` ADR-0313 e ADR-0299, `UI.md` «Edit the drawing: la figura sulla mappa» |
 | «Edit the drawing» sotto le opzioni A, B e C del risultato di «Draw»: la linea dell'opzione scelta sulla mappa | `tasks/TASK-403.md`, `DECISIONS.md` ADR-0337, ADR-0313 e ADR-0288, `UI.md` «Edit the drawing: la figura sulla mappa» |

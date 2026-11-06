@@ -24077,3 +24077,52 @@ Coordinatore; il resto è deciso dall'agente su delega dell'utente.
 7. **Nessuna rete sul telefono**: li disegna solo il server, come nella
    parte A. L'impronta iOS non si muove (solo JavaScript) e `sports.json`
    dell'orologio non cambia.
+## ADR-0338 — Le stazioni sciistiche: dati OSM, meteo MET Norway dal server, la giornata completa
+
+**Stato**: Proposto · 2026-11-06 · TASK-406. Le scelte di prodotto sono
+dell'utente (domande aperte in `tasks/TASK-406.md`); il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole tutte le stazioni sciistiche nella ricerca
+«Ski», con com'è la neve e il meteo. In «Record your day» vuole anche:
+- la stazione;
+- il modello;
+- il tipo di neve;
+- il numero degli impianti;
+- i km totali;
+- gli impianti presi («copia Slopes»).
+
+TASK-375 ha già la giornata, le risalite e gli impianti presi per nome. Ha
+anche gli estratti OSM del mondo sul server.
+
+**Decisione (proposta)**:
+
+1. **Le stazioni** sono le aree OSM `landuse=winter_sports` con un nome,
+   prese dagli stessi estratti di TASK-375 (niente Overpass, ADR-0154). Il
+   server le salva con il numero degli impianti e i km di piste, contati
+   dai riquadri dello sci.
+2. **Il meteo** viene da MET Norway Locationforecast: dati aperti CC BY
+   4.0, permessi anche a un'app commerciale. Lo chiede il server, con:
+   - un User-Agent che identifica MuW;
+   - le coordinate della stazione, a 4 decimali, mai quelle dell'utente;
+   - una cache fino a `Expires`.
+
+   L'app mostra l'attribuzione. Un contatto o una chiave stanno solo in
+   `.env` e `.env.example`.
+3. **Com'è la neve**: la proposta è la stima di MET Norway (precipitazione
+   sotto lo zero) più il tipo di neve segnato dai membri nelle ultime 24
+   ore. Un bollettino a pagamento solo se l'utente lo sceglie.
+4. **«Copia Slopes»**: si prendono le funzioni, non il nome, la grafica o i
+   testi di quell'app.
+5. Cinque parti: A stazioni sul server, B meteo, C ricerca «Ski», D
+   «Record your day», E prova sulla neve. Ogni parte ha la sua lista dei
+   file approvata dal Coordinatore.
+
+**Alternative**:
+
+- **Open-Meteo**: scartato, perché il piano gratis è solo per uso non
+  commerciale.
+- **Il meteo chiesto dal telefono**: scartato, perché manderebbe a un
+  terzo la posizione dell'utente e non avrebbe una cache condivisa.
+- **Le stazioni da un servizio esterno**: scartato. Costerebbe, e OSM le ha
+  già, nello stesso estratto di impianti e piste.

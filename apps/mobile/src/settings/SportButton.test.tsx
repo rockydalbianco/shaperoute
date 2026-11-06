@@ -80,21 +80,19 @@ test("a sport not ready is not a choice in the menu", async () => {
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
   expect(screen.getAllByRole("radio")).toHaveLength(1);
   expect(screen.getByLabelText("Bike, coming soon")).toBeOnTheScreen();
-  // Bike, Paddle, Open water swim (TASK-323), Walk (TASK-371), Hike
+  // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
   // (TASK-377), Ski and Cross-country ski (TASK-375), Gym (TASK-385 B) and
   // Paragliding (TASK-305 D0).
   expect(screen.getAllByText("Soon")).toHaveLength(9);
 });
 
-test("in the menu «Open water swim» is a choice like the others (TASK-323)", async () => {
+test("in the menu «Swim» is a choice like the others (TASK-323)", async () => {
   await render(<SportButton />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  expect(screen.queryByLabelText("Open water swim, coming soon")).toBeNull();
-  await fireEvent.press(screen.getByRole("radio", { name: "Open water swim" }));
+  expect(screen.queryByLabelText("Swim, coming soon")).toBeNull();
+  await fireEvent.press(screen.getByRole("radio", { name: "Swim" }));
   expect(saveSport).toHaveBeenCalledWith("swim");
-  expect(
-    screen.getByRole("button", { name: "Sport, Open water swim" }),
-  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Sport, Swim" })).toBeOnTheScreen();
   expect(screen.getByText("🏊")).toBeOnTheScreen();
 });
 

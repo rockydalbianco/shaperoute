@@ -3153,6 +3153,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Parte A in `main` (#871, cab53f51; impronta iOS 6f8bba4c invariata):
   server e migrazione `0053` dall'utente col comando del Coordinatore,
   quando dice sì. Prossimo: la parte B (app) in una sessione nuova.
+  Parte B (app) da `feat/TASK-400-b-pool-app`: in «Draw» con «Swim» la
+  scelta «Open water / Pool»; in piscina la vasca (25, 50, «Other» 10–100
+  m, ricordata), «Start swim», il cronometro con «Pause», «How many
+  lengths?» con la stima, vasche, metri, tempo e passo; `PUT
+  /me/pool-swims/{key}` col limite di 2,5 m/s controllato prima; Salute
+  come nuoto in piscina (senza la vasca: limite della libreria, ADR-0334
+  precisazione B); `pool` in `this_app`; la riga in «My activities».
+  Entra dopo TASK-378 B. Prossimo: la parte C (il post), poi server, OTA
+  e store col sì dell'utente.
 
 ## Completato
 

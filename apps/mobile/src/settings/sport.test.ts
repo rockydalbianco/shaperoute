@@ -65,7 +65,7 @@ test("run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, TASK-1
     "Run",
     "Bike",
     "Paddle",
-    "Open water swim",
+    "Swim",
     "Walk",
     "Hike",
     "Ski",
@@ -107,13 +107,13 @@ test("«Paragliding» comes last, only «Soon»: never chosen, never a route (TA
   expect(withoutRouteLabel("paragliding")).toBe("Run without a route");
 });
 
-test("«Open water swim» 🏊 comes after «Paddle», on since the server swims (TASK-323)", () => {
+test("«Swim» 🏊 comes after «Paddle», on since the server swims (TASK-323)", () => {
   const index = SPORTS.findIndex((option) => option.id === "swim");
   expect(SPORTS[index - 1]?.id).toBe("paddle");
   expect(SPORTS[index]).toEqual({
     id: "swim",
     emoji: "🏊",
-    name: "Open water swim",
+    name: "Swim",
     ready: true,
   });
   expect(canChoose("swim")).toBe(true);

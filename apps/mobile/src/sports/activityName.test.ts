@@ -10,7 +10,7 @@ it("names a run's sport in the form to publish as before", () => {
     "Run",
     "Bike",
     "Paddle",
-    "Open water swim",
+    "Swim",
     "Hike",
     "MTB",
     "Walk",

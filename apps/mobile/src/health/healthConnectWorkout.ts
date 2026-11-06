@@ -7,6 +7,7 @@ import type {
 } from "react-native-health-connect";
 
 import { tableOf } from "../sports";
+import { HEALTH_CONNECT_POOL } from "../sports/swimming";
 import { SYNC_VERSION, type Workout } from "./workout";
 
 /**
@@ -53,7 +54,11 @@ export function healthConnectWorkout(workout: Workout): HealthConnectWorkout {
   return {
     session: {
       recordType: "ExerciseSession",
-      exerciseType: EXERCISE_TYPE[workout.activity],
+      // A swim in a pool has its own type (TASK-400).
+      exerciseType:
+        workout.pool === undefined
+          ? EXERCISE_TYPE[workout.activity]
+          : HEALTH_CONNECT_POOL,
       startTime,
       endTime,
       segments: workout.pauses.map((pause) => ({

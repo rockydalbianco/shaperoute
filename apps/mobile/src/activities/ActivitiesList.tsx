@@ -21,6 +21,7 @@ import { useUnits } from "../units/useUnits";
 import { type RefusedRun, useActivitiesDoor } from "./activitiesDoor";
 import { GymTile } from "../gym/GymTile";
 import { clockLabel } from "../navigation/freeRun";
+import { isPoolSwimRun, PoolTile } from "../pool/PoolTile";
 import { runFacts, startedLabel, whereAndWhat } from "./activityText";
 import { RunDrawing } from "./RunDrawing";
 import { isTrackless } from "./snow";
@@ -250,7 +251,13 @@ function ActivityRow({
   onDelete,
 }: RowProps) {
   const when = startedLabel(activity.started_at);
-  const where = whereAndWhat(activity, activity.route_preview !== null);
+  // A swim in a pool has no line to draw nor to open on the map, and no
+  // place: «Pool swim», its metres, time and pace (TASK-400 part B).
+  const pool = isPoolSwimRun(activity);
+  const where =
+    pool && activity.place === null
+      ? t("Pool swim")
+      : whereAndWhat(activity, activity.route_preview !== null);
   // Written again when «Settings» changes the units (TASK-182).
   useUnits();
   // A workout at the gym has no distance: its time (TASK-385 B0).
@@ -260,17 +267,24 @@ function ActivityRow({
     <View style={styles.row} testID="activity-row">
       <Tap
         style={styles.open}
-        onPress={onOpen}
-        accessibilityRole="button"
-        accessibilityLabel={t(
-          isPublic
-            ? "{when}, {where}, {facts}, public, open on the map"
-            : "{when}, {where}, {facts}, open on the map",
-          { when, where, facts },
-        )}
+        onPress={pool ? undefined : onOpen}
+        disabled={pool}
+        accessibilityRole={pool ? undefined : "button"}
+        accessibilityLabel={
+          pool
+            ? `${when}, ${where}, ${facts}`
+            : t(
+                isPublic
+                  ? "{when}, {where}, {facts}, public, open on the map"
+                  : "{when}, {where}, {facts}, open on the map",
+                { when, where, facts },
+              )
+        }
       >
         {gym ? (
           <GymTile width={DRAWING} height={DRAWING} />
+        ) : pool ? (
+          <PoolTile width={DRAWING} height={DRAWING} />
         ) : (
           <RunDrawing
             route={activity.route_preview}

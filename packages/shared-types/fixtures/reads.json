@@ -1,6 +1,17 @@
 {
   "header": "X-MuW-Reads",
   "old_app_activities": ["running", "cycling", "paddling"],
-  "kinds": ["swimming", "hiking", "walking", "skiing", "xc_skiing", "gym", "trackless"],
-  "this_app": "swimming,hiking,walking,skiing,xc_skiing,gym,trackless"
+  "kinds": [
+    "swimming",
+    "hiking",
+    "mountain_biking",
+    "walking",
+    "gravel_biking",
+    "skiing",
+    "xc_skiing",
+    "gym",
+    "trackless",
+    "pool"
+  ],
+  "this_app": "swimming,hiking,mountain_biking,walking,gravel_biking,skiing,xc_skiing,gym,trackless,pool"
 }

@@ -220,6 +220,19 @@ plugin non è in `app.json`):
   d'ambiente (`MUW_WATCH=1` in `app.config.ts`); senza, la config di `main`
   è quella di oggi.
 
+**Esito A2** (2026-11-06): l'app dell'orologio in `targets/watch/` (target
+`watch`, SwiftUI, HealthKit, WatchConnectivity), provata nel simulatore di
+watchOS 27 con un prebuild locale `MUW_WATCH=1`. `@bacons/apple-targets`
+mette tutta la cartella del target nell'app: `plugins/withWatchCore.js`
+esclude `Core/` e lo collega come pacchetto locale (nel build nessun file di
+`Core/Tests`). Su richiesta dell'utente durante la prova, i numeri del
+pannello della corsa dell'app («Pace now», «Avg pace», «Last km», battito,
+calorie) e il logo MuW. Scelte in ADR-0314, «precisazione — La parte A2».
+Per A3: il telefono deve impostare `workoutSessionMirroringStartHandler` per
+ricevere il mirroring, leggere lo stato anche dall'application context
+(l'orologio lo manda lì quando il telefono non è raggiungibile) e mandare le
+unità scelte; la traccia GPS (`HKWorkoutRouteBuilder`) è della parte B.
+
 **A3 — Il telefono** (in `main`, solo JavaScript, il modulo nativo caricato
 solo se c'è, come `haptics/haptics.ts`):
 - `src/watch/watchLink.ts` (il ponte su `react-native-watch-connectivity`,
@@ -286,7 +299,23 @@ docs/STATUS.md (aggiunta)
 ```
 
 Parte A: vedi «Parte A, il piano» sopra (lista mandata al Coordinatore
-il 2026-11-05). Parti B–D (previsti, ognuno con la sua lista al
+il 2026-11-05). Parte A2 (lista approvata dal Coordinatore il
+2026-11-05, con le aggiunte approvate il 2026-11-06):
+
+```
+apps/mobile/targets/watch/expo-target.config.js, Info.plist, .gitignore (nuovi)
+apps/mobile/targets/watch/App/*.swift (nuova: l'app SwiftUI)
+apps/mobile/targets/watch/{en,it,de,es,fr}.lproj/ (nuove: testi generati)
+apps/mobile/targets/watch/Core/Sources/WatchCore/WatchFormat.swift, WatchPaces.swift (nuovi)
+apps/mobile/targets/watch/Core/Tests/WatchCoreTests/WatchFormatTests.swift, WatchPacesTests.swift (nuovi)
+apps/mobile/targets/watch/Core/Fixtures/format.json (nuovo)
+apps/mobile/plugins/withWatchCore.js, watchConfig.js, watchConfig.test.ts (nuovi)
+apps/mobile/src/watch/watchTexts.ts, watchTexts.test.ts, watchFormat.test.ts (nuovi)
+apps/mobile/scripts/watch-texts.sh (nuovo)
+apps/mobile/app.config.ts (poche righe: MUW_WATCH)
+docs/tasks/TASK-370.md, docs/DECISIONS.md, docs/STATUS.md
+```
+ Parti B–D (previsti, ognuno con la sua lista al
 Coordinatore prima di partire):
 
 ```

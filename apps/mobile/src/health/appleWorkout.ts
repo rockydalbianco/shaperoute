@@ -7,6 +7,7 @@ import type {
 import type { Activity, RunActivity } from "@shaperoute/shared-types";
 
 import { tableOf } from "../sports";
+import { APPLE_POOL_LOCATION } from "../sports/swimming";
 import { SYNC_VERSION, type Workout } from "./workout";
 
 /**
@@ -45,12 +46,14 @@ export type AppleWorkout = {
   /** The same, on the workout itself. */
   totals: { distance: number; energyBurned?: number };
   /** HealthKit's keys as their strings: HKMetadataKeySyncIdentifier,
-   * HKMetadataKeySyncVersion, HKMetadataKeyIndoorWorkout. The library puts
+   * HKMetadataKeySyncVersion, HKMetadataKeyIndoorWorkout, and for a swim
+   * in a pool HKMetadataKeySwimmingLocationType (TASK-400). The library puts
    * them on the samples too. */
   metadata: {
     HKSyncIdentifier: string;
     HKSyncVersion: number;
     HKIndoorWorkout: boolean;
+    HKSwimmingLocationType?: number;
   };
   /** The route, for HKWorkoutRouteBuilder. */
   locations: LocationForSaving[];
@@ -98,8 +101,14 @@ export function appleWorkout(workout: Workout): AppleWorkout {
     metadata: {
       HKSyncIdentifier: workout.syncId,
       HKSyncVersion: SYNC_VERSION,
-      // Every activity of MuW is outdoors: it follows the GPS.
-      HKIndoorWorkout: false,
+      // Every activity of MuW is outdoors, as it follows the GPS, but a
+      // workout at the gym (TASK-385 part C).
+      HKIndoorWorkout: workout.activity === "gym",
+      // A pool, not open water (TASK-400). Its length (HKMetadataKeyLapLength)
+      // wants an HKQuantity, which the library's metadata cannot carry.
+      ...(workout.pool === undefined
+        ? {}
+        : { HKSwimmingLocationType: APPLE_POOL_LOCATION }),
     },
     // MuW keeps no vertical accuracy, course or speed of a fix: Apple's −1
     // says so, and the height is then not taken as sure.

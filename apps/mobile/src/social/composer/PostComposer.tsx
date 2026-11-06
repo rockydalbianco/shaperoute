@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { GymTile } from "../../gym/GymTile";
+import { PoolTile } from "../../pool/PoolTile";
 import { t } from "../../i18n";
 import { OpenSettings } from "../../permissions/OpenSettings";
 import type { ImageSource } from "../../route/pickImage";
@@ -25,6 +26,7 @@ import {
   radius,
   space,
 } from "../../theme/tokens";
+import { TagWhatYouWear } from "../outfit/OutfitTagEditor";
 import { ComposedPhoto } from "./ComposedPhoto";
 import { type Flattened, flattenPhoto } from "./flattenPhoto";
 import {
@@ -78,6 +80,8 @@ type Props = {
   /** A workout at the gym (TASK-385 part D): its tile in place of the map,
    * and GYM_MAX_PHOTOS photos beside it. */
   gym?: boolean;
+  /** A swim in a pool (TASK-400 part C): as a workout, its 🏊 tile. */
+  pool?: boolean;
   /** The fake of the tests. */
   flatten?: typeof flattenPhoto;
 };
@@ -102,6 +106,7 @@ export function PostComposer({
   disabled,
   pick = pickPhotos,
   gym = false,
+  pool = false,
   flatten = flattenPhoto,
 }: Props) {
   const [choosing, setChoosing] = useState(false);
@@ -144,7 +149,7 @@ export function PostComposer({
     }
   }
 
-  const room = (gym ? GYM_MAX_PHOTOS + 1 : POST_MAX_ITEMS) - items.length;
+  const room = (gym || pool ? GYM_MAX_PHOTOS + 1 : POST_MAX_ITEMS) - items.length;
   const busy = disabled === true || picking || making !== null;
 
   async function choose(source: ImageSource) {
@@ -225,7 +230,9 @@ export function PostComposer({
               ? t("Photo {n}", { n: number })
               : gym
                 ? t("Gym")
-                : t("Drawing");
+                : pool
+                  ? t("Pool swim")
+                  : t("Drawing");
           return (
             <Animated.View
               key={item.kind === "drawing" ? "drawing" : `photo-${item.n}`}
@@ -267,6 +274,10 @@ export function PostComposer({
                 {photo === undefined && gym ? (
                   <View style={[styles.thumb, styles.gymTile]} testID="tile-gym">
                     <GymTile width={TILE} height={TILE} />
+                  </View>
+                ) : photo === undefined && pool ? (
+                  <View style={[styles.thumb, styles.gymTile]} testID="tile-pool">
+                    <PoolTile width={TILE} height={TILE} />
                   </View>
                 ) : photo === undefined ? (
                   <View style={[styles.thumb, styles.drawingTile]}>
@@ -365,6 +376,15 @@ export function PostComposer({
             })}
           </View>
         </View>
+      )}
+      {/* The items worn in the photo chosen (TASK-394 part B). */}
+      {chosen !== null && (
+        <TagWhatYouWear
+          n={chosen.n}
+          source={chosen.source}
+          places={photos.map((photo) => photo.n)}
+          disabled={busy}
+        />
       )}
       {problem !== null && (
         <>

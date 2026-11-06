@@ -295,3 +295,13 @@ test("parsePageMessage reads how far two fingers turned the figure (TASK-402)", 
     ),
   ).toBeNull();
 });
+
+test("parsePageMessage reads a tap that chooses a piece (TASK-402 part B)", () => {
+  expect(
+    parsePageMessage('{"type":"tapped","lngLat":[11,46],"metresPerPx":2.5}'),
+  ).toEqual({ type: "tapped", lngLat: [11, 46], metresPerPx: 2.5 });
+  expect(parsePageMessage('{"type":"tapped","lngLat":[11,46]}')).toBeNull();
+  expect(
+    parsePageMessage('{"type":"tapped","lngLat":[11],"metresPerPx":2.5}'),
+  ).toBeNull();
+});

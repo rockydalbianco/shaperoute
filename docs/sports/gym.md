@@ -68,6 +68,23 @@ I tetti sono sopra i record mondiali noti (le alzate) o sopra quello che una
 macchina carica; servono contro gli errori di battitura e i numeri
 inventati, non a giudicare. Un «Custom» non ha scala né classifica.
 
+## I traguardi sul profilo e nel post (parte E)
+
+- **Contano tutti gli allenamenti**, anche i privati (scelta dell'utente
+  del 2026-11-06, come i record personali): il profilo mostra figura,
+  esercizio e valore, mai l'allenamento. Contano anche le serie aggiunte
+  dopo «Stop»; «solo dal vivo» vale per la classifica.
+- **Sul profilo** il blocco «🏋️ Gym», dopo i record e il VO₂ max: ogni
+  esercizio dal livello 1, prima il livello più alto, con la figura e la
+  serie migliore. I primi cinque, gli altri sotto «Show more» (scelta
+  dell'utente del 2026-11-06).
+- **Nel post** «New level: 🦍 Gorilla · Panca piana 140 kg» per ogni
+  livello che l'allenamento supera rispetto a quelli cominciati prima:
+  sotto il riquadro nel Feed, sopra gli esercizi nella scheda. Spento
+  «Show exercises», niente livelli.
+- Il server li conta a ogni lettura dalle serie salvate: cancellato un
+  allenamento, il livello torna quello degli altri.
+
 ## Il catalogo
 
 Tipo e scala per ogni esercizio; nomi, figure e scale approvati dall'utente
@@ -179,8 +196,8 @@ nuove qui e nel file del catalogo dell'app.
   per ultimo; spostato il riquadro, l'ordine va al server come per le
   corse.
 - **Il riquadro** ha 🏋️, «Gym», il tempo e gli esercizi principali: i tre
-  con più serie, a pari serie quello fatto prima. Le kcal e il battito
-  vengono con le parti C e G. È anche l'immagine condivisa.
+  con più serie, a pari serie quello fatto prima, e le kcal (parte C).
+  Il battito viene con la parte G. È anche l'immagine condivisa.
 - **«Show exercises»**, acceso finché lo si spegne: alla fine
   dell'allenamento, nel modulo del post, e sulla scheda in «My
   activities». Spento, il post non mostra l'elenco né gli esercizi nel
@@ -191,13 +208,26 @@ nuove qui e nel file del catalogo dell'app.
   dopo l'allenamento, anche senza rete.
 - **Condividere**: il riquadro, senza risultati, emoji, video né Strava.
 
-## Le calorie dei blocchi cardio (parte C)
+## Le calorie (parte C)
 
-- Tapis roulant: ACSM della corsa/camminata con velocità e pendenza
-  (ADR-0318, punto 2); senza velocità, la distanza sul tempo.
+Sul telefono, in `gym/gymKcal.ts`; i valori e i codici sono in ADR-0327
+(precisazione C).
+
+- Tapis roulant (anche curvo): ACSM della camminata sotto i 7 km/h, della
+  corsa da 7 km/h, con la velocità o i metri sul tempo e la pendenza in
+  salita (ADR-0318, punto 2). Senza velocità né metri il blocco resta nel
+  tempo dei pesi.
 - Cyclette, ellittica, vogatore, scala, stepper e le altre: MET del
-  Compendium 2024 per fascia di livello o di velocità, copiati nel codice
-  con il codice attività, come bici e paddle.
-- Il resto della sessione: il MET del Compendium per l'allenamento con i
-  pesi. Quel MET è la media di una sessione con i recuperi dentro, quindi i
+  Compendium 2024 per fascia di livello (1–7 leggero, 8–14 moderato, oltre
+  vigoroso), per il vogatore coi metri dai watt del passo; copiati nel
+  codice con il codice attività, come bici e paddle. Una macchina col nome
+  libero resta nel tempo dei pesi.
+- Il resto della sessione: il MET dei pesi con più esercizi (3,5, 02054).
+  Quel MET è la media di una sessione con i recuperi dentro, quindi i
   recuperi non si tolgono una seconda volta.
+- Si vedono sotto il cronometro, alla fine, sul riquadro e nella riga del
+  post, nel riquadro condiviso. Con gli esercizi nascosti chi guarda il
+  post non vede le kcal (scelta dell'utente del 2026-11-06, «Niente
+  kcal»); l'autore sì.
+- **Salute**: con «Save», dopo il sì dell'utente, un allenamento di forza
+  con le kcal e le pause, senza percorso né distanza; su Apple al chiuso.

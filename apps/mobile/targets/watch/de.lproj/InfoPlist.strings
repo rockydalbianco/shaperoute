@@ -1,0 +1,5 @@
+/* The watch's texts (TASK-370), written by apps/mobile/scripts/watch-texts.sh
+   from src/watch/watchTexts.ts: do not change them here. */
+
+NSHealthShareUsageDescription = "MuW liest deine Herzfrequenz aus Apple Health während jeder Aktivität, um sie mit der Aktivität und in deinem Beitrag zu zeigen. Du kannst sie vor dem Veröffentlichen ausblenden.";
+NSHealthUpdateUsageDescription = "MuW speichert deine beendeten Aktivitäten in Apple Health, mit Zeit, Distanz, Route und, bei Läufen, den geschätzten Kalorien, damit sie auch in der Fitness-App erscheinen.";

@@ -8,6 +8,8 @@ import { useWinnerDrawingId } from "../contest/contestKept";
 import { WinnerBadge } from "../contest/WinnerBadge";
 import { ExploreStart } from "../explore/ExploreStart";
 import { GymDetail } from "../gym/GymDetail";
+import { PoolFigures } from "../pool/PoolFigures";
+import { isPoolLine } from "../pool/PoolTile";
 import type { StartView } from "../explore/useStartDirections";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
@@ -32,6 +34,7 @@ import { DrawingReactions } from "./DrawingReactions";
 import { followable, runnable } from "./drawingRoute";
 import { useDrawingsDoor } from "./drawingsDoor";
 import { useFollowsDoor } from "./followsDoor";
+import { OutfitTagLayer, OutfitTotals } from "./outfit/OutfitTagLayer";
 import { activityName } from "./PublicParts";
 import { SkiNamesList } from "./SkiNamesList";
 import { useDrawingGpx } from "./useDrawingGpx";
@@ -96,6 +99,8 @@ export function DrawingCard({
   const tags = drawing.tags ?? [];
   // A workout at the gym has no distance: its time (TASK-385 B0).
   const gym = isTrackless(drawing.activity);
+  // A swim in a pool: no line to draw again nor edit (TASK-400 part C).
+  const pool = isPoolLine(drawing.activity, drawing.track);
   const facts = [
     ...(drawing.activity === undefined ? [] : [activityName(drawing.activity)]),
     gym
@@ -120,10 +125,16 @@ export function DrawingCard({
           contentContainerStyle={styles.photos}
         >
           {photos.map((photo) => (
-            <Photo key={photo.n} photo={photo} source={photoSource(photo)} />
+            <Photo
+              key={photo.n}
+              photo={photo}
+              source={photoSource(photo)}
+              author={drawing.author}
+            />
           ))}
         </ScrollView>
       )}
+      <OutfitTotals photos={photos} />
       {drawing.description != null && drawing.description !== "" && (
         <Text style={styles.description}>{drawing.description}</Text>
       )}
@@ -152,6 +163,14 @@ export function DrawingCard({
       {drawing.activity === "skiing" && <SkiNamesList drawingId={drawing.id} />}
       {/* The exercises of a workout at the gym (TASK-385 B0). */}
       {gym && <GymDetail drawingId={drawing.id} />}
+      {/* The lengths, the pool and the pace of a swim in a pool (TASK-400 C). */}
+      {pool && (
+        <PoolFigures
+          drawingId={drawing.id}
+          metres={drawing.distance_m}
+          durationS={drawing.duration_s}
+        />
+      )}
       {/* The reactions and the actions, after a hairline. */}
       <Hairline />
       <DrawingReactions
@@ -191,12 +210,12 @@ export function DrawingCard({
           textStyle={styles.buttonText}
         />
       )}
-      {onDrawAgain !== undefined && !isOnSnow(drawing.activity) && !gym && (
+      {onDrawAgain !== undefined && !isOnSnow(drawing.activity) && !gym && !pool && (
         <Tap style={styles.button} onPress={onDrawAgain} accessibilityRole="button">
           <Text style={styles.buttonText}>{t("Draw it near me")}</Text>
         </Tap>
       )}
-      {onEditDrawing !== undefined && !isOnSnow(drawing.activity) && !gym && (
+      {onEditDrawing !== undefined && !isOnSnow(drawing.activity) && !gym && !pool && (
         <Tap style={styles.button} onPress={onEditDrawing} accessibilityRole="button">
           <Text style={styles.buttonText}>{t("Edit the drawing")}</Text>
         </Tap>
@@ -211,20 +230,26 @@ export function DrawingCard({
 function Photo({
   photo,
   source,
+  author,
 }: {
   photo: DrawingPhoto;
   source: { uri: string; headers?: Record<string, string> } | null;
+  author: { public_id: string; username: string } | null;
 }) {
   if (source === null) {
     return null;
   }
   const width = Math.round((PHOTO_HEIGHT * photo.width) / Math.max(photo.height, 1));
   return (
-    <Image
-      source={source}
-      style={[styles.photo, { width }]}
-      accessibilityLabel={t("Photo {n}", { n: photo.n })}
-    />
+    <View style={[styles.photo, { width }]}>
+      <Image
+        source={source}
+        style={StyleSheet.absoluteFill}
+        accessibilityLabel={t("Photo {n}", { n: photo.n })}
+      />
+      {/* The items worn: a tap on the photo shows them (TASK-394 part B). */}
+      <OutfitTagLayer photo={photo} fit="contain" toggle="photo" author={author} />
+    </View>
   );
 }
 
@@ -264,6 +289,7 @@ const styles = StyleSheet.create({
   photo: {
     height: PHOTO_HEIGHT,
     borderRadius: radius.md,
+    overflow: "hidden",
     backgroundColor: color.surfaceRaised,
   },
   description: {

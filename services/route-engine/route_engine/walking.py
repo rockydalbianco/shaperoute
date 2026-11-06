@@ -6,6 +6,10 @@ its own, 1-30 km, the user's choice. The API offers "walking" and asks the
 engine for a run (`engine_activity`); models.py does not know it, so the
 routes kept, the walks among them, keep their fingerprint.
 
+A gravel ride (TASK-378, ADR-0322) is drawn the same way, as a ride on the
+bike network: the API offers "gravel_biking" and asks the engine for
+"cycling", 10-30 km, the user's choice. Its routes are a ride's.
+
 No module that draws routes imports this file: route_store leaves it out of
 the engine's fingerprint (WALK_ONLY), so a change here keeps every route kept.
 
@@ -32,33 +36,46 @@ ACTIVITY = "walking"
 RUN = "running"
 # Its target distances in metres: within those of a run.
 WALK_DISTANCE_M = (1_000, 30_000)
+# A gravel ride, drawn as a ride (TASK-378), within a ride's distances.
+GRAVEL = "gravel_biking"
+RIDE = "cycling"
+GRAVEL_DISTANCE_M = (10_000, 30_000)
+
+# Each activity of the API the engine draws as another: that one, and its
+# own target distances in metres.
+DRAWN_AS: dict[str, tuple[str, tuple[int, int]]] = {
+    ACTIVITY: (RUN, WALK_DISTANCE_M),
+    GRAVEL: (RIDE, GRAVEL_DISTANCE_M),
+}
 
 # The activities of the API (packages/shared-types API_ACTIVITIES): the
-# engine's, and the walk drawn as a run.
-API_ACTIVITIES: tuple[str, ...] = (*SUPPORTED_ACTIVITIES, ACTIVITY)
+# engine's, then the walk drawn as a run and the gravel ride as a ride.
+API_ACTIVITIES: tuple[str, ...] = (*SUPPORTED_ACTIVITIES, *DRAWN_AS)
 # The target distances of each activity of the API.
 API_DISTANCE_LIMITS_M: dict[str, tuple[int, int]] = {
     **{activity: DISTANCE_LIMITS_M[activity] for activity in SUPPORTED_ACTIVITIES},
-    ACTIVITY: WALK_DISTANCE_M,
+    **{activity: limits for activity, (_, limits) in DRAWN_AS.items()},
 }
 
 
 def drawn_as(activity: str) -> str:
-    """The activity whose network `activity` goes on: a walk a run's, any
-    other its own (the way back to a route, a stroke matched to the roads)."""
-    return RUN if activity == ACTIVITY else activity
+    """The activity whose network `activity` goes on: a walk a run's, a
+    gravel ride a ride's, any other its own (the way back to a route, a
+    stroke matched to the roads)."""
+    return DRAWN_AS[activity][0] if activity in DRAWN_AS else activity
 
 
 def engine_activity(activity: str, distance_m: int) -> str:
     """The activity the engine draws a route of `activity` as: a walk as a
-    run, once its distance is within WALK_DISTANCE_M (InvalidRequestError,
-    in the words of models.check_distance); any other as it is."""
-    if activity == ACTIVITY:
-        low, high = WALK_DISTANCE_M
+    run, a gravel ride as a ride, once its distance is within its own
+    (DRAWN_AS; InvalidRequestError, in the words of models.check_distance);
+    any other as it is."""
+    if activity in DRAWN_AS:
+        low, high = DRAWN_AS[activity][1]
         if not low <= distance_m <= high:
             raise InvalidRequestError(
                 f"distance must be between {low} and {high} metres for "
-                f"{ACTIVITY}, got {distance_m}"
+                f"{activity}, got {distance_m}"
             )
     return drawn_as(activity)
 

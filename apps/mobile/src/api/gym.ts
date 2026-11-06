@@ -1,6 +1,8 @@
 import {
+  GYM_LEVEL_MEASURES,
   GYM_SET_KINDS,
   type GymExercises,
+  type GymLevel,
   type GymSession,
   type GymSessionRequest,
   type GymSet,
@@ -55,6 +57,32 @@ export function isGymExercises(body: unknown): body is GymExercises {
   return (
     isCount(rests) && isCount(rest_s) && Array.isArray(sets) && sets.every(isGymSet)
   );
+}
+
+/** A level at the gym (TASK-385 E): on a profile, or reached first by a
+ * workout. */
+export function isGymLevel(body: unknown): body is GymLevel {
+  if (typeof body !== "object" || body === null) {
+    return false;
+  }
+  const level = body as Record<string, unknown>;
+  return (
+    typeof level.exercise === "string" &&
+    typeof level.level === "number" &&
+    Number.isInteger(level.level) &&
+    level.level >= 1 &&
+    level.level <= 7 &&
+    typeof level.value === "number" &&
+    Number.isFinite(level.value) &&
+    (GYM_LEVEL_MEASURES as readonly unknown[]).includes(level.measure)
+  );
+}
+
+/** The levels of a list that the app can show; [] for anything else, as
+ * from an API older than TASK-385 E. A level the app cannot read is left
+ * out, never the page. */
+export function gymLevelsOf(list: unknown): GymLevel[] {
+  return Array.isArray(list) ? list.filter(isGymLevel) : [];
 }
 
 /** GET /drawings/{id}/exercises: 404 when its owner hides them. */

@@ -1002,6 +1002,37 @@ diverse.
 - Nessuna riga di prima cambia, nessun backfill. Test in
   `test_outfit_tags.py`.
 
+Migrazione `0053_pool_swims.sql` (TASK-400 parte A, ADR-0334, `API.md`
+«Pool swim»; il numero è del Coordinatore, la `0052` è di TASK-378 A):
+
+- **`runs`**: `runs_track_check` diventa `track IS NOT NULL OR activity IN
+  ('gym', 'swimming')`: un nuoto in piscina va senza traccia. Il nuoto in
+  acque libere ha la traccia come prima; `pool_swims` dice quale è quale.
+- **`pool_swims`**: una riga per nuoto in piscina, chiave la sua corsa (`ON
+  DELETE CASCADE`): `pool_length_m` (`numeric(5, 2)`, da 10 a 100) e
+  `lengths` (da 1 a 1000). `runs.distance_m` è il loro prodotto, al metro.
+- Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
+  `test_pool_swims.py`.
+
+Migrazione `0054_ski_resorts.sql` (TASK-406 parte A, ADR-0338, `API.md`
+«Ski resorts»; il numero è del Coordinatore):
+
+- **`ski_resorts`**: una riga per stazione sciistica.
+  - **Identità:** `id` (chiave, l'id di OpenSkiData, stabile da un import
+    all'altro), `name` (1–120), `country` (ISO a due lettere o `NULL`),
+    `region`.
+  - **Dove:** `center` (`geography(Point)`, indice GIST per le più vicine)
+    e il riquadro `south`, `west`, `north`, `east`.
+  - **Numeri:** `lifts`, `piste_km` e `piste_km_by_difficulty` (`jsonb`,
+    un oggetto), `min_elevation_m`, `max_elevation_m`.
+  - **Altro:** `website` (`http(s)://`, al più 300) e `updated_at`.
+- **Chi la scrive:** solo l'import (`resort_import.py`), che rimpiazza
+  ogni riga per `id`. Con `--clean` toglie anche le stazioni che il file
+  non ha più.
+- **Nessun dato degli utenti**: le stesse righe per tutti. Nessuna riga di
+  prima cambia, nessun backfill. Test in `test_ski_resorts_api.py` e
+  `test_resort_import.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

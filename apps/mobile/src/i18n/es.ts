@@ -1159,6 +1159,12 @@ export const ES: Table = {
   Hike: "Senderismo",
   "Trails can be demanding: check the route and the weather before you set off.":
     "Los senderos pueden ser exigentes: revisa la ruta y el tiempo antes de salir.",
+  // src/sports/gravel_biking.ts, mountain_biking.ts (TASK-378 part B),
+  // approved on 2026-11-05
+  Gravel: "Gravel",
+  MTB: "MTB",
+  "Trails can be technical: check the route before you set off.":
+    "Los senderos pueden ser técnicos: revisa la ruta antes de salir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Esquí",
   "Cross-country ski": "Esquí de fondo",
@@ -1190,6 +1196,16 @@ export const ES: Table = {
   "Still training?": "¿Sigues entrenando?",
   "Yes, keep going": "Sí, sigo",
   "Finish workout": "Terminar entrenamiento",
+  // src/gym/figures.ts, NewLevels.tsx (TASK-385 part E), approved on 2026-11-04
+  Mouse: "Ratón",
+  Rabbit: "Conejo",
+  Fox: "Zorro",
+  Wolf: "Lobo",
+  Bear: "Oso",
+  Rhino: "Rinoceronte",
+  Gorilla: "Gorila",
+  "New level: {figure} · {exercise} {value}":
+    "Nuevo nivel: {figure} · {exercise} {value}",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":
     "Sin formas en las pistas: MuW registra tu jornada.",
@@ -1435,6 +1451,12 @@ export const ES: Table = {
   "Turn right 15 degrees": "Girar 15 grados a la derecha",
   "Angle, {deg} degrees. Double tap to type it":
     "Ángulo, {deg} grados. Toca dos veces para escribirlo",
+  // src/mapdraw/DrawOnMap.tsx (TASK-402 part B)
+  "Change@@piece": "Cambiar",
+  "Tap a piece to choose it, then drag, resize or turn it. Tap outside to take them all.":
+    "Toca una pieza para elegirla y luego arrástrala, cambia su tamaño o gírala. Toca fuera para tomarlas todas.",
+  "Delete piece": "Eliminar pieza",
+  "Up to 6 pieces in one drawing.": "Como máximo 6 piezas en un dibujo.",
   Line: "Línea",
   "Tap point after point. Tap the first point to close it, the last one to finish.":
     "Toca punto tras punto. Toca el primer punto para cerrarla, el último para terminar.",
@@ -1710,8 +1732,19 @@ export const ES: Table = {
   FEEDBACK: "COMENTARIOS",
   // src/settings/sport.ts (TASK-305 D0: paragliding, «Soon» in «Sport»)
   Paragliding: "Parapente",
-  // src/settings/sport.ts (TASK-323 C: swimming in open water, «Soon» in «Sport»)
-  "Open water swim": "Natación en aguas abiertas",
+  // src/sports/swimming.ts (TASK-400: «Swim», in open water or in a pool)
+  Swim: "Natación",
+  // src/pool/ (TASK-400 part B: a swim in a pool), approved on 2026-11-06
+  "Open water": "Aguas abiertas",
+  Pool: "Piscina",
+  "Pool length": "Longitud de la piscina",
+  Other: "Otra",
+  "Length in meters": "Longitud en metros",
+  "Start swim": "Empezar a nadar",
+  "How many lengths?": "¿Cuántos largos?",
+  Lengths: "Largos",
+  "Pool swim": "Natación en piscina",
+  "Pace /100 m": "Ritmo /100 m",
   // src/explore/ExploredCard.tsx, src/social/DrawingCard.tsx (TASK-313)
   "Draw it near me": "Dibujarla cerca de mí",
   // src/route/RoutePanel.tsx (TASK-311 B: a word in one line that did not come out)

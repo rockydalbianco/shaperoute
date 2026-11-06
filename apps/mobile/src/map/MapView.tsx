@@ -18,6 +18,7 @@ import { useLanguage } from "../i18n/useLanguage";
 import { usePocketOn } from "../navigation/pocketOn";
 import { cumulative } from "../navigation/progress";
 import { useRunBehind } from "../navigation/runBehind";
+import { type WayBackShown, wayLineFrom } from "../navigation/wayBackShown";
 import { MapLoadingBar } from "../route/LoadingBar";
 import {
   color,
@@ -52,7 +53,7 @@ import {
   showLifts,
   showOthers,
   showProgress,
-  showRejoin,
+  showRejoinLine,
   showRoute,
   showStops,
   showTrack,
@@ -79,6 +80,12 @@ export type MapCanvas = {
   /** How much two fingers may shrink and grow the figure. */
   shrink: number;
   grow: number;
+  /** With pieces (TASK-402 part B): whether a tap with «Move» chooses one;
+   * the lines of the piece chosen, which alone the fingers move, the
+   * others faint; and the box drawn round it. None for the whole figure. */
+  choosing?: boolean;
+  chosen?: number[];
+  box?: LatLon[];
   /** A new number frames the map on the figure, or on the start without
    * one; the same one does not frame it again. */
   framing: number;
@@ -89,7 +96,9 @@ export type CanvasEvent =
   | { type: "drawn"; line: LatLon[]; metresPerPx: number }
   | { type: "bent"; from: LatLon; to: LatLon; metresPerPx: number }
   | { type: "figure"; centre: LatLon; factor: number; done: boolean; turn?: number }
-  | { type: "centre"; point: LatLon };
+  | { type: "centre"; point: LatLon }
+  /** A tap with «Move», among pieces (TASK-402 part B). */
+  | { type: "tapped"; point: LatLon; metresPerPx: number };
 
 type Props = {
   /** Where the route will start; the map centres on it with a marker. */
@@ -120,13 +129,15 @@ type Props = {
    * line `alongM` is measured on, when the navigator gives it: a closed
    * route is run from where the runner joined it (TASK-273), and the line
    * run starts there. Off the route, `rejoin` is where the runner gets back
-   * on it, from where they are: the map draws dots there (TASK-303). */
+   * on it, from where they are: the map draws dots there (TASK-303), along
+   * `wayBack` when the engine found the way on the streets (TASK-314). */
   progress?: {
     alongM: number;
     arrived: boolean;
     points?: LatLon[];
     along?: number[];
     rejoin?: { from: LatLon; to: LatLon } | null;
+    wayBack?: WayBackShown | null;
   } | null;
   /** The places of a themed route (TASK-129), or null for none. */
   stops?: { name: string; point: LatLon; passed: boolean }[] | null;
@@ -246,9 +257,11 @@ export function MapView({
       ? progress.points
       : null;
   const runAlong = runPoints === null ? null : (progress?.along ?? null);
-  // Off the route, the way back to it (TASK-303).
+  // Off the route, the way back to it (TASK-303), on the streets once the
+  // engine found it (TASK-314).
   const rejoinFrom = progress?.rejoin?.from ?? null;
   const rejoinTo = progress?.rejoin?.to ?? null;
+  const wayBack = progress?.wayBack ?? null;
   // Under the black screen of pocket mode nobody sees the blinking.
   const pocket = usePocketOn();
 
@@ -392,19 +405,22 @@ export function MapView({
   }, [ready, route, along, walks, doneM, pocket, runPoints, runAlong]);
 
   // Off the route: dots from the runner to where it goes on, moved with
-  // each fix (TASK-303). Back on it, or the run over, none.
+  // each fix (TASK-303), along the streets of the way back when there is one
+  // (TASK-314). Back on it, or the run over, none.
   useEffect(() => {
     if (!ready) {
       return;
     }
     if (rejoinFrom !== null && rejoinTo !== null) {
-      webView.current?.injectJavaScript(pageScript(showRejoin(rejoinFrom, rejoinTo)));
+      const line =
+        wayBack === null ? [rejoinFrom, rejoinTo] : wayLineFrom(wayBack, rejoinFrom);
+      webView.current?.injectJavaScript(pageScript(showRejoinLine(line)));
       rejoinShown.current = true;
     } else if (rejoinShown.current) {
       webView.current?.injectJavaScript(pageScript(clearRejoin()));
       rejoinShown.current = false;
     }
-  }, [ready, rejoinFrom, rejoinTo]);
+  }, [ready, rejoinFrom, rejoinTo, wayBack]);
 
   // Asked for only where a double tap means something: elsewhere it zooms.
   const wantsDoubleTap = onDoubleTap !== undefined;
@@ -467,6 +483,9 @@ export function MapView({
             centre: canvas.centre,
             shrink: canvas.shrink,
             grow: canvas.grow,
+            choosing: canvas.choosing,
+            chosen: canvas.chosen,
+            box: canvas.box,
             frame: canvas.framing !== framed.current,
           }),
         ),
@@ -557,6 +576,12 @@ export function MapView({
               factor: message.factor,
               done: message.done,
               ...(message.turn ? { turn: message.turn } : {}),
+            });
+          } else if (message?.type === "tapped") {
+            onCanvas?.({
+              type: "tapped",
+              point: fromLngLat(message.lngLat),
+              metresPerPx: message.metresPerPx,
             });
           } else if (message?.type === "centre") {
             const point = fromLngLat(message.lngLat);

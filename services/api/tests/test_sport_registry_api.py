@@ -47,15 +47,24 @@ BEFORE_RECORD_ACTIVITIES = ("skiing", "xc_skiing")
 BEFORE_GPX_TYPES = {"walking": "walking"}
 BEFORE_STREET_NAMES = {"running": True, "cycling": False}
 # Added since, each by a file of sports/ and a line of its register: a hike
-# (TASK-377), planned before the walk in the order of the contract.
-SINCE = "hiking"
-SINCE_SPORT_TYPE = "Hike"
-SINCE_GPX_TYPE = "hiking"
+# (TASK-377), planned before the walk in the order of the contract; an MTB
+# ride after it and a gravel ride after the walk (TASK-378).
+SINCE_SPORT_TYPES = {
+    "hiking": "Hike",
+    "mountain_biking": "MountainBikeRide",
+    "gravel_biking": "GravelRide",
+}
+SINCE = tuple(SINCE_SPORT_TYPES)
+SINCE_GPX_TYPES = {
+    "hiking": "hiking",
+    "mountain_biking": "mountain_biking",
+    "gravel_biking": "gravel_biking",
+}
 
 
 def _without_since(table: dict[str, object]) -> list[tuple[str, object]]:
-    """The items of `table` but the sport added since, in their order."""
-    return [(name, value) for name, value in table.items() if name != SINCE]
+    """The items of `table` but the sports added since, in their order."""
+    return [(name, value) for name, value in table.items() if name not in SINCE]
 
 
 def test_the_sports_are_those_of_the_contract_in_its_order() -> None:
@@ -71,13 +80,26 @@ def test_the_sports_are_those_of_the_contract_in_its_order() -> None:
 
 def test_the_tables_are_those_of_before_in_their_order() -> None:
     assert _without_since(SPORT_TYPES) == list(BEFORE_SPORT_TYPES.items())
-    assert SPORT_TYPES[SINCE] == SINCE_SPORT_TYPE
-    assert list(SPORT_TYPES).index(SINCE) == list(SPORT_TYPES).index("walking") - 1
+    assert {name: SPORT_TYPES[name] for name in SINCE} == SINCE_SPORT_TYPES
+    order = list(SPORT_TYPES)
+    assert order.index("hiking") == order.index("walking") - 2
+    assert order.index("mountain_biking") == order.index("walking") - 1
+    assert order.index("gravel_biking") == order.index("walking") + 1
     assert RECORD_ACTIVITIES == BEFORE_RECORD_ACTIVITIES
-    assert GPX_TYPES == {SINCE: SINCE_GPX_TYPE, **BEFORE_GPX_TYPES}
-    assert list(SPORTS.items()) == [("running", ON_FOOT), ("cycling", BY_BIKE)]
+    assert _without_since(GPX_TYPES) == list(BEFORE_GPX_TYPES.items())
+    assert {name: GPX_TYPES[name] for name in SINCE} == SINCE_GPX_TYPES
+    assert list(SPORTS.items()) == [
+        ("running", ON_FOOT),
+        ("cycling", BY_BIKE),
+        ("mountain_biking", BY_BIKE),
+        ("gravel_biking", BY_BIKE),
+    ]
     assert list(SPORTS) == list(get_args(Sport))
-    assert prefetch_zones.STREET_NAMES == {**BEFORE_STREET_NAMES, SINCE: True}
+    assert prefetch_zones.STREET_NAMES == {
+        **BEFORE_STREET_NAMES,
+        "hiking": True,
+        "mountain_biking": False,
+    }
 
 
 def test_the_bests_of_before_are_read_where_they_were() -> None:
@@ -107,10 +129,13 @@ def test_the_bests_of_before_are_read_where_they_were() -> None:
 
 def test_the_zone_boxes_are_those_of_before() -> None:
     boxes = prefetch_zones.ZONE_BOXES
-    assert list(boxes) == ["running", "cycling", SINCE]
+    assert list(boxes) == ["running", "cycling", "hiking", "mountain_biking"]
     assert boxes["running"] is prefetch_zones.zone_box
-    assert boxes[SINCE] is prefetch_zones.zone_box
+    assert boxes["hiking"] is prefetch_zones.zone_box
     assert boxes["cycling"] is prefetch_zones.bike_zone_box
+    # Its own longest route, a ride's 30 km: the box of a ride.
+    city = (46.0671, 11.1214)
+    assert boxes["mountain_biking"](city) == prefetch_zones.bike_zone_box(city)
 
 
 def test_every_sport_on_roads_has_zones_and_no_other() -> None:
@@ -148,7 +173,12 @@ def test_the_sports_import_nothing_but_the_sports() -> None:
 
 
 def test_the_zones_in_memory_and_the_description_are_those_of_before() -> None:
-    assert ZONES_IN_MEMORY == {"running": MAX_ZONES, "cycling": 1, SINCE: 1}
+    assert ZONES_IN_MEMORY == {
+        "running": MAX_ZONES,
+        "cycling": 1,
+        "hiking": 1,
+        "mountain_biking": 1,
+    }
     assert ACTIVITY_DESCRIPTION == (
         f"One of: {', '.join(API_ACTIVITIES)}; cycling is drawn on the "
         f"roads a bike may ride, one-way streets kept (TASK-190); paddling on a "
@@ -157,5 +187,8 @@ def test_the_zones_in_memory_and_the_description_are_those_of_before() -> None:
         f"shore, lap after lap, a shape of the catalogue or a drawing (TASK-323); "
         f"hiking on the trails and quiet roads of its own network, no roads cars "
         f"use, no trails beyond sac_scale T3 (TASK-377); "
-        f"walking on the foot network of a run (TASK-371)."
+        f"mountain_biking on the bike network with the trails up to mtb:scale "
+        f"S2, or sac_scale T2 when they give none (TASK-378); "
+        f"walking on the foot network of a run (TASK-371); "
+        f"gravel_biking is drawn as cycling, on the bike network (TASK-378)."
     )

@@ -11,7 +11,8 @@ bio, picture (profile_photos.py), number of drawings published
 who asks stands towards it (follows.py); since TASK-324 its totals: metres,
 climb and reactions received (profile_totals.py); since TASK-368 its
 personal bests (profile_bests.py); since TASK-397 its VO₂ max, with its
-owner's yes (vo2max.py). Never the email, the role, the
+owner's yes (vo2max.py); since TASK-385 E its levels at the gym
+(gym_levels.py). Never the email, the role, the
 internal id or when the account was made. It needs the token of an account:
 what members share is for members, as the feed (ADR-0114, point 4). The id
 is the random `public_id` of the account, not `id`: a sequence would let
@@ -58,6 +59,7 @@ from shaperoute_api.follows import (
     followers_count_sql,
     following_count_sql,
 )
+from shaperoute_api.gym_levels import GymLevelBody, gym_levels_sql
 from shaperoute_api.profile_bests import PersonalBestBody, personal_bests_sql
 from shaperoute_api.profile_totals import (
     climb_total_sql,
@@ -132,6 +134,11 @@ class PublicProfileBody(BaseModel):
         description="Of Health, else estimated from the running bests; null"
         " without the yes or without either."
     )
+    # The levels at the gym (TASK-385 E, ADR-0327): of every workout, private
+    # ones too, the user's choice; only figure, exercise and value.
+    gym_levels: list[GymLevelBody] = Field(
+        description="The highest level first, then as the catalog; [] without one."
+    )
 
 
 def checked_username(value: str) -> str:
@@ -203,7 +210,8 @@ class Profiles:
                 f" {reactions_received_sql('u.id', '%s')} AS reactions,"
                 f" {badges_sql('u.id', '%s')} AS badges,"
                 f" {personal_bests_sql('u.id', '%s')} AS personal_bests,"
-                f" {vo2max_sql('u.id', '%s')} AS vo2max"
+                f" {vo2max_sql('u.id', '%s')} AS vo2max,"
+                f" {gym_levels_sql('u.id')} AS gym_levels"
                 " FROM users u LEFT JOIN profile_photos p ON p.user_id = u.id"
                 " WHERE u.public_id = %s"
                 # Across a block the profile is not there (TASK-121).
@@ -230,6 +238,7 @@ class Profiles:
             badges=row["badges"],
             personal_bests=row["personal_bests"],
             vo2max=shown(vo2max, now.date()) if vo2max["show"] else None,
+            gym_levels=row["gym_levels"],
         )
 
 

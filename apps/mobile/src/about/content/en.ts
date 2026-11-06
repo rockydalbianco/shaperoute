@@ -10,9 +10,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * fill, and nothing here may be made up to fill them.
  */
 
-const UPDATED = "5 November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "5 November 2026";
+const UPDATED = "6 November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390) and for the items tagged on photos (TASK-394 B). */
+const PRIVACY_UPDATED = "6 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -74,6 +74,7 @@ const help: AboutDocument = {
       blocks: [
         "A saved run is private: only you see it. Other members see on your profile the totals of all your saved runs, distance and elevation gain, and your personal bests (the 5K, the 10K and your other fastest distances, on foot and by bike) with their time and date. A private run stays closed even when it holds a best. Choose «Everyone» or «Followers» under «Who can see it», at the end of the run or on a run in «My activities», and they see it as a drawing on your profile, whole. The next run you finish starts from the last choice you saved: you see it before «Save» and can change it. An activity added from a file always starts on «Only me».",
         "A run you publish can have up to 9 photos and the drawing. Hold one and drag it to change the order: the first is what people see in the Feed. Choose a layout to put the drawing on a photo.",
+        "On a photo you publish you can tag what you're wearing: what it is, the brand and, if you like, the model and a link to the shop. Others tap the photo to see the items and open the shop. Under your post only you see how many times they were opened.",
         "«Share» makes a picture of your run to send wherever you like.",
       ],
     },
@@ -182,6 +183,7 @@ const terms: AboutDocument = {
           bullets: [
             "publish offensive, hateful, threatening or harassing content, in your username, bio, picture, titles or comments;",
             "publish content that is not yours to publish, or other people's personal data without their permission;",
+            "use the items you tag for spam, for links to anything other than what you are wearing, for affiliate links of your own, or for advertising you do not declare;",
             "try to break, overload or get around the service, or collect data about its members by automated means.",
           ],
         },
@@ -190,7 +192,7 @@ const terms: AboutDocument = {
     {
       heading: "What you publish",
       blocks: [
-        "Your runs, your drawings, their titles, your profile and your comments stay yours.",
+        "Your runs, your drawings, their titles, your profile and your comments stay yours. The items you tag on your photos, with their links, are part of what you publish.",
         "By publishing them you allow us to keep them and to show them in the app to the other members, only to run the service: a free, non-exclusive permission that ends when you delete the content or your account.",
         "The app does not accept comments with offensive words: an automatic word filter refuses them. We may remove content that goes against these terms. To tell us about content that should not be there, write to [contact email].",
       ],
@@ -221,6 +223,7 @@ const terms: AboutDocument = {
       heading: "Advertising",
       blocks: [
         "MuW shows posts of its own, marked «Ad · Affiliate links», with links to shops (MuW Style). If you buy through one of these links, the shop pays MuW a commission; the price for you does not change. The sale is between you and the shop: MuW does not sell these products and does not answer for their price, availability, delivery or returns. The photos of these posts are made with AI and say so: the people in them do not exist, and the items shown are similar to the products, not the products themselves. You can hide these posts from the Feed in «Settings». MuW shows no other advertising.",
+        "The links members add to the items on their posts are theirs: MuW earns nothing from them and does not answer for the products or the shops. If a brand pays you or gives you what you tag, say so in the post's description.",
       ],
     },
     {
@@ -232,6 +235,7 @@ const terms: AboutDocument = {
             "Places are searched with Geoapify.",
             "If you connect Strava, the runs you send there follow Strava's own terms and privacy settings.",
             "A picture you share leaves through the phone's share sheet: the app that receives it has its own terms.",
+            "The link of a tagged item opens the shop's site in your browser: the shop has its own terms.",
           ],
         },
       ],
@@ -343,6 +347,7 @@ const privacy: AboutDocument = {
         "Whoever can see one of your runs can also follow it with «Start» and save that same track as a GPX file, without times.",
         "A photo you publish can have the drawing of your run inside the picture. It is the same drawing the Feed shows.",
         "For a day of skiing, our server compares the saved track with the lifts and pistes of OpenStreetMap, which it keeps itself, to write which ones you took and how many times. The names show on the post, for whoever can see it. Nothing goes to another service.",
+        "On the photos you publish you can tag the items you are wearing: what each one is, its brand and, if you like, its model and a link to a shop. Whoever sees the photo sees them. If the run goes back to «Only me», they leave our server with its photos and stay on this phone.",
       ],
     },
     {
@@ -370,7 +375,7 @@ const privacy: AboutDocument = {
     {
       heading: "Reports",
       blocks: [
-        "When you report a drawing, a comment or a profile, we keep who reported what, the reason and when. The person who runs MuW receives it by email and may hide what was reported from the other members. Nothing is deleted, and its author still sees it. Your report is never shown to the author.",
+        "When you report a drawing, a tagged item, a comment or a profile, we keep who reported what, the reason and when. The person who runs MuW receives it by email and may hide what was reported from the other members. Nothing is deleted, and its author still sees it. Your report is never shown to the author.",
       ],
     },
     {
@@ -406,7 +411,7 @@ const privacy: AboutDocument = {
     {
       heading: "Your position",
       blocks: [
-        "The phone's position is used on the phone, to start a route where you are and to follow your run. It goes to our server exactly as it is as the start of a route you ask for, as the start of the shapes the app prepares for you nearby when the phone cannot draw them itself, and inside a run you save. It goes rounded to about 1 km to find the offline map around you, recommended routes, towns and drawings nearby, and to put the places near you first in a search; rounded like this it is not kept with your account.",
+        "The phone's position is used on the phone, to start a route where you are and to follow your run. It goes to our server exactly as it is as the start of a route you ask for, as the start of the shapes the app prepares for you nearby when the phone cannot draw them itself, and inside a run you save. Off the route of a run, when the phone cannot find the way back to it by itself, it goes there exactly as it is with the stretch of the route ahead, to find that way on the streets: the server does not keep them. It goes rounded to about 1 km to find the offline map around you, recommended routes, towns and drawings nearby, and to put the places near you first in a search; rounded like this it is not kept with your account.",
         "On iPhone, during a run you started, the app keeps following your position also with the phone locked or another app open, until you stop the run; the iPhone shows it with a blue mark at the top of the screen. MuW asks for the position only while you use the app, never «Always».",
         "Like any internet service, our server sees the internet (IP) address a request comes from while it answers it. The server's log does not write positions, and the database holds no IP addresses.",
         "A register of the route requests, with their start, exists to reproduce a defect. It is off on our server; switched on, it holds at most 10 MB, then the oldest lines are lost.",
@@ -416,6 +421,7 @@ const privacy: AboutDocument = {
       heading: "Advertising",
       blocks: [
         "MuW shows its own Style posts with links to shops, marked «Ad · Affiliate links». MuW uses no advertising network, and the app never asks to track you across other apps. When you open a product or tap «Shop», our server only adds one to that day's count for that product: it does not know who you are or which phone it was. «Shop» opens the shop's site in your browser through the link of our affiliate network, Awin: from there Awin and the shop record the click and any purchase, with their cookies and under their own privacy policies, so that MuW can be paid its commission. From them MuW receives only totals of clicks, sales and commissions, never who you are.",
+        "The same count, by day and without knowing who you are, applies to the items members tag on their posts: whoever tagged an item sees how many times it was opened and how many times someone went to the shop, never who. A member's link goes straight to the shop, without Awin: from there the shop records the visit with its cookies, under its own privacy policy.",
       ],
     },
     {
@@ -447,6 +453,7 @@ const privacy: AboutDocument = {
             "Expo serves the app's updates.",
             "Google Ireland Limited (Firebase Cloud Messaging), to deliver push notifications to Android phones. When you turn push on, the app asks Firebase for a registration token for your phone; Expo's push service hands each notification (who did what, and the beginning of a comment) to Google, which delivers it to your phone. Google sees the token and the content of each notification, not your account or your position. The token is dropped from our server when you turn push off, log out or delete your account; the one on the phone goes when you uninstall the app.",
             "Resend, in the United States, sends MuW's emails: your email address with the email itself. For a report it carries to the person who runs MuW what was reported, its text, the reason, and the usernames of who reported it and who wrote it. For «Send feedback» it carries your message, your username and your email address.",
+            "Google, with its Web Risk service, receives from our server parts of the fingerprint (hash) of some links that members add to their items, to check that they do not lead to dangerous sites: never the whole link, nor who added it or who opens it.",
             "Strava, as said above.",
           ],
         },

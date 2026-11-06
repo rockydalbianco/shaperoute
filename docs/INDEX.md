@@ -41,7 +41,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Il compositore del post: fino a 10 foto, video e disegno, i layout, l'editor | `tasks/TASK-348.md`, `DECISIONS.md` ADR-0301 e ADR-0292, `API.md` «Drawings» |
 | Disegnare a mano in «Draw» («Freehand»), «Edit the drawing» sulle figure proposte | `UI.md`, `tasks/TASK-320.md` |
 | A mano solo sulla mappa: la linea aperta, «Erase», «Edit the drawing» sulla mappa, niente per le emoji | `UI.md` «Disegnare sulla mappa», `tasks/TASK-331.md`, `DECISIONS.md` ADR-0288 |
-| Girare la figura sulla mappa (−15°/+15°, i gradi scritti, due dita) e i pezzi da tessere | `UI.md` «Disegnare sulla mappa», «Girare la figura», `tasks/TASK-402.md`, `DECISIONS.md` ADR-0336 |
+| Girare la figura sulla mappa (−15°/+15°, i gradi scritti, due dita) e i pezzi da tessere | `UI.md` «Disegnare sulla mappa», «Girare la figura», «I pezzi», `tasks/TASK-402.md`, `DECISIONS.md` ADR-0336 (con le precisazioni della parte B) |
 | Il disegno libero ancorato alle strade: map matching per tratto col nostro motore, fantasma e punteggio, strumenti da professionista, guide | `tasks/TASK-347.md`, `DECISIONS.md` ADR-0300, `ROUTE_ENGINE.md` §4 («Il disegno ancorato e i tratti») e §5, `API.md` («Stroke matches») |
 | «Edit the drawing» su un disegno del Feed: la traccia dov'è stata corsa | `UI.md` «Edit the drawing: la figura sulla mappa», `tasks/TASK-346.md`, `DECISIONS.md` ADR-0299 |
 | Il nuoto in acque libere, «Open water swim», la guida con l'Apple Watch | `tasks/TASK-323.md`, `ROUTE_ENGINE.md` §8 |
@@ -64,12 +64,15 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Il mio corpo: dati del corpo, kcal di corsa/bici/paddle, zone del battito | `tasks/TASK-374.md`, `DECISIONS.md` ADR-0318 |
 | Lo sci alpino, «Ski»: piste e impianti, le tre opzioni, la giornata registrata | `tasks/TASK-373.md`, `DECISIONS.md` ADR-0317 e ADR-0278 |
 | Gli sport «Record only» senza forma: sci alpino e di fondo, `RECORD_ACTIVITIES`, le metriche della giornata, impianti e piste per nome | `tasks/TASK-375.md`, `DECISIONS.md` ADR-0319 e ADR-0317 |
+| Le stazioni sciistiche: la ricerca «Ski», com'è la neve, il meteo MET Norway dal server, la stazione e il modello nella giornata di sci | `tasks/TASK-406.md`, `DECISIONS.md` ADR-0338, `tasks/TASK-375.md`, `MAPS.md` «Impianti e piste da sci da un estratto» |
+| L'editor del video dell'attività: l'animale 3D che corre il percorso (three.js nella pagina del video), colori, emoji, scene, finale, il prompt letto dal telefono | `tasks/TASK-408.md`, `DECISIONS.md` ADR-0339 e ADR-0303, `tasks/TASK-351.md` |
 | Le app vecchie e le attività nuove: l'header `X-MuW-Reads`, cosa toglie il server da ogni lista, uno sport nuovo da aggiungere | `tasks/TASK-387.md`, `DECISIONS.md` ADR-0328, `API.md` («Quello che un'app sa leggere») |
 | «Edit the drawing» su ogni disegno: emoji, parole, percorsi a tema, corse libere e importate, sull'acqua; la copia senza legami | `tasks/TASK-369.md`, `DECISIONS.md` ADR-0313 e ADR-0299, `UI.md` «Edit the drawing: la figura sulla mappa» |
 | «Edit the drawing» sotto le opzioni A, B e C del risultato di «Draw»: la linea dell'opzione scelta sulla mappa | `tasks/TASK-403.md`, `DECISIONS.md` ADR-0337, ADR-0313 e ADR-0288, `UI.md` «Edit the drawing: la figura sulla mappa» |
 | Aggiungere uno sport: il registro, il banco `tools/sport_bench/`, le zone fisse, le misure di ogni sport | `tasks/TASK-376.md`, `DECISIONS.md` ADR-0320, `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md` |
 | L'escursionismo «Hike» (pilota della struttura degli sport): la rete dei sentieri, le misure | `tasks/TASK-377.md`, `DECISIONS.md` ADR-0321, `sports/hike.md`, `sports/COME-AGGIUNGERE.md` |
 | Gravel e MTB: la bici su sterrati e sentieri, la rete `mtb`, `mtb:scale`, le misure | `tasks/TASK-378.md`, `DECISIONS.md` ADR-0322, `sports/gravel.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
+| Il Roller (pattini in linea): l'asfalto liscio, la rete `roller`, superfici, salite, le misure | `tasks/TASK-380.md`, `DECISIONS.md` ADR-0324, `sports/roller.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
 | La palestra «Gym»: sessione senza traccia, esercizi e serie, timer di recupero, traguardi, classifica mensile | `tasks/TASK-385.md`, `DECISIONS.md` ADR-0327, `sports/gym.md` |
 | I movimenti: le molle di `motion.spring`, `src/ui/motion.ts`, la capsula della barra, l'«isola», fogli e liste | `tasks/TASK-388.md`, `DECISIONS.md` ADR-0329 e ADR-0293 |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |

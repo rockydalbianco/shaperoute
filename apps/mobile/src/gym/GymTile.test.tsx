@@ -41,3 +41,16 @@ test("without exercises the tile writes none", async () => {
     screen.queryByTestId("gym-tile-exercises", { includeHiddenElements: true }),
   ).toBeNull();
 });
+
+// TASK-385 part C: the energy under the time.
+
+test("the energy is written under the time, none without it", async () => {
+  await render(<GymTile width={320} height={256} durationS={3600} kcal="184 kcal" />);
+  expect(
+    screen.getByTestId("gym-tile-kcal", { includeHiddenElements: true }),
+  ).toHaveTextContent("184 kcal");
+  await render(<GymTile width={320} height={256} durationS={3600} kcal={null} />);
+  expect(
+    screen.queryByTestId("gym-tile-kcal", { includeHiddenElements: true }),
+  ).toBeNull();
+});

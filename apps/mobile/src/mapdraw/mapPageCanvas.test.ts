@@ -593,3 +593,82 @@ test("two fingers that barely turn size the figure without turning it (TASK-402)
   expect(done.factor).toBeCloseTo(1.5, 2);
   expect(done).not.toHaveProperty("turn");
 });
+
+/** A second square, 0.012° east of the first: on the screen from (270, 250)
+ * to (370, 350). */
+const EAST_SQUARE: LatLon[] = SQUARE.map(([lat, lon]) => [lat, lon + 0.012]);
+
+/** Two pieces, the second chosen with its box, or none chosen. */
+function piecesCanvas(chosen: boolean) {
+  return setCanvas({
+    mode: "move",
+    lines: [SQUARE, EAST_SQUARE],
+    links: [false, false],
+    bendable: [0],
+    marks: [],
+    centre: chosen ? [46, 11.012] : [46, 11],
+    shrink: 0.5,
+    grow: 2,
+    choosing: true,
+    chosen: chosen ? [1] : [],
+    box: chosen ? EAST_SQUARE : [],
+    frame: false,
+  });
+}
+
+test("among pieces a tap with «Move» is told, on a piece or off them (TASK-402 part B)", () => {
+  const page = runPage();
+  page.send(piecesCanvas(false));
+  // On the figure: a finger that does not move.
+  page.down(320, 300);
+  page.up();
+  // Off the figure, too.
+  page.down(50, 550);
+  page.up();
+  const taps = only(page.told(), "tapped");
+  expect(taps).toHaveLength(2);
+  expect(taps[0].lngLat[0]).toBeCloseTo(11 + 120 / PX_PER_DEG, 9);
+  expect(taps[0].metresPerPx).toBeGreaterThan(0);
+  expect(only(page.told(), "figure")).toHaveLength(0);
+  // A figure alone, or a drag, tells no tap.
+  const alone = runPage();
+  alone.send(canvas("move"));
+  alone.down(200, 300);
+  alone.up();
+  alone.down(200, 300);
+  alone.to(250, 300);
+  alone.up();
+  expect(only(alone.told(), "tapped")).toHaveLength(0);
+});
+
+test("the piece chosen alone moves with a finger, its box with it; the others faint (TASK-402 part B)", () => {
+  const page = runPage();
+  page.send(piecesCanvas(true));
+  // The chosen square full, the other faint, the box round the chosen.
+  expect(page.drawn("canvas")).toHaveLength(1);
+  expect(page.drawn("canvas-faint")).toHaveLength(1);
+  expect(page.drawn("canvas-box")).toHaveLength(5);
+  // A finger on the first square, outside the piece chosen, moves the map.
+  page.down(200, 300);
+  page.to(200, 310);
+  page.to(200, 330);
+  page.up();
+  expect(only(page.told(), "figure")).toHaveLength(0);
+  expect(page.view.lat).not.toBe(46);
+
+  const again = runPage();
+  again.send(piecesCanvas(true));
+  again.down(320, 300);
+  again.to(320, 250);
+  again.up();
+  const [moved] = only(again.told(), "figure");
+  // The chosen square's middle went 50 px north.
+  expect(moved.centre[0]).toBeCloseTo(11.012, 9);
+  expect(moved.centre[1]).toBeCloseTo(46.005, 9);
+  const [shown] = again.drawn("canvas") as number[][][];
+  expect(shown[0][1]).toBeCloseTo(45.995 + 0.005, 9);
+  const [faint] = again.drawn("canvas-faint") as number[][][];
+  expect(faint[0][1]).toBeCloseTo(45.995, 9);
+  const box = again.drawn("canvas-box") as number[][];
+  expect(box[0][1]).toBeCloseTo(45.995 + 0.005, 9);
+});

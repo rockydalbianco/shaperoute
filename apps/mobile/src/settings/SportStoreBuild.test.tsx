@@ -62,6 +62,9 @@ test("a store build leaves out the sports not ready, and keeps the order", () =>
     "bike",
     "paddle",
     "swim",
+    "hike",
+    "gravel",
+    "mtb",
     "ski",
     "gym",
   ]);
@@ -81,6 +84,9 @@ test("in a store build `SPORTS` itself has no «Paragliding»", () => {
       "bike",
       "paddle",
       "swim",
+      "hike",
+      "gravel",
+      "mtb",
       "ski",
       "gym",
     ]);
@@ -89,24 +95,27 @@ test("in a store build `SPORTS` itself has no «Paragliding»", () => {
 
 test("«Settings» of a store build has no «Soon» row", async () => {
   await render(<SportSetting sports={STORE} />);
-  // Run, bike, paddle, the swim (TASK-323), the alpine ski (TASK-375 D4) and
-  // the gym (TASK-385 B).
-  expect(screen.getAllByRole("radio")).toHaveLength(6);
+  // Run, bike, paddle, the swim (TASK-323), the hike (TASK-377), gravel and
+  // MTB (TASK-378), the alpine ski (TASK-375 D4) and the gym (TASK-385 B).
+  expect(screen.getAllByRole("radio")).toHaveLength(9);
+  expect(screen.getByRole("radio", { name: "Hike" })).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Gravel" })).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "MTB" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Ski" })).toBeOnTheScreen();
   expect(screen.queryByText("Soon")).toBeNull();
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
   expect(screen.queryByText("🪂")).toBeNull();
   // Swimming is a sport of the store builds since the server swims
   // (TASK-323), a row like the others.
-  expect(screen.getByRole("radio", { name: "Open water swim" })).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Swim" })).toBeOnTheScreen();
   expect(screen.getByText("🏊")).toBeOnTheScreen();
 });
 
 test("the sport menu of «Draw» in a store build has no «Soon» row", async () => {
   await render(<SportButton sports={STORE} />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  // The six of «Settings».
-  expect(screen.getAllByRole("radio")).toHaveLength(6);
+  // The nine of «Settings».
+  expect(screen.getAllByRole("radio")).toHaveLength(9);
   expect(screen.queryByText("Soon")).toBeNull();
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
 });

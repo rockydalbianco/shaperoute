@@ -23629,6 +23629,89 @@ TASK-348 (ADR-0301), già in `main`.
 approvato il 2026-11-04. Nessuna dipendenza, niente nativo, niente server:
 impronta iOS 6f8bba4c invariata. «Up to 10 in a post.» resta anche per la
 palestra: dice le foto, non le pagine.
+
+## ADR-0327, precisazione — La parte E: i traguardi della palestra
+
+**Stato**: Attiva · 2026-11-06 · TASK-385 parte E, decisa dall'agente su
+delega dell'utente dentro le sue scelte (la scelta 8, «100 kg di panca
+piana sblocchi quella figura», e del 2026-11-06 «Tutti» e «I primi 5 +
+altro»); lista dei file approvata dal Coordinatore.
+
+**Decisione**:
+
+1. **Si contano a ogni lettura, nessuna tabella**: il livello di un
+   esercizio è la serie migliore sotto il tetto, da `gym_sets`, con la
+   regola di `gym_catalog.measured` e `level_of` scritta in SQL
+   (`gym_levels.py`); un test confronta le due. Niente migrazione: un
+   account ha poche centinaia di serie.
+2. **Contano tutti gli allenamenti, anche i privati** (scelta dell'utente,
+   come i record personali di TASK-368): il profilo mostra figura,
+   esercizio e valore, mai l'allenamento. Le serie aggiunte dopo «Stop»
+   contano: la regola «solo dal vivo» è della classifica (parte F).
+3. **Sul profilo** `gym_levels` in `GET /users/{public_id}`, prima il
+   livello più alto, poi nell'ordine del catalogo. L'app mostra il blocco
+   «🏋️ Gym» dopo i record e il VO₂ max: i primi cinque, gli altri sotto
+   «Show more» (scelta dell'utente). Testi già approvati: «Gym», «Show
+   more» e i sette nomi delle figure.
+4. **Nel post** `new_levels` in `GET /drawings/{id}/exercises`: i livelli
+   che l'allenamento supera rispetto a quelli cominciati prima, anche se
+   salvati dopo. Seguono gli esercizi: nascosti loro, nascosti anche i
+   livelli. L'app scrive «New level: {figure} · {exercise} {value}» sotto
+   il riquadro nel Feed e sopra gli esercizi nella scheda.
+5. **Il valore si legge come una serie del post**: kg o lb come dicono le
+   unità (per mano col manubrio), «×30» per le ripetizioni, il tempo, la
+   distanza.
+
+**Conseguenze**: campi nuovi e facoltativi; le app vecchie li ignorano, e
+il server può andare prima dell'app. Nessuna dipendenza, niente nativo:
+impronta iOS invariata. Il server va col sì dell'utente.
+
+## ADR-0327, precisazione — La parte C: le calorie della palestra e Salute
+
+**Stato**: Attiva · 2026-11-06 · TASK-385 parte C, decisa dall'agente su
+delega dell'utente dentro le sue scelte (la scelta 2, «Stima MET sempre»,
+e del 2026-11-06 «Niente kcal» per gli esercizi nascosti); lista dei file
+approvata dal Coordinatore.
+
+**Decisione**:
+
+1. **Si contano sul telefono, come per gli altri sport** (`gym/gymKcal.ts`,
+   ADR-0318): energia attiva, ossigeno meno il riposo di Mifflin-St Jeor
+   (o un MET senza i dati del corpo), 70 kg senza peso. Niente sul server.
+2. **I blocchi cardio con la formula della macchina**:
+   - tapis roulant (anche curvo): l'equazione ACSM della camminata sotto
+     i 7 km/h, della corsa da 7 km/h (il mezzo dei 3,7–5 mph in cui
+     l'ACSM lascia la scelta), con la velocità o i metri sul tempo, la
+     pendenza solo in salita;
+   - le altre macchine: il MET del Compendium 2024 copiato col codice:
+     cyclette e reclinata 4,0 / 6,8 / 10,3 per fascia di livello (01214,
+     01224, 01232), 6,8 senza livello (01200), spin 9,0 senza livello
+     (01270); air bike 6,8 (01200); ellittica 5,0 / 9,0 (02048, 02049);
+     vogatore coi metri per i watt del passo (2,80 / (s/m)³: 5,0 / 7,5 /
+     11,0 / 14,0, 02071–02074), senza metri 7,3 (02070); ski erg 6,8
+     (02080); scala, stepper e climber 9,3 (02065, il più vicino); arm
+     ergometer 2,0 / 2,8 / 3,5 (02116, 02115, 02118); corda 11,0 (02068);
+   - il livello di una macchina sulla scala comune 1–20: fino a 7 leggero,
+     fino a 14 moderato, oltre vigoroso.
+3. **Il resto del tempo** al MET dei pesi con più esercizi, 3,5 (02054):
+   è la media di una sessione coi recuperi, che non si tolgono due volte.
+   Un blocco di cui la formula non sa niente (tapis roulant senza velocità
+   né metri, una macchina col nome libero) resta in quel tempo.
+4. **Dove si vedono**: sotto il cronometro durante l'allenamento, sotto il
+   tempo alla fine, sul riquadro e nella riga dei fatti del post, nel
+   riquadro condiviso. Nessun testo nuovo: «kcal» come le corse.
+5. **Esercizi nascosti, niente kcal** (scelta dell'utente del 2026-11-06,
+   «Niente kcal»): chi non vede le serie non vede le kcal, perché un
+   numero senza il cardio non sarebbe quello dell'autore. L'autore le
+   vede sempre: l'API gli dà le sue serie.
+6. **Salute** come il nuoto in piscina (TASK-400 B): con «Save», dopo il sì
+   dell'utente e col permesso, l'allenamento di forza (Apple 50, Health
+   Connect 70) con le kcal e le pause, niente percorso né distanza (i
+   metri di un blocco sono del blocco); su Apple al chiuso
+   (`HKIndoorWorkout`).
+
+**Conseguenze**: solo JavaScript, nessuna dipendenza: impronta iOS
+invariata, OTA col sì. Col battito (parte G) le kcal passano a Keytel.
 ## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
 
 **Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
@@ -23692,7 +23775,8 @@ freccia davanti; fuori rotta «Off the route»; sotto «{percent}% drawn ·
 cinque lingue; l'unico testo nuovo è «{distance} left», nelle unità scelte.
 ## ADR-0336 — Ruotare il disegno sulla mappa e aggiungere pezzi da tessere, tutto sul telefono
 
-**Stato**: Proposto · 2026-11-05 · TASK-402. Scelta di prodotto
+**Stato**: Accettato · 2026-11-06 (proposto il 2026-11-05) · TASK-402,
+parti A (#857) e B (#873) in `main`. Scelta di prodotto
 dell'utente («Aggiungere pezzi», punto 2); il resto deciso dall'agente su
 delega dell'utente; confine con TASK-347 deciso dal Coordinatore.
 
@@ -23739,6 +23823,44 @@ mappa». La parte D di TASK-347 (ADR-0300) prevedeva già «seleziona / sposta
 - **Girare in lng/lat sulla pagina della mappa**, come oggi il
   ridimensionamento: lontano dall'equatore storce la figura (un grado di
   longitudine è più corto di uno di latitudine).
+
+**Precisazioni della parte B** (2026-11-06, decise dall'agente su delega
+dell'utente):
+
+- **I pezzi stanno nell'app** (`mapdraw/pieces.ts`): il primo pezzo resta
+  `placed`, su cui lavorano penna, linea, gomma e piega; gli altri sono una
+  lista accanto. `joinedPieces` li unisce sul piano del primo: il contorno
+  del primo; poi, pezzo per pezzo, il suo contorno come dettaglio chiuso,
+  dal suo angolo più vicino al disegno; entro `SNAP_SHARE` parte sul
+  disegno senza collegamento, più lontano con il collegamento tratteggiato
+  (`linked`), percorso andata e ritorno. I dettagli del pezzo si riattaccano
+  al suo contorno. I pezzi aggiunti si semplificano al 1% della loro
+  grandezza (`SIMPLIFY_SHARE`), il primo no.
+- **Un pezzo solo non passa da `joinedPieces`**: la richiesta è esattamente
+  quella di prima (anche una forma per nome, anche a penna alzata).
+- **«Change» con più pezzi** cambia il pezzo scelto, o il primo senza
+  scelta, dov'è e grande com'è.
+- **Con più pezzi, spostare la figura intera è un passo di «Undo»**, come
+  spostare un pezzo: ogni passo ricorda i pezzi dopo il primo, e un
+  movimento senza passo li farebbe tornare indietro da soli.
+- **Limiti**: il totale dentro i limiti di «Draw» (tutti i pezzi
+  ridimensionati insieme attorno al mezzo del primo); un pezzo scelto non
+  scende sotto un sesto della distanza più corta (`lowest / MAX_PIECES`).
+  Un cambio che porterebbe il disegno oltre i punti del contratto non si
+  fa e dice `too_much`.
+- **Il tocco che sceglie**: la pagina della mappa dice `{type: "tapped",
+  lngLat, metresPerPx}` per un dito che non si muove con «Move», solo
+  quando ci sono pezzi; l'app sceglie il pezzo con la linea più vicina
+  entro la portata del dito, se no il più piccolo nel cui riquadro cade il
+  tocco. In `setCanvas` tre campi facoltativi: `choosing`, `chosen` (le
+  linee del pezzo scelto, le sole che le dita muovono; le altre in un layer
+  più chiaro, `FAINT_OPACITY`) e `box` (il riquadro girato col pezzo).
+- **«Change» e il «Change» della corsa**: in italiano il secondo è
+  «Differenza». Un testo uguale in inglese e diverso altrove si scrive
+  `t("Change@@piece")`: `translate` mostra in inglese quello che viene prima
+  di `@@` (`CONTEXT_MARK`), le tabelle hanno la chiave intera. È una
+  modifica al traduttore di tutta l'app: `apps/mobile/src/i18n/translate.ts`
+  e il suo test `translate.test.ts`; i testi senza `@@` restano come prima.
 
 ## ADR-0337 — «Edit the drawing» torna sotto le opzioni A, B e C del risultato di «Draw»
 
@@ -23802,6 +23924,91 @@ minuto», contro «Sparisce subito»).
 L'utente dà il sì a `@bacons/apple-targets` 5.0.0 e al modulo locale in
 Swift nella build 1.0.2 («Sì, nella 1.0.2»).
 
+---
+
+## ADR-0314, precisazione — La parte A2: l'app SwiftUI dell'orologio
+
+**Stato**: Attiva · 2026-11-06 · TASK-370 parte A2, deciso dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore; numeri in
+più sullo schermo e logo chiesti dall'utente durante la prova.
+
+**Decisione**:
+
+1. **`targets/watch/`** è il target `type: "watch"` di
+   `@bacons/apple-targets` (bundle `.watchkitapp`, watchOS 10, HealthKit).
+   Lo costruisce solo un `match` che nomina `watch`: oggi solo con
+   `MUW_WATCH=1`, da A-flip in `app.json`. La dipendenza la porta TASK-401 B
+   (confermato dal Coordinatore il 2026-11-05); A2 non tocca
+   `package.json`, `app.json` né il lock.
+2. **`Core/` fuori dai file del target, come pacchetto locale**: il plugin
+   (5.0.0) mette l'intera cartella del target in un
+   `PBXFileSystemSynchronizedRootGroup` ed esclude solo `Info.plist` e
+   `expo-target.config.js`: senza intervento compilerebbe `Package.swift`,
+   `Core/Tests` e `.build`, e `Bundle.module` di WatchCore non esisterebbe.
+   `plugins/withWatchCore.js` aggiunge `Core` (e il `.gitignore`) alle
+   eccezioni e collega `Core/` come `XCLocalSwiftPackageReference` con il
+   prodotto `WatchCore`, con lo stesso mod `xcodeProjectBeta2` del plugin.
+   Va **prima** di `@bacons/apple-targets` nei plugin: Expo esegue le
+   modifiche Xcode in ordine inverso. Verificato: nel build nessun file di
+   `Core/Tests`, `sports.json` nel bundle `WatchCore_WatchCore.bundle`.
+3. **`MUW_WATCH=1`** in `app.config.ts` chiama `plugins/watchConfig.js`:
+   se `app.json` ha già il plugin allarga `match` (`live-activity` →
+   `{live-activity,watch}`), altrimenti lo aggiunge con `match: "watch"`
+   (per le prove prima di 401 B, col pacchetto installato solo in locale).
+   È JavaScript perché Expo legge `app.config.ts` da solo e non risolve un
+   import TypeScript da lì (provato: «Cannot find module»). Si carica con un
+   `require` solo quando la variabile c'è: l'impronta conta ogni file che
+   la config carica (`expoConfigPlugins`), e con un `import` in cima era
+   `c770de78` invece di `6f8bba4c` anche senza `MUW_WATCH` (misurato).
+4. **Lo stato è di WatchCore, la registrazione di HealthKit**:
+   `HKWorkoutSession` + `HKLiveWorkoutBuilder` (salva l'allenamento in
+   Salute alla fine: un'attività, un allenamento), mirroring al telefono
+   avviato a ogni allenamento, `WCSession` coi messaggi di WatchCore: lo
+   stato a ogni cambio e ogni 5 s, il battito ogni 5 s; comandi dal telefono
+   (avvio, pausa, ripresa, fine). Uno sport che l'orologio non offre,
+   mandato da un telefono più nuovo, è lasciato fuori. Pausa e ripresa coi
+   due tasti del sistema passano dallo stesso stato.
+5. **I numeri come il pannello della corsa dell'app** (`RunPanel.tsx`), su
+   richiesta dell'utente durante la prova («andatura, battito, andatura
+   ultimo km… più informazioni»): pagina principale tempo, distanza,
+   «Pace now», battito; seconda pagina «Avg pace», «Last km» («Last mi»,
+   «Last 500 m» in acqua), calorie; in palestra tempo, calorie e battito.
+   «–» dove il numero non c'è ancora, come `NO_NUMBER`. «Pace now» e
+   «Last km» sono in `WatchPaces` (WatchCore, XCTest) con le regole di
+   `runStats.ts` (ultimi 200 m, fermo oltre 20 min/km, 60 nel nuoto; la
+   fine del km in proporzione fra due campioni), ma su distanza e tempo in
+   movimento di Salute invece che sui fix GPS: niente fixture comuni,
+   perché gli ingressi sono diversi. Tempo, distanza e passo invece si
+   scrivono con `WatchFormat`, tenuto uguale a `clockLabel`,
+   `runDistanceLabel`, `paceLabel` e ai passi di pagaia e nuoto da
+   `Fixtures/format.json`, letto da XCTest e da jest (anche i mezzi esatti
+   di `toFixed`, dove `%.2f` arrotonda al pari). La bici resta a passo,
+   come in A1; la velocità è della parte C.
+6. **Il logo** (richiesta dell'utente): in cima alla lista degli sport e
+   nel riepilogo, il cuore dell'icona e il nome di `splash-logo-dark.png`,
+   immagini generate dal plugin a ogni prebuild (`Assets.xcassets` è nel
+   `.gitignore` del target). Nessun colore scritto a mano: colori di
+   sistema e quelli delle immagini.
+7. **I testi** sono solo quelli che l'app ha già, con le sue traduzioni:
+   `src/watch/watchTexts.ts` li elenca, un test controlla che ognuno sia in
+   ogni tabella, `scripts/watch-texts.sh` scrive
+   `<lingua>.lproj/Localizable.strings`; le due frasi di Salute sono quelle
+   dell'iPhone (`app.json`, `locales/*.json`) in `InfoPlist.strings`. Un
+   nome di sport ancora senza traduzione resta inglese, come nell'app.
+8. **Le unità** sono quelle del sistema di misura dell'orologio, come fa
+   l'app finché non se ne sceglie una; la scelta del telefono arriva in A3.
+
+**Alternative**:
+- **Compilare i sorgenti di WatchCore nel target** invece del pacchetto:
+  niente plugin locale, ma `Bundle.module` non c'è fuori da SwiftPM e i
+  test andrebbero esclusi lo stesso; scartata.
+- **Spostare `Core/` fuori da `targets/watch/`**: cambierebbe A1 già in
+  `main` (percorsi di jest e di `watch.yml`); scartata.
+
+**Conseguenze**: senza `MUW_WATCH` la config è quella di prima e
+l'impronta iOS resta quella di `main` (misurata nella PR). La prova sul
+polso aspetta una build firmata con il team dell'utente; watchOS 27 non gira
+più sulla Series 6, ma l'app chiede watchOS 10.
 ## ADR-0321, precisazione — La parte B: Hike nell'app, «Soon» fino al server
 
 **Stato**: Accettato · 2026-11-05 · TASK-377 parte B. Lista dei file
@@ -23829,3 +24036,742 @@ delega dell'utente.
    così»): in montagna circa metà di un'escursione sta su strade
    secondarie tranquille. Pesare gli archi, l'alternativa di ADR-0321, è un
    task a parte del motore, dopo le prime escursioni vere.
+
+## ADR-0334 — Il nuoto in piscina: una scelta dentro il nuoto, le vasche scritte alla fine, il post senza traccia
+
+**Stato**: Proposto · 2026-11-05 · TASK-400. Le scelte di prodotto (come si
+contano le vasche, le lunghezze, dove sta, il Feed, i testi) sono
+**dell'utente**, prese una alla volta; il come è deciso dall'agente su
+delega dell'utente. Numeri dal Coordinatore.
+
+**Contesto**: il nuoto in acque libere (TASK-323, ADR-0283) ha lasciato
+fuori la piscina. In piscina il GPS non dà la distanza; il telefono resta
+fuori dall'acqua. Il server e l'app sanno già tenere e mostrare una corsa
+senza traccia (TASK-385, ADR-0327) e tenerla lontana dalle app che non la
+sanno leggere (ADR-0328).
+
+**Decisione**:
+
+1. **Uno sport, due posti.** Lo sport `swim` resta uno e si chiama «Swim»;
+   in «Draw» si sceglie «Open water» (com'è oggi) o «Pool». L'attività resta
+   `swimming`; la piscina è una corsa `swimming` **senza traccia** con i
+   suoi campi. L'ultima scelta fra i due resta sul telefono.
+2. **La vasca**: 25 m, 50 m o «Other» da 10 a 100 m, con al più due
+   decimali (33,33 m). Tenuta sul telefono, proposta la volta dopo. Niente
+   yard.
+3. **Le vasche alla fine.** Durante la nuotata c'è il cronometro (con
+   «Pause»), nessun GPS. Alla fine «How many lengths?» propone la stima
+   `round(tempo / (passo × vasca / 100))` con il passo/100 m medio delle
+   ultime nuotate in piscina, o 2:00/100 m se non ce ne sono; il numero si
+   corregge a mano, da 1 a 1000. Metri = vasche × vasca; passo/100 m =
+   tempo × 100 / metri.
+4. **Server (parte A)**: un endpoint suo, `PUT /me/pool-swims/{key}`, come
+   la palestra (ADR-0327 A, punto 1): `PUT /me/activities` vuole una
+   traccia. La corsa ha `track` nullo e `distance_m` dalle vasche; una
+   tabella `pool_swims` (`pool_length_m`, `lengths`) con il numero di
+   migrazione libero al merge; nessun punteggio di forma, nessun record di
+   corsa, nessun gioco.
+5. **Chi lo riceve**: un valore nuovo, `pool`, in `X-MuW-Reads`
+   (`packages/shared-types/fixtures/reads.json`). Un post di piscina passa
+   solo se l'app dichiara `swimming`, `trackless` **e** `pool`: un'app con
+   la palestra ma senza la piscina lo mostrerebbe senza vasche.
+6. **Salute** (parte B): HealthKit, allenamento `swimming` con
+   `HKMetadataKeySwimmingLocationType` = piscina, `HKMetadataKeyLapLength`
+   e la distanza a nuoto; Health Connect, `EXERCISE_TYPE_SWIMMING_POOL` con
+   la distanza. Dove basta, dal profilo dello sport (`sports/swimming.ts`)
+   invece di toccare `health/appleWorkout.ts` e `healthConnectWorkout.ts`,
+   che nella 1.0.2 cambiano con TASK-374 C, 345 C e 397 C. Nessun permesso
+   nuovo: il tipo dell'allenamento non è un permesso.
+7. **Il post** (parte C): senza mappa, come la palestra (ADR-0327 D), con
+   vasche, metri, tempo e passo/100 m e la solita scelta di visibilità.
+8. **Ordine e accensione**: A, poi B con C. Server, OTA e accensione nelle
+   build dello store ciascuno col sì dell'utente. L'Apple Watch (TASK-323 E)
+   potrà poi contare le vasche da solo.
+
+**Conseguenze**: nessuna dipendenza nuova, nessun permesso nuovo di Salute.
+Il nome dello sport cambia da «Open water swim» a «Swim» in tutte le lingue
+(testi approvati, tabella in `tasks/TASK-400.md`). Una migrazione nuova.
+
+**Scartato**: un tocco grande per vasca (mani bagnate, ci si deve fermare
+ogni volta); uno sport nuovo «Pool swim» (scelta dell'utente); le yard (per
+ora); mandare il post a chi dichiara solo `trackless` (lo vedrebbe senza le
+vasche).
+---
+
+## ADR-0322, precisazione — La parte A: Gravel come la bici, MTB con una rete sua, l'impronta del motore resta
+
+**Stato**: Accettato · 2026-11-06 · TASK-378 parte A. Lista dei file e
+impronta: scelte del Coordinatore; le scelte tecniche sono decise
+dall'agente su delega dell'utente.
+
+**Contesto**: la parte A porta `gravel_biking` e `mountain_biking` nel
+motore, nel contratto e nell'API, e i loro profili nascosti nell'app, come
+377-A per la hike (precisazione di ADR-0321).
+
+**Decisione**:
+
+1. **L'ordine del contratto**: running, cycling, paddling, swimming,
+   hiking, mountain_biking, walking, gravel_biking. MTB è un'attività del
+   motore, dopo la hike. Gravel si disegna come una bici in
+   `route_engine/walking.py` (`DRAWN_AS`, accanto alla camminata disegnata
+   come una corsa), e segue la camminata. Così `walking.py` resta fuori
+   dall'impronta (`WALK_ONLY`) e il Gravel non cambia nulla del motore.
+2. **Sensi unici e tratti a piedi sono una proprietà della rete**
+   (`Network.by_bike`, `networks/base.py`): `network.one_way_streets`, e
+   quindi i controlli di `validation.usability` (sterrato, a piedi con la
+   bici), la leggono invece del nome `bike`. `bike_ways` prende le regole
+   di una rete (`ride`) e il suo nome; `download_ways` scarica le vie con i
+   tag che le regole leggono. La bici non cambia.
+3. **La rete `mtb`** (`networks/mtb.py`) ha le regole del banco della
+   parte 0, uguali a `out/TASK-378/loader.py`:
+   - il filtro Overpass della bici, che scarica già i sentieri;
+   - i sentieri aperti alle bici fino a S1;
+   - quelli non chiusi alle bici fino a S2, o fino a T2 se non dicono
+     `mtb:scale`;
+   - il resto come la bici, con le `track` di ogni grado.
+
+   Un sentiero oltre S2 si fa a piedi con la bici anche se è segnato
+   ciclabile: il limite S2 è dell'utente.
+4. **L'impronta resta quella di prima** (`SAME_ROUTES_AS`): 54061c20df45 →
+   9be259696402, e lo stesso per i nuoti e gli esempi di canoa dell'app.
+   Il comportamento nuovo è solo un'attività senza percorsi tenuti, come
+   per la hike. I percorsi di prima sono provati uguali:
+   - i nove percorsi fissi di `test_same_routes.py` (darwin-arm64);
+   - il banco su sei zone, contro `main` con la stessa cache: corsa 54/54,
+     bici 54/54, canoa 27/27, identici punto per punto.
+5. **Nell'API**:
+   - MTB ha zone sue, grandi come quelle della bici (`longest`), senza
+     nomi delle strade, una sola in memoria;
+   - Gravel usa le zone della bici, come la camminata quelle della corsa;
+   - Strava `MountainBikeRide` e `GravelRide`;
+   - il `<type>` del GPX è il nome dell'attività;
+   - i record sono quelli della bici (`BY_BIKE`), separati.
+     `personal_bests` li conta per ogni corsa, come quelli della bici, e il
+     profilo mostra quelli delle corse di quello sport. La 0052 allarga
+     anche `run_bests_sport_check`.
+6. **Nell'app**:
+   - i profili entrano nascosti: nessuna riga in «Settings» e nessun chip
+     nella ricerca (`searchFilters.ts`);
+   - il nome resta senza `tLater` e l'energia non si conta fino alla parte
+     B;
+   - nessuna rete sul telefono: li disegna solo il server;
+   - `sports.json` dell'orologio li elenca, come la hike.
+
+**Server**: migrazione 0052 e deploy, col sì dell'utente. Nessuna notte di
+esempi.
+
+## ADR-0334, precisazione — La parte A: il nuoto in piscina nel server
+
+**Stato**: Attiva · 2026-11-06 · TASK-400 parte A, decisa dall'agente su
+delega dell'utente; lista dei file e migrazione `0053` dal Coordinatore.
+
+1. **Un endpoint suo**, `PUT /me/pool-swims/{key}`, come la palestra: la
+   corsa ha `activity` `swimming`, `track` nullo e `distance_m` = vasche ×
+   vasca, al metro. `GET /me/pool-swims/{key}` al proprietario, `GET
+   /drawings/{id}/pool-swim` (vasca e vasche) a chi vede il disegno.
+2. **La vasca al centimetro** (`numeric(5, 2)`, 10–100 m): 33⅓ m si tiene
+   33,33 m e 30 vasche fanno 1000 m. Le vasche da 1 a 1000.
+3. **Un tetto di velocità**, 2,5 m/s (sopra i record del mondo sui 50 m):
+   oltre è `422`, perché vasche o vasca sono scritte male. Il telefono lo
+   controlla prima (parte B).
+4. **Il CHECK delle corse senza traccia** si allarga a `swimming`; un CHECK
+   non legge `pool_swims`, quindi è l'API che non salva mai un nuoto senza
+   traccia fuori da `pool_swims.py`.
+5. **Il disegno apre solo il caso della piscina** (`drawings.py`, con la
+   condizione del Coordinatore): una corsa con una riga in `pool_swims` si
+   pubblica solo come `swimming`. Ogni altra corsa senza traccia resta col
+   `NOT_TRACKLESS` di prima (solo attività di `TRACKLESS_ACTIVITIES`): una
+   corsa di Salute senza GPS pubblicata come `running` arriverebbe senza
+   mappa ad app che non la sanno mostrare, perché nessun valore di
+   `X-MuW-Reads` la copre.
+6. **`pool` in `X-MuW-Reads`**, entrato dopo TASK-378 A: `Reads.pool`;
+   chi dice `swimming` e `trackless` ma non `pool` riceve i nuoti con la
+   traccia e non quelli senza (`r.activity <> 'swimming' OR r.track IS NOT
+   NULL` nell'SQL). `this_app` in `reads.json` resta senza `pool` finché
+   l'app non lo dice (parte B).
+
+**Conseguenze**: una migrazione, nessuna dipendenza, nessun testo
+dell'app, impronta iOS e del motore invariate (`pool_swims.py` e
+`drawings.py` non sono in `engine.zip`). Server col sì dell'utente.
+
+## ADR-0334, precisazione — La parte B: l'app registra il nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-400 parte B, decisa dall'agente su
+delega dell'utente; lista dei file dal Coordinatore.
+
+1. **Una cartella sua**, `apps/mobile/src/pool/`, sul modello della
+   palestra: la nuotata in corso in un file (un'app riaperta la ritrova),
+   uno schermo sopra l'app dallo «Start swim» al «Save», i nuoti salvati
+   senza rete in un file loro, mandati alla prima rete. La chiave si fa come
+   quella della palestra (`gymKey`): non c'è un primo punto GPS.
+2. **«Open water / Pool» sta in cima a «Draw»** con lo sport «Swim»; in
+   «Pool» spariscono partenza, forma e «Draw route». Scelta, vasca e gli
+   ultimi cinque passi/100 m restano sul telefono (`pool-choice.json`); la
+   stima di «How many lengths?» usa la media di quei passi, o 2:00/100 m.
+3. **Il limite di 2,5 m/s sul telefono**: «+» si ferma all'ultimo numero di
+   vasche sotto il limite, un numero più alto scritto a mano resta non
+   valido (bordo rosso, «Save» spento). Nessun testo nuovo: una frase che
+   spieghi il perché vorrebbe un testo da approvare.
+4. **Salute**: `Workout` ha un campo `pool` facoltativo; con quello
+   `appleWorkout.ts` mette `HKSwimmingLocationType` = piscina e
+   `healthConnectWorkout.ts` il tipo `EXERCISE_TYPE_SWIMMING_POOL`. I
+   numeri stanno nel profilo (`sports/swimming.ts`). Nessuna traccia e
+   nessuna energia, come il nuoto in acque libere.
+5. **La vasca non va in Apple Salute (limite)**: `HKMetadataKeyLapLength`
+   vuole un `HKQuantity`, e `@kingstinct/react-native-healthkit` 16.2.0
+   passa i metadati come `AnyMap`, che arriverebbe a HealthKit come un
+   dizionario: il salvataggio di tutto l'allenamento fallirebbe. Salute
+   riceve il nuoto in piscina con i metri, senza la lunghezza della vasca,
+   finché la libreria non la porta. Accettato dal Coordinatore.
+6. **«My activities»**: una corsa `swimming` senza traccia e senza percorso
+   è un nuoto in piscina; la sua riga mostra la tessera 🏊, «Pool swim»,
+   metri, tempo e passo, e non apre una mappa che non ha. Il post è la
+   parte C.
+7. **`pool` in `this_app`** (`reads.json`, `api/reads.ts`): dalla parte B
+   «My activities» riceve i nuoti in piscina. Nessun post ne arriva prima
+   della parte C, che li pubblica. Tre test dell'API che leggevano
+   `this_app` senza `pool` cambiano con lui.
+
+**Conseguenze**: nessuna dipendenza, nessun permesso nuovo, solo JS; il
+nome dello sport è «Swim» in ogni lingua. OTA e store col sì dell'utente.
+
+## ADR-0334, precisazione — La parte C: il post del nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-400 parte C, decisa dall'agente su
+delega dell'utente; lista dei file dal Coordinatore.
+
+1. **Un nuoto in piscina si riconosce dalla linea**: un post o un disegno
+   `swimming` senza linea (`isPoolLine`). Un nuoto in acque libere ne ha
+   sempre una. Nessun campo nuovo nel contratto.
+2. **Il post come quello della palestra** (ADR-0327 D): a fine nuotata il
+   modulo (foto, titolo, «How did it go?», persone, chi lo vede), con la
+   tessera 🏊 fra le foto e fino a dieci foto; mai ordinato, prima le foto
+   e la tessera in fondo. Si manda dopo il `PUT /me/pool-swims/{key}`,
+   dal file dei disegni in attesa, come `swimming`. L'attività resta solo
+   «Swim» (l'API vuole `swimming`) e non c'è la gara del mese.
+3. **La tessera**: «Pool swim», vasche e vasca (da `GET
+   /drawings/{id}/pool-swim`, chiesto una volta per post), metri, tempo e
+   passo/100 m; senza le vasche (un'app a cui non arrivano) restano metri,
+   tempo e passo. Nel Feed, nelle griglie del profilo, nella ricerca e
+   nell'immagine condivisa. La scheda del disegno scrive vasche × vasca e
+   passo sotto i fatti, e non offre «Draw it near me» né «Edit the
+   drawing».
+4. **L'immagine condivisa** è la tessera sola, come la palestra: niente
+   risultati, emoji, video né Strava. Dal proprio nuoto le vasche vengono
+   da `GET /me/pool-swims/{key}`; dal Feed, che non ha la chiave, da `GET
+   /drawings/{id}/pool-swim` (`PostRun.drawingId`, messo da
+   `postOfDrawing` in `feed/ActionBar.tsx`).
+5. **Nei file condivisi** poche righe: un `pool` in `PostComposer` e
+   `DrawingForm`, `alone` in `ActivityChips`, un ramo nella tessera di
+   `FeedPost`, `DrawingCard`, `DrawingsGrid`, `DrawingResultCard` e
+   `SharePost`. Il resto in `apps/mobile/src/pool/`.
+
+**Conseguenze**: nessun testo nuovo (solo i testi approvati), nessuna
+dipendenza, solo JS. Il post arriva solo alle app che dicono `pool`
+(ADR-0334, punto 5). Server, OTA e store col sì dell'utente.
+## ADR-0310, precisazione — Un percorso di MuW non dice quanto somiglia
+
+**Stato**: Accettato · 2026-11-06 · TASK-405. Deciso dall'agente su
+delega dell'utente, lista dei file approvata dal Coordinatore.
+
+I percorsi di MuW non hanno punteggio da mostrare (TASK-365: ogni percorso
+passa dall'occhio, non dal punteggio del motore), ma il foglio aperto dal
+Feed diceva «looks 100% like it» per il `similarity: 1` messo solo perché
+il tipo vuole un numero.
+
+1. **Il segno è un campo a parte**, `RecommendedRoute.scored?: false`,
+   messo solo da `muwCardRoute` e portato da `optionsOf` anche a percorso
+   caricato. Assente per ogni altro percorso, che resta com'è.
+2. **`ExploredCard`** con `scored === false` scrive `{title} · {city}`
+   come stringa composta: nessuna chiave, nessun testo nuovo.
+3. **`similarity` resta un numero**: renderla opzionale toccherebbe una
+   decina di file che la leggono (card, preferiti, `RouteResult`).
+
+**Scartato**: riconoscere i percorsi di MuW dall'id (`muw:`) nella card,
+un caso speciale sul nome.
+
+## ADR-0322, precisazione — La parte B: Gravel e MTB nell'app
+
+**Stato**: Accettato · 2026-11-06 · TASK-378 parte B. Testi, ordine dei
+record e «ready» sono scelte dell'utente (TASK-378.md); lista dei file del
+Coordinatore; il resto è deciso dall'agente su delega dell'utente.
+
+1. **In «Settings»** gli sport si chiamano `gravel` e `mtb`, dopo «Hike»,
+   nell'ordine dei profili. `ready` resta falso finché l'utente non li
+   accende (il Coordinatore glielo chiede con la parte B in `main`): nei
+   build dello store non si vedono, in Expo Go dicono «Soon». Ricerca e modulo per pubblicare li offrono solo da
+   pronti (`OFFERED_WHEN_READY`); via la lista `NOT_YET` di
+   `searchFilters.ts`.
+2. **Partire senza percorso** è quello della bici, «Ride without a
+   route», con l'emoji dello sport: nessun testo nuovo.
+3. **L'energia** (Compendium 2024): Gravel con le fasce di velocità della
+   bici, copiate nel suo file perché un file di sport non importa un altro
+   sport; MTB «bicycling, mountain, general» (01009), 8,5 MET a ogni
+   velocità, perché su un sentiero la velocità dice poco della fatica.
+4. **Salute**: Apple `.cycling` (13) e Health Connect `BIKING` (8),
+   controllati sulle librerie dell'app: nessuna delle due ha un tipo
+   gravel o MTB.
+5. **I file importati**: in un FIT il sub-sport di una bici (sport 2)
+   dice `mountain` (8), `gravel_cycling` (46) ed `e_bike_mountain` (47),
+   numeri del profilo dell'SDK Garmin; ogni altro resta una bici. Nei GPX
+   e TCX le parole «gravel», «mountain bike» e «mtb», mai
+   «mountaineering».
+6. **I record**: `PersonalBest.sport` del contratto si allarga ai due
+   sport, e il profilo li mostra dopo quelli della bici, «GRAVEL» e
+   «MTB».
+7. **Nessuna rete sul telefono**: li disegna solo il server, come nella
+   parte A. L'impronta iOS non si muove (solo JavaScript) e `sports.json`
+   dell'orologio non cambia.
+## ADR-0338 — Le stazioni sciistiche: dati OSM, meteo MET Norway dal server, la giornata completa
+
+**Stato**: Proposto · 2026-11-06 · TASK-406. Le scelte di prodotto sono
+dell'utente (domande aperte in `tasks/TASK-406.md`); il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole tutte le stazioni sciistiche nella ricerca
+«Ski», con com'è la neve e il meteo. In «Record your day» vuole anche:
+- la stazione;
+- il modello;
+- il tipo di neve;
+- il numero degli impianti;
+- i km totali;
+- gli impianti presi («copia Slopes»).
+
+TASK-375 ha già la giornata, le risalite e gli impianti presi per nome. Ha
+anche gli estratti OSM del mondo sul server.
+
+**Decisione (proposta)**:
+
+1. **Le stazioni** sono le aree OSM `landuse=winter_sports` con un nome,
+   prese dagli stessi estratti di TASK-375 (niente Overpass, ADR-0154). Il
+   server le salva con il numero degli impianti e i km di piste, contati
+   dai riquadri dello sci.
+2. **Il meteo** viene da MET Norway Locationforecast: dati aperti CC BY
+   4.0, permessi anche a un'app commerciale. Lo chiede il server, con:
+   - un User-Agent che identifica MuW;
+   - le coordinate della stazione, a 4 decimali, mai quelle dell'utente;
+   - una cache fino a `Expires`.
+
+   L'app mostra l'attribuzione. Un contatto o una chiave stanno solo in
+   `.env` e `.env.example`.
+3. **Com'è la neve**: la proposta è la stima di MET Norway (precipitazione
+   sotto lo zero) più il tipo di neve segnato dai membri nelle ultime 24
+   ore. Un bollettino a pagamento solo se l'utente lo sceglie.
+4. **«Copia Slopes»**: si prendono le funzioni, non il nome, la grafica o i
+   testi di quell'app.
+5. Cinque parti: A stazioni sul server, B meteo, C ricerca «Ski», D
+   «Record your day», E prova sulla neve. Ogni parte ha la sua lista dei
+   file approvata dal Coordinatore.
+
+**Alternative**:
+
+- **Open-Meteo**: scartato, perché il piano gratis è solo per uso non
+  commerciale.
+- **Il meteo chiesto dal telefono**: scartato, perché manderebbe a un
+  terzo la posizione dell'utente e non avrebbe una cache condivisa.
+- **Le stazioni da un servizio esterno**: scartato. Costerebbe, e OSM le ha
+  già, nello stesso estratto di impianti e piste.
+
+## ADR-0333, precisazione B — I capi nell'app: testi a parte, un ponte per il compositore, i capi accanto alle foto
+
+**Stato**: Accettato · **Data**: 2026-11-06 · **Task**: TASK-394 parte B
+
+Deciso dall'agente su delega dell'utente, salvo il punto 6, che è una scelta
+dell'utente.
+
+1. **I testi dei capi stanno in `social/outfit/outfitWords.ts`**, nelle
+   cinque lingue, come quelli di Style (`feed/styleWords.ts`), e non nelle
+   tabelle di `t`. Due motivi:
+   - le tabelle vanno per testo inglese, e «Top», «Cap», «Watch», «Other»
+     lì sono già altre parole;
+   - i file `i18n/` erano contesi da TASK-378 B e TASK-400 B.
+
+   «Shop on {store}» è quello di Style. «Done», «Save» e «Report» sono
+   testi che ci sono già.
+2. **Un ponte per il compositore** (`OutfitTagging`, un context): lo danno
+   la fine della corsa e la scheda di «My activities», e `DrawingForm`
+   (`PublicParts.tsx`, conteso) resta com'è. Senza ponte non c'è «Tag what
+   you wear». Così non c'è a fine allenamento in palestra (`GymPostForm`):
+   un limite scritto nel task, il seguito lo decide l'utente.
+3. **I capi sul telefono, accanto alle foto** (`drawing-outfits.json`,
+   per posto della foto).
+   - Vanno al server subito dopo le foto, dentro `syncPhotos`, così la coda
+     dei disegni e la scheda non cambiano.
+   - Una foto rimessa nel suo posto (un layout scelto) rimanda i capi: un
+     JPEG diverso li perde sul server.
+   - Una foto tolta li toglie.
+   - Un rifiuto `outfit_tag_rejected` resta sul telefono col suo motivo, e
+     si vede sotto «Tag what you wear». Non si rimanda finché i capi non
+     cambiano.
+   - Gli altri rifiuti definitivi (404, 409, `invalid_request`) lasciano
+     andare la lista: il server tiene la sua. Senza rete, o col server
+     occupato, i capi aspettano come le foto.
+   - Dopo un sì del server, il telefono tiene i capi con gli `id` del server:
+     rimandati, tengono i loro conteggi.
+4. **I controlli nel modulo** sono solo un aiuto: `https`, niente utente,
+   porta o indirizzo IP, gli accorciatori più comuni, un indirizzo scritto
+   nella marca o nel modello, 5 per foto e 10 per post. L'ultima parola
+   resta all'API (Web Risk, l'elenco dei bloccati, il filtro delle parole).
+5. **La scheda è un componente nuovo** (`OutfitTagSheet`), con lo stesso
+   aspetto di `StyleProductSheet`, che resta com'è.
+   - «Report» è il solito «…» (Report o Block), e solo per gli altri.
+   - L'autore si riconosce dai totali, che il server manda solo a lui. I
+     suoi tocchi non mandano `open` né `shop`, e il suo «Shop» apre il suo
+     link senza passare dal server.
+   - Un capo nascosto dopo una segnalazione, l'autore lo vede sbiadito.
+6. **Nel Feed i puntini li mostra la gruccia** (scelta dell'utente,
+   2026-11-06, «Gruccia nel Feed»): nel Feed un tocco sulla foto apre il
+   disegno (TASK-330), quindi lì apre i puntini la gruccia, sotto il
+   contatore delle pagine. Nel disegno aperto li mostra anche il tocco sulla
+   foto.
+7. **Nel Feed la foto è tagliata per riempire la pagina**: un capo che cade
+   nella parte tagliata non si mostra. Il modulo mostra la foto intera.
+8. **Nel modulo** un capo nuovo si conferma con «Add», uno già messo con
+   «Save». Chiudere il foglio tiene i capi; quello che si stava scrivendo e
+   non è stato aggiunto si perde.
+9. **Termini e Privacy hanno la data del 6 novembre 2026**, il giorno del
+   merge previsto. Se il merge slitta, si cambia la data nei cinque file e
+   nei tre test che la scrivono (`documents.test.ts`, `AboutPage.test.tsx`,
+   `site/tests/privacy.test.mjs`). In «Chi altro riceve dati» resta
+   «Google»; il nome della società si copia dal contratto quando l'utente
+   attiva Web Risk (sì anticipato del 2026-11-05).
+## TASK-407 — La 1.0.2 esce con il JS dell'ultimo OTA di produzione
+
+**Stato**: Accettato · 2026-11-06 · TASK-407. Deciso dal Coordinatore su
+delega dell'utente.
+
+La 1.0.2 esce solo per gli screenshot nuovi. La build parte da
+`release/1.0.2` = `76305c1a` (ultimo OTA di produzione) più il commit della
+versione, non da `main`: il JS dentro la build è quello che vede chi la
+installa prima del primo OTA, e `main` ha JS non ancora approvato per la
+produzione. `release/1.0.2` non si unisce a `main`. L'impronta resta
+`6f8bba4c`, perché `fingerprint.config.js` esclude la versione.
+## ADR-0338, aggiunta — Le stazioni da OpenSkiData, non dagli estratti
+
+**Stato**: Attiva · 2026-11-06 · TASK-406 parte A. Deciso dall'agente su
+delega dell'utente, con l'approvazione del Coordinatore. La scelta della
+domanda 1 è dell'utente: «Sì, gratis + membri».
+
+**Contesto**: il punto 1 voleva le aree OSM `landuse=winter_sports` dagli
+estratti di TASK-375. Ma quegli estratti erano già stati filtrati senza le
+stazioni, in tutti i continenti, e gli estratti interi erano stati
+cancellati. Riprenderle avrebbe voluto circa 60 GB di download, un paese
+alla volta.
+
+**Decisione**:
+
+1. **La fonte.** Le stazioni vengono da `ski_areas.geojson` di OpenSkiData
+   (openskidata.org): un file da 21 MB, ricavato da OpenStreetMap e
+   Skimap.org.
+   - Licenza ODbL, uso commerciale permesso.
+   - Attribuzione a OpenStreetMap contributors, OpenSkiMap.org, Skimap.org
+     e Who's On First. Il testo nell'app si chiede all'utente con la
+     domanda 5.
+   - Al massimo un download automatico al giorno; il server lo fa a mano,
+     una volta a stagione.
+2. **Cosa si tiene.** Le aree aperte, con piste da discesa e un nome: 4.768
+   il 2026-11-06.
+   - Ognuna in `ski_resorts` (0054) con il centro di OpenSkiMap, il
+     riquadro, gli impianti, i km di piste per difficoltà, le quote e il
+     sito.
+   - Un nome troppo lungo tiene le forme separate da virgole che stanno in
+     120 caratteri.
+   - Il formato non è promesso stabile. Un campo che serve, se manca o è
+     di un altro tipo, ferma l'import con il nome del campo prima di
+     scrivere qualsiasi cosa. La scrittura è una transazione: tutto o
+     niente.
+3. **Le rotte.** `GET /ski-resorts` (per nome o per posizione, al più 50) e
+   `GET /ski-resorts/{id}`.
+   - Senza token, perché le stazioni non contengono dati degli utenti; con
+     la chiave dell'API come ogni percorso.
+   - La posizione resta fuori dal registro degli accessi.
+4. **Cosa non cambia.** I riquadri dello sci di TASK-375 restano come sono
+   e servono ancora per gli impianti presi. Il motore, `schemas.py` e le
+   impronte non cambiano.
+5. **La licenza.** `ski_resorts` è un database derivato da dati ODbL, con
+   gli stessi obblighi dei dati OSM che il motore usa già.
+   - Mostrare all'app una stazione alla volta, o una ricerca, è un
+     «produced work»: basta l'attribuzione.
+   - Se un giorno la tabella si desse in blocco (un'esportazione, un'API di
+     tutte le stazioni), andrebbe offerta sotto ODbL.
+
+**Alternative**:
+
+- **Riprendere le aree OSM da tutti gli estratti**, un paese alla volta:
+  scartata, perché vuole circa 60 GB di download per un file che esiste
+  già raggruppato.
+- **Ricostruire le stazioni raggruppando impianti e piste dei riquadri**:
+  scartata, perché in OSM impianti e piste non portano il nome della
+  stazione.
+
+## ADR-0338, aggiunta — Il meteo: due quote, una stima della neve, la cache
+
+**Stato**: Attiva · 2026-11-06 · TASK-406 parte B. Deciso dall'agente su
+delega dell'utente, con la lista dei file approvata dal Coordinatore e tre
+sue richieste: la quota a MET Norway nella chiave della cache, un timeout
+breve, un campo che dica che la neve è una stima.
+
+**Contesto**: la domanda 1 («Sì, gratis + membri») vuole il meteo e la neve
+fresca prevista da MET Norway. In una stazione la valle e la cima hanno
+anche 1.500 m di differenza, e la neve o la pioggia dipendono dalla quota.
+
+**Decisione**:
+
+1. **Due quote.** `GET /ski-resorts/{id}/weather` chiede a MET Norway il
+   centro della stazione due volte: a `min_elevation_m` (`base`) e a
+   `max_elevation_m` (`top`), col parametro `altitude`. Con una quota sola
+   se ne chiede una; senza quote, una senza `altitude`.
+2. **La neve fresca è una stima.** La precipitazione delle prossime 24 ore,
+   contata solo nelle ore a 0,5 °C o meno, 1 mm d'acqua per 1 cm di neve.
+   La risposta lo dice con `snow_estimate: true`. Il testo per l'utente è
+   della parte C, da approvare.
+3. **Le ore** sono solo quelle che MET Norway dà una per una, cioè i primi
+   due giorni circa. I passi da sei ore si lasciano fuori.
+4. **La cache** sta in memoria, nel processo dell'API. La chiave è il centro
+   con 4 decimali più la quota. Una risposta vale fino al suo `Expires`,
+   tenuto fra 1 minuto e 6 ore, oppure 30 minuti se manca. Poi si richiede
+   con `If-Modified-Since`. Al più 4.000 voci: le più vecchie escono per
+   prime.
+5. **Il timeout** è di 4 secondi. Se MET Norway non risponde, si dà
+   l'ultima previsione tenuta con `stale: true`. Se non ce n'è nessuna, la
+   risposta è `503`.
+6. **Il contatto.** `SHAPEROUTE_MET_CONTACT` è facoltativo: se c'è, si
+   aggiunge al User-Agent `MuW/1.0 (https://getmuw.app)`. Sta solo nel
+   `.env` del server; `.env.example` lo ha vuoto. Nessuna dipendenza nuova
+   (urllib) e nessuna migrazione.
+
+**Alternative**:
+
+- **Una quota sola**, a metà: scartata, perché a metà la pioggia in valle e
+  la neve in cima si confondono.
+- **La cima calcolata dalla valle** con il gradiente standard (6,5 °C ogni
+  km): scartata, perché MET Norway corregge già la temperatura per la quota
+  chiesta, e lo fa meglio di una costante.
+- **La cache nel database** o su disco: scartata per ora. Dopo un riavvio
+  si richiede una volta per stazione, e MET Norway regge bene questo
+  carico.
+## ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi
+
+**Stato**: Accettato · 2026-11-06 · TASK-380. Le scelte dell'utente, il
+2026-11-06, sono in `tasks/TASK-380.md`:
+
+- «Roller» 🛼 (in tedesco «Inline», in spagnolo «Patines»);
+- la rete `roller`: città e pianura, non la montagna;
+- 5–30 km;
+- **nel gioco**, come chi va a piedi, con record personali propri su 5,
+  10, 21,1 e 42,2 km (la proposta era fuori dal gioco, come la bici);
+- i testi approvati, con l'avviso su traffico e discese;
+- acceso appena pronto.
+
+Numeri dal Coordinatore (2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
+`tasks/TASK-380.md`. I punti tecnici qui sotto sono decisi dall'agente su
+delega dell'utente.
+
+**Contesto**: il Roller è il terzo sport della fase 1 (TASK-376, scelta
+dell'utente del 2026-11-04: asfalto liscio e `inline_skates=yes`, e prima
+si misura quanta rete resta). Nessuna rete di oggi va bene:
+
+- la rete foot prende sentieri, sterrati, ciottoli e porfido;
+- la rete bike pedala ogni `track` e le strade principali, rispetta i
+  sensi unici e fa i marciapiedi «a piedi con la bici».
+
+Il banco ha provato quattro reti dai download della bici, senza toccare il
+motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
+54, 23 buoni):
+
+- **`roller`**:
+  - cosa prende: ciclabili, marciapiedi, aree pedonali, strade residenziali,
+    `service`, `unclassified` e terziarie, con superficie liscia o non
+    scritta; `path` e `track` solo se dicono una superficie liscia;
+  - cosa lascia fuori: `smoothness` da `bad` in giù, strade principali e
+    secondarie;
+  - i risultati: 34 su 54, 10 buoni. Milano 8 su 9, Trento 9 su 9,
+    pianura 8 su 9; Fiemme e Asiago 2 su 9. Mai su ciottoli, sterrato o
+    strade principali; il 61% dei km su strade con le auto.
+- **`rollersec`** (con le secondarie): 42 su 54, ma il 12,4% dei km su
+  strade secondarie.
+- **`rollerquiet`** (senza terziarie né autobloccanti): 21 su 54.
+- **`rollerflat`** (senza i tratti oltre l'8%): 26 su 54; a Trento la
+  salita scende da 210 a 95 m ogni 10 km.
+- **Il tag `inline_skates`** c'è solo per 4,5 km a Trento, e in nessun'altra
+  zona.
+
+**Decisione**:
+
+1. **Una rete nuova `roller`** (`route_engine/networks/roller.py`) con le
+   regole di `roller` qui sopra, scaricata con un suo filtro Overpass
+   (strade fino alle terziarie, ciclabili, marciapiedi, aree pedonali,
+   `path` e `track`), con file di cache suoi (`roller_*`). Il grafo dice
+   `network: roller`.
+2. **Ogni via va nei due sensi** (`by_bike` falso): chi pattina, per il
+   Codice della strada (art. 190), è un pedone. Niente tratti «a piedi»: si
+   pattina o non si passa.
+3. **Il tag `inline_skates`** non fa la rete: `inline_skates=no` toglie una
+   via, `yes` o `designated` la tiene anche se la superficie non lo dice.
+4. **Un'attività nuova** `inline_skating` in `activities/`, nei file nuovi
+   di ogni strato, con una riga per registro
+   (`docs/sports/COME-AGGIUNGERE.md`). Il nome non è `skating`, che alcuni
+   test usano come attività sconosciuta (`CONDIVISO.md`).
+5. **L'impronta del motore**: una rete nuova è un file nuovo nel motore.
+   Se i nove percorsi fissi di `test_same_routes.py` restano identici, una
+   riga in `SAME_ROUTES_AS`, come Hike e MTB; altrimenti una notte di
+   esempi, col sì dell'utente. Server e migrazione (numero dal
+   Coordinatore) col sì dell'utente.
+6. **Niente quote nel motore per ora**: il filtro delle salite vorrebbe le
+   tegole Terrarium dentro il motore, sul server e sul telefono. Si riprende
+   quando la parte G di TASK-347 porta il dislivello (ADR-0300).
+7. **Sul telefono**: un `SportProfile` con:
+   - Apple `.skatingSports` (39) e Health Connect `EXERCISE_TYPE_SKATING`
+     (60), da verificare sulle librerie;
+   - Strava `InlineSkate`;
+   - l'energia dal Compendium («inline skating»);
+   - un passo di circa 15 km/h per il tempo stimato.
+
+   Solo JavaScript: l'impronta iOS non si muove.
+
+8. **Nel gioco** (scelta dell'utente 4): `game_rules.py` conta il Roller
+   con la corsa, la camminata e Hike, con gli stessi controlli. Come la
+   camminata, niente tempi migliori del gioco; i record personali sono a
+   parte. Il controllo «veicolo» (oltre 25 km/h su 200 m per più del 10%
+   della corsa) può scartare un pattinatore veloce: la parte A lo misura,
+   e una soglia per sport andrebbe chiesta all'utente.
+
+**Alternative**:
+
+- **`rollersec`, con le secondarie**: otto forme in più, quasi tutte in
+  montagna, ma un ottavo del percorso su strade veloci, dove coi pattini non
+  si va. Non la propongo.
+- **`rollerquiet`**: più sicura sulla carta, ma regge solo a Milano.
+- **`rollerflat`**: toglie le discese ripide, ma costa forme a Trento e
+  vuole le quote nel motore. Dopo TASK-347 G.
+- **La rete foot o bike così come sono**: porterebbero chi pattina su
+  porfido, sterrato o strade principali.
+- **Una rete fatta col tag `inline_skates`**: 4,5 km in sei zone.
+
+## ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono
+
+**Stato**: Proposto · 2026-11-06 · TASK-408. Le scelte di prodotto sono
+dell'utente (domande aperte in `tasks/TASK-408.md`); il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole un animale (un cavallo, un elefante…) che
+corre il percorso nel video, in 3D, e tante modifiche: il finale, i
+colori, le emoji, il 2D e il 3D, i cambi di scena, anche scritte con un
+prompt, senza un costo per ogni richiesta. Il video di TASK-351 si fa già
+in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
+
+**Decisione (proposta)**:
+
+1. **Il personaggio** è un modello glTF animato, disegnato da **three.js**
+   come «custom layer» di MapLibre nella pagina del video (`videoPage.ts`).
+   three.js si carica come MapLibre: versione fissata e hash SRI. Niente di
+   nativo, quindi l'impronta iOS non cambia e si pubblica con un OTA.
+   three.js è una dipendenza nuova: l'utente ha detto sì il 2026-11-06.
+2. **I modelli** hanno una licenza scritta e nessun personaggio di altri.
+   Il pacchetto CC0 di Quaternius «Ultimate Animated Animals» (glTF,
+   galoppo e passo): l'utente vuole tutti i suoi 12 animali più l'elefante
+   (2026-11-06, `tasks/TASK-408.md`, scelta 7).
+   L'elefante non c'è in nessun pacchetto CC0 trovato: l'utente lo vuole
+   nella prima versione (2026-11-06). Si usa solo con una licenza letta e
+   scritta nel task. L'utente ha scelto «Elephant Anim» di Shivoahm
+   (Sketchfab, CC BY 4.0, gratis): titolo, autore, fonte, licenza e «adapted
+   by MuW» in una riga dei crediti dell'app; il testo l'ha approvato
+   l'utente il 2026-11-06 (`tasks/TASK-408.md`, scelta 6).
+3. **Il percorso non si inventa**: il personaggio sta sul punto della
+   traccia dove arriva la linea in quel fotogramma, girato nella direzione
+   della strada. La camera lo segue; su un telefono lento resta ferma, e
+   senza modello il video esce come oggi.
+4. **L'editor** offre righe chiuse (personaggio, stile, colori dai token,
+   emoji, scene, finale). La scena resta un elenco di cose da disegnare
+   (`VideoScene`), con pezzi in più: apertura, corsa e finale in 12
+   secondi, da riordinare o spegnere (scelta 8 dell'utente, 2026-11-06).
+5. **Il prompt** si legge **sul telefono** con una tabella di parole, come
+   le forme (ADR-0036): niente rete, nessun servizio AI, nessun costo per
+   richiesta (scelta dell'utente). Le parole scelgono solo voci
+   dell'editor, mai coordinate o geometrie (ADR-0001). Testo del riquadro e
+   prima tabella approvati il 2026-11-06 (`tasks/TASK-408.md`, scelta 9).
+6. Cinque parti: A proposta, B personaggio 3D, C editor, D prompt, E prova
+   sul telefono. Ogni parte ha la sua lista dei file approvata dal
+   Coordinatore.
+
+**Alternative**:
+
+- **Un'AI esterna per il prompt**: scartata dall'utente, per il costo a
+  ogni richiesta.
+- **Animali 2D (emoji o disegni piatti) che scorrono sulla linea**: più
+  leggeri, ma l'utente vuole il 3D. Restano la riserva se three.js non
+  entra.
+- **Un renderer 3D nativo** (SceneKit, Filament): una build nuova e
+  un'impronta nuova per ogni ritocco. La pagina del video ha già WebGL.
+- **I modelli 3D nel layer di MapLibre senza three.js**: MapLibre GL JS non
+  carica glTF da solo.
+
+## ADR-0274, precisazione B — Lo schermo di corsa: la strada nel ciclo delle posizioni, nessun testo nuovo, il server a telefono bloccato
+
+**Stato**: Accettato · **Data**: 2026-11-06 · **Task**: TASK-314 parte B
+
+Deciso dall'agente su delega dell'utente, salvo il punto 6, che è una scelta
+dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
+
+1. **La strada si chiede nel ciclo delle posizioni** (`navigation/
+   wayBackRun.ts`, chiamato da `useNavigation.ts` come `lockNotice`), non
+   da una schermata. Così:
+   - la voce passa dallo stesso `cue()`, dopo le parole del navigatore;
+   - la stessa frase va nella notifica a schermo bloccato (TASK-401 A);
+   - niente dipende da una schermata montata.
+
+   La strada sta in `Navigation.wayBack`. Il navigatore la porta da una
+   posizione all'altra ma non la legge: il rientro resta il suo (ADR-0263).
+   Banner e mappa la leggono da lì, `App.tsx` non cambia.
+2. **Quando**:
+   - alla prima posizione fuori percorso;
+   - poi solo senza strada: nessuna, lasciata dopo `OFF_FIXES` posizioni
+     oltre `OFF_ROUTE_M`, o con il rientro fuori dalla finestra;
+   - al più ogni `WAY_BACK_EVERY_S` = 15 s, una richiesta alla volta, persa
+     dopo 25 s;
+   - mai con una posizione scarsa;
+   - al rientro la richiesta in corso si annulla, e una risposta tardiva
+     non si mostra.
+
+   15 s sono meno della metà delle 6 al minuto che `/way-back` concede a
+   un telefono.
+3. **Con l'app non in primo piano si chiede subito al server**: le zone
+   passate a `wayBackOnPhoneFirst` sono vuote. La pagina del motore,
+   probabilmente sospesa a telefono bloccato, farebbe aspettare 20 s
+   (`WAY_BACK_TIMEOUT_MS`).
+4. **Il tratto mandato** è la finestra di ADR-0263 (`rejoinWindow`,
+   esportata dal navigatore, la stessa di `rejoinFor`), tagliata a 3 km
+   come `MAX_WAY_M`. Su una forma chiusa non ancora agganciata, 3 km
+   intorno al punto dei puntini.
+5. **Nessun testo nuovo**:
+   - il banner tiene «Off the route» e sotto mostra la svolta della strada
+     come quella del percorso;
+   - la voce dice le svolte con `announcement`, a `ANNOUNCE_M`;
+   - «una frase al ricalcolo» è la prossima svolta con i metri, al più una
+     volta al minuto per uscita; se è più lontana di `ANNOUNCE_M`, si ridice
+     vicino;
+   - le svolte passano da `simplifyDirections` come quelle del percorso.
+6. **Privacy** (scelta dell'utente del 2026-11-06, «Sì, aggiungi la
+   frase»):
+   - fuori percorso, la posizione esatta e il tratto davanti vanno al
+     server quando il telefono non trova la strada da solo, e il server non
+     li tiene;
+   - una frase in «Your position», nelle cinque lingue, e le pagine di
+     `site/privacy` rifatte.
+7. **TASK-401 B** (#862, nella 1.0.3): quando unisce `main`, `liveStateOf`
+   fuori percorso legge `navigation.wayBack` (`upcomingOnWay`) invece di
+   `navigation.rejoin`. Altrimenti la Live Activity direbbe «120 m NE»
+   mentre voce, banner e notifica danno la svolta. Lo cambia 401 B nel suo
+   file; il Coordinatore glielo passa.
+
+**Alternative**:
+
+- **Un hook nello schermo** (`NavigateScreen` o `App.tsx`): voce fuori dal
+  ciclo della corsa, notifica non raggiunta, `App.tsx` conteso.
+- **Richiedere ogni 15 s anche con una strada**: più richieste, e svolte
+  che cambiano sotto i piedi.
+- **Una frase nuova al ricalcolo** («Recalculating»): l'utente non l'ha
+  chiesta, e la svolta con i metri dice già dove andare.
+- **Solo il motore del telefono**: niente frase nella Privacy, ma a
+  telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
+  server.

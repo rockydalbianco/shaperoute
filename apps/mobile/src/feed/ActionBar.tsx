@@ -20,6 +20,8 @@ import type { ShownPost } from "./feedPosts";
 export function postOfDrawing({ drawing }: Pick<ShownPost, "drawing">): PostRun {
   return {
     key: null,
+    // A swim in a pool reads its lengths by it (TASK-400 part C).
+    drawingId: drawing.id,
     title: drawing.title,
     track: drawing.track_preview,
     distanceM: drawing.distance_m,

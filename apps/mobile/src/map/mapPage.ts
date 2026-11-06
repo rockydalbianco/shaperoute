@@ -162,6 +162,11 @@ export const ERASER_OPACITY = 0.35;
 export const MARK_RADIUS = 6;
 export const FIRST_MARK_RADIUS = 9;
 
+/** The pieces of TASK-402 part B: the lines of the pieces not chosen, this
+ * faint; and the box round the piece chosen, a thin line. */
+export const FAINT_OPACITY = 0.35;
+export const BOX_WIDTH = 1.5;
+
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
 export const TRACK_WIDTH = track.width;
@@ -293,6 +298,8 @@ export function buildMapPage(language: Language = appLanguage()): string {
     // and the dots of a straight line being tapped (TASK-331 part B), and
     // the line a finger is drawing.
     var figure = noRoute;
+    var faint = noRoute;
+    var chosenBox = noRoute;
     var links = noRoute;
     var marks = noRoute;
     var ink = [];
@@ -492,6 +499,31 @@ export function buildMapPage(language: Language = appLanguage()): string {
         paint: {
           "line-color": ${toScript(ROUTE_COLOR)},
           "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      // The pieces not chosen, faint, and the box round the one chosen
+      // (TASK-402 part B).
+      map.addSource("canvas-faint", { type: "geojson", data: faint });
+      map.addLayer({
+        id: "canvas-faint",
+        type: "line",
+        source: "canvas-faint",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(ROUTE_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": ${FAINT_OPACITY},
+        },
+      });
+      map.addSource("canvas-box", { type: "geojson", data: chosenBox });
+      map.addLayer({
+        id: "canvas-box",
+        type: "line",
+        source: "canvas-box",
+        paint: {
+          "line-color": ${toScript(ROUTE_COLOR)},
+          "line-width": ${BOX_WIDTH},
           "line-opacity": ${ROUTE_OPACITY},
         },
       });
@@ -1022,23 +1054,39 @@ export function buildMapPage(language: Language = appLanguage()): string {
           }
         : noRoute;
     }
+    // Whether line \`i\` moves with the fingers: all of them, or those of
+    // the piece chosen (TASK-402 part B).
+    function moves(i) {
+      return !canvas || canvas.chosen.length === 0 || canvas.chosen.indexOf(i) >= 0;
+    }
     // The figure's lines; the first side of a line that is a link apart,
-    // dashed (TASK-331 part B).
+    // dashed (TASK-331 part B); the pieces not chosen faint.
     function drawFigure(lines) {
       var drawnLines = [];
+      var faintLines = [];
       var linkLines = [];
       lines.forEach(function (line, i) {
+        var to = moves(i) ? drawnLines : faintLines;
         if (canvas && canvas.links[i] && line.length > 2) {
           linkLines.push(line.slice(0, 2));
-          drawnLines.push(line.slice(1));
+          to.push(line.slice(1));
         } else {
-          drawnLines.push(line);
+          to.push(line);
         }
       });
       figure = multiLine(drawnLines);
+      faint = multiLine(faintLines);
       links = multiLine(linkLines);
       setSource("canvas", figure);
+      setSource("canvas-faint", faint);
       setSource("canvas-links", links);
+    }
+    // The box round the piece chosen.
+    function drawBox(ring) {
+      chosenBox = ring.length > 1
+        ? { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: ring } }
+        : noRoute;
+      setSource("canvas-box", chosenBox);
     }
     // The dots of a straight line being tapped: the first larger, to close
     // it on.
@@ -1205,10 +1253,17 @@ export function buildMapPage(language: Language = appLanguage()): string {
         line.forEach(visit);
       });
     }
-    // The figure's box on the screen, with room for a finger around it.
+    // The lines the fingers move: all, or those of the piece chosen.
+    function movingLines() {
+      return canvas.lines.filter(function (line, i) {
+        return moves(i);
+      });
+    }
+    // The figure's box on the screen, or the piece's chosen, with room for
+    // a finger around it.
     function screenBox() {
       var box = null;
-      eachPoint(canvas.lines, function (lngLat) {
+      eachPoint(movingLines(), function (lngLat) {
         var p = map.project(lngLat);
         box = box
           ? {
@@ -1233,10 +1288,11 @@ export function buildMapPage(language: Language = appLanguage()): string {
         point.y <= box.bottom + ${GRAB_PX}
       );
     }
-    // The middle of the figure's box on the map: it grows from there.
+    // The middle of the figure's box on the map, or the piece's chosen: it
+    // grows from there.
     function figureMiddle() {
       var box = null;
-      eachPoint(canvas.lines, function (p) {
+      eachPoint(movingLines(), function (p) {
         box = box
           ? [Math.min(box[0], p[0]), Math.min(box[1], p[1]), Math.max(box[2], p[0]), Math.max(box[3], p[1])]
           : [p[0], p[1], p[0], p[1]];
@@ -1269,10 +1325,16 @@ export function buildMapPage(language: Language = appLanguage()): string {
       ]);
       return [lngLat.lng, lngLat.lat];
     }
+    // The lines that move changed, the others as they are.
     function mapLines(lines, change) {
-      return lines.map(function (line) {
-        return line.map(change);
+      return lines.map(function (line, i) {
+        return moves(i) ? line.map(change) : line;
       });
+    }
+    // The figure, or the piece chosen and its box, changed on the screen.
+    function drawChanged(change) {
+      drawFigure(mapLines(canvas.lines, change));
+      drawBox(canvas.box.map(change));
     }
     function tellCentre() {
       var centre = map.getCenter();
@@ -1280,12 +1342,16 @@ export function buildMapPage(language: Language = appLanguage()): string {
     }
     // A move or a size kept: the page draws the figure there until the app
     // sends it back, and the room to grow is what is left of it.
-    function keepFigure(lines, centre, factor, turn) {
+    function keepFigure(change, factor, turn) {
+      var lines = mapLines(canvas.lines, change);
+      var centre = canvas.centre && change(canvas.centre);
       canvas.lines = lines;
       canvas.centre = centre;
+      canvas.box = canvas.box.map(change);
       canvas.shrink /= factor;
       canvas.grow /= factor;
       drawFigure(lines);
+      drawBox(canvas.box);
       if (centre) {
         post(
           turn
@@ -1327,7 +1393,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
           // Held still on a line first, the drag bends it.
           gesture = { kind: "drag", from: at, by: null, since: time, grab: grabAt(at) };
         } else {
-          gesture = { kind: "pan", last: at };
+          gesture = { kind: "pan", from: at, last: at };
         }
         return;
       }
@@ -1399,32 +1465,40 @@ export function buildMapPage(language: Language = appLanguage()): string {
         }
       } else if (was.kind === "drag") {
         if (was.by) {
-          keepFigure(
-            mapLines(canvas.lines, function (p) {
-              return shiftedPoint(p, was.by);
-            }),
-            canvas.centre && shiftedPoint(canvas.centre, was.by),
-            1,
-          );
+          keepFigure(function (p) {
+            return shiftedPoint(p, was.by);
+          }, 1);
+        } else if (lifted) {
+          tellTap(was.from);
         }
       } else if (was.kind === "size") {
         if (was.factor !== 1 || was.turn !== 0) {
           keepFigure(
-            mapLines(canvas.lines, function (p) {
+            function (p) {
               return heldPoint(p, was.anchor, was.factor, was.turn);
-            }),
-            canvas.centre && heldPoint(canvas.centre, was.anchor, was.factor, was.turn),
+            },
             was.factor,
             was.turn,
           );
         }
       } else if (was.kind === "pan" || was.kind === "zoom") {
+        if (lifted && was.kind === "pan" && screenDist(was.from, was.last) < ${MOVE_MIN_PX}) {
+          tellTap(was.from);
+        }
         tellCentre();
+      }
+    }
+    // A tap with «Move» among pieces: the app chooses the one there, or
+    // none (TASK-402 part B).
+    function tellTap(at) {
+      if (canvas.choosing && canvas.mode === "move") {
+        post({ type: "tapped", lngLat: lngLatAt(at), metresPerPx: metresPerPx() });
       }
     }
     function dropGesture() {
       if (gesture && (gesture.kind === "drag" || gesture.kind === "size" || gesture.kind === "bend")) {
         drawFigure(canvas.lines);
+        drawBox(canvas.box);
         drawMarks(canvas.marks);
       }
       if (gesture && (gesture.kind === "ink" || gesture.kind === "tap")) {
@@ -1467,9 +1541,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
         var b = map.unproject([now.x, now.y]);
         var by = [b.lng - a.lng, b.lat - a.lat];
         gesture.by = by;
-        drawFigure(mapLines(canvas.lines, function (p) {
+        drawChanged(function (p) {
           return shiftedPoint(p, by);
-        }));
+        });
       } else if (gesture.kind === "pan" && touches.length === 1) {
         var to = pointOf(touches[0]);
         map.panBy([gesture.last.x - to.x, gesture.last.y - to.y], { animate: false });
@@ -1484,9 +1558,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
           var turn = turnOf(gesture.angle, angleOf(first, second));
           gesture.factor = factor;
           gesture.turn = turn;
-          drawFigure(mapLines(canvas.lines, function (p) {
+          drawChanged(function (p) {
             return heldPoint(p, anchor, factor, turn);
-          }));
+          });
           // The distance on screen follows, a step at a time.
           if (canvas.centre && Math.abs(factor / gesture.told - 1) >= 0.01) {
             gesture.told = factor;
@@ -1593,12 +1667,16 @@ export function buildMapPage(language: Language = appLanguage()): string {
         centre: message.centre,
         shrink: message.shrink,
         grow: message.grow,
+        choosing: message.choosing === true,
+        chosen: message.chosen || [],
+        box: message.box || [],
       };
       // The app has answered the line drawn: the figure takes its place.
       ink = [];
       inkLooks(message.mode);
       drawInk();
       drawFigure(message.lines);
+      drawBox(canvas.box);
       drawMarks(message.marks);
       if (message.frame) {
         frameCanvas();
@@ -1614,6 +1692,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       inkLooks("draw");
       drawInk();
       drawFigure([]);
+      drawBox([]);
       drawMarks([]);
       GESTURES.forEach(function (name) {
         var handler = map[name];

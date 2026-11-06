@@ -14,6 +14,7 @@ import {
   RUNNING,
   TRACKLESS_SPORTS,
 } from "./sports/index.ts";
+import type { GymLevel } from "./gym.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -1006,6 +1007,12 @@ export interface PublicProfile {
    * best to estimate it from. Missing from an API older than TASK-397.
    */
   vo2max?: Vo2Max | null;
+  /**
+   * The levels at the gym (TASK-385 E, ADR-0327): of every workout, private
+   * ones too; the highest level first, then as the catalog. Missing from an
+   * API older than TASK-385 E.
+   */
+  gym_levels?: GymLevel[];
 }
 
 /** Where a VO₂ max comes from (TASK-397). */
@@ -1075,7 +1082,8 @@ export const CYCLING_BEST_DISTANCES = [
  * ones too (TASK-368): moving seconds, the pauses left out.
  */
 export interface PersonalBest {
-  sport: "running" | "cycling";
+  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322). */
+  sport: "running" | "cycling" | "gravel_biking" | "mountain_biking";
   distance:
     (typeof RUNNING_BEST_DISTANCES)[number] | (typeof CYCLING_BEST_DISTANCES)[number];
   distance_m: number;
@@ -2581,6 +2589,7 @@ export interface StyleShop {
 }
 
 export * from "./gym.ts";
+export * from "./poolSwim.ts";
 
 /**
  * The items a member tags on the photos of its own posts (TASK-394,

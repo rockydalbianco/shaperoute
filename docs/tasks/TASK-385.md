@@ -115,6 +115,14 @@ Apple Salute / Health Connect come allenamento di forza.
     fine». Il modulo del post (foto, titolo, chi lo vede, «Show exercises»)
     sta sopra «Save», come a fine corsa; resta modificabile da «My
     activities».
+15. **Quali allenamenti contano per le figure** (parte E, 2026-11-06):
+    «Tutti». Anche i privati, come i record personali (TASK-368); sul
+    profilo solo figura, esercizio e valore, mai l'allenamento.
+16. **Cosa mostra il profilo** (parte E, 2026-11-06): «I primi 5 +
+    altro». Ogni esercizio dal livello 1, dal più alto; i primi cinque, gli
+    altri sotto «Show more» (testo già nell'app).
+17. **Kcal con gli esercizi nascosti** (parte C, 2026-11-06): «Niente
+    kcal». Chi non vede le serie non vede le kcal; l'autore sì.
 
 ## Domande aperte
 
@@ -245,8 +253,18 @@ Questa PR (documenti): `docs/tasks/TASK-385.md` (nuovo),
   - `RunEnd.tsx` esce: vuole una traccia, la palestra ha `GymEnd.tsx`. In B
     «Save» salva l'allenamento e lo mette in «My activities»; il post nel
     Feed è la parte D, le kcal e Salute la parte C.
-- **C**: `apps/mobile/src/gym/gymKcal.ts` (nuovo); punti di registrazione in
-  `health/*Workout.ts`.
+- **C** (lista approvata dal Coordinatore il 2026-11-06; branch
+  `feat/TASK-385-c-gym-kcal`; niente server):
+  - file nuovi in `apps/mobile/src/gym/`: `gymKcal.ts`, `gymHealth.ts` e i
+    test `gymKcal.test.ts`, `gymHealth.test.ts`, `GymKcalShown.test.tsx`;
+  - righe in file esistenti: `gym/WorkoutScreen.tsx`, `GymEnd.tsx`,
+    `GymTile.tsx` (+ `GymTile.test.tsx`), `GymSharePicture.tsx`;
+    `feed/postEnergy.ts` (`gymPostEnergy`), `feed/FeedPost.tsx` (le serie
+    a `postFacts` e le kcal al riquadro; dopo la #898);
+    `health/appleWorkout.ts` (`HKIndoorWorkout` per la palestra);
+    `health/healthConnectWorkout.ts` non cambia;
+  - documenti: questo file, `docs/DECISIONS.md` (precisazione),
+    `docs/STATUS.md` (righe proprie), `docs/sports/gym.md`.
 - **D** (lista approvata dal Coordinatore il 2026-11-05; branch
   `feat/TASK-385-d-gym-post`):
   - file nuovi in `apps/mobile/src/gym/`: `mainExercises.ts`,
@@ -264,7 +282,30 @@ Questa PR (documenti): `docs/tasks/TASK-385.md` (nuovo),
     «Show exercises», approvato);
   - documenti: questo file, `docs/DECISIONS.md` (precisazione),
     `docs/STATUS.md` (righe proprie), `docs/sports/gym.md`.
-- **E–H**: si elencano prima di ciascuna.
+- **E** (lista approvata dal Coordinatore il 2026-11-06; branch
+  `feat/TASK-385-e-gym-levels`; niente migrazione):
+  - file nuovi: `services/api/shaperoute_api/gym_levels.py`,
+    `services/api/tests/test_gym_levels.py`;
+    `packages/shared-types/fixtures/gym-levels.json` (l'esempio dei
+    livelli, aggiunto scrivendo il codice: un file nuovo); in
+    `apps/mobile/src/gym/` `figures.ts`, `levelValue.ts`, `GymLevels.tsx`,
+    `NewLevels.tsx` e i test `GymLevels.test.tsx`,
+    `GymNewLevelsPost.test.tsx`;
+  - righe in file esistenti: `profiles.py` (`gym_levels`),
+    `gym_sessions.py` (`new_levels`), `tests/test_profiles.py` e
+    `tests/test_gym.py` (una riga ciascuno); `shared-types` `src/gym.ts`
+    (`GymLevel`), `src/index.ts` (`gym_levels?` su `PublicProfile`),
+    `fixtures/public-profile.json` (`gym_levels: []`),
+    `test/gym.test.ts`, `test/accounts.test.ts` (la chiave nuova del
+    profilo); nell'app `api/gym.ts` (+ `gym.test.ts`),
+    `profile/ProfileHome.tsx`, `UserProfilePage.tsx`, `gym/GymDetail.tsx`,
+    `feed/FeedPost.tsx` (una riga), `i18n/it.ts`, `de.ts`, `fr.ts`,
+    `es.ts` (le sette figure e «New level…», approvati);
+  - `api/profiles.ts` non cambia: `isPublicProfile` non guarda i campi
+    nuovi, e l'app legge i livelli con `gymLevelsOf`;
+  - documenti: questo file, `docs/API.md`, `docs/DECISIONS.md`
+    (precisazione), `docs/STATUS.md` (righe proprie), `docs/sports/gym.md`.
+- **F–H**: si elencano prima di ciascuna.
 
 ## Testi dell'interfaccia (approvati il 2026-11-04)
 
@@ -335,3 +376,20 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
   il modulo del post a fine allenamento, la condivisione col riquadro.
   Scelte dell'utente: «10 foto», «Sì, anche alla fine». Impronta iOS
   6f8bba4c invariata su copia pulita. OTA col sì. Prossima: C, poi E.
+- 2026-11-05: parte D in `main` (#845, 4d52e439).
+- 2026-11-06: parte E scritta (ADR-0327, precisazione E): i livelli per
+  esercizio sul profilo e «New level» nel post, contati dal server da tutti
+  gli allenamenti. Scelte dell'utente: «Tutti», «I primi 5 + altro». Niente
+  migrazione; server col sì. Prossima: C, poi F.
+- 2026-11-06: parte E in `main` (#888, 9cd295b1); impronta iOS 6f8bba4c
+  misurata dal Coordinatore su copia pulita. Il server (`gym_levels`, senza
+  migrazione) va col sì dell'utente, col comando del Coordinatore; poi
+  l'OTA col sì. Prossima: C (kcal e Salute), poi F (classifica).
+- 2026-11-06: parte C scritta (ADR-0327, precisazione C): le kcal sul
+  telefono, il cardio con la formula della macchina e il resto al MET dei
+  pesi, durante, alla fine, nel post e nel riquadro condiviso; con «Save»
+  l'allenamento di forza in Salute. Scelta dell'utente: «Niente kcal» con
+  gli esercizi nascosti. Solo JavaScript; OTA col sì. Prossima: F.
+- 2026-11-06: parte C in `main` (#904, 756d6f83); impronta iOS 6f8bba4c
+  misurata dal Coordinatore. Niente server; OTA col sì dell'utente.
+  Prossima: F (classifica mensile), lista prima del codice.

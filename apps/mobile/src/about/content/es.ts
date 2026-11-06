@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "5 de noviembre de 2026";
+const UPDATED = "6 de noviembre de 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "5 de noviembre de 2026";
+const PRIVACY_UPDATED = "6 de noviembre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -73,6 +73,7 @@ const help: AboutDocument = {
       blocks: [
         "Una carrera guardada es privada: solo la ves tú. Los demás miembros ven en tu perfil los totales de todas tus carreras guardadas, distancia y desnivel, y tus mejores marcas (los 5K, los 10K y tus otras distancias más rápidas, a pie y en bici) con el tiempo y la fecha. Una carrera privada sigue cerrada aunque tenga una mejor marca. Elige «Todos» o «Seguidores» en «Quién puede verla», al final de la carrera o en una carrera de «Mis actividades», y la ven como un dibujo en tu perfil, entera. La próxima carrera que termines empieza con tu última elección guardada: la ves antes de «Guardar» y puedes cambiarla. Una actividad añadida desde un archivo siempre empieza en «Solo yo».",
         "Una carrera que publiques puede tener hasta 9 fotos y el dibujo. Mantén pulsada una y arrástrala para cambiar el orden: la primera es la que se ve en el Feed. Elige un diseño para poner el dibujo sobre una foto.",
+        "En una foto que publiques puedes etiquetar lo que llevas: qué es, la marca y, si quieres, el modelo y un enlace a la tienda. Los demás tocan la foto para ver las prendas y abrir la tienda. Debajo de tu publicación solo tú ves cuántas veces se han abierto.",
         "«Compartir» crea una imagen de tu carrera para enviarla donde quieras.",
       ],
     },
@@ -181,6 +182,7 @@ const terms: AboutDocument = {
           bullets: [
             "publiques contenido ofensivo, de odio, amenazante o acosador, ni en tu nombre de usuario, biografía, foto, títulos o comentarios;",
             "publiques contenido que no te corresponde publicar, ni datos personales de otras personas sin su permiso;",
+            "uses las prendas que etiquetas para spam, para enlaces a algo distinto de lo que llevas, para enlaces de afiliado tuyos o para publicidad que no declaras;",
             "intentes romper, sobrecargar o eludir el servicio, ni recopiles datos de sus miembros por medios automáticos.",
           ],
         },
@@ -189,7 +191,7 @@ const terms: AboutDocument = {
     {
       heading: "Lo que publicas",
       blocks: [
-        "Tus carreras, tus dibujos, sus títulos, tu perfil y tus comentarios siguen siendo tuyos.",
+        "Tus carreras, tus dibujos, sus títulos, tu perfil y tus comentarios siguen siendo tuyos. Las prendas que etiquetas en tus fotos, con sus enlaces, forman parte de lo que publicas.",
         "Al publicarlos nos permites guardarlos y mostrarlos en la app a los demás miembros, solo para hacer funcionar el servicio: un permiso gratuito y no exclusivo que termina cuando eliminas el contenido o tu cuenta.",
         "La app no acepta comentarios con palabras ofensivas: un filtro automático de palabras los rechaza. Podemos retirar contenido que vaya contra estas condiciones. Para avisarnos de un contenido que no debería estar, escribe a [contact email].",
       ],
@@ -220,6 +222,7 @@ const terms: AboutDocument = {
       heading: "Publicidad",
       blocks: [
         "MuW muestra publicaciones propias, marcadas «Publicidad · Enlaces de afiliado», con enlaces a tiendas (MuW Style). Si compras desde uno de estos enlaces, la tienda paga a MuW una comisión; para ti el precio no cambia. La venta es entre tú y la tienda: MuW no vende estos productos y no responde de su precio, disponibilidad, entrega o devoluciones. Las fotos de estas publicaciones están hechas con IA y lo indican: las personas que aparecen no existen, y las prendas son parecidas a los productos, no son los productos. Puedes quitar estas publicaciones del Feed en «Ajustes». MuW no muestra otra publicidad.",
+        "Los enlaces que los miembros ponen en las prendas de sus publicaciones son suyos: MuW no gana nada con ellos y no responde de los productos ni de las tiendas. Si una marca te paga o te regala lo que etiquetas, dilo en la descripción de la publicación.",
       ],
     },
     {
@@ -231,6 +234,7 @@ const terms: AboutDocument = {
             "Los lugares se buscan con Geoapify.",
             "Si conectas Strava, las carreras que envíes allí siguen las condiciones y los ajustes de privacidad de Strava.",
             "Una imagen que compartes sale por el menú de compartir del teléfono: la app que la recibe tiene sus propias condiciones.",
+            "El enlace de una prenda etiquetada abre la web de la tienda en tu navegador: la tienda tiene sus propias condiciones.",
           ],
         },
       ],
@@ -342,6 +346,7 @@ const privacy: AboutDocument = {
         "Quien puede ver una de tus carreras también puede seguirla con «Empezar» y guardar ese mismo recorrido como archivo GPX, sin tiempos.",
         "Una foto que publiques puede llevar dentro de la imagen el dibujo de tu carrera. Es el mismo dibujo que muestra el Feed.",
         "En una jornada de esquí, nuestro servidor compara la traza guardada con los remontes y pistas de OpenStreetMap, que guarda él mismo, para anotar cuáles tomaste y cuántas veces. Los nombres aparecen en la publicación, para quien pueda verla. Nada va a otro servicio.",
+        "En las fotos que publiques puedes etiquetar las prendas que llevas: qué es cada una, su marca y, si quieres, su modelo y un enlace a una tienda. Las ve quien ve la foto. Si la carrera vuelve a «Solo yo», salen de nuestro servidor con sus fotos y se quedan en este teléfono.",
       ],
     },
     {
@@ -369,7 +374,7 @@ const privacy: AboutDocument = {
     {
       heading: "Denuncias",
       blocks: [
-        "Cuando denuncias un dibujo, un comentario o un perfil, guardamos quién denunció qué, el motivo y cuándo. Quien gestiona MuW la recibe por correo y puede ocultar lo denunciado a los demás miembros. No se borra nada, y su autor lo sigue viendo. Tu denuncia nunca se muestra al autor.",
+        "Cuando denuncias un dibujo, una prenda etiquetada, un comentario o un perfil, guardamos quién denunció qué, el motivo y cuándo. Quien gestiona MuW la recibe por correo y puede ocultar lo denunciado a los demás miembros. No se borra nada, y su autor lo sigue viendo. Tu denuncia nunca se muestra al autor.",
       ],
     },
     {
@@ -405,7 +410,7 @@ const privacy: AboutDocument = {
     {
       heading: "Tu posición",
       blocks: [
-        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor exacta como inicio de una ruta que pides, como inicio de las formas que la app te prepara cerca cuando el teléfono no puede dibujarlas por sí mismo, y dentro de una carrera que guardas. Va redondeada a cerca de 1 km para encontrar el mapa sin conexión a tu alrededor, las rutas recomendadas, los pueblos y los dibujos cercanos, y para poner primero los lugares cercanos en una búsqueda; así redondeada no queda ligada a tu cuenta.",
+        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor exacta como inicio de una ruta que pides, como inicio de las formas que la app te prepara cerca cuando el teléfono no puede dibujarlas por sí mismo, y dentro de una carrera que guardas. Fuera de la ruta de una carrera, cuando el teléfono no encuentra por sí mismo el camino para volver a ella, va exacta a nuestro servidor con el tramo de la ruta que tienes delante, para encontrar ese camino por las calles: el servidor no los guarda. Va redondeada a cerca de 1 km para encontrar el mapa sin conexión a tu alrededor, las rutas recomendadas, los pueblos y los dibujos cercanos, y para poner primero los lugares cercanos en una búsqueda; así redondeada no queda ligada a tu cuenta.",
         "En iPhone, durante una carrera que has empezado, la app sigue tu posición también con el teléfono bloqueado o con otra app abierta, hasta que detienes la carrera; el iPhone lo muestra con una marca azul en la parte de arriba de la pantalla. MuW pide la posición solo mientras usas la app, nunca «Siempre».",
         "Como cualquier servicio de internet, nuestro servidor ve la dirección de internet (IP) de la que viene una petición mientras la responde. El registro del servidor no escribe posiciones, y la base de datos no guarda direcciones IP.",
         "Existe un registro de las peticiones de rutas, con su inicio, para reproducir un fallo. Está apagado en nuestro servidor; encendido, guarda como máximo 10 MB, y después se pierden las líneas más antiguas.",
@@ -415,6 +420,7 @@ const privacy: AboutDocument = {
       heading: "Publicidad",
       blocks: [
         "MuW muestra sus propias publicaciones Style con enlaces a tiendas, marcadas «Publicidad · Enlaces de afiliado». MuW no usa redes publicitarias, y la app nunca pide rastrearte a través de otras apps. Cuando abres un producto o tocas «Comprar», nuestro servidor solo suma uno al recuento de ese día para ese producto: no sabe quién eres ni qué teléfono era. «Comprar» abre la web de la tienda en tu navegador a través del enlace de nuestra red de afiliación, Awin: desde ahí Awin y la tienda registran el clic y la posible compra, con sus cookies y según sus propias políticas de privacidad, para que MuW reciba su comisión. De ellos MuW solo recibe totales de clics, ventas y comisiones, nunca quién eres.",
+        "El mismo recuento, por día y sin saber quién eres, vale para las prendas que los miembros etiquetan en sus publicaciones: quien etiquetó una prenda ve cuántas veces se abrió y cuántas veces alguien fue a la tienda, nunca quién. El enlace de un miembro va directo a la tienda, sin Awin: desde ahí la tienda registra la visita con sus cookies, según su propia política de privacidad.",
       ],
     },
     {
@@ -446,6 +452,7 @@ const privacy: AboutDocument = {
             "Expo sirve las actualizaciones de la app.",
             "Google Ireland Limited (Firebase Cloud Messaging), para entregar las notificaciones push a los teléfonos Android. Cuando enciendes push, la app pide a Firebase un token de registro para tu teléfono; el servicio push de Expo pasa cada notificación (quién hizo qué, y el principio de un comentario) a Google, que la entrega a tu teléfono. Google ve el token y el contenido de cada notificación, no tu cuenta ni tu posición. El token se quita de nuestro servidor cuando apagas push, cierras sesión o borras tu cuenta; el del teléfono se va cuando desinstalas la app.",
             "Resend, en Estados Unidos, envía los correos de MuW: tu dirección de correo con el correo mismo. En una denuncia lleva a quien gestiona MuW lo denunciado, su texto, el motivo y los nombres de usuario de quien lo denunció y de quien lo escribió. En «Envíanos tus comentarios» lleva tu mensaje, tu nombre de usuario y tu dirección de correo.",
+            "Google, con su servicio Web Risk, recibe de nuestro servidor partes de la huella (hash) de algunos enlaces que los miembros ponen en sus prendas, para comprobar que no llevan a sitios peligrosos: nunca el enlace entero, ni quién lo puso o quién lo abre.",
             "Strava, como se ha dicho arriba.",
           ],
         },

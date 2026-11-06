@@ -8,7 +8,7 @@ import type {
 import { isImageRequest } from "../api/routes";
 import { metresBetween } from "../map/coordinates";
 import { sameRequest } from "../route/useRouteRequest";
-import { canvasRequest } from "./canvasRequest";
+import { canvasRequest, piecesRequest } from "./canvasRequest";
 import { newDrawing, withDetail } from "./drawing";
 import { distanceOf, type Placed, placeAt, placedLines } from "./figure";
 import { isSimpleRing } from "./geometry";
@@ -159,4 +159,28 @@ test("the same figure moved or sized keeps its arrays: the app knows its route",
   );
   expect(asImage(sized).outline).toBe(asImage(first).outline);
   expect(sameRequest(first, sized)).toBe(false);
+});
+
+test("the pieces on the map: one asks what it always asked, two ask one drawing (TASK-402 part B)", () => {
+  const heart = placeAt({ kind: "shape", shape: "heart" }, TRENTO, 6000);
+  expect(piecesRequest([heart], true, "running")).toEqual(
+    canvasRequest(heart, true, "running"),
+  );
+  const { placed: circle } = drawnCircle(1000);
+  expect(piecesRequest([circle], true, "running")).toEqual(
+    canvasRequest(circle, true, "running"),
+  );
+
+  const star = placeAt(
+    { kind: "shape", shape: "star" },
+    fromPlane(TRENTO, [4000, 0]),
+    2000,
+  );
+  const request = asImage(piecesRequest([heart, star], true, "running"));
+  expectValidOutline(request.outline);
+  expect(request.strokes).toHaveLength(1);
+  // The heart is where the route starts; the star's distance and its link
+  // there and back are in the distance.
+  expect(metresBetween(request.start, placedLines(heart)[0][0])).toBeLessThan(15);
+  expect(request.distance_m).toBeGreaterThan(distanceOf(heart) + distanceOf(star));
 });

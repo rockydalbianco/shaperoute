@@ -1,7 +1,7 @@
 # TASK-314 — La strada per tornare sul percorso, sulle vie
 
-**Stato**: In lavorazione — parte A in `main` (#588, `f381b7f5`), parte B
-da fare
+**Stato**: Done — parte A in `main` (#588, `f381b7f5`), parte B chiusa
+nella sua PR, entra col merge del Coordinatore
 **Fase**: 4 · **Branch**: `feat/TASK-314-a-way-back` (A, mergiato), poi
 `feat/TASK-314-b-way-back-run` (B)
 **ADR**: ADR-0274 (seguito di ADR-0263) · A: motore, API, motore sul
@@ -249,4 +249,149 @@ apps/mobile/src/engine/wayBackOnPhone.ts               (nuovo)
 apps/mobile/src/engine/wayBackOnPhone.test.ts          (nuovo)
 apps/mobile/src/api/wayBack.ts                         (nuovo)
 apps/mobile/src/api/wayBack.test.ts                    (nuovo)
+```
+
+## Parte B — com'è fatta
+
+Lista dei file approvata dal Coordinatore il 2026-11-06; i dieci file della
+Privacy aggiunti dopo il sì dell'utente alla frase.
+
+- **Dove gira**: `navigation/wayBackRun.ts`, un oggetto della corsa come
+  `lockNotice`, nel ciclo delle posizioni di `useNavigation.ts`. Dopo ogni
+  passo del navigatore chiede, tiene o toglie la strada e aggiunge le sue
+  frasi dopo quelle del navigatore. Una strada che arriva fra due posizioni
+  passa da `onWay`: si vede e si dice subito, e va anche nella notifica a
+  schermo bloccato (TASK-401 A, `lockNotice.ts` invariato).
+- **Dove sta**: in `Navigation.wayBack` (`navigation/wayBackShown.ts`: la
+  strada, dove è il runner, quali svolte sono dette). Il navigatore la
+  porta da una posizione all'altra e non la legge: il rientro resta il suo
+  (ADR-0263). Banner e mappa la leggono da lì; `App.tsx` è invariato.
+- **Quando chiede**: alla prima posizione fuori percorso; poi solo se manca
+  una strada (nessuna, lasciata dopo `OFF_FIXES` posizioni a più di
+  `OFF_ROUTE_M`, o con il rientro fuori dalla finestra). Al massimo ogni
+  `WAY_BACK_EVERY_S` = 15 s, una richiesta alla volta, data per persa dopo
+  `WAY_BACK_WAIT_MS` = 25 s. Mai con una posizione scarsa. Al rientro la
+  richiesta in corso si annulla.
+- **Con il telefono bloccato** (l'app non in primo piano) si chiede subito
+  al server: la pagina del motore dorme, e aspetterebbe 20 s.
+- **Il tratto mandato** (`ahead`): la finestra di ADR-0263
+  (`rejoinWindow`, esportata dal navigatore, la stessa di `rejoinFor`), al
+  più `AHEAD_CAP_M` = 3 km, come `MAX_WAY_M`. Su una forma chiusa non
+  ancora agganciata: 3 km intorno al punto dei puntini.
+- **Mappa**: i puntini dal runner al punto dove sta sulla strada, poi
+  lungo quello che resta della strada (`showRejoinLine`). Il livello
+  `rejoin` di `mapPage.ts` disegnava già una linea di più punti.
+- **Banner**: «Off the route» e sotto la prossima svolta della strada, come
+  quella del percorso: freccia, metri, via, «Then …». Senza svolte rimaste,
+  la distanza e il punto cardinale di TASK-303.
+- **Voce**: le frasi delle svolte che esistono già, a `ANNOUNCE_M`, come
+  sul percorso. Al ricalcolo, la prossima svolta con i metri, al più una
+  volta ogni `NEW_WAY_SAID_EVERY_S` = 60 s (si riparte a ogni uscita). Se
+  era più lontana di `ANNOUNCE_M`, la si ridice vicino. Le svolte passano
+  da `simplifyDirections` come quelle del percorso. Fuori percorso il
+  navigatore non dice svolte, quindi la strada non parla mai sopra una
+  svolta del percorso.
+- **Nessun testo nuovo** nell'app (né `i18n/` né `voice/`).
+- **Privacy**: una frase in «Your position», nelle cinque lingue, approvata
+  dall'utente il 2026-11-06 («Sì, aggiungi la frase»). Le pagine di
+  `site/privacy` sono rifatte con `site/tools/make_privacy.mjs`.
+- **Solo sport con le strade sul telefono** (`NETWORKS`: corsa, camminata,
+  bici): gli altri hanno i puntini come prima. È la regola della parte A,
+  che per loro dà `none` senza chiedere al server.
+
+### Per TASK-401 B (Live Activity)
+
+`liveStateOf` (`navigation/liveActivity.ts`, #862), fuori percorso, legge
+`navigation.rejoin`, cioè i metri in linea d'aria e il punto cardinale.
+Dopo questa parte la Live Activity direbbe «120 m NE» mentre voce, banner
+e notifica danno la svolta della strada. Quando 401 B unisce `main` (lo
+avvisa il Coordinatore), legga `navigation.wayBack` con `upcomingOnWay`
+(`navigation/wayBackShown.ts`), come fa il banner. `useNavigation.ts`
+cambia negli stessi punti in cui lo cambia 401 B: conflitto di testo in
+3–4 righe.
+
+## Criteri di accettazione — parte B
+
+- [x] Una corsa finta intorno a un isolato: fuori percorso la voce dice
+      «You are off the route…», «The route is … to the south.», la prima
+      svolta della strada appena trovata, le svolte successive a 50 m e
+      «Back on the route.»; niente di più (`wayBackRun.test.ts`, e
+      `wayBackDetour.test.ts` attraverso `useNavigation`).
+- [x] La strada si chiede una volta mentre il runner ci sta sopra, dal
+      punto dove è uscito, con il percorso davanti a dove l'ha lasciato.
+- [x] Senza strada (404, `none`) restano i puntini e le parole di TASK-303,
+      senza errori. Si richiede al più ogni 15 s.
+- [x] Una richiesta senza risposta si annulla al rientro; una risposta
+      arrivata dopo il rientro non si mostra.
+- [x] Lasciata la strada, la si richiede da dove è il runner. Una strada
+      nuova entro 60 s non si dice subito; dopo 60 s sì.
+- [x] Con il telefono bloccato si chiede lo stesso, al server; la
+      notifica scrive le svolte della strada.
+- [x] Sull'acqua (nuoto, paddle) non si chiede niente.
+- [x] Banner: «Off the route» e la svolta della strada, anche su «Data»,
+      in italiano e in piedi; senza svolte rimaste, quello di TASK-303.
+- [x] Mappa: puntini lungo la strada; senza strada di nuovo dritti; al
+      rientro nessuno.
+- [x] Il rientro resta del navigatore: `navigator.test.ts`,
+      `detourRun.test.ts` e gli altri test della corsa verdi senza
+      modifiche.
+- [x] La frase della Privacy approvata dall'utente, nelle 5 lingue e nelle
+      pagine del sito (`privacy.test.mjs` verde).
+- [x] Test toccati verdi in locale; tsc, eslint e prettier puliti. Solo JS:
+      l'impronta iOS `6f8bba4c` la misura il Coordinatore.
+
+## Esito — parte B
+
+Fatta il 2026-11-06 nel branch `feat/TASK-314-b-way-back-run`. Test:
+26 nuovi (20 in `wayBackRun.test.ts`, 2 in `wayBackDetour.test.ts`, 4 in
+`NavigateWayBack.test.tsx`) più 2 in `MapViewWayBack.test.tsx`. Verdi
+anche i test già esistenti dei file toccati: navigazione, corsa, mappa,
+Privacy (425).
+
+**Non provato**: nel simulatore e su una corsa vera. Restano da vedere
+con gli occhi il motore del telefono dentro Pyodide, i tempi e il server
+con il telefono bloccato. Il percorso del codice è quello della parte A,
+che ha i suoi test.
+
+**Privacy**: la data della Privacy resta «6 November 2026», già quella
+di `main`, quindi i tre test con la data (`documents.test.ts`,
+`AboutPage.test.tsx`, `site/tests/privacy.test.mjs`) non cambiano.
+**App Privacy** su App Store Connect non cambia, d'accordo il
+Coordinatore: la posizione esatta è già dichiarata, legata all'uso
+dell'app, come partenza di un percorso.
+
+**Cosa resta**:
+- l'OTA, solo dopo la prova nel simulatore e l'ok dell'utente al video;
+- la pubblicazione del sito per la frase della Privacy, con il sì
+  dell'utente; il comando lo dà il Coordinatore dopo il merge;
+- dopo l'OTA, i log di `/way-back` come scritto nella parte A.
+
+## File toccati — parte B
+
+```
+apps/mobile/src/navigation/wayBackRun.ts           (nuovo)
+apps/mobile/src/navigation/wayBackShown.ts         (nuovo)
+apps/mobile/src/navigation/wayBackRun.test.ts      (nuovo)
+apps/mobile/src/navigation/wayBackDetour.test.ts   (nuovo)
+apps/mobile/src/navigation/navigator.ts            (campo wayBack, rejoinWindow)
+apps/mobile/src/navigation/useNavigation.ts        (startWayBack nel ciclo delle posizioni)
+apps/mobile/src/screens/NavigateScreen.tsx         (banner: la svolta della strada)
+apps/mobile/src/screens/NavigateWayBack.test.tsx   (nuovo)
+apps/mobile/src/map/MapView.tsx                    (puntini lungo la strada)
+apps/mobile/src/map/messages.ts                    (showRejoinLine)
+apps/mobile/src/map/MapViewWayBack.test.tsx        (nuovo)
+apps/mobile/src/about/content/en.ts                (una frase in «Your position»)
+apps/mobile/src/about/content/it.ts                (una frase in «La tua posizione»)
+apps/mobile/src/about/content/es.ts                (una frase in «Tu posición»)
+apps/mobile/src/about/content/fr.ts                (una frase in «Ta position»)
+apps/mobile/src/about/content/de.ts                (una frase in «Dein Standort»)
+site/privacy/index.html                            (rifatta da make_privacy.mjs)
+site/privacy/it/index.html                         (rifatta)
+site/privacy/es/index.html                         (rifatta)
+site/privacy/fr/index.html                         (rifatta)
+site/privacy/de/index.html                         (rifatta)
+docs/tasks/TASK-314.md
+docs/STATUS.md                                     (righe nuove)
+docs/DECISIONS.md                                  (ADR-0274, precisazione B, in fondo)
+docs/UI.md                                         (fuori percorso, la strada per tornare)
 ```

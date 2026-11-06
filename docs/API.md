@@ -1813,6 +1813,17 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   delle corse cominciate negli ultimi 365 giorni, arrotondato, tenuto fra
   20 e 90; si calcola a ogni lettura. `vo2max.py`, `vo2max_estimate.py`;
   un'API precedente non ha il campo.
+- **I livelli della palestra** (TASK-385 E, ADR-0327): `gym_levels`, per
+  ogni esercizio del catalogo la serie migliore sotto il tetto della sua
+  scala, presa da **tutti** gli allenamenti dell'account, privati compresi
+  (scelta dell'utente del 2026-11-06, come i record personali). Ogni
+  `GymLevel` ha `exercise`, `level` (1–7, la figura: 🐭 → 🦍), `value` e
+  `measure` (`load_kg`, `reps`, `duration_s` o `distance_m`): mai
+  l'allenamento. Solo gli esercizi dal livello 1, prima il livello più
+  alto, poi nell'ordine del catalogo; `[]` senza. Si contano a ogni
+  lettura da `gym_sets`; un esercizio scritto da chi si allena non ha
+  scala. Esempio `fixtures/gym-levels.json`; `gym_levels.py`; un'API
+  precedente non ha il campo.
 - **`GET /users/{public_id}/photos`** (TASK-324): le foto dei disegni che
   chi guarda vede sul profilo, dalla corsa più recente e nello stesso
   disegno per posto; `limit` da 1 a 60 (30), `cursor` dalla pagina prima
@@ -2900,7 +2911,7 @@ database, `503`. Tipi in `shared-types` (`OutfitTag`, `OutfitTagRequest`,
 
 Un allenamento in palestra: una corsa dell'attività `gym` **senza traccia**,
 con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
-(`GymSessionRequest`, `GymSession`, `GymSet`, `GymExercises`), esempio in
+(`GymSessionRequest`, `GymSession`, `GymSet`, `GymExercises`, `GymLevel`), esempio in
 `fixtures/gym-session.json`, catalogo degli esercizi in
 `fixtures/gym-exercises.json` (lo stesso di `gym_catalog.py` e di
 `docs/sports/gym.md`); il codice in `gym_sessions.py`.
@@ -2935,12 +2946,49 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
 - **Gli esercizi del post** si vedono finché il proprietario non li
   nasconde («Show exercises»); il proprietario li vede sempre. Un disegno
   che l'altro non vede è `404`, come uno che non c'è.
+- **I livelli raggiunti per primi** (parte E): `GymExercises.new_levels`,
+  i `GymLevel` che questo allenamento supera rispetto agli allenamenti dello
+  stesso account cominciati prima (anche quelli salvati dopo); prima il
+  livello più alto; `[]` senza. Con gli esercizi: nascosti loro, nascosti
+  anche i livelli.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`
   è `422`: un allenamento in palestra si salva solo qui.
 - Cancellare la corsa (`DELETE /me/activities/{key}`) o l'account cancella
   le serie. Senza il database, `503`.
+
+### Pool swim (TASK-400, ADR-0334)
+
+Un nuoto in piscina: una corsa dell'attività `swimming` **senza traccia**,
+con la vasca e le vasche. Token richiesto; tipi in
+`shared-types/src/poolSwim.ts` (`PoolSwimRequest`, `PoolSwim`,
+`PoolSwimFigures`), esempio in `fixtures/pool-swim.json`; il codice in
+`pool_swims.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/pool-swims/{key}` | salva il nuoto: inizio, fine, pause, vasca, vasche | `201` `PoolSwim` la prima volta, poi `200` com'era; `409` se la chiave è di una corsa |
+| `GET /me/pool-swims/{key}` | il nuoto del suo proprietario | `200` `PoolSwim`, o `404` |
+| `GET /drawings/{id}/pool-swim` | vasca e vasche del post, per chi vede il disegno | `200` `PoolSwimFigures`, o `404` |
+
+- **Tempo e metri li conta il server**: il tempo da `started_at` a
+  `ended_at` meno le pause (sovrapposte contate una volta), al più 24 ore;
+  i metri sono `lengths` × `pool_length_m`, al metro. La vasca va da 10 a
+  100 m e si tiene al centimetro (33,33 m); le vasche da 1 a 1000. Più
+  veloce di 2,5 m/s è `422` (vasche o vasca scritte male).
+- **Pubblicato come ogni corsa**, con `PUT /me/activities/{key}/drawing`:
+  senza linea (`track: []`). Il disegno non gli cambia attività:
+  `activity` diversa da `swimming` è `422`. Solo la piscina va come
+  `swimming` senza traccia; ogni altra corsa senza traccia resta fra le
+  attività senza traccia (`422` come prima).
+- **Solo a chi lo sa leggere**: `X-MuW-Reads` deve dire `swimming`,
+  `trackless` **e** `pool` (ADR-0334, punto 5). L'app di oggi, che dice
+  `trackless` per la palestra ma non `pool`, non riceve un nuoto senza
+  traccia: niente nel Feed, `404` sul dettaglio e su `/pool-swim`.
+- Nessun punteggio di forma, nessun record di corsa, nessun luogo, niente
+  Strava (una corsa senza traccia non si manda). Test in
+  `test_pool_swims.py`.
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 
@@ -2970,6 +3018,76 @@ fatte nella giornata di sci del post.
   per un'app che in `X-MuW-Reads` non dice `skiing` (TASK-387).
 - **Due elenchi vuoti:** per un'altra attività e per una giornata senza
   nomi trovati. L'app allora non mostra niente.
+
+### Ski resorts (TASK-406 parte A, ADR-0338)
+
+Le stazioni sciistiche del mondo, per la ricerca «Ski» e per la giornata di
+sci. Sono uguali per tutti e non contengono dati degli utenti, quindi non
+serve il token. La chiave dell'API serve come su ogni percorso.
+
+**Le rotte**
+- **`GET /ski-resorts?q=…`**: le stazioni il cui nome contiene `q`, senza
+  badare a maiuscole e minuscole.
+  - Prima i nomi che cominciano con `q`, poi per numero di impianti, poi
+    per nome.
+  - `q` è lungo al massimo 60 caratteri; `%` e `_` si leggono come testo.
+- **`GET /ski-resorts?lat=…&lon=…`**: le più vicine, dalla più vicina, con
+  `away_m`, i metri fino al centro della stazione. La posizione resta fuori
+  dal registro degli accessi, come ogni query string.
+- **`limit`**: da 1 a 50, 20 se manca. Vale per le due ricerche.
+- **`GET /ski-resorts/{id}`**: una stazione, oppure `404`.
+
+**La forma**
+- Ogni stazione è: `id`, `name`, `country` (ISO 3166-1 alpha-2 o `null`),
+  `region`, `lat`, `lon`, `bbox` (`[south, west, north, east]`), `lifts`,
+  `piste_km`, `piste_km_by_difficulty` (per esempio `{"easy": 35.9}`),
+  `min_elevation_m`, `max_elevation_m`, `website`, `away_m`.
+- `away_m` è `null` tranne nella ricerca per posizione.
+- Le ricerche rispondono `{"resorts": [...]}`.
+- Una stazione data come punto ha come `bbox` il suo centro.
+
+**Gli errori**
+- **`422`:** né `q` né `lat` e `lon`, oppure tutti e due, oppure un valore
+  fuori dai limiti.
+- **`404`:** un id che non c'è.
+
+**Da dove vengono**
+- Le stazioni vengono da OpenSkiData (`MAPS.md`, «Le stazioni sciistiche da
+  OpenSkiData»), con `resort_import.py`.
+- I tipi in `packages/shared-types` arrivano con la parte C.
+
+**Il meteo (TASK-406 parte B)**
+- **`GET /ski-resorts/{id}/weather`**: il meteo della stazione da MET
+  Norway (Locationforecast 2.0 compact), in basso e in cima.
+- **La risposta:** `resort_id`, `attribution` (`"MET Norway"`, da mostrare
+  accanto), `stale`, `base` e `top`.
+- **`base` e `top`:** ognuno ha `altitude_m`, `updated_at` (quando l'ha
+  fatto MET Norway), `hours`, `fresh_snow_cm` e `snow_estimate`.
+  - `hours` sono le prossime 24 ore, dall'ora in corso: `time` (UTC),
+    `temperature_c`, `wind_ms`, `symbol` (il `symbol_code` di MET Norway) e
+    `precipitation_mm`.
+  - `fresh_snow_cm` è la neve fresca attesa in quelle ore. È una
+    **stima**, non un bollettino, e per questo `snow_estimate` è sempre
+    `true`: la precipitazione delle ore a 0,5 °C o meno, 1 mm d'acqua per
+    1 cm di neve.
+- **Le quote:** `base` è `min_elevation_m` e `top` è `max_elevation_m`.
+  Con una quota sola, o due uguali, `top` è `null`. Senza quote c'è solo
+  `base`, con `altitude_m` `null`: la quota allora la sceglie MET Norway
+  dal suo terreno.
+- **A MET Norway** va solo il centro della stazione, con 4 decimali, e la
+  quota. Mai la posizione di chi chiede. Lo chiama il server, mai il
+  telefono, con un User-Agent `MuW/1.0 (https://getmuw.app)`, più il
+  contatto di `SHAPEROUTE_MET_CONTACT` se c'è. Aspetta al massimo 4
+  secondi.
+- **La cache:** ogni risposta resta in memoria fino al suo `Expires`, al
+  massimo 6 ore, oppure 30 minuti se l'`Expires` manca. Poi si richiede
+  con `If-Modified-Since`. La chiave è il centro arrotondato più la quota.
+- **`stale: true`:** MET Norway non ha risposto, e si dà l'ultima
+  previsione tenuta. Le ore partono comunque da quella in corso.
+- **Gli errori:** `404` per una stazione che non c'è, senza chiedere
+  niente a MET Norway. `503` «The weather is not available now; try again
+  later.» quando MET Norway non risponde e non c'è niente in cache.
+- **Il codice:** `resort_weather.py`.
 
 ### Drawing search (TASK-344, ADR-0297)
 

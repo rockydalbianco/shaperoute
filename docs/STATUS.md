@@ -160,6 +160,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
+  Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
+  La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo
+  commit della versione, con impronta `6f8bba4c` come la 1.0.1. La lancia l'utente. Login,
+  schermata di blocco, composer, calorie e battito passano alla 1.0.3. `tasks/TASK-407.md`.
 - **TASK-403 — «Edit the drawing» sotto A, B e C** (2026-11-05; numeri dal Coordinatore,
   ADR-0337 «Proposto»; richiesta dell'utente «quando fai tu il calcolo del disegno tipo il
   coniglio poi mi dai le tre opzioni AB e C però lì non c'è la possibilità di modificare
@@ -179,6 +184,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Parte A pronta il 2026-11-05** (branch `feat/TASK-402-a-turn`): «−15°», l'angolo da scrivere
   e «+15°» con «Move», due dita che girano, «Undo»; una forma girata va come contorno; impronta
   iOS 6f8bba4c invariata. Prossimo: la parte B (i pezzi), con la sua lista al Coordinatore.
+  **Parte B pronta il 2026-11-06** (branch `feat/TASK-402-b-pieces`, via del Coordinatore sulla
+  lista): «Change | Add» sopra le tessere; con «Add» una tessera aggiunge un pezzo (al massimo 6),
+  che con «Move» si sceglie con un tocco, si trascina, si ridimensiona, si gira e si toglie
+  («Delete piece»); un solo percorso come disegno, collegamenti tratteggiati, contratto uguale;
+  un pezzo solo chiede quello di prima. Testi 3–5 nelle quattro lingue. Prossimo: il video del
+  simulatore all'utente, la PR, il merge del Coordinatore, poi l'OTA col sì dell'utente.
+  **2026-11-06, Done**: parte A in `main` con la #857 (5fc4d20f), parte B con la #873 (e9960204);
+  i due video del simulatore approvati dall'utente. Resta: l'OTA di produzione col sì
+  dell'utente (la prepara il Coordinatore) e la prova sul telefono (due tocchi veloci su «+15°»
+  ne contano uno nel simulatore).
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
@@ -238,6 +253,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **A1 in `main` il 2026-11-05** (#839, `76be330e`; CI verde, impronta `6f8bba4c`). A2 in
   una sessione nuova, con la lista dei file al Coordinatore prima del codice; se TASK-401
   aggiunge `@bacons/apple-targets` nella 1.0.2, chi lo aggiunge si concorda con loro.
+- **TASK-370 A2 — L'app SwiftUI dell'orologio** (2026-11-06; parte A2 del piano in
+  `tasks/TASK-370.md`, ADR-0314 «precisazione A2»; lista dei file approvata dal
+  Coordinatore). `apps/mobile/targets/watch/`: il target `watch` di `@bacons/apple-targets`
+  (`.watchkitapp`, watchOS 10, HealthKit), l'app SwiftUI (sport col logo MuW, conto alla
+  rovescia, tempo, distanza, «Pace now», battito, «Avg pace», «Last km», calorie, pausa,
+  ripresa, fine, riepilogo), `HKWorkoutSession` + `HKLiveWorkoutBuilder` col mirroring,
+  `WCSession` coi messaggi di WatchCore; `WatchFormat` e `WatchPaces` nuovi in WatchCore
+  (XCTest; il formato uguale all'app via `Fixtures/format.json` letto anche da jest); i
+  testi solo quelli dell'app (`src/watch/watchTexts.ts`, `scripts/watch-texts.sh`).
+  `plugins/withWatchCore.js` tiene `Core/` fuori dai file del target e lo collega come
+  pacchetto locale; `MUW_WATCH=1` in `app.config.ts` (via `plugins/watchConfig.js`) solo
+  per le prove locali: la dipendenza la porta TASK-401 B. Provata nel simulatore di watchOS
+  27 (Series 12 da 42 mm) con un prebuild locale. Branch `feat/TASK-370-a2-watch-app`.
+  **Prossimo**: A3, il telefono (`src/watch/watchLink.ts`, `useWatch.ts`, il battito nella
+  corsa); la prova sul polso con una build firmata.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.
@@ -265,6 +295,67 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Scelte in `main`** (#841). Lista della parte A approvata dal
   Coordinatore, con la migrazione 0052 e i profili dell'app perché `main`
   resti pubblicabile. Prossimo: 378-A in una sessione nuova, dopo la #838.
+  **Parte A in PR** (2026-11-06, `feat/TASK-378-a-gravel-mtb-engine-api`):
+  - il motore disegna `mountain_biking` sulla rete nuova `mtb`, con file di
+    cache suoi; `gravel_biking` è disegnato come `cycling` (`walking.py`);
+  - sensi unici e tratti a piedi sono una proprietà della rete
+    (`Network.by_bike`);
+  - il contratto e l'API offrono i due sport: Strava `MountainBikeRide` e
+    `GravelRide`, record propri, fuori dal gioco; migrazione
+    `0052_gravel_mtb.sql`;
+  - l'app ha i due profili, nascosti;
+  - corsa, bici e canoa identiche al banco, e i nove percorsi fissi:
+    l'impronta del motore resta (`SAME_ROUTES_AS`), niente notte di esempi.
+
+  Server (0052 e deploy) solo col sì dell'utente. Prossimo: la parte B.
+  **Parte A in `main`** (#875, `7e36a76a`, 2026-11-06): impronta iOS
+  `6f8bba4c` invariata, impronta del motore tenuta. Il server con la 0052
+  lo aggiorna l'utente col suo sì, col comando del Coordinatore. Prossimo:
+  la parte B (app), con la sua lista di file al Coordinatore.
+  **Parte B in PR** (2026-11-06, `feat/TASK-378-b-gravel-app`): «Gravel»
+  🚲 e «MTB» 🚵 in «Settings» dopo «Hike», «Soon» finché l'utente non li
+  accende; i nomi e l'avviso MTB nelle cinque lingue; energia dal
+  Compendium; i record propri nel profilo; i file FIT (sub-sport), GPX e
+  Strava che li dicono. Solo JavaScript. Prossimo: `ready` vero nelle due
+  righe col sì dell'utente, che il Coordinatore chiede dopo il merge.
+  **Parte B in `main`** (#879, `85625132`, 2026-11-06): impronta iOS
+  `6f8bba4c` invariata, server a `cab53f51` con la 0052. Prossimo:
+  l'accensione col sì dell'utente, in una riga o PR a parte, poi la prova
+  sul telefono (si sceglie, si pedala, si salva, va in Salute).
+  **Parte C in PR** (2026-11-06, `feat/TASK-378-c-gravel-mtb-ready`):
+  `ready` vero per Gravel e MTB, col «Sì, accendili» dell'utente; anche
+  nei build dello store, nella ricerca e nel modulo per pubblicare. Solo
+  JavaScript. Prossimo: la prova sul telefono, poi la chiusura.
+  **Parte C in `main`** (#897, `22454109`, 2026-11-06): impronta iOS
+  `6f8bba4c` invariata. Anteprima all'utente a CI di `main` verde,
+  produzione col suo «ok produzione». Prossimo: la prova sul telefono
+  (si sceglie, si pedala, si salva, va in Salute), poi la chiusura.
+
+- **TASK-380 — Roller, i pattini in linea** (2026-11-06; numeri dal
+  Coordinatore, ADR-0324 **proposto**). Parte 0, solo documenti: misurate
+  col banco quattro reti di prova, dai download della bici, senza Overpass.
+  - `roller` (asfalto liscio; né sterrato, né ciottoli, né strade
+    principali e secondarie; ogni via nei due sensi): 34 su 54, 10 buoni.
+    Regge in città e in pianura (Milano 8 su 9, Trento 9 su 9), non in
+    montagna (Fiemme e Asiago 2 su 9): senza le secondarie la rete si
+    spezza.
+  - Con le secondarie: 42 su 54, ma il 12% dei km su strade veloci.
+  - Il tag `inline_skates` c'è solo per 4,5 km a Trento: non serve.
+
+  Prossimo: le scelte dell'utente, una alla volta (`tasks/TASK-380.md`,
+  `sports/roller.md`).
+  **Parte 0 in `main`** (#886). **Scelte dell'utente** (2026-11-06):
+  - «Roller» 🛼 sulla rete `roller`, da 5 a 30 km;
+  - nel gioco come chi va a piedi, con record propri su 5, 10, 21,1 e
+    42,2 km (la proposta era fuori dal gioco);
+  - i testi approvati in cinque lingue, con l'avviso su traffico e discese;
+  - acceso appena pronto.
+
+  ADR-0324 accettato. Prossimo: 380-A, motore, contratto e API, con la
+  lista al Coordinatore e il numero della migrazione.
+  Lista della parte A approvata dal Coordinatore, con la migrazione
+  `0055_inline_skating.sql`. Prossimo: 380-A in una sessione nuova, da
+  `origin/main` dopo la #880 (400 B).
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
@@ -446,6 +537,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nella condivisione niente video né Strava. Scelte dell'utente del
   2026-11-05: «10 foto», «Sì, anche alla fine». Impronta iOS 6f8bba4c
   invariata; OTA col sì. Prossima: C (kcal e Salute), E (traguardi).
+  Parte D in `main` (#845, 4d52e439).
+  Parte E (traguardi) in PR da `feat/TASK-385-e-gym-levels`: i livelli
+  per esercizio sul profilo (primi 5, gli altri sotto «Show more») e
+  «New level» nel post, contati dal server a ogni lettura da tutti gli
+  allenamenti, privati compresi. Scelte dell'utente del 2026-11-06:
+  «Tutti», «I primi 5 + altro». Niente migrazione; server col sì. Prossima:
+  C (kcal e Salute), F (classifica).
+  Parte E in `main` (#888, 9cd295b1), impronta iOS 6f8bba4c invariata;
+  server col sì dell'utente (comando dal Coordinatore), poi OTA col sì.
+  Parte C (kcal e Salute) in PR da `feat/TASK-385-c-gym-kcal`: le kcal
+  sul telefono (cardio con la formula della macchina, il resto al MET dei
+  pesi) durante, alla fine, nel post e nel riquadro condiviso; con «Save»
+  l'allenamento di forza in Salute / Health Connect. Scelta dell'utente
+  del 2026-11-06: «Niente kcal» se gli esercizi sono nascosti. Solo
+  JavaScript; OTA col sì. Prossima: F (classifica).
+  Parte C in `main` (#904, 756d6f83), impronta iOS 6f8bba4c misurata dal
+  Coordinatore; OTA col sì dell'utente. Prossima: F (classifica).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo
@@ -532,7 +640,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   import; ricerca e modulo la offrono appena è pronta. L'utente tiene la
   rete di oggi (circa metà sui sentieri in montagna). Prossimo: «ready»
   con una riga, dopo il server con la 0051, col sì dell'utente.
+  **«ready» pronta** (`feat/TASK-377-c-hike-ready`, PR in bozza sopra la
+  B): si unisce dopo il server con la 0051, col sì dell'utente.
   Prossimo: la parte B (app), dopo la #765.
+  **Parte A in `main`** (#838, `48bc58c8`). Prossimo: la parte B in una
+  sessione nuova (lista al Coordinatore; le note sono in
+  `tasks/TASK-377.md`), poi il server con la 0051 col sì dell'utente.
   **B3c, seconda metà, in PR** (2026-11-05, dopo la #765): «Impostazioni»
   legge emoji, nome e «Record only» dal profilo dello sport; `activityOf` e
   `runActivityOf` leggono l'attività di ogni riga invece di due `switch`.
@@ -544,6 +657,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in `main` (#838, #861). Le sue deroghe sono passi della ricetta
   (`COME-AGGIUNGERE.md`, «(pilota)»), ADR-0320 accettato. Prossimo per gli
   sport: Gravel/MTB parte A (TASK-378), poi il Roller (TASK-380).
+  **TASK-377 chiuso** (2026-11-06): server con la 0051, «ready» (#864) e
+  documenti (#859) in `main`, OTA di produzione 3ef55853: Hike ⛰️ acceso
+  per tutti con la 1.0.1. Prossimo: Gravel/MTB parte A (TASK-378, in
+  corso).
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il
@@ -613,6 +730,51 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     pubblicata. Il fondo resta «Soon». Solo JavaScript, impronta 6f8bba4c.
     Prossimo: l'OTA di produzione col sì dell'utente, gli estratti delle
     Alpi (o del mondo, se l'utente dice sì), poi la parte E.
+- **TASK-406 — Le stazioni sciistiche: la ricerca «Ski», la neve, il meteo
+  e la giornata** (ADR-0338 **proposto**; numeri dal Coordinatore il
+  2026-11-06). La richiesta dell'utente è del 2026-11-06:
+  - tutte le stazioni nella ricerca «Ski», con neve e meteo;
+  - in «Record your day»: la stazione, il modello, il tipo di neve, il
+    meteo e i km totali;
+  - «copia Slopes», cioè le sue funzioni, non il nome né la grafica.
+
+  Le stazioni vengono da OSM (gli estratti di TASK-375), il meteo da MET
+  Norway, chiesto dal server. Le parti sono A (stazioni), B (meteo), C
+  (ricerca), D (giornata) ed E (prova). Prossimo: la risposta dell'utente
+  alla domanda 1, com'è la neve (`tasks/TASK-406.md`).
+  - 2026-11-06: l'utente risponde «Sì, gratis + membri». **Parte A**: le
+    stazioni sciistiche del mondo da OpenSkiData, 4.768 aperte con discesa
+    e un nome, nella tabella `ski_resorts` (migrazione 0054). Si cercano
+    con `GET /ski-resorts`, per nome o per vicinanza, e una alla volta
+    con `GET /ski-resorts/{id}`. Gli estratti OSM non si riscaricano
+    (aggiunta ad ADR-0338). Per andare online, comandi dell'utente col suo
+    sì: il server con la 0054, poi il download del file e l'import.
+    Prossimo: la parte B, il meteo da MET Norway.
+  - 2026-11-06: A in `main` (#881). **Parte B**: `GET
+    /ski-resorts/{id}/weather` dà il meteo della stazione in valle e in
+    cima per le prossime 24 ore, da MET Norway. La neve fresca è una stima
+    (`snow_estimate: true`). Il server chiede con le coordinate della
+    stazione e la quota, e tiene le risposte in cache fino al loro
+    `Expires` (aggiunta ad ADR-0338). Niente migrazioni. Per andare online:
+    il deploy, e se si vuole `SHAPEROUTE_MET_CONTACT` nel `.env` del server,
+    col sì dell'utente. Prossimo: la domanda 2 (il modello), poi la parte
+    C, la ricerca «Ski» nell'app.
+- **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
+  percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
+  Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un
+  cavallo, un elefante o altri animali che corrono il percorso in 3D; il
+  finale, i colori, le emoji, il 2D e il 3D, i cambi di scena; un prompt.
+  Scelte: prima il personaggio, poi l'editor, poi il prompt; il prompt senza
+  costi, letto dal telefono con una tabella di parole. Proposta: three.js
+  nella pagina del video (niente di nativo) e modelli CC0: sì dell'utente
+  il 2026-11-06; l'elefante nella prima versione, «Elephant Anim» di
+  Shivoahm (Sketchfab, CC BY 4.0, gratis); la riga dei crediti approvata il
+  2026-11-06 (scelta 6); tutti i 13 personaggi, i 12 di Quaternius più
+  l'elefante (scelta 7); 12 secondi in tre pezzi, apertura, corsa e finale,
+  da riordinare o spegnere (scelta 8); il testo del prompt e la prima
+  tabella di parole (scelta 9); i testi in cinque lingue (scelta 10).
+  Domande finite. Prossimo: la parte B (il personaggio 3D), con la lista
+  dei file al Coordinatore (`tasks/TASK-408.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta
@@ -764,6 +926,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `out/muw-bike-drafts/`, nessuna approvata e nessuna pubblicata. Le scelte
   dell'utente sono tutte aperte; il codice parte col via del Coordinatore, dopo
   TASK-362 e TASK-355 A. `tasks/TASK-365.md`.
+  **La riga del Feed** (2026-11-05/06; via del Coordinatore; branch
+  `feat/TASK-365-feed-line`): le card di MuW in «All», una riga su 6, la prima
+  dopo il 3° disegno, mai accanto a pubblicità o Style, mai in «Following»,
+  anche senza account fra gli esempi (scelte dell'utente del 2026-11-05: «1
+  ogni 6», «Sì, fra gli esempi»); `feed/feedWithMuw.ts`. Un tocco apre il
+  percorso sulla mappa come da «Explore» (`onOpenMuw` in `App.tsx`). Nessun
+  testo nuovo. Visto nel simulatore. OTA di produzione col sì dell'utente.
+  **Chiuso il 2026-11-06**: #868 in `main` (`09307022`); vedi «Completato».
 
 - **TASK-356 — La posizione nel Feed: arrotondata, e detta nella privacy**
   (ADR-0306, punto 4; testo approvato dall'utente il 2026-10-30). Branch
@@ -1429,6 +1599,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dopo Apple, con il sì dell'utente; poi va guardato nei log quello che
   dice il task file. La parte B parte da qui, in una sessione sua, con i
   «File toccati» al Coordinatore prima del codice.
+  **Parte B pronta il 2026-11-06** (branch `feat/TASK-314-b-way-back-run`, lista approvata
+  dal Coordinatore): fuori percorso, a piedi o in bici, la corsa chiede la strada sulle vie
+  (telefono, poi server; a telefono bloccato subito il server), al più ogni 15 s. La mappa
+  mette i puntini lungo le vie, il banner la prossima svolta sotto «Off the route», la voce
+  e la notifica le svolte. Senza strada, i puntini di TASK-303. Nessun testo nuovo
+  nell'app; una frase nella Privacy (cinque lingue e `site/privacy`), approvata
+  dall'utente. Per TASK-401 B: la Live Activity legga `navigation.wayBack` (task file,
+  «ADR-0274, precisazione B»). Solo JS; impronta iOS dal Coordinatore. Non provata nel
+  simulatore. **Chiuso il 2026-11-06** nella PR della parte B; vedi «Completato».
 - **TASK-313 — «Draw it near me»: la stessa forma in un altro posto**
   (ADR-0273; richiesta dell'utente del 2026-10-27, «Sì, così» alla
   proposta; numero e ordine dal Coordinatore, prima di TASK-309 B). Branch
@@ -3028,6 +3207,28 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   server con la `0049` e la `0051`, col sì dell'utente; la chiave di Web Risk
   dopo, quando l'utente avrà il progetto Google Cloud. Prossimo: la parte B
   (app), con la lista dei file al Coordinatore.
+  **Parte B (app) pronta il 2026-11-06** (PR #894, branch
+  `feat/TASK-394-b-outfit-app`, via del Coordinatore sulla lista). Cosa fa:
+  - «Tag what you wear» sotto la foto scelta nel compositore, a fine corsa e
+    nella scheda di «My activities». Un tocco sulla foto mette il punto, poi
+    capo, marca, modello e link. Il modulo dice subito quello che l'API
+    rifiuterebbe; al massimo 5 capi per foto e 10 per post.
+  - I capi stanno sul telefono accanto alle foto e vanno al server subito
+    dopo di loro (dentro `syncPhotos`).
+  - Nel Feed i puntini li mostra la gruccia (scelta dell'utente del
+    2026-11-06, «Gruccia nel Feed»); nel disegno aperto anche il tocco sulla
+    foto.
+  - La scheda ha «Shop on {store}», la riga su chi ha messo il link e
+    «Report». I totali li vede solo l'autore.
+  - Help, Termini e Privacy nelle cinque lingue, e le pagine del sito, con la
+    data del 6 novembre 2026.
+
+  Solo JS, decisioni in ADR-0333 «precisazione B». Limite: a fine allenamento
+  in palestra i capi non si segnano; si segnano dopo, dalla scheda in «My
+  activities». Prossimo: il Coordinatore misura l'impronta iOS e unisce la PR;
+  poi, col sì dell'utente, l'OTA e il sito.
+  **Chiuso il 2026-11-06**: parte B in `main` (#894, `fd6a117d`), impronta iOS
+  `6f8bba4c` invariata; vedi «Completato».
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,
@@ -3086,8 +3287,90 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `tasks/TASK-398.md`.
   **Chiuso il 2026-11-05**: #827 in main (`42e0433a`); vedi «Completato».
 
+- **TASK-400 — Nuoto in piscina: la vasca scelta prima di partire**
+  (2026-11-05; numeri dal Coordinatore; ADR-0334 proposto). Scelte
+  dell'utente: vasche scritte alla fine con la stima dal tempo; 25 m, 50 m,
+  «Other» (10–100 m); una scelta «Open water / Pool» dentro lo sport, che si
+  chiama «Swim»; post nel Feed senza mappa come la Palestra (`pool` in
+  `X-MuW-Reads`); testi approvati. Proposta in PR da
+  `docs/TASK-400-pool-swim`; poi A (server), B (app), C (post), ognuna con la
+  lista dei file al Coordinatore. `tasks/TASK-400.md`.
+  2026-11-06: proposta in `main` (#867). Parte A (server: `PUT
+  /me/pool-swims/{key}`, migrazione `0053`, `drawings.py`) da
+  `feat/TASK-400-a-pool-api`; il valore `pool` in `X-MuW-Reads` dopo
+  TASK-378 A. Server col sì dell'utente.
+  Parte A in `main` (#871, cab53f51; impronta iOS 6f8bba4c invariata):
+  server e migrazione `0053` dall'utente col comando del Coordinatore,
+  quando dice sì. Prossimo: la parte B (app) in una sessione nuova.
+  Parte B (app) da `feat/TASK-400-b-pool-app`: in «Draw» con «Swim» la
+  scelta «Open water / Pool»; in piscina la vasca (25, 50, «Other» 10–100
+  m, ricordata), «Start swim», il cronometro con «Pause», «How many
+  lengths?» con la stima, vasche, metri, tempo e passo; `PUT
+  /me/pool-swims/{key}` col limite di 2,5 m/s controllato prima; Salute
+  come nuoto in piscina (senza la vasca: limite della libreria, ADR-0334
+  precisazione B); `pool` in `this_app`; la riga in «My activities».
+  Entra dopo TASK-378 B. Prossimo: la parte C (il post), poi server, OTA
+  e store col sì dell'utente.
+  Parte B in `main` (#880, a178bb18; impronta iOS 6f8bba4c invariata, CI
+  verde col job watch-core). Con lei «Swim» anche nei file dell'orologio
+  (rigenerati con i loro script). Prossimo: la parte C (il post) da
+  `feat/TASK-400-c-pool-post`, dopo TASK-394 B per `FeedPost.tsx`.
+  Parte C (il post) da `feat/TASK-400-c-pool-post`: a fine nuotata il
+  modulo del post come la palestra (foto, chi lo vede, solo «Swim», niente
+  gara); la tessera 🏊 con vasche, metri, tempo e passo nel Feed, nella
+  scheda, nelle griglie, nella ricerca e nell'immagine condivisa
+  (ADR-0334, precisazione C). Entra dopo TASK-394 B. Poi: server (A), OTA
+  e store col sì dell'utente.
+  **Chiuso il 2026-11-06**: C in main (#898, 1939b121); vedi «Completato».
+
 ## Completato
 
+- **TASK-314 — La strada per tornare sul percorso, sulle vie** (2026-11-06; ADR-0274 e la sua
+  «precisazione B»). Parte A #588 (motore, `/way-back`, motore sul telefono); parte B nella
+  sua PR: lo schermo di corsa chiede la strada fuori percorso e la mostra sulla mappa, nel
+  banner, a voce e a schermo bloccato; senza strada i puntini di TASK-303. Una frase nuova
+  nella Privacy, approvata dall'utente. Restano l'OTA e la pubblicazione del sito col sì
+  dell'utente, App Privacy da guardare, la prova su una corsa vera, e in 401 B la Live
+  Activity su `navigation.wayBack`. `tasks/TASK-314.md`.
+- **TASK-400 — Nuoto in piscina** (2026-11-06; ADR-0334 con le precisazioni A, B e C). Lo
+  sport si chiama «Swim»: in «Draw» «Open water» o «Pool»; in piscina la vasca (25, 50 o
+  «Other» 10–100 m), il cronometro con «Pause», «How many lengths?» con la stima, vasche,
+  metri, tempo e passo/100 m; salvato con `PUT /me/pool-swims/{key}`, in Salute come nuoto in
+  piscina (senza la lunghezza della vasca: limite della libreria); il post senza mappa come la
+  palestra, solo alle app che dicono `pool`. A #871 (server già a cab53f51 con `0053`), B #880,
+  C #898 (1939b121); impronta iOS `6f8bba4c` invariata. Preview pubblicata dal Coordinatore
+  (gruppo 71b18ba0). Resta l'OTA di produzione col sì dell'utente. `tasks/TASK-400.md`.
+
+- **TASK-394 — I capi che indossi: tag sui propri post con il link al negozio**
+  (2026-11-06; idea dell'utente, ADR-0333 e la sua «precisazione B»). Parte A
+  (API, migrazione `0050` già sul server) #844; parte B (app) #894
+  (`fd6a117d`). Cosa fa:
+  - l'iscritto segna sulle foto dei suoi post capo, marca, modello e link,
+    dal compositore a fine corsa o in «My activities»;
+  - chi guarda apre i puntini con la gruccia (nel Feed; nel disegno aperto
+    anche col tocco sulla foto) e da lì il negozio nel browser;
+  - solo l'autore vede i totali.
+
+  Help, Termini e Privacy nelle cinque lingue, datati 6 novembre 2026. Solo JS,
+  impronta `6f8bba4c` invariata. Restano, col sì dell'utente: l'OTA, il sito
+  della privacy e la chiave di Web Risk (fino ad allora si aprono solo i
+  negozi di Style). Limite: a fine allenamento in palestra niente capi.
+  `tasks/TASK-394.md`.
+- **TASK-405 — Un percorso di MuW non dice «looks 100% like it»** (2026-11-06; numero dal
+  Coordinatore, trovato con la #868 di TASK-365). Aperto dal Feed, il foglio dice solo titolo e
+  città: `muwCardRoute` mette `scored: false` su `RecommendedRoute` e `ExploredCard` lascia
+  fuori il percento; ogni altro percorso tiene la sua riga. Nessun testo nuovo, solo JS;
+  impronta `6f8bba4c` invariata, OTA col sì dell'utente. «ADR-0310, precisazione»,
+  `tasks/TASK-405.md`.
+- **TASK-365 — I percorsi di MuW nel Feed** (2026-11-06; ADR-0310). I 25 percorsi approvati
+  dall'utente (11 bici, 10 a piedi, 4 canoa) in `catalog/muw_routes/` e sul server
+  (`GET /muw-routes`); #868 in main (`09307022`): nell'app compaiono in «All» come card di
+  MuW, una riga su 6 dal 4° posto, mai accanto a pubblicità o Style, mai in «Following», anche
+  fra gli esempi senza account; un tocco apre il percorso sulla mappa come da «Explore». Un'app
+  già pubblicata non vede niente di nuovo. Prossimo: l'OTA di produzione col sì dell'utente;
+  restano da provare l'export GPX e il `404` nel simulatore (`tasks/TASK-365.md`, criteri;
+  impronta iOS `6f8bba4c` invariata, misurata dal Coordinatore); il «looks 100% like it» del
+  percorso aperto è TASK-405.
 - **TASK-404 — Disegno a mano: un primo tratto piccolo non blocca i tratti dopo** (2026-11-05;
   segnalazione dell'utente dal nuoto, vale per ogni sport). Ogni tratto aggiunto si raddrizza
   sull'1% della grandezza del disegno che forma, non di quello di prima: dopo un puntino un
@@ -3210,8 +3493,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Shape» e la nota «On the water, the drawing goes where it fits near the
   start.»; il disegno a mano va al motore sull'acqua di TASK-369 B, già sul
   server. Un disegno che non sta sull'acqua lo dice con parole sue. Solo
-  JavaScript, impronta iOS 6f8bba4c. Restano gli OTA, col sì dell'utente.
-  `tasks/TASK-396.md`.
+  JavaScript, impronta iOS 6f8bba4c. #860 in main (`452598d1`, 2026-11-06),
+  in produzione con l'OTA `3ef55853`. `tasks/TASK-396.md`.
 - **TASK-369 — «Edit the drawing» su ogni disegno** (ADR-0313; 2026-11-04;
   numeri dal Coordinatore): documenti #712, parte A #719 (`3e7c7d28`), parte
   B #722 (`bacd7c7b`). Il tasto c'è su ogni disegno con una linea, anche

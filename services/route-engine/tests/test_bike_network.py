@@ -454,16 +454,22 @@ def test_each_activity_has_a_network_and_distance_limits() -> None:
     assert set(DISTANCE_LIMITS_M) == set(ACTIVITIES)
     assert set(NETWORKS) | WATER_ACTIVITIES == set(ACTIVITIES)
     assert not set(NETWORKS) & WATER_ACTIVITIES
-    assert NETWORKS == {"running": "foot", "cycling": "bike", "hiking": "hike"}
+    assert NETWORKS == {
+        "running": "foot",
+        "cycling": "bike",
+        "hiking": "hike",
+        "mountain_biking": "mtb",
+    }
     # The contract offers cycling since the API's part (TASK-190, ADR-0153),
     # paddling since its own (TASK-191), swimming since TASK-323 part B,
-    # hiking since TASK-377 part A.
+    # hiking since TASK-377 part A, mountain biking since TASK-378 part A.
     assert SUPPORTED_ACTIVITIES == (
         "running",
         "cycling",
         "paddling",
         "swimming",
         "hiking",
+        "mountain_biking",
     )
 
 

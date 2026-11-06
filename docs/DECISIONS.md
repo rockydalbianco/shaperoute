@@ -24544,8 +24544,8 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
    nella prima versione (2026-11-06). Si usa solo con una licenza letta e
    scritta nel task. L'utente ha scelto «Elephant Anim» di Shivoahm
    (Sketchfab, CC BY 4.0, gratis): titolo, autore, fonte, licenza e «adapted
-   by MuW» in una riga dei crediti dell'app, col testo approvato
-   dall'utente.
+   by MuW» in una riga dei crediti dell'app; il testo l'ha approvato
+   l'utente il 2026-11-06 (`tasks/TASK-408.md`, scelta 6).
 3. **Il percorso non si inventa**: il personaggio sta sul punto della
    traccia dove arriva la linea in quel fotogramma, girato nella direzione
    della strada. La camera lo segue; su un telefono lento resta ferma, e

@@ -57,7 +57,8 @@ describe("the sport a file names", () => {
     expect(sportOfWord("VirtualRide")).toBe("cycling");
     expect(sportOfWord("kayaking")).toBe("paddling");
     expect(sportOfWord("stand_up_paddleboarding")).toBe("paddling");
-    expect(sportOfWord("hiking")).toBeNull();
+    expect(sportOfWord("hiking")).toBe("hiking");
+    expect(sportOfWord("yoga")).toBeNull();
     expect(sportOfWord("Other")).toBeNull();
   });
 });

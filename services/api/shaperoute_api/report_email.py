@@ -7,7 +7,8 @@ reason, who reported it, who wrote it, its text, how many reports it has
 and whether it is hidden already, and a link «Hide».
 
 The link is signed with SHAPEROUTE_EMAIL_SECRET and says one action (hide
-or show), one thing (a drawing, a comment, a member, a private message),
+or show), one thing (a drawing, a comment, a member, a private message, an
+item tagged on a photo),
 its id, when it expires (LINK_DAYS) and a random nonce. Opening it (GET)
 only shows what it will do and a button: a mail reader that opens links
 changes nothing.
@@ -17,8 +18,10 @@ After «Hide» the page has «Undo», a new link of the same kind.
 Hidden is from the others only: the author still sees it. A hidden drawing
 is out of drawings.drawing_seen_sql and shown_sql, a hidden comment out of
 comments.NOT_APART, a hidden group run out of group_runs.seen_sql
-(TASK-309), a hidden message out of messages.SEEN, and a hidden member is
-kept apart from everyone as across a block (follows.apart_sql). Nothing is
+(TASK-309), a hidden message out of messages.SEEN, a hidden item of a photo
+out of outfit_tags.tags_on_photos (TASK-394: only that item, never its
+post), and a hidden member is kept apart from everyone as across a block
+(follows.apart_sql). Nothing is
 deleted. Of a private message (TASK-319) the email holds that message
 only, never the rest of its conversation. A message with a photo, a video
 or a drawing (TASK-333) says so, and the page of the link shows it: the
@@ -44,6 +47,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from html import escape
 from typing import TYPE_CHECKING, Annotated, Literal, get_args
+from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, FastAPI, Query, Request
@@ -76,7 +80,7 @@ MAX_TOKEN_LENGTH = 160
 PAGE_HEADERS = {"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"}
 
 Action = Literal["hide", "show"]
-Kind = Literal["drawing", "comment", "user", "group_run", "message"]
+Kind = Literal["drawing", "comment", "user", "group_run", "message", "outfit_tag"]
 ACTIONS: tuple[Action, ...] = get_args(Action)
 KINDS: tuple[Kind, ...] = get_args(Kind)
 # What a report's kind is called in the email and on the pages.
@@ -86,6 +90,7 @@ NOUN: dict[Kind, str] = {
     "user": "profile",
     "group_run": "group run",
     "message": "message",
+    "outfit_tag": "tagged item",
 }
 
 # The row of each kind, by the id a report keeps (a member: its public_id).
@@ -95,6 +100,7 @@ TABLE_OF: dict[Kind, tuple[str, str]] = {
     "user": ("users", "public_id"),
     "group_run": ("group_runs", "id"),
     "message": ("messages", "id"),
+    "outfit_tag": ("drawing_outfit_tags", "id"),
 }
 
 
@@ -252,6 +258,33 @@ def _message(conn: Connection[DictRow], target: UUID) -> DictRow | None:
     ).fetchone()
 
 
+def _outfit_tag(conn: Connection[DictRow], target: UUID) -> DictRow | None:
+    return conn.execute(
+        "SELECT t.item, t.brand, t.product_name, t.url, t.drawing_id, t.n,"
+        " t.hidden_at, u.username, u.public_id FROM drawing_outfit_tags t"
+        " JOIN drawings d ON d.id = t.drawing_id JOIN runs r ON r.id = d.run_id"
+        " JOIN users u ON u.id = r.user_id WHERE t.id = %s",
+        (target,),
+    ).fetchone()
+
+
+def outfit_tag_lines(row: DictRow) -> tuple[str, ...]:
+    """An item tagged on a photo (TASK-394), for the email: the whole link
+    and its domain, which can go on the list of the blocked ones."""
+    url = row["url"]
+    host = urlsplit(url).hostname if url else None
+    return (
+        f"Item: {row['item']}",
+        f"Brand: {row['brand']}",
+        f"Model: {row['product_name'] or '(none)'}",
+        f"Link: {url or '(none)'}",
+        f"Domain: {host or '(none)'}",
+        f"On photo {row['n']} of the drawing {row['drawing_id']}",
+        "Hiding hides this item only. To stop a domain for every item, add it"
+        " to outfit_blocked_domains (docs/API.md, «Outfit tags»).",
+    )
+
+
 def _drawing_name(card: dict[str, object]) -> str:
     named = card.get("title") or card.get("word") or card.get("shape")
     return str(named) if named else "no name"
@@ -333,6 +366,10 @@ def reported(conn: Connection[DictRow], report_id: UUID) -> Reported | None:
                 f"Notes: {row['description'] or '(none)'}",
                 f"Starts: {starts_at.astimezone(UTC).strftime('%Y-%m-%d %H:%M UTC')}",
             )
+    elif kind == "outfit_tag":
+        row = _outfit_tag(conn, target)
+        if row is not None:
+            lines = outfit_tag_lines(row)
     elif kind == "message":
         row = _message(conn, target)
         if row is not None:

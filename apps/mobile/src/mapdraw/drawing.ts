@@ -4,7 +4,7 @@ import {
   MAX_OUTLINE_POINTS,
 } from "@shaperoute/shared-types";
 
-import type { Placed, Unit } from "./figure";
+import { type Placed, type Unit, unitsOn } from "./figure";
 import {
   boxOf,
   crossing,
@@ -295,10 +295,8 @@ export function withDetail(placed: Placed, line: readonly LatLon[]): Drawn {
   if (figure.kind !== "drawing") {
     return null;
   }
-  const drawn = line.map((point) => {
-    const [x, y] = toPlane(placed.centre, point);
-    return [x / placed.unitM, y / placed.unitM] as P;
-  });
+  // In the drawing's own units, turned back with it (TASK-402).
+  const drawn = line.map((point) => unitsOn(placed, point) as P);
   const hung = detailOf(figure.outline, figure.details, drawn);
   if (hung === null || "problem" in hung) {
     return hung;

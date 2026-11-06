@@ -482,6 +482,8 @@ export const ES: Table = {
     "{drawn} km de dibujo + {between} km en bici entre las partes",
   "{drawn} km of drawing + {between} km paddling between the parts":
     "{drawn} km de dibujo + {between} km remando entre las partes",
+  "On the water, the drawing goes where it fits near the start.":
+    "En el agua, el dibujo va donde cabe cerca de la salida.",
   "On the water, a shape of the catalogue.": "En el agua, una forma del catálogo.",
   "{name} · on the water · target {km} km": "{name} · en el agua · objetivo {km} km",
   "{name} · on roads · target {km} km": "{name} · por carretera · objetivo {km} km",
@@ -543,6 +545,12 @@ export const ES: Table = {
     "Esta solicitud se ha perdido. Inténtalo de nuevo.",
   "There is no lake or sea near this start. Start from the shore, within 2 km of the water.":
     "No hay ningún lago ni mar cerca de esta salida. Sal desde la orilla, a menos de 2 km del agua.",
+  "This drawing does not fit on the water near this start. Try a shorter distance, or another start.":
+    "Este dibujo no cabe en el agua cerca de esta salida. Prueba una distancia más corta u otra salida.",
+  "This drawing does not fit on the water here at this distance. It fits at about {km} km.":
+    "Este dibujo no cabe en el agua aquí a esta distancia. Cabe a unos {km} km.",
+  "This drawing does not fit on the water here at this distance. It fits at about {mi} mi.":
+    "Este dibujo no cabe en el agua aquí a esta distancia. Cabe a unas {mi} mi.",
   "This shape does not fit on the water here at this distance. It fits at about {km} km.":
     "Esta forma no cabe en el agua aquí a esta distancia. Cabe a unos {km} km.",
   "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:":
@@ -863,6 +871,7 @@ export const ES: Table = {
   "Ride without a route": "Rodar sin ruta",
   "Paddle without a route": "Remar sin ruta",
   "Walk without a route": "Caminar sin ruta",
+  "Hike without a route": "Senderismo sin ruta",
   "Record your day": "Registra tu jornada",
   "Run without a route": "Correr sin ruta",
 
@@ -1146,6 +1155,10 @@ export const ES: Table = {
   Bike: "Bici",
   Paddle: "Remo",
   Walk: "Caminata",
+  // src/sports/hiking.ts (TASK-377 part B), approved on 2026-11-05
+  Hike: "Senderismo",
+  "Trails can be demanding: check the route and the weather before you set off.":
+    "Los senderos pueden ser exigentes: revisa la ruta y el tiempo antes de salir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Esquí",
   "Cross-country ski": "Esquí de fondo",
@@ -1415,8 +1428,13 @@ export const ES: Table = {
     "Dibuja con un dedo. Termina donde empezaste para cerrarla. Con dos dedos mueves el mapa.",
   "Each new line joins the drawing. Two fingers move the map.":
     "Cada línea nueva se une al dibujo. Con dos dedos mueves el mapa.",
-  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize.":
-    "Arrastra la figura o el mapa. Mantén el dedo quieto en una línea y arrastra para doblarla. Con dos dedos cambias el tamaño.",
+  "Drag the figure or the map. Hold a line still, then drag to bend it. Two fingers resize and turn it.":
+    "Arrastra la figura o el mapa. Mantén el dedo quieto en una línea y arrastra para doblarla. Con dos dedos cambias el tamaño y la giras.",
+  // src/mapdraw/DrawOnMap.tsx (TASK-402)
+  "Turn left 15 degrees": "Girar 15 grados a la izquierda",
+  "Turn right 15 degrees": "Girar 15 grados a la derecha",
+  "Angle, {deg} degrees. Double tap to type it":
+    "Ángulo, {deg} grados. Toca dos veces para escribirlo",
   Line: "Línea",
   "Tap point after point. Tap the first point to close it, the last one to finish.":
     "Toca punto tras punto. Toca el primer punto para cerrarla, el último para terminar.",

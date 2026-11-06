@@ -1,6 +1,6 @@
 /**
  * A walk from another app (TASK-371): a file whose sport is walking is read
- * as a walk. A hike is not one yet (TASK-377).
+ * as a walk. A hike is its own since TASK-377 part B (hikeApp.test.tsx).
  */
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -26,7 +26,7 @@ test("GPX's walking and Strava's 10 are a walk", () => {
   expect(sportOfWord("walking")).toBe("walking");
   expect(sportOfWord("Walk")).toBe("walking");
   expect(sportOfWord("10")).toBe("walking");
-  expect(sportOfWord("hiking")).toBeNull();
+  expect(sportOfWord("hiking")).toBe("hiking");
   // The others as before.
   expect(sportOfWord("running")).toBe("running");
   expect(sportOfWord("9")).toBe("running");

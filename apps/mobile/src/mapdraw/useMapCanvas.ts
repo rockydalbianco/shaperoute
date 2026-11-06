@@ -35,12 +35,13 @@ import {
   type ToolProblem,
   unitsOf,
 } from "./tools";
+import { shownFigure, turnedBy, turnedTo, turnOf } from "./turn";
 
 /** What «Undo» takes back (TASK-281), and «Redo» puts again (TASK-331 part
  * B): a figure put on the map or drawn, or taken away, in place of what was
  * there; a tile, a line, the eraser, a point tapped or a bend that changed
- * the figure where it is. With it, the straight line being tapped then.
- * Moving and sizing are not undone. */
+ * the figure where it is, or turned it (TASK-402). With it, the straight
+ * line being tapped then. Moving and sizing are not undone. */
 type Step = (
   { kind: "put"; before: Placed | null } | { kind: "swap"; before: Figure }
 ) & {
@@ -88,6 +89,13 @@ export type MapCanvasState = {
   clear: () => void;
   /** What the figure would make, in metres, following two fingers. */
   distanceM: number | null;
+  /** How far the figure is turned on the map, clockwise, in whole degrees
+   * within (−180°, 180°] (TASK-402, ADR-0336); 0 with none. */
+  turnDeg: number;
+  /** «−15°» and «+15°»: the figure turned that much more. */
+  turnBy: (deg: number) => void;
+  /** The degrees typed: the figure turned to them. */
+  turnTo: (deg: number) => void;
   /** «Draw route»: the request for the figure where it is. */
   request: AnyRouteRequest | null;
   /** Why the last line drawn, or the last tool, gave nothing. */
@@ -162,8 +170,22 @@ export function useMapCanvas({
     [penUp, activity],
   );
   const within = useCallback(
-    (placed: Placed) => withinLimits(placed, [lowest, highest], apartOf(placed.figure)),
+    (placed: Placed) =>
+      withinLimits(placed, [lowest, highest], apartOf(shownFigure(placed))),
     [lowest, highest, apartOf],
+  );
+  /** `figure` turned `turnDeg` about `middle`, as long as `metres` as it is
+   * drawn: a shape turned by its outline. */
+  const placeTurned = useCallback(
+    (figure: Figure, middle: LatLon, metres: number, turnDeg: number): Placed => {
+      const turned = turnedTo({ figure, centre: middle, unitM: 1 }, turnDeg);
+      const shownNow = shownFigure(turned);
+      return {
+        ...turned,
+        unitM: placeAt(shownNow, middle, metres, apartOf(shownNow)).unitM,
+      };
+    },
+    [apartOf],
   );
   // Within the distances of now: a sport chosen since may have others.
   const placed = useMemo(() => (kept === null ? null : within(kept)), [kept, within]);
@@ -390,11 +412,17 @@ export function useMapCanvas({
           return;
         }
         setSizing(1);
-        setKept({
+        const moved = {
           ...placed,
           centre: event.centre,
           unitM: placed.unitM * event.factor,
-        });
+        };
+        // Turned by two fingers too: a step «Undo» takes back (TASK-402).
+        if (event.turn) {
+          change(within(turnedBy(moved, event.turn)), "put");
+          return;
+        }
+        setKept(moved);
         return;
       }
       // A line drawn or bent: the page shows it until the app answers,
@@ -437,6 +465,29 @@ export function useMapCanvas({
       );
     },
     [placed, mode, within, erase, tap, bend, change],
+  );
+
+  /** The figure turned on the map, a step «Undo» takes back (TASK-402). */
+  const turn = useCallback(
+    (next: (placed: Placed) => Placed) => {
+      if (placed === null) {
+        return;
+      }
+      const turned = next(placed);
+      if (turnOf(turned) !== turnOf(placed)) {
+        setProblem(null);
+        change(within(turned), "put");
+      }
+    },
+    [placed, within, change],
+  );
+  const turnBy = useCallback(
+    (deg: number) => turn((placed) => turnedBy(placed, deg)),
+    [turn],
+  );
+  const turnTo = useCallback(
+    (deg: number) => turn((placed) => turnedTo(placed, deg)),
+    [turn],
   );
 
   /** `step` done again, or undone: the figure as it was then, and the
@@ -490,7 +541,12 @@ export function useMapCanvas({
     }
   }, [placed, change]);
 
-  const apart = placed === null ? false : apartOf(placed.figure);
+  // As it is drawn and asked: a shape turned is its outline (ADR-0336).
+  const shown = useMemo(
+    () => (placed === null ? null : { ...placed, figure: shownFigure(placed) }),
+    [placed],
+  );
+  const apart = shown === null ? false : apartOf(shown.figure);
   // The points of the straight line being tapped, the first to close it.
   const marks = useMemo(() => {
     if (straight === null) {
@@ -510,7 +566,7 @@ export function useMapCanvas({
   }, [straight, placed]);
 
   const canvas = useMemo((): MapCanvas => {
-    if (placed === null) {
+    if (placed === null || shown === null) {
       return {
         mode,
         lines: [],
@@ -523,11 +579,11 @@ export function useMapCanvas({
         framing,
       };
     }
-    const lines = placedLines(placed, apart);
+    const lines = placedLines(shown, apart);
     const figure = placed.figure;
     const drawing = figure.kind === "drawing" ? figure : null;
     const open = drawing !== null && isOpenLine(drawing.outline, drawing.details);
-    const [smallest, largest] = unitLimits(figure, [lowest, highest], apart);
+    const [smallest, largest] = unitLimits(shown.figure, [lowest, highest], apart);
     return {
       mode,
       lines,
@@ -547,7 +603,7 @@ export function useMapCanvas({
     };
     // A new answer to a line is a new canvas, so the page clears its ink.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [placed, apart, mode, marks, lowest, highest, framing, answers]);
+  }, [placed, shown, apart, mode, marks, lowest, highest, framing, answers]);
 
   // The app renders again with new units (TASK-182): the request follows.
   const units = appUnits();
@@ -598,11 +654,13 @@ export function useMapCanvas({
       if (placed === null) {
         return null;
       }
-      const sized = within(placeAt(placed.figure, placed.centre, metres, apart));
+      const sized = within(
+        placeTurned(placed.figure, placed.centre, metres, turnOf(placed)),
+      );
       setKept(sized);
       return canvasRequest(sized, penUp, activity, units);
     },
-    [placed, apart, within, penUp, activity, units],
+    [placed, within, placeTurned, penUp, activity, units],
   );
 
   const changeTo = useCallback(
@@ -611,12 +669,15 @@ export function useMapCanvas({
         return null;
       }
       const figure = figureOf(choice);
-      const changed = within(placeAt(figure, placed.centre, metres, apartOf(figure)));
+      // Turned as the figure of before (TASK-402).
+      const changed = within(
+        placeTurned(figure, placed.centre, metres, turnOf(placed)),
+      );
       setProblem(null);
       change(changed, "put");
       return canvasRequest(changed, penUp, activity, units);
     },
-    [placed, within, apartOf, penUp, activity, units, change],
+    [placed, within, placeTurned, penUp, activity, units, change],
   );
 
   return {
@@ -634,7 +695,10 @@ export function useMapCanvas({
     redo,
     canRedo: undone.length > 0,
     clear,
-    distanceM: placed === null ? null : distanceOf(placed, apart) * sizing,
+    distanceM: shown === null ? null : distanceOf(shown, apart) * sizing,
+    turnDeg: placed === null ? 0 : turnOf(placed),
+    turnBy,
+    turnTo,
     request,
     problem,
     tapping: straight !== null,

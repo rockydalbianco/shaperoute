@@ -16,6 +16,7 @@ import {
   walk,
 } from "../theme/tokens";
 import { BEND_SHARE, CORNER_SHARE } from "../mapdraw/tools";
+import { MIN_TURN_DEG } from "../mapdraw/turn";
 import { toLngLat } from "./coordinates";
 import { kindLayers, PITCH_3D, TERRAIN_SPEC, withKinds } from "./mapKindStyle";
 import { darkMapStyle, LABEL_FONT } from "./mapStyle";
@@ -1187,6 +1188,18 @@ export function buildMapPage(language: Language = appLanguage()): string {
     function middleOf(a, b) {
       return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
     }
+    // The direction from one finger to the other on the screen, in degrees,
+    // growing clockwise (y down).
+    function angleOf(a, b) {
+      return (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+    }
+    // How far two fingers turned from \`from\` to \`now\`, within (−180°,
+    // 180°]; less than ${MIN_TURN_DEG}° is none, so sizing does not twist
+    // the figure (TASK-402).
+    function turnOf(from, now) {
+      var turn = (((now - from) % 360) + 540) % 360 - 180;
+      return Math.abs(turn) < ${MIN_TURN_DEG} ? 0 : turn;
+    }
     function eachPoint(lines, visit) {
       lines.forEach(function (line) {
         line.forEach(visit);
@@ -1238,6 +1251,24 @@ export function buildMapPage(language: Language = appLanguage()): string {
     function sizedPoint(p, anchor, factor) {
       return [anchor[0] + factor * (p[0] - anchor[0]), anchor[1] + factor * (p[1] - anchor[1])];
     }
+    // Sized and turned \`turn\` degrees clockwise about \`anchor\` (TASK-402):
+    // turned on the screen, in pixels, where the map keeps its angles, not
+    // in degrees of longitude and latitude.
+    function heldPoint(p, anchor, factor, turn) {
+      if (turn === 0) {
+        return sizedPoint(p, anchor, factor);
+      }
+      var a = (turn * Math.PI) / 180;
+      var at = map.project(p);
+      var middle = map.project(anchor);
+      var dx = at.x - middle.x;
+      var dy = at.y - middle.y;
+      var lngLat = map.unproject([
+        middle.x + factor * (dx * Math.cos(a) - dy * Math.sin(a)),
+        middle.y + factor * (dx * Math.sin(a) + dy * Math.cos(a)),
+      ]);
+      return [lngLat.lng, lngLat.lat];
+    }
     function mapLines(lines, change) {
       return lines.map(function (line) {
         return line.map(change);
@@ -1249,14 +1280,18 @@ export function buildMapPage(language: Language = appLanguage()): string {
     }
     // A move or a size kept: the page draws the figure there until the app
     // sends it back, and the room to grow is what is left of it.
-    function keepFigure(lines, centre, factor) {
+    function keepFigure(lines, centre, factor, turn) {
       canvas.lines = lines;
       canvas.centre = centre;
       canvas.shrink /= factor;
       canvas.grow /= factor;
       drawFigure(lines);
       if (centre) {
-        post({ type: "figure", centre: centre, factor: factor, done: true });
+        post(
+          turn
+            ? { type: "figure", centre: centre, factor: factor, done: true, turn: turn }
+            : { type: "figure", centre: centre, factor: factor, done: true },
+        );
       }
       // Grown past the screen, the map steps back to show it whole: there
       // is room again to zoom the map around it.
@@ -1303,7 +1338,15 @@ export function buildMapPage(language: Language = appLanguage()): string {
         // Only with «Move» do two fingers size the figure; else they move
         // and zoom the map, the figure on it.
         gesture = canvas.mode === "move" && onFigure(middle)
-          ? { kind: "size", from: apart(a, b), anchor: figureMiddle(), factor: 1, told: 1 }
+          ? {
+              kind: "size",
+              from: apart(a, b),
+              anchor: figureMiddle(),
+              factor: 1,
+              told: 1,
+              angle: angleOf(a, b),
+              turn: 0,
+            }
           : {
               kind: "zoom",
               from: apart(a, b),
@@ -1365,13 +1408,14 @@ export function buildMapPage(language: Language = appLanguage()): string {
           );
         }
       } else if (was.kind === "size") {
-        if (was.factor !== 1) {
+        if (was.factor !== 1 || was.turn !== 0) {
           keepFigure(
             mapLines(canvas.lines, function (p) {
-              return sizedPoint(p, was.anchor, was.factor);
+              return heldPoint(p, was.anchor, was.factor, was.turn);
             }),
-            canvas.centre && sizedPoint(canvas.centre, was.anchor, was.factor),
+            canvas.centre && heldPoint(canvas.centre, was.anchor, was.factor, was.turn),
             was.factor,
+            was.turn,
           );
         }
       } else if (was.kind === "pan" || was.kind === "zoom") {
@@ -1437,9 +1481,11 @@ export function buildMapPage(language: Language = appLanguage()): string {
         if (gesture.kind === "size") {
           var factor = Math.min(canvas.grow, Math.max(canvas.shrink, ratio));
           var anchor = gesture.anchor;
+          var turn = turnOf(gesture.angle, angleOf(first, second));
           gesture.factor = factor;
+          gesture.turn = turn;
           drawFigure(mapLines(canvas.lines, function (p) {
-            return sizedPoint(p, anchor, factor);
+            return heldPoint(p, anchor, factor, turn);
           }));
           // The distance on screen follows, a step at a time.
           if (canvas.centre && Math.abs(factor / gesture.told - 1) >= 0.01) {

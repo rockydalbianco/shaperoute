@@ -13,6 +13,8 @@ it("shows the rows of before, in their order", () => {
     { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
     { id: "swim", emoji: "🏊", name: "Open water swim", ready: true },
     { id: "walk", emoji: "🚶", name: "Walk", ready: false },
+    // Added since: the hike (TASK-377 part B).
+    { id: "hike", emoji: "⛰️", name: "Hike", ready: false },
     { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },
     {
       id: "xc_ski",
@@ -38,6 +40,7 @@ it("asks and saves the activities of before", () => {
     "paddling",
     "swimming",
     "walking",
+    "hiking",
     "running",
     "running",
     "running",
@@ -49,6 +52,7 @@ it("asks and saves the activities of before", () => {
     "paddling",
     "swimming",
     "walking",
+    "hiking",
     "skiing",
     "xc_skiing",
     "gym",

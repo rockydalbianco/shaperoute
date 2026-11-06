@@ -3278,6 +3278,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   verde col job watch-core). Con lei «Swim» anche nei file dell'orologio
   (rigenerati con i loro script). Prossimo: la parte C (il post) da
   `feat/TASK-400-c-pool-post`, dopo TASK-394 B per `FeedPost.tsx`.
+  Parte C (il post) da `feat/TASK-400-c-pool-post`: a fine nuotata il
+  modulo del post come la palestra (foto, chi lo vede, solo «Swim», niente
+  gara); la tessera 🏊 con vasche, metri, tempo e passo nel Feed, nella
+  scheda, nelle griglie, nella ricerca e nell'immagine condivisa
+  (ADR-0334, precisazione C). Entra dopo TASK-394 B. Poi: server (A), OTA
+  e store col sì dell'utente.
 
 ## Completato
 

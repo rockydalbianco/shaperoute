@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { RunDrawing } from "../activities/RunDrawing";
 import { isTrackless } from "../activities/snow";
 import { GymTile } from "../gym/GymTile";
+import { isPoolLine, PoolTile } from "../pool/PoolTile";
 import { Tap } from "../ui/Tap";
 import { color, font, radius, space } from "../theme/tokens";
 import { distanceLabel } from "../units/format";
@@ -57,6 +58,9 @@ export function DrawingResultCard({
       <View style={styles.preview}>
         {gym ? (
           <GymTile width={width} height={width * PREVIEW_RATIO} />
+        ) : isPoolLine(activity, line) ? (
+          // A swim in a pool has no line: its tile (TASK-400 part C).
+          <PoolTile width={width} height={width * PREVIEW_RATIO} />
         ) : (
           <RunDrawing
             route={[...line]}

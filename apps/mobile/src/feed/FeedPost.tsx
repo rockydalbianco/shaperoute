@@ -19,6 +19,8 @@ import { GymTile } from "../gym/GymTile";
 import { mainExercises } from "../gym/mainExercises";
 import { NewLevels } from "../gym/NewLevels";
 import { useGymExercises } from "../gym/useGymExercises";
+import { isPoolLine, PoolTile } from "../pool/PoolTile";
+import { usePoolFigures } from "../pool/usePoolFigures";
 import { t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
 import { useLanguage } from "../i18n/useLanguage";
@@ -169,6 +171,11 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const exercises = useGymExercises(isShown(post) ? post.drawing.id : post.id, {
     on: isShown(post) && isTrackless(post.activity),
   });
+  // A swim in a pool: its lengths and pool on its tile (TASK-400 part C).
+  const pool = isPoolLine(post.activity, post.line);
+  const figures = usePoolFigures(isShown(post) ? post.drawing.id : post.id, {
+    on: isShown(post) && pool,
+  });
   // Where the finger came down. «Feed» is the first page: a swipe towards
   // it moves nothing, so nothing takes the touch away, and it would end as
   // a tap on the card it crossed.
@@ -231,7 +238,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const pages =
     photos.length === 0
       ? []
-      : gym && (order === null || order === undefined)
+      : (gym || pool) && (order === null || order === undefined)
         ? [
             ...ordered.filter((item) => item.kind !== "drawing"),
             { kind: "drawing" as const },
@@ -282,7 +289,15 @@ export function FeedPost({ post, width, onOpen }: Props) {
           title: post.title,
           facts: heard,
         });
-  const drawing = gym ? (
+  const drawing = pool ? (
+    <PoolTile
+      width={width}
+      height={drawingHeight(width)}
+      durationS={isShown(post) ? post.drawing.duration_s : post.minutes * 60}
+      metres={post.route_m}
+      figures={figures}
+    />
+  ) : gym ? (
     <GymTile
       width={width}
       height={drawingHeight(width)}
@@ -315,7 +330,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
     <>
       <Scrim height={SCRIM_HEIGHT} />
       {/* No figure in the corner of a workout at the gym: it has none. */}
-      {!gym && (
+      {!gym && !pool && (
         <View
           style={styles.thumb}
           pointerEvents="none"

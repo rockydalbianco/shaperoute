@@ -549,6 +549,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in `main` (#838, #861). Le sue deroghe sono passi della ricetta
   (`COME-AGGIUNGERE.md`, «(pilota)»), ADR-0320 accettato. Prossimo per gli
   sport: Gravel/MTB parte A (TASK-378), poi il Roller (TASK-380).
+  **TASK-377 chiuso** (2026-11-06): server con la 0051, «ready» (#864) e
+  documenti (#859) in `main`, OTA di produzione 3ef55853: Hike ⛰️ acceso
+  per tutti con la 1.0.1. Prossimo: Gravel/MTB parte A (TASK-378, in
+  corso).
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il

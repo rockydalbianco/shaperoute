@@ -1,7 +1,8 @@
 # TASK-377 — L'escursionismo, il pilota della struttura degli sport
 
-**Stato**: In corso — parti 0, A e B in `main` (#821, #838, #861); resta
-«ready» (#864, in bozza), dopo il server con la parte A.
+**Stato**: Done (2026-11-06) — **Esito**: Hike ⛰️ acceso per tutti: parti
+0, A, B e «ready» in `main` (#821, #838, #861, #864, docs #859), server con
+la 0051, OTA di produzione 3ef55853 (1.0.1, runtime 6f8bba4c).
 **Fase**: 4 · **Branch**: `docs/TASK-377-0-hike` (parte 0), poi
 `feat/TASK-377-a-hike-engine-api`, `feat/TASK-377-b-hike-app` ·
 **ADR**: ADR-0321 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -207,10 +208,15 @@ Le scelte toccano le liste di A e B in tre punti:
       deterministici; corsa, bici e canoa invariate al banco (`compare`).
       Corsa 54/54, bici 54/54 e canoa 27/27 identiche punto per punto;
       `test_hiking.py` e `test_hiking_api.py`.
-- [ ] B: l'escursione si sceglie, si cammina, si salva e va in Salute; i
-      testi sono in cinque lingue.
-- [ ] Il diff di A e B confrontato con la ricetta: ogni deroga è in
-      CONDIVISO, e il criterio aperto di TASK-376 B si chiude.
+- [x] B: l'escursione si sceglie, si cammina, si salva e va in Salute; i
+      testi sono in cinque lingue. Provato dai test della #861 e della
+      #864; in Salute va come «Hiking» (Apple 24, Health Connect 37, dal
+      profilo `sports/hiking.ts`). Una camminata vera col telefono non
+      c'è ancora stata.
+- [x] Il diff di A e B confrontato con la ricetta: ogni deroga è in
+      CONDIVISO, e il criterio aperto di TASK-376 B si chiude. Fatto con
+      la chiusura di TASK-376 (#865): le deroghe sono passi «(pilota)» di
+      `COME-AGGIUNGERE.md`.
 
 ## File toccati
 
@@ -318,3 +324,11 @@ richiesta del Coordinatore: `fromProfile("hike", true)` e i test che
 contano le righe pronte e i «Soon» (Hike pronta in «Settings», nel menu di
 «Disegna», nelle build dello store, nella ricerca). Si unisce solo dopo il
 server con la 0051 e col sì dell'utente, e va nello stesso OTA della B.
+
+2026-11-06, **chiuso**. Il server ha la parte A (0051, deploy ef3faf2d
+alle 06:00Z), poi il Coordinatore ha unito «ready» (#864, `a23eb9cb`) e i
+documenti di A (#859, `b405e091`). Con l'«ok produzione» dell'utente è
+uscito l'OTA 3ef55853 della 1.0.1 (a 76305c1a, runtime 6f8bba4c): Hike è
+acceso per tutti. Restano fuori, come task a parte: pesare gli archi verso
+i sentieri (ADR-0321, dopo le prime escursioni vere) e un giro di esempi
+solo hike per Explore, se serve.

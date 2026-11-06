@@ -1,7 +1,8 @@
 # TASK-400 — Nuoto in piscina: la vasca scelta prima di partire
 
-**Stato**: In corso · proposta in `main` (#867); parte A (server) in PR;
-ogni parte dopo la sua lista dei file al Coordinatore
+**Stato**: In corso · proposta in `main` (#867); parte A (server) in
+`main` (#871, cab53f51), server col sì dell'utente; prossima la parte B
+(app); ogni parte dopo la sua lista dei file al Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-400-pool-swim` (documenti); il codice
 `feat/TASK-400-a-…`, `feat/TASK-400-b-…`
 **Dipende da**: TASK-323 (nuoto in acque libere, chiuso #834), TASK-385
@@ -146,7 +147,14 @@ docs/STATUS.md
 docs/tasks/TASK-400.md
 ```
 
-Le parti B e C: lista dei file al Coordinatore prima del codice.
+Le parti B e C: lista dei file al Coordinatore prima del codice. Nella
+lista della B (indicazione del Coordinatore, 2026-11-06) entrano anche
+`packages/shared-types/fixtures/reads.json` (`pool` in `this_app`, con
+`apps/mobile/src/api/reads.ts` e il suo test) e `apps/mobile/src/i18n/`
+per i testi approvati qui sopra. Per la B: l'API è `PUT
+/me/pool-swims/{key}` (`shared-types/src/poolSwim.ts`), il disegno si
+pubblica con `activity: "swimming"`, e oltre 2,5 m/s l'API risponde
+`422`, quindi il telefono lo controlla prima.
 `settings/sport.ts` è condiviso con TASK-376 B3c e TASK-377 B;
 `health/appleWorkout.ts` e `healthConnectWorkout.ts` con TASK-374 C, 345 C
 e 397 C (1.0.2): dove basta, si passa dal profilo dello sport

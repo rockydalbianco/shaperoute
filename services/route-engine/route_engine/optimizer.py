@@ -22,7 +22,7 @@ from typing import Any, Protocol
 
 import numpy as np
 
-from route_engine import pen_up, pieces
+from route_engine import joined_pieces, pen_up, pieces
 from route_engine.errors import (
     CollapsedShapeError,
     NoRoadsError,
@@ -1218,6 +1218,7 @@ def plan_shape(
     *,
     first: Placement | None = None,
     first_scale_m: float | None = None,
+    join_pieces: bool = True,
 ) -> Plan:
     """plan_route for any normalized shape, also an outline read from a file
     (TASK-032). `name` only labels the result and its messages; start and
@@ -1246,7 +1247,26 @@ def plan_shape(
     TASK-297 A2). Its start is at most START_OFFSET_M away, as the search
     near the start moves it: one farther, from the search 2 km away, is
     refused (ValueError), and that search has no `first`.
+
+    A shape of the catalogue in pieces with the pen down, like the rabbit's
+    head, starts from its pen-up route, each piece hung from the outline by
+    a link run out and back, and the search of the whole line runs only when
+    that is not good enough (joined_pieces.plan, TASK-2002, ADR-2002); not
+    `join_pieces`, the whole line alone, as before.
     """
+    if join_pieces and optimize and joined_pieces.applies(name, word, one_way):
+        return joined_pieces.plan(
+            shape,
+            name,
+            start,
+            distance_m,
+            source,
+            reuse_penalty,
+            max_tilt_deg,
+            activity,
+            first,
+            first_scale_m,
+        )
     if first is not None and first.offset_m > START_OFFSET_M:
         raise ValueError(
             f"the first placement is {first.offset_m:.0f} m from the start, "

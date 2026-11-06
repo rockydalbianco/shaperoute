@@ -31,6 +31,7 @@ from typing import Any, Protocol
 import networkx as nx
 import numpy as np
 
+from route_engine import joined_pieces
 from route_engine.alternatives import alternatives
 from route_engine.geo import LatLon, latlon_to_local_array, path_length_m
 from route_engine.memory import available_mb
@@ -198,6 +199,8 @@ class ShapeJob:
         return planned_distance(self.distance_m, self.one_way)
 
     def area(self, start: LatLon) -> BBox:
+        if joined_pieces.applies(self.name, self.word, self.one_way):
+            return joined_pieces.area(self.name, self.shape, start, self.planned_m)
         return required_area(self.shape, start, self.planned_m, word=self.word)
 
     def plan(self, start: LatLon, source: GraphLoader) -> Plan:
@@ -216,6 +219,25 @@ class ShapeJob:
         return self._as_asked(plan)
 
     def here(self, start: LatLon, source: GraphLoader) -> Plan:
+        """`plan_shape` with the start kept where it is (`_here`); for a
+        shape in pieces with the pen down, as plan_shape plans it: its
+        pen-up plan joined, or the whole line's (joined_pieces.better_of,
+        TASK-2002)."""
+        if not joined_pieces.applies(self.name, self.word, self.one_way):
+            return self._here(start, source)
+        word = compose_shape(self.name)
+        apart = replace(self, shape=tuple(word.points), word=word)
+        kept = joined_pieces.KeptSource(source)
+        return joined_pieces.better_of(
+            self.name,
+            self.shape,
+            self.distance_m,
+            lambda: apart.here(start, kept),
+            lambda: self._here(start, source),
+            kept.last,
+        )
+
+    def _here(self, start: LatLon, source: GraphLoader) -> Plan:
         """`plan_shape` with the start kept where it is.
 
         Only the search around `start` (`move_start` False): no rings

@@ -353,10 +353,18 @@ con gli occhi il motore del telefono dentro Pyodide, i tempi e il server
 con il telefono bloccato. Il percorso del codice è quello della parte A,
 che ha i suoi test.
 
-**Cosa resta**: l'OTA, con il sì dell'utente; la pubblicazione del sito
-per la frase della Privacy; App Privacy su App Store Connect da guardare
-(la posizione esatta va già al server come partenza di un percorso).
-Dopo l'OTA, i log di `/way-back` come scritto nella parte A.
+**Privacy**: la data della Privacy resta «6 November 2026», già quella
+di `main`, quindi i tre test con la data (`documents.test.ts`,
+`AboutPage.test.tsx`, `site/tests/privacy.test.mjs`) non cambiano.
+**App Privacy** su App Store Connect non cambia, d'accordo il
+Coordinatore: la posizione esatta è già dichiarata, legata all'uso
+dell'app, come partenza di un percorso.
+
+**Cosa resta**:
+- l'OTA, solo dopo la prova nel simulatore e l'ok dell'utente al video;
+- la pubblicazione del sito per la frase della Privacy, con il sì
+  dell'utente; il comando lo dà il Coordinatore dopo il merge;
+- dopo l'OTA, i log di `/way-back` come scritto nella parte A.
 
 ## File toccati — parte B
 

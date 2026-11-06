@@ -8,8 +8,10 @@ from __future__ import annotations
 
 from shaperoute_api.sports import (
     cycling,
+    gravel_biking,
     gym,
     hiking,
+    mountain_biking,
     paddling,
     running,
     skiing,
@@ -25,7 +27,9 @@ API_SPORTS: tuple[ApiSport, ...] = (
     paddling.SPORT,
     swimming.SPORT,
     hiking.SPORT,
+    mountain_biking.SPORT,
     walking.SPORT,
+    gravel_biking.SPORT,
     skiing.SPORT,
     xc_skiing.SPORT,
     gym.SPORT,

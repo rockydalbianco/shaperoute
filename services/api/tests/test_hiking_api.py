@@ -72,7 +72,8 @@ def three_networks() -> tuple[ActivityGraphs, Network, Network, Network]:
 
 def test_hiking_is_an_activity_of_the_api_before_the_walk() -> None:
     check_supported("hiking")
-    assert API_ACTIVITIES.index("hiking") == API_ACTIVITIES.index("walking") - 1
+    # Before the walk; an MTB ride between them since TASK-378.
+    assert API_ACTIVITIES.index("hiking") < API_ACTIVITIES.index("walking")
     assert DISTANCE_LIMITS_M["hiking"] == (1_000, 30_000)
     assert API_DISTANCE_LIMITS_M["hiking"] == (1_000, 30_000)
     contract = json.loads((CONTRACT / "contract.json").read_text())

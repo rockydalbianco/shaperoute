@@ -24211,8 +24211,9 @@ delega dell'utente; lista dei file dal Coordinatore.
    drawing».
 4. **L'immagine condivisa** è la tessera sola, come la palestra: niente
    risultati, emoji, video né Strava. Dal proprio nuoto le vasche vengono
-   da `GET /me/pool-swims/{key}`; dal Feed (`postOfDrawing` non ha la
-   chiave) la tessera ha metri, tempo e passo senza le vasche.
+   da `GET /me/pool-swims/{key}`; dal Feed, che non ha la chiave, da `GET
+   /drawings/{id}/pool-swim` (`PostRun.drawingId`, messo da
+   `postOfDrawing` in `feed/ActionBar.tsx`).
 5. **Nei file condivisi** poche righe: un `pool` in `PostComposer` e
    `DrawingForm`, `alone` in `ActivityChips`, un ramo nella tessera di
    `FeedPost`, `DrawingCard`, `DrawingsGrid`, `DrawingResultCard` e

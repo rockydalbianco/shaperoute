@@ -211,11 +211,11 @@ apps/mobile/src/feed/FeedPost.tsx
 apps/mobile/src/social/DrawingCard.tsx, DrawingsGrid.tsx, PublicParts.tsx
 apps/mobile/src/social/composer/PostComposer.tsx
 apps/mobile/src/search/DrawingResultCard.tsx
-apps/mobile/src/share/SharePost.tsx
+apps/mobile/src/share/SharePost.tsx, postRun.ts
+apps/mobile/src/feed/ActionBar.tsx (aggiunto col sì del Coordinatore: la
+  chiave del post, per le vasche nella tessera condivisa dal Feed)
 docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-400.md
-```
-
-`share/postRun.ts`, nella lista, non è servito. Nella
+``` Nella
 lista della B (indicazione del Coordinatore, 2026-11-06) entrano anche
 `packages/shared-types/fixtures/reads.json` (`pool` in `this_app`, con
 `apps/mobile/src/api/reads.ts` e il suo test) e `apps/mobile/src/i18n/`

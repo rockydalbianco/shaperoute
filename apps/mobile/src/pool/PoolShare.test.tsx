@@ -15,6 +15,7 @@ import { ActivitiesContext, useActivitiesDoor } from "../activities/activitiesDo
 import type { PostRun } from "../share/postRun";
 import { SharePost } from "../share/SharePost";
 import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
+import { forgetPoolFigures } from "./usePoolFigures";
 
 jest.mock("expo-file-system");
 jest.mock("react-native-view-shot");
@@ -78,6 +79,7 @@ async function show(run: PostRun = SWIM) {
 }
 
 beforeEach(() => {
+  forgetPoolFigures();
   share.mockClear();
   keepPost.mockClear();
   fetchSpy.mockReset();
@@ -116,7 +118,18 @@ test("the picture is the tile, with the lengths for its owner", async () => {
   );
 });
 
-test("from the Feed, without a key, the tile has no lengths and nothing is asked", async () => {
+test("from the Feed the lengths come by the post", async () => {
+  fetchSpy.mockImplementation(
+    answers({ status: 200, body: { pool_length_m: 50, lengths: 30 } }),
+  );
+  await show({ ...SWIM, key: null, drawingId: "d1" });
+  expect(String(fetchSpy.mock.calls[0][0])).toBe("http://api/drawings/d1/pool-swim");
+  expect(
+    screen.getByTestId("pool-tile-lengths", { includeHiddenElements: true }),
+  ).toHaveTextContent("Lengths 30 · 50 m");
+});
+
+test("without a key nor a post, the tile has no lengths and nothing is asked", async () => {
   await show({ ...SWIM, key: null });
   expect(fetchSpy).not.toHaveBeenCalled();
   expect(

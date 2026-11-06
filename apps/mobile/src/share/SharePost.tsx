@@ -222,6 +222,7 @@ function SharePage({ run, onClose }: Props) {
             <PoolSharePicture
               ref={post}
               poolKey={run.key}
+              drawingId={run.drawingId ?? null}
               durationS={Math.round(run.durationMs / 1000)}
               metres={Math.round(run.distanceM)}
               width={postWidth}

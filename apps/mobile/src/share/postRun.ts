@@ -19,6 +19,9 @@ import { paceLabel, runDistanceLabel } from "../units/format";
 export type PostRun = {
   /** The saved run's key, for Strava; null before «Save». */
   key: string | null;
+  /** The drawing it was shared from in the Feed (TASK-400 part C): a swim
+   * in a pool reads its lengths by it. Absent elsewhere. */
+  drawingId?: string;
   /** The title over the drawing; null shows none. */
   title: string | null;
   /** What was run, whole: the post draws all of it (ADR-0330). */

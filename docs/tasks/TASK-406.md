@@ -224,7 +224,9 @@ Parte C (approvata dal Coordinatore il 2026-11-06). File nuovi:
 File da cambiare: `packages/shared-types/src/index.ts` (una riga),
 `apps/mobile/src/search/SearchScreen.tsx`,
 `apps/mobile/src/i18n/{it,de,fr,es}.ts`, `docs/API.md` (una riga sui
-tipi), `docs/STATUS.md` e questa lista.
+tipi), `docs/STATUS.md` e questa lista. Aggiunto col via del Coordinatore
+il 2026-11-06: `apps/mobile/src/tabs/TabSwipeOwners.test.ts` (una riga,
+la fila delle ore del meteo che scorre di lato).
 
 Parti D–E: si elencano prima di ciascuna.
 

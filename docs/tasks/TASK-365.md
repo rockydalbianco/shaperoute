@@ -62,8 +62,13 @@ Una alla volta, con le sue parole. **Chiuse la 1, la 2 e la 5.**
    (scelta dell'utente in quella sessione: «Sì, questi 5»).
 3. **Dove stanno nel Feed.** Proposta: uno ogni dieci post, solo nella scheda
    «Tutti», mai in «Seguiti», e pochi: non devono coprire i post degli iscritti.
+   — *Risposta* (2026-11-05, in questa sessione, fra «1 ogni 10», «1 ogni 6» e
+   «1 ogni 8, come Style»): «1 ogni 6». Solo «All», mai in «Following», mai
+   accanto a una pubblicità o a un post Style.
 4. **Senza account.** Proposta: si vedono anche senza account, dopo gli esempi
    che ci sono oggi.
+   — *Risposta* (2026-11-05, fra «Sì, fra gli esempi», «Sì, dopo gli esempi» e
+   «No, solo con un account»): «Sì, fra gli esempi».
 5. **I testi**, in inglese, italiano, tedesco, francese e spagnolo. Proposta
    per l'etichetta:
    - Route created by MuW – ride it yourself
@@ -169,6 +174,45 @@ esattamente dal codice che li aveva scritti: la cartella `out/muw-bike-drafts/`
 è stata tolta da una pulizia del disco il 2026-11-03/04, con le bozze non
 approvate, le anteprime e le zone scaricate. I 25 approvati non ne dipendono.
 
+## La riga del Feed (2026-11-05)
+
+L'ultimo passo, col via del Coordinatore: le card di `MuwPost` dentro «All» e
+il tocco che apre il percorso. Branch `feat/TASK-365-feed-line`.
+
+**La regola dei posti** (`feed/feedWithMuw.ts`, dalle scelte 3 e 4):
+
+- il primo percorso dopo il 3° disegno (`MUW_FIRST`), poi uno ogni 6 righe
+  (`MUW_EVERY`): fra due percorsi 5 disegni, mai meno;
+- solo fra due disegni: mai prima del 4° posto, mai in fondo;
+- un posto già preso scende di un disegno, finché è libero, e il prossimo si
+  conta da lì. Sono presi i posti delle pubblicità (`adSlots`, che la
+  pubblicità sia arrivata o no, come fa Style, così una card non si sposta
+  quando ne arriva una) e quelli dei post Style che ci sono. Quindi una card di
+  MuW non sta mai accanto a una pubblicità o a un post Style, e i post Style
+  restano dove `feedWithStyle` li mette;
+- i percorsi nell'ordine di `GET /muw-routes`; finiti, nessun altro;
+- anche senza account, fra gli esempi: con i 15 esempi di oggi sono tre, dopo
+  il 3°, l'8° e il 13°. Mai in «Following».
+
+**Il tocco**: `FeedScreen` ha una prop nuova, `onOpenMuw(route)`. In `App.tsx`
+(ok del Coordinatore, solo la prop e l'import) fa quello che fa `onOpen` per un
+esempio: `closeExplore()`, `openExplored(muwCardRoute(route),
+fetchMuwRoute(route))`, `setRouteList("feed")`, la mappa. Nessun testo nuovo.
+
+**Nel simulatore** (2026-11-06, iPhone 17, Expo Go, API del worktree con i 25
+file, senza account): dopo il 3° esempio la card «MuW · Route created by MuW –
+ride it yourself», «Yellow Arrow · Valencia», «Bike · 26.8 km · ↑ 113 m»; un
+tocco apre il percorso sulla mappa di Valencia con Start ed Export GPX, e «Back
+to the list» torna a «Feed». Screenshot in `out/TASK-365/` (fuori dal
+repository): `feed-muw-card.png`, `muw-route-opened.png`. L'app resta scura
+anche col telefono in chiaro, quindi una prova in chiaro non c'è.
+
+**Emerso, fuori da questa riga**: sotto la distanza, la scheda del percorso
+aperto dice «looks 100% like it». È la riga di «Explore», che legge la
+`similarity: 1` messa da `muwCardRoute` e `muwDetail` (`feed/muwRoute.ts`), il
+cui commento dice che di questi percorsi non si mostra un punteggio. È da
+decidere col Coordinatore.
+
 ## L'etichetta nelle cinque lingue
 
 Risposta dell'utente (2026-11-03, nella chat del Coordinatore), sulle 15
@@ -232,6 +276,19 @@ docs/API.md, docs/UI.md, docs/STATUS.md, docs/tasks/TASK-365.md
 
 Senza migrazione: se le scelte la rendono necessaria, il numero lo dà il
 Coordinatore (0040 e 0041 sono prese).
+
+La riga del Feed (`feat/TASK-365-feed-line`, lista data al Coordinatore il
+2026-11-05):
+
+```
+apps/mobile/src/feed/feedWithMuw.ts, feedWithMuw.test.ts      (nuovi)
+apps/mobile/src/screens/FeedScreen.tsx
+apps/mobile/src/screens/FeedScreenMuw.test.tsx                (nuovo)
+apps/mobile/src/screens/FeedScreenPosts.test.tsx, FeedScreenTabs.test.tsx
+apps/mobile/__tests__/AppFeed.test.tsx, AppPages.test.tsx
+apps/mobile/App.tsx                                           (solo onOpenMuw)
+docs/tasks/TASK-365.md, docs/STATUS.md, docs/UI.md
+```
 
 ## Fuori scope
 

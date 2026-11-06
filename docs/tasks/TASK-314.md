@@ -344,7 +344,10 @@ cambia negli stessi punti in cui lo cambia 401 B: conflitto di testo in
 
 ## Esito — parte B
 
-Fatta il 2026-11-06 nel branch `feat/TASK-314-b-way-back-run`. Test:
+Fatta il 2026-11-06 nel branch `feat/TASK-314-b-way-back-run`; in `main`
+con la #908 (`58c29048`), unita dal Coordinatore a CI verde dopo un
+test-merge con tsc pulito. Impronta iOS `6f8bba4c` invariata, misurata da
+lui. Test:
 26 nuovi (20 in `wayBackRun.test.ts`, 2 in `wayBackDetour.test.ts`, 4 in
 `NavigateWayBack.test.tsx`) più 2 in `MapViewWayBack.test.tsx`. Verdi
 anche i test già esistenti dei file toccati: navigazione, corsa, mappa,

@@ -97,6 +97,7 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     hiking: 24,
     mountain_biking: 13,
     walking: 52,
+    gravel_biking: 13,
     skiing: 61,
     xc_skiing: 60,
     // `.traditionalStrengthTraining` (TASK-385).
@@ -120,6 +121,7 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     hiking: 37,
     mountain_biking: 8,
     walking: 79,
+    gravel_biking: 8,
     skiing: 61,
     xc_skiing: 61,
     // EXERCISE_TYPE_STRENGTH_TRAINING (TASK-385).

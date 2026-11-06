@@ -3,7 +3,8 @@
 A network is the graph of roads an activity is drawn on, one module of
 networks/ each: its name in the cache files and in the graph
 (`graph.graph["network"]`, network.check_network), its Overpass filter and
-how its graph is downloaded. network.py does the rest for every network.
+how its graph is downloaded, and whether it is ridden by bike. network.py
+does the rest for every network.
 """
 
 from __future__ import annotations
@@ -26,6 +27,11 @@ class Network:
     overpass_filter: Filter
     # The graph of a bounding box from Overpass, with the filter given.
     download: Callable[[BBox, Filter], Graph]
+    # Ridden by bike: its graphs keep one-way streets one way and hold the
+    # ways walked with the bike on foot (network.one_way_streets, the checks
+    # of validation.usability). The bike network's and the MTB one's
+    # (TASK-378, ADR-0322); on foot every way goes both ways.
+    by_bike: bool = False
 
 
 @contextmanager

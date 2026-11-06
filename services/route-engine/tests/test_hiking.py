@@ -217,7 +217,8 @@ def test_hiking_is_an_activity_of_the_engine_on_its_own_network() -> None:
 
 
 def test_the_api_offers_hiking_before_the_walk() -> None:
-    assert API_ACTIVITIES == (*SUPPORTED_ACTIVITIES, "walking")
+    # Then the walk and, since TASK-378, the gravel ride, drawn as others.
+    assert API_ACTIVITIES == (*SUPPORTED_ACTIVITIES, "walking", "gravel_biking")
     assert API_ACTIVITIES.index("hiking") < API_ACTIVITIES.index("walking")
 
 

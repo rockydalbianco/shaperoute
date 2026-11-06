@@ -535,6 +535,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **«ready» pronta** (`feat/TASK-377-c-hike-ready`, PR in bozza sopra la
   B): si unisce dopo il server con la 0051, col sì dell'utente.
   Prossimo: la parte B (app), dopo la #765.
+  **Parte A in `main`** (#838, `48bc58c8`). Prossimo: la parte B in una
+  sessione nuova (lista al Coordinatore; le note sono in
+  `tasks/TASK-377.md`), poi il server con la 0051 col sì dell'utente.
   **B3c, seconda metà, in PR** (2026-11-05, dopo la #765): «Impostazioni»
   legge emoji, nome e «Record only» dal profilo dello sport; `activityOf` e
   `runActivityOf` leggono l'attività di ogni riga invece di due `switch`.
@@ -546,6 +549,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in `main` (#838, #861). Le sue deroghe sono passi della ricetta
   (`COME-AGGIUNGERE.md`, «(pilota)»), ADR-0320 accettato. Prossimo per gli
   sport: Gravel/MTB parte A (TASK-378), poi il Roller (TASK-380).
+  **TASK-377 chiuso** (2026-11-06): server con la 0051, «ready» (#864) e
+  documenti (#859) in `main`, OTA di produzione 3ef55853: Hike ⛰️ acceso
+  per tutti con la 1.0.1. Prossimo: Gravel/MTB parte A (TASK-378, in
+  corso).
 
 - **TASK-375 — La categoria «Record only»: sci alpino e sci di fondo
   senza forma** (ADR-0319 **proposto**; numeri dal Coordinatore il
@@ -766,6 +773,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `out/muw-bike-drafts/`, nessuna approvata e nessuna pubblicata. Le scelte
   dell'utente sono tutte aperte; il codice parte col via del Coordinatore, dopo
   TASK-362 e TASK-355 A. `tasks/TASK-365.md`.
+  **La riga del Feed** (2026-11-05/06; via del Coordinatore; branch
+  `feat/TASK-365-feed-line`): le card di MuW in «All», una riga su 6, la prima
+  dopo il 3° disegno, mai accanto a pubblicità o Style, mai in «Following»,
+  anche senza account fra gli esempi (scelte dell'utente del 2026-11-05: «1
+  ogni 6», «Sì, fra gli esempi»); `feed/feedWithMuw.ts`. Un tocco apre il
+  percorso sulla mappa come da «Explore» (`onOpenMuw` in `App.tsx`). Nessun
+  testo nuovo. Visto nel simulatore. OTA di produzione col sì dell'utente.
+  **Chiuso il 2026-11-06**: #868 in `main` (`09307022`); vedi «Completato».
 
 - **TASK-356 — La posizione nel Feed: arrotondata, e detta nella privacy**
   (ADR-0306, punto 4; testo approvato dall'utente il 2026-10-30). Branch
@@ -3103,6 +3118,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-405 — Un percorso di MuW non dice «looks 100% like it»** (2026-11-06; numero dal
+  Coordinatore, trovato con la #868 di TASK-365). Aperto dal Feed, il foglio dice solo titolo e
+  città: `muwCardRoute` mette `scored: false` su `RecommendedRoute` e `ExploredCard` lascia
+  fuori il percento; ogni altro percorso tiene la sua riga. Nessun testo nuovo, solo JS;
+  impronta `6f8bba4c` invariata, OTA col sì dell'utente. «ADR-0310, precisazione»,
+  `tasks/TASK-405.md`.
+- **TASK-365 — I percorsi di MuW nel Feed** (2026-11-06; ADR-0310). I 25 percorsi approvati
+  dall'utente (11 bici, 10 a piedi, 4 canoa) in `catalog/muw_routes/` e sul server
+  (`GET /muw-routes`); #868 in main (`09307022`): nell'app compaiono in «All» come card di
+  MuW, una riga su 6 dal 4° posto, mai accanto a pubblicità o Style, mai in «Following», anche
+  fra gli esempi senza account; un tocco apre il percorso sulla mappa come da «Explore». Un'app
+  già pubblicata non vede niente di nuovo. Prossimo: l'OTA di produzione col sì dell'utente;
+  restano da provare l'export GPX e il `404` nel simulatore (`tasks/TASK-365.md`, criteri;
+  impronta iOS `6f8bba4c` invariata, misurata dal Coordinatore); il «looks 100% like it» del
+  percorso aperto è TASK-405.
 - **TASK-404 — Disegno a mano: un primo tratto piccolo non blocca i tratti dopo** (2026-11-05;
   segnalazione dell'utente dal nuoto, vale per ogni sport). Ogni tratto aggiunto si raddrizza
   sull'1% della grandezza del disegno che forma, non di quello di prima: dopo un puntino un
@@ -3225,8 +3255,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Shape» e la nota «On the water, the drawing goes where it fits near the
   start.»; il disegno a mano va al motore sull'acqua di TASK-369 B, già sul
   server. Un disegno che non sta sull'acqua lo dice con parole sue. Solo
-  JavaScript, impronta iOS 6f8bba4c. Restano gli OTA, col sì dell'utente.
-  `tasks/TASK-396.md`.
+  JavaScript, impronta iOS 6f8bba4c. #860 in main (`452598d1`, 2026-11-06),
+  in produzione con l'OTA `3ef55853`. `tasks/TASK-396.md`.
 - **TASK-369 — «Edit the drawing» su ogni disegno** (ADR-0313; 2026-11-04;
   numeri dal Coordinatore): documenti #712, parte A #719 (`3e7c7d28`), parte
   B #722 (`bacd7c7b`). Il tasto c'è su ogni disegno con una linea, anche

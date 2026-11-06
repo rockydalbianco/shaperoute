@@ -1,6 +1,7 @@
 # TASK-396 — «Freehand» in «Draw» anche con «Paddle»
 
-**Stato**: In revisione — PR aperta, il merge lo fa il Coordinatore
+**Stato**: Done — #860 in `main` (`452598d1`, 2026-11-06), in produzione con
+l'OTA `3ef55853` (da `76305c1a`)
 **Fase**: 4 · **Branch**: `feat/TASK-396-paddle-freehand` · **ADR**: ADR-0313
 (precisazione della scelta 4, nessun ADR nuovo)
 
@@ -112,5 +113,11 @@ docs/STATUS.md      (solo la riga di TASK-396)
 
 Con «Paddle», in «Draw», «Freehand · Shape» e la nota «On the water, the
 drawing goes where it fits near the start.»; il disegno a mano va al motore
-sull'acqua di TASK-369 B. Solo JavaScript, impronta iOS `6f8bba4c`. Restano
-gli OTA, col sì dell'utente.
+sull'acqua di TASK-369 B. Solo JavaScript, impronta iOS `6f8bba4c`. Unita il
+2026-11-06 (`452598d1`) e pubblicata in produzione con l'OTA `3ef55853`, col sì
+dell'utente («ok produzione»). Prova nel simulatore (iPhone 17e, Levico): un
+disegno a mano sul lago diventa un percorso sull'acqua di 1,0 mi dal pontile;
+screenshot in `out/TASK-396/` del worktree. Emerso: nella tavola con la canoa
+c'è «+ photo» (una foto sull'acqua, come per il nuoto); la scelta «niente
+Image» riguardava il selettore di «Draw»: se va tolto, è un seguito con la sua
+lista di file, da chiedere all'utente.

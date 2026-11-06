@@ -18,7 +18,9 @@ export function muwRouteId(route: { id: string }): string {
 /**
  * A MuW route as a route of «Explore» (TASK-365, ADR-0310): what the map and
  * its card show while the route is fetched whole. No likeness is said of it:
- * the app shows no score, and these routes have none to show.
+ * the app shows no score, and these routes have none to show. `scored`
+ * says so to the card, loaded too (TASK-405); `similarity` is only there
+ * because the type wants a number.
  */
 export function muwCardRoute(route: MuwRoute): RecommendedRoute {
   return {
@@ -30,6 +32,7 @@ export function muwCardRoute(route: MuwRoute): RecommendedRoute {
     distance_m: route.route_m,
     route_m: route.route_m,
     similarity: 1,
+    scored: false,
     start: route.start,
     away_m: 0,
     preview: route.preview,

@@ -77,11 +77,15 @@ export function ExploredCard({
       <View>
         <Text style={styles.result}>{distanceLabel(route.route_m, units)}</Text>
         <Text style={styles.target}>
-          {t("{title} · {city} · looks {percent}% like it", {
-            title,
-            city: cityName(route.city),
-            percent: Math.round(route.similarity * 100),
-          })}
+          {/* A route with no likeness to tell, a MuW one, says only what
+              and where (TASK-405). */}
+          {route.scored === false
+            ? `${title} · ${cityName(route.city)}`
+            : t("{title} · {city} · looks {percent}% like it", {
+                title,
+                city: cityName(route.city),
+                percent: Math.round(route.similarity * 100),
+              })}
         </Text>
         {/* A word with the pen up: its letters and the walks between them,
             as «Draw» says it (TASK-279). */}

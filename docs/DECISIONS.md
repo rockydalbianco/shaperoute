@@ -23952,3 +23952,24 @@ motore, nel contratto e nell'API, e i loro profili nascosti nell'app, come
 
 **Server**: migrazione 0052 e deploy, col sì dell'utente. Nessuna notte di
 esempi.
+
+## ADR-0310, precisazione — Un percorso di MuW non dice quanto somiglia
+
+**Stato**: Accettato · 2026-11-06 · TASK-405. Deciso dall'agente su
+delega dell'utente, lista dei file approvata dal Coordinatore.
+
+I percorsi di MuW non hanno punteggio da mostrare (TASK-365: ogni percorso
+passa dall'occhio, non dal punteggio del motore), ma il foglio aperto dal
+Feed diceva «looks 100% like it» per il `similarity: 1` messo solo perché
+il tipo vuole un numero.
+
+1. **Il segno è un campo a parte**, `RecommendedRoute.scored?: false`,
+   messo solo da `muwCardRoute` e portato da `optionsOf` anche a percorso
+   caricato. Assente per ogni altro percorso, che resta com'è.
+2. **`ExploredCard`** con `scored === false` scrive `{title} · {city}`
+   come stringa composta: nessuna chiave, nessun testo nuovo.
+3. **`similarity` resta un numero**: renderla opzionale toccherebbe una
+   decina di file che la leggono (card, preferiti, `RouteResult`).
+
+**Scartato**: riconoscere i percorsi di MuW dall'id (`muw:`) nella card,
+un caso speciale sul nome.

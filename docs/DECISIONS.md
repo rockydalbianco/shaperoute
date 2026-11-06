@@ -24321,7 +24321,7 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
    come «custom layer» di MapLibre nella pagina del video (`videoPage.ts`).
    three.js si carica come MapLibre: versione fissata e hash SRI. Niente di
    nativo, quindi l'impronta iOS non cambia e si pubblica con un OTA.
-   three.js è una dipendenza nuova: entra solo col sì dell'utente.
+   three.js è una dipendenza nuova: l'utente ha detto sì il 2026-11-06.
 2. **I modelli** hanno una licenza scritta e nessun personaggio di altri.
    Il candidato è il pacchetto CC0 di Quaternius (glTF, galoppo e passo).
    L'elefante non c'è in nessun pacchetto CC0 trovato: si aggiunge solo con

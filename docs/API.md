@@ -3054,7 +3054,8 @@ serve il token. La chiave dell'API serve come su ogni percorso.
 **Da dove vengono**
 - Le stazioni vengono da OpenSkiData (`MAPS.md`, «Le stazioni sciistiche da
   OpenSkiData»), con `resort_import.py`.
-- I tipi in `packages/shared-types` arrivano con la parte C.
+- I tipi sono in `packages/shared-types/src/skiResorts.ts` (parte C), con
+  gli esempi `fixtures/ski-resorts.json` e `ski-resort-weather.json`.
 
 **Il meteo (TASK-406 parte B)**
 - **`GET /ski-resorts/{id}/weather`**: il meteo della stazione da MET

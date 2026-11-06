@@ -70,6 +70,30 @@ stile di MuW.
   con meteo e neve fresca prevista da MET Norway, più il tipo di neve
   segnato dai membri nella stazione nelle ultime 24 ore. Niente bollettino
   a pagamento.
+- 2026-11-06, domanda 2: «Testo libero». Il modello è un testo libero,
+  «sci» o «snowboard» più marca e modello, ricordato per la volta dopo
+  (parte D).
+- 2026-11-06, domanda 4: «Sì, così», e poi «Sì, scheda Ski». La ricerca ha
+  una scheda **«Ski»** accanto a «All · Drawings · People · Routes»: il
+  filtro Sport della ricerca non offre lo sci, che si registra soltanto.
+  - Senza scrivere niente, le stazioni vicine («Near you»); scrivendo,
+    quelle con quel nome.
+  - La pagina della stazione: nome, regione, impianti, km di piste per
+    difficoltà, quote, sito, il meteo in valle e in cima per 24 ore con la
+    neve fresca stimata, i crediti.
+  - Il tipo di neve dei membri, i post e il tasto per seguirla arrivano con
+    la parte D.
+- 2026-11-06, domanda 5, i testi della parte C: «Sì, approvati».
+  - «Ski resorts», «Near you», «No ski resort with this name.», «Lifts»
+    («Impianti»), «Pistes», «Novice · Easy · Intermediate · Advanced ·
+    Expert · Freeride», «Website», «Base · Top» («Valle · Cima»), «Next 24
+    hours», «Fresh snow», «Estimated from the forecast, not a snow
+    report.», «Weather unavailable right now.», «Older forecast: MET Norway
+    is not answering.».
+  - I crediti, chiesti così dal Coordinatore per le licenze: «Weather: MET
+    Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap
+    contributors».
+  - La riga della privacy resta per la parte D.
 
 ## Domande aperte (una alla volta)
 
@@ -132,6 +156,34 @@ MET Norway:
 Dettagli in `API.md` («Il meteo») e nell'aggiunta ad ADR-0338. Prossimo: il
 deploy col sì dell'utente; poi la domanda 2 e la parte C.
 
+**Parte C, 2026-11-06.** Nella ricerca c'è la scheda «Ski»
+(`src/ski/`):
+- senza scrivere niente, chiede la posizione e mostra «Near you», le
+  stazioni più vicine; da due lettere, quelle con quel nome, 300 ms dopo
+  l'ultima lettera, come la ricerca dei disegni;
+- toccata una stazione, la sua pagina si apre sopra la ricerca, e «Back»
+  la riporta com'era;
+- la pagina mostra nome, regione, impianti, km di piste (totali e per
+  difficoltà, dalla più facile), le quote, il sito (solo un indirizzo
+  `http` o `https`), il meteo e i crediti;
+- il meteo: valle e cima, la temperatura di adesso, la neve fresca con la
+  riga della stima, e un'ora ogni tre delle prossime 24. Con `stale` c'è
+  la riga «Older forecast». Con un `503` c'è «Weather unavailable right
+  now.».
+
+Scelte tecniche, decise dall'agente su delega dell'utente:
+- all'API va la posizione arrotondata a 2 decimali, circa un chilometro,
+  come per i luoghi intorno. Per ordinare le stazioni basta;
+- chi usa le miglia vede le quote in piedi, i gradi Fahrenheit e la neve
+  in pollici; gli altri metri, gradi Celsius e centimetri;
+- le ore sono quelle del telefono;
+- i simboli del meteo di MET Norway diventano emoji, quindi senza
+  immagini nuove;
+- «Lifts» e «Top» hanno già un'altra traduzione nell'app («Risalite»,
+  «Top»), quindi qui si scrivono `Lifts@@resort` e `Top@@resort`.
+
+Prossimo: la parte D, con la sua lista dei file.
+
 ## File toccati
 
 Questa PR (documenti): `docs/tasks/TASK-406.md` (nuovo), `docs/DECISIONS.md`
@@ -160,7 +212,21 @@ File da cambiare: `services/api/shaperoute_api/ski_resorts_api.py`,
 `docs/API.md`, `docs/DECISIONS.md` (un'aggiunta ad ADR-0338),
 `docs/STATUS.md` e questa lista.
 
-Parti C–E: si elencano prima di ciascuna.
+Parte C (approvata dal Coordinatore il 2026-11-06). File nuovi:
+- `packages/shared-types/src/skiResorts.ts`,
+  `fixtures/ski-resorts.json`, `fixtures/ski-resort-weather.json` e
+  `test/skiResorts.test.ts`;
+- `apps/mobile/src/api/skiResorts.ts` e il suo test;
+- `apps/mobile/src/ski/ResortList.tsx`, `ResortPage.tsx` e
+  `ResortWeather.tsx`, ognuno col suo test;
+- `apps/mobile/src/search/skiResorts.test.tsx`.
+
+File da cambiare: `packages/shared-types/src/index.ts` (una riga),
+`apps/mobile/src/search/SearchScreen.tsx`,
+`apps/mobile/src/i18n/{it,de,fr,es}.ts`, `docs/API.md` (una riga sui
+tipi), `docs/STATUS.md` e questa lista.
+
+Parti D–E: si elencano prima di ciascuna.
 
 ## Criteri di accettazione
 

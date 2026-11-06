@@ -376,7 +376,10 @@ Parte C1: `apps/mobile/src/share/EditVideoSheet.tsx` e `.test.tsx`,
 `LineColourRow.tsx`, `VideoEmojiRow.tsx`, `videoEdit.ts` e `.test.ts`
 (nuovi); `SharePost.tsx` e `.test.tsx`, `SharePostVideo.test.tsx`,
 `StyleRow.tsx` e `.test.tsx`, `videoStyle.ts` e `.test.ts`, `videoScene.ts`
-e `.test.ts`, `videoPage.ts` e `.test.ts`; `apps/mobile/src/theme/tokens.ts`
+e `.test.ts`, `videoPage.ts` e `.test.ts` (i tre test `StyleRow.test.tsx`,
+`videoStyle.test.ts` e `videoPage.test.ts` aggiunti dal Coordinatore il
+2026-11-06); lo stile all'apertura resta «Night», anche con «2D» primo
+nella riga; `apps/mobile/src/theme/tokens.ts`
 (il blocco `videoLine`); `apps/mobile/src/i18n/{it,de,es,fr}.ts`;
 `apps/mobile/src/tabs/TabSwipeOwners.test.ts` (una riga in `ROWS`);
 `docs/tasks/TASK-408.md`, `docs/STATUS.md`, `docs/DECISIONS.md`.

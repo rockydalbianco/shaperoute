@@ -106,3 +106,13 @@ test("another member's profile shows its bests under the totals; an older API no
   await page(older);
   expect(screen.queryByTestId("personal-bests")).toBeNull();
 });
+
+test("a gravel and an MTB ride have bests of their own, after the bike's (TASK-378)", async () => {
+  const mtb: PersonalBest = { ...fortyK, sport: "mountain_biking", distance: "20k" };
+  const gravel: PersonalBest = { ...fortyK, sport: "gravel_biking", distance: "10k" };
+  await show([mtb, fortyK, gravel]);
+  const texts = within(screen.getByTestId("personal-bests"))
+    .getAllByText(/^(BIKE|GRAVEL|MTB|10 km|20 km|40 km)$/)
+    .map((node) => node.props.children);
+  expect(texts).toEqual(["BIKE", "40 km", "GRAVEL", "10 km", "MTB", "20 km"]);
+});

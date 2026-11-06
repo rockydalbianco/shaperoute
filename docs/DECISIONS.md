@@ -23692,7 +23692,8 @@ freccia davanti; fuori rotta «Off the route»; sotto «{percent}% drawn ·
 cinque lingue; l'unico testo nuovo è «{distance} left», nelle unità scelte.
 ## ADR-0336 — Ruotare il disegno sulla mappa e aggiungere pezzi da tessere, tutto sul telefono
 
-**Stato**: Proposto · 2026-11-05 · TASK-402. Scelta di prodotto
+**Stato**: Accettato · 2026-11-06 (proposto il 2026-11-05) · TASK-402,
+parti A (#857) e B (#873) in `main`. Scelta di prodotto
 dell'utente («Aggiungere pezzi», punto 2); il resto deciso dall'agente su
 delega dell'utente; confine con TASK-347 deciso dal Coordinatore.
 
@@ -24130,6 +24131,38 @@ il tipo vuole un numero.
 **Scartato**: riconoscere i percorsi di MuW dall'id (`muw:`) nella card,
 un caso speciale sul nome.
 
+## ADR-0322, precisazione — La parte B: Gravel e MTB nell'app
+
+**Stato**: Accettato · 2026-11-06 · TASK-378 parte B. Testi, ordine dei
+record e «ready» sono scelte dell'utente (TASK-378.md); lista dei file del
+Coordinatore; il resto è deciso dall'agente su delega dell'utente.
+
+1. **In «Settings»** gli sport si chiamano `gravel` e `mtb`, dopo «Hike»,
+   nell'ordine dei profili. `ready` resta falso finché l'utente non li
+   accende (il Coordinatore glielo chiede con la parte B in `main`): nei
+   build dello store non si vedono, in Expo Go dicono «Soon». Ricerca e modulo per pubblicare li offrono solo da
+   pronti (`OFFERED_WHEN_READY`); via la lista `NOT_YET` di
+   `searchFilters.ts`.
+2. **Partire senza percorso** è quello della bici, «Ride without a
+   route», con l'emoji dello sport: nessun testo nuovo.
+3. **L'energia** (Compendium 2024): Gravel con le fasce di velocità della
+   bici, copiate nel suo file perché un file di sport non importa un altro
+   sport; MTB «bicycling, mountain, general» (01009), 8,5 MET a ogni
+   velocità, perché su un sentiero la velocità dice poco della fatica.
+4. **Salute**: Apple `.cycling` (13) e Health Connect `BIKING` (8),
+   controllati sulle librerie dell'app: nessuna delle due ha un tipo
+   gravel o MTB.
+5. **I file importati**: in un FIT il sub-sport di una bici (sport 2)
+   dice `mountain` (8), `gravel_cycling` (46) ed `e_bike_mountain` (47),
+   numeri del profilo dell'SDK Garmin; ogni altro resta una bici. Nei GPX
+   e TCX le parole «gravel», «mountain bike» e «mtb», mai
+   «mountaineering».
+6. **I record**: `PersonalBest.sport` del contratto si allarga ai due
+   sport, e il profilo li mostra dopo quelli della bici, «GRAVEL» e
+   «MTB».
+7. **Nessuna rete sul telefono**: li disegna solo il server, come nella
+   parte A. L'impronta iOS non si muove (solo JavaScript) e `sports.json`
+   dell'orologio non cambia.
 ## ADR-0338 — Le stazioni sciistiche: dati OSM, meteo MET Norway dal server, la giornata completa
 
 **Stato**: Proposto · 2026-11-06 · TASK-406. Le scelte di prodotto sono
@@ -24237,3 +24270,92 @@ alla volta.
 - **Ricostruire le stazioni raggruppando impianti e piste dei riquadri**:
   scartata, perché in OSM impianti e piste non portano il nome della
   stazione.
+## ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi
+
+**Stato**: Proposto · 2026-11-06 · TASK-380. Numeri dal Coordinatore
+(2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
+`tasks/TASK-380.md`. I punti tecnici qui sotto sono decisi dall'agente su
+delega dell'utente.
+
+**Contesto**: il Roller è il terzo sport della fase 1 (TASK-376, scelta
+dell'utente del 2026-11-04: asfalto liscio e `inline_skates=yes`, e prima
+si misura quanta rete resta). Nessuna rete di oggi va bene:
+
+- la rete foot prende sentieri, sterrati, ciottoli e porfido;
+- la rete bike pedala ogni `track` e le strade principali, rispetta i
+  sensi unici e fa i marciapiedi «a piedi con la bici».
+
+Il banco ha provato quattro reti dai download della bici, senza toccare il
+motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
+54, 23 buoni):
+
+- **`roller`**:
+  - cosa prende: ciclabili, marciapiedi, aree pedonali, strade residenziali,
+    `service`, `unclassified` e terziarie, con superficie liscia o non
+    scritta; `path` e `track` solo se dicono una superficie liscia;
+  - cosa lascia fuori: `smoothness` da `bad` in giù, strade principali e
+    secondarie;
+  - i risultati: 34 su 54, 10 buoni. Milano 8 su 9, Trento 9 su 9,
+    pianura 8 su 9; Fiemme e Asiago 2 su 9. Mai su ciottoli, sterrato o
+    strade principali; il 61% dei km su strade con le auto.
+- **`rollersec`** (con le secondarie): 42 su 54, ma il 12,4% dei km su
+  strade secondarie.
+- **`rollerquiet`** (senza terziarie né autobloccanti): 21 su 54.
+- **`rollerflat`** (senza i tratti oltre l'8%): 26 su 54; a Trento la
+  salita scende da 210 a 95 m ogni 10 km.
+- **Il tag `inline_skates`** c'è solo per 4,5 km a Trento, e in nessun'altra
+  zona.
+
+**Decisione (proposta)**:
+
+1. **Una rete nuova `roller`** (`route_engine/networks/roller.py`) con le
+   regole di `roller` qui sopra, scaricata con un suo filtro Overpass
+   (strade fino alle terziarie, ciclabili, marciapiedi, aree pedonali,
+   `path` e `track`), con file di cache suoi (`roller_*`). Il grafo dice
+   `network: roller`.
+2. **Ogni via va nei due sensi** (`by_bike` falso): chi pattina, per il
+   Codice della strada (art. 190), è un pedone. Niente tratti «a piedi»: si
+   pattina o non si passa.
+3. **Il tag `inline_skates`** non fa la rete: `inline_skates=no` toglie una
+   via, `yes` o `designated` la tiene anche se la superficie non lo dice.
+4. **Un'attività nuova** `inline_skating` in `activities/`, nei file nuovi
+   di ogni strato, con una riga per registro
+   (`docs/sports/COME-AGGIUNGERE.md`). Il nome non è `skating`, che alcuni
+   test usano come attività sconosciuta (`CONDIVISO.md`).
+5. **L'impronta del motore**: una rete nuova è un file nuovo nel motore.
+   Se i nove percorsi fissi di `test_same_routes.py` restano identici, una
+   riga in `SAME_ROUTES_AS`, come Hike e MTB; altrimenti una notte di
+   esempi, col sì dell'utente. Server e migrazione (numero dal
+   Coordinatore) col sì dell'utente.
+6. **Niente quote nel motore per ora**: il filtro delle salite vorrebbe le
+   tegole Terrarium dentro il motore, sul server e sul telefono. Si riprende
+   quando la parte G di TASK-347 porta il dislivello (ADR-0300).
+7. **Sul telefono**: un `SportProfile` con:
+   - Apple `.skatingSports` (39) e Health Connect `EXERCISE_TYPE_SKATING`
+     (60), da verificare sulle librerie;
+   - Strava `InlineSkate`;
+   - l'energia dal Compendium («inline skating»);
+   - un passo di circa 15 km/h per il tempo stimato.
+
+   Solo JavaScript: l'impronta iOS non si muove.
+
+**Restano all'utente**:
+
+- nome ed emoji;
+- la rete, e quindi cosa si promette in montagna;
+- le distanze (il banco ha provato 5–30 km);
+- se conta nel gioco e nei record;
+- i testi, con l'avviso su traffico e discese;
+- quando si accende.
+
+**Alternative**:
+
+- **`rollersec`, con le secondarie**: otto forme in più, quasi tutte in
+  montagna, ma un ottavo del percorso su strade veloci, dove coi pattini non
+  si va. Non la propongo.
+- **`rollerquiet`**: più sicura sulla carta, ma regge solo a Milano.
+- **`rollerflat`**: toglie le discese ripide, ma costa forme a Trento e
+  vuole le quote nel motore. Dopo TASK-347 G.
+- **La rete foot o bike così come sono**: porterebbero chi pattina su
+  porfido, sterrato o strade principali.
+- **Una rete fatta col tag `inline_skates`**: 4,5 km in sei zone.

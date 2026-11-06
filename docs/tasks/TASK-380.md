@@ -253,6 +253,8 @@ apps/mobile/src/sports/inline_skating.ts, src/sports/index.ts, src/search/search
 apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts,
     src/route/distanceMiles.test.ts, src/api/accounts.test.ts
 apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json
+apps/mobile/targets/watch/{de,en,es,fr,it}.lproj/Localizable.strings  (da scripts/watch-texts.sh;
+    aggiunti dal Coordinatore il 2026-11-06, come per Gravel e MTB)
 apps/mobile/assets/engine/engine.zip
 docs/tasks/TASK-380.md, docs/STATUS.md, docs/sports/CONDIVISO.md,
     docs/sports/roller.md, docs/DECISIONS.md
@@ -328,4 +330,6 @@ personali nel contratto (`src/index.ts`) e `PersonalBests.tsx` non sanno
 ancora `inline_skating`; mancano anche i testi `tLater`, l'energia, il
 passo per il tempo stimato, l'avviso `caution`, la riga in
 `settings/sport.ts` e `OFFERED_WHEN_READY` (via il `NOT_YET` di
-`searchFilters.ts`).
+`searchFilters.ts`). I testi dell'orologio dicono «Roller» in tutte le
+lingue: con le traduzioni della parte B (in tedesco «Inline», in spagnolo
+«Patines») si rifanno con `scripts/watch-texts.sh`.

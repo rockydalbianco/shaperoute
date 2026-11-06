@@ -101,6 +101,7 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.pool_swims import install_pool_swims
 from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.profiles import install_profiles
 from shaperoute_api.push import install_push
@@ -371,6 +372,9 @@ def create_app(
     # The workouts at the gym, saved without a track, and their sets
     # (TASK-385); they need a token.
     install_gym_sessions(app)
+    # The swims in a pool, saved without a track, and their lengths
+    # (TASK-400); they need a token.
+    install_pool_swims(app)
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)

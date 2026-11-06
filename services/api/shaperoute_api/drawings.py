@@ -105,8 +105,8 @@ TAG_UNKNOWN = "Only MuW members can be tagged: one of these is not."
 TAG_YOURSELF = "You cannot tag yourself."
 TAG_TWICE = "Each person is tagged once."
 TOO_SHORT = "This run is too short to publish."
-# A workout at the gym has no track and a run has one (TASK-385): the
-# drawing cannot make one the other.
+# A workout at the gym and a swim in a pool have no track and a run has one
+# (TASK-385, TASK-400): the drawing cannot make one the other.
 NOT_TRACKLESS = "A workout at the gym stays one, and a run stays a run."
 NO_DRAWING = "No drawing with this id."
 PHOTOS_ON_THE_PHONE = (
@@ -429,7 +429,7 @@ MINE_COLUMNS = (
 )
 # The run of a drawing, locked while its drawing changes.
 RUN_TO_DRAW = (
-    "SELECT id, ST_AsGeoJSON(ST_Force2D(track), 15) AS track FROM runs"
+    "SELECT id, activity, ST_AsGeoJSON(ST_Force2D(track), 15) AS track FROM runs"
     " WHERE user_id = %s AND key = %s FOR UPDATE"
 )
 
@@ -699,9 +699,12 @@ class Drawings:
                 trackless = run["track"] is None
                 if visibility != "only_me" and not shown and not trackless:
                     raise AccountError(422, "invalid_request", TOO_SHORT)
-                if (
-                    body.activity is not None
-                    and (body.activity in TRACKLESS_ACTIVITIES) != trackless
+                # A run without a track keeps what it was: a workout at the
+                # gym, or a swim in a pool (TASK-400), which is `swimming`.
+                if body.activity is not None and (
+                    body.activity != run["activity"]
+                    if trackless
+                    else body.activity in TRACKLESS_ACTIVITIES
                 ):
                     raise AccountError(422, "invalid_request", NOT_TRACKLESS)
                 before = conn.execute(

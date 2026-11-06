@@ -2581,6 +2581,7 @@ export interface StyleShop {
 }
 
 export * from "./gym.ts";
+export * from "./poolSwim.ts";
 
 /**
  * The items a member tags on the photos of its own posts (TASK-394,

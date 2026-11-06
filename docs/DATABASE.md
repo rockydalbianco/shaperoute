@@ -1002,6 +1002,18 @@ diverse.
 - Nessuna riga di prima cambia, nessun backfill. Test in
   `test_outfit_tags.py`.
 
+Migrazione `0053_pool_swims.sql` (TASK-400 parte A, ADR-0334, `API.md`
+«Pool swim»; il numero è del Coordinatore, la `0052` è di TASK-378 A):
+
+- **`runs`**: `runs_track_check` diventa `track IS NOT NULL OR activity IN
+  ('gym', 'swimming')`: un nuoto in piscina va senza traccia. Il nuoto in
+  acque libere ha la traccia come prima; `pool_swims` dice quale è quale.
+- **`pool_swims`**: una riga per nuoto in piscina, chiave la sua corsa (`ON
+  DELETE CASCADE`): `pool_length_m` (`numeric(5, 2)`, da 10 a 100) e
+  `lengths` (da 1 a 1000). `runs.distance_m` è il loro prodotto, al metro.
+- Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
+  `test_pool_swims.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

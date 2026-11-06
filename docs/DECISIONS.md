@@ -23889,3 +23889,33 @@ Il nome dello sport cambia da «Open water swim» a «Swim» in tutte le lingue
 ogni volta); uno sport nuovo «Pool swim» (scelta dell'utente); le yard (per
 ora); mandare il post a chi dichiara solo `trackless` (lo vedrebbe senza le
 vasche).
+
+## ADR-0334, precisazione — La parte A: il nuoto in piscina nel server
+
+**Stato**: Attiva · 2026-11-06 · TASK-400 parte A, decisa dall'agente su
+delega dell'utente; lista dei file e migrazione `0053` dal Coordinatore.
+
+1. **Un endpoint suo**, `PUT /me/pool-swims/{key}`, come la palestra: la
+   corsa ha `activity` `swimming`, `track` nullo e `distance_m` = vasche ×
+   vasca, al metro. `GET /me/pool-swims/{key}` al proprietario, `GET
+   /drawings/{id}/pool-swim` (vasca e vasche) a chi vede il disegno.
+2. **La vasca al centimetro** (`numeric(5, 2)`, 10–100 m): 33⅓ m si tiene
+   33,33 m e 30 vasche fanno 1000 m. Le vasche da 1 a 1000.
+3. **Un tetto di velocità**, 2,5 m/s (sopra i record del mondo sui 50 m):
+   oltre è `422`, perché vasche o vasca sono scritte male. Il telefono lo
+   controlla prima (parte B).
+4. **Il CHECK delle corse senza traccia** si allarga a `swimming`; un CHECK
+   non legge `pool_swims`, quindi è l'API che non salva mai un nuoto senza
+   traccia fuori da `pool_swims.py`.
+5. **Il disegno lascia a una corsa senza traccia la sua attività**
+   (`drawings.py`): prima voleva un'attività di `TRACKLESS_ACTIVITIES`, e
+   un nuoto in piscina pubblicato con `activity: "swimming"` sarebbe stato
+   `422`. Una corsa con traccia resta una corsa (come prima).
+6. **`pool` in `X-MuW-Reads`** entra per ultimo in questa parte, dopo
+   TASK-378 A, che tiene `reads.py` e `reads.json` (Coordinatore). Fino ad
+   allora un nuoto in piscina passa a chi dice `swimming` e `trackless`:
+   nessuna app ne salva ancora, perché l'endpoint lo usa solo la parte B.
+
+**Conseguenze**: una migrazione, nessuna dipendenza, nessun testo
+dell'app, impronta iOS e del motore invariate (`pool_swims.py` e
+`drawings.py` non sono in `engine.zip`). Server col sì dell'utente.

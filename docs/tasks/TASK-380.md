@@ -115,6 +115,11 @@ docs/tasks/TASK-380.md, docs/STATUS.md, docs/sports/CONDIVISO.md, docs/sports/ro
   sulle zone intere, contro le misure di `roller.md`; corsa, bici e canoa
   identiche (`compare --same`).
 - **Il controllo «veicolo»** del gioco: vedi sotto, nelle scelte.
+- **La migrazione e l'ordine** (Coordinatore, 2026-11-06): la prima
+  libera oggi è la 0055, da confermare con l'approvazione della lista.
+  `packages/shared-types/src/index.ts`, `settings/sport.ts` e i test che
+  contano gli sport li toccano anche 378 C (accensione di Gravel e MTB) e
+  400 B/C (piscina): l'ordine fra questi task lo decide il Coordinatore.
 
 ### Parte B — app (dopo A)
 

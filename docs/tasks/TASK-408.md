@@ -116,13 +116,26 @@ oggi:
    nella pagina del video (versione fissata, SRI, niente di nativo); i
    modelli sono quelli CC0 di Quaternius, con la lista degli animali letta
    nel pacchetto prima di prometterla.
+4. **L'elefante subito** (2026-11-06): «Elefante subito». L'elefante è nella
+   prima versione, accanto agli animali CC0. Quale modello: domanda 2b.
 
 ## Domande aperte (una alla volta)
 
 1. ~~three.js e i modelli CC0~~: risposta sopra (scelta 3).
-2. **L'elefante** — la prossima. Proposta: per la prima versione gli animali del
-   pacchetto CC0; l'elefante dopo, con un modello a pagamento di cui si
-   legge la licenza, o fatto per MuW.
+2. ~~L'elefante~~: risposta sopra (scelta 4).
+2b. **Quale elefante** — la prossima. I candidati trovati il 2026-11-06:
+   - **«Elephant Anim» di Shivoahm su Sketchfab**
+     (https://sketchfab.com/3d-models/elephant-anim-766f267ff6bd4a87a45e3d26286b9d27):
+     gratis, **CC BY 4.0** (uso commerciale permesso, con il nome
+     dell'autore nei crediti dell'app), 6k triangoli, animazioni idle, passo,
+     corsa e in piedi su due zampe. L'autore lo chiama «realistico»: accanto
+     agli animali low-poly di Quaternius può sembrare di un altro stile.
+     **Proposta**, perché non costa e la licenza è chiara.
+   - **«African elephant» su CGTrader**, circa 7 $, licenza «Royalty Free»
+     di CGTrader, glTF, circa 6k poligoni, 15 animazioni; texture 8K da
+     ridurre per il telefono. Da comprare l'utente stesso, dopo aver letto
+     se la licenza permette un file che l'app scarica nella WebView.
+   Nessun elefante animato CC0 trovato.
 3. **Quali personaggi** nella riga, e quanti. Proposta: 5 o 6, scelti dalla
    tavola dopo aver visto il pacchetto.
 4. **Le scene e il finale**: quali pezzi si offrono, e se la durata resta

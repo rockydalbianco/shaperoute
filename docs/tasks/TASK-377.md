@@ -1,7 +1,7 @@
 # TASK-377 — L'escursionismo, il pilota della struttura degli sport
 
-**Stato**: In corso — parte 0: misura dei sentieri e proposta. Le scelte
-di prodotto vanno all'utente una alla volta, prima del codice.
+**Stato**: In corso — parti 0 e A in `main`, parte B in PR; resta
+«ready», dopo il server con la parte A.
 **Fase**: 4 · **Branch**: `docs/TASK-377-0-hike` (parte 0), poi
 `feat/TASK-377-a-hike-engine-api`, `feat/TASK-377-b-hike-app` ·
 **ADR**: ADR-0321 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -267,3 +267,27 @@ metà di un percorso sta sui sentieri: le misure sono in `hike.md`.
 Server (0051 e deploy) col sì dell'utente.
 
 Prossimo: la parte B, dopo la #765.
+
+2026-11-05, parte B (`feat/TASK-377-b-hike-app`), lista approvata dal
+Coordinatore con due deroghe (`sports/base.ts` per il campo `caution`,
+`screens/RunNoRouteButton.tsx` per ⛰️):
+
+- «Settings» ha la riga «Hike» ⛰️ dopo «Walk», ancora «Soon»
+  (`ready: false`); la hike si chiede e si salva come `hiking`, e parte
+  senza percorso con «Hike without a route»;
+- ricerca e modulo per pubblicare offrono la hike appena «Hike» è pronto
+  (`activityOffered`); via la riga di A in `searchFilters.ts`;
+- sotto ogni percorso di una hike, in «Disegna», l'avviso sui sentieri;
+- i file di altre app: FIT `hiking` (17), GPX/TCX «hik…», Strava «4»;
+- i tre testi della scelta 6 nelle quattro tabelle;
+- `route/runTime.ts` non cambia: il tempo usa già il passo delle
+  camminate (`timeAt: "walker"`). L'orologio tiene la hike come la
+  camminata (`NOT_ON_WATCH` non cambia).
+
+Domanda all'utente sui sentieri (2026-11-05): in montagna circa metà di
+un'escursione sta su strade secondarie tranquille. Risposta: **va bene
+così per ora**; pesare gli archi (l'alternativa di ADR-0321) sarà un task
+a parte del motore, dopo le prime escursioni vere.
+
+Prossimo: «ready» a vero con una riga in `settings/sport.ts`, dopo che il
+server ha la parte A (0051 e deploy), col sì dell'utente.

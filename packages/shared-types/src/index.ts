@@ -454,6 +454,11 @@ export const API_ERROR_CODES = [
   "new_account",
   /** The API has no keys for Apple or for Google, 503 (TASK-322). */
   "provider_unavailable",
+  /**
+   * An item tagged on a photo, 422 (TASK-394): `reason` is one of
+   * OUTFIT_TAG_REASONS, for the app's words.
+   */
+  "outfit_tag_rejected",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
@@ -472,9 +477,10 @@ export interface ApiError {
      * Only with "image_not_usable", else null: why the engine found no
      * outline (TASK-073). Missing from an API older than TASK-073. With
      * "outline_edit_rejected", why the drawing was refused (TASK-079); with
-     * "comment_rejected", why the comment was (TASK-120).
+     * "comment_rejected", why the comment was (TASK-120); with
+     * "outfit_tag_rejected", why the item was (TASK-394).
      */
-    reason?: ImageReason | EditReason | CommentReason | null;
+    reason?: ImageReason | EditReason | CommentReason | OutfitTagReason | null;
   };
 }
 
@@ -1226,6 +1232,11 @@ export interface DrawingPhoto {
   url: string;
   width: number;
   height: number;
+  /**
+   * What its owner wears in it (TASK-394): missing from an API before it.
+   * The link and the totals only to the owner.
+   */
+  outfit_tags?: OutfitTag[];
 }
 
 /**
@@ -1560,8 +1571,9 @@ export interface DrawingSearchPage extends FeedPage {
 
 /**
  * What a member reports with POST /reports (TASK-121, ADR-0228): a drawing
- * (a post of the feed), a comment, a member, a group run (TASK-309), or a
- * private message (TASK-319: only the one it was sent to reports it).
+ * (a post of the feed), a comment, a member, a group run (TASK-309), a
+ * private message (TASK-319: only the one it was sent to reports it), or an
+ * item tagged on a photo (TASK-394).
  */
 export const REPORT_KINDS = [
   "drawing",
@@ -1569,6 +1581,7 @@ export const REPORT_KINDS = [
   "user",
   "group_run",
   "message",
+  "outfit_tag",
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
@@ -1588,7 +1601,7 @@ export type ReportReason = (typeof REPORT_REASONS)[number];
 /**
  * POST /reports: kept once for each reporter and thing, the latest reason
  * kept; 204. `id` is the drawing's id, the comment's id, the member's
- * public_id or the message's id. PUT and DELETE /users/{public_id}/block keep two members
+ * public_id, the message's id or the item's id. PUT and DELETE /users/{public_id}/block keep two members
  * apart both ways, and GET /me/blocked is a PeoplePage of those blocked.
  */
 export interface ReportRequest {
@@ -2568,3 +2581,99 @@ export interface StyleShop {
 }
 
 export * from "./gym.ts";
+
+/**
+ * The items a member tags on the photos of its own posts (TASK-394,
+ * ADR-0333): the list the app shows, in this order (its words: Shoes, Top,
+ * Jacket…).
+ */
+export const OUTFIT_ITEMS = [
+  "shoes",
+  "top",
+  "jacket",
+  "shorts",
+  "tights",
+  "socks",
+  "cap",
+  "glasses",
+  "watch",
+  "backpack",
+  "other",
+] as const;
+export type OutfitItem = (typeof OUTFIT_ITEMS)[number];
+
+/** At most on a photo, and in a post; checked by the API too. */
+export const OUTFIT_TAGS_ON_PHOTO = 5;
+export const OUTFIT_TAGS_IN_POST = 10;
+export const OUTFIT_BRAND_MAX_LENGTH = 40;
+export const OUTFIT_MODEL_MAX_LENGTH = 80;
+
+/**
+ * Why the API refuses an item with "outfit_tag_rejected": a link that is not
+ * an https page on a domain name, a shortener, a link MuW cannot open (its
+ * list of domains, or Web Risk), an address in the brand or the model, more
+ * than 5 on the photo or 10 in the post, words of the filter.
+ */
+export const OUTFIT_TAG_REASONS = [
+  "not_https",
+  "shortened",
+  "blocked",
+  "link_in_text",
+  "too_many_on_photo",
+  "too_many_in_post",
+  "words",
+] as const;
+export type OutfitTagReason = (typeof OUTFIT_TAG_REASONS)[number];
+
+/** An item on a photo, in DrawingPhoto.outfit_tags. */
+export interface OutfitTag {
+  id: string;
+  /** From the left and the top of the photo, 0–1. */
+  x: number;
+  y: number;
+  item: OutfitItem;
+  brand: string;
+  product_name: string | null;
+  /** What «Shop on {store}» names; null: no link, no «Shop». */
+  store: string | null;
+  /** The link as kept, to the owner only, to change it; the others ask /shop. */
+  url: string | null;
+  /** Hidden from a report: only its owner ever sees one. */
+  hidden: boolean;
+  /** Times opened and «Shop» touched, in all: to the owner only, else null. */
+  opens: number | null;
+  shops: number | null;
+}
+
+/** One item of PUT /me/activities/{key}/drawing/photos/{n}/tags. */
+export interface OutfitTagRequest {
+  /** One already on this photo: it stays, with its counts. */
+  id?: string | null;
+  x: number;
+  y: number;
+  item: OutfitItem;
+  brand: string;
+  product_name?: string | null;
+  /** A shop's https page; the API cleans it before keeping it. */
+  url?: string | null;
+}
+
+/**
+ * PUT /me/activities/{key}/drawing/photos/{n}/tags: every item of the photo,
+ * in order; the answer is OutfitTags, as its owner sees them.
+ */
+export interface OutfitTagsRequest {
+  tags: OutfitTagRequest[];
+}
+
+export interface OutfitTags {
+  tags: OutfitTag[];
+}
+
+/**
+ * POST /outfit-tags/{id}/shop: what the app opens in the browser; null:
+ * «This link isn't available.». POST /outfit-tags/{id}/open is 204.
+ */
+export interface OutfitShop {
+  url: string | null;
+}

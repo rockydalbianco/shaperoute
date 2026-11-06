@@ -51,6 +51,8 @@ from shaperoute_api.moderation import (
 (GROUP_RUNS,) = [p for p in migrations() if p.name.endswith("_group_runs.sql")]
 # The private messages add their kind to the list (TASK-319).
 (MESSAGES,) = [p for p in migrations() if p.name.endswith("_messages.sql")]
+# Then the items tagged on the photos (TASK-394).
+(OUTFIT_TAGS,) = [p for p in migrations() if p.name.endswith("_outfit_tags.sql")]
 Headers = dict[str, str]
 
 
@@ -132,9 +134,9 @@ def test_the_example_is_the_body() -> None:
 
 def test_the_migration_holds_the_same_lists() -> None:
     sql = MODERATION.read_text(encoding="utf-8")
-    # The latest check of the kinds is the messages' (TASK-319), after
-    # the group runs' (TASK-309).
-    kinds = MESSAGES.read_text(encoding="utf-8").split("reports_kind_check")[-1]
+    # The latest check of the kinds is the items' (TASK-394), after the
+    # messages' (TASK-319) and the group runs' (TASK-309).
+    kinds = OUTFIT_TAGS.read_text(encoding="utf-8").split("reports_kind_check")[-1]
     for kind in REPORT_KINDS:
         assert f"'{kind}'" in kinds
     for reason in REPORT_REASONS:

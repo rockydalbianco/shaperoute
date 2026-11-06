@@ -88,7 +88,7 @@ export type MapCanvas = {
 export type CanvasEvent =
   | { type: "drawn"; line: LatLon[]; metresPerPx: number }
   | { type: "bent"; from: LatLon; to: LatLon; metresPerPx: number }
-  | { type: "figure"; centre: LatLon; factor: number; done: boolean }
+  | { type: "figure"; centre: LatLon; factor: number; done: boolean; turn?: number }
   | { type: "centre"; point: LatLon };
 
 type Props = {
@@ -556,6 +556,7 @@ export function MapView({
               centre: fromLngLat(message.centre),
               factor: message.factor,
               done: message.done,
+              ...(message.turn ? { turn: message.turn } : {}),
             });
           } else if (message?.type === "centre") {
             const point = fromLngLat(message.lngLat);

@@ -6,6 +6,9 @@
 > ancora scritti a mano, che qui sono elencati uno per uno. Se un passo non
 > va come scritto, la deroga va in `CONDIVISO.md` e questa ricetta si
 > corregge.
+>
+> Corretta il 2026-11-05 col pilota Hike (TASK-377, #838 e #861): le sue
+> deroghe sono diventate passi della ricetta, segnati «(pilota)».
 
 ## 0. Prima del codice
 
@@ -23,7 +26,17 @@
    cosa si promette, se conta nel gioco e nei record, i testi, quando si
    accende («ready»). Sono scelte di prodotto: nessuna sessione le decide.
 5. **I pezzi.** Si va per strati, una PR ciascuno: A per motore, contratto
-   e API; B per l'app. Così i file restano bloccati poco.
+   e API; B per l'app. Così i file restano bloccati poco. **(pilota)** A
+   porta già il profilo dell'app, nascosto (sezione 4): un'attività nel
+   contratto senza profilo fa cadere l'app al caricamento.
+6. **I test «di prima».** I test di TASK-376 congelano le tabelle di prima
+   in ogni strato (`test_sport_registry.py`, `sportRegistry.test.ts`,
+   `test_sport_registry_api.py`, `sportProfiles.test.ts`,
+   `sportRows.test.ts`): ognuno ha una lista «aggiunte da allora», e lo
+   sport nuovo vi aggiunge la sua voce. Non è una deroga: è il modo in cui
+   quei test dicono che gli sport di prima non sono cambiati. **(pilota)**
+   Un test che usa il nome dello sport come «attività sconosciuta» passa a
+   un nome che non è in programma (`yoga`, `climbing`).
 
 ## 1. Motore (`services/route-engine/route_engine/`)
 
@@ -59,6 +72,12 @@ Punti fissi:
   cambiare i percorsi (`test_same_routes.py`).
 - **Uno sport fuori dall'impronta** si tiene in un modulo a parte, come
   `walking.py` (`WALK_ONLY`): così gli esempi già disegnati restano validi.
+  **(pilota)** Oppure, se la prova di `test_same_routes.py` dà i percorsi
+  di prima identici, una riga in `SAME_ROUTES_AS` con la sua prova: Hike
+  ha tenuto così le impronte (precisazione di ADR-0321), senza notte di
+  esempi.
+- **(pilota)** Il finto `_GridSource` di `tests/test_cli.py` ha
+  `for_activity`: una rete nuova lo usa senza toccarlo.
 
 ## 2. Contratto (`packages/shared-types/`)
 
@@ -74,7 +93,9 @@ File nuovi:
 Righe nei registri:
 
 - `src/sports/index.ts`: una riga in `PLANNED_SPORTS`, `RECORDED_SPORTS` o
-  `TRACKLESS_SPORTS`. Il file `src/index.ts` ne ricava `ACTIVITIES`,
+  `TRACKLESS_SPORTS`.
+- **(pilota)** Le fixture che elencano le attività: `contract.json`,
+  `run-activities.json`, `reads.json`, una voce ciascuna. Il file `src/index.ts` ne ricava `ACTIVITIES`,
   `RECORD_ACTIVITIES`, `RUN_ACTIVITIES` e `DISTANCE_LIMITS_M`.
 
 Gli import del contratto hanno l'estensione `.ts`, perché lo vuole
@@ -117,7 +138,11 @@ Punti fissi, scritti a mano:
 - **Literal.** Un nome in `activities.RunActivity` e, se lo sport conta nei
   record, in `personal_bests.Sport`. `test_sport_registry_api.py` segnala
   quando non coincidono con il registro.
-- **`reads.py`**: le attività che una lettura accetta.
+- **`reads.py`**: le attività che una lettura accetta. **(pilota)**
+  `NEWER_ACTIVITIES` va nell'ordine di `RunActivity`, non in fondo.
+- **(pilota) Le zone.** Uno sport su una rete nuova dichiara le sue `Zones`
+  nel file dello sport: lo vuole
+  `test_every_sport_on_roads_has_zones_and_no_other`.
 - **`game_rules.py` e `themes.py`**, solo se lo sport entra nel gioco e
   nelle sfide.
 - **Il server** si aggiorna col sì dell'utente: comandi dell'utente o del
@@ -138,8 +163,13 @@ File nuovi:
 
   Servono solo se lo sport li ha: `shapesOnly`, `noWords`, `laps`,
   `timeAt`, i testi `partsBetween` e `lettersBetween`, `bests`, `skied`,
-  `onWater`. Un file di sport importa solo il contratto, `../i18n`, il tipo
-  `Limits` e `./base`: lo prova `sportProfiles.test.ts`.
+  `onWater`, e `caution`, l'avviso che «Disegna» mostra sotto ogni percorso
+  dello sport (i sentieri di Hike, **pilota**). Un file di sport importa
+  solo il contratto, `../i18n`, il tipo `Limits` e `./base`: lo prova
+  `sportProfiles.test.ts`.
+- **(pilota)** Il profilo entra con la parte A, nascosto: nessuna riga in
+  «Impostazioni», e la ricerca e il modulo per pubblicare non lo offrono
+  finché `activityOffered` non lo dice. La parte B lo completa.
 - Un test del profilo, nuovo.
 
 Righe nei registri:
@@ -158,8 +188,16 @@ Righe nei registri:
 
 Punti fissi, scritti a mano:
 
-- **`settings/sport.ts`**: la riga in `ALL_SPORTS` (id, emoji, nome,
-  `ready`), `activityOf` e `runActivityOf`.
+- **`settings/sport.ts`** (TASK-376 B3c, #843): emoji, nome e «Record
+  only» vengono dal profilo. Uno sport vi aggiunge:
+  - il nome nel tipo `Sport`;
+  - una voce in `ACTIVITY` (da lì `activityOf` e `runActivityOf`);
+  - una riga `fromProfile(id, ready)` in `ALL_SPORTS`;
+  - una voce in `OFFERED_WHEN_READY`, se la ricerca e il modulo per
+    pubblicare devono aspettare che sia pronto (camminata, Hike);
+  - il testo «… without a route» in `withoutRouteLabel`.
+- **(pilota) `screens/RunNoRouteButton.tsx`**: l'emoji accanto a «…
+  without a route», ancora uno `switch`.
 - **`imports/fit.ts` e `imports/fileTrack.ts`**: il tipo dello sport nei
   file FIT, GPX e TCX importati.
 - **`route/runTime.ts`**: il tempo stimato, se usa il passo a piedi.
@@ -178,7 +216,9 @@ Punti fissi, scritti a mano:
 - `docs/sports/<sport>.md` con le misure finali. Le scoperte utili ad altri
   vanno al Coordinatore Sport, per `CONDIVISO.md`.
 - **Il confronto con la ricetta.** Il diff delle PR dello sport si
-  confronta con le sezioni 1–4: solo file nuovi, righe nei registri e i
-  punti fissi elencati. Ogni altro file è una deroga: va in `CONDIVISO.md`,
-  e qui si corregge la ricetta o si porta quel punto nel registro.
+  confronta con le sezioni 0–4: solo file nuovi, righe nei registri, le
+  liste dei test «di prima» e i punti fissi elencati. Ogni altro file è una
+  deroga: va in `CONDIVISO.md`, e qui si corregge la ricetta o si porta quel
+  punto nel registro. Il pilota Hike ha toccato solo questo, più i punti
+  segnati «(pilota)».
 - Task file in Done, STATUS e DECISIONS.

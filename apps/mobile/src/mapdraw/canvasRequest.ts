@@ -12,6 +12,7 @@ import { appUnits, type Units } from "../units/units";
 import { distanceOf, type Figure, type Placed, placedStart } from "./figure";
 import { boxOf } from "./geometry";
 import { sentOutline } from "./sentOutline";
+import { shownFigure, turnedLines, turnOf } from "./turn";
 
 /**
  * «Draw route» on the map (TASK-281, ADR-0245): the request for the figure
@@ -63,24 +64,32 @@ export function framed(
   return { outline: sentOutline(outline.map(to), details), strokes: details };
 }
 
-/** The framed outline of each figure, made once: the requests for the same
- * figure, moved or sized, share its arrays, and the app knows a request by
- * them (`sameRequest`). */
-const FRAMED = new WeakMap<Figure, ReturnType<typeof framed>>();
+/** The framed outline of each figure at each angle, made once: the
+ * requests for the same figure, moved or sized, share its arrays, and the
+ * app knows a request by them (`sameRequest`). */
+const FRAMED = new WeakMap<Figure, Map<number, ReturnType<typeof framed>>>();
 
 /** The outlines of drawings asked for: a route of one is a «Drawing»,
  * where a photo's is an «Image» (TASK-320, TASK-331). */
 const DRAWN = new WeakSet<OutlinePoint[]>();
 
-function framedOf(figure: Extract<Figure, { outline: unknown }>) {
-  let made = FRAMED.get(figure);
+/** Framed as it is on the map, turned `turnDeg` (TASK-402): the engine
+ * starts from that angle. */
+function framedOf(figure: Extract<Figure, { outline: unknown }>, turnDeg: number) {
+  let angles = FRAMED.get(figure);
+  if (angles === undefined) {
+    angles = new Map();
+    FRAMED.set(figure, angles);
+  }
+  let made = angles.get(turnDeg);
   if (made === undefined) {
     const details = figure.kind === "drawing" ? figure.details : figure.strokes;
-    made = framed(figure.outline, details);
+    const [outline, ...strokes] = turnedLines([figure.outline, ...details], turnDeg);
+    made = framed(outline, strokes);
     if (figure.kind === "drawing") {
       DRAWN.add(made.outline);
     }
-    FRAMED.set(figure, made);
+    angles.set(turnDeg, made);
   }
   return made;
 }
@@ -104,11 +113,13 @@ export function canvasRequest(
   activity: Activity,
   units: Units = appUnits(),
 ): AnyRouteRequest {
-  const figure = placed.figure;
+  // A shape of the catalogue turned is asked by its outline (ADR-0336).
+  const figure = shownFigure(placed);
   const apart = figureApart(figure, penUp, activity);
+  const shown = { ...placed, figure };
   const common = {
-    start: placedStart(placed, apart),
-    distance_m: tenthsToM(nearestTenths(distanceOf(placed, apart), units), units),
+    start: placedStart(shown, apart),
+    distance_m: tenthsToM(nearestTenths(distanceOf(shown, apart), units), units),
     activity,
   };
   if (figure.kind === "shape") {
@@ -118,7 +129,7 @@ export function canvasRequest(
     };
     return request;
   }
-  const { outline, strokes } = framedOf(figure);
+  const { outline, strokes } = framedOf(figure, turnOf(placed));
   const request: ImageRouteRequest = {
     ...common,
     outline,

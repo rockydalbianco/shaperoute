@@ -29,7 +29,11 @@ export const PADDLING: SportProfile = {
   emoji: "🛶",
   pace: "paddle",
   onWater: true,
-  shapesOnly: true,
+  // A shape or a drawing by hand, never a word or an image (TASK-191,
+  // TASK-396): the drawing goes where the water has room for it.
+  noWords: true,
+  noImages: true,
+  drawNote: tLater("On the water, the drawing goes where it fits near the start."),
   // On the water (TASK-226): the whole is the distance asked.
   partsBetween: {
     km: tLater("{drawn} km of drawing + {between} km paddling between the parts"),

@@ -21725,6 +21725,28 @@ contratto, testi); la Pagaia nella parte A (l'API la rifiuta); cambiare
 dipendenze né nativo: arriva con un OTA, impronta iOS 6f8bba4c. La parte B
 cambia il comportamento dell'API (accetta quello che rifiutava), non la forma
 del contratto, e vuole l'aggiornamento del server col sì dell'utente.
+## ADR-0313, precisazione — «Freehand» anche sull'acqua con «Paddle» (TASK-396)
+
+**Data**: 2026-11-05 · **Stato**: Accettata
+
+Cambia la scelta 4 di ADR-0313 («niente "Freehand" sull'acqua in "Draw"») e
+i criteri di TASK-320 e TASK-340, per scelta dell'utente del 2026-11-05: «Dai
+le possibilità di disegnare a mano libera anche nella sezione draw con la
+canoa sui laghi e Mari», confermata con «Sì, confermo: Freehand con la canoa
+accanto alle forme, niente Word e niente Image».
+
+- Con «Paddle», in «Draw», «Freehand · Shape»; il disegno va al motore
+  sull'acqua di TASK-369 B, dove c'è posto vicino alla partenza. Niente
+  «Word» (l'API la rifiuta sull'acqua) e niente «Image» (scelta dell'utente).
+- Sopra il selettore la nota «On the water, the drawing goes where it fits
+  near the start.», approvata dall'utente.
+- Un disegno che non sta sull'acqua (canoa e nuoto) dice «This drawing…» e
+  non offre le forme del catalogo; testi approvati dall'utente.
+- Deciso dall'agente su delega dell'utente: la scelta sta nel profilo dello
+  sport (`noWords`, `noImages`, `drawNote` in `sports/`), non in un confronto
+  sull'attività in `RoutePanel.tsx`; `shapesOnly` è tolto perché nessuno sport
+  lo usa più. Solo JavaScript: impronta iOS `6f8bba4c`.
+
 ## ADR-0297, aggiunta — La schermata della ricerca (TASK-344 parte B)
 
 **Stato**: Attiva · 2026-11-04 · TASK-344 parte B. Deciso dall'agente su
@@ -21871,7 +21893,8 @@ o due con lo sci di fondo è dell'utente.
 
 ## ADR-0320 — Il registro degli sport: ogni sport nei suoi file, un banco di misura comune
 
-**Stato**: Proposto · 2026-11-04 · TASK-376 (sessione «Coordinatore Sport»).
+**Stato**: Accettato · 2026-11-05, alla chiusura di TASK-376 (proposto il
+2026-11-04) · TASK-376 (sessione «Coordinatore Sport»).
 Le scelte tecniche sono dell'agente su delega dell'utente; il ridisegno
 degli esempi (punto 3) vuole il sì dell'utente al momento del server, come
 ogni aggiornamento
@@ -21967,6 +21990,26 @@ ridisegnano, col sì dell'utente. Così il server si può aggiornare da `main`
 quando serve. Il primo sport della fase 1 cambia l'impronta con il suo
 codice nuovo: se può avere anche lui una riga (nessun percorso di prima
 cambia) o se serve la notte di esempi, si decide allora col Coordinatore.
+
+**Aggiornamento 2026-11-05, chiusura di TASK-376 (deciso dall'agente su
+delega dell'utente, col Coordinatore).** Com'è andata rispetto alla
+decisione:
+
+- **Punto 1.** I registri ci sono nei quattro strati. Il profilo dell'app
+  non ha `ready` né i testi: `ready` resta in `settings/sport.ts`, perché
+  accendere uno sport è una scelta dell'utente presa lì. I testi restano
+  nelle tabelle `i18n`, col file dello sport che tiene la chiave inglese
+  (approvato in B3).
+- **Punto 3.** Il primo sport della fase 1, Hike, ha tenuto le impronte con
+  `SAME_ROUTES_AS` e la sua prova (precisazione di ADR-0321): nessuna notte
+  di esempi finora.
+- **Punto 5 non vale più.** Ogni sport scrive le sue righe di registro
+  nella sua PR, con la lista dei file approvata prima dal Coordinatore:
+  le PR per strato sono piccole, e una PR di integrazione a fine fase
+  avrebbe tenuto fermi gli sport.
+- **Il pilota** ha toccato file nuovi, righe di registro, i punti fissi e
+  le liste dei test «di prima». Le sue deroghe ora sono passi di
+  `docs/sports/COME-AGGIUNGERE.md`, segnati «(pilota)».
 ## ADR-0319 — Gli sport «Record only»: si registrano senza forma, il motore non li vede
 
 **Stato**: Proposto · 2026-11-04 · TASK-375. Scelte dell'utente lo stesso
@@ -23422,6 +23465,126 @@ senza toccare il motore (`docs/sports/gravel.md`):
 
 ---
 
+## ADR-0333 — I capi sulle foto degli iscritti: tabelle loro, ogni link https controllato con Web Risk senza mandare il link
+
+**Stato**: Accettato · 2026-11-05 · TASK-394 parte A. Le cinque scelte e i
+testi sono **dell'utente** (`tasks/TASK-394.md`, «Le scelte dell'utente»);
+il come è deciso dall'agente su delega dell'utente. Numero dal
+Coordinatore.
+
+**Contesto**: un iscritto segna sulle foto dei suoi post i capi che indossa
+(tipo, marca, modello facoltativo, link al negozio facoltativo); chi vede la
+foto apre il negozio nel browser. Scelte dell'utente del 2026-11-05: ogni
+link `https`, controllato da fuori e con più moderazione a mano (1); MuW
+non guadagna sui link degli iscritti (2); tipo e marca obbligatori, link
+facoltativo (3); puntini nascosti dietro la gruccia (4, app); i totali di
+aperture e «Shop» solo all'autore, mai chi (5). L'API Safe Browsing di
+Google è solo per uso non commerciale: il controllo è **Google Web Risk**.
+
+**Decisione**:
+
+1. **Tabelle loro, non quelle di Style**: `drawing_outfit_tags`,
+   `outfit_tag_clicks`, `outfit_blocked_domains` (migrazione `0050`).
+   `post_product_tags` di Style resta legata a `style_posts`, già in
+   produzione: chi scrive, chi toglie, chi vede e chi segnala sono diversi.
+2. **Il capo segue la foto**: chiave esterna `(drawing_id, n)` su
+   `drawing_photos` con `ON DELETE CASCADE`, così una foto tolta, un
+   disegno tornato «Only me» (che toglie le foto dal server, ADR-0170), la
+   corsa o l'account si portano via i capi. Il riordino (ADR-0301) cambia
+   solo `item_order`, non `n`: i capi restano. **Una foto sostituita** nello
+   stesso posto è un `UPDATE` di `drawing_photos`, che la chiave non vede:
+   un trigger (`drawing_photo_replaced`, `AFTER UPDATE OF jpeg ... WHEN
+   (OLD.jpeg IS DISTINCT FROM NEW.jpeg)`) cancella i capi di quel posto. Il
+   confronto è sul JPEG e non sull'ora, perché l'app rimanda la stessa foto
+   dalla sua coda dopo un errore di rete, e il JPEG appiattito è lo stesso:
+   i capi non devono sparire per un nuovo tentativo. Un trigger e non una
+   riga in `drawing_photos.py` per non toccare quel file (ok del
+   Coordinatore). È il primo trigger del database.
+3. **La lista intera**: `PUT /me/activities/{key}/drawing/photos/{n}/tags`
+   riceve tutti i capi della foto; uno con il suo `id` si aggiorna e tiene
+   conteggi e `hidden_at`, uno che manca si toglie con i suoi conteggi. Al
+   più 5 per foto e 10 per post, controllati con la corsa bloccata (`FOR
+   UPDATE`, come le foto). Gli errori che l'app dice con parole sue hanno
+   un codice nuovo, `outfit_tag_rejected`, con un `reason` (`not_https`,
+   `shortened`, `blocked`, `link_in_text`, `too_many_on_photo`,
+   `too_many_in_post`, `words`): in `schemas.py` e in `shared-types`, come
+   `comment_rejected`.
+4. **Chi vede cosa**: i capi stanno dentro ogni foto (`PhotoBody.outfit_tags`),
+   letti da `drawings._details` con chi guarda (`viewer_id`, facoltativo:
+   senza, come chiunque altro). Arrivano solo a chi vede la foto, perché
+   solo lui riceve la foto. Il proprietario ha `url`, `hidden` e i totali
+   `opens`/`shops`; gli altri hanno `null` e chiedono il link a `POST
+   /outfit-tags/{id}/shop`, così ogni «Shop» ripassa dal controllo. Un capo
+   nascosto lo vede solo il proprietario. Ricerca e concorsi chiamano
+   `_details` senza chi guarda: lì il proprietario vede i suoi capi come gli
+   altri, senza nascosti né totali (quei file non cambiano). `X-MuW-Reads`
+   non serve: nessuna attività nuova, e i capi stanno nelle foto di disegni
+   già filtrati.
+5. **Il link** (`outfit_links.py`): solo `https` su un nome di dominio
+   (niente utente, password, porta, indirizzo IP, nome senza punto o con un
+   dominio di primo livello che non è di lettere), al più 1000 caratteri.
+   Gli accorciatori e i rimandi noti (bit.ly, t.co, amzn.to, linktr.ee, i
+   rimandi di Facebook e Instagram, Awin, Skimlinks, CJ…) sono rifiutati,
+   anche per un host sotto di loro. Il server **pulisce** il link: via il
+   frammento e i parametri noti di tracciamento e di affiliazione, `tag` e
+   simili solo sui siti di Amazon; il resto della query resta scritto
+   com'era, nel suo ordine. L'host si tiene in ASCII (punycode). Il server
+   non visita mai il link.
+6. **Il nome del negozio** (`store`) è quello di Style per
+   `RETAILER_HOSTS` (anche senza `www.`), se no l'host senza `www.`.
+   **Un'etichetta in lettere non latine resta in punycode**, non solo una
+   che mescola alfabeti: un nome tutto in cirillico che imita un sito
+   latino («аррӏе») è di un solo alfabeto e passerebbe. Le lettere latine
+   con accenti si mostrano come sono («müller.de»).
+7. **Web Risk nella forma «Update API»** (`web_risk.py`), mai la «Lookup
+   API», che riceve il link: il server tiene in memoria i prefissi di 4
+   byte delle impronte SHA-256 delle liste `MALWARE`,
+   `SOCIAL_ENGINEERING` e `UNWANTED_SOFTWARE`, aggiornati da
+   `threatLists.computeDiff` in un thread quando Google dice
+   (`recommendedNextDiff`, fra 1 minuto e 6 ore), con il controllo SHA-256
+   di ogni lista. Un link si canonicalizza e si scompone in espressioni
+   host/percorso come dice la documentazione di Web Risk; solo se
+   un'impronta comincia con un prefisso della lista, `hashes.search` riceve
+   **quel prefisso** e risponde le impronte intere, tenute fino a
+   `expireTime` (o il prefisso sicuro fino a `negativeExpireTime`). Al più
+   2^18 prefissi per lista (circa 12 MB): Google dà prima i più rilevanti.
+   La chiave è `SHAPEROUTE_WEB_RISK_KEY`, solo nel `.env` del server, in
+   un'intestazione (`X-Goog-Api-Key`), mai nell'indirizzo né nei log; i log
+   dicono solo il tipo d'errore e lo stato HTTP.
+8. **Quando Web Risk non può dire** (nessuna chiave, liste non aggiornate
+   da 24 ore, Google che non risponde a una ricerca) un link è
+   «unknown»: si salva e si apre solo un negozio di Style. Un link non passa
+   mai senza controllo; dopo un riavvio i primi secondi, finché le liste
+   arrivano, valgono come senza chiave. Le liste stanno in memoria e non nel
+   database: l'API è un solo processo, e un riavvio le riscarica.
+9. **L'elenco dei bloccati** è nostro, `outfit_blocked_domains`, scritto a
+   mano dopo una segnalazione (l'email ha il link intero e il dominio): Web
+   Risk non conosce siti per adulti né spam. Un dominio blocca anche gli
+   host sotto di lui. Vale al salvataggio e a ogni «Shop».
+10. **I conteggi** come in Style (ADR-0326 punto 3): uno in più per capo e
+    per giorno, nient'altro, e 120 tocchi l'ora per indirizzo contati solo
+    in memoria. **I tocchi del proprietario sui suoi capi non si contano**
+    nemmeno sul server, anche se un'app li mandasse. `open` e `shop`
+    vogliono il token, perché la foto si vede solo da iscritti; il server
+    non scrive chi ha toccato.
+11. **Segnalare un capo**: `kind` `outfit_tag` in `POST /reports` e
+    nell'email; «Hide» nasconde solo quel capo (`hidden_at`), come un
+    commento, e cambiarlo non lo rimostra.
+
+**Conseguenze**: la parte B (app) legge `outfit_tags` delle foto e manda la
+lista dopo la foto. In produzione servono la migrazione `0050` e, per i
+link fuori dai negozi di Style, il progetto Google Cloud con Web Risk e la
+sua chiave nel `.env` del server: tutto dell'utente, col suo sì. Il nome
+della società di Google per Web Risk entra nella Privacy quando l'utente lo
+attiva. Senza la chiave la funzione è già sicura, solo più stretta.
+
+**Scartato**: la Lookup API di Web Risk o Safe Browsing (riceve il link, e
+Safe Browsing non è per uso commerciale); una sola tabella con Style e due
+chiavi facoltative (meno chiara, e cambierebbe la `0046` in produzione);
+le liste nel database (un processo solo: non serve, e sarebbero qualche MB
+da riscrivere a ogni aggiornamento); visitare il link per vedere dove
+porta (il server non fa richieste ai negozi a nome di chi scrive); lasciar
+passare un link non controllato quando Web Risk non risponde.
 ## ADR-0327, precisazione — La parte D: il post di palestra nel Feed
 
 **Stato**: Attiva · 2026-11-05 · TASK-385 parte D, decisa dall'agente su
@@ -23638,3 +23801,31 @@ dell'arrivo sparisce subito (scelta dell'utente «Riepilogo per qualche
 minuto», contro «Sparisce subito»).
 L'utente dà il sì a `@bacons/apple-targets` 5.0.0 e al modulo locale in
 Swift nella build 1.0.2 («Sì, nella 1.0.2»).
+
+## ADR-0321, precisazione — La parte B: Hike nell'app, «Soon» fino al server
+
+**Stato**: Accettato · 2026-11-05 · TASK-377 parte B. Lista dei file
+approvata dal Coordinatore; le scelte tecniche sono decise dall'agente su
+delega dell'utente.
+
+1. **«Hike» sta dopo «Walk» in «Settings»**, `ready: false` finché il
+   server non ha la parte A (0051 e deploy). Si accende con una riga, col
+   sì dell'utente.
+2. **Offerta quando è pronta.** `activityOffered` legge una tabella,
+   `OFFERED_WHEN_READY` (camminata → «Walk», hike → «Hike»): la ricerca e
+   il modulo per pubblicare non offrono la hike prima della sua riga, così
+   l'API non risponde 422 a un filtro che l'app mostra.
+3. **L'avviso sui sentieri è un campo del profilo**, `caution`, letto in un
+   punto solo: `RoutePanel.tsx` lo mostra sotto ogni percorso dello sport,
+   col bordo «caution», fuori dalle due note del motore di TASK-337.
+4. **Il tempo stimato** usa il passo delle camminate (`timeAt: "walker"`,
+   12:00/km senza camminate). Le hike non entrano nel passo: dipende dalla
+   salita e piegherebbe la stima della camminata.
+5. **Gli import**: FIT `sport` 17 (hiking), GPX/TCX con «hik…», il numero
+   4 di Strava. Prima «hiking» era nessuno sport.
+6. **L'orologio** tiene la hike come la camminata: non entra in
+   `NOT_ON_WATCH`. Se TASK-370 la vuole fuori, è una riga sua.
+7. **La rete resta quella di A** (domanda all'utente, 2026-11-05: «Va bene
+   così»): in montagna circa metà di un'escursione sta su strade
+   secondarie tranquille. Pesare gli archi, l'alternativa di ADR-0321, è un
+   task a parte del motore, dopo le prime escursioni vere.

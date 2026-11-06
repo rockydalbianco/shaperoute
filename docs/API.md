@@ -2398,6 +2398,8 @@ nuovi. Il codice in `drawings.py` e `drawing_photos.py`.
   con la foto, così un telefono non mostra quella di prima dalla sua
   cache. A chi non vede il disegno, `404` «No drawing with this id.»; a
   chi lo vede, un posto vuoto è `404` «This drawing has no photo here.».
+  Da TASK-394 ogni foto ha anche `outfit_tags`, i capi segnati sopra
+  («Outfit tags»): `[]` se non ce ne sono.
 - **Cosa vedono gli altri** (ADR-0330, al posto del taglio dei 200 m di
   ADR-0114): la traccia pulita della corsa **intera, partenza e arrivo
   compresi**, tenuta così nel database; senza orari, senza pause, senza
@@ -2799,6 +2801,101 @@ codice in `style_posts.py`, `style_links.py` e `style_import.py`.
   errore, e un post già caricato non si sovrascrive. `--hide MS-001` lo
   nasconde.
 
+### Outfit tags (TASK-394, ADR-0333)
+
+I capi che un iscritto segna sulle foto dei suoi post: tipo, marca, e se
+vuole modello e link al negozio; chi vede la foto tocca un capo e apre il
+negozio nel browser. Token richiesto: senza, `401 not_signed_in`; senza
+database, `503`. Tipi in `shared-types` (`OutfitTag`, `OutfitTagRequest`,
+`OutfitTagsRequest`, `OutfitTags`, `OutfitShop`, `OUTFIT_ITEMS`,
+`OUTFIT_TAG_REASONS` e i limiti), esempio in
+`fixtures/outfit-tags-request.json`; il codice in `outfit_tags.py`,
+`outfit_links.py` e `web_risk.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/activities/{key}/drawing/photos/{n}/tags` | tutti i capi della foto `n`, in ordine | `200` `OutfitTags`, come li vede il proprietario |
+| `POST /outfit-tags/{id}/open` | un capo aperto | `204`, o `404` |
+| `POST /outfit-tags/{id}/shop` | «Shop» toccato: il link da aprire, controllato di nuovo | `200` `OutfitShop` |
+
+- **La lista intera**: un capo mandato con il suo `id` resta, cambiato, con
+  i suoi conteggi (e nascosto, se lo era); uno che manca si toglie con i
+  suoi; uno senza `id` è nuovo. `[]` li toglie tutti. Un `id` che non è di
+  questa foto, o due volte: `422 invalid_request`. Al più **5 per foto e
+  10 per post**.
+- **Solo dove stanno le foto**: la corsa del proprietario, con il disegno
+  visto da altri (`409` mentre è `only_me`, come per le foto), e una foto
+  già mandata in quel posto (`404` «No photo in this place: send the photo
+  first.»: l'app manda prima la foto, poi i suoi capi). Una corsa che non
+  c'è o di un altro: `404`.
+- **I campi**: `x` e `y` fra 0 e 1 dall'angolo in alto a sinistra; `item`
+  da `OUTFIT_ITEMS` (`shoes`, `top`, `jacket`, `shorts`, `tights`, `socks`,
+  `cap`, `glasses`, `watch`, `backpack`, `other`); `brand` obbligatoria, al
+  più 40 caratteri; `product_name` (il modello) e `url` facoltativi, 80 e
+  1000 caratteri. Spazi intorno tolti; vuoti valgono `null`; un carattere
+  di controllo o una marca vuota: `422 invalid_request`.
+- **Rifiutati con `422 outfit_tag_rejected`** e un `reason`, che l'app dice
+  con le sue parole: `not_https` (non `https`, con utente, password o
+  porta, un indirizzo IP, un nome senza dominio), `shortened` (un
+  accorciatore o un rimando: bit.ly, t.co, amzn.to, linktr.ee, i rimandi di
+  Instagram, Facebook e delle reti affiliate…, `outfit_links.SHORTENERS`),
+  `blocked` (un dominio dell'elenco dei bloccati, o un link che Web Risk
+  dà per pericoloso, o non controllabile), `link_in_text` (un indirizzo
+  scritto nella marca o nel modello: il link ha il suo campo), `words` (il
+  filtro dei commenti), `too_many_on_photo`, `too_many_in_post`.
+- **Il link si pulisce**: via il frammento e i parametri noti di
+  tracciamento e di affiliazione (`utm_*`, `fbclid`, `gclid`, quelli di
+  Awin, Impact, CJ, `ref`…; su Amazon anche `tag`, `linkCode`, `ascsubtag`
+  e simili, `outfit_links.TRACKING`); il resto della query resta com'è
+  scritto. L'host si tiene in ASCII (punycode). **Il server non visita mai
+  il link.**
+- **`store`** è ciò che «Shop on {store}» nomina: il negozio per i siti di
+  Style (`Zalando`), altrimenti l'host senza `www.` (`nike.com`). Un'etichetta
+  con lettere non latine resta in punycode (`xn--…`): un sito che ne imita
+  un altro non si traveste.
+- **Chi li vede**: i capi arrivano dentro ogni foto, in `outfit_tags`, a
+  chi vede la foto (`GET /drawings/{id}`, il Feed, i profili, la ricerca, i
+  concorsi, «My activities»). **Solo il proprietario** ha `url`, `hidden`
+  vero e i totali `opens` e `shops` (la somma dei giorni, scelta 5); agli
+  altri `url`, `opens` e `shops` sono `null`, e il link lo chiedono a
+  `/shop`. Un'app vecchia ignora il campo; `X-MuW-Reads` non cambia: i capi
+  stanno nelle foto di disegni già filtrati.
+- **Il capo segue la foto**: un nuovo ordine delle foto non lo tocca; una
+  foto **sostituita** (un JPEG diverso nello stesso posto) o tolta perde i
+  suoi capi, e così un disegno tornato `only_me`. La stessa foto rimandata
+  dall'app li tiene.
+- **«Shop»** controlla il link di nuovo: un dominio bloccato dopo, o un
+  link che Web Risk ha messo in lista dopo, risponde `{"url": null}` e non
+  si conta («This link isn't available.»); senza link, lo stesso.
+  `open` e `shop` di chi non vede il capo: `404`, come per un id che non
+  c'è.
+- **I conteggi** come in Style: uno in più per capo e per giorno
+  (`outfit_tag_clicks`), nient'altro, nessun account, indirizzo o
+  telefono; oltre 120 tocchi in un'ora da uno stesso indirizzo, un tocco ha
+  la sua risposta ma non si conta. **I tocchi del proprietario non si
+  contano**, anche se un'app li mandasse.
+- **Web Risk** (`web_risk.py`), nella forma «Update API»: il server tiene in
+  memoria i prefissi delle impronte SHA-256 di tre liste di Google
+  (`MALWARE`, `SOCIAL_ENGINEERING`, `UNWANTED_SOFTWARE`) e chiede a Google
+  solo quando l'impronta di un link comincia con uno di loro, mandando il
+  prefisso: **mai il link**, né chi lo mette o lo apre. Le liste si
+  aggiornano in un thread quando Google dice; la chiave è
+  `SHAPEROUTE_WEB_RISK_KEY` nel `.env` del server e va in un'intestazione,
+  mai in un indirizzo né in un log. **Senza la chiave**, con liste non
+  aggiornate da 24 ore o con Google che non risponde, si aprono solo i
+  negozi di Style (`style_links.RETAILER_HOSTS`): un link non passa mai
+  senza controllo.
+- **L'elenco dei bloccati** è `outfit_blocked_domains`: un dominio blocca
+  anche tutti gli host sotto di lui. Si aggiunge a mano, dopo una
+  segnalazione, sul server:
+  `INSERT INTO outfit_blocked_domains (domain, note) VALUES ('example.com',
+  'spam, report of 2026-11-05');` (minuscolo, ASCII, senza `www.` se vale
+  per tutto il sito). Vale dal salvataggio e dal «Shop» successivi.
+- **Segnalare un capo**: `POST /reports` con `kind` `outfit_tag` e l'`id`
+  del capo («Block and report»); «Hide» nell'email nasconde **solo quel
+  capo** (`drawing_outfit_tags.hidden_at`): il proprietario lo vede ancora,
+  con `hidden` vero, e cambiarlo non lo rimostra.
+
 ### Gym (TASK-385, ADR-0327)
 
 Un allenamento in palestra: una corsa dell'attività `gym` **senza traccia**,
@@ -2937,7 +3034,7 @@ Tipi in `shared-types` (`ReportRequest`, `ReportKind`, `REPORT_KINDS`,
 | `PUT /users/{public_id}/block` | blocca l'iscritto, e chiude ogni follow fra i due | `204` |
 | `DELETE /users/{public_id}/block` | lo sblocca | `204` |
 | `GET /me/blocked?limit=20&cursor=…` | gli iscritti bloccati, l'ultimo per primo | `200` `PeoplePage` |
-| `POST /reports` | segnala un disegno, un commento o un iscritto | `204` |
+| `POST /reports` | segnala un disegno, un commento, un iscritto, una corsa di gruppo, un messaggio o un capo segnato | `204` |
 
 - **Cosa nasconde un blocco**, fatto da uno dei due, a tutti e due: il
   feed (`feed.py`), i commenti di uno sotto qualsiasi disegno (né letti,
@@ -2962,10 +3059,11 @@ Tipi in `shared-types` (`ReportRequest`, `ReportKind`, `REPORT_KINDS`,
   a 50, cursore `microsecondi-public_id`), con `total`; ogni iscritto con
   nome e foto piccola, mai l'email.
 - **`POST /reports`**: `{"kind", "id", "reason"}`. `kind` è `drawing`
-  (un post del feed), `comment`, `user`, `group_run` (TASK-309) o
-  `message` (un messaggio privato, TASK-319, «Messages» sotto); `id` è
-  l'id del disegno, del commento, il `public_id` dell'iscritto, l'id della
-  corsa di gruppo o del messaggio; `reason` è uno di `spam`,
+  (un post del feed), `comment`, `user`, `group_run` (TASK-309),
+  `message` (un messaggio privato, TASK-319, «Messages» sotto) o
+  `outfit_tag` (un capo segnato su una foto, TASK-394, «Outfit tags»);
+  `id` è l'id del disegno, del commento, il `public_id` dell'iscritto,
+  l'id della corsa di gruppo, del messaggio o del capo; `reason` è uno di `spam`,
   `offensive`, `harassment`, `sexual`, `other`, in quest'ordine (l'app
   li mostra così). **Una riga per chi segnala e per cosa**: segnalato di
   nuovo, la riga prende il motivo e l'ora nuovi. Niente con quell'id:
@@ -3004,7 +3102,8 @@ di Resend non cambia mai la risposta di `POST /reports`.
 - **Senza chiave né token**: come `/strava/callback`, il link si apre da
   un browser (`access.OPEN_PATHS`). Lo protegge la firma.
 - **Il link** è firmato con `SHAPEROUTE_EMAIL_SECRET` e dice un'azione
-  (`hide` o `show`), una cosa (`drawing`, `comment`, `user`), il suo id,
+  (`hide` o `show`), una cosa (`drawing`, `comment`, `user`, `group_run`,
+  `message`, `outfit_tag`), il suo id,
   la scadenza (**7 giorni**) e un numero a caso. Fa solo quella cosa, e
   **una volta**: il numero va in `report_links_used`. Un link alterato o
   di un altro segreto: `404` «This link does nothing»; scaduto: `404`;
@@ -3024,7 +3123,12 @@ di Resend non cambia mai la risposta di `POST /reports`.
   - un **iscritto** nascosto (`users.hidden_at`) è lontano da tutti come
     dietro un blocco (`follows.apart_sql`): profilo, ricerca, disegni,
     commenti, reazioni, follow, e niente notifiche push agli altri per
-    quello che fa. Lui vede tutto come prima.
+    quello che fa. Lui vede tutto come prima;
+  - un **capo segnato** nascosto (`drawing_outfit_tags.hidden_at`,
+    TASK-394) sparisce dalla sua foto per gli altri, e `open` e `shop`
+    rispondono `404`; il post resta. L'email ha tipo, marca, modello, il
+    link intero e il suo dominio, da mettere in `outfit_blocked_domains`
+    se va fermato per tutti.
   Nessuno viene avvisato.
 
 ### Messages (TASK-319, ADR-0279)

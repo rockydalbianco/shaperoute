@@ -178,6 +178,9 @@ oggi:
      «gira»/«intorno» → camera che gira.
    - **Finale**: numeri, disegno, cuore, «tutto».
    La tabella è un file dell'app: parole nuove arrivano con un OTA.
+10. **I testi in cinque lingue** (2026-11-06): «Sì, approvo». Sono nella
+   sezione «Testi approvati» qui sotto, compresa la riga dei crediti in
+   tedesco, spagnolo e francese.
 
 ## Domande aperte (una alla volta)
 
@@ -207,7 +210,88 @@ oggi:
    (Horse, l'elefante, Stag, Fox, Wolf, Husky) più «None».
 4. ~~Le scene e il finale~~: risposta sopra (scelta 8).
 5. ~~Il prompt~~: risposta sopra (scelta 9).
-6. **I testi** in cinque lingue — la prossima.
+6. ~~I testi in cinque lingue~~: risposta sopra (scelta 10). Le
+   domande sono finite: prossima la parte B.
+
+## Testi approvati (scelta 10)
+
+Riusati senza cambiarli, perché l'app li ha già: «Style», «Night», «Day»,
+«3D», «Heart», «Title», «Emoji», «Done», «Video».
+
+### Il foglio «Edit video»
+
+| en | it | de | es | fr |
+|---|---|---|---|---|
+| Edit video | Modifica video | Video bearbeiten | Editar vídeo | Modifier la vidéo |
+| Character | Personaggio | Figur | Personaje | Personnage |
+| No animal | Nessun animale | Kein Tier | Ningún animal | Aucun animal |
+| 2D | 2D | 2D | 2D | 2D |
+| Line colour | Colore della linea | Linienfarbe | Color de la línea | Couleur de la ligne |
+| Along the way | Lungo il percorso | Unterwegs | Por el camino | En chemin |
+| At the end | Alla fine | Am Ende | Al final | À la fin |
+| Scenes | Scene | Szenen | Escenas | Scènes |
+| Opening | Apertura | Anfang | Inicio | Ouverture |
+| The route | Il percorso | Die Strecke | El recorrido | Le parcours |
+| Ending | Finale | Ende | Final | Fin |
+| Drawing in 2D | Disegno in 2D | Zeichnung in 2D | Dibujo en 2D | Dessin en 2D |
+| Nothing | Niente | Nichts | Nada | Rien |
+| Cut | Taglio | Schnitt | Corte | Coupe |
+| Fade | Dissolvenza | Überblendung | Fundido | Fondu |
+| Camera behind | Camera dietro | Kamera dahinter | Cámara detrás | Caméra derrière |
+| Camera around | Camera intorno | Kamera rundherum | Cámara alrededor | Caméra autour |
+| Line in 2D | Linea in 2D | Linie in 2D | Línea en 2D | Ligne en 2D |
+| Numbers | Numeri | Zahlen | Números | Chiffres |
+| Whole drawing | Disegno intero | Ganze Zeichnung | Dibujo entero | Dessin entier |
+| All three | Tutti e tre | Alle drei | Los tres | Les trois |
+| At least one scene stays on. | Almeno una scena resta accesa. | Mindestens eine Szene bleibt an. | Al menos una escena sigue activa. | Au moins une scène reste active. |
+
+### I colori (nomi per VoiceOver)
+
+| en | it | de | es | fr |
+|---|---|---|---|---|
+| Yellow | Giallo | Gelb | Amarillo | Jaune |
+| Light blue | Azzurro | Hellblau | Celeste | Bleu clair |
+| Pink | Rosa | Rosa | Rosa | Rose |
+| Green | Verde | Grün | Verde | Vert |
+| White | Bianco | Weiß | Blanco | Blanc |
+
+### I personaggi
+
+| en | it | de | es | fr |
+|---|---|---|---|---|
+| Horse | Cavallo | Pferd | Caballo | Cheval |
+| White horse | Cavallo bianco | Schimmel | Caballo blanco | Cheval blanc |
+| Elephant | Elefante | Elefant | Elefante | Éléphant |
+| Stag | Cervo | Hirsch | Ciervo | Cerf |
+| Deer | Capriolo | Reh | Corzo | Chevreuil |
+| Fox | Volpe | Fuchs | Zorro | Renard |
+| Wolf | Lupo | Wolf | Lobo | Loup |
+| Husky | Husky | Husky | Husky | Husky |
+| Shiba Inu | Shiba Inu | Shiba Inu | Shiba Inu | Shiba Inu |
+| Cow | Mucca | Kuh | Vaca | Vache |
+| Bull | Toro | Stier | Toro | Taureau |
+| Donkey | Asino | Esel | Burro | Âne |
+| Alpaca | Alpaca | Alpaka | Alpaca | Alpaga |
+
+### Il prompt
+
+| en | it | de | es | fr |
+|---|---|---|---|---|
+| Describe your video | Descrivi il tuo video | Beschreibe dein Video | Describe tu vídeo | Décris ta vidéo |
+| a horse at night, fireworks at the end | un cavallo di notte, fuochi d'artificio alla fine | ein Pferd bei Nacht, Feuerwerk am Ende | un caballo de noche, fuegos artificiales al final | un cheval la nuit, un feu d'artifice à la fin |
+| An animal, colours, emoji, the ending. Read on your phone. | Un animale, i colori, le emoji, il finale. Letto sul telefono. | Ein Tier, Farben, Emoji, das Ende. Auf dem Handy gelesen. | Un animal, colores, emojis, el final. Se lee en el móvil. | Un animal, des couleurs, des emojis, la fin. Lu sur ton téléphone. |
+
+### La riga dei crediti (Termini › «Services of others»)
+
+- **en** (approvata): The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm on Sketchfab (CC BY 4.0), adapted by MuW.
+- **it** (approvata): Gli animali 3D del video vengono da Quaternius (CC0); l'elefante è "Elephant Anim" di Shivoahm su Sketchfab (CC BY 4.0), adattato da MuW.
+- **de**: Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm auf Sketchfab (CC BY 4.0), angepasst von MuW.
+- **es**: Los animales 3D del vídeo vienen de Quaternius (CC0); el elefante es «Elephant Anim» de Shivoahm en Sketchfab (CC BY 4.0), adaptado por MuW.
+- **fr**: Les animaux 3D de la vidéo viennent de Quaternius (CC0) ; l'éléphant est « Elephant Anim » de Shivoahm sur Sketchfab (CC BY 4.0), adapté par MuW.
+
+Note: «No animal» al posto di «None», perché «None» c'è già al femminile
+(«Nessuna»). Il foglio ha solo «Done»: il video si esporta dal tasto che
+c'è già in «Share your run», quindi niente «Export video».
 
 ## Le parti
 

@@ -24215,8 +24215,18 @@ anche gli estratti OSM del mondo sul server.
 
 ## ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi
 
-**Stato**: Proposto · 2026-11-06 · TASK-380. Numeri dal Coordinatore
-(2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
+**Stato**: Accettato · 2026-11-06 · TASK-380. Le scelte dell'utente, il
+2026-11-06, sono in `tasks/TASK-380.md`:
+
+- «Roller» 🛼 (in tedesco «Inline», in spagnolo «Patines»);
+- la rete `roller`: città e pianura, non la montagna;
+- 5–30 km;
+- **nel gioco**, come chi va a piedi, con record personali propri su 5,
+  10, 21,1 e 42,2 km (la proposta era fuori dal gioco, come la bici);
+- i testi approvati, con l'avviso su traffico e discese;
+- acceso appena pronto.
+
+Numeri dal Coordinatore (2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
 `tasks/TASK-380.md`. I punti tecnici qui sotto sono decisi dall'agente su
 delega dell'utente.
 
@@ -24249,7 +24259,7 @@ motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
 - **Il tag `inline_skates`** c'è solo per 4,5 km a Trento, e in nessun'altra
   zona.
 
-**Decisione (proposta)**:
+**Decisione**:
 
 1. **Una rete nuova `roller`** (`route_engine/networks/roller.py`) con le
    regole di `roller` qui sopra, scaricata con un suo filtro Overpass
@@ -24282,14 +24292,12 @@ motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
 
    Solo JavaScript: l'impronta iOS non si muove.
 
-**Restano all'utente**:
-
-- nome ed emoji;
-- la rete, e quindi cosa si promette in montagna;
-- le distanze (il banco ha provato 5–30 km);
-- se conta nel gioco e nei record;
-- i testi, con l'avviso su traffico e discese;
-- quando si accende.
+8. **Nel gioco** (scelta dell'utente 4): `game_rules.py` conta il Roller
+   con la corsa, la camminata e Hike, con gli stessi controlli. Come la
+   camminata, niente tempi migliori del gioco; i record personali sono a
+   parte. Il controllo «veicolo» (oltre 25 km/h su 200 m per più del 10%
+   della corsa) può scartare un pattinatore veloce: la parte A lo misura,
+   e una soglia per sport andrebbe chiesta all'utente.
 
 **Alternative**:
 

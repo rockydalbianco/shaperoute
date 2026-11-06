@@ -24210,8 +24210,10 @@ alla volta.
      sito.
    - Un nome troppo lungo tiene le forme separate da virgole che stanno in
      120 caratteri.
-   - Una stazione che non si legge resta fuori e viene contata, senza
-     fermare l'import.
+   - Il formato non è promesso stabile. Un campo che serve, se manca o è
+     di un altro tipo, ferma l'import con il nome del campo prima di
+     scrivere qualsiasi cosa. La scrittura è una transazione: tutto o
+     niente.
 3. **Le rotte.** `GET /ski-resorts` (per nome o per posizione, al più 50) e
    `GET /ski-resorts/{id}`.
    - Senza token, perché le stazioni non contengono dati degli utenti; con
@@ -24220,6 +24222,12 @@ alla volta.
 4. **Cosa non cambia.** I riquadri dello sci di TASK-375 restano come sono
    e servono ancora per gli impianti presi. Il motore, `schemas.py` e le
    impronte non cambiano.
+5. **La licenza.** `ski_resorts` è un database derivato da dati ODbL, con
+   gli stessi obblighi dei dati OSM che il motore usa già.
+   - Mostrare all'app una stazione alla volta, o una ricerca, è un
+     «produced work»: basta l'attribuzione.
+   - Se un giorno la tabella si desse in blocco (un'esportazione, un'API di
+     tutte le stazioni), andrebbe offerta sotto ODbL.
 
 **Alternative**:
 

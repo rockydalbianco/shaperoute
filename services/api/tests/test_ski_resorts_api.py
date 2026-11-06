@@ -5,6 +5,7 @@ the API key as every path, with a limit on what one search gives."""
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -17,11 +18,12 @@ from test_personal_bests import (
     database,  # noqa: F401  (the fixture of the bests' tests)
 )
 
+from shaperoute_api import resort_import
 from shaperoute_api.access import KEY_HEADER, Access, protect
 from shaperoute_api.accounts import Accounts
 from shaperoute_api.activities import PlaceNames
 from shaperoute_api.app import create_app
-from shaperoute_api.db import Database
+from shaperoute_api.db import DATABASE_VARIABLE, Database
 from shaperoute_api.resort_import import resorts_of
 from shaperoute_api.ski_resorts import (
     MAX_FOUND,
@@ -193,3 +195,38 @@ def test_behind_the_api_key_as_every_path(database: Database) -> None:  # noqa: 
     assert (
         client.get("/ski-resorts?q=Hill", headers={KEY_HEADER: KEY}).status_code == 200
     )
+
+
+def _count(database: Database) -> int:  # noqa: F811
+    with database.connect() as conn:
+        row = conn.execute("SELECT count(*) AS n FROM ski_resorts").fetchone()
+    assert row is not None
+    return int(row["n"])
+
+
+def test_the_import_writes_every_resort_or_none(
+    database: Database,  # noqa: F811
+) -> None:
+    resorts = _resorts()
+    # The third breaks a CHECK of 0054: the first two go back too.
+    bad = [resorts[0], resorts[1], replace(resorts[2], name="")]
+    with pytest.raises(Exception, match="ski_resorts_name_check"):
+        with database.connect() as conn:
+            save_resorts(conn, bad, NOW)
+    assert _count(database) == 0
+
+
+def test_the_command_imports_the_file(
+    database: Database,  # noqa: F811
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setenv(DATABASE_VARIABLE, database.url)
+    assert resort_import.main(["--geojson", str(AREAS)]) == 0
+    assert "Saved 4 ski resorts, left out 3, removed 0" in capsys.readouterr().out
+    assert _count(database) == 4
+    with database.connect() as conn:
+        save_resorts(conn, [replace(_resorts()[0], id="gone")], NOW)
+    assert resort_import.main(["--geojson", str(AREAS), "--clean"]) == 0
+    assert "removed 1" in capsys.readouterr().out
+    assert _count(database) == 4

@@ -400,10 +400,11 @@ Skimap.org.
 - Licenza ODbL, anche per uso commerciale.
 - Si citano OpenStreetMap contributors, OpenSkiMap.org, Skimap.org e Who's
   On First.
-- I download automatici sono al massimo uno al giorno, e le loro tile
-  vettoriali non si usano direttamente.
-- Il formato non è promesso stabile: una stazione che non si legge come ci
-  si aspetta resta fuori, viene contata, e l'import va avanti.
+- I download automatici sono al massimo uno al giorno, con un User-Agent
+  di MuW, e le loro tile vettoriali non si usano mai.
+- Il formato non è promesso stabile. Se un campo che serve manca, o è di un
+  altro tipo, l'import si ferma e dice quale campo, senza scrivere niente.
+  La scrittura è una sola transazione: tutte le stazioni o nessuna.
 
 Non serve riscaricare gli estratti OSM: il file ha già le stazioni
 raggruppate, con impianti, km di piste e quote. I riquadri dello sci di
@@ -425,7 +426,7 @@ TASK-375 restano come sono.
 Una volta a stagione, sul server (comando dell'utente):
 
 ```bash
-curl -fsSL -o ski_areas.geojson https://tiles.openskimap.org/geojson/ski_areas.geojson
+curl -fsSL -A "MuW/1.0 (getmuw.app)" -o ski_areas.geojson https://tiles.openskimap.org/geojson/ski_areas.geojson
 python -m shaperoute_api.resort_import --geojson ski_areas.geojson --clean
 ```
 

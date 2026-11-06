@@ -3228,8 +3228,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Shape» e la nota «On the water, the drawing goes where it fits near the
   start.»; il disegno a mano va al motore sull'acqua di TASK-369 B, già sul
   server. Un disegno che non sta sull'acqua lo dice con parole sue. Solo
-  JavaScript, impronta iOS 6f8bba4c. Restano gli OTA, col sì dell'utente.
-  `tasks/TASK-396.md`.
+  JavaScript, impronta iOS 6f8bba4c. #860 in main (`452598d1`, 2026-11-06),
+  in produzione con l'OTA `3ef55853`. `tasks/TASK-396.md`.
 - **TASK-369 — «Edit the drawing» su ogni disegno** (ADR-0313; 2026-11-04;
   numeri dal Coordinatore): documenti #712, parte A #719 (`3e7c7d28`), parte
   B #722 (`bacd7c7b`). Il tasto c'è su ogni disegno con una linea, anche

@@ -197,6 +197,8 @@ testi di privacy col sì dell'utente.
 
 1. **La foto dell'autore**: resta TASK-355 B (proposta), o si chiude dentro
    TASK-410 con una riga qui?
+   **Risposta dell'utente (2026-11-06): «Resta TASK-355 B».** La parte A di
+   questo task è TASK-355 B, con il suo task file; qui non si duplica.
 2. **Battito e calorie degli altri**: il 2026-10-29 l'utente ha scelto per
    il battito «On, publisher can hide» (TASK-345); il brief propone «solo
    l'autore, a meno che non scelga di mostrarli». Proposta: tenere la scelta

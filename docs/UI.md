@@ -3805,6 +3805,26 @@ distanza e il tempo della deviazione contano nella corsa. Lo stesso in bici
 e in canoa. Testi in inglese e italiano qui sopra, le altre tre lingue in
 `src/voice/` e `src/i18n/`, **da approvare dall'utente**.
 
+**La strada per tornare, sulle vie** (TASK-314 parte B, ADR-0274). Fuori
+percorso, a piedi o in bici, l'app chiede al motore la strada per tornarci
+sulle vie: prima al telefono, poi al server; con il telefono bloccato
+subito al server. Quando c'è:
+
+- **Mappa**: i puntini vanno dal runner lungo le vie fino al percorso, al
+  posto della linea dritta.
+- **Banner**: sotto «Off the route», la prossima svolta della strada come
+  quella del percorso (freccia, metri, «Turn right onto Via Est», «Then …»).
+- **Voce**: appena trovata, la sua prossima svolta con i metri («In 30
+  metres, turn right onto Via Est»); poi ogni svolta a 50 m, come sul
+  percorso; a schermo bloccato anche nella notifica.
+
+La strada resta finché il runner ci sta sopra. Se la lascia, se ne chiede
+un'altra, al più ogni 15 s; una nuova si dice subito al più una volta al
+minuto. Senza strada (offline, server vecchio, troppe richieste, nessuna
+strada) resta tutto come sopra. Il rientro lo decidono sempre le
+posizioni. Nessun testo nuovo nell'app; la Privacy dice che la posizione
+esatta e il tratto davanti vanno al server per questo, e non si tengono.
+
 **Con le miglia** (TASK-182 parte C, ADR-0149 «aggiornamento (parte C)»;
 scelta dell'utente del 2026-10-03, «come fa Strava»). Con «Miles» in
 «Settings» la corsa si mostra e si dice in miglia, subito, anche a corsa

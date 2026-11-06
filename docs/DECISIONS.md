@@ -23692,7 +23692,8 @@ freccia davanti; fuori rotta «Off the route»; sotto «{percent}% drawn ·
 cinque lingue; l'unico testo nuovo è «{distance} left», nelle unità scelte.
 ## ADR-0336 — Ruotare il disegno sulla mappa e aggiungere pezzi da tessere, tutto sul telefono
 
-**Stato**: Proposto · 2026-11-05 · TASK-402. Scelta di prodotto
+**Stato**: Accettato · 2026-11-06 (proposto il 2026-11-05) · TASK-402,
+parti A (#857) e B (#873) in `main`. Scelta di prodotto
 dell'utente («Aggiungere pezzi», punto 2); il resto deciso dall'agente su
 delega dell'utente; confine con TASK-347 deciso dal Coordinatore.
 
@@ -24223,3 +24224,142 @@ versione, non da `main`: il JS dentro la build è quello che vede chi la
 installa prima del primo OTA, e `main` ha JS non ancora approvato per la
 produzione. `release/1.0.2` non si unisce a `main`. L'impronta resta
 `6f8bba4c`, perché `fingerprint.config.js` esclude la versione.
+## ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi
+
+**Stato**: Proposto · 2026-11-06 · TASK-380. Numeri dal Coordinatore
+(2026-11-04). Le scelte di prodotto sono dell'utente, una alla volta, in
+`tasks/TASK-380.md`. I punti tecnici qui sotto sono decisi dall'agente su
+delega dell'utente.
+
+**Contesto**: il Roller è il terzo sport della fase 1 (TASK-376, scelta
+dell'utente del 2026-11-04: asfalto liscio e `inline_skates=yes`, e prima
+si misura quanta rete resta). Nessuna rete di oggi va bene:
+
+- la rete foot prende sentieri, sterrati, ciottoli e porfido;
+- la rete bike pedala ogni `track` e le strade principali, rispetta i
+  sensi unici e fa i marciapiedi «a piedi con la bici».
+
+Il banco ha provato quattro reti dai download della bici, senza toccare il
+motore (`docs/sports/roller.md`), contro la bici sulla stessa area (54 su
+54, 23 buoni):
+
+- **`roller`**:
+  - cosa prende: ciclabili, marciapiedi, aree pedonali, strade residenziali,
+    `service`, `unclassified` e terziarie, con superficie liscia o non
+    scritta; `path` e `track` solo se dicono una superficie liscia;
+  - cosa lascia fuori: `smoothness` da `bad` in giù, strade principali e
+    secondarie;
+  - i risultati: 34 su 54, 10 buoni. Milano 8 su 9, Trento 9 su 9,
+    pianura 8 su 9; Fiemme e Asiago 2 su 9. Mai su ciottoli, sterrato o
+    strade principali; il 61% dei km su strade con le auto.
+- **`rollersec`** (con le secondarie): 42 su 54, ma il 12,4% dei km su
+  strade secondarie.
+- **`rollerquiet`** (senza terziarie né autobloccanti): 21 su 54.
+- **`rollerflat`** (senza i tratti oltre l'8%): 26 su 54; a Trento la
+  salita scende da 210 a 95 m ogni 10 km.
+- **Il tag `inline_skates`** c'è solo per 4,5 km a Trento, e in nessun'altra
+  zona.
+
+**Decisione (proposta)**:
+
+1. **Una rete nuova `roller`** (`route_engine/networks/roller.py`) con le
+   regole di `roller` qui sopra, scaricata con un suo filtro Overpass
+   (strade fino alle terziarie, ciclabili, marciapiedi, aree pedonali,
+   `path` e `track`), con file di cache suoi (`roller_*`). Il grafo dice
+   `network: roller`.
+2. **Ogni via va nei due sensi** (`by_bike` falso): chi pattina, per il
+   Codice della strada (art. 190), è un pedone. Niente tratti «a piedi»: si
+   pattina o non si passa.
+3. **Il tag `inline_skates`** non fa la rete: `inline_skates=no` toglie una
+   via, `yes` o `designated` la tiene anche se la superficie non lo dice.
+4. **Un'attività nuova** `inline_skating` in `activities/`, nei file nuovi
+   di ogni strato, con una riga per registro
+   (`docs/sports/COME-AGGIUNGERE.md`). Il nome non è `skating`, che alcuni
+   test usano come attività sconosciuta (`CONDIVISO.md`).
+5. **L'impronta del motore**: una rete nuova è un file nuovo nel motore.
+   Se i nove percorsi fissi di `test_same_routes.py` restano identici, una
+   riga in `SAME_ROUTES_AS`, come Hike e MTB; altrimenti una notte di
+   esempi, col sì dell'utente. Server e migrazione (numero dal
+   Coordinatore) col sì dell'utente.
+6. **Niente quote nel motore per ora**: il filtro delle salite vorrebbe le
+   tegole Terrarium dentro il motore, sul server e sul telefono. Si riprende
+   quando la parte G di TASK-347 porta il dislivello (ADR-0300).
+7. **Sul telefono**: un `SportProfile` con:
+   - Apple `.skatingSports` (39) e Health Connect `EXERCISE_TYPE_SKATING`
+     (60), da verificare sulle librerie;
+   - Strava `InlineSkate`;
+   - l'energia dal Compendium («inline skating»);
+   - un passo di circa 15 km/h per il tempo stimato.
+
+   Solo JavaScript: l'impronta iOS non si muove.
+
+**Restano all'utente**:
+
+- nome ed emoji;
+- la rete, e quindi cosa si promette in montagna;
+- le distanze (il banco ha provato 5–30 km);
+- se conta nel gioco e nei record;
+- i testi, con l'avviso su traffico e discese;
+- quando si accende.
+
+**Alternative**:
+
+- **`rollersec`, con le secondarie**: otto forme in più, quasi tutte in
+  montagna, ma un ottavo del percorso su strade veloci, dove coi pattini non
+  si va. Non la propongo.
+- **`rollerquiet`**: più sicura sulla carta, ma regge solo a Milano.
+- **`rollerflat`**: toglie le discese ripide, ma costa forme a Trento e
+  vuole le quote nel motore. Dopo TASK-347 G.
+- **La rete foot o bike così come sono**: porterebbero chi pattina su
+  porfido, sterrato o strade principali.
+- **Una rete fatta col tag `inline_skates`**: 4,5 km in sei zone.
+
+## ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono
+
+**Stato**: Proposto · 2026-11-06 · TASK-408. Le scelte di prodotto sono
+dell'utente (domande aperte in `tasks/TASK-408.md`); il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole un animale (un cavallo, un elefante…) che
+corre il percorso nel video, in 3D, e tante modifiche: il finale, i
+colori, le emoji, il 2D e il 3D, i cambi di scena, anche scritte con un
+prompt, senza un costo per ogni richiesta. Il video di TASK-351 si fa già
+in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
+
+**Decisione (proposta)**:
+
+1. **Il personaggio** è un modello glTF animato, disegnato da **three.js**
+   come «custom layer» di MapLibre nella pagina del video (`videoPage.ts`).
+   three.js si carica come MapLibre: versione fissata e hash SRI. Niente di
+   nativo, quindi l'impronta iOS non cambia e si pubblica con un OTA.
+   three.js è una dipendenza nuova: entra solo col sì dell'utente.
+2. **I modelli** hanno una licenza scritta e nessun personaggio di altri.
+   Il candidato è il pacchetto CC0 di Quaternius (glTF, galoppo e passo).
+   L'elefante non c'è in nessun pacchetto CC0 trovato: si aggiunge solo con
+   una licenza letta e scritta nel task.
+3. **Il percorso non si inventa**: il personaggio sta sul punto della
+   traccia dove arriva la linea in quel fotogramma, girato nella direzione
+   della strada. La camera lo segue; su un telefono lento resta ferma, e
+   senza modello il video esce come oggi.
+4. **L'editor** offre righe chiuse (personaggio, stile, colori dai token,
+   emoji, scene, finale). La scena resta un elenco di cose da disegnare
+   (`VideoScene`), con pezzi in più.
+5. **Il prompt** si legge **sul telefono** con una tabella di parole, come
+   le forme (ADR-0036): niente rete, nessun servizio AI, nessun costo per
+   richiesta (scelta dell'utente). Le parole scelgono solo voci
+   dell'editor, mai coordinate o geometrie (ADR-0001).
+6. Cinque parti: A proposta, B personaggio 3D, C editor, D prompt, E prova
+   sul telefono. Ogni parte ha la sua lista dei file approvata dal
+   Coordinatore.
+
+**Alternative**:
+
+- **Un'AI esterna per il prompt**: scartata dall'utente, per il costo a
+  ogni richiesta.
+- **Animali 2D (emoji o disegni piatti) che scorrono sulla linea**: più
+  leggeri, ma l'utente vuole il 3D. Restano la riserva se three.js non
+  entra.
+- **Un renderer 3D nativo** (SceneKit, Filament): una build nuova e
+  un'impronta nuova per ogni ritocco. La pagina del video ha già WebGL.
+- **I modelli 3D nel layer di MapLibre senza three.js**: MapLibre GL JS non
+  carica glTF da solo.

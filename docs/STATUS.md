@@ -190,6 +190,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   («Delete piece»); un solo percorso come disegno, collegamenti tratteggiati, contratto uguale;
   un pezzo solo chiede quello di prima. Testi 3–5 nelle quattro lingue. Prossimo: il video del
   simulatore all'utente, la PR, il merge del Coordinatore, poi l'OTA col sì dell'utente.
+  **2026-11-06, Done**: parte A in `main` con la #857 (5fc4d20f), parte B con la #873 (e9960204);
+  i due video del simulatore approvati dall'utente. Resta: l'OTA di produzione col sì
+  dell'utente (la prepara il Coordinatore) e la prova sul telefono (due tocchi veloci su «+15°»
+  ne contano uno nel simulatore).
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
@@ -318,6 +322,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `6f8bba4c` invariata, server a `cab53f51` con la 0052. Prossimo:
   l'accensione col sì dell'utente, in una riga o PR a parte, poi la prova
   sul telefono (si sceglie, si pedala, si salva, va in Salute).
+
+- **TASK-380 — Roller, i pattini in linea** (2026-11-06; numeri dal
+  Coordinatore, ADR-0324 **proposto**). Parte 0, solo documenti: misurate
+  col banco quattro reti di prova, dai download della bici, senza Overpass.
+  - `roller` (asfalto liscio; né sterrato, né ciottoli, né strade
+    principali e secondarie; ogni via nei due sensi): 34 su 54, 10 buoni.
+    Regge in città e in pianura (Milano 8 su 9, Trento 9 su 9), non in
+    montagna (Fiemme e Asiago 2 su 9): senza le secondarie la rete si
+    spezza.
+  - Con le secondarie: 42 su 54, ma il 12% dei km su strade veloci.
+  - Il tag `inline_skates` c'è solo per 4,5 km a Trento: non serve.
+
+  Prossimo: le scelte dell'utente, una alla volta (`tasks/TASK-380.md`,
+  `sports/roller.md`).
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
@@ -687,6 +705,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Norway, chiesto dal server. Le parti sono A (stazioni), B (meteo), C
   (ricerca), D (giornata) ed E (prova). Prossimo: la risposta dell'utente
   alla domanda 1, com'è la neve (`tasks/TASK-406.md`).
+- **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
+  percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
+  Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un
+  cavallo, un elefante o altri animali che corrono il percorso in 3D; il
+  finale, i colori, le emoji, il 2D e il 3D, i cambi di scena; un prompt.
+  Scelte: prima il personaggio, poi l'editor, poi il prompt; il prompt senza
+  costi, letto dal telefono con una tabella di parole. Proposta: three.js
+  nella pagina del video (niente di nativo) e modelli CC0. Prossimo: la
+  risposta dell'utente alla domanda 1, three.js e i modelli
+  (`tasks/TASK-408.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

@@ -1,10 +1,11 @@
 # TASK-400 — Nuoto in piscina: la vasca scelta prima di partire
 
-**Stato**: In corso · proposta in `main` (#867); parte A (server) in
-`main` (#871, cab53f51), server col sì dell'utente; parte B (app) in
-`main` (#880, a178bb18; impronta iOS 6f8bba4c invariata); prossima la
-parte C (post) in PR da `feat/TASK-400-c-pool-post`, dopo TASK-394 B;
-ogni parte dopo la sua lista dei file al Coordinatore
+**Stato**: Done · 2026-11-06. Esito: A (#871, cab53f51, server
+aggiornato con `0053`), B (#880, a178bb18) e C (#898, 1939b121) in
+`main`, impronta iOS 6f8bba4c invariata; preview pubblicata dal
+Coordinatore (gruppo 71b18ba0, commit 1939b121). Resta l'OTA di
+produzione col sì dell'utente. Limite: in Apple Salute senza la lunghezza
+della vasca (criteri, sotto)
 **Fase**: 5 · **Branch**: `docs/TASK-400-pool-swim` (documenti); il codice
 `feat/TASK-400-a-…`, `feat/TASK-400-b-…`
 **Dipende da**: TASK-323 (nuoto in acque libere, chiuso #834), TASK-385

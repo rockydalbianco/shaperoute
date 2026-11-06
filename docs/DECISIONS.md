@@ -24903,3 +24903,34 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
 - **Solo il motore del telefono**: niente frase nella Privacy, ma a
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
+
+## ADR-0324, terza precisazione — Il Roller nell'app: energia, tempo stimato, file importati
+
+**Data**: 2026-11-06 · **Stato**: Accettata · **Task**: TASK-380 parte B
+
+- **Il tempo stimato** sotto la distanza di «Disegna» usa il passo di chi
+  pattina: le ultime dieci pattinate tra 8 e 36 km/h, e **4:00/km** (15
+  km/h) finché non ce ne sono. Scelta dell'utente del 2026-11-06 («Sì,
+  4:00/km»); il profilo dice `timeAt: "skater"`.
+
+Deciso dall'agente su delega dell'utente:
+
+- **L'energia** viene dalle voci «in-line skating» del Compendium 2024:
+  - 7,5 MET a 14,4 km/h (15591);
+  - 9,8 a 17,7 km/h (15592);
+  - 12,3 a 21–21,7 km/h (15593);
+  - 15,5 a 24 km/h (15594).
+
+  Ogni fascia arriva fino a metà strada dalla velocità successiva: 16, 19,5
+  e 23 km/h.
+- **I record personali** nell'app sono quelli della corsa, chiamati come
+  gare: 5K, 10K, mezza e maratona (`INLINE_SKATING_BEST_DISTANCES` nel
+  contratto). Il gruppo «Roller» viene dopo la MTB.
+- **I file importati**: il FIT dice `sport` 30 (`inline_skating`); GPX e
+  TCX dicono `inline_skating`, `InlineSkate`, `rollerblading` o il numero
+  «6» di Strava. `IceSkate` e `RollerSki` non sono Roller.
+- **Apple Salute** `.skatingSports` (39), senza la distanza del giorno, e
+  **Health Connect** `EXERCISE_TYPE_SKATING` (60): controllati sulle
+  librerie installate.
+
+---

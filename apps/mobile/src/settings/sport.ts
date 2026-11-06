@@ -32,6 +32,7 @@ export type Sport =
   | "hike"
   | "gravel"
   | "mtb"
+  | "roller"
   | "swim"
   | "ski"
   | "xc_ski"
@@ -79,6 +80,7 @@ const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
   hike: "hiking",
   gravel: "gravel_biking",
   mtb: "mountain_biking",
+  roller: "inline_skating",
   ski: "skiing",
   xc_ski: "xc_skiing",
   gym: "gym",
@@ -119,6 +121,10 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // the user's «Sì, accendili», in the store builds too.
   fromProfile("gravel", true),
   fromProfile("mtb", true),
+  // Asked as "inline_skating" (activityOf), 5-30 km on the server's own
+  // network (TASK-380 part B); on once the server has part A and its
+  // migration 0055, the user's «appena pronto».
+  fromProfile("roller", false),
   // Saved as "skiing" and "xc_skiing" (runActivityOf). The alpine ski is on
   // since TASK-375 D4: the server has parts A-D (migrations 0044 and 0048)
   // and the day its numbers, lifts and pistes. The cross-country ski not yet.
@@ -137,6 +143,7 @@ const OFFERED_WHEN_READY: { readonly [A in Activity]?: Sport } = {
   hiking: "hike",
   gravel_biking: "gravel",
   mountain_biking: "mtb",
+  inline_skating: "roller",
 };
 
 /**
@@ -144,7 +151,7 @@ const OFFERED_WHEN_READY: { readonly [A in Activity]?: Sport } = {
  * (the form to publish, the search's filters): a walk once «Walk» is ready,
  * the server keeping walks (TASK-371), so the two come together, a hike
  * once «Hike» is (TASK-377), a gravel or an MTB ride once «Gravel» or «MTB»
- * is (TASK-378); every other as before.
+ * is (TASK-378), a skate once «Roller» is (TASK-380); every other as before.
  */
 export function activityOffered(
   activity: Activity,
@@ -281,7 +288,8 @@ export function runActivityOf(sport: Sport): RunActivity {
 /** The way out of «Draw» with the track only (TASK-149), in the sport's
  * words: «Ride» by bike (TASK-190), «Paddle» on the water (TASK-191),
  * «Walk» on foot (TASK-371), «Hike» on the trails (TASK-377), «Swim» in
- * open water (TASK-323). A gravel or an MTB ride is a ride (TASK-378). */
+ * open water (TASK-323). A gravel or an MTB ride is a ride (TASK-378).
+ * «Skate» on inline skates (TASK-380). */
 export function withoutRouteLabel(sport: Sport): string {
   switch (sport) {
     case "bike":
@@ -294,6 +302,8 @@ export function withoutRouteLabel(sport: Sport): string {
       return t("Walk without a route");
     case "hike":
       return t("Hike without a route");
+    case "roller":
+      return t("Skate without a route");
     case "swim":
       return t("Swim without a route");
     case "ski":

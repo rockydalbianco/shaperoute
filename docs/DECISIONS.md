@@ -24211,3 +24211,15 @@ anche gli estratti OSM del mondo sul server.
   terzo la posizione dell'utente e non avrebbe una cache condivisa.
 - **Le stazioni da un servizio esterno**: scartato. Costerebbe, e OSM le ha
   già, nello stesso estratto di impianti e piste.
+
+## TASK-407 — La 1.0.2 esce con il JS dell'ultimo OTA di produzione
+
+**Stato**: Accettato · 2026-11-06 · TASK-407. Deciso dal Coordinatore su
+delega dell'utente.
+
+La 1.0.2 esce solo per gli screenshot nuovi. La build parte da
+`release/1.0.2` = `76305c1a` (ultimo OTA di produzione) più il commit della
+versione, non da `main`: il JS dentro la build è quello che vede chi la
+installa prima del primo OTA, e `main` ha JS non ancora approvato per la
+produzione. `release/1.0.2` non si unisce a `main`. L'impronta resta
+`6f8bba4c`, perché `fingerprint.config.js` esclude la versione.

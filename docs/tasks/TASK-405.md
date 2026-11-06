@@ -1,10 +1,10 @@
 # TASK-405 — Un percorso di MuW non dice «looks 100% like it»
 
-**Stato**: In lavorazione · 2026-11-06
+**Stato**: Done · 2026-11-06
 **Fase**: 5 · **Branch**: `fix/TASK-405-muw-no-score`
-**Numeri**: TASK-405, assegnato dal Coordinatore; nessun ADR (è una
-correzione, nessuna scelta di prodotto cambia). Seguito di TASK-365
-(ADR-0310), trovato con la PR #868.
+**Numeri**: TASK-405, assegnato dal Coordinatore; nessun ADR nuovo (è una
+correzione, nessuna scelta di prodotto cambia): «ADR-0310, precisazione»
+in `DECISIONS.md`. Seguito di TASK-365 (ADR-0310), trovato con la PR #868.
 
 ## Obiettivo
 
@@ -47,15 +47,18 @@ invariata (`6f8bba4c`), arriva con un OTA.
 
 ## Criteri di accettazione
 
-- [ ] Un percorso di MuW, in caricamento e aperto, mostra
+- [x] Un percorso di MuW, in caricamento e aperto, mostra
       «{title} · {city}» senza «looks» né percento
-      (`feed/muwRouteNoScore.test.tsx`).
-- [ ] Un percorso di «Explore» tiene «… · looks N% like it» con la sua
+      (`feed/muwRouteNoScore.test.tsx`; senza la correzione i due test
+      falliscono).
+- [x] Un percorso di «Explore» tiene «… · looks N% like it» con la sua
       somiglianza (stesso file).
-- [ ] I test di prima di `ExploredCard` e `muwRoute` restano verdi;
-      typecheck, lint e Prettier verdi in locale sui file toccati.
-- [ ] Impronta iOS `6f8bba4c` su una copia pulita con
-      `APP_VARIANT=production`.
+- [x] I test di prima di `ExploredCard`, `muwRoute` e `recommendedRoutes`
+      restano verdi (28 su 28 coi nuovi); typecheck, lint e Prettier verdi
+      in locale sui file toccati.
+- [ ] Impronta iOS `6f8bba4c` con `APP_VARIANT=production`: la misura il
+      Coordinatore nella copia di pubblicazione (diff solo JS, lockfile
+      uguale).
 - [ ] CI verde.
 
 ## File toccati
@@ -80,3 +83,11 @@ docs/DECISIONS.md
 - Un percorso di MuW tenuto fra i preferiti e riaperto da lì: è un
   preferito, con la sua riga.
 - **L'OTA**, che parte col sì dell'utente.
+
+## Esito
+
+Un percorso di MuW aperto dal Feed dice solo «Star · Trento», in
+caricamento e aperto; ogni altro percorso tiene «looks N% like it». Il
+segno è `scored: false` su `RecommendedRoute`, messo da `muwCardRoute`.
+Solo JS; l'impronta la conferma il Coordinatore, l'OTA col sì
+dell'utente.

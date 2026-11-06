@@ -23892,23 +23892,21 @@ vasche).
 
 ## ADR-0310, precisazione — Un percorso di MuW non dice quanto somiglia
 
-**Stato**: Accettato · 2026-11-06 · TASK-405. Lista dei file mandata al
-Coordinatore; la scelta tecnica è decisa dall'agente su delega
-dell'utente.
+**Stato**: Accettato · 2026-11-06 · TASK-405. Deciso dall'agente su
+delega dell'utente, lista dei file approvata dal Coordinatore.
+
+I percorsi di MuW non hanno punteggio da mostrare (TASK-365: ogni percorso
+passa dall'occhio, non dal punteggio del motore), ma il foglio aperto dal
+Feed diceva «looks 100% like it» per il `similarity: 1` messo solo perché
+il tipo vuole un numero.
 
 1. **Il segno è un campo a parte**, `RecommendedRoute.scored?: false`,
-   messo solo da `muwCardRoute`: «nessuna somiglianza da dire». Assente
-   per ogni altro percorso, che resta com'è. `optionsOf` lo porta avanti
-   con lo spread, quindi vale anche a percorso caricato.
-2. **`ExploredCard` con `scored === false`** scrive `{title} · {city}`
-   come stringa composta, come `RouteTiles` e `NearYou`: nessuna chiave
-   nuova, nessun testo da tradurre, nessun `locales/*.json`.
-3. **`similarity` resta un numero.** Renderla opzionale (la soluzione più
-   pulita sulla carta) tocca una decina di file che la leggono: le card
-   con `match`, i preferiti, `toResult` → `RouteResult`. Il `1` di
-   `muwDetail` resta e finisce solo nel `RouteResult`, che nessuno
-   mostra come percento sul foglio di un percorso solo.
+   messo solo da `muwCardRoute` e portato da `optionsOf` anche a percorso
+   caricato. Assente per ogni altro percorso, che resta com'è.
+2. **`ExploredCard`** con `scored === false` scrive `{title} · {city}`
+   come stringa composta: nessuna chiave, nessun testo nuovo.
+3. **`similarity` resta un numero**: renderla opzionale toccherebbe una
+   decina di file che la leggono (card, preferiti, `RouteResult`).
 
-**Scartato**: riconoscere i percorsi di MuW dall'id (`muw:`) nella card:
-è un caso speciale sul nome, e il prossimo percorso senza punteggio ne
-vorrebbe un altro.
+**Scartato**: riconoscere i percorsi di MuW dall'id (`muw:`) nella card,
+un caso speciale sul nome.

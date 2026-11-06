@@ -24574,7 +24574,9 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
    nativo, quindi l'impronta iOS non cambia e si pubblica con un OTA.
    three.js è una dipendenza nuova: l'utente ha detto sì il 2026-11-06.
 2. **I modelli** hanno una licenza scritta e nessun personaggio di altri.
-   Il candidato è il pacchetto CC0 di Quaternius (glTF, galoppo e passo).
+   Il pacchetto CC0 di Quaternius «Ultimate Animated Animals» (glTF,
+   galoppo e passo): l'utente vuole tutti i suoi 12 animali più l'elefante
+   (2026-11-06, `tasks/TASK-408.md`, scelta 7).
    L'elefante non c'è in nessun pacchetto CC0 trovato: l'utente lo vuole
    nella prima versione (2026-11-06). Si usa solo con una licenza letta e
    scritta nel task. L'utente ha scelto «Elephant Anim» di Shivoahm

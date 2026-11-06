@@ -18,6 +18,7 @@ import { phonePhotoUri } from "../social/drawingPhotos";
 import type { PostLayout } from "../social/composer/layoutFrame";
 import type { ComposerPhoto } from "../social/composer/PostComposer";
 import { DRAWING_ITEM, type PostItem, renumbered } from "../social/composer/postOrder";
+import { OutfitTaggingContext, useChosenOutfits } from "../social/outfit/OutfitTagging";
 import {
   DrawingForm,
   FormScroll,
@@ -112,10 +113,13 @@ export function RunEnd({
     toDrawing,
     toPhotos,
     toOrder,
+    toOutfit,
     full,
     waiting,
     refused,
   } = useActivitiesDoor();
+  // The items tagged on the photos, until «Save» (TASK-394 part B).
+  const outfits = useChosenOutfits(owner);
   const strava = useStrava();
   const health = imported === undefined ? phoneHealth : null;
   const healthState = useHealth(health);
@@ -170,6 +174,12 @@ export function RunEnd({
       ),
     );
     toPhotos(post.photos);
+    // The items tagged on them go with them, in the same order (TASK-394).
+    toOutfit?.(
+      items.flatMap((item) =>
+        item.kind === "photo" && byPlace.has(item.n) ? [outfits.outfitOf(item.n)] : [],
+      ),
+    );
     toOrder(
       post.photos.length > 0 && post.order[0] !== DRAWING_ITEM ? post.order : null,
     );
@@ -244,52 +254,55 @@ export function RunEnd({
               </Text>
             </View>
           )}
-          <DrawingForm
-            choice={choice}
-            onChoice={setChoice}
-            items={items}
-            photos={shown}
-            onOrder={setItems}
-            onAddPhotos={(added) => {
-              const now = [...photos];
-              const pages = [...items];
-              for (const base64 of added) {
-                const n = nextPlace(now);
-                if (n === null) {
-                  break;
+          <OutfitTaggingContext.Provider value={outfits.tagging}>
+            <DrawingForm
+              choice={choice}
+              onChoice={setChoice}
+              items={items}
+              photos={shown}
+              onOrder={setItems}
+              onAddPhotos={(added) => {
+                const now = [...photos];
+                const pages = [...items];
+                for (const base64 of added) {
+                  const n = nextPlace(now);
+                  if (n === null) {
+                    break;
+                  }
+                  now.push({ n, base64, original: base64, layout: null });
+                  pages.push({ kind: "photo", n });
                 }
-                now.push({ n, base64, original: base64, layout: null });
-                pages.push({ kind: "photo", n });
+                setPhotos(now);
+                setItems(pages);
+              }}
+              onRemovePhoto={(n) => {
+                outfits.forget(n);
+                setPhotos((was) => was.filter((other) => other.n !== n));
+                setItems((was) =>
+                  was.filter((item) => item.kind === "drawing" || item.n !== n),
+                );
+              }}
+              track={line}
+              rotationDeg={ended?.rotation_deg ?? null}
+              onLayout={(n, layout, made) =>
+                setPhotos((was) =>
+                  was.map((photo) =>
+                    photo.n !== n
+                      ? photo
+                      : {
+                          ...photo,
+                          base64: made?.base64 ?? photo.original,
+                          layout: made === null ? null : layout,
+                        },
+                  ),
+                )
               }
-              setPhotos(now);
-              setItems(pages);
-            }}
-            onRemovePhoto={(n) => {
-              setPhotos((was) => was.filter((other) => other.n !== n));
-              setItems((was) =>
-                was.filter((item) => item.kind === "drawing" || item.n !== n),
-              );
-            }}
-            track={line}
-            rotationDeg={ended?.rotation_deg ?? null}
-            onLayout={(n, layout, made) =>
-              setPhotos((was) =>
-                was.map((photo) =>
-                  photo.n !== n
-                    ? photo
-                    : {
-                        ...photo,
-                        base64: made?.base64 ?? photo.original,
-                        layout: made === null ? null : layout,
-                      },
-                ),
-              )
-            }
-            imported={imported !== undefined}
-            pick={pick}
-            fetchFn={fetchFn}
-            apiKey={apiKey}
-          />
+              imported={imported !== undefined}
+              pick={pick}
+              fetchFn={fetchFn}
+              apiKey={apiKey}
+            />
+          </OutfitTaggingContext.Provider>
           {imported === undefined && (
             <StravaRunEnd
               strava={strava}

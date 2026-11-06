@@ -34,6 +34,7 @@ import { DrawingReactions } from "./DrawingReactions";
 import { followable, runnable } from "./drawingRoute";
 import { useDrawingsDoor } from "./drawingsDoor";
 import { useFollowsDoor } from "./followsDoor";
+import { OutfitTagLayer, OutfitTotals } from "./outfit/OutfitTagLayer";
 import { activityName } from "./PublicParts";
 import { SkiNamesList } from "./SkiNamesList";
 import { useDrawingGpx } from "./useDrawingGpx";
@@ -124,10 +125,16 @@ export function DrawingCard({
           contentContainerStyle={styles.photos}
         >
           {photos.map((photo) => (
-            <Photo key={photo.n} photo={photo} source={photoSource(photo)} />
+            <Photo
+              key={photo.n}
+              photo={photo}
+              source={photoSource(photo)}
+              author={drawing.author}
+            />
           ))}
         </ScrollView>
       )}
+      <OutfitTotals photos={photos} />
       {drawing.description != null && drawing.description !== "" && (
         <Text style={styles.description}>{drawing.description}</Text>
       )}
@@ -223,20 +230,26 @@ export function DrawingCard({
 function Photo({
   photo,
   source,
+  author,
 }: {
   photo: DrawingPhoto;
   source: { uri: string; headers?: Record<string, string> } | null;
+  author: { public_id: string; username: string } | null;
 }) {
   if (source === null) {
     return null;
   }
   const width = Math.round((PHOTO_HEIGHT * photo.width) / Math.max(photo.height, 1));
   return (
-    <Image
-      source={source}
-      style={[styles.photo, { width }]}
-      accessibilityLabel={t("Photo {n}", { n: photo.n })}
-    />
+    <View style={[styles.photo, { width }]}>
+      <Image
+        source={source}
+        style={StyleSheet.absoluteFill}
+        accessibilityLabel={t("Photo {n}", { n: photo.n })}
+      />
+      {/* The items worn: a tap on the photo shows them (TASK-394 part B). */}
+      <OutfitTagLayer photo={photo} fit="contain" toggle="photo" author={author} />
+    </View>
   );
 }
 
@@ -276,6 +289,7 @@ const styles = StyleSheet.create({
   photo: {
     height: PHOTO_HEIGHT,
     borderRadius: radius.md,
+    overflow: "hidden",
     backgroundColor: color.surfaceRaised,
   },
   description: {

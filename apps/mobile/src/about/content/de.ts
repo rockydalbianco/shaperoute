@@ -9,9 +9,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "5. November 2026";
+const UPDATED = "6. November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "5. November 2026";
+const PRIVACY_UPDATED = "6. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -73,6 +73,7 @@ const help: AboutDocument = {
       blocks: [
         "Ein gespeicherter Lauf ist privat: Nur du siehst ihn. Andere Mitglieder sehen auf deinem Profil die Summen aller deiner gespeicherten Läufe, Distanz und Anstieg, und deine Bestzeiten (die 5K, die 10K und deine anderen schnellsten Distanzen, zu Fuß und mit dem Rad) mit Zeit und Datum. Ein privater Lauf bleibt geschlossen, auch wenn er eine Bestzeit enthält. Wähle unter «Wer kann es sehen» «Alle» oder «Follower», am Ende des Laufs oder bei einem Lauf in «Meine Aktivitäten», und sie sehen ihn als Zeichnung auf deinem Profil, ganz. Der nächste Lauf, den du beendest, beginnt mit deiner zuletzt gespeicherten Wahl: Du siehst sie vor «Speichern» und kannst sie ändern. Eine aus einer Datei hinzugefügte Aktivität beginnt immer mit «Nur ich».",
         "Ein Lauf, den du veröffentlichst, kann bis zu 9 Fotos und die Zeichnung haben. Halte eines gedrückt und zieh es, um die Reihenfolge zu ändern: Das erste sieht man im Feed. Wähle ein Layout, um die Zeichnung auf ein Foto zu legen.",
+        "Auf einem Foto, das du veröffentlichst, kannst du markieren, was du trägst: was es ist, die Marke und, wenn du willst, das Modell und einen Link zum Shop. Andere tippen auf das Foto, um die Teile zu sehen und den Shop zu öffnen. Unter deinem Beitrag siehst nur du, wie oft sie geöffnet wurden.",
         "«Teilen» macht ein Bild deines Laufs, das du verschicken kannst, wohin du willst.",
       ],
     },
@@ -181,6 +182,7 @@ const terms: AboutDocument = {
           bullets: [
             "beleidigende, hasserfüllte, bedrohende oder belästigende Inhalte veröffentlichen, weder im Benutzernamen noch in Bio, Bild, Titeln oder Kommentaren;",
             "Inhalte veröffentlichen, die du nicht veröffentlichen darfst, oder personenbezogene Daten anderer ohne deren Erlaubnis;",
+            "die Teile, die du markierst, für Spam nutzen, für Links zu etwas anderem als dem, was du trägst, für eigene Affiliate-Links oder für Werbung, die du nicht kennzeichnest;",
             "versuchen, den Dienst zu stören, zu überlasten oder zu umgehen, oder mit automatischen Mitteln Daten über seine Mitglieder sammeln.",
           ],
         },
@@ -189,7 +191,7 @@ const terms: AboutDocument = {
     {
       heading: "Was du veröffentlichst",
       blocks: [
-        "Deine Läufe, deine Zeichnungen, ihre Titel, dein Profil und deine Kommentare bleiben deine.",
+        "Deine Läufe, deine Zeichnungen, ihre Titel, dein Profil und deine Kommentare bleiben deine. Die Teile, die du auf deinen Fotos markierst, gehören mit ihren Links zu dem, was du veröffentlichst.",
         "Mit der Veröffentlichung erlaubst du uns, sie aufzubewahren und sie in der App den anderen Mitgliedern zu zeigen, nur um den Dienst zu betreiben: eine kostenlose, nicht ausschließliche Erlaubnis, die endet, wenn du den Inhalt oder dein Konto löschst.",
         "Die App nimmt keine Kommentare mit beleidigenden Wörtern an: Ein automatischer Wortfilter lehnt sie ab. Wir können Inhalte entfernen, die gegen diese Bedingungen verstoßen. Um uns auf Inhalte hinzuweisen, die nicht da sein sollten, schreib an [contact email].",
       ],
@@ -220,6 +222,7 @@ const terms: AboutDocument = {
       heading: "Werbung",
       blocks: [
         "MuW zeigt eigene Beiträge, gekennzeichnet mit «Werbung · Affiliate-Links», mit Links zu Shops (MuW Style). Wenn du über einen dieser Links kaufst, zahlt der Shop MuW eine Provision; für dich ändert sich der Preis nicht. Der Kauf findet zwischen dir und dem Shop statt: MuW verkauft diese Produkte nicht und haftet nicht für Preis, Verfügbarkeit, Lieferung oder Rücksendung. Die Fotos dieser Beiträge sind mit KI erstellt und als solche gekennzeichnet: Die Personen darauf gibt es nicht, und die gezeigten Teile ähneln den Produkten, sind aber nicht die Produkte selbst. Du kannst diese Beiträge in «Einstellungen» aus dem Feed ausblenden. Andere Werbung zeigt MuW nicht.",
+        "Die Links, die Mitglieder an die Teile in ihren Beiträgen setzen, sind ihre: MuW verdient nichts daran und haftet nicht für die Produkte oder die Shops. Wenn eine Marke dich bezahlt oder dir schenkt, was du markierst, sag es in der Beschreibung des Beitrags.",
       ],
     },
     {
@@ -231,6 +234,7 @@ const terms: AboutDocument = {
             "Orte werden mit Geoapify gesucht.",
             "Wenn du Strava verbindest, gelten für die Läufe, die du dorthin sendest, die Bedingungen und Datenschutzeinstellungen von Strava.",
             "Ein Bild, das du teilst, verlässt das Handy über das Teilen-Menü: Die App, die es empfängt, hat ihre eigenen Bedingungen.",
+            "Der Link eines markierten Teils öffnet die Seite des Shops in deinem Browser: Der Shop hat seine eigenen Bedingungen.",
           ],
         },
       ],
@@ -342,6 +346,7 @@ const privacy: AboutDocument = {
         "Wer einen deiner Läufe sehen kann, kann ihm auch mit «Start» folgen und dieselbe Spur als GPX-Datei speichern, ohne Zeiten.",
         "Ein Foto, das du veröffentlichst, kann die Zeichnung deines Laufs im Bild enthalten. Es ist dieselbe Zeichnung wie im Feed.",
         "Bei einem Skitag vergleicht unser Server die gespeicherte Spur mit den Liften und Pisten von OpenStreetMap, die er selbst vorhält, um festzuhalten, welche du genommen hast und wie oft. Die Namen erscheinen im Beitrag, für alle, die ihn sehen können. Nichts geht an einen anderen Dienst.",
+        "Auf den Fotos, die du veröffentlichst, kannst du die Teile markieren, die du trägst: was jedes ist, die Marke und, wenn du willst, das Modell und einen Link zu einem Shop. Wer das Foto sieht, sieht sie. Geht der Lauf zurück auf «Nur ich», verlassen sie mit seinen Fotos unseren Server und bleiben auf diesem Telefon.",
       ],
     },
     {
@@ -369,7 +374,7 @@ const privacy: AboutDocument = {
     {
       heading: "Meldungen",
       blocks: [
-        "Wenn du eine Zeichnung, einen Kommentar oder ein Profil meldest, behalten wir, wer was gemeldet hat, den Grund und wann. Wer MuW betreibt, bekommt die Meldung per E-Mail und kann das Gemeldete vor den anderen Mitgliedern verbergen. Nichts wird gelöscht, und wer es geschrieben hat, sieht es weiter. Deine Meldung wird dem Verfasser nie gezeigt.",
+        "Wenn du eine Zeichnung, ein markiertes Teil, einen Kommentar oder ein Profil meldest, behalten wir, wer was gemeldet hat, den Grund und wann. Wer MuW betreibt, bekommt die Meldung per E-Mail und kann das Gemeldete vor den anderen Mitgliedern verbergen. Nichts wird gelöscht, und wer es geschrieben hat, sieht es weiter. Deine Meldung wird dem Verfasser nie gezeigt.",
       ],
     },
     {
@@ -415,6 +420,7 @@ const privacy: AboutDocument = {
       heading: "Werbung",
       blocks: [
         "MuW zeigt eigene Style-Beiträge mit Links zu Shops, gekennzeichnet mit «Werbung · Affiliate-Links». MuW nutzt kein Werbenetzwerk, und die App fragt nie, ob sie dich über andere Apps hinweg verfolgen darf. Wenn du ein Produkt öffnest oder auf «Kaufen» tippst, zählt unser Server nur für diesen Tag und dieses Produkt eins dazu: Er weiß nicht, wer du bist oder welches Telefon es war. «Kaufen» öffnet die Seite des Shops in deinem Browser über den Link unseres Affiliate-Netzwerks Awin: Ab dort erfassen Awin und der Shop den Klick und einen möglichen Kauf, mit ihren Cookies und nach ihren eigenen Datenschutzerklärungen, damit MuW seine Provision erhält. Von ihnen bekommt MuW nur Summen von Klicks, Verkäufen und Provisionen, nie, wer du bist.",
+        "Dieselbe Zählung, pro Tag und ohne zu wissen, wer du bist, gilt für die Teile, die Mitglieder in ihren Beiträgen markieren: Wer ein Teil markiert hat, sieht, wie oft es geöffnet wurde und wie oft jemand zum Shop gegangen ist, nie wer. Der Link eines Mitglieds führt direkt zum Shop, ohne Awin: Ab dort erfasst der Shop den Besuch mit seinen Cookies, nach seiner eigenen Datenschutzerklärung.",
       ],
     },
     {
@@ -446,6 +452,7 @@ const privacy: AboutDocument = {
             "Expo liefert die Updates der App.",
             "Google Ireland Limited (Firebase Cloud Messaging), um Push-Benachrichtigungen an Android-Telefone zu liefern. Wenn du Push einschaltest, fragt die App bei Firebase einen Registrierungs-Token für dein Telefon an; der Push-Dienst von Expo gibt jede Benachrichtigung (wer was getan hat, und den Anfang eines Kommentars) an Google weiter, das sie an dein Telefon liefert. Google sieht den Token und den Inhalt jeder Benachrichtigung, nicht dein Konto und nicht deine Position. Der Token wird von unserem Server entfernt, wenn du Push ausschaltest, dich abmeldest oder dein Konto löschst; der auf dem Telefon verschwindet, wenn du die App deinstallierst.",
             "Resend, in den Vereinigten Staaten, verschickt die E-Mails von MuW: deine E-Mail-Adresse mit der E-Mail selbst. Bei einer Meldung bringt es dem Betreiber von MuW, was gemeldet wurde, seinen Text, den Grund und die Benutzernamen dessen, der es gemeldet hat, und dessen, der es geschrieben hat. Bei «Feedback senden» bringt es deine Nachricht, deinen Benutzernamen und deine E-Mail-Adresse.",
+            "Google erhält mit seinem Dienst Web Risk von unserem Server Teile des Fingerabdrucks (Hash) mancher Links, die Mitglieder an ihre Teile setzen, um zu prüfen, dass sie nicht zu gefährlichen Seiten führen: nie den ganzen Link, und nie, wer ihn gesetzt hat oder wer ihn öffnet.",
             "Strava, wie oben gesagt.",
           ],
         },

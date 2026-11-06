@@ -10,6 +10,13 @@ import {
 } from "../api/drawings";
 import { keptList } from "../storage/keptList";
 import { forgetAllOrdersOf, forgetOrderOf } from "./drawingOrder";
+import {
+  forgetAllOutfitsOf,
+  forgetOutfit,
+  forgetOutfitsOf,
+  outfitToSendAgain,
+  syncOutfits,
+} from "./outfit/outfitKept";
 
 /**
  * The photos of the runs, on the phone (TASK-208, ADR-0170; the user's
@@ -131,6 +138,8 @@ export function keepPhoto(
   if (!writeFile(photoFile(owner, key, n), base64)) {
     return false;
   }
+  // A different picture loses its items on the API: they go again after it.
+  outfitToSendAgain(owner, key, n);
   return save(withEntry(loadDrawingPhotos(), { owner, key, n, sent: false }));
 }
 
@@ -167,6 +176,7 @@ export function removePhoto(
   onServer: boolean,
 ): void {
   deleteFile(photoFile(owner, key, n));
+  forgetOutfit(owner, key, n);
   const list = loadDrawingPhotos();
   const was = list.find((item) => same(item, owner, key, n));
   const stillThere = onServer || was?.sent === true;
@@ -178,9 +188,10 @@ export function removePhoto(
 }
 
 /** The run is gone: its photos go with it, here and (with it) on the API,
- * and their order (TASK-348). */
+ * and their order (TASK-348) and items (TASK-394). */
 export function forgetPhotosOf(owner: number, key: string): void {
   forgetOrderOf(owner, key);
+  forgetOutfitsOf(owner, key);
   const list = loadDrawingPhotos();
   const mine = list.filter((item) => same(item, owner, key));
   if (mine.length === 0) {
@@ -191,9 +202,10 @@ export function forgetPhotosOf(owner: number, key: string): void {
 }
 
 /** The account is deleted: every photo of its runs leaves the phone, and
- * their orders. */
+ * their orders and items. */
 export function forgetAllPhotosOf(owner: number): void {
   forgetAllOrdersOf(owner);
+  forgetAllOutfitsOf(owner);
   const list = loadDrawingPhotos();
   const mine = list.filter((item) => item.owner === owner);
   if (mine.length === 0) {
@@ -217,7 +229,8 @@ export type Synced = "done" | "waits" | "session_ended";
  * the others. Otherwise each photo kept here and not there goes (a 409,
  * the drawing still "only_me" for the API, leaves it waiting), and each
  * place emptied here is emptied there. A file the API will never take
- * (not a photo, 422) is let go.
+ * (not a photo, 422) is let go. Once the photos are there, the items tagged
+ * on them (TASK-394, outfit/outfitKept.ts).
  */
 export async function syncPhotos(
   baseUrl: string,
@@ -226,6 +239,20 @@ export async function syncPhotos(
   key: string,
   visibility: Visibility,
   options: Options = {},
+): Promise<Synced> {
+  const photos = await syncPhotosOnly(baseUrl, token, owner, key, visibility, options);
+  return photos === "done"
+    ? syncOutfits(baseUrl, token, owner, key, visibility, options)
+    : photos;
+}
+
+async function syncPhotosOnly(
+  baseUrl: string,
+  token: string,
+  owner: number,
+  key: string,
+  visibility: Visibility,
+  options: Options,
 ): Promise<Synced> {
   const mine = loadDrawingPhotos()
     .filter((item) => same(item, owner, key))

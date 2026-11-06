@@ -7,9 +7,9 @@ import type { AboutContent, AboutDocument } from "../documents";
  * as TASK-210 G names them: «Feed», «Disegna», «Esplora».
  */
 
-const UPDATED = "5 novembre 2026";
+const UPDATED = "6 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "5 novembre 2026";
+const PRIVACY_UPDATED = "6 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -71,6 +71,7 @@ const help: AboutDocument = {
       blocks: [
         "Una corsa salvata è privata: la vedi solo tu. Gli altri iscritti vedono sul tuo profilo i totali di tutte le tue corse salvate, distanza e dislivello, e i tuoi record (il 5K, il 10K e le altre distanze più veloci, a piedi e in bici) con il tempo e la data. Una corsa privata resta chiusa anche quando contiene un record. Scegli «Tutti» o «Follower» sotto «Chi può vederla», a fine corsa o su una corsa di «Le mie attività», e la vedono come disegno sul tuo profilo, intera. La prossima corsa che finisci parte dall'ultima scelta che hai salvato: la vedi prima di «Salva» e puoi cambiarla. Un'attività aggiunta da un file parte sempre da «Solo io».",
         "Una corsa che pubblichi può avere fino a 9 foto e il disegno. Tienine premuta una e trascinala per cambiare l'ordine: la prima è quella che si vede nel Feed. Scegli un layout per mettere il disegno su una foto.",
+        "Su una foto che pubblichi puoi segnare quello che indossi: cos'è, la marca e, se vuoi, il modello e il link al negozio. Gli altri toccano la foto per vedere i capi e aprire il negozio. Sotto il tuo post solo tu vedi quante volte sono stati aperti.",
         "«Condividi» crea un'immagine della tua corsa da mandare dove vuoi.",
       ],
     },
@@ -179,6 +180,7 @@ const terms: AboutDocument = {
           bullets: [
             "pubblicare contenuti offensivi, d'odio, minacciosi o molesti, nel nome utente, nella bio, nella foto, nei titoli o nei commenti;",
             "pubblicare contenuti che non hai il diritto di pubblicare, o dati personali di altre persone senza il loro permesso;",
+            "usare i capi che segni per spam, per link a cose diverse da quello che indossi, per link affiliati tuoi o per pubblicità che non dichiari;",
             "cercare di guastare, sovraccaricare o aggirare il servizio, o raccogliere dati sugli iscritti con mezzi automatici.",
           ],
         },
@@ -187,7 +189,7 @@ const terms: AboutDocument = {
     {
       heading: "Quello che pubblichi",
       blocks: [
-        "Le tue corse, i tuoi disegni, i loro titoli, il tuo profilo e i tuoi commenti restano tuoi.",
+        "Le tue corse, i tuoi disegni, i loro titoli, il tuo profilo e i tuoi commenti restano tuoi. I capi che segni sulle tue foto, con i loro link, sono parte di quello che pubblichi.",
         "Pubblicandoli ci permetti di conservarli e di mostrarli nell'app agli altri iscritti, solo per far funzionare il servizio: un permesso gratuito e non esclusivo, che finisce quando elimini il contenuto o l'account.",
         "L'app non accetta commenti con parole offensive: un filtro automatico di parole li rifiuta. Possiamo togliere i contenuti contrari a queste condizioni. Per segnalarci un contenuto che non dovrebbe esserci, scrivi a [contact email].",
       ],
@@ -218,6 +220,7 @@ const terms: AboutDocument = {
       heading: "Pubblicità",
       blocks: [
         "MuW mostra dei post suoi, segnati «Pubblicità · Link affiliati», con i link ai negozi (MuW Style). Se compri da uno di questi link, il negozio paga a MuW una commissione; per te il prezzo non cambia. La vendita è fra te e il negozio: MuW non vende questi prodotti e non risponde di prezzo, disponibilità, consegna o resi. Le foto di questi post sono fatte con l'AI e lo dicono: le persone che vedi non esistono, e i capi sono simili ai prodotti, non sono i prodotti. Puoi togliere questi post dal Feed in «Impostazioni». MuW non mostra altra pubblicità.",
+        "I link che gli iscritti mettono sui capi dei loro post sono loro: MuW non ci guadagna e non risponde dei prodotti né dei negozi. Se un marchio ti paga o ti regala quello che segni, dillo nella descrizione del post.",
       ],
     },
     {
@@ -229,6 +232,7 @@ const terms: AboutDocument = {
             "I luoghi si cercano con Geoapify.",
             "Se colleghi Strava, le corse che mandi là seguono le condizioni e le impostazioni di privacy di Strava.",
             "Un'immagine che condividi esce dal foglio di condivisione del telefono: l'app che la riceve ha le sue condizioni.",
+            "Il link di un capo segnato apre il sito del negozio nel tuo browser: il negozio ha le sue condizioni.",
           ],
         },
       ],
@@ -340,6 +344,7 @@ const privacy: AboutDocument = {
         "Chi può vedere una tua corsa può anche seguirla con «Parti» e salvarne la stessa traccia come file GPX, senza orari.",
         "Una foto che pubblichi può avere dentro l'immagine il disegno della tua corsa. È lo stesso disegno che mostra il Feed.",
         "Per una giornata di sci, il nostro server confronta la traccia salvata con gli impianti e le piste di OpenStreetMap, che tiene da sé, per scrivere quali hai preso e quante volte. I nomi compaiono nel post, per chi può vederlo. Niente va a un altro servizio.",
+        "Sulle foto che pubblichi puoi segnare i capi che indossi: cos'è ognuno, la marca e, se vuoi, il modello e il link a un negozio. Li vede chi vede la foto. Se la corsa torna «Solo io», lasciano il nostro server con le sue foto e restano su questo telefono.",
       ],
     },
     {
@@ -367,7 +372,7 @@ const privacy: AboutDocument = {
     {
       heading: "Segnalazioni",
       blocks: [
-        "Quando segnali un disegno, un commento o un profilo, teniamo chi ha segnalato cosa, il motivo e quando. Chi gestisce MuW la riceve per email e può nascondere agli altri iscritti ciò che è stato segnalato. Non si cancella niente, e il suo autore continua a vederlo. La tua segnalazione non è mai mostrata all'autore.",
+        "Quando segnali un disegno, un capo segnato, un commento o un profilo, teniamo chi ha segnalato cosa, il motivo e quando. Chi gestisce MuW la riceve per email e può nascondere agli altri iscritti ciò che è stato segnalato. Non si cancella niente, e il suo autore continua a vederlo. La tua segnalazione non è mai mostrata all'autore.",
       ],
     },
     {
@@ -413,6 +418,7 @@ const privacy: AboutDocument = {
       heading: "Pubblicità",
       blocks: [
         "MuW mostra i suoi post Style con i link ai negozi, segnati «Pubblicità · Link affiliati». MuW non usa reti pubblicitarie, e l'app non chiede mai di tracciarti nelle altre app. Quando apri un prodotto o tocchi «Compra», il nostro server aggiunge solo uno al conteggio di quel giorno per quel prodotto: non sa chi sei né quale telefono era. «Compra» apre il sito del negozio nel tuo browser passando dal link della nostra rete di affiliazione, Awin: da lì Awin e il negozio registrano il clic e l'eventuale acquisto, con i loro cookie e secondo le loro informative, perché MuW riceva la commissione. Da loro MuW riceve solo i totali di clic, vendite e commissioni, mai chi sei.",
+        "Lo stesso conteggio, per giorno e senza sapere chi sei, vale per i capi che gli iscritti segnano sui loro post: chi ha segnato un capo vede quante volte è stato aperto e quante volte si è andati al negozio, mai chi. Il link di un iscritto va diritto al negozio, senza Awin: da lì il negozio registra la visita con i suoi cookie, secondo la sua informativa.",
       ],
     },
     {
@@ -444,6 +450,7 @@ const privacy: AboutDocument = {
             "Expo serve gli aggiornamenti dell'app.",
             "Google Ireland Limited (Firebase Cloud Messaging), per consegnare le notifiche push ai telefoni Android. Quando accendi le push, l'app chiede a Firebase un token di registrazione per il tuo telefono; il servizio push di Expo passa ogni notifica (chi ha fatto cosa, e l'inizio di un commento) a Google, che la consegna al tuo telefono. Google vede il token e il contenuto di ogni notifica, non il tuo account né la tua posizione. Il token si toglie dal nostro server quando spegni le push, esci dall'account o lo elimini; quello sul telefono se ne va quando disinstalli l'app.",
             "Resend, negli Stati Uniti, manda le email di MuW: il tuo indirizzo email con la email stessa. Per una segnalazione porta a chi gestisce MuW ciò che è stato segnalato, il suo testo, il motivo e i nomi utente di chi l'ha segnalato e di chi l'ha scritto. Per «Mandaci un feedback» porta il tuo messaggio, il tuo nome utente e il tuo indirizzo email.",
+            "Google, con il suo servizio Web Risk, riceve dal nostro server pezzi dell'impronta (hash) di alcuni link che gli iscritti mettono sui loro capi, per controllare che non portino a siti pericolosi: mai il link intero, né chi l'ha messo o chi lo apre.",
             "Strava, come detto sopra.",
           ],
         },

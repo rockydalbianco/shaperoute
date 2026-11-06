@@ -160,6 +160,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
+  Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
+  La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo
+  commit della versione, con impronta `6f8bba4c` come la 1.0.1. La lancia l'utente. Login,
+  schermata di blocco, composer, calorie e battito passano alla 1.0.3. `tasks/TASK-407.md`.
 - **TASK-403 — «Edit the drawing» sotto A, B e C** (2026-11-05; numeri dal Coordinatore,
   ADR-0337 «Proposto»; richiesta dell'utente «quando fai tu il calcolo del disegno tipo il
   coniglio poi mi dai le tre opzioni AB e C però lì non c'è la possibilità di modificare
@@ -3163,6 +3168,26 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   server con la `0049` e la `0051`, col sì dell'utente; la chiave di Web Risk
   dopo, quando l'utente avrà il progetto Google Cloud. Prossimo: la parte B
   (app), con la lista dei file al Coordinatore.
+  **Parte B (app) pronta il 2026-11-06** (PR #894, branch
+  `feat/TASK-394-b-outfit-app`, via del Coordinatore sulla lista). Cosa fa:
+  - «Tag what you wear» sotto la foto scelta nel compositore, a fine corsa e
+    nella scheda di «My activities». Un tocco sulla foto mette il punto, poi
+    capo, marca, modello e link. Il modulo dice subito quello che l'API
+    rifiuterebbe; al massimo 5 capi per foto e 10 per post.
+  - I capi stanno sul telefono accanto alle foto e vanno al server subito
+    dopo di loro (dentro `syncPhotos`).
+  - Nel Feed i puntini li mostra la gruccia (scelta dell'utente del
+    2026-11-06, «Gruccia nel Feed»); nel disegno aperto anche il tocco sulla
+    foto.
+  - La scheda ha «Shop on {store}», la riga su chi ha messo il link e
+    «Report». I totali li vede solo l'autore.
+  - Help, Termini e Privacy nelle cinque lingue, e le pagine del sito, con la
+    data del 6 novembre 2026.
+
+  Solo JS, decisioni in ADR-0333 «precisazione B». Limite: a fine allenamento
+  in palestra i capi non si segnano; si segnano dopo, dalla scheda in «My
+  activities». Prossimo: il Coordinatore misura l'impronta iOS e unisce la PR;
+  poi, col sì dell'utente, l'OTA e il sito.
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,

@@ -1,7 +1,13 @@
 # Roller (pattini in linea)
 
-TASK-380, ADR-0324. Le scelte dell'utente sono in `tasks/TASK-380.md`. Qui
-ci sono le misure che le preparano.
+TASK-380, ADR-0324. Le scelte dell'utente del 2026-11-06 sono in
+`tasks/TASK-380.md`:
+
+- «Roller» 🛼 sulla rete `roller` qui sotto;
+- da 5 a 30 km;
+- nel gioco come chi va a piedi, con record personali propri.
+
+Qui ci sono le misure che hanno preparato le scelte.
 
 ## Le reti provate (TASK-380 parte 0, 2026-11-06)
 

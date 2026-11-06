@@ -331,6 +331,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   Prossimo: le scelte dell'utente, una alla volta (`tasks/TASK-380.md`,
   `sports/roller.md`).
+  **Parte 0 in `main`** (#886). **Scelte dell'utente** (2026-11-06):
+  - «Roller» 🛼 sulla rete `roller`, da 5 a 30 km;
+  - nel gioco come chi va a piedi, con record propri su 5, 10, 21,1 e
+    42,2 km (la proposta era fuori dal gioco);
+  - i testi approvati in cinque lingue, con l'avviso su traffico e discese;
+  - acceso appena pronto.
+
+  ADR-0324 accettato. Prossimo: 380-A, motore, contratto e API, con la
+  lista al Coordinatore e il numero della migrazione.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
@@ -715,9 +724,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   finale, i colori, le emoji, il 2D e il 3D, i cambi di scena; un prompt.
   Scelte: prima il personaggio, poi l'editor, poi il prompt; il prompt senza
   costi, letto dal telefono con una tabella di parole. Proposta: three.js
-  nella pagina del video (niente di nativo) e modelli CC0. Prossimo: la
-  risposta dell'utente alla domanda 1, three.js e i modelli
-  (`tasks/TASK-408.md`).
+  nella pagina del video (niente di nativo) e modelli CC0: sì dell'utente
+  il 2026-11-06; l'elefante nella prima versione. Prossimo: quale
+  elefante (domanda 2b, proposta il modello CC BY gratis di Sketchfab;
+  `tasks/TASK-408.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

@@ -125,13 +125,22 @@ oggi:
    modello è stato cambiato (MuW lo converte e ne riduce le texture): una
    riga nei crediti dell'app, testo nuovo da approvare (domanda 2c, vincolo
    del Coordinatore).
+6. **La riga dei crediti** (2026-11-06): «Sì, questa». Un punto nuovo in
+   «Terms» › «Services of others» (`about/content/*.ts`, cinque lingue, più
+   la pagina del sito). Testo approvato, in inglese: «The 3D animals in the
+   video come from Quaternius (CC0); the elephant is "Elephant Anim" by
+   Shivoahm on Sketchfab (CC BY 4.0), adapted by MuW.» In italiano: «Gli
+   animali 3D del video vengono da Quaternius (CC0); l'elefante è "Elephant
+   Anim" di Shivoahm su Sketchfab (CC BY 4.0), adattato da MuW.» Tedesco,
+   spagnolo e francese con la domanda 6. Entra con la parte B, insieme al
+   modello.
 
 ## Domande aperte (una alla volta)
 
 1. ~~three.js e i modelli CC0~~: risposta sopra (scelta 3).
 2. ~~L'elefante~~: risposta sopra (scelta 4).
 2b. ~~Quale elefante~~: risposta sopra (scelta 5).
-2c. **La riga dei crediti** — la prossima. Proposta: un punto nuovo in
+2c. ~~La riga dei crediti~~: risposta sopra (scelta 6). Era la proposta: un punto nuovo in
    «Terms» › «Services of others» (`about/content/*.ts`, cinque lingue, più
    la pagina del sito), in inglese: «The 3D animals in the video come from
    Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm on
@@ -150,7 +159,9 @@ oggi:
      ridurre per il telefono. Da comprare l'utente stesso, dopo aver letto
      se la licenza permette un file che l'app scarica nella WebView.
    Nessun elefante animato CC0 trovato.
-3. **Quali personaggi** nella riga, e quanti. Proposta: 5 o 6, scelti dalla
+3. **Quali personaggi** nella riga, e quanti — la prossima. Prima si
+   legge la lista del pacchetto Quaternius (scaricarlo chiede il sì
+   dell'utente, con nome del file, fonte e misura). Proposta: 5 o 6, scelti dalla
    tavola dopo aver visto il pacchetto.
 4. **Le scene e il finale**: quali pezzi si offrono, e se la durata resta
    12 secondi. Proposta: tre pezzi fissi da scegliere e riordinare, 12

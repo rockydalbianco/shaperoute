@@ -751,8 +751,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   costi, letto dal telefono con una tabella di parole. Proposta: three.js
   nella pagina del video (niente di nativo) e modelli CC0: sì dell'utente
   il 2026-11-06; l'elefante nella prima versione, «Elephant Anim» di
-  Shivoahm (Sketchfab, CC BY 4.0, gratis). Prossimo: il testo della riga
-  dei crediti (domanda 2c, `tasks/TASK-408.md`).
+  Shivoahm (Sketchfab, CC BY 4.0, gratis); la riga dei crediti approvata il
+  2026-11-06 (scelta 6). Prossimo: quali personaggi (domanda 3), dopo aver
+  letto il pacchetto Quaternius (`tasks/TASK-408.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

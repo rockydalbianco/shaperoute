@@ -23665,6 +23665,53 @@ altro»); lista dei file approvata dal Coordinatore.
 **Conseguenze**: campi nuovi e facoltativi; le app vecchie li ignorano, e
 il server può andare prima dell'app. Nessuna dipendenza, niente nativo:
 impronta iOS invariata. Il server va col sì dell'utente.
+
+## ADR-0327, precisazione — La parte C: le calorie della palestra e Salute
+
+**Stato**: Attiva · 2026-11-06 · TASK-385 parte C, decisa dall'agente su
+delega dell'utente dentro le sue scelte (la scelta 2, «Stima MET sempre»,
+e del 2026-11-06 «Niente kcal» per gli esercizi nascosti); lista dei file
+approvata dal Coordinatore.
+
+**Decisione**:
+
+1. **Si contano sul telefono, come per gli altri sport** (`gym/gymKcal.ts`,
+   ADR-0318): energia attiva, ossigeno meno il riposo di Mifflin-St Jeor
+   (o un MET senza i dati del corpo), 70 kg senza peso. Niente sul server.
+2. **I blocchi cardio con la formula della macchina**:
+   - tapis roulant (anche curvo): l'equazione ACSM della camminata sotto
+     i 7 km/h, della corsa da 7 km/h (il mezzo dei 3,7–5 mph in cui
+     l'ACSM lascia la scelta), con la velocità o i metri sul tempo, la
+     pendenza solo in salita;
+   - le altre macchine: il MET del Compendium 2024 copiato col codice:
+     cyclette e reclinata 4,0 / 6,8 / 10,3 per fascia di livello (01214,
+     01224, 01232), 6,8 senza livello (01200), spin 9,0 senza livello
+     (01270); air bike 6,8 (01200); ellittica 5,0 / 9,0 (02048, 02049);
+     vogatore coi metri per i watt del passo (2,80 / (s/m)³: 5,0 / 7,5 /
+     11,0 / 14,0, 02071–02074), senza metri 7,3 (02070); ski erg 6,8
+     (02080); scala, stepper e climber 9,3 (02065, il più vicino); arm
+     ergometer 2,0 / 2,8 / 3,5 (02116, 02115, 02118); corda 11,0 (02068);
+   - il livello di una macchina sulla scala comune 1–20: fino a 7 leggero,
+     fino a 14 moderato, oltre vigoroso.
+3. **Il resto del tempo** al MET dei pesi con più esercizi, 3,5 (02054):
+   è la media di una sessione coi recuperi, che non si tolgono due volte.
+   Un blocco di cui la formula non sa niente (tapis roulant senza velocità
+   né metri, una macchina col nome libero) resta in quel tempo.
+4. **Dove si vedono**: sotto il cronometro durante l'allenamento, sotto il
+   tempo alla fine, sul riquadro e nella riga dei fatti del post, nel
+   riquadro condiviso. Nessun testo nuovo: «kcal» come le corse.
+5. **Esercizi nascosti, niente kcal** (scelta dell'utente del 2026-11-06,
+   «Niente kcal»): chi non vede le serie non vede le kcal, perché un
+   numero senza il cardio non sarebbe quello dell'autore. L'autore le
+   vede sempre: l'API gli dà le sue serie.
+6. **Salute** come il nuoto in piscina (TASK-400 B): con «Save», dopo il sì
+   dell'utente e col permesso, l'allenamento di forza (Apple 50, Health
+   Connect 70) con le kcal e le pause, niente percorso né distanza (i
+   metri di un blocco sono del blocco); su Apple al chiuso
+   (`HKIndoorWorkout`).
+
+**Conseguenze**: solo JavaScript, nessuna dipendenza: impronta iOS
+invariata, OTA col sì. Col battito (parte G) le kcal passano a Keytel.
 ## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
 
 **Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto

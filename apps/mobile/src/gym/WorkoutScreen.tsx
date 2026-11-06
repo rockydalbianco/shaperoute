@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useBody } from "../body/useBody";
 import { t } from "../i18n";
 import { appLanguage } from "../i18n/language";
 import { clockLabel } from "../navigation/freeRun";
@@ -12,6 +13,7 @@ import { useUnits } from "../units/useUnits";
 import { exerciseName } from "./catalog";
 import { ExerciseList } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
+import { gymKcal, gymKcalLabel } from "./gymKcal";
 import { gymStyles } from "./gymStyles";
 import { useRestAlert } from "./restAlert";
 import { RestPanel } from "./RestPanel";
@@ -68,6 +70,7 @@ export function nextLabel(workout: Workout): string | null {
 export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: number }) {
   const insets = useSafeAreaInsets();
   const units = useUnits();
+  const body = useBody();
   const [picking, setPicking] = useState(workout.current === null);
   const [texts, setTexts] = useState<SetTexts>(() => {
     const last = sameAgainValues(workout);
@@ -105,6 +108,16 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
   }
 
   const done = workout.sets.length > 0;
+  // Its energy so far (part C, the user's «Stima MET sempre»).
+  const timeMs = activeMs(workout, nowMs);
+  const kcal = gymKcalLabel(
+    gymKcal(
+      workout.sets,
+      timeMs / 1000,
+      body,
+      new Date(workout.startedMs).getFullYear(),
+    ),
+  );
   return (
     <View style={gymStyles.screen} testID="gym-workout">
       <ScrollView
@@ -117,8 +130,13 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
         <View style={styles.head}>
           <Text style={gymStyles.muted}>{`🏋️ ${t("Gym")}`}</Text>
           <Text style={styles.clock} accessibilityRole="timer" testID="gym-clock">
-            {clockLabel(activeMs(workout, nowMs))}
+            {clockLabel(timeMs)}
           </Text>
+          {kcal !== null && (
+            <Text style={gymStyles.muted} testID="gym-kcal">
+              {kcal}
+            </Text>
+          )}
           {paused && <Text style={gymStyles.muted}>{t("Paused")}</Text>}
         </View>
         {stillAsking(workout, nowMs) && (

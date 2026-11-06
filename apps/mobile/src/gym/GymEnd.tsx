@@ -3,6 +3,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SIGN_IN_TO_KEEP_RUNS, useActivitiesDoor } from "../activities/activitiesDoor";
+import { useBody } from "../body/useBody";
+import { healthPhone } from "../health/healthModules";
+import type { HealthPhone } from "../health/healthPhone";
+import { HealthRunEnd } from "../health/HealthRunEnd";
+import { useHealth } from "../health/useHealth";
 import { t } from "../i18n";
 import { appLanguage } from "../i18n/language";
 import { clockLabel } from "../navigation/freeRun";
@@ -11,6 +16,8 @@ import { useUnits } from "../units/useUnits";
 import { restsLabel, rowsOf, setLabel } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
 import { type GymPost, GymPostForm, newGymPost } from "./GymPostForm";
+import { saveGymToHealth } from "./gymHealth";
+import { gymKcal, gymKcalLabel } from "./gymKcal";
 import { gymStyles } from "./gymStyles";
 import { SetFields, type SetTexts, textsOf, valuesOfTexts } from "./SetFields";
 import type { PickPhoto } from "../social/PublicParts";
@@ -37,8 +44,10 @@ type Editing = { kind: "set"; n: number; entry: Entry } | { kind: "new"; entry: 
  * added, before «Save» (the user's «Sì, così»); a set added now is not
  * «live». Under them the form of its post (TASK-385 part D, the user's
  * «Sì, anche alla fine»), as at the end of a run. «Save» keeps it on the
- * phone and sends it, its post after it; «Discard» asks first. Signed out,
- * it says to sign in, as the end of a run does.
+ * phone and sends it, its post after it, and writes it to Apple Health or
+ * Health Connect after the user's yes (part C); «Discard» asks first.
+ * Signed out, it says to sign in, as the end of a run does. Its energy
+ * under its time (part C, the user's «Stima MET sempre»).
  */
 export function GymEnd({
   workout,
@@ -46,6 +55,7 @@ export function GymEnd({
   pick,
   fetchFn,
   apiKey,
+  health: phone = healthPhone(),
 }: {
   workout: Workout;
   onSave: (workout: Workout, post?: GymPost) => GymSaved;
@@ -53,6 +63,8 @@ export function GymEnd({
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
   apiKey?: string | null;
+  /** The phone's health data; for the tests, a fake. */
+  health?: HealthPhone | null;
 }) {
   const insets = useSafeAreaInsets();
   const units = useUnits();
@@ -63,6 +75,8 @@ export function GymEnd({
   const [picking, setPicking] = useState(false);
   const [discarding, setDiscarding] = useState(false);
   const [problem, setProblem] = useState(false);
+  const healthState = useHealth(phone);
+  const body = useBody();
 
   function edit(set: LoggedSet) {
     const entry = entryOf(set);
@@ -89,6 +103,8 @@ export function GymEnd({
   function save() {
     const saved = onSave(workout, post);
     if (saved === "kept") {
+      // Written there, on the phone, with no network; never fails «Save».
+      void saveGymToHealth(phone, workout);
       endGymWorkout();
     } else {
       setProblem(true);
@@ -119,6 +135,15 @@ export function GymEnd({
     editing === null
       ? null
       : setOf(editing.entry, valuesOfTexts(editing.entry, texts, units), 0, true);
+  const timeMs = activeMs(workout, workout.endedMs ?? workout.startedMs);
+  const kcal = gymKcalLabel(
+    gymKcal(
+      workout.sets,
+      timeMs / 1000,
+      body,
+      new Date(workout.startedMs).getFullYear(),
+    ),
+  );
 
   return (
     <View style={gymStyles.screen} testID="gym-end">
@@ -135,8 +160,13 @@ export function GymEnd({
         <View style={styles.head}>
           <Text style={gymStyles.muted}>{`🏋️ ${t("Gym")}`}</Text>
           <Text style={styles.clock} testID="gym-end-time">
-            {clockLabel(activeMs(workout, workout.endedMs ?? workout.startedMs))}
+            {clockLabel(timeMs)}
           </Text>
+          {kcal !== null && (
+            <Text style={gymStyles.muted} testID="gym-end-kcal">
+              {kcal}
+            </Text>
+          )}
         </View>
         {workout.sets.length > 0 && (
           <Text style={gymStyles.text}>
@@ -220,6 +250,9 @@ export function GymEnd({
                 fetchFn={fetchFn}
                 apiKey={apiKey}
               />
+            )}
+            {phone !== null && signedIn && (
+              <HealthRunEnd store={phone.store} health={healthState} />
             )}
           </>
         )}

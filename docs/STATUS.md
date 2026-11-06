@@ -185,6 +185,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   («Delete piece»); un solo percorso come disegno, collegamenti tratteggiati, contratto uguale;
   un pezzo solo chiede quello di prima. Testi 3–5 nelle quattro lingue. Prossimo: il video del
   simulatore all'utente, la PR, il merge del Coordinatore, poi l'OTA col sì dell'utente.
+  **2026-11-06, Done**: parte A in `main` con la #857 (5fc4d20f), parte B con la #873 (e9960204);
+  i due video del simulatore approvati dall'utente. Resta: l'OTA di produzione col sì
+  dell'utente (la prepara il Coordinatore) e la prova sul telefono (due tocchi veloci su «+15°»
+  ne contano uno nel simulatore).
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi

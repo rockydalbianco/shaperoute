@@ -331,6 +331,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   Prossimo: le scelte dell'utente, una alla volta (`tasks/TASK-380.md`,
   `sports/roller.md`).
+  **Parte 0 in `main`** (#886). **Scelte dell'utente** (2026-11-06):
+  - «Roller» 🛼 sulla rete `roller`, da 5 a 30 km;
+  - nel gioco come chi va a piedi, con record propri su 5, 10, 21,1 e
+    42,2 km (la proposta era fuori dal gioco);
+  - i testi approvati in cinque lingue, con l'avviso su traffico e discese;
+  - acceso appena pronto.
+
+  ADR-0324 accettato. Prossimo: 380-A, motore, contratto e API, con la
+  lista al Coordinatore e il numero della migrazione.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

@@ -24334,8 +24334,10 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
    Il candidato è il pacchetto CC0 di Quaternius (glTF, galoppo e passo).
    L'elefante non c'è in nessun pacchetto CC0 trovato: l'utente lo vuole
    nella prima versione (2026-11-06). Si usa solo con una licenza letta e
-   scritta nel task: CC BY con il nome dell'autore nei crediti, o una
-   licenza comprata dall'utente.
+   scritta nel task. L'utente ha scelto «Elephant Anim» di Shivoahm
+   (Sketchfab, CC BY 4.0, gratis): titolo, autore, fonte, licenza e «adapted
+   by MuW» in una riga dei crediti dell'app, col testo approvato
+   dall'utente.
 3. **Il percorso non si inventa**: il personaggio sta sul punto della
    traccia dove arriva la linea in quel fotogramma, girato nella direzione
    della strada. La camera lo segue; su un telefono lento resta ferma, e

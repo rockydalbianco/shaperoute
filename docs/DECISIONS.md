@@ -23869,7 +23869,7 @@ più sullo schermo e logo chiesti dall'utente durante la prova.
    ogni tabella, `scripts/watch-texts.sh` scrive
    `<lingua>.lproj/Localizable.strings`; le due frasi di Salute sono quelle
    dell'iPhone (`app.json`, `locales/*.json`) in `InfoPlist.strings`. Un
-   nome di sport senza traduzione («Hike») resta inglese, come nell'app.
+   nome di sport ancora senza traduzione resta inglese, come nell'app.
 8. **Le unità** sono quelle del sistema di misura dell'orologio, come fa
    l'app finché non se ne sceglie una; la scelta del telefono arriva in A3.
 

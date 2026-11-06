@@ -23889,3 +23889,26 @@ Il nome dello sport cambia da «Open water swim» a «Swim» in tutte le lingue
 ogni volta); uno sport nuovo «Pool swim» (scelta dell'utente); le yard (per
 ora); mandare il post a chi dichiara solo `trackless` (lo vedrebbe senza le
 vasche).
+
+## ADR-0310, precisazione — Un percorso di MuW non dice quanto somiglia
+
+**Stato**: Accettato · 2026-11-06 · TASK-405. Lista dei file mandata al
+Coordinatore; la scelta tecnica è decisa dall'agente su delega
+dell'utente.
+
+1. **Il segno è un campo a parte**, `RecommendedRoute.scored?: false`,
+   messo solo da `muwCardRoute`: «nessuna somiglianza da dire». Assente
+   per ogni altro percorso, che resta com'è. `optionsOf` lo porta avanti
+   con lo spread, quindi vale anche a percorso caricato.
+2. **`ExploredCard` con `scored === false`** scrive `{title} · {city}`
+   come stringa composta, come `RouteTiles` e `NearYou`: nessuna chiave
+   nuova, nessun testo da tradurre, nessun `locales/*.json`.
+3. **`similarity` resta un numero.** Renderla opzionale (la soluzione più
+   pulita sulla carta) tocca una decina di file che la leggono: le card
+   con `match`, i preferiti, `toResult` → `RouteResult`. Il `1` di
+   `muwDetail` resta e finisce solo nel `RouteResult`, che nessuno
+   mostra come percento sul foglio di un percorso solo.
+
+**Scartato**: riconoscere i percorsi di MuW dall'id (`muw:`) nella card:
+è un caso speciale sul nome, e il prossimo percorso senza punteggio ne
+vorrebbe un altro.

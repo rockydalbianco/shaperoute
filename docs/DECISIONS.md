@@ -23865,3 +23865,63 @@ delega dell'utente.
    così»): in montagna circa metà di un'escursione sta su strade
    secondarie tranquille. Pesare gli archi, l'alternativa di ADR-0321, è un
    task a parte del motore, dopo le prime escursioni vere.
+
+## ADR-0334 — Il nuoto in piscina: una scelta dentro il nuoto, le vasche scritte alla fine, il post senza traccia
+
+**Stato**: Proposto · 2026-11-05 · TASK-400. Le scelte di prodotto (come si
+contano le vasche, le lunghezze, dove sta, il Feed, i testi) sono
+**dell'utente**, prese una alla volta; il come è deciso dall'agente su
+delega dell'utente. Numeri dal Coordinatore.
+
+**Contesto**: il nuoto in acque libere (TASK-323, ADR-0283) ha lasciato
+fuori la piscina. In piscina il GPS non dà la distanza; il telefono resta
+fuori dall'acqua. Il server e l'app sanno già tenere e mostrare una corsa
+senza traccia (TASK-385, ADR-0327) e tenerla lontana dalle app che non la
+sanno leggere (ADR-0328).
+
+**Decisione**:
+
+1. **Uno sport, due posti.** Lo sport `swim` resta uno e si chiama «Swim»;
+   in «Draw» si sceglie «Open water» (com'è oggi) o «Pool». L'attività resta
+   `swimming`; la piscina è una corsa `swimming` **senza traccia** con i
+   suoi campi. L'ultima scelta fra i due resta sul telefono.
+2. **La vasca**: 25 m, 50 m o «Other» da 10 a 100 m, con al più due
+   decimali (33,33 m). Tenuta sul telefono, proposta la volta dopo. Niente
+   yard.
+3. **Le vasche alla fine.** Durante la nuotata c'è il cronometro (con
+   «Pause»), nessun GPS. Alla fine «How many lengths?» propone la stima
+   `round(tempo / (passo × vasca / 100))` con il passo/100 m medio delle
+   ultime nuotate in piscina, o 2:00/100 m se non ce ne sono; il numero si
+   corregge a mano, da 1 a 1000. Metri = vasche × vasca; passo/100 m =
+   tempo × 100 / metri.
+4. **Server (parte A)**: un endpoint suo, `PUT /me/pool-swims/{key}`, come
+   la palestra (ADR-0327 A, punto 1): `PUT /me/activities` vuole una
+   traccia. La corsa ha `track` nullo e `distance_m` dalle vasche; una
+   tabella `pool_swims` (`pool_length_m`, `lengths`) con il numero di
+   migrazione libero al merge; nessun punteggio di forma, nessun record di
+   corsa, nessun gioco.
+5. **Chi lo riceve**: un valore nuovo, `pool`, in `X-MuW-Reads`
+   (`packages/shared-types/fixtures/reads.json`). Un post di piscina passa
+   solo se l'app dichiara `swimming`, `trackless` **e** `pool`: un'app con
+   la palestra ma senza la piscina lo mostrerebbe senza vasche.
+6. **Salute** (parte B): HealthKit, allenamento `swimming` con
+   `HKMetadataKeySwimmingLocationType` = piscina, `HKMetadataKeyLapLength`
+   e la distanza a nuoto; Health Connect, `EXERCISE_TYPE_SWIMMING_POOL` con
+   la distanza. Dove basta, dal profilo dello sport (`sports/swimming.ts`)
+   invece di toccare `health/appleWorkout.ts` e `healthConnectWorkout.ts`,
+   che nella 1.0.2 cambiano con TASK-374 C, 345 C e 397 C. Nessun permesso
+   nuovo: il tipo dell'allenamento non è un permesso.
+7. **Il post** (parte C): senza mappa, come la palestra (ADR-0327 D), con
+   vasche, metri, tempo e passo/100 m e la solita scelta di visibilità.
+8. **Ordine e accensione**: A, poi B con C. Server, OTA e accensione nelle
+   build dello store ciascuno col sì dell'utente. L'Apple Watch (TASK-323 E)
+   potrà poi contare le vasche da solo.
+
+**Conseguenze**: nessuna dipendenza nuova, nessun permesso nuovo di Salute.
+Il nome dello sport cambia da «Open water swim» a «Swim» in tutte le lingue
+(testi approvati, tabella in `tasks/TASK-400.md`). Una migrazione nuova.
+
+**Scartato**: un tocco grande per vasca (mani bagnate, ci si deve fermare
+ogni volta); uno sport nuovo «Pool swim» (scelta dell'utente); le yard (per
+ora); mandare il post a chi dichiara solo `trackless` (lo vedrebbe senza le
+vasche).

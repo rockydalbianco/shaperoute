@@ -105,8 +105,9 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // TASK-371 part A and its migration 0043.
   fromProfile("walk", false),
   // Asked as "hiking" (activityOf), 1-30 km on the server's own network; on
-  // once the server has TASK-377 part A and its migration 0051.
-  fromProfile("hike", false),
+  // since the server has TASK-377 part A and its migration 0051, the user's
+  // «acceso appena pronto», in the store builds too.
+  fromProfile("hike", true),
   // Saved as "skiing" and "xc_skiing" (runActivityOf). The alpine ski is on
   // since TASK-375 D4: the server has parts A-D (migrations 0044 and 0048)
   // and the day its numbers, lifts and pistes. The cross-country ski not yet.

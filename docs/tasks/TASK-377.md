@@ -1,7 +1,8 @@
 # TASK-377 — L'escursionismo, il pilota della struttura degli sport
 
-**Stato**: In corso — parti 0 e A in `main`, parte B in PR; resta
-«ready», dopo il server con la parte A.
+**Stato**: Done (2026-11-06) — **Esito**: Hike ⛰️ acceso per tutti: parti
+0, A, B e «ready» in `main` (#821, #838, #861, #864, docs #859), server con
+la 0051, OTA di produzione 3ef55853 (1.0.1, runtime 6f8bba4c).
 **Fase**: 4 · **Branch**: `docs/TASK-377-0-hike` (parte 0), poi
 `feat/TASK-377-a-hike-engine-api`, `feat/TASK-377-b-hike-app` ·
 **ADR**: ADR-0321 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -207,10 +208,15 @@ Le scelte toccano le liste di A e B in tre punti:
       deterministici; corsa, bici e canoa invariate al banco (`compare`).
       Corsa 54/54, bici 54/54 e canoa 27/27 identiche punto per punto;
       `test_hiking.py` e `test_hiking_api.py`.
-- [ ] B: l'escursione si sceglie, si cammina, si salva e va in Salute; i
-      testi sono in cinque lingue.
-- [ ] Il diff di A e B confrontato con la ricetta: ogni deroga è in
-      CONDIVISO, e il criterio aperto di TASK-376 B si chiude.
+- [x] B: l'escursione si sceglie, si cammina, si salva e va in Salute; i
+      testi sono in cinque lingue. Provato dai test della #861 e della
+      #864; in Salute va come «Hiking» (Apple 24, Health Connect 37, dal
+      profilo `sports/hiking.ts`). Una camminata vera col telefono non
+      c'è ancora stata.
+- [x] Il diff di A e B confrontato con la ricetta: ogni deroga è in
+      CONDIVISO, e il criterio aperto di TASK-376 B si chiude. Fatto con
+      la chiusura di TASK-376 (#865): le deroghe sono passi «(pilota)» di
+      `COME-AGGIUNGERE.md`.
 
 ## File toccati
 
@@ -268,6 +274,27 @@ Server (0051 e deploy) col sì dell'utente.
 
 Prossimo: la parte B, dopo la #765.
 
+2026-11-05, **parte A in `main`** (#838, `48bc58c8`), unita dal
+Coordinatore dopo l'OTA di produzione della sera. Dopo la lista
+definitiva, la CI ha chiesto altri file, tutti approvati dal Coordinatore:
+
+- otto test che usavano `hiking` come attività sconosciuta o ne
+  congelavano le liste: quattro dell'app e quattro dell'API;
+- `ACTIVITY_MIGRATIONS` di `test_favorites.py` ora contiene anche la 0051;
+- il file degli sport dell'orologio, `targets/watch/…/sports.json`,
+  rigenerato con `scripts/watch-sports.sh` (la hike vi ha
+  `onWatch: true`; l'orologio non è in nessuna build).
+
+`__main__.py` sceglie la rete a piedi con `OsmnxSource(cache_dir)`, come
+prima: lì i test mettono i loro grafi finti. Le altre reti passano per
+`OsmnxSource.for_activity`. Impronte finali: engine 9be259696402 →
+e13ded92b52d, swims 822413512e24 → db4ee081c4a4, paddle 05b33f547d79 →
+fb16815e3876. L'impronta iOS resta `6f8bba4c`.
+
+Il server non ha ancora la parte A: migrazione 0051 e deploy, col sì
+dell'utente. Un giro di esempi solo hike per Explore, se serve, è a
+parte.
+
 2026-11-05, parte B (`feat/TASK-377-b-hike-app`), lista approvata dal
 Coordinatore con due deroghe (`sports/base.ts` per il campo `caution`,
 `screens/RunNoRouteButton.tsx` per ⛰️):
@@ -291,3 +318,17 @@ a parte del motore, dopo le prime escursioni vere.
 
 Prossimo: «ready» a vero con una riga in `settings/sport.ts`, dopo che il
 server ha la parte A (0051 e deploy), col sì dell'utente.
+
+2026-11-05, «ready» (`feat/TASK-377-c-hike-ready`, sopra la parte B), su
+richiesta del Coordinatore: `fromProfile("hike", true)` e i test che
+contano le righe pronte e i «Soon» (Hike pronta in «Settings», nel menu di
+«Disegna», nelle build dello store, nella ricerca). Si unisce solo dopo il
+server con la 0051 e col sì dell'utente, e va nello stesso OTA della B.
+
+2026-11-06, **chiuso**. Il server ha la parte A (0051, deploy ef3faf2d
+alle 06:00Z), poi il Coordinatore ha unito «ready» (#864, `a23eb9cb`) e i
+documenti di A (#859, `b405e091`). Con l'«ok produzione» dell'utente è
+uscito l'OTA 3ef55853 della 1.0.1 (a 76305c1a, runtime 6f8bba4c): Hike è
+acceso per tutti. Restano fuori, come task a parte: pesare gli archi verso
+i sentieri (ADR-0321, dopo le prime escursioni vere) e un giro di esempi
+solo hike per Explore, se serve.

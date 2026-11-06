@@ -208,6 +208,27 @@ nuove qui e nel file del catalogo dell'app.
   dopo l'allenamento, anche senza rete.
 - **Condividere**: il riquadro, senza risultati, emoji, video né Strava.
 
+## La classifica (parte F)
+
+Scelte dell'utente: la scelta 9 («Sì, così») e del 2026-11-06 «Profilo +
+esercizio nel post» e «Per esercizio, almeno 3». Valori e regole in
+ADR-0327, precisazione F.
+
+- **Per esercizio e mese di calendario di Roma**, un esercizio del catalogo
+  con una scala. Una riga per persona: la sua serie migliore, letta come i
+  traguardi (kg assoluti per i carichi, ripetizioni, secondi, metri), a
+  pari valore la serie segnata prima.
+- **Contano** solo le serie segnate dal vivo, sotto il tetto, di allenamenti
+  cominciati e pubblicati nel mese, per tutti e con gli esercizi mostrati.
+  Un post nascosto dalla moderazione non conta: ogni riga si segnala
+  segnalando il suo post. Mai attraverso un blocco.
+- **Si apre** dalla riga «Gym leaderboard · {month}» sotto il riquadro
+  «🏋️ Gym» del profilo (sull'esercizio più alto) e toccando un esercizio
+  nella scheda del post. «‹» porta ai mesi prima; una riga apre il post,
+  «…» lo segnala. «Only sets logged live count.» sotto il titolo.
+- **«Winner»**: il primo di ogni esercizio a mese finito, se almeno 3
+  persone sono in classifica; senza push.
+
 ## Le calorie (parte C)
 
 Sul telefono, in `gym/gymKcal.ts`; i valori e i codici sono in ADR-0327

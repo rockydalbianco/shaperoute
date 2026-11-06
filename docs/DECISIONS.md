@@ -24589,7 +24589,8 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
    senza modello il video esce come oggi.
 4. **L'editor** offre righe chiuse (personaggio, stile, colori dai token,
    emoji, scene, finale). La scena resta un elenco di cose da disegnare
-   (`VideoScene`), con pezzi in più.
+   (`VideoScene`), con pezzi in più: apertura, corsa e finale in 12
+   secondi, da riordinare o spegnere (scelta 8 dell'utente, 2026-11-06).
 5. **Il prompt** si legge **sul telefono** con una tabella di parole, come
    le forme (ADR-0036): niente rete, nessun servizio AI, nessun costo per
    richiesta (scelta dell'utente). Le parole scelgono solo voci

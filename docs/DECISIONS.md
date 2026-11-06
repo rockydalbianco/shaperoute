@@ -23712,6 +23712,52 @@ approvata dal Coordinatore.
 
 **Conseguenze**: solo JavaScript, nessuna dipendenza: impronta iOS
 invariata, OTA col sì. Col battito (parte G) le kcal passano a Keytel.
+
+## ADR-0327, precisazione — La parte F: la classifica mensile della palestra
+
+**Stato**: Attiva · 2026-11-06 · TASK-385 parte F, decisa dall'agente su
+delega dell'utente dentro le sue scelte (la 9, «Sì, così», e del
+2026-11-06 «Profilo + esercizio nel post», «Per esercizio, almeno 3» e il
+testo della privacy approvato); lista dei file approvata dal Coordinatore.
+
+**Decisione**:
+
+1. **Si conta a ogni lettura, nessuna tabella** (`gym_leaderboard.py`):
+   le serie dei post pubblicati nel mese si leggono dall'indice del Feed
+   (`drawings_published_idx`, un test lo verifica col piano), poi la serie
+   migliore di ognuno, `row_number` e quanti sono. Mostra i primi 50 e chi
+   chiede.
+2. **Il mese** è quello di calendario di Roma, come i concorsi; contano gli
+   allenamenti cominciati **e** pubblicati nel mese, così uno vecchio
+   pubblicato tardi non entra.
+3. **Cosa conta**: serie `live`, sotto il tetto della scala, post per
+   tutti, esercizi mostrati (nascosti, la riga sparisce: come «Niente
+   kcal» della parte C), non nascosto dalla moderazione, account non
+   nascosto, corsa registrata con MuW. Il valore è quello dei livelli (kg
+   assoluti, scelta 9). A pari valore vince la serie segnata prima.
+4. **Segnalare una riga** è segnalare il suo post (`kind: "drawing"`): nessun
+   tipo nuovo. Nascosto dalla moderazione, il post non conta più.
+5. **Blocchi**: la classifica è una sola; chi è tenuto lontano da chi
+   chiede non si vede, gli altri tengono il loro posto (come i concorsi).
+6. **«Winner»** (scelta dell'utente): il primo di un esercizio in un mese
+   finito con almeno 3 persone. Si conta nel profilo pubblico
+   (`profiles.py`, `contest_wins` = concorsi + palestra), guardando solo i
+   mesi e gli esercizi in cui l'account ha serie. Non in `USER_COLUMNS`:
+   lì si calcolerebbe a ogni richiesta con il token (`current_user`), e
+   `test_notifications` legge quelle colonne dividendole sulle virgole. La
+   lista approvata diceva `accounts.py`: il cambio a `profiles.py` e a una
+   riga di `ProfileHome.tsx` l'ha approvato il Coordinatore. L'app legge
+   «Winner» dal proprio profilo pubblico. Nessuna push.
+7. **Quando servirà una tabella**: quando la classifica di un mese
+   supera i 200 ms sul server (il log delle richieste), o quando un mese ha
+   più di 50 000 serie dello stesso esercizio. Allora una tabella
+   `gym_monthly_best` (mese, esercizio, persona, valore, post), scritta al
+   salvataggio e alla pubblicazione, e i vincitori scritti a mese chiuso
+   come `close` dei concorsi.
+
+**Conseguenze**: un endpoint nuovo e un campo che cambia valore; niente
+migrazione. La privacy dice la palestra e la classifica (testo approvato
+dall'utente il 2026-11-06). Server e OTA col sì dell'utente.
 ## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
 
 **Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto

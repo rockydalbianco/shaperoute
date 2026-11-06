@@ -268,6 +268,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   27 (Series 12 da 42 mm) con un prebuild locale. Branch `feat/TASK-370-a2-watch-app`.
   **Prossimo**: A3, il telefono (`src/watch/watchLink.ts`, `useWatch.ts`, il battito nella
   corsa); la prova sul polso con una build firmata.
+  **A2 in `main` il 2026-11-06** (#866, `6bd49b4c`; CI verde, impronta `6f8bba4c`). Subito
+  dopo `main` era rosso: la #875 (Gravel e MTB) era entrata prima e i `Localizable.strings`
+  dell'orologio non li avevano; corretto con #883 (`e5c6c175`, impronta `6f8bba4c`). Uno
+  sport nuovo o un nome cambiato richiede di rilanciare `scripts/watch-texts.sh` e
+  `scripts/watch-sports.sh`. A3 in una sessione nuova, con la lista dei file al Coordinatore
+  prima del codice.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.
@@ -572,6 +578,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   JavaScript; OTA col sì. Prossima: F (classifica).
   Parte C in `main` (#904, 756d6f83), impronta iOS 6f8bba4c misurata dal
   Coordinatore; OTA col sì dell'utente. Prossima: F (classifica).
+  Parte F (classifica mensile) in PR da `feat/TASK-385-f-gym-leaderboard`:
+  `GET /gym/leaderboard`, la pagina dal profilo e dagli esercizi del post,
+  «Winner» per esercizio con almeno 3 persone, la riga della privacy.
+  Scelte dell'utente del 2026-11-06: «Profilo + esercizio nel post», «Per
+  esercizio, almeno 3», testo della privacy approvato. Niente migrazione;
+  server e OTA col sì. Prossima: G (battito, con TASK-345 C).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo

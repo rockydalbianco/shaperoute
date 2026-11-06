@@ -2,12 +2,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import catalog from "../fixtures/gym-exercises.json" with { type: "json" };
+import gymLeaderboard from "../fixtures/gym-leaderboard.json" with { type: "json" };
 import gymLevels from "../fixtures/gym-levels.json" with { type: "json" };
 import runActivities from "../fixtures/run-activities.json" with { type: "json" };
 import session from "../fixtures/gym-session.json" with { type: "json" };
 import {
   GYM_LEVEL_MEASURES,
   GYM_SET_KINDS,
+  type GymLeaderboard,
   type GymLevel,
   type GymSessionRequest,
   type GymSetKind,
@@ -92,4 +94,28 @@ test("a level on the profile is the one its value reaches on its scale", () => {
     order,
     [...order].sort((a, b) => b - a),
   );
+});
+
+test("a leaderboard ranks the best first, measured as its exercise's scale", () => {
+  const board: GymLeaderboard = {
+    ...gymLeaderboard,
+    measure: gymLeaderboard.measure as GymLeaderboard["measure"],
+  };
+  const exercise = catalog.exercises.find((item) => item.key === board.exercise);
+  assert.ok(exercise?.scale);
+  const scales: Record<string, { measure: string }> = catalog.scales;
+  assert.equal(scales[exercise.scale].measure, board.measure);
+  assert.match(board.month, /^\d{4}-(0[1-9]|1[0-2])$/);
+  const ranks = board.rows.map((row) => row.rank);
+  assert.deepEqual(
+    ranks,
+    [...ranks].sort((a, b) => a - b),
+  );
+  const values = board.rows.map((row) => row.value);
+  assert.deepEqual(
+    values,
+    [...values].sort((a, b) => b - a),
+  );
+  assert.ok(board.people >= board.rows.length);
+  assert.ok(board.rows.some((row) => row.rank === board.mine?.rank));
 });

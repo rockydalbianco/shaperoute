@@ -808,6 +808,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   limite noto nel task file: 3D a freddo può dare il video giallo di
   riserva dopo 15 s. L'OTA la pubblica il Coordinatore dopo il sì
   dell'utente.
+  **Parte C1** (2026-11-06, branch `feat/TASK-408-c1-edit-sheet`): il
+  foglio «Edit video» con stile (più «2D», fondo scuro: scelta dell'utente),
+  animale, colore della linea (cinque, blocco `videoLine` nei token) ed
+  emoji lungo il percorso e alla fine; provato nel simulatore (video
+  all'utente). Prossimo: C2 (scene, finale, camera dietro, anteprima);
+  B2 quando c'è l'elefante.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

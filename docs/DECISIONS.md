@@ -24903,3 +24903,38 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
 - **Solo il motore del telefono**: niente frase nella Privacy, ma a
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
+
+## ADR-0339, precisazione C — Il foglio «Edit video»: le scelte in un oggetto, il colore come ruolo, le emoji dove passa la linea
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-06), con la
+lista della parte C1 approvata dal Coordinatore; lo stile «2D» è una scelta
+dell'utente (scelta 11 del task file).
+
+1. **La parte C si fa in due PR**: C1 il foglio con stile (2D compreso),
+   animale, colore della linea ed emoji; C2 scene, finale, la camera dietro
+   l'animale sul 3D (tolta da B2, perché «Camera behind» è una voce delle
+   scene) e l'anteprima.
+2. **Il foglio è un `SheetModal`** dal basso, come i filtri della ricerca,
+   aperto da una riga «Edit video» di «Share your run» con sotto il
+   riassunto delle scelte. Ogni scelta vale subito; «Done» chiude. «Style»
+   e «Character» si spostano dentro il foglio; «Music» resta nella pagina.
+3. **Le scelte vanno a `videoScene` in un oggetto** (`SceneOptions`), non
+   più come quinto argomento: l'animale, il colore, le due emoji, e in C2
+   le scene.
+4. **Il colore è un ruolo nuovo della scena, `line`**, per la linea e la
+   punta della penna: la pagina del video non cambia per questo. Il giallo
+   è l'`accent` della tavolozza del video; gli altri quattro vengono dal
+   blocco `videoLine` di `tokens.ts` (vincolo del Coordinatore: nessun
+   secondo giallo scritto a mano). Sul giallo di riserva la linea resta
+   nera, perché un colore chiaro non si leggerebbe.
+5. **Le emoji del percorso** spuntano a un quarto, metà e tre quarti della
+   linea, nell'istante in cui la linea ci arriva (l'inverso della sua
+   curva), sotto l'animale; sul 3D stanno sulla linea come la mappa la
+   posa (`share`, la pagina le proietta come la punta della penna). **Le
+   emoji della fine** scoppiano in sei punti fissi agli angoli e a metà dei
+   lati del disegno, lontano dal titolo, dal logo e dai numeri (posti
+   scelti guardando i video del simulatore).
+6. **Il 2D** è lo stile Notte senza la mappa: la scena non chiede la mappa
+   alla pagina e il video esce subito, senza velo né crediti della mappa.
+   Le quattro caselle di «Style» stanno in una riga di 76 punti l'una.
+

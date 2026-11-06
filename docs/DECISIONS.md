@@ -24698,7 +24698,16 @@ e nell'API, e il suo profilo nascosto nell'app, come 377-A e 378-A.
    60). Nome senza `tLater`, niente record, energia e avviso fino alla
    parte B. `sports.json` dell'orologio lo elenca.
 
-{MEASURES}
+**Misure** (`sports/roller.md`, «La parte A sul motore vero»):
+
+- la rete del motore, scaricata col suo filtro, è quella della parte 0
+  zona per zona, e così le forme: 34 su 54 a 10–30 km, 13 su 18 a 5 km;
+- una zona `roller` pesa meno di una della bici: 76 MB a Trento, 452 MB a
+  Milano;
+- il controllo «veicolo» del gioco non scarta mai chi pattina tranquillo,
+  scarta in collina chi va a 20 km/h e sempre chi va a 25. Una soglia per
+  sport resta una scelta dell'utente, con la proposta di 35 km/h su 200 m
+  e 28 km/h di media.
 
 **Server**: migrazione 0055 e deploy, col sì dell'utente. Nessuna notte di
 esempi.

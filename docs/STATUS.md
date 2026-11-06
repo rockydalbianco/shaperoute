@@ -356,6 +356,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Lista della parte A approvata dal Coordinatore, con la migrazione
   `0055_inline_skating.sql`. Prossimo: 380-A in una sessione nuova, da
   `origin/main` dopo la #880 (400 B).
+  **Parte A in PR** (2026-11-06, `feat/TASK-380-a-roller-engine-api`):
+  - il motore disegna `inline_skating` sulla rete nuova `roller`, ogni via
+    nei due sensi, con file di cache suoi;
+  - il contratto e l'API offrono il Roller: Strava `InlineSkate`, record
+    propri, nel gioco come la camminata; migrazione `0055_inline_skating.sql`;
+  - l'app ha il profilo, nascosto;
+  - corsa, bici e canoa identiche al banco e nei nove percorsi fissi:
+    l'impronta del motore resta (`SAME_ROUTES_AS`), niente notte di esempi;
+  - sul motore vero rete e forme sono quelle della parte 0.
+
+  Aperto: il controllo «veicolo» del gioco scarta in collina chi pattina a
+  20 km/h; la soglia per il Roller (proposta: 35 km/h su 200 m, 28 di
+  media) è una domanda all'utente. Server (0055 e deploy) solo col sì
+  dell'utente. Prossimo: la parte B.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

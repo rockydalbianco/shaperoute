@@ -318,11 +318,91 @@ questa volta riesce. Un filtro sulle quote vorrebbe le tegole dentro il
 motore, sul server e sul telefono: oggi il motore non le ha (ADR-0300,
 parte G di TASK-347, non ancora codice).
 
+## La parte A sul motore vero (TASK-380 A, 2026-11-06)
+
+Banco sul Mac, branch `feat/TASK-380-a-roller-engine-api`, `nice -n 10`,
+un comando per volta. JSON e script in `out/TASK-380-a` (ignorato da git).
+
+- **Corsa, bici e canoa non cambiano.** Contro `main`, con la stessa cache
+  delle sei zone: corsa 54, bici 54, canoa 27 percorsi, identici punto per
+  punto (`compare --same`: «Nothing worse»). I nove percorsi fissi di
+  `test_same_routes.py` hanno gli stessi hash: l'impronta del motore resta
+  (`SAME_ROUTES_AS`, precisazione di ADR-0324).
+- **La rete `roller` scaricata col suo filtro** sulle zone intere di oggi
+  è quella della parte 0. Overpass ha risposto «al completo» (502) più
+  volte: Fiemme è entrata in un secondo giro.
+  - km del pezzo più grande: Trento 1.215,4, Valsugana 672,8, Milano
+    9.271,4, Fiemme 241,6, Asiago 74,7, pianura 1.149,6 (parte 0: gli
+    stessi, Milano 9.270,7);
+  - a Trento la zona intera ha 2.239 km pattinabili, come i download della
+    bici (2.239,2).
+- **Le forme sono quelle della parte 0**, zona per zona:
+  - a 10, 20 e 30 km: 34 su 54, 10 buoni, somiglianza mediana 0,80;
+  - a 5 km, ora richieste da Roller e non da corsa: 13 su 18, 3 buoni,
+    0,75;
+  - Milano 11 su 12, tutti buoni; Trento 12 su 12; pianura 11 su 12;
+    Valsugana 7, Fiemme 3, Asiago 3 su 12.
+- **I tempi**: mediana 1,5 s. Il primo percorso di 30 km di una zona
+  appena scaricata ha preso da 83 a 266 s (Trento, cerchio, 195 s); rifatto
+  a cache calda, 5,1 s, come nella parte 0. Gli altri restano sotto i 15 s.
+- **Quanto pesa una zona `roller`**, grande come quella della bici per i
+  30 km (`tracemalloc`, `out/TASK-380-a/weigh.py`):
+
+  | Zona | `roller` sul disco | in memoria | bici sul disco | in memoria |
+  |---|---|---|---|---|
+  | trento | 34 MB | 76 MB | 64 MB | 127 MB |
+  | valsugana | 12 MB | 25 MB | 30 MB | 51 MB |
+  | milano | 202 MB | 452 MB | 244 MB | 529 MB |
+  | asiago | 5 MB | 10 MB | 17 MB | 25 MB |
+  | pianura | 16 MB | 35 MB | 22 MB | 77 MB |
+
+  Il server ne tiene una in memoria (`ZONES_IN_MEMORY`), accanto a quelle
+  della bici e della MTB: altri 76 MB a Trento, fino a circa 450 MB a
+  Milano.
+
+### Il controllo «veicolo» del gioco
+
+Il gioco scarta una corsa con più del 10% su tratti di 200 m sopra i 25,2
+km/h (7 m/s), o con una media sopra i 21,6 km/h (6 m/s) oltre i 3 km
+(`game_rules.py`). Il Roller ha gli stessi controlli (scelta dell'utente 4).
+
+Nessun Roller è mai stato salvato: le pattinate sono fatte dal banco
+(`out/TASK-380-a/vehicle.py`). Sono i 47 percorsi riusciti qui sopra,
+con le quote delle tegole Terrarium e un punto ogni 2 s, a tre andature:
+
+- **tranquilla**: 15 km/h in piano, frena oltre i 25 in discesa;
+- **allenata**: 20 km/h in piano, lascia andare fino a 35;
+- **veloce**: 25 km/h in piano, fino a 45.
+
+In salita si rallenta (`1 − 6 × pendenza`, al minimo il 35%). In discesa
+si va alla velocità che la pendenza dà a chi non spinge e non frena
+(attrito 0,008, aria 0,35 m², 75 kg), mai più piano che in piano.
+
+| Andatura | media | contate oggi | con 35 km/h e 28 di media | con 45 km/h e 32 di media |
+|---|---|---|---|---|
+| tranquilla | 14–15 km/h | 47 su 47 | 47 | 47 |
+| allenata | 18–20 km/h | 26 su 47 | 47 | 47 |
+| veloce | 22–24 km/h | 0 su 47 | 28 | 47 |
+
+- **Chi pattina tranquillo non è mai scartato.**
+- **Chi va a 20 km/h è scartato in collina**, per le discese: Trento 9 su
+  12, Valsugana 7 su 7, Fiemme 3 su 3, Asiago 2 su 3. Mai a Milano e in
+  pianura.
+- **Chi va a 25 km/h è scartato sempre**, anche in pianura: la sua media
+  supera i 21,6 km/h.
+- **Le quote hanno un rumore di fondo** (ponti, sottopassi): a Milano un
+  allenato ha brevi tratti sopra i 25 km/h, ma mai abbastanza da essere
+  scartato.
+
+Una soglia per sport è una scelta dell'utente (`tasks/TASK-380.md`, «Un
+punto aperto»). La proposta: per il Roller 35 km/h su 200 m e 28 km/h di
+media. Nessun pattinatore tranquillo o allenato è scartato, e i più veloci
+solo in parte. Il prezzo: una bici a 25–30 km/h passerebbe per un
+Roller. Un'auto su strada aperta resta fuori; nel traffico di città, piano,
+passa già oggi.
+
 ## Cosa resta da misurare
 
-- **La rete sul motore vero** (parte A): i grafi `roller` scaricati con il
-  loro filtro, invece di quelli tagliati dai download della bici, sulle
-  zone intere di oggi.
 - **Le discese**: il motore non conosce le quote. Se la parte G di
   TASK-347 porta il dislivello dal server (ADR-0300), il Roller sarà il
   primo sport a volerlo anche per scegliere le vie.

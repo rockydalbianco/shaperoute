@@ -1,6 +1,6 @@
 # TASK-380 — Roller: i pattini in linea sull'asfalto liscio
 
-**Stato**: In corso — parte 0: misure in `main` (#886), scelte in PR.
+**Stato**: In corso — parte 0 in `main` (#886, #890); parte A in PR.
 **Fase**: 4 · **Branch**: `docs/TASK-380-0-roller` (parte 0), poi
 `feat/TASK-380-a-roller-engine-api`, `feat/TASK-380-b-roller-app` ·
 **ADR**: ADR-0324 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -210,7 +210,7 @@ Le scelte toccano le liste di A e B in tre punti:
 - [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-06).
 - [x] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
       della migrazione (approvata, 0055, 2026-11-06).
-- [ ] A: un percorso roller sul grafo di prova sta sull'asfalto liscio e
+- [x] A: un percorso roller sul grafo di prova sta sull'asfalto liscio e
       lascia fuori sterrato, ciottoli e strade principali; test
       deterministici; corsa, bici e canoa invariate al banco (`compare`).
 - [ ] B: lo sport si sceglie, si pattina, si salva e va in Salute; i testi
@@ -302,3 +302,30 @@ volta:
 ADR-0324 accettato. Il Coordinatore ha approvato la lista della parte A,
 con la migrazione 0055. Prossimo: la parte A in una sessione nuova, da
 `origin/main` dopo la #880 (400 B).
+
+2026-11-06, **parte A in PR** (`feat/TASK-380-a-roller-engine-api`):
+
+- il motore disegna `inline_skating` sulla rete nuova `roller`
+  (`networks/roller.py`), con file di cache suoi, ogni via nei due sensi;
+- il contratto e l'API offrono il Roller dopo la MTB: Strava `InlineSkate`,
+  record propri su 5, 10, 21,1 e 42,2 km, nel gioco come la camminata;
+  migrazione `0055_inline_skating.sql`;
+- l'app ha il profilo nascosto; `sports.json` dell'orologio lo elenca;
+- l'impronta del motore resta (`SAME_ROUTES_AS`, nove percorsi fissi
+  identici); corsa, bici e canoa identiche al banco;
+- sul motore vero la rete e le forme sono quelle della parte 0; una zona
+  pesa 76 MB a Trento, 452 MB a Milano.
+
+**Il punto aperto, misurato**: il controllo «veicolo» scarta in collina chi
+pattina a 20 km/h (21 su 47 pattinate fatte dal banco) e sempre chi va a 25,
+per la media sopra i 21,6 km/h. La proposta per l'utente: per il Roller 35
+km/h su 200 m e 28 km/h di media (`sports/roller.md`). Fino alla sua
+risposta il Roller ha le soglie della corsa.
+
+Prossimo: server (0055 e deploy) col sì dell'utente; la parte B (app),
+con la sua lista al Coordinatore. Per B: il tipo `sport` dei record
+personali nel contratto (`src/index.ts`) e `PersonalBests.tsx` non sanno
+ancora `inline_skating`; mancano anche i testi `tLater`, l'energia, il
+passo per il tempo stimato, l'avviso `caution`, la riga in
+`settings/sport.ts` e `OFFERED_WHEN_READY` (via il `NOT_YET` di
+`searchFilters.ts`).

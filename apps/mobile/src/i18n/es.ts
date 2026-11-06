@@ -1732,8 +1732,19 @@ export const ES: Table = {
   FEEDBACK: "COMENTARIOS",
   // src/settings/sport.ts (TASK-305 D0: paragliding, «Soon» in «Sport»)
   Paragliding: "Parapente",
-  // src/settings/sport.ts (TASK-323 C: swimming in open water, «Soon» in «Sport»)
-  "Open water swim": "Natación en aguas abiertas",
+  // src/sports/swimming.ts (TASK-400: «Swim», in open water or in a pool)
+  Swim: "Natación",
+  // src/pool/ (TASK-400 part B: a swim in a pool), approved on 2026-11-06
+  "Open water": "Aguas abiertas",
+  Pool: "Piscina",
+  "Pool length": "Longitud de la piscina",
+  Other: "Otra",
+  "Length in meters": "Longitud en metros",
+  "Start swim": "Empezar a nadar",
+  "How many lengths?": "¿Cuántos largos?",
+  Lengths: "Largos",
+  "Pool swim": "Natación en piscina",
+  "Pace /100 m": "Ritmo /100 m",
   // src/explore/ExploredCard.tsx, src/social/DrawingCard.tsx (TASK-313)
   "Draw it near me": "Dibujarla cerca de mí",
   // src/route/RoutePanel.tsx (TASK-311 B: a word in one line that did not come out)

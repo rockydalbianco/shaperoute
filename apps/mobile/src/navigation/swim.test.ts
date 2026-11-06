@@ -87,5 +87,5 @@ test("in the Feed a swim says its sport first, and its pace of 100 m", () => {
       minutes: 20,
       activity: "swimming",
     }),
-  ).toBe("Open water swim · Heart · 1.0 km · 20 min · 2:00 /100 m");
+  ).toBe("Swim · Heart · 1.0 km · 20 min · 2:00 /100 m");
 });

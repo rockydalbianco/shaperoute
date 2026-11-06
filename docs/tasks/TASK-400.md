@@ -1,8 +1,9 @@
 # TASK-400 — Nuoto in piscina: la vasca scelta prima di partire
 
 **Stato**: In corso · proposta in `main` (#867); parte A (server) in
-`main` (#871, cab53f51), server col sì dell'utente; prossima la parte B
-(app); ogni parte dopo la sua lista dei file al Coordinatore
+`main` (#871, cab53f51), server col sì dell'utente; parte B (app) in PR da
+`feat/TASK-400-b-pool-app`, dopo TASK-378 B; prossima la parte C (post);
+ogni parte dopo la sua lista dei file al Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-400-pool-swim` (documenti); il codice
 `feat/TASK-400-a-…`, `feat/TASK-400-b-…`
 **Dipende da**: TASK-323 (nuoto in acque libere, chiuso #834), TASK-385
@@ -101,14 +102,21 @@ dei file mandata al Coordinatore.
 
 ## Criteri di accettazione
 
-- [ ] Con lo sport «Swim», «Draw» offre «Open water» e «Pool»; «Open water»
-      funziona come prima.
-- [ ] In «Pool» si sceglie 25 m, 50 m o un valore da 10 a 100 m; un valore
-      fuori resta non valido; l'ultima scelta torna la volta dopo.
-- [ ] A fine nuotata si scrivono le vasche (con la stima proposta); metri =
-      vasche × vasca; passo/100 m = tempo × 100 / metri.
-- [ ] Il nuoto in piscina va in Apple Salute come nuoto in piscina con la
-      vasca, e in Health Connect come `SWIMMING_POOL`.
+- [x] Con lo sport «Swim», «Draw» offre «Open water» e «Pool»; «Open water»
+      funziona come prima. (B, `pool/PoolDraw.test.tsx`)
+- [x] In «Pool» si sceglie 25 m, 50 m o un valore da 10 a 100 m; un valore
+      fuori resta non valido; l'ultima scelta torna la volta dopo. (B)
+- [x] A fine nuotata si scrivono le vasche (con la stima proposta); metri =
+      vasche × vasca; passo/100 m = tempo × 100 / metri. (B,
+      `pool/poolSwim.test.ts`, `pool/PoolSwimHost.test.tsx`)
+- [x] Il nuoto in piscina va in Apple Salute come nuoto in piscina con la
+      vasca, e in Health Connect come `SWIMMING_POOL`. (B) **Limite**: in
+      Apple Salute va come nuoto in piscina con i metri ma **senza la
+      lunghezza della vasca**: `HKMetadataKeyLapLength` vuole un
+      `HKQuantity`, che `@kingstinct/react-native-healthkit` 16.2.0 non
+      sa passare nei metadati (arriverebbe un dizionario e il salvataggio
+      fallirebbe). ADR-0334, precisazione B, punto 5; accettato dal
+      Coordinatore il 2026-11-06.
 - [ ] Il post senza mappa arriva solo alle app che mandano `pool` e
       `trackless` in `X-MuW-Reads`.
 - [ ] Test deterministici per il calcolo, la scelta della vasca, l'header e
@@ -147,7 +155,45 @@ docs/STATUS.md
 docs/tasks/TASK-400.md
 ```
 
-Le parti B e C: lista dei file al Coordinatore prima del codice. Nella
+Parte B (approvata dal Coordinatore il 2026-11-06; gli ultimi tre test
+segnalati dopo, perché cambiano col nome o con `pool` in `this_app`):
+
+```
+apps/mobile/App.tsx
+apps/mobile/src/pool/*.ts, *.tsx (nuovi: poolSwim, poolChoice, poolStore,
+  usePoolSwim, poolOutbox, usePoolOutbox, poolHealth, PoolDraw,
+  PoolSwimScreen, PoolSwimEnd, PoolSwimHost, PoolTile e i loro test)
+apps/mobile/src/api/poolSwims.ts, poolSwims.test.ts (nuovi)
+apps/mobile/src/api/reads.ts, reads.test.ts
+apps/mobile/src/screens/ChooseScreen.tsx
+apps/mobile/src/activities/ActivitiesList.tsx
+apps/mobile/src/sports/swimming.ts
+apps/mobile/src/health/workout.ts, appleWorkout.ts, healthConnectWorkout.ts
+apps/mobile/src/i18n/it.ts, de.ts, fr.ts, es.ts
+apps/mobile/src/settings/sport.test.ts, SportButton.test.tsx,
+  sportRows.test.ts, SportSetting.test.tsx, SportStoreBuild.test.tsx,
+  SportVoiceItalian.test.tsx
+apps/mobile/src/navigation/swim.test.ts
+apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts
+packages/shared-types/fixtures/reads.json
+services/api/tests/test_reads.py, test_pool_swims.py
+apps/mobile/src/api/accounts.test.ts
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json
+  (solo da scripts/watch-sports.sh; file di TASK-370)
+apps/mobile/targets/watch/{en,it,de,fr,es}.lproj/Localizable.strings
+  (solo da scripts/watch-texts.sh; file di TASK-370)
+docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-400.md
+```
+
+**Per la parte C** (il post): il nuoto si salva con `usePoolOutbox`
+(`pool/usePoolOutbox.ts`), che oggi non manda un disegno; il post va come
+quello della palestra (`gym/useGymOutbox.ts`, `drawing` nel file dei nuoti
+in attesa e `keepForDrawing` dopo il `PUT`), con `activity: "swimming"` e
+`GET /drawings/{id}/pool-swim` per vasca e vasche. La tessera 🏊 di «My
+activities» è `pool/PoolTile.tsx`; un nuoto in piscina si riconosce con
+`isPoolSwimRun`. La riga mostra la distanza in km come ogni corsa.
+
+La parte C: lista dei file al Coordinatore prima del codice. Nella
 lista della B (indicazione del Coordinatore, 2026-11-06) entrano anche
 `packages/shared-types/fixtures/reads.json` (`pool` in `this_app`, con
 `apps/mobile/src/api/reads.ts` e il suo test) e `apps/mobile/src/i18n/`

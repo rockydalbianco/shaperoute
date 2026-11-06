@@ -24146,6 +24146,47 @@ delega dell'utente; lista dei file e migrazione `0053` dal Coordinatore.
 **Conseguenze**: una migrazione, nessuna dipendenza, nessun testo
 dell'app, impronta iOS e del motore invariate (`pool_swims.py` e
 `drawings.py` non sono in `engine.zip`). Server col sì dell'utente.
+
+## ADR-0334, precisazione — La parte B: l'app registra il nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-400 parte B, decisa dall'agente su
+delega dell'utente; lista dei file dal Coordinatore.
+
+1. **Una cartella sua**, `apps/mobile/src/pool/`, sul modello della
+   palestra: la nuotata in corso in un file (un'app riaperta la ritrova),
+   uno schermo sopra l'app dallo «Start swim» al «Save», i nuoti salvati
+   senza rete in un file loro, mandati alla prima rete. La chiave si fa come
+   quella della palestra (`gymKey`): non c'è un primo punto GPS.
+2. **«Open water / Pool» sta in cima a «Draw»** con lo sport «Swim»; in
+   «Pool» spariscono partenza, forma e «Draw route». Scelta, vasca e gli
+   ultimi cinque passi/100 m restano sul telefono (`pool-choice.json`); la
+   stima di «How many lengths?» usa la media di quei passi, o 2:00/100 m.
+3. **Il limite di 2,5 m/s sul telefono**: «+» si ferma all'ultimo numero di
+   vasche sotto il limite, un numero più alto scritto a mano resta non
+   valido (bordo rosso, «Save» spento). Nessun testo nuovo: una frase che
+   spieghi il perché vorrebbe un testo da approvare.
+4. **Salute**: `Workout` ha un campo `pool` facoltativo; con quello
+   `appleWorkout.ts` mette `HKSwimmingLocationType` = piscina e
+   `healthConnectWorkout.ts` il tipo `EXERCISE_TYPE_SWIMMING_POOL`. I
+   numeri stanno nel profilo (`sports/swimming.ts`). Nessuna traccia e
+   nessuna energia, come il nuoto in acque libere.
+5. **La vasca non va in Apple Salute (limite)**: `HKMetadataKeyLapLength`
+   vuole un `HKQuantity`, e `@kingstinct/react-native-healthkit` 16.2.0
+   passa i metadati come `AnyMap`, che arriverebbe a HealthKit come un
+   dizionario: il salvataggio di tutto l'allenamento fallirebbe. Salute
+   riceve il nuoto in piscina con i metri, senza la lunghezza della vasca,
+   finché la libreria non la porta. Accettato dal Coordinatore.
+6. **«My activities»**: una corsa `swimming` senza traccia e senza percorso
+   è un nuoto in piscina; la sua riga mostra la tessera 🏊, «Pool swim»,
+   metri, tempo e passo, e non apre una mappa che non ha. Il post è la
+   parte C.
+7. **`pool` in `this_app`** (`reads.json`, `api/reads.ts`): dalla parte B
+   «My activities» riceve i nuoti in piscina. Nessun post ne arriva prima
+   della parte C, che li pubblica. Tre test dell'API che leggevano
+   `this_app` senza `pool` cambiano con lui.
+
+**Conseguenze**: nessuna dipendenza, nessun permesso nuovo, solo JS; il
+nome dello sport è «Swim» in ogni lingua. OTA e store col sì dell'utente.
 ## ADR-0310, precisazione — Un percorso di MuW non dice quanto somiglia
 
 **Stato**: Accettato · 2026-11-06 · TASK-405. Deciso dall'agente su

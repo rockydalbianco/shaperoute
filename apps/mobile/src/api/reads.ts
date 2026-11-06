@@ -16,14 +16,20 @@ export const OLD_APP_ACTIVITIES: readonly string[] = ["running", "cycling", "pad
  * shown with its numbers in place of the line. */
 export const TRACKLESS = "trackless";
 
+/** A swim in a pool (TASK-400 part B, ADR-0334): a swim without a track,
+ * its pool and lengths in place of the line. */
+export const POOL = "pool";
+
 /**
  * Every activity a run of this app may be (RUN_ACTIVITIES) but those of
- * before, and `trackless`: the Feed, the profiles, the search and the
- * drawing show a post without a line since TASK-385 B0.
+ * before, `trackless`: the Feed, the profiles, the search and the drawing
+ * show a post without a line since TASK-385 B0; and `pool`: «My
+ * activities» shows a swim in a pool since TASK-400 B.
  */
 export const READS: readonly string[] = [
   ...RUN_ACTIVITIES.filter((activity) => !OLD_APP_ACTIVITIES.includes(activity)),
   TRACKLESS,
+  POOL,
 ];
 
 /** The header, for `ask` (accounts.ts). */

@@ -324,6 +324,20 @@ per la media sopra i 21,6 km/h. La proposta per l'utente: per il Roller 35
 km/h su 200 m e 28 km/h di media (`sports/roller.md`). Fino alla sua
 risposta il Roller ha le soglie della corsa.
 
+**La risposta** (2026-11-06): «Sì, 35 e 28». La parte A è in `main` (#912).
+Le soglie sono in una PR piccola da `main`
+(`feat/TASK-380-roller-vehicle-thresholds`), che tocca:
+
+```
+services/api/shaperoute_api/game_rules.py
+services/api/tests/test_inline_skating_api.py
+docs/GIOCO.md                (§4, una riga)
+docs/sports/roller.md
+docs/DECISIONS.md            (seconda precisazione di ADR-0324)
+docs/STATUS.md               (righe proprie)
+docs/tasks/TASK-380.md
+```
+
 Prossimo: server (0055 e deploy) col sì dell'utente; la parte B (app),
 con la sua lista al Coordinatore. Per B: il tipo `sport` dei record
 personali nel contratto (`src/index.ts`) e `PersonalBests.tsx` non sanno

@@ -83,6 +83,8 @@ le regole sotto usano solo posizioni e tempi (`M`) e le pause della corsa.
 2. **Corsa da veicolo.** La corsa non conta per niente (ragione
    `vehicle`) se i tratti scartati superano il **10 %** della distanza,
    oppure se la media in movimento supera **6,0 m/s** su più di 3 km.
+   Il Roller ha soglie sue: **35 km/h** su 200 m e **28 km/h** di media
+   (`speed_limits`, TASK-380, scelta dell'utente).
 3. **Buchi.** Un passo fra due posizioni distanti più di 30 s nel tempo
    conta nei km, se la sua velocità è da corsa, ma interrompe i tempi
    migliori: nessuna finestra lo attraversa.

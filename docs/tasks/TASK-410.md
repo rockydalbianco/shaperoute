@@ -145,9 +145,11 @@ colonne sottili di `View` (una per punto, altezza relativa, colore
   con `PUT /me/activities/{key}/stats` (il profilo ridotto a 120 punti;
   la cadenza solo quando c'è: file importati con cadenza, orologio). Le corse
   vecchie non li avranno: la sezione non c'è.
-- **Battito**: viene da TASK-345 B/C. Proposta al Coordinatore: TASK-345 B
-  scrive in `run_stats` invece che in tre colonne nuove di `runs`, così c'è
-  un posto solo; al riassunto si aggiungono minimo e secondi per zona.
+- **Battito**: viene da TASK-345 B/C; al riassunto si aggiungono minimo e
+  secondi per zona. **Vincolo per TASK-345 B** (Coordinatore, 2026-11-06):
+  un posto solo, `run_stats`, niente colonne nuove in `runs`. Chi parte
+  prima fra TASK-345 B e la parte C di questo task crea la tabella; l'altro
+  ci scrive. La nota nel task file di 345 la passa il Coordinatore.
 - **Calorie**: le calcola il telefono dell'autore con i suoi dati
   (`body/energy.ts`) e manda solo il numero; per chi guarda vale la regola
   di privacy della scelta 2.

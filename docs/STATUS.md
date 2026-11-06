@@ -340,6 +340,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
   ADR-0324 accettato. Prossimo: 380-A, motore, contratto e API, con la
   lista al Coordinatore e il numero della migrazione.
+  Lista della parte A approvata dal Coordinatore, con la migrazione
+  `0055_inline_skating.sql`. Prossimo: 380-A in una sessione nuova, da
+  `origin/main` dopo la #880 (400 B).
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

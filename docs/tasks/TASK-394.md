@@ -2,8 +2,9 @@
 
 **Stato**: In lavorazione — proposta approvata dall'utente (2026-11-05, «Sì,
 approvo»), con le cinque scelte, e testi approvati lo stesso giorno. Parte A
-(API, ADR-0333, migrazione `0050`) in `main` (#844, 2026-11-05); prossimo: la
-parte B (app), dopo TASK-384 B. Le scelte
+(API, ADR-0333, migrazione `0050`) in `main` (#844, 2026-11-05); parte B
+(app) pronta in PR il 2026-11-06 (`feat/TASK-394-b-outfit-app`, «Dove si è,
+parte B»). Le scelte
 di prodotto sono dell'utente (sotto, «Le scelte dell'utente»); il resto è
 deciso dall'agente su delega dell'utente
 **Fase**: 4 · **Branch**: `docs/TASK-394-member-outfit-tags` (proposta,
@@ -306,6 +307,13 @@ con le parole dell'utente.
    nelle cinque lingue), approvati a parte.
    — *Risposta* (2026-11-05): «Sì, approvo», sulla proposta con le cinque
    scelte. Non copre i testi, che si approvano a parte («I testi», sotto).
+7. **Parte B: chi mostra i puntini nel Feed.** La scelta 4 dice «un tocco
+   sulla foto»; nel Feed però un tocco sulla foto apre il disegno (TASK-330).
+   Proposta: nel Feed i puntini li mostra la gruccia (un pulsante
+   nell'angolo) e il tocco sulla foto apre il disegno come prima; nel disegno
+   aperto li mostra il tocco sulla foto. Alternativa: anche nel Feed il tocco
+   sulla foto mostra i puntini, e il disegno si apre dalla mappa o dal titolo.
+   — *Risposta* (2026-11-06): «Gruccia nel Feed».
 
 ## I testi
 
@@ -554,14 +562,22 @@ Le parti (scritti ora, controllati con loro):
       solo l'autore; una foto sostituita o tolta perde i suoi capi.
 - [x] A: i conteggi non tengono account, indirizzo o telefono (un test come
       `test_nothing_personal_is_kept` di Style).
-- [ ] B: un capo segnato nel compositore si vede nel Feed sulla stessa foto e
-      nello stesso punto, anche dopo aver riordinato le foto.
-- [ ] B: «Shop on {store}» apre il browser di sistema col link pulito.
+- [x] B: un capo segnato nel compositore si vede nel Feed sulla stessa foto e
+      nello stesso punto, anche dopo aver riordinato le foto. Il capo sta col
+      posto della foto, non col suo ordine (`RunEndOutfit.test.tsx`,
+      `PostComposerOutfit.test.tsx`, `FeedPostOutfit.test.tsx`,
+      `OutfitTagLayer.test.tsx`).
+- [x] B: «Shop on {store}» apre il browser di sistema col link pulito: quello
+      che risponde `/shop`, solo `https` (`OutfitTagLayer.test.tsx`,
+      `api/outfitTags.test.ts`).
 - [x] A: i totali dei conteggi arrivano solo all'autore; aggiornare i capi
       tiene i conteggi di quelli che restano.
-- [ ] B: l'autore vede i totali sul suo post e nella scheda dei suoi capi,
-      gli altri no; i tocchi dell'autore sui suoi capi non si contano.
-- [ ] B: l'impronta iOS resta quella di `main`.
+- [x] B: l'autore vede i totali sul suo post e nella scheda dei suoi capi,
+      gli altri no; i tocchi dell'autore sui suoi capi non si contano
+      (`OutfitTagLayer.test.tsx`, `FeedPostOutfit.test.tsx`,
+      `DrawingCardOutfit.test.tsx`).
+- [ ] B: l'impronta iOS resta quella di `main` (`6f8bba4c`): solo JS, la
+      misura il Coordinatore nella sua copia.
 
 ## File toccati
 
@@ -630,6 +646,72 @@ docs/STATUS.md
   ultimo dai sorgenti uniti (dopo la #838, Hike, che lo rifà anche lei).
   Server: la `0050` con la `0049` e la `0051`, col sì dell'utente; la chiave di
   Web Risk quando l'utente avrà il progetto Google Cloud.
+
+Parte B (`feat/TASK-394-b-outfit-app`; lista data al Coordinatore e approvata
+il 2026-11-06). I tre test con la data di Termini e Privacy
+(`documents.test.ts`, `AboutPage.test.tsx`, `site/tests/privacy.test.mjs`)
+non erano nella lista: li cambia la data nuova, e il Coordinatore ne è
+avvisato con la PR.
+
+```
+apps/mobile/src/social/outfit/outfitWords.ts            (nuovo, + .test.ts)
+apps/mobile/src/social/outfit/outfitTags.ts             (nuovo, + .test.ts)
+apps/mobile/src/social/outfit/outfitKept.ts             (nuovo, + .test.ts)
+apps/mobile/src/social/outfit/OutfitTagging.tsx         (nuovo, + .test.tsx)
+apps/mobile/src/social/outfit/OutfitTagEditor.tsx       (nuovo)
+apps/mobile/src/social/outfit/OutfitTagLayer.tsx        (nuovo, + .test.tsx)
+apps/mobile/src/social/outfit/OutfitTagSheet.tsx        (nuovo)
+apps/mobile/src/social/outfit/memoryFiles.testing.ts    (nuovo: i file del telefono nei test)
+apps/mobile/src/api/outfitTags.ts                       (nuovo, + .test.ts)
+apps/mobile/src/social/composer/PostComposer.tsx        (una riga: TagWhatYouWear)
+apps/mobile/src/social/composer/PostComposerOutfit.test.tsx (nuovo)
+apps/mobile/src/social/PublicRow.tsx                    (il ponte attorno a DrawingForm)
+apps/mobile/src/activities/RunEnd.tsx                   (il ponte e toOutfit con «Save»)
+apps/mobile/src/activities/RunEndOutfit.test.tsx        (nuovo)
+apps/mobile/src/activities/activitiesDoor.ts            (toOutfit accanto a toPhotos)
+apps/mobile/src/social/drawingPhotos.ts                 (i capi dopo le foto, e con loro tolti)
+apps/mobile/src/social/drawingPhotosOutfit.test.ts      (nuovo)
+apps/mobile/src/feed/FeedPost.tsx                       (il layer sulla foto, i totali)
+apps/mobile/src/feed/FeedPostOutfit.test.tsx            (nuovo)
+apps/mobile/src/social/DrawingCard.tsx                  (il layer sulla foto, i totali)
+apps/mobile/src/social/DrawingCardOutfit.test.tsx       (nuovo)
+apps/mobile/src/about/content/{en,it,de,fr,es}.ts       (Help B, Termini C1–C4, Privacy D1, D2, D3, D4; la data)
+apps/mobile/src/about/documents.test.ts                 (la data)
+apps/mobile/src/about/AboutPage.test.tsx                (la data)
+site/privacy/index.html e {it,de,fr,es}/index.html      (rifatti con make_privacy.mjs)
+site/tests/privacy.test.mjs                             (la data)
+docs/DECISIONS.md                                       (ADR-0333, precisazione B)
+docs/tasks/TASK-394.md
+docs/STATUS.md
+```
+
+### Dove si è, parte B (2026-11-06)
+
+- «Tag what you wear» sotto la foto scelta nel compositore, a fine corsa e
+  nella scheda di «My activities». Nel modulo:
+  - la foto intera, un tocco dove sta il capo;
+  - capo, marca (con le marche già usate), modello, link;
+  - un puntino si trascina, o si tocca per cambiarlo o toglierlo;
+  - 5 per foto e 10 per post, e quello che l'API rifiuterebbe si dice subito.
+- I capi stanno sul telefono accanto alle foto e vanno al server dopo di
+  loro. Un rifiuto del server si vede sotto il pulsante.
+- Chi guarda: la gruccia sulle foto con dei capi (nel Feed sotto il contatore
+  delle pagine), i puntini, la scheda con «Shop on {store}» nel browser di
+  sistema, la riga 7 e «Report». L'autore vede i totali sotto le foto e nella
+  scheda, e i suoi tocchi non si contano.
+- Help, Termini e Privacy nelle cinque lingue con la data del 6 novembre 2026,
+  e le pagine del sito rifatte. Le pubblica il Coordinatore col sì
+  dell'utente, dopo il merge e l'OTA.
+- Scelte tecniche in ADR-0333 «precisazione B».
+- **Limite**: a fine allenamento in palestra (`GymPostForm`) non c'è «Tag
+  what you wear»; i capi si segnano dopo, dalla scheda in «My activities».
+  Il seguito lo decide l'utente più avanti (Coordinatore, 2026-11-06).
+- Verificato in locale: i test dei file toccati, `tsc`, `eslint` e Prettier.
+  Non verificato: nessuna prova nel simulatore né sul telefono; la gruccia è
+  disegnata con delle View e va vista nell'anteprima.
+- Prossimo: l'impronta iOS dal Coordinatore, il merge, poi OTA e sito col sì
+  dell'utente. Il server ha già la `0050`; senza la chiave di Web Risk si
+  aprono solo i negozi di Style.
 
 ## Fuori scope
 

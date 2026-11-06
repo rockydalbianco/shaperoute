@@ -259,16 +259,20 @@ export function ActivityChips({
   value,
   onChange,
   disabled,
+  alone = false,
 }: {
   value: RunActivity;
   onChange: (activity: RunActivity) => void;
   disabled?: boolean;
+  /** Its own activity only: a swim in a pool stays a swim (TASK-400 C). */
+  alone?: boolean;
 }) {
-  const shown: readonly RunActivity[] = isTrackless(value)
-    ? [value]
-    : isRecordActivity(value)
-      ? RECORD_ACTIVITIES
-      : ACTIVITIES_SHOWN;
+  const shown: readonly RunActivity[] =
+    alone || isTrackless(value)
+      ? [value]
+      : isRecordActivity(value)
+        ? RECORD_ACTIVITIES
+        : ACTIVITIES_SHOWN;
   return (
     <Chips
       label={t("Activity")}
@@ -396,6 +400,9 @@ export type DrawingFormProps = {
   /** Under who can see it, on a workout at the gym: «Show exercises»
    * (TASK-385 part D). */
   extra?: ReactNode;
+  /** A swim in a pool (TASK-400 part C): its tile, a swim alone, no
+   * contest. */
+  pool?: boolean;
   /** The fakes of the tests. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
@@ -424,6 +431,7 @@ export function DrawingForm({
   disabled,
   imported = false,
   extra,
+  pool = false,
   pick,
   fetchFn,
   apiKey,
@@ -446,6 +454,7 @@ export function DrawingForm({
         disabled={disabled}
         pick={pick === undefined ? undefined : oneAtATime(pick)}
         gym={isTrackless(choice.activity)}
+        pool={pool}
       />
       <DrawingTitle
         value={title}
@@ -476,6 +485,7 @@ export function DrawingForm({
         value={choice.activity}
         onChange={(activity) => onChoice({ ...choice, activity })}
         disabled={disabled}
+        alone={pool}
       />
       <VisibilityChips
         value={choice.visibility}
@@ -486,6 +496,7 @@ export function DrawingForm({
       {/* A workout at the gym draws nothing for the contest (TASK-385 B0). */}
       {choice.visibility === "everyone" &&
         !imported &&
+        !pool &&
         !isTrackless(choice.activity) && (
           <EnterSwitch
             entry={choice.entry}

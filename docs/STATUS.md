@@ -3086,6 +3086,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `tasks/TASK-398.md`.
   **Chiuso il 2026-11-05**: #827 in main (`42e0433a`); vedi «Completato».
 
+- **TASK-400 — Nuoto in piscina: la vasca scelta prima di partire**
+  (2026-11-05; numeri dal Coordinatore; ADR-0334 proposto). Scelte
+  dell'utente: vasche scritte alla fine con la stima dal tempo; 25 m, 50 m,
+  «Other» (10–100 m); una scelta «Open water / Pool» dentro lo sport, che si
+  chiama «Swim»; post nel Feed senza mappa come la Palestra (`pool` in
+  `X-MuW-Reads`); testi approvati. Proposta in PR da
+  `docs/TASK-400-pool-swim`; poi A (server), B (app), C (post), ognuna con la
+  lista dei file al Coordinatore. `tasks/TASK-400.md`.
+
 ## Completato
 
 - **TASK-404 — Disegno a mano: un primo tratto piccolo non blocca i tratti dopo** (2026-11-05;

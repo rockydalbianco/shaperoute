@@ -370,6 +370,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   20 km/h; la soglia per il Roller (proposta: 35 km/h su 200 m, 28 di
   media) è una domanda all'utente. Server (0055 e deploy) solo col sì
   dell'utente. Prossimo: la parte B.
+  Parte A in `main` (#912, `f0a6e680`). Il 2026-11-06 l'utente ha risposto
+  sulla soglia: «Sì, 35 e 28». Le soglie del Roller sono in PR
+  (`feat/TASK-380-roller-vehicle-thresholds`, `game_rules.speed_limits`;
+  seconda precisazione di ADR-0324). Vanno sul server con la 0055.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

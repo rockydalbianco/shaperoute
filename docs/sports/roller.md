@@ -401,6 +401,9 @@ solo in parte. Il prezzo: una bici a 25–30 km/h passerebbe per un
 Roller. Un'auto su strada aperta resta fuori; nel traffico di città, piano,
 passa già oggi.
 
+**La scelta** (2026-11-06): «Sì, 35 e 28». Il Roller ha le sue soglie in
+`game_rules.speed_limits`; la corsa, la camminata e Hike tengono le loro.
+
 ## Cosa resta da misurare
 
 - **Le discese**: il motore non conosce le quote. Se la parte G di

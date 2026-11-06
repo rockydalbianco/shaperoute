@@ -24,7 +24,7 @@ from route_engine.geo import haversine_m
 # Raised whenever a rule below changes: game_backfill.py computes the runs
 # again. 2: a walk counts its metres (TASK-371). A hike counts as a walk
 # (TASK-377) and kept 2: no run saved before it could be a hike (0051); so
-# did a skate (TASK-380, 0055).
+# did a skate (TASK-380, 0055), with its own "vehicle" thresholds too.
 RULES_VERSION = 2
 
 # A stretch of at least VEHICLE_WINDOW_M covered faster than this is not
@@ -37,6 +37,11 @@ VEHICLE_SHARE = 0.10
 # MEAN_SPEED_FROM_M.
 MAX_MEAN_SPEED_MPS = 6.0
 MEAN_SPEED_FROM_M = 3_000.0
+# A skater rolls faster than a runner, downhill above all: 35 km/h over
+# VEHICLE_WINDOW_M and 28 km/h on average (TASK-380, ADR-0324, the user's
+# choice of 2026-11-06). What each threshold drops: docs/sports/roller.md.
+SKATE_VEHICLE_SPEED_MPS = 35 / 3.6
+SKATE_MAX_MEAN_SPEED_MPS = 28 / 3.6
 # Two fixes further apart than this in time: the step between them counts
 # in the metres, never inside a best time.
 MAX_GAP_S = 30.0
@@ -62,7 +67,8 @@ WALKING = "walking"
 # A hike counts as a walk (TASK-377, ADR-0321, the user's choice 5).
 HIKING = "hiking"
 # A skate counts as a walk too (TASK-380, ADR-0324, the user's choice 4): a
-# skater is a person on foot; the personal bests of a skate are its own.
+# skater is a person on foot, with thresholds of its own (speed_limits); the
+# personal bests of a skate are its own.
 INLINE_SKATING = "inline_skating"
 ON_FOOT = (RUNNING, WALKING, HIKING, INLINE_SKATING)
 
@@ -130,18 +136,26 @@ def evaluate(
         )
         for i, (a, b) in enumerate(zip(fixes, fixes[1:], strict=False))
     ]
-    fast = _vehicle_steps(steps)
+    vehicle_mps, mean_mps = speed_limits(activity)
+    fast = _vehicle_steps(steps, vehicle_mps)
     run_m = sum(s.length_m for s in steps if not s.stopped)
     moving_s = sum(s.moving_s for s in steps if not s.stopped)
     vehicle_m = sum(s.length_m for s, f in zip(steps, fast, strict=True) if f)
     if run_m > 0 and vehicle_m > VEHICLE_SHARE * run_m:
         return RunGame(False, VEHICLE, 0, {}, elapsed_s)
-    if run_m > MEAN_SPEED_FROM_M and (
-        moving_s <= 0 or run_m / moving_s > MAX_MEAN_SPEED_MPS
-    ):
+    if run_m > MEAN_SPEED_FROM_M and (moving_s <= 0 or run_m / moving_s > mean_mps):
         return RunGame(False, VEHICLE, 0, {}, elapsed_s)
     best = best_times(steps, fast, clock) if activity == RUNNING else {}
     return RunGame(True, None, round(run_m - vehicle_m), best, elapsed_s)
+
+
+def speed_limits(activity: str) -> tuple[float, float]:
+    """The speed over VEHICLE_WINDOW_M past which a stretch is a vehicle's,
+    and the most mean speed beyond MEAN_SPEED_FROM_M, in m/s: a skate's own,
+    a run's for the rest."""
+    if activity == INLINE_SKATING:
+        return SKATE_VEHICLE_SPEED_MPS, SKATE_MAX_MEAN_SPEED_MPS
+    return VEHICLE_SPEED_MPS, MAX_MEAN_SPEED_MPS
 
 
 def moving_clock(times: Sequence[float], pauses: Sequence[RunPause]) -> list[float]:
@@ -179,22 +193,22 @@ def _stopped_between(pauses: Sequence[RunPause], from_s: float, to_s: float) -> 
     return any(not p.auto and from_s <= p.from_s < to_s for p in pauses)
 
 
-def _vehicle_steps(steps: Sequence[_Step]) -> list[bool]:
+def _vehicle_steps(steps: Sequence[_Step], vehicle_mps: float) -> list[bool]:
     """Which steps lie in a stretch of at least VEHICLE_WINDOW_M covered
-    faster than VEHICLE_SPEED_MPS. A pause the runner asked for ends a
+    faster than `vehicle_mps`. A pause the runner asked for ends a
     stretch."""
     fast = [False] * len(steps)
     start = 0
     for end in range(len(steps) + 1):
         if end == len(steps) or steps[end].stopped:
             chain = steps[start:end]
-            for i, f in enumerate(_fast_in(chain)):
+            for i, f in enumerate(_fast_in(chain, vehicle_mps)):
                 fast[start + i] = f
             start = end + 1
     return fast
 
 
-def _fast_in(chain: Sequence[_Step]) -> list[bool]:
+def _fast_in(chain: Sequence[_Step], vehicle_mps: float) -> list[bool]:
     """Two indices along the chain: each window is the shortest run of
     steps from i reaching VEHICLE_WINDOW_M."""
     n = len(chain)
@@ -207,7 +221,7 @@ def _fast_in(chain: Sequence[_Step]) -> list[bool]:
             j += 1
         if length < VEHICLE_WINDOW_M:
             break
-        if moving <= 0 or length / moving > VEHICLE_SPEED_MPS:
+        if moving <= 0 or length / moving > vehicle_mps:
             for k in range(max(i, marked), j):
                 fast[k] = True
             marked = max(marked, j)

@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
+import type { GymSet } from "@shaperoute/shared-types";
 
 import { sportPaceLabel } from "../activities/activityText";
 import { isTrackless } from "../activities/snow";
@@ -46,7 +47,7 @@ import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { ActionBar } from "./ActionBar";
 import { isImportedPost, isShown } from "./feedPosts";
-import { postEnergy } from "./postEnergy";
+import { gymPostEnergy, postEnergy } from "./postEnergy";
 import { drawingHeight, RouteMap } from "./RouteMap";
 import type { SamplePost } from "./sampleFeed";
 import { turnedLine } from "./turnedLine";
@@ -91,8 +92,9 @@ function sameWords(a: string, b: string): boolean {
  * added from a file of another app says so before all, "Imported · 4.9 km ·
  * 27 min" (TASK-312). A run ends with its energy, "· 355 kcal" (TASK-345).
  * What the title of the card already says is not said twice (TASK-355).
+ * A workout at the gym counts its energy from its `sets` (TASK-385 C).
  */
-export function postFacts(post: SamplePost): string {
+export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): string {
   const named = post.what === undefined ? shapeLabel(post.shape) : post.what;
   const what = named !== null && sameWords(named, post.title) ? null : named;
   // A member's drawing has the seconds; an example only its minutes.
@@ -104,7 +106,7 @@ export function postFacts(post: SamplePost): string {
     gym ? null : distanceLabel(post.route_m),
     durationLabel(post.minutes * 60_000),
     gym ? null : sportPaceLabel(post.activity, post.route_m, ms),
-    postEnergy(post),
+    gym ? gymPostEnergy(post, sets) : postEnergy(post),
   ]
     .filter((fact): fact is string => fact !== null)
     .join(" · ");
@@ -267,7 +269,10 @@ export function FeedPost({ post, width, onOpen }: Props) {
     setPage(shown);
     setReached((was) => Math.max(was, shown));
   }
-  const heard = ago === "" ? postFacts(post) : `${ago} · ${postFacts(post)}`;
+  const heard =
+    ago === ""
+      ? postFacts(post, exercises?.sets)
+      : `${ago} · ${postFacts(post, exercises?.sets)}`;
   // A member's run may have no place found (TASK-118): then none is read.
   const label =
     city === ""
@@ -288,6 +293,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
       height={drawingHeight(width)}
       durationS={isShown(post) ? post.drawing.duration_s : post.minutes * 60}
       exercises={exercises === null ? [] : mainExercises(exercises.sets, language)}
+      kcal={gymPostEnergy(post, exercises?.sets)}
     />
   ) : (
     <RouteMap
@@ -303,7 +309,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const words = (
     <View style={styles.words}>
       <Text style={styles.title}>{post.title}</Text>
-      <Text style={styles.facts}>{postFacts(post)}</Text>
+      <Text style={styles.facts}>{postFacts(post, exercises?.sets)}</Text>
       {/* The figures this workout reached first (TASK-385 E). */}
       {gym && <NewLevels exercises={exercises} />}
     </View>
@@ -334,7 +340,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
         testID="feed-photo-words"
       >
         <Text style={styles.titleOnPhoto}>{post.title}</Text>
-        <Text style={styles.factsOnPhoto}>{postFacts(post)}</Text>
+        <Text style={styles.factsOnPhoto}>{postFacts(post, exercises?.sets)}</Text>
       </View>
     </>
   );

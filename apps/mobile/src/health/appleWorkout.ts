@@ -101,8 +101,9 @@ export function appleWorkout(workout: Workout): AppleWorkout {
     metadata: {
       HKSyncIdentifier: workout.syncId,
       HKSyncVersion: SYNC_VERSION,
-      // Every activity of MuW is outdoors: it follows the GPS.
-      HKIndoorWorkout: false,
+      // Every activity of MuW is outdoors, as it follows the GPS, but a
+      // workout at the gym (TASK-385 part C).
+      HKIndoorWorkout: workout.activity === "gym",
       // A pool, not open water (TASK-400). Its length (HKMetadataKeyLapLength)
       // wants an HKQuantity, which the library's metadata cannot carry.
       ...(workout.pool === undefined

@@ -125,13 +125,44 @@ oggi:
    modello è stato cambiato (MuW lo converte e ne riduce le texture): una
    riga nei crediti dell'app, testo nuovo da approvare (domanda 2c, vincolo
    del Coordinatore).
+6. **La riga dei crediti** (2026-11-06): «Sì, questa». Un punto nuovo in
+   «Terms» › «Services of others» (`about/content/*.ts`, cinque lingue, più
+   la pagina del sito). Testo approvato, in inglese: «The 3D animals in the
+   video come from Quaternius (CC0); the elephant is "Elephant Anim" by
+   Shivoahm on Sketchfab (CC BY 4.0), adapted by MuW.» In italiano: «Gli
+   animali 3D del video vengono da Quaternius (CC0); l'elefante è "Elephant
+   Anim" di Shivoahm su Sketchfab (CC BY 4.0), adattato da MuW.» Tedesco,
+   spagnolo e francese con la domanda 6. Entra con la parte B, insieme al
+   modello.
+7. **Quali personaggi** (2026-11-06): «Tutti i 13». I 12 animali del
+   pacchetto Quaternius «Ultimate Animated Animals» (luglio 2021, CC0, glTF;
+   lista letta il 2026-11-06 nella cartella pubblica linkata da
+   https://quaternius.com/packs/ultimateanimatedanimals.html, senza
+   scaricare): Alpaca, Bull, Cow, Deer, Donkey, Fox, Horse, Horse_White,
+   Husky, ShibaInu, Stag, Wolf; più l'elefante di Shivoahm. Con «None» sono
+   14 caselle: la riga «Character» scorre di lato. Il peso dei file e i nomi
+   delle animazioni si leggono nella parte B, scaricando la cartella glTF col
+   sì dell'utente (nome, fonte, misura).
+8. **Le scene e il finale** (2026-11-06): «Sì, così». Il video resta di
+   **12 secondi**, in tre pezzi:
+   - **Apertura** (0–3 s): il disegno 2D che si traccia sulla mappa piatta
+     (come oggi), il titolo, o niente; poi un taglio o una dissolvenza verso
+     il 3D.
+   - **La corsa** (3–9 s): l'animale in 3D con la camera dietro, la camera
+     che gira intorno al percorso (come oggi), o la linea 2D con l'animale
+     sopra; le emoji spuntano dove passa.
+   - **Finale** (9–12 s): i numeri, il disegno intero, il cuore, o tutti e
+     tre; le emoji della fine; il marchio MuW sempre per ultimo.
+   I pezzi si riordinano o si spengono, almeno uno resta acceso; se uno è
+   spento gli altri si allungano e il video dura sempre 12 secondi. Tutto
+   viene dalla traccia vera.
 
 ## Domande aperte (una alla volta)
 
 1. ~~three.js e i modelli CC0~~: risposta sopra (scelta 3).
 2. ~~L'elefante~~: risposta sopra (scelta 4).
 2b. ~~Quale elefante~~: risposta sopra (scelta 5).
-2c. **La riga dei crediti** — la prossima. Proposta: un punto nuovo in
+2c. ~~La riga dei crediti~~: risposta sopra (scelta 6). Era la proposta: un punto nuovo in
    «Terms» › «Services of others» (`about/content/*.ts`, cinque lingue, più
    la pagina del sito), in inglese: «The 3D animals in the video come from
    Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm on
@@ -150,12 +181,10 @@ oggi:
      ridurre per il telefono. Da comprare l'utente stesso, dopo aver letto
      se la licenza permette un file che l'app scarica nella WebView.
    Nessun elefante animato CC0 trovato.
-3. **Quali personaggi** nella riga, e quanti. Proposta: 5 o 6, scelti dalla
-   tavola dopo aver visto il pacchetto.
-4. **Le scene e il finale**: quali pezzi si offrono, e se la durata resta
-   12 secondi. Proposta: tre pezzi fissi da scegliere e riordinare, 12
-   secondi.
-5. **Il prompt**: cosa si promette nel testo del riquadro, e la prima
+3. ~~Quali personaggi~~: risposta sopra (scelta 7). Era la proposta: sei
+   (Horse, l'elefante, Stag, Fox, Wolf, Husky) più «None».
+4. ~~Le scene e il finale~~: risposta sopra (scelta 8).
+5. **Il prompt** — la prossima: cosa si promette nel testo del riquadro, e la prima
    tabella di parole. Proposta: «Describe your video: an animal, colours,
    emoji, the ending», con le parole di ogni voce dell'editor.
 6. **I testi** in cinque lingue.

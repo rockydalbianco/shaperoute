@@ -2,7 +2,11 @@ import { useCallback, useEffect, useRef } from "react";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { savePoolSwimOnApi } from "../api/poolSwims";
+import { keepForDrawing, sendWaitingDrawings } from "../social/drawingOutbox";
+import { keepOrder } from "../social/drawingOrder";
+import { keepPhotos } from "../social/drawingPhotos";
 import { useFollowsDoor } from "../social/followsDoor";
+import { saveVisibility } from "../social/visibilityChoice";
 import { keepPace } from "./poolChoice";
 import {
   keepPoolWaiting,
@@ -11,6 +15,7 @@ import {
   refusePoolWaiting,
   stopPoolWaiting,
 } from "./poolOutbox";
+import { type PoolPost, poolPostPhotos } from "./PoolPostForm";
 import {
   activeMs,
   pacePer100S,
@@ -28,11 +33,12 @@ export type PoolSaved = PoolKept | "signed_out" | "nothing";
  * phone, then to the API, now or when there is a network; once the API has
  * it, «My activities» asks for its list again. A swim the API will not take
  * (422, or 409 for a key of a run) stays on the phone and is not sent
- * again. As the workouts at the gym (gym/useGymOutbox.ts), without a post
- * (TASK-400 part C). `fetchFn` is for the tests.
+ * again. Its post (TASK-400 part C) goes after it, through the drawings'
+ * own file, with its photos and their order, as a workout's
+ * (gym/useGymOutbox.ts). `fetchFn` is for the tests.
  */
 export function usePoolOutbox(fetchFn?: typeof fetch): {
-  save: (swim: PoolSwim, lengths: number) => PoolSaved;
+  save: (swim: PoolSwim, lengths: number, post?: PoolPost) => PoolSaved;
 } {
   const { apiUrl, account } = useFollowsDoor();
   const { owner, refresh } = useActivitiesDoor();
@@ -52,6 +58,7 @@ export function usePoolOutbox(fetchFn?: typeof fetch): {
     }
     sending.current = true;
     let sent = false;
+    let posts = false;
     const options = { fetchFn: latest.current.fetchFn };
     try {
       for (const waiting of poolToSend(who)) {
@@ -63,6 +70,10 @@ export function usePoolOutbox(fetchFn?: typeof fetch): {
           options,
         );
         if (outcome.kind === "ok") {
+          if (waiting.drawing !== undefined) {
+            keepForDrawing({ owner: who, key: waiting.key, ...waiting.drawing });
+            posts = true;
+          }
           stopPoolWaiting(who, waiting.key);
           sent = true;
         } else if (
@@ -78,6 +89,9 @@ export function usePoolOutbox(fetchFn?: typeof fetch): {
           break;
         }
       }
+      if (posts) {
+        await sendWaitingDrawings(url, key, who, options);
+      }
     } finally {
       sending.current = false;
       if (sent) {
@@ -92,7 +106,7 @@ export function usePoolOutbox(fetchFn?: typeof fetch): {
   }, [send, token, owner]);
 
   const save = useCallback(
-    (swim: PoolSwim, lengths: number): PoolSaved => {
+    (swim: PoolSwim, lengths: number, post?: PoolPost): PoolSaved => {
       const who = latest.current.owner;
       if (who === null) {
         return "signed_out";
@@ -101,8 +115,22 @@ export function usePoolOutbox(fetchFn?: typeof fetch): {
       if (request === null || swim.endedMs === null) {
         return "nothing";
       }
-      const kept = keepPoolWaiting({ owner: who, key: swim.key, request });
+      const kept = keepPoolWaiting({
+        owner: who,
+        key: swim.key,
+        request,
+        ...(post === undefined ? {} : { drawing: post.choice }),
+      });
       if (kept === "kept") {
+        if (post !== undefined) {
+          // The photos take the places of the post's order, as a workout's.
+          const { photos, order } = poolPostPhotos(post);
+          keepPhotos(who, swim.key, photos);
+          if (order !== null) {
+            keepOrder(who, swim.key, order);
+          }
+          saveVisibility(who, post.choice.visibility);
+        }
         // The next estimate of «How many lengths?» goes by it.
         const pace = pacePer100S(
           activeMs(swim, swim.endedMs) / 1000,

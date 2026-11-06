@@ -24187,6 +24187,41 @@ delega dell'utente; lista dei file dal Coordinatore.
 
 **Conseguenze**: nessuna dipendenza, nessun permesso nuovo, solo JS; il
 nome dello sport è «Swim» in ogni lingua. OTA e store col sì dell'utente.
+
+## ADR-0334, precisazione — La parte C: il post del nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-400 parte C, decisa dall'agente su
+delega dell'utente; lista dei file dal Coordinatore.
+
+1. **Un nuoto in piscina si riconosce dalla linea**: un post o un disegno
+   `swimming` senza linea (`isPoolLine`). Un nuoto in acque libere ne ha
+   sempre una. Nessun campo nuovo nel contratto.
+2. **Il post come quello della palestra** (ADR-0327 D): a fine nuotata il
+   modulo (foto, titolo, «How did it go?», persone, chi lo vede), con la
+   tessera 🏊 fra le foto e fino a dieci foto; mai ordinato, prima le foto
+   e la tessera in fondo. Si manda dopo il `PUT /me/pool-swims/{key}`,
+   dal file dei disegni in attesa, come `swimming`. L'attività resta solo
+   «Swim» (l'API vuole `swimming`) e non c'è la gara del mese.
+3. **La tessera**: «Pool swim», vasche e vasca (da `GET
+   /drawings/{id}/pool-swim`, chiesto una volta per post), metri, tempo e
+   passo/100 m; senza le vasche (un'app a cui non arrivano) restano metri,
+   tempo e passo. Nel Feed, nelle griglie del profilo, nella ricerca e
+   nell'immagine condivisa. La scheda del disegno scrive vasche × vasca e
+   passo sotto i fatti, e non offre «Draw it near me» né «Edit the
+   drawing».
+4. **L'immagine condivisa** è la tessera sola, come la palestra: niente
+   risultati, emoji, video né Strava. Dal proprio nuoto le vasche vengono
+   da `GET /me/pool-swims/{key}`; dal Feed, che non ha la chiave, da `GET
+   /drawings/{id}/pool-swim` (`PostRun.drawingId`, messo da
+   `postOfDrawing` in `feed/ActionBar.tsx`).
+5. **Nei file condivisi** poche righe: un `pool` in `PostComposer` e
+   `DrawingForm`, `alone` in `ActivityChips`, un ramo nella tessera di
+   `FeedPost`, `DrawingCard`, `DrawingsGrid`, `DrawingResultCard` e
+   `SharePost`. Il resto in `apps/mobile/src/pool/`.
+
+**Conseguenze**: nessun testo nuovo (solo i testi approvati), nessuna
+dipendenza, solo JS. Il post arriva solo alle app che dicono `pool`
+(ADR-0334, punto 5). Server, OTA e store col sì dell'utente.
 ## ADR-0310, precisazione — Un percorso di MuW non dice quanto somiglia
 
 **Stato**: Accettato · 2026-11-06 · TASK-405. Deciso dall'agente su
@@ -24539,20 +24574,23 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
    nativo, quindi l'impronta iOS non cambia e si pubblica con un OTA.
    three.js è una dipendenza nuova: l'utente ha detto sì il 2026-11-06.
 2. **I modelli** hanno una licenza scritta e nessun personaggio di altri.
-   Il candidato è il pacchetto CC0 di Quaternius (glTF, galoppo e passo).
+   Il pacchetto CC0 di Quaternius «Ultimate Animated Animals» (glTF,
+   galoppo e passo): l'utente vuole tutti i suoi 12 animali più l'elefante
+   (2026-11-06, `tasks/TASK-408.md`, scelta 7).
    L'elefante non c'è in nessun pacchetto CC0 trovato: l'utente lo vuole
    nella prima versione (2026-11-06). Si usa solo con una licenza letta e
    scritta nel task. L'utente ha scelto «Elephant Anim» di Shivoahm
    (Sketchfab, CC BY 4.0, gratis): titolo, autore, fonte, licenza e «adapted
-   by MuW» in una riga dei crediti dell'app, col testo approvato
-   dall'utente.
+   by MuW» in una riga dei crediti dell'app; il testo l'ha approvato
+   l'utente il 2026-11-06 (`tasks/TASK-408.md`, scelta 6).
 3. **Il percorso non si inventa**: il personaggio sta sul punto della
    traccia dove arriva la linea in quel fotogramma, girato nella direzione
    della strada. La camera lo segue; su un telefono lento resta ferma, e
    senza modello il video esce come oggi.
 4. **L'editor** offre righe chiuse (personaggio, stile, colori dai token,
    emoji, scene, finale). La scena resta un elenco di cose da disegnare
-   (`VideoScene`), con pezzi in più.
+   (`VideoScene`), con pezzi in più: apertura, corsa e finale in 12
+   secondi, da riordinare o spegnere (scelta 8 dell'utente, 2026-11-06).
 5. **Il prompt** si legge **sul telefono** con una tabella di parole, come
    le forme (ADR-0036): niente rete, nessun servizio AI, nessun costo per
    richiesta (scelta dell'utente). Le parole scelgono solo voci

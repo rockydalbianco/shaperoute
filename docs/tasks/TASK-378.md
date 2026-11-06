@@ -1,7 +1,7 @@
 # TASK-378 — Gravel e MTB: la bici fuori dall'asfalto
 
-**Stato**: In corso — parte 0 in `main` (#840, #841); parte A in PR
-(2026-11-06); prossimo: la parte B.
+**Stato**: In corso — parte 0 in `main` (#840, #841); parte A in `main`
+(#875, 2026-11-06); prossimo: la parte B.
 **Fase**: 4 · **Branch**: `docs/TASK-378-0-gravel` (parte 0), poi
 `feat/TASK-378-a-gravel-engine-api`, `feat/TASK-378-b-gravel-app` ·
 **ADR**: ADR-0322 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -297,3 +297,16 @@ Per la parte B:
   allargati con la parte B: non sono nella sua lista;
 - l'energia di Gravel e MTB (Compendium) e la rete sul telefono, se
   serve, vanno nei profili.
+
+2026-11-06: la parte A è in `main` (#875, `7e36a76a`). L'impronta iOS
+resta `6f8bba4c` (misurata dal Coordinatore su `8387f2d0`). L'impronta del
+motore resta quella di prima, con `SAME_ROUTES_AS`.
+
+- **Il server** con la migrazione 0052 lo aggiorna l'utente, col suo sì;
+  il comando glielo dà il Coordinatore. Fino ad allora il server di
+  produzione non conosce `gravel_biking` né `mountain_biking`, e l'app
+  non li offre.
+- **Prossimo: la parte B** (app), con la sua lista di file al
+  Coordinatore prima del codice. In più rispetto alla lista sopra servono
+  il tipo dei record nel contratto e `profile/PersonalBests.tsx` (vedi
+  sopra).

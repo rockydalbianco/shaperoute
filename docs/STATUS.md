@@ -278,6 +278,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     l'impronta del motore resta (`SAME_ROUTES_AS`), niente notte di esempi.
 
   Server (0052 e deploy) solo col sì dell'utente. Prossimo: la parte B.
+  **Parte A in `main`** (#875, `7e36a76a`, 2026-11-06): impronta iOS
+  `6f8bba4c` invariata, impronta del motore tenuta. Il server con la 0052
+  lo aggiorna l'utente col suo sì, col comando del Coordinatore. Prossimo:
+  la parte B (app), con la sua lista di file al Coordinatore.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

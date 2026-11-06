@@ -23834,7 +23834,10 @@ più sullo schermo e logo chiesti dall'utente durante la prova.
    `{live-activity,watch}`), altrimenti lo aggiunge con `match: "watch"`
    (per le prove prima di 401 B, col pacchetto installato solo in locale).
    È JavaScript perché Expo legge `app.config.ts` da solo e non risolve un
-   import TypeScript da lì (provato: «Cannot find module»).
+   import TypeScript da lì (provato: «Cannot find module»). Si carica con un
+   `require` solo quando la variabile c'è: l'impronta conta ogni file che
+   la config carica (`expoConfigPlugins`), e con un `import` in cima era
+   `c770de78` invece di `6f8bba4c` anche senza `MUW_WATCH` (misurato).
 4. **Lo stato è di WatchCore, la registrazione di HealthKit**:
    `HKWorkoutSession` + `HKLiveWorkoutBuilder` (salva l'allenamento in
    Salute alla fine: un'attività, un allenamento), mirroring al telefono

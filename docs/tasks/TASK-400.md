@@ -177,6 +177,11 @@ apps/mobile/src/navigation/swim.test.ts
 apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts
 packages/shared-types/fixtures/reads.json
 services/api/tests/test_reads.py, test_pool_swims.py
+apps/mobile/src/api/accounts.test.ts
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json
+  (solo da scripts/watch-sports.sh; file di TASK-370)
+apps/mobile/targets/watch/{en,it,de,fr,es}.lproj/Localizable.strings
+  (solo da scripts/watch-texts.sh; file di TASK-370)
 docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-400.md
 ```
 

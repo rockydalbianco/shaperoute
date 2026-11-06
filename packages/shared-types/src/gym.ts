@@ -102,6 +102,36 @@ export interface GymLevel {
   measure: GymLevelMeasure;
 }
 
+/** A row of the monthly leaderboard (TASK-385 F, ADR-0327 point 9): a
+ * person's best live set of the month, read as the milestones read it. A
+ * tie goes to the set logged first. */
+export interface GymLeaderboardRow {
+  /** 1 is the first; a row kept apart by a block is missing, the others
+   * keep their rank. */
+  rank: number;
+  user: { public_id: string; username: string };
+  value: number;
+  /** The post of the workout: open it, report it. */
+  drawing_id: string;
+}
+
+/** GET /gym/leaderboard?exercise=&month=: a calendar month of Rome
+ * (YYYY-MM, this one when not asked), the first 50 and who asks. Mirrors
+ * gym_leaderboard.py. */
+export interface GymLeaderboard {
+  month: string;
+  exercise: string;
+  measure: GymLevelMeasure;
+  /** Everyone on it, the rows kept apart too. */
+  people: number;
+  rows: GymLeaderboardRow[];
+  mine: GymLeaderboardRow | null;
+}
+
+/** The people a leaderboard needs for its first to be a «Winner», once its
+ * month has ended (the user's choice of 2026-11-06). */
+export const GYM_WINNER_PEOPLE = 3;
+
 /** PUT /me/gym-sessions/{key}/show-exercises. */
 export interface ShowExercisesRequest {
   show: boolean;

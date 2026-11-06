@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { space } from "../theme/tokens";
 import { ExerciseList } from "./ExerciseList";
+import { Leaderboard } from "./Leaderboard";
 import { NewLevels } from "./NewLevels";
 import { useGymExercises } from "./useGymExercises";
 
@@ -18,17 +20,25 @@ type Props = {
  * API with the account's token, once for the tile in the Feed and the card
  * (part D), with the levels it reached first (part E). Nothing shows while
  * they come, when its owner hides them (404) or when the API does not give
- * them.
+ * them. An exercise's name opens its monthly leaderboard (part F, the
+ * user's choice of 2026-11-06).
  */
 export function GymDetail({ drawingId, fetchFn }: Props) {
   const exercises = useGymExercises(drawingId, { fetchFn });
+  const [board, setBoard] = useState<string | null>(null);
   if (exercises === null) {
     return null;
   }
   return (
     <View style={styles.detail}>
       <NewLevels exercises={exercises} />
-      <ExerciseList exercises={exercises} />
+      <ExerciseList exercises={exercises} onExercise={setBoard} />
+      <Leaderboard
+        visible={board !== null}
+        exercise={board ?? ""}
+        onClose={() => setBoard(null)}
+        fetchFn={fetchFn}
+      />
     </View>
   );
 }

@@ -9,6 +9,7 @@ import { isTrackless } from "../activities/snow";
 import { CardMapsCredit } from "../explore/RouteCard";
 import { useFeedMap } from "../feed/FeedMaps";
 import { GymTile } from "../gym/GymTile";
+import { isPoolLine, PoolTile } from "../pool/PoolTile";
 import { t } from "../i18n";
 import { bearingOf } from "../map/turnedMap";
 import {
@@ -252,6 +253,9 @@ function DrawingCell({ drawing, size, opening, disabled, onOpen }: CellProps) {
       {/* A workout at the gym has no line: its tile (TASK-385 B0). */}
       {isTrackless(drawing.activity) ? (
         <GymTile width={size} height={size} />
+      ) : isPoolLine(drawing.activity, drawing.track_preview) ? (
+        // A swim in a pool, the same (TASK-400 part C).
+        <PoolTile width={size} height={size} />
       ) : (
         <RunDrawing
           route={drawing.track_preview}

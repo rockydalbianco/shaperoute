@@ -34,6 +34,7 @@ import { startsAnywhere } from "./startAnywhere";
 import { isSwim, SWIM_AUTO_PAUSE_AFTER_MS } from "./swim";
 import { emptyTrack, type Track } from "./trackRecorder";
 import { startRun } from "./trackStore";
+import { startWayBack, type WayBackRun } from "./wayBackRun";
 
 /** A fix at least this often apart, in metres: a stride or two. */
 export const FIX_EVERY_M = 5;
@@ -90,7 +91,10 @@ export function play(cues: Cue[]): void {
  * in front, the GPS goes on where the app can (TASK-261, `runPosition`) and
  * the voice speaks, over the music (part B, `runAudio`); on iOS what the
  * navigator says is also written in a notification (TASK-401,
- * `lockNotice`). The position never leaves the phone.
+ * `lockNotice`). Off the route the way back to it on the streets is asked
+ * for, and its turns said and written the same way (TASK-314,
+ * `wayBackRun`): the position goes to the server only for that, when the
+ * phone has no map of the area.
  */
 export function useNavigation(
   points: LatLon[] | null,
@@ -130,6 +134,7 @@ export function useNavigation(
     let stopRecording: (() => void) | null = null;
     let away: RunAway | null = null;
     let notice: LockNoticeRun | null = null;
+    let wayBack: WayBackRun | null = null;
     // The phone's voices, before the first words: a chosen one is used only
     // once it is known to be there.
     void loadVoices();
@@ -199,6 +204,22 @@ export function useNavigation(
         // What the navigator says, written on the locked phone too
         // (TASK-401); not on a swim, with the phone in the buoy.
         notice = swim ? null : startLockNotice();
+        // A way back found between two fixes is shown and said at once.
+        wayBack = startWayBack(activity, (place) => {
+          if (stopped || navigation.current === null) {
+            return;
+          }
+          const found = place(navigation.current, speaking().language);
+          navigation.current = found.navigation;
+          setState({
+            status: "following",
+            navigation: found.navigation,
+            position,
+            track: recorder.track(),
+          });
+          cue(found.cues);
+          notice?.said(found.cues, found.navigation);
+        });
         const session = controlRun(recorder, {
           // «Pause» and «Resume» change the track between two fixes.
           onChange: () => {
@@ -240,12 +261,9 @@ export function useNavigation(
             position = fix;
             const { language } = speaking();
             const before = navigation.current;
-            const next = onFix(
-              before,
-              fix,
-              { accuracyM: coords.accuracy, timeMs: timestamp },
-              language,
-            );
+            const reading = { accuracyM: coords.accuracy, timeMs: timestamp };
+            const followed = onFix(before, fix, reading, language);
+            const next = wayBack?.onFix(followed, fix, reading, language) ?? followed;
             navigation.current = next.navigation;
             const drawing = movePen(
               pen,
@@ -337,6 +355,7 @@ export function useNavigation(
       subscription?.remove();
       away?.remove();
       notice?.end();
+      wayBack?.end();
       run?.end();
       stopRecording?.();
       void Speech.stop();

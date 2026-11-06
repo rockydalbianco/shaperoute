@@ -18,6 +18,8 @@ import {
 import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { isTrackless } from "../activities/snow";
 import { GymSharePicture } from "../gym/GymSharePicture";
+import { PoolSharePicture } from "../pool/PoolSharePicture";
+import { isPoolLine } from "../pool/PoolTile";
 import { t } from "../i18n";
 import {
   color,
@@ -76,7 +78,7 @@ type Props = {
  * TASK-351), in the style chosen in «Style», with the track chosen in
  * «Music» (TASK-301). A workout at the gym shares its yellow tile alone
  * (TASK-385 part D): no line to draw, so no results, emoji, video nor
- * Strava.
+ * Strava. A swim in a pool shares its tile alone too (TASK-400 part C).
  */
 export function SharePost({ run, onClose }: Props) {
   return (
@@ -103,7 +105,9 @@ function SharePage({ run, onClose }: Props) {
     (window.height * POST_HEIGHT_SHARE) / POST_RATIO,
   );
   const results = useMemo(() => resultsOf(run), [run]);
-  const gym = isTrackless(run.activity);
+  // A swim in a pool goes as a workout: its tile alone (TASK-400 part C).
+  const pool = isPoolLine(run.activity, run.track);
+  const gym = isTrackless(run.activity) || pool;
   const { keepPost } = useActivitiesDoor();
   const kept = run.post ?? null;
   // Every result the run has, on: the runner turns off what they keep. A
@@ -214,7 +218,17 @@ function SharePage({ run, onClose }: Props) {
         ]}
       >
         <View style={styles.center}>
-          {gym ? (
+          {pool ? (
+            <PoolSharePicture
+              ref={post}
+              poolKey={run.key}
+              drawingId={run.drawingId ?? null}
+              durationS={Math.round(run.durationMs / 1000)}
+              metres={Math.round(run.distanceM)}
+              width={postWidth}
+              height={postWidth * POST_RATIO}
+            />
+          ) : gym ? (
             <GymSharePicture
               ref={post}
               gymKey={run.key}

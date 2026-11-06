@@ -23665,6 +23665,53 @@ altro»); lista dei file approvata dal Coordinatore.
 **Conseguenze**: campi nuovi e facoltativi; le app vecchie li ignorano, e
 il server può andare prima dell'app. Nessuna dipendenza, niente nativo:
 impronta iOS invariata. Il server va col sì dell'utente.
+
+## ADR-0327, precisazione — La parte C: le calorie della palestra e Salute
+
+**Stato**: Attiva · 2026-11-06 · TASK-385 parte C, decisa dall'agente su
+delega dell'utente dentro le sue scelte (la scelta 2, «Stima MET sempre»,
+e del 2026-11-06 «Niente kcal» per gli esercizi nascosti); lista dei file
+approvata dal Coordinatore.
+
+**Decisione**:
+
+1. **Si contano sul telefono, come per gli altri sport** (`gym/gymKcal.ts`,
+   ADR-0318): energia attiva, ossigeno meno il riposo di Mifflin-St Jeor
+   (o un MET senza i dati del corpo), 70 kg senza peso. Niente sul server.
+2. **I blocchi cardio con la formula della macchina**:
+   - tapis roulant (anche curvo): l'equazione ACSM della camminata sotto
+     i 7 km/h, della corsa da 7 km/h (il mezzo dei 3,7–5 mph in cui
+     l'ACSM lascia la scelta), con la velocità o i metri sul tempo, la
+     pendenza solo in salita;
+   - le altre macchine: il MET del Compendium 2024 copiato col codice:
+     cyclette e reclinata 4,0 / 6,8 / 10,3 per fascia di livello (01214,
+     01224, 01232), 6,8 senza livello (01200), spin 9,0 senza livello
+     (01270); air bike 6,8 (01200); ellittica 5,0 / 9,0 (02048, 02049);
+     vogatore coi metri per i watt del passo (2,80 / (s/m)³: 5,0 / 7,5 /
+     11,0 / 14,0, 02071–02074), senza metri 7,3 (02070); ski erg 6,8
+     (02080); scala, stepper e climber 9,3 (02065, il più vicino); arm
+     ergometer 2,0 / 2,8 / 3,5 (02116, 02115, 02118); corda 11,0 (02068);
+   - il livello di una macchina sulla scala comune 1–20: fino a 7 leggero,
+     fino a 14 moderato, oltre vigoroso.
+3. **Il resto del tempo** al MET dei pesi con più esercizi, 3,5 (02054):
+   è la media di una sessione coi recuperi, che non si tolgono due volte.
+   Un blocco di cui la formula non sa niente (tapis roulant senza velocità
+   né metri, una macchina col nome libero) resta in quel tempo.
+4. **Dove si vedono**: sotto il cronometro durante l'allenamento, sotto il
+   tempo alla fine, sul riquadro e nella riga dei fatti del post, nel
+   riquadro condiviso. Nessun testo nuovo: «kcal» come le corse.
+5. **Esercizi nascosti, niente kcal** (scelta dell'utente del 2026-11-06,
+   «Niente kcal»): chi non vede le serie non vede le kcal, perché un
+   numero senza il cardio non sarebbe quello dell'autore. L'autore le
+   vede sempre: l'API gli dà le sue serie.
+6. **Salute** come il nuoto in piscina (TASK-400 B): con «Save», dopo il sì
+   dell'utente e col permesso, l'allenamento di forza (Apple 50, Health
+   Connect 70) con le kcal e le pause, niente percorso né distanza (i
+   metri di un blocco sono del blocco); su Apple al chiuso
+   (`HKIndoorWorkout`).
+
+**Conseguenze**: solo JavaScript, nessuna dipendenza: impronta iOS
+invariata, OTA col sì. Col battito (parte G) le kcal passano a Keytel.
 ## ADR-0335 — Le indicazioni a schermo bloccato: notifica con un OTA, Live Activity nella 1.0.2
 
 **Stato**: Proposto · 2026-11-05 · TASK-401. Scelta di prodotto
@@ -24187,6 +24234,41 @@ delega dell'utente; lista dei file dal Coordinatore.
 
 **Conseguenze**: nessuna dipendenza, nessun permesso nuovo, solo JS; il
 nome dello sport è «Swim» in ogni lingua. OTA e store col sì dell'utente.
+
+## ADR-0334, precisazione — La parte C: il post del nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-400 parte C, decisa dall'agente su
+delega dell'utente; lista dei file dal Coordinatore.
+
+1. **Un nuoto in piscina si riconosce dalla linea**: un post o un disegno
+   `swimming` senza linea (`isPoolLine`). Un nuoto in acque libere ne ha
+   sempre una. Nessun campo nuovo nel contratto.
+2. **Il post come quello della palestra** (ADR-0327 D): a fine nuotata il
+   modulo (foto, titolo, «How did it go?», persone, chi lo vede), con la
+   tessera 🏊 fra le foto e fino a dieci foto; mai ordinato, prima le foto
+   e la tessera in fondo. Si manda dopo il `PUT /me/pool-swims/{key}`,
+   dal file dei disegni in attesa, come `swimming`. L'attività resta solo
+   «Swim» (l'API vuole `swimming`) e non c'è la gara del mese.
+3. **La tessera**: «Pool swim», vasche e vasca (da `GET
+   /drawings/{id}/pool-swim`, chiesto una volta per post), metri, tempo e
+   passo/100 m; senza le vasche (un'app a cui non arrivano) restano metri,
+   tempo e passo. Nel Feed, nelle griglie del profilo, nella ricerca e
+   nell'immagine condivisa. La scheda del disegno scrive vasche × vasca e
+   passo sotto i fatti, e non offre «Draw it near me» né «Edit the
+   drawing».
+4. **L'immagine condivisa** è la tessera sola, come la palestra: niente
+   risultati, emoji, video né Strava. Dal proprio nuoto le vasche vengono
+   da `GET /me/pool-swims/{key}`; dal Feed, che non ha la chiave, da `GET
+   /drawings/{id}/pool-swim` (`PostRun.drawingId`, messo da
+   `postOfDrawing` in `feed/ActionBar.tsx`).
+5. **Nei file condivisi** poche righe: un `pool` in `PostComposer` e
+   `DrawingForm`, `alone` in `ActivityChips`, un ramo nella tessera di
+   `FeedPost`, `DrawingCard`, `DrawingsGrid`, `DrawingResultCard` e
+   `SharePost`. Il resto in `apps/mobile/src/pool/`.
+
+**Conseguenze**: nessun testo nuovo (solo i testi approvati), nessuna
+dipendenza, solo JS. Il post arriva solo alle app che dicono `pool`
+(ADR-0334, punto 5). Server, OTA e store col sì dell'utente.
 ## ADR-0310, precisazione — Un percorso di MuW non dice quanto somiglia
 
 **Stato**: Accettato · 2026-11-06 · TASK-405. Deciso dall'agente su
@@ -24421,6 +24503,53 @@ alla volta.
 - **Ricostruire le stazioni raggruppando impianti e piste dei riquadri**:
   scartata, perché in OSM impianti e piste non portano il nome della
   stazione.
+
+## ADR-0338, aggiunta — Il meteo: due quote, una stima della neve, la cache
+
+**Stato**: Attiva · 2026-11-06 · TASK-406 parte B. Deciso dall'agente su
+delega dell'utente, con la lista dei file approvata dal Coordinatore e tre
+sue richieste: la quota a MET Norway nella chiave della cache, un timeout
+breve, un campo che dica che la neve è una stima.
+
+**Contesto**: la domanda 1 («Sì, gratis + membri») vuole il meteo e la neve
+fresca prevista da MET Norway. In una stazione la valle e la cima hanno
+anche 1.500 m di differenza, e la neve o la pioggia dipendono dalla quota.
+
+**Decisione**:
+
+1. **Due quote.** `GET /ski-resorts/{id}/weather` chiede a MET Norway il
+   centro della stazione due volte: a `min_elevation_m` (`base`) e a
+   `max_elevation_m` (`top`), col parametro `altitude`. Con una quota sola
+   se ne chiede una; senza quote, una senza `altitude`.
+2. **La neve fresca è una stima.** La precipitazione delle prossime 24 ore,
+   contata solo nelle ore a 0,5 °C o meno, 1 mm d'acqua per 1 cm di neve.
+   La risposta lo dice con `snow_estimate: true`. Il testo per l'utente è
+   della parte C, da approvare.
+3. **Le ore** sono solo quelle che MET Norway dà una per una, cioè i primi
+   due giorni circa. I passi da sei ore si lasciano fuori.
+4. **La cache** sta in memoria, nel processo dell'API. La chiave è il centro
+   con 4 decimali più la quota. Una risposta vale fino al suo `Expires`,
+   tenuto fra 1 minuto e 6 ore, oppure 30 minuti se manca. Poi si richiede
+   con `If-Modified-Since`. Al più 4.000 voci: le più vecchie escono per
+   prime.
+5. **Il timeout** è di 4 secondi. Se MET Norway non risponde, si dà
+   l'ultima previsione tenuta con `stale: true`. Se non ce n'è nessuna, la
+   risposta è `503`.
+6. **Il contatto.** `SHAPEROUTE_MET_CONTACT` è facoltativo: se c'è, si
+   aggiunge al User-Agent `MuW/1.0 (https://getmuw.app)`. Sta solo nel
+   `.env` del server; `.env.example` lo ha vuoto. Nessuna dipendenza nuova
+   (urllib) e nessuna migrazione.
+
+**Alternative**:
+
+- **Una quota sola**, a metà: scartata, perché a metà la pioggia in valle e
+  la neve in cima si confondono.
+- **La cima calcolata dalla valle** con il gradiente standard (6,5 °C ogni
+  km): scartata, perché MET Norway corregge già la temperatura per la quota
+  chiesta, e lo fa meglio di una costante.
+- **La cache nel database** o su disco: scartata per ora. Dopo un riavvio
+  si richiede una volta per stazione, e MET Norway regge bene questo
+  carico.
 ## ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi
 
 **Stato**: Accettato · 2026-11-06 · TASK-380. Le scelte dell'utente, il
@@ -24594,24 +24723,28 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
    nativo, quindi l'impronta iOS non cambia e si pubblica con un OTA.
    three.js è una dipendenza nuova: l'utente ha detto sì il 2026-11-06.
 2. **I modelli** hanno una licenza scritta e nessun personaggio di altri.
-   Il candidato è il pacchetto CC0 di Quaternius (glTF, galoppo e passo).
+   Il pacchetto CC0 di Quaternius «Ultimate Animated Animals» (glTF,
+   galoppo e passo): l'utente vuole tutti i suoi 12 animali più l'elefante
+   (2026-11-06, `tasks/TASK-408.md`, scelta 7).
    L'elefante non c'è in nessun pacchetto CC0 trovato: l'utente lo vuole
    nella prima versione (2026-11-06). Si usa solo con una licenza letta e
    scritta nel task. L'utente ha scelto «Elephant Anim» di Shivoahm
    (Sketchfab, CC BY 4.0, gratis): titolo, autore, fonte, licenza e «adapted
-   by MuW» in una riga dei crediti dell'app, col testo approvato
-   dall'utente.
+   by MuW» in una riga dei crediti dell'app; il testo l'ha approvato
+   l'utente il 2026-11-06 (`tasks/TASK-408.md`, scelta 6).
 3. **Il percorso non si inventa**: il personaggio sta sul punto della
    traccia dove arriva la linea in quel fotogramma, girato nella direzione
    della strada. La camera lo segue; su un telefono lento resta ferma, e
    senza modello il video esce come oggi.
 4. **L'editor** offre righe chiuse (personaggio, stile, colori dai token,
    emoji, scene, finale). La scena resta un elenco di cose da disegnare
-   (`VideoScene`), con pezzi in più.
+   (`VideoScene`), con pezzi in più: apertura, corsa e finale in 12
+   secondi, da riordinare o spegnere (scelta 8 dell'utente, 2026-11-06).
 5. **Il prompt** si legge **sul telefono** con una tabella di parole, come
    le forme (ADR-0036): niente rete, nessun servizio AI, nessun costo per
    richiesta (scelta dell'utente). Le parole scelgono solo voci
-   dell'editor, mai coordinate o geometrie (ADR-0001).
+   dell'editor, mai coordinate o geometrie (ADR-0001). Testo del riquadro e
+   prima tabella approvati il 2026-11-06 (`tasks/TASK-408.md`, scelta 9).
 6. Cinque parti: A proposta, B personaggio 3D, C editor, D prompt, E prova
    sul telefono. Ogni parte ha la sua lista dei file approvata dal
    Coordinatore.
@@ -24627,3 +24760,73 @@ in una WebView, con MapLibre e WebCodecs, senza niente di nativo.
   un'impronta nuova per ogni ritocco. La pagina del video ha già WebGL.
 - **I modelli 3D nel layer di MapLibre senza three.js**: MapLibre GL JS non
   carica glTF da solo.
+
+## ADR-0274, precisazione B — Lo schermo di corsa: la strada nel ciclo delle posizioni, nessun testo nuovo, il server a telefono bloccato
+
+**Stato**: Accettato · **Data**: 2026-11-06 · **Task**: TASK-314 parte B
+
+Deciso dall'agente su delega dell'utente, salvo il punto 6, che è una scelta
+dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
+
+1. **La strada si chiede nel ciclo delle posizioni** (`navigation/
+   wayBackRun.ts`, chiamato da `useNavigation.ts` come `lockNotice`), non
+   da una schermata. Così:
+   - la voce passa dallo stesso `cue()`, dopo le parole del navigatore;
+   - la stessa frase va nella notifica a schermo bloccato (TASK-401 A);
+   - niente dipende da una schermata montata.
+
+   La strada sta in `Navigation.wayBack`. Il navigatore la porta da una
+   posizione all'altra ma non la legge: il rientro resta il suo (ADR-0263).
+   Banner e mappa la leggono da lì, `App.tsx` non cambia.
+2. **Quando**:
+   - alla prima posizione fuori percorso;
+   - poi solo senza strada: nessuna, lasciata dopo `OFF_FIXES` posizioni
+     oltre `OFF_ROUTE_M`, o con il rientro fuori dalla finestra;
+   - al più ogni `WAY_BACK_EVERY_S` = 15 s, una richiesta alla volta, persa
+     dopo 25 s;
+   - mai con una posizione scarsa;
+   - al rientro la richiesta in corso si annulla, e una risposta tardiva
+     non si mostra.
+
+   15 s sono meno della metà delle 6 al minuto che `/way-back` concede a
+   un telefono.
+3. **Con l'app non in primo piano si chiede subito al server**: le zone
+   passate a `wayBackOnPhoneFirst` sono vuote. La pagina del motore,
+   probabilmente sospesa a telefono bloccato, farebbe aspettare 20 s
+   (`WAY_BACK_TIMEOUT_MS`).
+4. **Il tratto mandato** è la finestra di ADR-0263 (`rejoinWindow`,
+   esportata dal navigatore, la stessa di `rejoinFor`), tagliata a 3 km
+   come `MAX_WAY_M`. Su una forma chiusa non ancora agganciata, 3 km
+   intorno al punto dei puntini.
+5. **Nessun testo nuovo**:
+   - il banner tiene «Off the route» e sotto mostra la svolta della strada
+     come quella del percorso;
+   - la voce dice le svolte con `announcement`, a `ANNOUNCE_M`;
+   - «una frase al ricalcolo» è la prossima svolta con i metri, al più una
+     volta al minuto per uscita; se è più lontana di `ANNOUNCE_M`, si ridice
+     vicino;
+   - le svolte passano da `simplifyDirections` come quelle del percorso.
+6. **Privacy** (scelta dell'utente del 2026-11-06, «Sì, aggiungi la
+   frase»):
+   - fuori percorso, la posizione esatta e il tratto davanti vanno al
+     server quando il telefono non trova la strada da solo, e il server non
+     li tiene;
+   - una frase in «Your position», nelle cinque lingue, e le pagine di
+     `site/privacy` rifatte.
+7. **TASK-401 B** (#862, nella 1.0.3): quando unisce `main`, `liveStateOf`
+   fuori percorso legge `navigation.wayBack` (`upcomingOnWay`) invece di
+   `navigation.rejoin`. Altrimenti la Live Activity direbbe «120 m NE»
+   mentre voce, banner e notifica danno la svolta. Lo cambia 401 B nel suo
+   file; il Coordinatore glielo passa.
+
+**Alternative**:
+
+- **Un hook nello schermo** (`NavigateScreen` o `App.tsx`): voce fuori dal
+  ciclo della corsa, notifica non raggiunta, `App.tsx` conteso.
+- **Richiedere ogni 15 s anche con una strada**: più richieste, e svolte
+  che cambiano sotto i piedi.
+- **Una frase nuova al ricalcolo** («Recalculating»): l'utente non l'ha
+  chiesta, e la svolta con i metri dice già dove andare.
+- **Solo il motore del telefono**: niente frase nella Privacy, ma a
+  telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
+  server.

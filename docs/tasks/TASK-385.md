@@ -121,6 +121,8 @@ Apple Salute / Health Connect come allenamento di forza.
 16. **Cosa mostra il profilo** (parte E, 2026-11-06): «I primi 5 +
     altro». Ogni esercizio dal livello 1, dal più alto; i primi cinque, gli
     altri sotto «Show more» (testo già nell'app).
+17. **Kcal con gli esercizi nascosti** (parte C, 2026-11-06): «Niente
+    kcal». Chi non vede le serie non vede le kcal; l'autore sì.
 
 ## Domande aperte
 
@@ -251,8 +253,18 @@ Questa PR (documenti): `docs/tasks/TASK-385.md` (nuovo),
   - `RunEnd.tsx` esce: vuole una traccia, la palestra ha `GymEnd.tsx`. In B
     «Save» salva l'allenamento e lo mette in «My activities»; il post nel
     Feed è la parte D, le kcal e Salute la parte C.
-- **C**: `apps/mobile/src/gym/gymKcal.ts` (nuovo); punti di registrazione in
-  `health/*Workout.ts`.
+- **C** (lista approvata dal Coordinatore il 2026-11-06; branch
+  `feat/TASK-385-c-gym-kcal`; niente server):
+  - file nuovi in `apps/mobile/src/gym/`: `gymKcal.ts`, `gymHealth.ts` e i
+    test `gymKcal.test.ts`, `gymHealth.test.ts`, `GymKcalShown.test.tsx`;
+  - righe in file esistenti: `gym/WorkoutScreen.tsx`, `GymEnd.tsx`,
+    `GymTile.tsx` (+ `GymTile.test.tsx`), `GymSharePicture.tsx`;
+    `feed/postEnergy.ts` (`gymPostEnergy`), `feed/FeedPost.tsx` (le serie
+    a `postFacts` e le kcal al riquadro; dopo la #898);
+    `health/appleWorkout.ts` (`HKIndoorWorkout` per la palestra);
+    `health/healthConnectWorkout.ts` non cambia;
+  - documenti: questo file, `docs/DECISIONS.md` (precisazione),
+    `docs/STATUS.md` (righe proprie), `docs/sports/gym.md`.
 - **D** (lista approvata dal Coordinatore il 2026-11-05; branch
   `feat/TASK-385-d-gym-post`):
   - file nuovi in `apps/mobile/src/gym/`: `mainExercises.ts`,
@@ -373,3 +385,11 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
   misurata dal Coordinatore su copia pulita. Il server (`gym_levels`, senza
   migrazione) va col sì dell'utente, col comando del Coordinatore; poi
   l'OTA col sì. Prossima: C (kcal e Salute), poi F (classifica).
+- 2026-11-06: parte C scritta (ADR-0327, precisazione C): le kcal sul
+  telefono, il cardio con la formula della macchina e il resto al MET dei
+  pesi, durante, alla fine, nel post e nel riquadro condiviso; con «Save»
+  l'allenamento di forza in Salute. Scelta dell'utente: «Niente kcal» con
+  gli esercizi nascosti. Solo JavaScript; OTA col sì. Prossima: F.
+- 2026-11-06: parte C in `main` (#904, 756d6f83); impronta iOS 6f8bba4c
+  misurata dal Coordinatore. Niente server; OTA col sì dell'utente.
+  Prossima: F (classifica mensile), lista prima del codice.

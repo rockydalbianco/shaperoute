@@ -14,6 +14,9 @@ type Props = {
   /** Its main exercises, by name (mainExercises; TASK-385 part D): none
    * when they are hidden or not here yet. */
   exercises?: readonly string[];
+  /** Its energy, "184 kcal" (gymKcal.ts; TASK-385 part C): none when
+   * its sets are hidden or not here yet. */
+  kcal?: string | null;
 };
 
 /**
@@ -21,11 +24,17 @@ type Props = {
  * ADR-0327): the MuW yellow made by the app, with 🏋️, «Gym» and its time.
  * The yellow is the user's choice for this tile («Prima foto, se no
  * riquadro», 2026-11-04), the text on it `onAccent`. Part D adds the main
- * exercises, and it is the picture of the post shared too; parts C and G
- * add the energy and the heart rate. A screen reader hears the card's
+ * exercises, and it is the picture of the post shared too; part C the
+ * energy under the time, part G will add the heart rate. A screen reader hears the card's
  * words, not the tile's.
  */
-export function GymTile({ width, height, durationS, exercises = [] }: Props) {
+export function GymTile({
+  width,
+  height,
+  durationS,
+  exercises = [],
+  kcal = null,
+}: Props) {
   const small = durationS === undefined;
   return (
     <View
@@ -39,6 +48,11 @@ export function GymTile({ width, height, durationS, exercises = [] }: Props) {
         <>
           <Text style={styles.name}>{t(GYM.name)}</Text>
           <Text style={styles.time}>{durationLabel(durationS * 1000)}</Text>
+          {kcal !== null && (
+            <Text style={styles.name} testID="gym-tile-kcal">
+              {kcal}
+            </Text>
+          )}
           {exercises.length > 0 && (
             <Text
               style={styles.exercises}

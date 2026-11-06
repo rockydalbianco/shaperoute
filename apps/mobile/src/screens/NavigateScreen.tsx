@@ -1,4 +1,4 @@
-import type { Activity } from "@shaperoute/shared-types";
+import type { Activity, Direction } from "@shaperoute/shared-types";
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -11,6 +11,7 @@ import { wordsOf } from "../voice/words";
 import { compassPoint, compassWords, headingDeg, share } from "../navigation/runStats";
 import { emptyTrack, type Track } from "../navigation/trackRecorder";
 import type { NavigationState } from "../navigation/useNavigation";
+import { upcomingOnWay } from "../navigation/wayBackShown";
 import {
   color,
   fontSize,
@@ -82,19 +83,19 @@ export function NavigationBanner({ state }: { state: NavigationState }) {
 }
 
 function NextTurn({ navigation }: { navigation: Navigation }) {
-  // The way to the turn in the app's units (TASK-182): metres, or feet,
-  // and its words in the app's language (TASK-210): the voice's phrasebook
-  // writes the banner too, so a street is said and shown the same way.
   const units = useUnits();
-  const words = wordsOf(useLanguage(), units);
   if (navigation.offRoute) {
-    // How far the route is and which way, as the dotted line on the map
-    // goes to it (TASK-303).
+    // The next turn of the way back on the streets, as the route's turn is
+    // shown (TASK-314); without one, how far the route is and which way, as
+    // the dotted line on the map goes to it (TASK-303).
     const rejoin = navigation.rejoin ?? null;
+    const turn = navigation.wayBack ? upcomingOnWay(navigation.wayBack) : null;
     return (
       <View style={[styles.box, styles.off]} accessibilityLiveRegion="polite">
         <Text style={styles.instruction}>{t("Off the route")}</Text>
-        {rejoin === null ? (
+        {turn !== null ? (
+          <Turn {...turn} />
+        ) : rejoin === null ? (
           <Text style={styles.message}>{t("Head back to the yellow line.")}</Text>
         ) : (
           <>
@@ -128,25 +129,48 @@ function NextTurn({ navigation }: { navigation: Navigation }) {
   }
   return (
     <View style={styles.box} accessibilityLiveRegion="polite">
+      <Turn {...next} />
+    </View>
+  );
+}
+
+/** A turn and how far it is, with the ones read with it: of the route, or
+ * of the way back to it (TASK-314). */
+function Turn({
+  direction,
+  inM,
+  then,
+}: {
+  direction: Direction;
+  inM: number;
+  then: Direction[];
+}) {
+  // The way to the turn in the app's units (TASK-182): metres, or feet,
+  // and its words in the app's language (TASK-210): the voice's phrasebook
+  // writes the banner too, so a street is said and shown the same way.
+  const units = useUnits();
+  const words = wordsOf(useLanguage(), units);
+  return (
+    <>
       <View style={styles.row}>
         <View style={styles.badge}>
           <Text style={styles.arrow} accessibilityElementsHidden>
-            {ARROWS[next.direction.turn]}
+            {ARROWS[direction.turn]}
           </Text>
         </View>
         <View style={styles.words}>
-          <Text style={styles.distance}>{distanceLabel(next.inM, units)}</Text>
-          <Text style={styles.instruction}>{words.direction(next.direction)}</Text>
+          <Text style={styles.distance}>{distanceLabel(inM, units)}</Text>
+          <Text style={styles.instruction}>{words.direction(direction)}</Text>
         </View>
       </View>
-      {next.then.length > 0 && (
+      {then.length > 0 && (
         <Text style={styles.message}>
           {t("Then {directions}", {
-            directions: lower(words.announcement(next.then, null)),
+            directions: lower(words.announcement(then, null)),
           })}
         </Text>
       )}
-    </View>
+    </>
   );
 }
 

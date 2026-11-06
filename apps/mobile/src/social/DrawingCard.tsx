@@ -8,6 +8,8 @@ import { useWinnerDrawingId } from "../contest/contestKept";
 import { WinnerBadge } from "../contest/WinnerBadge";
 import { ExploreStart } from "../explore/ExploreStart";
 import { GymDetail } from "../gym/GymDetail";
+import { PoolFigures } from "../pool/PoolFigures";
+import { isPoolLine } from "../pool/PoolTile";
 import type { StartView } from "../explore/useStartDirections";
 import { t } from "../i18n";
 import { ImportedMark } from "../imports/ImportedMark";
@@ -97,6 +99,8 @@ export function DrawingCard({
   const tags = drawing.tags ?? [];
   // A workout at the gym has no distance: its time (TASK-385 B0).
   const gym = isTrackless(drawing.activity);
+  // A swim in a pool: no line to draw again nor edit (TASK-400 part C).
+  const pool = isPoolLine(drawing.activity, drawing.track);
   const facts = [
     ...(drawing.activity === undefined ? [] : [activityName(drawing.activity)]),
     gym
@@ -159,6 +163,14 @@ export function DrawingCard({
       {drawing.activity === "skiing" && <SkiNamesList drawingId={drawing.id} />}
       {/* The exercises of a workout at the gym (TASK-385 B0). */}
       {gym && <GymDetail drawingId={drawing.id} />}
+      {/* The lengths, the pool and the pace of a swim in a pool (TASK-400 C). */}
+      {pool && (
+        <PoolFigures
+          drawingId={drawing.id}
+          metres={drawing.distance_m}
+          durationS={drawing.duration_s}
+        />
+      )}
       {/* The reactions and the actions, after a hairline. */}
       <Hairline />
       <DrawingReactions
@@ -198,12 +210,12 @@ export function DrawingCard({
           textStyle={styles.buttonText}
         />
       )}
-      {onDrawAgain !== undefined && !isOnSnow(drawing.activity) && !gym && (
+      {onDrawAgain !== undefined && !isOnSnow(drawing.activity) && !gym && !pool && (
         <Tap style={styles.button} onPress={onDrawAgain} accessibilityRole="button">
           <Text style={styles.buttonText}>{t("Draw it near me")}</Text>
         </Tap>
       )}
-      {onEditDrawing !== undefined && !isOnSnow(drawing.activity) && !gym && (
+      {onEditDrawing !== undefined && !isOnSnow(drawing.activity) && !gym && !pool && (
         <Tap style={styles.button} onPress={onEditDrawing} accessibilityRole="button">
           <Text style={styles.buttonText}>{t("Edit the drawing")}</Text>
         </Tap>

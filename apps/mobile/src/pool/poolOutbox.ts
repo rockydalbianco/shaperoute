@@ -1,5 +1,6 @@
 import type { PoolSwimRequest } from "@shaperoute/shared-types";
 
+import type { DrawingChoice } from "../api/drawings";
 import { keptList } from "../storage/keptList";
 
 /**
@@ -19,6 +20,10 @@ export type PoolWaiting = {
   owner: number;
   key: string;
   request: PoolSwimRequest;
+  /** Its post, as the end of the swim chose it (TASK-400 part C): it goes
+   * once the API has the swim, as a workout's. Its photos and their order
+   * wait in their own files. */
+  drawing?: DrawingChoice;
   /** The API will not take it (422, or 409 for a key of a run): it is not
    * sent again. */
   refused?: { code: string; message: string };

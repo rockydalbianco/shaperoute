@@ -326,6 +326,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `ready` vero per Gravel e MTB, col «Sì, accendili» dell'utente; anche
   nei build dello store, nella ricerca e nel modulo per pubblicare. Solo
   JavaScript. Prossimo: la prova sul telefono, poi la chiusura.
+  **Parte C in `main`** (#897, `22454109`, 2026-11-06): impronta iOS
+  `6f8bba4c` invariata. Anteprima all'utente a CI di `main` verde,
+  produzione col suo «ok produzione». Prossimo: la prova sul telefono
+  (si sceglie, si pedala, si salva, va in Salute), poi la chiusura.
 
 - **TASK-380 — Roller, i pattini in linea** (2026-11-06; numeri dal
   Coordinatore, ADR-0324 **proposto**). Parte 0, solo documenti: misurate
@@ -542,6 +546,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   C (kcal e Salute), F (classifica).
   Parte E in `main` (#888, 9cd295b1), impronta iOS 6f8bba4c invariata;
   server col sì dell'utente (comando dal Coordinatore), poi OTA col sì.
+  Parte C (kcal e Salute) in PR da `feat/TASK-385-c-gym-kcal`: le kcal
+  sul telefono (cardio con la formula della macchina, il resto al MET dei
+  pesi) durante, alla fine, nel post e nel riquadro condiviso; con «Save»
+  l'allenamento di forza in Salute / Health Connect. Scelta dell'utente
+  del 2026-11-06: «Niente kcal» se gli esercizi sono nascosti. Solo
+  JavaScript; OTA col sì. Prossima: F (classifica).
+  Parte C in `main` (#904, 756d6f83), impronta iOS 6f8bba4c misurata dal
+  Coordinatore; OTA col sì dell'utente. Prossima: F (classifica).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo
@@ -738,6 +750,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     (aggiunta ad ADR-0338). Per andare online, comandi dell'utente col suo
     sì: il server con la 0054, poi il download del file e l'import.
     Prossimo: la parte B, il meteo da MET Norway.
+  - 2026-11-06: A in `main` (#881). **Parte B**: `GET
+    /ski-resorts/{id}/weather` dà il meteo della stazione in valle e in
+    cima per le prossime 24 ore, da MET Norway. La neve fresca è una stima
+    (`snow_estimate: true`). Il server chiede con le coordinate della
+    stazione e la quota, e tiene le risposte in cache fino al loro
+    `Expires` (aggiunta ad ADR-0338). Niente migrazioni. Per andare online:
+    il deploy, e se si vuole `SHAPEROUTE_MET_CONTACT` nel `.env` del server,
+    col sì dell'utente. Prossimo: la domanda 2 (il modello), poi la parte
+    C, la ricerca «Ski» nell'app.
 - **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
   percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
   Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un
@@ -747,8 +768,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   costi, letto dal telefono con una tabella di parole. Proposta: three.js
   nella pagina del video (niente di nativo) e modelli CC0: sì dell'utente
   il 2026-11-06; l'elefante nella prima versione, «Elephant Anim» di
-  Shivoahm (Sketchfab, CC BY 4.0, gratis). Prossimo: il testo della riga
-  dei crediti (domanda 2c, `tasks/TASK-408.md`).
+  Shivoahm (Sketchfab, CC BY 4.0, gratis); la riga dei crediti approvata il
+  2026-11-06 (scelta 6); tutti i 13 personaggi, i 12 di Quaternius più
+  l'elefante (scelta 7); 12 secondi in tre pezzi, apertura, corsa e finale,
+  da riordinare o spegnere (scelta 8); il testo del prompt e la prima
+  tabella di parole (scelta 9); i testi in cinque lingue (scelta 10).
+  Domande finite. Prossimo: la parte B (il personaggio 3D), con la lista
+  dei file al Coordinatore (`tasks/TASK-408.md`).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta
@@ -1573,6 +1599,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dopo Apple, con il sì dell'utente; poi va guardato nei log quello che
   dice il task file. La parte B parte da qui, in una sessione sua, con i
   «File toccati» al Coordinatore prima del codice.
+  **Parte B pronta il 2026-11-06** (branch `feat/TASK-314-b-way-back-run`, lista approvata
+  dal Coordinatore): fuori percorso, a piedi o in bici, la corsa chiede la strada sulle vie
+  (telefono, poi server; a telefono bloccato subito il server), al più ogni 15 s. La mappa
+  mette i puntini lungo le vie, il banner la prossima svolta sotto «Off the route», la voce
+  e la notifica le svolte. Senza strada, i puntini di TASK-303. Nessun testo nuovo
+  nell'app; una frase nella Privacy (cinque lingue e `site/privacy`), approvata
+  dall'utente. Per TASK-401 B: la Live Activity legga `navigation.wayBack` (task file,
+  «ADR-0274, precisazione B»). Solo JS; impronta iOS dal Coordinatore. Non provata nel
+  simulatore. **Chiuso il 2026-11-06** nella PR della parte B; vedi «Completato».
 - **TASK-313 — «Draw it near me»: la stessa forma in un altro posto**
   (ADR-0273; richiesta dell'utente del 2026-10-27, «Sì, così» alla
   proposta; numero e ordine dal Coordinatore, prima di TASK-309 B). Branch
@@ -3192,6 +3227,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in palestra i capi non si segnano; si segnano dopo, dalla scheda in «My
   activities». Prossimo: il Coordinatore misura l'impronta iOS e unisce la PR;
   poi, col sì dell'utente, l'OTA e il sito.
+  **Chiuso il 2026-11-06**: parte B in `main` (#894, `fd6a117d`), impronta iOS
+  `6f8bba4c` invariata; vedi «Completato».
 - **TASK-397 — Il VO₂ max nel profilo pubblico** (2026-11-05; numeri dal
   Coordinatore, ADR-0332; richiesta dell'utente). Proposta, solo documenti.
   Scelte dell'utente: il valore di Apple Salute / Health Connect quando c'è,
@@ -3278,9 +3315,47 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   verde col job watch-core). Con lei «Swim» anche nei file dell'orologio
   (rigenerati con i loro script). Prossimo: la parte C (il post) da
   `feat/TASK-400-c-pool-post`, dopo TASK-394 B per `FeedPost.tsx`.
+  Parte C (il post) da `feat/TASK-400-c-pool-post`: a fine nuotata il
+  modulo del post come la palestra (foto, chi lo vede, solo «Swim», niente
+  gara); la tessera 🏊 con vasche, metri, tempo e passo nel Feed, nella
+  scheda, nelle griglie, nella ricerca e nell'immagine condivisa
+  (ADR-0334, precisazione C). Entra dopo TASK-394 B. Poi: server (A), OTA
+  e store col sì dell'utente.
+  **Chiuso il 2026-11-06**: C in main (#898, 1939b121); vedi «Completato».
 
 ## Completato
 
+- **TASK-314 — La strada per tornare sul percorso, sulle vie** (2026-11-06; ADR-0274 e la sua
+  «precisazione B»). Parte A #588 (motore, `/way-back`, motore sul telefono); parte B nella
+  sua PR: lo schermo di corsa chiede la strada fuori percorso e la mostra sulla mappa, nel
+  banner, a voce e a schermo bloccato; senza strada i puntini di TASK-303. Una frase nuova
+  nella Privacy, approvata dall'utente. Restano l'OTA e la pubblicazione del sito col sì
+  dell'utente, App Privacy da guardare, la prova su una corsa vera, e in 401 B la Live
+  Activity su `navigation.wayBack`. `tasks/TASK-314.md`.
+- **TASK-400 — Nuoto in piscina** (2026-11-06; ADR-0334 con le precisazioni A, B e C). Lo
+  sport si chiama «Swim»: in «Draw» «Open water» o «Pool»; in piscina la vasca (25, 50 o
+  «Other» 10–100 m), il cronometro con «Pause», «How many lengths?» con la stima, vasche,
+  metri, tempo e passo/100 m; salvato con `PUT /me/pool-swims/{key}`, in Salute come nuoto in
+  piscina (senza la lunghezza della vasca: limite della libreria); il post senza mappa come la
+  palestra, solo alle app che dicono `pool`. A #871 (server già a cab53f51 con `0053`), B #880,
+  C #898 (1939b121); impronta iOS `6f8bba4c` invariata. Preview pubblicata dal Coordinatore
+  (gruppo 71b18ba0). Resta l'OTA di produzione col sì dell'utente. `tasks/TASK-400.md`.
+
+- **TASK-394 — I capi che indossi: tag sui propri post con il link al negozio**
+  (2026-11-06; idea dell'utente, ADR-0333 e la sua «precisazione B»). Parte A
+  (API, migrazione `0050` già sul server) #844; parte B (app) #894
+  (`fd6a117d`). Cosa fa:
+  - l'iscritto segna sulle foto dei suoi post capo, marca, modello e link,
+    dal compositore a fine corsa o in «My activities»;
+  - chi guarda apre i puntini con la gruccia (nel Feed; nel disegno aperto
+    anche col tocco sulla foto) e da lì il negozio nel browser;
+  - solo l'autore vede i totali.
+
+  Help, Termini e Privacy nelle cinque lingue, datati 6 novembre 2026. Solo JS,
+  impronta `6f8bba4c` invariata. Restano, col sì dell'utente: l'OTA, il sito
+  della privacy e la chiave di Web Risk (fino ad allora si aprono solo i
+  negozi di Style). Limite: a fine allenamento in palestra niente capi.
+  `tasks/TASK-394.md`.
 - **TASK-405 — Un percorso di MuW non dice «looks 100% like it»** (2026-11-06; numero dal
   Coordinatore, trovato con la #868 di TASK-365). Aperto dal Feed, il foglio dice solo titolo e
   città: `muwCardRoute` mette `scored: false` su `RecommendedRoute` e `ExploredCard` lascia

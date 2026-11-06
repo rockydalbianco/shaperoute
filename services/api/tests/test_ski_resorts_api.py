@@ -17,6 +17,7 @@ from test_personal_bests import (
     WallClock,
     database,  # noqa: F401  (the fixture of the bests' tests)
 )
+from test_resort_weather import Clock, FakeMet
 
 from shaperoute_api import resort_import
 from shaperoute_api.access import KEY_HEADER, Access, protect
@@ -25,6 +26,7 @@ from shaperoute_api.activities import PlaceNames
 from shaperoute_api.app import create_app
 from shaperoute_api.db import DATABASE_VARIABLE, Database
 from shaperoute_api.resort_import import resorts_of
+from shaperoute_api.resort_weather import ResortWeather, WeatherUnavailable
 from shaperoute_api.ski_resorts import (
     MAX_FOUND,
     Resort,
@@ -44,13 +46,16 @@ def _resorts() -> list[Resort]:
     return resorts_of(features).resorts
 
 
-def _app(database: Database) -> TestClient:  # noqa: F811
+def _app(
+    database: Database,  # noqa: F811
+    met: FakeMet | None = None,
+) -> TestClient:
     app = create_app(
         FileSource(Path("unused.graphml")),
         accounts=Accounts(database, now=WallClock(), hasher=FAST_HASHER),
         run_places=PlaceNames(None),
     )
-    install_ski_resorts(app)
+    install_ski_resorts(app, ResortWeather(met or FakeMet(), now=Clock()))
     return TestClient(app)
 
 
@@ -190,7 +195,12 @@ def test_behind_the_api_key_as_every_path(database: Database) -> None:  # noqa: 
     install_ski_resorts(app)
     protect(app, Access(key=KEY))
     client = TestClient(app)
-    for path in ("/ski-resorts?q=Hill", "/ski-resorts/aaa1", "/ski-resorts/nope"):
+    for path in (
+        "/ski-resorts?q=Hill",
+        "/ski-resorts/aaa1",
+        "/ski-resorts/nope",
+        "/ski-resorts/aaa1/weather",
+    ):
         assert client.get(path).status_code == 401, path
     assert (
         client.get("/ski-resorts?q=Hill", headers={KEY_HEADER: KEY}).status_code == 200
@@ -230,3 +240,63 @@ def test_the_command_imports_the_file(
     assert resort_import.main(["--geojson", str(AREAS), "--clean"]) == 0
     assert "removed 1" in capsys.readouterr().out
     assert _count(database) == 4
+
+
+def _weather_client(database: Database, met: FakeMet) -> TestClient:  # noqa: F811
+    with database.connect() as conn:
+        save_resorts(conn, _resorts(), NOW)
+    return _app(database, met)
+
+
+def test_the_weather_at_the_base_and_at_the_top(
+    database: Database,  # noqa: F811
+) -> None:
+    met = FakeMet()
+    client = _weather_client(database, met)
+    answer = client.get("/ski-resorts/aaa1/weather")
+    assert answer.status_code == 200
+    body = answer.json()
+    # MET Norway is asked for the resort's centre, with each altitude.
+    assert met.asked == [(46.55, 11.75, 1200, None), (46.55, 11.75, 2500, None)]
+    assert body["resort_id"] == "aaa1"
+    assert body["attribution"] == "MET Norway"
+    assert body["stale"] is False
+    for part, altitude in (("base", 1200), ("top", 2500)):
+        weather = body[part]
+        assert weather["altitude_m"] == altitude
+        assert weather["fresh_snow_cm"] == 5.0
+        assert weather["snow_estimate"] is True
+        assert len(weather["hours"]) == 24
+        assert weather["hours"][0] == {
+            "time": "2026-11-06T12:00:00Z",
+            "temperature_c": 2.0,
+            "wind_ms": 3.0,
+            "symbol": "cloudy",
+            "precipitation_mm": 0.0,
+        }
+    # Asked again: from what was kept, MET Norway is not asked.
+    assert client.get("/ski-resorts/aaa1/weather").status_code == 200
+    assert len(met.asked) == 2
+
+
+def test_a_resort_without_altitudes_has_one_forecast(
+    database: Database,  # noqa: F811
+) -> None:
+    met = FakeMet()
+    body = _weather_client(database, met).get("/ski-resorts/ccc3/weather").json()
+    assert met.asked == [(60.0, 10.5, None, None)]
+    assert body["base"]["altitude_m"] is None
+    assert body["top"] is None
+
+
+def test_no_resort_404_and_no_weather_503(database: Database) -> None:  # noqa: F811
+    met = FakeMet([WeatherUnavailable("timed out")])
+    client = _weather_client(database, met)
+    missing = client.get("/ski-resorts/nope/weather")
+    assert missing.status_code == 404
+    assert met.asked == []
+    down = client.get("/ski-resorts/bbb2/weather")
+    assert down.status_code == 503
+    assert down.json()["error"]["message"] == (
+        "The weather is not available now; try again later."
+    )

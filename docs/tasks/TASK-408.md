@@ -125,13 +125,69 @@ oggi:
    modello è stato cambiato (MuW lo converte e ne riduce le texture): una
    riga nei crediti dell'app, testo nuovo da approvare (domanda 2c, vincolo
    del Coordinatore).
+6. **La riga dei crediti** (2026-11-06): «Sì, questa». Un punto nuovo in
+   «Terms» › «Services of others» (`about/content/*.ts`, cinque lingue, più
+   la pagina del sito). Testo approvato, in inglese: «The 3D animals in the
+   video come from Quaternius (CC0); the elephant is "Elephant Anim" by
+   Shivoahm on Sketchfab (CC BY 4.0), adapted by MuW.» In italiano: «Gli
+   animali 3D del video vengono da Quaternius (CC0); l'elefante è "Elephant
+   Anim" di Shivoahm su Sketchfab (CC BY 4.0), adattato da MuW.» Tedesco,
+   spagnolo e francese con la domanda 6. Entra con la parte B, insieme al
+   modello.
+7. **Quali personaggi** (2026-11-06): «Tutti i 13». I 12 animali del
+   pacchetto Quaternius «Ultimate Animated Animals» (luglio 2021, CC0, glTF;
+   lista letta il 2026-11-06 nella cartella pubblica linkata da
+   https://quaternius.com/packs/ultimateanimatedanimals.html, senza
+   scaricare): Alpaca, Bull, Cow, Deer, Donkey, Fox, Horse, Horse_White,
+   Husky, ShibaInu, Stag, Wolf; più l'elefante di Shivoahm. Con «None» sono
+   14 caselle: la riga «Character» scorre di lato. Il peso dei file e i nomi
+   delle animazioni si leggono nella parte B, scaricando la cartella glTF col
+   sì dell'utente (nome, fonte, misura).
+8. **Le scene e il finale** (2026-11-06): «Sì, così». Il video resta di
+   **12 secondi**, in tre pezzi:
+   - **Apertura** (0–3 s): il disegno 2D che si traccia sulla mappa piatta
+     (come oggi), il titolo, o niente; poi un taglio o una dissolvenza verso
+     il 3D.
+   - **La corsa** (3–9 s): l'animale in 3D con la camera dietro, la camera
+     che gira intorno al percorso (come oggi), o la linea 2D con l'animale
+     sopra; le emoji spuntano dove passa.
+   - **Finale** (9–12 s): i numeri, il disegno intero, il cuore, o tutti e
+     tre; le emoji della fine; il marchio MuW sempre per ultimo.
+   I pezzi si riordinano o si spengono, almeno uno resta acceso; se uno è
+   spento gli altri si allungano e il video dura sempre 12 secondi. Tutto
+   viene dalla traccia vera.
+9. **Il prompt** (2026-11-06): «Sì, approvo». Testi approvati, in inglese
+   (le altre lingue con la domanda 6):
+   - titolo del campo: «Describe your video»;
+   - esempio dentro il campo: «a horse at night, fireworks at the end»;
+   - riga sotto: «An animal, colours, emoji, the ending. Read on your
+     phone.»
+   Le parole scelgono solo voci dell'editor, che poi si cambiano a mano;
+   una parola sconosciuta si salta senza errore; niente rete. La prima
+   tabella, in it/en/de/es/fr (esempi in italiano):
+   - **Personaggio**: i 13 nomi con i sinonimi (cavallo, cavallo bianco,
+     elefante, cervo, capriolo, volpe, lupo, cane/husky, shiba, mucca, toro,
+     asino, alpaca); «nessuno» → None.
+   - **Stile**: notte, giorno, 2D/piatto, 3D.
+   - **Colore della linea**: giallo, azzurro, rosa, verde, bianco (i cinque
+     dei token).
+   - **Emoji**: fuochi d'artificio 🎆, stelle ⭐, cuore ❤️, fuoco 🔥, fulmine
+     ⚡, coriandoli 🎉, trofeo 🏆; con «alla fine» al finale, altrimenti lungo
+     il percorso.
+   - **Scene**: «senza apertura»; «da dietro»/«segui» → camera dietro;
+     «gira»/«intorno» → camera che gira.
+   - **Finale**: numeri, disegno, cuore, «tutto».
+   La tabella è un file dell'app: parole nuove arrivano con un OTA.
+10. **I testi in cinque lingue** (2026-11-06): «Sì, approvo». Sono nella
+   sezione «Testi approvati» qui sotto, compresa la riga dei crediti in
+   tedesco, spagnolo e francese.
 
 ## Domande aperte (una alla volta)
 
 1. ~~three.js e i modelli CC0~~: risposta sopra (scelta 3).
 2. ~~L'elefante~~: risposta sopra (scelta 4).
 2b. ~~Quale elefante~~: risposta sopra (scelta 5).
-2c. **La riga dei crediti** — la prossima. Proposta: un punto nuovo in
+2c. ~~La riga dei crediti~~: risposta sopra (scelta 6). Era la proposta: un punto nuovo in
    «Terms» › «Services of others» (`about/content/*.ts`, cinque lingue, più
    la pagina del sito), in inglese: «The 3D animals in the video come from
    Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm on
@@ -150,15 +206,92 @@ oggi:
      ridurre per il telefono. Da comprare l'utente stesso, dopo aver letto
      se la licenza permette un file che l'app scarica nella WebView.
    Nessun elefante animato CC0 trovato.
-3. **Quali personaggi** nella riga, e quanti. Proposta: 5 o 6, scelti dalla
-   tavola dopo aver visto il pacchetto.
-4. **Le scene e il finale**: quali pezzi si offrono, e se la durata resta
-   12 secondi. Proposta: tre pezzi fissi da scegliere e riordinare, 12
-   secondi.
-5. **Il prompt**: cosa si promette nel testo del riquadro, e la prima
-   tabella di parole. Proposta: «Describe your video: an animal, colours,
-   emoji, the ending», con le parole di ogni voce dell'editor.
-6. **I testi** in cinque lingue.
+3. ~~Quali personaggi~~: risposta sopra (scelta 7). Era la proposta: sei
+   (Horse, l'elefante, Stag, Fox, Wolf, Husky) più «None».
+4. ~~Le scene e il finale~~: risposta sopra (scelta 8).
+5. ~~Il prompt~~: risposta sopra (scelta 9).
+6. ~~I testi in cinque lingue~~: risposta sopra (scelta 10). Le
+   domande sono finite: prossima la parte B.
+
+## Testi approvati (scelta 10)
+
+Riusati senza cambiarli, perché l'app li ha già: «Style», «Night», «Day»,
+«3D», «Heart», «Title», «Emoji», «Done», «Video».
+
+### Il foglio «Edit video»
+
+| en | it | de | es | fr |
+|---|---|---|---|---|
+| Edit video | Modifica video | Video bearbeiten | Editar vídeo | Modifier la vidéo |
+| Character | Personaggio | Figur | Personaje | Personnage |
+| No animal | Nessun animale | Kein Tier | Ningún animal | Aucun animal |
+| 2D | 2D | 2D | 2D | 2D |
+| Line colour | Colore della linea | Linienfarbe | Color de la línea | Couleur de la ligne |
+| Along the way | Lungo il percorso | Unterwegs | Por el camino | En chemin |
+| At the end | Alla fine | Am Ende | Al final | À la fin |
+| Scenes | Scene | Szenen | Escenas | Scènes |
+| Opening | Apertura | Anfang | Inicio | Ouverture |
+| The route | Il percorso | Die Strecke | El recorrido | Le parcours |
+| Ending | Finale | Ende | Final | Fin |
+| Drawing in 2D | Disegno in 2D | Zeichnung in 2D | Dibujo en 2D | Dessin en 2D |
+| Nothing | Niente | Nichts | Nada | Rien |
+| Cut | Taglio | Schnitt | Corte | Coupe |
+| Fade | Dissolvenza | Überblendung | Fundido | Fondu |
+| Camera behind | Camera dietro | Kamera dahinter | Cámara detrás | Caméra derrière |
+| Camera around | Camera intorno | Kamera rundherum | Cámara alrededor | Caméra autour |
+| Line in 2D | Linea in 2D | Linie in 2D | Línea en 2D | Ligne en 2D |
+| Numbers | Numeri | Zahlen | Números | Chiffres |
+| Whole drawing | Disegno intero | Ganze Zeichnung | Dibujo entero | Dessin entier |
+| All three | Tutti e tre | Alle drei | Los tres | Les trois |
+| At least one scene stays on. | Almeno una scena resta accesa. | Mindestens eine Szene bleibt an. | Al menos una escena sigue activa. | Au moins une scène reste active. |
+
+### I colori (nomi per VoiceOver)
+
+| en | it | de | es | fr |
+|---|---|---|---|---|
+| Yellow | Giallo | Gelb | Amarillo | Jaune |
+| Light blue | Azzurro | Hellblau | Celeste | Bleu clair |
+| Pink | Rosa | Rosa | Rosa | Rose |
+| Green | Verde | Grün | Verde | Vert |
+| White | Bianco | Weiß | Blanco | Blanc |
+
+### I personaggi
+
+| en | it | de | es | fr |
+|---|---|---|---|---|
+| Horse | Cavallo | Pferd | Caballo | Cheval |
+| White horse | Cavallo bianco | Schimmel | Caballo blanco | Cheval blanc |
+| Elephant | Elefante | Elefant | Elefante | Éléphant |
+| Stag | Cervo | Hirsch | Ciervo | Cerf |
+| Deer | Capriolo | Reh | Corzo | Chevreuil |
+| Fox | Volpe | Fuchs | Zorro | Renard |
+| Wolf | Lupo | Wolf | Lobo | Loup |
+| Husky | Husky | Husky | Husky | Husky |
+| Shiba Inu | Shiba Inu | Shiba Inu | Shiba Inu | Shiba Inu |
+| Cow | Mucca | Kuh | Vaca | Vache |
+| Bull | Toro | Stier | Toro | Taureau |
+| Donkey | Asino | Esel | Burro | Âne |
+| Alpaca | Alpaca | Alpaka | Alpaca | Alpaga |
+
+### Il prompt
+
+| en | it | de | es | fr |
+|---|---|---|---|---|
+| Describe your video | Descrivi il tuo video | Beschreibe dein Video | Describe tu vídeo | Décris ta vidéo |
+| a horse at night, fireworks at the end | un cavallo di notte, fuochi d'artificio alla fine | ein Pferd bei Nacht, Feuerwerk am Ende | un caballo de noche, fuegos artificiales al final | un cheval la nuit, un feu d'artifice à la fin |
+| An animal, colours, emoji, the ending. Read on your phone. | Un animale, i colori, le emoji, il finale. Letto sul telefono. | Ein Tier, Farben, Emoji, das Ende. Auf dem Handy gelesen. | Un animal, colores, emojis, el final. Se lee en el móvil. | Un animal, des couleurs, des emojis, la fin. Lu sur ton téléphone. |
+
+### La riga dei crediti (Termini › «Services of others»)
+
+- **en** (approvata): The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm on Sketchfab (CC BY 4.0), adapted by MuW.
+- **it** (approvata): Gli animali 3D del video vengono da Quaternius (CC0); l'elefante è "Elephant Anim" di Shivoahm su Sketchfab (CC BY 4.0), adattato da MuW.
+- **de**: Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm auf Sketchfab (CC BY 4.0), angepasst von MuW.
+- **es**: Los animales 3D del vídeo vienen de Quaternius (CC0); el elefante es «Elephant Anim» de Shivoahm en Sketchfab (CC BY 4.0), adaptado por MuW.
+- **fr**: Les animaux 3D de la vidéo viennent de Quaternius (CC0) ; l'éléphant est « Elephant Anim » de Shivoahm sur Sketchfab (CC BY 4.0), adapté par MuW.
+
+Note: «No animal» al posto di «None», perché «None» c'è già al femminile
+(«Nessuna»). Il foglio ha solo «Done»: il video si esporta dal tasto che
+c'è già in «Share your run», quindi niente «Export video».
 
 ## Le parti
 

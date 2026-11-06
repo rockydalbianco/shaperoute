@@ -14,13 +14,16 @@ test("a walk is not offered until «Walk» is ready, every other sport is", () =
   expect(ALL_SPORTS.find((sport) => sport.id === "walk")?.ready).toBe(false);
   expect(activityOffered("walking")).toBe(false);
   expect(SEARCH_ACTIVITIES).not.toContain("walking");
-  // And the hike since «Hike» is ready (TASK-377).
+  // And the hike since «Hike» is ready (TASK-377), gravel and MTB since
+  // «Gravel» and «MTB» are (TASK-378).
   expect(SEARCH_ACTIVITIES).toEqual([
     "running",
     "cycling",
     "paddling",
     "swimming",
     "hiking",
+    "mountain_biking",
+    "gravel_biking",
   ]);
   const ready = ALL_SPORTS.map((sport) =>
     sport.id === "walk" ? { ...sport, ready: true } : sport,

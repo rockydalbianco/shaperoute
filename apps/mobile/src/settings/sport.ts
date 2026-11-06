@@ -16,7 +16,7 @@ import { profileOf } from "../sports";
  * walks, a hike on the trails of its own network (TASK-377 part B,
  * ADR-0321), «Soon» until the server hikes, a gravel ride on the bike's
  * network or an MTB ride on the trails of its own (TASK-378 part B,
- * ADR-0322), «Soon» until the user turns them on, or swimming in open water
+ * ADR-0322) since the server has them, or swimming in open water
  * (TASK-323, ADR-0283) since the server swims.
  * Paragliding (TASK-305 D0, ADR-0265) is only «Soon» for now: never chosen,
  * so never a route, and wherever the sports are told apart it goes as a
@@ -115,10 +115,10 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // «acceso appena pronto», in the store builds too.
   fromProfile("hike", true),
   // Asked as "gravel_biking" and "mountain_biking" (activityOf), 10-30 km
-  // each, from the server's TASK-378 part A (migration 0052); on with the
-  // user's yes, once this part B is in main.
-  fromProfile("gravel", false),
-  fromProfile("mtb", false),
+  // each; on since the server has TASK-378 part A and its migration 0052,
+  // the user's «Sì, accendili», in the store builds too.
+  fromProfile("gravel", true),
+  fromProfile("mtb", true),
   // Saved as "skiing" and "xc_skiing" (runActivityOf). The alpine ski is on
   // since TASK-375 D4: the server has parts A-D (migrations 0044 and 0048)
   // and the day its numbers, lifts and pistes. The cross-country ski not yet.

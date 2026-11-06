@@ -12,6 +12,7 @@ import { wordsOf } from "../voice/words";
 import { type Navigation, remainingM, upcoming } from "./navigator";
 import { ARROWS, distanceLabel } from "./phrases";
 import { compassPoint, share } from "./runStats";
+import { upcomingOnWay } from "./wayBackShown";
 
 /**
  * The run's directions as an iOS Live Activity (TASK-401 part B, ADR-0335):
@@ -98,6 +99,19 @@ export function liveStateOf(
     };
   }
   if (navigation.offRoute) {
+    // The next turn of the way back on the streets, as the banner, the
+    // voice and the notification say it (TASK-314 B, ADR-0274); without one,
+    // how far the route is and which way.
+    const turn = navigation.wayBack ? upcomingOnWay(navigation.wayBack) : null;
+    if (turn !== null) {
+      return {
+        ...base,
+        off: true,
+        sign: ARROWS[turn.direction.turn],
+        distance: distanceLabel(turn.inM, units),
+        instruction: wordsOf(language, units).direction(turn.direction),
+      };
+    }
     const rejoin = navigation.rejoin ?? null;
     return {
       ...base,

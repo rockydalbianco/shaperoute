@@ -11,6 +11,7 @@ import {
   UPDATE_EVERY_MS,
 } from "./liveActivity";
 import { type Navigation, startNavigation } from "./navigator";
+import { wayShownOf } from "./wayBackShown";
 
 // A street due east, 1 km long: 0.001° of longitude here is about 77 m.
 const LAT = 46.0;
@@ -92,6 +93,52 @@ test("off the route: the warning, and the way back when it is known", () => {
     "km",
   );
   expect(back.distance).toBe("120 m S");
+});
+
+test("off the route with a way back on the streets: its next turn, as the banner shows it", () => {
+  // A way north from the runner, turning left 80 m on, back to the route.
+  const north = (m: number): LatLon => [LAT + m / 111_195, 11.0 + 500 / M_PER_DEG_LON];
+  const way = wayShownOf(
+    {
+      points: [north(120), north(40), north(0)],
+      distance_m: 120,
+      rejoin: east(500),
+      rejoin_m: 0,
+      directions: [
+        direction("depart", 0, "Via Garibaldi"),
+        direction("left", 80, "Via Roma"),
+      ],
+    },
+    500,
+  );
+  const state = liveStateOf(
+    at(500, { offRoute: true, wayBack: { ...way, alongM: 20 } }),
+    "en",
+    "km",
+  );
+  expect(state).toMatchObject({
+    sign: "←",
+    distance: "60 m",
+    instruction: "Turn left onto Via Roma",
+    off: true,
+  });
+  // Past the way's last turn: how far the route is, as without a way.
+  const done = liveStateOf(
+    at(500, {
+      offRoute: true,
+      wayBack: { ...way, next: way.directions.length },
+      rejoin: {
+        from: east(500),
+        to: east(520),
+        alongM: 520,
+        distanceM: 40,
+        bearingDeg: 90,
+      },
+    }),
+    "en",
+    "km",
+  );
+  expect(done).toMatchObject({ sign: "⚠", distance: "40 m E", off: true });
 });
 
 test("past the last turn: on to the end", () => {

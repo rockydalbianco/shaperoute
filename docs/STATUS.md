@@ -3132,6 +3132,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   /me/pool-swims/{key}`, migrazione `0053`, `drawings.py`) da
   `feat/TASK-400-a-pool-api`; il valore `pool` in `X-MuW-Reads` dopo
   TASK-378 A. Server col sì dell'utente.
+  Parte A in `main` (#871, cab53f51; impronta iOS 6f8bba4c invariata):
+  server e migrazione `0053` dall'utente col comando del Coordinatore,
+  quando dice sì. Prossimo: la parte B (app) in una sessione nuova.
 
 ## Completato
 

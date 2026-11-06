@@ -290,5 +290,5 @@ Cross-country ski), poi Gym e Paragliding. «Run» resta lo sport di
 partenza; i filtri della ricerca seguono l'ordine di `ACTIVITIES` e non
 cambiano. Test toccati: `sport.test.ts`, `sportRows.test.ts`,
 `SportSetting.test.tsx`, `SportButton.test.tsx`, `SportStoreBuild.test.tsx`,
-`hikeApp.test.tsx`, `search/walkFilter.test.tsx`,
+`hikeApp.test.tsx`, `sports/gravelMtbProfile.test.ts`, `search/walkFilter.test.tsx`,
 `profile/SettingsPage.test.tsx`. Solo JS: impronta iOS invariata.

@@ -1,4 +1,4 @@
-import type { Person } from "@shaperoute/shared-types";
+import type { Person, SkiResort } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Animated,
@@ -21,6 +21,8 @@ import { useDrawingsDoor } from "../social/drawingsDoor";
 import { useFollowsDoor } from "../social/followsDoor";
 import { LOG_IN_TO_FIND } from "../social/PeopleSearch";
 import { usePeopleDoor } from "../social/peopleDoor";
+import { ResortList } from "../ski/ResortList";
+import { ResortPage } from "../ski/ResortPage";
 import { useReduceMotion } from "../ui/useReduceMotion";
 import {
   color,
@@ -44,7 +46,7 @@ import { activeCount, NO_FILTERS, type SearchFilters } from "./searchFilters";
 import { StartState } from "./StartState";
 import { asksAnything, useDrawingSearch } from "./useDrawingSearch";
 
-export type SearchTab = "all" | "drawings" | "people" | "routes";
+export type SearchTab = "all" | "drawings" | "people" | "routes" | "ski";
 
 /** In English: shown with `t()`. The tabs, in their order. */
 const TABS: readonly { key: SearchTab; label: string }[] = [
@@ -52,6 +54,9 @@ const TABS: readonly { key: SearchTab; label: string }[] = [
   { key: "drawings", label: tLater("Drawings") },
   { key: "people", label: tLater("People") },
   { key: "routes", label: tLater("Routes") },
+  // The ski resorts (TASK-406 part C): the filter «Sport» has no skiing,
+  // which is recorded only.
+  { key: "ski", label: tLater("Ski") },
 ];
 
 /** How many members «All» shows above the drawings. */
@@ -78,7 +83,8 @@ type Props = {
  * asked, the recent searches, the categories and the featured drawings;
  * then the drawings found, two a row, and the members by name. A drawing
  * touched opens on the map with its author, an example as its route, a
- * member as their profile: the search closes first.
+ * member as their profile: the search closes first. «Ski» has the ski
+ * resorts instead, near or by name, each opening its page over the search.
  */
 export function SearchScreen({ visible, onClose, onOpenExample }: Props) {
   return (
@@ -131,7 +137,8 @@ function SearchPage({ onClose, onOpenExample }: Omit<Props, "visible">) {
   const featured = useDrawingSearch("", POPULAR);
 
   const { open: openDrawing } = useDrawingsDoor();
-  const { openProfile } = useFollowsDoor();
+  const { apiUrl, openProfile } = useFollowsDoor();
+  const [resort, setResort] = useState<SkiResort | null>(null);
   const { open: openPeople } = usePeopleDoor();
 
   const remember = useCallback(() => {
@@ -269,7 +276,9 @@ function SearchPage({ onClose, onOpenExample }: Omit<Props, "visible">) {
           />
         )}
       </ScrollView>
-      {tab === "people" ? (
+      {tab === "ski" ? (
+        <ResortList typed={typed} apiUrl={apiUrl} onPick={setResort} />
+      ) : tab === "people" ? (
         <PeopleList
           shown={search.people}
           onPick={pickPerson}
@@ -329,6 +338,9 @@ function SearchPage({ onClose, onOpenExample }: Omit<Props, "visible">) {
         }}
         onClose={() => setSheet(false)}
       />
+      {resort !== null && (
+        <ResortPage resort={resort} apiUrl={apiUrl} onBack={() => setResort(null)} />
+      )}
     </Animated.View>
   );
 }

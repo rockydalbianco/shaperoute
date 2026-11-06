@@ -719,6 +719,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Norway, chiesto dal server. Le parti sono A (stazioni), B (meteo), C
   (ricerca), D (giornata) ed E (prova). Prossimo: la risposta dell'utente
   alla domanda 1, com'è la neve (`tasks/TASK-406.md`).
+  - 2026-11-06: l'utente risponde «Sì, gratis + membri». **Parte A**: le
+    stazioni sciistiche del mondo da OpenSkiData, 4.768 aperte con discesa
+    e un nome, nella tabella `ski_resorts` (migrazione 0054). Si cercano
+    con `GET /ski-resorts`, per nome o per vicinanza, e una alla volta
+    con `GET /ski-resorts/{id}`. Gli estratti OSM non si riscaricano
+    (aggiunta ad ADR-0338). Per andare online, comandi dell'utente col suo
+    sì: il server con la 0054, poi il download del file e l'import.
+    Prossimo: la parte B, il meteo da MET Norway.
 - **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
   percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
   Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un

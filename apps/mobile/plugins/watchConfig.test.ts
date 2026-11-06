@@ -78,5 +78,13 @@ describe("the watch's target in the config", () => {
     const others = (plugins as unknown[]).filter((plugin) => !isTargets(plugin));
     expect(added).toEqual(expect.arrayContaining(others));
     expect(added).toHaveLength(plugins.length + (hadTargets ? 1 : 2));
+    // The targets build the watch too, with WatchCore's plugin right before
+    // them: Expo runs the Xcode changes in reverse.
+    const at = (added as unknown[]).findIndex(isTargets);
+    expect((added as unknown[])[at]).toEqual([
+      APPLE_TARGETS,
+      { match: hadTargets ? "{live-activity,watch}" : "watch" },
+    ]);
+    expect((added as unknown[])[at - 1]).toBe(WATCH_CORE_PLUGIN);
   });
 });

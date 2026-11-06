@@ -1,3 +1,4 @@
+import { NO_BODY } from "../body/bodyProfile";
 import { appleWorkout } from "../health/appleWorkout";
 import { healthConnectWorkout } from "../health/healthConnectWorkout";
 import type { HealthPhone } from "../health/healthPhone";
@@ -19,13 +20,15 @@ function swim() {
   return finishPoolSwim(going, T0 + 42 * MIN);
 }
 
-test("the workout is a swim of lengths × pool, its pauses, no route, no energy", () => {
-  expect(poolWorkoutOf(swim(), 60)).toEqual({
+test("the workout is a swim of lengths × pool, its pauses, no route, its energy", () => {
+  // 1500 m in 40 min, 2:40 /100 m: 5.8 MET (TASK-409 part A), 70 kg,
+  // 284.2 kcal less 49 at rest.
+  expect(poolWorkoutOf(swim(), 60, NO_BODY)).toEqual({
     activity: "swimming",
     startMs: T0,
     endMs: T0 + 42 * MIN,
     distanceM: 1500,
-    kcal: null,
+    kcal: 235,
     route: [],
     pauses: [{ fromMs: T0 + 20 * MIN, toMs: T0 + 22 * MIN }],
     syncId: "key12345abc",
@@ -34,24 +37,26 @@ test("the workout is a swim of lengths × pool, its pauses, no route, no energy"
   expect(poolWorkoutOf(newPoolSwim("k", 25, T0), 10)).toBeNull();
 });
 
-test("Apple Health takes it as a swim in a pool, with the swimming distance", () => {
-  const apple = appleWorkout(poolWorkoutOf(swim(), 60)!);
+test("Apple Health takes it as a swim in a pool, with the swimming distance and energy", () => {
+  const apple = appleWorkout(poolWorkoutOf(swim(), 60, NO_BODY)!);
   // HKWorkoutActivityType.swimming, HKWorkoutSwimmingLocationType.pool.
   expect(apple.activityType).toBe(46);
   expect(apple.metadata.HKSwimmingLocationType).toBe(1);
   expect(apple.quantities.map((sample) => sample.quantityType)).toEqual([
     "HKQuantityTypeIdentifierDistanceSwimming",
+    "HKQuantityTypeIdentifierActiveEnergyBurned",
   ]);
-  expect(apple.totals).toEqual({ distance: 1500 });
+  expect(apple.totals).toEqual({ distance: 1500, energyBurned: 235 });
   expect(apple.locations).toEqual([]);
 });
 
-test("Health Connect takes it as SWIMMING_POOL, with its pause", () => {
-  const records = healthConnectWorkout(poolWorkoutOf(swim(), 60)!);
+test("Health Connect takes it as SWIMMING_POOL, with its pause and energy", () => {
+  const records = healthConnectWorkout(poolWorkoutOf(swim(), 60, NO_BODY)!);
   // ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL.
   expect(records.session.exerciseType).toBe(74);
   expect(records.session.segments).toHaveLength(1);
   expect(records.distance?.distance).toEqual({ value: 1500, unit: "meters" });
+  expect(records.calories?.energy).toEqual({ value: 235, unit: "kilocalories" });
 });
 
 test("a swim in open water says no location, as before", () => {

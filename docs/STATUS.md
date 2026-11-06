@@ -3366,6 +3366,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   e store col sì dell'utente.
   **Chiuso il 2026-11-06**: C in main (#898, 1939b121); vedi «Completato».
 
+- **TASK-409 — Nuoto in piscina: calorie, battito medio e tempo nelle
+  zone** (2026-11-06; numero dal Coordinatore, nessun ADR nuovo: precisazioni
+  di ADR-0318 e ADR-0334). Scelte dell'utente: «Calorie subito, battiti da
+  Salute»; «MET per passo» (Compendium 2024, crawl 5,8 / 8,0 / 10,5 / 14,5
+  per passo /100 m, meno il riposo; le acque libere restano senza); testi
+  della parte B «Approvati così». Parte A (calorie, solo JS, con un OTA) da
+  `feat/TASK-409-a-pool-calories`: `pool/poolKcal.ts`; «Calories» a fine
+  nuoto, in Salute / Health Connect, nel post del Feed e nella riga di «My
+  activities». Parte B (battito e zone) nella 1.0.3, sopra i lettori di
+  TASK-345 C e TASK-374 D. `tasks/TASK-409.md`.
+
 ## Completato
 
 - **TASK-314 — La strada per tornare sul percorso, sulle vie** (2026-11-06; ADR-0274 e la sua

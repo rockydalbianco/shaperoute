@@ -1,8 +1,8 @@
 # TASK-378 — Gravel e MTB: la bici fuori dall'asfalto
 
 **Stato**: In corso — parte 0 in `main` (#840, #841); parte A in `main`
-(#875, 2026-11-06); parte B in `main` (#879, 2026-11-06); prossimo:
-l'accensione, col sì dell'utente.
+(#875, 2026-11-06); parte B in `main` (#879, 2026-11-06); parte C
+(accensione, col sì dell'utente) in PR; prossimo: la prova sul telefono.
 **Fase**: 4 · **Branch**: `docs/TASK-378-0-gravel` (parte 0), poi
 `feat/TASK-378-a-gravel-engine-api`, `feat/TASK-378-b-gravel-app` ·
 **ADR**: ADR-0322 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -337,3 +337,12 @@ due righe) è una scelta dell'utente, che il Coordinatore gli chiede; va in
 una riga o PR a parte. Dopo l'accensione resta l'ultimo criterio della
 parte B, da provare sul telefono: lo sport si sceglie, si pedala, si salva
 e va in Salute.
+
+2026-11-06, parte C (`feat/TASK-378-c-gravel-mtb-ready`), come la 377 C di
+Hike: l'utente ha detto «Sì, accendili» al Coordinatore. `ready` vero nelle
+due righe di `settings/sport.ts`: Gravel e MTB si scelgono anche nei build
+dello store, e ricerca e modulo per pubblicare li offrono. Aggiornati i
+test che contano «Soon» e le righe dello store; nessun testo nuovo. Lista
+approvata dal Coordinatore; si parte dopo la #880 e la correzione dei testi
+dell'orologio. Prossimo: la prova sul telefono (si sceglie, si pedala, si
+salva, va in Salute), poi la chiusura.

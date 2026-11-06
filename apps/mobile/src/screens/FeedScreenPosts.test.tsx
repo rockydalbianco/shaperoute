@@ -40,7 +40,12 @@ function asked(): string[] {
     fetchSpy.mock.calls
       .map(([url]) => String(url).replace(API, ""))
       // The contest's card and MuW Style (TASK-384) are read beside the feed.
-      .filter((path) => path !== "/contests/current" && !path.startsWith("/style"))
+      .filter(
+        (path) =>
+          path !== "/contests/current" &&
+          !path.startsWith("/style") &&
+          !path.startsWith("/muw-routes"),
+      )
   );
 }
 

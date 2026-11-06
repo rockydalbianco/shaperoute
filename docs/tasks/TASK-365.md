@@ -1,6 +1,7 @@
 # TASK-365 — I percorsi di MuW nel Feed
 
-**Stato**: Todo — documenti ora, codice col via del Coordinatore e le scelte chiuse
+**Stato**: Done · 2026-11-06, il codice in `main` (ultima la #868, `09307022`); restano
+l'OTA di produzione col sì dell'utente e le prove senza spunta qui sotto
 **Fase**: 4 · **Branch**: `docs/TASK-365-muw-routes-in-feed` (documenti),
 `feat/TASK-365-muw-routes` (codice) · **ADR**: ADR-0310 · numeri dal
 Coordinatore (2026-10-31)
@@ -62,8 +63,13 @@ Una alla volta, con le sue parole. **Chiuse la 1, la 2 e la 5.**
    (scelta dell'utente in quella sessione: «Sì, questi 5»).
 3. **Dove stanno nel Feed.** Proposta: uno ogni dieci post, solo nella scheda
    «Tutti», mai in «Seguiti», e pochi: non devono coprire i post degli iscritti.
+   — *Risposta* (2026-11-05, in questa sessione, fra «1 ogni 10», «1 ogni 6» e
+   «1 ogni 8, come Style»): «1 ogni 6». Solo «All», mai in «Following», mai
+   accanto a una pubblicità o a un post Style.
 4. **Senza account.** Proposta: si vedono anche senza account, dopo gli esempi
    che ci sono oggi.
+   — *Risposta* (2026-11-05, fra «Sì, fra gli esempi», «Sì, dopo gli esempi» e
+   «No, solo con un account»): «Sì, fra gli esempi».
 5. **I testi**, in inglese, italiano, tedesco, francese e spagnolo. Proposta
    per l'etichetta:
    - Route created by MuW – ride it yourself
@@ -169,6 +175,45 @@ esattamente dal codice che li aveva scritti: la cartella `out/muw-bike-drafts/`
 è stata tolta da una pulizia del disco il 2026-11-03/04, con le bozze non
 approvate, le anteprime e le zone scaricate. I 25 approvati non ne dipendono.
 
+## La riga del Feed (2026-11-05)
+
+L'ultimo passo, col via del Coordinatore: le card di `MuwPost` dentro «All» e
+il tocco che apre il percorso. Branch `feat/TASK-365-feed-line`.
+
+**La regola dei posti** (`feed/feedWithMuw.ts`, dalle scelte 3 e 4):
+
+- il primo percorso dopo il 3° disegno (`MUW_FIRST`), poi uno ogni 6 righe
+  (`MUW_EVERY`): fra due percorsi 5 disegni, mai meno;
+- solo fra due disegni: mai prima del 4° posto, mai in fondo;
+- un posto già preso scende di un disegno, finché è libero, e il prossimo si
+  conta da lì. Sono presi i posti delle pubblicità (`adSlots`, che la
+  pubblicità sia arrivata o no, come fa Style, così una card non si sposta
+  quando ne arriva una) e quelli dei post Style che ci sono. Quindi una card di
+  MuW non sta mai accanto a una pubblicità o a un post Style, e i post Style
+  restano dove `feedWithStyle` li mette;
+- i percorsi nell'ordine di `GET /muw-routes`; finiti, nessun altro;
+- anche senza account, fra gli esempi: con i 15 esempi di oggi sono tre, dopo
+  il 3°, l'8° e il 13°. Mai in «Following».
+
+**Il tocco**: `FeedScreen` ha una prop nuova, `onOpenMuw(route)`. In `App.tsx`
+(ok del Coordinatore, solo la prop e l'import) fa quello che fa `onOpen` per un
+esempio: `closeExplore()`, `openExplored(muwCardRoute(route),
+fetchMuwRoute(route))`, `setRouteList("feed")`, la mappa. Nessun testo nuovo.
+
+**Nel simulatore** (2026-11-06, iPhone 17, Expo Go, API del worktree con i 25
+file, senza account): dopo il 3° esempio la card «MuW · Route created by MuW –
+ride it yourself», «Yellow Arrow · Valencia», «Bike · 26.8 km · ↑ 113 m»; un
+tocco apre il percorso sulla mappa di Valencia con Start ed Export GPX, e «Back
+to the list» torna a «Feed». Screenshot in `out/TASK-365/` (fuori dal
+repository): `feed-muw-card.png`, `muw-route-opened.png`. L'app resta scura
+anche col telefono in chiaro, quindi una prova in chiaro non c'è.
+
+**Emerso, fuori da questa riga**: sotto la distanza, la scheda del percorso
+aperto dice «looks 100% like it». È la riga di «Explore», che legge la
+`similarity: 1` messa da `muwCardRoute` e `muwDetail` (`feed/muwRoute.ts`), il
+cui commento dice che di questi percorsi non si mostra un punteggio. È da
+decidere col Coordinatore.
+
 ## L'etichetta nelle cinque lingue
 
 Risposta dell'utente (2026-11-03, nella chat del Coordinatore), sulle 15
@@ -177,25 +222,39 @@ de, es, fr): «SI ETICHETTE».
 
 ## Criteri di accettazione
 
-- [ ] **App già pubblicata**: `GET /feed` risponde come prima, nessun tipo e
-      nessun campo nuovo: test sulla risposta.
+- [x] **App già pubblicata**: `GET /feed` risponde come prima, nessun tipo e
+      nessun campo nuovo: test sulla risposta
+      (`test_the_feed_of_a_published_app_has_nothing_new`).
 - [ ] **Server di oggi**: la nuova app, con `GET /muw-routes` a `404`, mostra il
-      Feed di sempre, senza errori: test, e provato nel simulatore.
-- [ ] Una bozza non approvata non arriva mai all'API: nel repository ci sono
+      Feed di sempre, senza errori: test, e provato nel simulatore. *I test ci
+      sono (`useMuwRoutes.test.tsx`, `FeedScreenMuw.test.tsx`); nel simulatore
+      è stato provato solo con i percorsi, non col `404`.*
+- [x] Una bozza non approvata non arriva mai all'API: nel repository ci sono
       solo i file approvati, e un test rifiuta un file senza attribuzione OSM o
-      con un campo di tempo.
-- [ ] Sulla card c'è sempre l'etichetta tradotta; nessuna data, tempo, passo,
-      calorie o nome di persona: test.
-- [ ] Nessun utente «MuW» nel database; niente reazioni, commenti, profilo,
-      follow, messaggi o segnalazione sulla card: test.
-- [ ] Un percorso approvato si apre e si esporta in GPX come `cycling`.
-- [ ] Nessun percorso è doppio fra Feed ed Explore, salvo scelta dell'utente.
+      con un campo di tempo (`test_muw_routes.py`).
+- [x] Sulla card c'è sempre l'etichetta tradotta; nessuna data, tempo, passo,
+      calorie o nome di persona: test (`MuwPost.test.tsx`).
+- [x] Nessun utente «MuW» nel database; niente reazioni, commenti, profilo,
+      follow, messaggi o segnalazione sulla card: test (`MuwPost.test.tsx`; i
+      percorsi vengono da file, ADR-0310).
+- [ ] Un percorso approvato si apre e si esporta in GPX come `cycling`. *Si
+      apre (simulatore, 2026-11-06) con la richiesta di una bici
+      (`muwRoute.test.ts`); l'export GPX non è stato provato.*
+- [x] Nessun percorso è doppio fra Feed ed Explore, salvo scelta dell'utente
+      (scelta 2: Ghost, Bat e Pumpkin in Explore, non in `catalog/muw_routes/`).
 - [ ] Ogni percorso pubblicato è stato guardato a occhio, ha il dislivello detto
-      come stima e non supera i limiti della scelta 1.
-- [ ] Testi approvati in cinque lingue, nessun colore a mano, nessuna dipendenza
-      nuova, impronta iOS invariata su una copia pulita.
+      come stima e non supera i limiti della scelta 1. *Guardati e approvati
+      dall'utente («Buoni e discreti»); la card scrive «↑ 113 m» senza dire che
+      è una stima.*
+- [x] Testi approvati in cinque lingue, nessun colore a mano, nessuna dipendenza
+      nuova, impronta iOS invariata su una copia pulita. *Testi approvati, colori
+      dai token, nessuna dipendenza; impronta misurata dal Coordinatore su copia
+      pulita a `main` `09307022` (con la #868), `APP_VARIANT=production`:
+      `6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`, invariata.*
 - [ ] Prima e dopo dal simulatore, in scuro e in chiaro. Server e OTA solo col
-      sì dell'utente.
+      sì dell'utente. *Dal simulatore in scuro (`out/TASK-365/`); l'app non ha un
+      tema chiaro da provare. Server già aggiornato col sì dell'utente; l'OTA
+      no.*
 
 ## File toccati
 
@@ -233,6 +292,19 @@ docs/API.md, docs/UI.md, docs/STATUS.md, docs/tasks/TASK-365.md
 Senza migrazione: se le scelte la rendono necessaria, il numero lo dà il
 Coordinatore (0040 e 0041 sono prese).
 
+La riga del Feed (`feat/TASK-365-feed-line`, lista data al Coordinatore il
+2026-11-05):
+
+```
+apps/mobile/src/feed/feedWithMuw.ts, feedWithMuw.test.ts      (nuovi)
+apps/mobile/src/screens/FeedScreen.tsx
+apps/mobile/src/screens/FeedScreenMuw.test.tsx                (nuovo)
+apps/mobile/src/screens/FeedScreenPosts.test.tsx, FeedScreenTabs.test.tsx
+apps/mobile/__tests__/AppFeed.test.tsx, AppPages.test.tsx
+apps/mobile/App.tsx                                           (solo onOpenMuw)
+docs/tasks/TASK-365.md, docs/STATUS.md, docs/UI.md
+```
+
 ## Fuori scope
 
 - `tools/sample_feed.py`, `sampleFeed.json` e gli esempi finti: la scelta è
@@ -246,4 +318,13 @@ Coordinatore (0040 e 0041 sono prese).
 
 ## Esito
 
-*(si compila a fine task)*
+I 25 percorsi approvati dall'utente (11 bici, 10 a piedi, 4 canoa) stanno in
+`catalog/muw_routes/` e sul server (`GET /muw-routes`). Nella nuova app
+compaiono in «All» come card di MuW, una riga su 6 a partire dal 4° posto,
+anche fra gli esempi, con l'etichetta sempre sotto il nome; un tocco apre il
+percorso sulla mappa come uno di «Explore». Un'app già pubblicata non vede
+niente di nuovo. Restano: l'OTA di produzione col sì dell'utente, le prove
+senza spunta qui sopra, e TASK-405 (il «looks 100% like it» del percorso
+aperto), aperto dal Coordinatore.
+
+**Chiuso il 2026-11-06**: #868 in `main` (`09307022`), ultima parte del codice.

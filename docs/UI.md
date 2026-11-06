@@ -692,6 +692,19 @@ barra qui sopra, e lo swipe è quello qui sopra.
   «AI-generated» e «Ad · Affiliate links»; il puntino apre una scheda con
   prezzo o «See price», le due righe fisse e «Shop on {store}», che apre il
   browser. «Style posts in the Feed» in «Settings» li toglie da «All».
+  Con i **percorsi di MuW** sul server (`GET /muw-routes`, TASK-365,
+  ADR-0310) una riga su 6 di «All» al massimo è uno di loro: il primo dopo il
+  3° disegno, poi uno ogni 5 disegni, mai in «Following», anche senza account
+  fra gli esempi (scelte dell'utente del 2026-11-05: «1 ogni 6», «Sì, fra gli
+  esempi»). Un posto di una pubblicità o di un post Style scende di un
+  disegno: due nostre card non stanno mai affiancate. Escono nell'ordine
+  dell'API, finiti quelli non ne compaiono altri. La card ha il logo e il nome
+  di MuW, sempre l'etichetta («Route created by MuW – ride it yourself», «–
+  run it yourself», «– paddle it yourself»), la figura, il titolo, la città,
+  sport, distanza e dislivello stimato; niente persona, data, tempo, reazioni
+  o commenti. Un tocco apre il percorso sulla mappa come una card di
+  «Explore», e «←» torna a «Feed». Senza i percorsi (un server che non li
+  ha), il Feed di sempre.
   Se una lettura non arriva, «Couldn't load the Feed.» con «Try again», al posto
   degli esempi. Con un'API che non conosce ancora le schede (la pagina non dice
   la sua scheda) le schede spariscono e resta il feed che l'API manda. Senza account non ci sono schede: solo «All» con gli esempi

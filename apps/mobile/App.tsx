@@ -63,6 +63,7 @@ import {
 import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
 import { DrawAgainContext, useDrawAgainOf } from "./src/feed/drawAgainDoor";
 import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
+import { fetchMuwRoute, muwCardRoute } from "./src/feed/muwRoute";
 import type { SamplePost } from "./src/feed/sampleFeed";
 import { PhoneEngineView } from "./src/engine/PhoneEngineView";
 import { usePhoneZones } from "./src/engine/usePhoneZones";
@@ -1716,6 +1717,12 @@ function MuW() {
                     onOpen={(post) => {
                       closeExplore();
                       openExplored(postRoute(post), fetchPostRoute(post));
+                      setRouteList("feed");
+                      setScreen("map");
+                    }}
+                    onOpenMuw={(route) => {
+                      closeExplore();
+                      openExplored(muwCardRoute(route), fetchMuwRoute(route));
                       setRouteList("feed");
                       setScreen("map");
                     }}

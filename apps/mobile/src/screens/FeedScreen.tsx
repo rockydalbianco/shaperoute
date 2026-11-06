@@ -1,4 +1,8 @@
-import type { FeedFilter, StylePost as StylePostBody } from "@shaperoute/shared-types";
+import type {
+  FeedFilter,
+  MuwRoute,
+  StylePost as StylePostBody,
+} from "@shaperoute/shared-types";
 import { type ReactElement, useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -33,6 +37,10 @@ import { useStyleInFeed } from "../feed/styleInFeedChoice";
 import { StyleLens } from "../feed/StyleLens";
 import { StylePost } from "../feed/StylePost";
 import { useStylePosts } from "../feed/useStylePosts";
+// The routes MuW drew (TASK-365, ADR-0310): in «All», one row in 6 at most.
+import { feedWithMuw, type MuwItem } from "../feed/feedWithMuw";
+import { MuwPost } from "../feed/MuwPost";
+import { useMuwRoutes } from "../feed/useMuwRoutes";
 import { t } from "../i18n";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { usePeopleDoor } from "../social/peopleDoor";
@@ -45,6 +53,8 @@ import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 type Props = {
   /** An example drawing was tapped: its route goes on the map. */
   onOpen: (post: SamplePost) => void;
+  /** A route MuW drew was tapped: it goes on the map, as one of «Explore». */
+  onOpenMuw?: (route: MuwRoute) => void;
   /** «Feed» is the page on the screen. Built behind «Draw» at the start, it
    * asks for no ad (and no consent), and no drawings, until it is
    * (TASK-235, TASK-118). */
@@ -55,7 +65,7 @@ type Props = {
 
 /** A row of the list: a member's drawing, or an example. */
 type Post = SamplePost | ShownPost;
-type Item = FeedItem<Post, NativeAd> | StyleItem;
+type Item = FeedItem<Post, NativeAd> | StyleItem | MuwItem;
 
 /** How far from the end of the list, in screens, the next page is asked. */
 const MORE_AT_SCREENS = 1;
@@ -94,9 +104,16 @@ function postsOf(tab: FeedFilter, shown: FeedShown): readonly Post[] {
  * 5 (TASK-235, ADR-0198). While the API has MuW Style posts (TASK-384,
  * ADR-0326), one row in 8 of «All» at most is one of them, unless «Settings»
  * turned them off, and a third tab, «Style», has them all; without an
- * account the tabs are then «All» and «Style».
+ * account the tabs are then «All» and «Style». While the API has routes MuW
+ * drew (TASK-365, ADR-0310), one row in 6 of «All» at most is one of them,
+ * also among the examples; a tap opens it on the map.
  */
-export function FeedScreen({ onOpen, active = true, ads = feedAds() }: Props) {
+export function FeedScreen({
+  onOpen,
+  onOpenMuw,
+  active = true,
+  ads = feedAds(),
+}: Props) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const cardWidth = width - 2 * space.lg;
@@ -113,6 +130,7 @@ export function FeedScreen({ onOpen, active = true, ads = feedAds() }: Props) {
   const stylePosts = useStylePosts(active);
   const withStyle = stylePosts.length > 0;
   const styleInFeed = useStyleInFeed();
+  const muwRoutes = useMuwRoutes(active);
   const [styleOpened, setStyleOpened] = useState(chosen === "style");
   const all = useFeed(
     active &&
@@ -175,6 +193,8 @@ export function FeedScreen({ onOpen, active = true, ads = feedAds() }: Props) {
           feed={all}
           visible={tab === "all"}
           stylePosts={styleInFeed ? stylePosts : NO_STYLE}
+          muwRoutes={muwRoutes}
+          onOpenMuw={onOpenMuw}
           onRefresh={onRefreshAll}
           header={
             <View style={styles.header}>
@@ -258,6 +278,7 @@ export function FeedScreen({ onOpen, active = true, ads = feedAds() }: Props) {
 }
 
 const NO_STYLE: readonly StylePostBody[] = [];
+const NO_MUW: readonly MuwRoute[] = [];
 
 type ListProps = {
   tab: FeedFilter;
@@ -273,6 +294,9 @@ type ListProps = {
   empty: ReactElement | null;
   /** The MuW Style posts to put between the drawings: only in «All». */
   stylePosts?: readonly StylePostBody[];
+  /** The routes MuW drew, to put between the drawings: only in «All». */
+  muwRoutes?: readonly MuwRoute[];
+  onOpenMuw?: (route: MuwRoute) => void;
   onRefresh: () => void;
   open: (drawing: ShownPost["drawing"]) => void;
   onOpen: (post: SamplePost) => void;
@@ -290,6 +314,8 @@ function FeedList({
   header,
   empty,
   stylePosts = NO_STYLE,
+  muwRoutes = NO_MUW,
+  onOpenMuw,
   onRefresh,
   open,
   onOpen,
@@ -298,8 +324,8 @@ function FeedList({
   const posts = useMemo(() => postsOf(tab, shown), [tab, shown]);
   const { ads: placed, see } = useFeedAds(posts.length, active && visible, ads);
   const items = useMemo<Item[]>(
-    () => feedWithStyle(feedWithAds(posts, placed), stylePosts),
-    [posts, placed, stylePosts],
+    () => feedWithMuw(feedWithStyle(feedWithAds(posts, placed), stylePosts), muwRoutes),
+    [posts, placed, stylePosts, muwRoutes],
   );
   // The posts that have been on the screen: an ad never goes where the user
   // is looking.
@@ -370,11 +396,19 @@ function FeedList({
             ? item.post.id
             : item.kind === "style"
               ? `style-${item.style.id}`
-              : `ad-${item.slot}`
+              : item.kind === "muw"
+                ? `muw-${item.route.id}`
+                : `ad-${item.slot}`
         }
         renderItem={({ item }) =>
           item.kind === "style" ? (
             <StylePost post={item.style} width={cardWidth} />
+          ) : item.kind === "muw" ? (
+            <MuwPost
+              route={item.route}
+              width={cardWidth}
+              onOpen={(route) => onOpenMuw?.(route)}
+            />
           ) : item.kind === "post" ? (
             <FeedPost
               post={item.post}

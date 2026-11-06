@@ -58,7 +58,8 @@ function asked(): string[] {
         (path) =>
           path !== "/game/catalog" &&
           path !== "/contests/current" &&
-          !path.startsWith("/style"),
+          !path.startsWith("/style") &&
+          !path.startsWith("/muw-routes"),
       )
   );
 }

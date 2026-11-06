@@ -779,6 +779,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `out/muw-bike-drafts/`, nessuna approvata e nessuna pubblicata. Le scelte
   dell'utente sono tutte aperte; il codice parte col via del Coordinatore, dopo
   TASK-362 e TASK-355 A. `tasks/TASK-365.md`.
+  **La riga del Feed** (2026-11-05/06; via del Coordinatore; branch
+  `feat/TASK-365-feed-line`): le card di MuW in «All», una riga su 6, la prima
+  dopo il 3° disegno, mai accanto a pubblicità o Style, mai in «Following»,
+  anche senza account fra gli esempi (scelte dell'utente del 2026-11-05: «1
+  ogni 6», «Sì, fra gli esempi»); `feed/feedWithMuw.ts`. Un tocco apre il
+  percorso sulla mappa come da «Explore» (`onOpenMuw` in `App.tsx`). Nessun
+  testo nuovo. Visto nel simulatore. OTA di produzione col sì dell'utente.
 
 - **TASK-356 — La posizione nel Feed: arrotondata, e detta nella privacy**
   (ADR-0306, punto 4; testo approvato dall'utente il 2026-10-30). Branch

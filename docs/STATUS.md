@@ -318,6 +318,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   l'accensione col sì dell'utente, in una riga o PR a parte, poi la prova
   sul telefono (si sceglie, si pedala, si salva, va in Salute).
 
+- **TASK-380 — Roller, i pattini in linea** (2026-11-06; numeri dal
+  Coordinatore, ADR-0324 **proposto**). Parte 0, solo documenti: misurate
+  col banco quattro reti di prova, dai download della bici, senza Overpass.
+  - `roller` (asfalto liscio; né sterrato, né ciottoli, né strade
+    principali e secondarie; ogni via nei due sensi): 34 su 54, 10 buoni.
+    Regge in città e in pianura (Milano 8 su 9, Trento 9 su 9), non in
+    montagna (Fiemme e Asiago 2 su 9): senza le secondarie la rete si
+    spezza.
+  - Con le secondarie: 42 su 54, ma il 12% dei km su strade veloci.
+  - Il tag `inline_skates` c'è solo per 4,5 km a Trento: non serve.
+
+  Prossimo: le scelte dell'utente, una alla volta (`tasks/TASK-380.md`,
+  `sports/roller.md`).
+
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
   anche le vecchie»; testi nuovi approvati il 2026-11-05. Parte A (API +

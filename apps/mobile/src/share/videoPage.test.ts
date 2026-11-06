@@ -767,6 +767,32 @@ describe("the video page, with a fake map, in 3D", () => {
     expect(map.removed).toBe(true);
   });
 
+  it("lays the emoji of the way on the line as the map lays it, not where the flat line is (TASK-408)", async () => {
+    const along = videoScene(RUN, POST_RESULTS, [], "3d", { along: "🔥" });
+    const maplibre = fakeMapLibre("idle");
+    const { posted, context, make, prepareMap } = page(
+      fakeEncoder([VIDEO_CODECS[0]]).FakeEncoder,
+      FakeFrame,
+      maplibre,
+    );
+    await until(posted, "ready");
+    prepareMap(along.map);
+    await until(posted, "map");
+    make(along);
+    await until(posted, "done", "failed");
+    const flat = along.frames[along.frames.length - 1].filter(
+      (op) => op.k === "emoji" && op.text === "🔥",
+    );
+    expect(flat).toHaveLength(3);
+    const drawn = (context.fillText.mock.calls as [string, number, number][]).filter(
+      ([text]) => text === "🔥",
+    );
+    expect(drawn.length).toBeGreaterThan(0);
+    const [, x, y] = drawn[drawn.length - 1];
+    expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true);
+    expect(flat.some((op) => op.k === "emoji" && op.x === x && op.y === y)).toBe(false);
+  });
+
   it("stands still with a slow zoom about the drawing when a picture of the turn costs more than the budget", async () => {
     const maplibre = fakeMapLibre("idle");
     const { posted, context, make, prepareMap } = page(
@@ -800,7 +826,9 @@ describe("the video page, with a fake map, in 3D", () => {
 });
 
 describe("the video page, with an animal (TASK-408)", () => {
-  const HORSE_SCENE = videoScene(RUN, POST_RESULTS, STICKERS, "paper", "horse");
+  const HORSE_SCENE = videoScene(RUN, POST_RESULTS, STICKERS, "paper", {
+    character: "horse",
+  });
 
   it("loads three.js only when an animal is asked, pinned and checked against its hash", () => {
     expect(THREE_JS_URL).toMatch(

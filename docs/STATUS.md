@@ -820,6 +820,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   limite noto nel task file: 3D a freddo può dare il video giallo di
   riserva dopo 15 s. L'OTA la pubblica il Coordinatore dopo il sì
   dell'utente.
+- **TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e
+  calendario** (ADR-0341 **proposto**; numeri dal Coordinatore il
+  2026-11-06). Dalla segnalazione dell'utente «Start workout non fa nulla»
+  (corretta nella #927) e dalla sua richiesta. Scelte dell'utente del
+  2026-11-06: «Gruppi, poi macchinari», «3 passi + ultimo allenamento»,
+  «Schede + giorni», «Mese con giorni segnati»; testi approvati. Proposta in
+  PR da `docs/TASK-411-gym-plans-proposal`. Parti: A griglia, B calendario e
+  guida, C schede (migrazione), D privacy; ogni lista al Coordinatore.
+  `tasks/TASK-411.md`.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

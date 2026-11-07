@@ -24949,3 +24949,61 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
 - **Solo il motore del telefono**: niente frase nella Privacy, ma a
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
+
+## ADR-0341 — La palestra per tutti i giorni: la griglia, il calendario dal server, le schede sull'account
+
+**Stato**: Proposto · 2026-11-06 · TASK-411. Le scelte di prodotto sono
+dell'utente (griglia «Gruppi, poi macchinari», guida «3 passi + ultimo
+allenamento», piano «Schede + giorni», calendario «Mese con giorni
+segnati», testi approvati); il resto è deciso dall'agente su delega
+dell'utente, da confermare con la lista di ogni parte.
+
+**Contesto**: la palestra (ADR-0327) registra un allenamento, ma per usarla
+ogni settimana mancano un modo rapido di trovare il macchinario, un punto
+di partenza in «Draw», le schede e un calendario. La segnalazione «Start
+workout non fa niente» è stata corretta a parte (#927).
+
+**Decisione**:
+
+1. **La griglia è solo dell'app** (`gym/ExercisePicker.tsx`): otto riquadri
+   dei gruppi con un'emoji e quanti esercizi hanno, poi una griglia a 2
+   colonne del gruppo; scrivere nella ricerca mostra i risultati di tutti i
+   gruppi, come oggi, e il nome libero resta. Nessun testo nuovo («Back» c'è).
+2. **Il calendario si legge dal server**: `GET /me/gym-calendar?month=`
+   (mese di calendario sul fuso del telefono, mandato dall'app come
+   `tz`), per giorno gli allenamenti con l'ora di inizio, il tempo e
+   l'id del post se c'è; il totale del mese. Niente migrazione: `runs` con
+   `activity = 'gym'` dell'account. Solo il proprietario (è sotto `/me`).
+   La guida in «Draw» legge lo stesso endpoint per «Last workout» e «This
+   month».
+3. **Le schede sull'account**: una tabella `gym_plans` (account, nome 1–40,
+   giorni come sette bit, esercizi in ordine con il tipo e i valori
+   obiettivo nei limiti delle serie di `gym_catalog`, posizione,
+   aggiornata il), al massimo 20 schede da 30 esercizi;
+   `GET/PUT/DELETE /me/gym-plans/{id}` con la chiave scelta dal telefono
+   come per gli allenamenti (si salvano senza rete e poi partono). Una
+   colonna `gym_sessions.plan_id` (nullable, `ON DELETE SET NULL`) dice
+   quale scheda ha seguito l'allenamento: il calendario ne scrive il nome
+   e i giorni saltati sono i giorni della scheda senza un allenamento.
+   Migrazione col numero del Coordinatore (lista della parte C).
+4. **L'allenamento guidato è sul telefono**: «Start workout» con «Today:
+   …» copia la scheda nello stato dell'allenamento (`gym/workout.ts`):
+   l'esercizio corrente è il primo non finito, i campi della serie hanno
+   già i valori obiettivo, «Plan: {done}/{total} sets» sotto il cronometro.
+   Si può sempre cambiare esercizio o scrivere altri valori; le serie
+   salvate sono quelle fatte, non la scheda.
+5. **«Today»** è la prima scheda (per posizione) col giorno della settimana
+   di oggi sul telefono; più schede lo stesso giorno: la prima, le altre in
+   «Plans».
+6. **Privacy** (parte D): le schede sono dati dell'account, private, si
+   cancellano con l'account; una riga nel testo, col sì dell'utente.
+
+**Alternative scartate**: le schede solo sul telefono (perse cambiando
+telefono, come gli esercizi di ADR-0327); il calendario da «My activities»
+a pagine (un mese può chiedere molte pagine); i giorni saltati calcolati
+senza sapere quale scheda è stata fatta (un allenamento libero li
+«riempirebbe» tutti).
+
+**Conseguenze**: un endpoint senza migrazione (B), una tabella e una
+colonna (C); solo JavaScript nell'app, impronta iOS invariata. Server,
+migrazione, privacy e OTA col sì dell'utente.

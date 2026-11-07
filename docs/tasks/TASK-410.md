@@ -206,6 +206,11 @@ testi di privacy col sì dell'utente.
    l'autore, a meno che non scelga di mostrarli». Proposta: tenere la scelta
    del 29, estesa a tutta la sezione battito (min, medio, max, zone) e alle
    calorie calcolate col suo corpo.
+   **Risposta dell'utente (2026-11-07): «Visibili, nascondibili».** Resta la
+   regola del 2026-10-29: battito (min, medio, max, zone) e calorie si vedono
+   nei post degli altri; l'autore li spegne con «Show heart rate» nel foglio.
+   Il filtro è nel server: un dato spento non arriva al telefono di chi
+   guarda.
 3. **Il video per chi guarda**: la scena giocata nella pagina dalla traccia,
    con l'aspetto standard (proposta), o il file vero dell'autore caricato sul
    server (serve un lettore nativo: build 1.0.3)?

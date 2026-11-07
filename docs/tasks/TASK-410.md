@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: Proposta (in attesa delle scelte dell'utente)
+**Stato**: Proposta, scelte dell'utente chiuse il 2026-11-07; il codice parte col via del Coordinatore
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -280,6 +280,13 @@ testi di privacy col sì dell'utente.
 
    «Show heart rate» è la stessa chiave di TASK-345 B: un sì vale per tutti e
    due. I testi del meteo (parte E) e la riga della privacy vengono a parte.
+
+   **Risposta dell'utente (2026-11-07): «Sì, approvo».** Testi delle parti B
+   e D approvati come in tabella, nelle cinque lingue.
+
+**Scelte chiuse il 2026-11-07.** Restano da chiedere, quando arrivano le
+loro parti: i testi del meteo e la riga della privacy (parte E); server, OTA
+e backfill dei passi, ognuno col sì dell'utente.
 
 ## Criteri di accettazione
 

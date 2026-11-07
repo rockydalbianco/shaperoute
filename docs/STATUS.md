@@ -166,8 +166,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'autore (è TASK-355 B), video giocato nella pagina, foglio con quattro
   azioni e impostazioni, sezioni riepilogo, meteo, passi, dislivello,
   battito. Parti A–E; dati in una tabella nuova `run_stats`, senza toccare
-  `schemas.py`. Prossimo: le scelte dell'utente, una alla volta; niente
-  codice prima. `tasks/TASK-410.md`.
+  `schemas.py`. `tasks/TASK-410.md`.
+  **Scelte chiuse** (2026-11-06/07): la foto resta TASK-355 B; battito e
+  calorie visibili, nascondibili; il video è il file vero di TASK-336
+  (`expo-video`); meteo MET solo entro 3 ore; foglio come proposto; testi
+  di B e D approvati. Prossimo: ordine e via delle parti dal Coordinatore.
 - **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
   Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
   La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo

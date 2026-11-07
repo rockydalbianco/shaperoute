@@ -226,6 +226,9 @@ testi di privacy col sì dell'utente.
 4. **Il meteo**: MET al salvataggio, solo per le corse salvate entro 3 ore
    (proposta), con la riga della privacy («il punto di partenza, arrotondato
    a ~1 km, va a MET Norway per il meteo»).
+   **Risposta dell'utente (2026-11-07): «Sì, MET entro 3 ore».** Niente
+   archivio storico. Il testo esatto della riga della privacy, nelle cinque
+   lingue, va all'utente prima del merge della parte E.
 5. **Il foglio**: barra fissa con le quattro icone, impostazioni trascinando
    in su; 👍 = reazione 👍; «Condividi» solo sui propri post (proposta).
 6. **I testi** delle sezioni e delle righe nelle cinque lingue, prima del

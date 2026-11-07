@@ -214,6 +214,15 @@ testi di privacy col sì dell'utente.
 3. **Il video per chi guarda**: la scena giocata nella pagina dalla traccia,
    con l'aspetto standard (proposta), o il file vero dell'autore caricato sul
    server (serve un lettore nativo: build 1.0.3)?
+   **Risposta dell'utente (2026-11-07): «File vero caricato».** È il lavoro di
+   TASK-336 (ADR-0292): caricare il video della corsa nel post (parte A, API)
+   e mostrarlo con `expo-video` (parte C), dipendenza già approvata
+   dall'utente il 2026-10-29 («expo-video in 1.0.2»), che ora va con la
+   build nativa dopo la 1.0.2 (TASK-407). Qui non si duplica: la pagina usa
+   il lettore e il file di TASK-336. Senza video caricato (post vecchi, o
+   l'autore non l'ha messo) in alto c'è il disegno sulla mappa, fermo, senza
+   ▶. La parte B esce prima con un OTA, col disegno fermo; il video compare
+   quando c'è TASK-336 C nella build.
 4. **Il meteo**: MET al salvataggio, solo per le corse salvate entro 3 ore
    (proposta), con la riga della privacy («il punto di partenza, arrotondato
    a ~1 km, va a MET Norway per il meteo»).
@@ -254,7 +263,7 @@ Le parti elencano i loro file quando partono.
 - Il battito in tempo reale e l'app dell'orologio (TASK-370).
 - Leggere il battito da Apple Salute (TASK-345 C) e il tempo in zona a fine
   corsa sullo schermo della corsa (TASK-374 D).
-- Caricare file video sul server (TASK-336), salvo scelta 3.
+- Caricare il video e il lettore: sono TASK-336 (scelta 3).
 - La card del Feed: resta com'è, salvo la foto (parte A).
 - Un punteggio o una «precisione» (ADR-0207, nessun punteggio).
 

@@ -239,6 +239,48 @@ testi di privacy col sì dell'utente.
 6. **I testi** delle sezioni e delle righe nelle cinque lingue, prima del
    merge di B e D.
 
+   Proposta (2026-11-07). Riusati senza cambiarli: «Avg pace», «Avg speed»,
+   «Who can see it», «Everyone», «Followers», «Only me», «Title»
+   (`PublicParts`), «Description», «bpm». Nuovi:
+
+   | en | it | es | de | fr |
+   |---|---|---|---|---|
+   | **Parte B** | | | | |
+   | Like | Mi piace | Me gusta | Gefällt mir | J'aime |
+   | Comment | Commenta | Comentar | Kommentieren | Commenter |
+   | Share | Condividi | Compartir | Teilen | Partager |
+   | Edit & run | Modifica e corri | Editar y correr | Bearbeiten und laufen | Modifier et courir |
+   | Post settings | Impostazioni del post | Ajustes de la publicación | Beitragseinstellungen | Réglages de la publication |
+   | Show heart rate | Mostra il battito | Mostrar el pulso | Herzfrequenz zeigen | Afficher la fréquence cardiaque |
+   | Play the video *(VoiceOver)* | Riproduci il video | Reproducir el vídeo | Video abspielen | Lire la vidéo |
+   | Pause the video *(VoiceOver)* | Metti in pausa il video | Pausar el vídeo | Video pausieren | Mettre la vidéo en pause |
+   | Full screen *(VoiceOver)* | Schermo intero | Pantalla completa | Vollbild | Plein écran |
+   | **Parte D** | | | | |
+   | Summary | Riepilogo | Resumen | Übersicht | Résumé |
+   | Distance | Distanza | Distancia | Distanz | Distance |
+   | Time | Tempo | Tiempo | Zeit | Temps |
+   | Fastest km | Km più veloce | Km más rápido | Schnellster km | Km le plus rapide |
+   | Fastest mile | Miglio più veloce | Milla más rápida | Schnellste Meile | Mile la plus rapide |
+   | Avg cadence | Cadenza media | Cadencia media | Ø Kadenz | Cadence moy. |
+   | Calories | Calorie | Calorías | Kalorien | Calories |
+   | Elevation gain | Dislivello positivo | Desnivel positivo | Höhenmeter bergauf | Dénivelé positif |
+   | Splits | Parziali | Parciales | Zwischenzeiten | Temps intermédiaires |
+   | Pace | Passo | Ritmo | Tempo | Allure |
+   | Km | Km | Km | Km | Km |
+   | Mile | Miglio | Milla | Meile | Mile |
+   | Fastest: km {n} · {pace} | Il più veloce: km {n} · {pace} | El más rápido: km {n} · {pace} | Am schnellsten: km {n} · {pace} | Le plus rapide : km {n} · {pace} |
+   | Fastest: mile {n} · {pace} | Il più veloce: miglio {n} · {pace} | El más rápido: milla {n} · {pace} | Am schnellsten: Meile {n} · {pace} | Le plus rapide : mile {n} · {pace} |
+   | Elevation | Altimetria | Altimetría | Höhenprofil | Profil altimétrique |
+   | Elevation along the route, from {min} to {max} m *(VoiceOver)* | Altitudine lungo il percorso, da {min} a {max} m | Altitud a lo largo de la ruta, de {min} a {max} m | Höhe entlang der Strecke, von {min} bis {max} m | Altitude le long du parcours, de {min} à {max} m |
+   | Heart rate | Battito | Pulso | Herzfrequenz | Fréquence cardiaque |
+   | Min | Min | Mín. | Min. | Min |
+   | Average | Medio | Media | Durchschnitt | Moyenne |
+   | Max | Max | Máx. | Max. | Max |
+   | Zones from max heart rate {bpm} bpm | Zone dalla frequenza massima di {bpm} bpm | Zonas según una frecuencia máxima de {bpm} bpm | Zonen ab maximaler Herzfrequenz {bpm} bpm | Zones selon une fréquence max de {bpm} bpm |
+
+   «Show heart rate» è la stessa chiave di TASK-345 B: un sì vale per tutti e
+   due. I testi del meteo (parte E) e la riga della privacy vengono a parte.
+
 ## Criteri di accettazione
 
 - [ ] La pagina si apre dal Feed e funziona con un post senza `stats`.

@@ -231,6 +231,11 @@ testi di privacy col sì dell'utente.
    lingue, va all'utente prima del merge della parte E.
 5. **Il foglio**: barra fissa con le quattro icone, impostazioni trascinando
    in su; 👍 = reazione 👍; «Condividi» solo sui propri post (proposta).
+   **Risposta dell'utente (2026-11-07): «Sì, come proposto».** Barra fissa
+   con le icone; impostazioni (visibilità, «Show heart rate», titolo,
+   descrizione) trascinando in su, solo sui propri post; 👍 al tocco, le sei
+   reazioni tenendo premuto; «Condividi» solo sui propri post, sugli altri
+   tre icone; ✏️ nascosta per neve e palestra.
 6. **I testi** delle sezioni e delle righe nelle cinque lingue, prima del
    merge di B e D.
 

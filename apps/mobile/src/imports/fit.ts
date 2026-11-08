@@ -52,6 +52,7 @@ const SPORTS: ReadonlyMap<number, Activity> = new Map([
   [17, "hiking"],
   [19, "paddling"],
   [21, "cycling"], // e_biking
+  [30, "inline_skating"], // inline_skating (TASK-380)
   [37, "paddling"], // stand_up_paddleboarding
   [41, "paddling"], // kayaking
 ]);

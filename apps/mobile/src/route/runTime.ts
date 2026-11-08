@@ -13,6 +13,9 @@ export const USUAL_PACE_S_PER_KM = 360;
 /** The pace assumed with no walks saved: 12:00 a km (TASK-371, the user's
  * choice). */
 export const USUAL_WALK_S_PER_KM = 720;
+/** The pace assumed with no skates saved: 4:00 a km, 15 km/h (TASK-380, the
+ * user's choice). */
+export const USUAL_SKATE_S_PER_KM = 240;
 
 /** Runs shorter than this say little about a pace. */
 const SHORTEST_RUN_M = 1000;
@@ -26,14 +29,18 @@ const FASTEST_S_PER_KM = 150;
  * recording. */
 const FASTEST_WALK_S_PER_KM = 360;
 const SLOWEST_WALK_S_PER_KM = 1500;
+/** A skate between 36 and 8 km/h: faster is a ride, slower a skate left
+ * recording. */
+const FASTEST_SKATE_S_PER_KM = 100;
+const SLOWEST_SKATE_S_PER_KM = 450;
 
 /** A pace in seconds a km, and whether it is the runner's or the usual one;
  * with the walker's too (TASK-371), for the time under the distance of a
- * walk. */
-export type Pace = { sPerKm: number; own: boolean; walking?: Pace };
+ * walk, and the skater's (TASK-380). */
+export type Pace = { sPerKm: number; own: boolean; walking?: Pace; skating?: Pace };
 
-/** The kinds of outing on foot a pace is read from. */
-type OnFoot = "running" | "walking";
+/** The kinds of outing a pace is read from. */
+type OnFoot = "running" | "walking" | "inline_skating";
 
 const BOUNDS: Readonly<
   Record<OnFoot, { fastest: number; slowest: number; usual: number }>
@@ -48,6 +55,11 @@ const BOUNDS: Readonly<
     slowest: SLOWEST_WALK_S_PER_KM,
     usual: USUAL_WALK_S_PER_KM,
   },
+  inline_skating: {
+    fastest: FASTEST_SKATE_S_PER_KM,
+    slowest: SLOWEST_SKATE_S_PER_KM,
+    usual: USUAL_SKATE_S_PER_KM,
+  },
 };
 
 /**
@@ -55,10 +67,15 @@ const BOUNDS: Readonly<
  * runs on foot, each between 1 km and 2:30–15:00 a km. Imported activities
  * count: they are runs too. The usual pace when no run qualifies. Beside
  * it the walker's, from the walks between 6:00 and 25:00 a km, 12:00 a km
- * before there is any (TASK-371).
+ * before there is any (TASK-371), and the skater's, from the skates between
+ * 36 and 8 km/h, 4:00 a km before there is any (TASK-380).
  */
 export function averagePace(runs: readonly SavedRun[]): Pace {
-  return { ...paceOf(runs, "running"), walking: paceOf(runs, "walking") };
+  return {
+    ...paceOf(runs, "running"),
+    walking: paceOf(runs, "walking"),
+    skating: paceOf(runs, "inline_skating"),
+  };
 }
 
 /** The pace of the last outings of `kind`, as averagePace says it. */

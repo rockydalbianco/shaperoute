@@ -177,6 +177,28 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   post; acceso con fasi e VAM, con un OTA col sì dell'utente.
   Prossimo: la lista della parte A (contratto, API, CHECK, profilo nascosto)
   al Coordinatore. `tasks/TASK-415.md`, `sports/skimo.md`.
+- **TASK-414 — Carrozzina e passeggino ♿, forme semplici dove si spinge**
+  (2026-11-08; numeri dal Coordinatore, ADR-0343 **proposto**; sessione
+  avviata dal Coordinatore Sport). Parte 0, solo documenti: sei reti di
+  prova al banco, da un download per zona col filtro foot e i tag di
+  accessibilità, a 1–5 km su cerchio, cuore, stella e luna.
+  - `wheelcalm` (niente scale, cordoli alti, superfici ruvide, strade
+    principali e secondarie senza marciapiede): 69 su 96; Trento e Milano
+    16 su 16, pianura 13, Fiemme 4. Nessuna scala e nessun cordolo alto sui
+    percorsi (la rete foot: 7,4 km di scale e 92 cordoli alti).
+  - OSM incompleto: i cordoli si sanno solo a Milano e in parte a Trento;
+    `incline` sull'1–3% dei km. Il motore non ha le quote: le salite
+    restano (fino al 14% sui percorsi).
+
+  Scelte dell'utente (2026-11-08): uno sport solo, «Carrozzina e
+  passeggino» ♿ sulla rete `wheelcalm`; 1–5 km; solo cerchio, cuore,
+  stella, luna; i testi e l'avviso su cordoli, gradini e salite in cinque
+  lingue; nel gioco come la camminata, record su 1 e 5 km; tipo carrozzina
+  in Salute e Strava; acceso appena pronto.
+  Lista della parte A approvata dal Coordinatore (migrazione 0058 in bozza;
+  le forme le rifiuta il motore). Prossimo: 414-A in una sessione nuova,
+  nel turno fissato con 413 A e 415 A. `tasks/TASK-414.md`,
+  `sports/wheelchair.md`.
 - **TASK-410 — La pagina del post: più dati e più ordine** (ADR-0340,
   proposta; brief dell'utente del 2026-11-06; numeri dal Coordinatore).
   Branch `docs/TASK-410-post-page` (documenti). Pagina nuova dal Feed: foto
@@ -313,6 +335,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   invariata. Branch `feat/TASK-370-b1-watch-guide`. **Prossimo**: B2 (percorso chiuso preso
   dove lo tocchi, pezzi a penna alzata), poi B3 (l'orologio da solo, con le scelte
   dell'utente su vibrazioni e testi).
+- **TASK-370 A3 — Il telefono dell'orologio** (2026-11-08; parte A3 del piano in
+  `tasks/TASK-370.md`, ADR-0314 «precisazione A3»; lista dei file approvata dal Coordinatore
+  il 2026-11-08). `src/watch/watchLink.ts` (il modulo nativo `WatchConnectivity` coi nomi di
+  `react-native-watch-connectivity` 2.0.0, senza il pacchetto: niente senza nativo),
+  `useWatch.ts` (il conto alla rovescia avvia l'orologio con lo sport, pausa, ripresa e fine
+  nei due versi, le unità con un messaggio `settings` in `transferUserInfo`), `WatchHeart.tsx`
+  (battito e zona sulla card della corsa); `useHealth.ts` non riscrive in Salute la corsa
+  registrata dall'orologio; `PhoneLink.swift` risponde ai messaggi con risposta,
+  `WorkoutManager.swift` tiene le unità del telefono. Jest e XCTest sugli stessi fixture;
+  nessun `package.json`/`app.json`/`app.config.ts`, impronta iOS `6f8bba4c`. Branch
+  `feat/TASK-370-a3-phone`; la unisce il Coordinatore a CI verde. **Prossimo**: A-flip alla
+  build 1.1 (il pacchetto 2.0.0, `match` in `app.json`, il plugin nativo per
+  `workoutSessionMirroringStartHandler`), poi la prova al polso; la parte B.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.
@@ -422,6 +457,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sulla soglia: «Sì, 35 e 28». Le soglie del Roller sono in PR
   (`feat/TASK-380-roller-vehicle-thresholds`, `game_rules.speed_limits`;
   seconda precisazione di ADR-0324). Vanno sul server con la 0055.
+  Soglie in `main` (#914). **Parte B in PR** (2026-11-06,
+  `feat/TASK-380-b-roller-app`): il Roller 🛼 nell'app, «Soon» finché il
+  server non ha la 0055. Profilo completo (testi in cinque lingue, energia
+  del Compendium, avviso, Apple 39 e Health Connect 60), il tempo stimato
+  col passo di chi pattina (4:00/km finché non ne ha, scelta dell'utente),
+  i record propri, i file FIT/GPX/TCX/Strava, i testi dell'orologio. Solo
+  JavaScript. Prossimo: il server (0055) col sì dell'utente, poi `ready`
+  in una PR piccola.
 
 - **TASK-413 — Ciaspole, «Snowshoes» ❄️** (2026-11-08; numeri dal
   Coordinatore, ADR-0342). Parte 0, solo documenti. Al banco, una forma di
@@ -438,6 +481,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Prossimo: le liste di A1 (la neve nel motore) e A2 (contratto, API,
   migrazione, profilo nascosto) al Coordinatore, poi B (app).
   `tasks/TASK-413.md`, `sports/snowshoes.md`.
+  **Parte 0 in `main`** (#933, `189374bc`). Liste di A1 e A2 al
+  Coordinatore; migrazione in bozza 0057. Prossimo: A1 (la neve nel
+  motore) in una sessione nuova, dopo l'accordo con TASK-347 G su
+  `heights.py`; A1 e A2 entrano con l'ok dell'utente per il server.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
@@ -900,6 +947,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   PR da `docs/TASK-411-gym-plans-proposal`. Parti: A griglia, B calendario e
   guida, C schede (migrazione), D privacy; ogni lista al Coordinatore.
   `tasks/TASK-411.md`.
+  2026-11-08: **parte A in `main`** (#930, `a56f78c5`): «+ Exercise» a
+  griglia, prima gli 8 gruppi muscolari poi i loro esercizi; la ricerca
+  cerca in tutti. Solo JavaScript; OTA col sì. Prossimo: parte E (omini e
+  guide, richiesta dell'utente del 2026-11-07) dopo il suo ok di lista, poi B.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

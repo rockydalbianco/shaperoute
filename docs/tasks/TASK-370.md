@@ -1,7 +1,8 @@
 # TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono
 
 **Stato**: In lavorazione · proposta e piano della parte A in `main`; A1 in
-`main` (#839, 2026-11-05); A2 in `main` (#866 e #883, 2026-11-06); prossimo A3
+`main` (#839, 2026-11-05); A2 in `main` (#866 e #883, 2026-11-06); A3 in PR
+(2026-11-08); poi A-flip alla build 1.1
 **Fase**: 5 · **Branch**: `docs/TASK-370-apple-watch` (documenti); il codice
 `feat/TASK-370-a-…`, `feat/TASK-370-b-…`, …
 **Dipende da**: TASK-321 B (HealthKit nella build, in `main`), TASK-376 B3 (il
@@ -250,6 +251,25 @@ solo se c'è, come `haptics/haptics.ts`):
   battito; `src/health/HealthRunEnd.tsx` o `workout.ts` per non riscrivere
   in Salute l'allenamento che l'orologio ha già salvato.
 
+**Esito A3** (2026-11-08, branch `feat/TASK-370-a3-phone`): il telefono parla
+con l'orologio da `src/watch/watchLink.ts`, che chiama il modulo nativo
+`WatchConnectivity` coi nomi di `react-native-watch-connectivity` 2.0.0 senza
+il pacchetto (la 2.0.0 lancia all'import senza il nativo; entra con A-flip).
+`useWatch.ts`, montato in `RunCard` (corsa libera e percorso, quindi
+`FreeRunScreen.tsx` non serve): il conto alla rovescia avvia l'orologio con lo
+sport di «Settings», pausa, ripresa e fine nei due versi (dall'orologio conta
+il cambio fra due suoi stati), le unità in un messaggio nuovo `settings` con
+`transferUserInfo` (l'application context torna indietro: il pacchetto lo
+rimanda). `WatchHeart.tsx` mostra il battito con la zona. `useHealth.ts` non
+scrive in Salute la corsa che l'orologio ha registrato. Lato orologio:
+`PhoneLink.swift` risponde ai messaggi che aspettano risposta (il pacchetto
+manda sempre così), `WorkoutManager.swift` tiene le unità del telefono. Nessun
+testo nuovo; nessun `package.json`/`app.json`/`app.config.ts`; impronta iOS
+`6f8bba4c`. Scelte in ADR-0314, «precisazione A3». **Per A-flip**: il pacchetto
+2.0.0 (ricontrollare i nomi se cambia), `match` in `app.json`, un piccolo
+plugin nativo per `workoutSessionMirroringStartHandler` (solo da codice
+nativo); la prova vera al polso con la build 1.1.
+
 **A-flip — L'interruttore nativo** (solo alla build 1.1): `app.json` (il
 plugin `@bacons/apple-targets`), `apps/mobile/package.json` e
 `package-lock.json` (le due dipendenze), `app.config.ts` (via la variabile
@@ -367,7 +387,22 @@ apps/mobile/scripts/watch-texts.sh (nuovo)
 apps/mobile/app.config.ts (poche righe: MUW_WATCH)
 docs/tasks/TASK-370.md, docs/DECISIONS.md, docs/STATUS.md
 ```
- Parti B–D (previsti, ognuno con la sua lista al
+Parte A3 (lista approvata dal Coordinatore il 2026-11-08):
+
+```
+apps/mobile/src/watch/watchLink.ts, useWatch.ts, WatchHeart.tsx (nuovi)
+apps/mobile/src/watch/watchLink.test.ts, useWatch.test.tsx, WatchHeart.test.tsx, watchHealth.test.ts (nuovi)
+apps/mobile/src/watch/watchMessages.ts (il messaggio settings)
+apps/mobile/targets/watch/Core/Fixtures/messages.json
+apps/mobile/targets/watch/Core/Sources/WatchCore/WatchMessage.swift
+apps/mobile/targets/watch/Core/Tests/WatchCoreTests/WatchMessageTests.swift
+apps/mobile/targets/watch/App/PhoneLink.swift, WorkoutManager.swift
+apps/mobile/src/health/useHealth.ts (una riga)
+apps/mobile/src/screens/RunDashboard.tsx (useWatch e WatchHeart in RunCard)
+docs/tasks/TASK-370.md, docs/DECISIONS.md, docs/STATUS.md
+```
+
+Parti B–D (previsti, ognuno con la sua lista al
 Coordinatore prima di partire):
 
 ```

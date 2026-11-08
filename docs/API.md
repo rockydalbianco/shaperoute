@@ -3241,8 +3241,8 @@ Chiedono tutte il token.
   giornate di sci con quella stazione (`ski_resort_id` della D1).
   - Solo quelli che chi chiede vede su un profilo (`shown_sql`), e solo se
     l'app legge `skiing` (`X-MuW-Reads`).
-  - Dalla giornata più recente, a pagine come `GET
-    /users/{id}/drawings`: `drawings`, `next`, `total`.
+  - Dalla giornata più recente, a pagine: `posts`, `next`, `total`
+    (`resort-posts.json`). Ogni post ha il suo `author`, come nel Feed.
   - `404` per una stazione che non c'è.
 - **Il codice:** `resort_follows.py`. Migrazione `0062`, tipi in
   `packages/shared-types/src/resortFollows.ts`.

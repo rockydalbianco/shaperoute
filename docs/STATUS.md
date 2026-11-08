@@ -128,6 +128,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   forme candidate in `services/route-engine/candidate_outlines/`) nella PR
   #953; poi la registrazione delle sole forme che l'utente approva su strada.
   File: quelli della #953 · `tasks/TASK-418.md`
+- **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
+  parte 0 nella PR #981, scelte e testi approvati dall'utente; A1
+  (server) nella PR #983, poi A2, B1, B2, C. File: quelli della #983 ·
+  `tasks/TASK-424.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
   (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
   i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347

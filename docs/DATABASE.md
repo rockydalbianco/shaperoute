@@ -1050,6 +1050,17 @@ Migrazione `0056_ski_days.sql` (TASK-406 parte D1, ADR-0338, `API.md`
 - Nessuna posizione nuova, nessuna riga di prima cambia, nessun backfill.
   Test in `test_ski_days_api.py`.
 
+Migrazione `0057_ski_touring.sql` (TASK-415 parte A, ADR-0344; il numero è
+del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
+
+- Il vincolo `runs_activity_check` prende anche `'ski_touring'`: una gita
+  di scialpinismo si salva come corsa, come una giornata di sci (`0044`).
+  La migrazione rilegge il vincolo che trova e lo riscrive col nome in più,
+  in fondo, come la `0044`.
+- `favorites`, `group_runs` e `run_bests` no: nessun percorso da rifare,
+  nessun record personale.
+- Nessuna riga cambia. Test in `test_ski_touring_api.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

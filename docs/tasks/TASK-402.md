@@ -6,7 +6,10 @@ Esito: in «Draw on the map» la figura si gira di 15° per tocco, del numero
 scritto e con due dita; con «Add» le tessere aggiungono pezzi che si
 scelgono, si spostano, si girano e si tolgono, in un solo percorso. Video
 del simulatore approvati dall'utente («Sì, approvo», 2026-11-05 e
-2026-11-06). Resta: l'OTA di produzione col sì dell'utente.
+2026-11-06). In produzione, A e B, con l'OTA `6864a998` (2026-11-06).
+Resta solo la prova sul telefono: nel simulatore due tocchi veloci su
+«+15°» ne contavano uno, e un trascinamento subito dopo un tocco a volte
+non partiva.
 **Fase**: 5 · **Branch**: `docs/TASK-402-freehand-pieces` (documenti); poi
 `feat/TASK-402-a-turn` e `feat/TASK-402-b-pieces` · **ADR**: ADR-0336
 

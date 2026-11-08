@@ -13,15 +13,22 @@ public struct GuideDirection: Equatable, Sendable {
     public var joined: Bool
     /// Name or ref of the road entered; nil when OSM has neither.
     public var street: String?
+    /// Roads that meet at the junction.
+    public var branches: Int
+    /// Where the junction is; nil when the phone did not send it.
+    public var point: LatLon?
 
     public init(
-        distanceM: Double, turn: String, angleDeg: Double, joined: Bool, street: String?
+        distanceM: Double, turn: String, angleDeg: Double, joined: Bool, street: String?,
+        branches: Int = 0, point: LatLon? = nil
     ) {
         self.distanceM = distanceM
         self.turn = turn
         self.angleDeg = angleDeg
         self.joined = joined
         self.street = street
+        self.branches = branches
+        self.point = point
     }
 }
 
@@ -38,12 +45,17 @@ public enum GuideCue: Equatable, Sendable {
     case routeAt(distanceM: Double, bearingDeg: Double)
     case backOnRoute
     case arrived
+    /// The end of a letter or part of a route in pieces: the pen up until
+    /// `letter`, the next one (nil when the route names none).
+    case penUp(letter: String?)
+    /// The start of the next letter or part.
+    case penDown(letter: String?)
 
-    /// Whether the phone vibrates for it: a turn, leaving the route and
-    /// arriving; the others are said only.
+    /// Whether the phone vibrates for it: a turn, leaving the route,
+    /// arriving and the pen; the others are said only.
     public var vibrates: Bool {
         switch self {
-        case .turn, .offRoute, .arrived:
+        case .turn, .offRoute, .arrived, .penUp, .penDown:
             return true
         case .depart, .routeAt, .backOnRoute:
             return false
@@ -64,10 +76,10 @@ public struct GuideReading: Equatable, Sendable {
     }
 }
 
-/// The guidance along a route from its start (TASK-370 part B1, ADR-0314):
-/// the «follow» part of the phone's src/navigation/navigator.ts, with the
-/// same constants and the same steps. A closed route joined wherever the
-/// runner reaches it (TASK-273) and routes in pieces are part B2.
+/// The guidance along a route (TASK-370 parts B1 and B2, ADR-0314): the
+/// phone's src/navigation/navigator.ts, with the same constants and the
+/// same steps, from the route's start or, on a closed route, from wherever
+/// the runner reaches it (TASK-273, `StartAnywhere`).
 public struct Navigation: Equatable, Sendable {
     /// Fixes in a row beyond `offRouteM`, not yet told.
     public struct OffStreak: Equatable, Sendable {
@@ -80,6 +92,14 @@ public struct Navigation: Equatable, Sendable {
     public struct Found: Equatable, Sendable {
         public var firstM: Double
         public var alongM: Double
+        public var fixes: Int
+    }
+
+    /// Before a run joins a closed route, the fixes in a row on one pass of
+    /// it: where the first and the last were placed, along its loop.
+    public struct Pass: Equatable, Sendable {
+        public var firstM: Double
+        public var lastM: Double
         public var fixes: Int
     }
 
@@ -109,6 +129,18 @@ public struct Navigation: Equatable, Sendable {
     public var arrived = false
     /// How far ahead a turn is told.
     public var announceM: Double
+    /// A closed route the run joins wherever it reaches it: the route twice
+    /// round, until the run joins it; nil after, and along any other route.
+    public var loop: RouteLoop?
+    /// Fixes on the route in a row before the run joins it, on each pass.
+    public var joining: [Pass]?
+    /// Where the run joined a closed route, along the route as drawn:
+    /// `points`, `along` and `directions` are then the route from there.
+    /// nil before it joins, and along any other route.
+    public var joinedAtM: Double?
+
+    /// Whether the run is still to join a closed route.
+    public var waitingToJoin: Bool { loop != nil }
 }
 
 public enum Navigator {
@@ -131,29 +163,148 @@ public enum Navigator {
     /// No fix for this long, in milliseconds, is a gap: the runner may be
     /// anywhere ahead.
     public static let gapMs = 20_000.0
-    /// After a detour the fixes found ahead must have gone this far the
-    /// route's way: crossing the shape further on is not getting back on it.
+    /// A closed route is joined after this many fixes in a row on a pass
+    /// of it, each near the one before,
+    public static let joinFixes = 3
+    /// once they have gone this far along it, either way. After a detour the
+    /// fixes found ahead must have gone this far the route's way too.
     public static let joinM = 20.0
 
     /// The navigation at the start of a route, and what is told then.
+    /// `anywhere`, for a closed route (`StartAnywhere.startsAnywhere`),
+    /// starts the run where the runner reaches it: the road it heads out on
+    /// is told then.
     public static func start(
-        points: [LatLon], directions: [GuideDirection], announceM: Double = announceM
+        points: [LatLon], directions: [GuideDirection], announceM: Double = announceM,
+        anywhere: Bool = false
     ) -> (Navigation, [GuideCue]) {
         let departs = directions.first?.turn == "depart"
-        let navigation = Navigation(
+        let along = RouteProgress.cumulative(points)
+        var navigation = Navigation(
             points: points,
-            along: RouteProgress.cumulative(points),
+            along: along,
             directions: directions,
             next: departs ? 1 : 0,
             saidUpTo: departs ? 0 : -1,
             announceM: announceM
         )
-        return (navigation, departs ? [.depart(index: 0)] : [])
+        if anywhere {
+            navigation.loop = StartAnywhere.loopOf(points, along)
+        }
+        return (navigation, departs && !anywhere ? [.depart(index: 0)] : [])
     }
 
-    /// A fix along the route.
+    /// A fix along the route, or towards a closed route not joined yet.
     public static func onFix(
         _ navigation: Navigation, _ fix: LatLon, _ reading: GuideReading = GuideReading()
+    ) -> (Navigation, [GuideCue]) {
+        if let loop = navigation.loop, !navigation.arrived {
+            return towardsJoin(navigation, loop, fix, reading)
+        }
+        return follow(navigation, fix, reading)
+    }
+
+    /// A fix before the run has joined a closed route. Away from the route,
+    /// it is followed as on the way to a route's start. On it, nothing is
+    /// told until `joinFixes` fixes in a row on a pass of it have gone
+    /// `joinM` along it; then the route is the one from the first of them
+    /// round to there, the road it heads out on is told (after «back on the
+    /// route» if it was off), and the fix is followed on it.
+    static func towardsJoin(
+        _ navigation: Navigation, _ loop: RouteLoop, _ fix: LatLon, _ reading: GuideReading
+    ) -> (Navigation, [GuideCue]) {
+        var seen = navigation
+        seen.lastFixMs = reading.timeMs ?? navigation.lastFixMs
+        if let accuracyM = reading.accuracyM, accuracyM > poorFixM {
+            return (seen, [])
+        }
+        guard let joining = joiningWith(navigation, loop, fix) else {
+            // Farther than `offRouteM` from all the route: off it, from its start.
+            var away = navigation
+            away.joining = nil
+            return follow(away, fix, reading)
+        }
+        guard let pass = joinedPass(joining) else {
+            // Off the route before, the way to it is still shown.
+            var waiting = navigation.offRoute ? stillOff(navigation, seen, fix) : seen
+            waiting.joining = joining
+            waiting.offStreak = nil
+            return (waiting, [])
+        }
+        let route = StartAnywhere.joinRoute(
+            navigation.points, navigation.along, navigation.directions, loop,
+            joinM: pass.firstM.truncatingRemainder(dividingBy: loop.lengthM))
+        let departs = route.directions.first?.turn == "depart"
+        var joined = seen
+        joined.points = route.points
+        joined.along = route.along
+        joined.directions = route.directions
+        joined.alongM = 0
+        joined.next = departs ? 1 : 0
+        joined.saidUpTo = departs ? 0 : -1
+        joined.offRoute = false
+        joined.offStreak = nil
+        joined.backFixes = 0
+        joined.loop = nil
+        joined.joining = nil
+        joined.joinedAtM = route.joinedAtM
+        var cues: [GuideCue] = navigation.offRoute ? [.backOnRoute] : []
+        if departs {
+            cues.append(.depart(index: 0))
+        }
+        let followed = follow(joined, fix, reading)
+        return (followed.0, cues + followed.1)
+    }
+
+    /// The fixes on a closed route in a row with `fix`, on each pass of it
+    /// that they stay on, or nil when it is off the route. The next of a
+    /// row is looked for `backM` either way from the last; a row starts on
+    /// every pass near its first fix, placed on the loop's second round when
+    /// it is in the first half, so that it goes on across the route's start.
+    static func joiningWith(
+        _ navigation: Navigation, _ loop: RouteLoop, _ fix: LatLon
+    ) -> [Navigation.Pass]? {
+        let going = (navigation.joining ?? []).compactMap { pass -> Navigation.Pass? in
+            let near = RouteProgress.nearest(
+                loop.points, loop.along, fix,
+                fromM: pass.lastM - RouteProgress.backM, toM: pass.lastM + RouteProgress.backM)
+            return near.offM <= RouteProgress.offRouteM
+                ? Navigation.Pass(firstM: pass.firstM, lastM: near.alongM, fixes: pass.fixes + 1)
+                : nil
+        }
+        if !going.isEmpty {
+            return going
+        }
+        let passes = RouteProgress.passesNear(navigation.points, navigation.along, fix).map {
+            located -> Navigation.Pass in
+            let atM = located.alongM < loop.lengthM / 2
+                ? located.alongM + loop.lengthM : located.alongM
+            return Navigation.Pass(firstM: atM, lastM: atM, fixes: 1)
+        }
+        return passes.isEmpty ? nil : passes
+    }
+
+    /// The pass the run joins, once `joinFixes` fixes on it have gone
+    /// `joinM` along it, or nil. The route's way wins; going the other way
+    /// on every pass, the run joins all the same.
+    static func joinedPass(_ passes: [Navigation.Pass]) -> Navigation.Pass? {
+        let gone = { (pass: Navigation.Pass) in pass.lastM - pass.firstM }
+        let ready = passes.filter { $0.fixes >= joinFixes && abs(gone($0)) >= joinM }
+        let ahead = ready.filter { gone($0) > 0 }
+        if var best = ahead.first {
+            for pass in ahead.dropFirst() where gone(pass) > gone(best) {
+                best = pass
+            }
+            return best
+        }
+        // Another pass may be the route's way, still short of `joinM`.
+        return passes.contains { gone($0) > 0 } ? nil : ready.first
+    }
+
+    /// A fix along the route followed from its start, or from where the run
+    /// joined a closed route.
+    static func follow(
+        _ navigation: Navigation, _ fix: LatLon, _ reading: GuideReading
     ) -> (Navigation, [GuideCue]) {
         if navigation.arrived {
             return (navigation, [])
@@ -168,7 +319,7 @@ public enum Navigator {
         let lost = navigation.lost || gapBefore(navigation, timeMs)
         // Off the route, they may get back on it further on than `locate`
         // looks: a street closed, a block run round.
-        let detour = navigation.offRoute && navigation.alongM > 0
+        let detour = navigation.offRoute && navigation.alongM > 0 && !navigation.waitingToJoin
         var found: Navigation.Found?
         if offM > RouteProgress.offRouteM && (lost || detour) {
             // A poor fix neither ends nor extends the fixes found ahead.
@@ -325,6 +476,9 @@ public enum Navigator {
         _ navigation: Navigation, offRunM: Double
     ) -> (fromM: Double, toM: Double) {
         let alongM = navigation.alongM
+        if navigation.waitingToJoin {
+            return (-.infinity, .infinity)
+        }
         if alongM <= 0 {
             return (0, RouteProgress.aheadM)
         }

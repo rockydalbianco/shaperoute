@@ -1,34 +1,39 @@
 # INDEX — Cosa leggere, e quando
 
-Scopo di questo file: **evitare che si carichi documentazione inutile**.
-Trova la riga che descrive il tuo task, leggi solo quei documenti.
+Scopo: **non caricare documentazione inutile**. Trova la riga del tuo task e
+leggi solo quei documenti.
 
 ## Regola generale
 
-| Sempre | Mai "per sicurezza" |
+| Sempre | Mai «per sicurezza» |
 |---|---|
 | `CLAUDE.md`, `STATUS.md`, il task file | tutto il resto di `docs/` |
 
-## Instradamento per tipo di task
+**`DECISIONS.md` e `docs/archive/` non si leggono interi**: si cercano con
+grep per numero (`grep -n "ADR-0300" docs/DECISIONS.md docs/archive/*.md`,
+`grep -n "TASK-347" docs/archive/*.md`) e si legge solo la voce trovata.
+Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
+
+## Instradamento
 
 | Sto lavorando su… | Leggi |
 |---|---|
 | Installare tutto e partire da zero | `SETUP.md` |
-| Geometria delle forme (circle, heart, star) | `ROUTE_ENGINE.md` §2 |
-| Proiezione forma → coordinate geografiche | `ROUTE_ENGINE.md` §3 |
-| Snapping alla rete stradale, routing | `ROUTE_ENGINE.md` §4, `MAPS.md` |
-| Ottimizzazione e metrica di somiglianza | `ROUTE_ENGINE.md` §5 |
-| Validazione distanza / percorribilità | `ROUTE_ENGINE.md` §6, `TESTING.md` |
+| Forme, proiezione, snapping, routing, ottimizzazione, validazione | `ROUTE_ENGINE.md` (§2–§6), `MAPS.md`, `TESTING.md` |
+| Disegno libero ancorato alle strade (map matching per tratto) | `ROUTE_ENGINE.md` §4–§5, `API.md` «Stroke matches», `tasks/TASK-347.md`, ADR-0300 |
 | Guardare o confrontare percorsi generati | `../samples/README.md` |
 | Export GPX o wearable | `GPX.md` |
 | Endpoint, contratti REST, validazione input | `API.md`, `ARCHITECTURE.md` §3 |
-| Parole della forma lette dall'AI, Ollama | `AI.md` |
-| Schermate, mappa, interazione utente | `UI.md`, `PRODUCT.md` |
+| Cosa sa leggere un'app vecchia, `X-MuW-Reads`, uno sport nuovo nelle liste | `API.md` «Quello che un'app sa leggere», ADR-0328 |
+| Parole lette dall'AI, Ollama | `AI.md` |
+| Schermate, mappa, «Draw», «Edit the drawing», disegno a mano, girare la figura, i pezzi | `UI.md`, `PRODUCT.md` |
+| Il tema, il look premium, `src/ui/`, i movimenti (`motion.ts`) | `UI.md` «Il tema» e «Il look premium», ADR-0293, ADR-0329, `tasks/TASK-339.md`, `tasks/TASK-388.md` |
+| Barra di schede, header, swipe fra le schede | `UI.md`, ADR-0311, ADR-0323 |
 | Modello dati, migrazioni, PostGIS | `DATABASE.md` |
-| Scelta di libreria, provider, formato | `DECISIONS.md` |
+| Server, deploy, OTA, pubblicazione | `DEPLOY.md`, `AGENTI.md` |
+| Scelta di libreria, provider, formato | `DECISIONS.md` (indice, poi grep) |
 | Struttura cartelle, confini tra moduli | `ARCHITECTURE.md` |
 | Test, fixture, criteri di accettazione | `TESTING.md` |
-| Il sito web, il merch, le magliette | `SITO.md` |
 | Branch, PR, review, rilasci | `TEAM_WORKFLOW.md` |
 | Pubblicità, account AdMob, pagamenti | `PUBBLICITA.md`, `DECISIONS.md` ADR-0198 |
 | Il gioco delle forme, «Play», squadre e sfide | `GIOCO.md`, `tasks/TASK-296.md` |
@@ -82,43 +87,49 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Le ciaspole «Snowshoes»: forme piccole libere sulla neve (pendii, boschi, piste), l'avviso valanghe, le misure | `tasks/TASK-413.md`, `DECISIONS.md` ADR-0342, `sports/snowshoes.md`, `sports/COME-AGGIUNGERE.md`, `sports/paddle.md` |
 | I movimenti: le molle di `motion.spring`, `src/ui/motion.ts`, la capsula della barra, l'«isola», fogli e liste | `tasks/TASK-388.md`, `DECISIONS.md` ADR-0329 e ADR-0293 |
 | Il nuoto in piscina: calorie per passo /100 m, battito medio e tempo nelle zone da Salute | `tasks/TASK-409.md`, `tasks/TASK-400.md`, `DECISIONS.md` ADR-0318 («il nuoto in piscina») e ADR-0334 (precisazione D) |
+| Il sito, il merch | `SITO.md` |
+| Pubblicità, AdMob, pagamenti | `PUBBLICITA.md`, ADR-0198 |
+| Feed: schede, filtri «Tutti»/«Seguiti», percorsi di MuW | `API.md` «Feed», ADR-0306, ADR-0308, ADR-0310 |
+| Post: video, compositore, calorie e battito | `API.md` «Drawings», `tasks/TASK-336.md`, `tasks/TASK-348.md`, `tasks/TASK-345.md` |
+| La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 |
+| Video della corsa ed editor con l'animale 3D | ADR-0303, ADR-0339, `UI.md` «Il post da condividere», `tasks/TASK-408.md` |
+| Messaggi, chat, allegati | `API.md` «Messages», `UI.md`, ADR-0279, ADR-0305 |
+| Profilo: record personali, badge, il mio corpo, VO₂ max | `API.md` «Profile», ADR-0312, ADR-0318, `tasks/TASK-341.md`, `tasks/TASK-397.md` |
+| Posizione del telefono e privacy | `tasks/TASK-363.md`, ADR-0306 |
+| Il gioco delle forme, squadre e sfide | `GIOCO.md` |
+| Concorsi e sfide del mese | `CONCORSI.md`, `tasks/TASK-343.md` |
+| Corse di gruppo | `EVENTI.md`, `tasks/TASK-309.md` |
+| Attività da altre app (GPX, TCX, FIT), post di sole foto | `IMPORTAZIONI.md`, `tasks/TASK-312.md` |
+| Apple Salute, Health Connect | ADR-0281, `tasks/TASK-321.md` |
+| «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |
+| Percorsi in bici di MuW in «Explore» | `UI.md` «Pedalalo tu», ADR-0309 |
+| Il catalogo di «Explore»: forme nuove, i mille disegni, la pagina | `../catalog/README.md`, ADR-0347, `tasks/TASK-418.md`, `tasks/TASK-419.md`, `tasks/TASK-420.md` |
+| Aggiungere uno sport, il banco `tools/sport_bench/` | `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md`, ADR-0320 |
+| Uno sport in particolare (corsa, bici, canoa, hike, gravel, roller, gym, skimo, wheelchair, snowshoes) | `sports/<sport>.md` e il suo task file se aperto |
+| Nuoto in piscina: calorie, battito e zone | `tasks/TASK-409.md`, ADR-0318, ADR-0334 |
+| Walk, nuoto in acque libere | `ROUTE_ENGINE.md` (le reti, §8), `tasks/TASK-371.md` |
+| Sci: «Record only», stazioni, meteo | `MAPS.md` «Impianti e piste da sci», ADR-0319, ADR-0338, `tasks/TASK-375.md`, `tasks/TASK-406.md` |
+| Apple Watch | `tasks/TASK-370.md`, ADR-0314 |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
+
+Le righe di prima, con i rimandi ai task chiusi, sono in
+`archive/INDEX-fino-al-2026-11.md`.
 
 ## Stato dei documenti
 
-`[pieno]` utilizzabile · `[stub]` da scrivere quando arriva il task che lo richiede
-
-| Documento | Stato | Si scrive con |
-|---|---|---|
-| `SETUP.md` | pieno | — |
-| `PRODUCT.md` | pieno | — |
-| `ARCHITECTURE.md` | pieno | — |
-| `ROUTE_ENGINE.md` | pieno | — |
-| `ROADMAP.md` | pieno | — |
-| `DECISIONS.md` | pieno | — |
-| `STATUS.md` | pieno | — |
-| `TEAM_WORKFLOW.md` | pieno | — |
-| `TESTING.md` | pieno | — |
-| `GPX.md` | pieno | — |
-| `MAPS.md` | pieno | — |
-| `API.md` | pieno | — |
-| `UI.md` | pieno per mappa e posizione | il resto con TASK-023 |
-| `AI.md` | pieno | — |
-| `DATABASE.md` | pieno | — |
-| `SITO.md` | pieno | — |
-| `PUBBLICITA.md` | pieno per account e pagamenti | annunci veri con TASK-153 |
-
-Uno stub si riempie **quando arriva il suo task**, non prima: scrivere oggi
-un `DATABASE.md` dettagliato significa documentare decisioni non ancora prese.
+Tutti pieni, tranne `UI.md` (pieno per mappa e posizione) e `PUBBLICITA.md`
+(pieno per account e pagamenti; gli annunci veri con TASK-153). Uno stub si
+riempie quando arriva il suo task, non prima.
 
 ## Chi possiede cosa
 
-Ogni informazione vive in **un solo** documento. Se la trovi in due posti,
-uno dei due è già sbagliato: cancellalo e metti un rimando.
+Ogni informazione vive in **un solo** documento: se la trovi in due posti,
+uno dei due è già sbagliato.
 
-- Stato corrente e prossimo passo → `STATUS.md` (solo lì)
-- Perché una scelta è stata fatta → `DECISIONS.md` (solo lì)
-- Cosa faremo e in che ordine → `ROADMAP.md` (solo lì)
+- Stato corrente e prossimo passo → `STATUS.md`; task chiusi →
+  `archive/COMPLETATI.md`
+- Perché una scelta è stata fatta → `DECISIONS.md` (e i suoi archivi)
+- Cosa faremo e in che ordine → `ROADMAP.md`
 - Come funziona un algoritmo → il documento di dominio
-- Regole permanenti di comportamento → `CLAUDE.md` (solo lì)
-- Risultati generati e loro giudizio → `samples/LOG.md` (solo lì)
+- Regole permanenti → `CLAUDE.md`
+- Risultati generati e loro giudizio → `samples/LOG.md`

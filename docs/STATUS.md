@@ -105,8 +105,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'utente; poi D3. File: quelli della #960 · `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
-- **TASK-408 — L'editor del video dell'attività** · C1 in `main`; C2 (scene
-  e finale) nella PR #961. File: quelli della #961 · `tasks/TASK-408.md`
+- **TASK-408 — L'editor del video dell'attività** · C1 e C2a (scene e
+  finale) in `main`; C2b (camera dietro l'animale) nella PR #989; poi C2c
+  (anteprima), B2 (elefante), D, E. File: quelli della #989 ·
+  `tasks/TASK-408.md`
 - **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` (#922); B
   (battito e zone) nella 1.0.3. File: — · `tasks/TASK-409.md`
 - **TASK-410 — La pagina del post** · B in `main` (#949) e in produzione
@@ -117,8 +119,13 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   migrazione 0058); F (la palestra più chiara) in PR; poi server, sito della
   privacy e un OTA dedicato, ognuno col sì. File: quelli della F ·
   `tasks/TASK-411.md`
-- **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore) nella
-  PR #957, poi A2 e B. File: quelli della #957 · `tasks/TASK-413.md`
+- **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
+  schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
+  #962 · `tasks/TASK-411.md`
+- **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
+  `heights.py` condiviso); server col passo 2 dell'utente, senza
+  `draw_examples` (impronte uguali); prossime A2 e B. File: — ·
+  `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·
   `tasks/TASK-414.md`

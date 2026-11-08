@@ -26,8 +26,6 @@ dell'utente, una pubblicazione alla volta, dal Coordinatore (`AGENTI.md`).
 **TASK-407**: la build 1.0.2 da `release/1.0.2`, che lancia l'utente.
 OTA di produzione e aggiornamenti del server in sospeso per task già Done:
 li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
-Fra gli OTA in sospeso: la pagina «Catalog» di «Explore» (TASK-420, #954 in
-`main` il 2026-11-08), da provare sul telefono col primo OTA.
 
 ## In lavorazione
 

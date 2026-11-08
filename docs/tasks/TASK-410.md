@@ -464,8 +464,10 @@ niente Edit & run).
 Lista dei file approvata dal Coordinatore il 2026-11-08. Aggiunte dello
 stesso giorno: `services/api/tests/test_drawings.py` (due righe, `stats` in
 `NEW_FIELDS` e `SOURCE` come `order` di TASK-348), approvata dal
-Coordinatore; i tre test di `activitiesDoor` che contano le richieste,
-chiesti e in attesa del suo ok. Branch `feat/TASK-410-c-run-stats`.
+Coordinatore; i tre test di `activitiesDoor` che contano le richieste (il
+finto API risponde 200 a `…/stats` e lo toglie dalla lista) e il nuovo
+`activitiesDoorStats.test.tsx`, approvati dal Coordinatore; `api/drawings.ts`
+esce dalla lista. Branch `feat/TASK-410-c-run-stats`.
 
 ```
 services/api/migrations/0064_run_stats.sql       (nuovo; numero in bozza, il vero al merge)

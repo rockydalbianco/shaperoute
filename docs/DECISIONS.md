@@ -25053,6 +25053,63 @@ senza sapere quale scheda è stata fatta (un allenamento libero li
 colonna (C); solo JavaScript nell'app, impronta iOS invariata. Server,
 migrazione, privacy e OTA col sì dell'utente.
 
+## ADR-0342 — Le ciaspole: forme piccole piazzate libere sulla neve, come sull'acqua
+
+**Stato**: Accettato · 2026-11-08 · TASK-413. Scelte dell'utente: «SI ANCHE
+FORME LIBERE SULLA NEVE PIÙ PICCOLE» (2026-11-07); il 2026-11-08 nome,
+distanze, regole della neve, testi, gioco e accensione (`tasks/TASK-413.md`)
+
+**Contesto**: le ciaspole non hanno una rete. Sci di fondo e sci alpino
+sono «Record only» perché sulle piste le forme non vengono (ADR-0316,
+ADR-0317); con le ciaspole invece si cammina dove c'è neve. Il motore sa
+già piazzare una forma libera dove non c'è rete: sull'acqua, la forma
+piazzata è il percorso (ADR-0154, `water_fit.py`). Al banco, con la neve
+permessa al posto dell'acqua, una forma di 0,5–3 km entra 60 volte su 60 in
+cinque posti di montagna, 48 su 60 senza boschi (`sports/snowshoes.md`).
+
+**Decisione** (le scelte di prodotto sono dell'utente; il modo è deciso
+dall'agente su delega dell'utente):
+
+1. «Snowshoes» ❄️ è uno sport disegnato, `snowshoeing`, da 0,5 a 3 km.
+   Si può anche partire senza percorso, come ogni sport.
+2. La forma è piazzata da `water_fit.fit_shape` così com'è, su un'area di
+   **neve permessa**: il riquadro attorno alla partenza meno i pendii oltre
+   25° (con 30 m attorno a quelli oltre 30°), i boschi, i ruscelli, le
+   piste, gli impianti, roccia e ghiacciai, l'acqua, i paesi e le strade
+   principali, le riserve e i biotopi (i parchi restano). Si entra da un
+   punto di strada minore, carrareccia o sentiero entro 2 km. `water.py` e
+   `water_fit.py` non cambiano: canoa e nuoto restano identici.
+3. Le pendenze vengono dalle tegole Terrarium (zoom 13, circa 30 m), già
+   usate dall'app e dagli studi dello sci. Il modulo delle quote del motore
+   è quello condiviso voluto da ADR-0300 (parte G di TASK-347): il primo
+   che lo scrive lo scrive per tutti, tramite il Coordinatore.
+4. Solo dal server, come l'acqua: neve e quote si scaricano alla prima
+   richiesta di un posto e restano in cache; nessuna zona in memoria. Il
+   telefono non disegna sulla neve.
+5. I moduli nuovi del motore stanno fuori dall'impronta (come
+   `DRAWN_WATER_ONLY`): gli esempi tenuti non si ridisegnano.
+6. Un avviso di sicurezza al primo «Start», come canoa e nuoto (ADR-0283),
+   e una riga sotto ogni percorso, con i testi approvati in cinque lingue.
+   Il motore non conosce il bollettino valanghe, la neve del giorno, i
+   divieti locali e i terreni privati: l'avviso lo dice.
+7. Nel gioco come Hike: i metri contano, niente tempi migliori né record
+   personali.
+8. Le parti: A1 (la neve nel motore), A2 (contratto, API, migrazione,
+   profilo nascosto), B (app). «ready» appena pronte; server, migrazione e
+   produzione ciascuno col sì dell'utente.
+
+**Conseguenze**:
+
+- Un terzo modo di disegnare accanto a rete e acqua. I punti dell'API che
+  dicono «sull'acqua non c'è rete» (`jobs.py`, `activity_graphs.py`,
+  `errors.py`, `way_back.py`, `route_archive.py`) diventano «acqua o neve».
+- Una forma sulla neve non garantisce che la neve ci sia, né che il pendio
+  sia sicuro quel giorno: lo promette l'avviso, non il motore.
+- A 3 km la forma spesso non entra senza boschi: l'errore dice a quale
+  distanza entra.
+- Un posto nuovo aspetta Overpass (20–40 s) alla prima richiesta, come la
+  prima acqua di un lago.
+
 ## ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server
 
 **Stato**: Proposto · 2026-11-08 · TASK-415. Numeri dal Coordinatore. Le
@@ -25120,59 +25177,3 @@ decisione presa ma non ancora codice sulle quote dalle tegole Terrarium
   l'avviso lo dice;
 - le ciaspole e Hike possono avere fasi, pendenza e vette con gli stessi
   moduli, senza riscriverli.
-## ADR-0342 — Le ciaspole: forme piccole piazzate libere sulla neve, come sull'acqua
-
-**Stato**: Accettato · 2026-11-08 · TASK-413. Scelte dell'utente: «SI ANCHE
-FORME LIBERE SULLA NEVE PIÙ PICCOLE» (2026-11-07); il 2026-11-08 nome,
-distanze, regole della neve, testi, gioco e accensione (`tasks/TASK-413.md`)
-
-**Contesto**: le ciaspole non hanno una rete. Sci di fondo e sci alpino
-sono «Record only» perché sulle piste le forme non vengono (ADR-0316,
-ADR-0317); con le ciaspole invece si cammina dove c'è neve. Il motore sa
-già piazzare una forma libera dove non c'è rete: sull'acqua, la forma
-piazzata è il percorso (ADR-0154, `water_fit.py`). Al banco, con la neve
-permessa al posto dell'acqua, una forma di 0,5–3 km entra 60 volte su 60 in
-cinque posti di montagna, 48 su 60 senza boschi (`sports/snowshoes.md`).
-
-**Decisione** (le scelte di prodotto sono dell'utente; il modo è deciso
-dall'agente su delega dell'utente):
-
-1. «Snowshoes» ❄️ è uno sport disegnato, `snowshoeing`, da 0,5 a 3 km.
-   Si può anche partire senza percorso, come ogni sport.
-2. La forma è piazzata da `water_fit.fit_shape` così com'è, su un'area di
-   **neve permessa**: il riquadro attorno alla partenza meno i pendii oltre
-   25° (con 30 m attorno a quelli oltre 30°), i boschi, i ruscelli, le
-   piste, gli impianti, roccia e ghiacciai, l'acqua, i paesi e le strade
-   principali, le riserve e i biotopi (i parchi restano). Si entra da un
-   punto di strada minore, carrareccia o sentiero entro 2 km. `water.py` e
-   `water_fit.py` non cambiano: canoa e nuoto restano identici.
-3. Le pendenze vengono dalle tegole Terrarium (zoom 13, circa 30 m), già
-   usate dall'app e dagli studi dello sci. Il modulo delle quote del motore
-   è quello condiviso voluto da ADR-0300 (parte G di TASK-347): il primo
-   che lo scrive lo scrive per tutti, tramite il Coordinatore.
-4. Solo dal server, come l'acqua: neve e quote si scaricano alla prima
-   richiesta di un posto e restano in cache; nessuna zona in memoria. Il
-   telefono non disegna sulla neve.
-5. I moduli nuovi del motore stanno fuori dall'impronta (come
-   `DRAWN_WATER_ONLY`): gli esempi tenuti non si ridisegnano.
-6. Un avviso di sicurezza al primo «Start», come canoa e nuoto (ADR-0283),
-   e una riga sotto ogni percorso, con i testi approvati in cinque lingue.
-   Il motore non conosce il bollettino valanghe, la neve del giorno, i
-   divieti locali e i terreni privati: l'avviso lo dice.
-7. Nel gioco come Hike: i metri contano, niente tempi migliori né record
-   personali.
-8. Le parti: A1 (la neve nel motore), A2 (contratto, API, migrazione,
-   profilo nascosto), B (app). «ready» appena pronte; server, migrazione e
-   produzione ciascuno col sì dell'utente.
-
-**Conseguenze**:
-
-- Un terzo modo di disegnare accanto a rete e acqua. I punti dell'API che
-  dicono «sull'acqua non c'è rete» (`jobs.py`, `activity_graphs.py`,
-  `errors.py`, `way_back.py`, `route_archive.py`) diventano «acqua o neve».
-- Una forma sulla neve non garantisce che la neve ci sia, né che il pendio
-  sia sicuro quel giorno: lo promette l'avviso, non il motore.
-- A 3 km la forma spesso non entra senza boschi: l'errore dice a quale
-  distanza entra.
-- Un posto nuovo aspetta Overpass (20–40 s) alla prima richiesta, come la
-  prima acqua di un lago.

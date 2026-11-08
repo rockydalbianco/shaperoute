@@ -80,9 +80,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `fix/TASK-363-position`; server, sito e OTA, tre sì a parte. File: — ·
   `tasks/TASK-363.md`
 - **TASK-370 — L'app per Apple Watch** · A1–A3, B1, B2, B3a1 («Send to
-  watch», la lista «Routes» sull'orologio) in `main`; B3a2 (i preferiti da
-  soli) in PR; poi B3b, B3c, A-flip alla 1.1. File: `src/watch/`,
-  `src/favorites/favoritesDoor.ts` · `tasks/TASK-370.md`
+  watch», «Routes» sull'orologio), B3a2 (i preferiti da soli) in `main`;
+  prossimi B3b (la corsa guidata sull'orologio), B3c, A-flip alla 1.1.
+  File: — · `tasks/TASK-370.md`
 - **TASK-371 — La camminata, «Walk»** · A e B Done, «Walk» acceso (#923);
   resta C. File: — · `tasks/TASK-371.md`
 - **TASK-374 — Il mio corpo: calorie e zone del battito** · A e B in `main`;

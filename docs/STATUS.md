@@ -4,7 +4,7 @@
 > ultimo da aggiornare. Deve restare corto: lo storico è in `docs/archive/`
 > (si cerca con grep, non si legge intero).
 
-**Ultimo aggiornamento**: 2026-11-08 · **Fase corrente**: 5 — Sport e piattaforme
+**Ultimo aggiornamento**: 2026-11-08 (TASK-412 chiuso) · **Fase corrente**: 5 — Sport e piattaforme
 
 ---
 
@@ -50,12 +50,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   prova sull'iPhone. File: — · `tasks/TASK-301.md`
 - **TASK-309 — Le corse di gruppo** · documenti e A (API) in `main`;
   prossimo B (app), poi C. File: — · `tasks/TASK-309.md`
-- **TASK-310 — pytest fermato sotto la 9.2** · nel vecchio STATUS è in
-  «Completato», il task file dice «In corso»: da chiudere nel task file.
-  File: — · `tasks/TASK-310.md`
-- **TASK-315 — Le foto di un post si scorrono nel Feed** · nel vecchio
-  STATUS è in «Completato», il task file dice «In corso»: da chiudere nel
-  task file. File: — · `tasks/TASK-315.md`
 - **TASK-311 — Parole scritte meglio** · A e B fatte; C e D dopo il sì
   dell'utente. File: — · `tasks/TASK-311.md`
 - **TASK-312 — Attività da altre app e post di sole foto** · A e B in `main`;
@@ -118,13 +112,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-410 — La pagina del post** · B in `main` (#949); poi C
   (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
 - **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
-  schede) nella PR #964, D (privacy) nella #962, F (la palestra più chiara)
-  su `feat/TASK-411-f-gym-clearer` dopo la #964. File: quelli delle #964,
-  #962 e della F · `tasks/TASK-411.md`
-- **TASK-412 — Documenti snelli** · questa PR: STATUS, DECISIONS e INDEX
-  archiviati parola per parola in `docs/archive/`. File: `CLAUDE.md`,
-  `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md`, `docs/archive/` ·
-  `tasks/TASK-412.md`
+  schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
+  #962 · `tasks/TASK-411.md`
 - **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore) nella
   PR #957, poi A2 e B. File: quelli della #957 · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
@@ -132,8 +121,18 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `tasks/TASK-414.md`
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
-- **TASK-419 — Il catalogo grande di «Explore»** · proposta in `main`
-  (ADR-0347); primo giro nella PR #966. File: quelli della #966 · `tasks/TASK-419.md`
+- **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
+  proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
+  TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
+- **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
+  parte 0 nella PR #981, scelte e testi approvati dall'utente; A1
+  (server) nella PR #983, poi A2, B1, B2, C. File: quelli della #983 ·
+  `tasks/TASK-424.md`
+- **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
+  (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
+  i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347
+  precisazione). Prossimo: «via server catalogo» del Coordinatore, poi il
+  secondo giro (Italia, Europa) con le zone copiate dal server. File: — · `tasks/TASK-419.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

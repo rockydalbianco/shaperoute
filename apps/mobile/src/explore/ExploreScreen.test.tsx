@@ -285,12 +285,10 @@ test("no filters: every route near the start is a card (TASK-176)", async () => 
   expect(screen.queryByText(/^Distance/)).toBeNull();
   expect(screen.getAllByTestId("route-card")).toHaveLength(routes.length);
   // The cards are the only buttons of the page but the search at its top
-  // (TASK-367 part B) and the way into the catalog (TASK-420): nothing to
-  // set first.
+  // (TASK-367 part B): nothing to set first.
   const buttons = screen.getAllByRole("button");
   expect(buttons[0]).toHaveAccessibleName("Search");
-  expect(buttons[1]).toHaveAccessibleName(/^Catalog, /);
-  expect(buttons).toHaveLength(routes.length + 2);
+  expect(buttons).toHaveLength(routes.length + 1);
 });
 
 test("the routes are cards, two side by side between the page's margins", async () => {

@@ -54,6 +54,20 @@ l'allenamento che le segue), un calendario del mese.
 5. **Testi**: «Approvo» per la guida e il calendario, «Approvo» per le
    schede (sotto, nelle cinque lingue).
 
+## La privacy delle schede (parte D)
+
+Testo approvato dall'utente il 2026-11-08 («Approvo»), dopo la frase della
+palestra nella «Privacy» dell'app e del sito: «Le tue schede in palestra
+(nome, giorni, esercizi e valori obiettivo) restano sul telefono e sul tuo
+account: le vedi solo tu e si cancellano con l'account. Anche il calendario
+dei tuoi allenamenti lo vedi solo tu.» (le altre quattro lingue dicono lo
+stesso). La data della privacy è quella del merge. File:
+`apps/mobile/src/about/content/{en,it,de,fr,es}.ts`, `site/privacy/` (cinque
+pagine, rigenerate con `node site/tools/make_privacy.mjs`), i test della data
+(`about/AboutPage.test.tsx`, `about/documents.test.ts`,
+`site/tests/privacy.test.mjs`). La pubblicazione del sito col sì
+dell'utente.
+
 ## Il disegno tecnico
 
 In ADR-0341 (proposto, deciso dall'agente su delega dell'utente).
@@ -106,8 +120,7 @@ degli altri, `UserProfilePage` resta com'è).
 
 **Parte C** (lista approvata dal Coordinatore il 2026-11-08; l'utente ha
 detto «ok va bene» a farla lo stesso giorno): server
-`migrations/0060_gym_plans.sql` (numero in bozza, il vero è il primo libero
-in `main` al merge), `shaperoute_api/gym_plans.py` (nuovo),
+`migrations/0058_gym_plans.sql`, `shaperoute_api/gym_plans.py` (nuovo),
 `gym_sessions.py` (`plan`), `gym_calendar.py` (nome della scheda, giorni
 saltati), `app.py` (una riga), `tests/test_gym_plans.py` (nuovo);
 shared-types `src/gym.ts`, `fixtures/gym-plans.json` (nuovo),
@@ -270,3 +283,9 @@ l'italiano approvato dall'utente, le altre lingue dicono le stesse cose.
   «Full body»); il tastierino numerico si chiude trascinando e «Save» resta
   raggiungibile; i giorni in una riga; «−» e «+» delle serie con il bordo;
   «1 exercise» al singolare. Schermate in `out/TASK-411-f/`.
+- 2026-11-08: **l'uscita, scelta dell'utente «Solo screenshot, OTA»**: la
+  1.0.2 resta solo screenshot (TASK-407); la palestra completa esce con un
+  OTA dedicato dopo C, D e F in `main`, il server aggiornato e il sito della
+  privacy ripubblicato, ogni passo col suo sì. Il sì al server l'utente l'ha
+  dato al Coordinatore («Sì, ok server»): la migrazione delle schede è la
+  `0058_gym_plans.sql`.

@@ -461,33 +461,275 @@ lasciando le righe d'indice.
 - ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Proposto
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
+- ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
+- ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
-- ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
+- ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 
 ---
 
+- ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
+
 ## Voci nuove
 
-## ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati
+## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
 
-**Stato**: Attiva · 2026-11-08 · TASK-411 parte C. Deciso dall'agente su
-delega dell'utente, dalla sua scelta «Schede + giorni» del 2026-11-06
-(ADR-0341 in `docs/archive/DECISIONS-fino-al-2026-11.md`).
+**Data**: 2026-11-08 · **Stato**: Accettato · **Task**: TASK-424 · deciso
+dall'agente su delega dell'utente (la tecnica); le scelte di prodotto e la
+privacy sono dell'utente e si scrivono in `tasks/TASK-424.md`
 
-L'allenamento dice la sua scheda con la **chiave** (`gym_sessions.plan_key`),
-non con un riferimento: può arrivare all'API prima della scheda, e una
-scheda eliminata lascia i suoi allenamenti come erano (senza nome). I giorni
-in API sono 1 lunedì–7 domenica, nel database sette bit. Una scheda mandata
-più vecchia di quella tenuta non la sostituisce (due telefoni dello stesso
-account: vince l'ultima modifica); eliminarne una che non c'è non è un
-errore. I giorni saltati contano da quando la scheda è arrivata all'API
-(`created_at`) fino a ieri, sul fuso chiesto; un allenamento libero non
-riempie il giorno di una scheda. Sul telefono le schede stanno in un file
-(`gym-plans.json`): una modifica o un'eliminazione aspetta lì finché l'API
-non l'ha, e la lista dell'API sostituisce solo quelle che il telefono non
-ha cambiato dopo. «Start workout» segue la prima scheda di oggi
-dell'account mostrato in «Draw»; l'allenamento copia la scheda quando
-comincia. Una serie conta per il primo esercizio della scheda dello stesso
-tipo ancora incompleto; finito un esercizio, quello dopo diventa quello in
-corso da solo, coi valori della scheda nei campi se non ci sono serie di
-prima.
+**Contesto**: l'utente vuole un link da mandare a chi non ha l'app, che
+mostri dal vivo posizione, percorso fatto, dati e fine dell'attività, per
+tutti gli sport. Oggi nessun punto lascia il telefono durante una
+registrazione; il sito è statico; l'API ha già pagine a token
+(`account_email.py`) e giri di pulizia in thread (`SweepRound`).
+
+**Decisione**:
+- **Telefono → server**: un `POST` ogni 15 s in movimento, con i punti
+  nuovi (al massimo uno ogni 5 s) e i numeri del momento; subito a pausa,
+  ripresa, fine e stop; in pausa ogni 60 s. Parte dal task della posizione
+  che già gira a telefono bloccato (`runPosition.ts`), senza task nuovi.
+  Senza rete i punti restano in coda (al massimo 500).
+- **Pagina ← server**: polling ogni 10 s, `GET /live?t=<token>&after=<seq>`
+  con i soli punti nuovi. Niente WebSocket né SSE: niente da cambiare in
+  Caddy, risposte piccole, facile da provare.
+- **Link**: `https://getmuw.app/live/#<token>`; token di 128 bit
+  (`secrets.token_urlsafe(16)`), salvato come SHA-256. Il token dopo il `#`
+  non arriva al server del sito né nel Referer; all'API va in query, che il
+  log d'accesso non scrive (ADR-0096). `/live` in `OPEN_PATHS`, con
+  `Access-Control-Allow-Origin: https://getmuw.app` solo lì; un limite di
+  richieste per token.
+- **Dati**: `live_shares` e `live_share_points`, `ON DELETE CASCADE`
+  dall'account; un giro di pulizia ogni 5 min cancella i punti scaduti.
+  Nessuna posizione nel log (ADR-0092).
+- **Nessuna dipendenza nuova**: `fetch` e `Share` di React Native nell'app,
+  la libreria standard sul server; la pagina usa MapLibre copiato sul sito
+  alla versione dell'app (scelta dell'utente) e le tile di OpenFreeMap. L'impronta iOS si misura nella parte B.
+
+**Alternative scartate**: WebSocket o SSE (una connessione aperta per ogni
+spettatore, Caddy e i thread dell'API da cambiare, per un guadagno di pochi
+secondi); invio a ogni fix (una richiesta ogni pochi secondi a telefono
+bloccato: batteria); pagina disegnata dall'API su `api.getmuw.app` (fuori
+dal sito, più HTML nel server); token nel percorso dell'URL (finirebbe nel
+log d'accesso).
+
+**Conseguenze**: la pagina del sito carica le tile da fuori, la prima volta
+per `getmuw.app` (va nella privacy, col sì dell'utente); il
+server va aggiornato col sì; una richiesta ogni 15 s in più durante una
+condivisione.
+## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
+
+**Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole
+sue: «Non inserirli come catalogo, inseriscili e basta nella lista»,
+confermata «Sì, nella lista». Il resto deciso dall'agente su delega
+dell'utente, dentro ADR-0347.
+
+**Contesto**: ADR-0347 prevedeva una pagina «Catalog» nell'app
+(TASK-420). L'utente la toglie: i disegni tenuti devono comparire nella
+lista di «Explore» che esiste già («Best near you», gli esempi per città),
+cioè nei file `catalog/seed/<città>.json` che l'API legge all'avvio
+(`recommended.py`) e che sul server sono il bind mount `../catalog`
+del checkout (`deploy/compose.yaml`), non dentro l'immagine.
+
+**Decisione**:
+
+1. **Nessuna pagina nuova**: i tenuti stanno in `catalog/seed/`, il primo
+   giro (PR #966, 155 percorsi in 23 città, 2,3 MB invece di 5,7) è in
+   `main`. Sul server il catalogo si aggiorna con `git pull --ff-only` nel
+   checkout e `docker compose restart api` (l'API lo legge all'avvio); il
+   codice entrato in `main` nel frattempo non cambia finché non si fa
+   `--build`. Lo lancia l'utente via ssh, dopo il «via server catalogo» del
+   Coordinatore; la sequenza è in `tasks/TASK-419.md`.
+2. **I ripassi pesano per forma** come `optimizer.W_DOUBLED` (1,5 per
+   cuore, cerchio, stella, cavallo, luna, farfalla, lumaca; 0 per le forme
+   con i tratti): il punteggio segue il motore. Il filtro (≤ 10% in più)
+   vale per tutte, tolta la quota che la forma disegna due volte apposta,
+   misurata con `network.twice_drawn` sul contorno alla scala pianificata:
+   la stima con `doubled_share` sul contorno ricampionato dava zero e
+   bocciava zucca e faccina.
+3. **I 49 contorni candidati di TASK-418** (`candidate_outlines/`, non
+   registrati) si pianificano come casi a 5 e 10 km (`--outlines DIR`,
+   `ShapeJob` come `--outline`), segnati «TASK-418 outline»; i 20
+   preselezionati aspettano in `pending_outlines` di `tools/catalog_kept.json`
+   finché TASK-418 non registra le forme (Coordinatore, 2026-11-08).
+4. **Le parole** sono solo quelle approvate dall'utente in TASK-418 (CIAO,
+   HOLA, OLA, SALUT, HALLO, HEJ, LOVE…) o il nome corto della città (WIEN,
+   PRAHA, PORTO); una parola oltre la distanza massima della città (Venezia,
+   10 km) non si pianifica.
+5. **Le zone del server sul Mac**: con il «Sì, solo lettura» dell'utente
+   (via Coordinatore) le `foot_*` del server sono copiate in `data/cache`
+   con `rsync` dal terminale dell'utente, perché la sessione dell'agente
+   non può leggere dal server di produzione; Overpass l'8 novembre sera
+   non rispondeva (502, poi nessuna risposta) e i mirror nemmeno.
+6. **Il primo giro è la preselezione dell'agente**, accettata dall'utente
+   («ok si») con la pagina di revisione davanti: fino a 8 per città, almeno
+   3, le tre forme semplici da 5 km nelle città in evidenza; l'utente può
+   aggiungere o togliere chiavi dopo, dalla stessa pagina.
+
+**Conseguenze**: la pagina «Catalog» di TASK-420 esce; «Explore» mostra
+meno percorsi nelle 14 città del seme (i migliori), e quelli nuovi nelle
+città europee arriveranno col secondo giro, dallo stesso strumento.
+
+## ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono
+
+**Stato**: **Superata** il 2026-11-08, lo stesso giorno. La pagina è stata
+costruita e mergiata (#954), poi l'utente ha scelto, parole sue, «Non
+inserirli come catalogo, inseriscili e basta nella lista» («Sì, nella
+lista»): i disegni del seme vanno nella lista di «Explore» che c'è già
+(«Best near you», gli esempi per città) attraverso il catalogo del server,
+cioè TASK-419 e ADR-0347; la #978 toglie pagina, scheda, `catalog.json` e
+script. Niente al suo posto: nessuna pagina, nessun JSON nell'app. Sotto,
+la decisione com'era. · 2026-11-08 · TASK-420 (parte C del grande catalogo,
+con TASK-418 e TASK-419). Le scelte di prodotto sono dell'utente (il
+mockup approvato il 2026-11-08: il nome «Catalog», la scheda d'ingresso
+sotto la ricerca di «Explore», cuore e «Start» sulla scheda, l'ordine come
+interruttore); il resto è deciso dall'agente su delega dell'utente.
+
+**Contesto**: «Explore» mostra i percorsi del seme solo entro 5 km dalla
+partenza («Best near you», ADR-0098) e senza filtri (ADR-0144). L'utente
+vuole un catalogo grande e completo, riempito dai 1000 disegni di
+TASK-419, da scorrere e filtrare per città, paese, categoria, distanza e
+sport, con la ricerca per nome. Il seme di oggi ha 350 percorsi in 23
+città, in media 350 punti l'uno; l'API li conosce con id stabili
+(`<city>-<shape|word>-<distance_m>-<i>`, `recommended.py`).
+
+**Decisione**:
+
+1. **Una pagina a sé dentro «Explore»**, aperta da una scheda sotto la
+   ricerca (`CatalogEntry`) e chiusa da «←»: componenti nuovi in
+   `apps/mobile/src/explore/` (`CatalogScreen`, `CatalogGrid`,
+   `CatalogCard`, `CatalogFilterSheet`); `ExploreScreen.tsx` cambia solo
+   per la scheda e lo stato «aperto». `App.tsx` non cambia: il tocco su
+   una scheda passa dall'`onOpen` di «Explore» con un `RecommendedRoute`,
+   e la mappa chiede il dettaglio a `GET /recommended-routes/{id}` come
+   oggi.
+2. **I dati viaggiano con l'app**, in `src/explore/catalog.json`, scritto
+   da `apps/mobile/scripts/catalog-data.mjs` dai file di `catalog/seed/`
+   (come `tools/bike_ideas.py` scrive `bikeIdeas.json`, ADR-0309): per
+   ogni percorso l'id dell'API, città e paese, forma o parola con lo
+   stile, la categoria, le distanze, la somiglianza, la partenza, il giro
+   (`rotation_deg`), un'anteprima a 48 punti e la chiave dei preferiti
+   (`favoriteKey` sui punti interi, così il cuore sulla scheda sa se il
+   percorso è già tenuto senza scaricarlo). Niente rete per sfogliare:
+   la pagina funziona anche senza server; solo aprire e tenere un
+   percorso chiedono l'API. A 350 voci il file pesa 426 KB; a 1000,
+   circa 1,2 MB.
+3. **Filtri, ricerca e ordine sul telefono**, in funzioni pure
+   (`catalogFilters.ts`): paese, città, categoria (la tabella
+   forma → categoria vive nell'app finché TASK-418 non la scrive nel
+   catalogo delle forme), distanza fra 5, 10 e 21 km (quelle del seme),
+   sport (il seme di oggi è tutto corsa; il campo c'è per i seguiti); la
+   ricerca sul nome della forma nella lingua dell'app, sulla parola e
+   sulla città; l'ordine «Nearest» dalla partenza o dalla città scelta,
+   «Best» per somiglianza, «Shortest» per km.
+4. **La griglia è una `FlatList` a due colonne** che mostra 40 voci alla
+   volta e ne aggiunge 40 alla fine dello scorrimento; le miniature sono
+   `RouteThumb` (segmenti, niente mappa sotto: le mappe delle schede di
+   «Best near you» sono foto di «Feed», troppe per centinaia di voci).
+5. **Il cuore sulla scheda** usa `useFavoritesDoor`: pieno quando la
+   chiave è fra i preferiti; premuto, chiede il dettaglio all'API e passa
+   da `press` con `exploredKeepable`, così il percorso tenuto è lo stesso
+   della mappa; senza account apre «Profile» come il cuore sulla mappa.
+   «Start» apre il percorso sulla mappa, dove c'è il suo «Start»: la
+   partenza immediata vuole `App.tsx` ed è un seguito.
+6. **Testi in inglese con `t()`**, tradotti nelle quattro lingue; colori
+   solo da `tokens.ts`; nessuna dipendenza nuova; test Jest sulle
+   funzioni pure e sui componenti.
+
+**Alternative**:
+
+- **I dati dall'API, paginati** (`GET /catalog?offset=`): nessun peso
+  nell'app, ma un endpoint nuovo in `services/api/` (fuori dai confini
+  del task), la pagina vuota senza rete e una richiesta a ogni filtro.
+  Si riprende se `catalog.json` supera **mezzo megabyte** (limite fissato
+  col Coordinatore il 2026-11-08): lo script scrive allora solo l'indice
+  (senza anteprime) e la griglia chiede le anteprime a pagine.
+- **Leggere `catalog/seed/*.json` direttamente dall'app**: 2,5 MB di
+  punti interi nel bundle e il bundler che guarda fuori da `apps/`.
+- **Una sezione dentro «Best near you»** invece di una pagina: la lista
+  di «Explore» è già lunga e il catalogo vuole filtri suoi.
+- **Le mappe sotto le miniature** come in «Best near you»: una foto per
+  scheda, centinaia di schede.
+
+**Seguiti**: i dati paginati dall'API oltre mezzo megabyte; la partenza
+immediata da «Start» (`App.tsx`); le categorie dal catalogo delle forme
+quando TASK-418 le scrive; il rilancio di `catalog-data.mjs` a ogni seme
+nuovo, da chi cambia il seme (TASK-419; una riga nel suo task file e nel
+`README` del catalogo, dalla sua sessione).
+
+## ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme
+
+**Stato**: Proposto · 2026-11-08 · TASK-417. Le scelte di prodotto sono
+dell'utente (`tasks/TASK-417.md`, scelte 1–5); il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: nel video della corsa (TASK-408, ADR-0339) corre un animale
+3D sulla punta della linea. Si vuole anche la propria immagine (foto o GIF)
+al suo posto e, se nel post ci sono persone taggate che hanno corso la
+stessa corsa, un video solo con le tracce di tutti, sullo stesso orologio.
+Su Safari iOS non c'è ImageDecoder. Il server tiene i tempi di ogni punto
+(`runs.track` `LineStringM`) ma non li restituisce a nessuno, e la privacy
+promette che gli altri vedono le corse «senza orari». Il tag non ha un
+«accetta».
+
+**Decisione (proposta)**:
+
+1. **L'immagine è un personaggio in più** accanto agli animali: la scena
+   la porta come fotogrammi (uno, o fino a 8 per una GIF) di 256 px al
+   massimo; la pagina la disegna sulla punta della linea, tonda, con un
+   saltello, girata un poco nel verso della strada; sul 3D come cartellino
+   in piedi sulla linea; a fine percorso si ferma come l'animale.
+2. **Si crea solo con la foto ritagliata tonda** (scelta 1):
+   `expo-image-picker` (libreria o fotocamera, permessi già in `app.json`)
+   con il ritaglio quadrato di sistema, `expo-image-manipulator` a 256 px.
+   Nessuna dipendenza nuova, niente di nativo: l'impronta iOS non cambia.
+3. **Le GIF si leggono con un lettore nostro** in TypeScript
+   (`share/gifFrames.ts`), non con ImageDecoder, che su iOS non c'è. Al più
+   8 fotogrammi a distanza uguale; il formato verso la pagina e il tetto del
+   peso si misurano nella parte B.
+4. **Se l'immagine non si legge, il video esce senza**, come senza animale
+   (ADR-0339, precisazione B, punto 2): mai un errore.
+5. **L'immagine resta sul telefono**: non va al server, ne esce solo nel
+   video condiviso o pubblicato. Nel Feed il video vale come i video
+   propri dei post, senza controlli in più (scelta 2). Nessuna immagine
+   offerta dall'app.
+6. **«Together» usa tag e visibilità, nient'altro** (scelta 3): entra la
+   traccia di una persona taggata nel post la cui attività della stessa
+   corsa è visibile a chi fa il video (`drawing_seen_sql`). «La stessa
+   corsa»: tempi sovrapposti per almeno metà della più corta e partenze a
+   meno di 2 km (da misurare nella parte D). Al più 4 persone, chi fa il
+   video compreso (scelta 4).
+7. **I tempi escono solo per questo**: un endpoint nuovo dà all'autore del
+   post le tracce del gruppo con i **secondi dalla prima partenza**, mai
+   l'ora del giorno né la data, al più 600 punti a traccia, senza spostarne
+   nessuno. Gli altri endpoint restano senza tempi.
+8. **Un orologio solo, vero**, compresso nei secondi del pezzo «The route»:
+   ognuno sta dove era in quel secondo, fra due punti registrati; in pausa
+   è fermo. Dove due tracce passano a meno di 25 m nella stessa finestra di
+   10 s spunta un ⚡, al più uno ogni 3 s di video. Ognuno ha il suo colore
+   dai token e il suo animale o immagine.
+9. **La privacy cambia per «Together»**: la frase «senza orari» prende
+   l'eccezione e un punto nuovo dice che il video mostra il passo vero di
+   chi è taggato, senza ora né data (testi approvati, scelta 5).
+10. Cinque parti: A proposta, B immagine, C foto scattata e ritagliata, D
+   «Together» (server e app), E prova sul telefono. I file di TASK-408
+   (`videoScene.ts`, `videoPage.ts`, `EditVideoSheet.tsx`, il resto di
+   `share/`) si toccano solo dopo la sua parte C2, con la lista approvata
+   dal Coordinatore.
+
+**Alternative**:
+
+- **ImageDecoder nella WebView**: non c'è su Safari iOS.
+- **Una libreria GIF da npm**: una dipendenza nuova per poche centinaia di
+  righe che si provano bene da sole.
+- **Scatti in fila e disegno a dito**: proposti, non scelti dall'utente per
+  la prima versione (scelta 1).
+- **La sagoma scontornata**: vuole codice nativo (Vision), quindi
+  un'impronta iOS nuova.
+- **Un sì esplicito della persona taggata, per ogni video o una volta per
+  persona**: proposto dall'agente; l'utente ha scelto tag e visibilità
+  (scelta 3).
+- **Ogni traccia sul suo orologio** (tutti partono insieme e arrivano
+  insieme): niente tempi dal server, ma il video non direbbe chi andava più
+  veloce né dove ci si è incrociati, che è quello che si chiede.
+---

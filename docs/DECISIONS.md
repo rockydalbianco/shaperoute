@@ -24950,6 +24950,46 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
 
+## ADR-0318, precisazione — Il nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-409 parte A. Cambia §14 per il nuoto in
+piscina; le acque libere restano come lì. La formula è una scelta
+dell'utente («MET per passo», 2026-11-06); i dettagli sono decisi dall'agente
+su delega dell'utente.
+
+1. **Formula**: i MET del *Compendium of Physical Activities* 2024 per il
+   crawl, scelti dal passo medio /100 m (tempo senza le pause, metri =
+   vasche × vasca): più lento di 2:18 → 5,8 (18292); fino a 1:45 → 8,0
+   (18290); fino a 1:13 → 10,5 (18280); più veloce → 14,5 (18294). I bordi
+   stanno a metà fra le velocità del Compendium (45 e 50 yd/min, 50 e 75
+   yd/min) e a 90 yd/min; un passo uguale al bordo va nella fascia più
+   veloce. Energia attiva = MET × 0,0175 × peso × minuti − il riposo di §3
+   negli stessi minuti, intera, mai sotto zero; zero senza metri o senza
+   tempo.
+2. **Dove sta**: `pool/poolKcal.ts`, non `body/energy.ts`: lo sport «Swim»
+   resta senza `energy`, così un nuoto in acque libere non ne ha (§14), né
+   nel riquadro della corsa, né nel Feed, né in Salute.
+3. **Dove si vede**: un quinto riquadro «Calories» a fine nuoto («–» finché
+   le vasche non valgono); l'energia attiva dell'allenamento in Apple Salute
+   e Health Connect; «· 206 kcal» in fondo alla riga del post nel Feed (un
+   nuoto senza linea, come `isPoolLine`; il proprio col corpo del telefono,
+   quello degli altri a 70 kg, §5) e alla riga di «My activities». Nessun
+   testo nuovo: «Calories» e «kcal» ci sono già.
+
+## ADR-0334, precisazione D — Calorie, battito e zone del nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-409. Scelta dell'utente: «Calorie
+subito, battiti da Salute» (2026-11-06). Numero del task dal Coordinatore,
+nessun ADR nuovo.
+
+1. **Calorie subito**, con un OTA: ADR-0318, precisazione «il nuoto in
+   piscina».
+2. **Battito medio e tempo nelle zone** nella 1.0.3, letti da Apple Salute /
+   Health Connect nella finestra del nuoto, dall'orologio che li ha scritti.
+   Nessun lettore nuovo: il nuoto in piscina passa la sua finestra alle
+   funzioni di TASK-345 C (medio e massimo) e TASK-374 D (tempo in zona).
+   Senza campioni o con la lettura negata, solo le calorie. Testi approvati
+   in `tasks/TASK-409.md`.
 ## ADR-0324, terza precisazione — Il Roller nell'app: energia, tempo stimato, file importati
 
 **Data**: 2026-11-06 · **Stato**: Accettata · **Task**: TASK-380 parte B

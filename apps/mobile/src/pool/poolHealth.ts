@@ -1,26 +1,39 @@
+import { appBody, type BodyProfile } from "../body/bodyProfile";
 import { loadHealthOn } from "../health/healthChoice";
 import type { HealthPhone } from "../health/healthPhone";
 import type { Workout } from "../health/workout";
-import { poolMetres, type PoolSwim } from "./poolSwim";
+import { poolKcal } from "./poolKcal";
+import { activeMs, poolMetres, type PoolSwim } from "./poolSwim";
 
 /**
  * A swim in a pool as Apple Health and Health Connect take it (TASK-400
  * part B, ADR-0334, point 6): a swim with its metres and pauses, no route,
- * no energy (a swim has none yet, TASK-323 C2), and its pool, which the
- * two builders turn into a swim in a pool (appleWorkout.ts,
+ * its energy (poolKcal.ts, TASK-409 part A), and its pool, which the two
+ * builders turn into a swim in a pool (appleWorkout.ts,
  * healthConnectWorkout.ts). Null before its end.
  */
-export function poolWorkoutOf(swim: PoolSwim, lengths: number): Workout | null {
+export function poolWorkoutOf(
+  swim: PoolSwim,
+  lengths: number,
+  body: BodyProfile = appBody(),
+): Workout | null {
   const endMs = swim.endedMs;
   if (endMs === null || endMs <= swim.startedMs) {
     return null;
   }
+  const distanceM = poolMetres(lengths, swim.poolLengthM);
+  const kcal = poolKcal(
+    distanceM,
+    activeMs(swim, endMs) / 1000,
+    body,
+    new Date(swim.startedMs).getFullYear(),
+  );
   return {
     activity: "swimming",
     startMs: swim.startedMs,
     endMs,
-    distanceM: poolMetres(lengths, swim.poolLengthM),
-    kcal: null,
+    distanceM,
+    kcal: kcal > 0 ? kcal : null,
     route: [],
     pauses: swim.pauses.flatMap((pause) => {
       const fromMs = Math.max(pause.fromMs, swim.startedMs);

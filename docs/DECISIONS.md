@@ -464,7 +464,7 @@ lasciando le righe d'indice.
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
-- ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
+- ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 
 ---
 
@@ -472,103 +472,51 @@ lasciando le righe d'indice.
 
 ## Voci nuove
 
-### ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no
+## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
 
-**Stato**: Accettato · 2026-11-08 · TASK-421, PR #973. Numeri dal
-Coordinatore. La richiesta è dell'utente (correndo ha trovato strade del
-percorso chiuse da un cancello); la lista dei tag e il modo di togliere
-sono decisi dall'agente su delega dell'utente.
+**Data**: 2026-11-08 · **Stato**: Accettato · **Task**: TASK-424 · deciso
+dall'agente su delega dell'utente (la tecnica); le scelte di prodotto e la
+privacy sono dell'utente e si scrivono in `tasks/TASK-424.md`
 
-**Contesto**: `FOOT_FILTER` (`networks/foot.py`) scarta le vie
-`access=private` e `foot=no`, ma Overpass filtra solo le vie: un cancello è
-un **nodo** (`barrier=gate`, `lift_gate`, `swing_gate`…) con i suoi tag
-(`access`, `foot`, `locked`), e il filtro non lo vede. OSMnx semplificava il
-grafo appena scaricato, unendo le vie in archi e buttando i tag dei nodi:
-nelle zone in cache un cancello chiuso è un punto qualunque di un arco, e
-il motore ci disegna sopra. La rete `roller` (ADR-0324, `skate_ways`) e la
-carrozzina (ADR-0343, punto 2: «una barriera che blocca toglie il nodo»)
-hanno già il modo: scaricare senza semplificare, con i tag che servono,
-togliere, poi semplificare. Misurato offline dalle risposte Overpass in
-cache (`data/cache/http/`): Trento 17 km 1.871 nodi `barrier`, 122 tolti
-(6,5 %), 7,0 km di vie chiuse, rete 841,8 → 832,0 km; Milano 28.462 (quasi
-tutti `kerb`), 123 tolti, 46,0 km di vie (38,6 km di `service` con
-`access=no`), 3.224,8 → 3.176,7 km; Levico 126, 26 tolti, 2,1 km, 628,9 →
-626,1 km; Parigi 11.755, 132 tolti, 14,7 km, 1.391,6 → 1.375,4 km. I
-cancelli **senza tag** sono la maggioranza (Trento 627 `gate` e 220
-`lift_gate` nudi) e restano. Cancelli nudi su vie `access=destination`: 4 a
-Trento, 9 a Milano.
+**Contesto**: l'utente vuole un link da mandare a chi non ha l'app, che
+mostri dal vivo posizione, percorso fatto, dati e fine dell'attività, per
+tutti gli sport. Oggi nessun punto lascia il telefono durante una
+registrazione; il sito è statico; l'API ha già pagine a token
+(`account_email.py`) e giri di pulizia in thread (`SweepRound`).
 
 **Decisione**:
+- **Telefono → server**: un `POST` ogni 15 s in movimento, con i punti
+  nuovi (al massimo uno ogni 5 s) e i numeri del momento; subito a pausa,
+  ripresa, fine e stop; in pausa ogni 60 s. Parte dal task della posizione
+  che già gira a telefono bloccato (`runPosition.ts`), senza task nuovi.
+  Senza rete i punti restano in coda (al massimo 500).
+- **Pagina ← server**: polling ogni 10 s, `GET /live?t=<token>&after=<seq>`
+  con i soli punti nuovi. Niente WebSocket né SSE: niente da cambiare in
+  Caddy, risposte piccole, facile da provare.
+- **Link**: `https://getmuw.app/live/#<token>`; token di 128 bit
+  (`secrets.token_urlsafe(16)`), salvato come SHA-256. Il token dopo il `#`
+  non arriva al server del sito né nel Referer; all'API va in query, che il
+  log d'accesso non scrive (ADR-0096). `/live` in `OPEN_PATHS`, con
+  `Access-Control-Allow-Origin: https://getmuw.app` solo lì; un limite di
+  richieste per token.
+- **Dati**: `live_shares` e `live_share_points`, `ON DELETE CASCADE`
+  dall'account; un giro di pulizia ogni 5 min cancella i punti scaduti.
+  Nessuna posizione nel log (ADR-0092).
+- **Nessuna dipendenza nuova**: `fetch` e `Share` di React Native nell'app,
+  la libreria standard sul server; la pagina usa MapLibre copiato sul sito
+  alla versione dell'app (scelta dell'utente) e le tile di OpenFreeMap. L'impronta iOS si misura nella parte B.
 
-1. **Il download della rete foot non semplifica** (`download_foot_graph`,
-   `simplify=False`), chiede i tag dei nodi `barrier`, `access`, `foot`,
-   `locked` (`FOOT_NODE_TAGS`, `base.node_tags` accanto a `way_tags`) e
-   `foot` sulle vie; `foot_ways` toglie i nodi che bloccano e le vie
-   chiuse, poi semplifica come OSMnx (`simplify_graph`, come `skate_ways`).
-   Il grafo foot resta senza attributo `network`, come prima.
-2. **Un nodo `barrier` si toglie** (`blocks_foot`), nell'ordine:
-   `foot=no|private` → tolto; `foot=yes|designated|permissive|destination`
-   → resta, qualunque cosa dicano gli altri tag; `barrier=fence|wall` (una
-   recinzione disegnata come nodo della via) → tolto; `bollard`, `kerb`,
-   `cycle_barrier`, `block`, `kissing_gate`, `stile`, `cattle_grid`, `log`,
-   `planter`, `chain`, `rope`, `height_restrictor`, `motorcycle_barrier`,
-   `jersey_barrier`, `sump_buster`, `bus_trap`, `debris` → resta (il suo
-   `access` parla ai veicoli: un dissuasore con `access=no` ferma le auto);
-   ogni altra barriera (`gate`, `lift_gate`, `swing_gate`, `sliding_gate`,
-   `wicket_gate`, `turnstile`, `entrance`, `yes`…) → tolta se `access=no`,
-   `access=private` o `locked=yes`, altrimenti resta. Un cancello nudo
-   passa. Togliere il nodo taglia la via lì: si passa o no, niente tratti
-   «a piedi».
-3. **Una via si toglie** (`closed_to_foot`) se `foot=no|private`, o se
-   `access=no|private` senza un `foot` che apre; `access=destination`,
-   `customers`, `permit`, `agricultural` restano. Il filtro Overpass resta
-   com'è (l'estratto lo legge, `zone_extract`, e serve i tag dei nodi).
-4. **La rete `hike` eredita** tutto: passa da `download_foot_graph`.
-5. **Il bordo della zona cambia di poco**: OSMnx semplificava con 500 m di
-   margine e poi ritagliava, buttando intere strade con un capo fuori; ora
-   si ritaglia prima e si semplifica dopo (come `bike` e `roller`), e il
-   tratto interno di una strada che esce resta (Levico: 3.531 → 3.621 nodi,
-   607 → 629 km con la stessa risposta). Al banco la rete ricostruita così
-   senza la regola dà le stesse 72 forme della cache di oggi, punto per
-   punto (una diversa, stessa somiglianza).
-6. **Le zone in cache restano valide** finché non si rifanno: sono
-   semplificate e senza tag, quindi i cancelli restano lì dentro. Il piano
-   (Mac dalle risposte in cache, server dall'estratto) è in `MAPS.md` «I
-   cancelli chiusi» e `DEPLOY.md` F.15; l'azione sul server aspetta il sì
-   dell'utente, con `phone_zone_api` e `draw_examples` dopo.
-7. **L'impronta del motore cambia** (è un cambio di comportamento):
-   `ROUTES` nuovo in `tests/test_walk_fingerprint.py`; nuotate e canoa non
-   usano la rete foot e tengono la loro con una prova delle stesse rotte
-   (`SAME_ROUTES_AS`, ADR-0320).
+**Alternative scartate**: WebSocket o SSE (una connessione aperta per ogni
+spettatore, Caddy e i thread dell'API da cambiare, per un guadagno di pochi
+secondi); invio a ogni fix (una richiesta ogni pochi secondi a telefono
+bloccato: batteria); pagina disegnata dall'API su `api.getmuw.app` (fuori
+dal sito, più HTML nel server); token nel percorso dell'URL (finirebbe nel
+log d'accesso).
 
-**Motivo**: la regola segue i tag di OpenStreetMap così come sono scritti
-(`access` sul nodo, `foot` che vince, `locked`), e toglie poco: l'1–7 % dei
-nodi `barrier` e l'1–1,5 % dei km, soprattutto cortili privati. Al banco di
-corsa (8 forme × 3/5/10 km) Trento e Milano non cambiano (mediana 0,91 e
-0,96); a Levico la mediana passa da 0,84 a 0,80 perché le forme piccole
-dal Lido non attraversano più otto cancelli privati o chiusi a chiave dei
-vialetti del lido e del parco: è il caso del task.
-
-**Alternative scartate**:
-- togliere ogni `barrier=gate`: a Trento 627 cancelli nudi su 1.001, quasi
-  tutti aperti o di campagna;
-- ereditare l'`access` della via sul cancello nudo (`access=destination`):
-  4 casi a Trento, 9 a Milano, e una via `access=destination` si percorre;
-- un costo alto invece di togliere: un cancello chiuso non si passa, e un
-  arco caro finisce nei percorsi lo stesso quando è l'unica via;
-- rileggere i tag dei nodi dalle zone già in cache: non ci sono più;
-- lasciare che l'utente segnali un cancello dall'app: scelta di prodotto,
-  fuori scope (`tasks/TASK-421.md`).
-
-**Conseguenze**:
-- i percorsi nuovi evitano i cancelli chiusi e privati e le vie
-  `access=no`; qualche vicolo cieco in più (Trento 231 → 266 pezzi,
-  spezzoni dietro un cancello); dove c'era un cancello la forma cambia;
-- ogni zona foot va rifatta per avere l'effetto: Mac e server (piano in
-  `MAPS.md`/`DEPLOY.md`), poi `phone_zone_api` e `draw_examples`;
-- `bike`, `mtb` e `roller` non cambiano (reti loro); `hike` sì;
-- `engine.zip` del telefono ricostruito; le misure e il banco in
-  `tasks/TASK-421.md`.
+**Conseguenze**: la pagina del sito carica le tile da fuori, la prima volta
+per `getmuw.app` (va nella privacy, col sì dell'utente); il
+server va aggiornato col sì; una richiesta ogni 15 s in più durante una
+condivisione.
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole

@@ -124,11 +124,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
   proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
   TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
-- **TASK-421 — I percorsi a piedi non passano per i cancelli chiusi** · codice,
-  test, ADR-0349 e piano delle zone nella PR #973 (motore: entra col sì
-  dell'utente per server e `draw_examples`); poi le zone del server da
-  rifare (`DEPLOY.md` F.15), col sì dell'utente. File: quelli della #973 ·
-  `tasks/TASK-421.md`
+- **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
+  parte 0 nella PR #981, scelte e testi approvati dall'utente; A1
+  (server) nella PR #983, poi A2, B1, B2, C. File: quelli della #983 ·
+  `tasks/TASK-424.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
   (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
   i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347

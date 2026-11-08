@@ -205,9 +205,10 @@ services/api/shaperoute_api/route_store.py                   (SAME_ROUTES_AS: nu
 services/api/tests/fixtures/same_routes/<impronta>.json      (nuovo, la prova)
 apps/mobile/assets/engine/engine.zip                         (ricostruito, ultimo commit)
 docs/tasks/TASK-421.md                                       (nuovo)
-docs/DECISIONS.md                                            (ADR-0349, in fondo)
 docs/MAPS.md, docs/DEPLOY.md, docs/ROUTE_ENGINE.md
-docs/STATUS.md, docs/INDEX.md                                (righe proprie)
+docs/DECISIONS.md (ADR-0349), docs/STATUS.md, docs/INDEX.md  (righe proprie, nella PR di soli
+                                                              documenti subito dopo il merge della #973:
+                                                              regola del Coordinatore del 2026-11-08)
 ```
 
 ## Fuori scope

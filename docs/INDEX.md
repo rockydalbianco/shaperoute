@@ -20,7 +20,6 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 |---|---|
 | Installare tutto e partire da zero | `SETUP.md` |
 | Forme, proiezione, snapping, routing, ottimizzazione, validazione | `ROUTE_ENGINE.md` (§2–§6), `MAPS.md`, `TESTING.md` |
-| I cancelli chiusi e le vie `access=no` sulla rete a piedi; rifare le zone in cache | `MAPS.md` «I cancelli chiusi», `DEPLOY.md` F.15, `ROUTE_ENGINE.md` §4, `tasks/TASK-421.md`, ADR-0349 |
 | Disegno libero ancorato alle strade (map matching per tratto) | `ROUTE_ENGINE.md` §4–§5, `API.md` «Stroke matches», `tasks/TASK-347.md`, ADR-0300 |
 | Guardare o confrontare percorsi generati | `../samples/README.md` |
 | Export GPX o wearable | `GPX.md` |
@@ -60,6 +59,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Walk, nuoto in acque libere | `ROUTE_ENGINE.md` (le reti, §8), `tasks/TASK-371.md` |
 | Sci: «Record only», stazioni, meteo | `MAPS.md` «Impianti e piste da sci», ADR-0319, ADR-0338, `tasks/TASK-375.md`, `tasks/TASK-406.md` |
 | Apple Watch | `tasks/TASK-370.md`, ADR-0314 |
+| Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352 |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

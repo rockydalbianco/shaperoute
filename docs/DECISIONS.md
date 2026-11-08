@@ -25369,3 +25369,82 @@ e luna (`docs/sports/wheelchair.md`), contro la rete foot sulla stessa area
   TASK-347 G.
 - **La rete foot o roller così come sono**: scale, ciottoli, cordoli.
 - **Una rete fatta col tag `wheelchair`**: c'è quasi solo a Milano.
+
+## ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono
+
+**Stato**: Proposto · 2026-11-08 · TASK-420 (parte C del grande catalogo,
+con TASK-418 e TASK-419). Le scelte di prodotto sono dell'utente (il
+mockup approvato il 2026-11-08: il nome «Catalog», la scheda d'ingresso
+sotto la ricerca di «Explore», cuore e «Start» sulla scheda, l'ordine come
+interruttore); il resto è deciso dall'agente su delega dell'utente.
+
+**Contesto**: «Explore» mostra i percorsi del seme solo entro 5 km dalla
+partenza («Best near you», ADR-0098) e senza filtri (ADR-0144). L'utente
+vuole un catalogo grande e completo, riempito dai 1000 disegni di
+TASK-419, da scorrere e filtrare per città, paese, categoria, distanza e
+sport, con la ricerca per nome. Il seme di oggi ha 312 percorsi in 23
+città, in media 350 punti l'uno; l'API li conosce con id stabili
+(`<city>-<shape|word>-<distance_m>-<i>`, `recommended.py`).
+
+**Decisione**:
+
+1. **Una pagina a sé dentro «Explore»**, aperta da una scheda sotto la
+   ricerca (`CatalogEntry`) e chiusa da «←»: componenti nuovi in
+   `apps/mobile/src/explore/` (`CatalogScreen`, `CatalogGrid`,
+   `CatalogCard`, `CatalogFilterSheet`); `ExploreScreen.tsx` cambia solo
+   per la scheda e lo stato «aperto». `App.tsx` non cambia: il tocco su
+   una scheda passa dall'`onOpen` di «Explore» con un `RecommendedRoute`,
+   e la mappa chiede il dettaglio a `GET /recommended-routes/{id}` come
+   oggi.
+2. **I dati viaggiano con l'app**, in `src/explore/catalog.json`, scritto
+   da `apps/mobile/scripts/catalog-data.mjs` dai file di `catalog/seed/`
+   (come `tools/bike_ideas.py` scrive `bikeIdeas.json`, ADR-0309): per
+   ogni percorso l'id dell'API, città e paese, forma o parola con lo
+   stile, la categoria, le distanze, la somiglianza, la partenza, il giro
+   (`rotation_deg`), un'anteprima a 48 punti e la chiave dei preferiti
+   (`favoriteKey` sui punti interi, così il cuore sulla scheda sa se il
+   percorso è già tenuto senza scaricarlo). Niente rete per sfogliare:
+   la pagina funziona anche senza server; solo aprire e tenere un
+   percorso chiedono l'API. A 312 voci il file pesa circa 300 KB; a 1000,
+   circa 1 MB.
+3. **Filtri, ricerca e ordine sul telefono**, in funzioni pure
+   (`catalogFilters.ts`): paese, città, categoria (la tabella
+   forma → categoria vive nell'app finché TASK-418 non la scrive nel
+   catalogo delle forme), distanza fra 5, 10 e 21 km (quelle del seme),
+   sport (il seme di oggi è tutto corsa; il campo c'è per i seguiti); la
+   ricerca sul nome della forma nella lingua dell'app, sulla parola e
+   sulla città; l'ordine «Nearest» dalla partenza o dalla città scelta,
+   «Best» per somiglianza, «Shortest» per km.
+4. **La griglia è una `FlatList` a due colonne** che mostra 40 voci alla
+   volta e ne aggiunge 40 alla fine dello scorrimento; le miniature sono
+   `RouteThumb` (segmenti, niente mappa sotto: le mappe delle schede di
+   «Best near you» sono foto di «Feed», troppe per centinaia di voci).
+5. **Il cuore sulla scheda** usa `useFavoritesDoor`: pieno quando la
+   chiave è fra i preferiti; premuto, chiede il dettaglio all'API e passa
+   da `press` con `exploredKeepable`, così il percorso tenuto è lo stesso
+   della mappa; senza account apre «Profile» come il cuore sulla mappa.
+   «Start» apre il percorso sulla mappa, dove c'è il suo «Start»: la
+   partenza immediata vuole `App.tsx` ed è un seguito.
+6. **Testi in inglese con `t()`**, tradotti nelle quattro lingue; colori
+   solo da `tokens.ts`; nessuna dipendenza nuova; test Jest sulle
+   funzioni pure e sui componenti.
+
+**Alternative**:
+
+- **I dati dall'API, paginati** (`GET /catalog?offset=`): nessun peso
+  nell'app, ma un endpoint nuovo in `services/api/` (fuori dai confini
+  del task), la pagina vuota senza rete e una richiesta a ogni filtro.
+  Si riprende se `catalog.json` supera il megabyte: lo script può allora
+  scrivere solo l'indice (senza anteprime) e la griglia chiedere le
+  anteprime a pagine.
+- **Leggere `catalog/seed/*.json` direttamente dall'app**: 2,5 MB di
+  punti interi nel bundle e il bundler che guarda fuori da `apps/`.
+- **Una sezione dentro «Best near you»** invece di una pagina: la lista
+  di «Explore» è già lunga e il catalogo vuole filtri suoi.
+- **Le mappe sotto le miniature** come in «Best near you»: una foto per
+  scheda, centinaia di schede.
+
+**Seguiti**: i dati paginati dall'API oltre il megabyte; la partenza
+immediata da «Start» (`App.tsx`); le categorie dal catalogo delle forme
+quando TASK-418 le scrive; il rilancio di `catalog-data.mjs` a ogni seme
+nuovo di TASK-419 (una riga nel `README` del catalogo, di TASK-419).

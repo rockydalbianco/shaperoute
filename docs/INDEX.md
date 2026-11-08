@@ -74,6 +74,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | L'escursionismo «Hike» (pilota della struttura degli sport): la rete dei sentieri, le misure | `tasks/TASK-377.md`, `DECISIONS.md` ADR-0321, `sports/hike.md`, `sports/COME-AGGIUNGERE.md` |
 | Gravel e MTB: la bici su sterrati e sentieri, la rete `mtb`, `mtb:scale`, le misure | `tasks/TASK-378.md`, `DECISIONS.md` ADR-0322, `sports/gravel.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
 | Il Roller (pattini in linea): l'asfalto liscio, la rete `roller`, superfici, salite, le misure | `tasks/TASK-380.md`, `DECISIONS.md` ADR-0324, `sports/roller.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
+| Il catalogo in «Explore»: la pagina «Catalog», la griglia, i filtri, la ricerca, `catalog.json` dal seme | `tasks/TASK-420.md`, `DECISIONS.md` ADR-0348, `../catalog/README.md`, `UI.md` «Explore» |
 | Lo scialpinismo «Ski touring»: fasi e VAM, la pendenza dalle tegole Terrarium, le vette OSM e la collezione | `tasks/TASK-415.md`, `DECISIONS.md` ADR-0344, `sports/skimo.md`, `sports/CONDIVISO.md`, `tasks/TASK-375.md` |
 | Carrozzina e passeggino: forme semplici di 1–5 km dove si spinge, la rete `wheel` (scale, cordoli, superfici, strade grandi), quanto OSM sa, le misure | `tasks/TASK-414.md`, `DECISIONS.md` ADR-0343, `sports/wheelchair.md`, `sports/roller.md`, `sports/COME-AGGIUNGERE.md` |
 | La palestra «Gym»: sessione senza traccia, esercizi e serie, timer di recupero, traguardi, classifica mensile | `tasks/TASK-385.md`, `DECISIONS.md` ADR-0327, `sports/gym.md` |

@@ -160,6 +160,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-420 — La pagina del catalogo in «Explore»** (2026-11-08; numeri
+  dal Coordinatore, ADR-0348 **proposto**; parte C del grande catalogo
+  con TASK-418 e TASK-419). Mockup approvato dall'utente il 2026-11-08
+  («Sì, approvo»): il nome «Catalog», una scheda sotto la ricerca di
+  «Explore» che apre una pagina a sé, griglia a due colonne a pagine di
+  40, ricerca per nome, filtri per paese, città, categoria, distanza e
+  sport in un foglio, ordine Nearest · Best · Shortest, cuore e «Start»
+  su ogni scheda. I dati del seme viaggiano nell'app (`catalog.json` da
+  `apps/mobile/scripts/catalog-data.mjs`), i filtri sul telefono. Branch
+  `docs/TASK-420-catalog-page` (proposta). Prossimo: il via del
+  Coordinatore sulla lista dei file, poi il codice su
+  `feat/TASK-420-catalog-page`. `tasks/TASK-420.md`.
 - **TASK-415 — Ski touring, lo scialpinismo «Record only»** (2026-11-08;
   numeri dal Coordinatore, ADR-0344 **proposto**; sessione avviata dal
   Coordinatore Sport). Parte 0, solo documenti: disegno e costo delle

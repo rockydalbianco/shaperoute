@@ -36,7 +36,10 @@ test("ski touring comes after cross-country skiing, before the gym", () => {
     RUN_ACTIVITIES.indexOf("ski_touring"),
     RUN_ACTIVITIES.indexOf("xc_skiing") + 1,
   );
-  assert.equal(RUN_ACTIVITIES.indexOf("gym"), RUN_ACTIVITIES.indexOf("ski_touring") + 1);
+  assert.equal(
+    RUN_ACTIVITIES.indexOf("gym"),
+    RUN_ACTIVITIES.indexOf("ski_touring") + 1,
+  );
   assert.deepEqual(runActivities.run_activities, [...RUN_ACTIVITIES]);
   assert.deepEqual(runActivities.record_activities, [...RECORD_ACTIVITIES]);
 });
@@ -45,5 +48,8 @@ test("an app of today reads ski touring, one of before does not", () => {
   assert.ok(reads.kinds.includes("ski_touring"));
   assert.ok(reads.this_app.split(",").includes("ski_touring"));
   assert.ok(!reads.old_app_activities.includes("ski_touring"));
-  assert.equal(reads.kinds.indexOf("ski_touring"), reads.kinds.indexOf("xc_skiing") + 1);
+  assert.equal(
+    reads.kinds.indexOf("ski_touring"),
+    reads.kinds.indexOf("xc_skiing") + 1,
+  );
 });

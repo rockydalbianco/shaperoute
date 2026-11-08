@@ -347,6 +347,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `6f8bba4c` invariata. Anteprima all'utente a CI di `main` verde,
   produzione col suo «ok produzione». Prossimo: la prova sul telefono
   (si sceglie, si pedala, si salva, va in Salute), poi la chiusura.
+  **Chiuso** (2026-11-08): prova sul telefono passata, «Sì, funzionano»
+  dell'utente. Gravel e MTB si scelgono, si pedalano, si salvano e vanno
+  in Salute. TASK-378 Done.
 
 - **TASK-380 — Roller, i pattini in linea** (2026-11-06; numeri dal
   Coordinatore, ADR-0324 **proposto**). Parte 0, solo documenti: misurate

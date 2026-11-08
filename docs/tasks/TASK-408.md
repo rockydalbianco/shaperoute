@@ -351,8 +351,15 @@ c'è già in «Share your run», quindi niente «Export video».
       2026-11-08: 3D con apertura dall'alto, cavallo e finale «Heart»;
       Notte con titolo, volpe e finale «Numbers» (video in
       `out/TASK-408/sim-c2/`, fuori dal repository).
-    - **C2b**: la camera dietro l'animale sul 3D, con la riga «Camera
-      behind»/«Camera around», e l'anteprima nel foglio.
+    - **C2b** (branch `feat/TASK-408-c2b-chase`): sul 3D, sotto «The
+      route», tre scelte: «Camera around» (di base, il giro di prima),
+      «Camera behind» (la camera segue l'animale da dietro e un po'
+      dall'alto, scendendo dalla vista intera nel primo secondo del
+      percorso e risalendo dopo) e «Line in 2D» (tutto il video dall'alto,
+      sulla foto piatta di C2a). Se il telefono non regge la camera dietro,
+      la mappa resta ferma con lo zoom lento e l'animale corre lo stesso.
+    - **C2c**: l'anteprima nel foglio (un modo «play» della pagina del
+      video), con la sua lista.
 - **D — il prompt**: la tabella di parole nell'app e il riquadro; niente
   server.
 - **E — la prova sul telefono**: il tempo dell'esportazione con ogni
@@ -411,6 +418,13 @@ e `.test.tsx`, `videoScene.ts` e `.test.ts`, `videoPage.ts` e `.test.ts`,
 `apps/mobile/src/i18n/{it,de,es,fr}.ts`; `docs/tasks/TASK-408.md`,
 `docs/STATUS.md`, `docs/DECISIONS.md`. `SharePost.test.tsx` e
 `TabSwipeOwners.test.ts` erano nella lista ma non sono serviti.
+
+Parte C2b (lista mandata al Coordinatore il 2026-11-08):
+`apps/mobile/src/share/videoChase.ts` e `.test.ts` (nuovi); `videoEdit.ts`
+e `.test.ts`, `videoScenes.ts`, `ScenesRows.tsx`, `EditVideoSheet.test.tsx`,
+`videoScene.ts` e `.test.ts`, `videoPage.ts` e `.test.ts`,
+`SharePostVideo.test.tsx`; `apps/mobile/src/i18n/{it,de,es,fr}.ts`;
+`docs/tasks/TASK-408.md`, `docs/STATUS.md`, `docs/DECISIONS.md`.
 
 ## Criteri di accettazione
 

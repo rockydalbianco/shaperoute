@@ -963,6 +963,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   emoji lungo il percorso e alla fine; provato nel simulatore (video
   all'utente). Prossimo: C2 (scene, finale, camera dietro, anteprima);
   B2 quando c'è l'elefante.
+  **Parte C2a** (2026-11-08, branch `feat/TASK-408-c2-scenes`): «Scenes»
+  (apertura, percorso, finale; accese, spente, riordinate, sempre 12 s) ed
+  «Ending» (numeri, disegno intero, cuore, tutti e tre); sul 3D la foto
+  piatta della mappa per l'apertura. Il video di base resta identico
+  (scelta 12, «Come oggi»). Prossimo: C2b (camera dietro, anteprima).
 - **TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e
   calendario** (ADR-0341 **proposto**; numeri dal Coordinatore il
   2026-11-06). Dalla segnalazione dell'utente «Start workout non fa nulla»

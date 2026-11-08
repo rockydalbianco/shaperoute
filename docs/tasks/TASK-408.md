@@ -347,7 +347,10 @@ c'è già in «Share your run», quindi niente «Export video».
       acceso. Sotto, cosa mostra l'apertura («Drawing in 2D», «Title») e
       come passa alla scena dopo («Cut», «Fade»), e il finale («Numbers»,
       «Whole drawing», «Heart», «All three»). Il video di base è identico a
-      prima, fotogramma per fotogramma (scelta 12).
+      prima, fotogramma per fotogramma (scelta 12). Provato nel simulatore il
+      2026-11-08: 3D con apertura dall'alto, cavallo e finale «Heart»;
+      Notte con titolo, volpe e finale «Numbers» (video in
+      `out/TASK-408/sim-c2/`, fuori dal repository).
     - **C2b**: la camera dietro l'animale sul 3D, con la riga «Camera
       behind»/«Camera around», e l'anteprima nel foglio.
 - **D — il prompt**: la tabella di parole nell'app e il riquadro; niente

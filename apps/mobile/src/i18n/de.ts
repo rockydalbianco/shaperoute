@@ -2017,4 +2017,29 @@ export const DE: Table = {
   "Show it": "Zeigen",
   "Only you see this": "Nur du siehst das",
   "Show VO₂ max on my profile": "VO₂max in meinem Profil zeigen",
+  // src/ski/ResortList.tsx, ResortPage.tsx, ResortWeather.tsx (TASK-406 part C:
+  // the ski resorts of «Search», texts approved)
+  "Ski resorts": "Skigebiete",
+  "Near you": "In deiner Nähe",
+  "No ski resort with this name.": "Kein Skigebiet mit diesem Namen.",
+  "Lifts@@resort": "Lifte",
+  Pistes: "Pisten",
+  Novice: "Anfänger",
+  Easy: "Leicht",
+  Intermediate: "Mittel",
+  Advanced: "Schwer",
+  Expert: "Experten",
+  Freeride: "Freeride",
+  Website: "Website",
+  Base: "Tal",
+  "Top@@resort": "Berg",
+  "Next 24 hours": "Nächste 24 Stunden",
+  "Fresh snow": "Neuschnee",
+  "Estimated from the forecast, not a snow report.":
+    "Aus der Vorhersage geschätzt, kein Schneebericht.",
+  "Weather unavailable right now.": "Wetter gerade nicht verfügbar.",
+  "Older forecast: MET Norway is not answering.":
+    "Ältere Vorhersage: MET Norway antwortet nicht.",
+  "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
+    "Wetter: MET Norway (CC BY 4.0) · Skigebiete: OpenSkiMap.org, © OpenStreetMap-Mitwirkende",
 };

@@ -1,9 +1,9 @@
 # TASK-378 — Gravel e MTB: la bici fuori dall'asfalto
 
-**Stato**: In corso — parte 0 in `main` (#840, #841); parte A in `main`
-(#875, 2026-11-06); parte B in `main` (#879, 2026-11-06); parte C
-(accensione, col sì dell'utente) in `main` (#897, 2026-11-06); prossimo:
-la prova sul telefono.
+**Stato**: Done (2026-11-08) — **Esito**: Gravel 🚲 e MTB 🚵 accesi per
+tutti: parte 0 (#840, #841), A motore, contratto e API (#875), B app
+(#879), C accensione (#897); prova sul telefono passata, «Sì, funzionano»
+dell'utente (2026-11-08). Impronta iOS `6f8bba4c` invariata.
 **Fase**: 4 · **Branch**: `docs/TASK-378-0-gravel` (parte 0), poi
 `feat/TASK-378-a-gravel-engine-api`, `feat/TASK-378-b-gravel-app` ·
 **ADR**: ADR-0322 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -213,8 +213,9 @@ di quelle di oggi (`cycling`, `hiking`).
       (`compare`). Corsa 54/54, bici 54/54 e canoa 27/27 identiche punto
       per punto; `test_mountain_biking.py`, `test_gravel_biking.py`,
       `test_gravel_mtb_api.py`, `gravelMtb.test.ts`.
-- [ ] B: lo sport si sceglie, si pedala, si salva e va in Salute; i testi
-      sono in cinque lingue.
+- [x] B: lo sport si sceglie, si pedala, si salva e va in Salute; i testi
+      sono in cinque lingue. Provato sul telefono dall'utente, «Sì,
+      funzionano» (2026-11-08).
 
 ## File toccati
 
@@ -354,3 +355,7 @@ l'impronta iOS: `6f8bba4c`, invariata. L'anteprima va all'utente quando la
 CI di `main` è verde; la produzione solo col suo «ok produzione».
 Prossimo: la prova sul telefono (si sceglie, si pedala, si salva, va in
 Salute), poi la chiusura del task.
+
+2026-11-08: la prova sul telefono è passata, l'utente ha scritto «Sì,
+funzionano»: Gravel e MTB si scelgono, si pedalano, si salvano e vanno in
+Salute. Task chiuso; nessun server né OTA da questa chiusura.

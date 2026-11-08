@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-10, ~13:00Z · `main` = `98626bbc` · coordinatore: la sessione «Coordinatore» `local_e57a8224` (dal 2026-10-09; la vecchia `local_0caa214a` è archiviata). «Coordinatore 2» è archiviato dal 2026-10-10: i merge li fa il coordinatore; per riaverlo, una sessione nuova con «Sei il Coordinatore 2: segui `docs/COORDINATORE-2.md`».
+**Ultimo aggiornamento**: 2026-11-08, ~15:30Z · `main` = `6a9a20c0` · coordinatore: la sessione «Coordinatore» `local_3f55a0e9` (dal 2026-11-08; la vecchia `local_e57a8224` è archiviata). «Coordinatore 2» non c'è: i merge li fa il coordinatore; per riaverlo, una sessione nuova con «Sei il Coordinatore 2: segui `docs/COORDINATORE-2.md`». Le righe tolte oggi sono copiate in `docs/archive/AGENTI-fino-al-2026-11.md`.
 
 ## Come si usa
 
@@ -52,126 +52,132 @@
 
 ## La coda dei merge
 
-Alle 13:00Z del 2026-10-10 le uniche PR aperte sono ferme **fino
-all'approvazione di Apple della 1.0**: nessun cambio al server né al
-motore mentre il revisore prova l'app.
+Al 2026-11-08, ~15:30Z. **Nessuna PR aperta tocca `services/` né porta una
+migrazione**: entrano senza l'ok dell'utente per il server. Quasi tutte
+toccano `STATUS.md` e `DECISIONS.md`, quindi una alla volta: al suo turno
+la sessione proprietaria aggiorna da `origin/main` tenendo tutte le voci;
+se la sessione è archiviata, lo fa il coordinatore.
 
-- **#461** TASK-262 C, amici dalla rubrica: pronta e verde, testi e
-  privacy approvati. Dopo l'approvazione: ok dell'utente per il server
-  (`contact_people.py`, nessuna migrazione), merge, server, copia F.14
-  del sito, `preview`; su production serve una 1.0.1 nativa
-  (`expo-contacts`). Se la privacy entra dopo il 10 ottobre, la data nuova
-  vuole un sì dell'utente. Sessione chiusa: si riprende da
-  `tasks/TASK-262.md`, parte C, «Dove si è».
-- **#489** TASK-271, «u-turn» in fondo a una strada cieca (motore):
-  pronta. Dopo l'approvazione: ok dell'utente per server,
-  `draw_examples` e motore sul telefono. Sessione archiviata: la tiene il
-  coordinatore (worktree `.claude/worktrees/TASK-271`).
+Ordine: prima le PR di soli documenti, poi il codice, dalla più piccola.
 
-Le PR di soli documenti entrano una alla volta: toccano tutte
-`STATUS.md`, e ogni merge rimette in conflitto le altre.
+| # | Task | Stato alle 15:30Z | Note |
+|---|---|---|---|
+| #928 | TASK-411 proposta (docs) | verde, CLEAN | `DECISIONS` (ADR-0341), `INDEX`, `STATUS`, task file |
+| #926 | TASK-410 proposta (docs) | verde, CLEAN | `DECISIONS` (ADR-0340), `INDEX`, `STATUS`, task file |
+| #925 | TASK-385 F chiusura (docs) | verde, CLEAN | `STATUS`, task file |
+| #923 | TASK-371 Walk acceso e ordine degli sport | verde, CLEAN | `settings/sport*`; prima di #921 |
+| #922 | TASK-409 A calorie in piscina | verde, CLEAN | `pool/`, `feed/postEnergy` |
+| #924 | TASK-408 C1 il foglio «Edit video» | verde, CLEAN | `share/`, `theme/tokens.ts`, i18n |
+| #919 | TASK-406 C «Ski» nella ricerca | verde, CLEAN | `ski/`, `shared-types`, i18n |
+| #921 | TASK-380 B Roller nell'app, «Soon» finché il server non ha la 0055 | verde, CLEAN | `settings/sport*` come #923, `shared-types` come #919, i18n |
+| #930 | TASK-411 A la griglia dei gruppi muscolari | CI in corso, BLOCKED | `gym/`; dopo #928 |
+| #862 | TASK-401 B Live Activity (bozza) | ferma | **non prima del taglio della 1.0.3** |
+
+Dopo la coda parte **TASK-412**, la riduzione dei documenti (sessione
+«Ridurre dimensione docs per sessioni Claude» `local_3cd4003c`): tocca
+`STATUS.md`, `DECISIONS.md`, `INDEX.md`, `CLAUDE.md` e crea `docs/archive/`.
+Durante la sua finestra nessun'altra PR tocca quei file; dopo il suo merge
+le righe nuove in `STATUS` e `DECISIONS` seguono il formato che introduce.
 
 ## L'albero
 
 ```
-App Store 1.0.0 (TASK-152)
-  └─ In revisione da Apple dal 2026-10-10: build 5 da `793fa112`,
-     fingerprint `83793e26`, uscita manuale, solo iPhone, senza
-     pubblicità, utente «non commerciante» fino alla società.
-     Dopo l'approvazione: «Release This Version» (utente); il primo
-     `eas update --channel production` (TASK-270, 269) solo col via del
-     coordinatore; la 1.0.1 nativa con TASK-262 C
+App Store
+  ├─ 1.0.1 in produzione. OTA di produzione registrati: f607dcf5
+  │  (2026-11-04) e 3ef55853 (Hike acceso, #869). Aspettano l'OTA col sì
+  │  dell'utente: TASK-402 (ruotare e pezzi), TASK-403 («Edit the
+  │  drawing» sotto A, B, C), TASK-401 A (notifica a schermo bloccato,
+  │  prima una corsa vera)
+  ├─ 1.0.2 · TASK-407  solo gli screenshot nuovi: build da
+  │  `release/1.0.2` (`c74aab2f`), impronta `6f8bba4c`; la lancia l'utente
+  ├─ 1.0.3  login, schermata di blocco, composer, calorie e battito;
+  │  TASK-401 B (#862) entra solo dopo il taglio
+  └─ 1.1 · TASK-370  Apple Watch: A1 e A2 in `main` (#839, #866);
+     A3 (il telefono) sul branch `feat/TASK-370-a3-phone`, senza PR,
+     sessione archiviata; A-flip (l'interruttore nativo) alla build
 
-Fermi fino all'approvazione di Apple
-  ├─ #461 TASK-262 C e #489 TASK-271 (sopra)
-  └─ `draw_examples --water` (spiagge di TASK-245 C e laghi di TASK-246 B,
-     4–8 ore sul server), con l'ok dell'utente
+In PR (la coda qui sopra)
+  ├─ TASK-371 Walk · TASK-406 C Ski · TASK-408 C1 editor del video
+  ├─ TASK-409 A piscina · TASK-410 pagina del post (proposta)
+  ├─ TASK-411 palestra: proposta (#928), A griglia (#930);
+  │  E «guide» sul branch `feat/TASK-411-e-exercise-guides`, senza PR
+  └─ TASK-380 B Roller (sezione «Sport»)
 
-Da avviare (chip; le scelte dell'utente ci sono)
-  ├─ TASK-272 · ADR-0240  la corsa interrotta «riapre la corsa in pausa»
-  └─ TASK-273 · ADR-0241  partire da qualsiasi punto di una forma chiusa,
-                           «automatico, dove la tocchi»
-     272 e 273 toccano `navigator.ts`, `progress.ts`, `useNavigation.ts`:
-     l'ordine dei merge lo dà il coordinatore
+Sport (sezione «Sport», Coordinatore Sport `local_2c048887`)
+  ├─ Hike chiuso · Gravel/MTB: la prova sul telefono, poi la chiusura
+  ├─ Roller: #921, poi il server con la 0055 (sì dell'utente), poi `ready`
+  └─ Parte 0 in corso: carrozzina/passeggino, ciaspole, scialpinismo
+     (numeri da chiedere qui prima dei file)
+
+Da avviare
+  └─ TASK-412 riduzione dei documenti, dopo la coda (sopra)
 
 Fermi per scelta dell'utente
-  ├─ TASK-153 AdMob vero: aspetta la società (ADR-0236 riservato, branch
-  │  `feat/TASK-153-admob-live` con lo stato nel task file)
-  └─ TASK-262 B, la mail di conferma
-
-Chiusi dal 2026-10-07 al 2026-10-10: 092, 118, 121, 152 (A e B, inviata
-in revisione), 182 E, 203 B, 234 C, 237 D ed E (privacy e assistenza
-online), 245 C, 246 B, 251 C, 261 (A e B), 262 A, 263, 264, 265, 266,
-267 (A e B), 268, 269, 270, 274.
+  ├─ TASK-153 AdMob vero (aspetta la società; ADR-0236 riservato)
+  └─ TASK-262 B la mail di conferma
 ```
+
+**Lo spostamento del 2026-11-08.** Il repository è su
+`/Volumes/T9/Progetti/shaperoute` (il vecchio
+`/Users/lucapallaoro/Progetti/shaperoute` non esiste più). Le cartelle in
+`.claude/worktrees/` ci sono ancora ma **non sono più registrate** in
+`git worktree list` (solo `gracious-colden-d8cb3a` lo è): i branch sono
+salvi, il lavoro non committato va cercato nelle cartelle prima di
+toglierle, **mai `git clean`**. Le sessioni con `cwd` sul vecchio
+percorso vanno riaperte sul nuovo. `shaperoute-publish` e
+`shaperoute-release-1.0.2` sono accanto al repo, su `/Volumes/T9`.
 
 ## File occupati adesso
 
 | File | Di chi |
 |---|---|
-| `site/`, `docs/SITO.md` | TASK-237 (sessione «SITO WEB») |
-| `apps/mobile/src/about/content/*.ts`, `site/privacy/**`, `site/tests/privacy.test.mjs` | TASK-262 C (#461) fino al merge |
-| `services/route-engine/route_engine/directions.py` e il suo test | TASK-271 (#489) |
-| `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md` | tutti, ognuno solo le sue righe |
-| `docs/AGENTI.md`, `CLAUDE.md` | coordinatore |
+| `apps/mobile/src/gym/**` | TASK-411 A (#930) ed E (branch) |
+| `apps/mobile/src/share/**`, `apps/mobile/src/theme/tokens.ts` | TASK-408 C1 (#924) |
+| `apps/mobile/src/settings/sport*.ts`, `sportRows*`, `SportButton*`, `SportSetting*`, `profile/SettingsPage.test.tsx` | TASK-371 (#923) e poi TASK-380 B (#921): #923 entra prima, #921 si aggiorna |
+| `apps/mobile/src/pool/**`, `feed/postEnergy*`, `activities/ActivitiesList.tsx` | TASK-409 A (#922) |
+| `apps/mobile/src/ski/**`, `api/skiResorts*`, `search/SearchScreen.tsx`, `packages/shared-types/**` | TASK-406 C (#919); `shared-types/src/index.ts` anche #921 |
+| `apps/mobile/src/i18n/{de,es,fr,it}.ts` | #924, #921, #919: ognuno aggiunge chiavi, i conflitti si risolvono tenendo tutte |
+| `apps/mobile/src/tabs/TabSwipeOwners.test.ts` | #930, #924, #919 |
+| `apps/mobile/modules/live-activity/**`, `targets/live-activity/**`, `app.json`, `package.json`, `navigation/useNavigation.ts` | TASK-401 B (#862), ferma fino al taglio della 1.0.3 |
+| `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md` | tutti, ognuno solo le sue righe; poi TASK-412 da solo nella sua finestra |
+| `docs/AGENTI.md`, `CLAUDE.md` | coordinatore (sezione «Sport»: Coordinatore Sport) |
 
 ## Numeri
 
-- Task: presi fino a **TASK-274**. Il prossimo libero è **TASK-275**.
-- ADR: presi fino a **ADR-0241** (0225 TASK-261, 0226 TASK-262, 0227
-  TASK-118, 0228 TASK-121, 0229 TASK-092, 0230 TASK-203 B, 0231 TASK-263,
-  0232 TASK-264, 0233 TASK-152, 0234 TASK-265, 0235 TASK-266, 0236
-  TASK-153 riservato, 0237 TASK-267, 0238 non usato (TASK-268 è
-  un'aggiunta ad ADR-0137), 0239 TASK-269, 0240 TASK-272, 0241 TASK-273;
-  TASK-270, 271 e 274 sono aggiunte ad ADR-0052, ADR-0045 e ADR-0120). Il
-  prossimo libero è **ADR-0242**.
-- Migrazioni in `main` e sul server: 0001–0019 come prima, 0020
-  segnalazioni e blocchi (TASK-121), 0021 token push (TASK-262 A). La
-  prossima: il primo libero al merge.
+- Task: presi fino a **TASK-412** (409 calorie in piscina, 410 la pagina
+  del post, 411 palestra: griglia, guide, piani e calendario, 412 la
+  riduzione dei documenti, assegnato il 2026-11-08). Il prossimo libero è
+  **TASK-413**. Controllati `docs/tasks/`, `git branch -a` e le PR aperte.
+- ADR: in `main` fino a **ADR-0339**; ADR-0340 (TASK-410, #926) e
+  ADR-0341 (TASK-411, #928) sono nelle PR. Il prossimo libero è
+  **ADR-0342**.
+- Migrazioni in `main`: fino a `0055_inline_skating.sql` (0052 gravel e
+  MTB, 0053 piscina, 0054 stazioni sciistiche, 0055 roller). Quali sono
+  già sul server va verificato prima del prossimo deploy (`DEPLOY.md`);
+  la 0055 è la condizione per accendere il Roller. La prossima: il primo
+  libero al merge (oggi 0056).
 
 ## Il server e l'app
 
-- **Server**: Hetzner CX33 (il CX43 non era disponibile) più un
-  **Volume da 70 GB** montato in bind su `/root/shaperoute/data/cache`
-  (riga in `/etc/fstab`), da `deploy/compose.yaml` con PostgreSQL.
-  `https://api.getmuw.app` (e il vecchio `sslip.io`), sito su
-  `https://getmuw.app` (privacy e `/support/`). A `main` `55b990be` dal
-  2026-10-10 05:11Z, migrazioni 0001–0021; immagine di prima
-  `shaperoute-api:before-task262a`, copia del database
-  `shaperoute-2026-10-10T0510Z.dump`. Zone: 225 città nuove (USA 58 con
-  Cupertino per il revisore, Italia 99 sopra i 50 000 abitanti, Europa
-  68), con i file per i telefoni. Acqua: 291 file (67 spiagge). Spazio:
-  disco principale ~59 GB liberi, volume ~16 GB.
-- **App**: `preview` da `main` `066d10e8` (gruppo `cd929227`). Il
-  coordinatore pubblica da solo le cose di sola app (ok dell'utente del
-  2026-10-05); per il server l'ok si chiede ogni volta. **Production**:
-  la 1.0.0 (build 5) in revisione; nessun `eas update --channel
-  production` senza il via del coordinatore.
+- **Server**: Hetzner CX33 con il Volume da 70 GB, `deploy/compose.yaml`
+  con PostgreSQL, `https://api.getmuw.app`, sito su `https://getmuw.app`,
+  copie sullo Storage Box (TASK-122). Ultimo aggiornamento registrato in
+  `STATUS.md`: `f10033ce` del 2026-11-05 (migrazione 0046, TASK-394 A).
+  Prima di toccarlo: ok dell'utente, `origin/main` pulito, `DEPLOY.md`
+  F.12; dopo un cambio del motore, `draw_examples`.
+- **App**: 1.0.1 in produzione; `preview` e `production` solo col via del
+  coordinatore, una pubblicazione alla volta (regola 9). Chi cambia il
+  motore rifà `apps/mobile/assets/engine/engine.zip` e, se tocca acqua o
+  sagome, `src/paddle/paddleExamples.json`: due test della CI lo chiedono.
 - **Server e pubblicazione li fa una sessione sola per volta**, anche
   quando l'utente dà l'ok in più sessioni: chi lo riceve lo scrive al
   coordinatore e aspetta il suo via.
-- **Chi cambia il motore** rifà `apps/mobile/assets/engine/engine.zip`
-  (`python tools/phone_engine/phone_engine.py engine`) e, se tocca i file
-  dell'acqua o le sagome, `src/paddle/paddleExamples.json`
-  (`python -m shaperoute_api.paddle_examples`): due test della CI lo
-  chiedono.
 
-## Fatto in questa tornata (2026-10-01/02)
+## Fatto dal 2026-10-10
 
-In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
-#141 (144), #147 (128), #151 (114), #152 (146), #153 (148), #155 (AGENTI),
-#154 (149), #156 (151), #158 (115), #161 e #163 (task file di 067), #159
-(task file 150/152/153), #130 (132), #162 (154), #160 (155), #157 (122),
-#150 (137), #166 (158), #165 (157), #164 (156), #167 (122, copie), #140
-(141), #169 (141), #170 (AGENTI), #168 (159), #171 (160), #172 (165), #173
-(162), #174 (163, prima PR), #175 (161), #176 (164), e poi fino alla #214:
-#177–#402, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
-177, 178, 179, 180, 181, 186, 187 (API), 188, 189, 190 A, 192, 193, 194,
-195, 196, 067, 190 (A, B, C), 191 A1 e A2, 197, 198, 199, 116, 201 (misurato, non conviene), 200,
-202, 203, 187 (app), 204, 117 (A e B), 191 B, 205, 206 (A e B), 207,
-210 A, 211 A, 212, 213, 215, 120, 208 A, 209, 214 (A, B, C), 216, 218,
-219, 220, 221, 222, 223, 224, 225, 226 (A, B), 227, 228, 233, 234, 235, 236, 237 (A, A2), 211 B, 214 (A2, B2), 229, 230, 231 (A, B),
-119 (A, B), 217 e 191 C.
+450 PR in `main`, dalla #451 alla #929 (TASK-262 C … TASK-411): l'elenco
+per task è in «Completato» di `STATUS.md`. Le righe di prima di questo
+file sono in `docs/archive/AGENTI-fino-al-2026-11.md`.
 
 ## Sport (Coordinatore Sport)
 
@@ -180,14 +186,32 @@ In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
 > Coordinatore. Le liste dei file vanno comunque al Coordinatore prima del
 > codice: il controllo dei conflitti con le sessioni non sport lo fa lui.
 
-**Ultimo aggiornamento**: 2026-11-04.
+**Ultimo aggiornamento**: 2026-11-07.
 
-| Sessione | Adesso | Dopo | File toccati |
+La struttura (TASK-376, ADR-0320) è chiusa: registri, banco
+(`tools/sport_bench/`) e ricetta (`docs/sports/COME-AGGIUNGERE.md`). Ogni
+sport passa per le stesse parti: 0 (misura e scelte, solo documenti), A
+(motore, contratto, API, profilo nascosto), B (app, «Soon»), accensione
+(`ready`, col sì dell'utente dopo il server).
+
+| Sport | Task / ADR | Dove si è | Prossimo |
 |---|---|---|---|
-| Coordinatore Sport | TASK-376 A: banco e `docs/sports/` (PR #736), misure di base di corsa, bici, canoa | TASK-376 B, il registro, dopo TASK-371 A+B, 375 A+B, 323 C2 in `main` | `tools/sport_bench/`, `docs/sports/`, `docs/tasks/TASK-376.md`; righe proprie in `STATUS.md`, `DECISIONS.md`, `INDEX.md` e questa sezione |
+| Escursionismo ⛰️ | TASK-377 / ADR-0321 | Chiuso: acceso per tutti (OTA 3ef55853, #869) | — |
+| Gravel 🚲 e MTB 🚵 | TASK-378 / ADR-0322 | 0, A, B e accensione in `main` (#875, #879, #897) | La prova sul telefono, poi la chiusura |
+| Roller | TASK-380 / ADR-0324 | 0, A e soglie del gioco in `main` (#886, #890, #912, #914); B in PR (#921) | Server con la 0055 (sì dell'utente), poi l'accensione |
 
-Fase 1 (dopo TASK-376 B in `main`), numeri riservati: TASK-377 / ADR-0321
-Escursionismo (il pilota, scelta dell'utente), TASK-378 / ADR-0322
-Gravel/MTB; il terzo è il **Roller** (scelta
-dell'utente del 2026-11-04, «Sì, Roller», al posto dello sci di fondo che è
-già «Record only», TASK-372): TASK-380 / ADR-0324.
+Gli sport che vengono dopo, ciascuno con la sua parte 0 e i numeri chiesti
+al Coordinatore prima dei file:
+
+- **Carrozzina e passeggino**: misura col banco di scale, cordoli,
+  pendenze e superfici; uno o due sport, distanze e avviso sono scelte
+  dell'utente.
+- **Ciaspole**: «Record only» oppure forma libera sulla neve con avviso di
+  sicurezza; scelta dell'utente, con costi e rischi delle due strade.
+- **Scialpinismo**: «Record only», col riconoscimento di salite e discese
+  dello sci (TASK-373, TASK-375, TASK-406); D+, D−, tempo in salita e in
+  discesa.
+
+Al massimo tre sessioni sport in parallelo, mai sugli stessi file. Il banco
+gira una volta per volta con `nice -n 10`; in locale solo i test dei file
+toccati.

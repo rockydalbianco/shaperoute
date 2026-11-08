@@ -24949,3 +24949,231 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
 - **Solo il motore del telefono**: niente frase nella Privacy, ma a
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
+
+## ADR-0340 — La pagina del post: video nella pagina, foglio con quattro azioni, sezioni di dati da una tabella `run_stats`
+
+**Stato**: Proposto · 2026-11-06 · TASK-410. Le scelte di prodotto e di
+privacy sono dell'utente (`tasks/TASK-410.md`, «Scelte dell'utente»); il
+come è deciso dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole una pagina del post con la foto dell'autore,
+il video dell'attività, un foglio con quattro azioni e sezioni di dati
+(riepilogo, meteo, passi per km, dislivello, battito e zone). Oggi i dati
+oltre a distanza, tempo e dislivello totale restano sul telefono
+dell'autore, il video non va al server, l'app non ha un lettore video né
+`react-native-svg`, e il meteo c'è solo come previsione (MET Norway).
+
+**Decisione (proposta)**:
+
+1. **Una pagina nuova** (`feed/PostPage.tsx`) al tocco di un post del Feed;
+   `DrawingCard` resta per gli altri ingressi.
+2. **Il video** si gioca nella pagina con la WebView di TASK-351/408, dalla
+   traccia del disegno: niente file sul server, niente lettore nativo,
+   l'impronta iOS non cambia.
+3. **Il foglio** è un componente nuovo con `Animated` e `PanResponder`:
+   niente librerie di bottom sheet.
+4. **I grafici** sono fatti di `View` (colonne per il profilo, barre per le
+   zone): niente `react-native-svg`, che cambierebbe l'impronta.
+5. **I dati** stanno in una tabella nuova `run_stats` (`jsonb`), in un modulo
+   nuovo dell'API: **non si tocca `schemas.py`**, quindi né `engine.zip` né il
+   motore. I passi per km li calcola il server dalla traccia con i tempi
+   (anche per le corse vecchie); profilo del dislivello, cadenza e calorie li
+   manda il telefono; il battito viene da TASK-345 B/C. `GET /drawings/{id}`
+   dà `stats` già filtrato secondo le scelte dell'autore; `GET /feed` no.
+6. **Il meteo** si chiede a MET Norway al salvataggio, solo entro 3 ore dalla
+   fine: MET non ha un archivio, e un fornitore storico sarebbe una
+   dipendenza esterna nuova.
+7. **Le sezioni** vengono da una funzione pura: una sezione senza dati non
+   c'è, una riga senza valore non c'è; quali righe ha ogni sport lo dice un
+   file nuovo `sports/postMetrics.ts`.
+
+**Alternative scartate**: caricare il file video e mostrarlo con
+`expo-video` (nativo, build nuova, spazio sul server); `react-native-svg`
+(nativo); colonne nuove in `runs` per ogni dato (una migrazione per ogni
+metrica); `stats` dentro `GET /feed` (pagine del Feed più pesanti);
+Open-Meteo archivio (gratuito solo non commerciale).
+
+**Conseguenze**: le corse salvate prima della parte C hanno solo passi per
+km (dal backfill) e i campi di oggi; meteo solo per le corse salvate subito.
+## ADR-0341 — La palestra per tutti i giorni: la griglia, il calendario dal server, le schede sull'account
+
+**Stato**: Proposto · 2026-11-06 · TASK-411. Le scelte di prodotto sono
+dell'utente (griglia «Gruppi, poi macchinari», guida «3 passi + ultimo
+allenamento», piano «Schede + giorni», calendario «Mese con giorni
+segnati», testi approvati); il resto è deciso dall'agente su delega
+dell'utente, da confermare con la lista di ogni parte.
+
+**Contesto**: la palestra (ADR-0327) registra un allenamento, ma per usarla
+ogni settimana mancano un modo rapido di trovare il macchinario, un punto
+di partenza in «Draw», le schede e un calendario. La segnalazione «Start
+workout non fa niente» è stata corretta a parte (#927).
+
+**Decisione**:
+
+1. **La griglia è solo dell'app** (`gym/ExercisePicker.tsx`): otto riquadri
+   dei gruppi con un'emoji e quanti esercizi hanno, poi una griglia a 2
+   colonne del gruppo; scrivere nella ricerca mostra i risultati di tutti i
+   gruppi, come oggi, e il nome libero resta. Nessun testo nuovo («Back» c'è).
+2. **Il calendario si legge dal server**: `GET /me/gym-calendar?month=`
+   (mese di calendario sul fuso del telefono, mandato dall'app come
+   `tz`), per giorno gli allenamenti con l'ora di inizio, il tempo e
+   l'id del post se c'è; il totale del mese. Niente migrazione: `runs` con
+   `activity = 'gym'` dell'account. Solo il proprietario (è sotto `/me`).
+   La guida in «Draw» legge lo stesso endpoint per «Last workout» e «This
+   month».
+3. **Le schede sull'account**: una tabella `gym_plans` (account, nome 1–40,
+   giorni come sette bit, esercizi in ordine con il tipo e i valori
+   obiettivo nei limiti delle serie di `gym_catalog`, posizione,
+   aggiornata il), al massimo 20 schede da 30 esercizi;
+   `GET/PUT/DELETE /me/gym-plans/{id}` con la chiave scelta dal telefono
+   come per gli allenamenti (si salvano senza rete e poi partono). Una
+   colonna `gym_sessions.plan_id` (nullable, `ON DELETE SET NULL`) dice
+   quale scheda ha seguito l'allenamento: il calendario ne scrive il nome
+   e i giorni saltati sono i giorni della scheda senza un allenamento.
+   Migrazione col numero del Coordinatore (lista della parte C).
+4. **L'allenamento guidato è sul telefono**: «Start workout» con «Today:
+   …» copia la scheda nello stato dell'allenamento (`gym/workout.ts`):
+   l'esercizio corrente è il primo non finito, i campi della serie hanno
+   già i valori obiettivo, «Plan: {done}/{total} sets» sotto il cronometro.
+   Si può sempre cambiare esercizio o scrivere altri valori; le serie
+   salvate sono quelle fatte, non la scheda.
+5. **«Today»** è la prima scheda (per posizione) col giorno della settimana
+   di oggi sul telefono; più schede lo stesso giorno: la prima, le altre in
+   «Plans».
+6. **Privacy** (parte D): le schede sono dati dell'account, private, si
+   cancellano con l'account; una riga nel testo, col sì dell'utente.
+
+**Alternative scartate**: le schede solo sul telefono (perse cambiando
+telefono, come gli esercizi di ADR-0327); il calendario da «My activities»
+a pagine (un mese può chiedere molte pagine); i giorni saltati calcolati
+senza sapere quale scheda è stata fatta (un allenamento libero li
+«riempirebbe» tutti).
+
+**Conseguenze**: un endpoint senza migrazione (B), una tabella e una
+colonna (C); solo JavaScript nell'app, impronta iOS invariata. Server,
+migrazione, privacy e OTA col sì dell'utente.
+
+## ADR-0342 — Le ciaspole: forme piccole piazzate libere sulla neve, come sull'acqua
+
+**Stato**: Accettato · 2026-11-08 · TASK-413. Scelte dell'utente: «SI ANCHE
+FORME LIBERE SULLA NEVE PIÙ PICCOLE» (2026-11-07); il 2026-11-08 nome,
+distanze, regole della neve, testi, gioco e accensione (`tasks/TASK-413.md`)
+
+**Contesto**: le ciaspole non hanno una rete. Sci di fondo e sci alpino
+sono «Record only» perché sulle piste le forme non vengono (ADR-0316,
+ADR-0317); con le ciaspole invece si cammina dove c'è neve. Il motore sa
+già piazzare una forma libera dove non c'è rete: sull'acqua, la forma
+piazzata è il percorso (ADR-0154, `water_fit.py`). Al banco, con la neve
+permessa al posto dell'acqua, una forma di 0,5–3 km entra 60 volte su 60 in
+cinque posti di montagna, 48 su 60 senza boschi (`sports/snowshoes.md`).
+
+**Decisione** (le scelte di prodotto sono dell'utente; il modo è deciso
+dall'agente su delega dell'utente):
+
+1. «Snowshoes» ❄️ è uno sport disegnato, `snowshoeing`, da 0,5 a 3 km.
+   Si può anche partire senza percorso, come ogni sport.
+2. La forma è piazzata da `water_fit.fit_shape` così com'è, su un'area di
+   **neve permessa**: il riquadro attorno alla partenza meno i pendii oltre
+   25° (con 30 m attorno a quelli oltre 30°), i boschi, i ruscelli, le
+   piste, gli impianti, roccia e ghiacciai, l'acqua, i paesi e le strade
+   principali, le riserve e i biotopi (i parchi restano). Si entra da un
+   punto di strada minore, carrareccia o sentiero entro 2 km. `water.py` e
+   `water_fit.py` non cambiano: canoa e nuoto restano identici.
+3. Le pendenze vengono dalle tegole Terrarium (zoom 13, circa 30 m), già
+   usate dall'app e dagli studi dello sci. Il modulo delle quote del motore
+   è quello condiviso voluto da ADR-0300 (parte G di TASK-347): il primo
+   che lo scrive lo scrive per tutti, tramite il Coordinatore.
+4. Solo dal server, come l'acqua: neve e quote si scaricano alla prima
+   richiesta di un posto e restano in cache; nessuna zona in memoria. Il
+   telefono non disegna sulla neve.
+5. I moduli nuovi del motore stanno fuori dall'impronta (come
+   `DRAWN_WATER_ONLY`): gli esempi tenuti non si ridisegnano.
+6. Un avviso di sicurezza al primo «Start», come canoa e nuoto (ADR-0283),
+   e una riga sotto ogni percorso, con i testi approvati in cinque lingue.
+   Il motore non conosce il bollettino valanghe, la neve del giorno, i
+   divieti locali e i terreni privati: l'avviso lo dice.
+7. Nel gioco come Hike: i metri contano, niente tempi migliori né record
+   personali.
+8. Le parti: A1 (la neve nel motore), A2 (contratto, API, migrazione,
+   profilo nascosto), B (app). «ready» appena pronte; server, migrazione e
+   produzione ciascuno col sì dell'utente.
+
+**Conseguenze**:
+
+- Un terzo modo di disegnare accanto a rete e acqua. I punti dell'API che
+  dicono «sull'acqua non c'è rete» (`jobs.py`, `activity_graphs.py`,
+  `errors.py`, `way_back.py`, `route_archive.py`) diventano «acqua o neve».
+- Una forma sulla neve non garantisce che la neve ci sia, né che il pendio
+  sia sicuro quel giorno: lo promette l'avviso, non il motore.
+- A 3 km la forma spesso non entra senza boschi: l'errore dice a quale
+  distanza entra.
+- Un posto nuovo aspetta Overpass (20–40 s) alla prima richiesta, come la
+  prima acqua di un lago.
+
+## ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server
+
+**Stato**: Proposto · 2026-11-08 · TASK-415. Numeri dal Coordinatore. Le
+scelte di prodotto sono dell'utente, prese una alla volta il 2026-11-07
+(`tasks/TASK-415.md`): «Ski touring» 🏔️; le metriche proposte; l'avviso
+sulla pendenza nelle cinque lingue; la collezione delle vette nel profilo,
+visibile come i post; acceso con fasi e VAM. I punti tecnici qui sotto
+sono decisi dall'agente su delega dell'utente.
+
+**Contesto**: lo scialpinismo non ha forme da disegnare (come lo sci,
+ADR-0317), ma ha numeri suoi: chi sale con le pelli guarda il dislivello,
+la velocità di salita e i cambi; chi sceglie una gita guarda la pendenza;
+chi la finisce vuole la vetta. L'app ha già la categoria «Record only»
+(ADR-0319), le salite e le discese di una giornata di sci
+(`activities/snowDay.ts`), le quote dei punti salvate (TASK-324), i nomi di
+impianti e piste dal server da estratti OSM (ADR-0319, punto 11), e una
+decisione presa ma non ancora codice sulle quote dalle tegole Terrarium
+(ADR-0300, parte G). TASK-410 propone `run_stats` per i numeri del post.
+
+**Decisione**:
+
+1. **Uno sport «Record only» nuovo**, `ski_touring`, nei file della
+   ricetta (`COME-AGGIUNGERE.md`): Strava `BackcountrySki`, GPX
+   `ski_touring`, fuori dal gioco e senza record. Il motore non cambia.
+2. **Fasi e VAM sul telefono**, in un modulo TypeScript puro e generico
+   (`activities/mountainPhases.ts`) sopra le svolte di `snowDay.ts`: salita,
+   discesa, impianto; un cambio è una sosta di almeno 90 s alla svolta. La
+   VAM è il D+ (a passi di 3 m) sul tempo in movimento; in gita sugli
+   ultimi 5 minuti. Nessun barometro diretto: niente moduli nativi.
+3. **I numeri del post in `run_stats`** (TASK-410 C), non in colonne nuove
+   di `runs`.
+4. **La pendenza dal server, in un modulo condiviso** `terrain.py`: tegole
+   Terrarium a zoom 13 in cache sul Volume, PNG decodificato con `zlib`,
+   pendenza di Horn su 3 × 3 pixel. È il modulo della parte G di TASK-347:
+   uno solo, chi parte primo lo scrive. Si calcola dopo il salvataggio, in
+   sottofondo; il post mostra la sezione quando c'è. Quattro classi (sotto
+   30°, 30–35°, 35–40°, oltre 40°), legenda con testo e numeri, l'avviso
+   approvato dall'utente.
+5. **Le vette dal server, da un estratto** (`osmium tags-filter
+   n/natural=peak`, file a tegole come `ski_extract.py`): raggiunta se la
+   traccia passa entro 60 m dal nodo e, con le due quote, entro 80 m. Una
+   tabella `run_summits` con la cascata dalla corsa; la collezione è una
+   query con la visibilità dei post. Prima le Alpi, poi il mondo con gli
+   stessi comandi.
+6. **Le parti**: A contratto e API; B fasi e VAM nell'app (con lei si
+   accende); B2 i numeri nel post; C la pendenza; D le vette; E la neve.
+
+**Alternative scartate**:
+- la pendenza sul telefono, nella WebView della mappa (la tela legge i
+  pixel delle tegole): ogni telefono che guarda un post rifarebbe il
+  calcolo, e il tempo sopra i 30° tornerebbe dalla pagina con un messaggio
+  in più. Il server lo fa una volta e il modulo serve anche a TASK-347 G;
+- un barometro diretto (`expo-sensors`): un modulo nativo, impronta iOS
+  nuova, per un guadagno che sull'iPhone la quota fusa dà già;
+- le vette chieste a Overpass a ogni gita: Overpass rifiuta il server
+  (ADR-0154), e dal telefono la posizione andrebbe a un servizio esterno;
+- le fasi e le vette in colonne di `runs`: TASK-410 ha già chiesto un posto
+  solo per i numeri del post.
+
+**Conseguenze**:
+- fasi e VAM sono solo JavaScript: un OTA, impronta iOS invariata;
+- C e D cambiano il server e vogliono il sì dell'utente; D anche una
+  migrazione e una riga della privacy;
+- la pendenza sottostima i pendii corti e ripidi (dato di circa 30 m):
+  l'avviso lo dice;
+- le ciaspole e Hike possono avere fasi, pendenza e vette con gli stessi
+  moduli, senza riscriverli.

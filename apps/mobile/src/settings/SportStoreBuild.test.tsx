@@ -58,13 +58,14 @@ test("Expo Go and preview turn on the sports tried there first (`preview`, TASK-
 
 test("a store build leaves out the sports not ready, and keeps the order", () => {
   expect(STORE.map((option) => option.id)).toEqual([
+    "walk",
     "run",
-    "bike",
-    "paddle",
-    "swim",
     "hike",
+    "bike",
     "gravel",
     "mtb",
+    "paddle",
+    "swim",
     "ski",
     "gym",
   ]);
@@ -80,13 +81,14 @@ test("in a store build `SPORTS` itself has no «Paragliding»", () => {
     const store = jest.requireActual<typeof import("./sport")>("./sport");
     expect(store.isStoreBuild()).toBe(true);
     expect(store.SPORTS.map((option) => option.id)).toEqual([
+      "walk",
       "run",
-      "bike",
-      "paddle",
-      "swim",
       "hike",
+      "bike",
       "gravel",
       "mtb",
+      "paddle",
+      "swim",
       "ski",
       "gym",
     ]);
@@ -95,9 +97,11 @@ test("in a store build `SPORTS` itself has no «Paragliding»", () => {
 
 test("«Settings» of a store build has no «Soon» row", async () => {
   await render(<SportSetting sports={STORE} />);
-  // Run, bike, paddle, the swim (TASK-323), the hike (TASK-377), gravel and
-  // MTB (TASK-378), the alpine ski (TASK-375 D4) and the gym (TASK-385 B).
-  expect(screen.getAllByRole("radio")).toHaveLength(9);
+  // Walk (TASK-371), run, the hike (TASK-377), bike, gravel and MTB
+  // (TASK-378), paddle, the swim (TASK-323), the alpine ski (TASK-375 D4)
+  // and the gym (TASK-385 B).
+  expect(screen.getAllByRole("radio")).toHaveLength(10);
+  expect(screen.getByRole("radio", { name: "Walk" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Hike" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Gravel" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "MTB" })).toBeOnTheScreen();
@@ -114,8 +118,8 @@ test("«Settings» of a store build has no «Soon» row", async () => {
 test("the sport menu of «Draw» in a store build has no «Soon» row", async () => {
   await render(<SportButton sports={STORE} />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  // The nine of «Settings».
-  expect(screen.getAllByRole("radio")).toHaveLength(9);
+  // The ten of «Settings».
+  expect(screen.getAllByRole("radio")).toHaveLength(10);
   expect(screen.queryByText("Soon")).toBeNull();
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
 });

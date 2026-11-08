@@ -58,6 +58,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Walk, nuoto in acque libere | `ROUTE_ENGINE.md` (le reti, §8), `tasks/TASK-371.md` |
 | Sci: «Record only», stazioni, meteo | `MAPS.md` «Impianti e piste da sci», ADR-0319, ADR-0338, `tasks/TASK-375.md`, `tasks/TASK-406.md` |
 | Apple Watch | `tasks/TASK-370.md`, ADR-0314 |
+| Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352 |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

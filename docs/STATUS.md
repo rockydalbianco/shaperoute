@@ -123,6 +123,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `tasks/TASK-415.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · proposta in `main`
   (ADR-0347); primo giro nella PR #966. File: quelli della #966 · `tasks/TASK-419.md`
+- **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
+  parte 0 (proposta) nella PR `docs/TASK-424-live-share`; scelte di
+  prodotto e privacy all'utente, una per volta. File: i quattro documenti
+  della parte 0 · `tasks/TASK-424.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

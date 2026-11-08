@@ -1,6 +1,6 @@
 # TASK-412 — Documenti snelli: cosa legge una sessione all'avvio
 
-**Stato**: In corso · proposta approvata dall'utente il 2026-11-08 («Sì, approvo») · numero dal Coordinatore (local_3f55a0e9), nessun ADR
+**Stato**: Done · 2026-11-08 · #969 in `main` (e85a68ac), controllata dal Coordinatore · proposta approvata dall'utente il 2026-11-08 («Sì, approvo»), nessun ADR
 **Branch**: `docs/TASK-412-lean-docs` · una PR
 **Richiesta dell'utente**: «rendere il progetto più veloce ed efficiente per
 le sessioni Claude, riducendo ciò che ogni sessione legge all'avvio» —

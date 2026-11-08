@@ -54,6 +54,20 @@ l'allenamento che le segue), un calendario del mese.
 5. **Testi**: «Approvo» per la guida e il calendario, «Approvo» per le
    schede (sotto, nelle cinque lingue).
 
+## La privacy delle schede (parte D)
+
+Testo approvato dall'utente il 2026-11-08 («Approvo»), dopo la frase della
+palestra nella «Privacy» dell'app e del sito: «Le tue schede in palestra
+(nome, giorni, esercizi e valori obiettivo) restano sul telefono e sul tuo
+account: le vedi solo tu e si cancellano con l'account. Anche il calendario
+dei tuoi allenamenti lo vedi solo tu.» (le altre quattro lingue dicono lo
+stesso). La data della privacy è quella del merge. File:
+`apps/mobile/src/about/content/{en,it,de,fr,es}.ts`, `site/privacy/` (cinque
+pagine, rigenerate con `node site/tools/make_privacy.mjs`), i test della data
+(`about/AboutPage.test.tsx`, `about/documents.test.ts`,
+`site/tests/privacy.test.mjs`). La pubblicazione del sito col sì
+dell'utente.
+
 ## Il disegno tecnico
 
 In ADR-0341 (proposto, deciso dall'agente su delega dell'utente).

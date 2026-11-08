@@ -6,7 +6,15 @@ import json
 import re
 from pathlib import Path
 
-from catalog_review import THUMB_PX, cards, main, render_page, thumbnail
+from catalog_review import (
+    THUMB_POINTS,
+    THUMB_PX,
+    cards,
+    main,
+    render_page,
+    thinned,
+    thumbnail,
+)
 from catalog_seed import write_kept
 from test_catalog_seed import DLAT, DLON, ORIGIN, SQUARE, run
 
@@ -28,6 +36,17 @@ def test_thumbnail_fits_the_square_north_up() -> None:
     assert xy[0][0] == min(xs) and xy[0][1] == max(ys)
     assert xy[1][1] == min(ys)  # one kilometre north is up
     assert '<circle class="start"' in svg
+
+
+def test_thinned_keeps_the_ends_and_at_most_the_size() -> None:
+    many = [(46.0 + i / 1e4, 11.0) for i in range(1001)]
+    out = thinned(many)
+    assert len(out) == THUMB_POINTS and out[0] == many[0] and out[-1] == many[-1]
+    assert thinned(SQUARE) == SQUARE
+    assert (
+        len(re.search(r'points="([^"]+)"', thumbnail(many)).group(1).split())
+        == THUMB_POINTS
+    )
 
 
 def test_thumbnail_of_a_point_does_not_divide_by_zero() -> None:

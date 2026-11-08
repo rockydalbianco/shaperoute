@@ -44,6 +44,9 @@ THUMB_PX = 150
 THUMB_PAD_PX = 6
 # Coordinates in the SVG to a tenth of a pixel: enough, and the page stays small.
 SVG_DECIMALS = 1
+# A thumbnail of 150 px needs no more points than this: a route of 21 km has
+# a thousand, and a page of a thousand routes would weigh ten megabytes.
+THUMB_POINTS = 160
 
 PAGE_TEMPLATE = """<!doctype html>
 <html lang="en">
@@ -189,9 +192,22 @@ PAGE_TEMPLATE = """<!doctype html>
 """
 
 
+def thinned(
+    points: Sequence[tuple[float, float]], size: int = THUMB_POINTS
+) -> list[tuple[float, float]]:
+    """At most `size` of the points, evenly spread by index, the first and
+    the last kept (as the API's preview, recommended.py)."""
+    if len(points) <= size:
+        return list(points)
+    step = (len(points) - 1) / (size - 1)
+    return [points[round(i * step)] for i in range(size)]
+
+
 def thumbnail(points: Sequence[tuple[float, float]], size: int = THUMB_PX) -> str:
     """The route as one SVG polyline in a `size` square, north up, the
-    start marked: its points in metres around the first one, scaled to fit."""
+    start marked: its points, thinned, in metres around the first one,
+    scaled to fit."""
+    points = thinned(points)
     xy = local_xy(points[0], points)
     xs, ys = [p[0] for p in xy], [p[1] for p in xy]
     span = max(max(xs) - min(xs), max(ys) - min(ys), 1.0)

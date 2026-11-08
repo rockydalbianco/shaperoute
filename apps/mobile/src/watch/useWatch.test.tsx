@@ -68,6 +68,7 @@ function fakeLink(): FakeLink {
     },
     hear: (message) => listeners.forEach((listener) => listener(message)),
     listening: () => listeners.size,
+    ready: () => Promise.resolve(true),
   };
   return link;
 }

@@ -112,7 +112,10 @@ describe("a route for the watch", () => {
   });
 
   it("starts a closed swim wherever the swimmer reaches it", () => {
-    expect(watchRouteOf(routes()[2].send)).toMatchObject({ anywhere: true, ride: false });
+    expect(watchRouteOf(routes()[2].send)).toMatchObject({
+      anywhere: true,
+      ride: false,
+    });
   });
 
   it("has its points to 6 decimals", () => {
@@ -148,9 +151,20 @@ describe("a route for the watch", () => {
     expect(decodeWatchRoute({ ...route, key: "" })).toBeNull();
     expect(decodeWatchRoute({ ...route, walks: [[3, 1]] })).toBeNull();
     expect(
-      decodeWatchRoute({ ...route, directions: [{ ...route?.directions[0], turn: "jump" }] }),
+      decodeWatchRoute({
+        ...route,
+        directions: [{ ...route?.directions[0], turn: "jump" }],
+      }),
     ).toBeNull();
-    expect(decodeWatchRoute({ ...route, points: [[91, 11], [46, 11]] })).toBeNull();
+    expect(
+      decodeWatchRoute({
+        ...route,
+        points: [
+          [91, 11],
+          [46, 11],
+        ],
+      }),
+    ).toBeNull();
   });
 
   it("is the route on the map as the heart keeps it", () => {

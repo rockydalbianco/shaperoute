@@ -25165,6 +25165,18 @@ senza sapere quale scheda è stata fatta (un allenamento libero li
 colonna (C); solo JavaScript nell'app, impronta iOS invariata. Server,
 migrazione, privacy e OTA col sì dell'utente.
 
+**Precisazione B (2026-11-08, deciso dall'agente su delega dell'utente)**:
+il fuso è quello del telefono (`Intl`, «UTC» se non lo dice), un nome del
+database IANA, altrimenti 422; senza `month` il mese di oggi su quel fuso.
+La risposta porta solo i giorni con un allenamento e `last`, l'ultimo di
+sempre, per «Last workout» anche a inizio mese. Il post è quello del run se
+la moderazione non l'ha nascosto. Il calendario parte da lunedì; un giorno
+toccato elenca i suoi allenamenti (ora e tempo) e apre il post di quello che
+ne ha uno: un allenamento senza post non ha ancora una pagina sua. «Draw» lo
+chiede di nuovo quando cambia il numero delle attività dell'account (un
+allenamento appena salvato), non a ogni secondo. Un mese con un allenamento
+dice «Workout · {time}» invece di «1 times».
+
 ## ADR-0338, aggiunta — La giornata di sci: stazione, modello e neve in una rotta a parte
 
 **Stato**: Attiva · 2026-11-08 · TASK-406 parte D1. Deciso dall'agente su

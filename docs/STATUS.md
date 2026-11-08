@@ -109,8 +109,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   e finale) nella PR #961. File: quelli della #961 · `tasks/TASK-408.md`
 - **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` (#922); B
   (battito e zone) nella 1.0.3. File: — · `tasks/TASK-409.md`
-- **TASK-410 — La pagina del post** · B in `main` (#949); poi C
-  (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
+- **TASK-410 — La pagina del post** · B in `main` (#949) e in produzione
+  (OTA `8b1af1b4`); F (la card del Feed come la pagina) in `main` (#980),
+  esce col prossimo OTA unico. Poi C (`run_stats`, lista al Coordinatore
+  prima del codice), D, E. File: — · `tasks/TASK-410.md`
 - **TASK-411 — La palestra per tutti i giorni** · A–E in `main` (C con la
   migrazione 0058); F (la palestra più chiara) in PR; poi server, sito della
   privacy e un OTA dedicato, ognuno col sì. File: quelli della F ·

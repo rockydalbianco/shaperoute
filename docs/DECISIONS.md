@@ -466,6 +466,8 @@ lasciando le righe d'indice.
 
 ---
 
+- ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
+
 ## Voci nuove
 
 ## ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id`
@@ -503,3 +505,79 @@ membri e un tasto per seguirla. Seguire poteva dare anche notifiche.
 
 **Conseguenze**: una migrazione (`0062` o la prima libera al merge), quindi
 il server col sì dell'utente. L'app (D3b) viene dopo, con i suoi testi.
+## ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme
+
+**Stato**: Proposto · 2026-11-08 · TASK-417. Le scelte di prodotto sono
+dell'utente (`tasks/TASK-417.md`, scelte 1–5); il come è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: nel video della corsa (TASK-408, ADR-0339) corre un animale
+3D sulla punta della linea. Si vuole anche la propria immagine (foto o GIF)
+al suo posto e, se nel post ci sono persone taggate che hanno corso la
+stessa corsa, un video solo con le tracce di tutti, sullo stesso orologio.
+Su Safari iOS non c'è ImageDecoder. Il server tiene i tempi di ogni punto
+(`runs.track` `LineStringM`) ma non li restituisce a nessuno, e la privacy
+promette che gli altri vedono le corse «senza orari». Il tag non ha un
+«accetta».
+
+**Decisione (proposta)**:
+
+1. **L'immagine è un personaggio in più** accanto agli animali: la scena
+   la porta come fotogrammi (uno, o fino a 8 per una GIF) di 256 px al
+   massimo; la pagina la disegna sulla punta della linea, tonda, con un
+   saltello, girata un poco nel verso della strada; sul 3D come cartellino
+   in piedi sulla linea; a fine percorso si ferma come l'animale.
+2. **Si crea solo con la foto ritagliata tonda** (scelta 1):
+   `expo-image-picker` (libreria o fotocamera, permessi già in `app.json`)
+   con il ritaglio quadrato di sistema, `expo-image-manipulator` a 256 px.
+   Nessuna dipendenza nuova, niente di nativo: l'impronta iOS non cambia.
+3. **Le GIF si leggono con un lettore nostro** in TypeScript
+   (`share/gifFrames.ts`), non con ImageDecoder, che su iOS non c'è. Al più
+   8 fotogrammi a distanza uguale; il formato verso la pagina e il tetto del
+   peso si misurano nella parte B.
+4. **Se l'immagine non si legge, il video esce senza**, come senza animale
+   (ADR-0339, precisazione B, punto 2): mai un errore.
+5. **L'immagine resta sul telefono**: non va al server, ne esce solo nel
+   video condiviso o pubblicato. Nel Feed il video vale come i video
+   propri dei post, senza controlli in più (scelta 2). Nessuna immagine
+   offerta dall'app.
+6. **«Together» usa tag e visibilità, nient'altro** (scelta 3): entra la
+   traccia di una persona taggata nel post la cui attività della stessa
+   corsa è visibile a chi fa il video (`drawing_seen_sql`). «La stessa
+   corsa»: tempi sovrapposti per almeno metà della più corta e partenze a
+   meno di 2 km (da misurare nella parte D). Al più 4 persone, chi fa il
+   video compreso (scelta 4).
+7. **I tempi escono solo per questo**: un endpoint nuovo dà all'autore del
+   post le tracce del gruppo con i **secondi dalla prima partenza**, mai
+   l'ora del giorno né la data, al più 600 punti a traccia, senza spostarne
+   nessuno. Gli altri endpoint restano senza tempi.
+8. **Un orologio solo, vero**, compresso nei secondi del pezzo «The route»:
+   ognuno sta dove era in quel secondo, fra due punti registrati; in pausa
+   è fermo. Dove due tracce passano a meno di 25 m nella stessa finestra di
+   10 s spunta un ⚡, al più uno ogni 3 s di video. Ognuno ha il suo colore
+   dai token e il suo animale o immagine.
+9. **La privacy cambia per «Together»**: la frase «senza orari» prende
+   l'eccezione e un punto nuovo dice che il video mostra il passo vero di
+   chi è taggato, senza ora né data (testi approvati, scelta 5).
+10. Cinque parti: A proposta, B immagine, C foto scattata e ritagliata, D
+   «Together» (server e app), E prova sul telefono. I file di TASK-408
+   (`videoScene.ts`, `videoPage.ts`, `EditVideoSheet.tsx`, il resto di
+   `share/`) si toccano solo dopo la sua parte C2, con la lista approvata
+   dal Coordinatore.
+
+**Alternative**:
+
+- **ImageDecoder nella WebView**: non c'è su Safari iOS.
+- **Una libreria GIF da npm**: una dipendenza nuova per poche centinaia di
+  righe che si provano bene da sole.
+- **Scatti in fila e disegno a dito**: proposti, non scelti dall'utente per
+  la prima versione (scelta 1).
+- **La sagoma scontornata**: vuole codice nativo (Vision), quindi
+  un'impronta iOS nuova.
+- **Un sì esplicito della persona taggata, per ogni video o una volta per
+  persona**: proposto dall'agente; l'utente ha scelto tag e visibilità
+  (scelta 3).
+- **Ogni traccia sul suo orologio** (tutti partono insieme e arrivano
+  insieme): niente tempi dal server, ma il video non direbbe chi andava più
+  veloce né dove ci si è incrociati, che è quello che si chiede.
+---

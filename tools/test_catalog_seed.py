@@ -126,6 +126,34 @@ def test_new_cities_plan_the_core_and_the_simple_three_at_21_km() -> None:
     assert all(c.distance_m == word_distance("HALLO") == 19_000 for c in words)
 
 
+APPROVED_WORDS = {
+    "MUW",
+    "RUN",
+    "GO",
+    "VAI",
+    "WOW",
+    "LOVE",
+    "BACI",
+    "PACE",
+    "FORZA",
+    "DAJE",
+    "HOLA",
+    "OLA",
+    "SALUT",
+    "HALLO",
+    "HEJ",
+    "AMOR",
+    "CIAO",
+}
+
+
+def test_words_are_the_approved_ones_or_a_short_city_name() -> None:
+    for c in CITIES:
+        for w in c.words:
+            assert w.isalpha() and w.isupper()
+            assert w in APPROVED_WORDS or w.lower().startswith(c.name[:4]), (c.name, w)
+
+
 def test_venice_stays_within_10_km_without_a_15_km_word() -> None:
     cases = plan([BY_NAME["venezia"]])
     assert max(c.distance_m for c in cases) == 10_000

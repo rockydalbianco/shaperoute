@@ -105,21 +105,17 @@ class City:
     distances: tuple[int, ...] = DISTANCES_M
 
 
+# The words the user approved for the catalogue (TASK-418, 2026-11-08):
+# CIAO as in the seed, a greeting in the city's language where one is
+# approved, LOVE elsewhere, or the city's own name when it is short.
 ITALIAN_WORDS = ("CIAO",)
 HELLO = {
     "es": ("HOLA",),
     "pt": ("OLA",),
     "fr": ("SALUT",),
     "de": ("HALLO",),
-    "nl": ("HOI",),
-    "en": ("HELLO",),
     "scan": ("HEJ",),
-    "cs": ("AHOJ",),
-    "hu": ("SZIA",),
-    "pl": ("CZESC",),
-    "sl": ("ZIVJO",),
-    "hr": ("BOK",),
-    "el": ("YASU",),
+    "love": ("LOVE",),
 }
 
 
@@ -139,8 +135,10 @@ def _italy(name: str, lat: float, lon: float, **kw: Any) -> City:
     return City(name, (lat, lon), "italy", ITALIAN_WORDS, **kw)
 
 
-def _europe(name: str, lat: float, lon: float, lang: str, **kw: Any) -> City:
-    return City(name, (lat, lon), "europe", HELLO[lang], **kw)
+def _europe(
+    name: str, lat: float, lon: float, lang: str, words: tuple[str, ...] = (), **kw: Any
+) -> City:
+    return City(name, (lat, lon), "europe", words or HELLO[lang], **kw)
 
 
 CITIES: tuple[City, ...] = (
@@ -160,16 +158,16 @@ CITIES: tuple[City, ...] = (
     _seed("palermo", 38.11570, 13.36150),  # Quattro Canti
     _seed("newyork", 40.73590, -73.99110),  # Union Square
     # The cities "Explore" shows first (ADR-0132): the core, one greeting.
-    _featured("london", 51.50800, -0.12810, "HELLO"),  # Trafalgar Square
+    _featured("london", 51.50800, -0.12810, "LOVE"),  # Trafalgar Square
     _featured("paris", 48.85660, 2.35220, "SALUT"),  # Hôtel de Ville
     _featured("tokyo", 35.68120, 139.76710, "LOVE"),  # Tokyo Station square
     _featured("barcelona", 41.38700, 2.17010, "HOLA"),  # Plaça de Catalunya
     _featured("dubai", 25.26930, 55.30860, "LOVE"),  # Baniyas Square
-    _featured("amsterdam", 52.37310, 4.89320, "HOI"),  # Dam Square
+    _featured("amsterdam", 52.37310, 4.89320, "LOVE"),  # Dam Square
     _featured("berlin", 52.51370, 13.39270, "HALLO"),  # Gendarmenmarkt
     _featured("lisbon", 38.71390, -9.13940, "OLA"),  # Rossio
-    _featured("sydney", -33.87320, 151.20610, "GDAY"),  # Sydney Square
-    _featured("sanfrancisco", 37.78800, -122.40750, "HEY"),  # Union Square
+    _featured("sydney", -33.87320, 151.20610, "LOVE"),  # Sydney Square
+    _featured("sanfrancisco", 37.78800, -122.40750, "LOVE"),  # Union Square
     # Other Italian cities of prefetch_zones.ITALY, the most visited first.
     # Venice: the island alone, where 21 km has no room (MAPS.md, TASK-180).
     _italy("venezia", 45.43400, 12.33880, distances=(10_000, 5_000)),  # S. Marco
@@ -191,24 +189,24 @@ CITIES: tuple[City, ...] = (
     _italy("catania", 37.50220, 15.08730),  # Piazza del Duomo
     _italy("cagliari", 39.21670, 9.11100),  # Piazza Yenne
     # Capitals and tourist cities of Europe, one at a time.
-    _europe("vienna", 48.20850, 16.37250, "de"),  # Stephansplatz
-    _europe("prague", 50.08750, 14.42130, "cs"),  # Old Town Square
-    _europe("budapest", 47.49630, 19.05070, "hu"),  # Vörösmarty tér
+    _europe("vienna", 48.20850, 16.37250, "de", words=("WIEN",)),  # Stephansplatz
+    _europe("prague", 50.08750, 14.42130, "love", words=("PRAHA",)),  # Old Town Sq.
+    _europe("budapest", 47.49630, 19.05070, "love"),  # Vörösmarty tér
     _europe("munich", 48.13740, 11.57550, "de"),  # Marienplatz
     _europe("zurich", 47.36990, 8.53900, "de"),  # Paradeplatz
     _europe("brussels", 50.84670, 4.35250, "fr"),  # Grand-Place
     _europe("copenhagen", 55.67590, 12.56900, "scan"),  # Rådhuspladsen
     _europe("stockholm", 59.33260, 18.06490, "scan"),  # Sergels torg
-    _europe("dublin", 53.34430, -6.25960, "en"),  # College Green
-    _europe("edinburgh", 55.95420, -3.19270, "en"),  # St Andrew Square
+    _europe("dublin", 53.34430, -6.25960, "love"),  # College Green
+    _europe("edinburgh", 55.95420, -3.19270, "love"),  # St Andrew Square
     _europe("madrid", 40.41690, -3.70350, "es"),  # Puerta del Sol
     _europe("seville", 37.38910, -5.99550, "es"),  # Plaza Nueva
     _europe("valencia", 39.46990, -0.37630, "es"),  # Plaza del Ayuntamiento
-    _europe("porto", 41.14660, -8.61100, "pt"),  # Praça da Liberdade
-    _europe("athens", 37.97550, 23.73480, "el"),  # Syntagma Square
-    _europe("krakow", 50.06170, 19.93730, "pl"),  # Rynek Główny
-    _europe("ljubljana", 46.05140, 14.50600, "sl"),  # Prešeren Square
-    _europe("zagreb", 45.81310, 15.97750, "hr"),  # Ban Jelačić Square
+    _europe("porto", 41.14660, -8.61100, "pt", words=("PORTO",)),  # Pr. da Liberdade
+    _europe("athens", 37.97550, 23.73480, "love"),  # Syntagma Square
+    _europe("krakow", 50.06170, 19.93730, "love"),  # Rynek Główny
+    _europe("ljubljana", 46.05140, 14.50600, "love"),  # Prešeren Square
+    _europe("zagreb", 45.81310, 15.97750, "love"),  # Ban Jelačić Square
     _europe("nice", 43.69750, 7.27000, "fr"),  # Place Masséna
     _europe("lyon", 45.75780, 4.83200, "fr"),  # Place Bellecour
     _europe("hamburg", 53.55110, 9.99370, "de"),  # Rathausmarkt

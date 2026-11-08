@@ -5,14 +5,18 @@ import catalog from "../fixtures/gym-exercises.json" with { type: "json" };
 import gymCalendar from "../fixtures/gym-calendar.json" with { type: "json" };
 import gymLeaderboard from "../fixtures/gym-leaderboard.json" with { type: "json" };
 import gymLevels from "../fixtures/gym-levels.json" with { type: "json" };
+import gymPlans from "../fixtures/gym-plans.json" with { type: "json" };
 import runActivities from "../fixtures/run-activities.json" with { type: "json" };
 import session from "../fixtures/gym-session.json" with { type: "json" };
 import {
   GYM_LEVEL_MEASURES,
   GYM_SET_KINDS,
+  MAX_GYM_PLAN_ITEMS,
+  MAX_GYM_PLANS,
   type GymCalendar,
   type GymLeaderboard,
   type GymLevel,
+  type GymPlans,
   type GymSessionRequest,
   type GymSetKind,
   RUN_ACTIVITIES,
@@ -138,4 +142,31 @@ test("a calendar lists its days in order, and its count and time add up", () => 
     workouts.reduce((total, workout) => total + workout.duration_s, 0),
   );
   assert.deepEqual(calendar.last, workouts.at(-1));
+  for (const skipped of calendar.skipped ?? []) {
+    assert.ok(
+      !calendar.days.some(
+        (day) =>
+          day.day === skipped.day && day.workouts.some((w) => w.plan === skipped.plan),
+      ),
+    );
+  }
+});
+
+test("a plan's days are of the week once, its exercises of the catalog and its kind", () => {
+  const plans = gymPlans as GymPlans;
+  assert.ok(plans.plans.length <= MAX_GYM_PLANS);
+  for (const plan of plans.plans) {
+    assert.ok(plan.name.length >= 1 && plan.name.length <= 40);
+    assert.ok(plan.days.every((day) => day >= 1 && day <= 7));
+    assert.equal(new Set(plan.days).size, plan.days.length);
+    assert.ok(plan.items.length <= MAX_GYM_PLAN_ITEMS);
+    for (const item of plan.items) {
+      assert.ok(item.sets >= 1 && item.sets <= 20);
+      assert.ok((item.exercise === undefined) !== (item.name === undefined));
+      if (item.exercise !== undefined) {
+        const exercise = catalog.exercises.find((one) => one.key === item.exercise);
+        assert.equal(exercise?.kind, item.kind);
+      }
+    }
+  }
 });

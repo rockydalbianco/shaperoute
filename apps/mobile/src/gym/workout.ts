@@ -1,4 +1,9 @@
-import type { GymPause, GymSessionRequest, GymSet } from "@shaperoute/shared-types";
+import type {
+  GymPause,
+  GymPlanItem,
+  GymSessionRequest,
+  GymSet,
+} from "@shaperoute/shared-types";
 
 import {
   type Rest,
@@ -35,6 +40,10 @@ export type LoggedSet = GymSet & { n: number };
 /** A «Pause», in ms since the epoch; `toMs` null while it lasts. */
 export type WorkoutPause = { fromMs: number; toMs: number | null };
 
+/** The plan a workout follows (TASK-411 C, ADR-0341 point 4): copied when
+ * it starts, so changing the plan later leaves the workout as it was. */
+export type WorkoutPlan = { key: string; name: string; items: GymPlanItem[] };
+
 export type Workout = {
   /** Its key on the API (gymKey.ts). */
   key: string;
@@ -57,6 +66,8 @@ export type Workout = {
   endedMs: number | null;
   /** The number of the next set. */
   nextN: number;
+  /** The plan it follows; absent or null for a free workout. */
+  plan?: WorkoutPlan | null;
 };
 
 /** «Still training?» after this long with nothing. */
@@ -66,12 +77,18 @@ export const ANSWER_MS = 5 * 60_000;
 /** The longest workout the API keeps (gym_sessions.py MAX_WORKOUT). */
 export const MAX_WORKOUT_MS = 24 * 3_600_000;
 
-export function newWorkout(key: string, nowMs: number): Workout {
+export function newWorkout(
+  key: string,
+  nowMs: number,
+  plan: WorkoutPlan | null = null,
+): Workout {
+  const first = plan?.items[0];
   return {
     key,
     startedMs: nowMs,
     pauses: [],
-    current: null,
+    // A plan begins with its first exercise.
+    current: first === undefined ? null : entryOf(first),
     sets: [],
     rest: null,
     rests: 0,
@@ -80,7 +97,76 @@ export function newWorkout(key: string, nowMs: number): Workout {
     lastActiveMs: nowMs,
     endedMs: null,
     nextN: 1,
+    ...(plan === null ? {} : { plan }),
   };
+}
+
+/** How many sets of each item of the plan are done, in order: a set counts
+ * for the first item of its exercise still short of its sets. */
+function planDone(workout: Workout): number[] {
+  const items = workout.plan?.items ?? [];
+  const done = items.map(() => 0);
+  for (const set of workout.sets) {
+    const entry = entryOf(set);
+    const index = items.findIndex(
+      (item, i) => done[i] < item.sets && sameEntry(entryOf(item), entry),
+    );
+    if (index >= 0) {
+      done[index] += 1;
+    }
+  }
+  return done;
+}
+
+/** «Plan: {done}/{total} sets»; null for a free workout. */
+export function planProgress(workout: Workout): { done: number; total: number } | null {
+  const items = workout.plan?.items;
+  if (items === undefined || items.length === 0) {
+    return null;
+  }
+  return {
+    done: planDone(workout).reduce((sum, n) => sum + n, 0),
+    total: items.reduce((sum, item) => sum + item.sets, 0),
+  };
+}
+
+/** The first item of the plan not finished; null for a free workout or a
+ * plan done. */
+export function nextPlanItem(workout: Workout): GymPlanItem | null {
+  const items = workout.plan?.items ?? [];
+  const done = planDone(workout);
+  return items.find((item, i) => done[i] < item.sets) ?? null;
+}
+
+/** The values the plan aims at for `entry`, from its first item of it not
+ * finished; null when the plan has none. */
+export function planTarget(workout: Workout, entry: Entry): SetValues | null {
+  const items = workout.plan?.items ?? [];
+  const done = planDone(workout);
+  const item =
+    items.find((one, i) => done[i] < one.sets && sameEntry(entryOf(one), entry)) ??
+    items.find((one) => sameEntry(entryOf(one), entry));
+  if (item === undefined) {
+    return null;
+  }
+  const { exercise: _e, name: _n, kind: _k, sets: _s, ...values } = item;
+  return Object.keys(values).length === 0 ? null : (values as SetValues);
+}
+
+/** After a set: when the plan's exercise under way has all its sets, the
+ * next one of the plan is the exercise under way. */
+function followPlan(workout: Workout): Workout {
+  const current = workout.current;
+  if (current === null || workout.plan == null) {
+    return workout;
+  }
+  const items = workout.plan.items;
+  const done = planDone(workout);
+  const open = items.some(
+    (item, i) => done[i] < item.sets && sameEntry(entryOf(item), current),
+  );
+  const next = nextPlanItem(workout);
+  return open || next === null ? workout : { ...workout, current: entryOf(next) };
 }
 
 /** Whether the workout is in «Pause». */
@@ -200,13 +286,13 @@ export function logSet(
     return null;
   }
   const going = endRest(closePause(workout, nowMs), nowMs);
-  return {
+  return followPlan({
     ...going,
     sets: [...going.sets, { ...set, n: going.nextN }],
     nextN: going.nextN + 1,
     rest: startRest(nowMs, restSecondsFor(going, workout.current)),
     lastActiveMs: nowMs,
-  };
+  });
 }
 
 /** A set added at the end, before «Save»: not live (it will not count for
@@ -364,5 +450,6 @@ export function sessionRequest(workout: Workout): GymSessionRequest | null {
       ...set,
       at_s: Math.min(set.at_s, Math.floor(endS)),
     })),
+    ...(workout.plan == null ? {} : { plan: workout.plan.key }),
   };
 }

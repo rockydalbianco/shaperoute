@@ -53,6 +53,8 @@ export interface GymSessionRequest {
   /** «Show exercises» on its post; true when absent. */
   show_exercises?: boolean;
   sets?: GymSet[];
+  /** The key of the plan it followed (TASK-411 C); absent without one. */
+  plan?: string;
 }
 
 /** The workout as saved: 201 the first time, then 200 with it unchanged.
@@ -65,6 +67,8 @@ export interface GymSession {
   rest_s: number;
   show_exercises: boolean;
   sets: GymSet[];
+  /** The key of the plan it followed; absent without one. */
+  plan?: string;
 }
 
 /** GET /drawings/{id}/exercises: what the post of a workout shows; 404
@@ -141,6 +145,16 @@ export interface GymCalendarWorkout {
   duration_s: number;
   /** Its post, when it has one the moderation has not hidden. */
   drawing_id: string | null;
+  /** The name of the plan it followed (TASK-411 C); null for none, and
+   * missing from an API older than part C. */
+  plan?: string | null;
+}
+
+/** A day of a plan gone by without a workout of it (TASK-411 C). */
+export interface GymCalendarSkipped {
+  day: number;
+  /** The plan's name. */
+  plan: string;
 }
 
 /** A day of the month with at least one workout, on the asked time zone. */
@@ -162,7 +176,56 @@ export interface GymCalendar {
   duration_s: number;
   days: GymCalendarDay[];
   last: GymCalendarWorkout | null;
+  /** Missing from an API older than TASK-411 C. */
+  skipped?: GymCalendarSkipped[];
 }
+
+/** An exercise of a plan (TASK-411 C, ADR-0341 point 3): how many sets, and
+ * the values aimed at, each optional, of the fields of its kind only. */
+export interface GymPlanItem {
+  exercise?: string;
+  name?: string;
+  kind: GymSetKind;
+  /** 1–20. */
+  sets: number;
+  reps?: number;
+  load_kg?: number;
+  duration_s?: number;
+  distance_m?: number;
+  speed_kmh?: number;
+  incline_pct?: number;
+  level?: number;
+  floors?: number;
+}
+
+/** PUT /me/gym-plans/{key}: a plan without its key. Sent older than the one
+ * kept, it does not replace it. */
+export interface GymPlanRequest {
+  /** 1–40 characters. */
+  name: string;
+  /** The days of the week it is for, 1 Monday to 7 Sunday. */
+  days: number[];
+  /** At most 30, in order. */
+  items: GymPlanItem[];
+  /** Its place among the account's plans, 0–100. */
+  position: number;
+  /** When the phone last changed it. */
+  updated_at: string;
+}
+
+/** A plan as kept, with the key the phone chose. */
+export interface GymPlan extends GymPlanRequest {
+  key: string;
+}
+
+/** GET /me/gym-plans: one's own, at most 20, in their order. */
+export interface GymPlans {
+  plans: GymPlan[];
+}
+
+/** How many plans an account keeps, and exercises a plan has. */
+export const MAX_GYM_PLANS = 20;
+export const MAX_GYM_PLAN_ITEMS = 30;
 
 /** PUT /me/gym-sessions/{key}/show-exercises. */
 export interface ShowExercisesRequest {

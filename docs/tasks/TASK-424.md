@@ -386,12 +386,19 @@ Privacy, sezione «Sharing live»:
   `live_shares` resta solo senza posizioni, per i limiti, poi va via.
 - Una sezione nuova «Sharing live» nella privacy dell'app (e quindi del
   sito, rigenerata con `make_privacy.mjs`) e una frase in «Your position».
-- **App Privacy**: la posizione precisa è già dichiarata; l'invio scelto
-  dall'utente a una persona di sua scelta non è «tracking». Da rivedere
-  col sì dell'utente.
-- **Data safety**: Google non conta come «condivisione» un invio fatto
-  dall'utente a chi sceglie lui; la riga sulla posizione va comunque
-  rivista. Col sì dell'utente.
+- **App Privacy** (proposta, scelta 10): «Precise Location» resta com'è
+  (già dichiarata, legata all'account, per il funzionamento dell'app);
+  **«Health»** (il battito, che ora lascia il telefono) si dichiara
+  raccolto, legato all'account, per il funzionamento dell'app, senza
+  tracciamento, se non l'ha già dichiarato TASK-409 B. Apple non ha una
+  voce per l'invio a persone scelte dall'utente: non è «tracking».
+- **Data safety** (proposta, scelta 10): la riga «Posizione precisa» resta
+  «non condivisa»: Google esclude gli invii fatti dall'utente a chi sceglie
+  lui; si aggiunge in G.7 (`DEPLOY.md`) «anche a chi ha il link, su azione
+  dell'utente». Nessuna riga «Salute»: su Android l'orologio non c'è e il
+  battito non parte.
+- **Quando**: le due etichette si aggiornano dall'utente subito prima
+  dell'OTA di produzione della parte B, una alla volta, col suo sì.
 
 ### Rischi
 

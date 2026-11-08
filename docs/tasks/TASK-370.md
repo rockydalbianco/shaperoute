@@ -170,10 +170,23 @@ provato, senza tenere ferme le altre cose.
    con watchOS 10 o più: basta per battito, vibrazioni, GPS e uscite senza
    telefono.
 
+4. **Le vibrazioni** (2026-11-08): «Come Apple Maps» — le vibrazioni di
+   navigazione di watchOS (svolta a destra, a sinistra, altra manovra),
+   «errore» fuori rotta, «successo» al rientro e all'arrivo, un tocco per la
+   penna. Da riprovare al polso alla prima build e cambiabili.
+
+7. **Come arrivano i percorsi** (2026-11-08): «Pulsante e preferiti» —
+   «Send to watch» sulla mappa del percorso, più i «Favorites» mandati da
+   soli; l'orologio tiene gli ultimi 20.
+
+8. **Lo schermo** (2026-11-08): «Freccia prima» — freccia grande, metri e via;
+   con un gesto la mappa piccola, poi i numeri.
+
+5. **I testi di B3** (2026-11-08): «Sì, approvati», nelle cinque lingue come
+   nella tabella di «B3, la proposta».
+
 **Da chiedere, una per volta** (con una proposta pronta):
-4. Gli schemi delle vibrazioni (alle prime prove al polso).
-5. I testi nelle cinque lingue.
-6. La riga della privacy e l'etichetta App Privacy.
+6. La riga della privacy e l'etichetta App Privacy (prima della build 1.1).
 
 ## Parte A, il piano (2026-11-05)
 
@@ -353,12 +366,71 @@ della guida legata (ADR-0314 «precisazione B1»); impronta `6f8bba4c`.
 chiuso preso dove lo si tocca) e `penUp.ts` (i disegni a penna alzata), con
 tracce come in B1.
 
+B2 fatta il 2026-11-08: 26 tracce, 39 test XCTest verdi, ogni costante
+legata (ADR-0314 «precisazione B2»); impronta `6f8bba4c`.
+
 **B3 — L'orologio da solo**: i percorsi mandati dal telefono («Send to
 watch», testo da approvare) e tenuti sull'orologio, il GPS e la traccia
 (`HKWorkoutRouteBuilder`), la schermata con freccia, metri e mappa, le
 vibrazioni (schemi scelti dall'utente alla prima prova al polso), la traccia
 al telefono al rientro. Qui servono le scelte dell'utente 4 e 5 e la build
 con A-flip per la prova vera.
+
+## B3, la proposta (2026-11-08)
+
+Con le scelte 4, 5, 7 e 8. Nessun codice prima della lista al Coordinatore.
+
+**Sul telefono**
+- Sulla mappa di un percorso, accanto a «Favorites», il pulsante «Send to
+  watch» (solo con un Apple Watch abbinato e l'app installata). Lo tocchi:
+  «Sent to your watch». Il percorso parte con `transferUserInfo`, quindi
+  arriva anche se l'orologio è lontano o spento.
+- Ogni percorso tra i «Favorites» va sull'orologio da solo; tolto dai
+  preferiti, sparisce dall'orologio.
+- Il telefono manda il percorso già pronto: punti, direzioni semplificate
+  (`simplifyDirections`), tratti a penna alzata (`walksOf`), parola, se si
+  prende dove lo tocchi (`startsAnywhere`), sport, se va come la bici
+  (`isRide`) o la canoa. L'orologio non ricalcola niente di questo.
+
+**Sull'orologio**
+- «Routes»: gli ultimi 20 percorsi ricevuti più i preferiti, col disegno in
+  piccolo, la distanza e lo sport; in cima «Run without a route».
+- In corsa: prima pagina freccia, metri alla prossima svolta e via (i testi
+  delle svolte sono quelli del banner del telefono, già tradotti); con un
+  gesto la mappa piccola col percorso e il punto, poi i numeri di sempre.
+  Fuori rotta la freccia gira verso il percorso, con i metri.
+- Le vibrazioni come Apple Maps (scelta 4), coi tipi di avviso di B1 e B2.
+- GPS dell'orologio e `HKWorkoutRouteBuilder`: la traccia resta
+  nell'allenamento di Salute; a fine corsa va al telefono con
+  `transferFile`, che la apre come una corsa finita sua («Save» e il modulo
+  di sempre).
+
+**I testi nuovi** (inglese nell'interfaccia; approvati dall'utente il
+2026-11-08 nelle cinque lingue)
+
+| Dove | en | it | de | es | fr |
+|---|---|---|---|---|---|
+| telefono | Send to watch | Invia all'orologio | An die Uhr senden | Enviar al reloj | Envoyer à la montre |
+| telefono | Sent to your watch | Inviato all'orologio | An die Uhr gesendet | Enviado al reloj | Envoyé à la montre |
+| orologio | Routes | Percorsi | Routen | Rutas | Parcours |
+| orologio | Send a route from MuW on your iPhone | Invia un percorso da MuW sull'iPhone | Sende eine Route aus MuW auf dem iPhone | Envía una ruta desde MuW en el iPhone | Envoyez un parcours depuis MuW sur l'iPhone |
+| orologio | Off route | Fuori percorso | Abseits der Route | Fuera de la ruta | Hors parcours |
+| orologio | Back on route | Di nuovo sul percorso | Wieder auf der Route | De nuevo en la ruta | De retour sur le parcours |
+| orologio | Arrived | Arrivo | Ziel | Llegada | Arrivée |
+| orologio | Reach the route to start | Raggiungi il percorso per partire | Zur Route gehen, um zu starten | Llega a la ruta para empezar | Rejoignez le parcours pour démarrer |
+| orologio | To the {letter} | Verso la {letter} | Zum {letter} | Hacia la {letter} | Vers le {letter} |
+| orologio | Next part | Parte successiva | Nächster Teil | Siguiente parte | Partie suivante |
+| orologio | Pen down | Giù la penna | Stift aufsetzen | Baja el lápiz | Stylo baissé |
+
+«Back on route», «Pen down» e le svolte riprendono parole che l'app dice già.
+«Run without a route», «Favorites» e i numeri hanno già le loro traduzioni.
+
+**Le parti del codice**, ciascuna con la sua lista al Coordinatore:
+B3a il percorso dal telefono all'orologio (messaggio nuovo con le tracce di
+contratto come in A1, pulsante, preferiti); B3b la corsa sull'orologio
+(Navigator e Pen dentro `WorkoutManager`, GPS, vibrazioni, schermata);
+B3c la traccia al telefono e il salvataggio. La prova vera al polso vuole la
+build con A-flip.
 
 ## File toccati
 

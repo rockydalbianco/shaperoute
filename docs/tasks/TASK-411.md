@@ -66,6 +66,7 @@ In ADR-0341 (proposto, deciso dall'agente su delega dell'utente).
 | B | Il calendario del mese e la guida in «Draw» (`GET /me/gym-calendar`) | server col sì; testi approvati; OTA col sì |
 | C | Le schede: tabella, migrazione (numero dal Coordinatore con la lista), API, l'editor, «Today» in «Draw», l'allenamento guidato, i giorni saltati nel calendario | migrazione, server e OTA col sì |
 | D | La privacy: una riga sulle schede | testo col sì dell'utente |
+| E | Un omino animato accanto a ogni esercizio e una mini guida (3 passi e un avviso) — richiesta dell'utente del 2026-11-07 | solo app; testi approvati; OTA col sì |
 
 ## File toccati
 
@@ -74,12 +75,33 @@ Proposta (#928, in `main`): `docs/tasks/TASK-411.md` (nuovo),
 `docs/INDEX.md` (una riga). La lista precisa di ogni parte va al
 Coordinatore prima della parte.
 
+**Parte E** (#941, in `main` a `512e916a`): nuovi in `apps/mobile/src/gym/`
+`moves.ts`, `moves.test.ts`, `ExerciseFigure.tsx`, `ExerciseGuide.tsx`,
+`ExerciseGuide.test.tsx`, `guides/{types,index,en,it,de,fr,es}.ts`;
+modificati `ExerciseGrid.tsx`, `ExerciseGrid.test.tsx`, `ExercisePicker.tsx`,
+`WorkoutScreen.tsx`, `i18n/{it,de,fr,es}.ts` (tre righe ciascuno). Documenti
+di chiusura: `docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/DECISIONS.md`,
+`docs/sports/gym.md`.
+
 **Parte A** (#930, in `main` a `a56f78c5`): `apps/mobile/src/gym/ExerciseGrid.tsx`
 (nuovo), `ExerciseGrid.test.tsx` (nuovo), `ExercisePicker.tsx`; i test che
 ora toccano un gruppo prima dell'esercizio: `GymWorkoutHost.test.tsx`,
 `GymKcalShown.test.tsx`, `GymPostForm.test.tsx`; `tabs/TabSwipeOwners.test.ts`
 (la riga dei gruppi scorrevole non c'è più). Documenti di chiusura:
 `docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/sports/gym.md`.
+
+**Parte B** (lista approvata dal Coordinatore il 2026-11-08): server
+`services/api/shaperoute_api/gym_calendar.py` (nuovo), `app.py` (una
+riga), `tests/test_gym_calendar.py` (nuovo); shared-types `src/gym.ts`,
+`fixtures/gym-calendar.json` (nuovo), `test/gym.test.ts`; app
+`api/gymCalendar.ts` e `.test.ts` (nuovi), `gym/GymCalendar.tsx`,
+`gym/GymDrawGuide.tsx`, `gym/GymCalendar.test.tsx` (nuovi),
+`screens/ChooseScreen.tsx`, `i18n/{it,de,fr,es}.ts`; documenti
+`docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/DECISIONS.md`,
+`docs/sports/gym.md`; `gym/GymLevels.tsx` («Gym calendar ›» nel riquadro 🏋️
+del profilo, solo con `own`) e `profile/ProfileHome.tsx` (la sola prop `own`,
+ok del Coordinatore il 2026-11-08: il riquadro compare anche sui profili
+degli altri, `UserProfilePage` resta com'è).
 
 ## Testi dell'interfaccia (approvati il 2026-11-06)
 
@@ -110,6 +132,17 @@ ora toccano un gruppo prima dell'esercizio: `GymWorkoutHost.test.tsx`,
 «Reps», «Weight», «Back», «Close», i nomi dei gruppi e dei mesi ci sono
 già. `{when}` è «Today», «Yesterday» o il giorno di `dayLabel`.
 
+## Testi della parte E (approvati il 2026-11-07)
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| How to do it | Come si fa | So geht's | Comment faire | Cómo se hace |
+| Watch out | Attenzione | Achtung | Attention | Cuidado |
+| Add to workout | Aggiungi all'allenamento | Zum Training hinzufügen | Ajouter à la séance | Añadir al entrenamiento |
+
+Le 91 guide (tre passi e un avviso) sono in `apps/mobile/src/gym/guides/`:
+l'italiano approvato dall'utente, le altre lingue dicono le stesse cose.
+
 ## Criteri di accettazione
 
 - [x] Le scelte 1–4 hanno una risposta scritta qui.
@@ -126,6 +159,16 @@ già. `{when}` è «Today», «Yesterday» o il giorno di `dayLabel`.
 - 2026-11-06: nata dalla segnalazione dell'utente «ho premuto Start workout
   ma non succede nulla» (corretta nella #927) e dalla sua richiesta di
   griglia, guida, piano e calendario.
+- 2026-11-08: **parte E in `main`** (#941, `512e916a`), dalla richiesta
+  dell'utente del 2026-11-07 («aggiungi a fianco ai nomi animazioni degli
+  esercizi, e fai anche una mini guida»), scelta «Omino nell'app». Accanto a
+  ogni esercizio (riquadri, righe della ricerca, riquadri dei gruppi,
+  l'esercizio in corso) un omino disegnato dall'app che fa il movimento, col
+  carico in giallo; fermo con «Riduci movimento». «i» apre la guida: l'omino
+  grande, tre passi, «Watch out», e «Add to workout» se aperta da
+  «+ Exercise». 58 movimenti per i 91 esercizi; pose controllate in una
+  galleria nel browser (`out/TASK-411-e/gallery.ts`), non nel simulatore.
+  Solo JavaScript; OTA col sì dell'utente.
 - 2026-11-08: **parte A in `main`** (#930, `a56f78c5`). «+ Exercise» si apre
   sugli 8 riquadri dei gruppi (emoji, nome, quanti esercizi); un gruppo
   mostra i suoi esercizi in riquadri a 2 colonne, «‹» torna ai gruppi;
@@ -134,3 +177,14 @@ già. `{when}` è «Today», «Yesterday» o il giorno di `dayLabel`.
   Spalle 🤸 (era 🤷), si leggono meglio. Solo JavaScript, nessun testo
   nuovo; non vista nel simulatore (spento per lo spazio su disco). OTA col
   sì dell'utente.
+- 2026-11-08: **parte B scritta** (`feat/TASK-411-b-gym-calendar`).
+  `GET /me/gym-calendar?tz=&month=`: i giorni del mese sul fuso del
+  telefono con i loro allenamenti (inizio, tempo, post se c'è), il totale e
+  l'ultimo allenamento di sempre; senza migrazione. In «Draw», sotto «Start
+  workout», «How it works» in tre passi, «Last workout: {when} · {time}» e
+  «This month: {n} times ›», che apre il calendario (anche da «Gym
+  calendar ›» nel riquadro 🏋️ del proprio profilo): il mese a griglia da
+  lunedì, un pallino giallo nei giorni con un allenamento, «‹ ›»; un giorno
+  toccato elenca i suoi allenamenti e uno col post lo apre. Senza il server
+  nuovo (404) restano i tre passi e il calendario dice perché. I test del
+  database li fa girare la CI (Docker spento sul Mac). Server e OTA col sì.

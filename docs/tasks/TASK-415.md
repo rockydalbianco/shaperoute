@@ -1,6 +1,6 @@
 # TASK-415 — Ski touring: lo scialpinismo «Record only»
 
-**Stato**: In corso — parte 0 in `main` (#932), parte A in PR.
+**Stato**: In corso — parte 0 in `main` (#932), parte A in `main` (#948) e sul server.
 **Fase**: 4 · **Branch**: `docs/TASK-415-0-skimo` (parte 0), poi
 `feat/TASK-415-a-ski-touring-api`, `feat/TASK-415-b-…` ·
 **ADR**: ADR-0344 · numeri dal Coordinatore · sessione dello sport,
@@ -169,11 +169,20 @@ server, che chiede il Coordinatore.
 
 2026-11-08, parte A in PR (`feat/TASK-415-a-ski-touring-api`): la 0056 era
 libera in `main` all'apertura; la #935 di TASK-406 D1 è entrata prima con
-la sua 0056, e la nostra è diventata `0057_ski_touring.sql` (Coordinatore). Contratto, API, migrazione del solo CHECK di
-`runs`, profilo nascosto e orologio come da lista. I test col database
+la sua 0056, e la nostra è diventata `0057_ski_touring.sql` (Coordinatore).
+Contratto, API, migrazione del solo CHECK di `runs`, profilo nascosto e
+orologio come da lista. I test col database
 (migrazione, salvataggio, record) girano in CI: sul Mac Docker era spento.
 Il modulo per pubblicare una giornata sulla neve non offre lo scialpinismo
 finché c'è `NOT_YET_ON_SNOW` in `PublicParts.tsx`. Restano per B: toglierlo,
 il nome con `tLater` e i testi dell'orologio nelle quattro
 lingue (`scripts/watch-texts.sh`), la riga in `settings/sport.ts`, fasi e
 VAM.
+
+2026-11-08, parte A in `main` (#948, merge 8e898de5) e sul server, col sì
+dell'utente («Sì, ok server», al Coordinatore): copia
+`shaperoute-2026-11-08T1718Z.dump`, immagine di ritorno
+`shaperoute-api:before-task415`, checkout 8e898de5, `up -d --build`,
+migrazioni in cima `0057_ski_touring` e `0056_ski_days`,
+`runs_activity_check` con `'ski_touring'`, `/health` ok. Prossimo: la lista
+della parte B al Coordinatore.

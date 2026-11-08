@@ -1,12 +1,14 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { gymKey } from "./gymKey";
+import { planForToday } from "./plans";
 import {
   closeUnanswered,
   newWorkout,
   settle,
   unanswered,
   type Workout,
+  type WorkoutPlan,
 } from "./workout";
 import { loadWorkout, saveWorkout } from "./workoutStore";
 
@@ -40,10 +42,16 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-/** «Start workout»: a new workout, unless one is under way already. */
-export function startGymWorkout(nowMs: number = Date.now()): void {
+/** «Start workout»: a new workout, unless one is under way already. It
+ * follows today's plan (TASK-411 C, ADR-0341 point 4), or `plan` when given;
+ * null: «Start without the plan». */
+export function startGymWorkout(
+  nowMs: number = Date.now(),
+  plan: WorkoutPlan | null | undefined = undefined,
+): void {
   if (now() === null) {
-    put(newWorkout(gymKey(nowMs), nowMs));
+    const followed = plan === undefined ? planForToday(new Date(nowMs)) : plan;
+    put(newWorkout(gymKey(nowMs), nowMs, followed));
   }
 }
 

@@ -43,6 +43,7 @@ from shaperoute_api.activities import (
     BAD_CLOCK,
     CLOCK_AHEAD,
     EARLIEST_RUN,
+    KEY_PATTERN,
     MAX_ACTIVITIES,
     MAX_PAUSES,
     Key,
@@ -179,6 +180,9 @@ class GymSessionRequestBody(BaseModel):
     show_exercises: bool = True
     """Whether its post shows the exercises («Show exercises»)."""
     sets: list[GymSetBody] = Field(default_factory=list, max_length=MAX_SETS)
+    plan: str | None = Field(default=None, pattern=KEY_PATTERN)
+    """The key of the plan it followed (TASK-411 C, gym_plans.py); null for
+    a workout without one. The plan may reach the API later."""
 
     @model_validator(mode="after")
     def within_the_workout(self) -> GymSessionRequestBody:
@@ -217,6 +221,8 @@ class GymSessionBody(BaseModel):
     rest_s: int
     show_exercises: bool
     sets: list[GymSetBody]
+    plan: str | None = None
+    """The key of the plan it followed; left out without one."""
 
 
 class GymExercisesBody(BaseModel):
@@ -285,7 +291,8 @@ def _kept_pauses(pauses: Sequence[GymPauseBody]) -> list[dict[str, Any]]:
 
 WORKOUT_SQL = (
     "SELECT r.id, r.key, r.started_at, r.duration_s, g.rests, g.rest_s,"
-    " g.show_exercises FROM runs r JOIN gym_sessions g ON g.run_id = r.id"
+    " g.show_exercises, g.plan_key FROM runs r"
+    " JOIN gym_sessions g ON g.run_id = r.id"
     " WHERE r.user_id = %s AND r.key = %s"
 )
 
@@ -306,6 +313,7 @@ class GymSessions:
             rest_s=row["rest_s"],
             show_exercises=row["show_exercises"],
             sets=_sets(conn, row["id"]),
+            plan=row["plan_key"],
         )
 
     def get(self, user_id: int, key: str) -> GymSessionBody | None:
@@ -355,9 +363,10 @@ class GymSessions:
             ).fetchone()
             assert run is not None
             conn.execute(
-                "INSERT INTO gym_sessions (run_id, show_exercises, rests, rest_s)"
-                " VALUES (%s, %s, %s, %s)",
-                (run["id"], body.show_exercises, body.rests, body.rest_s),
+                "INSERT INTO gym_sessions"
+                " (run_id, show_exercises, rests, rest_s, plan_key)"
+                " VALUES (%s, %s, %s, %s, %s)",
+                (run["id"], body.show_exercises, body.rests, body.rest_s, body.plan),
             )
             if body.sets:
                 with conn.cursor() as cursor:

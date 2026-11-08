@@ -932,6 +932,19 @@ numero è del Coordinatore):
 - Nessuna posizione: un allenamento in palestra non ha luoghi né distanza
   (`distance_m` 0, `place` nullo). Test in `test_gym.py`.
 
+Migrazione `0058_gym_plans.sql` (TASK-411 parte C, ADR-0341):
+
+- **`gym_plans`**: le schede di un account, chiave `(user_id, key)` con la
+  chiave scelta dal telefono (`ON DELETE CASCADE` sull'account): `name`
+  1–40, `days` (sette bit, il bit 0 lunedì), `items` (JSONB, gli esercizi
+  in ordine con `sets` e i valori obiettivo; li controlla `gym_plans.py`),
+  `position`, `updated_at` (l'ultima modifica sul telefono: una più vecchia
+  non la sostituisce) e `created_at` (quando è arrivata all'API: i giorni
+  saltati contano da lì). Test in `test_gym_plans.py`.
+- **`gym_sessions.plan_key`**: la chiave della scheda seguita, nullable;
+  una chiave e non un riferimento, l'allenamento può arrivare prima della
+  scheda e una scheda eliminata lo lascia com'era.
+
 Migrazione `0048_run_ski_names.sql` (TASK-375 parte D2, ADR-0319, `API.md`
 «Ski names»; il numero è del Coordinatore. La `0047` è della palestra, e
 questa non ne ha bisogno):

@@ -461,15 +461,63 @@ lasciando le righe d'indice.
 - ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Proposto
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
-- ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
+- ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 
 ---
 
+- ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
+- ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
+
 ## Voci nuove
 
+## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
+
+**Data**: 2026-11-08 · **Stato**: Accettato · **Task**: TASK-424 · deciso
+dall'agente su delega dell'utente (la tecnica); le scelte di prodotto e la
+privacy sono dell'utente e si scrivono in `tasks/TASK-424.md`
+
+**Contesto**: l'utente vuole un link da mandare a chi non ha l'app, che
+mostri dal vivo posizione, percorso fatto, dati e fine dell'attività, per
+tutti gli sport. Oggi nessun punto lascia il telefono durante una
+registrazione; il sito è statico; l'API ha già pagine a token
+(`account_email.py`) e giri di pulizia in thread (`SweepRound`).
+
+**Decisione**:
+- **Telefono → server**: un `POST` ogni 15 s in movimento, con i punti
+  nuovi (al massimo uno ogni 5 s) e i numeri del momento; subito a pausa,
+  ripresa, fine e stop; in pausa ogni 60 s. Parte dal task della posizione
+  che già gira a telefono bloccato (`runPosition.ts`), senza task nuovi.
+  Senza rete i punti restano in coda (al massimo 500).
+- **Pagina ← server**: polling ogni 10 s, `GET /live?t=<token>&after=<seq>`
+  con i soli punti nuovi. Niente WebSocket né SSE: niente da cambiare in
+  Caddy, risposte piccole, facile da provare.
+- **Link**: `https://getmuw.app/live/#<token>`; token di 128 bit
+  (`secrets.token_urlsafe(16)`), salvato come SHA-256. Il token dopo il `#`
+  non arriva al server del sito né nel Referer; all'API va in query, che il
+  log d'accesso non scrive (ADR-0096). `/live` in `OPEN_PATHS`, con
+  `Access-Control-Allow-Origin: https://getmuw.app` solo lì; un limite di
+  richieste per token.
+- **Dati**: `live_shares` e `live_share_points`, `ON DELETE CASCADE`
+  dall'account; un giro di pulizia ogni 5 min cancella i punti scaduti.
+  Nessuna posizione nel log (ADR-0092).
+- **Nessuna dipendenza nuova**: `fetch` e `Share` di React Native nell'app,
+  la libreria standard sul server; la pagina usa MapLibre copiato sul sito
+  alla versione dell'app (scelta dell'utente) e le tile di OpenFreeMap. L'impronta iOS si misura nella parte B.
+
+**Alternative scartate**: WebSocket o SSE (una connessione aperta per ogni
+spettatore, Caddy e i thread dell'API da cambiare, per un guadagno di pochi
+secondi); invio a ogni fix (una richiesta ogni pochi secondi a telefono
+bloccato: batteria); pagina disegnata dall'API su `api.getmuw.app` (fuori
+dal sito, più HTML nel server); token nel percorso dell'URL (finirebbe nel
+log d'accesso).
+
+**Conseguenze**: la pagina del sito carica le tile da fuori, la prima volta
+per `getmuw.app` (va nella privacy, col sì dell'utente); il
+server va aggiornato col sì; una richiesta ogni 15 s in più durante una
+condivisione.
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole
@@ -686,3 +734,71 @@ promette che gli altri vedono le corse «senza orari». Il tag non ha un
   insieme): niente tempi dal server, ma il video non direbbe chi andava più
   veloce né dove ci si è incrociati, che è quello che si chiede.
 ---
+
+## ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app
+
+**Stato**: Accettata · 2026-11-08 · TASK-423 (estende ADR-0255). Proposta
+approvata dall'utente il 2026-11-08 con «Sì, approvo»
+(`docs/tasks/TASK-423-proposta.md`); le scelte tecniche sotto sono
+dell'agente su delega dell'utente.
+
+**Contesto**: il gioco delle forme (ADR-0255, `GIOCO.md`) ha 12 forme in una
+griglia, tempi migliori su 4 distanze e le sfide di squadra; le sfide del
+mese (TASK-343) stanno a parte. L'utente vuole collezioni a tema, 80–100
+forme, km da 1 a 10 000, livelli di passo su 10 distanze, sfide personali e
+streak, e premi dentro l'app, senza punti né classifiche (TASK-241), senza
+denaro né pubblicità.
+
+**Decisione**:
+
+1. **Ogni requisito è una forma**: 94 forme in 10 collezioni (24 gradini
+   di km totali, 6 traguardi di una corsa, 64 livelli di passo). Le 12
+   forme di oggi tengono id, nome e requisito: nessuno perde niente.
+2. **Il catalogo resta nel codice dell'API** (`game_catalog.py`), contorni
+   in coordinate del disegno: 18 letti dal motore, che non cambia, 8
+   calcolati, 56 disegnati come poligoni. Il foglio di tutte le forme lo
+   approva l'utente.
+3. **I traguardi di una corsa sono requisiti `pace` a 20:00/km con
+   `single_run: true`**: l'app installata rifiuta tutto il catalogo se
+   trova un tipo di requisito sconosciuto (`isGoal` di `gameApi.ts`) e
+   nasconderebbe «Play». Valgono le regole dei tempi: le camminate restano
+   fuori.
+4. **Tempi migliori su 11 distanze** (le 10 del passo e 50 000 m per
+   l'ultra), `RULES_VERSION` 3, stesso calcolo O(n); backfill una volta
+   dopo il deploy di A e B insieme, senza push.
+5. **Sfide personali senza iscrizione**, uguali per tutti: 3 settimanali e
+   2 mensili, a rotazione dal numero della settimana e del mese, con tre
+   gradini su una barra. Funzioni pure; una tabella `game_personal` scritta
+   nella transazione del salvataggio, come i pezzi; il backfill non la
+   tocca, e le medaglie partono dalla settimana del rilascio.
+6. **L'ora locale da `utc_offset_min`** mandato dall'app con la corsa e
+   salvato in `game_runs` (`runs` non cambia); senza, UTC. Dato nuovo: il
+   testo della privacy lo approva l'utente (parte C).
+7. **Streak a tre righe** (1, 2, 3 uscite a settimana) calcolata da tutta
+   la storia del gioco, senza scelte da salvare: niente da imbrogliare
+   abbassando la soglia.
+8. **Edizioni come righe di `game_unlocks`** (`silver` a 3 corse, `gold` a
+   10; la `solo` di oggi è il bronzo), contate da `game_runs`; solo per le
+   forme di passo e di traguardo.
+9. **Il profilo pubblico mostra premi del gioco solo se scelti** (cornice,
+   titolo, fino a 3 badge, in `game_prefs`); di default niente. Privacy
+   approvata dall'utente (parte E).
+10. **Sei passi**: documenti, A (catalogo), B (passi), C (personali), D
+    (app, dopo la #971 di TASK-422), E (premi). Server A+B, poi C, poi E;
+    un OTA dopo D+E; ognuno col sì dell'utente e il via del Coordinatore.
+
+**Alternative**:
+
+- **Livelli di passo come tabella a parte, non forme**: due modi di
+  mostrare lo stesso avanzamento; «Play mostra tutto» vuole una cosa sola.
+- **Un tipo di requisito nuovo `single_run`**: più pulito, ma spegne
+  «Play» su tutte le app installate fino all'OTA.
+- **Sfide personali su misura** (dal passato di ognuno): più dati, più
+  regole da spiegare; tre gradini coprono principianti e forti.
+- **Una soglia di streak scelta dall'utente**: va salvata, e cambiarla
+  riscrive la storia.
+
+**Conseguenze**: il catalogo diventa grande (94 contorni nella risposta di
+`GET /game/catalog`, circa 150 KB contro i 20 di oggi); l'app di oggi
+mostra le 94 forme nella griglia di sempre finché arriva l'OTA. Due
+migrazioni (C, E).

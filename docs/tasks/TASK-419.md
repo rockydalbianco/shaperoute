@@ -1,8 +1,11 @@
 # TASK-419 — I 1000 disegni del catalogo e la selezione (Explore, parte B)
 
-**Stato**: In corso — proposta (solo documenti), poi il codice
-**Fase**: 4 · **Branch**: `docs/TASK-419-catalog-seed` (proposta), poi
-`feat/TASK-419-catalog-seed` (codice e i file del seme) · **ADR**: ADR-0347
+**Stato**: In corso — primo giro in `main` (#966); aspetta il «via server
+catalogo», poi il secondo giro (Italia, Europa)
+**Fase**: 4 · **Branch**: `docs/TASK-419-catalog-seed` (proposta, #951),
+`feat/TASK-419-catalog-seed` (codice e primo giro, #966),
+`docs/TASK-419-first-round` (questi documenti) · **ADR**: ADR-0347 e la sua
+precisazione
 · numeri dal Coordinatore (2026-11-08) · sessione «task-419-catalog-seed»,
 avviata dal Coordinatore su «Sì, avviale» dell'utente
 
@@ -67,20 +70,73 @@ pubblicato.
 4. **Test deterministici** in `tools/test_catalog_seed.py` e
    `tools/test_catalog_review.py`: filtro, punteggio, preselezione, scrittura
    dei file, pagina; nessuna rete, nessun motore.
-5. **Il server**: il catalogo nuovo entra con la prossima immagine dell'API
-   (`catalog/seed` sta nell'immagine); si prepara, **non si pubblica** senza
-   l'ok dell'utente e il via del Coordinatore.
+5. **Il server**: `catalog/` sul server è il bind mount `../catalog` del
+   checkout `~/shaperoute` (`deploy/compose.yaml`), letto dall'API
+   all'avvio: il catalogo nuovo entra con un `git pull` e un riavvio
+   dell'API, senza ricostruire l'immagine. **Non si pubblica** senza il
+   «via server catalogo» del Coordinatore (che chiede l'ok all'utente); lo
+   lancia l'utente via ssh, sotto.
+
+## Scelte dell'utente
+
+- 2026-11-08, con la pagina di revisione davanti: «ok si» alla preselezione
+  dell'agente come primo giro (155 percorsi, fino a 8 per città, almeno 3);
+  può aggiungere o togliere chiavi dopo.
+- 2026-11-08, via Coordinatore: «Non inserirli come catalogo, inseriscili e
+  basta nella lista», «Sì, nella lista»: niente pagina «Catalog» (TASK-420),
+  i tenuti compaiono nella lista di «Explore» che c'è, dal catalogo del
+  server (ADR-0347, precisazione).
+- 2026-11-08, via Coordinatore: «Sì, solo lettura» alla copia delle zone dal
+  server alla cache del Mac.
+
+## Le zone copiate dal server (sola lettura)
+
+Il 2026-11-08 sera, dal terminale dell'utente (la sessione dell'agente non
+può leggere dal server di produzione), con il server fermo per il resto:
+
+```bash
+rsync -av --partial --bwlimit=20000 --include='foot_*.graphml' --include='foot_*.pickle' --exclude='*' root@188.245.9.220:shaperoute/data/cache/ /Volumes/T9/Progetti/shaperoute/data/cache/
+```
+
+1837 file (tutte le zone a piedi del server, anche quelle chieste dagli
+utenti nel mondo), nessun comando che scrive sul server. Servono al secondo
+giro: le 52 città italiane, Rovereto e le 10 in evidenza senza Overpass.
+
+## Aggiornare il catalogo sul server (lo lancia l'utente, dopo il via)
+
+**Fatto il 2026-11-08 sera** («via server catalogo» del Coordinatore,
+utente «Sì, ok catalogo»), con la variante che porta solo `catalog/`:
+`git fetch && git checkout origin/main -- catalog/`, poi il riavvio
+dell'API; il log ha detto «155 recommended routes from catalog/seed». Il
+checkout del server resta a `8e898de5` per il codice, con `catalog/` di
+`6d140645` nell'indice.
+
+```bash
+ssh root@188.245.9.220 'cd ~/shaperoute && git pull --ff-only && cd deploy && docker compose restart api && sleep 20 && docker compose logs --tail 50 api | grep -i "recommended routes"'
+```
+
+Deve stampare «N recommended routes from catalog/seed» con il numero dei
+tenuti (155 dopo il primo giro). `git pull` porta nel checkout anche il
+codice entrato in `main` nel frattempo, che però non gira finché non si
+fa `docker compose up -d --build` (quello resta col Coordinatore). Poi
+dall'app: «Explore» in una città del seme mostra i percorsi nuovi in
+«Best near you». Tornare indietro: `git checkout <commit di prima> --
+catalog/` e lo stesso `restart`.
 
 ## Criteri di accettazione
 
-- [ ] Circa 1000 casi pianificati nel registro, in città italiane ed europee.
-- [ ] Il filtro automatico scarta sotto 0,90, fuori ±10%, con ripassi in più
+- [ ] Circa 1000 casi pianificati nel registro, in città italiane ed europee
+      (primo giro: 1058 candidati, 375 nuovi; il secondo giro aggiunge
+      Italia ed Europa).
+- [x] Il filtro automatico scarta sotto 0,90, fuori ±10%, con ripassi in più
       oltre il 10% o con tratti su `motorway`/`trunk`; provato con test
-      deterministici.
-- [ ] Pagina di revisione mandata all'utente; la scelta è sua.
-- [ ] 200–400 disegni in `catalog/seed/*.json`, almeno 3 per città, ODbL.
-- [ ] `pytest tools` verde; `test_featured_catalog` verde.
-- [ ] CI verde; STATUS, task file e ADR aggiornati; Coordinatore avvisato.
+      deterministici (40 test, #966).
+- [x] Pagina di revisione mandata all'utente; la scelta è sua (primo giro).
+- [ ] 200–400 disegni in `catalog/seed/*.json`, almeno 3 per città, ODbL
+      (155 dopo il primo giro, almeno 3 per città).
+- [x] `pytest tools` verde; `test_featured_catalog` verde.
+- [x] CI verde; STATUS, task file e ADR aggiornati; Coordinatore avvisato
+      (primo giro).
 
 ## File toccati
 
@@ -110,4 +166,9 @@ Coordinatore prima.
 
 ## Esito
 
-*(a fine task)*
+*Primo giro (2026-11-08)*: strumenti e 40 test in `main` (#966); 1058
+candidati (683 del 2026-10, le sei forme nuove e i 49 contorni di TASK-418
+nelle città in cache), 626 passano il filtro, 155 tenuti in 23 città (la
+preselezione, accettata dall'utente); 20 candidati dai contorni in
+`pending_outlines`. Resta: il «via server catalogo», il secondo giro con le
+zone copiate dal server, le città europee quando Overpass risponde.

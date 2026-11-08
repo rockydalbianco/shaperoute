@@ -25119,6 +25119,21 @@ a pagine (un mese può chiedere molte pagine); i giorni saltati calcolati
 senza sapere quale scheda è stata fatta (un allenamento libero li
 «riempirebbe» tutti).
 
+**Precisazione E (2026-11-08, deciso dall'agente su delega dell'utente;
+scelta dell'utente «Omino nell'app» del 2026-11-07)**: l'omino è disegnato
+dall'app con `Animated` di React Native sul driver nativo, ogni osso una
+`View` ruotata e allungata: niente `react-native-svg`, niente immagini da
+scaricare, impronta iOS invariata. Le pose stanno in `gym/moves.ts` (58
+movimenti per i 91 esercizi, un riquadro 80 × 80, il pavimento a y = 74);
+25 fotogrammi a giro. Fra due pose corpo e gambe vanno in linea retta (il
+piede a terra resta lì), testa e braccia girano attorno al giunto per la via
+più corta, così un braccio che passa davanti alla spalla non si accorcia a
+zero (un test lo controlla). Il carico è giallo per la scelta dell'utente.
+La guida si apre al posto del contenuto, non in un `Modal`: il catalogo e
+l'allenamento sono già in un foglio (TASK-358). Tre passi e un avviso, al
+massimo 110 caratteri a riga; tedesco, francese e spagnolo tradotti
+dall'inglese.
+
 **Conseguenze**: un endpoint senza migrazione (B), una tabella e una
 colonna (C); solo JavaScript nell'app, impronta iOS invariata. Server,
 migrazione, privacy e OTA col sì dell'utente.

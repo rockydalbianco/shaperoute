@@ -85,6 +85,19 @@ inventati, non a giudicare. Un «Custom» non ha scala né classifica.
 - Il server li conta a ogni lettura dalle serie salvate: cancellato un
   allenamento, il livello torna quello degli altri.
 
+## Come si fa un esercizio (TASK-411 E)
+
+Accanto a ogni esercizio del catalogo c'è un omino che fa il movimento, col
+carico (bilanciere, manubrio o maniglia) in giallo: nei riquadri di un
+gruppo, nelle righe della ricerca, accanto all'esercizio in corso; i
+riquadri dei gruppi hanno un movimento tipico (panca, lat machine, squat,
+alzate laterali, curl, crunch, kettlebell, corsa). Con «Riduci movimento»
+l'omino resta fermo a metà del movimento. «i» apre la guida: l'omino grande,
+tre passi e «Watch out» con l'errore da evitare; aperta da «+ Exercise» ha
+«Add to workout», durante l'allenamento solo «‹». Un esercizio col nome
+libero non ha né omino né guida (`gym/moves.ts`, `gym/ExerciseFigure.tsx`,
+`gym/ExerciseGuide.tsx`, `gym/guides/`).
+
 ## La scelta dell'esercizio (TASK-411 A)
 
 «+ Exercise» si apre sugli otto gruppi muscolari, due per riga: ognuno con

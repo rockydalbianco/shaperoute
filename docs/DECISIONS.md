@@ -25444,6 +25444,20 @@ decisione presa ma non ancora codice sulle quote dalle tegole Terrarium
 - le ciaspole e Hike possono avere fasi, pendenza e vette con gli stessi
   moduli, senza riscriverli.
 
+**Precisazione (2026-11-08, TASK-415 parte A, decisa dall'agente su
+delega dell'utente)**: `ski_touring` viene dopo `xc_skiing` in
+`RECORDED_SPORTS`, quindi fra `xc_skiing` e `gym` in `RUN_ACTIVITIES`,
+`RunActivity` e `X-MuW-Reads`. Il profilo dell'app ha il nome «Ski touring»
+senza `tLater` e nessuna riga in «Settings» fino alla parte B, come il
+Roller nella sua parte A; il passo di una corsa senza percorso è quello di
+chi corre (`freeRunAs` vuoto), come lo sci di fondo, finché B non dà fasi e
+VAM. Apple `.crossCountrySkiing` (60) e Health Connect `EXERCISE_TYPE_SKIING`
+(61) sono verificati su `@kingstinct/react-native-healthkit` e
+`react-native-health-connect`. La migrazione allarga solo
+`runs_activity_check`: preferiti, corse di gruppo e `run_bests` restano
+com'erano. Il contratto dei percorsi (`contract.json`) e il motore non
+cambiano.
+
 ## ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km
 
 **Stato**: Proposto · 2026-11-08 · TASK-414. Le scelte dell'utente, il

@@ -177,6 +177,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   post; acceso con fasi e VAM, con un OTA col sì dell'utente.
   Prossimo: la lista della parte A (contratto, API, CHECK, profilo nascosto)
   al Coordinatore. `tasks/TASK-415.md`, `sports/skimo.md`.
+  Parte 0 in `main` (#932).
+  **Parte A in PR** (2026-11-08, `feat/TASK-415-a-ski-touring-api`):
+  `ski_touring` terzo sport «Record only» nel contratto (`RECORDED_SPORTS`,
+  le fixture), nell'API (`sports/ski_touring.py`: Strava `BackcountrySki`,
+  GPX `ski_touring`, senza record né gioco; `X-MuW-Reads`), la migrazione
+  `0057_ski_touring.sql` sul solo CHECK di `runs`, il profilo nascosto
+  nell'app (Apple `.crossCountrySkiing` 60, Health Connect
+  `EXERCISE_TYPE_SKIING` 61, verificati sulle librerie; nessuna riga in
+  «Settings») e l'orologio (`sports.json`, testi in inglese fino a B).
+  Impronta del motore neutra, iOS invariata. Il server dopo il merge, col
+  sì dell'utente già dato («ok si», 2026-11-08). Prossimo: parte B.
 - **TASK-414 — Carrozzina e passeggino ♿, forme semplici dove si spinge**
   (2026-11-08; numeri dal Coordinatore, ADR-0343 **proposto**; sessione
   avviata dal Coordinatore Sport). Parte 0, solo documenti: sei reti di

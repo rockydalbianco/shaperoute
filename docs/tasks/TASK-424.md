@@ -154,8 +154,9 @@ dell'API (conferma email, password) sono il modello per un link pubblico.
 
 Ognuna con una proposta. Si scrivono qui con la risposta.
 
-1. **Chi può ricevere il link** — proposta: chiunque lo abbia, senza app e
-   senza account; si manda a chi si vuole.
+1. **Chi può ricevere il link** — **deciso dall'utente il 2026-11-09**
+   («Sì, chiunque lo abbia»): chiunque abbia il link, senza app e senza
+   account; si manda a chi si vuole.
 2. **Quanto dura il link** — proposta: fino alla fine dell'attività, poi la
    pagina mostra «Finished» e il riepilogo per 1 ora, poi scade e i punti
    si cancellano; al massimo 24 ore in ogni caso.

@@ -3562,13 +3562,16 @@ della collezione. Le regole sono in `GIOCO.md`; il codice in
 
 | Endpoint | Account | Cosa | Risposta |
 |---|---|---|---|
-| `GET /game/catalog` | no | le forme del gioco: `rules_version` e `shapes`, ognuna con `id`, `names` (`en`, `de`, `it`, `es`, `fr`), `goal` e `outline` | `200` |
-| `GET /game/me` | sì | `counted_m`, `longest_m`, `best_s` (`{"1000": 287.4}`) e ogni forma del catalogo con `unlocked_at` e `progress` | `200` |
+| `GET /game/catalog` | no | le forme del gioco: `rules_version`, `shapes`, ognuna con `id`, `names` (`en`, `de`, `it`, `es`, `fr`), `goal`, `outline` e `collection`, e `collections` (TASK-423) in ordine, ognuna con `id` e `names` | `200` |
+| `GET /game/me` | sì | `counted_m`, `longest_m`, `best_s` (`{"1000": 287.4}`), ogni forma del catalogo con `unlocked_at` e `progress`, e `collections` (TASK-423): per ognuna `id`, `unlocked`, `total` | `200` |
 | `GET /game/runs/{key}` | sì | che cosa ha valso la corsa `key`: `counted`, `reason`, `counted_m`, `best_s`, `unlocked` (gli id sbloccati da lei) | `200`, `404` |
 
 - **`goal`**: `{kind: "distance", total_m}` oppure `{kind: "pace",
   distance_m, pace_s}` (secondi al km); i campi dell'altro tipo sono
-  `null`. **`outline`**: chiuso (l'ultimo punto è il primo), da 0 a 1, y
+  `null`. Da TASK-423 ha anche `single_run`: `true` per un traguardo di una
+  corsa (la prima 5K, la prima maratona), servito come `pace` a 1200 s/km
+  perché le app installate rifiutano un `kind` che non conoscono. Il
+  catalogo ha 94 forme in 10 collezioni (`GIOCO.md` §5.3). **`outline`**: chiuso (l'ultimo punto è il primo), da 0 a 1, y
   verso il basso come sullo schermo.
 - **`GET /game/catalog` accende «Play»** (ADR-0255): l'app mostra la
   pagina solo se risponde `200`; un'API precedente risponde `404`. Non
@@ -3577,7 +3580,8 @@ della collezione. Le regole sono in `GIOCO.md`; il codice in
   la prima volta, scrive la riga di `game_runs` nella stessa transazione
   della corsa e sblocca le forme raggiunte; la sua risposta non cambia.
   L'app chiede `GET /game/runs/{key}` dopo «Save»: risponde anche alle
-  volte dopo, con le stesse `unlocked`.
+  volte dopo, con le stesse `unlocked`. Una corsa che sblocca forme manda
+  **una** push `shape_unlocked`, quante che siano (TASK-423).
 - **`reason`**: `not_running` (bici, pagaia), `vehicle` (velocità da
   veicolo), `overlap` (un'altra corsa salvata prima copre lo stesso
   tempo), `daily_cap` (la corsa conta solo fino a 120 km nel giorno UTC;

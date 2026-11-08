@@ -587,6 +587,8 @@ def test_a_reaction_and_a_comment_go_to_the_drawing_s_owner(
     _, ada_id, bob, bob_id = two(client)
     push_on(client, bob)
     drawing = drawing_of(client, bob)
+    # The run of the drawing may unlock shapes of the game: not this test's.
+    expo.sent.clear()
     request = request_of(pusher)
     notify_owner(request, "reaction", ada_id, drawing, reaction="clap")
     notify_owner(request, "comment", ada_id, drawing, text="Great run", key="c1")

@@ -1669,11 +1669,25 @@ export type GamePushKind = "shape_unlocked";
 /**
  * What a shape of the game asks (GET /game/catalog): so many metres in
  * all, or `distance_m` in one run at `pace_s` seconds a kilometre or
- * better. The fields of the other kind are null.
+ * better. The fields of the other kind are null. `single_run` (TASK-423):
+ * a milestone of one run, «One run of 5 km»; its pace is so slow that any
+ * run of the distance meets it. Absent from an API before TASK-423.
  */
 export type GameGoal =
-  | { kind: "distance"; total_m: number; distance_m: null; pace_s: null }
-  | { kind: "pace"; total_m: null; distance_m: number; pace_s: number };
+  | {
+      kind: "distance";
+      total_m: number;
+      distance_m: null;
+      pace_s: null;
+      single_run?: boolean;
+    }
+  | {
+      kind: "pace";
+      total_m: null;
+      distance_m: number;
+      pace_s: number;
+      single_run?: boolean;
+    };
 
 /** A shape to collect, as the API's catalog serves it. */
 export interface GameShape {
@@ -1684,13 +1698,30 @@ export interface GameShape {
   /** Closed (the last point is the first), from 0 to 1, y downwards as on
    * a screen: a drawing, never a place. */
   outline: [number, number][];
+  /** The id of its collection (TASK-423); absent from an older API. */
+  collection?: string;
+}
+
+/** A collection of shapes (TASK-423, ADR-0351): «Animals», «Sky». */
+export interface GameCollection {
+  id: string;
+  names: Record<PushLanguage, string>;
 }
 
 /** GET /game/catalog: the shapes of the game. Without an account; an API
- * before the game answers 404, and the app shows no «Play» (ADR-0255). */
+ * before the game answers 404, and the app shows no «Play» (ADR-0255).
+ * `collections`, in order, from TASK-423; absent from an older API. */
 export interface GameCatalog {
   rules_version: number;
   shapes: GameShape[];
+  collections?: GameCollection[];
+}
+
+/** How far along a collection the account is: «7 / 13» (TASK-423). */
+export interface GameCollectionState {
+  id: string;
+  unlocked: number;
+  total: number;
 }
 
 /** One shape of the catalog, for the account: when it was unlocked, or how
@@ -1708,6 +1739,8 @@ export interface GameMe {
   longest_m: number;
   best_s: Record<string, number>;
   shapes: GameShapeState[];
+  /** Each collection in catalog order (TASK-423); absent from an older API. */
+  collections?: GameCollectionState[];
 }
 
 /** Why a run does not count for the game, or counts less (docs/GIOCO.md §4). */

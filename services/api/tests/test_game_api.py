@@ -67,6 +67,22 @@ def run_body(
 
 
 SIX_KM = [(6_000.0, 3.0)]
+# What 6 km at 5:33 a kilometre unlock (TASK-423): the km of geometry up to
+# 5, the kilometre and the 5 km at 7:30 to 6:00, and the first 5K. The
+# 400 m and the 3 km are timed from part B.
+SIX_KM_UNLOCKS = [
+    "oval",
+    "pentagon",
+    "triangle",
+    "penguin",
+    "cat",
+    "bear",
+    "bridge",
+    "arch",
+    "lighthouse",
+    "ferris_wheel",
+    "balloon",
+]
 
 
 @pytest.fixture
@@ -124,14 +140,29 @@ def test_the_catalog_needs_no_account(client: TestClient) -> None:
     body = answer.json()
     assert body["rules_version"] == RULES_VERSION
     shapes = {shape["id"]: shape for shape in body["shapes"]}
-    assert len(shapes) == 12
+    assert len(shapes) == 94
     assert shapes["triangle"]["goal"] == {
         "kind": "distance",
         "total_m": 5_000,
         "distance_m": None,
         "pace_s": None,
+        "single_run": False,
     }
+    assert shapes["triangle"]["collection"] == "geometry"
     assert shapes["lightning"]["goal"]["pace_s"] == 300
+    # A milestone stays a pace goal for the apps already installed.
+    assert shapes["medal"]["goal"] == {
+        "kind": "pace",
+        "total_m": None,
+        "distance_m": 42_195,
+        "pace_s": 1_200,
+        "single_run": True,
+    }
+    assert [c["id"] for c in body["collections"]][:3] == ["geometry", "animals", "sea"]
+    assert body["collections"][1]["names"]["it"] == "Animali"
+    assert {shape["collection"] for shape in body["shapes"]} == {
+        c["id"] for c in body["collections"]
+    }
     assert shapes["heart"]["names"]["it"] == "Cuore"
     outline = shapes["star"]["outline"]
     assert outline[0] == outline[-1]
@@ -150,7 +181,7 @@ def test_six_km_unlock_the_triangle(client: TestClient) -> None:
         "reason": None,
         "counted_m": 6_000,
         "best_s": {"1000": 333.3, "5000": 1666.7},
-        "unlocked": ["triangle"],
+        "unlocked": SIX_KM_UNLOCKS,
         "pieces_done": [],
     }
     answer = client.get("/game/me", headers=me).json()
@@ -169,6 +200,11 @@ def test_six_km_unlock_the_triangle(client: TestClient) -> None:
     assert shapes["lightning"]["progress"] == pytest.approx(0.9001, abs=1e-4)
     # Never 21.1 km in one run: the longest against it.
     assert shapes["crown"]["progress"] == pytest.approx(6_000 / 21_097, abs=1e-4)
+    collections = {c["id"]: c for c in answer["collections"]}
+    assert len(collections) == 10
+    assert collections["geometry"] == {"id": "geometry", "unlocked": 3, "total": 10}
+    assert collections["city"] == {"id": "city", "unlocked": 4, "total": 13}
+    assert collections["greece"] == {"id": "greece", "unlocked": 0, "total": 7}
 
 
 def test_a_fast_kilometre_unlocks_the_lightning(client: TestClient) -> None:
@@ -176,7 +212,15 @@ def test_a_fast_kilometre_unlocks_the_lightning(client: TestClient) -> None:
     # 1.2 km at 3.6 m/s: 4:38 a kilometre.
     save(client, me, run_body([(1_200.0, 3.6)]))
     game = game_of(client, me)
-    assert game["unlocked"] == ["lightning"]
+    # With the first km and the slower kilometres of the animals.
+    assert game["unlocked"] == [
+        "oval",
+        "penguin",
+        "cat",
+        "bear",
+        "butterfly",
+        "lightning",
+    ]
     assert game["best_s"] == {"1000": pytest.approx(277.8, abs=0.1)}
 
 
@@ -240,7 +284,8 @@ def test_saving_twice_counts_once_and_tells_once(
     assert save(client, me, run_body(SIX_KM)) == 200
     assert rows(database, "game_runs") == 1
     # The app asking again still reads what the run unlocked.
-    assert game_of(client, me)["unlocked"] == ["triangle"]
+    assert game_of(client, me)["unlocked"] == SIX_KM_UNLOCKS
+    # One push for the run, not one a shape.
     assert [(m["to"], m["body"]) for m in expo.sent] == [(PHONE, UNLOCKED_TEXT)]
 
 
@@ -249,8 +294,12 @@ def test_a_run_that_unlocks_nothing_tells_nothing(
 ) -> None:
     me = signed_up(client, "ada")
     put_token(client, me, PHONE)
+    save(client, me, run_body(SIX_KM))
     push_on(client, me)
-    save(client, me, run_body([(2_000.0, 3.0)]))
+    # 500 m more: 6.5 km, no step reached, nothing timed.
+    later = run_body([(500.0, 3.0)], start=MORNING + timedelta(hours=3))
+    save(client, me, later, OTHER_KEY)
+    assert game_of(client, me, OTHER_KEY)["unlocked"] == []
     assert expo.sent == []
 
 
@@ -260,7 +309,7 @@ def test_no_push_with_push_notifications_off(
     me = signed_up(client, "ada")
     put_token(client, me, PHONE)
     save(client, me, run_body(SIX_KM))
-    assert game_of(client, me)["unlocked"] == ["triangle"]
+    assert game_of(client, me)["unlocked"] == SIX_KM_UNLOCKS
     assert expo.sent == []
 
 
@@ -302,7 +351,8 @@ def test_deleting_the_account_deletes_its_game(
 ) -> None:
     me = signed_up(client, "ada")
     save(client, me, run_body(SIX_KM))
-    assert rows(database, "game_runs") == rows(database, "game_unlocks") == 1
+    assert rows(database, "game_runs") == 1
+    assert rows(database, "game_unlocks") == len(SIX_KM_UNLOCKS)
     assert client.delete("/me", headers=me).status_code == 204
     assert rows(database, "game_runs") == rows(database, "game_unlocks") == 0
 

@@ -584,6 +584,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Scelte dell'utente del 2026-11-06: «Profilo + esercizio nel post», «Per
   esercizio, almeno 3», testo della privacy approvato. Niente migrazione;
   server e OTA col sì. Prossima: G (battito, con TASK-345 C).
+  Parte F in `main` (#918, 7208c25e), impronta iOS 6f8bba4c misurata dal
+  Coordinatore; server (`gym_leaderboard`), giro del sito della privacy e
+  OTA col sì dell'utente. Prossima: G (battito, con TASK-345 C).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo

@@ -1216,6 +1216,17 @@ export const ES: Table = {
     "Nuevo nivel: {figure} · {exercise} {value}",
   // src/gym/Leaderboard.tsx (TASK-385 F)
   "Gym leaderboard · {month}": "Clasificación gimnasio · {month}",
+  "Pick an exercise from the grid": "Elige un ejercicio de la cuadrícula",
+  "Log each set: the rest starts by itself":
+    "Anota cada serie: el descanso empieza solo",
+  "«Save»: calories, milestones and leaderboard":
+    "«Guardar»: calorías, niveles y clasificación",
+  "Last workout: {when} · {time}": "Último entrenamiento: {when} · {time}",
+  "This month: 1 time": "Este mes: 1 vez",
+  "This month: {n} times": "Este mes: {n} veces",
+  "Gym calendar": "Calendario gimnasio",
+  "{n} times · {time}": "{n} veces · {time}",
+  Workout: "Entrenamiento",
   "Only sets logged live count.": "Solo cuentan las series anotadas en directo.",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":
@@ -1668,6 +1679,19 @@ export const ES: Table = {
   Donkey: "Burro",
   Alpaca: "Alpaca",
 
+  // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
+  "2D": "2D",
+  "Edit video": "Editar vídeo",
+  "Line colour": "Color de la línea",
+  "Along the way": "Por el camino",
+  "At the end": "Al final",
+  Nothing: "Nada",
+  Yellow: "Amarillo",
+  "Light blue": "Celeste",
+  Pink: "Rosa",
+  Green: "Verde",
+  White: "Blanco",
+
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concurso MuW",
   "The post with the most reactions wins.": "Gana la publicación con más reacciones.",
@@ -1972,6 +1996,12 @@ export const ES: Table = {
   "Try other words, or change the filters.":
     "Prueba otras palabras o cambia los filtros.",
 
+  // src/feed/PostSheet.tsx, PostSettings.tsx, postSections.ts (TASK-410: approved 2026-11-07)
+  Like: "Me gusta",
+  "Edit & run": "Editar y correr",
+  "Post settings": "Ajustes de la publicación",
+  Summary: "Resumen",
+
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Ruta creada por MuW – recórrela tú",
   "Route created by MuW – run it yourself": "Ruta creada por MuW – córrela tú",
@@ -2035,6 +2065,43 @@ export const ES: Table = {
     "Pronóstico más antiguo: MET Norway no responde.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Tiempo: MET Norway (CC BY 4.0) · Estaciones: OpenSkiMap.org, © colaboradores de OpenStreetMap",
+
+  // src/explore/CatalogScreen.tsx, CatalogEntry.tsx, CatalogCard.tsx,
+  // CatalogGrid.tsx, CatalogFilterSheet.tsx, catalog.ts (TASK-420: the catalog)
+  Catalog: "Catálogo",
+  "{count} drawing in {cities} cities · filters, search":
+    "{count} dibujo en {cities} ciudades · filtros, búsqueda",
+  "{count} drawings in {cities} cities · filters, search":
+    "{count} dibujos en {cities} ciudades · filtros, búsqueda",
+  "{count} drawings · {cities} cities": "{count} dibujos · {cities} ciudades",
+  "Search by name: heart, CIAO, Milan…": "Buscar por nombre: corazón, CIAO, Milán…",
+  Country: "País",
+  City: "Ciudad",
+  Category: "Categoría",
+  Nearest: "Más cercanos",
+  Best: "Más bonitos",
+  Shortest: "Más cortos",
+  Any: "Cualquiera",
+  "Loading more…": "Cargando más…",
+  "No drawings match": "Ningún dibujo coincide",
+  "Change the filters, or clear them to see every drawing.":
+    "Cambia los filtros, o bórralos para ver todos los dibujos.",
+  "The drawings are planned at {distances}.":
+    "Los dibujos están planeados a {distances}.",
+  "Show {count} drawing": "Mostrar {count} dibujo",
+  "Show {count} drawings": "Mostrar {count} dibujos",
+  Monuments: "Monumentos",
+  Holidays: "Fiestas",
+  Italy: "Italia",
+  "United States": "Estados Unidos",
+  Netherlands: "Países Bajos",
+  Spain: "España",
+  "United Arab Emirates": "Emiratos Árabes Unidos",
+  Portugal: "Portugal",
+  "United Kingdom": "Reino Unido",
+  France: "Francia",
+  Australia: "Australia",
+  Japan: "Japón",
   // src/ski/DayResort.tsx, DayChoices.tsx, SkiDayLine.tsx, screens/SnowFinishCard.tsx
   // (TASK-406 part D2: the day of skiing, texts approved on 2026-11-08)
   "Where are you skiing?": "¿Dónde estás esquiando?",

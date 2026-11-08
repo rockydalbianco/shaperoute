@@ -40,6 +40,7 @@ export const INLINE_SKATING: SportProfile = {
   healthConnect: 60,
   energy: { kind: "met", bands: BANDS },
   freeRunAs: "inline_skating",
+  rides: true,
   // Skaters share the roads and go fast downhill (the user's choice 5).
   caution: tLater(
     "Watch for traffic and steep descents: check the route before you set off.",

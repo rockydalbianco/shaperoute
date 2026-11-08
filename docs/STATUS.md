@@ -177,6 +177,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   post; acceso con fasi e VAM, con un OTA col sì dell'utente.
   Prossimo: la lista della parte A (contratto, API, CHECK, profilo nascosto)
   al Coordinatore. `tasks/TASK-415.md`, `sports/skimo.md`.
+  Parte 0 in `main` (#932).
+  **Parte A in PR** (2026-11-08, `feat/TASK-415-a-ski-touring-api`):
+  `ski_touring` terzo sport «Record only» nel contratto (`RECORDED_SPORTS`,
+  le fixture), nell'API (`sports/ski_touring.py`: Strava `BackcountrySki`,
+  GPX `ski_touring`, senza record né gioco; `X-MuW-Reads`), la migrazione
+  `0057_ski_touring.sql` sul solo CHECK di `runs`, il profilo nascosto
+  nell'app (Apple `.crossCountrySkiing` 60, Health Connect
+  `EXERCISE_TYPE_SKIING` 61, verificati sulle librerie; nessuna riga in
+  «Settings») e l'orologio (`sports.json`, testi in inglese fino a B).
+  Impronta del motore neutra, iOS invariata. Il server dopo il merge, col
+  sì dell'utente già dato («ok si», 2026-11-08). Prossimo: parte B.
 - **TASK-414 — Carrozzina e passeggino ♿, forme semplici dove si spinge**
   (2026-11-08; numeri dal Coordinatore, ADR-0343 **proposto**; sessione
   avviata dal Coordinatore Sport). Parte 0, solo documenti: sei reti di
@@ -210,6 +221,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   calorie visibili, nascondibili; il video è il file vero di TASK-336
   (`expo-video`); meteo MET solo entro 3 ore; foglio come proposto; testi
   di B e D approvati. Prossimo: ordine e via delle parti dal Coordinatore.
+  **Parte B** (2026-11-08, via del Coordinatore): la pagina dal Feed, il
+  foglio con le quattro azioni (Like apre le sei reazioni, scelta
+  dell'utente) e il riepilogo; branch `feat/TASK-410-b-post-page`, solo
+  app; provata sul simulatore. Prossimo: merge, poi OTA col sì
+  dell'utente; C (`run_stats`) dopo.
 - **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
   Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
   La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo
@@ -324,6 +340,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sport nuovo o un nome cambiato richiede di rilanciare `scripts/watch-texts.sh` e
   `scripts/watch-sports.sh`. A3 in una sessione nuova, con la lista dei file al Coordinatore
   prima del codice.
+- **TASK-370 B1 — La guida in Swift, uguale a quella del telefono** (2026-11-08; parte B1
+  del piano in `tasks/TASK-370.md`, ADR-0314 «precisazione B1»; via del Coordinatore
+  local_3f55a0e9). Solo file nuovi: `WatchCore/Guide/` (`RouteProgress`, `Rejoin`,
+  `Navigator`: la parte «follow» di `navigator.ts` con le stesse costanti) e gli avvisi per
+  tipo invece delle frasi. 14 tracce in `Fixtures/guide/` (due percorsi × dritto, bici,
+  deviazione, deviazione lunga, buco di GPS, fix poco precisi, senza tempi), scritte da
+  `scripts/watch-guide.sh` col `navigator.ts` del telefono e rigiocate da `GuideTests.swift`:
+  cambiare una costante da una parte sola fa fallire i test. Impronta iOS `6f8bba4c`
+  invariata. Branch `feat/TASK-370-b1-watch-guide`. **Prossimo**: B2 (percorso chiuso preso
+  dove lo tocchi, pezzi a penna alzata), poi B3 (l'orologio da solo, con le scelte
+  dell'utente su vibrazioni e testi).
 - **TASK-370 A3 — Il telefono dell'orologio** (2026-11-08; parte A3 del piano in
   `tasks/TASK-370.md`, ADR-0314 «precisazione A3»; lista dei file approvata dal Coordinatore
   il 2026-11-08). `src/watch/watchLink.ts` (il modulo nativo `WatchConnectivity` coi nomi di
@@ -337,6 +364,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `feat/TASK-370-a3-phone`; la unisce il Coordinatore a CI verde. **Prossimo**: A-flip alla
   build 1.1 (il pacchetto 2.0.0, `match` in `app.json`, il plugin nativo per
   `workoutSessionMirroringStartHandler`), poi la prova al polso; la parte B.
+- **TASK-370 B2 — Il percorso chiuso e i pezzi, in Swift** (2026-11-08; parte B2 del piano
+  in `tasks/TASK-370.md`, ADR-0314 «precisazione B2»; via del Coordinatore local_3f55a0e9).
+  Nuovi `WatchCore/Guide/Loop.swift` (`startAnywhere.ts`: il giro preso dove lo tocchi, la
+  svolta alla partenza ricalcolata) e `Pen.swift` (`penUp.ts`: penna su e giù fra lettere e
+  parti, a piedi, in bici, in canoa); `Navigator.swift` prende il percorso chiuso come
+  `navigator.ts` (`towardsJoin`). 12 tracce nuove (quadrato di 2 km: preso a metà, vicino alla
+  partenza, prima della fine, prima di un angolo, al passo della bici, contromano, da fuori
+  rotta; l'anello del nuoto; «IO» con parola, a parti, in bici, in canoa), 26 in tutto; ogni
+  costante legata. Impronta iOS `6f8bba4c`. **Prossimo**: B3, l'orologio da solo.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.
@@ -952,6 +988,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   limite noto nel task file: 3D a freddo può dare il video giallo di
   riserva dopo 15 s. L'OTA la pubblica il Coordinatore dopo il sì
   dell'utente.
+  **Parte C1** (2026-11-06, branch `feat/TASK-408-c1-edit-sheet`): il
+  foglio «Edit video» con stile (più «2D», fondo scuro: scelta dell'utente),
+  animale, colore della linea (cinque, blocco `videoLine` nei token) ed
+  emoji lungo il percorso e alla fine; provato nel simulatore (video
+  all'utente). Prossimo: C2 (scene, finale, camera dietro, anteprima);
+  B2 quando c'è l'elefante.
 - **TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e
   calendario** (ADR-0341 **proposto**; numeri dal Coordinatore il
   2026-11-06). Dalla segnalazione dell'utente «Start workout non fa nulla»
@@ -965,6 +1007,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   griglia, prima gli 8 gruppi muscolari poi i loro esercizi; la ricerca
   cerca in tutti. Solo JavaScript; OTA col sì. Prossimo: parte E (omini e
   guide, richiesta dell'utente del 2026-11-07) dopo il suo ok di lista, poi B.
+  2026-11-08: parte E in PR (#941); **parte B scritta** su
+  `feat/TASK-411-b-gym-calendar` (`GET /me/gym-calendar`, la guida in «Draw»,
+  il calendario del mese, anche dal riquadro 🏋️ del proprio profilo), PR dopo
+  la #941. Server e OTA col sì dell'utente.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta
@@ -3539,6 +3585,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-416 — Gravel, MTB e Roller registrano con i numeri della bici** (2026-11-08;
+  precisazione di ADR-0322 e ADR-0324). Un campo del profilo `rides: true` (bici, Gravel,
+  MTB, Roller), letto da `isRide` in `navigation/ride.ts`: velocità e media in km/h, parziali
+  in km/h, voce ogni 10 km, svolte 100 m prima. Stessi testi della bici, solo JavaScript,
+  impronta iOS `6f8bba4c` invariata. Resta l'OTA di produzione col sì dell'utente.
+  `tasks/TASK-416.md`.
 - **TASK-314 — La strada per tornare sul percorso, sulle vie** (2026-11-06; ADR-0274 e la sua
   «precisazione B»). Parte A #588 (motore, `/way-back`, motore sul telefono); parte B nella
   sua PR: lo schermo di corsa chiede la strada fuori percorso e la mostra sulla mappa, nel

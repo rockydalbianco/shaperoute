@@ -551,3 +551,16 @@ export const onFoot = {
   /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
   dash: [1.5, 1.5],
 } as const;
+
+/**
+ * The colours a run's video can draw its line in, the runner's choice in
+ * «Edit video» (TASK-408, ADR-0339): the route's yellow (`accent`, of the
+ * video's own palette), then four light ones that read on the dark map and,
+ * on their dark edge, on the light one.
+ */
+export const videoLine = {
+  lightBlue: "#7CC4FF",
+  pink: "#FF8FB8",
+  green: "#8EE08A",
+  white: "#FFFFFF",
+} as const;

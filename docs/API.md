@@ -1107,6 +1107,14 @@ registra e si salva, ma nessun percorso la disegna:
   (`fixtures/run-activities.json`). `Activity` e `ApiActivity` non
   cambiano. Un'API di prima rifiuta le due attività con `422`.
 
+**Lo scialpinismo** (`ski_touring`, TASK-415 parte A, ADR-0344) è un terzo
+sport senza forma, dopo `xc_skiing` in `RECORD_ACTIVITIES`: si salva, si
+elenca e si apre come una giornata di sci; Strava lo riceve come
+`BackcountrySki`, il GPX dice `<type>ski_touring</type>`. Niente percorsi,
+niente gioco delle forme, niente record personali; preferiti e corse di
+gruppo no (migrazione `0057`). Lo legge solo un'app che dice
+`ski_touring` in `X-MuW-Reads`.
+
 ### Quello che un'app sa leggere: `X-MuW-Reads` (TASK-387, ADR-0328)
 
 Ogni richiesta dell'app dice nell'header `X-MuW-Reads` i tipi in più che sa

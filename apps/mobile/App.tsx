@@ -63,6 +63,7 @@ import {
 } from "./src/favorites/favoriteRoute";
 import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
 import { DrawAgainContext, useDrawAgainOf } from "./src/feed/drawAgainDoor";
+import { EditRunContext, useEditRunOf } from "./src/feed/editRunDoor";
 import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
 import { fetchMuwRoute, muwCardRoute } from "./src/feed/muwRoute";
 import type { SamplePost } from "./src/feed/sampleFeed";
@@ -1094,6 +1095,8 @@ function MuW() {
 
   // The same for the cards of «Feed» (TASK-355).
   const drawAgainDoor = useDrawAgainOf(sportActivity, onDrawAgain);
+  // «Edit & run» on the page of a post (TASK-410): its line where it is.
+  const editRunDoor = useEditRunOf((line) => editTrackOf(cardTrack(routeTrack(line))));
 
   /** The button's action for `again`, when «Draw» can draw it. */
   function drawAgainOf(again: DrawAgain | null): (() => void) | undefined {
@@ -1719,21 +1722,23 @@ function MuW() {
               icon: "house",
               render: () => (
                 <DrawAgainContext.Provider value={drawAgainDoor}>
-                  <FeedScreen
-                    active={screen === "feed"}
-                    onOpen={(post) => {
-                      closeExplore();
-                      openExplored(postRoute(post), fetchPostRoute(post));
-                      setRouteList("feed");
-                      setScreen("map");
-                    }}
-                    onOpenMuw={(route) => {
-                      closeExplore();
-                      openExplored(muwCardRoute(route), fetchMuwRoute(route));
-                      setRouteList("feed");
-                      setScreen("map");
-                    }}
-                  />
+                  <EditRunContext.Provider value={editRunDoor}>
+                    <FeedScreen
+                      active={screen === "feed"}
+                      onOpen={(post) => {
+                        closeExplore();
+                        openExplored(postRoute(post), fetchPostRoute(post));
+                        setRouteList("feed");
+                        setScreen("map");
+                      }}
+                      onOpenMuw={(route) => {
+                        closeExplore();
+                        openExplored(muwCardRoute(route), fetchMuwRoute(route));
+                        setRouteList("feed");
+                        setScreen("map");
+                      }}
+                    />
+                  </EditRunContext.Provider>
                 </DrawAgainContext.Provider>
               ),
             },

@@ -81,6 +81,19 @@ ora toccano un gruppo prima dell'esercizio: `GymWorkoutHost.test.tsx`,
 (la riga dei gruppi scorrevole non c'è più). Documenti di chiusura:
 `docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/sports/gym.md`.
 
+**Parte B** (lista approvata dal Coordinatore il 2026-11-08): server
+`services/api/shaperoute_api/gym_calendar.py` (nuovo), `app.py` (una
+riga), `tests/test_gym_calendar.py` (nuovo); shared-types `src/gym.ts`,
+`fixtures/gym-calendar.json` (nuovo), `test/gym.test.ts`; app
+`api/gymCalendar.ts` e `.test.ts` (nuovi), `gym/GymCalendar.tsx`,
+`gym/GymDrawGuide.tsx`, `gym/GymCalendar.test.tsx` (nuovi),
+`screens/ChooseScreen.tsx`, `i18n/{it,de,fr,es}.ts`; documenti
+`docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/DECISIONS.md`,
+`docs/sports/gym.md`; `gym/GymLevels.tsx` («Gym calendar ›» nel riquadro 🏋️
+del profilo, solo con `own`) e `profile/ProfileHome.tsx` (la sola prop `own`,
+ok del Coordinatore il 2026-11-08: il riquadro compare anche sui profili
+degli altri, `UserProfilePage` resta com'è).
+
 ## Testi dell'interfaccia (approvati il 2026-11-06)
 
 | en | it | de | fr | es |
@@ -134,3 +147,14 @@ già. `{when}` è «Today», «Yesterday» o il giorno di `dayLabel`.
   Spalle 🤸 (era 🤷), si leggono meglio. Solo JavaScript, nessun testo
   nuovo; non vista nel simulatore (spento per lo spazio su disco). OTA col
   sì dell'utente.
+- 2026-11-08: **parte B scritta** (`feat/TASK-411-b-gym-calendar`).
+  `GET /me/gym-calendar?tz=&month=`: i giorni del mese sul fuso del
+  telefono con i loro allenamenti (inizio, tempo, post se c'è), il totale e
+  l'ultimo allenamento di sempre; senza migrazione. In «Draw», sotto «Start
+  workout», «How it works» in tre passi, «Last workout: {when} · {time}» e
+  «This month: {n} times ›», che apre il calendario (anche da «Gym
+  calendar ›» nel riquadro 🏋️ del proprio profilo): il mese a griglia da
+  lunedì, un pallino giallo nei giorni con un allenamento, «‹ ›»; un giorno
+  toccato elenca i suoi allenamenti e uno col post lo apre. Senza il server
+  nuovo (404) restano i tre passi e il calendario dice perché. I test del
+  database li fa girare la CI (Docker spento sul Mac). Server e OTA col sì.

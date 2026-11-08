@@ -50,12 +50,14 @@ BEFORE_STREET_NAMES = {"running": True, "cycling": False}
 # Added since, each by a file of sports/ and a line of its register: a hike
 # (TASK-377), planned before the walk in the order of the contract; an MTB
 # ride after it and a gravel ride after the walk (TASK-378); a skate after
-# the MTB ride (TASK-380).
+# the MTB ride (TASK-380); a day of ski touring after the days on the snow
+# (TASK-415).
 SINCE_SPORT_TYPES = {
     "hiking": "Hike",
     "mountain_biking": "MountainBikeRide",
     "inline_skating": "InlineSkate",
     "gravel_biking": "GravelRide",
+    "ski_touring": "BackcountrySki",
 }
 SINCE = tuple(SINCE_SPORT_TYPES)
 SINCE_GPX_TYPES = {
@@ -63,6 +65,7 @@ SINCE_GPX_TYPES = {
     "mountain_biking": "mountain_biking",
     "inline_skating": "inline_skating",
     "gravel_biking": "gravel_biking",
+    "ski_touring": "ski_touring",
 }
 
 
@@ -90,7 +93,8 @@ def test_the_tables_are_those_of_before_in_their_order() -> None:
     assert order.index("mountain_biking") == order.index("walking") - 2
     assert order.index("inline_skating") == order.index("walking") - 1
     assert order.index("gravel_biking") == order.index("walking") + 1
-    assert RECORD_ACTIVITIES == BEFORE_RECORD_ACTIVITIES
+    assert order.index("ski_touring") == order.index("xc_skiing") + 1
+    assert RECORD_ACTIVITIES == (*BEFORE_RECORD_ACTIVITIES, "ski_touring")
     assert _without_since(GPX_TYPES) == list(BEFORE_GPX_TYPES.items())
     assert {name: GPX_TYPES[name] for name in SINCE} == SINCE_GPX_TYPES
     assert list(SPORTS.items()) == [

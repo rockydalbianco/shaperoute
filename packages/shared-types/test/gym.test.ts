@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import catalog from "../fixtures/gym-exercises.json" with { type: "json" };
+import gymCalendar from "../fixtures/gym-calendar.json" with { type: "json" };
 import gymLeaderboard from "../fixtures/gym-leaderboard.json" with { type: "json" };
 import gymLevels from "../fixtures/gym-levels.json" with { type: "json" };
 import runActivities from "../fixtures/run-activities.json" with { type: "json" };
@@ -9,6 +10,7 @@ import session from "../fixtures/gym-session.json" with { type: "json" };
 import {
   GYM_LEVEL_MEASURES,
   GYM_SET_KINDS,
+  type GymCalendar,
   type GymLeaderboard,
   type GymLevel,
   type GymSessionRequest,
@@ -118,4 +120,22 @@ test("a leaderboard ranks the best first, measured as its exercise's scale", () 
   );
   assert.ok(board.people >= board.rows.length);
   assert.ok(board.rows.some((row) => row.rank === board.mine?.rank));
+});
+
+test("a calendar lists its days in order, and its count and time add up", () => {
+  const calendar: GymCalendar = gymCalendar;
+  assert.match(calendar.month, /^\d{4}-(0[1-9]|1[0-2])$/);
+  const days = calendar.days.map((day) => day.day);
+  assert.deepEqual(
+    days,
+    [...days].sort((a, b) => a - b),
+  );
+  const workouts = calendar.days.flatMap((day) => day.workouts);
+  assert.ok(calendar.days.every((day) => day.workouts.length > 0));
+  assert.equal(calendar.count, workouts.length);
+  assert.equal(
+    calendar.duration_s,
+    workouts.reduce((total, workout) => total + workout.duration_s, 0),
+  );
+  assert.deepEqual(calendar.last, workouts.at(-1));
 });

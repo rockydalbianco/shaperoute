@@ -136,7 +136,7 @@ export function ProfileHome({
         {/* The VO₂ max (TASK-397): none from an API older than it. */}
         {own?.vo2max !== undefined && <OwnVo2Max />}
         {/* The levels at the gym (TASK-385 E): none from an older API. */}
-        {own?.gym_levels && <GymLevels levels={own.gym_levels} />}
+        {own?.gym_levels && <GymLevels levels={own.gym_levels} own />}
       </View>
       {/* Built again at every block and unblock: it reads its lists anew. */}
       <FollowLists key={blocks} />

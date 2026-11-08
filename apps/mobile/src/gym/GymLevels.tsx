@@ -17,6 +17,7 @@ import { Tap } from "../ui/Tap";
 import { useUnits } from "../units/useUnits";
 import { exerciseName } from "./catalog";
 import { figureOf } from "./figures";
+import { calendarTitle, GymCalendarSheet } from "./GymCalendar";
 import { Leaderboard, leaderboardTitle } from "./Leaderboard";
 import { levelValue } from "./levelValue";
 
@@ -26,6 +27,8 @@ export const LEVELS_SHOWN = 5;
 type Props = {
   /** `gym_levels` of the profile, as the API gave it. */
   levels: unknown;
+  /** One's own profile: the calendar opens from it too (TASK-411 B). */
+  own?: boolean;
 };
 
 /**
@@ -35,13 +38,15 @@ type Props = {
  * only figure, exercise and value show (the user's choice, 2026-11-06). The
  * first five, the others under «Show more». Nothing without a level. Under
  * them the line that opens the monthly leaderboard, on the highest
- * exercise (part F, the user's choice of 2026-11-06).
+ * exercise (part F, the user's choice of 2026-11-06). On one's own
+ * profile, «Gym calendar ›» too (TASK-411 B): only the owner sees it.
  */
-export function GymLevels({ levels }: Props) {
+export function GymLevels({ levels, own = false }: Props) {
   const units = useUnits();
   const language = useLanguage();
   const [all, setAll] = useState(false);
   const [board, setBoard] = useState(false);
+  const [calendar, setCalendar] = useState(false);
   const known = gymLevelsOf(levels);
   if (known.length === 0) {
     return null;
@@ -93,11 +98,24 @@ export function GymLevels({ levels }: Props) {
       >
         <Text style={styles.moreText}>{`${leaderboardTitle()} ›`}</Text>
       </Tap>
+      {own && (
+        <Tap
+          style={styles.more}
+          onPress={() => setCalendar(true)}
+          accessibilityRole="button"
+          testID="gym-calendar-open"
+        >
+          <Text style={styles.moreText}>{`${calendarTitle()} ›`}</Text>
+        </Tap>
+      )}
       <Leaderboard
         visible={board}
         exercise={known[0].exercise}
         onClose={() => setBoard(false)}
       />
+      {own && (
+        <GymCalendarSheet visible={calendar} onClose={() => setCalendar(false)} />
+      )}
     </View>
   );
 }

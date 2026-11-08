@@ -25161,9 +25161,36 @@ a pagine (un mese può chiedere molte pagine); i giorni saltati calcolati
 senza sapere quale scheda è stata fatta (un allenamento libero li
 «riempirebbe» tutti).
 
+**Precisazione E (2026-11-08, deciso dall'agente su delega dell'utente;
+scelta dell'utente «Omino nell'app» del 2026-11-07)**: l'omino è disegnato
+dall'app con `Animated` di React Native sul driver nativo, ogni osso una
+`View` ruotata e allungata: niente `react-native-svg`, niente immagini da
+scaricare, impronta iOS invariata. Le pose stanno in `gym/moves.ts` (58
+movimenti per i 91 esercizi, un riquadro 80 × 80, il pavimento a y = 74);
+25 fotogrammi a giro. Fra due pose corpo e gambe vanno in linea retta (il
+piede a terra resta lì), testa e braccia girano attorno al giunto per la via
+più corta, così un braccio che passa davanti alla spalla non si accorcia a
+zero (un test lo controlla). Il carico è giallo per la scelta dell'utente.
+La guida si apre al posto del contenuto, non in un `Modal`: il catalogo e
+l'allenamento sono già in un foglio (TASK-358). Tre passi e un avviso, al
+massimo 110 caratteri a riga; tedesco, francese e spagnolo tradotti
+dall'inglese.
+
 **Conseguenze**: un endpoint senza migrazione (B), una tabella e una
 colonna (C); solo JavaScript nell'app, impronta iOS invariata. Server,
 migrazione, privacy e OTA col sì dell'utente.
+
+**Precisazione B (2026-11-08, deciso dall'agente su delega dell'utente)**:
+il fuso è quello del telefono (`Intl`, «UTC» se non lo dice), un nome del
+database IANA, altrimenti 422; senza `month` il mese di oggi su quel fuso.
+La risposta porta solo i giorni con un allenamento e `last`, l'ultimo di
+sempre, per «Last workout» anche a inizio mese. Il post è quello del run se
+la moderazione non l'ha nascosto. Il calendario parte da lunedì; un giorno
+toccato elenca i suoi allenamenti (ora e tempo) e apre il post di quello che
+ne ha uno: un allenamento senza post non ha ancora una pagina sua. «Draw» lo
+chiede di nuovo quando cambia il numero delle attività dell'account (un
+allenamento appena salvato), non a ogni secondo. Un mese con un allenamento
+dice «Workout · {time}» invece di «1 times».
 
 ## ADR-0338, aggiunta — La giornata di sci: stazione, modello e neve in una rotta a parte
 
@@ -25444,6 +25471,20 @@ decisione presa ma non ancora codice sulle quote dalle tegole Terrarium
 - le ciaspole e Hike possono avere fasi, pendenza e vette con gli stessi
   moduli, senza riscriverli.
 
+**Precisazione (2026-11-08, TASK-415 parte A, decisa dall'agente su
+delega dell'utente)**: `ski_touring` viene dopo `xc_skiing` in
+`RECORDED_SPORTS`, quindi fra `xc_skiing` e `gym` in `RUN_ACTIVITIES`,
+`RunActivity` e `X-MuW-Reads`. Il profilo dell'app ha il nome «Ski touring»
+senza `tLater` e nessuna riga in «Settings» fino alla parte B, come il
+Roller nella sua parte A; il passo di una corsa senza percorso è quello di
+chi corre (`freeRunAs` vuoto), come lo sci di fondo, finché B non dà fasi e
+VAM. Apple `.crossCountrySkiing` (60) e Health Connect `EXERCISE_TYPE_SKIING`
+(61) sono verificati su `@kingstinct/react-native-healthkit` e
+`react-native-health-connect`. La migrazione allarga solo
+`runs_activity_check`: preferiti, corse di gruppo e `run_bests` restano
+com'erano. Il contratto dei percorsi (`contract.json`) e il motore non
+cambiano.
+
 ## ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km
 
 **Stato**: Proposto · 2026-11-08 · TASK-414. Le scelte dell'utente, il
@@ -25538,7 +25579,128 @@ e luna (`docs/sports/wheelchair.md`), contro la rete foot sulla stessa area
   TASK-347 G.
 - **La rete foot o roller così come sono**: scale, ciottoli, cordoli.
 - **Una rete fatta col tag `wheelchair`**: c'è quasi solo a Milano.
+## ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce
 
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B2, decisa dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore (local_3f55a0e9).
+
+**Contesto**: la guida del telefono ha altri due modi oltre a quello dalla
+partenza: il percorso chiuso preso dove lo si tocca (TASK-273, ADR-0241) e
+le parole o le forme a pezzi con la penna alzata fra un pezzo e l'altro
+(TASK-198, TASK-223, TASK-226).
+
+**Decisione**:
+1. **Riscrittura riga per riga**: `Loop.swift` (`startAnywhere.ts`,
+   compresa la svolta alla partenza ricalcolata con le soglie del motore),
+   `Pen.swift` (`penUp.ts`), e in `Navigator.swift` la presa del percorso
+   chiuso (`towardsJoin`, `joiningWith`, `joinedPass`). `passesNear` sta in
+   `Loop.swift` come estensione di `RouteProgress`, per non toccare un file
+   fuori lista.
+2. **Ciò che decide il telefono resta del telefono**: quali percorsi si
+   prendono dove li tocchi (`startsAnywhere`), le direzioni semplificate
+   (`simplifyDirections`), i tratti a piedi (`walksOf`) e se lo sport va coi
+   numeri della bici (`isRide`, che con TASK-416 vale anche per gravel, MTB e
+   Roller) li calcola il telefono e li manda con il percorso (B3): `Pen.start`
+   riceve `ride` e `paddle`, non il nome dello sport. L'orologio porta solo
+   ciò che serve durante la corsa.
+3. **La penna dà due avvisi** (`penUp`, `penDown`, con la lettera che viene);
+   come dirli (a piedi, in bici, in canoa, lettere o parti) sta nelle
+   bandierine della penna, per la schermata di B3.
+4. **Le tracce, versione 2**: in più il percorso chiuso (`anywhere`, se si
+   aspetta ancora di prenderlo, dove è stato preso, e il percorso da lì con
+   le sue direzioni al fix che lo prende) e la penna dopo ogni fix. Le
+   direzioni portano anche `branches`. Gli scenari nuovi sono scelti perché
+   ogni costante conti: prendere il giro al passo della bici distingue
+   `JOIN_FIXES`, prima della fine `AT_START_M`, prima di un angolo
+   `GROUP_M`. Provato cambiando una costante per volta.
+
+**Conseguenze**: un cambio a `startAnywhere.ts` o `penUp.ts` vuole
+`scripts/watch-guide.sh` e lo stesso cambio in Swift. Le tracce sono 26,
+circa 1,7 MB.
+
+---
+
+
+## ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente
+
+**Stato**: Proposto · 2026-11-08 · TASK-419 (parte B del catalogo chiesto
+dall'utente il 2026-11-08; A è TASK-418, C è TASK-420).
+
+**Contesto**: «Explore» propone oggi i percorsi del seme di ADR-0097: 11
+forme e qualche parola in 13 città italiane e New York, più tre forme da
+5 km nelle città in evidenza (ADR-0132), tutti i disegni da 0,88 in su.
+L'utente vuole un catalogo grande e bello: circa 1000 disegni generati in
+città italiane ed europee, con le forme nuove, e **sceglie lui** i
+200–400 che restano. Sul Mac la cache ha solo le zone di Trento, Levico,
+Milano e un pezzo di Barcellona e Parigi; le 52 città italiane e le 10
+estere sono sul server, che non si tocca. Overpass rifiuta per ore dopo
+pochi download grandi (`MAPS.md`). `seed_catalog.py` appartiene al motore,
+che altri task stanno toccando.
+
+**Decisione**:
+
+1. **Uno strumento nuovo**, `tools/catalog_seed.py`, che importa
+   `seed_catalog` a runtime (`plan_case`, `engine_planner`,
+   `engine_prepare`, `read_runs`) e ne tiene il formato del registro: il
+   motore non cambia. Filtro, punteggio, selezione e scrittura dei file
+   sono funzioni di sola libreria standard, provate da `pytest tools`.
+2. **Le città** sono piazze pubbliche scritte nello strumento, mai la
+   posizione di una persona: le 14 del seme, le altre di
+   `prefetch_zones.ITALY` più Rovereto, poi capitali e città turistiche
+   europee. Le zone si scaricano **una per città** (la zona di
+   `engine_prepare`, che contiene ogni caso), con l'attesa dello slot dalla
+   pagina di stato di Overpass come `prefetch_zones`, a lotti piccoli con
+   una pausa, e un registro che riparte da dove era; `--overpass-url` per
+   un mirror. Le zone nuove restano in `data/cache` e servono anche agli
+   altri.
+3. **Il piano**: nelle città del seme tutte le forme a 5, 10 e 21 km (le
+   sei entrate dopo il 2026-10 — zucca, albero, faccina, fantasmino,
+   ciambella, sole — non sono mai state seminate) più le frasi di
+   `PHRASES`; nelle città nuove un nucleo di forme che leggono a 5 e
+   10 km, le tre semplici a 21 km e un saluto locale nei due stili. Circa
+   1000 casi.
+4. **I 683 disegni del giro del 2026-10** (`out/seed_catalog/runs.jsonl`)
+   entrano fra i candidati: sono disegni veri del motore, costano zero, e
+   le loro zone non sono più sul Mac. Nella pagina si vede da quale giro
+   viene ogni candidato.
+5. **Il filtro automatico**: somiglianza ≥ 0,90 (l'occhio dice «sì» da lì,
+   TASK-076); distanza reale entro ±10% della chiesta; **ripassi in più**
+   rispetto a quelli della forma (`extra_doubled_share`, ADR-0118) ≤ 10%
+   (l'unico cuore giudicato «sì» ne aveva 0%, gli altri 4–23%, ADR-0107);
+   nessun tratto su `motorway` o `trunk` (la rete `foot` già li esclude: è
+   un controllo). La quota su strade grandi (`primary`, `secondary`) si
+   mostra, non si filtra: in centro sono viali con il marciapiede.
+6. **Il punteggio** per ordinare: somiglianza − 1,5 × ripassi in più −
+   scarto di distanza, cioè il costo del motore con il segno cambiato. La
+   **preselezione** è per città: i migliori fino a 8, almeno 3 dove
+   passano; cuore, cerchio e stella da 5 km delle città in evidenza
+   restano sempre (ADR-0132).
+7. **La pagina di revisione** (`tools/catalog_review.py`) disegna ogni
+   candidato in **SVG dai suoi punti**, proiettati in locale: si apre da
+   `file://` senza rete, mostra mille miniature in un attimo, e non
+   dipende da tessere. Punteggio, misure e casella «tieni»; un tasto copia
+   le chiavi tenute. **La scelta è dell'utente**: le chiavi finiscono in
+   `tools/catalog_kept.json`, e `catalog/seed/<città>.json` si riscrive da
+   lì e dai registri, nel formato di ADR-0097, con la licenza ODbL.
+8. **Il server** riceve il catalogo con l'immagine dell'API, come oggi:
+   si prepara e si pubblica solo con l'ok dell'utente e il via del
+   Coordinatore.
+
+**Alternative**:
+
+- **Estendere `seed_catalog.py`**: tocca il motore mentre tre task lo
+  stanno cambiando, e la selezione a mano (`UNREADABLE`, `REJECTED`) vive
+  lì come costanti; la scelta dell'utente sta meglio in un file di dati.
+- **Girare il motore sul server**, dove le zone ci sono: il server è
+  dell'app pubblicata e non si tocca per un lavoro di ore.
+- **L'estratto Geofabrik sul Mac** (ADR-0119): 2,2 GB da scaricare e
+  `osmium` da installare; resta la via se Overpass non riapre, da
+  chiedere.
+- **Miniature con le tessere di OpenStreetMap** (`preview_samples.py`):
+  mille mappe Leaflet sono lente e vogliono la rete; la forma si giudica
+  dalla linea, la mappa serve dopo, per i dubbi.
+- **Una soglia più alta per i ripassi** o il filtro sulle strade grandi:
+  taglierebbero stelle e cuori buoni; meglio mostrarli e lasciar decidere.
 ---
 ## ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici
 

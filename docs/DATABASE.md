@@ -1061,6 +1061,18 @@ del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
   nessun record personale.
 - Nessuna riga cambia. Test in `test_ski_touring_api.py`.
 
+Migrazione `0058_resort_follows.sql` (TASK-406 parte D3a, ADR-0338, `API.md`
+«Seguire una stazione e i suoi post»; il numero è il primo libero al merge):
+
+- **`resort_follows`**: le stazioni che un account segue, «Your resorts».
+  - `user_id` verso `users(id)` e `resort_id` verso `ski_resorts(id)`, tutti
+    e due con `ON DELETE CASCADE`: un account cancellato, o una stazione
+    tolta da un import, se le porta via.
+  - `created_at`, per l'ordine: l'ultima seguita prima.
+  - Chiave `(user_id, resort_id)`: seguire due volte vale una.
+- La vede solo l'account. Nessuna posizione, nessuna riga di prima cambia,
+  nessun backfill. Test in `test_resort_follows.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

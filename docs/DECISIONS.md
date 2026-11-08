@@ -463,7 +463,6 @@ lasciando le righe d'indice.
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
-- ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 
 ---
 
@@ -471,29 +470,6 @@ lasciando le righe d'indice.
 
 ## Voci nuove
 
-## ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati
-
-**Stato**: Attiva · 2026-11-08 · TASK-411 parte C. Deciso dall'agente su
-delega dell'utente, dalla sua scelta «Schede + giorni» del 2026-11-06
-(ADR-0341 in `docs/archive/DECISIONS-fino-al-2026-11.md`).
-
-L'allenamento dice la sua scheda con la **chiave** (`gym_sessions.plan_key`),
-non con un riferimento: può arrivare all'API prima della scheda, e una
-scheda eliminata lascia i suoi allenamenti come erano (senza nome). I giorni
-in API sono 1 lunedì–7 domenica, nel database sette bit. Una scheda mandata
-più vecchia di quella tenuta non la sostituisce (due telefoni dello stesso
-account: vince l'ultima modifica); eliminarne una che non c'è non è un
-errore. I giorni saltati contano da quando la scheda è arrivata all'API
-(`created_at`) fino a ieri, sul fuso chiesto; un allenamento libero non
-riempie il giorno di una scheda. Sul telefono le schede stanno in un file
-(`gym-plans.json`): una modifica o un'eliminazione aspetta lì finché l'API
-non l'ha, e la lista dell'API sostituisce solo quelle che il telefono non
-ha cambiato dopo. «Start workout» segue la prima scheda di oggi
-dell'account mostrato in «Draw»; l'allenamento copia la scheda quando
-comincia. Una serie conta per il primo esercizio della scheda dello stesso
-tipo ancora incompleto; finito un esercizio, quello dopo diventa quello in
-corso da solo, coi valori della scheda nei campi se non ci sono serie di
-prima.
 ## ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono
 
 **Stato**: **Superata** il 2026-11-08, lo stesso giorno. La pagina è stata

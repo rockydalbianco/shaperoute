@@ -25140,6 +25140,73 @@ dall'agente su delega dell'utente):
 - Un posto nuovo aspetta Overpass (20–40 s) alla prima richiesta, come la
   prima acqua di un lago.
 
+---
+## ADR-0314, precisazione — La parte A3: il telefono
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte A3, deciso dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore il
+2026-11-08.
+
+**Decisione**:
+
+1. **Niente `react-native-watch-connectivity` prima di A-flip.** La 2.0.0
+   prende il modulo nativo con `TurboModuleRegistry.getEnforcing`, che
+   lancia appena si importa il pacchetto in un'app senza la sua parte
+   nativa (tutte le build fino alla 1.1). `src/watch/watchLink.ts` chiama il
+   modulo nativo `WatchConnectivity` con i nomi della 2.0.0 (metodi ed
+   eventi letti in `src/NativeWatchConnectivity.ts` e
+   `ios/WatchConnectivity.mm` del pacchetto) attraverso
+   `TurboModuleRegistry.get`: senza modulo, su Android, in Expo Go e nei
+   test il ponte è `null` e non succede niente. Il pacchetto, fissato a
+   **2.0.0**, entra con A-flip; i nomi vanno ricontrollati se la versione
+   cambia.
+2. **Il pacchetto manda ogni messaggio aspettando una risposta**
+   (`sendMessage:replyHandler:`): l'orologio deve avere
+   `session(_:didReceiveMessage:replyHandler:)`, altrimenti l'invio
+   fallisce. `PhoneLink.swift` risponde con un dizionario vuoto; il
+   telefono risponde allo stesso modo a un messaggio con `id`.
+3. **Le unità non viaggiano nell'application context**: il pacchetto
+   rimanda all'orologio ogni context che riceve
+   (`didReceiveApplicationContext` chiama `updateApplicationContext`), quindi
+   il context del telefono è sempre l'ultimo stato dell'orologio. Le unità
+   vanno con `transferUserInfo` in un messaggio nuovo, `settings`
+   (`units`: `km` o `mi`), negli stessi fixture (`messages.json`), in Swift
+   e in TypeScript; l'orologio le tiene in `UserDefaults`. La versione dei
+   messaggi resta **1**: nessun orologio ha ancora l'app. Il context del
+   telefono (`getApplicationContext`) si legge comunque all'inizio: per
+   l'eco è l'ultimo stato dell'orologio.
+4. **Lo stesso stato sui due** (`src/watch/useWatch.ts`, montato in
+   `RunCard`, la card di corsa libera e percorso): il conto alla rovescia
+   del telefono avvia l'allenamento dell'orologio con lo sport di
+   «Settings» (quello che «Save» usa), pausa e ripresa (a mano o da fermo)
+   vanno come comandi, la fine della corsa o l'uscita dalla schermata lo
+   chiudono. Dall'orologio arrivano solo stati: conta un **cambio** fra due
+   stati suoi (in corso → in pausa, in pausa → in corso, → finito), così uno
+   stato partito prima del comando del telefono e arrivato dopo non cambia
+   niente; «finito» dal polso chiude la corsa come «Stop». Uno stato più
+   vecchio di 5 s rispetto alla schermata (un allenamento di prima) è
+   lasciato fuori.
+5. **Un'attività, un allenamento**: se durante la corsa l'orologio ha
+   detto di registrare (in corso, in pausa o finito), `saveToHealth` in
+   `useHealth.ts` non scrive in Salute: l'allenamento lo salva l'orologio.
+   Vale fino al conto alla rovescia della corsa dopo.
+6. **Il battito** arriva come messaggio `heartRate` (ogni 5 s) e la card lo
+   mostra con `WatchHeart` («♥ 142 bpm», con la zona di «Heart rate zones»
+   quando ci sono età o battito massimo; i nomi delle zone sono quelli già
+   tradotti). Nessun testo nuovo.
+7. **Il mirroring di HealthKit** (`workoutSessionMirroringStartHandler`) si
+   imposta solo da codice nativo: aspetta A-flip, con un piccolo plugin
+   nativo. Stato e battito passano già da WCSession.
+
+**Alternative**:
+- **Il pacchetto subito, caricato con `require` solo se il modulo c'è**:
+  porta la dipendenza in `package.json` e muove l'impronta iOS; scartata.
+- **Le unità nell'application context**: l'eco del pacchetto le
+  sovrascriverebbe con lo stato dell'orologio; scartata.
+
+**Conseguenze**: impronta iOS `6f8bba4c` invariata (copia pulita,
+`APP_VARIANT=production`). Fino ad A-flip il codice del telefono non fa
+niente: la prova vera è con la build 1.1, al polso.
 ## ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server
 
 **Stato**: Proposto · 2026-11-08 · TASK-415. Numeri dal Coordinatore. Le

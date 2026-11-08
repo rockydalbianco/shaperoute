@@ -3597,6 +3597,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuoto, in Salute / Health Connect, nel post del Feed e nella riga di «My
   activities». Parte B (battito e zone) nella 1.0.3, sopra i lettori di
   TASK-345 C e TASK-374 D. `tasks/TASK-409.md`.
+  2026-11-08: parte A in `main` (#922, merge `3bf2802d`, impronta iOS
+  6f8bba4c invariata) e in produzione: OTA `fc8aa133` (solo iOS, col sì
+  dell'utente). Prossimo: la parte B nella 1.0.3, dopo TASK-345 C e
+  TASK-374 D.
 
 ## Completato
 

@@ -22,6 +22,11 @@
 "Routes" = "Routes";
 "Send a route from MuW on your iPhone" = "Send a route from MuW on your iPhone";
 "Favorites" = "Favorites";
+"Off route" = "Off route";
+"Arrived" = "Arrived";
+"Reach the route to start" = "Reach the route to start";
+"To the {letter}" = "To the {letter}";
+"Next part" = "Next part";
 "Run" = "Run";
 "Bike" = "Bike";
 "Paddle" = "Paddle";

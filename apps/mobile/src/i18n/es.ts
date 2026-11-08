@@ -1929,6 +1929,11 @@ export const ES: Table = {
   "Send to watch": "Enviar al reloj",
   "Sent to your watch": "Enviado al reloj",
   "Send a route from MuW on your iPhone": "Envía una ruta desde MuW en el iPhone",
+  "Off route": "Fuera de la ruta",
+  Arrived: "Llegada",
+  "Reach the route to start": "Llega a la ruta para empezar",
+  "To the {letter}": "Hacia la {letter}",
+  "Next part": "Siguiente parte",
   // The drawings of the private messages (TASK-333 part C).
   "Send to a friend": "Enviar a amigos",
   "Send to…": "Enviar a…",

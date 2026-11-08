@@ -46,6 +46,12 @@ export const WATCH_TEXTS: readonly string[] = [
   "Routes",
   tLater("Send a route from MuW on your iPhone"),
   "Favorites",
+  // the run with a route (part B3b)
+  tLater("Off route"),
+  tLater("Arrived"),
+  tLater("Reach the route to start"),
+  tLater("To the {letter}"),
+  tLater("Next part"),
 ];
 
 /**
@@ -67,13 +73,30 @@ export function watchInfoPlistFile(language: Language): string {
   return `targets/watch/${language}.lproj/InfoPlist.strings`;
 }
 
-/** What the watch asks of Apple Health: the same sentences as the iPhone. */
+/** What the watch asks of Apple Health, the same sentences as the iPhone;
+ * and its location during a workout (part B3b), a sentence of its own: the
+ * iPhone's speaks of a locked phone and the blue bar. */
 export const WATCH_INFO_PLIST_KEYS = [
   "NSHealthShareUsageDescription",
   "NSHealthUpdateUsageDescription",
+  "NSLocationWhenInUseUsageDescription",
 ] as const;
 
-type InfoPlistTexts = Readonly<Record<(typeof WATCH_INFO_PLIST_KEYS)[number], string>>;
+/** The watch's location sentence, approved by the user on 2026-11-08. */
+const WATCH_LOCATION: Readonly<Record<Language, string>> = {
+  en: "MuW uses your location during a workout to guide you along your route and to record it.",
+  it: "MuW usa la tua posizione durante un allenamento per guidarti lungo il percorso e per registrarlo.",
+  de: "MuW nutzt deinen Standort während eines Trainings, um dich entlang deiner Route zu führen und sie aufzuzeichnen.",
+  es: "MuW usa tu ubicación durante un entrenamiento para guiarte por la ruta y para registrarla.",
+  fr: "MuW utilise votre position pendant une séance pour vous guider le long du parcours et pour l'enregistrer.",
+};
+
+type HealthKey = Exclude<
+  (typeof WATCH_INFO_PLIST_KEYS)[number],
+  "NSLocationWhenInUseUsageDescription"
+>;
+
+type InfoPlistTexts = Readonly<Record<HealthKey, string>>;
 
 /** The iPhone's sentences in each language: app.json in English, the
  * locales/ files for the others. */
@@ -85,12 +108,15 @@ const INFO_PLIST: Readonly<Record<Language, InfoPlistTexts>> = {
   fr: fr.ios,
 };
 
-/** The sentence of `key` in `language`, as the iPhone asks it. */
+/** The sentence of `key` in `language`: the iPhone's for Apple Health, the
+ * watch's own for its location. */
 export function watchInfoPlistText(
   language: Language,
   key: (typeof WATCH_INFO_PLIST_KEYS)[number],
 ): string {
-  return INFO_PLIST[language][key];
+  return key === "NSLocationWhenInUseUsageDescription"
+    ? WATCH_LOCATION[language]
+    : INFO_PLIST[language][key];
 }
 
 /** `text` written between the quotes of a .strings file. */

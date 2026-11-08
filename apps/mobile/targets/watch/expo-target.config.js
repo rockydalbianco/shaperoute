@@ -17,7 +17,9 @@ module.exports = {
     MuWHeart: "../../assets/icon.png",
     MuWName: "../../assets/splash-logo-dark.png",
   },
-  frameworks: ["SwiftUI", "HealthKit", "WatchConnectivity"],
+  // CoreLocation and MapKit: the GPS and the small map of a run with a
+  // route (part B3b).
+  frameworks: ["SwiftUI", "HealthKit", "WatchConnectivity", "CoreLocation", "MapKit"],
   entitlements: {
     "com.apple.developer.healthkit": true,
     "com.apple.developer.healthkit.access": [],

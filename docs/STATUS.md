@@ -101,9 +101,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-401 — Le indicazioni a schermo bloccato** · A in `main`; B (Live
   Activity, 1.0.3) nella bozza #862. File: quelli della #862 ·
   `tasks/TASK-401.md`
-- **TASK-406 — Le stazioni sciistiche** · C e D1 in `main` e sul server;
-  D2 (la giornata nell'app) nella PR #960, OTA dopo il merge col sì
-  dell'utente; poi D3. File: quelli della #960 · `tasks/TASK-406.md`
+- **TASK-406 — Le stazioni sciistiche** · C, D1, D2 e D3a in `main`; D1 sul
+  server. La 0062 va sul server nel passo unico; lo sci esce con il prossimo
+  OTA di produzione, col sì dell'utente. Prossimo: D3b (la pagina della
+  stazione nell'app). File: quelli della D3b · `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
 - **TASK-408 — L'editor del video dell'attività** · C1 e C2a (scene e

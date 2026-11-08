@@ -868,6 +868,7 @@ export const IT: Table = {
   "Paddle without a route": "Pagaia senza percorso",
   "Walk without a route": "Cammina senza percorso",
   "Hike without a route": "Escursione senza percorso",
+  "Skate without a route": "Pattina senza percorso",
   "Record your day": "Registra la giornata",
   "Run without a route": "Corri senza percorso",
 
@@ -1161,6 +1162,10 @@ export const IT: Table = {
   MTB: "MTB",
   "Trails can be technical: check the route before you set off.":
     "I sentieri possono essere tecnici: controlla il percorso prima di partire.",
+  // src/sports/inline_skating.ts (TASK-380 part B), approved on 2026-11-06
+  Roller: "Roller",
+  "Watch for traffic and steep descents: check the route before you set off.":
+    "Attento al traffico e alle discese ripide: controlla il percorso prima di partire.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Sci",
   "Cross-country ski": "Sci di fondo",
@@ -2000,4 +2005,29 @@ export const IT: Table = {
   "Show it": "Mostralo",
   "Only you see this": "Lo vedi solo tu",
   "Show VO₂ max on my profile": "Mostra il VO₂ max sul mio profilo",
+  // src/ski/ResortList.tsx, ResortPage.tsx, ResortWeather.tsx (TASK-406 part C:
+  // the ski resorts of «Search», texts approved)
+  "Ski resorts": "Stazioni sciistiche",
+  "Near you": "Vicino a te",
+  "No ski resort with this name.": "Nessuna stazione con questo nome.",
+  "Lifts@@resort": "Impianti",
+  Pistes: "Piste",
+  Novice: "Principianti",
+  Easy: "Facili",
+  Intermediate: "Medie",
+  Advanced: "Difficili",
+  Expert: "Esperti",
+  Freeride: "Freeride",
+  Website: "Sito",
+  Base: "Valle",
+  "Top@@resort": "Cima",
+  "Next 24 hours": "Prossime 24 ore",
+  "Fresh snow": "Neve fresca",
+  "Estimated from the forecast, not a snow report.":
+    "Stima dalle previsioni, non un bollettino neve.",
+  "Weather unavailable right now.": "Meteo non disponibile in questo momento.",
+  "Older forecast: MET Norway is not answering.":
+    "Previsione meno recente: MET Norway non risponde.",
+  "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
+    "Meteo: MET Norway (CC BY 4.0) · Stazioni: OpenSkiMap.org, © i contributori di OpenStreetMap",
 };

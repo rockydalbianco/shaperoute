@@ -1,6 +1,7 @@
 # TASK-413 — Ciaspole: forme piccole libere sulla neve
 
-**Stato**: In corso — parte 0 (misure e scelte) in PR; poi A1, A2, B.
+**Stato**: In corso — parte 0 in `main` (#933, `189374bc`); prossime A1, A2, B,
+ciascuna in una sessione nuova
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -36,7 +37,7 @@ nuoto e il suo avviso), ADR-0319 («Record only»), ADR-0300 (le quote).
 ### Parte 0 — misura e proposta (solo documenti)
 
 1. Col banco, un giro per volta, `nice -n 10`: la forma libera di
-   `water_fit` con la neve al posto dell'acqua (`out/snow/snow.py`), sulle
+   `water_fit` con la neve al posto dell'acqua (`out/TASK-413/snow.py`), sulle
    due zone di montagna del banco e su tre posti da ciaspole, a 0,5–3 km.
    Varianti di pendenza, boschi, ruscelli, aree protette.
 2. Le misure in `docs/sports/snowshoes.md`, ADR-0342 in DECISIONS.
@@ -112,14 +113,30 @@ docs/tasks/TASK-413.md, docs/STATUS.md, docs/sports/snowshoes.md,
     docs/DECISIONS.md (precisazione di ADR-0342)
 ```
 
-- Il numero della migrazione lo dà il Coordinatore (in `main` l'ultima è
-  0055).
+- La migrazione è in bozza `0057_snowshoeing.sql` (la 0056 è la bozza di
+  TASK-406 D1); il numero vero è il primo libero al merge (Coordinatore,
+  2026-11-08).
 - Nessuna zona in memoria: niente grafo. La neve e le quote si scaricano
   alla prima richiesta di un posto, come l'acqua.
 - `draw_examples.py` e `paddle_examples.py`: niente esempi di neve in
   questa parte (gli esempi del server sono un passo a parte, col sì
   dell'utente).
 - Prima del codice, ogni sessione conferma la sua lista al Coordinatore.
+
+**Condizioni del Coordinatore** (2026-11-08):
+
+- A1 e A2 partono in **sessioni nuove**, col numero TASK-413 già assegnato;
+  ciascuna conferma la sua lista prima del codice.
+- **A1 tocca il motore**: la PR entra solo con l'ok dell'utente per il
+  server e per gli esempi (`draw_examples`), che chiede il Coordinatore.
+- **`heights.py` è il modulo condiviso con TASK-347 G** (ADR-0300): prima
+  del codice A1 si accorda con chi fa TASK-347 G su chi lo crea, e manda la
+  lista al Coordinatore.
+- **A2** entra anch'essa con l'ok dell'utente per il server.
+- Il banco della parte 0 è in `out/TASK-413/snow.py` del checkout
+  principale (ignorato da git): i dati (`osm/`, `dem/`, `results/`) si
+  riscaricano e si rifanno con `fetch` e `run`; le regole scelte sono la
+  variante `chosen`.
 
 ### Parte B — app (dopo A)
 
@@ -186,8 +203,8 @@ Tutte come la proposta, tranne la terza:
 
 - [x] 0: le misure della neve sono in `snowshoes.md`; ADR-0342 è scritto.
 - [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-08).
-- [ ] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
-      della migrazione.
+- [x] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
+      della migrazione (bozza 0057, 2026-11-08).
 - [ ] A1: una forma sulla neve di prova sta fuori da pendii, boschi, piste e
       paesi, parte da un punto raggiungibile a piedi; test deterministici
       senza rete; canoa e nuoto identici al banco (`compare --same`).

@@ -7,7 +7,8 @@ import { appLanguage } from "../i18n/language";
 import type { Language } from "../i18n/languages";
 import { color, space } from "../theme/tokens";
 import { GYM_EXERCISES, type GymExercise, type GymGroup } from "./catalog";
-import { groupName, GYM_GROUPS } from "./groups";
+import { GroupGrid, GROUP_EMOJI, MachineGrid } from "./ExerciseGrid";
+import { groupName } from "./groups";
 import { gymStyles } from "./gymStyles";
 import type { Entry } from "./setKinds";
 
@@ -56,7 +57,9 @@ function kindName(kind: GymSetKind, language: Language): string {
  * «+ Exercise» (TASK-385 part B, the user's «Sì, così»): the catalog by
  * group, a search, and «Add “{name}”» for one it has not, with the kind
  * chosen by whoever writes it (by the words of its fields: weight, reps,
- * time, cardio).
+ * time, cardio). The groups are a grid of tiles, then the group's
+ * exercises a grid too (TASK-411 part A, the user's «Gruppi, poi
+ * macchinari»); typing searches every group, as a list.
  */
 export function ExercisePicker({
   onPick,
@@ -69,7 +72,9 @@ export function ExercisePicker({
   const [search, setSearch] = useState("");
   const [group, setGroup] = useState<GymGroup | null>(null);
   const [own, setOwn] = useState<string | null>(null);
-  const found = exercisesFound(search, group, language);
+  // Typing searches every group, as a list; otherwise the grids.
+  const searching = search.trim() !== "";
+  const found = exercisesFound(search, null, language);
   const name = search.trim().slice(0, MAX_NAME);
   const exact = found.some(
     (exercise) => plain(exercise.names[language]) === plain(name),
@@ -120,34 +125,33 @@ export function ExercisePicker({
           <Text style={gymStyles.chipText}>{t("Close")}</Text>
         </Pressable>
       </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.groups}
-      >
-        {GYM_GROUPS.map((item) => {
-          const on = item === group;
-          return (
-            <Pressable
-              key={item}
-              style={[gymStyles.chip, on && gymStyles.chipOn]}
-              onPress={() => setGroup(on ? null : item)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: on }}
-              testID={`group-${item}`}
-            >
-              <Text style={[gymStyles.chipText, on && gymStyles.chipTextOn]}>
-                {groupName(item, language)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      {!searching && group !== null && (
+        <View style={styles.top}>
+          <Pressable
+            style={gymStyles.chip}
+            onPress={() => setGroup(null)}
+            accessibilityRole="button"
+            accessibilityLabel={t("Back")}
+            testID="groups-back"
+          >
+            <Text style={gymStyles.chipText}>‹</Text>
+          </Pressable>
+          <Text style={gymStyles.title} accessibilityRole="header">
+            {`${GROUP_EMOJI[group]} ${groupName(group, language)}`}
+          </Text>
+        </View>
+      )}
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.list}
       >
-        {name !== "" && !exact && (
+        {!searching &&
+          (group === null ? (
+            <GroupGrid language={language} onGroup={setGroup} />
+          ) : (
+            <MachineGrid group={group} language={language} onPick={onPick} />
+          ))}
+        {searching && name !== "" && !exact && (
           <Pressable
             style={styles.row}
             onPress={() => setOwn(name)}
@@ -157,17 +161,18 @@ export function ExercisePicker({
             <Text style={gymStyles.text}>{t("Add “{name}”", { name })}</Text>
           </Pressable>
         )}
-        {found.map((exercise) => (
-          <Pressable
-            key={exercise.key}
-            style={styles.row}
-            onPress={() => onPick({ exercise: exercise.key, kind: exercise.kind })}
-            accessibilityRole="button"
-            testID={`exercise-${exercise.key}`}
-          >
-            <Text style={gymStyles.text}>{exercise.names[language]}</Text>
-          </Pressable>
-        ))}
+        {searching &&
+          found.map((exercise) => (
+            <Pressable
+              key={exercise.key}
+              style={styles.row}
+              onPress={() => onPick({ exercise: exercise.key, kind: exercise.kind })}
+              accessibilityRole="button"
+              testID={`exercise-${exercise.key}`}
+            >
+              <Text style={gymStyles.text}>{exercise.names[language]}</Text>
+            </Pressable>
+          ))}
       </ScrollView>
     </View>
   );
@@ -184,9 +189,6 @@ const styles = StyleSheet.create({
   },
   search: {
     flex: 1,
-  },
-  groups: {
-    gap: space.sm,
   },
   wrap: {
     flexDirection: "row",

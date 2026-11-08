@@ -452,7 +452,6 @@ lasciando le righe d'indice.
 - ADR-0334, precisazione D — Calorie, battito e zone del nuoto in piscina · 2026-11-06 · Attiva
 - ADR-0324, terza precisazione — Il Roller nell'app: energia, tempo stimato, file importati · 2026-11-06 · Accettata
 - ADR-0340 — La pagina del post: video nella pagina, foglio con quattro azioni, sezioni di dati da una tabella `run_stats` · 2026-11-06 · Proposto
-- ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
 - ADR-0341 — La palestra per tutti i giorni: la griglia, il calendario dal server, le schede sull'account · 2026-11-06 · Proposto
 - ADR-0338, aggiunta — La giornata di sci: stazione, modello e neve in una rotta a parte · 2026-11-08 · Attiva
 - ADR-0342 — Le ciaspole: forme piccole piazzate libere sulla neve, come sull'acqua · 2026-11-08 · Accettato
@@ -472,25 +471,6 @@ lasciando le righe d'indice.
 
 ## Voci nuove
 
-### ADR-0340, precisazione F — La card del Feed come la pagina
-
-**Data**: 2026-11-08 · **Stato**: Attiva · **Task**: TASK-410 parte F
-
-**Contesto**: vista la pagina del post (parte B), l'utente ha chiesto lo
-stesso aspetto nella card del Feed; TASK-410 la lasciava com'era.
-
-**Decisione** (scelta dell'utente, «Tutto come la pagina»): la card di un
-post di un membro ha i numeri in riquadri (`SummaryBoxes`, dalle righe di
-`postSections`) al posto della riga di testo, e la stessa barra delle
-quattro azioni della pagina (`PostActions`, condivisa con `PostSheet`):
-Like (le sei reazioni), Comment, Share solo sui propri, Edit & run. Supera
-la scelta 4 di TASK-355 (ADR-0306): il «Draw it near me» giallo lascia la
-card, resta sul disegno aperto sulla mappa. Deciso dall'agente su delega:
-`ActionBar` si toglie invece di tenerne due; gli esempi tengono la riga di
-testo.
-
-**Conseguenze**: la card e la pagina cambiano insieme; `DrawAgainContext`
-resta in `App.tsx` senza chi lo usa nel Feed, da togliere a parte.
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole

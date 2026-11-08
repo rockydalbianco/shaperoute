@@ -469,7 +469,10 @@ finto API risponde 200 a `…/stats` e lo toglie dalla lista) e il nuovo
 `activitiesDoorStats.test.tsx`, approvati dal Coordinatore; `api/drawings.ts`
 esce dalla lista. Dopo la prima CI, due test dell'app intera che contano i
 PUT di `/me/activities/` (`AppActivities`, `AppPenUpSaved`): non contano
-`…/stats`, approvati dal Coordinatore. Branch `feat/TASK-410-c-run-stats`.
+`…/stats`, approvati dal Coordinatore. Dopo la seconda CI,
+`drawing-details-imported.json` prende `"stats": null`, come risponde il
+server (`test_imported_runs.py` confronta la fixture col corpo intero):
+segnalato al Coordinatore. Branch `feat/TASK-410-c-run-stats`.
 
 ```
 services/api/migrations/0064_run_stats.sql       (nuovo; numero in bozza, il vero al merge)
@@ -479,6 +482,7 @@ services/api/shaperoute_api/app.py               (install_run_stats)
 services/api/tests/test_run_stats.py             (nuovo)
 services/api/tests/test_drawings.py              (stats fra i campi nuovi delle fixture vecchie)
 packages/shared-types/fixtures/run-stats.json, run-stats-request.json (nuovi)
+packages/shared-types/fixtures/drawing-details-imported.json ("stats": null)
 apps/mobile/src/api/runStats.ts (+ test)         (nuovo: tipi, guardia, statsOf, PUT)
 apps/mobile/src/activities/runStatsOut.ts (+ test) (nuovo: profilo e calorie)
 apps/mobile/src/activities/activitiesDoor.ts     (manda le stats dopo il salvataggio)

@@ -11,7 +11,10 @@ import { color, font, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/t
 import { distanceLabel, METRES_PER_KM } from "../units/format";
 import type { Units } from "../units/units";
 import { useUnits } from "../units/useUnits";
+import { ResortPosts } from "./ResortPosts";
+import { ResortSnow } from "./ResortSnow";
 import { altitudeLabel, ResortWeather } from "./ResortWeather";
+import { useFollowedResorts } from "./useFollowedResorts";
 
 /** In English: shown with `t()`. The difficulties, from the easiest. */
 export const DIFFICULTY_LABELS: Readonly<Record<PisteDifficulty, string>> = {
@@ -46,6 +49,8 @@ type Props = {
   resort: SkiResort;
   apiUrl: string | null;
   onBack: () => void;
+  /** A post of the resort opened: the search gives way to the map. */
+  onLeave?: () => void;
   fetchFn?: typeof fetch;
   apiKey?: string | null;
 };
@@ -56,8 +61,18 @@ type Props = {
  * weather at its base and top, and whom the data comes from. Over the
  * search, which «Back» shows again as it was.
  */
-export function ResortPage({ resort, apiUrl, onBack, fetchFn, apiKey }: Props) {
+export function ResortPage({
+  resort,
+  apiUrl,
+  onBack,
+  onLeave,
+  fetchFn,
+  apiKey,
+}: Props) {
   const insets = useSafeAreaInsets();
+  // «Your resorts» (part D3): the same «Follow» as the members'.
+  const { isFollowed, toggle } = useFollowedResorts();
+  const following = isFollowed(resort.id);
   const units = useUnits();
   const elevations = elevationsLabel(resort, units);
   const website = websiteOf(resort);
@@ -84,6 +99,17 @@ export function ResortPage({ resort, apiUrl, onBack, fetchFn, apiKey }: Props) {
           {resort.name}
         </Text>
         {resort.region !== null && <Text style={styles.region}>{resort.region}</Text>}
+        <Pressable
+          style={[styles.follow, following && styles.following]}
+          onPress={() => toggle(resort)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: following }}
+          testID="resort-follow"
+        >
+          <Text style={[styles.followText, following && styles.followingText]}>
+            {t(following ? "Following" : "Follow")}
+          </Text>
+        </Pressable>
         <View style={styles.facts}>
           <Fact
             label={t("Lifts@@resort")}
@@ -130,6 +156,8 @@ export function ResortPage({ resort, apiUrl, onBack, fetchFn, apiKey }: Props) {
           fetchFn={fetchFn}
           apiKey={apiKey}
         />
+        <ResortSnow resortId={resort.id} />
+        <ResortPosts resortId={resort.id} onLeave={onLeave} />
         <Text style={styles.credits}>
           {t(
             "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors",
@@ -170,6 +198,28 @@ const styles = StyleSheet.create({
   },
   backText: {
     ...font.body,
+    color: color.text,
+  },
+  follow: {
+    minHeight: MIN_TAP_SIZE,
+    alignSelf: "flex-start",
+    justifyContent: "center",
+    paddingHorizontal: space.xl,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.text,
+    backgroundColor: color.text,
+  },
+  following: {
+    borderColor: color.borderStrong,
+    backgroundColor: "transparent",
+  },
+  followText: {
+    ...font.body,
+    fontWeight: fontWeight.semibold,
+    color: color.surface,
+  },
+  followingText: {
     color: color.text,
   },
   body: {

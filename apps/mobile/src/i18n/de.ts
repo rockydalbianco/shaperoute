@@ -2129,4 +2129,12 @@ export const DE: Table = {
   Resort: "Skigebiet",
   Snow: "Schnee",
   Gear: "Ausrüstung",
+  // src/ski/ResortList.tsx, ResortSnow.tsx, ResortPosts.tsx (TASK-406 part D3b:
+  // the resort's page, texts approved on 2026-11-08)
+  "Your resorts": "Deine Skigebiete",
+  "Snow today": "Schnee heute",
+  "{snow} ×{days}": "{snow} ×{days}",
+  "Marked by the members in the last 24 hours.":
+    "Von den Mitgliedern in den letzten 24 Stunden angegeben.",
+  "Members' days here": "Tage der Mitglieder hier",
 };

@@ -849,6 +849,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     OpenStreetMap. I tipi sono in `shared-types` (`skiResorts.ts`). Solo
     JavaScript, nessuna dipendenza. Funziona dopo il deploy delle parti A e
     B. Prossimo: la parte D, «Record your day», con la sua lista dei file.
+  - 2026-11-08: C in `main` (#919). Le risposte dell'utente: domanda 3
+    «Sì, così» (cinque tipi di neve, a fine giornata) e i testi della D2
+    con la riga della privacy approvati. La parte D va in tre PR: D1 server,
+    D2 app, D3 pagina della stazione. **Parte D1**: la giornata di sci
+    tiene stazione, modello e neve (migrazione 0056). Si scrivono con `PUT
+    /me/activities/{key}/ski` dopo il salvataggio, si leggono sul post con
+    `GET /drawings/{id}/ski-day`, e `GET /ski-resorts/{id}/snow` conta la
+    neve dei membri nelle ultime 24 ore, solo numeri (aggiunta ad
+    ADR-0338). Per andare online: il server con la 0056, col sì
+    dell'utente. Prossimo: la parte D2 nell'app.
 - **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
   percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
   Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un

@@ -114,12 +114,13 @@ dell'API (conferma email, password) sono il modello per un link pubblico.
 - **A1 — Server**: tabelle, rotte, pulizia, la riga della privacy. Il
   server va aggiornato col sì dell'utente.
 - **A2 — La pagina web** `site/live/`: statica, legge l'API ogni 10 s.
-- **B — L'app**: il pulsante, il consenso, l'invio dei punti, lo stop.
-  Parte da `main` **dopo** TASK-422 (#971, `RunDashboard.tsx`).
+- **B — L'app**: il pulsante, il consenso, l'invio dei punti e dei dati,
+  lo stop, per tutti gli sport, piscina e palestra comprese (scelta 7). B1
+  gli sport col GPS, da `main` **dopo** TASK-422 (#971,
+  `RunDashboard.tsx`); B2 piscina e palestra, **dopo** TASK-409 B e
+  TASK-411 C (`src/pool/`, `src/gym/`). L'OTA pubblica B1 e B2 insieme.
 - **C — I dati dal vivo che mancano** (l'elenco sopra). Parte dopo
   TASK-422, TASK-370 B3, TASK-409 B e TASK-411 C, che toccano quei file.
-- **D — Piscina e palestra in condivisione** (senza mappa, solo i dati), se
-  l'utente lo vuole: dopo B.
 
 ### La tecnica (ADR-0352, decisa dall'agente)
 
@@ -181,7 +182,12 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
    un limite contro gli abusi, fermabile da un altro telefono, cancellato
    con l'account); senza account il pulsante invita ad entrare. Chi riceve
    il link non ha bisogno di nulla (scelta 1).
-7. **Piscina e palestra** (parte D) — proposta: dopo, solo i dati.
+7. **Piscina e palestra** — **deciso dall'utente il 2026-11-09** («Subito
+   con gli altri»): la condivisione arriva insieme agli sport col GPS, non
+   dopo. La pagina, senza mappa, mostra i dati (piscina: tempo, vasche
+   stimate, calorie, battito; palestra: tempo, esercizio in corso, calorie,
+   battito). Entrano nella parte B; la pubblicazione di B aspetta anche
+   loro.
 8. **La mappa della pagina**: MapLibre e OpenFreeMap caricati da fuori,
    scritto nella privacy del sito.
 9. **I testi** in en/it/de/fr/es (pulsante, consenso, foglio, pagina,
@@ -230,7 +236,7 @@ docs/STATUS.md
 docs/INDEX.md
 ```
 
-Le liste delle parti A1, A2, B, C vanno al Coordinatore prima del codice.
+Le liste delle parti A1, A2, B1, B2, C vanno al Coordinatore prima del codice.
 
 ## Fuori scope
 

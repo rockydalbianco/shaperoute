@@ -21,9 +21,7 @@ const ROWS = [
   "feed/StyleLens.tsx",
   // In «Draw»: «NEAR YOU».
   "route/NearYou.tsx",
-  // In «Explore», on land and on the water, and its search; the filter
-  // chips of its catalog (TASK-420).
-  "explore/CatalogScreen.tsx",
+  // In «Explore», on land and on the water, and its search.
   "explore/CityWords.tsx",
   "explore/ExploreTools.tsx",
   "explore/IdeasFromEurope.tsx",

@@ -43,7 +43,8 @@ WINDOW_S = 60.0
 # (away_email.py, TASK-284; notice_email.py, TASK-262 B), a report's
 # (report_email.py, TASK-291), and those that confirm an address and choose
 # a new password (account_email.py, TASK-300). None does anything without
-# the token of its email.
+# the token of its email. So does the page of a live share (live_shares.py,
+# TASK-424), which shows nothing without the token of its link.
 OPEN_PATHS = frozenset(
     {
         "/health",
@@ -53,6 +54,7 @@ OPEN_PATHS = frozenset(
         "/report-link",
         "/email/confirm",
         "/password/reset",
+        "/live",
     }
 )
 LIMITED_METHODS = frozenset({"POST"})

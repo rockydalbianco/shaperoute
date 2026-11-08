@@ -432,7 +432,15 @@ Privacy, sezione «Sharing live»:
   aggiornamento dopo palestra, ciaspole e cancelli; la sequenza la prepara
   il Coordinatore e la lancia l'utente. Il giro di pulizia parte con quel
   deploy. Finché il server non c'è, A2 e B si provano in locale.
-- **A2** — la pagina `site/live/` (prossima). File proposti al
+- **A2** — la pagina `site/live/`: in PR (`feat/TASK-424-a2-live-page`,
+  2026-11-08). `view.js` (logica pura, provata con la fixture
+  `live-view.json`) e `live.js` (pagina, mappa, timer) al posto del solo
+  `live.js` proposto: un file nuovo nella stessa cartella. MapLibre 5.24.0
+  copiato con gli hash SRI dell'app. Provata in locale contro un finto
+  `/live` (`out/TASK-424/live-stand-in.mjs`, fuori da git): l'API vera
+  lascia leggere `/live` solo a `https://getmuw.app`. **Resta**: la copia
+  del sito sul server (F.14, che ora prende `site/live`), col sì
+  dell'utente, dopo l'aggiornamento del server. File approvati dal
   Coordinatore:
   ```
   site/live/index.html          (nuovo)

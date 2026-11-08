@@ -10,7 +10,9 @@
 Una pagina sola, in inglese, in `site/`, che **spiega come si usa l'app**
 (scelta dell'utente, 2026-10-05). HTML, CSS e JavaScript scritti a mano:
 nessuna dipendenza, nessun passo di build, niente cookie, niente dati di
-chi visita, niente caricato da altri siti.
+chi visita, niente caricato da altri siti. **Un'eccezione sola**: la mappa
+della pagina dal vivo (`live/`, sotto) carica le tile e i font da
+OpenFreeMap, scelta dell'utente del 2026-11-08 (TASK-424, scelta 8).
 
 Dall'alto in basso:
 
@@ -38,6 +40,7 @@ Dall'alto in basso:
 | `site/main.js` | collega i tasti alla pagina |
 | `site/assets/` | il segno e la scritta di MuW, ricavati da `docs/brand/muw-*.svg` (la scritta nel colore del testo, per lo sfondo scuro) |
 | `site/tools/` | gli script che ricavano i disegni dai percorsi veri |
+| `site/live/` | la pagina di un link dal vivo (TASK-424, sotto) |
 | `site/tests/` | i test (`node --test`) |
 
 ## Mettere il link per scaricare l'app
@@ -114,6 +117,56 @@ node site/tools/make_support.mjs
 
 Le risposte nominano i tasti come li mostra l'app in ogni lingua (un test
 lo controlla): se l'app cambia un nome, cambia anche qui.
+
+## La pagina dal vivo
+
+`getmuw.app/live/#<token>` (TASK-424, ADR-0352): il link di «Share live»
+dell'app. Chi lo apre, senza app né account, vede dal vivo la registrazione
+di chi l'ha mandato. Il token sta dopo il `#`, quindi non arriva mai al
+server del sito; la pagina lo manda all'API, `GET
+https://api.getmuw.app/live?t=<token>&after=<seq>` (`API.md`, «Live
+shares»), ogni 10 s, subito ancora quando la risposta dice `more`, ogni
+minuto quando l'attività è finita, e smette quando il link è fermato o
+scaduto. L'API lascia leggere `/live` solo a `https://getmuw.app` (CORS).
+
+| File | Cosa contiene |
+|---|---|
+| `live/index.html` | la pagina |
+| `live/view.js` | cosa mostrare, senza DOM: il token, la richiesta, le risposte, la riga sotto il titolo, i numeri, lo stile della mappa (funzioni pure, provate dai test con la fixture `live-view.json`) |
+| `live/live.js` | la pagina, la mappa e i timer |
+| `live/texts.js` | i testi approvati in «Testi» del task, in cinque lingue; la lingua viene dal browser, l'inglese se non è una di queste |
+| `live/live.css` | l'aspetto, sopra `styles.css`; i colori della mappa ricalcano quelli scuri di `tokens.ts` (un test li confronta) |
+| `live/maplibre-gl.js`, `.css` | MapLibre GL JS **copiato**, alla stessa versione dell'app (`apps/mobile/src/map/mapPage.ts`, oggi 5.24.0): un test controlla che i file abbiano gli hash SRI dell'app |
+
+- **Cosa mostra**: la mappa col percorso fatto e la posizione (l'ultimo
+  punto), poi distanza, tempo, passo o velocità medi (la velocità per le
+  bici, il roller e lo sci, il passo per 500 m in canoa e per 100 m a nuoto,
+  come nell'app), dislivello, calorie e battito quando ci sono. Nuoto in
+  piscina: tempo, vasche stimate, calorie, battito, senza mappa. Palestra:
+  tempo, esercizio in corso, calorie, battito, senza mappa. Miglia e piedi
+  per un browser degli Stati Uniti e del Regno Unito, come l'app dal
+  telefono.
+- **La riga sotto il titolo**: «Updated N s ago»; «No update since HH:MM»
+  dopo 2 minuti senza aggiornamenti (il tempo allora si ferma all'ultimo
+  del telefono); «Finished at HH:MM»; «Sharing stopped»; «This link has
+  expired», anche per un indirizzo senza token valido. Il tempo avanza fra
+  due risposte solo mentre il link è `live`.
+- **Da fuori** carica solo le tile e i font di OpenFreeMap, col credito
+  OpenFreeMap, OpenMapTiles, OpenStreetMap sulla mappa. OpenFreeMap vede
+  l'indirizzo IP di chi apre la pagina, non il token né la posizione (la
+  privacy lo dice, «Sharing live»). La pagina non va nei motori di ricerca
+  (`noindex`).
+- **Cambiare versione di MapLibre**: quando l'app la cambia, si ricopiano
+  `dist/maplibre-gl.js` e `.css` del pacchetto npm di quella versione; il
+  test fallisce finché gli hash non sono quelli di `mapPage.ts`.
+
+**Guardarla in locale.** L'API del Mac non va bene: lascia leggere `/live`
+solo a `https://getmuw.app`. Con il server del sito (sotto) e un finto
+`/live` che risponde dalla fixture, `?api=` (accettato solo da
+`127.0.0.1` e `localhost`) porta la pagina lì:
+`http://127.0.0.1:8237/live/?api=http://127.0.0.1:8299#<token>`. Il finto
+`/live` usato per la parte A2 sta, fuori da git, in
+`out/TASK-424/live-stand-in.mjs` della copia principale.
 
 ## Online
 

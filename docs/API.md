@@ -3012,7 +3012,7 @@ con la vasca e le vasche. Token richiesto; tipi in
 |---|---|---|
 | `PUT /me/pool-swims/{key}` | salva il nuoto: inizio, fine, pause, vasca, vasche | `201` `PoolSwim` la prima volta, poi `200` com'era; `409` se la chiave è di una corsa |
 | `GET /me/pool-swims/{key}` | il nuoto del suo proprietario | `200` `PoolSwim`, o `404` |
-| `GET /drawings/{id}/pool-swim` | vasca e vasche del post, per chi vede il disegno | `200` `PoolSwimFigures`, o `404` |
+| `GET /drawings/{id}/pool-swim` | vasca e vasche del post, per chi vede il disegno; il battito se si vede | `200` `PoolSwimFigures`, o `404` |
 
 - **Tempo e metri li conta il server**: il tempo da `started_at` a
   `ended_at` meno le pause (sovrapposte contate una volta), al più 24 ore;
@@ -3031,6 +3031,14 @@ con la vasca e le vasche. Token richiesto; tipi in
 - Nessun punteggio di forma, nessun record di corsa, nessun luogo, niente
   Strava (una corsa senza traccia non si manda). Test in
   `test_pool_swims.py`.
+- **Il battito** (TASK-409 parte B1, ADR-0334 precisazione D): il `PUT` può
+  portare `heart_avg_bpm` e `heart_max_bpm` (tutti e due o nessuno, da 30 a
+  230, il medio non sopra il massimo, se no `422`) e `heart_shown` («Show
+  heart rate», `true` se manca), esempio in `fixtures/pool-swim-heart.json`.
+  Si tengono sulla corsa (`runs.heart_*`), solo col primo `PUT`: un nuoto già
+  salvato resta com'era. Il proprietario li riceve sempre; `GET
+  /drawings/{id}/pool-swim` dà medio e massimo agli altri solo se
+  `heart_shown`. Senza battito le risposte non hanno i campi, come prima.
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 

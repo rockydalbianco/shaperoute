@@ -99,15 +99,17 @@ apps/mobile/src/navigation/useCompass.ts
 apps/mobile/src/navigation/useCompass.test.tsx
 apps/mobile/src/screens/RunDashboard.tsx
 apps/mobile/src/screens/RunDashboard.test.tsx
-docs/DECISIONS.md
-docs/INDEX.md
 docs/UI.md
-docs/archive/COMPLETATI.md
 docs/tasks/TASK-422.md
 ```
 
-(`docs/STATUS.md` non è toccato: dal formato di TASK-412 un task Done è una
-riga in `docs/archive/COMPLETATI.md`, non una voce in «In lavorazione».)
+In una PR di soli documenti subito dopo il merge della #971 (regola del
+Coordinatore del 2026-11-08: le PR di codice non toccano i file condivisi,
+che ogni merge rimette in conflitto): ADR-0350 intero in «Voci nuove» di
+`docs/DECISIONS.md` più la sua riga nell'Indice, una riga in
+`docs/INDEX.md`, una riga in `docs/archive/COMPLETATI.md`. `docs/STATUS.md`
+non si tocca: dal formato di TASK-412 un task Done è la riga in
+`COMPLETATI.md`, non una voce in «In lavorazione».
 
 ## Fuori scope
 

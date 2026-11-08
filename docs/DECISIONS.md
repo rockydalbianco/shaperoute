@@ -463,7 +463,6 @@ lasciando le righe d'indice.
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
-- ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 
 ---
 
@@ -471,67 +470,6 @@ lasciando le righe d'indice.
 
 ## Voci nuove
 
-## ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono
-
-**Data**: 2026-11-08 · **Stato**: Accettata · **Task**: TASK-422 ·
-aggiorna ADR-0137 (le due pagine) e ADR-0195 (la mappa girata e la freccia
-del nord)
-
-Chiesto dall'utente il 2026-11-08: una pagina nuova con la mappa sola, a
-tutto schermo, che ruota in base a dove punta il telefono, con un pulsante
-per tornare al nord; da fermo la bussola, in corsa la traccia GPS quando la
-bussola è inaffidabile, la regola da proporre. Le scelte di prodotto (nome
-«Compass», ordine Compass | Map | Data con apertura su «Map», cosa resta
-nella scheda, la freccia del nord a due tocchi, i due testi) approvate
-dall'utente il 2026-11-08 («approvo tutto»); la regola tecnica decisa
-dall'agente su delega dell'utente.
-
-**Contesto**: la corsa aveva due pagine (ADR-0137): «Map», la mappa col
-nord in alto o girata come il disegno (ADR-0195), e «Data». Chi corre in
-un posto nuovo vuole leggere la mappa come la vede: quello che ha davanti
-in alto, come fanno i navigatori.
-
-**Decisione**:
-- **Tre pagine**, «Compass» | «Map» | «Data»; si apre su «Map» come oggi.
-  Lo swipe passa una pagina alla volta, dalla scheda; i tre nomi con un
-  tocco. La pagina aperta vive in un modulo (`navigation/runPage.ts`),
-  come i comandi della corsa (`runControl`): la scheda la imposta, e la
-  mappa, che sta sopra la scheda in `App.tsx`, la legge. `App.tsx` cambia
-  per poche righe: l'hook `useHeadingUpMap` si mette sopra `useTurnedMap`
-  e dà alla mappa lo stesso `turn` della freccia del nord.
-- **«Compass» è la scheda ridotta ai pulsanti**, non una seconda mappa:
-  la mappa (`MapView`, una sola, mai ricaricata) prende lo spazio lasciato
-  libero. Niente numeri, barra, riga del gioco né battito; il banner della
-  svolta resta sopra la mappa.
-- **Da dove viene la direzione** (`navigation/headingUp.ts`): la bussola
-  (`expo-location` `watchHeadingAsync`, già nell'app: nessuna dipendenza
-  nuova; `trueHeading`, o `magHeading` quando il telefono non sa il nord
-  vero) **da fermi sempre**, perché la traccia dice da dove si è venuti,
-  non dove si guarda; **correndo la bussola finché la sua calibrazione è
-  media o alta** (≥ 2 sulla scala 0–3 di expo-location: sotto i 35° di
-  incertezza su iOS); **con calibrazione bassa o nulla, in movimento, la
-  traccia** (`headingDeg`, gli ultimi 10 m, la stessa della freccia). «In
-  movimento» è un fix GPS negli ultimi 10 s, la soglia dell'auto-pausa
-  (`AUTO_PAUSE_AFTER_MS`): le due cose dicono la stessa cosa su cosa sia
-  stare fermi. Senza bussola (un telefono che non ce l'ha, o la rifiuta)
-  vale la traccia in movimento, e da fermi la mappa resta com'è.
-- **Non trema**: una lettura della bussola sostituisce quella tenuta solo
-  se l'ago si è mosso di 2° o la calibrazione è cambiata, e non prima di
-  250 ms; la mappa gira solo per cambi di almeno 4° e non più di una volta
-  ogni 400 ms (`easeTo` di 500 ms, come la freccia del nord). La bussola è
-  accesa solo con «Compass» aperta e il nord non fissato: costa batteria.
-- **Il nord**: la freccia del nord di ADR-0195, nello stesso posto, sempre
-  visibile su «Compass». Un tocco mette il nord in alto e lo tiene (la
-  bussola si spegne), un secondo rimette la direzione; per VoiceOver il
-  secondo tocco è «Turns the map where you face» (`NorthArrow` prende
-  `northUp` e `upHint`). Lasciando la pagina, o a fine corsa, la mappa
-  torna al `bearing` del disegno, e la freccia è di nuovo quella del
-  disegno. La pagina aperta torna «Map» quando la scheda sparisce.
-
-**Conseguenze**: due testi nuovi nelle cinque lingue («Compass», «Turns
-the map where you face»); solo JavaScript, l'impronta iOS non cambia. Da
-provare sul telefono: la rotazione in mano da fermi e correndo, e se il
-banner su «Compass» dà fastidio (toglierlo è una riga in `App.tsx`).
 ## ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono
 
 **Stato**: **Superata** il 2026-11-08, lo stesso giorno. La pagina è stata

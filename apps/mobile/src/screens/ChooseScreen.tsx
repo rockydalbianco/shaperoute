@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { GymDrawGuide } from "../gym/GymDrawGuide";
 import { t, tLater } from "../i18n";
 import { useStartAddress } from "../location/startAddress";
 import { OpenSettings } from "../permissions/OpenSettings";
@@ -160,12 +161,18 @@ export function ChooseScreen({
           {pool ? (
             <PoolDraw />
           ) : recordOnly ? (
-            <RecordDay
-              label={runLabel}
-              icon={runIcon}
-              onPress={onRun}
-              hint={gym ? t("No route in the gym: MuW times your workout.") : undefined}
-            />
+            <>
+              <RecordDay
+                label={runLabel}
+                icon={runIcon}
+                onPress={onRun}
+                hint={
+                  gym ? t("No route in the gym: MuW times your workout.") : undefined
+                }
+              />
+              {/* How it works, the last workout, the calendar (TASK-411 B). */}
+              {gym && <GymDrawGuide />}
+            </>
           ) : (
             <>
               <TourPartView name={TOUR_PART.start} style={styles.startCard}>

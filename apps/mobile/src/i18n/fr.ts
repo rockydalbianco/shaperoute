@@ -1207,6 +1207,17 @@ export const FR: Table = {
     "Nouveau niveau : {figure} · {exercise} {value}",
   // src/gym/Leaderboard.tsx (TASK-385 F)
   "Gym leaderboard · {month}": "Classement salle · {month}",
+  "Pick an exercise from the grid": "Choisis un exercice dans la grille",
+  "Log each set: the rest starts by itself":
+    "Note chaque série : la récup démarre toute seule",
+  "«Save»: calories, milestones and leaderboard":
+    "« Enregistrer » : calories, niveaux et classement",
+  "Last workout: {when} · {time}": "Dernière séance : {when} · {time}",
+  "This month: 1 time": "Ce mois-ci : 1 fois",
+  "This month: {n} times": "Ce mois-ci : {n} fois",
+  "Gym calendar": "Calendrier salle",
+  "{n} times · {time}": "{n} fois · {time}",
+  Workout: "Séance",
   "Only sets logged live count.": "Seules les séries notées en direct comptent.",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":

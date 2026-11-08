@@ -1204,6 +1204,17 @@ export const IT: Table = {
     "Nuovo livello: {figure} · {exercise} {value}",
   // src/gym/Leaderboard.tsx (TASK-385 F)
   "Gym leaderboard · {month}": "Classifica palestra · {month}",
+  "Pick an exercise from the grid": "Scegli un esercizio dalla griglia",
+  "Log each set: the rest starts by itself":
+    "Segna ogni serie: il recupero parte da solo",
+  "«Save»: calories, milestones and leaderboard":
+    "«Salva»: calorie, traguardi e classifica",
+  "Last workout: {when} · {time}": "Ultimo allenamento: {when} · {time}",
+  "This month: 1 time": "Questo mese: 1 volta",
+  "This month: {n} times": "Questo mese: {n} volte",
+  "Gym calendar": "Calendario palestra",
+  "{n} times · {time}": "{n} volte · {time}",
+  Workout: "Allenamento",
   "Only sets logged live count.":
     "Contano solo le serie segnate durante l'allenamento.",
   // src/screens/ChooseScreen.tsx (TASK-375)

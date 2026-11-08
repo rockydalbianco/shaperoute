@@ -71,6 +71,7 @@ services/route-engine/candidate_outlines/*.json   (49 nuovi)
 docs/tasks/TASK-418.md
 docs/STATUS.md
 docs/DECISIONS.md
+docs/INDEX.md
 ```
 
 ## Fuori scope

@@ -329,6 +329,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sport nuovo o un nome cambiato richiede di rilanciare `scripts/watch-texts.sh` e
   `scripts/watch-sports.sh`. A3 in una sessione nuova, con la lista dei file al Coordinatore
   prima del codice.
+- **TASK-370 A3 — Il telefono dell'orologio** (2026-11-08; parte A3 del piano in
+  `tasks/TASK-370.md`, ADR-0314 «precisazione A3»; lista dei file approvata dal Coordinatore
+  il 2026-11-08). `src/watch/watchLink.ts` (il modulo nativo `WatchConnectivity` coi nomi di
+  `react-native-watch-connectivity` 2.0.0, senza il pacchetto: niente senza nativo),
+  `useWatch.ts` (il conto alla rovescia avvia l'orologio con lo sport, pausa, ripresa e fine
+  nei due versi, le unità con un messaggio `settings` in `transferUserInfo`), `WatchHeart.tsx`
+  (battito e zona sulla card della corsa); `useHealth.ts` non riscrive in Salute la corsa
+  registrata dall'orologio; `PhoneLink.swift` risponde ai messaggi con risposta,
+  `WorkoutManager.swift` tiene le unità del telefono. Jest e XCTest sugli stessi fixture;
+  nessun `package.json`/`app.json`/`app.config.ts`, impronta iOS `6f8bba4c`. Branch
+  `feat/TASK-370-a3-phone`; la unisce il Coordinatore a CI verde. **Prossimo**: A-flip alla
+  build 1.1 (il pacchetto 2.0.0, `match` in `app.json`, il plugin nativo per
+  `workoutSessionMirroringStartHandler`), poi la prova al polso; la parte B.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.

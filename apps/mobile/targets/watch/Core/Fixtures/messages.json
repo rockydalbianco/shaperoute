@@ -72,6 +72,14 @@
       "json": { "v": 1, "type": "heartRate", "bpm": 142, "at": 1762358521000 }
     },
     {
+      "name": "units chosen on the phone",
+      "json": { "v": 1, "type": "settings", "units": "mi", "at": 1762358400000 }
+    },
+    {
+      "name": "kilometres chosen on the phone",
+      "json": { "v": 1, "type": "settings", "units": "km", "at": 1762358400000 }
+    },
+    {
       "name": "a sport this side does not know is still read",
       "json": {
         "v": 1,
@@ -262,6 +270,16 @@
         "at": 1762358520000,
         "movingMs": 110000
       },
+      "error": "invalidField"
+    },
+    {
+      "name": "settings with units the app does not have",
+      "json": { "v": 1, "type": "settings", "units": "yd", "at": 1762358400000 },
+      "error": "invalidField"
+    },
+    {
+      "name": "settings without units",
+      "json": { "v": 1, "type": "settings", "at": 1762358400000 },
       "error": "invalidField"
     },
     {

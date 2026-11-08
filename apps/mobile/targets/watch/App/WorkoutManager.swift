@@ -24,9 +24,12 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     /// The sports of the watch, in the app's order; the swim is not one yet.
     let sports: [WatchSport] = (try? WatchSports.offered()) ?? []
-    /// As the app does until one is chosen: the watch's own measurement
-    /// system. The phone's choice reaches the watch in part A3.
-    let units: WatchUnits = Locale.current.measurementSystem == .metric ? .km : .mi
+    /// The units chosen on the phone (part A3), kept for the next time;
+    /// until the phone says, as the app does: the watch's own measurement
+    /// system.
+    @Published private(set) var units: WatchUnits =
+        UserDefaults.standard.string(forKey: WorkoutManager.unitsKey).flatMap(WatchUnits.init)
+        ?? (Locale.current.measurementSystem == .metric ? .km : .mi)
 
     private let store = HKHealthStore()
     private let phone = PhoneLink()
@@ -41,6 +44,8 @@ final class WorkoutManager: NSObject, ObservableObject {
     static let countdownSeconds = 3
     /// How often the phone hears the heart rate and the distance.
     static let sendEveryMs: Int64 = 5000
+    /// Where the phone's units are kept.
+    static let unitsKey = "units"
 
     var phase: WorkoutPhase {
         workout?.phase ?? .ready
@@ -189,6 +194,9 @@ final class WorkoutManager: NSObject, ObservableObject {
             case .end:
                 end()
             }
+        case let .settings(chosen, _):
+            units = chosen
+            UserDefaults.standard.set(chosen.rawValue, forKey: Self.unitsKey)
         default:
             break
         }

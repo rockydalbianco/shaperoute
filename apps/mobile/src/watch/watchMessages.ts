@@ -30,6 +30,11 @@ export type WatchCommand = (typeof WATCH_COMMANDS)[number];
 
 export type WatchSide = "phone" | "watch";
 
+/** The units the phone shows distances in (TASK-182): the watch writes its
+ * numbers in them too (TASK-370 part A3). */
+export const WATCH_UNITS = ["km", "mi"] as const;
+export type WatchUnits = (typeof WATCH_UNITS)[number];
+
 export type WatchMessage =
   /** A start says the sport: an activity of the app, which a watch older
    * than the phone may not know. */
@@ -51,7 +56,10 @@ export type WatchMessage =
       distanceM: number;
     }
   /** The heart rate the watch measures, beats per minute. */
-  | { type: "heartRate"; bpm: number; at: number };
+  | { type: "heartRate"; bpm: number; at: number }
+  /** What the runner chose on the phone, for the watch to keep (part A3):
+   * sent with transferUserInfo, so it arrives also later. */
+  | { type: "settings"; units: WatchUnits; at: number };
 
 /** Why a message was not read: the same codes as the watch's. */
 export type WatchMessageError =
@@ -145,6 +153,12 @@ function read(fields: Fields): WatchMessage | "unknownType" {
       }
       return { type: "heartRate", bpm, at: time(fields.at) };
     }
+    case "settings":
+      return {
+        type: "settings",
+        units: oneOf(WATCH_UNITS, fields.units),
+        at: time(fields.at),
+      };
     default:
       if (typeof fields.type !== "string") {
         throw new InvalidField();

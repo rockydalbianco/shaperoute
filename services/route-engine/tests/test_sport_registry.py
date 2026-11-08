@@ -10,7 +10,7 @@ from pathlib import Path
 
 import route_engine
 from route_engine import models, network
-from route_engine.activities import ENGINE_ACTIVITIES
+from route_engine.activities import ENGINE_ACTIVITIES, ENGINE_ONLY
 from route_engine.networks import NETWORKS_BY_NAME, bike, foot, hike, mtb, roller
 
 ENGINE = Path(route_engine.__file__).parent
@@ -32,6 +32,9 @@ SINCE_LIMITS = {
     "mountain_biking": (10_000, 30_000),
     "inline_skating": (5_000, 30_000),
 }
+# Drawn by the engine before the contract has it, by a line of ENGINE_ONLY:
+# snowshoeing on the snow (TASK-413, until its part A2).
+ENGINE_ONLY_LIMITS = {"snowshoeing": (500, 3_000)}
 SINCE_NETWORKS = {
     "hiking": "hike",
     "mountain_biking": "mtb",
@@ -41,14 +44,19 @@ SINCE_NETWORKS = {
 
 def test_the_activities_are_those_of_before_in_their_order() -> None:
     assert models.SUPPORTED_ACTIVITIES == BEFORE_SUPPORTED + SINCE_SUPPORTED
-    assert models.ACTIVITIES == BEFORE_SUPPORTED + SINCE_SUPPORTED
+    assert models.ACTIVITIES == (
+        BEFORE_SUPPORTED + SINCE_SUPPORTED + tuple(ENGINE_ONLY_LIMITS)
+    )
     assert list(models.DISTANCE_LIMITS_M.items()) == [
         *BEFORE_LIMITS.items(),
         *SINCE_LIMITS.items(),
+        *ENGINE_ONLY_LIMITS.items(),
     ]
     assert (models.MIN_DISTANCE_M, models.MAX_DISTANCE_M) == (1_000, 50_000)
     assert models.WATER_ACTIVITIES == {"paddling", "swimming"}
     assert models.DRAWN_ON_WATER == {"swimming"}
+    assert models.SNOW_ACTIVITIES == {"snowshoeing"}
+    assert models.FREE_ACTIVITIES == {"paddling", "swimming", "snowshoeing"}
 
 
 def test_the_networks_are_those_of_before() -> None:
@@ -71,10 +79,14 @@ def test_the_networks_are_those_of_before() -> None:
 
 
 def test_every_activity_is_on_a_network_of_the_register_or_on_the_water() -> None:
-    names = [activity.name for activity in ENGINE_ACTIVITIES]
+    # ... or on the snow (TASK-413), never two of them.
+    drawn = (*ENGINE_ACTIVITIES, *ENGINE_ONLY)
+    names = [activity.name for activity in drawn]
     assert len(names) == len(set(names))
-    for activity in ENGINE_ACTIVITIES:
-        assert (activity.network is None) == activity.on_water, activity.name
+    for activity in drawn:
+        free = activity.on_water or activity.on_snow
+        assert (activity.network is None) == free, activity.name
+        assert not (activity.on_water and activity.on_snow), activity.name
         assert activity.network is None or activity.network in NETWORKS_BY_NAME
         assert not activity.drawn_on_water or activity.on_water
         low, high = activity.distance_m

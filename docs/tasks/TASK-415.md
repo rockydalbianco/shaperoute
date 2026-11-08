@@ -104,7 +104,7 @@ Parte 0:
 - [x] ADR-0344 «proposto», una riga in INDEX, righe proprie in STATUS.
 - [x] Le voci per `CONDIVISO.md` (pendenza da Terrarium, fasi, vette) sono
   mandate al Coordinatore Sport, che lo tiene.
-- [ ] La lista della parte A è approvata dal Coordinatore.
+- [x] La lista della parte A è approvata dal Coordinatore (2026-11-08).
 
 Ogni parte dopo: test deterministici; l'impronta del motore e quella iOS
 non cambiano; nessuna dipendenza nuova.
@@ -134,7 +134,7 @@ services/api/shaperoute_api/sports/ski_touring.py      (nuovo)
 services/api/shaperoute_api/sports/__init__.py
 services/api/shaperoute_api/activities.py              (RunActivity)
 services/api/shaperoute_api/reads.py                   (NEWER_ACTIVITIES)
-services/api/migrations/00NN_ski_touring.sql           (nuovo; numero dal Coordinatore)
+services/api/migrations/0056_ski_touring.sql           (nuovo; 0056 in bozza, il primo libero al merge)
 services/api/tests/test_ski_touring_api.py             (nuovo)
 services/api/tests/test_sport_registry_api.py, test_record_only.py,
     test_reads.py, test_game_rules.py                  (solo se l'ordine lo chiede)
@@ -159,4 +159,7 @@ Parti B–D: la lista si manda al Coordinatore prima di ciascuna.
 ## Dove si è
 
 2026-11-07: le cinque scelte dell'utente prese. 2026-11-08: parte 0 in PR,
-la lista della parte A mandata al Coordinatore.
+la lista della parte A approvata dal
+Coordinatore, migrazione 0056 in bozza (anche TASK-406 D1 ha la 0056: chi
+arriva secondo rinomina). La PR di A entra col sì dell'utente per il
+server, che chiede il Coordinatore.

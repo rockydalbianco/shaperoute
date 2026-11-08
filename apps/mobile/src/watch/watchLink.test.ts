@@ -21,6 +21,8 @@ function fakeNative(context: object | null = null) {
     replyToMessageWithId: jest.fn(),
     transferUserInfo: jest.fn(),
     getApplicationContext: jest.fn(() => Promise.resolve(context)),
+    getIsPaired: jest.fn(() => Promise.resolve(true)),
+    getIsWatchAppInstalled: jest.fn(() => Promise.resolve(true)),
     addListener: jest.fn(),
     removeListeners: jest.fn(),
   } satisfies WatchNative;
@@ -181,4 +183,18 @@ describe("watchLink in an app with and without the native module", () => {
     link?.transfer({ type: "settings", units: "km", at: 1 });
     expect(native.transferUserInfo).toHaveBeenCalledTimes(1);
   });
+});
+
+test("the watch is ready only when it is paired and has the app", async () => {
+  const { native, emitter } = fakeNative();
+  const link = linkOn(native, emitter);
+  await expect(link.ready()).resolves.toBe(true);
+  native.getIsWatchAppInstalled.mockImplementationOnce(() => Promise.resolve(false));
+  await expect(link.ready()).resolves.toBe(false);
+  native.getIsPaired.mockImplementationOnce(() => Promise.resolve(false));
+  await expect(link.ready()).resolves.toBe(false);
+  native.getIsPaired.mockImplementationOnce(() =>
+    Promise.reject(new Error("no session")),
+  );
+  await expect(link.ready()).resolves.toBe(false);
 });

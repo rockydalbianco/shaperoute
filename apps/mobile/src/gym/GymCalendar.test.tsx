@@ -179,19 +179,17 @@ test("an API without the calendar says why, and the grid is still there", async 
   expect(screen.getByTestId("calendar-summary")).toHaveTextContent("");
 });
 
-test("in Draw: the three steps, the last workout, this month, which opens the calendar", async () => {
+test("in Draw: the month's tile with the last workout opens the calendar; the steps are gone once trained", async () => {
   const fetchFn = jest.fn(answers({ status: 200, body: calendar }));
   await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
-  expect(screen.getByText("How it works")).toBeOnTheScreen();
-  for (const step of GUIDE_STEPS) {
-    expect(screen.getByText(step)).toBeOnTheScreen();
-  }
+  // A workout is saved already (TASK-411 F): «How it works» has done its job.
+  expect(screen.queryByText("How it works")).toBeNull();
   expect(asked(fetchFn)[0]).toMatch(/^http:\/\/api\/me\/gym-calendar\?tz=[^&]+$/);
   expect(screen.getByTestId("gym-guide-last")).toHaveTextContent(
     /^Last workout: .+ · 1:00:00$/,
   );
   const month = screen.getByTestId("gym-guide-month");
-  expect(month).toHaveTextContent("This month: 3 times ›");
+  expect(month).toHaveTextContent(/^📅 Gym calendarThis month: 3 timesLast workout:/);
   await fireEvent.press(month);
   await act(async () => {});
   expect(screen.getByTestId("gym-calendar")).toBeOnTheScreen();
@@ -214,6 +212,23 @@ test("in Draw a workout just saved asks for the calendar again", async () => {
   );
   await act(async () => {});
   expect(fetchFn).toHaveBeenCalledTimes(2);
+});
+
+test("before the first workout Draw shows the three steps", async () => {
+  const fetchFn = jest.fn(
+    answers({
+      status: 200,
+      body: { ...calendar, days: [], count: 0, duration_s: 0, last: null },
+    }),
+  );
+  await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
+  expect(screen.getByText("How it works")).toBeOnTheScreen();
+  for (const step of GUIDE_STEPS) {
+    expect(screen.getByText(step)).toBeOnTheScreen();
+  }
+  expect(screen.getByTestId("gym-guide-month")).toHaveTextContent(
+    /This month: 0 times/,
+  );
 });
 
 test("without the API's calendar, or signed out, Draw shows the steps alone", async () => {

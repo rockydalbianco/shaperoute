@@ -13,6 +13,10 @@ export const POOL_LENGTHS_MAX = 1000;
 /** Faster than this the API answers 422: the lengths or the pool were
  * written wrong. */
 export const POOL_MAX_SPEED_M_S = 2.5;
+/** The beats a minute the API takes for a swim's heart rate (TASK-409 part
+ * B): outside, 422. */
+export const HEART_BPM_MIN = 30;
+export const HEART_BPM_MAX = 230;
 
 /** A pause («Pause»), in seconds since the swim began: out of its time. */
 export interface PoolPause {
@@ -27,6 +31,12 @@ export interface PoolSwimRequest {
   pauses?: PoolPause[];
   pool_length_m: number;
   lengths: number;
+  /** The heart rate its watch wrote in Apple Health during the swim
+   * (TASK-409 part B), both or neither; the average not above the maximum. */
+  heart_avg_bpm?: number;
+  heart_max_bpm?: number;
+  /** «Show heart rate»: whether others see it; true when left out. */
+  heart_shown?: boolean;
 }
 
 /** The swim as saved: 201 the first time, then 200 with it unchanged.
@@ -39,6 +49,10 @@ export interface PoolSwim {
   distance_m: number;
   pool_length_m: number;
   lengths: number;
+  /** The three only for a swim sent with its heart rate. */
+  heart_avg_bpm?: number;
+  heart_max_bpm?: number;
+  heart_shown?: boolean;
 }
 
 /** GET /drawings/{id}/pool-swim: what the post of a swim in a pool shows
@@ -47,4 +61,7 @@ export interface PoolSwim {
 export interface PoolSwimFigures {
   pool_length_m: number;
   lengths: number;
+  /** Its heart rate when its owner shows it, and always to its owner. */
+  heart_avg_bpm?: number;
+  heart_max_bpm?: number;
 }

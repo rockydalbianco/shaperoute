@@ -29,7 +29,7 @@ export const GROUP_MOVE: Readonly<Record<GymGroup, MoveKey>> = {
 };
 
 /** The side of the figure on a group's tile and on an exercise's. */
-const GROUP_FIGURE = 64;
+const GROUP_FIGURE = 52;
 const EXERCISE_FIGURE = 52;
 
 /** The sign of each group on its tile (TASK-411 part A, the user's «Gruppi,
@@ -83,7 +83,7 @@ export function GroupGrid({
               <Text style={styles.emoji} importantForAccessibility="no">
                 {GROUP_EMOJI[group]}
               </Text>
-              <Text style={styles.name} numberOfLines={1}>
+              <Text style={styles.name} numberOfLines={2}>
                 {name}
               </Text>
               <Text style={styles.count} importantForAccessibility="no">

@@ -153,6 +153,31 @@ export function planTarget(workout: Workout, entry: Entry): SetValues | null {
   return Object.keys(values).length === 0 ? null : (values as SetValues);
 }
 
+/** Where the exercise under way is in the plan (part F): «Set 2 of 4», and
+ * the plan's next exercise not finished after it; null when it is not of
+ * the plan, or the plan is done with it. */
+export function planStep(
+  workout: Workout,
+): { set: number; sets: number; then: GymPlanItem | null } | null {
+  const current = workout.current;
+  const items = workout.plan?.items ?? [];
+  if (current === null || items.length === 0) {
+    return null;
+  }
+  const done = planDone(workout);
+  const index = items.findIndex(
+    (item, i) => done[i] < item.sets && sameEntry(entryOf(item), current),
+  );
+  if (index < 0) {
+    return null;
+  }
+  return {
+    set: done[index] + 1,
+    sets: items[index].sets,
+    then: items.find((item, i) => i > index && done[i] < item.sets) ?? null,
+  };
+}
+
 /** After a set: when the plan's exercise under way has all its sets, the
  * next one of the plan is the exercise under way. */
 function followPlan(workout: Workout): Workout {

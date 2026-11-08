@@ -347,6 +347,7 @@ const privacy: AboutDocument = {
         "Una foto che pubblichi può avere dentro l'immagine il disegno della tua corsa. È lo stesso disegno che mostra il Feed.",
         "Per una giornata di sci, il nostro server confronta la traccia salvata con gli impianti e le piste di OpenStreetMap, che tiene da sé, per scrivere quali hai preso e quante volte. I nomi compaiono nel post, per chi può vederlo. Niente va a un altro servizio.",
         "Sulle foto che pubblichi puoi segnare i capi che indossi: cos'è ognuno, la marca e, se vuoi, il modello e il link a un negozio. Li vede chi vede la foto. Se la corsa torna «Solo io», lasciano il nostro server con le sue foto e restano su questo telefono.",
+        "Per una giornata di sci, l'app manda al nostro server la tua posizione arrotondata a circa 1 km per trovare la stazione più vicina; il meteo lo chiede il server a MET Norway con la posizione della stazione, mai la tua. Stazione, neve e attrezzatura che aggiungi si vedono sul post, per chi può vederlo, e la neve conta anche, senza il tuo nome, nella neve del giorno della stazione.",
       ],
     },
     {
@@ -410,10 +411,16 @@ const privacy: AboutDocument = {
     {
       heading: "La tua posizione",
       blocks: [
-        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account.",
+        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account. Quando condividi un'attività dal vivo, la tua posizione esatta va al nostro server e a chi ha il link, come spiegato in «Condivisione dal vivo».",
         "Su iPhone, durante una corsa che hai fatto partire, l'app continua a seguire la tua posizione anche a telefono bloccato o con un'altra app aperta, finché non fermi la corsa; l'iPhone lo mostra con un segno blu in cima allo schermo. MuW chiede la posizione solo mentre usi l'app, mai «Sempre».",
         "Come ogni servizio su internet, il nostro server vede l'indirizzo internet (IP) da cui arriva una richiesta mentre le risponde. Il log del server non scrive posizioni, e nel database non ci sono indirizzi IP.",
         "Un registro delle richieste di percorso, con la loro partenza, esiste per riprodurre un difetto. Sul nostro server è spento; acceso, tiene al massimo 10 MB, poi le righe più vecchie si perdono.",
+      ],
+    },
+    {
+      heading: "Condivisione dal vivo",
+      blocks: [
+        "Durante un'attività puoi toccare «Condividi dal vivo» per creare un link. Mentre condividi, il nostro server riceve ogni 15 secondi la tua posizione esatta con l'ora, i numeri dell'attività (distanza, tempo, passo o velocità, dislivello, calorie) e il battito quando un orologio lo manda. Chiunque abbia il link li vede su una pagina di getmuw.app, senza account: scegli tu a chi mandarlo, e chi lo ha può inoltrarlo. Il link è casuale e non si può indovinare; il nostro server ne tiene solo un hash. Smette di funzionare un'ora dopo la fine dell'attività, al massimo 24 ore dopo l'inizio, o appena smetti di condividere; poi le posizioni e il battito vengono cancellati. Il battito è un dato sulla salute: si condivide solo dopo che l'hai letto nella schermata che viene prima del link. La mappa di quella pagina viene da OpenFreeMap, che vede l'indirizzo internet (IP) di chi la apre, ma non il link né la tua posizione. Per condividere serve un account; cancellando l'account si cancellano le sue condivisioni.",
       ],
     },
     {

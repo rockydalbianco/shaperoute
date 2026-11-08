@@ -16,6 +16,7 @@ import { ImportedMark } from "../imports/ImportedMark";
 import { drawingOfDrawing } from "../messages/messageDrawing";
 import { SendDrawingButton } from "../messages/SendDrawingButton";
 import { durationLabel } from "../screens/FinishScreen";
+import { SkiDayLine } from "../ski/SkiDayLine";
 import {
   color,
   font,
@@ -161,6 +162,8 @@ export function DrawingCard({
       )}
       {/* The lifts and pistes of a day of skiing (TASK-375 part D). */}
       {drawing.activity === "skiing" && <SkiNamesList drawingId={drawing.id} />}
+      {/* Its resort, snow and gear (TASK-406 part D2). */}
+      {drawing.activity === "skiing" && <SkiDayLine drawingId={drawing.id} />}
       {/* The exercises of a workout at the gym (TASK-385 B0). */}
       {gym && <GymDetail drawingId={drawing.id} />}
       {/* The lengths, the pool and the pace of a swim in a pool (TASK-400 C). */}

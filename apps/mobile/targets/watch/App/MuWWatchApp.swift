@@ -2,16 +2,24 @@ import SwiftUI
 import WatchCore
 
 /// The MuW app on the Apple Watch (TASK-370 part A2, ADR-0314): choose the
-/// sport, start, the numbers, pause, resume, end. The watch never draws a
-/// route; following one is part B.
+/// sport, start, the numbers, pause, resume, end; from part B3a, the routes
+/// the phone sent. The watch never draws a route; following one is part B3b.
 @main
 struct MuWWatchApp: App {
-    @StateObject private var workouts = WorkoutManager()
+    @StateObject private var workouts: WorkoutManager
+    @StateObject private var store: RouteStore
+
+    init() {
+        let store = RouteStore()
+        _store = StateObject(wrappedValue: store)
+        _workouts = StateObject(wrappedValue: WorkoutManager(routes: store))
+    }
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(workouts)
+                .environmentObject(store)
                 .task {
                     await workouts.authorize()
                 }
@@ -26,7 +34,7 @@ struct RootView: View {
     var body: some View {
         switch workouts.phase {
         case .ready:
-            SportListView()
+            RoutesView()
         case .countdown:
             CountdownView()
         case .running, .paused:
@@ -58,7 +66,7 @@ struct LogoView: View {
     }
 }
 
-/// The sports of the watch: a tap starts one.
+/// The sports of the watch, for a run without a route: a tap starts one.
 struct SportListView: View {
     @EnvironmentObject private var workouts: WorkoutManager
 

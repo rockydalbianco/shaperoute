@@ -3,6 +3,7 @@ import de from "../../locales/de.json";
 import es from "../../locales/es.json";
 import fr from "../../locales/fr.json";
 import it from "../../locales/it.json";
+import { tLater } from "../i18n";
 import { LANGUAGES, type Language } from "../i18n/languages";
 import { TABLES } from "../i18n/translate";
 import { WATCH_SPORTS } from "./watchSports";
@@ -39,6 +40,12 @@ export const WATCH_TEXTS: readonly string[] = [
   "Calories",
   // the summary
   "Done",
+  // the routes the phone sent (part B3a); a text only the watch shows is
+  // marked with tLater, so that the app's tables keep it
+  "Run without a route",
+  "Routes",
+  tLater("Send a route from MuW on your iPhone"),
+  "Favorites",
 ];
 
 /**

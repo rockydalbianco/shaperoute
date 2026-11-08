@@ -432,6 +432,15 @@ contratto come in A1, pulsante, preferiti); B3b la corsa sull'orologio
 B3c la traccia al telefono e il salvataggio. La prova vera al polso vuole la
 build con A-flip.
 
+**B3a1 fatta** (2026-11-08, branch `feat/TASK-370-b3a-route-to-watch`): il
+contratto `WatchRoute` (TS e Swift, `routes.json` da `scripts/watch-routes.sh`,
+i messaggi «route» e «routes» in `messages.json`), «Send to watch» sotto il
+cuore (`FavoriteHeart.tsx`, al posto di `App.tsx`, d'accordo col
+Coordinatore), `watchLink.ready()`, `RouteShelf` e `RouteStore`, la pagina
+«Routes» come prima schermata dell'orologio. Provata nel simulatore di
+watchOS 27 con tre percorsi salvati. B3a2 (i preferiti mandati da soli,
+`useWatchFavorites` montato in `favoritesDoor.ts`) dopo, con la sua lista.
+
 ## File toccati
 
 Parte 0 (questa proposta):

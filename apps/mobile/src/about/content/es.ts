@@ -349,6 +349,7 @@ const privacy: AboutDocument = {
         "Una foto que publiques puede llevar dentro de la imagen el dibujo de tu carrera. Es el mismo dibujo que muestra el Feed.",
         "En una jornada de esquí, nuestro servidor compara la traza guardada con los remontes y pistas de OpenStreetMap, que guarda él mismo, para anotar cuáles tomaste y cuántas veces. Los nombres aparecen en la publicación, para quien pueda verla. Nada va a otro servicio.",
         "En las fotos que publiques puedes etiquetar las prendas que llevas: qué es cada una, su marca y, si quieres, su modelo y un enlace a una tienda. Las ve quien ve la foto. Si la carrera vuelve a «Solo yo», salen de nuestro servidor con sus fotos y se quedan en este teléfono.",
+        "En una jornada de esquí, la app envía a nuestro servidor tu posición redondeada a cerca de 1 km para encontrar la estación más cercana; el tiempo lo pide el servidor a MET Norway con la posición de la estación, nunca con la tuya. La estación, la nieve y el equipo que añades se ven en la publicación, para quien pueda verla, y la nieve también cuenta, sin tu nombre, en la nieve del día de la estación.",
       ],
     },
     {
@@ -412,10 +413,16 @@ const privacy: AboutDocument = {
     {
       heading: "Tu posición",
       blocks: [
-        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor exacta como inicio de una ruta que pides, como inicio de las formas que la app te prepara cerca cuando el teléfono no puede dibujarlas por sí mismo, y dentro de una carrera que guardas. Fuera de la ruta de una carrera, cuando el teléfono no encuentra por sí mismo el camino para volver a ella, va exacta a nuestro servidor con el tramo de la ruta que tienes delante, para encontrar ese camino por las calles: el servidor no los guarda. Va redondeada a cerca de 1 km para encontrar el mapa sin conexión a tu alrededor, las rutas recomendadas, los pueblos y los dibujos cercanos, y para poner primero los lugares cercanos en una búsqueda; así redondeada no queda ligada a tu cuenta.",
+        "La posición del teléfono se usa en el teléfono, para empezar una ruta donde estás y para seguir tu carrera. Va a nuestro servidor exacta como inicio de una ruta que pides, como inicio de las formas que la app te prepara cerca cuando el teléfono no puede dibujarlas por sí mismo, y dentro de una carrera que guardas. Fuera de la ruta de una carrera, cuando el teléfono no encuentra por sí mismo el camino para volver a ella, va exacta a nuestro servidor con el tramo de la ruta que tienes delante, para encontrar ese camino por las calles: el servidor no los guarda. Va redondeada a cerca de 1 km para encontrar el mapa sin conexión a tu alrededor, las rutas recomendadas, los pueblos y los dibujos cercanos, y para poner primero los lugares cercanos en una búsqueda; así redondeada no queda ligada a tu cuenta. Cuando compartes una actividad en directo, tu posición exacta va a nuestro servidor y a quien tenga el enlace, como se explica en «Compartir en directo».",
         "En iPhone, durante una carrera que has empezado, la app sigue tu posición también con el teléfono bloqueado o con otra app abierta, hasta que detienes la carrera; el iPhone lo muestra con una marca azul en la parte de arriba de la pantalla. MuW pide la posición solo mientras usas la app, nunca «Siempre».",
         "Como cualquier servicio de internet, nuestro servidor ve la dirección de internet (IP) de la que viene una petición mientras la responde. El registro del servidor no escribe posiciones, y la base de datos no guarda direcciones IP.",
         "Existe un registro de las peticiones de rutas, con su inicio, para reproducir un fallo. Está apagado en nuestro servidor; encendido, guarda como máximo 10 MB, y después se pierden las líneas más antiguas.",
+      ],
+    },
+    {
+      heading: "Compartir en directo",
+      blocks: [
+        "Durante una actividad puedes tocar «Compartir en directo» para crear un enlace. Mientras compartes, nuestro servidor recibe cada 15 segundos tu posición exacta con la hora, los datos de la actividad (distancia, tiempo, ritmo o velocidad, desnivel, calorías) y tu pulso cuando un reloj lo envía. Cualquiera que tenga el enlace los ve en una página de getmuw.app, sin cuenta: tú eliges a quién se lo mandas, y quien lo tenga puede reenviarlo. El enlace es aleatorio y no se puede adivinar; nuestro servidor guarda solo un hash. Deja de funcionar una hora después de que termine la actividad, como mucho 24 horas después de empezar, o en cuanto dejas de compartir; entonces se borran las posiciones y el pulso. El pulso es un dato de salud: solo se comparte después de que lo hayas leído en la pantalla que aparece antes del enlace. El mapa de esa página viene de OpenFreeMap, que ve la dirección de internet (IP) de quien la abre, pero no el enlace ni tu posición. Para compartir hace falta una cuenta; al borrar la cuenta se borran sus enlaces compartidos.",
       ],
     },
     {

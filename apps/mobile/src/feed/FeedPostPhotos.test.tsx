@@ -106,17 +106,16 @@ test("the words stay under the drawing, and lie over a photo on a scrim (TASK-33
   const [drawingPage, photoPage] = within(
     screen.getByTestId("feed-pages"),
   ).getAllByTestId("feed-page-tap");
-  // Under the drawing, so as not to cover the figure: the card's title, the
-  // facts muted.
+  // Under the drawing, so as not to cover the figure: the card's title; the
+  // numbers in boxes under the pages (TASK-410 part F), not a line of facts.
   expect(within(drawingPage).queryByTestId("feed-photo-words")).toBeNull();
   expect(within(drawingPage).getByText(post.title)).toHaveStyle({
     fontSize: font.cardTitle.fontSize,
     fontWeight: font.cardTitle.fontWeight,
     color: color.text,
   });
-  expect(within(drawingPage).getByText(postFacts(post))).toHaveStyle({
-    color: color.textMuted,
-  });
+  expect(within(drawingPage).queryByText(postFacts(post))).toBeNull();
+  expect(screen.getByTestId("feed-summary")).toBeOnTheScreen();
   // Over the photo: light in both tones, on the dark that rises from its
   // foot, out of the way of the finger, and not read twice (the card is
   // read as one thing).
@@ -131,9 +130,7 @@ test("the words stay under the drawing, and lie over a photo on a scrim (TASK-33
     fontWeight: font.heading.fontWeight,
     color: color.onScrim,
   });
-  expect(within(words).getByText(postFacts(post), hidden)).toHaveStyle({
-    color: color.onScrim,
-  });
+  expect(within(words).queryByText(postFacts(post), hidden)).toBeNull();
   // The scrim: an image stretched over the foot of the photo, and none
   // over the drawing.
   const [drawingJson, photoJson] = nodes(

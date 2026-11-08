@@ -90,6 +90,7 @@ from shaperoute_api.line_directions import (
     RouteDirectionsRequestBody,
     directions_of,
 )
+from shaperoute_api.live_shares import install_live_shares
 from shaperoute_api.messages import install_messages
 from shaperoute_api.moderation import install_moderation
 from shaperoute_api.muw_routes import MuwRouteCatalog, install_muw_routes
@@ -385,6 +386,9 @@ def create_app(
     # The swims in a pool, saved without a track, and their lengths
     # (TASK-400); they need a token.
     install_pool_swims(app)
+    # «Share live activity» (TASK-424): the links need a token, their page
+    # only the token of the link.
+    install_live_shares(app)
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)

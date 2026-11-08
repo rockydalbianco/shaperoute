@@ -172,7 +172,7 @@ async function showPost(id: string) {
   await within(<FeedPost post={shownPost(post(id))} width={320} onOpen={jest.fn()} />);
 }
 
-test("a post with its exercises shows its energy on the tile and in its facts", async () => {
+test("a post with its exercises shows its energy on the tile and in its numbers", async () => {
   fetchSpy.mockImplementation(
     answers({
       status: 200,
@@ -196,9 +196,8 @@ test("a post with its exercises shows its energy on the tile and in its facts", 
   expect(
     screen.getByTestId("gym-tile-kcal", { includeHiddenElements: true }),
   ).toHaveTextContent("184 kcal");
-  expect(
-    screen.getAllByText(/· 184 kcal/, { includeHiddenElements: true }).length,
-  ).toBeGreaterThan(0);
+  // Under the card, in its boxes (TASK-410 part F).
+  expect(screen.getByLabelText("Calories: 184 kcal")).toBeOnTheScreen();
 });
 
 test("a post whose exercises are hidden shows no energy", async () => {

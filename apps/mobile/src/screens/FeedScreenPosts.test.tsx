@@ -102,14 +102,16 @@ test("signed in, the page shows the drawings the members published", async () =>
   expect(await screen.findByText("Ada_runs")).toBeOnTheScreen();
   expect(screen.getByText("Sunday heart by the river")).toBeOnTheScreen();
   expect(screen.getByText("Trento")).toBeOnTheScreen();
-  expect(
-    screen.getByText("Star · 4.0 km · 19 min · 4:45 /km · 280 kcal"),
-  ).toBeOnTheScreen();
+  // Its numbers in boxes, as on its page (TASK-410 part F).
+  expect(screen.getAllByTestId("feed-summary")[0]).toHaveTextContent(
+    /4\.00 km.*19:00.*4:45 \/km.*280 kcal/,
+  );
   // The second, a word on a bike without a title, named by its day.
   expect(screen.getByText("adam.trento")).toBeOnTheScreen();
-  expect(
-    screen.getByText("Bike · ciao · 6.1 km · 34 min · 5:28 /km · 125 kcal"),
-  ).toBeOnTheScreen();
+  // On a bike, its speed in place of the pace (TASK-410 part F).
+  expect(screen.getAllByTestId("feed-summary")[1]).toHaveTextContent(
+    /6\.\d\d km.*km\/h.*125 kcal/,
+  );
   expect(screen.queryByTestId("feed-loading")).toBeNull();
   expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
   // Asked once, with the token, never with the phone's position.

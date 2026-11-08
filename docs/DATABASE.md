@@ -1027,6 +1027,22 @@ Migrazione `0053_pool_swims.sql` (TASK-400 parte A, ADR-0334, `API.md`
 - Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
   `test_pool_swims.py`.
 
+Migrazione `0063_live_shares.sql` (TASK-424 parte A1, ADR-0352, `API.md`
+«Live shares»; numero in bozza del Coordinatore, quello vero il primo
+libero al merge):
+
+- **`live_shares`**: una riga per link. `id` (uuid casuale), `user_id`
+  (`CASCADE` su `users`), `token_hash` (SHA-256 del token, 32 byte,
+  unico: il token non si tiene), `activity`, `pool_length_m` (solo per la
+  piscina), `created_at`, `expires_at`, `finished_at`, `stopped_at`,
+  `paused`, `stats` (`jsonb`, gli ultimi numeri), `updated_at`.
+- **`live_share_points`**: i punti del link, esatti (`lat`, `lon`, `at`),
+  `CASCADE` sul link; `id` è il `seq` che la pagina chiede.
+- **Si cancellano presto**: punti e `stats` allo stop subito, alla
+  scadenza dal giro di pulizia (5 minuti); la riga vuota un giorno dopo.
+  Fuori dalle copie notturne (`backup.sh`, `--exclude-table-data`). Test
+  in `test_live_shares.py`.
+
 Migrazione `0054_ski_resorts.sql` (TASK-406 parte A, ADR-0338, `API.md`
 «Ski resorts»; il numero è del Coordinatore):
 
@@ -1073,6 +1089,18 @@ del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
 - `favorites`, `group_runs` e `run_bests` no: nessun percorso da rifare,
   nessun record personale.
 - Nessuna riga cambia. Test in `test_ski_touring_api.py`.
+
+Migrazione `0061_run_heart.sql` (TASK-409 parte B1, ADR-0334 precisazione D;
+numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
+
+- **`runs`**: `heart_avg_bpm` e `heart_max_bpm` (`smallint`, null) e
+  `heart_shown` (`boolean`, `NOT NULL DEFAULT true`). Il vincolo
+  `runs_heart_check`: tutti e due o nessuno, da 30 a 230, il medio non sopra
+  il massimo. È un **dato sulla salute** (GDPR art. 9): arriva solo dopo il
+  consenso alla lettura sul telefono (il pulsante a fine nuoto, TASK-409).
+- Oggi li scrive solo un nuoto in piscina (`pool_swims.py`); le altre corse
+  restano null (TASK-345 B li userà per ogni sport). Si cancellano con la
+  corsa e con l'account. Nessun backfill. Test in `test_pool_swims.py`.
 
 Migrazione `0062_followed_resorts.sql` (TASK-406 parte D3a, ADR-0338, `API.md`
 «Seguire una stazione e i suoi post»; il numero è il primo libero al merge):
@@ -1123,4 +1151,7 @@ ADR-0111).
 - Una corsa va a Strava solo quando il suo proprietario lo chiede, e solo
   all'atleta che lui ha collegato (TASK-187); a Strava si chiede il solo
   permesso di aggiungere attività, niente in lettura.
+- Una posizione condivisa dal vivo (TASK-424) va a chi ha il link solo
+  finché il link vale; poi si cancella, e non entra nelle copie di
+  sicurezza.
 - Età minima 16 anni.

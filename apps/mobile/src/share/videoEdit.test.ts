@@ -16,7 +16,17 @@ describe("the choices of «Edit video» (TASK-408 C1)", () => {
       line: "yellow",
       along: null,
       end: null,
+      order: ["opening", "route", "ending"],
+      off: ["opening"],
+      opening: "drawing",
+      cut: "fade",
+      ending: "drawing",
     });
+  });
+
+  it("start with the scenes of before: no opening, the route, the whole drawing (C2, choice 12)", () => {
+    expect(FIRST_EDIT.off).toEqual(["opening"]);
+    expect(FIRST_EDIT.ending).toBe("drawing");
   });
 
   it("offer five line colours from the tokens, the yellow the palette's own", () => {

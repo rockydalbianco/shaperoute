@@ -57,6 +57,7 @@ from shaperoute_api.insights.events import wanted as insights_wanted
 from shaperoute_api.insights.vocabulary import DEFAULT_PATH as VOCABULARY
 from shaperoute_api.insights.vocabulary import Vocabulary
 from shaperoute_api.kept_routes import install_kept_routes
+from shaperoute_api.live_shares import LiveShares, LiveShareSweep
 from shaperoute_api.media_files import MediaConfigError
 from shaperoute_api.message_media import (
     SweepRound,
@@ -332,6 +333,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     install_message_media(app, message_media)
     if message_media is not None:
         SweepRound(message_media).start()
+    # The round that deletes the points and numbers of the live shares that
+    # ended (TASK-424, ADR-0352); their endpoints are in create_app.
+    if accounts is not None:
+        LiveShareSweep(LiveShares(accounts.database, accounts.now)).start()
     # Each message of «Send feedback» emailed to whoever runs MuW (TASK-308):
     # off without Resend and the address; the messages are kept either way.
     feedback_emails = None if feedback_setup is None else FeedbackEmails(feedback_setup)

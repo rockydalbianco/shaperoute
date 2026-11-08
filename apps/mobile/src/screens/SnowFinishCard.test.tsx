@@ -80,6 +80,10 @@ test("a day of skiing has its descents, metres down, speeds and lifts", async ()
   expect(screen.getByLabelText("Avg speed: 36.0 km/h")).toBeOnTheScreen();
   expect(screen.getByLabelText("Lifts: 1")).toBeOnTheScreen();
   expect(screen.getByLabelText("Time: 9:00")).toBeOnTheScreen();
+  // The whole day, the lift too (TASK-406 part D2), then the snow and gear.
+  expect(screen.getByLabelText("Total: 3.60 km")).toBeOnTheScreen();
+  expect(screen.getByText("How was the snow?")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Your gear")).toBeOnTheScreen();
   // No calories on the snow, and no pace.
   expect(screen.queryByText("Calories")).toBeNull();
   expect(screen.queryByText("Avg pace")).toBeNull();
@@ -103,6 +107,9 @@ test("a day of cross-country skiing has a run's distance, pace and climb, no cal
   expect(screen.getByLabelText("Time: 9:00")).toBeOnTheScreen();
   expect(screen.queryByText("Calories")).toBeNull();
   expect(screen.queryByText("Descents")).toBeNull();
+  // The resort's snow and gear are a downhill day's.
+  expect(screen.queryByText("Total")).toBeNull();
+  expect(screen.queryByText("How was the snow?")).toBeNull();
 });
 
 test("the day keeps the ways out of a run", async () => {

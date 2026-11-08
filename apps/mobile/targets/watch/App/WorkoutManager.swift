@@ -51,7 +51,11 @@ final class WorkoutManager: NSObject, ObservableObject {
         workout?.phase ?? .ready
     }
 
-    override init() {
+    /// Where the routes the phone sends are kept (part B3a).
+    private let routes: RouteStore?
+
+    init(routes: RouteStore? = nil) {
+        self.routes = routes
         super.init()
         phone.onMessage = { [weak self] message in
             self?.receive(message)
@@ -197,6 +201,8 @@ final class WorkoutManager: NSObject, ObservableObject {
         case let .settings(chosen, _):
             units = chosen
             UserDefaults.standard.set(chosen.rawValue, forKey: Self.unitsKey)
+        case .route, .routes:
+            routes?.receive(message)
         default:
             break
         }

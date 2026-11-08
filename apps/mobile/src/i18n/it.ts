@@ -931,9 +931,6 @@ export const IT: Table = {
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Tieni premuto per eliminare.",
 
-  // src/feed/ActionBar.tsx
-  Reactions: "Reazioni",
-
   // src/social/DrawingReactions.tsx
   React: "Reagisci",
   "Your reaction: {name}": "La tua reazione: {name}",
@@ -1228,12 +1225,17 @@ export const IT: Table = {
   "Plan name": "Nome della scheda",
   Sets: "Serie",
   "{n} exercises": "{n} esercizi",
-  "Today: {plan}": "Oggi: {plan}",
+  "1 exercise": "1 esercizio",
   "Start without the plan": "Inizia senza scheda",
   "Plan: {done}/{total} sets": "Scheda: {done}/{total} serie",
   "Delete plan": "Elimina la scheda",
   "Delete “{name}”?": "Eliminare «{name}»?",
   Planned: "In programma",
+  "Start “{plan}”": "Inizia «{plan}»",
+  "{n} plans": "{n} schede",
+  "1 plan": "1 scheda",
+  "Set {n} of {total}": "Serie {n} di {total}",
+  "Then: {exercise}": "Poi: {exercise}",
   "{n} times · {time}": "{n} volte · {time}",
   Workout: "Allenamento",
   "Only sets logged live count.":
@@ -1694,6 +1696,18 @@ export const IT: Table = {
   Pink: "Rosa",
   Green: "Verde",
   White: "Bianco",
+  // src/share/ScenesRows.tsx, EndingRow.tsx, videoScenes.ts (TASK-408 C2, texts of choice 10)
+  Scenes: "Scene",
+  Opening: "Apertura",
+  "The route": "Il percorso",
+  Ending: "Finale",
+  "Drawing in 2D": "Disegno in 2D",
+  Cut: "Taglio",
+  Fade: "Dissolvenza",
+  Numbers: "Numeri",
+  "Whole drawing": "Disegno intero",
+  "All three": "Tutti e tre",
+  "At least one scene stays on.": "Almeno una scena resta accesa.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concorso MuW",
@@ -1893,6 +1907,10 @@ export const IT: Table = {
   "Too many photos today. Try again tomorrow.": "Oggi troppe foto. Riprova domani.",
   "Videos can't be sent right now. Try again later.":
     "Ora non si possono mandare video. Riprova più tardi.",
+  // The Apple Watch (TASK-370 part B3a).
+  "Send to watch": "Invia all'orologio",
+  "Sent to your watch": "Inviato all'orologio",
+  "Send a route from MuW on your iPhone": "Invia un percorso da MuW sull'iPhone",
   // The drawings of the private messages (TASK-333 part C).
   "Send to a friend": "Invia agli amici",
   "Send to…": "Invia a…",
@@ -2063,4 +2081,23 @@ export const IT: Table = {
     "Previsione meno recente: MET Norway non risponde.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Meteo: MET Norway (CC BY 4.0) · Stazioni: OpenSkiMap.org, © i contributori di OpenStreetMap",
+  // src/ski/DayResort.tsx, DayChoices.tsx, SkiDayLine.tsx, screens/SnowFinishCard.tsx
+  // (TASK-406 part D2: the day of skiing, texts approved on 2026-11-08)
+  "Where are you skiing?": "Dove stai sciando?",
+  "Change@@resort": "Cambia",
+  "No ski resort nearby": "Nessuna stazione sciistica vicina",
+  "{temperature} now · {snow} fresh snow":
+    "{temperature} adesso · {snow} di neve fresca",
+  Total: "Totale",
+  "How was the snow?": "Com'era la neve?",
+  Powder: "Farinosa",
+  Groomed: "Battuta",
+  Icy: "Ghiacciata",
+  Spring: "Primaverile",
+  Heavy: "Pesante",
+  "Your gear": "La tua attrezzatura",
+  "Ski or snowboard, brand and model": "Sci o snowboard, marca e modello",
+  Resort: "Stazione",
+  Snow: "Neve",
+  Gear: "Attrezzatura",
 };

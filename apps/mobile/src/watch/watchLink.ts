@@ -46,6 +46,9 @@ export type WatchNative = {
   /** The context last sent: the package sends back each one it receives,
    * so this is the watch's last one. */
   getApplicationContext(): Promise<object | null>;
+  /** Whether an Apple Watch is paired, and has the MuW app (part B3a). */
+  getIsPaired(): Promise<boolean>;
+  getIsWatchAppInstalled(): Promise<boolean>;
   addListener(eventName: string): void;
   removeListeners(count: number): void;
 };
@@ -64,6 +67,9 @@ export type WatchLink = {
    * too) and its user info, already read: one that does not read is left
    * out, as the messages' rules say. Returns the function that stops. */
   listen(onMessage: (message: WatchMessage) => void): () => void;
+  /** Whether a watch is paired and has the app, so that what is sent to
+   * it arrives (part B3a: «Send to watch» shows only then). Never throws. */
+  ready(): Promise<boolean>;
 };
 
 type Fields = Record<string, unknown>;
@@ -127,6 +133,13 @@ export function linkOn(native: WatchNative, emitter: WatchEmitter): WatchLink {
           subscription.remove();
         }
       };
+    },
+    async ready() {
+      try {
+        return (await native.getIsPaired()) && (await native.getIsWatchAppInstalled());
+      } catch {
+        return false;
+      }
     },
   };
 }

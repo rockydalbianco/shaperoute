@@ -1,7 +1,8 @@
 # TASK-413 — Ciaspole: forme piccole libere sulla neve
 
-**Stato**: In corso — parte 0 in `main` (#933, `189374bc`); prossime A1, A2, B,
-ciascuna in una sessione nuova
+**Stato**: In corso — parte 0 in `main` (#933, `189374bc`); A1 nella PR #957
+(`feat/TASK-413-a1-snow-engine`; server e `draw_examples` approvati
+dall'utente il 2026-11-08, «approvo tutto»; aspetta «merge 957»); prossime A2, B, ciascuna in una sessione nuova
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -138,6 +139,31 @@ docs/tasks/TASK-413.md, docs/STATUS.md, docs/sports/snowshoes.md,
   riscaricano e si rifanno con `fetch` e `run`; le regole scelte sono la
   variante `chosen`.
 
+**Accordi della parte A1** (2026-11-08):
+
+- **`heights.py` lo crea A1** (Coordinatore, 2026-11-08): TASK-347 G non
+  ha né sessione né branch. A1 scrive la parte comune minima (tegole
+  Terrarium da PNG con Pillow, già dipendenza del motore; cache in
+  `<cache>/heights/`; quota bilineare per punto; griglia di pendenze a celle
+  di 25 m; il download dietro una funzione sostituibile, niente rete nei
+  test), fuori dall'impronta come `DRAWN_WATER_ONLY`. G vi aggiunge
+  `elevation_profile`, TASK-415 C la pendenza sotto la traccia, senza
+  riscriverlo. `tasks/TASK-347.md` non si tocca: l'accordo sta qui, il
+  Coordinatore lo mette in `AGENTI.md`.
+- **Le ciaspole nel motore, non nel contratto** (Coordinatore,
+  2026-11-08): una tupla `ENGINE_ONLY` del registro; `SUPPORTED_ACTIVITIES`,
+  il contratto e l'API non cambiano in A1. A2 sposta `snowshoeing` in
+  `ENGINE_ACTIVITIES` insieme alle righe del contratto.
+- **L'ordine con TASK-414 A** (Coordinatore Sport, 2026-11-08): A1 entra
+  prima; TASK-414 A riallinea su `main` dopo (`activities/`, `models.py`,
+  `test_sport_registry.py`, `test_bike_network.py`, `route_store.py` in
+  comune).
+- **Per A2**: `anchored.check_placement` rifiuta oggi solo l'acqua; va
+  esteso a `FREE_ACTIVITIES` quando le ciaspole entrano nell'API. Al banco
+  (`sports/snowshoes.md`, «La parte A1»): in una città una richiesta costa
+  fino a 44 s, e l'errore può proporre meno di 0,5 km; `errors.py` scarta
+  le distanze sotto il minimo solo per `WATER_ACTIVITIES`.
+
 ### Parte B — app (dopo A)
 
 Il profilo completo (`settings/sport.ts`, l'emoji in
@@ -205,9 +231,11 @@ Tutte come la proposta, tranne la terza:
 - [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-08).
 - [x] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
       della migrazione (bozza 0057, 2026-11-08).
-- [ ] A1: una forma sulla neve di prova sta fuori da pendii, boschi, piste e
+- [x] A1: una forma sulla neve di prova sta fuori da pendii, boschi, piste e
       paesi, parte da un punto raggiungibile a piedi; test deterministici
-      senza rete; canoa e nuoto identici al banco (`compare --same`).
+      senza rete; canoa e nuoto identici al banco (`compare --same`)
+      (2026-11-08: 48 forme su 60 sul motore vero, Milano nessuna; 27
+      canoe identiche, i nove percorsi fissi identici).
 - [ ] A2: lo sport è nel contratto e nell'API, nascosto nell'app; il server
       scarica la neve di un posto nuovo.
 - [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
@@ -225,6 +253,25 @@ docs/STATUS.md                (righe proprie)
 docs/INDEX.md                 (una riga)
 ```
 
-Parti A1, A2 e B: le liste qui sopra, da confermare al Coordinatore prima
+Parte A1 (`feat/TASK-413-a1-snow-engine`, lista approvata dal Coordinatore
+il 2026-11-08):
+
+```
+services/route-engine/route_engine/heights.py, snow.py, snowshoeing.py   (nuovi)
+services/route-engine/route_engine/activities/snowshoeing.py             (nuovo)
+services/route-engine/route_engine/activities/__init__.py, base.py
+services/route-engine/route_engine/models.py, __main__.py
+services/route-engine/tests/test_heights.py, test_snow.py, test_snowshoeing.py  (nuovi)
+services/route-engine/tests/test_sport_registry.py, test_bike_network.py,
+    test_walking.py (i limiti dell'API sono quelli del contratto, non di ENGINE_ONLY)
+services/api/shaperoute_api/route_store.py        (SNOW_ONLY, SAME_ROUTES_AS)
+services/api/tests/test_snow_fingerprint.py       (nuovo)
+services/api/tests/fixtures/same_routes/5e374d843dda.json  (nuovo: la prova)
+apps/mobile/assets/engine/engine.zip              (rifatto, ultimo commit)
+docs/tasks/TASK-413.md, docs/sports/snowshoes.md
+docs/STATUS.md, docs/DECISIONS.md (aggiunta ad ADR-0342): in una PR di soli documenti dopo il merge (regola del Coordinatore, 2026-11-08)
+```
+
+Parti A2 e B: le liste qui sopra, da confermare al Coordinatore prima
 del codice. `docs/sports/CONDIVISO.md` lo tiene il Coordinatore Sport: la
 voce della neve gli è mandata, non scritta da qui.

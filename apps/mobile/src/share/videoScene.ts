@@ -24,7 +24,13 @@ import {
 } from "./postRun";
 import type { Sticker } from "./stickers";
 import type { Character } from "./videoCharacter";
-import { ALONG_COUNT, type LineColour, lineColourOf } from "./videoEdit";
+import {
+  ALONG_COUNT,
+  FIRST_EDIT,
+  type LineColour,
+  lineColourOf,
+  type VideoEdit,
+} from "./videoEdit";
 import {
   MAP_CREDIT,
   MAP_PIXEL_RATIO,
@@ -34,6 +40,15 @@ import {
   type VideoMap,
   videoMap,
 } from "./videoMap";
+import {
+  type Cut,
+  type Ending,
+  type Opening,
+  SCENES,
+  type SceneName,
+  type SceneWindow,
+  sceneWindows,
+} from "./videoScenes";
 import { styleMap, styleRelief, stylePalette, type VideoStyle } from "./videoStyle";
 
 /**
@@ -70,8 +85,33 @@ export type VideoLook = "paper" | VideoStyle;
 
 /** When each part starts and how long the line takes, in seconds. */
 const INTRO_S = 1;
-const DRAW_S = 8;
-const HOLD_FROM_S = INTRO_S + DRAW_S;
+/** The scenes (TASK-408, part C2): the route's line starts this long into
+ * the route when the route is not first; the opening fades this long into
+ * what follows with «Fade»; its drawing starts this long into it and is
+ * whole this long before its end; with the ending off, its things come in
+ * this long before the video ends. */
+const LEAD_S = 0.3;
+const FADE_S = 0.5;
+const HOLD_S = 0.5;
+const LAST_S = 1.5;
+/** The opening's title: its size as a multiple of the title's, its top as
+ * a share of the height. */
+const BIG_TITLE = 1.5;
+const BIG_TITLE_TOP = 0.36;
+/** The ending's «Numbers»: their size as a multiple of the values', the
+ * first one's top as a share of the height. */
+const BIG_NUMBERS = 1.5;
+const BIG_NUMBERS_TOP = 0.3;
+/** The ending's heart: its square's side as a share of the width, its
+ * middle as a share of the height, the name's size as a multiple of the
+ * logo's; where in «All three» it comes in, as a share of the ending. */
+const HEART_CARD = 0.34;
+const HEART_CARD_MIDDLE = 0.44;
+const BIG_NAME = 1.8;
+const ALL_HEART_FROM = 0.45;
+/** How much of the look's ground veils the picture under the ending's
+ * numbers and heart. */
+const VEIL = 0.7;
 /** Between one emoji and the next coming in, and how long each takes. */
 const EMOJI_STEP_S = 0.15;
 const EMOJI_POP_S = 0.35;
@@ -133,7 +173,7 @@ const PHONE_WIDTH = 390;
 
 /** A colour of the look an op is drawn in. */
 export type ColorRole =
-  "ink" | "muted" | "faint" | "accent" | "onAccent" | "dot" | "line";
+  "ink" | "muted" | "faint" | "accent" | "onAccent" | "dot" | "line" | "paper";
 
 /** The colours of a look, from the tokens: what each role means. */
 export type VideoColors = {
@@ -159,8 +199,10 @@ export type VideoOp =
   /** The map's picture, once the page has it. On «3D», `turn` is where the
    * camera has turned to, in degrees about the drawing's bearing, when it
    * turns, and `zoom` how far the one picture is zoomed about the drawing's
-   * middle when the map stands still: the page knows which. */
-  | { k: "map"; alpha: number; turn?: number; zoom?: number }
+   * middle when the map stands still: the page knows which. With `flat`,
+   * the map seen from straight above under the opening's drawing
+   * (TASK-408, part C2), when the page has that picture. */
+  | { k: "map"; alpha: number; turn?: number; zoom?: number; flat?: boolean }
   /** The veil rising from `top` to the bottom edge, `peak` opaque there. */
   | { k: "scrim"; top: number; peak: number; alpha: number }
   /** A filled square with round corners. */
@@ -254,9 +296,12 @@ export type VideoScene = {
   fps: number;
   look: VideoLook;
   colors: VideoColors;
-  /** The map under the pictures; null on paper, or with nothing to frame. */
-  map: VideoMap | null;
-  /** Lines, each as x0, y0, x1, y1, …: the logo's heart, then the run. */
+  /** The map under the pictures; null on paper, or with nothing to frame.
+   * With `flat`, the page also takes its picture from straight above, for
+   * the opening on «3D» (TASK-408, part C2). */
+  map: (VideoMap & { flat?: boolean }) | null;
+  /** Lines, each as x0, y0, x1, y1, …: the logo's heart, then the run;
+   * then the ending's large heart when it has one (TASK-408). */
   paths: number[][];
   /** The animal that runs the line (TASK-408); null for the pen's tip only. */
   character: Character | null;
@@ -266,6 +311,7 @@ export type VideoScene = {
 
 const HEART_PATH = 0;
 const RUN_PATH = 1;
+const BIG_HEART_PATH = 2;
 
 /** The most points of the run's line, and the closest two may be. */
 export const MAX_POINTS = 2000;
@@ -629,10 +675,34 @@ function layoutOf(
     y: resultsTop + Math.floor(i / 2) * (labelHeight + valueHeight + w * look.rowGap),
   }));
 
+  // The ending's large heart, on its square in the middle (TASK-408).
+  const cardSide = w * HEART_CARD;
+  const cardWidth = cardSide * HEART_SHARE;
+  const cardScale = cardWidth / HEART_BOX.width;
+  const cardLeft = w / 2 - cardWidth / 2;
+  const cardTop = h * HEART_CARD_MIDDLE - heartHeight(cardWidth) / 2;
+  const cardPath = HEART_POINTS.flatMap(([x, y]) => [
+    round(cardLeft + x * cardScale),
+    round(cardTop + y * cardScale),
+  ]);
+
   return {
     badge,
     corner,
     heart,
+    heartCard: {
+      x: w / 2,
+      y: h * HEART_CARD_MIDDLE,
+      side: cardSide,
+      path: cardPath,
+      length: lengthOf(cardPath),
+      dot: {
+        x: cardPath[0],
+        y: cardPath[1],
+        r: (cardSide * HEART_DOT_SHARE) / 2,
+        ring: cardSide * HEART_RING_SHARE,
+      },
+    },
     heartLength: lengthOf(heart),
     heartLine: badge * HEART_LINE_SHARE,
     heartDot: {
@@ -696,6 +766,80 @@ const CREDIT_STYLE: TextStyle = {
   lineHeight: LINE_HEIGHT,
 };
 
+/** When the scenes play (TASK-408, part C2): the opening, the route with
+ * the second its line starts drawing, and the ending, each null when off;
+ * what the opening and the ending show. */
+type Plan = {
+  opening: SceneWindow | null;
+  route: (SceneWindow & { drawFrom: number }) | null;
+  ending: SceneWindow | null;
+  kind: Opening;
+  cut: Cut;
+  endKind: Ending;
+  /** On «3D», the map seen from straight above for the opening's drawing. */
+  flat: boolean;
+};
+
+function planOf(scenes: SceneChoice, relief: boolean): Plan {
+  let windows = sceneWindows(scenes.order, scenes.off, VIDEO_SECONDS);
+  if (windows.length === 0) {
+    windows = sceneWindows(SCENES, ["opening"], VIDEO_SECONDS);
+  }
+  const of = (name: SceneName) => windows.find((w) => w.scene === name) ?? null;
+  const route = of("route");
+  const opening = of("opening");
+  return {
+    opening,
+    route:
+      route === null
+        ? null
+        : { ...route, drawFrom: route.from + (route.from === 0 ? INTRO_S : LEAD_S) },
+    ending: of("ending"),
+    kind: scenes.opening,
+    cut: scenes.cut,
+    endKind: scenes.ending,
+    flat: relief && opening !== null && scenes.opening === "drawing",
+  };
+}
+
+/** How much of what follows the opening shows at `t`: all of it outside
+ * the opening; inside, nothing, or coming in over its last half second
+ * with «Fade» when a scene comes after it. */
+function afterOpening(t: number, plan: Plan): number {
+  const o = plan.opening;
+  if (o === null || t < o.from || t >= o.to) {
+    return 1;
+  }
+  return plan.cut === "fade" && o.to < VIDEO_SECONDS ? ramp(t, o.to - FADE_S, o.to) : 0;
+}
+
+/** How much of the opening shows at `t`. */
+function openingShown(t: number, plan: Plan): number {
+  const o = plan.opening;
+  return o === null || t < o.from || t >= o.to ? 0 : 1 - afterOpening(t, plan);
+}
+
+/** How much of its line the run has drawn at `t`: drawing itself in the
+ * route, whole in the ending and after the route. */
+function drawnShare(t: number, plan: Plan): number {
+  const { route, ending } = plan;
+  if (ending !== null && t >= ending.from && t < ending.to) {
+    return 1;
+  }
+  if (route === null) {
+    return ending !== null && t >= ending.from ? 1 : 0;
+  }
+  return easeInOut(ramp(t, route.drawFrom, route.to));
+}
+
+/** When the line has drawn `share` of itself in `route`, in seconds: the
+ * inverse of its slow-at-both-ends draw. */
+function drawnAt(route: { drawFrom: number; to: number }, share: number): number {
+  return (
+    route.drawFrom + ((route.to - route.drawFrom) * Math.acos(1 - 2 * share)) / Math.PI
+  );
+}
+
 /** What the picture at `t` seconds shows. */
 function frameAt(
   t: number,
@@ -705,11 +849,24 @@ function frameAt(
   look: Look,
   language: string,
   options: SceneOptions,
+  plan: Plan,
 ): VideoOp[] {
   const character = options.character ?? null;
   const w = VIDEO_WIDTH;
   const h = VIDEO_HEIGHT;
   const ops: VideoOp[] = [];
+  const { route, ending } = plan;
+  // What follows the opening, and the opening, at this picture.
+  const main = afterOpening(t, plan);
+  const opening = openingShown(t, plan);
+  // The seconds the ending's things come in from: the ending's own, or the
+  // video's last, with the ending off.
+  const endFrom = ending !== null ? ending.from : VIDEO_SECONDS - LAST_S;
+  // The ending's things go once it is over, when another scene follows.
+  const endOut =
+    ending !== null && ending.to < VIDEO_SECONDS
+      ? 1 - ramp(t, ending.to, ending.to + 0.3)
+      : 1;
 
   // The map comes in with the logo, and the dark under the words with it.
   const ground = round3(ramp(t, 0, 0.5));
@@ -723,9 +880,17 @@ function frameAt(
         turn: round3(-TURN_DEG + 2 * TURN_DEG * u),
         zoom: round3(1 + (STILL_ZOOM - 1) * u),
       });
+      // The map from straight above under the opening's drawing.
+      if (plan.flat && opening > 0) {
+        ops.push({ k: "map", alpha: round3(ground * opening), flat: true });
+      }
     } else {
       ops.push({ k: "map", alpha: ground });
     }
+  }
+
+  if (opening > 0 && plan.opening !== null) {
+    ops.push(...openingOps(t, run, layout, look, plan.opening, plan.kind, opening));
   }
 
   const brand = round3(ramp(t, 0, 0.5));
@@ -770,6 +935,8 @@ function frameAt(
     ),
   );
   if (run.title !== null) {
+    // The title at the top, out of the way of the opening's own title.
+    const titled = plan.opening !== null && plan.kind === "title" ? main : 1;
     ops.push(
       text(
         run.title,
@@ -778,15 +945,15 @@ function frameAt(
         look.title,
         "ink",
         w * (1 - 2 * SIDE),
-        ramp(t, 0.2, 0.8),
+        ramp(t, 0.2, 0.8) * titled,
         "center",
         2,
       ),
     );
   }
 
-  const share = easeInOut(ramp(t, INTRO_S, HOLD_FROM_S));
-  if (layout.trackLength > 0 && share > 0) {
+  const share = drawnShare(t, plan);
+  if (layout.trackLength > 0 && share > 0 && main > 0) {
     const upTo = layout.trackLength * share;
     if (look.casing !== null) {
       ops.push({
@@ -795,7 +962,7 @@ function frameAt(
         upTo: round(upTo),
         width: round(layout.line + w * look.casing.extra),
         color: "onAccent",
-        alpha: round3(look.casing.alpha),
+        alpha: round3(look.casing.alpha * main),
       });
     }
     ops.push({
@@ -804,11 +971,12 @@ function frameAt(
       upTo: round(upTo),
       width: round(layout.line),
       color: look.line.color,
-      alpha: 1,
+      alpha: round3(main),
       ...(look.relief ? { share: round3(share) } : {}),
     });
-    // The pen's tip while it draws, gone once the drawing is whole.
-    const tip = 1 - ramp(t, HOLD_FROM_S, HOLD_FROM_S + 0.3);
+    // The pen's tip while the route draws, gone once the drawing is whole.
+    const tip =
+      route !== null && t >= route.from ? 1 - ramp(t, route.to, route.to + 0.3) : 0;
     if (tip > 0) {
       const [x, y] = pointAlong(layout.track, upTo);
       ops.push({
@@ -819,16 +987,18 @@ function frameAt(
         ring: round(layout.line * 0.5),
         fill: "line",
         ringColor: "onAccent",
-        alpha: round3(tip),
+        alpha: round3(tip * main),
         ...(look.relief ? { path: RUN_PATH, share: round3(share) } : {}),
       });
     }
     // The emoji of the way, popping as the line reaches each (TASK-408),
-    // under the animal that passes over them.
+    // under the animal that passes over them; at the ending's start when
+    // the route is off.
     if (options.along) {
       for (let i = 1; i <= ALONG_COUNT; i += 1) {
         const at = i / (ALONG_COUNT + 1);
-        const from = drawnAt(at);
+        const from =
+          route !== null ? drawnAt(route, at) : endFrom + 0.1 + (i - 1) * EMOJI_STEP_S;
         const pop = ramp(t, from, from + EMOJI_POP_S);
         if (pop > 0) {
           const [x, y] = pointAlong(layout.track, layout.trackLength * at);
@@ -839,16 +1009,17 @@ function frameAt(
             y: round(y),
             size: round(w * ALONG_EMOJI),
             scale: round3(easeOutBack(pop)),
-            alpha: round3(Math.min(1, pop * 2)),
+            alpha: round3(Math.min(1, pop * 2) * main),
             ...(look.relief ? { path: RUN_PATH, share: round3(at) } : {}),
           });
         }
       }
     }
-    // The animal over the tip, galloping while the line draws, then at
-    // rest at the end of it.
+    // The animal over the tip, galloping while the route draws, then at
+    // rest at the end of the line.
     if (character !== null) {
-      const running = t < HOLD_FROM_S;
+      const running = route !== null && t >= route.from && t < route.to;
+      const restFrom = route !== null && t >= route.to ? route.to : endFrom;
       ops.push({
         k: "character",
         path: RUN_PATH,
@@ -856,8 +1027,8 @@ function frameAt(
         size: round(w * CHARACTER),
         tilt: look.relief ? 90 - PITCH_3D : CHARACTER_TILT,
         clip: running ? "run" : "rest",
-        time: round3(running ? t - INTRO_S : t - HOLD_FROM_S),
-        alpha: 1,
+        time: round3(running && route !== null ? t - route.drawFrom : t - restFrom),
+        alpha: round3(main),
         ...(look.relief ? { share: round3(share) } : {}),
       });
     }
@@ -868,11 +1039,18 @@ function frameAt(
       k: "scrim",
       top: round(h * SCRIM_TOP),
       peak: look.scrimPeak,
-      alpha: ground,
+      alpha: round3(ground * main),
     });
   }
 
-  const numbers = ramp(t, 0.6, 1);
+  // The numbers come in with the route or the ending, whichever is first;
+  // the big numbers of the ending take their place.
+  const shownFrom = Math.min(route?.from ?? Infinity, ending?.from ?? Infinity);
+  const big =
+    ending !== null && plan.endKind === "numbers"
+      ? ramp(t, ending.from, ending.from + 0.5) * endOut
+      : 0;
+  const numbers = ramp(t, shownFrom + 0.6, shownFrom + 1) * main * (1 - big);
   for (const { result, x, y } of layout.placed) {
     const value = valueAt(run, result, share);
     const name = resultName(result);
@@ -901,6 +1079,20 @@ function frameAt(
       );
     }
   }
+
+  if (ending !== null && t >= ending.from) {
+    if (big > 0) {
+      ops.push(...bigNumbersOps(run, layout, look, language, big * main));
+    }
+    if (plan.endKind === "heart" || plan.endKind === "all") {
+      const from =
+        plan.endKind === "heart"
+          ? ending.from + 0.2
+          : ending.from + (ending.to - ending.from) * ALL_HEART_FROM;
+      ops.push(...heartCardOps(t, layout, from, endOut * main));
+    }
+  }
+
   if (look.credit !== null) {
     ops.push(
       text(
@@ -910,7 +1102,7 @@ function frameAt(
         CREDIT_STYLE,
         "faint",
         w * (1 - 2 * SIDE),
-        numbers,
+        ramp(t, 0.6, 1),
         "center",
       ),
     );
@@ -919,10 +1111,10 @@ function frameAt(
   stickers.forEach((sticker, i) => {
     const pop = ramp(
       t,
-      HOLD_FROM_S + 0.2 + i * EMOJI_STEP_S,
-      HOLD_FROM_S + 0.2 + i * EMOJI_STEP_S + EMOJI_POP_S,
+      endFrom + 0.2 + i * EMOJI_STEP_S,
+      endFrom + 0.2 + i * EMOJI_STEP_S + EMOJI_POP_S,
     );
-    if (pop > 0) {
+    if (pop > 0 && main > 0) {
       ops.push({
         k: "emoji",
         text: sticker.emoji,
@@ -930,16 +1122,17 @@ function frameAt(
         y: round(sticker.y * h),
         size: round(w * EMOJI),
         scale: round3(easeOutBack(pop)),
-        alpha: round3(Math.min(1, pop * 2)),
+        alpha: round3(Math.min(1, pop * 2) * main),
       });
     }
   });
   // The emoji of the end, bursting around the whole drawing (TASK-408).
   if (options.end) {
     END_SPOTS.forEach(([x, y], i) => {
-      const from = HOLD_FROM_S + 0.1 + i * END_STEP_S;
+      const from = endFrom + 0.1 + i * END_STEP_S;
       const pop = ramp(t, from, from + EMOJI_POP_S);
-      if (pop > 0) {
+      const alpha = Math.min(1, pop * 2) * endOut * main;
+      if (pop > 0 && alpha > 0) {
         ops.push({
           k: "emoji",
           text: options.end as string,
@@ -947,7 +1140,7 @@ function frameAt(
           y: round(y * h),
           size: round(w * END_EMOJI),
           scale: round3(easeOutBack(pop)),
-          alpha: round3(Math.min(1, pop * 2)),
+          alpha: round3(alpha),
         });
       }
     });
@@ -955,26 +1148,235 @@ function frameAt(
   return ops;
 }
 
-/** When the line has drawn `share` of itself, in seconds: the inverse of
- * its slow-at-both-ends draw. */
-function drawnAt(share: number): number {
-  return INTRO_S + (DRAW_S * Math.acos(1 - 2 * share)) / Math.PI;
+/** The opening at `t`, `shown` that much: the line drawing itself from
+ * above, on the flat map, or the run's title large in the middle. */
+function openingOps(
+  t: number,
+  run: PostRun,
+  layout: Layout,
+  look: Look,
+  window: SceneWindow,
+  kind: Opening,
+  shown: number,
+): VideoOp[] {
+  const w = VIDEO_WIDTH;
+  const h = VIDEO_HEIGHT;
+  if (kind === "title") {
+    return [
+      text(
+        run.title ?? "MuW",
+        w / 2,
+        h * BIG_TITLE_TOP,
+        { ...look.title, size: look.title.size * BIG_TITLE },
+        "ink",
+        w * (1 - 2 * SIDE),
+        ramp(t, window.from + 0.1, window.from + 0.6) * shown,
+        "center",
+        3,
+      ),
+    ];
+  }
+  const share = easeInOut(
+    ramp(
+      t,
+      window.from + LEAD_S,
+      Math.max(window.from + LEAD_S + 0.5, window.to - HOLD_S),
+    ),
+  );
+  if (layout.trackLength <= 0 || share <= 0) {
+    return [];
+  }
+  const upTo = layout.trackLength * share;
+  const ops: VideoOp[] = [];
+  if (look.casing !== null) {
+    ops.push({
+      k: "line",
+      path: RUN_PATH,
+      upTo: round(upTo),
+      width: round(layout.line + w * look.casing.extra),
+      color: "onAccent",
+      alpha: round3(look.casing.alpha * shown),
+    });
+  }
+  ops.push({
+    k: "line",
+    path: RUN_PATH,
+    upTo: round(upTo),
+    width: round(layout.line),
+    color: look.line.color,
+    alpha: round3(shown),
+  });
+  if (share < 1) {
+    const [x, y] = pointAlong(layout.track, upTo);
+    ops.push({
+      k: "dot",
+      x: round(x),
+      y: round(y),
+      r: round(layout.line * 1.3),
+      ring: round(layout.line * 0.5),
+      fill: "line",
+      ringColor: "onAccent",
+      alpha: round3(shown),
+    });
+  }
+  return ops;
 }
 
+/** The ending's «Numbers»: the results large, one under the other in the
+ * middle, over a veil of the look's ground. */
+function bigNumbersOps(
+  run: PostRun,
+  layout: Layout,
+  look: Look,
+  language: string,
+  alpha: number,
+): VideoOp[] {
+  const w = VIDEO_WIDTH;
+  const h = VIDEO_HEIGHT;
+  const value = { ...look.value, size: look.value.size * BIG_NUMBERS };
+  const row = layout.labelHeight + w * value.size * value.lineHeight + w * look.rowGap;
+  const ops: VideoOp[] = [veil(alpha)];
+  layout.placed.forEach(({ result }, i) => {
+    const y = h * BIG_NUMBERS_TOP + i * row;
+    const name = resultName(result);
+    ops.push(
+      text(
+        look.label.upper ? name.toLocaleUpperCase(language) : name,
+        w / 2,
+        y,
+        look.label,
+        look.label.color,
+        w * (1 - 2 * SIDE),
+        alpha,
+        "center",
+      ),
+    );
+    const shown = valueAt(run, result, 1);
+    if (shown !== null) {
+      ops.push(
+        text(
+          shown,
+          w / 2,
+          y + layout.labelHeight,
+          value,
+          "ink",
+          w * (1 - 2 * SIDE),
+          alpha,
+          "center",
+        ),
+      );
+    }
+  });
+  return ops;
+}
+
+/** The ending's heart: the yellow square of MuW popping in the middle over
+ * a veil, the heart drawing itself on it, the name under it, from `from`
+ * seconds. */
+function heartCardOps(t: number, layout: Layout, from: number, out: number): VideoOp[] {
+  const w = VIDEO_WIDTH;
+  const shown = ramp(t, from, from + 0.4) * out;
+  if (shown <= 0) {
+    return [];
+  }
+  const card = layout.heartCard;
+  const side = card.side * easeOutBack(ramp(t, from, from + 0.5));
+  const drawn = easeInOut(ramp(t, from + 0.3, from + 1));
+  const ops: VideoOp[] = [
+    veil(shown),
+    {
+      k: "rect",
+      x: round(card.x - side / 2),
+      y: round(card.y - side / 2),
+      w: round(side),
+      h: round(side),
+      r: round(side * BADGE_CORNER_SHARE),
+      color: "accent",
+      alpha: round3(shown),
+    },
+  ];
+  if (drawn > 0) {
+    ops.push(
+      {
+        k: "line",
+        path: BIG_HEART_PATH,
+        upTo: round(card.length * drawn),
+        width: round(card.side * HEART_LINE_SHARE),
+        color: "onAccent",
+        alpha: round3(shown),
+      },
+      {
+        k: "dot",
+        ...card.dot,
+        r: round(card.dot.r),
+        ring: round(card.dot.ring),
+        fill: "dot",
+        ringColor: "onAccent",
+        alpha: round3(shown),
+      },
+    );
+  }
+  ops.push(
+    text(
+      "MuW",
+      card.x,
+      card.y + card.side / 2 + w * BRAND_GAP * 2,
+      { ...NAME_STYLE, size: NAME * BIG_NAME },
+      "ink",
+      w / 2,
+      ramp(t, from + 0.6, from + 1) * out,
+      "center",
+    ),
+  );
+  return ops;
+}
+
+/** The look's own ground over the whole picture, `alpha` of `VEIL`. */
+function veil(alpha: number): VideoOp {
+  return {
+    k: "rect",
+    x: 0,
+    y: 0,
+    w: VIDEO_WIDTH,
+    h: VIDEO_HEIGHT,
+    r: 0,
+    color: "paper",
+    alpha: round3(VEIL * alpha),
+  };
+}
+
+/** What «Edit video» chose for the scenes (TASK-408, part C2). */
+export type SceneChoice = Pick<
+  VideoEdit,
+  "order" | "off" | "opening" | "cut" | "ending"
+>;
+
 /** What «Edit video» adds to the post's video (TASK-408): the animal, the
- * line's colour on the map looks, the emoji of the way and of the end. */
-export type SceneOptions = {
+ * line's colour on the map looks, the emoji of the way and of the end, and
+ * the scenes, each as the post opens when not given. */
+export type SceneOptions = Partial<SceneChoice> & {
   character?: Character | null;
   line?: LineColour;
   along?: string | null;
   end?: string | null;
 };
 
+/** The scenes in `options`, as the post opens where not given. */
+function scenesOf(options: SceneOptions): SceneChoice {
+  return {
+    order: options.order ?? FIRST_EDIT.order,
+    off: options.off ?? FIRST_EDIT.off,
+    opening: options.opening ?? FIRST_EDIT.opening,
+    cut: options.cut ?? FIRST_EDIT.cut,
+    ending: options.ending ?? FIRST_EDIT.ending,
+  };
+}
+
 /**
  * The video of `run`'s post as it is now, in `look`: the results on in
  * `shown`, the emoji where the runner put them, and what «Edit video» chose
  * in `options` (TASK-408): the animal running the line, the line's colour,
- * the emoji of the way and of the end.
+ * the emoji of the way and of the end, the scenes and their order.
  */
 export function videoScene(
   run: PostRun,
@@ -996,6 +1398,9 @@ export function videoScene(
         );
   const language = appLanguage();
   const layout = layoutOf(run, shown, spec, palette, language);
+  const plan = planOf(scenesOf(options), spec.relief);
+  const hearted =
+    plan.ending !== null && (plan.endKind === "heart" || plan.endKind === "all");
   const count = VIDEO_SECONDS * VIDEO_FPS;
   return {
     width: VIDEO_WIDTH,
@@ -1003,11 +1408,13 @@ export function videoScene(
     fps: VIDEO_FPS,
     look,
     colors: spec.colors,
-    map: layout.map,
-    paths: [layout.heart, layout.track],
+    map: layout.map !== null && plan.flat ? { ...layout.map, flat: true } : layout.map,
+    paths: hearted
+      ? [layout.heart, layout.track, layout.heartCard.path]
+      : [layout.heart, layout.track],
     character: options.character ?? null,
     frames: Array.from({ length: count }, (_, i) =>
-      frameAt(i / VIDEO_FPS, run, stickers, layout, spec, language, options),
+      frameAt(i / VIDEO_FPS, run, stickers, layout, spec, language, options, plan),
     ),
   };
 }

@@ -163,6 +163,8 @@ import { useInboxTab, useMessagesDoor } from "./src/messages/messagesDoor";
 import { MessagesPage } from "./src/tabs/MessagesPage";
 import { TabShell } from "./src/tabs/TabShell";
 import { StretchReminder } from "./src/screens/StretchReminder";
+import { clearSkiDay, queueSkiDay } from "./src/ski/skiDayStore";
+import { useSkiDayOutbox } from "./src/ski/useSkiDayOutbox";
 import { StretchScreen } from "./src/stretch/StretchScreen";
 import { useSwimNotice } from "./src/swim/safetyNotice";
 import { SwimNotice } from "./src/swim/SwimNotice";
@@ -387,6 +389,8 @@ function MuW() {
     signedIn,
     list: savedRuns,
   } = useActivitiesDoor();
+  // The resort, snow and gear of the days of skiing saved (TASK-406 D2).
+  useSkiDayOutbox();
   // The time under the distance of «Draw» (TASK-361): the pace of the last
   // runs saved, or a usual one.
   const pace = useMemo(() => averagePace(savedRuns), [savedRuns]);
@@ -904,6 +908,7 @@ function MuW() {
 
   /** The end of a run without a route leaves the screen. */
   function leaveFreeFinish() {
+    clearSkiDay();
     setFreeFinished(null);
     setScreen("choose");
   }
@@ -949,6 +954,9 @@ function MuW() {
         ? recordRun(finished.run, drawnBy(finished.run.route))
         : freeFinished !== null && recordRun(freeFinished.run, null);
     if (kept) {
+      if (freeFinished !== null && sport === "ski") {
+        queueSkiDay(freeFinished.run);
+      }
       onDiscardRun();
     }
     return kept;

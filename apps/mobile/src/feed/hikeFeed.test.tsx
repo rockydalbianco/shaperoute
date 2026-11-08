@@ -15,9 +15,8 @@ import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
 import { DrawingCard } from "../social/DrawingCard";
 import { activityName } from "../social/PublicParts";
 import { runnable } from "../social/drawingRoute";
-import { ActionBar } from "./ActionBar";
-import { DrawAgainContext } from "./drawAgainDoor";
-import { postFacts } from "./FeedPost";
+import { EditRunContext } from "./editRunDoor";
+import { FeedPost, postFacts } from "./FeedPost";
 import { shownPost } from "./feedPosts";
 import { postEnergy } from "./postEnergy";
 
@@ -81,14 +80,13 @@ test("a post of a hike says its sport and its energy on foot", () => {
 test("the Feed's card of a hike has the actions of a route", async () => {
   await render(
     <FollowsContext.Provider value={DOOR}>
-      <DrawAgainContext.Provider value={() => jest.fn()}>
-        <ActionBar post={shownPost(HIKE)} onOpen={jest.fn()} />
-      </DrawAgainContext.Provider>
+      <EditRunContext.Provider value={() => jest.fn()}>
+        <FeedPost post={shownPost(HIKE)} width={358} onOpen={jest.fn()} />
+      </EditRunContext.Provider>
     </FollowsContext.Provider>,
   );
-  expect(screen.getByRole("button", { name: "Comments" })).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Reactions" })).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Draw it near me" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Like" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Edit & run" })).toBeOnTheScreen();
 });
 
 test("a hike opened shows as a route to follow", async () => {

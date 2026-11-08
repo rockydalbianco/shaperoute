@@ -465,13 +465,88 @@ lasciando le righe d'indice.
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
+- ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
+- ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 
 ---
 
 - ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
 - ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
+- ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
+- ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
+- ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
+- ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
+- ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
 
 ## Voci nuove
+
+## ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati
+
+**Stato**: Attiva · 2026-11-08 · TASK-411 parte C. Deciso dall'agente su
+delega dell'utente, dalla sua scelta «Schede + giorni» del 2026-11-06
+(ADR-0341 in `docs/archive/DECISIONS-fino-al-2026-11.md`).
+
+L'allenamento dice la sua scheda con la **chiave** (`gym_sessions.plan_key`),
+non con un riferimento: può arrivare all'API prima della scheda, e una
+scheda eliminata lascia i suoi allenamenti come erano (senza nome). I giorni
+in API sono 1 lunedì–7 domenica, nel database sette bit. Una scheda mandata
+più vecchia di quella tenuta non la sostituisce (due telefoni dello stesso
+account: vince l'ultima modifica); eliminarne una che non c'è non è un
+errore. I giorni saltati contano da quando la scheda è arrivata all'API
+(`created_at`) fino a ieri, sul fuso chiesto; un allenamento libero non
+riempie il giorno di una scheda. Sul telefono le schede stanno in un file
+(`gym-plans.json`): una modifica o un'eliminazione aspetta lì finché l'API
+non l'ha, e la lista dell'API sostituisce solo quelle che il telefono non
+ha cambiato dopo. «Start workout» segue la prima scheda di oggi
+dell'account mostrato in «Draw»; l'allenamento copia la scheda quando
+comincia. Una serie conta per il primo esercizio della scheda dello stesso
+tipo ancora incompleto; finito un esercizio, quello dopo diventa quello in
+corso da solo, coi valori della scheda nei campi se non ci sono serie di
+prima.
+## ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py`
+
+**Stato**: Accettato · 2026-11-08 · TASK-413 A1. Deciso dall'agente su
+delega dell'utente; `ENGINE_ONLY` e `heights.py` approvati dal Coordinatore
+il 2026-11-08.
+
+1. **Le ciaspole entrano nel motore prima che nel contratto.** Una tupla
+   nuova del registro, `activities.ENGINE_ONLY`, tiene le attività che il
+   motore disegna e il contratto non ha ancora: `snowshoeing` fino ad A2.
+   `SUPPORTED_ACTIVITIES` (e quindi `API_ACTIVITIES`, shared-types, l'API)
+   non cambia; `ACTIVITIES`, `DISTANCE_LIMITS_M`, `SNOW_ACTIVITIES` e
+   `FREE_ACTIVITIES` la contano. A2 la sposta in `ENGINE_ACTIVITIES` insieme
+   alle righe del contratto. È come prima di TASK-376, quando
+   `SUPPORTED_ACTIVITIES` era un sottoinsieme di `ACTIVITIES`.
+2. **`FREE_ACTIVITIES` = acqua + neve**: niente parole, immagini né
+   disegni (`ON_SNOW_SHAPES_ONLY`, testo suo), `near` permesso come
+   sull'acqua (il testo di `NEAR_ON_WATER_ONLY` resta: l'API lo usa).
+3. **`route_engine/heights.py` è il modulo condiviso delle quote** (ADR-0300
+   parte G, ADR-0344 C): tegole Terrarium zoom 13 in `<cache>/heights/`
+   come PNG scaricati, decodificate con Pillow (già dipendenza del motore,
+   quindi anche del server), quota bilineare per punto, griglia di pendenze
+   a celle di 25 m. Il download passa da una funzione sostituibile
+   (`fetch`): i test non usano la rete. TASK-347 G vi aggiunge
+   `elevation_profile`, TASK-415 C la pendenza sotto la traccia: nessun
+   `terrain.py` nuovo nel server.
+4. **La neve è un `water.WaterArea`** costruito da `snow.build_area` con le
+   regole della variante `chosen` (`snow.CHOSEN`); `water.py` e
+   `water_fit.py` non cambiano. Gli errori di `water_fit` sono detti per la
+   neve (`NoSnowError`, `SnowFitError`, con la distanza a cui la forma
+   entra). La verifica è `snowshoeing.check_on_snow`: chiusa, nulla fuori
+   dalla neve permessa, entro il 10%; nessuna fascia di riva.
+5. **L'impronta**: `heights.py`, `snow.py` e `snowshoeing.py` stanno fuori
+   (`route_store.SNOW_ONLY`, come `DRAWN_WATER_ONLY`); `models.py`,
+   `activities/` e `__main__.py` la cambiano senza cambiare un percorso: tre
+   righe in `SAME_ROUTES_AS` con la prova `5e374d843dda.json` (i nove
+   percorsi fissi identici, darwin-arm64) e la canoa del banco identica
+   (`compare --same`, 27 percorsi). Quando G farà leggere le quote a ogni
+   percorso, `heights.py` esce da `SNOW_ONLY`.
+6. **La cache della neve** è `<cache>/snow/snow_<s>_<w>_<n>_<e>.json`, nel
+   formato dell'acqua (`water.read_water`); un file che contiene l'area
+   chiesta la serve. Il riquadro di una richiesta è quello dell'acqua senza
+   la fascia di 1 km di riva, più 100 m (`snow.snow_bbox`). Il filtro chiede
+   anche le `relation` di parchi, giardini, golf e campi: al banco un parco
+   di città disegnato così (Parco Sempione, Milano) passava per neve.
 
 ## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
 
@@ -802,3 +877,206 @@ denaro né pubblicità.
 `GET /game/catalog`, circa 150 KB contro i 20 di oggi); l'app di oggi
 mostra le 94 forme nella griglia di sempre finché arriva l'OTA. Due
 migrazioni (C, E).
+
+---
+## ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono
+
+**Data**: 2026-11-08 · **Stato**: Accettata · **Task**: TASK-422 ·
+aggiorna ADR-0137 (le due pagine) e ADR-0195 (la mappa girata e la freccia
+del nord)
+
+Chiesto dall'utente il 2026-11-08: una pagina nuova con la mappa sola, a
+tutto schermo, che ruota in base a dove punta il telefono, con un pulsante
+per tornare al nord; da fermo la bussola, in corsa la traccia GPS quando la
+bussola è inaffidabile, la regola da proporre. Le scelte di prodotto (nome
+«Compass», ordine Compass | Map | Data con apertura su «Map», cosa resta
+nella scheda, la freccia del nord a due tocchi, i due testi) approvate
+dall'utente il 2026-11-08 («approvo tutto»); la regola tecnica decisa
+dall'agente su delega dell'utente. In `main` con la #971.
+
+**Contesto**: la corsa aveva due pagine (ADR-0137): «Map», la mappa col
+nord in alto o girata come il disegno (ADR-0195), e «Data». Chi corre in
+un posto nuovo vuole leggere la mappa come la vede: quello che ha davanti
+in alto, come fanno i navigatori.
+
+**Decisione**:
+- **Tre pagine**, «Compass» | «Map» | «Data»; si apre su «Map» come oggi.
+  Lo swipe passa una pagina alla volta, dalla scheda; i tre nomi con un
+  tocco. La pagina aperta vive in un modulo (`navigation/runPage.ts`),
+  come i comandi della corsa (`runControl`): la scheda la imposta, e la
+  mappa, che sta sopra la scheda in `App.tsx`, la legge. `App.tsx` cambia
+  per poche righe: l'hook `useHeadingUpMap` si mette sopra `useTurnedMap`
+  e dà alla mappa lo stesso `turn` della freccia del nord.
+- **«Compass» è la scheda ridotta ai pulsanti**, non una seconda mappa:
+  la mappa (`MapView`, una sola, mai ricaricata) prende lo spazio lasciato
+  libero. Niente numeri, barra, riga del gioco né battito; il banner della
+  svolta resta sopra la mappa.
+- **Da dove viene la direzione** (`navigation/headingUp.ts`): la bussola
+  (`expo-location` `watchHeadingAsync`, già nell'app: nessuna dipendenza
+  nuova; `trueHeading`, o `magHeading` quando il telefono non sa il nord
+  vero) **da fermi sempre**, perché la traccia dice da dove si è venuti,
+  non dove si guarda; **correndo la bussola finché la sua calibrazione è
+  media o alta** (≥ 2 sulla scala 0–3 di expo-location: sotto i 35° di
+  incertezza su iOS); **con calibrazione bassa o nulla, in movimento, la
+  traccia** (`headingDeg`, gli ultimi 10 m, la stessa della freccia). «In
+  movimento» è un fix GPS negli ultimi 10 s, la soglia dell'auto-pausa
+  (`AUTO_PAUSE_AFTER_MS`): le due cose dicono la stessa cosa su cosa sia
+  stare fermi. Senza bussola (un telefono che non ce l'ha, o la rifiuta)
+  vale la traccia in movimento, e da fermi la mappa resta com'è.
+- **Non trema**: una lettura della bussola sostituisce quella tenuta solo
+  se l'ago si è mosso di 2° o la calibrazione è cambiata, e non prima di
+  250 ms; la mappa gira solo per cambi di almeno 4° e non più di una volta
+  ogni 400 ms (`easeTo` di 500 ms, come la freccia del nord). La bussola è
+  accesa solo con «Compass» aperta e il nord non fissato: costa batteria.
+- **Il nord**: la freccia del nord di ADR-0195, nello stesso posto, sempre
+  visibile su «Compass». Un tocco mette il nord in alto e lo tiene (la
+  bussola si spegne), un secondo rimette la direzione; per VoiceOver il
+  secondo tocco è «Turns the map where you face» (`NorthArrow` prende
+  `northUp` e `upHint`). Lasciando la pagina, o a fine corsa, la mappa
+  torna al `bearing` del disegno, e la freccia è di nuovo quella del
+  disegno. La pagina aperta torna «Map» quando la scheda sparisce.
+
+**Conseguenze**: due testi nuovi nelle cinque lingue («Compass», «Turns
+the map where you face»); solo JavaScript, l'impronta iOS non cambia. Da
+provare sul telefono: la rotazione in mano da fermi e correndo, e se il
+banner su «Compass» dà fastidio (toglierlo è una riga in `App.tsx`).
+
+## ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes»
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B3a1, decisa dall'agente su
+delega dell'utente; scelte dell'utente 4, 5, 7, 8 del task file; lista dei
+file approvata dal Coordinatore (local_3f55a0e9).
+
+**Contesto**: l'orologio deve correre senza telefono un percorso che il
+telefono gli ha mandato («Pulsante e preferiti»). I preferiti e i percorsi
+di «Explore» non hanno direzioni: il telefono le chiede a `/route-directions`
+al via.
+
+**Decisione**:
+1. **Il telefono decide, l'orologio segue**: `src/watch/watchRoute.ts`
+   prepara il percorso una volta (direzioni semplificate, tratti a penna
+   alzata che stanno sui punti, `startsAnywhere`, `isRide`, canoa, distanza
+   d'annuncio, coordinate a 6 decimali) e lo manda col messaggio nuovo
+   «route» (`transferUserInfo`). «routes» porta le chiavi dei preferiti
+   (B3a2). Nessuna versione nuova del protocollo: un tipo sconosciuto si
+   ignora già.
+2. **Il contratto** è `Fixtures/routes.json`, scritto da
+   `scripts/watch-routes.sh` dal codice del telefono e letto da
+   `WatchRoute.swift`; `messages.json` ha i casi validi e rifiutati.
+3. **«Send to watch»** sta sotto «Send to a friend» nella colonna del cuore
+   (`FavoriteHeart.tsx`, non `App.tsx`), solo con un orologio abbinato che
+   ha l'app (`watchLink.ready()`); chiede le direzioni come al via, nessuna
+   sull'acqua; senza rete «No connection…», testo che l'app ha già.
+4. **Sull'orologio** `RouteShelf` (WatchCore, puro) tiene tutti i preferiti
+   e gli ultimi 20 mandati, sostituisce per chiave; `RouteStore` lo salva in
+   un file; la prima pagina è «Routes» con «Run without a route» in cima. Un
+   percorso fa partire il suo sport: la guida in corsa è B3b.
+5. **Un testo che vede solo l'orologio** sta nelle tabelle dell'app e in
+   `watchTexts.ts` con `tLater`, così il controllo dei testi non usati lo
+   tiene.
+
+**Conseguenze**: il telefono chiede le direzioni a ogni invio (rete
+necessaria, come al via). B3a2 manderà i preferiti da soli col messaggio
+«routes». Il codice dell'orologio si prova con un prebuild locale
+`MUW_WATCH=1`; impronta iOS senza variabile invariata.
+## ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-08); le scene
+di base sono una scelta dell'utente (scelta 12 del task file, «Come oggi»).
+
+1. **C2 si fa in due PR**: C2a le scene e il finale; C2b la camera dietro
+   l'animale sul 3D e l'anteprima nel foglio, che toccano la pagina in
+   modo più pesante.
+2. **I tempi**: con tutte e tre accese, 3 s di apertura, 6 di percorso e 3
+   di finale (scelta 8). Una scena spenta dà i suoi secondi al percorso; a
+   percorso spento, le altre se li dividono a metà. Il video dura sempre
+   12 s. Così, con l'apertura spenta, il percorso ha 9 s (1 s di logo, 8 di
+   linea) e il finale 3: è il video di prima, e un test lo confronta
+   fotogramma per fotogramma con quello salvato prima di C2.
+3. **Le scelte delle scene** sono campi di `VideoEdit` (`order`, `off`,
+   `opening`, `cut`, `ending`); `videoScene` le legge dalle opzioni, quelle
+   mancanti come all'apertura del post.
+4. **L'apertura «Drawing in 2D»** disegna la linea dall'alto in quei
+   secondi, senza numeri; il percorso poi la ridisegna con l'animale. Sul
+   3D la pagina scatta prima la mappa da dritto sopra (dove sta la linea
+   piatta della scena), poi la inclina come sempre: la descrizione della
+   mappa dice `flat`, e il file della mappa non cambia. Se la foto piatta
+   non c'è, sotto resta quella inclinata. **«Title»** mette il titolo
+   grande in mezzo (o «MuW», senza titolo) e nasconde quello in alto.
+   **«Cut»** passa alla scena dopo di colpo; **«Fade»** sfuma nell'ultimo
+   mezzo secondo dell'apertura.
+5. **I finali**: «Whole drawing» è quello di prima; «Numbers» mette i
+   risultati grandi in colonna in mezzo, su un velo del fondo dello stile;
+   «Heart» fa spuntare in mezzo il quadrato giallo con il cuore che si
+   disegna e «MuW» sotto; «All three» tiene il disegno con i numeri e poi,
+   a metà del finale, il cuore. Il marchio nell'angolo resta sempre.
+6. **Riordino senza testi nuovi**: i tre riquadri stanno in fila come
+   nella tavola («2D › 3D › Reveal») e si spostano con «‹ ›», etichettati
+   con «Move left»/«Move right», già tradotti. Le cose del finale spariscono
+   quando dopo viene un'altra scena; le emoji del post restano.
+
+## ADR-0340, precisazione F — La card del Feed come la pagina
+
+**Stato**: Attiva · 2026-11-08 · TASK-410 parte F (#980). Scelta
+dell'utente, «Tutto come la pagina»; il resto deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: vista la pagina del post (parte B), l'utente ha chiesto lo
+stesso aspetto nella card del Feed; TASK-410 la lasciava com'era.
+
+**Decisione**: la card di un post di un membro ha i numeri in riquadri
+(`SummaryBoxes`, dalle righe di `postSections`) al posto della riga di
+testo, e la stessa barra delle quattro azioni della pagina (`PostActions`,
+condivisa con `PostSheet`): Like (le sei reazioni), Comment, Share solo sui
+propri, Edit & run. Supera la scelta 4 di TASK-355 (ADR-0306): il «Draw it
+near me» giallo lascia la card e resta sul disegno aperto sulla mappa.
+`ActionBar` si toglie invece di tenerne due; gli esempi tengono la riga di
+testo.
+
+**Conseguenze**: card e pagina cambiano insieme; il testo «Reactions» esce
+dalle tabelle; `DrawAgainContext` resta in `App.tsx` senza chi lo usa nel
+Feed, da togliere a parte.
+
+## ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica
+
+**Stato**: Attiva · 2026-11-08 · TASK-418. Deciso dall'agente su delega
+dell'utente; numero dal Coordinatore.
+
+**Contesto**: 49 forme nuove per il catalogo grande di «Explore», approvate
+dall'utente sulla carta. Le forme di prima erano disegnate a mano, punto per
+punto, una alla volta (ADR-0035). ADR-0036 vuole il giudizio su strade vere
+prima che una forma entri nel catalogo.
+
+**Decisione**:
+
+1. Ogni forma è scritta in `tools/draw_new_shapes.py` come unione di
+   cerchi, ellissi, rettangoli e linee spesse (shapely, già dipendenza del
+   motore): il contorno esterno è il contorno, i buchi (l'anello
+   dell'ancora, l'arco del lucchetto) e i dettagli staccati (gli occhi, le
+   ruote della bici) sono `pieces`. Semplificata a 0,006, partenza nel
+   punto più alto; un dettaglio a meno di 0,03 da un'altra linea resta
+   fuori.
+2. I file stanno in `services/route-engine/candidate_outlines/`, **fuori**
+   da `route_engine/`: non entrano in `SHAPES`, né nello zip del motore sul
+   telefono (`tools/phone_engine`, che prende il pacchetto intero). Il CLI
+   li pianifica con `--outline`. Una chiave in più, `category`, dice il
+   gruppo del catalogo; `read_outline` la ignora.
+3. Una forma approvata su strade vere si sposta in
+   `route_engine/shapes/outlines/` e si registra (motore, contratto, app)
+   in un task suo.
+
+**Motivo**: 49 forme a mano costano giorni e sbagliano più spesso; dalle
+primitive si ridisegnano in un secondo e il test controlla che i file siano
+quelli dello script. Fuori dal pacchetto non toccano l'app né il catalogo
+finché l'utente non ha scelto.
+
+**Alternative**:
+
+- **Subito in `outlines/`**: cambia lo zip del motore sul telefono (un file
+  dell'app) e porta sul telefono forme non giudicate; scartata.
+- **Dalle immagini generate** (`image_outline.py`): contorni più
+  irregolari e licenze delle immagini da chiarire; scartata per ora.
+
+**Conseguenze**: TASK-419 pianifica le candidate con `--outline` (o con il
+seme esteso a leggere `candidate_outlines/`). La registrazione delle forme
+approvate è una parte successiva di TASK-418.

@@ -120,10 +120,12 @@ def test_new_cities_plan_the_core_and_the_simple_three_at_21_km() -> None:
     assert at5 == set(CORE_SHAPES)
     words = [c for c in cases if c.style is not None]
     assert [(c.shape, c.style) for c in words] == [
-        ("HALLO", "round"),
-        ("HALLO", "block"),
+        ("WIEN", "round"),
+        ("WIEN", "block"),
     ]
-    assert all(c.distance_m == word_distance("HALLO") == 19_000 for c in words)
+    assert all(c.distance_m == word_distance("WIEN") == 15_000 for c in words)
+    hamburg = [c for c in plan([BY_NAME["hamburg"]]) if c.style is not None]
+    assert {c.shape for c in hamburg} == {"HALLO"}
 
 
 APPROVED_WORDS = {
@@ -147,11 +149,14 @@ APPROVED_WORDS = {
 }
 
 
+CITY_NAMES = {"WIEN", "PRAHA", "PORTO"}
+
+
 def test_words_are_the_approved_ones_or_a_short_city_name() -> None:
     for c in CITIES:
         for w in c.words:
             assert w.isalpha() and w.isupper()
-            assert w in APPROVED_WORDS or w.lower().startswith(c.name[:4]), (c.name, w)
+            assert w in APPROVED_WORDS or w in CITY_NAMES, (c.name, w)
 
 
 def test_venice_stays_within_10_km_without_a_15_km_word() -> None:

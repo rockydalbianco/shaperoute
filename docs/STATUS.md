@@ -123,6 +123,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `tasks/TASK-415.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · proposta in `main`
   (ADR-0347); primo giro nella PR #966. File: quelli della #966 · `tasks/TASK-419.md`
+- **TASK-423 — «Play» grande** (ADR-0351) · proposta approvata il
+  2026-11-08: 94 forme in 10 collezioni, passi su 10 distanze, sfide
+  personali, premi; documenti in PR, poi A–E (D dopo la #971). File:
+  quelli del branch `docs/TASK-423-play-expansion` · `tasks/TASK-423.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

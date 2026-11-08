@@ -11,7 +11,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "6 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "6 novembre 2026";
+const PRIVACY_UPDATED = "8 novembre 2026";
 
 const help: AboutDocument = {
   title: "Comment fonctionne MuW",
@@ -411,10 +411,16 @@ const privacy: AboutDocument = {
     {
       heading: "Ta position",
       blocks: [
-        "La position du téléphone est utilisée sur le téléphone, pour commencer un parcours là où tu es et pour suivre ta course. Elle va vers notre serveur exacte comme départ d'un parcours que tu demandes, comme départ des formes que l'app te prépare à proximité quand le téléphone ne peut pas les dessiner lui-même, et dans une course que tu enregistres. Hors du parcours d'une course, quand le téléphone ne trouve pas lui-même le chemin pour y revenir, elle va exacte vers notre serveur avec le tronçon du parcours devant toi, pour trouver ce chemin par les rues : le serveur ne les garde pas. Elle y va arrondie à environ 1 km pour trouver la carte hors ligne autour de toi, les parcours recommandés, les villes et les dessins proches, et pour montrer d'abord les lieux près de toi dans une recherche ; ainsi arrondie, elle ne reste pas liée à ton compte.",
+        "La position du téléphone est utilisée sur le téléphone, pour commencer un parcours là où tu es et pour suivre ta course. Elle va vers notre serveur exacte comme départ d'un parcours que tu demandes, comme départ des formes que l'app te prépare à proximité quand le téléphone ne peut pas les dessiner lui-même, et dans une course que tu enregistres. Hors du parcours d'une course, quand le téléphone ne trouve pas lui-même le chemin pour y revenir, elle va exacte vers notre serveur avec le tronçon du parcours devant toi, pour trouver ce chemin par les rues : le serveur ne les garde pas. Elle y va arrondie à environ 1 km pour trouver la carte hors ligne autour de toi, les parcours recommandés, les villes et les dessins proches, et pour montrer d'abord les lieux près de toi dans une recherche ; ainsi arrondie, elle ne reste pas liée à ton compte. Quand tu partages une activité en direct, ta position exacte va à notre serveur et à qui a le lien, comme décrit dans «Partage en direct».",
         "Sur iPhone, pendant une course que tu as lancée, l'app continue de suivre ta position même téléphone verrouillé ou avec une autre app ouverte, jusqu'à ce que tu arrêtes la course ; l'iPhone l'indique par une marque bleue en haut de l'écran. MuW demande la position seulement pendant que tu utilises l'app, jamais « Toujours ».",
         "Comme tout service internet, notre serveur voit l'adresse internet (IP) d'où vient une requête pendant qu'il y répond. Le journal du serveur n'écrit pas de positions, et la base de données ne contient aucune adresse IP.",
         "Un registre des demandes de parcours, avec leur départ, existe pour reproduire un défaut. Il est éteint sur notre serveur ; allumé, il contient 10 Mo au plus, puis les lignes les plus anciennes sont perdues.",
+      ],
+    },
+    {
+      heading: "Partage en direct",
+      blocks: [
+        "Pendant une activité, tu peux toucher «Partager en direct» pour créer un lien. Tant que tu partages, notre serveur reçoit toutes les 15 secondes ta position exacte avec l'heure, les chiffres de l'activité (distance, temps, allure ou vitesse, dénivelé, calories) et ta fréquence cardiaque quand une montre l'envoie. Toute personne qui a le lien les voit sur une page de getmuw.app, sans compte : tu choisis à qui l'envoyer, et qui l'a peut le transmettre. Le lien est aléatoire et impossible à deviner ; notre serveur n'en garde qu'un hash. Il cesse de fonctionner une heure après la fin de l'activité, au plus tard 24 heures après son début, ou dès que tu arrêtes le partage ; les positions et la fréquence cardiaque sont alors supprimées. La fréquence cardiaque est une donnée de santé : elle n'est partagée qu'après que tu l'as lu sur l'écran qui précède le lien. La carte de cette page vient d'OpenFreeMap, qui voit l'adresse internet (IP) de qui l'ouvre, mais ni le lien ni ta position. Pour partager, il faut un compte ; supprimer le compte supprime ses partages.",
       ],
     },
     {

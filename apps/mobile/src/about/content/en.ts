@@ -11,8 +11,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "6 November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B) and for the gym (TASK-385 F). */
-const PRIVACY_UPDATED = "6 November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) and for sharing live (TASK-424). */
+const PRIVACY_UPDATED = "8 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -412,10 +412,16 @@ const privacy: AboutDocument = {
     {
       heading: "Your position",
       blocks: [
-        "The phone's position is used on the phone, to start a route where you are and to follow your run. It goes to our server exactly as it is as the start of a route you ask for, as the start of the shapes the app prepares for you nearby when the phone cannot draw them itself, and inside a run you save. Off the route of a run, when the phone cannot find the way back to it by itself, it goes there exactly as it is with the stretch of the route ahead, to find that way on the streets: the server does not keep them. It goes rounded to about 1 km to find the offline map around you, recommended routes, towns and drawings nearby, and to put the places near you first in a search; rounded like this it is not kept with your account.",
+        "The phone's position is used on the phone, to start a route where you are and to follow your run. It goes to our server exactly as it is as the start of a route you ask for, as the start of the shapes the app prepares for you nearby when the phone cannot draw them itself, and inside a run you save. Off the route of a run, when the phone cannot find the way back to it by itself, it goes there exactly as it is with the stretch of the route ahead, to find that way on the streets: the server does not keep them. It goes rounded to about 1 km to find the offline map around you, recommended routes, towns and drawings nearby, and to put the places near you first in a search; rounded like this it is not kept with your account. When you share an activity live, your exact position goes to our server and to whoever has the link, as described under «Sharing live».",
         "On iPhone, during a run you started, the app keeps following your position also with the phone locked or another app open, until you stop the run; the iPhone shows it with a blue mark at the top of the screen. MuW asks for the position only while you use the app, never «Always».",
         "Like any internet service, our server sees the internet (IP) address a request comes from while it answers it. The server's log does not write positions, and the database holds no IP addresses.",
         "A register of the route requests, with their start, exists to reproduce a defect. It is off on our server; switched on, it holds at most 10 MB, then the oldest lines are lost.",
+      ],
+    },
+    {
+      heading: "Sharing live",
+      blocks: [
+        "During an activity you can tap «Share live» to create a link. While you share, our server receives every 15 seconds your exact position with its time, the activity's numbers (distance, time, pace or speed, elevation gain, calories) and your heart rate when a watch sends it. Anyone who has the link can see them on a page of getmuw.app, without an account: you choose whom you send it to, and whoever has it can pass it on. The link is random and cannot be guessed; our server keeps only a hash of it. It stops working one hour after the activity ends, at most 24 hours after it started, or as soon as you stop sharing; then the positions and the heart rate are deleted. Your heart rate is health data: it is shared only after you have read it on the screen that comes before the link. The map on that page comes from OpenFreeMap, which sees the internet (IP) address of whoever opens it, but not the link or your position. Sharing needs an account; deleting the account deletes its shares.",
       ],
     },
     {

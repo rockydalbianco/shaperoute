@@ -9,7 +9,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "6 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "6 novembre 2026";
+const PRIVACY_UPDATED = "8 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -409,10 +409,16 @@ const privacy: AboutDocument = {
     {
       heading: "La tua posizione",
       blocks: [
-        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account.",
+        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server esatta come partenza di un percorso che chiedi, come partenza delle forme che l'app ti prepara qui vicino quando il telefono non riesce a disegnarle da solo, e dentro una corsa che salvi. Fuori dal percorso di una corsa, quando il telefono non trova da solo la strada per tornarci, va esatta al nostro server con il tratto di percorso davanti, per trovarla sulle vie: il server non le tiene. Va arrotondata a circa 1 km per trovare la mappa offline intorno a te, i percorsi consigliati, i paesi e i disegni vicini, e per mettere prima i luoghi vicini a te in una ricerca; così arrotondata non resta legata al tuo account. Quando condividi un'attività dal vivo, la tua posizione esatta va al nostro server e a chi ha il link, come spiegato in «Condivisione dal vivo».",
         "Su iPhone, durante una corsa che hai fatto partire, l'app continua a seguire la tua posizione anche a telefono bloccato o con un'altra app aperta, finché non fermi la corsa; l'iPhone lo mostra con un segno blu in cima allo schermo. MuW chiede la posizione solo mentre usi l'app, mai «Sempre».",
         "Come ogni servizio su internet, il nostro server vede l'indirizzo internet (IP) da cui arriva una richiesta mentre le risponde. Il log del server non scrive posizioni, e nel database non ci sono indirizzi IP.",
         "Un registro delle richieste di percorso, con la loro partenza, esiste per riprodurre un difetto. Sul nostro server è spento; acceso, tiene al massimo 10 MB, poi le righe più vecchie si perdono.",
+      ],
+    },
+    {
+      heading: "Condivisione dal vivo",
+      blocks: [
+        "Durante un'attività puoi toccare «Condividi dal vivo» per creare un link. Mentre condividi, il nostro server riceve ogni 15 secondi la tua posizione esatta con l'ora, i numeri dell'attività (distanza, tempo, passo o velocità, dislivello, calorie) e il battito quando un orologio lo manda. Chiunque abbia il link li vede su una pagina di getmuw.app, senza account: scegli tu a chi mandarlo, e chi lo ha può inoltrarlo. Il link è casuale e non si può indovinare; il nostro server ne tiene solo un hash. Smette di funzionare un'ora dopo la fine dell'attività, al massimo 24 ore dopo l'inizio, o appena smetti di condividere; poi le posizioni e il battito vengono cancellati. Il battito è un dato sulla salute: si condivide solo dopo che l'hai letto nella schermata che viene prima del link. La mappa di quella pagina viene da OpenFreeMap, che vede l'indirizzo internet (IP) di chi la apre, ma non il link né la tua posizione. Per condividere serve un account; cancellando l'account si cancellano le sue condivisioni.",
       ],
     },
     {

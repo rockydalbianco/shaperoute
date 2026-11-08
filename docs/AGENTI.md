@@ -69,6 +69,12 @@
    una voce intera in «Voci nuove» più una riga nell'«Indice»; un task
    chiuso diventa una riga in `docs/archive/COMPLETATI.md`. Lo storico è in
    `docs/archive/`, si cerca con grep. Dettagli in `CLAUDE.md`.
+   **Riallineare un branch nato prima del 2026-11-08**: dopo `git merge
+   origin/main` i tre file vanno **ripresi da `main`** (`git checkout
+   origin/main -- docs/STATUS.md docs/DECISIONS.md docs/INDEX.md`) e le
+   proprie righe riaggiunte a mano nel formato nuovo: il vecchio driver
+   `merge=union` (TASK-359), tolto il 2026-11-09, riportava indietro tutto
+   il testo archiviato (450 KB) senza segnalare conflitti.
 16. **Le memorie delle sessioni** sul T9 sono collegate con symlink a
    `~/.claude/projects/-Users-lucapallaoro-Progetti-shaperoute/memory`; un
    worktree nuovo parte vuoto: va collegato allo stesso modo.

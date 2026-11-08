@@ -70,10 +70,11 @@ tools/draw_new_shapes.py
 tools/test_draw_new_shapes.py
 services/route-engine/candidate_outlines/*.json   (49 nuovi)
 docs/tasks/TASK-418.md
-docs/STATUS.md
-docs/DECISIONS.md
-docs/INDEX.md
 ```
+
+Le righe in `STATUS.md`, `DECISIONS.md` (ADR-0346) e `INDEX.md` vanno in
+una PR di soli documenti subito dopo il merge (regola del Coordinatore del
+2026-11-08: le PR di codice non toccano quei tre file).
 
 ## Fuori scope
 

@@ -464,7 +464,6 @@ lasciando le righe d'indice.
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
-- ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 
 ---
@@ -473,49 +472,6 @@ lasciando le righe d'indice.
 
 ## Voci nuove
 
-## ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica
-
-**Stato**: Attiva · 2026-11-08 · TASK-418. Deciso dall'agente su delega
-dell'utente; numero dal Coordinatore.
-
-**Contesto**: 49 forme nuove per il catalogo grande di «Explore», approvate
-dall'utente sulla carta. Le forme di prima erano disegnate a mano, punto per
-punto, una alla volta (ADR-0035). ADR-0036 vuole il giudizio su strade vere
-prima che una forma entri nel catalogo.
-
-**Decisione**:
-
-1. Ogni forma è scritta in `tools/draw_new_shapes.py` come unione di
-   cerchi, ellissi, rettangoli e linee spesse (shapely, già dipendenza del
-   motore): il contorno esterno è il contorno, i buchi (l'anello
-   dell'ancora, l'arco del lucchetto) e i dettagli staccati (gli occhi, le
-   ruote della bici) sono `pieces`. Semplificata a 0,006, partenza nel
-   punto più alto; un dettaglio a meno di 0,03 da un'altra linea resta
-   fuori.
-2. I file stanno in `services/route-engine/candidate_outlines/`, **fuori**
-   da `route_engine/`: non entrano in `SHAPES`, né nello zip del motore sul
-   telefono (`tools/phone_engine`, che prende il pacchetto intero). Il CLI
-   li pianifica con `--outline`. Una chiave in più, `category`, dice il
-   gruppo del catalogo; `read_outline` la ignora.
-3. Una forma approvata su strade vere si sposta in
-   `route_engine/shapes/outlines/` e si registra (motore, contratto, app)
-   in un task suo.
-
-**Motivo**: 49 forme a mano costano giorni e sbagliano più spesso; dalle
-primitive si ridisegnano in un secondo e il test controlla che i file siano
-quelli dello script. Fuori dal pacchetto non toccano l'app né il catalogo
-finché l'utente non ha scelto.
-
-**Alternative**:
-
-- **Subito in `outlines/`**: cambia lo zip del motore sul telefono (un file
-  dell'app) e porta sul telefono forme non giudicate; scartata.
-- **Dalle immagini generate** (`image_outline.py`): contorni più
-  irregolari e licenze delle immagini da chiarire; scartata per ora.
-
-**Conseguenze**: TASK-419 pianifica le candidate con `--outline` (o con il
-seme esteso a leggere `candidate_outlines/`). La registrazione delle forme
-approvate è una parte successiva di TASK-418.
 ## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
 
 **Data**: 2026-11-08 · **Stato**: Accettato · **Task**: TASK-424 · deciso

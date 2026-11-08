@@ -124,10 +124,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
   proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
   TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
-- **TASK-418 — Forme nuove per il catalogo di «Explore»** · parte A (49
-  forme candidate in `services/route-engine/candidate_outlines/`) nella PR
-  #953; poi la registrazione delle sole forme che l'utente approva su strada.
-  File: quelli della #953 · `tasks/TASK-418.md`
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
   parte 0 nella PR #981, scelte e testi approvati dall'utente; A1
   (server) nella PR #983, poi A2, B1, B2, C. File: quelli della #983 ·

@@ -72,16 +72,27 @@ export function fetchPoolSwim(
   );
 }
 
+/** A heart rate the API may leave out (TASK-409 part B): absent, or a
+ * count. */
+function isOptionalCount(value: unknown): boolean {
+  return value === undefined || isCount(value);
+}
+
 export function isPoolSwimFigures(body: unknown): body is PoolSwimFigures {
   if (typeof body !== "object" || body === null) {
     return false;
   }
-  const { pool_length_m, lengths } = body as Record<string, unknown>;
+  const { pool_length_m, lengths, heart_avg_bpm, heart_max_bpm } = body as Record<
+    string,
+    unknown
+  >;
   return (
     typeof pool_length_m === "number" &&
     Number.isFinite(pool_length_m) &&
     pool_length_m > 0 &&
-    isCount(lengths)
+    isCount(lengths) &&
+    isOptionalCount(heart_avg_bpm) &&
+    isOptionalCount(heart_max_bpm)
   );
 }
 

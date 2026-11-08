@@ -1785,6 +1785,14 @@ export const IT: Table = {
   Lengths: "Vasche",
   "Pool swim": "Nuoto in piscina",
   "Pace /100 m": "Passo /100 m",
+  // TASK-409 part B: the heart rate of a swim in a pool.
+  "Add heart rate from Apple Health": "Aggiungi il battito da Salute",
+  "No heart rate from your watch for this swim.":
+    "Nessun battito dall'orologio per questa nuotata.",
+  "Show heart rate": "Mostra il battito",
+  "Avg heart rate": "Battito medio",
+  "Time in zones": "Tempo nelle zone",
+  "From your watch, via Apple Health": "Dal tuo orologio, tramite Salute",
   // src/explore/ExploredCard.tsx, src/social/DrawingCard.tsx (TASK-313: la
   // stessa forma in «Draw»)
   "Draw it near me": "Disegnala vicino a me",

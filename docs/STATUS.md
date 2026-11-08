@@ -3490,6 +3490,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-416 — Gravel, MTB e Roller registrano con i numeri della bici** (2026-11-08;
+  precisazione di ADR-0322 e ADR-0324). Un campo del profilo `rides: true` (bici, Gravel,
+  MTB, Roller), letto da `isRide` in `navigation/ride.ts`: velocità e media in km/h, parziali
+  in km/h, voce ogni 10 km, svolte 100 m prima. Stessi testi della bici, solo JavaScript,
+  impronta iOS `6f8bba4c` invariata. Resta l'OTA di produzione col sì dell'utente.
+  `tasks/TASK-416.md`.
 - **TASK-314 — La strada per tornare sul percorso, sulle vie** (2026-11-06; ADR-0274 e la sua
   «precisazione B»). Parte A #588 (motore, `/way-back`, motore sul telefono); parte B nella
   sua PR: lo schermo di corsa chiede la strada fuori percorso e la mostra sulla mappa, nel

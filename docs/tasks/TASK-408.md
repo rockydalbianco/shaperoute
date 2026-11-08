@@ -432,7 +432,8 @@ Parte C2b (lista mandata al Coordinatore il 2026-11-08):
 e `.test.ts`, `videoScenes.ts`, `ScenesRows.tsx`, `EditVideoSheet.test.tsx`,
 `videoScene.ts` e `.test.ts`, `videoPage.ts` e `.test.ts`,
 `SharePostVideo.test.tsx`; `apps/mobile/src/i18n/{it,de,es,fr}.ts`;
-`docs/tasks/TASK-408.md`, `docs/STATUS.md`, `docs/DECISIONS.md`.
+`docs/tasks/TASK-408.md`. `docs/STATUS.md` e `docs/DECISIONS.md` in una PR
+di soli documenti dopo il merge (regola del Coordinatore del 2026-11-08).
 
 ## Criteri di accettazione
 

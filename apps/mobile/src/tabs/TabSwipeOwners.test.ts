@@ -39,9 +39,6 @@ const ROWS = [
   "explore/StopPhotos.tsx",
   "game/NewChallenge.tsx",
   "route/WhileRouting.tsx",
-  // Over the app, in a workout at the gym: the groups of «+ Exercise»
-  // (TASK-385 B).
-  "gym/ExercisePicker.tsx",
   // In «Share your run»: the animals of the video (TASK-408).
   "share/CharacterRow.tsx",
   // In the search's «Ski»: the hours of a resort's weather (TASK-406 C).

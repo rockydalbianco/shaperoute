@@ -85,6 +85,17 @@ inventati, non a giudicare. Un «Custom» non ha scala né classifica.
 - Il server li conta a ogni lettura dalle serie salvate: cancellato un
   allenamento, il livello torna quello degli altri.
 
+## La scelta dell'esercizio (TASK-411 A)
+
+«+ Exercise» si apre sugli otto gruppi muscolari, due per riga: ognuno con
+la sua emoji (Petto 🫁, Schiena 🧗, Gambe 🦵, Spalle 🤸, Braccia 💪, Addome
+🧘, Total body 🏋️, Cardio 🏃), il nome e quanti esercizi ha. Toccato un
+gruppo, i suoi esercizi in riquadri a due colonne, nell'ordine del catalogo;
+«‹» torna ai gruppi. Scrivendo nella ricerca l'elenco cerca in tutti i
+gruppi, per nome nella lingua dell'app o in inglese, e «Add “{name}”»
+aggiunge un esercizio col nome libero (`gym/ExerciseGrid.tsx`,
+`gym/ExercisePicker.tsx`).
+
 ## Il catalogo
 
 Tipo e scala per ogni esercizio; nomi, figure e scale approvati dall'utente

@@ -411,6 +411,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sulla soglia: «Sì, 35 e 28». Le soglie del Roller sono in PR
   (`feat/TASK-380-roller-vehicle-thresholds`, `game_rules.speed_limits`;
   seconda precisazione di ADR-0324). Vanno sul server con la 0055.
+  Soglie in `main` (#914). **Parte B in PR** (2026-11-06,
+  `feat/TASK-380-b-roller-app`): il Roller 🛼 nell'app, «Soon» finché il
+  server non ha la 0055. Profilo completo (testi in cinque lingue, energia
+  del Compendium, avviso, Apple 39 e Health Connect 60), il tempo stimato
+  col passo di chi pattina (4:00/km finché non ne ha, scelta dell'utente),
+  i record propri, i file FIT/GPX/TCX/Strava, i testi dell'orologio. Solo
+  JavaScript. Prossimo: il server (0055) col sì dell'utente, poi `ready`
+  in una PR piccola.
 
 - **TASK-413 — Ciaspole, «Snowshoes» ❄️** (2026-11-08; numeri dal
   Coordinatore, ADR-0342). Parte 0, solo documenti. Al banco, una forma di
@@ -427,6 +435,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Prossimo: le liste di A1 (la neve nel motore) e A2 (contratto, API,
   migrazione, profilo nascosto) al Coordinatore, poi B (app).
   `tasks/TASK-413.md`, `sports/snowshoes.md`.
+  **Parte 0 in `main`** (#933, `189374bc`). Liste di A1 e A2 al
+  Coordinatore; migrazione in bozza 0057. Prossimo: A1 (la neve nel
+  motore) in una sessione nuova, dopo l'accordo con TASK-347 G su
+  `heights.py`; A1 e A2 entrano con l'ok dell'utente per il server.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
@@ -899,6 +911,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   PR da `docs/TASK-411-gym-plans-proposal`. Parti: A griglia, B calendario e
   guida, C schede (migrazione), D privacy; ogni lista al Coordinatore.
   `tasks/TASK-411.md`.
+  2026-11-08: **parte A in `main`** (#930, `a56f78c5`): «+ Exercise» a
+  griglia, prima gli 8 gruppi muscolari poi i loro esercizi; la ricerca
+  cerca in tutti. Solo JavaScript; OTA col sì. Prossimo: parte E (omini e
+  guide, richiesta dell'utente del 2026-11-07) dopo il suo ok di lista, poi B.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

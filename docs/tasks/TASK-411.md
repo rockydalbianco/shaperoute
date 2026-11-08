@@ -1,7 +1,7 @@
 # TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e calendario
 
-**Stato**: Todo · proposta in PR da `docs/TASK-411-gym-plans-proposal`;
-ogni parte dopo la sua lista dei file al Coordinatore
+**Stato**: In lavorazione · proposta in `main` (#928); parte A in `main`
+(#930); ogni parte dopo la sua lista dei file al Coordinatore
 **Fase**: 5 · **Branch**: `feat/TASK-411-a-…` per il codice
 **Dipende da**: TASK-385 (la palestra: B, E e F in `main`), la #927 (la
 schermata dell'allenamento si apre da «Draw»)
@@ -69,10 +69,17 @@ In ADR-0341 (proposto, deciso dall'agente su delega dell'utente).
 
 ## File toccati
 
-Questa PR (documenti): `docs/tasks/TASK-411.md` (nuovo),
+Proposta (#928, in `main`): `docs/tasks/TASK-411.md` (nuovo),
 `docs/DECISIONS.md` (ADR-0341), `docs/STATUS.md` (una voce),
 `docs/INDEX.md` (una riga). La lista precisa di ogni parte va al
 Coordinatore prima della parte.
+
+**Parte A** (#930, in `main` a `a56f78c5`): `apps/mobile/src/gym/ExerciseGrid.tsx`
+(nuovo), `ExerciseGrid.test.tsx` (nuovo), `ExercisePicker.tsx`; i test che
+ora toccano un gruppo prima dell'esercizio: `GymWorkoutHost.test.tsx`,
+`GymKcalShown.test.tsx`, `GymPostForm.test.tsx`; `tabs/TabSwipeOwners.test.ts`
+(la riga dei gruppi scorrevole non c'è più). Documenti di chiusura:
+`docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/sports/gym.md`.
 
 ## Testi dell'interfaccia (approvati il 2026-11-06)
 
@@ -119,3 +126,11 @@ già. `{when}` è «Today», «Yesterday» o il giorno di `dayLabel`.
 - 2026-11-06: nata dalla segnalazione dell'utente «ho premuto Start workout
   ma non succede nulla» (corretta nella #927) e dalla sua richiesta di
   griglia, guida, piano e calendario.
+- 2026-11-08: **parte A in `main`** (#930, `a56f78c5`). «+ Exercise» si apre
+  sugli 8 riquadri dei gruppi (emoji, nome, quanti esercizi); un gruppo
+  mostra i suoi esercizi in riquadri a 2 colonne, «‹» torna ai gruppi;
+  scrivendo nella ricerca l'elenco cerca in tutti i gruppi e il nome libero
+  c'è ancora. Emoji cambiate rispetto all'anteprima: Schiena 🧗 (era 🔙),
+  Spalle 🤸 (era 🤷), si leggono meglio. Solo JavaScript, nessun testo
+  nuovo; non vista nel simulatore (spento per lo spazio su disco). OTA col
+  sì dell'utente.

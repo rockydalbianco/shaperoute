@@ -116,3 +116,17 @@ test("a gravel and an MTB ride have bests of their own, after the bike's (TASK-3
     .map((node) => node.props.children);
   expect(texts).toEqual(["BIKE", "40 km", "GRAVEL", "10 km", "MTB", "20 km"]);
 });
+
+test("a skate has bests of its own, named as races, after the rides' (TASK-380)", async () => {
+  const marathon: PersonalBest = {
+    ...half,
+    sport: "inline_skating",
+    distance: "marathon",
+  };
+  const tenK: PersonalBest = { ...fiveK, sport: "inline_skating", distance: "10k" };
+  await show([marathon, fiveK, tenK, fortyK]);
+  const texts = within(screen.getByTestId("personal-bests"))
+    .getAllByText(/^(RUN|BIKE|ROLLER|5K|10K|Marathon|40 km)$/)
+    .map((node) => node.props.children);
+  expect(texts).toEqual(["RUN", "5K", "BIKE", "40 km", "ROLLER", "10K", "Marathon"]);
+});

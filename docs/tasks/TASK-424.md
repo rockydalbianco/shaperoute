@@ -80,8 +80,10 @@ battito quindi si vede solo con quella build.
 5. **Battito nella palestra e in piscina**: va con TASK-385 G e TASK-409 B
    (che lo stanno facendo); qui solo se resta qualcosa.
 
-Calorie e dislivello sulla pagina «Map» (la striscia ha tre caselle) sono
-una scelta di prodotto: sono già su «Data», a uno swipe.
+**Deciso dall'utente il 2026-11-09** («Sì, tre su Map»): la pagina «Map»
+resta con i suoi tre numeri (distanza, passo o velocità, tempo) e il
+battito; «Data» è la pagina con tutti i dati di ogni sport, battito
+compreso (punto 1).
 
 ### Cosa c'è per la condivisione dal vivo
 
@@ -246,7 +248,8 @@ Le liste delle parti A1, A2, B1, B2, C vanno al Coordinatore prima del codice.
 - Vedere dal vivo nell'app gli amici che corrono (questa è una pagina web).
 - Avvisi automatici al genitore (partenza, arrivo, «fermo da 10 minuti»).
 - Le corse di gruppo dal vivo.
-- Cambiare la striscia della pagina «Map» senza una scelta dell'utente.
+- Cambiare la striscia della pagina «Map» (l'utente l'ha voluta a tre
+  numeri, 2026-11-09).
 
 ## Esito
 

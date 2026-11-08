@@ -1216,6 +1216,17 @@ export const ES: Table = {
     "Nuevo nivel: {figure} · {exercise} {value}",
   // src/gym/Leaderboard.tsx (TASK-385 F)
   "Gym leaderboard · {month}": "Clasificación gimnasio · {month}",
+  "Pick an exercise from the grid": "Elige un ejercicio de la cuadrícula",
+  "Log each set: the rest starts by itself":
+    "Anota cada serie: el descanso empieza solo",
+  "«Save»: calories, milestones and leaderboard":
+    "«Guardar»: calorías, niveles y clasificación",
+  "Last workout: {when} · {time}": "Último entrenamiento: {when} · {time}",
+  "This month: 1 time": "Este mes: 1 vez",
+  "This month: {n} times": "Este mes: {n} veces",
+  "Gym calendar": "Calendario gimnasio",
+  "{n} times · {time}": "{n} veces · {time}",
+  Workout: "Entrenamiento",
   "Only sets logged live count.": "Solo cuentan las series anotadas en directo.",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":
@@ -2066,4 +2077,41 @@ export const ES: Table = {
     "Pronóstico más antiguo: MET Norway no responde.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Tiempo: MET Norway (CC BY 4.0) · Estaciones: OpenSkiMap.org, © colaboradores de OpenStreetMap",
+
+  // src/explore/CatalogScreen.tsx, CatalogEntry.tsx, CatalogCard.tsx,
+  // CatalogGrid.tsx, CatalogFilterSheet.tsx, catalog.ts (TASK-420: the catalog)
+  Catalog: "Catálogo",
+  "{count} drawing in {cities} cities · filters, search":
+    "{count} dibujo en {cities} ciudades · filtros, búsqueda",
+  "{count} drawings in {cities} cities · filters, search":
+    "{count} dibujos en {cities} ciudades · filtros, búsqueda",
+  "{count} drawings · {cities} cities": "{count} dibujos · {cities} ciudades",
+  "Search by name: heart, CIAO, Milan…": "Buscar por nombre: corazón, CIAO, Milán…",
+  Country: "País",
+  City: "Ciudad",
+  Category: "Categoría",
+  Nearest: "Más cercanos",
+  Best: "Más bonitos",
+  Shortest: "Más cortos",
+  Any: "Cualquiera",
+  "Loading more…": "Cargando más…",
+  "No drawings match": "Ningún dibujo coincide",
+  "Change the filters, or clear them to see every drawing.":
+    "Cambia los filtros, o bórralos para ver todos los dibujos.",
+  "The drawings are planned at {distances}.":
+    "Los dibujos están planeados a {distances}.",
+  "Show {count} drawing": "Mostrar {count} dibujo",
+  "Show {count} drawings": "Mostrar {count} dibujos",
+  Monuments: "Monumentos",
+  Holidays: "Fiestas",
+  Italy: "Italia",
+  "United States": "Estados Unidos",
+  Netherlands: "Países Bajos",
+  Spain: "España",
+  "United Arab Emirates": "Emiratos Árabes Unidos",
+  Portugal: "Portugal",
+  "United Kingdom": "Reino Unido",
+  France: "Francia",
+  Australia: "Australia",
+  Japan: "Japón",
 };

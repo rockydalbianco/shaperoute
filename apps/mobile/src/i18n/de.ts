@@ -1689,6 +1689,18 @@ export const DE: Table = {
   Pink: "Rosa",
   Green: "Grün",
   White: "Weiß",
+  // src/share/ScenesRows.tsx, EndingRow.tsx, videoScenes.ts (TASK-408 C2, texts of choice 10)
+  Scenes: "Szenen",
+  Opening: "Anfang",
+  "The route": "Die Strecke",
+  Ending: "Ende",
+  "Drawing in 2D": "Zeichnung in 2D",
+  Cut: "Schnitt",
+  Fade: "Überblendung",
+  Numbers: "Zahlen",
+  "Whole drawing": "Ganze Zeichnung",
+  "All three": "Alle drei",
+  "At least one scene stays on.": "Mindestens eine Szene bleibt an.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "MuW-Wettbewerb",

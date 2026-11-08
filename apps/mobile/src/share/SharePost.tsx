@@ -56,6 +56,7 @@ import {
 import { StravaPostRow } from "./StravaPostRow";
 import { characterName } from "./videoCharacter";
 import { FIRST_EDIT, type VideoEdit } from "./videoEdit";
+import { sceneName } from "./videoScenes";
 import { type VideoOutcome, videoProblem } from "./videoFile";
 import { hearMusic, type Music } from "./videoMusic";
 import { type VideoScene, videoScene } from "./videoScene";
@@ -384,6 +385,14 @@ function editSummary(edit: VideoEdit): string {
   const emoji = [edit.along, edit.end].filter((e): e is string => e !== null);
   if (emoji.length > 0) {
     parts.push(emoji.join(" "));
+  }
+  // The scenes on, in order, once they are not the ones of before (C2).
+  const scenes = edit.order.filter((scene) => !edit.off.includes(scene));
+  if (
+    edit.off.join() !== FIRST_EDIT.off.join() ||
+    edit.order.join() !== FIRST_EDIT.order.join()
+  ) {
+    parts.push(scenes.map(sceneName).join(" › "));
   }
   return parts.join(" · ");
 }

@@ -1,6 +1,13 @@
 import { t } from "../i18n";
 import { type Palette, videoLine } from "../theme/tokens";
 import type { Character } from "./videoCharacter";
+import {
+  type Cut,
+  type Ending,
+  type Opening,
+  SCENES,
+  type SceneName,
+} from "./videoScenes";
 import type { VideoStyle } from "./videoStyle";
 
 /**
@@ -17,16 +24,30 @@ export type VideoEdit = {
   along: string | null;
   /** The emoji that bursts once the drawing is whole; null for none. */
   end: string | null;
+  /** The three scenes in the order the runner put them (part C2). */
+  order: readonly SceneName[];
+  /** The scenes turned off; never all three. */
+  off: readonly SceneName[];
+  opening: Opening;
+  /** How the opening gives way to the next scene. */
+  cut: Cut;
+  ending: Ending;
 };
 
 /** The video as it was before the sheet: «Night», no animal, the yellow
- * line, no emoji of the video's own. */
+ * line, no emoji of the video's own; the opening off, the route and the
+ * whole drawing at the end (the user's choice 12). */
 export const FIRST_EDIT: VideoEdit = {
   style: "night",
   character: null,
   line: "yellow",
   along: null,
   end: null,
+  order: SCENES,
+  off: ["opening"],
+  opening: "drawing",
+  cut: "fade",
+  ending: "drawing",
 };
 
 /** The line's colours, in the order the sheet offers them. */

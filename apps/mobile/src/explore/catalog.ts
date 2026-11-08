@@ -47,7 +47,8 @@ export type CatalogRoute = {
   favorite_key: string;
 };
 
-export const CATALOG: readonly CatalogRoute[] = data.routes as unknown as CatalogRoute[];
+export const CATALOG: readonly CatalogRoute[] =
+  data.routes as unknown as CatalogRoute[];
 
 /** Whose the routes' streets are, as the seed says. */
 export const CATALOG_LICENSE: string = data.license;
@@ -99,7 +100,10 @@ export function catalogCounts(routes: readonly CatalogRoute[]): {
  * A route of the catalog as a route of «Explore», for the map to open it
  * (`onOpen`): `away_m` from `near` when there is one, else 0.
  */
-export function asRecommended(route: CatalogRoute, near: LatLon | null): RecommendedRoute {
+export function asRecommended(
+  route: CatalogRoute,
+  near: LatLon | null,
+): RecommendedRoute {
   return {
     id: route.id,
     city: route.city,

@@ -106,8 +106,9 @@ function preview(points, size = PREVIEW_POINTS) {
   const chosen =
     points.length <= size
       ? points
-      : Array.from({ length: size }, (_, i) =>
-          points[Math.round((i * (points.length - 1)) / (size - 1))],
+      : Array.from(
+          { length: size },
+          (_, i) => points[Math.round((i * (points.length - 1)) / (size - 1))],
         );
   return chosen.map(([lat, lon]) => [
     Number(lat.toFixed(PREVIEW_DECIMALS)),
@@ -156,9 +157,9 @@ const routes = files.flatMap((name) =>
 );
 const out = {
   written_from: "catalog/seed",
-  license:
-    "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0",
+  license: "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0",
   routes,
 };
-writeFileSync(OUT, `${JSON.stringify(out)}\n`);
+// Indented, as the repository's formatter writes JSON (`npm run format`).
+writeFileSync(OUT, `${JSON.stringify(out, null, 2)}\n`);
 console.log(`${routes.length} routes of ${files.length} cities → ${OUT}`);

@@ -93,7 +93,9 @@ export function searchCatalog(
   routes: readonly CatalogRoute[],
   query: string,
 ): CatalogRoute[] {
-  const words = plain(query).split(" ").filter((word) => word !== "");
+  const words = plain(query)
+    .split(" ")
+    .filter((word) => word !== "");
   if (words.length === 0) {
     return [...routes];
   }
@@ -114,7 +116,8 @@ export function orderCatalog(
   order: CatalogOrder,
   near: LatLon | null,
 ): CatalogRoute[] {
-  const byId = (a: CatalogRoute, b: CatalogRoute) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const byId = (a: CatalogRoute, b: CatalogRoute) =>
+    a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
   const best = (a: CatalogRoute, b: CatalogRoute) =>
     b.similarity - a.similarity || a.route_m - b.route_m || byId(a, b);
   if (order === "shortest") {
@@ -142,7 +145,10 @@ export function hasMore(routes: readonly CatalogRoute[], pages: number): boolean
 /** The countries of the routes, in the order they are read, those with
  * more routes first. "" (a city with no country) is left out. */
 export function countriesOf(routes: readonly CatalogRoute[]): string[] {
-  return ranked(routes.map((r) => r.country).filter((c) => c !== ""), countryName);
+  return ranked(
+    routes.map((r) => r.country).filter((c) => c !== ""),
+    countryName,
+  );
 }
 
 /** The cities of the routes, those of `country` when given, the ones with
@@ -170,8 +176,9 @@ export function activitiesOf(routes: readonly CatalogRoute[]): Activity[] {
 /** The categories among the routes, in the catalog's order. */
 export function categoriesOf(routes: readonly CatalogRoute[]): CatalogCategory[] {
   const present = new Set(routes.map((r) => r.category));
-  return (["animals", "food", "symbols", "monuments", "sport", "words", "holidays"] as const)
-    .filter((category) => present.has(category));
+  return (
+    ["animals", "food", "symbols", "monuments", "sport", "words", "holidays"] as const
+  ).filter((category) => present.has(category));
 }
 
 /** Distinct values, the most frequent first, then by their name. */

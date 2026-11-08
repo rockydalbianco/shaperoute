@@ -54,7 +54,9 @@ test("the heart on yellow is at the right of «Best near you», before the list"
   expect(order[heart - 1]).toMatch(/^Starting within /);
   // Under it the way into the catalog (TASK-420), then the list's note.
   expect(order[heart + 1]).toBe("Catalog");
-  expect(order.slice(heart + 2).find((text) => /^Choose a start first/.test(text))).toBeDefined();
+  expect(
+    order.slice(heart + 2).find((text) => /^Choose a start first/.test(text)),
+  ).toBeDefined();
 });
 
 test("it is as wide as the button of «Profile» above it", async () => {

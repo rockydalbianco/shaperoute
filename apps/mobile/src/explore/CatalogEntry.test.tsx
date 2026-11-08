@@ -19,7 +19,9 @@ test("the strip shows the best of five different figures", () => {
     expect(thumb.similarity).toBe(best);
   }
   // Fewer figures than places: as many as there are.
-  const two: CatalogRoute[] = CATALOG.filter((r) => r.shape === "heart" || r.shape === "star");
+  const two: CatalogRoute[] = CATALOG.filter(
+    (r) => r.shape === "heart" || r.shape === "star",
+  );
   expect(entryThumbs(two)).toHaveLength(2);
 });
 
@@ -31,7 +33,9 @@ test("the card says its name and how much it holds, and opens", async () => {
     screen.getByText(`${CATALOG.length} drawings in 23 cities · filters, search`),
   ).toBeOnTheScreen();
   await fireEvent.press(
-    screen.getByRole("button", { name: `Catalog, ${CATALOG.length} drawings in 23 cities · filters, search` }),
+    screen.getByRole("button", {
+      name: `Catalog, ${CATALOG.length} drawings in 23 cities · filters, search`,
+    }),
   );
   expect(onPress).toHaveBeenCalled();
 });

@@ -132,7 +132,9 @@ export function CatalogCard({
           />
         ))}
         <View style={styles.match}>
-          <Text style={styles.matchText}>{`${Math.round(route.similarity * 100)}%`}</Text>
+          <Text
+            style={styles.matchText}
+          >{`${Math.round(route.similarity * 100)}%`}</Text>
         </View>
         <Pressable
           style={styles.heart}

@@ -46,7 +46,11 @@ import {
   orderCatalog,
   searchCatalog,
 } from "./catalogFilters";
-import { cityName, fetchRecommendedRoute, type RecommendedRoute } from "./recommendedRoutes";
+import {
+  cityName,
+  fetchRecommendedRoute,
+  type RecommendedRoute,
+} from "./recommendedRoutes";
 
 const LENS = require("../../assets/ui/tabs/search.png");
 
@@ -101,7 +105,8 @@ export function CatalogScreen({
   const [filtering, setFiltering] = useState(false);
 
   const shown = useMemo(
-    () => orderCatalog(searchCatalog(filterCatalog(routes, filter), query), order, near),
+    () =>
+      orderCatalog(searchCatalog(filterCatalog(routes, filter), query), order, near),
     [routes, filter, query, order, near],
   );
   const counts = catalogCounts(routes);
@@ -152,7 +157,12 @@ export function CatalogScreen({
   );
 
   // The chips: each filter, set or not; a set one shows its value.
-  const chips: { key: keyof CatalogFilter; label: string; on: boolean; clear: CatalogFilter }[] = [
+  const chips: {
+    key: keyof CatalogFilter;
+    label: string;
+    on: boolean;
+    clear: CatalogFilter;
+  }[] = [
     {
       key: "country",
       label: filter.country === null ? t("Country") : countryName(filter.country),
@@ -239,7 +249,9 @@ export function CatalogScreen({
               <Chip
                 label={chip.on ? `${chip.label} ×` : chip.label}
                 on={chip.on}
-                onPress={() => (chip.on ? changeFilter(chip.clear) : setFiltering(true))}
+                onPress={() =>
+                  chip.on ? changeFilter(chip.clear) : setFiltering(true)
+                }
                 testID={`catalog-chip-${chip.key}`}
               />
             </View>

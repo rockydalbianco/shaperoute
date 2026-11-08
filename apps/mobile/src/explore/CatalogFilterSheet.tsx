@@ -19,7 +19,12 @@ import { SheetModal } from "../ui/SheetModal";
 import { Tap } from "../ui/Tap";
 import { wholeDistanceLabel } from "../units/format";
 import type { Units } from "../units/units";
-import { type CatalogCategory, type CatalogRoute, categoryName, countryName } from "./catalog";
+import {
+  type CatalogCategory,
+  type CatalogRoute,
+  categoryName,
+  countryName,
+} from "./catalog";
 import {
   activitiesOf,
   type CatalogFilter,
@@ -73,7 +78,13 @@ export function CatalogFilterSheet({
   );
 }
 
-function SheetBody({ routes, filter, units, onApply, onClose }: Omit<Props, "visible">) {
+function SheetBody({
+  routes,
+  filter,
+  units,
+  onApply,
+  onClose,
+}: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState<CatalogFilter>(filter);
   const count = filterCatalog(routes, draft).length;
@@ -131,7 +142,11 @@ function SheetBody({ routes, filter, units, onApply, onClose }: Omit<Props, "vis
           </Section>
           <Hairline />
           <Section title={t("City")}>
-            <Chip label={t("All")} on={draft.city === null} onPress={() => set({ city: null })} />
+            <Chip
+              label={t("All")}
+              on={draft.city === null}
+              onPress={() => set({ city: null })}
+            />
             {cities.map((city) => (
               <Chip
                 key={city}

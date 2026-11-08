@@ -23,7 +23,9 @@ test("every route of the seed, once, with the id the API gives it", () => {
   expect(new Set(CATALOG.map((r) => r.id)).size).toBe(CATALOG.length);
   for (const route of CATALOG) {
     const name = route.word?.toLowerCase() ?? route.shape;
-    expect(route.id).toBe(`${route.city}-${name}-${route.distance_m}-${route.id.split("-").at(-1)}`);
+    expect(route.id).toBe(
+      `${route.city}-${name}-${route.distance_m}-${route.id.split("-").at(-1)}`,
+    );
     // One of the two, as in a route request.
     expect(route.shape === null).not.toBe(route.word === null);
     expect(route.style === null).toBe(route.word === null);
@@ -82,10 +84,12 @@ test("as a route of «Explore»: the same fields, how far from the start", () =>
   // Without a start, nothing to measure from.
   expect(asRecommended(route, null).away_m).toBe(0);
   // A turned route keeps its turn; an upright one says nothing.
-  expect("rotation_deg" in asRecommended({ ...route, rotation_deg: 30 }, null)).toBe(true);
-  expect("rotation_deg" in asRecommended({ ...route, rotation_deg: undefined }, null)).toBe(
-    false,
+  expect("rotation_deg" in asRecommended({ ...route, rotation_deg: 30 }, null)).toBe(
+    true,
   );
+  expect(
+    "rotation_deg" in asRecommended({ ...route, rotation_deg: undefined }, null),
+  ).toBe(false);
 });
 
 test("names as people read them", () => {

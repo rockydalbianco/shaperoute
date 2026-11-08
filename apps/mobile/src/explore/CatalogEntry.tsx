@@ -49,7 +49,9 @@ export function entryThumbs(
 export function CatalogEntry({ onPress, width, routes = CATALOG }: Props) {
   const { routes: count, cities } = catalogCounts(routes);
   const thumbs = entryThumbs(routes);
-  const side = Math.floor((width - 2 * space.md - (ENTRY_THUMBS - 1) * space.sm) / ENTRY_THUMBS);
+  const side = Math.floor(
+    (width - 2 * space.md - (ENTRY_THUMBS - 1) * space.sm) / ENTRY_THUMBS,
+  );
   const detail = tPlural(
     count,
     "{count} drawing in {cities} cities · filters, search",

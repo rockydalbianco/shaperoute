@@ -92,7 +92,9 @@ test("no filter keeps them all; each filter keeps its own", () => {
     TRENTO_CAT.id,
     MILANO_WORD.id,
   ]);
-  expect(ids(filterCatalog(ALL, { ...NO_FILTER, city: "milano" }))).toEqual([MILANO_WORD.id]);
+  expect(ids(filterCatalog(ALL, { ...NO_FILTER, city: "milano" }))).toEqual([
+    MILANO_WORD.id,
+  ]);
   expect(ids(filterCatalog(ALL, { ...NO_FILTER, category: "animals" }))).toEqual([
     TRENTO_CAT.id,
   ]);
@@ -101,7 +103,9 @@ test("no filter keeps them all; each filter keeps its own", () => {
     PARIS_BIKE.id,
   ]);
   // Several distances at once.
-  expect(filterCatalog(ALL, { ...NO_FILTER, distances: [5000, 21000] })).toHaveLength(3);
+  expect(filterCatalog(ALL, { ...NO_FILTER, distances: [5000, 21000] })).toHaveLength(
+    3,
+  );
   expect(ids(filterCatalog(ALL, { ...NO_FILTER, activity: "cycling" }))).toEqual([
     PARIS_BIKE.id,
   ]);
@@ -113,7 +117,9 @@ test("no filter keeps them all; each filter keeps its own", () => {
 
 test("how many filters are set", () => {
   expect(activeFilters(NO_FILTER)).toBe(0);
-  expect(activeFilters({ ...NO_FILTER, country: "Italy", distances: [5000, 10000] })).toBe(2);
+  expect(
+    activeFilters({ ...NO_FILTER, country: "Italy", distances: [5000, 10000] }),
+  ).toBe(2);
   expect(
     activeFilters({
       country: "Italy",
@@ -168,11 +174,17 @@ test("«Shortest» puts the fewest metres first", () => {
 
 test("«Nearest» from the start; without a start, as «Best»", () => {
   const fromTrento = orderCatalog(ALL, "nearest", [46.07, 11.12]);
-  expect(ids(fromTrento).slice(0, 3)).toEqual([TRENTO_HEART.id, TRENTO_CAT.id, MILANO_WORD.id]);
+  expect(ids(fromTrento).slice(0, 3)).toEqual([
+    TRENTO_HEART.id,
+    TRENTO_CAT.id,
+    MILANO_WORD.id,
+  ]);
   expect(ids(fromTrento).at(-1)).toBe(NEWYORK_STAR.id);
   const fromParis = orderCatalog(ALL, "nearest", [48.85, 2.35]);
   expect(ids(fromParis)[0]).toBe(PARIS_BIKE.id);
-  expect(ids(orderCatalog(ALL, "nearest", null))).toEqual(ids(orderCatalog(ALL, "best", null)));
+  expect(ids(orderCatalog(ALL, "nearest", null))).toEqual(
+    ids(orderCatalog(ALL, "best", null)),
+  );
   // The list given is not changed.
   expect(ids(ALL)[0]).toBe(TRENTO_HEART.id);
 });

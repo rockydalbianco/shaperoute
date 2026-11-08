@@ -2038,7 +2038,8 @@ export const IT: Table = {
   "No drawings match": "Nessun disegno corrisponde",
   "Change the filters, or clear them to see every drawing.":
     "Cambia i filtri, o cancellali per vedere tutti i disegni.",
-  "The drawings are planned at {distances}.": "I disegni sono pianificati a {distances}.",
+  "The drawings are planned at {distances}.":
+    "I disegni sono pianificati a {distances}.",
   "Show {count} drawing": "Mostra {count} disegno",
   "Show {count} drawings": "Mostra {count} disegni",
   Monuments: "Monumenti",

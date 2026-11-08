@@ -2053,7 +2053,8 @@ export const ES: Table = {
   "No drawings match": "Ningún dibujo coincide",
   "Change the filters, or clear them to see every drawing.":
     "Cambia los filtros, o bórralos para ver todos los dibujos.",
-  "The drawings are planned at {distances}.": "Los dibujos están planeados a {distances}.",
+  "The drawings are planned at {distances}.":
+    "Los dibujos están planeados a {distances}.",
   "Show {count} drawing": "Mostrar {count} dibujo",
   "Show {count} drawings": "Mostrar {count} dibujos",
   Monuments: "Monumentos",

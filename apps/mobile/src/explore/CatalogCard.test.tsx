@@ -48,10 +48,12 @@ function card(over: Partial<React.ComponentProps<typeof CatalogCard>> = {}) {
 test("what it is and where, in the words of «Best near you»", () => {
   expect(catalogTitle(HEART, "km")).toBe("Heart · 10.2 km");
   expect(catalogTitle(HEART, "mi")).toBe("Heart · 6.4 mi");
-  expect(catalogTitle({ ...HEART, shape: null, word: "CIAO", style: "round" }, "km")).toBe(
-    "CIAO · 10.2 km",
+  expect(
+    catalogTitle({ ...HEART, shape: null, word: "CIAO", style: "round" }, "km"),
+  ).toBe("CIAO · 10.2 km");
+  expect(catalogDetail(HEART, [46.07, 11.12], "km")).toMatch(
+    /^Trento · Italy · \d+ m away$/,
   );
-  expect(catalogDetail(HEART, [46.07, 11.12], "km")).toMatch(/^Trento · Italy · \d+ m away$/);
   // Without a start, nothing to be away from; without a country, the city alone.
   expect(catalogDetail(HEART, null, "km")).toBe("Trento · Italy");
   expect(catalogDetail({ ...HEART, country: "" }, null, "km")).toBe("Trento");
@@ -64,7 +66,9 @@ test("the card: the drawing with its likeness, the words, the heart, «Start»",
   expect(screen.getByText("93%")).toBeOnTheScreen();
   expect(screen.getByText("♡")).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Add to favorites" })).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Start: Heart · 10.2 km" })).toBeOnTheScreen();
+  expect(
+    screen.getByRole("button", { name: "Start: Heart · 10.2 km" }),
+  ).toBeOnTheScreen();
   // The line is drawn: segments of the preview, turned back upright.
   expect(screen.getByTestId("catalog-card-drawing").children.length).toBeGreaterThan(3);
 });

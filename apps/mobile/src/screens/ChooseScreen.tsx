@@ -160,19 +160,17 @@ export function ChooseScreen({
           {swim && <SwimPlaceChoice place={place} />}
           {pool ? (
             <PoolDraw />
+          ) : recordOnly && gym ? (
+            // The gym's own page: today's plan or «Start workout», the month,
+            // the plans, how it works (TASK-411 B, C and F).
+            <GymDrawGuide
+              onStart={onRun}
+              startLabel={runLabel}
+              startIcon={runIcon}
+              hint={t("No route in the gym: MuW times your workout.")}
+            />
           ) : recordOnly ? (
-            <>
-              <RecordDay
-                label={runLabel}
-                icon={runIcon}
-                onPress={onRun}
-                hint={
-                  gym ? t("No route in the gym: MuW times your workout.") : undefined
-                }
-              />
-              {/* How it works, the last workout, the calendar (TASK-411 B). */}
-              {gym && <GymDrawGuide />}
-            </>
+            <RecordDay label={runLabel} icon={runIcon} onPress={onRun} />
           ) : (
             <>
               <TourPartView name={TOUR_PART.start} style={styles.startCard}>

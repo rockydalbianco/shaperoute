@@ -124,6 +124,8 @@ export function GymPlanEditor({
     <ScrollView
       contentContainerStyle={styles.editor}
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      automaticallyAdjustKeyboardInsets
       testID="plan-editor"
     >
       <TextInput
@@ -278,12 +280,14 @@ const styles = StyleSheet.create({
   },
   days: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: space.xs,
   },
   day: {
-    minWidth: MIN_TAP_SIZE,
+    flex: 1,
+    minHeight: MIN_TAP_SIZE,
+    paddingHorizontal: 0,
     alignItems: "center",
+    justifyContent: "center",
   },
   item: {
     gap: space.sm,
@@ -312,6 +316,9 @@ const styles = StyleSheet.create({
     minHeight: MIN_TAP_SIZE,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: MIN_TAP_SIZE / 2,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
   },
   count: {
     minWidth: MIN_TAP_SIZE / 2,

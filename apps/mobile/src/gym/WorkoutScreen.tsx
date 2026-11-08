@@ -8,12 +8,13 @@ import { appLanguage } from "../i18n/language";
 import { clockLabel } from "../navigation/freeRun";
 import { useRunAwake } from "../navigation/useRunAwake";
 import { HoldButton } from "../screens/HoldButton";
-import { color, fontSize, fontWeight, space } from "../theme/tokens";
+import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
 import { exerciseName, gymExercise } from "./catalog";
 import { ExerciseFigure } from "./ExerciseFigure";
 import { GuideButton } from "./ExerciseGrid";
 import { ExerciseGuide } from "./ExerciseGuide";
+import { planItemLine } from "./GymDrawGuide";
 import { ExerciseList } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
 import { gymKcal, gymKcalLabel } from "./gymKcal";
@@ -35,6 +36,7 @@ import {
   nextSetNumber,
   pauseWorkout,
   planProgress,
+  planStep,
   planTarget,
   restNow,
   resumeWorkout,
@@ -163,6 +165,7 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
 
   const done = workout.sets.length > 0;
   const progress = planProgress(workout);
+  const step = planStep(workout);
   // Its energy so far (part C, the user's «Stima MET sempre»).
   const timeMs = activeMs(workout, nowMs);
   const kcal = gymKcalLabel(
@@ -191,6 +194,18 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
             <Text style={gymStyles.muted} testID="gym-kcal">
               {kcal}
             </Text>
+          )}
+          {progress !== null && (
+            <View style={styles.bar} importantForAccessibility="no-hide-descendants">
+              <View
+                style={[
+                  styles.barDone,
+                  {
+                    width: `${Math.round((progress.done / Math.max(1, progress.total)) * 100)}%`,
+                  },
+                ]}
+              />
+            </View>
           )}
           {progress !== null && (
             <Text style={gymStyles.muted} testID="plan-progress">
@@ -237,47 +252,75 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
                 />
               )}
             </View>
-            <Text style={gymStyles.muted}>
-              {t("Set {n}", { n: String(nextSetNumber(workout)) })}
-            </Text>
+            {step === null ? (
+              <Text style={gymStyles.muted}>
+                {t("Set {n}", { n: String(nextSetNumber(workout)) })}
+              </Text>
+            ) : (
+              <View style={styles.step} testID="plan-step">
+                <Text style={gymStyles.muted}>
+                  {t("Set {n} of {total}", {
+                    n: String(step.set),
+                    total: String(step.sets),
+                  })}
+                </Text>
+                <View
+                  style={styles.dots}
+                  importantForAccessibility="no-hide-descendants"
+                >
+                  {Array.from({ length: step.sets }, (_, i) => (
+                    <View
+                      key={i}
+                      style={[styles.dot, i < step.set - 1 && styles.dotDone]}
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
             <SetFields
               entry={current}
               texts={texts}
               units={units}
               onChange={setTexts}
             />
-            <View style={gymStyles.row}>
-              <Pressable
-                style={[
-                  gymStyles.button,
-                  gymStyles.primary,
-                  typed === null && gymStyles.disabled,
-                ]}
-                disabled={typed === null}
-                onPress={() => log(valuesOfTexts(current, texts, units))}
-                accessibilityRole="button"
-                testID="log-set"
-              >
-                <Text style={[gymStyles.buttonText, gymStyles.primaryText]}>
-                  {t("Log set")}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={[gymStyles.button, again === null && gymStyles.disabled]}
-                disabled={again === null}
-                onPress={() => {
-                  if (again !== null) {
-                    setTexts(textsOf(current, again, units));
-                    log(again);
-                  }
-                }}
-                accessibilityRole="button"
-                testID="same-again"
-              >
-                <Text style={gymStyles.buttonText}>{t("Same again")}</Text>
-              </Pressable>
-            </View>
+            <Pressable
+              style={[
+                gymStyles.button,
+                gymStyles.primary,
+                styles.log,
+                typed === null && gymStyles.disabled,
+              ]}
+              disabled={typed === null}
+              onPress={() => log(valuesOfTexts(current, texts, units))}
+              accessibilityRole="button"
+              testID="log-set"
+            >
+              <Text style={[gymStyles.buttonText, gymStyles.primaryText]}>
+                {`✓ ${t("Log set")}`}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[gymStyles.button, again === null && gymStyles.disabled]}
+              disabled={again === null}
+              onPress={() => {
+                if (again !== null) {
+                  setTexts(textsOf(current, again, units));
+                  log(again);
+                }
+              }}
+              accessibilityRole="button"
+              testID="same-again"
+            >
+              <Text style={gymStyles.buttonText}>{t("Same again")}</Text>
+            </Pressable>
           </View>
+        )}
+        {step?.then != null && (
+          <Text style={gymStyles.muted} testID="plan-then">
+            {t("Then: {exercise}", {
+              exercise: planItemLine(step.then, language),
+            })}
+          </Text>
         )}
         <Pressable
           style={[gymStyles.button, current === null && gymStyles.primary]}
@@ -324,6 +367,9 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
 
 /** The side of the figure beside the exercise under way. */
 const NAME_FIGURE = 48;
+/** The dots of the plan's sets and the bar of its progress (part F). */
+const DOT = 10;
+const BAR = 6;
 
 const styles = StyleSheet.create({
   guide: {
@@ -336,6 +382,36 @@ const styles = StyleSheet.create({
   },
   nameText: {
     flex: 1,
+  },
+  step: {
+    gap: space.xs,
+  },
+  dots: {
+    flexDirection: "row",
+    gap: space.xs,
+  },
+  dot: {
+    width: DOT,
+    height: DOT,
+    borderRadius: DOT / 2,
+    backgroundColor: color.surfaceRaised,
+  },
+  dotDone: {
+    backgroundColor: color.accent,
+  },
+  log: {
+    minHeight: MIN_TAP_SIZE + space.md,
+  },
+  bar: {
+    alignSelf: "stretch",
+    height: BAR,
+    borderRadius: BAR / 2,
+    backgroundColor: color.surfaceRaised,
+    overflow: "hidden",
+  },
+  barDone: {
+    height: BAR,
+    backgroundColor: color.accent,
   },
   head: {
     alignItems: "center",

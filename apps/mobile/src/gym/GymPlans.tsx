@@ -26,7 +26,11 @@ export const MAX_PLANS = 20;
 /** «Mon · Thu · 3 exercises»: a plan's days and how many exercises. */
 export function planLine(plan: Pick<GymPlan, "days" | "items">): string {
   const days = plan.days.map((day) => t(WEEK_DAYS[day - 1]));
-  return [...days, t("{n} exercises", { n: String(plan.items.length) })].join(" · ");
+  const count =
+    plan.items.length === 1
+      ? t("1 exercise")
+      : t("{n} exercises", { n: String(plan.items.length) });
+  return [...days, count].join(" · ");
 }
 
 /**
@@ -39,10 +43,13 @@ export function GymPlansSheet({
   visible,
   onClose,
   fetchFn,
+  startNew = false,
 }: {
   visible: boolean;
   onClose: () => void;
   fetchFn?: typeof fetch;
+  /** Open on a new plan's editor; back from it, the list (TASK-411 F). */
+  startNew?: boolean;
 }) {
   return (
     <Modal
@@ -53,7 +60,9 @@ export function GymPlansSheet({
     >
       {/* Over the whole screen: the Pager's pages have no top edge of their own. */}
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        {visible && <PlansPage onClose={onClose} fetchFn={fetchFn} />}
+        {visible && (
+          <PlansPage onClose={onClose} fetchFn={fetchFn} startNew={startNew} />
+        )}
       </SafeAreaProvider>
     </Modal>
   );
@@ -62,14 +71,16 @@ export function GymPlansSheet({
 function PlansPage({
   onClose,
   fetchFn,
+  startNew,
 }: {
   onClose: () => void;
   fetchFn?: typeof fetch;
+  startNew: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const { plans, keep, drop } = useGymPlans(fetchFn);
   // The plan being written: «new», a plan's key, or none (the list).
-  const [editing, setEditing] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(startNew ? "new" : null);
   const page = {
     paddingTop: insets.top + space.lg,
     paddingBottom: insets.bottom + space.lg,

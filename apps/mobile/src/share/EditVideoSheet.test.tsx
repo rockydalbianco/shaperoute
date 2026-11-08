@@ -4,7 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { EditVideoSheet } from "./EditVideoSheet";
 import type { PostRun } from "./postRun";
-import { FIRST_EDIT } from "./videoEdit";
+import { FIRST_EDIT, type VideoEdit } from "./videoEdit";
 
 const METRICS = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -27,13 +27,17 @@ const RUN: PostRun = {
   durationMs: (28 * 60 + 10) * 1000,
 };
 
-async function shown(onChange = jest.fn(), onClose = jest.fn()) {
+async function shown(
+  onChange = jest.fn(),
+  onClose = jest.fn(),
+  edit: VideoEdit = FIRST_EDIT,
+) {
   await render(
     <SafeAreaProvider initialMetrics={METRICS}>
       <EditVideoSheet
         visible
         run={RUN}
-        edit={FIRST_EDIT}
+        edit={edit}
         onChange={onChange}
         onClose={onClose}
       />
@@ -81,5 +85,70 @@ describe("EditVideoSheet (TASK-408 C1)", () => {
     const { onClose } = await shown();
     await fireEvent.press(screen.getByTestId("edit-video-done"));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("EditVideoSheet, the scenes (TASK-408 C2)", () => {
+  it("shows the three scenes in order, the opening off and the whole drawing at the end, as before", async () => {
+    await shown();
+    expect(screen.getByText("Scenes")).toBeOnTheScreen();
+    expect(screen.getByRole("switch", { name: "Opening" })).not.toBeChecked();
+    expect(screen.getByRole("switch", { name: "The route" })).toBeChecked();
+    expect(screen.getByRole("switch", { name: "Ending" })).toBeChecked();
+    expect(screen.getByTestId("ending-drawing")).toBeChecked();
+    // What the opening shows only once it is on.
+    expect(screen.queryByTestId("opening-drawing")).toBeNull();
+    expect(screen.queryByText("At least one scene stays on.")).toBeNull();
+  });
+
+  it("turns a scene on and off, and moves it left or right", async () => {
+    const { onChange } = await shown();
+    await fireEvent.press(screen.getByTestId("scene-opening"));
+    expect(onChange).toHaveBeenLastCalledWith({ ...FIRST_EDIT, off: [] });
+    await fireEvent.press(screen.getByTestId("scene-ending"));
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...FIRST_EDIT,
+      off: ["opening", "ending"],
+    });
+    await fireEvent.press(screen.getByRole("button", { name: "Ending, Move left" }));
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...FIRST_EDIT,
+      order: ["opening", "ending", "route"],
+    });
+    // No arrow past either end.
+    expect(screen.queryByTestId("scene-opening-left")).toBeNull();
+    expect(screen.queryByTestId("scene-ending-right")).toBeNull();
+  });
+
+  it("keeps the last scene on, and says so", async () => {
+    const onChange = jest.fn();
+    await shown(onChange, jest.fn(), { ...FIRST_EDIT, off: ["opening", "route"] });
+    expect(screen.getByText("At least one scene stays on.")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId("scene-ending"));
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...FIRST_EDIT,
+      off: ["opening", "route"],
+    });
+  });
+
+  it("chooses what the opening shows and how it gives way, with the opening on", async () => {
+    const onChange = jest.fn();
+    const open = { ...FIRST_EDIT, off: [] };
+    await shown(onChange, jest.fn(), open);
+    expect(screen.getByTestId("opening-drawing")).toBeChecked();
+    expect(screen.getByTestId("cut-fade")).toBeChecked();
+    await fireEvent.press(screen.getByRole("radio", { name: "Title" }));
+    expect(onChange).toHaveBeenLastCalledWith({ ...open, opening: "title" });
+    await fireEvent.press(screen.getByRole("radio", { name: "Cut" }));
+    expect(onChange).toHaveBeenLastCalledWith({ ...open, cut: "cut" });
+  });
+
+  it("chooses the ending, and hides it with the ending off", async () => {
+    const { onChange } = await shown();
+    await fireEvent.press(screen.getByRole("radio", { name: "All three" }));
+    expect(onChange).toHaveBeenLastCalledWith({ ...FIRST_EDIT, ending: "all" });
+    screen.unmount();
+    await shown(jest.fn(), jest.fn(), { ...FIRST_EDIT, off: ["ending"] });
+    expect(screen.queryByTestId("ending-drawing")).toBeNull();
   });
 });

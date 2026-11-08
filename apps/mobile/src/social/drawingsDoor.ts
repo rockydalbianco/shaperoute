@@ -4,6 +4,8 @@ import type {
   DrawingPhoto,
   DrawingsPage,
   MyDrawing,
+  SkiDay,
+  SkiDayRequest,
   SkiNames,
 } from "@shaperoute/shared-types";
 import { DRAWING_PHOTO_PLACES } from "@shaperoute/shared-types";
@@ -32,6 +34,7 @@ import {
   saveDrawing,
   worthAgain,
 } from "../api/drawings";
+import { fetchSkiDay, keepSkiDay, type SkiDaySent, sentOf } from "../api/skiDays";
 import { fetchSkiNames } from "../api/skiNames";
 import { themedOf } from "../contest/contestApi";
 import { enteredIn, keptContest } from "../contest/contestKept";
@@ -136,6 +139,12 @@ export type DrawingsDoor = {
    * nobody signed in, or when the API did not give them. Without it (a
    * door of a test made before it) there are no names. */
   skiNamesOf?: (drawingId: string) => Promise<SkiNames | null>;
+  /** The resort, snow and gear of a day of skiing (TASK-406 part D2); null
+   * as skiNamesOf. Without it there are none. */
+  skiDayOf?: (drawingId: string) => Promise<SkiDay | null>;
+  /** Sends the skier's choices of a day saved (useSkiDayOutbox); "later"
+   * with nobody signed in. Without it nothing is sent. */
+  keepSkiDay?: (key: string, request: SkiDayRequest) => Promise<SkiDaySent>;
 };
 
 const NO_KEYS: ReadonlySet<string> = new Set();
@@ -159,6 +168,8 @@ const NOTHING: DrawingsDoor = {
   back: () => {},
   leave: () => {},
   skiNamesOf: async () => null,
+  skiDayOf: async () => null,
+  keepSkiDay: async () => "later",
 };
 
 /** Without «Profile» around it (a test of one screen): no drawings. */
@@ -479,6 +490,35 @@ export function useDrawingsOf(
     [baseUrl, ended, fetchFn, key, token],
   );
 
+  const skiDayOf = useCallback(
+    async (drawingId: string) => {
+      if (token === null || baseUrl === null) {
+        return null;
+      }
+      const outcome = await fetchSkiDay(baseUrl, token, drawingId, { fetchFn, key });
+      if (outcome.kind === "ok") {
+        return outcome.value;
+      }
+      ended(token, outcome);
+      return null;
+    },
+    [baseUrl, ended, fetchFn, key, token],
+  );
+
+  const keepSkiDayOf = useCallback(
+    async (runKey: string, request: SkiDayRequest): Promise<SkiDaySent> => {
+      if (token === null || baseUrl === null) {
+        return "later";
+      }
+      const outcome = await keepSkiDay(baseUrl, token, runKey, request, {
+        fetchFn,
+        key,
+      });
+      return ended(token, outcome) ? "later" : sentOf(outcome);
+    },
+    [baseUrl, ended, fetchFn, key, token],
+  );
+
   const [opening, setOpening] = useState<string | null>(null);
   // With the token it was opened with: nobody else's drawing on the map.
   const [opened, setOpened] = useState<{
@@ -554,6 +594,8 @@ export function useDrawingsOf(
       back,
       leave,
       skiNamesOf,
+      skiDayOf,
+      keepSkiDay: keepSkiDayOf,
     }),
     [
       publicKeys,
@@ -575,6 +617,8 @@ export function useDrawingsOf(
       back,
       leave,
       skiNamesOf,
+      skiDayOf,
+      keepSkiDayOf,
     ],
   );
 }

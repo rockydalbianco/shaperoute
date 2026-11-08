@@ -8,7 +8,7 @@
  */
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
 import * as Location from "expo-location";
 
 import App from "../App";
@@ -115,9 +115,10 @@ test("a member's drawing opens its page from «Feed», and «Back» comes back t
   await onFeed();
   // The drawings the members published, asked from where the phone is.
   expect(await screen.findByText("Ada_runs")).toBeOnTheScreen();
-  expect(
-    screen.getByText("Star · 4.0 km · 19 min · 4:45 /km · 280 kcal"),
-  ).toBeOnTheScreen();
+  // Its numbers in boxes, as on its page (TASK-410 part F).
+  expect(screen.getAllByTestId("feed-summary")[0]).toHaveTextContent(
+    /4\.00 km.*19:00.*4:45 \/km.*280 kcal/,
+  );
   expect(screen.queryByText(SAMPLE_FEED[0].user)).toBeNull();
   expect(asked(FEED)).toBe(1);
 
@@ -127,7 +128,7 @@ test("a member's drawing opens its page from «Feed», and «Back» comes back t
   const page = await screen.findByTestId("post-page");
   expect(page).toBeOnTheScreen();
   expect(screen.getByTestId("post-summary")).toBeOnTheScreen();
-  expect(screen.getByTestId("post-like")).toBeOnTheScreen();
+  expect(within(page).getByTestId("post-like")).toBeOnTheScreen();
 
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   // «Feed» again, as it was; not asked again.

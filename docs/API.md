@@ -39,7 +39,8 @@ d'ambiente `SHAPEROUTE_API_KEY` è impostata (almeno 16 caratteri), ogni
 richiesta tranne `GET /health` deve avere l'intestazione `X-API-Key` con
 quel valore; senza, l'API è aperta come prima. Passa senza chiave anche
 `GET /strava/callback`, la pagina a cui Strava rimanda il browser («Send
-to Strava», più sotto): un browser non ha la chiave. I POST sono limitati a
+to Strava», più sotto): un browser non ha la chiave. Così anche `GET
+/live`, la pagina di un link dal vivo («Live shares»). I POST sono limitati a
 `SHAPEROUTE_RATE_LIMIT` al minuto per client (default 30, 0 = nessun
 limite); il polling dei job è GET e non conta. La chiave non si passa mai
 da riga di comando.
@@ -2977,6 +2978,22 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   un blocco manca, le altre tengono il loro `rank`. Si segnala il post
   (`drawing_id`, segnalazione `drawing`). Vuole il token. Esempio
   `fixtures/gym-leaderboard.json`; `gym_leaderboard.py`.
+- **`GET /me/gym-calendar?tz=&month=`** (TASK-411 B, ADR-0341): gli
+  allenamenti del proprietario in un mese di calendario sul fuso `tz` del
+  telefono (nome IANA, `422` se no; `YYYY-MM`, questo se manca). Solo i
+  giorni con un allenamento: inizio, tempo, post se c'è, nome della scheda
+  (parte C); `count`, `duration_s`, `last` (l'ultimo di sempre) e
+  `skipped` (i giorni di una scheda passati senza di lei, parte C). Vuole il
+  token. Esempio `fixtures/gym-calendar.json`; `gym_calendar.py`.
+- **`GET /me/gym-plans`, `PUT /me/gym-plans/{key}`, `DELETE
+  /me/gym-plans/{key}`** (TASK-411 C, ADR-0341): le schede del
+  proprietario, nel loro ordine; la chiave la sceglie il telefono (`201`
+  la prima volta, poi `200`); una mandata più vecchia (`updated_at`) di
+  quella tenuta non la sostituisce; eliminare è `204` anche se non c'è; al
+  massimo 20 (`422`). Un esercizio: `exercise` o `name`, `kind`, `sets`
+  1–20 e i valori obiettivo del suo tipo, facoltativi. `PUT
+  /me/gym-sessions/{key}` accetta `plan`, la chiave della scheda seguita.
+  Esempio `fixtures/gym-plans.json`; `gym_plans.py`.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`
@@ -3023,6 +3040,47 @@ con la vasca e le vasche. Token richiesto; tipi in
   salvato resta com'era. Il proprietario li riceve sempre; `GET
   /drawings/{id}/pool-swim` dà medio e massimo agli altri solo se
   `heart_shown`. Senza battito le risposte non hanno i campi, come prima.
+
+### Live shares (TASK-424, ADR-0352)
+
+«Share live activity»: un link che mostra una registrazione dal vivo, su
+una pagina del sito (`https://getmuw.app/live/#<token>`), a chi lo ha,
+senza app né account. Tipi in `shared-types/src/liveShare.ts`
+(`LiveShareRequest`, `LiveShareCreated`, `LiveUpdate`, `LiveShare`,
+`LiveView`), esempi in `fixtures/live-share-request.json`,
+`live-share-update.json`, `live-view.json`; il codice in `live_shares.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /me/live-shares` | fa il link: attività, e la vasca per la piscina | `201` `LiveShareCreated` (`url` col token, dato una volta sola); `429` oltre 20 al giorno |
+| `POST /me/live-shares/{id}/updates` | i punti nuovi (al più 200), i numeri del momento, `live`/`paused`/`finished` | `200` `LiveShare`; `404` se non è suo; `410` se il link è finito; `422` per punti fuori tempo |
+| `DELETE /me/live-shares/{id}` | ferma il link: punti e numeri cancellati subito | `204`, anche la seconda volta; `404` se non è suo |
+| `GET /live?t=<token>&after=<seq>` | quello che vede la pagina, **senza chiave dell'API** né token d'account | `200` `LiveView`; `429` oltre 120 al minuto per link |
+
+- **Il token**: 128 bit casuali (`secrets.token_urlsafe(16)`, 22
+  caratteri), salvati solo come SHA-256. Sta dopo il `#` della pagina, che
+  lo manda all'API in query: il log d'accesso non scrive la query
+  (ADR-0096). Un token sconosciuto e uno scaduto rispondono uguale
+  (`status: "expired"`).
+- **Quanto dura** (scelte dell'utente del 2026-11-09): 24 ore al massimo;
+  il primo `finished` lo lascia un'ora ancora, col riepilogo; lo stop lo
+  chiude subito. Un link nuovo ferma quelli non finiti dello stesso
+  account. Da `stopped` o `expired` la pagina riceve solo lo `status`.
+- **I punti**: esatti, `[lat, lon, secondi epoch]` nella risposta, in
+  ordine di arrivo; `after` è il `last_seq` della risposta prima, e `more`
+  dice di chiedere subito ancora (2000 per risposta, 20 000 per link). Un
+  punto più vecchio di 5 minuti prima del link, o nel futuro, è `422`.
+- **I numeri** (`LiveStats`): distanza, tempo senza pause, dislivello,
+  calorie, battito (quando l'orologio lo manda), vasche stimate, esercizio
+  della palestra. La pagina calcola passo o velocità medi.
+- **Solo il sito legge `/live`**: `Access-Control-Allow-Origin:
+  https://getmuw.app`, `Cache-Control: no-store`, `Referrer-Policy:
+  no-referrer`, anche sul `429`.
+- **La pulizia**: ogni 5 minuti un giro (`LiveShareSweep`, avviato da
+  `__main__`) cancella punti e numeri dei link finiti; la riga vuota resta
+  un giorno, perché la pagina possa dire «stopped». Le copie notturne del
+  database non tengono le righe dei link (`deploy/backup.sh`). Cancellare
+  l'account cancella i link. Test in `test_live_shares.py`.
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 

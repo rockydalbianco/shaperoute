@@ -54,6 +54,20 @@ l'allenamento che le segue), un calendario del mese.
 5. **Testi**: «Approvo» per la guida e il calendario, «Approvo» per le
    schede (sotto, nelle cinque lingue).
 
+## La privacy delle schede (parte D)
+
+Testo approvato dall'utente il 2026-11-08 («Approvo»), dopo la frase della
+palestra nella «Privacy» dell'app e del sito: «Le tue schede in palestra
+(nome, giorni, esercizi e valori obiettivo) restano sul telefono e sul tuo
+account: le vedi solo tu e si cancellano con l'account. Anche il calendario
+dei tuoi allenamenti lo vedi solo tu.» (le altre quattro lingue dicono lo
+stesso). La data della privacy è quella del merge. File:
+`apps/mobile/src/about/content/{en,it,de,fr,es}.ts`, `site/privacy/` (cinque
+pagine, rigenerate con `node site/tools/make_privacy.mjs`), i test della data
+(`about/AboutPage.test.tsx`, `about/documents.test.ts`,
+`site/tests/privacy.test.mjs`). La pubblicazione del sito col sì
+dell'utente.
+
 ## Il disegno tecnico
 
 In ADR-0341 (proposto, deciso dall'agente su delega dell'utente).
@@ -67,6 +81,7 @@ In ADR-0341 (proposto, deciso dall'agente su delega dell'utente).
 | C | Le schede: tabella, migrazione (numero dal Coordinatore con la lista), API, l'editor, «Today» in «Draw», l'allenamento guidato, i giorni saltati nel calendario | migrazione, server e OTA col sì |
 | D | La privacy: una riga sulle schede | testo col sì dell'utente |
 | E | Un omino animato accanto a ogni esercizio e una mini guida (3 passi e un avviso) — richiesta dell'utente del 2026-11-07 | solo app; testi approvati; OTA col sì |
+| F | La palestra più chiara: in «Draw» una sola scheda con un tasto, calendario e schede come riquadri; nell'allenamento barra, «Set n of m», «Then: …» — richiesta dell'utente del 2026-11-08 | solo app; testi approvati; OTA col sì |
 
 ## File toccati
 
@@ -103,6 +118,20 @@ del profilo, solo con `own`) e `profile/ProfileHome.tsx` (la sola prop `own`,
 ok del Coordinatore il 2026-11-08: il riquadro compare anche sui profili
 degli altri, `UserProfilePage` resta com'è).
 
+**Parte C** (lista approvata dal Coordinatore il 2026-11-08; l'utente ha
+detto «ok va bene» a farla lo stesso giorno): server
+`migrations/0058_gym_plans.sql`, `shaperoute_api/gym_plans.py` (nuovo),
+`gym_sessions.py` (`plan`), `gym_calendar.py` (nome della scheda, giorni
+saltati), `app.py` (una riga), `tests/test_gym_plans.py` (nuovo);
+shared-types `src/gym.ts`, `fixtures/gym-plans.json` (nuovo),
+`fixtures/gym-calendar.json`, `test/gym.test.ts`; app `api/gymPlans.ts` e
+`.test.ts`, `gym/plans.ts`, `gym/plans.test.ts`, `gym/GymPlans.tsx`,
+`gym/GymPlanEditor.tsx`, `gym/GymPlans.test.tsx` (nuovi), `gym/workout.ts`,
+`gym/useWorkout.ts`, `gym/WorkoutScreen.tsx`, `gym/GymDrawGuide.tsx`,
+`gym/GymCalendar.tsx`, `i18n/{it,de,fr,es}.ts`; documenti
+`docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/DECISIONS.md`,
+`docs/sports/gym.md`, `docs/API.md`, `docs/DATABASE.md`.
+
 ## Testi dell'interfaccia (approvati il 2026-11-06)
 
 | en | it | de | fr | es |
@@ -131,6 +160,28 @@ degli altri, `UserProfilePage` resta com'è).
 
 «Reps», «Weight», «Back», «Close», i nomi dei gruppi e dei mesi ci sono
 già. `{when}` è «Today», «Yesterday» o il giorno di `dayLabel`.
+
+**Parte F** (richiesta dell'utente del 2026-11-08, «cerca di renderla più
+chiara e facile da utilizzare»; anteprima scelta «Sì, così»; lista al
+Coordinatore lo stesso giorno): `gym/GymDrawGuide.tsx`,
+`screens/ChooseScreen.tsx`, `gym/WorkoutScreen.tsx`, `gym/workout.ts`,
+`gym/GymPlans.tsx`, `gym/GymPlanEditor.tsx`, `gym/ExerciseGrid.tsx` (le
+correzioni della prova nel simulatore), `i18n/{it,de,fr,es}.ts` (cinque testi
+nuovi più «1 exercise», «Today: {plan}» tolto), i test
+`gym/GymCalendar.test.tsx`, `gym/GymPlans.test.tsx`; documenti
+`docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/sports/gym.md`. Parte dal
+branch della C e la PR si apre dopo la #964.
+
+## Testi della parte F (approvati il 2026-11-08)
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Start “{plan}” | Inizia «{plan}» | „{plan}“ starten | Commencer « {plan} » | Empezar «{plan}» |
+| {n} plans | {n} schede | {n} Pläne | {n} programmes | {n} rutinas |
+| 1 plan | 1 scheda | 1 Plan | 1 programme | 1 rutina |
+| Set {n} of {total} | Serie {n} di {total} | Satz {n} von {total} | Série {n} sur {total} | Serie {n} de {total} |
+| Then: {exercise} | Poi: {exercise} | Danach: {exercise} | Ensuite : {exercise} | Después: {exercise} |
+| 1 exercise (approvato il 2026-11-08 dopo la prova nel simulatore) | 1 esercizio | 1 Übung | 1 exercice | 1 ejercicio |
 
 ## Testi della parte E (approvati il 2026-11-07)
 
@@ -188,3 +239,53 @@ l'italiano approvato dall'utente, le altre lingue dicono le stesse cose.
   toccato elenca i suoi allenamenti e uno col post lo apre. Senza il server
   nuovo (404) restano i tre passi e il calendario dice perché. I test del
   database li fa girare la CI (Docker spento sul Mac). Server e OTA col sì.
+- 2026-11-08: **parte C scritta** (`feat/TASK-411-c-gym-plans`), dopo
+  l'«ok va bene» dell'utente. Le schede: nome, giorni della settimana,
+  esercizi in ordine con serie e valori obiettivo; sul telefono anche senza
+  rete e sull'account (`GET/PUT/DELETE /me/gym-plans`, al massimo 20 da 30
+  esercizi, solo il proprietario). In «Draw» «Today: {plan}», che «Start
+  workout» segue, «Start without the plan» e «Plans ›» (elenco, «New plan»,
+  editor, «Delete plan» che chiede prima). L'allenamento di una scheda parte
+  dal primo esercizio coi valori già scritti, dice «Plan: {done}/{total}
+  sets» e passa da solo all'esercizio dopo; il salvataggio dice quale scheda
+  ha seguito. Il calendario scrive la scheda di ogni allenamento e mette un
+  pallino grigio nei giorni di una scheda passati senza di lei. Migrazione,
+  server e OTA col sì dell'utente; i test del database li fa la CI.
+- 2026-11-08: **parte F scritta** (`feat/TASK-411-f-gym-clearer`, sopra la
+  C), dalla richiesta dell'utente «cerca di renderla più chiara e facile da
+  utilizzare poi la mandiamo in produzione, deve uscire sull'App Store con
+  il prossimo aggiornamento». In «Draw» la palestra è una pagina sua: con
+  una scheda di oggi un riquadro «Today · Mon» con il nome, gli esercizi
+  («Bench press 4×8») e un solo tasto giallo «Start “Push”», sotto «Start
+  without the plan»; senza, «Start workout» e «New plan». Sotto due
+  riquadri: il mese (quante volte, l'ultimo allenamento) che apre il
+  calendario, e le schede. «How it works» solo prima del primo allenamento
+  salvato. Nell'allenamento una barra gialla dell'avanzamento della scheda,
+  «Set 2 of 4» coi pallini, «✓ Log set» più alto su una riga sua, «Then:
+  Dips 3×10». L'uscita (build o OTA) la decide il Coordinatore col sì
+  dell'utente.
+- 2026-11-08: **l'uscita** (dal Coordinatore). La palestra completa (A, B,
+  C, D, E, F) va in produzione con un OTA dedicato dopo che C, D e F sono in
+  `main` e il server ha la migrazione delle schede (0058 o il primo libero)
+  e l'endpoint del calendario; il sito della privacy si ripubblica prima
+  dell'OTA; ogni passo col sì dell'utente, chiesto dal Coordinatore. Sul
+  telefono arriva a tutti con l'OTA (anche a chi ha la 1.0.1) e nella build
+  1.0.3; la 1.0.2 (TASK-407) è solo screenshot per scelta dell'utente: la
+  palestra anche lì è un cambio a TASK-407, che gli chiede il Coordinatore.
+- 2026-11-08: **prova nel simulatore** (iPhone 17e, Expo Go, Metro della
+  copia della F; ok del Coordinatore). Fatti a mano: «Draw» → Gym, «New
+  plan», la griglia dei gruppi e del petto con gli omini, una scheda «Push»
+  (domenica, Bench press 4×8 a 60 kg), «Today · Sun» con «Start “Push”»,
+  l'allenamento coi valori già scritti, «Set 1 of 4» coi pallini, una serie,
+  la barra a 1/4 e il recupero. Corretti dopo la prova: il riquadro «Plans»
+  compare solo con delle schede (prima ripeteva «New plan»); «New plan» apre
+  subito l'editor; i nomi dei gruppi non si tagliano più («Shoulders»,
+  «Full body»); il tastierino numerico si chiude trascinando e «Save» resta
+  raggiungibile; i giorni in una riga; «−» e «+» delle serie con il bordo;
+  «1 exercise» al singolare. Schermate in `out/TASK-411-f/`.
+- 2026-11-08: **l'uscita, scelta dell'utente «Solo screenshot, OTA»**: la
+  1.0.2 resta solo screenshot (TASK-407); la palestra completa esce con un
+  OTA dedicato dopo C, D e F in `main`, il server aggiornato e il sito della
+  privacy ripubblicato, ogni passo col suo sì. Il sì al server l'utente l'ha
+  dato al Coordinatore («Sì, ok server»): la migrazione delle schede è la
+  `0058_gym_plans.sql`.

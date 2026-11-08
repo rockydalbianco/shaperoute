@@ -20,6 +20,7 @@ import { runActivityOf } from "../settings/sport";
 import { useSport } from "../settings/useSport";
 import { postOfTrack } from "../share/postRun";
 import { SharePostButton } from "../share/SharePost";
+import { DayResort } from "../ski/DayResort";
 import {
   color,
   fontSize,
@@ -136,7 +137,7 @@ export function FreeRunCard({
   // With «Paddle» in «Settings» the numbers are a paddler's (TASK-251),
   // with «Bike» speeds, as along a route (TASK-251 C); a run's as before.
   const sport = runActivityOf(useSport());
-  return (
+  const card = (
     <RunCard
       track={track}
       live={running}
@@ -144,6 +145,16 @@ export function FreeRunCard({
       onStop={onStop}
       activity={freeRunActivity(sport)}
     />
+  );
+  // On the slopes, the resort of the day and its weather over the numbers
+  // (TASK-406 part D2).
+  return sport === "skiing" ? (
+    <View style={styles.skiing}>
+      <DayResort />
+      {card}
+    </View>
+  ) : (
+    card
   );
 }
 
@@ -237,6 +248,9 @@ const box = {
 } as const;
 
 const styles = StyleSheet.create({
+  skiing: {
+    gap: space.md,
+  },
   // Alone at the top of the map: it takes the width the way back leaves.
   banner: {
     ...box,

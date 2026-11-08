@@ -738,3 +738,158 @@ describe("videoScene, as «Edit video» makes it (TASK-408 C1)", () => {
     expect(runLine(last)?.share).toBeUndefined();
   });
 });
+
+describe("videoScene, with the scenes of «Edit video» (TASK-408 C2)", () => {
+  type Map = Extract<VideoOp, { k: "map" }>;
+  type Rect = Extract<VideoOp, { k: "rect" }>;
+  const at = (s: { frames: VideoOp[][] }, seconds: number) =>
+    s.frames[Math.round(seconds * VIDEO_FPS)];
+  const value = resultValue(RUN, "distance") as string;
+  const shownWords = (frame: VideoOp[]) =>
+    frame
+      .filter((op): op is Words => op.k === "text" && op.alpha > 0)
+      .map((op) => op.text);
+  const opened = { off: [] as never[] };
+
+  it("draws the same pictures with the scenes as the post opens", () => {
+    const plain = videoScene(RUN, POST_RESULTS, STICKERS, "night");
+    const same = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+      order: ["opening", "route", "ending"],
+      off: ["opening"],
+      opening: "title",
+      cut: "cut",
+      ending: "drawing",
+    });
+    expect(same.frames).toEqual(plain.frames);
+    expect(same.paths).toEqual(plain.paths);
+    expect(same.map).toEqual(plain.map);
+  });
+
+  it("is 12 seconds long whatever is on", () => {
+    for (const off of [[], ["route"], ["opening", "route"]] as const) {
+      expect(videoScene(RUN, POST_RESULTS, [], "night", { off }).frames).toHaveLength(
+        VIDEO_SECONDS * VIDEO_FPS,
+      );
+    }
+  });
+
+  it("opens with the line drawing itself from above, no numbers, then the route draws it again", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ...opened, cut: "cut" });
+    const drawing = runLine(at(s, 1.5)) as Line;
+    expect(drawing.upTo).toBeGreaterThan(0);
+    expect(drawing.share).toBeUndefined();
+    expect(shownWords(at(s, 1.5))).not.toContain(value);
+    // Whole before the cut, then the route starts from nothing at 3 s.
+    expect((runLine(at(s, 2.7)) as Line).upTo).toBeCloseTo(lengthOf(s.paths[1]), -1);
+    expect(runLine(at(s, 3.1))).toBeUndefined();
+    expect((runLine(at(s, 6)) as Line).upTo).toBeLessThan(lengthOf(s.paths[1]));
+  });
+
+  it("cuts at once, or fades the opening into the route over its last half second", () => {
+    const cut = videoScene(RUN, POST_RESULTS, [], "night", { ...opened, cut: "cut" });
+    const fade = videoScene(RUN, POST_RESULTS, [], "night", { ...opened, cut: "fade" });
+    expect((runLine(at(cut, 2.8)) as Line).alpha).toBe(1);
+    const fading = runLine(at(fade, 2.8)) as Line;
+    expect(fading.alpha).toBeGreaterThan(0);
+    expect(fading.alpha).toBeLessThan(1);
+  });
+
+  it("asks the page for the map from straight above under the opening on «3D», and only there", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "3d", opened);
+    expect(s.map?.flat).toBe(true);
+    const flat = (frame: VideoOp[]) =>
+      frame.some((op) => op.k === "map" && (op as Map).flat === true);
+    expect(flat(at(s, 1.5))).toBe(true);
+    expect(flat(at(s, 4))).toBe(false);
+    expect(videoScene(RUN, POST_RESULTS, [], "3d").map?.flat).toBeUndefined();
+    expect(
+      videoScene(RUN, POST_RESULTS, [], "night", opened).map?.flat,
+    ).toBeUndefined();
+    expect(
+      videoScene(RUN, POST_RESULTS, [], "3d", { ...opened, opening: "title" }).map
+        ?.flat,
+    ).toBeUndefined();
+  });
+
+  it("opens with the run's title large in the middle, the small one hidden meanwhile", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", {
+      ...opened,
+      opening: "title",
+      cut: "cut",
+    });
+    const titles = at(s, 1.5).filter(
+      (op): op is Words => op.k === "text" && op.text === "Heart in Trento",
+    );
+    const big = titles.find((op) => op.alpha > 0) as Words;
+    const small = titles.find((op) => op !== big) as Words;
+    expect(big.y).toBeGreaterThan(VIDEO_HEIGHT * 0.3);
+    expect(big.size).toBeGreaterThan(small.size);
+    expect(small.alpha).toBe(0);
+    expect(shownWords(at(s, 4))).toContain("Heart in Trento");
+  });
+
+  it("ends on the numbers large in the middle, over a veil, the small ones gone", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ending: "numbers" });
+    const end = at(s, 11);
+    const big = end.filter(
+      (op): op is Words =>
+        op.k === "text" && op.text === value && op.align === "center",
+    );
+    expect(big).toHaveLength(1);
+    expect(big[0].alpha).toBe(1);
+    const small = end.find(
+      (op): op is Words => op.k === "text" && op.text === value && op.align === "left",
+    ) as Words;
+    expect(small.alpha).toBe(0);
+    expect(end.some((op) => op.k === "rect" && (op as Rect).color === "paper")).toBe(
+      true,
+    );
+  });
+
+  it("ends on the heart of MuW drawing itself on its square in the middle", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ending: "heart" });
+    expect(s.paths).toHaveLength(3);
+    const end = at(s, 11.5);
+    const square = end.find(
+      (op): op is Rect =>
+        op.k === "rect" && op.color === "accent" && op.w > VIDEO_WIDTH / 4,
+    ) as Rect;
+    expect(square.x + square.w / 2).toBeCloseTo(VIDEO_WIDTH / 2, -1);
+    expect(end.some((op) => op.k === "line" && op.path === 2 && op.upTo > 0)).toBe(
+      true,
+    );
+    expect(videoScene(RUN, POST_RESULTS, [], "night").paths).toHaveLength(2);
+  });
+
+  it("ends on all three: the whole drawing with the numbers first, the heart after", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ending: "all" });
+    const hearted = (frame: VideoOp[]) =>
+      frame.some((op) => op.k === "line" && op.path === 2);
+    expect(hearted(at(s, 9.8))).toBe(false);
+    expect(shownWords(at(s, 9.8))).toContain(value);
+    expect(hearted(at(s, 11.5))).toBe(true);
+  });
+
+  it("gives the opening and the ending the route's seconds when it is off, the line whole in the ending", () => {
+    const s = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+      off: ["route"],
+      cut: "cut",
+    });
+    expect((runLine(at(s, 7)) as Line).upTo).toBeCloseTo(lengthOf(s.paths[1]), 0);
+    expect(at(s, 7).some((op) => op.k === "emoji")).toBe(true);
+    expect(at(s, 5.5).some((op) => op.k === "emoji")).toBe(false);
+  });
+
+  it("follows the order the runner chose: the ending first, then the route drawing from nothing", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", {
+      order: ["ending", "route", "opening"],
+    });
+    expect((runLine(at(s, 1)) as Line).upTo).toBeCloseTo(lengthOf(s.paths[1]), 0);
+    expect((runLine(at(s, 5)) as Line).upTo).toBeLessThan(lengthOf(s.paths[1]) / 2);
+  });
+
+  it("keeps the map's credit on through the opening", () => {
+    const s = videoScene(RUN, POST_RESULTS, [], "night", { ...opened, cut: "cut" });
+    expect(shownWords(at(s, 2))).toContain(MAP_CREDIT);
+  });
+});

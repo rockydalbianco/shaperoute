@@ -15,14 +15,21 @@ type Props = {
   /** The map's bearing now, in degrees clockwise from north. */
   shown: number;
   onPress: () => void;
+  /** Whether north is up, for the hint, when the map says it better than
+   * `shown` does: on the run's «Compass» page (TASK-422). */
+  northUp?: boolean;
+  /** What a tap does with north up, when not the drawing's turn. */
+  upHint?: string;
 };
 
 /**
  * The north arrow of a turned map (TASK-232, ADR-0195): it points where
  * north is. A tap puts north up; with north up, a tap turns the map as the
- * drawing again.
+ * drawing again, or where the phone points on the run's «Compass» page
+ * (TASK-422).
  */
-export function NorthArrow({ shown, onPress }: Props) {
+export function NorthArrow({ shown, onPress, northUp, upHint }: Props) {
+  const up = northUp ?? !isTurned(shown);
   return (
     <Pressable
       testID="north-arrow"
@@ -31,9 +38,9 @@ export function NorthArrow({ shown, onPress }: Props) {
       accessibilityRole="button"
       accessibilityLabel={t("North arrow")}
       accessibilityHint={
-        isTurned(shown)
-          ? t("Turns the map north up")
-          : t("Turns the map like the drawing")
+        up
+          ? (upHint ?? t("Turns the map like the drawing"))
+          : t("Turns the map north up")
       }
     >
       <View

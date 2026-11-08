@@ -554,3 +554,32 @@ describe("«Edit video» (TASK-408 C1)", () => {
     expect(inject.mock.calls[0][0]).toContain('"map":null');
   });
 });
+
+describe("«Edit video», the scenes (TASK-408 C2)", () => {
+  it("makes the video with the opening, the order and the ending chosen in the sheet", async () => {
+    await shown();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
+    await fireEvent.press(screen.getByRole("radio", { name: "3D" }));
+    await fireEvent.press(screen.getByTestId("scene-opening"));
+    await fireEvent.press(screen.getByRole("radio", { name: "Heart" }));
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
+    expect(
+      screen.getByText("3D · No animal · Opening › The route › Ending"),
+    ).toBeOnTheScreen();
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    // The page takes the map from straight above too, for the opening.
+    expect(inject.mock.calls[0][0]).toContain('"flat":true');
+    await page({ type: "map", ok: true, why: null, ms: {} });
+    const scene = JSON.parse(
+      inject.mock.calls[1][0]
+        .replace(/^window\.muwVideo\.make\(/, "")
+        .replace(/\);?\s*(true;?)?\s*$/, ""),
+    ) as { paths: number[][]; frames: { k: string; flat?: boolean }[][] };
+    // The ending's heart is the third line; the opening's map is flat.
+    expect(scene.paths).toHaveLength(3);
+    expect(scene.frames[45].some((op) => op.k === "map" && op.flat === true)).toBe(
+      true,
+    );
+  });
+});

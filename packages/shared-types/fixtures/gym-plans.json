@@ -1,0 +1,60 @@
+{
+  "plans": [
+    {
+      "key": "pl00000000000001",
+      "name": "Push",
+      "days": [1, 4],
+      "position": 0,
+      "updated_at": "2026-11-08T09:00:00Z",
+      "items": [
+        {
+          "exercise": "bench_press",
+          "kind": "load",
+          "sets": 4,
+          "reps": 8,
+          "load_kg": 60
+        },
+        {
+          "exercise": "dips",
+          "kind": "bodyweight",
+          "sets": 3,
+          "reps": 10
+        },
+        {
+          "exercise": "plank",
+          "kind": "timed",
+          "sets": 2,
+          "duration_s": 60
+        }
+      ]
+    },
+    {
+      "key": "pl00000000000002",
+      "name": "Legs",
+      "days": [3],
+      "position": 1,
+      "updated_at": "2026-11-08T09:05:00Z",
+      "items": [
+        {
+          "exercise": "back_squat",
+          "kind": "load",
+          "sets": 5,
+          "reps": 5,
+          "load_kg": 80
+        },
+        {
+          "exercise": "treadmill",
+          "kind": "cardio",
+          "sets": 1,
+          "duration_s": 600,
+          "speed_kmh": 10
+        },
+        {
+          "name": "Sled push",
+          "kind": "load",
+          "sets": 3
+        }
+      ]
+    }
+  ]
+}

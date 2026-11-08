@@ -40,6 +40,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Feed: schede, filtri «Tutti»/«Seguiti», percorsi di MuW | `API.md` «Feed», ADR-0306, ADR-0308, ADR-0310 |
 | Post: video, compositore, calorie e battito | `API.md` «Drawings», `tasks/TASK-336.md`, `tasks/TASK-348.md`, `tasks/TASK-345.md` |
 | La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 |
+| La mia immagine al posto dell'animale nel video (foto tonda, GIF, cartellino sul 3D) e il video «Together» con le persone taggate sullo stesso orologio | `tasks/TASK-417.md`, `DECISIONS.md` ADR-0345 e ADR-0339, `tasks/TASK-408.md` |
 | Video della corsa ed editor con l'animale 3D | ADR-0303, ADR-0339, `UI.md` «Il post da condividere», `tasks/TASK-408.md` |
 | Messaggi, chat, allegati | `API.md` «Messages», `UI.md`, ADR-0279, ADR-0305 |
 | Profilo: record personali, badge, il mio corpo, VO₂ max | `API.md` «Profile», ADR-0312, ADR-0318, `tasks/TASK-341.md`, `tasks/TASK-397.md` |
@@ -52,12 +53,15 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |
 | Percorsi in bici di MuW in «Explore» | `UI.md` «Pedalalo tu», ADR-0309 |
 | Il catalogo di «Explore»: forme nuove, i mille disegni, la pagina | `../catalog/README.md`, ADR-0347, `tasks/TASK-418.md`, `tasks/TASK-419.md`, `tasks/TASK-420.md` |
+| Le forme candidate: `candidate_outlines/`, `tools/draw_new_shapes.py`, l'anteprima | `tasks/TASK-418.md`, ADR-0346, ADR-0036 |
 | Aggiungere uno sport, il banco `tools/sport_bench/` | `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md`, ADR-0320 |
 | Uno sport in particolare (corsa, bici, canoa, hike, gravel, roller, gym, skimo, wheelchair, snowshoes) | `sports/<sport>.md` e il suo task file se aperto |
 | Nuoto in piscina: calorie, battito e zone | `tasks/TASK-409.md`, ADR-0318, ADR-0334 |
 | Walk, nuoto in acque libere | `ROUTE_ENGINE.md` (le reti, §8), `tasks/TASK-371.md` |
 | Sci: «Record only», stazioni, meteo | `MAPS.md` «Impianti e piste da sci», ADR-0319, ADR-0338, `tasks/TASK-375.md`, `tasks/TASK-406.md` |
 | Apple Watch | `tasks/TASK-370.md`, ADR-0314 |
+| Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352 |
+| La corsa in registrazione: le tre pagine «Compass», «Map», «Data», la mappa che gira dove punta il telefono | `UI.md` «La navigazione», ADR-0350, ADR-0137, `tasks/TASK-422.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

@@ -932,6 +932,19 @@ numero è del Coordinatore):
 - Nessuna posizione: un allenamento in palestra non ha luoghi né distanza
   (`distance_m` 0, `place` nullo). Test in `test_gym.py`.
 
+Migrazione `0058_gym_plans.sql` (TASK-411 parte C, ADR-0341):
+
+- **`gym_plans`**: le schede di un account, chiave `(user_id, key)` con la
+  chiave scelta dal telefono (`ON DELETE CASCADE` sull'account): `name`
+  1–40, `days` (sette bit, il bit 0 lunedì), `items` (JSONB, gli esercizi
+  in ordine con `sets` e i valori obiettivo; li controlla `gym_plans.py`),
+  `position`, `updated_at` (l'ultima modifica sul telefono: una più vecchia
+  non la sostituisce) e `created_at` (quando è arrivata all'API: i giorni
+  saltati contano da lì). Test in `test_gym_plans.py`.
+- **`gym_sessions.plan_key`**: la chiave della scheda seguita, nullable;
+  una chiave e non un riferimento, l'allenamento può arrivare prima della
+  scheda e una scheda eliminata lo lascia com'era.
+
 Migrazione `0048_run_ski_names.sql` (TASK-375 parte D2, ADR-0319, `API.md`
 «Ski names»; il numero è del Coordinatore. La `0047` è della palestra, e
 questa non ne ha bisogno):
@@ -1013,6 +1026,22 @@ Migrazione `0053_pool_swims.sql` (TASK-400 parte A, ADR-0334, `API.md`
   `lengths` (da 1 a 1000). `runs.distance_m` è il loro prodotto, al metro.
 - Nessuna posizione, nessuna riga di prima cambia, nessun backfill. Test in
   `test_pool_swims.py`.
+
+Migrazione `0063_live_shares.sql` (TASK-424 parte A1, ADR-0352, `API.md`
+«Live shares»; numero in bozza del Coordinatore, quello vero il primo
+libero al merge):
+
+- **`live_shares`**: una riga per link. `id` (uuid casuale), `user_id`
+  (`CASCADE` su `users`), `token_hash` (SHA-256 del token, 32 byte,
+  unico: il token non si tiene), `activity`, `pool_length_m` (solo per la
+  piscina), `created_at`, `expires_at`, `finished_at`, `stopped_at`,
+  `paused`, `stats` (`jsonb`, gli ultimi numeri), `updated_at`.
+- **`live_share_points`**: i punti del link, esatti (`lat`, `lon`, `at`),
+  `CASCADE` sul link; `id` è il `seq` che la pagina chiede.
+- **Si cancellano presto**: punti e `stats` allo stop subito, alla
+  scadenza dal giro di pulizia (5 minuti); la riga vuota un giorno dopo.
+  Fuori dalle copie notturne (`backup.sh`, `--exclude-table-data`). Test
+  in `test_live_shares.py`.
 
 Migrazione `0054_ski_resorts.sql` (TASK-406 parte A, ADR-0338, `API.md`
 «Ski resorts»; il numero è del Coordinatore):
@@ -1110,4 +1139,7 @@ ADR-0111).
 - Una corsa va a Strava solo quando il suo proprietario lo chiede, e solo
   all'atleta che lui ha collegato (TASK-187); a Strava si chiede il solo
   permesso di aggiungere attività, niente in lettura.
+- Una posizione condivisa dal vivo (TASK-424) va a chi ha il link solo
+  finché il link vale; poi si cancella, e non entra nelle copie di
+  sicurezza.
 - Età minima 16 anni.

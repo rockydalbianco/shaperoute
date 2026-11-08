@@ -21,6 +21,9 @@ import { MAPLIBRE_JS_SRI, MAPLIBRE_JS_URL } from "../map/mapPage";
  * every picture, the camera turning, the line laid on the hills each time
  * (mode `orbit`); over it, or when the time runs out, the one picture is
  * zoomed slowly instead (mode `still`). The video comes out either way.
+ * When the scene opens with the drawing (TASK-408, part C2), the map's
+ * description says `flat`: the page first takes its picture from straight
+ * above, where the scene's flat line lies, then leans it on its hills.
  *
  * The app talks to it with `window.muwVideo.make(scene)`
  * (injectJavaScript); it answers with `ReactNativeWebView.postMessage`, one
@@ -151,6 +154,9 @@ const SCRIPT = String.raw`
   var started = false;
   // The map's picture, once prepared, and how long its steps took.
   var background = null;
+  // On «3D», the map's picture from straight above too, for the opening's
+  // drawing (TASK-408, part C2), when the scene asks for it.
+  var flatBackground = null;
   var mapTimes = {};
   var preparing = false;
   // How the map is drawn under the pictures: "flat", "still" or "orbit".
@@ -331,6 +337,8 @@ const SCRIPT = String.raw`
     preparing = true;
     var t0 = now();
     var relief = !!spec.terrain;
+    // First from straight above, for the opening's drawing, then leaning.
+    var flatFirst = relief && !!spec.flat;
     var settled = false;
     var errors = 0;
     var timer = null;
@@ -340,8 +348,8 @@ const SCRIPT = String.raw`
     var still = 0;
     var busy = false;
     var terrainOn = false;
-    // tiles → (fit →) shot → (dry →) done
-    var phase = "tiles";
+    // (flat →) tiles → (fit →) shot → (dry →) done
+    var phase = flatFirst ? "flat" : "tiles";
     var box = null;
     var map = null;
     mode = relief ? "still" : "flat";
@@ -364,10 +372,9 @@ const SCRIPT = String.raw`
       map = null;
       box = null;
     }
-    function takePicture() {
-      var t = now();
-      // Drawn once more right now, so the picture is of the whole map
-      // whatever the page's frames did.
+    // The map as it is now, drawn once more right now, so the picture is
+    // of the whole map whatever the page's frames did.
+    function pictureOf() {
       try {
         map.redraw();
       } catch (error) {
@@ -377,7 +384,11 @@ const SCRIPT = String.raw`
       picture.width = spec.width * spec.pixelRatio;
       picture.height = spec.height * spec.pixelRatio;
       picture.getContext("2d").drawImage(map.getCanvas(), 0, 0, picture.width, picture.height);
-      background = picture;
+      return picture;
+    }
+    function takePicture() {
+      var t = now();
+      background = pictureOf();
       mapTimes.snapshot = Math.round(now() - t);
       if (relief) {
         lineAtRest = projectLine(map, spec);
@@ -502,6 +513,15 @@ const SCRIPT = String.raw`
       }
       busy = true;
       try {
+        if (phase === "flat") {
+          // The picture from straight above, then the map leaning on its
+          // hills, and whole once more.
+          flatBackground = pictureOf();
+          phase = "tiles";
+          still = 0;
+          map.jumpTo({ pitch: spec.camera.pitch });
+          return;
+        }
         if (phase === "tiles" && relief) {
           // Drawn again at the fitted camera, and whole once more.
           phase = "fit";
@@ -566,7 +586,7 @@ const SCRIPT = String.raw`
         center: spec.camera.center,
         zoom: spec.camera.zoom,
         bearing: spec.camera.bearing,
-        pitch: spec.camera.pitch,
+        pitch: flatFirst ? 0 : spec.camera.pitch,
         interactive: false,
         attributionControl: false,
         fadeDuration: 0,
@@ -579,7 +599,7 @@ const SCRIPT = String.raw`
         center: spec.camera.center,
         zoom: spec.camera.zoom,
         bearing: spec.camera.bearing,
-        pitch: spec.camera.pitch
+        pitch: flatFirst ? 0 : spec.camera.pitch
       });
     } catch (error) {
       finish(false, messageOf(error));
@@ -1051,7 +1071,13 @@ const SCRIPT = String.raw`
       }
       g.globalAlpha = Math.min(1, op.alpha);
       if (op.k === "map") {
-        if (live !== null && mode === "orbit") {
+        if (op.flat) {
+          // From straight above, when the page has that picture; the
+          // leaning one under it stays otherwise.
+          if (flatBackground !== null) {
+            g.drawImage(flatBackground, 0, 0, scene.width, scene.height);
+          }
+        } else if (live !== null && mode === "orbit") {
           live.map.jumpTo({ bearing: live.spec.camera.bearing + (op.turn || 0) });
           live.map.redraw();
           g.drawImage(live.map.getCanvas(), 0, 0, scene.width, scene.height);

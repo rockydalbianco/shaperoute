@@ -70,6 +70,7 @@ from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
 from shaperoute_api.gym_calendar import install_gym_calendar
 from shaperoute_api.gym_leaderboard import install_gym_leaderboard
+from shaperoute_api.gym_plans import install_gym_plans
 from shaperoute_api.gym_sessions import install_gym_sessions
 from shaperoute_api.images import (
     AnyRequest,
@@ -89,6 +90,7 @@ from shaperoute_api.line_directions import (
     RouteDirectionsRequestBody,
     directions_of,
 )
+from shaperoute_api.live_shares import install_live_shares
 from shaperoute_api.messages import install_messages
 from shaperoute_api.moderation import install_moderation
 from shaperoute_api.muw_routes import MuwRouteCatalog, install_muw_routes
@@ -379,9 +381,14 @@ def create_app(
     # The calendar of one's own workouts at the gym (TASK-411 B); it needs
     # a token.
     install_gym_calendar(app)
+    # The plans of the gym (TASK-411 C); they need a token.
+    install_gym_plans(app)
     # The swims in a pool, saved without a track, and their lengths
     # (TASK-400); they need a token.
     install_pool_swims(app)
+    # «Share live activity» (TASK-424): the links need a token, their page
+    # only the token of the link.
+    install_live_shares(app)
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)

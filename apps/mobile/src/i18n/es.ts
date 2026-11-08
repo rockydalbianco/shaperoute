@@ -250,6 +250,7 @@ export const ES: Table = {
   "North arrow": "Flecha del norte",
   "Turns the map north up": "Pone el norte arriba",
   "Turns the map like the drawing": "Gira el mapa como el dibujo",
+  "Turns the map where you face": "Gira el mapa hacia donde miras",
 
   // src/map/MapKindButton.tsx
   "Map type": "Tipo de mapa",
@@ -934,9 +935,6 @@ export const ES: Table = {
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Mantén pulsado para eliminar.",
 
-  // src/feed/ActionBar.tsx
-  Reactions: "Reacciones",
-
   // src/social/DrawingReactions.tsx
   React: "Reaccionar",
   "Your reaction: {name}": "Tu reacción: {name}",
@@ -1100,6 +1098,7 @@ export const ES: Table = {
   Pause: "Pausa",
   Music: "Música",
   "Opens Spotify": "Abre Spotify",
+  Compass: "Brújula",
   Map: "Mapa",
   Data: "Datos",
   "Auto-pause": "Pausa automática",
@@ -1225,6 +1224,22 @@ export const ES: Table = {
   "This month: 1 time": "Este mes: 1 vez",
   "This month: {n} times": "Este mes: {n} veces",
   "Gym calendar": "Calendario gimnasio",
+  Plans: "Rutinas",
+  "New plan": "Nueva rutina",
+  "Plan name": "Nombre de la rutina",
+  Sets: "Series",
+  "{n} exercises": "{n} ejercicios",
+  "1 exercise": "1 ejercicio",
+  "Start without the plan": "Empezar sin rutina",
+  "Plan: {done}/{total} sets": "Rutina: {done}/{total} series",
+  "Delete plan": "Eliminar la rutina",
+  "Delete “{name}”?": "¿Eliminar «{name}»?",
+  Planned: "Previsto",
+  "Start “{plan}”": "Empezar «{plan}»",
+  "{n} plans": "{n} rutinas",
+  "1 plan": "1 rutina",
+  "Set {n} of {total}": "Serie {n} de {total}",
+  "Then: {exercise}": "Después: {exercise}",
   "{n} times · {time}": "{n} veces · {time}",
   Workout: "Entrenamiento",
   "Only sets logged live count.": "Solo cuentan las series anotadas en directo.",
@@ -1691,6 +1706,18 @@ export const ES: Table = {
   Pink: "Rosa",
   Green: "Verde",
   White: "Blanco",
+  // src/share/ScenesRows.tsx, EndingRow.tsx, videoScenes.ts (TASK-408 C2, texts of choice 10)
+  Scenes: "Escenas",
+  Opening: "Inicio",
+  "The route": "El recorrido",
+  Ending: "Final",
+  "Drawing in 2D": "Dibujo en 2D",
+  Cut: "Corte",
+  Fade: "Fundido",
+  Numbers: "Números",
+  "Whole drawing": "Dibujo entero",
+  "All three": "Los tres",
+  "At least one scene stays on.": "Al menos una escena sigue activa.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concurso MuW",
@@ -1901,6 +1928,10 @@ export const ES: Table = {
     "Hoy ya hay demasiadas fotos. Vuelve a intentarlo mañana.",
   "Videos can't be sent right now. Try again later.":
     "Ahora no se pueden enviar vídeos. Vuelve a intentarlo más tarde.",
+  // The Apple Watch (TASK-370 part B3a).
+  "Send to watch": "Enviar al reloj",
+  "Sent to your watch": "Enviado al reloj",
+  "Send a route from MuW on your iPhone": "Envía una ruta desde MuW en el iPhone",
   // The drawings of the private messages (TASK-333 part C).
   "Send to a friend": "Enviar a amigos",
   "Send to…": "Enviar a…",
@@ -2073,41 +2104,23 @@ export const ES: Table = {
     "Pronóstico más antiguo: MET Norway no responde.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Tiempo: MET Norway (CC BY 4.0) · Estaciones: OpenSkiMap.org, © colaboradores de OpenStreetMap",
-
-  // src/explore/CatalogScreen.tsx, CatalogEntry.tsx, CatalogCard.tsx,
-  // CatalogGrid.tsx, CatalogFilterSheet.tsx, catalog.ts (TASK-420: the catalog)
-  Catalog: "Catálogo",
-  "{count} drawing in {cities} cities · filters, search":
-    "{count} dibujo en {cities} ciudades · filtros, búsqueda",
-  "{count} drawings in {cities} cities · filters, search":
-    "{count} dibujos en {cities} ciudades · filtros, búsqueda",
-  "{count} drawings · {cities} cities": "{count} dibujos · {cities} ciudades",
-  "Search by name: heart, CIAO, Milan…": "Buscar por nombre: corazón, CIAO, Milán…",
-  Country: "País",
-  City: "Ciudad",
-  Category: "Categoría",
-  Nearest: "Más cercanos",
-  Best: "Más bonitos",
-  Shortest: "Más cortos",
-  Any: "Cualquiera",
-  "Loading more…": "Cargando más…",
-  "No drawings match": "Ningún dibujo coincide",
-  "Change the filters, or clear them to see every drawing.":
-    "Cambia los filtros, o bórralos para ver todos los dibujos.",
-  "The drawings are planned at {distances}.":
-    "Los dibujos están planeados a {distances}.",
-  "Show {count} drawing": "Mostrar {count} dibujo",
-  "Show {count} drawings": "Mostrar {count} dibujos",
-  Monuments: "Monumentos",
-  Holidays: "Fiestas",
-  Italy: "Italia",
-  "United States": "Estados Unidos",
-  Netherlands: "Países Bajos",
-  Spain: "España",
-  "United Arab Emirates": "Emiratos Árabes Unidos",
-  Portugal: "Portugal",
-  "United Kingdom": "Reino Unido",
-  France: "Francia",
-  Australia: "Australia",
-  Japan: "Japón",
+  // src/ski/DayResort.tsx, DayChoices.tsx, SkiDayLine.tsx, screens/SnowFinishCard.tsx
+  // (TASK-406 part D2: the day of skiing, texts approved on 2026-11-08)
+  "Where are you skiing?": "¿Dónde estás esquiando?",
+  "Change@@resort": "Cambiar",
+  "No ski resort nearby": "Ninguna estación de esquí cerca",
+  "{temperature} now · {snow} fresh snow":
+    "{temperature} ahora · {snow} de nieve nueva",
+  Total: "Total",
+  "How was the snow?": "¿Cómo estaba la nieve?",
+  Powder: "Polvo",
+  Groomed: "Pisada",
+  Icy: "Helada",
+  Spring: "Primavera",
+  Heavy: "Pesada",
+  "Your gear": "Tu equipo",
+  "Ski or snowboard, brand and model": "Esquí o snowboard, marca y modelo",
+  Resort: "Estación",
+  Snow: "Nieve",
+  Gear: "Equipo",
 };

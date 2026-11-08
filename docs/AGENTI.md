@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-11-08, ~15:30Z · `main` = `6a9a20c0` · coordinatore: la sessione «Coordinatore» `local_3f55a0e9` (dal 2026-11-08; la vecchia `local_e57a8224` è archiviata). «Coordinatore 2» non c'è: i merge li fa il coordinatore; per riaverlo, una sessione nuova con «Sei il Coordinatore 2: segui `docs/COORDINATORE-2.md`». Le righe tolte oggi sono copiate in `docs/archive/AGENTI-fino-al-2026-11.md`.
+**Ultimo aggiornamento**: 2026-11-08, ~19:00Z · `main` = `e85a68ac` · coordinatore: la sessione «Coordinatore» `local_3f55a0e9` (dal 2026-11-08; la vecchia `local_e57a8224` è archiviata). «Coordinatore 2» non c'è: i merge li fa il coordinatore; per riaverlo, una sessione nuova con «Sei il Coordinatore 2: segui `docs/COORDINATORE-2.md`». Le righe tolte l'8 novembre sono in `docs/archive/AGENTI-fino-al-2026-11.md`.
 
 ## Come si usa
 
@@ -49,135 +49,188 @@
    esempi tenuti non valgono più: va rilanciato `draw_examples` (circa 35
    minuti, dentro il container dell'API), mai mentre gira un altro
    aggiornamento.
+12. **Si lavora solo sul T9**: il repository è `/Volumes/T9/Progetti/shaperoute`
+   e i worktree stanno in `.claude/worktrees/` lì sotto. Il vecchio
+   `/Users/lucapallaoro/Progetti/shaperoute` è un symlink: non si usa nei
+   comandi, nei percorsi né nei brief. Copie pulite, `npm ci`, build,
+   DerivedData e misure pesanti vanno in `/Volumes/T9/Progetti/tmp/<nome>/`,
+   mai sul disco interno (l'8 novembre si è riempito: 240 MB liberi).
+13. **Una PR di codice entra solo dopo «#NNN pronta» → «merge NNN»**, anche
+   per le sessioni sport e anche se il brief dice altro. Si riallinea da
+   `origin/main` **solo se GitHub dice CONFLICTING/DIRTY**: se è MERGEABLE
+   con i check in corso si lascia correre (il job `api` dura 25–35 minuti,
+   un riallineamento inutile li rifà).
+14. **Le PR di soli documenti che toccano `STATUS.md` o `DECISIONS.md`**
+   entrano a grappolo, quando le PR di codice in CI sono dentro: ogni merge
+   su quei file rimette DIRTY le altre. Quelle che toccano altri file
+   (task file, `docs/sports/`, `AGENTI.md`) entrano appena verdi.
+15. **Dal 2026-11-08 `STATUS.md` e `DECISIONS.md` sono snelli (TASK-412)**:
+   un task aperto ha al massimo 5 righe in «In lavorazione»; una decisione è
+   una voce intera in «Voci nuove» più una riga nell'«Indice»; un task
+   chiuso diventa una riga in `docs/archive/COMPLETATI.md`. Lo storico è in
+   `docs/archive/`, si cerca con grep. Dettagli in `CLAUDE.md`.
+   **Riallineare un branch nato prima del 2026-11-08**: dopo `git merge
+   origin/main` i tre file vanno **ripresi da `main`** (`git checkout
+   origin/main -- docs/STATUS.md docs/DECISIONS.md docs/INDEX.md`) e le
+   proprie righe riaggiunte a mano nel formato nuovo: il vecchio driver
+   `merge=union` (TASK-359), tolto l'8 novembre sera, riportava indietro tutto
+   il testo archiviato (450 KB) senza segnalare conflitti.
+   **Dalla sera del 2026-11-08 le PR di codice non toccano `STATUS.md`, `DECISIONS.md`
+   né `INDEX.md`**: con i file snelli ogni PR che li tocca va in conflitto
+   con tutte le altre a ogni merge (l'8 novembre quattordici PR insieme).
+   Le righe del task (voce ≤ 5 righe in STATUS, voce ADR in «Voci nuove»
+   più riga d'indice, riga in INDEX o in COMPLETATI) vanno in una **PR di
+   soli documenti aperta dopo il merge del codice**, che il coordinatore
+   unisce subito (CI ~1 min, riallineata al volo). In un ramo già aperto:
+   `git checkout origin/main -- docs/STATUS.md docs/DECISIONS.md
+   docs/INDEX.md` e le righe messe da parte per la PR docs.
+16. **Le memorie delle sessioni** sul T9 sono collegate con symlink a
+   `~/.claude/projects/-Users-lucapallaoro-Progetti-shaperoute/memory`; un
+   worktree nuovo parte vuoto: va collegato allo stesso modo.
 
 ## La coda dei merge
 
-Al 2026-11-08, ~15:30Z. **Nessuna PR aperta tocca `services/` né porta una
-migrazione**: entrano senza l'ok dell'utente per il server. Quasi tutte
-toccano `STATUS.md` e `DECISIONS.md`, quindi una alla volta: al suo turno
-la sessione proprietaria aggiorna da `origin/main` tenendo tutte le voci;
-se la sessione è archiviata, lo fa il coordinatore.
+Al 2026-11-08 sera, dopo la finestra di TASK-412.
+Tutte le PR aperte che toccano `STATUS.md`/`DECISIONS.md` si riallineano
+da `main` nel formato nuovo prima del merge.
 
-Ordine: prima le PR di soli documenti, poi il codice, dalla più piccola.
-
-| # | Task | Stato alle 15:30Z | Note |
+| # | Task | Stato | Note |
 |---|---|---|---|
-| #928 | TASK-411 proposta (docs) | verde, CLEAN | `DECISIONS` (ADR-0341), `INDEX`, `STATUS`, task file |
-| #926 | TASK-410 proposta (docs) | verde, CLEAN | `DECISIONS` (ADR-0340), `INDEX`, `STATUS`, task file |
-| #925 | TASK-385 F chiusura (docs) | verde, CLEAN | `STATUS`, task file |
-| #923 | TASK-371 Walk acceso e ordine degli sport | verde, CLEAN | `settings/sport*`; prima di #921 |
-| #922 | TASK-409 A calorie in piscina | verde, CLEAN | `pool/`, `feed/postEnergy` |
-| #924 | TASK-408 C1 il foglio «Edit video» | verde, CLEAN | `share/`, `theme/tokens.ts`, i18n |
-| #919 | TASK-406 C «Ski» nella ricerca | verde, CLEAN | `ski/`, `shared-types`, i18n |
-| #921 | TASK-380 B Roller nell'app, «Soon» finché il server non ha la 0055 | verde, CLEAN | `settings/sport*` come #923, `shared-types` come #919, i18n |
-| #930 | TASK-411 A la griglia dei gruppi muscolari | CI in corso, BLOCKED | `gym/`; dopo #928 |
+| #961 | TASK-408 C2a scene e finale del video | verde, da riallineare | poi C2b da `main` |
+| #957 | TASK-413 A1 la neve nel motore | verde, da riallineare | **motore**: sì dell'utente dato (server + `draw_examples` ~35 min); i comandi li lancia l'utente |
+| #960 | TASK-406 D2 la giornata di sci nell'app | CI | tocca `App.tsx`, privacy (con #962) |
+| #962 | TASK-411 D la privacy delle schede | CI | privacy e sito (con #960); sito col sì dell'utente |
+| #964 | TASK-411 C le schede con i giorni | CI | **migrazione** (0060 in bozza → il primo libero, oggi 0058): sì dell'utente per il server |
+| #966 | TASK-419 i 1000 disegni, primo giro | CI | `tools/`, `catalog/seed/` |
+| #971 | TASK-422 la pagina «Compass» | da riallineare | scelte approvate dall'utente; merge a CI verde |
+| #970 | TASK-409 scelte della parte B (docs) | CI | solo task file |
+| #950, #952, #953 | TASK-417 proposta, TASK-420 chiusura, TASK-418 forme candidate (docs) | da riallineare nel formato nuovo | #950 e #952 le riallinea il coordinatore (sessioni chiuse) |
 | #862 | TASK-401 B Live Activity (bozza) | ferma | **non prima del taglio della 1.0.3** |
 
-Dopo la coda parte **TASK-412**, la riduzione dei documenti (sessione
-«Ridurre dimensione docs per sessioni Claude» `local_3cd4003c`): tocca
-`STATUS.md`, `DECISIONS.md`, `INDEX.md`, `CLAUDE.md` e crea `docs/archive/`.
-Durante la sua finestra nessun'altra PR tocca quei file; dopo il suo merge
-le righe nuove in `STATUS` e `DECISIONS` seguono il formato che introduce.
+In arrivo con la lista già approvata: TASK-408 C2b e C2c, TASK-409 B1/B2
+(migrazione 0061 in bozza), TASK-370 B3a1/B3a2, TASK-411 D seguiti,
+TASK-413 A2 (0059), TASK-414 A (0058), TASK-415 B, TASK-406 D3,
+TASK-421 (motore: `networks/foot.py`), TASK-410 C (`run_stats`).
 
 ## L'albero
 
 ```
 App Store
-  ├─ 1.0.1 in produzione. OTA di produzione registrati: f607dcf5
-  │  (2026-11-04) e 3ef55853 (Hike acceso, #869). Aspettano l'OTA col sì
-  │  dell'utente: TASK-402 (ruotare e pezzi), TASK-403 («Edit the
-  │  drawing» sotto A, B, C), TASK-401 A (notifica a schermo bloccato,
-  │  prima una corsa vera)
+  ├─ 1.0.1 in produzione. OTA di produzione dell'8 novembre, in ordine:
+  │  fc8aa133 da 3bf2802d (calorie piscina, Walk, griglia palestra,
+  │  Roller «Soon», telefono dell'orologio) · 10279e05 da f1c7ad23
+  │  (Roller acceso, guide della palestra) · 8b1af1b4 da a0f38012
+  │  (pagina del post, TASK-416, foglio «Edit video»).
+  │  Non ancora in produzione: pagina «Catalog» (#954), calendario della
+  │  palestra (#955), B1/B2 dell'orologio, scialpinismo nascosto (#948):
+  │  prossimo OTA col sì dell'utente. Anteprima: 8b96dbd1 da 2a418d11.
   ├─ 1.0.2 · TASK-407  solo gli screenshot nuovi: build da
   │  `release/1.0.2` (`c74aab2f`), impronta `6f8bba4c`; la lancia l'utente
   ├─ 1.0.3  login, schermata di blocco, composer, calorie e battito;
-  │  TASK-401 B (#862) entra solo dopo il taglio
-  └─ 1.1 · TASK-370  Apple Watch: A1 e A2 in `main` (#839, #866);
-     A3 (il telefono) sul branch `feat/TASK-370-a3-phone`, senza PR,
-     sessione archiviata; A-flip (l'interruttore nativo) alla build
-
-In PR (la coda qui sopra)
-  ├─ TASK-371 Walk · TASK-406 C Ski · TASK-408 C1 editor del video
-  ├─ TASK-409 A piscina · TASK-410 pagina del post (proposta)
-  ├─ TASK-411 palestra: proposta (#928), A griglia (#930);
-  │  E «guide» sul branch `feat/TASK-411-e-exercise-guides`, senza PR
-  └─ TASK-380 B Roller (sezione «Sport»)
+  │  TASK-401 B (#862) entra solo dopo il taglio; TASK-409 B
+  └─ 1.1 · TASK-370  Apple Watch: A1, A2, A3, B1, B2 in `main`; B3
+     (proposta #968: «Send to watch» + preferiti, vibrazioni come Apple
+     Maps, freccia prima) in tre parti, B3a in corso; A-flip alla build
 
 Sport (sezione «Sport», Coordinatore Sport `local_2c048887`)
-  ├─ Hike chiuso · Gravel/MTB: la prova sul telefono, poi la chiusura
-  ├─ Roller: #921, poi il server con la 0055 (sì dell'utente), poi `ready`
-  └─ Parte 0 in corso: carrozzina/passeggino, ciaspole, scialpinismo
-     (numeri da chiedere qui prima dei file)
+  ├─ Roller acceso (OTA 10279e05); Gravel/MTB chiusi (#937); TASK-416
+  │  numeri da bici in `main` (#947)
+  ├─ Scialpinismo: 0 e A in `main` (server 0057); B dopo
+  ├─ Ciaspole: 0 in `main`; A1 nella #957 (motore), poi A2 (0059), B
+  └─ Carrozzina e passeggino: 0 in `main` (#939); A con la 0058, dopo A1
 
-Da avviare
-  └─ TASK-412 riduzione dei documenti, dopo la coda (sopra)
+Catalogo di «Explore» (TASK-418 forme, 419 disegni, 420 pagina)
+  ├─ 420 Done: pagina «Catalog» in `main` (#954), 350 percorsi d'esempio
+  ├─ 419: primo giro nella #966 (155 tenuti in 23 città); zone del server
+  │  copiate sul T9; Europa quando Overpass riapre
+  └─ 418: 49 contorni candidati nella #953; registrazione dopo il giudizio
+     dell'utente su strada
+
+Altro in corso
+  ├─ TASK-408 video: C1 in `main`, C2a #961, C2b e C2c dopo
+  ├─ TASK-411 palestra: A, B, E in `main`; C #964, D #962
+  ├─ TASK-410 post: B in `main` (OTA 8b1af1b4); C `run_stats` dopo
+  ├─ TASK-406 sci: C e D1 in `main` (server 0056); D2 #960; D3 dopo
+  ├─ TASK-417 immagine nel video: proposta #950; B dopo TASK-408 C2
+  ├─ TASK-421 cancelli nella rete foot (motore), TASK-422 «Compass» #971
+  └─ TASK-412 documenti snelli: Done (#969)
 
 Fermi per scelta dell'utente
   ├─ TASK-153 AdMob vero (aspetta la società; ADR-0236 riservato)
   └─ TASK-262 B la mail di conferma
 ```
 
-**Lo spostamento del 2026-11-08.** Il repository è su
-`/Volumes/T9/Progetti/shaperoute` (il vecchio
-`/Users/lucapallaoro/Progetti/shaperoute` non esiste più). Le cartelle in
-`.claude/worktrees/` ci sono ancora ma **non sono più registrate** in
-`git worktree list` (solo `gracious-colden-d8cb3a` lo è): i branch sono
-salvi, il lavoro non committato va cercato nelle cartelle prima di
-toglierle, **mai `git clean`**. Le sessioni con `cwd` sul vecchio
-percorso vanno riaperte sul nuovo. `shaperoute-publish` e
-`shaperoute-release-1.0.2` sono accanto al repo, su `/Volumes/T9`.
-
 ## File occupati adesso
 
 | File | Di chi |
 |---|---|
-| `apps/mobile/src/gym/**` | TASK-411 A (#930) ed E (branch) |
-| `apps/mobile/src/share/**`, `apps/mobile/src/theme/tokens.ts` | TASK-408 C1 (#924) |
-| `apps/mobile/src/settings/sport*.ts`, `sportRows*`, `SportButton*`, `SportSetting*`, `profile/SettingsPage.test.tsx` | TASK-371 (#923) e poi TASK-380 B (#921): #923 entra prima, #921 si aggiorna |
-| `apps/mobile/src/pool/**`, `feed/postEnergy*`, `activities/ActivitiesList.tsx` | TASK-409 A (#922) |
-| `apps/mobile/src/ski/**`, `api/skiResorts*`, `search/SearchScreen.tsx`, `packages/shared-types/**` | TASK-406 C (#919); `shared-types/src/index.ts` anche #921 |
-| `apps/mobile/src/i18n/{de,es,fr,it}.ts` | #924, #921, #919: ognuno aggiunge chiavi, i conflitti si risolvono tenendo tutte |
-| `apps/mobile/src/tabs/TabSwipeOwners.test.ts` | #930, #924, #919 |
-| `apps/mobile/modules/live-activity/**`, `targets/live-activity/**`, `app.json`, `package.json`, `navigation/useNavigation.ts` | TASK-401 B (#862), ferma fino al taglio della 1.0.3 |
-| `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md` | tutti, ognuno solo le sue righe; poi TASK-412 da solo nella sua finestra |
+| `apps/mobile/src/share/**` | TASK-408 C2a (#961), poi C2b/C2c |
+| `apps/mobile/App.tsx` | TASK-406 D2 (#960); poi TASK-370 B3a no (usa `FavoriteHeart.tsx`), TASK-422 no (già in #971 senza) |
+| `apps/mobile/src/about/content/*.ts`, `site/privacy/**`, test della data | TASK-411 D (#962) e TASK-406 D2 (#960): chi entra dopo riallinea e rigenera; poi TASK-409 B, TASK-417 |
+| `apps/mobile/src/gym/**`, `services/api/shaperoute_api/gym_*.py`, `shared-types/src/gym.ts` | TASK-411 C (#964) |
+| `apps/mobile/src/ski/**`, `screens/FreeRunScreen.tsx`, `SnowFinishCard.tsx` | TASK-406 D2 (#960) |
+| `apps/mobile/src/screens/RunDashboard.tsx`, `map/NorthArrow.tsx`, `navigation/headingUp*`, `useCompass*` | TASK-422 (#971) |
+| `apps/mobile/src/watch/**`, `targets/watch/**`, `src/favorites/FavoriteHeart.tsx` | TASK-370 B3a1/B3a2 |
+| `apps/mobile/src/health/heartSamples*`, `body/zoneTime*`, `pool/**` | TASK-409 B |
+| `services/route-engine/route_engine/{activities/,models.py,snow.py,snowshoeing.py,heights.py}`, `route_store.py` | TASK-413 A1 (#957); poi TASK-414 A, TASK-421 (`networks/foot.py`, `networks/base.py`) |
+| `tools/catalog_*`, `catalog/seed/**` | TASK-419 (#966) |
+| `services/route-engine/candidate_outlines/**`, `tools/draw_new_shapes*` | TASK-418 (#953) |
+| `apps/mobile/src/i18n/{de,es,fr,it}.ts` | tutti: ognuno aggiunge chiavi, conflitti tenendo tutte |
+| `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md` | tutti, solo la propria voce, nel formato nuovo |
 | `docs/AGENTI.md`, `CLAUDE.md` | coordinatore (sezione «Sport»: Coordinatore Sport) |
 
 ## Numeri
 
-- Task: presi fino a **TASK-412** (409 calorie in piscina, 410 la pagina
-  del post, 411 palestra: griglia, guide, piani e calendario, 412 la
-  riduzione dei documenti, assegnato il 2026-11-08). Il prossimo libero è
-  **TASK-413**. Controllati `docs/tasks/`, `git branch -a` e le PR aperte.
-- ADR: in `main` fino a **ADR-0339**; ADR-0340 (TASK-410, #926) e
-  ADR-0341 (TASK-411, #928) sono nelle PR. Il prossimo libero è
-  **ADR-0342**.
-- Migrazioni in `main`: fino a `0055_inline_skating.sql` (0052 gravel e
-  MTB, 0053 piscina, 0054 stazioni sciistiche, 0055 roller). Quali sono
-  già sul server va verificato prima del prossimo deploy (`DEPLOY.md`);
-  la 0055 è la condizione per accendere il Roller. La prossima: il primo
-  libero al merge (oggi 0056).
+- Task: presi fino a **TASK-422** (413 ciaspole, 414 carrozzina e
+  passeggino, 415 scialpinismo, 416 numeri da bici, 417 immagine nel video,
+  418 forme nuove, 419 i 1000 disegni, 420 pagina del catalogo, 421 cancelli
+  nella rete foot, 422 pagina «Compass»). Il prossimo libero è **TASK-423**.
+- ADR: presi fino a **ADR-0350** (0342 TASK-413, 0343 TASK-414, 0344
+  TASK-415, 0345 TASK-417, 0346 TASK-418, 0347 TASK-419, 0348 TASK-420,
+  0349 TASK-421, 0350 TASK-422). Il prossimo libero è **ADR-0351**.
+- Migrazioni in `main` e sul server: fino a `0057_ski_touring.sql`. In
+  bozza, nell'ordine di oggi: 0058 TASK-414 A, 0059 TASK-413 A2, 0060
+  TASK-411 C (#964), 0061 TASK-409 B1. Il numero vero è il primo libero al
+  merge: chi entra prima prende il più basso, gli altri rinominano.
 
 ## Il server e l'app
 
 - **Server**: Hetzner CX33 con il Volume da 70 GB, `deploy/compose.yaml`
   con PostgreSQL, `https://api.getmuw.app`, sito su `https://getmuw.app`,
-  copie sullo Storage Box (TASK-122). Ultimo aggiornamento registrato in
-  `STATUS.md`: `f10033ce` del 2026-11-05 (migrazione 0046, TASK-394 A).
-  Prima di toccarlo: ok dell'utente, `origin/main` pulito, `DEPLOY.md`
-  F.12; dopo un cambio del motore, `draw_examples`.
-- **App**: 1.0.1 in produzione; `preview` e `production` solo col via del
-  coordinatore, una pubblicazione alla volta (regola 9). Chi cambia il
-  motore rifà `apps/mobile/assets/engine/engine.zip` e, se tocca acqua o
-  sagome, `src/paddle/paddleExamples.json`: due test della CI lo chiedono.
+  copie sullo Storage Box. A `main` **`8e898de5`** dal 2026-11-08 ~17:18Z
+  (migrazione 0057, TASK-415 A; prima `c9bc0da9` alle 16:46Z con la 0056 e
+  `gym_leaderboard`; prima ancora `758bccd1` del 6 novembre con la 0055).
+  Copie: `shaperoute-2026-11-08T1646Z.dump` e `…T1718Z.dump`; immagini di
+  ritorno `shaperoute-api:before-2026-11-08` (= 758bccd1) e
+  `shaperoute-api:before-task415`. I comandi sul server li lancia
+  **l'utente via ssh** (`ssh root@188.245.9.220`): il classificatore delle
+  sessioni li ferma; la sessione prepara la sequenza (`DEPLOY.md` F.12).
+  Non ancora sul server: l'endpoint `/me/gym-calendar` (#955, senza
+  migrazione). Prossimi, col sì dell'utente: #957 (motore → anche
+  `draw_examples`), #964 (0058), poi 414 A.
+- **App**: 1.0.1 in produzione, OTA e anteprima sopra. Chi pubblica lo fa
+  da una copia pulita su `origin/main` **sul T9** (`shaperoute-publish` o
+  `/Volumes/T9/Progetti/tmp/<nome>/`), una pubblicazione alla volta, col
+  via del coordinatore; l'anteprima ha runtime `exposdk:57.0.0` (la build
+  interna `8a612504`), la produzione `6f8bba4c`. Chi cambia il motore
+  rifà `apps/mobile/assets/engine/engine.zip` e, se tocca acqua o sagome,
+  `src/paddle/paddleExamples.json`.
+- **Sito**: la privacy va ripubblicata (frase della classifica palestra,
+  poi quelle di #962 e #960) col sì dell'utente.
 - **Server e pubblicazione li fa una sessione sola per volta**, anche
   quando l'utente dà l'ok in più sessioni: chi lo riceve lo scrive al
   coordinatore e aspetta il suo via.
 
 ## Fatto dal 2026-10-10
 
-450 PR in `main`, dalla #451 alla #929 (TASK-262 C … TASK-411): l'elenco
-per task è in «Completato» di `STATUS.md`. Le righe di prima di questo
-file sono in `docs/archive/AGENTI-fino-al-2026-11.md`.
+450 PR in `main` dalla #451 alla #929 (TASK-262 C … TASK-411): l'elenco è
+in `docs/archive/STATUS-fino-al-2026-11.md`. Dell'8 novembre, dalla #930
+alla #969: 930, 931, 932, 933, 934, 936, 937, 938, 939, 940, 941, 942, 943,
+944, 945, 946, 947, 948, 949, 951, 954, 955, 956, 958, 959, 963, 965, 967,
+968, 969 (TASK-370 A3/B1/B2/B3, 371, 378, 380, 385 F, 406 C/D1, 408 C1,
+409 A, 410 B, 411 A/B/E, 412, 413 0, 414 0, 415 0/A, 416, 419 proposta,
+420, AGENTI, sport CONDIVISO). Le righe di prima di questo file sono in
+`docs/archive/AGENTI-fino-al-2026-11.md`.
 
 ## Sport (Coordinatore Sport)
 

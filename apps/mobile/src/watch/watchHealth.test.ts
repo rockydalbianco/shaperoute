@@ -71,6 +71,7 @@ function runWithWatch(watchPhase: "running" | null) {
       hear = onMessage;
       return () => {};
     },
+    ready: () => Promise.resolve(true),
   };
   const stop = followWatch(link, {
     activity: "running",

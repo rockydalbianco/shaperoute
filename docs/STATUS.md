@@ -79,9 +79,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-363 — Dove va la posizione del telefono** · codice in
   `fix/TASK-363-position`; server, sito e OTA, tre sì a parte. File: — ·
   `tasks/TASK-363.md`
-- **TASK-370 — L'app per Apple Watch** · A1, A2, A3, B1, B2 in `main`;
-  prossimi A-flip alla build 1.1 e B3 (l'orologio da solo). File: — ·
-  `tasks/TASK-370.md`
+- **TASK-370 — L'app per Apple Watch** · A1–A3, B1, B2, B3a1 («Send to
+  watch», la lista «Routes» sull'orologio) in `main`; B3a2 (i preferiti da
+  soli) in PR; poi B3b, B3c, A-flip alla 1.1. File: `src/watch/`,
+  `src/favorites/favoritesDoor.ts` · `tasks/TASK-370.md`
 - **TASK-371 — La camminata, «Walk»** · A e B Done, «Walk» acceso (#923);
   resta C. File: — · `tasks/TASK-371.md`
 - **TASK-374 — Il mio corpo: calorie e zone del battito** · A e B in `main`;
@@ -100,32 +101,57 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-401 — Le indicazioni a schermo bloccato** · A in `main`; B (Live
   Activity, 1.0.3) nella bozza #862. File: quelli della #862 ·
   `tasks/TASK-401.md`
-- **TASK-406 — Le stazioni sciistiche** · C e D1 in `main`; D2 (la giornata
-  nell'app) nella PR #960, poi D3. File: quelli della #960 ·
-  `tasks/TASK-406.md`
+- **TASK-406 — Le stazioni sciistiche** · C e D1 in `main` e sul server;
+  D2 (la giornata nell'app) nella PR #960, OTA dopo il merge col sì
+  dell'utente; poi D3. File: quelli della #960 · `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
-- **TASK-408 — L'editor del video dell'attività** · C1 in `main`; C2 (scene
-  e finale) nella PR #961. File: quelli della #961 · `tasks/TASK-408.md`
-- **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` e in produzione;
-  B1 (battito sulla corsa, server) in PR, server col sì dell'utente; poi B2
-  (app). La B fa anche i pezzi di TASK-345 B/C e 374 D. File:
-  `pool_swims.py`, `0061_run_heart.sql`, `shared-types/src/poolSwim.ts` ·
-  `tasks/TASK-409.md`
-- **TASK-410 — La pagina del post** · B in `main` (#949); poi C
-  (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
+- **TASK-408 — L'editor del video dell'attività** · C1 e C2a (scene e
+  finale) in `main`; C2b (camera dietro l'animale) nella PR #989; poi C2c
+  (anteprima), B2 (elefante), D, E. File: quelli della #989 ·
+  `tasks/TASK-408.md`
+- **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` (#922); B
+  (battito e zone) nella 1.0.3. File: — · `tasks/TASK-409.md`
+- **TASK-410 — La pagina del post** · B in `main` (#949) e in produzione
+  (OTA `8b1af1b4`); F (la card del Feed come la pagina) in `main` (#980),
+  esce col prossimo OTA unico. Poi C (`run_stats`, lista al Coordinatore
+  prima del codice), D, E. File: — · `tasks/TASK-410.md`
+- **TASK-411 — La palestra per tutti i giorni** · A–E in `main` (C con la
+  migrazione 0058); F (la palestra più chiara) in PR; poi server, sito della
+  privacy e un OTA dedicato, ognuno col sì. File: quelli della F ·
+  `tasks/TASK-411.md`
 - **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
   schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
   #962 · `tasks/TASK-411.md`
-- **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore) nella
-  PR #957, poi A2 e B. File: quelli della #957 · `tasks/TASK-413.md`
+- **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
+  `heights.py` condiviso); server col passo 2 dell'utente, senza
+  `draw_examples` (impronte uguali); prossime A2 e B. File: — ·
+  `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·
   `tasks/TASK-414.md`
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
-- **TASK-419 — Il catalogo grande di «Explore»** · proposta in `main`
-  (ADR-0347); primo giro nella PR #966. File: quelli della #966 · `tasks/TASK-419.md`
+- **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
+  proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
+  TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
+- **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
+  parte 0 nella PR #981, scelte e testi approvati dall'utente; A1
+  (server) nella PR #983, poi A2, B1, B2, C. File: quelli della #983 ·
+  `tasks/TASK-424.md`
+- **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
+  (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
+  i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347
+  precisazione). Prossimo: «via server catalogo» del Coordinatore, poi il
+  secondo giro (Italia, Europa) con le zone copiate dal server. File: — · `tasks/TASK-419.md`
+- **TASK-423 — «Play» grande** (ADR-0351) · proposta approvata il
+  2026-11-08: 94 forme in 10 collezioni, passi su 10 distanze, sfide
+  personali, premi. Documenti in PR; parte A nella #984 (foglio delle forme
+  all'utente), poi B–E (D dopo la #971). File: quelli della #984 · `tasks/TASK-423.md`
+- **TASK-418 — Forme nuove per il catalogo di «Explore»** · parte A in
+  `main` (#953): 49 forme candidate in `services/route-engine/candidate_outlines/`;
+  poi la registrazione delle sole forme che l'utente approva su strada (dopo
+  TASK-419). File: — · `tasks/TASK-418.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

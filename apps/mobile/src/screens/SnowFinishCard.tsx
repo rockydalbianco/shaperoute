@@ -7,6 +7,7 @@ import { t } from "../i18n";
 import type { FreeRun } from "../navigation/freeRun";
 import { postOfTrack } from "../share/postRun";
 import { SharePostButton } from "../share/SharePost";
+import { DayChoices } from "../ski/DayChoices";
 import { profileOf } from "../sports";
 import {
   color,
@@ -99,6 +100,13 @@ export function SnowFinishCard({ run, activity, onResume, onDone }: Props) {
             <Tile label={t("Lifts")} value={countOf(day.lifts?.length ?? null)} />
             <Tile label={t("Time")} value={numbers.time} />
           </View>
+          {/* The whole day, descents and lifts together (TASK-406 part D2). */}
+          <View style={styles.tiles}>
+            <Tile
+              label={t("Total")}
+              value={runDistanceLabel(track.distanceM, numbers.units)}
+            />
+          </View>
         </View>
       ) : (
         <View style={styles.tiles}>
@@ -111,6 +119,8 @@ export function SnowFinishCard({ run, activity, onResume, onDone }: Props) {
           <Tile label={t("Time")} value={numbers.time} />
         </View>
       )}
+      {/* The snow and the gear of the day, sent with it at «Save». */}
+      {skiing && <DayChoices />}
       <View style={styles.buttons}>
         {/* The post of the day (TASK-231): a line, as a run without a route. */}
         <SharePostButton makeRun={() => postOfTrack(track)} />

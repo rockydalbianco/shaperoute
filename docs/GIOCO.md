@@ -2,14 +2,20 @@
 
 > Documento di dominio del gioco: come si contano i km, come si sblocca
 > una forma, come funzionano squadre e sfide, dove stanno i dati.
-> Perché è fatto così: ADR-0255. Lo stato delle parti: `tasks/TASK-296.md`.
+> Perché è fatto così: ADR-0255 e, per collezioni, passi, sfide personali e
+> premi, ADR-0351. Lo stato delle parti: `tasks/TASK-296.md` e
+> `tasks/TASK-423.md` (catalogo intero in `tasks/TASK-423-proposta.md`).
+> Le parti di TASK-423 non ancora in `main` sono segnate «(423 X)».
 
 ## 1. L'idea
 
 Le corse a piedi salvate in «My activities» valgono per un gioco. I km
-sommati e i tempi migliori sbloccano **forme da collezionare**. In
-**squadra** si ricrea insieme una forma divisa in **pezzi**, entro una
-scadenza.
+sommati e i tempi migliori sbloccano **forme da collezionare**, raccolte
+in **collezioni** a tema (423 A). In **squadra** si ricrea insieme una
+forma divisa in **pezzi**, entro una scadenza. Da soli ci sono le **sfide
+personali** della settimana e del mese e la **streak** (423 C). Forme
+rifatte, collezioni complete e sfide finite danno **premi** dentro l'app:
+edizioni, cornici, titoli, badge e medaglie (423 E).
 
 Tutto sta in **«Play»**, con due schede: **Collection** e
 **Challenges**. Fino al 2026-10-29 era una pagina accanto a Feed, Draw ed
@@ -20,7 +26,8 @@ dell'utente del 2026-10-29) si apre a tutto schermo dalla sua riga in
 Le forme del gioco sono figurine: **non** chiudono niente in «Draw», dove
 ogni forma resta libera. Non c'è punteggio né classifica: TASK-241 ha tolto
 il punteggio su richiesta dell'utente, e il gioco mostra solo la
-collezione e le barre di avanzamento.
+collezione e le barre di avanzamento. Nessun premio vale denaro e nel
+gioco non c'è pubblicità (ADR-0351).
 
 ## 2. Chi decide che cosa
 
@@ -110,7 +117,15 @@ cambia si alza `RULES_VERSION` e il comando del §7 ricalcola le corse.
   ha un passo pari o migliore della soglia. Per ogni corsa si calcola il
   **miglior tempo in movimento** su 1 000, 5 000, 10 000 e 21 097 m con
   due indici che scorrono la traccia (O(n)), interpolando ai bordi della
-  finestra.
+  finestra. Dalle regole 3 (423 B) le distanze sono 11: 400, 1 000, 1 609
+  (il miglio), 3 000, 5 000, 10 000, 15 000, 21 097, 30 000, 42 195 e
+  50 000 m, e il backfill le calcola anche sulle corse vecchie.
+- **Con una corsa sola** (423 A, i traguardi): una corsa che ha un tempo
+  migliore su `D`, cioè `D` di fila con le regole dei tempi (§4). Nel
+  catalogo è un requisito `pace` a 20:00/km con `single_run: true`, perché
+  l'app installata rifiuta i tipi di requisito che non conosce; l'app
+  nuova scrive «One run of 5 km». Le camminate non hanno tempi, quindi non
+  valgono.
 - Una forma sbloccata resta per sempre (`game_unlocks`), anche se si
   cancella la corsa che l'ha sbloccata.
 
@@ -151,6 +166,53 @@ coordinate **del disegno**, da 0 a 1 e mai geografiche:
 Il catalogo è una proposta dell'agente: l'utente può cambiarlo quando
 vuole, perché costa solo un deploy dell'API.
 
+**Da TASK-423 (423 A)**: 94 forme in 10 collezioni, approvate dall'utente
+il 2026-11-08. Le 12 sopra restano con id e requisito. Ogni requisito è una
+forma: 24 gradini di km totali (1, 3, 5, 10, 15, 20, 30, 42, 50, 75, 100,
+150, 200, 250, 300, 400, 500, 750, 1 000, 1 500, 2 000, 3 000, 5 000,
+10 000 km), 6 traguardi di una corsa (5K, 10K, mezza, 30K, maratona, 50K) e
+64 livelli di passo su 10 distanze:
+
+| Distanza | Livelli (min/km) |
+|---|---|
+| 400 m | 6:00 · 5:00 · 4:30 · 4:00 · 3:30 · 3:00 |
+| 1 km | 7:00 · 6:30 · 6:00 · 5:30 · 5:00 · 4:30 · 4:00 · 3:30 |
+| miglio | 7:00 · 6:00 · 5:00 · 4:30 · 4:00 |
+| 3 km | 7:00 · 6:00 · 5:30 · 5:00 · 4:30 · 4:00 |
+| 5 km | 7:30 · 7:00 · 6:30 · 6:00 · 5:30 · 5:00 · 4:30 · 4:00 |
+| 10 km | 7:30 · 7:00 · 6:30 · 6:00 · 5:30 · 5:00 · 4:30 · 4:00 |
+| 15 km | 7:00 · 6:00 · 5:30 · 5:00 · 4:30 |
+| mezza | 7:30 · 7:00 · 6:30 · 6:00 · 5:30 · 5:00 · 4:30 |
+| 30 km | 7:00 · 6:00 · 5:30 · 5:00 |
+| maratona | 7:30 · 7:00 · 6:30 · 6:00 · 5:30 · 5:00 · 4:30 |
+
+Le collezioni: Geometrie (10), Animali (13), Mare (5), Cielo (9), Natura
+(12), Città (13), Traguardi (7), Feste e stagioni (7), Leggende (11),
+Antica Grecia (7). Ogni forma ha la sua `collection`; ogni collezione ha
+id, nome nelle 5 lingue e ordine. Le forme, i nomi e i requisiti uno per
+uno: `tasks/TASK-423-proposta.md` §2. Contorni: 18 letti dal motore, 8
+calcolati, 56 disegnati come poligoni nel catalogo.
+
+### 5.4 Premi (423 E)
+
+Solo dentro l'app, mai denaro.
+
+- **Edizioni**: per le 70 forme di passo e di traguardo, **bronzo** allo
+  sblocco (la riga `solo` di oggi), **argento** quando il requisito è
+  fatto in 3 corse diverse, **oro** in 10. Le forme dei km totali non ne
+  hanno. L'edizione squadra (§6.4) resta a parte.
+- **Cornici**: una per collezione completa, per la foto del profilo.
+- **Titoli** (8): Corridore (100 km), Esploratore (1 000 km), Viaggiatore
+  (3 000 km), Giramondo (10 000 km), Maratoneta, Ultramaratoneta (50 km),
+  Costante (streak di 26 settimane), Collezionista (tutte le collezioni).
+  Il titolo è un nome, senza numero.
+- **Badge** (8): streak 4, 12 e 52 settimane; 10 e 50 sfide personali; 10
+  edizioni oro; 1 e 10 sfide di squadra completate.
+- **Medaglie**: ogni sfida personale finita dà la medaglia del gradino più
+  alto preso (§6.6).
+- **Sul profilo pubblico** niente del gioco finché non lo si sceglie: una
+  cornice, un titolo e fino a 3 badge. Di default niente.
+
 ## 6. Squadre e sfide
 
 ### 6.1 Squadre
@@ -173,10 +235,11 @@ vuole, perché costa solo un deploy dell'API.
 
 ### 6.2 Sfide
 
-- Una sfida ha una forma del catalogo divisa in **N pezzi**, da 2 a 12,
-  di lunghezza uguale sul contorno. Ogni pezzo chiede **X km**, da 1 a
+- Una sfida ha una forma del catalogo divisa in **N pezzi**, da 2 a 12
+  (da 2 a 20 con 423 C), di lunghezza uguale sul contorno. Ogni pezzo chiede **X km**, da 1 a
   50, oppure è un **pezzo veloce**: 1 km o 5 km sotto un passo scelto.
-- Ha una scadenza da 1 a 14 giorni, **7 di default**. Una squadra ha al
+- Ha una scadenza da 1 a 14 giorni (da 1 a 30 con 423 C), **7 di
+  default**. Una squadra ha al
   massimo una sfida attiva alla volta, e qualunque iscritto può crearne una
   quando non ce n'è.
 - Il contorno dei pezzi non si salva: si ricava sempre da forma e N con
@@ -232,6 +295,58 @@ Scelte dell'agente su delega dell'utente, registrate in ADR-0255:
 - Con l'account spariscono iscrizioni e contributi; i metri restano nei
   pezzi, che tornano liberi; la squadra passa all'iscritto più vecchio.
 
+### 6.6 Sfide personali (423 C)
+
+- Da soli, **senza iscriversi**, uguali per tutti nella stessa settimana:
+  **3 settimanali** (da lunedì a domenica) e **2 mensili**. Ognuna ha tre
+  gradini, **bronzo, argento, oro**, su una barra sola.
+- **Uscita**: una corsa, camminata, escursione o roller che conta per il
+  gioco (§3) con almeno 1 km contato. I km sono quelli contati, dopo
+  sovrapposizioni e tetto. Le sfide di passo valgono solo per le corse.
+- **Rotazione**: tre posti settimanali, ognuno con la sua lista, una voce a
+  settimana dal numero della settimana (si ripete ogni 15 settimane):
+  - Volume: km della settimana (10 · 20 · 40 km), giorni attivi (2 · 4 ·
+    6), uscite di almeno 3 km (2 · 3 · 5);
+  - Abitudine: uscite iniziate prima delle 8:00 (1 · 2 · 3), km di sabato
+    e domenica (5 · 10 · 20), uscite iniziate dopo le 19:00 (1 · 2 · 3);
+  - Corsa: 5 km di fila sotto 7:00 · 6:00 · 5:00 /km, un'uscita di 8 · 12 ·
+    18 km, 1 km sotto 6:00 · 5:00 · 4:15 /km, 10 km di fila sotto 7:30 ·
+    6:30 · 5:30 /km, corse di almeno 5 km (2 · 3 · 4).
+  - Mensili, mesi dispari: km del mese (50 · 100 · 200) e uscite di almeno
+    10 km (1 · 3 · 6); mesi pari: giorni attivi (8 · 12 · 16) e uscite
+    prima delle 8:00 (3 · 6 · 10).
+- **L'ora locale** viene da `utc_offset_min`, che l'app manda con la corsa;
+  senza (corse vecchie, app vecchie) vale UTC. Una corsa conta nel periodo
+  in cui è iniziata, anche se arriva più tardi dalla coda.
+- Un gradino preso si scrive nella transazione del salvataggio
+  (`game_personal`) e resta. Il backfill non scrive sfide: le medaglie
+  partono dalla settimana del rilascio.
+- Niente push per le sfide personali.
+
+### 6.7 Streak (423 C)
+
+Tre righe: le settimane di fila con almeno **1**, **2** e **3** uscite. La
+streak conta le settimane finite di fila fino all'ultima, più quella in
+corso se ha già raggiunto la soglia; una settimana in corso non la rompe
+finché non finisce. Si calcola da tutta la storia del gioco, con la
+settimana locale, e si tiene anche la più lunga di sempre. Nessuna soglia
+da scegliere, niente promemoria.
+
+### 6.8 La lista «Challenges» (423 D)
+
+Una lista sola in tre gruppi:
+
+- **In corso**: le sfide personali con i loro gradini e il tempo che
+  resta, la streak, la sfida attiva di ogni squadra, la sfida del mese
+  (TASK-343) se ci si è iscritti.
+- **Disponibili**: le squadre senza sfida («New challenge»), «Create team»
+  e «Join team», la sfida del mese se non ci si è iscritti.
+- **Finite**: le personali delle ultime 8 settimane con la medaglia, le
+  sfide di squadra completate o scadute, l'archivio delle sfide del mese.
+
+Le sfide del mese restano di TASK-343 (`CONCORSI.md`): qui c'è solo il
+link alla loro pagina.
+
 ## 7. Dati
 
 Una migrazione nuova per la parte A e una per la parte C. Il numero è
@@ -249,6 +364,12 @@ altri iscritti, con il titolare del pezzo a `NULL`.
 | `game_challenges` | C | `id`, `team_id`, `shape_id`, `created_by` (`SET NULL`), `starts_at`, `ends_at`, `completed_at`, `ending_told_at` (la push «1 day left», una volta) |
 | `game_pieces` | C | `(challenge_id, idx)`, `required_m` oppure `fast_distance_m` + `max_pace_s`, `holder_id` (`SET NULL`), `held_at`, `done_m`, `done_at` |
 | `game_contributions` | C | `challenge_id`, `piece_idx`, `user_id` (`CASCADE`), `run_id` (`SET NULL`), `metres`, `at` |
+| `game_runs.utc_offset_min` | 423 C | i minuti dell'orologio del telefono da UTC all'inizio della corsa; `NULL` = UTC |
+| `game_personal` | 423 C | `(user_id, period_start, challenge_id)`, `tier` (1–3), `done_at`, `run_id` (`SET NULL`) |
+| `game_unlocks.edition` | 423 E | anche `silver` e `gold` |
+| `game_prefs` | 423 E | `user_id`, `title_id`, `frame_id`, `shown_badges` (fino a 3): che cosa mostra il profilo |
+
+Dalle regole 3 (423 B) `best_s` ha le 11 distanze del §5.1.
 
 Le corse di prima del gioco si calcolano con
 `python -m shaperoute_api.game_backfill`: è idempotente, salta le righe
@@ -271,13 +392,19 @@ dopo il deploy della parte A e di nuovo a ogni cambio di regole.
 | POST | `/game/teams/{id}/challenges` | sì | C |
 | GET | `/game/challenges/{id}` | sì | C: pezzi, titolari, km, contributi, tempo che resta |
 | POST / DELETE | `/game/challenges/{id}/pieces/{idx}/hold` | sì | C: prendi o lascia un pezzo |
+| — | `GET /game/catalog`, `GET /game/me` | | 423 A: `collections[]`, per forma `collection` e `goal.single_run`; in `me` l'avanzamento per collezione. Campi solo aggiunti |
+| — | `PUT /me/activities/{key}` | sì | 423 C: `utc_offset_min` facoltativo; la risposta non cambia |
+| GET | `/game/personal` | sì | 423 C: le sfide della settimana e del mese con i gradini, la streak, le finite delle ultime 8 settimane |
+| GET / PUT | `/game/prizes` | sì | 423 E: edizioni, cornici, titoli, badge presi e da prendere; che cosa mostra il profilo |
 
 Le push sono `Kind` nuovi in `push.py`: `shape_unlocked` (parte A),
 `piece_done`, `challenge_done` e `challenge_ending` (parte C). Valgono gli
 interruttori di TASK-262 A (`notify_push`) e i blocchi, come per le altre
 push. La push di una forma sbloccata parte sempre, ma con l'app aperta
 il telefono non la mostra, perché c'è già la scheda dopo «Save». Serve
-per le corse mandate più tardi dalla coda del telefono. I testi delle push li approva l'utente
+per le corse mandate più tardi dalla coda del telefono. Con 423 E, allo
+stesso modo, `edition_up` (un'edizione nuova) e `collection_done` (una
+collezione completa, con la sua cornice). I testi delle push li approva l'utente
 nelle cinque lingue.
 
 Dalla parte C `GET /game/runs/{key}` ha anche `pieces_done` (i pezzi che
@@ -339,5 +466,14 @@ una volta per sfida.
   all'inizio della corsa (`GET /game/me` e `GET /game/teams`), mai
   durante; senza rete, senza account, senza il gioco, in bici e in canoa
   la riga non c'è e non compare nessun errore.
+- **Da TASK-423 (423 D, E)**: «Collection» è la lista delle 10 collezioni,
+  ognuna con «7 / 13», la barra e la sua pagina (la griglia delle sue forme
+  e la cornice in fondo); in cima, «Prizes» apre la pagina dei premi, dove
+  si sceglie che cosa mostra il profilo. «Challenges» è la lista del §6.8.
+  Le carte delle forme di passo e di traguardo hanno il segno
+  dell'edizione. La scheda di sblocco dice la collezione («Animals ·
+  8 / 13»), le edizioni nuove e la collezione completa; oltre 3 cose in una
+  corsa, una scheda sola di riepilogo. Il profilo mostra cornice, titolo e
+  badge scelti. L'app manda `utc_offset_min` con la corsa.
 - I colori vengono da `src/theme/tokens.ts`. I testi sono in inglese e
   tradotti nelle cinque lingue.

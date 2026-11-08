@@ -100,10 +100,10 @@ test("in the menu «Swim» is a choice like the others (TASK-323)", async () => 
 test("the app's menu ends with «Paragliding» «Soon», as «Settings» (TASK-305 D0)", async () => {
   await render(<SportButton />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  // Run, bike, paddle, the swim in Expo Go, the hike (TASK-377), gravel and
-  // MTB (TASK-378), the alpine ski (TASK-375 D4) and the gym in Expo Go
-  // (TASK-385 B).
-  expect(screen.getAllByRole("radio")).toHaveLength(9);
+  // Walk (TASK-371), run, the hike (TASK-377), bike, gravel and MTB
+  // (TASK-378), paddle, the swim in Expo Go, the alpine ski (TASK-375 D4)
+  // and the gym in Expo Go (TASK-385 B).
+  expect(screen.getAllByRole("radio")).toHaveLength(10);
   await fireEvent.press(screen.getByLabelText("Paragliding, coming soon"));
   expect(saveSport).not.toHaveBeenCalled();
   expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();

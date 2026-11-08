@@ -185,6 +185,12 @@ oggi:
    fondo della notte senza mappa, niente velo e niente crediti della
    mappa, la linea nel colore scelto. L'altra strada era il giallo di oggi
    con la linea nera, dove il colore della linea non avrebbe contato.
+12. **Le scene di base** (2026-11-07, parte C2): «Come oggi». Chi non
+   tocca le scene ha il video di oggi: «Opening» spento, la linea che si
+   disegna per 9 secondi, poi 3 secondi di «Ending» con il disegno intero e
+   i numeri. «Camera behind» e «Camera around» compaiono solo con lo stile
+   3D; su 2D, Night e Day il percorso si vede dall'alto. L'altra strada era
+   il video della tavola (2D → percorso → finale) per tutti.
 
 ## Domande aperte (una alla volta)
 
@@ -333,7 +339,20 @@ c'è già in «Share your run», quindi niente «Export video».
     `out/TASK-408/sim-c1/`, fuori dal repository).
   - **C2**: «Scenes» (apertura, percorso, finale; riordino e spegnimento,
     sempre 12 secondi), «Ending», la camera dietro l'animale sul 3D (tolta
-    da B2) e l'anteprima nel foglio.
+    da B2) e l'anteprima nel foglio. In due PR (ADR-0339, precisazione C2):
+    - **C2a** (branch `feat/TASK-408-c2-scenes`): «Scenes» e «Ending». Tre
+      riquadri «Opening › The route › Ending» nell'ordine del video, che si
+      accendono e si spengono con un tocco e si spostano con «‹ ›» (testi
+      «Move left»/«Move right», già approvati); l'ultimo acceso resta
+      acceso. Sotto, cosa mostra l'apertura («Drawing in 2D», «Title») e
+      come passa alla scena dopo («Cut», «Fade»), e il finale («Numbers»,
+      «Whole drawing», «Heart», «All three»). Il video di base è identico a
+      prima, fotogramma per fotogramma (scelta 12). Provato nel simulatore il
+      2026-11-08: 3D con apertura dall'alto, cavallo e finale «Heart»;
+      Notte con titolo, volpe e finale «Numbers» (video in
+      `out/TASK-408/sim-c2/`, fuori dal repository).
+    - **C2b**: la camera dietro l'animale sul 3D, con la riga «Camera
+      behind»/«Camera around», e l'anteprima nel foglio.
 - **D — il prompt**: la tabella di parole nell'app e il riquadro; niente
   server.
 - **E — la prova sul telefono**: il tempo dell'esportazione con ogni
@@ -383,6 +402,15 @@ nella riga; `apps/mobile/src/theme/tokens.ts`
 (il blocco `videoLine`); `apps/mobile/src/i18n/{it,de,es,fr}.ts`;
 `apps/mobile/src/tabs/TabSwipeOwners.test.ts` (una riga in `ROWS`);
 `docs/tasks/TASK-408.md`, `docs/STATUS.md`, `docs/DECISIONS.md`.
+
+Parte C2a (lista mandata al Coordinatore il 2026-11-08):
+`apps/mobile/src/share/videoScenes.ts` e `.test.ts`, `ScenesRows.tsx`,
+`EndingRow.tsx` (nuovi); `videoEdit.ts` e `.test.ts`, `EditVideoSheet.tsx`
+e `.test.tsx`, `videoScene.ts` e `.test.ts`, `videoPage.ts` e `.test.ts`,
+`SharePost.tsx`, `SharePostVideo.test.tsx`;
+`apps/mobile/src/i18n/{it,de,es,fr}.ts`; `docs/tasks/TASK-408.md`,
+`docs/STATUS.md`, `docs/DECISIONS.md`. `SharePost.test.tsx` e
+`TabSwipeOwners.test.ts` erano nella lista ma non sono serviti.
 
 ## Criteri di accettazione
 

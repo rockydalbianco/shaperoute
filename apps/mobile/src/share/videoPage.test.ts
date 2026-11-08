@@ -825,6 +825,54 @@ describe("the video page, with a fake map, in 3D", () => {
   });
 });
 
+describe("the video page, with the opening's drawing on «3D» (TASK-408 C2)", () => {
+  const OPENING_SCENE = videoScene(RUN, POST_RESULTS, STICKERS, "3d", {
+    off: [],
+    cut: "cut",
+  });
+
+  it("takes the map's picture from straight above first, then leans it, and lays the flat one under the opening", async () => {
+    const maplibre = fakeMapLibre("idle");
+    const { posted, context, make, prepareMap } = page(
+      fakeEncoder([VIDEO_CODECS[0]]).FakeEncoder,
+      FakeFrame,
+      maplibre,
+    );
+    await until(posted, "ready");
+    prepareMap({ ...OPENING_SCENE.map, budgetMs: -1 });
+    await until(posted, "map");
+    expect(posted[posted.length - 1]).toEqual(
+      expect.objectContaining({ type: "map", ok: true, mode: "still" }),
+    );
+    const map = maplibre.made[0];
+    expect(map.options.pitch).toBe(0);
+    expect(map.jumps.some((jump) => jump.pitch === 55)).toBe(true);
+
+    const drawnBefore = context.drawImage.mock.calls.length;
+    make(OPENING_SCENE);
+    await until(posted, "done", "failed");
+    expect(posted[posted.length - 1]).toEqual(
+      expect.objectContaining({ type: "done", frames: 360 }),
+    );
+    // Both pictures in the opening's 3 seconds but the first picture,
+    // where the map has not come in; the leaning one alone after.
+    expect(context.drawImage.mock.calls.length - drawnBefore).toBe(89 * 2 + 270);
+  });
+
+  it("leans the map at once when the scene does not open with the drawing", async () => {
+    const maplibre = fakeMapLibre("idle");
+    const { posted, prepareMap } = page(
+      fakeEncoder([VIDEO_CODECS[0]]).FakeEncoder,
+      FakeFrame,
+      maplibre,
+    );
+    await until(posted, "ready");
+    prepareMap({ ...RELIEF_SCENE.map, budgetMs: -1 });
+    await until(posted, "map");
+    expect(maplibre.made[0].options.pitch).toBe(55);
+  });
+});
+
 describe("the video page, with an animal (TASK-408)", () => {
   const HORSE_SCENE = videoScene(RUN, POST_RESULTS, STICKERS, "paper", {
     character: "horse",

@@ -1,6 +1,4 @@
-import type { RunActivity } from "@shaperoute/shared-types";
-
-import { isTrackless } from "../activities/snow";
+import { type RunActivity, TRACKLESS_ACTIVITIES } from "@shaperoute/shared-types";
 
 /**
  * What the page of a post shows of an activity of each sport (TASK-410,
@@ -27,7 +25,10 @@ const BY_SPEED: ReadonlySet<RunActivity> = new Set([
 /** The rows of the summary of an activity of `activity`; a run's when none. */
 export function postMetrics(activity: RunActivity | undefined): PostMetrics {
   // A workout at the gym has its time and its energy, no way nor pace.
-  if (isTrackless(activity)) {
+  if (
+    activity !== undefined &&
+    (TRACKLESS_ACTIVITIES as readonly string[]).includes(activity)
+  ) {
     return { distance: false, rate: null };
   }
   return {

@@ -37,17 +37,21 @@ const SHEET_ROOM = 120;
 type Props = {
   post: ShownPost;
   onClose: () => void;
+  /** Opens the drawing whole on the map, with «Start», «Export GPX» and
+   * the rest of its card; none, the drawing is not a button. */
+  onMap?: () => void;
 };
 
 /**
  * The page of a post of «Feed» (TASK-410, ADR-0340), over the whole
  * screen: at the top who ran it, where, when and what; then the drawing on
- * its map, still (the run's video comes with TASK-336), its title and its
+ * its map, still (the run's video comes with TASK-336), a tap on it opens
+ * it on the map as before (`onMap`), its title and its
  * description; then its cards (`postSections`), each only when it has
  * something to show; at the foot `PostSheet`, always there. On somebody
  * else's post the «…» reports it, as on the card.
  */
-export function PostPage({ post, onClose }: Props) {
+export function PostPage({ post, onClose, onMap }: Props) {
   const units = useUnits();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -75,6 +79,16 @@ export function PostPage({ post, onClose }: Props) {
     .filter((part): part is string => part !== null)
     .join(" · ");
   const sections = postSections(post, units);
+  const map = (
+    <RouteMap
+      id={post.id}
+      line={post.line}
+      gaps={post.gaps}
+      rotationDeg={post.rotation_deg}
+      width={width}
+      marks
+    />
+  );
   return (
     <Modal visible animationType="slide" onRequestClose={onClose} testID="post-page">
       <View style={[styles.page, { paddingTop: insets.top }]}>
@@ -115,16 +129,22 @@ export function PostPage({ post, onClose }: Props) {
               </Text>
             </View>
           </View>
-          {lined && (
-            <RouteMap
-              id={post.id}
-              line={post.line}
-              gaps={post.gaps}
-              rotationDeg={post.rotation_deg}
-              width={width}
-              marks
-            />
-          )}
+          {lined &&
+            (onMap === undefined ? (
+              map
+            ) : (
+              // A tap opens it on the map, as from the card before the page:
+              // «Start» on its track, «Export GPX», «Send to a friend».
+              <Tap
+                onPress={onMap}
+                accessibilityRole="button"
+                accessibilityLabel={title}
+                accessibilityHint={t("Opens the route on the map")}
+                testID="post-map"
+              >
+                {map}
+              </Tap>
+            ))}
           <View style={styles.words}>
             <Text style={styles.title} accessibilityRole="header">
               {title}

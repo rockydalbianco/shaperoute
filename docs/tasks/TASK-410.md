@@ -369,9 +369,10 @@ ha icone né SVG); «Comment» riusa la chiave che c'era («Commento» in
 italiano, non «Commenta»); i testi del video («Play the video», «Pause the
 video», «Full screen») e «Show heart rate» non entrano in B, perché nessuno
 li mostrerebbe (il test delle tabelle li rifiuta): entrano con le loro parti.
-Dalla pagina non si arriva più a «Start», «Export GPX» e «Send to a friend»
-del disegno sulla mappa: la corsa sullo stesso percorso passa da «Edit &
-run».
+Un tocco sul disegno della pagina lo apre sulla mappa come prima, con la
+sua card («Start», «Export GPX», «Send to a friend», «Edit the drawing»):
+senza, quelle azioni non si sarebbero più raggiunte dal Feed (la CI lo ha
+mostrato con tre test dell'app).
 
 File toccati (parte B):
 
@@ -387,6 +388,7 @@ apps/mobile/src/feed/postSections.test.ts    (nuovo)
 apps/mobile/src/screens/FeedScreen.tsx
 apps/mobile/src/screens/FeedScreenPosts.test.tsx
 apps/mobile/__tests__/AppFeedDrawing.test.tsx
+apps/mobile/__tests__/AppDrawingStart.test.tsx, AppDrawAgain.test.tsx, AppEditDrawing.test.tsx
 apps/mobile/src/social/DrawingReactions.tsx  (prop `barAtStart`)
 apps/mobile/App.tsx                          (la porta di «Edit & run»)
 apps/mobile/src/i18n/{it,es,de,fr}.ts        (Like, Edit & run, Post settings, Summary)

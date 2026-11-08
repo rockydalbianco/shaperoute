@@ -109,3 +109,10 @@ test("«Back» closes the page", async () => {
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(onClose).toHaveBeenCalledTimes(1);
 });
+
+test("a tap on the drawing opens it on the map, as from the card before", async () => {
+  const onMap = jest.fn();
+  await render(<PostPage post={shownPost(OTHERS)} onClose={jest.fn()} onMap={onMap} />);
+  await fireEvent.press(screen.getByTestId("post-map"));
+  expect(onMap).toHaveBeenCalledTimes(1);
+});

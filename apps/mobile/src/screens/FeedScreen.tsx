@@ -283,7 +283,16 @@ export function FeedScreen({
           />
         )}
       </View>
-      {page !== null && <PostPage post={page} onClose={() => setPage(null)} />}
+      {page !== null && (
+        <PostPage
+          post={page}
+          onClose={() => setPage(null)}
+          onMap={() => {
+            setPage(null);
+            open(page.drawing);
+          }}
+        />
+      )}
     </View>
   );
 }

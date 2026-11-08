@@ -160,6 +160,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-419 — I 1000 disegni del catalogo e la selezione (Explore, parte B)**
+  (2026-11-08; numeri dal Coordinatore, ADR-0347 **proposto**; sessione
+  avviata dal Coordinatore su «Sì, avviale» dell'utente). Proposta, solo
+  documenti: uno strumento nuovo in `tools/` che usa `seed_catalog` senza
+  toccarlo, circa 1000 casi città × forma/parola × distanza (14 città del
+  seme con tutte le 17 forme, le altre italiane e le europee con un nucleo),
+  una zona per città da Overpass a lotti piccoli con l'attesa dello slot, i
+  683 disegni del 2026-10 fra i candidati, filtro ≥ 0,90 / ±10% / ripassi
+  ≤ 10% / niente `motorway`-`trunk`, pagina di revisione in SVG, **la scelta
+  all'utente** (200–400, almeno 3 per città), i tenuti in
+  `catalog/seed/<città>.json`. Prossimo: la lista dei file al Coordinatore,
+  poi il codice su `feat/TASK-419-catalog-seed`. `tasks/TASK-419.md`.
 - **TASK-415 — Ski touring, lo scialpinismo «Record only»** (2026-11-08;
   numeri dal Coordinatore, ADR-0344 **proposto**; sessione avviata dal
   Coordinatore Sport). Parte 0, solo documenti: disegno e costo delle

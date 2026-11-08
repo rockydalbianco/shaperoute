@@ -45,3 +45,17 @@ def way_tags(extra: Sequence[str]) -> Iterator[None]:
         yield
     finally:
         ox.settings.useful_tags_way = saved
+
+
+@contextmanager
+def node_tags(extra: Sequence[str]) -> Iterator[None]:
+    """OSMnx keeps the `extra` tags of the nodes too, for the block: a
+    barrier's `access` or `foot` (networks/foot.py, TASK-421)."""
+    import osmnx as ox
+
+    saved = list(ox.settings.useful_tags_node)
+    ox.settings.useful_tags_node = saved + [t for t in extra if t not in saved]
+    try:
+        yield
+    finally:
+        ox.settings.useful_tags_node = saved

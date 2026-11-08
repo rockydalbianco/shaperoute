@@ -839,6 +839,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     il deploy, e se si vuole `SHAPEROUTE_MET_CONTACT` nel `.env` del server,
     col sì dell'utente. Prossimo: la domanda 2 (il modello), poi la parte
     C, la ricerca «Ski» nell'app.
+  - 2026-11-06: B in `main` (#902). Le risposte dell'utente: domanda 2
+    «Testo libero», domanda 4 «Sì, così» e poi «Sì, scheda Ski», i testi
+    della parte C approvati. **Parte C**: la ricerca ha una scheda «Ski»,
+    perché il filtro Sport non offre lo sci. Mostra le stazioni vicine, o
+    quelle col nome scritto. La pagina della stazione ha impianti, piste
+    per difficoltà, quote, sito, il meteo in valle e in cima con la neve
+    fresca stimata, e i crediti di MET Norway, OpenSkiMap.org e
+    OpenStreetMap. I tipi sono in `shared-types` (`skiResorts.ts`). Solo
+    JavaScript, nessuna dipendenza. Funziona dopo il deploy delle parti A e
+    B. Prossimo: la parte D, «Record your day», con la sua lista dei file.
 - **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
   percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
   Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un

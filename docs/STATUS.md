@@ -101,9 +101,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Activity, 1.0.3) nella bozza #862. File: quelli della #862 ·
   `tasks/TASK-401.md`
 - **TASK-406 — Le stazioni sciistiche** · C e D1 in `main`; D2 (la giornata
-  nell'app) nella PR #960, OTA dopo il merge; D3a (seguire una stazione, i
-  suoi post, migrazione 0062) nella sua PR, poi D3b. File: quelli della #960
-  e della D3a · `tasks/TASK-406.md`
+  nell'app) nella PR #960, poi D3. File: quelli della #960 ·
+  `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
 - **TASK-408 — L'editor del video dell'attività** · C1 in `main`; C2 (scene

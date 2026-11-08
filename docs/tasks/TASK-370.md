@@ -353,6 +353,9 @@ della guida legata (ADR-0314 «precisazione B1»); impronta `6f8bba4c`.
 chiuso preso dove lo si tocca) e `penUp.ts` (i disegni a penna alzata), con
 tracce come in B1.
 
+B2 fatta il 2026-11-08: 26 tracce, 39 test XCTest verdi, ogni costante
+legata (ADR-0314 «precisazione B2»); impronta `6f8bba4c`.
+
 **B3 — L'orologio da solo**: i percorsi mandati dal telefono («Send to
 watch», testo da approvare) e tenuti sull'orologio, il GPS e la traccia
 (`HKWorkoutRouteBuilder`), la schermata con freccia, metri e mappa, le

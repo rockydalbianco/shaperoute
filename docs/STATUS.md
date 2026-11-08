@@ -364,6 +364,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `feat/TASK-370-a3-phone`; la unisce il Coordinatore a CI verde. **Prossimo**: A-flip alla
   build 1.1 (il pacchetto 2.0.0, `match` in `app.json`, il plugin nativo per
   `workoutSessionMirroringStartHandler`), poi la prova al polso; la parte B.
+- **TASK-370 B2 — Il percorso chiuso e i pezzi, in Swift** (2026-11-08; parte B2 del piano
+  in `tasks/TASK-370.md`, ADR-0314 «precisazione B2»; via del Coordinatore local_3f55a0e9).
+  Nuovi `WatchCore/Guide/Loop.swift` (`startAnywhere.ts`: il giro preso dove lo tocchi, la
+  svolta alla partenza ricalcolata) e `Pen.swift` (`penUp.ts`: penna su e giù fra lettere e
+  parti, a piedi, in bici, in canoa); `Navigator.swift` prende il percorso chiuso come
+  `navigator.ts` (`towardsJoin`). 12 tracce nuove (quadrato di 2 km: preso a metà, vicino alla
+  partenza, prima della fine, prima di un angolo, al passo della bici, contromano, da fuori
+  rotta; l'anello del nuoto; «IO» con parola, a parti, in bici, in canoa), 26 in tutto; ogni
+  costante legata. Impronta iOS `6f8bba4c`. **Prossimo**: B3, l'orologio da solo.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.

@@ -177,6 +177,28 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   post; acceso con fasi e VAM, con un OTA col sì dell'utente.
   Prossimo: la lista della parte A (contratto, API, CHECK, profilo nascosto)
   al Coordinatore. `tasks/TASK-415.md`, `sports/skimo.md`.
+- **TASK-414 — Carrozzina e passeggino ♿, forme semplici dove si spinge**
+  (2026-11-08; numeri dal Coordinatore, ADR-0343 **proposto**; sessione
+  avviata dal Coordinatore Sport). Parte 0, solo documenti: sei reti di
+  prova al banco, da un download per zona col filtro foot e i tag di
+  accessibilità, a 1–5 km su cerchio, cuore, stella e luna.
+  - `wheelcalm` (niente scale, cordoli alti, superfici ruvide, strade
+    principali e secondarie senza marciapiede): 69 su 96; Trento e Milano
+    16 su 16, pianura 13, Fiemme 4. Nessuna scala e nessun cordolo alto sui
+    percorsi (la rete foot: 7,4 km di scale e 92 cordoli alti).
+  - OSM incompleto: i cordoli si sanno solo a Milano e in parte a Trento;
+    `incline` sull'1–3% dei km. Il motore non ha le quote: le salite
+    restano (fino al 14% sui percorsi).
+
+  Scelte dell'utente (2026-11-08): uno sport solo, «Carrozzina e
+  passeggino» ♿ sulla rete `wheelcalm`; 1–5 km; solo cerchio, cuore,
+  stella, luna; i testi e l'avviso su cordoli, gradini e salite in cinque
+  lingue; nel gioco come la camminata, record su 1 e 5 km; tipo carrozzina
+  in Salute e Strava; acceso appena pronto.
+  Lista della parte A approvata dal Coordinatore (migrazione 0058 in bozza;
+  le forme le rifiuta il motore). Prossimo: 414-A in una sessione nuova,
+  nel turno fissato con 413 A e 415 A. `tasks/TASK-414.md`,
+  `sports/wheelchair.md`.
 - **TASK-410 — La pagina del post: più dati e più ordine** (ADR-0340,
   proposta; brief dell'utente del 2026-11-06; numeri dal Coordinatore).
   Branch `docs/TASK-410-post-page` (documenti). Pagina nuova dal Feed: foto

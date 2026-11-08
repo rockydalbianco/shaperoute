@@ -28,6 +28,7 @@ from test_drawings import (
     wall,  # noqa: F401
 )
 
+from shaperoute_api import game as game_module
 from shaperoute_api.contests import Contests
 from shaperoute_api.db import Database
 from shaperoute_api.reads import EVERYTHING, OLD_APP, READS_HEADER, reads_from
@@ -38,6 +39,14 @@ FIXTURES = (
 THIS_APP = json.loads((FIXTURES / "reads.json").read_text(encoding="utf-8"))["this_app"]
 SNOW_KEY = "a1b2c3d4e5f60718"
 Headers = dict[str, str]
+
+
+@pytest.fixture(autouse=True)
+def no_game_shapes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A saved run here unlocks no shape of the game: from TASK-423 the first
+    km does, and its line in the bell is not these tests' (test_game_api.py
+    has it)."""
+    monkeypatch.setattr(game_module, "CATALOG", ())
 
 
 def _load(name: str) -> Any:

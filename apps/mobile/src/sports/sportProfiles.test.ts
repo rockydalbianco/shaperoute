@@ -38,7 +38,8 @@ import {
 // the sports added since, each by a file and a line of index.ts: a hike
 // (TASK-377), before the walk; an MTB ride (TASK-378) after the hike and a
 // gravel ride after the walk; a skate (TASK-380) after the MTB ride, hidden
-// until part B.
+// until part B; a day of ski touring (TASK-415) after the days on the snow,
+// hidden until part B.
 
 const MPH_KMH = 1.609344;
 
@@ -106,6 +107,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     gravel_biking: 13,
     skiing: 61,
     xc_skiing: 60,
+    // `.crossCountrySkiing` too (TASK-415).
+    ski_touring: 60,
     // `.traditionalStrengthTraining` (TASK-385).
     gym: 50,
   });
@@ -132,6 +135,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     gravel_biking: 8,
     skiing: 61,
     xc_skiing: 61,
+    // EXERCISE_TYPE_SKIING too (TASK-415).
+    ski_touring: 61,
     // EXERCISE_TYPE_STRENGTH_TRAINING (TASK-385).
     gym: 70,
   });
@@ -216,6 +221,7 @@ it("starts a run without a route and labels a MuW route as before", () => {
     "cycling",
     undefined,
     undefined,
+    undefined,
   ]);
   expect(muwLabel("running")).toBe("Route created by MuW – run it yourself");
   expect(muwLabel("paddling")).toBe("Route created by MuW – paddle it yourself");
@@ -259,6 +265,7 @@ it("gives the screens what they told apart before (part B3b)", () => {
     gravel_biking: "🚲",
     skiing: "⛷️",
     xc_skiing: "🎿",
+    ski_touring: "🏔️",
     gym: "🏋️",
   });
   expect(tableOf((sport) => sport.pace)).toEqual({

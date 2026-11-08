@@ -1,6 +1,6 @@
 # TASK-415 — Ski touring: lo scialpinismo «Record only»
 
-**Stato**: In corso — parte 0 (solo documenti) in PR.
+**Stato**: In corso — parte 0 in `main` (#932), parte A in PR.
 **Fase**: 4 · **Branch**: `docs/TASK-415-0-skimo` (parte 0), poi
 `feat/TASK-415-a-ski-touring-api`, `feat/TASK-415-b-…` ·
 **ADR**: ADR-0344 · numeri dal Coordinatore · sessione dello sport,
@@ -134,7 +134,7 @@ services/api/shaperoute_api/sports/ski_touring.py      (nuovo)
 services/api/shaperoute_api/sports/__init__.py
 services/api/shaperoute_api/activities.py              (RunActivity)
 services/api/shaperoute_api/reads.py                   (NEWER_ACTIVITIES)
-services/api/migrations/0056_ski_touring.sql           (nuovo; 0056 in bozza, il primo libero al merge)
+services/api/migrations/0057_ski_touring.sql           (nuovo; 0056 in bozza, 0057 dopo TASK-406 D1)
 services/api/tests/test_ski_touring_api.py             (nuovo)
 services/api/tests/test_sport_registry_api.py, test_record_only.py,
     test_reads.py, test_game_rules.py                  (solo se l'ordine lo chiede)
@@ -146,6 +146,9 @@ apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json,
     targets/watch/{de,en,es,fr,it}.lproj/Localizable.strings
                                                        (se l'orologio elenca gli sport, come per il Roller)
 apps/mobile/assets/engine/engine.zip                   (i moduli sports/ dell'API vanno sul telefono)
+apps/mobile/src/social/PublicParts.tsx, src/settings/snowSport.test.ts
+                                                       (aggiunti dal Coordinatore il 2026-11-08:
+                                                        `NOT_YET_ON_SNOW`, che la parte B toglie)
 docs/tasks/TASK-415.md, docs/STATUS.md, docs/DECISIONS.md, docs/API.md,
     docs/DATABASE.md
 ```
@@ -163,3 +166,14 @@ la lista della parte A approvata dal
 Coordinatore, migrazione 0056 in bozza (anche TASK-406 D1 ha la 0056: chi
 arriva secondo rinomina). La PR di A entra col sì dell'utente per il
 server, che chiede il Coordinatore.
+
+2026-11-08, parte A in PR (`feat/TASK-415-a-ski-touring-api`): la 0056 era
+libera in `main` all'apertura; la #935 di TASK-406 D1 è entrata prima con
+la sua 0056, e la nostra è diventata `0057_ski_touring.sql` (Coordinatore). Contratto, API, migrazione del solo CHECK di
+`runs`, profilo nascosto e orologio come da lista. I test col database
+(migrazione, salvataggio, record) girano in CI: sul Mac Docker era spento.
+Il modulo per pubblicare una giornata sulla neve non offre lo scialpinismo
+finché c'è `NOT_YET_ON_SNOW` in `PublicParts.tsx`. Restano per B: toglierlo,
+il nome con `tLater` e i testi dell'orologio nelle quattro
+lingue (`scripts/watch-texts.sh`), la riga in `settings/sport.ts`, fasi e
+VAM.

@@ -48,4 +48,5 @@ export const GRAVEL_BIKING: SportProfile = {
   healthConnect: 8,
   energy: { kind: "met", bands: BANDS },
   freeRunAs: "gravel_biking",
+  rides: true,
 };

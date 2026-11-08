@@ -10,9 +10,10 @@
     "gravel_biking",
     "skiing",
     "xc_skiing",
+    "ski_touring",
     "gym",
     "trackless",
     "pool"
   ],
-  "this_app": "swimming,hiking,mountain_biking,inline_skating,walking,gravel_biking,skiing,xc_skiing,gym,trackless,pool"
+  "this_app": "swimming,hiking,mountain_biking,inline_skating,walking,gravel_biking,skiing,xc_skiing,ski_touring,gym,trackless,pool"
 }

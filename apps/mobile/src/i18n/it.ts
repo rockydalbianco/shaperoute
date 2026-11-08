@@ -1658,6 +1658,19 @@ export const IT: Table = {
   Donkey: "Asino",
   Alpaca: "Alpaca",
 
+  // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
+  "2D": "2D",
+  "Edit video": "Modifica video",
+  "Line colour": "Colore della linea",
+  "Along the way": "Lungo il percorso",
+  "At the end": "Alla fine",
+  Nothing: "Niente",
+  Yellow: "Giallo",
+  "Light blue": "Azzurro",
+  Pink: "Rosa",
+  Green: "Verde",
+  White: "Bianco",
+
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concorso MuW",
   "The post with the most reactions wins.": "Vince il post con più reazioni.",
@@ -1957,6 +1970,12 @@ export const IT: Table = {
   Reset: "Azzera",
   "No drawings found": "Nessun disegno trovato",
   "Try other words, or change the filters.": "Prova altre parole, o cambia i filtri.",
+
+  // src/feed/PostSheet.tsx, PostSettings.tsx, postSections.ts (TASK-410: approved 2026-11-07)
+  Like: "Mi piace",
+  "Edit & run": "Modifica e corri",
+  "Post settings": "Impostazioni del post",
+  Summary: "Riepilogo",
 
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Percorso creato da MuW – pedalalo tu",

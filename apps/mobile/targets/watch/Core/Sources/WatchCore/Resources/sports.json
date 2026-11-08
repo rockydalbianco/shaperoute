@@ -123,6 +123,17 @@
       "onWatch": true
     },
     {
+      "activity": "ski_touring",
+      "name": "Ski touring",
+      "emoji": "🏔️",
+      "appleWorkout": 60,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": true,
+      "onWatch": true
+    },
+    {
       "activity": "gym",
       "name": "Gym",
       "emoji": "🏋️",

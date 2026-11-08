@@ -441,6 +441,16 @@ Coordinatore), `watchLink.ready()`, `RouteShelf` e `RouteStore`, la pagina
 watchOS 27 con tre percorsi salvati. B3a2 (i preferiti mandati da soli,
 `useWatchFavorites` montato in `favoritesDoor.ts`) dopo, con la sua lista.
 
+**B3a2 fatta** (2026-11-08, branch `feat/TASK-370-b3a2-favorites`): i
+preferiti vanno sull'orologio da soli. `useWatchFavorites` (montato in
+`favoritesDoor.ts`, una riga) a ogni cambio della lista, con l'orologio
+pronto e l'account aperto, scarica il preferito intero, chiede le direzioni
+(nessuna sull'acqua) e lo manda con «route»; alla fine manda «routes» con
+tutte le chiavi. Uno alla volta, mai due giri insieme (un cambio durante un
+giro ne fa partire un altro dopo); senza rete si ferma e tiene ciò che è
+partito (`watchSent.ts`, le chiavi in un file), il resto al cambio o
+all'apertura dopo. Nessun testo nuovo.
+
 ## File toccati
 
 Parte 0 (questa proposta):

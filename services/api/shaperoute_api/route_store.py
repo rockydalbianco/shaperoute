@@ -138,6 +138,11 @@ SAME_ROUTES_AS: dict[str, str] = {
     "5e374d843dda": "66509163156f",  # every route but a swim
     "4ad203b6a8ac": "07f13e87d494",  # the swims
     "2bee8b8f1e4f": "6b1ca82cd4e3",  # the app's paddling examples
+    # TASK-421: the foot network leaves closed gates and closed ways out
+    # (ADR-0349). Runs and walks are drawn anew (no line for them); the
+    # swims and the paddling never touch the foot network.
+    "17d7608bd912": "4ad203b6a8ac",  # the swims
+    "8a62c5877031": "2bee8b8f1e4f",  # the app's paddling examples
 }
 
 

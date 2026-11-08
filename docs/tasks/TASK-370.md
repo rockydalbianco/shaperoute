@@ -188,6 +188,17 @@ provato, senza tenere ferme le altre cose.
 **Da chiedere, una per volta** (con una proposta pronta):
 6. La riga della privacy e l'etichetta App Privacy (prima della build 1.1).
 
+9. **Il permesso di posizione dell'orologio** (2026-11-08): «Approvo la
+   proposta» — en «MuW uses your location during a workout to guide you
+   along your route and to record it.»; it «MuW usa la tua posizione durante
+   un allenamento per guidarti lungo il percorso e per registrarlo.»; de
+   «MuW nutzt deinen Standort während eines Trainings, um dich entlang deiner
+   Route zu führen und sie aufzuzeichnen.»; es «MuW usa tu ubicación durante
+   un entrenamiento para guiarte por la ruta y para registrarla.»; fr «MuW
+   utilise votre position pendant une séance pour vous guider le long du
+   parcours et pour l'enregistrer.» (quello del telefono parla del telefono
+   bloccato e della barra blu, non vale per l'orologio).
+
 ## Parte A, il piano (2026-11-05)
 
 **Il vincolo della build**: la 1.1 è una build sua, dopo la 1.0.2, e gli
@@ -440,6 +451,16 @@ Coordinatore), `watchLink.ready()`, `RouteShelf` e `RouteStore`, la pagina
 «Routes» come prima schermata dell'orologio. Provata nel simulatore di
 watchOS 27 con tre percorsi salvati. B3a2 (i preferiti mandati da soli,
 `useWatchFavorites` montato in `favoritesDoor.ts`) dopo, con la sua lista.
+
+**B3a2 fatta** (2026-11-08, branch `feat/TASK-370-b3a2-favorites`): i
+preferiti vanno sull'orologio da soli. `useWatchFavorites` (montato in
+`favoritesDoor.ts`, una riga) a ogni cambio della lista, con l'orologio
+pronto e l'account aperto, scarica il preferito intero, chiede le direzioni
+(nessuna sull'acqua) e lo manda con «route»; alla fine manda «routes» con
+tutte le chiavi. Uno alla volta, mai due giri insieme (un cambio durante un
+giro ne fa partire un altro dopo); senza rete si ferma e tiene ciò che è
+partito (`watchSent.ts`, le chiavi in un file), il resto al cambio o
+all'apertura dopo. Nessun testo nuovo.
 
 ## File toccati
 

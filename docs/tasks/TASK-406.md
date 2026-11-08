@@ -117,6 +117,11 @@ stile di MuW.
     tua. Stazione, neve e attrezzatura che aggiungi si vedono sul post, per
     chi può vederlo, e la neve conta anche, senza il tuo nome, nella neve
     del giorno della stazione.»
+- 2026-11-08, seguire una stazione: «Le tue stazioni». Le stazioni seguite
+  compaiono per prime nella scheda «Ski» («Your resorts») e per prime in
+  «Cambia» durante la giornata. Nessuna notifica. La pagina della stazione
+  mostra anche la neve segnata oggi dai membri e i loro post fatti lì,
+  quelli che chi guarda vede (parte D3).
 
 ## Domande aperte (una alla volta)
 
@@ -264,6 +269,36 @@ Scelte tecniche, decise dall'agente su delega dell'utente:
 Prossimo: l'OTA col sì dell'utente; poi la parte D3, la pagina della
 stazione con la neve dei membri, i loro post e il tasto per seguirla.
 
+D2 è in `main` (#960); esce con il prossimo OTA di produzione del
+Coordinatore, col sì dell'utente.
+
+**La parte D3 in due PR:** D3a sul server, D3b nell'app.
+
+**Parte D3a, 2026-11-08.** Sul server (`API.md`, «Seguire una stazione e i
+suoi post»; migrazione `0062`):
+- `PUT` e `DELETE /me/ski-resorts/{id}/follow`, e `GET /me/ski-resorts`:
+  «Your resorts», l'ultima seguita prima, nessuna notifica;
+- `GET /ski-resorts/{id}/drawings`: i post delle giornate di sci in quella
+  stazione che chi chiede vede, dalla più recente, a pagine come un
+  profilo.
+
+D3a è in `main` (#976). Le scelte tecniche sono nell'aggiunta ad ADR-0338.
+La `0062` va sul server nel passo unico con la `0061` e la `0063`.
+
+**I testi della D3b**, approvati dall'utente il 2026-11-08 («Sì,
+approvati»), in inglese con l'italiano; de, fr ed es tradotti allo stesso
+modo:
+- «Your resorts» («Le tue stazioni»), in cima alla scheda «Ski» e a
+  «Cambia»;
+- «Follow» e «Following», gli stessi dei membri («Segui», «Segui già»);
+  toccato di nuovo, non la segue più;
+- «Snow today» («Neve di oggi»), con «{snow} ×{days}», e «Marked by the
+  members in the last 24 hours.» («Segnata dai membri nelle ultime 24
+  ore.»);
+- «Members' days here» («Le giornate dei membri qui»).
+
+Le parti vuote non compaiono. Prossimo: la D3b.
+
 ## File toccati
 
 Questa PR (documenti): `docs/tasks/TASK-406.md` (nuovo), `docs/DECISIONS.md`
@@ -335,7 +370,21 @@ File da cambiare: `apps/mobile/src/screens/FreeRunScreen.tsx`,
 `apps/mobile/src/about/content/{en,it,de,fr,es}.ts` (la riga della
 privacy), `site/privacy/` (rigenerata), `docs/STATUS.md` e questa lista.
 
-Parti D3 ed E: si elencano prima di ciascuna.
+Parte D3a (approvata dal Coordinatore il 2026-11-08; migrazione `0062`).
+File nuovi:
+- `services/api/migrations/0062_followed_resorts.sql`;
+- `services/api/shaperoute_api/resort_follows.py` e
+  `services/api/tests/test_resort_follows.py`;
+- `packages/shared-types/src/resortFollows.ts`,
+  `fixtures/followed-resorts.json` e `test/resortFollows.test.ts`.
+
+File da cambiare: `services/api/shaperoute_api/__main__.py` (una riga),
+`packages/shared-types/src/index.ts` (una riga), `docs/API.md`,
+`docs/DATABASE.md` e questa lista. Le righe di `STATUS.md` e
+`DECISIONS.md` in una PR di soli documenti (la regola del Coordinatore del
+2026-11-08).
+
+Parti D3b ed E: si elencano prima di ciascuna.
 
 ## Criteri di accettazione
 

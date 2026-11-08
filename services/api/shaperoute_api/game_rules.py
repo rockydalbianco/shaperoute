@@ -296,10 +296,17 @@ class DistanceGoal:
 
 @dataclass(frozen=True)
 class PaceGoal:
-    """`distance_m` in one run at `pace_s` a kilometre or better."""
+    """`distance_m` in one run at `pace_s` a kilometre or better.
+
+    `single_run`: a milestone of one run (the first 5K, the first marathon:
+    TASK-423, ADR-0351). Its pace is so slow that any run of the distance
+    meets it, and the app says «One run of 5 km»; it stays a pace goal so
+    that the apps already installed, which know only `distance` and `pace`,
+    keep reading the catalog."""
 
     distance_m: int
     pace_s: int
+    single_run: bool = False
 
     @property
     def target_s(self) -> float:

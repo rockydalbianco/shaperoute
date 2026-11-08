@@ -111,9 +111,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (battito e zone) nella 1.0.3. File: — · `tasks/TASK-409.md`
 - **TASK-410 — La pagina del post** · B in `main` (#949); poi C
   (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
-- **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
-  schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
-  #962 · `tasks/TASK-411.md`
+- **TASK-411 — La palestra per tutti i giorni** · A–E in `main` (C con la
+  migrazione 0058); F (la palestra più chiara) in PR; poi server, sito della
+  privacy e un OTA dedicato, ognuno col sì. File: quelli della F ·
+  `tasks/TASK-411.md`
 - **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore) nella
   PR #957, poi A2 e B. File: quelli della #957 · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A

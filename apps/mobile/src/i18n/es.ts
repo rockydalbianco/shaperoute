@@ -250,6 +250,7 @@ export const ES: Table = {
   "North arrow": "Flecha del norte",
   "Turns the map north up": "Pone el norte arriba",
   "Turns the map like the drawing": "Gira el mapa como el dibujo",
+  "Turns the map where you face": "Gira el mapa hacia donde miras",
 
   // src/map/MapKindButton.tsx
   "Map type": "Tipo de mapa",
@@ -1100,6 +1101,7 @@ export const ES: Table = {
   Pause: "Pausa",
   Music: "Música",
   "Opens Spotify": "Abre Spotify",
+  Compass: "Brújula",
   Map: "Mapa",
   Data: "Datos",
   "Auto-pause": "Pausa automática",
@@ -1225,6 +1227,17 @@ export const ES: Table = {
   "This month: 1 time": "Este mes: 1 vez",
   "This month: {n} times": "Este mes: {n} veces",
   "Gym calendar": "Calendario gimnasio",
+  Plans: "Rutinas",
+  "New plan": "Nueva rutina",
+  "Plan name": "Nombre de la rutina",
+  Sets: "Series",
+  "{n} exercises": "{n} ejercicios",
+  "Today: {plan}": "Hoy: {plan}",
+  "Start without the plan": "Empezar sin rutina",
+  "Plan: {done}/{total} sets": "Rutina: {done}/{total} series",
+  "Delete plan": "Eliminar la rutina",
+  "Delete “{name}”?": "¿Eliminar «{name}»?",
+  Planned: "Previsto",
   "{n} times · {time}": "{n} veces · {time}",
   Workout: "Entrenamiento",
   "Only sets logged live count.": "Solo cuentan las series anotadas en directo.",
@@ -1691,6 +1704,18 @@ export const ES: Table = {
   Pink: "Rosa",
   Green: "Verde",
   White: "Blanco",
+  // src/share/ScenesRows.tsx, EndingRow.tsx, videoScenes.ts (TASK-408 C2, texts of choice 10)
+  Scenes: "Escenas",
+  Opening: "Inicio",
+  "The route": "El recorrido",
+  Ending: "Final",
+  "Drawing in 2D": "Dibujo en 2D",
+  Cut: "Corte",
+  Fade: "Fundido",
+  Numbers: "Números",
+  "Whole drawing": "Dibujo entero",
+  "All three": "Los tres",
+  "At least one scene stays on.": "Al menos una escena sigue activa.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concurso MuW",
@@ -2065,4 +2090,23 @@ export const ES: Table = {
     "Pronóstico más antiguo: MET Norway no responde.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Tiempo: MET Norway (CC BY 4.0) · Estaciones: OpenSkiMap.org, © colaboradores de OpenStreetMap",
+  // src/ski/DayResort.tsx, DayChoices.tsx, SkiDayLine.tsx, screens/SnowFinishCard.tsx
+  // (TASK-406 part D2: the day of skiing, texts approved on 2026-11-08)
+  "Where are you skiing?": "¿Dónde estás esquiando?",
+  "Change@@resort": "Cambiar",
+  "No ski resort nearby": "Ninguna estación de esquí cerca",
+  "{temperature} now · {snow} fresh snow":
+    "{temperature} ahora · {snow} de nieve nueva",
+  Total: "Total",
+  "How was the snow?": "¿Cómo estaba la nieve?",
+  Powder: "Polvo",
+  Groomed: "Pisada",
+  Icy: "Helada",
+  Spring: "Primavera",
+  Heavy: "Pesada",
+  "Your gear": "Tu equipo",
+  "Ski or snowboard, brand and model": "Esquí o snowboard, marca y modelo",
+  Resort: "Estación",
+  Snow: "Nieve",
+  Gear: "Equipo",
 };

@@ -1,12 +1,5 @@
 import type { Activity } from "@shaperoute/shared-types";
-import {
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import {
   Animated,
   Modal,
@@ -33,6 +26,14 @@ import {
 import { PADDLE_PACE_M, PADDLE_PACE_UNIT } from "../navigation/paddle";
 import { speedChange, speedNumber } from "../navigation/ride";
 import { changeLabel, type Split, splits } from "../navigation/runMetrics";
+import {
+  FIRST_PAGE,
+  runPage,
+  type RunPage,
+  setRunPage,
+  swipedTo,
+  useRunPage,
+} from "../navigation/runPage";
 import { paceClock } from "../navigation/runStats";
 import { SWIM_PACE_M, SWIM_PACE_UNIT } from "../navigation/swim";
 import { openPause, type Track } from "../navigation/trackRecorder";
@@ -66,30 +67,21 @@ import {
 } from "./RunPanel";
 
 /**
- * A run in progress, with a route or without one (TASK-169, ADR-0137): two
- * pages a swipe apart. «Map» is the map with the turn over it and, under
- * it, a few numbers; «Data» is every number, the kilometres one by one and
- * the run's switches, with no map. Both have the same way to pause, to go
- * on and to stop. With miles (TASK-182) the kilometres are miles, one by
- * one too: worked out here from the track, which stays in metres. Under
- * the numbers of both pages, on a run on foot with an account, the game's
- * line (TASK-296 part E): the next shape to collect, or the pace piece in
- * hand against its target; read once as the run starts.
+ * A run in progress, with a route or without one (TASK-169, ADR-0137):
+ * three pages a swipe apart (TASK-422, ADR-0350). «Compass», on the left,
+ * is the map alone, turned where the phone points, with only the run's
+ * buttons under it; «Map» is the map with the turn over it and, under it,
+ * a few numbers; «Data» is every number, the kilometres one by one and the
+ * run's switches, with no map. All have the same way to pause, to go on
+ * and to stop. With miles (TASK-182) the kilometres are miles, one by one
+ * too: worked out here from the track, which stays in metres. Under the
+ * numbers of «Map» and «Data», on a run on foot with an account, the
+ * game's line (TASK-296 part E): the next shape to collect, or the pace
+ * piece in hand against its target; read once as the run starts. The page
+ * open lives in `runPage.ts`: the map above the card reads it too.
  */
 
-export type RunPage = "map" | "data";
-
-/** A finger that moved this far sideways, and less up or down, is a swipe. */
-export const SWIPE_M = 48;
-
-/** The page a drag of (`dx`, `dy`) points asks for, or null: to the left
- * for «Data», which lies on the right, and to the right for «Map». */
-export function swipedTo(dx: number, dy: number): RunPage | null {
-  if (Math.abs(dx) < SWIPE_M || Math.abs(dx) < 2 * Math.abs(dy)) {
-    return null;
-  }
-  return dx < 0 ? "data" : "map";
-}
+export { type RunPage, SWIPE_M, swipedTo } from "../navigation/runPage";
 
 /** Whether a drag has gone sideways enough to be taken from what is under it. */
 function sideways(dx: number, dy: number): boolean {
@@ -143,22 +135,28 @@ export function RunCard({
   // The Apple Watch along (TASK-370 A3): the same state on both, its heart
   // rate here; the sport «Save» takes, the one of «Settings».
   const bpm = useWatch(runActivityOf(useSport()), onStop);
-  const [page, setPage] = useState<RunPage>("map");
+  const page = useRunPage();
+  // The next run opens on «Map» again.
+  useEffect(() => () => setRunPage(FIRST_PAGE), []);
   const paused = openPause(track) !== null;
-  // One function for the whole run: a swipe in progress keeps its page.
-  const toMap = useCallback(() => setPage("map"), []);
-  const toData = useMemo(
+  // One responder for the whole run: the page it starts from is read as
+  // the finger lifts.
+  const swipe = useMemo(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_event, { dx, dy }) => sideways(dx, dy),
         onPanResponderRelease: (_event, { dx, dy }) => {
-          if (swipedTo(dx, dy) === "data") {
-            setPage("data");
+          const to = swipedTo(dx, dy, runPage());
+          if (to !== null) {
+            setRunPage(to);
           }
         },
       }),
     [],
   );
+  // «Compass» (TASK-422): the map, and under it only the way to pause and
+  // to stop. No number is drawn, so the map takes the room.
+  const compassPage = page === "compass";
 
   const buttons = (
     <RunButtons
@@ -175,25 +173,26 @@ export function RunCard({
   const dark = <PocketScreen on={pocket.on} onExit={pocket.exit} />;
 
   return (
-    <View style={styles.card} {...toData.panHandlers}>
-      {paused ? (
-        <>
-          <Kilometres numbers={numbers} />
-          <RunGrid numbers={numbers} />
-        </>
-      ) : (
-        <RunStrip numbers={numbers} />
-      )}
-      <RunGameLine text={game} />
-      <WatchHeart bpm={bpm} />
-      {route && <RouteBar route={route} numbers={numbers} />}
+    <View style={styles.card} testID="run-card" {...swipe.panHandlers}>
+      {!compassPage &&
+        (paused ? (
+          <>
+            <Kilometres numbers={numbers} />
+            <RunGrid numbers={numbers} />
+          </>
+        ) : (
+          <RunStrip numbers={numbers} />
+        ))}
+      {!compassPage && <RunGameLine text={game} />}
+      {!compassPage && <WatchHeart bpm={bpm} />}
+      {!compassPage && route && <RouteBar route={route} numbers={numbers} />}
       {buttons}
-      <PageTabs page={page} onPage={setPage} />
-      {page === "map" && dark}
+      <PageTabs page={page} onPage={setRunPage} />
+      {page !== "data" && dark}
       <Countdown />
       <DataPage
         open={page === "data"}
-        onClose={toMap}
+        onClose={setRunPage}
         track={track}
         numbers={numbers}
         game={game}
@@ -394,18 +393,20 @@ function PhoneIcon() {
   );
 }
 
-/** «Map» and «Data»: a thumb's height, not the smallest a control may be. */
+/** «Compass», «Map» and «Data»: a thumb's height, not the smallest a
+ * control may be. */
 export const PAGE_TAB_HEIGHT = MIN_TAP_SIZE + space.md;
 
 const PAGES: readonly { page: RunPage; title: string }[] = [
+  { page: "compass", title: tLater("Compass") },
   { page: "map", title: tLater("Map") },
   { page: "data", title: tLater("Data") },
 ];
 
 /**
- * The two pages by name, in the order they lie in: touched, or swiped to.
- * Two buttons as wide as the card and taller than the smallest tap (TASK-186):
- * they are hit while running, without looking for them.
+ * The three pages by name, in the order they lie in: touched, or swiped to.
+ * Three buttons as wide as the card and taller than the smallest tap
+ * (TASK-186): they are hit while running, without looking for them.
  */
 function PageTabs({
   page,
@@ -439,7 +440,8 @@ function PageTabs({
 
 type DataProps = {
   open: boolean;
-  onClose: () => void;
+  /** The page has slid away: the one it leaves for. */
+  onClose: (page: RunPage) => void;
   track: Track;
   numbers: RunNumbers;
   /** The game's line, as the card has it; null for none. */
@@ -453,8 +455,9 @@ type DataProps = {
 /**
  * «Data»: the page with every number and no map. It lies to the right of
  * the map and slides over it; a swipe to the right, or «Map», slides it
- * back. The run's switches live here: they are set once, not while running;
- * under «Voice», the language and the voice it speaks with (TASK-209).
+ * back, «Compass» slides it back and opens that page. The run's switches
+ * live here: they are set once, not while running; under «Voice», the
+ * language and the voice it speaks with (TASK-209).
  */
 function DataPage({
   open,
@@ -485,13 +488,14 @@ function DataPage({
   }, [open, width, x]);
 
   const toMap = useMemo(() => {
-    /** The page slides away, then it is closed: never cut short. */
-    const close = () =>
+    /** The page slides away, then it is closed: never cut short. A swipe
+     * leaves for «Map», next to it; a name touched for its page. */
+    const close = (to: RunPage = "map") =>
       Animated.timing(x, {
         toValue: width,
         duration: SLIDE_MS,
         useNativeDriver: true,
-      }).start(onClose);
+      }).start(() => onClose(to));
     /** The page slides back where it was: a swipe too short, or taken. */
     const stay = () =>
       Animated.timing(x, {
@@ -506,7 +510,7 @@ function DataPage({
         // The page follows the finger to the right.
         onPanResponderMove: (_event, { dx }) => x.setValue(Math.max(0, dx)),
         onPanResponderRelease: (_event, { dx, dy }) => {
-          if (swipedTo(dx, dy) === "map") {
+          if (swipedTo(dx, dy, "data") === "map") {
             close();
           } else {
             stay();
@@ -526,7 +530,7 @@ function DataPage({
       transparent
       animationType="none"
       statusBarTranslucent
-      onRequestClose={toMap.close}
+      onRequestClose={() => toMap.close()}
     >
       <Animated.View
         style={[
@@ -577,7 +581,7 @@ function DataPage({
           {!numbers.swim && <VoiceSetting />}
         </ScrollView>
         {buttons}
-        <PageTabs page="data" onPage={(page) => page === "map" && toMap.close()} />
+        <PageTabs page="data" onPage={(page) => page !== "data" && toMap.close(page)} />
         {dark}
       </Animated.View>
     </Modal>

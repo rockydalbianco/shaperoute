@@ -28,7 +28,7 @@ LEFT_OUT = NOT_ROUTES | SWIM_ONLY | ANCHORED_ONLY | DRAWN_WATER_ONLY | WALK_ONLY
 # The engine's fingerprints when the walk joined: the swims', and every
 # route but a swim's, moved on by TASK-421 (the foot network leaves closed
 # gates out, ADR-0349: runs and walks are drawn anew, the swims are not).
-ROUTES = "34ef405997d9"
+ROUTES = "8ab61d8e87f9"
 SWIMS = "b9d00c37d28d"
 
 

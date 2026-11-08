@@ -100,9 +100,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-401 — Le indicazioni a schermo bloccato** · A in `main`; B (Live
   Activity, 1.0.3) nella bozza #862. File: quelli della #862 ·
   `tasks/TASK-401.md`
-- **TASK-406 — Le stazioni sciistiche** · C e D1 in `main`; D2 (la giornata
-  nell'app) nella PR #960, poi D3. File: quelli della #960 ·
-  `tasks/TASK-406.md`
+- **TASK-406 — Le stazioni sciistiche** · C e D1 in `main` e sul server;
+  D2 (la giornata nell'app) nella PR #960, OTA dopo il merge col sì
+  dell'utente; poi D3. File: quelli della #960 · `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
 - **TASK-408 — L'editor del video dell'attività** · C1 in `main`; C2 (scene
@@ -111,9 +111,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (battito e zone) nella 1.0.3. File: — · `tasks/TASK-409.md`
 - **TASK-410 — La pagina del post** · B in `main` (#949); poi C
   (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
-- **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
-  schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
-  #962 · `tasks/TASK-411.md`
+- **TASK-411 — La palestra per tutti i giorni** · A–E in `main` (C con la
+  migrazione 0058); F (la palestra più chiara) in PR; poi server, sito della
+  privacy e un OTA dedicato, ognuno col sì. File: quelli della F ·
+  `tasks/TASK-411.md`
 - **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore) nella
   PR #957, poi A2 e B. File: quelli della #957 · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
@@ -133,6 +134,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347
   precisazione). Prossimo: «via server catalogo» del Coordinatore, poi il
   secondo giro (Italia, Europa) con le zone copiate dal server. File: — · `tasks/TASK-419.md`
+- **TASK-423 — «Play» grande** (ADR-0351) · proposta approvata il
+  2026-11-08: 94 forme in 10 collezioni, passi su 10 distanze, sfide
+  personali, premi. Documenti in PR; parte A nella #984 (foglio delle forme
+  all'utente), poi B–E (D dopo la #971). File: quelli della #984 · `tasks/TASK-423.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

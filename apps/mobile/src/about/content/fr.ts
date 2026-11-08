@@ -349,6 +349,7 @@ const privacy: AboutDocument = {
         "Une photo que tu publies peut contenir le dessin de ta course dans l'image. C'est le même dessin que celui du Feed.",
         "Pour une journée de ski, notre serveur compare la trace enregistrée aux remontées et pistes d'OpenStreetMap, qu'il garde lui-même, pour noter celles que tu as prises et combien de fois. Les noms apparaissent dans la publication, pour qui peut la voir. Rien ne part vers un autre service.",
         "Sur les photos que tu publies, tu peux identifier les articles que tu portes : ce qu'est chacun, sa marque et, si tu veux, son modèle et un lien vers une boutique. Ceux qui voient la photo les voient. Si la course repasse en «Moi seulement», ils quittent notre serveur avec ses photos et restent sur ce téléphone.",
+        "Pour une journée de ski, l'app envoie à notre serveur ta position arrondie à environ 1 km pour trouver la station la plus proche ; la météo, c'est le serveur qui la demande à MET Norway avec la position de la station, jamais la tienne. La station, la neige et l'équipement que tu ajoutes apparaissent sur la publication, pour qui peut la voir, et la neige compte aussi, sans ton nom, dans la neige du jour de la station.",
       ],
     },
     {

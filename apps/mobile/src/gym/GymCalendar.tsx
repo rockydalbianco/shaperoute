@@ -159,6 +159,11 @@ function CalendarPage({
   const workoutsOf = new Map(
     (calendar?.days ?? []).map((day) => [day.day, day.workouts] as const),
   );
+  // The days of a plan gone by without it (part C): a grey dot.
+  const skippedOf = new Map<number, string[]>();
+  for (const missed of calendar?.skipped ?? []) {
+    skippedOf.set(missed.day, [...(skippedOf.get(missed.day) ?? []), missed.plan]);
+  }
   const isLatest = month >= today;
   const before = shiftMonth(month, -1);
   const after = shiftMonth(month, 1);
@@ -234,6 +239,8 @@ function CalendarPage({
               }
               const workouts = workoutsOf.get(day) ?? [];
               const trained = workouts.length > 0;
+              const missed = skippedOf.get(day) ?? [];
+              const planned = !trained && missed.length > 0;
               return (
                 <Pressable
                   key={day}
@@ -243,24 +250,44 @@ function CalendarPage({
                     day === chosen && styles.chosen,
                     pressed && styles.pressed,
                   ]}
-                  onPress={() => setChosen(trained ? day : null)}
+                  onPress={() => setChosen(trained || planned ? day : null)}
                   accessibilityRole="button"
                   accessibilityLabel={
-                    trained ? `${day} ${monthLabel(month)}, ${t("Workout")}` : undefined
+                    trained
+                      ? `${day} ${monthLabel(month)}, ${t("Workout")}`
+                      : planned
+                        ? `${day} ${monthLabel(month)}, ${t("Planned")}`
+                        : undefined
                   }
                   accessibilityState={{ selected: day === chosen }}
                   testID={`calendar-day-${day}`}
                 >
                   <Text style={styles.dayText}>{day}</Text>
                   <View
-                    style={[styles.dot, trained && styles.trained]}
-                    testID={trained ? `calendar-dot-${day}` : undefined}
+                    style={[
+                      styles.dot,
+                      trained && styles.trained,
+                      planned && styles.planned,
+                    ]}
+                    testID={
+                      trained
+                        ? `calendar-dot-${day}`
+                        : planned
+                          ? `calendar-skipped-${day}`
+                          : undefined
+                    }
                   />
                 </Pressable>
               );
             })}
           </View>
         ))}
+        {chosen !== null &&
+          (skippedOf.get(chosen) ?? []).map((plan) => (
+            <Text key={plan} style={gymStyles.muted} testID="calendar-skipped">
+              {`${t("Planned")} · ${plan}`}
+            </Text>
+          ))}
         {listed.map((workout) => (
           <Pressable
             key={workout.id}
@@ -270,7 +297,9 @@ function CalendarPage({
             accessibilityRole={workout.drawing_id === null ? "text" : "button"}
             testID="calendar-workout"
           >
-            <Text style={gymStyles.text}>{`🏋️ ${workoutLine(workout)}`}</Text>
+            <Text style={gymStyles.text}>
+              {`🏋️ ${workoutLine(workout)}${workout.plan == null ? "" : ` · ${workout.plan}`}`}
+            </Text>
             {workout.drawing_id !== null && <Text style={styles.chevron}>›</Text>}
           </Pressable>
         ))}
@@ -374,6 +403,9 @@ const styles = StyleSheet.create({
   },
   trained: {
     backgroundColor: color.accent,
+  },
+  planned: {
+    backgroundColor: color.textFaint,
   },
   workout: {
     flexDirection: "row",

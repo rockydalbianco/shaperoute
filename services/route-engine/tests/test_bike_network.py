@@ -30,8 +30,10 @@ from route_engine.geo import latlon_to_local, local_to_latlon
 from route_engine.models import (
     ACTIVITIES,
     DISTANCE_LIMITS_M,
+    FREE_ACTIVITIES,
     MAX_DISTANCE_M,
     MIN_DISTANCE_M,
+    SNOW_ACTIVITIES,
     SUPPORTED_ACTIVITIES,
     WATER_ACTIVITIES,
     InvalidRequestError,
@@ -450,10 +452,12 @@ def test_the_foot_source_and_its_files_are_those_of_before() -> None:
 
 
 def test_each_activity_has_a_network_and_distance_limits() -> None:
-    # Each activity is drawn on a network, or on the water (TASK-191).
+    # Each activity is drawn on a network, on the water (TASK-191) or on
+    # the snow (TASK-413).
     assert set(DISTANCE_LIMITS_M) == set(ACTIVITIES)
-    assert set(NETWORKS) | WATER_ACTIVITIES == set(ACTIVITIES)
-    assert not set(NETWORKS) & WATER_ACTIVITIES
+    assert set(NETWORKS) | FREE_ACTIVITIES == set(ACTIVITIES)
+    assert not set(NETWORKS) & FREE_ACTIVITIES
+    assert not WATER_ACTIVITIES & SNOW_ACTIVITIES
     assert NETWORKS == {
         "running": "foot",
         "cycling": "bike",

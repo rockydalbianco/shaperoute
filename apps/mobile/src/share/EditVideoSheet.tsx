@@ -13,8 +13,10 @@ import {
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
 import { CharacterRow } from "./CharacterRow";
+import { EndingRow } from "./EndingRow";
 import { LineColourRow } from "./LineColourRow";
 import type { PostRun } from "./postRun";
+import { ScenesRows } from "./ScenesRows";
 import { StyleRow } from "./StyleRow";
 import type { VideoEdit } from "./videoEdit";
 import { VideoEmojiRow } from "./VideoEmojiRow";
@@ -31,8 +33,9 @@ type Props = {
 /**
  * «Edit video» (TASK-408, ADR-0339, part C1): a sheet from the bottom of
  * «Share your run», with the video's own choices in rows, as the proposal's
- * board draws it: «Style», «Character», «Line colour» and the emoji
- * «Along the way» and «At the end». Every choice holds at once; «Done»
+ * board draws it: «Style», «Character», «Line colour», the emoji
+ * «Along the way» and «At the end», then «Scenes» and «Ending» (part C2).
+ * Every choice holds at once; «Done»
  * closes the sheet, and «Export video» makes the video as chosen.
  */
 export function EditVideoSheet({ visible, run, edit, onChange, onClose }: Props) {
@@ -94,6 +97,10 @@ function SheetBody({ run, edit, onChange, onClose }: Omit<Props, "visible">) {
             onChange={(end) => change({ end })}
             testID="end"
           />
+          <ScenesRows edit={edit} onChange={change} />
+          {!edit.off.includes("ending") && (
+            <EndingRow ending={edit.ending} onChange={(ending) => change({ ending })} />
+          )}
         </ScrollView>
       </View>
     </View>

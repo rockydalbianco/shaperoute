@@ -23,7 +23,7 @@ import { useRestAlert } from "./restAlert";
 import { RestPanel } from "./RestPanel";
 import { restOver } from "./restTimer";
 import { SetFields, type SetTexts, textsOf, valuesOfTexts } from "./SetFields";
-import { type Entry, setOf } from "./setKinds";
+import { type Entry, sameEntry, type SetValues, setOf } from "./setKinds";
 import { StillTraining } from "./StillTraining";
 import { changeWorkout } from "./useWorkout";
 import {
@@ -34,6 +34,8 @@ import {
   logSet,
   nextSetNumber,
   pauseWorkout,
+  planProgress,
+  planTarget,
   restNow,
   resumeWorkout,
   sameAgainValues,
@@ -78,12 +80,39 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
   const [picking, setPicking] = useState(workout.current === null);
   // The guide of the exercise under way, in place of the workout (part E).
   const [guiding, setGuiding] = useState(false);
-  const [texts, setTexts] = useState<SetTexts>(() => {
-    const last = sameAgainValues(workout);
-    return workout.current === null || last === null
-      ? {}
-      : textsOf(workout.current, last, units);
-  });
+  // What the boxes of a set hold first: the last set of the exercise, or
+  // what the plan aims at (TASK-411 C), or nothing.
+  function startTexts(going: Workout, entry: Entry): SetTexts {
+    const last = setsOf(going, entry).at(-1);
+    if (last !== undefined) {
+      return textsOf(entry, last, units);
+    }
+    const target = planTarget(going, entry);
+    return target === null ? {} : textsOf(entry, target, units);
+  }
+  const [texts, setTexts] = useState<SetTexts>(() =>
+    workout.current === null ? {} : startTexts(workout, workout.current),
+  );
+
+  // A set logged; when the plan moves on to its next exercise, its boxes
+  // hold what the plan aims at.
+  function log(values: SetValues) {
+    const moved: { to: Workout | null } = { to: null };
+    changeWorkout((going, at) => {
+      const after = logSet(going, values, at);
+      if (
+        after?.current != null &&
+        going.current !== null &&
+        !sameEntry(after.current, going.current)
+      ) {
+        moved.to = after;
+      }
+      return after;
+    });
+    if (moved.to?.current != null) {
+      setTexts(startTexts(moved.to, moved.to.current));
+    }
+  }
   const paused = isPaused(workout);
   const rest =
     workout.rest !== null && !restOver(workout.rest, nowMs) ? workout.rest : null;
@@ -100,8 +129,7 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
 
   function pick(entry: Entry) {
     changeWorkout((going, at) => chooseExercise(going, entry, at));
-    const last = setsOf(workout, entry).at(-1);
-    setTexts(last === undefined ? {} : textsOf(entry, last, units));
+    setTexts(startTexts(workout, entry));
     setPicking(false);
   }
 
@@ -134,6 +162,7 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
   }
 
   const done = workout.sets.length > 0;
+  const progress = planProgress(workout);
   // Its energy so far (part C, the user's «Stima MET sempre»).
   const timeMs = activeMs(workout, nowMs);
   const kcal = gymKcalLabel(
@@ -161,6 +190,14 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
           {kcal !== null && (
             <Text style={gymStyles.muted} testID="gym-kcal">
               {kcal}
+            </Text>
+          )}
+          {progress !== null && (
+            <Text style={gymStyles.muted} testID="plan-progress">
+              {`${workout.plan?.name ?? ""} · ${t("Plan: {done}/{total} sets", {
+                done: String(progress.done),
+                total: String(progress.total),
+              })}`}
             </Text>
           )}
           {paused && <Text style={gymStyles.muted}>{t("Paused")}</Text>}
@@ -217,11 +254,7 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
                   typed === null && gymStyles.disabled,
                 ]}
                 disabled={typed === null}
-                onPress={() =>
-                  changeWorkout((going, at) =>
-                    logSet(going, valuesOfTexts(current, texts, units), at),
-                  )
-                }
+                onPress={() => log(valuesOfTexts(current, texts, units))}
                 accessibilityRole="button"
                 testID="log-set"
               >
@@ -235,7 +268,7 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
                 onPress={() => {
                   if (again !== null) {
                     setTexts(textsOf(current, again, units));
-                    changeWorkout((going, at) => logSet(going, again, at));
+                    log(again);
                   }
                 }}
                 accessibilityRole="button"

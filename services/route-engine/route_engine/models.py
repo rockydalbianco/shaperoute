@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal
 
-from route_engine.activities import ENGINE_ACTIVITIES, running
+from route_engine.activities import ENGINE_ACTIVITIES, ENGINE_ONLY, running
 from route_engine.directions import Direction
 from route_engine.shapes import SUPPORTED_SHAPES, in_pieces
 from route_engine.words import (
@@ -29,18 +29,25 @@ SUPPORTED_ACTIVITIES: tuple[str, ...] = tuple(a.name for a in ENGINE_ACTIVITIES)
 MIN_DISTANCE_M, MAX_DISTANCE_M = running.ACTIVITY.distance_m
 
 # Every activity the engine draws, each on its own network
-# (network.NETWORKS) or on the water (WATER_ACTIVITIES), and its target
-# distances in metres (activities/).
-DISTANCE_LIMITS_M: dict[str, tuple[int, int]] = {
-    a.name: a.distance_m for a in ENGINE_ACTIVITIES
-}
+# (network.NETWORKS), on the water (WATER_ACTIVITIES) or on the snow
+# (SNOW_ACTIVITIES), and its target distances in metres (activities/): those
+# of the contract, then those it draws before the contract has them
+# (ENGINE_ONLY, TASK-413).
+_DRAWN = (*ENGINE_ACTIVITIES, *ENGINE_ONLY)
+DISTANCE_LIMITS_M: dict[str, tuple[int, int]] = {a.name: a.distance_m for a in _DRAWN}
 ACTIVITIES: tuple[str, ...] = tuple(DISTANCE_LIMITS_M)
 
 # The activities drawn on a lake or the sea, with no road network: where the
 # shape fits on the water it is the route (water_fit.py, ADR-0154).
-WATER_ACTIVITIES: frozenset[str] = frozenset(
-    a.name for a in ENGINE_ACTIVITIES if a.on_water
-)
+WATER_ACTIVITIES: frozenset[str] = frozenset(a.name for a in _DRAWN if a.on_water)
+# The activities drawn on open snow, with no network either: where the shape
+# fits on the snow one may walk on it is the route (snow.py, TASK-413,
+# ADR-0342).
+SNOW_ACTIVITIES: frozenset[str] = frozenset(a.name for a in _DRAWN if a.on_snow)
+# Those placed freely, on the water or on the snow, with no network: no
+# word, image or outline (ON_WATER_SHAPES_ONLY, ON_SNOW_SHAPES_ONLY), a
+# shape that may be moved (`near`).
+FREE_ACTIVITIES: frozenset[str] = WATER_ACTIVITIES | SNOW_ACTIVITIES
 # Those that also take a drawn outline, an image's or one drawn by hand:
 # a swim (TASK-323, the user's ask of 2026-10-29).
 DRAWN_ON_WATER: frozenset[str] = frozenset(
@@ -54,6 +61,8 @@ LAPS_SWIM_ONLY = "laps are for a swim"
 # a shape of the catalogue is drawn there for now. The API says it for an
 # image too (TASK-191 part B).
 ON_WATER_SHAPES_ONLY = "on the water only a shape of the catalogue is drawn"
+# The same on the snow (TASK-413).
+ON_SNOW_SHAPES_ONLY = "on the snow only a shape of the catalogue is drawn"
 
 
 # Why a request with the pen up and no word is refused (TASK-197): the API
@@ -64,8 +73,9 @@ PEN_UP_WITHOUT_WORD = "pen_up is for the letters of a word"
 PEN_UP_WITHOUT_PIECES = f"{PEN_UP_WITHOUT_WORD}, or the pieces of a shape"
 
 
-# A shape is moved only on the water (TASK-238): on the roads the search
-# decides where it fits.
+# A shape is moved only on the water (TASK-238), and on the snow (TASK-413,
+# the same text: the API says it): on the roads the search decides where it
+# fits.
 NEAR_ON_WATER_ONLY = "a shape is placed near a point only on the water"
 
 
@@ -155,7 +165,7 @@ class RouteRequest:
         if self.pen_up and self.shape is not None and not in_pieces(self.shape):
             raise InvalidRequestError(f"{PEN_UP_WITHOUT_PIECES}; {self.shape} has none")
         if self.near is not None:
-            if self.activity not in WATER_ACTIVITIES:
+            if self.activity not in FREE_ACTIVITIES:
                 raise InvalidRequestError(NEAR_ON_WATER_ONLY)
             check_start(self.near)
         check_laps(self.laps, self.activity)
@@ -223,9 +233,12 @@ def check_activity(activity: str) -> None:
 
 def check_drawn_on_land(activity: str, what: str) -> None:
     """Refuse `what` (a word, an image, an outline) for an activity on the
-    water (WATER_ACTIVITIES): only a shape of the catalogue is drawn there."""
+    water (WATER_ACTIVITIES) or on the snow (SNOW_ACTIVITIES): only a shape
+    of the catalogue is drawn there."""
     if activity in WATER_ACTIVITIES:
         raise InvalidRequestError(f"{ON_WATER_SHAPES_ONLY}, not {what}")
+    if activity in SNOW_ACTIVITIES:
+        raise InvalidRequestError(f"{ON_SNOW_SHAPES_ONLY}, not {what}")
 
 
 def check_outline_drawn(activity: str, what: str) -> None:

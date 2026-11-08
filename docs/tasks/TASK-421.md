@@ -110,7 +110,7 @@ Una pubblicazione alla volta: prima potrebbero passare TASK-419 e la #957.
    ssh root@188.245.9.220 'cd /root/shaperoute && git pull -q --ff-only && cd deploy && docker compose build -q api && docker compose up -d && sleep 25 && curl -s http://127.0.0.1:8000/health && docker compose logs api --tail 30 | grep -i "accounts\|schema\|migration"'
    ```
 
-3. L'impronta nel container deve essere `34ef405997d9`.
+3. L'impronta nel container deve essere `8ab61d8e87f9`.
 
    ```bash
    ssh root@188.245.9.220 'cd /root/shaperoute/deploy && docker compose exec -T api python -c "from shaperoute_api.route_store import engine_fingerprint; print(engine_fingerprint())"'
@@ -188,7 +188,7 @@ shaperoute-api && docker compose up -d` (il dump del passo 1 per il database).
       `access=destination` no.
 - [x] La rete `hike` perde gli stessi nodi.
 - [x] Le misure su 2–3 zone e il banco prima/dopo in questo file.
-- [x] Impronta: `ROUTES` nuovo (`34ef405997d9`); nuotate e canoa con la
+- [x] Impronta: `ROUTES` nuovo (`8ab61d8e87f9`); nuotate e canoa con la
       prova delle stesse rotte; `engine.zip` rifatto.
 - [ ] CI verde sulla PR #973.
 - [x] Piano di rigenerazione delle zone in `MAPS.md` e `DEPLOY.md`; il

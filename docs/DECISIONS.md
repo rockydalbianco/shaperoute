@@ -465,12 +465,39 @@ lasciando le righe d'indice.
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
+- ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 
 ---
 
 - ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
+- ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
+- ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 
 ## Voci nuove
+
+## ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati
+
+**Stato**: Attiva · 2026-11-08 · TASK-411 parte C. Deciso dall'agente su
+delega dell'utente, dalla sua scelta «Schede + giorni» del 2026-11-06
+(ADR-0341 in `docs/archive/DECISIONS-fino-al-2026-11.md`).
+
+L'allenamento dice la sua scheda con la **chiave** (`gym_sessions.plan_key`),
+non con un riferimento: può arrivare all'API prima della scheda, e una
+scheda eliminata lascia i suoi allenamenti come erano (senza nome). I giorni
+in API sono 1 lunedì–7 domenica, nel database sette bit. Una scheda mandata
+più vecchia di quella tenuta non la sostituisce (due telefoni dello stesso
+account: vince l'ultima modifica); eliminarne una che non c'è non è un
+errore. I giorni saltati contano da quando la scheda è arrivata all'API
+(`created_at`) fino a ieri, sul fuso chiesto; un allenamento libero non
+riempie il giorno di una scheda. Sul telefono le schede stanno in un file
+(`gym-plans.json`): una modifica o un'eliminazione aspetta lì finché l'API
+non l'ha, e la lista dell'API sostituisce solo quelle che il telefono non
+ha cambiato dopo. «Start workout» segue la prima scheda di oggi
+dell'account mostrato in «Draw»; l'allenamento copia la scheda quando
+comincia. Una serie conta per il primo esercizio della scheda dello stesso
+tipo ancora incompleto; finito un esercizio, quello dopo diventa quello in
+corso da solo, coi valori della scheda nei campi se non ci sono serie di
+prima.
 
 ## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
 
@@ -733,3 +760,134 @@ promette che gli altri vedono le corse «senza orari». Il tag non ha un
   insieme): niente tempi dal server, ma il video non direbbe chi andava più
   veloce né dove ci si è incrociati, che è quello che si chiede.
 ---
+
+## ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app
+
+**Stato**: Accettata · 2026-11-08 · TASK-423 (estende ADR-0255). Proposta
+approvata dall'utente il 2026-11-08 con «Sì, approvo»
+(`docs/tasks/TASK-423-proposta.md`); le scelte tecniche sotto sono
+dell'agente su delega dell'utente.
+
+**Contesto**: il gioco delle forme (ADR-0255, `GIOCO.md`) ha 12 forme in una
+griglia, tempi migliori su 4 distanze e le sfide di squadra; le sfide del
+mese (TASK-343) stanno a parte. L'utente vuole collezioni a tema, 80–100
+forme, km da 1 a 10 000, livelli di passo su 10 distanze, sfide personali e
+streak, e premi dentro l'app, senza punti né classifiche (TASK-241), senza
+denaro né pubblicità.
+
+**Decisione**:
+
+1. **Ogni requisito è una forma**: 94 forme in 10 collezioni (24 gradini
+   di km totali, 6 traguardi di una corsa, 64 livelli di passo). Le 12
+   forme di oggi tengono id, nome e requisito: nessuno perde niente.
+2. **Il catalogo resta nel codice dell'API** (`game_catalog.py`), contorni
+   in coordinate del disegno: 18 letti dal motore, che non cambia, 8
+   calcolati, 56 disegnati come poligoni. Il foglio di tutte le forme lo
+   approva l'utente.
+3. **I traguardi di una corsa sono requisiti `pace` a 20:00/km con
+   `single_run: true`**: l'app installata rifiuta tutto il catalogo se
+   trova un tipo di requisito sconosciuto (`isGoal` di `gameApi.ts`) e
+   nasconderebbe «Play». Valgono le regole dei tempi: le camminate restano
+   fuori.
+4. **Tempi migliori su 11 distanze** (le 10 del passo e 50 000 m per
+   l'ultra), `RULES_VERSION` 3, stesso calcolo O(n); backfill una volta
+   dopo il deploy di A e B insieme, senza push.
+5. **Sfide personali senza iscrizione**, uguali per tutti: 3 settimanali e
+   2 mensili, a rotazione dal numero della settimana e del mese, con tre
+   gradini su una barra. Funzioni pure; una tabella `game_personal` scritta
+   nella transazione del salvataggio, come i pezzi; il backfill non la
+   tocca, e le medaglie partono dalla settimana del rilascio.
+6. **L'ora locale da `utc_offset_min`** mandato dall'app con la corsa e
+   salvato in `game_runs` (`runs` non cambia); senza, UTC. Dato nuovo: il
+   testo della privacy lo approva l'utente (parte C).
+7. **Streak a tre righe** (1, 2, 3 uscite a settimana) calcolata da tutta
+   la storia del gioco, senza scelte da salvare: niente da imbrogliare
+   abbassando la soglia.
+8. **Edizioni come righe di `game_unlocks`** (`silver` a 3 corse, `gold` a
+   10; la `solo` di oggi è il bronzo), contate da `game_runs`; solo per le
+   forme di passo e di traguardo.
+9. **Il profilo pubblico mostra premi del gioco solo se scelti** (cornice,
+   titolo, fino a 3 badge, in `game_prefs`); di default niente. Privacy
+   approvata dall'utente (parte E).
+10. **Sei passi**: documenti, A (catalogo), B (passi), C (personali), D
+    (app, dopo la #971 di TASK-422), E (premi). Server A+B, poi C, poi E;
+    un OTA dopo D+E; ognuno col sì dell'utente e il via del Coordinatore.
+
+**Alternative**:
+
+- **Livelli di passo come tabella a parte, non forme**: due modi di
+  mostrare lo stesso avanzamento; «Play mostra tutto» vuole una cosa sola.
+- **Un tipo di requisito nuovo `single_run`**: più pulito, ma spegne
+  «Play» su tutte le app installate fino all'OTA.
+- **Sfide personali su misura** (dal passato di ognuno): più dati, più
+  regole da spiegare; tre gradini coprono principianti e forti.
+- **Una soglia di streak scelta dall'utente**: va salvata, e cambiarla
+  riscrive la storia.
+
+**Conseguenze**: il catalogo diventa grande (94 contorni nella risposta di
+`GET /game/catalog`, circa 150 KB contro i 20 di oggi); l'app di oggi
+mostra le 94 forme nella griglia di sempre finché arriva l'OTA. Due
+migrazioni (C, E).
+
+---
+## ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono
+
+**Data**: 2026-11-08 · **Stato**: Accettata · **Task**: TASK-422 ·
+aggiorna ADR-0137 (le due pagine) e ADR-0195 (la mappa girata e la freccia
+del nord)
+
+Chiesto dall'utente il 2026-11-08: una pagina nuova con la mappa sola, a
+tutto schermo, che ruota in base a dove punta il telefono, con un pulsante
+per tornare al nord; da fermo la bussola, in corsa la traccia GPS quando la
+bussola è inaffidabile, la regola da proporre. Le scelte di prodotto (nome
+«Compass», ordine Compass | Map | Data con apertura su «Map», cosa resta
+nella scheda, la freccia del nord a due tocchi, i due testi) approvate
+dall'utente il 2026-11-08 («approvo tutto»); la regola tecnica decisa
+dall'agente su delega dell'utente. In `main` con la #971.
+
+**Contesto**: la corsa aveva due pagine (ADR-0137): «Map», la mappa col
+nord in alto o girata come il disegno (ADR-0195), e «Data». Chi corre in
+un posto nuovo vuole leggere la mappa come la vede: quello che ha davanti
+in alto, come fanno i navigatori.
+
+**Decisione**:
+- **Tre pagine**, «Compass» | «Map» | «Data»; si apre su «Map» come oggi.
+  Lo swipe passa una pagina alla volta, dalla scheda; i tre nomi con un
+  tocco. La pagina aperta vive in un modulo (`navigation/runPage.ts`),
+  come i comandi della corsa (`runControl`): la scheda la imposta, e la
+  mappa, che sta sopra la scheda in `App.tsx`, la legge. `App.tsx` cambia
+  per poche righe: l'hook `useHeadingUpMap` si mette sopra `useTurnedMap`
+  e dà alla mappa lo stesso `turn` della freccia del nord.
+- **«Compass» è la scheda ridotta ai pulsanti**, non una seconda mappa:
+  la mappa (`MapView`, una sola, mai ricaricata) prende lo spazio lasciato
+  libero. Niente numeri, barra, riga del gioco né battito; il banner della
+  svolta resta sopra la mappa.
+- **Da dove viene la direzione** (`navigation/headingUp.ts`): la bussola
+  (`expo-location` `watchHeadingAsync`, già nell'app: nessuna dipendenza
+  nuova; `trueHeading`, o `magHeading` quando il telefono non sa il nord
+  vero) **da fermi sempre**, perché la traccia dice da dove si è venuti,
+  non dove si guarda; **correndo la bussola finché la sua calibrazione è
+  media o alta** (≥ 2 sulla scala 0–3 di expo-location: sotto i 35° di
+  incertezza su iOS); **con calibrazione bassa o nulla, in movimento, la
+  traccia** (`headingDeg`, gli ultimi 10 m, la stessa della freccia). «In
+  movimento» è un fix GPS negli ultimi 10 s, la soglia dell'auto-pausa
+  (`AUTO_PAUSE_AFTER_MS`): le due cose dicono la stessa cosa su cosa sia
+  stare fermi. Senza bussola (un telefono che non ce l'ha, o la rifiuta)
+  vale la traccia in movimento, e da fermi la mappa resta com'è.
+- **Non trema**: una lettura della bussola sostituisce quella tenuta solo
+  se l'ago si è mosso di 2° o la calibrazione è cambiata, e non prima di
+  250 ms; la mappa gira solo per cambi di almeno 4° e non più di una volta
+  ogni 400 ms (`easeTo` di 500 ms, come la freccia del nord). La bussola è
+  accesa solo con «Compass» aperta e il nord non fissato: costa batteria.
+- **Il nord**: la freccia del nord di ADR-0195, nello stesso posto, sempre
+  visibile su «Compass». Un tocco mette il nord in alto e lo tiene (la
+  bussola si spegne), un secondo rimette la direzione; per VoiceOver il
+  secondo tocco è «Turns the map where you face» (`NorthArrow` prende
+  `northUp` e `upHint`). Lasciando la pagina, o a fine corsa, la mappa
+  torna al `bearing` del disegno, e la freccia è di nuovo quella del
+  disegno. La pagina aperta torna «Map» quando la scheda sparisce.
+
+**Conseguenze**: due testi nuovi nelle cinque lingue («Compass», «Turns
+the map where you face»); solo JavaScript, l'impronta iOS non cambia. Da
+provare sul telefono: la rotazione in mano da fermi e correndo, e se il
+banner su «Compass» dà fastidio (toglierlo è una riga in `App.tsx`).

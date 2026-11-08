@@ -101,10 +101,13 @@ apps/mobile/src/screens/RunDashboard.tsx
 apps/mobile/src/screens/RunDashboard.test.tsx
 docs/DECISIONS.md
 docs/INDEX.md
-docs/STATUS.md
 docs/UI.md
+docs/archive/COMPLETATI.md
 docs/tasks/TASK-422.md
 ```
+
+(`docs/STATUS.md` non è toccato: dal formato di TASK-412 un task Done è una
+riga in `docs/archive/COMPLETATI.md`, non una voce in «In lavorazione».)
 
 ## Fuori scope
 

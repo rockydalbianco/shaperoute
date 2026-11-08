@@ -25370,10 +25370,10 @@ e luna (`docs/sports/wheelchair.md`), contro la rete foot sulla stessa area
 - **La rete foot o roller così come sono**: scale, ciottoli, cordoli.
 - **Una rete fatta col tag `wheelchair`**: c'è quasi solo a Milano.
 
-## ADR-0349 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica
+## ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica
 
 **Stato**: Attiva · 2026-11-08 · TASK-418. Deciso dall'agente su delega
-dell'utente; numero preso come primo libero (`AGENTI.md` regola 4).
+dell'utente; numero dal Coordinatore.
 
 **Contesto**: 49 forme nuove per il catalogo grande di «Explore», approvate
 dall'utente sulla carta. Le forme di prima erano disegnate a mano, punto per
@@ -25412,5 +25412,5 @@ finché l'utente non ha scelto.
 
 **Conseguenze**: TASK-419 pianifica le candidate con `--outline` (o con il
 seme esteso a leggere `candidate_outlines/`). La registrazione delle forme
-approvate è un task da aprire.
+approvate è una parte successiva di TASK-418.
 

@@ -1,8 +1,8 @@
 # TASK-418 — Forme nuove per il catalogo di «Explore»
 
 **Stato**: Done
-**Fase**: 4 · **Branch**: `feat/TASK-418-new-shapes` · **ADR**: ADR-0349
-(preso come primo libero, `AGENTI.md` regola 4, e detto al Coordinatore) ·
+**Fase**: 4 · **Branch**: `feat/TASK-418-new-shapes` · **ADR**: ADR-0346
+(numeri dal Coordinatore) ·
 parte A del catalogo grande; B è TASK-419 (i 1000 disegni e la scelta),
 C è TASK-420 (la pagina del catalogo)
 
@@ -38,7 +38,7 @@ completo e scorribile». La lista l'ha approvata intera («Va bene tutta»):
   qui non serve niente.
 
 Da leggere: `ROUTE_ENGINE.md` §2, `route_engine/shapes/outline.py` (il
-formato), ADR-0035, ADR-0036, ADR-0349.
+formato), ADR-0035, ADR-0036, ADR-0346.
 
 ## Cosa fare
 
@@ -77,8 +77,9 @@ docs/DECISIONS.md
 
 - **Registrare le forme** in `SHAPES`, nel contratto, nell'API e
   nell'app (nomi, `catalogueShapes`, lo zip del telefono): dopo il giudizio
-  dell'utente su strade vere, per le sole forme approvate. Task da aprire
-  col Coordinatore quando TASK-419 ha la pagina di revisione.
+  dell'utente su strade vere, per le sole forme approvate. Una parte
+  successiva di TASK-418, con la lista dei file al Coordinatore quando
+  TASK-419 ha la pagina di revisione.
 - **Pianificare i 1000 disegni** e le parole nelle città: TASK-419.
 - **La pagina del catalogo**: TASK-420.
 
@@ -89,4 +90,4 @@ strumento che li ridisegna e l'anteprima. Al primo controllo a occhio
 quattro forme erano sbagliate (bracci dell'ancora e vele staccati,
 quadrifoglio a nuvola, coda della balena): corrette. La moka a Barcellona
 si legge poco: la scelta la fa l'utente su TASK-419. Prossimo: la
-registrazione delle forme approvate (task da aprire).
+registrazione delle forme approvate (una parte successiva di TASK-418).

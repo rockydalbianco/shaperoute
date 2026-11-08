@@ -40,7 +40,7 @@ Al posto della fascia d'acqua c'è la **neve su cui si cammina**:
   minore, carrareccia o sentiero dentro la neve permessa. La partenza è il
   più vicino che regge la forma, entro 2 km da dove si chiede.
 
-È un prototipo del banco (`out/snow/snow.py`, ignorato da git), non codice
+È un prototipo del banco (`out/TASK-413/snow.py`, ignorato da git), non codice
 del motore: `water_fit.fit_shape` riceve un `WaterArea` fatto con la neve
 al posto dell'acqua, senza cambiare una riga del motore.
 
@@ -48,7 +48,7 @@ al posto dell'acqua, senza cambiare una riga del motore.
 
 Sul Mac, `main` `8c1e84da`, `nice -n 10`, un giro per volta dopo i banchi
 della sessione carrozzina. Il banco `tools/sport_bench/` misura reti di
-strade (`--loader` vuole un grafo): per la neve il giro è `out/snow/snow.py`,
+strade (`--loader` vuole un grafo): per la neve il giro è `out/TASK-413/snow.py`,
 con le stesse forme di base (cerchio, cuore, stella) e le distanze proposte,
 **0,5, 1, 2 e 3 km**. Un download Overpass per posto (23–38 s, uno ha preso
 un 502 ed è stato rifatto dopo un minuto), 43 tegole delle quote (5 MB).
@@ -148,7 +148,7 @@ Biotopo Torbiera delle Viote (Bondone, 6% del riquadro), due biotopi a
 Lavazè (0,2%), il Parco naturale Paneveggio-Pale di San Martino a Rolle
 (`protect_class=2`). Delle 60 forme di base **una sola** passa in una
 riserva o in un biotopo (Bondone); tenendoli fuori entrano lo stesso tutte
-e 60 (`out/snow/pa.py`). Si propone di tenere fuori riserve e biotopi e di
+e 60 (`snow.py run --protected`). Si propone di tenere fuori riserve e biotopi e di
 lasciare dentro i parchi, dove le ciaspole sono permesse sui percorsi
 segnati o fuori a seconda delle regole del parco: l'avviso lo dice.
 

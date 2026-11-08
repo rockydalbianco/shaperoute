@@ -2081,41 +2081,4 @@ export const DE: Table = {
     "Ältere Vorhersage: MET Norway antwortet nicht.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Wetter: MET Norway (CC BY 4.0) · Skigebiete: OpenSkiMap.org, © OpenStreetMap-Mitwirkende",
-
-  // src/explore/CatalogScreen.tsx, CatalogEntry.tsx, CatalogCard.tsx,
-  // CatalogGrid.tsx, CatalogFilterSheet.tsx, catalog.ts (TASK-420: the catalog)
-  Catalog: "Katalog",
-  "{count} drawing in {cities} cities · filters, search":
-    "{count} Zeichnung in {cities} Städten · Filter, Suche",
-  "{count} drawings in {cities} cities · filters, search":
-    "{count} Zeichnungen in {cities} Städten · Filter, Suche",
-  "{count} drawings · {cities} cities": "{count} Zeichnungen · {cities} Städte",
-  "Search by name: heart, CIAO, Milan…": "Nach Namen suchen: Herz, CIAO, Mailand…",
-  Country: "Land",
-  City: "Stadt",
-  Category: "Kategorie",
-  Nearest: "Am nächsten",
-  Best: "Am schönsten",
-  Shortest: "Am kürzesten",
-  Any: "Beliebig",
-  "Loading more…": "Weitere werden geladen…",
-  "No drawings match": "Keine passende Zeichnung",
-  "Change the filters, or clear them to see every drawing.":
-    "Ändere die Filter oder lösche sie, um alle Zeichnungen zu sehen.",
-  "The drawings are planned at {distances}.":
-    "Die Zeichnungen sind auf {distances} geplant.",
-  "Show {count} drawing": "{count} Zeichnung zeigen",
-  "Show {count} drawings": "{count} Zeichnungen zeigen",
-  Monuments: "Denkmäler",
-  Holidays: "Feste",
-  Italy: "Italien",
-  "United States": "Vereinigte Staaten",
-  Netherlands: "Niederlande",
-  Spain: "Spanien",
-  "United Arab Emirates": "Vereinigte Arabische Emirate",
-  Portugal: "Portugal",
-  "United Kingdom": "Vereinigtes Königreich",
-  France: "Frankreich",
-  Australia: "Australien",
-  Japan: "Japan",
 };

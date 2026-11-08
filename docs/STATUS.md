@@ -148,6 +148,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   2026-11-08: 94 forme in 10 collezioni, passi su 10 distanze, sfide
   personali, premi. Documenti in PR; parte A nella #984 (foglio delle forme
   all'utente), poi B–E (D dopo la #971). File: quelli della #984 · `tasks/TASK-423.md`
+- **TASK-418 — Forme nuove per il catalogo di «Explore»** · parte A in
+  `main` (#953): 49 forme candidate in `services/route-engine/candidate_outlines/`;
+  poi la registrazione delle sole forme che l'utente approva su strada (dopo
+  TASK-419). File: — · `tasks/TASK-418.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

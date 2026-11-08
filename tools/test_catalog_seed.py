@@ -23,6 +23,7 @@ from catalog_seed import (
     doubled_share,
     imported,
     main,
+    outline_cases,
     path_length_m,
     plan,
     preselect,
@@ -131,6 +132,23 @@ def test_venice_stays_within_10_km_without_a_15_km_word() -> None:
     assert not any(c.style for c in cases)
 
 
+def test_outline_cases_name_the_shape_after_the_file(tmp_path: Path) -> None:
+    files = [tmp_path / "pizza_slice.json", tmp_path / "colosseum.json"]
+    cases = outline_cases([BY_NAME["roma"], BY_NAME["venezia"]], files)
+    assert [c.key for c in cases] == [
+        "roma/colosseum/10000",
+        "roma/pizza_slice/10000",
+        "roma/colosseum/5000",
+        "roma/pizza_slice/5000",
+        "venezia/colosseum/10000",
+        "venezia/pizza_slice/10000",
+        "venezia/colosseum/5000",
+        "venezia/pizza_slice/5000",
+    ]
+    assert cases[0].outline == str(files[1]) and cases[0].style is None
+    assert outline_cases([BY_NAME["roma"]], []) == []
+
+
 def test_largest_distance_comes_first_in_a_city() -> None:
     cases = [c for c in plan([BY_NAME["trento"]]) if c.style is None]
     distances = [c.distance_m for c in cases]
@@ -232,6 +250,8 @@ def test_score_is_the_engine_cost_with_its_sign_changed() -> None:
         run(similarity=0.95, route_m=5100, extra_doubled=0.04)
     ) == pytest.approx(0.95 - 1.5 * 0.04 - 0.02)
     assert score(run(similarity=0.95, route_m=5000)) == pytest.approx(0.95)
+    # A shape drawn with strokes does not pay for retracing (ADR-0118).
+    assert score(run("roma/cat/5000", extra_doubled=0.3, route_m=5000)) == 0.95
 
 
 def test_preselect_keeps_the_best_per_city_and_at_least_three() -> None:

@@ -228,12 +228,15 @@ def word_distance(word: str) -> int:
 @dataclass(frozen=True)
 class Case:
     """A shape of the catalogue, or with a `style` a word (`shape` holds
-    it): the same fields and key as seed_catalog.Case."""
+    it): the same fields and key as seed_catalog.Case. With `outline`, a
+    shape read from that JSON file instead (the candidates of TASK-418,
+    not in the engine's catalogue yet), named after the file."""
 
     city: str
     shape: str
     distance_m: int
     style: str | None = None
+    outline: str | None = None
 
     @property
     def key(self) -> str:
@@ -264,6 +267,28 @@ def plan(cities: Iterable[City] = CITIES) -> list[Case]:
             if len(word) <= MAX_WORD_LETTERS and d <= max(city.distances):
                 cases += [Case(city.name, word, d, s) for s in STYLES]
     return cases
+
+
+OUTLINE_DISTANCES_M: tuple[int, ...] = (10_000, 5_000)
+OUTLINE_SOURCE = "TASK-418 outline"
+
+
+def outline_cases(
+    cities: Iterable[City],
+    outlines: Iterable[Path],
+    distances: Sequence[int] = OUTLINE_DISTANCES_M,
+) -> list[Case]:
+    """A case per city, outline file and distance, the largest first: the
+    shapes drawn for TASK-418 tried on real roads before they are in the
+    engine's catalogue. The key names the shape after the file."""
+    files = sorted(outlines, key=lambda f: f.name)
+    return [
+        Case(city.name, f.stem, d, outline=str(f))
+        for city in cities
+        for d in sorted(distances, reverse=True)
+        for f in files
+        if d <= max(city.distances)
+    ]
 
 
 def select_cities(
@@ -354,7 +379,15 @@ def road_shares(
 MIN_SIMILARITY = 0.90  # the eye says "yes" from here (TASK-076)
 MAX_DISTANCE_OFF = 0.10  # the engine's own tolerance (ADR-0025)
 MAX_EXTRA_DOUBLED = 0.10  # the heart judged "yes" had 0%, the rest 4-23% (ADR-0107)
-W_DOUBLED = 1.5  # as the engine's cost (ADR-0107, ADR-0109)
+# What a route run twice over the same street costs, shape by shape, as the
+# engine's optimizer.W_DOUBLED (ADR-0107, ADR-0109, ADR-0118): nothing for
+# the shapes drawn with strokes, whose routes the user preferred as they are.
+W_DOUBLED: dict[str, float] = {
+    name: 1.5
+    for name in ("heart", "circle", "star", "horse", "moon", "butterfly", "snail")
+}
+# Every measure of a run carries this; `--enrich` redoes older ones.
+MEASURE_VERSION = 2
 # Roads nobody runs on: the foot network leaves them out already; a check.
 BAD_ROADS: frozenset[str] = frozenset(
     {"motorway", "motorway_link", "trunk", "trunk_link"}
@@ -416,11 +449,13 @@ def big_roads(run: Run) -> float | None:
 
 def score(run: Run) -> float:
     """To order the candidates: the engine's cost with its sign changed,
-    without the start's offset (similarity, retraced, distance)."""
+    without the start's offset (similarity, retraced where the shape weighs
+    it, distance)."""
     if not drawn(run):
         return -math.inf
     extra = run.get("extra_doubled") or 0.0
-    return run["similarity"] - W_DOUBLED * extra - abs(distance_off(run))
+    weight = W_DOUBLED.get(str(run.get("shape")), 0.0)
+    return run["similarity"] - weight * extra - abs(distance_off(run))
 
 
 def passing(runs: Iterable[Run]) -> list[Run]:
@@ -702,6 +737,7 @@ def run_cities(
     max_downloads: int | None = None,
     overpass_url: str | None = None,
     enrich: bool = False,
+    outlines: Sequence[Path] = (),
     say: Callable[[str], None] = print,
 ) -> int:
     """Plans the cases of `cities` not yet in `log`, one city at a time:
@@ -709,14 +745,23 @@ def run_cities(
     city's one zone may be downloaded (at most `max_downloads` in this run,
     after a free slot of Overpass), the rest. Every case is planned as the
     API plans it and appended to `log` with `extra_doubled` and
-    `road_shares`. With `enrich`, fills those two into the imported runs of
-    the city whose area is here. Returns how many cases were planned."""
+    `road_shares`. With `enrich`, measures those two again for every run of
+    the city not measured this way yet (the imported ones) whose area is
+    here. `outlines` adds the cases of those JSON outline files
+    (`outline_cases`). Returns how many cases were planned."""
+    import numpy as np
     import osmnx as ox
     from route_engine import seed_catalog
-    from route_engine.network import OsmnxSource
-    from route_engine.optimizer import SHAPE_POINTS, planned_distance, required_area
-    from route_engine.retracing import doubled_share as engine_doubled_share
+    from route_engine.nearby_starts import ShapeJob, plan_nearby
+    from route_engine.network import OsmnxSource, twice_drawn
+    from route_engine.optimizer import (
+        SHAPE_POINTS,
+        planned_distance,
+        required_area,
+        tilt_limit,
+    )
     from route_engine.shapes import get_shape
+    from route_engine.shapes.outline import read_outline
     from route_engine.stops import union
     from route_engine.words import compose
 
@@ -729,11 +774,33 @@ def run_cities(
     downloads = 0
     planned = 0
 
+    outline_files: dict[str, Any] = {}
+
     def outline_of(case: Case) -> tuple[list[Any], Any]:
+        if case.outline is not None:
+            if case.outline not in outline_files:
+                outline_files[case.outline] = read_outline(Path(case.outline))
+            return outline_files[case.outline](SHAPE_POINTS), None
         if case.style is None:
             return get_shape(case.shape)(SHAPE_POINTS), None
         word = compose(case.shape, style=case.style)  # type: ignore[arg-type]
         return list(word.points), word
+
+    def outline_planner(case: Case) -> Callable[[Any, LatLon], Any]:
+        # As the CLI plans `--outline FILE` with the nearby starts: the
+        # outline's points as the shape, upright within the usual tilt.
+        outline, _ = outline_of(case)
+
+        def plan_outline(_: Any, start: LatLon) -> Any:
+            job = ShapeJob(
+                tuple(outline),
+                case.shape,
+                case.distance_m,
+                max_tilt_deg=tilt_limit(case.shape),
+            )
+            return plan_nearby(job, start, source).plan.result
+
+        return plan_outline
 
     def area_of(case: Case, start: LatLon) -> tuple[float, float, float, float]:
         outline, word = outline_of(case)
@@ -741,12 +808,27 @@ def run_cities(
             outline, start, planned_distance(case.distance_m, False), word=word
         )
 
+    expected_cache: dict[str, float] = {}
+
     def expected_doubled(case: Case) -> float:
-        # What the shape itself draws twice (strokes), scale-free: the
-        # outline read as tiny lat/lon offsets (ADR-0118).
-        outline, _ = outline_of(case)
-        pseudo = [(0.001 * y, 0.001 * x) for x, y in outline]
-        return engine_doubled_share(pseudo) if len(pseudo) > 1 else 0.0
+        # The share of the shape's own length it draws twice on purpose
+        # (strokes out and back, ADR-0118), at the size planned: a side
+        # whose middle lies within TWICE_NEAR_M of a side going the other
+        # way, as the engine sees it (network.twice_drawn).
+        what = case.key.split("/", 1)[1]
+        if what not in expected_cache:
+            outline, _ = outline_of(case)
+            xy = np.array(outline, dtype=float)
+            sides = np.hypot(*np.diff(xy, axis=0).T)
+            total = float(sides.sum())
+            if total == 0:
+                expected_cache[what] = 0.0
+            else:
+                xy = xy * (planned_distance(case.distance_m, False) / total)
+                sides = np.hypot(*np.diff(xy, axis=0).T)
+                twice = twice_drawn(xy)
+                expected_cache[what] = float(sides[twice].sum() / sides.sum())
+        return expected_cache[what]
 
     roads_cache: dict[
         tuple[float, float, float, float], dict[frozenset[LatLon], str]
@@ -765,6 +847,7 @@ def run_cities(
             max(0.0, doubled_share(run["points"]) - expected_doubled(case)), 4
         )
         run["road_shares"] = road_shares(run["points"], roads_of(area))
+        run["measured"] = MEASURE_VERSION
 
     def plan_one(
         case: Case, start: LatLon, area: tuple[float, float, float, float]
@@ -772,8 +855,13 @@ def run_cities(
         seed_case = seed_catalog.Case(
             case.city, case.shape, case.distance_m, case.style
         )
-        run = seed_catalog.plan_case(seed_case, start, planner)
-        run["source"] = "TASK-419"
+        if case.outline is None:
+            run = seed_catalog.plan_case(seed_case, start, planner)
+            run["source"] = "TASK-419"
+        else:
+            run = seed_catalog.plan_case(seed_case, start, outline_planner(case))
+            run["source"] = OUTLINE_SOURCE
+            run["outline"] = Path(case.outline).name
         if drawn(run):
             measure(run, case, area)
         append_run(log, run)
@@ -784,7 +872,7 @@ def run_cities(
         say(f"{case.key}: {what}, {run['seconds']:.0f} s")
 
     for city in cities:
-        all_cases = plan([city])
+        all_cases = plan([city]) + outline_cases([city], outlines)
         todo = [c for c in all_cases if c.key not in done]
         areas = {c.key: area_of(c, city.square) for c in all_cases}
         here = [c for c in todo if source.is_cached(areas[c.key])]
@@ -819,12 +907,24 @@ def run_cities(
             to_enrich = [
                 r
                 for r in runs
-                if r["city"] == city.name and drawn(r) and "road_shares" not in r
+                if r["city"] == city.name
+                and drawn(r)
+                and r.get("measured") != MEASURE_VERSION
             ]
             enriched = 0
             for run in to_enrich:
+                outline = run.get("outline")
+                if outline is not None:
+                    found = [f for f in outlines if f.name == outline]
+                    if not found:
+                        continue
+                    outline = str(found[0])
                 case = Case(
-                    run["city"], name_of(run), run["distance_m"], run.get("style")
+                    run["city"],
+                    name_of(run),
+                    run["distance_m"],
+                    run.get("style"),
+                    outline,
                 )
                 area = area_of(case, city.square)
                 if not source.is_cached(area):
@@ -855,7 +955,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--enrich",
         action="store_true",
-        help="with --run: fill retraced and road shares into imported runs",
+        help="with --run: measure retraced and road shares in older runs too",
     )
     p.add_argument(
         "--import-log",
@@ -883,6 +983,12 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--overpass-url", help="a mirror of Overpass instead of overpass-api.de"
     )
+    p.add_argument(
+        "--outlines",
+        type=Path,
+        metavar="DIR",
+        help="with --plan or --run: also the JSON outlines of this folder (TASK-418)",
+    )
     p.add_argument("--log", type=Path, default=DEFAULT_LOG)
     p.add_argument("--kept", type=Path, default=DEFAULT_KEPT)
     p.add_argument("--out", type=Path, default=DEFAULT_SEED)
@@ -897,8 +1003,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     except ValueError as exc:
         print(exc, file=sys.stderr)
         return 2
+    outlines = sorted(args.outlines.glob("*.json")) if args.outlines else []
     if args.plan:
-        cases = plan(cities)
+        cases = plan(cities) + outline_cases(cities, outlines)
         for c in cases:
             print(c.key)
         print(f"{len(cases)} cases in {len(cities)} cities", file=sys.stderr)
@@ -921,6 +1028,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             max_downloads=args.max_downloads,
             overpass_url=args.overpass_url,
             enrich=args.enrich,
+            outlines=outlines,
         )
         print(f"{planned} cases planned")
     runs = read_runs(args.log)

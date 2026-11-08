@@ -392,6 +392,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (`feat/TASK-380-roller-vehicle-thresholds`, `game_rules.speed_limits`;
   seconda precisazione di ADR-0324). Vanno sul server con la 0055.
 
+- **TASK-413 — Ciaspole, «Snowshoes» ❄️** (2026-11-08; numeri dal
+  Coordinatore, ADR-0342). Parte 0, solo documenti. Al banco, una forma di
+  0,5–3 km piazzata libera sulla neve come sull'acqua (`water_fit`, senza
+  cambiarlo), fuori da pendii oltre 25°, boschi, ruscelli, piste, rocce e
+  paesi, entra 48 volte su 60 in cinque posti di montagna (60 su 60 coi
+  boschi), in meno di un secondo. Scelte dell'utente del 2026-11-08:
+  - «Snowshoes» ❄️, da 0,5 a 3 km;
+  - senza boschi (la proposta li teneva);
+  - l'avviso valanghe al primo «Start» e la riga sotto ogni percorso,
+    approvati in cinque lingue;
+  - nel gioco come Hike, acceso appena pronto.
+
+  Prossimo: le liste di A1 (la neve nel motore) e A2 (contratto, API,
+  migrazione, profilo nascosto) al Coordinatore, poi B (app).
+  `tasks/TASK-413.md`, `sports/snowshoes.md`.
+
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
   anche le vecchie»; testi nuovi approvati il 2026-11-05. Parte A (API +

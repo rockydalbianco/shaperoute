@@ -1,0 +1,213 @@
+# TASK-413 — Ciaspole: forme piccole libere sulla neve
+
+**Stato**: In corso — parte 0 (misure e scelte) in PR; poi A1, A2, B.
+**Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
+`feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
+`feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
+Coordinatore (2026-11-08) · sessione dello sport, avviata dal «Coordinatore
+Sport»
+
+## Obiettivo
+
+Chi va con le ciaspole sceglie «Snowshoes» ❄️ e riceve una **forma piccola,
+da 0,5 a 3 km, piazzata libera sulla neve**: non su una rete di strade, ma
+su prati e pascoli dove si può camminare, lontano da pendii ripidi, piste,
+rocce e paesi. Prima del primo «Start» vede un avviso di sicurezza. Può
+anche registrare senza forma. La traccia diventa il disegno nel Feed, va in
+Apple Salute, Health Connect e Strava.
+
+## Contesto
+
+- L'utente il 2026-11-07: «SI ANCHE FORME LIBERE SULLA NEVE PIÙ PICCOLE».
+  Le ciaspole non sono solo «Record only» (TASK-375, ADR-0319): hanno anche
+  forme, più corte di quelle degli altri sport.
+- Sulla neve non c'è una rete: il modello è quello della canoa e del nuoto
+  (`water_fit.py`, ADR-0154, TASK-323). **La forma piazzata è il
+  percorso**, dentro un'area permessa, raggiunta da un punto da cui si
+  entra a piedi.
+- Le misure sono in `docs/sports/snowshoes.md`.
+
+Da leggere: `docs/sports/COME-AGGIUNGERE.md`, `docs/sports/CONDIVISO.md`,
+`docs/sports/snowshoes.md`, ADR-0154 (la forma sull'acqua), ADR-0283 (il
+nuoto e il suo avviso), ADR-0319 («Record only»), ADR-0300 (le quote).
+
+## Cosa fare
+
+### Parte 0 — misura e proposta (solo documenti)
+
+1. Col banco, un giro per volta, `nice -n 10`: la forma libera di
+   `water_fit` con la neve al posto dell'acqua (`out/snow/snow.py`), sulle
+   due zone di montagna del banco e su tre posti da ciaspole, a 0,5–3 km.
+   Varianti di pendenza, boschi, ruscelli, aree protette.
+2. Le misure in `docs/sports/snowshoes.md`, ADR-0342 in DECISIONS.
+3. Le scelte dell'utente, una per volta (qui sotto).
+4. La lista della parte A al Coordinatore, con il numero della migrazione.
+
+### Parte A — la neve nel motore, poi contratto e API (dopo le scelte)
+
+Una forma libera fuori dall'acqua non è «file nuovi più una riga»: il
+motore oggi conosce due modi di disegnare, sulla rete e sull'acqua, e
+l'API distingue l'acqua in sei punti (`WATER_ACTIVITIES`). Proposta: due
+PR, così i file restano bloccati poco.
+
+**A1 — la neve nel motore** (`feat/TASK-413-a1-snow-engine`), senza
+contratto né API:
+
+```
+services/route-engine/route_engine/heights.py          (nuovo: le quote dalle tegole Terrarium, in cache; il modulo condiviso di ADR-0300 G, da accordare con TASK-347 tramite il Coordinatore)
+services/route-engine/route_engine/snow.py             (nuovo: filtro Overpass, l'area di neve come water.WaterArea, i punti da cui si entra, le regole di snowshoes.md)
+services/route-engine/route_engine/snowshoeing.py      (nuovo: plan_snowshoeing, come paddling.plan_paddling; la verifica sulla neve)
+services/route-engine/route_engine/activities/snowshoeing.py  (nuovo: 0,5–3 km, on_snow)
+services/route-engine/route_engine/activities/__init__.py     (una riga)
+services/route-engine/route_engine/activities/base.py  (il campo on_snow)
+services/route-engine/route_engine/models.py           (SNOW_ACTIVITIES ricavato dal registro; FREE_ACTIVITIES = acqua + neve)
+services/route-engine/route_engine/__main__.py         (il ramo della neve nella riga di comando)
+services/route-engine/tests/test_snow.py, test_snowshoeing.py, test_heights.py  (nuovi, con elementi e quote finti: niente rete)
+services/route-engine/tests/test_sport_registry.py     (la lista «aggiunte da allora»)
+services/api/shaperoute_api/route_store.py             (SNOW_ONLY fuori dall'impronta, come DRAWN_WATER_ONLY)
+docs/tasks/TASK-413.md, docs/STATUS.md, docs/sports/snowshoes.md
+```
+
+- `water_fit.py` e `water.py` **non cambiano**: canoa e nuoto restano
+  identici (banco `compare --same`, i nove percorsi fissi).
+- L'impronta del motore resta se `snow.py`, `snowshoeing.py` e
+  `heights.py` stanno fuori come `DRAWN_WATER_ONLY`; i file toccati del
+  registro e di `models.py` vanno provati con `SAME_ROUTES_AS`.
+- Se `activities/snowshoeing.py` entra nel registro, il contratto deve
+  conoscerla nella stessa PR (`test_sport_registry` del contratto): allora
+  A1 porta anche le righe del contratto di A2. Lo decide la sessione A1 col
+  Coordinatore, guardando il test.
+
+**A2 — contratto, API, profilo nascosto** (`feat/TASK-413-a2-snowshoes-api`),
+sulla lista della 380-A:
+
+```
+packages/shared-types/src/sports/snowshoeing.ts                (nuovo)
+packages/shared-types/src/sports/index.ts                      (una riga)
+packages/shared-types/fixtures/route-request-snowshoeing.json  (nuovo)
+packages/shared-types/fixtures/contract.json, reads.json, run-activities.json
+packages/shared-types/test/snowshoeing.test.ts                 (nuovo), sportRegistry.test.ts
+services/api/shaperoute_api/sports/snowshoeing.py              (nuovo: Strava «Snowshoe», GPX, nessun record)
+services/api/shaperoute_api/sports/__init__.py                 (una riga)
+services/api/shaperoute_api/snowshoeing.py                     (nuovo: la neve in <cache>/snow/ e le quote in <cache>/heights/, Overpass a un posto nuovo)
+services/api/shaperoute_api/jobs.py                            (il ramo della neve, come l'acqua)
+services/api/shaperoute_api/activity_graphs.py, errors.py, way_back.py, route_archive.py
+                                                               (acqua → FREE_ACTIVITIES dove conta «niente rete»)
+services/api/shaperoute_api/activities.py                      (un nome nel Literal)
+services/api/shaperoute_api/reads.py                           (una riga)
+services/api/shaperoute_api/game_rules.py                      (con la camminata e Hike: scelta 5)
+services/api/migrations/00XX_snowshoeing.sql                   (nuovo: CHECK di runs, favorites, group_runs)
+services/api/tests/test_snowshoeing_api.py                     (nuovo)
+services/api/tests/test_sport_registry_api.py, test_game_rules.py, test_record_only.py,
+    test_favorites.py, test_paddling.py, test_hiking_api.py, test_walking_api.py (le liste)
+apps/mobile/src/sports/snowshoeing.ts                          (nuovo: il profilo, nascosto)
+apps/mobile/src/sports/index.ts                                (una riga)
+apps/mobile/src/search/searchFilters.ts                        (l'esclusione, se serve ancora)
+apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts,
+    src/route/distanceMiles.test.ts, src/api/accounts.test.ts  (le liste)
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json  (da scripts/watch-sports.sh)
+apps/mobile/targets/watch/{de,en,es,fr,it}.lproj/Localizable.strings    (da scripts/watch-texts.sh)
+apps/mobile/assets/engine/engine.zip                           (rifatto, ultimo commit)
+docs/tasks/TASK-413.md, docs/STATUS.md, docs/sports/snowshoes.md,
+    docs/DECISIONS.md (precisazione di ADR-0342)
+```
+
+- Il numero della migrazione lo dà il Coordinatore (in `main` l'ultima è
+  0055).
+- Nessuna zona in memoria: niente grafo. La neve e le quote si scaricano
+  alla prima richiesta di un posto, come l'acqua.
+- `draw_examples.py` e `paddle_examples.py`: niente esempi di neve in
+  questa parte (gli esempi del server sono un passo a parte, col sì
+  dell'utente).
+- Prima del codice, ogni sessione conferma la sua lista al Coordinatore.
+
+### Parte B — app (dopo A)
+
+Il profilo completo (`settings/sport.ts`, l'emoji in
+`screens/RunNoRouteButton.tsx`, i testi in `i18n`, il campo `caution`),
+l'avviso di sicurezza al primo «Start» come quello della canoa e del nuoto
+(un file suo, `snow/safetyNotice.ts`), «Record your day» se lo sport resta
+anche «Record only», i numeri di fine giro (dislivello, tempo). Apple
+Salute: nessun tipo «ciaspole» (si propone `hiking`, da verificare); Health
+Connect: `EXERCISE_TYPE_SNOWSHOEING`, da verificare sulla libreria. Solo
+JavaScript: l'impronta iOS non si muove. La lista al Coordinatore prima del
+codice.
+
+## Scelte dell'utente
+
+Una alla volta, ciascuna con la proposta dell'agente, il 2026-11-08.
+Tutte come la proposta, tranne la terza:
+
+1. **Nome ed emoji**: «Snowshoes» ❄️ (Ciaspole, Schneeschuhe, Raquettes,
+   Raquetas). Un'emoji delle ciaspole non esiste.
+2. **Le distanze**: da 0,5 a 3 km.
+3. **Dove sta la forma**: fino a 25° di pendenza, **senza boschi** (la
+   proposta li teneva dentro). Fuori anche: 30 m attorno ai pendii oltre
+   30°, piste, impianti, rocce, ghiacciai, paesi, ruscelli, riserve e
+   biotopi. I parchi restano dentro. Al banco così entrano **48 forme su
+   60**: a 3 km spesso non entrano (Bondone già da 2 km); l'errore dice a
+   quale distanza la forma entra.
+4. **I testi**, approvati come proposti (il «tu» dell'app):
+
+   | | en | it | de | fr | es |
+   |---|---|---|---|---|---|
+   | Sport | Snowshoes | Ciaspole | Schneeschuhe | Raquettes | Raquetas |
+   | Pulsante | Snowshoe without a route | Ciaspola senza percorso | Ohne Route auf Schneeschuhen | Raquettes sans parcours | Raquetas sin ruta |
+   | Sotto ogni percorso | Off-trail on snow: check the avalanche bulletin first. | Fuori sentiero sulla neve: prima guarda il bollettino valanghe. | Abseits der Wege im Schnee: Schau zuerst in den Lawinenlagebericht. | Hors sentier sur la neige : consulte d'abord le bulletin d'avalanches. | Fuera de sendero en la nieve: consulta antes el boletín de aludes. |
+   | Titolo dell'avviso | Before you head out on snowshoes | Prima di uscire con le ciaspole | Bevor du mit Schneeschuhen losgehst | Avant de partir en raquettes | Antes de salir con raquetas |
+   | Avviso, 1 | Check the avalanche bulletin and the weather before you go. MuW does not know them. | Controlla il bollettino valanghe e il meteo prima di partire. MuW non li conosce. | Prüf vor dem Start den Lawinenlagebericht und das Wetter. MuW kennt sie nicht. | Consulte le bulletin d'avalanches et la météo avant de partir. MuW ne les connaît pas. | Consulta el boletín de aludes y el tiempo antes de salir. MuW no los conoce. |
+   | Avviso, 2 | The route avoids slopes over 25°, woods, pistes and rock. That does not make it safe: an avalanche can come from above. | Il percorso evita i pendii oltre 25°, i boschi, le piste e le rocce. Questo non lo rende sicuro: una valanga può arrivare dall'alto. | Die Route meidet Hänge über 25°, Wälder, Pisten und Fels. Sicher ist sie dadurch nicht: Eine Lawine kann von oben kommen. | Le parcours évite les pentes de plus de 25°, les bois, les pistes et les rochers. Cela ne le rend pas sûr : une avalanche peut venir d'en haut. | La ruta evita las pendientes de más de 25°, los bosques, las pistas y las rocas. Eso no la hace segura: un alud puede venir desde arriba. |
+   | Avviso, 3 | Stay off the pistes and follow the local rules: parks, reserves, wildlife quiet zones, private land. MuW does not know them all. | Non camminare sulle piste e rispetta le regole del posto: parchi, riserve, zone di quiete per la fauna, terreni privati. MuW non le conosce tutte. | Geh nicht auf Pisten und halte dich an die Regeln vor Ort: Parks, Schutzgebiete, Wildruhezonen, Privatgrund. MuW kennt nicht alle. | Ne marche pas sur les pistes et respecte les règles locales : parcs, réserves, zones de quiétude de la faune, terrains privés. MuW ne les connaît pas toutes. | No camines por las pistas y respeta las normas del lugar: parques, reservas, zonas de tranquilidad para la fauna, terrenos privados. MuW no las conoce todas. |
+   | Avviso, 4 | Never go alone, tell someone where you are going, and turn back if the snow or the weather changes. | Non andare da solo, di' a qualcuno dove vai e torna indietro se la neve o il tempo cambiano. | Geh nicht allein, sag jemandem, wohin du gehst, und kehr um, wenn sich Schnee oder Wetter ändern. | Ne pars pas seul, dis à quelqu'un où tu vas et fais demi-tour si la neige ou le temps changent. | No vayas solo, dile a alguien adónde vas y da la vuelta si la nieve o el tiempo cambian. |
+
+   L'avviso si vede al primo «Start» delle ciaspole, con «I understand» e
+   «Not now», come per canoa e nuoto (ADR-0283).
+5. **Gioco e record**: come Hike. I metri contano nel gioco come quelli di
+   una corsa, con gli stessi controlli; niente tempi migliori e niente
+   record personali.
+6. **Quando si accende**: appena pronte. «ready» diventa vero quando il
+   server ha la parte A e l'app la parte B. Server, migrazione e
+   aggiornamento di produzione restano ciascuno col sì dell'utente.
+
+**Deciso dall'agente su delega dell'utente**:
+
+- L'attività nel contratto si chiama `snowshoeing`, con la forma in «-ing»
+  delle altre.
+- La forma libera sulla neve usa `water_fit.fit_shape` così com'è, con
+  un'area fatta dalla neve: canoa e nuoto non cambiano.
+- Le regole della neve sono quelle di `snowshoes.md` («Il modello»), con i
+  boschi fuori (scelta 3) e i ruscelli fuori (sotto la neve possono
+  cedere; al banco non costa nulla).
+- Le riserve e i biotopi (`boundary=protected_area` e
+  `leisure=nature_reserve`, tranne `protect_class` 2 e 5, cioè i parchi)
+  stanno fuori: al banco non costa nulla.
+
+## Criteri di accettazione
+
+- [x] 0: le misure della neve sono in `snowshoes.md`; ADR-0342 è scritto.
+- [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-08).
+- [ ] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
+      della migrazione.
+- [ ] A1: una forma sulla neve di prova sta fuori da pendii, boschi, piste e
+      paesi, parte da un punto raggiungibile a piedi; test deterministici
+      senza rete; canoa e nuoto identici al banco (`compare --same`).
+- [ ] A2: lo sport è nel contratto e nell'API, nascosto nell'app; il server
+      scarica la neve di un posto nuovo.
+- [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
+      e i testi sono in cinque lingue.
+
+## File toccati
+
+Parte 0 (`docs/TASK-413-0-snowshoes`):
+
+```
+docs/tasks/TASK-413.md        (nuovo)
+docs/sports/snowshoes.md      (nuovo)
+docs/DECISIONS.md             (solo ADR-0342, in fondo)
+docs/STATUS.md                (righe proprie)
+docs/INDEX.md                 (una riga)
+```
+
+Parti A1, A2 e B: le liste qui sopra, da confermare al Coordinatore prima
+del codice. `docs/sports/CONDIVISO.md` lo tiene il Coordinatore Sport: la
+voce della neve gli è mandata, non scritta da qui.

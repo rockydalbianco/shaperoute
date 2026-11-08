@@ -173,7 +173,9 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
 4. **Se parte da sola a ogni registrazione** — **deciso dall'utente il
    2026-11-09** («Sì, col pulsante»): no, ogni volta col pulsante; nessuna
    impostazione per farla partire da sola.
-5. **Come si manda** — proposta: il foglio di condivisione del telefono.
+5. **Come si manda** — **deciso dall'utente il 2026-11-09** («Sì, il
+   foglio»): il foglio di condivisione del telefono (`Share` di React
+   Native: WhatsApp, SMS, Mail, «Copia»), con una riga breve e il link.
 6. **Chi può condividere** — proposta: serve l'account (il link è legato a
    chi lo crea e si ferma anche da un altro telefono).
 7. **Piscina e palestra** (parte D) — proposta: dopo, solo i dati.

@@ -248,3 +248,11 @@ l'italiano approvato dall'utente, le altre lingue dicono le stesse cose.
   «Set 2 of 4» coi pallini, «✓ Log set» più alto su una riga sua, «Then:
   Dips 3×10». L'uscita (build o OTA) la decide il Coordinatore col sì
   dell'utente.
+- 2026-11-08: **l'uscita** (dal Coordinatore). La palestra completa (A, B,
+  C, D, E, F) va in produzione con un OTA dedicato dopo che C, D e F sono in
+  `main` e il server ha la migrazione delle schede (0058 o il primo libero)
+  e l'endpoint del calendario; il sito della privacy si ripubblica prima
+  dell'OTA; ogni passo col sì dell'utente, chiesto dal Coordinatore. Sul
+  telefono arriva a tutti con l'OTA (anche a chi ha la 1.0.1) e nella build
+  1.0.3; la 1.0.2 (TASK-407) è solo screenshot per scelta dell'utente: la
+  palestra anche lì è un cambio a TASK-407, che gli chiede il Coordinatore.

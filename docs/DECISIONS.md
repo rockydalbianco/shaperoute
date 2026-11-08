@@ -480,6 +480,7 @@ lasciando le righe d'indice.
 - ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
 - ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
 - ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy · 2026-11-08 · Attiva
+- ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1159,3 +1160,30 @@ dell'utente.
    scheda, quando l'API lo dà. Il tempo nelle zone resta sul telefono.
 6. **Privacy** dell'app e del sito con i testi approvati (scelta 7), datata 8
    novembre 2026: da ridatare al giorno del merge se entra dopo.
+
+## ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B3a2, decisa dall'agente su
+delega dell'utente («Pulsante e preferiti»); lista dei file approvata dal
+Coordinatore (local_3f55a0e9). In `main` con la #993.
+
+**Contesto**: i preferiti devono stare sull'orologio senza che l'utente li
+mandi uno per uno, ma l'API li dà senza direzioni: ognuno va scaricato
+intero e le sue direzioni chieste, come al via di una corsa.
+
+**Decisione**:
+1. **`useWatchFavorites`**, montato in `favoritesDoor.ts`, a ogni cambio
+   della lista dei preferiti (con l'orologio pronto e l'account aperto)
+   manda all'orologio quelli che non ha («route», `favorite: true`) e alla
+   fine le chiavi di tutti («routes»): l'orologio lascia andare i tolti.
+2. **Uno alla volta**: scaricato, direzioni, consegnato a WatchConnectivity,
+   poi il successivo; mai due giri insieme, un cambio durante un giro ne fa
+   partire un altro dopo.
+3. **Senza rete si ferma** dove è arrivato: le chiavi già mandate stanno in
+   un file (`watchSent.ts`, scritto dopo ognuna), il resto parte al cambio o
+   all'apertura successiva. Un percorso che l'orologio non può tenere non si
+   riprova.
+
+**Conseguenze**: chi ha molti preferiti li vede arrivare sull'orologio uno
+dopo l'altro, la prima volta. Se l'app dell'orologio viene reinstallata il
+telefono non lo sa: i preferiti tornano al cambio successivo della lista.

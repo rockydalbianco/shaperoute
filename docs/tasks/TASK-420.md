@@ -1,8 +1,8 @@
 # TASK-420 — La pagina del catalogo in «Explore» (grande catalogo, parte C)
 
-**Stato**: In lavorazione · mockup approvato dall'utente il 2026-11-08
-(«Sì, approvo»); proposta in #952; il codice in #954 (bozza fino al via
-del Coordinatore sulla lista dei file)
+**Stato**: Done · 2026-11-08 · mockup approvato dall'utente («Sì,
+approvo»); codice in `main` con la #954 (`1df7dbf5`, mergiata dal
+Coordinatore); documenti in #952
 **Fase**: 5 · **Branch**: `docs/TASK-420-catalog-page` (documenti), poi
 `feat/TASK-420-catalog-page` (codice)
 **Dipende da**: TASK-418 (forme e parole nuove: i nomi e le categorie),
@@ -194,4 +194,18 @@ che il registro di `TabSwipeOwners.test.ts` deve elencare.
 
 ## Esito
 
-*(a fine task)*
+**2026-11-08, Done.** La pagina «Catalog» è in `main` (#954, `1df7dbf5`):
+la scheda d'ingresso sotto la ricerca di «Explore», la griglia a due
+colonne a pagine di 40, la ricerca per nome, i cinque filtri in un foglio,
+l'ordine Nearest · Best · Shortest, il cuore e «Start» su ogni scheda; i
+dati del seme di oggi (350 percorsi di 23 città) in `catalog.json`,
+scritto da `apps/mobile/scripts/catalog-data.mjs`. Test Jest di dati,
+filtri, griglia, scheda, foglio, ingresso e pagina verdi; CI verde. Tre
+test esistenti toccati (la scheda è un bottone in più, i chip uno scroll
+orizzontale). **Non provata nel simulatore**: il disco interno era sotto
+il limite dei 10 GB; la prova sul telefono arriva con l'OTA, che il
+Coordinatore chiede all'utente. **Rimandato**: la partenza immediata da
+«Start» sulla scheda (vuole `App.tsx`); i dati paginati dall'API oltre
+mezzo megabyte di `catalog.json`; le categorie dal catalogo delle forme
+quando TASK-418 le scrive; la rigenerazione di `catalog.json` da chi cambia
+il seme (TASK-419, #966), come dice «I dati».

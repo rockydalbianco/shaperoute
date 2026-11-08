@@ -171,8 +171,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `apps/mobile/scripts/catalog-data.mjs`: 350 percorsi di 23 città), i
   filtri sul telefono. Proposta in #952; codice in #954 (bozza), con i
   test Jest di dati, filtri, griglia, scheda, foglio e pagina verdi in
-  locale. Prossimo: il via del Coordinatore sulla lista, #954 fuori bozza
-  a CI verde, poi il merge e l'OTA col sì dell'utente. `tasks/TASK-420.md`.
+  locale. **In `main` il 2026-11-08** (#954, `1df7dbf5`, mergiata dal
+  Coordinatore; CI verde). Non provata nel simulatore (disco interno sotto
+  i 10 GB): la prova sul telefono arriva con l'OTA, che il Coordinatore
+  chiede all'utente. Quando TASK-419 cambia il seme (#966), chi lo cambia
+  rilancia `catalog-data.mjs`. Seguiti nel task file: la partenza immediata
+  da «Start» (`App.tsx`), l'API paginata oltre mezzo megabyte. TASK-420
+  Done. `tasks/TASK-420.md`.
 - **TASK-415 — Ski touring, lo scialpinismo «Record only»** (2026-11-08;
   numeri dal Coordinatore, ADR-0344 **proposto**; sessione avviata dal
   Coordinatore Sport). Parte 0, solo documenti: disegno e costo delle

@@ -40,9 +40,11 @@ Al posto della fascia d'acqua c'è la **neve su cui si cammina**:
   minore, carrareccia o sentiero dentro la neve permessa. La partenza è il
   più vicino che regge la forma, entro 2 km da dove si chiede.
 
-È un prototipo del banco (`out/TASK-413/snow.py`, ignorato da git), non codice
-del motore: `water_fit.fit_shape` riceve un `WaterArea` fatto con la neve
-al posto dell'acqua, senza cambiare una riga del motore.
+Nella parte 0 era un prototipo del banco (`out/TASK-413/snow.py`, ignorato
+da git); dalla parte A1 è il motore: `route_engine/snow.py` costruisce la
+neve come `water.WaterArea`, `snowshoeing.plan_snowshoeing` la passa a
+`water_fit.fit_shape` così com'è, e le pendenze vengono da
+`route_engine/heights.py`, il modulo delle quote condiviso (ADR-0300 G).
 
 ## Le misure (parte 0, 2026-11-07)
 
@@ -187,8 +189,48 @@ segnati o fuori a seconda delle regole del parco: l'avviso lo dice.
   modulo condiviso per il dislivello: la parte A si accorda con lui tramite
   il Coordinatore invece di farne un altro.
 
-## Da rifare nella parte A
+## La parte A1 sul motore vero (2026-11-08)
 
-- Il banco sul motore vero, con la neve scaricata dal filtro della parte A,
-  sugli stessi cinque posti, e canoa e nuoto identici (`compare --same`).
-- Un posto senza neve permessa vicino (una città): l'errore giusto.
+Banco sul Mac, branch `feat/TASK-413-a1-snow-engine`, `nice -n 10`, un
+comando per volta: `out/TASK-413/engine_bench.py` (ignorato da git), con la
+neve scaricata dal filtro del motore (`snow.SNOW_QUERY`) e le quote di
+`heights.py`, in cache in `out/TASK-413/cache/`. Overpass ha risposto 502
+più volte (Asiago, Rolle, Milano): lo script riprova dopo 90 s.
+
+- **Canoa e nuoto non cambiano.** Contro `main`, con la stessa cache: 27
+  percorsi di canoa identici punto per punto (`compare --same`: «Nothing
+  worse»). I nove percorsi fissi di `test_same_routes.py` (corsa, bici,
+  canoa, nuoto) hanno gli stessi hash: l'impronta resta (`SAME_ROUTES_AS`,
+  aggiunta di ADR-0342).
+- **Le forme sulla neve**, variante scelta (`snow.CHOSEN`), cerchio, cuore e
+  stella a 0,5, 1, 2 e 3 km:
+
+  | Posto | Neve permessa | Forme entro il 10% | Spostamento (mediana, max) | Pendenza (98° percentile, max) | Salita (max) | Tempo (max) |
+  |---|---|---|---|---|---|---|
+  | Fiemme | 33% | 10 su 12 | 377 m, 440 m | 18,1° | 157 m | 3,2 s |
+  | Asiago | 50% | 12 su 12 | 502 m, 1863 m | 11,0° | 67 m | 3,0 s |
+  | Bondone | 13% | 7 su 12 | 439 m, 1349 m | 23,4° | 146 m | 3,4 s |
+  | Lavazè | 25% | 9 su 12 | 735 m, 1999 m | 24,5° | 165 m | 1,7 s |
+  | Rolle | 23% | 10 su 12 | 488 m, 1269 m | 23,5° | 181 m | 1,4 s |
+
+  **48 su 60, come il prototipo**, con le stesse forme che mancano: a 3 km
+  (tranne Asiago e la stella a Fiemme) e al Bondone da 2 km. L'errore dice
+  la distanza a cui la forma entra («the heart does not fit at 3 km on open
+  snow here: it fits at 2.4 km»). Il tempo comprende la lettura della neve
+  in cache e l'area (0,8–2,2 s per riquadro).
+- **Milano (Duomo), il posto senza neve:** 0 su 12. Il primo giro ne dava 6
+  nel Parco Sempione: un parco di città disegnato come `relation`, che il
+  filtro del prototipo non chiedeva. Il filtro chiede ora anche le
+  relation di parchi, giardini, golf e campi. Due cose per A2:
+  - **una città è lenta**: 83.000 elementi, 10 s per l'area e fino a 44 s
+    per una richiesta, che cerca in briciole di neve permessa (9% del
+    riquadro) a ogni scala e inclinazione. L'API può dire prima «niente
+    neve» quando attorno alla partenza la neve permessa è poca;
+  - **l'errore può proporre meno di 0,5 km** («it fits at 0.2 km»):
+    `errors.py` dell'API scarta già le distanze sotto il minimo per
+    l'acqua (`WATER_ACTIVITIES`), va esteso alla neve (`FREE_ACTIVITIES`).
+
+## Da rifare nella parte A2
+
+- La neve scaricata dal server alla prima richiesta di un posto, e i tempi
+  sul server (la città sopra).

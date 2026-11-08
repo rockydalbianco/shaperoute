@@ -92,6 +92,12 @@ ANCHORED_ONLY = frozenset({"anchored.py", "stroke_match.py"})
 # (TASK-369, ADR-0313), never kept either: changing them keeps the routes
 # kept; a test fails when a module that draws other routes imports one.
 DRAWN_WATER_ONLY = frozenset({"drawn_water.py"})
+# Files of the engine that draw only on the snow (TASK-413, ADR-0342):
+# snowshoeing, no route of which is kept yet, and the heights, which only
+# the snow reads for now (TASK-347 part G is to read them for every route:
+# then they leave this set). Changing them keeps the routes kept; a test
+# fails when a module that draws other routes imports one.
+SNOW_ONLY = frozenset({"heights.py", "snow.py", "snowshoeing.py"})
 # The walk (TASK-371, ADR-0315): the API's own activity, drawn as a run on the
 # foot network, so a walk is a run kept. Changing it keeps the routes kept; a
 # test fails when a module that draws routes imports it.
@@ -126,6 +132,12 @@ SAME_ROUTES_AS: dict[str, str] = {
     "66509163156f": "54061c20df45",  # every route but a swim
     "07f13e87d494": "25b3163837e8",  # the swims
     "6b1ca82cd4e3": "1751ee7eca8a",  # the app's paddling examples
+    # TASK-413 A1: snowshoeing on the snow, in modules of its own (SNOW_ONLY)
+    # and a line of ENGINE_ONLY; every route of before drawn the same
+    # (ADR-0342).
+    "5e374d843dda": "66509163156f",  # every route but a swim
+    "4ad203b6a8ac": "07f13e87d494",  # the swims
+    "2bee8b8f1e4f": "6b1ca82cd4e3",  # the app's paddling examples
 }
 
 
@@ -148,7 +160,8 @@ def engine_fingerprint(folder: Path | None = None, swims: bool = False) -> str:
     the same code keeps what it drew. `folder`: the engine's own. Without
     `swims` the files that draw only swims are left out (SWIM_ONLY): the
     fingerprint of every route but a swim. The files of what is never kept
-    are always left out (ANCHORED_ONLY, DRAWN_WATER_ONLY), and the walk's,
+    are always left out (ANCHORED_ONLY, DRAWN_WATER_ONLY), the snow's
+    (SNOW_ONLY), and the walk's,
     which draws as a run (WALK_ONLY). An engine that only moved its code
     keeps the earlier fingerprint (SAME_ROUTES_AS)."""
     return same_routes_as(code_fingerprint(folder, swims))
@@ -158,7 +171,7 @@ def code_fingerprint(folder: Path | None = None, swims: bool = False) -> str:
     """The fingerprint of the engine's files as they are, before
     SAME_ROUTES_AS (engine_fingerprint)."""
     folder = Path(route_engine.__file__).parent if folder is None else folder
-    never_kept = NOT_ROUTES | ANCHORED_ONLY | DRAWN_WATER_ONLY | WALK_ONLY
+    never_kept = NOT_ROUTES | ANCHORED_ONLY | DRAWN_WATER_ONLY | SNOW_ONLY | WALK_ONLY
     left_out = never_kept if swims else never_kept | SWIM_ONLY
     digest = hashlib.sha256()
     for path in sorted(folder.rglob("*")):

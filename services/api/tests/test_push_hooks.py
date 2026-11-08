@@ -71,10 +71,16 @@ def people(client: TestClient, push: bool = True) -> tuple[Any, Any]:
 
 
 def drawing_of(
-    client: TestClient, headers: dict[str, str], tags: list[str] | None = None
+    client: TestClient,
+    headers: dict[str, str],
+    tags: list[str] | None = None,
+    expo: FakeExpo | None = None,
 ) -> str:
     run = _load("activity-request.json")
     client.put(f"/me/activities/{KEY}", json=run, headers=headers)
+    if expo is not None:
+        # The run may unlock shapes of the game (TASK-423): not these tests'.
+        expo.sent[:] = [m for m in expo.sent if m["data"]["kind"] != "shape_unlocked"]
     body: dict[str, Any] = {"title": "Sunday heart", "visibility": "everyone"}
     if tags is not None:
         body["tags"] = tags
@@ -113,7 +119,7 @@ def test_a_reaction_and_each_comment_are_told_to_the_owner(
     client: TestClient, expo: FakeExpo
 ) -> None:
     ada, bob = people(client)
-    drawing = drawing_of(client, ada)
+    drawing = drawing_of(client, ada, expo=expo)
     reaction = f"/drawings/{drawing}/reaction"
     assert client.put(reaction, json={"kind": "fire"}, headers=bob).is_success
     # Another kind the same day is the same news.
@@ -137,9 +143,9 @@ def test_a_tag_is_told_once_to_the_member_tagged(
     client: TestClient, expo: FakeExpo
 ) -> None:
     ada, bob = people(client)
-    drawing = drawing_of(client, ada, tags=[public_id(client, bob)])
+    drawing = drawing_of(client, ada, tags=[public_id(client, bob)], expo=expo)
     # Kept again with the same tag: nothing new.
-    drawing_of(client, ada, tags=[public_id(client, bob)])
+    drawing_of(client, ada, tags=[public_id(client, bob)], expo=expo)
     assert told(expo) == [(BOB_PHONE, "ada tagged you in a post.")]
     assert expo.sent[0]["data"] == {"kind": "tag", "drawing_id": drawing}
 
@@ -150,7 +156,7 @@ def test_nothing_is_told_with_push_notifications_off(
     ada, bob = people(client, push=False)
     client.post(f"/users/{public_id(client, ada)}/follow", headers=bob)
     client.post(f"/me/follow-requests/{public_id(client, bob)}/accept", headers=ada)
-    drawing = drawing_of(client, ada, tags=[public_id(client, bob)])
+    drawing = drawing_of(client, ada, tags=[public_id(client, bob)], expo=expo)
     client.put(f"/drawings/{drawing}/reaction", json={"kind": "wow"}, headers=bob)
     client.post(f"/drawings/{drawing}/comments", json={"text": "Nice"}, headers=bob)
     assert expo.sent == []
@@ -160,7 +166,7 @@ def test_nothing_is_told_between_blocked_people(
     client: TestClient, expo: FakeExpo
 ) -> None:
     ada, bob = people(client)
-    drawing = drawing_of(client, ada)
+    drawing = drawing_of(client, ada, expo=expo)
     # Ada blocks Bob (TASK-121): whatever reaches the database, nothing is
     # told, either way.
     block = client.put(f"/users/{public_id(client, bob)}/block", headers=ada)

@@ -104,6 +104,13 @@ giro: le 52 città italiane, Rovereto e le 10 in evidenza senza Overpass.
 
 ## Aggiornare il catalogo sul server (lo lancia l'utente, dopo il via)
 
+**Fatto il 2026-11-08 sera** («via server catalogo» del Coordinatore,
+utente «Sì, ok catalogo»), con la variante che porta solo `catalog/`:
+`git fetch && git checkout origin/main -- catalog/`, poi il riavvio
+dell'API; il log ha detto «155 recommended routes from catalog/seed». Il
+checkout del server resta a `8e898de5` per il codice, con `catalog/` di
+`6d140645` nell'indice.
+
 ```bash
 ssh root@188.245.9.220 'cd ~/shaperoute && git pull --ff-only && cd deploy && docker compose restart api && sleep 20 && docker compose logs --tail 50 api | grep -i "recommended routes"'
 ```

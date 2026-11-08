@@ -26,6 +26,8 @@ export function withoutRouteIcon(sport: Sport): string {
       return "🚲";
     case "mtb":
       return "🚵";
+    case "roller":
+      return "🛼";
     case "ski":
       return "⛷️";
     case "xc_ski":

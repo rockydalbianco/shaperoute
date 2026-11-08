@@ -4,6 +4,7 @@ import {
   durationText,
   runTimeText,
   USUAL_PACE_S_PER_KM,
+  USUAL_SKATE_S_PER_KM,
   USUAL_WALK_S_PER_KM,
 } from "./runTime";
 
@@ -71,4 +72,25 @@ test("an hour and more, and miles", () => {
 
 test("no distance, no line", () => {
   expect(runTimeText(null, averagePace([]), "km")).toBeNull();
+});
+
+test("a skate has its own pace, 4:00 a km before there is any (TASK-380)", () => {
+  expect(averagePace([]).skating).toEqual({ sPerKm: USUAL_SKATE_S_PER_KM, own: false });
+  expect(USUAL_SKATE_S_PER_KM).toBe(240);
+  expect(runTimeText(20000, { sPerKm: USUAL_SKATE_S_PER_KM, own: false }, "km")).toBe(
+    "≈ 1 h 20 min at 4:00/km (a usual pace)",
+  );
+  // 10 km in 33:20 and 20 km in 66:40: 3:20 a km, 18 km/h; runs and rides
+  // do not count, nor a skate left recording (10:00 a km) or one that was a
+  // ride (1:20 a km, 45 km/h).
+  const pace = averagePace([
+    run(10000, 2000, "inline_skating"),
+    run(20000, 4000, "inline_skating"),
+    run(5000, 1500),
+    run(20000, 2400, "cycling"),
+    run(5000, 3000, "inline_skating"),
+    run(5000, 400, "inline_skating"),
+  ]);
+  expect(pace.skating).toEqual({ sPerKm: 200, own: true });
+  expect(pace).toMatchObject({ sPerKm: 300, own: true });
 });

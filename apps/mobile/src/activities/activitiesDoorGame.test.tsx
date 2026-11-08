@@ -74,6 +74,11 @@ function api(worth: Record<string, unknown>) {
   const calls: string[] = [];
   const fetchFn = jest.fn(async (url: string, init?: RequestInit) => {
     const path = url.replace(URL, "");
+    // The figures of the post (TASK-410 C) go after each run saved: their
+    // own test is activitiesDoorStats.test.tsx.
+    if (path.endsWith("/stats")) {
+      return Response.json({}, { status: 200 });
+    }
     calls.push(`${init?.method ?? "GET"} ${path}`);
     if (init?.method === "PUT") {
       return Response.json(activities.activities[0], { status: 200 });

@@ -21,6 +21,8 @@ import {
   savePost,
 } from "../api/activities";
 import { type DrawingChoice, isSeen } from "../api/drawings";
+import { saveRunStats } from "../api/runStats";
+import { appBody } from "../body/bodyProfile";
 import { tellUnlocked } from "../game/unlockedRuns";
 import { t, tLater } from "../i18n";
 import { metresBetween } from "../map/coordinates";
@@ -44,6 +46,7 @@ import {
   type Waiting,
 } from "./outbox";
 import { type Drawn, type RecordedRun, recordedRun } from "./recordedRun";
+import { runStatsRequest } from "./runStatsOut";
 import { activityProblem, type ActivitiesState, useActivities } from "./useActivities";
 
 /** A run of this phone the API will not take (TASK-257), as «My
@@ -348,6 +351,22 @@ export function useActivitiesOf(
             const drawing = toDrawingOf(run);
             if (drawing !== null) {
               keepForDrawing({ owner, key: run.id, ...drawing });
+            }
+            // The figures of its post (TASK-410 C): its profile and its
+            // calories, counted with the body that stays on this phone.
+            // Once, outside the loop's wait: a post without them still shows.
+            const stats = runStatsRequest(
+              run.request,
+              {
+                activity: drawing?.activity ?? outcome.value.activity ?? null,
+                metres: outcome.value.distance_m,
+                seconds: outcome.value.duration_s,
+              },
+              appBody(),
+              new Date().getFullYear(),
+            );
+            if (stats !== null) {
+              void saveRunStats(baseUrl, token, run.id, stats, { fetchFn, key });
             }
             stopWaiting(owner, run.id);
             // The shape game (TASK-296): what the run unlocked, now that the

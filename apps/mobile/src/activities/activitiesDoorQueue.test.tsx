@@ -87,6 +87,11 @@ type Answer = { status: number; body?: unknown } | Error;
 function api(puts: Record<string, Answer | Answer[]>) {
   const sent: string[] = [];
   const fetchFn = jest.fn(async (url: string, init?: RequestInit) => {
+    // The figures of the post (TASK-410 C) go after each run saved: their
+    // own test is activitiesDoorStats.test.tsx.
+    if (url.endsWith("/stats")) {
+      return Response.json({}, { status: 200 });
+    }
     if (init?.method !== "PUT") {
       return Response.json(activities, { status: 200 });
     }

@@ -411,6 +411,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sulla soglia: «Sì, 35 e 28». Le soglie del Roller sono in PR
   (`feat/TASK-380-roller-vehicle-thresholds`, `game_rules.speed_limits`;
   seconda precisazione di ADR-0324). Vanno sul server con la 0055.
+  Soglie in `main` (#914). **Parte B in PR** (2026-11-06,
+  `feat/TASK-380-b-roller-app`): il Roller 🛼 nell'app, «Soon» finché il
+  server non ha la 0055. Profilo completo (testi in cinque lingue, energia
+  del Compendium, avviso, Apple 39 e Health Connect 60), il tempo stimato
+  col passo di chi pattina (4:00/km finché non ne ha, scelta dell'utente),
+  i record propri, i file FIT/GPX/TCX/Strava, i testi dell'orologio. Solo
+  JavaScript. Prossimo: il server (0055) col sì dell'utente, poi `ready`
+  in una PR piccola.
 
 - **TASK-413 — Ciaspole, «Snowshoes» ❄️** (2026-11-08; numeri dal
   Coordinatore, ADR-0342). Parte 0, solo documenti. Al banco, una forma di

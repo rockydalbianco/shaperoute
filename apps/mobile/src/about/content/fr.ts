@@ -11,7 +11,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "6 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "6 novembre 2026";
+const PRIVACY_UPDATED = "8 novembre 2026";
 
 const help: AboutDocument = {
   title: "Comment fonctionne MuW",
@@ -342,6 +342,7 @@ const privacy: AboutDocument = {
         "Une course enregistrée est privée, sauf si tu choisis autrement : seul ton compte la voit. Les autres membres voient sur ton profil les totaux de toutes tes courses enregistrées, distance et dénivelé, et tes records, à pied et à vélo, avec le temps et la date où tu les as faits : aussi ceux d'une course privée, qui ne s'ouvre pourtant pas. Elle reste jusqu'à ce que tu la supprimes de «Mes activités» ou que tu supprimes ton compte.",
         "Si tu choisis «L'afficher», les autres membres voient aussi ta VO₂ max sur ton profil. En attendant qu'Apple Santé arrive avec une prochaine mise à jour, c'est notre estimation d'après tes records de course des 12 derniers mois, calculée par notre serveur. Désactive-la dans Réglages et elle disparaît de ton profil.",
         "Une séance en salle est enregistrée avec ses exercices, ses séries et ses poids. Sur ton profil, les autres membres voient tes niveaux en salle (la figure, l'exercice et ta meilleure série), comptés sur toutes tes séances, même privées, mais jamais la séance elle-même. Si la publication d'une séance est visible par tout le monde et montre ses exercices, ta meilleure série du mois dans chaque exercice peut apparaître, avec ton nom d'utilisateur, dans le classement mensuel de cet exercice, que les autres membres voient. Masque les exercices de la publication, ou rends-la privée, et elle quitte le classement.",
+        "Tes programmes en salle (nom, jours, exercices et valeurs visées) restent sur ton téléphone et sur ton compte : toi seul les vois, et ils sont supprimés avec ton compte. Le calendrier de tes séances, toi seul le vois aussi.",
         "Si tu ajoutes une activité passée depuis un fichier, nous gardons sa trace et ses heures comme pour une course enregistrée avec MuW. Nous ne gardons pas le fichier.",
         "Une course commence et finit souvent devant ta porte. C'est pourquoi une course ne devient visible pour les autres membres qu'après que tu as choisi «Tout le monde» ou «Abonnés» sous «Qui peut la voir», et ils voient alors la trace entière, départ et arrivée compris, avec le titre que tu lui as donné, et sans les temps, les pauses ni le parcours prévu. Ton choix reste sur ce téléphone pour la course suivante : elle part du dernier enregistré, tu le vois avant «Enregistrer» et tu peux le changer. Une activité ajoutée depuis un fichier part toujours de «Moi seulement».",
         "Qui peut voir une de tes courses peut aussi la suivre avec «Démarrer» et enregistrer cette même trace comme fichier GPX, sans les temps.",

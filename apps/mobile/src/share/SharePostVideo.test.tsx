@@ -583,3 +583,19 @@ describe("«Edit video», the scenes (TASK-408 C2)", () => {
     );
   });
 });
+
+describe("«Edit video», the camera behind the animal (TASK-408 C2b)", () => {
+  it("asks the page to try the cameras along the run before the video", async () => {
+    await shown();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
+    await fireEvent.press(screen.getByRole("radio", { name: "3D" }));
+    await fireEvent.press(screen.getByRole("radio", { name: "Camera behind" }));
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
+    await exportVideo();
+    await page({ type: "ready", codec: "avc1.42e028" });
+    const prepare = inject.mock.calls.find((call) =>
+      (call[0] as string).includes("prepareMap"),
+    )?.[0] as string;
+    expect(prepare).toContain('"chase":{"cameras":[');
+  });
+});

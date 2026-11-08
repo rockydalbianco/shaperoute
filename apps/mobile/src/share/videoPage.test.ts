@@ -196,6 +196,18 @@ function fakeMapLibre(outcome: MapOutcome) {
       return this.camera.zoom;
     }
 
+    getCenter() {
+      return { lng: this.camera.center[0], lat: this.camera.center[1] };
+    }
+
+    getBearing() {
+      return this.camera.bearing;
+    }
+
+    getPitch() {
+      return this.camera.pitch;
+    }
+
     setTerrain(spec: unknown) {
       this.terrain = spec;
     }
@@ -870,6 +882,68 @@ describe("the video page, with the opening's drawing on «3D» (TASK-408 C2)", (
     prepareMap({ ...RELIEF_SCENE.map, budgetMs: -1 });
     await until(posted, "map");
     expect(maplibre.made[0].options.pitch).toBe(55);
+  });
+});
+
+describe("the video page, with the camera behind the animal (TASK-408 C2b)", () => {
+  const CHASE_SCENE = videoScene(RUN, POST_RESULTS, STICKERS, "3d", {
+    camera: "behind",
+  });
+
+  it("tries the cameras along the run, then moves the map behind the animal for every picture", async () => {
+    const maplibre = fakeMapLibre("idle");
+    const { posted, make, prepareMap } = page(
+      fakeEncoder([VIDEO_CODECS[0]]).FakeEncoder,
+      FakeFrame,
+      maplibre,
+    );
+    await until(posted, "ready");
+    prepareMap(CHASE_SCENE.map);
+    await until(posted, "map");
+    expect(posted[posted.length - 1]).toEqual(
+      expect.objectContaining({ type: "map", ok: true, mode: "chase" }),
+    );
+    const map = maplibre.made[0];
+    const tried = CHASE_SCENE.map?.chase?.cameras ?? [];
+    expect(map.jumps).toEqual(
+      expect.arrayContaining([expect.objectContaining(tried[5])]),
+    );
+    // Back on the whole drawing after the try, and kept alive.
+    expect(map.camera.pitch).toBe(55);
+    expect(map.removed).toBe(false);
+
+    const before = map.jumps.length;
+    make(CHASE_SCENE);
+    await until(posted, "done", "failed");
+    expect(posted[posted.length - 1]).toEqual(
+      expect.objectContaining({ type: "done", frames: 360, mode: "chase" }),
+    );
+    // Every picture but the first moves the camera; in the middle of the
+    // route it is the scene's camera behind the animal.
+    const moves = map.jumps.slice(before);
+    expect(moves).toHaveLength(359);
+    const middle = CHASE_SCENE.frames[150].find((op) => op.k === "map") as {
+      chase: { center: [number, number]; zoom: number };
+    };
+    expect(moves[149].center).toEqual(middle.chase.center);
+    expect(moves[149].zoom).toBeCloseTo(middle.chase.zoom, 6);
+    expect(map.removed).toBe(true);
+  });
+
+  it("stands still with the slow zoom when a picture behind the animal costs too much", async () => {
+    const maplibre = fakeMapLibre("idle");
+    const { posted, prepareMap } = page(
+      fakeEncoder([VIDEO_CODECS[0]]).FakeEncoder,
+      FakeFrame,
+      maplibre,
+    );
+    await until(posted, "ready");
+    prepareMap({ ...CHASE_SCENE.map, budgetMs: -1 });
+    await until(posted, "map");
+    expect(posted[posted.length - 1]).toEqual(
+      expect.objectContaining({ type: "map", ok: true, mode: "still" }),
+    );
+    expect(maplibre.made[0].removed).toBe(true);
   });
 });
 

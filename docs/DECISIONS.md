@@ -465,6 +465,7 @@ lasciando le righe d'indice.
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
+- ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 
@@ -476,6 +477,9 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
 - ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
 - ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
+- ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
+- ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
+- ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -592,6 +596,27 @@ log d'accesso).
 per `getmuw.app` (va nella privacy, col sì dell'utente); il
 server va aggiornato col sì; una richiesta ogni 15 s in più durante una
 condivisione.
+
+## ADR-0352, precisazione A1 — Il server dei link dal vivo
+
+**Stato**: Attiva · 2026-11-08 · TASK-424 parte A1 (#983) · deciso
+dall'agente su delega dell'utente
+
+- Migrazione `0063_live_shares.sql`: `live_shares` (hash SHA-256 del
+  token, mai il token) e `live_share_points`, `CASCADE` dall'account.
+- Un token sconosciuto e uno scaduto rispondono uguali (`200`, `status:
+  "expired"`): la pagina non distingue un link mai esistito da uno finito.
+  Uno fermato risponde `stopped` finché la sua riga vuota resta (un
+  giorno).
+- Un link nuovo ferma quelli dello stesso account non ancora finiti; quelli
+  finiti tengono la loro ora di riepilogo. Dopo `finished`, `stop` o la
+  scadenza, gli aggiornamenti rispondono `410`.
+- Limiti: 20 link al giorno per account, 200 punti per aggiornamento,
+  20 000 per link, 2000 per risposta (`more`), 120 letture al minuto per
+  link, anche il `429` con l'intestazione CORS del sito.
+- Le copie notturne del database (`deploy/backup.sh`) lasciano fuori le
+  righe dei due tavoli (`--exclude-table-data`): la privacy dice che le
+  posizioni si cancellano, e nelle copie resterebbero 14 giorni.
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole
@@ -1035,3 +1060,102 @@ testo.
 **Conseguenze**: card e pagina cambiano insieme; il testo «Reactions» esce
 dalle tabelle; `DrawAgainContext` resta in `App.tsx` senza chi lo usa nel
 Feed, da togliere a parte.
+
+## ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica
+
+**Stato**: Attiva · 2026-11-08 · TASK-418. Deciso dall'agente su delega
+dell'utente; numero dal Coordinatore.
+
+**Contesto**: 49 forme nuove per il catalogo grande di «Explore», approvate
+dall'utente sulla carta. Le forme di prima erano disegnate a mano, punto per
+punto, una alla volta (ADR-0035). ADR-0036 vuole il giudizio su strade vere
+prima che una forma entri nel catalogo.
+
+**Decisione**:
+
+1. Ogni forma è scritta in `tools/draw_new_shapes.py` come unione di
+   cerchi, ellissi, rettangoli e linee spesse (shapely, già dipendenza del
+   motore): il contorno esterno è il contorno, i buchi (l'anello
+   dell'ancora, l'arco del lucchetto) e i dettagli staccati (gli occhi, le
+   ruote della bici) sono `pieces`. Semplificata a 0,006, partenza nel
+   punto più alto; un dettaglio a meno di 0,03 da un'altra linea resta
+   fuori.
+2. I file stanno in `services/route-engine/candidate_outlines/`, **fuori**
+   da `route_engine/`: non entrano in `SHAPES`, né nello zip del motore sul
+   telefono (`tools/phone_engine`, che prende il pacchetto intero). Il CLI
+   li pianifica con `--outline`. Una chiave in più, `category`, dice il
+   gruppo del catalogo; `read_outline` la ignora.
+3. Una forma approvata su strade vere si sposta in
+   `route_engine/shapes/outlines/` e si registra (motore, contratto, app)
+   in un task suo.
+
+**Motivo**: 49 forme a mano costano giorni e sbagliano più spesso; dalle
+primitive si ridisegnano in un secondo e il test controlla che i file siano
+quelli dello script. Fuori dal pacchetto non toccano l'app né il catalogo
+finché l'utente non ha scelto.
+
+**Alternative**:
+
+- **Subito in `outlines/`**: cambia lo zip del motore sul telefono (un file
+  dell'app) e porta sul telefono forme non giudicate; scartata.
+- **Dalle immagini generate** (`image_outline.py`): contorni più
+  irregolari e licenze delle immagini da chiarire; scartata per ora.
+
+**Conseguenze**: TASK-419 pianifica le candidate con `--outline` (o con il
+seme esteso a leggere `candidate_outlines/`). La registrazione delle forme
+approvate è una parte successiva di TASK-418.
+
+## ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate»
+
+**Stato**: Attiva · 2026-11-08 · TASK-409 parte B1. Scelte dell'utente in
+`tasks/TASK-409.md` (5: «Anche nel post del Feed»; 6: «Pulsante a fine
+nuoto»); il resto è deciso dall'agente su delega dell'utente, e col
+Coordinatore: la parte B costruisce i pezzi di TASK-345 B (server) e C, e di
+TASK-374 D.
+
+1. **Sulla corsa, non sul nuoto**: `runs.heart_avg_bpm`, `heart_max_bpm`,
+   `heart_shown` (`0061`), così TASK-345 B li usa per ogni sport senza una
+   migrazione sua. Oggi li scrive solo `PUT /me/pool-swims/{key}`.
+2. **Limiti**: da 30 a 230 bpm, tutti e due o nessuno, il medio non sopra il
+   massimo: nel contratto (`422`) e nel vincolo del database.
+3. **Chi li vede**: il proprietario sempre; gli altri in `GET
+   /drawings/{id}/pool-swim` solo se `heart_shown` (vero se il telefono non
+   lo manda). Il filtro sta nel server. Il Feed generico (`FeedPost`) e «My
+   activities» non li hanno ancora: arrivano con TASK-345 B.
+4. **Una volta sola**: col primo `PUT`, come il resto del nuoto. Cambiare
+   «Show heart rate» dopo non si può ancora.
+5. **Compatibilità**: senza battito le risposte non hanno i campi
+   (`response_model_exclude_none`), così le app di oggi e i loro test vedono
+   lo stesso corpo di prima; il vecchio esempio `pool-swim.json` resta, quello
+   col battito è `pool-swim-heart.json`.
+
+## ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy
+
+**Stato**: Attiva · 2026-11-08 · TASK-409 parte B2. Scelte dell'utente in
+`tasks/TASK-409.md` (5, 6, 7); il resto è deciso dall'agente su delega
+dell'utente.
+
+1. **Moduli condivisi, file nuovi**: `health/heartSamples.ts` (la lettura in
+   una finestra, pause escluse; letture fuori da 30–230 scartate; medio e
+   massimo interi, il medio mai sopra il massimo) e `body/zoneTime.ts` (i
+   secondi in ogni zona). Sono i pezzi di TASK-345 C e TASK-374 D: quei task
+   li agganciano alle corse senza riscriverli.
+2. **Solo dove c'è il nativo**: `health/heartModules.ts`, separato da
+   `healthModules.ts`, carica la libreria solo con Nitro su iOS. Sulla build 7
+   e su Android è null e non si chiede nulla. La 1.0.1 ha già
+   `NSHealthShareUsageDescription` per il battito: il tipo si chiede a runtime
+   (`toRead`), l'impronta `6f8bba4c` non cambia.
+3. **Il consenso**: il primo tocco su «Add heart rate from Apple Health»
+   apre la richiesta di iOS ed è tenuto in `pool-heart.json`; ai nuoti dopo si
+   legge da solo. iOS non dice se la lettura è stata negata: negata vuol dire
+   nessuna lettura, e allora «No heart rate from your watch for this swim.».
+4. **Tempo in zona**: una lettura dura fino alla successiva, al più 60 s (un
+   buco più lungo è una lettura persa); l'ultima fino alla fine, con lo stesso
+   limite. Sotto la zona 1 non conta, sopra il massimo è zona 5. Le zone sono
+   quelle di «Heart rate zones» (TASK-374 B); senza FC massima né anno di
+   nascita si vede solo il medio.
+5. **Dove si vede**: a fine nuoto (medio, zone, fonte); «Show heart rate»
+   nel modulo del post, acceso; il medio nella tessera del Feed e nella
+   scheda, quando l'API lo dà. Il tempo nelle zone resta sul telefono.
+6. **Privacy** dell'app e del sito con i testi approvati (scelta 7), datata 8
+   novembre 2026: da ridatare al giorno del merge se entra dopo.

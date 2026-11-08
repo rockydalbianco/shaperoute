@@ -15,6 +15,13 @@ GET /me/pool-swims/{key} gives the swim back to its owner. GET
 drawing (drawings.drawing_seen_sql), from an app that reads it; otherwise
 404, as for a drawing that is not there. Deleting the run, or the account,
 deletes them.
+
+The heart rate (TASK-409 part B, ADR-0334 precisazione D): the phone may
+send, with the swim, the average and maximum beats a minute its watch wrote
+in Apple Health, and whether others see them («Show heart rate»). They are
+kept on the run (runs.heart_*), given back to the owner always and, with the
+pool and lengths, to others only when shown. A swim without them answers
+without the fields.
 """
 
 from __future__ import annotations
@@ -61,6 +68,9 @@ MAX_LENGTHS = 1_000
 # Faster than the world records over 50 m (about 2.4 m/s): the lengths or
 # the pool were written wrong.
 MAX_SPEED_M_S = 2.5
+# Beats a minute a watch can have written for a person swimming.
+MIN_HEART_BPM = 30
+MAX_HEART_BPM = 230
 
 UNKNOWN_SWIM = "No swim in a pool with this key."
 NO_POOL_SWIM = "No swim in a pool to show for this drawing."
@@ -99,6 +109,11 @@ class PoolSwimRequestBody(BaseModel):
     """25, 50, or one the swimmer wrote («Other»); kept to the centimetre."""
     lengths: int = Field(ge=1, le=MAX_LENGTHS)
     """What the swimmer wrote at the end («How many lengths?»)."""
+    heart_avg_bpm: int | None = Field(None, ge=MIN_HEART_BPM, le=MAX_HEART_BPM)
+    heart_max_bpm: int | None = Field(None, ge=MIN_HEART_BPM, le=MAX_HEART_BPM)
+    """The swim's heart rate from the watch, both or neither."""
+    heart_shown: bool = True
+    """«Show heart rate»: whether others see it."""
 
     @model_validator(mode="after")
     def within_the_swim(self) -> PoolSwimRequestBody:
@@ -108,6 +123,18 @@ class PoolSwimRequestBody(BaseModel):
         length_s = length.total_seconds()
         if any(pause.to_s > length_s for pause in self.pauses):
             raise ValueError("a pause is inside the swim")
+        return self
+
+    @model_validator(mode="after")
+    def one_heart_rate(self) -> PoolSwimRequestBody:
+        if (self.heart_avg_bpm is None) != (self.heart_max_bpm is None):
+            raise ValueError("the average and the maximum heart rate go together")
+        if (
+            self.heart_avg_bpm is not None
+            and self.heart_max_bpm is not None
+            and self.heart_avg_bpm > self.heart_max_bpm
+        ):
+            raise ValueError("the average heart rate is not above the maximum")
         return self
 
     def pool_m(self) -> float:
@@ -141,14 +168,21 @@ class PoolSwimBody(BaseModel):
     distance_m: int
     pool_length_m: float
     lengths: int
+    heart_avg_bpm: int | None = None
+    heart_max_bpm: int | None = None
+    heart_shown: bool | None = None
+    """The three only for a swim with its heart rate."""
 
 
 class PoolSwimFiguresBody(BaseModel):
     """GET /drawings/{id}/pool-swim: what the post of a swim in a pool shows
-    besides the run's time and metres."""
+    besides the run's time and metres; the heart rate when its owner shows
+    it, or to the owner."""
 
     pool_length_m: float
     lengths: int
+    heart_avg_bpm: int | None = None
+    heart_max_bpm: int | None = None
 
 
 def _kept_pauses(pauses: Sequence[PoolPauseBody]) -> list[dict[str, Any]]:
@@ -162,13 +196,15 @@ def _kept_pauses(pauses: Sequence[PoolPauseBody]) -> list[dict[str, Any]]:
 
 SWIM_SQL = (
     "SELECT r.key, r.started_at, r.duration_s, r.distance_m,"
-    " p.pool_length_m::float8 AS pool_length_m, p.lengths"
+    " p.pool_length_m::float8 AS pool_length_m, p.lengths,"
+    " r.heart_avg_bpm, r.heart_max_bpm, r.heart_shown"
     " FROM runs r JOIN pool_swims p ON p.run_id = r.id"
     " WHERE r.user_id = %s AND r.key = %s"
 )
 
 
 def _body(row: DictRow) -> PoolSwimBody:
+    heart = row["heart_avg_bpm"] is not None
     return PoolSwimBody(
         id=row["key"],
         started_at=row["started_at"],
@@ -176,6 +212,9 @@ def _body(row: DictRow) -> PoolSwimBody:
         distance_m=row["distance_m"],
         pool_length_m=row["pool_length_m"],
         lengths=row["lengths"],
+        heart_avg_bpm=row["heart_avg_bpm"],
+        heart_max_bpm=row["heart_max_bpm"],
+        heart_shown=row["heart_shown"] if heart else None,
     )
 
 
@@ -222,8 +261,10 @@ class PoolSwims:
                 raise AccountError(422, "invalid_request", ACTIVITIES_FULL)
             run = conn.execute(
                 "INSERT INTO runs (user_id, key, track, pauses, started_at,"
-                " distance_m, duration_s, created_at, activity)"
-                " VALUES (%s, %s, NULL, %s, %s, %s, %s, %s, %s) RETURNING id",
+                " distance_m, duration_s, created_at, activity,"
+                " heart_avg_bpm, heart_max_bpm, heart_shown)"
+                " VALUES (%s, %s, NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                " RETURNING id",
                 (
                     user_id,
                     key,
@@ -233,6 +274,9 @@ class PoolSwims:
                     duration_s,
                     now,
                     SWIMMING,
+                    body.heart_avg_bpm,
+                    body.heart_max_bpm,
+                    body.heart_shown,
                 ),
             ).fetchone()
             assert run is not None
@@ -249,25 +293,33 @@ class PoolSwims:
         self, viewer_id: int, drawing_id: str, reads: Reads = EVERYTHING
     ) -> PoolSwimFiguresBody | None:
         """The pool and lengths of a drawing `viewer_id` sees, of an
-        activity `reads` shows; None otherwise."""
+        activity `reads` shows, with the heart rate when its owner shows it
+        or `viewer_id` is the owner; None otherwise."""
         try:
             wanted = UUID(drawing_id)
         except ValueError:
             return None
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT p.pool_length_m::float8 AS pool_length_m, p.lengths"
+                "SELECT p.pool_length_m::float8 AS pool_length_m, p.lengths,"
+                " CASE WHEN r.heart_shown OR r.user_id = %s"
+                " THEN r.heart_avg_bpm END AS heart_avg_bpm,"
+                " CASE WHEN r.heart_shown OR r.user_id = %s"
+                " THEN r.heart_max_bpm END AS heart_max_bpm"
                 " FROM drawings d"
                 " JOIN runs r ON r.id = d.run_id"
                 " JOIN pool_swims p ON p.run_id = r.id"
                 f" WHERE d.id = %s AND {drawing_seen_sql('%s')}"
                 f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}",
-                (wanted, viewer_id),
+                (viewer_id, viewer_id, wanted, viewer_id),
             ).fetchone()
         if row is None:
             return None
         return PoolSwimFiguresBody(
-            pool_length_m=row["pool_length_m"], lengths=row["lengths"]
+            pool_length_m=row["pool_length_m"],
+            lengths=row["lengths"],
+            heart_avg_bpm=row["heart_avg_bpm"],
+            heart_max_bpm=row["heart_max_bpm"],
         )
 
 
@@ -288,7 +340,12 @@ Me = Annotated[UserBody, Depends(current_user)]
 def pool_swim_routes() -> APIRouter:
     router = APIRouter(tags=["pool"], responses=ACCOUNT_ERRORS)
 
-    @router.get("/me/pool-swims/{key}", responses={404: {"model": ErrorBody}})
+    # A swim without its heart rate answers without the fields, as before.
+    @router.get(
+        "/me/pool-swims/{key}",
+        responses={404: {"model": ErrorBody}},
+        response_model_exclude_none=True,
+    )
     def get_pool_swim(key: Key, pool: Pool, user: Me) -> PoolSwimBody:
         swim = pool.get(user.id, key)
         if swim is None:
@@ -296,7 +353,11 @@ def pool_swim_routes() -> APIRouter:
         return swim
 
     # Sending a swim twice saves it once: 201 the first time, then 200.
-    @router.put("/me/pool-swims/{key}", responses={201: {"model": PoolSwimBody}})
+    @router.put(
+        "/me/pool-swims/{key}",
+        responses={201: {"model": PoolSwimBody}},
+        response_model_exclude_none=True,
+    )
     def save_pool_swim(
         key: Key,
         body: PoolSwimRequestBody,
@@ -310,7 +371,9 @@ def pool_swim_routes() -> APIRouter:
         return swim
 
     @router.get(
-        "/drawings/{drawing_id}/pool-swim", responses={404: {"model": ErrorBody}}
+        "/drawings/{drawing_id}/pool-swim",
+        responses={404: {"model": ErrorBody}},
+        response_model_exclude_none=True,
     )
     def drawing_pool_swim(
         drawing_id: str, pool: Pool, user: Me, reads: Shown

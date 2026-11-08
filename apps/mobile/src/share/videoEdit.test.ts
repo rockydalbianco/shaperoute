@@ -20,6 +20,7 @@ describe("the choices of «Edit video» (TASK-408 C1)", () => {
       off: ["opening"],
       opening: "drawing",
       cut: "fade",
+      camera: "around",
       ending: "drawing",
     });
   });

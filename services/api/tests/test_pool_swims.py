@@ -280,3 +280,86 @@ def test_a_private_swim_shows_nothing_to_the_others(
     path = f"/drawings/{drawing['id']}/pool-swim"
     assert client.get(path, headers=reading(reader)).status_code == 404
     assert client.get(path, headers=reading(me)).status_code == 200
+
+
+# --- The heart rate (TASK-409 part B, ADR-0334 precisazione D) ---
+
+HEART = {"heart_avg_bpm": 142, "heart_max_bpm": 171}
+
+
+def test_the_example_with_its_heart_rate_is_a_request() -> None:
+    body = json.loads((FIXTURES / "pool-swim-heart.json").read_text(encoding="utf-8"))
+    request = PoolSwimRequestBody.model_validate(body)
+    assert (request.heart_avg_bpm, request.heart_max_bpm) == (142, 171)
+    assert request.heart_shown is True
+    assert {k: v for k, v in body.items() if not k.startswith("heart_")} == swim()
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"heart_avg_bpm": 142},
+        {"heart_max_bpm": 171},
+        {"heart_avg_bpm": 172, "heart_max_bpm": 171},
+        {"heart_avg_bpm": 29, "heart_max_bpm": 171},
+        {"heart_avg_bpm": 142, "heart_max_bpm": 231},
+    ],
+)
+def test_a_wrong_heart_rate_is_refused(changes: dict[str, Any]) -> None:
+    with pytest.raises(ValueError):
+        PoolSwimRequestBody.model_validate(swim(**changes))
+
+
+def test_a_swim_keeps_its_heart_rate_for_its_owner(
+    client: TestClient, database: Database  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    first = kept(client, me, **HEART)
+    assert (first["heart_avg_bpm"], first["heart_max_bpm"], first["heart_shown"]) == (
+        142,
+        171,
+        True,
+    )
+    assert client.get(f"/me/pool-swims/{POOL_KEY}", headers=me).json() == first
+    # Sent again without it, the swim stays as it was saved.
+    again = client.put(f"/me/pool-swims/{POOL_KEY}", json=swim(), headers=me)
+    assert again.json() == first
+    with database.connect() as conn:
+        row = conn.execute(
+            "SELECT heart_avg_bpm, heart_max_bpm, heart_shown FROM runs"
+        ).fetchone()
+        assert tuple(row.values()) == (142, 171, True)
+    bad = client.put(
+        "/me/pool-swims/0f9e8d7c6b5a4f3e",
+        json=swim(heart_avg_bpm=142),
+        headers=me,
+    )
+    assert bad.status_code == 422
+
+
+def test_others_see_the_heart_rate_only_when_it_is_shown(
+    client: TestClient,  # noqa: F811
+) -> None:
+    me, reader = signed_up(client), other(client)
+    kept(client, me, **HEART)
+    hidden_key = "0f9e8d7c6b5a4f3e"
+    kept(client, me, hidden_key, heart_shown=False, **HEART)
+    shown = drawn(client, me, POOL_KEY, activity="swimming")["id"]
+    hidden = drawn(client, me, hidden_key, activity="swimming")["id"]
+
+    def figures(drawing_id: str, headers: Headers) -> Any:
+        answer = client.get(
+            f"/drawings/{drawing_id}/pool-swim", headers=reading(headers)
+        )
+        assert answer.status_code == 200, answer.text
+        return answer.json()
+
+    with_heart = {"pool_length_m": 25.0, "lengths": 60, **HEART}
+    assert figures(shown, reader) == with_heart
+    assert figures(hidden, reader) == {"pool_length_m": 25.0, "lengths": 60}
+    # Its owner always sees it.
+    assert figures(hidden, me) == with_heart
+    assert (
+        client.get(f"/me/pool-swims/{hidden_key}", headers=me).json()["heart_shown"]
+        is False
+    )

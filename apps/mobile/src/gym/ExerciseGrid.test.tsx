@@ -37,8 +37,8 @@ test("a group shows its exercises as tiles; one picks it; «‹» goes back", as
   const onPick = await picker();
   await fireEvent.press(screen.getByTestId("group-legs"));
   expect(screen.queryByTestId("group-grid")).toBeNull();
-  const machines = within(screen.getByTestId("machine-grid-legs")).getAllByRole(
-    "button",
+  const machines = within(screen.getByTestId("machine-grid-legs")).getAllByTestId(
+    /^exercise-/,
   );
   expect(machines).toHaveLength(exercisesOf("legs").length);
   expect(screen.queryByTestId("exercise-bench_press")).toBeNull();

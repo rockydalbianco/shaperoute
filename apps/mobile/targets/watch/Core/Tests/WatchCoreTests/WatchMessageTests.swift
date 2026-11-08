@@ -47,4 +47,12 @@ final class WatchMessageTests: XCTestCase {
         XCTAssertEqual(fields["activity"] as? String, "running")
         XCTAssertEqual(try WatchMessage.decode(fields), message)
     }
+
+    func testTheUnitsOfThePhoneAreRead() throws {
+        let fields: [String: Any] = ["v": 1, "type": "settings", "units": "mi", "at": 9]
+        XCTAssertEqual(try WatchMessage.decode(fields), .settings(units: .mi, at: 9))
+        XCTAssertEqual(
+            NSDictionary(dictionary: WatchMessage.settings(units: .km, at: 3).encoded()),
+            NSDictionary(dictionary: ["v": 1, "type": "settings", "units": "km", "at": 3]))
+    }
 }

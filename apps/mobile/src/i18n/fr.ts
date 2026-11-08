@@ -871,6 +871,7 @@ export const FR: Table = {
   "Paddle without a route": "Pagayer sans parcours",
   "Walk without a route": "Marcher sans parcours",
   "Hike without a route": "Randonner sans parcours",
+  "Skate without a route": "Rouler sans parcours",
   "Record your day": "Enregistrer la journée",
   "Run without a route": "Courir sans parcours",
 
@@ -1164,6 +1165,10 @@ export const FR: Table = {
   MTB: "VTT",
   "Trails can be technical: check the route before you set off.":
     "Les sentiers peuvent être techniques : vérifie le parcours avant de partir.",
+  // src/sports/inline_skating.ts (TASK-380 part B), approved on 2026-11-06
+  Roller: "Roller",
+  "Watch for traffic and steep descents: check the route before you set off.":
+    "Attention à la circulation et aux descentes raides : vérifie le parcours avant de partir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Ski",
   "Cross-country ski": "Ski de fond",
@@ -1178,6 +1183,9 @@ export const FR: Table = {
     "Pas de parcours en salle : MuW chronomètre ta séance.",
   "+ Exercise": "+ Exercice",
   "Search exercises": "Rechercher un exercice",
+  "How to do it": "Comment faire",
+  "Watch out": "Attention",
+  "Add to workout": "Ajouter à la séance",
   "Add “{name}”": "Ajouter « {name} »",
   "Set {n}": "Série {n}",
   Reps: "Répétitions",

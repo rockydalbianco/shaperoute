@@ -49,9 +49,9 @@ export interface SportProfile {
   drawNote?: string;
   /** Its route is laps, and «Draw» shows them (TASK-323 C2, SwimResult). */
   laps?: boolean;
-  /** Whose pace gives the time under the distance in «Draw» (TASK-361);
-   * none, no time. */
-  timeAt?: "runner" | "walker";
+  /** Whose pace gives the time under the distance in «Draw» (TASK-361),
+   * the skater's since TASK-380; none, no time. */
+  timeAt?: "runner" | "walker" | "skater";
   /** What «Draw» says of a drawing in parts and of a word: the metres drawn
    * and the metres between them, `{drawn}`/`{letters}` and `{between}`;
    * a run's when not said. */

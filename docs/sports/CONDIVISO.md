@@ -41,13 +41,14 @@ tutto: è corto apposta.
 - **2026-11-08, TASK-415 (Ski touring, ADR-0344) — la pendenza dalle
   stesse tegole, nello stesso modulo.** Lo scialpinismo vuole la pendenza
   del terreno sotto la traccia (Horn su 3 × 3 pixel, zoom 13) e il tempo
-  sopra i 30°. Va nel modulo condiviso del server `terrain.py`, lo stesso
-  della parte G di TASK-347 (quote e profilo): tegole Terrarium in cache sul
-  Volume, PNG decodificato con `zlib` (il server non ha Pillow), `numpy` già
-  nel server. Chi parte primo fra TASK-415 C e TASK-347 G lo scrive,
-  l'altro lo usa: si accordano tramite il Coordinatore. Il dato è di circa
-  30 m in Italia: la pendenza dei pendii corti si sottostima, e chi la
-  mostra lo dice. `sports/skimo.md`.
+  sopra i 30°. Va nel modulo condiviso delle quote, lo stesso della parte G
+  di TASK-347 (quote e profilo): tegole Terrarium in cache sul Volume.
+  **Correzione del 2026-11-08:** il modulo è `route_engine/heights.py`, lo
+  scrive TASK-413 A1 (ciaspole), e non un `terrain.py` nuovo; Pillow è già
+  una dipendenza del motore (`pillow>=10,<13`), quindi è anche
+  nell'immagine del server. TASK-415 e TASK-347 G lo usano. Il dato è di
+  circa 30 m in Italia: la pendenza dei pendii corti si sottostima, e chi
+  la mostra lo dice. `sports/skimo.md`, `sports/snowshoes.md`.
 
 ## Il motore
 
@@ -234,7 +235,11 @@ tutto: è corto apposta.
 ## I pezzi di montagna (fasi, vette)
 
 - **2026-11-08, TASK-415 (Ski touring, ADR-0344) — tre pezzi generici, non
-  dello scialpinismo.** Pensati anche per le ciaspole e per Hike:
+  dello scialpinismo.** Valgono anche per Hike e per le ciaspole, dove
+  servono. Le ciaspole disegnano forme libere (TASK-413), non sono «Record
+  only»: le vette e la pendenza vanno bene per loro, mentre fasi, VAM e
+  numeri del post seguono la strada «Record only» e per loro sono
+  facoltativi, da verificare:
   - **le fasi** (salita, discesa, impianto, cambi) e la **VAM** sul
     telefono, `activities/mountainPhases.ts`, sopra `legs`, `isLift` e
     `droppedM` di `snowDay.ts` (esportati, senza cambiarli). Chi sale con le

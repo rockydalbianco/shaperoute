@@ -868,6 +868,7 @@ export const IT: Table = {
   "Paddle without a route": "Pagaia senza percorso",
   "Walk without a route": "Cammina senza percorso",
   "Hike without a route": "Escursione senza percorso",
+  "Skate without a route": "Pattina senza percorso",
   "Record your day": "Registra la giornata",
   "Run without a route": "Corri senza percorso",
 
@@ -1161,6 +1162,10 @@ export const IT: Table = {
   MTB: "MTB",
   "Trails can be technical: check the route before you set off.":
     "I sentieri possono essere tecnici: controlla il percorso prima di partire.",
+  // src/sports/inline_skating.ts (TASK-380 part B), approved on 2026-11-06
+  Roller: "Roller",
+  "Watch for traffic and steep descents: check the route before you set off.":
+    "Attento al traffico e alle discese ripide: controlla il percorso prima di partire.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Sci",
   "Cross-country ski": "Sci di fondo",
@@ -1175,6 +1180,9 @@ export const IT: Table = {
     "In palestra niente percorso: MuW cronometra il tuo allenamento.",
   "+ Exercise": "+ Esercizio",
   "Search exercises": "Cerca esercizi",
+  "How to do it": "Come si fa",
+  "Watch out": "Attenzione",
+  "Add to workout": "Aggiungi all'allenamento",
   "Add “{name}”": "Aggiungi «{name}»",
   "Set {n}": "Serie {n}",
   Reps: "Ripetizioni",

@@ -21,6 +21,8 @@ import { useUnits } from "../units/useUnits";
 import { type RefusedRun, useActivitiesDoor } from "./activitiesDoor";
 import { GymTile } from "../gym/GymTile";
 import { clockLabel } from "../navigation/freeRun";
+import { useBody } from "../body/useBody";
+import { poolKcal, poolKcalLabel } from "../pool/poolKcal";
 import { isPoolSwimRun, PoolTile } from "../pool/PoolTile";
 import { runFacts, startedLabel, whereAndWhat } from "./activityText";
 import { RunDrawing } from "./RunDrawing";
@@ -262,7 +264,23 @@ function ActivityRow({
   useUnits();
   // A workout at the gym has no distance: its time (TASK-385 B0).
   const gym = isTrackless(activity.activity);
-  const facts = gym ? clockLabel(activity.duration_s * 1000) : runFacts(activity);
+  // A swim in a pool ends with its energy, "· 206 kcal" (TASK-409 part A).
+  const body = useBody();
+  const kcal = pool
+    ? poolKcalLabel(
+        poolKcal(
+          activity.distance_m,
+          activity.duration_s,
+          body,
+          new Date(activity.started_at).getFullYear(),
+        ),
+      )
+    : null;
+  const facts = gym
+    ? clockLabel(activity.duration_s * 1000)
+    : kcal === null
+      ? runFacts(activity)
+      : `${runFacts(activity)} · ${kcal}`;
   return (
     <View style={styles.row} testID="activity-row">
       <Tap

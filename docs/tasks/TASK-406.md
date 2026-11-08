@@ -94,6 +94,29 @@ stile di MuW.
     Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap
     contributors».
   - La riga della privacy resta per la parte D.
+- 2026-11-07, domanda 3: «Sì, così». Il tipo di neve è una sola scelta,
+  facoltativa, a fine giornata: «Powder · Groomed · Icy · Spring · Heavy»
+  («Farinosa · Battuta · Ghiacciata · Primaverile · Pesante»).
+- 2026-11-08, i testi della parte D2 e la riga della privacy: «Sì,
+  approvati». In inglese, con l'italiano; de, fr ed es tradotti allo stesso
+  modo.
+  - Durante la giornata: «Where are you skiing?» («Dove stai sciando?»),
+    «Change» («Cambia»), «No ski resort nearby» («Nessuna stazione
+    sciistica vicina»), «{temperature} now · {snow} fresh snow»
+    («{temperature} adesso · {snow} di neve fresca»).
+  - A fine giornata: «Total» («Totale», discese più risalite), «How was the
+    snow?» («Com'era la neve?»), i cinque tipi qui sopra, «Your gear» («La
+    tua attrezzatura»), «Ski or snowboard, brand and model» («Sci o
+    snowboard, marca e modello»).
+  - Sul post: «Resort» («Stazione»), «Snow» («Neve»), «Gear»
+    («Attrezzatura»).
+  - La riga della privacy, in fondo a «Le tue corse e le loro tracce GPS»:
+    «Per una giornata di sci, l'app manda al nostro server la tua posizione
+    arrotondata a circa 1 km per trovare la stazione più vicina; il meteo lo
+    chiede il server a MET Norway con la posizione della stazione, mai la
+    tua. Stazione, neve e attrezzatura che aggiungi si vedono sul post, per
+    chi può vederlo, e la neve conta anche, senza il tuo nome, nella neve
+    del giorno della stazione.»
 
 ## Domande aperte (una alla volta)
 
@@ -109,6 +132,7 @@ stile di MuW.
    marche e modelli.
 3. **Il tipo di neve**. Proposta: una sola scelta, facoltativa, a fine
    giornata, fra farinosa, battuta, ghiacciata, primaverile e pesante.
+   **Risposta dell'utente, 2026-11-07: «Sì, così».**
 4. **La pagina della stazione** nella ricerca «Ski». Proposta: nome,
    numero degli impianti, km di piste, meteo, neve, i post dei membri lì e
    un tasto per seguirla.
@@ -184,6 +208,27 @@ Scelte tecniche, decise dall'agente su delega dell'utente:
 
 Prossimo: la parte D, con la sua lista dei file.
 
+**La parte D in tre PR**, ognuna da main dopo la precedente:
+- **D1, il server:** stazione, modello e neve della giornata.
+- **D2, l'app:** «Record your day» con la stazione e il suo meteo, a fine
+  giornata la neve, il modello e i km totali, e il post che li mostra.
+- **D3, la pagina della stazione:** la neve dei membri, i loro post e il
+  tasto per seguirla.
+
+**Parte D1, 2026-11-08.** La giornata di sci tiene la stazione, il modello
+e il tipo di neve (`API.md`, «La giornata di sci: stazione, modello e
+neve»; migrazione `0056`):
+- `PUT /me/activities/{key}/ski` li scrive dopo il salvataggio della
+  giornata, come il post. Il corpo di `PUT /me/activities/{key}` resta
+  com'era;
+- `GET /drawings/{id}/ski-day` li mostra sul post a chi lo vede;
+- `GET /ski-resorts/{id}/snow` conta la neve segnata dai membri nella
+  stazione nelle ultime 24 ore. Contano solo i post che chi chiede vede su
+  un profilo, e dà solo numeri.
+
+Le scelte tecniche sono nell'aggiunta ad ADR-0338. Prossimo: il server con
+la `0056`, col sì dell'utente; poi la parte D2.
+
 ## File toccati
 
 Questa PR (documenti): `docs/tasks/TASK-406.md` (nuovo), `docs/DECISIONS.md`
@@ -228,7 +273,21 @@ tipi), `docs/STATUS.md` e questa lista. Aggiunto col via del Coordinatore
 il 2026-11-06: `apps/mobile/src/tabs/TabSwipeOwners.test.ts` (una riga,
 la fila delle ore del meteo che scorre di lato).
 
-Parti D–E: si elencano prima di ciascuna.
+Parte D1 (approvata dal Coordinatore il 2026-11-08; la migrazione è la
+prima libera al merge, `0056` quel giorno). File nuovi:
+- `services/api/migrations/0056_ski_days.sql`;
+- `services/api/shaperoute_api/ski_days.py` e
+  `services/api/tests/test_ski_days_api.py`;
+- `packages/shared-types/src/skiDays.ts`, `fixtures/ski-day-request.json`,
+  `fixtures/ski-day.json`, `fixtures/resort-snow.json` e
+  `test/skiDays.test.ts`.
+
+File da cambiare: `services/api/shaperoute_api/__main__.py` (una riga),
+`packages/shared-types/src/index.ts` (una riga), `docs/API.md`,
+`docs/DATABASE.md`, `docs/DECISIONS.md` (un'aggiunta ad ADR-0338),
+`docs/STATUS.md` e questa lista.
+
+Parti D2, D3 ed E: si elencano prima di ciascuna.
 
 ## Criteri di accettazione
 

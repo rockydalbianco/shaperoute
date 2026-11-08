@@ -25515,9 +25515,11 @@ le parole o le forme a pezzi con la penna alzata fra un pezzo e l'altro
    fuori lista.
 2. **Ciò che decide il telefono resta del telefono**: quali percorsi si
    prendono dove li tocchi (`startsAnywhere`), le direzioni semplificate
-   (`simplifyDirections`) e i tratti a piedi (`walksOf`) li calcola il
-   telefono e li manda con il percorso (B3). L'orologio porta solo ciò che
-   serve durante la corsa.
+   (`simplifyDirections`), i tratti a piedi (`walksOf`) e se lo sport va coi
+   numeri della bici (`isRide`, che con TASK-416 vale anche per gravel, MTB e
+   Roller) li calcola il telefono e li manda con il percorso (B3): `Pen.start`
+   riceve `ride` e `paddle`, non il nome dello sport. L'orologio porta solo
+   ciò che serve durante la corsa.
 3. **La penna dà due avvisi** (`penUp`, `penDown`, con la lettera che viene);
    come dirli (a piedi, in bici, in canoa, lettere o parti) sta nelle
    bandierine della penna, per la schermata di B3.

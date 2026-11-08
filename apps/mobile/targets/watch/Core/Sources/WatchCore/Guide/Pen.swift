@@ -43,9 +43,11 @@ public struct Pen: Equatable, Sendable {
     /// The pen at the start of a route whose metres from its start are
     /// `along`, with its walks as pairs of point indices. `word` names the
     /// letters: the walk at `i` leads to its letter `i + 1` when it has one
-    /// more letter than walks. `activity` is the app's name of the sport.
+    /// more letter than walks. Whether the sport rides (the phone's `isRide`:
+    /// the bike, gravel, MTB, Roller) or paddles is the phone's to say: it
+    /// sends it with the route.
     public static func start(
-        along: [Double], walks: [(Int, Int)], word: String?, activity: String?
+        along: [Double], walks: [(Int, Int)], word: String?, ride: Bool, paddle: Bool
     ) -> Pen {
         let letters = (word ?? "").uppercased().map(String.init)
         let named = letters.count == walks.count + 1
@@ -54,10 +56,10 @@ public struct Pen: Equatable, Sendable {
             walks: walks.enumerated().map { i, walk in
                 Stretch(fromM: point(walk.0), toM: point(walk.1), letter: named ? letters[i + 1] : nil)
             },
-            ride: activity == "cycling",
+            ride: ride,
             parts: (word ?? "").isEmpty,
-            paddle: activity == "paddling",
-            downM: activity == "paddling" ? downOnWaterM : downM
+            paddle: paddle,
+            downM: paddle ? downOnWaterM : downM
         )
     }
 

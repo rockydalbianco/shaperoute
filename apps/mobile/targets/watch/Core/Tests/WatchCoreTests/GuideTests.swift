@@ -218,9 +218,7 @@ final class GuideTests: XCTestCase {
         let paddle = try XCTUnwrap(want["paddle"] as? Bool)
         // The word that names these letters: the first is never said.
         let word = parts ? nil : "?" + letters.map { $0 ?? "" }.joined()
-        let pen = Pen.start(
-            along: along, walks: indices, word: word,
-            activity: ride ? "cycling" : paddle ? "paddling" : nil)
+        let pen = Pen.start(along: along, walks: indices, word: word, ride: ride, paddle: paddle)
         XCTAssertEqual(pen.walks.map(\.letter), letters, "\(file) pen letters")
         XCTAssertEqual(pen.parts, parts, "\(file) pen parts")
         XCTAssertEqual(pen.ride, ride, "\(file) pen ride")

@@ -320,10 +320,17 @@ def test_preselect_always_keeps_the_featured_three_of_5_km() -> None:
         chosen
     )
     assert len(chosen) == PER_CITY + 3
-    # A seed city has no such rule.
-    assert preselect(
-        [run("roma/heart/10000", similarity=0.99, route_m=10000, distance_m=10000)]
-    ) == ["roma/heart/10000"]
+    # Rome is featured in the app too; Bologna is not.
+    runs = [
+        run(f"{c}/heart/10000", similarity=0.99, route_m=10000, distance_m=10000)
+        for c in ("roma", "bologna")
+    ]
+    runs += [run(f"{c}/star/5000", similarity=0.7) for c in ("roma", "bologna")]
+    assert preselect(runs, per_city=1, at_least=1) == [
+        "bologna/heart/10000",
+        "roma/heart/10000",
+        "roma/star/5000",
+    ]
 
 
 # --- The run log ---------------------------------------------------------------

@@ -396,8 +396,27 @@ BIG_ROADS: frozenset[str] = frozenset(
 )
 PER_CITY = 8
 AT_LEAST = 3
-# The featured cities keep a heart, a circle and a star of 5 km whatever the
+# The cities "Explore" shows first (FEATURED_CITIES in the app, by the
+# names used here) keep a heart, a circle and a star of 5 km whatever the
 # eye says (ADR-0132, tools/test_featured_catalog.py).
+APP_FEATURED: frozenset[str] = frozenset(
+    {
+        "newyork",
+        "london",
+        "paris",
+        "tokyo",
+        "roma",
+        "milano",
+        "torino",
+        "barcelona",
+        "dubai",
+        "amsterdam",
+        "berlin",
+        "lisbon",
+        "sydney",
+        "sanfrancisco",
+    }
+)
 FEATURED_KEEP: frozenset[str] = frozenset(SIMPLE_SHAPES)
 FEATURED_DISTANCE_M = 5_000
 
@@ -465,7 +484,8 @@ def preselect(
 ) -> list[str]:
     """The keys proposed to the user: in every city the `per_city` best of
     those passing the filter, by score, and at least `at_least` drawn ones
-    even below it, best first; the featured three of 5 km always."""
+    even below it, best first; in the cities "Explore" shows first, the
+    three simple shapes of 5 km always."""
     by_city: dict[str, list[Run]] = {}
     for r in runs:
         if drawn(r):
@@ -480,8 +500,7 @@ def preselect(
                 break
             if r["key"] not in keys:
                 keys.append(r["key"])
-        featured = BY_NAME.get(city)
-        if featured is not None and featured.group == "featured":
+        if city in APP_FEATURED:
             for r in ranked:
                 if (
                     r.get("shape") in FEATURED_KEEP

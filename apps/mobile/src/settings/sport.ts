@@ -99,29 +99,33 @@ function fromProfile(id: Sport, ready: boolean): SportOption {
     : { id, emoji, name, ready };
 }
 
-/** Every sport, in the order they are shown; the ones not ready included. */
+/** Every sport, in the order they are shown; the ones not ready included.
+ * By family, from the easiest (TASK-371, the user's «prima walk poi run,
+ * bicycle, paddle, swim»): on foot, on wheels, on the water, on the snow,
+ * then the gym and the ones still «Soon». */
 export const ALL_SPORTS: readonly SportOption[] = [
+  // On foot. A walk is asked as "walking" (activityOf), 1-30 km; on since
+  // the server has TASK-371 part A and its migration 0043, the user's «cosa
+  // aspettiamo ad attivare Walk» (2026-11-06). A hike is asked as "hiking",
+  // 1-30 km on the server's own network; on since the server has TASK-377
+  // part A and its migration 0051, the user's «acceso appena pronto».
+  fromProfile("walk", true),
   fromProfile("run", true),
-  fromProfile("bike", true),
-  fromProfile("paddle", true),
-  // Asked as "swimming" since TASK-323 C2 (activityOf); on since the server
-  // swims (TASK-323, 2026-11-04), in the store builds too.
-  fromProfile("swim", true),
-  // Asked as "walking" (activityOf), 1-30 km; on once the server has
-  // TASK-371 part A and its migration 0043.
-  fromProfile("walk", false),
-  // Asked as "hiking" (activityOf), 1-30 km on the server's own network; on
-  // since the server has TASK-377 part A and its migration 0051, the user's
-  // «acceso appena pronto», in the store builds too.
   fromProfile("hike", true),
-  // Asked as "gravel_biking" and "mountain_biking" (activityOf), 10-30 km
-  // each; on since the server has TASK-378 part A and its migration 0052,
-  // the user's «Sì, accendili», in the store builds too.
+  // On wheels. Gravel and MTB are asked as "gravel_biking" and
+  // "mountain_biking" (activityOf), 10-30 km each; on since the server has
+  // TASK-378 part A and its migration 0052, the user's «Sì, accendili».
+  fromProfile("bike", true),
   fromProfile("gravel", true),
   fromProfile("mtb", true),
-  // Saved as "skiing" and "xc_skiing" (runActivityOf). The alpine ski is on
-  // since TASK-375 D4: the server has parts A-D (migrations 0044 and 0048)
-  // and the day its numbers, lifts and pistes. The cross-country ski not yet.
+  // On the water. The swim is asked as "swimming" since TASK-323 C2
+  // (activityOf); on since the server swims (TASK-323, 2026-11-04).
+  fromProfile("paddle", true),
+  fromProfile("swim", true),
+  // On the snow, saved as "skiing" and "xc_skiing" (runActivityOf). The
+  // alpine ski is on since TASK-375 D4: the server has parts A-D
+  // (migrations 0044 and 0048) and the day its numbers, lifts and pistes.
+  // The cross-country ski not yet.
   fromProfile("ski", true),
   fromProfile("xc_ski", false),
   // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in

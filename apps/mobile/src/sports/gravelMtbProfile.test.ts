@@ -27,9 +27,10 @@ import { profileOf } from "./index";
 
 jest.mock("expo-file-system");
 
-test("«Gravel» 🚲 and «MTB» 🚵 come after «Hike», on since part C", () => {
+test("«Gravel» 🚲 and «MTB» 🚵 come after «Bike», on since part C", () => {
+  // On wheels, by family since TASK-371.
   const index = ALL_SPORTS.findIndex((option) => option.id === "gravel");
-  expect(ALL_SPORTS[index - 1]?.id).toBe("hike");
+  expect(ALL_SPORTS[index - 1]?.id).toBe("bike");
   expect(ALL_SPORTS.slice(index, index + 2)).toEqual([
     { id: "gravel", emoji: "🚲", name: "Gravel", ready: true },
     { id: "mtb", emoji: "🚵", name: "MTB", ready: true },

@@ -3107,6 +3107,50 @@ serve il token. La chiave dell'API serve come su ogni percorso.
   later.» quando MET Norway non risponde e non c'è niente in cache.
 - **Il codice:** `resort_weather.py`.
 
+**La giornata di sci: stazione, modello e neve (TASK-406 parte D1)**
+
+Queste tre rotte chiedono il token: toccano le giornate dei membri.
+- **`PUT /me/activities/{key}/ski`**: chi scia scrive della sua giornata,
+  dopo averla salvata, come il post (`/post`). La giornata si manda come
+  prima.
+  - **Il corpo:** `{"resort_id", "gear", "snow"}`, ognuno `null` se non
+    c'è (`ski-day-request.json`).
+    - `resort_id` è una stazione di `GET /ski-resorts`.
+    - `gear` è testo libero, al più 60 caratteri, «sci» o «snowboard» più
+      marca e modello. Gli spazi in più si tolgono, e vuoto vale `null`.
+    - `snow` è uno di `powder`, `groomed`, `icy`, `spring`, `heavy`.
+  - **Come si scrive:** sempre intero, e vince l'ultimo. Quello che manca
+    diventa `null`.
+  - **La risposta:** `{"resort", "gear", "snow"}` (`ski-day.json`), con
+    `resort` come `{"id", "name"}` oppure `null`.
+  - **Gli errori:**
+    - `404` per una corsa che l'account non ha;
+    - `422` per un'attività diversa da `skiing` («Only a day of skiing has
+      a resort, gear and snow.»);
+    - `422` per una stazione che non c'è, una neve fuori dai cinque o un
+      campo in più.
+- **`GET /drawings/{id}/ski-day`**: la stessa forma, sul post. La vede
+  chi vede il disegno, come i nomi di impianti e piste.
+  - Chi non può aprirlo, o un'app che non legge `skiing` (`X-MuW-Reads`),
+    riceve `404`.
+  - Per un'altra attività, o una giornata senza queste cose, risponde
+    tutto `null`.
+  - Una stazione tolta da un import (`--clean`) lascia la giornata senza
+    stazione: `resort` diventa `null`.
+- **`GET /ski-resorts/{id}/snow`**: la neve segnata dai membri nella
+  stazione nelle ultime 24 ore (`resort-snow.json`).
+  - **La risposta:** `resort_id`, `since` (l'inizio delle 24 ore) e
+    `snow`, una lista di `{"snow", "days"}`. Prima la neve segnata più
+    volte, poi nell'ordine dei cinque. Vuota se nessuno ne ha segnata.
+  - **Cosa conta:** una giornata `skiing` finita dopo `since`, con quella
+    stazione e una neve, il cui post chi chiede vede su un profilo
+    (`shown_sql`: per tutti, o per i follower se li segue, mai attraverso
+    un blocco).
+  - Solo numeri, mai chi.
+  - `404` per una stazione che non c'è.
+- **Il codice:** `ski_days.py`. Migrazione `0056`, tipi in
+  `packages/shared-types/src/skiDays.ts`.
+
 ### Drawing search (TASK-344, ADR-0297)
 
 La ricerca dei disegni dalla lente del Feed: le stesse regole del feed su

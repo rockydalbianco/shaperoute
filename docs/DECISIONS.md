@@ -477,6 +477,8 @@ lasciando le righe d'indice.
 - ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
 - ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
 - ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
+- ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
+- ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1080,3 +1082,58 @@ finché l'utente non ha scelto.
 **Conseguenze**: TASK-419 pianifica le candidate con `--outline` (o con il
 seme esteso a leggere `candidate_outlines/`). La registrazione delle forme
 approvate è una parte successiva di TASK-418.
+
+## ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate»
+
+**Stato**: Attiva · 2026-11-08 · TASK-409 parte B1. Scelte dell'utente in
+`tasks/TASK-409.md` (5: «Anche nel post del Feed»; 6: «Pulsante a fine
+nuoto»); il resto è deciso dall'agente su delega dell'utente, e col
+Coordinatore: la parte B costruisce i pezzi di TASK-345 B (server) e C, e di
+TASK-374 D.
+
+1. **Sulla corsa, non sul nuoto**: `runs.heart_avg_bpm`, `heart_max_bpm`,
+   `heart_shown` (`0061`), così TASK-345 B li usa per ogni sport senza una
+   migrazione sua. Oggi li scrive solo `PUT /me/pool-swims/{key}`.
+2. **Limiti**: da 30 a 230 bpm, tutti e due o nessuno, il medio non sopra il
+   massimo: nel contratto (`422`) e nel vincolo del database.
+3. **Chi li vede**: il proprietario sempre; gli altri in `GET
+   /drawings/{id}/pool-swim` solo se `heart_shown` (vero se il telefono non
+   lo manda). Il filtro sta nel server. Il Feed generico (`FeedPost`) e «My
+   activities» non li hanno ancora: arrivano con TASK-345 B.
+4. **Una volta sola**: col primo `PUT`, come il resto del nuoto. Cambiare
+   «Show heart rate» dopo non si può ancora.
+5. **Compatibilità**: senza battito le risposte non hanno i campi
+   (`response_model_exclude_none`), così le app di oggi e i loro test vedono
+   lo stesso corpo di prima; il vecchio esempio `pool-swim.json` resta, quello
+   col battito è `pool-swim-heart.json`.
+
+## ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy
+
+**Stato**: Attiva · 2026-11-08 · TASK-409 parte B2. Scelte dell'utente in
+`tasks/TASK-409.md` (5, 6, 7); il resto è deciso dall'agente su delega
+dell'utente.
+
+1. **Moduli condivisi, file nuovi**: `health/heartSamples.ts` (la lettura in
+   una finestra, pause escluse; letture fuori da 30–230 scartate; medio e
+   massimo interi, il medio mai sopra il massimo) e `body/zoneTime.ts` (i
+   secondi in ogni zona). Sono i pezzi di TASK-345 C e TASK-374 D: quei task
+   li agganciano alle corse senza riscriverli.
+2. **Solo dove c'è il nativo**: `health/heartModules.ts`, separato da
+   `healthModules.ts`, carica la libreria solo con Nitro su iOS. Sulla build 7
+   e su Android è null e non si chiede nulla. La 1.0.1 ha già
+   `NSHealthShareUsageDescription` per il battito: il tipo si chiede a runtime
+   (`toRead`), l'impronta `6f8bba4c` non cambia.
+3. **Il consenso**: il primo tocco su «Add heart rate from Apple Health»
+   apre la richiesta di iOS ed è tenuto in `pool-heart.json`; ai nuoti dopo si
+   legge da solo. iOS non dice se la lettura è stata negata: negata vuol dire
+   nessuna lettura, e allora «No heart rate from your watch for this swim.».
+4. **Tempo in zona**: una lettura dura fino alla successiva, al più 60 s (un
+   buco più lungo è una lettura persa); l'ultima fino alla fine, con lo stesso
+   limite. Sotto la zona 1 non conta, sopra il massimo è zona 5. Le zone sono
+   quelle di «Heart rate zones» (TASK-374 B); senza FC massima né anno di
+   nascita si vede solo il medio.
+5. **Dove si vede**: a fine nuoto (medio, zone, fonte); «Show heart rate»
+   nel modulo del post, acceso; il medio nella tessera del Feed e nella
+   scheda, quando l'API lo dà. Il tempo nelle zone resta sul telefono.
+6. **Privacy** dell'app e del sito con i testi approvati (scelta 7), datata 8
+   novembre 2026: da ridatare al giorno del merge se entra dopo.

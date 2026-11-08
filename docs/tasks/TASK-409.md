@@ -59,6 +59,32 @@ metri, tempo e passo /100 m che ha già.
    battito medio va al server e si vede nel post, con la riga per nasconderlo
    come in TASK-345 B; il tempo nelle zone resta sul telefono (ADR-0318 §1).
    Scartate: «Solo sul telefono» (la proposta), «Telefono ora, Feed dopo».
+6. **Il consenso alla lettura**: «Pulsante a fine nuoto» (2026-11-08). A
+   fine nuoto, se Apple Salute c'è, il pulsante «Add heart rate from Apple
+   Health»: il primo tocco apre la richiesta di lettura del battito di iOS e
+   vale come consenso esplicito (GDPR art. 9), ricordato per i nuoti dopo;
+   poi battito medio e tempo nelle zone; nel modulo del post «Show heart
+   rate», acceso. Senza tocco non si legge nulla; si spegne nelle
+   Impostazioni di Salute. Scartate: un interruttore nelle Impostazioni,
+   chiedere a ogni nuoto.
+7. **Testi della parte B e privacy**: «Approvati così» (2026-11-08).
+   Inglese → italiano; tedesco, francese e spagnolo li traduce l'agente.
+
+   | English | Italiano |
+   |---|---|
+   | Add heart rate from Apple Health | Aggiungi il battito da Salute |
+   | No heart rate from your watch for this swim. | Nessun battito dall'orologio per questa nuotata. |
+   | Show heart rate | Mostra il battito |
+
+   Privacy, al posto di «MuW non legge mai i tuoi dati di salute, e niente di
+   questi arriva al nostro server o a qualche pubblicità»: «Se a fine
+   nuotata in piscina tocchi «Aggiungi il battito da Salute», MuW legge il
+   battito che il tuo orologio ha registrato durante quella nuotata, e
+   nient'altro. Medio e massimo restano con la nuotata sul nostro server e si
+   vedono nel suo post, a meno che tu spenga «Mostra il battito»; il tempo in
+   ogni zona resta sul telefono. Niente dei tuoi dati di salute arriva a
+   qualche pubblicità.» Tra le basi giuridiche, sotto «Il tuo consenso»: «…
+   e la lettura del battito da Apple Salute.»
 
 ## Contesto da leggere
 

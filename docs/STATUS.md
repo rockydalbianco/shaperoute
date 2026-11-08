@@ -222,6 +222,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   i due video del simulatore approvati dall'utente. Resta: l'OTA di produzione col sì
   dell'utente (la prepara il Coordinatore) e la prova sul telefono (due tocchi veloci su «+15°»
   ne contano uno nel simulatore).
+  **2026-11-06, in produzione**: parti A e B con l'OTA `6864a998`, dopo l'«ok produzione»
+  dell'utente. Resta solo la prova sul telefono (nel simulatore due tocchi veloci su «+15°»
+  ne contavano uno, e un trascinamento subito dopo un tocco a volte non partiva).
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi

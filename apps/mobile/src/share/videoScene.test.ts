@@ -2,7 +2,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 
 import { fitLines } from "../activities/fitLines";
 import { PITCH_3D } from "../map/mapKindStyle";
-import { color, SHADES } from "../theme/tokens";
+import { color, SHADES, videoLine } from "../theme/tokens";
 import { POST_RESULTS, type PostRun, resultValue } from "./postRun";
 import type { Sticker } from "./stickers";
 import {
@@ -104,7 +104,7 @@ describe("videoScene, on paper", () => {
 
   it("shows the pen's tip only while the line draws", () => {
     const tips = (frame: VideoOp[]) =>
-      frame.filter((op) => op.k === "dot" && op.fill === "accent" && op.alpha > 0);
+      frame.filter((op) => op.k === "dot" && op.fill === "line" && op.alpha > 0);
     expect(tips(scene.frames[5 * VIDEO_FPS])).toHaveLength(1);
     expect(tips(last)).toHaveLength(0);
   });
@@ -221,6 +221,7 @@ describe("videoScene, at night", () => {
       accent: NIGHT.accent,
       onAccent: NIGHT.onAccent,
       dot: NIGHT.text,
+      line: NIGHT.accent,
       scrim: NIGHT.scrim,
     });
     expect(NIGHT.map).toEqual(SHADES.dark.darkest.map);
@@ -229,7 +230,7 @@ describe("videoScene, at night", () => {
       []) {
       expect(known.has(hex)).toBe(true);
     }
-    expect(runLine(end)).toMatchObject({ color: "accent", width: 17.3 });
+    expect(runLine(end)).toMatchObject({ color: "line", width: 17.3 });
   });
 
   it("writes the title regular and tight, the labels small, spaced and in capitals, the numbers large and light", () => {
@@ -343,6 +344,7 @@ describe("videoScene, by day", () => {
       accent: DAY.accent,
       onAccent: DAY.onAccent,
       dot: DAY.text,
+      line: DAY.accent,
       scrim: DAY.map.background,
     });
     const known = new Set<string>(Object.values(DAY.map));
@@ -361,7 +363,7 @@ describe("videoScene, by day", () => {
     const lines = end.filter((op): op is Line => op.k === "line" && op.path === 1);
     expect(lines).toHaveLength(2);
     expect(lines[0]).toMatchObject({ color: "onAccent", alpha: 0.85, width: 25.6 });
-    expect(lines[1]).toMatchObject({ color: "accent", width: 17.3 });
+    expect(lines[1]).toMatchObject({ color: "line", width: 17.3 });
     expect(lines[0].upTo).toBe(lines[1].upTo);
     // The edge grows with the line, from the start.
     const early = day.frames[3 * VIDEO_FPS].filter(
@@ -573,7 +575,7 @@ describe("videoScene, in 3D", () => {
     const drawing = relief.frames[3 * VIDEO_FPS];
     const tip = drawing
       .filter((op): op is Dot => op.k === "dot")
-      .find((op) => op.fill === "accent");
+      .find((op) => op.fill === "line");
     expect(tip).toMatchObject({ path: 1, share: runLine(drawing)?.share });
     expect(runLine(night.frames[3 * VIDEO_FPS])?.share).toBeUndefined();
   });
@@ -594,7 +596,9 @@ describe("videoScene, with an animal (TASK-408)", () => {
   function animal(frame: VideoOp[]): Animal | undefined {
     return frame.find((op): op is Animal => op.k === "character");
   }
-  const withHorse = videoScene(RUN, POST_RESULTS, STICKERS, "night", "horse");
+  const withHorse = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+    character: "horse",
+  });
 
   it("has no animal unless one is asked", () => {
     expect(scene.character).toBeNull();
@@ -628,7 +632,7 @@ describe("videoScene, with an animal (TASK-408)", () => {
   });
 
   it("follows the line as the map lays it in 3D", () => {
-    const relief = videoScene(RUN, POST_RESULTS, STICKERS, "3d", "fox");
+    const relief = videoScene(RUN, POST_RESULTS, STICKERS, "3d", { character: "fox" });
     const frame = relief.frames[5 * VIDEO_FPS];
     expect(animal(frame)?.share).toBe(runLine(frame)?.share);
   });
@@ -638,5 +642,99 @@ describe("videoScene, with an animal (TASK-408)", () => {
     expect(
       withHorse.frames.map((frame) => frame.filter((op) => op.k !== "character")),
     ).toEqual(without.frames);
+  });
+});
+
+describe("videoScene, as «Edit video» makes it (TASK-408 C1)", () => {
+  type Emoji = Extract<VideoOp, { k: "emoji" }>;
+  function emoji(frame: VideoOp[], text: string): Emoji[] {
+    return frame.filter((op): op is Emoji => op.k === "emoji" && op.text === text);
+  }
+  const night = videoScene(RUN, POST_RESULTS, [], "night");
+
+  it("draws the line and the pen's tip in the colour chosen, the yellow when none is", () => {
+    const pink = videoScene(RUN, POST_RESULTS, [], "night", { line: "pink" });
+    expect(night.colors.line).toBe(NIGHT.accent);
+    expect(pink.colors.line).toBe(videoLine.pink);
+    expect(pink.colors.accent).toBe(NIGHT.accent);
+    expect(pink.frames).toEqual(night.frames);
+    const white = videoScene(RUN, POST_RESULTS, [], "day", { line: "white" });
+    expect(white.colors.line).toBe(videoLine.white);
+  });
+
+  it("keeps the ink line on paper, whatever the colour", () => {
+    const paper = videoScene(RUN, POST_RESULTS, [], "paper", { line: "green" });
+    expect(paper.colors.line).toBe(color.onAccent);
+  });
+
+  it("pops the emoji of the way where the line reaches it, three times, under the animal", () => {
+    const along = videoScene(RUN, POST_RESULTS, [], "night", {
+      along: "⭐",
+      character: "horse",
+    });
+    expect(emoji(along.frames[0], "⭐")).toHaveLength(0);
+    const last = along.frames[along.frames.length - 1];
+    const stars = emoji(last, "⭐");
+    expect(stars).toHaveLength(3);
+    const line = runLine(last) as Line;
+    stars.forEach((star, i) => {
+      expect(star.scale).toBe(1);
+      expect(star.share).toBeUndefined();
+      const [x, y] = pointAlong(
+        night.paths[1],
+        lengthOf(night.paths[1]) * ((i + 1) / 4),
+      );
+      expect(star.x).toBeCloseTo(x, 0);
+      expect(star.y).toBeCloseTo(y, 0);
+      expect(last.indexOf(star)).toBeGreaterThan(last.indexOf(line));
+      expect(last.indexOf(star)).toBeLessThan(
+        last.findIndex((op) => op.k === "character"),
+      );
+    });
+    // Each pops once the line has drawn past it, not before.
+    along.frames.forEach((frame) => {
+      const drawn = runLine(frame)?.upTo ?? 0;
+      const whole = lengthOf(night.paths[1]);
+      const shown = emoji(frame, "⭐").length;
+      expect(shown).toBeLessThanOrEqual(Math.floor((drawn / whole) * 4 + 0.01));
+    });
+  });
+
+  it("lays the emoji of the way on the line as the map lays it in 3D", () => {
+    const relief = videoScene(RUN, POST_RESULTS, [], "3d", { along: "🔥" });
+    const last = relief.frames[relief.frames.length - 1];
+    expect(emoji(last, "🔥").map((op) => op.share)).toEqual([0.25, 0.5, 0.75]);
+  });
+
+  it("bursts the emoji of the end around the drawing once it is whole, six of them", () => {
+    const end = videoScene(RUN, POST_RESULTS, [], "night", { end: "🎆" });
+    expect(emoji(end.frames[8 * VIDEO_FPS], "🎆")).toHaveLength(0);
+    const last = emoji(end.frames[end.frames.length - 1], "🎆");
+    expect(last).toHaveLength(6);
+    for (const op of last) {
+      expect(op.scale).toBe(1);
+      expect(op.size).toBeCloseTo(VIDEO_WIDTH * 0.12, 1);
+      // Under the title, over the numbers.
+      expect(op.y).toBeGreaterThan(VIDEO_HEIGHT * 0.2);
+      expect(op.y).toBeLessThan(VIDEO_HEIGHT * 0.7);
+    }
+  });
+
+  it("adds nothing without emoji: the video as before", () => {
+    const none = videoScene(RUN, POST_RESULTS, [], "night", { along: null, end: null });
+    expect(none.frames).toEqual(night.frames);
+  });
+
+  it("draws «2D» on the night's ground with no map, no veil and no credit, the line in its colour", () => {
+    const flat = videoScene(RUN, POST_RESULTS, [], "2d", { line: "light_blue" });
+    expect(flat.map).toBeNull();
+    expect(flat.colors.paper).toBe(NIGHT.map.background);
+    expect(flat.colors.line).toBe(videoLine.lightBlue);
+    const last = flat.frames[flat.frames.length - 1];
+    expect(last.some((op) => op.k === "map" || op.k === "scrim")).toBe(false);
+    expect(words(last)).not.toContain(MAP_CREDIT);
+    expect(flat.paths).toEqual(night.paths);
+    expect(runLine(last)).toMatchObject({ color: "line", width: 17.3 });
+    expect(runLine(last)?.share).toBeUndefined();
   });
 });

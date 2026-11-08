@@ -2,14 +2,14 @@
 
 An app says in X-MuW-Reads the kinds it reads besides running, cycling and
 paddling, separated by commas: `swimming`, `hiking`, `mountain_biking`,
-`inline_skating`, `walking`, `gravel_biking`, `skiing`, `xc_skiing`, `gym`,
-`trackless` for a run or a drawing without a track (TASK-385): a workout at
-the gym, which has none, needs both; and `pool` for a swim in a pool
-(TASK-400), which needs `swimming`, `trackless` and `pool`. A request
-without it comes from a build of before, which reads those three only, each
-with its track. Every list of runs, drawings, routes or group runs leaves
-out what the request does not read; a drawing or a group run it does not
-read is not found, as one that is not there.
+`inline_skating`, `walking`, `gravel_biking`, `skiing`, `xc_skiing`,
+`ski_touring` (TASK-415), `gym`, `trackless` for a run or a drawing without
+a track (TASK-385): a workout at the gym, which has none, needs both; and
+`pool` for a swim in a pool (TASK-400), which needs `swimming`, `trackless`
+and `pool`. A request without it comes from a build of before, which reads
+those three only, each with its track. Every list of runs, drawings,
+routes or group runs leaves out what the request does not read; a drawing
+or a group run it does not read is not found, as one that is not there.
 
 Names and values are read without case, the spaces around them and the
 values this API does not know are left out: an app newer than the server
@@ -41,6 +41,8 @@ NEWER_ACTIVITIES: tuple[str, ...] = (
     "gravel_biking",
     "skiing",
     "xc_skiing",
+    # A day of ski touring (TASK-415), in the same order.
+    "ski_touring",
     # A workout at the gym (TASK-385): shown only with `trackless` too.
     "gym",
 )

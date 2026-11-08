@@ -1,12 +1,11 @@
 /**
  * A member's drawing in «Feed» (TASK-118, ADR-0227): signed in, the page
- * shows the drawings the API gives, a tap opens one whole on the map, and
- * «←» comes back to «Feed», not to «Profile». An API without a feed leaves
+ * shows the drawings the API gives, a tap opens the page of one (TASK-410),
+ * and «Back» comes back to «Feed». An API without a feed leaves
  * the examples, without a word. The page alone is in
  * src/screens/FeedScreenPosts.test.tsx; the example drawings in
  * AppFeed.test.tsx.
  */
-import drawing from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import { fireEvent, render, screen } from "@testing-library/react-native";
@@ -108,11 +107,10 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test("a member's drawing opens whole from «Feed», and «←» comes back to «Feed»", async () => {
+test("a member's drawing opens its page from «Feed», and «Back» comes back to «Feed»", async () => {
   api({
     ...ACCOUNT,
     [`GET ${FEED}`]: () => Response.json(feed),
-    [`GET /drawings/${drawing.id}`]: () => Response.json(drawing),
   });
   await onFeed();
   // The drawings the members published, asked from where the phone is.
@@ -124,23 +122,18 @@ test("a member's drawing opens whole from «Feed», and «←» comes back to «
   expect(asked(FEED)).toBe(1);
 
   await fireEvent.press(screen.getByText(String(STAR.title)));
-  // On the map, with the drawing's card: its day and km, and «Start» on
-  // its track (TASK-307, in AppDrawingStart.test.tsx).
-  expect(await screen.findByText(String(drawing.description))).toBeOnTheScreen();
-  expect(screen.getByText(/4\.00 km/)).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
-  expect(screen.queryByRole("tab")).toBeNull();
-  expect(asked(`/drawings/${drawing.id}`)).toBe(1);
+  // The page of the post (TASK-410): its summary from the feed's own
+  // fields, nothing more asked of the API.
+  const page = await screen.findByTestId("post-page");
+  expect(page).toBeOnTheScreen();
+  expect(screen.getByTestId("post-summary")).toBeOnTheScreen();
+  expect(screen.getByTestId("post-like")).toBeOnTheScreen();
 
-  await fireEvent.press(screen.getByRole("button", { name: "Back to the profile" }));
-  // «Feed» again, as it was; «Profile» stays closed.
-  expect(
-    await screen.findByRole("tab", { name: "Feed", selected: true }),
-  ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  // «Feed» again, as it was; not asked again.
+  expect(screen.queryByTestId("post-page")).toBeNull();
+  expect(screen.getByRole("tab", { name: "Feed", selected: true })).toBeOnTheScreen();
   expect(screen.getByText("Ada_runs")).toBeOnTheScreen();
-  expect(screen.queryByText("Drawings")).toBeNull();
-  expect(screen.queryByText("Log out")).toBeNull();
-  // Built again under the map, «Feed» keeps what it had: not asked again.
   expect(asked(FEED)).toBe(1);
 });
 

@@ -121,9 +121,9 @@ export const ALL_SPORTS: readonly SportOption[] = [
   fromProfile("gravel", true),
   fromProfile("mtb", true),
   // Inline skating is asked as "inline_skating" (activityOf), 5-30 km on
-  // the server's own network (TASK-380 part B); on once the server has part
+  // the server's own network (TASK-380 part B); on since the server has part
   // A and its migration 0055, the user's «appena pronto».
-  fromProfile("roller", false),
+  fromProfile("roller", true),
   // On the water. The swim is asked as "swimming" since TASK-323 C2
   // (activityOf); on since the server swims (TASK-323, 2026-11-04).
   fromProfile("paddle", true),

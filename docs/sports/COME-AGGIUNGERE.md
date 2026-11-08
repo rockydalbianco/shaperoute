@@ -186,6 +186,10 @@ Righe nei registri:
   - «Disegna», il Feed, i record, il pannello della corsa;
   - il nome nel modulo per pubblicare.
 
+Nel profilo, se lo sport si registra come un giro in bici (velocità in
+km/h, parziali in km/h, voce ogni 10 km): `rides: true` (TASK-416). Senza,
+valgono i numeri della corsa.
+
 Punti fissi, scritti a mano:
 
 - **`settings/sport.ts`** (TASK-376 B3c, #843): emoji, nome e «Record

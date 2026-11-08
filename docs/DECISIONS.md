@@ -24950,6 +24950,40 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
 
+## ADR-0339, precisazione C — Il foglio «Edit video»: le scelte in un oggetto, il colore come ruolo, le emoji dove passa la linea
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-06), con la
+lista della parte C1 approvata dal Coordinatore; lo stile «2D» è una scelta
+dell'utente (scelta 11 del task file).
+
+1. **La parte C si fa in due PR**: C1 il foglio con stile (2D compreso),
+   animale, colore della linea ed emoji; C2 scene, finale, la camera dietro
+   l'animale sul 3D (tolta da B2, perché «Camera behind» è una voce delle
+   scene) e l'anteprima.
+2. **Il foglio è un `SheetModal`** dal basso, come i filtri della ricerca,
+   aperto da una riga «Edit video» di «Share your run» con sotto il
+   riassunto delle scelte. Ogni scelta vale subito; «Done» chiude. «Style»
+   e «Character» si spostano dentro il foglio; «Music» resta nella pagina.
+3. **Le scelte vanno a `videoScene` in un oggetto** (`SceneOptions`), non
+   più come quinto argomento: l'animale, il colore, le due emoji, e in C2
+   le scene.
+4. **Il colore è un ruolo nuovo della scena, `line`**, per la linea e la
+   punta della penna: la pagina del video non cambia per questo. Il giallo
+   è l'`accent` della tavolozza del video; gli altri quattro vengono dal
+   blocco `videoLine` di `tokens.ts` (vincolo del Coordinatore: nessun
+   secondo giallo scritto a mano). Sul giallo di riserva la linea resta
+   nera, perché un colore chiaro non si leggerebbe.
+5. **Le emoji del percorso** spuntano a un quarto, metà e tre quarti della
+   linea, nell'istante in cui la linea ci arriva (l'inverso della sua
+   curva), sotto l'animale; sul 3D stanno sulla linea come la mappa la
+   posa (`share`, la pagina le proietta come la punta della penna). **Le
+   emoji della fine** scoppiano in sei punti fissi agli angoli e a metà dei
+   lati del disegno, lontano dal titolo, dal logo e dai numeri (posti
+   scelti guardando i video del simulatore).
+6. **Il 2D** è lo stile Notte senza la mappa: la scena non chiede la mappa
+   alla pagina e il video esce subito, senza velo né crediti della mappa.
+   Le quattro caselle di «Style» stanno in una riga di 76 punti l'una.
+
 ## ADR-0318, precisazione — Il nuoto in piscina
 
 **Stato**: Attiva · 2026-11-06 · TASK-409 parte A. Cambia §14 per il nuoto in
@@ -25065,6 +25099,14 @@ Open-Meteo archivio (gratuito solo non commerciale).
 
 **Conseguenze**: le corse salvate prima della parte C hanno solo passi per
 km (dal backfill) e i campi di oggi; meteo solo per le corse salvate subito.
+
+**Parte B** (2026-11-08, deciso dall'agente su delega dell'utente): la
+pagina è un `Modal` aperto da `FeedScreen`, non una schermata di `App`;
+«Like» apre le sei reazioni (scelta dell'utente, non c'è un 👍); le icone
+del foglio sono emoji (niente icone né SVG nell'app); «Edit & run» passa
+per una porta nuova (`feed/editRunDoor.ts`) verso `editTrackOf` di `App`;
+le impostazioni del proprio post trovano la corsa in `GET /me/drawings`
+per id e salvano con `DrawingsDoor.choose`.
 ## ADR-0341 — La palestra per tutti i giorni: la griglia, il calendario dal server, le schede sull'account
 
 **Stato**: Proposto · 2026-11-06 · TASK-411. Le scelte di prodotto sono
@@ -25257,6 +25299,47 @@ dall'agente su delega dell'utente):
 - Un posto nuovo aspetta Overpass (20–40 s) alla prima richiesta, come la
   prima acqua di un lago.
 
+## ADR-0314, precisazione — La parte B1: la guida in Swift, legata al telefono dalle tracce
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B1, decisa dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore (local_3f55a0e9).
+
+**Contesto**: l'orologio deve guidare senza telefono (scelta dell'utente,
+ADR-0314 punto 1), quindi la guida del telefono (`navigator.ts`,
+`progress.ts`, `rejoin.ts`) va riscritta in Swift. Due copie della stessa
+logica divergono, se niente le lega.
+
+**Decisione**:
+1. **Una riscrittura riga per riga** in `WatchCore/Guide/`, con le stesse
+   costanti e gli stessi nomi; B1 copre la guida dalla partenza (svolte,
+   fuori rotta, rientro, buco di GPS, deviazione con rientro più avanti, fix
+   poco precisi, arrivo). Il percorso chiuso preso dove lo si tocca e i
+   pezzi a penna alzata sono B2.
+2. **Avvisi per tipo, non frasi**: `GuideCue` (partenza, svolta con la
+   catena e i metri, fuori rotta, dov'è il percorso, di nuovo sul percorso,
+   arrivato) e `vibrates` come il `vibrate` del telefono. L'orologio mostra e
+   vibra; le parole restano del telefono.
+3. **Le tracce come contratto**: `src/watch/guideScenarios.ts` fa uscite
+   deterministiche sui due percorsi di `navigation/fixtures/`, con i fix a 8
+   decimali; `guideTrace.ts` le fa seguire al navigator del telefono e scrive
+   lo stato dopo ogni fix e gli avvisi per tipo (il tipo si ricava dalle
+   parole inglesi; una frase senza tipo è un errore). Le 14 tracce stanno in
+   `targets/watch/Core/Fixtures/guide/`, scritte da `scripts/watch-guide.sh`
+   e formattate con Prettier; jest controlla che dicano ciò che il codice di
+   oggi fa (per contenuto, non per impaginazione), XCTest le rigioca (metri
+   entro 1 cm, il resto uguale).
+4. **Gli scenari hanno denti**: una deviazione sta a una distanza e da un
+   lato liberi da ogni altra parte del percorso, e quella lunga rientra 700 m
+   più avanti, oltre la finestra che si avrebbe con meno di `REJOIN_PER_M`.
+   Provato cambiando una costante per volta nello Swift (`forwardCost`,
+   `passM`, `gapMs`, `poorFixM`, `joinM`, `offFixes`, `perM`): ogni cambio fa
+   fallire i test.
+
+**Conseguenze**: un cambio a `navigator.ts`, `progress.ts` o `rejoin.ts`
+vuole `scripts/watch-guide.sh` e lo stesso cambio in Swift, o fallisce jest o
+`swift test`. Le tracce pesano circa 670 KB.
+
+---
 ---
 ## ADR-0314, precisazione — La parte A3: il telefono
 
@@ -25392,6 +25475,20 @@ decisione presa ma non ancora codice sulle quote dalle tegole Terrarium
 - le ciaspole e Hike possono avere fasi, pendenza e vette con gli stessi
   moduli, senza riscriverli.
 
+**Precisazione (2026-11-08, TASK-415 parte A, decisa dall'agente su
+delega dell'utente)**: `ski_touring` viene dopo `xc_skiing` in
+`RECORDED_SPORTS`, quindi fra `xc_skiing` e `gym` in `RUN_ACTIVITIES`,
+`RunActivity` e `X-MuW-Reads`. Il profilo dell'app ha il nome «Ski touring»
+senza `tLater` e nessuna riga in «Settings» fino alla parte B, come il
+Roller nella sua parte A; il passo di una corsa senza percorso è quello di
+chi corre (`freeRunAs` vuoto), come lo sci di fondo, finché B non dà fasi e
+VAM. Apple `.crossCountrySkiing` (60) e Health Connect `EXERCISE_TYPE_SKIING`
+(61) sono verificati su `@kingstinct/react-native-healthkit` e
+`react-native-health-connect`. La migrazione allarga solo
+`runs_activity_check`: preferiti, corse di gruppo e `run_bests` restano
+com'erano. Il contratto dei percorsi (`contract.json`) e il motore non
+cambiano.
+
 ## ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km
 
 **Stato**: Proposto · 2026-11-08 · TASK-414. Le scelte dell'utente, il
@@ -25486,3 +25583,24 @@ e luna (`docs/sports/wheelchair.md`), contro la rete foot sulla stessa area
   TASK-347 G.
 - **La rete foot o roller così come sono**: scale, ciottoli, cordoli.
 - **Una rete fatta col tag `wheelchair`**: c'è quasi solo a Milano.
+
+---
+## ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici
+
+**Data**: 2026-11-08 · **Stato**: Accettata · **Task**: TASK-416
+
+Scelte dell'utente: Gravel e MTB «tutti dati da bici diciamo non corsa»
+(2026-11-07); Roller «Sì, km/h» (2026-11-08). Velocità e media in km/h,
+parziali in km/h, voce ogni 10 km, svolte dette 100 m prima.
+
+Approvato dal Coordinatore, deciso dall'agente su delega dell'utente:
+
+- **Un campo del profilo** `rides?: true` («i suoi numeri sono quelli di un
+  giro in bici») in `sports/base.ts`, detto da bici, Gravel, MTB e Roller.
+  `isRide` in `navigation/ride.ts` lo legge con `findProfile`, invece di
+  confrontare l'attività con `"cycling"`. Uno sport nuovo che si registra
+  come un giro lo dice nel suo file, senza toccare `navigation/`.
+- **Nessun ciclo di import**: `sports/` non importa `navigation/ride`.
+- **Gli stessi testi della bici**: il Roller sente «Average speed» e
+  «kilometres per hour» come chi pedala. Solo JavaScript, l'impronta iOS
+  resta `6f8bba4c`.

@@ -234,7 +234,11 @@ tutto: è corto apposta.
 ## I pezzi di montagna (fasi, vette)
 
 - **2026-11-08, TASK-415 (Ski touring, ADR-0344) — tre pezzi generici, non
-  dello scialpinismo.** Pensati anche per le ciaspole e per Hike:
+  dello scialpinismo.** Valgono anche per Hike e per le ciaspole, dove
+  servono. Le ciaspole disegnano forme libere (TASK-413), non sono «Record
+  only»: le vette e la pendenza vanno bene per loro, mentre fasi, VAM e
+  numeri del post seguono la strada «Record only» e per loro sono
+  facoltativi, da verificare:
   - **le fasi** (salita, discesa, impianto, cambi) e la **VAM** sul
     telefono, `activities/mountainPhases.ts`, sopra `legs`, `isLift` e
     `droppedM` di `snowDay.ts` (esportati, senza cambiarli). Chi sale con le

@@ -20,6 +20,7 @@ from test_game_api import (
     OTHER_KEY,
     PHONE,
     SIX_KM,
+    SIX_KM_UNLOCKS,
     game_of,
     run_body,
     save,
@@ -109,12 +110,20 @@ def test_the_backfill_gives_the_rows_of_a_save(
     told = len(expo.sent)
     forget_the_game(database)
 
-    assert backfill(database) == Backfilled(accounts=1, runs=2, unlocked=2)
+    assert backfill(database) == Backfilled(
+        accounts=1, runs=2, unlocked=len(SIX_KM_UNLOCKS) + 1
+    )
     assert game_rows(database) == saved
-    # At the end of the run that reached each: 6 km, then 12.
+    # At the end of the run that reached each. The first, paused after 10
+    # minutes, has no 5 km in one go: its km and kilometres only. The
+    # second has the 5 km, and 12 km in all: the square.
     end_of_first = saved[0]["ended_at"]
     end_of_second = saved[1]["ended_at"]
-    assert unlocks(database) == [("square", end_of_second), ("triangle", end_of_first)]
+    first = {"oval", "pentagon", "triangle", "penguin", "cat", "bear"}
+    assert unlocks(database) == sorted(
+        [(s, end_of_first if s in first else end_of_second) for s in SIX_KM_UNLOCKS]
+        + [("square", end_of_second)]
+    )
     # Nobody is told.
     assert len(expo.sent) == told
 
@@ -153,8 +162,8 @@ def test_newer_rules_compute_every_run_again(
     monkeypatch.setattr(game_backfill, "RULES_VERSION", newer)
     assert backfill(database) == Backfilled(accounts=1, runs=1, unlocked=0)
     assert [row["rules_version"] for row in game_rows(database)] == [newer]
-    # The shape stays, once.
-    assert [shape for shape, _ in unlocks(database)] == ["triangle"]
+    # The shapes stay, once.
+    assert [shape for shape, _ in unlocks(database)] == sorted(SIX_KM_UNLOCKS)
 
 
 def test_the_command_needs_the_database(
@@ -178,5 +187,5 @@ def test_the_command_says_what_it_did(
     assert main([]) == 0
     assert capsys.readouterr().out.strip() == (
         f"game_backfill: rules {game_backfill.RULES_VERSION}, 1 account(s),"
-        " 1 run(s), 1 shape(s) unlocked"
+        f" 1 run(s), {len(SIX_KM_UNLOCKS)} shape(s) unlocked"
     )

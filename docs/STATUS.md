@@ -101,9 +101,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-401 — Le indicazioni a schermo bloccato** · A in `main`; B (Live
   Activity, 1.0.3) nella bozza #862. File: quelli della #862 ·
   `tasks/TASK-401.md`
-- **TASK-406 — Le stazioni sciistiche** · C e D1 in `main` e sul server;
-  D2 (la giornata nell'app) nella PR #960, OTA dopo il merge col sì
-  dell'utente; poi D3. File: quelli della #960 · `tasks/TASK-406.md`
+- **TASK-406 — Le stazioni sciistiche** · C, D1, D2 e D3a in `main`; D1 sul
+  server. La 0062 va sul server nel passo unico; lo sci esce con il prossimo
+  OTA di produzione, col sì dell'utente. Prossimo: D3b (la pagina della
+  stazione nell'app). File: quelli della D3b · `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
 - **TASK-408 — L'editor del video dell'attività** · C1 e C2a (scene e
@@ -147,10 +148,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347
   precisazione). Prossimo: «via server catalogo» del Coordinatore, poi il
   secondo giro (Italia, Europa) con le zone copiate dal server. File: — · `tasks/TASK-419.md`
-- **TASK-423 — «Play» grande** (ADR-0351) · proposta approvata il
-  2026-11-08: 94 forme in 10 collezioni, passi su 10 distanze, sfide
-  personali, premi. Documenti in PR; parte A nella #984 (foglio delle forme
-  all'utente), poi B–E (D dopo la #971). File: quelli della #984 · `tasks/TASK-423.md`
+- **TASK-423 — «Play» grande** (ADR-0351) · documenti (#982) e A, il
+  catalogo a 94 forme (#984), in `main`; server di A insieme a B, col sì.
+  Prossima B (i tempi su 11 distanze, `RULES_VERSION` 3), poi C, D (dopo
+  la #971), E. File: — · `tasks/TASK-423.md`
 - **TASK-418 — Forme nuove per il catalogo di «Explore»** · parte A in
   `main` (#953): 49 forme candidate in `services/route-engine/candidate_outlines/`;
   poi la registrazione delle sole forme che l'utente approva su strada (dopo

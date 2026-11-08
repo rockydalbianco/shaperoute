@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: In lavorazione — parte B fatta e pubblicata (2026-11-08); A è TASK-355 B; prossima C, poi D ed E
+**Stato**: In lavorazione — B fatta e pubblicata, F (la card del Feed) in PR (2026-11-08); A è TASK-355 B; prossima C, poi D ed E
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -321,7 +321,8 @@ Le parti elencano i loro file quando partono.
 - Leggere il battito da Apple Salute (TASK-345 C) e il tempo in zona a fine
   corsa sullo schermo della corsa (TASK-374 D).
 - Caricare il video e il lettore: sono TASK-336 (scelta 3).
-- La card del Feed: resta com'è, salvo la foto (parte A).
+- ~~La card del Feed: resta com'è, salvo la foto (parte A).~~ Superato dalla
+  scelta dell'utente del 2026-11-08 («Tutto come la pagina»): è la parte F.
 - Un punteggio o una «precisione» (ADR-0207, nessun punteggio).
 
 ## Bozza visiva
@@ -409,6 +410,54 @@ produzione iOS: gruppo `8b1af1b4-8365-490c-ad74-00df811b9254`, update
 `6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`; con TASK-416 e TASK-408 C1.
 Sì dell'utente: «si confermo esatto» (parte B) e «Sì, OTA tutto» (nella
 sessione del Coordinatore).
+
+## Parte F — la card del Feed come la pagina (2026-11-08)
+
+Dopo aver visto la pagina, l'utente ha chiesto lo stesso aspetto «anche da
+fuori nello scorrimento». Domanda con le anteprime; **risposta dell'utente
+(2026-11-08): «Tutto come la pagina»**: nome in alto, disegno, titolo, i
+numeri in riquadri (distanza, tempo, passo o velocità, calorie) al posto
+della riga di testo, e sotto la stessa barra a icone della pagina. Supera
+la **scelta 4 di TASK-355** («Draw it near me» giallo nella card): al suo
+posto «Edit & run». «Draw it near me» resta sul disegno aperto sulla mappa.
+Via del Coordinatore il 2026-11-08: è la parte F di TASK-410, stesso numero.
+
+Cosa fa:
+
+- `PostActions` (nuovo): la barra delle quattro azioni, una sola per la
+  card e per il foglio della pagina (`PostSheet` la usa); `postOfDrawing`
+  passa qui. `ActionBar` e il suo test non ci sono più; il testo
+  «Reactions» esce dalle quattro tabelle (nessuno lo mostra).
+- `FeedPost`: un post di un membro ha sotto le pagine `SummaryBoxes`
+  (nuovo, da `summaryRows`), sotto il titolo niente riga di testo, né sotto
+  il disegno né sopra la foto; poi la barra. Gli esempi restano come erano.
+  «Edit & run» non c'è su neve, palestra e piscina.
+- Il foglio dei commenti si crea al primo «Comment»: una card non ne porta
+  uno che non apre.
+- `DrawAgainContext` di `App.tsx` non ha più chi lo usa nella card: resta
+  lì, innocuo; toglierlo tocca `App.tsx` e i suoi test (da fare a parte).
+
+File toccati (parte F):
+
+```
+apps/mobile/src/feed/PostActions.tsx         (nuovo)
+apps/mobile/src/feed/PostActions.test.tsx    (nuovo)
+apps/mobile/src/feed/SummaryBoxes.tsx        (nuovo)
+apps/mobile/src/feed/FeedPost.tsx
+apps/mobile/src/feed/PostSheet.tsx
+apps/mobile/src/feed/ActionBar.tsx           (tolto)
+apps/mobile/src/feed/ActionBar.test.tsx      (tolto)
+apps/mobile/src/feed/FeedPostPhotos.test.tsx, hikeFeed.test.tsx, snowFeed.test.tsx
+apps/mobile/src/screens/FeedScreenPosts.test.tsx
+apps/mobile/__tests__/AppFeedDrawing.test.tsx
+apps/mobile/src/i18n/{it,es,de,fr}.ts        («Reactions» tolto)
+docs/tasks/TASK-410.md, docs/STATUS.md, docs/DECISIONS.md
+```
+
+Provata sul simulatore (Expo Go, 2026-11-08): la card di una corsa di un
+altro (quattro riquadri, Like ed Edit & run), di una bici (velocità in
+km/h) e di un proprio allenamento in palestra (solo il tempo, Like e Share,
+niente Edit & run).
 
 ## Esito
 

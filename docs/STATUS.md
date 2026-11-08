@@ -109,8 +109,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   e finale) nella PR #961. File: quelli della #961 · `tasks/TASK-408.md`
 - **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` (#922); B
   (battito e zone) nella 1.0.3. File: — · `tasks/TASK-409.md`
-- **TASK-410 — La pagina del post** · B in `main` (#949); poi C
-  (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
+- **TASK-410 — La pagina del post** · B in `main` (#949) e in produzione
+  (OTA `8b1af1b4`); F (la card del Feed come la pagina) nel branch
+  `feat/TASK-410-f-feed-card`; poi C (`run_stats`), D, E. File:
+  `src/feed/FeedPost.tsx`, `PostActions.tsx`, `PostSheet.tsx` ·
+  `tasks/TASK-410.md`
 - **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
   schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
   #962 · `tasks/TASK-411.md`

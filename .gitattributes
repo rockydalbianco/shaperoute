@@ -1,4 +1,5 @@
-# Append-only documents: two tasks adding lines at once keep both (TASK-359).
-docs/STATUS.md merge=union
-docs/DECISIONS.md merge=union
-docs/INDEX.md merge=union
+# TASK-359 had `merge=union` on docs/STATUS.md, DECISIONS.md and INDEX.md
+# (append-only documents). Removed on 2026-11-08 (evening) after TASK-412 made them
+# short: a union merge of an older branch brought the whole archived text
+# back. Conflicts there are now resolved by hand, keeping main's version
+# and re-adding only the branch's lines in the new format.

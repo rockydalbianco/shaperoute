@@ -432,7 +432,7 @@ Privacy, sezione «Sharing live»:
   aggiornamento dopo palestra, ciaspole e cancelli; la sequenza la prepara
   il Coordinatore e la lancia l'utente. Il giro di pulizia parte con quel
   deploy. Finché il server non c'è, A2 e B si provano in locale.
-- **A2** — la pagina `site/live/`: in PR (`feat/TASK-424-a2-live-page`,
+- **A2** — la pagina `site/live/`: in PR #1010 (`feat/TASK-424-a2-live-page`,
   2026-11-08). `view.js` (logica pura, provata con la fixture
   `live-view.json`) e `live.js` (pagina, mappa, timer) al posto del solo
   `live.js` proposto: un file nuovo nella stessa cartella. MapLibre 5.24.0

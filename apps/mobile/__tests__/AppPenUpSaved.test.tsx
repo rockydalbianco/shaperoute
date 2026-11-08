@@ -173,11 +173,14 @@ function api(answers: Answers) {
   });
 }
 
+/** The bodies sent; not the figures of a post (TASK-410 C), which follow
+ * each run saved. */
 function bodies(method: string, prefix: string): unknown[] {
   return fetchSpy.mock.calls
     .filter(
       ([input, init]) =>
         String(input).startsWith(`${API}${prefix}`) &&
+        !String(input).endsWith("/stats") &&
         (init?.method ?? "GET") === method,
     )
     .map(([, init]) => JSON.parse(String(init?.body)));

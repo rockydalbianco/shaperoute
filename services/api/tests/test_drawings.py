@@ -81,6 +81,10 @@ NEW_FIELDS |= SOURCE
 # The post's order (TASK-348): every fixture written before was never ordered.
 NEW_FIELDS |= {"order"}
 SOURCE |= {"order"}
+# The figures of the run (TASK-410 part C): no fixture written before has
+# them (test_run_stats.py has their examples).
+NEW_FIELDS |= {"stats"}
+SOURCE |= {"stats"}
 THIRD_EMAIL = "third@example.com"
 
 

@@ -36,6 +36,7 @@ export const MOUNTAIN_BIKING: SportProfile = {
   // speed, which on a trail says little of the effort.
   energy: { kind: "met", bands: [{ belowKmh: Infinity, met: 8.5 }] },
   freeRunAs: "mountain_biking",
+  rides: true,
   // Its trails go up to mtb:scale S2 (the user's choice 5).
   caution: tLater("Trails can be technical: check the route before you set off."),
 };

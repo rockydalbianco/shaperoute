@@ -1,6 +1,7 @@
 import type { Activity } from "@shaperoute/shared-types";
 
 import { BASE_LANGUAGE, type Language } from "../i18n/languages";
+import { findProfile } from "../sports";
 import { metresPer } from "../units/format";
 import { speedIn } from "../units/runFormat";
 import { appUnits, type Units } from "../units/units";
@@ -9,7 +10,8 @@ import { ANNOUNCE_M } from "./navigator";
 import { durationMs, type Track } from "./trackRecorder";
 
 /**
- * A route followed by bike (TASK-216, ADR-0179): what changes from a run.
+ * A route followed by bike (TASK-216, ADR-0179), or by any sport whose
+ * profile says `rides` (TASK-416): what changes from a run.
  * The speed in km/h where a run has its pace, the kilometres said every
  * RIDE_KM_EVERY, and the turns said further ahead. Pure functions; a run,
  * and any other activity, is followed as before.
@@ -36,9 +38,11 @@ export function rideEveryOf(units: Units = appUnits()): number {
   return units === "mi" ? RIDE_MI_EVERY : RIDE_KM_EVERY;
 }
 
-/** Whether a route of `activity` is followed by bike. */
+/** Whether a route of `activity` is followed with a ride's numbers: a
+ * sport whose profile says `rides` (TASK-416), the bike, gravel, MTB and
+ * Roller. */
 export function isRide(activity: Activity | undefined): boolean {
-  return activity === "cycling";
+  return findProfile(activity)?.rides === true;
 }
 
 /** How far ahead a turn is said along a route of `activity`. */

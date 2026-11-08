@@ -46,5 +46,6 @@ export const CYCLING: SportProfile = {
   energy: { kind: "met", bands: BANDS },
   // A ride's numbers are speeds, as along a route by bike (TASK-251 C).
   freeRunAs: "cycling",
+  rides: true,
   muwLabel: RIDE_IT_YOURSELF,
 };

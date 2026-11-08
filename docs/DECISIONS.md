@@ -478,6 +478,7 @@ lasciando le righe d'indice.
 - ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
 - ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
 - ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
+- ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1102,3 +1103,32 @@ finché l'utente non ha scelto.
 **Conseguenze**: TASK-419 pianifica le candidate con `--outline` (o con il
 seme esteso a leggere `candidate_outlines/`). La registrazione delle forme
 approvate è una parte successiva di TASK-418.
+
+## ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-08), con la
+scelta dell'utente 12 (la camera si sceglie solo sul 3D).
+
+1. **L'anteprima nel foglio diventa C2c**: è un modo nuovo della pagina
+   del video, in una WebView visibile, e merita una PR sua. C2b è solo la
+   camera.
+2. **Tre modi di vedere il percorso sul 3D**: «Camera around» (il giro di
+   prima, la scelta all'apertura del post: il video non cambia), «Camera
+   behind» e «Line in 2D». Quest'ultima disegna tutto sulla foto dall'alto
+   di C2a, come uno stile piatto.
+3. **La camera la calcola l'app** (`videoChase.ts`), dalla traccia vera in
+   metri su un piano attorno alla partenza: il centro 60 m davanti
+   all'animale, la direzione della strada presa su 120 m e smussata su
+   300 m (niente scossoni dal GPS), inclinazione 62°, 1,8 livelli di zoom
+   più vicino del disegno intero (al massimo 16,5). Ogni fotogramma del
+   percorso porta la sua camera e quanto la camera è scesa dalla vista
+   intera (`u`): giù nel primo secondo, su nel secondo dopo il percorso.
+   Così i test la provano senza la mappa.
+4. **La pagina muove la mappa** a ogni fotogramma (modo `chase`). Prima del
+   video prova 16 camere lungo il percorso, per le tessere e per il costo,
+   come il giro di prima; sopra il budget, o finito il tempo, la mappa
+   resta ferma con lo zoom lento (`still`) e l'animale corre lo stesso.
+5. **Lungo la linea si misura in metri**: con la camera bassa la linea
+   posata ha i pixel stirati vicino alla camera, quindi nel modo `chase`
+   la pagina mette punta, emoji e animale alla quota di metri della
+   scena, non di pixel. Gli altri modi restano come prima.

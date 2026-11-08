@@ -106,9 +106,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'utente; poi D3. File: quelli della #960 · `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
-- **TASK-408 — L'editor del video dell'attività** · C1 e C2a (scene e
-  finale) in `main`; C2b (camera dietro l'animale) nella PR #989; poi C2c
-  (anteprima), B2 (elefante), D, E. File: quelli della #989 ·
+- **TASK-408 — L'editor del video dell'attività** · C1, C2a (scene e
+  finale) e C2b (camera dietro l'animale) in `main`; poi C2c (anteprima nel
+  foglio), B2 (elefante), D (prompt), E (telefono). File: — ·
   `tasks/TASK-408.md`
 - **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` (#922); B
   (battito e zone) nella 1.0.3. File: — · `tasks/TASK-409.md`

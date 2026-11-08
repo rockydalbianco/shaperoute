@@ -39,7 +39,11 @@ del percorso chiuse da un cancello.
 5. L'impronta del motore: `ROUTES` nuovo in `test_walk_fingerprint.py`;
    nuotate e canoa con la prova delle stesse rotte; `engine.zip` rifatto.
 6. Il piano per rifare le zone in cache: `MAPS.md` «I cancelli chiusi» e
-   `DEPLOY.md` F.15. **L'azione sul server aspetta il sì dell'utente.**
+   `DEPLOY.md` F.15. **Sì dell'utente il 2026-11-08** («Sì, dopo il
+   merge»): le zone foot del server si rifanno dopo il merge della #973 e
+   il server aggiornato, coi passi di F.15 dati all'utente come one-liner
+   ssh, uno per volta. Il sì per il server e `draw_examples` lo chiede il
+   Coordinatore.
 
 ## Misure (2026-11-08)
 

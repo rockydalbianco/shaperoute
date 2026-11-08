@@ -188,6 +188,7 @@ async function ended(fetchFn: jest.Mock) {
     </FollowsContext.Provider>,
   );
   await act(async () => startGymWorkout());
+  await fireEvent.press(screen.getByTestId("group-core"));
   await fireEvent.press(screen.getByTestId("exercise-plank"));
   await fireEvent.changeText(screen.getByTestId("set-duration_s"), "60");
   await fireEvent.press(screen.getByTestId("log-set"));

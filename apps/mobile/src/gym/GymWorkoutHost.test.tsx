@@ -120,6 +120,7 @@ test("a set, its rest by itself, Skip, Same again", async () => {
   await act(async () => startGymWorkout());
   // The first thing: «+ Exercise», the catalog.
   expect(screen.getByTestId("exercise-picker")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("group-chest"));
   await fireEvent.press(screen.getByTestId("exercise-bench_press"));
   expect(screen.getByText("Bench press")).toBeOnTheScreen();
   expect(screen.getByText("Set 1")).toBeOnTheScreen();
@@ -143,6 +144,7 @@ test("a set, its rest by itself, Skip, Same again", async () => {
 test("the clock stops in Pause; a set ends it", async () => {
   await show();
   await act(async () => startGymWorkout());
+  await fireEvent.press(screen.getByTestId("group-core"));
   await fireEvent.press(screen.getByTestId("exercise-plank"));
   await wait(60_000);
   await fireEvent.press(screen.getByTestId("gym-pause"));
@@ -170,6 +172,7 @@ test("an exercise of one's own, with the kind chosen", async () => {
 test("an app opened again finds the workout where it was", async () => {
   await show();
   await act(async () => startGymWorkout());
+  await fireEvent.press(screen.getByTestId("group-chest"));
   await fireEvent.press(screen.getByTestId("exercise-bench_press"));
   await benchSet("8", "70");
   await screen.unmount();
@@ -182,6 +185,7 @@ test("an app opened again finds the workout where it was", async () => {
 test("Still training? after 30 minutes with nothing, and without an answer it ends at the last set", async () => {
   await show();
   await act(async () => startGymWorkout());
+  await fireEvent.press(screen.getByTestId("group-chest"));
   await fireEvent.press(screen.getByTestId("exercise-bench_press"));
   await wait(10 * 60_000);
   await benchSet("5", "80");
@@ -207,6 +211,7 @@ test("Stop held, a set corrected, Save: it goes to the API and the screen leaves
   });
   await show(fetchFn);
   await act(async () => startGymWorkout());
+  await fireEvent.press(screen.getByTestId("group-chest"));
   await fireEvent.press(screen.getByTestId("exercise-bench_press"));
   await wait(60_000);
   await benchSet("10", "60");
@@ -251,6 +256,7 @@ test("without a network the workout waits on the phone", async () => {
   const fetchFn = answers(new Error("Network request failed"));
   await show(fetchFn);
   await act(async () => startGymWorkout());
+  await fireEvent.press(screen.getByTestId("group-core"));
   await fireEvent.press(screen.getByTestId("exercise-plank"));
   await fireEvent.changeText(screen.getByTestId("set-duration_s"), "60");
   await fireEvent.press(screen.getByTestId("log-set"));
@@ -265,6 +271,7 @@ test("without a network the workout waits on the phone", async () => {
 test("Discard asks once more, then forgets the workout", async () => {
   await show();
   await act(async () => startGymWorkout());
+  await fireEvent.press(screen.getByTestId("group-core"));
   await fireEvent.press(screen.getByTestId("exercise-plank"));
   await wait(60_000);
   await fireEvent(screen.getByLabelText("Stop"), "longPress");
@@ -278,6 +285,7 @@ test("Discard asks once more, then forgets the workout", async () => {
 test("signed out, it says to sign in instead of Save", async () => {
   await show(undefined, false);
   await act(async () => startGymWorkout());
+  await fireEvent.press(screen.getByTestId("group-core"));
   await fireEvent.press(screen.getByTestId("exercise-plank"));
   await wait(60_000);
   await fireEvent(screen.getByLabelText("Stop"), "longPress");

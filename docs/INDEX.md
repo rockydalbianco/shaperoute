@@ -73,6 +73,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | L'escursionismo «Hike» (pilota della struttura degli sport): la rete dei sentieri, le misure | `tasks/TASK-377.md`, `DECISIONS.md` ADR-0321, `sports/hike.md`, `sports/COME-AGGIUNGERE.md` |
 | Gravel e MTB: la bici su sterrati e sentieri, la rete `mtb`, `mtb:scale`, le misure | `tasks/TASK-378.md`, `DECISIONS.md` ADR-0322, `sports/gravel.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
 | Il Roller (pattini in linea): l'asfalto liscio, la rete `roller`, superfici, salite, le misure | `tasks/TASK-380.md`, `DECISIONS.md` ADR-0324, `sports/roller.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
+| Lo scialpinismo «Ski touring»: fasi e VAM, la pendenza dalle tegole Terrarium, le vette OSM e la collezione | `tasks/TASK-415.md`, `DECISIONS.md` ADR-0344, `sports/skimo.md`, `sports/CONDIVISO.md`, `tasks/TASK-375.md` |
 | La palestra «Gym»: sessione senza traccia, esercizi e serie, timer di recupero, traguardi, classifica mensile | `tasks/TASK-385.md`, `DECISIONS.md` ADR-0327, `sports/gym.md` |
 | La palestra per tutti i giorni: la griglia dei macchinari, la guida in «Draw», le schede con i giorni, il calendario | `tasks/TASK-411.md`, `DECISIONS.md` ADR-0341, `sports/gym.md` |
 | I movimenti: le molle di `motion.spring`, `src/ui/motion.ts`, la capsula della barra, l'«isola», fogli e liste | `tasks/TASK-388.md`, `DECISIONS.md` ADR-0329 e ADR-0293 |

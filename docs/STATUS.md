@@ -160,6 +160,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-415 — Ski touring, lo scialpinismo «Record only»** (2026-11-08;
+  numeri dal Coordinatore, ADR-0344 **proposto**; sessione avviata dal
+  Coordinatore Sport). Parte 0, solo documenti: disegno e costo delle
+  quattro funzioni scelte dall'utente il 2026-11-07 («Le prime 4»):
+  - (a) fasi e (b) VAM sul telefono, solo JavaScript, sopra le svolte dello
+    sci (`snowDay.ts`);
+  - (c) pendenza dalle tegole Terrarium sul server, nel modulo condiviso con
+    TASK-347 G, col tempo sopra i 30° e l'avviso;
+  - (d) vette da un estratto OSM `natural=peak` sul server, con la tabella
+    `run_summits` e la collezione nel profilo.
+
+  Scelte dell'utente (2026-11-07): «Ski touring» 🏔️; le metriche proposte
+  (D+ in grande, D−, tempi, VAM, quota massima, fasi con gli orari); l'avviso
+  sulla pendenza in cinque lingue; le vette nel profilo, visibili come i
+  post; acceso con fasi e VAM, con un OTA col sì dell'utente.
+  Prossimo: la lista della parte A (contratto, API, CHECK, profilo nascosto)
+  al Coordinatore. `tasks/TASK-415.md`, `sports/skimo.md`.
 - **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
   Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
   La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo

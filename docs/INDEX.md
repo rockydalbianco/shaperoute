@@ -82,6 +82,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | I movimenti: le molle di `motion.spring`, `src/ui/motion.ts`, la capsula della barra, l'«isola», fogli e liste | `tasks/TASK-388.md`, `DECISIONS.md` ADR-0329 e ADR-0293 |
 | Il nuoto in piscina: calorie per passo /100 m, battito medio e tempo nelle zone da Salute | `tasks/TASK-409.md`, `tasks/TASK-400.md`, `DECISIONS.md` ADR-0318 («il nuoto in piscina») e ADR-0334 (precisazione D) |
 | La corsa in registrazione: le tre pagine «Compass», «Map» e «Data», la mappa che gira dove punta il telefono, la bussola | `tasks/TASK-422.md`, `DECISIONS.md` ADR-0350 e ADR-0137, `UI.md` «La navigazione» |
+| Il grande catalogo di «Explore», parte B: i mille disegni, il filtro automatico, la pagina di revisione, `catalog/seed/*.json` | `tasks/TASK-419.md`, `DECISIONS.md` ADR-0347, `../catalog/README.md`, `MAPS.md` «Overpass: come si scarica», `ROUTE_ENGINE.md` §5 |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 ## Stato dei documenti

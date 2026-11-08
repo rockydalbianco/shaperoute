@@ -172,6 +172,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dipendenza nuova. **Due testi nuovi nelle cinque lingue: il merge aspetta
   il sì dell'utente**; poi la prova sul telefono e l'OTA col suo sì.
   `tasks/TASK-422.md`.
+- **TASK-419 — I 1000 disegni del catalogo e la selezione (Explore, parte B)**
+  (2026-11-08; numeri dal Coordinatore, ADR-0347 **proposto**; sessione
+  avviata dal Coordinatore su «Sì, avviale» dell'utente). Proposta, solo
+  documenti: uno strumento nuovo in `tools/` che usa `seed_catalog` senza
+  toccarlo, circa 1000 casi città × forma/parola × distanza (14 città del
+  seme con tutte le 17 forme, le altre italiane e le europee con un nucleo),
+  una zona per città da Overpass a lotti piccoli con l'attesa dello slot, i
+  683 disegni del 2026-10 fra i candidati, filtro ≥ 0,90 / ±10% / ripassi
+  ≤ 10% / niente `motorway`-`trunk`, pagina di revisione in SVG, **la scelta
+  all'utente** (200–400, almeno 3 per città), i tenuti in
+  `catalog/seed/<città>.json`. Prossimo: la lista dei file al Coordinatore,
+  poi il codice su `feat/TASK-419-catalog-seed`. `tasks/TASK-419.md`.
 - **TASK-415 — Ski touring, lo scialpinismo «Record only»** (2026-11-08;
   numeri dal Coordinatore, ADR-0344 **proposto**; sessione avviata dal
   Coordinatore Sport). Parte 0, solo documenti: disegno e costo delle
@@ -190,7 +202,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Prossimo: la lista della parte A (contratto, API, CHECK, profilo nascosto)
   al Coordinatore. `tasks/TASK-415.md`, `sports/skimo.md`.
   Parte 0 in `main` (#932).
-  **Parte A in PR** (2026-11-08, `feat/TASK-415-a-ski-touring-api`):
+  **Parte A in `main`** (#948, 2026-11-08, sul server):
   `ski_touring` terzo sport «Record only» nel contratto (`RECORDED_SPORTS`,
   le fixture), nell'API (`sports/ski_touring.py`: Strava `BackcountrySki`,
   GPX `ski_touring`, senza record né gioco; `X-MuW-Reads`), la migrazione
@@ -198,8 +210,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nell'app (Apple `.crossCountrySkiing` 60, Health Connect
   `EXERCISE_TYPE_SKIING` 61, verificati sulle librerie; nessuna riga in
   «Settings») e l'orologio (`sports.json`, testi in inglese fino a B).
-  Impronta del motore neutra, iOS invariata. Il server dopo il merge, col
-  sì dell'utente già dato («ok si», 2026-11-08). Prossimo: parte B.
+  Impronta del motore neutra, iOS invariata. Server al commit 8e898de5 il
+  2026-11-08, col sì dell'utente: copia `shaperoute-2026-11-08T1718Z.dump`,
+  immagine di ritorno `shaperoute-api:before-task415`, migrazione 0057
+  applicata, `/health` ok. Nessun telefono registra ancora lo
+  scialpinismo: si accende con la parte B. Prossimo: parte B (lista al
+  Coordinatore prima del codice).
 - **TASK-414 — Carrozzina e passeggino ♿, forme semplici dove si spinge**
   (2026-11-08; numeri dal Coordinatore, ADR-0343 **proposto**; sessione
   avviata dal Coordinatore Sport). Parte 0, solo documenti: sei reti di
@@ -238,6 +254,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'utente) e il riepilogo; branch `feat/TASK-410-b-post-page`, solo
   app; provata sul simulatore. Prossimo: merge, poi OTA col sì
   dell'utente; C (`run_stats`) dopo.
+  **Parte B chiusa** (2026-11-08): #949 in `main` (08803c33); OTA di
+  produzione iOS gruppo `8b1af1b4`, commit `a0f38012`, runtime `6f8bba4c`
+  (con TASK-416 e TASK-408 C1; sì dell'utente «si confermo esatto» e «Sì,
+  OTA tutto»). Prossimo: parte C (`run_stats`), lista al Coordinatore
+  prima del codice; A è TASK-355 B.
 - **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
   Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
   La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo
@@ -272,6 +293,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   i due video del simulatore approvati dall'utente. Resta: l'OTA di produzione col sì
   dell'utente (la prepara il Coordinatore) e la prova sul telefono (due tocchi veloci su «+15°»
   ne contano uno nel simulatore).
+  **2026-11-06, in produzione**: parti A e B con l'OTA `6864a998`, dopo l'«ok produzione»
+  dell'utente. Resta solo la prova sul telefono (nel simulatore due tocchi veloci su «+15°»
+  ne contavano uno, e un trascinamento subito dopo un tocco a volte non partiva).
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
@@ -1004,6 +1028,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   PR da `docs/TASK-411-gym-plans-proposal`. Parti: A griglia, B calendario e
   guida, C schede (migrazione), D privacy; ogni lista al Coordinatore.
   `tasks/TASK-411.md`.
+  2026-11-08: **parte E in `main`** (#941, `512e916a`): un omino animato e
+  una mini guida per ogni esercizio, in cinque lingue; OTA col sì.
   2026-11-08: **parte A in `main`** (#930, `a56f78c5`): «+ Exercise» a
   griglia, prima gli 8 gruppi muscolari poi i loro esercizi; la ricerca
   cerca in tutti. Solo JavaScript; OTA col sì. Prossimo: parte E (omini e
@@ -3583,6 +3609,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuoto, in Salute / Health Connect, nel post del Feed e nella riga di «My
   activities». Parte B (battito e zone) nella 1.0.3, sopra i lettori di
   TASK-345 C e TASK-374 D. `tasks/TASK-409.md`.
+  2026-11-08: parte A in `main` (#922, merge `3bf2802d`, impronta iOS
+  6f8bba4c invariata) e in produzione: OTA `fc8aa133` (solo iOS, col sì
+  dell'utente). Prossimo: la parte B nella 1.0.3, dopo TASK-345 C e
+  TASK-374 D.
 
 ## Completato
 

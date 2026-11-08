@@ -58,6 +58,8 @@ import { useScrollToTopOnReselect } from "../tabs/tabReselect";
 import { postRoute } from "../feed/feedRoute";
 import type { SamplePost } from "../feed/sampleFeed";
 import { ExploreSearch } from "./ExploreSearch";
+import { CatalogEntry } from "./CatalogEntry";
+import { CatalogScreen } from "./CatalogScreen";
 
 type ListState =
   | { status: "loading" }
@@ -141,6 +143,8 @@ export function ExploreScreen({
   const { width } = useWindowDimensions();
   const contentWidth = width - 2 * space.lg;
   const card = cardWidth(contentWidth);
+  // The catalog of every drawing, a page over this one (TASK-420).
+  const [catalogOpen, setCatalogOpen] = useState(false);
   // The answer for one start: another start shows "loading" until its own.
   const [answer, setAnswer] = useState<{ key: string; list: ListState } | null>(null);
   const lat = near?.[0];
@@ -311,6 +315,8 @@ export function ExploreScreen({
         ]}
         keyboardShouldPersistTaps="handled"
       >
+        {/* The way into the catalog of every drawing (TASK-420, ADR-0348). */}
+        <CatalogEntry width={contentWidth} onPress={() => setCatalogOpen(true)} />
         {onCity && (
           <CityPicker apiUrl={apiUrl} city={city} onCity={onCity} recent={recent} />
         )}
@@ -427,6 +433,14 @@ export function ExploreScreen({
           />
         )}
       </ScrollView>
+      {catalogOpen && (
+        <CatalogScreen
+          apiUrl={apiUrl}
+          near={near}
+          onBack={() => setCatalogOpen(false)}
+          onOpen={onOpen}
+        />
+      )}
     </View>
   );
 }

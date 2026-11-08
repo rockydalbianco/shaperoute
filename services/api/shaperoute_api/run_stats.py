@@ -5,7 +5,7 @@ The page shows, besides a run's metres and seconds, its splits, its
 elevation profile, its cadence, its calories and its heart rate, each only
 when there is one. They are kept in `run_stats` (migration 0064), one row per
 run, never in `runs`; the heart rate is the exception, kept on the run by
-TASK-409 B (runs.heart_avg_bpm, heart_max_bpm, heart_shown).
+TASK-409 B (migration 0061: runs.heart_avg_bpm, heart_max_bpm, heart_shown).
 
 - The **splits** per kilometre and per mile the API counts itself, from the
   track and its pauses as `runs` keeps them (splits): the moving time of each
@@ -230,17 +230,6 @@ def counted(track: Sequence[TrackPoint], pauses: Sequence[KeptPause]) -> dict[st
 # --- In the database ---
 
 
-def _heart_columns(conn: Connection[DictRow]) -> bool:
-    """Whether `runs` has the heart rate of TASK-409 B (its migration 0061).
-    Until it is in main, no run has one and every run shows it."""
-    row = conn.execute(
-        "SELECT 1 FROM information_schema.columns"
-        " WHERE table_schema = current_schema() AND table_name = 'runs'"
-        " AND column_name = 'heart_shown'"
-    ).fetchone()
-    return row is not None
-
-
 def seen_stats(
     conn: Connection[DictRow], run_id: int, author: bool
 ) -> RunStatsBody | None:
@@ -248,22 +237,17 @@ def seen_stats(
     heart rate and the calories only for its `author`, or when the author
     shows the heart rate. None for a run without any."""
     row = conn.execute(
-        "SELECT stats FROM run_stats WHERE run_id = %s", (run_id,)
+        "SELECT s.stats, r.heart_avg_bpm, r.heart_max_bpm, r.heart_shown"
+        " FROM runs r LEFT JOIN run_stats s ON s.run_id = r.id WHERE r.id = %s",
+        (run_id,),
     ).fetchone()
-    kept: dict[str, Any] = {} if row is None else dict(row["stats"])
-    shown, heart = True, None
-    if _heart_columns(conn):
-        run = conn.execute(
-            "SELECT heart_avg_bpm, heart_max_bpm, heart_shown FROM runs"
-            " WHERE id = %s",
-            (run_id,),
-        ).fetchone()
-        if run is not None:
-            shown = bool(run["heart_shown"])
-            if run["heart_avg_bpm"] is not None and run["heart_max_bpm"] is not None:
-                heart = HeartBody(
-                    avg_bpm=run["heart_avg_bpm"], max_bpm=run["heart_max_bpm"]
-                )
+    if row is None:
+        return None
+    kept: dict[str, Any] = dict(row["stats"] or {})
+    heart = None
+    if row["heart_avg_bpm"] is not None and row["heart_max_bpm"] is not None:
+        heart = HeartBody(avg_bpm=row["heart_avg_bpm"], max_bpm=row["heart_max_bpm"])
+    shown = bool(row["heart_shown"])
     body = RunStatsBody.model_validate({**kept, "heart": heart})
     if not (author or shown):
         body = body.model_copy(update={"heart": None, "kcal": None})

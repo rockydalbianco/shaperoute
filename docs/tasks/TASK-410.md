@@ -488,10 +488,9 @@ Cosa fa:
   `splits_km`, `splits_mile`, `elevation`, `cadence_spm`, `kcal`.
 - **Battito**: **non** in `run_stats`. Scelta del Coordinatore
   (2026-11-08): la #979 (TASK-409 B1) lo tiene in `runs` (`heart_avg_bpm`,
-  `heart_max_bpm`, `heart_shown`), e la parte C lo legge da lì. Finché la
-  sua migrazione non è in `main`, nessuna corsa ha battito e tutte si
-  mostrano (`run_stats._heart_columns`). Da scrivere come precisazione di
-  ADR-0340 nella PR dei documenti dopo il merge.
+  `heart_max_bpm`, `heart_shown`, migrazione 0061, entrata in `main` il
+  2026-11-08), e la parte C lo legge da lì. Da scrivere come precisazione
+  di ADR-0340 nella PR dei documenti dopo il merge.
 - **Il filtro**: battito e calorie degli altri solo con `heart_shown`;
   all'autore sempre. Senza dati, o per una corsa di prima, `stats` è
   `null`. `GET /feed` non lo manda.

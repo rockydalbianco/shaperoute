@@ -74,14 +74,8 @@ def with_stats(
 
 
 def heart_on_runs(db: Database, avg: int, top: int, shown: bool) -> None:
-    """The heart rate as TASK-409 B keeps it on the run (its migration 0061),
-    for every run: added here while that migration is not in main."""
+    """The heart rate as TASK-409 B keeps it on the run, for every run."""
     with db.connect() as conn:
-        conn.execute(
-            "ALTER TABLE runs ADD COLUMN IF NOT EXISTS heart_avg_bpm smallint,"
-            " ADD COLUMN IF NOT EXISTS heart_max_bpm smallint,"
-            " ADD COLUMN IF NOT EXISTS heart_shown boolean NOT NULL DEFAULT true"
-        )
         conn.execute(
             "UPDATE runs SET heart_avg_bpm = %s, heart_max_bpm = %s,"
             " heart_shown = %s",

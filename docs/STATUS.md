@@ -454,6 +454,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   i record propri, i file FIT/GPX/TCX/Strava, i testi dell'orologio. Solo
   JavaScript. Prossimo: il server (0055) col sì dell'utente, poi `ready`
   in una PR piccola.
+  Parte B in `main` (#921, `b69a2312`); il server ha la 0055 (deploy
+  758bccd1). **Accensione in PR** (2026-11-08, `feat/TASK-380-roller-on`):
+  `ready: true`, anche nelle build degli store. Entra dopo l'OTA della #922;
+  il Roller acceso esce con un OTA suo, col sì dell'utente.
 
 - **TASK-413 — Ciaspole, «Snowshoes» ❄️** (2026-11-08; numeri dal
   Coordinatore, ADR-0342). Parte 0, solo documenti. Al banco, una forma di

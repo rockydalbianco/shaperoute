@@ -1,7 +1,7 @@
 /**
  * «Roller» 🛼 in the app (TASK-380 part B, ADR-0324): its row in «Settings»,
- * «Soon» until the server has part A; offered in the search and the form to
- * publish once ready; the caution under its routes; the energy of the
+ * on since the server has part A; offered in the search and the form to
+ * publish while ready; the caution under its routes; the energy of the
  * Compendium; the time at the skater's pace; the files of other apps that
  * say a skate.
  */
@@ -27,16 +27,16 @@ import { profileOf } from "./index";
 
 jest.mock("expo-file-system");
 
-test("«Roller» 🛼 comes after «MTB», «Soon» until turned on", () => {
+test("«Roller» 🛼 comes after «MTB», on since the server has part A", () => {
   const index = ALL_SPORTS.findIndex((option) => option.id === "roller");
   expect(ALL_SPORTS[index - 1]?.id).toBe("mtb");
   expect(ALL_SPORTS[index]).toEqual({
     id: "roller",
     emoji: "🛼",
     name: "Roller",
-    ready: false,
+    ready: true,
   });
-  expect(canChoose("roller", ALL_SPORTS)).toBe(false);
+  expect(canChoose("roller", ALL_SPORTS)).toBe(true);
   // Asked, and saved, as itself; out with its own words.
   expect(activityOf("roller")).toBe("inline_skating");
   expect(runActivityOf("roller")).toBe("inline_skating");
@@ -44,13 +44,13 @@ test("«Roller» 🛼 comes after «MTB», «Soon» until turned on", () => {
   expect(withoutRouteIcon("roller")).toBe("🛼");
 });
 
-test("a skate is offered to search and publish only once ready", () => {
-  expect(activityOffered("inline_skating")).toBe(false);
-  expect(SEARCH_ACTIVITIES).not.toContain("inline_skating");
-  const ready: SportOption[] = ALL_SPORTS.map((option) =>
-    option.id === "roller" ? { ...option, ready: true } : option,
+test("a skate is offered to search and publish while ready", () => {
+  expect(activityOffered("inline_skating")).toBe(true);
+  expect(SEARCH_ACTIVITIES).toContain("inline_skating");
+  const soon: SportOption[] = ALL_SPORTS.map((option) =>
+    option.id === "roller" ? { ...option, ready: false } : option,
   );
-  expect(activityOffered("inline_skating", ready)).toBe(true);
+  expect(activityOffered("inline_skating", soon)).toBe(false);
   expect(activityOffered("cycling")).toBe(true);
 });
 

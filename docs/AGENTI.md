@@ -75,6 +75,15 @@
    proprie righe riaggiunte a mano nel formato nuovo: il vecchio driver
    `merge=union` (TASK-359), tolto il 2026-11-09, riportava indietro tutto
    il testo archiviato (450 KB) senza segnalare conflitti.
+   **Dal 2026-11-09 le PR di codice non toccano `STATUS.md`, `DECISIONS.md`
+   né `INDEX.md`**: con i file snelli ogni PR che li tocca va in conflitto
+   con tutte le altre a ogni merge (l'8 novembre quattordici PR insieme).
+   Le righe del task (voce ≤ 5 righe in STATUS, voce ADR in «Voci nuove»
+   più riga d'indice, riga in INDEX o in COMPLETATI) vanno in una **PR di
+   soli documenti aperta dopo il merge del codice**, che il coordinatore
+   unisce subito (CI ~1 min, riallineata al volo). In un ramo già aperto:
+   `git checkout origin/main -- docs/STATUS.md docs/DECISIONS.md
+   docs/INDEX.md` e le righe messe da parte per la PR docs.
 16. **Le memorie delle sessioni** sul T9 sono collegate con symlink a
    `~/.claude/projects/-Users-lucapallaoro-Progetti-shaperoute/memory`; un
    worktree nuovo parte vuoto: va collegato allo stesso modo.

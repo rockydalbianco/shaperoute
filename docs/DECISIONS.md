@@ -25496,3 +25496,42 @@ e luna (`docs/sports/wheelchair.md`), contro la rete foot sulla stessa area
   TASK-347 G.
 - **La rete foot o roller così come sono**: scale, ciottoli, cordoli.
 - **Una rete fatta col tag `wheelchair`**: c'è quasi solo a Milano.
+## ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B2, decisa dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore (local_3f55a0e9).
+
+**Contesto**: la guida del telefono ha altri due modi oltre a quello dalla
+partenza: il percorso chiuso preso dove lo si tocca (TASK-273, ADR-0241) e
+le parole o le forme a pezzi con la penna alzata fra un pezzo e l'altro
+(TASK-198, TASK-223, TASK-226).
+
+**Decisione**:
+1. **Riscrittura riga per riga**: `Loop.swift` (`startAnywhere.ts`,
+   compresa la svolta alla partenza ricalcolata con le soglie del motore),
+   `Pen.swift` (`penUp.ts`), e in `Navigator.swift` la presa del percorso
+   chiuso (`towardsJoin`, `joiningWith`, `joinedPass`). `passesNear` sta in
+   `Loop.swift` come estensione di `RouteProgress`, per non toccare un file
+   fuori lista.
+2. **Ciò che decide il telefono resta del telefono**: quali percorsi si
+   prendono dove li tocchi (`startsAnywhere`), le direzioni semplificate
+   (`simplifyDirections`) e i tratti a piedi (`walksOf`) li calcola il
+   telefono e li manda con il percorso (B3). L'orologio porta solo ciò che
+   serve durante la corsa.
+3. **La penna dà due avvisi** (`penUp`, `penDown`, con la lettera che viene);
+   come dirli (a piedi, in bici, in canoa, lettere o parti) sta nelle
+   bandierine della penna, per la schermata di B3.
+4. **Le tracce, versione 2**: in più il percorso chiuso (`anywhere`, se si
+   aspetta ancora di prenderlo, dove è stato preso, e il percorso da lì con
+   le sue direzioni al fix che lo prende) e la penna dopo ogni fix. Le
+   direzioni portano anche `branches`. Gli scenari nuovi sono scelti perché
+   ogni costante conti: prendere il giro al passo della bici distingue
+   `JOIN_FIXES`, prima della fine `AT_START_M`, prima di un angolo
+   `GROUP_M`. Provato cambiando una costante per volta.
+
+**Conseguenze**: un cambio a `startAnywhere.ts` o `penUp.ts` vuole
+`scripts/watch-guide.sh` e lo stesso cambio in Swift. Le tracce sono 26,
+circa 1,7 MB.
+
+---
+

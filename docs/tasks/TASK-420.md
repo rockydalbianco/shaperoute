@@ -1,8 +1,8 @@
 # TASK-420 — La pagina del catalogo in «Explore» (grande catalogo, parte C)
 
 **Stato**: In lavorazione · mockup approvato dall'utente il 2026-11-08
-(«Sì, approvo»); proposta in PR; il codice dopo il via del Coordinatore
-sulla lista dei file
+(«Sì, approvo»); proposta in #952; il codice in #954 (bozza fino al via
+del Coordinatore sulla lista dei file)
 **Fase**: 5 · **Branch**: `docs/TASK-420-catalog-page` (documenti), poi
 `feat/TASK-420-catalog-page` (codice)
 **Dipende da**: TASK-418 (forme e parole nuove: i nomi e le categorie),
@@ -37,7 +37,7 @@ preferiti e «Start». Fluido con centinaia di voci.
   partenza (`GET /recommended-routes`), le città in evidenza, gli esempi
   disegnati sul momento, le idee a tema. Non c'è un posto dove vedere
   **tutti** i disegni del catalogo, né filtri (ADR-0144).
-- `catalog/seed/` ha 23 città e 312 percorsi (13 italiane e New York con
+- `catalog/seed/` ha 23 città e 350 percorsi (13 italiane e New York con
   tutte le forme; 9 in evidenza con cerchio, cuore e stella). L'API dà a
   ogni percorso l'id `<city>-<shape|word>-<distance_m>-<i>`
   (`recommended.py`, `parse_city`), stabile finché il file non cambia.
@@ -49,7 +49,7 @@ preferiti e «Start». Fluido con centinaia di voci.
 Artifact https://claude.ai/artifact/N1g83bkw5P4VwBsAC6NwoW. Tre schermate:
 
 1. **L'ingresso**: in «Explore», sotto il campo di ricerca, una scheda
-   larga con cinque disegnini in fila, «Catalog» e «312 drawings in 23
+   larga con cinque disegnini in fila, «Catalog» e «350 drawings in 23
    cities · filters, search»; un tocco apre il catalogo come pagina a sé,
    «←» torna a «Explore».
 2. **La pagina**: titolo «Catalog» col conteggio; «Search by name»;
@@ -142,7 +142,14 @@ apps/mobile/src/explore/CatalogEntry.tsx        (nuovo)
 apps/mobile/src/explore/CatalogEntry.test.tsx   (nuovo)
 apps/mobile/src/explore/ExploreScreen.tsx       (solo l'ingresso)
 apps/mobile/src/i18n/it.ts, de.ts, fr.ts, es.ts (solo le chiavi nuove)
+apps/mobile/src/explore/ExploreHeart.test.tsx   (un bottone in più: la scheda)
+apps/mobile/src/explore/ExploreScreen.test.tsx  (idem)
+apps/mobile/src/tabs/TabSwipeOwners.test.ts     (una riga: i chip scorrono di lato)
 ```
+
+I tre test esistenti sono toccati perché la scheda d'ingresso è un bottone
+in più su «Explore» e i chip dei filtri sono uno scroll orizzontale nuovo,
+che il registro di `TabSwipeOwners.test.ts` deve elencare.
 
 ## Fuori scope
 

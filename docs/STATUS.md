@@ -168,10 +168,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   40, ricerca per nome, filtri per paese, città, categoria, distanza e
   sport in un foglio, ordine Nearest · Best · Shortest, cuore e «Start»
   su ogni scheda. I dati del seme viaggiano nell'app (`catalog.json` da
-  `apps/mobile/scripts/catalog-data.mjs`), i filtri sul telefono. Branch
-  `docs/TASK-420-catalog-page` (proposta). Prossimo: il via del
-  Coordinatore sulla lista dei file, poi il codice su
-  `feat/TASK-420-catalog-page`. `tasks/TASK-420.md`.
+  `apps/mobile/scripts/catalog-data.mjs`: 350 percorsi di 23 città), i
+  filtri sul telefono. Proposta in #952; codice in #954 (bozza), con i
+  test Jest di dati, filtri, griglia, scheda, foglio e pagina verdi in
+  locale. Prossimo: il via del Coordinatore sulla lista, #954 fuori bozza
+  a CI verde, poi il merge e l'OTA col sì dell'utente. `tasks/TASK-420.md`.
 - **TASK-415 — Ski touring, lo scialpinismo «Record only»** (2026-11-08;
   numeri dal Coordinatore, ADR-0344 **proposto**; sessione avviata dal
   Coordinatore Sport). Parte 0, solo documenti: disegno e costo delle

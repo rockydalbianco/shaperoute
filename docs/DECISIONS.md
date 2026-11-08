@@ -25382,7 +25382,7 @@ interruttore); il resto è deciso dall'agente su delega dell'utente.
 partenza («Best near you», ADR-0098) e senza filtri (ADR-0144). L'utente
 vuole un catalogo grande e completo, riempito dai 1000 disegni di
 TASK-419, da scorrere e filtrare per città, paese, categoria, distanza e
-sport, con la ricerca per nome. Il seme di oggi ha 312 percorsi in 23
+sport, con la ricerca per nome. Il seme di oggi ha 350 percorsi in 23
 città, in media 350 punti l'uno; l'API li conosce con id stabili
 (`<city>-<shape|word>-<distance_m>-<i>`, `recommended.py`).
 
@@ -25405,8 +25405,8 @@ città, in media 350 punti l'uno; l'API li conosce con id stabili
    (`favoriteKey` sui punti interi, così il cuore sulla scheda sa se il
    percorso è già tenuto senza scaricarlo). Niente rete per sfogliare:
    la pagina funziona anche senza server; solo aprire e tenere un
-   percorso chiedono l'API. A 312 voci il file pesa circa 300 KB; a 1000,
-   circa 1 MB.
+   percorso chiedono l'API. A 350 voci il file pesa 426 KB; a 1000,
+   circa 1,2 MB.
 3. **Filtri, ricerca e ordine sul telefono**, in funzioni pure
    (`catalogFilters.ts`): paese, città, categoria (la tabella
    forma → categoria vive nell'app finché TASK-418 non la scrive nel

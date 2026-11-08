@@ -39,6 +39,11 @@ public enum WatchMessage: Equatable, Sendable {
     /// What the runner chose on the phone, for the watch to keep (part A3):
     /// it comes with transferUserInfo, so also when the app was closed.
     case settings(units: WatchUnits, at: Int64)
+    /// A route to follow on the watch alone (part B3a), from «Send to
+    /// watch» or among the favorites.
+    case route(WatchRoute, favorite: Bool, at: Int64)
+    /// The keys of all the favorites: the others are let go of.
+    case routes(favorites: [String], at: Int64)
 }
 
 /// Why a message was not read: the same codes as the phone's.
@@ -101,6 +106,24 @@ extension WatchMessage {
                 throw WatchMessageError.invalidField
             }
             return .settings(units: units, at: try time(fields["at"]))
+        case "route":
+            guard let favorite = boolean(fields["favorite"]) else {
+                throw WatchMessageError.invalidField
+            }
+            return .route(
+                try WatchRoute.decode(fields["route"]), favorite: favorite,
+                at: try time(fields["at"]))
+        case "routes":
+            guard let keys = fields["favorites"] as? [Any] else {
+                throw WatchMessageError.invalidField
+            }
+            let favorites = try keys.map { key -> String in
+                guard let key = key as? String, !key.isEmpty else {
+                    throw WatchMessageError.invalidField
+                }
+                return key
+            }
+            return .routes(favorites: favorites, at: try time(fields["at"]))
         default:
             throw WatchMessageError.unknownType
         }
@@ -145,6 +168,15 @@ extension WatchMessage {
             fields["type"] = "settings"
             fields["units"] = units.rawValue
             fields["at"] = at
+        case let .route(route, favorite, at):
+            fields["type"] = "route"
+            fields["route"] = route.encoded()
+            fields["favorite"] = favorite
+            fields["at"] = at
+        case let .routes(favorites, at):
+            fields["type"] = "routes"
+            fields["favorites"] = favorites
+            fields["at"] = at
         }
         return fields
     }
@@ -152,7 +184,7 @@ extension WatchMessage {
 
 // JSONSerialization and WatchConnectivity give numbers as NSNumber, and a
 // JSON true is one too: it is not a number here.
-private func number(_ value: Any?) -> Double? {
+func number(_ value: Any?) -> Double? {
     guard let value = value as? NSNumber,
         CFGetTypeID(value) != CFBooleanGetTypeID()
     else {
@@ -164,7 +196,7 @@ private func number(_ value: Any?) -> Double? {
 
 /// A whole number, also when written as 12.0, as the phone's
 /// Number.isInteger reads it.
-private func integer(_ value: Any?) -> Int64? {
+func integer(_ value: Any?) -> Int64? {
     guard let real = number(value), real.rounded() == real,
         abs(real) < 9_007_199_254_740_992
     else {
@@ -173,7 +205,7 @@ private func integer(_ value: Any?) -> Int64? {
     return Int64(real)
 }
 
-private func real(_ value: Any?) -> Double? {
+func real(_ value: Any?) -> Double? {
     number(value)
 }
 
@@ -196,4 +228,12 @@ private func activity(_ value: Any?) throws -> String {
         throw WatchMessageError.invalidField
     }
     return activity
+}
+
+/// A JSON true or false; a number is not one.
+func boolean(_ value: Any?) -> Bool? {
+    guard let value = value as? NSNumber, CFGetTypeID(value) == CFBooleanGetTypeID() else {
+        return nil
+    }
+    return value.boolValue
 }

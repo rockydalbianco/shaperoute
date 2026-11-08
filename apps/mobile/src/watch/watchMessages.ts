@@ -9,7 +9,11 @@
  * own and refuses a newer one, since the watch app is not updated by an
  * OTA; a later version only adds fields, and the ones a side does not know
  * are left out. Times are milliseconds since 1970, distances metres.
+ * A message of a type a side does not know is left out too (`unknownType`):
+ * so «route» and «routes» (part B3a) came without a new version.
  */
+
+import { decodeWatchRoute, type WatchRoute } from "./watchRoute";
 
 export const WATCH_PROTOCOL_VERSION = 1;
 
@@ -59,7 +63,13 @@ export type WatchMessage =
   | { type: "heartRate"; bpm: number; at: number }
   /** What the runner chose on the phone, for the watch to keep (part A3):
    * sent with transferUserInfo, so it arrives also later. */
-  | { type: "settings"; units: WatchUnits; at: number };
+  | { type: "settings"; units: WatchUnits; at: number }
+  /** A route for the watch to follow on its own (part B3a): one sent with
+   * «Send to watch», or a favorite. Sent with transferUserInfo. */
+  | { type: "route"; route: WatchRoute; favorite: boolean; at: number }
+  /** The keys of all the favorites: the watch keeps those, and lets go of
+   * a favorite no longer among them. */
+  | { type: "routes"; favorites: string[]; at: number };
 
 /** Why a message was not read: the same codes as the watch's. */
 export type WatchMessageError =
@@ -159,6 +169,23 @@ function read(fields: Fields): WatchMessage | "unknownType" {
         units: oneOf(WATCH_UNITS, fields.units),
         at: time(fields.at),
       };
+    case "route": {
+      const route = decodeWatchRoute(fields.route);
+      if (route === null || typeof fields.favorite !== "boolean") {
+        throw new InvalidField();
+      }
+      return { type: "route", route, favorite: fields.favorite, at: time(fields.at) };
+    }
+    case "routes": {
+      const { favorites } = fields;
+      if (
+        !Array.isArray(favorites) ||
+        favorites.some((key) => typeof key !== "string" || key === "")
+      ) {
+        throw new InvalidField();
+      }
+      return { type: "routes", favorites: favorites as string[], at: time(fields.at) };
+    }
     default:
       if (typeof fields.type !== "string") {
         throw new InvalidField();

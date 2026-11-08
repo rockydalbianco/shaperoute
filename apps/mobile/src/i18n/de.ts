@@ -1927,6 +1927,10 @@ export const DE: Table = {
     "Heute schon zu viele Fotos. Versuch es morgen wieder.",
   "Videos can't be sent right now. Try again later.":
     "Gerade können keine Videos gesendet werden. Versuch es später wieder.",
+  // The Apple Watch (TASK-370 part B3a).
+  "Send to watch": "An die Uhr senden",
+  "Sent to your watch": "An die Uhr gesendet",
+  "Send a route from MuW on your iPhone": "Sende eine Route aus MuW auf dem iPhone",
   // The drawings of the private messages (TASK-333 part C).
   "Send to a friend": "An Freunde senden",
   "Send to…": "Senden an…",

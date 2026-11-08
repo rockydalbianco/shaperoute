@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-11-09, ~01:15Z · `main` = `e85a68ac` · coordinatore: la sessione «Coordinatore» `local_3f55a0e9` (dal 2026-11-08; la vecchia `local_e57a8224` è archiviata). «Coordinatore 2» non c'è: i merge li fa il coordinatore; per riaverlo, una sessione nuova con «Sei il Coordinatore 2: segui `docs/COORDINATORE-2.md`». Le righe tolte l'8 novembre sono in `docs/archive/AGENTI-fino-al-2026-11.md`.
+**Ultimo aggiornamento**: 2026-11-08, ~19:00Z · `main` = `e85a68ac` · coordinatore: la sessione «Coordinatore» `local_3f55a0e9` (dal 2026-11-08; la vecchia `local_e57a8224` è archiviata). «Coordinatore 2» non c'è: i merge li fa il coordinatore; per riaverlo, una sessione nuova con «Sei il Coordinatore 2: segui `docs/COORDINATORE-2.md`». Le righe tolte l'8 novembre sono in `docs/archive/AGENTI-fino-al-2026-11.md`.
 
 ## Come si usa
 
@@ -73,9 +73,9 @@
    origin/main` i tre file vanno **ripresi da `main`** (`git checkout
    origin/main -- docs/STATUS.md docs/DECISIONS.md docs/INDEX.md`) e le
    proprie righe riaggiunte a mano nel formato nuovo: il vecchio driver
-   `merge=union` (TASK-359), tolto il 2026-11-09, riportava indietro tutto
+   `merge=union` (TASK-359), tolto l'8 novembre sera, riportava indietro tutto
    il testo archiviato (450 KB) senza segnalare conflitti.
-   **Dal 2026-11-09 le PR di codice non toccano `STATUS.md`, `DECISIONS.md`
+   **Dalla sera del 2026-11-08 le PR di codice non toccano `STATUS.md`, `DECISIONS.md`
    né `INDEX.md`**: con i file snelli ogni PR che li tocca va in conflitto
    con tutte le altre a ogni merge (l'8 novembre quattordici PR insieme).
    Le righe del task (voce ≤ 5 righe in STATUS, voce ADR in «Voci nuove»
@@ -90,7 +90,7 @@
 
 ## La coda dei merge
 
-Al 2026-11-09, ~01:15Z, dopo la finestra di TASK-412 (chiusa alle 01:10Z).
+Al 2026-11-08 sera, dopo la finestra di TASK-412.
 Tutte le PR aperte che toccano `STATUS.md`/`DECISIONS.md` si riallineano
 da `main` nel formato nuovo prima del merge.
 

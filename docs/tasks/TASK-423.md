@@ -42,6 +42,8 @@ pubblico solo se scelti, con il testo della privacy in E.
   2026-11-09).
 - STATUS e DECISIONS nel formato snello di TASK-412: dopo un merge di `main`
   si riprendono da `main` e si riaggiungono le proprie righe.
+- Dal 2026-11-08 le PR di codice non toccano `STATUS.md`, `DECISIONS.md` e
+  `INDEX.md`: le righe vanno in una PR di soli documenti dopo il merge.
 - Server, backfill e OTA solo col sì dell'utente e il via del Coordinatore.
 - Impronta iOS invariata (`83793e26`): niente dipendenze, niente nativo;
   misurata su una copia pulita prima di ogni PR dell'app.

@@ -117,6 +117,11 @@ stile di MuW.
     tua. Stazione, neve e attrezzatura che aggiungi si vedono sul post, per
     chi può vederlo, e la neve conta anche, senza il tuo nome, nella neve
     del giorno della stazione.»
+- 2026-11-08, seguire una stazione: «Le tue stazioni». Le stazioni seguite
+  compaiono per prime nella scheda «Ski» («Your resorts») e per prime in
+  «Cambia» durante la giornata. Nessuna notifica. La pagina della stazione
+  mostra anche la neve segnata oggi dai membri e i loro post fatti lì,
+  quelli che chi guarda vede (parte D3).
 
 ## Domande aperte (una alla volta)
 

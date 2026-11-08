@@ -1102,6 +1102,18 @@ numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
   restano null (TASK-345 B li userà per ogni sport). Si cancellano con la
   corsa e con l'account. Nessun backfill. Test in `test_pool_swims.py`.
 
+Migrazione `0062_followed_resorts.sql` (TASK-406 parte D3a, ADR-0338, `API.md`
+«Seguire una stazione e i suoi post»; il numero è il primo libero al merge):
+
+- **`resort_follows`**: le stazioni che un account segue, «Your resorts».
+  - `user_id` verso `users(id)` e `resort_id` verso `ski_resorts(id)`, tutti
+    e due con `ON DELETE CASCADE`: un account cancellato, o una stazione
+    tolta da un import, se le porta via.
+  - `created_at`, per l'ordine: l'ultima seguita prima.
+  - Chiave `(user_id, resort_id)`: seguire due volte vale una.
+- La vede solo l'account. Nessuna posizione, nessuna riga di prima cambia,
+  nessun backfill. Test in `test_resort_follows.py`.
+
 Migrazione `0064_run_stats.sql` (TASK-410 parte C, ADR-0340, `API.md`
 «Run stats»; numero in bozza, il vero è del Coordinatore, il primo libero al
 merge):

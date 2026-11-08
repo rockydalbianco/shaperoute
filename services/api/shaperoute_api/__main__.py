@@ -83,6 +83,7 @@ from shaperoute_api.report_email import (
     install_report_email,
 )
 from shaperoute_api.request_log import DEFAULT_DIR, ON_VARIABLE, RequestLog, wanted
+from shaperoute_api.resort_follows import install_resort_follows
 from shaperoute_api.route_archive import RouteArchive
 from shaperoute_api.route_store import STORE_FOLDER, RouteStore
 from shaperoute_api.ski_days import install_ski_days
@@ -291,6 +292,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     # The ski resorts of the world, by name and near a place (TASK-406).
     install_ski_resorts(app)
     install_ski_days(app)
+    install_resort_follows(app)
     # The email to who has not opened the app for two weeks (TASK-284): off
     # without the database, Resend's key, the links' secret and the domain.
     away = (

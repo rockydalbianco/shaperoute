@@ -12,6 +12,7 @@ import type { Account } from "../account/useAccount";
 import { sessionEnded } from "../account/messages";
 import { type Favorite, type FavoriteDetail, fetchFavorite } from "../api/favorites";
 import { t, tLater } from "../i18n";
+import { useWatchFavorites } from "../watch/useWatchFavorites";
 import { type Keepable, type OpenedFavorite, openedFavorite } from "./favoriteRoute";
 import { favoriteProblem, type FavoritesState, useFavorites } from "./useFavorites";
 
@@ -97,6 +98,8 @@ export function useFavoritesOf(
   const favorites = useFavorites(baseUrl, token, account.sessionEnded, options);
   const { status, has, toggle } = favorites;
   const { fetchFn, key } = options;
+  // The favorites on the Apple Watch by themselves (TASK-370 part B3a2).
+  useWatchFavorites(baseUrl, token, favorites.list, { fetchFn, apiKey: key });
 
   // The route whose heart was tapped with nobody signed in.
   const waiting = useRef<Keepable | null>(null);

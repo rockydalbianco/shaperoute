@@ -396,7 +396,7 @@ const privacy: AboutDocument = {
     {
       heading: "The shape game",
       blocks: [
-        "With an account, our server works out from your saved runs on foot how many kilometres count for the game, your best times over 1, 5, 10 and 21.1 km, and the shapes you collected. Only you see your collection and your best times. If you join a team, its members see your username, your picture, the pieces of a challenge you took and the kilometres you gave to each, never your tracks, the times of your runs or where you ran. A team is found only with its code: it is never in a search. Deleting a run takes its kilometres out of the count, and the shapes you already collected stay. When you delete your account, your game data is deleted with it; in a team's challenges the pieces you ran stay for the others, without your name.",
+        "With an account, our server works out from your saved runs on foot how many kilometres count for the game, your best times over distances from 400 m to 50 km, and the shapes you collected. Only you see your collection and your best times. If you join a team, its members see your username, your picture, the pieces of a challenge you took and the kilometres you gave to each, never your tracks, the times of your runs or where you ran. A team is found only with its code: it is never in a search. Deleting a run takes its kilometres out of the count, and the shapes you already collected stay. When you delete your account, your game data is deleted with it; in a team's challenges the pieces you ran stay for the others, without your name.",
       ],
     },
     {

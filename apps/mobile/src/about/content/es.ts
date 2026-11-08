@@ -395,7 +395,7 @@ const privacy: AboutDocument = {
     {
       heading: "El juego de las formas",
       blocks: [
-        "Con una cuenta, nuestro servidor calcula a partir de tus carreras a pie guardadas cuántos kilómetros cuentan para el juego, tus mejores tiempos en 1, 5, 10 y 21,1 km y las formas que has coleccionado. Solo tú ves tu colección y tus mejores tiempos. Si te unes a un equipo, sus miembros ven tu nombre de usuario, tu foto, las piezas de un reto que tomaste y los kilómetros que diste a cada una, nunca tus trazados, los tiempos de tus carreras ni dónde corriste. A un equipo solo se llega con su código: nunca está en una búsqueda. Borrar una carrera quita sus kilómetros del recuento, y las formas que ya coleccionaste se quedan. Cuando eliminas tu cuenta, tus datos del juego se eliminan con ella; en los retos de un equipo, las piezas que corriste se quedan para los demás, sin tu nombre.",
+        "Con una cuenta, nuestro servidor calcula a partir de tus carreras a pie guardadas cuántos kilómetros cuentan para el juego, tus mejores tiempos en distancias de 400 m a 50 km y las formas que has coleccionado. Solo tú ves tu colección y tus mejores tiempos. Si te unes a un equipo, sus miembros ven tu nombre de usuario, tu foto, las piezas de un reto que tomaste y los kilómetros que diste a cada una, nunca tus trazados, los tiempos de tus carreras ni dónde corriste. A un equipo solo se llega con su código: nunca está en una búsqueda. Borrar una carrera quita sus kilómetros del recuento, y las formas que ya coleccionaste se quedan. Cuando eliminas tu cuenta, tus datos del juego se eliminan con ella; en los retos de un equipo, las piezas que corriste se quedan para los demás, sin tu nombre.",
       ],
     },
     {

@@ -1,7 +1,9 @@
 # TASK-421 — I percorsi a piedi non passano per i cancelli chiusi
 
-**Stato**: In corso — PR #973 (codice, test, documenti); dopo il merge le
-zone del server (`DEPLOY.md` F.15) col sì dell'utente
+**Stato**: In corso — motore in `main` (#973, mergiata dall'utente il
+2026-11-08); ADR-0349, STATUS e INDEX nella PR di soli documenti; restano il
+server e le zone foot (`DEPLOY.md` F.15, sì dell'utente dato) al «via server
+973» del Coordinatore
 **Fase**: 5 · **Branch**: `feat/TASK-421-foot-barriers` · **ADR**: ADR-0349 ·
 numeri dal Coordinatore (2026-11-08) · sessione «Foot routes barrier
 filtering», avviata dall'utente

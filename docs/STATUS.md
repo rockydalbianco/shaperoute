@@ -195,8 +195,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   stella, luna; i testi e l'avviso su cordoli, gradini e salite in cinque
   lingue; nel gioco come la camminata, record su 1 e 5 km; tipo carrozzina
   in Salute e Strava; acceso appena pronto.
-  Prossimo: la lista della parte A al Coordinatore, col numero della
-  migrazione. `tasks/TASK-414.md`, `sports/wheelchair.md`.
+  Lista della parte A approvata dal Coordinatore (migrazione 0058 in bozza;
+  le forme le rifiuta il motore). Prossimo: 414-A in una sessione nuova,
+  nel turno fissato con 413 A e 415 A. `tasks/TASK-414.md`,
+  `sports/wheelchair.md`.
 - **TASK-410 — La pagina del post: più dati e più ordine** (ADR-0340,
   proposta; brief dell'utente del 2026-11-06; numeri dal Coordinatore).
   Branch `docs/TASK-410-post-page` (documenti). Pagina nuova dal Feed: foto

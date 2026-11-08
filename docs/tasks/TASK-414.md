@@ -86,7 +86,7 @@ services/api/shaperoute_api/activities.py                        (un nome nel Li
 services/api/shaperoute_api/personal_bests.py                    (un nome nel Literal Sport)
 services/api/shaperoute_api/reads.py                             (una riga)
 services/api/shaperoute_api/game_rules.py                        (nel gioco come la camminata: scelta 7)
-services/api/migrations/00NN_wheelchair.sql                      (nuovo: CHECK di runs, favorites, group_runs, run_bests)
+services/api/migrations/0058_wheelchair.sql                       (nuovo: CHECK di runs, favorites, group_runs, run_bests)
 services/api/tests/test_wheelchair_api.py                        (nuovo)
 services/api/tests/test_sport_registry_api.py, test_personal_bests.py, test_cycling.py,
     test_record_only.py, test_favorites.py, test_paddling.py, test_gravel_mtb_api.py,
@@ -114,13 +114,27 @@ docs/tasks/TASK-414.md, docs/STATUS.md, docs/sports/wheelchair.md,
   - l'app mostra solo quelle in «Disegna»: un campo del profilo
     (`sports/base.ts`), nella parte B.
 
-  Da confermare col Coordinatore, che può preferire solo l'app: allora
-  `base.py` e `models.py` escono dalla lista.
+  Confermato dal Coordinatore (2026-11-08): le rifiuta il motore, coi
+  test, e l'app le nasconde nella parte B.
 - **L'impronta del motore**: `networks/wheel.py` è un file nuovo nel
   motore. Se i nove percorsi fissi di `test_same_routes.py` restano
   identici, `SAME_ROUTES_AS`, come Roller, Hike e MTB.
 - **Una zona `wheel` in memoria sul server**: piccola (distanze fino a 5
   km), ma la parte A la misura (`activity_graphs.ZONES_IN_MEMORY`).
+- **Lista approvata dal Coordinatore** (2026-11-08), con la migrazione in
+  bozza **`0058_wheelchair.sql`** (0056 è di TASK-406 D1, 0057 di TASK-413
+  A2): il numero vero è il primo libero in `main` al merge.
+- **L'ordine**: `activities/base.py` e `models.py` li tocca anche TASK-413
+  A1 (ciaspole, `on_snow`); il registro (`activities/__init__.py`,
+  `test_sport_registry.py`, `sports/__init__.py`, `activities.py`,
+  `reads.py`, indice e fixture del contratto) anche 413 A2 e 415 A. Le
+  parti A di 413, 414 e 415 entrano una alla volta, nell'ordine che fissano
+  il Coordinatore Sport e il Coordinatore; chi entra dopo riallinea da
+  `main`.
+- **Il motore**: la parte A tocca `services/route-engine/` ed entra solo
+  col sì dell'utente per server e `draw_examples`, che chiede il
+  Coordinatore. `engine.zip` si rifà nell'ultimo commit. ADR-0343 si segna
+  «Accettato» nella parte A.
 
 ### Parte B — app (dopo A)
 
@@ -185,8 +199,8 @@ come la proposta, tranne la prima:
 
 - [x] 0: le misure delle reti sono in `wheelchair.md`; ADR-0343 è proposto.
 - [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-08).
-- [ ] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
-      della migrazione.
+- [x] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
+      della migrazione (approvata, 0058 in bozza, 2026-11-08).
 - [ ] A: un percorso sul grafo di prova evita scale, cordoli alti, superfici
       ruvide e strade grandi senza marciapiede; test deterministici; corsa,
       bici e canoa invariate al banco (`compare --same`).
@@ -229,8 +243,10 @@ Le misure sono in `wheelchair.md`. Le scelte dell'utente (2026-11-08) sono
 qui sopra: uno sport solo, «Carrozzina e passeggino» ♿ sulla rete
 `wheelcalm`, 1–5 km, cerchio, cuore, stella e luna, nel gioco con record su
 1 e 5 km, tipo carrozzina in Salute, acceso appena pronto. ADR-0343 è
-proposto, con le scelte dentro. Prossimo: la lista della parte A al
-Coordinatore, col numero della migrazione.
+proposto, con le scelte dentro. Lista della parte A approvata dal
+Coordinatore, migrazione 0058 in bozza, forme rifiutate dal motore.
+Prossimo: la parte A in una sessione nuova, nel turno che fissano il
+Coordinatore Sport e il Coordinatore (dopo o prima di 413 A e 415 A).
 
 - Gli script del banco sono in `out/TASK-414/` nel worktree della parte 0
   (`task-414-0-wheelchair`), ignorato da git: `loader.py`, `mix.py`,

@@ -146,6 +146,9 @@ apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json,
     targets/watch/{de,en,es,fr,it}.lproj/Localizable.strings
                                                        (se l'orologio elenca gli sport, come per il Roller)
 apps/mobile/assets/engine/engine.zip                   (i moduli sports/ dell'API vanno sul telefono)
+apps/mobile/src/social/PublicParts.tsx, src/settings/snowSport.test.ts
+                                                       (aggiunti dal Coordinatore il 2026-11-08:
+                                                        `NOT_YET_ON_SNOW`, che la parte B toglie)
 docs/tasks/TASK-415.md, docs/STATUS.md, docs/DECISIONS.md, docs/API.md,
     docs/DATABASE.md
 ```
@@ -168,6 +171,8 @@ server, che chiede il Coordinatore.
 libera in `main` all'apertura. Contratto, API, migrazione del solo CHECK di
 `runs`, profilo nascosto e orologio come da lista. I test col database
 (migrazione, salvataggio, record) girano in CI: sul Mac Docker era spento.
-Restano per B: il nome con `tLater` e i testi dell'orologio nelle quattro
+Il modulo per pubblicare una giornata sulla neve non offre lo scialpinismo
+finché c'è `NOT_YET_ON_SNOW` in `PublicParts.tsx`. Restano per B: toglierlo,
+il nome con `tLater` e i testi dell'orologio nelle quattro
 lingue (`scripts/watch-texts.sh`), la riga in `settings/sport.ts`, fasi e
 VAM.

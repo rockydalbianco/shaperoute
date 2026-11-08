@@ -127,6 +127,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `tasks/TASK-414.md`
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
+- **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
+  proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
+  TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · proposta in `main`
   (ADR-0347); primo giro nella PR #966. File: quelli della #966 · `tasks/TASK-419.md`
 

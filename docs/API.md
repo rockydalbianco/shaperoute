@@ -3178,7 +3178,7 @@ Chiedono tutte il token.
   - Dalla giornata più recente, a pagine come `GET
     /users/{id}/drawings`: `drawings`, `next`, `total`.
   - `404` per una stazione che non c'è.
-- **Il codice:** `resort_follows.py`. Migrazione `0058`, tipi in
+- **Il codice:** `resort_follows.py`. Migrazione `0062`, tipi in
   `packages/shared-types/src/resortFollows.ts`.
 
 ### Drawing search (TASK-344, ADR-0297)

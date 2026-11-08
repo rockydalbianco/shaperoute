@@ -1061,7 +1061,7 @@ del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
   nessun record personale.
 - Nessuna riga cambia. Test in `test_ski_touring_api.py`.
 
-Migrazione `0058_resort_follows.sql` (TASK-406 parte D3a, ADR-0338, `API.md`
+Migrazione `0062_resort_follows.sql` (TASK-406 parte D3a, ADR-0338, `API.md`
 «Seguire una stazione e i suoi post»; il numero è il primo libero al merge):
 
 - **`resort_follows`**: le stazioni che un account segue, «Your resorts».

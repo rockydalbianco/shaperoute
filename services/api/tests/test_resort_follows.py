@@ -1,5 +1,5 @@
 """The ski resorts a member follows and the posts of a resort (TASK-406 part
-D3, ADR-0338, migration 0058): «Your resorts» with PUT, DELETE and GET, and
+D3, ADR-0338, migration 0062): «Your resorts» with PUT, DELETE and GET, and
 GET /ski-resorts/{id}/drawings with the posts the asker sees.
 
 The days are those of the day-of-skiing tests (test_ski_days_api.py); the

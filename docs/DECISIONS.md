@@ -482,7 +482,7 @@ membri e un tasto per seguirla. Seguire poteva dare anche notifiche.
 
 1. **Seguire** mette la stazione fra «Your resorts», per prime nella scheda
    «Ski» e in «Cambia» durante la giornata. Nessuna notifica. La tabella
-   `resort_follows` (migrazione `0058`) ha l'account e la stazione, tutti e
+   `resort_follows` (migrazione `0062`) ha l'account e la stazione, tutti e
    due con `ON DELETE CASCADE`: una stazione tolta da un import esce dalle
    seguite.
 2. **Le rotte**: `PUT` e `DELETE /me/ski-resorts/{id}/follow` (204, la
@@ -501,5 +501,5 @@ membri e un tasto per seguirla. Seguire poteva dare anche notifiche.
 - **Le seguite sul telefono**: scartate, perché si perdono cambiando
   telefono e non seguono l'account.
 
-**Conseguenze**: una migrazione (`0058` o la prima libera al merge), quindi
+**Conseguenze**: una migrazione (`0062` o la prima libera al merge), quindi
 il server col sì dell'utente. L'app (D3b) viene dopo, con i suoi testi.

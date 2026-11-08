@@ -1,5 +1,5 @@
 """The ski resorts a member follows, and the posts of the days skied at a
-resort (TASK-406 part D3, ADR-0338, migration 0058).
+resort (TASK-406 part D3, ADR-0338, migration 0062).
 
 PUT and DELETE /me/ski-resorts/{id}/follow: «Your resorts» (the user's
 choice, 2026-11-08), first in the «Ski» search and in «Change» during a day

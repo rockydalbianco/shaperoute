@@ -156,6 +156,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `main` (#953): 49 forme candidate in `services/route-engine/candidate_outlines/`;
   poi la registrazione delle sole forme che l'utente approva su strada (dopo
   TASK-419). File: — · `tasks/TASK-418.md`
+- **TASK-421 — I percorsi a piedi non passano per i cancelli chiusi** · motore
+  in `main` (#973, ADR-0349, impronta `8ab61d8e87f9`); restano il server e le
+  zone foot da rifare (`DEPLOY.md` F.15, sì dell'utente dato), al «via server
+  973» del Coordinatore. File: — · `tasks/TASK-421.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

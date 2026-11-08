@@ -932,8 +932,7 @@ numero è del Coordinatore):
 - Nessuna posizione: un allenamento in palestra non ha luoghi né distanza
   (`distance_m` 0, `place` nullo). Test in `test_gym.py`.
 
-Migrazione `0060_gym_plans.sql` (TASK-411 parte C, ADR-0341, numero in
-bozza dal Coordinatore):
+Migrazione `0058_gym_plans.sql` (TASK-411 parte C, ADR-0341):
 
 - **`gym_plans`**: le schede di un account, chiave `(user_id, key)` con la
   chiave scelta dal telefono (`ON DELETE CASCADE` sull'account): `name`

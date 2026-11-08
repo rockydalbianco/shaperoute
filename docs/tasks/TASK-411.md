@@ -105,8 +105,7 @@ degli altri, `UserProfilePage` resta com'è).
 
 **Parte C** (lista approvata dal Coordinatore il 2026-11-08; l'utente ha
 detto «ok va bene» a farla lo stesso giorno): server
-`migrations/0060_gym_plans.sql` (numero in bozza, il vero è il primo libero
-in `main` al merge), `shaperoute_api/gym_plans.py` (nuovo),
+`migrations/0058_gym_plans.sql`, `shaperoute_api/gym_plans.py` (nuovo),
 `gym_sessions.py` (`plan`), `gym_calendar.py` (nome della scheda, giorni
 saltati), `app.py` (una riga), `tests/test_gym_plans.py` (nuovo);
 shared-types `src/gym.ts`, `fixtures/gym-plans.json` (nuovo),
@@ -215,3 +214,9 @@ l'italiano approvato dall'utente, le altre lingue dicono le stesse cose.
   ha seguito. Il calendario scrive la scheda di ogni allenamento e mette un
   pallino grigio nei giorni di una scheda passati senza di lei. Migrazione,
   server e OTA col sì dell'utente; i test del database li fa la CI.
+- 2026-11-08: **l'uscita, scelta dell'utente «Solo screenshot, OTA»**: la
+  1.0.2 resta solo screenshot (TASK-407); la palestra completa esce con un
+  OTA dedicato dopo C, D e F in `main`, il server aggiornato e il sito della
+  privacy ripubblicato, ogni passo col suo sì. Il sì al server l'utente l'ha
+  dato al Coordinatore («Sì, ok server»): la migrazione delle schede è la
+  `0058_gym_plans.sql`.

@@ -15,6 +15,8 @@ import {
   moved,
   OPENINGS,
   openingName,
+  ROUTE_CAMERAS,
+  routeCameraName,
   type SceneName,
   sceneName,
   switched,
@@ -32,11 +34,14 @@ type Props = {
  * draws them («Opening › The route › Ending»). A scene turns on and off
  * with a tap, and moves left or right with its arrows; the last one on
  * stays on. Under them, what the opening shows and how it gives way to
- * the next scene. The video lasts 12 seconds whatever is on.
+ * the next scene, and on «3D» how the route is seen (part C2b). The video
+ * lasts 12 seconds whatever is on.
  */
 export function ScenesRows({ edit, onChange }: Props) {
   const lastOn = edit.off.length >= edit.order.length - 1;
   const openingOn = !edit.off.includes("opening");
+  // How the route is seen: a choice on «3D» only (part C2b, choice 12).
+  const cameraChoice = edit.style === "3d" && !edit.off.includes("route");
   return (
     <>
       <Text style={styles.label}>{t("Scenes")}</Text>
@@ -97,6 +102,18 @@ export function ScenesRows({ edit, onChange }: Props) {
             nameOf={cutName}
             onChange={(cut) => onChange({ cut })}
             testID="cut"
+          />
+        </>
+      )}
+      {cameraChoice && (
+        <>
+          <Text style={styles.label}>{t("The route")}</Text>
+          <ChoiceChips
+            choices={ROUTE_CAMERAS}
+            chosen={edit.camera}
+            nameOf={routeCameraName}
+            onChange={(camera) => onChange({ camera })}
+            testID="camera"
           />
         </>
       )}

@@ -1712,6 +1712,9 @@ export const FR: Table = {
   "Whole drawing": "Dessin entier",
   "All three": "Les trois",
   "At least one scene stays on.": "Au moins une scène reste active.",
+  "Camera behind": "Caméra derrière",
+  "Camera around": "Caméra autour",
+  "Line in 2D": "Ligne en 2D",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concours MuW",

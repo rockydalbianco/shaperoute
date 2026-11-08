@@ -108,10 +108,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-408 — L'editor del video dell'attività** · C1 in `main`; C2 (scene
   e finale) nella PR #961. File: quelli della #961 · `tasks/TASK-408.md`
 - **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` e in produzione;
-  B1 (battito sulla corsa, server) in PR #979, server col sì dell'utente; B2
-  (app) pronta nel branch, PR dopo B1. La B fa anche i pezzi di TASK-345 B/C
-  e 374 D. File: `pool_swims.py`, `src/pool/`, `src/health/heart*`,
-  `src/about/content/`, `site/privacy/` · `tasks/TASK-409.md`
+  B1 (battito sulla corsa, server) in PR, server col sì dell'utente; poi B2
+  (app). La B fa anche i pezzi di TASK-345 B/C e 374 D. File:
+  `pool_swims.py`, `0061_run_heart.sql`, `shared-types/src/poolSwim.ts` ·
+  `tasks/TASK-409.md`
 - **TASK-410 — La pagina del post** · B in `main` (#949); poi C
   (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
 - **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le

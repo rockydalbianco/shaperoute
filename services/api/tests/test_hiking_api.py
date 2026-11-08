@@ -171,7 +171,9 @@ def test_a_hike_out_of_its_distances_is_refused(distance: int) -> None:
 
 
 def test_a_hike_counts_its_metres_as_a_walk_without_best_times() -> None:
-    assert RULES_VERSION == 2  # no run saved before 0051 can be a hike
+    # No run saved before 0051 can be a hike: the hike kept rules 2 (3 is
+    # TASK-423's best times, which a hike has none of).
+    assert RULES_VERSION >= 2
     fixes = Runner().run(8_000, 1.2).fixes
     hike, walk = evaluate(fixes, [], "hiking"), evaluate(fixes, [], "walking")
     assert hike.counted and hike.reason is None

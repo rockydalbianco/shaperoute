@@ -18,7 +18,7 @@ import { GymCalendarSheet } from "./GymCalendar";
 import { GymDrawGuide } from "./GymDrawGuide";
 import { forgetPlans, mergePlans, plansOf, workoutPlan } from "./plans";
 import { forgetHeldWorkout } from "./useWorkout";
-import { newWorkout } from "./workout";
+import { logSet, newWorkout, planStep } from "./workout";
 import { WorkoutScreen } from "./WorkoutScreen";
 import { loadWorkout } from "./workoutStore";
 
@@ -111,7 +111,10 @@ beforeEach(() => {
 test("in Draw: «Today» with today's plan; «Start without the plan» starts a free one", async () => {
   const fetchFn = api([EVERY_DAY]);
   await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
-  expect(screen.getByTestId("gym-guide-today")).toHaveTextContent("Today: Push");
+  const today = screen.getByTestId("gym-guide-today");
+  expect(within(today).getByRole("header", { name: "Push" })).toBeOnTheScreen();
+  expect(within(today).getByText("Bench press 4×8")).toBeOnTheScreen();
+  expect(within(today).getByRole("button", { name: "Start “Push”" })).toBeOnTheScreen();
   await fireEvent.press(screen.getByTestId("gym-guide-free"));
   const started = loadWorkout();
   expect(started).not.toBeNull();
@@ -192,4 +195,52 @@ test("the calendar writes a workout's plan and marks a day skipped", async () =>
   expect(screen.getByTestId("calendar-skipped")).toHaveTextContent("Planned · Legs");
   await fireEvent.press(screen.getByTestId("calendar-day-5"));
   expect(screen.getByTestId("calendar-workout")).toHaveTextContent(/ · Push›$/);
+});
+
+test("a plan's exercise says which of its sets is next, and the next exercise", () => {
+  let workout = newWorkout("w1", 0, workoutPlan(PUSH));
+  expect(planStep(workout)).toMatchObject({
+    set: 1,
+    sets: 4,
+    then: { exercise: "dips" },
+  });
+  workout = logSet(workout, { reps: 8, load_kg: 60 }, 60_000)!;
+  expect(planStep(workout)).toMatchObject({ set: 2, sets: 4 });
+  // Not of the plan: no step.
+  expect(
+    planStep({ ...workout, current: { exercise: "crunch", kind: "bodyweight" } }),
+  ).toBeNull();
+});
+
+test("during a plan's workout: the bar, «Set 1 of 4» with its dots, «Then: …»", async () => {
+  const workout = newWorkout("w1", Date.now(), workoutPlan(PUSH));
+  await shown(<WorkoutScreen workout={workout} nowMs={Date.now()} />);
+  expect(screen.getByTestId("plan-step")).toHaveTextContent("Set 1 of 4");
+  expect(screen.getByTestId("plan-then")).toHaveTextContent("Then: Dips 3×10");
+  expect(screen.getByTestId("log-set")).toHaveTextContent("✓ Log set");
+});
+
+test("in Draw without a plan: «Start workout», «New plan» and the plans' tile", async () => {
+  const fetchFn = api([]);
+  await shown(
+    <GymDrawGuide
+      onStart={jest.fn()}
+      startLabel="Start workout"
+      hint="No route in the gym: MuW times your workout."
+      fetchFn={fetchFn as unknown as typeof fetch}
+    />,
+  );
+  expect(screen.getByRole("button", { name: "Start workout" })).toBeOnTheScreen();
+  expect(screen.getByTestId("gym-guide-new-plan")).toHaveTextContent("📋 New plan");
+  expect(screen.getByTestId("gym-guide-plans")).toHaveTextContent("📋 PlansNew plan");
+  await screen.unmount();
+
+  mergePlans(OWNER, [
+    PUSH,
+    { ...PUSH, key: "pl00000000000009", name: "Pull", days: [] },
+  ]);
+  await shown(<GymDrawGuide fetchFn={api([PUSH]) as unknown as typeof fetch} />);
+  expect(screen.getByTestId("gym-guide-plans")).toHaveTextContent(
+    /📋 Plans(2 plans|1 plan)/,
+  );
 });

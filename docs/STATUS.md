@@ -118,8 +118,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-410 — La pagina del post** · B in `main` (#949); poi C
   (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
 - **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
-  schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
-  #962 · `tasks/TASK-411.md`
+  schede) nella PR #964, D (privacy) nella #962, F (la palestra più chiara)
+  su `feat/TASK-411-f-gym-clearer` dopo la #964. File: quelli delle #964,
+  #962 e della F · `tasks/TASK-411.md`
 - **TASK-412 — Documenti snelli** · questa PR: STATUS, DECISIONS e INDEX
   archiviati parola per parola in `docs/archive/`. File: `CLAUDE.md`,
   `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md`, `docs/archive/` ·

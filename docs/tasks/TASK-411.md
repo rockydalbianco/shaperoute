@@ -67,6 +67,7 @@ In ADR-0341 (proposto, deciso dall'agente su delega dell'utente).
 | C | Le schede: tabella, migrazione (numero dal Coordinatore con la lista), API, l'editor, «Today» in «Draw», l'allenamento guidato, i giorni saltati nel calendario | migrazione, server e OTA col sì |
 | D | La privacy: una riga sulle schede | testo col sì dell'utente |
 | E | Un omino animato accanto a ogni esercizio e una mini guida (3 passi e un avviso) — richiesta dell'utente del 2026-11-07 | solo app; testi approvati; OTA col sì |
+| F | La palestra più chiara: in «Draw» una sola scheda con un tasto, calendario e schede come riquadri; nell'allenamento barra, «Set n of m», «Then: …» — richiesta dell'utente del 2026-11-08 | solo app; testi approvati; OTA col sì |
 
 ## File toccati
 
@@ -147,6 +148,25 @@ shared-types `src/gym.ts`, `fixtures/gym-plans.json` (nuovo),
 «Reps», «Weight», «Back», «Close», i nomi dei gruppi e dei mesi ci sono
 già. `{when}` è «Today», «Yesterday» o il giorno di `dayLabel`.
 
+**Parte F** (richiesta dell'utente del 2026-11-08, «cerca di renderla più
+chiara e facile da utilizzare»; anteprima scelta «Sì, così»; lista al
+Coordinatore lo stesso giorno): `gym/GymDrawGuide.tsx`,
+`screens/ChooseScreen.tsx`, `gym/WorkoutScreen.tsx`, `gym/workout.ts`,
+`i18n/{it,de,fr,es}.ts` (cinque testi nuovi, «Today: {plan}» tolto), i test
+`gym/GymCalendar.test.tsx`, `gym/GymPlans.test.tsx`; documenti
+`docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/sports/gym.md`. Parte dal
+branch della C e la PR si apre dopo la #964.
+
+## Testi della parte F (approvati il 2026-11-08)
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Start “{plan}” | Inizia «{plan}» | „{plan}“ starten | Commencer « {plan} » | Empezar «{plan}» |
+| {n} plans | {n} schede | {n} Pläne | {n} programmes | {n} rutinas |
+| 1 plan | 1 scheda | 1 Plan | 1 programme | 1 rutina |
+| Set {n} of {total} | Serie {n} di {total} | Satz {n} von {total} | Série {n} sur {total} | Serie {n} de {total} |
+| Then: {exercise} | Poi: {exercise} | Danach: {exercise} | Ensuite : {exercise} | Después: {exercise} |
+
 ## Testi della parte E (approvati il 2026-11-07)
 
 | en | it | de | fr | es |
@@ -215,3 +235,16 @@ l'italiano approvato dall'utente, le altre lingue dicono le stesse cose.
   ha seguito. Il calendario scrive la scheda di ogni allenamento e mette un
   pallino grigio nei giorni di una scheda passati senza di lei. Migrazione,
   server e OTA col sì dell'utente; i test del database li fa la CI.
+- 2026-11-08: **parte F scritta** (`feat/TASK-411-f-gym-clearer`, sopra la
+  C), dalla richiesta dell'utente «cerca di renderla più chiara e facile da
+  utilizzare poi la mandiamo in produzione, deve uscire sull'App Store con
+  il prossimo aggiornamento». In «Draw» la palestra è una pagina sua: con
+  una scheda di oggi un riquadro «Today · Mon» con il nome, gli esercizi
+  («Bench press 4×8») e un solo tasto giallo «Start “Push”», sotto «Start
+  without the plan»; senza, «Start workout» e «New plan». Sotto due
+  riquadri: il mese (quante volte, l'ultimo allenamento) che apre il
+  calendario, e le schede. «How it works» solo prima del primo allenamento
+  salvato. Nell'allenamento una barra gialla dell'avanzamento della scheda,
+  «Set 2 of 4» coi pallini, «✓ Log set» più alto su una riga sua, «Then:
+  Dips 3×10». L'uscita (build o OTA) la decide il Coordinatore col sì
+  dell'utente.

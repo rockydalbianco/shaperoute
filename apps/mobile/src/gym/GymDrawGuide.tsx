@@ -1,4 +1,8 @@
-import type { GymCalendar, GymCalendarWorkout } from "@shaperoute/shared-types";
+import type {
+  GymCalendar,
+  GymCalendarWorkout,
+  GymPlanItem,
+} from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -6,6 +10,8 @@ import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { dayLabel } from "../activities/activityText";
 import { fetchGymCalendar, phoneTimeZone } from "../api/gymCalendar";
 import { t, tLater } from "../i18n";
+import type { Language } from "../i18n/languages";
+import { useLanguage } from "../i18n/useLanguage";
 import { clockLabel } from "../navigation/freeRun";
 import { useFollowsDoor } from "../social/followsDoor";
 import {
@@ -17,9 +23,11 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { exerciseName } from "./catalog";
 import { GymCalendarSheet } from "./GymCalendar";
+import { WEEK_DAYS } from "./GymPlanEditor";
 import { GymPlansSheet } from "./GymPlans";
-import { todayPlan, useGymPlans } from "./plans";
+import { isoDay, todayPlan, useGymPlans } from "./plans";
 import { startGymWorkout } from "./useWorkout";
 
 /** The three steps of «How it works» (texts approved on 2026-11-06). */
@@ -59,18 +67,56 @@ export function monthLine(count: number): string {
     : t("This month: {n} times", { n: String(count) });
 }
 
+/** «Bench press 4×8»: an exercise of a plan, its sets and what each aims at. */
+export function planItemLine(item: GymPlanItem, language: Language): string {
+  const name = exerciseName(
+    item.exercise !== undefined
+      ? { exercise: item.exercise }
+      : { name: item.name ?? "" },
+    language,
+  );
+  const each =
+    item.reps !== undefined
+      ? String(item.reps)
+      : item.duration_s !== undefined
+        ? clockLabel(item.duration_s * 1000)
+        : "";
+  return `${name} ${item.sets}×${each}`;
+}
+
+/** «2 plans», «1 plan». */
+export function plansCount(count: number): string {
+  return count === 1 ? t("1 plan") : t("{n} plans", { n: String(count) });
+}
+
 /**
- * Under «Start workout» in Draw (TASK-411 B, ADR-0341, the user's «3 passi
- * + ultimo allenamento»): «How it works» in three steps; under them, for
- * who is signed in, the last workout and how many this month, which opens
- * the calendar. An API without the calendar shows the steps alone. Asked
- * again when the account's activities change: a workout just saved counts.
- * With a plan for today (part C), «Today: {plan}», which «Start workout»
- * follows, and «Start without the plan»; «Plans» lists and writes them.
+ * The gym in Draw (TASK-411 B, C and F, ADR-0341, the user's «Sì, così» of
+ * 2026-11-08): one card with one yellow button. With a plan for today,
+ * «Today · Mon», the plan, its exercises and «Start “Push”», which follows
+ * it, and «Start without the plan»; without one, «Start workout» and «New
+ * plan». Under it two tiles: the month (how many workouts, the last one),
+ * which opens the calendar, and the plans. «How it works» in three steps
+ * until the first workout is saved. The calendar is asked again when the
+ * account's activities change: a workout just saved counts.
  */
-export function GymDrawGuide({ fetchFn }: { fetchFn?: typeof fetch }) {
+export function GymDrawGuide({
+  onStart,
+  startLabel,
+  startIcon,
+  hint,
+  fetchFn,
+}: {
+  /** «Start workout» of Draw: today's plan when there is one. */
+  onStart?: () => void;
+  startLabel?: string;
+  startIcon?: string;
+  /** The line under the title without a plan. */
+  hint?: string;
+  fetchFn?: typeof fetch;
+}) {
   const { apiUrl, account } = useFollowsDoor();
   const { total } = useActivitiesDoor();
+  const language = useLanguage();
   const token =
     account.state.status === "signedIn" ? account.state.session.token : null;
   const [calendar, setCalendar] = useState<GymCalendar | null>(null);
@@ -97,28 +143,49 @@ export function GymDrawGuide({ fetchFn }: { fetchFn?: typeof fetch }) {
   }, [apiUrl, token, total, fetchFn]);
 
   const shown = token === null ? null : calendar;
-  return (
-    <View style={styles.box} testID="gym-guide">
-      <Text style={styles.title} accessibilityRole="header">
-        {t("How it works")}
-      </Text>
-      {GUIDE_STEPS.map((step, index) => (
-        <View key={step} style={styles.step}>
-          <View style={styles.number}>
-            <Text style={styles.numberText} importantForAccessibility="no">
-              {index + 1}
-            </Text>
-          </View>
-          <Text style={styles.stepText}>{t(step)}</Text>
-        </View>
-      ))}
-      {today !== null && (
-        <View style={styles.history}>
-          <Text style={styles.monthText} testID="gym-guide-today">
-            {t("Today: {plan}", { plan: today.name })}
+  // Once a workout is saved, the steps have done their job.
+  const firstTime = shown === null || shown.last === null;
+  const start = startLabel ?? t("Start workout");
+
+  function startButton(label: string, testID: string) {
+    return (
+      <Pressable
+        style={({ pressed }) => [styles.start, pressed && styles.pressed]}
+        onPress={onStart}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        testID={testID}
+      >
+        {startIcon !== undefined && (
+          <Text style={styles.startText} importantForAccessibility="no">
+            {startIcon}
           </Text>
+        )}
+        <Text style={styles.startText}>{label}</Text>
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={styles.page} testID="gym-guide">
+      {today !== null ? (
+        <View style={styles.box} testID="gym-guide-today">
+          <Text style={styles.label}>
+            {`${t("Today")} · ${t(WEEK_DAYS[isoDay(new Date()) - 1])}`}
+          </Text>
+          <Text style={styles.title} accessibilityRole="header">
+            {today.name}
+          </Text>
+          <View style={styles.chips}>
+            {today.items.map((item, index) => (
+              <Text key={index} style={styles.chip}>
+                {planItemLine(item, language)}
+              </Text>
+            ))}
+          </View>
+          {startButton(t("Start “{plan}”", { plan: today.name }), "run-no-route")}
           <Pressable
-            style={({ pressed }) => [styles.month, pressed && styles.pressed]}
+            style={({ pressed }) => [styles.link, pressed && styles.pressed]}
             onPress={() => startGymWorkout(Date.now(), null)}
             accessibilityRole="button"
             testID="gym-guide-free"
@@ -126,33 +193,71 @@ export function GymDrawGuide({ fetchFn }: { fetchFn?: typeof fetch }) {
             <Text style={styles.muted}>{t("Start without the plan")}</Text>
           </Pressable>
         </View>
-      )}
-      {shown !== null && (
-        <View style={styles.history}>
-          {shown.last !== null && (
-            <Text style={styles.muted} testID="gym-guide-last">
-              {lastLine(shown.last)}
-            </Text>
+      ) : (
+        <View style={styles.box} testID="record-day">
+          {startButton(start, "run-no-route")}
+          {hint !== undefined && <Text style={styles.muted}>{hint}</Text>}
+          {owner !== null && (
+            <Pressable
+              style={({ pressed }) => [styles.ghost, pressed && styles.pressed]}
+              onPress={() => setPlansOpen(true)}
+              accessibilityRole="button"
+              testID="gym-guide-new-plan"
+            >
+              <Text style={styles.ghostText}>{`📋 ${t("New plan")}`}</Text>
+            </Pressable>
           )}
-          <Pressable
-            style={({ pressed }) => [styles.month, pressed && styles.pressed]}
-            onPress={() => setOpen(true)}
-            accessibilityRole="button"
-            testID="gym-guide-month"
-          >
-            <Text style={styles.monthText}>{`${monthLine(shown.count)} ›`}</Text>
-          </Pressable>
         </View>
       )}
-      {owner !== null && (
-        <Pressable
-          style={({ pressed }) => [styles.month, pressed && styles.pressed]}
-          onPress={() => setPlansOpen(true)}
-          accessibilityRole="button"
-          testID="gym-guide-plans"
-        >
-          <Text style={styles.monthText}>{`${t("Plans")} ›`}</Text>
-        </Pressable>
+      {(shown !== null || owner !== null) && (
+        <View style={styles.tiles}>
+          {shown !== null && (
+            <Pressable
+              style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
+              onPress={() => setOpen(true)}
+              accessibilityRole="button"
+              testID="gym-guide-month"
+            >
+              <Text style={styles.label}>{`📅 ${t("Gym calendar")}`}</Text>
+              <Text style={styles.tileValue}>{monthLine(shown.count)}</Text>
+              {shown.last !== null && (
+                <Text style={styles.muted} testID="gym-guide-last">
+                  {lastLine(shown.last)}
+                </Text>
+              )}
+            </Pressable>
+          )}
+          {owner !== null && (
+            <Pressable
+              style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
+              onPress={() => setPlansOpen(true)}
+              accessibilityRole="button"
+              testID="gym-guide-plans"
+            >
+              <Text style={styles.label}>{`📋 ${t("Plans")}`}</Text>
+              <Text style={styles.tileValue}>
+                {plans.length === 0 ? t("New plan") : plansCount(plans.length)}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      )}
+      {firstTime && (
+        <View style={styles.box} testID="gym-guide-steps">
+          <Text style={styles.stepsTitle} accessibilityRole="header">
+            {t("How it works")}
+          </Text>
+          {GUIDE_STEPS.map((step, index) => (
+            <View key={step} style={styles.step}>
+              <View style={styles.number}>
+                <Text style={styles.numberText} importantForAccessibility="no">
+                  {index + 1}
+                </Text>
+              </View>
+              <Text style={styles.stepText}>{t(step)}</Text>
+            </View>
+          ))}
+        </View>
       )}
       <GymCalendarSheet
         visible={open}
@@ -171,6 +276,9 @@ export function GymDrawGuide({ fetchFn }: { fetchFn?: typeof fetch }) {
 const NUMBER_SIZE = 24;
 
 const styles = StyleSheet.create({
+  page: {
+    gap: space.md,
+  },
   box: {
     gap: space.sm,
     padding: space.md,
@@ -179,9 +287,87 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     backgroundColor: color.surface,
   },
+  label: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
+  },
   title: {
     ...font.heading,
     color: color.text,
+  },
+  chips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: space.xs,
+  },
+  chip: {
+    color: color.text,
+    fontSize: fontSize.small,
+    paddingHorizontal: space.sm,
+    paddingVertical: space.xs,
+    borderRadius: radius.md,
+    backgroundColor: color.surfaceRaised,
+    overflow: "hidden",
+  },
+  start: {
+    minHeight: MIN_TAP_SIZE,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+    borderRadius: radius.pill,
+    backgroundColor: color.accent,
+  },
+  startText: {
+    color: color.onAccent,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.bold,
+  },
+  link: {
+    minHeight: MIN_TAP_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ghost: {
+    minHeight: MIN_TAP_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+  },
+  ghostText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+  tiles: {
+    flexDirection: "row",
+    gap: space.sm,
+  },
+  tile: {
+    flex: 1,
+    gap: space.xs,
+    minHeight: MIN_TAP_SIZE * 2,
+    padding: space.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface,
+  },
+  tileValue: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  stepsTitle: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   step: {
     flexDirection: "row",
@@ -208,26 +394,8 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.body,
   },
-  history: {
-    gap: space.xs,
-    paddingTop: space.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: color.border,
-  },
   muted: {
     color: color.textMuted,
     fontSize: fontSize.small,
-  },
-  month: {
-    minHeight: MIN_TAP_SIZE,
-    justifyContent: "center",
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  monthText: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
   },
 });

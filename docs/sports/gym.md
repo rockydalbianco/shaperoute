@@ -125,14 +125,25 @@ allenamento libero. Nel calendario ogni allenamento ha il nome della sua
 scheda e i giorni di una scheda passati senza di lei hanno un pallino
 grigio («In programma»).
 
-## Il calendario e la guida in «Draw» (TASK-411 B)
+## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
-Sotto «Start workout», «How it works» in tre passi (scegli dalla griglia;
-segna ogni serie, il recupero parte da solo; «Save»: calorie, traguardi e
-classifica). Per chi è dentro all'account, sotto: «Last workout: {when} ·
-{time}» (oggi, ieri o il giorno; il tempo senza le pause) e «This month: {n}
-times ›», che apre il calendario; sul proprio profilo lo apre anche «Gym
-calendar ›» nel riquadro 🏋️.
+In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una
+scheda per oggi un riquadro «Today · Mon» col nome della scheda, i suoi
+esercizi («Bench press 4×8») e un solo tasto giallo «Start “Push”», che la
+segue; sotto «Start without the plan». Senza una scheda per oggi «Start
+workout» con la sua riga e «New plan». Sotto, per chi è dentro all'account,
+due riquadri: «📅 Gym calendar» con «This month: {n} times» e «Last workout:
+{when} · {time}», che apre il calendario, e «📋 Plans» con quante schede
+(«New plan» se nessuna), che apre le schede. «How it works» in tre passi
+(scegli dalla griglia; segna ogni serie, il recupero parte da solo; «Save»:
+calorie, traguardi e classifica) resta solo finché non c'è un allenamento
+salvato. Sul proprio profilo il calendario lo apre anche «Gym calendar ›»
+nel riquadro 🏋️.
+
+Durante l'allenamento di una scheda, sotto il cronometro una barra gialla
+dell'avanzamento e «{plan} · Plan: {done}/{total} sets»; sull'esercizio in
+corso «Set 2 of 4» coi pallini, «✓ Log set» su una riga sua, e sotto «Then:
+Dips 3×10», il prossimo esercizio della scheda.
 
 Il calendario (`GET /me/gym-calendar?tz=&month=`, solo il proprietario) è un
 mese a griglia da lunedì sul fuso del telefono: un pallino giallo nei giorni

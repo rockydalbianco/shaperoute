@@ -1074,6 +1074,24 @@ del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
   nessun record personale.
 - Nessuna riga cambia. Test in `test_ski_touring_api.py`.
 
+Migrazione `0064_run_stats.sql` (TASK-410 parte C, ADR-0340, `API.md`
+«Run stats»; numero in bozza, il vero è del Coordinatore, il primo libero al
+merge):
+
+- **`run_stats`**: al più una riga per corsa, chiave `run_id` (`ON DELETE
+  CASCADE`), `stats` (`jsonb`, un oggetto) e `updated_at`. In `stats`:
+  `splits_km` e `splits_mile` (li conta il server dalla traccia), poi
+  `elevation` (al più 120 punti), `cadence_spm` e `kcal` (li manda il
+  telefono a fine attività). Una chiave assente o `null` è un dato che la
+  corsa non ha.
+- **Il battito non è qui**: sta in `runs` (`heart_avg_bpm`,
+  `heart_max_bpm`, `heart_shown`, TASK-409 B), e `heart_shown` decide anche
+  le calorie per chi guarda (scelta del Coordinatore, 2026-11-08).
+- Nessuna colonna nuova in `runs`, nessuna riga di prima cambia. Il
+  backfill dei passi delle corse vecchie (`python -m
+  shaperoute_api.run_stats`) scrive solo le righe che mancano, e si lancia
+  col sì dell'utente. Test in `test_run_stats.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

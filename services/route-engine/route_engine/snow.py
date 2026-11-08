@@ -178,7 +178,9 @@ SNOW_QUERY = (
     'way["aerialway"]({b});'
     'way["railway"~"^(rail|narrow_gauge|light_rail)$"]({b});'
     'way["highway"]({b});'
+    # A town's park is often a multipolygon (Parco Sempione, Milano).
     'way["leisure"~"^(golf_course|pitch|garden|park)$"]({b});'
+    'relation["leisure"~"^(golf_course|pitch|garden|park)$"]({b});'
     'way["boundary"="protected_area"]["protect_class"!~"^(2|5)$"]({b});'
     'relation["boundary"="protected_area"]["protect_class"!~"^(2|5)$"]({b});'
     'way["leisure"="nature_reserve"]["protect_class"!~"^(2|5)$"]({b});'

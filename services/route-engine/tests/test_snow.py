@@ -124,6 +124,8 @@ def test_the_query_leaves_parks_out_and_asks_the_geometry() -> None:
     query = snow_query((46.0, 11.0, 46.1, 11.1))
     assert "46.00000,11.00000,46.10000,11.10000" in query
     assert '["protect_class"!~"^(2|5)$"]' in query
+    # A town's park drawn as a multipolygon is asked too (Parco Sempione).
+    assert 'relation["leisure"~"^(golf_course|pitch|garden|park)$"]' in query
     assert query.endswith("out body geom;")
     assert "[timeout:180]" in query
 

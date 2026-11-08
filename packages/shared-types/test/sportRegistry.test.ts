@@ -38,6 +38,9 @@ const SINCE_LIMITS: Readonly<Record<string, readonly [number, number]>> = {
   gravel_biking: [10_000, 30_000],
 };
 const SINCE = Object.keys(SINCE_LIMITS);
+// And a day of ski touring (TASK-415), recorded without a shape after the
+// days on the snow of before.
+const NOW_RECORD_ACTIVITIES = [...BEFORE_RECORD_ACTIVITIES, "ski_touring"];
 const NOW_ACTIVITIES = [
   ...BEFORE_ACTIVITIES.slice(0, 4),
   "hiking",
@@ -50,11 +53,15 @@ const NOW_ACTIVITIES = [
 test("the activities are those of before, in their order", () => {
   assert.deepEqual([...ACTIVITIES], NOW_ACTIVITIES);
   assert.deepEqual([...API_ACTIVITIES], NOW_ACTIVITIES);
-  assert.deepEqual([...RECORD_ACTIVITIES], BEFORE_RECORD_ACTIVITIES);
+  assert.deepEqual([...RECORD_ACTIVITIES], NOW_RECORD_ACTIVITIES);
+  assert.deepEqual(
+    NOW_RECORD_ACTIVITIES.filter((a) => a !== "ski_touring"),
+    BEFORE_RECORD_ACTIVITIES,
+  );
   // Then a workout at the gym, saved without a track (TASK-385 B0).
   assert.deepEqual(
     [...RUN_ACTIVITIES],
-    [...NOW_ACTIVITIES, ...BEFORE_RECORD_ACTIVITIES, "gym"],
+    [...NOW_ACTIVITIES, ...NOW_RECORD_ACTIVITIES, "gym"],
   );
   assert.deepEqual(
     NOW_ACTIVITIES.filter((a) => !SINCE.includes(a)),

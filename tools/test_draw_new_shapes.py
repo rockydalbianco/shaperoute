@@ -1,0 +1,109 @@
+"""The new shapes of TASK-418: the files in the repository are the ones
+``draw_new_shapes.py`` writes, and the engine reads every one of them as one
+outline it can follow, with its pieces apart."""
+
+from __future__ import annotations
+
+import json
+
+import pytest
+
+pytest.importorskip("route_engine")
+pytest.importorskip("shapely")
+
+from draw_new_shapes import (  # noqa: E402
+    CANDIDATES,
+    CATEGORIES,
+    S,
+    as_text,
+    draw,
+    preview,
+)
+from route_engine.shapes import SHAPES  # noqa: E402
+from route_engine.shapes.outline import read_outline  # noqa: E402
+
+NAMES = sorted(S)
+N = 64
+
+
+def _flat(line: list[list[float]]) -> list[float]:
+    return [c for point in line for c in point]
+
+
+def _file(name: str) -> dict:
+    return json.loads((CANDIDATES / f"{name}.json").read_text(encoding="utf-8"))
+
+
+def test_the_user_chose_forty_nine_shapes_in_five_groups() -> None:
+    assert len(NAMES) == 49
+    groups = {c: sum(S[n][0] == c for n in NAMES) for c in CATEGORIES}
+    assert groups == {
+        "monuments": 7,
+        "food": 8,
+        "animals": 11,
+        "objects": 12,
+        "symbols": 11,
+    }
+
+
+def test_no_new_shape_takes_the_name_of_one_in_the_catalogue() -> None:
+    assert not set(NAMES) & set(SHAPES)
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_the_file_is_the_one_the_script_writes(name: str) -> None:
+    data, left_out = draw(name)
+    assert left_out == []
+    kept = _file(name)
+    assert {k: v for k, v in kept.items() if k not in ("points", "pieces")} == {
+        k: v for k, v in data.items() if k not in ("points", "pieces")
+    }
+    for key in ("points", "pieces"):
+        assert len(kept.get(key, [])) == len(data.get(key, []))
+    lines = [kept["points"], *kept.get("pieces", [])]
+    wanted = [data["points"], *data.get("pieces", [])]
+    for got, want in zip(lines, wanted, strict=True):
+        assert _flat(got) == pytest.approx(_flat(want), abs=1e-3)
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_the_engine_follows_it_as_one_closed_outline(name: str) -> None:
+    outline = read_outline(CANDIDATES / f"{name}.json")
+    assert outline.name == name
+    assert not outline.line
+    points = outline(N)
+    assert points[0] == points[-1]
+    assert len(points) >= N + 1
+    assert len(outline.pieces) == len(_file(name).get("pieces", []))
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_the_route_starts_at_the_top(name: str) -> None:
+    points = _file(name)["points"]
+    assert points[0] == points[-1]
+    assert points[0][1] == max(y for _, y in points)
+
+
+def test_the_holes_become_pieces() -> None:
+    # The ring of the anchor, the shackle and keyhole of the padlock, the
+    # bow of the key, the two loops of the infinity sign.
+    assert len(_file("anchor").get("pieces", [])) == 1
+    assert len(_file("padlock")["pieces"]) == 2
+    assert len(_file("key")["pieces"]) == 1
+    assert len(_file("infinity")["pieces"]) == 2
+
+
+def test_the_bicycle_has_its_wheels_apart() -> None:
+    wheels = [p for p in _file("bicycle")["pieces"] if len(p) > 20]
+    assert len(wheels) == 2
+
+
+def test_a_file_ends_with_a_new_line() -> None:
+    data, _ = draw(NAMES[0])
+    assert as_text(data).endswith("}\n")
+
+
+def test_the_preview_draws_every_shape() -> None:
+    page = preview([draw(n)[0] for n in NAMES])
+    assert page.count("<figure>") == 49
+    assert "<b>colosseum</b>" in page

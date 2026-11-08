@@ -3503,6 +3503,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **TASK-418 — Forme nuove per il catalogo di «Explore»** (2026-11-08; ADR-0349). 49
+  contorni approvati dall'utente sulla carta (monumenti, cibo, animali, oggetti, simboli) in
+  `services/route-engine/candidate_outlines/`, fuori dal pacchetto, disegnati da
+  `tools/draw_new_shapes.py` (`--preview` per vederli); si provano su strade vere con
+  `python -m route_engine --outline`. Le 17 parole approvate sono nel task file, per
+  TASK-419. Prossimo: registrare in `SHAPES` e nell'app le sole forme che l'utente approva
+  su strade vere (task da aprire). `tasks/TASK-418.md`.
 - **TASK-314 — La strada per tornare sul percorso, sulle vie** (2026-11-06; ADR-0274 e la sua
   «precisazione B»). Parte A #588 (motore, `/way-back`, motore sul telefono); parte B nella
   sua PR: lo schermo di corsa chiede la strada fuori percorso e la mostra sulla mappa, nel

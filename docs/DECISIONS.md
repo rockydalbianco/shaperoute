@@ -25369,3 +25369,48 @@ e luna (`docs/sports/wheelchair.md`), contro la rete foot sulla stessa area
   TASK-347 G.
 - **La rete foot o roller così come sono**: scale, ciottoli, cordoli.
 - **Una rete fatta col tag `wheelchair`**: c'è quasi solo a Milano.
+
+## ADR-0349 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica
+
+**Stato**: Attiva · 2026-11-08 · TASK-418. Deciso dall'agente su delega
+dell'utente; numero preso come primo libero (`AGENTI.md` regola 4).
+
+**Contesto**: 49 forme nuove per il catalogo grande di «Explore», approvate
+dall'utente sulla carta. Le forme di prima erano disegnate a mano, punto per
+punto, una alla volta (ADR-0035). ADR-0036 vuole il giudizio su strade vere
+prima che una forma entri nel catalogo.
+
+**Decisione**:
+
+1. Ogni forma è scritta in `tools/draw_new_shapes.py` come unione di
+   cerchi, ellissi, rettangoli e linee spesse (shapely, già dipendenza del
+   motore): il contorno esterno è il contorno, i buchi (l'anello
+   dell'ancora, l'arco del lucchetto) e i dettagli staccati (gli occhi, le
+   ruote della bici) sono `pieces`. Semplificata a 0,006, partenza nel
+   punto più alto; un dettaglio a meno di 0,03 da un'altra linea resta
+   fuori.
+2. I file stanno in `services/route-engine/candidate_outlines/`, **fuori**
+   da `route_engine/`: non entrano in `SHAPES`, né nello zip del motore sul
+   telefono (`tools/phone_engine`, che prende il pacchetto intero). Il CLI
+   li pianifica con `--outline`. Una chiave in più, `category`, dice il
+   gruppo del catalogo; `read_outline` la ignora.
+3. Una forma approvata su strade vere si sposta in
+   `route_engine/shapes/outlines/` e si registra (motore, contratto, app)
+   in un task suo.
+
+**Motivo**: 49 forme a mano costano giorni e sbagliano più spesso; dalle
+primitive si ridisegnano in un secondo e il test controlla che i file siano
+quelli dello script. Fuori dal pacchetto non toccano l'app né il catalogo
+finché l'utente non ha scelto.
+
+**Alternative**:
+
+- **Subito in `outlines/`**: cambia lo zip del motore sul telefono (un file
+  dell'app) e porta sul telefono forme non giudicate; scartata.
+- **Dalle immagini generate** (`image_outline.py`): contorni più
+  irregolari e licenze delle immagini da chiarire; scartata per ora.
+
+**Conseguenze**: TASK-419 pianifica le candidate con `--outline` (o con il
+seme esteso a leggere `candidate_outlines/`). La registrazione delle forme
+approvate è un task da aprire.
+

@@ -64,6 +64,7 @@ test("a store build leaves out the sports not ready, and keeps the order", () =>
     "bike",
     "gravel",
     "mtb",
+    "roller",
     "paddle",
     "swim",
     "ski",
@@ -87,6 +88,7 @@ test("in a store build `SPORTS` itself has no «Paragliding»", () => {
       "bike",
       "gravel",
       "mtb",
+      "roller",
       "paddle",
       "swim",
       "ski",
@@ -98,9 +100,10 @@ test("in a store build `SPORTS` itself has no «Paragliding»", () => {
 test("«Settings» of a store build has no «Soon» row", async () => {
   await render(<SportSetting sports={STORE} />);
   // Walk (TASK-371), run, the hike (TASK-377), bike, gravel and MTB
-  // (TASK-378), paddle, the swim (TASK-323), the alpine ski (TASK-375 D4)
-  // and the gym (TASK-385 B).
-  expect(screen.getAllByRole("radio")).toHaveLength(10);
+  // (TASK-378), the skate (TASK-380), paddle, the swim (TASK-323), the
+  // alpine ski (TASK-375 D4) and the gym (TASK-385 B).
+  expect(screen.getAllByRole("radio")).toHaveLength(11);
+  expect(screen.getByRole("radio", { name: "Roller" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Walk" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Hike" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Gravel" })).toBeOnTheScreen();
@@ -118,8 +121,8 @@ test("«Settings» of a store build has no «Soon» row", async () => {
 test("the sport menu of «Draw» in a store build has no «Soon» row", async () => {
   await render(<SportButton sports={STORE} />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  // The ten of «Settings».
-  expect(screen.getAllByRole("radio")).toHaveLength(10);
+  // The eleven of «Settings».
+  expect(screen.getAllByRole("radio")).toHaveLength(11);
   expect(screen.queryByText("Soon")).toBeNull();
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
 });

@@ -54,3 +54,19 @@ test("one's own posts are counted with the body on the phone, others' not", () =
   // 4.9 km × 90 kg.
   expect(postEnergy(RUN)).toBe("441 kcal");
 });
+
+test("a swim in a pool has its own (TASK-409 part A), one in open water none", () => {
+  const pool: SamplePost = { ...RUN, activity: "swimming", route_m: 1500, minutes: 40 };
+  // 1500 m in 40 min at 2:40 /100 m, 70 kg (pool/poolKcal.test.ts).
+  expect(postEnergy(pool)).toBe("235 kcal");
+  // Others' with no body, one's own with the body on the phone.
+  saveBody({ ...NO_BODY, weightKg: 80 });
+  expect(postEnergy(pool)).toBe("235 kcal");
+  jest.mocked(loadSession).mockReturnValue({
+    token: "t",
+    user: { username: "Ada_runs" } as never,
+  });
+  expect(postEnergy(pool)).toBe("269 kcal");
+  // A swim in open water has a line, and no energy yet (ADR-0318 §14).
+  expect(postEnergy({ ...pool, line: [[46, 11]] })).toBeNull();
+});

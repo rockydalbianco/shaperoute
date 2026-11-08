@@ -10,11 +10,15 @@ import { useRunAwake } from "../navigation/useRunAwake";
 import { HoldButton } from "../screens/HoldButton";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
-import { exerciseName } from "./catalog";
+import { exerciseName, gymExercise } from "./catalog";
+import { ExerciseFigure } from "./ExerciseFigure";
+import { GuideButton } from "./ExerciseGrid";
+import { ExerciseGuide } from "./ExerciseGuide";
 import { ExerciseList } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
 import { gymKcal, gymKcalLabel } from "./gymKcal";
 import { gymStyles } from "./gymStyles";
+import { moveOf } from "./moves";
 import { useRestAlert } from "./restAlert";
 import { RestPanel } from "./RestPanel";
 import { restOver } from "./restTimer";
@@ -72,6 +76,8 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
   const units = useUnits();
   const body = useBody();
   const [picking, setPicking] = useState(workout.current === null);
+  // The guide of the exercise under way, in place of the workout (part E).
+  const [guiding, setGuiding] = useState(false);
   const [texts, setTexts] = useState<SetTexts>(() => {
     const last = sameAgainValues(workout);
     return workout.current === null || last === null
@@ -103,6 +109,26 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
     return (
       <View style={[gymStyles.screen, { paddingTop: insets.top + space.lg }]}>
         <ExercisePicker onPick={pick} onClose={() => setPicking(false)} />
+      </View>
+    );
+  }
+
+  const language = appLanguage();
+  const guided =
+    current !== null && "exercise" in current
+      ? gymExercise(current.exercise)
+      : undefined;
+  const move = guided === undefined ? null : moveOf(guided.key);
+  if (guiding && guided !== undefined) {
+    return (
+      <View style={[gymStyles.screen, { paddingTop: insets.top + space.lg }]}>
+        <View style={[gymStyles.content, styles.guide]}>
+          <ExerciseGuide
+            exercise={guided}
+            language={language}
+            onBack={() => setGuiding(false)}
+          />
+        </View>
       </View>
     );
   }
@@ -161,7 +187,19 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
         )}
         {current !== null && (
           <View style={styles.set} testID="gym-set">
-            <Text style={gymStyles.title}>{entryName(current)}</Text>
+            <View style={styles.name}>
+              {move !== null && <ExerciseFigure move={move} size={NAME_FIGURE} />}
+              <Text style={[gymStyles.title, styles.nameText]}>
+                {entryName(current)}
+              </Text>
+              {guided !== undefined && (
+                <GuideButton
+                  exercise={guided}
+                  language={language}
+                  onGuide={() => setGuiding(true)}
+                />
+              )}
+            </View>
             <Text style={gymStyles.muted}>
               {t("Set {n}", { n: String(nextSetNumber(workout)) })}
             </Text>
@@ -251,7 +289,21 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
   );
 }
 
+/** The side of the figure beside the exercise under way. */
+const NAME_FIGURE = 48;
+
 const styles = StyleSheet.create({
+  guide: {
+    flex: 1,
+  },
+  name: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+  },
+  nameText: {
+    flex: 1,
+  },
   head: {
     alignItems: "center",
     gap: space.xs,

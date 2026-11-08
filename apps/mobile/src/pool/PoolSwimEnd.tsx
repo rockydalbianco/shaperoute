@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SIGN_IN_TO_KEEP_RUNS, useActivitiesDoor } from "../activities/activitiesDoor";
+import { useBody } from "../body/useBody";
 import { gymStyles } from "../gym/gymStyles";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
@@ -16,6 +17,7 @@ import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/token
 import { averagePace } from "./poolChoice";
 import { metresLabel } from "./PoolDraw";
 import { savePoolToHealth } from "./poolHealth";
+import { poolKcal, poolKcalLabel } from "./poolKcal";
 import { newPoolPost, type PoolPost, PoolPostForm } from "./PoolPostForm";
 import {
   activeMs,
@@ -39,7 +41,8 @@ export function maxLengths(activeS: number, poolLengthM: number): number {
 /**
  * The swim in a pool ended (TASK-400 part B, ADR-0334, point 3): «How many
  * lengths?» with the estimate from its time, to correct with − and + or by
- * writing it; then lengths, metres, time and pace /100 m. Lengths faster
+ * writing it; then lengths, metres, time, pace /100 m and calories (with
+ * the body of «Body», TASK-409 part A). Lengths faster
  * than 2.5 m/s, which the API refuses, stay not valid and «Save» waits.
  * «Save» keeps it on the phone and sends it, and writes it to Apple Health
  * or Health Connect after the user's yes; «Discard» asks first. Under the
@@ -67,6 +70,7 @@ export function PoolSwimEnd({
   const { signedIn, signIn, owner } = useActivitiesDoor();
   const [post, setPost] = useState<PoolPost>(() => newPoolPost(owner));
   const healthState = useHealth(phone);
+  const body = useBody();
   const activeS = activeMs(swim, swim.endedMs ?? swim.startedMs) / 1000;
   const most = maxLengths(activeS, swim.poolLengthM);
   const [text, setText] = useState(() =>
@@ -85,6 +89,12 @@ export function PoolSwimEnd({
   const lengths =
     written !== null && metres !== null && !isTooFast(activeS, metres) ? written : null;
   const pace = metres === null ? null : pacePer100S(activeS, metres);
+  const kcal =
+    lengths === null || metres === null
+      ? null
+      : poolKcalLabel(
+          poolKcal(metres, activeS, body, new Date(swim.startedMs).getFullYear()),
+        );
 
   function step(by: number) {
     const from = written ?? 0;
@@ -176,6 +186,7 @@ export function PoolSwimEnd({
             value={lengths === null || pace === null ? "–" : clockLabel(pace * 1000)}
             testID="pool-pace"
           />
+          <Figure label={t("Calories")} value={kcal ?? "–"} testID="pool-kcal" />
         </View>
         {signedIn && (
           <PoolPostForm

@@ -1,7 +1,7 @@
 # TASK-380 — Roller: i pattini in linea sull'asfalto liscio
 
 **Stato**: In corso — parte 0 in `main` (#886, #890), parte A in `main`
-(#912, soglie #914); parte B in PR.
+(#912, soglie #914), parte B in `main` (#921); accensione in PR.
 **Fase**: 4 · **Branch**: `docs/TASK-380-0-roller` (parte 0), poi
 `feat/TASK-380-a-roller-engine-api`, `feat/TASK-380-b-roller-app` ·
 **ADR**: ADR-0324 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -283,6 +283,19 @@ apps/mobile/src/settings/SportButton.test.tsx, SportSetting.test.tsx,
 docs/tasks/TASK-380.md, docs/STATUS.md, docs/DECISIONS.md (terza precisazione di ADR-0324)
 ```
 
+Accensione (`feat/TASK-380-roller-on`), lista approvata dal Coordinatore
+il 2026-11-06, come la #897 di Gravel/MTB:
+
+```
+apps/mobile/src/settings/sport.ts                 (fromProfile("roller", true))
+apps/mobile/src/settings/SportStoreBuild.test.tsx, SportButton.test.tsx,
+    SportSetting.test.tsx, sport.test.ts, sportRows.test.ts
+apps/mobile/src/profile/SettingsPage.test.tsx
+apps/mobile/src/search/walkFilter.test.tsx
+apps/mobile/src/sports/rollerProfile.test.ts
+docs/STATUS.md, docs/tasks/TASK-380.md
+```
+
 Della lista approvata della parte A non sono serviti: `test_hiking.py`, `test_walking.py`,
 `test_mountain_biking.py`, `test_gravel_biking.py` (motore),
 `hiking.test.ts`, `gravelMtb.test.ts` (contratto), `test_hiking_api.py`,
@@ -390,3 +403,16 @@ Roller 🛼 è nell'app, «Soon» finché il server non ha la 0055:
 È solo JavaScript: l'impronta iOS la misura il Coordinatore. Prossimo: il
 server con la 0055, col sì dell'utente. Poi `ready: true` in una PR
 piccola, quando il Coordinatore scrive che il server è aggiornato.
+
+2026-11-08: la parte B è in `main` (#921, `b69a2312`). Prima del merge
+è entrata la #923, che ordina gli sport per famiglia: il Roller sta «su
+ruote», dopo la MTB. Il server ha la 0055 dal deploy 758bccd1.
+
+**Accensione in PR** (`feat/TASK-380-roller-on`): `ready: true`. Il Roller
+si sceglie in «Impostazioni» e in «Disegna», anche nelle build degli store,
+e la ricerca e il modulo per pubblicare lo offrono.
+
+La PR entra dopo l'OTA di produzione della #922. Il Roller acceso esce con
+un OTA suo, col sì dell'utente, che chiede il Coordinatore. Poi va provato
+sul telefono: si sceglie, si pattina, si salva e va in Salute (il criterio
+B).

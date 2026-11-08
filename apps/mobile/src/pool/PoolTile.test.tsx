@@ -12,8 +12,8 @@ import { isPoolSwimRun } from "./PoolTile";
 
 // TASK-400 part B: a swim in a pool in «My activities», as the API lists it
 // to an app that says `pool`: no line, no place. Its row shows the 🏊 tile,
-// «Pool swim», its metres, time and pace /100 m, and does not open a map
-// it has not got.
+// «Pool swim», its metres, time, pace /100 m and calories (TASK-409 A),
+// and does not open a map it has not got.
 
 jest.mock("expo-file-system");
 jest.mock(
@@ -68,7 +68,9 @@ test("its row: the tile, «Pool swim», metres, time and pace, nothing to open",
   ).toBeOnTheScreen();
   expect(screen.getByLabelText(/Pool swim, 1\.50 km/)).toBeOnTheScreen();
   expect(screen.getByText("Pool swim")).toBeOnTheScreen();
-  expect(screen.getByText("1.50 km · 40:00 · 2:40 /100 m")).toBeOnTheScreen();
+  expect(
+    screen.getByText("1.50 km · 40:00 · 2:40 /100 m · 235 kcal"),
+  ).toBeOnTheScreen();
   await fireEvent.press(screen.getByText("Pool swim"));
   expect(open).not.toHaveBeenCalled();
 });

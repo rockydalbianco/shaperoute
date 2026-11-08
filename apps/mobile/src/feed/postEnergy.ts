@@ -5,6 +5,8 @@ import { appBody, type BodyProfile, NO_BODY } from "../body/bodyProfile";
 import { activeKcal } from "../body/energy";
 import { isOnSnow, isTrackless } from "../activities/snow";
 import { gymKcal, gymKcalLabel } from "../gym/gymKcal";
+import { poolKcal, poolKcalLabel } from "../pool/poolKcal";
+import { isShown } from "./feedPosts";
 import type { SamplePost } from "./sampleFeed";
 
 /**
@@ -12,7 +14,9 @@ import type { SamplePost } from "./sampleFeed";
  * ADR-0298), with each sport's own formula (TASK-374, ADR-0318). The body
  * stays on the phone: one's own posts are counted with it, everyone else's
  * as a body with no data (70 kg). An activity with no metres has none, and
- * neither has a ride or a paddle with no time.
+ * neither has a ride or a paddle with no time. A swim in a pool, a swim
+ * without a line, has its own (poolKcal.ts, TASK-409 part A); one in open
+ * water none.
  */
 export function postEnergy(
   post: SamplePost,
@@ -27,6 +31,11 @@ export function postEnergy(
       : (post.activity ?? "running");
   if (activity === null) {
     return null;
+  }
+  // A swim without a line is in a pool (isPoolLine, pool/PoolTile.tsx).
+  if (activity === "swimming" && post.line.length === 0) {
+    const seconds = isShown(post) ? post.drawing.duration_s : post.minutes * 60;
+    return poolKcalLabel(poolKcal(post.route_m, seconds, body, year));
   }
   const energy = activeKcal(
     {

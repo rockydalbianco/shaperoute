@@ -87,6 +87,7 @@ import { useMapCanvas } from "./src/mapdraw/useMapCanvas";
 import { MapView } from "./src/map/MapView";
 import { NorthArrow } from "./src/map/NorthArrow";
 import { useTurnedMap } from "./src/map/turnedMap";
+import { useHeadingUpMap } from "./src/map/useHeadingUpMap";
 import {
   canResume,
   endFreeRun,
@@ -819,6 +820,13 @@ function MuW() {
             ? (followedRotation ?? move.left?.rotationDeg ?? null)
             : followedRotation,
   );
+  // The run's «Compass» page (TASK-422, ADR-0350): the map turned where the
+  // phone points, over the drawing's turn; off that page, the drawing's.
+  const mapTurn = useHeadingUpMap(turned, {
+    on: running || navigating,
+    trackDeg: heading,
+    lastFixMs: runTrack.fixes[runTrack.fixes.length - 1]?.timeMs ?? null,
+  });
   const exploredExport: ExportState =
     explored?.status === "done" &&
     gpx.state.status !== "idle" &&
@@ -1325,8 +1333,13 @@ function MuW() {
           ) : undefined
         }
         compass={
-          turned.arrow ? (
-            <NorthArrow shown={turned.shown} onPress={turned.onArrow} />
+          mapTurn.arrow ? (
+            <NorthArrow
+              shown={mapTurn.shown}
+              onPress={mapTurn.onArrow}
+              northUp={mapTurn.compass ? mapTurn.northUp : undefined}
+              upHint={mapTurn.compass ? t("Turns the map where you face") : undefined}
+            />
           ) : undefined
         }
         map={
@@ -1438,9 +1451,9 @@ function MuW() {
             }
             moving={movingShape || movingExample}
             onMoved={movingExample ? moveExample.onMoved : move.onMoved}
-            bearing={turned.bearing}
-            turn={turned.turn}
-            onTurned={turned.onTurned}
+            bearing={mapTurn.bearing}
+            turn={mapTurn.turn}
+            onTurned={mapTurn.onTurned}
             // «Draw on the map» (TASK-281): the figure, and the fingers.
             canvas={canvasOn ? mapDraw.canvas : null}
             onCanvas={mapDraw.onCanvas}

@@ -24995,6 +24995,14 @@ Open-Meteo archivio (gratuito solo non commerciale).
 
 **Conseguenze**: le corse salvate prima della parte C hanno solo passi per
 km (dal backfill) e i campi di oggi; meteo solo per le corse salvate subito.
+
+**Parte B** (2026-11-08, deciso dall'agente su delega dell'utente): la
+pagina è un `Modal` aperto da `FeedScreen`, non una schermata di `App`;
+«Like» apre le sei reazioni (scelta dell'utente, non c'è un 👍); le icone
+del foglio sono emoji (niente icone né SVG nell'app); «Edit & run» passa
+per una porta nuova (`feed/editRunDoor.ts`) verso `editTrackOf` di `App`;
+le impostazioni del proprio post trovano la corsa in `GET /me/drawings`
+per id e salvano con `DrawingsDoor.choose`.
 ## ADR-0341 — La palestra per tutti i giorni: la griglia, il calendario dal server, le schede sull'account
 
 **Stato**: Proposto · 2026-11-06 · TASK-411. Le scelte di prodotto sono

@@ -4,7 +4,7 @@
 > ultimo da aggiornare. Deve restare corto: lo storico è in `docs/archive/`
 > (si cerca con grep, non si legge intero).
 
-**Ultimo aggiornamento**: 2026-11-08 · **Fase corrente**: 5 — Sport e piattaforme
+**Ultimo aggiornamento**: 2026-11-08 (TASK-412 chiuso) · **Fase corrente**: 5 — Sport e piattaforme
 
 ---
 
@@ -50,12 +50,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   prova sull'iPhone. File: — · `tasks/TASK-301.md`
 - **TASK-309 — Le corse di gruppo** · documenti e A (API) in `main`;
   prossimo B (app), poi C. File: — · `tasks/TASK-309.md`
-- **TASK-310 — pytest fermato sotto la 9.2** · nel vecchio STATUS è in
-  «Completato», il task file dice «In corso»: da chiudere nel task file.
-  File: — · `tasks/TASK-310.md`
-- **TASK-315 — Le foto di un post si scorrono nel Feed** · nel vecchio
-  STATUS è in «Completato», il task file dice «In corso»: da chiudere nel
-  task file. File: — · `tasks/TASK-315.md`
 - **TASK-311 — Parole scritte meglio** · A e B fatte; C e D dopo il sì
   dell'utente. File: — · `tasks/TASK-311.md`
 - **TASK-312 — Attività da altre app e post di sole foto** · A e B in `main`;
@@ -120,10 +114,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
   schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
   #962 · `tasks/TASK-411.md`
-- **TASK-412 — Documenti snelli** · questa PR: STATUS, DECISIONS e INDEX
-  archiviati parola per parola in `docs/archive/`. File: `CLAUDE.md`,
-  `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md`, `docs/archive/` ·
-  `tasks/TASK-412.md`
 - **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore) nella
   PR #957, poi A2 e B. File: quelli della #957 · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A

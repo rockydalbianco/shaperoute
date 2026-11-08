@@ -170,8 +170,9 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
    GDPR): il consenso della prima volta lo deve dire in chiaro, va al
    server solo durante la condivisione e si cancella con i punti; la
    privacy lo nomina.
-4. **Se parte da sola a ogni registrazione** — proposta: no, ogni volta col
-   pulsante.
+4. **Se parte da sola a ogni registrazione** — **deciso dall'utente il
+   2026-11-09** («Sì, col pulsante»): no, ogni volta col pulsante; nessuna
+   impostazione per farla partire da sola.
 5. **Come si manda** — proposta: il foglio di condivisione del telefono.
 6. **Chi può condividere** — proposta: serve l'account (il link è legato a
    chi lo crea e si ferma anche da un altro telefono).

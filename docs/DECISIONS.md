@@ -466,6 +466,7 @@ lasciando le righe d'indice.
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
+- ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 
 ---
 
@@ -498,6 +499,50 @@ comincia. Una serie conta per il primo esercizio della scheda dello stesso
 tipo ancora incompleto; finito un esercizio, quello dopo diventa quello in
 corso da solo, coi valori della scheda nei campi se non ci sono serie di
 prima.
+## ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py`
+
+**Stato**: Accettato · 2026-11-08 · TASK-413 A1. Deciso dall'agente su
+delega dell'utente; `ENGINE_ONLY` e `heights.py` approvati dal Coordinatore
+il 2026-11-08.
+
+1. **Le ciaspole entrano nel motore prima che nel contratto.** Una tupla
+   nuova del registro, `activities.ENGINE_ONLY`, tiene le attività che il
+   motore disegna e il contratto non ha ancora: `snowshoeing` fino ad A2.
+   `SUPPORTED_ACTIVITIES` (e quindi `API_ACTIVITIES`, shared-types, l'API)
+   non cambia; `ACTIVITIES`, `DISTANCE_LIMITS_M`, `SNOW_ACTIVITIES` e
+   `FREE_ACTIVITIES` la contano. A2 la sposta in `ENGINE_ACTIVITIES` insieme
+   alle righe del contratto. È come prima di TASK-376, quando
+   `SUPPORTED_ACTIVITIES` era un sottoinsieme di `ACTIVITIES`.
+2. **`FREE_ACTIVITIES` = acqua + neve**: niente parole, immagini né
+   disegni (`ON_SNOW_SHAPES_ONLY`, testo suo), `near` permesso come
+   sull'acqua (il testo di `NEAR_ON_WATER_ONLY` resta: l'API lo usa).
+3. **`route_engine/heights.py` è il modulo condiviso delle quote** (ADR-0300
+   parte G, ADR-0344 C): tegole Terrarium zoom 13 in `<cache>/heights/`
+   come PNG scaricati, decodificate con Pillow (già dipendenza del motore,
+   quindi anche del server), quota bilineare per punto, griglia di pendenze
+   a celle di 25 m. Il download passa da una funzione sostituibile
+   (`fetch`): i test non usano la rete. TASK-347 G vi aggiunge
+   `elevation_profile`, TASK-415 C la pendenza sotto la traccia: nessun
+   `terrain.py` nuovo nel server.
+4. **La neve è un `water.WaterArea`** costruito da `snow.build_area` con le
+   regole della variante `chosen` (`snow.CHOSEN`); `water.py` e
+   `water_fit.py` non cambiano. Gli errori di `water_fit` sono detti per la
+   neve (`NoSnowError`, `SnowFitError`, con la distanza a cui la forma
+   entra). La verifica è `snowshoeing.check_on_snow`: chiusa, nulla fuori
+   dalla neve permessa, entro il 10%; nessuna fascia di riva.
+5. **L'impronta**: `heights.py`, `snow.py` e `snowshoeing.py` stanno fuori
+   (`route_store.SNOW_ONLY`, come `DRAWN_WATER_ONLY`); `models.py`,
+   `activities/` e `__main__.py` la cambiano senza cambiare un percorso: tre
+   righe in `SAME_ROUTES_AS` con la prova `5e374d843dda.json` (i nove
+   percorsi fissi identici, darwin-arm64) e la canoa del banco identica
+   (`compare --same`, 27 percorsi). Quando G farà leggere le quote a ogni
+   percorso, `heights.py` esce da `SNOW_ONLY`.
+6. **La cache della neve** è `<cache>/snow/snow_<s>_<w>_<n>_<e>.json`, nel
+   formato dell'acqua (`water.read_water`); un file che contiene l'area
+   chiesta la serve. Il riquadro di una richiesta è quello dell'acqua senza
+   la fascia di 1 km di riva, più 100 m (`snow.snow_bbox`). Il filtro chiede
+   anche le `relation` di parchi, giardini, golf e campi: al banco un parco
+   di città disegnato così (Parco Sempione, Milano) passava per neve.
 
 ## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
 

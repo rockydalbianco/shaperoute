@@ -238,6 +238,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'utente) e il riepilogo; branch `feat/TASK-410-b-post-page`, solo
   app; provata sul simulatore. Prossimo: merge, poi OTA col sì
   dell'utente; C (`run_stats`) dopo.
+  **Parte B chiusa** (2026-11-08): #949 in `main` (08803c33); OTA di
+  produzione iOS gruppo `8b1af1b4`, commit `a0f38012`, runtime `6f8bba4c`
+  (con TASK-416 e TASK-408 C1; sì dell'utente «si confermo esatto» e «Sì,
+  OTA tutto»). Prossimo: parte C (`run_stats`), lista al Coordinatore
+  prima del codice; A è TASK-355 B.
 - **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
   Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
   La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo

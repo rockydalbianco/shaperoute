@@ -21,7 +21,14 @@ del nord rimette il nord in alto. Chiesta dall'utente il 2026-11-08.
 - `apps/mobile/src/screens/RunDashboard.tsx`, `src/map/turnedMap.ts`,
   `src/map/NorthArrow.tsx`, `src/map/MapView.tsx` (`turn`, `onTurned`)
 
-## Scelte (dell'agente su delega dell'utente, con la proposta del brief)
+## Scelte (proposte dall'agente, approvate dall'utente)
+
+**Approvate dall'utente il 2026-11-08** nella sessione del Coordinatore
+(«approvo tutto»): il nome «Compass», l'ordine Compass | Map | Data con
+l'apertura su «Map», la freccia del nord a due tocchi, i due testi nelle
+cinque lingue («Compass», «Turns the map where you face»). La regola
+tecnica dell'heading (bussola o traccia, le soglie) è dell'agente, in
+ADR-0350.
 
 - **Ordine e apertura**: «Compass» a sinistra, «Map» al centro, «Data» a
   destra. La corsa si apre su «Map», come oggi. Lo swipe passa una pagina
@@ -115,5 +122,6 @@ gira dove punta il telefono con la regola di ADR-0350, la freccia del nord
 alterna nord in alto e direzione. Quattro moduli nuovi con i loro test;
 `RunDashboard.tsx` cambia solo per la terza pagina, `App.tsx` per cinque
 righe. Due testi nuovi nelle cinque lingue («Compass», «Turns the map
-where you face»): il merge aspetta il sì dell'utente sui testi, poi la
-prova sul telefono.
+where you face»), approvati dall'utente con le altre scelte il
+2026-11-08. PR #971, unita dal Coordinatore; restano la prova sul
+telefono e l'OTA col sì dell'utente.

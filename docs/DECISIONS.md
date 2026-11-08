@@ -464,7 +464,6 @@ lasciando le righe d'indice.
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
-- ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 
 ---
@@ -473,44 +472,6 @@ lasciando le righe d'indice.
 
 ## Voci nuove
 
-## ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes»
-
-**Stato**: Attiva · 2026-11-08 · TASK-370 parte B3a1, decisa dall'agente su
-delega dell'utente; scelte dell'utente 4, 5, 7, 8 del task file; lista dei
-file approvata dal Coordinatore (local_3f55a0e9).
-
-**Contesto**: l'orologio deve correre senza telefono un percorso che il
-telefono gli ha mandato («Pulsante e preferiti»). I preferiti e i percorsi
-di «Explore» non hanno direzioni: il telefono le chiede a `/route-directions`
-al via.
-
-**Decisione**:
-1. **Il telefono decide, l'orologio segue**: `src/watch/watchRoute.ts`
-   prepara il percorso una volta (direzioni semplificate, tratti a penna
-   alzata che stanno sui punti, `startsAnywhere`, `isRide`, canoa, distanza
-   d'annuncio, coordinate a 6 decimali) e lo manda col messaggio nuovo
-   «route» (`transferUserInfo`). «routes» porta le chiavi dei preferiti
-   (B3a2). Nessuna versione nuova del protocollo: un tipo sconosciuto si
-   ignora già.
-2. **Il contratto** è `Fixtures/routes.json`, scritto da
-   `scripts/watch-routes.sh` dal codice del telefono e letto da
-   `WatchRoute.swift`; `messages.json` ha i casi validi e rifiutati.
-3. **«Send to watch»** sta sotto «Send to a friend» nella colonna del cuore
-   (`FavoriteHeart.tsx`, non `App.tsx`), solo con un orologio abbinato che
-   ha l'app (`watchLink.ready()`); chiede le direzioni come al via, nessuna
-   sull'acqua; senza rete «No connection…», testo che l'app ha già.
-4. **Sull'orologio** `RouteShelf` (WatchCore, puro) tiene tutti i preferiti
-   e gli ultimi 20 mandati, sostituisce per chiave; `RouteStore` lo salva in
-   un file; la prima pagina è «Routes» con «Run without a route» in cima. Un
-   percorso fa partire il suo sport: la guida in corsa è B3b.
-5. **Un testo che vede solo l'orologio** sta nelle tabelle dell'app e in
-   `watchTexts.ts` con `tLater`, così il controllo dei testi non usati lo
-   tiene.
-
-**Conseguenze**: il telefono chiede le direzioni a ogni invio (rete
-necessaria, come al via). B3a2 manderà i preferiti da soli col messaggio
-«routes». Il codice dell'orologio si prova con un prebuild locale
-`MUW_WATCH=1`; impronta iOS senza variabile invariata.
 ## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
 
 **Data**: 2026-11-08 · **Stato**: Accettato · **Task**: TASK-424 · deciso

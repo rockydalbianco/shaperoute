@@ -79,10 +79,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-363 — Dove va la posizione del telefono** · codice in
   `fix/TASK-363-position`; server, sito e OTA, tre sì a parte. File: — ·
   `tasks/TASK-363.md`
-- **TASK-370 — L'app per Apple Watch** · A1–A3, B1, B2 in `main`; B3a1 in
-  PR («Send to watch», la lista «Routes» sull'orologio); poi B3a2 (i
-  preferiti da soli), B3b, B3c, A-flip alla 1.1. File: `src/watch/`,
-  `targets/watch/`, `src/favorites/FavoriteHeart.tsx`, `src/i18n/` ·
+- **TASK-370 — L'app per Apple Watch** · A1, A2, A3, B1, B2 in `main`;
+  prossimi A-flip alla build 1.1 e B3 (l'orologio da solo). File: — ·
   `tasks/TASK-370.md`
 - **TASK-371 — La camminata, «Walk»** · A e B Done, «Walk» acceso (#923);
   resta C. File: — · `tasks/TASK-371.md`

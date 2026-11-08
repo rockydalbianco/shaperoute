@@ -348,6 +348,7 @@ const privacy: AboutDocument = {
         "Ein Foto, das du veröffentlichst, kann die Zeichnung deines Laufs im Bild enthalten. Es ist dieselbe Zeichnung wie im Feed.",
         "Bei einem Skitag vergleicht unser Server die gespeicherte Spur mit den Liften und Pisten von OpenStreetMap, die er selbst vorhält, um festzuhalten, welche du genommen hast und wie oft. Die Namen erscheinen im Beitrag, für alle, die ihn sehen können. Nichts geht an einen anderen Dienst.",
         "Auf den Fotos, die du veröffentlichst, kannst du die Teile markieren, die du trägst: was jedes ist, die Marke und, wenn du willst, das Modell und einen Link zu einem Shop. Wer das Foto sieht, sieht sie. Geht der Lauf zurück auf «Nur ich», verlassen sie mit seinen Fotos unseren Server und bleiben auf diesem Telefon.",
+        "Bei einem Skitag sendet die App unserem Server deine Position, auf etwa 1 km gerundet, um das nächste Skigebiet zu finden; das Wetter fragt der Server bei MET Norway mit der Position des Skigebiets ab, nie mit deiner. Skigebiet, Schnee und Ausrüstung, die du hinzufügst, stehen auf dem Beitrag, für alle, die ihn sehen können, und der Schnee zählt außerdem, ohne deinen Namen, zum Schnee des Tages im Skigebiet.",
       ],
     },
     {

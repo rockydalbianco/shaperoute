@@ -910,6 +910,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     neve dei membri nelle ultime 24 ore, solo numeri (aggiunta ad
     ADR-0338). Per andare online: il server con la 0056, col sì
     dell'utente. Prossimo: la parte D2 nell'app.
+  - 2026-11-08: D1 in `main` (#935) e sul server (`c9bc0da9`, copia
+    `shaperoute-2026-11-08T1646Z.dump`). **Parte D2**: in «Record your
+    day» per lo sci, sopra i numeri, la stazione più vicina (entro 5 km)
+    con temperatura e neve fresca, e «Cambia» per sceglierne un'altra. A
+    fine giornata il riquadro «Totale», il tipo di neve e l'attrezzatura,
+    ricordata. Con «Salva» le scelte partono dopo la giornata, con un
+    piccolo outbox che riprova finché la giornata non è sul server. Sul
+    post compaiono stazione, neve e attrezzatura. La riga della privacy è
+    nell'app e sul sito, con la data della pagina invariata. Solo
+    JavaScript. Per arrivare ai telefoni: l'OTA e la pagina del sito, col
+    sì dell'utente. Prossimo: la parte D3, la pagina della stazione.
 - **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
   percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
   Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un

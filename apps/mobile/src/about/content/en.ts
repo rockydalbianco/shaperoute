@@ -349,6 +349,7 @@ const privacy: AboutDocument = {
         "A photo you publish can have the drawing of your run inside the picture. It is the same drawing the Feed shows.",
         "For a day of skiing, our server compares the saved track with the lifts and pistes of OpenStreetMap, which it keeps itself, to write which ones you took and how many times. The names show on the post, for whoever can see it. Nothing goes to another service.",
         "On the photos you publish you can tag the items you are wearing: what each one is, its brand and, if you like, its model and a link to a shop. Whoever sees the photo sees them. If the run goes back to «Only me», they leave our server with its photos and stay on this phone.",
+        "For a day of skiing, the app sends our server your position rounded to about 1 km to find the nearest resort; the server asks MET Norway for the weather with the resort's position, never yours. The resort, snow and gear you add show on the post, for whoever can see it, and the snow also counts, without your name, in the resort's snow of the day.",
       ],
     },
     {

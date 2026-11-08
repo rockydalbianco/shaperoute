@@ -348,6 +348,7 @@ const privacy: AboutDocument = {
         "Una foto que publiques puede llevar dentro de la imagen el dibujo de tu carrera. Es el mismo dibujo que muestra el Feed.",
         "En una jornada de esquí, nuestro servidor compara la traza guardada con los remontes y pistas de OpenStreetMap, que guarda él mismo, para anotar cuáles tomaste y cuántas veces. Los nombres aparecen en la publicación, para quien pueda verla. Nada va a otro servicio.",
         "En las fotos que publiques puedes etiquetar las prendas que llevas: qué es cada una, su marca y, si quieres, su modelo y un enlace a una tienda. Las ve quien ve la foto. Si la carrera vuelve a «Solo yo», salen de nuestro servidor con sus fotos y se quedan en este teléfono.",
+        "En una jornada de esquí, la app envía a nuestro servidor tu posición redondeada a cerca de 1 km para encontrar la estación más cercana; el tiempo lo pide el servidor a MET Norway con la posición de la estación, nunca con la tuya. La estación, la nieve y el equipo que añades se ven en la publicación, para quien pueda verla, y la nieve también cuenta, sin tu nombre, en la nieve del día de la estación.",
       ],
     },
     {

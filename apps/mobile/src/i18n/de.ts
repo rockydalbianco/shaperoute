@@ -2047,4 +2047,22 @@ export const DE: Table = {
     "Ältere Vorhersage: MET Norway antwortet nicht.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Wetter: MET Norway (CC BY 4.0) · Skigebiete: OpenSkiMap.org, © OpenStreetMap-Mitwirkende",
+  // src/ski/DayResort.tsx, DayChoices.tsx, SkiDayLine.tsx, screens/SnowFinishCard.tsx
+  // (TASK-406 part D2: the day of skiing, texts approved on 2026-11-08)
+  "Where are you skiing?": "Wo fährst du Ski?",
+  "Change@@resort": "Ändern",
+  "No ski resort nearby": "Kein Skigebiet in der Nähe",
+  "{temperature} now · {snow} fresh snow": "{temperature} jetzt · {snow} Neuschnee",
+  Total: "Gesamt",
+  "How was the snow?": "Wie war der Schnee?",
+  Powder: "Pulver",
+  Groomed: "Präpariert",
+  Icy: "Vereist",
+  Spring: "Firn",
+  Heavy: "Schwer",
+  "Your gear": "Deine Ausrüstung",
+  "Ski or snowboard, brand and model": "Ski oder Snowboard, Marke und Modell",
+  Resort: "Skigebiet",
+  Snow: "Schnee",
+  Gear: "Ausrüstung",
 };

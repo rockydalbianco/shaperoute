@@ -229,6 +229,41 @@ neve»; migrazione `0056`):
 Le scelte tecniche sono nell'aggiunta ad ADR-0338. Prossimo: il server con
 la `0056`, col sì dell'utente; poi la parte D2.
 
+D1 è in `main` (#935) e sul server dal 2026-11-08 (`c9bc0da9`).
+
+**Parte D2, 2026-11-08.** Nell'app, «Record your day» per lo sci:
+- **durante la giornata**, sopra i numeri, la stazione più vicina con la
+  temperatura di adesso e la neve fresca in valle. «Cambia» ne sceglie
+  un'altra per nome o vicina, con l'elenco della ricerca «Ski». La stazione
+  resta per la giornata, anche se l'app si riapre;
+- **a fine giornata** il riquadro «Totale» (discese più risalite), poi «Com'era
+  la neve?» con i cinque tipi (uno o nessuno) e «La tua attrezzatura»,
+  ricordata per la volta dopo;
+- **con «Salva»** le scelte partono con la giornata (`PUT
+  /me/activities/{key}/ski`);
+- **sul post** compaiono «Stazione», «Neve» e «Attrezzatura», sotto impianti
+  e piste;
+- **la riga della privacy** approvata è in fondo a «Le tue corse e le loro
+  tracce GPS», in cinque lingue e sul sito.
+
+Scelte tecniche, decise dall'agente su delega dell'utente:
+- **le scelte si mandano dopo la giornata.** Un piccolo outbox
+  (`useSkiDayOutbox`) le prova appena la giornata è sul server: un `404`
+  vuol dire che non c'è ancora, quindi riprova ogni minuto, e dopo 7 giorni
+  lascia perdere. Così `activitiesDoor.ts` e il salvataggio della giornata
+  restano com'erano;
+- **le scelte stanno in un file del telefono** (`ski-day.json`). Stazione e
+  neve valgono solo per la giornata, l'attrezzatura resta. La stazione
+  scelta più di 18 ore prima è di un altro giorno;
+- **la stazione si prende da sola solo entro 5 km** da dove parte la
+  giornata; oltre c'è «Nessuna stazione sciistica vicina» e si sceglie con
+  «Cambia»;
+- **la data della pagina privacy non cambia**, come per la palestra
+  (TASK-385 F): la riga si aggiunge alla pagina del 6 novembre.
+
+Prossimo: l'OTA col sì dell'utente; poi la parte D3, la pagina della
+stazione con la neve dei membri, i loro post e il tasto per seguirla.
+
 ## File toccati
 
 Questa PR (documenti): `docs/tasks/TASK-406.md` (nuovo), `docs/DECISIONS.md`
@@ -287,7 +322,20 @@ File da cambiare: `services/api/shaperoute_api/__main__.py` (una riga),
 `docs/DATABASE.md`, `docs/DECISIONS.md` (un'aggiunta ad ADR-0338),
 `docs/STATUS.md` e questa lista.
 
-Parti D2, D3 ed E: si elencano prima di ciascuna.
+Parte D2 (approvata dal Coordinatore il 2026-11-08). File nuovi:
+- `apps/mobile/src/api/skiDays.ts` e il suo test;
+- `apps/mobile/src/ski/skiDayStore.ts`, `useSkiDayOutbox.ts`,
+  `DayResort.tsx`, `DayChoices.tsx` e `SkiDayLine.tsx`, ognuno col suo
+  test, e `skiDayFlow.test.tsx`.
+
+File da cambiare: `apps/mobile/src/screens/FreeRunScreen.tsx`,
+`SnowFinishCard.tsx` e `SnowFinishCard.test.tsx`, `apps/mobile/App.tsx`
+(otto righe), `apps/mobile/src/social/drawingsDoor.ts`, `DrawingCard.tsx`
+(una riga), `apps/mobile/src/i18n/{it,de,fr,es}.ts`,
+`apps/mobile/src/about/content/{en,it,de,fr,es}.ts` (la riga della
+privacy), `site/privacy/` (rigenerata), `docs/STATUS.md` e questa lista.
+
+Parti D3 ed E: si elencano prima di ciascuna.
 
 ## Criteri di accettazione
 

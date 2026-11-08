@@ -346,6 +346,7 @@ Banco sul Mac, branch `feat/TASK-378-a-gravel-mtb-engine-api`, `nice -n
   Milano.
 - **Il Gravel** si disegna come la bici, con le stesse zone: i suoi
   percorsi sono quelli della bici al banco.
+- **Nel registrare** (TASK-416) Gravel e MTB hanno i numeri della bici: velocità e media in km/h, parziali in km/h, voce ogni 10 km, svolte 100 m prima (`rides: true` nel profilo).
 
 ## Cosa resta da misurare
 

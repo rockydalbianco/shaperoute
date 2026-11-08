@@ -25535,3 +25535,24 @@ circa 1,7 MB.
 
 ---
 
+
+---
+## ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici
+
+**Data**: 2026-11-08 · **Stato**: Accettata · **Task**: TASK-416
+
+Scelte dell'utente: Gravel e MTB «tutti dati da bici diciamo non corsa»
+(2026-11-07); Roller «Sì, km/h» (2026-11-08). Velocità e media in km/h,
+parziali in km/h, voce ogni 10 km, svolte dette 100 m prima.
+
+Approvato dal Coordinatore, deciso dall'agente su delega dell'utente:
+
+- **Un campo del profilo** `rides?: true` («i suoi numeri sono quelli di un
+  giro in bici») in `sports/base.ts`, detto da bici, Gravel, MTB e Roller.
+  `isRide` in `navigation/ride.ts` lo legge con `findProfile`, invece di
+  confrontare l'attività con `"cycling"`. Uno sport nuovo che si registra
+  come un giro lo dice nel suo file, senza toccare `navigation/`.
+- **Nessun ciclo di import**: `sports/` non importa `navigation/ride`.
+- **Gli stessi testi della bici**: il Roller sente «Average speed» e
+  «kilometres per hour» come chi pedala. Solo JavaScript, l'impronta iOS
+  resta `6f8bba4c`.

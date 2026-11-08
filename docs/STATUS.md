@@ -122,8 +122,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `heights.py` condiviso) nella PR #957, approvata dall'utente per server e
   `draw_examples`, aspetta «merge 957»; poi A2 e B. File: quelli della #957 ·
   `tasks/TASK-413.md`
-- **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore) nella
-  PR #957, poi A2 e B. File: quelli della #957 · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·
   `tasks/TASK-414.md`

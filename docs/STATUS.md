@@ -914,6 +914,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   limite noto nel task file: 3D a freddo può dare il video giallo di
   riserva dopo 15 s. L'OTA la pubblica il Coordinatore dopo il sì
   dell'utente.
+- **TASK-417 — La mia immagine al posto dell'animale e il video
+  «Together»** (ADR-0345 **proposto**; numeri dal Coordinatore il
+  2026-11-08). Si appoggia a TASK-408. Scelte dell'utente del 2026-11-08:
+  l'immagine si crea solo come foto ritagliata tonda (più una foto o una GIF
+  dalla libreria); nel Feed com'è; «Together» con tag e visibilità, senza
+  richiesta; al massimo 4 persone; testi nelle cinque lingue approvati,
+  compresa la riga nuova della privacy. Verificato: su Safari iOS non c'è
+  ImageDecoder (lettore GIF nostro); il server ha i tempi dei punti ma non
+  li dà a nessuno (endpoint nuovo nella parte D). Proposta in PR da
+  `docs/TASK-417-my-image-video-proposal`. Prossimo: la parte B, quando C2
+  di TASK-408 è chiusa, con la lista dei file al Coordinatore
+  (`tasks/TASK-417.md`).
 - **TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e
   calendario** (ADR-0341 **proposto**; numeri dal Coordinatore il
   2026-11-06). Dalla segnalazione dell'utente «Start workout non fa nulla»

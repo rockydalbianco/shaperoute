@@ -3,7 +3,7 @@ import XCTest
 
 @testable import WatchCore
 
-/// The watch's guidance against the phone's (TASK-370 part B1): each file in
+/// The watch's guidance against the phone's (TASK-370 parts B1, B2): each file in
 /// Fixtures/guide/ is a made-up run on a real route with what the phone's
 /// navigator did after each fix, written by apps/mobile/scripts/watch-guide.sh.
 /// The Swift navigator follows the same fixes and must do the same: the
@@ -15,7 +15,7 @@ final class GuideTests: XCTestCase {
 
     func testEveryTraceIsFollowedAsOnThePhone() throws {
         let names = try traceNames()
-        XCTAssertGreaterThanOrEqual(names.count, 14, "the guide traces are missing")
+        XCTAssertGreaterThanOrEqual(names.count, 26, "the guide traces are missing")
         for name in names {
             try follow(name)
         }
@@ -65,13 +65,15 @@ final class GuideTests: XCTestCase {
     private func follow(_ file: String) throws {
         let trace = try XCTUnwrap(
             try fixture("guide/\(file)") as? [String: Any], "\(file) is not an object")
-        XCTAssertEqual(trace["version"] as? Int, 1, file)
+        XCTAssertEqual(trace["version"] as? Int, 2, file)
         let points = try (trace["points"] as? [[Double]] ?? []).map(latLon)
         let directions = try (trace["directions"] as? [[String: Any]] ?? []).map(direction)
         let announceM = try XCTUnwrap(trace["announceM"] as? Double, file)
+        let anywhere = try XCTUnwrap(trace["anywhere"] as? Bool, file)
         var (navigation, cues) = Navigator.start(
-            points: points, directions: directions, announceM: announceM)
+            points: points, directions: directions, announceM: announceM, anywhere: anywhere)
         try expect(cues, trace["start"], "\(file) start")
+        var pen = try startPen(trace["pen"], along: navigation.along, file)
         for (i, step) in cases(trace["steps"]).enumerated() {
             let at = "\(file) step \(i)"
             let fix = try latLon(XCTUnwrap(step["fix"] as? [Double], at))
@@ -93,6 +95,29 @@ final class GuideTests: XCTestCase {
                 XCTAssertNil(navigation.rejoin, "\(at) rejoin")
             }
             try expect(cues, step["cues"], at)
+            XCTAssertEqual(navigation.waitingToJoin, step["waiting"] as? Bool, "\(at) waiting")
+            if let joinedAtM = step["joinedAtM"] as? Double {
+                try expectClose(try XCTUnwrap(navigation.joinedAtM, at), joinedAtM, "\(at) joinedAtM")
+            } else {
+                XCTAssertNil(navigation.joinedAtM, "\(at) joinedAtM")
+            }
+            if let route = step["route"] as? [String: Any] {
+                XCTAssertEqual(navigation.points.count, route["pointCount"] as? Int, "\(at) route points")
+                try expectClose(navigation.along.last ?? 0, route["lengthM"], "\(at) route length")
+                let want = try (route["directions"] as? [[String: Any]] ?? []).map(direction)
+                try expectSame(navigation.directions, want, "\(at) route")
+            }
+            if var drawing = pen {
+                let moved = Pen.move(drawing, alongM: navigation.alongM, accuracyM: reading.accuracyM)
+                drawing = moved.0
+                pen = drawing
+                let want = try XCTUnwrap(step["pen"] as? [String: Any], "\(at) pen")
+                XCTAssertEqual(drawing.next, want["next"] as? Int, "\(at) pen next")
+                XCTAssertEqual(drawing.up, want["up"] as? Bool, "\(at) pen up")
+                try expect(moved.2, want["cues"], "\(at) pen")
+            } else {
+                XCTAssertTrue(step["pen"] is NSNull, "\(at) pen")
+            }
             if navigation.alongM.isNaN {
                 return XCTFail("\(at): lost the route")
             }
@@ -123,6 +148,12 @@ final class GuideTests: XCTestCase {
                 XCTAssertEqual(want["kind"] as? String, "backOnRoute", at)
             case .arrived:
                 XCTAssertEqual(want["kind"] as? String, "arrived", at)
+            case .penUp(let letter):
+                XCTAssertEqual(want["kind"] as? String, "penUp", at)
+                XCTAssertEqual(letter, want["letter"] as? String, "\(at) pen letter")
+            case .penDown(let letter):
+                XCTAssertEqual(want["kind"] as? String, "penDown", at)
+                XCTAssertEqual(letter, want["letter"] as? String, "\(at) pen letter")
             }
         }
     }
@@ -145,8 +176,57 @@ final class GuideTests: XCTestCase {
             turn: try XCTUnwrap(json["turn"] as? String),
             angleDeg: try XCTUnwrap(json["angle_deg"] as? Double),
             joined: try XCTUnwrap(json["joined"] as? Bool),
-            street: json["street"] as? String
+            street: json["street"] as? String,
+            branches: try XCTUnwrap(json["branches"] as? Int)
         )
+    }
+
+    /// Two lists of directions alike, but where each junction is.
+    private func expectSame(
+        _ mine: [GuideDirection], _ want: [GuideDirection], _ at: String
+    ) throws {
+        XCTAssertEqual(mine.count, want.count, "\(at) directions")
+        for (i, (a, b)) in zip(mine, want).enumerated() {
+            XCTAssertEqual(a.distanceM, b.distanceM, accuracy: tolerance, "\(at) \(i) distance")
+            XCTAssertEqual(a.angleDeg, b.angleDeg, accuracy: tolerance, "\(at) \(i) angle")
+            XCTAssertEqual(a.turn, b.turn, "\(at) \(i) turn")
+            XCTAssertEqual(a.joined, b.joined, "\(at) \(i) joined")
+            XCTAssertEqual(a.street, b.street, "\(at) \(i) street")
+            XCTAssertEqual(a.branches, b.branches, "\(at) \(i) branches")
+        }
+    }
+
+    /// The pen of a trace's route in pieces, started as the phone's and
+    /// checked against it; nil for a route of one piece.
+    private func startPen(_ json: Any?, along: [Double], _ file: String) throws -> Pen? {
+        guard let want = json as? [String: Any] else {
+            return nil
+        }
+        let walks = cases(want["walks"])
+        // The walks as the phone's pen has them, back to point indices of
+        // the route: each end is a point where `along` is the metres given.
+        let indices = try walks.map { walk -> (Int, Int) in
+            let fromM = try XCTUnwrap(walk["fromM"] as? Double)
+            let toM = try XCTUnwrap(walk["toM"] as? Double)
+            let from = try XCTUnwrap(along.firstIndex { abs($0 - fromM) < tolerance }, file)
+            let to = try XCTUnwrap(along.firstIndex { abs($0 - toM) < tolerance }, file)
+            return (from, to)
+        }
+        let letters = walks.map { $0["letter"] as? String }
+        let parts = try XCTUnwrap(want["parts"] as? Bool)
+        let ride = try XCTUnwrap(want["ride"] as? Bool)
+        let paddle = try XCTUnwrap(want["paddle"] as? Bool)
+        // The word that names these letters: the first is never said.
+        let word = parts ? nil : "?" + letters.map { $0 ?? "" }.joined()
+        let pen = Pen.start(
+            along: along, walks: indices, word: word,
+            activity: ride ? "cycling" : paddle ? "paddling" : nil)
+        XCTAssertEqual(pen.walks.map(\.letter), letters, "\(file) pen letters")
+        XCTAssertEqual(pen.parts, parts, "\(file) pen parts")
+        XCTAssertEqual(pen.ride, ride, "\(file) pen ride")
+        XCTAssertEqual(pen.paddle, paddle, "\(file) pen paddle")
+        XCTAssertEqual(pen.downM, try XCTUnwrap(want["downM"] as? Double), "\(file) pen downM")
+        return pen
     }
 }
 

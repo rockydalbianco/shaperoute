@@ -73,6 +73,16 @@ tutto: è corto apposta.
 - **2026-11-04, TASK-371 — un modulo che nessun file di disegno importa**
   si tiene fuori dall'impronta (`WALK_ONLY`, come `ANCHORED_ONLY`,
   `DRAWN_WATER_ONLY`): la camminata è entrata senza ridisegnare nulla.
+- **2026-11-08, TASK-413 (Ciaspole, ADR-0342) — la forma libera sulla
+  neve.** Dove non c'è rete, `water_fit.fit_shape` piazza una forma su
+  qualsiasi `water.WaterArea`: basta un'area permessa (`band`, `wet`) e i
+  punti da cui si entra (`access`). Per le ciaspole l'area è la neve su cui
+  si cammina: il riquadro meno pendii oltre 25° (tegole Terrarium, celle di
+  25 m), boschi, ruscelli, piste, impianti, rocce, paesi e riserve. In
+  cinque posti di montagna entrano 48 forme su 60 a 0,5–3 km (60 su 60 coi
+  boschi), in meno di un secondo. `water.py` e `water_fit.py` non cambiano.
+  Le pendenze servono al motore: il modulo delle quote di ADR-0300 G
+  (vedi «Le quote») va scritto una volta per tutti. `sports/snowshoes.md`.
 
 ## Il contratto e l'API
 

@@ -465,6 +465,7 @@ lasciando le righe d'indice.
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
+- ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 
@@ -593,6 +594,27 @@ log d'accesso).
 per `getmuw.app` (va nella privacy, col sì dell'utente); il
 server va aggiornato col sì; una richiesta ogni 15 s in più durante una
 condivisione.
+
+## ADR-0352, precisazione A1 — Il server dei link dal vivo
+
+**Stato**: Attiva · 2026-11-08 · TASK-424 parte A1 (#983) · deciso
+dall'agente su delega dell'utente
+
+- Migrazione `0063_live_shares.sql`: `live_shares` (hash SHA-256 del
+  token, mai il token) e `live_share_points`, `CASCADE` dall'account.
+- Un token sconosciuto e uno scaduto rispondono uguali (`200`, `status:
+  "expired"`): la pagina non distingue un link mai esistito da uno finito.
+  Uno fermato risponde `stopped` finché la sua riga vuota resta (un
+  giorno).
+- Un link nuovo ferma quelli dello stesso account non ancora finiti; quelli
+  finiti tengono la loro ora di riepilogo. Dopo `finished`, `stop` o la
+  scadenza, gli aggiornamenti rispondono `410`.
+- Limiti: 20 link al giorno per account, 200 punti per aggiornamento,
+  20 000 per link, 2000 per risposta (`more`), 120 letture al minuto per
+  link, anche il `429` con l'intestazione CORS del sito.
+- Le copie notturne del database (`deploy/backup.sh`) lasciano fuori le
+  righe dei due tavoli (`--exclude-table-data`): la privacy dice che le
+  posizioni si cancellano, e nelle copie resterebbero 14 giorni.
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole

@@ -1,7 +1,7 @@
 # TASK-424 — I dati dal vivo per ogni sport e «Share live activity»
 
-**Stato**: In corso · parte 0 pronta (scelte dell'utente tutte prese il
-2026-11-08); prossima A1
+**Stato**: In corso · parte 0 (#981) e A1 (#983) in `main`; prossime A2 e
+B1; il server col sì dell'utente
 **Fase**: 5 · **Branch**: `docs/TASK-424-live-share` (parte 0) · **ADR**:
 ADR-0352 · numeri dal Coordinatore (2026-11-08)
 
@@ -417,6 +417,53 @@ Privacy, sezione «Sharing live»:
   `SITO.md`.
 - **Confini**: `RunDashboard.tsx` è di TASK-422 (#971), `src/watch/` di
   TASK-370 B3, `src/pool/` di TASK-409 B, `src/gym/` di TASK-411 C.
+
+## Avanzamento
+
+- **Parte 0** — documenti, scelte e testi: #981 in `main` (2026-11-08).
+- **A1** — server: #983 in `main` (4e94a022, 2026-11-08). Migrazione
+  `0063_live_shares.sql`, `live_shares.py` (link, aggiornamenti, stop,
+  `GET /live` aperta, giro di pulizia ogni 5 min), `/live` in
+  `OPEN_PATHS`, tipi `shared-types/src/liveShare.ts` con le fixture
+  `live-*.json`, `deploy/backup.sh` che lascia fuori dalle copie le righe
+  dei link, la sezione «Sharing live» della privacy in cinque lingue e
+  `site/privacy/` rigenerato, `API.md` «Live shares», `DATABASE.md`.
+  **Resta**: il server. Le migrazioni 0061, 0062 e 0063 entrano in un solo
+  aggiornamento dopo palestra, ciaspole e cancelli; la sequenza la prepara
+  il Coordinatore e la lancia l'utente. Il giro di pulizia parte con quel
+  deploy. Finché il server non c'è, A2 e B si provano in locale.
+- **A2** — la pagina `site/live/` (prossima). File proposti al
+  Coordinatore:
+  ```
+  site/live/index.html          (nuovo)
+  site/live/live.js             (nuovo: polling ogni 10 s, mappa, numeri)
+  site/live/live.css            (nuovo)
+  site/live/texts.js            (nuovo: i testi approvati, cinque lingue)
+  site/live/maplibre-gl.js      (nuovo: copia della versione dell'app)
+  site/live/maplibre-gl.css     (nuovo: idem)
+  site/tests/live.test.mjs      (nuovo)
+  docs/SITO.md                  (la pagina, la mappa da fuori)
+  docs/DEPLOY.md                (la cartella nell'elenco dei file del sito)
+  docs/tasks/TASK-424.md
+  ```
+  Il sito sul server si copia col sì dell'utente, dopo il server.
+- **B1** — l'app, sport col GPS (dopo A2, da `main` con #971 dentro).
+  File proposti:
+  ```
+  apps/mobile/src/liveShare/*            (nuovi: client, coda, invio,
+                                          pulsante, foglio del consenso,
+                                          test)
+  apps/mobile/src/navigation/runPosition.ts  (i punti all'invio, anche a
+                                          telefono bloccato)
+  apps/mobile/src/screens/RunDashboard.tsx   (il pulsante e l'etichetta)
+  apps/mobile/src/i18n/{en,it,de,fr,es}.ts   (i testi approvati)
+  docs/UI.md, docs/tasks/TASK-424.md
+  ```
+  L'impronta iOS si misura prima della PR.
+- **B2** (piscina e palestra) e **C** (i dati dal vivo che mancano): dopo
+  TASK-409 B, TASK-411 C e TASK-370 B3. Le PR di codice non toccano
+  `STATUS.md`, `DECISIONS.md` né `INDEX.md` (regola del Coordinatore del
+  2026-11-08): le loro righe vanno in PR di soli documenti.
 
 ## File toccati
 

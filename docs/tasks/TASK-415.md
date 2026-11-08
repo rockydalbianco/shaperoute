@@ -1,6 +1,6 @@
 # TASK-415 — Ski touring: lo scialpinismo «Record only»
 
-**Stato**: In corso — parte 0 (solo documenti) in PR.
+**Stato**: In corso — parte 0 in `main` (#932), parte A in PR.
 **Fase**: 4 · **Branch**: `docs/TASK-415-0-skimo` (parte 0), poi
 `feat/TASK-415-a-ski-touring-api`, `feat/TASK-415-b-…` ·
 **ADR**: ADR-0344 · numeri dal Coordinatore · sessione dello sport,
@@ -163,3 +163,11 @@ la lista della parte A approvata dal
 Coordinatore, migrazione 0056 in bozza (anche TASK-406 D1 ha la 0056: chi
 arriva secondo rinomina). La PR di A entra col sì dell'utente per il
 server, che chiede il Coordinatore.
+
+2026-11-08, parte A in PR (`feat/TASK-415-a-ski-touring-api`): la 0056 era
+libera in `main` all'apertura. Contratto, API, migrazione del solo CHECK di
+`runs`, profilo nascosto e orologio come da lista. I test col database
+(migrazione, salvataggio, record) girano in CI: sul Mac Docker era spento.
+Restano per B: il nome con `tLater` e i testi dell'orologio nelle quattro
+lingue (`scripts/watch-texts.sh`), la riga in `settings/sport.ts`, fasi e
+VAM.

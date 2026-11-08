@@ -147,9 +147,9 @@ dell'API (conferma email, password) sono il modello per un link pubblico.
 - **Nessuna dipendenza nuova**: nell'app `fetch` e `Share` di React Native
   (già usato in `game/shareCode.ts`); sul server la libreria standard.
   L'impronta iOS dovrebbe restare `83793e26`: si misura nella parte B.
-- **La mappa della pagina**: MapLibre alla stessa versione dell'app, con le
-  tile di OpenFreeMap. È la prima pagina del sito che carica qualcosa da
-  fuori: va detto nella privacy del sito (scelta dell'utente sotto).
+- **La mappa della pagina**: MapLibre copiato sul sito alla stessa
+  versione dell'app, le tile di OpenFreeMap (scelta 8). È la prima pagina
+  del sito che carica qualcosa da fuori: va detto nella privacy del sito.
 
 ### Scelte di prodotto per l'utente (una alla volta)
 
@@ -188,8 +188,11 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
    stimate, calorie, battito; palestra: tempo, esercizio in corso, calorie,
    battito). Entrano nella parte B; la pubblicazione di B aspetta anche
    loro.
-8. **La mappa della pagina**: MapLibre e OpenFreeMap caricati da fuori,
-   scritto nella privacy del sito.
+8. **La mappa della pagina** — **deciso dall'utente il 2026-11-09** («Sì,
+   così»): il file di MapLibre copiato sul sito (`site/live/`), alla stessa
+   versione dell'app; solo le tile e i font da OpenFreeMap, che vede l'IP di
+   chi apre la pagina ma non il token né la posizione. Una riga nella
+   privacy del sito; `SITO.md` aggiornato nella parte A2.
 9. **I testi** in en/it/de/fr/es (pulsante, consenso, foglio, pagina,
    privacy dell'app e del sito): li scrive l'agente, li approva l'utente.
 10. **App Privacy e Data safety**: proposta più sotto, ogni passo col sì.

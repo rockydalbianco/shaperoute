@@ -499,8 +499,8 @@ registrazione; il sito è statico; l'API ha già pagine a token
   dall'account; un giro di pulizia ogni 5 min cancella i punti scaduti.
   Nessuna posizione nel log (ADR-0092).
 - **Nessuna dipendenza nuova**: `fetch` e `Share` di React Native nell'app,
-  la libreria standard sul server; la pagina usa MapLibre alla versione
-  dell'app e le tile di OpenFreeMap. L'impronta iOS si misura nella parte B.
+  la libreria standard sul server; la pagina usa MapLibre copiato sul sito
+  alla versione dell'app (scelta dell'utente) e le tile di OpenFreeMap. L'impronta iOS si misura nella parte B.
 
 **Alternative scartate**: WebSocket o SSE (una connessione aperta per ogni
 spettatore, Caddy e i thread dell'API da cambiare, per un guadagno di pochi
@@ -509,7 +509,7 @@ bloccato: batteria); pagina disegnata dall'API su `api.getmuw.app` (fuori
 dal sito, più HTML nel server); token nel percorso dell'URL (finirebbe nel
 log d'accesso).
 
-**Conseguenze**: la pagina del sito carica MapLibre e le tile da fuori, la
-prima volta per `getmuw.app` (va nella privacy, col sì dell'utente); il
+**Conseguenze**: la pagina del sito carica le tile da fuori, la prima volta
+per `getmuw.app` (va nella privacy, col sì dell'utente); il
 server va aggiornato col sì; una richiesta ogni 15 s in più durante una
 condivisione.

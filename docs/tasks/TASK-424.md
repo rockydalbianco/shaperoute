@@ -157,9 +157,12 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
 1. **Chi può ricevere il link** — **deciso dall'utente il 2026-11-09**
    («Sì, chiunque lo abbia»): chiunque abbia il link, senza app e senza
    account; si manda a chi si vuole.
-2. **Quanto dura il link** — proposta: fino alla fine dell'attività, poi la
-   pagina mostra «Finished» e il riepilogo per 1 ora, poi scade e i punti
-   si cancellano; al massimo 24 ore in ogni caso.
+2. **Quanto dura il link** — **deciso dall'utente il 2026-11-09** («Sì,
+   così»): vale fino alla fine dell'attività; poi la pagina mostra
+   «Finished» con il riepilogo e il percorso per 1 ora, poi il link scade e
+   i punti si cancellano; al massimo 24 ore dall'inizio in ogni caso (anche
+   se il telefono si spegne). Uno stop dall'app fa scadere il link e
+   cancella i punti subito.
 3. **Cosa vede chi lo apre** — posizione esatta o sfocata vicino a casa;
    battito sì o no. Proposta: posizione esatta (lo scopo è sapere dove si
    è), battito no (è un dato di salute).

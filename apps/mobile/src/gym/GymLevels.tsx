@@ -17,6 +17,7 @@ import { Tap } from "../ui/Tap";
 import { useUnits } from "../units/useUnits";
 import { exerciseName } from "./catalog";
 import { figureOf } from "./figures";
+import { Leaderboard, leaderboardTitle } from "./Leaderboard";
 import { levelValue } from "./levelValue";
 
 /** The exercises shown before «Show more» (the user's choice, 2026-11-06). */
@@ -32,12 +33,15 @@ type Props = {
  * at level 1 or more with its figure and its best set, the highest level
  * first, as the API orders them. Every workout counts, private ones too, and
  * only figure, exercise and value show (the user's choice, 2026-11-06). The
- * first five, the others under «Show more». Nothing without a level.
+ * first five, the others under «Show more». Nothing without a level. Under
+ * them the line that opens the monthly leaderboard, on the highest
+ * exercise (part F, the user's choice of 2026-11-06).
  */
 export function GymLevels({ levels }: Props) {
   const units = useUnits();
   const language = useLanguage();
   const [all, setAll] = useState(false);
+  const [board, setBoard] = useState(false);
   const known = gymLevelsOf(levels);
   if (known.length === 0) {
     return null;
@@ -81,6 +85,19 @@ export function GymLevels({ levels }: Props) {
           <Text style={styles.moreText}>{t("Show more")}</Text>
         </Tap>
       )}
+      <Tap
+        style={styles.more}
+        onPress={() => setBoard(true)}
+        accessibilityRole="button"
+        testID="gym-leaderboard-open"
+      >
+        <Text style={styles.moreText}>{`${leaderboardTitle()} ›`}</Text>
+      </Tap>
+      <Leaderboard
+        visible={board}
+        exercise={known[0].exercise}
+        onClose={() => setBoard(false)}
+      />
     </View>
   );
 }

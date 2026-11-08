@@ -1,7 +1,7 @@
 # TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono
 
 **Stato**: In lavorazione · proposta e piano della parte A in `main`; A1 in
-`main` (#839, 2026-11-05); prossimo A2
+`main` (#839, 2026-11-05); A2 in `main` (#866 e #883, 2026-11-06); prossimo A3
 **Fase**: 5 · **Branch**: `docs/TASK-370-apple-watch` (documenti); il codice
 `feat/TASK-370-a-…`, `feat/TASK-370-b-…`, …
 **Dipende da**: TASK-321 B (HealthKit nella build, in `main`), TASK-376 B3 (il
@@ -232,6 +232,11 @@ Per A3: il telefono deve impostare `workoutSessionMirroringStartHandler` per
 ricevere il mirroring, leggere lo stato anche dall'application context
 (l'orologio lo manda lì quando il telefono non è raggiungibile) e mandare le
 unità scelte; la traccia GPS (`HKWorkoutRouteBuilder`) è della parte B.
+In `main` con #866 (`6bd49b4c`) e la correzione #883 (`e5c6c175`: «Gravel» e
+«MTB» della #875 nei testi dell'orologio); impronta iOS `6f8bba4c`
+invariata. Uno sport nuovo o un nome cambiato richiede di rilanciare
+`scripts/watch-texts.sh` e `scripts/watch-sports.sh`, altrimenti
+`watchTexts.test.ts` fallisce.
 
 **A3 — Il telefono** (in `main`, solo JavaScript, il modulo nativo caricato
 solo se c'è, come `haptics/haptics.ts`):

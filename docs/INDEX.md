@@ -74,6 +74,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Gravel e MTB: la bici su sterrati e sentieri, la rete `mtb`, `mtb:scale`, le misure | `tasks/TASK-378.md`, `DECISIONS.md` ADR-0322, `sports/gravel.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
 | Il Roller (pattini in linea): l'asfalto liscio, la rete `roller`, superfici, salite, le misure | `tasks/TASK-380.md`, `DECISIONS.md` ADR-0324, `sports/roller.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
 | La palestra «Gym»: sessione senza traccia, esercizi e serie, timer di recupero, traguardi, classifica mensile | `tasks/TASK-385.md`, `DECISIONS.md` ADR-0327, `sports/gym.md` |
+| La palestra per tutti i giorni: la griglia dei macchinari, la guida in «Draw», le schede con i giorni, il calendario | `tasks/TASK-411.md`, `DECISIONS.md` ADR-0341, `sports/gym.md` |
 | I movimenti: le molle di `motion.spring`, `src/ui/motion.ts`, la capsula della barra, l'«isola», fogli e liste | `tasks/TASK-388.md`, `DECISIONS.md` ADR-0329 e ADR-0293 |
 | Il nuoto in piscina: calorie per passo /100 m, battito medio e tempo nelle zone da Salute | `tasks/TASK-409.md`, `tasks/TASK-400.md`, `DECISIONS.md` ADR-0318 («il nuoto in piscina») e ADR-0334 (precisazione D) |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |

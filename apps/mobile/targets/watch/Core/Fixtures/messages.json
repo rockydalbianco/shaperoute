@@ -69,15 +69,30 @@
     },
     {
       "name": "heart rate",
-      "json": { "v": 1, "type": "heartRate", "bpm": 142, "at": 1762358521000 }
+      "json": {
+        "v": 1,
+        "type": "heartRate",
+        "bpm": 142,
+        "at": 1762358521000
+      }
     },
     {
       "name": "units chosen on the phone",
-      "json": { "v": 1, "type": "settings", "units": "mi", "at": 1762358400000 }
+      "json": {
+        "v": 1,
+        "type": "settings",
+        "units": "mi",
+        "at": 1762358400000
+      }
     },
     {
       "name": "kilometres chosen on the phone",
-      "json": { "v": 1, "type": "settings", "units": "km", "at": 1762358400000 }
+      "json": {
+        "v": 1,
+        "type": "settings",
+        "units": "km",
+        "at": 1762358400000
+      }
     },
     {
       "name": "a sport this side does not know is still read",
@@ -99,7 +114,12 @@
         "at": 1762358522000,
         "zone": 3
       },
-      "encoded": { "v": 1, "type": "heartRate", "bpm": 150, "at": 1762358522000 }
+      "encoded": {
+        "v": 1,
+        "type": "heartRate",
+        "bpm": 150,
+        "at": 1762358522000
+      }
     },
     {
       "name": "an activity on a pause is not one of its fields",
@@ -118,39 +138,180 @@
         "from": "phone",
         "at": 1762358460000
       }
+    },
+    {
+      "name": "a route sent from the phone",
+      "json": {
+        "v": 1,
+        "type": "route",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "activity": "running",
+          "distanceM": 5100,
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291]
+          ],
+          "directions": [
+            {
+              "distance_m": 0,
+              "turn": "depart",
+              "angle_deg": 0,
+              "joined": false,
+              "street": "Via Roma",
+              "branches": 3
+            },
+            {
+              "distance_m": 111.2,
+              "turn": "right",
+              "angle_deg": 90,
+              "joined": false,
+              "street": null,
+              "branches": 4
+            }
+          ],
+          "walks": [],
+          "word": null,
+          "anywhere": false,
+          "ride": false,
+          "paddle": false,
+          "announceM": 50
+        },
+        "favorite": false,
+        "at": 1762358500000
+      }
+    },
+    {
+      "name": "a favorite word with the pen up",
+      "json": {
+        "v": 1,
+        "type": "route",
+        "route": {
+          "key": "d4e5",
+          "title": "IO",
+          "activity": "cycling",
+          "distanceM": 5100,
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "directions": [
+            {
+              "distance_m": 0,
+              "turn": "depart",
+              "angle_deg": 0,
+              "joined": false,
+              "street": "Via Roma",
+              "branches": 3
+            },
+            {
+              "distance_m": 111.2,
+              "turn": "right",
+              "angle_deg": 90,
+              "joined": false,
+              "street": null,
+              "branches": 4
+            }
+          ],
+          "walks": [[0, 1]],
+          "word": "IO",
+          "anywhere": false,
+          "ride": true,
+          "paddle": false,
+          "announceM": 100
+        },
+        "favorite": true,
+        "at": 1762358500000
+      }
+    },
+    {
+      "name": "the keys of the favorites",
+      "json": {
+        "v": 1,
+        "type": "routes",
+        "favorites": ["a1b2c3", "d4e5"],
+        "at": 1762358510000
+      }
+    },
+    {
+      "name": "no favorites left",
+      "json": {
+        "v": 1,
+        "type": "routes",
+        "favorites": [],
+        "at": 1762358520000
+      }
     }
   ],
   "invalid": [
-    { "name": "not an object", "json": [1, 2], "error": "notAnObject" },
-    { "name": "a string", "json": "pause", "error": "notAnObject" },
+    {
+      "name": "not an object",
+      "json": [1, 2],
+      "error": "notAnObject"
+    },
+    {
+      "name": "a string",
+      "json": "pause",
+      "error": "notAnObject"
+    },
     {
       "name": "a newer version",
-      "json": { "v": 2, "type": "heartRate", "bpm": 142, "at": 1762358521000 },
+      "json": {
+        "v": 2,
+        "type": "heartRate",
+        "bpm": 142,
+        "at": 1762358521000
+      },
       "error": "unsupportedVersion"
     },
     {
       "name": "no version",
-      "json": { "type": "heartRate", "bpm": 142, "at": 1762358521000 },
+      "json": {
+        "type": "heartRate",
+        "bpm": 142,
+        "at": 1762358521000
+      },
       "error": "invalidField"
     },
     {
       "name": "version zero",
-      "json": { "v": 0, "type": "heartRate", "bpm": 142, "at": 1762358521000 },
+      "json": {
+        "v": 0,
+        "type": "heartRate",
+        "bpm": 142,
+        "at": 1762358521000
+      },
       "error": "invalidField"
     },
     {
       "name": "a version as text",
-      "json": { "v": "1", "type": "heartRate", "bpm": 142, "at": 1762358521000 },
+      "json": {
+        "v": "1",
+        "type": "heartRate",
+        "bpm": 142,
+        "at": 1762358521000
+      },
       "error": "invalidField"
     },
     {
       "name": "an unknown type",
-      "json": { "v": 1, "type": "route", "at": 1762358521000 },
+      "json": {
+        "v": 1,
+        "type": "lap",
+        "at": 1762358521000
+      },
       "error": "unknownType"
     },
     {
       "name": "no type",
-      "json": { "v": 1, "at": 1762358521000 },
+      "json": {
+        "v": 1,
+        "at": 1762358521000
+      },
       "error": "invalidField"
     },
     {
@@ -274,27 +435,228 @@
     },
     {
       "name": "settings with units the app does not have",
-      "json": { "v": 1, "type": "settings", "units": "yd", "at": 1762358400000 },
+      "json": {
+        "v": 1,
+        "type": "settings",
+        "units": "yd",
+        "at": 1762358400000
+      },
       "error": "invalidField"
     },
     {
       "name": "settings without units",
-      "json": { "v": 1, "type": "settings", "at": 1762358400000 },
+      "json": {
+        "v": 1,
+        "type": "settings",
+        "at": 1762358400000
+      },
       "error": "invalidField"
     },
     {
       "name": "a heart rate of zero",
-      "json": { "v": 1, "type": "heartRate", "bpm": 0, "at": 1762358521000 },
+      "json": {
+        "v": 1,
+        "type": "heartRate",
+        "bpm": 0,
+        "at": 1762358521000
+      },
       "error": "invalidField"
     },
     {
       "name": "a heart rate past 300",
-      "json": { "v": 1, "type": "heartRate", "bpm": 301, "at": 1762358521000 },
+      "json": {
+        "v": 1,
+        "type": "heartRate",
+        "bpm": 301,
+        "at": 1762358521000
+      },
       "error": "invalidField"
     },
     {
       "name": "a heart rate with a fraction",
-      "json": { "v": 1, "type": "heartRate", "bpm": 142.5, "at": 1762358521000 },
+      "json": {
+        "v": 1,
+        "type": "heartRate",
+        "bpm": 142.5,
+        "at": 1762358521000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a route of one point",
+      "json": {
+        "v": 1,
+        "type": "route",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "activity": "running",
+          "distanceM": 5100,
+          "points": [[46.01, 11.29]],
+          "directions": [
+            {
+              "distance_m": 0,
+              "turn": "depart",
+              "angle_deg": 0,
+              "joined": false,
+              "street": "Via Roma",
+              "branches": 3
+            },
+            {
+              "distance_m": 111.2,
+              "turn": "right",
+              "angle_deg": 90,
+              "joined": false,
+              "street": null,
+              "branches": 4
+            }
+          ],
+          "walks": [],
+          "word": null,
+          "anywhere": false,
+          "ride": false,
+          "paddle": false,
+          "announceM": 50
+        },
+        "favorite": false,
+        "at": 1
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a route without saying if it is a favorite",
+      "json": {
+        "v": 1,
+        "type": "route",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "activity": "running",
+          "distanceM": 5100,
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291]
+          ],
+          "directions": [
+            {
+              "distance_m": 0,
+              "turn": "depart",
+              "angle_deg": 0,
+              "joined": false,
+              "street": "Via Roma",
+              "branches": 3
+            },
+            {
+              "distance_m": 111.2,
+              "turn": "right",
+              "angle_deg": 90,
+              "joined": false,
+              "street": null,
+              "branches": 4
+            }
+          ],
+          "walks": [],
+          "word": null,
+          "anywhere": false,
+          "ride": false,
+          "paddle": false,
+          "announceM": 50
+        },
+        "at": 1
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a route whose walk does not fit its points",
+      "json": {
+        "v": 1,
+        "type": "route",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "activity": "running",
+          "distanceM": 5100,
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291]
+          ],
+          "directions": [
+            {
+              "distance_m": 0,
+              "turn": "depart",
+              "angle_deg": 0,
+              "joined": false,
+              "street": "Via Roma",
+              "branches": 3
+            },
+            {
+              "distance_m": 111.2,
+              "turn": "right",
+              "angle_deg": 90,
+              "joined": false,
+              "street": null,
+              "branches": 4
+            }
+          ],
+          "walks": [[1, 7]],
+          "word": null,
+          "anywhere": false,
+          "ride": false,
+          "paddle": false,
+          "announceM": 50
+        },
+        "favorite": false,
+        "at": 1
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a route with a turn nobody knows",
+      "json": {
+        "v": 1,
+        "type": "route",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "activity": "running",
+          "distanceM": 5100,
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291]
+          ],
+          "directions": [
+            {
+              "distance_m": 111.2,
+              "turn": "jump",
+              "angle_deg": 90,
+              "joined": false,
+              "street": null,
+              "branches": 4
+            }
+          ],
+          "walks": [],
+          "word": null,
+          "anywhere": false,
+          "ride": false,
+          "paddle": false,
+          "announceM": 50
+        },
+        "favorite": false,
+        "at": 1
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "favorites with an empty key",
+      "json": {
+        "v": 1,
+        "type": "routes",
+        "favorites": ["a1", ""],
+        "at": 1
+      },
       "error": "invalidField"
     }
   ]

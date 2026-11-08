@@ -25083,6 +25083,52 @@ senza sapere quale scheda è stata fatta (un allenamento libero li
 colonna (C); solo JavaScript nell'app, impronta iOS invariata. Server,
 migrazione, privacy e OTA col sì dell'utente.
 
+## ADR-0338, aggiunta — La giornata di sci: stazione, modello e neve in una rotta a parte
+
+**Stato**: Attiva · 2026-11-08 · TASK-406 parte D1. Deciso dall'agente su
+delega dell'utente, con la lista dei file approvata dal Coordinatore
+(2026-11-08). I cinque tipi di neve sono la risposta dell'utente alla
+domanda 3 («Sì, così», 2026-11-07); il modello in testo libero la sua
+risposta alla domanda 2.
+
+**Contesto**: «Record your day» deve tenere la stazione, il modello e il
+tipo di neve, e la pagina della stazione mostrare la neve segnata dai
+membri. La giornata si salva già con `PUT /me/activities/{key}`, il cui
+corpo è un contratto usato da tutte le attività (`activity-request.json`).
+
+**Decisione**:
+
+1. **Una rotta a parte**, `PUT /me/activities/{key}/ski`, come il post
+   (`/post`). Il salvataggio della giornata resta com'era, e l'app manda
+   la stazione, il modello e la neve dopo, anche più volte: vince
+   l'ultimo, sempre intero.
+2. **Tre colonne in `runs`** (migrazione `0056`): `ski_resort_id` con `ON
+   DELETE SET NULL` verso `ski_resorts`, `ski_gear` (1–60) e `snow` (CHECK
+   sui cinque). Solo su `skiing`, altrimenti `422`.
+3. **Sul post** con `GET /drawings/{id}/ski-day`, per chi vede il
+   disegno e con `X-MuW-Reads`, come i nomi di impianti e piste. Il nome
+   della stazione si legge dalla tabella delle stazioni, quindi segue gli
+   import.
+4. **La neve dei membri** con `GET /ski-resorts/{id}/snow`: le giornate
+   finite nelle ultime 24 ore, con quella stazione e una neve, il cui post
+   chi chiede vede su un profilo (`shown_sql`). Dà solo quante per tipo,
+   mai chi, e chiede il token.
+
+**Alternative**:
+
+- **I tre campi nel corpo di `PUT /me/activities/{key}`**: scartata. Quel
+  contratto lo usano tutte le attività, l'outbox e l'import, e un campo in
+  più tocca file di altri task.
+- **Una sola colonna `jsonb`**: scartata. Contare la neve per stazione
+  vuole un indice sulla stazione, e il CHECK sui cinque tipi è più chiaro
+  su una colonna.
+- **Il nome della stazione copiato nella giornata**: scartato. Con il
+  riferimento il nome resta quello di OpenSkiData; una stazione tolta lascia
+  la giornata senza nome, ed è raro.
+
+**Conseguenze**: una migrazione (`0056`), quindi il server col sì
+dell'utente. Niente motore e niente nativo, impronte ferme. L'app (D2) e
+la pagina della stazione (D3) vengono dopo.
 ## ADR-0342 — Le ciaspole: forme piccole piazzate libere sulla neve, come sull'acqua
 
 **Stato**: Accettato · 2026-11-08 · TASK-413. Scelte dell'utente: «SI ANCHE

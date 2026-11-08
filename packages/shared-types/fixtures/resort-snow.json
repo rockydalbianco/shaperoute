@@ -1,0 +1,8 @@
+{
+  "resort_id": "aaa1",
+  "since": "2026-11-02T09:00:00Z",
+  "snow": [
+    { "snow": "powder", "days": 2 },
+    { "snow": "groomed", "days": 1 }
+  ]
+}

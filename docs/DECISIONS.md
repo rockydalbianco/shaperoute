@@ -462,9 +462,106 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
+- ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
 
 ---
 
 ## Voci nuove
 
-_(nessuna dal 2026-11-08)_
+### ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no
+
+**Stato**: Accettato · 2026-11-08 · TASK-421, PR #973. Numeri dal
+Coordinatore. La richiesta è dell'utente (correndo ha trovato strade del
+percorso chiuse da un cancello); la lista dei tag e il modo di togliere
+sono decisi dall'agente su delega dell'utente.
+
+**Contesto**: `FOOT_FILTER` (`networks/foot.py`) scarta le vie
+`access=private` e `foot=no`, ma Overpass filtra solo le vie: un cancello è
+un **nodo** (`barrier=gate`, `lift_gate`, `swing_gate`…) con i suoi tag
+(`access`, `foot`, `locked`), e il filtro non lo vede. OSMnx semplificava il
+grafo appena scaricato, unendo le vie in archi e buttando i tag dei nodi:
+nelle zone in cache un cancello chiuso è un punto qualunque di un arco, e
+il motore ci disegna sopra. La rete `roller` (ADR-0324, `skate_ways`) e la
+carrozzina (ADR-0343, punto 2: «una barriera che blocca toglie il nodo»)
+hanno già il modo: scaricare senza semplificare, con i tag che servono,
+togliere, poi semplificare. Misurato offline dalle risposte Overpass in
+cache (`data/cache/http/`): Trento 17 km 1.871 nodi `barrier`, 122 tolti
+(6,5 %), 7,0 km di vie chiuse, rete 841,8 → 832,0 km; Milano 28.462 (quasi
+tutti `kerb`), 123 tolti, 46,0 km di vie (38,6 km di `service` con
+`access=no`), 3.224,8 → 3.176,7 km; Levico 126, 26 tolti, 2,1 km, 628,9 →
+626,1 km; Parigi 11.755, 132 tolti, 14,7 km, 1.391,6 → 1.375,4 km. I
+cancelli **senza tag** sono la maggioranza (Trento 627 `gate` e 220
+`lift_gate` nudi) e restano. Cancelli nudi su vie `access=destination`: 4 a
+Trento, 9 a Milano.
+
+**Decisione**:
+
+1. **Il download della rete foot non semplifica** (`download_foot_graph`,
+   `simplify=False`), chiede i tag dei nodi `barrier`, `access`, `foot`,
+   `locked` (`FOOT_NODE_TAGS`, `base.node_tags` accanto a `way_tags`) e
+   `foot` sulle vie; `foot_ways` toglie i nodi che bloccano e le vie
+   chiuse, poi semplifica come OSMnx (`simplify_graph`, come `skate_ways`).
+   Il grafo foot resta senza attributo `network`, come prima.
+2. **Un nodo `barrier` si toglie** (`blocks_foot`), nell'ordine:
+   `foot=no|private` → tolto; `foot=yes|designated|permissive|destination`
+   → resta, qualunque cosa dicano gli altri tag; `barrier=fence|wall` (una
+   recinzione disegnata come nodo della via) → tolto; `bollard`, `kerb`,
+   `cycle_barrier`, `block`, `kissing_gate`, `stile`, `cattle_grid`, `log`,
+   `planter`, `chain`, `rope`, `height_restrictor`, `motorcycle_barrier`,
+   `jersey_barrier`, `sump_buster`, `bus_trap`, `debris` → resta (il suo
+   `access` parla ai veicoli: un dissuasore con `access=no` ferma le auto);
+   ogni altra barriera (`gate`, `lift_gate`, `swing_gate`, `sliding_gate`,
+   `wicket_gate`, `turnstile`, `entrance`, `yes`…) → tolta se `access=no`,
+   `access=private` o `locked=yes`, altrimenti resta. Un cancello nudo
+   passa. Togliere il nodo taglia la via lì: si passa o no, niente tratti
+   «a piedi».
+3. **Una via si toglie** (`closed_to_foot`) se `foot=no|private`, o se
+   `access=no|private` senza un `foot` che apre; `access=destination`,
+   `customers`, `permit`, `agricultural` restano. Il filtro Overpass resta
+   com'è (l'estratto lo legge, `zone_extract`, e serve i tag dei nodi).
+4. **La rete `hike` eredita** tutto: passa da `download_foot_graph`.
+5. **Il bordo della zona cambia di poco**: OSMnx semplificava con 500 m di
+   margine e poi ritagliava, buttando intere strade con un capo fuori; ora
+   si ritaglia prima e si semplifica dopo (come `bike` e `roller`), e il
+   tratto interno di una strada che esce resta (Levico: 3.531 → 3.621 nodi,
+   607 → 629 km con la stessa risposta). Al banco la rete ricostruita così
+   senza la regola dà le stesse 72 forme della cache di oggi, punto per
+   punto (una diversa, stessa somiglianza).
+6. **Le zone in cache restano valide** finché non si rifanno: sono
+   semplificate e senza tag, quindi i cancelli restano lì dentro. Il piano
+   (Mac dalle risposte in cache, server dall'estratto) è in `MAPS.md` «I
+   cancelli chiusi» e `DEPLOY.md` F.15; l'azione sul server aspetta il sì
+   dell'utente, con `phone_zone_api` e `draw_examples` dopo.
+7. **L'impronta del motore cambia** (è un cambio di comportamento):
+   `ROUTES` nuovo in `tests/test_walk_fingerprint.py`; nuotate e canoa non
+   usano la rete foot e tengono la loro con una prova delle stesse rotte
+   (`SAME_ROUTES_AS`, ADR-0320).
+
+**Motivo**: la regola segue i tag di OpenStreetMap così come sono scritti
+(`access` sul nodo, `foot` che vince, `locked`), e toglie poco: l'1–7 % dei
+nodi `barrier` e l'1–1,5 % dei km, soprattutto cortili privati. Al banco di
+corsa (8 forme × 3/5/10 km) Trento e Milano non cambiano (mediana 0,91 e
+0,96); a Levico la mediana passa da 0,84 a 0,80 perché le forme piccole
+dal Lido non attraversano più otto cancelli privati o chiusi a chiave dei
+vialetti del lido e del parco: è il caso del task.
+
+**Alternative scartate**:
+- togliere ogni `barrier=gate`: a Trento 627 cancelli nudi su 1.001, quasi
+  tutti aperti o di campagna;
+- ereditare l'`access` della via sul cancello nudo (`access=destination`):
+  4 casi a Trento, 9 a Milano, e una via `access=destination` si percorre;
+- un costo alto invece di togliere: un cancello chiuso non si passa, e un
+  arco caro finisce nei percorsi lo stesso quando è l'unica via;
+- rileggere i tag dei nodi dalle zone già in cache: non ci sono più;
+- lasciare che l'utente segnali un cancello dall'app: scelta di prodotto,
+  fuori scope (`tasks/TASK-421.md`).
+
+**Conseguenze**:
+- i percorsi nuovi evitano i cancelli chiusi e privati e le vie
+  `access=no`; qualche vicolo cieco in più (Trento 231 → 266 pezzi,
+  spezzoni dietro un cancello); dove c'era un cancello la forma cambia;
+- ogni zona foot va rifatta per avere l'effetto: Mac e server (piano in
+  `MAPS.md`/`DEPLOY.md`), poi `phone_zone_api` e `draw_examples`;
+- `bike`, `mtb` e `roller` non cambiano (reti loro); `hike` sì;
+- `engine.zip` del telefono ricostruito; le misure e il banco in
+  `tasks/TASK-421.md`.

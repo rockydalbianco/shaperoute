@@ -133,6 +133,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `tasks/TASK-415.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · proposta in `main`
   (ADR-0347); primo giro nella PR #966. File: quelli della #966 · `tasks/TASK-419.md`
+- **TASK-421 — I percorsi a piedi non passano per i cancelli chiusi** · codice,
+  test, ADR-0349 e piano delle zone nella PR #973 (motore: entra col sì
+  dell'utente per server e `draw_examples`); poi le zone del server da
+  rifare (`DEPLOY.md` F.15), col sì dell'utente. File: quelli della #973 ·
+  `tasks/TASK-421.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

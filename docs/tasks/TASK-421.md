@@ -1,7 +1,8 @@
 # TASK-421 — I percorsi a piedi non passano per i cancelli chiusi
 
-**Stato**: In corso
-**Fase**: 4 · **Branch**: `feat/TASK-421-foot-barriers` · **ADR**: ADR-0349 ·
+**Stato**: In corso — PR #973 (codice, test, documenti); dopo il merge le
+zone del server (`DEPLOY.md` F.15) col sì dell'utente
+**Fase**: 5 · **Branch**: `feat/TASK-421-foot-barriers` · **ADR**: ADR-0349 ·
 numeri dal Coordinatore (2026-11-08) · sessione «Foot routes barrier
 filtering», avviata dall'utente
 
@@ -88,9 +89,10 @@ prima il motore attraversava (cuore da 5 km 0,92 → 0,81, stella da 3 km
       `access=destination` no.
 - [x] La rete `hike` perde gli stessi nodi.
 - [x] Le misure su 2–3 zone e il banco prima/dopo in questo file.
-- [ ] Impronta: `ROUTES` nuovo; nuotate e canoa con la prova delle stesse
-      rotte; `engine.zip` rifatto; CI verde.
-- [ ] Piano di rigenerazione delle zone in `MAPS.md` e `DEPLOY.md`; il
+- [x] Impronta: `ROUTES` nuovo (`34ef405997d9`); nuotate e canoa con la
+      prova delle stesse rotte; `engine.zip` rifatto.
+- [ ] CI verde sulla PR #973.
+- [x] Piano di rigenerazione delle zone in `MAPS.md` e `DEPLOY.md`; il
       server non si tocca senza il sì dell'utente.
 
 ## File toccati

@@ -475,6 +475,7 @@ lasciando le righe d'indice.
 - ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
 - ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
+- ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1012,3 +1013,25 @@ di base sono una scelta dell'utente (scelta 12 del task file, «Come oggi»).
    nella tavola («2D › 3D › Reveal») e si spostano con «‹ ›», etichettati
    con «Move left»/«Move right», già tradotti. Le cose del finale spariscono
    quando dopo viene un'altra scena; le emoji del post restano.
+
+## ADR-0340, precisazione F — La card del Feed come la pagina
+
+**Stato**: Attiva · 2026-11-08 · TASK-410 parte F (#980). Scelta
+dell'utente, «Tutto come la pagina»; il resto deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: vista la pagina del post (parte B), l'utente ha chiesto lo
+stesso aspetto nella card del Feed; TASK-410 la lasciava com'era.
+
+**Decisione**: la card di un post di un membro ha i numeri in riquadri
+(`SummaryBoxes`, dalle righe di `postSections`) al posto della riga di
+testo, e la stessa barra delle quattro azioni della pagina (`PostActions`,
+condivisa con `PostSheet`): Like (le sei reazioni), Comment, Share solo sui
+propri, Edit & run. Supera la scelta 4 di TASK-355 (ADR-0306): il «Draw it
+near me» giallo lascia la card e resta sul disegno aperto sulla mappa.
+`ActionBar` si toglie invece di tenerne due; gli esempi tengono la riga di
+testo.
+
+**Conseguenze**: card e pagina cambiano insieme; il testo «Reactions» esce
+dalle tabelle; `DrawAgainContext` resta in `App.tsx` senza chi lo usa nel
+Feed, da togliere a parte.

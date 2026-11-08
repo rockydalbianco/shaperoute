@@ -463,7 +463,6 @@ lasciando le righe d'indice.
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
-- ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
 
 ---
 
@@ -471,41 +470,6 @@ lasciando le righe d'indice.
 
 ## Voci nuove
 
-## ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali
-
-**Stato:** deciso dall'agente su delega dell'utente (2026-11-08); le scene
-di base sono una scelta dell'utente (scelta 12 del task file, «Come oggi»).
-
-1. **C2 si fa in due PR**: C2a le scene e il finale; C2b la camera dietro
-   l'animale sul 3D e l'anteprima nel foglio, che toccano la pagina in
-   modo più pesante.
-2. **I tempi**: con tutte e tre accese, 3 s di apertura, 6 di percorso e 3
-   di finale (scelta 8). Una scena spenta dà i suoi secondi al percorso; a
-   percorso spento, le altre se li dividono a metà. Il video dura sempre
-   12 s. Così, con l'apertura spenta, il percorso ha 9 s (1 s di logo, 8 di
-   linea) e il finale 3: è il video di prima, e un test lo confronta
-   fotogramma per fotogramma con quello salvato prima di C2.
-3. **Le scelte delle scene** sono campi di `VideoEdit` (`order`, `off`,
-   `opening`, `cut`, `ending`); `videoScene` le legge dalle opzioni, quelle
-   mancanti come all'apertura del post.
-4. **L'apertura «Drawing in 2D»** disegna la linea dall'alto in quei
-   secondi, senza numeri; il percorso poi la ridisegna con l'animale. Sul
-   3D la pagina scatta prima la mappa da dritto sopra (dove sta la linea
-   piatta della scena), poi la inclina come sempre: la descrizione della
-   mappa dice `flat`, e il file della mappa non cambia. Se la foto piatta
-   non c'è, sotto resta quella inclinata. **«Title»** mette il titolo
-   grande in mezzo (o «MuW», senza titolo) e nasconde quello in alto.
-   **«Cut»** passa alla scena dopo di colpo; **«Fade»** sfuma nell'ultimo
-   mezzo secondo dell'apertura.
-5. **I finali**: «Whole drawing» è quello di prima; «Numbers» mette i
-   risultati grandi in colonna in mezzo, su un velo del fondo dello stile;
-   «Heart» fa spuntare in mezzo il quadrato giallo con il cuore che si
-   disegna e «MuW» sotto; «All three» tiene il disegno con i numeri e poi,
-   a metà del finale, il cuore. Il marchio nell'angolo resta sempre.
-6. **Riordino senza testi nuovi**: i tre riquadri stanno in fila come
-   nella tavola («2D › 3D › Reveal») e si spostano con «‹ ›», etichettati
-   con «Move left»/«Move right», già tradotti. Le cose del finale spariscono
-   quando dopo viene un'altra scena; le emoji del post restano.
 ## ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono
 
 **Stato**: **Superata** il 2026-11-08, lo stesso giorno. La pagina è stata

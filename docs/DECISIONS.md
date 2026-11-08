@@ -461,6 +461,7 @@ lasciando le righe d'indice.
 - ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Proposto
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
+- ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
@@ -494,6 +495,59 @@ TASK-374 D.
    (`response_model_exclude_none`), così le app di oggi e i loro test vedono
    lo stesso corpo di prima; il vecchio esempio `pool-swim.json` resta, quello
    col battito è `pool-swim-heart.json`.
+## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
+
+**Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole
+sue: «Non inserirli come catalogo, inseriscili e basta nella lista»,
+confermata «Sì, nella lista». Il resto deciso dall'agente su delega
+dell'utente, dentro ADR-0347.
+
+**Contesto**: ADR-0347 prevedeva una pagina «Catalog» nell'app
+(TASK-420). L'utente la toglie: i disegni tenuti devono comparire nella
+lista di «Explore» che esiste già («Best near you», gli esempi per città),
+cioè nei file `catalog/seed/<città>.json` che l'API legge all'avvio
+(`recommended.py`) e che sul server sono il bind mount `../catalog`
+del checkout (`deploy/compose.yaml`), non dentro l'immagine.
+
+**Decisione**:
+
+1. **Nessuna pagina nuova**: i tenuti stanno in `catalog/seed/`, il primo
+   giro (PR #966, 155 percorsi in 23 città, 2,3 MB invece di 5,7) è in
+   `main`. Sul server il catalogo si aggiorna con `git pull --ff-only` nel
+   checkout e `docker compose restart api` (l'API lo legge all'avvio); il
+   codice entrato in `main` nel frattempo non cambia finché non si fa
+   `--build`. Lo lancia l'utente via ssh, dopo il «via server catalogo» del
+   Coordinatore; la sequenza è in `tasks/TASK-419.md`.
+2. **I ripassi pesano per forma** come `optimizer.W_DOUBLED` (1,5 per
+   cuore, cerchio, stella, cavallo, luna, farfalla, lumaca; 0 per le forme
+   con i tratti): il punteggio segue il motore. Il filtro (≤ 10% in più)
+   vale per tutte, tolta la quota che la forma disegna due volte apposta,
+   misurata con `network.twice_drawn` sul contorno alla scala pianificata:
+   la stima con `doubled_share` sul contorno ricampionato dava zero e
+   bocciava zucca e faccina.
+3. **I 49 contorni candidati di TASK-418** (`candidate_outlines/`, non
+   registrati) si pianificano come casi a 5 e 10 km (`--outlines DIR`,
+   `ShapeJob` come `--outline`), segnati «TASK-418 outline»; i 20
+   preselezionati aspettano in `pending_outlines` di `tools/catalog_kept.json`
+   finché TASK-418 non registra le forme (Coordinatore, 2026-11-08).
+4. **Le parole** sono solo quelle approvate dall'utente in TASK-418 (CIAO,
+   HOLA, OLA, SALUT, HALLO, HEJ, LOVE…) o il nome corto della città (WIEN,
+   PRAHA, PORTO); una parola oltre la distanza massima della città (Venezia,
+   10 km) non si pianifica.
+5. **Le zone del server sul Mac**: con il «Sì, solo lettura» dell'utente
+   (via Coordinatore) le `foot_*` del server sono copiate in `data/cache`
+   con `rsync` dal terminale dell'utente, perché la sessione dell'agente
+   non può leggere dal server di produzione; Overpass l'8 novembre sera
+   non rispondeva (502, poi nessuna risposta) e i mirror nemmeno.
+6. **Il primo giro è la preselezione dell'agente**, accettata dall'utente
+   («ok si») con la pagina di revisione davanti: fino a 8 per città, almeno
+   3, le tre forme semplici da 5 km nelle città in evidenza; l'utente può
+   aggiungere o togliere chiavi dopo, dalla stessa pagina.
+
+**Conseguenze**: la pagina «Catalog» di TASK-420 esce; «Explore» mostra
+meno percorsi nelle 14 città del seme (i migliori), e quelli nuovi nelle
+città europee arriveranno col secondo giro, dallo stesso strumento.
+
 ## ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono
 
 **Stato**: **Superata** il 2026-11-08, lo stesso giorno. La pagina è stata

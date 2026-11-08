@@ -467,7 +467,9 @@ stesso giorno: `services/api/tests/test_drawings.py` (due righe, `stats` in
 Coordinatore; i tre test di `activitiesDoor` che contano le richieste (il
 finto API risponde 200 a `…/stats` e lo toglie dalla lista) e il nuovo
 `activitiesDoorStats.test.tsx`, approvati dal Coordinatore; `api/drawings.ts`
-esce dalla lista. Branch `feat/TASK-410-c-run-stats`.
+esce dalla lista. Dopo la prima CI, due test dell'app intera che contano i
+PUT di `/me/activities/` (`AppActivities`, `AppPenUpSaved`): non contano
+`…/stats`, segnalati al Coordinatore. Branch `feat/TASK-410-c-run-stats`.
 
 ```
 services/api/migrations/0064_run_stats.sql       (nuovo; numero in bozza, il vero al merge)
@@ -482,6 +484,7 @@ apps/mobile/src/activities/runStatsOut.ts (+ test) (nuovo: profilo e calorie)
 apps/mobile/src/activities/activitiesDoor.ts     (manda le stats dopo il salvataggio)
 apps/mobile/src/activities/activitiesDoorStats.test.tsx (nuovo)
 apps/mobile/src/activities/activitiesDoorQueue/Drawing/Game.test.tsx (rispondono a …/stats)
+apps/mobile/__tests__/AppActivities.test.tsx, AppPenUpSaved.test.tsx (non contano …/stats fra i PUT)
 docs/API.md («Run stats»), docs/DATABASE.md (la 0064)
 docs/tasks/TASK-410.md
 ```

@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: In lavorazione — parte B in PR (via del Coordinatore, 2026-11-08); A è TASK-355 B; poi C, D, E
+**Stato**: In lavorazione — parte B fatta e pubblicata (2026-11-08); A è TASK-355 B; prossima C, poi D ed E
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -400,6 +400,15 @@ altro (riepilogo di quattro righe, Like ed Edit & run) e un post senza dati
 proprio (palestra: solo il tempo, niente mappa né Edit & run; Share e
 impostazioni trascinando in su). Schermate in `out/TASK-410-b/` del
 worktree.
+
+**Esito della parte B** (2026-11-08): #949 in `main` (08803c33), dopo un
+giro rosso della CI (un import vietato in `sports/` e tre test dell'app
+che aprivano la mappa dal Feed: da qui il tocco sul disegno). OTA di
+produzione iOS: gruppo `8b1af1b4-8365-490c-ad74-00df811b9254`, update
+`01a1bc27-a1fc-7961-a799-713e3aca2e42`, commit `a0f38012`, runtime
+`6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`; con TASK-416 e TASK-408 C1.
+Sì dell'utente: «si confermo esatto» (parte B) e «Sì, OTA tutto» (nella
+sessione del Coordinatore).
 
 ## Esito
 

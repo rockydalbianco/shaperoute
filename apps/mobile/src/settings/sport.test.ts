@@ -84,6 +84,7 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "bike",
     "gravel",
     "mtb",
+    "roller",
     "paddle",
     "swim",
     "ski",
@@ -99,8 +100,8 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
   // And a gravel and an MTB ride (TASK-378 part C).
   expect(canChoose("gravel")).toBe(true);
   expect(canChoose("mtb")).toBe(true);
-  // Not a skate before TASK-380 is on (part B).
-  expect(canChoose("roller")).toBe(false);
+  // And a skate, since the server has TASK-380 part A.
+  expect(canChoose("roller")).toBe(true);
   expect(canChoose("xc_ski")).toBe(false);
   expect(canChoose("golf")).toBe(false);
 });

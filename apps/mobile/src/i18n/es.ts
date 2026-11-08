@@ -2065,43 +2065,6 @@ export const ES: Table = {
     "Pronóstico más antiguo: MET Norway no responde.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Tiempo: MET Norway (CC BY 4.0) · Estaciones: OpenSkiMap.org, © colaboradores de OpenStreetMap",
-
-  // src/explore/CatalogScreen.tsx, CatalogEntry.tsx, CatalogCard.tsx,
-  // CatalogGrid.tsx, CatalogFilterSheet.tsx, catalog.ts (TASK-420: the catalog)
-  Catalog: "Catálogo",
-  "{count} drawing in {cities} cities · filters, search":
-    "{count} dibujo en {cities} ciudades · filtros, búsqueda",
-  "{count} drawings in {cities} cities · filters, search":
-    "{count} dibujos en {cities} ciudades · filtros, búsqueda",
-  "{count} drawings · {cities} cities": "{count} dibujos · {cities} ciudades",
-  "Search by name: heart, CIAO, Milan…": "Buscar por nombre: corazón, CIAO, Milán…",
-  Country: "País",
-  City: "Ciudad",
-  Category: "Categoría",
-  Nearest: "Más cercanos",
-  Best: "Más bonitos",
-  Shortest: "Más cortos",
-  Any: "Cualquiera",
-  "Loading more…": "Cargando más…",
-  "No drawings match": "Ningún dibujo coincide",
-  "Change the filters, or clear them to see every drawing.":
-    "Cambia los filtros, o bórralos para ver todos los dibujos.",
-  "The drawings are planned at {distances}.":
-    "Los dibujos están planeados a {distances}.",
-  "Show {count} drawing": "Mostrar {count} dibujo",
-  "Show {count} drawings": "Mostrar {count} dibujos",
-  Monuments: "Monumentos",
-  Holidays: "Fiestas",
-  Italy: "Italia",
-  "United States": "Estados Unidos",
-  Netherlands: "Países Bajos",
-  Spain: "España",
-  "United Arab Emirates": "Emiratos Árabes Unidos",
-  Portugal: "Portugal",
-  "United Kingdom": "Reino Unido",
-  France: "Francia",
-  Australia: "Australia",
-  Japan: "Japón",
   // src/ski/DayResort.tsx, DayChoices.tsx, SkiDayLine.tsx, screens/SnowFinishCard.tsx
   // (TASK-406 part D2: the day of skiing, texts approved on 2026-11-08)
   "Where are you skiing?": "¿Dónde estás esquiando?",

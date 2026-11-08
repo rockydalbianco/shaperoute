@@ -11,7 +11,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "6. November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "6. November 2026";
+const PRIVACY_UPDATED = "8. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -342,6 +342,7 @@ const privacy: AboutDocument = {
         "Ein gespeicherter Lauf ist privat, solange du nichts anderes wählst: Nur dein Konto sieht ihn. Andere Mitglieder sehen auf deinem Profil die Summen aller deiner gespeicherten Läufe, Distanz und Anstieg, und deine Bestzeiten, zu Fuß und mit dem Rad, mit der Zeit und dem Datum, an dem du sie aufgestellt hast: auch die eines privaten Laufs, der sich aber nicht öffnet. Er bleibt, bis du ihn in «Meine Aktivitäten» löschst oder dein Konto löschst.",
         "Wenn du «Zeigen» wählst, sehen andere Mitglieder auf deinem Profil auch deine VO₂max. Bis Apple Health mit einem späteren Update kommt, ist sie unsere Schätzung aus deinen Lauf-Bestzeiten der letzten 12 Monate, berechnet von unserem Server. Schalte sie in den Einstellungen aus, und sie verschwindet von deinem Profil.",
         "Ein Training im Fitnessstudio wird mit seinen Übungen, Sätzen und Gewichten gespeichert. Andere Mitglieder sehen auf deinem Profil deine Stufen im Fitnessstudio (die Figur, die Übung und deinen besten Satz), gezählt aus all deinen Trainings, auch den privaten, aber nie das Training selbst. Ist der Beitrag eines Trainings für alle sichtbar und zeigt er seine Übungen, kann dein bester Satz des Monats in jeder Übung mit deinem Benutzernamen in der Monatsrangliste dieser Übung erscheinen, die andere Mitglieder sehen. Blende die Übungen des Beitrags aus oder mach ihn privat, und er verlässt die Rangliste.",
+        "Deine Trainingspläne (Name, Tage, Übungen und Zielwerte) bleiben auf deinem Telefon und in deinem Konto: Nur du siehst sie, und sie werden mit deinem Konto gelöscht. Auch den Kalender deiner Trainings siehst nur du.",
         "Wenn du eine frühere Aktivität aus einer Datei hinzufügst, speichern wir ihre Spur und ihre Uhrzeiten wie bei einem mit MuW aufgezeichneten Lauf. Die Datei selbst speichern wir nicht.",
         "Ein Lauf beginnt und endet oft an deiner Haustür. Deshalb wird ein Lauf für die anderen Mitglieder erst sichtbar, nachdem du unter «Wer kann es sehen» «Alle» oder «Follower» gewählt hast, und dann sehen sie die ganze Spur, mit Start und Ziel, mit dem Titel, den du ihr gegeben hast, und ohne Zeiten, Pausen oder die geplante Route. Deine Wahl bleibt für den nächsten Lauf auf diesem Telefon: Er beginnt mit der zuletzt gespeicherten, du siehst sie vor «Speichern» und kannst sie ändern. Eine aus einer Datei hinzugefügte Aktivität beginnt immer mit «Nur ich».",
         "Wer einen deiner Läufe sehen kann, kann ihm auch mit «Start» folgen und dieselbe Spur als GPX-Datei speichern, ohne Zeiten.",

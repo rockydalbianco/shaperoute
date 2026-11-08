@@ -163,9 +163,13 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
    i punti si cancellano; al massimo 24 ore dall'inizio in ogni caso (anche
    se il telefono si spegne). Uno stop dall'app fa scadere il link e
    cancella i punti subito.
-3. **Cosa vede chi lo apre** — posizione esatta o sfocata vicino a casa;
-   battito sì o no. Proposta: posizione esatta (lo scopo è sapere dove si
-   è), battito no (è un dato di salute).
+3. **Cosa vede chi lo apre** — **deciso dall'utente il 2026-11-09**
+   («Esatta e col battito»): la posizione esatta, non sfocata, e il battito
+   quando un orologio lo manda, oltre a distanza, tempo, passo o velocità,
+   dislivello, calorie e la fine. Il battito è un dato di salute (art. 9
+   GDPR): il consenso della prima volta lo deve dire in chiaro, va al
+   server solo durante la condivisione e si cancella con i punti; la
+   privacy lo nomina.
 4. **Se parte da sola a ogni registrazione** — proposta: no, ogni volta col
    pulsante.
 5. **Come si manda** — proposta: il foglio di condivisione del telefono.
@@ -180,7 +184,8 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
 
 ### Privacy
 
-- Consenso chiaro la prima volta, con cosa vede chi riceve il link.
+- Consenso chiaro la prima volta, con cosa vede chi riceve il link,
+  battito compreso (dato di salute, scelta 3).
 - Link non indovinabile (128 bit), che scade; stop in ogni momento
   dall'app, che cancella subito i punti.
 - I punti si cancellano dopo la fine (scelta 2); la riga di

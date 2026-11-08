@@ -50,6 +50,15 @@ metri, tempo e passo /100 m che ha già.
    | From your watch, via Health Connect | Dal tuo orologio, tramite Health Connect | Von deiner Uhr, über Health Connect | De ta montre, via Health Connect | De tu reloj, a través de Health Connect |
 
    I nomi delle zone sono quelli già approvati in TASK-374 (scelta 6).
+4. **Il via alla parte B** (2026-11-08): «SI PROCEDIAMO», «APPROVO», detto
+   alla proposta che chiedeva i suoi sì su testi della privacy, App Privacy e
+   build. Vale come via alla parte B; ogni testo concreto (privacy, App
+   Privacy, Data safety, chiave di lettura) gli si mostra comunque prima del
+   merge o dell'invio.
+5. **Dove si vede il battito**: «Anche nel post del Feed» (2026-11-08). Il
+   battito medio va al server e si vede nel post, con la riga per nasconderlo
+   come in TASK-345 B; il tempo nelle zone resta sul telefono (ADR-0318 §1).
+   Scartate: «Solo sul telefono» (la proposta), «Telefono ora, Feed dopo».
 
 ## Contesto da leggere
 
@@ -80,12 +89,17 @@ metri, tempo e passo /100 m che ha già.
    finisce con «· 206 kcal».
 6. Impronta iOS invariata (`6f8bba4c`): solo JS.
 
-## Parte B — battito medio e tempo nelle zone, nella 1.0.3
+## Parte B — battito medio e tempo nelle zone
 
 Va **sopra** i lettori di TASK-345 C (battito da Salute: campioni tra inizio e
 fine, medio e massimo) e TASK-374 D (tempo in ogni zona, con le zone di
 TASK-374 B). Nessun lettore nuovo in `pool/`: il nuoto in piscina passa a
 quelle funzioni la sua finestra (`startedMs`–`endedMs`, pause escluse).
+Il 2026-11-08 TASK-345 C e TASK-374 D non sono ancora iniziati: chi li
+costruisce, e se la parte B parte prima, lo decide il Coordinatore (chiesto
+lo stesso giorno). Su iPhone la 1.0.1 build 8 (`6f8bba4c`) ha già
+`NSHealthShareUsageDescription` per il battito: la lettura può arrivare con
+un OTA; il server (scelta 5) va prima, col sì dell'utente.
 
 1. A nuoto salvato in Salute, l'app legge i campioni di battito della
    finestra; con almeno un campione mostra «Avg heart rate» e «Time in zones»

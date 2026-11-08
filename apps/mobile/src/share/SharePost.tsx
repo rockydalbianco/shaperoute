@@ -1,5 +1,5 @@
 import * as Sharing from "expo-sharing";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -196,6 +196,11 @@ function SharePage({ run, onClose }: Props) {
   }
 
   const busy = sharing || video !== null;
+  // The video with an edit, for the preview in «Edit video» (part C2c).
+  const sceneOf = useCallback(
+    (next: VideoEdit) => videoScene(run, shown, stickers, next.style, next),
+    [run, shown, stickers],
+  );
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -369,6 +374,7 @@ function SharePage({ run, onClose }: Props) {
           edit={edit}
           onChange={setEdit}
           onClose={() => setEditing(false)}
+          sceneOf={sceneOf}
         />
       )}
     </View>

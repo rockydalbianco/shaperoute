@@ -66,6 +66,8 @@ export type VideoPageMessage =
   /** The animal is ready to be drawn (`ok`), or not and why: the video then
    * comes without it, the pen's tip on the line as before (TASK-408). */
   | { type: "character"; ok: boolean; why: string | null; ms: number }
+  /** In the preview (TASK-408, part C2c): the second shown. */
+  | { type: "time"; seconds: number }
   | { type: "failed"; error: string };
 
 /**
@@ -1315,9 +1317,86 @@ const SCRIPT = String.raw`
     post({ type: "done", frames: scene.frames.length, ms: mapTimes, mode: mode });
   }
 
+  // The preview of «Edit video» (TASK-408, part C2c): the scene's
+  // pictures drawn as they come, on a canvas over the whole page, round
+  // and round, with no encoding; the map and the animal as for the video.
+  // A new scene takes the old one's place at the same second; "pause"
+  // holds the picture. The second shown goes to the app four times a
+  // second.
+  var playing = null;
+  var PLAY_STEP_MS = 33;
+  var TIME_EVERY_MS = 250;
+  function play(scene) {
+    if (playing === null) {
+      var canvas = document.createElement("canvas");
+      canvas.style.position = "fixed";
+      canvas.style.left = "0";
+      canvas.style.top = "0";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.style.zIndex = "10";
+      var wide = (window.innerWidth || scene.width) * (window.devicePixelRatio || 1);
+      var k = Math.min(1, wide / scene.width);
+      canvas.width = Math.round(scene.width * k);
+      canvas.height = Math.round(scene.height * k);
+      document.body.appendChild(canvas);
+      var g = canvas.getContext("2d");
+      g.setTransform(k, 0, 0, k, 0, 0);
+      playing = { scene: scene, g: g, start: now(), paused: false, at: 0, drawn: -1, told: 0 };
+      tick();
+      return;
+    }
+    playing.scene = scene;
+    playing.drawn = -1;
+  }
+  function secondsOf(p) {
+    var length = p.scene.frames.length / p.scene.fps;
+    return p.paused ? p.at : ((now() - p.start) / 1000) % length;
+  }
+  function tick() {
+    var p = playing;
+    if (p === null) {
+      return;
+    }
+    var at = secondsOf(p);
+    var i = Math.min(p.scene.frames.length - 1, Math.floor(at * p.scene.fps));
+    if (i !== p.drawn) {
+      try {
+        draw(p.g, p.scene, p.scene.frames[i]);
+      } catch (error) {
+        // A picture not drawn: the next one is tried.
+      }
+      p.drawn = i;
+    }
+    if (now() - p.told >= TIME_EVERY_MS) {
+      p.told = now();
+      post({ type: "time", seconds: Math.round(at * 10) / 10 });
+    }
+    setTimeout(tick, PLAY_STEP_MS);
+  }
+  function pause() {
+    if (playing !== null && !playing.paused) {
+      playing.at = secondsOf(playing);
+      playing.paused = true;
+    }
+  }
+  function stop() {
+    playing = null;
+  }
+  function resume() {
+    if (playing !== null && playing.paused) {
+      playing.start = now() - playing.at * 1000;
+      playing.paused = false;
+    }
+  }
+
   window.muwVideo = {
     prepareMap: prepareMap,
     prepareCharacter: prepareCharacter,
+    play: play,
+    pause: pause,
+    resume: resume,
+    stop: stop,
     make: function (scene) {
       if (started) {
         return;
@@ -1399,6 +1478,20 @@ export const VIDEO_PAGE_BASE = "https://video.muw.invalid/";
 /** What the app asks the page to do: make the video of `sceneJson`. */
 export function makeCall(sceneJson: string): string {
   return `window.muwVideo.make(${sceneJson}); true;`;
+}
+
+/** What the preview asks (TASK-408, part C2c): play `sceneJson` round and
+ * round, in place of what it plays now; hold the picture; go on. */
+export function playCall(sceneJson: string): string {
+  return `window.muwVideo.play(${sceneJson}); true;`;
+}
+
+export function pauseCall(): string {
+  return "window.muwVideo.pause(); true;";
+}
+
+export function resumeCall(): string {
+  return "window.muwVideo.resume(); true;";
 }
 
 /** What the app asks first with an animal: make it ready, from its model

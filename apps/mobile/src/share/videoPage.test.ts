@@ -331,6 +331,10 @@ function page(
     make: (scene: unknown) => void;
     prepareMap: (map: unknown) => void;
     prepareCharacter: (spec: unknown) => void;
+    play: (scene: unknown) => void;
+    pause: () => void;
+    resume: () => void;
+    stop: () => void;
   };
   return {
     posted,
@@ -340,6 +344,10 @@ function page(
     make: api.make,
     prepareMap: api.prepareMap,
     prepareCharacter: api.prepareCharacter,
+    play: api.play,
+    pause: api.pause,
+    resume: api.resume,
+    stop: api.stop,
   };
 }
 
@@ -944,6 +952,72 @@ describe("the video page, with the camera behind the animal (TASK-408 C2b)", () 
       expect.objectContaining({ type: "map", ok: true, mode: "still" }),
     );
     expect(maplibre.made[0].removed).toBe(true);
+  });
+});
+
+describe("the video page, playing the preview (TASK-408 C2c)", () => {
+  type Time = Extract<VideoPageMessage, { type: "time" }>;
+  const times = (posted: VideoPageMessage[]) =>
+    posted.filter((m): m is Time => m.type === "time").map((m) => m.seconds);
+  const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  // Every page started here stops playing after its test, passed or not.
+  const playing: { stop: () => void }[] = [];
+  afterEach(() => playing.splice(0).forEach((p) => p.stop()));
+  function started(): ReturnType<typeof page> {
+    const p = page(fakeEncoder([VIDEO_CODECS[0]]).FakeEncoder, FakeFrame);
+    playing.push(p);
+    return p;
+  }
+
+  it("draws the scene's pictures as they come, round and round, with no encoding, and says the second", async () => {
+    const p = started();
+    await until(p.posted, "ready");
+    p.play(SCENE);
+    await pause(400);
+    p.stop();
+    // The canvas over the page, the pictures painted on it, none encoded.
+    expect(p.context.fillRect).toHaveBeenCalled();
+    expect(p.posted.some((m) => m.type === "config" || m.type === "chunks")).toBe(
+      false,
+    );
+    const said = times(p.posted);
+    expect(said.length).toBeGreaterThan(0);
+    expect(said[said.length - 1]).toBeGreaterThan(0);
+    expect(said[said.length - 1]).toBeLessThan(1);
+  });
+
+  it("holds the picture on pause and goes on from there on resume", async () => {
+    const p = started();
+    await until(p.posted, "ready");
+    p.play(SCENE);
+    await pause(300);
+    p.pause();
+    // The picture of the second it stopped at, drawn once, then held.
+    await pause(100);
+    const held = p.context.fillRect.mock.calls.length;
+    await pause(300);
+    const still = times(p.posted).slice(-2);
+    expect(still[0]).toBe(still[1]);
+    expect(p.context.fillRect.mock.calls.length).toBe(held);
+    p.resume();
+    await pause(300);
+    p.stop();
+    expect(p.context.fillRect.mock.calls.length).toBeGreaterThan(held);
+    const after = times(p.posted);
+    expect(after[after.length - 1]).toBeGreaterThan(still[1]);
+  });
+
+  it("takes a new scene in place of the old one at once", async () => {
+    const p = started();
+    await until(p.posted, "ready");
+    p.play(SCENE);
+    await pause(100);
+    const drawn = p.written.length;
+    expect(p.written).not.toContain("Second scene");
+    p.play(videoScene({ ...RUN, title: "Second scene" }, POST_RESULTS, [], "paper"));
+    await pause(200);
+    p.stop();
+    expect(p.written.slice(drawn)).toContain("Second scene");
   });
 });
 

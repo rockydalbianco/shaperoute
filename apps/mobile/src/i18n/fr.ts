@@ -1717,6 +1717,8 @@ export const FR: Table = {
   "Camera behind": "Caméra derrière",
   "Camera around": "Caméra autour",
   "Line in 2D": "Ligne en 2D",
+  // src/share/VideoPreview.tsx (TASK-408 C2c, choice 13; «Resume» and «Pause» were there)
+  "Video preview": "Aperçu de la vidéo",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concours MuW",

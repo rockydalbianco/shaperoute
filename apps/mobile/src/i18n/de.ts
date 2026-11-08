@@ -1730,6 +1730,8 @@ export const DE: Table = {
   "Camera behind": "Kamera dahinter",
   "Camera around": "Kamera rundherum",
   "Line in 2D": "Linie in 2D",
+  // src/share/VideoPreview.tsx (TASK-408 C2c, choice 13; «Resume» and «Pause» were there)
+  "Video preview": "Videovorschau",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "MuW-Wettbewerb",

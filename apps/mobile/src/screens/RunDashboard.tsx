@@ -46,9 +46,13 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { runActivityOf } from "../settings/sport";
+import { useSport } from "../settings/useSport";
 import { metresPer } from "../units/format";
 import type { Units } from "../units/units";
 import { VoiceSetting } from "../voice/VoiceSetting";
+import { useWatch } from "../watch/useWatch";
+import { WatchHeart } from "../watch/WatchHeart";
 import { Countdown } from "./Countdown";
 import { HoldButton, ROUND_BUTTON } from "./HoldButton";
 import { confirmPocketMode, PocketScreen } from "./PocketScreen";
@@ -136,6 +140,9 @@ export function RunCard({
   // The game's line (TASK-296 part E): the API asked once, here, as the
   // run starts; the line then follows the track, on both pages.
   const game = useRunGameStrip(track, activity, { fetchFn, key: apiKey });
+  // The Apple Watch along (TASK-370 A3): the same state on both, its heart
+  // rate here; the sport «Save» takes, the one of «Settings».
+  const bpm = useWatch(runActivityOf(useSport()), onStop);
   const [page, setPage] = useState<RunPage>("map");
   const paused = openPause(track) !== null;
   // One function for the whole run: a swipe in progress keeps its page.
@@ -178,6 +185,7 @@ export function RunCard({
         <RunStrip numbers={numbers} />
       )}
       <RunGameLine text={game} />
+      <WatchHeart bpm={bpm} />
       {route && <RouteBar route={route} numbers={numbers} />}
       {buttons}
       <PageTabs page={page} onPage={setPage} />

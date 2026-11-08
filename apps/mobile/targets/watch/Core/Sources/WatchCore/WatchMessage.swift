@@ -36,6 +36,9 @@ public enum WatchMessage: Equatable, Sendable {
         movingMs: Int64, distanceM: Double)
     /// The heart rate the watch measures, beats per minute.
     case heartRate(bpm: Int, at: Int64)
+    /// What the runner chose on the phone, for the watch to keep (part A3):
+    /// it comes with transferUserInfo, so also when the app was closed.
+    case settings(units: WatchUnits, at: Int64)
 }
 
 /// Why a message was not read: the same codes as the phone's.
@@ -92,6 +95,12 @@ extension WatchMessage {
                 throw WatchMessageError.invalidField
             }
             return .heartRate(bpm: Int(bpm), at: try time(fields["at"]))
+        case "settings":
+            guard let name = fields["units"] as? String, let units = WatchUnits(rawValue: name)
+            else {
+                throw WatchMessageError.invalidField
+            }
+            return .settings(units: units, at: try time(fields["at"]))
         default:
             throw WatchMessageError.unknownType
         }
@@ -131,6 +140,10 @@ extension WatchMessage {
         case let .heartRate(bpm, at):
             fields["type"] = "heartRate"
             fields["bpm"] = bpm
+            fields["at"] = at
+        case let .settings(units, at):
+            fields["type"] = "settings"
+            fields["units"] = units.rawValue
             fields["at"] = at
         }
         return fields

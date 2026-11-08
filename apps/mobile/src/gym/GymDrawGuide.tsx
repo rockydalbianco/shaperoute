@@ -122,6 +122,8 @@ export function GymDrawGuide({
   const [calendar, setCalendar] = useState<GymCalendar | null>(null);
   const [open, setOpen] = useState(false);
   const [plansOpen, setPlansOpen] = useState(false);
+  // «New plan» opens the editor straight away, not the empty list.
+  const [newPlan, setNewPlan] = useState(false);
   const { owner, plans } = useGymPlans(fetchFn);
   const today = todayPlan(plans);
 
@@ -200,7 +202,10 @@ export function GymDrawGuide({
           {owner !== null && (
             <Pressable
               style={({ pressed }) => [styles.ghost, pressed && styles.pressed]}
-              onPress={() => setPlansOpen(true)}
+              onPress={() => {
+                setNewPlan(true);
+                setPlansOpen(true);
+              }}
               accessibilityRole="button"
               testID="gym-guide-new-plan"
             >
@@ -209,7 +214,7 @@ export function GymDrawGuide({
           )}
         </View>
       )}
-      {(shown !== null || owner !== null) && (
+      {(shown !== null || (owner !== null && plans.length > 0)) && (
         <View style={styles.tiles}>
           {shown !== null && (
             <Pressable
@@ -227,7 +232,7 @@ export function GymDrawGuide({
               )}
             </Pressable>
           )}
-          {owner !== null && (
+          {owner !== null && plans.length > 0 && (
             <Pressable
               style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
               onPress={() => setPlansOpen(true)}
@@ -235,9 +240,7 @@ export function GymDrawGuide({
               testID="gym-guide-plans"
             >
               <Text style={styles.label}>{`📋 ${t("Plans")}`}</Text>
-              <Text style={styles.tileValue}>
-                {plans.length === 0 ? t("New plan") : plansCount(plans.length)}
-              </Text>
+              <Text style={styles.tileValue}>{plansCount(plans.length)}</Text>
             </Pressable>
           )}
         </View>
@@ -266,7 +269,11 @@ export function GymDrawGuide({
       />
       <GymPlansSheet
         visible={plansOpen}
-        onClose={() => setPlansOpen(false)}
+        startNew={newPlan}
+        onClose={() => {
+          setPlansOpen(false);
+          setNewPlan(false);
+        }}
         fetchFn={fetchFn}
       />
     </View>

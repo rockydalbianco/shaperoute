@@ -1226,6 +1226,7 @@ export const IT: Table = {
   "Plan name": "Nome della scheda",
   Sets: "Serie",
   "{n} exercises": "{n} esercizi",
+  "1 exercise": "1 esercizio",
   "Start without the plan": "Inizia senza scheda",
   "Plan: {done}/{total} sets": "Scheda: {done}/{total} serie",
   "Delete plan": "Elimina la scheda",

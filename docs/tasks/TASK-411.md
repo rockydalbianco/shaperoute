@@ -152,7 +152,9 @@ già. `{when}` è «Today», «Yesterday» o il giorno di `dayLabel`.
 chiara e facile da utilizzare»; anteprima scelta «Sì, così»; lista al
 Coordinatore lo stesso giorno): `gym/GymDrawGuide.tsx`,
 `screens/ChooseScreen.tsx`, `gym/WorkoutScreen.tsx`, `gym/workout.ts`,
-`i18n/{it,de,fr,es}.ts` (cinque testi nuovi, «Today: {plan}» tolto), i test
+`gym/GymPlans.tsx`, `gym/GymPlanEditor.tsx`, `gym/ExerciseGrid.tsx` (le
+correzioni della prova nel simulatore), `i18n/{it,de,fr,es}.ts` (cinque testi
+nuovi più «1 exercise», «Today: {plan}» tolto), i test
 `gym/GymCalendar.test.tsx`, `gym/GymPlans.test.tsx`; documenti
 `docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/sports/gym.md`. Parte dal
 branch della C e la PR si apre dopo la #964.
@@ -256,3 +258,14 @@ l'italiano approvato dall'utente, le altre lingue dicono le stesse cose.
   telefono arriva a tutti con l'OTA (anche a chi ha la 1.0.1) e nella build
   1.0.3; la 1.0.2 (TASK-407) è solo screenshot per scelta dell'utente: la
   palestra anche lì è un cambio a TASK-407, che gli chiede il Coordinatore.
+- 2026-11-08: **prova nel simulatore** (iPhone 17e, Expo Go, Metro della
+  copia della F; ok del Coordinatore). Fatti a mano: «Draw» → Gym, «New
+  plan», la griglia dei gruppi e del petto con gli omini, una scheda «Push»
+  (domenica, Bench press 4×8 a 60 kg), «Today · Sun» con «Start “Push”»,
+  l'allenamento coi valori già scritti, «Set 1 of 4» coi pallini, una serie,
+  la barra a 1/4 e il recupero. Corretti dopo la prova: il riquadro «Plans»
+  compare solo con delle schede (prima ripeteva «New plan»); «New plan» apre
+  subito l'editor; i nomi dei gruppi non si tagliano più («Shoulders»,
+  «Full body»); il tastierino numerico si chiude trascinando e «Save» resta
+  raggiungibile; i giorni in una riga; «−» e «+» delle serie con il bordo;
+  «1 exercise» al singolare. Schermate in `out/TASK-411-f/`.

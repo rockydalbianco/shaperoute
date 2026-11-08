@@ -126,10 +126,11 @@ test("«Plans» lists them; «New plan» writes one, kept here and sent", async 
   const fetchFn = api([]);
   await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
   expect(screen.queryByTestId("gym-guide-today")).toBeNull();
-  await fireEvent.press(screen.getByTestId("gym-guide-plans"));
+  // Without plans no tile: «New plan» opens the editor straight away.
+  expect(screen.queryByTestId("gym-guide-plans")).toBeNull();
+  await fireEvent.press(screen.getByTestId("gym-guide-new-plan"));
   await act(async () => {});
-  expect(screen.getByText("Plans")).toBeOnTheScreen();
-  await fireEvent.press(screen.getByTestId("gym-plan-new"));
+  expect(screen.getByText("New plan")).toBeOnTheScreen();
   expect(screen.getByTestId("plan-save")).toBeDisabled();
 
   await fireEvent.changeText(screen.getByTestId("plan-name"), "Pull");
@@ -148,7 +149,7 @@ test("«Plans» lists them; «New plan» writes one, kept here and sent", async 
 
   const row = screen.getByTestId("gym-plan-row");
   expect(within(row).getByText("Pull")).toBeOnTheScreen();
-  expect(within(row).getByText("Tue · Fri · 1 exercises")).toBeOnTheScreen();
+  expect(within(row).getByText("Tue · Fri · 1 exercise")).toBeOnTheScreen();
   const [kept] = plansOf(OWNER);
   expect(kept).toMatchObject({
     name: "Pull",
@@ -232,7 +233,7 @@ test("in Draw without a plan: «Start workout», «New plan» and the plans' til
   );
   expect(screen.getByRole("button", { name: "Start workout" })).toBeOnTheScreen();
   expect(screen.getByTestId("gym-guide-new-plan")).toHaveTextContent("📋 New plan");
-  expect(screen.getByTestId("gym-guide-plans")).toHaveTextContent("📋 PlansNew plan");
+  expect(screen.queryByTestId("gym-guide-plans")).toBeNull();
   await screen.unmount();
 
   mergePlans(OWNER, [

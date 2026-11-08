@@ -1229,6 +1229,7 @@ export const FR: Table = {
   "Plan name": "Nom du programme",
   Sets: "Séries",
   "{n} exercises": "{n} exercices",
+  "1 exercise": "1 exercice",
   "Start without the plan": "Commencer sans programme",
   "Plan: {done}/{total} sets": "Programme : {done}/{total} séries",
   "Delete plan": "Supprimer le programme",

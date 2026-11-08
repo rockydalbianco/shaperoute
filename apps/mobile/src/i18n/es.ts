@@ -1230,6 +1230,7 @@ export const ES: Table = {
   "Plan name": "Nombre de la rutina",
   Sets: "Series",
   "{n} exercises": "{n} ejercicios",
+  "1 exercise": "1 ejercicio",
   "Start without the plan": "Empezar sin rutina",
   "Plan: {done}/{total} sets": "Rutina: {done}/{total} series",
   "Delete plan": "Eliminar la rutina",

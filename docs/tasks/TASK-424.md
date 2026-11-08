@@ -199,6 +199,87 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
    privacy dell'app e del sito): li scrive l'agente, li approva l'utente.
 10. **App Privacy e Data safety**: proposta più sotto, ogni passo col sì.
 
+### Testi (bozza, aspettano il sì dell'utente)
+
+Prima in inglese e italiano; de/fr/es dopo il sì su questi.
+
+**App**
+
+| Dove | en | it |
+|---|---|---|
+| Pulsante | Share live | Condividi dal vivo |
+| Etichetta attiva | Sharing live | Condivisione attiva |
+| Senza account | Sign in to share live | Accedi per condividere dal vivo |
+| Foglio, titolo | Share this activity live | Condividi l'attività dal vivo |
+| Foglio, testo 1 | Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it. | Chiunque abbia il link può seguirti su una pagina web, senza l'app: la tua posizione esatta sulla mappa, il percorso fatto, distanza, tempo, passo o velocità, dislivello, calorie e il battito quando un orologio lo manda. |
+| Foglio, testo 2 | The link stops working one hour after you finish, or as soon as you stop sharing. Then your positions are deleted. | Il link smette di funzionare un'ora dopo la fine, o appena smetti di condividere. Poi le tue posizioni vengono cancellate. |
+| Foglio, pulsanti | Share link · Not now | Condividi il link · Non ora |
+| Messaggio | Follow my activity live on MuW: {url} | Segui la mia attività dal vivo su MuW: {url} |
+| Stop, titolo | Stop sharing? | Smettere di condividere? |
+| Stop, testo | The link stops working now. | Il link smette di funzionare adesso. |
+| Stop, pulsanti | Stop sharing · Keep sharing | Smetti · Continua |
+| Errore | Couldn't create the link. Try again. | Non è stato possibile creare il link. Riprova. |
+
+**Pagina web** (`site/live/`, lingua dal browser)
+
+| en | it |
+|---|---|
+| Live activity | Attività dal vivo |
+| Live | Dal vivo |
+| Updated {n} s ago | Aggiornato {n} s fa |
+| No update since {time} | Nessun aggiornamento dalle {time} |
+| Paused | In pausa |
+| Finished at {time} | Finita alle {time} |
+| Sharing stopped | Condivisione interrotta |
+| This link has expired | Questo link è scaduto |
+| Distance · Time · Pace · Speed · Elev. gain · Calories · Heart rate | Distanza · Tempo · Passo · Velocità · Dislivello · Calorie · Battito |
+| Lengths (est.) · Exercise | Vasche (stima) · Esercizio |
+| Shared from MuW. The link stops working one hour after the activity ends. | Condiviso da MuW. Il link smette di funzionare un'ora dopo la fine dell'attività. |
+
+**Privacy dell'app e del sito**: sezione nuova «Sharing live» («Condivisione
+dal vivo»), dopo «Your position».
+
+> en — During an activity you can tap «Share live» to create a link. While
+> you share, our server receives every 15 seconds your exact position with
+> its time, the activity's numbers (distance, time, pace or speed,
+> elevation gain, calories) and your heart rate when a watch sends it.
+> Anyone who has the link can see them on a page of getmuw.app, without an
+> account: you choose whom you send it to, and whoever has it can pass it
+> on. The link is random and cannot be guessed; our server keeps only a
+> hash of it. It stops working one hour after the activity ends, at most 24
+> hours after it started, or as soon as you stop sharing; then the
+> positions and the heart rate are deleted. Your heart rate is health data:
+> it is shared only after you have read it on the screen that comes before
+> the link. The map on that page comes from OpenFreeMap, which sees the
+> internet (IP) address of whoever opens it, but not the link or your
+> position. Sharing needs an account; deleting the account deletes its
+> shares.
+
+> it — Durante un'attività puoi toccare «Condividi dal vivo» per creare un
+> link. Mentre condividi, il nostro server riceve ogni 15 secondi la tua
+> posizione esatta con l'ora, i numeri dell'attività (distanza, tempo, passo
+> o velocità, dislivello, calorie) e il battito quando un orologio lo manda.
+> Chiunque abbia il link li vede su una pagina di getmuw.app, senza
+> account: scegli tu a chi mandarlo, e chi lo ha può inoltrarlo. Il link è
+> casuale e non si può indovinare; il nostro server ne tiene solo un hash.
+> Smette di funzionare un'ora dopo la fine dell'attività, al massimo 24 ore
+> dopo l'inizio, o appena smetti di condividere; poi le posizioni e il
+> battito vengono cancellati. Il battito è un dato sulla salute: si
+> condivide solo dopo che l'hai letto nella schermata che viene prima del
+> link. La mappa di quella pagina viene da OpenFreeMap, che vede l'indirizzo
+> internet (IP) di chi la apre, ma non il link né la tua posizione. Per
+> condividere serve un account; cancellando l'account si cancellano le sue
+> condivisioni.
+
+**«Your position»**, una frase in fondo al primo paragrafo:
+
+> en — When you share an activity live, your exact position goes to our
+> server and to whoever has the link, as described under «Sharing live».
+
+> it — Quando condividi un'attività dal vivo, la tua posizione esatta va al
+> nostro server e a chi ha il link, come spiegato in «Condivisione dal
+> vivo».
+
 ### Privacy
 
 - Consenso chiaro la prima volta, con cosa vede chi riceve il link,

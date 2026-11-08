@@ -201,8 +201,8 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
 
 ### Testi
 
-**en e it approvati dall'utente il 2026-11-09** («Sì, approvo»). de/fr/es
-in fondo a questa sezione, aspettano il sì.
+**Tutti approvati dall'utente il 2026-11-09**: en e it («Sì, approvo»),
+poi de/fr/es («Sì, approvo»).
 
 **App**
 
@@ -281,7 +281,7 @@ dal vivo»), dopo «Your position».
 > nostro server e a chi ha il link, come spiegato in «Condivisione dal
 > vivo».
 
-**de / fr / es (bozza, aspettano il sì dell'utente)**
+**de / fr / es**
 
 | en | de | fr | es |
 |---|---|---|---|

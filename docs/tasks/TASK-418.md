@@ -1,6 +1,7 @@
 # TASK-418 — Forme nuove per il catalogo di «Explore»
 
-**Stato**: Done
+**Stato**: In corso — parte A (le forme candidate) Done nella PR #953; la
+registrazione delle forme approvate su strada è Todo.
 **Fase**: 4 · **Branch**: `feat/TASK-418-new-shapes` · **ADR**: ADR-0346
 (numeri dal Coordinatore) ·
 parte A del catalogo grande; B è TASK-419 (i 1000 disegni e la scelta),

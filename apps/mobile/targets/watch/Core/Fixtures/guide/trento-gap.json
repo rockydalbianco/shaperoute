@@ -1,7 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "name": "trento-gap",
   "announceM": 50,
+  "anywhere": false,
   "points": [
     [46.0534679, 11.1242691],
     [46.0533868, 11.1242729],
@@ -154,212 +155,243 @@
       "turn": "depart",
       "angle_deg": 0,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 1
     },
     {
       "distance_m": 11.2,
       "turn": "left",
       "angle_deg": -95.4,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 4
     },
     {
       "distance_m": 123.2,
       "turn": "left",
       "angle_deg": -32.5,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 145.4,
       "turn": "left",
       "angle_deg": -61.1,
       "joined": false,
-      "street": "Via Antonio Gramsci"
+      "street": "Via Antonio Gramsci",
+      "branches": 4
     },
     {
       "distance_m": 292.3,
       "turn": "left",
       "angle_deg": -75.8,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 304,
       "turn": "right",
       "angle_deg": 133.2,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 328.1,
       "turn": "left",
       "angle_deg": -51.2,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 334.4,
       "turn": "right",
       "angle_deg": 37.5,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 428.4,
       "turn": "left",
       "angle_deg": -32.8,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 451.1,
       "turn": "left",
       "angle_deg": -70.6,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 549.5,
       "turn": "right",
       "angle_deg": 84.9,
       "joined": false,
-      "street": "Via Palermo"
+      "street": "Via Palermo",
+      "branches": 4
     },
     {
       "distance_m": 756.9,
       "turn": "right",
       "angle_deg": 35.6,
       "joined": false,
-      "street": "Via Palermo"
+      "street": "Via Palermo",
+      "branches": 3
     },
     {
       "distance_m": 789.3,
       "turn": "left",
       "angle_deg": -87.8,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 4
     },
     {
       "distance_m": 909.4,
       "turn": "right",
       "angle_deg": 85.9,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 921.9,
       "turn": "left",
       "angle_deg": -31.9,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 930.8,
       "turn": "left",
       "angle_deg": -45.8,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 934.5,
       "turn": "right",
       "angle_deg": 58.5,
       "joined": true,
-      "street": "Viale Rovereto"
+      "street": "Viale Rovereto",
+      "branches": 4
     },
     {
       "distance_m": 1059,
       "turn": "left",
       "angle_deg": -97.4,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 4
     },
     {
       "distance_m": 1063.9,
       "turn": "right",
       "angle_deg": 35.4,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 1068,
       "turn": "right",
       "angle_deg": 64.3,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 1073.5,
       "turn": "left",
       "angle_deg": -82.2,
       "joined": true,
-      "street": "Via Giovanni a Prato"
+      "street": "Via Giovanni a Prato",
+      "branches": 4
     },
     {
       "distance_m": 1187.4,
       "turn": "right",
       "angle_deg": 89.4,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 4
     },
     {
       "distance_m": 1191.8,
       "turn": "left",
       "angle_deg": -89.4,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 1401.2,
       "turn": "right",
       "angle_deg": 65,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 1410.6,
       "turn": "left",
       "angle_deg": -54.1,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 1420.9,
       "turn": "right",
       "angle_deg": 83.6,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 1682.8,
       "turn": "right",
       "angle_deg": 87.2,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 1694.4,
       "turn": "left",
       "angle_deg": -87.3,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 1696,
       "turn": "right",
       "angle_deg": 82.6,
       "joined": true,
-      "street": null
+      "street": null,
+      "branches": 3
     },
     {
       "distance_m": 1782.2,
       "turn": "right",
       "angle_deg": 87.5,
       "joined": false,
-      "street": null
+      "street": null,
+      "branches": 3
     }
   ],
+  "pen": null,
   "start": [{ "kind": "depart", "index": 0, "vibrate": false }],
   "steps": [
     {
@@ -373,9 +405,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 1, "count": 1, "aheadM": 11.2, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.05337842, 11.12427673],
@@ -388,7 +424,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05339379, 11.12438796],
@@ -401,7 +441,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05339979, 11.12451723],
@@ -414,7 +458,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05340687, 11.12464313],
@@ -427,7 +475,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05342151, 11.12476768],
@@ -440,7 +492,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05342263, 11.12489726],
@@ -453,7 +509,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05342375, 11.12502684],
@@ -466,7 +526,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05342487, 11.12515641],
@@ -479,9 +543,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 2, "count": 1, "aheadM": 43.2004, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.05342599, 11.12528599],
@@ -494,7 +562,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.0534271, 11.12541557],
@@ -507,7 +579,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05342822, 11.12554515],
@@ -520,7 +596,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05342934, 11.12567473],
@@ -533,7 +613,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05343601, 11.1258025],
@@ -546,7 +630,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05350771, 11.1258513],
@@ -559,9 +647,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 3, "count": 1, "aheadM": 5.3997, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.05355252, 11.12591625],
@@ -574,7 +666,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05364215, 11.12590572],
@@ -587,7 +683,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05373179, 11.12589518],
@@ -600,7 +700,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05382142, 11.12588464],
@@ -613,7 +717,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05391106, 11.12587411],
@@ -626,7 +734,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05400069, 11.1258636],
@@ -639,7 +751,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05409032, 11.12585296],
@@ -652,7 +768,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05417994, 11.12584221],
@@ -665,7 +785,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05426957, 11.12583147],
@@ -678,7 +802,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05435919, 11.12582073],
@@ -691,7 +819,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05444881, 11.12580998],
@@ -704,9 +836,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 4, "count": 2, "aheadM": 42.3001, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.05453843, 11.12579924],
@@ -719,7 +855,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05462806, 11.12578849],
@@ -732,7 +872,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05471768, 11.12577775],
@@ -745,7 +889,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.0548073, 11.12576701],
@@ -758,7 +906,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.0548419, 11.1256675],
@@ -771,7 +923,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05488526, 11.12566289],
@@ -784,7 +940,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.0549164, 11.12578331],
@@ -797,9 +957,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 6, "count": 2, "aheadM": 8.1001, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.05500051, 11.12581128],
@@ -812,7 +976,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05508151, 11.12584946],
@@ -825,7 +993,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05515174, 11.12592794],
@@ -838,7 +1010,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05519509, 11.12604149],
@@ -851,7 +1027,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05524422, 11.12614955],
@@ -864,7 +1044,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05529937, 11.12625192],
@@ -877,9 +1061,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 8, "count": 1, "aheadM": 48.3997, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.05535452, 11.12635428],
@@ -892,7 +1080,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05540861, 11.1264578],
@@ -905,7 +1097,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05545948, 11.1265644],
@@ -918,7 +1114,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05549823, 11.12668118],
@@ -931,7 +1131,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05553677, 11.12679625],
@@ -944,7 +1148,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05560391, 11.12688249],
@@ -957,9 +1165,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 9, "count": 1, "aheadM": 11.0996, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.055684, 11.12691742],
@@ -972,7 +1184,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05575116, 11.12685326],
@@ -985,7 +1201,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05580745, 11.12675571],
@@ -998,7 +1218,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05585471, 11.12664545],
@@ -1011,7 +1235,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05590197, 11.12653519],
@@ -1024,7 +1252,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05595305, 11.12642862],
@@ -1037,9 +1269,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 10, "count": 1, "aheadM": 49.5002, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.05600572, 11.12632357],
@@ -1052,7 +1288,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05605839, 11.12621853],
@@ -1065,7 +1305,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.05611106, 11.12611349],
@@ -1078,7 +1322,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.0561374, 11.12606097],
@@ -1091,7 +1339,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06118245, 11.1270219],
@@ -1104,7 +1356,11 @@
       "lost": true,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06125803, 11.12695165],
@@ -1117,7 +1373,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06133361, 11.12688141],
@@ -1130,7 +1390,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06140919, 11.12681117],
@@ -1143,7 +1407,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06148477, 11.12674092],
@@ -1156,7 +1424,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06156034, 11.12667068],
@@ -1169,7 +1441,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06163592, 11.12660044],
@@ -1182,7 +1458,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06171114, 11.1265294],
@@ -1195,7 +1475,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06176934, 11.12644164],
@@ -1208,7 +1492,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06184416, 11.12636973],
@@ -1221,7 +1509,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06191891, 11.12629767],
@@ -1234,7 +1526,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06199367, 11.12622561],
@@ -1247,9 +1543,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 23, "count": 3, "aheadM": 42.1994, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.06206842, 11.12615355],
@@ -1262,7 +1562,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06214317, 11.12608149],
@@ -1275,7 +1579,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06221792, 11.12600943],
@@ -1288,7 +1596,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06228803, 11.12592898],
@@ -1301,7 +1613,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06236054, 11.12593946],
@@ -1314,7 +1630,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06243461, 11.12590976],
@@ -1327,7 +1647,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06249332, 11.12598109],
@@ -1340,7 +1664,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06253759, 11.12609391],
@@ -1353,7 +1681,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06258215, 11.12620645],
@@ -1366,7 +1698,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06263734, 11.12630869],
@@ -1379,7 +1715,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06269653, 11.12640627],
@@ -1392,7 +1732,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06275572, 11.12650385],
@@ -1405,7 +1749,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06281492, 11.12660143],
@@ -1418,7 +1766,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06288261, 11.12668648],
@@ -1431,7 +1783,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06295279, 11.12676753],
@@ -1444,7 +1800,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06302297, 11.12684857],
@@ -1457,7 +1817,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06309431, 11.12692739],
@@ -1470,7 +1834,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06316811, 11.12700146],
@@ -1483,7 +1851,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06324709, 11.12706312],
@@ -1496,7 +1868,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06332704, 11.12712247],
@@ -1509,7 +1885,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06340807, 11.12717838],
@@ -1522,7 +1902,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.0634918, 11.12722568],
@@ -1535,7 +1919,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06357553, 11.12727297],
@@ -1548,7 +1936,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06365926, 11.12732027],
@@ -1561,7 +1953,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06374299, 11.12736756],
@@ -1574,7 +1970,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06382672, 11.12741486],
@@ -1587,7 +1987,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.0639106, 11.12746161],
@@ -1600,7 +2004,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06399453, 11.12750818],
@@ -1613,9 +2021,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 26, "count": 3, "aheadM": 43.7997, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.06407845, 11.12755475],
@@ -1628,7 +2040,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06416238, 11.12760132],
@@ -1641,7 +2057,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06424631, 11.12764789],
@@ -1654,7 +2074,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06433024, 11.12769445],
@@ -1667,7 +2091,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06434502, 11.12778822],
@@ -1680,7 +2108,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06433658, 11.12790011],
@@ -1693,7 +2125,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.0643155, 11.12802612],
@@ -1706,7 +2142,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06429443, 11.12815212],
@@ -1719,7 +2159,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06427335, 11.12827812],
@@ -1732,7 +2176,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06425228, 11.12840413],
@@ -1745,9 +2193,13 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
       "cues": [
         { "kind": "turn", "index": 29, "count": 1, "aheadM": 43.2, "vibrate": true }
-      ]
+      ],
+      "pen": null
     },
     {
       "fix": [46.0642312, 11.12853013],
@@ -1760,7 +2212,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06421013, 11.12865614],
@@ -1773,7 +2229,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06418877, 11.12878204],
@@ -1786,7 +2246,11 @@
       "lost": false,
       "arrived": false,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.06416787, 11.1289081],
@@ -1799,7 +2263,11 @@
       "lost": false,
       "arrived": true,
       "rejoin": null,
-      "cues": [{ "kind": "arrived", "vibrate": true }]
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [{ "kind": "arrived", "vibrate": true }],
+      "pen": null
     },
     {
       "fix": [46.0641407, 11.1289424],
@@ -1812,7 +2280,11 @@
       "lost": false,
       "arrived": true,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     },
     {
       "fix": [46.0641407, 11.1289424],
@@ -1825,7 +2297,11 @@
       "lost": false,
       "arrived": true,
       "rejoin": null,
-      "cues": []
+      "waiting": false,
+      "joinedAtM": null,
+      "route": null,
+      "cues": [],
+      "pen": null
     }
   ]
 }

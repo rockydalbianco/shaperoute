@@ -160,6 +160,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-419 — I 1000 disegni del catalogo e la selezione (Explore, parte B)**
+  (2026-11-08; numeri dal Coordinatore, ADR-0347 **proposto**; sessione
+  avviata dal Coordinatore su «Sì, avviale» dell'utente). Proposta, solo
+  documenti: uno strumento nuovo in `tools/` che usa `seed_catalog` senza
+  toccarlo, circa 1000 casi città × forma/parola × distanza (14 città del
+  seme con tutte le 17 forme, le altre italiane e le europee con un nucleo),
+  una zona per città da Overpass a lotti piccoli con l'attesa dello slot, i
+  683 disegni del 2026-10 fra i candidati, filtro ≥ 0,90 / ±10% / ripassi
+  ≤ 10% / niente `motorway`-`trunk`, pagina di revisione in SVG, **la scelta
+  all'utente** (200–400, almeno 3 per città), i tenuti in
+  `catalog/seed/<città>.json`. Prossimo: la lista dei file al Coordinatore,
+  poi il codice su `feat/TASK-419-catalog-seed`. `tasks/TASK-419.md`.
 - **TASK-415 — Ski touring, lo scialpinismo «Record only»** (2026-11-08;
   numeri dal Coordinatore, ADR-0344 **proposto**; sessione avviata dal
   Coordinatore Sport). Parte 0, solo documenti: disegno e costo delle
@@ -177,6 +189,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   post; acceso con fasi e VAM, con un OTA col sì dell'utente.
   Prossimo: la lista della parte A (contratto, API, CHECK, profilo nascosto)
   al Coordinatore. `tasks/TASK-415.md`, `sports/skimo.md`.
+  Parte 0 in `main` (#932).
+  **Parte A in `main`** (#948, 2026-11-08, sul server):
+  `ski_touring` terzo sport «Record only» nel contratto (`RECORDED_SPORTS`,
+  le fixture), nell'API (`sports/ski_touring.py`: Strava `BackcountrySki`,
+  GPX `ski_touring`, senza record né gioco; `X-MuW-Reads`), la migrazione
+  `0057_ski_touring.sql` sul solo CHECK di `runs`, il profilo nascosto
+  nell'app (Apple `.crossCountrySkiing` 60, Health Connect
+  `EXERCISE_TYPE_SKIING` 61, verificati sulle librerie; nessuna riga in
+  «Settings») e l'orologio (`sports.json`, testi in inglese fino a B).
+  Impronta del motore neutra, iOS invariata. Server al commit 8e898de5 il
+  2026-11-08, col sì dell'utente: copia `shaperoute-2026-11-08T1718Z.dump`,
+  immagine di ritorno `shaperoute-api:before-task415`, migrazione 0057
+  applicata, `/health` ok. Nessun telefono registra ancora lo
+  scialpinismo: si accende con la parte B. Prossimo: parte B (lista al
+  Coordinatore prima del codice).
 - **TASK-414 — Carrozzina e passeggino ♿, forme semplici dove si spinge**
   (2026-11-08; numeri dal Coordinatore, ADR-0343 **proposto**; sessione
   avviata dal Coordinatore Sport). Parte 0, solo documenti: sei reti di
@@ -210,6 +237,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   calorie visibili, nascondibili; il video è il file vero di TASK-336
   (`expo-video`); meteo MET solo entro 3 ore; foglio come proposto; testi
   di B e D approvati. Prossimo: ordine e via delle parti dal Coordinatore.
+  **Parte B** (2026-11-08, via del Coordinatore): la pagina dal Feed, il
+  foglio con le quattro azioni (Like apre le sei reazioni, scelta
+  dell'utente) e il riepilogo; branch `feat/TASK-410-b-post-page`, solo
+  app; provata sul simulatore. Prossimo: merge, poi OTA col sì
+  dell'utente; C (`run_stats`) dopo.
+  **Parte B chiusa** (2026-11-08): #949 in `main` (08803c33); OTA di
+  produzione iOS gruppo `8b1af1b4`, commit `a0f38012`, runtime `6f8bba4c`
+  (con TASK-416 e TASK-408 C1; sì dell'utente «si confermo esatto» e «Sì,
+  OTA tutto»). Prossimo: parte C (`run_stats`), lista al Coordinatore
+  prima del codice; A è TASK-355 B.
 - **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
   Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
   La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo
@@ -244,6 +281,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   i due video del simulatore approvati dall'utente. Resta: l'OTA di produzione col sì
   dell'utente (la prepara il Coordinatore) e la prova sul telefono (due tocchi veloci su «+15°»
   ne contano uno nel simulatore).
+  **2026-11-06, in produzione**: parti A e B con l'OTA `6864a998`, dopo l'«ok produzione»
+  dell'utente. Resta solo la prova sul telefono (nel simulatore due tocchi veloci su «+15°»
+  ne contavano uno, e un trascinamento subito dopo un tocco a volte non partiva).
 - **TASK-401 — Le indicazioni a schermo bloccato** (2026-11-05; numeri dal
   Coordinatore, ADR-0335 «Proposto»; richiesta dell'utente «dai le indicazioni del
   percorso anche da iPhone bloccato con una notifica esterna», scelta «Live Activity, poi
@@ -348,6 +388,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `feat/TASK-370-a3-phone`; la unisce il Coordinatore a CI verde. **Prossimo**: A-flip alla
   build 1.1 (il pacchetto 2.0.0, `match` in `app.json`, il plugin nativo per
   `workoutSessionMirroringStartHandler`), poi la prova al polso; la parte B.
+- **TASK-370 B2 — Il percorso chiuso e i pezzi, in Swift** (2026-11-08; parte B2 del piano
+  in `tasks/TASK-370.md`, ADR-0314 «precisazione B2»; via del Coordinatore local_3f55a0e9).
+  Nuovi `WatchCore/Guide/Loop.swift` (`startAnywhere.ts`: il giro preso dove lo tocchi, la
+  svolta alla partenza ricalcolata) e `Pen.swift` (`penUp.ts`: penna su e giù fra lettere e
+  parti, a piedi, in bici, in canoa); `Navigator.swift` prende il percorso chiuso come
+  `navigator.ts` (`towardsJoin`). 12 tracce nuove (quadrato di 2 km: preso a metà, vicino alla
+  partenza, prima della fine, prima di un angolo, al passo della bici, contromano, da fuori
+  rotta; l'anello del nuoto; «IO» con parola, a parti, in bici, in canoa), 26 in tutto; ogni
+  costante legata. Impronta iOS `6f8bba4c`. **Prossimo**: B3, l'orologio da solo.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.
@@ -952,6 +1001,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   limite noto nel task file: 3D a freddo può dare il video giallo di
   riserva dopo 15 s. L'OTA la pubblica il Coordinatore dopo il sì
   dell'utente.
+  **Parte C1** (2026-11-06, branch `feat/TASK-408-c1-edit-sheet`): il
+  foglio «Edit video» con stile (più «2D», fondo scuro: scelta dell'utente),
+  animale, colore della linea (cinque, blocco `videoLine` nei token) ed
+  emoji lungo il percorso e alla fine; provato nel simulatore (video
+  all'utente). Prossimo: C2 (scene, finale, camera dietro, anteprima);
+  B2 quando c'è l'elefante.
 - **TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e
   calendario** (ADR-0341 **proposto**; numeri dal Coordinatore il
   2026-11-06). Dalla segnalazione dell'utente «Start workout non fa nulla»
@@ -961,10 +1016,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   PR da `docs/TASK-411-gym-plans-proposal`. Parti: A griglia, B calendario e
   guida, C schede (migrazione), D privacy; ogni lista al Coordinatore.
   `tasks/TASK-411.md`.
+  2026-11-08: **parte E in `main`** (#941, `512e916a`): un omino animato e
+  una mini guida per ogni esercizio, in cinque lingue; OTA col sì.
   2026-11-08: **parte A in `main`** (#930, `a56f78c5`): «+ Exercise» a
   griglia, prima gli 8 gruppi muscolari poi i loro esercizi; la ricerca
   cerca in tutti. Solo JavaScript; OTA col sì. Prossimo: parte E (omini e
   guide, richiesta dell'utente del 2026-11-07) dopo il suo ok di lista, poi B.
+  2026-11-08: parte E in PR (#941); **parte B scritta** su
+  `feat/TASK-411-b-gym-calendar` (`GET /me/gym-calendar`, la guida in «Draw»,
+  il calendario del mese, anche dal riquadro 🏋️ del proprio profilo), PR dopo
+  la #941. Server e OTA col sì dell'utente.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta
@@ -3536,6 +3597,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuoto, in Salute / Health Connect, nel post del Feed e nella riga di «My
   activities». Parte B (battito e zone) nella 1.0.3, sopra i lettori di
   TASK-345 C e TASK-374 D. `tasks/TASK-409.md`.
+  2026-11-08: parte A in `main` (#922, merge `3bf2802d`, impronta iOS
+  6f8bba4c invariata) e in produzione: OTA `fc8aa133` (solo iOS, col sì
+  dell'utente). Prossimo: la parte B nella 1.0.3, dopo TASK-345 C e
+  TASK-374 D.
 
 ## Completato
 

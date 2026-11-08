@@ -119,8 +119,11 @@ describe("the post", () => {
     await screen.findByText("Send to Strava");
   });
 
-  it("offers the animals in «Character», none chosen when the post opens (TASK-408)", async () => {
+  it("offers the animals in «Character», in «Edit video», none chosen when the post opens (TASK-408)", async () => {
     await shown(<SharePost run={RUN} onClose={() => {}} />);
+    expect(screen.queryByText("Character")).toBeNull();
+    expect(screen.getByText("Night · No animal")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId("edit-video-open"));
     expect(screen.getByText("Character")).toBeOnTheScreen();
     expect(screen.getByRole("radio", { name: "No animal" })).toBeChecked();
     for (const name of ["Horse", "White horse", "Stag", "Fox", "Shiba Inu", "Alpaca"]) {
@@ -129,6 +132,8 @@ describe("the post", () => {
     await fireEvent.press(screen.getByRole("radio", { name: "Fox" }));
     expect(screen.getByRole("radio", { name: "Fox" })).toBeChecked();
     expect(screen.getByRole("radio", { name: "No animal" })).not.toBeChecked();
+    await fireEvent.press(screen.getByTestId("edit-video-done"));
+    expect(screen.getByText("Night · Fox")).toBeOnTheScreen();
     await screen.findByText("Send to Strava");
   });
 

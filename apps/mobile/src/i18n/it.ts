@@ -1212,6 +1212,17 @@ export const IT: Table = {
     "Nuovo livello: {figure} · {exercise} {value}",
   // src/gym/Leaderboard.tsx (TASK-385 F)
   "Gym leaderboard · {month}": "Classifica palestra · {month}",
+  "Pick an exercise from the grid": "Scegli un esercizio dalla griglia",
+  "Log each set: the rest starts by itself":
+    "Segna ogni serie: il recupero parte da solo",
+  "«Save»: calories, milestones and leaderboard":
+    "«Salva»: calorie, traguardi e classifica",
+  "Last workout: {when} · {time}": "Ultimo allenamento: {when} · {time}",
+  "This month: 1 time": "Questo mese: 1 volta",
+  "This month: {n} times": "Questo mese: {n} volte",
+  "Gym calendar": "Calendario palestra",
+  "{n} times · {time}": "{n} volte · {time}",
+  Workout: "Allenamento",
   "Only sets logged live count.":
     "Contano solo le serie segnate durante l'allenamento.",
   // src/screens/ChooseScreen.tsx (TASK-375)
@@ -1658,6 +1669,19 @@ export const IT: Table = {
   Donkey: "Asino",
   Alpaca: "Alpaca",
 
+  // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
+  "2D": "2D",
+  "Edit video": "Modifica video",
+  "Line colour": "Colore della linea",
+  "Along the way": "Lungo il percorso",
+  "At the end": "Alla fine",
+  Nothing: "Niente",
+  Yellow: "Giallo",
+  "Light blue": "Azzurro",
+  Pink: "Rosa",
+  Green: "Verde",
+  White: "Bianco",
+
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concorso MuW",
   "The post with the most reactions wins.": "Vince il post con più reazioni.",
@@ -1958,6 +1982,12 @@ export const IT: Table = {
   "No drawings found": "Nessun disegno trovato",
   "Try other words, or change the filters.": "Prova altre parole, o cambia i filtri.",
 
+  // src/feed/PostSheet.tsx, PostSettings.tsx, postSections.ts (TASK-410: approved 2026-11-07)
+  Like: "Mi piace",
+  "Edit & run": "Modifica e corri",
+  "Post settings": "Impostazioni del post",
+  Summary: "Riepilogo",
+
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Percorso creato da MuW – pedalalo tu",
   "Route created by MuW – run it yourself": "Percorso creato da MuW – corrilo tu",
@@ -2020,4 +2050,41 @@ export const IT: Table = {
     "Previsione meno recente: MET Norway non risponde.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Meteo: MET Norway (CC BY 4.0) · Stazioni: OpenSkiMap.org, © i contributori di OpenStreetMap",
+
+  // src/explore/CatalogScreen.tsx, CatalogEntry.tsx, CatalogCard.tsx,
+  // CatalogGrid.tsx, CatalogFilterSheet.tsx, catalog.ts (TASK-420: the catalog)
+  Catalog: "Catalogo",
+  "{count} drawing in {cities} cities · filters, search":
+    "{count} disegno in {cities} città · filtri, ricerca",
+  "{count} drawings in {cities} cities · filters, search":
+    "{count} disegni in {cities} città · filtri, ricerca",
+  "{count} drawings · {cities} cities": "{count} disegni · {cities} città",
+  "Search by name: heart, CIAO, Milan…": "Cerca per nome: cuore, CIAO, Milano…",
+  Country: "Paese",
+  City: "Città",
+  Category: "Categoria",
+  Nearest: "Più vicini",
+  Best: "Più belli",
+  Shortest: "Più corti",
+  Any: "Qualsiasi",
+  "Loading more…": "Ne arrivano altri…",
+  "No drawings match": "Nessun disegno corrisponde",
+  "Change the filters, or clear them to see every drawing.":
+    "Cambia i filtri, o cancellali per vedere tutti i disegni.",
+  "The drawings are planned at {distances}.":
+    "I disegni sono pianificati a {distances}.",
+  "Show {count} drawing": "Mostra {count} disegno",
+  "Show {count} drawings": "Mostra {count} disegni",
+  Monuments: "Monumenti",
+  Holidays: "Feste",
+  Italy: "Italia",
+  "United States": "Stati Uniti",
+  Netherlands: "Paesi Bassi",
+  Spain: "Spagna",
+  "United Arab Emirates": "Emirati Arabi Uniti",
+  Portugal: "Portogallo",
+  "United Kingdom": "Regno Unito",
+  France: "Francia",
+  Australia: "Australia",
+  Japan: "Giappone",
 };

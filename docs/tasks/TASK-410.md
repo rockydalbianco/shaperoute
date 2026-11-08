@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: Proposta, scelte dell'utente chiuse il 2026-11-07; il codice parte col via del Coordinatore
+**Stato**: In lavorazione — parte B fatta e pubblicata (2026-11-08); A è TASK-355 B; prossima C, poi D ed E
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -329,6 +329,86 @@ Le parti elencano i loro file quando partono.
 Canvas privato, quattro tavole (cima della pagina; le sezioni; il foglio
 aperto su un proprio post; un post vecchio di un altro, senza `stats`):
 https://claude.ai/artifact/AoKBE6wBXbbzvZvndRERk9
+
+## Parte B — la pagina, il foglio, il riepilogo (2026-11-08)
+
+Via del Coordinatore il 2026-11-08 (A e B in parallelo, poi C). Branch
+`feat/TASK-410-b-post-page`, solo app, esce con un OTA col sì dell'utente.
+`postSections.ts` e `postMetrics.ts`, previsti nella parte D, passano in B
+(Coordinatore): qui costruiscono il solo riepilogo, D aggiunge le sezioni.
+
+**7. Il tasto «Like»** (scelta nuova, 2026-11-08): l'app non ha una
+reazione 👍 (le sei sono il cuore Sgrava, 🔥 👏 💪 😂 😮), e aggiungerla
+vorrebbe server e API. **Risposta dell'utente: «Apre le sei».** Il tocco su
+«Like» apre sopra la barra le sei reazioni di `DrawingReactions`, già
+aperte (`barAtStart`); un altro tocco le chiude.
+
+Cosa fa:
+
+- Il tocco su un post di un membro nel Feed apre `PostPage` (un `Modal` a
+  tutto schermo) invece del disegno sulla mappa; «‹» torna al Feed. Gli
+  esempi aprono ancora il percorso sulla mappa.
+- In alto la lettera dell'autore a 40 pt (`Avatar`; la foto arriva con
+  TASK-355 B), nome, luogo · giorno · sport, il «…» sui post degli altri.
+- Il disegno fermo (`RouteMap`), senza ▶: il video arriva con TASK-336.
+  Palestra, piscina e post senza linea non hanno la finestra.
+- Titolo, descrizione, poi le card di `postSections` (oggi il riepilogo:
+  distanza, tempo, passo o velocità, calorie; una riga senza valore non
+  c'è, una card vuota non c'è).
+- `PostSheet`: barra fissa con 👍 Like, 💬 Comment (col numero), ↗ Share
+  (solo sui propri), ✏️ Edit & run (non su neve, palestra, piscina). Sui
+  propri post si trascina in su (o si tocca la maniglia) e mostra
+  `PostSettings`: chi la vede, titolo, descrizione, «Save». La corsa si
+  trova fra `GET /me/drawings` per id e si salva con `DrawingsDoor.choose`,
+  come in «My activities». «Show heart rate» arriva con TASK-345 B.
+- «Edit & run» passa la linea del post a `editTrackOf` di `App.tsx`
+  (TASK-369) con una porta nuova, `editRunDoor.ts`.
+
+Deciso dall'agente su delega: le icone sono le emoji del brief (l'app non
+ha icone né SVG); «Comment» riusa la chiave che c'era («Commento» in
+italiano, non «Commenta»); i testi del video («Play the video», «Pause the
+video», «Full screen») e «Show heart rate» non entrano in B, perché nessuno
+li mostrerebbe (il test delle tabelle li rifiuta): entrano con le loro parti.
+Un tocco sul disegno della pagina lo apre sulla mappa come prima, con la
+sua card («Start», «Export GPX», «Send to a friend», «Edit the drawing»):
+senza, quelle azioni non si sarebbero più raggiunte dal Feed (la CI lo ha
+mostrato con tre test dell'app).
+
+File toccati (parte B):
+
+```
+apps/mobile/src/feed/PostPage.tsx            (nuovo)
+apps/mobile/src/feed/PostSheet.tsx           (nuovo)
+apps/mobile/src/feed/PostSettings.tsx        (nuovo)
+apps/mobile/src/feed/postSections.ts         (nuovo)
+apps/mobile/src/feed/editRunDoor.ts          (nuovo)
+apps/mobile/src/sports/postMetrics.ts        (nuovo)
+apps/mobile/src/feed/PostPage.test.tsx       (nuovo)
+apps/mobile/src/feed/postSections.test.ts    (nuovo)
+apps/mobile/src/screens/FeedScreen.tsx
+apps/mobile/src/screens/FeedScreenPosts.test.tsx
+apps/mobile/__tests__/AppFeedDrawing.test.tsx
+apps/mobile/__tests__/AppDrawingStart.test.tsx, AppDrawAgain.test.tsx, AppEditDrawing.test.tsx
+apps/mobile/src/social/DrawingReactions.tsx  (prop `barAtStart`)
+apps/mobile/App.tsx                          (la porta di «Edit & run»)
+apps/mobile/src/i18n/{it,es,de,fr}.ts        (Like, Edit & run, Post settings, Summary)
+docs/tasks/TASK-410.md, docs/STATUS.md, docs/DECISIONS.md (ADR-0340)
+```
+
+Provata sul simulatore (Expo Go, 2026-11-08) con un post completo di un
+altro (riepilogo di quattro righe, Like ed Edit & run) e un post senza dati
+proprio (palestra: solo il tempo, niente mappa né Edit & run; Share e
+impostazioni trascinando in su). Schermate in `out/TASK-410-b/` del
+worktree.
+
+**Esito della parte B** (2026-11-08): #949 in `main` (08803c33), dopo un
+giro rosso della CI (un import vietato in `sports/` e tre test dell'app
+che aprivano la mappa dal Feed: da qui il tocco sul disegno). OTA di
+produzione iOS: gruppo `8b1af1b4-8365-490c-ad74-00df811b9254`, update
+`01a1bc27-a1fc-7961-a799-713e3aca2e42`, commit `a0f38012`, runtime
+`6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`; con TASK-416 e TASK-408 C1.
+Sì dell'utente: «si confermo esatto» (parte B) e «Sì, OTA tutto» (nella
+sessione del Coordinatore).
 
 ## Esito
 

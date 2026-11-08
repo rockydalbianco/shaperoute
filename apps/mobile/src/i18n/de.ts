@@ -1984,6 +1984,12 @@ export const DE: Table = {
   "Try other words, or change the filters.":
     "Versuche andere Wörter oder ändere die Filter.",
 
+  // src/feed/PostSheet.tsx, PostSettings.tsx, postSections.ts (TASK-410: approved 2026-11-07)
+  Like: "Gefällt mir",
+  "Edit & run": "Bearbeiten und laufen",
+  "Post settings": "Beitragseinstellungen",
+  Summary: "Übersicht",
+
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Route von MuW – fahr sie selbst",
   "Route created by MuW – run it yourself": "Route von MuW – lauf sie selbst",

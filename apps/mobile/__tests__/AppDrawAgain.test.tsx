@@ -172,6 +172,8 @@ test("a member's drawing gives «Draw» its shape, the drawing left for good", a
   store.kept.set(SESSION_KEY, JSON.stringify(session));
   await onFeed();
   await fireEvent.press(await screen.findByText(String(feed.posts[0].title)));
+  // The page of the post (TASK-410): a tap on its drawing opens the map.
+  await fireEvent.press(await screen.findByTestId("post-map"));
   expect(await screen.findByText(String(drawing.description))).toBeOnTheScreen();
 
   await fireEvent.press(screen.getByRole("button", { name: "Draw it near me" }));
@@ -215,6 +217,8 @@ test.each([
   });
   await onFeed();
   await fireEvent.press(await screen.findByText(String(feed.posts[0].title)));
+  // The page of the post (TASK-410): a tap on its drawing opens the map.
+  await fireEvent.press(await screen.findByTestId("post-map"));
   expect(await screen.findByText(String(drawing.description))).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: "Draw it near me" })).toBeNull();

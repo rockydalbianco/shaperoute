@@ -1972,6 +1972,12 @@ export const ES: Table = {
   "Try other words, or change the filters.":
     "Prueba otras palabras o cambia los filtros.",
 
+  // src/feed/PostSheet.tsx, PostSettings.tsx, postSections.ts (TASK-410: approved 2026-11-07)
+  Like: "Me gusta",
+  "Edit & run": "Editar y correr",
+  "Post settings": "Ajustes de la publicación",
+  Summary: "Resumen",
+
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Ruta creada por MuW – recórrela tú",
   "Route created by MuW – run it yourself": "Ruta creada por MuW – córrela tú",

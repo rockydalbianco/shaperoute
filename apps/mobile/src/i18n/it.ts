@@ -1958,6 +1958,12 @@ export const IT: Table = {
   "No drawings found": "Nessun disegno trovato",
   "Try other words, or change the filters.": "Prova altre parole, o cambia i filtri.",
 
+  // src/feed/PostSheet.tsx, PostSettings.tsx, postSections.ts (TASK-410: approved 2026-11-07)
+  Like: "Mi piace",
+  "Edit & run": "Modifica e corri",
+  "Post settings": "Impostazioni del post",
+  Summary: "Riepilogo",
+
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Percorso creato da MuW – pedalalo tu",
   "Route created by MuW – run it yourself": "Percorso creato da MuW – corrilo tu",

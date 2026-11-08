@@ -1,9 +1,9 @@
 # TASK-424 — I dati dal vivo per ogni sport e «Share live activity»
 
 **Stato**: In corso · parte 0 pronta (scelte dell'utente tutte prese il
-2026-11-09); prossima A1
+2026-11-08); prossima A1
 **Fase**: 5 · **Branch**: `docs/TASK-424-live-share` (parte 0) · **ADR**:
-ADR-0352 · numeri dal Coordinatore (2026-11-09)
+ADR-0352 · numeri dal Coordinatore (2026-11-08)
 
 ## Obiettivo
 
@@ -81,7 +81,7 @@ battito quindi si vede solo con quella build.
 5. **Battito nella palestra e in piscina**: va con TASK-385 G e TASK-409 B
    (che lo stanno facendo); qui solo se resta qualcosa.
 
-**Deciso dall'utente il 2026-11-09** («Sì, tre su Map»): la pagina «Map»
+**Deciso dall'utente il 2026-11-08** («Sì, tre su Map»): la pagina «Map»
 resta con i suoi tre numeri (distanza, passo o velocità, tempo) e il
 battito; «Data» è la pagina con tutti i dati di ogni sport, battito
 compreso (punto 1).
@@ -156,18 +156,18 @@ dell'API (conferma email, password) sono il modello per un link pubblico.
 
 ### Scelte di prodotto per l'utente (una alla volta)
 
-Tutte prese dall'utente il 2026-11-09, una per volta.
+Tutte prese dall'utente il 2026-11-08, una per volta.
 
-1. **Chi può ricevere il link** — **deciso dall'utente il 2026-11-09**
+1. **Chi può ricevere il link** — **deciso dall'utente il 2026-11-08**
    («Sì, chiunque lo abbia»): chiunque abbia il link, senza app e senza
    account; si manda a chi si vuole.
-2. **Quanto dura il link** — **deciso dall'utente il 2026-11-09** («Sì,
+2. **Quanto dura il link** — **deciso dall'utente il 2026-11-08** («Sì,
    così»): vale fino alla fine dell'attività; poi la pagina mostra
    «Finished» con il riepilogo e il percorso per 1 ora, poi il link scade e
    i punti si cancellano; al massimo 24 ore dall'inizio in ogni caso (anche
    se il telefono si spegne). Uno stop dall'app fa scadere il link e
    cancella i punti subito.
-3. **Cosa vede chi lo apre** — **deciso dall'utente il 2026-11-09**
+3. **Cosa vede chi lo apre** — **deciso dall'utente il 2026-11-08**
    («Esatta e col battito»): la posizione esatta, non sfocata, e il battito
    quando un orologio lo manda, oltre a distanza, tempo, passo o velocità,
    dislivello, calorie e la fine. Il battito è un dato di salute (art. 9
@@ -175,37 +175,37 @@ Tutte prese dall'utente il 2026-11-09, una per volta.
    server solo durante la condivisione e si cancella con i punti; la
    privacy lo nomina.
 4. **Se parte da sola a ogni registrazione** — **deciso dall'utente il
-   2026-11-09** («Sì, col pulsante»): no, ogni volta col pulsante; nessuna
+   2026-11-08** («Sì, col pulsante»): no, ogni volta col pulsante; nessuna
    impostazione per farla partire da sola.
-5. **Come si manda** — **deciso dall'utente il 2026-11-09** («Sì, il
+5. **Come si manda** — **deciso dall'utente il 2026-11-08** («Sì, il
    foglio»): il foglio di condivisione del telefono (`Share` di React
    Native: WhatsApp, SMS, Mail, «Copia»), con una riga breve e il link.
-6. **Chi può condividere** — **deciso dall'utente il 2026-11-09** («Sì,
+6. **Chi può condividere** — **deciso dall'utente il 2026-11-08** («Sì,
    serve»): serve l'account per creare il link (legato a chi lo crea, con
    un limite contro gli abusi, fermabile da un altro telefono, cancellato
    con l'account); senza account il pulsante invita ad entrare. Chi riceve
    il link non ha bisogno di nulla (scelta 1).
-7. **Piscina e palestra** — **deciso dall'utente il 2026-11-09** («Subito
+7. **Piscina e palestra** — **deciso dall'utente il 2026-11-08** («Subito
    con gli altri»): la condivisione arriva insieme agli sport col GPS, non
    dopo. La pagina, senza mappa, mostra i dati (piscina: tempo, vasche
    stimate, calorie, battito; palestra: tempo, esercizio in corso, calorie,
    battito). Entrano nella parte B; la pubblicazione di B aspetta anche
    loro.
-8. **La mappa della pagina** — **deciso dall'utente il 2026-11-09** («Sì,
+8. **La mappa della pagina** — **deciso dall'utente il 2026-11-08** («Sì,
    così»): il file di MapLibre copiato sul sito (`site/live/`), alla stessa
    versione dell'app; solo le tile e i font da OpenFreeMap, che vede l'IP di
    chi apre la pagina ma non il token né la posizione. Una riga nella
    privacy del sito; `SITO.md` aggiornato nella parte A2.
 9. **I testi** in en/it/de/fr/es (pulsante, consenso, foglio, pagina,
-   privacy dell'app e del sito) — **approvati dall'utente il 2026-11-09**,
+   privacy dell'app e del sito) — **approvati dall'utente il 2026-11-08**,
    sotto in «Testi».
 10. **App Privacy e Data safety** — **proposta approvata dall'utente il
-    2026-11-09** («Sì, approvo»), sotto in «Privacy»; ogni aggiornamento
+    2026-11-08** («Sì, approvo»), sotto in «Privacy»; ogni aggiornamento
     delle etichette resta un sì a parte, prima dell'OTA di B.
 
 ### Testi
 
-**Tutti approvati dall'utente il 2026-11-09**: en e it («Sì, approvo»),
+**Tutti approvati dall'utente il 2026-11-08**: en e it («Sì, approvo»),
 poi de/fr/es («Sì, approvo»).
 
 **App**
@@ -437,7 +437,7 @@ Le liste delle parti A1, A2, B1, B2, C vanno al Coordinatore prima del codice.
 - Avvisi automatici al genitore (partenza, arrivo, «fermo da 10 minuti»).
 - Le corse di gruppo dal vivo.
 - Cambiare la striscia della pagina «Map» (l'utente l'ha voluta a tre
-  numeri, 2026-11-09).
+  numeri, 2026-11-08).
 
 ## Esito
 

@@ -462,7 +462,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
-- ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-09 · Accettato
+- ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 
 ---
 
@@ -470,7 +470,7 @@ lasciando le righe d'indice.
 
 ## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
 
-**Data**: 2026-11-09 · **Stato**: Accettato · **Task**: TASK-424 · deciso
+**Data**: 2026-11-08 · **Stato**: Accettato · **Task**: TASK-424 · deciso
 dall'agente su delega dell'utente (la tecnica); le scelte di prodotto e la
 privacy sono dell'utente e si scrivono in `tasks/TASK-424.md`
 

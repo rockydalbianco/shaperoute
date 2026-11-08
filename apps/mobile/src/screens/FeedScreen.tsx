@@ -26,6 +26,7 @@ import { FeedAd } from "../feed/FeedAd";
 import { FeedMapShooter } from "../feed/FeedMaps";
 import { drawingHeight, FeedPost } from "../feed/FeedPost";
 import { isShown, type ShownPost, shownPost } from "../feed/feedPosts";
+import { PostPage } from "../feed/PostPage";
 import { loadFeedTab, saveFeedTab } from "../feed/feedTabChoice";
 import { type FeedTab, feedTabName, FeedTabs } from "../feed/FeedTabs";
 import { SAMPLE_FEED, type SamplePost } from "../feed/sampleFeed";
@@ -171,7 +172,16 @@ export function FeedScreen({
         {openProblem}
       </Text>
     ) : null;
-  const shared = { active, ads, cardWidth, insetBottom: insets.bottom, open, onOpen };
+  // The page of a member's post, over the feed (TASK-410, ADR-0340).
+  const [page, setPage] = useState<ShownPost | null>(null);
+  const shared = {
+    active,
+    ads,
+    cardWidth,
+    insetBottom: insets.bottom,
+    openPost: setPage,
+    onOpen,
+  };
   return (
     <View style={StyleSheet.absoluteFill}>
       <FeedMapShooter width={cardWidth} height={drawingHeight(cardWidth)} />
@@ -273,6 +283,7 @@ export function FeedScreen({
           />
         )}
       </View>
+      {page !== null && <PostPage post={page} onClose={() => setPage(null)} />}
     </View>
   );
 }
@@ -298,7 +309,8 @@ type ListProps = {
   muwRoutes?: readonly MuwRoute[];
   onOpenMuw?: (route: MuwRoute) => void;
   onRefresh: () => void;
-  open: (drawing: ShownPost["drawing"]) => void;
+  /** Opens the page of a member's post (TASK-410). */
+  openPost: (post: ShownPost) => void;
   onOpen: (post: SamplePost) => void;
 };
 
@@ -317,7 +329,7 @@ function FeedList({
   muwRoutes = NO_MUW,
   onOpenMuw,
   onRefresh,
-  open,
+  openPost,
   onOpen,
 }: ListProps) {
   const { shown, signedIn, refreshing, refresh, more } = feed;
@@ -414,7 +426,7 @@ function FeedList({
               post={item.post}
               width={cardWidth}
               onOpen={() =>
-                isShown(item.post) ? open(item.post.drawing) : onOpen(item.post)
+                isShown(item.post) ? openPost(item.post) : onOpen(item.post)
               }
             />
           ) : ads.views === null ? null : (

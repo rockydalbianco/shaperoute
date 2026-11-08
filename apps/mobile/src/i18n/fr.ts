@@ -1960,6 +1960,12 @@ export const FR: Table = {
   "Try other words, or change the filters.":
     "Essaie d'autres mots ou change les filtres.",
 
+  // src/feed/PostSheet.tsx, PostSettings.tsx, postSections.ts (TASK-410: approved 2026-11-07)
+  Like: "J'aime",
+  "Edit & run": "Modifier et courir",
+  "Post settings": "Réglages de la publication",
+  Summary: "Résumé",
+
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Parcours créé par MuW – à toi de pédaler",
   "Route created by MuW – run it yourself": "Parcours créé par MuW – à toi de courir",

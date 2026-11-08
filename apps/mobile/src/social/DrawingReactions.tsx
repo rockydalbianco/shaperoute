@@ -42,6 +42,9 @@ type Props = {
   onSuperLiked?: () => void;
   /** What stays next to the reactions, on their row: the comments' button. */
   beside?: ReactNode;
+  /** The bar of the six open from the start: the page of a post opens it
+   * from its «Like» (TASK-410). */
+  barAtStart?: boolean;
 };
 
 /**
@@ -51,9 +54,14 @@ type Props = {
  * drawing, is the super like and asks for its comment. Without an account,
  * or on an API without reactions, only what is `beside`, in its place.
  */
-export function DrawingReactions({ drawingId, onSuperLiked, beside }: Props) {
+export function DrawingReactions({
+  drawingId,
+  onSuperLiked,
+  beside,
+  barAtStart = false,
+}: Props) {
   const reactions = useDrawingReactions(drawingId);
-  const [barOpen, setBarOpen] = useState(false);
+  const [barOpen, setBarOpen] = useState(barAtStart);
   const [writing, setWriting] = useState(false);
   // A count, not a flag: a double tap while the heart is up starts it again.
   const [hearts, setHearts] = useState(0);

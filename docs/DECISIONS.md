@@ -25334,6 +25334,7 @@ VAM. Apple `.crossCountrySkiing` (60) e Health Connect `EXERCISE_TYPE_SKIING`
 `runs_activity_check`: preferiti, corse di gruppo e `run_bests` restano
 com'erano. Il contratto dei percorsi (`contract.json`) e il motore non
 cambiano.
+
 ## ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km
 
 **Stato**: Proposto · 2026-11-08 · TASK-414. Le scelte dell'utente, il

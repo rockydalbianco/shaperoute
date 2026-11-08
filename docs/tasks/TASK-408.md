@@ -181,6 +181,10 @@ oggi:
 10. **I testi in cinque lingue** (2026-11-06): «Sì, approvo». Sono nella
    sezione «Testi approvati» qui sotto, compresa la riga dei crediti in
    tedesco, spagnolo e francese.
+11. **Com'è fatto lo stile «2D»** (2026-11-06, parte C1): «Fondo scuro». Il
+   fondo della notte senza mappa, niente velo e niente crediti della
+   mappa, la linea nel colore scelto. L'altra strada era il giallo di oggi
+   con la linea nera, dove il colore della linea non avrebbe contato.
 
 ## Domande aperte (una alla volta)
 
@@ -313,10 +317,23 @@ c'è già in «Share your run», quindi niente «Export video».
     È il comportamento di TASK-351, non nuovo di B1; la misura sul telefono
     è della parte E.
   - **B2**: l'elefante (il file lo scarica l'utente da Sketchfab, che chiede
-    un account), la riga dei crediti nei Termini (`about/content/*.ts`,
-    dopo la #908), la camera dietro l'animale sul 3D.
+    un account) e la riga dei crediti nei Termini (`about/content/*.ts`,
+    dopo la #908). La camera dietro l'animale sul 3D passa a C2.
 - **C — l'editor**: il foglio «Edit video», colori, emoji lungo il
-  percorso, scene, finale, lo stile 2D.
+  percorso, scene, finale, lo stile 2D. In due PR (ADR-0339, precisazione
+  C):
+  - **C1** (branch `feat/TASK-408-c1-edit-sheet`): il foglio «Edit video»
+    (dal basso, con «Done») aperto da una riga «Edit video» in «Share your
+    run», con sotto il riassunto delle scelte; dentro «Style» con il 2D,
+    «Character», «Line colour» (cinque colori) e le emoji «Along the way»
+    (tre, dove passa la linea) e «At the end» (sei, intorno al disegno).
+    Lista approvata dal Coordinatore il 2026-11-06, con
+    `videoPage.test.ts`, `StyleRow.test.tsx` e `videoStyle.test.ts` chiesti
+    lo stesso giorno. Provato nel simulatore (video in
+    `out/TASK-408/sim-c1/`, fuori dal repository).
+  - **C2**: «Scenes» (apertura, percorso, finale; riordino e spegnimento,
+    sempre 12 secondi), «Ending», la camera dietro l'animale sul 3D (tolta
+    da B2) e l'anteprima nel foglio.
 - **D — il prompt**: la tabella di parole nell'app e il riquadro; niente
   server.
 - **E — la prova sul telefono**: il tempo dell'esportazione con ogni
@@ -354,6 +371,18 @@ dal Coordinatore il 2026-11-06),
 `docs/STATUS.md`, `docs/DECISIONS.md`. Fuori dal repository:
 `out/TASK-408/` (i glTF scaricati, `shrink.mjs`, i .glb, la pagina di prova
 per il browser).
+
+Parte C1: `apps/mobile/src/share/EditVideoSheet.tsx` e `.test.tsx`,
+`LineColourRow.tsx`, `VideoEmojiRow.tsx`, `videoEdit.ts` e `.test.ts`
+(nuovi); `SharePost.tsx` e `.test.tsx`, `SharePostVideo.test.tsx`,
+`StyleRow.tsx` e `.test.tsx`, `videoStyle.ts` e `.test.ts`, `videoScene.ts`
+e `.test.ts`, `videoPage.ts` e `.test.ts` (i tre test `StyleRow.test.tsx`,
+`videoStyle.test.ts` e `videoPage.test.ts` aggiunti dal Coordinatore il
+2026-11-06); lo stile all'apertura resta «Night», anche con «2D» primo
+nella riga; `apps/mobile/src/theme/tokens.ts`
+(il blocco `videoLine`); `apps/mobile/src/i18n/{it,de,es,fr}.ts`;
+`apps/mobile/src/tabs/TabSwipeOwners.test.ts` (una riga in `ROWS`);
+`docs/tasks/TASK-408.md`, `docs/STATUS.md`, `docs/DECISIONS.md`.
 
 ## Criteri di accettazione
 

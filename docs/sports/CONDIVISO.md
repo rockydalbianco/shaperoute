@@ -201,6 +201,14 @@ tutto: è corto apposta.
 - **2026-11-05, chiusura di TASK-376.** Le deroghe di A e B sono diventate
   passi della ricetta (`COME-AGGIUNGERE.md`, segnati «(pilota)»). Gravel/MTB
   e Roller partono dalla ricetta corretta.
+- **2026-11-08, TASK-416 — i numeri di un giro dal profilo.** Il profilo
+  di uno sport ha il campo `rides?: true` (`sports/base.ts`): «i suoi numeri
+  sono quelli di un giro in bici». `isRide` (`navigation/ride.ts`) lo
+  legge, e da lui dipendono velocità e media in km/h, parziali in km/h,
+  voce ogni 10 km (5 mi), svolte dette 100 m prima e niente confronto del
+  singolo km. Oggi lo dicono bici, Gravel, MTB e Roller. Uno sport nuovo
+  che si registra come un giro aggiunge `rides: true` nel suo file, senza
+  toccare `navigation/`; senza il campo valgono i numeri della corsa (#947).
 
 ## Il banco e Overpass
 

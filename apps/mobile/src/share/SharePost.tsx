@@ -29,7 +29,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { CharacterRow } from "./CharacterRow";
+import { EditVideoSheet } from "./EditVideoSheet";
 import { MusicRow } from "./MusicRow";
 import { PostButton } from "./PostButton";
 import { POST_RATIO, PostImage } from "./PostImage";
@@ -54,12 +54,12 @@ import {
   stickersOf,
 } from "./stickers";
 import { StravaPostRow } from "./StravaPostRow";
-import { StyleRow } from "./StyleRow";
-import type { Character } from "./videoCharacter";
+import { characterName } from "./videoCharacter";
+import { FIRST_EDIT, type VideoEdit } from "./videoEdit";
 import { type VideoOutcome, videoProblem } from "./videoFile";
 import { hearMusic, type Music } from "./videoMusic";
 import { type VideoScene, videoScene } from "./videoScene";
-import type { VideoStyle } from "./videoStyle";
+import { styleName } from "./videoStyle";
 
 /** The share of the screen's height the post takes: the choices fit under it. */
 const POST_HEIGHT_SHARE = 0.5;
@@ -77,9 +77,9 @@ type Props = {
  * shared, the post goes to the API with its saved run (TASK-258), and
  * opens as it was the next time. «Export video» shares the same post as a
  * short video of the run drawing itself over the map of the run (TASK-295,
- * TASK-351), in the style chosen in «Style», with the track chosen in
- * «Music» (TASK-301), with the animal chosen in «Character» running the
- * line (TASK-408). A workout at the gym shares its yellow tile alone
+ * TASK-351), with the track chosen in «Music» (TASK-301), as chosen in
+ * «Edit video» (TASK-408): its style, the animal running the line, the
+ * line's colour, the emoji of the way and of the end. A workout at the gym shares its yellow tile alone
  * (TASK-385 part D): no line to draw, so no results, emoji, video nor
  * Strava. A swim in a pool shares its tile alone too (TASK-400 part C).
  */
@@ -125,10 +125,10 @@ function SharePage({ run, onClose }: Props) {
   const [problem, setProblem] = useState<string | null>(null);
   // The video's music, none when the post opens (TASK-301).
   const [music, setMusic] = useState<Music | null>(null);
-  // The video's style, «Night» when the post opens (TASK-351).
-  const [style, setStyle] = useState<VideoStyle>("night");
-  // The animal that runs the line, none when the post opens (TASK-408).
-  const [character, setCharacter] = useState<Character | null>(null);
+  // The video as «Edit video» makes it: «Night», no animal, the yellow
+  // line, no emoji of its own when the post opens (TASK-351, TASK-408).
+  const [edit, setEdit] = useState<VideoEdit>(FIRST_EDIT);
+  const [editing, setEditing] = useState(false);
   // The video being made, with its music, and how much of it is (TASK-295);
   // the map under it, and the post on yellow for when the map does not
   // come (TASK-351).
@@ -180,8 +180,8 @@ function SharePage({ run, onClose }: Props) {
     hearMusic(null);
     setMade(0);
     setVideo({
-      scene: videoScene(run, shown, stickers, style, character),
-      fallback: videoScene(run, shown, stickers, "paper", character),
+      scene: videoScene(run, shown, stickers, edit.style, edit),
+      fallback: videoScene(run, shown, stickers, "paper", edit),
       music,
     });
   }
@@ -309,8 +309,21 @@ function SharePage({ run, onClose }: Props) {
               </Text>
             )}
 
-            <StyleRow run={run} style={style} onChange={setStyle} />
-            <CharacterRow character={character} onChange={setCharacter} />
+            <Pressable
+              style={styles.editRow}
+              onPress={() => setEditing(true)}
+              accessibilityRole="button"
+              accessibilityHint={editSummary(edit)}
+              testID="edit-video-open"
+            >
+              <View style={styles.editWords}>
+                <Text style={styles.editTitle}>{t("Edit video")}</Text>
+                <Text style={styles.hint} numberOfLines={1}>
+                  {editSummary(edit)}
+                </Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </Pressable>
             <MusicRow music={music} onChange={setMusic} />
           </>
         )}
@@ -348,8 +361,31 @@ function SharePage({ run, onClose }: Props) {
           {!gym && <StravaPostRow runKey={run.key} caption={caption} onSent={keep} />}
         </View>
       </ScrollView>
+      {!gym && (
+        <EditVideoSheet
+          visible={editing}
+          run={run}
+          edit={edit}
+          onChange={setEdit}
+          onClose={() => setEditing(false)}
+        />
+      )}
     </View>
   );
+}
+
+/** What «Edit video» has chosen, in a line: the style, the animal, the
+ * emoji of the way and of the end. */
+function editSummary(edit: VideoEdit): string {
+  const parts = [
+    styleName(edit.style),
+    edit.character === null ? t("No animal") : characterName(edit.character),
+  ];
+  const emoji = [edit.along, edit.end].filter((e): e is string => e !== null);
+  if (emoji.length > 0) {
+    parts.push(emoji.join(" "));
+  }
+  return parts.join(" · ");
 }
 
 type ButtonProps = {
@@ -461,6 +497,30 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface,
   },
   emojiText: {
+    fontSize: fontSize.title,
+  },
+  editRow: {
+    minHeight: MIN_TAP_SIZE,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+  },
+  editWords: {
+    flex: 1,
+    gap: space.xs,
+  },
+  editTitle: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  chevron: {
+    color: color.textMuted,
     fontSize: fontSize.title,
   },
   actions: {

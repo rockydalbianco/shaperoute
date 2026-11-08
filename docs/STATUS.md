@@ -210,6 +210,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   calorie visibili, nascondibili; il video è il file vero di TASK-336
   (`expo-video`); meteo MET solo entro 3 ore; foglio come proposto; testi
   di B e D approvati. Prossimo: ordine e via delle parti dal Coordinatore.
+  **Parte B** (2026-11-08, via del Coordinatore): la pagina dal Feed, il
+  foglio con le quattro azioni (Like apre le sei reazioni, scelta
+  dell'utente) e il riepilogo; branch `feat/TASK-410-b-post-page`, solo
+  app; provata sul simulatore. Prossimo: merge, poi OTA col sì
+  dell'utente; C (`run_stats`) dopo.
 - **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
   Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
   La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo
@@ -964,6 +969,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `docs/TASK-417-my-image-video-proposal`. Prossimo: la parte B, quando C2
   di TASK-408 è chiusa, con la lista dei file al Coordinatore
   (`tasks/TASK-417.md`).
+  **Parte C1** (2026-11-06, branch `feat/TASK-408-c1-edit-sheet`): il
+  foglio «Edit video» con stile (più «2D», fondo scuro: scelta dell'utente),
+  animale, colore della linea (cinque, blocco `videoLine` nei token) ed
+  emoji lungo il percorso e alla fine; provato nel simulatore (video
+  all'utente). Prossimo: C2 (scene, finale, camera dietro, anteprima);
+  B2 quando c'è l'elefante.
 - **TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e
   calendario** (ADR-0341 **proposto**; numeri dal Coordinatore il
   2026-11-06). Dalla segnalazione dell'utente «Start workout non fa nulla»

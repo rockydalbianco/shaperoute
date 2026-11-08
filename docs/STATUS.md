@@ -160,6 +160,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-422 — La corsa a tre pagine: «Compass», la mappa grande che gira
+  dove punta il telefono** (2026-11-08; numero dal Coordinatore, ADR-0350).
+  In PR (`feat/TASK-422-compass-page`): «Compass» | «Map» | «Data», si apre
+  su «Map»; su «Compass» la scheda tiene solo i pulsanti e i tre nomi, la
+  mappa gira con la bussola (da fermi sempre, correndo se calibrata) o con
+  la traccia GPS, 4° e 400 ms di soglia; la freccia del nord alterna nord
+  in alto e direzione; lasciando la pagina la mappa torna com'era. Moduli
+  nuovi `navigation/runPage.ts`, `headingUp.ts`, `useCompass.ts`,
+  `map/useHeadingUpMap.ts`, con i test; `App.tsx` per poche righe; nessuna
+  dipendenza nuova. **Due testi nuovi nelle cinque lingue: il merge aspetta
+  il sì dell'utente**; poi la prova sul telefono e l'OTA col suo sì.
+  `tasks/TASK-422.md`.
 - **TASK-415 — Ski touring, lo scialpinismo «Record only»** (2026-11-08;
   numeri dal Coordinatore, ADR-0344 **proposto**; sessione avviata dal
   Coordinatore Sport). Parte 0, solo documenti: disegno e costo delle

@@ -29,6 +29,29 @@ test("with north up the arrow is upright, and says it turns the map back", async
   );
 });
 
+test("on the run's Compass page, heading-up, a tap puts north up even facing north (TASK-422)", async () => {
+  await render(
+    <NorthArrow
+      shown={0}
+      northUp={false}
+      upHint="Where you face"
+      onPress={jest.fn()}
+    />,
+  );
+  expect(screen.getByTestId("north-arrow").props.accessibilityHint).toBe(
+    "Turns the map north up",
+  );
+});
+
+test("on the run's Compass page, with north up, the hint is the page's (TASK-422)", async () => {
+  await render(
+    <NorthArrow shown={-30} northUp upHint="Where you face" onPress={jest.fn()} />,
+  );
+  expect(screen.getByTestId("north-arrow").props.accessibilityHint).toBe(
+    "Where you face",
+  );
+});
+
 test("the arrow is not the route's yellow: only the route is", async () => {
   await render(<NorthArrow shown={45} onPress={jest.fn()} />);
   const tip = StyleSheet.flatten(screen.getByText("▲").props.style);

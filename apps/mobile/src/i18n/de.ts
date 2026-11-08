@@ -253,6 +253,7 @@ export const DE: Table = {
   "North arrow": "Nordpfeil",
   "Turns the map north up": "Dreht die Karte nach Norden",
   "Turns the map like the drawing": "Dreht die Karte wie die Zeichnung",
+  "Turns the map where you face": "Dreht die Karte in deine Blickrichtung",
 
   // src/map/MapKindButton.tsx
   "Map type": "Kartentyp",
@@ -1108,6 +1109,7 @@ export const DE: Table = {
   Pause: "Pause",
   Music: "Musik",
   "Opens Spotify": "Öffnet Spotify",
+  Compass: "Kompass",
   Map: "Karte",
   Data: "Daten",
   "Auto-pause": "Auto-Pause",

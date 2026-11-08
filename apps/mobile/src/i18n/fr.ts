@@ -252,6 +252,7 @@ export const FR: Table = {
   "North arrow": "Flèche du nord",
   "Turns the map north up": "Met le nord en haut",
   "Turns the map like the drawing": "Tourne la carte comme le dessin",
+  "Turns the map where you face": "Tourne la carte vers où tu regardes",
 
   // src/map/MapKindButton.tsx
   "Map type": "Type de carte",
@@ -1099,6 +1100,7 @@ export const FR: Table = {
   Pause: "Pause",
   Music: "Musique",
   "Opens Spotify": "Ouvre Spotify",
+  Compass: "Boussole",
   Map: "Carte",
   Data: "Données",
   "Auto-pause": "Pause auto",

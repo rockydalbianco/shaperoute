@@ -20,6 +20,7 @@ import {
   setVoice,
   skipCountdown,
 } from "../navigation/runControl";
+import { runPage } from "../navigation/runPage";
 import { emptyTrack, type Track, type TrackFix } from "../navigation/trackRecorder";
 import { clearRun, startRun } from "../navigation/trackStore";
 import { color, fontSize, MIN_TAP_SIZE } from "../theme/tokens";
@@ -216,21 +217,71 @@ test("Stop is held: a touch only says so, a hold ends the run", async () => {
   expect(onStop).toHaveBeenCalledTimes(1);
 });
 
-test("Map and Data are two buttons as wide as the card, taller than a tap", async () => {
+test("Compass, Map and Data are three buttons as wide as the card, taller than a tap", async () => {
   await render(<LiveRun fixes={north(300)} />);
   expect(PAGE_TAB_HEIGHT).toBeGreaterThan(MIN_TAP_SIZE);
-  for (const name of ["Map", "Data"]) {
+  // Left to right (TASK-422), and the run opens on «Map».
+  expect(screen.getAllByRole("tab").map((tab) => tab.props.accessibilityLabel)).toEqual(
+    ["Compass", "Map", "Data"],
+  );
+  expect(screen.getByRole("tab", { name: "Map" }).props.accessibilityState).toEqual({
+    selected: true,
+  });
+  for (const name of ["Compass", "Map", "Data"]) {
     expect(screen.getByRole("tab", { name })).toHaveStyle({
       flex: 1,
       minHeight: PAGE_TAB_HEIGHT,
     });
   }
-  // The same two on «Data», where they slide the page back.
+  // The same three on «Data», where they slide the page back.
   await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
   expect(screen.getAllByRole("tab", { name: "Map" }).at(-1)).toHaveStyle({
     flex: 1,
     minHeight: PAGE_TAB_HEIGHT,
   });
+  expect(screen.getAllByRole("tab", { name: "Compass" })).toHaveLength(2);
+});
+
+test("Compass is the map alone: no number under it, only Pause and the three names (TASK-422)", async () => {
+  await render(<LiveRun fixes={north(300)} />);
+  expect(screen.getByLabelText("Distance: 0.30 km")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("tab", { name: "Compass" }));
+  expect(runPage()).toBe("compass");
+  expect(screen.queryByLabelText("Distance: 0.30 km")).toBeNull();
+  expect(screen.queryByLabelText(/Pace now/)).toBeNull();
+  expect(screen.queryByText("Next turn")).toBeNull();
+  expect(screen.getByLabelText("Pause")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Pocket mode")).toBeOnTheScreen();
+  expect(screen.getByRole("tab", { name: "Compass" }).props.accessibilityState).toEqual(
+    {
+      selected: true,
+    },
+  );
+  // Paused there, the numbers of the pause stay away too; Stop and Resume are there.
+  await fireEvent.press(screen.getByLabelText("Pause"));
+  expect(screen.queryByLabelText("Distance: 0.30 km")).toBeNull();
+  expect(screen.getByLabelText("Resume")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Stop")).toBeOnTheScreen();
+  // Back on «Map», the numbers again.
+  await fireEvent.press(screen.getByRole("tab", { name: "Map" }));
+  expect(screen.getByLabelText("Distance: 0.30 km")).toBeOnTheScreen();
+});
+
+test("from Data, Compass slides the page away and opens the map alone; the run over, Map is next", async () => {
+  const { unmount } = await render(<LiveRun fixes={north(300)} />);
+  await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+  await fireEvent.press(screen.getAllByRole("tab", { name: "Compass" }).at(-1)!);
+  await act(async () => {
+    jest.advanceTimersByTime(1000);
+  });
+  await waitFor(() => expect(runPage()).toBe("compass"));
+  expect(screen.queryByTestId("data-page")).toBeNull();
+  expect(screen.queryByLabelText("Distance: 0.30 km")).toBeNull();
+  // The card gone, the next run opens on «Map».
+  await act(async () => {
+    unmount();
+  });
+  expect(runPage()).toBe("map");
 });
 
 test("Music, across from Pocket on both pages, opens Spotify; not on a paused run", async () => {
@@ -430,9 +481,15 @@ test("at the end of a route only Finish is left", async () => {
   expect(onStop).toHaveBeenCalledTimes(1);
 });
 
-test("a swipe is sideways and long enough: left for Data, right for Map", () => {
+test("a swipe is sideways and long enough: left for the page on the right, right for the one on the left", () => {
+  // From «Map», where the run opens: «Data» on the right, «Compass» on the left (TASK-422).
   expect(swipedTo(-80, 5)).toBe("data");
-  expect(swipedTo(80, -5)).toBe("map");
+  expect(swipedTo(80, -5)).toBe("compass");
+  expect(swipedTo(80, -5, "data")).toBe("map");
+  expect(swipedTo(-80, 0, "compass")).toBe("map");
+  // Past the ends, nothing.
+  expect(swipedTo(80, 0, "compass")).toBeNull();
+  expect(swipedTo(-80, 0, "data")).toBeNull();
   // Too short, or more down than across.
   expect(swipedTo(-30, 0)).toBeNull();
   expect(swipedTo(-80, 60)).toBeNull();

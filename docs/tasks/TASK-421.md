@@ -84,6 +84,101 @@ A Levico la partenza del banco è al Lido: entro 550 m ci sono otto cancelli
 prima il motore attraversava (cuore da 5 km 0,92 → 0,81, stella da 3 km
 0,86 → 0,72): è il caso del task, non un difetto. Tempi uguali.
 
+## La sequenza sul server (dopo il «via server 973» del Coordinatore)
+
+Sì dell'utente: «Sì, ok server» (sessione del Coordinatore) e «Sì, dopo il
+merge» (questa sessione), 2026-11-08. Un comando ssh per volta, lanciato
+dall'utente dal Mac (`!` davanti); io leggo l'esito e do il successivo.
+Una pubblicazione alla volta: prima potrebbero passare TASK-419 e la #957.
+
+**A. Il server al `main` con la #973** (F.12, come gli aggiornamenti di prima)
+
+1. Stato e copia: `main` pulito sul server, dump del database, immagine di
+   ritorno.
+
+   ```bash
+   ssh root@188.245.9.220 'cd /root/shaperoute && git status --short | head -3 && git fetch -q origin && git log --oneline -1 origin/main'
+   ```
+
+   ```bash
+   ssh root@188.245.9.220 'cd /root/shaperoute/deploy && docker compose exec -T backup bash /backup.sh now && docker tag shaperoute-api shaperoute-api:before-task421 && df -h / | tail -1'
+   ```
+
+2. Codice, build prima e `up` dopo (pochi secondi di API ferma), salute.
+
+   ```bash
+   ssh root@188.245.9.220 'cd /root/shaperoute && git pull -q --ff-only && cd deploy && docker compose build -q api && docker compose up -d && sleep 25 && curl -s http://127.0.0.1:8000/health && docker compose logs api --tail 30 | grep -i "accounts\|schema\|migration"'
+   ```
+
+3. L'impronta nel container deve essere `34ef405997d9`.
+
+   ```bash
+   ssh root@188.245.9.220 'cd /root/shaperoute/deploy && docker compose exec -T api python -c "from shaperoute_api.route_store import engine_fingerprint; print(engine_fingerprint())"'
+   ```
+
+4. L'immagine dei download rifatta sulla nuova API (porta il motore nuovo:
+   senza, le zone uscirebbero coi cancelli).
+
+   ```bash
+   ssh root@188.245.9.220 "printf 'FROM shaperoute-api\nUSER root\nRUN apt-get update && apt-get install -y --no-install-recommends osmium-tool\nUSER shaperoute\n' | docker build -q -t shaperoute-prefetch -"
+   ```
+
+**B. Le zone foot** (F.15)
+
+5. Spazio e zone vecchie da parte (`prefetch_zones` salta una città «ready»).
+
+   ```bash
+   ssh root@188.245.9.220 'cd /root/shaperoute/data/cache && du -sh . && mkdir -p before-task421 && mv foot_*.graphml foot_*.pickle foot_*.zone.json.gz before-task421/ && ls before-task421 | wc -l'
+   ```
+
+6. Le italiane più Rovereto dall'estratto, staccato dalla ssh (circa un
+   minuto a città, memoria fino a 4 GB).
+
+   ```bash
+   ssh -f root@188.245.9.220 'cd /root/shaperoute && (setsid nohup docker run --rm --memory 4g --env-file deploy/.env -v /root/shaperoute/data/cache:/app/data/cache -v /srv/shaperoute/extracts:/extracts shaperoute-prefetch python -m shaperoute_api.prefetch_zones --preset italy Rovereto --extract /extracts/italy-260930-highways.osm.pbf --cache-dir /app/data/cache > data/prefetch-task421.log 2>&1 &)'
+   ```
+
+   Si segue finché «missing» è vuoto:
+
+   ```bash
+   ssh root@188.245.9.220 'tail -5 /root/shaperoute/data/prefetch-task421.log; ls /root/shaperoute/data/cache/foot_*.graphml 2>/dev/null | wc -l'
+   ```
+
+7. Le estere da Overpass (pausa e tetto: dopo pochi download rifiuta, si
+   rilancia più tardi; le italiane del preset sono già «ready»).
+
+   ```bash
+   ssh -f root@188.245.9.220 'cd /root/shaperoute && (setsid nohup docker run --rm --memory 4g --env-file deploy/.env -v /root/shaperoute/data/cache:/app/data/cache shaperoute-prefetch python -m shaperoute_api.prefetch_zones --preset featured --max-downloads 4 --cache-dir /app/data/cache > data/prefetch-task421-featured.log 2>&1 &)'
+   ```
+
+**C. Le zone del telefono** (80 minuti circa, dentro il container dell'API:
+non riavviare l'API finché gira)
+
+   ```bash
+   ssh -f root@188.245.9.220 'cd /root/shaperoute/deploy && (setsid nohup docker compose exec -T api nice -n 19 python -m shaperoute_api.phone_zone_api > ../data/phone-zones-task421.log 2>&1 &)'
+   ```
+
+**D. Gli esempi** (`draw_examples`, circa 35 minuti, dopo le zone)
+
+   ```bash
+   ssh -f root@188.245.9.220 'cd /root/shaperoute/deploy && (setsid nohup docker compose exec -T api python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 --preset italy --preset featured Rovereto > ../data/draw-examples-2026-11-08-task421.log 2>&1 &)'
+   ```
+
+   Alla fine «66 of 66»; una città «not found by the city search» si rifà
+   da sola per nome. Si segue con:
+
+   ```bash
+   ssh root@188.245.9.220 'tail -3 /root/shaperoute/data/draw-examples-2026-11-08-task421.log'
+   ```
+
+**E. Controllo**: dall'app, il percorso del 2026-11-08 non passa più dal
+cancello; `du -sh data/cache`. Dopo una settimana, `rm -r
+data/cache/before-task421`.
+
+**Rollback**: zone, `mv data/cache/before-task421/* data/cache/` e
+`docker compose restart api`; API, `docker tag shaperoute-api:before-task421
+shaperoute-api && docker compose up -d` (il dump del passo 1 per il database).
+
 ## Criteri di accettazione
 
 - [x] Un grafo finto con un cancello chiuso, uno aperto e uno pedonale: il

@@ -119,6 +119,7 @@ from shaperoute_api.recommended import (
 from shaperoute_api.request_log import RequestLog
 from shaperoute_api.route_store import RouteStore
 from shaperoute_api.run_gpx import with_type
+from shaperoute_api.run_stats import install_run_stats
 from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
@@ -385,6 +386,9 @@ def create_app(
     # The swims in a pool, saved without a track, and their lengths
     # (TASK-400); they need a token.
     install_pool_swims(app)
+    # The figures of a run for the page of its post: splits, elevation,
+    # cadence, calories (TASK-410 C); they need a token.
+    install_run_stats(app)
     # Up to three photos of a drawing, besides its map (TASK-208); they need
     # a token.
     install_drawing_photos(app)

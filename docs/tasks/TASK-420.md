@@ -96,6 +96,35 @@ d'ingresso, cuore e «Start» sulla scheda, l'ordine come interruttore.
    la pagina dopo; la scheda (testi, cuore, «Start»); il foglio dei
    filtri; l'ingresso in «Explore».
 
+## I dati: `catalog.json` e il seme
+
+`apps/mobile/src/explore/catalog.json` è un'**istantanea** di
+`catalog/seed/*.json`, scritta da:
+
+```
+node apps/mobile/scripts/catalog-data.mjs
+```
+
+da qualunque cartella (Node solo, nessuna dipendenza). Il seme resta la
+fonte: ogni volta che cambia, lo script si rilancia e il file nuovo va
+in PR con la riga «rigenerato da catalog/seed a `<commit>`».
+
+- **Chi lo rigenera**: chi cambia il seme. TASK-419 (i 1000 disegni),
+  quando aggiunge città o percorsi, rilancia lo script nella stessa PR o
+  in una PR dell'app subito dopo; il task file di TASK-419 lo dice (una
+  riga da aggiungere lì, dalla sua sessione). Una città nuova senza paese
+  nella tabella `COUNTRIES` dello script esce con la città sola: la
+  tabella si allunga nella stessa PR.
+- **Il limite**: 426 KB oggi (350 percorsi). **Oltre mezzo megabyte**
+  (circa 420 percorsi con l'anteprima a 48 punti) si passa ai dati
+  paginati dall'API, come dice ADR-0348 fra le alternative: lo script
+  scrive solo l'indice (senza anteprime) e la griglia chiede le anteprime
+  a pagine a un endpoint nuovo in `services/api/` (task a sé, lista al
+  Coordinatore). Fino a lì, il file viaggia con l'app.
+- `catalog.test.ts` controlla che il file sia coerente (id dell'API, una
+  forma o una parola, anteprima ≤ 48 punti, la chiave dei preferiti uguale
+  a `favoriteKey` sui punti interi del seme).
+
 ## Criteri di accettazione
 
 - [ ] In «Explore», sotto la ricerca, la scheda «Catalog» col conteggio;

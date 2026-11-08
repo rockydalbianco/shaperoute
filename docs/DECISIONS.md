@@ -25434,9 +25434,9 @@ città, in media 350 punti l'uno; l'API li conosce con id stabili
 - **I dati dall'API, paginati** (`GET /catalog?offset=`): nessun peso
   nell'app, ma un endpoint nuovo in `services/api/` (fuori dai confini
   del task), la pagina vuota senza rete e una richiesta a ogni filtro.
-  Si riprende se `catalog.json` supera il megabyte: lo script può allora
-  scrivere solo l'indice (senza anteprime) e la griglia chiedere le
-  anteprime a pagine.
+  Si riprende se `catalog.json` supera **mezzo megabyte** (limite fissato
+  col Coordinatore il 2026-11-08): lo script scrive allora solo l'indice
+  (senza anteprime) e la griglia chiede le anteprime a pagine.
 - **Leggere `catalog/seed/*.json` direttamente dall'app**: 2,5 MB di
   punti interi nel bundle e il bundler che guarda fuori da `apps/`.
 - **Una sezione dentro «Best near you»** invece di una pagina: la lista
@@ -25444,7 +25444,8 @@ città, in media 350 punti l'uno; l'API li conosce con id stabili
 - **Le mappe sotto le miniature** come in «Best near you»: una foto per
   scheda, centinaia di schede.
 
-**Seguiti**: i dati paginati dall'API oltre il megabyte; la partenza
+**Seguiti**: i dati paginati dall'API oltre mezzo megabyte; la partenza
 immediata da «Start» (`App.tsx`); le categorie dal catalogo delle forme
 quando TASK-418 le scrive; il rilancio di `catalog-data.mjs` a ogni seme
-nuovo di TASK-419 (una riga nel `README` del catalogo, di TASK-419).
+nuovo, da chi cambia il seme (TASK-419; una riga nel suo task file e nel
+`README` del catalogo, dalla sua sessione).

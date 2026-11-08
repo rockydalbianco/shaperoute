@@ -114,14 +114,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
   schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
   #962 · `tasks/TASK-411.md`
-- **TASK-412 — Documenti snelli** · questa PR: STATUS, DECISIONS e INDEX
-  archiviati parola per parola in `docs/archive/`. File: `CLAUDE.md`,
-  `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md`, `docs/archive/` ·
-  `tasks/TASK-412.md`
-- **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore,
-  `heights.py` condiviso) nella PR #957, approvata dall'utente per server e
-  `draw_examples`, aspetta «merge 957»; poi A2 e B. File: quelli della #957 ·
-  `tasks/TASK-413.md`
+- **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore) nella
+  PR #957, poi A2 e B. File: quelli della #957 · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·
   `tasks/TASK-414.md`

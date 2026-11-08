@@ -269,7 +269,7 @@ services/api/tests/test_snow_fingerprint.py       (nuovo)
 services/api/tests/fixtures/same_routes/5e374d843dda.json  (nuovo: la prova)
 apps/mobile/assets/engine/engine.zip              (rifatto, ultimo commit)
 docs/tasks/TASK-413.md, docs/sports/snowshoes.md
-docs/STATUS.md, docs/DECISIONS.md (aggiunta ad ADR-0342), a finestra di TASK-412 chiusa
+docs/STATUS.md, docs/DECISIONS.md (aggiunta ad ADR-0342): in una PR di soli documenti dopo il merge (regola del Coordinatore, 2026-11-08)
 ```
 
 Parti A2 e B: le liste qui sopra, da confermare al Coordinatore prima

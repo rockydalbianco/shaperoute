@@ -954,6 +954,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `feat/TASK-411-b-gym-calendar` (`GET /me/gym-calendar`, la guida in «Draw»,
   il calendario del mese, anche dal riquadro 🏋️ del proprio profilo), PR dopo
   la #941. Server e OTA col sì dell'utente.
+  2026-11-08: **parte C scritta** su `feat/TASK-411-c-gym-plans` (le schede
+  con i giorni, l'allenamento che le segue, i giorni saltati nel
+  calendario; migrazione 0060 in bozza), PR dopo la #955. Migrazione, server
+  e OTA col sì dell'utente; poi D (una riga di privacy, testo col suo sì).
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

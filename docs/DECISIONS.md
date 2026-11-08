@@ -25135,6 +25135,25 @@ chiede di nuovo quando cambia il numero delle attività dell'account (un
 allenamento appena salvato), non a ogni secondo. Un mese con un allenamento
 dice «Workout · {time}» invece di «1 times».
 
+**Precisazione C (2026-11-08, deciso dall'agente su delega dell'utente)**:
+l'allenamento dice la sua scheda con la **chiave** (`gym_sessions.plan_key`),
+non con un riferimento: può arrivare all'API prima della scheda, e una
+scheda eliminata lascia i suoi allenamenti come erano (senza nome). I giorni
+in API sono 1 lunedì–7 domenica, nel database sette bit. Una scheda mandata
+più vecchia di quella tenuta non la sostituisce (due telefoni dello stesso
+account: vince l'ultima modifica); eliminarne una che non c'è non è un
+errore. I giorni saltati contano da quando la scheda è arrivata all'API
+(`created_at`) fino a ieri, sul fuso chiesto; un allenamento libero non
+riempie il giorno di una scheda. Sul telefono le schede stanno in un file
+(`gym-plans.json`): una modifica o un'eliminazione aspetta lì finché l'API
+non l'ha, e la lista dell'API sostituisce solo quelle che il telefono non
+ha cambiato dopo. «Start workout» segue la prima scheda di oggi
+dell'account mostrato in «Draw»; l'allenamento copia la scheda quando
+comincia. Una serie conta per il primo esercizio della scheda dello stesso
+tipo ancora incompleto; finito un esercizio, quello dopo diventa quello in
+corso da solo, coi valori della scheda nei campi se non ci sono serie di
+prima.
+
 ## ADR-0338, aggiunta — La giornata di sci: stazione, modello e neve in una rotta a parte
 
 **Stato**: Attiva · 2026-11-08 · TASK-406 parte D1. Deciso dall'agente su

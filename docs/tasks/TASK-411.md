@@ -94,6 +94,21 @@ del profilo, solo con `own`) e `profile/ProfileHome.tsx` (la sola prop `own`,
 ok del Coordinatore il 2026-11-08: il riquadro compare anche sui profili
 degli altri, `UserProfilePage` resta com'è).
 
+**Parte C** (lista approvata dal Coordinatore il 2026-11-08; l'utente ha
+detto «ok va bene» a farla lo stesso giorno): server
+`migrations/0060_gym_plans.sql` (numero in bozza, il vero è il primo libero
+in `main` al merge), `shaperoute_api/gym_plans.py` (nuovo),
+`gym_sessions.py` (`plan`), `gym_calendar.py` (nome della scheda, giorni
+saltati), `app.py` (una riga), `tests/test_gym_plans.py` (nuovo);
+shared-types `src/gym.ts`, `fixtures/gym-plans.json` (nuovo),
+`fixtures/gym-calendar.json`, `test/gym.test.ts`; app `api/gymPlans.ts` e
+`.test.ts`, `gym/plans.ts`, `gym/plans.test.ts`, `gym/GymPlans.tsx`,
+`gym/GymPlanEditor.tsx`, `gym/GymPlans.test.tsx` (nuovi), `gym/workout.ts`,
+`gym/useWorkout.ts`, `gym/WorkoutScreen.tsx`, `gym/GymDrawGuide.tsx`,
+`gym/GymCalendar.tsx`, `i18n/{it,de,fr,es}.ts`; documenti
+`docs/tasks/TASK-411.md`, `docs/STATUS.md`, `docs/DECISIONS.md`,
+`docs/sports/gym.md`, `docs/API.md`, `docs/DATABASE.md`.
+
 ## Testi dell'interfaccia (approvati il 2026-11-06)
 
 | en | it | de | fr | es |
@@ -158,3 +173,15 @@ già. `{when}` è «Today», «Yesterday» o il giorno di `dayLabel`.
   toccato elenca i suoi allenamenti e uno col post lo apre. Senza il server
   nuovo (404) restano i tre passi e il calendario dice perché. I test del
   database li fa girare la CI (Docker spento sul Mac). Server e OTA col sì.
+- 2026-11-08: **parte C scritta** (`feat/TASK-411-c-gym-plans`), dopo
+  l'«ok va bene» dell'utente. Le schede: nome, giorni della settimana,
+  esercizi in ordine con serie e valori obiettivo; sul telefono anche senza
+  rete e sull'account (`GET/PUT/DELETE /me/gym-plans`, al massimo 20 da 30
+  esercizi, solo il proprietario). In «Draw» «Today: {plan}», che «Start
+  workout» segue, «Start without the plan» e «Plans ›» (elenco, «New plan»,
+  editor, «Delete plan» che chiede prima). L'allenamento di una scheda parte
+  dal primo esercizio coi valori già scritti, dice «Plan: {done}/{total}
+  sets» e passa da solo all'esercizio dopo; il salvataggio dice quale scheda
+  ha seguito. Il calendario scrive la scheda di ogni allenamento e mette un
+  pallino grigio nei giorni di una scheda passati senza di lei. Migrazione,
+  server e OTA col sì dell'utente; i test del database li fa la CI.

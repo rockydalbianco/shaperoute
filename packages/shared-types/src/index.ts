@@ -2686,4 +2686,5 @@ export interface OutfitTags {
 export interface OutfitShop {
   url: string | null;
 }
+export * from "./skiResorts.ts";
 export * from "./skiDays.ts";

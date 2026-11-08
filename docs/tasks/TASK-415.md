@@ -1,0 +1,165 @@
+# TASK-415 — Ski touring: lo scialpinismo «Record only»
+
+**Stato**: In corso — parte 0 (solo documenti) in PR.
+**Fase**: 4 · **Branch**: `docs/TASK-415-0-skimo` (parte 0), poi
+`feat/TASK-415-a-ski-touring-api`, `feat/TASK-415-b-…` ·
+**ADR**: ADR-0344 · numeri dal Coordinatore · sessione dello sport,
+avviata dal «Coordinatore Sport»
+
+## Obiettivo
+
+Chi va in scialpinismo registra la gita in MuW e ne riceve i numeri che
+contano: le fasi (salita, cambio pelli, discesa) con l'ora di ogni cambio,
+la VAM, la traccia colorata per pendenza del terreno con il tempo sopra i
+30°, la vetta raggiunta col suo nome e una collezione delle vette. Nessuna
+forma: è uno sport «Record only» (TASK-375, ADR-0319).
+
+## Contesto
+
+Il Coordinatore Sport, 2026-11-07: tre sport nuovi in parallelo (ciaspole,
+carrozzina/passeggino, scialpinismo), con la parte 0 di sola
+documentazione. L'utente, lo stesso giorno:
+
+- «OK SÌ»: lo scialpinismo è «Record only», tiene i dati importanti ed è
+  innovativo;
+- «Le prime 4 (a–d)»: (a) fasi automatiche, (b) VAM, (c) pendenza dal
+  modello Terrarium col tempo sopra i 30°, solo informativa, (d) la vetta da
+  OSM `natural=peak` e la collezione;
+- fuori, per ora: il video 3D, l'efficienza per battito, l'«Everest» della
+  stagione, le condizioni della neve, il timer del rientro.
+
+Da leggere: `docs/sports/skimo.md` (il disegno e i costi),
+`docs/sports/CONDIVISO.md`, `docs/sports/COME-AGGIUNGERE.md`,
+`tasks/TASK-375.md` (la categoria, le salite e gli impianti, i nomi dal
+server), ADR-0300 (le quote dalle tegole, parte G di TASK-347),
+`tasks/TASK-410.md` (`run_stats`, i numeri del post).
+
+## Scelte dell'utente (2026-11-07, una alla volta)
+
+1. **Nome ed emoji**: «Ski touring» 🏔️ — it Scialpinismo · de Skitour ·
+   fr Ski de randonnée · es Esquí de travesía. (Proposta accettata.)
+2. **Le metriche**: «Sì, così».
+   - A fine gita: in grande il D+; sotto D−, tempo in salita, tempo in
+     discesa, VAM media della salita (m/h), quota massima, km totali e
+     tempo totale; poi l'elenco delle fasi (salita, cambio pelli, discesa)
+     con ora e durata di ogni cambio, e la VAM di ogni salita.
+   - Durante la gita: VAM degli ultimi 5 minuti, D+ fin qui, fase attuale,
+     quota e tempo.
+   - Tempo sopra i 30° e vetta stanno nel post, calcolati dal server.
+   - Niente calorie sulla neve (come TASK-375).
+3. **L'avviso sulla pendenza**: «Bozza approvata».
+
+   | Dove | Testo |
+   |---|---|
+   | Avviso, en | «Slope from a terrain model (about 30 m): information only. It is not an avalanche bulletin and does not tell you whether a slope is safe.» |
+   | it | «Pendenza da un modello del terreno (circa 30 m): solo un'informazione. Non è un bollettino valanghe e non dice se un pendio è sicuro.» |
+   | de | «Hangneigung aus einem Geländemodell (etwa 30 m): nur zur Information. Sie ist kein Lawinenlagebericht und sagt nicht, ob ein Hang sicher ist.» |
+   | fr | «Pente tirée d'un modèle de terrain (environ 30 m) : à titre d'information. Ce n'est pas un bulletin d'avalanches et cela ne dit pas si une pente est sûre.» |
+   | es | «Pendiente de un modelo del terreno (unos 30 m): solo información. No es un boletín de aludes y no indica si una ladera es segura.» |
+   | Legenda | «Slope» · Pendenza · Hangneigung · Pente · Pendiente — «<30° · 30–35° · 35–40° · >40°», uguale in tutte le lingue |
+   | Casella | «Above 30°» · Sopra 30° · Über 30° · Au-dessus de 30° · Más de 30° |
+
+4. **La collezione delle vette**: «Profilo, come i post». Una riga
+   «Summits» nel profilo («12 summits») che apre l'elenco con nome, quota,
+   data della prima salita e quante volte; la vede chi può vedere i post
+   della persona. Nel post della gita, la vetta raggiunta col suo nome.
+   I testi della riga e della pagina si fanno approvare con la parte D.
+5. **Quando si accende**: «Acceso con a e b». «Soon» nelle impostazioni
+   finché non ci sono fasi e VAM (solo telefono); acceso appena pronti, con
+   un OTA col sì dell'utente. Pendenza (c) e vette (d) arrivano dopo nel
+   post, quando il server ha tegole e vette (comandi col sì dell'utente).
+
+## Decisioni dell'agente (su delega dell'utente)
+
+- L'attività si chiama `ski_touring` (Strava `BackcountrySki`, `<type>` del
+  GPX `ski_touring`). Apple Salute `.crossCountrySkiing` (60), Health
+  Connect `EXERCISE_TYPE_SKIING` (61): non c'è un tipo per lo scialpinismo;
+  i numeri si verificano sulle librerie in A.
+- Fuori dal gioco e senza record personali, come lo sci.
+- I moduli sono generici, non dello scialpinismo: `mountainPhases.ts`,
+  `terrain.py`, `summits.py`. Le ciaspole e Hike possono usarli.
+- Il resto del disegno tecnico: `docs/sports/skimo.md` e ADR-0344.
+
+## Le parti
+
+| Parte | Cosa | Server, testi, OTA |
+|---|---|---|
+| 0 | Questo: disegno, costi, scelte | — |
+| A | Contratto, API, migrazione del CHECK, profilo nascosto nell'app | server col sì dell'utente |
+| B | App: fasi e VAM (a, b), la fine gita, il pannello in gita, la riga in «Settings»; acceso con l'OTA | testi e OTA col sì |
+| B2 | I numeri e le fasi nel post, in `run_stats` | dopo TASK-410 C e D |
+| C | La pendenza: `terrain.py` (condiviso con TASK-347 G), il lavoro dopo il salvataggio, il layer colorato e l'avviso | server col sì |
+| D | Le vette: `peak_extract.py`, `summits.py`, `run_summits`, le rotte, il profilo | server, privacy e testi col sì |
+| E | La prova sulla neve: soglie delle fasi e della VAM, batteria al freddo | — |
+
+A prima; B dopo A; B2 dopo B e TASK-410 C/D; C dopo A e TASK-410 C; D dopo
+A, indipendente da B e C; E con la neve.
+
+## Criteri di accettazione
+
+Parte 0:
+- [x] Le quattro funzioni hanno disegno, strato, migrazione, nativo,
+  riuso, rischi e costo (`docs/sports/skimo.md`).
+- [x] Le cinque domande hanno una risposta scritta qui.
+- [x] ADR-0344 «proposto», una riga in INDEX, righe proprie in STATUS.
+- [x] Le voci per `CONDIVISO.md` (pendenza da Terrarium, fasi, vette) sono
+  mandate al Coordinatore Sport, che lo tiene.
+- [x] La lista della parte A è approvata dal Coordinatore (2026-11-08).
+
+Ogni parte dopo: test deterministici; l'impronta del motore e quella iOS
+non cambiano; nessuna dipendenza nuova.
+
+## File toccati
+
+Parte 0:
+
+```
+docs/tasks/TASK-415.md      (nuovo)
+docs/sports/skimo.md        (nuovo)
+docs/DECISIONS.md           (solo ADR-0344, in fondo)
+docs/STATUS.md              (righe proprie)
+docs/INDEX.md               (una riga)
+```
+
+Parte A (`feat/TASK-415-a-ski-touring-api`), proposta al Coordinatore,
+sulla ricetta (`COME-AGGIUNGERE.md` §2–4) per uno sport «Record only»:
+
+```
+packages/shared-types/src/sports/ski_touring.ts        (nuovo)
+packages/shared-types/src/sports/index.ts              (RECORDED_SPORTS)
+packages/shared-types/fixtures/run-activities.json, reads.json
+packages/shared-types/test/skiTouring.test.ts          (nuovo)
+packages/shared-types/test/sportRegistry.test.ts       (lista «da allora»)
+services/api/shaperoute_api/sports/ski_touring.py      (nuovo)
+services/api/shaperoute_api/sports/__init__.py
+services/api/shaperoute_api/activities.py              (RunActivity)
+services/api/shaperoute_api/reads.py                   (NEWER_ACTIVITIES)
+services/api/migrations/0056_ski_touring.sql           (nuovo; 0056 in bozza, il primo libero al merge)
+services/api/tests/test_ski_touring_api.py             (nuovo)
+services/api/tests/test_sport_registry_api.py, test_record_only.py,
+    test_reads.py, test_game_rules.py                  (solo se l'ordine lo chiede)
+apps/mobile/src/sports/ski_touring.ts                  (nuovo, nascosto)
+apps/mobile/src/sports/index.ts
+apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts,
+    src/api/accounts.test.ts
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json,
+    targets/watch/{de,en,es,fr,it}.lproj/Localizable.strings
+                                                       (se l'orologio elenca gli sport, come per il Roller)
+apps/mobile/assets/engine/engine.zip                   (i moduli sports/ dell'API vanno sul telefono)
+docs/tasks/TASK-415.md, docs/STATUS.md, docs/DECISIONS.md, docs/API.md,
+    docs/DATABASE.md
+```
+
+Niente motore, niente `contract.json` (il contratto dei percorsi tiene solo
+le attività che si disegnano, come per lo sci). Impronta del motore neutra,
+impronta iOS invariata.
+
+Parti B–D: la lista si manda al Coordinatore prima di ciascuna.
+
+## Dove si è
+
+2026-11-07: le cinque scelte dell'utente prese. 2026-11-08: parte 0 in PR,
+la lista della parte A approvata dal
+Coordinatore, migrazione 0056 in bozza (anche TASK-406 D1 ha la 0056: chi
+arriva secondo rinomina). La PR di A entra col sì dell'utente per il
+server, che chiede il Coordinatore.

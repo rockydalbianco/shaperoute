@@ -25155,3 +25155,71 @@ dall'agente su delega dell'utente):
   distanza entra.
 - Un posto nuovo aspetta Overpass (20–40 s) alla prima richiesta, come la
   prima acqua di un lago.
+
+## ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server
+
+**Stato**: Proposto · 2026-11-08 · TASK-415. Numeri dal Coordinatore. Le
+scelte di prodotto sono dell'utente, prese una alla volta il 2026-11-07
+(`tasks/TASK-415.md`): «Ski touring» 🏔️; le metriche proposte; l'avviso
+sulla pendenza nelle cinque lingue; la collezione delle vette nel profilo,
+visibile come i post; acceso con fasi e VAM. I punti tecnici qui sotto
+sono decisi dall'agente su delega dell'utente.
+
+**Contesto**: lo scialpinismo non ha forme da disegnare (come lo sci,
+ADR-0317), ma ha numeri suoi: chi sale con le pelli guarda il dislivello,
+la velocità di salita e i cambi; chi sceglie una gita guarda la pendenza;
+chi la finisce vuole la vetta. L'app ha già la categoria «Record only»
+(ADR-0319), le salite e le discese di una giornata di sci
+(`activities/snowDay.ts`), le quote dei punti salvate (TASK-324), i nomi di
+impianti e piste dal server da estratti OSM (ADR-0319, punto 11), e una
+decisione presa ma non ancora codice sulle quote dalle tegole Terrarium
+(ADR-0300, parte G). TASK-410 propone `run_stats` per i numeri del post.
+
+**Decisione**:
+
+1. **Uno sport «Record only» nuovo**, `ski_touring`, nei file della
+   ricetta (`COME-AGGIUNGERE.md`): Strava `BackcountrySki`, GPX
+   `ski_touring`, fuori dal gioco e senza record. Il motore non cambia.
+2. **Fasi e VAM sul telefono**, in un modulo TypeScript puro e generico
+   (`activities/mountainPhases.ts`) sopra le svolte di `snowDay.ts`: salita,
+   discesa, impianto; un cambio è una sosta di almeno 90 s alla svolta. La
+   VAM è il D+ (a passi di 3 m) sul tempo in movimento; in gita sugli
+   ultimi 5 minuti. Nessun barometro diretto: niente moduli nativi.
+3. **I numeri del post in `run_stats`** (TASK-410 C), non in colonne nuove
+   di `runs`.
+4. **La pendenza dal server, in un modulo condiviso** `terrain.py`: tegole
+   Terrarium a zoom 13 in cache sul Volume, PNG decodificato con `zlib`,
+   pendenza di Horn su 3 × 3 pixel. È il modulo della parte G di TASK-347:
+   uno solo, chi parte primo lo scrive. Si calcola dopo il salvataggio, in
+   sottofondo; il post mostra la sezione quando c'è. Quattro classi (sotto
+   30°, 30–35°, 35–40°, oltre 40°), legenda con testo e numeri, l'avviso
+   approvato dall'utente.
+5. **Le vette dal server, da un estratto** (`osmium tags-filter
+   n/natural=peak`, file a tegole come `ski_extract.py`): raggiunta se la
+   traccia passa entro 60 m dal nodo e, con le due quote, entro 80 m. Una
+   tabella `run_summits` con la cascata dalla corsa; la collezione è una
+   query con la visibilità dei post. Prima le Alpi, poi il mondo con gli
+   stessi comandi.
+6. **Le parti**: A contratto e API; B fasi e VAM nell'app (con lei si
+   accende); B2 i numeri nel post; C la pendenza; D le vette; E la neve.
+
+**Alternative scartate**:
+- la pendenza sul telefono, nella WebView della mappa (la tela legge i
+  pixel delle tegole): ogni telefono che guarda un post rifarebbe il
+  calcolo, e il tempo sopra i 30° tornerebbe dalla pagina con un messaggio
+  in più. Il server lo fa una volta e il modulo serve anche a TASK-347 G;
+- un barometro diretto (`expo-sensors`): un modulo nativo, impronta iOS
+  nuova, per un guadagno che sull'iPhone la quota fusa dà già;
+- le vette chieste a Overpass a ogni gita: Overpass rifiuta il server
+  (ADR-0154), e dal telefono la posizione andrebbe a un servizio esterno;
+- le fasi e le vette in colonne di `runs`: TASK-410 ha già chiesto un posto
+  solo per i numeri del post.
+
+**Conseguenze**:
+- fasi e VAM sono solo JavaScript: un OTA, impronta iOS invariata;
+- C e D cambiano il server e vogliono il sì dell'utente; D anche una
+  migrazione e una riga della privacy;
+- la pendenza sottostima i pendii corti e ripidi (dato di circa 30 m):
+  l'avviso lo dice;
+- le ciaspole e Hike possono avere fasi, pendenza e vette con gli stessi
+  moduli, senza riscriverli.

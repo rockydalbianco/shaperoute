@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — proposta approvata (2026-11-08), documenti in PR
+**Stato**: In corso — documenti (#982) e parte A (#984) in `main`; prossima B
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,
@@ -171,8 +171,20 @@ E  services/api/migrations/00NN_game_prizes.sql (nuovo),
 
 ## Cronologia
 
-- 2026-11-08 — Proposta scritta e approvata («Sì, approvo»); PR dei
-  documenti.
+- 2026-11-08 — Proposta scritta e approvata («Sì, approvo»); documenti in
+  `main` (#982).
+- 2026-11-08 — Parte A in `main` (#984, 9d3f0a88): 94 forme in 10
+  collezioni, `single_run`, `collections` in catalogo e in `/game/me`, una
+  push `shape_unlocked` per corsa; foglio delle forme approvato
+  dall'utente («Sì, approvo»), in `out/TASK-423/forme-*.svg` del checkout
+  principale; `tools/game_shapes_sheet.py` lo rifà. Fuori dalla lista,
+  con l'ok del Coordinatore: i test che contavano sblocchi e push
+  (`test_game_backfill`, `test_game_challenges`, `test_push`,
+  `test_push_hooks`, `test_notification_list`, `test_reads_lists`).
+  Finché B non è sul server, le forme dei tempi nuovi (400 m, miglio, 3, 15,
+  30 km, maratona, 50 km) non si sbloccano: **A va sul server insieme a B**,
+  poi subito il backfill, così le forme raggiunte prima prendono la data
+  della loro corsa e non arrivano tutte alla prossima corsa.
 
 ## Esito
 

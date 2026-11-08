@@ -147,10 +147,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347
   precisazione). Prossimo: «via server catalogo» del Coordinatore, poi il
   secondo giro (Italia, Europa) con le zone copiate dal server. File: — · `tasks/TASK-419.md`
-- **TASK-423 — «Play» grande** (ADR-0351) · proposta approvata il
-  2026-11-08: 94 forme in 10 collezioni, passi su 10 distanze, sfide
-  personali, premi. Documenti in PR; parte A nella #984 (foglio delle forme
-  all'utente), poi B–E (D dopo la #971). File: quelli della #984 · `tasks/TASK-423.md`
+- **TASK-423 — «Play» grande** (ADR-0351) · documenti (#982) e A, il
+  catalogo a 94 forme (#984), in `main`; server di A insieme a B, col sì.
+  Prossima B (i tempi su 11 distanze, `RULES_VERSION` 3), poi C, D (dopo
+  la #971), E. File: — · `tasks/TASK-423.md`
 - **TASK-418 — Forme nuove per il catalogo di «Explore»** · parte A in
   `main` (#953): 49 forme candidate in `services/route-engine/candidate_outlines/`;
   poi la registrazione delle sole forme che l'utente approva su strada (dopo

@@ -523,6 +523,7 @@ del checkout (`deploy/compose.yaml`), non dentro l'immagine.
 **Conseguenze**: la pagina «Catalog» di TASK-420 esce; «Explore» mostra
 meno percorsi nelle 14 città del seme (i migliori), e quelli nuovi nelle
 città europee arriveranno col secondo giro, dallo stesso strumento.
+
 ## ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono
 
 **Stato**: **Superata** il 2026-11-08, lo stesso giorno. La pagina è stata

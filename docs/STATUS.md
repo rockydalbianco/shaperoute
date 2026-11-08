@@ -190,7 +190,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Prossimo: la lista della parte A (contratto, API, CHECK, profilo nascosto)
   al Coordinatore. `tasks/TASK-415.md`, `sports/skimo.md`.
   Parte 0 in `main` (#932).
-  **Parte A in PR** (2026-11-08, `feat/TASK-415-a-ski-touring-api`):
+  **Parte A in `main`** (#948, 2026-11-08, sul server):
   `ski_touring` terzo sport «Record only» nel contratto (`RECORDED_SPORTS`,
   le fixture), nell'API (`sports/ski_touring.py`: Strava `BackcountrySki`,
   GPX `ski_touring`, senza record né gioco; `X-MuW-Reads`), la migrazione
@@ -198,8 +198,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nell'app (Apple `.crossCountrySkiing` 60, Health Connect
   `EXERCISE_TYPE_SKIING` 61, verificati sulle librerie; nessuna riga in
   «Settings») e l'orologio (`sports.json`, testi in inglese fino a B).
-  Impronta del motore neutra, iOS invariata. Il server dopo il merge, col
-  sì dell'utente già dato («ok si», 2026-11-08). Prossimo: parte B.
+  Impronta del motore neutra, iOS invariata. Server al commit 8e898de5 il
+  2026-11-08, col sì dell'utente: copia `shaperoute-2026-11-08T1718Z.dump`,
+  immagine di ritorno `shaperoute-api:before-task415`, migrazione 0057
+  applicata, `/health` ok. Nessun telefono registra ancora lo
+  scialpinismo: si accende con la parte B. Prossimo: parte B (lista al
+  Coordinatore prima del codice).
 - **TASK-414 — Carrozzina e passeggino ♿, forme semplici dove si spinge**
   (2026-11-08; numeri dal Coordinatore, ADR-0343 **proposto**; sessione
   avviata dal Coordinatore Sport). Parte 0, solo documenti: sei reti di

@@ -20,9 +20,8 @@ import { NO_FILTERS } from "../search/searchFilters";
 import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
 import { DrawingCard } from "../social/DrawingCard";
 import { followedOf, runnable } from "../social/drawingRoute";
-import { ActionBar } from "./ActionBar";
-import { DrawAgainContext } from "./drawAgainDoor";
-import { postFacts } from "./FeedPost";
+import { EditRunContext } from "./editRunDoor";
+import { FeedPost, postFacts } from "./FeedPost";
 import { shownPost } from "./feedPosts";
 import { postEnergy } from "./postEnergy";
 
@@ -94,32 +93,30 @@ test.each([
 });
 
 test.each(SNOW)(
-  "the Feed's card of %s: comments, reactions, Share, never «Draw it near me»",
+  "the Feed's card of %s: like, Share, never «Edit & run» (TASK-410 F)",
   async (activity) => {
-    const again = jest.fn();
     await render(
       <FollowsContext.Provider value={door("ada")}>
-        <DrawAgainContext.Provider value={() => again}>
-          <ActionBar post={shownPost(post(activity))} onOpen={jest.fn()} />
-        </DrawAgainContext.Provider>
+        <EditRunContext.Provider value={() => jest.fn()}>
+          <FeedPost post={shownPost(post(activity))} width={358} onOpen={jest.fn()} />
+        </EditRunContext.Provider>
       </FollowsContext.Provider>,
     );
-    expect(screen.getByRole("button", { name: "Comments" })).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "Reactions" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Like" })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "Share" })).toBeOnTheScreen();
-    expect(screen.queryByRole("button", { name: "Draw it near me" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Edit & run" })).toBeNull();
   },
 );
 
-test("a run keeps its «Draw it near me»", async () => {
+test("a run keeps its «Edit & run»", async () => {
   await render(
     <FollowsContext.Provider value={door("other")}>
-      <DrawAgainContext.Provider value={() => jest.fn()}>
-        <ActionBar post={shownPost(post("running"))} onOpen={jest.fn()} />
-      </DrawAgainContext.Provider>
+      <EditRunContext.Provider value={() => jest.fn()}>
+        <FeedPost post={shownPost(post("running"))} width={358} onOpen={jest.fn()} />
+      </EditRunContext.Provider>
     </FollowsContext.Provider>,
   );
-  expect(screen.getByRole("button", { name: "Draw it near me" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Edit & run" })).toBeOnTheScreen();
 });
 
 test.each(SNOW)(

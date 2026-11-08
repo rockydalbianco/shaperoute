@@ -144,6 +144,7 @@ RunActivity = Literal[
     "gravel_biking",
     "skiing",
     "xc_skiing",
+    "ski_touring",
     "gym",
 ]
 # A day on the snow: recorded and shown, never planned by the engine. Its

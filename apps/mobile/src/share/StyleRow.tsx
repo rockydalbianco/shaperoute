@@ -15,6 +15,7 @@ import {
   space,
 } from "../theme/tokens";
 import { postLine, type PostRun } from "./postRun";
+import { type LineColour, lineColourOf } from "./videoEdit";
 import {
   styleName,
   stylePalette,
@@ -23,9 +24,10 @@ import {
   type VideoStyle,
 } from "./videoStyle";
 
-/** A tile has the video's shape, 9 wide and 16 tall: three fit in a row. */
-const TILE_WIDTH = 104;
-const TILE_HEIGHT = 185;
+/** A tile has the video's shape, 9 wide and 16 tall: four fit in a row
+ * (TASK-408 added «2D»). */
+const TILE_WIDTH = 76;
+const TILE_HEIGHT = 135;
 /** The drawing's place in the tile, as in the video (videoScene): in from
  * the sides, between the title's room and the numbers'. */
 const SIDE = 0.08;
@@ -42,6 +44,9 @@ type Props = {
   /** The style the video gets. */
   style: VideoStyle;
   onChange: (style: VideoStyle) => void;
+  /** The line's colour chosen in «Edit video» (TASK-408): the tiles draw
+   * the drawing in it; the route's yellow when not given. */
+  line?: LineColour;
 };
 
 /** One straight piece of the drawing, as a turned View (as PostImage). */
@@ -57,13 +62,14 @@ function placed(s: Segment, thickness: number) {
 }
 
 /**
- * «Style» in «Share your run» (TASK-351, ADR-0303): a tile for each style
- * of the video, with the run's drawing in the style's colours on its map's
- * ground, one of them chosen; «Night» when the post opens. The tiles are
+ * «Style» in «Edit video» (TASK-351, ADR-0303; TASK-408): a tile for each
+ * style of the video, with the run's drawing in the style's colours and the
+ * line's colour on its map's ground, one of them chosen; «Night» when the
+ * post opens. The tiles are
  * the video's shape, so what they show is where the drawing will be; in
  * the «3D» tile the drawing leans as the map will (part D).
  */
-export function StyleRow({ run, style, onChange }: Props) {
+export function StyleRow({ run, style, onChange, line = "yellow" }: Props) {
   const bearing = bearingOf(run.rotationDeg);
   const [segments] = useMemo(
     () =>
@@ -126,7 +132,7 @@ export function StyleRow({ run, style, onChange }: Props) {
                       style={[
                         styles.line,
                         placed(s, LINE),
-                        { backgroundColor: palette.accent },
+                        { backgroundColor: lineColourOf(line, palette) },
                       ]}
                     />
                   ))}
@@ -150,7 +156,7 @@ const styles = StyleSheet.create({
   },
   tiles: {
     flexDirection: "row",
-    gap: space.xl,
+    gap: space.md,
   },
   choice: {
     width: TILE_WIDTH,

@@ -85,6 +85,19 @@ inventati, non a giudicare. Un «Custom» non ha scala né classifica.
 - Il server li conta a ogni lettura dalle serie salvate: cancellato un
   allenamento, il livello torna quello degli altri.
 
+## Come si fa un esercizio (TASK-411 E)
+
+Accanto a ogni esercizio del catalogo c'è un omino che fa il movimento, col
+carico (bilanciere, manubrio o maniglia) in giallo: nei riquadri di un
+gruppo, nelle righe della ricerca, accanto all'esercizio in corso; i
+riquadri dei gruppi hanno un movimento tipico (panca, lat machine, squat,
+alzate laterali, curl, crunch, kettlebell, corsa). Con «Riduci movimento»
+l'omino resta fermo a metà del movimento. «i» apre la guida: l'omino grande,
+tre passi e «Watch out» con l'errore da evitare; aperta da «+ Exercise» ha
+«Add to workout», durante l'allenamento solo «‹». Un esercizio col nome
+libero non ha né omino né guida (`gym/moves.ts`, `gym/ExerciseFigure.tsx`,
+`gym/ExerciseGuide.tsx`, `gym/guides/`).
+
 ## La scelta dell'esercizio (TASK-411 A)
 
 «+ Exercise» si apre sugli otto gruppi muscolari, due per riga: ognuno con
@@ -95,6 +108,22 @@ gruppo, i suoi esercizi in riquadri a due colonne, nell'ordine del catalogo;
 gruppi, per nome nella lingua dell'app o in inglese, e «Add “{name}”»
 aggiunge un esercizio col nome libero (`gym/ExerciseGrid.tsx`,
 `gym/ExercisePicker.tsx`).
+
+## Il calendario e la guida in «Draw» (TASK-411 B)
+
+Sotto «Start workout», «How it works» in tre passi (scegli dalla griglia;
+segna ogni serie, il recupero parte da solo; «Save»: calorie, traguardi e
+classifica). Per chi è dentro all'account, sotto: «Last workout: {when} ·
+{time}» (oggi, ieri o il giorno; il tempo senza le pause) e «This month: {n}
+times ›», che apre il calendario; sul proprio profilo lo apre anche «Gym
+calendar ›» nel riquadro 🏋️.
+
+Il calendario (`GET /me/gym-calendar?tz=&month=`, solo il proprietario) è un
+mese a griglia da lunedì sul fuso del telefono: un pallino giallo nei giorni
+con un allenamento, il giorno di oggi bordato, «‹ ›» per i mesi (mai oltre
+questo), sopra quanti allenamenti e il loro tempo. Un giorno toccato elenca
+i suoi allenamenti con l'ora e il tempo; quello con un post lo apre. Letto
+da `runs` con `activity = 'gym'`: nessuna tabella sua.
 
 ## Il catalogo
 

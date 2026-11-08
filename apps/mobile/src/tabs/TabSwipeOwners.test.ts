@@ -21,7 +21,9 @@ const ROWS = [
   "feed/StyleLens.tsx",
   // In «Draw»: «NEAR YOU».
   "route/NearYou.tsx",
-  // In «Explore», on land and on the water, and its search.
+  // In «Explore», on land and on the water, and its search; the filter
+  // chips of its catalog (TASK-420).
+  "explore/CatalogScreen.tsx",
   "explore/CityWords.tsx",
   "explore/ExploreTools.tsx",
   "explore/IdeasFromEurope.tsx",
@@ -41,6 +43,8 @@ const ROWS = [
   "route/WhileRouting.tsx",
   // In «Share your run»: the animals of the video (TASK-408).
   "share/CharacterRow.tsx",
+  // In «Edit video»: the emoji of the video (TASK-408 C1).
+  "share/VideoEmojiRow.tsx",
   // In the search's «Ski»: the hours of a resort's weather (TASK-406 C).
   "ski/ResortWeather.tsx",
 ];

@@ -132,6 +132,38 @@ export interface GymLeaderboard {
  * month has ended (the user's choice of 2026-11-06). */
 export const GYM_WINNER_PEOPLE = 3;
 
+/** A workout of the gym calendar (TASK-411 B, ADR-0341 point 2). */
+export interface GymCalendarWorkout {
+  /** The key the app gave it, as in /me/activities. */
+  id: string;
+  started_at: string;
+  /** Pauses left out, rests in. */
+  duration_s: number;
+  /** Its post, when it has one the moderation has not hidden. */
+  drawing_id: string | null;
+}
+
+/** A day of the month with at least one workout, on the asked time zone. */
+export interface GymCalendarDay {
+  /** 1–31. */
+  day: number;
+  /** The first first. */
+  workouts: GymCalendarWorkout[];
+}
+
+/** GET /me/gym-calendar?tz=&month=: one's own workouts at the gym in a month
+ * of the calendar on `tz` (YYYY-MM, this one when not asked), only the days
+ * with a workout; and the last workout of all, for «Last workout» in Draw.
+ * Only the owner. Mirrors gym_calendar.py. */
+export interface GymCalendar {
+  month: string;
+  tz: string;
+  count: number;
+  duration_s: number;
+  days: GymCalendarDay[];
+  last: GymCalendarWorkout | null;
+}
+
 /** PUT /me/gym-sessions/{key}/show-exercises. */
 export interface ShowExercisesRequest {
   show: boolean;

@@ -1,6 +1,7 @@
 # TASK-409 — Nuoto in piscina: calorie, battito medio e tempo nelle zone
 
-**Stato**: In corso: parte A (calorie)
+**Stato**: In corso: parte A (calorie) in `main` e in produzione; parte B
+nella 1.0.3
 **Fase**: 5 · **Branch**: `feat/TASK-409-a-pool-calories` (parte A, col task
 file); la parte B avrà il suo
 **Dipende da**: TASK-400 (nuoto in piscina, chiuso), TASK-374 (Il mio corpo,
@@ -112,8 +113,9 @@ quelle funzioni la sua finestra (`startedMs`–`endedMs`, pause escluse).
       (`pool/poolKcal.test.ts`, `pool/PoolKcal.test.tsx`,
       `pool/poolHealth.test.ts`, `feed/postEnergy.test.ts`,
       `pool/PoolTile.test.tsx`, `health/swimWorkout.test.ts`)
-- [ ] A: impronta iOS `6f8bba4c` invariata (la misura il Coordinatore); test
-      toccati, tsc, lint e Prettier verdi in locale.
+- [x] A: impronta iOS `6f8bba4c` invariata (misurata con `npm ci` su una
+      copia pulita di `3bf2802d`); test toccati, tsc, lint e Prettier verdi in
+      locale, CI verde.
 - [ ] B: con un orologio, battito medio e tempo nelle zone della finestra del
       nuoto (modulo finto); senza campioni o con la lettura negata, solo le
       calorie.
@@ -141,4 +143,11 @@ Parte B: dopo TASK-345 C e TASK-374 D.
 
 ## Esito
 
-*(si compila a fine task)*
+- **Parte A** (2026-11-08): #922 in `main` (merge `3bf2802d`, unita dal
+  Coordinatore). OTA di produzione col sì dell'utente («ok produzuone»,
+  «pubblicala tu»): gruppo `fc8aa133-9844-4fed-a538-2b2029e1b708`, solo iOS,
+  runtime `6f8bba4c`, commit `3bf2802d`; con lei uscivano anche #923, #930,
+  #921 e #943. Gli OTA di produzione successivi (`10279e05`, `8b1af1b4` da
+  `a0f38012`) la contengono. Android non pubblicato (test chiuso).
+- **Parte B**: aperta, nella 1.0.3, quando TASK-345 C e TASK-374 D sono in
+  `main` (sezione «Parte B» sopra).

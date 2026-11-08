@@ -171,6 +171,8 @@ async function drawingOpened() {
   });
   await fireEvent.press(screen.getByRole("tab", { name: "Feed" }));
   await fireEvent.press(await screen.findByText(String(feed.posts[0].title)));
+  // The page of the post (TASK-410): a tap on its drawing opens the map.
+  await fireEvent.press(await screen.findByTestId("post-map"));
   expect(await screen.findByText(String(drawing.description))).toBeOnTheScreen();
 }
 

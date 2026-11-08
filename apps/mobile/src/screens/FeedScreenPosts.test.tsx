@@ -139,7 +139,7 @@ test("while the first page comes, no example takes its place", async () => {
   expect(screen.getByText("Ada_runs")).toBeOnTheScreen();
 });
 
-test("a tap on a member's drawing opens it whole, not as a route of «Explore»", async () => {
+test("a tap on a member's drawing opens its page, not a route of «Explore»", async () => {
   const open = jest.fn();
   const onOpen = jest.fn();
   await render(
@@ -148,11 +148,16 @@ test("a tap on a member's drawing opens it whole, not as a route of «Explore»"
     </Around>,
   );
   await fireEvent.press(await screen.findByText("Sunday heart by the river"));
-  expect(open).toHaveBeenCalledWith(STAR);
+  // The page of the post (TASK-410), over the feed; not the map.
+  expect(screen.getByTestId("post-page")).toBeOnTheScreen();
+  expect(open).not.toHaveBeenCalled();
   expect(onOpen).not.toHaveBeenCalled();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.queryByTestId("post-page")).toBeNull();
   // The second card; its author's name opens the profile (TASK-399).
   await fireEvent.press(screen.getAllByTestId("feed-post")[1]!);
-  expect(open).toHaveBeenLastCalledWith(WORD);
+  expect(screen.getByTestId("post-page")).toBeOnTheScreen();
+  expect(open).not.toHaveBeenCalled();
 });
 
 test("a drawing that did not open says why, above the list", async () => {

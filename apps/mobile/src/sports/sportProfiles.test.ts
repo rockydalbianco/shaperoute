@@ -2,6 +2,7 @@ import {
   ACTIVITIES,
   CYCLING_BEST_DISTANCES,
   DISTANCE_LIMITS_M,
+  INLINE_SKATING_BEST_DISTANCES,
   RUN_ACTIVITIES,
   RUNNING_BEST_DISTANCES,
 } from "@shaperoute/shared-types";
@@ -168,6 +169,8 @@ it("counts the energy as before", () => {
     hiking: "oxygen",
     // A gravel and an MTB ride (TASK-378 part B), the Compendium's bicycling.
     mountain_biking: "met",
+    // A skate (TASK-380 part B), the Compendium's in-line skating.
+    inline_skating: "met",
     walking: "oxygen",
     gravel_biking: "met",
   });
@@ -279,6 +282,8 @@ it("gives the screens what they told apart before (part B3b)", () => {
   expect(tableOf((sport) => sport.timeAt)).toEqual({
     running: "runner",
     hiking: "walker",
+    // A skate at the skater's pace (TASK-380 part B).
+    inline_skating: "skater",
     walking: "walker",
   });
   expect(tableOf((sport) => sport.skied)).toEqual({ skiing: true });
@@ -288,6 +293,8 @@ it("gives the screens what they told apart before (part B3b)", () => {
     // A ride's, kept apart from a ride's (TASK-378).
     mountain_biking: { distances: CYCLING_BEST_DISTANCES, named: "km" },
     gravel_biking: { distances: CYCLING_BEST_DISTANCES, named: "km" },
+    // A run's races, kept apart from a run's (TASK-380).
+    inline_skating: { distances: INLINE_SKATING_BEST_DISTANCES, named: "race" },
   });
   expect(tableOf((sport) => sport.partsBetween?.km)).toEqual({
     running: "{drawn} km of drawing + {between} km walking between the parts",

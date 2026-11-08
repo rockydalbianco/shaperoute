@@ -188,6 +188,28 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Settings») e l'orologio (`sports.json`, testi in inglese fino a B).
   Impronta del motore neutra, iOS invariata. Il server dopo il merge, col
   sì dell'utente già dato («ok si», 2026-11-08). Prossimo: parte B.
+- **TASK-414 — Carrozzina e passeggino ♿, forme semplici dove si spinge**
+  (2026-11-08; numeri dal Coordinatore, ADR-0343 **proposto**; sessione
+  avviata dal Coordinatore Sport). Parte 0, solo documenti: sei reti di
+  prova al banco, da un download per zona col filtro foot e i tag di
+  accessibilità, a 1–5 km su cerchio, cuore, stella e luna.
+  - `wheelcalm` (niente scale, cordoli alti, superfici ruvide, strade
+    principali e secondarie senza marciapiede): 69 su 96; Trento e Milano
+    16 su 16, pianura 13, Fiemme 4. Nessuna scala e nessun cordolo alto sui
+    percorsi (la rete foot: 7,4 km di scale e 92 cordoli alti).
+  - OSM incompleto: i cordoli si sanno solo a Milano e in parte a Trento;
+    `incline` sull'1–3% dei km. Il motore non ha le quote: le salite
+    restano (fino al 14% sui percorsi).
+
+  Scelte dell'utente (2026-11-08): uno sport solo, «Carrozzina e
+  passeggino» ♿ sulla rete `wheelcalm`; 1–5 km; solo cerchio, cuore,
+  stella, luna; i testi e l'avviso su cordoli, gradini e salite in cinque
+  lingue; nel gioco come la camminata, record su 1 e 5 km; tipo carrozzina
+  in Salute e Strava; acceso appena pronto.
+  Lista della parte A approvata dal Coordinatore (migrazione 0058 in bozza;
+  le forme le rifiuta il motore). Prossimo: 414-A in una sessione nuova,
+  nel turno fissato con 413 A e 415 A. `tasks/TASK-414.md`,
+  `sports/wheelchair.md`.
 - **TASK-410 — La pagina del post: più dati e più ordine** (ADR-0340,
   proposta; brief dell'utente del 2026-11-06; numeri dal Coordinatore).
   Branch `docs/TASK-410-post-page` (documenti). Pagina nuova dal Feed: foto
@@ -422,6 +444,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sulla soglia: «Sì, 35 e 28». Le soglie del Roller sono in PR
   (`feat/TASK-380-roller-vehicle-thresholds`, `game_rules.speed_limits`;
   seconda precisazione di ADR-0324). Vanno sul server con la 0055.
+  Soglie in `main` (#914). **Parte B in PR** (2026-11-06,
+  `feat/TASK-380-b-roller-app`): il Roller 🛼 nell'app, «Soon» finché il
+  server non ha la 0055. Profilo completo (testi in cinque lingue, energia
+  del Compendium, avviso, Apple 39 e Health Connect 60), il tempo stimato
+  col passo di chi pattina (4:00/km finché non ne ha, scelta dell'utente),
+  i record propri, i file FIT/GPX/TCX/Strava, i testi dell'orologio. Solo
+  JavaScript. Prossimo: il server (0055) col sì dell'utente, poi `ready`
+  in una PR piccola.
 
 - **TASK-413 — Ciaspole, «Snowshoes» ❄️** (2026-11-08; numeri dal
   Coordinatore, ADR-0342). Parte 0, solo documenti. Al banco, una forma di

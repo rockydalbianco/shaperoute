@@ -24950,6 +24950,36 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
 
+## ADR-0324, terza precisazione — Il Roller nell'app: energia, tempo stimato, file importati
+
+**Data**: 2026-11-06 · **Stato**: Accettata · **Task**: TASK-380 parte B
+
+- **Il tempo stimato** sotto la distanza di «Disegna» usa il passo di chi
+  pattina: le ultime dieci pattinate tra 8 e 36 km/h, e **4:00/km** (15
+  km/h) finché non ce ne sono. Scelta dell'utente del 2026-11-06 («Sì,
+  4:00/km»); il profilo dice `timeAt: "skater"`.
+
+Deciso dall'agente su delega dell'utente:
+
+- **L'energia** viene dalle voci «in-line skating» del Compendium 2024:
+  - 7,5 MET a 14,4 km/h (15591);
+  - 9,8 a 17,7 km/h (15592);
+  - 12,3 a 21–21,7 km/h (15593);
+  - 15,5 a 24 km/h (15594).
+
+  Ogni fascia arriva fino a metà strada dalla velocità successiva: 16, 19,5
+  e 23 km/h.
+- **I record personali** nell'app sono quelli della corsa, chiamati come
+  gare: 5K, 10K, mezza e maratona (`INLINE_SKATING_BEST_DISTANCES` nel
+  contratto). Il gruppo «Roller» viene dopo la MTB.
+- **I file importati**: il FIT dice `sport` 30 (`inline_skating`); GPX e
+  TCX dicono `inline_skating`, `InlineSkate`, `rollerblading` o il numero
+  «6» di Strava. `IceSkate` e `RollerSki` non sono Roller.
+- **Apple Salute** `.skatingSports` (39), senza la distanza del giorno, e
+  **Health Connect** `EXERCISE_TYPE_SKATING` (60): controllati sulle
+  librerie installate.
+
+---
 ## ADR-0340 — La pagina del post: video nella pagina, foglio con quattro azioni, sezioni di dati da una tabella `run_stats`
 
 **Stato**: Proposto · 2026-11-06 · TASK-410. Le scelte di prodotto e di
@@ -25191,3 +25221,97 @@ VAM. Apple `.crossCountrySkiing` (60) e Health Connect `EXERCISE_TYPE_SKIING`
 `runs_activity_check`: preferiti, corse di gruppo e `run_bests` restano
 com'erano. Il contratto dei percorsi (`contract.json`) e il motore non
 cambiano.
+## ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km
+
+**Stato**: Proposto · 2026-11-08 · TASK-414. Le scelte dell'utente, il
+2026-11-08, sono in `tasks/TASK-414.md`:
+
+- uno sport solo, «Carrozzina e passeggino» ♿ (la proposta erano due sport
+  sulla stessa rete);
+- la rete `wheelcalm`: città e pianura, non la montagna;
+- 1–5 km; solo cerchio, cuore, stella e luna;
+- nel gioco come la camminata, con record propri su 1 e 5 km;
+- il tipo «carrozzina» in Salute e su Strava, anche per il passeggino;
+- i testi approvati, con l'avviso su cordoli, gradini e salite;
+- acceso appena pronto.
+
+Numeri dal Coordinatore. I punti tecnici qui sotto sono decisi dall'agente
+su delega dell'utente.
+
+**Contesto**: scelta dell'utente del 2026-11-07, «studia percorsi
+percorribili e solo forme semplici di pochi km». Nessuna rete di oggi va
+bene: la rete foot passa per scale, sentieri, ciottoli e porfido; la rete
+roller non guarda cordoli e barriere ed è pensata per 5–30 km.
+
+Il banco ha provato sei reti da un download per zona (il filtro della rete
+foot con i tag di accessibilità), a 1, 2, 3 e 5 km, cerchio, cuore, stella
+e luna (`docs/sports/wheelchair.md`), contro la rete foot sulla stessa area
+(92 su 96, 31 buoni):
+
+- **`wheel`**: fuori scale, cordoli alti (`kerb=raised`), `incline` oltre
+  l'8%, superfici ruvide, `smoothness` da `bad` in giù, `wheelchair=no`,
+  `sac_scale`, tornelli e scalette; `path` e `track` solo con una superficie
+  scritta. 81 su 96, 13 buoni; nessuna scala, nessun cordolo alto, nessuna
+  superficie ruvida sui percorsi (la rete foot: 7,4 km di scale e 92 cordoli
+  alti). Ma il 9% dei km su strade principali e secondarie senza
+  marciapiede scritto.
+- **`wheelcalm`**: `wheel` senza quelle strade. 69 su 96, 9 buoni: Trento e
+  Milano 16 su 16, pianura 13, Asiago 11, Valsugana 9, Fiemme 4. Strade
+  grandi all'1,1% (quelle con `sidewalk` scritto).
+- **`wheelstrict`** (anche ghiaino, `incline` senza numero, cordoli non
+  detti ribassati): 65 su 96, 5 buoni.
+- **`wheelflat6`** (senza i tratti oltre il 6%, tegole Terrarium): 67 su 96;
+  in montagna la rete crolla, e vorrebbe le quote nel motore.
+- **OSM incompleto**: i cordoli si sanno a Milano (13.858 nodi) e in parte a
+  Trento (710), quasi mai altrove; sui percorsi di `wheelcalm` 36
+  attraversamenti su 1.000 dicono il cordolo. `incline` c'è sull'1–3% dei
+  km, `wheelchair` quasi solo a Milano (36,6 km).
+
+**Decisione**:
+
+1. **Una rete nuova `wheel`** (`route_engine/networks/wheel.py`) con le
+   regole di `wheelcalm`: il filtro della rete foot, scaricato senza
+   semplificare con i tag delle vie e dei nodi che servono, le vie e i nodi
+   che le regole scartano tolti, poi semplificato (come `networks/roller.py`
+   `skate_ways`). Il grafo dice `network: wheel`; file di cache suoi.
+2. **Un cordolo alto o una barriera che blocca tolgono il nodo**, e con lui
+   il passaggio: si passa o no, niente tratti «a piedi».
+3. **Il tag `wheelchair`** non fa la rete: `no` toglie una via o un nodo,
+   `yes` o `designated` li tiene.
+4. **Ogni via va nei due sensi**, come a piedi (`by_bike` falso).
+5. **Un'attività nuova** `wheelchair` (1–5 km) in `activities/`, nei file
+   nuovi di ogni strato, con una riga per registro: uno sport solo per
+   carrozzina e passeggino.
+6. **Niente quote nel motore per ora**: come per il Roller (ADR-0324,
+   punto 6), si riprende quando la parte G di TASK-347 porta il dislivello
+   (ADR-0300). Il limite si dice nell'avviso.
+7. **Le forme semplici** (cerchio, cuore, stella, luna) sono una lista
+   dell'attività. La proposta: il motore e l'API rifiutano le altre, l'app
+   mostra solo quelle; la lista della parte A col Coordinatore può fermarsi
+   all'app.
+8. **L'impronta del motore**: `SAME_ROUTES_AS` se i nove percorsi fissi di
+   `test_same_routes.py` restano identici, altrimenti una notte di esempi
+   col sì dell'utente.
+9. **Sul telefono e su Strava**: Apple `.wheelchairWalkPace`, Health
+   Connect `EXERCISE_TYPE_WHEELCHAIR`, Strava `Wheelchair`, per tutti.
+   Da verificare sulle librerie. Solo JavaScript: l'impronta iOS non si
+   muove.
+10. **Nel gioco** come la camminata, con record propri su 1 e 5 km e le
+   soglie «veicolo» della corsa.
+
+**Alternative**:
+
+- **Due sport sulla stessa rete** (la proposta dell'agente): il tipo giusto
+  in Salute e Strava per tutti e due, record separati, un file in più per
+  strato. L'utente ha scelto uno sport solo.
+
+- **`wheel`, con le strade grandi**: 12 forme in più, ma un percorso su
+  undici passa per strade principali o secondarie senza marciapiede, in
+  mezzo al traffico. Non la propongo.
+- **`wheelstrict`**: lascia fuori ciclabili in terra battuta che un
+  passeggino fa, e tratta come gradino ogni cordolo non detto: 4 forme e
+  4 buone in meno di `wheelcalm`.
+- **`wheelflat6`**: toglie le salite, ma vuole le quote nel motore. Dopo
+  TASK-347 G.
+- **La rete foot o roller così come sono**: scale, ciottoli, cordoli.
+- **Una rete fatta col tag `wheelchair`**: c'è quasi solo a Milano.

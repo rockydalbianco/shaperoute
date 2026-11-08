@@ -107,11 +107,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
 - **TASK-408 — L'editor del video dell'attività** · C1 in `main`; C2 (scene
   e finale) nella PR #961. File: quelli della #961 · `tasks/TASK-408.md`
-- **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` e in produzione;
-  B1 (battito sulla corsa, server) in PR, server col sì dell'utente; poi B2
-  (app). La B fa anche i pezzi di TASK-345 B/C e 374 D. File:
-  `pool_swims.py`, `0061_run_heart.sql`, `shared-types/src/poolSwim.ts` ·
-  `tasks/TASK-409.md`
+- **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` (#922); B
+  (battito e zone) nella 1.0.3. File: — · `tasks/TASK-409.md`
 - **TASK-410 — La pagina del post** · B in `main` (#949); poi C
   (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
 - **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le

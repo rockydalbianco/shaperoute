@@ -1,162 +1,31 @@
 # STATUS — Dove siamo adesso
 
-> **Unica fonte di verità sullo stato del progetto.**
-> Primo file da leggere in ogni sessione, ultimo da aggiornare a fine task.
-> Se è disallineato dalla realtà, tutto il resto del sistema smette di
-> funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
+> **Unica fonte di verità sullo stato del progetto.** Primo file da leggere,
+> ultimo da aggiornare. Deve restare corto: lo storico è in `docs/archive/`
+> (si cerca con grep, non si legge intero).
 
-**Ultimo aggiornamento**: 2026-10-02 · **Fase corrente**: 4 — Estensione
+**Ultimo aggiornamento**: 2026-11-08 · **Fase corrente**: 5 — Sport e piattaforme
 
 ---
 
 ## In una riga
 
-MuW (già «Sgrava», TASK-260) gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
-Hetzner, in HTTPS e sempre accesa, con il database degli account; il Mac
-serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (i disegni
-pubblicati dagli iscritti, TASK-118; esempi finché non ce ne sono), «Draw» ed «Explore», e «Profile» per iscriversi ed
-entrare, con i preferiti e le corse salvate («My activities»). In «Draw» si sceglie una forma del catalogo (cerchio, cuore,
-stella, cavallo, luna, gatto, pesce, farfalla, lumaca, testa di cane,
-testa di coniglio, zucca, albero di Natale, faccina, fantasmino,
-ciambella, sole), una parola dalla A alla Z,
-tonda o squadrata, o una foto, e una distanza fino a 21 km: fino a tre
-percorsi fra cui scegliere, il GPX, la navigazione a voce, il punteggio a
-fine corsa; si corre anche senza percorso.
-«Explore» propone percorsi in ogni città: esempi già disegnati, categorie,
-percorsi a tema dai luoghi veri, e «Start». Un annuncio di prova prima di
-ogni percorso, solo nella build propria. Le ricerche insegnano sinonimi e
-correzioni, applicati a mano (`INSIGHTS.md`). Tempi: 3–10 km nelle zone in
-cache in 5–25 s, da 15 a 21 km in 30–50 s. 52 città italiane, Rovereto e 10 estere
-hanno la zona già sul server; le altre la scaricano da Overpass, che dopo
-molti download rifiuta per qualche ora (`MAPS.md`).
+MuW è sull'App Store (la 1.0.1 approvata da Apple; la 1.0.2 solo per gli
+screenshot nuovi, TASK-407) e in preparazione su Google Play (TASK-294).
+L'API gira sul server Hetzner (`api.getmuw.app`) con PostgreSQL; il sito è
+`getmuw.app`. L'app disegna forme, parole, foto e disegni a mano come
+percorsi veri a piedi, in bici, in canoa e a nuoto; registra anche gli sport
+senza forma (sci, palestra). Ha un lato social: Feed, profili, messaggi,
+concorsi e sfide del mese, badge, MuW Style. In corso: nuovi sport (Roller,
+ciaspole, carrozzina e passeggino, scialpinismo, palestra), l'app per Apple
+Watch, il catalogo di «Explore», il video della corsa. Gli OTA di produzione e il server si toccano solo col sì
+dell'utente, una pubblicazione alla volta, dal Coordinatore (`AGENTI.md`).
 
 ## Prossimo passo
 
-*(2026-10-25: TASK-122 è Done, lo Storage Box c'è e riceve le copie; il
-paragrafo qui sotto è superato per quella parte.)*
-
-**TASK-122 — le copie fuori dal server**: il server è spostato, manca lo
-Storage Box Hetzner, che crea l'utente (`DEPLOY.md` F.13, punto 2); poi
-il servizio `offsite` sul server. Dopo, la parte social (`ROADMAP.md`,
-«La parte social») riprende da **TASK-116** (il profilo: fatto, PR #224,
-aspetta il merge, il server e l'app), **TASK-117**
-(pubblicare una corsa: salvarla è già di TASK-172, e il suo task file va
-aggiornato da chi lo prende) e **TASK-118** (il feed vero, al posto degli esempi
-di TASK-156), poi 119–121. **TASK-092 — Percorsi consigliati** (ADR-0086)
-ora ha il database e il server. Gli altri Todo.
-
-In coda, dopo o accanto:
-
-- **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
-  posizioni non si salva; il GPX di una corsa salvata; il cuore dei
-  preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
-  TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
-- **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
-  sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
-  (TASK-178, sotto), email e numero di telefono anche (TASK-183), le unità di misura sono fatte (TASK-182), «Help», «Terms» e «Privacy» sono fatte, i due testi
-  legali come bozze (TASK-184); **TASK-185**, i due
-  interruttori delle notifiche email e push, è fatto: salvati nell'account, spenti all'inizio, e **non mandano
-  ancora niente**. L'invio vero (che cosa notificare, un servizio di
-  posta, `expo-notifications`, una build propria) è un task da aprire,
-  con scelte dell'utente. Nessuna voce dice più «Soon».
-- **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
-  (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
-  parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
-  account dell'utente.
-- **Seguiti scritti nei task fatti**: le forme a 21 km di Bari, Palermo
-  e New York, quando Overpass riapre, e il feed d'esempio da rifare sulle
-  14 città (TASK-161); cuore, cerchio e stella di Berlino nel catalogo,
-  quando Overpass riapre, e `catalog/` da aggiornare sul server
-  (TASK-163); Berlino, che resta a Overpass, e le zone da rifare
-  quando l'estratto invecchia (TASK-137); il segnale della scelta fra
-  A · B · C negli esempi (TASK-151); la linea intera a fine corsa
-  (TASK-149); zone scaricate con un margine (TASK-143); un GraphML già
-  rotto (TASK-133); la password dimenticata, che vuole la posta (TASK-114);
-  un esempio sul server costa 7–19 s contro 1–2,5 del Mac (TASK-168, dai
-  log): il piano dalla partenza, più l'attesa delle tre partenze vicine,
-  che ogni richiesta fa in tre processi nuovi su 4 vCPU condivise (fino a
-  3 s dopo un piano buono, 8 altrimenti); il grafo pesa 0,3–2 s, 8,8 alla
-  prima lettura di una zona estera grande; i 4 minuti di Rovereto erano
-  tre download da Overpass, uno per forma. Per scendere serve il motore:
-  processi tenuti accesi, o esempi senza A · B · C (scelta dell'utente).
-- **Da provare sull'iPhone**: la navigazione camminando un percorso vero
-  (TASK-049), il punteggio a fine corsa (TASK-112, 113), iscriversi ed
-  entrare (TASK-115: l'API sul server ha il database dal 2026-10-02),
-  «Explore» (TASK-126, 134) e il suo «Start» (TASK-145), correre senza
-  percorso (TASK-149), «A · B · C» negli esempi (TASK-151, 155), lo swipe
-  col dito (TASK-154), il feed d'esempio e i ritocchi di TASK-156, 157,
-  158, la schermata della corsa con i numeri e la freccia di direzione
-  (TASK-164). Tutti pubblicati su `preview` il 2026-10-02 (ultimo update
-  `eba74321`, da 73095e7).
-- **Battito e musica nella corsa**, chiesti dall'utente il 2026-10-02
-  (seguiti di TASK-169, numeri dal coordinatore): il battito da un sensore
-  Bluetooth (`react-native-ble-plx`, dipendenza nuova) e da Apple Watch
-  (HealthKit e un'app per l'orologio, dopo TASK-152), tutti e due solo in
-  una build propria; la musica: l'utente usa Spotify, «Music» lo apre
-  (TASK-173, fatto). **Aspetta la risposta dell'utente**: brano, pausa e
-  avanti dentro Sgrava (app Spotify Developer sua, Premium, dipendenze
-  nuove, 5 persone al massimo finché è in sviluppo); la proposta è di non
-  farlo adesso (`tasks/TASK-173.md`, «La seconda parte»).
-- **Altri sport**, chiesti dall'utente il 2026-10-02: dopo «Sport» in
-  «Settings» (TASK-189, fatto), **TASK-190 — percorsi in bici**
-  (ADR-0153 tenuto; 10–30 km, scelta dell'utente) e **TASK-191 — percorsi
-  in canoa e paddle** (ADR-0154 tenuto; sull'acqua entro 1 km dalla riva,
-  scelta dell'utente; esempi a Lago di Garda, Lago di Como, Jesolo,
-  Riccione). La bici: motore (PR #214) e API (PR #219) in `main`, l'app
-  (parte C) assegnata il 2026-10-02 sera. La canoa: il motore dell'acqua
-  (A1, PR #216) in `main`; **A2** (la canoa in una richiesta del motore)
-  in `main` (PR #235), con le scelte dell'utente del 2026-10-03: **1–5 km**, al
-  mare la forma **oltre 200 m dalla riva**, sui laghi 50 m (ADR-0161);
-  **B** (l'API, `activity: "paddling"`) in `main` (PR #241, ADR-0164);
-  **C** (l'app, ADR-0169) fatta il 2026-10-03, in revisione; la prova dal
-  vero aspetta l'acqua dei quattro luoghi sul server.
-- **La penna alzata nelle parole**, chiesta e confermata dall'utente il
-  2026-10-02: fra una lettera e l'altra si cammina senza disegnare, e
-  l'app mette in pausa la registrazione da sola, con un avviso a voce.
-  **TASK-197** (motore e API, ADR-0157: `pen_up` nella richiesta, `walks`
-  nel risultato, aggiunti senza togliere niente), poi **TASK-198** (l'app).
-  Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
-  telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
-  preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-06**. **Server**: su `main` `873de53` dalle
-  ~20:00Z (ok dell'utente «ok server», eseguito dal coordinatore; «MuW»
-  nei testi di Strava, nel creatore del GPX e nel messaggio dei tag,
-  TASK-260 A), con le migrazioni `0001`–`0019` (`0019_run_posts`: il
-  post della corsa sul server, TASK-258; `0018_route_rotation`: la
-  rotazione nelle corse salvate e nei preferiti), il punto del luogo in `/cities` (TASK-249: Tenna
-  [46.015703, 11.264283]), `run_scored` al salvataggio (TASK-247), le
-  partenze vicine senza `Pool` (TASK-248 B), `activity` in
-  `/me/activities` (TASK-251 B), `rotation_deg` nel catalogo e negli
-  esempi della canoa (TASK-232 C); fermo circa 10 secondi; immagine di
-  prima `shaperoute-api:before-task260`, copia del database
-  `shaperoute-2026-10-06T1957Z.dump`; `draw_examples` del mattino finito («70 of 72»:
-  a Tenna il cuore e a Calceranica il cerchio non si disegnano). Zone del
-  telefono: 528 file. Acqua della canoa: 248 file (Ledro dal 2026-10-06,
-  TASK-250; l'elenco dei laghi vive nell'app, `lake_catalog.py` è un
-  comando offline: il server non ha bisogno di altro). **App** su `preview` da `main`
-  `873de53` (gruppo `9585ffac`, 2026-10-06 ~19:57Z): tutto `main`, fino
-  al nome e alla scritta «MuW» (TASK-260; icona e splash con una build
-  nativa), alla fine corsa stile Strava (TASK-208 B), a «Draw» ed
-  «Explore» in italiano (TASK-210 C, D), a «Location is off»
-  in corsa (TASK-259 B), alla corsa in italiano (TASK-210 B), al post che
-  resta sul server
-  (TASK-258), a «Open Settings» e «Retry» (TASK-259 A), agli errori che
-  parlano a chi corre (TASK-256), alla corsa rifiutata
-  con il motivo (TASK-257), allo schermo acceso in corsa (TASK-255), alle
-  dodici correzioni piccole (TASK-254) e a Ledro in «Paddle» (TASK-250).
-  **Da provare sull'iPhone.** Strava spento per scelta dell'utente.
-- **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
-  dall'utente con campioni da più città): saltare la ricerca lontana
-  quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
-  2–3,7 s in meno nei casi lunghi; `NEARBY_GOOD_GRACE_S` 3→1, 1,5 s in
-  meno con meno alternative (`tasks/TASK-203.md`). **Fatto il
-  2026-10-08 (parte B, ADR-0230)**: la ricerca lontana parte solo dove
-  vicino non si disegna niente; `FAR_TRACES` e `NEARBY_GOOD_GRACE_S` non
-  cambiano. **Resta**: aggiornamento del server e `draw_examples` (circa
-  40 minuti) con l'ok dell'utente.
-
-Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
-`CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
+**TASK-407**: la build 1.0.2 da `release/1.0.2`, che lancia l'utente.
+OTA di produzione e aggiornamenti del server in sospeso per task già Done:
+li tiene il Coordinatore (`AGENTI.md`, «L'albero»), col sì dell'utente.
 
 ## In lavorazione
 
@@ -6362,105 +6231,133 @@ corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
 - **Lavoro in parallelo** — TASK-359 (2026-10-30): `STATUS.md`, `DECISIONS.md` e
   `INDEX.md` si uniscono con `merge=union`, per non far ripartire la CI a ogni
   aggiunta. File `tasks/TASK-359.md`.
+Al massimo 5 righe per task: stato, «File toccati» occupati adesso (branch o
+PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
+
+- **TASK-214 — Il motore dei percorsi sul telefono** · A, B, C, A2, B2 in
+  `main`; restano tempi e memoria su un iPhone vero e le zone dove il server
+  dà 404. File: — · `tasks/TASK-214.md`
+- **TASK-237 — Il sito web** · online su getmuw.app; resta il merch.
+  File: `site/`, `docs/SITO.md` · `tasks/TASK-237.md`
+- **TASK-276 — Più percorsi all'ora sullo stesso server** · Todo, piano
+  pronto; aspetta il sì dell'utente e il via del Coordinatore. File: — ·
+  `tasks/TASK-276.md`
+- **TASK-283 — Le foto dei paesi in «NEARBY TOWNS»** · codice in `main`
+  (#499); resta il server. File: — · `tasks/TASK-283.md`
+- **TASK-294 — MuW su Google Play** · A, B, C in `main`; manca la copia sul
+  server (F.14). File: — · `tasks/TASK-294.md`
+- **TASK-297 — Archivio dei percorsi e loghi a penna alzata** · A e A2 fatte;
+  C (motore) nella PR #547; poi C2. File: — · `tasks/TASK-297.md`
+- **TASK-301 — La musica nel video della corsa** · PR #568, aspetta merge e
+  prova sull'iPhone. File: — · `tasks/TASK-301.md`
+- **TASK-309 — Le corse di gruppo** · documenti e A (API) in `main`;
+  prossimo B (app), poi C. File: — · `tasks/TASK-309.md`
+- **TASK-310 — pytest fermato sotto la 9.2** · nel vecchio STATUS è in
+  «Completato», il task file dice «In corso»: da chiudere nel task file.
+  File: — · `tasks/TASK-310.md`
+- **TASK-315 — Le foto di un post si scorrono nel Feed** · nel vecchio
+  STATUS è in «Completato», il task file dice «In corso»: da chiudere nel
+  task file. File: — · `tasks/TASK-315.md`
+- **TASK-311 — Parole scritte meglio** · A e B fatte; C e D dopo il sì
+  dell'utente. File: — · `tasks/TASK-311.md`
+- **TASK-312 — Attività da altre app e post di sole foto** · A e B in `main`;
+  poi C, D, E. File: — · `tasks/TASK-312.md`
+- **TASK-316 — Explore pronto prima** · A e B in `main`; C (server,
+  `draw_examples`) col sì dell'utente. File: — · `tasks/TASK-316.md`
+- **TASK-321 — L'attività in Apple Salute e Health Connect** · A in `main`,
+  B approvata con la 1.0.1; poi C (Android). File: — · `tasks/TASK-321.md`
+- **TASK-322 — Entrare con Apple e Google** · A (API) in `main`; prossima B
+  (app), C (chiavi sul server) col sì. File: — · `tasks/TASK-322.md`
+- **TASK-339 — L'interfaccia premium** · A, B, C2 in `main`; D in PR, poi C1
+  ed E. File: — · `tasks/TASK-339.md`
+- **TASK-343 — Le sfide del mese** · documenti e A in `main`; B nella PR
+  #667; server con la 0039 col sì. File: — · `tasks/TASK-343.md`
+- **TASK-346 — «Edit the drawing» nel Feed** · in PR, aspetta il merge e la
+  prova sul telefono. File: — · `tasks/TASK-346.md`
+- **TASK-347 — Il disegno libero ancorato alle strade** · A fatta; prossima
+  B (il telefono). File: — · `tasks/TASK-347.md`
+- **TASK-348 — Il compositore del post** · A in `main`; resta la prova sul
+  telefono, poi B, C, D. File: — · `tasks/TASK-348.md`
+- **TASK-353 — La chat: orari, giorni, non letti** · in corso; dopo il merge
+  TASK-354. File: — · `tasks/TASK-353.md`
+- **TASK-355 — Una scheda del Feed chiara** · A in `main`; B dopo 344 B.
+  File: — · `tasks/TASK-355.md`
+- **TASK-361 — «Draw» in tre secondi** · A e B in `main`; manca la
+  pubblicazione. File: — · `tasks/TASK-361.md`
+- **TASK-363 — Dove va la posizione del telefono** · codice in
+  `fix/TASK-363-position`; server, sito e OTA, tre sì a parte. File: — ·
+  `tasks/TASK-363.md`
+- **TASK-370 — L'app per Apple Watch** · A1, A2, A3, B1, B2 in `main`;
+  prossimi A-flip alla build 1.1 e B3 (l'orologio da solo). File: — ·
+  `tasks/TASK-370.md`
+- **TASK-371 — La camminata, «Walk»** · A e B Done, «Walk» acceso (#923);
+  resta C. File: — · `tasks/TASK-371.md`
+- **TASK-374 — Il mio corpo: calorie e zone del battito** · A e B in `main`;
+  C e D nella 1.0.2. File: — · `tasks/TASK-374.md`
+- **TASK-380 — Roller** · 0, A, B in `main`, server con la 0055;
+  l'accensione in PR (`feat/TASK-380-roller-on`), dopo l'OTA della #922.
+  File: quelli di quel branch · `tasks/TASK-380.md`
+- **TASK-384 — «MuW Style»** · A e B in `main`; prossima C, i primi 6 post.
+  File: — · `tasks/TASK-384.md`
+- **TASK-385 — «Gym», la palestra** · parti fino a F in `main`; prossima G
+  (il battito, con TASK-345 C). File: — · `tasks/TASK-385.md`
+- **TASK-388 — Movimenti stile Apple** · A, A2, B, C, C3 in `main`; C2 in PR.
+  File: — · `tasks/TASK-388.md`
+- **TASK-397 — Il VO₂ max nel profilo** · A e B in `main`; C con la 1.0.2,
+  poi D. File: — · `tasks/TASK-397.md`
+- **TASK-401 — Le indicazioni a schermo bloccato** · A in `main`; B (Live
+  Activity, 1.0.3) nella bozza #862. File: quelli della #862 ·
+  `tasks/TASK-401.md`
+- **TASK-406 — Le stazioni sciistiche** · C e D1 in `main`; D2 (la giornata
+  nell'app) nella PR #960, poi D3. File: quelli della #960 ·
+  `tasks/TASK-406.md`
+- **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
+  `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
+- **TASK-408 — L'editor del video dell'attività** · C1 in `main`; C2 (scene
+  e finale) nella PR #961. File: quelli della #961 · `tasks/TASK-408.md`
+- **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` (#922); B
+  (battito e zone) nella 1.0.3. File: — · `tasks/TASK-409.md`
+- **TASK-410 — La pagina del post** · B in `main` (#949); poi C
+  (`run_stats`), D, E. File: — · `tasks/TASK-410.md`
+- **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
+  schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
+  #962 · `tasks/TASK-411.md`
+- **TASK-412 — Documenti snelli** · questa PR: STATUS, DECISIONS e INDEX
+  archiviati parola per parola in `docs/archive/`. File: `CLAUDE.md`,
+  `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md`, `docs/archive/` ·
+  `tasks/TASK-412.md`
+- **TASK-413 — Ciaspole** · parte 0 in `main`; A1 (la neve nel motore) nella
+  PR #957, poi A2 e B. File: quelli della #957 · `tasks/TASK-413.md`
+- **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
+  approvata; prossima A, migrazione 0058 in bozza. File: — ·
+  `tasks/TASK-414.md`
+- **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
+  `tasks/TASK-415.md`
+- **TASK-419 — Il catalogo grande di «Explore»** · proposta in `main`
+  (ADR-0347); primo giro nella PR #966. File: quelli della #966 · `tasks/TASK-419.md`
+
+In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
+(aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
+la figura, 305 parapendio, 336 video nei post, 341 badge, 345 calorie e
+battito nel Feed, 373 sci alpino, 375 «Record only».
 
 ## Bloccato
 
 Niente.
 
-## Note per la prossima sessione
-
-- Sul Mac l'API che lancia il motore dal thread di una richiesta può
-  mandare in errore (segfault) in loop i processi delle partenze vicine:
-  è il fork su macOS, visto da TASK-197; sul server Linux no. Se l'API del
-  Mac (porta 8000) rallenta o scrive questi errori, riavviarla.
-- Navigazione col GPS (TASK-049): da provare sull'iPhone camminando un
-  percorso vero; dopo il merge serve `npm install` dalla radice
-  (`expo-speech`).
-- Ollama 0.34.4 è installato in `D:\Ollama` e parte con Windows; i
-  modelli stanno in `D:\Ollama\models` (variabile `OLLAMA_MODELS`
-  dell'account). C'è solo `qwen3:4b`: i due scartati e l'installer sono
-  già tolti. L'ambiente dell'API ha anche `services\ai` installato.
-- Precaricamento del modello (TASK-052): da misurare con il PC scarico,
-  riga «AI model loaded in … s» nel log dell'API.
-- In sospeso, dall'AI (`AI.md`): precaricare il modello all'avvio
-  dell'API (prima parola da 40–49 s a circa 5 s, 3,2 GB di RAM da subito).
-- Su questo PC il route-engine usa l'ambiente dell'API: non c'è
-  `services/route-engine/.venv` (`SETUP.md`, passo 10.2).
-- In cache ci sono i grafi `foot` di zona di trento, levico, valsugana e
-  milano (ADR-0023), più le zone di Trento da 21 e 30 km (TASK-026) e
-  quelle di Levico e Milano larghe 12,7 km (casa da 15 km, TASK-032), e
-  una zona di Levico larga 15 km (TASK-038, per cercare il posto a 2 km):
-  tutti i casi girano offline. Da questo PC un indirizzo di
-  `overpass-api.de` non risponde: prima di scaricare, leggere `MAPS.md`,
-  "Overpass: come si scarica".
-- Per generare campioni senza salvare ritagli in `data/cache/`: uno script
-  usa-e-getta che chiama `plan_shape` con `ZoneGraphs` dell'API, come in
-  TASK-032. Da TASK-136 anche la CLI non salva più i ritagli (ADR-0108).
-- Per giudicare le forme senza mappa basta un PNG scritto con la libreria
-  standard (`zlib`, `struct`), come `out/TASK-037-before-after.png`: niente
-  matplotlib né PIL.
-- Il 50% di `STROKE_DETAIL` (ADR-0039) è un primo valore; l'albero con
-  fusto e sei rami è troppo fitto per 15 km.
-- Per misurare sui casi di riferimento (in `services/route-engine/`, con
-  `..\api\.venv\Scripts\python.exe`): `tests/measure_optimizer.py`
-  (ottimizzatore, `--no-optimize` per TASK-017) e
-  `tests/measure_snapping.py` (solo snapping).
-- Fuori scope di TASK-016, annotati: tag `surface`, `sac_scale` e
-  `sidewalk` (serve riscaricare i grafi), ed evitare scale e strade
-  principali nella ricerca (oggi si misurano e si avvisa soltanto).
-- Dopo TASK-063, sopra i 30 s restano la seconda ricerca fino a 2 km
-  (ADR-0040), che a Trento corre quasi sempre, e il ritaglio della zona
-  nell'API (6–13 s a Milano): proposte in `tasks/TASK-063.md`, da decidere.
-- Motore lento sulle distanze lunghe: 30–50 s da 15 a 30 km, più il
-  download di una zona nuova (TASK-023, TASK-026; `API.md`, «Tempi»). Le
-  richieste in due tempi lo rendono sopportabile, non veloce: `PRODUCT.md`
-  chiede al massimo 30 s.
-- Far scegliere all'utente fra più percorsi alternativi: è TASK-093.
-- La Valsugana è sospesa su richiesta dell'utente: cuore e cerchio da 5 km
-  lì non sono disponibili (ADR-0025, ADR-0027).
-- matplotlib non è una dipendenza: per guardare le forme basta uno script
-  usa-e-getta fuori dal repository.
-- Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse
-  scambia `-33.9,...` per un'opzione.
-- App: dalla radice `npm install`, poi `npm run mobile` e il QR con la
-  Fotocamera dell'iPhone (`SETUP.md`, passo 9). In PowerShell di questo PC
-  si scrive `npm.cmd` al posto di `npm` (script bloccati). Sull'iPhone
-  Expo Go vuole l'accesso con lo stesso account Expo sul PC e sul telefono
-  (già fatto); il permesso di posizione è di Expo Go (`SETUP.md`, 9.4).
-- API: dalla radice `services\api\.venv\Scripts\python.exe -m
-shaperoute_api --lan` (`SETUP.md`, passo 10); risponde anche su `/docs`.
-- Il disco C: di questo PC ha poco spazio (5,5 GB liberi il 2026-09-23,
-  dopo la pulizia: tolti MATLAB, i ritagli in `data/cache/` e la venv del
-  route-engine). Ogni zona nuova scaricata vale circa 40 MB, più le
-  risposte di Overpass in `data/cache/http/`; Expo si ferma con `ENOSPC`
-  quando finisce lo spazio. Fino a TASK-136 la CLI salvava un ritaglio per
-  ogni partenza o distanza nuova dentro una zona in cache: quelli rimasti
-  si elencano e si cancellano con `python -m route_engine.prune_crops`
-  (ADR-0108). Il disco D: ha più di 270 GB liberi.
-- Le partenze delle tre zone sono in `docs/TESTING.md`.
-- Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
-  le zone fisse servono solo a confrontare le prove.
-- Il MVP non rispetta ancora il tempo di `PRODUCT.md` (≤ 30 s) sopra i
-  10 km e con le zone nuove: è il motore lento annotato sopra.
-- Il repository è pubblico: nessun segreto nei file, mai. Le chiavi stanno
-  solo in `.env`, che non entra nel repository.
-- Più sessioni lavorano insieme, ognuna nel suo worktree: l'app in
-  `D:\shaperoute-app`, con i suoi `node_modules` (`npm ci --cache
-D:/npm-cache`: il 2026-09-24 C: aveva 2,8 GB liberi). Il primo `jest` a
-  freddo può superare i 5 s di un test e fallire; al secondo giro è verde.
-
 ---
 
 ## Come si aggiorna
 
-A fine task, in un solo commit dentro la stessa PR:
-
-1. Sposta il task da **In lavorazione** a **Completato**, con una riga di
-   esito: cosa funziona adesso che prima non funzionava.
-2. Riscrivi **Prossimo passo** con un solo task.
-3. Aggiorna **In una riga**.
-4. Svuota o aggiorna **Note per la prossima sessione**.
-
-Tenere breve questo file è parte del lavoro: è quello che si paga in ogni
-sessione. Lo storico sta nei commit e nelle PR, non qui. Se **Completato**
-supera una decina di righe, si condensa per fase.
+- **Task nuovo**: una voce in «In lavorazione», al massimo 5 righe.
+- **Task che avanza**: si **riscrive** la sua voce, non si aggiunge sotto.
+  La cronologia va nel task file.
+- **Task chiuso**: la voce **esce** da qui e diventa **una riga** in fondo a
+  `docs/archive/COMPLETATI.md`
+  (`TASK-NNN — titolo · data · PR · esito in una frase`). Quello che resta
+  da fare (OTA, server, prova) va nel task file; se aspetta l'utente, una
+  riga in «Prossimo passo».
+- **In una riga** e **Prossimo passo** si riscrivono, non si allungano.
+- Se il file supera i 12 KB qualcosa è andato storto: si accorcia.
+- Lo `STATUS.md` fino al 2026-11-08 è intero in
+  `docs/archive/STATUS-fino-al-2026-11.md`.

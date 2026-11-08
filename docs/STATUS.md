@@ -1007,6 +1007,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   PR da `docs/TASK-411-gym-plans-proposal`. Parti: A griglia, B calendario e
   guida, C schede (migrazione), D privacy; ogni lista al Coordinatore.
   `tasks/TASK-411.md`.
+  2026-11-08: **parte E in `main`** (#941, `512e916a`): un omino animato e
+  una mini guida per ogni esercizio, in cinque lingue; OTA col sì.
   2026-11-08: **parte A in `main`** (#930, `a56f78c5`): «+ Exercise» a
   griglia, prima gli 8 gruppi muscolari poi i loro esercizi; la ricerca
   cerca in tutti. Solo JavaScript; OTA col sì. Prossimo: parte E (omini e

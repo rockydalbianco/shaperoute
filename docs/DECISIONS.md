@@ -465,6 +465,7 @@ lasciando le righe d'indice.
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
+- ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 
 ---
 
@@ -510,6 +511,51 @@ al via.
 necessaria, come al via). B3a2 manderà i preferiti da soli col messaggio
 «routes». Il codice dell'orologio si prova con un prebuild locale
 `MUW_WATCH=1`; impronta iOS senza variabile invariata.
+## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
+
+**Data**: 2026-11-08 · **Stato**: Accettato · **Task**: TASK-424 · deciso
+dall'agente su delega dell'utente (la tecnica); le scelte di prodotto e la
+privacy sono dell'utente e si scrivono in `tasks/TASK-424.md`
+
+**Contesto**: l'utente vuole un link da mandare a chi non ha l'app, che
+mostri dal vivo posizione, percorso fatto, dati e fine dell'attività, per
+tutti gli sport. Oggi nessun punto lascia il telefono durante una
+registrazione; il sito è statico; l'API ha già pagine a token
+(`account_email.py`) e giri di pulizia in thread (`SweepRound`).
+
+**Decisione**:
+- **Telefono → server**: un `POST` ogni 15 s in movimento, con i punti
+  nuovi (al massimo uno ogni 5 s) e i numeri del momento; subito a pausa,
+  ripresa, fine e stop; in pausa ogni 60 s. Parte dal task della posizione
+  che già gira a telefono bloccato (`runPosition.ts`), senza task nuovi.
+  Senza rete i punti restano in coda (al massimo 500).
+- **Pagina ← server**: polling ogni 10 s, `GET /live?t=<token>&after=<seq>`
+  con i soli punti nuovi. Niente WebSocket né SSE: niente da cambiare in
+  Caddy, risposte piccole, facile da provare.
+- **Link**: `https://getmuw.app/live/#<token>`; token di 128 bit
+  (`secrets.token_urlsafe(16)`), salvato come SHA-256. Il token dopo il `#`
+  non arriva al server del sito né nel Referer; all'API va in query, che il
+  log d'accesso non scrive (ADR-0096). `/live` in `OPEN_PATHS`, con
+  `Access-Control-Allow-Origin: https://getmuw.app` solo lì; un limite di
+  richieste per token.
+- **Dati**: `live_shares` e `live_share_points`, `ON DELETE CASCADE`
+  dall'account; un giro di pulizia ogni 5 min cancella i punti scaduti.
+  Nessuna posizione nel log (ADR-0092).
+- **Nessuna dipendenza nuova**: `fetch` e `Share` di React Native nell'app,
+  la libreria standard sul server; la pagina usa MapLibre copiato sul sito
+  alla versione dell'app (scelta dell'utente) e le tile di OpenFreeMap. L'impronta iOS si misura nella parte B.
+
+**Alternative scartate**: WebSocket o SSE (una connessione aperta per ogni
+spettatore, Caddy e i thread dell'API da cambiare, per un guadagno di pochi
+secondi); invio a ogni fix (una richiesta ogni pochi secondi a telefono
+bloccato: batteria); pagina disegnata dall'API su `api.getmuw.app` (fuori
+dal sito, più HTML nel server); token nel percorso dell'URL (finirebbe nel
+log d'accesso).
+
+**Conseguenze**: la pagina del sito carica le tile da fuori, la prima volta
+per `getmuw.app` (va nella privacy, col sì dell'utente); il
+server va aggiornato col sì; una richiesta ogni 15 s in più durante una
+condivisione.
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole

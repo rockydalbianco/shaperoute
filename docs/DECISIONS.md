@@ -480,6 +480,7 @@ lasciando le righe d'indice.
 - ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
 - ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
 - ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy · 2026-11-08 · Attiva
+- ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1159,3 +1160,39 @@ dell'utente.
    scheda, quando l'API lo dà. Il tempo nelle zone resta sul telefono.
 6. **Privacy** dell'app e del sito con i testi approvati (scelta 7), datata 8
    novembre 2026: da ridatare al giorno del merge se entra dopo.
+
+## ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id`
+
+**Stato**: Attiva · 2026-11-08 · TASK-406 parte D3a. La scelta di cosa vuol
+dire seguire è dell'utente («Le tue stazioni», 2026-11-08); il resto è
+deciso dall'agente su delega dell'utente, con la lista dei file mandata al
+Coordinatore.
+
+**Contesto**: la domanda 4 voleva nella pagina della stazione i post dei
+membri e un tasto per seguirla. Seguire poteva dare anche notifiche.
+
+**Decisione**:
+
+1. **Seguire** mette la stazione fra «Your resorts», per prime nella scheda
+   «Ski» e in «Cambia» durante la giornata. Nessuna notifica. La tabella
+   `resort_follows` (migrazione `0062`) ha l'account e la stazione, tutti e
+   due con `ON DELETE CASCADE`: una stazione tolta da un import esce dalle
+   seguite.
+2. **Le rotte**: `PUT` e `DELETE /me/ski-resorts/{id}/follow` (204, la
+   `PUT` dà 404 per una stazione che non c'è), `GET /me/ski-resorts` (le
+   seguite, l'ultima prima, nella forma della ricerca, al più 200).
+3. **I post della stazione**: `GET /ski-resorts/{id}/drawings` dà le
+   giornate di sci con quella stazione (`runs.ski_resort_id`, della D1) che
+   chi chiede vede su un profilo (`shown_sql`), con `X-MuW-Reads`, dalla più
+   recente, a pagine come un profilo. Riusa le colonne e i dettagli di
+   `drawings.py` come fa `contests.py`, senza cambiare quel file.
+
+**Alternative**:
+
+- **Le notifiche** a ogni giornata pubblicata in una stazione seguita:
+  scartate dall'utente.
+- **Le seguite sul telefono**: scartate, perché si perdono cambiando
+  telefono e non seguono l'account.
+
+**Conseguenze**: una migrazione (`0062`), quindi
+il server col sì dell'utente. L'app (D3b) viene dopo, con i suoi testi.

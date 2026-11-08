@@ -7,6 +7,7 @@
  * an API without the calendar leaves the steps alone.
  */
 import calendar from "@shaperoute/shared-types/fixtures/gym-calendar.json";
+import levels from "@shaperoute/shared-types/fixtures/gym-levels.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { Session } from "@shaperoute/shared-types";
 import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
@@ -16,6 +17,7 @@ import { answers, apiError } from "../account/testing";
 import { DrawingsContext, type DrawingsDoor } from "../social/drawingsDoor";
 import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
 import { GymCalendarSheet, monthGrid, monthSummary } from "./GymCalendar";
+import { GymLevels } from "./GymLevels";
 import {
   GUIDE_STEPS,
   GymDrawGuide,
@@ -220,10 +222,31 @@ test("without the API's calendar, or signed out, Draw shows the steps alone", as
   expect(screen.getByText("How it works")).toBeOnTheScreen();
   expect(screen.queryByTestId("gym-guide-month")).toBeNull();
   expect(screen.queryByTestId("gym-guide-last")).toBeNull();
-  screen.unmount();
+  await screen.unmount();
 
   const unused = jest.fn(answers({ status: 200, body: calendar }));
   await shown(<GymDrawGuide fetchFn={unused as unknown as typeof fetch} />, false);
   expect(unused).not.toHaveBeenCalled();
   expect(screen.queryByTestId("gym-guide-month")).toBeNull();
+});
+
+test("one's own profile opens the calendar from the gym box; another's has no line", async () => {
+  const fetchSpy = jest
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(
+      answers({ status: 200, body: calendar }) as unknown as typeof fetch,
+    );
+  try {
+    const mine = await shown(<GymLevels levels={levels.gym_levels} own />);
+    await fireEvent.press(mine.getByTestId("gym-calendar-open"));
+    await act(async () => {});
+    expect(mine.getByTestId("gym-calendar")).toBeOnTheScreen();
+    expect(String(fetchSpy.mock.calls[0][0])).toMatch(/\/me\/gym-calendar\?tz=/);
+    await mine.unmount();
+    const theirs = await shown(<GymLevels levels={levels.gym_levels} />);
+    expect(theirs.getByTestId("gym-levels")).toBeOnTheScreen();
+    expect(theirs.queryByTestId("gym-calendar-open")).toBeNull();
+  } finally {
+    fetchSpy.mockRestore();
+  }
 });

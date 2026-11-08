@@ -102,7 +102,8 @@ Sotto «Start workout», «How it works» in tre passi (scegli dalla griglia;
 segna ogni serie, il recupero parte da solo; «Save»: calorie, traguardi e
 classifica). Per chi è dentro all'account, sotto: «Last workout: {when} ·
 {time}» (oggi, ieri o il giorno; il tempo senza le pause) e «This month: {n}
-times ›», che apre il calendario.
+times ›», che apre il calendario; sul proprio profilo lo apre anche «Gym
+calendar ›» nel riquadro 🏋️.
 
 Il calendario (`GET /me/gym-calendar?tz=&month=`, solo il proprietario) è un
 mese a griglia da lunedì sul fuso del telefono: un pallino giallo nei giorni

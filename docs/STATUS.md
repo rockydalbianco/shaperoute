@@ -899,8 +899,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   guide, richiesta dell'utente del 2026-11-07) dopo il suo ok di lista, poi B.
   2026-11-08: parte E in PR (#941); **parte B scritta** su
   `feat/TASK-411-b-gym-calendar` (`GET /me/gym-calendar`, la guida in «Draw»,
-  il calendario del mese), PR dopo la #941. Server e OTA col sì dell'utente;
-  «Gym calendar ›» sul profilo in attesa dell'ok per `ProfileHome.tsx`.
+  il calendario del mese, anche dal riquadro 🏋️ del proprio profilo), PR dopo
+  la #941. Server e OTA col sì dell'utente.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta

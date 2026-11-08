@@ -677,13 +677,27 @@ def overpass_wait_s(
     url: str = OVERPASS_STATUS, timeout_s: float = 20.0
 ) -> float | None:
     """Seconds until a slot is free; None when Overpass does not answer or
-    says nothing usable (the 502 "at capacity" page, for one)."""
+    says nothing usable (the 502 "at capacity" page, for one). Through the
+    address of Overpass that accepts connections, when the engine is here
+    to pick it (overpass_address, ADR-0100)."""
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     try:
-        with urllib.request.urlopen(request, timeout=timeout_s) as r:
-            wait = slot_wait_s(r.read().decode("utf-8", "replace"))
+        from route_engine.overpass_address import reachable
+    except ImportError:  # the standard library alone: the first address
+        reachable = None
+    try:
+        if reachable is None:
+            with urllib.request.urlopen(request, timeout=timeout_s) as r:
+                text = r.read().decode("utf-8", "replace")
+        else:
+            with (
+                reachable(url),
+                urllib.request.urlopen(request, timeout=timeout_s) as r,
+            ):
+                text = r.read().decode("utf-8", "replace")
     except Exception:
         return None
+    wait = slot_wait_s(text)
     return wait if wait is not None and wait <= MAX_SLOT_WAIT_S else None
 
 

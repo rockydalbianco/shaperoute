@@ -469,7 +469,7 @@ finto API risponde 200 a `…/stats` e lo toglie dalla lista) e il nuovo
 `activitiesDoorStats.test.tsx`, approvati dal Coordinatore; `api/drawings.ts`
 esce dalla lista. Dopo la prima CI, due test dell'app intera che contano i
 PUT di `/me/activities/` (`AppActivities`, `AppPenUpSaved`): non contano
-`…/stats`, segnalati al Coordinatore. Branch `feat/TASK-410-c-run-stats`.
+`…/stats`, approvati dal Coordinatore. Branch `feat/TASK-410-c-run-stats`.
 
 ```
 services/api/migrations/0064_run_stats.sql       (nuovo; numero in bozza, il vero al merge)

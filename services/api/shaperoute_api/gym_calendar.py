@@ -11,9 +11,10 @@ Only the owner: it is under /me. Read from `runs` with the activity
 from __future__ import annotations
 
 import re
+from calendar import monthrange
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated, Any
 from uuid import UUID
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -42,6 +43,17 @@ class GymCalendarWorkoutBody(BaseModel):
     started_at: datetime
     duration_s: int = Field(ge=0, description="Pauses left out, rests in.")
     drawing_id: UUID | None = Field(description="Its post, when it has one.")
+    plan: str | None = Field(
+        default=None,
+        description="The name of the plan it followed (TASK-411 C); null for none.",
+    )
+
+
+class GymCalendarSkippedBody(BaseModel):
+    """packages/shared-types src/gym.ts, `GymCalendarSkipped`."""
+
+    day: int = Field(ge=1, le=31)
+    plan: str = Field(description="The name of the plan of that day.")
 
 
 class GymCalendarDayBody(BaseModel):
@@ -62,6 +74,11 @@ class GymCalendarBody(BaseModel):
     last: GymCalendarWorkoutBody | None = Field(
         description="The last workout of all, of any month; null for none."
     )
+    skipped: list[GymCalendarSkippedBody] = Field(
+        default_factory=list,
+        description="The days of a plan gone by without a workout of it,"
+        " since the plan was made (TASK-411 C).",
+    )
 
 
 def _workout(row: dict[str, Any]) -> GymCalendarWorkoutBody:
@@ -70,12 +87,21 @@ def _workout(row: dict[str, Any]) -> GymCalendarWorkoutBody:
         started_at=row["started_at"],
         duration_s=row["duration_s"],
         drawing_id=row["drawing_id"],
+        plan=row["plan"],
     )
 
 
 # A workout's post (one a run at most), when the moderation has not hidden it.
-_POST = " LEFT JOIN drawings p ON p.run_id = r.id AND p.hidden_at IS NULL"
-_COLUMNS = "r.key, r.started_at, r.duration_s, p.id AS drawing_id"
+# And the plan it followed, when the plan is still there (gym_plans.py).
+_POST = (
+    " LEFT JOIN drawings p ON p.run_id = r.id AND p.hidden_at IS NULL"
+    " LEFT JOIN gym_sessions g ON g.run_id = r.id"
+    " LEFT JOIN gym_plans gp ON gp.user_id = r.user_id AND gp.key = g.plan_key"
+)
+_COLUMNS = (
+    "r.key, r.started_at, r.duration_s, p.id AS drawing_id,"
+    " gp.name AS plan, g.plan_key"
+)
 
 
 @dataclass
@@ -119,9 +145,30 @@ class GymCalendars:
                 " ORDER BY r.started_at DESC, r.id DESC LIMIT 1",
                 params,
             ).fetchone()
+            plans = conn.execute(
+                "SELECT key, name, days, created_at FROM gym_plans"
+                " WHERE user_id = %(owner)s ORDER BY position, key",
+                params,
+            ).fetchall()
         days: dict[int, list[GymCalendarWorkoutBody]] = {}
+        followed: set[tuple[int, str]] = set()
         for row in rows:
             days.setdefault(row["day"], []).append(_workout(row))
+            if row["plan_key"] is not None:
+                followed.add((row["day"], row["plan_key"]))
+        zone = ZoneInfo(tz)
+        today = self.now().astimezone(zone).date()
+        year, number = params["year"], params["month"]
+        skipped = [
+            GymCalendarSkippedBody(day=day, plan=plan["name"])
+            for day in range(1, monthrange(year, number)[1] + 1)
+            for plan in plans
+            if plan["created_at"].astimezone(zone).date()
+            <= date(year, number, day)
+            < today
+            and plan["days"] & (1 << date(year, number, day).weekday())
+            and (day, plan["key"]) not in followed
+        ]
         return GymCalendarBody(
             month=month,
             tz=tz,
@@ -132,6 +179,7 @@ class GymCalendars:
                 for day, workouts in sorted(days.items())
             ],
             last=None if last is None else _workout(last),
+            skipped=skipped,
         )
 
 

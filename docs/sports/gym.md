@@ -109,6 +109,22 @@ gruppi, per nome nella lingua dell'app o in inglese, e «Add “{name}”»
 aggiunge un esercizio col nome libero (`gym/ExerciseGrid.tsx`,
 `gym/ExercisePicker.tsx`).
 
+## Le schede (TASK-411 C)
+
+«Plans ›» in «Draw» elenca le proprie schede (nome, giorni, quanti
+esercizi); «New plan» ne scrive una: un nome, i giorni della settimana, gli
+esercizi dalla griglia in ordine, per ognuno le serie (1–20, tre all'inizio)
+e i valori obiettivo nei campi del suo tipo, anche vuoti. «Delete plan»
+chiede prima. Al massimo 20 schede da 30 esercizi; le vede solo chi le ha
+fatte. Il giorno di una scheda «Draw» dice «Today: {plan}» e «Start
+workout» la segue: parte dal primo esercizio coi valori già scritti, sotto
+il cronometro «{plan} · Plan: {done}/{total} sets», e finite le serie di un
+esercizio passa al successivo; si può sempre cambiare esercizio o scrivere
+altri valori, e si salvano le serie fatte. «Start without the plan» fa un
+allenamento libero. Nel calendario ogni allenamento ha il nome della sua
+scheda e i giorni di una scheda passati senza di lei hanno un pallino
+grigio («In programma»).
+
 ## Il calendario e la guida in «Draw» (TASK-411 B)
 
 Sotto «Start workout», «How it works» in tre passi (scegli dalla griglia;

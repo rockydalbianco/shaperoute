@@ -267,7 +267,7 @@ def test_the_request_is_checked(client: TestClient) -> None:
         assert answer.json()["error"]["code"] == "invalid_request"
     answer = client.post(
         challenges,
-        json={"shape_id": "cat", "pieces": 4, "piece": DISTANCE_2_KM},
+        json={"shape_id": "teapot", "pieces": 4, "piece": DISTANCE_2_KM},
         headers=ada,
     )
     assert answer.status_code == 422
@@ -466,8 +466,9 @@ def test_the_last_piece_completes_the_challenge_for_everyone_who_ran(
     ]
     assert heart["unlocked_at"] is None
     assert heart["team_unlocked_at"] == done["completed_at"]
-    # Each piece told to the other; the shape done told to both.
-    assert told(expo) == [
+    # Each piece told to the other; the shape done told to both. (The first
+    # kilometre unlocks shapes too: those pushes are each runner's own.)
+    assert [t for t in told(expo) if t[1]["kind"] != "shape_unlocked"] == [
         (BOB_PHONE, {"kind": "piece_done", "challenge_id": challenge["id"]}),
         (ADA_PHONE, {"kind": "piece_done", "challenge_id": challenge["id"]}),
         (ADA_PHONE, {"kind": "challenge_done", "challenge_id": challenge["id"]}),

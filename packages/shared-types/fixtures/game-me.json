@@ -6,5 +6,9 @@
     { "id": "triangle", "unlocked_at": "2026-10-23T12:00:00Z", "progress": 1.0 },
     { "id": "hexagon", "unlocked_at": null, "progress": 0.71 },
     { "id": "lightning", "unlocked_at": null, "progress": 0.9317 }
+  ],
+  "collections": [
+    { "id": "geometry", "unlocked": 1, "total": 2 },
+    { "id": "sky", "unlocked": 0, "total": 1 }
   ]
 }

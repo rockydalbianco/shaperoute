@@ -127,8 +127,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
   proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
   TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
-- **TASK-419 — Il catalogo grande di «Explore»** · proposta in `main`
-  (ADR-0347); primo giro nella PR #966. File: quelli della #966 · `tasks/TASK-419.md`
+- **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
+  (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
+  i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347
+  precisazione). Prossimo: «via server catalogo» del Coordinatore, poi il
+  secondo giro (Italia, Europa) con le zone copiate dal server. File: — · `tasks/TASK-419.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

@@ -41,6 +41,20 @@ Solo parole corte (ADR-0130): CIAO e TIAMO nelle città italiane, più AO e
 AMOR a Roma, BONA a Firenze, UE a Bari, UELA a Milano; a New York LOVE,
 HEY e NYC. Oltre le 4–5 lettere, al tetto dei 21 km, non si leggono.
 
+### Il catalogo grande (TASK-419, ADR-0347)
+
+Da TASK-419 i file di `seed/` li scrive `tools/catalog_seed.py`, che usa
+`seed_catalog` senza cambiarlo: pianifica circa 1000 casi città × forma o
+parola × distanza (le piazze delle città sono nello strumento), una zona
+per città da Overpass con l'attesa dello slot, tiene un registro in
+`out/TASK-419/runs.jsonl`, filtra (somiglianza ≥ 0,90, distanza ±10%,
+ripassi in più ≤ 10%, niente `motorway`/`trunk`) e propone una
+preselezione; `tools/catalog_review.py` fa la pagina HTML con cui
+**l'utente sceglie**. Le chiavi tenute stanno in `tools/catalog_kept.json`
+e `--write` riscrive i file di `seed/` da lì: i file delle città del seme
+sono stati riscritti con i tenuti (155 percorsi in 23 città il 2026-11-08).
+Il filtro e la scrittura hanno test deterministici in `tools/`.
+
 ### Le città in evidenza
 
 Le città che «Explore» mostra per prime (`FEATURED_CITIES` nell'app) e che

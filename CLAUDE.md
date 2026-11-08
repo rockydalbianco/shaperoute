@@ -26,6 +26,11 @@ decide il percorso.** L'AI non produce mai coordinate, tracce o geometrie.
 Non leggere l'intera cartella `docs/`. Non leggere codice di servizi
 che il task non tocca.
 
+**`DECISIONS.md` e i file in `docs/archive/` non si leggono interi**: si
+cercano con grep per numero ADR/TASK
+(`grep -n "ADR-0300" docs/DECISIONS.md docs/archive/*.md`) e si legge solo
+la voce trovata.
+
 ## Regole di lavoro
 
 - Un task = un branch = una Pull Request. Mai commit diretti su `main`.
@@ -89,14 +94,20 @@ Più agenti lavorano sullo stesso repository nello stesso momento.
   «Coordinatore»): chiedili prima di creare il file, anche quando il task te
   lo dà l'utente. Senza coordinatore, cerca il primo numero libero anche nei
   branch remoti e nei worktree (`git branch -a`, `git worktree list`).
-- In `STATUS.md` e `DECISIONS.md` aggiungi le tue righe: non riscrivere né
-  cancellare quelle degli altri.
+- In `STATUS.md` riscrivi solo la voce del tuo task; in `DECISIONS.md`
+  aggiungi le tue voci. Non riscrivere né cancellare quelle degli altri.
 
 ## A fine task, sempre
 
 - [ ] Test verdi in locale.
-- [ ] `docs/STATUS.md` aggiornato (cosa è fatto, cosa è il prossimo passo).
-- [ ] Se è stata presa una decisione tecnica: nuova voce in `docs/DECISIONS.md`.
+- [ ] `docs/STATUS.md`: la voce del task **esce** da «In lavorazione» e
+      diventa **una riga** in fondo a `docs/archive/COMPLETATI.md`
+      (`TASK-NNN — titolo · data · PR · esito`). Quello che resta (OTA,
+      server, prova) va nel task file; se aspetta l'utente, una riga in
+      «Prossimo passo». Un task aperto ha al massimo 5 righe in
+      `STATUS.md`: la cronologia va nel task file, non lì.
+- [ ] Decisione tecnica: voce intera in «Voci nuove» di `docs/DECISIONS.md`
+      e la sua riga nell'«Indice».
 - [ ] Se il comportamento è cambiato: documento di dominio aggiornato.
 - [ ] Task file spostato a stato `Done` con una riga di esito.
 - [ ] Avvisato il coordinatore («TASK-XXX fatto»), poi **contesto pulito**:

@@ -357,7 +357,15 @@ c'è già in «Share your run», quindi niente «Export video».
       dall'alto, scendendo dalla vista intera nel primo secondo del
       percorso e risalendo dopo) e «Line in 2D» (tutto il video dall'alto,
       sulla foto piatta di C2a). Se il telefono non regge la camera dietro,
-      la mappa resta ferma con lo zoom lento e l'animale corre lo stesso.
+      la mappa resta ferma con lo zoom lento e l'animale corre lo stesso. Lista approvata
+      dal Coordinatore il 2026-11-08. Provato nel simulatore: la prima
+      volta, con le tessere da scaricare, la mappa ha usato i 15 s e il
+      video è uscito con la mappa ferma; poi un fotogramma dietro
+      l'animale costava 24–29 ms (budget 25, il simulatore non ha la
+      scheda grafica del telefono). Con il budget alzato solo nella prova,
+      la camera scende, segue il cavallo e risale; «Line in 2D» dall'alto
+      con la volpe (video in `out/TASK-408/sim-c2b/`). La misura vera è
+      della parte E.
     - **C2c**: l'anteprima nel foglio (un modo «play» della pagina del
       video), con la sua lista.
 - **D — il prompt**: la tabella di parole nell'app e il riquadro; niente

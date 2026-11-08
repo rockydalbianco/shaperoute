@@ -2,6 +2,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import type { PostRun } from "./postRun";
+import { videoLine } from "../theme/tokens";
 import { StyleRow } from "./StyleRow";
 
 /** A straight line north, a point every 50 m. */
@@ -21,11 +22,11 @@ const RUN: PostRun = {
 };
 
 describe("StyleRow", () => {
-  it("offers Night, Day and 3D, the chosen one checked, and tells which is tapped", async () => {
+  it("offers 2D, Night, Day and 3D, the chosen one checked, and tells which is tapped", async () => {
     const onChange = jest.fn();
     await render(<StyleRow run={RUN} style="night" onChange={onChange} />);
     expect(screen.getByText("Style")).toBeOnTheScreen();
-    expect(screen.getAllByRole("radio")).toHaveLength(3);
+    expect(screen.getAllByRole("radio")).toHaveLength(4);
     expect(screen.getByRole("radio", { name: "3D" })).not.toBeChecked();
     expect(screen.getByRole("radio", { name: "Night" })).toBeChecked();
     expect(screen.getByRole("radio", { name: "Day" })).not.toBeChecked();
@@ -49,7 +50,7 @@ describe("StyleRow", () => {
       />,
     );
     expect(screen.queryAllByTestId("style-line")).toHaveLength(0);
-    expect(screen.getAllByRole("radio")).toHaveLength(3);
+    expect(screen.getAllByRole("radio")).toHaveLength(4);
   });
 
   it("leans the drawing in the 3D tile, as the map will, and only there", async () => {
@@ -60,7 +61,16 @@ describe("StyleRow", () => {
     expect(screen.getByTestId("style-drawing-3d")).toHaveStyle(leaning);
     expect(screen.getByTestId("style-drawing-night")).not.toHaveStyle(leaning);
     expect(screen.getByTestId("style-drawing-day")).not.toHaveStyle(leaning);
+    expect(screen.getByTestId("style-drawing-2d")).not.toHaveStyle(leaning);
     await fireEvent.press(screen.getByRole("radio", { name: "Night" }));
     expect(onChange).toHaveBeenCalledWith("night");
+  });
+
+  it("draws the drawing in the line's colour chosen in «Edit video» (TASK-408)", async () => {
+    await render(<StyleRow run={RUN} style="2d" line="pink" onChange={() => {}} />);
+    expect(screen.getByRole("radio", { name: "2D" })).toBeChecked();
+    for (const piece of screen.getAllByTestId("style-line")) {
+      expect(piece).toHaveStyle({ backgroundColor: videoLine.pink });
+    }
   });
 });

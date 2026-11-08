@@ -1658,6 +1658,19 @@ export const IT: Table = {
   Donkey: "Asino",
   Alpaca: "Alpaca",
 
+  // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
+  "2D": "2D",
+  "Edit video": "Modifica video",
+  "Line colour": "Colore della linea",
+  "Along the way": "Lungo il percorso",
+  "At the end": "Alla fine",
+  Nothing: "Niente",
+  Yellow: "Giallo",
+  "Light blue": "Azzurro",
+  Pink: "Rosa",
+  Green: "Verde",
+  White: "Bianco",
+
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concorso MuW",
   "The post with the most reactions wins.": "Vince il post con più reazioni.",

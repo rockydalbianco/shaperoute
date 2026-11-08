@@ -957,6 +957,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   limite noto nel task file: 3D a freddo può dare il video giallo di
   riserva dopo 15 s. L'OTA la pubblica il Coordinatore dopo il sì
   dell'utente.
+  **Parte C1** (2026-11-06, branch `feat/TASK-408-c1-edit-sheet`): il
+  foglio «Edit video» con stile (più «2D», fondo scuro: scelta dell'utente),
+  animale, colore della linea (cinque, blocco `videoLine` nei token) ed
+  emoji lungo il percorso e alla fine; provato nel simulatore (video
+  all'utente). Prossimo: C2 (scene, finale, camera dietro, anteprima);
+  B2 quando c'è l'elefante.
 - **TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e
   calendario** (ADR-0341 **proposto**; numeri dal Coordinatore il
   2026-11-06). Dalla segnalazione dell'utente «Start workout non fa nulla»

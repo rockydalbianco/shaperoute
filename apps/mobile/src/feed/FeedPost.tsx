@@ -151,7 +151,7 @@ export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): st
  * photo they lie over it, light on the dark that rises from its foot, with
  * the figure small in a corner. A member's drawing says when it was run, as
  * a comment says when it was written, and has its actions under the card
- * (`ActionBar`, TASK-355); the «…» and the actions stay outside the card's
+ * (`PostActions`, TASK-410 F); the «…» and the actions stay outside the card's
  * button, where a screen reader reaches them. So does its author's name with
  * the initial: a tap on them opens the author's profile, as a tagged name
  * does (TASK-399).

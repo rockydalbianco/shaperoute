@@ -461,9 +461,11 @@ niente Edit & run).
 
 ## Parte C — `run_stats` sul server (2026-11-08)
 
-Lista dei file approvata dal Coordinatore il 2026-11-08, con due aggiunte
-chieste nello stesso giorno (i test di `drawings` e di `activitiesDoor`
-che contano le richieste). Branch `feat/TASK-410-c-run-stats`.
+Lista dei file approvata dal Coordinatore il 2026-11-08. Aggiunte dello
+stesso giorno: `services/api/tests/test_drawings.py` (due righe, `stats` in
+`NEW_FIELDS` e `SOURCE` come `order` di TASK-348), approvata dal
+Coordinatore; i tre test di `activitiesDoor` che contano le richieste,
+chiesti e in attesa del suo ok. Branch `feat/TASK-410-c-run-stats`.
 
 ```
 services/api/migrations/0064_run_stats.sql       (nuovo; numero in bozza, il vero al merge)

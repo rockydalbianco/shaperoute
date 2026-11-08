@@ -313,6 +313,53 @@ prima della 1.1, con la stessa dipendenza `@bacons/apple-targets`.
   `main`; dopo, quella della 1.0.2. Ogni PR di A la misura senza
   `MUW_WATCH`.
 
+## Parte B, il piano (2026-11-08)
+
+B, senza telefono, va in tre pezzi; B1 può andare in parallelo ad A3
+perché usa solo file nuovi.
+
+**B1 — La guida in Swift** (in `main`, impronta invariata: niente di
+nativo cambia, il pacchetto `Core/` è fuori dal build finché A-flip non lo
+accende):
+- `targets/watch/Core/Sources/WatchCore/Guide/`: `RouteProgress.swift`
+  (`progress.ts` e `metresBetween`), `Rejoin.swift` (`rejoin.ts`),
+  `Navigator.swift` (la parte «follow» di `navigator.ts`: le svolte
+  annunciate a `ANNOUNCE_M`, la catena delle svolte unite, il fuori rotta
+  dopo `OFF_FIXES` fix in `OFF_SECONDS`, il rientro dopo `BACK_FIXES`, il buco
+  di GPS (`GAP_MS`), il rientro più avanti dopo un giro dell'isolato, i fix
+  poco precisi, l'arrivo dopo `ARRIVE_FIXES`). Le stesse costanti, gli stessi
+  nomi.
+- **Gli avvisi senza parole**: il telefono dice frasi, l'orologio vibra e
+  mostra. `Navigator.swift` dà avvisi con un tipo (partenza, svolta in
+  arrivo con la catena e i metri, fuori rotta, dov'è il percorso con metri e
+  direzione, di nuovo sul percorso, arrivato) e se vibrare, come il
+  `vibrate` del telefono.
+- **Uguali per costruzione**: `src/watch/guideScenarios.ts` fa uscite
+  deterministiche sui percorsi di `navigation/fixtures/` (dritto fino alla
+  fine, una deviazione e il rientro, un buco di GPS, fix poco precisi, una
+  deviazione più lunga con il rientro più avanti); `guideTrace.ts` le fa
+  correre al `navigator.ts` del telefono e scrive per ogni fix lo stato
+  (`alongM`, `next`, `saidUpTo`, fuori rotta, arrivato) e gli avvisi per
+  tipo. Le tracce stanno in `targets/watch/Core/Fixtures/guide/`, scritte da
+  `scripts/watch-guide.sh`; `guideTrace.test.ts` controlla che siano quelle
+  del codice di oggi, `GuideTests.swift` le rigioca in Swift (i metri entro
+  1 cm, il resto uguale). Se `navigator.ts` cambia e le tracce no, jest
+  fallisce; se le tracce cambiano e lo Swift no, `swift test`.
+
+B1 fatta il 2026-11-08: 14 tracce, 31 test XCTest verdi, ogni costante
+della guida legata (ADR-0314 «precisazione B1»); impronta `6f8bba4c`.
+
+**B2 — Il percorso chiuso e i pezzi**: `startAnywhere.ts` (un percorso
+chiuso preso dove lo si tocca) e `penUp.ts` (i disegni a penna alzata), con
+tracce come in B1.
+
+**B3 — L'orologio da solo**: i percorsi mandati dal telefono («Send to
+watch», testo da approvare) e tenuti sull'orologio, il GPS e la traccia
+(`HKWorkoutRouteBuilder`), la schermata con freccia, metri e mappa, le
+vibrazioni (schemi scelti dall'utente alla prima prova al polso), la traccia
+al telefono al rientro. Qui servono le scelte dell'utente 4 e 5 e la build
+con A-flip per la prova vera.
+
 ## File toccati
 
 Parte 0 (questa proposta):

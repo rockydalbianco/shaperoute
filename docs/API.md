@@ -3226,6 +3226,27 @@ Queste tre rotte chiedono il token: toccano le giornate dei membri.
 - **Il codice:** `ski_days.py`. Migrazione `0056`, tipi in
   `packages/shared-types/src/skiDays.ts`.
 
+**Seguire una stazione e i suoi post (TASK-406 parte D3a)**
+
+Chiedono tutte il token.
+- **`PUT /me/ski-resorts/{id}/follow`**: segue la stazione, `204`. Due
+  volte vale una. `404` per una stazione che non c'è.
+- **`DELETE /me/ski-resorts/{id}/follow`**: non la segue più, `204`, anche
+  se non la seguiva.
+- **`GET /me/ski-resorts`**: «Your resorts», le stazioni seguite, l'ultima
+  seguita prima, al più 200. La forma è quella di `GET /ski-resorts`, con
+  `away_m` `null` (`followed-resorts.json`). Nessuna notifica (la scelta
+  dell'utente).
+- **`GET /ski-resorts/{id}/drawings?cursor=…&limit=…`**: i post delle
+  giornate di sci con quella stazione (`ski_resort_id` della D1).
+  - Solo quelli che chi chiede vede su un profilo (`shown_sql`), e solo se
+    l'app legge `skiing` (`X-MuW-Reads`).
+  - Dalla giornata più recente, a pagine come `GET
+    /users/{id}/drawings`: `drawings`, `next`, `total`.
+  - `404` per una stazione che non c'è.
+- **Il codice:** `resort_follows.py`. Migrazione `0062`, tipi in
+  `packages/shared-types/src/resortFollows.ts`.
+
 ### Drawing search (TASK-344, ADR-0297)
 
 La ricerca dei disegni dalla lente del Feed: le stesse regole del feed su

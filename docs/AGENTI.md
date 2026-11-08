@@ -180,14 +180,32 @@ In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
 > Coordinatore. Le liste dei file vanno comunque al Coordinatore prima del
 > codice: il controllo dei conflitti con le sessioni non sport lo fa lui.
 
-**Ultimo aggiornamento**: 2026-11-04.
+**Ultimo aggiornamento**: 2026-11-07.
 
-| Sessione | Adesso | Dopo | File toccati |
+La struttura (TASK-376, ADR-0320) è chiusa: registri, banco
+(`tools/sport_bench/`) e ricetta (`docs/sports/COME-AGGIUNGERE.md`). Ogni
+sport passa per le stesse parti: 0 (misura e scelte, solo documenti), A
+(motore, contratto, API, profilo nascosto), B (app, «Soon»), accensione
+(`ready`, col sì dell'utente dopo il server).
+
+| Sport | Task / ADR | Dove si è | Prossimo |
 |---|---|---|---|
-| Coordinatore Sport | TASK-376 A: banco e `docs/sports/` (PR #736), misure di base di corsa, bici, canoa | TASK-376 B, il registro, dopo TASK-371 A+B, 375 A+B, 323 C2 in `main` | `tools/sport_bench/`, `docs/sports/`, `docs/tasks/TASK-376.md`; righe proprie in `STATUS.md`, `DECISIONS.md`, `INDEX.md` e questa sezione |
+| Escursionismo ⛰️ | TASK-377 / ADR-0321 | Chiuso: acceso per tutti (OTA 3ef55853, #869) | — |
+| Gravel 🚲 e MTB 🚵 | TASK-378 / ADR-0322 | 0, A, B e accensione in `main` (#875, #879, #897) | La prova sul telefono, poi la chiusura |
+| Roller | TASK-380 / ADR-0324 | 0, A e soglie del gioco in `main` (#886, #890, #912, #914); B in PR (#921) | Server con la 0055 (sì dell'utente), poi l'accensione |
 
-Fase 1 (dopo TASK-376 B in `main`), numeri riservati: TASK-377 / ADR-0321
-Escursionismo (il pilota, scelta dell'utente), TASK-378 / ADR-0322
-Gravel/MTB; il terzo è il **Roller** (scelta
-dell'utente del 2026-11-04, «Sì, Roller», al posto dello sci di fondo che è
-già «Record only», TASK-372): TASK-380 / ADR-0324.
+Gli sport che vengono dopo, ciascuno con la sua parte 0 e i numeri chiesti
+al Coordinatore prima dei file:
+
+- **Carrozzina e passeggino**: misura col banco di scale, cordoli,
+  pendenze e superfici; uno o due sport, distanze e avviso sono scelte
+  dell'utente.
+- **Ciaspole**: «Record only» oppure forma libera sulla neve con avviso di
+  sicurezza; scelta dell'utente, con costi e rischi delle due strade.
+- **Scialpinismo**: «Record only», col riconoscimento di salite e discese
+  dello sci (TASK-373, TASK-375, TASK-406); D+, D−, tempo in salita e in
+  discesa.
+
+Al massimo tre sessioni sport in parallelo, mai sugli stessi file. Il banco
+gira una volta per volta con `nice -n 10`; in locale solo i test dei file
+toccati.

@@ -168,6 +168,7 @@ branch della C e la PR si apre dopo la #964.
 | 1 plan | 1 scheda | 1 Plan | 1 programme | 1 rutina |
 | Set {n} of {total} | Serie {n} di {total} | Satz {n} von {total} | Série {n} sur {total} | Serie {n} de {total} |
 | Then: {exercise} | Poi: {exercise} | Danach: {exercise} | Ensuite : {exercise} | Después: {exercise} |
+| 1 exercise (approvato il 2026-11-08 dopo la prova nel simulatore) | 1 esercizio | 1 Übung | 1 exercice | 1 ejercicio |
 
 ## Testi della parte E (approvati il 2026-11-07)
 

@@ -12,7 +12,7 @@ import {
 import type { GymSet } from "@shaperoute/shared-types";
 
 import { sportPaceLabel } from "../activities/activityText";
-import { isTrackless } from "../activities/snow";
+import { isOnSnow, isTrackless } from "../activities/snow";
 import { drawingPhotoSource } from "../api/drawings";
 import { cityName } from "../explore/recommendedRoutes";
 import { RouteThumb } from "../explore/RouteThumb";
@@ -43,14 +43,18 @@ import {
   space,
 } from "../theme/tokens";
 import { DEFAULT_ACTIVITY, findProfile } from "../sports";
+import { Hairline } from "../ui/Hairline";
 import { Scrim } from "../ui/Scrim";
 import { Tap } from "../ui/Tap";
 import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
-import { ActionBar } from "./ActionBar";
+import { useEditRunDoor } from "./editRunDoor";
 import { isImportedPost, isShown } from "./feedPosts";
+import { PostActions } from "./PostActions";
 import { gymPostEnergy, postEnergy } from "./postEnergy";
+import { summaryRows } from "./postSections";
 import { drawingHeight, RouteMap } from "./RouteMap";
+import { SummaryBoxes } from "./SummaryBoxes";
 import type { SamplePost } from "./sampleFeed";
 import { turnedLine } from "./turnedLine";
 
@@ -155,8 +159,9 @@ export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): st
 export function FeedPost({ post, width, onOpen }: Props) {
   // The line of facts is written again when «Settings» changes the units
   // (TASK-182).
-  useUnits();
+  const units = useUnits();
   const { apiUrl, account, openProfile } = useFollowsDoor();
+  const editRun = useEditRunDoor();
   // Which of the drawing (0) and its photos is shown, and the furthest
   // reached: the photos up to the one after it are loaded, and stay.
   const [page, setPage] = useState(0);
@@ -321,10 +326,13 @@ export function FeedPost({ post, width, onOpen }: Props) {
     />
   );
   // Under the drawing, so as not to cover the figure.
+  // A member's post has its numbers in boxes under the card, as its page
+  // (TASK-410 part F); an example its line of facts.
+  const shown = isShown(post);
   const words = (
     <View style={styles.words}>
       <Text style={styles.title}>{post.title}</Text>
-      <Text style={styles.facts}>{postFacts(post, exercises?.sets)}</Text>
+      {!shown && <Text style={styles.facts}>{postFacts(post, exercises?.sets)}</Text>}
       {/* The figures this workout reached first (TASK-385 E). */}
       {gym && <NewLevels exercises={exercises} />}
     </View>
@@ -355,7 +363,9 @@ export function FeedPost({ post, width, onOpen }: Props) {
         testID="feed-photo-words"
       >
         <Text style={styles.titleOnPhoto}>{post.title}</Text>
-        <Text style={styles.factsOnPhoto}>{postFacts(post, exercises?.sets)}</Text>
+        {!shown && (
+          <Text style={styles.factsOnPhoto}>{postFacts(post, exercises?.sets)}</Text>
+        )}
       </View>
     </>
   );
@@ -521,12 +531,25 @@ export function FeedPost({ post, width, onOpen }: Props) {
   if (!isShown(post)) {
     return card;
   }
+  const mine =
+    state.status === "signedIn" &&
+    state.session.user.public_id === post.drawing.author.public_id;
+  // «Edit & run» where there is a line to run: not on the snow, at the gym
+  // nor in a pool.
+  const onEditRun =
+    gym || pool || isOnSnow(post.drawing.activity) ? undefined : editRun(post.line);
   return (
     <View style={styles.card}>
       {who}
       {card}
+      <SummaryBoxes rows={summaryRows(post, units, exercises?.sets)} />
       {menu !== null && <View style={styles.menu}>{menu}</View>}
-      {onOpen !== undefined && <ActionBar post={post} onOpen={onOpen} />}
+      {onOpen !== undefined && (
+        <>
+          <Hairline />
+          <PostActions post={post} mine={mine} onEditRun={onEditRun} />
+        </>
+      )}
     </View>
   );
 }

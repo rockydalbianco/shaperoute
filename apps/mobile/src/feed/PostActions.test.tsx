@@ -4,9 +4,16 @@ import { StyleSheet } from "react-native";
 
 import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
 import { color, MIN_TAP_SIZE } from "../theme/tokens";
-import { ActionBar, postOfDrawing } from "./ActionBar";
-import { DrawAgainContext } from "./drawAgainDoor";
 import { shownPost } from "./feedPosts";
+import { PostActions, postOfDrawing } from "./PostActions";
+
+jest.mock(
+  "react-native-safe-area-context",
+  () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
+);
+
+// The four actions of a post (TASK-410 B and F), in the card of «Feed» and
+// at the foot of its page.
 
 const DRAWING: ApiFeedPost = {
   id: "d1",
@@ -31,58 +38,53 @@ const DRAWING: ApiFeedPost = {
   author: { public_id: "ada", username: "ada_runs" },
 } as ApiFeedPost;
 
-function door(publicId: string): FollowsDoor {
-  return {
-    apiUrl: "http://api.test",
-    account: {
-      state: {
-        status: "signedIn",
-        session: { token: "t", user: { id: "u", public_id: publicId } },
-      },
-      sessionEnded: () => {},
+const DOOR = {
+  apiUrl: "http://api.test",
+  account: {
+    state: {
+      status: "signedIn",
+      session: { token: "t", user: { id: "u", public_id: "me" } },
     },
-  } as unknown as FollowsDoor;
-}
+    sessionEnded: () => {},
+  },
+} as unknown as FollowsDoor;
 
-async function bar(publicId: string, onOpen = jest.fn(), again?: () => void) {
+async function bar(mine: boolean, onEditRun?: () => void) {
   await render(
-    <FollowsContext.Provider value={door(publicId)}>
-      <DrawAgainContext.Provider value={() => again}>
-        <ActionBar post={shownPost(DRAWING)} onOpen={onOpen} />
-      </DrawAgainContext.Provider>
+    <FollowsContext.Provider value={DOOR}>
+      <PostActions post={shownPost(DRAWING)} mine={mine} onEditRun={onEditRun} />
     </FollowsContext.Provider>,
   );
-  return onOpen;
 }
 
-test("comments and reactions open the drawing", async () => {
-  const onOpen = await bar("other");
-  await fireEvent.press(screen.getByRole("button", { name: "Comments" }));
-  await fireEvent.press(screen.getByRole("button", { name: "Reactions" }));
-  expect(onOpen).toHaveBeenCalledTimes(2);
+test("«Like» opens the six reactions over the row, and closes them", async () => {
+  await bar(false);
+  expect(screen.queryByTestId("post-reactions")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Like" }));
+  expect(screen.getByTestId("post-reactions")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Like" }));
+  expect(screen.queryByTestId("post-reactions")).toBeNull();
 });
 
 test("«Share» only on one's own drawings", async () => {
-  await bar("other");
+  await bar(false);
   expect(screen.queryByRole("button", { name: "Share" })).toBeNull();
-  await bar("ada");
+  await bar(true);
   expect(screen.getByRole("button", { name: "Share" })).toBeOnTheScreen();
 });
 
-test("«Draw it near me» is yellow, and only when «Draw» can draw it", async () => {
-  await bar("other");
-  expect(screen.queryByRole("button", { name: "Draw it near me" })).toBeNull();
-
-  const again = jest.fn();
-  await bar("other", jest.fn(), again);
-  const button = screen.getByRole("button", { name: "Draw it near me" });
-  expect(button).toHaveStyle({ backgroundColor: color.accent });
-  await fireEvent.press(button);
-  expect(again).toHaveBeenCalledTimes(1);
+test("«Edit & run» is the yellow word, and only when there is a line to run", async () => {
+  await bar(false);
+  expect(screen.queryByRole("button", { name: "Edit & run" })).toBeNull();
+  const edit = jest.fn();
+  await bar(false, edit);
+  await fireEvent.press(screen.getByRole("button", { name: "Edit & run" }));
+  expect(edit).toHaveBeenCalledTimes(1);
+  expect(screen.getByText("Edit & run")).toHaveStyle({ color: color.accent });
 });
 
 test("every button is big enough to touch", async () => {
-  await bar("ada", jest.fn(), () => {});
+  await bar(true, () => {});
   for (const button of screen.getAllByRole("button")) {
     const { minHeight } = StyleSheet.flatten(button.props.style);
     expect(minHeight).toBeGreaterThanOrEqual(MIN_TAP_SIZE);

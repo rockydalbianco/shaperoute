@@ -199,9 +199,10 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
    privacy dell'app e del sito): li scrive l'agente, li approva l'utente.
 10. **App Privacy e Data safety**: proposta più sotto, ogni passo col sì.
 
-### Testi (bozza, aspettano il sì dell'utente)
+### Testi
 
-Prima in inglese e italiano; de/fr/es dopo il sì su questi.
+**en e it approvati dall'utente il 2026-11-09** («Sì, approvo»). de/fr/es
+in fondo a questa sezione, aspettano il sì.
 
 **App**
 
@@ -279,6 +280,101 @@ dal vivo»), dopo «Your position».
 > it — Quando condividi un'attività dal vivo, la tua posizione esatta va al
 > nostro server e a chi ha il link, come spiegato in «Condivisione dal
 > vivo».
+
+**de / fr / es (bozza, aspettano il sì dell'utente)**
+
+| en | de | fr | es |
+|---|---|---|---|
+| Share live | Live teilen | Partager en direct | Compartir en directo |
+| Sharing live | Live-Teilen aktiv | Partage en direct activé | Compartiendo en directo |
+| Sign in to share live | Melde dich an, um live zu teilen | Connecte-toi pour partager en direct | Inicia sesión para compartir en directo |
+| Share this activity live | Diese Aktivität live teilen | Partager cette activité en direct | Compartir esta actividad en directo |
+| Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it. | Wer den Link hat, kann dir auf einer Webseite folgen, ohne die App: deine genaue Position auf der Karte, die bisherige Strecke, Distanz, Zeit, Pace oder Tempo, Höhenmeter, Kalorien und deinen Puls, wenn eine Uhr ihn sendet. | Toute personne qui a le lien peut te suivre sur une page web, sans l'app : ta position exacte sur la carte, le parcours déjà fait, la distance, le temps, l'allure ou la vitesse, le dénivelé, les calories et ta fréquence cardiaque quand une montre l'envoie. | Cualquiera que tenga el enlace puede seguirte en una página web, sin la app: tu posición exacta en el mapa, el recorrido hecho, distancia, tiempo, ritmo o velocidad, desnivel, calorías y tu pulso cuando un reloj lo envía. |
+| The link stops working one hour after you finish, or as soon as you stop sharing. Then your positions are deleted. | Der Link funktioniert eine Stunde nach dem Ende nicht mehr, oder sobald du das Teilen beendest. Dann werden deine Positionen gelöscht. | Le lien cesse de fonctionner une heure après la fin, ou dès que tu arrêtes le partage. Tes positions sont alors supprimées. | El enlace deja de funcionar una hora después de terminar, o en cuanto dejas de compartir. Después se borran tus posiciones. |
+| Share link · Not now | Link teilen · Nicht jetzt | Partager le lien · Pas maintenant | Compartir enlace · Ahora no |
+| Follow my activity live on MuW: {url} | Verfolge meine Aktivität live auf MuW: {url} | Suis mon activité en direct sur MuW : {url} | Sigue mi actividad en directo en MuW: {url} |
+| Stop sharing? | Teilen beenden? | Arrêter le partage ? | ¿Dejar de compartir? |
+| The link stops working now. | Der Link funktioniert ab jetzt nicht mehr. | Le lien cesse de fonctionner maintenant. | El enlace deja de funcionar ahora. |
+| Stop sharing · Keep sharing | Beenden · Weiter teilen | Arrêter · Continuer | Dejar de compartir · Seguir |
+| Couldn't create the link. Try again. | Der Link konnte nicht erstellt werden. Versuch es noch einmal. | Impossible de créer le lien. Réessaie. | No se ha podido crear el enlace. Inténtalo de nuevo. |
+| Live activity | Live-Aktivität | Activité en direct | Actividad en directo |
+| Live | Live | En direct | En directo |
+| Updated {n} s ago | Vor {n} s aktualisiert | Mis à jour il y a {n} s | Actualizado hace {n} s |
+| No update since {time} | Keine Aktualisierung seit {time} | Aucune mise à jour depuis {time} | Sin actualizaciones desde las {time} |
+| Paused | Pausiert | En pause | En pausa |
+| Finished at {time} | Beendet um {time} | Terminée à {time} | Terminada a las {time} |
+| Sharing stopped | Teilen beendet | Partage arrêté | Se ha dejado de compartir |
+| This link has expired | Dieser Link ist abgelaufen | Ce lien a expiré | Este enlace ha caducado |
+| Distance · Time · Pace · Speed · Elev. gain · Calories · Heart rate | Distanz · Zeit · Pace · Tempo · Höhenmeter · Kalorien · Puls | Distance · Temps · Allure · Vitesse · Dénivelé · Calories · Fréquence cardiaque | Distancia · Tiempo · Ritmo · Velocidad · Desnivel · Calorías · Pulso |
+| Lengths (est.) · Exercise | Bahnen (geschätzt) · Übung | Longueurs (estim.) · Exercice | Largos (estim.) · Ejercicio |
+| Shared from MuW. The link stops working one hour after the activity ends. | Geteilt über MuW. Der Link funktioniert eine Stunde nach dem Ende der Aktivität nicht mehr. | Partagé depuis MuW. Le lien cesse de fonctionner une heure après la fin de l'activité. | Compartido desde MuW. El enlace deja de funcionar una hora después de que termine la actividad. |
+
+Privacy, sezione «Sharing live»:
+
+> de — «Live teilen»: Während einer Aktivität kannst du auf «Live teilen»
+> tippen, um einen Link zu erstellen. Solange du teilst, erhält unser
+> Server alle 15 Sekunden deine genaue Position mit der Uhrzeit, die Werte
+> der Aktivität (Distanz, Zeit, Pace oder Tempo, Höhenmeter, Kalorien) und
+> deinen Puls, wenn eine Uhr ihn sendet. Wer den Link hat, sieht sie auf
+> einer Seite von getmuw.app, ohne Konto: Du entscheidest, wem du ihn
+> schickst, und wer ihn hat, kann ihn weitergeben. Der Link ist zufällig und
+> nicht zu erraten; unser Server speichert nur einen Hash davon. Er
+> funktioniert eine Stunde nach dem Ende der Aktivität nicht mehr,
+> spätestens 24 Stunden nach ihrem Beginn, oder sobald du das Teilen
+> beendest; dann werden die Positionen und der Puls gelöscht. Dein Puls ist
+> ein Gesundheitsdatum: Er wird nur geteilt, nachdem du es auf dem
+> Bildschirm vor dem Link gelesen hast. Die Karte auf dieser Seite kommt von
+> OpenFreeMap, das die Internetadresse (IP) der Person sieht, die sie
+> öffnet, aber weder den Link noch deine Position. Zum Teilen brauchst du
+> ein Konto; wenn du das Konto löschst, werden auch seine Freigaben
+> gelöscht.
+
+> fr — «Partage en direct» : Pendant une activité, tu peux toucher
+> «Partager en direct» pour créer un lien. Tant que tu partages, notre
+> serveur reçoit toutes les 15 secondes ta position exacte avec l'heure,
+> les chiffres de l'activité (distance, temps, allure ou vitesse, dénivelé,
+> calories) et ta fréquence cardiaque quand une montre l'envoie. Toute
+> personne qui a le lien les voit sur une page de getmuw.app, sans compte :
+> tu choisis à qui l'envoyer, et qui l'a peut le transmettre. Le lien est
+> aléatoire et impossible à deviner ; notre serveur n'en garde qu'un hash.
+> Il cesse de fonctionner une heure après la fin de l'activité, au plus
+> tard 24 heures après son début, ou dès que tu arrêtes le partage ; les
+> positions et la fréquence cardiaque sont alors supprimées. La fréquence
+> cardiaque est une donnée de santé : elle n'est partagée qu'après que tu
+> l'as lu sur l'écran qui précède le lien. La carte de cette page vient
+> d'OpenFreeMap, qui voit l'adresse internet (IP) de qui l'ouvre, mais ni
+> le lien ni ta position. Pour partager, il faut un compte ; supprimer le
+> compte supprime ses partages.
+
+> es — «Compartir en directo»: Durante una actividad puedes tocar
+> «Compartir en directo» para crear un enlace. Mientras compartes, nuestro
+> servidor recibe cada 15 segundos tu posición exacta con la hora, los
+> datos de la actividad (distancia, tiempo, ritmo o velocidad, desnivel,
+> calorías) y tu pulso cuando un reloj lo envía. Cualquiera que tenga el
+> enlace los ve en una página de getmuw.app, sin cuenta: tú eliges a quién
+> se lo mandas, y quien lo tenga puede reenviarlo. El enlace es aleatorio y
+> no se puede adivinar; nuestro servidor guarda solo un hash. Deja de
+> funcionar una hora después de que termine la actividad, como mucho 24
+> horas después de empezar, o en cuanto dejas de compartir; entonces se
+> borran las posiciones y el pulso. El pulso es un dato de salud: solo se
+> comparte después de que lo hayas leído en la pantalla que aparece antes
+> del enlace. El mapa de esa página viene de OpenFreeMap, que ve la
+> dirección de internet (IP) de quien la abre, pero no el enlace ni tu
+> posición. Para compartir hace falta una cuenta; al borrar la cuenta se
+> borran sus enlaces compartidos.
+
+«Your position», la frase in più:
+
+> de — Wenn du eine Aktivität live teilst, geht deine genaue Position an
+> unseren Server und an alle, die den Link haben, wie unter «Live teilen»
+> beschrieben.
+
+> fr — Quand tu partages une activité en direct, ta position exacte va à
+> notre serveur et à qui a le lien, comme décrit dans «Partage en direct».
+
+> es — Cuando compartes una actividad en directo, tu posición exacta va a
+> nuestro servidor y a quien tenga el enlace, como se explica en
+> «Compartir en directo».
 
 ### Privacy
 

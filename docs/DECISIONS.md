@@ -466,6 +466,7 @@ lasciando le righe d'indice.
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
+- ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 
 ---
 
@@ -473,6 +474,7 @@ lasciando le righe d'indice.
 - ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
 - ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
+- ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -499,6 +501,50 @@ comincia. Una serie conta per il primo esercizio della scheda dello stesso
 tipo ancora incompleto; finito un esercizio, quello dopo diventa quello in
 corso da solo, coi valori della scheda nei campi se non ci sono serie di
 prima.
+## ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py`
+
+**Stato**: Accettato · 2026-11-08 · TASK-413 A1. Deciso dall'agente su
+delega dell'utente; `ENGINE_ONLY` e `heights.py` approvati dal Coordinatore
+il 2026-11-08.
+
+1. **Le ciaspole entrano nel motore prima che nel contratto.** Una tupla
+   nuova del registro, `activities.ENGINE_ONLY`, tiene le attività che il
+   motore disegna e il contratto non ha ancora: `snowshoeing` fino ad A2.
+   `SUPPORTED_ACTIVITIES` (e quindi `API_ACTIVITIES`, shared-types, l'API)
+   non cambia; `ACTIVITIES`, `DISTANCE_LIMITS_M`, `SNOW_ACTIVITIES` e
+   `FREE_ACTIVITIES` la contano. A2 la sposta in `ENGINE_ACTIVITIES` insieme
+   alle righe del contratto. È come prima di TASK-376, quando
+   `SUPPORTED_ACTIVITIES` era un sottoinsieme di `ACTIVITIES`.
+2. **`FREE_ACTIVITIES` = acqua + neve**: niente parole, immagini né
+   disegni (`ON_SNOW_SHAPES_ONLY`, testo suo), `near` permesso come
+   sull'acqua (il testo di `NEAR_ON_WATER_ONLY` resta: l'API lo usa).
+3. **`route_engine/heights.py` è il modulo condiviso delle quote** (ADR-0300
+   parte G, ADR-0344 C): tegole Terrarium zoom 13 in `<cache>/heights/`
+   come PNG scaricati, decodificate con Pillow (già dipendenza del motore,
+   quindi anche del server), quota bilineare per punto, griglia di pendenze
+   a celle di 25 m. Il download passa da una funzione sostituibile
+   (`fetch`): i test non usano la rete. TASK-347 G vi aggiunge
+   `elevation_profile`, TASK-415 C la pendenza sotto la traccia: nessun
+   `terrain.py` nuovo nel server.
+4. **La neve è un `water.WaterArea`** costruito da `snow.build_area` con le
+   regole della variante `chosen` (`snow.CHOSEN`); `water.py` e
+   `water_fit.py` non cambiano. Gli errori di `water_fit` sono detti per la
+   neve (`NoSnowError`, `SnowFitError`, con la distanza a cui la forma
+   entra). La verifica è `snowshoeing.check_on_snow`: chiusa, nulla fuori
+   dalla neve permessa, entro il 10%; nessuna fascia di riva.
+5. **L'impronta**: `heights.py`, `snow.py` e `snowshoeing.py` stanno fuori
+   (`route_store.SNOW_ONLY`, come `DRAWN_WATER_ONLY`); `models.py`,
+   `activities/` e `__main__.py` la cambiano senza cambiare un percorso: tre
+   righe in `SAME_ROUTES_AS` con la prova `5e374d843dda.json` (i nove
+   percorsi fissi identici, darwin-arm64) e la canoa del banco identica
+   (`compare --same`, 27 percorsi). Quando G farà leggere le quote a ogni
+   percorso, `heights.py` esce da `SNOW_ONLY`.
+6. **La cache della neve** è `<cache>/snow/snow_<s>_<w>_<n>_<e>.json`, nel
+   formato dell'acqua (`water.read_water`); un file che contiene l'area
+   chiesta la serve. Il riquadro di una richiesta è quello dell'acqua senza
+   la fascia di 1 km di riva, più 100 m (`snow.snow_bbox`). Il filtro chiede
+   anche le `relation` di parchi, giardini, golf e campi: al banco un parco
+   di città disegnato così (Parco Sempione, Milano) passava per neve.
 
 ## ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#`
 
@@ -931,3 +977,38 @@ al via.
 necessaria, come al via). B3a2 manderà i preferiti da soli col messaggio
 «routes». Il codice dell'orologio si prova con un prebuild locale
 `MUW_WATCH=1`; impronta iOS senza variabile invariata.
+## ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-08); le scene
+di base sono una scelta dell'utente (scelta 12 del task file, «Come oggi»).
+
+1. **C2 si fa in due PR**: C2a le scene e il finale; C2b la camera dietro
+   l'animale sul 3D e l'anteprima nel foglio, che toccano la pagina in
+   modo più pesante.
+2. **I tempi**: con tutte e tre accese, 3 s di apertura, 6 di percorso e 3
+   di finale (scelta 8). Una scena spenta dà i suoi secondi al percorso; a
+   percorso spento, le altre se li dividono a metà. Il video dura sempre
+   12 s. Così, con l'apertura spenta, il percorso ha 9 s (1 s di logo, 8 di
+   linea) e il finale 3: è il video di prima, e un test lo confronta
+   fotogramma per fotogramma con quello salvato prima di C2.
+3. **Le scelte delle scene** sono campi di `VideoEdit` (`order`, `off`,
+   `opening`, `cut`, `ending`); `videoScene` le legge dalle opzioni, quelle
+   mancanti come all'apertura del post.
+4. **L'apertura «Drawing in 2D»** disegna la linea dall'alto in quei
+   secondi, senza numeri; il percorso poi la ridisegna con l'animale. Sul
+   3D la pagina scatta prima la mappa da dritto sopra (dove sta la linea
+   piatta della scena), poi la inclina come sempre: la descrizione della
+   mappa dice `flat`, e il file della mappa non cambia. Se la foto piatta
+   non c'è, sotto resta quella inclinata. **«Title»** mette il titolo
+   grande in mezzo (o «MuW», senza titolo) e nasconde quello in alto.
+   **«Cut»** passa alla scena dopo di colpo; **«Fade»** sfuma nell'ultimo
+   mezzo secondo dell'apertura.
+5. **I finali**: «Whole drawing» è quello di prima; «Numbers» mette i
+   risultati grandi in colonna in mezzo, su un velo del fondo dello stile;
+   «Heart» fa spuntare in mezzo il quadrato giallo con il cuore che si
+   disegna e «MuW» sotto; «All three» tiene il disegno con i numeri e poi,
+   a metà del finale, il cuore. Il marchio nell'angolo resta sempre.
+6. **Riordino senza testi nuovi**: i tre riquadri stanno in fila come
+   nella tavola («2D › 3D › Reveal») e si spostano con «‹ ›», etichettati
+   con «Move left»/«Move right», già tradotti. Le cose del finale spariscono
+   quando dopo viene un'altra scena; le emoji del post restano.

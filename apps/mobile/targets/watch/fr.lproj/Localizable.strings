@@ -22,6 +22,11 @@
 "Routes" = "Parcours";
 "Send a route from MuW on your iPhone" = "Envoyez un parcours depuis MuW sur l'iPhone";
 "Favorites" = "Favoris";
+"Off route" = "Hors parcours";
+"Arrived" = "Arrivée";
+"Reach the route to start" = "Rejoignez le parcours pour démarrer";
+"To the {letter}" = "Vers le {letter}";
+"Next part" = "Partie suivante";
 "Run" = "Course";
 "Bike" = "Vélo";
 "Paddle" = "Pagaie";

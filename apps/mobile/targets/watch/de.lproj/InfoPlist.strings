@@ -3,3 +3,4 @@
 
 NSHealthShareUsageDescription = "MuW liest deine Herzfrequenz aus Apple Health während jeder Aktivität, um sie mit der Aktivität und in deinem Beitrag zu zeigen. Du kannst sie vor dem Veröffentlichen ausblenden.";
 NSHealthUpdateUsageDescription = "MuW speichert deine beendeten Aktivitäten in Apple Health, mit Zeit, Distanz, Route und, bei Läufen, den geschätzten Kalorien, damit sie auch in der Fitness-App erscheinen.";
+NSLocationWhenInUseUsageDescription = "MuW nutzt deinen Standort während eines Trainings, um dich entlang deiner Route zu führen und sie aufzuzeichnen.";

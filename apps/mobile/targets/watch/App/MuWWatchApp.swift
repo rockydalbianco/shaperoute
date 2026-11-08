@@ -19,6 +19,7 @@ struct MuWWatchApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(workouts)
+                .environmentObject(workouts.guide)
                 .environmentObject(store)
                 .task {
                     await workouts.authorize()
@@ -114,14 +115,24 @@ struct CountdownView: View {
 /// The workout: the numbers on two pages, and a swipe to the controls.
 struct WorkoutView: View {
     @EnvironmentObject private var workouts: WorkoutManager
+    @EnvironmentObject private var guide: GuideSession
     @State private var page = 1
 
     var body: some View {
         TabView(selection: $page) {
             ControlsView().tag(0)
-            MetricsView().tag(1)
-            if workouts.sport?.gps == true {
-                DetailsView().tag(2)
+            // Along a route the arrow comes first, then the small map, then
+            // the numbers (part B3b, «Freccia prima»).
+            if guide.route != nil {
+                GuideView().tag(1)
+                RouteMapView().tag(2)
+                MetricsView().tag(3)
+                DetailsView().tag(4)
+            } else {
+                MetricsView().tag(1)
+                if workouts.sport?.gps == true {
+                    DetailsView().tag(2)
+                }
             }
         }
         .tabViewStyle(.page)

@@ -53,6 +53,8 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     /// Where the routes the phone sends are kept (part B3a).
     private let routes: RouteStore?
+    /// The guidance along a route, on a run with one (part B3b).
+    let guide = GuideSession()
 
     init(routes: RouteStore? = nil) {
         self.routes = routes
@@ -107,10 +109,14 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     // MARK: From the wrist and from the phone
 
-    func start(_ sport: WatchSport) {
+    /// A workout of `sport`, along `route` when there is one (part B3b).
+    func start(_ sport: WatchSport, route: WatchRoute? = nil) {
         var next = Workout(activity: sport.activity)
         guard phase == .ready, next.apply(.start, at: Self.now()) else {
             return
+        }
+        if let route {
+            guide.begin(route)
         }
         self.sport = sport
         workout = next
@@ -155,6 +161,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             }
             countdownTask?.cancel()
             countdownTask = nil
+            guide.stop()
             builder?.discardWorkout()
             session?.end()
             session = nil
@@ -166,6 +173,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         guard apply(.end) else {
             return
         }
+        guide.stop()
         // The builder saves the workout when the session says it ended.
         session?.end()
     }
@@ -216,6 +224,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             return
         }
         paces.add(movingMs: 0, metres: 0)
+        guide.run()
         let date = Date()
         session?.startActivity(with: date)
         builder?.beginCollection(withStart: date) { _, _ in }

@@ -1,8 +1,8 @@
 # TASK-420 — La pagina del catalogo in «Explore» (grande catalogo, parte C)
 
-**Stato**: Done · 2026-11-08 · mockup approvato dall'utente («Sì,
-approvo»); codice in `main` con la #954 (`1df7dbf5`, mergiata dal
-Coordinatore); documenti in #952
+**Stato**: Done · 2026-11-08 · pagina costruita (#954), poi **tolta** con
+la #978 per scelta dell'utente del 2026-11-08: i disegni vanno nella lista
+esistente di «Explore» (TASK-419); documenti in #952
 **Fase**: 5 · **Branch**: `docs/TASK-420-catalog-page` (documenti), poi
 `feat/TASK-420-catalog-page` (codice)
 **Dipende da**: TASK-418 (forme e parole nuove: i nomi e le categorie),
@@ -194,18 +194,17 @@ che il registro di `TabSwipeOwners.test.ts` deve elencare.
 
 ## Esito
 
-**2026-11-08, Done.** La pagina «Catalog» è in `main` (#954, `1df7dbf5`):
-la scheda d'ingresso sotto la ricerca di «Explore», la griglia a due
-colonne a pagine di 40, la ricerca per nome, i cinque filtri in un foglio,
-l'ordine Nearest · Best · Shortest, il cuore e «Start» su ogni scheda; i
-dati del seme di oggi (350 percorsi di 23 città) in `catalog.json`,
-scritto da `apps/mobile/scripts/catalog-data.mjs`. Test Jest di dati,
-filtri, griglia, scheda, foglio, ingresso e pagina verdi; CI verde. Tre
-test esistenti toccati (la scheda è un bottone in più, i chip uno scroll
-orizzontale). **Non provata nel simulatore**: il disco interno era sotto
-il limite dei 10 GB; la prova sul telefono arriva con l'OTA, che il
-Coordinatore chiede all'utente. **Rimandato**: la partenza immediata da
-«Start» sulla scheda (vuole `App.tsx`); i dati paginati dall'API oltre
-mezzo megabyte di `catalog.json`; le categorie dal catalogo delle forme
-quando TASK-418 le scrive; la rigenerazione di `catalog.json` da chi cambia
-il seme (TASK-419, #966), come dice «I dati».
+**2026-11-08, Done: pagina costruita, poi tolta.** La pagina «Catalog» è
+stata costruita e mergiata (#954, `1df7dbf5`: scheda d'ingresso sotto la
+ricerca di «Explore», griglia a due colonne a pagine di 40, ricerca per
+nome, cinque filtri in un foglio, ordine Nearest · Best · Shortest, cuore e
+«Start» su ogni scheda; i 350 percorsi del seme in `catalog.json`; test
+Jest e CI verdi). Lo stesso giorno l'utente ha scelto altrimenti, parole
+sue: «Non inserirli come catalogo, inseriscili e basta nella lista»,
+confermato con «Sì, nella lista». La #978 toglie la pagina, la scheda,
+`catalog.json` e lo script (revert esatto della #954, impronta ferma); i
+disegni del seme arrivano nella lista di «Explore» che c'è già («Best near
+you» e gli esempi per città) attraverso il catalogo del server, lavoro di
+TASK-419. ADR-0348 passa a «Superata». Nessun OTA della pagina. Resta
+nella storia di git, se mai servisse: filtri e ordine come funzioni pure
+(`catalogFilters.ts`), la griglia virtualizzata, il foglio dei filtri.

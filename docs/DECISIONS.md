@@ -465,13 +465,20 @@ lasciando le righe d'indice.
 
 ---
 
-- ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Attiva (proposta accettata: #954 in `main`)
+- ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 
 ## Voci nuove
 
 ## ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono
 
-**Stato**: Attiva (in `main` con la #954 il 2026-11-08) · 2026-11-08 · TASK-420 (parte C del grande catalogo,
+**Stato**: **Superata** il 2026-11-08, lo stesso giorno. La pagina è stata
+costruita e mergiata (#954), poi l'utente ha scelto, parole sue, «Non
+inserirli come catalogo, inseriscili e basta nella lista» («Sì, nella
+lista»): i disegni del seme vanno nella lista di «Explore» che c'è già
+(«Best near you», gli esempi per città) attraverso il catalogo del server,
+cioè TASK-419 e ADR-0347; la #978 toglie pagina, scheda, `catalog.json` e
+script. Niente al suo posto: nessuna pagina, nessun JSON nell'app. Sotto,
+la decisione com'era. · 2026-11-08 · TASK-420 (parte C del grande catalogo,
 con TASK-418 e TASK-419). Le scelte di prodotto sono dell'utente (il
 mockup approvato il 2026-11-08: il nome «Catalog», la scheda d'ingresso
 sotto la ricerca di «Explore», cuore e «Start» sulla scheda, l'ordine come

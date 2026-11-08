@@ -4,9 +4,11 @@ import type {
   DrawingPhoto,
   DrawingsPage,
   MyDrawing,
+  ResortSnow,
   SkiDay,
   SkiDayRequest,
   SkiNames,
+  SkiResort,
 } from "@shaperoute/shared-types";
 import { DRAWING_PHOTO_PLACES } from "@shaperoute/shared-types";
 import {
@@ -34,7 +36,19 @@ import {
   saveDrawing,
   worthAgain,
 } from "../api/drawings";
-import { fetchSkiDay, keepSkiDay, type SkiDaySent, sentOf } from "../api/skiDays";
+import {
+  fetchFollowedResorts,
+  fetchResortPosts,
+  followResort,
+  type ResortPostsPage,
+} from "../api/resortFollows";
+import {
+  fetchResortSnow,
+  fetchSkiDay,
+  keepSkiDay,
+  type SkiDaySent,
+  sentOf,
+} from "../api/skiDays";
 import { fetchSkiNames } from "../api/skiNames";
 import { themedOf } from "../contest/contestApi";
 import { enteredIn, keptContest } from "../contest/contestKept";
@@ -145,6 +159,18 @@ export type DrawingsDoor = {
   /** Sends the skier's choices of a day saved (useSkiDayOutbox); "later"
    * with nobody signed in. Without it nothing is sent. */
   keepSkiDay?: (key: string, request: SkiDayRequest) => Promise<SkiDaySent>;
+  /** The page of a ski resort (TASK-406 part D3): the members' snow of the
+   * last 24 hours, the posts of the days skied there, and «Your resorts».
+   * Null with nobody signed in, or when the API did not give them; without
+   * them (a door of a test made before) the page shows none of it. */
+  resortSnowOf?: (resortId: string) => Promise<ResortSnow | null>;
+  resortPostsOf?: (
+    resortId: string,
+    cursor: string | null,
+  ) => Promise<ResortPostsPage | null>;
+  followedResortsOf?: () => Promise<SkiResort[] | null>;
+  /** Follows the resort, or no more; false when it did not go. */
+  followResortOf?: (resortId: string, on: boolean) => Promise<boolean>;
 };
 
 const NO_KEYS: ReadonlySet<string> = new Set();
@@ -170,6 +196,10 @@ const NOTHING: DrawingsDoor = {
   skiNamesOf: async () => null,
   skiDayOf: async () => null,
   keepSkiDay: async () => "later",
+  resortSnowOf: async () => null,
+  resortPostsOf: async () => null,
+  followedResortsOf: async () => null,
+  followResortOf: async () => false,
 };
 
 /** Without «Profile» around it (a test of one screen): no drawings. */
@@ -519,6 +549,68 @@ export function useDrawingsOf(
     [baseUrl, ended, fetchFn, key, token],
   );
 
+  // The page of a ski resort (TASK-406 part D3): read with the token, as
+  // the names of a day of skiing.
+  const resortSnowOf = useCallback(
+    async (resortId: string) => {
+      if (token === null || baseUrl === null) {
+        return null;
+      }
+      const outcome = await fetchResortSnow(baseUrl, token, resortId, { fetchFn, key });
+      if (outcome.kind === "ok") {
+        return outcome.value;
+      }
+      ended(token, outcome);
+      return null;
+    },
+    [baseUrl, ended, fetchFn, key, token],
+  );
+
+  const resortPostsOf = useCallback(
+    async (resortId: string, cursor: string | null) => {
+      if (token === null || baseUrl === null) {
+        return null;
+      }
+      const outcome = await fetchResortPosts(baseUrl, token, resortId, cursor, {
+        fetchFn,
+        key,
+      });
+      if (outcome.kind === "ok") {
+        return outcome.value;
+      }
+      ended(token, outcome);
+      return null;
+    },
+    [baseUrl, ended, fetchFn, key, token],
+  );
+
+  const followedResortsOf = useCallback(async () => {
+    if (token === null || baseUrl === null) {
+      return null;
+    }
+    const outcome = await fetchFollowedResorts(baseUrl, token, { fetchFn, key });
+    if (outcome.kind === "ok") {
+      return outcome.value.resorts;
+    }
+    ended(token, outcome);
+    return null;
+  }, [baseUrl, ended, fetchFn, key, token]);
+
+  const followResortOf = useCallback(
+    async (resortId: string, on: boolean) => {
+      if (token === null || baseUrl === null) {
+        return false;
+      }
+      const outcome = await followResort(baseUrl, token, resortId, on, {
+        fetchFn,
+        key,
+      });
+      ended(token, outcome);
+      return outcome.kind === "ok";
+    },
+    [baseUrl, ended, fetchFn, key, token],
+  );
+
   const [opening, setOpening] = useState<string | null>(null);
   // With the token it was opened with: nobody else's drawing on the map.
   const [opened, setOpened] = useState<{
@@ -596,6 +688,10 @@ export function useDrawingsOf(
       skiNamesOf,
       skiDayOf,
       keepSkiDay: keepSkiDayOf,
+      resortSnowOf,
+      resortPostsOf,
+      followedResortsOf,
+      followResortOf,
     }),
     [
       publicKeys,
@@ -619,6 +715,10 @@ export function useDrawingsOf(
       skiNamesOf,
       skiDayOf,
       keepSkiDayOf,
+      resortSnowOf,
+      resortPostsOf,
+      followedResortsOf,
+      followResortOf,
     ],
   );
 }

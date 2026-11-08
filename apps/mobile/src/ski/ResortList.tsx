@@ -16,6 +16,7 @@ import { type PositionState, readPosition } from "../location/useCurrentPosition
 import { SEARCH_DELAY_MS } from "../search/useDrawingSearch";
 import { color, font, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { nearDistanceLabel } from "../units/format";
+import { useFollowedResorts } from "./useFollowedResorts";
 
 /** From this many letters the resorts are searched by name; below, the
  * nearest. */
@@ -138,6 +139,8 @@ type Props = Options & {
 /** The resorts found, a row each: the name, the region and how far it is. */
 export function ResortList({ typed, apiUrl, onPick, ...options }: Props) {
   const { byName, shown } = useResortSearch(typed, apiUrl, options);
+  // «Your resorts» first, while nothing is typed (part D3).
+  const { followed } = useFollowedResorts();
   return (
     <ScrollView
       contentContainerStyle={styles.list}
@@ -145,6 +148,21 @@ export function ResortList({ typed, apiUrl, onPick, ...options }: Props) {
       keyboardDismissMode="on-drag"
       testID="ski-resorts"
     >
+      {!byName && followed.length > 0 && (
+        <>
+          <Text style={styles.heading} accessibilityRole="header">
+            {t("Your resorts")}
+          </Text>
+          {followed.map((resort) => (
+            <ResortRow
+              key={resort.id}
+              resort={resort}
+              onPick={onPick}
+              testID={`followed-${resort.id}`}
+            />
+          ))}
+        </>
+      )}
       <Text style={styles.heading} accessibilityRole="header">
         {byName ? t("Ski resorts") : t("Near you")}
       </Text>
@@ -170,9 +188,11 @@ export function ResortList({ typed, apiUrl, onPick, ...options }: Props) {
 function ResortRow({
   resort,
   onPick,
+  testID = `resort-${resort.id}`,
 }: {
   resort: SkiResort;
   onPick: (resort: SkiResort) => void;
+  testID?: string;
 }) {
   const where = [
     resort.region,
@@ -183,7 +203,7 @@ function ResortRow({
       style={styles.row}
       onPress={() => onPick(resort)}
       accessibilityRole="button"
-      testID={`resort-${resort.id}`}
+      testID={testID}
     >
       <View style={styles.rowText}>
         <Text style={styles.name} numberOfLines={1}>

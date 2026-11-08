@@ -121,9 +121,13 @@ Va **sopra** i lettori di TASK-345 C (battito da Salute: campioni tra inizio e
 fine, medio e massimo) e TASK-374 D (tempo in ogni zona, con le zone di
 TASK-374 B). Nessun lettore nuovo in `pool/`: il nuoto in piscina passa a
 quelle funzioni la sua finestra (`startedMs`–`endedMs`, pause escluse).
-Il 2026-11-08 TASK-345 C e TASK-374 D non sono ancora iniziati: chi li
-costruisce, e se la parte B parte prima, lo decide il Coordinatore (chiesto
-lo stesso giorno). Su iPhone la 1.0.1 build 8 (`6f8bba4c`) ha già
+Il 2026-11-08 TASK-345 C e TASK-374 D non sono ancora iniziati. Il
+Coordinatore ha deciso (stesso giorno): **la parte B li costruisce**, in file
+nuovi che 345 C e 374 D agganceranno poi alle corse (`health/heartSamples.ts`,
+`body/zoneTime.ts`), e con loro il pezzo server di TASK-345 B (il battito
+sulla corsa, il filtro nell'API). I task file di 345 e 374 non si toccano.
+Due passi: **B1** server e contratto, **B2** app, dopo B1 in `main` e sul
+server. Su iPhone la 1.0.1 build 8 (`6f8bba4c`) ha già
 `NSHealthShareUsageDescription` per il battito: la lettura può arrivare con
 un OTA; il server (scelta 5) va prima, col sì dell'utente.
 
@@ -179,7 +183,21 @@ docs/STATUS.md
 docs/INDEX.md
 ```
 
-Parte B: dopo TASK-345 C e TASK-374 D.
+Parte B1 (approvata dal Coordinatore il 2026-11-08):
+
+```
+services/api/migrations/0061_run_heart.sql (nuovo; numero vero al merge)
+services/api/shaperoute_api/pool_swims.py
+services/api/tests/test_pool_swims.py
+packages/shared-types/src/poolSwim.ts
+packages/shared-types/fixtures/pool-swim-heart.json (nuovo, al posto di
+  cambiare pool-swim.json, che i test dell'app leggono)
+packages/shared-types/test/poolSwim.test.ts
+docs/API.md, docs/DATABASE.md, docs/DECISIONS.md, docs/STATUS.md,
+docs/tasks/TASK-409.md
+```
+
+Parte B2: la lista va al Coordinatore dopo B1.
 
 ## Esito
 

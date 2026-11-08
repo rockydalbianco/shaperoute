@@ -1061,6 +1061,18 @@ del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
   nessun record personale.
 - Nessuna riga cambia. Test in `test_ski_touring_api.py`.
 
+Migrazione `0061_run_heart.sql` (TASK-409 parte B1, ADR-0334 precisazione D;
+numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
+
+- **`runs`**: `heart_avg_bpm` e `heart_max_bpm` (`smallint`, null) e
+  `heart_shown` (`boolean`, `NOT NULL DEFAULT true`). Il vincolo
+  `runs_heart_check`: tutti e due o nessuno, da 30 a 230, il medio non sopra
+  il massimo. È un **dato sulla salute** (GDPR art. 9): arriva solo dopo il
+  consenso alla lettura sul telefono (il pulsante a fine nuoto, TASK-409).
+- Oggi li scrive solo un nuoto in piscina (`pool_swims.py`); le altre corse
+  restano null (TASK-345 B li userà per ogni sport). Si cancellano con la
+  corsa e con l'account. Nessun backfill. Test in `test_pool_swims.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

@@ -462,9 +462,32 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
+- ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
 
 ---
 
 ## Voci nuove
 
-_(nessuna dal 2026-11-08)_
+### ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate»
+
+**Stato**: Attiva · 2026-11-08 · TASK-409 parte B1. Scelte dell'utente in
+`tasks/TASK-409.md` (5: «Anche nel post del Feed»; 6: «Pulsante a fine
+nuoto»); il resto è deciso dall'agente su delega dell'utente, e col
+Coordinatore: la parte B costruisce i pezzi di TASK-345 B (server) e C, e di
+TASK-374 D.
+
+1. **Sulla corsa, non sul nuoto**: `runs.heart_avg_bpm`, `heart_max_bpm`,
+   `heart_shown` (`0061`), così TASK-345 B li usa per ogni sport senza una
+   migrazione sua. Oggi li scrive solo `PUT /me/pool-swims/{key}`.
+2. **Limiti**: da 30 a 230 bpm, tutti e due o nessuno, il medio non sopra il
+   massimo: nel contratto (`422`) e nel vincolo del database.
+3. **Chi li vede**: il proprietario sempre; gli altri in `GET
+   /drawings/{id}/pool-swim` solo se `heart_shown` (vero se il telefono non
+   lo manda). Il filtro sta nel server. Il Feed generico (`FeedPost`) e «My
+   activities» non li hanno ancora: arrivano con TASK-345 B.
+4. **Una volta sola**: col primo `PUT`, come il resto del nuoto. Cambiare
+   «Show heart rate» dopo non si può ancora.
+5. **Compatibilità**: senza battito le risposte non hanno i campi
+   (`response_model_exclude_none`), così le app di oggi e i loro test vedono
+   lo stesso corpo di prima; il vecchio esempio `pool-swim.json` resta, quello
+   col battito è `pool-swim-heart.json`.

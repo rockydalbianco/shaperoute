@@ -182,7 +182,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `ski_touring` terzo sport «Record only» nel contratto (`RECORDED_SPORTS`,
   le fixture), nell'API (`sports/ski_touring.py`: Strava `BackcountrySki`,
   GPX `ski_touring`, senza record né gioco; `X-MuW-Reads`), la migrazione
-  `0056_ski_touring.sql` sul solo CHECK di `runs`, il profilo nascosto
+  `0057_ski_touring.sql` sul solo CHECK di `runs`, il profilo nascosto
   nell'app (Apple `.crossCountrySkiing` 60, Health Connect
   `EXERCISE_TYPE_SKIING` 61, verificati sulle librerie; nessuna riga in
   «Settings») e l'orologio (`sports.json`, testi in inglese fino a B).

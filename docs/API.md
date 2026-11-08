@@ -1112,7 +1112,7 @@ sport senza forma, dopo `xc_skiing` in `RECORD_ACTIVITIES`: si salva, si
 elenca e si apre come una giornata di sci; Strava lo riceve come
 `BackcountrySki`, il GPX dice `<type>ski_touring</type>`. Niente percorsi,
 niente gioco delle forme, niente record personali; preferiti e corse di
-gruppo no (migrazione `0056`). Lo legge solo un'app che dice
+gruppo no (migrazione `0057`). Lo legge solo un'app che dice
 `ski_touring` in `X-MuW-Reads`.
 
 ### Quello che un'app sa leggere: `X-MuW-Reads` (TASK-387, ADR-0328)

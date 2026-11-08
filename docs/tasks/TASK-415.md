@@ -134,7 +134,7 @@ services/api/shaperoute_api/sports/ski_touring.py      (nuovo)
 services/api/shaperoute_api/sports/__init__.py
 services/api/shaperoute_api/activities.py              (RunActivity)
 services/api/shaperoute_api/reads.py                   (NEWER_ACTIVITIES)
-services/api/migrations/0056_ski_touring.sql           (nuovo; 0056 in bozza, il primo libero al merge)
+services/api/migrations/0057_ski_touring.sql           (nuovo; 0056 in bozza, 0057 dopo TASK-406 D1)
 services/api/tests/test_ski_touring_api.py             (nuovo)
 services/api/tests/test_sport_registry_api.py, test_record_only.py,
     test_reads.py, test_game_rules.py                  (solo se l'ordine lo chiede)
@@ -168,7 +168,8 @@ arriva secondo rinomina). La PR di A entra col sì dell'utente per il
 server, che chiede il Coordinatore.
 
 2026-11-08, parte A in PR (`feat/TASK-415-a-ski-touring-api`): la 0056 era
-libera in `main` all'apertura. Contratto, API, migrazione del solo CHECK di
+libera in `main` all'apertura; la #935 di TASK-406 D1 è entrata prima con
+la sua 0056, e la nostra è diventata `0057_ski_touring.sql` (Coordinatore). Contratto, API, migrazione del solo CHECK di
 `runs`, profilo nascosto e orologio come da lista. I test col database
 (migrazione, salvataggio, record) girano in CI: sul Mac Docker era spento.
 Il modulo per pubblicare una giornata sulla neve non offre lo scialpinismo

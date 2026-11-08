@@ -1033,8 +1033,8 @@ Migrazione `0054_ski_resorts.sql` (TASK-406 parte A, ADR-0338, `API.md`
   prima cambia, nessun backfill. Test in `test_ski_resorts_api.py` e
   `test_resort_import.py`.
 
-Migrazione `0056_ski_touring.sql` (TASK-415 parte A, ADR-0344; il numero è
-il primo libero in `main` all'apertura della PR):
+Migrazione `0057_ski_touring.sql` (TASK-415 parte A, ADR-0344; il numero è
+del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
 
 - Il vincolo `runs_activity_check` prende anche `'ski_touring'`: una gita
   di scialpinismo si salva come corsa, come una giornata di sci (`0044`).

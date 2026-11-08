@@ -123,10 +123,18 @@ Apple Salute / Health Connect come allenamento di forza.
     altri sotto «Show more» (testo già nell'app).
 17. **Kcal con gli esercizi nascosti** (parte C, 2026-11-06): «Niente
     kcal». Chi non vede le serie non vede le kcal; l'autore sì.
+18. **Dove si apre la classifica** (parte F, 2026-11-06): «Profilo +
+    esercizio nel post». Una riga sotto il riquadro «🏋️ Gym» del profilo
+    e il nome di un esercizio nella scheda del post.
+19. **Come si vince «Winner»** (parte F, 2026-11-06): «Per esercizio,
+    almeno 3». Il primo di ogni esercizio a mese finito, con almeno 3
+    persone in classifica; senza push.
+20. **Privacy** (parte F, 2026-11-06): «Approvo» la frase su allenamenti,
+    traguardi e classifica, dopo il paragrafo del VO₂ max.
 
 ## Domande aperte
 
-- **Privacy**: la riga per esercizi, pesi e classifica, con la parte A.
+- **Privacy**: fatta con la parte F (scelta 20).
 
 ## Il disegno tecnico
 
@@ -305,7 +313,28 @@ Questa PR (documenti): `docs/tasks/TASK-385.md` (nuovo),
     nuovi, e l'app legge i livelli con `gymLevelsOf`;
   - documenti: questo file, `docs/API.md`, `docs/DECISIONS.md`
     (precisazione), `docs/STATUS.md` (righe proprie), `docs/sports/gym.md`.
-- **F–H**: si elencano prima di ciascuna.
+- **F** (lista approvata dal Coordinatore il 2026-11-06; branch
+  `feat/TASK-385-f-gym-leaderboard`; niente migrazione):
+  - file nuovi: `services/api/shaperoute_api/gym_leaderboard.py`,
+    `services/api/tests/test_gym_leaderboard.py`;
+    `packages/shared-types/fixtures/gym-leaderboard.json`; nell'app
+    `api/gymLeaderboard.ts` (+ test), `gym/Leaderboard.tsx`,
+    `gym/Leaderboard.test.tsx`;
+  - righe in file esistenti: `app.py` (il router), `profiles.py`
+    («Winner» con la palestra, al posto di `accounts.py`: cambio approvato dal
+    Coordinatore il 2026-11-06, perché `USER_COLUMNS` gira a ogni
+    richiesta col token); `shared-types` `src/gym.ts`, `test/gym.test.ts`;
+    nell'app `gym/GymLevels.tsx`, `gym/ExerciseList.tsx`,
+    `gym/GymDetail.tsx`, `profile/ProfileHome.tsx` (una riga, «Winner»
+    dal profilo), `i18n/it.ts`, `de.ts`, `fr.ts`, `es.ts` (i due testi
+    approvati);
+  - privacy: `apps/mobile/src/about/content/*.ts` (cinque lingue) e
+    `site/privacy/**/index.html` rigenerati; la data resta 6 novembre
+    2026, i tre test con la data non cambiano;
+  - documenti: questo file, `docs/API.md`, `docs/CONCORSI.md`,
+    `docs/DECISIONS.md` (precisazione), `docs/STATUS.md` (righe proprie),
+    `docs/sports/gym.md`.
+- **G–H**: si elencano prima di ciascuna.
 
 ## Testi dell'interfaccia (approvati il 2026-11-04)
 
@@ -393,3 +422,8 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
 - 2026-11-06: parte C in `main` (#904, 756d6f83); impronta iOS 6f8bba4c
   misurata dal Coordinatore. Niente server; OTA col sì dell'utente.
   Prossima: F (classifica mensile), lista prima del codice.
+- 2026-11-06: parte F scritta (ADR-0327, precisazione F): la classifica
+  mensile per esercizio, contata a ogni lettura, dal profilo e dagli
+  esercizi del post; «Winner» per esercizio con almeno 3 persone; la riga
+  della privacy. Scelte dell'utente 18–20. Niente migrazione; server e OTA
+  col sì. Prossima: G.

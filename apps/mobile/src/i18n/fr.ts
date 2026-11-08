@@ -1210,6 +1210,9 @@ export const FR: Table = {
   Gorilla: "Gorille",
   "New level: {figure} · {exercise} {value}":
     "Nouveau niveau : {figure} · {exercise} {value}",
+  // src/gym/Leaderboard.tsx (TASK-385 F)
+  "Gym leaderboard · {month}": "Classement salle · {month}",
+  "Only sets logged live count.": "Seules les séries notées en direct comptent.",
   // src/screens/ChooseScreen.tsx (TASK-375)
   "No shapes on the slopes: MuW records your day.":
     "Pas de formes sur les pistes : MuW enregistre ta journée.",

@@ -59,6 +59,7 @@ from shaperoute_api.follows import (
     followers_count_sql,
     following_count_sql,
 )
+from shaperoute_api.gym_leaderboard import gym_wins_sql
 from shaperoute_api.gym_levels import GymLevelBody, gym_levels_sql
 from shaperoute_api.profile_bests import PersonalBestBody, personal_bests_sql
 from shaperoute_api.profile_totals import (
@@ -204,7 +205,10 @@ class Profiles:
                 f" {followers_count_sql('u.id')} AS followers,"
                 f" {following_count_sql('u.id')} AS following,"
                 f" {follow_state_sql('%s', 'u.id')} AS follow,"
-                f" {contest_wins_sql('u.id')} AS contest_wins,"
+                # The monthly leaderboards at the gym make a «Winner» too
+                # (TASK-385 F, the user's choice of 2026-11-06).
+                f" ({contest_wins_sql('u.id')} + {gym_wins_sql('u.id')})"
+                " AS contest_wins,"
                 f" {distance_total_sql('u.id')} AS distance_m,"
                 f" {climb_total_sql('u.id')} AS climb_m,"
                 f" {reactions_received_sql('u.id', '%s')} AS reactions,"

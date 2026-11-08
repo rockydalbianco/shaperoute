@@ -1824,6 +1824,11 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   lettura da `gym_sets`; un esercizio scritto da chi si allena non ha
   scala. Esempio `fixtures/gym-levels.json`; `gym_levels.py`; un'API
   precedente non ha il campo.
+- **«Winner» anche dalla palestra** (TASK-385 F): nel profilo pubblico
+  `contest_wins` somma ai concorsi vinti le classifiche mensili della
+  palestra vinte: primo di un esercizio in un mese finito, con almeno 3
+  persone (scelta dell'utente del 2026-11-06). `GET /me` resta coi soli
+  concorsi: l'app legge «Winner» dal proprio profilo.
 - **`GET /users/{public_id}/photos`** (TASK-324): le foto dei disegni che
   chi guarda vede sul profilo, dalla corsa più recente e nello stesso
   disegno per posto; `limit` da 1 a 60 (30), `cursor` dalla pagina prima
@@ -2951,6 +2956,19 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   stesso account cominciati prima (anche quelli salvati dopo); prima il
   livello più alto; `[]` senza. Con gli esercizi: nascosti loro, nascosti
   anche i livelli.
+- **`GET /gym/leaderboard?exercise=&month=`** (parte F, ADR-0327
+  precisazione F): la classifica mensile di un esercizio del catalogo con
+  una scala (`404` `unknown_exercise` per gli altri), in un mese di
+  calendario di Roma (`YYYY-MM`, questo se manca; `422` se non è un mese).
+  Una riga per persona, la sua serie migliore: solo serie `live`, sotto il
+  tetto, di allenamenti cominciati e pubblicati nel mese, per tutti, con
+  gli esercizi mostrati, non nascosti dalla moderazione né di un account
+  nascosto. Il valore come i livelli (`measure`); a pari valore la serie
+  segnata prima. `rows` i primi 50, `mine` chi chiede ovunque sia (`null`
+  se non c'è), `people` quanti sono in tutto. Una riga tenuta lontana da
+  un blocco manca, le altre tengono il loro `rank`. Si segnala il post
+  (`drawing_id`, segnalazione `drawing`). Vuole il token. Esempio
+  `fixtures/gym-leaderboard.json`; `gym_leaderboard.py`.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`

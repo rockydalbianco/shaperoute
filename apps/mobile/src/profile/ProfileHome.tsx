@@ -103,7 +103,8 @@ export function ProfileHome({
           bio={bioOf(user)}
           photo={photo.uri}
           detail={user.email}
-          winner={(user.contest_wins ?? 0) > 0}
+          // The profile's count has the gym's monthly wins too (TASK-385 F).
+          winner={(own?.contest_wins ?? user.contest_wins ?? 0) > 0}
           badges={own?.badges ?? null}
           photoButton={{
             open: photoOpen,

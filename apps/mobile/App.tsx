@@ -1690,10 +1690,6 @@ function MuW() {
         {/* The stretching, over the whole screen, until done or skipped
             (TASK-285 part B). */}
         {stretching && <StretchScreen onLeave={() => setStretching(false)} />}
-        {/* A workout at the gym, over everything until saved (TASK-385 B). */}
-        <GymWorkoutHost />
-        {/* A swim in a pool, over everything until saved (TASK-400 B). */}
-        <PoolSwimHost />
       </MapScreen>
       {/* Over the map, opposite the way back: keep the route shown. */}
       <FavoriteHeart route={onMap} />
@@ -1953,6 +1949,11 @@ function MuW() {
         onAccept={swimNotice.accept}
         onDismiss={swimNotice.dismiss}
       />
+      {/* A workout at the gym (TASK-385 B) and a swim in a pool (TASK-400
+          B), over everything until saved. Out of the map's card, which has
+          nothing while «Draw» shows: «Start workout» there opened nothing. */}
+      <GymWorkoutHost />
+      <PoolSwimHost />
     </View>
   );
 }

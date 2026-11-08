@@ -5,6 +5,7 @@ import {
   type Cut,
   type Ending,
   type Opening,
+  type RouteCamera,
   SCENES,
   type SceneName,
 } from "./videoScenes";
@@ -31,6 +32,8 @@ export type VideoEdit = {
   opening: Opening;
   /** How the opening gives way to the next scene. */
   cut: Cut;
+  /** How the route is seen on «3D» (part C2b). */
+  camera: RouteCamera;
   ending: Ending;
 };
 
@@ -47,6 +50,7 @@ export const FIRST_EDIT: VideoEdit = {
   off: ["opening"],
   opening: "drawing",
   cut: "fade",
+  camera: "around",
   ending: "drawing",
 };
 

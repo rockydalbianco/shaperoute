@@ -23,6 +23,14 @@ import {
   resultValue,
 } from "./postRun";
 import type { Sticker } from "./stickers";
+import {
+  CHASE_PITCH,
+  type ChaseCamera,
+  chaseCamera,
+  chaseSamples,
+  type Plane,
+  planeOf,
+} from "./videoChase";
 import type { Character } from "./videoCharacter";
 import {
   ALONG_COUNT,
@@ -93,6 +101,9 @@ const INTRO_S = 1;
 const LEAD_S = 0.3;
 const FADE_S = 0.5;
 const HOLD_S = 0.5;
+/** «Camera behind» (part C2b): how long the camera takes to come down to
+ * the animal, and back up after the route. */
+const SWOOP_S = 1;
 const LAST_S = 1.5;
 /** The opening's title: its size as a multiple of the title's, its top as
  * a share of the height. */
@@ -201,8 +212,20 @@ export type VideoOp =
    * turns, and `zoom` how far the one picture is zoomed about the drawing's
    * middle when the map stands still: the page knows which. With `flat`,
    * the map seen from straight above under the opening's drawing
-   * (TASK-408, part C2), when the page has that picture. */
-  | { k: "map"; alpha: number; turn?: number; zoom?: number; flat?: boolean }
+   * (TASK-408, part C2), when the page has that picture. With «Camera
+   * behind» (part C2b), `chase` is the camera behind the animal and `u`
+   * how far the page's camera has gone from the whole drawing to it, 0 to
+   * 1; the page moves the map there when it can, and keeps it still
+   * otherwise. */
+  | {
+      k: "map";
+      alpha: number;
+      turn?: number;
+      zoom?: number;
+      flat?: boolean;
+      chase?: ChaseCamera;
+      u?: number;
+    }
   /** The veil rising from `top` to the bottom edge, `peak` opaque there. */
   | { k: "scrim"; top: number; peak: number; alpha: number }
   /** A filled square with round corners. */
@@ -299,7 +322,14 @@ export type VideoScene = {
   /** The map under the pictures; null on paper, or with nothing to frame.
    * With `flat`, the page also takes its picture from straight above, for
    * the opening on «3D» (TASK-408, part C2). */
-  map: (VideoMap & { flat?: boolean }) | null;
+  map:
+    | (VideoMap & {
+        flat?: boolean;
+        /** «Camera behind» (part C2b): cameras along the run for the
+         * page to try before the video. */
+        chase?: { cameras: ChaseCamera[] };
+      })
+    | null;
   /** Lines, each as x0, y0, x1, y1, …: the logo's heart, then the run;
    * then the ending's large heart when it has one (TASK-408). */
   paths: number[][];
@@ -455,6 +485,10 @@ function mapLook(
 /** One decimal: the scene goes to the WebView as text. */
 function round(value: number): number {
   return Math.round(value * 10) / 10;
+}
+
+function round6(value: number): number {
+  return Math.round(value * 1e6) / 1e6;
 }
 
 function round3(value: number): number {
@@ -776,11 +810,17 @@ type Plan = {
   kind: Opening;
   cut: Cut;
   endKind: Ending;
-  /** On «3D», the map seen from straight above for the opening's drawing. */
+  /** On «3D», the map seen from straight above for the opening's drawing,
+   * or for the whole video with «Line in 2D» (`flatAll`, part C2b). */
   flat: boolean;
+  flatAll: boolean;
+  /** «Camera behind» on «3D»: the run on its plane, and the zoom of the
+   * whole drawing the camera comes closer from; null otherwise. */
+  chase: Plane | null;
+  fitZoom: number;
 };
 
-function planOf(scenes: SceneChoice, relief: boolean): Plan {
+function planOf(scenes: SceneChoice, relief: boolean, map: VideoMap | null): Plan {
   let windows = sceneWindows(scenes.order, scenes.off, VIDEO_SECONDS);
   if (windows.length === 0) {
     windows = sceneWindows(SCENES, ["opening"], VIDEO_SECONDS);
@@ -788,6 +828,7 @@ function planOf(scenes: SceneChoice, relief: boolean): Plan {
   const of = (name: SceneName) => windows.find((w) => w.scene === name) ?? null;
   const route = of("route");
   const opening = of("opening");
+  const flatAll = relief && route !== null && scenes.camera === "line";
   return {
     opening,
     route:
@@ -798,7 +839,17 @@ function planOf(scenes: SceneChoice, relief: boolean): Plan {
     kind: scenes.opening,
     cut: scenes.cut,
     endKind: scenes.ending,
-    flat: relief && opening !== null && scenes.opening === "drawing",
+    flat: relief && ((opening !== null && scenes.opening === "drawing") || flatAll),
+    flatAll,
+    chase:
+      relief &&
+      route !== null &&
+      scenes.camera === "behind" &&
+      map !== null &&
+      map.line.length >= 2
+        ? planeOf(map.line.map(([lon, lat]): LatLon => [lat, lon]))
+        : null,
+    fitZoom: map?.camera.zoom ?? 0,
   };
 }
 
@@ -840,6 +891,37 @@ function drawnAt(route: { drawFrom: number; to: number }, share: number): number
   );
 }
 
+/** «Camera behind» at `t`: the camera behind the animal, and how far the
+ * page's camera has come down to it from the whole drawing, over the
+ * route's first second; back up over the second after it. Nothing when
+ * the camera is not behind the animal, or still on the whole drawing. */
+function chaseAt(t: number, plan: Plan): { chase?: ChaseCamera; u?: number } {
+  const { chase, route } = plan;
+  if (chase === null || route === null) {
+    return {};
+  }
+  const u =
+    easeInOut(ramp(t, route.from, route.from + SWOOP_S)) *
+    (1 - easeInOut(ramp(t, route.to, route.to + SWOOP_S)));
+  if (u <= 0) {
+    return {};
+  }
+  const camera = chaseCamera(
+    chase,
+    t < route.to ? drawnShare(t, plan) : 1,
+    plan.fitZoom,
+  );
+  return {
+    chase: {
+      center: [round6(camera.center[0]), round6(camera.center[1])],
+      bearing: round3(camera.bearing),
+      zoom: round3(camera.zoom),
+      pitch: camera.pitch,
+    },
+    u: round3(u),
+  };
+}
+
 /** What the picture at `t` seconds shows. */
 function frameAt(
   t: number,
@@ -871,7 +953,10 @@ function frameAt(
   // The map comes in with the logo, and the dark under the words with it.
   const ground = round3(ramp(t, 0, 0.5));
   if (layout.map !== null) {
-    if (look.relief) {
+    if (plan.flatAll) {
+      // «Line in 2D» on «3D»: the map from straight above all along.
+      ops.push({ k: "map", alpha: ground, flat: true });
+    } else if (look.relief) {
       // The camera's turn, or the picture's zoom, slow at both ends.
       const u = easeInOut(ramp(t, 0, VIDEO_SECONDS));
       ops.push({
@@ -879,6 +964,7 @@ function frameAt(
         alpha: ground,
         turn: round3(-TURN_DEG + 2 * TURN_DEG * u),
         zoom: round3(1 + (STILL_ZOOM - 1) * u),
+        ...chaseAt(t, plan),
       });
       // The map from straight above under the opening's drawing.
       if (plan.flat && opening > 0) {
@@ -1025,7 +1111,9 @@ function frameAt(
         path: RUN_PATH,
         upTo: round(upTo),
         size: round(w * CHARACTER),
-        tilt: look.relief ? 90 - PITCH_3D : CHARACTER_TILT,
+        tilt: look.relief
+          ? 90 - (plan.chase !== null ? CHASE_PITCH : PITCH_3D)
+          : CHARACTER_TILT,
         clip: running ? "run" : "rest",
         time: round3(running && route !== null ? t - route.drawFrom : t - restFrom),
         alpha: round3(main),
@@ -1348,7 +1436,7 @@ function veil(alpha: number): VideoOp {
 /** What «Edit video» chose for the scenes (TASK-408, part C2). */
 export type SceneChoice = Pick<
   VideoEdit,
-  "order" | "off" | "opening" | "cut" | "ending"
+  "order" | "off" | "opening" | "cut" | "camera" | "ending"
 >;
 
 /** What «Edit video» adds to the post's video (TASK-408): the animal, the
@@ -1368,6 +1456,7 @@ function scenesOf(options: SceneOptions): SceneChoice {
     off: options.off ?? FIRST_EDIT.off,
     opening: options.opening ?? FIRST_EDIT.opening,
     cut: options.cut ?? FIRST_EDIT.cut,
+    camera: options.camera ?? FIRST_EDIT.camera,
     ending: options.ending ?? FIRST_EDIT.ending,
   };
 }
@@ -1398,7 +1487,10 @@ export function videoScene(
         );
   const language = appLanguage();
   const layout = layoutOf(run, shown, spec, palette, language);
-  const plan = planOf(scenesOf(options), spec.relief);
+  const plan = planOf(scenesOf(options), spec.relief, layout.map);
+  // «Line in 2D» on «3D»: drawn as on a flat map, over its picture from
+  // straight above.
+  const drawn = plan.flatAll ? { ...spec, relief: false } : spec;
   const hearted =
     plan.ending !== null && (plan.endKind === "heart" || plan.endKind === "all");
   const count = VIDEO_SECONDS * VIDEO_FPS;
@@ -1408,13 +1500,22 @@ export function videoScene(
     fps: VIDEO_FPS,
     look,
     colors: spec.colors,
-    map: layout.map !== null && plan.flat ? { ...layout.map, flat: true } : layout.map,
+    map:
+      layout.map === null
+        ? null
+        : {
+            ...layout.map,
+            ...(plan.flat ? { flat: true } : {}),
+            ...(plan.chase !== null
+              ? { chase: { cameras: chaseSamples(plan.chase, plan.fitZoom) } }
+              : {}),
+          },
     paths: hearted
       ? [layout.heart, layout.track, layout.heartCard.path]
       : [layout.heart, layout.track],
     character: options.character ?? null,
     frames: Array.from({ length: count }, (_, i) =>
-      frameAt(i / VIDEO_FPS, run, stickers, layout, spec, language, options, plan),
+      frameAt(i / VIDEO_FPS, run, stickers, layout, drawn, language, options, plan),
     ),
   };
 }

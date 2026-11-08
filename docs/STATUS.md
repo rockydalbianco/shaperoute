@@ -116,9 +116,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (OTA `8b1af1b4`); F (la card del Feed come la pagina) in `main` (#980),
   esce col prossimo OTA unico. Poi C (`run_stats`, lista al Coordinatore
   prima del codice), D, E. File: — · `tasks/TASK-410.md`
-- **TASK-411 — La palestra per tutti i giorni** · A–E in `main` (C con la
-  migrazione 0058); F (la palestra più chiara) in PR; poi server, sito della
-  privacy e un OTA dedicato, ognuno col sì. File: quelli della F ·
+- **TASK-411 — La palestra per tutti i giorni** · A–F in `main` (la
+  migrazione 0058 delle schede); restano il server (0058 e il calendario), il
+  sito della privacy e un OTA dedicato, ognuno col sì. File: — ·
   `tasks/TASK-411.md`
 - **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
   schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e

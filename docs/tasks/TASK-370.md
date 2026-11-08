@@ -326,6 +326,9 @@ accende):
   1 cm, il resto uguale). Se `navigator.ts` cambia e le tracce no, jest
   fallisce; se le tracce cambiano e lo Swift no, `swift test`.
 
+B1 fatta il 2026-11-08: 14 tracce, 31 test XCTest verdi, ogni costante
+della guida legata (ADR-0314 «precisazione B1»); impronta `6f8bba4c`.
+
 **B2 — Il percorso chiuso e i pezzi**: `startAnywhere.ts` (un percorso
 chiuso preso dove lo si tocca) e `penUp.ts` (i disegni a penna alzata), con
 tracce come in B1.

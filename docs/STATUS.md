@@ -285,6 +285,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sport nuovo o un nome cambiato richiede di rilanciare `scripts/watch-texts.sh` e
   `scripts/watch-sports.sh`. A3 in una sessione nuova, con la lista dei file al Coordinatore
   prima del codice.
+- **TASK-370 B1 — La guida in Swift, uguale a quella del telefono** (2026-11-08; parte B1
+  del piano in `tasks/TASK-370.md`, ADR-0314 «precisazione B1»; via del Coordinatore
+  local_3f55a0e9). Solo file nuovi: `WatchCore/Guide/` (`RouteProgress`, `Rejoin`,
+  `Navigator`: la parte «follow» di `navigator.ts` con le stesse costanti) e gli avvisi per
+  tipo invece delle frasi. 14 tracce in `Fixtures/guide/` (due percorsi × dritto, bici,
+  deviazione, deviazione lunga, buco di GPS, fix poco precisi, senza tempi), scritte da
+  `scripts/watch-guide.sh` col `navigator.ts` del telefono e rigiocate da `GuideTests.swift`:
+  cambiare una costante da una parte sola fa fallire i test. Impronta iOS `6f8bba4c`
+  invariata. Branch `feat/TASK-370-b1-watch-guide`. **Prossimo**: B2 (percorso chiuso preso
+  dove lo tocchi, pezzi a penna alzata), poi B3 (l'orologio da solo, con le scelte
+  dell'utente su vibrazioni e testi).
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.

@@ -25109,3 +25109,45 @@ dall'agente su delega dell'utente):
   distanza entra.
 - Un posto nuovo aspetta Overpass (20–40 s) alla prima richiesta, come la
   prima acqua di un lago.
+
+## ADR-0314, precisazione — La parte B1: la guida in Swift, legata al telefono dalle tracce
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B1, decisa dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore (local_3f55a0e9).
+
+**Contesto**: l'orologio deve guidare senza telefono (scelta dell'utente,
+ADR-0314 punto 1), quindi la guida del telefono (`navigator.ts`,
+`progress.ts`, `rejoin.ts`) va riscritta in Swift. Due copie della stessa
+logica divergono, se niente le lega.
+
+**Decisione**:
+1. **Una riscrittura riga per riga** in `WatchCore/Guide/`, con le stesse
+   costanti e gli stessi nomi; B1 copre la guida dalla partenza (svolte,
+   fuori rotta, rientro, buco di GPS, deviazione con rientro più avanti, fix
+   poco precisi, arrivo). Il percorso chiuso preso dove lo si tocca e i
+   pezzi a penna alzata sono B2.
+2. **Avvisi per tipo, non frasi**: `GuideCue` (partenza, svolta con la
+   catena e i metri, fuori rotta, dov'è il percorso, di nuovo sul percorso,
+   arrivato) e `vibrates` come il `vibrate` del telefono. L'orologio mostra e
+   vibra; le parole restano del telefono.
+3. **Le tracce come contratto**: `src/watch/guideScenarios.ts` fa uscite
+   deterministiche sui due percorsi di `navigation/fixtures/`, con i fix a 8
+   decimali; `guideTrace.ts` le fa seguire al navigator del telefono e scrive
+   lo stato dopo ogni fix e gli avvisi per tipo (il tipo si ricava dalle
+   parole inglesi; una frase senza tipo è un errore). Le 14 tracce stanno in
+   `targets/watch/Core/Fixtures/guide/`, scritte da `scripts/watch-guide.sh`
+   e formattate con Prettier; jest controlla che dicano ciò che il codice di
+   oggi fa (per contenuto, non per impaginazione), XCTest le rigioca (metri
+   entro 1 cm, il resto uguale).
+4. **Gli scenari hanno denti**: una deviazione sta a una distanza e da un
+   lato liberi da ogni altra parte del percorso, e quella lunga rientra 700 m
+   più avanti, oltre la finestra che si avrebbe con meno di `REJOIN_PER_M`.
+   Provato cambiando una costante per volta nello Swift (`forwardCost`,
+   `passM`, `gapMs`, `poorFixM`, `joinM`, `offFixes`, `perM`): ogni cambio fa
+   fallire i test.
+
+**Conseguenze**: un cambio a `navigator.ts`, `progress.ts` o `rejoin.ts`
+vuole `scripts/watch-guide.sh` e lo stesso cambio in Swift, o fallisce jest o
+`swift test`. Le tracce pesano circa 670 KB.
+
+---

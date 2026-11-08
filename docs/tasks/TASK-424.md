@@ -176,8 +176,11 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
 5. **Come si manda** — **deciso dall'utente il 2026-11-09** («Sì, il
    foglio»): il foglio di condivisione del telefono (`Share` di React
    Native: WhatsApp, SMS, Mail, «Copia»), con una riga breve e il link.
-6. **Chi può condividere** — proposta: serve l'account (il link è legato a
-   chi lo crea e si ferma anche da un altro telefono).
+6. **Chi può condividere** — **deciso dall'utente il 2026-11-09** («Sì,
+   serve»): serve l'account per creare il link (legato a chi lo crea, con
+   un limite contro gli abusi, fermabile da un altro telefono, cancellato
+   con l'account); senza account il pulsante invita ad entrare. Chi riceve
+   il link non ha bisogno di nulla (scelta 1).
 7. **Piscina e palestra** (parte D) — proposta: dopo, solo i dati.
 8. **La mappa della pagina**: MapLibre e OpenFreeMap caricati da fuori,
    scritto nella privacy del sito.

@@ -3329,10 +3329,11 @@ il banner dice «Location is off» e «Allow it for Sgrava in Settings to
 follow the route.», con «Open Settings» che apre la pagina dell'app nelle
 impostazioni del telefono (TASK-259).
 
-**La corsa: due pagine, il conto alla rovescia, la pausa** (TASK-169,
-ADR-0137), chiesta dall'utente con una registrazione di Nike Run Club come
-riferimento. Uguale con un percorso e senza; sostituisce il pannello di
-TASK-164, di cui tiene i numeri.
+**La corsa: tre pagine, il conto alla rovescia, la pausa** (TASK-169,
+ADR-0137; la terza pagina, «Compass», da TASK-422, ADR-0350), chiesta
+dall'utente con una registrazione di Nike Run Club come riferimento.
+Uguale con un percorso e senza; sostituisce il pannello di TASK-164, di
+cui tiene i numeri.
 
 - **Il conto alla rovescia.** Una corsa nuova parte con «3», «2», «1» a
   tutto schermo, gialli su nero, e «Get ready». In quei tre secondi il GPS
@@ -3340,14 +3341,34 @@ TASK-164, di cui tiene i numeri.
   ancora: la corsa parte dal punto in cui si è quando il conto finisce, in
   quell'istante, anche da fermi. Una corsa ripresa («Keep running»)
   riparte subito, senza conto.
-- **Due pagine, una accanto all'altra**: «Map» a sinistra, «Data» a destra.
-  Si passa con uno swipe (verso sinistra per «Data», verso destra per
-  tornare a «Map») o toccando i due pulsanti in fondo; la corsa si apre su
-  «Map». Lo swipe parte dalla scheda, non dalla mappa: lì un dito sposta
-  la mappa. I due pulsanti si dividono la larghezza della scheda e sono
-  alti 56 punti, più del tocco minimo: si prendono col pollice correndo
-  (TASK-186). La pagina aperta ha la superficie più chiara e il bordo,
-  come le altre scelte dell'app; il giallo resta del percorso.
+- **Tre pagine, una accanto all'altra**: «Compass» a sinistra, «Map» al
+  centro, «Data» a destra (TASK-422; prima erano due). Si passa con uno
+  swipe, una pagina alla volta (verso sinistra per quella a destra, verso
+  destra per quella a sinistra; oltre i bordi niente) o toccando i tre
+  pulsanti in fondo; la corsa si apre su «Map». Lo swipe parte dalla
+  scheda, non dalla mappa: lì un dito sposta la mappa. I tre pulsanti si
+  dividono la larghezza della scheda e sono alti 56 punti, più del tocco
+  minimo: si prendono col pollice correndo (TASK-186). La pagina aperta ha
+  la superficie più chiara e il bordo, come le altre scelte dell'app; il
+  giallo resta del percorso. Vale per tutti gli sport che registrano con la
+  stessa scheda (corsa, bici, canoa, nuoto, free run).
+- **«Compass»** (TASK-422, ADR-0350; chiesta dall'utente il 2026-11-08):
+  solo la mappa, grande. Sotto restano i pulsanti della corsa («Pocket»,
+  «Pause», «Music»; in pausa «Stop» da tenere e «Resume»; all'arrivo
+  «Finish») e i tre nomi; niente numeri, barra del percorso, riga del gioco
+  né battito. Sopra la mappa il banner resta (la svolta, o la partenza).
+  **La mappa gira dove punta il telefono**: la direzione verso cui si è
+  rivolti sta in alto (heading-up). Da fermi comanda la bussola del
+  telefono; correndo la bussola finché è calibrata (media o alta), e quando
+  è inaffidabile la direzione della traccia GPS degli ultimi 10 m, come la
+  freccia di direzione. La mappa gira per cambi di almeno 4° e non più di
+  una volta ogni 400 ms, per non tremare in mano. **La freccia del nord**
+  c'è sempre su questa pagina, nel suo posto: un tocco mette il nord in
+  alto e lo tiene (la bussola si spegne), un secondo tocco rimette la mappa
+  dove punta il telefono; per VoiceOver «Turns the map north up» e «Turns
+  the map where you face». Lasciando la pagina, o a fine corsa, la mappa
+  torna com'era: girata come il disegno, o col nord in alto. La bussola è
+  accesa solo con «Compass» aperta.
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra

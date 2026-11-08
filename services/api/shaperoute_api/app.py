@@ -70,6 +70,7 @@ from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.group_runs import install_group_runs
 from shaperoute_api.gym_calendar import install_gym_calendar
 from shaperoute_api.gym_leaderboard import install_gym_leaderboard
+from shaperoute_api.gym_plans import install_gym_plans
 from shaperoute_api.gym_sessions import install_gym_sessions
 from shaperoute_api.images import (
     AnyRequest,
@@ -379,6 +380,8 @@ def create_app(
     # The calendar of one's own workouts at the gym (TASK-411 B); it needs
     # a token.
     install_gym_calendar(app)
+    # The plans of the gym (TASK-411 C); they need a token.
+    install_gym_plans(app)
     # The swims in a pool, saved without a track, and their lengths
     # (TASK-400); they need a token.
     install_pool_swims(app)

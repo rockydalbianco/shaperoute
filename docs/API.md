@@ -2977,6 +2977,22 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   un blocco manca, le altre tengono il loro `rank`. Si segnala il post
   (`drawing_id`, segnalazione `drawing`). Vuole il token. Esempio
   `fixtures/gym-leaderboard.json`; `gym_leaderboard.py`.
+- **`GET /me/gym-calendar?tz=&month=`** (TASK-411 B, ADR-0341): gli
+  allenamenti del proprietario in un mese di calendario sul fuso `tz` del
+  telefono (nome IANA, `422` se no; `YYYY-MM`, questo se manca). Solo i
+  giorni con un allenamento: inizio, tempo, post se c'è, nome della scheda
+  (parte C); `count`, `duration_s`, `last` (l'ultimo di sempre) e
+  `skipped` (i giorni di una scheda passati senza di lei, parte C). Vuole il
+  token. Esempio `fixtures/gym-calendar.json`; `gym_calendar.py`.
+- **`GET /me/gym-plans`, `PUT /me/gym-plans/{key}`, `DELETE
+  /me/gym-plans/{key}`** (TASK-411 C, ADR-0341): le schede del
+  proprietario, nel loro ordine; la chiave la sceglie il telefono (`201`
+  la prima volta, poi `200`); una mandata più vecchia (`updated_at`) di
+  quella tenuta non la sostituisce; eliminare è `204` anche se non c'è; al
+  massimo 20 (`422`). Un esercizio: `exercise` o `name`, `kind`, `sets`
+  1–20 e i valori obiettivo del suo tipo, facoltativi. `PUT
+  /me/gym-sessions/{key}` accetta `plan`, la chiave della scheda seguita.
+  Esempio `fixtures/gym-plans.json`; `gym_plans.py`.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`

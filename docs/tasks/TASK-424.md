@@ -1,6 +1,7 @@
 # TASK-424 — I dati dal vivo per ogni sport e «Share live activity»
 
-**Stato**: Proposto (parte 0)
+**Stato**: In corso · parte 0 pronta (scelte dell'utente tutte prese il
+2026-11-09); prossima A1
 **Fase**: 5 · **Branch**: `docs/TASK-424-live-share` (parte 0) · **ADR**:
 ADR-0352 · numeri dal Coordinatore (2026-11-09)
 
@@ -155,7 +156,7 @@ dell'API (conferma email, password) sono il modello per un link pubblico.
 
 ### Scelte di prodotto per l'utente (una alla volta)
 
-Ognuna con una proposta. Si scrivono qui con la risposta.
+Tutte prese dall'utente il 2026-11-09, una per volta.
 
 1. **Chi può ricevere il link** — **deciso dall'utente il 2026-11-09**
    («Sì, chiunque lo abbia»): chiunque abbia il link, senza app e senza
@@ -196,8 +197,11 @@ Ognuna con una proposta. Si scrivono qui con la risposta.
    chi apre la pagina ma non il token né la posizione. Una riga nella
    privacy del sito; `SITO.md` aggiornato nella parte A2.
 9. **I testi** in en/it/de/fr/es (pulsante, consenso, foglio, pagina,
-   privacy dell'app e del sito): li scrive l'agente, li approva l'utente.
-10. **App Privacy e Data safety**: proposta più sotto, ogni passo col sì.
+   privacy dell'app e del sito) — **approvati dall'utente il 2026-11-09**,
+   sotto in «Testi».
+10. **App Privacy e Data safety** — **proposta approvata dall'utente il
+    2026-11-09** («Sì, approvo»), sotto in «Privacy»; ogni aggiornamento
+    delle etichette resta un sì a parte, prima dell'OTA di B.
 
 ### Testi
 
@@ -386,13 +390,13 @@ Privacy, sezione «Sharing live»:
   `live_shares` resta solo senza posizioni, per i limiti, poi va via.
 - Una sezione nuova «Sharing live» nella privacy dell'app (e quindi del
   sito, rigenerata con `make_privacy.mjs`) e una frase in «Your position».
-- **App Privacy** (proposta, scelta 10): «Precise Location» resta com'è
+- **App Privacy** (approvato, scelta 10): «Precise Location» resta com'è
   (già dichiarata, legata all'account, per il funzionamento dell'app);
   **«Health»** (il battito, che ora lascia il telefono) si dichiara
   raccolto, legato all'account, per il funzionamento dell'app, senza
   tracciamento, se non l'ha già dichiarato TASK-409 B. Apple non ha una
   voce per l'invio a persone scelte dall'utente: non è «tracking».
-- **Data safety** (proposta, scelta 10): la riga «Posizione precisa» resta
+- **Data safety** (approvato, scelta 10): la riga «Posizione precisa» resta
   «non condivisa»: Google esclude gli invii fatti dall'utente a chi sceglie
   lui; si aggiunge in G.7 (`DEPLOY.md`) «anche a chi ha il link, su azione
   dell'utente». Nessuna riga «Salute»: su Android l'orologio non c'è e il

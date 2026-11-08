@@ -86,6 +86,10 @@ export interface SportProfile {
   /** What a run without a route counts as, from «Settings»: its numbers are
    * that activity's; undefined, a run's (navigation/freeSport.ts). */
   freeRunAs: Activity | undefined;
+  /** Its numbers are a ride's (TASK-416, ADR-0322/0324): speeds in km/h,
+   * splits in km/h, the voice every 10 km and the turns said 100 m ahead
+   * (navigation/ride.ts); none, a run's. */
+  rides?: true;
   /** What a MuW route of the sport says on its card (TASK-365); a ride's
    * when not said. */
   muwLabel?: string;

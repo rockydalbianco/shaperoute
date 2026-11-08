@@ -29,15 +29,16 @@ test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191), «Swim» (T
   expect(screen.getByRole("radio", { name: "Ski" })).not.toBeChecked();
   // And «Gym» (TASK-385 B), on in Expo Go and preview, «Hike» (TASK-377),
   // «Gravel» and «MTB» (TASK-378), «Walk» (TASK-371).
-  expect(screen.getAllByRole("radio")).toHaveLength(10);
+  expect(screen.getAllByRole("radio")).toHaveLength(11);
   expect(screen.getByRole("radio", { name: "Walk" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Hike" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Gravel" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "MTB" })).not.toBeChecked();
-  // «Roller» (TASK-380), «Cross-country ski» (TASK-375) and «Paragliding»
-  // (TASK-305 D0) say «Soon».
-  expect(screen.getAllByText("Soon")).toHaveLength(3);
-  expect(screen.getByLabelText("Roller, coming soon")).toBeOnTheScreen();
+  // And «Roller» (TASK-380).
+  expect(screen.getByRole("radio", { name: "Roller" })).not.toBeChecked();
+  // «Cross-country ski» (TASK-375) and «Paragliding» (TASK-305 D0) say
+  // «Soon».
+  expect(screen.getAllByText("Soon")).toHaveLength(2);
   expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
 });
 

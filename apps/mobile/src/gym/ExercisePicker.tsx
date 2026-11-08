@@ -7,10 +7,16 @@ import { appLanguage } from "../i18n/language";
 import type { Language } from "../i18n/languages";
 import { color, space } from "../theme/tokens";
 import { GYM_EXERCISES, type GymExercise, type GymGroup } from "./catalog";
-import { GroupGrid, GROUP_EMOJI, MachineGrid } from "./ExerciseGrid";
+import { ExerciseFigure } from "./ExerciseFigure";
+import { GroupGrid, GROUP_EMOJI, GuideButton, MachineGrid } from "./ExerciseGrid";
+import { ExerciseGuide } from "./ExerciseGuide";
 import { groupName } from "./groups";
 import { gymStyles } from "./gymStyles";
+import { moveOf } from "./moves";
 import type { Entry } from "./setKinds";
+
+/** The side of the figure on a row of the search. */
+const ROW_FIGURE = 40;
 
 /** The longest name the API keeps for an exercise of one's own. */
 export const MAX_NAME = 40;
@@ -59,7 +65,9 @@ function kindName(kind: GymSetKind, language: Language): string {
  * chosen by whoever writes it (by the words of its fields: weight, reps,
  * time, cardio). The groups are a grid of tiles, then the group's
  * exercises a grid too (TASK-411 part A, the user's «Gruppi, poi
- * macchinari»); typing searches every group, as a list.
+ * macchinari»); typing searches every group, as a list. Each exercise has
+ * its figure moving beside its name and «ⓘ» for its guide (part E, the
+ * user's «Omino nell'app»).
  */
 export function ExercisePicker({
   onPick,
@@ -72,6 +80,7 @@ export function ExercisePicker({
   const [search, setSearch] = useState("");
   const [group, setGroup] = useState<GymGroup | null>(null);
   const [own, setOwn] = useState<string | null>(null);
+  const [guide, setGuide] = useState<GymExercise | null>(null);
   // Typing searches every group, as a list; otherwise the grids.
   const searching = search.trim() !== "";
   const found = exercisesFound(search, null, language);
@@ -79,6 +88,19 @@ export function ExercisePicker({
   const exact = found.some(
     (exercise) => plain(exercise.names[language]) === plain(name),
   );
+
+  if (guide !== null) {
+    return (
+      <View style={[gymStyles.content, styles.picker]}>
+        <ExerciseGuide
+          exercise={guide}
+          language={language}
+          onBack={() => setGuide(null)}
+          onAdd={() => onPick({ exercise: guide.key, kind: guide.kind })}
+        />
+      </View>
+    );
+  }
 
   if (own !== null) {
     return (
@@ -149,7 +171,12 @@ export function ExercisePicker({
           (group === null ? (
             <GroupGrid language={language} onGroup={setGroup} />
           ) : (
-            <MachineGrid group={group} language={language} onPick={onPick} />
+            <MachineGrid
+              group={group}
+              language={language}
+              onPick={onPick}
+              onGuide={setGuide}
+            />
           ))}
         {searching && name !== "" && !exact && (
           <Pressable
@@ -162,17 +189,31 @@ export function ExercisePicker({
           </Pressable>
         )}
         {searching &&
-          found.map((exercise) => (
-            <Pressable
-              key={exercise.key}
-              style={styles.row}
-              onPress={() => onPick({ exercise: exercise.key, kind: exercise.kind })}
-              accessibilityRole="button"
-              testID={`exercise-${exercise.key}`}
-            >
-              <Text style={gymStyles.text}>{exercise.names[language]}</Text>
-            </Pressable>
-          ))}
+          found.map((exercise) => {
+            const move = moveOf(exercise.key);
+            return (
+              <View key={exercise.key} style={styles.found}>
+                <Pressable
+                  style={styles.foundPick}
+                  onPress={() =>
+                    onPick({ exercise: exercise.key, kind: exercise.kind })
+                  }
+                  accessibilityRole="button"
+                  testID={`exercise-${exercise.key}`}
+                >
+                  {move !== null && <ExerciseFigure move={move} size={ROW_FIGURE} />}
+                  <Text style={[gymStyles.text, styles.foundName]}>
+                    {exercise.names[language]}
+                  </Text>
+                </Pressable>
+                <GuideButton
+                  exercise={exercise}
+                  language={language}
+                  onGuide={setGuide}
+                />
+              </View>
+            );
+          })}
       </ScrollView>
     </View>
   );
@@ -203,5 +244,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: color.border,
+  },
+  found: {
+    minHeight: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: color.border,
+  },
+  foundPick: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    paddingVertical: space.xs,
+  },
+  foundName: {
+    flex: 1,
   },
 });

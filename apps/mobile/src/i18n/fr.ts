@@ -2028,4 +2028,40 @@ export const FR: Table = {
     "Prévision plus ancienne : MET Norway ne répond pas.",
   "Weather: MET Norway (CC BY 4.0) · Resorts: OpenSkiMap.org, © OpenStreetMap contributors":
     "Météo : MET Norway (CC BY 4.0) · Stations : OpenSkiMap.org, © les contributeurs d'OpenStreetMap",
+
+  // src/explore/CatalogScreen.tsx, CatalogEntry.tsx, CatalogCard.tsx,
+  // CatalogGrid.tsx, CatalogFilterSheet.tsx, catalog.ts (TASK-420: the catalog)
+  Catalog: "Catalogue",
+  "{count} drawing in {cities} cities · filters, search":
+    "{count} dessin dans {cities} villes · filtres, recherche",
+  "{count} drawings in {cities} cities · filters, search":
+    "{count} dessins dans {cities} villes · filtres, recherche",
+  "{count} drawings · {cities} cities": "{count} dessins · {cities} villes",
+  "Search by name: heart, CIAO, Milan…": "Chercher par nom : cœur, CIAO, Milan…",
+  Country: "Pays",
+  City: "Ville",
+  Category: "Catégorie",
+  Nearest: "Les plus proches",
+  Best: "Les plus beaux",
+  Shortest: "Les plus courts",
+  Any: "Toutes",
+  "Loading more…": "Chargement de la suite…",
+  "No drawings match": "Aucun dessin ne correspond",
+  "Change the filters, or clear them to see every drawing.":
+    "Changez les filtres, ou effacez-les pour voir tous les dessins.",
+  "The drawings are planned at {distances}.": "Les dessins sont tracés sur {distances}.",
+  "Show {count} drawing": "Afficher {count} dessin",
+  "Show {count} drawings": "Afficher {count} dessins",
+  Monuments: "Monuments",
+  Holidays: "Fêtes",
+  Italy: "Italie",
+  "United States": "États-Unis",
+  Netherlands: "Pays-Bas",
+  Spain: "Espagne",
+  "United Arab Emirates": "Émirats arabes unis",
+  Portugal: "Portugal",
+  "United Kingdom": "Royaume-Uni",
+  France: "France",
+  Australia: "Australie",
+  Japan: "Japon",
 };

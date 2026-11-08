@@ -52,7 +52,9 @@ test("the heart on yellow is at the right of «Best near you», before the list"
   const heart = order.indexOf("heart-badge");
   expect(heart).toBeGreaterThan(order.indexOf("Best near you"));
   expect(order[heart - 1]).toMatch(/^Starting within /);
-  expect(order[heart + 1]).toMatch(/^Choose a start first/);
+  // Under it the way into the catalog (TASK-420), then the list's note.
+  expect(order[heart + 1]).toBe("Catalog");
+  expect(order.slice(heart + 2).find((text) => /^Choose a start first/.test(text))).toBeDefined();
 });
 
 test("it is as wide as the button of «Profile» above it", async () => {
@@ -67,8 +69,9 @@ test("it is as wide as the button of «Profile» above it", async () => {
 test("only a picture: VoiceOver does not find it, and nothing is pressed", async () => {
   await renderExplore();
   expect(screen.queryByTestId("heart-badge")).toBeNull();
-  // The only button is the search at the top (TASK-367 part B).
+  // The only buttons are the search at the top (TASK-367 part B) and the
+  // way into the catalog (TASK-420).
   expect(
     screen.queryAllByRole("button").map((button) => button.props.accessibilityLabel),
-  ).toEqual(["Search"]);
+  ).toEqual(["Search", expect.stringMatching(/^Catalog, /)]);
 });

@@ -8,16 +8,18 @@ import { activityOf, ALL_SPORTS, runActivityOf, type Sport } from "./sport";
 
 it("shows the rows of before, in their order", () => {
   expect(ALL_SPORTS).toEqual([
+    // By family since TASK-371: on foot, on wheels, on the water, on the
+    // snow. The walk on since the server walks.
+    { id: "walk", emoji: "🚶", name: "Walk", ready: true },
     { id: "run", emoji: "🏃‍♂️", name: "Run", ready: true },
-    { id: "bike", emoji: "🚴", name: "Bike", ready: true },
-    { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
-    { id: "swim", emoji: "🏊", name: "Swim", ready: true },
-    { id: "walk", emoji: "🚶", name: "Walk", ready: false },
     // Added since: the hike (TASK-377 part B), on since the server hikes.
     { id: "hike", emoji: "⛰️", name: "Hike", ready: true },
+    { id: "bike", emoji: "🚴", name: "Bike", ready: true },
     // The gravel and the MTB ride (TASK-378 part B), on since part C.
     { id: "gravel", emoji: "🚲", name: "Gravel", ready: true },
     { id: "mtb", emoji: "🚵", name: "MTB", ready: true },
+    { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
+    { id: "swim", emoji: "🏊", name: "Swim", ready: true },
     { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },
     {
       id: "xc_ski",
@@ -38,28 +40,28 @@ it("shows the rows of before, in their order", () => {
 it("asks and saves the activities of before", () => {
   const every: Sport[] = ALL_SPORTS.map((option) => option.id);
   expect(every.map(activityOf)).toEqual([
-    "running",
-    "cycling",
-    "paddling",
-    "swimming",
     "walking",
+    "running",
     "hiking",
+    "cycling",
     "gravel_biking",
     "mountain_biking",
+    "paddling",
+    "swimming",
     "running",
     "running",
     "running",
     "running",
   ]);
   expect(every.map(runActivityOf)).toEqual([
-    "running",
-    "cycling",
-    "paddling",
-    "swimming",
     "walking",
+    "running",
     "hiking",
+    "cycling",
     "gravel_biking",
     "mountain_biking",
+    "paddling",
+    "swimming",
     "skiing",
     "xc_skiing",
     "gym",

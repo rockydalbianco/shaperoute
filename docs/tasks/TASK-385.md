@@ -427,3 +427,6 @@ I nomi degli esercizi e delle figure sono in `docs/sports/gym.md`.
   esercizi del post; «Winner» per esercizio con almeno 3 persone; la riga
   della privacy. Scelte dell'utente 18–20. Niente migrazione; server e OTA
   col sì. Prossima: G.
+- 2026-11-06: parte F in `main` (#918, 7208c25e); impronta iOS 6f8bba4c
+  misurata dal Coordinatore. Server, sito della privacy e OTA col sì
+  dell'utente. Prossima: G.

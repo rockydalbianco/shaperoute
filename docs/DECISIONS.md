@@ -24950,6 +24950,51 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
 
+## ADR-0340 — La pagina del post: video nella pagina, foglio con quattro azioni, sezioni di dati da una tabella `run_stats`
+
+**Stato**: Proposto · 2026-11-06 · TASK-410. Le scelte di prodotto e di
+privacy sono dell'utente (`tasks/TASK-410.md`, «Scelte dell'utente»); il
+come è deciso dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole una pagina del post con la foto dell'autore,
+il video dell'attività, un foglio con quattro azioni e sezioni di dati
+(riepilogo, meteo, passi per km, dislivello, battito e zone). Oggi i dati
+oltre a distanza, tempo e dislivello totale restano sul telefono
+dell'autore, il video non va al server, l'app non ha un lettore video né
+`react-native-svg`, e il meteo c'è solo come previsione (MET Norway).
+
+**Decisione (proposta)**:
+
+1. **Una pagina nuova** (`feed/PostPage.tsx`) al tocco di un post del Feed;
+   `DrawingCard` resta per gli altri ingressi.
+2. **Il video** si gioca nella pagina con la WebView di TASK-351/408, dalla
+   traccia del disegno: niente file sul server, niente lettore nativo,
+   l'impronta iOS non cambia.
+3. **Il foglio** è un componente nuovo con `Animated` e `PanResponder`:
+   niente librerie di bottom sheet.
+4. **I grafici** sono fatti di `View` (colonne per il profilo, barre per le
+   zone): niente `react-native-svg`, che cambierebbe l'impronta.
+5. **I dati** stanno in una tabella nuova `run_stats` (`jsonb`), in un modulo
+   nuovo dell'API: **non si tocca `schemas.py`**, quindi né `engine.zip` né il
+   motore. I passi per km li calcola il server dalla traccia con i tempi
+   (anche per le corse vecchie); profilo del dislivello, cadenza e calorie li
+   manda il telefono; il battito viene da TASK-345 B/C. `GET /drawings/{id}`
+   dà `stats` già filtrato secondo le scelte dell'autore; `GET /feed` no.
+6. **Il meteo** si chiede a MET Norway al salvataggio, solo entro 3 ore dalla
+   fine: MET non ha un archivio, e un fornitore storico sarebbe una
+   dipendenza esterna nuova.
+7. **Le sezioni** vengono da una funzione pura: una sezione senza dati non
+   c'è, una riga senza valore non c'è; quali righe ha ogni sport lo dice un
+   file nuovo `sports/postMetrics.ts`.
+
+**Alternative scartate**: caricare il file video e mostrarlo con
+`expo-video` (nativo, build nuova, spazio sul server); `react-native-svg`
+(nativo); colonne nuove in `runs` per ogni dato (una migrazione per ogni
+metrica); `stats` dentro `GET /feed` (pagine del Feed più pesanti);
+Open-Meteo archivio (gratuito solo non commerciale).
+
+**Conseguenze**: le corse salvate prima della parte C hanno solo passi per
+km (dal backfill) e i campi di oggi; meteo solo per le corse salvate subito.
 ## ADR-0341 — La palestra per tutti i giorni: la griglia, il calendario dal server, le schede sull'account
 
 **Stato**: Proposto · 2026-11-06 · TASK-411. Le scelte di prodotto sono
@@ -25054,3 +25099,59 @@ corpo è un contratto usato da tutte le attività (`activity-request.json`).
 **Conseguenze**: una migrazione (`0056`), quindi il server col sì
 dell'utente. Niente motore e niente nativo, impronte ferme. L'app (D2) e
 la pagina della stazione (D3) vengono dopo.
+## ADR-0342 — Le ciaspole: forme piccole piazzate libere sulla neve, come sull'acqua
+
+**Stato**: Accettato · 2026-11-08 · TASK-413. Scelte dell'utente: «SI ANCHE
+FORME LIBERE SULLA NEVE PIÙ PICCOLE» (2026-11-07); il 2026-11-08 nome,
+distanze, regole della neve, testi, gioco e accensione (`tasks/TASK-413.md`)
+
+**Contesto**: le ciaspole non hanno una rete. Sci di fondo e sci alpino
+sono «Record only» perché sulle piste le forme non vengono (ADR-0316,
+ADR-0317); con le ciaspole invece si cammina dove c'è neve. Il motore sa
+già piazzare una forma libera dove non c'è rete: sull'acqua, la forma
+piazzata è il percorso (ADR-0154, `water_fit.py`). Al banco, con la neve
+permessa al posto dell'acqua, una forma di 0,5–3 km entra 60 volte su 60 in
+cinque posti di montagna, 48 su 60 senza boschi (`sports/snowshoes.md`).
+
+**Decisione** (le scelte di prodotto sono dell'utente; il modo è deciso
+dall'agente su delega dell'utente):
+
+1. «Snowshoes» ❄️ è uno sport disegnato, `snowshoeing`, da 0,5 a 3 km.
+   Si può anche partire senza percorso, come ogni sport.
+2. La forma è piazzata da `water_fit.fit_shape` così com'è, su un'area di
+   **neve permessa**: il riquadro attorno alla partenza meno i pendii oltre
+   25° (con 30 m attorno a quelli oltre 30°), i boschi, i ruscelli, le
+   piste, gli impianti, roccia e ghiacciai, l'acqua, i paesi e le strade
+   principali, le riserve e i biotopi (i parchi restano). Si entra da un
+   punto di strada minore, carrareccia o sentiero entro 2 km. `water.py` e
+   `water_fit.py` non cambiano: canoa e nuoto restano identici.
+3. Le pendenze vengono dalle tegole Terrarium (zoom 13, circa 30 m), già
+   usate dall'app e dagli studi dello sci. Il modulo delle quote del motore
+   è quello condiviso voluto da ADR-0300 (parte G di TASK-347): il primo
+   che lo scrive lo scrive per tutti, tramite il Coordinatore.
+4. Solo dal server, come l'acqua: neve e quote si scaricano alla prima
+   richiesta di un posto e restano in cache; nessuna zona in memoria. Il
+   telefono non disegna sulla neve.
+5. I moduli nuovi del motore stanno fuori dall'impronta (come
+   `DRAWN_WATER_ONLY`): gli esempi tenuti non si ridisegnano.
+6. Un avviso di sicurezza al primo «Start», come canoa e nuoto (ADR-0283),
+   e una riga sotto ogni percorso, con i testi approvati in cinque lingue.
+   Il motore non conosce il bollettino valanghe, la neve del giorno, i
+   divieti locali e i terreni privati: l'avviso lo dice.
+7. Nel gioco come Hike: i metri contano, niente tempi migliori né record
+   personali.
+8. Le parti: A1 (la neve nel motore), A2 (contratto, API, migrazione,
+   profilo nascosto), B (app). «ready» appena pronte; server, migrazione e
+   produzione ciascuno col sì dell'utente.
+
+**Conseguenze**:
+
+- Un terzo modo di disegnare accanto a rete e acqua. I punti dell'API che
+  dicono «sull'acqua non c'è rete» (`jobs.py`, `activity_graphs.py`,
+  `errors.py`, `way_back.py`, `route_archive.py`) diventano «acqua o neve».
+- Una forma sulla neve non garantisce che la neve ci sia, né che il pendio
+  sia sicuro quel giorno: lo promette l'avviso, non il motore.
+- A 3 km la forma spesso non entra senza boschi: l'errore dice a quale
+  distanza entra.
+- Un posto nuovo aspetta Overpass (20–40 s) alla prima richiesta, come la
+  prima acqua di un lago.

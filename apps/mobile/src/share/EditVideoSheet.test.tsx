@@ -3,8 +3,11 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { EditVideoSheet } from "./EditVideoSheet";
-import type { PostRun } from "./postRun";
+import { POST_RESULTS, type PostRun } from "./postRun";
 import { FIRST_EDIT, type VideoEdit } from "./videoEdit";
+import { videoScene } from "./videoScene";
+
+jest.mock("react-native-webview");
 
 const METRICS = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -40,6 +43,7 @@ async function shown(
         edit={edit}
         onChange={onChange}
         onClose={onClose}
+        sceneOf={(next) => videoScene(RUN, POST_RESULTS, [], next.style, next)}
       />
     </SafeAreaProvider>,
   );

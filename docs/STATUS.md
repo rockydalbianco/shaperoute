@@ -407,6 +407,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Prossimo: le liste di A1 (la neve nel motore) e A2 (contratto, API,
   migrazione, profilo nascosto) al Coordinatore, poi B (app).
   `tasks/TASK-413.md`, `sports/snowshoes.md`.
+  **Parte 0 in `main`** (#933, `189374bc`). Liste di A1 e A2 al
+  Coordinatore; migrazione in bozza 0057. Prossimo: A1 (la neve nel
+  motore) in una sessione nuova, dopo l'accordo con TASK-347 G su
+  `heights.py`; A1 e A2 entrano con l'ok dell'utente per il server.
 
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,

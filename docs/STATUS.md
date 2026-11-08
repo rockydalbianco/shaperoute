@@ -160,6 +160,34 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-415 — Ski touring, lo scialpinismo «Record only»** (2026-11-08;
+  numeri dal Coordinatore, ADR-0344 **proposto**; sessione avviata dal
+  Coordinatore Sport). Parte 0, solo documenti: disegno e costo delle
+  quattro funzioni scelte dall'utente il 2026-11-07 («Le prime 4»):
+  - (a) fasi e (b) VAM sul telefono, solo JavaScript, sopra le svolte dello
+    sci (`snowDay.ts`);
+  - (c) pendenza dalle tegole Terrarium sul server, nel modulo condiviso con
+    TASK-347 G, col tempo sopra i 30° e l'avviso;
+  - (d) vette da un estratto OSM `natural=peak` sul server, con la tabella
+    `run_summits` e la collezione nel profilo.
+
+  Scelte dell'utente (2026-11-07): «Ski touring» 🏔️; le metriche proposte
+  (D+ in grande, D−, tempi, VAM, quota massima, fasi con gli orari); l'avviso
+  sulla pendenza in cinque lingue; le vette nel profilo, visibili come i
+  post; acceso con fasi e VAM, con un OTA col sì dell'utente.
+  Prossimo: la lista della parte A (contratto, API, CHECK, profilo nascosto)
+  al Coordinatore. `tasks/TASK-415.md`, `sports/skimo.md`.
+- **TASK-410 — La pagina del post: più dati e più ordine** (ADR-0340,
+  proposta; brief dell'utente del 2026-11-06; numeri dal Coordinatore).
+  Branch `docs/TASK-410-post-page` (documenti). Pagina nuova dal Feed: foto
+  dell'autore (è TASK-355 B), video giocato nella pagina, foglio con quattro
+  azioni e impostazioni, sezioni riepilogo, meteo, passi, dislivello,
+  battito. Parti A–E; dati in una tabella nuova `run_stats`, senza toccare
+  `schemas.py`. `tasks/TASK-410.md`.
+  **Scelte chiuse** (2026-11-06/07): la foto resta TASK-355 B; battito e
+  calorie visibili, nascondibili; il video è il file vero di TASK-336
+  (`expo-video`); meteo MET solo entro 3 ore; foglio come proposto; testi
+  di B e D approvati. Prossimo: ordine e via delle parti dal Coordinatore.
 - **TASK-407 — La 1.0.2 solo per gli screenshot nuovi** (2026-11-06; numero dal
   Coordinatore; l'utente: «usciamo solo con gli screen shot»). `app.json` a 1.0.2 in `main`.
   La build parte da `release/1.0.2`, cioè `76305c1a` (ultimo OTA di produzione) più il solo
@@ -381,6 +409,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (`feat/TASK-380-roller-vehicle-thresholds`, `game_rules.speed_limits`;
   seconda precisazione di ADR-0324). Vanno sul server con la 0055.
 
+- **TASK-413 — Ciaspole, «Snowshoes» ❄️** (2026-11-08; numeri dal
+  Coordinatore, ADR-0342). Parte 0, solo documenti. Al banco, una forma di
+  0,5–3 km piazzata libera sulla neve come sull'acqua (`water_fit`, senza
+  cambiarlo), fuori da pendii oltre 25°, boschi, ruscelli, piste, rocce e
+  paesi, entra 48 volte su 60 in cinque posti di montagna (60 su 60 coi
+  boschi), in meno di un secondo. Scelte dell'utente del 2026-11-08:
+  - «Snowshoes» ❄️, da 0,5 a 3 km;
+  - senza boschi (la proposta li teneva);
+  - l'avviso valanghe al primo «Start» e la riga sotto ogni percorso,
+    approvati in cinque lingue;
+  - nel gioco come Hike, acceso appena pronto.
+
+  Prossimo: le liste di A1 (la neve nel motore) e A2 (contratto, API,
+  migrazione, profilo nascosto) al Coordinatore, poi B (app).
+  `tasks/TASK-413.md`, `sports/snowshoes.md`.
+
 - **TASK-390 — Il disegno intero: via il taglio dei primi e ultimi 200 m**
   (2026-11-05; numeri dal Coordinatore, ADR-0330). Scelta dell'utente: «Via,
   anche le vecchie»; testi nuovi approvati il 2026-11-05. Parte A (API +
@@ -584,6 +628,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Scelte dell'utente del 2026-11-06: «Profilo + esercizio nel post», «Per
   esercizio, almeno 3», testo della privacy approvato. Niente migrazione;
   server e OTA col sì. Prossima: G (battito, con TASK-345 C).
+  Parte F in `main` (#918, 7208c25e), impronta iOS 6f8bba4c misurata dal
+  Coordinatore; server (`gym_leaderboard`), giro del sito della privacy e
+  OTA col sì dell'utente. Prossima: G (battito, con TASK-345 C).
 
 - **TASK-391 — Lo swipe che arriva su «Messages» o sul profilo: niente pagina che si svuota**
   (2026-11-05; numero dal Coordinatore; video dell'utente). Arrivando con lo swipe, il profilo
@@ -826,6 +873,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   emoji lungo il percorso e alla fine; provato nel simulatore (video
   all'utente). Prossimo: C2 (scene, finale, camera dietro, anteprima);
   B2 quando c'è l'elefante.
+- **TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e
+  calendario** (ADR-0341 **proposto**; numeri dal Coordinatore il
+  2026-11-06). Dalla segnalazione dell'utente «Start workout non fa nulla»
+  (corretta nella #927) e dalla sua richiesta. Scelte dell'utente del
+  2026-11-06: «Gruppi, poi macchinari», «3 passi + ultimo allenamento»,
+  «Schede + giorni», «Mese con giorni segnati»; testi approvati. Proposta in
+  PR da `docs/TASK-411-gym-plans-proposal`. Parti: A griglia, B calendario e
+  guida, C schede (migrazione), D privacy; ogni lista al Coordinatore.
+  `tasks/TASK-411.md`.
 - **TASK-371 — La camminata, «Walk»** (ADR-0315, proposta; richiesta
   dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-371-walk` (documenti). Scelte dell'utente: 1–30 km, si aspetta
@@ -857,6 +913,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scelta dell'utente), con `RULES_VERSION` 2. I concorsi le accettano già.
   Il server e `game_backfill` vanno nel giro delle migrazioni 0043–0045,
   col sì dell'utente.
+  **«Walk» acceso il 2026-11-06** (branch `feat/TASK-371-walk-on-order`,
+  richiesta dell'utente «cosa aspettiamo ad attivare sulla preview la
+  sezione Walk»): `ready: true` in `sport.ts`, il server ha già la 0043
+  (ha la 0051 e la 0052). Nello stesso cambio gli sport vanno per famiglia,
+  «prima walk poi run, bicycle, paddle, swim»: a piedi (Walk, Run, Hike),
+  su ruote (Bike, Gravel, MTB), sull'acqua (Paddle, Swim), sulla neve (Ski,
+  Cross-country ski), poi Gym e Paragliding. «Run» resta lo sport di
+  partenza. Nella preview col prossimo OTA; in produzione solo col sì
+  dell'utente all'OTA di produzione.
 - **TASK-373 — Sci alpino: proposta e misure** (ADR-0317 **proposto**;
   richiesta dell'utente del 2026-11-04; numeri dal Coordinatore). Branch
   `docs/TASK-373-ski-proposal`: solo documenti e misure, **nessun codice**

@@ -60,29 +60,31 @@ beforeEach(() => {
   disk.state.failing = false;
 });
 
-test("run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, TASK-191, TASK-323, TASK-375)", () => {
+test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, TASK-191, TASK-323, TASK-371, TASK-375)", () => {
+  // By family: on foot, on wheels, on the water, on the snow (TASK-371).
   expect(SPORTS.map((option) => option.name)).toEqual([
-    "Run",
-    "Bike",
-    "Paddle",
-    "Swim",
     "Walk",
+    "Run",
     "Hike",
+    "Bike",
     "Gravel",
     "MTB",
+    "Paddle",
+    "Swim",
     "Ski",
     "Cross-country ski",
     "Gym",
     "Paragliding",
   ]);
   expect(SPORTS.filter((option) => option.ready).map((option) => option.id)).toEqual([
+    "walk",
     "run",
-    "bike",
-    "paddle",
-    "swim",
     "hike",
+    "bike",
     "gravel",
     "mtb",
+    "paddle",
+    "swim",
     "ski",
     "gym",
   ]);
@@ -91,6 +93,8 @@ test("run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, TASK-1
   expect(canChoose("paddle")).toBe(true);
   expect(canChoose("swim")).toBe(true);
   expect(canChoose("ski")).toBe(true);
+  // And a walk (TASK-371).
+  expect(canChoose("walk")).toBe(true);
   // And a gravel and an MTB ride (TASK-378 part C).
   expect(canChoose("gravel")).toBe(true);
   expect(canChoose("mtb")).toBe(true);
@@ -133,18 +137,17 @@ test("«Swim» 🏊 comes after «Paddle», on since the server swims (TASK-323)
   expect(withoutRouteLabel("swim")).toBe("Swim without a route");
 });
 
-test("«Walk» 🚶 comes after the swim, «Soon» until the server walks (TASK-371 B)", () => {
-  const index = SPORTS.findIndex((option) => option.id === "walk");
-  expect(SPORTS[index - 1]?.id).toBe("swim");
-  expect(SPORTS[index]).toEqual({
+test("«Walk» 🚶 comes first, on since the server walks (TASK-371)", () => {
+  expect(SPORTS[0]).toEqual({
     id: "walk",
     emoji: "🚶",
     name: "Walk",
-    ready: false,
+    ready: true,
   });
-  expect(canChoose("walk")).toBe(false);
+  expect(shownSports(ALL_SPORTS, true)[0]?.id).toBe("walk");
+  expect(canChoose("walk")).toBe(true);
   saveSport("walk");
-  expect(loadSport()).toBe("run");
+  expect(loadSport()).toBe("walk");
   // Asked as a walk, drawn as a run on the foot network (part A).
   expect(activityOf("walk")).toBe("walking");
   expect(withoutRouteLabel("walk")).toBe("Walk without a route");

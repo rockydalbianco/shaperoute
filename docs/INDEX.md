@@ -66,6 +66,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Gli sport «Record only» senza forma: sci alpino e di fondo, `RECORD_ACTIVITIES`, le metriche della giornata, impianti e piste per nome | `tasks/TASK-375.md`, `DECISIONS.md` ADR-0319 e ADR-0317 |
 | Le stazioni sciistiche: la ricerca «Ski», com'è la neve, il meteo MET Norway dal server, la stazione e il modello nella giornata di sci | `tasks/TASK-406.md`, `DECISIONS.md` ADR-0338, `tasks/TASK-375.md`, `MAPS.md` «Impianti e piste da sci da un estratto» |
 | L'editor del video dell'attività: l'animale 3D che corre il percorso (three.js nella pagina del video), colori, emoji, scene, finale, il prompt letto dal telefono | `tasks/TASK-408.md`, `DECISIONS.md` ADR-0339 e ADR-0303, `tasks/TASK-351.md` |
+| La pagina del post nel Feed: foto dell'autore, video nella pagina, foglio con quattro azioni, sezioni (riepilogo, meteo, passi, dislivello, battito), `run_stats` | `tasks/TASK-410.md`, `DECISIONS.md` ADR-0340, `tasks/TASK-355.md`, `tasks/TASK-345.md`, `tasks/TASK-374.md` |
 | Le app vecchie e le attività nuove: l'header `X-MuW-Reads`, cosa toglie il server da ogni lista, uno sport nuovo da aggiungere | `tasks/TASK-387.md`, `DECISIONS.md` ADR-0328, `API.md` («Quello che un'app sa leggere») |
 | «Edit the drawing» su ogni disegno: emoji, parole, percorsi a tema, corse libere e importate, sull'acqua; la copia senza legami | `tasks/TASK-369.md`, `DECISIONS.md` ADR-0313 e ADR-0299, `UI.md` «Edit the drawing: la figura sulla mappa» |
 | «Edit the drawing» sotto le opzioni A, B e C del risultato di «Draw»: la linea dell'opzione scelta sulla mappa | `tasks/TASK-403.md`, `DECISIONS.md` ADR-0337, ADR-0313 e ADR-0288, `UI.md` «Edit the drawing: la figura sulla mappa» |
@@ -73,7 +74,10 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | L'escursionismo «Hike» (pilota della struttura degli sport): la rete dei sentieri, le misure | `tasks/TASK-377.md`, `DECISIONS.md` ADR-0321, `sports/hike.md`, `sports/COME-AGGIUNGERE.md` |
 | Gravel e MTB: la bici su sterrati e sentieri, la rete `mtb`, `mtb:scale`, le misure | `tasks/TASK-378.md`, `DECISIONS.md` ADR-0322, `sports/gravel.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
 | Il Roller (pattini in linea): l'asfalto liscio, la rete `roller`, superfici, salite, le misure | `tasks/TASK-380.md`, `DECISIONS.md` ADR-0324, `sports/roller.md`, `sports/bike.md`, `sports/COME-AGGIUNGERE.md` |
+| Lo scialpinismo «Ski touring»: fasi e VAM, la pendenza dalle tegole Terrarium, le vette OSM e la collezione | `tasks/TASK-415.md`, `DECISIONS.md` ADR-0344, `sports/skimo.md`, `sports/CONDIVISO.md`, `tasks/TASK-375.md` |
 | La palestra «Gym»: sessione senza traccia, esercizi e serie, timer di recupero, traguardi, classifica mensile | `tasks/TASK-385.md`, `DECISIONS.md` ADR-0327, `sports/gym.md` |
+| La palestra per tutti i giorni: la griglia dei macchinari, la guida in «Draw», le schede con i giorni, il calendario | `tasks/TASK-411.md`, `DECISIONS.md` ADR-0341, `sports/gym.md` |
+| Le ciaspole «Snowshoes»: forme piccole libere sulla neve (pendii, boschi, piste), l'avviso valanghe, le misure | `tasks/TASK-413.md`, `DECISIONS.md` ADR-0342, `sports/snowshoes.md`, `sports/COME-AGGIUNGERE.md`, `sports/paddle.md` |
 | I movimenti: le molle di `motion.spring`, `src/ui/motion.ts`, la capsula della barra, l'«isola», fogli e liste | `tasks/TASK-388.md`, `DECISIONS.md` ADR-0329 e ADR-0293 |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 

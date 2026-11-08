@@ -299,6 +299,31 @@ modo:
 
 Le parti vuote non compaiono. Prossimo: la D3b.
 
+**Parte D3b, 2026-11-08.** Nell'app, la pagina della stazione e «Your
+resorts»:
+- **«Follow»** sotto il nome, che diventa «Following»; toccato di nuovo,
+  non la segue più. Cambia subito, e torna com'era se il server dice di no;
+- **«Snow today»**: la neve segnata dai membri nelle ultime 24 ore, la più
+  segnata prima («Powder ×3 · Groomed ×1»), con la riga che lo spiega;
+- **«Members' days here»**: i post delle giornate di sci in quella stazione
+  che chi guarda vede, due per riga come i disegni della ricerca, ognuno
+  con chi l'ha fatto. Toccato, si apre sulla mappa e la ricerca si chiude;
+  «Show more» porta la pagina dopo;
+- **«Your resorts»** in cima all'elenco delle stazioni, nella scheda «Ski»
+  e in «Cambia», finché non si scrive niente.
+
+Scelte tecniche, decise dall'agente su delega dell'utente:
+- **una sola lista delle stazioni seguite** per tutta l'app
+  (`useFollowedResorts`), letta una volta per sessione: la pagina e
+  l'elenco si vedono cambiare insieme;
+- **i post con l'autore**: la rotta della D3a dà ora `posts` con `author`
+  come il Feed (#1004), perché i post di una stazione sono di più membri;
+- **le parti vuote non compaiono**, e senza account la pagina resta quella
+  della parte C.
+
+Prossimo: il server con la `0062` nel passo unico; poi l'OTA col sì
+dell'utente, e la parte E, la prova sulla neve.
+
 ## File toccati
 
 Questa PR (documenti): `docs/tasks/TASK-406.md` (nuovo), `docs/DECISIONS.md`
@@ -384,7 +409,20 @@ File da cambiare: `services/api/shaperoute_api/__main__.py` (una riga),
 `DECISIONS.md` in una PR di soli documenti (la regola del Coordinatore del
 2026-11-08).
 
-Parti D3b ed E: si elencano prima di ciascuna.
+Parte D3b (approvata dal Coordinatore il 2026-11-08). File nuovi:
+- `apps/mobile/src/api/resortFollows.ts` e il suo test;
+- `apps/mobile/src/ski/ResortSnow.tsx`, `ResortPosts.tsx` e
+  `useFollowedResorts.ts`, ognuno col suo test.
+
+File da cambiare: `apps/mobile/src/ski/ResortPage.tsx` e `ResortList.tsx`,
+`apps/mobile/src/social/drawingsDoor.ts`,
+`apps/mobile/src/i18n/{it,de,fr,es}.ts` e questa lista. Aggiunto col via
+del Coordinatore il 2026-11-08: `apps/mobile/src/search/SearchScreen.tsx`
+(la sola riga `onLeave={onClose}`). I test di `ResortPage` e `ResortList`
+restano com'erano: «Follow» e «Your resorts» sono provati in
+`useFollowedResorts.test.tsx`.
+
+La parte E: si elenca prima.
 
 ## Criteri di accettazione
 

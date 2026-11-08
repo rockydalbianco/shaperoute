@@ -112,6 +112,7 @@ test("the energy goes up while the workout goes, and stays at its end", async ()
   jest.useFakeTimers({ now: T0 });
   await within(<GymWorkoutHost />);
   await act(async () => startGymWorkout());
+  await fireEvent.press(screen.getByTestId("group-chest"));
   await fireEvent.press(screen.getByTestId("exercise-bench_press"));
   await act(async () => {
     jest.advanceTimersByTime(10 * MIN);

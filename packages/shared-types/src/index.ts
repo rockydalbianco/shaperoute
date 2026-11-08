@@ -1077,13 +1077,17 @@ export const CYCLING_BEST_DISTANCES = [
   "160k",
 ] as const;
 
+/** On inline skates (TASK-380, ADR-0324): a run's races, bests of their own. */
+export const INLINE_SKATING_BEST_DISTANCES = ["5k", "10k", "half", "marathon"] as const;
+
 /**
  * The fastest stretch of a distance inside any run of the account, private
  * ones too (TASK-368): moving seconds, the pauses left out.
  */
 export interface PersonalBest {
-  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322). */
-  sport: "running" | "cycling" | "gravel_biking" | "mountain_biking";
+  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322), and
+   * a skate's (TASK-380, ADR-0324). */
+  sport: "running" | "cycling" | "gravel_biking" | "mountain_biking" | "inline_skating";
   distance:
     (typeof RUNNING_BEST_DISTANCES)[number] | (typeof CYCLING_BEST_DISTANCES)[number];
   distance_m: number;
@@ -2686,3 +2690,4 @@ export interface OutfitTags {
 export interface OutfitShop {
   url: string | null;
 }
+export * from "./skiResorts.ts";

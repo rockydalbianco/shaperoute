@@ -1,6 +1,7 @@
 # TASK-380 — Roller: i pattini in linea sull'asfalto liscio
 
-**Stato**: In corso — parte 0 in `main` (#886, #890); parte A in PR.
+**Stato**: In corso — parte 0 in `main` (#886, #890), parte A in `main`
+(#912, soglie #914); parte B in PR.
 **Fase**: 4 · **Branch**: `docs/TASK-380-0-roller` (parte 0), poi
 `feat/TASK-380-a-roller-engine-api`, `feat/TASK-380-b-roller-app` ·
 **ADR**: ADR-0324 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -260,7 +261,29 @@ docs/tasks/TASK-380.md, docs/STATUS.md, docs/sports/CONDIVISO.md,
     docs/sports/roller.md, docs/DECISIONS.md
 ```
 
-Della lista approvata non sono serviti: `test_hiking.py`, `test_walking.py`,
+Parte B (`feat/TASK-380-b-roller-app`), lista approvata dal Coordinatore
+il 2026-11-06:
+
+```
+apps/mobile/src/sports/inline_skating.ts, src/sports/base.ts
+apps/mobile/src/settings/sport.ts, src/screens/RunNoRouteButton.tsx
+apps/mobile/src/search/searchFilters.ts, src/social/PublicParts.tsx
+apps/mobile/src/imports/fit.ts, src/imports/fileTrack.ts
+apps/mobile/src/profile/PersonalBests.tsx
+apps/mobile/src/route/runTime.ts, src/route/RoutePanel.tsx
+apps/mobile/src/i18n/it.ts, de.ts, fr.ts, es.ts
+apps/mobile/targets/watch/de.lproj/Localizable.strings, es.lproj/Localizable.strings
+    (da scripts/watch-texts.sh)
+packages/shared-types/src/index.ts
+apps/mobile/src/sports/rollerProfile.test.ts (nuovo), sportProfiles.test.ts
+apps/mobile/src/route/runTime.test.ts, src/profile/PersonalBests.test.tsx,
+    src/profile/SettingsPage.test.tsx
+apps/mobile/src/settings/SportButton.test.tsx, SportSetting.test.tsx,
+    SportVoiceItalian.test.tsx, sport.test.ts, sportRows.test.ts
+docs/tasks/TASK-380.md, docs/STATUS.md, docs/DECISIONS.md (terza precisazione di ADR-0324)
+```
+
+Della lista approvata della parte A non sono serviti: `test_hiking.py`, `test_walking.py`,
 `test_mountain_biking.py`, `test_gravel_biking.py` (motore),
 `hiking.test.ts`, `gravelMtb.test.ts` (contratto), `test_hiking_api.py`,
 `test_walking_api.py`, `test_game_rules.py` (API): i loro controlli
@@ -347,3 +370,23 @@ passo per il tempo stimato, l'avviso `caution`, la riga in
 `searchFilters.ts`). I testi dell'orologio dicono «Roller» in tutte le
 lingue: con le traduzioni della parte B (in tedesco «Inline», in spagnolo
 «Patines») si rifanno con `scripts/watch-texts.sh`.
+
+2026-11-06, **parte B in PR** (`feat/TASK-380-b-roller-app`). Il
+Roller 🛼 è nell'app, «Soon» finché il server non ha la 0055:
+
+- c'è la riga in «Impostazioni» dopo la MTB, con «Skate without a route»;
+- la ricerca e il modulo per pubblicare lo offrono quando è pronto
+  (`OFFERED_WHEN_READY`, via il `NOT_YET`);
+- il profilo è completo: i testi approvati in cinque lingue, l'avviso
+  `caution`, l'energia del Compendium, Apple 39 e Health Connect 60;
+- il tempo stimato usa il passo di chi pattina, 4:00/km finché non ce n'è
+  uno. È la scelta dell'utente di oggi, «Sì, 4:00/km»;
+- i record personali hanno un gruppo «Roller», con le gare della corsa;
+- i file FIT (sport 30), GPX e TCX (`inline_skating`, `InlineSkate`, «6»)
+  diventano Roller;
+- i testi dell'orologio sono rifatti: «Inline» in tedesco, «Patines» in
+  spagnolo.
+
+È solo JavaScript: l'impronta iOS la misura il Coordinatore. Prossimo: il
+server con la 0055, col sì dell'utente. Poi `ready: true` in una PR
+piccola, quando il Coordinatore scrive che il server è aggiornato.

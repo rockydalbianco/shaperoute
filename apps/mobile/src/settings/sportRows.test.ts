@@ -18,6 +18,8 @@ it("shows the rows of before, in their order", () => {
     // The gravel and the MTB ride (TASK-378 part B), on since part C.
     { id: "gravel", emoji: "🚲", name: "Gravel", ready: true },
     { id: "mtb", emoji: "🚵", name: "MTB", ready: true },
+    // The skate (TASK-380 part B), «Soon» until the server has part A.
+    { id: "roller", emoji: "🛼", name: "Roller", ready: false },
     { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
     { id: "swim", emoji: "🏊", name: "Swim", ready: true },
     { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },
@@ -46,6 +48,7 @@ it("asks and saves the activities of before", () => {
     "cycling",
     "gravel_biking",
     "mountain_biking",
+    "inline_skating",
     "paddling",
     "swimming",
     "running",
@@ -60,6 +63,7 @@ it("asks and saves the activities of before", () => {
     "cycling",
     "gravel_biking",
     "mountain_biking",
+    "inline_skating",
     "paddling",
     "swimming",
     "skiing",

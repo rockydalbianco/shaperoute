@@ -38,6 +38,16 @@ tutto: è corto apposta.
   volta sola**, in un modulo condiviso: la prima sessione sport che ne ha
   bisogno (escursionismo probabilmente) si accorda con TASK-347 G tramite il
   Coordinatore, invece di farne uno suo.
+- **2026-11-08, TASK-415 (Ski touring, ADR-0344) — la pendenza dalle
+  stesse tegole, nello stesso modulo.** Lo scialpinismo vuole la pendenza
+  del terreno sotto la traccia (Horn su 3 × 3 pixel, zoom 13) e il tempo
+  sopra i 30°. Va nel modulo condiviso del server `terrain.py`, lo stesso
+  della parte G di TASK-347 (quote e profilo): tegole Terrarium in cache sul
+  Volume, PNG decodificato con `zlib` (il server non ha Pillow), `numpy` già
+  nel server. Chi parte primo fra TASK-415 C e TASK-347 G lo scrive,
+  l'altro lo usa: si accordano tramite il Coordinatore. Il dato è di circa
+  30 m in Italia: la pendenza dei pendii corti si sottostima, e chi la
+  mostra lo dice. `sports/skimo.md`.
 
 ## Il motore
 
@@ -63,6 +73,16 @@ tutto: è corto apposta.
 - **2026-11-04, TASK-371 — un modulo che nessun file di disegno importa**
   si tiene fuori dall'impronta (`WALK_ONLY`, come `ANCHORED_ONLY`,
   `DRAWN_WATER_ONLY`): la camminata è entrata senza ridisegnare nulla.
+- **2026-11-08, TASK-413 (Ciaspole, ADR-0342) — la forma libera sulla
+  neve.** Dove non c'è rete, `water_fit.fit_shape` piazza una forma su
+  qualsiasi `water.WaterArea`: basta un'area permessa (`band`, `wet`) e i
+  punti da cui si entra (`access`). Per le ciaspole l'area è la neve su cui
+  si cammina: il riquadro meno pendii oltre 25° (tegole Terrarium, celle di
+  25 m), boschi, ruscelli, piste, impianti, rocce, paesi e riserve. In
+  cinque posti di montagna entrano 48 forme su 60 a 0,5–3 km (60 su 60 coi
+  boschi), in meno di un secondo. `water.py` e `water_fit.py` non cambiano.
+  Le pendenze servono al motore: il modulo delle quote di ADR-0300 G
+  (vedi «Le quote») va scritto una volta per tutti. `sports/snowshoes.md`.
 
 ## Il contratto e l'API
 
@@ -210,6 +230,27 @@ tutto: è corto apposta.
   librerie) non chiede permessi nuovi né codice nativo.
 - **Già nella 1.0.1**: notifiche locali (`expo-notifications`), vibrazione,
   keep-awake e audio. Un timer che avvisa a schermo bloccato è solo JS.
+
+## I pezzi di montagna (fasi, vette)
+
+- **2026-11-08, TASK-415 (Ski touring, ADR-0344) — tre pezzi generici, non
+  dello scialpinismo.** Valgono anche per Hike e per le ciaspole, dove
+  servono. Le ciaspole disegnano forme libere (TASK-413), non sono «Record
+  only»: le vette e la pendenza vanno bene per loro, mentre fasi, VAM e
+  numeri del post seguono la strada «Record only» e per loro sono
+  facoltativi, da verificare:
+  - **le fasi** (salita, discesa, impianto, cambi) e la **VAM** sul
+    telefono, `activities/mountainPhases.ts`, sopra `legs`, `isLift` e
+    `droppedM` di `snowDay.ts` (esportati, senza cambiarli). Chi sale con le
+    pelli o con le ciaspole resta sotto la soglia dell'impianto (0,3 m/s);
+  - **le vette** dal server, `peak_extract.py` (`osmium tags-filter
+    n/natural=peak`, file a tegole come `ski_extract.py`) e `summits.py`
+    (entro 60 m dal nodo, entro 80 m di quota), con la tabella `run_summits`:
+    non dipendono dalle fasi, valgono per ogni traccia salvata;
+  - **i numeri del post** di uno sport «Record only» in `run_stats`
+    (TASK-410 C), non in colonne nuove di `runs`.
+  Gli estratti interi dello sci sono stati cancellati dopo i riquadri: le
+  vette li riscaricano. `sports/skimo.md`.
 
 ## Le misure
 

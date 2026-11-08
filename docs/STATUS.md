@@ -324,6 +324,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sport nuovo o un nome cambiato richiede di rilanciare `scripts/watch-texts.sh` e
   `scripts/watch-sports.sh`. A3 in una sessione nuova, con la lista dei file al Coordinatore
   prima del codice.
+- **TASK-370 A3 — Il telefono dell'orologio** (2026-11-08; parte A3 del piano in
+  `tasks/TASK-370.md`, ADR-0314 «precisazione A3»; lista dei file approvata dal Coordinatore
+  il 2026-11-08). `src/watch/watchLink.ts` (il modulo nativo `WatchConnectivity` coi nomi di
+  `react-native-watch-connectivity` 2.0.0, senza il pacchetto: niente senza nativo),
+  `useWatch.ts` (il conto alla rovescia avvia l'orologio con lo sport, pausa, ripresa e fine
+  nei due versi, le unità con un messaggio `settings` in `transferUserInfo`), `WatchHeart.tsx`
+  (battito e zona sulla card della corsa); `useHealth.ts` non riscrive in Salute la corsa
+  registrata dall'orologio; `PhoneLink.swift` risponde ai messaggi con risposta,
+  `WorkoutManager.swift` tiene le unità del telefono. Jest e XCTest sugli stessi fixture;
+  nessun `package.json`/`app.json`/`app.config.ts`, impronta iOS `6f8bba4c`. Branch
+  `feat/TASK-370-a3-phone`; la unisce il Coordinatore a CI verde. **Prossimo**: A-flip alla
+  build 1.1 (il pacchetto 2.0.0, `match` in `app.json`, il plugin nativo per
+  `workoutSessionMirroringStartHandler`), poi la prova al polso; la parte B.
 - **TASK-378 — Gravel e MTB** (2026-11-05; numeri dal Coordinatore,
   ADR-0322 **proposto**). Parte 0, solo documenti: misurate col banco due
   reti di prova.
@@ -883,6 +896,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
     OpenStreetMap. I tipi sono in `shared-types` (`skiResorts.ts`). Solo
     JavaScript, nessuna dipendenza. Funziona dopo il deploy delle parti A e
     B. Prossimo: la parte D, «Record your day», con la sua lista dei file.
+  - 2026-11-08: C in `main` (#919). Le risposte dell'utente: domanda 3
+    «Sì, così» (cinque tipi di neve, a fine giornata) e i testi della D2
+    con la riga della privacy approvati. La parte D va in tre PR: D1 server,
+    D2 app, D3 pagina della stazione. **Parte D1**: la giornata di sci
+    tiene stazione, modello e neve (migrazione 0056). Si scrivono con `PUT
+    /me/activities/{key}/ski` dopo il salvataggio, si leggono sul post con
+    `GET /drawings/{id}/ski-day`, e `GET /ski-resorts/{id}/snow` conta la
+    neve dei membri nelle ultime 24 ore, solo numeri (aggiunta ad
+    ADR-0338). Per andare online: il server con la 0056, col sì
+    dell'utente. Prossimo: la parte D2 nell'app.
 - **TASK-408 — L'editor del video dell'attività: un animale 3D corre il
   percorso, le modifiche, il prompt** (ADR-0339 **proposto**; numeri dal
   Coordinatore il 2026-11-06). La richiesta dell'utente è del 2026-11-06: un
@@ -3493,6 +3516,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (ADR-0334, precisazione C). Entra dopo TASK-394 B. Poi: server (A), OTA
   e store col sì dell'utente.
   **Chiuso il 2026-11-06**: C in main (#898, 1939b121); vedi «Completato».
+
+- **TASK-409 — Nuoto in piscina: calorie, battito medio e tempo nelle
+  zone** (2026-11-06; numero dal Coordinatore, nessun ADR nuovo: precisazioni
+  di ADR-0318 e ADR-0334). Scelte dell'utente: «Calorie subito, battiti da
+  Salute»; «MET per passo» (Compendium 2024, crawl 5,8 / 8,0 / 10,5 / 14,5
+  per passo /100 m, meno il riposo; le acque libere restano senza); testi
+  della parte B «Approvati così». Parte A (calorie, solo JS, con un OTA) da
+  `feat/TASK-409-a-pool-calories`: `pool/poolKcal.ts`; «Calories» a fine
+  nuoto, in Salute / Health Connect, nel post del Feed e nella riga di «My
+  activities». Parte B (battito e zone) nella 1.0.3, sopra i lettori di
+  TASK-345 C e TASK-374 D. `tasks/TASK-409.md`.
 
 ## Completato
 

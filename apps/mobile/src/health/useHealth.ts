@@ -2,6 +2,7 @@ import type { RunActivity } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useState } from "react";
 
 import type { Track } from "../navigation/trackRecorder";
+import { watchSavesWorkout } from "../watch/useWatch";
 import { keepHealthOn, loadHealthOn } from "./healthChoice";
 import type { HealthPermission, HealthPhone } from "./healthPhone";
 import { workoutOf } from "./workout";
@@ -80,15 +81,16 @@ export function useHealth(phone: HealthPhone | null): HealthState {
 /**
  * With «Save»: the activity also goes to the phone's health data, when the
  * user said yes and the permission, read now, still allows it (turned off
- * in the Health app or in Health Connect, it does not). Never fails «Save»:
- * true once written, false otherwise.
+ * in the Health app or in Health Connect, it does not). Not when the Apple
+ * Watch recorded the run: it saved the workout itself (TASK-370 A3). Never
+ * fails «Save»: true once written, false otherwise.
  */
 export async function saveToHealth(
   phone: HealthPhone | null,
   track: Track,
   activity: RunActivity,
 ): Promise<boolean> {
-  if (phone === null || !loadHealthOn()) {
+  if (phone === null || !loadHealthOn() || watchSavesWorkout()) {
     return false;
   }
   try {

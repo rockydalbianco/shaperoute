@@ -24984,6 +24984,46 @@ dell'utente (scelta 11 del task file).
    alla pagina e il video esce subito, senza velo né crediti della mappa.
    Le quattro caselle di «Style» stanno in una riga di 76 punti l'una.
 
+## ADR-0318, precisazione — Il nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-409 parte A. Cambia §14 per il nuoto in
+piscina; le acque libere restano come lì. La formula è una scelta
+dell'utente («MET per passo», 2026-11-06); i dettagli sono decisi dall'agente
+su delega dell'utente.
+
+1. **Formula**: i MET del *Compendium of Physical Activities* 2024 per il
+   crawl, scelti dal passo medio /100 m (tempo senza le pause, metri =
+   vasche × vasca): più lento di 2:18 → 5,8 (18292); fino a 1:45 → 8,0
+   (18290); fino a 1:13 → 10,5 (18280); più veloce → 14,5 (18294). I bordi
+   stanno a metà fra le velocità del Compendium (45 e 50 yd/min, 50 e 75
+   yd/min) e a 90 yd/min; un passo uguale al bordo va nella fascia più
+   veloce. Energia attiva = MET × 0,0175 × peso × minuti − il riposo di §3
+   negli stessi minuti, intera, mai sotto zero; zero senza metri o senza
+   tempo.
+2. **Dove sta**: `pool/poolKcal.ts`, non `body/energy.ts`: lo sport «Swim»
+   resta senza `energy`, così un nuoto in acque libere non ne ha (§14), né
+   nel riquadro della corsa, né nel Feed, né in Salute.
+3. **Dove si vede**: un quinto riquadro «Calories» a fine nuoto («–» finché
+   le vasche non valgono); l'energia attiva dell'allenamento in Apple Salute
+   e Health Connect; «· 206 kcal» in fondo alla riga del post nel Feed (un
+   nuoto senza linea, come `isPoolLine`; il proprio col corpo del telefono,
+   quello degli altri a 70 kg, §5) e alla riga di «My activities». Nessun
+   testo nuovo: «Calories» e «kcal» ci sono già.
+
+## ADR-0334, precisazione D — Calorie, battito e zone del nuoto in piscina
+
+**Stato**: Attiva · 2026-11-06 · TASK-409. Scelta dell'utente: «Calorie
+subito, battiti da Salute» (2026-11-06). Numero del task dal Coordinatore,
+nessun ADR nuovo.
+
+1. **Calorie subito**, con un OTA: ADR-0318, precisazione «il nuoto in
+   piscina».
+2. **Battito medio e tempo nelle zone** nella 1.0.3, letti da Apple Salute /
+   Health Connect nella finestra del nuoto, dall'orologio che li ha scritti.
+   Nessun lettore nuovo: il nuoto in piscina passa la sua finestra alle
+   funzioni di TASK-345 C (medio e massimo) e TASK-374 D (tempo in zona).
+   Senza campioni o con la lettura negata, solo le calorie. Testi approvati
+   in `tasks/TASK-409.md`.
 ## ADR-0324, terza precisazione — Il Roller nell'app: energia, tempo stimato, file importati
 
 **Data**: 2026-11-06 · **Stato**: Accettata · **Task**: TASK-380 parte B
@@ -25117,6 +25157,52 @@ senza sapere quale scheda è stata fatta (un allenamento libero li
 colonna (C); solo JavaScript nell'app, impronta iOS invariata. Server,
 migrazione, privacy e OTA col sì dell'utente.
 
+## ADR-0338, aggiunta — La giornata di sci: stazione, modello e neve in una rotta a parte
+
+**Stato**: Attiva · 2026-11-08 · TASK-406 parte D1. Deciso dall'agente su
+delega dell'utente, con la lista dei file approvata dal Coordinatore
+(2026-11-08). I cinque tipi di neve sono la risposta dell'utente alla
+domanda 3 («Sì, così», 2026-11-07); il modello in testo libero la sua
+risposta alla domanda 2.
+
+**Contesto**: «Record your day» deve tenere la stazione, il modello e il
+tipo di neve, e la pagina della stazione mostrare la neve segnata dai
+membri. La giornata si salva già con `PUT /me/activities/{key}`, il cui
+corpo è un contratto usato da tutte le attività (`activity-request.json`).
+
+**Decisione**:
+
+1. **Una rotta a parte**, `PUT /me/activities/{key}/ski`, come il post
+   (`/post`). Il salvataggio della giornata resta com'era, e l'app manda
+   la stazione, il modello e la neve dopo, anche più volte: vince
+   l'ultimo, sempre intero.
+2. **Tre colonne in `runs`** (migrazione `0056`): `ski_resort_id` con `ON
+   DELETE SET NULL` verso `ski_resorts`, `ski_gear` (1–60) e `snow` (CHECK
+   sui cinque). Solo su `skiing`, altrimenti `422`.
+3. **Sul post** con `GET /drawings/{id}/ski-day`, per chi vede il
+   disegno e con `X-MuW-Reads`, come i nomi di impianti e piste. Il nome
+   della stazione si legge dalla tabella delle stazioni, quindi segue gli
+   import.
+4. **La neve dei membri** con `GET /ski-resorts/{id}/snow`: le giornate
+   finite nelle ultime 24 ore, con quella stazione e una neve, il cui post
+   chi chiede vede su un profilo (`shown_sql`). Dà solo quante per tipo,
+   mai chi, e chiede il token.
+
+**Alternative**:
+
+- **I tre campi nel corpo di `PUT /me/activities/{key}`**: scartata. Quel
+  contratto lo usano tutte le attività, l'outbox e l'import, e un campo in
+  più tocca file di altri task.
+- **Una sola colonna `jsonb`**: scartata. Contare la neve per stazione
+  vuole un indice sulla stazione, e il CHECK sui cinque tipi è più chiaro
+  su una colonna.
+- **Il nome della stazione copiato nella giornata**: scartato. Con il
+  riferimento il nome resta quello di OpenSkiData; una stazione tolta lascia
+  la giornata senza nome, ed è raro.
+
+**Conseguenze**: una migrazione (`0056`), quindi il server col sì
+dell'utente. Niente motore e niente nativo, impronte ferme. L'app (D2) e
+la pagina della stazione (D3) vengono dopo.
 ## ADR-0342 — Le ciaspole: forme piccole piazzate libere sulla neve, come sull'acqua
 
 **Stato**: Accettato · 2026-11-08 · TASK-413. Scelte dell'utente: «SI ANCHE
@@ -25174,6 +25260,73 @@ dall'agente su delega dell'utente):
 - Un posto nuovo aspetta Overpass (20–40 s) alla prima richiesta, come la
   prima acqua di un lago.
 
+---
+## ADR-0314, precisazione — La parte A3: il telefono
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte A3, deciso dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore il
+2026-11-08.
+
+**Decisione**:
+
+1. **Niente `react-native-watch-connectivity` prima di A-flip.** La 2.0.0
+   prende il modulo nativo con `TurboModuleRegistry.getEnforcing`, che
+   lancia appena si importa il pacchetto in un'app senza la sua parte
+   nativa (tutte le build fino alla 1.1). `src/watch/watchLink.ts` chiama il
+   modulo nativo `WatchConnectivity` con i nomi della 2.0.0 (metodi ed
+   eventi letti in `src/NativeWatchConnectivity.ts` e
+   `ios/WatchConnectivity.mm` del pacchetto) attraverso
+   `TurboModuleRegistry.get`: senza modulo, su Android, in Expo Go e nei
+   test il ponte è `null` e non succede niente. Il pacchetto, fissato a
+   **2.0.0**, entra con A-flip; i nomi vanno ricontrollati se la versione
+   cambia.
+2. **Il pacchetto manda ogni messaggio aspettando una risposta**
+   (`sendMessage:replyHandler:`): l'orologio deve avere
+   `session(_:didReceiveMessage:replyHandler:)`, altrimenti l'invio
+   fallisce. `PhoneLink.swift` risponde con un dizionario vuoto; il
+   telefono risponde allo stesso modo a un messaggio con `id`.
+3. **Le unità non viaggiano nell'application context**: il pacchetto
+   rimanda all'orologio ogni context che riceve
+   (`didReceiveApplicationContext` chiama `updateApplicationContext`), quindi
+   il context del telefono è sempre l'ultimo stato dell'orologio. Le unità
+   vanno con `transferUserInfo` in un messaggio nuovo, `settings`
+   (`units`: `km` o `mi`), negli stessi fixture (`messages.json`), in Swift
+   e in TypeScript; l'orologio le tiene in `UserDefaults`. La versione dei
+   messaggi resta **1**: nessun orologio ha ancora l'app. Il context del
+   telefono (`getApplicationContext`) si legge comunque all'inizio: per
+   l'eco è l'ultimo stato dell'orologio.
+4. **Lo stesso stato sui due** (`src/watch/useWatch.ts`, montato in
+   `RunCard`, la card di corsa libera e percorso): il conto alla rovescia
+   del telefono avvia l'allenamento dell'orologio con lo sport di
+   «Settings» (quello che «Save» usa), pausa e ripresa (a mano o da fermo)
+   vanno come comandi, la fine della corsa o l'uscita dalla schermata lo
+   chiudono. Dall'orologio arrivano solo stati: conta un **cambio** fra due
+   stati suoi (in corso → in pausa, in pausa → in corso, → finito), così uno
+   stato partito prima del comando del telefono e arrivato dopo non cambia
+   niente; «finito» dal polso chiude la corsa come «Stop». Uno stato più
+   vecchio di 5 s rispetto alla schermata (un allenamento di prima) è
+   lasciato fuori.
+5. **Un'attività, un allenamento**: se durante la corsa l'orologio ha
+   detto di registrare (in corso, in pausa o finito), `saveToHealth` in
+   `useHealth.ts` non scrive in Salute: l'allenamento lo salva l'orologio.
+   Vale fino al conto alla rovescia della corsa dopo.
+6. **Il battito** arriva come messaggio `heartRate` (ogni 5 s) e la card lo
+   mostra con `WatchHeart` («♥ 142 bpm», con la zona di «Heart rate zones»
+   quando ci sono età o battito massimo; i nomi delle zone sono quelli già
+   tradotti). Nessun testo nuovo.
+7. **Il mirroring di HealthKit** (`workoutSessionMirroringStartHandler`) si
+   imposta solo da codice nativo: aspetta A-flip, con un piccolo plugin
+   nativo. Stato e battito passano già da WCSession.
+
+**Alternative**:
+- **Il pacchetto subito, caricato con `require` solo se il modulo c'è**:
+  porta la dipendenza in `package.json` e muove l'impronta iOS; scartata.
+- **Le unità nell'application context**: l'eco del pacchetto le
+  sovrascriverebbe con lo stato dell'orologio; scartata.
+
+**Conseguenze**: impronta iOS `6f8bba4c` invariata (copia pulita,
+`APP_VARIANT=production`). Fino ad A-flip il codice del telefono non fa
+niente: la prova vera è con la build 1.1, al polso.
 ## ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server
 
 **Stato**: Proposto · 2026-11-08 · TASK-415. Numeri dal Coordinatore. Le

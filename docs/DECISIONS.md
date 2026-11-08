@@ -24950,6 +24950,51 @@ dell'utente. I punti 3 e 7 li ha visti anche il Coordinatore.
   telefono bloccato la strada quasi non ci sarebbe. L'utente ha scelto il
   server.
 
+## ADR-0340 — La pagina del post: video nella pagina, foglio con quattro azioni, sezioni di dati da una tabella `run_stats`
+
+**Stato**: Proposto · 2026-11-06 · TASK-410. Le scelte di prodotto e di
+privacy sono dell'utente (`tasks/TASK-410.md`, «Scelte dell'utente»); il
+come è deciso dall'agente su delega dell'utente.
+
+**Contesto**: l'utente vuole una pagina del post con la foto dell'autore,
+il video dell'attività, un foglio con quattro azioni e sezioni di dati
+(riepilogo, meteo, passi per km, dislivello, battito e zone). Oggi i dati
+oltre a distanza, tempo e dislivello totale restano sul telefono
+dell'autore, il video non va al server, l'app non ha un lettore video né
+`react-native-svg`, e il meteo c'è solo come previsione (MET Norway).
+
+**Decisione (proposta)**:
+
+1. **Una pagina nuova** (`feed/PostPage.tsx`) al tocco di un post del Feed;
+   `DrawingCard` resta per gli altri ingressi.
+2. **Il video** si gioca nella pagina con la WebView di TASK-351/408, dalla
+   traccia del disegno: niente file sul server, niente lettore nativo,
+   l'impronta iOS non cambia.
+3. **Il foglio** è un componente nuovo con `Animated` e `PanResponder`:
+   niente librerie di bottom sheet.
+4. **I grafici** sono fatti di `View` (colonne per il profilo, barre per le
+   zone): niente `react-native-svg`, che cambierebbe l'impronta.
+5. **I dati** stanno in una tabella nuova `run_stats` (`jsonb`), in un modulo
+   nuovo dell'API: **non si tocca `schemas.py`**, quindi né `engine.zip` né il
+   motore. I passi per km li calcola il server dalla traccia con i tempi
+   (anche per le corse vecchie); profilo del dislivello, cadenza e calorie li
+   manda il telefono; il battito viene da TASK-345 B/C. `GET /drawings/{id}`
+   dà `stats` già filtrato secondo le scelte dell'autore; `GET /feed` no.
+6. **Il meteo** si chiede a MET Norway al salvataggio, solo entro 3 ore dalla
+   fine: MET non ha un archivio, e un fornitore storico sarebbe una
+   dipendenza esterna nuova.
+7. **Le sezioni** vengono da una funzione pura: una sezione senza dati non
+   c'è, una riga senza valore non c'è; quali righe ha ogni sport lo dice un
+   file nuovo `sports/postMetrics.ts`.
+
+**Alternative scartate**: caricare il file video e mostrarlo con
+`expo-video` (nativo, build nuova, spazio sul server); `react-native-svg`
+(nativo); colonne nuove in `runs` per ogni dato (una migrazione per ogni
+metrica); `stats` dentro `GET /feed` (pagine del Feed più pesanti);
+Open-Meteo archivio (gratuito solo non commerciale).
+
+**Conseguenze**: le corse salvate prima della parte C hanno solo passi per
+km (dal backfill) e i campi di oggi; meteo solo per le corse salvate subito.
 ## ADR-0341 — La palestra per tutti i giorni: la griglia, il calendario dal server, le schede sull'account
 
 **Stato**: Proposto · 2026-11-06 · TASK-411. Le scelte di prodotto sono

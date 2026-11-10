@@ -504,8 +504,39 @@ lasciando le righe d'indice.
 - ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì · 2026-11-10 · Accettata
 - ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF · 2026-11-10 · Attiva
 - ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Accettata
+- ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano · 2026-11-10 · Accettata
 
 ## Voci nuove
+
+## ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano
+
+**Stato**: Accettata · 2026-11-10 · TASK-430 (#1074). La scelta di prodotto
+è dell'utente («togli tutti i percorsi fatti da MuW, ad esempio Yellow Arrow
+Valencia»; poi «Solo il Feed»); il modo è deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: dal TASK-365 (ADR-0310) il Feed mescola a «All» i 25
+percorsi di `catalog/muw_routes/`, letti da `GET /muw-routes`. L'utente li
+vuole fuori dal Feed; la fila «RIDE IT YOURSELF» di «Explore» (TASK-364)
+resta.
+
+**Decisione**: un interruttore nell'app, `MUW_ROUTES_IN_FEED = false` in
+`apps/mobile/src/feed/muwInFeed.ts`. Spento, `FeedScreen` non chiede
+`GET /muw-routes` e non passa percorsi a `feedWithMuw`. Endpoint, file di
+`catalog/muw_routes/`, schede e codice restano: **si riaccende con una
+riga**, mettendo `true`. I test del comportamento acceso restano
+(`FeedScreenMuw.test.tsx` accende l'interruttore); `FeedScreenNoMuw.test.tsx`
+prova lo spento.
+
+**Alternative scartate**: svuotare `catalog/muw_routes/` sul server
+(effetto subito su tutte le versioni, ma tocca il server e cancella dati
+approvati a mano); togliere il codice del TASK-365 (più diff, e
+riaccenderlo vorrebbe dire rifarlo).
+
+**Conseguenze**: arriva sui telefoni con l'OTA di produzione, col sì
+dell'utente; fino ad allora le versioni installate li mostrano ancora.
+Il server continua a rispondere a `GET /muw-routes`, che nessuna app nuova
+chiama.
 
 ## ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL
 

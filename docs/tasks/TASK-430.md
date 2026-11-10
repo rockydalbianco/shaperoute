@@ -1,8 +1,10 @@
 # TASK-430 — Niente percorsi di MuW nel Feed
 
-**Stato**: In lavorazione · **Fase**: 5 · **Branch**:
-`feat/TASK-430-no-muw-routes-in-feed` · **ADR**: ADR-0358 · numeri dal
-Coordinatore il 2026-11-10
+**Stato**: Done · 2026-11-10, il codice in `main` con la #1074
+(`95e69afe`); resta l'OTA di produzione, col sì dell'utente che chiede il
+Coordinatore (insieme a «My image») · **Fase**: 5 · **Branch**:
+`feat/TASK-430-no-muw-routes-in-feed` (codice), `docs/TASK-430-close`
+(documenti) · **ADR**: ADR-0358 · numeri dal Coordinatore il 2026-11-10
 
 ## Obiettivo
 
@@ -29,8 +31,8 @@ in «Explore» (Ghost, Bat, Pumpkin, TASK-364) resta.
       l'API le ha.
 - [x] L'app non chiama `GET /muw-routes`.
 - [x] Test dei file toccati e `tsc` verdi.
-- [ ] Merge col via del Coordinatore; OTA di produzione solo col sì
-      dell'utente.
+- [x] Merge col via del Coordinatore (#1074, `95e69afe`).
+- [ ] OTA di produzione, solo col sì dell'utente.
 
 ## File toccati
 
@@ -42,5 +44,11 @@ apps/mobile/src/screens/FeedScreenNoMuw.test.tsx (nuovo)
 docs/tasks/TASK-430.md                           (nuovo)
 ```
 
-Le righe di `STATUS.md`, `DECISIONS.md` (ADR-0358) e `INDEX.md` vanno in
-una PR di soli documenti dopo il merge del codice.
+Nella PR di soli documenti, dopo il merge: `DECISIONS.md` (ADR-0358),
+`INDEX.md`, `UI.md` («Feed»), `archive/COMPLETATI.md` e questo file.
+
+## Esito
+
+Il Feed mostra solo i post delle persone (e pubblicità e Style come prima):
+nessun percorso di MuW, e l'app non li chiede più. Si riaccendono con una
+riga (`MUW_ROUTES_IN_FEED = true`).

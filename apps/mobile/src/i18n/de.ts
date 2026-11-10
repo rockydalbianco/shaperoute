@@ -1716,6 +1716,8 @@ export const DE: Table = {
   Bull: "Stier",
   Donkey: "Esel",
   Alpaca: "Alpaka",
+  // TASK-408 B2: the elephant
+  Elephant: "Elefant",
 
   // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
   "2D": "2D",

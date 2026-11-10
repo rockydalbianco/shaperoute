@@ -886,7 +886,11 @@ const SCRIPT = String.raw`
         var m = numbersOf(glb, one.skin.inverseBindMatrices).array;
         inverses = bones.map(function (bone, k) { return new THREE.Matrix4().fromArray(m, k * 16); });
       }
-      one.mesh.bind(new THREE.Skeleton(bones, inverses), one.mesh.matrixWorld);
+      // Bound with no matrix of its own: glTF ignores the transform of a
+      // skinned mesh's node, which the joints already carry. The elephant's
+      // mesh sits under turned and scaled nodes (TASK-408 B2); the
+      // Quaternius animals', at the origin, draw the same either way.
+      one.mesh.bind(new THREE.Skeleton(bones, inverses), new THREE.Matrix4());
     });
     var PATHS = { translation: "position", rotation: "quaternion", scale: "scale" };
     var clips = {};

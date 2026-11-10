@@ -6,7 +6,7 @@ import {
 
 import { type AnyRouteRequest, isImageRequest } from "../api/routes";
 import { CLOSED_SHARE, firstLineOf } from "../mapdraw/drawing";
-import type { FigureLines } from "../mapdraw/edit";
+import { drawingOf, type FigureLines } from "../mapdraw/edit";
 import { boxOf, dist } from "../mapdraw/geometry";
 import { fromPlane, toPlane } from "../mapdraw/plane";
 
@@ -53,9 +53,12 @@ function spread<T>(points: readonly T[], size: number): T[] {
  * (never in degrees), so it is put back on the map just where it was. A
  * line that ends near its start (CLOSED_SHARE) is one closed outline of at
  * most MAX_OUTLINE_POINTS corners, as a favorite keeps the outline of an
- * image (`favoriteRoute.outlineOf`); one that ends away from it stays open,
- * as a first line drawn on the map does (`firstLineOf`, TASK-331): a ring
- * at its start and the line hung on it (TASK-369).
+ * image (`favoriteRoute.outlineOf`). One that ends away from it is closed
+ * too, by a straight side from its end back to its start (TASK-425,
+ * ADR-0353): hung open on a ring at its start (TASK-369) the route ran it
+ * out and back, twice the distance of the track. Only when closing it makes
+ * no drawing (`drawingOf`) does it stay open, as a first line drawn on the
+ * map does (`firstLineOf`, TASK-331).
  */
 export function trackInPlace(points: readonly LatLon[]): TrackInPlace {
   const origin = points[0];
@@ -74,25 +77,34 @@ export function trackInPlace(points: readonly LatLon[]): TrackInPlace {
     1e-6,
   );
   const units = atCentre.map(([x, y]): [number, number] => [x / unitM, y / unitM]);
-  const open = openLines(units);
-  if (open !== null) {
-    return { lines: open, centre, unitM };
+  const closed: FigureLines = { outline: closedOutline(units), details: [] };
+  if (endsAway(units) && drawingOf(closed) === null) {
+    const open = openLines(units);
+    if (open !== null) {
+      return { lines: open, centre, unitM };
+    }
   }
+  return { lines: closed, centre, unitM };
+}
+
+/** The track as one closed outline of at most MAX_OUTLINE_POINTS corners:
+ * a last side back to its first point when it does not end on it. */
+function closedOutline(units: readonly [number, number][]): [number, number][] {
   const outline = spread(units, MAX_OUTLINE_POINTS);
   const [first, last] = [outline[0], outline[outline.length - 1]];
-  const closed =
-    first[0] === last[0] && first[1] === last[1] ? outline : [...outline, first];
-  return { lines: { outline: closed, details: [] }, centre, unitM };
+  return first[0] === last[0] && first[1] === last[1] ? outline : [...outline, first];
+}
+
+/** Whether a track ends away from its start (CLOSED_SHARE of its size). */
+function endsAway(units: readonly [number, number][]): boolean {
+  const { size } = boxOf([units]);
+  return dist(units[0], units[units.length - 1]) > CLOSED_SHARE * size;
 }
 
 /** The lines of a track that ends away from its start, as a first line
- * drawn on the map that stays open; null for one that ends near it, and for
- * one with more points than a route runs (it is then closed, as before). */
+ * drawn on the map that stays open; null for one with more points than a
+ * route runs (it is then closed). */
 function openLines(units: readonly [number, number][]): FigureLines | null {
-  const { size } = boxOf([units]);
-  if (dist(units[0], units[units.length - 1]) <= CLOSED_SHARE * size) {
-    return null;
-  }
   const lines = firstLineOf(units);
   return lines === null || "problem" in lines ? null : lines;
 }

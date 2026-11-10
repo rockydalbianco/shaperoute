@@ -494,6 +494,8 @@ lasciando le righe d'indice.
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
 - ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
 - ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
+- ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute · 2026-11-10 · Attiva
+- ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda · 2026-11-10 · Attiva
 - ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
 
 ## Voci nuove
@@ -1687,6 +1689,56 @@ da sole e il motore prende solo contorni semplici. Per loro servirebbe il
 motore (linea aperta corsa una volta, ritorno per la via più breve): è
 proposto all'utente come task a parte. Solo JavaScript nell'app, nell'OTA
 unico.
+
+## ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B3c1, decisa dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore. In `main`
+con la #1020.
+
+**Decisione**:
+1. **Un file a fine allenamento** (`WatchTrack`, contratto in Swift e
+   TypeScript su `Fixtures/tracks.json`): sport, inizio e fine, arrivato o
+   fermato, il percorso seguito (con la somiglianza, per il punteggio anche
+   se il telefono non ha più quel percorso), le posizioni
+   `[lat, lon, ms, precisione, quota]`, le pause, distanza, tempo in
+   movimento, calorie e battito medio. Va con `WCSession.transferFile`, che
+   lo tiene finché il telefono non lo prende.
+2. **`TrackRecorder` ha il GPS** per ogni sport col GPS, anche senza
+   percorso; dà le posizioni alla guida, a `TrackLog` (le regole del
+   registratore del telefono: niente fix oltre 40 m, fuori ordine o in
+   pausa, al massimo 20 000) e a `HKWorkoutRouteBuilder`, così la linea sta
+   anche nell'allenamento di Salute.
+3. **`WatchRoute` porta `similarity`**, facoltativa: un percorso senza
+   (telefono più vecchio) la legge come sconosciuta.
+
+**Conseguenze**: il permesso di Salute chiede anche la linea
+dell'allenamento. La corsa simulata dopo lo spostamento del GPS non si è
+potuta ripetere nel simulatore (il foglio di Salute non prende i tocchi): si
+prova al polso.
+
+## ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B3c2; scelta dell'utente
+«Avviso e scheda» e testi approvati il 2026-11-10; lista dei file e turno su
+`App.tsx` dal Coordinatore. In `main` con la #1041.
+
+**Decisione**:
+1. **Il telefono tiene in attesa** ogni corsa dell'orologio (`watchRuns.ts`,
+   al massimo 10, in un file), anche quelle arrivate ad app chiusa
+   (`getQueuedFiles`), e manda una notifica locale.
+2. **Una scheda in cima a «My activities»** («From your Apple Watch», «Open»,
+   «Discard») finché non la si apre o scarta; «Open» apre la fine corsa di
+   sempre (`finish` col punteggio, `runFinish` senza percorso). Niente si
+   apre da solo mentre si usa l'app.
+3. **La linea la rifà il registratore del telefono** (`watchRun.ts`:
+   `addFix`, `pauseTrack`, `resumeTrack`): metri, pause e fix lasciati fuori
+   sono quelli di una corsa registrata col telefono.
+4. **I file dell'orologio** stanno in `watchFiles()`, a parte dal
+   collegamento dei messaggi.
+
+**Conseguenze**: l'arrivo del file e la notifica si provano con l'orologio
+vero (build 1.1).
 
 ## ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta
 

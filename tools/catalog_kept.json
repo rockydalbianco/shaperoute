@@ -385,9 +385,7 @@
   "tokyo/moon/10000",
   "tokyo/LOVE:round/15000",
   "tokyo/heart/10000",
-  "tokyo/star/10000"
- ],
- "pending_outlines": [
+  "tokyo/star/10000",
   "barcelona/bicycle/10000",
   "barcelona/pear/5000",
   "barcelona/bear_head/10000",
@@ -409,5 +407,6 @@
   "trento/airplane/5000",
   "trento/cherries/5000"
  ],
- "note": "2026-11-08: round 1, the agent's preselection accepted by the user (155). 2026-11-10: round 2, the round-1 keys plus the agent's proposal for 22 new cities and the featured cities, accepted by the user (\u00abVai con la proposta\u00bb; 386 in all). The TASK-418 outline candidates wait in pending_outlines until those shapes are registered."
+ "pending_outlines": [],
+ "note": "2026-11-08: round 1, the agent's preselection accepted by the user (155). 2026-11-10: round 2, the round-1 keys plus the agent's proposal for 22 new cities and the featured cities, accepted by the user (\u00abVai con la proposta\u00bb; 386 in all). 2026-11-10: the 20 routes of the TASK-418 outlines enter, the 14 shapes being registered (#1042; Coordinator's \u00abvia 20 contorni\u00bb, user's \u00abok procedi\u00bb)."
 }

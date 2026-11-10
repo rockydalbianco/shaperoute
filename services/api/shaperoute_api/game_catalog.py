@@ -28,26 +28,14 @@ from route_engine.shapes import OUTLINES, SHAPES
 from route_engine.shapes.outline import Outline, read_outline
 from route_engine.shapes.resample import resample_by_arc_length
 
-from shaperoute_api.game_rules import DistanceGoal, Goal, PaceGoal
+from shaperoute_api.game_rules import BEST_DISTANCES_M, DistanceGoal, Goal, PaceGoal
 
 # Points of an engine outline, equally spaced along it: enough for a card.
 OUTLINE_POINTS = 96
 LANGUAGES = ("en", "de", "it", "es", "fr")
-# The distances the pace and single-run shapes ask, in metres: the best
-# times of the rules (BEST_DISTANCES_M) cover them from TASK-423 part B.
-PACE_DISTANCES_M: tuple[int, ...] = (
-    400,
-    1_000,
-    1_609,
-    3_000,
-    5_000,
-    10_000,
-    15_000,
-    21_097,
-    30_000,
-    42_195,
-    50_000,
-)
+# The distances the pace and single-run shapes ask, in metres: those the
+# rules time (TASK-423 part B).
+PACE_DISTANCES_M: tuple[int, ...] = BEST_DISTANCES_M
 # A single run asks its distance at this pace or better: any run of it.
 SINGLE_RUN_PACE_S = 1_200
 

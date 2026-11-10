@@ -3618,7 +3618,7 @@ della collezione. Le regole sono in `GIOCO.md`; il codice in
 | Endpoint | Account | Cosa | Risposta |
 |---|---|---|---|
 | `GET /game/catalog` | no | le forme del gioco: `rules_version`, `shapes`, ognuna con `id`, `names` (`en`, `de`, `it`, `es`, `fr`), `goal`, `outline` e `collection`, e `collections` (TASK-423) in ordine, ognuna con `id` e `names` | `200` |
-| `GET /game/me` | sì | `counted_m`, `longest_m`, `best_s` (`{"1000": 287.4}`), ogni forma del catalogo con `unlocked_at` e `progress`, e `collections` (TASK-423): per ognuna `id`, `unlocked`, `total` | `200` |
+| `GET /game/me` | sì | `counted_m`, `longest_m`, `best_s` (`{"1000": 287.4}`; dalle regole 3, TASK-423, su 400, 1000, 1609, 3000, 5000, 10000, 15000, 21097, 30000, 42195 e 50000 m), ogni forma del catalogo con `unlocked_at` e `progress`, e `collections` (TASK-423): per ognuna `id`, `unlocked`, `total` | `200` |
 | `GET /game/runs/{key}` | sì | che cosa ha valso la corsa `key`: `counted`, `reason`, `counted_m`, `best_s`, `unlocked` (gli id sbloccati da lei) | `200`, `404` |
 
 - **`goal`**: `{kind: "distance", total_m}` oppure `{kind: "pace",

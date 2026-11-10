@@ -56,6 +56,7 @@ import { startViewOf, useStartDirections } from "./src/explore/useStartDirection
 import { isHere, nearMeRequest } from "./src/explore/themedIdeas";
 import { useThemedRoute } from "./src/explore/useThemedRoute";
 import { FavoriteHeart } from "./src/favorites/FavoriteHeart";
+import { SaveRouteButton } from "./src/favorites/SaveRouteButton";
 import { useWatchRuns } from "./src/watch/useWatchRuns";
 import {
   drawnKeepable,
@@ -627,6 +628,9 @@ function MuW() {
     start: start?.point ?? null,
   });
   const [fromCanvas, setFromCanvas] = useState(false);
+  // The figure on the map came from an edit («Edit & run» of a post, «Edit
+  // the drawing» of «Explore»): its route gets «Save» beside «Start».
+  const [fromEdit, setFromEdit] = useState(false);
   const asked = fromCanvas ? mapDraw.request : request;
   // A new start, shape, word or distance leaves the last answer behind; so
   // does a figure moved or changed.
@@ -1166,6 +1170,7 @@ function MuW() {
       closeExplore();
       leaveDrawing();
       if (mapDraw.editInPlace(track.lines, track.centre, track.unitM)) {
+        setFromEdit(true);
         setScreen("canvas");
       }
     };
@@ -1177,6 +1182,7 @@ function MuW() {
     // The drawn route takes the map back from "Explore".
     closeExplore();
     setFromCanvas(false);
+    setFromEdit(false);
     // The same route already drawn is shown again, not asked for again.
     if (request && (fromCanvas || view.status !== "done")) {
       draw(request);
@@ -1189,6 +1195,7 @@ function MuW() {
   function onOpenCanvas() {
     Keyboard.dismiss();
     mapDraw.open();
+    setFromEdit(false);
     setScreen("canvas");
   }
 
@@ -1745,6 +1752,11 @@ function MuW() {
               }
             }}
             onMove={move.available ? move.begin : undefined}
+            save={
+              fromEdit && fromCanvas && drawnFavorite !== null ? (
+                <SaveRouteButton route={drawnFavorite} />
+              ) : undefined
+            }
             movedElsewhere={move.elsewhere}
             choices={choices}
             chosen={chosenIndex}

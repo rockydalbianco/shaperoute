@@ -30,6 +30,7 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.db import Database
+from shaperoute_api.gym_plans import planned_on, program_of
 from shaperoute_api.schemas import ErrorBody
 
 MONTH = re.compile(r"^(\d{4})-(0[1-9]|1[0-2])$")
@@ -145,11 +146,12 @@ class GymCalendars:
                 " ORDER BY r.started_at DESC, r.id DESC LIMIT 1",
                 params,
             ).fetchone()
-            plans = conn.execute(
-                "SELECT key, name, days, created_at FROM gym_plans"
+            kept = conn.execute(
+                "SELECT key, name, days, created_at, program FROM gym_plans"
                 " WHERE user_id = %(owner)s ORDER BY position, key",
                 params,
             ).fetchall()
+        plans = [{**plan, "program": program_of(plan)} for plan in kept]
         days: dict[int, list[GymCalendarWorkoutBody]] = {}
         followed: set[tuple[int, str]] = set()
         for row in rows:
@@ -166,7 +168,7 @@ class GymCalendars:
             if plan["created_at"].astimezone(zone).date()
             <= date(year, number, day)
             < today
-            and plan["days"] & (1 << date(year, number, day).weekday())
+            and planned_on(plan["days"], plan["program"], date(year, number, day))
             and (day, plan["key"]) not in followed
         ]
         return GymCalendarBody(

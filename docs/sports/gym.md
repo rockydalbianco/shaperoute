@@ -125,6 +125,51 @@ allenamento libero. Nel calendario ogni allenamento ha il nome della sua
 scheda e i giorni di una scheda passati senza di lei hanno un pallino
 grigio («In programma»).
 
+## Le schede guidate (TASK-433)
+
+Scelte dell'utente del 2026-11-10, una alla volta, sulla tela «Schede
+palestra guidate»: «New plan» è una guida in **cinque passi**, ognuno con una
+domanda sola e la risposta già scelta («Continue» fino in fondo fa una
+scheda buona):
+
+1. **Obiettivo**: «More muscle» (4 × 10, poi 3 × 12, recupero 90 s), «More
+   strength» (5 × 5, poi 3 × 8, 3 min), «Tone up and lose weight» (3 × 15,
+   45 s), «Get back in shape» (3 × 12, 60 s, quattro esercizi invece di
+   cinque). «I'll write the plan myself» salta la proposta: gli allenamenti
+   restano vuoti («Workout A», «B»…).
+2. **Giorni**: 2, 3, 4 o 5 a settimana coi giorni già scelti (un giorno di
+   riposo in mezzo dove ci sta: lun-gio, lun-mer-ven, lun-mar-gio-ven,
+   lun–ven), da cambiare uno per uno; sotto, come si divide il lavoro (2:
+   total body A/B; 3: petto-spalle-tricipiti, schiena-bicipiti,
+   gambe-addome; 4: parte alta e bassa A/B; 5: un gruppo al giorno).
+3. **La scheda pronta**: una linguetta per allenamento («A · Mon»), il nome
+   da cambiare, gli esercizi del catalogo coi valori dell'obiettivo e i kg
+   vuoti (si scrivono al primo allenamento); toccato un esercizio si
+   cambiano serie, valori, ordine, lo si sostituisce o si toglie.
+4. **Le settimane**, quattro modi: «More load each week» (+2,5 kg a
+   settimana, l'ultima di un ciclo di 3 o più è più leggera: i kg della
+   prima e una serie in meno), «More reps each week» (+1 ripetizione per due
+   settimane, poi +2,5 kg e si torna alle ripetizioni di partenza), «Weeks A /
+   B in turn» (la seconda settimana con altri esercizi degli stessi muscoli),
+   «Always the same». Il ciclo è di 4 settimane (6 o 8 con un tasto; 2 per
+   A/B, 1 per «uguale»); finito, ricomincia un passo più pesante. Le barre
+   delle settimane si toccano: una settimana scritta a mano prende il posto
+   di quella calcolata («Back to the automatic week» la toglie).
+5. **Nome e via**: il nome già scritto («More strength · 2 days»), il primo
+   giorno (oggi o lunedì prossimo; le settimane contano dal suo lunedì), il
+   riepilogo; «Save plan».
+
+In «My plans» una scheda con le settimane è un riquadro: «In progress»,
+«Week 2 of 4» con le tacche del ciclo, i giorni di questa settimana con la
+lettera dell'allenamento (oggi cerchiato), «Edit» (passo 3) e «Weeks» (passo
+4); le schede di prima sono righe «sempre uguale» e si aprono nella guida
+allo stesso modo. In «Draw» «Today» mostra l'allenamento del giorno della
+settimana del ciclo, coi valori di quella settimana, e «Week 2 of 4»;
+l'allenamento parte col recupero dell'obiettivo per ogni esercizio. Il
+calendario segna saltati i giorni con un allenamento nella settimana del
+ciclo. Calcolo in `apps/mobile/src/gym/program.ts`, proposta in
+`proposal.ts`, la guida in `GymPlanWizard.tsx`.
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una

@@ -1,4 +1,4 @@
-import type { GymPlan, GymPlanRequest } from "@shaperoute/shared-types";
+import type { GymPlan, GymPlanItem, GymPlanRequest } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
@@ -6,6 +6,7 @@ import { dropGymPlan, fetchGymPlans, isGymPlan, saveGymPlan } from "../api/gymPl
 import { useFollowsDoor } from "../social/followsDoor";
 import { keptList } from "../storage/keptList";
 import { gymKey } from "./gymKey";
+import { sessionOn } from "./program";
 import type { WorkoutPlan } from "./workout";
 
 /**
@@ -195,16 +196,77 @@ export function isoDay(date: Date): number {
   return ((date.getDay() + 6) % 7) + 1;
 }
 
-/** «Today: Push» (ADR-0341 point 5): the first plan, in order, for today's
- * day of the week; null when none is. */
-export function todayPlan(plans: GymPlan[], date: Date = new Date()): GymPlan | null {
-  const day = isoDay(date);
-  return plans.find((plan) => plan.days.includes(day) && plan.items.length > 0) ?? null;
+/** Today's workout of a plan: for a plan made with the guide, the one of
+ * this week of its cycle, its values worked out (program.ts). */
+export type TodayWorkout = {
+  /** The plan's key, which the workout keeps. */
+  key: string;
+  /** The plan's name. */
+  plan: string;
+  /** The workout's: the plan's, or the guide's workout of the day. */
+  name: string;
+  items: GymPlanItem[];
+  /** The week of the cycle and how many, for a plan with weeks. */
+  week: number | null;
+  weeks: number | null;
+  /** The rest of the plan's goal, for a plan made with the guide. */
+  restS?: number;
+};
+
+function todayOf(plan: GymPlan, date: Date): TodayWorkout | null {
+  if (plan.program != null) {
+    const found = sessionOn(plan.program, date);
+    if (found === null || found.session.items.length === 0) {
+      return null;
+    }
+    return {
+      key: plan.key,
+      plan: plan.name,
+      name: found.session.name,
+      items: found.session.items,
+      week: plan.program.weeks > 1 ? found.week : null,
+      weeks: plan.program.weeks > 1 ? plan.program.weeks : null,
+      ...(plan.program.rest_s === undefined ? {} : { restS: plan.program.rest_s }),
+    };
+  }
+  if (!plan.days.includes(isoDay(date)) || plan.items.length === 0) {
+    return null;
+  }
+  return {
+    key: plan.key,
+    plan: plan.name,
+    name: plan.name,
+    items: plan.items,
+    week: null,
+    weeks: null,
+  };
 }
 
-/** What a workout copies of a plan. */
-export function workoutPlan(plan: GymPlan): WorkoutPlan {
-  return { key: plan.key, name: plan.name, items: plan.items };
+/** «Today: Push» (ADR-0341 point 5): the workout of the first plan, in
+ * order, with one today; null when none has. */
+export function todayPlan(
+  plans: GymPlan[],
+  date: Date = new Date(),
+): TodayWorkout | null {
+  for (const plan of plans) {
+    const today = todayOf(plan, date);
+    if (today !== null) {
+      return today;
+    }
+  }
+  return null;
+}
+
+/** What a workout copies of today's workout of a plan. */
+export function workoutPlan(
+  plan: Pick<TodayWorkout, "key" | "name" | "items" | "restS">,
+): WorkoutPlan {
+  return {
+    key: plan.key,
+    name: plan.name,
+    items: plan.items,
+    ...(plan.restS === undefined ? {} : { restS: plan.restS }),
+  };
 }
 
 /** The plan «Start workout» follows now: today's of the account last
@@ -213,8 +275,8 @@ export function planForToday(date: Date = new Date()): WorkoutPlan | null {
   if (shownOwner === null) {
     return null;
   }
-  const plan = todayPlan(plansOf(shownOwner), date);
-  return plan === null ? null : workoutPlan(plan);
+  const today = todayPlan(plansOf(shownOwner), date);
+  return today === null ? null : workoutPlan(today);
 }
 
 /** For the tests: the file read again, nobody shown. */

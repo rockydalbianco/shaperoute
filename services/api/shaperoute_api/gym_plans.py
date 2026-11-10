@@ -2,6 +2,11 @@
 gym.md «Le schede»): a name, the days of the week it is for, its exercises
 in order, each with the sets to do and the values aimed at.
 
+A plan made with the guide is a program (`program`, migration 0066): its
+workouts of the week, each on its day with its own exercises, and a cycle
+of weeks that changes as its owner chose; the phone works out each week's
+values, the API keeps what it was given and knows which days are planned.
+
 GET /me/gym-plans lists the account's plans in their order; PUT
 /me/gym-plans/{key} keeps one, with the key the phone chose, so a plan
 made without a network goes up later and sent twice is one row (201, then
@@ -15,8 +20,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Annotated, Any
+from datetime import date, datetime, timedelta
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, FastAPI, Response
 from psycopg.types.json import Jsonb
@@ -45,6 +50,15 @@ MAX_PLANS = 20
 MAX_ITEMS = 30
 MAX_SETS = 20
 PLANS_FULL = "An account keeps at most 20 plans."
+MAX_WEEKS = 12
+MAX_SESSIONS = 7
+MAX_PROGRAM_ITEMS = 300
+
+Goal = Literal["muscle", "strength", "tone", "fit"]
+"""What the guide asked first: more muscle, more strength, tone, fitness."""
+Mode = Literal["load", "reps", "alternate", "same"]
+"""How the weeks change: more load each week, more reps each week, two
+weeks in turn, or always the same."""
 
 
 class GymPlanItemBody(BaseModel):
@@ -87,6 +101,104 @@ class GymPlanItemBody(BaseModel):
         return self
 
 
+def _days_once(sessions: list[GymPlanSessionBody]) -> None:
+    days = [session.day for session in sessions]
+    if len(set(days)) != len(days):
+        raise ValueError("a day of the week has one workout")
+
+
+class GymPlanSessionBody(BaseModel):
+    """A workout of a program: packages/shared-types src/gym.ts,
+    `GymPlanSession`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    day: int = Field(ge=1, le=7)
+    """The day of the week it is for, 1 Monday to 7 Sunday."""
+    name: str = Field(min_length=1, max_length=MAX_NAME_LENGTH)
+    items: list[GymPlanItemBody] = Field(default_factory=list, max_length=MAX_ITEMS)
+
+
+class GymPlanWeekBody(BaseModel):
+    """A week of the cycle written by hand: `GymPlanWeek`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    week: int = Field(ge=2, le=MAX_WEEKS)
+    sessions: list[GymPlanSessionBody] = Field(max_length=MAX_SESSIONS)
+
+    @model_validator(mode="after")
+    def one_workout_a_day(self) -> GymPlanWeekBody:
+        _days_once(self.sessions)
+        return self
+
+
+class GymProgramBody(BaseModel):
+    """The weeks of a plan made with the guide: `GymProgram`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    goal: Goal | None = None
+    starts_on: date
+    """Its first day: the week of the cycle is counted from its Monday."""
+    weeks: int = Field(ge=1, le=MAX_WEEKS)
+    mode: Mode
+    step_kg: float = Field(default=0, ge=0, le=20, allow_inf_nan=False)
+    rest_s: int | None = Field(default=None, ge=10, le=600)
+    sessions: list[GymPlanSessionBody] = Field(min_length=1, max_length=MAX_SESSIONS)
+    """The first week; the others are worked out from it by `mode`."""
+    custom: list[GymPlanWeekBody] = Field(
+        default_factory=list, max_length=MAX_WEEKS - 1
+    )
+    """The weeks written by hand, in place of the ones worked out."""
+
+    @model_validator(mode="after")
+    def weeks_of_the_cycle(self) -> GymProgramBody:
+        _days_once(self.sessions)
+        numbers = [week.week for week in self.custom]
+        if len(set(numbers)) != len(numbers):
+            raise ValueError("a week is written once")
+        if any(number > self.weeks for number in numbers):
+            raise ValueError("a week written is one of the cycle")
+        count = sum(len(one.items) for one in self.sessions) + sum(
+            len(one.items) for week in self.custom for one in week.sessions
+        )
+        if count > MAX_PROGRAM_ITEMS:
+            raise ValueError(f"a program has at most {MAX_PROGRAM_ITEMS} exercises")
+        return self
+
+    def days(self) -> list[int]:
+        """Every day of the week one of its weeks has a workout on."""
+        every = [one.day for one in self.sessions] + [
+            one.day for week in self.custom for one in week.sessions
+        ]
+        return sorted(set(every))
+
+    def sessions_on(self, day: date) -> list[GymPlanSessionBody]:
+        """The workout planned on `day`, if any: none before it starts."""
+        if day < self.starts_on:
+            return []
+        monday = self.starts_on - timedelta(days=self.starts_on.weekday())
+        week = (day - monday).days // 7 % self.weeks + 1
+        written = next((one for one in self.custom if one.week == week), None)
+        sessions = self.sessions if written is None else written.sessions
+        return [one for one in sessions if one.day == day.isoweekday()]
+
+
+def planned_on(days: int, program: GymProgramBody | None, day: date) -> bool:
+    """Whether a plan kept with the days `days` (bit 0 Monday) and its
+    `program` has a workout on `day`."""
+    if program is None:
+        return bool(days & (1 << day.weekday()))
+    return bool(program.sessions_on(day))
+
+
+def program_of(row: dict[str, Any]) -> GymProgramBody | None:
+    """The program of a row of gym_plans; None for a plan of one workout."""
+    kept = row["program"]
+    return None if kept is None else GymProgramBody.model_validate(kept)
+
+
 class GymPlanRequestBody(BaseModel):
     """PUT /me/gym-plans/{key}: packages/shared-types/fixtures/gym-plans.json,
     a plan of `plans`, without its key."""
@@ -100,6 +212,10 @@ class GymPlanRequestBody(BaseModel):
     position: int = Field(default=0, ge=0, le=100)
     updated_at: AwareDatetime
     """When the phone last changed it: an older one does not replace it."""
+    program: GymProgramBody | None = None
+    """Its weeks, when made with the guide; null makes it a plan of one
+    workout again. Not sent (an app older than the guide) it stays as it
+    was."""
 
     @model_validator(mode="after")
     def days_of_the_week(self) -> GymPlanRequestBody:
@@ -141,10 +257,11 @@ def _plan(row: dict[str, Any]) -> GymPlanBody:
         items=[GymPlanItemBody.model_validate(item) for item in row["items"]],
         position=row["position"],
         updated_at=row["updated_at"],
+        program=program_of(row),
     )
 
 
-PLAN_COLUMNS = "key, name, days, items, position, updated_at"
+PLAN_COLUMNS = "key, name, days, items, position, updated_at, program"
 
 
 @dataclass
@@ -169,6 +286,14 @@ class GymPlans:
         """The plan as kept, and whether it is new. 422 for one more than
         MAX_PLANS."""
         items = [item.model_dump(exclude_none=True) for item in body.items]
+        days = body.days
+        # The program is changed only when sent: an app older than the
+        # guide leaves it as it was.
+        sent = "program" in body.model_fields_set
+        program = None
+        if body.program is not None:
+            program = Jsonb(body.program.model_dump(mode="json", exclude_none=True))
+            days = body.program.days()
         with self.database.connect() as conn:
             # One account's plans change one at a time: the count below is
             # the count when the row goes in.
@@ -191,20 +316,24 @@ class GymPlans:
             row = conn.execute(
                 "INSERT INTO gym_plans"
                 " (user_id, key, name, days, items, position, updated_at,"
-                " created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                " created_at, program) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 " ON CONFLICT (user_id, key) DO UPDATE SET name = EXCLUDED.name,"
                 " days = EXCLUDED.days, items = EXCLUDED.items,"
-                " position = EXCLUDED.position, updated_at = EXCLUDED.updated_at"
+                " position = EXCLUDED.position, updated_at = EXCLUDED.updated_at,"
+                " program = CASE WHEN %s THEN EXCLUDED.program"
+                " ELSE gym_plans.program END"
                 f" RETURNING {PLAN_COLUMNS}",
                 (
                     owner,
                     key,
                     body.name,
-                    days_mask(body.days),
+                    days_mask(days),
                     Jsonb(items),
                     body.position,
                     body.updated_at,
                     self.now(),
+                    program,
+                    sent,
                 ),
             ).fetchone()
             assert row is not None

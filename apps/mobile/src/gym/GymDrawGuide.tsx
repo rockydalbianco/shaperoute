@@ -25,7 +25,7 @@ import {
 } from "../theme/tokens";
 import { exerciseName } from "./catalog";
 import { GymCalendarSheet } from "./GymCalendar";
-import { WEEK_DAYS } from "./GymPlanEditor";
+import { WEEK_DAYS } from "./planLimits";
 import { GymPlansSheet } from "./GymPlans";
 import { isoDay, todayPlan, useGymPlans } from "./plans";
 import { startGymWorkout } from "./useWorkout";
@@ -172,12 +172,23 @@ export function GymDrawGuide({
     <View style={styles.page} testID="gym-guide">
       {today !== null ? (
         <View style={styles.box} testID="gym-guide-today">
-          <Text style={styles.label}>
-            {`${t("Today")} · ${t(WEEK_DAYS[isoDay(new Date()) - 1])}`}
-          </Text>
+          <View style={styles.todayTop}>
+            <Text style={styles.label}>
+              {`${t("Today")} · ${t(WEEK_DAYS[isoDay(new Date()) - 1])}`}
+            </Text>
+            {today.week !== null && today.weeks !== null && (
+              <Text style={styles.label} testID="gym-guide-week">
+                {t("Week {n} of {total}", {
+                  n: String(today.week),
+                  total: String(today.weeks),
+                })}
+              </Text>
+            )}
+          </View>
           <Text style={styles.title} accessibilityRole="header">
             {today.name}
           </Text>
+          {today.plan !== today.name && <Text style={styles.muted}>{today.plan}</Text>}
           <View style={styles.chips}>
             {today.items.map((item, index) => (
               <Text key={index} style={styles.chip}>
@@ -293,6 +304,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.border,
     backgroundColor: color.surface,
+  },
+  todayTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: space.sm,
   },
   label: {
     color: color.textMuted,

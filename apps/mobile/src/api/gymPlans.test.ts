@@ -9,7 +9,7 @@ import { dropGymPlan, fetchGymPlans, isGymPlans, saveGymPlan } from "./gymPlans"
 const URL = "http://api";
 const TOKEN = "the-token";
 const options = (fetchFn: jest.Mock) => ({ fetchFn, key: null });
-const [push] = plans.plans as GymPlan[];
+const [push, , muscle] = plans.plans as GymPlan[];
 
 test("the example of the API is what the app reads", () => {
   expect(isGymPlans(plans)).toBe(true);
@@ -23,6 +23,20 @@ test("the example of the API is what the app reads", () => {
       plans: [{ ...push, items: [{ exercise: "plank", kind: "timed", sets: 0 }] }],
     }),
   ).toBe(false);
+});
+
+test("a plan made with the guide brings its weeks", () => {
+  expect(muscle.program?.weeks).toBe(4);
+  expect(isGymPlans({ plans: [{ ...push, program: null }] })).toBe(true);
+  const program = muscle.program!;
+  for (const broken of [
+    { ...program, mode: "random" },
+    { ...program, starts_on: "2 November" },
+    { ...program, sessions: [{ day: 8, name: "A", items: [] }] },
+    { ...program, custom: [{ week: 2 }] },
+  ]) {
+    expect(isGymPlans({ plans: [{ ...muscle, program: broken }] })).toBe(false);
+  }
 });
 
 test("it lists, keeps and drops a plan by its key", async () => {
@@ -53,4 +67,22 @@ test("it lists, keeps and drops a plan by its key", async () => {
 test("an API without plans is an error, not a list", async () => {
   const fetchFn = jest.fn(answers({ status: 404, body: apiError("http_error") }));
   expect((await fetchGymPlans(URL, TOKEN, options(fetchFn))).kind).not.toBe("ok");
+});
+
+test("an app of before reads a plan with weeks: its days, no exercises, no «Today»", () => {
+  // The check of the app in production before the guide (TASK-411 C):
+  // these six fields only, `program` unread.
+  const before = (body: Record<string, unknown>) =>
+    typeof body.key === "string" &&
+    typeof body.name === "string" &&
+    Array.isArray(body.days) &&
+    body.days.every((day) => Number.isInteger(day) && day >= 1 && day <= 7) &&
+    Array.isArray(body.items) &&
+    typeof body.position === "number" &&
+    typeof body.updated_at === "string";
+  const plan = muscle as unknown as Record<string, unknown>;
+  expect(before(plan)).toBe(true);
+  expect(muscle.days).toEqual([1, 3, 5]);
+  // Without exercises its «Today» of before (days and items) is never one.
+  expect(muscle.items).toEqual([]);
 });

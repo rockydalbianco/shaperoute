@@ -38,6 +38,11 @@ esempio.
   un altro sport dallo stesso tasto. Le schede sono Oggi · Giornate ·
   Stazioni · Feed · Profilo; i messaggi passano all'icona in alto, col
   numero rosso.
+- 2026-11-10, domanda 2: «Sì, tutte e sei». La prima versione ha le sei
+  sezioni del punto 3: Oggi, riepilogo della giornata, mappa con legenda,
+  discesa per discesa, la stagione, Stazioni. Con la stessa risposta la
+  Ricerca dell'app normale perde la scheda «Ski»: le stazioni stanno solo
+  nella modalità sci.
 
 ## Cosa c'è già (non si rifà)
 
@@ -131,8 +136,8 @@ confronto fra stagioni.
 Account, profilo, Feed, messaggi, notifiche, la privacy, le giornate
 salvate e i post (che restano post di MuW, visibili come oggi anche a chi
 non è nella modalità sci). La Ricerca dell'app normale **perde** la scheda
-«Ski»: le stazioni stanno solo nella modalità sci (da confermare con la
-domanda 1).
+«Ski»: le stazioni stanno solo nella modalità sci (scelta dell'utente,
+domanda 2).
 
 ## I dati: cosa c'è e cosa manca
 
@@ -173,9 +178,10 @@ nuovi in cinque lingue col sì dell'utente; server e OTA col sì dell'utente.
    **Risposta dell'utente, 2026-11-10: «Sì, così».** Vale la proposta: si
    entra con «Ski» dal tasto dello sport in alto o da Impostazioni, si esce
    scegliendo un altro sport dallo stesso tasto; schede Oggi · Giornate ·
-   Stazioni · Feed · Profilo, messaggi dall'icona in alto. Resta aperto se la
-   Ricerca dell'app normale perde la scheda «Ski» (con la domanda 2).
-2. **Le sezioni della prima versione.** Proposta: le sei del punto 3.
+   Stazioni · Feed · Profilo, messaggi dall'icona in alto.
+2. **Le sezioni della prima versione.** Proposta: le sei del punto 3, e la
+   Ricerca normale perde «Ski». **Risposta dell'utente, 2026-11-10: «Sì,
+   tutte e sei».**
 3. **I colori della legenda.** Proposta: discese gialle piene, risalite
    rosse tratteggiate (un rosso diverso dal numero rosso), con numeri ed
    etichette.

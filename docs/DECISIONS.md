@@ -484,6 +484,7 @@ lasciando le righe d'indice.
 - ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta · 2026-11-08 · Attiva
 - ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina · 2026-11-08 · Attiva
+- ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1354,3 +1355,38 @@ scelta dell'utente 12 (la camera si sceglie solo sul 3D).
    posata ha i pixel stirati vicino alla camera, quindi nel modo `chase`
    la pagina mette punta, emoji e animale alla quota di metri della
    scena, non di pixel. Gli altri modi restano come prima.
+
+## ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore
+
+**Stato**: Attiva · 2026-11-08 · TASK-406 parte D3b (#1006) e #1004. Deciso
+dall'agente su delega dell'utente, con la lista dei file approvata dal
+Coordinatore; i testi sono dell'utente («Sì, approvati», 2026-11-08).
+
+**Contesto**: la pagina della stazione mostra «Follow», la neve dei membri e
+le loro giornate lì; «Your resorts» sta in cima all'elenco delle stazioni,
+nella scheda «Ski» e in «Cambia».
+
+**Decisione**:
+
+1. **Una sola lista delle stazioni seguite** per tutta l'app
+   (`useFollowedResorts`), letta una volta per sessione dalla porta dei
+   disegni. Un tocco la cambia subito, e torna com'era se il server dice di
+   no: la pagina e l'elenco cambiano insieme.
+2. **I post di una stazione hanno l'autore**, come nel Feed: `GET
+   /ski-resorts/{id}/drawings` risponde `{posts, next, total}` con
+   `FeedPostBody` (#1004). Sono di più membri, mentre la pagina di un profilo
+   è di uno solo. La forma è cambiata prima che la rotta arrivasse sul
+   server.
+3. **Un post toccato si apre sulla mappa e chiude la ricerca**, come i
+   risultati della ricerca (`SearchScreen`: `onLeave={onClose}`).
+4. **Le parti vuote non compaiono**; senza account la pagina resta quella
+   della parte C.
+
+**Alternative**:
+
+- **Le seguite lette da ogni schermo**: scartate, la pagina e l'elenco
+  avrebbero potuto dire cose diverse.
+- **I post senza autore**: scartati, non si saprebbe di chi è la giornata.
+
+**Conseguenze**: solo JavaScript nell'app; sul server nessuna migrazione in
+più. Tutto esce con il passo unico sul server e l'OTA unico.

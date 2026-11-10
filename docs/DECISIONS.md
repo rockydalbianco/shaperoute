@@ -484,6 +484,7 @@ lasciando le righe d'indice.
 - ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta · 2026-11-08 · Attiva
 - ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina · 2026-11-08 · Attiva
+- ADR-0339, precisazione C2c — L'anteprima nel foglio: la pagina del video in modo «play» · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1354,3 +1355,29 @@ scelta dell'utente 12 (la camera si sceglie solo sul 3D).
    posata ha i pixel stirati vicino alla camera, quindi nel modo `chase`
    la pagina mette punta, emoji e animale alla quota di metri della
    scena, non di pixel. Gli altri modi restano come prima.
+
+## ADR-0339, precisazione C2c — L'anteprima nel foglio: la pagina del video in modo «play»
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-08), con la
+scelta dell'utente 13 (il video vero in loop, non un fotogramma fermo).
+
+1. **La stessa pagina del video, visibile**: l'anteprima è `videoPage` in
+   una WebView in cima a «Edit video», in un modo nuovo `play` che disegna
+   i fotogrammi della scena in tempo reale su un canvas sopra la pagina,
+   senza codificarli. Mappa, animale e camera sono quelli del video: niente
+   secondo disegnatore da tenere uguale al primo. L'esportazione (`make`)
+   non cambia.
+2. **La pagina alla misura della sua mappa** (360 × 640 punti), mostrata
+   rimpicciolita a 150 punti di larghezza: la mappa si disegna come per il
+   video, dentro una pagina visibile.
+3. **La scena si calcola mezzo secondo dopo l'ultima scelta**, non a ogni
+   tocco; una nuova scena prende il posto della vecchia allo stesso
+   secondo. Un nuovo stile o un nuovo animale ricaricano la pagina, perché
+   la pagina prepara la mappa e il modello una volta sola.
+4. **Sulle mappe parte a mappa pronta** (o quando non è venuta): prima
+   resta fermo il fondo, anche sul 3D che può chiedere qualche secondo
+   (richiesta del Coordinatore). Senza mappa parte subito.
+5. **Il costo**: nel simulatore circa il 32 % di un core del Mac sulla
+   Notte e il 40 % sul 3D con la camera dietro, solo con il foglio aperto
+   (che smonta la pagina quando si chiude) e fermabile con un tocco. La
+   batteria si misura sul telefono nella parte E.

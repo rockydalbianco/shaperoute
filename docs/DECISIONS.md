@@ -490,6 +490,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
+- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
 
 ## Voci nuove
 
@@ -1544,3 +1545,26 @@ nella scheda «Ski» e in «Cambia».
 
 **Conseguenze**: solo JavaScript nell'app; sul server nessuna migrazione in
 più. Tutto esce con il passo unico sul server e l'OTA unico.
+
+## ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-10), dentro la
+scelta dell'utente 9 (nessuna AI, nessun costo, la prima tabella).
+
+1. **La tabella è un file dell'app** (`share/videoWords.ts`), nelle cinque
+   lingue, letta come le parole delle forme (ADR-0036): accenti, maiuscole
+   e apostrofi non contano, e le parole di ogni lingua valgono qualunque
+   sia la lingua dell'app. Parole nuove arrivano con un OTA.
+2. **Sceglie solo le voci del foglio** (animale, stile, colore, emoji,
+   apertura, camera, finale) e niente altro: il risultato è un `VideoEdit`
+   con gli stessi campi, e un test prova che numeri come coordinate non
+   danno nulla (ADR-0001).
+3. **Come legge**: la frase si divide in parti alle virgole e alle «e»; i
+   nomi più lunghi prima («cavallo bianco» prima di «cavallo» e «bianco»).
+   Un'emoji va «alla fine» se la sua parte lo dice, altrimenti lungo il
+   percorso; «cuore» è il finale dove la parte parla del finale, altrimenti
+   l'emoji; i finali contano solo dove si parla della fine. Una camera
+   senza stile sceglie il 3D, l'unico stile dove si muove.
+4. **Quando**: alla fine del campo (Invio o uscita), non a ogni lettera.
+   Una parola sconosciuta si salta senza messaggi; il resto del foglio
+   resta com'era.

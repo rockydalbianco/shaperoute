@@ -644,6 +644,20 @@ Privacy, sezione «Sharing live»:
     `RunSportEnergy.test.tsx` (nuovo) e i test che dicevano «niente
     calorie» per neve e acque libere (`snowWorkout`, `swimWorkout`,
     `snowFeed`, `RunSwim`, `SnowFinishCard`, `navigation/swim`).
+  - **C2b — Le discese dello sci al server** (con TASK-429; lista comune
+    approvata dal Coordinatore il 2026-11-10; scelta dell'utente «Sì, il
+    server»). Branch `feat/TASK-424-c2b-ski-parts`. Un campo solo per due
+    usi: il telefono manda `ski_parts` (risalite e discese) dentro
+    `PUT /me/activities/{key}/stats`; l'API li tiene in `run_stats.stats`
+    (nessuna migrazione) coi tempi sui secondi della traccia e ne ricava
+    `ski_descents` `{metres, moving_s}`, che ogni lista di post rimanda. Il
+    Feed conta le calorie dello sci su quelle, come la fine giornata; la
+    429 legge `ski_parts` per riepilogo e mappa. A mandarli è l'app della
+    429 B. **Prima il server, poi l'app**: un server senza C2b dà 422 a
+    quel PUT. I controlli del server, prima e dopo, sono nel checkout
+    principale, in `out/TASK-424/c2b-server-checks.md`. In più rispetto
+    alla lista: `tests/test_run_stats.py` e `tests/test_drawings.py`, che
+    contano i campi delle fixture vecchie (una riga ciascuno).
   - **C3 — Le calorie in rosso ovunque**: un token nuovo `energy` in
     `tokens.ts`, col contrasto misurato nei due temi, su ogni numero di
     calorie dell'app (corsa, neve, piscina, palestra, Feed, «Activities»,

@@ -18,9 +18,10 @@ import type { SamplePost } from "./sampleFeed";
  * neither has a ride or a paddle with no time. A swim in a pool, a swim
  * without a line, has its own (poolKcal.ts, TASK-409 part A); one in open
  * water, a day of cross-country skiing or of ski touring theirs since
- * TASK-424 part C2. A day of alpine skiing counts its descents alone, and
- * the post has the time of the whole day, lifts and all: none until the
- * API keeps the descents' time (TASK-424 part C2b).
+ * TASK-424 part C2. A day of alpine skiing counts its descents alone, as
+ * the end of the day does: their metres and seconds come with the post
+ * (`ski_descents`, TASK-424 part C2b); a day without them, saved before or
+ * by a phone that sent no parts, has none.
  */
 export function postEnergy(
   post: SamplePost,
@@ -31,8 +32,20 @@ export function postEnergy(
   const activity = isTrackless(post.activity) ? null : (post.activity ?? "running");
   // A sport newer than the app has no formula here.
   const profile = findProfile(activity ?? undefined);
-  if (activity === null || profile === undefined || profile.skied === true) {
+  if (activity === null || profile === undefined) {
     return null;
+  }
+  if (profile.skied === true) {
+    const descents = post.ski_descents;
+    if (descents === undefined) {
+      return null;
+    }
+    const skied = activeKcal(
+      { activity, metres: descents.metres, seconds: descents.moving_s, climbM: null },
+      body,
+      year,
+    );
+    return skied > 0 ? `${skied} kcal` : null;
   }
   // A swim without a line is in a pool (isPoolLine, pool/PoolTile.tsx).
   if (activity === "swimming" && post.line.length === 0) {

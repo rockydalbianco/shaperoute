@@ -25,6 +25,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Guardare o confrontare percorsi generati | `../samples/README.md` |
 | Export GPX o wearable | `GPX.md` |
 | Endpoint, contratti REST, validazione input | `API.md`, `ARCHITECTURE.md` §3 |
+| Quanti percorsi regge il server; i processi che calcolano i percorsi (`--route-processes`) | `tasks/TASK-276.md`, ADR-0242 |
 | Cosa sa leggere un'app vecchia, `X-MuW-Reads`, uno sport nuovo nelle liste | `API.md` «Quello che un'app sa leggere», ADR-0328 |
 | Parole lette dall'AI, Ollama | `AI.md` |
 | Schermate, mappa, «Draw», «Edit the drawing», disegno a mano, girare la figura, i pezzi | `UI.md`, `PRODUCT.md` |

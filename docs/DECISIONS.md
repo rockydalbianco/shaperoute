@@ -492,6 +492,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
 - ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
+- ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
 
 ## Voci nuove
 
@@ -1608,3 +1609,41 @@ scelta dell'utente 9 (nessuna AI, nessun costo, la prima tabella).
 4. **Quando**: alla fine del campo (Invio o uscita), non a ogni lettera.
    Una parola sconosciuta si salta senza messaggi; il resto del foglio
    resta com'era.
+
+## ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte
+
+**Stato**: Accettata · 2026-11-10 · TASK-425 (#1021). Scelta dell'utente del
+2026-11-10: «Sì, chiudile»; il ripiego quando la chiusura non fa un disegno
+è deciso dall'agente su delega dell'utente.
+
+**Contesto**: dal TASK-369 (ADR-0313) una traccia che finisce lontano dalla
+partenza (oltre `CLOSED_SHARE`, il 15% della sua grandezza) restava aperta in
+«Edit the drawing»: un anellino alla partenza e tutta la linea come
+dettaglio. I dettagli si contano e si corrono andata e ritorno, quindi la
+distanza chiesta era il doppio della traccia (4.000 m → 8.029 m). Lo ha
+notato un amico dell'utente: «come se ci passasse sopra due volte».
+
+**Decisione**:
+
+1. `trackInPlace` (`route/figureLines.ts`) **chiude anche la traccia che
+   finisce lontano**, con un lato dritto dalla fine al primo punto. La
+   distanza diventa la traccia più il ritorno, e la partenza resta dov'era.
+2. **Se chiusa non fa un disegno** (`drawingOf` nullo: la traccia si incrocia
+   da sola, o il lato di ritorno la attraversa), resta aperta come prima,
+   perché il tasto deve continuare a funzionare.
+
+**Alternative**:
+
+- **Lasciare la linea aperta e contarla una volta sola**: scartata, il motore
+  corre comunque i dettagli andata e ritorno; la distanza sarebbe stata
+  sbagliata.
+- **Tenere solo l'anello più grande quando la traccia chiusa si incrocia**:
+  scartata, toglie pezzi del disegno.
+
+**Conseguenze**: su 124 tracce aperte vere (i percorsi di `samples/` tagliati
+al 50% e al 75%), 46 si chiudono con la distanza giusta (0,9–1,0 volte la
+traccia più il ritorno) e 76 restano doppie come prima, perché si incrociano
+da sole e il motore prende solo contorni semplici. Per loro servirebbe il
+motore (linea aperta corsa una volta, ritorno per la via più breve): è
+proposto all'utente come task a parte. Solo JavaScript nell'app, nell'OTA
+unico.

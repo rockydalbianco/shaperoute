@@ -1,4 +1,5 @@
 import SwiftUI
+import WatchKit
 import WatchCore
 
 /// The MuW app on the Apple Watch (TASK-370 part A2, ADR-0314): choose the
@@ -6,13 +7,17 @@ import WatchCore
 /// the phone sent. The watch never draws a route; following one is part B3b.
 @main
 struct MuWWatchApp: App {
+    /// Woken by the phone (part B4): the workout's configuration arrives here.
+    @WKApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var workouts: WorkoutManager
     @StateObject private var store: RouteStore
 
     init() {
         let store = RouteStore()
+        let workouts = WorkoutManager(routes: store)
         _store = StateObject(wrappedValue: store)
-        _workouts = StateObject(wrappedValue: WorkoutManager(routes: store))
+        _workouts = StateObject(wrappedValue: workouts)
+        AppDelegate.workouts = workouts
     }
 
     var body: some Scene {

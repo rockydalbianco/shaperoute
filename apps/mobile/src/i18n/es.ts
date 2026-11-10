@@ -2214,4 +2214,6 @@ export const ES: Table = {
     "Lugares famosos, vistas, comida… en cualquier ciudad",
   "The rest could not load.": "El resto no se pudo cargar.",
   "Loading more…": "Cargando más…",
+  "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
+    "Cualquiera que tenga el enlace puede seguirte en una página web, sin la app: tiempo, largos o ejercicio, calorías y tu pulso cuando un reloj lo envía.",
 };

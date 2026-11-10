@@ -2224,4 +2224,6 @@ export const DE: Table = {
     "Berühmte Orte, Aussichten, Essen… in jeder Stadt",
   "The rest could not load.": "Der Rest konnte nicht geladen werden.",
   "Loading more…": "Weitere werden geladen…",
+  "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
+    "Wer den Link hat, kann dir auf einer Webseite folgen, ohne die App: Zeit, Bahnen oder Übung, Kalorien und deinen Puls, wenn eine Uhr ihn sendet.",
 };

@@ -3454,6 +3454,20 @@ cui tiene i numeri.
   ancora un'ora. Partono solo i punti da quando c'è il link: il server non
   ne prende di più vecchi di 5 minuti. «Keep running» dopo la fine vuole
   un link nuovo. Mai acceso da solo.
+- **«Share live» in piscina e in palestra** (TASK-424 parte B2): lo
+  stesso pulsante, lo stesso foglio e la stessa etichetta, sotto
+  l'orologio (piscina: sotto la vasca e il tempo; palestra: sotto tempo,
+  calorie e scheda). Il primo testo del foglio dice cosa mostra la loro
+  pagina, senza mappa (testo approvato il 2026-11-10: «Anyone with the
+  link can follow you on a web page, without the app: time, lengths or
+  exercise, calories and your heart rate when a watch sends it.»); il
+  secondo è quello di B1. Il link della piscina porta la vasca. Gli invii
+  non hanno punti: il tempo senza pause, in piscina le vasche stimate dal
+  passo (nessuna prima di mezza vasca) e le loro calorie, in palestra
+  l'esercizio in corso e le calorie dello schermo; il battito quando un
+  orologio lo manderà (oggi nessuno segue piscina e palestra: vuoto).
+  Ogni 15 s, subito a pausa e ripresa, `finished` quando lo schermo se ne
+  va (fine, «Still training?» senza risposta).
 - **«Pause»**, un pulsante tondo e chiaro in mezzo, su tutte e due le
   pagine; da una parte «Pocket», dall'altra «Music». In pausa il tempo si ferma, le posizioni non
   entrano nella traccia e «Pace now» è «–»; la mappa continua a seguire, e

@@ -363,7 +363,32 @@ TASK-424 C2b): `apps/mobile/src/activities/runStatsOut.ts` e il suo test,
 con il tipo `SkiPart` di `apps/mobile/src/api/runStats.ts` (di C2b) e un
 test del ripiego al `422`.
 
-Parti C ed E: si elencano prima di ciascuna.
+Parte C1, il server (approvata dal Coordinatore il 2026-11-10; dopo la C2b
+di TASK-424, che salva `ski_parts`). File nuovi:
+`services/api/shaperoute_api/ski_day_parts.py` e `ski_season.py`,
+`services/api/tests/test_ski_day_parts.py` e `test_ski_season.py`,
+`packages/shared-types/src/skiSeason.ts`, `fixtures/ski-day-parts.json`,
+`fixtures/ski-season.json` e `test/skiSeason.test.ts`. File da cambiare:
+`services/api/shaperoute_api/ski_days.py` (`parts` nel `GET`),
+`__main__.py` (la rotta della stagione), `packages/shared-types/src/skiDays.ts`
+(`SkiDayPart`, `SkiDayWithParts`) e `index.ts` (una riga), `docs/API.md` e
+questa lista.
+
+Scelte tecniche della C1, decise dall'agente su delega dell'utente:
+- **`parts` solo quando ci sono**: il `GET` ha un corpo suo
+  (`SkiDayPartsBody`) e non scrive la chiave senza tratti, così la
+  risposta di prima e il `PUT` restano identici e un'app in produzione
+  legge quello che leggeva;
+- **i tratti si legano alla traccia per ore**: `start_s` ed `end_s` di C2b
+  danno il primo e l'ultimo punto (`from_fix`, `to_fix`), che l'app usa
+  per colorare la mappa del post;
+- **i nomi alla lettura**, con `ski_names.py` sul pezzo di traccia di ogni
+  tratto, e una cache per processo di al più 256 giornate per 10 minuti,
+  per corsa e per l'ultimo invio dei run-stats: niente colonne nuove;
+- **la stagione** è fra due giorni chiesti dall'app (al più 400), solo
+  numeri e solo le proprie giornate.
+
+Parti C2 ed E: si elencano prima di ciascuna.
 
 ## Criteri di accettazione
 

@@ -3337,6 +3337,38 @@ Chiedono tutte il token.
 - **Il codice:** `resort_follows.py`. Migrazione `0062`, tipi in
   `packages/shared-types/src/resortFollows.ts`.
 
+**I tratti della giornata e la stagione (TASK-429 parte C1, ADR-0357)**
+
+Il telefono manda risalite e discese della giornata a «Salva», come
+`ski_parts` dei run-stats (`PUT /me/activities/{key}/stats`, TASK-424 parte
+C2b). Il server tiene la traccia con le ore ma senza le quote, quindi non
+le trova da sé: le giornate salvate prima non ne hanno (scelta dell'utente
+del 2026-11-10).
+- **`GET /drawings/{id}/ski-day`** dà in più `parts`, solo quando la
+  giornata li ha (`ski-day-parts.json`); senza, la risposta è quella di
+  prima, senza la chiave. Il `PUT` della giornata non la dà mai.
+  - Ogni tratto, nell'ordine della giornata: `kind` (`lift`|`descent`),
+    `n` (contati a parte: «L2», «3»), `start_s` ed `end_s` sui secondi
+    della traccia del server, `moving_s`, `metres`, `height_m` (salito o
+    sceso), `top_mps` (null per le risalite);
+  - `from_fix` e `to_fix`: il primo e l'ultimo punto della traccia del post
+    nel tratto (il post la mostra intera, ADR-0330), null se nessuno;
+  - `name`: l'impianto o la pista, trovato come per la giornata intera
+    (`ski_names.py`) sul pezzo di traccia del tratto; null se nessuno.
+  - I nomi si cercano alla lettura e restano in una cache di ogni processo:
+    al più 256 giornate, per 10 minuti, per corsa e per l'ultimo invio dei
+    run-stats. L'API gira in più processi (ADR-0242), quindi ognuno ha la
+    sua.
+- **`GET /me/ski-season?from=YYYY-MM-DD&to=YYYY-MM-DD`**, con il token: le
+  proprie giornate di sci iniziate fra i due giorni (UTC, compresi) e le
+  somme dei loro tratti (`ski-season.json`): `days`, `days_with_parts`,
+  `skied_m` e `vertical_m` delle discese, `descents`, `lifts`, `top_mps`,
+  `moving_s`. Una giornata senza tratti conta solo in `days`. `422` se `to`
+  viene prima di `from`, o per più di 400 giorni.
+- **Il codice:** `ski_day_parts.py`, `ski_days.py`, `ski_season.py`; tipi
+  in `packages/shared-types/src/skiDays.ts` (`SkiDayPart`,
+  `SkiDayWithParts`) e `skiSeason.ts`.
+
 ### Drawing search (TASK-344, ADR-0297)
 
 La ricerca dei disegni dalla lente del Feed: le stesse regole del feed su

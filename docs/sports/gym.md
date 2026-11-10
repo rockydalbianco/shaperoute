@@ -170,6 +170,15 @@ calendario segna saltati i giorni con un allenamento nella settimana del
 ciclo. Calcolo in `apps/mobile/src/gym/program.ts`, proposta in
 `proposal.ts`, la guida in `GymPlanWizard.tsx`.
 
+**I giorni di corsa** (TASK-433 C): al passo 2 «And running?» aggiunge 1–3
+corse nei giorni senza palestra e «Your week» cambia ogni giorno (palestra,
+corsa, riposo). Un giorno di corsa è Lenta, Ripetute o Lungo, in km o
+minuti; con le settimane +10% circa (le ripetute +1), l'ultima settimana di
+un ciclo di 3 o più all'80% della prima. In «Draw» quel giorno «Today» dice
+la corsa e «Go to the run · 5.5 km» passa a «Run» coi km già scritti; una
+corsa fatta quel giorno conta come fatta nel calendario. La sigla «RUN» ha
+il suo colore (`runDay`). `runDay.ts`, `RunDayEditor.tsx`.
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una

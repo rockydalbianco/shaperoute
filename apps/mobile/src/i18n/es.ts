@@ -1286,9 +1286,6 @@ export const ES: Table = {
     "De aquí salen series, repeticiones y descanso. Podrás cambiarlos después.",
   "to start with": "para empezar",
   "How many days a week?": "¿Cuántos días a la semana?",
-  "Which days": "Qué días",
-  "With a day of rest in between, where it fits.":
-    "Con un día de descanso en medio, donde cabe.",
   "How the work is split": "Cómo se reparte el trabajo",
   "Your plan": "Tu plan",
   "Here is your plan": "Aquí está tu plan",
@@ -1344,6 +1341,32 @@ export const ES: Table = {
   "Lower body B": "Tren inferior B",
   "Arms, core": "Brazos, abdomen",
   "Workout {letter}": "Entrenamiento {letter}",
+  // src/gym/RunDayEditor.tsx, runDay.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-433 C, approved 2026-11-10)
+  "Go to the run · {amount}": "Ir a la carrera · {amount}",
+  "Gym today instead": "Hoy gimnasio en su lugar",
+  "And running?": "¿Y correr?",
+  No: "No",
+  "Touch a day to change it: gym, run or rest.":
+    "Toca un día para cambiarlo: gimnasio, carrera o descanso.",
+  "Your week": "Tu semana",
+  "How much": "Cuánto",
+  "The same every week.": "Igual cada semana.",
+  "Which run": "Qué carrera",
+  "With the weeks": "Con las semanas",
+  minutes: "minutos",
+  "{values}; week {n}: {last} to recover":
+    "{values}; semana {n}: {last} para recuperar",
+  "Easy run": "Carrera suave",
+  Intervals: "Series",
+  "Easy, at a pace you can talk at.": "Suave, a un ritmo en el que puedes hablar.",
+  "Easy@@run": "Suave",
+  "Fast stretches with a slow jog between.":
+    "Tramos rápidos con un trote suave entre medias.",
+  "Long@@run": "Larga",
+  "Longer than the others, slowly.": "Más larga que las otras, despacio.",
+  "easy, you can talk": "suave, puedes hablar",
+  "fast + recovery": "rápido + recuperación",
+  "more km, slowly": "más km, despacio",
   Workout: "Entrenamiento",
   "Only sets logged live count.": "Solo cuentan las series anotadas en directo.",
   // src/screens/ChooseScreen.tsx (TASK-375)

@@ -114,6 +114,62 @@ libero al merge),
       (cartella `out/` del checkout principale).
 - [ ] Prova sul telefono dell'utente.
 
+## Parte C — I giorni di corsa nella scheda
+
+Chiesta dall'utente il 2026-11-10 («aggiungi anche la possibilità di
+aggiungere una scheda di allenamento di corsa nella sezione palestra»);
+alla prima domanda «Giorni di corsa nella scheda», poi «continua con questa
+task»; scelte una alla volta sulle schermate C1–C3 della tela:
+
+1. **Come si aggiunge**: «Così» — al passo 2, sotto i giorni, «And
+   running?» No / 1 / 2 / 3: le corse vanno nei giorni senza palestra
+   (martedì e sabato per primi); in «Your week» ogni giorno si tocca:
+   palestra, corsa, riposo. Di base «No».
+2. **Che corsa**: «Sì, così» — Lenta, Ripetute, Lungo; km o minuti (le
+   ripetute: quante e quanto ciascuna, 200/400/800/1000 m); con le
+   settimane +10% circa a settimana (mezzi km, minuti interi), le ripetute
+   +1, l'ultima settimana di un ciclo di 3 o più all'80% della prima;
+   «Always the same» la lascia com'è.
+3. **In «Draw»**: «Sì, così» — «Today» mostra la corsa della settimana
+   («Easy run · 5.5 km», la riga del tipo); «Go to the run · 5.5 km» passa
+   «Draw» a «Run» coi km già scritti (forma o corsa senza percorso); «Gym
+   today instead» fa un allenamento libero. Una corsa fatta quel giorno
+   conta come fatta nel calendario della palestra.
+4. **Testi e grafica**: «Approvo» — la sigla «RUN» nell'azzurro di un token
+   nuovo `runDay` (lo stesso colore di `startHere`, ma un token suo, così
+   ognuno ha un significato), le lettere dei giorni di palestra in giallo.
+
+**Il disegno tecnico** (in ADR-0360, precisazione C, con la PR di soli
+documenti dopo il merge): un giorno del programma ha un campo nuovo
+facoltativo `run` (`kind`, `distance_m` o `duration_s`; per le ripetute
+`reps` e `rep_m` o `rep_s`) e nessun esercizio; niente migrazione, sta nel
+JSONB di `program`. I valori di ogni settimana li calcola il telefono
+(`program.ts`, `runInWeek`). Il calendario (`gym_calendar.py`) dà per fatto
+un giorno di corsa se quel giorno c'è una corsa (`runs.activity =
+'running'`). «Go to the run» usa `saveSport("run")` e un canale nuovo di
+`useDrawDistance.ts` (`chooseDrawDistance`) per scrivere i km di «Draw».
+
+**Cosa vede l'app in produzione** (l'OTA del 2026-11-10, che ha le schede
+guidate ma non i giorni di corsa): un giorno di corsa è un allenamento senza
+esercizi; la sua `isGymProgram` non guarda `run` e lo legge; in «Draw» non
+diventa «Today» (zero esercizi); in «Edit» la guida di prima lo mostra come
+un giorno di palestra vuoto e non lascia salvare finché non ha esercizi. Il
+server va aggiornato prima dell'OTA: quello di oggi rifiuta un giorno con
+`run` (campi in più vietati) e la scheda resta in attesa sul telefono.
+
+File (lista mandata al Coordinatore): server `gym_plans.py`,
+`gym_calendar.py`, `tests/test_gym_plans.py`; shared-types `src/gym.ts`,
+`fixtures/gym-plans.json`, `test/gym.test.ts`; app `api/gymPlans.ts` (+
+test), `gym/program.ts` (+ test), `gym/proposal.ts` (+ test),
+`gym/plans.ts`, `gym/GymPlanWizard.tsx`, `gym/GymPlans.tsx` (+ test),
+`gym/GymDrawGuide.tsx`, nuovi `gym/runDay.ts`, `gym/RunDayEditor.tsx`;
+`units/useDrawDistance.ts` e il test nuovo
+`units/chooseDrawDistance.test.tsx`; `theme/tokens.ts` e
+`theme/palettes.test.ts` (il token `runDay`); `i18n/{it,de,fr,es}.ts` (via
+«Which days» e la sua riga, che il passo 2 non mostra più); documenti
+`docs/tasks/TASK-433.md`, `docs/sports/gym.md`, `docs/API.md`. Sul
+simulatore non è stata vista girare.
+
 ## Da fare dopo il merge (Coordinatore, col sì dell'utente)
 
 1. Server: backup, migrazione 0066, deploy, nel passo che compone il

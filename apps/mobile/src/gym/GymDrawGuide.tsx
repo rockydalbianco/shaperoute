@@ -28,6 +28,7 @@ import { GymCalendarSheet } from "./GymCalendar";
 import { WEEK_DAYS } from "./planLimits";
 import { GymPlansSheet } from "./GymPlans";
 import { isoDay, todayPlan, useGymPlans } from "./plans";
+import { goToRun, RUN_HINTS, runAmount, runTitle } from "./runDay";
 import { startGymWorkout } from "./useWorkout";
 
 /** The three steps of «How it works» (texts approved on 2026-11-06). */
@@ -185,26 +186,65 @@ export function GymDrawGuide({
               </Text>
             )}
           </View>
-          <Text style={styles.title} accessibilityRole="header">
-            {today.name}
-          </Text>
-          {today.plan !== today.name && <Text style={styles.muted}>{today.plan}</Text>}
-          <View style={styles.chips}>
-            {today.items.map((item, index) => (
-              <Text key={index} style={styles.chip}>
-                {planItemLine(item, language)}
+          {today.run !== undefined ? (
+            <>
+              <View style={styles.runHead}>
+                <Text style={styles.runMark} importantForAccessibility="no">
+                  RUN
+                </Text>
+                <View style={styles.runText}>
+                  <Text style={styles.title} accessibilityRole="header">
+                    {runTitle(today.run)}
+                  </Text>
+                  <Text style={styles.muted}>{today.plan}</Text>
+                </View>
+              </View>
+              <Text style={styles.muted}>{t(RUN_HINTS[today.run.kind])}</Text>
+              <Pressable
+                style={({ pressed }) => [styles.start, pressed && styles.pressed]}
+                onPress={() => today.run !== undefined && goToRun(today.run)}
+                accessibilityRole="button"
+                testID="gym-guide-go-run"
+              >
+                <Text style={styles.startText}>
+                  {t("Go to the run · {amount}", { amount: runAmount(today.run) })}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.link, pressed && styles.pressed]}
+                onPress={() => startGymWorkout(Date.now(), null)}
+                accessibilityRole="button"
+                testID="gym-guide-free"
+              >
+                <Text style={styles.muted}>{t("Gym today instead")}</Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <Text style={styles.title} accessibilityRole="header">
+                {today.name}
               </Text>
-            ))}
-          </View>
-          {startButton(t("Start “{plan}”", { plan: today.name }), "run-no-route")}
-          <Pressable
-            style={({ pressed }) => [styles.link, pressed && styles.pressed]}
-            onPress={() => startGymWorkout(Date.now(), null)}
-            accessibilityRole="button"
-            testID="gym-guide-free"
-          >
-            <Text style={styles.muted}>{t("Start without the plan")}</Text>
-          </Pressable>
+              {today.plan !== today.name && (
+                <Text style={styles.muted}>{today.plan}</Text>
+              )}
+              <View style={styles.chips}>
+                {today.items.map((item, index) => (
+                  <Text key={index} style={styles.chip}>
+                    {planItemLine(item, language)}
+                  </Text>
+                ))}
+              </View>
+              {startButton(t("Start “{plan}”", { plan: today.name }), "run-no-route")}
+              <Pressable
+                style={({ pressed }) => [styles.link, pressed && styles.pressed]}
+                onPress={() => startGymWorkout(Date.now(), null)}
+                accessibilityRole="button"
+                testID="gym-guide-free"
+              >
+                <Text style={styles.muted}>{t("Start without the plan")}</Text>
+              </Pressable>
+            </>
+          )}
         </View>
       ) : (
         <View style={styles.box} testID="record-day">
@@ -304,6 +344,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.border,
     backgroundColor: color.surface,
+  },
+  runHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+  },
+  runMark: {
+    width: 52,
+    height: 52,
+    lineHeight: 52,
+    textAlign: "center",
+    borderRadius: radius.md,
+    overflow: "hidden",
+    backgroundColor: color.surfaceRaised,
+    color: color.runDay,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.bold,
+  },
+  runText: {
+    flex: 1,
+    gap: 2,
   },
   todayTop: {
     flexDirection: "row",

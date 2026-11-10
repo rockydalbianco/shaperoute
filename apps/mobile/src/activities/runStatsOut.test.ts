@@ -4,7 +4,15 @@ import type { ActivityFix, ActivityRequest } from "../api/activities";
 import { MAX_ELEVATION_POINTS } from "../api/runStats";
 import { NO_BODY } from "../body/bodyProfile";
 import { activeKcal } from "../body/energy";
-import { elevationProfile, runStatsRequest } from "./runStatsOut";
+import type { AccountOutcome } from "../api/accounts";
+import type { RunStats, RunStatsRequest } from "../api/runStats";
+import {
+  elevationProfile,
+  MAX_SKI_PARTS,
+  runStatsRequest,
+  sendRunStats,
+  skiPartsOf,
+} from "./runStatsOut";
 
 // What the phone sends at the end of an activity for its post (TASK-410
 // part C): the profile from the heights of the fixes, and the calories.
@@ -122,4 +130,118 @@ test("a day of skiing counts its descents alone (TASK-424 part C2)", () => {
       runStatsRequest(BASE, { ...COUNTED, activity }, NO_BODY, 2026)?.kcal,
     ).toBeGreaterThan(0);
   }
+});
+
+// TASK-429 part B2: a day of skiing sends its lifts and descents
+// (`ski_parts`), and the figures go again without them when the API
+// refuses them.
+
+/** Down 300 m, up a chairlift, down 300 m: a fix every 30 s. */
+function skiDay(): ActivityFix[] {
+  const down = (fromM: number, fromS: number) =>
+    Array.from({ length: 11 }, (_, i) =>
+      north(fromM + i * 200, fromS + i * 30, 2000 - i * 30),
+    );
+  const lift = Array.from({ length: 21 }, (_, i) =>
+    north(3500 - i * 75, 300 + i * 30, 1700 + i * 15),
+  );
+  return [...down(1500, 0), ...lift.slice(1), ...down(2000, 900).slice(1)];
+}
+
+const SKIING = { activity: "skiing" as const, metres: 5500, seconds: 1500 };
+
+test("a day of skiing sends its lifts and descents, in the order of the day", () => {
+  const parts = runStatsRequest(run(skiDay()), SKIING, NO_BODY, 2026)?.ski_parts;
+  expect(parts?.map((part) => `${part.kind} ${part.n}`)).toEqual([
+    "descent 1",
+    "lift 1",
+    "descent 2",
+  ]);
+  const [first, lift] = parts ?? [];
+  expect(first.start_ms).toBe(1_790_000_000_000);
+  expect(first.end_ms).toBe(1_790_000_000_000 + 300_000);
+  expect(first.moving_s).toBe(300);
+  expect(first.height_m).toBe(300);
+  expect(first.top_mps).not.toBeNull();
+  expect(lift.top_mps).toBeNull();
+  expect(lift.height_m).toBe(300);
+  for (const part of parts ?? []) {
+    expect(part.moving_s).toBeLessThanOrEqual((part.end_ms - part.start_ms) / 1000);
+  }
+});
+
+test("no parts for another sport, nor for a day without heights", () => {
+  const track = skiDay();
+  expect(
+    runStatsRequest(run(track), { ...SKIING, activity: "running" }, NO_BODY, 2026),
+  ).not.toHaveProperty("ski_parts");
+  const flat = track.map(({ point, time_ms }) => ({ point, time_ms }));
+  expect(skiPartsOf(run(flat), 5500)).toEqual([]);
+  expect(runStatsRequest(run(flat), SKIING, NO_BODY, 2026)).not.toHaveProperty(
+    "ski_parts",
+  );
+  expect(MAX_SKI_PARTS).toBe(500);
+});
+
+const STATS = { ski_parts: null } as unknown as RunStats;
+const refused: AccountOutcome<RunStats> = {
+  kind: "api_error",
+  code: "invalid_request",
+  message: "Unknown field",
+  suggested_distance_m: null,
+  retryAfterS: null,
+};
+
+test("the figures go once when the API takes them", async () => {
+  const save = jest.fn(
+    async (
+      ..._args: Parameters<typeof sendRunStats>
+    ): Promise<AccountOutcome<RunStats>> => ({
+      kind: "ok",
+      value: STATS,
+    }),
+  );
+  const request = runStatsRequest(
+    run(skiDay()),
+    SKIING,
+    NO_BODY,
+    2026,
+  ) as RunStatsRequest;
+  const outcome = await sendRunStats("http://api", "tok", "k1", request, {}, save);
+  expect(outcome.kind).toBe("ok");
+  expect(save).toHaveBeenCalledTimes(1);
+  expect(save.mock.calls[0][3]).toHaveProperty("ski_parts");
+});
+
+test("refused with the parts, the figures go again without them", async () => {
+  const save = jest
+    .fn()
+    .mockResolvedValueOnce(refused)
+    .mockResolvedValueOnce({ kind: "ok", value: STATS });
+  const request = runStatsRequest(
+    run(skiDay()),
+    SKIING,
+    NO_BODY,
+    2026,
+  ) as RunStatsRequest;
+  const outcome = await sendRunStats("http://api", "tok", "k1", request, {}, save);
+  expect(outcome.kind).toBe("ok");
+  expect(save).toHaveBeenCalledTimes(2);
+  const again = save.mock.calls[1][3] as RunStatsRequest;
+  expect(again).not.toHaveProperty("ski_parts");
+  expect(again.kcal).toBe(request.kcal);
+  expect(again.elevation).toEqual(request.elevation);
+});
+
+test("refused without parts, nothing goes again", async () => {
+  const save = jest.fn(async () => refused);
+  const request = runStatsRequest(
+    run(skiDay()),
+    { ...SKIING, activity: "running" },
+    NO_BODY,
+    2026,
+  ) as RunStatsRequest;
+  const outcome = await sendRunStats("http://api", "tok", "k1", request, {}, save);
+  expect(outcome).toEqual(refused);
+  expect(save).toHaveBeenCalledTimes(1);
 });

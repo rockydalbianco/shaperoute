@@ -31,7 +31,7 @@ import {
   type Plane,
   planeOf,
 } from "./videoChase";
-import type { Character } from "./videoCharacter";
+import type { Actor } from "./videoActor";
 import {
   ALONG_COUNT,
   FIRST_EDIT,
@@ -177,6 +177,10 @@ const CHARACTER = 0.2;
 /** How high the animal is seen from, in degrees above the ground, on the
  * flat looks; on «3D», from as high as the map is. */
 const CHARACTER_TILT = 50;
+/** The runner's own image hops as it runs (TASK-417, ADR-0345): this high
+ * at most, as a share of the animal's length, this many times a second. */
+const IMAGE_HOP = 0.07;
+const IMAGE_HOPS_PER_S = 2.5;
 
 /** The width of the phone the type scale (`font`) is drawn for, in points:
  * a size in points is that share of the video's width. */
@@ -300,7 +304,8 @@ export type VideoOp =
    * `size` pixels long, seen from `tilt` degrees above the ground; in its
    * gallop or its rest, `time` seconds into it.
    * A page without the animal draws nothing for it: the pen's tip is under
-   * it anyway. */
+   * it anyway. With the runner's own image (TASK-417), `hop` pixels up
+   * while it runs, none at rest. */
   | {
       k: "character";
       path: number;
@@ -311,6 +316,7 @@ export type VideoOp =
       time: number;
       alpha: number;
       share?: number;
+      hop?: number;
     };
 
 export type VideoScene = {
@@ -333,8 +339,9 @@ export type VideoScene = {
   /** Lines, each as x0, y0, x1, y1, …: the logo's heart, then the run;
    * then the ending's large heart when it has one (TASK-408). */
   paths: number[][];
-  /** The animal that runs the line (TASK-408); null for the pen's tip only. */
-  character: Character | null;
+  /** The animal that runs the line (TASK-408), or the runner's own image
+   * (TASK-417); null for the pen's tip only. */
+  character: Actor | null;
   /** What each picture shows, in order. */
   frames: VideoOp[][];
 };
@@ -922,6 +929,17 @@ function chaseAt(t: number, plan: Plan): { chase?: ChaseCamera; u?: number } {
   };
 }
 
+/** How high the runner's image is, `seconds` into its run, for an animal
+ * `length` pixels long: a hop up and back down, again and again, starting
+ * on the ground (TASK-417). */
+export function imageHop(seconds: number, length: number): number {
+  return (
+    length *
+    IMAGE_HOP *
+    Math.abs(Math.sin(Math.PI * IMAGE_HOPS_PER_S * Math.max(0, seconds)))
+  );
+}
+
 /** What the picture at `t` seconds shows. */
 function frameAt(
   t: number,
@@ -1118,6 +1136,15 @@ function frameAt(
         time: round3(running && route !== null ? t - route.drawFrom : t - restFrom),
         alpha: round3(main),
         ...(look.relief ? { share: round3(share) } : {}),
+        ...(character === "my_image"
+          ? {
+              hop: round(
+                running && route !== null
+                  ? imageHop(t - route.drawFrom, w * CHARACTER)
+                  : 0,
+              ),
+            }
+          : {}),
       });
     }
   }
@@ -1443,7 +1470,7 @@ export type SceneChoice = Pick<
  * line's colour on the map looks, the emoji of the way and of the end, and
  * the scenes, each as the post opens when not given. */
 export type SceneOptions = Partial<SceneChoice> & {
-  character?: Character | null;
+  character?: Actor | null;
   line?: LineColour;
   along?: string | null;
   end?: string | null;

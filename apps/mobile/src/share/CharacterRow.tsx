@@ -1,6 +1,8 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { type ReactNode, useMemo, useState } from "react";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
+import type { ImageSource } from "../route/pickImage";
 import {
   color,
   fontSize,
@@ -10,25 +12,121 @@ import {
   space,
 } from "../theme/tokens";
 import {
-  type Character,
-  CHARACTERS,
-  characterEmoji,
-  characterName,
-} from "./videoCharacter";
+  MY_IMAGE,
+  myImageUri,
+  pickMyImage,
+  removeMyImage,
+  useMyImageStamp,
+} from "./myImage";
+import { MyImageChoices } from "./MyImageChoices";
+import type { Actor } from "./videoActor";
+import { CHARACTERS, characterEmoji, characterName } from "./videoCharacter";
 
 type Props = {
-  /** The animal that runs the line in the video; null for none. */
-  character: Character | null;
-  onChange: (character: Character | null) => void;
+  /** The animal that runs the line in the video, or the runner's own
+   * image (TASK-417); null for none. */
+  character: Actor | null;
+  onChange: (character: Actor | null) => void;
 };
 
 /**
- * «Character» in «Share your run» (TASK-408, ADR-0339): «No animal» and the
- * animals, one of them chosen, in a row that scrolls sideways. «No animal»
- * is chosen when the post opens: the video is the one of before.
+ * «Character» in «Share your run» (TASK-408, ADR-0339): «No animal», the
+ * runner's own image (TASK-417, ADR-0345), then the animals, one of them
+ * chosen, in a row that scrolls sideways. «No animal» is chosen when the
+ * post opens: the video is the one of before.
+ *
+ * «My image» with no image, or chosen already, opens its choices under the
+ * row; with an image not chosen, it chooses it.
  */
 export function CharacterRow({ character, onChange }: Props) {
-  const choices: (Character | null)[] = [null, ...CHARACTERS];
+  const stamp = useMyImageStamp();
+  // Read again whenever the image changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const uri = useMemo(() => myImageUri(), [stamp]);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const imageOn = character === MY_IMAGE && uri !== null;
+
+  function pressImage() {
+    if (uri !== null && !imageOn) {
+      onChange(MY_IMAGE);
+      return;
+    }
+    setProblem(null);
+    setOpen(!open);
+  }
+
+  async function choose(source: ImageSource) {
+    setBusy(true);
+    setProblem(null);
+    const picked = await pickMyImage(source);
+    setBusy(false);
+    switch (picked.kind) {
+      case "picked":
+        onChange(MY_IMAGE);
+        setOpen(false);
+        break;
+      case "denied":
+        setProblem(
+          t(
+            "The camera is off for this app. Allow it in Settings, or choose a picture instead.",
+          ),
+        );
+        break;
+      case "unreadable":
+        setProblem(t("This image can't be read. The video goes out without it."));
+        break;
+      case "cancelled":
+        break;
+    }
+  }
+
+  function remove() {
+    removeMyImage();
+    if (character === MY_IMAGE) {
+      onChange(null);
+    }
+    setOpen(false);
+  }
+
+  const tile = (
+    key: string,
+    on: boolean,
+    name: string,
+    face: ReactNode,
+    onPress: () => void,
+  ) => (
+    <Pressable
+      key={key}
+      style={[styles.tile, on && styles.tileOn]}
+      onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityLabel={name}
+      accessibilityState={{ checked: on }}
+      testID={`character-${key}`}
+    >
+      <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        {face}
+      </View>
+      <Text style={[styles.name, on && styles.nameOn]} numberOfLines={2}>
+        {name}
+      </Text>
+    </Pressable>
+  );
+
+  const imageFace =
+    uri === null ? (
+      <Text style={styles.emoji}>+</Text>
+    ) : (
+      <Image
+        key={stamp}
+        source={{ uri, cache: "reload" }}
+        style={styles.image}
+        testID="my-image-thumb"
+      />
+    );
+
   return (
     <>
       <Text style={styles.label}>{t("Character")}</Text>
@@ -38,34 +136,33 @@ export function CharacterRow({ character, onChange }: Props) {
         contentContainerStyle={styles.row}
         accessibilityRole="radiogroup"
       >
-        {choices.map((choice) => {
-          const on = choice === character;
-          const name = choice === null ? t("No animal") : characterName(choice);
-          return (
-            <Pressable
-              key={choice ?? "none"}
-              style={[styles.tile, on && styles.tileOn]}
-              onPress={() => onChange(choice)}
-              accessibilityRole="radio"
-              accessibilityLabel={name}
-              accessibilityState={{ checked: on }}
-              testID={`character-${choice ?? "none"}`}
-            >
-              <View
-                importantForAccessibility="no-hide-descendants"
-                accessibilityElementsHidden
-              >
-                <Text style={styles.emoji}>
-                  {choice === null ? "—" : characterEmoji(choice)}
-                </Text>
-              </View>
-              <Text style={[styles.name, on && styles.nameOn]} numberOfLines={2}>
-                {name}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {tile(
+          "none",
+          character === null,
+          t("No animal"),
+          <Text style={styles.emoji}>—</Text>,
+          () => onChange(null),
+        )}
+        {tile(MY_IMAGE, imageOn, t("My image"), imageFace, pressImage)}
+        {CHARACTERS.map((choice) =>
+          tile(
+            choice,
+            choice === character,
+            characterName(choice),
+            <Text style={styles.emoji}>{characterEmoji(choice)}</Text>,
+            () => onChange(choice),
+          ),
+        )}
       </ScrollView>
+      {open && (
+        <MyImageChoices
+          hasImage={uri !== null}
+          busy={busy}
+          problem={problem}
+          onChoose={(source) => void choose(source)}
+          onRemove={remove}
+        />
+      )}
     </>
   );
 }
@@ -98,6 +195,12 @@ const styles = StyleSheet.create({
   emoji: {
     fontSize: fontSize.title,
     color: color.text,
+  },
+  // The image as the video draws it: round.
+  image: {
+    width: fontSize.title * 1.4,
+    height: fontSize.title * 1.4,
+    borderRadius: fontSize.title * 0.7,
   },
   name: {
     color: color.textMuted,

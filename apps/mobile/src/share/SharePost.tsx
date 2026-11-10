@@ -54,7 +54,7 @@ import {
   stickersOf,
 } from "./stickers";
 import { StravaPostRow } from "./StravaPostRow";
-import { characterName } from "./videoCharacter";
+import { actorName } from "./videoActor";
 import { FIRST_EDIT, type VideoEdit } from "./videoEdit";
 import { sceneName } from "./videoScenes";
 import { type VideoOutcome, videoProblem } from "./videoFile";
@@ -384,10 +384,7 @@ function SharePage({ run, onClose }: Props) {
 /** What «Edit video» has chosen, in a line: the style, the animal, the
  * emoji of the way and of the end. */
 function editSummary(edit: VideoEdit): string {
-  const parts = [
-    styleName(edit.style),
-    edit.character === null ? t("No animal") : characterName(edit.character),
-  ];
+  const parts = [styleName(edit.style), actorName(edit.character)];
   const emoji = [edit.along, edit.end].filter((e): e is string => e !== null);
   if (emoji.length > 0) {
     parts.push(emoji.join(" "));

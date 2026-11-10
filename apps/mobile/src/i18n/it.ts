@@ -2199,6 +2199,15 @@ export const IT: Table = {
     "Luoghi famosi, panorami, cibo… in qualsiasi città",
   "The rest could not load.": "Il resto non si è caricato.",
   "Loading more…": "Ne arrivano altri…",
+  // src/share/CharacterRow.tsx, MyImageChoices.tsx (TASK-417: the runner's
+  // own image in place of the animal, texts approved, choice 5)
+  "My image": "La mia immagine",
+  "Choose a photo": "Scegli una foto",
+  "Remove image": "Togli l'immagine",
+  "Your image stays on this phone. It leaves only in the video you share.":
+    "La tua immagine resta sul telefono. Esce solo nel video che condividi.",
+  "This image can't be read. The video goes out without it.":
+    "Questa immagine non si legge. Il video esce senza.",
   "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
     "Chiunque abbia il link può seguirti su una pagina web, senza l'app: tempo, vasche o esercizio, calorie e il battito quando un orologio lo manda.",
 };

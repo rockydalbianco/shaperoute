@@ -5,12 +5,12 @@ import { WebView } from "react-native-webview";
 import { t } from "../i18n";
 import { color, fontSize, radius, space } from "../theme/tokens";
 import { pageMessageOf } from "./videoFile";
-import { base64OfBytes, characterModel } from "./videoCharacter";
+import { useMyImageStamp } from "./myImage";
+import { prepareActorCall } from "./videoActor";
 import { MAP_HEIGHT, MAP_WIDTH } from "./videoMap";
 import {
   pauseCall,
   playCall,
-  prepareCharacterCall,
   prepareMapCall,
   resumeCall,
   VIDEO_PAGE,
@@ -67,7 +67,11 @@ export function VideoPreview({ edit, sceneOf }: Props) {
     () => (shown.map === null ? null : JSON.stringify(shown.map)),
     [shown.map],
   );
-  const pageKey = `${mapJson ?? "none"}|${shown.character ?? "none"}`;
+  // A new image of the runner's own (TASK-417) is a new page too.
+  const image = useMyImageStamp();
+  const actorKey =
+    shown.character === "my_image" ? `my_image:${image}` : (shown.character ?? "none");
+  const pageKey = `${mapJson ?? "none"}|${actorKey}`;
   return (
     <PreviewPage
       key={pageKey}
@@ -114,12 +118,13 @@ function PreviewPage({ sceneJson, mapJson, character, seconds }: PageProps) {
       play();
     }
     if (character !== null) {
-      // The animal comes in when its model is read; without it, the tip.
-      void characterModel(character)
-        .then((bytes) =>
-          webView.current?.injectJavaScript(prepareCharacterCall(base64OfBytes(bytes))),
-        )
-        .catch(() => {});
+      // The animal comes in when its model is read, the runner's image when
+      // it is read; without them, the tip.
+      void prepareActorCall(character).then((call) => {
+        if (call !== null) {
+          webView.current?.injectJavaScript(call);
+        }
+      });
     }
   }
 

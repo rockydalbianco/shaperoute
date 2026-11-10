@@ -531,8 +531,15 @@ Privacy, sezione «Sharing live»:
   pulita: `6f8bba4c`, uguale a `main` e alla build 8 di produzione.
   **Resta**: la prova su un telefono vero; l'OTA, a parte, insieme a B2
   e dopo i sì dell'utente su App Privacy «Health» e Data safety.
-- **B2** — piscina e palestra: branch `feat/TASK-424-b2-pool-gym-live`
-  (2026-11-10), da `main` con #998 (TASK-409 B) dentro. File approvati dal
+- **In produzione** (2026-11-10, dal Coordinatore): server 9cf5576b
+  (migrazione 0063) e sito 4b193f2b (`site/live/`); App Privacy «Salute»
+  pubblicata; l'OTA con B1 (#1025) da e1bb8a58: gruppo di produzione
+  `3056f4e4-e8a7-41b9-ba28-49ba477f9644`, update iOS
+  `01a1c493-2854-72fb-9a4b-26799e529206`, runtime `6f8bba4c`; gruppo
+  preview `01a7e1e2-320e-400a-85cc-4d26fcd9d67b`.
+- **B2** — piscina e palestra: #1053 in `main` (52010be4, 2026-11-10);
+  le scelte tecniche in ADR-0352, precisazione B2. Branch
+  `feat/TASK-424-b2-pool-gym-live`, da `main` con #998 (TASK-409 B) dentro. File approvati dal
   Coordinatore il 2026-11-10:
   ```
   apps/mobile/src/liveShare/liveShareStore.ts   (numeri senza traccia,
@@ -574,8 +581,13 @@ Privacy, sezione «Sharing live»:
     «Still training?» senza risposta), come in B1.
   Prove: test nuovi in `liveShare/`, `pool/`, `gym/`; i test di piscina,
   palestra, condivisione, i18n e corsa; `tsc`, prettier, lint. **Resta**:
-  l'impronta iOS nella PR, la prova su un telefono vero, l'OTA suo (scelta
-  12) col sì dell'utente.
+  impronta iOS invariata (`6f8bba4c`, su copia pulita). **In produzione**
+  con l'OTA 3 del 2026-11-10 (dal Coordinatore; sì dell'utente «si
+  procedi» al Coordinatore e «Sì, pubblica» nella sessione Feed): commit
+  52010be4, gruppo di produzione `978fbccc-fcb0-45d0-968a-c003bc4f79c2`,
+  update iOS `01a1c57e-74e0-7aba-981b-5d3a2a650123`, impronta `6f8bba4c`;
+  gruppo preview `d6071d95-0c09-46c7-9499-600528f1c3d1`. **Resta**: la
+  prova su un telefono vero.
 - **C** (i dati dal vivo che mancano): dopo TASK-370 B3. Le PR di codice
   non toccano `STATUS.md`, `DECISIONS.md` né `INDEX.md` (regola del
   Coordinatore del 2026-11-08): le loro righe vanno in PR di soli

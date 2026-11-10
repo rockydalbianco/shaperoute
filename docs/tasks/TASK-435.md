@@ -376,9 +376,10 @@ scaldato i due processi; il job letto ogni 10 ms):
   sua `better_distance_m`, e la toglie agli altri, come fa il motore con le
   alternative. Se dopo il primo l'utente annulla, lo stato torna vuoto come
   per ogni annullamento.
-- C, testo nuovo da approvare prima dell'OTA: «Looking for other routes…»
-  («Cerco altri percorsi…», «Weitere Routen werden gesucht…», «Recherche
-  d'autres parcours…», «Buscando otras rutas…»).
+- C, testo nuovo, **approvato dall'utente il 2026-11-10** («Sì, va
+  bene»): «Looking for other routes…» («Cerco altri percorsi…», «Weitere
+  Routen werden gesucht…», «Recherche d'autres parcours…», «Buscando otras
+  rutas…»).
 
 ## File di altri task
 

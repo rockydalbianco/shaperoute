@@ -3076,8 +3076,8 @@ senza app né account. Tipi in `shared-types/src/liveShare.ts`
 - **Solo il sito legge `/live`**: `Access-Control-Allow-Origin:
   https://getmuw.app`, `Cache-Control: no-store`, `Referrer-Policy:
   no-referrer`, anche sul `429`.
-- **La pulizia**: ogni 5 minuti un giro (`LiveShareSweep`, avviato da
-  `__main__`) cancella punti e numeri dei link finiti; la riga vuota resta
+- **La pulizia**: ogni 5 minuti un giro (`LiveShareSweep`, acceso e
+  spento col lifespan dell'app, prima che il database si chiuda) cancella punti e numeri dei link finiti; la riga vuota resta
   un giorno, perché la pagina possa dire «stopped». Le copie notturne del
   database non tengono le righe dei link (`deploy/backup.sh`). Cancellare
   l'account cancella i link. Test in `test_live_shares.py`.

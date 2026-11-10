@@ -118,7 +118,7 @@ test("while the examples are drawn, drawings of the feed to look at (TASK-163)",
   expect(order.indexOf("MEANWHILE, FROM THE FEED")).toBeGreaterThan(
     order.indexOf("EXAMPLES IN VERCELLI"),
   );
-  expect(order.indexOf("ASK FOR A ROUTE")).toBeGreaterThan(
+  expect(order.indexOf("Ask for a route")).toBeGreaterThan(
     order.indexOf("MEANWHILE, FROM THE FEED"),
   );
 });
@@ -176,7 +176,7 @@ function texts(): string[] {
   return screen.getAllByText(/./).map((node) => String(node.props.children));
 }
 
-test("«Ask for a route» is open under the routes, our four categories in view", async () => {
+test("«Ask for a route» is a line under the routes; open, our four categories in view (TASK-420)", async () => {
   // An answer for each request: the towns near the start are asked too.
   fetchMock.mockImplementation(() => Promise.resolve(Response.json(list)));
   const onAsk = jest.fn();
@@ -190,8 +190,14 @@ test("«Ask for a route» is open under the routes, our four categories in view"
     />,
   );
   await screen.findByText("Star · 5.1 km");
-  // No line to open it: it is open, under the routes.
-  expect(screen.queryByRole("button", { name: "Ask for a route" })).toBeNull();
+  // A line under the routes opens it (the user's choice of 2026-11-10).
+  expect(screen.queryByText("ASK FOR A ROUTE")).toBeNull();
+  const line = screen.getByRole("button", { name: "Ask for a route" });
+  const before = texts();
+  expect(before.indexOf("Ask for a route")).toBeGreaterThan(
+    before.indexOf("CIAO · 15.2 km"),
+  );
+  await fireEvent.press(line);
   const order = texts();
   expect(order.indexOf("ASK FOR A ROUTE")).toBeGreaterThan(
     order.indexOf("CIAO · 15.2 km"),
@@ -227,6 +233,7 @@ test("our ideas are in it, above the categories, and one opens as it is", async 
     />,
   );
   await screen.findByText("Star · 5.1 km");
+  await fireEvent.press(screen.getByRole("button", { name: "Ask for a route" }));
   const order = texts();
   expect(order.indexOf("IDEAS FROM EUROPE")).toBeGreaterThan(
     order.indexOf("ASK FOR A ROUTE"),
@@ -245,7 +252,7 @@ test("our ideas are in it, above the categories, and one opens as it is", async 
   );
 });
 
-test("«Ask for a route» is at the foot of the page also without routes", async () => {
+test("«Ask for a route» is at the foot of the page also without routes, and opens there", async () => {
   fetchMock.mockResolvedValue(Response.json({ routes: [] }));
   await render(
     <ExploreScreen
@@ -256,6 +263,7 @@ test("«Ask for a route» is at the foot of the page also without routes", async
     />,
   );
   await screen.findByText(/No recommended routes near this start yet/);
+  await fireEvent.press(screen.getByRole("button", { name: "Ask for a route" }));
   const order = texts();
   expect(order.indexOf("ASK FOR A ROUTE")).toBeGreaterThan(
     order.indexOf(
@@ -272,6 +280,7 @@ test("without a way to ask there is no «Ask for a route»", async () => {
   );
   await screen.findByText("Star · 5.1 km");
   expect(screen.queryByText("ASK FOR A ROUTE")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Ask for a route" })).toBeNull();
   expect(screen.queryByTestId("themed-ideas")).toBeNull();
 });
 

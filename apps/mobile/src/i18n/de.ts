@@ -1296,7 +1296,6 @@ export const DE: Table = {
   "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
     "Hier gibt es noch keine empfohlenen Routen: Formen von {distance} ab dem Zentrum, jetzt gezeichnet.",
   "Three first, more while you choose.": "Erst drei, weitere während du wählst.",
-  "Best near you": "Die besten in deiner Nähe",
   "Starting within {distance} of {place}": "Start innerhalb von {distance} um {place}",
   "your start": "deinen Start",
   "Loading routes…": "Routen werden geladen…",
@@ -2144,4 +2143,19 @@ export const DE: Table = {
   "Marked by the members in the last 24 hours.":
     "Von den Mitgliedern in den letzten 24 Stunden angegeben.",
   "Members' days here": "Tage der Mitglieder hier",
+
+  // src/explore/ExploreScreen.tsx, FartherAway.tsx, AskLine.tsx (TASK-420: every
+  // drawing of the catalog in «Explore», the nearest first)
+  "{count} drawings in {cities} cities · the nearest first":
+    "{count} Zeichnungen in {cities} Städten · die nächsten zuerst",
+  "{count} drawings · the nearest first": "{count} Zeichnungen · die nächsten zuerst",
+  "within {distance} · {count}": "innerhalb von {distance} · {count}",
+  "FARTHER AWAY": "WEITER WEG",
+  "{count} drawing · by city": "{count} Zeichnung · nach Stadt",
+  "{count} drawings · by city": "{count} Zeichnungen · nach Stadt",
+  "Ask for a route": "Eine Route anfragen",
+  "Famous places, best views, food… in any city":
+    "Berühmte Orte, Aussichten, Essen… in jeder Stadt",
+  "The rest could not load.": "Der Rest konnte nicht geladen werden.",
+  "Loading more…": "Weitere werden geladen…",
 };

@@ -1,6 +1,8 @@
 # TASK-433 — Le schede della palestra guidate, con le settimane che cambiano
 
-**Stato**: In lavorazione · 2026-11-10 · PR di codice aperta, aspetta CI e merge
+**Stato**: In lavorazione · 2026-11-10 · codice in `main` (#1095,
+`8138b456`); restano server (0066) e OTA nel passo unico del Coordinatore,
+col sì dell'utente, e la prova sul telefono
 **Fase**: 5 · **Branch**: `feat/TASK-433-gym-guided-plans`
 **Dipende da**: TASK-411 (le schede, parte C: tabella `gym_plans`, 0058)
 **ADR**: ADR-0360 (proposto) · numeri dal Coordinatore il 2026-11-10
@@ -106,8 +108,10 @@ libero al merge),
       il calendario segna i giorni saltati del ciclo (`test_gym_plans.py`).
 - [x] Testi nelle cinque lingue (`tables.test.ts`).
 - [x] Testi approvati dall'utente («Approvo», 2026-11-10).
-- [ ] CI verde; merge, migrazione sul server e OTA dal Coordinatore col sì
-      dell'utente.
+- [x] CI verde e merge (#1095, `8138b456`).
+- [ ] Migrazione sul server e poi OTA, dal Coordinatore col sì dell'utente;
+      righe di controllo di sola lettura in `out/TASK-433/SERVER.md`
+      (cartella `out/` del checkout principale).
 - [ ] Prova sul telefono dell'utente.
 
 ## Da fare dopo il merge (Coordinatore, col sì dell'utente)

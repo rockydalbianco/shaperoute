@@ -169,6 +169,9 @@ docs/INDEX.md           (una riga)
    che le vicine siano pianificate; non è chiamato senza vicine né quando
    la partenza fallisce; il `NearbyPlan` è identico con e senza.
 4. `engine.zip` rifatto per ultimo (il motore è dentro).
+5. La PR dice l'impronta nuova e la prova; **il merge lo fa l'utente**: il
+   motore è fuori dai merge del Coordinatore (regola del Coordinatore,
+   2026-11-10).
 
 ```
 services/route-engine/route_engine/nearby_starts.py
@@ -208,10 +211,16 @@ docs/tasks/TASK-435.md
    col risultato di sempre); `route_processes` con un pianificatore finto
    nel processo; `GET` con e senza `?first=1`; il corpo senza `?first=1` è
    quello di oggi più `"first": null`.
-7. `engine.zip` rifatto per ultimo (`jobs.py`, `images.py`, `schemas.py`
-   sono dentro).
+7. Un test che l'app in produzione (OTA del 2026-11-10) legga il
+   contratto esteso (chiesto dal Coordinatore): `requestRoute` di oggi,
+   senza `onFirst`, davanti a un job `computing` con `first` pieno e poi
+   `done`, dà il risultato intero come oggi. In un file di test nuovo,
+   che la parte C non riscrive.
+8. `engine.zip` rifatto nell'ultimo commit (`jobs.py`, `images.py`,
+   `schemas.py` sono dentro) ed elencato nella PR.
 
 ```
+apps/mobile/src/api/routesFirstCompat.test.ts    (nuovo)
 services/api/shaperoute_api/images.py
 services/api/shaperoute_api/job_times.py        (il protocollo ShowsFirst)
 services/api/shaperoute_api/jobs.py

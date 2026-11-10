@@ -128,8 +128,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
   #962 · `tasks/TASK-411.md`
 - **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
-  `heights.py` condiviso); server col passo 2 dell'utente, senza
-  `draw_examples` (impronte uguali); prossime A2 e B. File: — ·
+  `heights.py` condiviso) e sul server col passo unico del 2026-11-10;
+  prossime A2 (contratto, API, migrazione in bozza 0057) e B. File: — ·
   `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·

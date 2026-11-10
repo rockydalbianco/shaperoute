@@ -1,8 +1,8 @@
 # TASK-276 — Più percorsi all'ora sullo stesso server
 
-**Stato**: Todo — aspetta l'approvazione di Apple della 1.0 (nessun lavoro
-pesante sul server mentre il revisore prova l'app), poi l'ok dell'utente e
-il via del coordinatore
+**Stato**: In corso — parte A, giro 1 misurato il 2026-11-10 (senza
+partenze vicine, vedi «Esito»); manca il giro 2b con le partenze vicine,
+poi la scelta della parte B
 **Fase**: 4 · **Branch**: `docs/TASK-276-plan` (questo file); per il
 codice, se si decide di farlo, `feat/TASK-276-route-process-pool`
 · **ADR**: 0242, riservato
@@ -190,4 +190,69 @@ docs/STATUS.md, docs/tasks/TASK-276.md
 
 ## Esito
 
-*(si compila a fine task)*
+### Parte A, giro 1 (2026-11-10)
+
+Con il sì dell'utente («Sì, misura») e il via del Coordinatore. Righe ssh
+lanciate dall'utente dal Mac; script `out/TASK-276/route_bench.py`, uscita
+in `out/TASK-276/server.out`, analisi intera in `out/TASK-276/RISULTATI.md`
+(nella cartella `out/` del checkout principale, non nel repository).
+
+**Limite:** il giro è partito **senza partenze vicine**. Mandato su stdin,
+lo script aveva `__file__ = "<stdin>"` e i processi `spawn` morivano
+all'avvio (`FileNotFoundError: '/app/<stdin>'`). Misura quindi lo scenario
+«niente partenze vicine». Lo script è corretto e provato su stdin sul Mac.
+
+**Il server:** 4 core, 7,9 GB, 5,7–6,2 GB disponibili; API 680 MiB;
+carico 0,35 prima, nessun job nei 10 minuti prima.
+
+**Un percorso alla volta** (zona di Trento in memoria; secondi = CPU del
+processo principale, il server calcola e non aspetta):
+
+- 9 forme da 5 km: 2,6–12,8 s, media 6,4;
+- 3 cuori da 10 km: 8,1–12,5 s, media 10,5;
+- cuore da 15 km a Milano: 18,6 s;
+- stesso cuore da 5 km: 5,9 s sul server, 1,9–2,8 s sul Mac. **Un core
+  del server è 2–3 volte più lento del Mac.**
+
+**Più richieste insieme** (`RouteJobs` a 2 thread, come l'API):
+
+| Insieme | Percorsi/min | Attesa media (max) | Totale medio (max) | Core usati |
+|---|---|---|---|---|
+| 1 | 9,7 | 0,1 s | 6,2 s | 1,0 |
+| 2 | 8,2 | 0,1 s | 13,4 s (14,6) | 1,2 |
+| 4 | 8,4 | 7,7 s (19,1) | 19,6 s (28,5) | 1,2 |
+| 8 | 7,4 | 26,5 s (56,5) | 42,0 s (64,6) | 1,2 |
+
+- Il tetto è circa 8 percorsi al minuto, comunque arrivino le richieste.
+- Il server usa 1,2 core su 4: i due thread si dividono il GIL.
+- CPU per percorso: 6,2 s da solo, 9,5 s con 8 insieme (+50%, contesa).
+
+**RAM:** processo con le zone di Trento e di Milano, picco 891 MB. Il picco
+dei figli va riletto nel giro 2b.
+
+**Persone al giorno:** circa 480 percorsi l'ora nel picco. Se l'ora di
+punta porta il 15% dei percorsi del giorno e ogni persona attiva ne chiede
+3 (ipotesi, non misure), il server regge circa 1.000 persone attive al
+giorno prima che nei picchi si aspetti più di mezzo minuto. Con le
+partenze vicine il numero può solo restare uguale o scendere. Non conta i
+percorsi già pronti dell'archivio (ADR-0256). La stima del 2026-10-11
+(2.000–3.000) era troppo alta.
+
+**Proposta per la parte B, in ordine:**
+
+1. 3 processi di lavoro già caldi (zone in memoria) al posto dei 2 thread:
+   usano i 3 core fermi e tolgono la contesa. Senza partenze vicine il
+   tetto passerebbe da circa 8 a circa 25 percorsi al minuto; circa 0,9 GB
+   per processo stanno nei 5,7 GB liberi. Con le partenze vicine il
+   guadagno lo dice il giro 2b.
+2. Più percorsi calcolati sul telefono (TASK-214).
+3. Un server con vCPU dedicate (Hetzner CCX), dopo un `vmstat` che misuri
+   la CPU tolta da chi condivide la macchina.
+
+Scelta di prodotto, dell'utente: spegnere le partenze vicine quando il
+server è carico.
+
+**Il giro 2b** (righe in `out/TASK-276/RIGHE-SSH.md`: `vmstat 1 5`, poi lo
+script corretto) serve prima di costruire il punto 1, non per scegliere la
+direzione. Il Coordinatore lo chiede all'utente dopo i lavori di oggi sul
+server.

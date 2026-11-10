@@ -1,8 +1,10 @@
 # TASK-435 — Primo percorso subito, alternative dopo
 
-**Stato**: In corso — parte 0 chiusa (piano, misura, le scelte
-dell'utente del 2026-11-10: si costruisce, e il primo percorso resta A);
-prossima la parte A (motore)
+**Stato**: In corso — parte 0 in `main` (#1104); parte A (motore) nella
+PR #1105, la mergia l'utente; B (API) e C (app) scritte e provate sui
+branch `feat/TASK-435-b-first-in-job` e `feat/TASK-435-c-app-first-route`,
+una sopra l'altra, in PR quando quella prima è in `main`. Guadagno
+misurato sul Mac scritto sotto («Parte D»)
 **Fase**: 5 · **Branch**: `docs/TASK-435-plan` (questo file); poi una per
 parte, sotto · **ADR**: 0361
 
@@ -335,6 +337,48 @@ docs/tasks/TASK-435.md
 Sul Mac, con l'API e i 2 processi: per le richieste di
 `out/TASK-276/route_bench.py`, i secondi fra `POST` e il primo `first` e
 fra `POST` e `done`, scritti qui. Poi server e OTA (sotto).
+
+**Misurato il 2026-11-10 sul Mac**, col codice di A + B
+(`out/TASK-435/first_route_jobs.py`: `RouteJobs` con 2 processi caldi come
+l'API, zone di `data/cache`, i 12 percorsi del bench a Trento dopo aver
+scaldato i due processi; il job letto ogni 10 ms):
+
+| | Mediana | Minimo | Massimo |
+|---|---|---|---|
+| Secondi alla risposta intera | 3,17 | 2,00 | 6,16 |
+| Secondi al primo percorso (`first`) | 2,52 | 1,20 | 5,25 |
+| **Secondi guadagnati** | **0,79** | 0,06 | 2,11 |
+
+- Tutti e 12 i job hanno avuto un primo percorso prima della risposta.
+- Il primo percorso era quello scelto dal motore in 5 job, la prima
+  alternativa in 3, la seconda in 3, e in 1 il motore non l'aveva tenuto
+  (lì l'app mostra il primo e le due migliori).
+- Per forma: 5 km, guadagno 0,06–1,45 s (mediana 0,62); cuore da 10 km,
+  0,91–2,11 s.
+- L'app legge ogni 0,5 s nei primi 6 s: quello che l'occhio guadagna è
+  questo numero arrotondato al mezzo secondo, in più o in meno.
+- Dentro i processi caldi il guadagno è più grande che nella misura
+  diretta della parte 0 (0,2 s in mediana, `plan_nearby` chiamato da
+  solo): il perché non è stato cercato.
+
+**Non ancora misurato**: il server (dopo il passo server, dalle righe
+«times» del log) e l'app su un telefono vero (dopo l'OTA di anteprima).
+
+**Come sono fatte le parti, rispetto al piano.**
+
+- B: chi non chiede `?first=1` riceve il `RouteJob` **senza il campo**,
+  non con `first: null`: il corpo per un'app non aggiornata è quello di
+  prima, byte per byte (`RouteJobWithFirstBody` è un modello a parte). Il
+  pianificatore chiama `plan_nearby` come prima quando nessuno mostra il
+  primo percorso (`images._plan_nearby`).
+- B: il test dell'app pubblicata è `apps/mobile/src/api/routesFirstCompat.test.ts`.
+- C: `withFirst` (`route/choices.ts`) tiene del primo percorso anche la
+  sua `better_distance_m`, e la toglie agli altri, come fa il motore con le
+  alternative. Se dopo il primo l'utente annulla, lo stato torna vuoto come
+  per ogni annullamento.
+- C, testo nuovo da approvare prima dell'OTA: «Looking for other routes…»
+  («Cerco altri percorsi…», «Weitere Routen werden gesucht…», «Recherche
+  d'autres parcours…», «Buscando otras rutas…»).
 
 ## File di altri task
 

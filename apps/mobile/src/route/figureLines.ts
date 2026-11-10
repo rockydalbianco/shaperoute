@@ -56,9 +56,13 @@ function spread<T>(points: readonly T[], size: number): T[] {
  * image (`favoriteRoute.outlineOf`). One that ends away from it is closed
  * too, by a straight side from its end back to its start (TASK-425,
  * ADR-0353): hung open on a ring at its start (TASK-369) the route ran it
- * out and back, twice the distance of the track. Only when closing it makes
- * no drawing (`drawingOf`) does it stay open, as a first line drawn on the
- * map does (`firstLineOf`, TASK-331).
+ * out and back, twice the distance of the track. When closing it makes no
+ * outline (`drawingOf`) — it crosses itself, or the side back crosses it —
+ * the closed line is a loop hung on a ring at its start (TASK-428,
+ * ADR-0356): a detail that ends on its own first point is run once, and a
+ * detail may cross itself. Only when that makes no drawing either does it
+ * stay open, as a first line drawn on the map does (`firstLineOf`,
+ * TASK-331), run out and back.
  */
 export function trackInPlace(points: readonly LatLon[]): TrackInPlace {
   const origin = points[0];
@@ -79,6 +83,10 @@ export function trackInPlace(points: readonly LatLon[]): TrackInPlace {
   const units = atCentre.map(([x, y]): [number, number] => [x / unitM, y / unitM]);
   const closed: FigureLines = { outline: closedOutline(units), details: [] };
   if (endsAway(units) && drawingOf(closed) === null) {
+    const loop = loopLines(units);
+    if (loop !== null && drawingOf(loop) !== null) {
+      return { lines: loop, centre, unitM };
+    }
     const open = openLines(units);
     if (open !== null) {
       return { lines: open, centre, unitM };
@@ -107,6 +115,19 @@ function endsAway(units: readonly [number, number][]): boolean {
 function openLines(units: readonly [number, number][]): FigureLines | null {
   const lines = firstLineOf(units);
   return lines === null || "problem" in lines ? null : lines;
+}
+
+/** The open lines of a track with a last side from the end of the line
+ * back to its first point: a loop, run once (TASK-428). Whole, where
+ * `outlineOf` would keep the largest ring of a line that crosses itself
+ * and cut the rest. Null when the track makes no open lines. */
+function loopLines(units: readonly [number, number][]): FigureLines | null {
+  const open = openLines(units);
+  if (open === null || open.details.length !== 1) {
+    return null;
+  }
+  const line = open.details[0];
+  return { outline: open.outline, details: [[...line, line[0]]] };
 }
 
 /** What a member's drawing says of its figure (GET /drawings/{id}). */

@@ -1844,6 +1844,14 @@ export const DE: Table = {
   Lengths: "Bahnen",
   "Pool swim": "Schwimmen im Becken",
   "Pace /100 m": "Tempo /100 m",
+  // TASK-409 part B: the heart rate of a swim in a pool.
+  "Add heart rate from Apple Health": "Herzfrequenz aus Apple Health hinzufügen",
+  "No heart rate from your watch for this swim.":
+    "Keine Herzfrequenz von deiner Uhr für dieses Schwimmen.",
+  "Show heart rate": "Herzfrequenz zeigen",
+  "Avg heart rate": "Durchschn. Herzfrequenz",
+  "Time in zones": "Zeit in Zonen",
+  "From your watch, via Apple Health": "Von deiner Uhr, über Apple Health",
   // src/explore/ExploredCard.tsx, src/social/DrawingCard.tsx (TASK-313)
   "Draw it near me": "In meiner Nähe zeichnen",
   // src/route/RoutePanel.tsx (TASK-311 B: a word in one line that did not come out)
@@ -1945,6 +1953,10 @@ export const DE: Table = {
   // The Apple Watch (TASK-370 part B3a).
   "Send to watch": "An die Uhr senden",
   "Sent to your watch": "An die Uhr gesendet",
+  "Your activity from the watch is ready": "Deine Aktivität von der Uhr ist bereit",
+  "Open MuW to save it.": "Öffne MuW, um sie zu speichern.",
+  "From your Apple Watch": "Von deiner Apple Watch",
+  Open: "Öffnen",
   "Send a route from MuW on your iPhone": "Sende eine Route aus MuW auf dem iPhone",
   "Off route": "Abseits der Route",
   Arrived: "Ziel",
@@ -2149,4 +2161,23 @@ export const DE: Table = {
   "Marked by the members in the last 24 hours.":
     "Von den Mitgliedern in den letzten 24 Stunden angegeben.",
   "Members' days here": "Tage der Mitglieder hier",
+
+  // src/liveShare/LiveShareButton.tsx (TASK-424 part B1; «Not now» above)
+  "Share live": "Live teilen",
+  "Sharing live": "Live-Teilen aktiv",
+  "Sign in to share live": "Melde dich an, um live zu teilen",
+  "Share this activity live": "Diese Aktivität live teilen",
+  "Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it.":
+    "Wer den Link hat, kann dir auf einer Webseite folgen, ohne die App: deine genaue Position auf der Karte, die bisherige Strecke, Distanz, Zeit, Pace oder Tempo, Höhenmeter, Kalorien und deinen Puls, wenn eine Uhr ihn sendet.",
+  "The link stops working one hour after you finish, or as soon as you stop sharing. Then your positions are deleted.":
+    "Der Link funktioniert eine Stunde nach dem Ende nicht mehr, oder sobald du das Teilen beendest. Dann werden deine Positionen gelöscht.",
+  "Share link": "Link teilen",
+  "Follow my activity live on MuW: {url}":
+    "Verfolge meine Aktivität live auf MuW: {url}",
+  "Stop sharing?": "Teilen beenden?",
+  "The link stops working now.": "Der Link funktioniert ab jetzt nicht mehr.",
+  "Stop sharing": "Beenden",
+  "Keep sharing": "Weiter teilen",
+  "Couldn't create the link. Try again.":
+    "Der Link konnte nicht erstellt werden. Versuch es noch einmal.",
 };

@@ -35,6 +35,9 @@ export const WATCH_EVENTS = {
   context: "WatchApplicationContextReceived",
   /** User info: `{ userInfo, timestamp, id }`. */
   userInfo: "WatchUserInfoReceived",
+  /** A file the watch sent (part B3c): `{ id, timestamp, url, metadata }`,
+   * the file copied into the app's documents. */
+  file: "WatchFileReceived",
 } as const;
 
 /** What the phone uses of the native module. */
@@ -49,6 +52,10 @@ export type WatchNative = {
   /** Whether an Apple Watch is paired, and has the MuW app (part B3a). */
   getIsPaired(): Promise<boolean>;
   getIsWatchAppInstalled(): Promise<boolean>;
+  /** The files received while nobody listened, by id (part B3c). */
+  getQueuedFiles(): Promise<object>;
+  /** Files done with: not given again. */
+  dequeueFile(ids: string[]): void;
   addListener(eventName: string): void;
   removeListeners(count: number): void;
 };
@@ -71,6 +78,29 @@ export type WatchLink = {
    * it arrives (part B3a: «Send to watch» shows only then). Never throws. */
   ready(): Promise<boolean>;
 };
+
+/** The files the watch sends (part B3c): a finished workout. */
+export type WatchFiles = {
+  /** Each file, those that came before too; `done` with each once kept.
+   * Returns the function that stops. */
+  listen(onFile: (file: WatchFile) => void): () => void;
+  done(fileId: string): void;
+};
+
+/** A file the watch sent, copied into the app's documents. */
+export type WatchFile = { id: string; url: string; metadata: Record<string, unknown> };
+
+/** The file in an event's body; null when it is not one. */
+export function watchFileOf(body: unknown): WatchFile | null {
+  if (!isFields(body)) {
+    return null;
+  }
+  const { id, url, metadata } = body;
+  if (typeof id !== "string" || typeof url !== "string") {
+    return null;
+  }
+  return { id, url, metadata: isFields(metadata) ? metadata : {} };
+}
 
 type Fields = Record<string, unknown>;
 
@@ -144,6 +174,46 @@ export function linkOn(native: WatchNative, emitter: WatchEmitter): WatchLink {
   };
 }
 
+/** The files of the watch on `native`, whose events come from `emitter`. */
+export function filesOn(native: WatchNative, emitter: WatchEmitter): WatchFiles {
+  return {
+    listen(onFile) {
+      let open = true;
+      const subscription = emitter.addListener(WATCH_EVENTS.file, (body) => {
+        const file = watchFileOf(body);
+        if (file !== null) {
+          onFile(file);
+        }
+      });
+      native
+        .getQueuedFiles()
+        .then((queued) => {
+          if (!open || !isFields(queued)) {
+            return;
+          }
+          for (const body of Object.values(queued)) {
+            const file = watchFileOf(body);
+            if (file !== null) {
+              onFile(file);
+            }
+          }
+        })
+        .catch(() => {});
+      return () => {
+        open = false;
+        subscription.remove();
+      };
+    },
+    done(fileId) {
+      try {
+        native.dequeueFile([fileId]);
+      } catch {
+        // No session: nothing kept to give again.
+      }
+    },
+  };
+}
+
 /** The native module, in an app built with it; null otherwise. */
 function watchNative(): WatchNative | null {
   if (Platform.OS !== "ios") {
@@ -157,6 +227,7 @@ function watchNative(): WatchNative | null {
 }
 
 let link: WatchLink | null | undefined;
+let files: WatchFiles | null = null;
 
 /** The link to the watch, made at its first use; null in an app without
  * the native module. */
@@ -166,12 +237,20 @@ export function watchLink(): WatchLink | null {
     if (native === null) {
       link = null;
     } else {
-      const emitter = new NativeEventEmitter(native as unknown as NativeModule);
-      link = linkOn(native, {
+      const events = new NativeEventEmitter(native as unknown as NativeModule);
+      const emitter: WatchEmitter = {
         addListener: (event, listener): EmitterSubscription =>
-          emitter.addListener(event, listener),
-      });
+          events.addListener(event, listener),
+      };
+      link = linkOn(native, emitter);
+      files = filesOn(native, emitter);
     }
   }
   return link;
+}
+
+/** The files the watch sends, on the same native module; null without it. */
+export function watchFiles(): WatchFiles | null {
+  watchLink();
+  return files;
 }

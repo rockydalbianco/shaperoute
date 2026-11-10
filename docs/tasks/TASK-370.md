@@ -499,6 +499,18 @@ nell'allenamento di Salute), il file a fine allenamento con
 `transferFile`. Il percorso porta ora `similarity` (facoltativa), che torna
 con la traccia per il punteggio. B3c2: il telefono riceve e mostra.
 
+**B3c2 fatta** (branch `feat/TASK-370-b3c2-phone-run`): il telefono
+riceve il file dell'orologio (`watchFiles()`, l'evento `WatchFileReceived` e
+quelli arrivati ad app chiusa con `getQueuedFiles`), lo tiene tra le corse in
+attesa (`watchRuns.ts`, al massimo 10, in un file con `keptList`), manda la
+notifica e mostra la scheda «From your Apple Watch» in cima a «My
+activities» (`WatchRunCard`, una riga in `ActivitiesList.tsx`). «Open» la
+toglie dall'attesa e apre la fine corsa di sempre (13 righe in `App.tsx`:
+«finish» col punteggio per un percorso, «runFinish» senza); «Discard» la
+toglie. La linea la rifà il registratore del telefono (`watchRun.ts`:
+`addFix`, `pauseTrack`, `resumeTrack`), con i suoi metri e le sue pause. Da
+provare con l'orologio vero: l'arrivo del file e la notifica.
+
 ## File toccati
 
 Parte 0 (questa proposta):

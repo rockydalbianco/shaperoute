@@ -1,8 +1,8 @@
 # TASK-276 — Più percorsi all'ora sullo stesso server
 
-**Stato**: In corso — parte A misurata il 2026-11-10 (giro 1 senza
-partenze vicine, giro 2b con; vedi «Esito»); la scelta della parte B è
-davanti all'utente
+**Stato**: In corso — parte A misurata il 2026-11-10; parte B (2 processi
+caldi) in PR da `feat/TASK-276-route-process-pool`; poi il server, col sì
+dell'utente, in un passo a parte
 **Fase**: 4 · **Branch**: `docs/TASK-276-plan` (questo file); per il
 codice, se si decide di farlo, `feat/TASK-276-route-process-pool`
 · **ADR**: 0242, riservato
@@ -170,15 +170,19 @@ docs/tasks/TASK-276.md
 docs/STATUS.md (solo le righe di questo task)
 ```
 
-Parte B, se si costruisce (previsti):
+Parte B (PR di codice; `jobs.py` non si tocca: è dentro `engine.zip`
+del telefono, e un modulo nuovo basta):
 
 ```
-services/api/shaperoute_api/jobs.py
-services/api/shaperoute_api/<modulo nuovo del pool>.py
-services/api/tests/<test nuovi>
-docs/DECISIONS.md (ADR-0242)
-docs/STATUS.md, docs/tasks/TASK-276.md
+services/api/shaperoute_api/route_processes.py   (nuovo)
+services/api/shaperoute_api/__main__.py          (--route-processes)
+services/api/tests/test_route_processes.py       (nuovo)
+services/api/tests/route_process_helpers.py      (nuovo)
+docs/tasks/TASK-276.md
 ```
+
+Dopo il merge, in una PR docs: `docs/DECISIONS.md` (ADR-0242),
+`docs/STATUS.md`, `docs/INDEX.md` se serve.
 
 ## Fuori scope
 
@@ -314,3 +318,70 @@ testa; senza archivio né telefono):
 3. Scelta di prodotto: partenze vicine spente sotto carico, con un terzo
    processo (×3 nei picchi).
 4. Un server con vCPU dedicate, dopo il `vmstat`.
+
+### Parte B, 2 processi caldi (2026-11-10)
+
+Via del Coordinatore dopo l'«ok continua» dell'utente. ADR-0242, deciso
+dall'agente su delega dell'utente (la voce intera va in `DECISIONS.md`
+nella PR docs dopo il merge):
+
+- **Dove:** un modulo nuovo, `route_processes.py`. `RouteProcesses` è un
+  planner (`jobs.Planner`) e `__main__.py` lo passa a `create_app`.
+  `RouteJobs`, la sua coda, l'archivio e i suoi 2 thread restano come
+  sono: il thread di un job dà la richiesta a un processo e aspetta il
+  piano. `jobs.py` e `app.py` non cambiano: `jobs.py` è dentro
+  `engine.zip` del telefono (cambiarlo vorrebbe dire ricostruirlo e
+  pubblicare l'app), e `app.py` ha una PR aperta di un altro task.
+- **Percorsi identici:** il processo usa lo stesso planner
+  (`images.plan_request`), le stesse zone (`ActivityGraphs.from_cache`
+  della stessa cartella) e lo stesso `jobs._Reporting`. Le indicazioni le
+  calcola il processo, che ha le zone, sul piano e su ogni alternativa;
+  il thread del job non ha caricato grafi e `with_choices` le lascia come
+  sono. Un test confronta, a Levico, risultato, errore e disegno posato di
+  un job calcolato nel thread e di uno calcolato nel processo. Il motore
+  non cambia: niente prova `test_same_routes`.
+- **Stato, annullamento, errori:** il processo manda lo stato
+  («downloading_map») e i tempi del job. Il thread manda un «cancel»
+  quando l'app ha dimenticato il job, e il processo lo guarda dopo ogni
+  caricamento, dove lo guardava il thread. I messaggi hanno il numero del
+  loro percorso: un cancel arrivato tardi non tocca il percorso dopo.
+  Gli errori del planner arrivano interi (pickle), quindi `error_of` dà
+  gli stessi codici (`shape_not_drawable` con la distanza suggerita);
+  un errore che non si serializza diventa `engine_error`.
+- **Vincolo 1 (TASK-248):** niente `Pool`. Un `Process` per lavoratore,
+  avviato a mano, non daemon (deve poter avviare i figli delle partenze
+  vicine), nel suo gruppo di processi. Ogni percorso ha al massimo
+  `MAX_JOB_S` = 600 s: oltre, il processo e i suoi figli vengono uccisi
+  (`killpg`) e il percorso fallisce come `engine_error`. Lo stesso succede
+  se il processo muore; il percorso dopo ne avvia uno nuovo. Alla fine
+  dell'API, `close()` (anche da `atexit`) li ferma.
+- **Vincolo 2 (RAM):** `WORKERS` = 2, dai numeri della parte A. Circa
+  0,9 GB per processo con zone grandi, figli fino a circa 0,4 GB l'uno,
+  limitati già da `workers_that_fit`; 5,6 GB liberi. Un terzo processo
+  toglierebbe core ai figli senza alzare il tetto.
+- **Vincolo 3:** il test dei percorsi identici, sopra.
+  `--route-processes 0` torna ai thread di prima.
+- **Forkserver:** i processi li crea il fork server, un processo pulito
+  avviato con `RouteProcesses` all'avvio dell'API, non l'API stessa. Sul
+  Mac un processo avviato dall'API dopo che un thread finito aveva letto
+  una zona GraphML moriva prima di partire (SIGSEGV tra fork ed exec):
+  riprodotto da solo e assente col fork server. Su Linux non succede.
+  Lo stesso difetto del Mac tocca le partenze vicine avviate dal thread
+  principale, fuori da questo task.
+- **Test:** 10 nuovi in `test_route_processes.py`: percorsi identici,
+  `POST /routes` senza indicazioni, 2 percorsi insieme in 2 processi,
+  «downloading_map», annullamento, errori, tempo massimo, processo morto,
+  chiusura. Verdi sul Mac, insieme a `test_main`, `test_jobs` e
+  `test_route_jobs`.
+- **Prova sul Mac** (10 core, zona di Trento, 4 richieste da 5 km
+  insieme): 31,6 percorsi al minuto coi thread, 36,9 coi processi (+17%).
+  Sul Mac i figli hanno core in abbondanza; sul server, 4 core, il
+  guadagno atteso è circa +40% (parte A, giro 2b). Si misura dopo il
+  passaggio sul server, con `RouteJobs` su `RouteProcesses` come nella
+  prova del Mac (lo script va adattato: `route_bench.py` misura i thread).
+- **Sul server:** il fork server apre il suo socket nella cartella
+  temporanea del container (`/tmp`), che deve essere scrivibile per l'uid
+  10001. Da controllare al passaggio.
+
+**Resta:** il merge (Coordinatore), la PR docs (ADR-0242, STATUS), il
+passaggio sul server col sì dell'utente, poi la misura.

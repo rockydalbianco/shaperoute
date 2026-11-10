@@ -1,7 +1,9 @@
 # TASK-409 — Nuoto in piscina: calorie, battito medio e tempo nelle zone
 
-**Stato**: In corso: parte A (calorie) in `main` e in produzione; parte B
-nella 1.0.3
+**Stato**: Done · 2026-11-10. Esito: calorie (A, #922) in `main` e in
+produzione; battito medio e tempo nelle zone (B1 #979 server, B2 #998 app) in
+`main`, server con la `0061`, OTA di produzione `3056f4e4` e App Privacy
+«Salute» pubblicati (2026-11-10). Niente in sospeso
 **Fase**: 5 · **Branch**: `feat/TASK-409-a-pool-calories` (parte A, col task
 file); la parte B avrà il suo
 **Dipende da**: TASK-400 (nuoto in piscina, chiuso), TASK-374 (Il mio corpo,
@@ -160,9 +162,10 @@ un OTA; il server (scelta 5) va prima, col sì dell'utente.
 - [x] A: impronta iOS `6f8bba4c` invariata (misurata con `npm ci` su una
       copia pulita di `3bf2802d`); test toccati, tsc, lint e Prettier verdi in
       locale, CI verde.
-- [ ] B: con un orologio, battito medio e tempo nelle zone della finestra del
+- [x] B: con un orologio, battito medio e tempo nelle zone della finestra del
       nuoto (modulo finto); senza campioni o con la lettura negata, solo le
-      calorie.
+      calorie. (`pool/PoolHeart.test.tsx`, `health/heartSamples.test.ts`,
+      `body/zoneTime.test.ts`; il server in `test_pool_swims.py`)
 
 ## File toccati
 
@@ -197,7 +200,30 @@ docs/API.md, docs/DATABASE.md, docs/DECISIONS.md, docs/STATUS.md,
 docs/tasks/TASK-409.md
 ```
 
-Parte B2: la lista va al Coordinatore dopo B1.
+Parte B2 (approvata dal Coordinatore il 2026-11-08; branch
+`feat/TASK-409-b-pool-heart`, PR dopo B1 in `main` e sul server):
+
+```
+apps/mobile/src/health/heartSamples.ts, heartSamples.test.ts (nuovi)
+apps/mobile/src/health/heartModules.ts (nuovo)
+apps/mobile/src/body/zoneTime.ts, zoneTime.test.ts (nuovi)
+apps/mobile/src/pool/poolHeart.ts, usePoolHeart.ts, PoolHeartLines.tsx,
+  PoolHeart.test.tsx (nuovi; il componente si chiama PoolHeartLines perché
+  PoolHeart.tsx e poolHeart.ts su macOS sono lo stesso file)
+apps/mobile/src/pool/PoolSwimEnd.tsx, PoolSwimHost.tsx (il lettore finto dei
+  test), PoolPostForm.tsx, usePoolOutbox.ts, poolSwim.ts, PoolFigures.tsx,
+  PoolTile.tsx
+apps/mobile/src/api/poolSwims.ts
+apps/mobile/src/i18n/it.ts, de.ts, fr.ts, es.ts (i tre testi della scelta 7
+  e i tre della scelta 3)
+apps/mobile/src/about/content/en.ts, it.ts, de.ts, fr.ts, es.ts
+apps/mobile/src/about/documents.test.ts, AboutPage.test.tsx (la data)
+site/privacy/index.html, it/, de/, fr/, es/ (rigenerate)
+site/tests/privacy.test.mjs (la data)
+docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-409.md
+```
+
+`poolOutbox.ts` non cambia: il battito viaggia nel corpo della richiesta.
 
 ## Esito
 
@@ -207,5 +233,22 @@ Parte B2: la lista va al Coordinatore dopo B1.
   runtime `6f8bba4c`, commit `3bf2802d`; con lei uscivano anche #923, #930,
   #921 e #943. Gli OTA di produzione successivi (`10279e05`, `8b1af1b4` da
   `a0f38012`) la contengono. Android non pubblicato (test chiuso).
-- **Parte B**: aperta, nella 1.0.3, quando TASK-345 C e TASK-374 D sono in
-  `main` (sezione «Parte B» sopra).
+- **Parte B1** (2026-11-08): #979 in `main` (`63ff7a03`), migrazione
+  `0061_run_heart.sql`; sul server col passo unico del Coordinatore
+  (0061–0064, 2026-11-10), lanciato dall'utente («ok si»).
+- **Parte B2** (2026-11-10): #998 in `main` (`73acca24`), unita dal
+  Coordinatore. Documenti B1/B2 in #996.
+- **OTA di produzione della B2** (2026-11-10, col sì dell'utente «ok va bene
+  tutto», «sblocca e dai l'ok»): commit `e1bb8a58`, gruppo
+  `3056f4e4-e8a7-41b9-ba28-49ba477f9644`, update iOS
+  `01a1c493-2854-72fb-9a4b-26799e529206`, runtime `6f8bba4c`; preview gruppo
+  `01a7e1e2-320e-400a-85cc-4d26fcd9d67b`.
+- **App Privacy «Salute»** pubblicata su App Store Connect dal Coordinatore lo
+  stesso giorno: Salute, solo Funzionalità dell'app, collegata all'identità,
+  niente monitoraggio (vale anche per TASK-424). Data safety di Google Play
+  invariata finché Android non legge il battito (TASK-321 C).
+- **Per TASK-345 C e TASK-374 D**: la lettura del battito
+  (`health/heartSamples.ts`, `health/heartModules.ts`) e il tempo in zona
+  (`body/zoneTime.ts`) sono già in `main`: si agganciano alle corse senza
+  riscriverli. Il battito sulla corsa (`runs.heart_*`) è il pezzo server di
+  TASK-345 B: lo scrive per ora solo il nuoto in piscina.

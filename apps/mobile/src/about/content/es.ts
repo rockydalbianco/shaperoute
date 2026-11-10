@@ -441,7 +441,7 @@ const privacy: AboutDocument = {
     {
       heading: "Apple Salud y Health Connect",
       blocks: [
-        "Cuando activas «Guardar en Apple Salud» (iPhone) o «Guardar en Health Connect» (Android), cada actividad que guardas se escribe también allí, en tu teléfono: el deporte, cuándo empezó y terminó, la distancia, la ruta y, en una carrera, las calorías activas estimadas. MuW nunca lee tus datos de salud, y nada de ellos llega a nuestro servidor ni a ninguna publicidad. Puedes detenerlo en la app Salud o en Health Connect. Lo que ya está allí se queda hasta que lo borres allí, también cuando borras la carrera o tu cuenta.",
+        "Cuando activas «Guardar en Apple Salud» (iPhone) o «Guardar en Health Connect» (Android), cada actividad que guardas se escribe también allí, en tu teléfono: el deporte, cuándo empezó y terminó, la distancia, la ruta y, en una carrera, las calorías activas estimadas. Si al final de una sesión de natación en piscina tocas «Añadir la frecuencia cardiaca desde Salud», MuW lee la frecuencia cardiaca que tu reloj registró durante esa sesión, y nada más. La media y el máximo se quedan con la sesión en nuestro servidor y se ven en su publicación, salvo que desactives «Mostrar la frecuencia cardiaca»; el tiempo en cada zona se queda en tu teléfono. Ninguno de tus datos de salud llega a ninguna publicidad. Puedes detenerlo en la app Salud o en Health Connect. Lo que ya está allí se queda hasta que lo borres allí, también cuando borras la carrera o tu cuenta.",
       ],
     },
     {
@@ -489,7 +489,7 @@ const privacy: AboutDocument = {
           bullets: [
             "Para darte el servicio que pides (contrato): tu cuenta, tu perfil, las rutas que pides, y las carreras, favoritos, comentarios, reacciones y seguimientos que guardas, los correos de las notificaciones que encendiste, y el juego de las formas.",
             "Nuestro interés legítimo en que MuW funcione, sea segura y mejore: los registros breves del servidor, los recuentos que limitan las descargas de mapas y los eventos de búsqueda, que no dicen nada de quién eres; la comparación de los números de tus contactos, que no conserva ninguno; el correo cuando no estás, que puedes rechazar al registrarte, en «Ajustes» o en cada correo; los correos de las denuncias, para que MuW sea segura; el archivo de las rutas dibujadas, que no dice nada de quién eres; los mensajes de «Envíanos tus comentarios», para leerlos y responderte.",
-            "Tu consentimiento: el número de teléfono que decides añadir, la conexión con Strava y el guardado de tus actividades en Apple Salud o Health Connect. Puedes retirar un consentimiento en cualquier momento; lo que se hizo antes sigue siendo lícito.",
+            "Tu consentimiento: el número de teléfono que decides añadir, la conexión con Strava, el guardado de tus actividades en Apple Salud o Health Connect y la lectura de tu frecuencia cardiaca desde Apple Salud. Puedes retirar un consentimiento en cualquier momento; lo que se hizo antes sigue siendo lícito.",
             "Una obligación legal, cuando una ley nos pide conservar o entregar datos.",
           ],
         },

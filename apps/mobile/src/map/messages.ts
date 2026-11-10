@@ -115,6 +115,13 @@ export type CanvasOnPage = {
   /** Frame the map on the figure, or on the start without one: as the
    * screen opens and as a figure is put on it. */
   frame: boolean;
+  /** Where the route of the figure starts, a dot; none on the water
+   * (TASK-426, ADR-0354). With «Move» a finger on it drags it along
+   * `startLine`, or only to its two ends (`startEnds`), and the page tells
+   * where it was left (`started`); with no line, it stays. */
+  start?: LngLat | null;
+  startLine?: LngLat[];
+  startEnds?: boolean;
 };
 
 /** A place of a themed route on the map (TASK-129). */
@@ -151,6 +158,9 @@ export type FromPage =
   /** A tap with «Move» where pieces are chosen (TASK-402 part B): where,
    * and how many metres a pixel is, for a finger's reach. */
   | { type: "tapped"; lngLat: LngLat; metresPerPx: number }
+  /** The start dot dragged with «Move» and left (TASK-426): where on its
+   * line, and how many metres a pixel is, for a finger's reach. */
+  | { type: "started"; lngLat: LngLat; metresPerPx: number }
   | { type: "error"; message: string };
 
 export function setPosition(point: LatLon): ToPage {
@@ -363,6 +373,9 @@ export function setCanvas(canvas: {
   chosen?: number[];
   box?: LatLon[];
   frame: boolean;
+  start?: LatLon | null;
+  startLine?: LatLon[];
+  startEnds?: boolean;
 }): ToPage {
   return {
     type: "setCanvas",
@@ -371,6 +384,12 @@ export function setCanvas(canvas: {
     marks: canvas.marks.map(toLngLat),
     centre: canvas.centre === null ? null : toLngLat(canvas.centre),
     ...(canvas.box === undefined ? {} : { box: canvas.box.map(toLngLat) }),
+    ...(canvas.start === undefined
+      ? {}
+      : { start: canvas.start === null ? null : toLngLat(canvas.start) }),
+    ...(canvas.startLine === undefined
+      ? {}
+      : { startLine: canvas.startLine.map(toLngLat) }),
   };
 }
 
@@ -496,6 +515,12 @@ export function parsePageMessage(data: string): FromPage | null {
     const { lngLat, metresPerPx } = message;
     return isLngLat(lngLat) && isScale(metresPerPx)
       ? { type: "tapped", lngLat: [lngLat[0], lngLat[1]], metresPerPx }
+      : null;
+  }
+  if (message.type === "started" && "lngLat" in message && "metresPerPx" in message) {
+    const { lngLat, metresPerPx } = message;
+    return isLngLat(lngLat) && isScale(metresPerPx)
+      ? { type: "started", lngLat: [lngLat[0], lngLat[1]], metresPerPx }
       : null;
   }
   if (message.type === "centre" && "lngLat" in message) {

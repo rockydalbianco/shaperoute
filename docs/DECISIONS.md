@@ -468,6 +468,7 @@ lasciando le righe d'indice.
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 - ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0352, precisazione A2 — La pagina dei link dal vivo · 2026-11-08 · Attiva
+- ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link · 2026-11-10 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -493,6 +494,8 @@ lasciando le righe d'indice.
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
 - ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
 - ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
+- ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute · 2026-11-10 · Attiva
+- ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda · 2026-11-10 · Attiva
 
 ## Voci nuove
 
@@ -664,6 +667,44 @@ dall'agente su delega dell'utente
   l'API. `?api=` (solo da `127.0.0.1`/`localhost`, solo verso un indirizzo
   locale) serve a provarla sul Mac contro un finto `/live`: l'API vera
   lascia leggere `/live` solo a `https://getmuw.app`.
+## ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parte B1 (#1025, a25a24a9) ·
+deciso dall'agente su delega dell'utente; il consenso a ogni link è
+scelta dell'utente del 2026-11-10 («ok procedi»)
+
+- **Lo stato del link sta fuori da React** (`src/liveShare/liveShareStore.ts`),
+  un link alla volta come la corsa: il task della posizione
+  (`navigation/runPosition.ts`) gli passa ogni posizione e fa partire
+  l'invio, anche a telefono bloccato; nessun task nuovo. Lo schermo della
+  corsa (`RunCard`, con `useLiveShareFeed`) gli passa traccia, calorie,
+  battito dell'orologio e pausa; i numeri si calcolano dalla traccia al
+  momento dell'invio. Davanti un timer di 5 s porta i segnali della pausa e
+  i nuovi tentativi della fine anche senza posizioni.
+- **La macchina degli invii** (`liveSharer.ts`) non ha orologio né timer
+  suoi: 15 s in movimento, 60 s in pausa, subito a ogni cambio di stato;
+  un punto ogni 5 s al più, 200 per invio (subito il resto dopo un invio
+  pieno), coda di 500 che perde i più vecchi; un tentativo fallito aspetta
+  il giro normale. `410`, `404` e `401` chiudono il link; un `422` scarta
+  quei punti; rete, `5xx` e `429` li tengono. `finished` riprovato fino a 4
+  volte, poi il link scade da solo. Lo stop chiude subito sul telefono e
+  manda il `DELETE`, una seconda volta se manca la rete.
+- **I punti** vengono dal task della posizione (precisione entro
+  `MAX_ACCURACY_M`) e, dove il GPS va solo in primo piano (Expo Go, un
+  servizio Android rifiutato), dalle posizioni nuove della traccia dello
+  schermo; la stessa posizione non entra due volte. Solo da quando c'è il
+  link: il server non prende punti più vecchi di 5 minuti.
+- **La fine** è quando la scheda della corsa se ne va (finita, salvata o
+  no), non quando `live` diventa falso: un GPS perso a metà corsa non
+  chiude il link. Una fine mentre il link si sta facendo lo cancella.
+- **Il consenso** torna a ogni link nuovo: ogni link è nuovo e il battito
+  è un dato di salute (scelta dell'utente del 2026-11-10). Il foglio di
+  condivisione del telefono si apre solo dopo che il nostro foglio è
+  sparito (su iOS a `onDismiss`, come TASK-358). Su «Compass» niente
+  pulsante né etichetta.
+- **Impronta iOS** invariata: `6f8bba4c`, come la build 8 di produzione.
+  Nessuna dipendenza nuova: `fetch` e `Share` di React Native.
+
 ## ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog`
 
 **Stato**: Accettata · 2026-11-10 · TASK-420 parte D. Scelta dell'utente,
@@ -1647,3 +1688,53 @@ da sole e il motore prende solo contorni semplici. Per loro servirebbe il
 motore (linea aperta corsa una volta, ritorno per la via più breve): è
 proposto all'utente come task a parte. Solo JavaScript nell'app, nell'OTA
 unico.
+
+## ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B3c1, decisa dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore. In `main`
+con la #1020.
+
+**Decisione**:
+1. **Un file a fine allenamento** (`WatchTrack`, contratto in Swift e
+   TypeScript su `Fixtures/tracks.json`): sport, inizio e fine, arrivato o
+   fermato, il percorso seguito (con la somiglianza, per il punteggio anche
+   se il telefono non ha più quel percorso), le posizioni
+   `[lat, lon, ms, precisione, quota]`, le pause, distanza, tempo in
+   movimento, calorie e battito medio. Va con `WCSession.transferFile`, che
+   lo tiene finché il telefono non lo prende.
+2. **`TrackRecorder` ha il GPS** per ogni sport col GPS, anche senza
+   percorso; dà le posizioni alla guida, a `TrackLog` (le regole del
+   registratore del telefono: niente fix oltre 40 m, fuori ordine o in
+   pausa, al massimo 20 000) e a `HKWorkoutRouteBuilder`, così la linea sta
+   anche nell'allenamento di Salute.
+3. **`WatchRoute` porta `similarity`**, facoltativa: un percorso senza
+   (telefono più vecchio) la legge come sconosciuta.
+
+**Conseguenze**: il permesso di Salute chiede anche la linea
+dell'allenamento. La corsa simulata dopo lo spostamento del GPS non si è
+potuta ripetere nel simulatore (il foglio di Salute non prende i tocchi): si
+prova al polso.
+
+## ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B3c2; scelta dell'utente
+«Avviso e scheda» e testi approvati il 2026-11-10; lista dei file e turno su
+`App.tsx` dal Coordinatore. In `main` con la #1041.
+
+**Decisione**:
+1. **Il telefono tiene in attesa** ogni corsa dell'orologio (`watchRuns.ts`,
+   al massimo 10, in un file), anche quelle arrivate ad app chiusa
+   (`getQueuedFiles`), e manda una notifica locale.
+2. **Una scheda in cima a «My activities»** («From your Apple Watch», «Open»,
+   «Discard») finché non la si apre o scarta; «Open» apre la fine corsa di
+   sempre (`finish` col punteggio, `runFinish` senza percorso). Niente si
+   apre da solo mentre si usa l'app.
+3. **La linea la rifà il registratore del telefono** (`watchRun.ts`:
+   `addFix`, `pauseTrack`, `resumeTrack`): metri, pause e fix lasciati fuori
+   sono quelli di una corsa registrata col telefono.
+4. **I file dell'orologio** stanno in `watchFiles()`, a parte dal
+   collegamento dei messaggi.
+
+**Conseguenze**: l'arrivo del file e la notifica si provano con l'orologio
+vero (build 1.1).

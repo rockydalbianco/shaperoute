@@ -248,6 +248,10 @@ class ActivityRequestBody(BaseModel):
     """Where the run comes from (TASK-312): `file` for an activity of
     another app; missing from an older app, which only recorded. Like the
     rest of the body, it counts only the first time."""
+    utc_offset_min: int | None = Field(default=None, ge=-840, le=840)
+    """The minutes the phone's clock was ahead of UTC when the run started
+    (TASK-423 part C): the local day and hour of the game's personal
+    challenges. Never a place; missing from an older app (UTC)."""
 
     @field_validator("track")
     @classmethod
@@ -897,6 +901,7 @@ class Activities:
                     run.pauses,
                     body.activity,
                     self.now(),
+                    body.utc_offset_min,
                 )
             # One more run along this line, for whoever asks it next
             # (ADR-0256): the line's name only, never who ran it.

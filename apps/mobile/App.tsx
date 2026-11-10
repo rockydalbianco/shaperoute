@@ -56,6 +56,7 @@ import { startViewOf, useStartDirections } from "./src/explore/useStartDirection
 import { isHere, nearMeRequest } from "./src/explore/themedIdeas";
 import { useThemedRoute } from "./src/explore/useThemedRoute";
 import { FavoriteHeart } from "./src/favorites/FavoriteHeart";
+import { useWatchRuns } from "./src/watch/useWatchRuns";
 import {
   drawnKeepable,
   exploredKeepable,
@@ -865,6 +866,18 @@ function MuW() {
         : exploring
           ? (favorite?.keepable ?? exploredFavorite)
           : drawnFavorite;
+
+  // A workout of the Apple Watch, opened from its card on top of «My
+  // activities» (TASK-370 part B3c2): the end of a run of always.
+  useWatchRuns((watch) => {
+    if (watch.kind === "route") {
+      setFinished(finishedRun(watch.run, false));
+      setScreen("finish");
+    } else {
+      setFreeFinished(freeFinishedRun(watch.run, false));
+      setScreen("runFinish");
+    }
+  });
 
   /** Stop or Finish: the run ends, and with a line to judge shows its score. */
   function onEndRun() {

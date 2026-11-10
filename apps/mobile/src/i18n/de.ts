@@ -2144,4 +2144,23 @@ export const DE: Table = {
   "Marked by the members in the last 24 hours.":
     "Von den Mitgliedern in den letzten 24 Stunden angegeben.",
   "Members' days here": "Tage der Mitglieder hier",
+
+  // src/liveShare/LiveShareButton.tsx (TASK-424 part B1; «Not now» above)
+  "Share live": "Live teilen",
+  "Sharing live": "Live-Teilen aktiv",
+  "Sign in to share live": "Melde dich an, um live zu teilen",
+  "Share this activity live": "Diese Aktivität live teilen",
+  "Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it.":
+    "Wer den Link hat, kann dir auf einer Webseite folgen, ohne die App: deine genaue Position auf der Karte, die bisherige Strecke, Distanz, Zeit, Pace oder Tempo, Höhenmeter, Kalorien und deinen Puls, wenn eine Uhr ihn sendet.",
+  "The link stops working one hour after you finish, or as soon as you stop sharing. Then your positions are deleted.":
+    "Der Link funktioniert eine Stunde nach dem Ende nicht mehr, oder sobald du das Teilen beendest. Dann werden deine Positionen gelöscht.",
+  "Share link": "Link teilen",
+  "Follow my activity live on MuW: {url}":
+    "Verfolge meine Aktivität live auf MuW: {url}",
+  "Stop sharing?": "Teilen beenden?",
+  "The link stops working now.": "Der Link funktioniert ab jetzt nicht mehr.",
+  "Stop sharing": "Beenden",
+  "Keep sharing": "Weiter teilen",
+  "Couldn't create the link. Try again.":
+    "Der Link konnte nicht erstellt werden. Versuch es noch einmal.",
 };

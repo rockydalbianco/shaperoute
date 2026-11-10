@@ -87,9 +87,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   resta C. File: — · `tasks/TASK-371.md`
 - **TASK-374 — Il mio corpo: calorie e zone del battito** · A e B in `main`;
   C e D nella 1.0.2. File: — · `tasks/TASK-374.md`
-- **TASK-380 — Roller** · 0, A, B in `main`, server con la 0055;
-  l'accensione in PR (`feat/TASK-380-roller-on`), dopo l'OTA della #922.
-  File: quelli di quel branch · `tasks/TASK-380.md`
 - **TASK-384 — «MuW Style»** · A e B in `main`; prossima C, i primi 6 post.
   File: — · `tasks/TASK-384.md`
 - **TASK-385 — «Gym», la palestra** · parti fino a F in `main`; prossima G

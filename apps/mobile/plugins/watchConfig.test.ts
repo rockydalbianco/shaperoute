@@ -2,7 +2,6 @@ import appJson from "../app.json";
 import {
   APPLE_TARGETS,
   WATCH_CORE_PLUGIN,
-  WATCH_TARGET,
   withWatchMatch,
   withWatchTarget,
 } from "./watchConfig";
@@ -72,7 +71,7 @@ describe("the watch's target in the config", () => {
     expect(watched).toEqual(appJson.expo);
     expect(appJson.expo.plugins.slice(-2)).toEqual([
       WATCH_CORE_PLUGIN,
-      [APPLE_TARGETS, { match: WATCH_TARGET, appleTeamId: "D6WUSJZKVZ" }],
+      [APPLE_TARGETS, { match: "{live-activity,watch}", appleTeamId: "D6WUSJZKVZ" }],
     ]);
   });
 });

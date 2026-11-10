@@ -511,6 +511,22 @@ toglie. La linea la rifà il registratore del telefono (`watchRun.ts`:
 `addFix`, `pauseTrack`, `resumeTrack`), con i suoi metri e le sue pause. Da
 provare con l'orologio vero: l'arrivo del file e la notifica.
 
+**A-flip pronta** (2026-11-10, branch `feat/TASK-370-a-flip`, PR aperta da
+NON unire prima del «merge A-flip» del Coordinatore: cambia l'impronta nativa
+e `main` serve ancora gli OTA di produzione su `6f8bba4c`). L'utente ha detto
+«procedi per me» su A-flip e sulla prova al polso con la build 1.1 (via il
+Coordinatore, 2026-11-10). Le due dipendenze, approvate dall'utente il
+2026-10-30: `@bacons/apple-targets` 5.0.0 e `react-native-watch-connectivity`
+2.0.0 (solo iOS in `react-native.config.js`). In `app.json`
+`./plugins/withWatchCore.js` e `["@bacons/apple-targets", {"match":
+"watch"}]`; con TASK-401 B (#862) il `match` diventa
+`"{live-activity,watch}"`, una config sola. `app.config.ts` non cambia:
+`MUW_WATCH=1` ora non aggiunge niente. Impronte su copia pulita: iOS
+`e882218f` (con `MUW_WATCH=1` `43995c28`, solo perché `app.config.ts` carica
+un file in più), Android da `227457f3` a `a740e825`. I passi della 1.1
+(`eas build`, TestFlight, la prova al polso, l'invio ad Apple) sono ognuno un
+sì dell'utente.
+
 ## File toccati
 
 Parte 0 (questa proposta):

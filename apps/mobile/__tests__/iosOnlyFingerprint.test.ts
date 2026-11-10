@@ -21,7 +21,7 @@ type FingerprintConfig = {
     encoding: string,
   ): string | null;
   ignorePaths: string[];
-  IOS_ONLY: { plugins: string[] };
+  IOS_ONLY: { plugins: string[]; infoPlist: string[] };
   WATCH_BUILD_PATHS: string[];
   splitIosOnly(config: Record<string, any>): {
     config: Record<string, any>;
@@ -72,6 +72,11 @@ it("the config both fingerprints read has none of the watch", () => {
     expect(names(read.plugins)).not.toContain(name);
   }
   expect(read.extra.eas.build).toBeUndefined();
+  expect(config.ios.infoPlist.NSSupportsLiveActivities).toBe(true);
+  expect(read.ios.infoPlist).not.toHaveProperty("NSSupportsLiveActivities");
+  expect(read.ios.infoPlist.UIBackgroundModes).toEqual(
+    config.ios.infoPlist.UIBackgroundModes,
+  );
   // The rest of the config is as it was.
   expect(read.extra.eas.projectId).toBe(config.extra.eas.projectId);
   expect(read.plugins).toHaveLength(config.plugins.length - 2);
@@ -87,6 +92,7 @@ it("the iPhone fingerprint keeps the watch", () => {
     { appleTeamId: "D6WUSJZKVZ", match: "{live-activity,watch}" },
   ]);
   expect(Object.keys(taken[2] as object)).toEqual(["extra.eas.build.experimental.ios"]);
+  expect(taken[3]).toEqual({ "ios.infoPlist.NSSupportsLiveActivities": true });
 });
 
 it("the Android fingerprint knows nothing of the watch", () => {
@@ -98,7 +104,7 @@ it("the Android fingerprint knows nothing of the watch", () => {
   expect(read).not.toContain("live-activity");
 });
 
-it("a config without the watch is read as it is: a build before A-flip", () => {
+it("a config without the watch and the Live Activity is read as it is: a build before the 1.1", () => {
   const config = expoConfig();
   config.plugins = config.plugins.filter(
     (plugin: unknown) =>
@@ -107,6 +113,7 @@ it("a config without the watch is read as it is: a build before A-flip", () => {
       ),
   );
   delete config.extra.eas.build;
+  delete config.ios.infoPlist.NSSupportsLiveActivities;
   const split = fingerprint.splitIosOnly(JSON.parse(JSON.stringify(config)));
   expect(split.taken).toEqual([]);
   expect(split.config).toEqual(config);

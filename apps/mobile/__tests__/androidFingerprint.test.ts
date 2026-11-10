@@ -85,6 +85,8 @@ it("a config without the Android settings is read as it is", () => {
       ),
   );
   delete config.extra.eas.build;
+  // Nor the Live Activity's key (TASK-401 B, the 1.1).
+  delete config.ios.infoPlist.NSSupportsLiveActivities;
   const written = stringifyJsonSorted(config);
   expect(transform("expoConfig", written)).toBe(written);
 });

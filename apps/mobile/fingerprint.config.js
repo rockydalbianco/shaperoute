@@ -46,8 +46,13 @@ const ANDROID_SOURCE = "expoAutolinkingConfig:android";
 // reaches them; its native module in the iPhone app
 // (modules/live-activity, Apple only) is counted by iOS autolinking.
 
-/** The plugins for the iPhone only, by name. */
-const IOS_ONLY = { plugins: ["./plugins/withWatchCore.js", "@bacons/apple-targets"] };
+/** The plugins for the iPhone only, by name, and the keys of
+ * `ios.infoPlist` an Android build never reads: the Live Activity's
+ * (TASK-401 B, in the 1.1 with the watch). */
+const IOS_ONLY = {
+  plugins: ["./plugins/withWatchCore.js", "@bacons/apple-targets"],
+  infoPlist: ["NSSupportsLiveActivities"],
+};
 
 /** The source only the iPhone fingerprint has. */
 const IOS_SOURCE = "expoAutolinkingConfig:ios";
@@ -145,9 +150,10 @@ function pluginName(plugin) {
   return Array.isArray(plugin) ? plugin[0] : plugin;
 }
 
-/** `config` without the iPhone's plugins and what they add to it for EAS
- * (the watch's credentials, `extra.eas.build.experimental.ios`), and what
- * was taken out: nothing when there is none of it. */
+/** `config` without the iPhone's plugins, what they add to it for EAS
+ * (the watch's credentials, `extra.eas.build.experimental.ios`) and the
+ * iPhone-only keys of `ios.infoPlist`, and what was taken out: nothing when
+ * there is none of it. */
 function splitIosOnly(config) {
   const plugins = config.plugins ?? [];
   const taken = plugins.filter((plugin) =>
@@ -168,6 +174,13 @@ function splitIosOnly(config) {
     }
     if (Object.keys(build).length === 0) {
       delete config.extra.eas.build;
+    }
+  }
+  const plist = config.ios?.infoPlist;
+  for (const key of IOS_ONLY.infoPlist) {
+    if (plist !== undefined && plist !== null && key in plist) {
+      taken.push({ [`ios.infoPlist.${key}`]: plist[key] });
+      delete plist[key];
     }
   }
   return { config, taken };

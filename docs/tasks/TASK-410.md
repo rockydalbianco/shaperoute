@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: In lavorazione — B e F in `main`; C (`run_stats`) in PR (2026-11-08); A è TASK-355 B; poi D ed E
+**Stato**: In lavorazione — B, F e C (`run_stats`, #1001) in `main` (2026-11-08); A è TASK-355 B; poi D ed E
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -472,7 +472,8 @@ PUT di `/me/activities/` (`AppActivities`, `AppPenUpSaved`): non contano
 `…/stats`, approvati dal Coordinatore. Dopo la seconda CI,
 `drawing-details-imported.json` prende `"stats": null`, come risponde il
 server (`test_imported_runs.py` confronta la fixture col corpo intero):
-segnalato al Coordinatore. Branch `feat/TASK-410-c-run-stats`.
+approvato dal Coordinatore. Branch `feat/TASK-410-c-run-stats`, #1001 in
+`main` (`72ac332b`).
 
 ```
 services/api/migrations/0064_run_stats.sql       (nuovo; numero in bozza, il vero al merge)

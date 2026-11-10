@@ -53,6 +53,7 @@ test("with no choice the app is dark at its darkest (ADR-0046), warm (ADR-0293)"
     north: "#FF5B4F",
     strava: "#FC5200",
     onStrava: "#FFFFFF",
+    ski: { descent: "#FFD02B", lift: "#FF5A4E", onLine: "#0B0A08" },
     // The text at 20 %, for the thin divisions (TASK-339).
     hairline: "#F6F3EC33",
     map: {

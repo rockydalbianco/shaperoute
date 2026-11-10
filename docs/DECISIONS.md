@@ -470,6 +470,7 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione A2 — La pagina dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link · 2026-11-10 · Attiva
 - ADR-0352, precisazione B2 — Piscina e palestra: gli stessi pulsante e invii, i numeri senza traccia, il consenso senza mappa · 2026-11-10 · Attiva
+- ADR-0352, precisazione C — I dati dal vivo che mancano: il battito su «Data», la piscina dal vivo, le calorie di ogni attività (lo sci sulle discese) · 2026-11-10 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -515,8 +516,80 @@ lasciando le righe d'indice.
 - ADR-0357, precisazione A — La modalità sci nell'app: le schede dallo sport, «Oggi» sulla pagina «choose», le icone come `face`, la barra ricostruita · 2026-11-10 · Attiva
 - ADR-0360 — Le schede della palestra guidate: le settimane in una colonna `program`, i valori di ogni settimana dal telefono, l'app di prima che legge ancora · 2026-11-10 · Accettata
 - ADR-0361 — Primo percorso subito: `plan_nearby` avvisa quando la partenza ha il suo piano, il job lo porta in `first` a chi lo chiede, nell'app il primo resta A · 2026-11-10 · Accettata
+- ADR-0351, precisazione E1 — I premi sul server: le edizioni come righe di `game_unlocks`, cornici, titoli e badge letti a ogni richiesta, la scelta del profilo in `game_prefs` · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0352, precisazione C — I dati dal vivo che mancano: il battito su «Data», la piscina dal vivo, le calorie di ogni attività (lo sci sulle discese)
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parti C1 (#1096, in produzione
+con l'OTA 5) e C2 (#1098, a064a486). Scelte dell'utente del 2026-11-10,
+parole sue: «Formula da sci» (sulla domanda delle calorie dello sci), poi
+«le calorie devono essere calcolate per ogni attività, e segnate con colore
+rosso in tutte», e «Sì, il server» per lo sci nel Feed (parte C2b). Il
+resto deciso dall'agente su delega dell'utente.
+
+- **Superate dalla scelta dell'utente del 2026-11-10**: «Niente calorie
+  sulla neve» di TASK-375 (ADR-0319) e la scelta 2 di TASK-415
+  (scialpinismo, «Niente calorie sulla neve (come TASK-375)»). I file di
+  quei task non si toccano (CLAUDE.md): vale questa voce.
+- **C1**: su «Data» la stessa riga del battito di «Map» (`WatchHeart`),
+  sotto i sei riquadri; in piscina, sotto l'orologio, vasche e calorie
+  stimate da `poolLiveStats`, gli stessi numeri che manda «Share live»,
+  ogni secondo, fermi in pausa.
+- **C2, una formula per ogni attività** (`src/sports/`, tabella in
+  `UI.md` «Calories»): acque libere con le fasce a MET per passo della
+  piscina; sci alpino MET 5,3 (discesa, sforzo moderato, solo tempo
+  attivo) sui soli metri e secondi delle discese; sci di fondo MET per
+  velocità media (Compendium 2024: 6,8 / 9,0 / 12,5 / 15,0 a 4, 5 e 8
+  mph); scialpinismo l'equazione ACSM del cammino, come l'hike. Solo la
+  palestra conta le sue serie.
+- **Una funzione sola per le discese**: `activities/trackEffort.ts`
+  (`skiedDay`, `trackEffort`) dà metri, secondi e salita di una traccia,
+  per lo sci alpino quelli delle discese di `snowDay` (che dà anche
+  `skiedMs`). La usano lo schermo, Apple Salute, la pagina del post; la
+  riusa TASK-429 B.
+- **Dal vivo le calorie sono dello sport registrato** (quello di
+  «Settings» che «Save» salva), non di `freeRunAs`: lo sci tiene le
+  velocità della bici e prende le sue calorie.
+- **Uno sport più nuovo dell'app** non ha calorie e non fa errori
+  (`findProfile`).
+- **Il Feed dello sci alpino** resta senza calorie fino a C2b: il post ha
+  solo distanza e tempo della giornata intera, risalite comprese.
+- **Impronta iOS** invariata: C1 e C2 sono solo JavaScript. Nessuna
+  dipendenza nuova.
+
+## ADR-0351, precisazione E1 — I premi sul server: le edizioni come righe di `game_unlocks`, cornici, titoli e badge letti a ogni richiesta, la scelta del profilo in `game_prefs`
+
+**Stato**: Attiva · 2026-11-10 · TASK-423 parte E1 (#1099). Deciso
+dall'agente su delega dell'utente; i testi delle due push approvati
+dall'utente («Sì, approvo», 2026-11-10).
+
+**Decisione**:
+
+- **Le edizioni argento e oro sono righe di `game_unlocks`** (`edition`
+  `silver`, `gold`), accanto a `solo` (il bronzo) e `team`: la stessa
+  tabella dice quando e con quale corsa. La CHECK di `edition` si allarga
+  (0067), mai si stringe, e il codice di prima filtra già `solo` e `team`.
+  Si scrivono nella transazione del salvataggio (`record_editions`)
+  contando le corse contate che fanno il requisito; il backfill le dà alle
+  corse vecchie con la corsa che le ha date, alla sua fine, senza push.
+- **Cornici, titoli e badge non si salvano**: si leggono a ogni richiesta
+  (`game_prizes.py` puro, `facts_of`) da quello che il gioco tiene già.
+  Niente da tenere allineato, niente backfill; se una corsa si cancella un
+  premio di km può tornare indietro, e il profilo smette di mostrarlo.
+- **La scelta del profilo è in `game_prefs`** (una cornice, un titolo,
+  fino a 3 badge), accettata solo fra i premi presi; il profilo pubblico
+  mostra `game_prizes` solo per quello che si ha ancora, `null` di
+  default. I campi nuovi di `/game/me`, `/game/runs/{key}` e del profilo
+  sono facoltativi: l'app in produzione li ignora (test con i suoi
+  validatori).
+- **Due push nuove**, `edition_up` (l'oro ha le sue parole) e
+  `collection_done`, una per corsa ciascuna, dopo `shape_unlocked`.
+
+**Perché**: il server conta, l'app mostra; meno stato salvato vuol dire
+meno cose che possono andare fuori sincronia, e l'app installata resta
+intatta.
 
 ## ADR-0361 — Primo percorso subito: `plan_nearby` avvisa quando la partenza ha il suo piano, il job lo porta in `first` a chi lo chiede, nell'app il primo resta A
 

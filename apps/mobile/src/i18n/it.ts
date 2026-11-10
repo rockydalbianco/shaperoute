@@ -794,8 +794,6 @@ export const IT: Table = {
   // src/screens/FreeRunScreen.tsx, SnowFinishCard.tsx (TASK-375 part C)
   "Your day": "La tua giornata",
   "White: where you skied.": "Bianco: dove hai sciato.",
-  "White: your descents. Dashed: the lifts.":
-    "Bianco: le discese. Tratteggio: gli impianti.",
   "Skied: {distance}": "Sciati: {distance}",
   Descents: "Discese",
   Vertical: "Dislivello",
@@ -2356,4 +2354,13 @@ export const IT: Table = {
     "Scegli un altro sport per tornare a MuW di sempre.",
   "Log in to see your days.": "Accedi per vedere le tue giornate.",
   "No days on the snow yet.": "Ancora nessuna giornata sulla neve.",
+
+  // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
+  "Runs@@ski": "Discese",
+  Legend: "Legenda",
+  "Descents · solid, numbered": "Discese · linea piena, numerate",
+  "Lifts · dashed, L1, L2…": "Risalite · tratteggiate, L1, L2…",
+  Lift: "Risalita",
+  "{speed} top": "{speed} max",
+  "Stopped {minutes} min": "Fermo {minutes} min",
 };

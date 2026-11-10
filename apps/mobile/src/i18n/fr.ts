@@ -2207,4 +2207,13 @@ export const FR: Table = {
     "Lieux célèbres, panoramas, cuisine… dans n'importe quelle ville",
   "The rest could not load.": "La suite n'a pas pu être chargée.",
   "Loading more…": "Chargement de la suite…",
+  // src/share/CharacterRow.tsx, MyImageChoices.tsx (TASK-417: the runner's
+  // own image in place of the animal, texts approved, choice 5)
+  "My image": "Mon image",
+  "Choose a photo": "Choisir une photo",
+  "Remove image": "Retirer l'image",
+  "Your image stays on this phone. It leaves only in the video you share.":
+    "Ton image reste sur ton téléphone. Elle n'en sort que dans la vidéo que tu partages.",
+  "This image can't be read. The video goes out without it.":
+    "Cette image est illisible. La vidéo sort sans elle.",
 };

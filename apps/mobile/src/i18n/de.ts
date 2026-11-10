@@ -2222,4 +2222,13 @@ export const DE: Table = {
     "Berühmte Orte, Aussichten, Essen… in jeder Stadt",
   "The rest could not load.": "Der Rest konnte nicht geladen werden.",
   "Loading more…": "Weitere werden geladen…",
+  // src/share/CharacterRow.tsx, MyImageChoices.tsx (TASK-417: the runner's
+  // own image in place of the animal, texts approved, choice 5)
+  "My image": "Mein Bild",
+  "Choose a photo": "Foto auswählen",
+  "Remove image": "Bild entfernen",
+  "Your image stays on this phone. It leaves only in the video you share.":
+    "Dein Bild bleibt auf dem Handy. Es verlässt es nur im Video, das du teilst.",
+  "This image can't be read. The video goes out without it.":
+    "Dieses Bild lässt sich nicht lesen. Das Video kommt ohne es.",
 };

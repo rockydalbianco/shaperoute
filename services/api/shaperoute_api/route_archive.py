@@ -59,7 +59,12 @@ from psycopg.rows import DictRow
 from psycopg.types.json import Jsonb
 from route_engine.directions import guidance
 from route_engine.geo import LatLon, local_to_latlon, path_length_m
-from route_engine.models import WATER_ACTIVITIES, RouteRequest, RouteResult
+from route_engine.models import (
+    FREE_ACTIVITIES,
+    SNOW_ACTIVITIES,
+    RouteRequest,
+    RouteResult,
+)
 from route_engine.nearby_starts import (
     APPROACH_MAX_M,
     NEARBY_MAX_M,
@@ -185,7 +190,7 @@ class RouteArchive:
         its alternatives; None without one. Without one by this engine, a
         route of before drawn again first (`_draw_again`). psycopg.Error
         and the zone's own errors are the caller's (jobs.RouteJobs)."""
-        if not _kept(request) or request.activity in WATER_ACTIVITIES:
+        if not _kept(request) or request.activity in FREE_ACTIVITIES:
             return None
         rows = self._rows(request, NEARBY_M)
         if not rows and self._draw_again(request, source, named_roads):
@@ -513,7 +518,7 @@ def placed_by(request: RouteRequest, plan: Plan) -> Placed | None:
     away (ADR-0040), which takes no `first`; and on the water, or without
     a search."""
     found = plan.search
-    if request.activity in WATER_ACTIVITIES or found is None or found is plan.far:
+    if request.activity in FREE_ACTIVITIES or found is None or found is plan.far:
         return None
     placement = found.best.placement
     if placement.offset_m == 0 and placement.start != request.start:
@@ -564,12 +569,15 @@ class _Loaded:
 
 def _kept(request: object) -> bool:
     """A shape or a word, not moved by hand nor anchored where the user drew
-    it (TASK-347): what the archive keeps. An image's outline is the user's
-    own (ADR-0136)."""
+    it (TASK-347), not on the snow: what the archive keeps. An image's
+    outline is the user's own (ADR-0136); the snow's files are out of the
+    engine's fingerprint (route_store.SNOW_ONLY, TASK-413), so a route on
+    the snow kept would outlive the rules that drew it."""
     return (
         isinstance(request, RouteRequest)
         and request.near is None
         and getattr(request, "placement", "free") == "free"
+        and request.activity not in SNOW_ACTIVITIES
     )
 
 

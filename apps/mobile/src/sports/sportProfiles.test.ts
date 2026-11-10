@@ -38,8 +38,9 @@ import {
 // the sports added since, each by a file and a line of index.ts: a hike
 // (TASK-377), before the walk; an MTB ride (TASK-378) after the hike and a
 // gravel ride after the walk; a skate (TASK-380) after the MTB ride, hidden
-// until part B; a day of ski touring (TASK-415) after the days on the snow,
-// hidden until part B.
+// until part B; snowshoeing (TASK-413) after the skate, hidden until part
+// B; a day of ski touring (TASK-415) after the days on the snow, hidden
+// until part B.
 
 const MPH_KMH = 1.609344;
 
@@ -68,6 +69,13 @@ it("gives «Draw» the distances of before", () => {
     ["mountain_biking", [10, 30]],
     ["inline_skating", [5, 30]],
     [
+      "snowshoeing",
+      [
+        DISTANCE_LIMITS_M.snowshoeing[0] / 1000,
+        DISTANCE_LIMITS_M.snowshoeing[1] / 1000,
+      ],
+    ],
+    [
       "walking",
       [DISTANCE_LIMITS_M.walking[0] / 1000, DISTANCE_LIMITS_M.walking[1] / 1000],
     ],
@@ -81,11 +89,12 @@ it("gives «Draw» the distances of before", () => {
     ["hiking", [1, 18]],
     ["mountain_biking", [7, 18]],
     ["inline_skating", [4, 18]],
+    ["snowshoeing", [0.5, 1.5]],
     ["walking", [1, 18]],
     ["gravel_biking", [7, 18]],
   ]);
   expect(ACTIVITIES.map((activity) => distanceStep(activity))).toEqual([
-    1, 1, 1, 0.5, 1, 1, 1, 1, 1,
+    1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 1,
   ]);
   expect(distanceForSport("7", "paddling", "km")).toBe("2");
   expect(distanceForSport("7", "swimming", "km")).toBe("1");
@@ -103,6 +112,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     mountain_biking: 13,
     // `.skatingSports` (TASK-380).
     inline_skating: 39,
+    // `.hiking`: Apple has no type for it (TASK-413).
+    snowshoeing: 24,
     walking: 52,
     gravel_biking: 13,
     skiing: 61,
@@ -119,6 +130,7 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     ["swimming", "HKQuantityTypeIdentifierDistanceSwimming"],
     ["hiking", "HKQuantityTypeIdentifierDistanceWalkingRunning"],
     ["mountain_biking", "HKQuantityTypeIdentifierDistanceCycling"],
+    ["snowshoeing", "HKQuantityTypeIdentifierDistanceWalkingRunning"],
     ["walking", "HKQuantityTypeIdentifierDistanceWalkingRunning"],
     ["gravel_biking", "HKQuantityTypeIdentifierDistanceCycling"],
   ]);
@@ -131,6 +143,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     mountain_biking: 8,
     // EXERCISE_TYPE_SKATING (TASK-380).
     inline_skating: 60,
+    // EXERCISE_TYPE_SNOWSHOEING (TASK-413).
+    snowshoeing: 63,
     walking: 79,
     gravel_biking: 8,
     skiing: 61,
@@ -151,6 +165,7 @@ it("names the sports, and draws on the phone the ones of before", () => {
     ["hiking", "Hike"],
     ["mountain_biking", "MTB"],
     ["inline_skating", "Roller"],
+    ["snowshoeing", "Snowshoes"],
     ["walking", "Walk"],
     ["gravel_biking", "Gravel"],
   ]);
@@ -216,6 +231,7 @@ it("starts a run without a route and labels a MuW route as before", () => {
     "hiking",
     "mountain_biking",
     "inline_skating",
+    "snowshoeing",
     "walking",
     "gravel_biking",
     "cycling",
@@ -261,6 +277,7 @@ it("gives the screens what they told apart before (part B3b)", () => {
     hiking: "⛰️",
     mountain_biking: "🚵",
     inline_skating: "🛼",
+    snowshoeing: "❄️",
     walking: "🚶",
     gravel_biking: "🚲",
     skiing: "⛷️",
@@ -273,8 +290,16 @@ it("gives the screens what they told apart before (part B3b)", () => {
     swimming: "swim",
   });
   expect(tableOf((sport) => sport.onWater)).toEqual({ paddling: true, swimming: true });
-  expect(tableOf((sport) => sport.noWords)).toEqual({ paddling: true, swimming: true });
-  expect(tableOf((sport) => sport.noImages)).toEqual({ paddling: true });
+  expect(tableOf((sport) => sport.noWords)).toEqual({
+    paddling: true,
+    swimming: true,
+    // A shape of the catalogue only on the snow (TASK-413).
+    snowshoeing: true,
+  });
+  expect(tableOf((sport) => sport.noImages)).toEqual({
+    paddling: true,
+    snowshoeing: true,
+  });
   expect(tableOf((sport) => sport.drawNote)).toEqual({
     paddling: "On the water, the drawing goes where it fits near the start.",
   });

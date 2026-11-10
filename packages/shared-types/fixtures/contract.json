@@ -55,6 +55,7 @@
     "hiking",
     "mountain_biking",
     "inline_skating",
+    "snowshoeing",
     "walking",
     "gravel_biking"
   ],
@@ -68,6 +69,7 @@
     "hiking": [1000, 30000],
     "mountain_biking": [10000, 30000],
     "inline_skating": [5000, 30000],
+    "snowshoeing": [500, 3000],
     "walking": [1000, 30000],
     "gravel_biking": [10000, 30000]
   },

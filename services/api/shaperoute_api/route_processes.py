@@ -57,11 +57,17 @@ from multiprocessing.connection import Connection
 from multiprocessing.process import BaseProcess
 from typing import Any
 
-from route_engine.models import WATER_ACTIVITIES
+from route_engine.models import SNOW_ACTIVITIES, WATER_ACTIVITIES
 from route_engine.network import Graph
 from route_engine.optimizer import Plan
 
-from shaperoute_api.activity_graphs import Graphs, Ground, source_for, water_for
+from shaperoute_api.activity_graphs import (
+    Graphs,
+    Ground,
+    snow_for,
+    source_for,
+    water_for,
+)
 from shaperoute_api.alongs import NamedRoads
 from shaperoute_api.images import AnyRequest, plan_request
 from shaperoute_api.job_times import JobTimes
@@ -70,6 +76,7 @@ from shaperoute_api.jobs import (
     Planner,
     _Dropped,
     _Reporting,
+    _ReportingSnow,
     _ReportingWater,
     with_directions,
 )
@@ -389,6 +396,10 @@ def _plan(
         if activity in WATER_ACTIVITIES:
             water = _ReportingWater(water_for(graphs, activity), report, wanted, times)
             plan = planner(request, water)
+        elif activity in SNOW_ACTIVITIES:
+            # On the snow (TASK-413): no graph, so no directions, as the water.
+            snow = _ReportingSnow(snow_for(graphs, activity), report, wanted, times)
+            plan = planner(request, snow)
         else:
             roads = source_for(graphs, activity)
             ground = _Reporting(roads, report, wanted, times)

@@ -46,7 +46,7 @@ from route_engine.geo import LatLon, latlon_to_local_array
 from route_engine.metrics import SIMILARITIES
 from route_engine.models import (
     ACTIVITIES,
-    WATER_ACTIVITIES,
+    FREE_ACTIVITIES,
     InvalidRequestError,
     RouteResult,
     check_activity,
@@ -107,9 +107,11 @@ PLACEMENTS: tuple[str, ...] = ("free", "anchored")
 # The magnet is for an anchored drawing only: the search has its own zones
 # and band (ADR-0039).
 FIT_WITH_ANCHORED_ONLY = "fit is the magnet of an anchored placement"
-# On the water there are no roads to anchor to: the shape is placed where
+# On the water or the snow there are no roads to anchor to: the shape is placed where
 # it fits (ADR-0154).
-ANCHORED_ON_LAND_ONLY = "a shape is anchored to the roads only, not on the water"
+ANCHORED_ON_LAND_ONLY = (
+    "a shape is anchored to the roads only, not on the water or the snow"
+)
 
 
 @dataclass
@@ -132,7 +134,9 @@ def check_placement(placement: str, fit: float | None, activity: str) -> None:
         raise InvalidRequestError(
             f"unknown placement {placement!r}; choose one of: {', '.join(PLACEMENTS)}"
         )
-    if placement == "anchored" and activity in WATER_ACTIVITIES:
+    # Nothing is anchored where there are no roads: on the water, or on
+    # the snow (TASK-413, ADR-0342).
+    if placement == "anchored" and activity in FREE_ACTIVITIES:
         raise InvalidRequestError(ANCHORED_ON_LAND_ONLY)
     if fit is not None:
         if placement != "anchored":
@@ -367,8 +371,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--activity",
         default="running",
-        help=f"one of: {', '.join(a for a in ACTIVITIES if a not in WATER_ACTIVITIES)}"
-        " (default: running); nothing is anchored on the water",
+        help=f"one of: {', '.join(a for a in ACTIVITIES if a not in FREE_ACTIVITIES)}"
+        " (default: running); nothing is anchored on the water or the snow",
     )
     parser.add_argument(
         "--cache-dir",

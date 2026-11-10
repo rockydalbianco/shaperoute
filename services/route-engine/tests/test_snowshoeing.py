@@ -97,15 +97,16 @@ def _request(shape: str = "circle", distance_m: int = 1000, **kw: Any) -> RouteR
 # --- The activity -------------------------------------------------------------
 
 
-def test_snowshoeing_is_drawn_by_the_engine_not_yet_by_the_contract() -> None:
-    assert [a.name for a in ENGINE_ONLY] == ["snowshoeing"]
-    assert "snowshoeing" not in {a.name for a in ENGINE_ACTIVITIES}
-    assert "snowshoeing" not in SUPPORTED_ACTIVITIES
+def test_snowshoeing_is_drawn_by_the_engine_and_in_the_contract() -> None:
+    # In ENGINE_ONLY until TASK-413 part A2, which gives it to the contract,
+    # after the skate.
+    assert ENGINE_ONLY == ()
+    (activity,) = (a for a in ENGINE_ACTIVITIES if a.name == "snowshoeing")
+    assert SUPPORTED_ACTIVITIES[-1] == "snowshoeing"
     assert ACTIVITIES[-1] == "snowshoeing"
     assert DISTANCE_LIMITS_M["snowshoeing"] == (500, 3_000)
     assert SNOW_ACTIVITIES == {"snowshoeing"}
     assert FREE_ACTIVITIES == WATER_ACTIVITIES | {"snowshoeing"}
-    (activity,) = ENGINE_ONLY
     assert activity.on_snow and not activity.on_water and activity.network is None
 
 

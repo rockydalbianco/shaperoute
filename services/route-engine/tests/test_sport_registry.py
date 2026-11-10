@@ -25,16 +25,18 @@ BEFORE_LIMITS = {
 }
 BEFORE_NETWORKS = {"running": "foot", "cycling": "bike"}
 # Added since, each by a line of its register: a hike (TASK-377), an MTB
-# ride (TASK-378), a skate (TASK-380).
-SINCE_SUPPORTED = ("hiking", "mountain_biking", "inline_skating")
+# ride (TASK-378), a skate (TASK-380), snowshoeing on the snow (TASK-413,
+# in ENGINE_ONLY until its part A2).
+SINCE_SUPPORTED = ("hiking", "mountain_biking", "inline_skating", "snowshoeing")
 SINCE_LIMITS = {
     "hiking": (1_000, 30_000),
     "mountain_biking": (10_000, 30_000),
     "inline_skating": (5_000, 30_000),
+    "snowshoeing": (500, 3_000),
 }
 # Drawn by the engine before the contract has it, by a line of ENGINE_ONLY:
-# snowshoeing on the snow (TASK-413, until its part A2).
-ENGINE_ONLY_LIMITS = {"snowshoeing": (500, 3_000)}
+# none now.
+ENGINE_ONLY_LIMITS: dict[str, tuple[int, int]] = {}
 SINCE_NETWORKS = {
     "hiking": "hike",
     "mountain_biking": "mtb",

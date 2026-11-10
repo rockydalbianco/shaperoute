@@ -47,7 +47,13 @@ from typing import Any
 
 import route_engine
 from route_engine.directions import Direction
-from route_engine.models import Landmark, RouteRequest, RouteResult, SwimTurn
+from route_engine.models import (
+    SNOW_ACTIVITIES,
+    Landmark,
+    RouteRequest,
+    RouteResult,
+    SwimTurn,
+)
 
 log = logging.getLogger(__name__)
 
@@ -421,6 +427,11 @@ class RouteStore:
             return None  # a shape moved by the user (TASK-238): theirs too
         if getattr(request, "placement", "free") != "free":
             return None  # anchored where the user drew it (TASK-347): theirs
+        if request.activity in SNOW_ACTIVITIES:
+            # The snow's files are out of the fingerprint (SNOW_ONLY): a
+            # route on the snow kept would outlive the rules that drew it
+            # (TASK-413, ADR-0342).
+            return None
         same = json.dumps(
             [self._engine_of(request), self._same(request)], sort_keys=True
         )

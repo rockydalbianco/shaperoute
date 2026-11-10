@@ -83,6 +83,8 @@ def test_the_placement_is_free_or_anchored_and_the_magnet_anchored_only() -> Non
         check_placement("free", 0.5, "running")
     with pytest.raises(InvalidRequestError, match=ANCHORED_ON_LAND_ONLY):
         check_placement("anchored", None, "paddling")
+    with pytest.raises(InvalidRequestError, match=ANCHORED_ON_LAND_ONLY):
+        check_placement("anchored", None, "snowshoeing")
     with pytest.raises(InvalidRequestError, match="fit must be between 0 and 1"):
         check_placement("anchored", 1.2, "running")
 

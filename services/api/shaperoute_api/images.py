@@ -26,6 +26,7 @@ from route_engine.drawn_water import plan_drawn_water
 from route_engine.geo import LatLon
 from route_engine.image_outline import ANALYSIS_SIDE, MAX_POINTS, outline_data
 from route_engine.models import (
+    SNOW_ACTIVITIES,
     WATER_ACTIVITIES,
     InvalidRequestError,
     RouteRequest,
@@ -58,6 +59,7 @@ from shaperoute_api.schemas import (
     RouteRequestBody,
     RouteResultBody,
 )
+from shaperoute_api.snowshoeing import SnowGround, plan_snow
 
 log = logging.getLogger(__name__)
 
@@ -292,14 +294,21 @@ def image_job(request: ImageRequest) -> ShapeJob:
     )
 
 
-def plan_request(request: AnyRequest, source: GraphLoader | WaterSource) -> Plan:
+def plan_request(
+    request: AnyRequest, source: GraphLoader | WaterSource | SnowGround
+) -> Plan:
     """The API's planner: a shape, a word or an image, also from a few road
     nodes near the start, keeping the best (TASK-076, ADR-0071) and the
     others worth choosing (TASK-093, ADR-0087). A shape on the water is
     placed on the water `source` gives (TASK-191): there are no roads. An
     anchored request (TASK-347, ADR-0300) is traced once where it was drawn,
     from its own start, with no search, no nearby starts and no
-    alternatives: `plan_anchored`."""
+    alternatives: `plan_anchored`. A shape on the snow is placed on the snow
+    `source` gives (TASK-413), as on the water."""
+    if request.activity in SNOW_ACTIVITIES:
+        # The words of RouteRequest and the outlines of ImageRequest refuse
+        # the snow (models.check_drawn_on_land).
+        return plan_snow(cast(RouteRequest, request), cast(SnowGround, source))
     if request.activity in WATER_ACTIVITIES:
         water = cast(WaterSource, source)
         if isinstance(request, ImageRequest) and request.activity == PADDLING:

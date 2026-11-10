@@ -468,7 +468,8 @@ def test_each_activity_has_a_network_and_distance_limits() -> None:
     # The contract offers cycling since the API's part (TASK-190, ADR-0153),
     # paddling since its own (TASK-191), swimming since TASK-323 part B,
     # hiking since TASK-377 part A, mountain biking since TASK-378 part A,
-    # inline skating since TASK-380 part A.
+    # inline skating since TASK-380 part A, snowshoeing since TASK-413 part
+    # A2.
     assert SUPPORTED_ACTIVITIES == (
         "running",
         "cycling",
@@ -477,6 +478,7 @@ def test_each_activity_has_a_network_and_distance_limits() -> None:
         "hiking",
         "mountain_biking",
         "inline_skating",
+        "snowshoeing",
     )
 
 

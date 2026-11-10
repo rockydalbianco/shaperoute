@@ -6,7 +6,9 @@ refuses a graph of another network (`network.check_network`). The API keeps
 one ZoneGraphs for each and gives a route the one of its activity. What has
 no activity, the themed routes and the directions of a route of "Explore",
 is on foot, as before. A paddling route has no network: it is drawn on the
-water of the cache (paddling.ServerWater, TASK-191).
+water of the cache (paddling.ServerWater, TASK-191). Nor has a snowshoe
+route: it is drawn on the snow of the cache (snowshoeing.ServerSnow,
+TASK-413).
 """
 
 from __future__ import annotations
@@ -15,6 +17,8 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from route_engine.models import (
+    FREE_ACTIVITIES,
+    SNOW_ACTIVITIES,
     SUPPORTED_ACTIVITIES,
     WATER_ACTIVITIES,
     InvalidRequestError,
@@ -26,6 +30,7 @@ from route_engine.water import WaterSource
 
 from shaperoute_api.graphs import MAX_ZONES, ZoneGraphs
 from shaperoute_api.paddling import ServerWater
+from shaperoute_api.snowshoeing import ServerSnow, SnowGround
 from shaperoute_api.sports import API_SPORTS
 
 # Zones kept in memory, for each activity on roads: each sport says it
@@ -37,9 +42,9 @@ ZONES_IN_MEMORY: dict[str, int] = {
     if sport.zones is not None
 }
 # The activities of the contract drawn on roads, each on its network's zones;
-# the others are drawn on the water (TASK-191).
+# the others are drawn on the water (TASK-191) or on the snow (TASK-413).
 ROAD_ACTIVITIES: tuple[str, ...] = tuple(
-    activity for activity in SUPPORTED_ACTIVITIES if activity not in WATER_ACTIVITIES
+    activity for activity in SUPPORTED_ACTIVITIES if activity not in FREE_ACTIVITIES
 )
 
 
@@ -55,20 +60,26 @@ def check_supported(activity: str) -> None:
 
 
 class ActivityGraphs:
-    """One graph loader for each activity of the contract on roads, and the
-    water for those on the water."""
+    """One graph loader for each activity of the contract on roads, the
+    water for those on the water, and the snow for those on the snow."""
 
     def __init__(
-        self, graphs: Mapping[str, GraphLoader], water: WaterSource | None = None
+        self,
+        graphs: Mapping[str, GraphLoader],
+        water: WaterSource | None = None,
+        snow: SnowGround | None = None,
     ) -> None:
         self._graphs = dict(graphs)
         self.water = water
+        self.snow = snow
 
     @classmethod
     def from_cache(cls, cache_dir: Path) -> ActivityGraphs:
-        """Each activity's zones in `cache_dir`, and the water in its
-        `water/` folder, downloaded there when missing, as the CLI does
-        (OsmnxSource.for_activity, water.OverpassWaterSource)."""
+        """Each activity's zones in `cache_dir`, the water in its `water/`
+        folder and the snow in its `snow/` folder, with the heights in
+        `heights/`, downloaded there when missing, as the CLI does
+        (OsmnxSource.for_activity, water.OverpassWaterSource,
+        snow.OverpassSnowSource, heights.TerrariumTiles)."""
         return cls(
             {
                 activity: ZoneGraphs(
@@ -78,6 +89,7 @@ class ActivityGraphs:
                 for activity in ROAD_ACTIVITIES
             },
             water=ServerWater(cache_dir),
+            snow=ServerSnow(cache_dir),
         )
 
     def for_activity(self, activity: str) -> GraphLoader:
@@ -92,8 +104,8 @@ class ActivityGraphs:
 # What the API is given to draw with: the graphs of each activity, or, in
 # the tests, one graph loader for every route.
 Graphs = ActivityGraphs | GraphLoader
-# What a route is drawn on: the roads of its network, or the water.
-Ground = GraphLoader | WaterSource
+# What a route is drawn on: the roads of its network, the water, or the snow.
+Ground = GraphLoader | WaterSource | SnowGround
 
 
 def source_for(graphs: Graphs, activity: str) -> GraphLoader:
@@ -115,9 +127,22 @@ def water_for(graphs: Graphs, activity: str) -> WaterSource:
     return water
 
 
+def snow_for(graphs: Graphs, activity: str) -> SnowGround:
+    """The snow a route of `activity` is drawn on (TASK-413): an API with
+    one graph loader only, as the tests give, has none."""
+    check_supported(activity)
+    snow = graphs.snow if isinstance(graphs, ActivityGraphs) else None
+    if snow is None:
+        raise InvalidRequestError(f"no {activity} routes on this API")
+    return snow
+
+
 def ground_for(graphs: Graphs, activity: str) -> Ground:
     """What a route of `activity` is drawn on: the water for one on the water
-    (models.WATER_ACTIVITIES), else the graphs of its network."""
+    (models.WATER_ACTIVITIES), the snow for one on the snow
+    (models.SNOW_ACTIVITIES), else the graphs of its network."""
     if activity in WATER_ACTIVITIES:
         return water_for(graphs, activity)
+    if activity in SNOW_ACTIVITIES:
+        return snow_for(graphs, activity)
     return source_for(graphs, activity)

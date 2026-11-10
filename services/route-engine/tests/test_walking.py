@@ -27,7 +27,7 @@ def test_a_walk_is_an_activity_of_the_api_not_of_the_engine() -> None:
     assert walking.API_ACTIVITIES == (*SUPPORTED_ACTIVITIES, "walking", "gravel_biking")
     assert "walking" not in SUPPORTED_ACTIVITIES
     assert "walking" not in DISTANCE_LIMITS_M
-    # The engine's of the contract: snowshoeing waits in ENGINE_ONLY (TASK-413).
+    # The engine's of the contract, snowshoeing among them since TASK-413 A2.
     assert walking.API_DISTANCE_LIMITS_M == {
         **{a: DISTANCE_LIMITS_M[a] for a in SUPPORTED_ACTIVITIES},
         "walking": (1_000, 30_000),

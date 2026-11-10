@@ -692,6 +692,11 @@ barra qui sopra, e lo swipe è quello qui sopra.
   «AI-generated» e «Ad · Affiliate links»; il puntino apre una scheda con
   prezzo o «See price», le due righe fisse e «Shop on {store}», che apre il
   browser. «Style posts in the Feed» in «Settings» li toglie da «All».
+  **Spenti dal 2026-11-10** (TASK-430, ADR-0358, scelta dell'utente «Solo il
+  Feed»): i percorsi di MuW non compaiono più nel Feed e l'app non chiede
+  `GET /muw-routes`; si riaccendono con `MUW_ROUTES_IN_FEED = true`
+  (`src/feed/muwInFeed.ts`) e tornano come scritto qui sotto. La fila «RIDE
+  IT YOURSELF» di «Explore» resta.
   Con i **percorsi di MuW** sul server (`GET /muw-routes`, TASK-365,
   ADR-0310) una riga su 6 di «All» al massimo è uno di loro: il primo dopo il
   3° disegno, poi uno ogni 5 disegni, mai in «Following», anche senza account

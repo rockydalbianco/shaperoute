@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037, privacy (#1007) e D (#1080) in `main`; A, B e C sul server; D in produzione con l'OTA 4; prossima E
+**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037, privacy (#1007) e D (#1080) ed E1 (#1099) in `main`; A, B e C sul server; D in produzione con l'OTA 4; prossimi il server di E1 ed E2
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,
@@ -276,6 +276,16 @@ E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
   preview gruppo e72c1aad-3239-4b34-ae0a-c65c64b3ddec. Resta E: la sua
   migrazione nasce in bozza e prende il primo numero libero al merge (la
   0066 è in bozza per TASK-433).
+- 2026-11-10 — Parte E iniziata col sì dell'utente («si garzie», riferito
+  dalla sessione madre); lista approvata dal Coordinatore, due PR. E1 in
+  `main` (#1099, adf0dec0): edizioni argento e oro in `game_unlocks`,
+  `game_prefs`, `GET /game/prizes` e `PUT /game/prizes/shown`,
+  `game_prizes` nel profilo pubblico, le push `edition_up` e
+  `collection_done` (testi approvati dall'utente: «Sì, approvo»), le
+  edizioni nel backfill senza push; migrazione 0067_game_prizes. Controlli
+  di sola lettura per il passo server 6 in `out/TASK-423/SERVER-E.md` del
+  checkout principale. E2 (l'app) entra in `main` solo dopo «server E1
+  fatto» del Coordinatore.
 
 ## Esito
 

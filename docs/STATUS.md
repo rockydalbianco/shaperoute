@@ -131,8 +131,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
   privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
   collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
-  in produzione con l'OTA 4 del 2026-11-10. Prossima E (premi, una
-  migrazione). File: — · `tasks/TASK-423.md`
+  in produzione con l'OTA 4 del 2026-11-10. E1 (premi sul server, 0067) in
+  `main` con la #1099, il passo server 6 aspetta il sì dell'utente; poi E2
+  (l'app) e la privacy. File: — · `tasks/TASK-423.md`
 - **TASK-429 — La modalità sci** (ADR-0357) · 0 e A in `main` (A: #1093,
   esce col prossimo OTA). B1 (mappa a colori, legenda, «Summary · Map ·
   Runs») scritta, PR dopo la #1098; poi B2 e C, i tratti `ski_parts` con

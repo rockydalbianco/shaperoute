@@ -109,10 +109,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   finale, camera dietro, anteprima) e D («Describe your video») in `main`,
   nell'OTA di produzione; restano B2 (elefante, file dall'utente) ed E
   (telefono). File: — · `tasks/TASK-408.md`
-- **TASK-410 — La pagina del post** · B (#949), F (#980) e C (`run_stats`,
-  #1001) in `main`; 0064 e backfill dei passi col passo unico sul server.
-  OTA di produzione del 2026-11-10 da 88e5f88f (gruppo `4eca1d42`, preview
-  `b0f9913b`). D (#1043) col secondo OTA, poi E. File: — · `tasks/TASK-410.md`
+- **TASK-410 — La pagina del post** · B (#949), F (#980), C (`run_stats`,
+  #1001; 0064 e backfill sul server) e D (le sezioni, #1043) in `main`. OTA
+  di produzione del 2026-11-10 da 88e5f88f (gruppo `4eca1d42`) con F e C;
+  D con l'OTA 3, dopo il passo server 2, col sì dell'utente. Poi E. File: —
+  · `tasks/TASK-410.md`
 - **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
   `heights.py` condiviso) e sul server col passo unico del 2026-11-10;
   prossime A2 (contratto, API, migrazione in bozza 0057) e B. File: — ·

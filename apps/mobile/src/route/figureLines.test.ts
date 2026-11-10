@@ -1,3 +1,8 @@
+/// <reference types="node" />
+
+import { readdirSync, readFileSync } from "fs";
+import { join } from "path";
+
 import type { LatLon, OutlinePoint } from "@shaperoute/shared-types";
 import imageRequest from "@shaperoute/shared-types/fixtures/image-route-request.json";
 
@@ -238,6 +243,35 @@ test("a track that crosses itself is run once with the way back, not twice (TASK
   expect(askedFor(crossing) / once).toBeLessThan(1.01);
 });
 
+test("a closed track that crosses itself is a loop hung on a ring at its start, run once", () => {
+  // A bowtie back to its start, 4.8 km: its two halves cross in the
+  // middle, so it makes no outline. Before, «Edit the drawing» had no
+  // drawing of it and the card of «Explore» showed no button.
+  const sides = [
+    [0, 0],
+    [1000, 1000],
+    [1000, 0],
+    [0, 1000],
+    [0, 0],
+  ] as [number, number][];
+  const bowtie = trackOf(sides);
+  const { lines, centre, unitM } = trackInPlace(bowtie);
+  expect(drawingOf(lines)).not.toBeNull();
+  expect(routeTrack(bowtie)).toEqual({ lines, centre, unitM });
+  expect(isOpenLine(lines.outline, lines.details)).toBe(true);
+  expect(lines.details).toHaveLength(1);
+  const detail = lines.details[0];
+  // It starts where the track did and ends on that very point: run once.
+  const at = (point: OutlinePoint) =>
+    onMap({ figure: { kind: "shape", shape: "heart" }, centre, unitM }, point);
+  expect(metresBetween(at(detail[0]), bowtie[0])).toBeLessThan(1);
+  expect(detail[detail.length - 1]).toEqual(detail[0]);
+  // The whole bowtie once, not out and back.
+  const once = 2000 + 2 * Math.hypot(1000, 1000);
+  expect(askedFor(bowtie) / once).toBeGreaterThan(0.99);
+  expect(askedFor(bowtie) / once).toBeLessThan(1.01);
+});
+
 test("a track that ends near its start is still one closed outline", () => {
   expect(isOpenLine(trackInPlace(RING).lines.outline, [])).toBe(false);
   expect(trackInPlace(RING).lines.details).toEqual([]);
@@ -276,3 +310,50 @@ test("a route of «Explore» gives its line where it is; one too short nothing",
   expect(routeTrack([TRENTO])).toBeNull();
   expect(routeTrack([])).toBeNull();
 });
+
+/** Every route of the catalog of «Explore» (`catalog/`): the seed of each
+ * city and MuW's own drawings, by their points. */
+function catalogRoutes(): [string, LatLon[]][] {
+  const catalog = join(__dirname, "..", "..", "..", "..", "catalog");
+  const read = (path: string) => JSON.parse(readFileSync(path, "utf8"));
+  const seed = readdirSync(join(catalog, "seed")).flatMap((file) =>
+    (read(join(catalog, "seed", file)).routes as RouteFile[]).map(
+      (route): [string, LatLon[]] => [
+        `${file} ${route.shape ?? route.word} ${route.distance_m}`,
+        route.points,
+      ],
+    ),
+  );
+  const muw = readdirSync(join(catalog, "muw_routes")).map(
+    (file): [string, LatLon[]] => [
+      file,
+      (read(join(catalog, "muw_routes", file)) as RouteFile).points,
+    ],
+  );
+  return [...seed, ...muw];
+}
+
+type RouteFile = {
+  shape?: string;
+  word?: string;
+  distance_m?: number;
+  points: LatLon[];
+};
+
+test("every route of the catalog of «Explore» has a drawing to edit, run once (TASK-432)", () => {
+  // Before, 334 of 575 crossed themselves and made no drawing: no button.
+  const routes = catalogRoutes();
+  expect(routes.length).toBeGreaterThan(500);
+  const without = routes.filter(([, points]) => {
+    const track = routeTrack(points);
+    return track === null || drawingOf(track.lines) === null;
+  });
+  expect(without.map(([name]) => name)).toEqual([]);
+  // Never out and back: at most the route itself (simplified, a little less).
+  for (const [name, points] of routes) {
+    const ratio = askedFor(points) / lengthOf(points);
+    if (ratio > 1.02) {
+      throw new Error(`${name} asks ${ratio.toFixed(2)} times the route`);
+    }
+  }
+}, 60_000);

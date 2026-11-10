@@ -130,9 +130,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `tasks/TASK-424.md`
 - **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
   privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
-  collezioni, lista unica di «Challenges», `utc_offset_min`) in `main` con
-  la #1080, esce col prossimo OTA col sì dell'utente. Prossima E (premi).
-  File: — · `tasks/TASK-423.md`
+  collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
+  in produzione con l'OTA 4 del 2026-11-10. Prossima E (premi, una
+  migrazione). File: — · `tasks/TASK-423.md`
 - **TASK-429 — La modalità sci** (ADR-0357) · parte 0 fatta: proposta,
   mockup e le quattro scelte dell'utente (schede, sei sezioni, colori,
   testi). Prossima la parte A (la modalità e le schede), con la lista al

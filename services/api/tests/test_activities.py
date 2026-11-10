@@ -52,6 +52,8 @@ POST = {"post"}
 # Where a run comes from (TASK-312 part A): every fixture written before is
 # a run of the app, as an older app sends it and an older API answers it.
 SOURCE = {"source"}
+# The phone's offset for the game (TASK-423 C): only a newer app sends it.
+OFFSET = {"utc_offset_min"}
 MUW = {"source": "muw"}
 
 
@@ -163,7 +165,11 @@ def test_the_fixtures_are_the_contract() -> None:
     # TASK-208, in activity-request-cycling.json (test_drawings.py).
     body = _load("activity-request.json")
     assert set(body) == (
-        set(ActivityRequestBody.model_fields) - {"walks", "activity"} - TURN - SOURCE
+        set(ActivityRequestBody.model_fields)
+        - {"walks", "activity"}
+        - TURN
+        - SOURCE
+        - OFFSET
     )
     assert set(body["pauses"][0]) == set(PauseBody.model_fields) - {"pen"}
     ActivityRequestBody.model_validate(body)
@@ -183,7 +189,7 @@ def test_the_fixtures_are_the_contract() -> None:
     # A word with the pen up (TASK-199): every field but the activity.
     walked = _load("activity-request-walks.json")
     assert set(walked) == (
-        set(ActivityRequestBody.model_fields) - {"activity"} - TURN - SOURCE
+        set(ActivityRequestBody.model_fields) - {"activity"} - TURN - SOURCE - OFFSET
     )
     assert set(walked["pauses"][0]) == set(PauseBody.model_fields)
     ActivityRequestBody.model_validate(walked)
@@ -202,7 +208,7 @@ def test_the_fixtures_are_the_contract() -> None:
     # request of before with its turn, and the run whole with every field.
     turned = _load("activity-request-turned.json")
     assert set(turned) == (
-        set(ActivityRequestBody.model_fields) - {"walks", "activity"} - SOURCE
+        set(ActivityRequestBody.model_fields) - {"walks", "activity"} - SOURCE - OFFSET
     )
     assert {**turned, "rotation_deg": None} == {**body, "rotation_deg": None}
     assert ActivityRequestBody.model_validate(turned).rotation_deg == -30

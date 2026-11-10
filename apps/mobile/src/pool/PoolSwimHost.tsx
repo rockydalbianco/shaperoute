@@ -2,6 +2,7 @@ import { Modal } from "react-native";
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context";
 
 import type { HealthPhone } from "../health/healthPhone";
+import type { HeartReader } from "../health/heartSamples";
 import { PoolSwimEnd } from "./PoolSwimEnd";
 import { PoolSwimScreen } from "./PoolSwimScreen";
 import { usePoolOutbox } from "./usePoolOutbox";
@@ -12,12 +13,17 @@ import { usePoolSwim } from "./usePoolSwim";
  * in «Draw» until «Save» or «Discard»; an app opened again with one under
  * way opens on it. As the workout at the gym (GymWorkoutHost), with its own
  * safe area. The swims saved go to the API from here, those left from
- * before too. `fetchFn` and `health` are for the tests.
+ * before too. `fetchFn`, `health` and `heart` are for the tests.
  */
 export function PoolSwimHost({
   fetchFn,
   health,
-}: { fetchFn?: typeof fetch; health?: HealthPhone | null } = {}) {
+  heart,
+}: {
+  fetchFn?: typeof fetch;
+  health?: HealthPhone | null;
+  heart?: HeartReader | null;
+} = {}) {
   const { swim, nowMs } = usePoolSwim();
   const { save } = usePoolOutbox(fetchFn);
   if (swim === null) {
@@ -29,7 +35,7 @@ export function PoolSwimHost({
         {swim.endedMs === null ? (
           <PoolSwimScreen key={swim.key} swim={swim} nowMs={nowMs} />
         ) : (
-          <PoolSwimEnd swim={swim} onSave={save} health={health} />
+          <PoolSwimEnd swim={swim} onSave={save} health={health} heart={heart} />
         )}
       </SafeAreaProvider>
     </Modal>

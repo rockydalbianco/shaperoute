@@ -1,5 +1,7 @@
 import { type DrawingChoice, NOT_CHOSEN } from "../api/drawings";
+import { SwitchRow } from "../contest/EnterSwitch";
 import type { GymPhoto } from "../gym/GymPostForm";
+import { t } from "../i18n";
 import { phonePhotoUri } from "../social/drawingPhotos";
 import type { ComposerPhoto } from "../social/composer/PostComposer";
 import { DRAWING_ITEM, type PostItem, renumbered } from "../social/composer/postOrder";
@@ -19,6 +21,9 @@ export type PoolPost = {
   photos: GymPhoto[];
   /** The pages: the tile among the photos. */
   items: PostItem[];
+  /** «Show heart rate» (TASK-409 part B): on until turned off, as in
+   * TASK-345 («On, publisher can hide»). */
+  showHeart: boolean;
 };
 
 /** A post not touched yet: a swim, seen by whom the last post was
@@ -28,6 +33,7 @@ export function newPoolPost(owner: number | null): PoolPost {
     choice: { ...NOT_CHOSEN, activity: "swimming", visibility: loadVisibility(owner) },
     photos: [],
     items: [{ kind: "drawing" }],
+    showHeart: true,
   };
 }
 
@@ -59,6 +65,8 @@ type Props = {
   post: PoolPost;
   onPost: (next: PoolPost) => void;
   disabled?: boolean;
+  /** Whether the swim has its heart rate: «Show heart rate» shows. */
+  heart?: boolean;
   /** The fakes of the tests. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
@@ -70,9 +78,17 @@ type Props = {
  * the user's «Sì, come la Palestra»): the photos with the yellow tile among
  * them, the title, «How did it go?», the people tagged and who can see it.
  * A swim stays a swim and enters no contest. It goes with «Save», with
- * the swim.
+ * the swim. With its heart rate, «Show heart rate» (TASK-409 part B).
  */
-export function PoolPostForm({ post, onPost, disabled, pick, fetchFn, apiKey }: Props) {
+export function PoolPostForm({
+  post,
+  onPost,
+  disabled,
+  heart = false,
+  pick,
+  fetchFn,
+  apiKey,
+}: Props) {
   const shown: ComposerPhoto[] = post.photos.map((photo) => ({
     n: photo.n,
     source: { uri: phonePhotoUri(photo.base64) },
@@ -109,6 +125,16 @@ export function PoolPostForm({ post, onPost, disabled, pick, fetchFn, apiKey }: 
         })
       }
       track={null}
+      extra={
+        heart ? (
+          <SwitchRow
+            label={t("Show heart rate")}
+            on={post.showHeart}
+            onChange={(showHeart) => onPost({ ...post, showHeart })}
+            disabled={disabled}
+          />
+        ) : undefined
+      }
       pool
       disabled={disabled}
       pick={pick}

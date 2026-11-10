@@ -468,6 +468,7 @@ lasciando le righe d'indice.
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 - ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0352, precisazione A2 — La pagina dei link dal vivo · 2026-11-08 · Attiva
+- ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link · 2026-11-10 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -665,6 +666,44 @@ dall'agente su delega dell'utente
   l'API. `?api=` (solo da `127.0.0.1`/`localhost`, solo verso un indirizzo
   locale) serve a provarla sul Mac contro un finto `/live`: l'API vera
   lascia leggere `/live` solo a `https://getmuw.app`.
+## ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parte B1 (#1025, a25a24a9) ·
+deciso dall'agente su delega dell'utente; il consenso a ogni link è
+scelta dell'utente del 2026-11-10 («ok procedi»)
+
+- **Lo stato del link sta fuori da React** (`src/liveShare/liveShareStore.ts`),
+  un link alla volta come la corsa: il task della posizione
+  (`navigation/runPosition.ts`) gli passa ogni posizione e fa partire
+  l'invio, anche a telefono bloccato; nessun task nuovo. Lo schermo della
+  corsa (`RunCard`, con `useLiveShareFeed`) gli passa traccia, calorie,
+  battito dell'orologio e pausa; i numeri si calcolano dalla traccia al
+  momento dell'invio. Davanti un timer di 5 s porta i segnali della pausa e
+  i nuovi tentativi della fine anche senza posizioni.
+- **La macchina degli invii** (`liveSharer.ts`) non ha orologio né timer
+  suoi: 15 s in movimento, 60 s in pausa, subito a ogni cambio di stato;
+  un punto ogni 5 s al più, 200 per invio (subito il resto dopo un invio
+  pieno), coda di 500 che perde i più vecchi; un tentativo fallito aspetta
+  il giro normale. `410`, `404` e `401` chiudono il link; un `422` scarta
+  quei punti; rete, `5xx` e `429` li tengono. `finished` riprovato fino a 4
+  volte, poi il link scade da solo. Lo stop chiude subito sul telefono e
+  manda il `DELETE`, una seconda volta se manca la rete.
+- **I punti** vengono dal task della posizione (precisione entro
+  `MAX_ACCURACY_M`) e, dove il GPS va solo in primo piano (Expo Go, un
+  servizio Android rifiutato), dalle posizioni nuove della traccia dello
+  schermo; la stessa posizione non entra due volte. Solo da quando c'è il
+  link: il server non prende punti più vecchi di 5 minuti.
+- **La fine** è quando la scheda della corsa se ne va (finita, salvata o
+  no), non quando `live` diventa falso: un GPS perso a metà corsa non
+  chiude il link. Una fine mentre il link si sta facendo lo cancella.
+- **Il consenso** torna a ogni link nuovo: ogni link è nuovo e il battito
+  è un dato di salute (scelta dell'utente del 2026-11-10). Il foglio di
+  condivisione del telefono si apre solo dopo che il nostro foglio è
+  sparito (su iOS a `onDismiss`, come TASK-358). Su «Compass» niente
+  pulsante né etichetta.
+- **Impronta iOS** invariata: `6f8bba4c`, come la build 8 di produzione.
+  Nessuna dipendenza nuova: `fetch` e `Share` di React Native.
+
 ## ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog`
 
 **Stato**: Accettata · 2026-11-10 · TASK-420 parte D. Scelta dell'utente,
@@ -1697,4 +1736,5 @@ anello: distanza chiesta 0,76–0,99 volte la traccia più il ritorno dritto
 veri a Trento (`plan_request`, `placement="anchored"`): 7,6 km per 7,0
 chiesti, 10,5 per 10,7, 19,3 per 17,0, somiglianza 0,97–1,00. Il ritorno è
 dritto verso la partenza, non la via più breve, e sulla mappa fa parte della
-figura. Solo JavaScript nell'app, nell'OTA unico o nel successivo.
+figura. Solo JavaScript nell'app: esce con il prossimo OTA di produzione,
+dopo il passo server 2.

@@ -89,6 +89,12 @@ export type MapCanvas = {
   /** A new number frames the map on the figure, or on the start without
    * one; the same one does not frame it again. */
   framing: number;
+  /** Where the route of the figure starts, a dot, none on the water; the
+   * line a finger drags it along with «Move», only to its two ends
+   * (`startEnds`); with no line it stays (TASK-426, ADR-0354). */
+  start?: LatLon | null;
+  startLine?: LatLon[];
+  startEnds?: boolean;
 };
 
 /** What the page of «Draw on the map» tells the app (TASK-281). */
@@ -98,7 +104,9 @@ export type CanvasEvent =
   | { type: "figure"; centre: LatLon; factor: number; done: boolean; turn?: number }
   | { type: "centre"; point: LatLon }
   /** A tap with «Move», among pieces (TASK-402 part B). */
-  | { type: "tapped"; point: LatLon; metresPerPx: number };
+  | { type: "tapped"; point: LatLon; metresPerPx: number }
+  /** The start dot left with «Move» (TASK-426): where on its line. */
+  | { type: "started"; point: LatLon; metresPerPx: number };
 
 type Props = {
   /** Where the route will start; the map centres on it with a marker. */
@@ -487,6 +495,9 @@ export function MapView({
             chosen: canvas.chosen,
             box: canvas.box,
             frame: canvas.framing !== framed.current,
+            start: canvas.start,
+            startLine: canvas.startLine,
+            startEnds: canvas.startEnds,
           }),
         ),
       );
@@ -580,6 +591,12 @@ export function MapView({
           } else if (message?.type === "tapped") {
             onCanvas?.({
               type: "tapped",
+              point: fromLngLat(message.lngLat),
+              metresPerPx: message.metresPerPx,
+            });
+          } else if (message?.type === "started") {
+            onCanvas?.({
+              type: "started",
               point: fromLngLat(message.lngLat),
               metresPerPx: message.metresPerPx,
             });

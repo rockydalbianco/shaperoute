@@ -1743,6 +1743,66 @@ export interface GameMe {
   collections?: GameCollectionState[];
 }
 
+/**
+ * What a personal challenge's number is (TASK-423 part C): metres, a count
+ * of outings, days, or seconds a kilometre, where lower is better.
+ */
+export type GamePersonalUnit = "m" | "count" | "days" | "pace_s";
+
+/** A personal challenge: its id and its three steps, bronze to gold. */
+export interface GamePersonalChallenge {
+  /** "week_km", "early", "month_days": the app names it. */
+  id: string;
+  unit: GamePersonalUnit;
+  /** Bronze, silver, gold: to reach, or for "pace_s" to beat. */
+  tiers: number[];
+}
+
+/** A challenge of this week or month, for the account. */
+export interface GamePersonalStanding extends GamePersonalChallenge {
+  /** Where the account is; null for a pace without a run of the distance. */
+  value: number | null;
+  /** 0 to 3: the steps reached. */
+  tier: number;
+}
+
+/** A week or a month on the runner's clock: `end` is the day after it. */
+export interface GamePersonalPeriod {
+  start: string;
+  end: string;
+  challenges: GamePersonalStanding[];
+}
+
+/** One line of the streak: weeks in a row with at least `runs` outings. */
+export interface GameStreak {
+  runs: number;
+  current: number;
+  best: number;
+}
+
+/** A step reached in a week or a month gone by: its medal. */
+export interface GamePersonalFinished extends GamePersonalChallenge {
+  period: "week" | "month";
+  start: string;
+  /** 1 bronze, 2 silver, 3 gold. */
+  tier: number;
+  done_at: string;
+}
+
+/**
+ * GET /game/personal (TASK-423 part C, ADR-0351): the account's personal
+ * challenges and streak, on the phone's clock (`utc_offset_min` in the
+ * query). An API before it answers 404.
+ */
+export interface GamePersonal {
+  week: GamePersonalPeriod;
+  month: GamePersonalPeriod;
+  /** Three lines: 1, 2 and 3 outings a week. */
+  streaks: GameStreak[];
+  /** The medals of the last 8 weeks, newest first, this period's left out. */
+  finished: GamePersonalFinished[];
+}
+
 /** Why a run does not count for the game, or counts less (docs/GIOCO.md §4). */
 export type RunGameReason = "not_running" | "vehicle" | "overlap" | "daily_cap";
 

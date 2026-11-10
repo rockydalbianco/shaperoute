@@ -1833,6 +1833,14 @@ export const ES: Table = {
   Lengths: "Largos",
   "Pool swim": "Natación en piscina",
   "Pace /100 m": "Ritmo /100 m",
+  // TASK-409 part B: the heart rate of a swim in a pool.
+  "Add heart rate from Apple Health": "Añadir la frecuencia cardiaca desde Salud",
+  "No heart rate from your watch for this swim.":
+    "Ninguna frecuencia cardiaca de tu reloj para esta sesión de natación.",
+  "Show heart rate": "Mostrar la frecuencia cardiaca",
+  "Avg heart rate": "FC media",
+  "Time in zones": "Tiempo en zonas",
+  "From your watch, via Apple Health": "De tu reloj, a través de Salud",
   // src/explore/ExploredCard.tsx, src/social/DrawingCard.tsx (TASK-313)
   "Draw it near me": "Dibujarla cerca de mí",
   // src/route/RoutePanel.tsx (TASK-311 B: a word in one line that did not come out)
@@ -1934,6 +1942,10 @@ export const ES: Table = {
   // The Apple Watch (TASK-370 part B3a).
   "Send to watch": "Enviar al reloj",
   "Sent to your watch": "Enviado al reloj",
+  "Your activity from the watch is ready": "Tu actividad del reloj está lista",
+  "Open MuW to save it.": "Abre MuW para guardarla.",
+  "From your Apple Watch": "Desde tu Apple Watch",
+  Open: "Abrir",
   "Send a route from MuW on your iPhone": "Envía una ruta desde MuW en el iPhone",
   "Off route": "Fuera de la ruta",
   Arrived: "Llegada",

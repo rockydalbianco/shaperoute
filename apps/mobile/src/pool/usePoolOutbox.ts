@@ -15,6 +15,7 @@ import {
   refusePoolWaiting,
   stopPoolWaiting,
 } from "./poolOutbox";
+import type { PoolHeart as PoolHeartRead } from "./poolHeart";
 import { type PoolPost, poolPostPhotos } from "./PoolPostForm";
 import {
   activeMs,
@@ -38,7 +39,12 @@ export type PoolSaved = PoolKept | "signed_out" | "nothing";
  * (gym/useGymOutbox.ts). `fetchFn` is for the tests.
  */
 export function usePoolOutbox(fetchFn?: typeof fetch): {
-  save: (swim: PoolSwim, lengths: number, post?: PoolPost) => PoolSaved;
+  save: (
+    swim: PoolSwim,
+    lengths: number,
+    post?: PoolPost,
+    heart?: PoolHeartRead | null,
+  ) => PoolSaved;
 } {
   const { apiUrl, account } = useFollowsDoor();
   const { owner, refresh } = useActivitiesDoor();
@@ -106,12 +112,28 @@ export function usePoolOutbox(fetchFn?: typeof fetch): {
   }, [send, token, owner]);
 
   const save = useCallback(
-    (swim: PoolSwim, lengths: number, post?: PoolPost): PoolSaved => {
+    (
+      swim: PoolSwim,
+      lengths: number,
+      post?: PoolPost,
+      heart: PoolHeartRead | null = null,
+    ): PoolSaved => {
       const who = latest.current.owner;
       if (who === null) {
         return "signed_out";
       }
-      const request = poolSwimRequest(swim, lengths);
+      // Its heart rate, shown in the post unless turned off (TASK-409 B).
+      const request = poolSwimRequest(
+        swim,
+        lengths,
+        heart === null
+          ? null
+          : {
+              avgBpm: heart.avgBpm,
+              maxBpm: heart.maxBpm,
+              shown: post?.showHeart ?? true,
+            },
+      );
       if (request === null || swim.endedMs === null) {
         return "nothing";
       }

@@ -1,7 +1,7 @@
 # TASK-406 — Le stazioni sciistiche: la ricerca «Ski», la neve, il meteo e la giornata
 
-**Stato**: Proposto · nessun codice prima delle scelte dell'utente e della
-lista dei file di ogni parte, approvata dal Coordinatore
+**Stato**: In lavorazione · parti A–D online dal 2026-11-10 (server e OTA
+di produzione); resta la parte E, la prova sulla neve
 **Fase**: 5 · **Branch**: `docs/TASK-406-ski-resorts` (documenti); il
 codice `feat/TASK-406-a-…`
 **Dipende da**: TASK-375 (lo sci «Record only», impianti e piste per nome,
@@ -323,6 +323,22 @@ Scelte tecniche, decise dall'agente su delega dell'utente:
 
 Prossimo: il server con la `0062` nel passo unico; poi l'OTA col sì
 dell'utente, e la parte E, la prova sulla neve.
+
+**Online, 2026-11-10.** Le parti A–D sono sul server e sui telefoni:
+- **il server** è a `9cf5576b`, con il passo unico del Coordinatore lanciato
+  dall'utente: migrazioni `0061`–`0064` (con la `0062` delle stazioni
+  seguite), copia `shaperoute-2026-11-10T0742Z.dump`, immagine di ritorno
+  `shaperoute-api:before-2026-11-10`. Controlli: `/ski-resorts/x/drawings`
+  risponde `401` (la rotta c'è) e `ResortPostsBody` è nello schema;
+- **l'OTA di produzione** è da `main` `88e5f88f`, col sì dell'utente («ok
+  si»): gruppo `4eca1d42-cb1c-407a-84aa-0d929ede781d`, update
+  `01a1c482-7073-7baa-8070-7289e90a2387`, runtime `6f8bba4c`. Su preview è
+  il gruppo `b0f9913b`. Dentro ci sono la scheda «Ski», «Record your day»
+  per lo sci e la pagina della stazione;
+- **la pagina della privacy** sul sito è nella copia del Coordinatore.
+
+Prossimo: la parte E, la prova sulla neve, quando l'utente va a sciare.
+Prima la sua lista al Coordinatore.
 
 ## File toccati
 

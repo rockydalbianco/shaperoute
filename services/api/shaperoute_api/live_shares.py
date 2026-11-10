@@ -34,8 +34,8 @@ import math
 import re
 import secrets
 import threading
-import time
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Annotated, Any, Literal
@@ -395,19 +395,34 @@ def _stop(conn: Any, share_id: UUID, now: datetime) -> None:
 
 
 class LiveShareSweep:
-    """`sweep` every SWEEP_EVERY_S, in a thread of its own, for as long as the
-    API runs."""
+    """`sweep` every SWEEP_EVERY_S, in a thread of its own, while the app
+    serves: started and stopped around its lifespan (install_live_shares),
+    so it never runs on a database already closed."""
 
     def __init__(self, shares: LiveShares, every_s: float = SWEEP_EVERY_S) -> None:
         self.shares = shares
         self.every_s = every_s
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
 
     def start(self) -> None:
-        threading.Thread(target=self._run, name="live-shares", daemon=True).start()
+        if self._thread is not None:
+            return
+        self._stop.clear()
+        self._thread = threading.Thread(
+            target=self._run, name="live-shares", daemon=True
+        )
+        self._thread.start()
+
+    def stop(self) -> None:
+        """No more rounds; one under way ends before this returns."""
+        self._stop.set()
+        thread, self._thread = self._thread, None
+        if thread is not None:
+            thread.join()
 
     def _run(self) -> None:
-        while True:
-            time.sleep(self.every_s)
+        while not self._stop.wait(self.every_s):
             try:
                 gone = self.shares.sweep()
                 if gone:
@@ -494,7 +509,29 @@ def live_share_routes() -> APIRouter:
 
 
 def install_live_shares(app: FastAPI) -> None:
-    """Without a database the endpoints answer 503, as the others of the
-    accounts."""
+    """After install_accounts. Without a database the endpoints answer 503,
+    as the others of the accounts, and there is no round. With one, the
+    round runs only while the app serves: started and stopped around the
+    app's lifespan, before the database closes."""
     app.state.live_view_limiter = RateLimiter(VIEWS_PER_MINUTE)
+    accounts: Accounts | None = app.state.accounts
+    if accounts is not None:
+        sweep = LiveShareSweep(LiveShares(accounts.database, accounts.now))
+        app.state.live_share_sweep = sweep
+        _around_lifespan(app, sweep)
     app.include_router(live_share_routes())
+
+
+def _around_lifespan(app: FastAPI, sweep: LiveShareSweep) -> None:
+    inner = app.router.lifespan_context
+
+    @asynccontextmanager
+    async def lifespan(app_: FastAPI) -> AsyncIterator[Any]:
+        async with inner(app_) as state:
+            sweep.start()
+            try:
+                yield state
+            finally:
+                sweep.stop()
+
+    app.router.lifespan_context = lifespan

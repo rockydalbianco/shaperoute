@@ -500,6 +500,7 @@ lasciando le righe d'indice.
 - ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL · 2026-11-10 · Accettata
 - ADR-0340, precisazione D — Le sezioni della pagina: parziali, altimetria, battito medio e massimo; zone e minimo rimandati, dislivello dal profilo · 2026-11-10 · Attiva
 - ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
+- ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì · 2026-11-10 · Accettata
 
 ## Voci nuove
 
@@ -1953,3 +1954,48 @@ chiesti, 10,5 per 10,7, 19,3 per 17,0, somiglianza 0,97–1,00. Il ritorno è
 dritto verso la partenza, non la via più breve, e sulla mappa fa parte della
 figura. Solo JavaScript nell'app: esce con il prossimo OTA di produzione,
 dopo il passo server 2.
+
+## ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì
+
+**Stato**: Accettata · 2026-11-10 · TASK-426 (#1035). Il gesto e cosa si
+vede sono scelta dell'utente del 2026-11-10 («Sì, così»); il modo di farlo
+è deciso dall'agente su delega dell'utente.
+
+**Contesto**: in «Draw on the map» il percorso parte sempre dal primo punto
+del contorno (`lookOf(...).start`), che la mappa non mostrava. L'utente
+voleva poterlo spostare in un altro punto della linea. Il motore mette il
+primo punto della figura sulla partenza (`anchored.py`) e prova anche altre
+fasi lungo la forma (`optimizer.PHASES`), sempre con la partenza chiesta.
+
+**Decisione**:
+
+1. **Un pallino** (ciano, `color.startHere`) sul primo punto della figura
+   mostrata, in tutti i modi; con «Move» un dito che parte sul pallino lo
+   trascina lungo la linea, e la pagina dice dove lo lascia (`started`).
+2. **Il contorno ricomincia dal punto scelto** (`mapdraw/startPoint.ts`):
+   un angolo entro mezzo dito (`CORNER_SHARE · REACH_PX`), altrimenti un
+   punto nuovo sul lato, se il contorno ha meno di `MAX_OUTLINE_POINTS`
+   angoli. La figura non si muove e `start` della richiesta viene da sé
+   (`placedStart`): niente di nuovo nel contratto né nel motore.
+3. **Linea aperta**: solo le due estremità; all'altra la linea si gira e
+   l'anellino di partenza (`startRing`) si rifà lì. Non si gira se finisce
+   in un occhiello o se un altro dettaglio è appeso all'anellino.
+4. **Emoji**: spostata, diventa il suo contorno (`shapeOutline`), come una
+   girata (ADR-0336); a penna alzata il pallino è fermo.
+5. **Pezzi**: si sposta il primo pezzo, che dà il contorno; fermo mentre è
+   scelto un altro pezzo. **Sull'acqua** nessun pallino: lì il motore parte
+   dalla riva e la figura non è ancorata (ADR-0313).
+6. Ogni spostamento è un passo di «Undo» (`swap`, o del pezzo).
+
+**Alternative**:
+
+- **Un campo nuovo con la partenza, separato dal contorno**: scartata, ogni
+  modifica della figura (penna, gomma, piega) avrebbe dovuto tenerlo
+  allineato; girare il contorno basta, e la richiesta resta quella di oggi.
+- **Tenere premuto il pallino prima di trascinarlo**: scartata dall'utente;
+  tenere premuto su una linea resta la piega.
+
+**Conseguenze**: solo JavaScript nell'app (`mapdraw/`, `map/mapPage.ts`,
+`map/messages.ts`, `map/MapView.tsx`), nessun testo nuovo, hash SRI di
+MapLibre invariati; esce con l'OTA di produzione. Come oggi il motore può
+ancora spostare la figura per trovare le strade, ma parte dal punto scelto.

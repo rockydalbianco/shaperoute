@@ -2224,6 +2224,15 @@ export const DE: Table = {
     "Berühmte Orte, Aussichten, Essen… in jeder Stadt",
   "The rest could not load.": "Der Rest konnte nicht geladen werden.",
   "Loading more…": "Weitere werden geladen…",
+  // src/share/CharacterRow.tsx, MyImageChoices.tsx (TASK-417: the runner's
+  // own image in place of the animal, texts approved, choice 5)
+  "My image": "Mein Bild",
+  "Choose a photo": "Foto auswählen",
+  "Remove image": "Bild entfernen",
+  "Your image stays on this phone. It leaves only in the video you share.":
+    "Dein Bild bleibt auf dem Handy. Es verlässt es nur im Video, das du teilst.",
+  "This image can't be read. The video goes out without it.":
+    "Dieses Bild lässt sich nicht lesen. Das Video kommt ohne es.",
   "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
     "Wer den Link hat, kann dir auf einer Webseite folgen, ohne die App: Zeit, Bahnen oder Übung, Kalorien und deinen Puls, wenn eine Uhr ihn sendet.",
 };

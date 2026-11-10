@@ -308,7 +308,9 @@ export function ExploreScreen({
           </Pressable>
         )}
         <View style={styles.titles}>
-          <Text style={styles.title}>{t("Explore")}</Text>
+          <Text style={styles.title} testID="explore-title">
+            {t("Explore")}
+          </Text>
           <Text style={styles.subtitle}>
             {catalog.total !== null && catalog.cities !== null
               ? t("{count} drawings in {cities} cities · the nearest first", {

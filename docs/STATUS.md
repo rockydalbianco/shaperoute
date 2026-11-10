@@ -140,9 +140,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
   TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
-  parte 0 e A1 (server, migrazione 0063) in `main`; il server col sì
-  nell'aggiornamento unico; prossime A2 (pagina) e B1 (app), poi B2 e C.
-  File: — · `tasks/TASK-424.md`
+  parte 0, A1 (server, migrazione 0063) e A2 (pagina `site/live/`, #1010)
+  in `main`; server e copia del sito (F.14) col sì nell'aggiornamento
+  unico; prossima B1 (app), poi B2 e C. File: — · `tasks/TASK-424.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
   (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
   i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347

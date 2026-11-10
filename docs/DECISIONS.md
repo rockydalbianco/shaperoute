@@ -466,6 +466,7 @@ lasciando le righe d'indice.
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 - ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
+- ADR-0352, precisazione A2 — La pagina dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -622,6 +623,40 @@ dall'agente su delega dell'utente
 - Le copie notturne del database (`deploy/backup.sh`) lasciano fuori le
   righe dei due tavoli (`--exclude-table-data`): la privacy dice che le
   posizioni si cancellano, e nelle copie resterebbero 14 giorni.
+
+## ADR-0352, precisazione A2 — La pagina dei link dal vivo
+
+**Stato**: Attiva · 2026-11-08 · TASK-424 parte A2 (#1010) · deciso
+dall'agente su delega dell'utente
+
+- `site/live/` senza framework né build: la logica pura in `view.js`
+  (token, richieste, risposte, riga sotto il titolo, numeri, stile della
+  mappa), provata con la fixture `live-view.json`; `live.js` solo pagina,
+  mappa e timer. `view.js` è un file in più rispetto alla lista approvata,
+  nuovo e nella stessa cartella.
+- Le richieste: ogni 10 s; subito con `more`; ogni 60 s quando l'attività
+  è finita (non cambia più, si aspetta solo la scadenza); nessuna più dopo
+  `stopped` o `expired`; dopo un `429` 30 s, perché il browser non può
+  leggere `Retry-After` (l'API non lo espone col CORS). Una richiesta alla
+  volta; al ritorno sulla scheda una subito.
+- L'ora dell'ultimo aggiornamento si misura col clock del browser: la
+  prima risposta usa `updated_at`, le altre al più un giro (10 s) prima
+  dell'arrivo, così un orologio del computer sbagliato non fa dire «No
+  update since» a un link vivo. Il tempo avanza fra due risposte solo con
+  `live`; dopo 2 minuti di silenzio torna l'ultimo del telefono.
+- Passo o velocità come l'app: velocità per bici, gravel, MTB, roller e
+  sci alpino, passo per 500 m in canoa e per 100 m a nuoto, passo per km
+  per gli altri (anche gli sport che verranno); arrotondato come
+  `paceClock`. Miglia e piedi per un browser `en-US`/`en-GB` (le regioni
+  di `phoneUnits.ts`).
+- La mappa ha lo stile scuro dell'app copiato in `view.js`; i suoi colori
+  stanno una volta in `live.css` e un test li confronta con `tokens.ts`.
+  MapLibre 5.24.0 copiato dal pacchetto npm; un test ne confronta gli hash
+  con gli SRI di `mapPage.ts`.
+- Un indirizzo senza token valido dice «This link has expired», come
+  l'API. `?api=` (solo da `127.0.0.1`/`localhost`, solo verso un indirizzo
+  locale) serve a provarla sul Mac contro un finto `/live`: l'API vera
+  lascia leggere `/live` solo a `https://getmuw.app`.
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole

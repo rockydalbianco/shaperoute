@@ -2779,6 +2779,21 @@ parte da quell'angolo e per trovare le strade può girarla ancora fino a
 VoiceOver legge *Turn left 15 degrees*, *Turn right 15 degrees* e *Angle,
 30 degrees. Double tap to type it*.
 
+**La partenza** (TASK-426, ADR-0354): dove parte il percorso, il primo
+punto del contorno, è un **pallino ciano** sulla figura, in tutti i modi.
+Con «Move» un dito che parte sul pallino lo trascina, senza tenerlo fermo
+prima: scorre lungo il contorno, agganciato al punto più vicino al dito, e
+dove lo si lascia il contorno ricomincia da lì. La figura resta dov'è; un
+angolo entro mezzo dito vince, altrimenti c'è un punto nuovo sul lato
+(finché il contorno ha posto sotto i 100 punti). Su una **linea aperta**
+va solo alle due estremità: all'altra la linea si corre nel verso opposto.
+Non va mai sui dettagli. Con i **pezzi** scorre sul contorno del primo, ed
+è fermo mentre è scelto un altro pezzo. Un'**emoji** spostata si chiede col
+suo contorno, come girata; a penna alzata il pallino c'è ma non si muove.
+**Sull'acqua** (canoa, nuoto) non c'è: il motore parte dalla riva. Ogni
+spostamento è un passo di «Undo». Nessun testo nuovo: il suggerimento di
+«Move» non nomina il pallino.
+
 **I pezzi** (TASK-402 parte B, ADR-0336): con una figura sulla mappa,
 sopra le tessere c'è **«Change | Add»**. Con «Change» la tessera cambia la
 figura come prima (o il pezzo scelto, dov'è e grande com'è); con **«Add»**
@@ -2810,7 +2825,8 @@ cresciuta oltre lo schermo fa allontanare la mappa, che la mostra intera.
 
 **«Undo»** toglie l'ultima figura messa o disegnata (torna quella di
 prima, dov'era), l'ultimo cambio di tessera, l'ultimo tratto appeso,
-l'ultima cancellatura, l'ultimo punto tappato o l'ultima piega.
+l'ultima cancellatura, l'ultimo punto tappato, l'ultima piega o
+l'ultima partenza spostata (TASK-426).
 **«Redo»** rimette quello che «Undo» ha tolto, finché non si cambia altro.
 **«Clear all»** chiede *Clear the whole drawing?* («Cancel» o «Clear all»)
 e toglie la figura; «Undo» la rimette.
@@ -2822,7 +2838,8 @@ tutti. Spenti finché non c'è niente.
 **«Draw route»** chiede il percorso della figura dov'è, senza niente di
 nuovo nel contratto: una forma come in «Draw» (con la penna alzata se
 «Draw» la chiede così), un disegno o una foto come un contorno di
-«Image»; la partenza è il primo punto della figura, la distanza la sua,
+«Image»; la partenza è il primo punto della figura (il pallino, che si
+sposta lungo il contorno, TASK-426), la distanza la sua,
 al decimo («target 5.7 km»). Il motore la mette dove trova le strade e
 **può spostarla** di qualche centinaio di metri o più, con «Start here»
 (scelta dell'utente «in due passi»; il posto esatto è TASK-282). Il

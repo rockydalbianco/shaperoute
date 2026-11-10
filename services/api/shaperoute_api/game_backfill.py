@@ -62,6 +62,15 @@ def _account(database: Database, user_id: int) -> tuple[int, int]:
     unlocked."""
     with database.connect() as conn:
         conn.execute("SELECT 1 FROM users WHERE id = %s FOR UPDATE", (user_id,))
+        # The phone's offset of each run came with it (TASK-423 part C): the
+        # rules cannot compute it again, so it is kept across the rewrite.
+        offsets = {
+            int(row["run_id"]): row["utc_offset_min"]
+            for row in conn.execute(
+                "SELECT run_id, utc_offset_min FROM game_runs WHERE user_id = %s",
+                (user_id,),
+            ).fetchall()
+        }
         conn.execute("DELETE FROM game_runs WHERE user_id = %s", (user_id,))
         ids = [
             int(row["id"])
@@ -83,7 +92,15 @@ def _account(database: Database, user_id: int) -> tuple[int, int]:
             game = evaluate(fixes, pauses, row["activity"])
             ended_at = row["started_at"] + timedelta(seconds=game.elapsed_s)
             unlocked += len(
-                record(conn, user_id, run_id, row["started_at"], game, ended_at)
+                record(
+                    conn,
+                    user_id,
+                    run_id,
+                    row["started_at"],
+                    game,
+                    ended_at,
+                    offsets.get(run_id),
+                )
             )
     return len(ids), unlocked
 

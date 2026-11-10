@@ -237,12 +237,24 @@ def test_a_challenge_shows_no_time_or_place_of_any_run(
     }
 
 
+def test_a_challenge_has_up_to_twenty_pieces_and_thirty_days(
+    client: TestClient,
+) -> None:
+    # TASK-423 part C: more pieces, longer, any shape of the 94.
+    ada, _, team = two(client)
+    big = challenge_of(client, ada, team["id"], 20, shape_id="dragon", days=30)
+    assert len(big["pieces"]) == 20
+    starts = datetime.fromisoformat(big["starts_at"])
+    assert datetime.fromisoformat(big["ends_at"]) - starts == timedelta(days=30)
+
+
 def test_the_request_is_checked(client: TestClient) -> None:
     ada, bob, team = two(client)
     challenges = f"/game/teams/{team['id']}/challenges"
     bad = [
         {"shape_id": "heart", "pieces": 1, "piece": DISTANCE_2_KM},
-        {"shape_id": "heart", "pieces": 13, "piece": DISTANCE_2_KM},
+        # Up to 20 pieces and 30 days from TASK-423 part C.
+        {"shape_id": "heart", "pieces": 21, "piece": DISTANCE_2_KM},
         {
             "shape_id": "heart",
             "pieces": 4,
@@ -258,7 +270,7 @@ def test_the_request_is_checked(client: TestClient) -> None:
         {"shape_id": "heart", "pieces": 4, "piece": {**FAST_KM, "pace_s": 100}},
         {"shape_id": "heart", "pieces": 4, "piece": {**FAST_KM, "total_m": 2_000}},
         {"shape_id": "heart", "pieces": 4, "piece": DISTANCE_2_KM, "days": 0},
-        {"shape_id": "heart", "pieces": 4, "piece": DISTANCE_2_KM, "days": 15},
+        {"shape_id": "heart", "pieces": 4, "piece": DISTANCE_2_KM, "days": 31},
         {"shape_id": "heart", "pieces": 4, "piece": DISTANCE_2_KM, "extra": 1},
     ]
     for body in bad:
@@ -409,7 +421,7 @@ def test_one_piece_in_progress_for_each_member(client: TestClient) -> None:
     assert pieces_of(hold(client, ada, challenge["id"], 0))[0] == ("ada", 0, False)
     answer = client.post(f"{pieces}/7/hold", headers=ada)
     assert answer.status_code == 404 and answer.json()["error"]["message"] == NO_PIECE
-    assert client.post(f"{pieces}/12/hold", headers=ada).status_code == 422
+    assert client.post(f"{pieces}/20/hold", headers=ada).status_code == 422
     carol = signed_up(client, "carol")
     assert client.post(f"{pieces}/1/hold", headers=carol).status_code == 404
 

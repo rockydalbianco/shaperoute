@@ -1,9 +1,10 @@
 # TASK-427 — L'archivio risponde da qualsiasi punto dell'anello
 
-**Stato**: Todo — **proposta, aspetta il sì dell'utente** (scelta di
-prodotto, §8). Nessun codice prima del sì.
-**Fase**: 5 · **Branch**: `docs/TASK-427-loop-archive` (questa proposta);
-le parti di codice avranno il loro (`feat/TASK-427-a-...`).
+**Stato**: Fermo — **parte 0 fatta (2026-11-10): non vale la pena ora**
+(«Esito della parte 0», sotto). Nessun codice. Si riapre quando i
+numeri del §«Quando riaprirlo» cambiano, o se l'utente lo chiede.
+**Fase**: 5 · **Branch**: `docs/TASK-427-loop-archive` (la proposta, #1031),
+`docs/TASK-427-part0-results` (l'esito della parte 0).
 **ADR**: ADR-0355, riservato dal Coordinatore; si scrive in
 `DECISIONS.md` solo dopo il sì, con le scelte che l'utente fa qui.
 
@@ -48,15 +49,67 @@ dall'utente, 2026-11-10):
 - Il motore è partito circa **140 volte** (148 − 8). Questa proposta agisce
   su quelle: le 8 «reached» di oggi restano, e una parte dei 140, quelli di
   forme chiuse, troverebbe un anello entro 150 m.
-- **Quanti dei 140, ancora non si sa**: nei dati sul Mac non c'è l'archivio
-  del server. La stima è pronta in `out/TASK-427/stima_anello.sql`, nella
-  cartella `out/` della copia principale (sola lettura, solo conteggi,
-  provata in locale su dati finti), con la riga per lanciarla in
-  `out/TASK-427/RIGHE-SSH.md`. È la parte 0: si lancia col sì dell'utente e
-  il numero va scritto qui.
+- **Quanti ne avrebbe presi l'anello**: la parte 0, sotto. Pochissimi.
 - A 140 percorsi a settimana il server oggi è lontanissimo dal suo tetto
   (7–8 al minuto). L'anello conta per **i picchi** (un concorso, un post che
   gira) e per i tempi d'attesa: 0,3–2 s invece di 5–15 s per chi lo riceve.
+
+## Esito della parte 0 (2026-11-10)
+
+La query `out/TASK-427/stima_anello.sql` (cartella `out/` della copia
+principale; sola lettura, solo conteggi), lanciata dall'utente sul
+server, sugli ultimi 7 giorni di `drawn_routes`:
+
+| Colonna | Quante | Cosa vuol dire |
+|---|---|---|
+| `richieste` | 7 356 | gruppi di righe calcolate (un percorso e le sue alternative) |
+| `forme_ok` | 589 | di queste, forme chiuse: non parole, non penna alzata, non acqua |
+| `oggi_100m` | 4 | servibili già oggi da una riga entro 100 m dalla partenza |
+| `anello_150m` | 14 | servibili da un anello entro 150 m |
+| `insieme` | 18 | una delle due |
+
+**Lettura:**
+
+- L'anello prende **14 forme chiuse su 589, circa il 2,4%**: **10 in più**
+  di quelle che il raggio di oggi già prende. In linea d'aria: lungo le
+  strade, qualcuna in meno.
+- In CPU: 10 percorsi a settimana × ~19 s ≈ **3 minuti di CPU a
+  settimana**. Niente, rispetto al costo di costruirlo: indice nuovo,
+  rotazione, test, aggiornamento del server.
+- Il motivo: le richieste sono **sparse**. Stessa forma, stessa distanza
+  (al km), stessa attività **e** a 150 m da un anello già disegnato, nei 30
+  giorni prima, succede di rado. La chiave esatta pesa più del raggio.
+- I 7 356 gruppi contro i 148 «queued» dei log nella stessa settimana
+  dicono che la tabella non contiene solo richieste di persone (con ogni
+  probabilità percorsi disegnati in serie, come esempi e cataloghi; non
+  verificato). Non cambia la conclusione: anche sulle sole forme chiuse
+  il guadagno è del 2,4%.
+- Oggi il server non è vicino al tetto: circa 140 percorsi calcolati a
+  settimana contro 7–8 al minuto possibili. Il problema che la proposta
+  risolve **oggi non c'è**.
+
+**Il concorso del 2026-11-16**: lì tutti chiedono **la stessa forma**, e la
+chiave esatta smette di essere il freno. Ma per far trovare un anello già
+pronto serve anche la parte B (il riempimento di notte), oltre alla A:
+due parti di codice e il server in 5 giorni, insieme a TASK-276 B. Non
+ci sta, e il carico che il concorso porterà non si sa. Se serve
+velocità per il concorso, le strade più corte sono già in piano:
+TASK-276 B (+40%, nessuna scelta di prodotto) e, da verificare,
+disegnare in anticipo l'animale dai centri delle città come gli esempi
+(`draw_examples`), senza codice nuovo.
+
+**Conclusione: non vale la pena ora.** La scelta di prodotto del §8 non
+si pone finché il task è fermo.
+
+### Quando riaprirlo
+
+- I «queued» dei log passano **1 000 a settimana**, o nei picchi
+  l'attesa in coda supera **10 s** (le righe di TASK-276);
+- oppure, dopo il concorso, la stessa query rilanciata sulla settimana
+  del concorso dà **`anello_150m` oltre il 15% di `forme_ok`**: vorrebbe
+  dire che una forma chiesta da tutti cambia il conto.
+
+La query resta in `out/TASK-427/`, pronta da rilanciare.
 
 ## Contesto da leggere
 
@@ -324,12 +377,13 @@ Varianti se l'utente preferisce:
 
 Per la proposta (questo branch):
 
-- [ ] Il task file è in `main` con una PR `docs/`.
-- [ ] L'utente ha risposto al §8 (sì, variante, o no).
+- [x] Il task file è in `main` con una PR `docs/` (#1031).
+- [ ] L'utente ha risposto al §8 (sì, variante, o no) — non serve
+      finché il task è fermo (esito della parte 0).
 
 Per le parti, dopo il sì:
 
-- [ ] Parte 0: per gli ultimi 7 giorni, il tasso con 100 m dalla partenza
+- [x] Parte 0: per gli ultimi 7 giorni, il tasso con 100 m dalla partenza
       e quello con 150 m dall'anello, scritti in `out/TASK-427/` e in
       questo file.
 - [ ] Parte A: una richiesta di forma chiusa a ≤ 150 m da un punto
@@ -389,4 +443,6 @@ deploy/compose.yaml (solo se la notte diventa un servizio) (parte B)
 
 ## Esito
 
-—
+Parte 0 fatta il 2026-11-10: l'anello entro 150 m avrebbe servito 14
+forme chiuse su 589 in 7 giorni (2,4%), 10 più di oggi. Non vale la pena
+ora; fermo finché i numeri di «Quando riaprirlo» non cambiano.

@@ -88,7 +88,7 @@ richiesta risponde subito e il percorso si chiede dopo.
 
   | `status` | Vuol dire |
   |---|---|
-  | `queued` | in coda: i due thread di lavoro sono occupati |
+  | `queued` | in coda: i due lavoratori (processi, ADR-0242) sono occupati |
   | `downloading_map` | la zona non è in cache e si scarica da Overpass |
   | `computing` | grafo pronto (o in lettura dal disco), il motore calcola |
   | `done` | `result` è il `RouteResult` |
@@ -96,7 +96,9 @@ richiesta risponde subito e il percorso si chiede dopo.
 
 - `DELETE /route-jobs/{job_id}` annulla: `204`. Una richiesta in coda non
   parte; una che sta caricando il grafo si ferma prima di calcolare; una
-  che sta già calcolando finisce nel suo thread e il risultato si butta.
+  che sta già calcolando finisce nel suo processo e il risultato si butta.
+  Un percorso ha al massimo 600 s: oltre, finisce `failed` con
+  `engine_error` (ADR-0242).
   L'annullamento è un evento delle ricerche (`cancelled`, TASK-142).
 - Un `job_id` sconosciuto (annullato, finito da più di 10 minuti, o API
   riavviata) risponde `404 http_error`.

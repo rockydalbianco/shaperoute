@@ -1,3 +1,4 @@
+import type { RunActivity } from "@shaperoute/shared-types";
 import { type ReactNode, useRef, useState } from "react";
 import { Alert, Platform, Share, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -26,13 +27,21 @@ import { startLiveShare, stopLiveShare, useLiveShare } from "./liveShareStore";
  * link» makes the link and, once the sheet is down, opens the phone's
  * share sheet with one line and the link. While it shares, «Sharing live»:
  * a touch asks, then stops it. Without an account, «Sign in to share live»
- * in grey, with nothing to touch. Never on by itself.
+ * in grey, with nothing to touch. Never on by itself. A swim in a pool and
+ * a workout at the gym (part B2) have it too, with no map: the sheet says
+ * what their page shows.
  */
+
+/** A recording with no map (part B2): its activity, and for a swim in a
+ * pool its pool. */
+export type Trackless = { activity: RunActivity; poolLengthM?: number | null };
 
 type Props = {
   /** A link can be made now: the activity is under way. While one is on,
    * «Sharing live» shows whatever this says, so it can be stopped. */
   canStart: boolean;
+  /** A recording with no map; absent, the sport of «Settings», with one. */
+  trackless?: Trackless;
   /** For the tests: the fetch and the API key. */
   fetchFn?: typeof fetch;
   apiKey?: string | null;
@@ -55,10 +64,11 @@ export function confirmStopSharing(): void {
   ]);
 }
 
-export function LiveShareButton({ canStart, fetchFn, apiKey }: Props) {
+export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props) {
   const { apiUrl, account } = useFollowsDoor();
   const status = useLiveShare();
-  const activity = runActivityOf(useSport());
+  const sport = runActivityOf(useSport());
+  const activity = trackless?.activity ?? sport;
   const [open, setOpen] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   // The link made, until the sheet has gone: iOS opens one sheet at a time,
@@ -86,6 +96,7 @@ export function LiveShareButton({ canStart, fetchFn, apiKey }: Props) {
     const outcome = await startLiveShare(
       { baseUrl: apiUrl, token: session.token, fetchFn, key: apiKey },
       activity,
+      trackless?.poolLengthM ?? null,
     );
     if (outcome.kind === "started") {
       toShare.current = outcome.url;
@@ -150,6 +161,7 @@ export function LiveShareButton({ canStart, fetchFn, apiKey }: Props) {
         testID="live-share-sheet"
       >
         <ConsentSheet
+          withMap={trackless === undefined}
           starting={starting}
           problem={problem}
           onShare={() => void share()}
@@ -161,11 +173,13 @@ export function LiveShareButton({ canStart, fetchFn, apiKey }: Props) {
 }
 
 function ConsentSheet({
+  withMap,
   starting,
   problem,
   onShare,
   onCancel,
 }: {
+  withMap: boolean;
   starting: boolean;
   problem: string | null;
   onShare: () => void;
@@ -186,9 +200,13 @@ function ConsentSheet({
           {t("Share this activity live")}
         </Text>
         <Text style={styles.body}>
-          {t(
-            "Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it.",
-          )}
+          {withMap
+            ? t(
+                "Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it.",
+              )
+            : t(
+                "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.",
+              )}
         </Text>
         <Text style={styles.body}>
           {t(

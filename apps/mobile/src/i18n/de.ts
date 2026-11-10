@@ -2176,4 +2176,6 @@ export const DE: Table = {
   "Keep sharing": "Weiter teilen",
   "Couldn't create the link. Try again.":
     "Der Link konnte nicht erstellt werden. Versuch es noch einmal.",
+  "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
+    "Wer den Link hat, kann dir auf einer Webseite folgen, ohne die App: Zeit, Bahnen oder Übung, Kalorien und deinen Puls, wenn eine Uhr ihn sendet.",
 };

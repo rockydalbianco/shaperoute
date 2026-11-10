@@ -1,4 +1,4 @@
-import type { RunActivity } from "@shaperoute/shared-types";
+import type { LiveStats, RunActivity } from "@shaperoute/shared-types";
 import { useSyncExternalStore } from "react";
 
 import { emptyTrack, MAX_ACCURACY_M, type Track } from "../navigation/trackRecorder";
@@ -33,6 +33,9 @@ export type LiveSnapshot = {
   kcal: number | null;
   bpm: number | null;
   paused: boolean;
+  /** A recording without a track (a swim in a pool, a workout at the gym,
+   * part B2): its numbers at a time, in place of the track's. */
+  numbers?: (atMs: number) => LiveStats;
 };
 
 /** In front, an update can be due with no fix: a pause, the end. */
@@ -102,13 +105,18 @@ export type StartOutcome =
 export async function startLiveShare(
   api: LiveApiOptions,
   activity: RunActivity,
+  /** A swim in a pool: its pool, and the page shows lengths (part B2). */
+  poolLengthM: number | null = null,
 ): Promise<StartOutcome> {
   if (status.kind !== "off") {
     return { kind: "busy" };
   }
   cancelled = false;
   put({ kind: "starting" });
-  const answer = await createLiveShare(api, { activity });
+  const answer = await createLiveShare(
+    api,
+    poolLengthM === null ? { activity } : { activity, pool_length_m: poolLengthM },
+  );
   if (answer.kind !== "ok") {
     put(OFF);
     return { kind: "failed" };
@@ -126,8 +134,12 @@ export async function startLiveShare(
   const mine: LiveSharer = new LiveSharer({
     update: (update) => sendLiveUpdate(api, id, update),
     stop: () => stopLiveShareRequest(api, id),
-    stats: () =>
-      liveStats(snapshot.track, endedAtMs ?? Date.now(), snapshot.kcal, snapshot.bpm),
+    stats: () => {
+      const atMs = endedAtMs ?? Date.now();
+      return snapshot.numbers !== undefined
+        ? snapshot.numbers(atMs)
+        : liveStats(snapshot.track, atMs, snapshot.kcal, snapshot.bpm);
+    },
     state: () => (snapshot.paused ? "paused" : "live"),
     now: () => Date.now(),
     onEnd: (_why: LiveEnd) => {
@@ -190,6 +202,16 @@ export function observeLiveShare(next: LiveSnapshot): void {
   }
   fedFixes = fixes.length;
   void mine.tick();
+}
+
+/** The numbers of a recording without a track (part B2: a swim in a pool, a
+ * workout at the gym), again at each change: no points, the numbers worked
+ * out at the time of each update. A pause or a resume goes at once. */
+export function observeLiveNumbers(
+  numbers: (atMs: number) => LiveStats,
+  paused: boolean,
+): void {
+  observeLiveShare({ track: emptyTrack(), kcal: null, bpm: null, paused, numbers });
 }
 
 /** The activity ended: `finished`, and the link lasts one hour more. */

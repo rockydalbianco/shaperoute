@@ -56,6 +56,8 @@ ciano di «Start here».
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
+| `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il cono di «Compass»; il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
+| `north` | `#FF5B4F` | la punta della freccia del nord (TASK-431); nel tono chiaro `#C42F24` |
 | `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
 | `map.*` | dal `#100F0C` al `#3F3B34` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
 
@@ -692,6 +694,11 @@ barra qui sopra, e lo swipe è quello qui sopra.
   «AI-generated» e «Ad · Affiliate links»; il puntino apre una scheda con
   prezzo o «See price», le due righe fisse e «Shop on {store}», che apre il
   browser. «Style posts in the Feed» in «Settings» li toglie da «All».
+  **Spenti dal 2026-11-10** (TASK-430, ADR-0358, scelta dell'utente «Solo il
+  Feed»): i percorsi di MuW non compaiono più nel Feed e l'app non chiede
+  `GET /muw-routes`; si riaccendono con `MUW_ROUTES_IN_FEED = true`
+  (`src/feed/muwInFeed.ts`) e tornano come scritto qui sotto. La fila «RIDE
+  IT YOURSELF» di «Explore» resta.
   Con i **percorsi di MuW** sul server (`GET /muw-routes`, TASK-365,
   ADR-0310) una riga su 6 di «All» al massimo è uno di loro: il primo dopo il
   3° disegno, poi uno ogni 5 disegni, mai in «Following», anche senza account
@@ -2965,7 +2972,10 @@ fino alla partenza (TASK-425, ADR-0353): il percorso la fa una volta e
 torna. Se così chiusa non fa un contorno (si incrocia da sola, o il lato di
 ritorno la attraversa) diventa un anello appeso alla partenza, con lo stesso
 lato dritto (TASK-428, ADR-0356): il percorso la fa ancora una volta e
-torna, e sulla mappa si vede chiusa allo stesso modo. Solo se nemmeno così
+torna, e sulla mappa si vede chiusa allo stesso modo. Lo stesso anello vale
+per un percorso che torna alla partenza e si incrocia da solo, come una
+parola o una farfalla di «Explore» (TASK-432): prima non faceva un disegno e
+la scheda non aveva il tasto. Solo se nemmeno così
 fa un disegno resta una linea aperta, come la prima linea disegnata sulla
 mappa (TASK-331), e il percorso la fa andata e ritorno. Il tasto non c'è per un
 post di sole foto e sotto il risultato di «Draw» (TASK-340). Dalla parte
@@ -3371,10 +3381,15 @@ cui tiene i numeri.
   pulsanti in fondo; la corsa si apre su «Map». Lo swipe parte dalla
   scheda, non dalla mappa: lì un dito sposta la mappa. I tre pulsanti si
   dividono la larghezza della scheda e sono alti 56 punti, più del tocco
-  minimo: si prendono col pollice correndo (TASK-186). La pagina aperta ha
-  la superficie più chiara e il bordo, come le altre scelte dell'app; il
-  giallo resta del percorso. Vale per tutti gli sport che registrano con la
-  stessa scheda (corsa, bici, canoa, nuoto, free run).
+  minimo: si prendono col pollice correndo (TASK-186). Ognuno ha **il suo
+  disegno sopra il nome** (TASK-431, ADR-0359, scelta dell'utente del
+  2026-11-10): un quadrante con l'ago per «Compass», una mappa piegata in tre
+  per «Map», tre barre che salgono per «Data»; disegni fatti di View, nascosti
+  a VoiceOver (il pulsante dice il suo nome). La pagina aperta ha la
+  superficie più chiara, il disegno azzurro (`you`) e sotto il nome una
+  linea azzurra larga metà del pulsante; le altre sono grigie (`textMuted`).
+  Il giallo resta del percorso. Vale per tutti gli sport che registrano con
+  la stessa scheda (corsa, bici, canoa, nuoto, free run).
 - **«Compass»** (TASK-422, ADR-0350; chiesta dall'utente il 2026-11-08):
   solo la mappa, grande. Sotto restano i pulsanti della corsa («Pocket»,
   «Pause», «Music»; in pausa «Stop» da tenere e «Resume»; all'arrivo
@@ -3391,7 +3406,12 @@ cui tiene i numeri.
   dove punta il telefono; per VoiceOver «Turns the map north up» e «Turns
   the map where you face». Lasciando la pagina, o a fine corsa, la mappa
   torna com'era: girata come il disegno, o col nord in alto. La bussola è
-  accesa solo con «Compass» aperta.
+  accesa solo con «Compass» aperta. **La freccia della posizione** (TASK-431)
+  qui segue la mappa: punta dove la mappa ha girato l'ultima volta, cioè
+  sempre in alto, anche da fermi, e davanti apre **un cono azzurro** che
+  sfuma in avanti: dove punta il telefono. Col nord in alto (un tocco) il
+  cono si chiude e la freccia torna a seguire la traccia. La punta della
+  freccia del nord è rossa (`north`), la «N» chiara.
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
@@ -3666,8 +3686,13 @@ Time: … Average pace: …»), dopo la svolta se cadono insieme, e dal secondo
 km il confronto col km precedente (TASK-217: «Correre senza percorso»,
 più giù).
 
-**La freccia di direzione** (TASK-164). Mentre si corre il segnaposto sulla
-mappa è una freccia chiara, girata dove si sta andando; la mappa resta col
+**La freccia di direzione** (TASK-164; ridisegnata da TASK-431, ADR-0359,
+variante «B» scelta dall'utente il 2026-11-10). Mentre si corre il
+segnaposto sulla mappa è una freccia chiara e grande (42 punti), con un
+bordo scuro per leggersi sul giallo, dentro un anello azzurro (`you`, pieno
+al 22 %), girata dove si sta andando; su «Compass» davanti ha anche il cono
+azzurro (sopra). Il riquadro della freccia lascia passare le dita: chi tocca
+il cono sposta la mappa. La mappa resta col
 nord in alto, o **girata come il disegno** quando il percorso è inclinato
 (TASK-232, scelta dell'utente: chi corre vede la forma dritta come l'ha
 scelta). La freccia segna sempre dove si va davvero: è girata con la

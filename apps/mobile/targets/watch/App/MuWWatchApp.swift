@@ -1,4 +1,5 @@
 import SwiftUI
+import WatchKit
 import WatchCore
 
 /// The MuW app on the Apple Watch (TASK-370 part A2, ADR-0314): choose the
@@ -6,13 +7,17 @@ import WatchCore
 /// the phone sent. The watch never draws a route; following one is part B3b.
 @main
 struct MuWWatchApp: App {
+    /// Woken by the phone (part B4): the workout's configuration arrives here.
+    @WKApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var workouts: WorkoutManager
     @StateObject private var store: RouteStore
 
     init() {
         let store = RouteStore()
+        let workouts = WorkoutManager(routes: store)
         _store = StateObject(wrappedValue: store)
-        _workouts = StateObject(wrappedValue: WorkoutManager(routes: store))
+        _workouts = StateObject(wrappedValue: workouts)
+        AppDelegate.workouts = workouts
     }
 
     var body: some Scene {
@@ -20,6 +25,7 @@ struct MuWWatchApp: App {
             RootView()
                 .environmentObject(workouts)
                 .environmentObject(workouts.guide)
+                .environmentObject(workouts.live)
                 .environmentObject(store)
                 .task {
                     await workouts.authorize()
@@ -112,7 +118,8 @@ struct CountdownView: View {
     }
 }
 
-/// The workout: the numbers on two pages, and a swipe to the controls.
+/// The workout: the numbers, the map with the GPS, the details, and a
+/// swipe to the controls.
 struct WorkoutView: View {
     @EnvironmentObject private var workouts: WorkoutManager
     @EnvironmentObject private var guide: GuideSession
@@ -128,11 +135,14 @@ struct WorkoutView: View {
                 RouteMapView().tag(2)
                 MetricsView().tag(3)
                 DetailsView().tag(4)
+            } else if workouts.sport?.gps == true {
+                // Without a route the map comes after the numbers (part B5).
+                MetricsView().tag(1)
+                LiveMapView().tag(2)
+                DetailsView().tag(3)
             } else {
                 MetricsView().tag(1)
-                if workouts.sport?.gps == true {
-                    DetailsView().tag(2)
-                }
+                DetailsView().tag(2)
             }
         }
         .tabViewStyle(.page)
@@ -158,6 +168,7 @@ struct MetricsView: View {
                 }
                 Text(verbatim: WatchFormat.clock(ms: workouts.movingMs(at: context.date)))
                     .font(.system(size: 40, weight: .semibold, design: .rounded))
+                    .foregroundStyle(workouts.phase == .paused ? .secondary : .primary)
                     .monospacedDigit()
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
@@ -165,11 +176,13 @@ struct MetricsView: View {
                     Text(verbatim: WatchFormat.distance(metres: workouts.distanceM, units: workouts.units))
                         .font(.system(.title2, design: .rounded))
                         .monospacedDigit()
-                    MetricRow(label: tr("Pace now"), value: paceNow(sport, at: context.date))
+                        .foregroundStyle(.yellow)
+                    MetricRow(
+                        label: tr("Pace now"), value: paceNow(sport, at: context.date), tint: .cyan)
                 } else {
-                    MetricRow(label: tr("Calories"), value: calories)
+                    MetricRow(label: tr("Calories"), value: calories, tint: .orange)
                 }
-                HeartRow(bpm: workouts.heartRate)
+                HeartRow(bpm: workouts.heartRate, zone: workouts.heartZone)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -188,23 +201,47 @@ struct MetricsView: View {
 }
 
 /// The numbers of the whole workout, as the second row of the app's panel:
-/// the average pace, the last kilometre, the calories.
+/// the average pace, the last kilometre; from part B5 the metres climbed,
+/// the average heart rate, the calories and the time of day too.
 struct DetailsView: View {
     @EnvironmentObject private var workouts: WorkoutManager
+    @EnvironmentObject private var live: LiveRun
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 5)) { context in
-            VStack(alignment: .leading, spacing: 6) {
-                if let sport = workouts.sport {
-                    let ms = workouts.movingMs(at: context.date)
-                    MetricRow(label: averageLabel(sport), value: average(sport, ms: ms))
-                    MetricRow(label: splitLabel(sport), value: split(sport))
+            ScrollView {
+                VStack(alignment: .leading, spacing: 6) {
+                    if let sport = workouts.sport, sport.gps {
+                        let ms = workouts.movingMs(at: context.date)
+                        MetricRow(
+                            label: averageLabel(sport), value: average(sport, ms: ms), tint: .cyan)
+                        MetricRow(label: splitLabel(sport), value: split(sport), tint: .cyan)
+                        // The run screen's metres climbed, metres in miles too.
+                        if sport.pace == .km {
+                            MetricRow(
+                                label: tr("Elev. gain"),
+                                value: live.climb.metres.map { "\(Int($0.rounded())) m" } ?? noNumber,
+                                tint: .green)
+                        }
+                    }
+                    MetricRow(
+                        label: tr("Avg heart rate"),
+                        value: workouts.heartAvgBpm.map { "\($0) bpm" } ?? noNumber, tint: .red)
+                    MetricRow(
+                        label: tr("Calories"),
+                        value: workouts.kcal > 0 ? "\(Int(workouts.kcal.rounded())) kcal" : noNumber,
+                        tint: .orange)
+                    Label {
+                        Text(context.date, format: .dateTime.hour().minute())
+                            .monospacedDigit()
+                    } icon: {
+                        Image(systemName: "clock")
+                    }
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                 }
-                MetricRow(
-                    label: tr("Calories"),
-                    value: workouts.kcal > 0 ? "\(Int(workouts.kcal.rounded())) kcal" : noNumber)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -254,6 +291,8 @@ struct DetailsView: View {
 struct MetricRow: View {
     let label: String
     let value: String
+    /// The colour of the number (part B5): each kind of number its own.
+    var tint: Color = .primary
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -266,25 +305,50 @@ struct MetricRow: View {
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+                .foregroundStyle(tint)
         }
     }
 }
 
-/// The heart rate the watch measures, beats a minute.
+/// The heart rate the watch measures, beats a minute, in red; with the
+/// phone's zones (part B5) its zone too, «Z3», and a bar of the five zones
+/// with the one now lit.
 struct HeartRow: View {
     let bpm: Int?
+    let zone: Int?
+
+    /// The zones' colours, from the easy blue to the red of the max.
+    static let zoneColors: [Color] = [.blue, .cyan, .green, .orange, .red]
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 4) {
-            Image(systemName: "heart.fill")
-                .symbolRenderingMode(.multicolor)
-            Text(verbatim: bpm.map(String.init) ?? noNumber)
-                .monospacedDigit()
-            Text(verbatim: "bpm")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Image(systemName: "heart.fill")
+                    .foregroundStyle(.red)
+                Text(verbatim: bpm.map(String.init) ?? noNumber)
+                    .monospacedDigit()
+                    .foregroundStyle(.red)
+                Text(verbatim: "bpm")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                if let zone {
+                    Text(verbatim: "Z\(zone)")
+                        .font(.system(.footnote, design: .rounded).bold())
+                        .foregroundStyle(Self.zoneColors[zone - 1])
+                }
+            }
+            .font(.system(.title3, design: .rounded))
+            if let zone {
+                HStack(spacing: 2) {
+                    ForEach(1...Self.zoneColors.count, id: \.self) { each in
+                        Capsule()
+                            .fill(Self.zoneColors[each - 1].opacity(each == zone ? 1 : 0.3))
+                            .frame(height: each == zone ? 6 : 4)
+                    }
+                }
+                .accessibilityHidden(true)
+            }
         }
-        .font(.system(.title3, design: .rounded))
     }
 }
 
@@ -316,8 +380,10 @@ struct ControlsView: View {
 }
 
 /// What the workout was, until it is seen: Apple Health already has it.
+/// In the colours of the numbers during the workout (part B5).
 struct SummaryView: View {
     @EnvironmentObject private var workouts: WorkoutManager
+    @EnvironmentObject private var live: LiveRun
 
     var body: some View {
         ScrollView {
@@ -332,15 +398,26 @@ struct SummaryView: View {
                 if let sport = workouts.sport, sport.gps {
                     MetricRow(
                         label: tr("Distance"),
-                        value: WatchFormat.distance(metres: workouts.distanceM, units: workouts.units))
+                        value: WatchFormat.distance(metres: workouts.distanceM, units: workouts.units),
+                        tint: .yellow)
                     MetricRow(
                         label: tr("Avg pace"),
                         value: WatchFormat.pace(
                             metres: workouts.distanceM, ms: ms, pace: sport.pace, units: workouts.units)
-                            ?? noNumber)
+                            ?? noNumber,
+                        tint: .cyan)
+                    if sport.pace == .km, let climbed = live.climb.metres {
+                        MetricRow(
+                            label: tr("Elev. gain"), value: "\(Int(climbed.rounded())) m", tint: .green)
+                    }
+                }
+                if let average = workouts.heartAvgBpm {
+                    MetricRow(label: tr("Avg heart rate"), value: "\(average) bpm", tint: .red)
                 }
                 if workouts.kcal > 0 {
-                    MetricRow(label: tr("Calories"), value: "\(Int(workouts.kcal.rounded())) kcal")
+                    MetricRow(
+                        label: tr("Calories"), value: "\(Int(workouts.kcal.rounded())) kcal",
+                        tint: .orange)
                 }
                 Button(tr("Done")) {
                     workouts.done()

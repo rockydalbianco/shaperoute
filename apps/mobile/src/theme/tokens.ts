@@ -96,6 +96,15 @@ export type Shade = {
   /** Where a moved route begins (ADR-0040). Cyan, so it never reads as route. */
   readonly startHere: string;
 
+  /**
+   * The runner on the map while running (TASK-431, ADR-0359): the ring
+   * around the arrow and the cone of where the phone points. Blue, so it
+   * reads neither as the route (yellow) nor as «Start here» (cyan).
+   */
+  readonly you: string;
+  /** The tip of the north arrow (TASK-431): north at a glance. */
+  readonly north: string;
+
   readonly map: {
     readonly background: string;
     readonly water: string;
@@ -154,6 +163,8 @@ export const SHADES: Readonly<
       warning: "#FF7A59",
       error: "#FF6B6B",
       startHere: "#4DD2FF",
+      you: "#3D9BFF",
+      north: "#FF5B4F",
       map: {
         background: "#100F0C",
         water: "#101F29",
@@ -181,6 +192,8 @@ export const SHADES: Readonly<
       warning: "#FF9478",
       error: "#FF8A8A",
       startHere: "#6EDBFF",
+      you: "#5AAEFF",
+      north: "#FF7068",
       map: {
         background: "#2B2925",
         water: "#1F3A4B",
@@ -210,6 +223,8 @@ export const SHADES: Readonly<
       warning: "#9A330A",
       error: "#A1221B",
       startHere: "#006E94",
+      you: "#1565C0",
+      north: "#C42F24",
       map: {
         background: "#DAD7CF",
         water: "#9CC2D8",
@@ -237,6 +252,8 @@ export const SHADES: Readonly<
       warning: "#B23C0B",
       error: "#B3261E",
       startHere: "#007BA3",
+      you: "#1460B8",
+      north: "#C8352A",
       map: {
         background: "#F5F4F0",
         water: "#B5D6E8",

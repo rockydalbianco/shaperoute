@@ -9,10 +9,13 @@ import {
   skipCountdown,
 } from "../navigation/runControl";
 import { clearRun, startRun } from "../navigation/trackStore";
+import { NO_BODY, saveBody } from "../body/bodyProfile";
+import { NO_HEART, saveHeart } from "../body/heartZones";
 import { saveUnitsChoice } from "../units/units";
 import { CLOCK_SLACK_MS, followWatch, useWatch, watchSavesWorkout } from "./useWatch";
 import type { WatchLink } from "./watchLink";
 import type { WatchMessage, WatchPhase } from "./watchMessages";
+import type { WatchWaker } from "./watchWake";
 
 // The run on the phone with the workout on the watch (TASK-370 part A3): a
 // fake link stands for WatchConnectivity, the run's controls are the real
@@ -92,10 +95,10 @@ function commands(link: FakeLink): string[] {
   );
 }
 
-function follow(link: FakeLink, activity = "running") {
+function follow(link: FakeLink, activity = "running", wake: WatchWaker | null = null) {
   const onEnd = jest.fn();
   const onHeart = jest.fn();
-  const stop = followWatch(link, { activity, onEnd, onHeart });
+  const stop = followWatch(link, { activity, onEnd, onHeart, wake });
   return { onEnd, onHeart, stop };
 }
 
@@ -142,6 +145,66 @@ test("a run already under the controls when the screen comes starts the watch", 
   stop();
 });
 
+test("the countdown wakes the watch app, and the start goes again once it is up (part B4)", async () => {
+  const link = fakeLink();
+  const wake = jest.fn(async (_activity: string) => true);
+  const { stop } = follow(link, "cycling", wake);
+  const session = beginRun();
+  expect(wake).toHaveBeenCalledWith("cycling");
+  await act(async () => {});
+  // The first start was lost on a closed app; the second has the sport.
+  expect(link.sent).toEqual([
+    { type: "command", command: "start", activity: "cycling", from: "phone", at: NOW },
+    { type: "command", command: "start", activity: "cycling", from: "phone", at: NOW },
+  ]);
+  session.end();
+  stop();
+});
+
+test("a watch already in its workout, or not woken, gets one start only (part B4)", async () => {
+  const link = fakeLink();
+  let answer: (woken: boolean) => void = () => {};
+  const wake = jest.fn(
+    () =>
+      new Promise<boolean>((resolve) => {
+        answer = resolve;
+      }),
+  );
+  const { stop } = follow(link, "running", wake);
+  const session = beginRun();
+  // The app was open: it answers before Apple does.
+  link.hear(watchState("countdown"));
+  await act(async () => answer(true));
+  expect(commands(link)).toEqual(["start"]);
+  session.end();
+  stop();
+
+  const other = fakeLink();
+  const { stop: stopOther } = follow(other, "running", async () => false);
+  const again = beginRun();
+  await act(async () => {});
+  expect(commands(other)).toEqual(["start"]);
+  again.end();
+  stopOther();
+});
+
+test("without Apple Health's permission the watch is not woken, and the run goes on (part B4)", async () => {
+  const link = fakeLink();
+  // HealthKit refuses: the app may not save workouts.
+  const wake = jest.fn(async () => {
+    throw new Error("Not authorized");
+  });
+  const { stop } = follow(link, "running", wake);
+  const session = beginRun();
+  await act(async () => {});
+  expect(wake).toHaveBeenCalledTimes(1);
+  expect(commands(link)).toEqual(["start"]);
+  skipCountdown();
+  expect(runControl().phase).toBe("running");
+  session.end();
+  stop();
+});
+
 test("Pause and Resume on the phone go to the watch, by hand or by standing still", () => {
   const link = fakeLink();
   const { stop } = follow(link);
@@ -166,6 +229,29 @@ test("the units chosen on the phone go as user info, now and when they change", 
   stop();
   saveUnitsChoice("km");
   expect(link.transferred).toHaveLength(2);
+});
+
+test("the heart rate zones go with the units, and again when they change (part B5)", () => {
+  const link = fakeLink();
+  const { stop } = follow(link);
+  saveHeart({ maxBpm: 190, restBpm: null, limits: [null, null, null, null, null] });
+  expect(link.transferred).toEqual([
+    { type: "settings", units: "km", at: NOW },
+    {
+      type: "settings",
+      units: "km",
+      heartZones: [95, 114, 133, 152, 171, 190],
+      at: NOW,
+    },
+  ]);
+  saveBody({ ...NO_BODY, birthYear: 1990 });
+  // A max typed by hand counts over the age: the same zones again.
+  expect(link.transferred).toHaveLength(3);
+  expect(link.transferred[2]).toEqual(link.transferred[1]);
+  stop();
+  saveHeart(NO_HEART);
+  saveBody(NO_BODY);
+  expect(link.transferred).toHaveLength(3);
 });
 
 test("a pause and a resume from the wrist do the same on the phone", () => {

@@ -7,9 +7,13 @@ import {
   runControl,
   subscribeRunControl,
 } from "../navigation/runControl";
-import { appUnits, subscribeUnits, type Units } from "../units/units";
+import { appBody, subscribeBody } from "../body/bodyProfile";
+import { appHeart, subscribeHeart } from "../body/heartZones";
+import { appUnits, subscribeUnits } from "../units/units";
 import { type WatchLink, watchLink } from "./watchLink";
 import type { WatchPhase } from "./watchMessages";
+import { watchSettings } from "./watchSettings";
+import { type WatchWaker, watchWaker } from "./watchWake";
 
 /**
  * The run on the phone and the workout on the Apple Watch together
@@ -54,6 +58,8 @@ export type FollowWatch = {
   onEnd: () => void;
   /** The heart rate the watch measures; null once its workout is over. */
   onHeart: (bpm: number | null) => void;
+  /** Wakes the watch app at the countdown (part B4); none in Expo Go. */
+  wake?: WatchWaker | null;
   now?: () => number;
 };
 
@@ -62,7 +68,7 @@ export type FollowWatch = {
  * workout too. */
 export function followWatch(
   link: WatchLink,
-  { activity, onEnd, onHeart, now = Date.now }: FollowWatch,
+  { activity, onEnd, onHeart, wake = watchWaker(), now = Date.now }: FollowWatch,
 ): () => void {
   const since = now() - CLOCK_SLACK_MS;
   let phonePhase: RunPhase = "idle";
@@ -80,11 +86,41 @@ export function followWatch(
     link.send({ type: "command", command: "end", from: "phone", at: now() });
   };
 
-  const sendUnits = (units: Units) => {
-    link.transfer({ type: "settings", units, at: now() });
+  // The units and the heart rate zones (part B5), now and at each change.
+  const sendSettings = () => {
+    const at = now();
+    link.transfer(
+      watchSettings(appUnits(), appHeart(), appBody(), new Date(at).getFullYear(), at),
+    );
   };
-  sendUnits(appUnits());
-  const stopUnits = subscribeUnits(sendUnits);
+  sendSettings();
+  const stopUnits = subscribeUnits(sendSettings);
+  const stopHeart = subscribeHeart(sendSettings);
+  const stopBody = subscribeBody(sendSettings);
+
+  // The start message reaches the watch only with MuW open there: Apple
+  // wakes the app (part B4), and once it is up the start goes again, with
+  // the app's sport. A watch already in its workout lets it go. Without
+  // Apple Health's permission for workouts, or without a watch, Apple says
+  // no: the run on the phone goes on all the same.
+  const wakeWatch = () => {
+    if (wake === null) {
+      return;
+    }
+    const asked = wake(activity).catch(() => false);
+    void asked.then((woken) => {
+      const still = started && !ended && phonePhase !== "idle";
+      if (woken && still && watchPhase === null) {
+        link.send({
+          type: "command",
+          command: "start",
+          activity,
+          from: "phone",
+          at: now(),
+        });
+      }
+    });
+  };
 
   const onControl = () => {
     const previous = phonePhase;
@@ -101,6 +137,7 @@ export function followWatch(
       ended = false;
       watchPhase = null;
       link.send({ type: "command", command: "start", activity, from: "phone", at });
+      wakeWatch();
     } else if (previous === "running" && next === "paused") {
       link.send({ type: "command", command: "pause", from: "phone", at });
     } else if (previous === "paused" && next === "running") {
@@ -146,6 +183,8 @@ export function followWatch(
 
   return () => {
     stopUnits();
+    stopHeart();
+    stopBody();
     stopControl();
     stopListening();
     end();

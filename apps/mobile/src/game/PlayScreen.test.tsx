@@ -49,13 +49,18 @@ const SESSION = session as Session;
 const SIGNED_IN: AccountState = { status: "signedIn", session: SESSION };
 const SIGNED_OUT: AccountState = { status: "signedOut", notice: null };
 const CATALOG = catalog as GameCatalog;
+/** The catalog of an API before TASK-423: no collections, one grid. */
+const GRID: GameCatalog = {
+  rules_version: CATALOG.rules_version,
+  shapes: CATALOG.shapes.map(({ collection: _collection, ...shape }) => shape),
+};
 
 /** The fake fetch, as the page takes it. */
 const fake = (...list: Parameters<typeof answers>): jest.Mock => answers(...list);
 
 beforeEach(() => {
   forgetGameMe();
-  setGameCatalog(CATALOG);
+  setGameCatalog(GRID);
 });
 
 afterEach(() => {
@@ -150,4 +155,45 @@ test("a refused session shows the account's words", async () => {
   await shown(fake({ status: 401, body: apiError("session_expired") }));
   await waitFor(() => expect(screen.getByTestId("play-retry")).toBeTruthy());
   expect(screen.getByText("Your session has ended. Log in again.")).toBeTruthy();
+});
+
+// --- In collections (TASK-423 part D) ---
+
+test("a catalog in collections shows them, each with its count", async () => {
+  setGameCatalog(CATALOG);
+  await shown(fake({ status: 200, body: me }));
+  await waitFor(() => expect(screen.getByTestId("play-totals")).toBeTruthy());
+  expect(screen.getByTestId("collection-list")).toBeTruthy();
+  expect(screen.getByTestId("collection-geometry")).toHaveTextContent(
+    /Geometry.*1 \/ 2/,
+  );
+  expect(screen.getByTestId("collection-sky")).toHaveTextContent(/Sky.*0 \/ 1/);
+  // No grid until a collection is opened.
+  expect(screen.queryByTestId("shape-card-triangle")).toBeNull();
+});
+
+test("a collection opens on its shapes, and «←» goes back to the list", async () => {
+  setGameCatalog(CATALOG);
+  await shown(fake({ status: 200, body: me }));
+  await waitFor(() => expect(screen.getByTestId("play-totals")).toBeTruthy());
+  await fireEvent.press(screen.getByTestId("collection-geometry"));
+  expect(screen.getByTestId("collection-page-geometry")).toBeTruthy();
+  expect(screen.getByTestId("collection-count")).toHaveTextContent("1 / 2");
+  expect(screen.getByTestId("shape-card-triangle")).toHaveTextContent(/Unlocked/);
+  expect(screen.getByTestId("shape-card-hexagon")).toHaveTextContent(/20 km in total/);
+  // The lightning is of «Sky»: not on this page.
+  expect(screen.queryByTestId("shape-card-lightning")).toBeNull();
+  await fireEvent.press(screen.getByTestId("collection-back"));
+  expect(screen.getByTestId("collection-list")).toBeTruthy();
+});
+
+test("without an account the collections are there, none taken", async () => {
+  setGameCatalog(CATALOG);
+  saveLanguageChoice("it");
+  await shown(fake(), SIGNED_OUT);
+  expect(screen.getByTestId("collection-geometry")).toHaveTextContent(
+    /Geometrie.*0 \/ 2/,
+  );
+  expect(screen.getByTestId("collection-sky")).toHaveTextContent(/Cielo.*0 \/ 1/);
+  expect(screen.getByTestId("play-sign-in")).toBeTruthy();
 });

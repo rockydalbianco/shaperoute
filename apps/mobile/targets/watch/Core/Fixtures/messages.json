@@ -95,6 +95,16 @@
       }
     },
     {
+      "name": "the heart rate zones of the phone (part B5)",
+      "json": {
+        "v": 1,
+        "type": "settings",
+        "units": "km",
+        "heartZones": [95, 114, 133, 152, 171, 190],
+        "at": 1762358400000
+      }
+    },
+    {
       "name": "a sport this side does not know is still read",
       "json": {
         "v": 1,
@@ -536,6 +546,52 @@
       "json": {
         "v": 1,
         "type": "settings",
+        "at": 1762358400000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "zones that are not a list",
+      "json": {
+        "v": 1,
+        "type": "settings",
+        "units": "km",
+        "heartZones": {
+          "one": 95
+        },
+        "at": 1762358400000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "five limits are not zones",
+      "json": {
+        "v": 1,
+        "type": "settings",
+        "units": "km",
+        "heartZones": [95, 114, 133, 152, 171],
+        "at": 1762358400000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "limits out of order",
+      "json": {
+        "v": 1,
+        "type": "settings",
+        "units": "km",
+        "heartZones": [95, 133, 114, 152, 171, 190],
+        "at": 1762358400000
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a limit that is not a whole number",
+      "json": {
+        "v": 1,
+        "type": "settings",
+        "units": "km",
+        "heartZones": [95, 114.5, 133, 152, 171, 190],
         "at": 1762358400000
       },
       "error": "invalidField"

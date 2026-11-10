@@ -1880,9 +1880,14 @@ export interface ChallengePushData {
   challenge_id: string;
 }
 
-/** The limits of a challenge, as the API checks them (docs/GIOCO.md §6.2). */
+/**
+ * The limits of a challenge, as the API checks them (docs/GIOCO.md §6.2):
+ * `MIN_PIECES, MAX_PIECES` and `MIN_DAYS, MAX_DAYS, DEFAULT_DAYS` of
+ * services/api/shaperoute_api/game_challenges.py; up to 20 pieces and 30
+ * days from TASK-423 part C. test/gameTeams.test.ts holds them together.
+ */
 export const CHALLENGE_PIECES_MIN = 2;
-export const CHALLENGE_PIECES_MAX = 12;
+export const CHALLENGE_PIECES_MAX = 20;
 export const CHALLENGE_PIECE_M_MIN = 1_000;
 export const CHALLENGE_PIECE_M_MAX = 50_000;
 /** A fast piece is run over one of these distances, in metres. */
@@ -1890,7 +1895,7 @@ export const CHALLENGE_FAST_DISTANCES_M: readonly number[] = [1_000, 5_000];
 export const CHALLENGE_PACE_S_MIN = 150;
 export const CHALLENGE_PACE_S_MAX = 900;
 export const CHALLENGE_DAYS_MIN = 1;
-export const CHALLENGE_DAYS_MAX = 14;
+export const CHALLENGE_DAYS_MAX = 30;
 export const CHALLENGE_DAYS_DEFAULT = 7;
 /** A team takes this many members, and an account is in this many teams. */
 export const TEAM_MEMBERS_MAX = 20;

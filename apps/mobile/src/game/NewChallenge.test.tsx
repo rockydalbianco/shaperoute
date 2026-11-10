@@ -41,15 +41,21 @@ beforeEach(() => {
 test("it starts from the first shape, a piece a member, 5 km each and 7 days", async () => {
   await shown();
   expect(screen.getByTestId("new-shape-triangle")).toBeSelected();
-  expect(screen.getByTestId("new-shape-lightning")).not.toBeSelected();
+  // The shapes by collection (TASK-423): the first one's shown.
+  expect(screen.getByTestId("new-collection-geometry")).toBeSelected();
+  expect(screen.queryByTestId("new-shape-lightning")).toBeNull();
   expect(screen.getByTestId("new-pieces")).toHaveTextContent("2");
   expect(screen.getByTestId("new-distance")).toHaveTextContent("5 km");
   expect(screen.getByTestId("new-days")).toHaveTextContent("7");
   expect(screen.getByTestId("new-summary")).toHaveTextContent(
     "2 pieces · 5 km in total each",
   );
+  await press("new-collection-sky");
+  expect(screen.getByTestId("new-collection-sky")).toBeSelected();
+  expect(screen.queryByTestId("new-shape-triangle")).toBeNull();
   await press("new-shape-lightning");
   expect(screen.getByTestId("new-shape-lightning")).toBeSelected();
+  await press("new-collection-geometry");
   expect(screen.getByTestId("new-shape-triangle")).not.toBeSelected();
   await press("new-start");
   expect(onStart).toHaveBeenCalledWith({
@@ -61,15 +67,16 @@ test("it starts from the first shape, a piece a member, 5 km each and 7 days", a
 });
 
 test("the steppers keep inside the limits of the API", async () => {
-  await shown({ members: 15 });
-  expect(screen.getByTestId("new-pieces")).toHaveTextContent("12");
+  // Up to 20 pieces and 30 days (TASK-423 part C).
+  await shown({ members: 25 });
+  expect(screen.getByTestId("new-pieces")).toHaveTextContent("20");
   await press("new-pieces-more");
-  expect(screen.getByTestId("new-pieces")).toHaveTextContent("12");
+  expect(screen.getByTestId("new-pieces")).toHaveTextContent("20");
   await press("new-pieces-less");
-  expect(screen.getByTestId("new-pieces")).toHaveTextContent("11");
-  await press("new-days-more", 8);
-  expect(screen.getByTestId("new-days")).toHaveTextContent("14");
-  await press("new-days-less", 20);
+  expect(screen.getByTestId("new-pieces")).toHaveTextContent("19");
+  await press("new-days-more", 30);
+  expect(screen.getByTestId("new-days")).toHaveTextContent("30");
+  await press("new-days-less", 40);
   expect(screen.getByTestId("new-days")).toHaveTextContent("1");
   await press("new-distance-less", 6);
   expect(screen.getByTestId("new-distance")).toHaveTextContent("1 km");
@@ -138,4 +145,17 @@ test("on its way the start waits, a refusal is said, and «Cancel» closes", asy
   );
   await press("new-cancel");
   expect(onCancel).toHaveBeenCalledTimes(1);
+});
+
+test("an older API's catalog, without collections: all the shapes in one row", async () => {
+  await shown({
+    catalog: {
+      ...CATALOG,
+      collections: undefined,
+      shapes: CATALOG.shapes.map(({ collection: _collection, ...shape }) => shape),
+    },
+  });
+  expect(screen.queryByTestId("new-collection-geometry")).toBeNull();
+  expect(screen.getByTestId("new-shape-triangle")).toBeSelected();
+  expect(screen.getByTestId("new-shape-lightning")).not.toBeSelected();
 });

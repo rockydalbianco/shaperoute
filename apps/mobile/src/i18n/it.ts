@@ -1535,6 +1535,58 @@ export const IT: Table = {
   "New shape unlocked: {name}": "Nuova forma sbloccata: {name}",
   "It is in your collection.": "È nella tua collezione.",
   "See collection": "Vedi la collezione",
+  // src/game/ (TASK-423 part D: the collections, the personal challenges,
+  // the streak, the one list of «Challenges»)
+  "One run of {distance}": "Una corsa di {distance}",
+  "{name}, {unlocked} of {total} shapes": "{name}, {unlocked} forme su {total}",
+  "{unlocked} of {total} shapes": "{unlocked} forme su {total}",
+  "In progress": "In corso",
+  Available: "Disponibili",
+  Finished: "Finite",
+  "Nothing in progress.": "Niente in corso.",
+  "Nothing finished yet.": "Ancora niente di finito.",
+  "This week": "Questa settimana",
+  "This month": "Questo mese",
+  "Shape completed": "Forma completata",
+  "Past monthly challenges": "Sfide del mese passate",
+  "Themes and winners of the past months": "Temi e vincitori dei mesi scorsi",
+  "Other shapes": "Altre forme",
+  Streak: "Streak",
+  "{count} outing a week": "{count} uscita a settimana",
+  "{count} outings a week": "{count} uscite a settimana",
+  "{count} week": "{count} settimana",
+  "{count} weeks": "{count} settimane",
+  "best {best}": "record {best}",
+  "Kilometres this week": "Km della settimana",
+  "Active days": "Giorni attivi",
+  "Long outings": "Uscite lunghe",
+  "Early bird": "Di buon'ora",
+  Weekend: "Weekend",
+  "Evening outings": "Di sera",
+  "5 km pace": "Passo sui 5 km",
+  "Long run": "Lungo",
+  "Fast kilometre": "Chilometro veloce",
+  "10 km pace": "Passo sui 10 km",
+  Double: "Doppietta",
+  "Kilometres this month": "Km del mese",
+  "Long outings of the month": "Le lunghe del mese",
+  "Active days of the month": "Giorni attivi del mese",
+  "Early riser": "Mattiniero",
+  "Kilometres counted": "Chilometri contati",
+  "Days with an outing": "Giorni con un'uscita",
+  "Outings of {distance} or more": "Uscite di almeno {distance}",
+  "Outings started before 8 am": "Uscite iniziate prima delle 8",
+  "Outings started after 7 pm": "Uscite iniziate dopo le 19",
+  "Kilometres on Saturday and Sunday": "Chilometri di sabato e domenica",
+  "{distance} in one run, under the pace": "{distance} di fila, sotto il passo",
+  "One outing of the distance": "Un'uscita della distanza",
+  "Runs of {distance} or more": "Corse di almeno {distance}",
+  Bronze: "Bronzo",
+  Silver: "Argento",
+  Gold: "Oro",
+  "No run of {distance} yet": "Ancora nessuna corsa di {distance}",
+  "Week of {date}": "Settimana dal {date}",
+  "Month of {date}": "Mese dal {date}",
 
   // src/navigation/runPosition.ts, the Android notification of a run (TASK-294)
   "MuW is recording your activity": "MuW sta registrando la tua attività",
@@ -1595,7 +1647,6 @@ export const IT: Table = {
   Challenges: "Sfide",
   "Sign in to play with a team.": "Accedi per giocare in squadra.",
   "Teams are not on this server yet.": "Le squadre non sono ancora su questo server.",
-  "YOUR TEAMS": "LE TUE SQUADRE",
   "No team yet. Create one, or join one with its code.":
     "Nessuna squadra ancora. Creane una, o entra in una con il suo codice.",
   "Team name": "Nome della squadra",
@@ -1728,12 +1779,6 @@ export const IT: Table = {
   "Line in 2D": "Linea in 2D",
   // src/share/VideoPreview.tsx (TASK-408 C2c, choice 13; «Resume» and «Pause» were there)
   "Video preview": "Anteprima del video",
-  // src/share/DescribeVideo.tsx (TASK-408 D, texts of choice 9)
-  "Describe your video": "Descrivi il tuo video",
-  "a horse at night, fireworks at the end":
-    "un cavallo di notte, fuochi d'artificio alla fine",
-  "An animal, colours, emoji, the ending. Read on your phone.":
-    "Un animale, i colori, le emoji, il finale. Letto sul telefono.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concorso MuW",
@@ -2199,6 +2244,15 @@ export const IT: Table = {
     "Luoghi famosi, panorami, cibo… in qualsiasi città",
   "The rest could not load.": "Il resto non si è caricato.",
   "Loading more…": "Ne arrivano altri…",
+  // src/share/CharacterRow.tsx, MyImageChoices.tsx (TASK-417: the runner's
+  // own image in place of the animal, texts approved, choice 5)
+  "My image": "La mia immagine",
+  "Choose a photo": "Scegli una foto",
+  "Remove image": "Togli l'immagine",
+  "Your image stays on this phone. It leaves only in the video you share.":
+    "La tua immagine resta sul telefono. Esce solo nel video che condividi.",
+  "This image can't be read. The video goes out without it.":
+    "Questa immagine non si legge. Il video esce senza.",
   "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
     "Chiunque abbia il link può seguirti su una pagina web, senza l'app: tempo, vasche o esercizio, calorie e il battito quando un orologio lo manda.",
 

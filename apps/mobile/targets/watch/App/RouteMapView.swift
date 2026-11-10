@@ -6,20 +6,17 @@ import WatchCore
 /// where the runner is, one swipe after the arrow.
 struct RouteMapView: View {
     @EnvironmentObject private var guide: GuideSession
+    @EnvironmentObject private var live: LiveRun
 
     var body: some View {
         if let route = guide.route {
             Map(initialPosition: .region(Self.region(of: route.points))) {
-                MapPolyline(coordinates: route.points.map {
-                    CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lon)
-                })
-                .stroke(.yellow, lineWidth: 4)
+                MapPolyline(coordinates: route.points.map(\.coordinate))
+                    .stroke(.yellow, lineWidth: 4)
+                // Where the runner is, and towards where (part B5).
                 if let here = guide.position {
-                    Annotation("", coordinate: CLLocationCoordinate2D(latitude: here.lat, longitude: here.lon)) {
-                        Circle()
-                            .fill(.blue)
-                            .stroke(.white, lineWidth: 2)
-                            .frame(width: 12, height: 12)
+                    Annotation("", coordinate: here.coordinate) {
+                        HereMarker(courseDeg: live.courseDeg)
                     }
                 }
             }

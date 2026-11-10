@@ -19,17 +19,20 @@ export function useEditRunDoor(): EditRunDoor {
 /**
  * The door for the app, from what edits a line: the same door from render
  * to render, whatever `onEdit` is this time, so the page under it is not
- * drawn again with the app.
+ * drawn again with the app. `edits` says, from the line alone, whether
+ * `onEdit` puts it on the map: no button that does nothing (TASK-410).
  */
 export function useEditRunOf(
   onEdit: (line: readonly LatLon[]) => (() => void) | undefined,
+  edits: (line: readonly LatLon[]) => boolean,
 ): EditRunDoor {
   const latest = useRef(onEdit);
   useEffect(() => {
     latest.current = onEdit;
   });
   return useMemo(
-    () => (line) => (line.length >= 2 ? () => latest.current(line)?.() : undefined),
-    [],
+    () => (line) =>
+      line.length >= 2 && edits(line) ? () => latest.current(line)?.() : undefined,
+    [edits],
   );
 }

@@ -81,10 +81,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-363 — Dove va la posizione del telefono** · codice in
   `fix/TASK-363-position`; server, sito e OTA, tre sì a parte. File: — ·
   `tasks/TASK-363.md`
-- **TASK-370 — L'app per Apple Watch** · A1–A3, B1, B2, B3 (percorsi,
-  corsa guidata, traccia al telefono con notifica e scheda) in `main`;
-  privacy in PR (#1051); poi A-flip e la prova al polso con la build 1.1,
-  col sì dell'utente. File: `about/content/`, `site/privacy/` · `tasks/TASK-370.md`
+- **TASK-370 — L'app per Apple Watch** · A1–A3, B1–B5 e privacy in `main`
+  (B5 mappa, colori, zone #1085; B4 risveglio #1089); build 11 provata al
+  polso. A-flip (#1058, in bozza, 1.1.0) ha main dentro: la build 12 su
+  TestFlight col sì dell'utente. File: — · `tasks/TASK-370.md`
 - **TASK-371 — La camminata, «Walk»** · A e B Done, «Walk» acceso (#923);
   resta C. File: — · `tasks/TASK-371.md`
 - **TASK-374 — Il mio corpo: calorie e zone del battito** · A e B in `main`;
@@ -120,18 +120,14 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
 - **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
-  proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
-  TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
+  B e C («My image», #1067) in `main`, escono col prossimo OTA di
+  produzione; prossime D («Together») ed E (telefono: anche il picker di
+  sistema). File: — · `tasks/TASK-417.md`
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
   0, A1, A2, B1 e B2 (piscina e palestra, #1053) in `main` e in
   produzione dal 2026-11-10 (server, sito, OTA 2 con B1, OTA 3 con B2).
   Restano la prova sul telefono e la parte C. File: — ·
   `tasks/TASK-424.md`
-- **TASK-419 — Il catalogo grande di «Explore»** · primo giro sul server
-  (155); secondo giro nella PR #1028 (386 percorsi in 45 città, scelta
-  dell'utente del 2026-11-10), poi «via server catalogo». Restano 16 città
-  europee (Overpass chiuso) e i contorni di TASK-418 in attesa della
-  registrazione. File: quelli della #1028 · `tasks/TASK-419.md`
 - **TASK-423 — «Play» grande** (ADR-0351) · A, B, C (sfide personali,
   streak, 0065) e la privacy in `main`; server A+B fatto, il backfill
   riparte dopo la fix #1037 (corse senza traccia); la 0065 nel passo server
@@ -140,6 +136,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   mockup e le quattro scelte dell'utente (schede, sei sezioni, colori,
   testi). Prossima la parte A (la modalità e le schede), con la lista al
   Coordinatore. File: — · `tasks/TASK-429.md`
+- **TASK-431 — «Compass» più bella** (ADR-0359) · in `main` (#1081): la
+  freccia «B» con anello e cono azzurri che punta dove punta la mappa, le
+  tre schede coi disegni, la punta rossa del nord. Restano l'OTA di
+  produzione (col sì dell'utente) e la prova sul telefono. File: — ·
+  `tasks/TASK-431.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

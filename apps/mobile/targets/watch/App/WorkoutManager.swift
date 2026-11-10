@@ -30,12 +30,19 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published private(set) var units: WatchUnits =
         UserDefaults.standard.string(forKey: WorkoutManager.unitsKey).flatMap(WatchUnits.init)
         ?? (Locale.current.measurementSystem == .metric ? .km : .mi)
+    /// The heart rate zones of the phone (part B5), kept for the next
+    /// time; none until the phone has an age or a max heart rate.
+    @Published private(set) var heartZones: HeartZones? =
+        (UserDefaults.standard.array(forKey: WorkoutManager.zonesKey) as? [Int])
+        .flatMap(HeartZones.init(limits:))
 
     private let store = HKHealthStore()
     private let phone = PhoneLink()
     private var session: HKWorkoutSession?
     private var builder: HKLiveWorkoutBuilder?
     private var countdownTask: Task<Void, Never>?
+    /// Woken by the phone (part B4): the wait for its start message.
+    private var wakeTask: Task<Void, Never>?
     /// When the phone was last told the heart rate and the distance.
     private var heartSentAt: Int64 = 0
     /// The heart rates of the workout, for its average in the track.
@@ -54,6 +61,8 @@ final class WorkoutManager: NSObject, ObservableObject {
     static let sendEveryMs: Int64 = 5000
     /// Where the phone's units are kept.
     static let unitsKey = "units"
+    /// Where the phone's heart rate zones are kept.
+    static let zonesKey = "heartZones"
 
     var phase: WorkoutPhase {
         workout?.phase ?? .ready
@@ -66,6 +75,8 @@ final class WorkoutManager: NSObject, ObservableObject {
     /// The positions of a workout with the GPS, for the phone and Apple
     /// Health (part B3c).
     private let recorder = TrackRecorder()
+    /// The line, the arrow and the climb on the wrist (part B5).
+    let live = LiveRun()
 
     init(routes: RouteStore? = nil) {
         self.routes = routes
@@ -74,8 +85,27 @@ final class WorkoutManager: NSObject, ObservableObject {
             self?.receive(message)
         }
         recorder.onFix = { [weak self] fix in
-            self?.guide.follow(fix)
+            guard let self else {
+                return
+            }
+            self.guide.follow(fix)
+            if self.phase == .running {
+                self.live.follow(fix)
+            }
         }
+    }
+
+    /// The average heart rate of the workout so far.
+    var heartAvgBpm: Int? {
+        heartCount > 0 ? Int((heartSum / Double(heartCount)).rounded()) : nil
+    }
+
+    /// The zone of the heart rate now, 1 to 5, when the phone sent zones.
+    var heartZone: Int? {
+        guard let heartRate, let heartZones else {
+            return nil
+        }
+        return heartZones.zone(of: heartRate)
     }
 
     func movingMs(at date: Date) -> Int64 {
@@ -126,6 +156,8 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     /// A workout of `sport`, along `route` when there is one (part B3b).
     func start(_ sport: WatchSport, route: WatchRoute? = nil) {
+        wakeTask?.cancel()
+        wakeTask = nil
         var next = Workout(activity: sport.activity)
         guard phase == .ready, next.apply(.start, at: Self.now()) else {
             return
@@ -138,6 +170,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         startedAtMs = Self.now()
         heartSum = 0
         heartCount = 0
+        live.begin()
         if sport.gps {
             recorder.prepare(store: store, ride: route?.ride ?? false)
         }
@@ -174,6 +207,32 @@ final class WorkoutManager: NSObject, ObservableObject {
             return
         }
         session?.resume()
+    }
+
+    /// The phone woke the app for a workout (part B4): its start message,
+    /// with the app's sport, follows once the app is up. Without it within
+    /// `WatchWake.waitS`, the sport of the configuration starts; a workout
+    /// already on lets it go, as a second start.
+    func wake(_ configuration: HKWorkoutConfiguration) {
+        guard phase == .ready, wakeTask == nil else {
+            return
+        }
+        let appleWorkout = Int(configuration.activityType.rawValue)
+        let outdoor = configuration.locationType != .indoor
+        wakeTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(WatchWake.waitS * 1_000_000_000))
+            guard let self, !Task.isCancelled else {
+                return
+            }
+            self.wakeTask = nil
+            guard self.phase == .ready,
+                let sport = WatchWake.sport(
+                    appleWorkout: appleWorkout, outdoor: outdoor, among: self.sports)
+            else {
+                return
+            }
+            self.start(sport)
+        }
     }
 
     /// The end; during the countdown it stops it, and nothing is recorded.
@@ -237,9 +296,12 @@ final class WorkoutManager: NSObject, ObservableObject {
             case .end:
                 end()
             }
-        case let .settings(chosen, _):
+        case let .settings(chosen, zones, _):
             units = chosen
             UserDefaults.standard.set(chosen.rawValue, forKey: Self.unitsKey)
+            // A phone with no age and no max heart rate says no zones.
+            heartZones = zones
+            UserDefaults.standard.set(zones?.limits, forKey: Self.zonesKey)
         case .route, .routes:
             routes?.receive(message)
         default:
@@ -346,7 +408,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             endedAtMs: max(endedAtMs, startedAtMs),
             status: arrived ? .arrived : .stopped, route: followed, distanceM: distanceM,
             movingMs: workout.movingMs(at: endedAtMs), kcal: kcal > 0 ? kcal : nil,
-            heartAvgBpm: heartCount > 0 ? Int((heartSum / Double(heartCount)).rounded()) : nil)
+            heartAvgBpm: heartAvgBpm)
         phone.sendTrack(track)
         followed = nil
     }

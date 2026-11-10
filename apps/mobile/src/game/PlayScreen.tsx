@@ -26,6 +26,9 @@ import { inUnits } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { type RequestedChallenge, useRequestedChallenge } from "./challengeDoor";
 import { ChallengesTab } from "./ChallengesTab";
+import { CollectionList } from "./CollectionList";
+import { CollectionPage } from "./CollectionPage";
+import { collectionRows, hasCollections } from "./collections";
 import { useGameCatalog } from "./gameCatalog";
 import { ShapeCard } from "./ShapeCard";
 import { useGameMe } from "./useGameMe";
@@ -55,7 +58,9 @@ const COLUMNS = 2;
  * shown as they are, with the way to sign in above them. «Challenges»: the
  * account's teams and their challenges (`ChallengesTab`); a challenge's
  * notification touched opens the page on it. The page exists only while
- * the API has the game (`gameCatalog`): the app shows it then.
+ * the API has the game (`gameCatalog`): the app shows it then. A catalog
+ * in collections (TASK-423 part D) shows «Collection» as the list of them,
+ * each opening its own page; an older API's, the one grid.
  */
 export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
   const insets = useSafeAreaInsets();
@@ -64,6 +69,8 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
   const language = useLanguage();
   const catalog = useGameCatalog();
   const [tab, setTab] = useState<PlayTab>("collection");
+  // The collection whose page is open; null: the list of them.
+  const [openId, setOpenId] = useState<string | null>(null);
   // A challenge asked for from outside (a notification): its tab, once
   // per request; the tab opens the challenge itself.
   const requested = useRequestedChallenge();
@@ -77,6 +84,11 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
   const cardWidth = (width - space.md * (COLUMNS + 1)) / COLUMNS;
   const me: GameMe | null = shown.status === "ready" ? shown.me : null;
   const states = new Map(me?.shapes.map((state) => [state.id, state]) ?? []);
+  const rows =
+    catalog !== null && hasCollections(catalog)
+      ? collectionRows(catalog, states)
+      : null;
+  const opened = rows?.find((row) => row.collection.id === openId) ?? null;
   return (
     <ScrollView
       style={styles.page}
@@ -143,6 +155,18 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
           <Text style={styles.noticeText}>
             {t("The game is not available right now.")}
           </Text>
+        ) : opened !== null ? (
+          <CollectionPage
+            row={opened}
+            states={states}
+            me={me}
+            cardWidth={cardWidth}
+            units={units}
+            language={language}
+            onBack={() => setOpenId(null)}
+          />
+        ) : rows !== null ? (
+          <CollectionList rows={rows} language={language} onOpen={setOpenId} />
         ) : (
           <View style={styles.grid}>
             {catalog.shapes.map((shape) => (

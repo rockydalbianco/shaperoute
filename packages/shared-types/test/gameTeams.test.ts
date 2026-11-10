@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import catalog from "../fixtures/game-catalog.json" with { type: "json" };
 import challenge from "../fixtures/game-challenge.json" with { type: "json" };
 import team from "../fixtures/game-team.json" with { type: "json" };
 import {
+  CHALLENGE_DAYS_DEFAULT,
+  CHALLENGE_DAYS_MAX,
+  CHALLENGE_DAYS_MIN,
   CHALLENGE_PIECES_MAX,
   CHALLENGE_PIECES_MIN,
   type ChallengeRequest,
@@ -33,6 +37,29 @@ const going: GameChallenge = {
   })),
 };
 const mine: GameTeam = { ...team, challenge: null };
+
+test("the limits of a challenge are the API's, number for number", () => {
+  // game_challenges.py checks them; the form of the app keeps inside them.
+  const api = readFileSync(
+    new URL("../../../services/api/shaperoute_api/game_challenges.py", import.meta.url),
+    "utf8",
+  );
+  const pieces = /^MIN_PIECES, MAX_PIECES = (\d+), (\d+)$/m.exec(api);
+  const days = /^MIN_DAYS, MAX_DAYS, DEFAULT_DAYS = (\d+), (\d+), (\d+)$/m.exec(api);
+  assert.ok(pieces !== null && days !== null);
+  assert.deepEqual(pieces.slice(1).map(Number), [
+    CHALLENGE_PIECES_MIN,
+    CHALLENGE_PIECES_MAX,
+  ]);
+  assert.deepEqual(days.slice(1).map(Number), [
+    CHALLENGE_DAYS_MIN,
+    CHALLENGE_DAYS_MAX,
+    CHALLENGE_DAYS_DEFAULT,
+  ]);
+  // TASK-423 part C: up to 20 pieces and 30 days.
+  assert.equal(CHALLENGE_PIECES_MAX, 20);
+  assert.equal(CHALLENGE_DAYS_MAX, 30);
+});
 
 test("the team has a code of six and its members in order, the owner among them", () => {
   assert.match(mine.code, /^[A-HJ-NP-Z2-9]{6}$/);

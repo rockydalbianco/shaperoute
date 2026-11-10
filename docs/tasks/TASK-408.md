@@ -445,6 +445,15 @@ c'è già in «Share your run», quindi niente «Export video».
   parola sconosciuta si salta senza messaggi; numeri come coordinate non
   danno nulla (test). L'elefante entra nella tabella con B2. Provato nel
   simulatore (schermata in `out/TASK-408/sim-d/`).
+- **D2 — via il prompt** (branch `fix/TASK-408-remove-describe`): la parte
+  D è tolta per scelta dell'utente, il 2026-11-10, dopo averla provata sul
+  telefono: «togli la parte di scrivere per modificare il video». Escono
+  il riquadro «Describe your video», `DescribeVideo.tsx`, la tabella
+  `share/videoWords.ts` (con le parole dell'elefante di B2), i loro test e
+  i tre testi della scelta 9 nelle quattro lingue. Il resto di «Edit
+  video» resta com'è. ADR-0339 precisazione D resta come storia,
+  segnata come superata. In `main` con #1075 (30fc2789), esce col
+  prossimo OTA di produzione.
 - **E — la prova sul telefono**: il tempo dell'esportazione con ogni
   personaggio, nei tre stili. Il 2026-11-10 l'utente ha provato sul suo
   telefono: «funziona top». Misure di tempi e batteria non prese.

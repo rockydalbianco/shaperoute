@@ -460,7 +460,7 @@ lasciando le righe d'indice.
 - ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server · 2026-11-08 · Proposto
 - ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Proposto
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
-- ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
+- ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Accettata (chiuso il 2026-11-10: 572 percorsi in 63 città)
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
 - ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog` · 2026-11-10 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
@@ -477,6 +477,7 @@ lasciando le righe d'indice.
 ---
 
 - ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
+- ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D · 2026-11-10 · Attiva
 - ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
 - ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
@@ -494,18 +495,186 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
-- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
+- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Superata dalla scelta dell'utente del 2026-11-10 (TASK-408 D2, #1075)
 - ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
 - ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute · 2026-11-10 · Attiva
 - ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda · 2026-11-10 · Attiva
+- ADR-0314, precisazione — La parte B5: mappa nella corsa libera, colori, zone del battito dal telefono · 2026-11-10 · Attiva
+- ADR-0314, precisazione — La parte B4: il telefono sveglia l'orologio con `startWatchApp` della libreria HealthKit · 2026-11-10 · Attiva
 - ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL · 2026-11-10 · Accettata
 - ADR-0340, precisazione D — Le sezioni della pagina: parziali, altimetria, battito medio e massimo; zone e minimo rimandati, dislivello dal profilo · 2026-11-10 · Attiva
 - ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
 - ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì · 2026-11-10 · Accettata
 - ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF · 2026-11-10 · Attiva
 - ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Accettata
+- ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano · 2026-11-10 · Accettata
+- ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni · 2026-11-10 · Accettata
+- ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno · 2026-11-10 · Attiva
+- ADR-0356, precisazione — Anche il percorso chiuso che si incrocia diventa un anello alla partenza: «Edit the drawing» su ogni percorso di «Explore» · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0314, precisazione — La parte B5: mappa nella corsa libera, colori, zone del battito dal telefono
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B5 (#1085). Proposta
+approvata dall'utente («Sì, tutta») dopo la prova della build 11; il
+resto è deciso dall'agente su delega dell'utente.
+
+**Decisione**:
+1. **Gli sport col GPS hanno una mappa anche senza percorso**
+   (`LiveMapView`). Le pagine sono Numeri → Mappa → Dettagli. La linea
+   (`LiveLine`) prende un punto ogni 5 m, al massimo 1500, e oltre tiene
+   un punto ogni due. La freccia (`HereMarker`) segue la direzione del
+   GPS sopra 0,5 m/s ed è la stessa sulla mappa del percorso.
+2. **Le zone del battito le conta il telefono.** Il messaggio `settings`
+   ha un campo facoltativo `heartZones`, i sei limiti di «Heart rate
+   zones»; un orologio vecchio lo ignora. Il telefono lo rimanda a ogni
+   cambio di unità, battito o profilo; l'orologio lo tiene per la volta
+   dopo.
+3. **I colori sono quelli di sistema**, non esadecimali: il giallo della
+   distanza è il `.yellow` di watchOS, come la linea del percorso. Così
+   `tokens.ts` resta del solo telefono.
+4. **Il dislivello è quello del telefono** (`climbM`, scalini di 3 m), in
+   metri anche in miglia come «Elev. gain», solo sugli sport a terra.
+
+**Conseguenze**: i colori e la mappa si vedono solo al polso: la prova a
+vista è la build 12.
+
+## ADR-0314, precisazione — La parte B4: il telefono sveglia l'orologio con `startWatchApp` della libreria HealthKit
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B4 (#1089), decisa
+dall'agente su delega dell'utente; lista dei file dal Coordinatore.
+
+**Contesto**: con la build 11 una corsa avviata sul telefono faceva
+partire l'orologio solo se MuW era già aperta al polso. `sendMessage`
+arriva solo a un'app raggiungibile.
+
+**Decisione**:
+1. **Al conto alla rovescia il telefono chiede ad Apple di avviare
+   l'allenamento sull'orologio** (`HKHealthStore.startWatchApp(with:)`).
+   Usa `startWatchApp` di @kingstinct/react-native-healthkit 16.2.0, già
+   nella build 1.0.1, senza codice nativo nuovo; l'impronta iOS resta
+   6f8bba4c. La libreria si carica come in `healthModules.ts`.
+2. **Un no di Apple** (senza permesso di Salute, senza orologio o senza
+   app) fallisce in silenzio: la corsa sul telefono va avanti.
+3. **Lo sport esatto arriva col messaggio di partenza**, che il telefono
+   rimanda quando Apple dice sì. La configurazione dice solo il tipo di
+   Apple, e bici, mountain bike e gravel sono tutte «ciclismo».
+   L'orologio aspetta 3 s quel messaggio, poi parte col primo sport di
+   quel tipo e con lo stesso GPS (`WatchWake.sport`). Una seconda
+   partenza durante un allenamento non cambia nulla.
+
+**Conseguenze**: il risveglio vero si prova solo al polso, con la build
+12. Il battito specchiato in tempo reale (`workoutSessionMirroringStartHandler`)
+resta fuori: il battito arriva ogni 5 s coi messaggi.
+
+## ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno
+
+**Stato**: Attiva · 2026-11-10 · TASK-410, correzione (#1078,
+`db3d131c`). Deciso dall'agente su delega dell'utente, dopo la sua
+segnalazione sull'iPhone.
+
+**Contesto**: dopo l'OTA 3 l'utente non riusciva a usare «‹» della pagina
+del post («troppo in alto») e «Edit & run» non faceva niente, né sulla
+card né nella pagina. Tre cause: dentro un `Modal` iOS i margini dell'app
+valgono 0, così «‹» stava sotto l'orologio; la mappa di «Draw on the map»
+si apriva sotto la pagina, che restava sopra; le corse chiuse il cui
+contorno non fa un disegno mostravano il tasto senza effetto.
+
+**Decisione**:
+
+1. **La pagina ha i suoi margini**: un `SafeAreaProvider` con
+   `initialWindowMetrics` dentro il `Modal`, lo schema di «Heart rate
+   zones» e della ricerca (TASK-366). Anche la barra delle quattro azioni
+   sta sopra il bordo basso del telefono.
+2. **«Edit & run» chiude la pagina, poi apre la mappa**.
+3. **Il tasto solo dove c'è un disegno**: `useEditRunOf` riceve
+   `editsLine` (la linea fa un disegno secondo `cardTrack(routeTrack)`),
+   come «Edit the drawing» sulle schede. Il difetto delle tracce chiuse
+   che si incrociano lo corregge ADR-0356 / TASK-432 (#1079) su tutto il
+   catalogo; la modifica doppia è stata tolta dalla #1078.
+
+**Conseguenze**: esce con l'OTA 4. Il calcolo di `cardTrack` gira a ogni
+card del Feed (al più 64 punti per traccia).
+
+## ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni
+
+**Stato**: Accettata · 2026-11-10 · TASK-431 (#1081, `5747259d`). Le
+scelte di quello che si vede sono dell'utente, che su un'anteprima con due
+varianti ha scelto la «B»; il modo è deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: provando l'OTA del 2026-11-10 l'utente ha chiesto una pagina
+«Compass» (TASK-422, ADR-0350) più ordinata e una freccia della posizione da
+cui si capisca dove punta. La mappa girava con la bussola, ma la freccia
+seguiva solo la traccia GPS degli ultimi 10 m, e `MapView` mandava la
+direzione alla pagina della mappa solo con un fix nuovo: da fermi la
+freccia non diceva dove si guardava.
+
+**Decisione**:
+- **La direzione della mappa è quella della freccia**: `useHeadingUpMap`
+  espone `facing`, la direzione dell'ultima rotazione su «Compass» (null
+  fuori pagina e col nord in alto). `App.tsx` la passa a `MapView`, che la
+  manda alla pagina col messaggio nuovo `face` a ogni grado intero nuovo, e
+  una volta `null` all'uscita. Nella pagina la freccia gira lì anche senza
+  un fix, un fix con la direzione della traccia non la sovrascrive, e
+  `stopFollow` la dimentica. Così la freccia sta sempre in alto e cambia
+  con la mappa (4°, 400 ms, ADR-0350).
+- **Un solo disegno** (`HEADING_ARROW_SVG`, riquadro di 160 pt): freccia
+  chiara grande col bordo scuro, anello azzurro, e davanti un cono a
+  gradiente radiale acceso solo da `face`. Il riquadro ha
+  `pointer-events: none`, così le dita sul cono spostano la mappa.
+- **Due token nuovi**, nei due toni: `you` (azzurro: anello, cono, la
+  scheda aperta) e `north` (rosso: la punta della freccia del nord). Né
+  giallo, che è del percorso, né ciano, che è di «Start here».
+  `palettes.test.ts` controlla ≥ 3:1 su mappa, fondo e `surfaceRaised` per
+  ogni tono e passo.
+- **Le schede Compass | Map | Data** hanno un disegno fatto di View
+  (`RunPageGlyphs.tsx`: l'app non ha icone né SVG), nascosto a VoiceOver.
+  La pagina aperta ha la superficie chiara, il disegno `you` e una linea
+  `you`; l'altezza resta 56 pt.
+
+**Alternative scartate**: girare la freccia sulla bussola grezza (avrebbe
+tremato in mano e si sarebbe staccata dalla mappa, che gira a soglie);
+mandare la direzione dentro `follow` (arriva solo con un fix: da fermi non
+basta); il cono anche su «Map» (lì la bussola è spenta, e un cono sulla
+traccia promette quello che non sa); un'icona di una libreria (dipendenza
+nuova).
+
+**Conseguenze**: un solo stile di freccia per tutte le pagine con la mappa.
+Il cono non mostra quanto è precisa la bussola (fuori scope). Arriva sui
+telefoni con l'OTA di produzione, col sì dell'utente; resta la prova sul
+telefono.
+
+## ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano
+
+**Stato**: Accettata · 2026-11-10 · TASK-430 (#1074). La scelta di prodotto
+è dell'utente («togli tutti i percorsi fatti da MuW, ad esempio Yellow Arrow
+Valencia»; poi «Solo il Feed»); il modo è deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: dal TASK-365 (ADR-0310) il Feed mescola a «All» i 25
+percorsi di `catalog/muw_routes/`, letti da `GET /muw-routes`. L'utente li
+vuole fuori dal Feed; la fila «RIDE IT YOURSELF» di «Explore» (TASK-364)
+resta.
+
+**Decisione**: un interruttore nell'app, `MUW_ROUTES_IN_FEED = false` in
+`apps/mobile/src/feed/muwInFeed.ts`. Spento, `FeedScreen` non chiede
+`GET /muw-routes` e non passa percorsi a `feedWithMuw`. Endpoint, file di
+`catalog/muw_routes/`, schede e codice restano: **si riaccende con una
+riga**, mettendo `true`. I test del comportamento acceso restano
+(`FeedScreenMuw.test.tsx` accende l'interruttore); `FeedScreenNoMuw.test.tsx`
+prova lo spento.
+
+**Alternative scartate**: svuotare `catalog/muw_routes/` sul server
+(effetto subito su tutte le versioni, ma tocca il server e cancella dati
+approvati a mano); togliere il codice del TASK-365 (più diff, e
+riaccenderlo vorrebbe dire rifarlo).
+
+**Conseguenze**: arriva sui telefoni con l'OTA di produzione, col sì
+dell'utente; fino ad allora le versioni installate li mostrano ancora.
+Il server continua a rispondere a `GET /muw-routes`, che nessuna app nuova
+chiama.
 
 ## ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL
 
@@ -1001,6 +1170,48 @@ immediata da «Start» (`App.tsx`); le categorie dal catalogo delle forme
 quando TASK-418 le scrive; il rilancio di `catalog-data.mjs` a ogni seme
 nuovo, da chi cambia il seme (TASK-419; una riga nel suo task file e nel
 `README` del catalogo, dalla sua sessione).
+
+## ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D
+
+**Stato**: Attiva · 2026-11-10 · TASK-417 parti B e C (#1067, 87f98fd6) ·
+deciso dall'agente su delega dell'utente; le scelte di prodotto restano le
+1–5 del task file
+
+- **Il ritaglio**: `expo-image-picker` con `allowsEditing` e
+  `aspect: [1, 1]`, per la libreria e per la fotocamera. Su iOS l'editor
+  ritaglia ogni fotogramma di una GIF e la lascia animata
+  (`processGifData` con `cropRect` in expo-image-picker 57). Una foto si
+  tiene come JPEG di 256 px (`expo-image-manipulator`), una GIF così com'è,
+  dopo averla letta una volta. Un'immagine sola, nella cartella documenti
+  dell'app (`my-image.jpg` o `my-image.gif`).
+- **Il formato verso la pagina** (punto 3, misurato): una foto passa come
+  data URL JPEG, letta da un `img`; una GIF come i suoi fotogrammi in RGBA
+  base64, posati con `putImageData`. Al più 8 fotogrammi a distanza uguale,
+  di al più 256 px; tutti insieme entro **2 MiB** di RGBA: se non ci stanno,
+  meno fotogrammi, mai meno di uno. Ognuno dura quanto i fotogrammi che
+  rappresenta, così il giro tiene la sua velocità. Oltre 40 milioni di
+  pixel da posare (una GIF lunga) si legge solo il primo. Una GIF di 12
+  fotogrammi scritta da ImageIO: 8 fotogrammi in 7 ms (Node).
+- **Le scelte sotto la riga**, non in un foglio sopra il foglio: «Choose a
+  photo», «Take a photo» e «Remove image» compaiono sotto «Character»,
+  come quelle della foto del profilo; così il picker di sistema si apre
+  sopra senza un Modal che si chiude. La casella vuota apre le scelte;
+  un'immagine tenuta e non scelta si sceglie con un tocco; toccata da
+  scelta, riapre le scelte.
+- **Nel video**: tonda, larga 0,6 della lunghezza dell'animale, con un
+  anello del colore della linea; inclinata al più di 12° nel verso della
+  strada, mai capovolta; il saltello lo calcola la scena (`hop`, |sin| a
+  2,5 salti al secondo, al più il 7 % della lunghezza dell'animale, 0 a
+  riposo). Sul 3D sta in piedi su un'asticella alta 0,55 volte la sua
+  larghezza, sopra un'ombra tonda.
+- **Il personaggio** è `Actor = Character | "my_image"`
+  (`share/videoActor.ts`); `prepareActorCall` dà alla pagina la chiamata
+  per l'animale o per l'immagine, `null` se non si legge.
+- **Nessuna rete**: `prepareImage` non carica three.js né altro; un test
+  legge l'immagine dalla cartella dell'app con `fetch` e `XMLHttpRequest`
+  sotto controllo.
+- **Impronta** iOS `6f8bba4c` e Android `227457f3`, invariate; nessuna
+  dipendenza nuova.
 
 ## ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme
 
@@ -1751,6 +1962,11 @@ più. Tutto esce con il passo unico sul server e l'OTA unico.
 **Stato:** deciso dall'agente su delega dell'utente (2026-11-10), dentro la
 scelta dell'utente 9 (nessuna AI, nessun costo, la prima tabella).
 
+**Superata dalla scelta dell'utente del 2026-11-10**, dopo la prova sul
+telefono: «togli la parte di scrivere per modificare il video». Il campo
+«Describe your video» e la tabella `share/videoWords.ts` sono tolti
+dall'app (TASK-408 D2, #1075); la voce resta come storia.
+
 1. **La tabella è un file dell'app** (`share/videoWords.ts`), nelle cinque
    lingue, letta come le parole delle forme (ADR-0036): accenti, maiuscole
    e apostrofi non contano, e le parole di ogni lingua valgono qualunque
@@ -2111,3 +2327,45 @@ dei messaggi resta, il Feed esce dalla barra), scartata con la domanda 1.
 **Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` ferma; motore
 non toccato. Le parti A–E si elencano nel task file, ognuna con la sua
 lista al Coordinatore; una parte che tocca `src/ski/**` lo concorda prima.
+
+## ADR-0356, precisazione — Anche il percorso chiuso che si incrocia diventa un anello alla partenza: «Edit the drawing» su ogni percorso di «Explore»
+
+**Stato**: Attiva · 2026-11-10 · TASK-432 (#1079). Numero dal Coordinatore;
+nessuna domanda nuova all'utente: la figura sulla mappa cambia come con
+ADR-0356, già scelto dall'utente (Coordinatore, 2026-11-10). Deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: l'utente, provando l'OTA di produzione del 2026-11-10: «non mi
+lascia modificare il disegno in explore». La scheda mostra «Edit the
+drawing» solo se la linea del percorso fa un disegno (`cardTrack` in
+`App.tsx`). Un percorso che torna alla partenza era un solo contorno chiuso;
+se si incrocia da solo (parole, farfalle, smiley) `outlineOf` non ne fa uno,
+e il pulsante spariva. ADR-0356 dava l'anello solo alle tracce che finiscono
+lontano dalla partenza. 334 percorsi del catalogo su 575 erano senza
+pulsante, già prima di ADR-0353: il problema c'era da ADR-0313.
+
+**Decisione**:
+
+1. `trackInPlace` (`route/figureLines.ts`) manda come anello alla partenza
+   (punto 1 di ADR-0356) **ogni** traccia il cui contorno chiuso non fa un
+   disegno, anche quella che finisce vicino alla partenza.
+2. Se l'anello non fa un disegno, vale `firstLineOf` sulla linea intera: per
+   un percorso chiuso è il contorno che trova su tutti i punti (l'anello
+   più grande, come per le altre tracce chiuse), per una traccia aperta la
+   linea aperta di prima.
+3. Un test legge tutto `catalog/` (`exploreCatalogEdit.test.ts`): ogni
+   percorso deve avere un disegno e non chiedere più della propria
+   lunghezza.
+
+**Alternative**:
+
+- **L'anello per le tracce chiuse senza il punto 2** (la prima versione
+  della correzione di TASK-410, #1078): lasciava fuori 23 percorsi del
+  catalogo (552 su 575), quelli il cui contorno di 100 punti si incrocia ma
+  che su tutti i punti ne hanno uno; tolta dalla #1078.
+
+**Conseguenze**: sul catalogo di allora 575 percorsi su 575 col pulsante
+(264 contorni, 311 anelli), dopo il quarto giro di TASK-419 597 su 597.
+Gli anelli chiedono 0,91–1,00 volte il percorso (mediana 0,97), mai andata
+e ritorno. Sulla mappa la figura si vede intera con l'anellino alla
+partenza. Solo JavaScript nell'app: esce con il prossimo OTA di produzione.

@@ -1,6 +1,6 @@
 import { t } from "../i18n";
 import { type Palette, videoLine } from "../theme/tokens";
-import type { Character } from "./videoCharacter";
+import type { Actor } from "./videoActor";
 import {
   type Cut,
   type Ending,
@@ -19,7 +19,8 @@ import type { VideoStyle } from "./videoStyle";
  */
 export type VideoEdit = {
   style: VideoStyle;
-  character: Character | null;
+  /** The animal, or the runner's own image (TASK-417); null for none. */
+  character: Actor | null;
   line: LineColour;
   /** The emoji that pops where the line passes; null for none. */
   along: string | null;

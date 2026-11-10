@@ -17,12 +17,11 @@ import {
   VIDEO_SILENCE_MS,
   type VideoOutcome,
 } from "./videoFile";
-import { base64OfBytes, characterModel } from "./videoCharacter";
+import { prepareActorCall } from "./videoActor";
 import { type Music, musicTrack } from "./videoMusic";
 import {
   makeCall,
   type PageTimes,
-  prepareCharacterCall,
   prepareMapCall,
   VIDEO_PAGE,
   VIDEO_PAGE_BASE,
@@ -89,14 +88,11 @@ export function RunVideo({
   const [audio] = useState<Promise<AudioTrack | null> | null>(() =>
     music === null ? null : musicTrack(music).catch(() => null),
   );
-  // The animal's model, in base64 for the page (TASK-408), read once; null
-  // when it could not be read: the video then comes without the animal.
+  // What makes the animal ready in the page (TASK-408), or the runner's own
+  // image (TASK-417), read once; null when it could not be read: the video
+  // then comes without it.
   const [model] = useState<Promise<string | null> | null>(() =>
-    scene.character === null
-      ? null
-      : characterModel(scene.character)
-          .then(base64OfBytes)
-          .catch(() => null),
+    scene.character === null ? null : prepareActorCall(scene.character),
   );
   // The latest callbacks, for the timer and the page's messages.
   const callbacks = useRef({ onProgress, onEnd, onTimes });
@@ -201,14 +197,14 @@ export function RunVideo({
           } else if (model === null) {
             next();
           } else {
-            void model.then((base64) => {
+            void model.then((call) => {
               if (ended.current) {
                 return;
               }
-              if (base64 === null) {
+              if (call === null) {
                 next();
               } else {
-                webView.current?.injectJavaScript(prepareCharacterCall(base64));
+                webView.current?.injectJavaScript(call);
               }
             });
           }

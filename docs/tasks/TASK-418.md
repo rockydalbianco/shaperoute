@@ -158,6 +158,7 @@ apps/mobile/src/route/ShapeNamesLanguages.test.tsx
 apps/mobile/src/search/categories.ts
 apps/mobile/src/mapdraw/catalogueShapes.json
 apps/mobile/src/mapdraw/ChangeFigureApp.test.tsx
+apps/mobile/__tests__/App.test.tsx
 apps/mobile/assets/engine/engine.zip
 docs/tasks/TASK-418.md
 ```

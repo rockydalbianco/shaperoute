@@ -348,8 +348,12 @@ c'è già in «Share your run», quindi niente «Export video».
     - **La pagina del video**: legava la pelle alle ossa con la matrice del
       nodo del modello, che per glTF va ignorata. L'elefante sta sotto nodi
       ruotati e scalati: veniva sottosopra, e a pezzi in corsa. Ora il bind
-      è all'identità; gli animali di Quaternius restano identici (provato
-      con il cavallo, contro il GLTFLoader di three.js 0.159.0).
+      è all'identità, e le matrici si aggiornano dopo il bind, prima di
+      misurare l'animale (senza, l'elefante risultava di pochi centimetri e
+      finiva disegnato enorme, fuori vista). Gli animali di Quaternius
+      restano identici (provato con il cavallo, contro il GLTFLoader di
+      three.js 0.159.0 e nel simulatore). Video del simulatore, Notte e
+      Day con l'elefante, in `out/TASK-408/sim-b2/`.
     - **Crediti** (scelta dell'utente del 2026-11-10, «Tutti e due»): «The
       3D animals in the video come from Quaternius (CC0); the elephant is
       "Elephant Anim" by Shivoahm and SahuAvdhesh on Sketchfab (CC BY 4.0),

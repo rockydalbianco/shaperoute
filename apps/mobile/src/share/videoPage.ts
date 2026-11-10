@@ -892,6 +892,10 @@ const SCRIPT = String.raw`
       // Quaternius animals', at the origin, draw the same either way.
       one.mesh.bind(new THREE.Skeleton(bones, inverses), new THREE.Matrix4());
     });
+    // Once more, so a bound mesh has its node's matrix to undo before its
+    // size is measured: without it the elephant measured a few centimetres
+    // and was drawn far too big, out of sight.
+    root.updateMatrixWorld(true);
     var PATHS = { translation: "position", rotation: "quaternion", scale: "scale" };
     var clips = {};
     (json.animations || []).forEach(function (animation) {

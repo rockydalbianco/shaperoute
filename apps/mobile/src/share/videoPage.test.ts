@@ -1034,6 +1034,11 @@ describe("the video page, with an animal (TASK-408)", () => {
       "one.mesh.bind(new THREE.Skeleton(bones, inverses), new THREE.Matrix4());",
     );
     expect(script()).not.toContain("one.mesh.matrixWorld);");
+    // And the matrices brought up to date after binding, before the
+    // animal's size is measured.
+    expect(script()).toMatch(
+      /new THREE\.Matrix4\(\)\);\s*\}\);\s*(\/\/[^\n]*\s*)*root\.updateMatrixWorld\(true\);/,
+    );
   });
 
   it("loads three.js only when an animal is asked, pinned and checked against its hash", () => {

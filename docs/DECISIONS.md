@@ -493,6 +493,7 @@ lasciando le righe d'indice.
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
 - ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
 - ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
+- ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
 
 ## Voci nuove
 
@@ -1647,3 +1648,53 @@ da sole e il motore prende solo contorni semplici. Per loro servirebbe il
 motore (linea aperta corsa una volta, ritorno per la via più breve): è
 proposto all'utente come task a parte. Solo JavaScript nell'app, nell'OTA
 unico.
+
+## ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta
+
+**Stato**: Accettata · 2026-11-10 · TASK-428 (#1040). Numeri dal
+Coordinatore. Scelta dell'utente del 2026-11-10: «Sì, fallo così» (l'anello
+solo nell'app, invece del ritorno disegnato a parte dal motore); come
+costruire l'anello è deciso dall'agente su delega dell'utente.
+
+**Contesto**: dopo ADR-0353 una traccia aperta che, chiusa con un lato
+dritto, non fa un contorno (si incrocia da sola, o il lato di ritorno la
+attraversa) restava una linea appesa a un anellino alla partenza, corsa
+andata e ritorno: 1,4–1,8 volte la traccia più il ritorno, su circa il 60%
+delle tracce aperte vere. Motore e API sapevano già fare il resto: un
+dettaglio che finisce sul **proprio primo punto** è un anello corso una
+volta sola (`_loop_start` in `shapes/outline.py`, `travelledLength`
+nell'app), e le richieste di un disegno passano da
+`parse_outline(..., allow_crossings=True)`, che lascia incrociare un
+dettaglio.
+
+**Decisione**:
+
+1. `trackInPlace` (`route/figureLines.ts`), quando la traccia chiusa non fa
+   un disegno, la manda come **anellino alla partenza più un dettaglio**: la
+   linea, semplificata come una prima linea disegnata (`firstLineOf`), e un
+   ultimo lato fino al suo primo punto. Il percorso la fa una volta e torna
+   verso la partenza seguendo quel lato.
+2. L'anello si costruisce **dalla linea aperta**, non passando la traccia
+   chiusa a `firstLineOf`: quella proverebbe `outlineOf`, che di una linea che
+   si incrocia tiene l'anello più grande e taglia il resto (7 tracce su 124
+   perdevano fino a un terzo della figura).
+3. Se nemmeno l'anello fa un disegno, la traccia resta aperta come prima.
+
+**Alternative**:
+
+- **Ritorno disegnato a parte, sulla strada più breve calcolata dal
+  motore**: scartata dall'utente per ora; chiede che il motore segni dove
+  finisce la figura e dove comincia il ritorno, la prova `test_same_routes`
+  e un cambio di contratto, qualche giorno di lavoro.
+- **Mandare la traccia chiusa come `path`** (la linea sola delle parole, che
+  può incrociarsi): scartata, il contratto delle richieste di un disegno non
+  ha `path` e la modifica sulla mappa lavora su contorno e dettagli.
+
+**Conseguenze**: su 124 tracce aperte vere (1 GPX ogni 8 di `samples/`,
+tagliato al 50% e al 75%), 45 si chiudono come con ADR-0353 e 79 diventano
+anello: distanza chiesta 0,76–0,99 volte la traccia più il ritorno dritto
+(mediana 0,97; prima 1,60), tutte accettate da `outline_of`. Tre percorsi
+veri a Trento (`plan_request`, `placement="anchored"`): 7,6 km per 7,0
+chiesti, 10,5 per 10,7, 19,3 per 17,0, somiglianza 0,97–1,00. Il ritorno è
+dritto verso la partenza, non la via più breve, e sulla mappa fa parte della
+figura. Solo JavaScript nell'app, nell'OTA unico o nel successivo.

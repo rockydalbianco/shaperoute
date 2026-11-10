@@ -152,8 +152,17 @@ C  services/api/migrations/00NN_game_personal.sql (nuovo),
    shaperoute_api/game_personal.py (nuovo), game.py, game_challenges.py,
    activities.py (solo il campo facoltativo), tests nuovi; il testo della
    privacy (site/privacy/, apps/mobile/src/about/content/), col sì
-D  apps/mobile/src/game/*, i18n (de, es, fr, it), activitiesDoor per
-   l'offset
+D  (lista data al Coordinatore il 2026-11-10, out/TASK-423/LISTA-D.md)
+   apps/mobile/src/game/: collections.ts, CollectionList.tsx,
+   CollectionPage.tsx, personalApi.ts, usePersonal.ts, personalText.ts,
+   PersonalCard.tsx, StreakCard.tsx, MonthChallengeRow.tsx (nuovi, coi
+   loro test); PlayScreen.tsx, ChallengesTab.tsx, goalText.ts,
+   NewChallenge.tsx; apps/mobile/src/api/activities.ts (l'offset e il
+   secondo invio senza); packages/shared-types/src/index.ts (20 pezzi, 30
+   giorni) e test/gameTeams.test.ts; i18n de, es, fr, it. Test aggiornati:
+   PlayScreen, PlayScreenTabs, ChallengesTab, NewChallenge, goalText,
+   gameCatalogCompat, api/activities, activitiesTurn, activityHeights,
+   activitiesDoorQueue
 E  services/api/migrations/00NN_game_prizes.sql (nuovo),
    shaperoute_api/game_prizes.py (nuovo), game.py, profiles.py, push.py;
    apps/mobile/src/game/*, src/profile/ (cornice, titolo, badge),
@@ -231,6 +240,21 @@ E  services/api/migrations/00NN_game_prizes.sql (nuovo),
   `shaperoute-2026-11-10T0914Z.dump`. Controlli in `out/TASK-423/SERVER-C.md`
   del checkout principale. L'OTA 3 (da 52010be4) è del Coordinatore; restano
   D (app, dopo la #971 di TASK-422) ed E (premi).
+
+- 2026-11-10 — Parte D: sì dell'utente a partire («Sì, parti con D»), lista
+  dei file approvata dal Coordinatore. «Collection» è la lista delle 10
+  collezioni con «7 / 13» e la pagina di ognuna (con un catalogo senza
+  collezioni resta la griglia); i traguardi dicono «One run of 5 km».
+  «Challenges» è una lista sola: In corso (personali della settimana e del
+  mese, streak, squadre con una sfida, sfida del mese se iscritto) ·
+  Disponibili (sfida del mese, le altre squadre, Create e Join) · Finite
+  (medaglie delle ultime 8 settimane, sfide di squadra finite o scadute,
+  archivio delle sfide del mese). L'app manda `utc_offset_min` nel PUT
+  della corsa (non per i file di altre app) e, se l'API lo rifiuta, la
+  rimanda senza; «New challenge» fino a 20 pezzi e 30 giorni, con le forme
+  per collezione. I limiti in shared-types li lega a `game_challenges.py`
+  un test di contratto. Testi nuovi nelle 5 lingue da approvare con
+  l'utente prima del merge. Esce con l'OTA successivo, col sì dell'utente.
 
 ## Esito
 

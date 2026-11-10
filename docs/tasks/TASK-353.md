@@ -1,6 +1,7 @@
 # TASK-353 — La chat: orari, giorni, quanti messaggi nuovi, i vecchi scorrendo
 
-**Stato**: In corso
+**Stato**: Done · 2026-11-10 · #671 in `main` dal 2026-10-30 e sul server;
+resta solo la prova dell'utente sul telefono; TASK-354 è un task a parte
 **Fase**: 4 · **Branch**: `feat/TASK-353-chat-look`
 **ADR**: ADR-0305 · **Numeri**: TASK-353 / ADR-0305, assegnati dal
 Coordinatore il 2026-10-30. Il passo dopo è TASK-354 (invio ottimistico e
@@ -111,3 +112,7 @@ Per questo il conteggio è una query a parte, solo sulla pagina.
 ## Esito
 
 *(si compila a fine task)*
+
+## Chiusura (2026-11-10)
+
+Chiuso dal giro delle chiusure del 2026-11-10 (sessione «Task backlog review», su assegnazione del Coordinatore): la #671 è in `main` dal 2026-10-30; `unread_count` è sul server (che è oltre quel `main`) e l'app è uscita con gli OTA di produzione. **Resta per l'utente**: la prova sul telefono, l'aspetto delle bolle e dell'elenco e lo scorrimento vero. Il passo dopo, l'invio ottimistico e la coda offline, è TASK-354.

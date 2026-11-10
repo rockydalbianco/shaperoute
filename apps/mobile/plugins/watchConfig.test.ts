@@ -2,6 +2,7 @@ import appJson from "../app.json";
 import {
   APPLE_TARGETS,
   WATCH_CORE_PLUGIN,
+  WATCH_TARGET,
   withWatchMatch,
   withWatchTarget,
 } from "./watchConfig";
@@ -64,13 +65,14 @@ describe("the watch's target in the config", () => {
     ).toEqual([APPLE_TARGETS, {}]);
   });
 
-  it("changes nothing of app.json but its plugins", () => {
-    const { plugins, ...rest } = appJson.expo;
+  // From A-flip (the watch's own build, 1.1) app.json builds the watch
+  // itself: MUW_WATCH=1 changes nothing of it.
+  it("changes nothing of app.json, which builds the watch already", () => {
     const watched = withWatchTarget(appJson.expo as unknown as { plugins: Plugins });
-    const { plugins: added, ...same } = watched as typeof watched &
-      Record<string, unknown>;
-    expect(same).toEqual(rest);
-    expect(added).toEqual(expect.arrayContaining(plugins as unknown[]));
-    expect(added).toHaveLength(plugins.length + 2);
+    expect(watched).toEqual(appJson.expo);
+    expect(appJson.expo.plugins.slice(-2)).toEqual([
+      WATCH_CORE_PLUGIN,
+      [APPLE_TARGETS, { match: WATCH_TARGET, appleTeamId: "D6WUSJZKVZ" }],
+    ]);
   });
 });

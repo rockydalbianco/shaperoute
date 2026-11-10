@@ -2,7 +2,7 @@
   "expo": {
     "name": "MuW",
     "slug": "shaperoute",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "runtimeVersion": "exposdk:57.0.0",
     "updates": {
       "url": "https://u.expo.dev/47bc672d-5824-4e77-84c4-b44132c6e87f"
@@ -102,6 +102,14 @@
         "expo-contacts",
         {
           "contactsPermission": "MuW reads only the phone numbers of your contacts, when you tap «Find friends in your contacts», to find friends who are on MuW. The numbers leave the phone coded and the server keeps none."
+        }
+      ],
+      "./plugins/withWatchCore.js",
+      [
+        "@bacons/apple-targets",
+        {
+          "match": "watch",
+          "appleTeamId": "D6WUSJZKVZ"
         }
       ]
     ],

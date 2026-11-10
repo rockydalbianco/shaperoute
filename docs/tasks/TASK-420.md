@@ -1,8 +1,9 @@
 # TASK-420 — La pagina del catalogo in «Explore» (grande catalogo, parte C)
 
-**Stato**: Done · 2026-11-08 · pagina costruita (#954), poi **tolta** con
-la #978 per scelta dell'utente del 2026-11-08: i disegni vanno nella lista
-esistente di «Explore» (TASK-419); documenti in #952
+**Stato**: **Riaperto il 2026-11-10** come parte D, «tutte le forme in
+«Explore»»: codice in #1022 (app), aspetta l'endpoint del server (sotto,
+«Il seguito del 2026-11-10»). Prima: pagina costruita (#954), poi tolta
+con la #978 per scelta dell'utente del 2026-11-08; documenti in #952
 **Fase**: 5 · **Branch**: `docs/TASK-420-catalog-page` (documenti), poi
 `feat/TASK-420-catalog-page` (codice)
 **Dipende da**: TASK-418 (forme e parole nuove: i nomi e le categorie),
@@ -191,6 +192,67 @@ che il registro di `TabSwipeOwners.test.ts` deve elencare.
 - Le mappe sotto le miniature (le schede di «Best near you» le hanno): qui
   sono centinaia, restano linee gialle sul fondo della mappa.
 - `App.tsx`, `services/`, `catalog/`, i file di altri task.
+
+## Il seguito del 2026-11-10: tutte le forme in «Explore» (parte D)
+
+L'utente, in questa sessione, parole sue: «sì ma io voglio togliere il
+catalogo tutte le forme devono essere nella pagina ma non dentro catalogo,
+migliora la pagina esterna…». Mockup (https://claude.ai/artifact/QPEGVb9T2soNs2KFQqjnSB)
+con due disposizioni; scelta: **«A, griglia per città»**.
+
+**Cosa cambia in «Explore»** (#1022, branch `feat/TASK-420-explore-all-drawings`):
+
+- la pagina è una sola `FlatList` virtualizzata: tutto quello che c'era
+  (ricerca, chip delle città, paesi vicini, esempi, «Recommended», le
+  schede vicine) è la sua testata, le righe sono quelle del catalogo;
+- titolo «Explore», sotto «N drawings in M cities · the nearest first»
+  appena il catalogo risponde (altrimenti la riga di prima); sopra le
+  schede vicine «NEAR YOU · within 5 km · N»;
+- «Ask for a route» è una riga che apre il modulo sotto di sé
+  (`AskLine.tsx`): la pagina ora continua, il modulo non sta più in fondo;
+- «FARTHER AWAY · N drawings · by city»: il catalogo città dopo città
+  dalla più vicina («ROVERETO · 22 km · 8»), due per riga, le stesse schede
+  di «Near you» (mappa sotto quando la scheda è a schermo), 40 alla volta
+  mentre si scorre (`catalogList.ts`, `FartherAway.tsx`); le vicine non
+  compaiono due volte; una pagina fallita lo dice in fondo con «Try again»;
+- niente filtri (ADR-0144): i chip delle città e la ricerca in alto.
+
+**Il contratto col server, da fare** (chi lo fa lo decide l'utente o il
+Coordinatore; la sessione di TASK-420 può farlo come parte E, in
+`services/api/shaperoute_api/recommended.py` e `app.py`, test e `API.md`,
+senza migrazione):
+
+```
+GET /catalog?lat=<lat>&lon=<lon>&offset=0&limit=40      (limit ≤ 200)
+→ { "total": 155, "cities": 23, "routes": [ …come /recommended-routes, con away_m… ] }
+```
+
+ordinati per città dalla più vicina a `near` (la città per la sua
+partenza più vicina), dentro la città per somiglianza; `total` e `cities`
+sull'intero catalogo. Finché l'endpoint non c'è (404, o una risposta che
+non è una pagina) la pagina è esattamente quella di prima: la #1022 può
+entrare per prima. L'app misura `away_m` dal punto vero, come per
+`/recommended-routes` (TASK-363).
+
+**File toccati (#1022)**, nuovi in `apps/mobile/src/explore/`:
+`catalogList.ts` + test, `FartherAway.tsx` + test, `AskLine.tsx` + test,
+`ExploreFartherAway.test.tsx`; esistenti: `ExploreScreen.tsx`,
+`ExploreScreen.test.tsx`, `ExploreHeart.test.tsx`,
+`ExploreOwnRoutes.test.tsx` (l'etichetta «NEAR YOU»), `i18n/{it,de,fr,es}.ts`
+(chiavi nuove; «Best near you» tolta perché non più mostrata). Solo app,
+impronta ferma, nessuna dipendenza nuova.
+
+**Criteri di accettazione della parte D**
+
+- [ ] #1022 in `main`: con un'API senza `/catalog` la pagina è come prima
+      (titolo a parte) e i test di `explore` restano verdi.
+- [ ] Con l'endpoint sul server: il titolo conta il catalogo, «FARTHER
+      AWAY» mostra ogni città dalla più vicina, lo scorrimento carica le
+      pagine seguenti, le schede aprono il percorso sulla mappa.
+- [ ] Prova sul telefono con l'OTA, col sì dell'utente.
+
+**Fuori scope della parte D**: filtri e ordinamenti (ADR-0144); un JSON
+nell'app (ADR-0348, superata); la partenza immediata da una scheda.
 
 ## Esito
 

@@ -143,6 +143,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   parte 0, A1 (server, migrazione 0063) e A2 (pagina `site/live/`, #1010)
   in `main`; server e copia del sito (F.14) col sì nell'aggiornamento
   unico; prossima B1 (app), poi B2 e C. File: — · `tasks/TASK-424.md`
+- **TASK-420 — Tutte le forme in «Explore»** (riaperto il 2026-11-10 come
+  parte D, scelta dell'utente «A, griglia per città»; ADR-0347 precisazione
+  B) · app in #1022: «Explore» lista unica, «NEAR YOU» poi «FARTHER AWAY»
+  città per città da `GET /catalog`, a pagine; senza endpoint la pagina è
+  come prima. Prossimo: l'endpoint nell'API (parte E, da assegnare), poi
+  l'OTA col sì dell'utente. File: — · `tasks/TASK-420.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
   (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
   i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347

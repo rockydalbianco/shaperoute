@@ -462,6 +462,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
+- ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog` · 2026-11-10 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
@@ -661,6 +662,45 @@ dall'agente su delega dell'utente
   l'API. `?api=` (solo da `127.0.0.1`/`localhost`, solo verso un indirizzo
   locale) serve a provarla sul Mac contro un finto `/live`: l'API vera
   lascia leggere `/live` solo a `https://getmuw.app`.
+## ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog`
+
+**Stato**: Accettata · 2026-11-10 · TASK-420 parte D. Scelta dell'utente,
+parole sue: «tutte le forme devono essere nella pagina ma non dentro
+catalogo, migliora la pagina esterna»; sul mockup «A, griglia per città».
+Il resto deciso dall'agente su delega dell'utente.
+
+**Contesto**: la precisazione precedente mette i tenuti «nella lista di
+«Explore» che c'è», cioè «Best near you» entro 5 km e gli esempi per città:
+così si vede solo quello che sta vicino. L'utente vuole invece **tutte** le
+forme del catalogo nella pagina, senza una pagina a parte (ADR-0348,
+superata) e senza filtri (ADR-0144).
+
+**Decisione**:
+
+1. **«Explore» è una lista sola, virtualizzata** (`FlatList`): la testata è
+   la pagina com'era (ricerca, chip, paesi vicini, esempi, «Recommended»,
+   le schede entro 5 km sotto «NEAR YOU»), le righe sono il catalogo.
+2. **Il catalogo arriva dal server a pagine**: `GET /catalog?lat&lon&offset&limit`
+   dà `{total, cities, routes}` con le stesse voci di `/recommended-routes`,
+   città per città dalla più vicina al punto, per somiglianza dentro la
+   città. L'app chiede 40 voci alla volta mentre si scorre e non mostra due
+   volte quelle di «NEAR YOU». Niente JSON nell'app.
+3. **Senza l'endpoint la pagina è quella di prima**: 404 o una risposta
+   che non è una pagina valgono «niente catalogo»; l'app entra prima del
+   server. Una pagina fallita dopo la prima lo dice in fondo con «Try again».
+4. **«Ask for a route» diventa una riga** che apre il modulo sotto di sé:
+   la pagina continua e il modulo non può più stare in fondo.
+5. **Il titolo è «Explore»** con il conto del catalogo; «Best near you»
+   resta solo come etichetta «NEAR YOU» della prima sezione.
+
+**Alternative**: righe orizzontali per figura (B del mockup), scartata
+dall'utente; un JSON nel bundle (ADR-0348), superato: il seme cresce con
+TASK-419; alzare i limiti di `/recommended-routes` (60 entro 50 km): non
+dà l'ordine per città né il totale.
+
+**Conseguenze**: un endpoint nuovo nell'API, senza migrazione, da
+assegnare (TASK-420 parte E o TASK-419); l'app in #1022.
+
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole

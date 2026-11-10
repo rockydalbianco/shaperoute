@@ -53,7 +53,10 @@ I dati (tempi per file, script che li ricava dai log) sono in
 - [ ] Il check `api` resta quello obbligatorio e diventa rosso se una
       parte fallisce. *(Il nome è rimasto e il caso verde è provato; il
       caso rosso non è ancora capitato in CI: chi lo vede lo annota qui.)*
-- [ ] Una PR di soli documenti finisce verde in pochi secondi come prima.
+- [x] Una PR di soli documenti finisce verde in pochi secondi come prima.
+      *(Provato sulla #1124: ogni job dura 5–8 secondi coi test saltati e
+      `api` finale è verde. L'attesa di una macchina libera è un'altra
+      cosa: vedi «Esito».)*
 
 ## File toccati
 
@@ -97,6 +100,17 @@ sono entrati in `main` nel frattempo).
 Le parti sono bilanciate: la differenza tra l'una e l'altra nello stesso
 run è la macchina, e cambia parte da un run all'altro. I minuti di
 macchina non calano, si dividono.
+
+**La coda delle macchine** (visto sulla #1124, PR di soli documenti, run
+42883116407): i nove job sono durati 5–8 secondi l'uno, ma il run è finito
+dopo 17 minuti, perché con 16 run in corso nel repository i job hanno
+aspettato una macchina libera da 4 a 17 minuti. Due PR di soli documenti
+di poco prima, col job unico e meno carico, erano finite in 10–30 secondi.
+Ogni run ora chiede 8 macchine insieme invece di 5 (più il job finale, che
+ne aspetta una a sua volta): quando molte PR girano insieme la coda si
+riempie prima. Se pesa, le leve sono la lista `shard` (3 parti stanno a
+10–14 minuti) e il database modello, che riduce i minuti di macchina
+invece di dividerli.
 
 Rimandato: il database modello per i test (vedi «Fuori scope»), scritto
 come proposta per l'utente in `out/TASK-438/PROPOSTA-database-modello.md`

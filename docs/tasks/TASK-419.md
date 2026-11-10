@@ -1,7 +1,7 @@
 # TASK-419 — I 1000 disegni del catalogo e la selezione (Explore, parte B)
 
-**Stato**: In corso — primo giro in `main` (#966); aspetta il «via server
-catalogo», poi il secondo giro (Italia, Europa)
+**Stato**: In corso — primo giro sul server (#966, 155); secondo giro in PR
+(386 in 45 città); terzo giro per le 16 città europee che aspettano Overpass
 **Fase**: 4 · **Branch**: `docs/TASK-419-catalog-seed` (proposta, #951),
 `feat/TASK-419-catalog-seed` (codice e primo giro, #966),
 `docs/TASK-419-first-round` (questi documenti) · **ADR**: ADR-0347 e la sua
@@ -88,6 +88,8 @@ pubblicato.
   server (ADR-0347, precisazione).
 - 2026-11-08, via Coordinatore: «Sì, solo lettura» alla copia delle zone dal
   server alla cache del Mac.
+- 2026-11-10: «Vai con la proposta» al secondo giro: i 155 del primo più la
+  proposta per 22 città nuove e per le città in evidenza, 386 in tutto.
 
 ## Le zone copiate dal server (sola lettura)
 
@@ -125,15 +127,15 @@ catalog/` e lo stesso `restart`.
 
 ## Criteri di accettazione
 
-- [ ] Circa 1000 casi pianificati nel registro, in città italiane ed europee
-      (primo giro: 1058 candidati, 375 nuovi; il secondo giro aggiunge
-      Italia ed Europa).
+- [x] Circa 1000 casi pianificati nel registro, in città italiane ed europee
+      (1600 candidati dopo il secondo giro, 917 pianificati da TASK-419;
+      16 città europee aspettano Overpass).
 - [x] Il filtro automatico scarta sotto 0,90, fuori ±10%, con ripassi in più
       oltre il 10% o con tratti su `motorway`/`trunk`; provato con test
       deterministici (40 test, #966).
 - [x] Pagina di revisione mandata all'utente; la scelta è sua (primo giro).
-- [ ] 200–400 disegni in `catalog/seed/*.json`, almeno 3 per città, ODbL
-      (155 dopo il primo giro, almeno 3 per città).
+- [x] 200–400 disegni in `catalog/seed/*.json`, almeno 3 per città, ODbL
+      (386 dopo il secondo giro, almeno 4 per città).
 - [x] `pytest tools` verde; `test_featured_catalog` verde.
 - [x] CI verde; STATUS, task file e ADR aggiornati; Coordinatore avvisato
       (primo giro).
@@ -165,6 +167,14 @@ Coordinatore prima.
 - Le città fuori dall'Europa oltre a quelle già in evidenza.
 
 ## Esito
+
+*Secondo giro (2026-11-10)*: 1600 candidati (327 nuovi dalle zone copiate:
+18 città italiane, più Vienna, Praga e Budapest che avevano la zona sul
+server; 6 zone da Overpass nella notte del 9: Parigi, Tokyo, Barcellona,
+Dubai, Berlino, Lisbona), 1029 passano il filtro, 386 tenuti in 45 città
+(almeno 4 per città). Berlino esce da `MISSING` di
+`tools/test_featured_catalog.py`. Restano 16 città europee senza zona
+(Overpass chiuso dal 9 sera) per un terzo giro, e i contorni in attesa.
 
 *Primo giro (2026-11-08)*: strumenti e 40 test in `main` (#966); 1058
 candidati (683 del 2026-10, le sei forme nuove e i 49 contorni di TASK-418

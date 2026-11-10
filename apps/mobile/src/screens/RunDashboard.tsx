@@ -15,6 +15,8 @@ import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
 import { RunGameLine, useRunGameStrip } from "../game/RunGameStrip";
 import { t, tLater } from "../i18n";
+import { LiveShareButton } from "../liveShare/LiveShareButton";
+import { useLiveShareFeed } from "../liveShare/useLiveShareFeed";
 import { openMusic } from "../navigation/music";
 import {
   pauseRun,
@@ -139,6 +141,12 @@ export function RunCard({
   // The next run opens on «Map» again.
   useEffect(() => () => setRunPage(FIRST_PAGE), []);
   const paused = openPause(track) !== null;
+  // «Share live» (TASK-424 part B1): the numbers go to the live link, when
+  // the runner made one; the end of this screen ends it.
+  useLiveShareFeed(track, numbers.energy, bpm, paused);
+  const share = (
+    <LiveShareButton canStart={live && !arrived} fetchFn={fetchFn} apiKey={apiKey} />
+  );
   // One responder for the whole run: the page it starts from is read as
   // the finger lifts.
   const swipe = useMemo(
@@ -186,6 +194,7 @@ export function RunCard({
       {!compassPage && <RunGameLine text={game} />}
       {!compassPage && <WatchHeart bpm={bpm} />}
       {!compassPage && route && <RouteBar route={route} numbers={numbers} />}
+      {!compassPage && page !== "data" && share}
       {buttons}
       <PageTabs page={page} onPage={setRunPage} />
       {page !== "data" && dark}
@@ -198,6 +207,7 @@ export function RunCard({
         game={game}
         route={route}
         heading={heading}
+        share={share}
         buttons={buttons}
         dark={dark}
       />
@@ -448,6 +458,8 @@ type DataProps = {
   game: string | null;
   route?: RouteProgress;
   heading?: ReactNode;
+  /** «Share live», or «Sharing live» (TASK-424 part B1). */
+  share: ReactNode;
   buttons: ReactNode;
   dark: ReactNode;
 };
@@ -467,6 +479,7 @@ function DataPage({
   game,
   route,
   heading,
+  share,
   buttons,
   dark,
 }: DataProps) {
@@ -560,6 +573,7 @@ function DataPage({
           {route && <RouteBar route={route} numbers={numbers} />}
           <RunGrid numbers={numbers} />
           <RunGameLine text={game} />
+          {open && share}
           <Splits
             track={track}
             ride={numbers.ride}

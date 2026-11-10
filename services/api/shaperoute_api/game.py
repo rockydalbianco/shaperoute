@@ -53,6 +53,7 @@ from shaperoute_api.game_challenges import (
     pieces_done_bodies,
     pieces_done_by,
 )
+from shaperoute_api.game_personal_api import install_game_personal, record_personal
 from shaperoute_api.game_rules import (
     DAILY_CAP,
     OVERLAP,
@@ -229,16 +230,26 @@ def after_run_saved(
     pauses: Sequence[_Pause],
     activity: str,
     now: datetime,
+    utc_offset_min: int | None = None,
 ) -> list[str]:
     """In the transaction that saved the run, after its row: its game, the
-    shapes it unlocked (returned), and the pieces of its teams' challenges
-    it filled (part C)."""
+    shapes it unlocked (returned), the pieces of its teams' challenges it
+    filled (part C), and the steps of the personal challenges it reached
+    (TASK-423 part C). `utc_offset_min`: the phone's clock against UTC, as
+    the app sent it."""
     fixes = [Fix(p.lat, p.lon, p.time_s or 0.0) for p in track]
     kept = [RunPause(p.from_s, p.to_s, p.auto) for p in pauses]
     unlocked = record(
-        conn, user_id, run_id, started_at, evaluate(fixes, kept, activity), now
+        conn,
+        user_id,
+        run_id,
+        started_at,
+        evaluate(fixes, kept, activity),
+        now,
+        utc_offset_min,
     )
     _fill_pieces(conn, user_id, run_id, started_at, now)
+    record_personal(conn, user_id, run_id, now)
     return unlocked
 
 
@@ -268,11 +279,14 @@ def record(
     started_at: datetime,
     game: RunGame,
     unlocked_at: datetime,
+    utc_offset_min: int | None = None,
 ) -> list[str]:
     """Writes the run's row, with the rules that need the account's other
     runs, then the shapes it unlocked: their ids, in catalog order. The
     caller holds the account's row locked (activities.save,
-    game_backfill), so its runs change one at a time."""
+    game_backfill), so its runs change one at a time. `utc_offset_min`: the
+    one the app sent (the backfill passes it on); without one, a row's own
+    stays."""
     ended_at = started_at + timedelta(seconds=game.elapsed_s)
     counted, reason, metres, best = (
         game.counted,
@@ -288,12 +302,14 @@ def record(
             reason, metres = DAILY_CAP, kept
     conn.execute(
         "INSERT INTO game_runs (run_id, user_id, rules_version, counted, reason,"
-        " counted_m, best_s, started_at, ended_at)"
-        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        " counted_m, best_s, started_at, ended_at, utc_offset_min)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         " ON CONFLICT (run_id) DO UPDATE SET rules_version = EXCLUDED.rules_version,"
         " counted = EXCLUDED.counted, reason = EXCLUDED.reason,"
         " counted_m = EXCLUDED.counted_m, best_s = EXCLUDED.best_s,"
-        " started_at = EXCLUDED.started_at, ended_at = EXCLUDED.ended_at",
+        " started_at = EXCLUDED.started_at, ended_at = EXCLUDED.ended_at,"
+        " utc_offset_min = coalesce(EXCLUDED.utc_offset_min,"
+        " game_runs.utc_offset_min)",
         (
             run_id,
             user_id,
@@ -304,6 +320,7 @@ def record(
             Jsonb({str(d): s for d, s in best.items()}),
             started_at,
             ended_at,
+            utc_offset_min,
         ),
     )
     return _unlock(conn, user_id, run_id, unlocked_at)
@@ -524,6 +541,7 @@ def install_game(app: FastAPI) -> None:
     app.include_router(game_routes())
     install_game_teams(app)
     install_game_challenges(app)
+    install_game_personal(app)
 
 
 def kept_run(row: dict[str, Any]) -> tuple[list[Fix], list[RunPause]]:

@@ -52,10 +52,19 @@ problema c'è da TASK-369.
   0,97), mai andata e ritorno. Sotto 1 per la semplificazione della linea,
   come per ogni linea disegnata.
 
+Dopo il merge di `main` (`50a9fa4a`, quarto giro di TASK-419) il catalogo
+ha 597 percorsi: il pulsante c'è su tutti.
+
+La #1078 (correzione di TASK-410, «Edit & run» del Feed) aveva la stessa
+modifica a `figureLines.ts`, ma con una guardia che lasciava fuori 23
+percorsi (552 su 575): la sessione del Feed l'ha tolta dalla sua PR e i
+suoi test passano con questa versione (Coordinatore, 2026-11-10).
+
 ## File toccati
 
 - `apps/mobile/src/route/figureLines.ts`
 - `apps/mobile/src/route/figureLines.test.ts`
+- `apps/mobile/src/route/exploreCatalogEdit.test.ts` (nuovo)
 - `docs/tasks/TASK-432.md`
 
 PR di soli documenti, dopo il merge: `docs/STATUS.md`, `docs/DECISIONS.md`
@@ -67,10 +76,10 @@ questo file.
 - [x] Un percorso chiuso che si incrocia fa un disegno: anello alla partenza
       corso una volta (test «bowtie»; fallisce sul codice di `main`).
 - [x] Ogni percorso del catalogo ha un disegno da modificare e non chiede
-      più del percorso stesso (test sul catalogo, 575 su 575; fallisce sul
-      codice di `main`).
+      più del percorso stesso (`exploreCatalogEdit.test.ts`, 597 su 597;
+      fallisce sul codice di `main`).
 - [x] I test di TASK-425 e TASK-428 restano verdi.
-- [x] Test toccati, `tsc`, lint e Prettier verdi in locale; CI verde.
+- [x] Test toccati, `tsc`, lint e Prettier verdi in locale.
 
 ## Dopo il merge
 

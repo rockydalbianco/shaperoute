@@ -3,6 +3,7 @@ import {
   clearRoute,
   clearStops,
   clearTrack,
+  face,
   follow,
   pageScript,
   parsePageMessage,
@@ -187,6 +188,12 @@ test("follow sends the heading in whole degrees, stopFollow ends it", () => {
   // 359.7 is north, not 360.
   expect(follow([46.0671, 11.1214], 359.7)).toMatchObject({ heading: 0 });
   expect(stopFollow()).toEqual({ type: "stopFollow" });
+});
+
+test("face sends where the phone points in whole degrees, null off Compass (TASK-431)", () => {
+  expect(face(91.4)).toEqual({ type: "face", heading: 91 });
+  expect(face(359.7)).toEqual({ type: "face", heading: 0 });
+  expect(face(null)).toEqual({ type: "face", heading: null });
 });
 
 test("showTrack sends the run in MapLibre order, clearTrack removes it", () => {

@@ -242,6 +242,36 @@ test("Compass, Map and Data are three buttons as wide as the card, taller than a
   expect(screen.getAllByRole("tab", { name: "Compass" })).toHaveLength(2);
 });
 
+test("each page has its drawing over its name; the open one is blue with a blue line (TASK-431)", async () => {
+  await render(<LiveRun fixes={north(300)} />);
+  const map = screen.getByRole("tab", { name: "Map" });
+  for (const [name, page] of [
+    ["Compass", "compass"],
+    ["Map", "map"],
+    ["Data", "data"],
+  ] as const) {
+    // Hidden from VoiceOver: the tab says its name.
+    expect(
+      within(screen.getByRole("tab", { name })).getByTestId(`run-page-glyph-${page}`, {
+        includeHiddenElements: true,
+      }),
+    ).toBeOnTheScreen();
+  }
+  // One blue line, under «Map», the page open.
+  expect(screen.getAllByTestId("run-page-tab-line")).toHaveLength(1);
+  expect(within(map).getByTestId("run-page-tab-line")).toHaveStyle({
+    backgroundColor: color.you,
+  });
+  await fireEvent.press(screen.getByRole("tab", { name: "Compass" }));
+  const compass = screen.getByRole("tab", { name: "Compass" });
+  expect(within(compass).getByTestId("run-page-tab-line")).toHaveStyle({
+    backgroundColor: color.you,
+  });
+  expect(within(map).queryByTestId("run-page-tab-line")).toBeNull();
+  // Not the route's yellow.
+  expect(color.you).not.toBe(color.accent);
+});
+
 test("Compass is the map alone: no number under it, only Pause and the three names (TASK-422)", async () => {
   await render(<LiveRun fixes={north(300)} />);
   expect(screen.getByLabelText("Distance: 0.30 km")).toBeOnTheScreen();

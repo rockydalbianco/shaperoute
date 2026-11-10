@@ -471,6 +471,7 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link · 2026-11-10 · Attiva
 - ADR-0352, precisazione B2 — Piscina e palestra: gli stessi pulsante e invii, i numeri senza traccia, il consenso senza mappa · 2026-11-10 · Attiva
 - ADR-0352, precisazione C — I dati dal vivo che mancano: il battito su «Data», la piscina dal vivo, le calorie di ogni attività (lo sci sulle discese) · 2026-11-10 · Attiva
+- ADR-0352, precisazione C2b — I tratti della giornata di sci nei run-stats, le discese in ogni lista di post: un campo solo con TASK-429, nessuna migrazione · 2026-11-10 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -521,6 +522,36 @@ lasciando le righe d'indice.
 - ADR-0357, precisazione C1 — I tratti della giornata salvata e la stagione sul server: `parts` solo quando ci sono, nomi alla lettura con una cache per processo · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0352, precisazione C2b — I tratti della giornata di sci nei run-stats, le discese in ogni lista di post: un campo solo con TASK-429, nessuna migrazione
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parte C2b (#1110, d5226b1e),
+disegnata con TASK-429 (modalità sci). Scelta dell'utente del 2026-11-10,
+«Sì, il server» (le calorie dello sci nel Feed come a fine giornata). Il
+resto deciso dall'agente su delega dell'utente, d'accordo con la sessione
+della 429 e col Coordinatore («un campo solo, una migrazione al più»).
+
+- **Un campo per due usi**: il telefono manda `ski_parts` (risalite e
+  discese: tipo, numero, inizio e fine sull'orologio della traccia, tempo
+  in movimento, metri, dislivello, velocità massima; al più 500, in
+  ordine) dentro `PUT /me/activities/{key}/stats`. La 429 ne legge la
+  lista per riepilogo e mappa; il Feed le somme delle discese per le
+  calorie.
+- **Nessuna migrazione**: stanno in `run_stats.stats` (jsonb della 0064),
+  coi tempi portati sui secondi della traccia del server (`start_s`,
+  `end_s`) e la somma delle discese (`ski_descents`) calcolata una volta al
+  `PUT`. Le liste dei post la leggono con una sottoquery sulla chiave
+  primaria di `run_stats`.
+- **Visibilità**: `ski_parts` e `ski_descents` a chiunque veda il post,
+  come i passi e il profilo; non sono battito né calorie.
+- **Prima il server, poi l'app**: il corpo dei run-stats rifiuta le chiavi
+  sconosciute (`extra="forbid"`), quindi un server senza C2b dà 422 a un
+  `PUT` con i tratti e la giornata perde tutti i suoi dati. L'app di C2b
+  non li manda (solo tipi e lettura); li manda la 429 B, dopo il server.
+- **Il Feed dello sci alpino** conta le calorie su `ski_descents` (MET 5,3
+  sui secondi delle sole discese), lo stesso numero di fine giornata; un
+  post senza tratti, salvato prima o da un telefono che non li manda, resta
+  senza.
 
 ## ADR-0352, precisazione C — I dati dal vivo che mancano: il battito su «Data», la piscina dal vivo, le calorie di ogni attività (lo sci sulle discese)
 

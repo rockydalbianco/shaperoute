@@ -55,6 +55,10 @@ esempio.
   domanda 4, in inglese con l'italiano; de, fr ed es tradotti allo stesso
   modo. «Discese» resta anche il nome della sezione discesa per discesa
   («Runs»).
+- 2026-11-10, i due testi in più della parte A: «Sì, approvate». In
+  «Giornate» senza account «Log in to see your days.» («Accedi per vedere
+  le tue giornate.») e senza giornate «No days on the snow yet.» («Ancora
+  nessuna giornata sulla neve.»); de, fr ed es tradotti allo stesso modo.
 
 ## Cosa c'è già (non si rifà)
 
@@ -164,7 +168,7 @@ domanda 2).
 | Amici che hanno sciato qui oggi | i post delle giornate nella stazione (`GET /ski-resorts/{id}/drawings`) | sì, filtrati sui seguiti dal telefono |
 | Amici dal vivo sulle piste | posizione condivisa | no; dopo, con TASK-424 e una sua domanda di privacy |
 
-## Le parti (da confermare dopo le risposte)
+## Le parti
 
 - **A — la modalità**: `skiMode` dallo sport, le cinque schede, l'icona dei
   messaggi in alto, il menu dello sport che entra ed esce. Solo app.
@@ -173,7 +177,47 @@ domanda 2).
 - **C — la stagione**: i numeri della giornata al server, `GET
   /me/ski-season`, la scheda Giornate. Server col sì dell'utente.
 - **D — i nomi tratto per tratto** nella linea del tempo. Server.
-- **E — la Ricerca senza «Ski»** e la grafica nuova delle Stazioni.
+- **E — la grafica nuova delle Stazioni** (le schede di «Your resorts»
+  col meteo). La Ricerca senza «Ski» passa nella parte A, perché le stazioni
+  cambiano posto nello stesso momento.
+
+**La parte A, il piano (2026-11-10).** Cosa vede l'utente:
+- con «Ski» scelto, la barra in basso ha Oggi · Giornate · Stazioni · Feed ·
+  Profilo, e l'app si apre su Oggi;
+- **Oggi**: la stazione della giornata con il suo meteo (`DayResort`, così
+  com'è) e «Record your day», che apre la registrazione di sempre. Le altre
+  sezioni di Oggi (numeri dal vivo, la stagione in breve, gli amici)
+  arrivano con le parti B e C;
+- **Giornate**: le proprie giornate di sci, dalla più recente, con stazione,
+  km e tempo (`fetchMyDrawings`, attività `skiing`); toccata, si apre il suo
+  post come oggi. I totali della stagione arrivano con la parte C, il
+  riepilogo a tre pagine con la parte B;
+- **Stazioni**: l'elenco e la pagina della stazione della Ricerca
+  (`ResortList`, `ResortPage`), così come sono;
+- **i messaggi**: un'icona in alto, accanto al tasto dello sport, col
+  numero rosso; toccata, apre i messaggi sopra l'app, con «←»;
+- **il menu dello sport**: sotto «Ski» la riga «Turns MuW into your ski
+  app»; nella modalità, in cima, «Ski mode» e «Choose another sport to go
+  back to MuW as always.»;
+- **la Ricerca** dell'app normale non ha più la scheda «Ski».
+
+Scelte tecniche, decise dall'agente su delega dell'utente:
+- **la barra si ricostruisce quando la modalità cambia** (`key` di
+  `TabShell`): le schede sono altre, e le luci della barra ripartono dalla
+  pagina sullo schermo;
+- **le icone delle schede sci** sono di Lucide come le altre, disegnate
+  dagli SVG con lo Swift del Mac alle stesse linee (1,8 e 2,6 su 24),
+  senza dipendenze nuove;
+- **la modalità è una funzione dello sport** (`isSkiMode(sport)`), nessuno
+  stato nuovo: scelto un altro sport, `App.tsx` torna alle pagine di prima;
+- **Oggi usa la pagina «choose»**: ogni «indietro» che oggi riporta a
+  «Draw» (fine giornata, «Discard») riporta a Oggi senza toccare quei
+  percorsi del codice;
+- **le pagine nuove stanno in `src/skimode/`**, file nuovi; `src/ski/` non
+  si tocca, si importano `DayResort`, `ResortList` e `ResortPage`;
+- **in `App.tsx` il minimo**: le pagine della barra scelte da una funzione
+  pura (`skiModePages`, testata), l'icona dei messaggi nell'header, i
+  messaggi sopra l'app quando non hanno una scheda.
 
 Ogni parte manda prima al Coordinatore la sua lista dei file. TASK-406
 resta della sua sessione (la parte E, la prova sulla neve): una parte che
@@ -222,7 +266,29 @@ Parte 0 (documenti): `docs/tasks/TASK-429.md` (nuovo), `docs/DECISIONS.md`
 proposta è in `main` con #1065, la risposta 2 con #1072; le risposte 3 e 4
 e l'ADR accettata in una sola PR di documenti.
 
-Parti A–E: si elencano prima di ciascuna.
+Parte A (mandata al Coordinatore il 2026-11-10). File nuovi:
+- `apps/mobile/src/skimode/skiMode.ts` (`isSkiMode`, `skiModePages`) e
+  `skiMode.test.ts`;
+- `apps/mobile/src/skimode/SkiTodayPage.tsx`, `SkiDaysPage.tsx`,
+  `SkiResortsPage.tsx` e `MessagesButton.tsx`, ognuno col suo test;
+- `apps/mobile/src/skimode/skiModeShell.test.tsx` (entrare e uscire: le
+  schede cambiano con lo sport).
+- aggiunti strada facendo, file nuovi: `apps/mobile/src/skimode/SkiMessages.tsx`
+  (i messaggi sopra l'app, con «‹ Back») e `SkiTabIcon.tsx` (le icone delle
+  schede sci come `face` della barra, così `TabBar.tsx` non cambia), ognuno
+  col suo test; le icone Lucide `mountain`, `calendar` e `cable-car` in
+  `apps/mobile/assets/ui/tabs/` (normale e `-active`, 1x, 2x, 3x).
+
+File da cambiare: `apps/mobile/App.tsx` (le pagine della barra, l'icona
+dei messaggi, i messaggi sopra l'app), `apps/mobile/src/settings/SportButton.tsx`
+e `SportButton.test.tsx` (le righe del menu),
+`apps/mobile/src/search/SearchScreen.tsx` (via la scheda «Ski») e
+`apps/mobile/src/search/skiResorts.test.tsx` (diventa la prova che la
+scheda non c'è), `apps/mobile/src/i18n/{it,de,fr,es}.ts` (i testi approvati
+della parte A) e questa lista. Nessun file di `src/ski/`, nessun token,
+nessun server.
+
+Parti B–E: si elencano prima di ciascuna.
 
 ## Criteri di accettazione
 

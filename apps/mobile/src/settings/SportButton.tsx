@@ -18,6 +18,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { isSkiMode } from "../skimode/skiMode";
 import { Hairline } from "../ui/Hairline";
 import { saveSport, type Sport, SPORTS, type SportOption } from "./sport";
 import { useSport } from "./useSport";
@@ -96,6 +97,16 @@ export function SportButton({ sports = SPORTS }: Props) {
           accessibilityRole="radiogroup"
           accessibilityLabel={t("Sport")}
         >
+          {/* In the ski mode (TASK-429, ADR-0357), how to leave it. */}
+          {isSkiMode(sport) && (
+            <View style={styles.mode} accessible testID="sport-ski-mode">
+              <Text style={styles.modeTitle}>{t("Ski mode")}</Text>
+              <Text style={styles.modeLine}>
+                {t("Choose another sport to go back to MuW as always.")}
+              </Text>
+              <Hairline style={styles.modeRule} />
+            </View>
+          )}
           {sports.map((option, at) => (
             <View key={option.id}>
               {at > 0 && <Hairline style={styles.inset} />}
@@ -106,10 +117,23 @@ export function SportButton({ sports = SPORTS }: Props) {
                   accessibilityRole="radio"
                   // One name for the row: the emoji is not read on its own.
                   accessibilityLabel={t(option.name)}
+                  accessibilityHint={
+                    isSkiMode(option.id) ? t("Turns MuW into your ski app") : undefined
+                  }
                   accessibilityState={{ checked: option.id === sport }}
                 >
                   <Text style={styles.emoji}>{option.emoji}</Text>
-                  <Text style={styles.rowText}>{t(option.name)}</Text>
+                  {isSkiMode(option.id) ? (
+                    // Choosing it changes the app (TASK-429): the row says so.
+                    <View style={styles.words}>
+                      <Text style={styles.rowText}>{t(option.name)}</Text>
+                      <Text style={styles.rowLine}>
+                        {t("Turns MuW into your ski app")}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.rowText}>{t(option.name)}</Text>
+                  )}
                   {option.id === sport && <Text style={styles.check}>✓</Text>}
                 </Pressable>
               ) : (
@@ -171,6 +195,34 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: fontSize.input + space.xs,
+  },
+  words: {
+    flex: 1,
+    paddingVertical: space.sm,
+  },
+  rowLine: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+  },
+  mode: {
+    gap: space.xs / 2,
+    maxWidth: 260,
+    paddingHorizontal: space.md,
+    paddingTop: space.md,
+  },
+  modeTitle: {
+    color: color.textMuted,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  modeLine: {
+    color: color.text,
+    fontSize: fontSize.small,
+  },
+  modeRule: {
+    marginTop: space.md,
   },
   rowText: {
     flex: 1,

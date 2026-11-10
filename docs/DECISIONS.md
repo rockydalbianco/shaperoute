@@ -499,6 +499,8 @@ lasciando le righe d'indice.
 - ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
 - ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute · 2026-11-10 · Attiva
 - ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda · 2026-11-10 · Attiva
+- ADR-0314, precisazione — La parte B5: mappa nella corsa libera, colori, zone del battito dal telefono · 2026-11-10 · Attiva
+- ADR-0314, precisazione — La parte B4: il telefono sveglia l'orologio con `startWatchApp` della libreria HealthKit · 2026-11-10 · Attiva
 - ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL · 2026-11-10 · Accettata
 - ADR-0340, precisazione D — Le sezioni della pagina: parziali, altimetria, battito medio e massimo; zone e minimo rimandati, dislivello dal profilo · 2026-11-10 · Attiva
 - ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
@@ -511,6 +513,60 @@ lasciando le righe d'indice.
 - ADR-0356, precisazione — Anche il percorso chiuso che si incrocia diventa un anello alla partenza: «Edit the drawing» su ogni percorso di «Explore» · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0314, precisazione — La parte B5: mappa nella corsa libera, colori, zone del battito dal telefono
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B5 (#1085). Proposta
+approvata dall'utente («Sì, tutta») dopo la prova della build 11; il
+resto è deciso dall'agente su delega dell'utente.
+
+**Decisione**:
+1. **Gli sport col GPS hanno una mappa anche senza percorso**
+   (`LiveMapView`). Le pagine sono Numeri → Mappa → Dettagli. La linea
+   (`LiveLine`) prende un punto ogni 5 m, al massimo 1500, e oltre tiene
+   un punto ogni due. La freccia (`HereMarker`) segue la direzione del
+   GPS sopra 0,5 m/s ed è la stessa sulla mappa del percorso.
+2. **Le zone del battito le conta il telefono.** Il messaggio `settings`
+   ha un campo facoltativo `heartZones`, i sei limiti di «Heart rate
+   zones»; un orologio vecchio lo ignora. Il telefono lo rimanda a ogni
+   cambio di unità, battito o profilo; l'orologio lo tiene per la volta
+   dopo.
+3. **I colori sono quelli di sistema**, non esadecimali: il giallo della
+   distanza è il `.yellow` di watchOS, come la linea del percorso. Così
+   `tokens.ts` resta del solo telefono.
+4. **Il dislivello è quello del telefono** (`climbM`, scalini di 3 m), in
+   metri anche in miglia come «Elev. gain», solo sugli sport a terra.
+
+**Conseguenze**: i colori e la mappa si vedono solo al polso: la prova a
+vista è la build 12.
+
+## ADR-0314, precisazione — La parte B4: il telefono sveglia l'orologio con `startWatchApp` della libreria HealthKit
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B4 (#1089), decisa
+dall'agente su delega dell'utente; lista dei file dal Coordinatore.
+
+**Contesto**: con la build 11 una corsa avviata sul telefono faceva
+partire l'orologio solo se MuW era già aperta al polso. `sendMessage`
+arriva solo a un'app raggiungibile.
+
+**Decisione**:
+1. **Al conto alla rovescia il telefono chiede ad Apple di avviare
+   l'allenamento sull'orologio** (`HKHealthStore.startWatchApp(with:)`).
+   Usa `startWatchApp` di @kingstinct/react-native-healthkit 16.2.0, già
+   nella build 1.0.1, senza codice nativo nuovo; l'impronta iOS resta
+   6f8bba4c. La libreria si carica come in `healthModules.ts`.
+2. **Un no di Apple** (senza permesso di Salute, senza orologio o senza
+   app) fallisce in silenzio: la corsa sul telefono va avanti.
+3. **Lo sport esatto arriva col messaggio di partenza**, che il telefono
+   rimanda quando Apple dice sì. La configurazione dice solo il tipo di
+   Apple, e bici, mountain bike e gravel sono tutte «ciclismo».
+   L'orologio aspetta 3 s quel messaggio, poi parte col primo sport di
+   quel tipo e con lo stesso GPS (`WatchWake.sport`). Una seconda
+   partenza durante un allenamento non cambia nulla.
+
+**Conseguenze**: il risveglio vero si prova solo al polso, con la build
+12. Il battito specchiato in tempo reale (`workoutSessionMirroringStartHandler`)
+resta fuori: il battito arriva ogni 5 s coi messaggi.
 
 ## ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno
 

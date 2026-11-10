@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037 e privacy (#1007) in `main`; A, B e C sul server; prossime D ed E
+**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037, privacy (#1007) e D (#1080) in `main`; A, B e C sul server; D esce col prossimo OTA; prossima E
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,

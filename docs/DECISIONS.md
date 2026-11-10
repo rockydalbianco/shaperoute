@@ -511,8 +511,46 @@ lasciando le righe d'indice.
 - ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni · 2026-11-10 · Accettata
 - ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno · 2026-11-10 · Attiva
 - ADR-0356, precisazione — Anche il percorso chiuso che si incrocia diventa un anello alla partenza: «Edit the drawing» su ogni percorso di «Explore» · 2026-11-10 · Attiva
+- ADR-0351, precisazione D — L'app di «Play» grande: collezioni contate dal telefono, una lista sola, l'ora del telefono con il secondo invio senza · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0351, precisazione D — L'app di «Play» grande: collezioni contate dal telefono, una lista sola, l'ora del telefono con il secondo invio senza
+
+**Stato**: Attiva · 2026-11-10 · TASK-423 parte D (#1080). Deciso
+dall'agente su delega dell'utente; i 50 testi nuovi nelle 5 lingue
+approvati dall'utente («Sì, approvo», 2026-11-10).
+
+**Decisione**:
+
+- **«7 / 13» si conta sul telefono** dagli stati delle forme di
+  `GET /game/me`, non da `collections` della risposta: la riga e la
+  griglia della pagina non possono dire due cose diverse. Il test confronta
+  il conto del telefono con quello dell'esempio dell'API. Un catalogo senza
+  collezioni (API prima di 423 A) mostra la griglia unica di prima.
+- **«Challenges» è una lista sola** (`GIOCO.md` §6.8) in una schermata:
+  le carte personali e la streak da `GET /game/personal`, le squadre da
+  `GET /game/teams`, la sfida del mese da `useContest` di TASK-343, solo
+  per chi ha l'account. Un 404 di `/game/personal` (API prima di 423 C)
+  toglie le carte senza errore, come già per le squadre. La sfida del mese
+  è solo una riga che apre la sua pagina (`openContestPage`): niente in
+  `src/contest/` cambia. «YOUR TEAMS» non c'è più: i titoli sono In corso ·
+  Disponibili · Finite.
+- **L'ora del telefono si aggiunge all'invio** (`saveActivity`,
+  `withOffset`), non quando la corsa entra nella coda: la coda salvata sul
+  telefono non cambia forma, e vale l'offset del primo punto della traccia.
+  Le corse importate da un file non lo mandano: non contano per «Play». Se
+  l'API rifiuta il campo, la corsa riparte senza, prima degli altri ritiri
+  per le API vecchie (altezze, rotazione, penna alzata). Un offset 0 si
+  scrive `0`, mai `-0`.
+- **I limiti delle sfide di squadra** (20 pezzi, 30 giorni) restano costanti
+  in `packages/shared-types`, legate a `game_challenges.py` da un test di
+  contratto che legge le due righe del Python.
+- Impronta iOS invariata (6f8bba4c su copia pulita): niente dipendenze né
+  codice nativo.
+
+**Perché**: ogni scelta tiene l'app installata e i server vecchi senza
+errori, e lascia le parti degli altri task (TASK-343, TASK-422) come sono.
 
 ## ADR-0314, precisazione — La parte B5: mappa nella corsa libera, colori, zone del battito dal telefono
 

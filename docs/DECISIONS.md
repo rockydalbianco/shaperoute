@@ -484,6 +484,8 @@ lasciando le righe d'indice.
 - ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta · 2026-11-08 · Attiva
 - ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina · 2026-11-08 · Attiva
+- ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso · 2026-11-08 · Attiva
+- ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1354,3 +1356,53 @@ scelta dell'utente 12 (la camera si sceglie solo sul 3D).
    posata ha i pixel stirati vicino alla camera, quindi nel modo `chase`
    la pagina mette punta, emoji e animale alla quota di metri della
    scena, non di pixel. Gli altri modi restano come prima.
+
+## ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B3b1, decisa dall'agente su
+delega dell'utente («Come Apple Maps», «Freccia prima»); lista dei file
+approvata dal Coordinatore. In `main` con la #1008.
+
+**Contesto**: gli avvisi di B1 e B2 sono tipi, non frasi; l'orologio deve
+farne una schermata e una vibrazione, uguali per ogni sport.
+
+**Decisione**:
+1. **`GuideDisplay`**, puro in WatchCore: dagli avvisi la vibrazione
+   (`GuideHaptic`: svolta a destra, a sinistra, altra manovra, fuori rotta,
+   di nuovo sul percorso, arrivo, penna), ogni tipo una volta per posizione;
+   la partenza e «dov'è il percorso» si vedono soltanto.
+2. **La schermata** (`GuideScreen`): in attesa del percorso chiuso, lungo il
+   percorso, fuori rotta, arrivo; la freccia girata dell'angolo della
+   svolta, o fuori rotta verso il percorso rispetto alla direzione di marcia
+   (a nord in su senza direzione); i metri alla svolta, alla fine o al
+   percorso; il tipo di svolta e la via; la penna («To the O», «Next part»).
+
+**Conseguenze**: l'app dell'orologio disegna e suona soltanto; ogni regola
+di cosa mostrare ha i suoi test in Swift.
+
+## ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B3b2, decisa dall'agente su
+delega dell'utente; testi e permesso di posizione approvati dall'utente il
+2026-11-08 (scelte 5 e 9 del task file); lista dei file approvata dal
+Coordinatore. In `main` con la #1012.
+
+**Decisione**:
+1. **Un tocco su un percorso di «Routes»** fa partire il suo sport con la
+   guida; `GuideSession` chiede la posizione al via e accende il GPS a fine
+   conto alla rovescia; a ogni posizione Navigator, Pen, la schermata e le
+   vibrazioni di watchOS (quelle di navigazione di Apple Maps per le
+   svolte, «failure», «success», «click»).
+2. **Le pagine** lungo un percorso: la freccia (`GuideView`), la mappa
+   piccola che inquadra il disegno intero (`RouteMapView`), poi i numeri.
+   Senza percorso le pagine restano quelle di prima.
+3. **Niente parole delle svolte** sullo schermo: la freccia vale in ogni
+   lingua e lo schermo è piccolo. «Back on route» e «Pen down» non si
+   scrivono: lo dice la vibrazione.
+4. **Il permesso di posizione dell'orologio** ha una frase sua, approvata
+   dall'utente nelle cinque lingue: quella del telefono parla del telefono
+   bloccato e della barra blu. CoreLocation e MapKit nel target dell'orologio;
+   l'impronta iOS senza `MUW_WATCH` resta `6f8bba4c`.
+
+**Conseguenze**: la traccia della corsa resta sull'orologio finché B3c non
+la manda al telefono. Le vibrazioni si provano al polso con la build A-flip.

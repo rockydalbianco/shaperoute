@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018) e privacy (#1007) in `main`; prossime D ed E
+**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037 e privacy (#1007) in `main`; A, B e C sul server; prossime D ed E
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,
@@ -220,6 +220,17 @@ E  services/api/migrations/00NN_game_prizes.sql (nuovo),
   colpito (solo `PUT /me/activities`, sempre con una traccia). Gli account
   fatti prima dell'errore restano a regole 3, quello in errore è tornato
   indietro: il backfill rilanciato fa solo quelli che mancano.
+
+- 2026-11-10 — Passo server 2 fatto dal Coordinatore, col sì dell'utente
+  («si garzie procedi»): sul server `main` 039fe4e1 (con #1018 e #1037),
+  migrazione 0065_game_personal applicata, `/game/personal` 401 senza token
+  (la rotta c'è), `/game/catalog` 200. Backfill: «game_backfill: rules 3,
+  2 account(s), 11 run(s), 48 shape(s) unlocked», senza `Traceback`;
+  rilanciato, «0 account(s), 0 run(s), 0 shape(s) unlocked». Immagini di
+  ritorno `before-passo3` (= 7dec87d7) e `before-passo2` (= 9cf5576b), dump
+  `shaperoute-2026-11-10T0914Z.dump`. Controlli in `out/TASK-423/SERVER-C.md`
+  del checkout principale. L'OTA 3 (da 52010be4) è del Coordinatore; restano
+  D (app, dopo la #971 di TASK-422) ed E (premi).
 
 ## Esito
 

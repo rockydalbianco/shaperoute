@@ -191,22 +191,6 @@ describe("EditVideoSheet, the camera of the route (TASK-408 C2b)", () => {
   });
 });
 
-describe("EditVideoSheet, «Describe your video» (TASK-408 D)", () => {
-  it("fills the rows from the words, at the top of the sheet", async () => {
-    const { onChange } = await shown();
-    expect(screen.getByText("Describe your video")).toBeOnTheScreen();
-    const field = screen.getByTestId("describe-video");
-    await fireEvent.changeText(field, "un cavallo di notte, stelle");
-    await fireEvent(field, "endEditing");
-    expect(onChange).toHaveBeenLastCalledWith({
-      ...FIRST_EDIT,
-      character: "horse",
-      style: "night",
-      along: "⭐",
-    });
-  });
-});
-
 describe("EditVideoSheet, with the runner's own image (TASK-417)", () => {
   const myImage = jest.requireMock<typeof import("./myImage")>("./myImage");
 

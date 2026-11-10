@@ -517,6 +517,8 @@ lasciando le righe d'indice.
 - ADR-0360 — Le schede della palestra guidate: le settimane in una colonna `program`, i valori di ogni settimana dal telefono, l'app di prima che legge ancora · 2026-11-10 · Accettata
 - ADR-0361 — Primo percorso subito: `plan_nearby` avvisa quando la partenza ha il suo piano, il job lo porta in `first` a chi lo chiede, nell'app il primo resta A · 2026-11-10 · Accettata
 - ADR-0351, precisazione E1 — I premi sul server: le edizioni come righe di `game_unlocks`, cornici, titoli e badge letti a ogni richiesta, la scelta del profilo in `game_prefs` · 2026-11-10 · Attiva
+- ADR-0357, precisazione B1 — La giornata di sci a colori: un solo calcolo dei tratti, i colori come token, i numeri sulle linee · 2026-11-10 · Attiva
+- ADR-0357, precisazione C1 — I tratti della giornata salvata e la stagione sul server: `parts` solo quando ci sono, nomi alla lettura con una cache per processo · 2026-11-10 · Attiva
 
 ## Voci nuove
 
@@ -2633,4 +2635,60 @@ invariata; `src/ski/` non cambia. Per le parti dopo, l'utente ha scelto il
 2026-11-10 («Sì, così») che il telefono mandi i tratti della giornata a
 «Salva», in un solo campo `ski_parts` dei run-stats condiviso con TASK-424
 C2b (`tasks/TASK-429.md`, «La parte C»).
+
+## ADR-0357, precisazione B1 — La giornata di sci a colori: un solo calcolo dei tratti, i colori come token, i numeri sulle linee
+
+**Stato**: Attiva · 2026-11-10 · TASK-429 parte B1 (#1108). Deciso
+dall'agente su delega dell'utente, dentro le scelte dell'utente di ADR-0357
+(domande 3 e 4).
+
+**Decisione**:
+
+1. **Un solo calcolo dei tratti**: `snowDay.ts` tiene una funzione interna,
+   `liftsAndDescents`, che usano sia `snowDay` sia la nuova
+   `snowParts(track) → SnowPart[] | null` (tipo, numero, inizio e fine, tempo
+   in movimento, metri, dislivello, velocità massima). Il resto
+   (`skiedDay`, `skiedMs` di TASK-424 C2) si riusa.
+2. **I colori solo come token** (`ski.descent`, `ski.lift`, `ski.onLine`):
+   la pagina della mappa colora la traccia e le risalite quando arriva una
+   giornata di sci, e spenta torna al bianco della corsa.
+3. **I numeri sulle linee** sono un punto del colore della linea col numero
+   scuro, a metà del tratto (`skiDayLabels`); la legenda in parole sta in
+   cima alla mappa, al posto della riga di prima.
+4. **«Summary · Map · Runs»** sulla scheda di fine giornata: «Map» nasconde
+   i numeri e lascia la mappa; «Runs» mostra i tratti e le soste di 10
+   minuti o più.
+
+**Conseguenze**: solo app, impronta iOS `6f8bba4c` invariata, nessun invio
+nuovo al server (quello è la B2).
+
+## ADR-0357, precisazione C1 — I tratti della giornata salvata e la stagione sul server: `parts` solo quando ci sono, nomi alla lettura con una cache per processo
+
+**Stato**: Attiva · 2026-11-10 · TASK-429 parte C1 (#1114). Deciso
+dall'agente su delega dell'utente, dentro la scelta dell'utente del
+2026-11-10 («Sì, così»: i tratti dal telefono, le giornate di prima senza).
+
+**Contesto**: il server tiene la traccia con le ore ma senza le quote. I
+tratti li manda il telefono come `ski_parts` dei run-stats (TASK-424 C2b,
+`run_stats.stats` della `0064`), un solo campo per lo sci e per le calorie.
+
+**Decisione**:
+
+1. **`GET /drawings/{id}/ski-day` dà `parts` solo quando ci sono**: un corpo
+   suo per il `GET` (`SkiDayPartsBody`, `response_model_exclude_unset`), così
+   la risposta senza tratti e quella del `PUT` restano identiche e l'app in
+   produzione legge quello che leggeva.
+2. **I tratti si legano alla traccia per ore**: `start_s` ed `end_s` danno il
+   primo e l'ultimo punto (`from_fix`, `to_fix`) della traccia del post, che
+   il post mostra intera (ADR-0330).
+3. **I nomi alla lettura**, con `ski_names.py` sul pezzo di traccia di ogni
+   tratto, in una cache di ogni processo: al più 256 giornate, per 10
+   minuti, per corsa e per l'ultimo invio dei run-stats. Niente colonne né
+   migrazioni.
+4. **`GET /me/ski-season?from&to`**: solo le giornate di chi chiede, solo
+   numeri, al più 400 giorni; una giornata senza tratti conta solo come
+   giornata.
+
+**Conseguenze**: nessuna migrazione; sul server col passo 7, insieme alla
+C2b di TASK-424.
 

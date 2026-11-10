@@ -170,6 +170,12 @@ calendario segna saltati i giorni con un allenamento nella settimana del
 ciclo. Calcolo in `apps/mobile/src/gym/program.ts`, proposta in
 `proposal.ts`, la guida in `GymPlanWizard.tsx`.
 
+La prima volta che si tocca «Palestra» in «Draw» (mai all'avvio, mai con
+un altro sport) sale un riquadro «Your plan, step by step» con le barre
+delle settimane e tre passi; «Create my plan» apre la guida, «Not now» lo
+chiude per sempre, la riga «How plans work» lo riapre (TASK-433 B,
+`gymIntro.ts`, `GymIntroSheet.tsx`).
+
 **I giorni di corsa** (TASK-433 C): al passo 2 «And running?» aggiunge 1–3
 corse nei giorni senza palestra e «Your week» cambia ogni giorno (palestra,
 corsa, riposo). Un giorno di corsa è Lenta, Ripetute o Lungo, in km o

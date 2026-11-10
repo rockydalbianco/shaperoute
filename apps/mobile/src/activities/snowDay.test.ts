@@ -1,7 +1,7 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
 import { addFix, emptyTrack, type Track } from "../navigation/trackRecorder";
-import { snowDay } from "./snowDay";
+import { snowDay, snowParts } from "./snowDay";
 
 const START: LatLon = [46.4, 11.8];
 const METRE = 1 / 111_195;
@@ -178,5 +178,50 @@ describe("a day on the snow", () => {
       averageMps: null,
       lifts: null,
     });
+  });
+});
+
+// TASK-429 part B: the lifts and the descents one by one, for «Runs» and
+// the numbers on the map.
+describe("the parts of a day on the snow", () => {
+  it("gives descent, lift, descent in the order of the day, each counted apart", () => {
+    const parts = snowParts(trackOf(twoDescents()));
+    expect(parts?.map((part) => `${part.kind} ${part.n}`)).toEqual([
+      "descent 1",
+      "lift 1",
+      "descent 2",
+    ]);
+  });
+
+  it("gives each part its time, its metres and its height", () => {
+    const [first, lift, second] = snowParts(trackOf(twoDescents())) ?? [];
+    expect(first.startMs).toBe(0);
+    expect(first.ms).toBe(120_000);
+    expect(first.heightM).toBeCloseTo(300, -1);
+    expect(first.topMps).toBeCloseTo(10, 0);
+    expect(first.endMs).toBe(120_000);
+    expect(lift.startMs).toBe(120_000);
+    expect(lift.ms).toBe(300_000);
+    expect(lift.heightM).toBeCloseTo(300, 0);
+    expect(lift.topMps).toBeNull();
+    expect(second.startMs).toBe(420_000);
+    expect(second.metres).toBeGreaterThan(1150);
+  });
+
+  it("agrees with the day's own numbers", () => {
+    const track = trackOf(twoDescents());
+    const day = snowDay(track);
+    const parts = snowParts(track) ?? [];
+    expect(parts.filter((part) => part.kind === "descent")).toHaveLength(
+      day.descents ?? 0,
+    );
+    expect(
+      parts.filter((part) => part.kind === "lift").map((part) => part.leg),
+    ).toEqual(day.lifts);
+  });
+
+  it("has none to tell apart without heights", () => {
+    const steps = twoDescents().map(([north, seconds]): Step => [north, seconds, null]);
+    expect(snowParts(trackOf(steps))).toBeNull();
   });
 });

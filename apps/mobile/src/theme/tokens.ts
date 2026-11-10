@@ -56,6 +56,20 @@ const FIXED = {
   strava: "#FC5200",
   /** Text on `strava`: white, as Strava's own button; semibold, 3:1. */
   onStrava: "#FFFFFF",
+
+  /**
+   * A day of skiing on its map, in the ski mode only (TASK-429, ADR-0357,
+   * the user's choice): the descents in the brand yellow, solid, and the
+   * lifts in a red lighter than `badge`, dashed. There the app draws no
+   * route, so the yellow keeps one meaning; numbers on the lines and a
+   * legend in words say it without the colours.
+   */
+  ski: {
+    descent: "#FFD02B",
+    lift: "#FF5A4E",
+    /** The numbers on the lines: dark, as `onAccent`. */
+    onLine: "#0B0A08",
+  },
 } as const;
 
 /**

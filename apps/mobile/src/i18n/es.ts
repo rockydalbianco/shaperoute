@@ -797,8 +797,6 @@ export const ES: Table = {
   // src/screens/FreeRunScreen.tsx, SnowFinishCard.tsx (TASK-375 part C)
   "Your day": "Tu jornada",
   "White: where you skied.": "Blanco: donde esquiaste.",
-  "White: your descents. Dashed: the lifts.":
-    "Blanco: tus descensos. Discontinuo: los remontes.",
   "Skied: {distance}": "Esquiado: {distance}",
   Descents: "Descensos",
   Vertical: "Desnivel",
@@ -1341,6 +1339,21 @@ export const ES: Table = {
   "Lower body B": "Tren inferior B",
   "Arms, core": "Brazos, abdomen",
   "Workout {letter}": "Entrenamiento {letter}",
+  // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
+  "Your plan, step by step": "Tu plan, paso a paso",
+  "A minute to make it, then it guides you every time.":
+    "Un minuto para hacerlo y luego te guía cada vez.",
+  "Choose your goal and days": "Elige objetivo y días",
+  "More muscle, more strength, tone up or get back in shape, 2 to 5 days.":
+    "Más músculo, más fuerza, tonificar o volver a estar en forma, de 2 a 5 días.",
+  "The plan is ready": "El plan ya está listo",
+  "Exercises, sets and reps proposed: touch an exercise to change it.":
+    "Ejercicios, series y repeticiones propuestos: toca un ejercicio para cambiarlo.",
+  "The weeks change by themselves": "Las semanas cambian solas",
+  "More load, more reps or weeks A / B. Here you find today's workout.":
+    "Más peso, más repeticiones o semanas A / B. Aquí encuentras el entrenamiento de hoy.",
+  "Create my plan": "Crear mi plan",
+  "How plans work": "Cómo funcionan los planes",
   // src/gym/RunDayEditor.tsx, runDay.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-433 C, approved 2026-11-10)
   "Go to the run · {amount}": "Ir a la carrera · {amount}",
   "Gym today instead": "Hoy gimnasio en su lugar",
@@ -2393,4 +2406,13 @@ export const ES: Table = {
     "Elige otro deporte para volver a MuW de siempre.",
   "Log in to see your days.": "Inicia sesión para ver tus jornadas.",
   "No days on the snow yet.": "Aún no hay jornadas en la nieve.",
+
+  // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
+  "Runs@@ski": "Descensos",
+  Legend: "Leyenda",
+  "Descents · solid, numbered": "Descensos · línea continua, numerados",
+  "Lifts · dashed, L1, L2…": "Remontes · discontinuo, L1, L2…",
+  Lift: "Remonte",
+  "{speed} top": "{speed} máx.",
+  "Stopped {minutes} min": "Parada {minutes} min",
 };

@@ -6,10 +6,13 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import vm from "node:vm";
 
-import { onFoot } from "../theme/tokens";
+import { color, onFoot } from "../theme/tokens";
 import {
   buildMapPage,
   LIFT_DASH,
+  SKI_DESCENT_COLOR,
+  SKI_LABEL_COLOR,
+  SKI_LIFT_COLOR,
   TRACK_COLOR,
   TRACK_OPACITY,
   TRACK_WIDTH,
@@ -52,7 +55,12 @@ function runPage() {
     getLayer(id: string) {
       return layers.find((layer) => layer.id === id);
     }
-    setPaintProperty() {}
+    setPaintProperty(id: string, name: string, value: unknown) {
+      const layer = layers.find((each) => each.id === id);
+      if (layer) {
+        layer.paint[name] = value;
+      }
+    }
     setFeatureState() {}
     fitBounds() {}
     flyTo() {}
@@ -152,4 +160,73 @@ test("lifts sent before the style loads are drawn with it", () => {
   page.styleLoads();
   expect(page.data("lifts")?.geometry?.type).toBe("MultiLineString");
   expect(page.data("track")?.geometry?.type).toBe("MultiLineString");
+});
+
+// TASK-429 part B: a day of skiing in the ski mode's colours, the descents
+// and the lifts numbered; the run's white comes back when it is cleared.
+
+/** A layer's paint, by its id. */
+function paintOf(page: ReturnType<typeof runPage>, id: string) {
+  return page.layers.find((layer) => layer.id === id)!.paint;
+}
+
+test("the ski colours are tokens: yellow descents, red lifts, dark numbers", () => {
+  expect(SKI_DESCENT_COLOR).toBe(color.ski.descent);
+  expect(SKI_LIFT_COLOR).toBe(color.ski.lift);
+  expect(SKI_LABEL_COLOR).toBe(color.ski.onLine);
+});
+
+test("a day of skiing: yellow descents, red dashed lifts, and their numbers", () => {
+  const page = runPage();
+  page.styleLoads();
+  page.send(
+    showLifts(
+      [DOWN, AGAIN],
+      [UP],
+      [
+        { point: DOWN[1], text: "1", kind: "descent" },
+        { point: UP[1], text: "L1", kind: "lift" },
+      ],
+    ),
+  );
+  expect(paintOf(page, "track")["line-color"]).toBe(SKI_DESCENT_COLOR);
+  expect(paintOf(page, "lifts")["line-color"]).toBe(SKI_LIFT_COLOR);
+  expect(paintOf(page, "lifts")["line-dasharray"]).toEqual(LIFT_DASH);
+  const labels = page.data("ski-labels") as unknown as {
+    features: { properties: { text: string; kind: string }; geometry: unknown }[];
+  };
+  expect(labels.features.map((feature) => feature.properties)).toEqual([
+    { text: "1", kind: "descent" },
+    { text: "L1", kind: "lift" },
+  ]);
+  expect(labels.features[1].geometry).toEqual({
+    type: "Point",
+    coordinates: [UP[1][1], UP[1][0]],
+  });
+  const ids = page.layers.map((layer) => layer.id);
+  expect(ids.indexOf("lifts")).toBeLessThan(ids.indexOf("ski-label-dots"));
+  expect(ids.indexOf("ski-label-dots")).toBeLessThan(ids.indexOf("ski-label-text"));
+});
+
+test("cleared, the run's white comes back and the numbers go", () => {
+  const page = runPage();
+  page.styleLoads();
+  page.send(showLifts([DOWN], [UP], [{ point: UP[0], text: "L1", kind: "lift" }]));
+  page.send(clearLifts());
+  expect(paintOf(page, "track")["line-color"]).toBe(TRACK_COLOR);
+  expect(paintOf(page, "lifts")["line-color"]).toBe(TRACK_COLOR);
+  expect(
+    (page.data("ski-labels") as unknown as { features: unknown[] }).features,
+  ).toEqual([]);
+});
+
+test("a day sent before the style loads is drawn in its colours", () => {
+  const page = runPage();
+  page.send(showLifts([DOWN], [UP], [{ point: UP[0], text: "L1", kind: "lift" }]));
+  page.styleLoads();
+  expect(paintOf(page, "track")["line-color"]).toBe(SKI_DESCENT_COLOR);
+  expect(paintOf(page, "lifts")["line-color"]).toBe(SKI_LIFT_COLOR);
+  expect(
+    (page.data("ski-labels") as unknown as { features: unknown[] }).features,
+  ).toHaveLength(1);
 });

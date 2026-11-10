@@ -1,12 +1,16 @@
 # TASK-408 — L'editor del video dell'attività: un animale 3D corre il percorso, le modifiche, il prompt
 
-**Stato**: Proposto · nessun codice prima delle scelte dell'utente e della
-lista dei file di ogni parte, approvata dal Coordinatore
+**Stato**: Done · 2026-11-10 · le parti A–E fatte: 13 animali (l'elefante
+animato da MuW), il foglio «Edit video» con scene, finale, camera dietro,
+anteprima e «Describe your video»; in produzione con l'OTA del 2026-11-10
+salvo l'elefante (#1066), che esce con il prossimo OTA di produzione dal
+Coordinatore. Resta fuori dal task la pagina dei crediti del sito
+(TASK-237), con il testo qui sotto.
 **Fase**: 5 · **Branch**: `docs/TASK-408-video-editor` (documenti); il
 codice `feat/TASK-408-b-…`
 **Dipende da**: TASK-351 (il video con la mappa sotto, i tre stili, il 3D
 che gira). TASK-351 resta chiuso così com'è.
-**ADR**: ADR-0339 (proposto)
+**ADR**: ADR-0339 (attiva), precisazioni B, C, C2, C2b, C2c, D, B2
 
 ## Obiettivo
 
@@ -301,6 +305,21 @@ Riusati senza cambiarli, perché l'app li ha già: «Style», «Night», «Day»
 
 ### La riga dei crediti (Termini › «Services of others»)
 
+**Il testo in uso** (scelta dell'utente del 2026-11-10, «Tutti e due»; in
+`about/content/*.ts` dalla #1066). È anche quello da mettere nella pagina
+dei crediti del sito, TASK-237, ancora da assegnare:
+
+- **en**: The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm and SahuAvdhesh on Sketchfab (CC BY 4.0), animated and adapted by MuW.
+- **it**: Gli animali 3D del video vengono da Quaternius (CC0); l'elefante è "Elephant Anim" di Shivoahm e SahuAvdhesh su Sketchfab (CC BY 4.0), animato e adattato da MuW.
+- **de**: Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm und SahuAvdhesh auf Sketchfab (CC BY 4.0), von MuW animiert und angepasst.
+- **es**: Los animales 3D del vídeo vienen de Quaternius (CC0); el elefante es «Elephant Anim» de Shivoahm y SahuAvdhesh en Sketchfab (CC BY 4.0), animado y adaptado por MuW.
+- **fr**: Les animaux 3D de la vidéo viennent de Quaternius (CC0) ; l'éléphant est « Elephant Anim » de Shivoahm et SahuAvdhesh sur Sketchfab (CC BY 4.0), animé et adapté par MuW.
+
+Link alla pagina del modello per il sito:
+https://sketchfab.com/3d-models/elephant-anim-766f267ff6bd4a87a45e3d26286b9d27.
+
+La proposta di prima, superata dalla scelta qui sopra:
+
 - **en** (approvata): The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm on Sketchfab (CC BY 4.0), adapted by MuW.
 - **it** (approvata): Gli animali 3D del video vengono da Quaternius (CC0); l'elefante è "Elephant Anim" di Shivoahm su Sketchfab (CC BY 4.0), adattato da MuW.
 - **de**: Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm auf Sketchfab (CC BY 4.0), angepasst von MuW.
@@ -525,13 +544,14 @@ di soli documenti dopo il merge (regola del Coordinatore del 2026-11-08).
 
 ## Criteri di accettazione
 
-- [ ] Le domande 1–6 hanno una risposta scritta qui.
-- [ ] Ogni modello 3D ha la licenza scritta qui, con il link alla pagina.
-- [ ] Il prompt sceglie solo voci dell'editor e non chiama la rete: un
+- [x] Le domande 1–6 hanno una risposta scritta qui.
+- [x] Ogni modello 3D ha la licenza scritta qui, con il link alla pagina.
+- [x] Il prompt sceglie solo voci dell'editor e non chiama la rete: un
   test lo prova con parole sconosciute e con numeri che sembrano
-  coordinate.
-- [ ] Ogni parte ha la lista dei file approvata dal Coordinatore e test
+  coordinate (`videoWords.test.ts`).
+- [x] Ogni parte ha la lista dei file approvata dal Coordinatore e test
   deterministici.
-- [ ] Il video esce sempre: senza mappa, senza modello o su un telefono
+- [x] Il video esce sempre: senza mappa, senza modello o su un telefono
   lento, il personaggio si toglie o la camera si ferma, mai un errore.
-- [ ] L'impronta iOS non cambia, salvo una lista che lo dica.
+- [x] L'impronta iOS non cambia, salvo una lista che lo dica: nessuna
+  parte ha cambiato codice nativo.

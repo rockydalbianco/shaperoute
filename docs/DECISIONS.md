@@ -444,7 +444,7 @@ lasciando le righe d'indice.
 - ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi · 2026-11-06 · Accettato
 - ADR-0324, precisazione — La parte A: il Roller nel motore, nel contratto e nell'API, l'impronta del motore resta · 2026-11-06 · Accettato
 - ADR-0324, seconda precisazione — Le soglie «veicolo» del Roller: 35 km/h su 200 m, 28 di media · 2026-11-06 · Accettata (scelta dell'utente, «Sì, 35 e
-- ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono · 2026-11-06 · Proposto
+- ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono · 2026-11-06 · Attiva
 - ADR-0339, precisazione B — L'animale disegnato a parte e posato sul fotogramma, three.js r159, i modelli in uno zip · 2026-11-06
 - ADR-0274, precisazione B — Lo schermo di corsa: la strada nel ciclo delle posizioni, nessun testo nuovo, il server a telefono bloccato · 2026-11-06 · Accettato
 - ADR-0339, precisazione C — Il foglio «Edit video»: le scelte in un oggetto, il colore come ruolo, le emoji dove passa la linea · 2026-11-06
@@ -501,6 +501,7 @@ lasciando le righe d'indice.
 - ADR-0340, precisazione D — Le sezioni della pagina: parziali, altimetria, battito medio e massimo; zone e minimo rimandati, dislivello dal profilo · 2026-11-10 · Attiva
 - ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
 - ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì · 2026-11-10 · Accettata
+- ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF · 2026-11-10 · Attiva
 
 ## Voci nuove
 
@@ -1999,3 +2000,28 @@ fasi lungo la forma (`optimizer.PHASES`), sempre con la partenza chiesta.
 `map/messages.ts`, `map/MapView.tsx`), nessun testo nuovo, hash SRI di
 MapLibre invariati; esce con l'OTA di produzione. Come oggi il motore può
 ancora spostare la figura per trovare le strade, ma parte dal punto scelto.
+
+## ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-10), con le
+scelte dell'utente: scaricarlo dal suo account («fallo tu»), installare
+Blender, e i crediti con i due nomi («Tutti e due»).
+
+1. **Il modello**: «Elephant Anim»
+   (https://sketchfab.com/3d-models/elephant-anim-766f267ff6bd4a87a45e3d26286b9d27),
+   CC BY 4.0. Nessuno dei file scaricabili (GLB, glTF, `.blend`) ha
+   animazioni. MuW gli ha fatto due cicli in Blender ruotando le ossa
+   («Gallop», un passo veloce in sequenza laterale, 0,8 s; «Idle»,
+   orecchie, proboscide e coda, 3 s) e un grigio piatto, la media della
+   sua texture, senza immagini: 330 KB. Lo script è fuori dal repository
+   (`out/TASK-408/elephant-tools/animate.py`).
+2. **I crediti**: la pagina lo attribuisce a @Shivoahm, il file di licenza
+   a SahuAvdhesh; i Termini nominano tutti e due e dicono che MuW l'ha
+   animato e adattato.
+3. **La pelle legata alle ossa con l'identità**: per glTF la trasformazione
+   del nodo di una mesh con scheletro si ignora, perché le ossa la portano
+   già. Legata con la matrice del suo nodo, la mesh dell'elefante (sotto
+   nodi ruotati e scalati) veniva sottosopra, e a pezzi in corsa. Poi le
+   matrici si aggiornano prima di misurare l'animale, altrimenti la misura
+   era sbagliata e l'animale finiva fuori vista. Gli animali di Quaternius,
+   con la mesh nell'origine, si disegnano identici.

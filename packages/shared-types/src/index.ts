@@ -525,6 +525,14 @@ export interface RouteJob {
   result: RouteResult | null;
   /** Only when `status` is "failed". */
   error: ApiError["error"] | null;
+  /**
+   * Only in the answer to GET /route-jobs/{job_id}?first=1, while the job
+   * computes (TASK-435, ADR-0361): the route from the user's own start, with
+   * no alternatives, as soon as it is planned and the nearby starts are not
+   * yet. Missing without `?first=1` and from an API before it; the whole
+   * answer is `result`, as ever.
+   */
+  first?: RouteResult | null;
 }
 
 /** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */

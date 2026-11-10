@@ -156,6 +156,41 @@ toglierebbero i figli delle partenze vicine già avviati. Poi:
   migliore sostituisce» è ancora da fare (la proposta resta «il primo
   resta»), poi le parti A, B, C.
 
+## Il numero di TASK-434 (2026-11-10)
+
+Da `docs/tasks/TASK-434.md`, «L'avvio dei figli nel flusso vero» (PR docs
+#1102; dati in `out/TASK-434/child-start.txt`, 18 percorsi da 5 km sul
+Mac, 42 figli).
+
+| | Oggi | Con i figli già avviati |
+|---|---|---|
+| Mac: attesa dei figli dopo il piano della partenza | media 0,26 s, mediana 0,24 | media 0,09 s, mediana **0,00** |
+| Mac: percorsi che aspettano i figli | 14 su 18 | 8 su 18 |
+| Server, i 9 job di sopra: `wait` (stima, non misura) | media 2,0 s, mediana 1,5 | media circa 1,2 s, mediana circa 1,0 |
+
+- Sul Mac un figlio impiega 0,36 s da `_Workers(...)` alla ricerca: 0,26 di
+  avvio (interprete e import del motore), 0,02 di ricezione, 0,08 di grafo
+  spacchettato. Sul server, dalle 9 righe, circa 2 s (1,4–2,7), di cui
+  circa 1,5 di avvio: l'ipotesi di sopra regge, ma là non è stato misurato.
+- Con i figli già avviati quello che resta di `wait` sul server è quasi
+  tutto lavoro del processo principale **prima** del piano della partenza
+  (0,6–1,0 s), che «primo percorso subito» non toglie.
+
+**Cosa resta a questo task.** Tolti 1,5 s di avvio dall'attesa dopo il
+piano, nei 9 job del server il guadagno di «primo percorso subito»
+scenderebbe da mediana 1 s (0–3,5) a mediana **0 s** (media 0,4; 0 in 5
+job su 9; al massimo 2 s, nel job con la partenza pronta in 1,1 s). È una
+stima con le due ipotesi di TASK-434 (0,8 s prima del piano, 1,5 s di
+avvio).
+
+**Raccomandazione dell'agente.** I figli già avviati (proposta 2 di
+TASK-434) tolgono circa 0,7–0,8 s a ogni percorso sul server, alle app non
+aggiornate comprese, senza toccare contratto e app e senza mostrare per
+primo un percorso che nel 38% dei casi non è il migliore. Dopo, a questo
+task resta troppo poco per tre PR, un passo sul server e un OTA: chiuderlo
+come proposta ferma, e riaprirlo solo se la misura sul server dopo i figli
+già avviati mostra ancora un'attesa che vale la pena.
+
 ## Il piano, in parti
 
 Una parte = un branch da `main` = una PR. Le PR di codice non toccano

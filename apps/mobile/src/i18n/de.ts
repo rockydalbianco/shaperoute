@@ -1351,6 +1351,21 @@ export const DE: Table = {
   "Lower body B": "Unterkörper B",
   "Arms, core": "Arme, Bauch",
   "Workout {letter}": "Training {letter}",
+  // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
+  "Your plan, step by step": "Dein Plan, Schritt für Schritt",
+  "A minute to make it, then it guides you every time.":
+    "Eine Minute, um ihn zu erstellen, dann führt er dich jedes Mal.",
+  "Choose your goal and days": "Wähle Ziel und Tage",
+  "More muscle, more strength, tone up or get back in shape, 2 to 5 days.":
+    "Mehr Muskeln, mehr Kraft, straffen oder wieder fit werden, 2 bis 5 Tage.",
+  "The plan is ready": "Der Plan ist schon fertig",
+  "Exercises, sets and reps proposed: touch an exercise to change it.":
+    "Übungen, Sätze und Wiederholungen vorgeschlagen: tippe auf eine Übung, um sie zu ändern.",
+  "The weeks change by themselves": "Die Wochen ändern sich von selbst",
+  "More load, more reps or weeks A / B. Here you find today's workout.":
+    "Mehr Gewicht, mehr Wiederholungen oder Wochen A / B. Hier findest du das heutige Training.",
+  "Create my plan": "Meinen Plan erstellen",
+  "How plans work": "So funktionieren Pläne",
   Workout: "Training",
   "Only sets logged live count.": "Es zählen nur live eingetragene Sätze.",
   // src/screens/ChooseScreen.tsx (TASK-375)

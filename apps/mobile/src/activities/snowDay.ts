@@ -36,6 +36,8 @@ export type SnowDay = {
   descents: number | null;
   /** The metres of the descents, or of the whole day without heights. */
   skiedM: number;
+  /** Their milliseconds: the time the calories count (TASK-424 part C2). */
+  skiedMs: number;
   /** The metres skied down; null without heights. */
   verticalM: number | null;
   /** In metres a second; null before any descent has its seconds. */
@@ -230,6 +232,7 @@ export function snowDay(track: Track): SnowDay {
   return {
     descents: heights ? descents.length : null,
     skiedM,
+    skiedMs,
     verticalM: heights ? verticalM : null,
     topMps,
     averageMps: skiedMs > 0 ? skiedM / (skiedMs / 1000) : null,

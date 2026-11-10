@@ -1,11 +1,7 @@
-import {
-  ACTIVITIES,
-  type Activity,
-  type LatLon,
-  type RunActivity,
-} from "@shaperoute/shared-types";
+import { type LatLon, type RunActivity } from "@shaperoute/shared-types";
 
 import { activityKey } from "../activities/activityKey";
+import { trackEffort } from "../activities/trackEffort";
 import { appBody, type BodyProfile } from "../body/bodyProfile";
 import { activeKcal } from "../body/energy";
 import { climbM } from "../navigation/runMetrics";
@@ -56,11 +52,6 @@ export type Workout = {
 /** The version of what is written for a run: there is only one so far. */
 export const SYNC_VERSION = 1;
 
-/** One of the activities with a route, whose energy MuW estimates. */
-function isRouteActivity(activity: RunActivity): activity is Activity {
-  return (ACTIVITIES as readonly string[]).includes(activity);
-}
-
 /**
  * The workout of a finished `track`, done as `activity` by `body`; null
  * with less than two fixes, or no time between the first and the last.
@@ -77,19 +68,13 @@ export function workoutOf(
   }
   const startMs = first.timeMs;
   const endMs = last.timeMs;
-  // A day on the snow has no estimate yet (TASK-375 part C): no energy.
-  const energy = !isRouteActivity(activity)
-    ? 0
-    : activeKcal(
-        {
-          activity,
-          metres: track.distanceM,
-          seconds: activeMs(track, endMs) / 1000,
-          climbM: climbM(track),
-        },
-        body,
-        new Date(startMs).getFullYear(),
-      );
+  // Every activity its own (TASK-424 part C2): a day of skiing on its
+  // descents alone, as its end shows it.
+  const energy = activeKcal(
+    trackEffort(activity, track, activeMs(track, endMs) / 1000, climbM(track)),
+    body,
+    new Date(startMs).getFullYear(),
+  );
   return {
     activity,
     startMs,

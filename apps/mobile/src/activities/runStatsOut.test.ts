@@ -81,11 +81,11 @@ test("the calories are the post's, counted with the phone's body", () => {
 });
 
 test("nothing to send: no figures", () => {
-  // At the gym or on the snow there are no calories of this kind, and an
-  // activity of no metres has none.
-  for (const activity of ["gym", "skiing"] as const) {
-    expect(runStatsRequest(BASE, { ...COUNTED, activity }, NO_BODY, 2026)).toBeNull();
-  }
+  // At the gym there are no calories of this kind (its sets count them),
+  // and an activity of no metres has none.
+  expect(
+    runStatsRequest(BASE, { ...COUNTED, activity: "gym" }, NO_BODY, 2026),
+  ).toBeNull();
   expect(runStatsRequest(BASE, { ...COUNTED, metres: 0 }, NO_BODY, 2026)).toBeNull();
   // A run with heights still sends its profile.
   const track = [north(0, 0, 200), north(400, 120, 205)];
@@ -93,4 +93,33 @@ test("nothing to send: no figures", () => {
     runStatsRequest(run(track), { ...COUNTED, activity: "gym" }, NO_BODY, 2026)
       ?.elevation,
   ).toHaveLength(2);
+});
+
+test("a day of skiing counts its descents alone (TASK-424 part C2)", () => {
+  // Down 300 m in 2 km and 5 minutes, a fix every 30 s.
+  const down = (fromM: number, fromS: number) =>
+    Array.from({ length: 11 }, (_, i) =>
+      north(fromM + i * 200, fromS + i * 30, 2000 - i * 30),
+    );
+  // Up a chairlift first: 300 m in 10 minutes, steady, 1.5 km north.
+  const lift = Array.from({ length: 21 }, (_, i) =>
+    north(i * 75, i * 30, 1700 + i * 15),
+  );
+  const counted = { activity: "skiing" as const, metres: 3500, seconds: 900 };
+  const descentOnly = runStatsRequest(run(down(1500, 600)), counted, NO_BODY, 2026);
+  const withLift = runStatsRequest(
+    run([...lift, ...down(1500, 600).slice(1)]),
+    counted,
+    NO_BODY,
+    2026,
+  );
+  expect(descentOnly?.kcal).toBeGreaterThan(0);
+  expect(withLift?.kcal).toBe(descentOnly?.kcal);
+  // A day of cross-country skiing, ski touring or a swim in open water: its
+  // own formula, on the metres and the time of the post.
+  for (const activity of ["xc_skiing", "ski_touring", "swimming"] as const) {
+    expect(
+      runStatsRequest(BASE, { ...COUNTED, activity }, NO_BODY, 2026)?.kcal,
+    ).toBeGreaterThan(0);
+  }
 });

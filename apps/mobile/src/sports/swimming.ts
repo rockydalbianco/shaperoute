@@ -1,7 +1,7 @@
 import { DISTANCE_LIMITS_M } from "@shaperoute/shared-types";
 
 import { tLater } from "../i18n";
-import type { SportProfile } from "./base";
+import type { MetBand, SportProfile } from "./base";
 
 /** A swim goes by half a km, or half a mile (TASK-323 C2, the user's
  * choice): 0.5 to 3 km are six steps, whole km would be three. */
@@ -19,10 +19,24 @@ export const APPLE_POOL_LOCATION = 1;
 export const HEALTH_CONNECT_POOL = 74;
 
 /**
+ * The MET of a swim at its average speed (TASK-424 part C2, the user's
+ * choice of 2026-11-10: calories for every activity): the bands of a swim
+ * in a pool (pool/poolKcal.ts, Compendium 2024, crawl), from their paces
+ * /100 m — 2:18, 1:45 and 1:13 — to km/h.
+ */
+const BANDS: readonly MetBand[] = [
+  { belowKmh: 360 / 138, met: 5.8 },
+  { belowKmh: 360 / 105, met: 8.0 },
+  { belowKmh: 360 / 73, met: 10.5 },
+  { belowKmh: Infinity, met: 14.5 },
+];
+
+/**
  * A swim (TASK-323), «Swim» since TASK-400 (ADR-0334): in open water, or in
  * a pool, chosen in «Draw» (src/pool). In open water its own limits, 0.5–3 km, by half a km;
  * with «Miles» by half a mile, 0.5 to 1.5 (0.8 to 2.4 km: 2 mi are past
- * the 3 km). No energy yet (TASK-323 C2).
+ * the 3 km). Its energy in open water is a pool's (TASK-424 part C2); a
+ * swim in a pool counts its own (pool/poolKcal.ts), on its lengths.
  */
 export const SWIMMING: SportProfile = {
   activity: "swimming",
@@ -48,4 +62,5 @@ export const SWIMMING: SportProfile = {
   // EXERCISE_TYPE_SWIMMING_OPEN_WATER (TASK-323).
   healthConnect: 73,
   freeRunAs: "swimming",
+  energy: { kind: "met", bands: BANDS },
 };

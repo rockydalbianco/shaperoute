@@ -68,6 +68,10 @@ describe("a day on the snow", () => {
     expect(day.skiedM).toBeLessThan(2450);
     expect(day.verticalM).toBeGreaterThan(580);
     expect(day.verticalM).toBeLessThanOrEqual(600);
+    // Their time, the lift's left out (TASK-424 part C2): the average is
+    // the descents' metres over it.
+    expect(day.skiedMs).toBeGreaterThan(0);
+    expect(day.averageMps).toBeCloseTo(day.skiedM / (day.skiedMs / 1000), 6);
   });
 
   it("gives the speeds of the descents, never of the lift", () => {
@@ -168,6 +172,7 @@ describe("a day on the snow", () => {
     expect(snowDay(emptyTrack())).toEqual({
       descents: null,
       skiedM: 0,
+      skiedMs: 0,
       verticalM: null,
       topMps: null,
       averageMps: null,

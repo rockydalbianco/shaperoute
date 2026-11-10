@@ -143,11 +143,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   parte 0, A1 (server, migrazione 0063) e A2 (pagina `site/live/`, #1010)
   in `main`; server e copia del sito (F.14) col sì nell'aggiornamento
   unico; prossima B1 (app), poi B2 e C. File: — · `tasks/TASK-424.md`
-- **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
-  (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
-  i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347
-  precisazione). Prossimo: «via server catalogo» del Coordinatore, poi il
-  secondo giro (Italia, Europa) con le zone copiate dal server. File: — · `tasks/TASK-419.md`
+- **TASK-419 — Il catalogo grande di «Explore»** · primo giro sul server
+  (155); secondo giro nella PR #1028 (386 percorsi in 45 città, scelta
+  dell'utente del 2026-11-10), poi «via server catalogo». Restano 16 città
+  europee (Overpass chiuso) e i contorni di TASK-418 in attesa della
+  registrazione. File: quelli della #1028 · `tasks/TASK-419.md`
 - **TASK-423 — «Play» grande** (ADR-0351) · documenti (#982) e A, il
   catalogo a 94 forme (#984), in `main`; server di A insieme a B, col sì.
   Prossima B (i tempi su 11 distanze, `RULES_VERSION` 3), poi C, D (dopo

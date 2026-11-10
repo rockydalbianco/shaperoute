@@ -54,10 +54,19 @@ it("the config both fingerprints read has none of the watch", () => {
   expect(names(config.plugins)).toEqual(
     expect.arrayContaining(fingerprint.IOS_ONLY.plugins),
   );
-  expect(config.extra.eas.build.experimental.ios.appExtensions[0]).toMatchObject({
-    bundleIdentifier: "com.lppl1316.sgrava.watchkitapp",
-    targetName: "watch",
-  });
+  // From the 1.1 the same plugin builds the Live Activity too (TASK-401 B).
+  expect(config.extra.eas.build.experimental.ios.appExtensions).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        bundleIdentifier: "com.lppl1316.sgrava.watchkitapp",
+        targetName: "watch",
+      }),
+      expect.objectContaining({
+        bundleIdentifier: "com.lppl1316.sgrava.live-activity",
+        targetName: "liveactivity",
+      }),
+    ]),
+  );
   const read = JSON.parse(transform("expoConfig", stringifyJsonSorted(config))!);
   for (const name of fingerprint.IOS_ONLY.plugins) {
     expect(names(read.plugins)).not.toContain(name);
@@ -75,7 +84,7 @@ it("the iPhone fingerprint keeps the watch", () => {
   expect(names(taken.slice(0, 2))).toEqual(fingerprint.IOS_ONLY.plugins);
   expect(taken[1]).toEqual([
     "@bacons/apple-targets",
-    { appleTeamId: "D6WUSJZKVZ", match: "watch" },
+    { appleTeamId: "D6WUSJZKVZ", match: "{live-activity,watch}" },
   ]);
   expect(Object.keys(taken[2] as object)).toEqual(["extra.eas.build.experimental.ios"]);
 });
@@ -86,6 +95,7 @@ it("the Android fingerprint knows nothing of the watch", () => {
     expect(read).not.toContain(name);
   }
   expect(read).not.toContain("watchkitapp");
+  expect(read).not.toContain("live-activity");
 });
 
 it("a config without the watch is read as it is: a build before A-flip", () => {
@@ -107,6 +117,10 @@ it("the files the watch's plugins load count in neither fingerprint", () => {
     expect.arrayContaining(["eas.json", ...fingerprint.WATCH_BUILD_PATHS]),
   );
   expect(fingerprint.WATCH_BUILD_PATHS).toEqual(
-    expect.arrayContaining(["targets/watch/**", "plugins/withWatchCore.js"]),
+    expect.arrayContaining([
+      "targets/watch/**",
+      "targets/live-activity/**",
+      "plugins/withWatchCore.js",
+    ]),
   );
 });

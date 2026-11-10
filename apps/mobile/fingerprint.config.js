@@ -41,6 +41,10 @@ const ANDROID_SOURCE = "expoAutolinkingConfig:android";
 // count in neither: they build the watch only, whose code no update
 // reaches, and the iPhone's side of it is the native module
 // react-native-watch-connectivity, which iOS autolinking counts.
+// The Live Activity (TASK-401 B, in the 1.1 too) is built by the same
+// plugin: its widget target's files count in neither either, as no update
+// reaches them; its native module in the iPhone app
+// (modules/live-activity, Apple only) is counted by iOS autolinking.
 
 /** The plugins for the iPhone only, by name. */
 const IOS_ONLY = { plugins: ["./plugins/withWatchCore.js", "@bacons/apple-targets"] };
@@ -51,6 +55,7 @@ const IOS_SOURCE = "expoAutolinkingConfig:ios";
 /** What the watch's plugins load, counted in neither fingerprint. */
 const WATCH_BUILD_PATHS = [
   "targets/watch/**",
+  "targets/live-activity/**",
   "plugins/withWatchCore.js",
   "plugins/watchConfig.js",
   "../../node_modules/@bacons/**",

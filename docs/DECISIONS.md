@@ -515,8 +515,41 @@ lasciando le righe d'indice.
 - ADR-0357, precisazione A — La modalità sci nell'app: le schede dallo sport, «Oggi» sulla pagina «choose», le icone come `face`, la barra ricostruita · 2026-11-10 · Attiva
 - ADR-0360 — Le schede della palestra guidate: le settimane in una colonna `program`, i valori di ogni settimana dal telefono, l'app di prima che legge ancora · 2026-11-10 · Accettata
 - ADR-0361 — Primo percorso subito: `plan_nearby` avvisa quando la partenza ha il suo piano, il job lo porta in `first` a chi lo chiede, nell'app il primo resta A · 2026-11-10 · Accettata
+- ADR-0351, precisazione E1 — I premi sul server: le edizioni come righe di `game_unlocks`, cornici, titoli e badge letti a ogni richiesta, la scelta del profilo in `game_prefs` · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0351, precisazione E1 — I premi sul server: le edizioni come righe di `game_unlocks`, cornici, titoli e badge letti a ogni richiesta, la scelta del profilo in `game_prefs`
+
+**Stato**: Attiva · 2026-11-10 · TASK-423 parte E1 (#1099). Deciso
+dall'agente su delega dell'utente; i testi delle due push approvati
+dall'utente («Sì, approvo», 2026-11-10).
+
+**Decisione**:
+
+- **Le edizioni argento e oro sono righe di `game_unlocks`** (`edition`
+  `silver`, `gold`), accanto a `solo` (il bronzo) e `team`: la stessa
+  tabella dice quando e con quale corsa. La CHECK di `edition` si allarga
+  (0067), mai si stringe, e il codice di prima filtra già `solo` e `team`.
+  Si scrivono nella transazione del salvataggio (`record_editions`)
+  contando le corse contate che fanno il requisito; il backfill le dà alle
+  corse vecchie con la corsa che le ha date, alla sua fine, senza push.
+- **Cornici, titoli e badge non si salvano**: si leggono a ogni richiesta
+  (`game_prizes.py` puro, `facts_of`) da quello che il gioco tiene già.
+  Niente da tenere allineato, niente backfill; se una corsa si cancella un
+  premio di km può tornare indietro, e il profilo smette di mostrarlo.
+- **La scelta del profilo è in `game_prefs`** (una cornice, un titolo,
+  fino a 3 badge), accettata solo fra i premi presi; il profilo pubblico
+  mostra `game_prizes` solo per quello che si ha ancora, `null` di
+  default. I campi nuovi di `/game/me`, `/game/runs/{key}` e del profilo
+  sono facoltativi: l'app in produzione li ignora (test con i suoi
+  validatori).
+- **Due push nuove**, `edition_up` (l'oro ha le sue parole) e
+  `collection_done`, una per corsa ciascuna, dopo `shape_unlocked`.
+
+**Perché**: il server conta, l'app mostra; meno stato salvato vuol dire
+meno cose che possono andare fuori sincronia, e l'app installata resta
+intatta.
 
 ## ADR-0361 — Primo percorso subito: `plan_nearby` avvisa quando la partenza ha il suo piano, il job lo porta in `first` a chi lo chiede, nell'app il primo resta A
 

@@ -1,11 +1,9 @@
 # TASK-429 — La modalità sci: scelto lo sci, MuW diventa un'app per lo sci
 
-**Stato**: Todo · parte 0 fatta il 2026-11-10: proposta, mockup e le
-quattro scelte dell'utente qui sotto; prossima la parte A, con la lista dei
-file al Coordinatore
-**Fase**: 5 · **Branch**: `docs/TASK-429-ski-mode` e `docs/TASK-429-part0`
-(documenti); il codice
-`feat/TASK-429-a-…`
+**Stato**: In lavorazione · parte 0 e parte A in `main` (A: #1093); B1
+scritta, aspetta la #1098 di TASK-424; poi B2 e C
+**Fase**: 5 · **Branch**: `docs/TASK-429-…` (documenti); il codice
+`feat/TASK-429-a-ski-mode` (A, in `main`), `feat/TASK-429-b-ski-day` (B1)
 **Dipende da**: TASK-375 (la giornata di sci, impianti e piste per nome) e
 TASK-406 (stazioni, meteo, neve, «Follow»), tutti e due online dal
 2026-11-10. Non li riapre: ne riusa le pagine.
@@ -59,6 +57,11 @@ esempio.
   «Giornate» senza account «Log in to see your days.» («Accedi per vedere
   le tue giornate.») e senza giornate «No days on the snow yet.» («Ancora
   nessuna giornata sulla neve.»); de, fr ed es tradotti allo stesso modo.
+- 2026-11-10, la parte C: «Sì, così». A «Salva» il telefono manda al server
+  i tratti della giornata (risalite e discese con i loro numeri); il server
+  li tiene, dà il nome a ogni tratto e fa i totali della stagione. Le
+  giornate già salvate restano con km e tempo, senza tratti: il server non
+  ne ha le quote.
 
 ## Cosa c'è già (non si rifà)
 
@@ -172,11 +175,17 @@ domanda 2).
 
 - **A — la modalità**: `skiMode` dallo sport, le cinque schede, l'icona dei
   messaggi in alto, il menu dello sport che entra ed esce. Solo app.
-- **B — le pagine della giornata**: Oggi, riepilogo, discesa per discesa,
-  mappa con legenda e i token nuovi. Solo app.
-- **C — la stagione**: i numeri della giornata al server, `GET
-  /me/ski-season`, la scheda Giornate. Server col sì dell'utente.
-- **D — i nomi tratto per tratto** nella linea del tempo. Server.
+- **B — la giornata a fine giornata**, in due:
+  - **B1**: la mappa a colori con i numeri 1, 2… e L1, L2…, la legenda,
+    «Summary · Map · Runs» sulla scheda di fine giornata, i token
+    `ski.descent` e `ski.lift`, `snowParts`. Solo app, nessun invio nuovo;
+  - **B2**: a «Salva» i tratti al server (`ski_parts`, sotto), con il
+    ripiego se il server non li conosce. Solo app, dopo il server di
+    TASK-424 C2b.
+- **C — la giornata salvata e la stagione**: i nomi tratto per tratto e i
+  totali della stagione dal server, letti da `ski_parts`; da «Giornate» una
+  giornata salvata si apre con «Summary · Map · Runs». Server e app, col sì
+  dell'utente. Ha preso dentro la vecchia D (i nomi tratto per tratto).
 - **E — la grafica nuova delle Stazioni** (le schede di «Your resorts»
   col meteo). La Ricerca senza «Ski» passa nella parte A, perché le stazioni
   cambiano posto nello stesso momento.
@@ -215,9 +224,57 @@ Scelte tecniche, decise dall'agente su delega dell'utente:
   percorsi del codice;
 - **le pagine nuove stanno in `src/skimode/`**, file nuovi; `src/ski/` non
   si tocca, si importano `DayResort`, `ResortList` e `ResortPage`;
-- **in `App.tsx` il minimo**: le pagine della barra scelte da una funzione
-  pura (`skiModePages`, testata), l'icona dei messaggi nell'header, i
-  messaggi sopra l'app quando non hanno una scheda.
+- **in `App.tsx` il minimo**: le pagine della barra scelte da funzioni
+  pure (`barPagesOf`, `shellPagesOf`, testate), l'icona dei messaggi
+  nell'header, i messaggi sopra l'app quando non hanno una scheda.
+
+**Parte A, in `main` il 2026-11-10** (#1093, `80befda7`). Impronta iOS
+`6f8bba4c` invariata (copia pulita con `npm ci`, uguale a `main`). Esce con
+il prossimo OTA di produzione del Coordinatore, col sì dell'utente.
+
+**La parte B, il piano (2026-11-10).** A fine giornata di sci:
+- **sulla mappa** le discese gialle a linea piena, numerate 1, 2…, e le
+  risalite rosse tratteggiate, numerate L1, L2…; in cima, al posto della riga
+  «White: your descents. Dashed: the lifts.», la legenda in parole;
+- **la scheda** ha «Summary · Map · Runs»: i numeri di prima, la mappa
+  lasciata libera, ogni tratto con ora, durata, metri su o giù, velocità
+  massima, e le soste di 10 minuti o più.
+
+Scelte tecniche, decise dall'agente su delega dell'utente:
+- **un solo calcolo dei tratti**: `snowDay.ts` tiene una funzione interna,
+  `liftsAndDescents`, che usano sia `snowDay` sia la nuova
+  `snowParts(track) → SnowPart[] | null` (tipo, numero, inizio e fine, tempo
+  in movimento, metri, dislivello, velocità massima). È solo quello che
+  mancava: i numeri e la linea del tempo; il resto (`skiedDay`, `skiedMs` di
+  TASK-424 C2) si riusa;
+- **i colori solo come token** (`ski.descent`, `ski.lift`, `ski.onLine` per
+  i numeri), e la pagina della mappa li prende di lì; spenta la giornata, il
+  bianco della corsa torna;
+- **i numeri sulla mappa** sono un punto del colore della linea con il
+  numero scuro, a metà del suo tratto (`skiDayLabels`).
+
+**La parte C, il disegno (2026-11-10), scelto dall'utente («Sì, così»).**
+Il server tiene la traccia di una giornata con le ore ma senza le quote:
+discese, risalite e la linea del tempo di una giornata salvata non si
+possono ricalcolare lì. Il telefono le sa a fine giornata (`snowParts`).
+- **Un solo campo, condiviso con TASK-424 C2b** (le calorie dello sci nel
+  Feed vogliono metri e secondi delle sole discese): `ski_parts` dentro `PUT
+  /me/activities/{key}/stats` (`run_stats.stats` della `0064`), nessuna
+  migrazione. Ogni voce: `kind` (`lift`|`descent`), `n`, `start_ms` ed
+  `end_ms` sull'orologio dei `time_ms` della traccia, `moving_s`, `metres`,
+  `height_m`, `top_mps` (null per le risalite); al più 500, facoltativo.
+- **Il server** (TASK-424 C2b) aggiunge `start_s` ed `end_s` sui secondi
+  della sua traccia e le somme `ski_descents`; `GET /drawings/{id}` dà
+  `ski_parts` intera a chi vede il post, il Feed solo `ski_descents`.
+- **L'ordine** (Coordinatore, 2026-11-10): TASK-424 C2 (#1098) → TASK-424
+  C2b (server) → 429 B (B1 dopo #1098; B2 dopo C2b) → 429 C → TASK-424 C3.
+  Il `PUT …/stats` rifiuta le chiavi che non conosce (`422`): B2 rimanda i
+  run-stats senza `ski_parts` se il server dice di no, e il Coordinatore
+  tiene comunque il server prima dell'OTA.
+- **La parte C** legge `ski_parts`: i nomi tratto per tratto (la traccia del
+  server tagliata con `start_s`/`end_s`, confrontata con impianti e piste
+  come fa `ski_names.py`), i totali della stagione, la giornata salvata da
+  «Giornate». La sua lista si manda al Coordinatore prima di cominciare.
 
 Ogni parte manda prima al Coordinatore la sua lista dei file. TASK-406
 resta della sua sessione (la parte E, la prova sulla neve): una parte che
@@ -288,7 +345,25 @@ scheda non c'è), `apps/mobile/src/i18n/{it,de,fr,es}.ts` (i testi approvati
 della parte A) e questa lista. Nessun file di `src/ski/`, nessun token,
 nessun server.
 
-Parti B–E: si elencano prima di ciascuna.
+Parte B1 (approvata dal Coordinatore il 2026-11-10). File nuovi:
+`apps/mobile/src/skimode/SkiLegend.tsx`, `SkiRuns.tsx`, `SkiDaySections.tsx`,
+`skiDayLabels.ts`, ognuno col suo test. File da cambiare:
+`apps/mobile/src/theme/tokens.ts` (`ski`), `apps/mobile/src/activities/snowDay.ts`
+e `snowDay.test.ts` (`snowParts`), `apps/mobile/src/map/mapPage.ts`,
+`messages.ts`, `MapView.tsx` e i test `mapPageLifts.test.ts`,
+`MapViewLifts.test.tsx`, `apps/mobile/App.tsx` (i numeri della giornata alla
+mappa), `apps/mobile/src/screens/SnowFinishCard.tsx` e il suo test,
+`apps/mobile/src/screens/FreeRunScreen.tsx` (la legenda in cima),
+`apps/mobile/src/i18n/{it,de,fr,es}.ts`, e i due test che contano i token,
+`apps/mobile/src/theme/palettes.test.ts` e `apps/mobile/src/map/mapPage.test.ts`.
+`SnowFinishCard.tsx` per ultimo, dopo la #1098 che lo tocca anche lei.
+
+Parte B2 (approvata dal Coordinatore il 2026-11-10, dopo il merge di
+TASK-424 C2b): `apps/mobile/src/activities/runStatsOut.ts` e il suo test,
+con il tipo `SkiPart` di `apps/mobile/src/api/runStats.ts` (di C2b) e un
+test del ripiego al `422`.
+
+Parti C ed E: si elencano prima di ciascuna.
 
 ## Criteri di accettazione
 

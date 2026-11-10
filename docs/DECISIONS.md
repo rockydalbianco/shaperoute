@@ -512,6 +512,7 @@ lasciando le righe d'indice.
 - ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno · 2026-11-10 · Attiva
 - ADR-0356, precisazione — Anche il percorso chiuso che si incrocia diventa un anello alla partenza: «Edit the drawing» su ogni percorso di «Explore» · 2026-11-10 · Attiva
 - ADR-0351, precisazione D — L'app di «Play» grande: collezioni contate dal telefono, una lista sola, l'ora del telefono con il secondo invio senza · 2026-11-10 · Attiva
+- ADR-0357, precisazione A — La modalità sci nell'app: le schede dallo sport, «Oggi» sulla pagina «choose», le icone come `face`, la barra ricostruita · 2026-11-10 · Attiva
 
 ## Voci nuove
 
@@ -2407,3 +2408,35 @@ pulsante, già prima di ADR-0353: il problema c'era da ADR-0313.
 Gli anelli chiedono 0,91–1,00 volte il percorso (mediana 0,97), mai andata
 e ritorno. Sulla mappa la figura si vede intera con l'anellino alla
 partenza. Solo JavaScript nell'app: esce con il prossimo OTA di produzione.
+
+## ADR-0357, precisazione A — La modalità sci nell'app: le schede dallo sport, «Oggi» sulla pagina «choose», le icone come `face`, la barra ricostruita
+
+**Stato**: Attiva · 2026-11-10 · TASK-429 parte A (#1093). Deciso
+dall'agente su delega dell'utente, dentro le scelte dell'utente di ADR-0357.
+
+**Decisione**:
+
+1. **La modalità è una funzione dello sport** (`src/skimode/skiMode.ts`):
+   `isSkiMode(sport)`, `barPagesOf(sport)` e `shellPagesOf`, pure e
+   testate. Nessuno stato nuovo: scelto un altro sport, `App.tsx` torna
+   alle pagine di prima.
+2. **«Oggi» è la pagina «choose»**: ogni «indietro» che portava a «Draw»
+   (fine giornata, «Discard») porta a «Oggi» senza toccare quei percorsi.
+   «Giornate» e «Stazioni» sono due schermate nuove, `skiDays` e
+   `skiResorts`.
+3. **«Giornate»** legge le giornate dai post del profilo (`pageOf`, attività
+   `skiing`), fino a 5 pagine per volta finché ne trova una.
+4. **Le icone delle schede sci** (Lucide `mountain`, `calendar`,
+   `cable-car`, disegnate dagli SVG con lo Swift del Mac alle stesse linee
+   delle altre) passano dal `face` della barra: `TabBar.tsx` non cambia.
+5. **La barra si ricostruisce quando la modalità cambia** (`key` di
+   `TabShell`): senza, le luci della barra si animavano su schede sparite.
+6. **I messaggi** hanno un tasto nell'header e si aprono sopra l'app
+   (`SkiMessages`), con «‹ Back» e il tasto indietro di Android.
+
+**Conseguenze**: solo JavaScript e immagini, impronta iOS `6f8bba4c`
+invariata; `src/ski/` non cambia. Per le parti dopo, l'utente ha scelto il
+2026-11-10 («Sì, così») che il telefono mandi i tratti della giornata a
+«Salva», in un solo campo `ski_parts` dei run-stats condiviso con TASK-424
+C2b (`tasks/TASK-429.md`, «La parte C»).
+

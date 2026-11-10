@@ -25,6 +25,8 @@ import {
 } from "../theme/tokens";
 import { exerciseName } from "./catalog";
 import { GymCalendarSheet } from "./GymCalendar";
+import { closeGymIntro, showGymIntro, useGymIntro } from "./gymIntro";
+import { GymIntroSheet } from "./GymIntroSheet";
 import { WEEK_DAYS } from "./planLimits";
 import { GymPlansSheet } from "./GymPlans";
 import { isoDay, todayPlan, useGymPlans } from "./plans";
@@ -126,6 +128,10 @@ export function GymDrawGuide({
   const [newPlan, setNewPlan] = useState(false);
   const { owner, plans } = useGymPlans(fetchFn);
   const today = todayPlan(plans);
+  // «Your plan, step by step»: up the first time «Gym» is touched (TASK-433
+  // B); «Create my plan» opens the guide once the sheet is down.
+  const intro = useGymIntro();
+  const [createAfterIntro, setCreateAfterIntro] = useState(false);
 
   useEffect(() => {
     if (apiUrl === null || token === null) {
@@ -256,6 +262,14 @@ export function GymDrawGuide({
           )}
         </View>
       )}
+      <Pressable
+        style={({ pressed }) => [styles.link, pressed && styles.pressed]}
+        onPress={showGymIntro}
+        accessibilityRole="button"
+        testID="gym-guide-intro"
+      >
+        <Text style={[styles.muted, styles.underline]}>{t("How plans work")}</Text>
+      </Pressable>
       {firstTime && (
         <View style={styles.box} testID="gym-guide-steps">
           <Text style={styles.stepsTitle} accessibilityRole="header">
@@ -277,6 +291,25 @@ export function GymDrawGuide({
         visible={open}
         onClose={() => setOpen(false)}
         fetchFn={fetchFn}
+      />
+      <GymIntroSheet
+        visible={intro}
+        onCreate={
+          owner === null
+            ? null
+            : () => {
+                setCreateAfterIntro(true);
+                closeGymIntro();
+              }
+        }
+        onClose={closeGymIntro}
+        onHidden={() => {
+          if (createAfterIntro) {
+            setCreateAfterIntro(false);
+            setNewPlan(true);
+            setPlansOpen(true);
+          }
+        }}
       />
       <GymPlansSheet
         visible={plansOpen}
@@ -416,6 +449,9 @@ const styles = StyleSheet.create({
     flex: 1,
     color: color.text,
     fontSize: fontSize.body,
+  },
+  underline: {
+    textDecorationLine: "underline",
   },
   muted: {
     color: color.textMuted,

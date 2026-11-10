@@ -563,6 +563,16 @@ apps/mobile/src/i18n/*.ts, site/privacy/ (testi e privacy, col sì)
 docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-370.md
 ```
 
+La privacy dell'orologio (2026-11-10, turno dal Coordinatore dopo la #998):
+
+```
+apps/mobile/src/about/content/{en,it,de,es,fr}.ts (la sezione e la data)
+apps/mobile/src/about/AboutPage.test.tsx, documents.test.ts (solo la data)
+site/privacy/index.html, site/privacy/{it,de,es,fr}/index.html (rigenerati)
+site/tests/privacy.test.mjs (solo la data)
+docs/tasks/TASK-370.md
+```
+
 ## Criteri di accettazione
 
 - [ ] (0) Proposta in `main`, ADR-0314 «Proposto», scelte dell'utente

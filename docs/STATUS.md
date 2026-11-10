@@ -120,13 +120,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   C (`run_stats`, #1001, migrazione 0064) in `main`; F e l'invio delle stats
   col prossimo OTA unico, la 0064 col passo unico sul server, il backfill
   dei passi col sì dell'utente. Poi D, E. File: — · `tasks/TASK-410.md`
-- **TASK-411 — La palestra per tutti i giorni** · A–F in `main` (la
-  migrazione 0058 delle schede); restano il server (0058 e il calendario), il
-  sito della privacy e un OTA dedicato, ognuno col sì. File: — ·
-  `tasks/TASK-411.md`
-- **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
-  schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
-  #962 · `tasks/TASK-411.md`
 - **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
   `heights.py` condiviso); server col passo 2 dell'utente, senza
   `draw_examples` (impronte uguali); prossime A2 e B. File: — ·
@@ -150,15 +143,15 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   come prima; endpoint `GET /catalog` in #1027 (parte E). Prossimo: merge
   di #1022 e #1027, server col sì dell'utente, poi l'OTA. File: — ·
   `tasks/TASK-420.md`
-- **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
-  (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
-  i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347
-  precisazione). Prossimo: «via server catalogo» del Coordinatore, poi il
-  secondo giro (Italia, Europa) con le zone copiate dal server. File: — · `tasks/TASK-419.md`
-- **TASK-423 — «Play» grande** (ADR-0351) · documenti (#982) e A, il
-  catalogo a 94 forme (#984), in `main`; server di A insieme a B, col sì.
-  Prossima B (i tempi su 11 distanze, `RULES_VERSION` 3), poi C, D (dopo
-  la #971), E. File: — · `tasks/TASK-423.md`
+- **TASK-419 — Il catalogo grande di «Explore»** · primo giro sul server
+  (155); secondo giro nella PR #1028 (386 percorsi in 45 città, scelta
+  dell'utente del 2026-11-10), poi «via server catalogo». Restano 16 città
+  europee (Overpass chiuso) e i contorni di TASK-418 in attesa della
+  registrazione. File: quelli della #1028 · `tasks/TASK-419.md`
+- **TASK-423 — «Play» grande** (ADR-0351) · A (94 forme), B (tempi su 11
+  distanze, regole 3) e la privacy (#1007) in `main`; C (sfide personali,
+  streak, 0065) nella #1018. Server A+B col backfill: sì dell'utente, via
+  del Coordinatore. Poi D (dopo la #971) ed E. File: quelli della #1018 · `tasks/TASK-423.md`
 - **TASK-418 — Forme nuove per il catalogo di «Explore»** · parte A in
   `main` (#953): 49 forme candidate in `services/route-engine/candidate_outlines/`;
   poi la registrazione delle sole forme che l'utente approva su strada (dopo

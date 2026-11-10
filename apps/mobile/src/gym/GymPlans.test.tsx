@@ -16,7 +16,9 @@ import { DrawingsContext, type DrawingsDoor } from "../social/drawingsDoor";
 import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
 import { GymCalendarSheet } from "./GymCalendar";
 import { GymDrawGuide } from "./GymDrawGuide";
-import { forgetPlans, mergePlans, plansOf, workoutPlan } from "./plans";
+import { GymPlansSheet } from "./GymPlans";
+import { forgetPlans, mergePlans, planForToday, plansOf, workoutPlan } from "./plans";
+import { isoDate } from "./program";
 import { forgetHeldWorkout } from "./useWorkout";
 import { logSet, newWorkout, planStep } from "./workout";
 import { WorkoutScreen } from "./WorkoutScreen";
@@ -54,7 +56,7 @@ jest.mock("expo-file-system", () => {
 
 const { files } = jest.requireMock<{ files: Map<string, string> }>("expo-file-system");
 const OWNER = 7;
-const [PUSH] = plans.plans as GymPlan[];
+const [PUSH, , MUSCLE] = plans.plans as GymPlan[];
 // Every day of the week: «Today» whatever day the test runs.
 const EVERY_DAY: GymPlan = { ...PUSH, days: [1, 2, 3, 4, 5, 6, 7] };
 
@@ -122,47 +124,160 @@ test("in Draw: «Today» with today's plan; «Start without the plan» starts a 
   expect(started?.current).toBeNull();
 });
 
-test("«Plans» lists them; «New plan» writes one, kept here and sent", async () => {
+test("«New plan» is the guide: goal, days, the plan ready, the weeks, the name", async () => {
   const fetchFn = api([]);
   await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
   expect(screen.queryByTestId("gym-guide-today")).toBeNull();
-  // Without plans no tile: «New plan» opens the editor straight away.
+  // Without plans no tile: «New plan» opens the guide straight away.
   expect(screen.queryByTestId("gym-guide-plans")).toBeNull();
   await fireEvent.press(screen.getByTestId("gym-guide-new-plan"));
   await act(async () => {});
-  expect(screen.getByText("New plan")).toBeOnTheScreen();
-  expect(screen.getByTestId("plan-save")).toBeDisabled();
 
-  await fireEvent.changeText(screen.getByTestId("plan-name"), "Pull");
-  await fireEvent.press(screen.getByTestId("plan-day-2"));
-  await fireEvent.press(screen.getByTestId("plan-day-5"));
-  await fireEvent.press(screen.getByTestId("plan-add-exercise"));
-  await fireEvent.press(screen.getByTestId("group-back"));
-  await fireEvent.press(screen.getByTestId("exercise-lat_pulldown"));
-  // Three sets at first; one more.
-  expect(screen.getByTestId("plan-sets-0")).toHaveTextContent("3");
-  await fireEvent.press(screen.getByTestId("plan-sets-more-0"));
-  await fireEvent.changeText(screen.getByTestId("set-reps"), "10");
-  await fireEvent.changeText(screen.getByTestId("set-load_kg"), "45");
-  await fireEvent.press(screen.getByTestId("plan-save"));
+  // 1. The goal, «More muscle» chosen already; more strength instead.
+  expect(screen.getByText("STEP 1 OF 5")).toBeOnTheScreen();
+  expect(screen.getByTestId("wizard-goal-muscle")).toBeSelected();
+  expect(screen.getByText("5 × 5 · rest 3 min")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("wizard-goal-strength"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 2. Three days with a day of rest between; two instead.
+  expect(screen.getByTestId("wizard-day-3")).toBeChecked();
+  await fireEvent.press(screen.getByTestId("wizard-count-2"));
+  expect(screen.getByTestId("wizard-day-4")).toBeChecked();
+  expect(screen.getByText("Full body A")).toBeOnTheScreen();
+  expect(screen.getByText("Full body B")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 3. The plan ready: one set more of the squat, and its kg.
+  expect(screen.getByTestId("session-item-0")).toHaveTextContent(/Squat.*5 × 5/);
+  await fireEvent.press(screen.getByTestId("session-item-0"));
+  await fireEvent.press(screen.getByTestId("session-sets-more-0"));
+  await fireEvent.changeText(screen.getByTestId("set-load_kg"), "80");
+  expect(screen.getByTestId("session-item-0")).toHaveTextContent(/6 × 5/);
+  await fireEvent.press(screen.getByTestId("wizard-tab-1"));
+  expect(screen.getByTestId("session-item-0")).toHaveTextContent(/Leg press/);
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 4. More load each week, four weeks; six instead.
+  expect(screen.getByTestId("wizard-mode-load")).toBeSelected();
+  expect(screen.getByTestId("wizard-week-4")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("wizard-weeks-6"));
+  expect(screen.getByTestId("wizard-week-6")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // 5. The name written by the guide; saved.
+  expect(screen.getByTestId("plan-name").props.value).toBe("More strength · 2 days");
+  await fireEvent.press(screen.getByTestId("wizard-next"));
   await act(async () => {});
 
-  const row = screen.getByTestId("gym-plan-row");
-  expect(within(row).getByText("Pull")).toBeOnTheScreen();
-  expect(within(row).getByText("Tue · Fri · 1 exercise")).toBeOnTheScreen();
+  expect(screen.getByTestId("gym-plan-program")).toHaveTextContent(
+    /More strength · 2 days/,
+  );
   const [kept] = plansOf(OWNER);
   expect(kept).toMatchObject({
-    name: "Pull",
-    days: [2, 5],
-    items: [{ exercise: "lat_pulldown", kind: "load", sets: 4, reps: 10, load_kg: 45 }],
+    name: "More strength · 2 days",
+    days: [1, 4],
+    items: [],
+    program: { goal: "strength", weeks: 6, mode: "load", step_kg: 2.5, rest_s: 180 },
+  });
+  expect(kept.program?.sessions[0].items[0]).toEqual({
+    exercise: "back_squat",
+    kind: "load",
+    sets: 6,
+    reps: 5,
+    load_kg: 80,
   });
   const sent = fetchFn.mock.calls.find(([, init]) => init?.method === "PUT");
   expect(String(sent?.[0])).toBe(`http://api/me/gym-plans/${kept.key}`);
   expect(JSON.parse(String(sent?.[1]?.body))).toMatchObject({
-    name: "Pull",
-    days: [2, 5],
+    name: "More strength · 2 days",
+    program: { mode: "load", weeks: 6 },
   });
   expect(plansOf(OWNER)[0].state).toBe("sent");
+});
+
+test("a week written by hand, and a plan of before opened in the guide", async () => {
+  mergePlans(OWNER, [MUSCLE, PUSH]);
+  const fetchFn = api([MUSCLE, PUSH]);
+  await shown(
+    <GymPlansSheet
+      visible
+      onClose={jest.fn()}
+      fetchFn={fetchFn as unknown as typeof fetch}
+    />,
+  );
+  // «Weeks» opens on the weeks; the fourth is written by hand already.
+  await fireEvent.press(screen.getByTestId("gym-plan-weeks"));
+  expect(screen.getByText("STEP 4 OF 5")).toBeOnTheScreen();
+  expect(screen.getByTestId("wizard-week-4")).toHaveTextContent(/By hand/);
+  // The second week: one set less of the bench press.
+  await fireEvent.press(screen.getByTestId("wizard-week-2"));
+  expect(screen.getByText("Week 2")).toBeOnTheScreen();
+  expect(screen.getByTestId("session-item-0")).toHaveTextContent(/Bench press.*4 × 10/);
+  await fireEvent.press(screen.getByTestId("session-item-0"));
+  await fireEvent.press(screen.getByTestId("session-sets-less-0"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  expect(screen.getByTestId("wizard-week-2")).toHaveTextContent(/By hand/);
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await act(async () => {});
+  const kept = plansOf(OWNER).find((one) => one.key === MUSCLE.key)!;
+  const second = kept.program?.custom.find((week) => week.week === 2);
+  expect(second?.sessions[0].items[0]).toMatchObject({
+    exercise: "bench_press",
+    sets: 3,
+    load_kg: 62.5,
+  });
+
+  // The first week is the plan itself, never a week written by hand.
+  await fireEvent.press(screen.getByTestId("gym-plan-weeks"));
+  await fireEvent.press(screen.getByTestId("wizard-week-1"));
+  await fireEvent.press(screen.getByTestId("session-item-0"));
+  await fireEvent.press(screen.getByTestId("session-sets-more-0"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  expect(screen.getByTestId("wizard-week-1")).not.toHaveTextContent(/By hand/);
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await act(async () => {});
+  const again = plansOf(OWNER).find((one) => one.key === MUSCLE.key)!;
+  expect(again.program?.custom.map((week) => week.week)).toEqual([2, 4]);
+  expect(again.program?.sessions[0].items[0].sets).toBe(5);
+
+  // A plan made before the guide: a row, opened on its workouts.
+  await fireEvent.press(screen.getByTestId("gym-plan-row"));
+  expect(screen.getByText("STEP 3 OF 5")).toBeOnTheScreen();
+  expect(screen.getByTestId("wizard-tab-1")).toHaveTextContent("B · Thu");
+  expect(screen.getByTestId("session-item-0")).toHaveTextContent(/Bench press/);
+});
+
+test("in Draw: today's workout of a plan with weeks, and the week it is in", async () => {
+  const now = new Date();
+  const lastWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+  const program = MUSCLE.program!;
+  const everyDay: GymPlan = {
+    ...MUSCLE,
+    days: [1, 2, 3, 4, 5, 6, 7],
+    program: {
+      ...program,
+      starts_on: isoDate(lastWeek),
+      custom: [],
+      sessions: [1, 2, 3, 4, 5, 6, 7].map((day) => ({ ...program.sessions[0], day })),
+    },
+  };
+  await shown(<GymDrawGuide fetchFn={api([everyDay]) as unknown as typeof fetch} />);
+  const today = screen.getByTestId("gym-guide-today");
+  expect(
+    within(today).getByRole("header", { name: "Chest, shoulders, triceps" }),
+  ).toBeOnTheScreen();
+  expect(within(today).getByText("Muscle · 3 days")).toBeOnTheScreen();
+  expect(screen.getByTestId("gym-guide-week")).toHaveTextContent("Week 2 of 4");
+  // The second week: a step heavier.
+  expect(within(today).getByText("Bench press 4×10")).toBeOnTheScreen();
+  expect(planForToday()?.items[0].load_kg).toBe(62.5);
+  expect(planForToday()?.restS).toBe(90);
+  expect(newWorkout("w", Date.now(), planForToday()).restChoices).toMatchObject({
+    bench_press: 90,
+  });
 });
 
 test("a workout of a plan says how many of its sets are done, with its values typed", async () => {

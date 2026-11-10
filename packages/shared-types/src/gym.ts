@@ -211,6 +211,55 @@ export interface GymPlanRequest {
   position: number;
   /** When the phone last changed it. */
   updated_at: string;
+  /** Its weeks, when made with the guide; null makes it a plan of one
+   * workout again; absent from a plan without (and from an API older than
+   * migration 0066). Sent, the API keeps `days` as its days. */
+  program?: GymProgram | null;
+}
+
+/** What the guide asks first: more muscle, more strength, tone, fitness. */
+export const GYM_PLAN_GOALS = ["muscle", "strength", "tone", "fit"] as const;
+export type GymPlanGoal = (typeof GYM_PLAN_GOALS)[number];
+
+/** How the weeks of a program change: more load each week, more reps each
+ * week, two weeks in turn, always the same. */
+export const GYM_PLAN_MODES = ["load", "reps", "alternate", "same"] as const;
+export type GymPlanMode = (typeof GYM_PLAN_MODES)[number];
+
+/** A workout of a program: its day of the week, its name, its exercises. */
+export interface GymPlanSession {
+  /** 1 Monday to 7 Sunday, once a week. */
+  day: number;
+  /** 1–40 characters. */
+  name: string;
+  /** At most 30, in order. */
+  items: GymPlanItem[];
+}
+
+/** A week of the cycle written by hand, in place of the one worked out. */
+export interface GymPlanWeek {
+  /** 2 to the program's `weeks`. */
+  week: number;
+  sessions: GymPlanSession[];
+}
+
+/** The weeks of a plan made with the guide (mirrors gym_plans.py): the
+ * phone works out each week's values from `sessions` and `mode`. */
+export interface GymProgram {
+  goal?: GymPlanGoal;
+  /** YYYY-MM-DD: the cycle's weeks are counted from its Monday. */
+  starts_on: string;
+  /** 1–12. */
+  weeks: number;
+  mode: GymPlanMode;
+  /** The kg added at each step, 0–20. */
+  step_kg: number;
+  /** The rest between sets the guide proposed, 10–600 s. */
+  rest_s?: number;
+  /** The first week: 1–7 workouts. */
+  sessions: GymPlanSession[];
+  /** The weeks written by hand, each once. */
+  custom: GymPlanWeek[];
 }
 
 /** A plan as kept, with the key the phone chose. */
@@ -226,6 +275,9 @@ export interface GymPlans {
 /** How many plans an account keeps, and exercises a plan has. */
 export const MAX_GYM_PLANS = 20;
 export const MAX_GYM_PLAN_ITEMS = 30;
+/** The weeks of a cycle, and exercises of a whole program. */
+export const MAX_GYM_PLAN_WEEKS = 12;
+export const MAX_GYM_PROGRAM_ITEMS = 300;
 
 /** PUT /me/gym-sessions/{key}/show-exercises. */
 export interface ShowExercisesRequest {

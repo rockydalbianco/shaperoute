@@ -133,15 +133,20 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
   in produzione con l'OTA 4 del 2026-11-10. Prossima E (premi, una
   migrazione). File: — · `tasks/TASK-423.md`
-- **TASK-429 — La modalità sci** (ADR-0357) · parte 0 fatta: proposta,
-  mockup e le quattro scelte dell'utente (schede, sei sezioni, colori,
-  testi). Prossima la parte A (la modalità e le schede), con la lista al
-  Coordinatore. File: — · `tasks/TASK-429.md`
+- **TASK-429 — La modalità sci** (ADR-0357) · 0 e A in `main` (A: #1093,
+  esce col prossimo OTA). B1 (mappa a colori, legenda, «Summary · Map ·
+  Runs») scritta, PR dopo la #1098; poi B2 e C, i tratti `ski_parts` con
+  TASK-424 C2b (scelta dell'utente «Sì, così»). File: — · `tasks/TASK-429.md`
 - **TASK-431 — «Compass» più bella** (ADR-0359) · in `main` (#1081): la
   freccia «B» con anello e cono azzurri che punta dove punta la mappa, le
   tre schede coi disegni, la punta rossa del nord. Restano l'OTA di
   produzione (col sì dell'utente) e la prova sul telefono. File: — ·
   `tasks/TASK-431.md`
+- **TASK-433 — Le schede della palestra guidate** (ADR-0360) · in `main`
+  (#1095): la guida in 5 passi, le settimane che cambiano (4 modi, ciclo
+  4/6/8), «My plans» e «Today» con la settimana. Restano il server
+  (migrazione 0066) e poi l'OTA, nel passo unico del Coordinatore col sì
+  dell'utente, e la prova sul telefono. File: — · `tasks/TASK-433.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

@@ -486,6 +486,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta · 2026-11-08 · Attiva
 - ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina · 2026-11-08 · Attiva
 - ADR-0339, precisazione C2c — L'anteprima nel foglio: la pagina del video in modo «play» · 2026-11-08 · Attiva
+- ADR-0340, precisazione C — `run_stats`: passi dal server, profilo e calorie dal telefono, il battito resta in `runs` · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1416,3 +1417,42 @@ scelta dell'utente 13 (il video vero in loop, non un fotogramma fermo).
    Notte e il 40 % sul 3D con la camera dietro, solo con il foglio aperto
    (che smonta la pagina quando si chiude) e fermabile con un tocco. La
    batteria si misura sul telefono nella parte E.
+
+## ADR-0340, precisazione C — `run_stats`: passi dal server, profilo e calorie dal telefono, il battito resta in `runs`
+
+**Stato**: Attiva · 2026-11-08 · TASK-410 parte C (#1001). Scelte
+dell'utente in `tasks/TASK-410.md` (2: «Visibili, nascondibili»); il posto
+del battito deciso dal Coordinatore; il resto deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: la pagina del post mostra passi, dislivello, cadenza, calorie
+e battito solo quando ci sono. ADR-0340 metteva tutto in una tabella
+`run_stats`; nel frattempo TASK-409 B1 (#979, `0061`) ha messo il battito
+in `runs`.
+
+**Decisione**:
+
+1. **`run_stats`** (`0064`): una riga per corsa, `stats` `jsonb` con
+   `splits_km`, `splits_mile`, `elevation`, `cadence_spm`, `kcal`. **Il
+   battito non c'è**: si legge da `runs.heart_*` (scelta del Coordinatore,
+   un posto solo), e `heart_shown` decide anche le calorie per chi guarda.
+2. **I passi li conta il server** dalla traccia e dalle pause, a ogni `PUT
+   /me/activities/{key}/stats`, non al salvataggio della corsa:
+   `activities.py` resta com'è. L'ultimo pezzo dopo l'ultimo intero è un
+   passo marcato (`partial_m`) solo da 100 m in su.
+3. **Il telefono manda** profilo (dalle altezze dei punti, al più 120 a
+   passi uguali) e calorie (`activeKcal` col corpo del telefono, metri e
+   secondi del server), una volta, dopo che il server ha preso la corsa;
+   niente nuovi tentativi: la pagina funziona senza. La cadenza resta
+   `null` finché una registrazione non la dà.
+4. **Il filtro sta nel server**: `stats` in `GET /drawings/{id}`, con
+   battito e calorie per gli altri solo se `heart_shown`; all'autore
+   sempre; `null` senza dati. `GET /feed` non lo manda.
+5. **Le corse vecchie**: i passi col backfill `python -m
+   shaperoute_api.run_stats` (solo le righe che mancano), col sì
+   dell'utente; profilo e calorie non li avranno.
+
+**Conseguenze**: la parte D legge `stats` con `statsOf`
+(`api/runStats.ts`) senza toccare `DrawingDetail`; TASK-345 B scrive il
+battito in `runs` e lo trova già nella pagina; il server ha la `0064` da
+applicare nel passo unico.

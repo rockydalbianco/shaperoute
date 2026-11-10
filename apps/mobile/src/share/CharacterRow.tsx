@@ -20,11 +20,7 @@ import {
 } from "./myImage";
 import { MyImageChoices } from "./MyImageChoices";
 import type { Actor } from "./videoActor";
-import {
-  CHARACTERS,
-  characterEmoji,
-  characterName,
-} from "./videoCharacter";
+import { CHARACTERS, characterEmoji, characterName } from "./videoCharacter";
 
 type Props = {
   /** The animal that runs the line in the video, or the runner's own

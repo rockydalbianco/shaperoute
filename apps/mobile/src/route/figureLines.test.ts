@@ -4,7 +4,8 @@ import imageRequest from "@shaperoute/shared-types/fixtures/image-route-request.
 import { metresBetween } from "../map/coordinates";
 import { isOpenLine } from "../mapdraw/drawing";
 import { drawingOf } from "../mapdraw/edit";
-import { onMap } from "../mapdraw/figure";
+import { distanceOf, onMap } from "../mapdraw/figure";
+import { fromPlane } from "../mapdraw/plane";
 import { drawingTrack, requestLines, routeTrack, trackInPlace } from "./figureLines";
 
 /**
@@ -104,13 +105,88 @@ test("a long track keeps at most the corners an outline may have, its start firs
 });
 
 /** A line of 60 points going east from Trento, 1.2 km: it ends away from
- * its start, as a run from A to B or a word does. */
+ * its start, and a side back to it crosses its wiggles, so closed it makes
+ * no drawing. */
 const LINE: LatLon[] = Array.from({ length: 60 }, (_, i) => [
   TRENTO[0] + 0.0005 * Math.sin(i / 6),
   TRENTO[1] + (0.015 * i) / 59,
 ]);
 
-test("a track that ends away from its start stays open: a ring at its start and the line hung on it", () => {
+/** A track of straight sides through the points `xy`, in metres east and
+ * north of Trento, 20 points a side. */
+function trackOf(xy: [number, number][]): LatLon[] {
+  const points: LatLon[] = [];
+  for (let i = 1; i < xy.length; i += 1) {
+    const [a, b] = [xy[i - 1], xy[i]];
+    for (let k = 0; k < 20; k += 1) {
+      const t = k / 20;
+      points.push(
+        fromPlane(TRENTO, [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]),
+      );
+    }
+  }
+  points.push(fromPlane(TRENTO, xy[xy.length - 1]));
+  return points;
+}
+
+/** The distance «Draw route» asks for the drawing of `track`, in metres. */
+function askedFor(track: LatLon[]): number {
+  const { lines, centre, unitM } = trackInPlace(track);
+  const drawing = drawingOf(lines);
+  if (drawing === null) {
+    throw new Error("no drawing");
+  }
+  return distanceOf({ figure: drawing, centre, unitM });
+}
+
+test("a track that ends away from its start is closed by a side back to it, run once (TASK-425)", () => {
+  // Steps, 4.5 km in all, ending 3.2 km from the start.
+  const steps = trackOf([
+    [0, 0],
+    [1000, 0],
+    [1000, 1000],
+    [2000, 1000],
+    [2000, 2500],
+  ]);
+  const { lines, centre, unitM } = trackInPlace(steps);
+  expect(lines.details).toEqual([]);
+  expect(isOpenLine(lines.outline, lines.details)).toBe(false);
+  const { outline } = lines;
+  expect(outline[outline.length - 1]).toEqual(outline[0]);
+  // Its route starts where the track did.
+  const at = (point: OutlinePoint) =>
+    onMap({ figure: { kind: "shape", shape: "heart" }, centre, unitM }, point);
+  expect(metresBetween(at(outline[0]), steps[0])).toBeLessThan(1);
+  // The track once and the way back: before, out and back, over 9 km.
+  expect(askedFor(steps)).toBeCloseTo(4500 + Math.hypot(2000, 2500), -1);
+});
+
+test("a word's zigzag is run once with the way back, not twice (TASK-425)", () => {
+  const zigzag = trackOf([
+    [0, 0],
+    [0, 800],
+    [400, 100],
+    [800, 800],
+    [1200, 100],
+  ]);
+  expect(askedFor(zigzag)).toBeCloseTo(
+    800 + 3 * Math.hypot(400, 700) + Math.hypot(1200, 100),
+    -1,
+  );
+});
+
+test("a closed track asks the distance it is, as before", () => {
+  const square = trackOf([
+    [0, 0],
+    [1000, 0],
+    [1000, 1000],
+    [0, 1000],
+    [0, 0],
+  ]);
+  expect(askedFor(square)).toBeCloseTo(4000, -1);
+});
+
+test("a track that makes no drawing once closed stays open: a ring at its start and the line hung on it", () => {
   const { lines, centre, unitM } = trackInPlace(LINE);
   // The outline is the small ring on the first point, the line a detail.
   expect(isOpenLine(lines.outline, lines.details)).toBe(true);

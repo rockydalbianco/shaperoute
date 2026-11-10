@@ -1723,6 +1723,12 @@ export const ES: Table = {
   "Line in 2D": "Línea en 2D",
   // src/share/VideoPreview.tsx (TASK-408 C2c, choice 13; «Resume» and «Pause» were there)
   "Video preview": "Vista previa del vídeo",
+  // src/share/DescribeVideo.tsx (TASK-408 D, texts of choice 9)
+  "Describe your video": "Describe tu vídeo",
+  "a horse at night, fireworks at the end":
+    "un caballo de noche, fuegos artificiales al final",
+  "An animal, colours, emoji, the ending. Read on your phone.":
+    "Un animal, colores, emojis, el final. Se lee en el móvil.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concurso MuW",

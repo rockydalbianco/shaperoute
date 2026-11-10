@@ -581,8 +581,13 @@ Privacy, sezione «Sharing live»:
     «Still training?» senza risposta), come in B1.
   Prove: test nuovi in `liveShare/`, `pool/`, `gym/`; i test di piscina,
   palestra, condivisione, i18n e corsa; `tsc`, prettier, lint. **Resta**:
-  impronta iOS invariata (`6f8bba4c`, su copia pulita). **Resta**: la
-  prova su un telefono vero, l'OTA suo (scelta 12) col sì dell'utente.
+  impronta iOS invariata (`6f8bba4c`, su copia pulita). **In produzione**
+  con l'OTA 3 del 2026-11-10 (dal Coordinatore; sì dell'utente «si
+  procedi» al Coordinatore e «Sì, pubblica» nella sessione Feed): commit
+  52010be4, gruppo di produzione `978fbccc-fcb0-45d0-968a-c003bc4f79c2`,
+  update iOS `01a1c57e-74e0-7aba-981b-5d3a2a650123`, impronta `6f8bba4c`;
+  gruppo preview `d6071d95-0c09-46c7-9499-600528f1c3d1`. **Resta**: la
+  prova su un telefono vero.
 - **C** (i dati dal vivo che mancano): dopo TASK-370 B3. Le PR di codice
   non toccano `STATUS.md`, `DECISIONS.md` né `INDEX.md` (regola del
   Coordinatore del 2026-11-08): le loro righe vanno in PR di soli

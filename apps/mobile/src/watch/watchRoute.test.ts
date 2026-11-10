@@ -43,6 +43,7 @@ function routes(): { name: string; send: RouteToSend }[] {
         distanceM: 1015.1,
         points: run,
         directions: levico.directions as Direction[],
+        similarity: 0.91,
       },
     },
     {
@@ -56,6 +57,7 @@ function routes(): { name: string; send: RouteToSend }[] {
         directions: [],
         walks: penUp.walks as Walk[],
         word: penUp.word,
+        similarity: penUp.similarity,
       },
     },
     {
@@ -189,10 +191,27 @@ describe("a route for the watch", () => {
     );
     expect(send).toMatchObject({
       key: "k1",
+      similarity: 0.9,
       title: "CIAO",
       activity: "cycling",
       distanceM: 1015.1,
       word: "CIAO",
     });
   });
+});
+
+test("carries the similarity, and reads a route without it as unknown", () => {
+  const route = watchRouteOf({
+    key: "k",
+    title: "Star",
+    activity: "running",
+    distanceM: 1000,
+    points: levico.points as LatLon[],
+    directions: [],
+    similarity: 0.87,
+  });
+  expect(route?.similarity).toBe(0.87);
+  const { similarity: _similarity, ...older } = route ?? {};
+  expect(decodeWatchRoute(older)?.similarity).toBeNull();
+  expect(decodeWatchRoute({ ...route, similarity: "high" })).toBeNull();
 });

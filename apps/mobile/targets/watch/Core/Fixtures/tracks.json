@@ -1,0 +1,539 @@
+{
+  "valid": [
+    {
+      "name": "a run along a route that reached its end",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      }
+    },
+    {
+      "name": "a run without a route, stopped",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "stopped",
+        "route": null,
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": null,
+        "heartAvgBpm": null
+      }
+    },
+    {
+      "name": "a route the phone sent without a similarity",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": null
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      }
+    },
+    {
+      "name": "a workout with no position at all (the gym)",
+      "json": {
+        "v": 1,
+        "activity": "gym",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "stopped",
+        "route": null,
+        "fixes": [],
+        "pauses": [],
+        "distanceM": 0,
+        "movingMs": 18000,
+        "kcal": null,
+        "heartAvgBpm": null
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "a newer file",
+      "json": {
+        "v": 2,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "unsupportedVersion"
+    },
+    {
+      "name": "no version",
+      "json": {
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "an end before the start",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a status nobody knows",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "running",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a fix not after the one before",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.01, 11.29, 1762358400000, 4.5, 212.3]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a fix of four values",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [[46.01, 11.29, 1762358400000, 4.5]],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a fix off the Earth",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [[95, 11, 1762358400000, null, null]],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a pause that ends before it begins",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 5,
+            "toMs": 4
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a route of one point",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [[46.01, 11.29]],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a walk that does not fit the route",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[2, 9]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": 9.5,
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "calories that are not a number",
+      "json": {
+        "v": 1,
+        "activity": "running",
+        "startedAtMs": 1762358397000,
+        "endedAtMs": 1762358420000,
+        "status": "arrived",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291],
+            [46.012, 11.291]
+          ],
+          "walks": [[1, 2]],
+          "word": "IO",
+          "similarity": 0.93
+        },
+        "fixes": [
+          [46.01, 11.29, 1762358400000, 4.5, 212.3],
+          [46.0105, 11.29, 1762358403000, 5, null],
+          [46.011, 11.29, 1762358406000, null, null]
+        ],
+        "pauses": [
+          {
+            "fromMs": 1762358407000,
+            "toMs": 1762358412000
+          }
+        ],
+        "distanceM": 111.2,
+        "movingMs": 18000,
+        "kcal": "many",
+        "heartAvgBpm": 142
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "not an object",
+      "json": [1, 2],
+      "error": "notAnObject"
+    }
+  ]
+}

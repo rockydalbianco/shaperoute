@@ -332,7 +332,7 @@ finché non finisce. Si calcola da tutta la storia del gioco, con la
 settimana locale, e si tiene anche la più lunga di sempre. Nessuna soglia
 da scegliere, niente promemoria.
 
-### 6.8 La lista «Challenges» (423 D)
+### 6.8 La lista «Challenges»
 
 Una lista sola in tre gruppi:
 
@@ -345,7 +345,11 @@ Una lista sola in tre gruppi:
   sfide di squadra completate o scadute, l'archivio delle sfide del mese.
 
 Le sfide del mese restano di TASK-343 (`CONCORSI.md`): qui c'è solo il
-link alla loro pagina.
+link alla loro pagina, per chi ha l'account. Su un server senza le sfide
+personali (404) la lista non ha le loro carte e non dice nessun errore.
+L'app manda `utc_offset_min` con il salvataggio della corsa (l'ora del
+telefono al primo punto; non per le corse importate da un file); un server
+che non lo conosce la riceve di nuovo senza.
 
 ## 7. Dati
 
@@ -466,14 +470,18 @@ una volta per sfida.
   all'inizio della corsa (`GET /game/me` e `GET /game/teams`), mai
   durante; senza rete, senza account, senza il gioco, in bici e in canoa
   la riga non c'è e non compare nessun errore.
-- **Da TASK-423 (423 D, E)**: «Collection» è la lista delle 10 collezioni,
-  ognuna con «7 / 13», la barra e la sua pagina (la griglia delle sue forme
-  e la cornice in fondo); in cima, «Prizes» apre la pagina dei premi, dove
-  si sceglie che cosa mostra il profilo. «Challenges» è la lista del §6.8.
-  Le carte delle forme di passo e di traguardo hanno il segno
-  dell'edizione. La scheda di sblocco dice la collezione («Animals ·
-  8 / 13»), le edizioni nuove e la collezione completa; oltre 3 cose in una
-  corsa, una scheda sola di riepilogo. Il profilo mostra cornice, titolo e
-  badge scelti. L'app manda `utc_offset_min` con la corsa.
+- **Da TASK-423 parte D**: «Collection» è la lista delle 10 collezioni,
+  ognuna con il contorno della prima forma non presa, «7 / 13» e la barra;
+  toccata, apre la sua pagina con la griglia delle sue forme. Con un
+  catalogo senza collezioni resta la griglia unica. I traguardi dicono
+  «One run of 5 km». «Challenges» è la lista del §6.8. «New challenge»
+  sceglie la forma per collezione, fino a 20 pezzi e 30 giorni.
+- **(423 E)**: in cima a «Collection», «Prizes» apre la pagina dei premi,
+  dove si sceglie che cosa mostra il profilo; la cornice in fondo alla
+  pagina di una collezione. Le carte delle forme di passo e di traguardo
+  hanno il segno dell'edizione. La scheda di sblocco dice la collezione
+  («Animals · 8 / 13»), le edizioni nuove e la collezione completa; oltre 3
+  cose in una corsa, una scheda sola di riepilogo. Il profilo mostra
+  cornice, titolo e badge scelti.
 - I colori vengono da `src/theme/tokens.ts`. I testi sono in inglese e
   tradotti nelle cinque lingue.

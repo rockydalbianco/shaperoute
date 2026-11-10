@@ -128,10 +128,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   produzione dal 2026-11-10 (server, sito, OTA 2 con B1, OTA 3 con B2).
   Restano la prova sul telefono e la parte C. File: — ·
   `tasks/TASK-424.md`
-- **TASK-423 — «Play» grande** (ADR-0351) · A, B, C (sfide personali,
-  streak, 0065) e la privacy in `main`; server A+B fatto, il backfill
-  riparte dopo la fix #1037 (corse senza traccia); la 0065 nel passo server
-  2. Poi D (dopo la #971) ed E. File: quelli della #1037 · `tasks/TASK-423.md`
+- **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
+  privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
+  collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
+  in produzione con l'OTA 4 del 2026-11-10. Prossima E (premi, una
+  migrazione). File: — · `tasks/TASK-423.md`
 - **TASK-429 — La modalità sci** (ADR-0357) · parte 0 fatta: proposta,
   mockup e le quattro scelte dell'utente (schede, sei sezioni, colori,
   testi). Prossima la parte A (la modalità e le schede), con la lista al

@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037 e privacy (#1007) in `main`; A, B e C sul server; prossime D ed E
+**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037, privacy (#1007) e D (#1080) in `main`; A, B e C sul server; D in produzione con l'OTA 4; prossima E
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,
@@ -255,8 +255,14 @@ E  services/api/migrations/00NN_game_prizes.sql (nuovo),
   per collezione. I limiti in shared-types li lega a `game_challenges.py`
   un test di contratto. PR #1080. I 50 testi nuovi nelle 5 lingue
   (`out/TASK-423/TESTI-D.md` del checkout principale; tolto solo «YOUR
-  TEAMS») approvati dall'utente il 2026-11-10 con «Sì, approvo». Esce con
-  l'OTA successivo, col sì dell'utente.
+  TEAMS») approvati dall'utente il 2026-11-10 con «Sì, approvo».
+- 2026-11-10 — Parte D in `main` (#1080, a56d19e4) e in produzione con
+  l'OTA 4 del Coordinatore, dallo stesso commit a56d19e4, col sì
+  dell'utente («Sì, pubblica»): gruppo 341e7da1-5c1a-4343-9551-ad3fcf5f20e4,
+  update iOS 01a1c658-eca3-7951-890d-9b4d7b1080d5, impronta 6f8bba4c;
+  preview gruppo e72c1aad-3239-4b34-ae0a-c65c64b3ddec. Resta E: la sua
+  migrazione nasce in bozza e prende il primo numero libero al merge (la
+  0066 è in bozza per TASK-433).
 
 ## Esito
 

@@ -147,8 +147,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   parte D, scelta dell'utente «A, griglia per città»; ADR-0347 precisazione
   B) · app in #1022: «Explore» lista unica, «NEAR YOU» poi «FARTHER AWAY»
   città per città da `GET /catalog`, a pagine; senza endpoint la pagina è
-  come prima. Prossimo: l'endpoint nell'API (parte E, da assegnare), poi
-  l'OTA col sì dell'utente. File: — · `tasks/TASK-420.md`
+  come prima; endpoint `GET /catalog` in #1027 (parte E). Prossimo: merge
+  di #1022 e #1027, server col sì dell'utente, poi l'OTA. File: — ·
+  `tasks/TASK-420.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · primo giro in `main`
   (#966: 155 percorsi in 23 città, l'utente ha scelto la preselezione);
   i tenuti vanno nella lista di «Explore» che c'è (scelta dell'utente, ADR-0347

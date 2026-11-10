@@ -1,8 +1,8 @@
 # TASK-420 — La pagina del catalogo in «Explore» (grande catalogo, parte C)
 
 **Stato**: **Riaperto il 2026-11-10** come parte D, «tutte le forme in
-«Explore»»: codice in #1022 (app), aspetta l'endpoint del server (sotto,
-«Il seguito del 2026-11-10»). Prima: pagina costruita (#954), poi tolta
+«Explore»»: app in #1022, endpoint `GET /catalog` in #1027 (parte E,
+«Sì, fallo tu» dell'utente); poi il server col sì dell'utente e l'OTA. Prima: pagina costruita (#954), poi tolta
 con la #978 per scelta dell'utente del 2026-11-08; documenti in #952
 **Fase**: 5 · **Branch**: `docs/TASK-420-catalog-page` (documenti), poi
 `feat/TASK-420-catalog-page` (codice)
@@ -217,10 +217,10 @@ con due disposizioni; scelta: **«A, griglia per città»**.
   compaiono due volte; una pagina fallita lo dice in fondo con «Try again»;
 - niente filtri (ADR-0144): i chip delle città e la ricerca in alto.
 
-**Il contratto col server, da fare** (chi lo fa lo decide l'utente o il
-Coordinatore; la sessione di TASK-420 può farlo come parte E, in
-`services/api/shaperoute_api/recommended.py` e `app.py`, test e `API.md`,
-senza migrazione):
+**Il contratto col server, parte E** (#1027, «Sì, fallo tu» dell'utente
+del 2026-11-10: `services/api/shaperoute_api/recommended.py` e `app.py`,
+`tests/test_recommended.py`, `packages/shared-types/fixtures/catalog.json`
+nuovo, `docs/API.md`; nessuna migrazione, motore non toccato):
 
 ```
 GET /catalog?lat=<lat>&lon=<lon>&offset=0&limit=40      (limit ≤ 200)
@@ -249,7 +249,10 @@ impronta ferma, nessuna dipendenza nuova.
 - [ ] Con l'endpoint sul server: il titolo conta il catalogo, «FARTHER
       AWAY» mostra ogni città dalla più vicina, lo scorrimento carica le
       pagine seguenti, le schede aprono il percorso sulla mappa.
+- [ ] #1027 in `main` e sul server (deploy col sì dell'utente).
 - [ ] Prova sul telefono con l'OTA, col sì dell'utente.
+- [ ] Seguito piccolo: il test di contratto lato app su `catalog.json`
+      (`catalogList.test.ts`), quando #1022 e #1027 sono tutte e due in `main`.
 
 **Fuori scope della parte D**: filtri e ordinamenti (ADR-0144); un JSON
 nell'app (ADR-0348, superata); la partenza immediata da una scheda.

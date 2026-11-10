@@ -321,7 +321,12 @@ taglia la via lì: il percorso non passa.
   Parigi, New York…) si rifanno **senza rete**: spostare altrove il
   `foot_*.graphml` col suo `.pickle` e chiedere la zona di nuovo (CLI o
   banco): OSMnx rilegge la risposta dalla cache HTTP, con lo stesso filtro
-  e riquadro. Le altre vogliono Overpass. Sul server: `DEPLOY.md` F.15.
+  e riquadro. Le altre vogliono Overpass. Sul server le 53 zone di
+  «Explore» sono rifatte il 2026-11-10 e le vecchie che ci stavano dentro
+  messe da parte (`DEPLOY.md` F.15): l'API prende la zona **più piccola**
+  che contiene la richiesta, quindi una vecchia dentro una nuova
+  vincerebbe. Le circa 400 zone fuori da «Explore» hanno ancora i
+  cancelli.
 - **Il bordo della zona**: OSMnx semplificava con 500 m di margine e poi
   ritagliava, buttando le strade con un capo fuori; ora ritaglia prima e
   semplifica dopo (come `bike` e `roller`), e il tratto interno di una

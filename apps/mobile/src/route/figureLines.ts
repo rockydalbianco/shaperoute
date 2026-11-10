@@ -5,9 +5,8 @@ import {
 } from "@shaperoute/shared-types";
 
 import { type AnyRouteRequest, isImageRequest } from "../api/routes";
-import { CLOSED_SHARE, firstLineOf } from "../mapdraw/drawing";
+import { firstLineOf } from "../mapdraw/drawing";
 import { drawingOf, type FigureLines } from "../mapdraw/edit";
-import { boxOf, dist } from "../mapdraw/geometry";
 import { fromPlane, toPlane } from "../mapdraw/plane";
 
 /**
@@ -60,9 +59,11 @@ function spread<T>(points: readonly T[], size: number): T[] {
  * outline (`drawingOf`) — it crosses itself, or the side back crosses it —
  * the closed line is a loop hung on a ring at its start (TASK-428,
  * ADR-0356): a detail that ends on its own first point is run once, and a
- * detail may cross itself. Only when that makes no drawing either does it
- * stay open, as a first line drawn on the map does (`firstLineOf`,
- * TASK-331), run out and back.
+ * detail may cross itself. So is a track that ends near its start and
+ * crosses itself (TASK-432): a word, a butterfly, most routes of «Explore»;
+ * with no drawing of it, «Edit the drawing» had no button. Only when that
+ * makes no drawing either does it stay open, as a first line drawn on the
+ * map does (`firstLineOf`, TASK-331), run out and back.
  */
 export function trackInPlace(points: readonly LatLon[]): TrackInPlace {
   const origin = points[0];
@@ -82,7 +83,7 @@ export function trackInPlace(points: readonly LatLon[]): TrackInPlace {
   );
   const units = atCentre.map(([x, y]): [number, number] => [x / unitM, y / unitM]);
   const closed: FigureLines = { outline: closedOutline(units), details: [] };
-  if (endsAway(units) && drawingOf(closed) === null) {
+  if (drawingOf(closed) === null) {
     const loop = loopLines(units);
     if (loop !== null && drawingOf(loop) !== null) {
       return { lines: loop, centre, unitM };
@@ -103,15 +104,10 @@ function closedOutline(units: readonly [number, number][]): [number, number][] {
   return first[0] === last[0] && first[1] === last[1] ? outline : [...outline, first];
 }
 
-/** Whether a track ends away from its start (CLOSED_SHARE of its size). */
-function endsAway(units: readonly [number, number][]): boolean {
-  const { size } = boxOf([units]);
-  return dist(units[0], units[units.length - 1]) > CLOSED_SHARE * size;
-}
-
-/** The lines of a track that ends away from its start, as a first line
- * drawn on the map that stays open; null for one with more points than a
- * route runs (it is then closed). */
+/** The lines of a track as a first line drawn on the map: open on a ring
+ * at its start, or the outline `firstLineOf` keeps of one that ends near
+ * it; null for one with more points than a route runs (it is then
+ * closed). */
 function openLines(units: readonly [number, number][]): FigureLines | null {
   const lines = firstLineOf(units);
   return lines === null || "problem" in lines ? null : lines;

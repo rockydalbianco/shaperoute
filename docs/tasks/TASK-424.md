@@ -206,6 +206,16 @@ Tutte prese dall'utente il 2026-11-08, una per volta.
     («ok procedi», sulla proposta della parte B1): il foglio che dice cosa
     vede chi ha il link, battito compreso, torna a ogni link nuovo, non
     solo la prima volta.
+12. **B1 esce prima di B2** — **deciso dall'utente il 2026-11-10** nella
+    sessione del Coordinatore, alla domanda «tengo Share live fuori dal
+    prossimo OTA finché piscina e palestra sono pronte?»: «Esce ora». B1
+    (sport col GPS) esce con l'OTA 2 del 2026-11-10, dopo l'aggiornamento
+    di App Privacy «Salute»; B2 (piscina e palestra) segue con un OTA suo.
+    Cambia la scelta 7 («la pubblicazione di B aspetta anche loro»).
+13. **Il consenso di piscina e palestra** — **deciso dall'utente il
+    2026-11-10** («Testo nuovo»): il primo testo del foglio non parla di
+    mappa e percorso, che lì non ci sono; il secondo resta quello di B1.
+    Il testo sotto in «Testi», «Testi di B2».
 
 ### Testi
 
@@ -228,6 +238,13 @@ poi de/fr/es («Sì, approvo»).
 | Stop, testo | The link stops working now. | Il link smette di funzionare adesso. |
 | Stop, pulsanti | Stop sharing · Keep sharing | Smetti · Continua |
 | Errore | Couldn't create the link. Try again. | Non è stato possibile creare il link. Riprova. |
+
+**Testi di B2** (piscina e palestra, scelta 13; **approvati dall'utente il
+2026-11-10** nelle cinque lingue): il primo testo del foglio.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it. | Chiunque abbia il link può seguirti su una pagina web, senza l'app: tempo, vasche o esercizio, calorie e il battito quando un orologio lo manda. | Wer den Link hat, kann dir auf einer Webseite folgen, ohne die App: Zeit, Bahnen oder Übung, Kalorien und deinen Puls, wenn eine Uhr ihn sendet. | Toute personne qui a le lien peut te suivre sur une page web, sans l'app : le temps, les longueurs ou l'exercice, les calories et ta fréquence cardiaque quand une montre l'envoie. | Cualquiera que tenga el enlace puede seguirte en una página web, sin la app: tiempo, largos o ejercicio, calorías y tu pulso cuando un reloj lo envía. |
 
 **Pagina web** (`site/live/`, lingua dal browser)
 
@@ -514,10 +531,67 @@ Privacy, sezione «Sharing live»:
   pulita: `6f8bba4c`, uguale a `main` e alla build 8 di produzione.
   **Resta**: la prova su un telefono vero; l'OTA, a parte, insieme a B2
   e dopo i sì dell'utente su App Privacy «Health» e Data safety.
-- **B2** (piscina e palestra) e **C** (i dati dal vivo che mancano): dopo
-  TASK-409 B, TASK-411 C e TASK-370 B3. Le PR di codice non toccano
-  `STATUS.md`, `DECISIONS.md` né `INDEX.md` (regola del Coordinatore del
-  2026-11-08): le loro righe vanno in PR di soli documenti.
+- **In produzione** (2026-11-10, dal Coordinatore): server 9cf5576b
+  (migrazione 0063) e sito 4b193f2b (`site/live/`); App Privacy «Salute»
+  pubblicata; l'OTA con B1 (#1025) da e1bb8a58: gruppo di produzione
+  `3056f4e4-e8a7-41b9-ba28-49ba477f9644`, update iOS
+  `01a1c493-2854-72fb-9a4b-26799e529206`, runtime `6f8bba4c`; gruppo
+  preview `01a7e1e2-320e-400a-85cc-4d26fcd9d67b`.
+- **B2** — piscina e palestra: #1053 in `main` (52010be4, 2026-11-10);
+  le scelte tecniche in ADR-0352, precisazione B2. Branch
+  `feat/TASK-424-b2-pool-gym-live`, da `main` con #998 (TASK-409 B) dentro. File approvati dal
+  Coordinatore il 2026-11-10:
+  ```
+  apps/mobile/src/liveShare/liveShareStore.ts   (numeri senza traccia,
+                                                 pool_length_m)
+  apps/mobile/src/liveShare/liveStats.ts        (tracklessStats)
+  apps/mobile/src/liveShare/LiveShareButton.tsx (trackless, il testo nuovo)
+  apps/mobile/src/liveShare/useLiveShareNumbers.ts (nuovo)
+  apps/mobile/src/liveShare/liveShareStore.test.ts, liveStats.test.ts (nuovo)
+  apps/mobile/src/pool/PoolSwimScreen.tsx, poolLive.ts (nuovo),
+    poolLive.test.ts, PoolLiveShare.test.tsx (nuovi)
+  apps/mobile/src/gym/WorkoutScreen.tsx, gymLive.ts (nuovo),
+    gymLive.test.ts, GymLiveShare.test.tsx (nuovi)
+  apps/mobile/src/i18n/{it,de,fr,es}.ts         (il testo della scelta 13)
+  docs/UI.md, docs/tasks/TASK-424.md
+  ```
+  Scelte tecniche (decise dall'agente su delega dell'utente; la voce in
+  `DECISIONS.md`, precisazione B2 di ADR-0352, va nella PR di soli
+  documenti dopo il merge):
+  - **Nessuna seconda copia di B1**: lo stesso store, la stessa macchina
+    degli invii, lo stesso pulsante. Lo schermo senza traccia passa allo
+    store una funzione che dà i numeri a un dato momento
+    (`observeLiveNumbers`, dall'hook `useLiveShareNumbers`): l'orologio si
+    legge a ogni invio, senza un valore nuovo ogni secondo; i punti non ci
+    sono. Una corsa dopo torna ai numeri della traccia.
+  - **Piscina**: `activity: "swimming"` e `pool_length_m`; le vasche con
+    `estimateLengths` e il passo medio delle nuotate prima (come «How many
+    lengths?»), ma 0 prima di mezza vasca (la stima di fine nuotata parte
+    da 1); le calorie con `poolKcal` su quelle vasche; niente distanza.
+  - **Palestra**: `activity: "gym"`; l'esercizio in corso col suo nome
+    nella lingua dell'app (`entryName`, al più 80 caratteri come vuole
+    l'API), le calorie di `gymKcal` come sullo schermo.
+  - **Le calorie a zero** non partono (`null`), come lo schermo non le
+    mostra.
+  - **Il battito**: oggi né piscina né palestra hanno una fonte dal vivo
+    (`useWatch` segue solo la corsa; il battito della piscina di TASK-409 B
+    si legge da Apple Salute a fine nuotata). Il campo parte e vale `null`
+    finché una fonte non c'è (ok del Coordinatore il 2026-11-10).
+  - **La fine** è quando lo schermo della registrazione se ne va (fine,
+    «Still training?» senza risposta), come in B1.
+  Prove: test nuovi in `liveShare/`, `pool/`, `gym/`; i test di piscina,
+  palestra, condivisione, i18n e corsa; `tsc`, prettier, lint. **Resta**:
+  impronta iOS invariata (`6f8bba4c`, su copia pulita). **In produzione**
+  con l'OTA 3 del 2026-11-10 (dal Coordinatore; sì dell'utente «si
+  procedi» al Coordinatore e «Sì, pubblica» nella sessione Feed): commit
+  52010be4, gruppo di produzione `978fbccc-fcb0-45d0-968a-c003bc4f79c2`,
+  update iOS `01a1c57e-74e0-7aba-981b-5d3a2a650123`, impronta `6f8bba4c`;
+  gruppo preview `d6071d95-0c09-46c7-9499-600528f1c3d1`. **Resta**: la
+  prova su un telefono vero.
+- **C** (i dati dal vivo che mancano): dopo TASK-370 B3. Le PR di codice
+  non toccano `STATUS.md`, `DECISIONS.md` né `INDEX.md` (regola del
+  Coordinatore del 2026-11-08): le loro righe vanno in PR di soli
+  documenti.
 
 ## File toccati
 

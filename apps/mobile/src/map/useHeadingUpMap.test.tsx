@@ -186,6 +186,37 @@ test("leaving «Compass» turns the map back as its drawing, and lets the compas
   expect(result.current.turn).toEqual({ bearing: 45 });
 });
 
+test("the arrow faces where the map turned on «Compass», nowhere off it or north up (TASK-431)", async () => {
+  const { result } = await renderHook(() => useHeadingUpMap(drawing(), RUNNING));
+  expect(result.current.facing).toBeNull();
+  await act(async () => {
+    setRunPage("compass");
+  });
+  await flush();
+  // The line run first, then the compass: always the map's last turn.
+  expect(result.current.facing).toBe(90);
+  await wait(TURN_EVERY_MS);
+  await read(130);
+  expect(result.current.facing).toBe(130);
+  // North up: the arrow is the line run's again.
+  await act(async () => {
+    result.current.onArrow();
+  });
+  expect(result.current.facing).toBeNull();
+  await act(async () => {
+    result.current.onArrow();
+  });
+  await flush();
+  // Heading-up again: the arrow is where the map turns.
+  expect(result.current.facing).toBe(130);
+  expect(result.current.turn).toEqual({ bearing: 130 });
+  // Off the page: none.
+  await act(async () => {
+    setRunPage("map");
+  });
+  expect(result.current.facing).toBeNull();
+});
+
 test("the run over, the map goes back too, whatever page was open", async () => {
   const { result, rerender } = await renderHook(
     ({ run }: { run: RunHeading }) => useHeadingUpMap(drawing(), run),

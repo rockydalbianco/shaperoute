@@ -1706,6 +1706,8 @@ export const ES: Table = {
   Bull: "Toro",
   Donkey: "Burro",
   Alpaca: "Alpaca",
+  // TASK-408 B2: the elephant
+  Elephant: "Elefante",
 
   // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
   "2D": "2D",
@@ -1736,12 +1738,6 @@ export const ES: Table = {
   "Line in 2D": "Línea en 2D",
   // src/share/VideoPreview.tsx (TASK-408 C2c, choice 13; «Resume» and «Pause» were there)
   "Video preview": "Vista previa del vídeo",
-  // src/share/DescribeVideo.tsx (TASK-408 D, texts of choice 9)
-  "Describe your video": "Describe tu vídeo",
-  "a horse at night, fireworks at the end":
-    "un caballo de noche, fuegos artificiales al final",
-  "An animal, colours, emoji, the ending. Read on your phone.":
-    "Un animal, colores, emojis, el final. Se lee en el móvil.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concurso MuW",
@@ -2212,4 +2208,15 @@ export const ES: Table = {
     "Lugares famosos, vistas, comida… en cualquier ciudad",
   "The rest could not load.": "El resto no se pudo cargar.",
   "Loading more…": "Cargando más…",
+  // src/share/CharacterRow.tsx, MyImageChoices.tsx (TASK-417: the runner's
+  // own image in place of the animal, texts approved, choice 5)
+  "My image": "Mi imagen",
+  "Choose a photo": "Elegir una foto",
+  "Remove image": "Quitar la imagen",
+  "Your image stays on this phone. It leaves only in the video you share.":
+    "Tu imagen se queda en el móvil. Solo sale en el vídeo que compartes.",
+  "This image can't be read. The video goes out without it.":
+    "Esta imagen no se puede leer. El vídeo sale sin ella.",
+  "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
+    "Cualquiera que tenga el enlace puede seguirte en una página web, sin la app: tiempo, largos o ejercicio, calorías y tu pulso cuando un reloj lo envía.",
 };

@@ -56,6 +56,8 @@ ciano di «Start here».
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
+| `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il cono di «Compass»; il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
+| `north` | `#FF5B4F` | la punta della freccia del nord (TASK-431); nel tono chiaro `#C42F24` |
 | `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
 | `map.*` | dal `#100F0C` al `#3F3B34` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
 
@@ -692,6 +694,11 @@ barra qui sopra, e lo swipe è quello qui sopra.
   «AI-generated» e «Ad · Affiliate links»; il puntino apre una scheda con
   prezzo o «See price», le due righe fisse e «Shop on {store}», che apre il
   browser. «Style posts in the Feed» in «Settings» li toglie da «All».
+  **Spenti dal 2026-11-10** (TASK-430, ADR-0358, scelta dell'utente «Solo il
+  Feed»): i percorsi di MuW non compaiono più nel Feed e l'app non chiede
+  `GET /muw-routes`; si riaccendono con `MUW_ROUTES_IN_FEED = true`
+  (`src/feed/muwInFeed.ts`) e tornano come scritto qui sotto. La fila «RIDE
+  IT YOURSELF» di «Explore» resta.
   Con i **percorsi di MuW** sul server (`GET /muw-routes`, TASK-365,
   ADR-0310) una riga su 6 di «All» al massimo è uno di loro: il primo dopo il
   3° disegno, poi uno ogni 5 disegni, mai in «Following», anche senza account
@@ -2779,6 +2786,21 @@ parte da quell'angolo e per trovare le strade può girarla ancora fino a
 VoiceOver legge *Turn left 15 degrees*, *Turn right 15 degrees* e *Angle,
 30 degrees. Double tap to type it*.
 
+**La partenza** (TASK-426, ADR-0354): dove parte il percorso, il primo
+punto del contorno, è un **pallino ciano** sulla figura, in tutti i modi.
+Con «Move» un dito che parte sul pallino lo trascina, senza tenerlo fermo
+prima: scorre lungo il contorno, agganciato al punto più vicino al dito, e
+dove lo si lascia il contorno ricomincia da lì. La figura resta dov'è; un
+angolo entro mezzo dito vince, altrimenti c'è un punto nuovo sul lato
+(finché il contorno ha posto sotto i 100 punti). Su una **linea aperta**
+va solo alle due estremità: all'altra la linea si corre nel verso opposto.
+Non va mai sui dettagli. Con i **pezzi** scorre sul contorno del primo, ed
+è fermo mentre è scelto un altro pezzo. Un'**emoji** spostata si chiede col
+suo contorno, come girata; a penna alzata il pallino c'è ma non si muove.
+**Sull'acqua** (canoa, nuoto) non c'è: il motore parte dalla riva. Ogni
+spostamento è un passo di «Undo». Nessun testo nuovo: il suggerimento di
+«Move» non nomina il pallino.
+
 **I pezzi** (TASK-402 parte B, ADR-0336): con una figura sulla mappa,
 sopra le tessere c'è **«Change | Add»**. Con «Change» la tessera cambia la
 figura come prima (o il pezzo scelto, dov'è e grande com'è); con **«Add»**
@@ -2810,7 +2832,8 @@ cresciuta oltre lo schermo fa allontanare la mappa, che la mostra intera.
 
 **«Undo»** toglie l'ultima figura messa o disegnata (torna quella di
 prima, dov'era), l'ultimo cambio di tessera, l'ultimo tratto appeso,
-l'ultima cancellatura, l'ultimo punto tappato o l'ultima piega.
+l'ultima cancellatura, l'ultimo punto tappato, l'ultima piega o
+l'ultima partenza spostata (TASK-426).
 **«Redo»** rimette quello che «Undo» ha tolto, finché non si cambia altro.
 **«Clear all»** chiede *Clear the whole drawing?* («Cancel» o «Clear all»)
 e toglie la figura; «Undo» la rimette.
@@ -2822,7 +2845,8 @@ tutti. Spenti finché non c'è niente.
 **«Draw route»** chiede il percorso della figura dov'è, senza niente di
 nuovo nel contratto: una forma come in «Draw» (con la penna alzata se
 «Draw» la chiede così), un disegno o una foto come un contorno di
-«Image»; la partenza è il primo punto della figura, la distanza la sua,
+«Image»; la partenza è il primo punto della figura (il pallino, che si
+sposta lungo il contorno, TASK-426), la distanza la sua,
 al decimo («target 5.7 km»). Il motore la mette dove trova le strade e
 **può spostarla** di qualche centinaio di metri o più, con «Start here»
 (scelta dell'utente «in due passi»; il posto esatto è TASK-282). Il
@@ -2945,9 +2969,12 @@ Quello che sopra dice «non c'è mai per una forma del catalogo, né per una
 parola» e «nel mezzo della partenza di "Draw"» per le schede non vale più.
 Una traccia che finisce lontano dalla partenza si chiude con un lato dritto
 fino alla partenza (TASK-425, ADR-0353): il percorso la fa una volta e
-torna. Solo se così chiusa non fa un disegno (si incrocia da sola) resta una
-linea aperta, come la prima linea disegnata sulla mappa (TASK-331), e il
-percorso la fa andata e ritorno. Il tasto non c'è per un
+torna. Se così chiusa non fa un contorno (si incrocia da sola, o il lato di
+ritorno la attraversa) diventa un anello appeso alla partenza, con lo stesso
+lato dritto (TASK-428, ADR-0356): il percorso la fa ancora una volta e
+torna, e sulla mappa si vede chiusa allo stesso modo. Solo se nemmeno così
+fa un disegno resta una linea aperta, come la prima linea disegnata sulla
+mappa (TASK-331), e il percorso la fa andata e ritorno. Il tasto non c'è per un
 post di sole foto e sotto il risultato di «Draw» (TASK-340). Dalla parte
 B c'è anche sull'acqua: con lo sport «Paddle» «Draw route» chiede il disegno
 in canoa, e la canoa lo pagaia dove ci sta vicino alla partenza, non
@@ -3351,10 +3378,15 @@ cui tiene i numeri.
   pulsanti in fondo; la corsa si apre su «Map». Lo swipe parte dalla
   scheda, non dalla mappa: lì un dito sposta la mappa. I tre pulsanti si
   dividono la larghezza della scheda e sono alti 56 punti, più del tocco
-  minimo: si prendono col pollice correndo (TASK-186). La pagina aperta ha
-  la superficie più chiara e il bordo, come le altre scelte dell'app; il
-  giallo resta del percorso. Vale per tutti gli sport che registrano con la
-  stessa scheda (corsa, bici, canoa, nuoto, free run).
+  minimo: si prendono col pollice correndo (TASK-186). Ognuno ha **il suo
+  disegno sopra il nome** (TASK-431, ADR-0359, scelta dell'utente del
+  2026-11-10): un quadrante con l'ago per «Compass», una mappa piegata in tre
+  per «Map», tre barre che salgono per «Data»; disegni fatti di View, nascosti
+  a VoiceOver (il pulsante dice il suo nome). La pagina aperta ha la
+  superficie più chiara, il disegno azzurro (`you`) e sotto il nome una
+  linea azzurra larga metà del pulsante; le altre sono grigie (`textMuted`).
+  Il giallo resta del percorso. Vale per tutti gli sport che registrano con
+  la stessa scheda (corsa, bici, canoa, nuoto, free run).
 - **«Compass»** (TASK-422, ADR-0350; chiesta dall'utente il 2026-11-08):
   solo la mappa, grande. Sotto restano i pulsanti della corsa («Pocket»,
   «Pause», «Music»; in pausa «Stop» da tenere e «Resume»; all'arrivo
@@ -3371,7 +3403,12 @@ cui tiene i numeri.
   dove punta il telefono; per VoiceOver «Turns the map north up» e «Turns
   the map where you face». Lasciando la pagina, o a fine corsa, la mappa
   torna com'era: girata come il disegno, o col nord in alto. La bussola è
-  accesa solo con «Compass» aperta.
+  accesa solo con «Compass» aperta. **La freccia della posizione** (TASK-431)
+  qui segue la mappa: punta dove la mappa ha girato l'ultima volta, cioè
+  sempre in alto, anche da fermi, e davanti apre **un cono azzurro** che
+  sfuma in avanti: dove punta il telefono. Col nord in alto (un tocco) il
+  cono si chiude e la freccia torna a seguire la traccia. La punta della
+  freccia del nord è rossa (`north`), la «N» chiara.
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
@@ -3434,6 +3471,20 @@ cui tiene i numeri.
   ancora un'ora. Partono solo i punti da quando c'è il link: il server non
   ne prende di più vecchi di 5 minuti. «Keep running» dopo la fine vuole
   un link nuovo. Mai acceso da solo.
+- **«Share live» in piscina e in palestra** (TASK-424 parte B2): lo
+  stesso pulsante, lo stesso foglio e la stessa etichetta, sotto
+  l'orologio (piscina: sotto la vasca e il tempo; palestra: sotto tempo,
+  calorie e scheda). Il primo testo del foglio dice cosa mostra la loro
+  pagina, senza mappa (testo approvato il 2026-11-10: «Anyone with the
+  link can follow you on a web page, without the app: time, lengths or
+  exercise, calories and your heart rate when a watch sends it.»); il
+  secondo è quello di B1. Il link della piscina porta la vasca. Gli invii
+  non hanno punti: il tempo senza pause, in piscina le vasche stimate dal
+  passo (nessuna prima di mezza vasca) e le loro calorie, in palestra
+  l'esercizio in corso e le calorie dello schermo; il battito quando un
+  orologio lo manderà (oggi nessuno segue piscina e palestra: vuoto).
+  Ogni 15 s, subito a pausa e ripresa, `finished` quando lo schermo se ne
+  va (fine, «Still training?» senza risposta).
 - **«Pause»**, un pulsante tondo e chiaro in mezzo, su tutte e due le
   pagine; da una parte «Pocket», dall'altra «Music». In pausa il tempo si ferma, le posizioni non
   entrano nella traccia e «Pace now» è «–»; la mappa continua a seguire, e
@@ -3632,8 +3683,13 @@ Time: … Average pace: …»), dopo la svolta se cadono insieme, e dal secondo
 km il confronto col km precedente (TASK-217: «Correre senza percorso»,
 più giù).
 
-**La freccia di direzione** (TASK-164). Mentre si corre il segnaposto sulla
-mappa è una freccia chiara, girata dove si sta andando; la mappa resta col
+**La freccia di direzione** (TASK-164; ridisegnata da TASK-431, ADR-0359,
+variante «B» scelta dall'utente il 2026-11-10). Mentre si corre il
+segnaposto sulla mappa è una freccia chiara e grande (42 punti), con un
+bordo scuro per leggersi sul giallo, dentro un anello azzurro (`you`, pieno
+al 22 %), girata dove si sta andando; su «Compass» davanti ha anche il cono
+azzurro (sopra). Il riquadro della freccia lascia passare le dita: chi tocca
+il cono sposta la mappa. La mappa resta col
 nord in alto, o **girata come il disegno** quando il percorso è inclinato
 (TASK-232, scelta dell'utente: chi corre vede la forma dritta come l'ha
 scelta). La freccia segna sempre dove si va davvero: è girata con la

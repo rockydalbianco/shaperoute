@@ -8,6 +8,12 @@ import { FIRST_EDIT, type VideoEdit } from "./videoEdit";
 import { videoScene } from "./videoScene";
 
 jest.mock("react-native-webview");
+jest.mock("./myImage", () => ({
+  ...jest.requireActual<typeof import("./myImage")>("./myImage"),
+  myImageUri: jest.fn(() => null),
+  pickMyImage: jest.fn(),
+  removeMyImage: jest.fn(),
+}));
 
 const METRICS = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -185,18 +191,73 @@ describe("EditVideoSheet, the camera of the route (TASK-408 C2b)", () => {
   });
 });
 
-describe("EditVideoSheet, «Describe your video» (TASK-408 D)", () => {
-  it("fills the rows from the words, at the top of the sheet", async () => {
+describe("EditVideoSheet, with the runner's own image (TASK-417)", () => {
+  const myImage = jest.requireMock<typeof import("./myImage")>("./myImage");
+
+  beforeEach(() => {
+    jest.mocked(myImage.myImageUri).mockReturnValue(null);
+    jest.mocked(myImage.pickMyImage).mockReset();
+    jest.mocked(myImage.removeMyImage).mockReset();
+  });
+
+  it("offers «My image» after «No animal»: empty, it opens the ways to one, and where it stays", async () => {
     const { onChange } = await shown();
-    expect(screen.getByText("Describe your video")).toBeOnTheScreen();
-    const field = screen.getByTestId("describe-video");
-    await fireEvent.changeText(field, "un cavallo di notte, stelle");
-    await fireEvent(field, "endEditing");
-    expect(onChange).toHaveBeenLastCalledWith({
+    const tile = screen.getByRole("radio", { name: "My image" });
+    expect(tile).not.toBeChecked();
+    expect(screen.queryByText("Choose a photo")).toBeNull();
+    await fireEvent.press(tile);
+    expect(screen.getByRole("button", { name: "Choose a photo" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Take a photo" })).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Remove image" })).toBeNull();
+    expect(
+      screen.getByText(
+        "Your image stays on this phone. It leaves only in the video you share.",
+      ),
+    ).toBeOnTheScreen();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("chooses the image once it is picked", async () => {
+    jest
+      .mocked(myImage.pickMyImage)
+      .mockResolvedValueOnce({ kind: "picked", uri: "file:///app/my-image.jpg" });
+    const { onChange } = await shown();
+    await fireEvent.press(screen.getByRole("radio", { name: "My image" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Take a photo" }));
+    expect(myImage.pickMyImage).toHaveBeenCalledWith("camera");
+    expect(onChange).toHaveBeenLastCalledWith({ ...FIRST_EDIT, character: "my_image" });
+  });
+
+  it("says so when the image cannot be read, and chooses nothing", async () => {
+    jest.mocked(myImage.pickMyImage).mockResolvedValueOnce({ kind: "unreadable" });
+    const { onChange } = await shown();
+    await fireEvent.press(screen.getByRole("radio", { name: "My image" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Choose a photo" }));
+    expect(myImage.pickMyImage).toHaveBeenCalledWith("library");
+    expect(
+      screen.getByText("This image can't be read. The video goes out without it."),
+    ).toBeOnTheScreen();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("chooses an image kept from before at once", async () => {
+    jest.mocked(myImage.myImageUri).mockReturnValue("file:///app/my-image.gif");
+    const { onChange } = await shown();
+    await fireEvent.press(screen.getByRole("radio", { name: "My image" }));
+    expect(onChange).toHaveBeenLastCalledWith({ ...FIRST_EDIT, character: "my_image" });
+    expect(screen.queryByText("Choose a photo")).toBeNull();
+  });
+
+  it("opens the ways again with the image chosen, and takes it off when asked", async () => {
+    jest.mocked(myImage.myImageUri).mockReturnValue("file:///app/my-image.gif");
+    const { onChange } = await shown(jest.fn(), jest.fn(), {
       ...FIRST_EDIT,
-      character: "horse",
-      style: "night",
-      along: "⭐",
+      character: "my_image",
     });
+    expect(screen.getByRole("radio", { name: "My image" })).toBeChecked();
+    await fireEvent.press(screen.getByRole("radio", { name: "My image" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Remove image" }));
+    expect(myImage.removeMyImage).toHaveBeenCalled();
+    expect(onChange).toHaveBeenLastCalledWith({ ...FIRST_EDIT, character: null });
   });
 });

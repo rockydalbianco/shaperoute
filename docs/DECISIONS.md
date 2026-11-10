@@ -444,7 +444,7 @@ lasciando le righe d'indice.
 - ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi · 2026-11-06 · Accettato
 - ADR-0324, precisazione — La parte A: il Roller nel motore, nel contratto e nell'API, l'impronta del motore resta · 2026-11-06 · Accettato
 - ADR-0324, seconda precisazione — Le soglie «veicolo» del Roller: 35 km/h su 200 m, 28 di media · 2026-11-06 · Accettata (scelta dell'utente, «Sì, 35 e
-- ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono · 2026-11-06 · Proposto
+- ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono · 2026-11-06 · Attiva
 - ADR-0339, precisazione B — L'animale disegnato a parte e posato sul fotogramma, three.js r159, i modelli in uno zip · 2026-11-06
 - ADR-0274, precisazione B — Lo schermo di corsa: la strada nel ciclo delle posizioni, nessun testo nuovo, il server a telefono bloccato · 2026-11-06 · Accettato
 - ADR-0339, precisazione C — Il foglio «Edit video»: le scelte in un oggetto, il colore come ruolo, le emoji dove passa la linea · 2026-11-06
@@ -460,7 +460,7 @@ lasciando le righe d'indice.
 - ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server · 2026-11-08 · Proposto
 - ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Proposto
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
-- ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
+- ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Accettata (chiuso il 2026-11-10: 572 percorsi in 63 città)
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
 - ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog` · 2026-11-10 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
@@ -469,6 +469,7 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0352, precisazione A2 — La pagina dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link · 2026-11-10 · Attiva
+- ADR-0352, precisazione B2 — Piscina e palestra: gli stessi pulsante e invii, i numeri senza traccia, il consenso senza mappa · 2026-11-10 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -476,6 +477,7 @@ lasciando le righe d'indice.
 ---
 
 - ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
+- ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D · 2026-11-10 · Attiva
 - ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
 - ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
@@ -493,14 +495,99 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
-- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
+- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Superata dalla scelta dell'utente del 2026-11-10 (TASK-408 D2, #1075)
 - ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
 - ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute · 2026-11-10 · Attiva
 - ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda · 2026-11-10 · Attiva
 - ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL · 2026-11-10 · Accettata
 - ADR-0340, precisazione D — Le sezioni della pagina: parziali, altimetria, battito medio e massimo; zone e minimo rimandati, dislivello dal profilo · 2026-11-10 · Attiva
+- ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
+- ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì · 2026-11-10 · Accettata
+- ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF · 2026-11-10 · Attiva
+- ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Accettata
+- ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano · 2026-11-10 · Accettata
+- ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni · 2026-11-10 · Accettata
 
 ## Voci nuove
+
+## ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni
+
+**Stato**: Accettata · 2026-11-10 · TASK-431 (#1081, `5747259d`). Le
+scelte di quello che si vede sono dell'utente, che su un'anteprima con due
+varianti ha scelto la «B»; il modo è deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: provando l'OTA del 2026-11-10 l'utente ha chiesto una pagina
+«Compass» (TASK-422, ADR-0350) più ordinata e una freccia della posizione da
+cui si capisca dove punta. La mappa girava con la bussola, ma la freccia
+seguiva solo la traccia GPS degli ultimi 10 m, e `MapView` mandava la
+direzione alla pagina della mappa solo con un fix nuovo: da fermi la
+freccia non diceva dove si guardava.
+
+**Decisione**:
+- **La direzione della mappa è quella della freccia**: `useHeadingUpMap`
+  espone `facing`, la direzione dell'ultima rotazione su «Compass» (null
+  fuori pagina e col nord in alto). `App.tsx` la passa a `MapView`, che la
+  manda alla pagina col messaggio nuovo `face` a ogni grado intero nuovo, e
+  una volta `null` all'uscita. Nella pagina la freccia gira lì anche senza
+  un fix, un fix con la direzione della traccia non la sovrascrive, e
+  `stopFollow` la dimentica. Così la freccia sta sempre in alto e cambia
+  con la mappa (4°, 400 ms, ADR-0350).
+- **Un solo disegno** (`HEADING_ARROW_SVG`, riquadro di 160 pt): freccia
+  chiara grande col bordo scuro, anello azzurro, e davanti un cono a
+  gradiente radiale acceso solo da `face`. Il riquadro ha
+  `pointer-events: none`, così le dita sul cono spostano la mappa.
+- **Due token nuovi**, nei due toni: `you` (azzurro: anello, cono, la
+  scheda aperta) e `north` (rosso: la punta della freccia del nord). Né
+  giallo, che è del percorso, né ciano, che è di «Start here».
+  `palettes.test.ts` controlla ≥ 3:1 su mappa, fondo e `surfaceRaised` per
+  ogni tono e passo.
+- **Le schede Compass | Map | Data** hanno un disegno fatto di View
+  (`RunPageGlyphs.tsx`: l'app non ha icone né SVG), nascosto a VoiceOver.
+  La pagina aperta ha la superficie chiara, il disegno `you` e una linea
+  `you`; l'altezza resta 56 pt.
+
+**Alternative scartate**: girare la freccia sulla bussola grezza (avrebbe
+tremato in mano e si sarebbe staccata dalla mappa, che gira a soglie);
+mandare la direzione dentro `follow` (arriva solo con un fix: da fermi non
+basta); il cono anche su «Map» (lì la bussola è spenta, e un cono sulla
+traccia promette quello che non sa); un'icona di una libreria (dipendenza
+nuova).
+
+**Conseguenze**: un solo stile di freccia per tutte le pagine con la mappa.
+Il cono non mostra quanto è precisa la bussola (fuori scope). Arriva sui
+telefoni con l'OTA di produzione, col sì dell'utente; resta la prova sul
+telefono.
+
+## ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano
+
+**Stato**: Accettata · 2026-11-10 · TASK-430 (#1074). La scelta di prodotto
+è dell'utente («togli tutti i percorsi fatti da MuW, ad esempio Yellow Arrow
+Valencia»; poi «Solo il Feed»); il modo è deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: dal TASK-365 (ADR-0310) il Feed mescola a «All» i 25
+percorsi di `catalog/muw_routes/`, letti da `GET /muw-routes`. L'utente li
+vuole fuori dal Feed; la fila «RIDE IT YOURSELF» di «Explore» (TASK-364)
+resta.
+
+**Decisione**: un interruttore nell'app, `MUW_ROUTES_IN_FEED = false` in
+`apps/mobile/src/feed/muwInFeed.ts`. Spento, `FeedScreen` non chiede
+`GET /muw-routes` e non passa percorsi a `feedWithMuw`. Endpoint, file di
+`catalog/muw_routes/`, schede e codice restano: **si riaccende con una
+riga**, mettendo `true`. I test del comportamento acceso restano
+(`FeedScreenMuw.test.tsx` accende l'interruttore); `FeedScreenNoMuw.test.tsx`
+prova lo spento.
+
+**Alternative scartate**: svuotare `catalog/muw_routes/` sul server
+(effetto subito su tutte le versioni, ma tocca il server e cancella dati
+approvati a mano); togliere il codice del TASK-365 (più diff, e
+riaccenderlo vorrebbe dire rifarlo).
+
+**Conseguenze**: arriva sui telefoni con l'OTA di produzione, col sì
+dell'utente; fino ad allora le versioni installate li mostrano ancora.
+Il server continua a rispondere a `GET /muw-routes`, che nessuna app nuova
+chiama.
 
 ## ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL
 
@@ -782,6 +869,42 @@ scelta dell'utente del 2026-11-10 («ok procedi»)
 - **Impronta iOS** invariata: `6f8bba4c`, come la build 8 di produzione.
   Nessuna dipendenza nuova: `fetch` e `Share` di React Native.
 
+## ADR-0352, precisazione B2 — Piscina e palestra: gli stessi pulsante e invii, i numeri senza traccia, il consenso senza mappa
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parte B2 (#1053, 52010be4) ·
+deciso dall'agente su delega dell'utente; il testo del consenso è scelta
+dell'utente del 2026-11-10 («Testo nuovo»), l'uscita a parte la sua scelta
+dello stesso giorno («Esce ora», per B1)
+
+- **Nessuna seconda copia di B1**: lo stesso store, la stessa macchina
+  degli invii, lo stesso pulsante. Uno schermo senza traccia passa allo
+  store una funzione che dà i numeri a un dato momento
+  (`observeLiveNumbers`, dall'hook `useLiveShareNumbers`): l'orologio si
+  legge a ogni invio, senza un valore nuovo ogni secondo; i punti non ci
+  sono. Una corsa dopo torna ai numeri della traccia.
+  `LiveShareButton` prende `trackless` (attività e vasca).
+- **I numeri** (`liveStats.tracklessStats`) nei limiti di `LiveStatsBody`:
+  tempo senza pause, calorie (`null` a zero, come lo schermo non le
+  mostra), battito, vasche, esercizio (al più 80 caratteri, contati come
+  l'API). Niente distanza né dislivello.
+- **Piscina** (`pool/poolLive.ts`): `activity: "swimming"` e
+  `pool_length_m`; le vasche con `estimateLengths` e il passo medio delle
+  nuotate prima, come «How many lengths?», ma 0 prima di mezza vasca (la
+  stima di fine nuotata parte da 1); le calorie con `poolKcal` su quelle
+  vasche.
+- **Palestra** (`gym/gymLive.ts`): `activity: "gym"`; l'esercizio in corso
+  col nome nella lingua dell'app (`entryName`), le calorie di `gymKcal`
+  come sullo schermo.
+- **Il battito** parte `null`: oggi nessuna fonte dal vivo segue piscina e
+  palestra (`useWatch` segue solo la corsa; quello della piscina di
+  TASK-409 B si legge da Apple Salute a fine nuotata). Il campo c'è per
+  quando una fonte arriverà.
+- **Il consenso** di piscina e palestra ha un primo testo suo, senza mappa
+  né percorso; il secondo resta quello di B1.
+- **La fine** è quando lo schermo della registrazione se ne va (fine,
+  «Still training?» senza risposta), come in B1.
+- **Impronta iOS** invariata: `6f8bba4c`. Nessuna dipendenza nuova.
+
 ## ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog`
 
 **Stato**: Accettata · 2026-11-10 · TASK-420 parte D. Scelta dell'utente,
@@ -960,6 +1083,48 @@ immediata da «Start» (`App.tsx`); le categorie dal catalogo delle forme
 quando TASK-418 le scrive; il rilancio di `catalog-data.mjs` a ogni seme
 nuovo, da chi cambia il seme (TASK-419; una riga nel suo task file e nel
 `README` del catalogo, dalla sua sessione).
+
+## ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D
+
+**Stato**: Attiva · 2026-11-10 · TASK-417 parti B e C (#1067, 87f98fd6) ·
+deciso dall'agente su delega dell'utente; le scelte di prodotto restano le
+1–5 del task file
+
+- **Il ritaglio**: `expo-image-picker` con `allowsEditing` e
+  `aspect: [1, 1]`, per la libreria e per la fotocamera. Su iOS l'editor
+  ritaglia ogni fotogramma di una GIF e la lascia animata
+  (`processGifData` con `cropRect` in expo-image-picker 57). Una foto si
+  tiene come JPEG di 256 px (`expo-image-manipulator`), una GIF così com'è,
+  dopo averla letta una volta. Un'immagine sola, nella cartella documenti
+  dell'app (`my-image.jpg` o `my-image.gif`).
+- **Il formato verso la pagina** (punto 3, misurato): una foto passa come
+  data URL JPEG, letta da un `img`; una GIF come i suoi fotogrammi in RGBA
+  base64, posati con `putImageData`. Al più 8 fotogrammi a distanza uguale,
+  di al più 256 px; tutti insieme entro **2 MiB** di RGBA: se non ci stanno,
+  meno fotogrammi, mai meno di uno. Ognuno dura quanto i fotogrammi che
+  rappresenta, così il giro tiene la sua velocità. Oltre 40 milioni di
+  pixel da posare (una GIF lunga) si legge solo il primo. Una GIF di 12
+  fotogrammi scritta da ImageIO: 8 fotogrammi in 7 ms (Node).
+- **Le scelte sotto la riga**, non in un foglio sopra il foglio: «Choose a
+  photo», «Take a photo» e «Remove image» compaiono sotto «Character»,
+  come quelle della foto del profilo; così il picker di sistema si apre
+  sopra senza un Modal che si chiude. La casella vuota apre le scelte;
+  un'immagine tenuta e non scelta si sceglie con un tocco; toccata da
+  scelta, riapre le scelte.
+- **Nel video**: tonda, larga 0,6 della lunghezza dell'animale, con un
+  anello del colore della linea; inclinata al più di 12° nel verso della
+  strada, mai capovolta; il saltello lo calcola la scena (`hop`, |sin| a
+  2,5 salti al secondo, al più il 7 % della lunghezza dell'animale, 0 a
+  riposo). Sul 3D sta in piedi su un'asticella alta 0,55 volte la sua
+  larghezza, sopra un'ombra tonda.
+- **Il personaggio** è `Actor = Character | "my_image"`
+  (`share/videoActor.ts`); `prepareActorCall` dà alla pagina la chiamata
+  per l'animale o per l'immagine, `null` se non si legge.
+- **Nessuna rete**: `prepareImage` non carica three.js né altro; un test
+  legge l'immagine dalla cartella dell'app con `fetch` e `XMLHttpRequest`
+  sotto controllo.
+- **Impronta** iOS `6f8bba4c` e Android `227457f3`, invariate; nessuna
+  dipendenza nuova.
 
 ## ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme
 
@@ -1710,6 +1875,11 @@ più. Tutto esce con il passo unico sul server e l'OTA unico.
 **Stato:** deciso dall'agente su delega dell'utente (2026-11-10), dentro la
 scelta dell'utente 9 (nessuna AI, nessun costo, la prima tabella).
 
+**Superata dalla scelta dell'utente del 2026-11-10**, dopo la prova sul
+telefono: «togli la parte di scrivere per modificare il video». Il campo
+«Describe your video» e la tabella `share/videoWords.ts` sono tolti
+dall'app (TASK-408 D2, #1075); la voce resta come storia.
+
 1. **La tabella è un file dell'app** (`share/videoWords.ts`), nelle cinque
    lingue, letta come le parole delle forme (ADR-0036): accenti, maiuscole
    e apostrofi non contano, e le parole di ogni lingua valgono qualunque
@@ -1901,3 +2071,172 @@ minimo e il tempo e la % per zona: nessuna fonte li manda ancora.
 **Conseguenze**: la parte D esce con un OTA; le zone hanno un posto pronto
 nella card «Battito» quando arrivano i secondi; il dislivello del post può
 essere qualche metro sotto quello dello schermo della corsa.
+
+## ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta
+
+**Stato**: Accettata · 2026-11-10 · TASK-428 (#1040). Numeri dal
+Coordinatore. Scelta dell'utente del 2026-11-10: «Sì, fallo così» (l'anello
+solo nell'app, invece del ritorno disegnato a parte dal motore); come
+costruire l'anello è deciso dall'agente su delega dell'utente.
+
+**Contesto**: dopo ADR-0353 una traccia aperta che, chiusa con un lato
+dritto, non fa un contorno (si incrocia da sola, o il lato di ritorno la
+attraversa) restava una linea appesa a un anellino alla partenza, corsa
+andata e ritorno: 1,4–1,8 volte la traccia più il ritorno, su circa il 60%
+delle tracce aperte vere. Motore e API sapevano già fare il resto: un
+dettaglio che finisce sul **proprio primo punto** è un anello corso una
+volta sola (`_loop_start` in `shapes/outline.py`, `travelledLength`
+nell'app), e le richieste di un disegno passano da
+`parse_outline(..., allow_crossings=True)`, che lascia incrociare un
+dettaglio.
+
+**Decisione**:
+
+1. `trackInPlace` (`route/figureLines.ts`), quando la traccia chiusa non fa
+   un disegno, la manda come **anellino alla partenza più un dettaglio**: la
+   linea, semplificata come una prima linea disegnata (`firstLineOf`), e un
+   ultimo lato fino al suo primo punto. Il percorso la fa una volta e torna
+   verso la partenza seguendo quel lato.
+2. L'anello si costruisce **dalla linea aperta**, non passando la traccia
+   chiusa a `firstLineOf`: quella proverebbe `outlineOf`, che di una linea che
+   si incrocia tiene l'anello più grande e taglia il resto (7 tracce su 124
+   perdevano fino a un terzo della figura).
+3. Se nemmeno l'anello fa un disegno, la traccia resta aperta come prima.
+
+**Alternative**:
+
+- **Ritorno disegnato a parte, sulla strada più breve calcolata dal
+  motore**: scartata dall'utente per ora; chiede che il motore segni dove
+  finisce la figura e dove comincia il ritorno, la prova `test_same_routes`
+  e un cambio di contratto, qualche giorno di lavoro.
+- **Mandare la traccia chiusa come `path`** (la linea sola delle parole, che
+  può incrociarsi): scartata, il contratto delle richieste di un disegno non
+  ha `path` e la modifica sulla mappa lavora su contorno e dettagli.
+
+**Conseguenze**: su 124 tracce aperte vere (1 GPX ogni 8 di `samples/`,
+tagliato al 50% e al 75%), 45 si chiudono come con ADR-0353 e 79 diventano
+anello: distanza chiesta 0,76–0,99 volte la traccia più il ritorno dritto
+(mediana 0,97; prima 1,60), tutte accettate da `outline_of`. Tre percorsi
+veri a Trento (`plan_request`, `placement="anchored"`): 7,6 km per 7,0
+chiesti, 10,5 per 10,7, 19,3 per 17,0, somiglianza 0,97–1,00. Il ritorno è
+dritto verso la partenza, non la via più breve, e sulla mappa fa parte della
+figura. Solo JavaScript nell'app: esce con il prossimo OTA di produzione,
+dopo il passo server 2.
+
+## ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì
+
+**Stato**: Accettata · 2026-11-10 · TASK-426 (#1035). Il gesto e cosa si
+vede sono scelta dell'utente del 2026-11-10 («Sì, così»); il modo di farlo
+è deciso dall'agente su delega dell'utente.
+
+**Contesto**: in «Draw on the map» il percorso parte sempre dal primo punto
+del contorno (`lookOf(...).start`), che la mappa non mostrava. L'utente
+voleva poterlo spostare in un altro punto della linea. Il motore mette il
+primo punto della figura sulla partenza (`anchored.py`) e prova anche altre
+fasi lungo la forma (`optimizer.PHASES`), sempre con la partenza chiesta.
+
+**Decisione**:
+
+1. **Un pallino** (ciano, `color.startHere`) sul primo punto della figura
+   mostrata, in tutti i modi; con «Move» un dito che parte sul pallino lo
+   trascina lungo la linea, e la pagina dice dove lo lascia (`started`).
+2. **Il contorno ricomincia dal punto scelto** (`mapdraw/startPoint.ts`):
+   un angolo entro mezzo dito (`CORNER_SHARE · REACH_PX`), altrimenti un
+   punto nuovo sul lato, se il contorno ha meno di `MAX_OUTLINE_POINTS`
+   angoli. La figura non si muove e `start` della richiesta viene da sé
+   (`placedStart`): niente di nuovo nel contratto né nel motore.
+3. **Linea aperta**: solo le due estremità; all'altra la linea si gira e
+   l'anellino di partenza (`startRing`) si rifà lì. Non si gira se finisce
+   in un occhiello o se un altro dettaglio è appeso all'anellino.
+4. **Emoji**: spostata, diventa il suo contorno (`shapeOutline`), come una
+   girata (ADR-0336); a penna alzata il pallino è fermo.
+5. **Pezzi**: si sposta il primo pezzo, che dà il contorno; fermo mentre è
+   scelto un altro pezzo. **Sull'acqua** nessun pallino: lì il motore parte
+   dalla riva e la figura non è ancorata (ADR-0313).
+6. Ogni spostamento è un passo di «Undo» (`swap`, o del pezzo).
+
+**Alternative**:
+
+- **Un campo nuovo con la partenza, separato dal contorno**: scartata, ogni
+  modifica della figura (penna, gomma, piega) avrebbe dovuto tenerlo
+  allineato; girare il contorno basta, e la richiesta resta quella di oggi.
+- **Tenere premuto il pallino prima di trascinarlo**: scartata dall'utente;
+  tenere premuto su una linea resta la piega.
+
+**Conseguenze**: solo JavaScript nell'app (`mapdraw/`, `map/mapPage.ts`,
+`map/messages.ts`, `map/MapView.tsx`), nessun testo nuovo, hash SRI di
+MapLibre invariati; esce con l'OTA di produzione. Come oggi il motore può
+ancora spostare la figura per trovare le strade, ma parte dal punto scelto.
+
+## ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-10), con le
+scelte dell'utente: scaricarlo dal suo account («fallo tu»), installare
+Blender, e i crediti con i due nomi («Tutti e due»).
+
+1. **Il modello**: «Elephant Anim»
+   (https://sketchfab.com/3d-models/elephant-anim-766f267ff6bd4a87a45e3d26286b9d27),
+   CC BY 4.0. Nessuno dei file scaricabili (GLB, glTF, `.blend`) ha
+   animazioni. MuW gli ha fatto due cicli in Blender ruotando le ossa
+   («Gallop», un passo veloce in sequenza laterale, 0,8 s; «Idle»,
+   orecchie, proboscide e coda, 3 s) e un grigio piatto, la media della
+   sua texture, senza immagini: 330 KB. Lo script è fuori dal repository
+   (`out/TASK-408/elephant-tools/animate.py`).
+2. **I crediti**: la pagina lo attribuisce a @Shivoahm, il file di licenza
+   a SahuAvdhesh; i Termini nominano tutti e due e dicono che MuW l'ha
+   animato e adattato.
+3. **La pelle legata alle ossa con l'identità**: per glTF la trasformazione
+   del nodo di una mesh con scheletro si ignora, perché le ossa la portano
+   già. Legata con la matrice del suo nodo, la mesh dell'elefante (sotto
+   nodi ruotati e scalati) veniva sottosopra, e a pezzi in corsa. Poi le
+   matrici si aggiornano prima di misurare l'animale, altrimenti la misura
+   era sbagliata e l'animale finiva fuori vista. Gli animali di Quaternius,
+   con la mesh nell'origine, si disegnano identici.
+
+## ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci
+
+**Stato**: Accettata · 2026-11-10 · TASK-429, parte 0 (solo documenti).
+Numero dal Coordinatore. Le scelte di prodotto sono dell'utente, quattro
+domande nel task file, tutte con «Sì»; il disegno tecnico è deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: dopo TASK-406 l'utente non trova lo sci nell'app: sta nella
+Ricerca e dietro lo sport «Ski». Il 2026-11-10 chiede che, scelto lo sci,
+«l'app deve cambiare» e diventare un'app per lo sci «tipo Slopes», con più
+sezioni, tutti i dati (impianti presi compresi) e la mappa con linee
+colorate e legenda. Lo sci non va messo in vista nell'app normale.
+
+**Decisione** (dettagli e mockup in `tasks/TASK-429.md`):
+
+1. **La modalità segue lo sport già salvato** (`saveSport`, `useSport`):
+   con «Ski» l'app è nella modalità sci, con un altro sport è quella di
+   sempre. Si entra e si esce dal tasto dello sport in alto o da
+   Impostazioni; nessuno stato nuovo da ricordare (domanda 1).
+2. **Le stesse cinque schede di `TabShell`**, con tre pagine diverse: Oggi ·
+   Giornate · Stazioni · Feed · Profilo. I messaggi passano a un'icona in
+   alto, col numero rosso. È lo schema che «Explore» usa già per acqua e
+   nuoto (`PaddleExplore`), allargato (domanda 1).
+3. **Sei sezioni nella prima versione**: Oggi, riepilogo della giornata,
+   mappa con legenda, discesa per discesa, la stagione, Stazioni. La
+   Ricerca dell'app normale perde la scheda «Ski» (domanda 2).
+4. **Si riusa quello che c'è**: `src/ski/` (stazioni, meteo, neve,
+   seguite), `SnowFinishCard`, `snowDay.ts`, `ski-names`.
+5. **I colori della giornata, solo nella modalità sci e solo come token**:
+   `ski.descent` giallo, linea piena, discese numerate 1, 2…; `ski.lift`
+   rosso più chiaro del badge (`#FF5A4E` sul tono scuro), tratteggiato,
+   risalite numerate L1, L2…; la legenda dice tutto a parole. È
+   un'eccezione voluta dall'utente alle due regole di `tokens.ts` (giallo =
+   percorso, rosso = badge), valida perché nella modalità non ci sono
+   percorsi; fuori la giornata resta bianca (domanda 3).
+6. **I testi** della tabella della domanda 4, approvati.
+7. **Il server** serve per due cose sole: i totali della stagione e i nomi
+   tratto per tratto (parti C e D, ognuna col sì dell'utente).
+
+**Alternative**: un tasto «Ski» in più nell'app normale, scartato
+dall'utente il 2026-11-10; un'app a parte, che vorrebbe una build nativa
+nuova e l'impronta iOS cambiata; l'alternativa B delle schede (la scheda
+dei messaggi resta, il Feed esce dalla barra), scartata con la domanda 1.
+
+**Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` ferma; motore
+non toccato. Le parti A–E si elencano nel task file, ognuna con la sua
+lista al Coordinatore; una parte che tocca `src/ski/**` lo concorda prima.

@@ -21,6 +21,10 @@ export type HeadingUpMap = TurnedMap & {
   compass: boolean;
   /** On «Compass», north was put up by a tap: the map is not turning. */
   northUp: boolean;
+  /** On «Compass», the direction the map last turned to (TASK-431): the
+   * runner's arrow points there, up on the screen. Null off the page, with
+   * north up, and before the first direction. */
+  facing: number | null;
 };
 
 /**
@@ -47,6 +51,8 @@ export function useHeadingUpMap(turned: TurnedMap, run: RunHeading): HeadingUpMa
     setLatest(turned.turn);
   }
   const last = useRef<Turned | null>(null);
+  // The direction of the last turn, for the arrow (TASK-431).
+  const [facing, setFacing] = useState<number | null>(null);
   // Since when the page is open: a reading of before does not count.
   const openedAt = useRef<number | null>(null);
 
@@ -60,6 +66,7 @@ export function useHeadingUpMap(turned: TurnedMap, run: RunHeading): HeadingUpMa
     if (openedAt.current !== null) {
       openedAt.current = null;
       last.current = null;
+      setFacing(null);
       setNorthUp(false);
       setLatest({ bearing: turned.bearing });
     }
@@ -82,6 +89,7 @@ export function useHeadingUpMap(turned: TurnedMap, run: RunHeading): HeadingUpMa
     if (chosen !== null && shouldTurn(last.current, chosen.deg, nowMs)) {
       last.current = { deg: chosen.deg, atMs: nowMs };
       setLatest({ bearing: chosen.deg });
+      setFacing(chosen.deg);
     }
   }, [on, northUp, compass, run.trackDeg, run.lastFixMs]);
 
@@ -93,11 +101,12 @@ export function useHeadingUpMap(turned: TurnedMap, run: RunHeading): HeadingUpMa
     } else {
       setNorthUp(true);
       setLatest({ bearing: 0 });
+      setFacing(null);
     }
   }, [northUp]);
 
   if (!on) {
-    return { ...turned, turn: latest, compass: false, northUp: false };
+    return { ...turned, turn: latest, compass: false, northUp: false, facing: null };
   }
   return {
     bearing: turned.bearing,
@@ -108,5 +117,6 @@ export function useHeadingUpMap(turned: TurnedMap, run: RunHeading): HeadingUpMa
     onArrow,
     compass: true,
     northUp,
+    facing: northUp ? null : facing,
   };
 }

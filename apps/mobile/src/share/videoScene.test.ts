@@ -15,6 +15,7 @@ import {
 import { CHASE_PITCH, CHASE_SAMPLES } from "./videoChase";
 import { DAY, NIGHT } from "./videoStyle";
 import {
+  imageHop,
   lengthOf,
   MAX_POINTS,
   MAX_POINTS_3D,
@@ -643,6 +644,54 @@ describe("videoScene, with an animal (TASK-408)", () => {
     expect(
       withHorse.frames.map((frame) => frame.filter((op) => op.k !== "character")),
     ).toEqual(without.frames);
+  });
+});
+
+describe("videoScene, with the runner's own image (TASK-417)", () => {
+  type Animal = Extract<VideoOp, { k: "character" }>;
+  function actor(frame: VideoOp[]): Animal | undefined {
+    return frame.find((op): op is Animal => op.k === "character");
+  }
+  const withImage = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+    character: "my_image",
+  });
+  const withHorse = videoScene(RUN, POST_RESULTS, STICKERS, "night", {
+    character: "horse",
+  });
+
+  it("runs the line where the animal would, hopping as it runs and still at rest", () => {
+    expect(withImage.character).toBe("my_image");
+    const hops: number[] = [];
+    withImage.frames.forEach((frame, i) => {
+      const image = actor(frame);
+      const horse = actor(withHorse.frames[i]);
+      expect(image === undefined).toBe(horse === undefined);
+      if (image === undefined || horse === undefined) {
+        return;
+      }
+      const { hop, ...rest } = image;
+      expect(rest).toEqual(horse);
+      expect(hop).toBeGreaterThanOrEqual(0);
+      expect(hop).toBeLessThanOrEqual(Math.ceil(VIDEO_WIDTH * 0.2 * 0.07));
+      if (image.clip === "rest") {
+        expect(hop).toBe(0);
+      }
+      hops.push(hop ?? 0);
+    });
+    expect(Math.max(...hops)).toBeGreaterThan(5);
+  });
+
+  it("hops on the ground at the start, up and down again and again", () => {
+    expect(imageHop(0, 200)).toBe(0);
+    expect(imageHop(0.2, 200)).toBeCloseTo(14, 5);
+    expect(imageHop(0.4, 200)).toBeCloseTo(0, 5);
+    expect(imageHop(-1, 200)).toBe(0);
+  });
+
+  it("gives an animal no hop", () => {
+    expect(withHorse.frames.some((frame) => actor(frame)?.hop !== undefined)).toBe(
+      false,
+    );
   });
 });
 

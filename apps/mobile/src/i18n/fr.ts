@@ -1702,6 +1702,8 @@ export const FR: Table = {
   Bull: "Taureau",
   Donkey: "Âne",
   Alpaca: "Alpaga",
+  // TASK-408 B2: the elephant
+  Elephant: "Éléphant",
 
   // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
   "2D": "2D",
@@ -1732,12 +1734,6 @@ export const FR: Table = {
   "Line in 2D": "Ligne en 2D",
   // src/share/VideoPreview.tsx (TASK-408 C2c, choice 13; «Resume» and «Pause» were there)
   "Video preview": "Aperçu de la vidéo",
-  // src/share/DescribeVideo.tsx (TASK-408 D, texts of choice 9)
-  "Describe your video": "Décris ta vidéo",
-  "a horse at night, fireworks at the end":
-    "un cheval la nuit, un feu d'artifice à la fin",
-  "An animal, colours, emoji, the ending. Read on your phone.":
-    "Un animal, des couleurs, des emojis, la fin. Lu sur ton téléphone.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concours MuW",
@@ -2207,4 +2203,15 @@ export const FR: Table = {
     "Lieux célèbres, panoramas, cuisine… dans n'importe quelle ville",
   "The rest could not load.": "La suite n'a pas pu être chargée.",
   "Loading more…": "Chargement de la suite…",
+  // src/share/CharacterRow.tsx, MyImageChoices.tsx (TASK-417: the runner's
+  // own image in place of the animal, texts approved, choice 5)
+  "My image": "Mon image",
+  "Choose a photo": "Choisir une photo",
+  "Remove image": "Retirer l'image",
+  "Your image stays on this phone. It leaves only in the video you share.":
+    "Ton image reste sur ton téléphone. Elle n'en sort que dans la vidéo que tu partages.",
+  "This image can't be read. The video goes out without it.":
+    "Cette image est illisible. La vidéo sort sans elle.",
+  "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
+    "Toute personne qui a le lien peut te suivre sur une page web, sans l'app : le temps, les longueurs ou l'exercice, les calories et ta fréquence cardiaque quand une montre l'envoie.",
 };

@@ -541,6 +541,30 @@ nelle opzioni del plugin. Impronte su copia pulita: iOS da `6f8bba4c` a
 (`eas build`, TestFlight, la prova al polso, l'invio ad Apple) sono ognuno un
 sì dell'utente.
 
+## B5, la corsa libera sull'orologio (2026-11-10)
+
+Dalla prova al polso con la build 11 l'utente ha chiesto la mappa anche
+senza disegno, più colori e più informazioni. La proposta approvata è
+«Sì, tutta».
+
+- **Mappa nella corsa libera.** Negli sport col GPS le pagine sono Numeri
+  → Mappa → Dettagli. La mappa mostra la linea fatta finora, in giallo, e
+  una freccia blu che punta dove vai; segue chi corre, col nord in alto.
+  Nella corsa col disegno il pallino diventa la stessa freccia.
+- **Colori.** Tempo bianco, distanza gialla, passo azzurro, battito rosso,
+  dislivello verde, calorie arancio. Anche il riepilogo finale è a colori.
+- **Zone del battito.** Il telefono manda all'orologio le zone di «Heart
+  rate zones», se ci sono età o FC massima. Sono il campo facoltativo
+  `heartZones` del messaggio `settings`: i sei limiti, un orologio vecchio
+  li ignora. L'orologio mostra «Z3» e una barra delle cinque zone.
+- **Dettagli.** Passo medio, ultimo km, dislivello (come «Elev. gain» del
+  telefono, solo sugli sport a terra), battito medio, calorie, ora. Il
+  dislivello è anche nel riepilogo.
+
+`WatchCore` ha tre file nuovi: `HeartZones`, `Climb` (gli scalini di 3 m
+di `climbM`) e `LiveLine` (un punto ogni 5 m, al massimo 1500). Da
+provare al polso con la build 12, insieme a B4.
+
 ## File toccati
 
 Parte 0 (questa proposta):
@@ -603,6 +627,22 @@ apps/mobile/src/about/content/{en,it,de,es,fr}.ts (la sezione e la data)
 apps/mobile/src/about/AboutPage.test.tsx, documents.test.ts (solo la data)
 site/privacy/index.html, site/privacy/{it,de,es,fr}/index.html (rigenerati)
 site/tests/privacy.test.mjs (solo la data)
+docs/tasks/TASK-370.md
+```
+
+Parte B5 (lista mandata al Coordinatore il 2026-11-10):
+
+```
+apps/mobile/src/watch/watchSettings.ts, watchSettings.test.ts (nuovi)
+apps/mobile/src/watch/watchMessages.ts, useWatch.ts, useWatch.test.tsx, watchTexts.ts
+apps/mobile/targets/watch/Core/Sources/WatchCore/HeartZones.swift, Climb.swift, LiveLine.swift (nuovi)
+apps/mobile/targets/watch/Core/Tests/WatchCoreTests/HeartZonesTests.swift (nuovo)
+apps/mobile/targets/watch/Core/Sources/WatchCore/WatchMessage.swift
+apps/mobile/targets/watch/Core/Tests/WatchCoreTests/WatchMessageTests.swift
+apps/mobile/targets/watch/Core/Fixtures/messages.json
+apps/mobile/targets/watch/App/LiveMapView.swift (nuovo)
+apps/mobile/targets/watch/App/MuWWatchApp.swift, RouteMapView.swift, WorkoutManager.swift
+apps/mobile/targets/watch/{en,it,de,es,fr}.lproj/Localizable.strings (rigenerati)
 docs/tasks/TASK-370.md
 ```
 

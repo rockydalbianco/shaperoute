@@ -61,10 +61,14 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Nuoto in piscina: calorie, battito e zone | `tasks/TASK-409.md`, ADR-0318, ADR-0334 |
 | Walk, nuoto in acque libere | `ROUTE_ENGINE.md` (le reti, §8), `tasks/TASK-371.md` |
 | Sci: «Record only», stazioni, meteo | `MAPS.md` «Impianti e piste da sci», ADR-0319, ADR-0338, `tasks/TASK-375.md`, `tasks/TASK-406.md` |
+| La modalità sci: scelto lo sci, l'app diventa un'app per lo sci (schede, giornata, mappa con legenda, stagione) | `tasks/TASK-429.md`, ADR-0357, ADR-0338, ADR-0319 |
 | Apple Watch | `tasks/TASK-370.md`, ADR-0314 |
 | Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352, `API.md` «Live shares», `SITO.md` «La pagina dal vivo», `UI.md` «La corsa» («Share live») |
 | La corsa in registrazione: le tre pagine «Compass», «Map», «Data», la mappa che gira dove punta il telefono | `UI.md` «La navigazione», ADR-0350, ADR-0137, `tasks/TASK-422.md` |
-| «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0313, `tasks/TASK-425.md` |
+| La freccia di chi corre (anello e cono azzurri, punta dove punta la mappa su «Compass»), i disegni delle tre schede, i token `you` e `north` | `UI.md` «La freccia di direzione» e «La corsa: tre pagine», ADR-0359, `tasks/TASK-431.md` |
+| «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte; se si incrocia, un anello alla partenza | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0356, ADR-0313, `tasks/TASK-425.md`, `tasks/TASK-428.md` |
+| «Draw on the map»: la partenza, un pallino da spostare lungo il disegno | `UI.md` «Disegnare sulla mappa» («La partenza»), ADR-0354, ADR-0336, `tasks/TASK-426.md` |
+| I percorsi di MuW nel Feed: spenti, l'interruttore per riaccenderli | `UI.md` «Feed», ADR-0358, ADR-0310, `tasks/TASK-430.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

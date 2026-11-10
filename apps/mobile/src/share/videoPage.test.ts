@@ -9,6 +9,7 @@ import { bytesOfBase64, samplesOf } from "./videoFile";
 import {
   makeCall,
   prepareCharacterCall,
+  prepareImageCall,
   prepareMapCall,
   THREE_JS_SRI,
   THREE_JS_URL,
@@ -280,6 +281,26 @@ function fakeContext(written: string[]) {
   });
 }
 
+/** An img of the page (TASK-417): a JPEG data URL loads, 4 × 3 pixels,
+ * anything else fails. */
+function fakeImage() {
+  const image: Record<string, unknown> = { naturalWidth: 0, naturalHeight: 0 };
+  Object.defineProperty(image, "src", {
+    set(value: string) {
+      setTimeout(() => {
+        if (value.startsWith("data:image/jpeg;base64,")) {
+          image.naturalWidth = 4;
+          image.naturalHeight = 3;
+          (image.onload as () => void)();
+        } else {
+          (image.onerror as () => void)();
+        }
+      }, 1);
+    },
+  });
+  return image;
+}
+
 /** The page, run with these WebCodecs (undefined: none) and this MapLibre
  * (undefined: the library did not load), as in the WebView. */
 function page(
@@ -308,13 +329,16 @@ function page(
       }),
       removeChild: jest.fn(),
     },
-    createElement: () => ({
-      width: 0,
-      height: 0,
-      style: {},
-      parentNode: null,
-      getContext: () => context,
-    }),
+    createElement: (tag?: string) =>
+      tag === "img"
+        ? fakeImage()
+        : {
+            width: 0,
+            height: 0,
+            style: {},
+            parentNode: null,
+            getContext: () => context,
+          },
   };
   const btoa = (text: string) => Buffer.from(text, "latin1").toString("base64");
   new Function(
@@ -331,6 +355,7 @@ function page(
     make: (scene: unknown) => void;
     prepareMap: (map: unknown) => void;
     prepareCharacter: (spec: unknown) => void;
+    prepareImage: (spec: unknown) => void;
     play: (scene: unknown) => void;
     pause: () => void;
     resume: () => void;
@@ -344,6 +369,7 @@ function page(
     make: api.make,
     prepareMap: api.prepareMap,
     prepareCharacter: api.prepareCharacter,
+    prepareImage: api.prepareImage,
     play: api.play,
     pause: api.pause,
     resume: api.resume,
@@ -1026,6 +1052,21 @@ describe("the video page, with an animal (TASK-408)", () => {
     character: "horse",
   });
 
+  it("binds an animal's skin as glTF says, with no matrix of the mesh's own node (TASK-408 B2)", () => {
+    // The elephant's mesh hangs under turned and scaled nodes: bound with
+    // its node's world matrix, it came out upside down, and in pieces once
+    // it ran. Checked by eye in three.js 0.159.0 against its GLTFLoader.
+    expect(script()).toContain(
+      "one.mesh.bind(new THREE.Skeleton(bones, inverses), new THREE.Matrix4());",
+    );
+    expect(script()).not.toContain("one.mesh.matrixWorld);");
+    // And the matrices brought up to date after binding, before the
+    // animal's size is measured.
+    expect(script()).toMatch(
+      /new THREE\.Matrix4\(\)\);\s*\}\);\s*(\/\/[^\n]*\s*)*root\.updateMatrixWorld\(true\);/,
+    );
+  });
+
   it("loads three.js only when an animal is asked, pinned and checked against its hash", () => {
     expect(THREE_JS_URL).toMatch(
       /^https:\/\/unpkg\.com\/three@\d+\.\d+\.\d+\/build\/three\.min\.js$/,
@@ -1089,5 +1130,91 @@ describe("the video page, with an animal (TASK-408)", () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(p.posted.filter((m) => m.type === "character")).toHaveLength(1);
     expect(p.added).toHaveLength(1);
+  });
+});
+
+describe("the video page, with the runner's own image (TASK-417)", () => {
+  const IMAGE_SCENE = videoScene(RUN, POST_RESULTS, STICKERS, "paper", {
+    character: "my_image",
+  });
+  /** A GIF's two frames of one pixel, red then green. */
+  const GIF_IMAGE = {
+    frames: [
+      { width: 1, height: 1, rgba: Buffer.from([255, 0, 0, 255]).toString("base64") },
+      { width: 1, height: 1, rgba: Buffer.from([0, 255, 0, 255]).toString("base64") },
+    ],
+    frameMs: [100, 100],
+  };
+
+  /** A page whose canvases give pixels a place to go. */
+  async function imagePage() {
+    const { FakeEncoder, made } = fakeEncoder(VIDEO_CODECS);
+    const p = page(FakeEncoder);
+    p.context.createImageData.mockImplementation((width: number, height: number) => ({
+      data: new Uint8ClampedArray(width * height * 4),
+    }));
+    await until(p.posted, "ready");
+    return { ...p, made };
+  }
+
+  it("is asked with the image's frames, and nothing in the call points to the network", () => {
+    const call = prepareImageCall(GIF_IMAGE);
+    expect(call).toBe(
+      `window.muwVideo.prepareImage(${JSON.stringify(GIF_IMAGE)}); true;`,
+    );
+    expect(call).not.toMatch(/https?:/);
+  });
+
+  it("makes a GIF's frames ready with no script loaded, and draws the image round, in a ring, on every picture", async () => {
+    const p = await imagePage();
+    p.prepareImage(GIF_IMAGE);
+    await until(p.posted, "character");
+    expect(p.posted.find((m) => m.type === "character")).toMatchObject({
+      ok: true,
+      why: null,
+    });
+    // No three.js, nothing added to the page: nothing from the network.
+    expect(p.added).toHaveLength(0);
+    expect(p.context.putImageData).toHaveBeenCalledTimes(2);
+    p.make(IMAGE_SCENE);
+    await until(p.posted, "done", "failed");
+    expect(p.posted.find((m) => m.type === "done")).toMatchObject({
+      frames: IMAGE_SCENE.frames.length,
+    });
+    const drawn = IMAGE_SCENE.frames.filter((ops) =>
+      ops.some((op) => op.k === "character"),
+    ).length;
+    expect(drawn).toBeGreaterThan(0);
+    expect(p.context.clip).toHaveBeenCalledTimes(drawn);
+    expect(p.context.arc).toHaveBeenCalled();
+    expect(p.context.drawImage).toHaveBeenCalledTimes(drawn);
+    // On paper, no stick and no shadow: those are for «3D».
+    expect(p.context.ellipse).not.toHaveBeenCalled();
+  });
+
+  it("makes a photo ready through an img", async () => {
+    const p = await imagePage();
+    p.prepareImage({ frames: [{ src: "data:image/jpeg;base64,/9j/" }], frameMs: [0] });
+    await until(p.posted, "character");
+    expect(p.posted.find((m) => m.type === "character")).toMatchObject({ ok: true });
+    expect(p.added).toHaveLength(0);
+  });
+
+  it("says why when the image does not read, and the video still comes without it", async () => {
+    for (const spec of [
+      { frames: [{ width: 2, height: 2, rgba: "AAAA" }], frameMs: [0] },
+      { frames: [{ src: "data:," }], frameMs: [0] },
+      { frames: [{ width: 1, height: 1, rgba: "not base64 !" }], frameMs: [0] },
+      { frames: [], frameMs: [] },
+    ]) {
+      const p = await imagePage();
+      p.prepareImage(spec);
+      await until(p.posted, "character");
+      expect(p.posted.find((m) => m.type === "character")).toMatchObject({ ok: false });
+      p.make(IMAGE_SCENE);
+      await until(p.posted, "done", "failed");
+      expect(p.posted.some((m) => m.type === "done")).toBe(true);
+      expect(p.context.drawImage).not.toHaveBeenCalled();
+    }
   });
 });

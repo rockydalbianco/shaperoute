@@ -1,9 +1,8 @@
 # TASK-421 — I percorsi a piedi non passano per i cancelli chiusi
 
-**Stato**: In corso — motore in `main` (#973, mergiata dall'utente il
-2026-11-08); ADR-0349, STATUS e INDEX nella PR di soli documenti; restano il
-server e le zone foot (`DEPLOY.md` F.15, sì dell'utente dato) al «via server
-973» del Coordinatore
+**Stato**: Done — motore in `main` (#973, 2026-11-08), documenti #1009 e
+la PR di chiusura; le 53 zone foot di «Explore» rifatte sul server il
+2026-11-10, le vecchie all'ombra da parte (`DEPLOY.md` F.15)
 **Fase**: 5 · **Branch**: `feat/TASK-421-foot-barriers` · **ADR**: ADR-0349 ·
 numeri dal Coordinatore (2026-11-08) · sessione «Foot routes barrier
 filtering», avviata dall'utente
@@ -86,100 +85,49 @@ A Levico la partenza del banco è al Lido: entro 550 m ci sono otto cancelli
 prima il motore attraversava (cuore da 5 km 0,92 → 0,81, stella da 3 km
 0,86 → 0,72): è il caso del task, non un difetto. Tempi uguali.
 
-## La sequenza sul server (dopo il «via server 973» del Coordinatore)
+## La sequenza sul server (2026-11-10)
 
 Sì dell'utente: «Sì, ok server» (sessione del Coordinatore) e «Sì, dopo il
-merge» (questa sessione), 2026-11-08. Un comando ssh per volta, lanciato
-dall'utente dal Mac (`!` davanti); io leggo l'esito e do il successivo.
-Una pubblicazione alla volta: prima potrebbero passare TASK-419 e la #957.
+merge» (questa sessione), 2026-11-08; «no fallo tu» il 2026-11-10: i passi
+sul server li ha eseguiti il Coordinatore, non più one-liner all'utente.
+Il piano scritto il 2026-11-08 («tutte le zone foot da parte, poi rifare
+Italia dall'estratto ed estere da Overpass») **non è stato seguito**: il
+metodo vero è in `DEPLOY.md` F.15, qui l'esito.
 
-**A. Il server al `main` con la #973** (F.12, come gli aggiornamenti di prima)
+1. **Server al `main`** col passo unico del Coordinatore (#957, #973,
+   migrazioni 0061–0064, Play; immagine di ritorno
+   `shaperoute-api:before-2026-11-10`); impronta nel container
+   `8ab61d8e87f9`, `{"status":"ok"}`; immagine `shaperoute-prefetch`
+   rifatta sopra (`sha256:7f5a88f5…`).
+2. **Primo tentativo**, 08:58Z: zone da parte in `before-task421/` e
+   `prefetch_zones --preset italy Rovereto` nella cache. Fermato dopo Roma e
+   Rovereto: in cache c'erano 934 zone, non 63 (USA, Europa, Italia 50k di
+   ottobre), e il container è morto per la memoria quando ne è partito un
+   secondo. Lo script `out/TASK-421/task421_split.py` ha rimesso in cache le
+   2.458 zone fuori da «Explore»; il Coordinatore ha riportato le 61 città
+   di «Explore» con `mv -n`: nessuna città scoperta.
+3. **Il giro vero**, del Coordinatore: cartella a parte `cache-task421` coi
+   `names_*.json` copiati, `--memory 5g` (con 4g osmium veniva ucciso
+   dall'OOM, due volte), `--preset italy --preset featured Rovereto`
+   dall'estratto `italy-260930`: **53 su 53** (4 ready, 49 downloaded, 0
+   missing), log `data/prefetch-task421b.log`. Scambio per nome alle 10:25Z:
+   49 con lo stesso nome (vecchi in `before-task421/*.old`), 4 col nome
+   nuovo (Firenze, Milano, Levico, Trento).
+4. **Le zone all'ombra**, 10:35Z, con `out/TASK-421/zone_shadows.py`
+   (l'API prende la zona più piccola che contiene la richiesta, quindi le
+   vecchie dentro le nuove vincevano): prova a secco «934 zone, 53 nuove;
+   414 contenute, 13,7 GB; 63 della stessa città, 2,0 GB», poi `--apply`:
+   477 zone, 1.413 file in `before-task421/` (1.564 file, 26 GB; 52 GB
+   liberi). In cache 457 `foot_*.graphml`. Uscite in
+   `out/TASK-421/dryrun-server.txt` e `apply-server.txt`.
+5. **Prova** senza riavvio: aereo e cuore da 5,2 km a Trento, pronti in
+   10–12 s, log «graph from disk (foot_45.98990_11.01550_46.14290_11.23600
+   .graphml)»: la zona nuova.
+6. **Riavvio, zone del telefono, esempi**: lanciati dall'utente dopo lo
+   scambio; i numeri nel «server fatto 973» del Coordinatore (sotto,
+   «Esito»).
 
-1. Stato e copia: `main` pulito sul server, dump del database, immagine di
-   ritorno.
-
-   ```bash
-   ssh root@188.245.9.220 'cd /root/shaperoute && git status --short | head -3 && git fetch -q origin && git log --oneline -1 origin/main'
-   ```
-
-   ```bash
-   ssh root@188.245.9.220 'cd /root/shaperoute/deploy && docker compose exec -T backup bash /backup.sh now && docker tag shaperoute-api shaperoute-api:before-task421 && df -h / | tail -1'
-   ```
-
-2. Codice, build prima e `up` dopo (pochi secondi di API ferma), salute.
-
-   ```bash
-   ssh root@188.245.9.220 'cd /root/shaperoute && git pull -q --ff-only && cd deploy && docker compose build -q api && docker compose up -d && sleep 25 && curl -s http://127.0.0.1:8000/health && docker compose logs api --tail 30 | grep -i "accounts\|schema\|migration"'
-   ```
-
-3. L'impronta nel container deve essere `8ab61d8e87f9`.
-
-   ```bash
-   ssh root@188.245.9.220 'cd /root/shaperoute/deploy && docker compose exec -T api python -c "from shaperoute_api.route_store import engine_fingerprint; print(engine_fingerprint())"'
-   ```
-
-4. L'immagine dei download rifatta sulla nuova API (porta il motore nuovo:
-   senza, le zone uscirebbero coi cancelli).
-
-   ```bash
-   ssh root@188.245.9.220 "printf 'FROM shaperoute-api\nUSER root\nRUN apt-get update && apt-get install -y --no-install-recommends osmium-tool\nUSER shaperoute\n' | docker build -q -t shaperoute-prefetch -"
-   ```
-
-**B. Le zone foot** (F.15)
-
-5. Spazio e zone vecchie da parte (`prefetch_zones` salta una città «ready»).
-
-   ```bash
-   ssh root@188.245.9.220 'cd /root/shaperoute/data/cache && du -sh . && mkdir -p before-task421 && mv foot_*.graphml foot_*.pickle foot_*.zone.json.gz before-task421/ && ls before-task421 | wc -l'
-   ```
-
-6. Le italiane più Rovereto dall'estratto, staccato dalla ssh (circa un
-   minuto a città, memoria fino a 4 GB).
-
-   ```bash
-   ssh -f root@188.245.9.220 'cd /root/shaperoute && (setsid nohup docker run --rm --memory 4g --env-file deploy/.env -v /root/shaperoute/data/cache:/app/data/cache -v /srv/shaperoute/extracts:/extracts shaperoute-prefetch python -m shaperoute_api.prefetch_zones --preset italy Rovereto --extract /extracts/italy-260930-highways.osm.pbf --cache-dir /app/data/cache > data/prefetch-task421.log 2>&1 &)'
-   ```
-
-   Si segue finché «missing» è vuoto:
-
-   ```bash
-   ssh root@188.245.9.220 'tail -5 /root/shaperoute/data/prefetch-task421.log; ls /root/shaperoute/data/cache/foot_*.graphml 2>/dev/null | wc -l'
-   ```
-
-7. Le estere da Overpass (pausa e tetto: dopo pochi download rifiuta, si
-   rilancia più tardi; le italiane del preset sono già «ready»).
-
-   ```bash
-   ssh -f root@188.245.9.220 'cd /root/shaperoute && (setsid nohup docker run --rm --memory 4g --env-file deploy/.env -v /root/shaperoute/data/cache:/app/data/cache shaperoute-prefetch python -m shaperoute_api.prefetch_zones --preset featured --max-downloads 4 --cache-dir /app/data/cache > data/prefetch-task421-featured.log 2>&1 &)'
-   ```
-
-**C. Le zone del telefono** (80 minuti circa, dentro il container dell'API:
-non riavviare l'API finché gira)
-
-   ```bash
-   ssh -f root@188.245.9.220 'cd /root/shaperoute/deploy && (setsid nohup docker compose exec -T api nice -n 19 python -m shaperoute_api.phone_zone_api > ../data/phone-zones-task421.log 2>&1 &)'
-   ```
-
-**D. Gli esempi** (`draw_examples`, circa 35 minuti, dopo le zone)
-
-   ```bash
-   ssh -f root@188.245.9.220 'cd /root/shaperoute/deploy && (setsid nohup docker compose exec -T api python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 --preset italy --preset featured Rovereto > ../data/draw-examples-2026-11-08-task421.log 2>&1 &)'
-   ```
-
-   Alla fine «66 of 66»; una città «not found by the city search» si rifà
-   da sola per nome. Si segue con:
-
-   ```bash
-   ssh root@188.245.9.220 'tail -3 /root/shaperoute/data/draw-examples-2026-11-08-task421.log'
-   ```
-
-**E. Controllo**: dall'app, il percorso del 2026-11-08 non passa più dal
-cancello; `du -sh data/cache`. Dopo una settimana, `rm -r
-data/cache/before-task421`.
-
-**Rollback**: zone, `mv data/cache/before-task421/* data/cache/` e
-`docker compose restart api`; API, `docker tag shaperoute-api:before-task421
-shaperoute-api && docker compose up -d` (il dump del passo 1 per il database).
+**Rollback**: `DEPLOY.md` F.15.
 
 ## Criteri di accettazione
 
@@ -192,7 +140,7 @@ shaperoute-api && docker compose up -d` (il dump del passo 1 per il database).
 - [x] Le misure su 2–3 zone e il banco prima/dopo in questo file.
 - [x] Impronta: `ROUTES` nuovo (`8ab61d8e87f9`); nuotate e canoa con la
       prova delle stesse rotte; `engine.zip` rifatto.
-- [ ] CI verde sulla PR #973.
+- [x] CI verde sulla PR #973.
 - [x] Piano di rigenerazione delle zone in `MAPS.md` e `DEPLOY.md`; il
       server non si tocca senza il sì dell'utente.
 
@@ -225,4 +173,16 @@ docs/DECISIONS.md (ADR-0349), docs/STATUS.md, docs/INDEX.md  (righe proprie, nel
 
 ## Esito
 
-*(a fine task)*
+2026-11-10. Motore in `main` con la #973 (ADR-0349, impronta
+`8ab61d8e87f9`), documenti nella #1009 e in questa PR. Sul server le 53
+zone foot di «Explore» rifatte dall'estratto del 2026-09-30 senza cancelli
+e 477 zone vecchie all'ombra messe da parte (`DEPLOY.md` F.15); una
+richiesta a Trento usa la zona nuova. Restano coi cancelli le circa 400
+zone fuori da «Explore» e quelle più grandi di 17 km delle stesse città:
+rifarle (`prefetch_zones --boxes`, estratti per paese, ore di server) è una
+scelta dell'utente, che il Coordinatore gli porta. Zone del telefono ed
+esempi: nel passo successivo del Coordinatore.
+
+Strumenti fuori dal repository, in `out/TASK-421/` sul Mac:
+`task421_split.py` (rimette in cache le zone fuori da «Explore»),
+`zone_shadows.py` (le zone all'ombra, prova a secco e `--apply`).

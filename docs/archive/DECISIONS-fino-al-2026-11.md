@@ -25625,7 +25625,7 @@ circa 1,7 MB.
 
 ## ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente
 
-**Stato**: Proposto · 2026-11-08 · TASK-419 (parte B del catalogo chiesto
+**Stato**: Accettata · 2026-11-08, chiuso il 2026-11-10 con 572 percorsi in 63 città · TASK-419 (parte B del catalogo chiesto
 dall'utente il 2026-11-08; A è TASK-418, C è TASK-420).
 
 **Contesto**: «Explore» propone oggi i percorsi del seme di ADR-0097: 11

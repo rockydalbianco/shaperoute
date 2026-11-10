@@ -10,7 +10,7 @@ import type { AboutContent, AboutDocument } from "../documents";
  * fill, and nothing here may be made up to fill them.
  */
 
-const UPDATED = "6 November 2026";
+const UPDATED = "10 November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). */
 const PRIVACY_UPDATED = "10 November 2026";
 
@@ -232,6 +232,7 @@ const terms: AboutDocument = {
         {
           bullets: [
             "The maps come from OpenFreeMap and from the data of OpenStreetMap (© OpenStreetMap contributors).",
+            'The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm and SahuAvdhesh on Sketchfab (CC BY 4.0), animated and adapted by MuW.',
             "Places are searched with Geoapify.",
             "If you connect Strava, the runs you send there follow Strava's own terms and privacy settings.",
             "A picture you share leaves through the phone's share sheet: the app that receives it has its own terms.",

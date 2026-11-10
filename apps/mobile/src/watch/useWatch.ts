@@ -7,9 +7,12 @@ import {
   runControl,
   subscribeRunControl,
 } from "../navigation/runControl";
-import { appUnits, subscribeUnits, type Units } from "../units/units";
+import { appBody, subscribeBody } from "../body/bodyProfile";
+import { appHeart, subscribeHeart } from "../body/heartZones";
+import { appUnits, subscribeUnits } from "../units/units";
 import { type WatchLink, watchLink } from "./watchLink";
 import type { WatchPhase } from "./watchMessages";
+import { watchSettings } from "./watchSettings";
 
 /**
  * The run on the phone and the workout on the Apple Watch together
@@ -80,11 +83,17 @@ export function followWatch(
     link.send({ type: "command", command: "end", from: "phone", at: now() });
   };
 
-  const sendUnits = (units: Units) => {
-    link.transfer({ type: "settings", units, at: now() });
+  // The units and the heart rate zones (part B5), now and at each change.
+  const sendSettings = () => {
+    const at = now();
+    link.transfer(
+      watchSettings(appUnits(), appHeart(), appBody(), new Date(at).getFullYear(), at),
+    );
   };
-  sendUnits(appUnits());
-  const stopUnits = subscribeUnits(sendUnits);
+  sendSettings();
+  const stopUnits = subscribeUnits(sendSettings);
+  const stopHeart = subscribeHeart(sendSettings);
+  const stopBody = subscribeBody(sendSettings);
 
   const onControl = () => {
     const previous = phonePhase;
@@ -146,6 +155,8 @@ export function followWatch(
 
   return () => {
     stopUnits();
+    stopHeart();
+    stopBody();
     stopControl();
     stopListening();
     end();

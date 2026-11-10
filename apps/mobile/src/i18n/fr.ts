@@ -2265,4 +2265,15 @@ export const FR: Table = {
     "Cette image est illisible. La vidéo sort sans elle.",
   "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
     "Toute personne qui a le lien peut te suivre sur une page web, sans l'app : le temps, les longueurs ou l'exercice, les calories et ta fréquence cardiaque quand une montre l'envoie.",
+
+  // src/skimode/, settings/SportButton.tsx (TASK-429 part A: the ski mode)
+  "Days@@ski": "Journées",
+  Resorts: "Stations",
+  "Your days": "Tes journées",
+  "Ski mode": "Mode ski",
+  "Turns MuW into your ski app": "Fait de MuW ton appli de ski",
+  "Choose another sport to go back to MuW as always.":
+    "Choisis un autre sport pour retrouver MuW comme toujours.",
+  "Log in to see your days.": "Connecte-toi pour voir tes journées.",
+  "No days on the snow yet.": "Pas encore de journée sur la neige.",
 };

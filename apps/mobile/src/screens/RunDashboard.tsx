@@ -208,6 +208,7 @@ export function RunCard({
         onClose={setRunPage}
         track={track}
         numbers={numbers}
+        bpm={bpm}
         game={game}
         route={route}
         heading={heading}
@@ -468,6 +469,8 @@ type DataProps = {
   onClose: (page: RunPage) => void;
   track: Track;
   numbers: RunNumbers;
+  /** The watch's heart rate, as the card has it; null for none. */
+  bpm: number | null;
   /** The game's line, as the card has it; null for none. */
   game: string | null;
   route?: RouteProgress;
@@ -490,6 +493,7 @@ function DataPage({
   onClose,
   track,
   numbers,
+  bpm,
   game,
   route,
   heading,
@@ -586,6 +590,9 @@ function DataPage({
           <Kilometres numbers={numbers} hero />
           {route && <RouteBar route={route} numbers={numbers} />}
           <RunGrid numbers={numbers} />
+          {/* Every number of the run, the heart rate too (TASK-424 part
+              C1, the user's choice): «Map» keeps it under its three. */}
+          <WatchHeart bpm={bpm} />
           <RunGameLine text={game} />
           {open && share}
           <Splits

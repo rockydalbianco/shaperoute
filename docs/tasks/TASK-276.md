@@ -1,7 +1,7 @@
 # TASK-276 — Più percorsi all'ora sullo stesso server
 
-**Stato**: In corso — parte A misurata, parte B in `main` (#1038) e sul
-server (2026-11-10); resta la misura dei percorsi al minuto con i processi
+**Stato**: In corso — parte A misurata, parte B in `main` (#1038), sul
+server e misurata (2026-11-10); resta la chiusura del Coordinatore
 **Fase**: 4 · **Branch**: `docs/TASK-276-plan` (questo file); per il
 codice, se si decide di farlo, `feat/TASK-276-route-process-pool`
 · **ADR**: 0242, riservato
@@ -416,3 +416,33 @@ Coordinatore dice «server libero» (dopo le zone del telefono e
 poi coi 2 processi, con 1, 2, 4 e 8 insieme, e stampa i percorsi al
 minuto, i core usati, lo `steal` della macchina condivisa e il picco di
 RAM dei lavoratori. Provato sul Mac nella versione corta.
+
+**Misura con i processi (2026-11-10 sera, server libero):** script
+`out/TASK-276/process_bench.py`, uscita `out/TASK-276/server-b.out`,
+tabella intera in `out/TASK-276/RISULTATI.md`. Stesse 9 richieste da 5 km
+a Trento, prima coi 2 thread e poi coi 2 processi, nessun errore.
+
+| Insieme | Thread, percorsi/min | Processi, percorsi/min | Tempo totale medio (max), thread → processi |
+|---|---|---|---|
+| 1 | 6,0 | 5,3 | 9,9 → 11,3 s |
+| 2 | 7,7 | 8,4 (+9%) | 15,1 (15,6) → 13,7 (14,2) s |
+| 4 | 7,6 | 8,3 (+9%) | 22,7 (31,5) → 20,9 (28,8) s |
+| 8 | 7,2 | 9,4 (+31%) | 41,7 (66,8) → 32,5 (51,1) s |
+
+- Il tetto passa da circa 7,5 a 8,5–9,5 percorsi al minuto: meno del +40%
+  stimato. Con i processi i core sono quasi pieni (3,4–3,6 su 4) e i figli
+  delle partenze vicine si prendono il resto: un terzo processo non
+  servirebbe.
+- `steal` 0,0% in ogni giro: in quell'ora chi condivide la macchina non
+  toglie CPU.
+- Picco di RAM di ogni lavoratore: 360 MB con la zona di Trento. Memoria
+  disponibile più bassa durante la misura: 4,3 GB.
+- Le zone foot sono state rifatte oggi, ma i numeri dei thread sono quelli
+  di stamattina (10,0 contro 10,1 s da solo; 7,2 contro 7,1 al minuto con
+  8 insieme): il confronto regge.
+- Un percorso da solo è circa 1 s più lento nel processo. È una sola
+  misura: da rivedere solo se ricapita.
+
+**Resta:** niente di tecnico. La leva più grande nei picchi resta la
+scelta di prodotto (partenze vicine spente sotto carico, ×3), poi il
+telefono (TASK-214).

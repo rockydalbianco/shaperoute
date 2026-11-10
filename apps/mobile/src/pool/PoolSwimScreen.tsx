@@ -53,6 +53,9 @@ export function PoolSwimScreen({
     [swim, pace, body],
   );
   useLiveShareNumbers(numbers, paused);
+  // On the screen too, every second (TASK-424 part C1): the lengths and the
+  // calories the link sends, estimated from the pace.
+  const now = numbers(nowMs);
   return (
     <View style={gymStyles.screen} testID="pool-swim">
       <View style={[styles.head, { paddingTop: insets.top + space.xl }]}>
@@ -62,6 +65,19 @@ export function PoolSwimScreen({
         <Text style={styles.clock} accessibilityRole="timer" testID="pool-clock">
           {clockLabel(activeMs(swim, nowMs))}
         </Text>
+        <View style={styles.figures}>
+          <Figure
+            label={t("Lengths")}
+            value={String(now.lengths ?? 0)}
+            testID="pool-live-lengths"
+          />
+          <Figure
+            label={t("Calories")}
+            value={typeof now.kcal === "number" ? String(now.kcal) : "–"}
+            unit={typeof now.kcal === "number" ? "kcal" : undefined}
+            testID="pool-live-kcal"
+          />
+        </View>
         {paused && <Text style={gymStyles.muted}>{t("Paused")}</Text>}
         <LiveShareButton
           canStart={swim.endedMs === null}
@@ -91,6 +107,32 @@ export function PoolSwimScreen({
   );
 }
 
+/** A number of the swim, its name under it. */
+function Figure({
+  label,
+  value,
+  unit,
+  testID,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  testID: string;
+}) {
+  return (
+    <View
+      style={styles.figure}
+      accessible
+      accessibilityLabel={`${label}: ${value}${unit ? ` ${unit}` : ""}`}
+    >
+      <Text style={styles.value} testID={testID}>
+        {unit ? `${value} ${unit}` : value}
+      </Text>
+      <Text style={gymStyles.muted}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   head: {
     flex: 1,
@@ -101,6 +143,20 @@ const styles = StyleSheet.create({
   clock: {
     color: color.text,
     fontSize: fontSize.display,
+    fontWeight: fontWeight.bold,
+    fontVariant: ["tabular-nums"],
+  },
+  figures: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: space.xl,
+  },
+  figure: {
+    alignItems: "center",
+  },
+  value: {
+    color: color.text,
+    fontSize: fontSize.title,
     fontWeight: fontWeight.bold,
     fontVariant: ["tabular-nums"],
   },

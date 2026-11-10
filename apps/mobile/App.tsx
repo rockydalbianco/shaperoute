@@ -162,7 +162,7 @@ import {
 } from "./src/screens/ProfileLayer";
 import { useInboxTab, useMessagesDoor } from "./src/messages/messagesDoor";
 import { MessagesPage } from "./src/tabs/MessagesPage";
-import { TabShell } from "./src/tabs/TabShell";
+import { type ShellPage, TabShell } from "./src/tabs/TabShell";
 import { StretchReminder } from "./src/screens/StretchReminder";
 import { clearSkiDay, queueSkiDay } from "./src/ski/skiDayStore";
 import { useSkiDayOutbox } from "./src/ski/useSkiDayOutbox";
@@ -181,6 +181,18 @@ import { activityOf, withoutRouteLabel } from "./src/settings/sport";
 import { withoutRouteIcon } from "./src/screens/RunNoRouteButton";
 import { SportButton } from "./src/settings/SportButton";
 import { useSport } from "./src/settings/useSport";
+import { MessagesButton } from "./src/skimode/MessagesButton";
+import {
+  barPagesOf,
+  isSkiMode,
+  pageAfterModeChange,
+  shellPagesOf,
+} from "./src/skimode/skiMode";
+import { SkiDaysPage } from "./src/skimode/SkiDaysPage";
+import { SkiMessages } from "./src/skimode/SkiMessages";
+import { SkiResortsPage } from "./src/skimode/SkiResortsPage";
+import { SkiTabIcon } from "./src/skimode/SkiTabIcon";
+import { SkiTodayPage } from "./src/skimode/SkiTodayPage";
 import { DrawingCard } from "./src/social/DrawingCard";
 import { drawingDoubleTapped } from "./src/social/DrawingReactions";
 import { drawnOf, followedOf } from "./src/social/drawingRoute";
@@ -217,15 +229,19 @@ type Screen =
   | "messages"
   | "canvas"
   | "pickStart"
-  | "play";
+  | "play"
+  // The pages of the ski mode (TASK-429, ADR-0357): «Days» and «Resorts».
+  | "skiDays"
+  | "skiResorts";
 
 /** The screens that are pages of the tab bar, in the order of their tabs
  * (TASK-367, ADR-0311): «Feed», «Draw», «Messages», «Explore», «Profile».
  * The others take the whole screen, the bar and the header with them.
  * «Play», the shape game (TASK-296, ADR-0255), is not among them since
  * 2026-10-29 (the user's choice): it opens from its row under the distance
- * of «Draw», over the app. */
-const PAGES: readonly Screen[] = ["feed", "choose", "messages", "explore", "profile"];
+ * of «Draw», over the app. With «Ski» chosen, the ski mode's pages instead
+ * (TASK-429, ADR-0357): «Today», «Days», «Resorts», «Feed», «Profile»
+ * (`src/skimode/skiMode.ts`). */
 
 /** A run that ended, shown on the finish screen. */
 type Finished = {
@@ -410,7 +426,10 @@ function MuW() {
   // (TASK-296): asked once as the app opens, kept on the phone for the next
   // opening.
   const playOn = useGameCatalog() !== null;
-  const pages = PAGES;
+  // The sport of «Settings» decides the pages: with «Ski», the ski mode's.
+  const barSport = useSport();
+  const skiMode = isSkiMode(barSport);
+  const pages: readonly Screen[] = barPagesOf(barSport);
   useEffect(() => {
     void refreshGameCatalog(API_URL);
   }, []);
@@ -1305,6 +1324,21 @@ function MuW() {
   const messages = useMessagesDoor();
   const messagesWaiting =
     messages.unread === null ? 0 : messages.unread.unread + messages.unread.requests;
+  // The ski mode coming on opens «Today»; going off, «Days» and «Resorts»
+  // go to «Draw» (TASK-429). Only on a page: never over a run.
+  const wasSkiMode = useRef(skiMode);
+  useEffect(() => {
+    const next = pageAfterModeChange(screenNow, wasSkiMode.current, skiMode);
+    wasSkiMode.current = skiMode;
+    if (next !== null && latestPage.current.onPage) {
+      latestPage.current.showPage(next);
+    }
+    // Only when the mode changes: the page then is the one to leave.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skiMode]);
+  // «Messages» of the ski mode, over the app: «Back» returns where they
+  // were opened from.
+  const messagesFrom = useRef<Screen>("choose");
   const profileTab = useProfileTab();
 
   /** Another page, by its tab. */
@@ -1742,6 +1776,9 @@ function MuW() {
       <FavoriteHeart route={onMap} />
       {page !== -1 && (
         <TabShell
+          // Built again when the ski mode comes or goes (TASK-429): other
+          // tabs, whose lights start from the page on screen.
+          key={skiMode ? "ski" : "app"}
           page={page}
           onPage={(index) =>
             // Nobody signed in has no messages: their tab is the way to sign in.
@@ -1749,234 +1786,287 @@ function MuW() {
               pages[index] === "messages" && !signedIn ? "profile" : pages[index],
             )
           }
-          // The sport at the right of the header (TASK-205, TASK-367).
-          action={<SportButton />}
-          pages={[
-            {
-              title: pageTitle("feed"),
-              label: pageTitle("feed"),
-              icon: "house",
-              render: () => (
-                <DrawAgainContext.Provider value={drawAgainDoor}>
-                  <EditRunContext.Provider value={editRunDoor}>
-                    <FeedScreen
-                      active={screen === "feed"}
-                      onOpen={(post) => {
-                        closeExplore();
-                        openExplored(postRoute(post), fetchPostRoute(post));
-                        setRouteList("feed");
-                        setScreen("map");
-                      }}
-                      onOpenMuw={(route) => {
-                        closeExplore();
-                        openExplored(muwCardRoute(route), fetchMuwRoute(route));
-                        setRouteList("feed");
-                        setScreen("map");
-                      }}
-                    />
-                  </EditRunContext.Provider>
-                </DrawAgainContext.Provider>
-              ),
-            },
-            {
-              title: pageTitle("draw"),
-              label: pageTitle("draw"),
-              icon: "pencil",
-              render: () => (
-                <ChooseScreen
-                  status={startStatus(startMode, position, start)}
-                  denied={startMode === "gps" && position.status === "denied"}
-                  mode={startMode}
-                  onMode={(mode) => {
-                    setStartMode(mode);
-                    if (mode === "gps") {
-                      // Asked again, as the old button did: the permission may be on now.
-                      refresh();
-                    }
+          // The sport at the right of the header (TASK-205, TASK-367); in the
+          // ski mode «Messages» beside it, which has no tab there (TASK-429).
+          action={
+            skiMode ? (
+              <View style={styles.headerActions}>
+                <MessagesButton
+                  waiting={messagesWaiting}
+                  onPress={() => {
+                    messagesFrom.current = screen;
+                    showPage(signedIn ? "messages" : "profile");
                   }}
-                  searching={showsSearch(startMode, position)}
-                  onPlace={(chosen) => {
-                    setPlace(chosen);
-                    // A small lake's shapes fit at less than 2 km (TASK-240).
-                    const fits = distanceOnSpot(chosen, distanceM);
-                    if (fits !== null) {
-                      distance.choose(fits);
-                    }
-                  }}
-                  near={
-                    position.status === "ok" ? position.point : (place?.point ?? null)
-                  }
-                  // On the water the search knows the lakes and the beaches,
-                  // for a swim too (TASK-323).
-                  suggest={isOnWater(sportActivity) ? spotPlaces : undefined}
-                  searchHint={isOnWater(sportActivity) ? SPOT_SEARCH_HINT : undefined}
-                  onPickOnMap={onOpenPick}
-                  mapError={mapError}
-                  onMapRetry={() => {
-                    setMapError(null);
-                    setMapTries((tries) => tries + 1);
-                  }}
-                  footer={
-                    <>
-                      <ZoneNotice bytes={firstMaps} />
-                      <DrawButton
-                        enabled={request !== null}
-                        onDraw={onDraw}
-                        // What it draws and how far (TASK-361).
-                        label={drawLabel(drawWhat(drawn), distanceM)}
-                        testID="draw-route"
+                />
+                <SportButton />
+              </View>
+            ) : (
+              <SportButton />
+            )
+          }
+          pages={shellPagesOf<ShellPage>(
+            barSport,
+            [
+              {
+                title: pageTitle("feed"),
+                label: pageTitle("feed"),
+                icon: "house",
+                render: () => (
+                  <DrawAgainContext.Provider value={drawAgainDoor}>
+                    <EditRunContext.Provider value={editRunDoor}>
+                      <FeedScreen
+                        active={screen === "feed"}
+                        onOpen={(post) => {
+                          closeExplore();
+                          openExplored(postRoute(post), fetchPostRoute(post));
+                          setRouteList("feed");
+                          setScreen("map");
+                        }}
+                        onOpenMuw={(route) => {
+                          closeExplore();
+                          openExplored(muwCardRoute(route), fetchMuwRoute(route));
+                          setRouteList("feed");
+                          setScreen("map");
+                        }}
                       />
-                    </>
-                  }
-                  onRun={() => {
-                    Keyboard.dismiss();
-                    // A workout at the gym has its own screen (TASK-385 B).
-                    if (sport === "gym") startGymWorkout();
-                    else setScreen("run");
-                  }}
-                  runLabel={withoutRouteLabel(sport)}
-                  runIcon={withoutRouteIcon(sport)}
-                >
-                  <ImageEditsContext.Provider value={imageEdits}>
-                    <RouteChoice
-                      kind={drawKind}
-                      onKind={setKind}
-                      shapeText={shapeText}
-                      shape={shape}
-                      onShapeText={setShapeText}
-                      reading={reading}
-                      onShapeDone={() => {
-                        if (reading) {
-                          shapeReading.read(shapeText);
-                        }
-                      }}
-                      wordText={wordText}
-                      onWordText={setWordText}
-                      wordCheck={wordCheck}
-                      letterStyle={letterStyle}
-                      onLetterStyle={setLetterStyle}
-                      penUp={penUp}
-                      onPenUp={setPenUp}
-                      image={image.state}
-                      onChooseImage={image.choose}
-                      distanceText={distance.text}
-                      distanceM={distanceM}
-                      onDistanceText={distance.type}
-                      activity={sportActivity}
-                      onFreehand={onOpenCanvas}
-                      pace={pace}
-                    />
-                  </ImageEditsContext.Provider>
-                  {/* The shape game, right under the distance (the user's
-                      choice of 2026-10-29), while the API has it. */}
-                  {playOn && <PlayRow onPress={() => showPage("play")} />}
-                  {/* Shapes ready to run near the phone, or in other cities
-                      (TASK-306): one opens as a route of «Explore», and «←»
-                      comes back here. */}
-                  {sportActivity === "running" && (
-                    <NearYou
-                      cards={nearYou}
-                      onOpen={(route) => {
-                        Keyboard.dismiss();
-                        closeExplore();
-                        openExplored(route);
-                        setRouteList("choose");
-                        setScreen("map");
-                      }}
-                    />
-                  )}
-                </ChooseScreen>
-              ),
-            },
-            {
-              title: pageTitle("messages"),
-              label:
-                messagesWaiting > 0
-                  ? t("Messages, {count} waiting", { count: messagesWaiting })
-                  : pageTitle("messages"),
-              icon: "send",
-              count: messagesWaiting,
-              // It asks the API for the conversations as it opens.
-              lazy: true,
-              render: () => <MessagesPage active={screen === "messages"} />,
-            },
-            {
-              title: pageTitle("explore"),
-              label: pageTitle("explore"),
-              icon: "search",
-              // It asks the API for its routes as it opens: not before.
-              lazy: true,
-              render: () =>
-                // On the water, the lakes and the beaches (TASK-191), a
-                // swim's too (TASK-323 C4).
-                sport === "paddle" || sport === "swim" ? (
-                  <PaddleExplore
-                    apiUrl={API_URL}
-                    near={start?.point ?? null}
-                    swim={sport === "swim"}
-                    onOpen={(route) => {
-                      closeExplore();
-                      openExplored(route);
-                      setRouteList("explore");
-                      setScreen("map");
-                    }}
-                    onOpenExample={openFoundExample}
-                  />
-                ) : (
-                  <ExploreScreen
-                    apiUrl={API_URL}
-                    near={start?.point ?? null}
-                    onOpen={(route) => {
-                      closeExplore();
-                      openExplored(route);
-                      setRouteList("explore");
-                      setScreen("map");
-                    }}
-                    onOpenExample={openFoundExample}
-                    city={exploreCity}
-                    onCity={(city) => {
-                      setExploreCity(city);
-                      if (city !== null) {
-                        const recent = remember(recentCities, city);
-                        setRecentCities(recent);
-                        saveRecentCities(recent);
+                    </EditRunContext.Provider>
+                  </DrawAgainContext.Provider>
+                ),
+              },
+              {
+                title: pageTitle("draw"),
+                label: pageTitle("draw"),
+                icon: "pencil",
+                render: () => (
+                  <ChooseScreen
+                    status={startStatus(startMode, position, start)}
+                    denied={startMode === "gps" && position.status === "denied"}
+                    mode={startMode}
+                    onMode={(mode) => {
+                      setStartMode(mode);
+                      if (mode === "gps") {
+                        // Asked again, as the old button did: the permission may be on now.
+                        refresh();
                       }
                     }}
-                    recent={recentCities}
-                    onAsk={(request) => {
-                      Keyboard.dismiss();
-                      closeExplore();
-                      themed.ask(request);
-                      setRouteList("explore");
-                      setScreen("map");
+                    searching={showsSearch(startMode, position)}
+                    onPlace={(chosen) => {
+                      setPlace(chosen);
+                      // A small lake's shapes fit at less than 2 km (TASK-240).
+                      const fits = distanceOnSpot(chosen, distanceM);
+                      if (fits !== null) {
+                        distance.choose(fits);
+                      }
                     }}
-                    onIdea={(idea) => {
+                    near={
+                      position.status === "ok" ? position.point : (place?.point ?? null)
+                    }
+                    // On the water the search knows the lakes and the beaches,
+                    // for a swim too (TASK-323).
+                    suggest={isOnWater(sportActivity) ? spotPlaces : undefined}
+                    searchHint={isOnWater(sportActivity) ? SPOT_SEARCH_HINT : undefined}
+                    onPickOnMap={onOpenPick}
+                    mapError={mapError}
+                    onMapRetry={() => {
+                      setMapError(null);
+                      setMapTries((tries) => tries + 1);
+                    }}
+                    footer={
+                      <>
+                        <ZoneNotice bytes={firstMaps} />
+                        <DrawButton
+                          enabled={request !== null}
+                          onDraw={onDraw}
+                          // What it draws and how far (TASK-361).
+                          label={drawLabel(drawWhat(drawn), distanceM)}
+                          testID="draw-route"
+                        />
+                      </>
+                    }
+                    onRun={() => {
                       Keyboard.dismiss();
-                      closeExplore();
-                      // Planned already: it opens at once, nothing asked.
-                      themed.show(idea);
-                      setRouteList("explore");
-                      setScreen("map");
+                      // A workout at the gym has its own screen (TASK-385 B).
+                      if (sport === "gym") startGymWorkout();
+                      else setScreen("run");
+                    }}
+                    runLabel={withoutRouteLabel(sport)}
+                    runIcon={withoutRouteIcon(sport)}
+                  >
+                    <ImageEditsContext.Provider value={imageEdits}>
+                      <RouteChoice
+                        kind={drawKind}
+                        onKind={setKind}
+                        shapeText={shapeText}
+                        shape={shape}
+                        onShapeText={setShapeText}
+                        reading={reading}
+                        onShapeDone={() => {
+                          if (reading) {
+                            shapeReading.read(shapeText);
+                          }
+                        }}
+                        wordText={wordText}
+                        onWordText={setWordText}
+                        wordCheck={wordCheck}
+                        letterStyle={letterStyle}
+                        onLetterStyle={setLetterStyle}
+                        penUp={penUp}
+                        onPenUp={setPenUp}
+                        image={image.state}
+                        onChooseImage={image.choose}
+                        distanceText={distance.text}
+                        distanceM={distanceM}
+                        onDistanceText={distance.type}
+                        activity={sportActivity}
+                        onFreehand={onOpenCanvas}
+                        pace={pace}
+                      />
+                    </ImageEditsContext.Provider>
+                    {/* The shape game, right under the distance (the user's
+                      choice of 2026-10-29), while the API has it. */}
+                    {playOn && <PlayRow onPress={() => showPage("play")} />}
+                    {/* Shapes ready to run near the phone, or in other cities
+                      (TASK-306): one opens as a route of «Explore», and «←»
+                      comes back here. */}
+                    {sportActivity === "running" && (
+                      <NearYou
+                        cards={nearYou}
+                        onOpen={(route) => {
+                          Keyboard.dismiss();
+                          closeExplore();
+                          openExplored(route);
+                          setRouteList("choose");
+                          setScreen("map");
+                        }}
+                      />
+                    )}
+                  </ChooseScreen>
+                ),
+              },
+              {
+                title: pageTitle("messages"),
+                label:
+                  messagesWaiting > 0
+                    ? t("Messages, {count} waiting", { count: messagesWaiting })
+                    : pageTitle("messages"),
+                icon: "send",
+                count: messagesWaiting,
+                // It asks the API for the conversations as it opens.
+                lazy: true,
+                render: () => <MessagesPage active={screen === "messages"} />,
+              },
+              {
+                title: pageTitle("explore"),
+                label: pageTitle("explore"),
+                icon: "search",
+                // It asks the API for its routes as it opens: not before.
+                lazy: true,
+                render: () =>
+                  // On the water, the lakes and the beaches (TASK-191), a
+                  // swim's too (TASK-323 C4).
+                  sport === "paddle" || sport === "swim" ? (
+                    <PaddleExplore
+                      apiUrl={API_URL}
+                      near={start?.point ?? null}
+                      swim={sport === "swim"}
+                      onOpen={(route) => {
+                        closeExplore();
+                        openExplored(route);
+                        setRouteList("explore");
+                        setScreen("map");
+                      }}
+                      onOpenExample={openFoundExample}
+                    />
+                  ) : (
+                    <ExploreScreen
+                      apiUrl={API_URL}
+                      near={start?.point ?? null}
+                      onOpen={(route) => {
+                        closeExplore();
+                        openExplored(route);
+                        setRouteList("explore");
+                        setScreen("map");
+                      }}
+                      onOpenExample={openFoundExample}
+                      city={exploreCity}
+                      onCity={(city) => {
+                        setExploreCity(city);
+                        if (city !== null) {
+                          const recent = remember(recentCities, city);
+                          setRecentCities(recent);
+                          saveRecentCities(recent);
+                        }
+                      }}
+                      recent={recentCities}
+                      onAsk={(request) => {
+                        Keyboard.dismiss();
+                        closeExplore();
+                        themed.ask(request);
+                        setRouteList("explore");
+                        setScreen("map");
+                      }}
+                      onIdea={(idea) => {
+                        Keyboard.dismiss();
+                        closeExplore();
+                        // Planned already: it opens at once, nothing asked.
+                        themed.show(idea);
+                        setRouteList("explore");
+                        setScreen("map");
+                      }}
+                    />
+                  ),
+              },
+              {
+                // The account's own profile (TASK-278): its picture is its tab.
+                title: pageTitle("profile"),
+                label: profileTab.label,
+                face: (selected) => <ProfileFace selected={selected} />,
+                count: profileTab.requests,
+                lazy: true,
+                render: () => (
+                  <OwnProfile
+                    active={screen === "profile"}
+                    onBack={profileFrom !== null ? backFromProfile : undefined}
+                  />
+                ),
+              },
+            ],
+            {
+              // The ski mode's own pages (TASK-429 part A, ADR-0357).
+              choose: {
+                title: t("Today"),
+                label: t("Today"),
+                face: (selected) => <SkiTabIcon name="today" selected={selected} />,
+                render: () => (
+                  <SkiTodayPage
+                    onRecord={() => {
+                      Keyboard.dismiss();
+                      setScreen("run");
                     }}
                   />
                 ),
+              },
+              skiDays: {
+                title: t("Days@@ski"),
+                label: t("Days@@ski"),
+                face: (selected) => <SkiTabIcon name="days" selected={selected} />,
+                lazy: true,
+                render: () => <SkiDaysPage onLogIn={() => showPage("profile")} />,
+              },
+              skiResorts: {
+                title: t("Resorts"),
+                label: t("Resorts"),
+                face: (selected) => <SkiTabIcon name="resorts" selected={selected} />,
+                lazy: true,
+                render: () => <SkiResortsPage apiUrl={API_URL} />,
+              },
             },
-            {
-              // The account's own profile (TASK-278): its picture is its tab.
-              title: pageTitle("profile"),
-              label: profileTab.label,
-              face: (selected) => <ProfileFace selected={selected} />,
-              count: profileTab.requests,
-              lazy: true,
-              render: () => (
-                <OwnProfile
-                  active={screen === "profile"}
-                  onBack={profileFrom !== null ? backFromProfile : undefined}
-                />
-              ),
-            },
-          ]}
+          )}
         />
+      )}
+      {/* «Messages» of the ski mode over the app (TASK-429 part A). */}
+      {skiMode && screen === "messages" && (
+        <SkiMessages onBack={() => showPage(messagesFrom.current)} />
       )}
       {/* The shape game (TASK-296, ADR-0255) over the app, opened from its
           row in «Draw»: «←» goes back there. */}
@@ -2008,6 +2098,11 @@ function MuW() {
 }
 
 const styles = StyleSheet.create({
+  // The ski mode's «Messages» and sport, side by side (TASK-429).
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   screen: {
     flex: 1,
     backgroundColor: color.background,

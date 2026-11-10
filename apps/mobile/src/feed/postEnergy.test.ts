@@ -55,7 +55,7 @@ test("one's own posts are counted with the body on the phone, others' not", () =
   expect(postEnergy(RUN)).toBe("441 kcal");
 });
 
-test("a swim in a pool has its own (TASK-409 part A), one in open water none", () => {
+test("a swim in a pool has its own (TASK-409 part A), one in open water a pool's", () => {
   const pool: SamplePost = { ...RUN, activity: "swimming", route_m: 1500, minutes: 40 };
   // 1500 m in 40 min at 2:40 /100 m, 70 kg (pool/poolKcal.test.ts).
   expect(postEnergy(pool)).toBe("235 kcal");
@@ -67,6 +67,24 @@ test("a swim in a pool has its own (TASK-409 part A), one in open water none", (
     user: { username: "Ada_runs" } as never,
   });
   expect(postEnergy(pool)).toBe("269 kcal");
-  // A swim in open water has a line, and no energy yet (ADR-0318 §14).
-  expect(postEnergy({ ...pool, line: [[46, 11]] })).toBeNull();
+  // A swim in open water has a line, and a pool's bands (TASK-424 part
+  // C2): the same pace, the same calories.
+  expect(postEnergy({ ...pool, line: [[46, 11]] })).toBe("269 kcal");
+});
+
+test("every activity its calories in the Feed (TASK-424 part C2)", () => {
+  const snow = {
+    ...RUN,
+    line: [[46, 11]] as SamplePost["line"],
+    route_m: 10_000,
+    minutes: 60,
+  };
+  // Cross-country and ski touring from the post's metres and time.
+  expect(postEnergy({ ...snow, activity: "xc_skiing" })).toMatch(/^[1-9]\d* kcal$/);
+  expect(postEnergy({ ...snow, activity: "ski_touring" })).toMatch(/^[1-9]\d* kcal$/);
+  // Downhill counts the descents alone, and the post has the whole day:
+  // none until the API keeps their time (part C2b).
+  expect(postEnergy({ ...snow, activity: "skiing" })).toBeNull();
+  // The gym counts its sets (gymPostEnergy).
+  expect(postEnergy({ ...snow, activity: "gym" })).toBeNull();
 });

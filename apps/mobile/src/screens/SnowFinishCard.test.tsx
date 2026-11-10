@@ -84,8 +84,9 @@ test("a day of skiing has its descents, metres down, speeds and lifts", async ()
   expect(screen.getByLabelText("Total: 3.60 km")).toBeOnTheScreen();
   expect(screen.getByText("How was the snow?")).toBeOnTheScreen();
   expect(screen.getByLabelText("Your gear")).toBeOnTheScreen();
-  // No calories on the snow, and no pace.
-  expect(screen.queryByText("Calories")).toBeNull();
+  // Calories on the descents alone (TASK-424 part C2): 4 minutes at 5.3
+  // MET for 70 kg, less the rest. No pace.
+  expect(screen.getByLabelText("Calories: 21 kcal")).toBeOnTheScreen();
   expect(screen.queryByText("Avg pace")).toBeNull();
 });
 
@@ -98,14 +99,15 @@ test("with miles the speeds are in mph and the kilometres in miles", async () =>
   expect(screen.getByLabelText("Vertical: 600 m")).toBeOnTheScreen();
 });
 
-test("a day of cross-country skiing has a run's distance, pace and climb, no calories", async () => {
+test("a day of cross-country skiing has a run's distance, pace, climb and calories", async () => {
   mockSport = "xc_ski";
   await render(<FreeFinishCard run={dayOf(twoDescents())} onDone={jest.fn()} />);
   expect(screen.getByLabelText("Distance: 3.60 km")).toBeOnTheScreen();
   expect(screen.getByText("Avg pace")).toBeOnTheScreen();
   expect(screen.getByLabelText("Elev. gain: 300 m")).toBeOnTheScreen();
   expect(screen.getByLabelText("Time: 9:00")).toBeOnTheScreen();
-  expect(screen.queryByText("Calories")).toBeNull();
+  // Its own formula (TASK-424 part C2): 24 km/h, racing, 15 MET for 9 min.
+  expect(screen.getByLabelText("Calories: 154 kcal")).toBeOnTheScreen();
   expect(screen.queryByText("Descents")).toBeNull();
   // The resort's snow and gear are a downhill day's.
   expect(screen.queryByText("Total")).toBeNull();

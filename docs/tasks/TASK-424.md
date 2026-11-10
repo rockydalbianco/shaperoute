@@ -621,6 +621,29 @@ Privacy, sezione «Sharing live»:
     tempo in pista (risalite escluse, `snowDay`); sci di fondo e
     scialpinismo con la loro formula. Dal vivo (lo sport registrato, non
     quello di `freeRunAs`), a fine giornata, in Apple Salute e nel Feed.
+    Branch `feat/TASK-424-c2-kcal-every-sport`. Le formule, in tabella,
+    in `UI.md` («Calories»). Scelte tecniche (decise dall'agente su delega
+    dell'utente; la voce in `DECISIONS.md` nella PR di soli documenti):
+    - una funzione sola, `activities/trackEffort.ts` (file nuovo), dà
+      metri, secondi e salita di una traccia: per lo sci alpino quelli
+      delle discese (`snowDay`, che ora dà anche `skiedMs`). La usano lo
+      schermo, Apple Salute e la pagina del post;
+    - dal vivo le calorie sono dello sport di «Settings» (quello che
+      «Save» salva e che va in Apple Salute), non di `freeRunAs`: lo sci
+      ha le velocità della bici e le sue calorie;
+    - la pagina del post (`runStatsOut.ts`) rilegge le discese dai punti
+      mandati, con le quote;
+    - nel Feed lo sci alpino resta senza calorie fino a **C2b**: il post
+      ha solo distanza e tempo della giornata intera. Scelta dell'utente
+      del 2026-11-10, «Sì, il server»: l'API calcola e tiene il tempo
+      delle discese, il Feed le conta come la fine giornata; C2b esce con
+      un aggiornamento del server, col sì dell'utente;
+    - uno sport che l'app non conosce (più nuovo dell'app) non ha calorie
+      e non fa errori (`findProfile`).
+    In più rispetto alla lista: il file nuovo `trackEffort.ts`,
+    `RunSportEnergy.test.tsx` (nuovo) e i test che dicevano «niente
+    calorie» per neve e acque libere (`snowWorkout`, `swimWorkout`,
+    `snowFeed`, `RunSwim`, `SnowFinishCard`, `navigation/swim`).
   - **C3 — Le calorie in rosso ovunque**: un token nuovo `energy` in
     `tokens.ts`, col contrasto misurato nei due temi, su ogni numero di
     calorie dell'app (corsa, neve, piscina, palestra, Feed, «Activities»,

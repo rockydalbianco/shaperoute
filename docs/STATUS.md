@@ -124,15 +124,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   produzione; prossime D («Together») ed E (telefono: anche il picker di
   sistema). File: — · `tasks/TASK-417.md`
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
-  0, A1, A2, B1 e B2 (piscina e palestra, #1053) in `main` e in
-  produzione dal 2026-11-10 (server, sito, OTA 2 con B1, OTA 3 con B2).
-  Restano la prova sul telefono e la parte C. File: — ·
-  `tasks/TASK-424.md`
+  0, A, B in produzione; C1 (#1096, OTA 5) e C2 (#1098, calorie di ogni
+  attività) in `main`. In corso C2b (le discese dello sci al server, con
+  TASK-429; il server col sì dell'utente), poi C3 (calorie in rosso).
+  Resta la prova sul telefono. File: quelli di C2b · `tasks/TASK-424.md`
 - **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
   privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
   collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
-  in produzione con l'OTA 4 del 2026-11-10. Prossima E (premi, una
-  migrazione). File: — · `tasks/TASK-423.md`
+  in produzione con l'OTA 4 del 2026-11-10. E1 (premi sul server, 0067) in
+  `main` con la #1099, il passo server 6 aspetta il sì dell'utente; poi E2
+  (l'app) e la privacy. File: — · `tasks/TASK-423.md`
 - **TASK-429 — La modalità sci** (ADR-0357) · 0 e A in `main` (A: #1093,
   esce col prossimo OTA). B1 (mappa a colori, legenda, «Summary · Map ·
   Runs») scritta, PR dopo la #1098; poi B2 e C, i tratti `ski_parts` con
@@ -142,6 +143,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   tre schede coi disegni, la punta rossa del nord. Restano l'OTA di
   produzione (col sì dell'utente) e la prova sul telefono. File: — ·
   `tasks/TASK-431.md`
+- **TASK-433 — Le schede della palestra guidate** (ADR-0360) · in `main`
+  (#1095): la guida in 5 passi, le settimane che cambiano (4 modi, ciclo
+  4/6/8), «My plans» e «Today» con la settimana. Restano il server
+  (migrazione 0066) e poi l'OTA, nel passo unico del Coordinatore col sì
+  dell'utente, e la prova sul telefono. File: — · `tasks/TASK-433.md`
+- **TASK-435 — Primo percorso subito, alternative dopo** (ADR-0361) ·
+  parte 0 fatta: piano, misura (una vicina vince nel 38% delle prove;
+  guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il
+  primo resta A»). Prossima la parte A (motore), poi B (API) e C (app).
+  File: — · `tasks/TASK-435.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

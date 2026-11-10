@@ -108,11 +108,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   finale, camera dietro, anteprima) e D («Describe your video») in `main`,
   nell'OTA di produzione; restano B2 (elefante, file dall'utente) ed E
   (telefono). File: — · `tasks/TASK-408.md`
-- **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` e in produzione;
-  B1 (battito sulla corsa, migrazione 0061) in `main` (#979), sul server con
-  l'aggiornamento del Coordinatore; B2 (l'app) in PR, entra dopo il server.
-  La B fa anche i pezzi di TASK-345 B/C e 374 D. File: `src/pool/`,
-  `src/health/heart*`, `src/about/content/`, `site/privacy/` · `tasks/TASK-409.md`
 - **TASK-410 — La pagina del post** · B (#949), F (#980) e C (`run_stats`,
   #1001) in `main`; 0064 e backfill dei passi col passo unico sul server.
   OTA di produzione del 2026-11-10 da 88e5f88f (gruppo `4eca1d42`, preview

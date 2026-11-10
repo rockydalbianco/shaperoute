@@ -1,7 +1,9 @@
 # TASK-409 — Nuoto in piscina: calorie, battito medio e tempo nelle zone
 
-**Stato**: In corso: parte A (calorie) in `main` e in produzione; parte B
-nella 1.0.3
+**Stato**: Done · 2026-11-10. Esito: calorie (A, #922) in `main` e in
+produzione; battito medio e tempo nelle zone (B1 #979 server, B2 #998 app) in
+`main`, server con la `0061`. Restano l'OTA di produzione della B2 e App
+Privacy «Salute», col sì dell'utente già dato (Esito, sotto)
 **Fase**: 5 · **Branch**: `feat/TASK-409-a-pool-calories` (parte A, col task
 file); la parte B avrà il suo
 **Dipende da**: TASK-400 (nuoto in piscina, chiuso), TASK-374 (Il mio corpo,
@@ -160,9 +162,10 @@ un OTA; il server (scelta 5) va prima, col sì dell'utente.
 - [x] A: impronta iOS `6f8bba4c` invariata (misurata con `npm ci` su una
       copia pulita di `3bf2802d`); test toccati, tsc, lint e Prettier verdi in
       locale, CI verde.
-- [ ] B: con un orologio, battito medio e tempo nelle zone della finestra del
+- [x] B: con un orologio, battito medio e tempo nelle zone della finestra del
       nuoto (modulo finto); senza campioni o con la lettura negata, solo le
-      calorie.
+      calorie. (`pool/PoolHeart.test.tsx`, `health/heartSamples.test.ts`,
+      `body/zoneTime.test.ts`; il server in `test_pool_swims.py`)
 
 ## File toccati
 
@@ -230,5 +233,20 @@ docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-409.md
   runtime `6f8bba4c`, commit `3bf2802d`; con lei uscivano anche #923, #930,
   #921 e #943. Gli OTA di produzione successivi (`10279e05`, `8b1af1b4` da
   `a0f38012`) la contengono. Android non pubblicato (test chiuso).
-- **Parte B**: aperta, nella 1.0.3, quando TASK-345 C e TASK-374 D sono in
-  `main` (sezione «Parte B» sopra).
+- **Parte B1** (2026-11-08): #979 in `main` (`63ff7a03`), migrazione
+  `0061_run_heart.sql`; sul server col passo unico del Coordinatore
+  (0061–0064, 2026-11-10), lanciato dall'utente («ok si»).
+- **Parte B2** (2026-11-10): #998 in `main` (`73acca24`), unita dal
+  Coordinatore. Documenti B1/B2 in #996.
+- **Resta, col sì dell'utente già dato** («ok va bene tutto», «sblocca e dai
+  l'ok», 2026-11-10): l'OTA di produzione che porta la B2, pubblicato dalla
+  sessione del Feed al via del Coordinatore; poi App Privacy «Salute» su App
+  Store Connect, che l'utente fa nel suo account (testo in
+  `out/TASK-409/app-privacy.md` della cartella principale, passato dal
+  Coordinatore; vale anche per TASK-424). Data safety di Google Play
+  invariata finché Android non legge il battito (TASK-321 C).
+- **Per TASK-345 C e TASK-374 D**: la lettura del battito
+  (`health/heartSamples.ts`, `health/heartModules.ts`) e il tempo in zona
+  (`body/zoneTime.ts`) sono già in `main`: si agganciano alle corse senza
+  riscriverli. Il battito sulla corsa (`runs.heart_*`) è il pezzo server di
+  TASK-345 B: lo scrive per ora solo il nuoto in piscina.

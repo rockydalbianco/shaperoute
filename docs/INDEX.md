@@ -40,7 +40,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Pubblicità, AdMob, pagamenti | `PUBBLICITA.md`, ADR-0198 |
 | Feed: schede, filtri «Tutti»/«Seguiti», percorsi di MuW | `API.md` «Feed», ADR-0306, ADR-0308, ADR-0310 |
 | Post: video, compositore, calorie e battito | `API.md` «Drawings», `tasks/TASK-336.md`, `tasks/TASK-348.md`, `tasks/TASK-345.md` |
-| La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 |
+| La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 (precisazioni C, F), `API.md` «Run stats», `DATABASE.md` (0064) |
 | La mia immagine al posto dell'animale nel video (foto tonda, GIF, cartellino sul 3D) e il video «Together» con le persone taggate sullo stesso orologio | `tasks/TASK-417.md`, `DECISIONS.md` ADR-0345 e ADR-0339, `tasks/TASK-408.md` |
 | Video della corsa ed editor con l'animale 3D | ADR-0303, ADR-0339, `UI.md` «Il post da condividere», `tasks/TASK-408.md` |
 | Messaggi, chat, allegati | `API.md` «Messages», `UI.md`, ADR-0279, ADR-0305 |
@@ -61,7 +61,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Walk, nuoto in acque libere | `ROUTE_ENGINE.md` (le reti, §8), `tasks/TASK-371.md` |
 | Sci: «Record only», stazioni, meteo | `MAPS.md` «Impianti e piste da sci», ADR-0319, ADR-0338, `tasks/TASK-375.md`, `tasks/TASK-406.md` |
 | Apple Watch | `tasks/TASK-370.md`, ADR-0314 |
-| Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352 |
+| Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352, `API.md` «Live shares», `SITO.md` «La pagina dal vivo» |
 | La corsa in registrazione: le tre pagine «Compass», «Map», «Data», la mappa che gira dove punta il telefono | `UI.md` «La navigazione», ADR-0350, ADR-0137, `tasks/TASK-422.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 

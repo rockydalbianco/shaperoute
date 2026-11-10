@@ -68,15 +68,28 @@ def run_body(
 
 SIX_KM = [(6_000.0, 3.0)]
 # What 6 km at 5:33 a kilometre unlock (TASK-423): the km of geometry up to
-# 5, the kilometre and the 5 km at 7:30 to 6:00, and the first 5K. The
-# 400 m and the 3 km are timed from part B.
+# 5, every pace of 6:00 or slower over 400 m, 1 km, the mile, 3 and 5 km,
+# and the first 5K.
+# Its best times: every distance of 6 km or less (TASK-423 part B).
+SIX_KM_BEST = {
+    "400": 133.3,
+    "1000": 333.3,
+    "1609": 536.3,
+    "3000": 1000.0,
+    "5000": 1666.7,
+}
 SIX_KM_UNLOCKS = [
     "oval",
     "pentagon",
     "triangle",
+    "snail",
     "penguin",
     "cat",
     "bear",
+    "crab",
+    "octopus",
+    "house",
+    "igloo",
     "bridge",
     "arch",
     "lighthouse",
@@ -180,13 +193,13 @@ def test_six_km_unlock_the_triangle(client: TestClient) -> None:
         "counted": True,
         "reason": None,
         "counted_m": 6_000,
-        "best_s": {"1000": 333.3, "5000": 1666.7},
+        "best_s": SIX_KM_BEST,
         "unlocked": SIX_KM_UNLOCKS,
         "pieces_done": [],
     }
     answer = client.get("/game/me", headers=me).json()
     assert answer["counted_m"] == 6_000 and answer["longest_m"] == 6_000
-    assert answer["best_s"] == {"1000": 333.3, "5000": 1666.7}
+    assert answer["best_s"] == SIX_KM_BEST
     shapes = {shape["id"]: shape for shape in answer["shapes"]}
     assert shapes["triangle"] == {
         "id": "triangle",
@@ -203,7 +216,7 @@ def test_six_km_unlock_the_triangle(client: TestClient) -> None:
     collections = {c["id"]: c for c in answer["collections"]}
     assert len(collections) == 10
     assert collections["geometry"] == {"id": "geometry", "unlocked": 3, "total": 10}
-    assert collections["city"] == {"id": "city", "unlocked": 4, "total": 13}
+    assert collections["city"] == {"id": "city", "unlocked": 6, "total": 13}
     assert collections["greece"] == {"id": "greece", "unlocked": 0, "total": 7}
 
 
@@ -212,16 +225,21 @@ def test_a_fast_kilometre_unlocks_the_lightning(client: TestClient) -> None:
     # 1.2 km at 3.6 m/s: 4:38 a kilometre.
     save(client, me, run_body([(1_200.0, 3.6)]))
     game = game_of(client, me)
-    # With the first km and the slower kilometres of the animals.
+    # With the first km and the slower 400 m and kilometres of the animals.
     assert game["unlocked"] == [
         "oval",
+        "snail",
+        "turtle",
         "penguin",
         "cat",
         "bear",
         "butterfly",
         "lightning",
     ]
-    assert game["best_s"] == {"1000": pytest.approx(277.8, abs=0.1)}
+    assert game["best_s"] == {
+        "400": pytest.approx(111.1, abs=0.1),
+        "1000": pytest.approx(277.8, abs=0.1),
+    }
 
 
 def test_a_shape_is_unlocked_once(client: TestClient) -> None:

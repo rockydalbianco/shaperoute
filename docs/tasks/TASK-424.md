@@ -1,7 +1,7 @@
 # TASK-424 — I dati dal vivo per ogni sport e «Share live activity»
 
-**Stato**: In corso · parte 0 (#981) e A1 (#983) in `main`; prossime A2 e
-B1; il server col sì dell'utente
+**Stato**: In corso · parte 0 (#981), A1 (#983) e A2 (#1010) in `main`;
+prossima B1; il server e la copia del sito col sì dell'utente
 **Fase**: 5 · **Branch**: `docs/TASK-424-live-share` (parte 0) · **ADR**:
 ADR-0352 · numeri dal Coordinatore (2026-11-08)
 
@@ -432,15 +432,17 @@ Privacy, sezione «Sharing live»:
   aggiornamento dopo palestra, ciaspole e cancelli; la sequenza la prepara
   il Coordinatore e la lancia l'utente. Il giro di pulizia parte con quel
   deploy. Finché il server non c'è, A2 e B si provano in locale.
-- **A2** — la pagina `site/live/`: in PR #1010 (`feat/TASK-424-a2-live-page`,
-  2026-11-08). `view.js` (logica pura, provata con la fixture
+- **A2** — la pagina `site/live/`: #1010 in `main` (ceef7cb3,
+  2026-11-08); le scelte tecniche in ADR-0352, precisazione A2. `view.js` (logica pura, provata con la fixture
   `live-view.json`) e `live.js` (pagina, mappa, timer) al posto del solo
   `live.js` proposto: un file nuovo nella stessa cartella. MapLibre 5.24.0
   copiato con gli hash SRI dell'app. Provata in locale contro un finto
   `/live` (`out/TASK-424/live-stand-in.mjs`, fuori da git): l'API vera
   lascia leggere `/live` solo a `https://getmuw.app`. **Resta**: la copia
   del sito sul server (F.14, che ora prende `site/live`), col sì
-  dell'utente, dopo l'aggiornamento del server. File approvati dal
+  dell'utente, dopo l'aggiornamento del server: la riga ssh, le prove e il
+  ritorno indietro in `out/TASK-424/f14-site-live.md` della copia
+  principale (controllata dal Coordinatore). File approvati dal
   Coordinatore:
   ```
   site/live/index.html          (nuovo)

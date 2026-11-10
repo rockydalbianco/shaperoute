@@ -19,8 +19,9 @@ from shaperoute_api.game_rules import (
 
 
 def test_the_rules_changed_for_the_walk() -> None:
-    # game_backfill computes the runs kept with rules 1 again.
-    assert RULES_VERSION == 2
+    # game_backfill computes the runs kept with rules 1 again (2: the walk;
+    # 3, TASK-423: the best times over 11 distances).
+    assert RULES_VERSION >= 2
     assert WALKING == "walking"
 
 

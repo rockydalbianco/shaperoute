@@ -1,8 +1,8 @@
 # TASK-276 — Più percorsi all'ora sullo stesso server
 
-**Stato**: Todo — aspetta l'approvazione di Apple della 1.0 (nessun lavoro
-pesante sul server mentre il revisore prova l'app), poi l'ok dell'utente e
-il via del coordinatore
+**Stato**: In corso — parte A misurata il 2026-11-10 (giro 1 senza
+partenze vicine, giro 2b con; vedi «Esito»); la scelta della parte B è
+davanti all'utente
 **Fase**: 4 · **Branch**: `docs/TASK-276-plan` (questo file); per il
 codice, se si decide di farlo, `feat/TASK-276-route-process-pool`
 · **ADR**: 0242, riservato
@@ -190,4 +190,127 @@ docs/STATUS.md, docs/tasks/TASK-276.md
 
 ## Esito
 
-*(si compila a fine task)*
+### Parte A, giro 1 (2026-11-10)
+
+Con il sì dell'utente («Sì, misura») e il via del Coordinatore. Righe ssh
+lanciate dall'utente dal Mac; script `out/TASK-276/route_bench.py`, uscita
+in `out/TASK-276/server.out`, analisi intera in `out/TASK-276/RISULTATI.md`
+(nella cartella `out/` del checkout principale, non nel repository).
+
+**Limite:** il giro è partito **senza partenze vicine**. Mandato su stdin,
+lo script aveva `__file__ = "<stdin>"` e i processi `spawn` morivano
+all'avvio (`FileNotFoundError: '/app/<stdin>'`). Misura quindi lo scenario
+«niente partenze vicine». Lo script è corretto e provato su stdin sul Mac.
+
+**Il server:** 4 core, 7,9 GB, 5,7–6,2 GB disponibili; API 680 MiB;
+carico 0,35 prima, nessun job nei 10 minuti prima.
+
+**Un percorso alla volta** (zona di Trento in memoria; secondi = CPU del
+processo principale, il server calcola e non aspetta):
+
+- 9 forme da 5 km: 2,6–12,8 s, media 6,4;
+- 3 cuori da 10 km: 8,1–12,5 s, media 10,5;
+- cuore da 15 km a Milano: 18,6 s;
+- stesso cuore da 5 km: 5,9 s sul server, 1,9–2,8 s sul Mac. **Un core
+  del server è 2–3 volte più lento del Mac.**
+
+**Più richieste insieme** (`RouteJobs` a 2 thread, come l'API):
+
+| Insieme | Percorsi/min | Attesa media (max) | Totale medio (max) | Core usati |
+|---|---|---|---|---|
+| 1 | 9,7 | 0,1 s | 6,2 s | 1,0 |
+| 2 | 8,2 | 0,1 s | 13,4 s (14,6) | 1,2 |
+| 4 | 8,4 | 7,7 s (19,1) | 19,6 s (28,5) | 1,2 |
+| 8 | 7,4 | 26,5 s (56,5) | 42,0 s (64,6) | 1,2 |
+
+- Il tetto è circa 8 percorsi al minuto, comunque arrivino le richieste.
+- Il server usa 1,2 core su 4: i due thread si dividono il GIL.
+- CPU per percorso: 6,2 s da solo, 9,5 s con 8 insieme (+50%, contesa).
+
+**RAM:** processo con le zone di Trento e di Milano, picco 891 MB. Il picco
+dei figli va riletto nel giro 2b.
+
+**Persone al giorno:** circa 480 percorsi l'ora nel picco. Se l'ora di
+punta porta il 15% dei percorsi del giorno e ogni persona attiva ne chiede
+3 (ipotesi, non misure), il server regge circa 1.000 persone attive al
+giorno prima che nei picchi si aspetti più di mezzo minuto. Con le
+partenze vicine il numero può solo restare uguale o scendere. Non conta i
+percorsi già pronti dell'archivio (ADR-0256). La stima del 2026-10-11
+(2.000–3.000) era troppo alta.
+
+**Proposta per la parte B, in ordine:**
+
+1. 3 processi di lavoro già caldi (zone in memoria) al posto dei 2 thread:
+   usano i 3 core fermi e tolgono la contesa. Senza partenze vicine il
+   tetto passerebbe da circa 8 a circa 25 percorsi al minuto; circa 0,9 GB
+   per processo stanno nei 5,7 GB liberi. Con le partenze vicine il
+   guadagno lo dice il giro 2b.
+2. Più percorsi calcolati sul telefono (TASK-214).
+3. Un server con vCPU dedicate (Hetzner CCX), dopo un `vmstat` che misuri
+   la CPU tolta da chi condivide la macchina.
+
+Scelta di prodotto, dell'utente: spegnere le partenze vicine quando il
+server è carico.
+
+La proposta qui sopra è del giro 1: quella valida è sotto, dopo il giro 2b.
+
+### Parte A, giro 2b (2026-11-10, con le partenze vicine)
+
+Lo script corretto, lanciato dall'utente; uscita in
+`out/TASK-276/server-2.out`. Come in produzione: i figli partono. Il
+`vmstat` non è stato lanciato: la CPU tolta da chi condivide la macchina
+resta da misurare.
+
+**Un percorso alla volta:** 9 forme da 5 km in 5,2–13,3 s (media 8,1),
+CPU principale media 6,9 s, CPU dei figli media 11,7 s (rapporto
+0,75–2,92, media 2,0): **circa 19 s di CPU per percorso**. Cuori da 10 km
+in 11,7–14,7 s. Quasi sempre 1–2 alternative.
+
+| Insieme | Percorsi/min | Attesa media (max) | Totale medio (max) | Core usati |
+|---|---|---|---|---|
+| 1 | 5,9 | 0,1 s | 10,1 s | 2,2 |
+| 2 | 7,7 | 0,1 s | 14,3 s (15,6) | 3,0 |
+| 4 | 7,8 | 8,1 s (16,9) | 22,5 s (30,8) | 2,7 |
+| 8 | 7,1 | 27,6 s (59,6) | 43,8 s (67,8) | 2,5 |
+
+- **In produzione il tetto è circa 7–8 percorsi al minuto**: il collo di
+  bottiglia è il thread principale col GIL (circa 1,1 core), mentre i figli
+  usano già circa 1,4 core accanto. Carico 3,07 con 8 richieste insieme.
+- RAM: processo con le zone di Trento e Milano 893 MB; figlio più grande
+  386 MB in un percorso solo, 893 MB nel giro a più richieste (da capire
+  prima di costruire, forse `ru_maxrss` falsato). Liberi 5,6–6,3 GB.
+
+**Il tetto rifatto:** senza contesa un percorso costa circa 18–22 s di CPU
+(6,3 principale + 12–16 figli). Con 4 core il massimo è **11–13 percorsi
+al minuto**, realisticamente 10–11: **circa +40%** con i processi caldi e
+le partenze vicine accese. È il «+33% al massimo» del piano, più la
+contesa del GIL tolta. Senza partenze vicine (6,2 s per percorso) 3
+processi danno circa 25–29 percorsi al minuto.
+
+**Quanti processi:**
+
+- con le partenze vicine sempre accese, **2 processi** al posto dei 2
+  thread: un core intero per ogni principale e i figli, a priorità più
+  bassa, sugli altri due. Un terzo toglierebbe core ai figli senza alzare
+  il tetto. RAM: circa 4 GB nei 5,6 liberi (`workers_that_fit` limita già i
+  figli alla memoria libera);
+- con le partenze vicine spente sotto carico, **3 processi**.
+
+**Persone attive al giorno** (ipotesi: 15% nell'ora di punta, 3 percorsi a
+testa; senza archivio né telefono):
+
+| Configurazione | Percorsi/min | Persone al giorno |
+|---|---|---|
+| Oggi | 7–8 | circa 1.000 |
+| 2 processi caldi, partenze vicine accese | 10–11 | circa 1.400 |
+| 3 processi, partenze vicine spente sotto carico | 25–29 | circa 3.500 |
+
+**Proposta per la parte B, in ordine:**
+
+1. 2 processi caldi al posto dei 2 thread: circa +40%, percorsi identici,
+   nessuna scelta di prodotto.
+2. Il telefono (TASK-214): ogni percorso fatto lì toglie circa 19 s di
+   CPU al server.
+3. Scelta di prodotto: partenze vicine spente sotto carico, con un terzo
+   processo (×3 nei picchi).
+4. Un server con vCPU dedicate, dopo il `vmstat`.

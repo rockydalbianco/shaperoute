@@ -532,6 +532,18 @@ Restano, ognuno col sì dell'utente chiesto dal Coordinatore: il deploy del
 server con la migrazione in produzione, il backfill dei passi
 (`python -m shaperoute_api.run_stats`), l'OTA della parte app.
 
+## OTA del 2026-11-10 (parti F e C)
+
+Il deploy con la 0064 e il backfill dei passi sono entrati nel passo unico
+sul server del 2026-11-10. Al «via ota» dell'utente è uscito l'OTA di
+produzione da `main` 88e5f88f, solo iOS, da una copia pulita: gruppo
+`4eca1d42-cb1c-407a-84aa-0d929ede781d`, update
+`01a1c482-7073-7baa-8070-7289e90a2387`, runtime `6f8bba4c…`. Stesso commit
+sul canale preview (gruppo `b0f9913b-b8cf-4765-92b2-796924d597c1`, runtime
+`exposdk:57.0.0`) per l'iPhone di prova. Porta la card del Feed come la
+pagina (F) e l'invio delle stats (C). La parte D (#1043) esce col secondo
+OTA, dopo il passo server 2, col sì dell'utente.
+
 ## Parte D — le sezioni nella pagina del post (2026-11-10)
 
 Chiesta dall'utente il 2026-11-10 («continua con la parte d»); lista dei

@@ -87,9 +87,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   resta C. File: — · `tasks/TASK-371.md`
 - **TASK-374 — Il mio corpo: calorie e zone del battito** · A e B in `main`;
   C e D nella 1.0.2. File: — · `tasks/TASK-374.md`
-- **TASK-380 — Roller** · 0, A, B in `main`, server con la 0055;
-  l'accensione in PR (`feat/TASK-380-roller-on`), dopo l'OTA della #922.
-  File: quelli di quel branch · `tasks/TASK-380.md`
 - **TASK-384 — «MuW Style»** · A e B in `main`; prossima C, i primi 6 post.
   File: — · `tasks/TASK-384.md`
 - **TASK-385 — «Gym», la palestra** · parti fino a F in `main`; prossima G
@@ -116,10 +113,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   l'aggiornamento del Coordinatore; B2 (l'app) in PR, entra dopo il server.
   La B fa anche i pezzi di TASK-345 B/C e 374 D. File: `src/pool/`,
   `src/health/heart*`, `src/about/content/`, `site/privacy/` · `tasks/TASK-409.md`
-- **TASK-410 — La pagina del post** · B (#949, OTA `8b1af1b4`), F (#980) e
-  C (`run_stats`, #1001, migrazione 0064) in `main`; F e l'invio delle stats
-  col prossimo OTA unico, la 0064 col passo unico sul server, il backfill
-  dei passi col sì dell'utente. Poi D, E. File: — · `tasks/TASK-410.md`
+- **TASK-410 — La pagina del post** · B (#949), F (#980) e C (`run_stats`,
+  #1001) in `main`; 0064 e backfill dei passi col passo unico sul server.
+  OTA di produzione del 2026-11-10 da 88e5f88f (gruppo `4eca1d42`, preview
+  `b0f9913b`). D (#1043) col secondo OTA, poi E. File: — · `tasks/TASK-410.md`
 - **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
   `heights.py` condiviso) e sul server col passo unico del 2026-11-10;
   prossime A2 (contratto, API, migrazione in bozza 0057) e B. File: — ·

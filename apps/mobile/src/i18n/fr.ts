@@ -1831,6 +1831,14 @@ export const FR: Table = {
   Lengths: "Longueurs",
   "Pool swim": "Nage en piscine",
   "Pace /100 m": "Allure /100 m",
+  // TASK-409 part B: the heart rate of a swim in a pool.
+  "Add heart rate from Apple Health": "Ajouter la fréquence cardiaque depuis Santé",
+  "No heart rate from your watch for this swim.":
+    "Aucune fréquence cardiaque de ta montre pour cette nage.",
+  "Show heart rate": "Afficher la fréquence cardiaque",
+  "Avg heart rate": "FC moyenne",
+  "Time in zones": "Temps par zone",
+  "From your watch, via Apple Health": "De ta montre, via Santé",
   // src/explore/ExploredCard.tsx, src/social/DrawingCard.tsx (TASK-313)
   "Draw it near me": "La dessiner près de moi",
   // src/route/RoutePanel.tsx (TASK-311 B: a word in one line that did not come out)
@@ -2150,4 +2158,22 @@ export const FR: Table = {
   "Marked by the members in the last 24 hours.":
     "Indiquée par les membres ces dernières 24 heures.",
   "Members' days here": "Les journées des membres ici",
+
+  // src/liveShare/LiveShareButton.tsx (TASK-424 part B1; «Not now» above)
+  "Share live": "Partager en direct",
+  "Sharing live": "Partage en direct activé",
+  "Sign in to share live": "Connecte-toi pour partager en direct",
+  "Share this activity live": "Partager cette activité en direct",
+  "Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it.":
+    "Toute personne qui a le lien peut te suivre sur une page web, sans l'app : ta position exacte sur la carte, le parcours déjà fait, la distance, le temps, l'allure ou la vitesse, le dénivelé, les calories et ta fréquence cardiaque quand une montre l'envoie.",
+  "The link stops working one hour after you finish, or as soon as you stop sharing. Then your positions are deleted.":
+    "Le lien cesse de fonctionner une heure après la fin, ou dès que tu arrêtes le partage. Tes positions sont alors supprimées.",
+  "Share link": "Partager le lien",
+  "Follow my activity live on MuW: {url}":
+    "Suis mon activité en direct sur MuW : {url}",
+  "Stop sharing?": "Arrêter le partage ?",
+  "The link stops working now.": "Le lien cesse de fonctionner maintenant.",
+  "Stop sharing": "Arrêter",
+  "Keep sharing": "Continuer",
+  "Couldn't create the link. Try again.": "Impossible de créer le lien. Réessaie.",
 };

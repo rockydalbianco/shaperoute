@@ -1823,6 +1823,14 @@ export const IT: Table = {
   Lengths: "Vasche",
   "Pool swim": "Nuoto in piscina",
   "Pace /100 m": "Passo /100 m",
+  // TASK-409 part B: the heart rate of a swim in a pool.
+  "Add heart rate from Apple Health": "Aggiungi il battito da Salute",
+  "No heart rate from your watch for this swim.":
+    "Nessun battito dall'orologio per questa nuotata.",
+  "Show heart rate": "Mostra il battito",
+  "Avg heart rate": "Battito medio",
+  "Time in zones": "Tempo nelle zone",
+  "From your watch, via Apple Health": "Dal tuo orologio, tramite Salute",
   // src/explore/ExploredCard.tsx, src/social/DrawingCard.tsx (TASK-313: la
   // stessa forma in «Draw»)
   "Draw it near me": "Disegnala vicino a me",
@@ -2139,4 +2147,23 @@ export const IT: Table = {
   "Marked by the members in the last 24 hours.":
     "Segnata dai membri nelle ultime 24 ore.",
   "Members' days here": "Le giornate dei membri qui",
+
+  // src/liveShare/LiveShareButton.tsx (TASK-424 part B1; «Not now» above)
+  "Share live": "Condividi dal vivo",
+  "Sharing live": "Condivisione attiva",
+  "Sign in to share live": "Accedi per condividere dal vivo",
+  "Share this activity live": "Condividi l'attività dal vivo",
+  "Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it.":
+    "Chiunque abbia il link può seguirti su una pagina web, senza l'app: la tua posizione esatta sulla mappa, il percorso fatto, distanza, tempo, passo o velocità, dislivello, calorie e il battito quando un orologio lo manda.",
+  "The link stops working one hour after you finish, or as soon as you stop sharing. Then your positions are deleted.":
+    "Il link smette di funzionare un'ora dopo la fine, o appena smetti di condividere. Poi le tue posizioni vengono cancellate.",
+  "Share link": "Condividi il link",
+  "Follow my activity live on MuW: {url}":
+    "Segui la mia attività dal vivo su MuW: {url}",
+  "Stop sharing?": "Smettere di condividere?",
+  "The link stops working now.": "Il link smette di funzionare adesso.",
+  "Stop sharing": "Smetti",
+  "Keep sharing": "Continua",
+  "Couldn't create the link. Try again.":
+    "Non è stato possibile creare il link. Riprova.",
 };

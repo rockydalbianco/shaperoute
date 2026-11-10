@@ -38,6 +38,12 @@ export function PoolFigures({ drawingId, metres, durationS, fetchFn }: Props) {
           style={styles.line}
         >{`${t("Pace /100 m")}: ${clockLabel(pace * 1000)}`}</Text>
       )}
+      {/* When its owner shows it (TASK-409 part B). */}
+      {figures.heart_avg_bpm !== undefined && (
+        <Text style={styles.line} testID="pool-figures-heart">
+          {`${t("Avg heart rate")}: ${figures.heart_avg_bpm} bpm`}
+        </Text>
+      )}
     </View>
   );
 }

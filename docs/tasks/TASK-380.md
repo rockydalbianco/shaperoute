@@ -1,7 +1,8 @@
 # TASK-380 — Roller: i pattini in linea sull'asfalto liscio
 
-**Stato**: In corso — parte 0 in `main` (#886, #890), parte A in `main`
-(#912, soglie #914), parte B in `main` (#921); accensione in PR.
+**Stato**: Done (2026-11-10) — il Roller è acceso: parte 0 (#886, #890),
+A (#912, soglie #914), B (#921) e accensione (#946) in `main`; server con la
+0055; OTA di produzione 10279e05. Resta la prova sul telefono.
 **Fase**: 4 · **Branch**: `docs/TASK-380-0-roller` (parte 0), poi
 `feat/TASK-380-a-roller-engine-api`, `feat/TASK-380-b-roller-app` ·
 **ADR**: ADR-0324 · numeri dal Coordinatore (2026-11-04) · sessione
@@ -416,3 +417,20 @@ La PR entra dopo l'OTA di produzione della #922. Il Roller acceso esce con
 un OTA suo, col sì dell'utente, che chiede il Coordinatore. Poi va provato
 sul telefono: si sceglie, si pattina, si salva e va in Salute (il criterio
 B).
+
+2026-11-08: **accensione in `main`** (#946, `f1c7ad23`), dopo l'OTA della
+#922. L'OTA di produzione col Roller acceso è uscito col sì dell'utente
+(«Sì, OTA Roller»):
+
+- gruppo `10279e05-03c8-44c4-8e86-3ee7deece22e`;
+- update iOS `01a1bc24-cb8d-7209-9691-232a34c56089`;
+- commit `f1c7ad23`, runtime `6f8bba4c`, solo iOS.
+
+Dentro c'erano anche le guide animate della palestra (#941).
+
+**Esito**: il Roller 🛼 si sceglie in «Impostazioni» e in «Disegna», con la
+sua rete e i suoi record, nel gioco con soglie sue.
+
+**Resta da fare**: la prova sul telefono del criterio B (si sceglie, si
+pattina, si salva e va in Salute). I test lo coprono, ma sul telefono nessuno
+l'ha ancora provato.

@@ -3406,6 +3406,34 @@ cui tiene i numeri.
   bici e in canoa la riga non c'è e non compare nessun errore; la voce non
   cambia. **Da provare su preview**: il posto della riga lo conferma
   l'utente quando la vede.
+- **«Share live»** (TASK-424 parte B1, ADR-0352; codice in
+  `src/liveShare/`): su «Map» sopra i pulsanti della corsa, su «Data» sotto
+  la riga del gioco, un pulsante a pillola «Share live»; su «Compass» niente.
+  Senza account al suo posto «Sign in to share live», grigio e senza
+  tocco; dopo l'arrivo di un percorso niente (un link già acceso resta,
+  per poterlo fermare). **Il tocco** apre un foglio dal basso, «Share this
+  activity live», con i due testi approvati (cosa vede chi ha il link,
+  battito compreso; quando smette di funzionare) e «Not now» · «Share
+  link». Il foglio torna a ogni link nuovo: è il consenso, e ogni link è
+  nuovo. «Share link» fa il link (`POST /me/live-shares`) col foglio
+  aperto; se non riesce, nel foglio «Couldn't create the link. Try
+  again.». Fatto il link, il foglio scende e solo dopo si apre il foglio di
+  condivisione del telefono con «Follow my activity live on MuW: {url}»
+  (su iOS si aspetta che il nostro sia sparito, come in TASK-358). Chiuso
+  senza mandare, il link resta acceso. **Mentre condivide**, al posto del
+  pulsante l'etichetta «Sharing live» con un pallino arancio (`warning`);
+  un tocco chiede «Stop sharing?» / «The link stops working now.» con
+  «Keep sharing» · «Stop sharing», e lo stop spegne subito l'etichetta e
+  manda il `DELETE`. Un `410` dal server la spegne da solo. **Gli invii**
+  partono dal task della posizione, anche a telefono bloccato: ogni 15 s
+  in movimento (i punti nuovi, uno ogni 5 s al più, 200 per invio, e
+  distanza, tempo senza pause, dislivello, calorie, battito
+  dall'orologio), subito a pausa e ripresa, ogni 60 s in pausa; senza rete
+  fino a 500 punti in coda. Alla fine dell'attività (la scheda della corsa
+  se ne va) `finished`, riprovato fino a quattro volte; il link vale
+  ancora un'ora. Partono solo i punti da quando c'è il link: il server non
+  ne prende di più vecchi di 5 minuti. «Keep running» dopo la fine vuole
+  un link nuovo. Mai acceso da solo.
 - **«Pause»**, un pulsante tondo e chiaro in mezzo, su tutte e due le
   pagine; da una parte «Pocket», dall'altra «Music». In pausa il tempo si ferma, le posizioni non
   entrano nella traccia e «Pace now» è «–»; la mappa continua a seguire, e

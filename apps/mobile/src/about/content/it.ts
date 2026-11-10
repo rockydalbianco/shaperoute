@@ -439,7 +439,7 @@ const privacy: AboutDocument = {
     {
       heading: "Apple Salute e Health Connect",
       blocks: [
-        "Quando accendi «Salva in Apple Salute» (iPhone) o «Salva in Health Connect» (Android), ogni attività che salvi viene scritta anche lì, sul telefono: lo sport, quando è iniziata e finita, la distanza, il percorso e, per una corsa, le calorie attive stimate. MuW non legge mai i tuoi dati di salute, e niente di questi arriva al nostro server o a qualche pubblicità. Puoi fermarlo nell'app Salute o in Health Connect. Quello che c'è già resta finché non lo cancelli lì, anche quando cancelli la corsa o il tuo account.",
+        "Quando accendi «Salva in Apple Salute» (iPhone) o «Salva in Health Connect» (Android), ogni attività che salvi viene scritta anche lì, sul telefono: lo sport, quando è iniziata e finita, la distanza, il percorso e, per una corsa, le calorie attive stimate. Se a fine nuotata in piscina tocchi «Aggiungi il battito da Salute», MuW legge il battito che il tuo orologio ha registrato durante quella nuotata, e nient'altro. Medio e massimo restano con la nuotata sul nostro server e si vedono nel suo post, a meno che tu spenga «Mostra il battito»; il tempo in ogni zona resta sul telefono. Niente dei tuoi dati di salute arriva a qualche pubblicità. Puoi fermarlo nell'app Salute o in Health Connect. Quello che c'è già resta finché non lo cancelli lì, anche quando cancelli la corsa o il tuo account.",
       ],
     },
     {
@@ -487,7 +487,7 @@ const privacy: AboutDocument = {
           bullets: [
             "Per darti il servizio che chiedi (contratto): il tuo account, il tuo profilo, i percorsi che chiedi, e le corse, i preferiti, i commenti, le reazioni e i follow che salvi, le email delle notifiche che hai acceso, e il gioco delle forme.",
             "Il nostro legittimo interesse a far funzionare MuW, a tenerla sicura e a migliorarla: i brevi registri del server, i conteggi che limitano gli scaricamenti delle mappe e gli eventi delle ricerche, che non dicono nulla di chi sei; il confronto dei numeri della tua rubrica, che non ne tiene nessuno; la email quando sei via, che puoi rifiutare all'iscrizione, in «Impostazioni» o in ogni email; le email delle segnalazioni, per tenere MuW sicura; l'archivio dei percorsi disegnati, che non dice nulla di chi sei; i messaggi di «Mandaci un feedback», per leggerli e risponderti.",
-            "Il tuo consenso: il numero di telefono che scegli di aggiungere, il collegamento a Strava e il salvataggio delle attività in Apple Salute o in Health Connect. Puoi ritirare un consenso in qualsiasi momento; quello che è stato fatto prima resta lecito.",
+            "Il tuo consenso: il numero di telefono che scegli di aggiungere, il collegamento a Strava, il salvataggio delle attività in Apple Salute o in Health Connect e la lettura del battito da Apple Salute. Puoi ritirare un consenso in qualsiasi momento; quello che è stato fatto prima resta lecito.",
             "Un obbligo di legge, quando una legge ci chiede di conservare o di consegnare dei dati.",
           ],
         },

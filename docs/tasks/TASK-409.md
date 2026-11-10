@@ -197,7 +197,30 @@ docs/API.md, docs/DATABASE.md, docs/DECISIONS.md, docs/STATUS.md,
 docs/tasks/TASK-409.md
 ```
 
-Parte B2: la lista va al Coordinatore dopo B1.
+Parte B2 (approvata dal Coordinatore il 2026-11-08; branch
+`feat/TASK-409-b-pool-heart`, PR dopo B1 in `main` e sul server):
+
+```
+apps/mobile/src/health/heartSamples.ts, heartSamples.test.ts (nuovi)
+apps/mobile/src/health/heartModules.ts (nuovo)
+apps/mobile/src/body/zoneTime.ts, zoneTime.test.ts (nuovi)
+apps/mobile/src/pool/poolHeart.ts, usePoolHeart.ts, PoolHeartLines.tsx,
+  PoolHeart.test.tsx (nuovi; il componente si chiama PoolHeartLines perché
+  PoolHeart.tsx e poolHeart.ts su macOS sono lo stesso file)
+apps/mobile/src/pool/PoolSwimEnd.tsx, PoolSwimHost.tsx (il lettore finto dei
+  test), PoolPostForm.tsx, usePoolOutbox.ts, poolSwim.ts, PoolFigures.tsx,
+  PoolTile.tsx
+apps/mobile/src/api/poolSwims.ts
+apps/mobile/src/i18n/it.ts, de.ts, fr.ts, es.ts (i tre testi della scelta 7
+  e i tre della scelta 3)
+apps/mobile/src/about/content/en.ts, it.ts, de.ts, fr.ts, es.ts
+apps/mobile/src/about/documents.test.ts, AboutPage.test.tsx (la data)
+site/privacy/index.html, it/, de/, fr/, es/ (rigenerate)
+site/tests/privacy.test.mjs (la data)
+docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-409.md
+```
+
+`poolOutbox.ts` non cambia: il battito viaggia nel corpo della richiesta.
 
 ## Esito
 

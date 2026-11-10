@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SIGN_IN_TO_KEEP_RUNS, useActivitiesDoor } from "../activities/activitiesDoor";
 import { useBody } from "../body/useBody";
 import { gymStyles } from "../gym/gymStyles";
+import { heartReader } from "../health/heartModules";
+import type { HeartReader } from "../health/heartSamples";
 import { healthPhone } from "../health/healthModules";
 import type { HealthPhone } from "../health/healthPhone";
 import { HealthRunEnd } from "../health/HealthRunEnd";
@@ -15,6 +17,8 @@ import { clockLabel } from "../navigation/freeRun";
 import type { PickPhoto } from "../social/PublicParts";
 import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { averagePace } from "./poolChoice";
+import { PoolHeartLines } from "./PoolHeartLines";
+import type { PoolHeart as PoolHeartRead } from "./poolHeart";
 import { metresLabel } from "./PoolDraw";
 import { savePoolToHealth } from "./poolHealth";
 import { poolKcal, poolKcalLabel } from "./poolKcal";
@@ -29,6 +33,7 @@ import {
   type PoolSwim,
 } from "./poolSwim";
 import type { PoolSaved } from "./usePoolOutbox";
+import { usePoolHeart } from "./usePoolHeart";
 import { endPoolSwim } from "./usePoolSwim";
 
 /** The most lengths of `poolLengthM` in `activeS` the API takes: no faster
@@ -53,14 +58,22 @@ export function PoolSwimEnd({
   swim,
   onSave,
   health: phone = healthPhone(),
+  heart: reader = heartReader(),
   pick,
   fetchFn,
   apiKey,
 }: {
   swim: PoolSwim;
-  onSave: (swim: PoolSwim, lengths: number, post?: PoolPost) => PoolSaved;
+  onSave: (
+    swim: PoolSwim,
+    lengths: number,
+    post?: PoolPost,
+    heart?: PoolHeartRead | null,
+  ) => PoolSaved;
   /** The phone's health data; for the tests, a fake. */
   health?: HealthPhone | null;
+  /** Where the heart rate is read (TASK-409 part B); for the tests, a fake. */
+  heart?: HeartReader | null;
   /** The fakes of the tests: the photo picker, the fetch of the tag search. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
@@ -71,6 +84,8 @@ export function PoolSwimEnd({
   const [post, setPost] = useState<PoolPost>(() => newPoolPost(owner));
   const healthState = useHealth(phone);
   const body = useBody();
+  const { state: heartState, add: addHeart } = usePoolHeart(reader, swim);
+  const heart = heartState.kind === "heart" ? heartState.heart : null;
   const activeS = activeMs(swim, swim.endedMs ?? swim.startedMs) / 1000;
   const most = maxLengths(activeS, swim.poolLengthM);
   const [text, setText] = useState(() =>
@@ -105,7 +120,7 @@ export function PoolSwimEnd({
     if (lengths === null) {
       return;
     }
-    const saved = onSave(swim, lengths, post);
+    const saved = onSave(swim, lengths, post, heart);
     if (saved === "kept") {
       // Written there, on the phone, with no network; never fails «Save».
       void savePoolToHealth(phone, swim, lengths);
@@ -188,10 +203,12 @@ export function PoolSwimEnd({
           />
           <Figure label={t("Calories")} value={kcal ?? "–"} testID="pool-kcal" />
         </View>
+        <PoolHeartLines state={heartState} onAdd={addHeart} />
         {signedIn && (
           <PoolPostForm
             post={post}
             onPost={setPost}
+            heart={heart !== null}
             pick={pick}
             fetchFn={fetchFn}
             apiKey={apiKey}

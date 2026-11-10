@@ -92,17 +92,19 @@ test("the collection shows the unlocked shapes in colour and the others with the
   await waitFor(() => expect(screen.getByTestId("play-totals")).toBeTruthy());
   expect(screen.getByTestId("play-totals")).toHaveTextContent("14.2 km counted so far");
   // The triangle, unlocked on the 23rd.
+  // Unlocked, and still saying what it asked.
   expect(screen.getByTestId("shape-card-triangle")).toHaveTextContent(
-    /Triangle.*Unlocked .* 23 Oct 2026/,
+    /Triangle.*Unlocked .* 23 Oct 2026.*5 km in total/,
   );
   expect(screen.getAllByTestId("shape-unlocked")).toHaveLength(1);
   // The hexagon, 71 % of 20 km.
   expect(screen.getByTestId("shape-card-hexagon")).toHaveTextContent(
     /Hexagon.*20 km in total.*71%.*14\.2 \/ 20 km/,
   );
-  // The lightning, with the best kilometre against the target.
+  // The lightning, the only level over 1 km here: from 6:00 /km, a minute
+  // slower, to 5:00 /km, a best of 5:22 is 63 % of the way (TASK-423).
   expect(screen.getByTestId("shape-card-lightning")).toHaveTextContent(
-    /Lightning.*1 km under 5:00 \/km.*93%.*Best 5:22 \/km · target 5:00 \/km/,
+    /Lightning.*1 km under 5:00 \/km.*63%.*Best 5:22 \/km · 0:22 \/km to go/,
   );
   expect(screen.getAllByTestId("shape-locked")).toHaveLength(2);
   expect(screen.queryByTestId("play-sign-in")).toBeNull();

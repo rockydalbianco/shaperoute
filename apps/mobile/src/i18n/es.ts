@@ -1684,6 +1684,15 @@ export const ES: Table = {
   "No run of {distance} yet": "Aún ninguna carrera de {distance}",
   "Week of {date}": "Semana del {date}",
   "Month of {date}": "Mes desde el {date}",
+  // src/game/goalText.ts, shapeProgress.ts (TASK-423 after use: the names
+  // of the distances, the bar of a pace)
+  "1 mile": "1 milla",
+  "One half marathon": "Una media maratón",
+  "One marathon": "Un maratón",
+  "First run {distance} in one go · longest {longest}":
+    "Primero corre {distance} seguidos · hasta ahora {longest}",
+  "No time over {distance} yet": "Aún sin tiempo en {distance}",
+  "Best {best} · {gap} to go": "Mejor {best} · faltan {gap}",
 
   // src/navigation/runPosition.ts, the Android notification of a run (TASK-294)
   "MuW is recording your activity": "MuW está registrando tu actividad",

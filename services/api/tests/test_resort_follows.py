@@ -34,7 +34,7 @@ from shaperoute_api.accounts import Accounts
 from shaperoute_api.activities import PlaceNames
 from shaperoute_api.app import create_app
 from shaperoute_api.db import Database
-from shaperoute_api.resort_follows import install_resort_follows
+from shaperoute_api.resort_follows import ResortPostsBody, install_resort_follows
 from shaperoute_api.ski_days import install_ski_days
 from shaperoute_api.ski_resorts import delete_missing, save_resorts
 from shaperoute_api.ski_resorts_api import SkiResortsBody
@@ -139,7 +139,9 @@ def test_the_resorts_posts_are_those_one_sees_the_latest_first(
     answer = _posts(client, viewer)
     assert answer.status_code == 200, answer.text
     body = answer.json()
-    assert [d["id"] for d in body["drawings"]] == [new, old]
+    assert [d["id"] for d in body["posts"]] == [new, old]
+    # Each with who published it, as in the feed.
+    assert [d["author"]["username"] for d in body["posts"]] == ["runner_2", "runner_1"]
     assert body["total"] == 2
     assert body["next"] is None
     # A follower of b sees the post for the followers too.
@@ -151,10 +153,10 @@ def test_the_resorts_posts_come_in_pages(client: TestClient) -> None:
     a, viewer = signed_up(client, 1), signed_up(client, 2)
     drawings = [_skied(client, a, key, when=TODAY - n) for n, key in enumerate(KEYS)]
     first = _posts(client, viewer, limit=2).json()
-    assert [d["id"] for d in first["drawings"]] == drawings[:2]
+    assert [d["id"] for d in first["posts"]] == drawings[:2]
     assert first["total"] == 3
     rest = _posts(client, viewer, limit=2, cursor=first["next"]).json()
-    assert [d["id"] for d in rest["drawings"]] == drawings[2:]
+    assert [d["id"] for d in rest["posts"]] == drawings[2:]
     assert rest["next"] is None
 
 
@@ -163,12 +165,15 @@ def test_an_app_that_does_not_read_skiing_sees_no_posts(client: TestClient) -> N
     _skied(client, a, KEYS[0])
     answer = client.get("/ski-resorts/aaa1/drawings", headers=viewer)
     assert answer.status_code == 200
-    assert answer.json()["drawings"] == []
+    assert answer.json()["posts"] == []
     assert _posts(client, viewer, resort="nowhere").status_code == 404
     assert client.get("/ski-resorts/aaa1/drawings").status_code == 401
 
 
-def test_the_example_is_the_body() -> None:
+def test_the_examples_are_the_bodies() -> None:
     example = json.loads((FIXTURES / "followed-resorts.json").read_text("utf-8"))
     body = SkiResortsBody.model_validate(example)
     assert body.resorts and all(resort.away_m is None for resort in body.resorts)
+    posts = json.loads((FIXTURES / "resort-posts.json").read_text("utf-8"))
+    assert set(posts) == set(ResortPostsBody.model_fields)
+    ResortPostsBody.model_validate(posts)

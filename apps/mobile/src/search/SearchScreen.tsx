@@ -339,7 +339,12 @@ function SearchPage({ onClose, onOpenExample }: Omit<Props, "visible">) {
         onClose={() => setSheet(false)}
       />
       {resort !== null && (
-        <ResortPage resort={resort} apiUrl={apiUrl} onBack={() => setResort(null)} />
+        <ResortPage
+          resort={resort}
+          apiUrl={apiUrl}
+          onBack={() => setResort(null)}
+          onLeave={onClose}
+        />
       )}
     </Animated.View>
   );

@@ -9,7 +9,7 @@ followed first, in the shape of the search.
 GET /ski-resorts/{id}/drawings: a page of the posts of the days of skiing at
 the resort (runs.ski_resort_id, migration 0056) that the asker sees on a
 profile (drawings.shown_sql), of the activities the app reads (X-MuW-Reads),
-the latest day first, as a profile's page.
+the latest day first, each with its author as in the feed.
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Query, Response
+from pydantic import BaseModel
 
 from shaperoute_api.accounts import (
     ACCOUNT_ERRORS,
@@ -30,8 +31,7 @@ from shaperoute_api.drawings import (
     LISTED_COLUMNS,
     MAX_PAGE_SIZE,
     PAGE_SIZE,
-    DrawingBody,
-    DrawingsBody,
+    AuthorBody,
     _after_cursor,
     _cursor,
     _details,
@@ -39,6 +39,7 @@ from shaperoute_api.drawings import (
     _seen,
     shown_sql,
 )
+from shaperoute_api.feed import FeedPostBody
 from shaperoute_api.reads import Shown
 from shaperoute_api.recommended import preview
 from shaperoute_api.schemas import ErrorBody
@@ -49,6 +50,18 @@ ResortId = Annotated[str, Path(max_length=80)]
 
 # The resorts followed are the member's own: a few, never a page.
 MAX_FOLLOWED = 200
+
+
+class ResortPostsBody(BaseModel):
+    """GET /ski-resorts/{id}/drawings: a page of the posts of the days
+    skied at the resort, each with who published it, as the feed lists
+    them: packages/shared-types/fixtures/resort-posts.json."""
+
+    posts: list[FeedPostBody]
+    next: str | None
+    """The `cursor` of the next page; null on the last one."""
+    total: int
+    """How many of them the one who asks sees, on every page."""
 
 
 def resort_follows_routes() -> APIRouter:
@@ -119,7 +132,7 @@ def resort_follows_routes() -> APIRouter:
         reads: Shown,
         limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = PAGE_SIZE,
         cursor: Annotated[str | None, Query(pattern=CURSOR_PATTERN)] = None,
-    ) -> DrawingsBody:
+    ) -> ResortPostsBody:
         known(accounts, resort_id)
         where = (
             f"r.ski_resort_id = %s AND r.activity = 'skiing' AND {shown_sql('%s')}"
@@ -137,18 +150,23 @@ def resort_follows_routes() -> APIRouter:
                 paged += " AND (r.started_at, d.id) < (%s, %s)"
                 after += _after_cursor(cursor)
             rows = conn.execute(
-                f"SELECT {LISTED_COLUMNS} FROM drawings d"
-                f" JOIN runs r ON r.id = d.run_id WHERE {paged}"
+                f"SELECT {LISTED_COLUMNS}, u.public_id, u.username FROM drawings d"
+                " JOIN runs r ON r.id = d.run_id JOIN users u ON u.id = r.user_id"
+                f" WHERE {paged}"
                 " ORDER BY r.started_at DESC, d.id DESC LIMIT %s",
                 (*after, limit + 1),
             ).fetchall()
             page, more = rows[:limit], len(rows) > limit
             details = _details(conn, [row["id"] for row in page], user.id)
         assert count is not None
-        return DrawingsBody(
-            drawings=[
-                DrawingBody(
-                    **_seen(row, details), track_preview=preview(_line(row["track"]))
+        return ResortPostsBody(
+            posts=[
+                FeedPostBody(
+                    **_seen(row, details),
+                    track_preview=preview(_line(row["track"])),
+                    author=AuthorBody(
+                        public_id=row["public_id"], username=row["username"]
+                    ),
                 )
                 for row in page
             ],

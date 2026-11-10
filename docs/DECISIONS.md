@@ -468,6 +468,7 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
+- ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
 
 ---
 
@@ -482,6 +483,7 @@ lasciando le righe d'indice.
 - ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta · 2026-11-08 · Attiva
+- ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -1198,6 +1200,105 @@ membri e un tasto per seguirla. Seguire poteva dare anche notifiche.
 **Conseguenze**: una migrazione (`0062`), quindi
 il server col sì dell'utente. L'app (D3b) viene dopo, con i suoi testi.
 
+---
+
+## ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no
+
+**Stato**: Accettato · 2026-11-08 · TASK-421, PR #973. Numeri dal
+Coordinatore. La richiesta è dell'utente (correndo ha trovato strade del
+percorso chiuse da un cancello); la lista dei tag e il modo di togliere
+sono decisi dall'agente su delega dell'utente.
+
+**Contesto**: `FOOT_FILTER` (`networks/foot.py`) scarta le vie
+`access=private` e `foot=no`, ma Overpass filtra solo le vie: un cancello è
+un **nodo** (`barrier=gate`, `lift_gate`, `swing_gate`…) con i suoi tag
+(`access`, `foot`, `locked`), e il filtro non lo vede. OSMnx semplificava il
+grafo appena scaricato, unendo le vie in archi e buttando i tag dei nodi:
+nelle zone in cache un cancello chiuso è un punto qualunque di un arco, e
+il motore ci disegna sopra. La rete `roller` (ADR-0324, `skate_ways`) e la
+carrozzina (ADR-0343, punto 2: «una barriera che blocca toglie il nodo»)
+hanno già il modo: scaricare senza semplificare, con i tag che servono,
+togliere, poi semplificare. Misurato offline dalle risposte Overpass in
+cache (`data/cache/http/`): Trento 17 km 1.871 nodi `barrier`, 122 tolti
+(6,5 %), 7,0 km di vie chiuse, rete 841,8 → 832,0 km; Milano 28.462 (quasi
+tutti `kerb`), 123 tolti, 46,0 km di vie (38,6 km di `service` con
+`access=no`), 3.224,8 → 3.176,7 km; Levico 126, 26 tolti, 2,1 km, 628,9 →
+626,1 km; Parigi 11.755, 132 tolti, 14,7 km, 1.391,6 → 1.375,4 km. I
+cancelli **senza tag** sono la maggioranza (Trento 627 `gate` e 220
+`lift_gate` nudi) e restano. Cancelli nudi su vie `access=destination`: 4 a
+Trento, 9 a Milano.
+
+1. **Il download della rete foot non semplifica** (`download_foot_graph`,
+   `simplify=False`), chiede i tag dei nodi `barrier`, `access`, `foot`,
+   `locked` (`FOOT_NODE_TAGS`, `base.node_tags` accanto a `way_tags`) e
+   `foot` sulle vie; `foot_ways` toglie i nodi che bloccano e le vie
+   chiuse, poi semplifica come OSMnx (`simplify_graph`, come `skate_ways`).
+   Il grafo foot resta senza attributo `network`, come prima.
+2. **Un nodo `barrier` si toglie** (`blocks_foot`), nell'ordine:
+   `foot=no|private` → tolto; `foot=yes|designated|permissive|destination`
+   → resta, qualunque cosa dicano gli altri tag; `barrier=fence|wall` (una
+   recinzione disegnata come nodo della via) → tolto; `bollard`, `kerb`,
+   `cycle_barrier`, `block`, `kissing_gate`, `stile`, `cattle_grid`, `log`,
+   `planter`, `chain`, `rope`, `height_restrictor`, `motorcycle_barrier`,
+   `jersey_barrier`, `sump_buster`, `bus_trap`, `debris` → resta (il suo
+   `access` parla ai veicoli: un dissuasore con `access=no` ferma le auto);
+   ogni altra barriera (`gate`, `lift_gate`, `swing_gate`, `sliding_gate`,
+   `wicket_gate`, `turnstile`, `entrance`, `yes`…) → tolta se `access=no`,
+   `access=private` o `locked=yes`, altrimenti resta. Un cancello nudo
+   passa. Togliere il nodo taglia la via lì: si passa o no, niente tratti
+   «a piedi».
+3. **Una via si toglie** (`closed_to_foot`) se `foot=no|private`, o se
+   `access=no|private` senza un `foot` che apre; `access=destination`,
+   `customers`, `permit`, `agricultural` restano. Il filtro Overpass resta
+   com'è (l'estratto lo legge, `zone_extract`, e serve i tag dei nodi).
+4. **La rete `hike` eredita** tutto: passa da `download_foot_graph`.
+5. **Il bordo della zona cambia di poco**: OSMnx semplificava con 500 m di
+   margine e poi ritagliava, buttando intere strade con un capo fuori; ora
+   si ritaglia prima e si semplifica dopo (come `bike` e `roller`), e il
+   tratto interno di una strada che esce resta (Levico: 3.531 → 3.621 nodi,
+   607 → 629 km con la stessa risposta). Al banco la rete ricostruita così
+   senza la regola dà le stesse 72 forme della cache di oggi, punto per
+   punto (una diversa, stessa somiglianza).
+6. **Le zone in cache restano valide** finché non si rifanno: sono
+   semplificate e senza tag, quindi i cancelli restano lì dentro. Il piano
+   (Mac dalle risposte in cache, server dall'estratto) è in `MAPS.md` «I
+   cancelli chiusi» e `DEPLOY.md` F.15; l'azione sul server aspetta il sì
+   dell'utente, con `phone_zone_api` e `draw_examples` dopo.
+7. **L'impronta del motore cambia** (è un cambio di comportamento):
+   `ROUTES` nuovo in `tests/test_walk_fingerprint.py`; nuotate e canoa non
+   usano la rete foot e tengono la loro con una prova delle stesse rotte
+   (`SAME_ROUTES_AS`, ADR-0320).
+
+**Motivo**: la regola segue i tag di OpenStreetMap così come sono scritti
+(`access` sul nodo, `foot` che vince, `locked`), e toglie poco: l'1–7 % dei
+nodi `barrier` e l'1–1,5 % dei km, soprattutto cortili privati. Al banco di
+corsa (8 forme × 3/5/10 km) Trento e Milano non cambiano (mediana 0,91 e
+0,96); a Levico la mediana passa da 0,84 a 0,80 perché le forme piccole
+dal Lido non attraversano più otto cancelli privati o chiusi a chiave dei
+vialetti del lido e del parco: è il caso del task.
+
+**Alternative scartate**:
+- togliere ogni `barrier=gate`: a Trento 627 cancelli nudi su 1.001, quasi
+  tutti aperti o di campagna;
+- ereditare l'`access` della via sul cancello nudo (`access=destination`):
+  4 casi a Trento, 9 a Milano, e una via `access=destination` si percorre;
+- un costo alto invece di togliere: un cancello chiuso non si passa, e un
+  arco caro finisce nei percorsi lo stesso quando è l'unica via;
+- rileggere i tag dei nodi dalle zone già in cache: non ci sono più;
+- lasciare che l'utente segnali un cancello dall'app: scelta di prodotto,
+  fuori scope (`tasks/TASK-421.md`).
+
+**Conseguenze**:
+- i percorsi nuovi evitano i cancelli chiusi e privati e le vie
+  `access=no`; qualche vicolo cieco in più (Trento 231 → 266 pezzi,
+  spezzoni dietro un cancello); dove c'era un cancello la forma cambia;
+- ogni zona foot va rifatta per avere l'effetto: Mac e server (piano in
+  `MAPS.md`/`DEPLOY.md`), poi `phone_zone_api` e `draw_examples`;
+- `bike`, `mtb` e `roller` non cambiano (reti loro); `hike` sì;
+- `engine.zip` del telefono ricostruito; le misure e il banco in
+  `tasks/TASK-421.md`.
+---
+
 ## ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta
 
 **Stato**: Attiva · 2026-11-08 · TASK-370 parte B3a2, decisa dall'agente su
@@ -1224,3 +1325,32 @@ intero e le sue direzioni chieste, come al via di una corsa.
 **Conseguenze**: chi ha molti preferiti li vede arrivare sull'orologio uno
 dopo l'altro, la prima volta. Se l'app dell'orologio viene reinstallata il
 telefono non lo sa: i preferiti tornano al cambio successivo della lista.
+
+## ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-08), con la
+scelta dell'utente 12 (la camera si sceglie solo sul 3D).
+
+1. **L'anteprima nel foglio diventa C2c**: è un modo nuovo della pagina
+   del video, in una WebView visibile, e merita una PR sua. C2b è solo la
+   camera.
+2. **Tre modi di vedere il percorso sul 3D**: «Camera around» (il giro di
+   prima, la scelta all'apertura del post: il video non cambia), «Camera
+   behind» e «Line in 2D». Quest'ultima disegna tutto sulla foto dall'alto
+   di C2a, come uno stile piatto.
+3. **La camera la calcola l'app** (`videoChase.ts`), dalla traccia vera in
+   metri su un piano attorno alla partenza: il centro 60 m davanti
+   all'animale, la direzione della strada presa su 120 m e smussata su
+   300 m (niente scossoni dal GPS), inclinazione 62°, 1,8 livelli di zoom
+   più vicino del disegno intero (al massimo 16,5). Ogni fotogramma del
+   percorso porta la sua camera e quanto la camera è scesa dalla vista
+   intera (`u`): giù nel primo secondo, su nel secondo dopo il percorso.
+   Così i test la provano senza la mappa.
+4. **La pagina muove la mappa** a ogni fotogramma (modo `chase`). Prima del
+   video prova 16 camere lungo il percorso, per le tessere e per il costo,
+   come il giro di prima; sopra il budget, o finito il tempo, la mappa
+   resta ferma con lo zoom lento (`still`) e l'animale corre lo stesso.
+5. **Lungo la linea si misura in metri**: con la camera bassa la linea
+   posata ha i pixel stirati vicino alla camera, quindi nel modo `chase`
+   la pagina mette punta, emoji e animale alla quota di metri della
+   scena, non di pixel. Gli altri modi restano come prima.

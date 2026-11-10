@@ -462,6 +462,21 @@ giro ne fa partire un altro dopo); senza rete si ferma e tiene ciò che è
 partito (`watchSent.ts`, le chiavi in un file), il resto al cambio o
 all'apertura dopo. Nessun testo nuovo.
 
+**B3b fatta** (2026-11-08): B3b1 (#1008) `GuideDisplay`, cosa mostra e come
+vibra il polso; B3b2 (branch `feat/TASK-370-b3b2-watch-run`) l'app: un tocco
+su un percorso di «Routes» fa partire lo sport con la guida. `GuideSession`
+prende il GPS dell'orologio (CoreLocation, chiesto al via, testo del permesso
+approvato dall'utente, scelta 9) e a ogni posizione passa Navigator e Pen,
+la schermata e le vibrazioni di watchOS (Apple Maps per le svolte). Pagine:
+la freccia (`GuideView`), la mappa piccola che inquadra il disegno
+(`RouteMapView`), poi i numeri. Le parole delle svolte non ci sono: la
+freccia vale in ogni lingua; restano «Off route», «Arrived», «Reach the route
+to start», «To the {letter}», «Next part». «Back on route» e «Pen down» non
+servono: lo dice la vibrazione. Provata nel simulatore di watchOS 27 con
+una corsa simulata a Levico: la freccia a destra coi metri che scendono, la
+svolta a sinistra dopo, la mappa, il fuori rotta in rosso con la freccia
+verso il percorso. La traccia al telefono è B3c.
+
 ## File toccati
 
 Parte 0 (questa proposta):

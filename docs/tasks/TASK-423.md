@@ -186,6 +186,15 @@ E  services/api/migrations/00NN_game_prizes.sql (nuovo),
   poi subito il backfill, così le forme raggiunte prima prendono la data
   della loro corsa e non arrivano tutte alla prossima corsa.
 
+- 2026-11-08 — Testi della privacy approvati dall'utente («Sì, approvo»,
+  con la tabella delle 5 lingue davanti): i tempi migliori «su distanze da
+  400 m a 50 km» (parte B) e la frase sull'ora del telefono, con le sfide
+  personali e la streak viste solo da chi corre (parte C). PR #1007; il sito
+  si rigenera con `site/tools/make_privacy.mjs` e si pubblica col sì
+  dell'utente insieme al server. Sì dell'utente al server di A+B e al
+  backfill («PROCEDI», «SI PROCEDI»), dopo la #1005 e il via del
+  Coordinatore; non vale per l'OTA né per C–E.
+
 ## Esito
 
 *(a fine task)*

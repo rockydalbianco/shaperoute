@@ -914,10 +914,13 @@ test("a run along a route still on the map is saved with what the route draws", 
   await screen.findByText("Your run");
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
 
+  // The run's own PUT: the figures of its post (TASK-410 C) go after it.
   const puts = () =>
     fetchSpy.mock.calls.filter(
       ([input, init]) =>
-        init?.method === "PUT" && String(input).startsWith(`${API}/me/activities/`),
+        init?.method === "PUT" &&
+        String(input).startsWith(`${API}/me/activities/`) &&
+        !String(input).endsWith("/stats"),
     );
   await waitFor(() => expect(puts()).toHaveLength(1));
   const [url, init] = puts()[0];

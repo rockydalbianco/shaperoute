@@ -107,10 +107,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   stazione nell'app). File: quelli della D3b · `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
-- **TASK-408 — L'editor del video dell'attività** · C1 e C2a (scene e
-  finale) in `main`; C2b (camera dietro l'animale) nella PR #989; poi C2c
-  (anteprima), B2 (elefante), D, E. File: quelli della #989 ·
-  `tasks/TASK-408.md`
+- **TASK-408 — L'editor del video dell'attività** · C1, C2a (scene e
+  finale) e C2b (camera dietro l'animale) in `main`; C2c (anteprima nel
+  foglio) in lavorazione; poi B2 (elefante), D (prompt), E (telefono).
+  File: `apps/mobile/src/share/` (C2c) · `tasks/TASK-408.md`
 - **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` e in produzione;
   B1 (battito sulla corsa, migrazione 0061) in `main` (#979), sul server con
   l'aggiornamento del Coordinatore; B2 (l'app) in PR, entra dopo il server.
@@ -156,6 +156,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `main` (#953): 49 forme candidate in `services/route-engine/candidate_outlines/`;
   poi la registrazione delle sole forme che l'utente approva su strada (dopo
   TASK-419). File: — · `tasks/TASK-418.md`
+- **TASK-421 — I percorsi a piedi non passano per i cancelli chiusi** · motore
+  in `main` (#973, ADR-0349, impronta `8ab61d8e87f9`); restano il server e le
+  zone foot da rifare (`DEPLOY.md` F.15, sì dell'utente dato), al «via server
+  973» del Coordinatore. File: — · `tasks/TASK-421.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

@@ -3082,6 +3082,40 @@ senza app né account. Tipi in `shared-types/src/liveShare.ts`
   database non tengono le righe dei link (`deploy/backup.sh`). Cancellare
   l'account cancella i link. Test in `test_live_shares.py`.
 
+### Run stats (TASK-410 parte C, ADR-0340)
+
+I dati della pagina del post oltre a metri e tempo: passi, profilo del
+dislivello, cadenza, calorie, battito. Token richiesto; il codice in
+`run_stats.py`, la tabella `run_stats` (`DATABASE.md`); esempi in
+`fixtures/run-stats-request.json` e `fixtures/run-stats.json`; tipi
+dell'app in `apps/mobile/src/api/runStats.ts`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/activities/{key}/stats` | quello che sa il telefono a fine attività: `elevation` (2–120 punti `{distance_m, altitude_m}`, lungo la corsa), `cadence_spm`, `kcal` | `200` `RunStats` come lo vede l'autore; `404` per una chiave non sua |
+| `GET /drawings/{id}` | il campo nuovo `stats`, `RunStats` o `null` | come prima |
+
+- **I passi li conta il server** dalla traccia (`runs.track`, M in
+  secondi) e dalle pause, a ogni `PUT …/stats`: per ogni km (`splits_km`) e
+  ogni miglio (`splits_mile`) `{n, seconds, partial_m}`, il tempo in
+  movimento al decimo di secondo. Le pause chieste dal corridore non
+  contano né metri né secondi, come in `activities.py`. Quello che resta
+  dopo l'ultimo intero è un passo marcato con `partial_m` (i suoi metri),
+  solo da 100 m in su. Una corsa senza traccia (piscina, palestra) non ne
+  ha.
+- **Tutto ogni volta**: un campo non mandato o `null` è un dato che non
+  c'è. Le calorie le conta il telefono col corpo dell'autore e manda solo
+  il numero; la cadenza oggi non la manda nessuno (`null`).
+- **Già filtrato**: in `GET /drawings/{id}` battito (`heart`, da
+  `runs.heart_*` di TASK-409 B) e `kcal` arrivano a chi guarda solo se
+  l'autore mostra il battito (`runs.heart_shown`; la scelta 2,
+  «Visibili, nascondibili»); all'autore sempre. Un dato spento non esce
+  dal server. Senza nessun dato, o per una corsa di prima, `stats` è
+  `null`. **`GET /feed` non lo manda.**
+- Backfill dei passi per le corse vecchie: `python -m
+  shaperoute_api.run_stats`, solo col sì dell'utente. Test in
+  `test_run_stats.py`.
+
 ### Ski names (TASK-375 parte D2, ADR-0319)
 
 `GET /drawings/{id}/ski-names`, con il token: gli impianti presi e le piste
@@ -3241,8 +3275,8 @@ Chiedono tutte il token.
   giornate di sci con quella stazione (`ski_resort_id` della D1).
   - Solo quelli che chi chiede vede su un profilo (`shown_sql`), e solo se
     l'app legge `skiing` (`X-MuW-Reads`).
-  - Dalla giornata più recente, a pagine come `GET
-    /users/{id}/drawings`: `drawings`, `next`, `total`.
+  - Dalla giornata più recente, a pagine: `posts`, `next`, `total`
+    (`resort-posts.json`). Ogni post ha il suo `author`, come nel Feed.
   - `404` per una stazione che non c'è.
 - **Il codice:** `resort_follows.py`. Migrazione `0062`, tipi in
   `packages/shared-types/src/resortFollows.ts`.

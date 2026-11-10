@@ -1,0 +1,50 @@
+<!doctype html>
+<!-- «Share live activity» (TASK-424, docs/SITO.md): https://getmuw.app/live/#<token> -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Live activity — MuW</title>
+    <meta name="theme-color" content="#0A0A0B" />
+    <link rel="icon" href="../assets/muw-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="maplibre-gl.css" />
+    <link rel="stylesheet" href="live.css" />
+    <script src="maplibre-gl.js" defer></script>
+    <script type="module" src="live.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <a class="top__logo" href="../" aria-label="MuW, home">
+        <img class="top__mark" src="../assets/muw-mark.svg" alt="" width="34" height="34" />
+        <img class="top__word" src="../assets/muw-logo.svg" alt="MuW" width="84" height="24" />
+      </a>
+    </header>
+
+    <main id="main" class="live">
+      <section class="live__head">
+        <h1 class="live__title">
+          <span data-text="title">Live activity</span>
+          <span class="live__badge" data-badge hidden></span>
+        </h1>
+        <p class="live__status" data-status aria-live="polite"></p>
+      </section>
+
+      <section data-map-box hidden>
+        <div class="live__map" data-map></div>
+      </section>
+
+      <section>
+        <dl class="live__numbers" data-numbers></dl>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <img src="../assets/muw-mark.svg" alt="" width="24" height="24" />
+      <p data-text="footer">Shared from MuW. The link stops working one hour after the activity ends.</p>
+      <p><a class="foot__link" href="../privacy/" data-privacy data-text="privacy">Privacy policy</a></p>
+    </footer>
+  </body>
+</html>

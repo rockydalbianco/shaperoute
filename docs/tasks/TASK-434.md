@@ -1,7 +1,7 @@
 # TASK-434 — Dove va il tempo di un percorso nel Route Engine
 
 **Stato**: Done — misura fatta sul Mac il 2026-11-10; nessun codice toccato
-**Fase**: 5 · **Branch**: `docs/TASK-434-engine-profile` (solo questo file)
+**Fase**: 5 · **Branch**: `docs/TASK-434-engine-profile` (PR #1102, solo documenti)
 
 ## Obiettivo
 
@@ -164,7 +164,27 @@ Le indicazioni (`with_directions`, 3 volte: il percorso e 2 alternative)
 passano metà del tempo in `sidewalks.graph_roads`, rifatta ogni volta sullo
 stesso grafo.
 
-## Proposte, in ordine
+## Le tre proposte da portare all'utente
+
+Guadagno su un percorso da 5 km: misurato sul Mac, poi la stima sul server
+(× 5,6, da ricontrollare: vedi «Limiti»). Dettagli e numeri d'origine nella
+lista completa qui sotto.
+
+| | 1. Tabelle del grafo a blocchi | 2. Figli già avviati | 3. Non aspettare le alternative |
+|---|---|---|---|
+| Cosa cambia | Le due tabelle che ogni ricerca fa una volta per grafo, calcolate su tutti gli archi insieme | I processi delle partenze vicine restano vivi tra un percorso e l'altro | Il percorso della partenza, se è già buono, esce subito |
+| Tempo | −0,13 s (9%); server circa −0,7 s | −0,15 s (10%); server circa −0,8 s | −0,21 s (14%); server circa −1,1 s |
+| CPU | −0,44 s (13%); server circa −2,5 s | −0,48 s (15%); server circa −2,7 s | 0 |
+| Rischio | Basso | Medio: figli in ritardo da riavviare, 56 MB per figlio in attesa, la storia di TASK-248 | Basso nel codice |
+| Percorsi identici (`same_routes`) | Sì: tabelle uguali bit per bit nel prototipo, 10 grafi su 10 | Sì per ogni ricerca; arrivando prima, una partenza vicina può vincere più spesso | No: in 2 casi su 6 qui vinceva una partenza vicina |
+| Scelta di prodotto | No | No | **Sì**: è la domanda di TASK-435 |
+| File toccati | `route_engine/network.py`, `route_engine/optimizer.py`, un test nuovo in `services/route-engine/tests/`, una riga in coda a `SAME_ROUTES_AS` (`shaperoute_api/route_store.py`) con la sua fixture in `services/api/tests/fixtures/same_routes/`, `apps/mobile/assets/engine/engine.zip`, `docs/ROUTE_ENGINE.md` | `route_engine/nearby_starts.py` (`_Workers`, `_work`), `tests/test_nearby_workers.py`, forse `shaperoute_api/route_processes.py` e il suo test (i figli da chiudere col processo caldo), riga e fixture di `SAME_ROUTES_AS`, `engine.zip`, `docs/ROUTE_ENGINE.md`, un ADR | Quelli di TASK-435: motore, API, contratto e app |
+
+La 1 e la 2 si sommano: circa −0,28 s (19%) e −0,92 s di CPU (28%) sul Mac,
+circa −1,5 s sul server. La 2 e la 3 guardano la stessa attesa: fatta la 2,
+alla 3 resta meno da togliere (vedi «L'avvio dei figli nel flusso vero»).
+
+## Tutte le proposte, in ordine
 
 Guadagno su un percorso da 5 km: secondi misurati sul Mac, poi la stima sul
 server (× 5,6). «Tempo» è quando arriva il percorso, «CPU» la somma di
@@ -252,10 +272,58 @@ Da dove vengono i numeri:
   restano 0,06 s da togliere.
 - Più processi: TASK-276 ha già detto che i 4 core sono pieni.
 
+## L'avvio dei figli nel flusso vero
+
+Chiesto da TASK-435: quanto passa fra `_Workers(...)` e l'inizio della
+ricerca in un figlio, e quanta attesa resterebbe con i figli già avviati.
+Misurato sul Mac nel flusso vero (`plan_request`, i `_Workers` del motore,
+tutti i figli insieme al piano dalla partenza; `child_start.py`, 18
+percorsi da 5 km, 42 figli; `child-start.txt`).
+
+| Da `_Workers(...)` | Secondi (media, min–max) |
+|---|---|
+| al figlio pronto: interprete e import del motore | 0,26 (0,22–0,33) |
+| poi richiesta e grafo ricevuti | 0,02 |
+| poi grafo spacchettato | 0,08 |
+| **all'inizio della ricerca** | **0,36 (0,30–0,46)** |
+
+Prima di `_Workers(...)` il processo della richiesta spende altri 0,18 s
+(scelta dei nodi vicini col passaggio del garbage collector, grafo
+impacchettato): nel log dell'API finiscono in `wait` anche loro.
+
+| Attesa | Oggi | Con i figli già avviati |
+|---|---|---|
+| Dopo il piano dalla partenza, media | 0,26 s | 0,09 s |
+| Dopo il piano dalla partenza, mediana | 0,24 s | 0,00 s |
+| Percorsi che aspettano i figli | 14 su 18 | 8 su 18 |
+| `wait` come lo conta il log dell'API, media | 0,49 s | 0,30 s |
+
+**Sul server**, dalle righe «times» lette da TASK-435
+(`out/TASK-435/server-times.txt`, 9 job con le partenze vicine), non da
+una misura mia. Nei 5 job in cui i figli finiscono per ultimi,
+`start + wait − nearby` dà il tempo fra l'inizio del lavoro e l'inizio
+della ricerca del figlio: 2,4–3,3 s (mediana 3,2). Di questi, 0,6–1,0 s
+sono nel processo della richiesta prima del piano (è il `wait` dei job in
+cui i figli finiscono prima). Restano **circa 2 s (1,4–2,7) fra
+`_Workers(...)` e la ricerca**, contro 0,28 s sul Mac (0,36 col grafo
+spacchettato, che nel log sta dentro `nearby`): l'ipotesi di TASK-435
+regge. Con i figli già avviati se ne andrebbe la parte di avvio
+(sul Mac il 72%: circa 1,5 s), e il `wait` di quei 9 job scenderebbe da
+2,0 a circa 1,2 s in media (mediana da 1,5 a 1,0). È una stima su 9 righe
+e due ipotesi (0,8 s prima del piano, 1,5 s di avvio): la conferma è
+rimisurare dopo la modifica. Quel che resta di `wait` non è attesa dei
+figli ma lavoro del processo della richiesta prima del piano (proposte 5
+e 6).
+
+Non misurato in un container a 4 vCPU: sul Mac sarebbe stato un carico in
+più senza riprodurre i core del server.
+
 ## Limiti della misura
 
 - **Mac, non server.** Il fattore 5,6 viene da due misure fatte in giorni e
-  su zone diverse. Il log dell'API ha già i tempi veri per fase di ogni job
+  su zone diverse, e dal 2026-11-10 sul server girano i 2 processi caldi e
+  le zone foot rifatte, più grandi: va ricontrollato fra qualche giorno con
+  le righe «times» (il log riparte a ogni ricreazione del container). Il log dell'API ha già i tempi veri per fase di ogni job
   (righe «times», TASK-289: `crop`, `start`, `wait`, `nearby`,
   `directions`): una lettura, in sola lettura, direbbe se le quote sono le
   stesse. TASK-435 ne ha lette 9: totale mediano 6,8 s, `start` 4,7 s,
@@ -282,11 +350,14 @@ Da dove vengono i numeri:
       rischio, percorsi identici o no, scelta di prodotto o no.
 - [x] Nessuna modifica a `services/`, nessun comando sul server, nessuna
       dipendenza nuova.
+- [x] La tabella delle tre proposte per l'utente, coi file toccati, e il
+      numero dei figli chiesto da TASK-435.
 
 ## File toccati
 
 ```
 docs/tasks/TASK-434.md
+docs/archive/COMPLETATI.md
 ```
 
 ## Fuori scope

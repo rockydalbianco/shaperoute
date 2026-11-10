@@ -18,6 +18,7 @@ from route_engine.network import FileSource
 
 from shaperoute_api.app import create_app
 from shaperoute_api.recommended import (
+    CatalogRoute,
     RecommendedCatalog,
     distance_m,
     parse_city,
@@ -215,3 +216,106 @@ def test_a_route_with_both_or_neither_is_left_out() -> None:
     }
     neither = {"distance_m": 5000, "route_m": 5000, "similarity": 0.9, "points": line}
     assert parse_city({"city": "x", "routes": [both, neither]}) == []
+
+
+# GET /catalog: the whole catalogue a page at a time, city by city from the
+# nearest, for the end of «Explore» (TASK-420 part E, ADR-0347
+# precisazione B).
+
+
+def test_a_page_of_the_catalogue_is_the_shared_contract(api: TestClient) -> None:
+    answer = api.get("/catalog", params={**PIAZZA_DUOMO, "limit": 2})
+    assert answer.status_code == 200
+    contract = json.loads((CONTRACT / "catalog.json").read_text("utf-8"))
+    assert answer.json() == contract
+
+
+def test_the_page_counts_the_whole_catalogue_and_joins_with_the_next(
+    api: TestClient,
+) -> None:
+    first = api.get("/catalog", params={**PIAZZA_DUOMO, "limit": 3}).json()
+    assert (first["total"], first["cities"]) == (4, 1)
+    # Inside a city, as /recommended-routes: the best first, nearer first.
+    assert [r["id"] for r in first["routes"]] == [
+        "trento-star-5000-0",
+        "trento-heart-10000-1",
+        "trento-heart-21000-2",
+    ]
+    second = api.get(
+        "/catalog", params={**PIAZZA_DUOMO, "offset": 3, "limit": 3}
+    ).json()
+    assert [r["id"] for r in second["routes"]] == ["trento-ciao-15000-3"]
+    assert (second["total"], second["cities"]) == (4, 1)
+    beyond = api.get("/catalog", params={**PIAZZA_DUOMO, "offset": 9}).json()
+    assert beyond["routes"] == []
+    assert beyond["total"] == 4
+    # Each route says how far it is from the point, as in the near list.
+    assert first["routes"][0]["away_m"] == 0
+
+
+def _route(
+    city: str, name: str, lat: float, lon: float, similarity: float
+) -> CatalogRoute:
+    return CatalogRoute(
+        id=f"{city}-{name}-5000-0",
+        city=city,
+        shape=name,
+        word=None,
+        style=None,
+        distance_m=5000,
+        route_m=5100,
+        similarity=similarity,
+        points=((lat, lon), (lat + 0.001, lon + 0.001)),
+        license="",
+    )
+
+
+def test_cities_come_from_the_nearest_whole_before_the_next() -> None:
+    catalog = RecommendedCatalog(
+        [
+            _route("milano", "heart", 45.4642, 9.19, 0.99),
+            _route("trento", "star", 46.067, 11.1215, 0.9),
+            _route("trento", "heart", 46.07, 11.12, 0.95),
+            _route("rovereto", "moon", 45.89, 11.04, 0.97),
+        ]
+    )
+    from_trento = catalog.page((46.067, 11.1215), 0, 10)
+    assert [r.id for r in from_trento.routes] == [
+        # Trento first, its best first; then Rovereto; Milano last, however good.
+        "trento-heart-5000-0",
+        "trento-star-5000-0",
+        "rovereto-moon-5000-0",
+        "milano-heart-5000-0",
+    ]
+    assert (from_trento.total, from_trento.cities) == (4, 3)
+    from_milan = catalog.page((45.46, 9.19), 0, 10)
+    assert [r.city for r in from_milan.routes] == [
+        "milano",
+        "rovereto",
+        "trento",
+        "trento",
+    ]
+    # A page in the middle keeps the same order.
+    assert [r.id for r in catalog.page((45.46, 9.19), 1, 2).routes] == [
+        "rovereto-moon-5000-0",
+        "trento-heart-5000-0",
+    ]
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {},
+        {"lat": 46.0},
+        {**PIAZZA_DUOMO, "limit": 0},
+        {**PIAZZA_DUOMO, "limit": 201},
+        {**PIAZZA_DUOMO, "offset": -1},
+    ],
+)
+def test_a_bad_page_query_is_invalid(api: TestClient, params: dict[str, Any]) -> None:
+    assert api.get("/catalog", params=params).status_code == 422
+
+
+def test_without_a_catalogue_the_page_is_empty() -> None:
+    answer = client(None).get("/catalog", params=PIAZZA_DUOMO)
+    assert answer.json() == {"total": 0, "cities": 0, "routes": []}

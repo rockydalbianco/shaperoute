@@ -1298,7 +1298,6 @@ export const IT: Table = {
   "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
     "Qui non ci sono ancora percorsi consigliati: forme di {distance} dal centro, disegnate adesso.",
   "Three first, more while you choose.": "Prima tre, altre mentre scegli.",
-  "Best near you": "I migliori vicino a te",
   "Starting within {distance} of {place}": "Con partenza entro {distance} da {place}",
   "your start": "dove sei",
   "Loading routes…": "Carico i percorsi…",
@@ -2060,6 +2059,21 @@ export const IT: Table = {
   "Edit & run": "Modifica e corri",
   "Post settings": "Impostazioni del post",
   Summary: "Riepilogo",
+  // src/feed/postSections.ts (TASK-410 part D: approved 2026-11-07)
+  "Fastest km": "Km più veloce",
+  "Fastest mile": "Miglio più veloce",
+  "Avg cadence": "Cadenza media",
+  "Elevation gain": "Dislivello positivo",
+  Splits: "Parziali",
+  Mile: "Miglio",
+  "Fastest: km {n} · {pace}": "Il più veloce: km {n} · {pace}",
+  "Fastest: mile {n} · {pace}": "Il più veloce: miglio {n} · {pace}",
+  Elevation: "Altimetria",
+  "Elevation along the route, from {min} to {max} m":
+    "Altitudine lungo il percorso, da {min} a {max} m",
+  "Heart rate": "Battito",
+  Average: "Medio",
+  Max: "Max",
 
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Percorso creato da MuW – pedalalo tu",
@@ -2169,4 +2183,18 @@ export const IT: Table = {
   "Keep sharing": "Continua",
   "Couldn't create the link. Try again.":
     "Non è stato possibile creare il link. Riprova.",
+  // src/explore/ExploreScreen.tsx, FartherAway.tsx, AskLine.tsx (TASK-420: every
+  // drawing of the catalog in «Explore», the nearest first)
+  "{count} drawings in {cities} cities · the nearest first":
+    "{count} disegni in {cities} città · prima i più vicini",
+  "{count} drawings · the nearest first": "{count} disegni · prima i più vicini",
+  "within {distance} · {count}": "entro {distance} · {count}",
+  "FARTHER AWAY": "PIÙ LONTANO",
+  "{count} drawing · by city": "{count} disegno · per città",
+  "{count} drawings · by city": "{count} disegni · per città",
+  "Ask for a route": "Chiedi un percorso",
+  "Famous places, best views, food… in any city":
+    "Luoghi famosi, panorami, cibo… in qualsiasi città",
+  "The rest could not load.": "Il resto non si è caricato.",
+  "Loading more…": "Ne arrivano altri…",
 };

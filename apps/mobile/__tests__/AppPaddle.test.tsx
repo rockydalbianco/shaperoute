@@ -345,7 +345,7 @@ test("«Explore» has the lakes and the beaches; their routes start without dire
   expect(
     screen.getByText("Shapes to paddle, within 1 km of the shore"),
   ).toBeOnTheScreen();
-  expect(screen.queryByText("Best near you")).toBeNull();
+  expect(screen.queryByTestId("explore-title")).toBeNull();
   // «Near me» is on at once, and the start is on Riccione's beach (TASK-233).
   expect(screen.getByRole("button", { name: "Near me" })).toBeSelected();
   expect(screen.getByText("RICCIONE · FROM THE BEACH")).toBeOnTheScreen();
@@ -365,6 +365,6 @@ test("with «Run», «Explore» is the one of before", async () => {
   fetchSpy.mockImplementation(async () => Response.json({ routes: [] }));
   await atRiccione();
   await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
-  expect(screen.getByText("Best near you")).toBeOnTheScreen();
+  expect(screen.getByTestId("explore-title")).toBeOnTheScreen();
   expect(screen.queryByText("On the water")).toBeNull();
 });

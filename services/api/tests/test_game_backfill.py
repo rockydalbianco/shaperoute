@@ -92,6 +92,40 @@ def forget_the_game(database: Database) -> None:
         conn.execute("DELETE FROM game_unlocks")
 
 
+def without_track(database: Database, username: str, key: str) -> None:
+    """An activity saved without a track, as a gym session or a pool swim
+    is (gym_sessions.py, pool_swims.py): `source` muw, `track` NULL."""
+    with database.connect() as conn:
+        conn.execute(
+            "INSERT INTO runs (user_id, key, track, pauses, started_at,"
+            " distance_m, duration_s, created_at, activity)"
+            " SELECT id, %s, NULL, '[]', %s, 0, 3600, %s, 'gym' FROM users"
+            " WHERE username = %s",
+            (key, MORNING + timedelta(days=1), NOW, username),
+        )
+
+
+def test_an_activity_without_a_track_is_left_out(
+    client: TestClient, database: Database
+) -> None:
+    # TASK-423: the backfill of rules 3 stopped on a gym session on the
+    # server. It has no game, as when it is saved.
+    me = signed_up(client, "ada")
+    save(client, me, run_body(SIX_KM))
+    without_track(database, "ada", OTHER_KEY)
+    forget_the_game(database)
+    assert backfill(database) == Backfilled(
+        accounts=1, runs=1, unlocked=len(SIX_KM_UNLOCKS)
+    )
+    assert len(game_rows(database)) == 1
+    # Run again: nothing left to do, the session never counts as missing.
+    assert backfill(database) == Backfilled(accounts=0, runs=0, unlocked=0)
+    # An account with only a session has no game to compute.
+    signed_up(client, "bob")
+    without_track(database, "bob", KEY)
+    assert backfill(database) == Backfilled(accounts=0, runs=0, unlocked=0)
+
+
 def test_the_backfill_gives_the_rows_of_a_save(
     client: TestClient, database: Database, expo: FakeExpo
 ) -> None:

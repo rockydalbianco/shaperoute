@@ -10,8 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "6 de noviembre de 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "8 de noviembre de 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). */
+const PRIVACY_UPDATED = "10 de noviembre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -436,6 +436,14 @@ const privacy: AboutDocument = {
       heading: "Strava",
       blocks: [
         "Una carrera va a Strava solo cuando lo pides, y solo después de que hayas conectado tu perfil de Strava. Mientras está conectado, nuestro servidor guarda tu nombre de Strava y las claves que Strava nos dio para tu perfil. Luego enviamos a Strava el recorrido con sus tiempos, el nombre y una línea de descripción. A Strava solo le pedimos permiso para añadir actividades, nunca para leer las tuyas. En Strava la actividad sigue tus ajustes de privacidad de Strava, no los de MuW.",
+      ],
+    },
+    {
+      heading: "La app de MuW en el Apple Watch",
+      blocks: [
+        "Con la app de MuW en el Apple Watch, durante un entrenamiento que inicias el reloj registra tu ubicación, tu frecuencia cardiaca y tus calorías activas, y guarda el entrenamiento en Apple Salud en el reloj.",
+        "El teléfono envía al reloj las rutas que eliges («Enviar al reloj» y tus favoritos). Al final de un entrenamiento el reloj envía al teléfono el recorrido, que se queda allí hasta que lo guardes o lo descartes: una carrera guardada va a nuestro servidor como se describe en «Tus carreras y sus recorridos GPS».",
+        "Durante una carrera el reloj envía al teléfono tu frecuencia cardiaca, para mostrarla en la pantalla de la carrera: no llega a nuestro servidor. El reloj pide tu ubicación solo durante un entrenamiento.",
       ],
     },
     {

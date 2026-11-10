@@ -15,6 +15,7 @@ import {
   TRACKLESS_SPORTS,
 } from "./sports/index.ts";
 import type { GymLevel } from "./gym.ts";
+import type { SkiDescents } from "./skiParts.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -1355,6 +1356,13 @@ interface DrawingFields {
    * saved before; missing from an API before TASK-232 part C.
    */
   rotation_deg?: number | null;
+  /**
+   * A day of alpine skiing: the metres and the seconds of its descents
+   * alone, which its calories are counted on (TASK-424 part C2b,
+   * skiParts.ts). Null for any other run and for a day whose phone sent no
+   * parts; missing from an API before it.
+   */
+  ski_descents?: SkiDescents | null;
 }
 
 /** One drawing of GET /users/{public_id}/drawings. */
@@ -2811,3 +2819,4 @@ export interface OutfitShop {
 export * from "./skiResorts.ts";
 export * from "./skiDays.ts";
 export * from "./resortFollows.ts";
+export * from "./skiParts.ts";

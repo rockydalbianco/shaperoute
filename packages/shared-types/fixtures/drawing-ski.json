@@ -1,0 +1,46 @@
+{
+  "id": "3f9d2c71-8a4b-4e06-b5d1-c27e9a40f815",
+  "title": "Sella Ronda",
+  "started_at": "2026-09-20T07:13:20Z",
+  "published_at": "2026-10-02T21:40:00Z",
+  "place": "Trento",
+  "shape": null,
+  "word": null,
+  "style": null,
+  "route_title": null,
+  "distance_m": 11800,
+  "duration_s": 21600,
+  "score": null,
+  "fidelity": null,
+  "visibility": "followers",
+  "description": "Legs heavy after the bridge.\nThe heart came out round all the same.",
+  "activity": "skiing",
+  "tags": [
+    {
+      "public_id": "3b9d2e10-7c4a-4f8e-a1d6-5e2f9c0b7a44",
+      "username": "adam.trento"
+    }
+  ],
+  "photos": [
+    {
+      "n": 1,
+      "url": "/drawings/3f9d2c71-8a4b-4e06-b5d1-c27e9a40f815/photos/1?v=1790027100000000",
+      "width": 1080,
+      "height": 810
+    }
+  ],
+  "rotation_deg": null,
+  "track_preview": [
+    [46.0671, 11.12399],
+    [46.0671, 11.1344],
+    [46.0761, 11.1344],
+    [46.0761, 11.1214],
+    [46.0689, 11.1214]
+  ],
+  "source": "muw",
+  "order": null,
+  "ski_descents": {
+    "metres": 2900.0,
+    "moving_s": 285.0
+  }
+}

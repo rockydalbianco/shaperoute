@@ -3133,6 +3133,27 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
 - Backfill dei passi per le corse vecchie: `python -m
   shaperoute_api.run_stats`, solo col sì dell'utente. Test in
   `test_run_stats.py`.
+- **I tratti di una giornata di sci** (TASK-424 parte C2b, con TASK-429;
+  tipi in `packages/shared-types/src/skiParts.ts`, esempi in
+  `fixtures/ski-parts-request.json` e `fixtures/drawing-ski.json`, test in
+  `test_ski_parts.py`). Il telefono può mandare in più `ski_parts`, al più
+  500, nell'ordine della giornata:
+  `{kind: "lift"|"descent", n, start_ms, end_ms, moving_s, metres,
+  height_m, top_mps}`. `start_ms` ed `end_ms` sono sull'orologio dei
+  `time_ms` della traccia; `moving_s` non supera la durata del tratto;
+  `top_mps` è `null` per una risalita. L'API li tiene in `stats` con
+  `start_s`/`end_s` al posto dei millisecondi (secondi dal primo punto
+  tenuto della traccia, come la M di `runs.track`), e calcola
+  `ski_descents` `{metres, moving_s}`, la somma delle sole discese. Una
+  lista vuota o assente è nessuno. `GET /drawings/{id}` dà `ski_parts` e
+  `ski_descents` dentro `stats`, a chi vede il post; ogni lista di post
+  (`GET /feed`, il profilo, la stazione, la ricerca, le gare) dà
+  `ski_descents` sul post, `null` senza tratti: il Feed ci conta le
+  calorie dello sci come la fine della giornata.
+  **Prima il server, poi l'app**: un server senza C2b rifiuta un
+  `PUT …/stats` con `ski_parts` (422, `extra="forbid"`) e la giornata
+  perde tutti i suoi dati. Nessuna app manda i tratti prima che il server
+  con C2b sia acceso.
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 

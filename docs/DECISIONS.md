@@ -513,8 +513,72 @@ lasciando le righe d'indice.
 - ADR-0356, precisazione — Anche il percorso chiuso che si incrocia diventa un anello alla partenza: «Edit the drawing» su ogni percorso di «Explore» · 2026-11-10 · Attiva
 - ADR-0351, precisazione D — L'app di «Play» grande: collezioni contate dal telefono, una lista sola, l'ora del telefono con il secondo invio senza · 2026-11-10 · Attiva
 - ADR-0357, precisazione A — La modalità sci nell'app: le schede dallo sport, «Oggi» sulla pagina «choose», le icone come `face`, la barra ricostruita · 2026-11-10 · Attiva
+- ADR-0360 — Le schede della palestra guidate: le settimane in una colonna `program`, i valori di ogni settimana dal telefono, l'app di prima che legge ancora · 2026-11-10 · Accettata
 
 ## Voci nuove
+
+## ADR-0360 — Le schede della palestra guidate: le settimane in una colonna `program`, i valori di ogni settimana dal telefono, l'app di prima che legge ancora
+
+**Stato**: Accettata · 2026-11-10 · TASK-433 (#1095, `8138b456`). Le
+scelte di quello che si vede sono dell'utente, una alla volta su una tela
+di sette schermate («5 passi così», «Tutti e 4 i modi», «4 settimane,
+cambiabile», «Approvo» la grafica e i testi, «Sì, con la migrazione»); il
+modo è deciso dall'agente su delega dell'utente.
+
+**Contesto**: provate le schede di TASK-411 (ADR-0341) sul telefono,
+l'utente ha chiesto di crearne una «il più facilmente possibile», guidata,
+con le settimane che possono cambiare e una grafica più elegante. Una
+scheda di TASK-411 è un solo allenamento sui suoi giorni (`days`, `items`),
+uguale ogni settimana.
+
+**Decisione**:
+- **Una colonna, non una tabella**: `gym_plans.program` JSONB nullable
+  (migrazione `0066_gym_plan_weeks.sql`). Una scheda guidata è una riga di
+  `gym_plans` col suo programma: `goal`, `starts_on` (le settimane contano
+  dal suo lunedì), `weeks` 1–12, `mode` (`load`, `reps`, `alternate`,
+  `same`), `step_kg`, `rest_s`, `sessions` (la prima settimana, un
+  allenamento per giorno) e `custom` (le settimane scritte a mano, dalla 2).
+  Chiave, ordine, limite di 20 schede, «l'ultima modifica vince» e
+  sincronia restano quelli di ADR-0341; al massimo 300 esercizi per
+  programma. Con un `program` i `days` della riga sono quelli dei suoi
+  allenamenti e `items` è vuoto.
+- **I valori di ogni settimana li calcola il telefono**
+  (`apps/mobile/src/gym/program.ts`) dalla prima settimana e dal modo:
+  `load` +`step_kg` a settimana con l'ultima di un ciclo di 3 o più più
+  leggera (i kg della prima e una serie in meno), `reps` +1 ripetizione per
+  due settimane e poi +`step_kg`, `alternate` due settimane in turno,
+  `same` sempre uguale; finito il ciclo ricomincia un passo più pesante.
+  Una settimana scritta a mano prende il posto di quella calcolata. Il
+  server tiene il programma com'è e sa solo quali giorni sono in programma
+  (`GymProgramBody.sessions_on`), per i giorni saltati del calendario.
+- **L'app di prima legge ancora** (condizione del Coordinatore: il
+  contratto è già usato dall'app in produzione): il contratto cambia solo
+  con il campo nuovo facoltativo `program`, nessun campo rinominato o
+  tolto. L'app di prima guarda solo `key`, `name`, `days`, `items`,
+  `position`, `updated_at`: una scheda con le settimane passa, con i giorni
+  dei suoi allenamenti e zero esercizi; in «Plans» è una riga «Mon · Wed ·
+  Fri · 0 exercises», in «Draw» non diventa mai «Today» (serve almeno un
+  esercizio) e «Start workout» resta libero. Se la modifica, manda il `PUT`
+  senza `program` e il server lascia le settimane com'erano;
+  `program: null` riporta una scheda a un solo allenamento. Lo provano
+  `apps/mobile/src/api/gymPlans.test.ts` («an app of before reads a plan
+  with weeks») e `test_gym_plans.py`
+  (`test_a_program_is_kept_and_an_older_app_leaves_it`).
+- **Le schede di prima** si aprono nella guida come un programma di una
+  settimana «sempre uguale» (`programOfPlan`); il vecchio editor lascia il
+  posto alla guida (`GymPlanWizard.tsx`, `SessionEditor.tsx`; le costanti in
+  `planLimits.ts`). La proposta pronta (`proposal.ts`) usa solo esercizi del
+  catalogo coi valori dell'obiettivo, i kg vuoti.
+- **Il recupero dell'obiettivo** (90 s, 3 min, 45 s, 60 s) è il primo
+  recupero di ogni esercizio nell'allenamento che segue la scheda.
+
+**Conseguenze**: prima il server, poi l'OTA: l'API di prima risponde `422`
+a un `PUT` con `program` (campi in più vietati) e la scheda resta in attesa
+sul telefono finché il server non c'è. Tornare all'immagine di prima del
+server non chiede di toccare il database: la colonna è nullable e il codice
+di prima legge le colonne per nome. Il comportamento in
+`docs/sports/gym.md` «Le schede guidate»; il contratto in `API.md`, la
+colonna in `DATABASE.md`.
 
 ## ADR-0351, precisazione D — L'app di «Play» grande: collezioni contate dal telefono, una lista sola, l'ora del telefono con il secondo invio senza
 

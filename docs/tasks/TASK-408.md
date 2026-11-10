@@ -388,8 +388,17 @@ c'è già in «Share your run», quindi niente «Export video».
       batteria non si misura: la parte E la misura sul telefono. Il costo
       c'è solo con il foglio aperto, che smonta la pagina quando si chiude,
       e un tocco ferma il disegno (video in `out/TASK-408/sim-c2c/`).
-- **D — il prompt**: la tabella di parole nell'app e il riquadro; niente
-  server.
+- **D — il prompt** (branch `feat/TASK-408-d-prompt`): il riquadro
+  «Describe your video» in cima a «Edit video», con i tre testi approvati
+  (scelta 9). Finito il campo, il telefono legge le parole con la tabella
+  di `share/videoWords.ts`, nelle cinque lingue, e riempie solo le voci
+  del foglio: animale, stile, colore della linea, emoji lungo il percorso
+  o alla fine, niente apertura, camera dietro o intorno, finale. Una camera
+  senza stile sceglie il 3D. «Cuore» è il finale dove si parla del finale,
+  altrimenti l'emoji; i finali contano solo dove si parla della fine. Una
+  parola sconosciuta si salta senza messaggi; numeri come coordinate non
+  danno nulla (test). L'elefante entra nella tabella con B2. Provato nel
+  simulatore (schermata in `out/TASK-408/sim-d/`).
 - **E — la prova sul telefono**: il tempo dell'esportazione con ogni
   personaggio, nei tre stili.
 
@@ -446,6 +455,12 @@ e `.test.tsx`, `videoScene.ts` e `.test.ts`, `videoPage.ts` e `.test.ts`,
 `apps/mobile/src/i18n/{it,de,es,fr}.ts`; `docs/tasks/TASK-408.md`,
 `docs/STATUS.md`, `docs/DECISIONS.md`. `SharePost.test.tsx` e
 `TabSwipeOwners.test.ts` erano nella lista ma non sono serviti.
+
+Parte D (lista mandata al Coordinatore il 2026-11-10):
+`apps/mobile/src/share/videoWords.ts` e `.test.ts`, `DescribeVideo.tsx` e
+`.test.tsx` (nuovi); `EditVideoSheet.tsx` e `.test.tsx`;
+`apps/mobile/src/i18n/{it,de,es,fr}.ts`; `docs/tasks/TASK-408.md`. STATUS e
+DECISIONS in una PR di soli documenti dopo il merge.
 
 Parte C2c (lista approvata dal Coordinatore il 2026-11-08):
 `apps/mobile/src/share/VideoPreview.tsx` e `.test.tsx` (nuovi);

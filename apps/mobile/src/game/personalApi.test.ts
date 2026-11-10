@@ -73,5 +73,5 @@ test("an API before TASK-423 part C says it has none", async () => {
 
 test("the offset now is the phone's", () => {
   const now = Date.parse("2026-11-10T09:00:00Z");
-  expect(offsetNow(now)).toBe(-new Date(now).getTimezoneOffset());
+  expect(offsetNow(now)).toBe(0 - new Date(now).getTimezoneOffset());
 });

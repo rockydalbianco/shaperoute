@@ -203,7 +203,8 @@ export const UTC_OFFSET_MAX_MIN = 840;
 /** How far the phone's clock is from UTC at the moment `ms`, in minutes:
  * +60 in Rome in winter, −300 in New York. */
 export function utcOffsetAt(ms: number): number {
-  const offset = -new Date(ms).getTimezoneOffset();
+  // 0 - …, not -…: on UTC that is 0, never -0.
+  const offset = 0 - new Date(ms).getTimezoneOffset();
   return Number.isFinite(offset) ? offset : 0;
 }
 

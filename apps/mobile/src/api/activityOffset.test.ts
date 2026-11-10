@@ -40,7 +40,9 @@ test("the offset is the phone's at the first fix", () => {
 });
 
 test("the phone's own clock: minutes ahead of UTC", () => {
-  expect(utcOffsetAt(FIRST_MS)).toBe(-new Date(FIRST_MS).getTimezoneOffset());
+  expect(utcOffsetAt(FIRST_MS)).toBe(0 - new Date(FIRST_MS).getTimezoneOffset());
+  // On UTC: 0, not -0.
+  expect(Object.is(utcOffsetAt(FIRST_MS) + 0, utcOffsetAt(FIRST_MS))).toBe(true);
 });
 
 test("no fix, a file, an offset already there, or one the API would refuse: as it is", () => {

@@ -87,7 +87,8 @@ export function isGamePersonal(value: unknown): value is GamePersonal {
 /** How far the phone's clock is from UTC now, in minutes: +60 in Rome in
  * winter. The API reads the week and the hours on it. */
 export function offsetNow(nowMs: number = Date.now()): number {
-  return -new Date(nowMs).getTimezoneOffset();
+  // 0 - …, not -…: on UTC that is 0, never -0.
+  return 0 - new Date(nowMs).getTimezoneOffset();
 }
 
 /** GET /game/personal?utc_offset_min=: the account's challenges of this

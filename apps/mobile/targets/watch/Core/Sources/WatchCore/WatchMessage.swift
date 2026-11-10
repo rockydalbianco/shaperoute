@@ -38,7 +38,9 @@ public enum WatchMessage: Equatable, Sendable {
     case heartRate(bpm: Int, at: Int64)
     /// What the runner chose on the phone, for the watch to keep (part A3):
     /// it comes with transferUserInfo, so also when the app was closed.
-    case settings(units: WatchUnits, at: Int64)
+    /// From part B5 the heart rate zones too, when the phone has them (an
+    /// age or a max heart rate): an older phone sends none.
+    case settings(units: WatchUnits, heartZones: HeartZones?, at: Int64)
     /// A route to follow on the watch alone (part B3a), from «Send to
     /// watch» or among the favorites.
     case route(WatchRoute, favorite: Bool, at: Int64)
@@ -105,7 +107,9 @@ extension WatchMessage {
             else {
                 throw WatchMessageError.invalidField
             }
-            return .settings(units: units, at: try time(fields["at"]))
+            return .settings(
+                units: units, heartZones: try heartZones(fields["heartZones"]),
+                at: try time(fields["at"]))
         case "route":
             guard let favorite = boolean(fields["favorite"]) else {
                 throw WatchMessageError.invalidField
@@ -164,9 +168,12 @@ extension WatchMessage {
             fields["type"] = "heartRate"
             fields["bpm"] = bpm
             fields["at"] = at
-        case let .settings(units, at):
+        case let .settings(units, heartZones, at):
             fields["type"] = "settings"
             fields["units"] = units.rawValue
+            if let heartZones {
+                fields["heartZones"] = heartZones.limits
+            }
             fields["at"] = at
         case let .route(route, favorite, at):
             fields["type"] = "route"
@@ -228,6 +235,27 @@ private func activity(_ value: Any?) throws -> String {
         throw WatchMessageError.invalidField
     }
     return activity
+}
+
+/// The zones of a settings message: none when the field is not there, and
+/// six whole limits in order when it is.
+private func heartZones(_ value: Any?) throws -> HeartZones? {
+    guard let value else {
+        return nil
+    }
+    guard let list = value as? [Any] else {
+        throw WatchMessageError.invalidField
+    }
+    let limits = try list.map { item -> Int in
+        guard let bpm = integer(item) else {
+            throw WatchMessageError.invalidField
+        }
+        return Int(bpm)
+    }
+    guard let zones = HeartZones(limits: limits) else {
+        throw WatchMessageError.invalidField
+    }
+    return zones
 }
 
 /// A JSON true or false; a number is not one.

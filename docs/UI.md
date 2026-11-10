@@ -3423,7 +3423,9 @@ cui tiene i numeri.
   salita) e «Calories». Sotto, i km uno per uno («Km · Pace · Change»:
   «2 · 5:14 · -0:06», l'ultimo in cima; prima del primo km «Your first
   kilometre will show here.»). Poi i due interruttori della corsa,
-  «Auto-pause» e «Voice».
+  «Auto-pause» e «Voice». Con un orologio, sotto i sei riquadri, la riga
+  del battito di «Map» («♥ 142 bpm» e la zona; TASK-424 parte C1, scelta
+  dell'utente del 2026-11-08: «Data» ha tutti i numeri, battito compreso).
 - **La riga del gioco** (TASK-296 parte E, ADR-0255; `GIOCO.md` §9,
   «Durante la corsa»; codice in `src/game/RunGameStrip.tsx` e
   `runStripData.ts`): su una corsa a piedi, con l'account e il gioco sul
@@ -3488,6 +3490,12 @@ cui tiene i numeri.
   orologio lo manderà (oggi nessuno segue piscina e palestra: vuoto).
   Ogni 15 s, subito a pausa e ripresa, `finished` quando lo schermo se ne
   va (fine, «Still training?» senza risposta).
+- **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
+  numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
+  /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,
+  «–» finché sono zero), gli stessi che manda «Share live». Si aggiornano
+  ogni secondo; in pausa si fermano. A fine nuotata «How many lengths?»
+  chiede le vasche vere.
 - **«Pause»**, un pulsante tondo e chiaro in mezzo, su tutte e due le
   pagine; da una parte «Pocket», dall'altra «Music». In pausa il tempo si ferma, le posizioni non
   entrano nella traccia e «Pace now» è «–»; la mappa continua a seguire, e

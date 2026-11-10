@@ -588,10 +588,47 @@ Privacy, sezione «Sharing live»:
   update iOS `01a1c57e-74e0-7aba-981b-5d3a2a650123`, impronta `6f8bba4c`;
   gruppo preview `d6071d95-0c09-46c7-9499-600528f1c3d1`. **Resta**: la
   prova su un telefono vero.
-- **C** (i dati dal vivo che mancano): dopo TASK-370 B3. Le PR di codice
-  non toccano `STATUS.md`, `DECISIONS.md` né `INDEX.md` (regola del
-  Coordinatore del 2026-11-08): le loro righe vanno in PR di soli
-  documenti.
+- **C** (i dati dal vivo che mancano): TASK-370 B3, 409 B e 411 C sono in
+  `main`. Le PR di codice non toccano `STATUS.md`, `DECISIONS.md` né
+  `INDEX.md` (regola del Coordinatore del 2026-11-08): le loro righe vanno
+  in PR di soli documenti. **Scelte dell'utente del 2026-11-10**, in questa
+  chat:
+  - alla domanda sulle calorie dello sci (TASK-375 e TASK-415 dicevano
+    «niente calorie sulla neve»): «Formula da sci», dal vivo, a fine
+    giornata, in Apple Salute e nel Feed;
+  - poi: «le calorie devono essere calcolate per ogni attività, e segnate
+    con colore rosso in tutte». Supera «niente calorie sulla neve» di
+    TASK-375 e la scelta 2 di TASK-415: la PR di soli documenti le segna
+    superate, con queste parole.
+
+  Tre PR, nell'ordine, ognuna da `main` dopo il merge della precedente
+  (liste approvate dal Coordinatore il 2026-11-10):
+  - **C1 — Il battito su «Data» e la piscina dal vivo**. Branch
+    `feat/TASK-424-c-live-numbers`. File:
+    ```
+    apps/mobile/src/screens/RunDashboard.tsx      (WatchHeart anche su «Data»)
+    apps/mobile/src/screens/RunDataHeart.test.tsx  (nuovo)
+    apps/mobile/src/pool/PoolSwimScreen.tsx       (vasche e kcal sotto l'orologio)
+    apps/mobile/src/pool/PoolLiveFigures.test.tsx  (nuovo)
+    docs/UI.md, docs/tasks/TASK-424.md
+    ```
+    Su «Data», sotto i sei riquadri, la stessa riga del battito di «Map».
+    In piscina, sotto l'orologio, «Lengths» e «Calories» da
+    `poolLiveStats`: gli stessi numeri che manda «Share live», ogni
+    secondo. Nessun testo nuovo («Lengths», «Calories» ci sono già).
+  - **C2 — Le calorie di ogni sport**: acque libere con le fasce a MET
+    per passo della piscina; sci alpino col MET della discesa sul solo
+    tempo in pista (risalite escluse, `snowDay`); sci di fondo e
+    scialpinismo con la loro formula. Dal vivo (lo sport registrato, non
+    quello di `freeRunAs`), a fine giornata, in Apple Salute e nel Feed.
+  - **C3 — Le calorie in rosso ovunque**: un token nuovo `energy` in
+    `tokens.ts`, col contrasto misurato nei due temi, su ogni numero di
+    calorie dell'app (corsa, neve, piscina, palestra, Feed, «Activities»,
+    immagini da condividere).
+
+  **Seguito, fuori da TASK-424**: le calorie in rosso anche nell'app
+  dell'orologio (Swift, build nativa). Il battito di piscina e palestra
+  resta a TASK-385 G.
 
 ## File toccati
 

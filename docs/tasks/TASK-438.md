@@ -1,10 +1,10 @@
 # TASK-438 — Il job `api` della CI diviso in parti
 
-**Stato**: In corso · 2026-11-10
+**Stato**: Done · 2026-11-10: #1119 in main (dc049b88), unita dal
+Coordinatore
 **Fase**: 4 · **Branch**: `chore/TASK-438-api-ci-shards`
 **Numeri**: TASK-438 e ADR-0364 («i test dell'API in CI girano in 4 parti
-per file»), assegnati dal Coordinatore; la voce dell'ADR entra con la PR di
-soli documenti dopo il merge. Seguito di TASK-248 e TASK-393.
+per file»), assegnati dal Coordinatore. Seguito di TASK-248 e TASK-393.
 
 ## Obiettivo
 
@@ -47,12 +47,16 @@ I dati (tempi per file, script che li ricava dai log) sono in
 
 ## Criteri di accettazione
 
-- [ ] Ogni test dell'API gira una volta sola: la somma dei test raccolti
+- [x] Ogni test dell'API gira una volta sola: la somma dei test raccolti
       dalle parti è uguale al totale della suite intera.
-- [ ] La parte più lenta dura meno di 15 minuti in due run consecutivi.
+- [x] La parte più lenta dura meno di 15 minuti in due run consecutivi.
 - [ ] Il check `api` resta quello obbligatorio e diventa rosso se una
-      parte fallisce.
-- [ ] Una PR di soli documenti finisce verde in pochi secondi come prima.
+      parte fallisce. *(Il nome è rimasto e il caso verde è provato; il
+      caso rosso non è ancora capitato in CI: chi lo vede lo annota qui.)*
+- [x] Una PR di soli documenti finisce verde in pochi secondi come prima.
+      *(Provato sulla #1124: ogni job dura 5–8 secondi coi test saltati e
+      `api` finale è verde. L'attesa di una macchina libera è un'altra
+      cosa: vedi «Esito».)*
 
 ## File toccati
 
@@ -76,4 +80,38 @@ docs/tasks/TASK-438.md
 
 ## Esito
 
-*(a fine task)*
+In `main` con #1119 (2026-11-10), decisione in ADR-0364. Due run
+consecutivi sulla PR, durata di ogni job `api-tests`:
+
+| Parte | Test | Run 42877881051 | Run 42880163931 |
+|---|---|---|---|
+| 1 | 833 | 6 min 40 s | 9 min 11 s |
+| 2 | 739 (1 saltato) | 9 min 34 s | 6 min 54 s |
+| 3 | 790 | 6 min 47 s | 10 min 02 s |
+| 4 | 752 | 10 min 48 s | 9 min 06 s |
+
+Il job finale `api` dura 2–3 secondi. Prima: un job solo, 27–39 minuti.
+
+Test raccolti: 833 + 739 + 790 + 752 = 3114, quanti la suite intera sullo
+stesso commit (controllo della parte 1: 3114 test, 178 file); 3113
+passati e 1 saltato, come nel job unico (3098 + 1 su 3099: i 15 in più
+sono entrati in `main` nel frattempo).
+
+Le parti sono bilanciate: la differenza tra l'una e l'altra nello stesso
+run è la macchina, e cambia parte da un run all'altro. I minuti di
+macchina non calano, si dividono.
+
+**La coda delle macchine** (visto sulla #1124, PR di soli documenti, run
+42883116407): i nove job sono durati 5–8 secondi l'uno, ma il run è finito
+dopo 17 minuti, perché con 16 run in corso nel repository i job hanno
+aspettato una macchina libera da 4 a 17 minuti. Due PR di soli documenti
+di poco prima, col job unico e meno carico, erano finite in 10–30 secondi.
+Ogni run ora chiede 8 macchine insieme invece di 5 (più il job finale, che
+ne aspetta una a sua volta): quando molte PR girano insieme la coda si
+riempie prima. Se pesa, le leve sono la lista `shard` (3 parti stanno a
+10–14 minuti) e il database modello, che riduce i minuti di macchina
+invece di dividerli.
+
+Rimandato: il database modello per i test (vedi «Fuori scope»), scritto
+come proposta per l'utente in `out/TASK-438/PROPOSTA-database-modello.md`
+del checkout principale e portato dal Coordinatore.

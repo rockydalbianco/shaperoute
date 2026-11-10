@@ -520,8 +520,66 @@ lasciando le righe d'indice.
 - ADR-0351, precisazione E1 — I premi sul server: le edizioni come righe di `game_unlocks`, cornici, titoli e badge letti a ogni richiesta, la scelta del profilo in `game_prefs` · 2026-11-10 · Attiva
 - ADR-0357, precisazione B1 — La giornata di sci a colori: un solo calcolo dei tratti, i colori come token, i numeri sulle linee · 2026-11-10 · Attiva
 - ADR-0357, precisazione C1 — I tratti della giornata salvata e la stagione sul server: `parts` solo quando ci sono, nomi alla lettura con una cache per processo · 2026-11-10 · Attiva
+- ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale
+
+**Stato**: Attiva · 2026-11-10 · deciso dall'agente su delega dell'utente
+(TASK-438; numero e via libera del Coordinatore).
+
+**Contesto**: il job `api` di `ci.yml` eseguiva tutta la suite dell'API su
+una macchina: 27 minuti sulla PR #1105, 39 sulla #1103, annullata al limite
+di 40 con ogni passo verde. Misurato su quattro run del 2026-11-10 (3099
+test, 176 file): tutto il tempo è in pytest; nessun file pesa più del
+4,5 %; tra un run da 27 e uno da 37 minuti ogni file è più lento dello
+stesso fattore, cioè è la macchina; il costo è per test, perché ogni test
+riceve un database vuoto a cui la fixture del file applica tutte le
+migrazioni. La suite è raddoppiata in tre settimane.
+
+**Decisione**:
+
+- il job diventa la matrice `api-tests` con 4 parti (`fail-fast: false`,
+  25 minuti di limite ciascuna). `tools/ci_api_shards.py`, solo libreria
+  standard, dà ogni file di `services/api/tests` a una parte sola: un file
+  pesa quanti `def test_` ha e va, dal più pesante, alla parte più leggera;
+  a parità decide il nome. Stessi file, stesse parti. Il numero delle parti
+  è la sola lista `shard` di `ci.yml` (`strategy.job-total` fa il resto);
+- lint e controllo di copertura girano una volta, nella parte 1: pytest
+  elenca tutta la suite senza eseguirla e il job fallisce se raccoglie un
+  test da un file che nessuna parte esegue; lo stesso passo stampa il
+  totale dei test raccolti;
+- un job finale `api` (`needs: api-tests`, `if: always()`) passa solo se il
+  risultato della matrice è `success`. Il check obbligatorio del ruleset
+  resta `api`; `api-tests (1)` … `api-tests (4)` non sono obbligatori;
+- ogni parte stampa i suoi 25 test più lenti (`--durations=25`).
+
+**Perché così**: senza un file dominante non c'è un test da sistemare, e
+dividere per file non chiede dipendenze né cambia i test. Il giro
+alfabetico dei file con 4 parti lasciava la più lenta a 9–13 minuti contro
+7–10 del bilanciamento sul numero di test, che resta entro il 10 % dalla
+divisione ideale senza tempi salvati che invecchiano. `always()` sul job
+finale perché un job saltato vale come passato per il ruleset, e con il
+default una parte fallita o annullata lo farebbe saltare. Con una lista di
+file vuota pytest eseguirebbe tutta la suite: lo script rifiuta più parti
+che file e il passo controlla che la lista non sia vuota.
+
+**Scartato**: `pytest-xdist` (dipendenza nuova, stato condiviso tra file da
+verificare; non serve per stare sotto i 15 minuti); tempi per file salvati
+nel repository (invecchiano a ogni PR); un database modello con le
+migrazioni applicate una volta per run (`CREATE DATABASE … TEMPLATE`): è
+la riduzione più grande del tempo totale, ma cambia `tests/conftest.py` e
+le fixture dei test, quindi è una proposta a parte, non costruita.
+
+**Conseguenze**: sulla #1119, due run consecutivi con la parte più lenta a
+10 min 48 s e 10 min 02 s; le quattro parti raccolgono 833 + 739 + 790 +
+752 = 3114 test, quanti la suite intera sullo stesso commit. I minuti di
+macchina non calano: si dividono su quattro job, più circa un minuto di
+installazione per parte. Un file di test nuovo entra da solo in una parte.
+Una PR di soli documenti fa partire quattro job `api-tests` invece di uno,
+tutti verdi in pochi secondi col passo «Changes» (ADR-0331). In locale non
+cambia niente: `pytest` esegue tutta la suite.
 
 ## ADR-0352, precisazione C2b — I tratti della giornata di sci nei run-stats, le discese in ogni lista di post: un campo solo con TASK-429, nessuna migrazione
 

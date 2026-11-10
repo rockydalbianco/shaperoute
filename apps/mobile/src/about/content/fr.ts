@@ -10,8 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "6 novembre 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "8 novembre 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). */
+const PRIVACY_UPDATED = "10 novembre 2026";
 
 const help: AboutDocument = {
   title: "Comment fonctionne MuW",
@@ -436,6 +436,14 @@ const privacy: AboutDocument = {
       heading: "Strava",
       blocks: [
         "Une course ne va vers Strava que quand tu le demandes, et seulement après que tu as connecté ton profil Strava. Tant qu'il est connecté, notre serveur garde ton nom Strava et les clés que Strava nous a données pour ton profil. Nous envoyons alors à Strava la trace avec ses temps, le nom et une ligne de description. Nous demandons à Strava seulement l'autorisation d'ajouter des activités, jamais de lire les tiennes. Sur Strava, l'activité suit tes réglages de confidentialité Strava, pas ceux de MuW.",
+      ],
+    },
+    {
+      heading: "L'app MuW sur Apple Watch",
+      blocks: [
+        "Avec l'app MuW sur Apple Watch, pendant une séance que tu lances, la montre enregistre ta position, ta fréquence cardiaque et tes calories actives, et enregistre la séance dans Apple Santé sur la montre.",
+        "Le téléphone envoie à la montre les parcours que tu choisis («Envoyer à la montre» et tes favoris). À la fin d'une séance, la montre envoie au téléphone sa trace, qui y reste jusqu'à ce que tu l'enregistres ou la supprimes : une course enregistrée va sur notre serveur comme décrit dans «Tes courses et leurs traces GPS».",
+        "Pendant une course, la montre envoie au téléphone ta fréquence cardiaque, pour l'afficher sur l'écran de la course : elle n'arrive pas sur notre serveur. La montre ne demande ta position que pendant une séance.",
       ],
     },
     {

@@ -186,7 +186,16 @@ provato, senza tenere ferme le altre cose.
    nella tabella di «B3, la proposta».
 
 **Da chiedere, una per volta** (con una proposta pronta):
-6. La riga della privacy e l'etichetta App Privacy (prima della build 1.1).
+6. **La privacy** (2026-11-10): «Sì, approvato» — una sezione «The MuW app
+   on Apple Watch» nella «Privacy» dell'app e del sito, prima di «Apple
+   Health and Health Connect»: posizione, battito e calorie registrati
+   dall'orologio durante un allenamento e salvati in Apple Salute
+   sull'orologio; i percorsi scelti all'orologio; la traccia al telefono
+   finché non la si salva o scarta, poi al server come ogni corsa; il
+   battito al telefono durante la corsa, mai al server; la posizione chiesta
+   solo durante un allenamento. L'etichetta App Privacy non cambia
+   (posizione e attività già dichiarate, il battito non arriva al server).
+   La copia online del sito (DEPLOY F.14) col sì dell'utente.
 
 9. **Il permesso di posizione dell'orologio** (2026-11-08): «Approvo la
    proposta» — en «MuW uses your location during a workout to guide you

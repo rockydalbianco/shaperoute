@@ -171,7 +171,9 @@ E1 services/api/migrations/0067_game_prizes.sql (bozza, numero al merge),
    game_backfill.py, push.py, profiles.py; packages/shared-types
    (index.ts, fixture game-me, game-run, game-prizes, test/game.test.ts);
    apps/mobile/src/game/gameCatalogCompat.test.ts (l'app di oggi legge i
-   campi nuovi); docs/API.md
+   campi nuovi); docs/API.md. PR #1099; i testi delle push edition_up e
+   collection_done nelle 5 lingue (out/TASK-423/TESTI-E1.md) approvati
+   dall'utente il 2026-11-10 con «Sì, approvo»
 E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
    GamePrizesRow, prizesApi, usePrizes, prizesText; PlayScreen,
    CollectionPage, ShapeCard, UnlockCard, UnlockLayer, unlocks.ts),

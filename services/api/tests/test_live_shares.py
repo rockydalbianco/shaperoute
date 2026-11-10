@@ -5,6 +5,8 @@ account, the end of the link and the round that deletes the points."""
 from __future__ import annotations
 
 import json
+import threading
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -13,6 +15,7 @@ import pytest
 from fastapi.testclient import TestClient
 from test_drawings import (
     WallClock,
+    api,
     client,  # noqa: F401  (the fixtures of the drawings' tests)
     database,  # noqa: F401
     other,
@@ -29,6 +32,7 @@ from shaperoute_api.live_shares import (
     SITE_ORIGIN,
     LiveShareRequestBody,
     LiveShares,
+    LiveShareSweep,
     LiveUpdateBody,
     LiveViewBody,
     token_hash,
@@ -364,3 +368,50 @@ def test_deleting_the_account_deletes_its_links(
         assert conn.execute("SELECT 1 FROM live_shares").fetchone() is None
         assert conn.execute("SELECT 1 FROM live_share_points").fetchone() is None
     assert seen(client, share)["status"] == "expired"
+
+
+# --- The round ---
+
+
+def live_rounds() -> list[threading.Thread]:
+    return [t for t in threading.enumerate() if t.name == "live-shares"]
+
+
+def test_the_round_runs_only_while_the_app_serves(
+    database: Database,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    # Made, not served (as in most tests, and in __main__ before uvicorn):
+    # no round, so none can outlive a database closed by a test.
+    app = api(database, wall)
+    assert live_rounds() == []
+    with app:
+        assert len(live_rounds()) == 1
+    assert live_rounds() == []
+
+
+class Counted:
+    """A stand-in for LiveShares: counts the rounds, the first one slow."""
+
+    def __init__(self) -> None:
+        self.rounds = 0
+        self.started = threading.Event()
+
+    def sweep(self) -> int:
+        self.started.set()
+        time.sleep(0.05)
+        self.rounds += 1
+        return 0
+
+
+def test_stop_waits_for_the_round_under_way_and_ends_them() -> None:
+    shares = Counted()
+    sweep = LiveShareSweep(shares, every_s=0.01)  # type: ignore[arg-type]
+    sweep.start()
+    assert shares.started.wait(5)
+    sweep.stop()
+    done = shares.rounds
+    assert done >= 1
+    time.sleep(0.05)
+    assert shares.rounds == done
+    assert live_rounds() == []

@@ -120,13 +120,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   C (`run_stats`, #1001, migrazione 0064) in `main`; F e l'invio delle stats
   col prossimo OTA unico, la 0064 col passo unico sul server, il backfill
   dei passi col sì dell'utente. Poi D, E. File: — · `tasks/TASK-410.md`
-- **TASK-411 — La palestra per tutti i giorni** · A–F in `main` (la
-  migrazione 0058 delle schede); restano il server (0058 e il calendario), il
-  sito della privacy e un OTA dedicato, ognuno col sì. File: — ·
-  `tasks/TASK-411.md`
-- **TASK-411 — La palestra per tutti i giorni** · A, B, E in `main`; C (le
-  schede) nella PR #964, D (privacy) nella #962. File: quelli delle #964 e
-  #962 · `tasks/TASK-411.md`
 - **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
   `heights.py` condiviso); server col passo 2 dell'utente, senza
   `draw_examples` (impronte uguali); prossime A2 e B. File: — ·

@@ -145,10 +145,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   dell'utente del 2026-11-10), poi «via server catalogo». Restano 16 città
   europee (Overpass chiuso) e i contorni di TASK-418 in attesa della
   registrazione. File: quelli della #1028 · `tasks/TASK-419.md`
-- **TASK-423 — «Play» grande** (ADR-0351) · A (94 forme), B (tempi su 11
-  distanze, regole 3) e la privacy (#1007) in `main`; C (sfide personali,
-  streak, 0065) nella #1018. Server A+B col backfill: sì dell'utente, via
-  del Coordinatore. Poi D (dopo la #971) ed E. File: quelli della #1018 · `tasks/TASK-423.md`
+- **TASK-423 — «Play» grande** (ADR-0351) · A, B, C (sfide personali,
+  streak, 0065) e la privacy in `main`; server A+B fatto, il backfill
+  riparte dopo la fix #1037 (corse senza traccia); la 0065 nel passo server
+  2. Poi D (dopo la #971) ed E. File: quelli della #1037 · `tasks/TASK-423.md`
 - **TASK-418 — Forme nuove per il catalogo di «Explore»** · parte A in
   `main` (#953): 49 forme candidate in `services/route-engine/candidate_outlines/`;
   poi la registrazione delle sole forme che l'utente approva su strada (dopo

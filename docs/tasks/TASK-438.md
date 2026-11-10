@@ -2,8 +2,9 @@
 
 **Stato**: In corso · 2026-11-10
 **Fase**: 4 · **Branch**: `chore/TASK-438-api-ci-shards`
-**Numeri**: TASK-438 assegnato dal Coordinatore. Nessun ADR: la scelta è
-descritta qui e in `docs/TESTING.md`. Seguito di TASK-248 e TASK-393.
+**Numeri**: TASK-438 e ADR-0364 («i test dell'API in CI girano in 4 parti
+per file»), assegnati dal Coordinatore; la voce dell'ADR entra con la PR di
+soli documenti dopo il merge. Seguito di TASK-248 e TASK-393.
 
 ## Obiettivo
 

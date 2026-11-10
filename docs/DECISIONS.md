@@ -507,11 +507,11 @@ lasciando le righe d'indice.
 - ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Accettata
 - ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano · 2026-11-10 · Accettata
 - ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni · 2026-11-10 · Accettata
-- ADR-0340, precisazione E1 — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno · 2026-11-10 · Attiva
+- ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno · 2026-11-10 · Attiva
 
 ## Voci nuove
 
-## ADR-0340, precisazione E1 — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno
+## ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno
 
 **Stato**: Attiva · 2026-11-10 · TASK-410, correzione (#1078,
 `db3d131c`). Deciso dall'agente su delega dell'utente, dopo la sua

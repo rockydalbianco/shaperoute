@@ -18,8 +18,8 @@ to: outside the package, so neither the catalogue nor the engine of the phone
 
 Nothing here is a route: the engine plans the routes, on real roads, from
 these files (``python -m route_engine --outline FILE``). The shapes enter
-``SHAPES``, and move to ``route_engine/shapes/outlines/``, only once the user
-has judged them on real roads (ADR-0036).
+``SHAPES``, and their files ``route_engine/shapes/outlines/``, only once the
+user has judged them on real roads (ADR-0036): those are in ``APPROVED``.
 ``tools/test_draw_new_shapes.py`` checks that the files in the repository
 are the ones this script writes.
 """
@@ -40,6 +40,29 @@ from shapely.ops import unary_union
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CANDIDATES = REPO_ROOT / "services" / "route-engine" / "candidate_outlines"
+OUTLINES = (
+    REPO_ROOT / "services" / "route-engine" / "route_engine" / "shapes" / "outlines"
+)
+# The shapes the user approved on real roads (TASK-419's first round, «ok
+# procedi» on 2026-11-10): in the catalogue, their files among the others.
+APPROVED = frozenset(
+    {
+        "airplane",
+        "anchor",
+        "bear_head",
+        "bicycle",
+        "cherries",
+        "espresso_cup",
+        "four_leaf_clover",
+        "leaning_tower",
+        "music_note",
+        "pear",
+        "sailboat",
+        "swan",
+        "windmill",
+        "wine_glass",
+    }
+)
 CATEGORIES = ("monuments", "food", "animals", "objects", "symbols")
 # Simplified this close to the drawing, as a share of the unit square.
 SIMPLIFY = 0.006
@@ -1038,23 +1061,32 @@ span{{color:var(--muted);font-size:12px}}
 """
 
 
+def home(name: str) -> Path:
+    """Where the file of the shape called ``name`` lives: in the catalogue
+    once the user approved it, among the candidates before."""
+    return (OUTLINES if name in APPROVED else CANDIDATES) / f"{name}.json"
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--out", type=Path, default=CANDIDATES)
+    parser.add_argument(
+        "--out", type=Path, help="write every file here instead of its home"
+    )
     parser.add_argument("--preview", type=Path, help="also write this HTML page")
     args = parser.parse_args(argv)
-    args.out.mkdir(parents=True, exist_ok=True)
     files = []
     for name in sorted(S, key=lambda n: (CATEGORIES.index(S[n][0]), n)):
         data, left_out = draw(name)
-        (args.out / f"{name}.json").write_text(as_text(data), encoding="utf-8")
+        path = home(name) if args.out is None else args.out / f"{name}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(as_text(data), encoding="utf-8")
         files.append(data)
         for line_ in left_out:
             print(line_)
     if args.preview:
         args.preview.parent.mkdir(parents=True, exist_ok=True)
         args.preview.write_text(preview(files), encoding="utf-8")
-    print(f"{len(files)} shapes written to {args.out}")
+    print(f"{len(files)} shapes written, {len(APPROVED)} in the catalogue")
     return 0
 
 

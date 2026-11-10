@@ -12,11 +12,14 @@ pytest.importorskip("route_engine")
 pytest.importorskip("shapely")
 
 from draw_new_shapes import (  # noqa: E402
+    APPROVED,
     CANDIDATES,
     CATEGORIES,
+    OUTLINES,
     S,
     as_text,
     draw,
+    home,
     preview,
 )
 from route_engine.shapes import SHAPES  # noqa: E402
@@ -31,7 +34,7 @@ SAME_DRAWING = 0.02
 
 
 def _file(name: str) -> dict:
-    return json.loads((CANDIDATES / f"{name}.json").read_text(encoding="utf-8"))
+    return json.loads(home(name).read_text(encoding="utf-8"))
 
 
 def test_the_user_chose_forty_nine_shapes_in_five_groups() -> None:
@@ -46,8 +49,17 @@ def test_the_user_chose_forty_nine_shapes_in_five_groups() -> None:
     }
 
 
-def test_no_new_shape_takes_the_name_of_one_in_the_catalogue() -> None:
-    assert not set(NAMES) & set(SHAPES)
+def test_only_the_approved_shapes_are_in_the_catalogue() -> None:
+    assert len(APPROVED) == 14
+    assert APPROVED <= set(NAMES)
+    assert set(NAMES) & set(SHAPES) == APPROVED
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_each_file_lives_in_one_place(name: str) -> None:
+    in_catalogue = (OUTLINES / f"{name}.json").exists()
+    candidate = (CANDIDATES / f"{name}.json").exists()
+    assert (in_catalogue, candidate) == (name in APPROVED, name not in APPROVED)
 
 
 @pytest.mark.parametrize("name", NAMES)
@@ -70,7 +82,7 @@ def test_the_file_is_the_one_the_script_writes(name: str) -> None:
 
 @pytest.mark.parametrize("name", NAMES)
 def test_the_engine_follows_it_as_one_closed_outline(name: str) -> None:
-    outline = read_outline(CANDIDATES / f"{name}.json")
+    outline = read_outline(home(name))
     assert outline.name == name
     assert not outline.line
     points = outline(N)

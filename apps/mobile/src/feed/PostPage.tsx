@@ -24,10 +24,13 @@ import { Tap } from "../ui/Tap";
 import { useUnits } from "../units/useUnits";
 import { useEditRunDoor } from "./editRunDoor";
 import type { ShownPost } from "./feedPosts";
-import { postSections } from "./postSections";
+import { PostElevation } from "./PostElevation";
+import { type PostSection, postSections } from "./postSections";
 import { PostSettings } from "./PostSettings";
 import { PostSheet } from "./PostSheet";
+import { PostSplits } from "./PostSplits";
 import { RouteMap } from "./RouteMap";
+import { usePostStats } from "./usePostStats";
 
 /** The side of the author's picture at the top of the page. */
 export const AUTHOR_SIDE = 40;
@@ -48,8 +51,10 @@ type Props = {
  * its map, still (the run's video comes with TASK-336), a tap on it opens
  * it on the map as before (`onMap`), its title and its
  * description; then its cards (`postSections`), each only when it has
- * something to show; at the foot `PostSheet`, always there. On somebody
- * else's post the «…» reports it, as on the card.
+ * something to show: the summary, and with the figures of GET
+ * /drawings/{id} (part D) the splits, the elevation, the heart rate; at the
+ * foot `PostSheet`, always there. On somebody else's post the «…» reports
+ * it, as on the card.
  */
 export function PostPage({ post, onClose, onMap }: Props) {
   const units = useUnits();
@@ -78,7 +83,8 @@ export function PostPage({ post, onClose, onMap }: Props) {
   ]
     .filter((part): part is string => part !== null)
     .join(" · ");
-  const sections = postSections(post, units);
+  const stats = usePostStats(drawing.id);
+  const sections = postSections(post, units, undefined, stats);
   const map = (
     <RouteMap
       id={post.id}
@@ -162,19 +168,7 @@ export function PostPage({ post, onClose, onMap }: Props) {
               <Text style={styles.cardTitle} accessibilityRole="header">
                 {section.title}
               </Text>
-              <View style={styles.rows}>
-                {section.rows.map((row) => (
-                  <View
-                    key={row.label}
-                    style={styles.row}
-                    accessible
-                    accessibilityLabel={`${row.label}: ${row.value}`}
-                  >
-                    <Text style={styles.rowLabel}>{row.label}</Text>
-                    <Text style={styles.rowValue}>{row.value}</Text>
-                  </View>
-                ))}
-              </View>
+              <SectionBody section={section} />
             </View>
           ))}
         </ScrollView>
@@ -187,6 +181,40 @@ export function PostPage({ post, onClose, onMap }: Props) {
         />
       </View>
     </Modal>
+  );
+}
+
+/** What a card holds under its title: rows, two to a line; the table of
+ * the splits; the profile. */
+function SectionBody({ section }: { section: PostSection }) {
+  if (section.kind === "splits") {
+    return (
+      <PostSplits unit={section.unit} rows={section.rows} fastest={section.fastest} />
+    );
+  }
+  if (section.kind === "elevation") {
+    return (
+      <PostElevation
+        gain={section.gain}
+        columns={section.columns}
+        label={section.label}
+      />
+    );
+  }
+  return (
+    <View style={styles.rows}>
+      {section.rows.map((row) => (
+        <View
+          key={row.label}
+          style={styles.row}
+          accessible
+          accessibilityLabel={`${row.label}: ${row.value}`}
+        >
+          <Text style={styles.rowLabel}>{row.label}</Text>
+          <Text style={styles.rowValue}>{row.value}</Text>
+        </View>
+      ))}
+    </View>
   );
 }
 

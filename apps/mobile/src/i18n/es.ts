@@ -2042,6 +2042,21 @@ export const ES: Table = {
   "Edit & run": "Editar y correr",
   "Post settings": "Ajustes de la publicación",
   Summary: "Resumen",
+  // src/feed/postSections.ts (TASK-410 part D: approved 2026-11-07)
+  "Fastest km": "Km más rápido",
+  "Fastest mile": "Milla más rápida",
+  "Avg cadence": "Cadencia media",
+  "Elevation gain": "Desnivel positivo",
+  Splits: "Parciales",
+  Mile: "Milla",
+  "Fastest: km {n} · {pace}": "El más rápido: km {n} · {pace}",
+  "Fastest: mile {n} · {pace}": "El más rápido: milla {n} · {pace}",
+  Elevation: "Altimetría",
+  "Elevation along the route, from {min} to {max} m":
+    "Altitud a lo largo de la ruta, de {min} a {max} m",
+  "Heart rate": "Pulso",
+  Average: "Media",
+  Max: "Máx.",
 
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Ruta creada por MuW – recórrela tú",

@@ -1,9 +1,12 @@
 import {
+  GYM_PLAN_MODES,
   GYM_SET_KINDS,
   type GymPlan,
   type GymPlanItem,
   type GymPlanRequest,
   type GymPlans,
+  type GymPlanSession,
+  type GymProgram,
 } from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "./accounts";
@@ -47,11 +50,62 @@ export function isGymPlanItem(body: unknown): body is GymPlanItem {
   );
 }
 
+function isDay(day: unknown): boolean {
+  return Number.isInteger(day) && (day as number) >= 1 && (day as number) <= 7;
+}
+
+function isSessions(body: unknown): body is GymPlanSession[] {
+  return (
+    Array.isArray(body) &&
+    body.every((one) => {
+      if (typeof one !== "object" || one === null) {
+        return false;
+      }
+      const { day, name, items } = one as Record<string, unknown>;
+      return (
+        isDay(day) &&
+        typeof name === "string" &&
+        Array.isArray(items) &&
+        items.every(isGymPlanItem)
+      );
+    })
+  );
+}
+
+/** The weeks of a plan made with the guide (migration 0066). */
+export function isGymProgram(body: unknown): body is GymProgram {
+  if (typeof body !== "object" || body === null) {
+    return false;
+  }
+  const { starts_on, weeks, mode, step_kg, sessions, custom } = body as Record<
+    string,
+    unknown
+  >;
+  return (
+    typeof starts_on === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(starts_on) &&
+    Number.isInteger(weeks) &&
+    (weeks as number) >= 1 &&
+    (GYM_PLAN_MODES as readonly unknown[]).includes(mode) &&
+    typeof step_kg === "number" &&
+    Number.isFinite(step_kg) &&
+    isSessions(sessions) &&
+    Array.isArray(custom) &&
+    custom.every(
+      (week) =>
+        typeof week === "object" &&
+        week !== null &&
+        Number.isInteger((week as Record<string, unknown>).week) &&
+        isSessions((week as Record<string, unknown>).sessions),
+    )
+  );
+}
+
 export function isGymPlan(body: unknown): body is GymPlan {
   if (typeof body !== "object" || body === null) {
     return false;
   }
-  const { key, name, days, items, position, updated_at } = body as Record<
+  const { key, name, days, items, position, updated_at, program } = body as Record<
     string,
     unknown
   >;
@@ -59,7 +113,8 @@ export function isGymPlan(body: unknown): body is GymPlan {
     typeof key === "string" &&
     typeof name === "string" &&
     Array.isArray(days) &&
-    days.every((day) => Number.isInteger(day) && day >= 1 && day <= 7) &&
+    days.every(isDay) &&
+    (program === undefined || program === null || isGymProgram(program)) &&
     Array.isArray(items) &&
     items.every(isGymPlanItem) &&
     typeof position === "number" &&

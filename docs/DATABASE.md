@@ -945,6 +945,14 @@ Migrazione `0058_gym_plans.sql` (TASK-411 parte C, ADR-0341):
   una chiave e non un riferimento, l'allenamento può arrivare prima della
   scheda e una scheda eliminata lo lascia com'era.
 
+Migrazione `0066_gym_plan_weeks.sql` (TASK-433, le schede guidate):
+
+- **`gym_plans.program`**: JSONB nullable, le settimane di una scheda fatta
+  con la guida (obiettivo, primo giorno, ciclo, modo, allenamenti della
+  prima settimana, settimane scritte a mano; li controlla `gym_plans.py`);
+  null per una scheda di un allenamento sui suoi giorni, come prima. Con un
+  `program`, `days` tiene i giorni dei suoi allenamenti e `items` è vuoto.
+
 Migrazione `0048_run_ski_names.sql` (TASK-375 parte D2, ADR-0319, `API.md`
 «Ski names»; il numero è del Coordinatore. La `0047` è della palestra, e
 questa non ne ha bisogno):

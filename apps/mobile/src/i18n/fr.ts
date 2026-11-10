@@ -1301,7 +1301,6 @@ export const FR: Table = {
     "Pas encore de parcours recommandés ici : des formes de {distance} depuis le centre, dessinées maintenant.",
   "Three first, more while you choose.":
     "Trois d'abord, d'autres pendant que vous choisissez.",
-  "Best near you": "Les meilleurs près de vous",
   "Starting within {distance} of {place}": "Départ à moins de {distance} de {place}",
   "your start": "votre départ",
   "Loading routes…": "Chargement des parcours…",
@@ -2179,4 +2178,18 @@ export const FR: Table = {
   "Stop sharing": "Arrêter",
   "Keep sharing": "Continuer",
   "Couldn't create the link. Try again.": "Impossible de créer le lien. Réessaie.",
+  // src/explore/ExploreScreen.tsx, FartherAway.tsx, AskLine.tsx (TASK-420: every
+  // drawing of the catalog in «Explore», the nearest first)
+  "{count} drawings in {cities} cities · the nearest first":
+    "{count} dessins dans {cities} villes · les plus proches d'abord",
+  "{count} drawings · the nearest first": "{count} dessins · les plus proches d'abord",
+  "within {distance} · {count}": "à moins de {distance} · {count}",
+  "FARTHER AWAY": "PLUS LOIN",
+  "{count} drawing · by city": "{count} dessin · par ville",
+  "{count} drawings · by city": "{count} dessins · par ville",
+  "Ask for a route": "Demander un itinéraire",
+  "Famous places, best views, food… in any city":
+    "Lieux célèbres, panoramas, cuisine… dans n'importe quelle ville",
+  "The rest could not load.": "La suite n'a pas pu être chargée.",
+  "Loading more…": "Chargement de la suite…",
 };

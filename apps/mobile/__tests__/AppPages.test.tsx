@@ -105,7 +105,7 @@ test("opens on «Draw», the second of the five tabs, and asks the API nothing",
   expect(screen.getByRole("tab", { name: "Draw", selected: true })).toBeOnTheScreen();
   expect(screen.getByTestId("draw-route")).toBeOnTheScreen();
   // «Explore» is one swipe away, and has not asked for its routes yet.
-  expect(screen.queryByText("Best near you")).toBeNull();
+  expect(screen.queryByTestId("explore-title")).toBeNull();
   expect(askedBesidesTheGame()).toEqual([]);
   // An API without the shape game: no «Play» page (TASK-296).
   expect(screen.queryByRole("tab", { name: "Play" })).toBeNull();
@@ -117,7 +117,7 @@ test("a swipe to the left goes to «Explore», which asks for its routes then", 
   expect(
     screen.getByRole("tab", { name: "Explore", selected: true }),
   ).toBeOnTheScreen();
-  expect(screen.getByText("Best near you")).toBeOnTheScreen();
+  expect(screen.getByTestId("explore-title")).toBeOnTheScreen();
   expect(await screen.findByText("Star · 5.1 km")).toBeOnTheScreen();
   expect(listCalls()).toBe(1);
   // «Draw» is the page beside it now: out of sight, as it was left.
@@ -126,7 +126,7 @@ test("a swipe to the left goes to «Explore», which asks for its routes then", 
 
   await swipeTo(1);
   expect(screen.getByTestId("draw-route")).toBeOnTheScreen();
-  expect(screen.queryByText("Best near you")).toBeNull();
+  expect(screen.queryByTestId("explore-title")).toBeNull();
   // Back on «Explore» the list is still there: it is not asked for again.
   await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
   expect(screen.getByText("Star · 5.1 km")).toBeOnTheScreen();
@@ -170,6 +170,6 @@ test("a route of «Explore» takes the whole screen; back, «Explore» is the pa
   expect(
     screen.getByRole("tab", { name: "Explore", selected: true }),
   ).toBeOnTheScreen();
-  expect(screen.getByText("Best near you")).toBeOnTheScreen();
+  expect(screen.getByTestId("explore-title")).toBeOnTheScreen();
   expect(screen.queryByTestId("draw-route")).toBeNull();
 });

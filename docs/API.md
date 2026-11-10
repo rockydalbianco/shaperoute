@@ -3028,7 +3028,7 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   `program: null` la riporta a una scheda di un allenamento; un `PUT` senza
   `program` (un'app di prima) lo lascia com'era. I valori di ogni settimana
   li calcola il telefono; l'API sa solo quali giorni sono in programma (il
-  calendario). Un giorno di corsa (TASK-433 C) ha `run` e nessun esercizio:
+  calendario). Un giorno di corsa (TASK-433 C, ADR-0363) ha `run` e nessun esercizio:
   `kind` (`easy`, `intervals`, `long`), per `easy` e `long` `distance_m`
   (100–100 000) o `duration_s` (60 s–6 h), per `intervals` `reps` (1–50) e
   `rep_m` (50–5000) o `rep_s` (10–1800); nel calendario è fatto se quel

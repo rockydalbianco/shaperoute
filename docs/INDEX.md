@@ -64,7 +64,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Sci: «Record only», stazioni, meteo | `MAPS.md` «Impianti e piste da sci», ADR-0319, ADR-0338, `tasks/TASK-375.md`, `tasks/TASK-406.md` |
 | La modalità sci: scelto lo sci, l'app diventa un'app per lo sci (schede, giornata, mappa con legenda, stagione) | `tasks/TASK-429.md`, ADR-0357, ADR-0338, ADR-0319 |
 | Apple Watch | `tasks/TASK-370.md`, ADR-0314 |
-| Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352, `API.md` «Live shares», `SITO.md` «La pagina dal vivo», `UI.md` «La corsa» («Share live») |
+| Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352, `API.md` «Live shares», `SITO.md` «La pagina dal vivo», `UI.md` «La corsa» («Share live») e «Calories» (le formule di ogni attività), ADR-0352 precisazione C |
 | La corsa in registrazione: le tre pagine «Compass», «Map», «Data», la mappa che gira dove punta il telefono | `UI.md` «La navigazione», ADR-0350, ADR-0137, `tasks/TASK-422.md` |
 | La freccia di chi corre (anello e cono azzurri, punta dove punta la mappa su «Compass»), i disegni delle tre schede, i token `you` e `north` | `UI.md` «La freccia di direzione» e «La corsa: tre pagine», ADR-0359, `tasks/TASK-431.md` |
 | Le schede della palestra guidate: la guida in 5 passi, le settimane che cambiano, «My plans», l'app di prima che le legge | `sports/gym.md` «Le schede guidate», ADR-0360, ADR-0341, `API.md` «Gym», `tasks/TASK-433.md` |

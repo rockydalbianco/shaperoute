@@ -139,8 +139,8 @@ task»; scelte una alla volta sulle schermate C1–C3 della tela:
    nuovo `runDay` (lo stesso colore di `startHere`, ma un token suo, così
    ognuno ha un significato), le lettere dei giorni di palestra in giallo.
 
-**Il disegno tecnico** (in ADR-0360, precisazione C, con la PR di soli
-documenti dopo il merge): un giorno del programma ha un campo nuovo
+**Il disegno tecnico** (ADR-0363, numero del Coordinatore del 2026-11-10;
+la voce intera con la PR di soli documenti dopo il merge): un giorno del programma ha un campo nuovo
 facoltativo `run` (`kind`, `distance_m` o `duration_s`; per le ripetute
 `reps` e `rep_m` o `rep_s`) e nessun esercizio; niente migrazione, sta nel
 JSONB di `program`. I valori di ogni settimana li calcola il telefono
@@ -157,7 +157,12 @@ un giorno di palestra vuoto e non lascia salvare finché non ha esercizi. Il
 server va aggiornato prima dell'OTA: quello di oggi rifiuta un giorno con
 `run` (campi in più vietati) e la scheda resta in attesa sul telefono.
 
-File (lista mandata al Coordinatore): server `gym_plans.py`,
+**Due PR** (Coordinatore): C1 #1117 server e shared-types, C2 #1115
+l'app, che entra in `main` solo dopo il «server C1 fatto» del Coordinatore
+(l'app manderebbe `run` a un server che lo rifiuta con `422`). Righe di
+controllo del server in `out/TASK-433/SERVER-C.md`.
+
+File (lista approvata dal Coordinatore il 2026-11-10): server `gym_plans.py`,
 `gym_calendar.py`, `tests/test_gym_plans.py`; shared-types `src/gym.ts`,
 `fixtures/gym-plans.json`, `test/gym.test.ts`; app `api/gymPlans.ts` (+
 test), `gym/program.ts` (+ test), `gym/proposal.ts` (+ test),

@@ -64,7 +64,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Apple Watch | `tasks/TASK-370.md`, ADR-0314 |
 | Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352, `API.md` «Live shares», `SITO.md` «La pagina dal vivo», `UI.md` «La corsa» («Share live») |
 | La corsa in registrazione: le tre pagine «Compass», «Map», «Data», la mappa che gira dove punta il telefono | `UI.md` «La navigazione», ADR-0350, ADR-0137, `tasks/TASK-422.md` |
-| «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0313, `tasks/TASK-425.md` |
+| «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte; se si incrocia, un anello alla partenza | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0356, ADR-0313, `tasks/TASK-425.md`, `tasks/TASK-428.md` |
 | «Draw on the map»: la partenza, un pallino da spostare lungo il disegno | `UI.md` «Disegnare sulla mappa» («La partenza»), ADR-0354, ADR-0336, `tasks/TASK-426.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 

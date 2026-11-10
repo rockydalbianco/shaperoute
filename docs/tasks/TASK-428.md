@@ -1,7 +1,7 @@
 # TASK-428 — «Edit the drawing»: la traccia aperta che si incrocia si corre una volta
 
-**Stato**: In review · 2026-11-10 · codice nella PR di
-`feat/TASK-428-open-track-loop`
+**Stato**: Done · 2026-11-10 · #1040 in `main` (1e830b6f), documenti nella
+PR di `docs/TASK-428-docs`
 **Fase**: 5 · **ADR**: ADR-0356 · numeri dal Coordinatore («Coordinatore
 (fork)», 2026-11-10)
 
@@ -94,7 +94,13 @@ lontano dalla partenza resta una linea aperta» (già superata da TASK-425).
       chiedevano (test di TASK-425 invariati).
 - [x] Test toccati, `tsc`, lint e Prettier verdi in locale.
 
+## Esito
+
+In `main` con la #1040: le 79 tracce aperte vere che correvano andata e
+ritorno diventano un anello alla partenza, corso una volta (mediana 0,97
+volte traccia più ritorno, prima 1,60).
+
 ## Dopo il merge
 
-- OTA: nell'OTA unico se entra in tempo, altrimenti nel prossimo
+- OTA: esce con il prossimo OTA di produzione, dopo il passo server 2
   (Coordinatore, 2026-11-10).

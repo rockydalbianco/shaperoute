@@ -2962,9 +2962,12 @@ Quello che sopra dice «non c'è mai per una forma del catalogo, né per una
 parola» e «nel mezzo della partenza di "Draw"» per le schede non vale più.
 Una traccia che finisce lontano dalla partenza si chiude con un lato dritto
 fino alla partenza (TASK-425, ADR-0353): il percorso la fa una volta e
-torna. Solo se così chiusa non fa un disegno (si incrocia da sola) resta una
-linea aperta, come la prima linea disegnata sulla mappa (TASK-331), e il
-percorso la fa andata e ritorno. Il tasto non c'è per un
+torna. Se così chiusa non fa un contorno (si incrocia da sola, o il lato di
+ritorno la attraversa) diventa un anello appeso alla partenza, con lo stesso
+lato dritto (TASK-428, ADR-0356): il percorso la fa ancora una volta e
+torna, e sulla mappa si vede chiusa allo stesso modo. Solo se nemmeno così
+fa un disegno resta una linea aperta, come la prima linea disegnata sulla
+mappa (TASK-331), e il percorso la fa andata e ritorno. Il tasto non c'è per un
 post di sole foto e sotto il risultato di «Draw» (TASK-340). Dalla parte
 B c'è anche sull'acqua: con lo sport «Paddle» «Draw route» chiede il disegno
 in canoa, e la canoa lo pagaia dove ci sta vicino alla partenza, non

@@ -1,4 +1,4 @@
-import type { LatLon, RunActivity } from "@shaperoute/shared-types";
+import type { LatLon, RunActivity, SkiDescents } from "@shaperoute/shared-types";
 
 import { withPaddle } from "./paddlePosts";
 import posts from "./sampleFeed.json";
@@ -37,6 +37,10 @@ export type SamplePost = {
    * (TASK-232): the drawing is shown turned back. Absent for a figure
    * north up. */
   rotation_deg?: number;
+  /** A day of alpine skiing: the metres and the seconds of its descents,
+   * which its calories are counted on (TASK-424 part C2b). Absent for any
+   * other post, and for a day whose phone sent no parts. */
+  ski_descents?: SkiDescents;
 };
 
 /** The drawings of the runs, in their order. In the file a point is a list

@@ -170,6 +170,12 @@ calendario segna saltati i giorni con un allenamento nella settimana del
 ciclo. Calcolo in `apps/mobile/src/gym/program.ts`, proposta in
 `proposal.ts`, la guida in `GymPlanWizard.tsx`.
 
+La prima volta che si tocca «Palestra» in «Draw» (mai all'avvio, mai con
+un altro sport) sale un riquadro «Your plan, step by step» con le barre
+delle settimane e tre passi; «Create my plan» apre la guida, «Not now» lo
+chiude per sempre, la riga «How plans work» lo riapre (TASK-433 B,
+`gymIntro.ts`, `GymIntroSheet.tsx`).
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una

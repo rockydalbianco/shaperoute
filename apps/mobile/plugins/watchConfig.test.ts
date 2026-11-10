@@ -72,7 +72,7 @@ describe("the watch's target in the config", () => {
     expect(watched).toEqual(appJson.expo);
     expect(appJson.expo.plugins.slice(-2)).toEqual([
       WATCH_CORE_PLUGIN,
-      [APPLE_TARGETS, { match: WATCH_TARGET }],
+      [APPLE_TARGETS, { match: WATCH_TARGET, appleTeamId: "D6WUSJZKVZ" }],
     ]);
   });
 });

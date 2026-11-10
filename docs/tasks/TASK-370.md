@@ -521,9 +521,14 @@ Coordinatore, 2026-11-10). Le due dipendenze, approvate dall'utente il
 `./plugins/withWatchCore.js` e `["@bacons/apple-targets", {"match":
 "watch"}]`; con TASK-401 B (#862) il `match` diventa
 `"{live-activity,watch}"`, una config sola. `app.config.ts` non cambia:
-`MUW_WATCH=1` ora non aggiunge niente. Impronte su copia pulita: iOS
-`e882218f` (con `MUW_WATCH=1` `43995c28`, solo perché `app.config.ts` carica
-un file in più), Android da `227457f3` a `a740e825`. I passi della 1.1
+`MUW_WATCH=1` ora non aggiunge niente. L'Android resta com'è (decisione
+del Coordinatore, 2026-11-10): `fingerprint.config.js` conta i plugin
+dell'orologio e le credenziali EAS che aggiungono (`extra.eas.build.
+experimental.ios`) solo nell'impronta iOS, lo specchio di `ANDROID_ONLY`, e
+non conta in nessuna i file che quei plugin caricano (test
+`__tests__/iosOnlyFingerprint.test.ts`). Il Team ID Apple (`D6WUSJZKVZ`) sta
+nelle opzioni del plugin. Impronte su copia pulita: iOS da `6f8bba4c` a
+`77a5233c` (uguale con `MUW_WATCH=1`), Android `227457f3` invariata. I passi della 1.1
 (`eas build`, TestFlight, la prova al polso, l'invio ad Apple) sono ognuno un
 sì dell'utente.
 

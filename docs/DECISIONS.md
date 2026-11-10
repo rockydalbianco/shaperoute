@@ -469,6 +469,7 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0352, precisazione A2 — La pagina dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link · 2026-11-10 · Attiva
+- ADR-0352, precisazione B2 — Piscina e palestra: gli stessi pulsante e invii, i numeri senza traccia, il consenso senza mappa · 2026-11-10 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -785,6 +786,42 @@ scelta dell'utente del 2026-11-10 («ok procedi»)
   pulsante né etichetta.
 - **Impronta iOS** invariata: `6f8bba4c`, come la build 8 di produzione.
   Nessuna dipendenza nuova: `fetch` e `Share` di React Native.
+
+## ADR-0352, precisazione B2 — Piscina e palestra: gli stessi pulsante e invii, i numeri senza traccia, il consenso senza mappa
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parte B2 (#1053, 52010be4) ·
+deciso dall'agente su delega dell'utente; il testo del consenso è scelta
+dell'utente del 2026-11-10 («Testo nuovo»), l'uscita a parte la sua scelta
+dello stesso giorno («Esce ora», per B1)
+
+- **Nessuna seconda copia di B1**: lo stesso store, la stessa macchina
+  degli invii, lo stesso pulsante. Uno schermo senza traccia passa allo
+  store una funzione che dà i numeri a un dato momento
+  (`observeLiveNumbers`, dall'hook `useLiveShareNumbers`): l'orologio si
+  legge a ogni invio, senza un valore nuovo ogni secondo; i punti non ci
+  sono. Una corsa dopo torna ai numeri della traccia.
+  `LiveShareButton` prende `trackless` (attività e vasca).
+- **I numeri** (`liveStats.tracklessStats`) nei limiti di `LiveStatsBody`:
+  tempo senza pause, calorie (`null` a zero, come lo schermo non le
+  mostra), battito, vasche, esercizio (al più 80 caratteri, contati come
+  l'API). Niente distanza né dislivello.
+- **Piscina** (`pool/poolLive.ts`): `activity: "swimming"` e
+  `pool_length_m`; le vasche con `estimateLengths` e il passo medio delle
+  nuotate prima, come «How many lengths?», ma 0 prima di mezza vasca (la
+  stima di fine nuotata parte da 1); le calorie con `poolKcal` su quelle
+  vasche.
+- **Palestra** (`gym/gymLive.ts`): `activity: "gym"`; l'esercizio in corso
+  col nome nella lingua dell'app (`entryName`), le calorie di `gymKcal`
+  come sullo schermo.
+- **Il battito** parte `null`: oggi nessuna fonte dal vivo segue piscina e
+  palestra (`useWatch` segue solo la corsa; quello della piscina di
+  TASK-409 B si legge da Apple Salute a fine nuotata). Il campo c'è per
+  quando una fonte arriverà.
+- **Il consenso** di piscina e palestra ha un primo testo suo, senza mappa
+  né percorso; il secondo resta quello di B1.
+- **La fine** è quando lo schermo della registrazione se ne va (fine,
+  «Still training?» senza risposta), come in B1.
+- **Impronta iOS** invariata: `6f8bba4c`. Nessuna dipendenza nuova.
 
 ## ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog`
 

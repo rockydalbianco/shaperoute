@@ -103,6 +103,13 @@
         {
           "contactsPermission": "MuW reads only the phone numbers of your contacts, when you tap «Find friends in your contacts», to find friends who are on MuW. The numbers leave the phone coded and the server keeps none."
         }
+      ],
+      "./plugins/withWatchCore.js",
+      [
+        "@bacons/apple-targets",
+        {
+          "match": "watch"
+        }
       ]
     ],
     "extra": {

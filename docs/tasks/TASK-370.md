@@ -477,6 +477,28 @@ una corsa simulata a Levico: la freccia a destra coi metri che scendono, la
 svolta a sinistra dopo, la mappa, il fuori rotta in rosso con la freccia
 verso il percorso. La traccia al telefono è B3c.
 
+**B3c, le scelte** (2026-11-08): «Avviso e scheda» — quando la corsa
+dell'orologio arriva sul telefono, una notifica e una scheda in cima a «My
+activities» finché non la si salva o scarta; «Open» apre la schermata di
+fine corsa di sempre. Testi approvati: «Your activity from the watch is
+ready» / «Open MuW to save it.» / «From your Apple Watch» / «Open» (con
+«Discard» che c'è già); it «L'attività dall'orologio è pronta», «Apri MuW
+per salvarla.», «Dal tuo Apple Watch», «Apri»; de «Deine Aktivität von der
+Uhr ist bereit», «Öffne MuW, um sie zu speichern.», «Von deiner Apple
+Watch», «Öffnen»; es «Tu actividad del reloj está lista», «Abre MuW para
+guardarla.», «Desde tu Apple Watch», «Abrir»; fr «Votre activité de la
+montre est prête», «Ouvrez MuW pour l'enregistrer.», «De votre Apple
+Watch», «Ouvrir».
+
+**B3c1 fatta** (branch `feat/TASK-370-b3c1-watch-track`): il contratto
+`WatchTrack` (Swift e TS, `Fixtures/tracks.json`), `TrackLog` (le posizioni
+come le tiene il telefono: niente fix peggiori di 40 m, fuori ordine o in
+pausa; al massimo 20 000), `TrackRecorder` (il GPS per ogni sport col GPS,
+anche senza percorso, e `HKWorkoutRouteBuilder`: la linea sta anche
+nell'allenamento di Salute), il file a fine allenamento con
+`transferFile`. Il percorso porta ora `similarity` (facoltativa), che torna
+con la traccia per il punteggio. B3c2: il telefono riceve e mostra.
+
 ## File toccati
 
 Parte 0 (questa proposta):

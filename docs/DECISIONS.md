@@ -507,8 +507,38 @@ lasciando le righe d'indice.
 - ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Accettata
 - ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano · 2026-11-10 · Accettata
 - ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni · 2026-11-10 · Accettata
+- ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno
+
+**Stato**: Attiva · 2026-11-10 · TASK-410, correzione (#1078,
+`db3d131c`). Deciso dall'agente su delega dell'utente, dopo la sua
+segnalazione sull'iPhone.
+
+**Contesto**: dopo l'OTA 3 l'utente non riusciva a usare «‹» della pagina
+del post («troppo in alto») e «Edit & run» non faceva niente, né sulla
+card né nella pagina. Tre cause: dentro un `Modal` iOS i margini dell'app
+valgono 0, così «‹» stava sotto l'orologio; la mappa di «Draw on the map»
+si apriva sotto la pagina, che restava sopra; le corse chiuse il cui
+contorno non fa un disegno mostravano il tasto senza effetto.
+
+**Decisione**:
+
+1. **La pagina ha i suoi margini**: un `SafeAreaProvider` con
+   `initialWindowMetrics` dentro il `Modal`, lo schema di «Heart rate
+   zones» e della ricerca (TASK-366). Anche la barra delle quattro azioni
+   sta sopra il bordo basso del telefono.
+2. **«Edit & run» chiude la pagina, poi apre la mappa**.
+3. **Il tasto solo dove c'è un disegno**: `useEditRunOf` riceve
+   `editsLine` (la linea fa un disegno secondo `cardTrack(routeTrack)`),
+   come «Edit the drawing» sulle schede. Il difetto delle tracce chiuse
+   che si incrociano lo corregge ADR-0356 / TASK-432 (#1079) su tutto il
+   catalogo; la modifica doppia è stata tolta dalla #1078.
+
+**Conseguenze**: esce con l'OTA 4. Il calcolo di `cardTrack` gira a ogni
+card del Feed (al più 64 punti per traccia).
 
 ## ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni
 

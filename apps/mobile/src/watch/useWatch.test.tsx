@@ -9,6 +9,8 @@ import {
   skipCountdown,
 } from "../navigation/runControl";
 import { clearRun, startRun } from "../navigation/trackStore";
+import { NO_BODY, saveBody } from "../body/bodyProfile";
+import { NO_HEART, saveHeart } from "../body/heartZones";
 import { saveUnitsChoice } from "../units/units";
 import { CLOCK_SLACK_MS, followWatch, useWatch, watchSavesWorkout } from "./useWatch";
 import type { WatchLink } from "./watchLink";
@@ -227,6 +229,29 @@ test("the units chosen on the phone go as user info, now and when they change", 
   stop();
   saveUnitsChoice("km");
   expect(link.transferred).toHaveLength(2);
+});
+
+test("the heart rate zones go with the units, and again when they change (part B5)", () => {
+  const link = fakeLink();
+  const { stop } = follow(link);
+  saveHeart({ maxBpm: 190, restBpm: null, limits: [null, null, null, null, null] });
+  expect(link.transferred).toEqual([
+    { type: "settings", units: "km", at: NOW },
+    {
+      type: "settings",
+      units: "km",
+      heartZones: [95, 114, 133, 152, 171, 190],
+      at: NOW,
+    },
+  ]);
+  saveBody({ ...NO_BODY, birthYear: 1990 });
+  // A max typed by hand counts over the age: the same zones again.
+  expect(link.transferred).toHaveLength(3);
+  expect(link.transferred[2]).toEqual(link.transferred[1]);
+  stop();
+  saveHeart(NO_HEART);
+  saveBody(NO_BODY);
+  expect(link.transferred).toHaveLength(3);
 });
 
 test("a pause and a resume from the wrist do the same on the phone", () => {

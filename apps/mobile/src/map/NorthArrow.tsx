@@ -74,8 +74,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingBottom: space.xs / 2,
   },
+  // The tip in red (TASK-431): north at a glance, as on a compass.
   tip: {
-    color: color.text,
+    color: color.north,
     fontSize: fontSize.label,
     lineHeight: fontSize.label,
   },

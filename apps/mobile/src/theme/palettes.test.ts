@@ -49,6 +49,8 @@ test("with no choice the app is dark at its darkest (ADR-0046), warm (ADR-0293)"
     scrim: "#0B0A08",
     onScrim: "#FFFFFF",
     startHere: "#4DD2FF",
+    you: "#3D9BFF",
+    north: "#FF5B4F",
     strava: "#FC5200",
     onStrava: "#FFFFFF",
     // The text at 20 %, for the thin divisions (TASK-339).
@@ -118,6 +120,11 @@ test.each(EVERY)("%s at step %i keeps the contrasts", (_tone, _step, c) => {
   // The map: place names and «Start here».
   expect(contrast(c.map.label, c.map.labelHalo)).toBeGreaterThanOrEqual(4.5);
   expect(contrast(c.startHere, c.map.background)).toBeGreaterThanOrEqual(3);
+  // The runner's ring and cone on the map, the north tip on its button and
+  // the line under the page open (TASK-431).
+  expect(contrast(c.you, c.map.background)).toBeGreaterThanOrEqual(3);
+  expect(contrast(c.you, c.background)).toBeGreaterThanOrEqual(3);
+  expect(contrast(c.north, c.surfaceRaised)).toBeGreaterThanOrEqual(3);
   // Text on yellow does not depend on the tone.
   expect(contrast(c.onAccent, c.accent)).toBeGreaterThanOrEqual(7);
 });

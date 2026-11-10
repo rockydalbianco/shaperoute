@@ -41,6 +41,7 @@ import {
   clearStops,
   focus as focusMap,
   clearTrack,
+  face,
   follow,
   pageScript,
   parsePageMessage,
@@ -131,6 +132,10 @@ type Props = {
   /** Where the runner is heading, in degrees clockwise from north: the
    * marker followed is an arrow turned that way (TASK-164). */
   heading?: number | null;
+  /** On the run's «Compass» page, where the phone points, in degrees
+   * clockwise from north (TASK-431, ADR-0359): the arrow turns there,
+   * standing still too, and opens its cone. Null off that page. */
+  facing?: number | null;
   /** While running the route, how far along it the runner is (TASK-224):
    * the part run stays solid yellow, the part left is dashed and blinks.
    * None draws the route whole, as before. `points` and `along` are the
@@ -198,6 +203,7 @@ export function MapView({
   lifts = null,
   following = null,
   heading = null,
+  facing = null,
   progress = null,
   stops = null,
   focus = null,
@@ -392,6 +398,19 @@ export function MapView({
     // route effect above draws the route.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, following]);
+
+  // On «Compass», where the phone points (TASK-431): the arrow turns with
+  // the map though the runner stands still. Told once off the page, so the
+  // cone closes; never before the page has said anything.
+  const faced = useRef(false);
+  const facingDeg = facing === null ? null : Math.round(facing) % 360;
+  useEffect(() => {
+    if (!ready || (facingDeg === null && !faced.current)) {
+      return;
+    }
+    faced.current = facingDeg !== null;
+    webView.current?.injectJavaScript(pageScript(face(facingDeg)));
+  }, [ready, facingDeg]);
 
   // Running the route: cut where the runner is. After, the route whole again.
   useEffect(() => {

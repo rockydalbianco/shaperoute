@@ -460,7 +460,7 @@ lasciando le righe d'indice.
 - ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server · 2026-11-08 · Proposto
 - ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Proposto
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
-- ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
+- ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Accettata (chiuso il 2026-11-10: 572 percorsi in 63 città)
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
 - ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog` · 2026-11-10 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
@@ -477,6 +477,7 @@ lasciando le righe d'indice.
 ---
 
 - ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
+- ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D · 2026-11-10 · Attiva
 - ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
 - ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
@@ -494,7 +495,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
-- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
+- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Superata dalla scelta dell'utente del 2026-11-10 (TASK-408 D2, #1075)
 - ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
 - ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute · 2026-11-10 · Attiva
 - ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda · 2026-11-10 · Attiva
@@ -505,8 +506,58 @@ lasciando le righe d'indice.
 - ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF · 2026-11-10 · Attiva
 - ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Accettata
 - ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano · 2026-11-10 · Accettata
+- ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni · 2026-11-10 · Accettata
 
 ## Voci nuove
+
+## ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni
+
+**Stato**: Accettata · 2026-11-10 · TASK-431 (#1081, `5747259d`). Le
+scelte di quello che si vede sono dell'utente, che su un'anteprima con due
+varianti ha scelto la «B»; il modo è deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: provando l'OTA del 2026-11-10 l'utente ha chiesto una pagina
+«Compass» (TASK-422, ADR-0350) più ordinata e una freccia della posizione da
+cui si capisca dove punta. La mappa girava con la bussola, ma la freccia
+seguiva solo la traccia GPS degli ultimi 10 m, e `MapView` mandava la
+direzione alla pagina della mappa solo con un fix nuovo: da fermi la
+freccia non diceva dove si guardava.
+
+**Decisione**:
+- **La direzione della mappa è quella della freccia**: `useHeadingUpMap`
+  espone `facing`, la direzione dell'ultima rotazione su «Compass» (null
+  fuori pagina e col nord in alto). `App.tsx` la passa a `MapView`, che la
+  manda alla pagina col messaggio nuovo `face` a ogni grado intero nuovo, e
+  una volta `null` all'uscita. Nella pagina la freccia gira lì anche senza
+  un fix, un fix con la direzione della traccia non la sovrascrive, e
+  `stopFollow` la dimentica. Così la freccia sta sempre in alto e cambia
+  con la mappa (4°, 400 ms, ADR-0350).
+- **Un solo disegno** (`HEADING_ARROW_SVG`, riquadro di 160 pt): freccia
+  chiara grande col bordo scuro, anello azzurro, e davanti un cono a
+  gradiente radiale acceso solo da `face`. Il riquadro ha
+  `pointer-events: none`, così le dita sul cono spostano la mappa.
+- **Due token nuovi**, nei due toni: `you` (azzurro: anello, cono, la
+  scheda aperta) e `north` (rosso: la punta della freccia del nord). Né
+  giallo, che è del percorso, né ciano, che è di «Start here».
+  `palettes.test.ts` controlla ≥ 3:1 su mappa, fondo e `surfaceRaised` per
+  ogni tono e passo.
+- **Le schede Compass | Map | Data** hanno un disegno fatto di View
+  (`RunPageGlyphs.tsx`: l'app non ha icone né SVG), nascosto a VoiceOver.
+  La pagina aperta ha la superficie chiara, il disegno `you` e una linea
+  `you`; l'altezza resta 56 pt.
+
+**Alternative scartate**: girare la freccia sulla bussola grezza (avrebbe
+tremato in mano e si sarebbe staccata dalla mappa, che gira a soglie);
+mandare la direzione dentro `follow` (arriva solo con un fix: da fermi non
+basta); il cono anche su «Map» (lì la bussola è spenta, e un cono sulla
+traccia promette quello che non sa); un'icona di una libreria (dipendenza
+nuova).
+
+**Conseguenze**: un solo stile di freccia per tutte le pagine con la mappa.
+Il cono non mostra quanto è precisa la bussola (fuori scope). Arriva sui
+telefoni con l'OTA di produzione, col sì dell'utente; resta la prova sul
+telefono.
 
 ## ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano
 
@@ -1032,6 +1083,48 @@ immediata da «Start» (`App.tsx`); le categorie dal catalogo delle forme
 quando TASK-418 le scrive; il rilancio di `catalog-data.mjs` a ogni seme
 nuovo, da chi cambia il seme (TASK-419; una riga nel suo task file e nel
 `README` del catalogo, dalla sua sessione).
+
+## ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D
+
+**Stato**: Attiva · 2026-11-10 · TASK-417 parti B e C (#1067, 87f98fd6) ·
+deciso dall'agente su delega dell'utente; le scelte di prodotto restano le
+1–5 del task file
+
+- **Il ritaglio**: `expo-image-picker` con `allowsEditing` e
+  `aspect: [1, 1]`, per la libreria e per la fotocamera. Su iOS l'editor
+  ritaglia ogni fotogramma di una GIF e la lascia animata
+  (`processGifData` con `cropRect` in expo-image-picker 57). Una foto si
+  tiene come JPEG di 256 px (`expo-image-manipulator`), una GIF così com'è,
+  dopo averla letta una volta. Un'immagine sola, nella cartella documenti
+  dell'app (`my-image.jpg` o `my-image.gif`).
+- **Il formato verso la pagina** (punto 3, misurato): una foto passa come
+  data URL JPEG, letta da un `img`; una GIF come i suoi fotogrammi in RGBA
+  base64, posati con `putImageData`. Al più 8 fotogrammi a distanza uguale,
+  di al più 256 px; tutti insieme entro **2 MiB** di RGBA: se non ci stanno,
+  meno fotogrammi, mai meno di uno. Ognuno dura quanto i fotogrammi che
+  rappresenta, così il giro tiene la sua velocità. Oltre 40 milioni di
+  pixel da posare (una GIF lunga) si legge solo il primo. Una GIF di 12
+  fotogrammi scritta da ImageIO: 8 fotogrammi in 7 ms (Node).
+- **Le scelte sotto la riga**, non in un foglio sopra il foglio: «Choose a
+  photo», «Take a photo» e «Remove image» compaiono sotto «Character»,
+  come quelle della foto del profilo; così il picker di sistema si apre
+  sopra senza un Modal che si chiude. La casella vuota apre le scelte;
+  un'immagine tenuta e non scelta si sceglie con un tocco; toccata da
+  scelta, riapre le scelte.
+- **Nel video**: tonda, larga 0,6 della lunghezza dell'animale, con un
+  anello del colore della linea; inclinata al più di 12° nel verso della
+  strada, mai capovolta; il saltello lo calcola la scena (`hop`, |sin| a
+  2,5 salti al secondo, al più il 7 % della lunghezza dell'animale, 0 a
+  riposo). Sul 3D sta in piedi su un'asticella alta 0,55 volte la sua
+  larghezza, sopra un'ombra tonda.
+- **Il personaggio** è `Actor = Character | "my_image"`
+  (`share/videoActor.ts`); `prepareActorCall` dà alla pagina la chiamata
+  per l'animale o per l'immagine, `null` se non si legge.
+- **Nessuna rete**: `prepareImage` non carica three.js né altro; un test
+  legge l'immagine dalla cartella dell'app con `fetch` e `XMLHttpRequest`
+  sotto controllo.
+- **Impronta** iOS `6f8bba4c` e Android `227457f3`, invariate; nessuna
+  dipendenza nuova.
 
 ## ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme
 
@@ -1781,6 +1874,11 @@ più. Tutto esce con il passo unico sul server e l'OTA unico.
 
 **Stato:** deciso dall'agente su delega dell'utente (2026-11-10), dentro la
 scelta dell'utente 9 (nessuna AI, nessun costo, la prima tabella).
+
+**Superata dalla scelta dell'utente del 2026-11-10**, dopo la prova sul
+telefono: «togli la parte di scrivere per modificare il video». Il campo
+«Describe your video» e la tabella `share/videoWords.ts` sono tolti
+dall'app (TASK-408 D2, #1075); la voce resta come storia.
 
 1. **La tabella è un file dell'app** (`share/videoWords.ts`), nelle cinque
    lingue, letta come le parole delle forme (ADR-0036): accenti, maiuscole

@@ -52,6 +52,9 @@ export const WATCH_TEXTS: readonly string[] = [
   tLater("Reach the route to start"),
   tLater("To the {letter}"),
   tLater("Next part"),
+  // the details of a workout (part B5), the run screen's and the post's
+  "Elev. gain",
+  "Avg heart rate",
 ];
 
 /**

@@ -62,8 +62,10 @@ export type WatchMessage =
   /** The heart rate the watch measures, beats per minute. */
   | { type: "heartRate"; bpm: number; at: number }
   /** What the runner chose on the phone, for the watch to keep (part A3):
-   * sent with transferUserInfo, so it arrives also later. */
-  | { type: "settings"; units: WatchUnits; at: number }
+   * sent with transferUserInfo, so it arrives also later. From part B5 the
+   * heart rate zones too, when the phone has them: the six limits, from the
+   * bottom of zone 1 to the max heart rate. */
+  | { type: "settings"; units: WatchUnits; heartZones?: number[]; at: number }
   /** A route for the watch to follow on its own (part B3a): one sent with
    * «Send to watch», or a favorite. Sent with transferUserInfo. */
   | { type: "route"; route: WatchRoute; favorite: boolean; at: number }
@@ -116,6 +118,28 @@ function oneOf<T extends string>(names: readonly T[], value: unknown): T {
   return found;
 }
 
+/** The zones of a settings message (part B5): as many limits as the
+ * phone's, whole beats in HEART_ZONE_BPM, each over the one before. */
+export const HEART_ZONE_LIMITS = 6;
+export const HEART_ZONE_BPM = { min: 30, max: 300 } as const;
+
+function heartZones(value: unknown): number[] {
+  if (
+    !Array.isArray(value) ||
+    value.length !== HEART_ZONE_LIMITS ||
+    value.some(
+      (bpm, i) =>
+        !isInteger(bpm) ||
+        bpm < HEART_ZONE_BPM.min ||
+        bpm > HEART_ZONE_BPM.max ||
+        (i > 0 && bpm <= value[i - 1]),
+    )
+  ) {
+    throw new InvalidField();
+  }
+  return value as number[];
+}
+
 function read(fields: Fields): WatchMessage | "unknownType" {
   switch (fields.type) {
     case "command": {
@@ -163,12 +187,14 @@ function read(fields: Fields): WatchMessage | "unknownType" {
       }
       return { type: "heartRate", bpm, at: time(fields.at) };
     }
-    case "settings":
-      return {
-        type: "settings",
-        units: oneOf(WATCH_UNITS, fields.units),
-        at: time(fields.at),
-      };
+    case "settings": {
+      const units = oneOf(WATCH_UNITS, fields.units);
+      const at = time(fields.at);
+      if (fields.heartZones === undefined) {
+        return { type: "settings", units, at };
+      }
+      return { type: "settings", units, heartZones: heartZones(fields.heartZones), at };
+    }
     case "route": {
       const route = decodeWatchRoute(fields.route);
       if (route === null || typeof fields.favorite !== "boolean") {

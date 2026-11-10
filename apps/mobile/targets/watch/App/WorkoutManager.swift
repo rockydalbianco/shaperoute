@@ -30,6 +30,11 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published private(set) var units: WatchUnits =
         UserDefaults.standard.string(forKey: WorkoutManager.unitsKey).flatMap(WatchUnits.init)
         ?? (Locale.current.measurementSystem == .metric ? .km : .mi)
+    /// The heart rate zones of the phone (part B5), kept for the next
+    /// time; none until the phone has an age or a max heart rate.
+    @Published private(set) var heartZones: HeartZones? =
+        (UserDefaults.standard.array(forKey: WorkoutManager.zonesKey) as? [Int])
+        .flatMap(HeartZones.init(limits:))
 
     private let store = HKHealthStore()
     private let phone = PhoneLink()
@@ -56,6 +61,8 @@ final class WorkoutManager: NSObject, ObservableObject {
     static let sendEveryMs: Int64 = 5000
     /// Where the phone's units are kept.
     static let unitsKey = "units"
+    /// Where the phone's heart rate zones are kept.
+    static let zonesKey = "heartZones"
 
     var phase: WorkoutPhase {
         workout?.phase ?? .ready
@@ -68,6 +75,8 @@ final class WorkoutManager: NSObject, ObservableObject {
     /// The positions of a workout with the GPS, for the phone and Apple
     /// Health (part B3c).
     private let recorder = TrackRecorder()
+    /// The line, the arrow and the climb on the wrist (part B5).
+    let live = LiveRun()
 
     init(routes: RouteStore? = nil) {
         self.routes = routes
@@ -76,8 +85,27 @@ final class WorkoutManager: NSObject, ObservableObject {
             self?.receive(message)
         }
         recorder.onFix = { [weak self] fix in
-            self?.guide.follow(fix)
+            guard let self else {
+                return
+            }
+            self.guide.follow(fix)
+            if self.phase == .running {
+                self.live.follow(fix)
+            }
         }
+    }
+
+    /// The average heart rate of the workout so far.
+    var heartAvgBpm: Int? {
+        heartCount > 0 ? Int((heartSum / Double(heartCount)).rounded()) : nil
+    }
+
+    /// The zone of the heart rate now, 1 to 5, when the phone sent zones.
+    var heartZone: Int? {
+        guard let heartRate, let heartZones else {
+            return nil
+        }
+        return heartZones.zone(of: heartRate)
     }
 
     func movingMs(at date: Date) -> Int64 {
@@ -142,6 +170,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         startedAtMs = Self.now()
         heartSum = 0
         heartCount = 0
+        live.begin()
         if sport.gps {
             recorder.prepare(store: store, ride: route?.ride ?? false)
         }
@@ -267,9 +296,12 @@ final class WorkoutManager: NSObject, ObservableObject {
             case .end:
                 end()
             }
-        case let .settings(chosen, _):
+        case let .settings(chosen, zones, _):
             units = chosen
             UserDefaults.standard.set(chosen.rawValue, forKey: Self.unitsKey)
+            // A phone with no age and no max heart rate says no zones.
+            heartZones = zones
+            UserDefaults.standard.set(zones?.limits, forKey: Self.zonesKey)
         case .route, .routes:
             routes?.receive(message)
         default:
@@ -376,7 +408,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             endedAtMs: max(endedAtMs, startedAtMs),
             status: arrived ? .arrived : .stopped, route: followed, distanceM: distanceM,
             movingMs: workout.movingMs(at: endedAtMs), kcal: kcal > 0 ? kcal : nil,
-            heartAvgBpm: heartCount > 0 ? Int((heartSum / Double(heartCount)).rounded()) : nil)
+            heartAvgBpm: heartAvgBpm)
         phone.sendTrack(track)
         followed = nil
     }

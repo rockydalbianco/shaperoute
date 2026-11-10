@@ -325,6 +325,11 @@ function cardTrack(track: TrackInPlace | null): TrackInPlace | null {
   return track === null || drawingOf(track.lines) === null ? null : track;
 }
 
+/** Whether «Edit & run» puts a post's line on the map (TASK-410). */
+function editsLine(line: readonly LatLon[]): boolean {
+  return cardTrack(routeTrack(line)) !== null;
+}
+
 export default function App() {
   // A new language from «Settings» renders the whole app again in it (TASK-210).
   useLanguage();
@@ -1117,7 +1122,10 @@ function MuW() {
   // The same for the cards of «Feed» (TASK-355).
   const drawAgainDoor = useDrawAgainOf(sportActivity, onDrawAgain);
   // «Edit & run» on the page of a post (TASK-410): its line where it is.
-  const editRunDoor = useEditRunOf((line) => editTrackOf(cardTrack(routeTrack(line))));
+  const editRunDoor = useEditRunOf(
+    (line) => editTrackOf(cardTrack(routeTrack(line))),
+    editsLine,
+  );
 
   /** The button's action for `again`, when «Draw» can draw it. */
   function drawAgainOf(again: DrawAgain | null): (() => void) | undefined {
@@ -1459,6 +1467,8 @@ function MuW() {
                   : null
             }
             heading={heading}
+            // On «Compass», the arrow faces where the map turned (TASK-431).
+            facing={mapTurn.facing}
             // Running the route: the part run solid, the part left dashed
             // and blinking (TASK-224).
             progress={

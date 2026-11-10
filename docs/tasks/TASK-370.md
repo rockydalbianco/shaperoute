@@ -520,6 +520,58 @@ toglie. La linea la rifà il registratore del telefono (`watchRun.ts`:
 `addFix`, `pauseTrack`, `resumeTrack`), con i suoi metri e le sue pause. Da
 provare con l'orologio vero: l'arrivo del file e la notifica.
 
+## B5, la corsa libera sull'orologio (2026-11-10)
+
+Dalla prova al polso con la build 11 l'utente ha chiesto la mappa anche
+senza disegno, più colori e più informazioni. La proposta approvata è
+«Sì, tutta».
+
+- **Mappa nella corsa libera.** Negli sport col GPS le pagine sono Numeri
+  → Mappa → Dettagli. La mappa mostra la linea fatta finora, in giallo, e
+  una freccia blu che punta dove vai; segue chi corre, col nord in alto.
+  Nella corsa col disegno il pallino diventa la stessa freccia.
+- **Colori.** Tempo bianco, distanza gialla, passo azzurro, battito rosso,
+  dislivello verde, calorie arancio. Anche il riepilogo finale è a colori.
+- **Zone del battito.** Il telefono manda all'orologio le zone di «Heart
+  rate zones», se ci sono età o FC massima. Sono il campo facoltativo
+  `heartZones` del messaggio `settings`: i sei limiti, un orologio vecchio
+  li ignora. L'orologio mostra «Z3» e una barra delle cinque zone.
+- **Dettagli.** Passo medio, ultimo km, dislivello (come «Elev. gain» del
+  telefono, solo sugli sport a terra), battito medio, calorie, ora. Il
+  dislivello è anche nel riepilogo.
+
+`WatchCore` ha tre file nuovi: `HeartZones`, `Climb` (gli scalini di 3 m
+di `climbM`) e `LiveLine` (un punto ogni 5 m, al massimo 1500). Da
+provare al polso con la build 12, insieme a B4.
+
+## B4, il risveglio dell'orologio (2026-11-10)
+
+Prova con la build 11: una corsa avviata sull'iPhone fa partire
+l'orologio solo se MuW è già aperta al polso. Il messaggio di partenza
+(`sendMessage`) arriva solo a un'app raggiungibile.
+
+- **Telefono.** Al conto alla rovescia chiede ad Apple di avviare
+  l'allenamento sull'orologio (`HKHealthStore.startWatchApp(with:)`), che
+  lancia l'app anche chiusa. La funzione c'è già nella libreria HealthKit
+  della build 1.0.1 (`startWatchApp` di @kingstinct/react-native-healthkit
+  16.2.0), quindi basta JavaScript (`src/watch/watchWake.ts`). La libreria
+  si carica come in `health/healthModules.ts`; senza il suo codice nativo
+  (Expo Go, Android) non succede nulla. Quando Apple risponde sì e
+  l'orologio non ha ancora detto il suo stato, il telefono rimanda la
+  partenza con lo sport dell'app.
+- **Senza permesso di Salute, o senza orologio,** Apple dice no: il
+  risveglio fallisce in silenzio e la corsa sul telefono va avanti (test).
+- **Orologio.** Un `WKApplicationDelegate` (`AppDelegate.swift`) riceve la
+  configurazione dell'allenamento. `WorkoutManager.wake` aspetta 3 s la
+  partenza del telefono, con lo sport esatto: bici, mountain bike e gravel
+  per Apple sono tutte «ciclismo». Se non arriva, parte il primo sport
+  con quel tipo e lo stesso GPS (`WatchWake.sport`). Una seconda partenza
+  durante un allenamento non cambia nulla.
+- **Impronta iOS** misurata su copia pulita con `APP_VARIANT=production`:
+  6f8bba4c sul branch e su main, ferma.
+
+Da provare al polso con la build 12.
+
 ## File toccati
 
 Parte 0 (questa proposta):
@@ -582,6 +634,34 @@ apps/mobile/src/about/content/{en,it,de,es,fr}.ts (la sezione e la data)
 apps/mobile/src/about/AboutPage.test.tsx, documents.test.ts (solo la data)
 site/privacy/index.html, site/privacy/{it,de,es,fr}/index.html (rigenerati)
 site/tests/privacy.test.mjs (solo la data)
+docs/tasks/TASK-370.md
+```
+
+Parte B5 (lista mandata al Coordinatore il 2026-11-10):
+
+```
+apps/mobile/src/watch/watchSettings.ts, watchSettings.test.ts (nuovi)
+apps/mobile/src/watch/watchMessages.ts, useWatch.ts, useWatch.test.tsx, watchTexts.ts
+apps/mobile/targets/watch/Core/Sources/WatchCore/HeartZones.swift, Climb.swift, LiveLine.swift (nuovi)
+apps/mobile/targets/watch/Core/Tests/WatchCoreTests/HeartZonesTests.swift (nuovo)
+apps/mobile/targets/watch/Core/Sources/WatchCore/WatchMessage.swift
+apps/mobile/targets/watch/Core/Tests/WatchCoreTests/WatchMessageTests.swift
+apps/mobile/targets/watch/Core/Fixtures/messages.json
+apps/mobile/targets/watch/App/LiveMapView.swift (nuovo)
+apps/mobile/targets/watch/App/MuWWatchApp.swift, RouteMapView.swift, WorkoutManager.swift
+apps/mobile/targets/watch/{en,it,de,es,fr}.lproj/Localizable.strings (rigenerati)
+docs/tasks/TASK-370.md
+```
+
+Parte B4 (lista mandata al Coordinatore il 2026-11-10):
+
+```
+apps/mobile/src/watch/watchWake.ts, watchWake.test.ts (nuovi)
+apps/mobile/src/watch/useWatch.ts, useWatch.test.tsx
+apps/mobile/targets/watch/App/AppDelegate.swift (nuovo)
+apps/mobile/targets/watch/App/MuWWatchApp.swift, WorkoutManager.swift
+apps/mobile/targets/watch/Core/Sources/WatchCore/WatchWake.swift (nuovo)
+apps/mobile/targets/watch/Core/Tests/WatchCoreTests/WatchWakeTests.swift (nuovo)
 docs/tasks/TASK-370.md
 ```
 

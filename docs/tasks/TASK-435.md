@@ -76,23 +76,42 @@ richieste a piedi distinte del registro del Mac
 | Dove | Risposta intera | Piano della partenza pronto | Guadagno |
 |---|---|---|---|
 | Mac, 81 richieste | mediana 1,3 s (max 3,8) | mediana 1,1 s | mediana **0,2 s**, max 0,9; almeno 0,5 s in 13 su 81 |
-| Server, 9 forme da 5 km (giro 2b di TASK-276) | media 8,1 s | — | stima **0–3,7 s, mediana 0,5, media 1,2** |
+| Server, 9 forme da 5 km (giro 2b di TASK-276) | media 8,1 s | — | stima 0–3,7 s, mediana 0,5, media 1,2 |
 | Server, 3 cuori da 10 km (giro 2b) | 11,7–14,7 s | — | stima 2,2–3,1 s |
+| **Server, 9 job veri con le partenze vicine** (log dell'API, senza quello che ha scaricato la zona) | mediana 6,8 s (4,7–11,7) | mediana 4,7 s (1,1–8,1) dopo il ritaglio | `wait` mediana 1,5 s (0,6–4,1); guadagno stimato **mediana 1 s, da 0 a 3,5** |
 
 Sul Mac le partenze vicine finiscono quasi sempre prima del piano della
 partenza: costano circa metà (cercano solo dal loro nodo) e hanno un core
-a testa. La stima per il server è «secondi totali meno CPU del processo
+a testa. La stima del giro 2b è «secondi totali meno CPU del processo
 principale» delle righe di `out/TASK-276/server-2.out`: mentre aspetta i
-figli il principale non consuma CPU. Il numero preciso è il campo `wait=`
-delle righe «times» dei job veri nel log dell'API (TASK-289): chiesto al
-Coordinatore in sola lettura, va scritto qui quando arriva.
+figli il principale non consuma CPU.
 
-**Cosa vuol dire.** Il grosso dei 10 s sul server è il piano della partenza
-stesso (circa 6 s di CPU, 8 con i figli accanto), che questo task non
-accorcia. «Primo percorso subito» toglie l'attesa dei figli **dopo** quel
-piano: circa 1 s su 8 per 5 km, 2–3 s su 12–15 per 10 km, fino a 8 s nei
-casi lenti. Dove va il resto del tempo lo misura il profilo del motore
-(sessione a parte, sola misura).
+**I job veri** (`out/TASK-435/server-times.txt`: le righe «times» del log
+dell'API, TASK-289, lette dal Coordinatore il 2026-11-10; solo secondi e
+conteggi). 18 righe, 10 con le partenze vicine:
+
+- `start` (il piano della partenza): 1,1–8,1 s, mediana 4,7.
+- `wait` (tutto quello che le vicine aggiungono): 0,6–4,1 s, mediana 1,5;
+  il 28% del totale in mediana. Circa 0,5 s di `wait` vengono **prima**
+  del piano della partenza (il grafo impacchettato, i processi avviati: è
+  il `wait` del job in cui la partenza ha impiegato 8,1 s e le vicine
+  3,7) e restano; il resto è l'attesa dopo, che questo task toglie dal
+  primo percorso.
+- Il caso migliore: partenza pronta in 1,1 s e già buona, vicine in
+  1,0–2,0 s di calcolo, eppure `wait` 4,1 s e totale 5,4 s. Il primo
+  percorso sarebbe sullo schermo dopo circa 2 s invece di 5,4.
+- I figli impiegano circa 2 s solo a partire (processo nuovo, import del
+  motore, grafo da leggere): nei due job con la partenza pronta in 1–2 s
+  le vicine hanno calcolato per meno di 2 s e il `wait` è stato 2,5 e
+  4,1 s. Non è di questo task; va al profilo del motore.
+- `chosen`: una vicina ha vinto in 4 job su 10, come nelle prove (38%).
+
+**Cosa vuol dire.** Il grosso dell'attesa sul server è il piano della
+partenza stesso (mediana 4,7 s), che questo task non accorcia. «Primo
+percorso subito» toglie l'attesa dei figli **dopo** quel piano: circa 1 s
+su 7 in mediana, fino a 3,5 s quando la partenza è veloce e già buona, 0
+quando la partenza è lenta. Dove va il resto del tempo lo misura il
+profilo del motore (sessione a parte, sola misura).
 
 ## La domanda (di prodotto, per l'utente)
 

@@ -624,11 +624,15 @@ dell'utente.
   quattro ora sta sopra il bordo basso del telefono.
 - **Nella pagina** la mappa di «Draw on the map» si apriva sotto la pagina,
   che restava sopra: ora la pagina si chiude prima.
-- **Sulla card** una corsa che finisce dove è partita e lì si incrocia
-  (andata e ritorno sulla stessa strada, un otto) non faceva un disegno:
-  il tasto c'era e non succedeva niente. Ora è un anello appeso alla
-  partenza, come la traccia aperta di TASK-428 (`figureLines.ts`); dove
-  non c'è comunque un disegno il tasto non compare.
+- **Sulla card** una corsa chiusa il cui contorno non fa un disegno
+  (andata e ritorno sulla stessa strada, un otto) lasciava il tasto senza
+  effetto. In `trackInPlace` ogni traccia il cui contorno chiuso non fa un
+  disegno prova ora l'anello appeso alla partenza di TASK-428, non più solo
+  quelle che finiscono lontano dalla partenza. L'anello c'è quando
+  `firstLineOf` dà la traccia come una linea aperta (`outlineOf` la
+  rifiuta); se invece `outlineOf` ne tiene un anello, o l'anello non fa un
+  disegno, resta il contorno chiuso senza disegno e il tasto non compare.
+  La traccia aperta (andata e ritorno) resta solo per chi finisce lontano.
 
 File: `App.tsx`, `src/feed/PostPage.tsx`, `src/feed/editRunDoor.ts`,
 `src/route/figureLines.ts` e i test `figureLines.test.ts`,

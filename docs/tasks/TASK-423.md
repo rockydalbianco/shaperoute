@@ -163,10 +163,23 @@ D  (lista data al Coordinatore il 2026-11-10, out/TASK-423/LISTA-D.md)
    PlayScreen, PlayScreenTabs, ChallengesTab, NewChallenge, goalText,
    gameCatalogCompat, api/activities, activitiesTurn, activityHeights,
    activitiesDoorQueue, __tests__/AppActivities e __tests__/AppPlay
-E  services/api/migrations/00NN_game_prizes.sql (nuovo),
-   shaperoute_api/game_prizes.py (nuovo), game.py, profiles.py, push.py;
-   apps/mobile/src/game/*, src/profile/ (cornice, titolo, badge),
-   src/theme/tokens.ts, i18n; il testo della privacy, col sì
+E  (lista data al Coordinatore il 2026-11-10, out/TASK-423/LISTA-E.md;
+   due PR, E1 il server ed E2 l'app da main dopo E1)
+E1 services/api/migrations/0067_game_prizes.sql (bozza, numero al merge),
+   shaperoute_api/game_prizes.py, game_prizes_api.py,
+   tests/test_game_prizes.py, test_game_prizes_api.py (nuovi); game.py,
+   game_backfill.py, push.py, profiles.py; packages/shared-types
+   (index.ts, fixture game-me, game-run, game-prizes, test/game.test.ts);
+   apps/mobile/src/game/gameCatalogCompat.test.ts (l'app di oggi legge i
+   campi nuovi); docs/API.md. PR #1099; i testi delle push edition_up e
+   collection_done nelle 5 lingue (out/TASK-423/TESTI-E1.md) approvati
+   dall'utente il 2026-11-10 con «Sì, approvo»
+E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
+   GamePrizesRow, prizesApi, usePrizes, prizesText; PlayScreen,
+   CollectionPage, ShapeCard, UnlockCard, UnlockLayer, unlocks.ts),
+   src/profile/ (ProfileHeader, ProfileHome, UserProfilePage),
+   src/notifications/ (notificationTap, pushDevice), src/theme/tokens.ts,
+   i18n; il testo della privacy, col sì
 ```
 
 ## Fuori scope

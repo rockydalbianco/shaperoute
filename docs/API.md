@@ -1851,6 +1851,11 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   lettura da `gym_sets`; un esercizio scritto da chi si allena non ha
   scala. Esempio `fixtures/gym-levels.json`; `gym_levels.py`; un'API
   precedente non ha il campo.
+- **I premi del gioco** (TASK-423 E, ADR-0351): `game_prizes`, solo quello
+  che il proprietario ha scelto di mostrare con `PUT /game/prizes/shown`
+  e ha ancora: `{frame, title, badges}` (una cornice, un titolo, fino a 3
+  badge); `null` quando non ha scelto niente, il default. `game_prizes_api.py`;
+  un'API precedente non ha il campo.
 - **«Winner» anche dalla palestra** (TASK-385 F): nel profilo pubblico
   `contest_wins` somma ai concorsi vinti le classifiche mensili della
   palestra vinte: primo di un esercizio in un mese finito, con almeno 3
@@ -3703,6 +3708,35 @@ della collezione. Le regole sono in `GIOCO.md`; il codice in
   settimana e il mese locali della corsa, solo quando il gradino sale; il
   backfill non le scrive. Restano se la corsa si cancella; si cancellano
   con l'account.
+
+**Premi** (TASK-423 parte E, ADR-0351; `game_prizes.py` puro,
+`game_prizes_api.py`; regole in `GIOCO.md` §5.4). Con l'account.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /game/prizes` | cornici, titoli e badge, presi e no, con quanto manca; le edizioni; che cosa mostra il profilo | `200` `GamePrizes` |
+| `PUT /game/prizes/shown` | che cosa mostra il profilo pubblico: `{frame, title, badges}` (`null` e `[]` = niente), solo fra i premi presi | `200` `GamePrizes`; `422 invalid_request` per un premio non preso o sconosciuto, o più di 3 badge |
+
+- **`GamePrizes`**: `frames` (una per collezione, in ordine: `id` della
+  collezione, `got`, `unlocked`, `total`), `titles` e `badges` (`id`,
+  `got`, `value`, `target`, nell'unità del premio: metri, settimane,
+  medaglie, edizioni, sfide), `editions` (`{silver, gold}`: quante),
+  `shown` (`{frame, title, badges}`). Esempio `fixtures/game-prizes.json`.
+- **Le edizioni**: una forma di passo o di traguardo è bronzo quando si
+  sblocca, **argento** quando il requisito è fatto in 3 corse contate,
+  **oro** in 10; righe `silver` e `gold` di `game_unlocks` scritte nella
+  transazione del salvataggio con la corsa che le dà. **`GET /game/me`**
+  ha in più, per ogni forma, `edition` (`bronze`, `silver`, `gold`; `null`
+  prima e per le forme dei km totali) e `edition_runs` (le corse che fanno
+  il requisito; `null` per le forme dei km totali). **`GET
+  /game/runs/{key}`** ha in più `editions` (`[{shape_id, edition}]`) e
+  `collections_done` (le collezioni che la corsa ha completato). Campi
+  solo aggiunti: l'app di prima non li legge.
+- **Push**: `edition_up` («Lightning: silver edition! …», `number` 3 o 10)
+  e `collection_done` («Animals collection complete! A new frame …»), una per corsa
+  ciascuna, dopo `shape_unlocked`, come lei a chi corre. Il backfill
+  scrive le edizioni delle corse vecchie con la corsa che le ha date,
+  senza push; rilanciato non aggiunge niente.
 
 **Parte C — squadre e sfide** (`game_teams.py`, `game_challenges.py`;
 regole in `GIOCO.md` §6). Tutti con l'account; i compagni vedono di un

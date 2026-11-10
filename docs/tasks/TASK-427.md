@@ -34,6 +34,30 @@ riempire l'archivio di notte con i core fermi del server.
   distanza. Il raggio di 100 m ne prende solo una parte; quanto ne
   prenderebbe l'anello lo misura la parte 0, prima di costruire.
 
+**I numeri del server, ultimi 7 giorni** (log dell'API, riga lanciata
+dall'utente, 2026-11-10):
+
+| Riga di log | Quante | Cosa vuol dire |
+|---|---|---|
+| «already drawn» | 121 | risposta subito, senza motore (riga entro 10 m o file di una città) |
+| «queued» | 148 | non c'era una risposta subito |
+| «kept route reached» | 8 | di quei 148, raggiunte dall'archivio entro 100 m, senza motore |
+
+- **Già oggi quasi metà delle richieste non fa partire il motore**:
+  (121 + 8) / (121 + 148) = 129 / 269 = **48%**.
+- Il motore è partito circa **140 volte** (148 − 8). Questa proposta agisce
+  su quelle: le 8 «reached» di oggi restano, e una parte dei 140, quelli di
+  forme chiuse, troverebbe un anello entro 150 m.
+- **Quanti dei 140, ancora non si sa**: nei dati sul Mac non c'è l'archivio
+  del server. La stima è pronta in `out/TASK-427/stima_anello.sql`, nella
+  cartella `out/` della copia principale (sola lettura, solo conteggi,
+  provata in locale su dati finti), con la riga per lanciarla in
+  `out/TASK-427/RIGHE-SSH.md`. È la parte 0: si lancia col sì dell'utente e
+  il numero va scritto qui.
+- A 140 percorsi a settimana il server oggi è lontanissimo dal suo tetto
+  (7–8 al minuto). L'anello conta per **i picchi** (un concorso, un post che
+  gira) e per i tempi d'attesa: 0,3–2 s invece di 5–15 s per chi lo riceve.
+
 ## Contesto da leggere
 
 - `services/api/shaperoute_api/route_archive.py` — docstring del modulo,
@@ -242,15 +266,15 @@ Le righe di log di oggi in `jobs.py`:
 **Tasso di risposta senza motore** = (already drawn + kept route reached) /
 (already drawn + queued), al giorno, da `journalctl` sul server.
 
-- **Parte 0, prima di costruire** (nessun cambiamento alle risposte
-  dell'API, solo un comando in sola lettura, `archive_loop_hit_rate`):
-  sulle righe degli ultimi 30 giorni
-  di `drawn_routes`, per ogni riga di forma chiusa si chiede se una riga
+- **Parte 0, prima di costruire** (nessun cambiamento all'API: una query
+  in sola lettura, `out/TASK-427/stima_anello.sql`, già scritta e provata
+  su dati finti): sulle richieste calcolate negli ultimi 7 giorni
+  di `drawn_routes`, per ogni richiesta di forma chiusa si chiede se una riga
   **precedente** della stessa chiave (meno di 30 giorni prima) l'avrebbe
   servita **entro 100 m dalla partenza** (oggi) o **entro 150 m dall'anello**
   (proposta), in linea d'aria. Dà il guadagno atteso, il numero da mostrare
-  all'utente prima del codice. Gira sul server in sola lettura, col sì
-  dell'utente, o su una copia.
+  all'utente prima del codice. Gira sul server in sola lettura (riga in
+  `out/TASK-427/RIGHE-SSH.md`), col sì dell'utente.
 - Dopo la parte A, una riga nuova distinguibile in `route_archive.py`:
   `kept loop joined %.0f m from the line, %.0f%% along` (il caso di prima,
   entro 100 m dalla partenza, resta `kept route reached from %.0f m away`).
@@ -287,7 +311,7 @@ Varianti se l'utente preferisce:
 
 ## Parti
 
-- **0 — Misura** (script in sola lettura): il guadagno atteso (§7). Se è
+- **0 — Misura** (query in sola lettura, pronta): il guadagno atteso (§7). Se è
   piccolo, ci si ferma qui.
 - **A — L'anello nell'API**: migrazione dell'indice, domanda nuova in
   `nearby`, rotazione, ordine, riga di log, test. Poi aggiornamento del
@@ -305,7 +329,7 @@ Per la proposta (questo branch):
 
 Per le parti, dopo il sì:
 
-- [ ] Parte 0: per gli ultimi 30 giorni, il tasso con 100 m dalla partenza
+- [ ] Parte 0: per gli ultimi 7 giorni, il tasso con 100 m dalla partenza
       e quello con 150 m dall'anello, scritti in `out/TASK-427/` e in
       questo file.
 - [ ] Parte A: una richiesta di forma chiusa a ≤ 150 m da un punto
@@ -338,7 +362,6 @@ cominciare, perché `route_archive.py` e `jobs.py` possono essere di altri
 task in quel momento, per esempio TASK-276 B):
 
 ```
-services/api/shaperoute_api/archive_loop_hit_rate.py      (nuovo, parte 0)
 services/api/migrations/0NNN_drawn_routes_loop_idx.sql    (nuovo, parte A)
 services/api/shaperoute_api/route_archive.py              (parte A e B)
 services/api/tests/test_route_archive_loop.py             (nuovo, parte A)

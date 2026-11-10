@@ -588,6 +588,13 @@ dell'agente su delega dell'utente; in DECISIONS nella PR dei documenti):
 - La barra di un parziale è lunga quanto il suo passo rispetto al più
   veloce (il più veloce piena).
 
+Provata sul simulatore (Expo Go, 2026-11-10) con un harness temporaneo che
+apre la pagina di un post di un altro: con le stats dell'esempio
+(`run-stats.json`: riepilogo con km più veloce, cadenza, calorie e
+dislivello; parziali col 3 in giallo e «0.43» in corsivo; altimetria;
+battito) e senza (solo il riepilogo di prima). Schermate in
+`out/TASK-410-d/` della copia principale.
+
 ## Esito
 
 *(a fine task)*

@@ -194,8 +194,11 @@ it("counts the energy as before", () => {
     skiing: "met",
     xc_skiing: "met",
     ski_touring: "oxygen",
+    // Snowshoeing as a hike (TASK-413).
+    snowshoeing: "oxygen",
   });
   expect(profileOf("hiking").energy).toEqual(profileOf("walking").energy);
+  expect(profileOf("snowshoeing").energy).toEqual(profileOf("hiking").energy);
   expect(profileOf("running").energy).toEqual({
     kind: "oxygen",
     mlKgPerM: 0.2,

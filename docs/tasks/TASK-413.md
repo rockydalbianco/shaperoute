@@ -203,7 +203,9 @@ delega dell'utente):
 - **Il profilo nell'app è nascosto**: nessuna riga in «Impostazioni», la
   ricerca lo lascia fuori (`searchFilters.NOT_YET`), il modulo per
   pubblicare non lo elenca. Nome in inglese senza `tLater`, niente
-  `caution`, tempo e calorie: li porta B con i testi. Apple Salute `hiking`
+  `caution` né tempo: li porta B con i testi. Le calorie sono quelle di
+  Hike, come per lo scialpinismo (TASK-424 C2, #1098: calorie per ogni
+  attività, scelta dell'utente del 2026-11-10). Apple Salute `hiking`
   (24, nessun tipo per le ciaspole), Health Connect
   `EXERCISE_TYPE_SNOWSHOEING` (63, verificato sulla libreria).
 

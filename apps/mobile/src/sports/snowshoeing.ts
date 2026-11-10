@@ -8,7 +8,9 @@ import type { SportProfile } from "./base";
  * Not offered yet: «Settings» has no row for it and the search leaves it out
  * until part B, which also gives its name and its caution their texts
  * (`tLater`) in the four languages, the safety notice before the first
- * «Start», its time and its calories.
+ * «Start» and its time. Its energy is a hike's, as ski touring's (TASK-424
+ * part C2, calories for every activity): the ACSM walking equation, its
+ * metres and its metres climbed.
  */
 export const SNOWSHOEING: SportProfile = {
   activity: "snowshoeing",
@@ -32,5 +34,6 @@ export const SNOWSHOEING: SportProfile = {
   appleDistance: "HKQuantityTypeIdentifierDistanceWalkingRunning",
   // EXERCISE_TYPE_SNOWSHOEING.
   healthConnect: 63,
+  energy: { kind: "oxygen", mlKgPerM: 0.1, mlKgPerMUp: 1.8 },
   freeRunAs: "snowshoeing",
 };

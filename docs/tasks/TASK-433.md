@@ -170,7 +170,7 @@ test), `gym/program.ts` (+ test), `gym/proposal.ts` (+ test),
 `gym/GymDrawGuide.tsx`, nuovi `gym/runDay.ts`, `gym/RunDayEditor.tsx`;
 `units/useDrawDistance.ts` e il test nuovo
 `units/chooseDrawDistance.test.tsx`; `theme/tokens.ts` e
-`theme/palettes.test.ts` (il token `runDay`); `i18n/{it,de,fr,es}.ts` (via
+`theme/palettes.test.ts` (il token `runDay`); `tabs/TabSwipeOwners.test.ts` (le linguette che scorrono, una riga); `i18n/{it,de,fr,es}.ts` (via
 «Which days» e la sua riga, che il passo 2 non mostra più); documenti
 `docs/tasks/TASK-433.md`, `docs/sports/gym.md`, `docs/API.md`. Sul
 simulatore non è stata vista girare.

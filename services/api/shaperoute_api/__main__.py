@@ -13,6 +13,7 @@ import argparse
 import logging
 import socket
 from collections.abc import Sequence
+from functools import partial
 from pathlib import Path
 
 import psycopg
@@ -49,6 +50,7 @@ from shaperoute_api.feedback import (
     FeedbackSetup,
     install_feedback_email,
 )
+from shaperoute_api.images import plan_request
 from shaperoute_api.insights import Insights
 from shaperoute_api.insights.events import DEFAULT_DIR as INSIGHTS_DIR
 from shaperoute_api.insights.events import OFF_VARIABLE as INSIGHTS_OFF
@@ -57,7 +59,6 @@ from shaperoute_api.insights.events import wanted as insights_wanted
 from shaperoute_api.insights.vocabulary import DEFAULT_PATH as VOCABULARY
 from shaperoute_api.insights.vocabulary import Vocabulary
 from shaperoute_api.kept_routes import install_kept_routes
-from shaperoute_api.live_shares import LiveShares, LiveShareSweep
 from shaperoute_api.media_files import MediaConfigError
 from shaperoute_api.message_media import (
     SweepRound,
@@ -85,6 +86,7 @@ from shaperoute_api.report_email import (
 from shaperoute_api.request_log import DEFAULT_DIR, ON_VARIABLE, RequestLog, wanted
 from shaperoute_api.resort_follows import install_resort_follows
 from shaperoute_api.route_archive import RouteArchive
+from shaperoute_api.route_processes import WORKERS, RouteProcesses
 from shaperoute_api.route_store import STORE_FOLDER, RouteStore
 from shaperoute_api.ski_days import install_ski_days
 from shaperoute_api.ski_names_api import install_ski_names
@@ -144,6 +146,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         type=Path,
         default=DEFAULT_DIR,
         help=f"where the request log is written (default: {DEFAULT_DIR})",
+    )
+    parser.add_argument(
+        "--route-processes",
+        type=int,
+        default=WORKERS,
+        help=(
+            f"draw the routes in this many worker processes, their zones kept "
+            f"in memory (default: {WORKERS}, TASK-276); 0 draws them in the "
+            f"API's own threads"
+        ),
     )
     parser.add_argument(
         "--no-route-store",
@@ -266,8 +278,21 @@ def main(argv: Sequence[str] | None = None) -> None:
         ai=ThemeReader(OllamaModel(args.ai_model, args.ai_url)),
         photos=photos,
     )
+    # Each route in a worker process of its own, kept warm (TASK-276,
+    # ADR-0242): the API's threads drew one route at a time, on one core.
+    processes = (
+        None
+        if args.route_processes < 1
+        else RouteProcesses(
+            partial(ActivityGraphs.from_cache, args.cache_dir),
+            workers=args.route_processes,
+        )
+    )
+    if processes is not None:
+        processes.start()
     app = create_app(
         graphs,
+        planner=plan_request if processes is None else processes,
         reader=reader,
         request_log=request_log,
         places=places,
@@ -333,10 +358,6 @@ def main(argv: Sequence[str] | None = None) -> None:
     install_message_media(app, message_media)
     if message_media is not None:
         SweepRound(message_media).start()
-    # The round that deletes the points and numbers of the live shares that
-    # ended (TASK-424, ADR-0352); their endpoints are in create_app.
-    if accounts is not None:
-        LiveShareSweep(LiveShares(accounts.database, accounts.now)).start()
     # Each message of «Send feedback» emailed to whoever runs MuW (TASK-308):
     # off without Resend and the address; the messages are kept either way.
     feedback_emails = None if feedback_setup is None else FeedbackEmails(feedback_setup)
@@ -422,6 +443,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         # The app's end closes the pool; this, when the app never started.
         if database is not None:
             database.close()
+        if processes is not None:
+            processes.close()
 
 
 if __name__ == "__main__":

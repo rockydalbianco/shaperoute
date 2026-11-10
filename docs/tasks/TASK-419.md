@@ -1,7 +1,8 @@
 # TASK-419 — I 1000 disegni del catalogo e la selezione (Explore, parte B)
 
-**Stato**: In corso — primo giro sul server (#966, 155); secondo giro in PR
-(386 in 45 città); terzo giro per le 16 città europee che aspettano Overpass
+**Stato**: In corso — primo giro sul server (#966, 155); secondo giro in
+`main` (#1028, 386); terzo giro in PR (530 in 63 città); restano i 20
+contorni dopo TASK-418 B e una quindicina di casi da 21 km da Overpass
 **Fase**: 4 · **Branch**: `docs/TASK-419-catalog-seed` (proposta, #951),
 `feat/TASK-419-catalog-seed` (codice e primo giro, #966),
 `docs/TASK-419-first-round` (questi documenti) · **ADR**: ADR-0347 e la sua
@@ -90,6 +91,9 @@ pubblicato.
   server alla cache del Mac.
 - 2026-11-10: «Vai con la proposta» al secondo giro: i 155 del primo più la
   proposta per 22 città nuove e per le città in evidenza, 386 in tutto.
+- 2026-11-10: «Vai con 530» al terzo giro: 8 per ciascuna delle 18 città
+  europee nuove (l'alternativa a 3 per città, 440, per restare nei 200–400
+  del brief, scartata dall'utente).
 
 ## Le zone copiate dal server (sola lettura)
 
@@ -135,7 +139,8 @@ catalog/` e lo stesso `restart`.
       deterministici (40 test, #966).
 - [x] Pagina di revisione mandata all'utente; la scelta è sua (primo giro).
 - [x] 200–400 disegni in `catalog/seed/*.json`, almeno 3 per città, ODbL
-      (386 dopo il secondo giro, almeno 4 per città).
+      (530 dopo il terzo giro, scelta dell'utente sopra i 400; almeno 4 per
+      città).
 - [x] `pytest tools` verde; `test_featured_catalog` verde.
 - [x] CI verde; STATUS, task file e ADR aggiornati; Coordinatore avvisato
       (primo giro).
@@ -167,6 +172,13 @@ Coordinatore prima.
 - Le città fuori dall'Europa oltre a quelle già in evidenza.
 
 ## Esito
+
+*Terzo giro (2026-11-10)*: le 16 città europee avevano la zona nella copia
+del server (chieste da utenti), Zurigo da Overpass con `--slot-wait-hours 0`
+(la pagina di stato di Overpass non risponde agli strumenti da riga di
+comando mentre al browser sì; MAPS.md: un tentativo, poi più tardi). 1930
+candidati, 1311 passano, 530 tenuti in 63 città (4–11 per città, 7,9 MB).
+Restano circa 15 casi da 21 km in 8 città che vogliono una zona nuova.
 
 *Secondo giro (2026-11-10)*: 1600 candidati (327 nuovi dalle zone copiate:
 18 città italiane, più Vienna, Praga e Budapest che avevano la zona sul

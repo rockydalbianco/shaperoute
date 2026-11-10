@@ -482,6 +482,7 @@ lasciando le righe d'indice.
 - ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
 - ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
 - ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
+- ADR-0346, precisazione B — Le 14 forme approvate entrano nel catalogo; le zone restano sulle 17 forme di prima · 2026-11-10 · Attiva
 - ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
 - ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
@@ -494,8 +495,86 @@ lasciando le righe d'indice.
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
 - ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
 - ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
+- ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute · 2026-11-10 · Attiva
+- ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda · 2026-11-10 · Attiva
+- ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL · 2026-11-10 · Accettata
+- ADR-0340, precisazione D — Le sezioni della pagina: parziali, altimetria, battito medio e massimo; zone e minimo rimandati, dislivello dal profilo · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL
+
+**Stato**: Accettata · 2026-11-10 · TASK-276 parte B (#1038). Deciso
+dall'agente su delega dell'utente («ok continua» alla proposta della parte
+A), col via del Coordinatore. Numero riservato nel task file dal
+2026-10-11.
+
+**Contesto.** Misurato sul server (TASK-276 parte A): il tetto è di circa
+7–8 percorsi al minuto, comunque arrivino le richieste. I job di
+`/route-jobs` giravano in 2 thread di un solo processo (ADR-0032); il
+lavoro del motore teneva il GIL, quindi un percorso alla volta su circa
+1,1 core, e i figli delle partenze vicine (ADR-0071) su circa 1,4 core
+accanto. Un percorso da 5 km costa circa 19 s di CPU; con 8 richieste
+insieme l'attesa media è di 28 s. Il traffico vero è più basso (7 giorni:
+148 percorsi calcolati, 121 già pronti, 8 dall'archivio vicino, cioè circa
+21 calcoli al giorno): questa decisione è per i picchi e per i concorsi.
+
+**Decisione.**
+
+1. `services/api/shaperoute_api/route_processes.py`: `RouteProcesses` è un
+   planner (`jobs.Planner`), che `__main__.py` passa a `create_app`
+   (`--route-processes N`, default 2; 0 torna ai thread). `RouteJobs`, la
+   sua coda, l'archivio (ADR-0256) e i suoi 2 thread restano come sono: il
+   thread di un job dà la richiesta a un processo e ne aspetta il piano.
+2. **Percorsi identici.** Il processo usa lo stesso planner
+   (`images.plan_request`), le stesse zone (`ActivityGraphs.from_cache`
+   della stessa cartella) e lo stesso `jobs._Reporting`. Le indicazioni le
+   calcola il processo, che ha le zone, sul piano e su ogni alternativa;
+   il thread del job non ha grafi e `with_choices` le lascia come sono.
+   Un test lo confronta a Levico. Il motore non cambia: niente prova
+   `test_same_routes`.
+3. **Cosa passa per il tubo:** lo stato («downloading_map»), i tempi del
+   job, il piano, oppure l'errore del planner intero (pickle: `error_of`
+   dà gli stessi codici; un errore che non si serializza diventa
+   `engine_error`), oppure «dropped». Verso il processo passano la
+   richiesta e il «cancel» di un job dimenticato, che il processo guarda
+   dopo ogni caricamento, dove lo guardava il thread. Ogni messaggio ha il
+   numero del suo percorso.
+4. **Niente `Pool`** (TASK-248, ADR-0212): un `Process` per lavoratore,
+   non daemon (deve avviare i figli delle partenze vicine), nel suo gruppo
+   di processi. Un percorso ha al massimo 600 s (`MAX_JOB_S`); oltre, il
+   processo e i figli vengono uccisi (`killpg`) e il percorso fallisce
+   come `engine_error`. Così anche un processo morto; il percorso dopo ne
+   avvia uno nuovo. `close()` li ferma alla fine dell'API, anche da
+   `atexit`.
+5. **Quanti: 2**, dalla RAM e dai core misurati. Circa 0,9 GB per processo
+   con zone grandi, figli fino a circa 0,4 GB l'uno (già limitati da
+   `workers_that_fit`), 5,6 GB liberi. Un terzo processo toglierebbe core
+   ai figli senza alzare il tetto: previsto circa +40%, 10–11 percorsi al
+   minuto.
+6. **Il fork server.** I processi li crea il forkserver di
+   `multiprocessing`, avviato con `RouteProcesses` all'avvio dell'API. Sul
+   Mac, un processo avviato dall'API dopo che un thread già finito aveva
+   letto una zona GraphML moriva tra fork ed exec (SIGSEGV); dal fork
+   server parte. Su Linux non succede.
+
+**Alternative scartate.**
+
+- Cambiare `jobs.py`: è dentro `engine.zip` del telefono (`on_phone` lo
+  importa); cambiarlo vuol dire ricostruire lo zip e pubblicare l'app.
+- Un `ProcessPoolExecutor`: il suo `shutdown` a metà lavoro è il caso di
+  TASK-248, e non dà un tempo massimo per percorso.
+- 3 o 4 processi: con le partenze vicine accese non alzano il tetto.
+  Spegnere le partenze vicine sotto carico (circa ×3 nei picchi) è una
+  scelta di prodotto dell'utente, non presa.
+
+**Conseguenze.** I percorsi e il contratto non cambiano. Nel container ci
+sono 3 processi in più (il forkserver e 2 lavoratori). Il forkserver vuole
+una cartella temporanea scrivibile per l'uid 10001: si controlla al
+passaggio sul server (`out/TASK-276/SERVER-B.md`). Le zone sono in memoria
+nei lavoratori; l'API ne carica solo per l'archivio vicino. Lo stesso
+difetto del Mac tocca anche le partenze vicine avviate dal thread
+principale (test, comandi), fuori da questa decisione.
 
 ## ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati
 
@@ -1686,3 +1765,139 @@ da sole e il motore prende solo contorni semplici. Per loro servirebbe il
 motore (linea aperta corsa una volta, ritorno per la via più breve): è
 proposto all'utente come task a parte. Solo JavaScript nell'app, nell'OTA
 unico.
+
+## ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B3c1, decisa dall'agente su
+delega dell'utente; lista dei file approvata dal Coordinatore. In `main`
+con la #1020.
+
+**Decisione**:
+1. **Un file a fine allenamento** (`WatchTrack`, contratto in Swift e
+   TypeScript su `Fixtures/tracks.json`): sport, inizio e fine, arrivato o
+   fermato, il percorso seguito (con la somiglianza, per il punteggio anche
+   se il telefono non ha più quel percorso), le posizioni
+   `[lat, lon, ms, precisione, quota]`, le pause, distanza, tempo in
+   movimento, calorie e battito medio. Va con `WCSession.transferFile`, che
+   lo tiene finché il telefono non lo prende.
+2. **`TrackRecorder` ha il GPS** per ogni sport col GPS, anche senza
+   percorso; dà le posizioni alla guida, a `TrackLog` (le regole del
+   registratore del telefono: niente fix oltre 40 m, fuori ordine o in
+   pausa, al massimo 20 000) e a `HKWorkoutRouteBuilder`, così la linea sta
+   anche nell'allenamento di Salute.
+3. **`WatchRoute` porta `similarity`**, facoltativa: un percorso senza
+   (telefono più vecchio) la legge come sconosciuta.
+
+**Conseguenze**: il permesso di Salute chiede anche la linea
+dell'allenamento. La corsa simulata dopo lo spostamento del GPS non si è
+potuta ripetere nel simulatore (il foglio di Salute non prende i tocchi): si
+prova al polso.
+
+## ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda
+
+**Stato**: Attiva · 2026-11-10 · TASK-370 parte B3c2; scelta dell'utente
+«Avviso e scheda» e testi approvati il 2026-11-10; lista dei file e turno su
+`App.tsx` dal Coordinatore. In `main` con la #1041.
+
+**Decisione**:
+1. **Il telefono tiene in attesa** ogni corsa dell'orologio (`watchRuns.ts`,
+   al massimo 10, in un file), anche quelle arrivate ad app chiusa
+   (`getQueuedFiles`), e manda una notifica locale.
+2. **Una scheda in cima a «My activities»** («From your Apple Watch», «Open»,
+   «Discard») finché non la si apre o scarta; «Open» apre la fine corsa di
+   sempre (`finish` col punteggio, `runFinish` senza percorso). Niente si
+   apre da solo mentre si usa l'app.
+3. **La linea la rifà il registratore del telefono** (`watchRun.ts`:
+   `addFix`, `pauseTrack`, `resumeTrack`): metri, pause e fix lasciati fuori
+   sono quelli di una corsa registrata col telefono.
+4. **I file dell'orologio** stanno in `watchFiles()`, a parte dal
+   collegamento dei messaggi.
+
+**Conseguenze**: l'arrivo del file e la notifica si provano con l'orologio
+vero (build 1.1).
+
+## ADR-0346, precisazione B — Le 14 forme approvate entrano nel catalogo; le zone restano sulle 17 forme di prima
+
+**Stato**: Attiva · 2026-11-10 · TASK-418 parte B (#1042). Deciso
+dall'agente su delega dell'utente (la scatola delle zone: dal Coordinatore,
+su delega).
+
+**Contesto**: l'utente ha approvato su strada 20 percorsi di TASK-419 fatti
+con 14 forme candidate. `prefetch_zones.longest_route_box` faceva l'unione
+delle zone di **tutte** le forme del catalogo: pera e Torre di Pisa, strette
+e alte, a parità di distanza disegnano più in grande e la allargavano di un
+decimo per ogni sport (la corsa a 50 km da circa 40 a 44 km di lato). Ogni
+zona tenuta sul server avrebbe cambiato chiave e andava riscaricata.
+
+**Decisione**:
+
+1. I 14 file passano da `candidate_outlines/` a
+   `route_engine/shapes/outlines/` (`APPROVED` in
+   `tools/draw_new_shapes.py`) ed entrano in `SHAPES`, nel contratto,
+   nell'API, nelle descrizioni per l'AI e nell'app; le altre 35 restano
+   candidate.
+2. `prefetch_zones.ZONE_SHAPES`: la scatola dei percorsi più lunghi resta
+   calcolata sulle 17 forme di prima. `test_zone_shapes.py` fissa le
+   scatole di ogni sport come erano.
+3. Penna alzata: ancora, orso, bici e tazzina hanno pezzi, quindi l'API le
+   accetta (`PEN_UP_SHAPES` viene dal motore, come per il sole); l'app non
+   la offre finché l'utente non le ha giudicate così.
+4. Le categorie della ricerca restano quelle di TASK-344: orso e cigno negli
+   animali, ancora, quadrifoglio e nota nei simboli, il resto nelle emoji.
+
+**Il limite accettato**: in bici, pera e Torre di Pisa stanno nella zona
+già scaricata fino a 26 km, non a 30 (`test_prefetch_zones.py`). Oltre,
+come ogni percorso vicino al bordo, possono prendere qualche strada fuori
+zona. Le altre forme nuove stanno nella zona a 30 km.
+
+**Motivo**: nessuna zona da riscaricare e nessun download in più su
+Overpass per un caso raro (una pera di 30 km).
+
+**Alternative**:
+
+- **La scatola sull'intero catalogo**: zone del 10% più larghe e tutte da
+  riscaricare; scartata.
+- **Una scatola per forma**: più chiavi di zona per la stessa città;
+  scartata.
+
+**Conseguenze**: impronta del codice 2bca806f467b (nuoto 55b54eea0e14,
+pagaiata cf585f8fb31b), con le righe `SAME_ROUTES_AS` verso le impronte di
+prima: le 9 rotte di `test_same_routes.py` sono identiche, gli esempi
+tenuti restano validi. Sul server, il passo 2 (`out/TASK-418/SERVER.md`);
+nell'app le forme arrivano con l'OTA dopo il server.
+
+## ADR-0340, precisazione D — Le sezioni della pagina: parziali, altimetria, battito medio e massimo; zone e minimo rimandati, dislivello dal profilo
+
+**Stato**: Attiva · 2026-11-10 · TASK-410 parte D (#1043). Testi approvati
+dall'utente il 2026-11-07 (scelta 6); i punti 1 e 2 decisi dal Coordinatore
+su delega dell'utente, il resto deciso dall'agente su delega dell'utente.
+
+**Contesto**: la parte C (precisazione C) mette nel dettaglio del post
+`stats`: parziali per km e per miglio, profilo, cadenza, calorie
+dell'autore, battito medio e massimo. Il brief chiedeva anche il battito
+minimo e il tempo e la % per zona: nessuna fonte li manda ancora.
+
+**Decisione**:
+
+1. **Zone e minimo rimandati**: la card «Battito» mostra medio e massimo. Le
+   barre delle zone, il minimo e il criterio «% per zona» arrivano quando
+   TASK-345 C o TASK-374 D danno i secondi per zona.
+2. **Il dislivello si conta dal profilo** (al più 120 punti, la regola dei
+   3 m di `climbM`): è una sotto stima di quello della traccia intera, che
+   il post non porta. In miglia è in piedi.
+3. **La pagina legge `GET /drawings/{id}` una volta all'apertura**
+   (`usePostStats`, `statsOf`): `GET /feed` resta leggero. Senza stats o
+   senza rete resta il riepilogo di prima.
+4. **Calorie**: quelle dell'autore (`stats.kcal`) quando il server le manda;
+   se l'autore le nasconde, la stima di prima (70 kg), che non dice niente
+   del suo corpo.
+5. **Per sport** (`postMetrics`): parziali a piedi e su ruote, non in
+   acqua, sulla neve, in palestra; altimetria ovunque tranne acqua e
+   palestra; cadenza solo a piedi.
+6. **Grafici a `View`**: barre dei parziali lunghe quanto il passo rispetto
+   al più veloce (il più veloce in `accent`), una colonna per punto del
+   profilo; niente `react-native-svg`, niente build nuova.
+
+**Conseguenze**: la parte D esce con un OTA; le zone hanno un posto pronto
+nella card «Battito» quando arrivano i secondi; il dislivello del post può
+essere qualche metro sotto quello dello schermo della corsa.

@@ -36,6 +36,20 @@ export const SHAPE_SIGNS: Record<Shape, string> = {
   ghost: "👻",
   donut: "🍩",
   sun: "☀️",
+  airplane: "✈️",
+  anchor: "⚓",
+  bear_head: "🐻",
+  bicycle: "🚲",
+  cherries: "🍒",
+  espresso_cup: "☕",
+  four_leaf_clover: "🍀",
+  leaning_tower: "🗼",
+  music_note: "🎵",
+  pear: "🍐",
+  sailboat: "⛵",
+  swan: "🦢",
+  windmill: "🌬️",
+  wine_glass: "🍷",
 };
 
 type Props = {

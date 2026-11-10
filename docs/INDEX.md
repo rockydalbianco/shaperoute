@@ -25,6 +25,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Guardare o confrontare percorsi generati | `../samples/README.md` |
 | Export GPX o wearable | `GPX.md` |
 | Endpoint, contratti REST, validazione input | `API.md`, `ARCHITECTURE.md` §3 |
+| Quanti percorsi regge il server; i processi che calcolano i percorsi (`--route-processes`) | `tasks/TASK-276.md`, ADR-0242 |
 | Cosa sa leggere un'app vecchia, `X-MuW-Reads`, uno sport nuovo nelle liste | `API.md` «Quello che un'app sa leggere», ADR-0328 |
 | Parole lette dall'AI, Ollama | `AI.md` |
 | Schermate, mappa, «Draw», «Edit the drawing», disegno a mano, girare la figura, i pezzi | `UI.md`, `PRODUCT.md` |
@@ -40,7 +41,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Pubblicità, AdMob, pagamenti | `PUBBLICITA.md`, ADR-0198 |
 | Feed: schede, filtri «Tutti»/«Seguiti», percorsi di MuW | `API.md` «Feed», ADR-0306, ADR-0308, ADR-0310 |
 | Post: video, compositore, calorie e battito | `API.md` «Drawings», `tasks/TASK-336.md`, `tasks/TASK-348.md`, `tasks/TASK-345.md` |
-| La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 (precisazioni C, F), `API.md` «Run stats», `DATABASE.md` (0064) |
+| La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 (precisazioni C, D, F), `API.md` «Run stats», `DATABASE.md` (0064) |
 | La mia immagine al posto dell'animale nel video (foto tonda, GIF, cartellino sul 3D) e il video «Together» con le persone taggate sullo stesso orologio | `tasks/TASK-417.md`, `DECISIONS.md` ADR-0345 e ADR-0339, `tasks/TASK-408.md` |
 | Video della corsa ed editor con l'animale 3D | ADR-0303, ADR-0339, `UI.md` «Il post da condividere», `tasks/TASK-408.md` |
 | Messaggi, chat, allegati | `API.md` «Messages», `UI.md`, ADR-0279, ADR-0305 |
@@ -54,7 +55,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |
 | Percorsi in bici di MuW in «Explore» | `UI.md` «Pedalalo tu», ADR-0309 |
 | Il catalogo di «Explore»: forme nuove, i mille disegni, la pagina | `../catalog/README.md`, ADR-0347, `tasks/TASK-418.md`, `tasks/TASK-419.md`, `tasks/TASK-420.md` |
-| Le forme candidate: `candidate_outlines/`, `tools/draw_new_shapes.py`, l'anteprima | `tasks/TASK-418.md`, ADR-0346, ADR-0036 |
+| Le forme candidate e quelle approvate: `candidate_outlines/`, `tools/draw_new_shapes.py` (`APPROVED`), `ZONE_SHAPES` | `tasks/TASK-418.md`, ADR-0346 e la precisazione B, ADR-0036 |
 | Aggiungere uno sport, il banco `tools/sport_bench/` | `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md`, ADR-0320 |
 | Uno sport in particolare (corsa, bici, canoa, hike, gravel, roller, gym, skimo, wheelchair, snowshoes) | `sports/<sport>.md` e il suo task file se aperto |
 | Nuoto in piscina: calorie, battito e zone | `tasks/TASK-409.md`, ADR-0318, ADR-0334 |

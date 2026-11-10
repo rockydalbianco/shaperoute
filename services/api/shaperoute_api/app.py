@@ -111,8 +111,11 @@ from shaperoute_api.profiles import install_profiles
 from shaperoute_api.push import install_push
 from shaperoute_api.reactions import install_reactions
 from shaperoute_api.recommended import (
+    DEFAULT_PAGE,
     DEFAULT_RADIUS_M,
+    MAX_PAGE,
     MAX_RADIUS_M,
+    CatalogPageBody,
     RecommendedCatalog,
     RecommendedRouteDetailBody,
     RecommendedRoutesBody,
@@ -545,6 +548,17 @@ def create_app(
     install_best_routes(app, catalog)
     # The routes MuW draws for the Feed, apart from it (TASK-365, ADR-0310).
     install_muw_routes(app, muw_routes)
+
+    # The whole catalogue a page at a time, for the end of «Explore»
+    # (TASK-420 part E): city by city from the nearest to the point.
+    @app.get("/catalog")
+    def catalog_page(
+        lat: float = Query(ge=-90, le=90),
+        lon: float = Query(ge=-180, le=180),
+        offset: int = Query(default=0, ge=0),
+        limit: int = Query(default=DEFAULT_PAGE, ge=1, le=MAX_PAGE),
+    ) -> CatalogPageBody:
+        return catalog.page((lat, lon), offset, limit)
 
     @app.get("/recommended-routes")
     def list_recommended_routes(

@@ -8,8 +8,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "6 novembre 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "8 novembre 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). */
+const PRIVACY_UPDATED = "10 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -434,6 +434,14 @@ const privacy: AboutDocument = {
       heading: "Strava",
       blocks: [
         "Una corsa va a Strava solo quando lo chiedi, e solo dopo che hai collegato il tuo profilo Strava. Finché è collegato, il nostro server tiene il tuo nome su Strava e le chiavi che Strava ci ha dato per il tuo profilo. A Strava mandiamo allora la traccia con gli orari, il nome e una riga di descrizione. A Strava chiediamo solo il permesso di aggiungere attività, mai di leggere le tue. Su Strava l'attività segue le tue impostazioni di privacy di Strava, non quelle di MuW.",
+      ],
+    },
+    {
+      heading: "L'app MuW su Apple Watch",
+      blocks: [
+        "Con l'app MuW su Apple Watch, durante un allenamento che avvii l'orologio registra la tua posizione, il battito e le calorie attive, e salva l'allenamento in Apple Salute sull'orologio.",
+        "Il telefono manda all'orologio i percorsi che scegli («Invia all'orologio» e i tuoi preferiti). A fine allenamento l'orologio manda al telefono la traccia, che resta lì finché non la salvi o la scarti: una corsa salvata va al nostro server come descritto in «Le tue corse e le loro tracce GPS».",
+        "Durante una corsa l'orologio manda al telefono il battito, per mostrarlo nella schermata della corsa: non arriva al nostro server. L'orologio chiede la posizione solo durante un allenamento.",
       ],
     },
     {

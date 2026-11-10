@@ -59,6 +59,13 @@ PIECES = {
     "ghost": 2,
     "donut": 1,
     "sun": 8,
+    # The new shapes in pieces of TASK-418: the ring of the anchor, the eyes
+    # and snout of the bear, the wheels of the bicycle and the triangle of
+    # its frame, the steam of the cup.
+    "anchor": 1,
+    "bear_head": 3,
+    "bicycle": 3,
+    "espresso_cup": 2,
 }
 
 
@@ -175,7 +182,9 @@ def test_each_piece_is_drawn_on_its_own_and_paddled_to(where: str, shape: str) -
     for a, b in drawn:
         piece = LineString(xy[a : b + 1])
         assert area.band.buffer(1e-6).contains(piece)
-        assert piece.is_closed or shape in ("smiley", "sun")  # its mouth, its rays
+        # Open pieces: the mouth of the smiley, the rays of the sun, the steam
+        # of the cup.
+        assert piece.is_closed or shape in ("smiley", "sun", "espresso_cup")
     # The route's checks: closed, on water, within 1 km, the distance asked.
     measures = water_fit.measure(result.points, area)
     assert measures.closed and measures.on_land_m == 0.0

@@ -262,13 +262,25 @@ def test_a_failed_download_says_its_http_status(tmp_path: Path) -> None:
 def test_the_bike_box_holds_a_30_km_route_from_the_centre() -> None:
     box = bike_zone_box(VERCELLI)
     assert BIKE_DISTANCE_M == 30_000
-    for shape in SUPPORTED_SHAPES:
+
+    def held(shape: str, distance_m: int) -> bool:
         outline = get_shape(shape)(SHAPE_POINTS)
         # With the far search, from the centre; without, a little off it.
-        far = zone_area(outline, VERCELLI, BIKE_DISTANCE_M, FAR_OFFSET_M)
-        assert holds(box, far), shape
-        for start in starts_on_circle(VERCELLI, 1_400.0):
-            assert holds(box, required_area(outline, start, BIKE_DISTANCE_M)), shape
+        far = zone_area(outline, VERCELLI, distance_m, FAR_OFFSET_M)
+        return holds(box, far) and all(
+            holds(box, required_area(outline, start, distance_m))
+            for start in starts_on_circle(VERCELLI, 1_400.0)
+        )
+
+    # Every shape the box is made of; the pear and the Leaning Tower of
+    # TASK-418 up to 26 km only, the limit ADR-0346 accepted so that no zone
+    # kept on the server changes. Every other new shape fits at 30 km.
+    taller = {"pear", "leaning_tower"}
+    for shape in SUPPORTED_SHAPES:
+        if shape in taller:
+            assert held(shape, 26_000) and not held(shape, BIKE_DISTANCE_M), shape
+        else:
+            assert held(shape, BIKE_DISTANCE_M), shape
     # Shorter routes from farther out, with the far search.
     circle = get_shape("circle")(SHAPE_POINTS)
     for distance, radius in ((20_000, 3_400.0), (10_000, 6_900.0)):

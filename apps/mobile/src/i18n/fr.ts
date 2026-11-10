@@ -230,6 +230,20 @@ export const FR: Table = {
   Ghost: "Fantôme",
   Donut: "Donut",
   "The sun": "Soleil",
+  Airplane: "Avion",
+  Anchor: "Ancre",
+  "Bear head": "Tête d'ours",
+  Bicycle: "Vélo",
+  Cherries: "Cerises",
+  "Espresso cup": "Tasse d'espresso",
+  "Four-leaf clover": "Trèfle à quatre feuilles",
+  "Leaning Tower": "Tour penchée",
+  "Music note": "Note de musique",
+  Pear: "Poire",
+  Sailboat: "Voilier",
+  Swan: "Cygne",
+  Windmill: "Moulin à vent",
+  "Wine glass": "Verre à vin",
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "VILLES PROCHES",
@@ -1287,7 +1301,6 @@ export const FR: Table = {
     "Pas encore de parcours recommandés ici : des formes de {distance} depuis le centre, dessinées maintenant.",
   "Three first, more while you choose.":
     "Trois d'abord, d'autres pendant que vous choisissez.",
-  "Best near you": "Les meilleurs près de vous",
   "Starting within {distance} of {place}": "Départ à moins de {distance} de {place}",
   "your start": "votre départ",
   "Loading routes…": "Chargement des parcours…",
@@ -2056,6 +2069,21 @@ export const FR: Table = {
   "Edit & run": "Modifier et courir",
   "Post settings": "Réglages de la publication",
   Summary: "Résumé",
+  // src/feed/postSections.ts (TASK-410 part D: approved 2026-11-07)
+  "Fastest km": "Km le plus rapide",
+  "Fastest mile": "Mile la plus rapide",
+  "Avg cadence": "Cadence moy.",
+  "Elevation gain": "Dénivelé positif",
+  Splits: "Temps intermédiaires",
+  Mile: "Mile",
+  "Fastest: km {n} · {pace}": "Le plus rapide : km {n} · {pace}",
+  "Fastest: mile {n} · {pace}": "Le plus rapide : mile {n} · {pace}",
+  Elevation: "Profil altimétrique",
+  "Elevation along the route, from {min} to {max} m":
+    "Altitude le long du parcours, de {min} à {max} m",
+  "Heart rate": "Fréquence cardiaque",
+  Average: "Moyenne",
+  Max: "Max",
 
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Parcours créé par MuW – à toi de pédaler",
@@ -2165,4 +2193,18 @@ export const FR: Table = {
   "Stop sharing": "Arrêter",
   "Keep sharing": "Continuer",
   "Couldn't create the link. Try again.": "Impossible de créer le lien. Réessaie.",
+  // src/explore/ExploreScreen.tsx, FartherAway.tsx, AskLine.tsx (TASK-420: every
+  // drawing of the catalog in «Explore», the nearest first)
+  "{count} drawings in {cities} cities · the nearest first":
+    "{count} dessins dans {cities} villes · les plus proches d'abord",
+  "{count} drawings · the nearest first": "{count} dessins · les plus proches d'abord",
+  "within {distance} · {count}": "à moins de {distance} · {count}",
+  "FARTHER AWAY": "PLUS LOIN",
+  "{count} drawing · by city": "{count} dessin · par ville",
+  "{count} drawings · by city": "{count} dessins · par ville",
+  "Ask for a route": "Demander un itinéraire",
+  "Famous places, best views, food… in any city":
+    "Lieux célèbres, panoramas, cuisine… dans n'importe quelle ville",
+  "The rest could not load.": "La suite n'a pas pu être chargée.",
+  "Loading more…": "Chargement de la suite…",
 };

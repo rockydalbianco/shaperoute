@@ -86,7 +86,9 @@ jobs:
   # I test girano sul grafo piccolo di Levico e sui JSON di shared-types.
   api:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    # The suite takes 27 to 39 minutes (2026-11-10): at 40 a slow runner
+    # cancelled a green run. Splitting the suite is the real fix.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:

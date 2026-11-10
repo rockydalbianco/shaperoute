@@ -31,6 +31,14 @@ uscire, Oggi, giornata in corso, riepilogo, mappa con legenda, discesa per
 discesa, la stagione, le stazioni). Testi in inglese da approvare, numeri di
 esempio.
 
+## Scelte dell'utente
+
+- 2026-11-10, domanda 1: «Sì, così». Si entra nella modalità sci scegliendo
+  «Ski» dal tasto dello sport in alto o da Impostazioni; si esce scegliendo
+  un altro sport dallo stesso tasto. Le schede sono Oggi · Giornate ·
+  Stazioni · Feed · Profilo; i messaggi passano all'icona in alto, col
+  numero rosso.
+
 ## Cosa c'è già (non si rifà)
 
 | Cosa | Dove | Nella modalità sci |
@@ -162,6 +170,11 @@ nuovi in cinque lingue col sì dell'utente; server e OTA col sì dell'utente.
    tasto dello sport in alto o in Impostazioni, si esce scegliendo un altro
    sport dallo stesso tasto; schede «Oggi · Giornate · Stazioni · Feed ·
    Profilo», messaggi dall'icona in alto. Alternativa B sopra.
+   **Risposta dell'utente, 2026-11-10: «Sì, così».** Vale la proposta: si
+   entra con «Ski» dal tasto dello sport in alto o da Impostazioni, si esce
+   scegliendo un altro sport dallo stesso tasto; schede Oggi · Giornate ·
+   Stazioni · Feed · Profilo, messaggi dall'icona in alto. Resta aperto se la
+   Ricerca dell'app normale perde la scheda «Ski» (con la domanda 2).
 2. **Le sezioni della prima versione.** Proposta: le sei del punto 3.
 3. **I colori della legenda.** Proposta: discese gialle piene, risalite
    rosse tratteggiate (un rosso diverso dal numero rosso), con numeri ed

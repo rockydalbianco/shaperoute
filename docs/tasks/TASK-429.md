@@ -55,6 +55,10 @@ esempio.
   domanda 4, in inglese con l'italiano; de, fr ed es tradotti allo stesso
   modo. «Discese» resta anche il nome della sezione discesa per discesa
   («Runs»).
+- 2026-11-10, i due testi in più della parte A: «Sì, approvate». In
+  «Giornate» senza account «Log in to see your days.» («Accedi per vedere
+  le tue giornate.») e senza giornate «No days on the snow yet.» («Ancora
+  nessuna giornata sulla neve.»); de, fr ed es tradotti allo stesso modo.
 
 ## Cosa c'è già (non si rifà)
 

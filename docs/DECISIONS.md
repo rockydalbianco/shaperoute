@@ -502,7 +502,7 @@ lasciando le righe d'indice.
 - ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
 - ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì · 2026-11-10 · Accettata
 - ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF · 2026-11-10 · Attiva
-- ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Proposta
+- ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Accettata
 
 ## Voci nuove
 
@@ -2029,9 +2029,10 @@ Blender, e i crediti con i due nomi («Tutti e due»).
 
 ## ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci
 
-**Stato**: Proposta · 2026-11-10 · TASK-429, parte 0 (solo documenti).
-Numero dal Coordinatore. Le scelte di prodotto sono dell'utente, una
-domanda alla volta nel task file, prima del codice.
+**Stato**: Accettata · 2026-11-10 · TASK-429, parte 0 (solo documenti).
+Numero dal Coordinatore. Le scelte di prodotto sono dell'utente, quattro
+domande nel task file, tutte con «Sì»; il disegno tecnico è deciso
+dall'agente su delega dell'utente.
 
 **Contesto**: dopo TASK-406 l'utente non trova lo sci nell'app: sta nella
 Ricerca e dietro lo sport «Ski». Il 2026-11-10 chiede che, scelto lo sci,
@@ -2039,28 +2040,37 @@ Ricerca e dietro lo sport «Ski». Il 2026-11-10 chiede che, scelto lo sci,
 sezioni, tutti i dati (impianti presi compresi) e la mappa con linee
 colorate e legenda. Lo sci non va messo in vista nell'app normale.
 
-**Proposta** (dettagli e mockup in `tasks/TASK-429.md`):
+**Decisione** (dettagli e mockup in `tasks/TASK-429.md`):
 
 1. **La modalità segue lo sport già salvato** (`saveSport`, `useSport`):
    con «Ski» l'app è nella modalità sci, con un altro sport è quella di
    sempre. Si entra e si esce dal tasto dello sport in alto o da
-   Impostazioni; nessuno stato nuovo da ricordare.
+   Impostazioni; nessuno stato nuovo da ricordare (domanda 1).
 2. **Le stesse cinque schede di `TabShell`**, con tre pagine diverse: Oggi ·
    Giornate · Stazioni · Feed · Profilo. I messaggi passano a un'icona in
-   alto. È lo schema che «Explore» usa già per acqua e nuoto
-   (`PaddleExplore`), allargato.
-3. **Si riusa quello che c'è**: `src/ski/` (stazioni, meteo, neve,
+   alto, col numero rosso. È lo schema che «Explore» usa già per acqua e
+   nuoto (`PaddleExplore`), allargato (domanda 1).
+3. **Sei sezioni nella prima versione**: Oggi, riepilogo della giornata,
+   mappa con legenda, discesa per discesa, la stagione, Stazioni. La
+   Ricerca dell'app normale perde la scheda «Ski» (domanda 2).
+4. **Si riusa quello che c'è**: `src/ski/` (stazioni, meteo, neve,
    seguite), `SnowFinishCard`, `snowDay.ts`, `ski-names`.
-4. **I colori della giornata solo come token** (`ski.descent`,
-   `ski.lift`), con tratteggio, numeri ed etichette perché la legenda si
-   legga senza colori. Tocca due regole di `tokens.ts` (giallo = percorso,
-   rosso = badge): decide l'utente.
-5. **Il server** serve per due cose sole: i totali della stagione e i nomi
-   tratto per tratto.
+5. **I colori della giornata, solo nella modalità sci e solo come token**:
+   `ski.descent` giallo, linea piena, discese numerate 1, 2…; `ski.lift`
+   rosso più chiaro del badge (`#FF5A4E` sul tono scuro), tratteggiato,
+   risalite numerate L1, L2…; la legenda dice tutto a parole. È
+   un'eccezione voluta dall'utente alle due regole di `tokens.ts` (giallo =
+   percorso, rosso = badge), valida perché nella modalità non ci sono
+   percorsi; fuori la giornata resta bianca (domanda 3).
+6. **I testi** della tabella della domanda 4, approvati.
+7. **Il server** serve per due cose sole: i totali della stagione e i nomi
+   tratto per tratto (parti C e D, ognuna col sì dell'utente).
 
 **Alternative**: un tasto «Ski» in più nell'app normale, scartato
 dall'utente il 2026-11-10; un'app a parte, che vorrebbe una build nativa
-nuova e l'impronta iOS cambiata.
+nuova e l'impronta iOS cambiata; l'alternativa B delle schede (la scheda
+dei messaggi resta, il Feed esce dalla barra), scartata con la domanda 1.
 
 **Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` ferma; motore
-non toccato. Le parti A–E si elencano nel task file dopo le risposte.
+non toccato. Le parti A–E si elencano nel task file, ognuna con la sua
+lista al Coordinatore; una parte che tocca `src/ski/**` lo concorda prima.

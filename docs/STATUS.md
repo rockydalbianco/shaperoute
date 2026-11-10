@@ -136,10 +136,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   streak, 0065) e la privacy in `main`; server A+B fatto, il backfill
   riparte dopo la fix #1037 (corse senza traccia); la 0065 nel passo server
   2. Poi D (dopo la #971) ed E. File: quelli della #1037 · `tasks/TASK-423.md`
-- **TASK-429 — La modalità sci** (ADR-0357) · proposta e canvas dei
-  mockup nel task file; aspetta le scelte dell'utente (domanda 1: come si
-  entra e quali schede), poi la lista della parte A al Coordinatore.
-  File: — · `tasks/TASK-429.md`
+- **TASK-429 — La modalità sci** (ADR-0357) · parte 0 fatta: proposta,
+  mockup e le quattro scelte dell'utente (schede, sei sezioni, colori,
+  testi). Prossima la parte A (la modalità e le schede), con la lista al
+  Coordinatore. File: — · `tasks/TASK-429.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

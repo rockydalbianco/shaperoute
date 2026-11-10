@@ -47,6 +47,8 @@ export type ToPage =
   | { type: "showLifts"; skied: LngLat[][]; lifts: LngLat[][] }
   | { type: "clearLifts" }
   | { type: "follow"; lngLat: LngLat; heading: number | null }
+  /** Where the phone points on «Compass» (TASK-431), or null off it. */
+  | { type: "face"; heading: number | null }
   | { type: "stopFollow" }
   | { type: "showStops"; stops: StopFeature[] }
   | { type: "clearStops" }
@@ -214,6 +216,18 @@ export function follow(point: LatLon, heading: number | null = null): ToPage {
   return {
     type: "follow",
     lngLat: toLngLat(point),
+    heading: heading === null ? null : Math.round(heading) % 360,
+  };
+}
+
+/**
+ * Where the phone points while «Compass» is open (TASK-431, ADR-0359),
+ * degrees clockwise from north: the runner's arrow turns there, standing
+ * still too, and opens its cone. Null off that page: the cone closes.
+ */
+export function face(heading: number | null): ToPage {
+  return {
+    type: "face",
     heading: heading === null ? null : Math.round(heading) % 360,
   };
 }

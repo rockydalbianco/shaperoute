@@ -67,6 +67,7 @@ import {
   RunStrip,
   useRunNumbers,
 } from "./RunPanel";
+import { RunPageGlyph } from "./RunPageGlyphs";
 
 /**
  * A run in progress, with a route or without one (TASK-169, ADR-0137):
@@ -416,7 +417,9 @@ const PAGES: readonly { page: RunPage; title: string }[] = [
 /**
  * The three pages by name, in the order they lie in: touched, or swiped to.
  * Three buttons as wide as the card and taller than the smallest tap
- * (TASK-186): they are hit while running, without looking for them.
+ * (TASK-186): they are hit while running, without looking for them. Each
+ * has its drawing over its name (TASK-431, ADR-0359); the page open is
+ * lighter, its drawing blue (`you`) and a blue line under it.
  */
 function PageTabs({
   page,
@@ -438,9 +441,17 @@ function PageTabs({
             accessibilityState={{ selected }}
             accessibilityLabel={t(each.title)}
           >
+            <RunPageGlyph
+              page={each.page}
+              tint={selected ? color.you : color.textMuted}
+            />
             <Text style={[styles.tabText, selected && styles.tabTextSelected]}>
               {t(each.title)}
             </Text>
+            <View
+              testID={selected ? "run-page-tab-line" : undefined}
+              style={[styles.tabLine, selected && styles.tabLineSelected]}
+            />
           </Pressable>
         );
       })}
@@ -982,7 +993,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: space.xs,
     gap: space.xs,
-    borderRadius: radius.pill,
+    borderRadius: radius.lg,
     backgroundColor: color.background,
   },
   tab: {
@@ -990,23 +1001,34 @@ const styles = StyleSheet.create({
     minHeight: PAGE_TAB_HEIGHT,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: "transparent",
+    gap: space.xs / 2,
+    paddingTop: space.xs,
+    borderRadius: radius.md,
+    overflow: "hidden",
   },
-  // The page on screen is told by a lighter surface, not by yellow: that is
-  // the route's.
+  // The page on screen is told by a lighter surface and the runner's blue,
+  // not by yellow: that is the route's (TASK-431).
   tabSelected: {
     backgroundColor: color.surfaceRaised,
-    borderColor: color.borderStrong,
   },
   tabText: {
     color: color.textMuted,
-    fontSize: fontSize.input,
+    fontSize: fontSize.small,
     fontWeight: fontWeight.bold,
   },
   tabTextSelected: {
     color: color.text,
+  },
+  // A line under the page open, as wide as half the tab.
+  tabLine: {
+    width: "50%",
+    height: 3,
+    borderRadius: 2,
+    marginTop: space.xs / 2,
+    backgroundColor: "transparent",
+  },
+  tabLineSelected: {
+    backgroundColor: color.you,
   },
   // What is left between the turn and the buttons: the numbers scroll in it.
   numbers: {

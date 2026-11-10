@@ -187,15 +187,25 @@ export const LIFT_DASH = onFoot.dash;
 export const POSITION_COLOR = color.text;
 
 /**
- * The runner while running (TASK-164): an arrow in the marker's colour,
- * turned where the runner is heading, on a faint disc of the same colour;
- * the dark edge keeps it readable over the yellow of the route.
+ * The runner while running (TASK-164; drawn anew by TASK-431, ADR-0359,
+ * the user's variant «B»): a large arrow in the marker's colour, turned
+ * where the runner is heading, in a blue ring (`you`); the dark edge keeps
+ * it readable over the yellow of the route. On «Compass» a blue cone,
+ * fading outwards, opens ahead of it: where the phone points. The box is
+ * the cone's, the arrow at its centre; it lets the fingers through.
  */
-export const HEADING_ARROW_SIZE = 36;
+export const HEADING_ARROW_SIZE = 160;
+/** The class of the cone in the arrow, shown on «Compass» only. */
+export const FACING_CONE_CLASS = "facing-cone";
 export const HEADING_ARROW_SVG =
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${HEADING_ARROW_SIZE}" height="${HEADING_ARROW_SIZE}" viewBox="0 0 36 36">` +
-  `<circle cx="18" cy="18" r="17" fill="${POSITION_COLOR}" fill-opacity="0.18"/>` +
-  `<path d="M18 5 L27.5 28 L18 23 L8.5 28 Z" fill="${POSITION_COLOR}" stroke="${color.map.background}" stroke-width="1.5" stroke-linejoin="round"/>` +
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${HEADING_ARROW_SIZE}" height="${HEADING_ARROW_SIZE}" viewBox="0 0 160 160">` +
+  `<defs><radialGradient id="facing-fade" cx="80" cy="80" r="78" gradientUnits="userSpaceOnUse">` +
+  `<stop offset="0.25" stop-color="${color.you}" stop-opacity="0.6"/>` +
+  `<stop offset="1" stop-color="${color.you}" stop-opacity="0"/>` +
+  `</radialGradient></defs>` +
+  `<path class="${FACING_CONE_CLASS}" display="none" d="M80 80 L52 8 A77 77 0 0 1 108 8 Z" fill="url(#facing-fade)"/>` +
+  `<circle cx="80" cy="80" r="27" fill="${color.you}" fill-opacity="0.22" stroke="${color.you}" stroke-width="2.5"/>` +
+  `<path d="M80 56 L96 98 L80 89 L64 98 Z" fill="${POSITION_COLOR}" stroke="${color.map.background}" stroke-width="2" stroke-linejoin="round"/>` +
   `</svg>`;
 
 /**
@@ -280,6 +290,10 @@ export function buildMapPage(language: Language = appLanguage()): string {
     var styleLoaded = false;
     var marker = null;
     var arrow = null;
+    var arrowElement = null;
+    // Where the phone points, on «Compass» (TASK-431): the arrow turns there
+    // and opens its cone. Null off that page.
+    var facing = null;
     var startHere = null;
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
@@ -601,6 +615,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       if (arrow) {
         arrow.remove();
         arrow = null;
+        arrowElement = null;
       }
       if (marker) {
         marker.setLngLat(lngLat);
@@ -620,15 +635,33 @@ export function buildMapPage(language: Language = appLanguage()): string {
         element.style.width = "${HEADING_ARROW_SIZE}px";
         element.style.height = "${HEADING_ARROW_SIZE}px";
         element.style.lineHeight = "0";
+        // The cone is wide: a finger on it moves the map, not the arrow.
+        element.style.pointerEvents = "none";
         element.innerHTML = ${toScript(HEADING_ARROW_SVG)};
+        arrowElement = element;
         // Turned with the map: north of the arrow is north of the map.
         arrow = new maplibregl.Marker({ element: element, rotationAlignment: "map" })
           .setLngLat(lngLat)
           .addTo(map);
       }
       arrow.setLngLat(lngLat);
+      // On «Compass» where the phone points, as the map (TASK-431).
+      if (facing !== null) {
+        heading = facing;
+      }
       if (typeof heading === "number") {
         arrow.setRotation(heading);
+      }
+      showCone();
+    }
+    // The cone ahead of the arrow: open while the phone's direction is told.
+    function showCone() {
+      var cone =
+        arrowElement && arrowElement.querySelector
+          ? arrowElement.querySelector(".${FACING_CONE_CLASS}")
+          : null;
+      if (cone) {
+        cone.style.display = facing !== null ? "inline" : "none";
       }
     }
     function setStartHere(lngLat) {
@@ -1883,8 +1916,8 @@ export function buildMapPage(language: Language = appLanguage()): string {
           frame();
         } else if (message.type === "follow") {
           // An arrow once the heading is known; it stays one when a fix
-          // comes without it.
-          if (typeof message.heading === "number" || arrow) {
+          // comes without it. On «Compass» the phone's direction is one.
+          if (typeof message.heading === "number" || arrow || facing !== null) {
             showArrow(message.lngLat, message.heading);
           } else {
             showPin(message.lngLat);
@@ -1897,8 +1930,20 @@ export function buildMapPage(language: Language = appLanguage()): string {
             bearing: wanted,
             duration: 500,
           });
+        } else if (message.type === "face") {
+          // Where the phone points, on «Compass» (TASK-431): the arrow
+          // turns there with the map, standing still too, and opens its
+          // cone; null closes it, and the next fix turns the arrow as the
+          // line run.
+          facing = typeof message.heading === "number" ? message.heading : null;
+          if (arrow) {
+            showArrow(arrow.getLngLat(), null);
+          } else if (marker && following && facing !== null) {
+            showArrow(marker.getLngLat(), null);
+          }
         } else if (message.type === "stopFollow") {
           following = false;
+          facing = null;
           if (arrow) {
             showPin(arrow.getLngLat());
           }

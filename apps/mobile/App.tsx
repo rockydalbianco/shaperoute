@@ -1459,6 +1459,8 @@ function MuW() {
                   : null
             }
             heading={heading}
+            // On «Compass», the arrow faces where the map turned (TASK-431).
+            facing={mapTurn.facing}
             // Running the route: the part run solid, the part left dashed
             // and blinking (TASK-224).
             progress={

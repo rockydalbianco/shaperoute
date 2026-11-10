@@ -7,7 +7,11 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  initialWindowMetrics,
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { dayLabel } from "../activities/activityText";
 import { isOnSnow, isTrackless } from "../activities/snow";
@@ -57,6 +61,18 @@ type Props = {
  * it, as on the card.
  */
 export function PostPage({ post, onClose, onMap }: Props) {
+  return (
+    <Modal visible animationType="slide" onRequestClose={onClose} testID="post-page">
+      {/* Its own edges, as «Heart rate zones» has them (TASK-366): inside a
+          Modal the app's are none, and «‹» sat under the clock (TASK-410). */}
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <Page post={post} onClose={onClose} onMap={onMap} />
+      </SafeAreaProvider>
+    </Modal>
+  );
+}
+
+function Page({ post, onClose, onMap }: Props) {
   const units = useUnits();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -73,8 +89,15 @@ export function PostPage({ post, onClose, onMap }: Props) {
   const description = saved === null ? drawing.description : saved.description;
   const pool = isPoolLine(drawing.activity, post.line);
   const lined = post.line.length >= 2 && !isTrackless(drawing.activity) && !pool;
+  const run = lined && !isOnSnow(drawing.activity) ? editRun(post.line) : undefined;
+  // The page goes first: left open, it stayed over the map (TASK-410).
   const onEditRun =
-    lined && !isOnSnow(drawing.activity) ? editRun(post.line) : undefined;
+    run === undefined
+      ? undefined
+      : () => {
+          onClose();
+          run();
+        };
   const city = cityName(post.city);
   const where = [
     city === "" ? null : city,
@@ -96,91 +119,85 @@ export function PostPage({ post, onClose, onMap }: Props) {
     />
   );
   return (
-    <Modal visible animationType="slide" onRequestClose={onClose} testID="post-page">
-      <View style={[styles.page, { paddingTop: insets.top }]}>
-        <View style={styles.top}>
-          <Tap
-            style={styles.back}
-            onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel={t("Back")}
-            testID="post-back"
-          >
-            <Text style={styles.backMark} accessible={false}>
-              ‹
+    <View style={[styles.page, { paddingTop: insets.top }]}>
+      <View style={styles.top}>
+        <Tap
+          style={styles.back}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t("Back")}
+          testID="post-back"
+        >
+          <Text style={styles.backMark} accessible={false}>
+            ‹
+          </Text>
+        </Tap>
+        {!mine && apiUrl !== null && state.status === "signedIn" && (
+          <ReportMenu
+            apiUrl={apiUrl}
+            token={state.session.token}
+            target={{ kind: "drawing", id: drawing.id }}
+            person={drawing.author}
+            onSessionEnded={account.sessionEnded}
+          />
+        )}
+      </View>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: SHEET_ROOM + insets.bottom }}
+        showsVerticalScrollIndicator={false}
+        testID="post-scroll"
+      >
+        <View style={styles.who}>
+          {/* The picture comes with TASK-355 B: the letter until then. */}
+          <Avatar name={drawing.author.username} size={AUTHOR_SIDE} />
+          <View style={styles.names}>
+            <Text style={styles.user}>{drawing.author.username}</Text>
+            <Text style={styles.where} numberOfLines={1}>
+              {where}
             </Text>
-          </Tap>
-          {!mine && apiUrl !== null && state.status === "signedIn" && (
-            <ReportMenu
-              apiUrl={apiUrl}
-              token={state.session.token}
-              target={{ kind: "drawing", id: drawing.id }}
-              person={drawing.author}
-              onSessionEnded={account.sessionEnded}
-            />
+          </View>
+        </View>
+        {lined &&
+          (onMap === undefined ? (
+            map
+          ) : (
+            // A tap opens it on the map, as from the card before the page:
+            // «Start» on its track, «Export GPX», «Send to a friend».
+            <Tap
+              onPress={onMap}
+              accessibilityRole="button"
+              accessibilityLabel={title}
+              accessibilityHint={t("Opens the route on the map")}
+              testID="post-map"
+            >
+              {map}
+            </Tap>
+          ))}
+        <View style={styles.words}>
+          <Text style={styles.title} accessibilityRole="header">
+            {title}
+          </Text>
+          {description != null && description !== "" && (
+            <Text style={styles.description}>{description}</Text>
           )}
         </View>
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: SHEET_ROOM + insets.bottom }}
-          showsVerticalScrollIndicator={false}
-          testID="post-scroll"
-        >
-          <View style={styles.who}>
-            {/* The picture comes with TASK-355 B: the letter until then. */}
-            <Avatar name={drawing.author.username} size={AUTHOR_SIDE} />
-            <View style={styles.names}>
-              <Text style={styles.user}>{drawing.author.username}</Text>
-              <Text style={styles.where} numberOfLines={1}>
-                {where}
-              </Text>
-            </View>
-          </View>
-          {lined &&
-            (onMap === undefined ? (
-              map
-            ) : (
-              // A tap opens it on the map, as from the card before the page:
-              // «Start» on its track, «Export GPX», «Send to a friend».
-              <Tap
-                onPress={onMap}
-                accessibilityRole="button"
-                accessibilityLabel={title}
-                accessibilityHint={t("Opens the route on the map")}
-                testID="post-map"
-              >
-                {map}
-              </Tap>
-            ))}
-          <View style={styles.words}>
-            <Text style={styles.title} accessibilityRole="header">
-              {title}
+        {sections.map((section) => (
+          <View key={section.kind} style={styles.card} testID={`post-${section.kind}`}>
+            <Text style={styles.cardTitle} accessibilityRole="header">
+              {section.title}
             </Text>
-            {description != null && description !== "" && (
-              <Text style={styles.description}>{description}</Text>
-            )}
+            <SectionBody section={section} />
           </View>
-          {sections.map((section) => (
-            <View
-              key={section.kind}
-              style={styles.card}
-              testID={`post-${section.kind}`}
-            >
-              <Text style={styles.cardTitle} accessibilityRole="header">
-                {section.title}
-              </Text>
-              <SectionBody section={section} />
-            </View>
-          ))}
-        </ScrollView>
-        <PostSheet
-          post={post}
-          mine={mine}
-          onEditRun={onEditRun}
-          insetBottom={insets.bottom}
-          settings={mine ? <PostSettings post={post} onSaved={setSaved} /> : undefined}
-        />
-      </View>
-    </Modal>
+        ))}
+      </ScrollView>
+      <PostSheet
+        post={post}
+        mine={mine}
+        onEditRun={onEditRun}
+        insetBottom={insets.bottom}
+        settings={mine ? <PostSettings post={post} onSaved={setSaved} /> : undefined}
+      />
+    </View>
   );
 }
 

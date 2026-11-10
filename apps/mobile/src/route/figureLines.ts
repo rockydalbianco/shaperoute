@@ -82,12 +82,15 @@ export function trackInPlace(points: readonly LatLon[]): TrackInPlace {
   );
   const units = atCentre.map(([x, y]): [number, number] => [x / unitM, y / unitM]);
   const closed: FigureLines = { outline: closedOutline(units), details: [] };
-  if (endsAway(units) && drawingOf(closed) === null) {
+  if (drawingOf(closed) === null) {
+    // A track that ends at its start and crosses itself there — an out and
+    // back on one street, a figure eight — is a loop too (TASK-410):
+    // without it «Edit & run» had nothing to put on the map.
     const loop = loopLines(units);
     if (loop !== null && drawingOf(loop) !== null) {
       return { lines: loop, centre, unitM };
     }
-    const open = openLines(units);
+    const open = endsAway(units) ? openLines(units) : null;
     if (open !== null) {
       return { lines: open, centre, unitM };
     }

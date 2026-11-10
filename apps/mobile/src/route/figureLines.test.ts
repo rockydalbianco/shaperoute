@@ -238,6 +238,46 @@ test("a track that crosses itself is run once with the way back, not twice (TASK
   expect(askedFor(crossing) / once).toBeLessThan(1.01);
 });
 
+test.each([
+  [
+    // The way back drifts across the way out, as GPS on one street does.
+    "an out and back on one street",
+    [
+      [0, 0],
+      [1000, 30],
+      [2000, 0],
+      [1500, 30],
+      [500, 0],
+      [0, 0],
+    ] as [number, number][],
+    2 * Math.hypot(1000, 30) + Math.hypot(500, 30) + Math.hypot(1000, 30) + 500,
+  ],
+  [
+    "a figure eight",
+    [
+      [0, 0],
+      [1000, 1000],
+      [1000, 0],
+      [0, 1000],
+      [0, 0],
+    ] as [number, number][],
+    2000 + 2 * Math.hypot(1000, 1000),
+  ],
+])(
+  "a track that ends at its start and crosses itself there is a loop, run once (TASK-410): %s",
+  (_what, xy, metres) => {
+    const track = trackOf(xy);
+    // Closed, it makes no drawing: «Edit & run» had nothing to put on the map.
+    const { lines } = trackInPlace(track);
+    expect(drawingOf(lines)).not.toBeNull();
+    expect(isOpenLine(lines.outline, lines.details)).toBe(true);
+    const detail = lines.details[0];
+    expect(detail[detail.length - 1]).toEqual(detail[0]);
+    expect(askedFor(track) / metres).toBeGreaterThan(0.97);
+    expect(askedFor(track) / metres).toBeLessThan(1.03);
+  },
+);
+
 test("a track that ends near its start is still one closed outline", () => {
   expect(isOpenLine(trackInPlace(RING).lines.outline, [])).toBe(false);
   expect(trackInPlace(RING).lines.details).toEqual([]);

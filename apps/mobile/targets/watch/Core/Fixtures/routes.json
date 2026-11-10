@@ -146,7 +146,8 @@
         "anywhere": false,
         "ride": false,
         "paddle": false,
-        "announceM": 50
+        "announceM": 50,
+        "similarity": 0.91
       }
     },
     {
@@ -174,7 +175,8 @@
         "anywhere": false,
         "ride": true,
         "paddle": false,
-        "announceM": 100
+        "announceM": 100,
+        "similarity": 0.9
       }
     },
     {
@@ -582,7 +584,8 @@
         "anywhere": true,
         "ride": false,
         "paddle": false,
-        "announceM": 50
+        "announceM": 50,
+        "similarity": null
       }
     }
   ]

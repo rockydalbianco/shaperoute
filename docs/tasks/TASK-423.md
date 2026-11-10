@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — documenti (#982) e parte A (#984) in `main`; prossima B
+**Stato**: In corso — documenti, A (#984), B (#1005) e privacy (#1007) in `main`; C nella #1018
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,
@@ -194,6 +194,22 @@ E  services/api/migrations/00NN_game_prizes.sql (nuovo),
   dell'utente insieme al server. Sì dell'utente al server di A+B e al
   backfill («PROCEDI», «SI PROCEDI»), dopo la #1005 e il via del
   Coordinatore; non vale per l'OTA né per C–E.
+
+- 2026-11-10 — Parte B in `main` (#1005, 9cf5576b): `BEST_DISTANCES_M` su
+  400, 1000, 1609, 3000, 5000, 10000, 15000, 21097, 30000, 42195 e 50000 m,
+  `RULES_VERSION` 3, `PACE_DISTANCES_M` = `BEST_DISTANCES_M`. Fuori dalla
+  lista, con l'ok del Coordinatore: `test_walk_game`, `test_hiking_api` e
+  `test_inline_skating_api` leggono `RULES_VERSION >= 2`. Privacy di B e C
+  in `main` (#1007, 3d9306c3).
+- 2026-11-10 — Parte C nella #1018: `game_personal.py` (puro),
+  `game_personal_api.py` (`GET /game/personal`, le medaglie nel
+  salvataggio), migrazione 0065 (`game_runs.utc_offset_min`,
+  `game_personal`), `utc_offset_min` facoltativo in `PUT /me/activities`,
+  squadre fino a 20 pezzi e 30 giorni. Fuori dalla lista, con l'ok del
+  Coordinatore: `game_backfill.py` (tiene gli offset quando riscrive
+  `game_runs`), `test_activities.py` e `test_imported_runs.py` (il contratto
+  delle fixture senza `utc_offset_min`). La 0065 va nel passo unico sul
+  server solo se la #1018 è in `main` prima che parta.
 
 ## Esito
 

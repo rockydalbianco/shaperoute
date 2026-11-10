@@ -1,7 +1,9 @@
 # TASK-411 — La palestra per tutti i giorni: griglia, guida, schede e calendario
 
-**Stato**: In lavorazione · proposta in `main` (#928); parte A in `main`
-(#930); ogni parte dopo la sua lista dei file al Coordinatore
+**Stato**: Done · 2026-11-10 · A–F in `main` (#930, #941, #955, #962,
+#964, #986); server a 30b7a285 con la 0058 e il calendario. Restano, nel giro
+unico del Coordinatore col sì dell'utente: la copia del sito con la privacy
+(F.14) e l'OTA di produzione
 **Fase**: 5 · **Branch**: `feat/TASK-411-a-…` per il codice
 **Dipende da**: TASK-385 (la palestra: B, E e F in `main`), la #927 (la
 schermata dell'allenamento si apre da «Draw»)
@@ -289,3 +291,10 @@ l'italiano approvato dall'utente, le altre lingue dicono le stesse cose.
   privacy ripubblicato, ogni passo col suo sì. Il sì al server l'utente l'ha
   dato al Coordinatore («Sì, ok server»): la migrazione delle schede è la
   `0058_gym_plans.sql`.
+- 2026-11-10: **server fatto** dall'utente con le righe ssh (copia
+  `shaperoute-2026-11-08T2035Z.dump`, immagine di ritorno
+  `shaperoute-api:before-task411` = 8e898de5, checkout 30b7a285): in cima
+  `0058_gym_plans`, health 200, `/me/gym-plans` e `/me/gym-calendar` 401
+  (ci sono e vogliono l'account). Il Coordinatore mette la palestra
+  nell'unico OTA di produzione del giorno e la privacy nella copia del sito
+  F.14 dello stesso giro, col sì dell'utente. Task chiuso.

@@ -4,10 +4,11 @@ import WatchCore
 import WatchKit
 
 /// A run along a route on the wrist alone (TASK-370 part B3b, ADR-0314):
-/// the watch's GPS, WatchCore's Navigator and Pen at each fix, and what
-/// they tell shown (GuideDisplay) and felt, with watchOS's own navigation
-/// vibrations (the user's choice «Come Apple Maps»). The workout keeps the
-/// app running with the screen down; the track for the phone is part B3c.
+/// WatchCore's Navigator and Pen at each fix of the watch's GPS, which the
+/// TrackRecorder gets (part B3c), and what they tell shown (GuideDisplay)
+/// and felt, with watchOS's own navigation vibrations (the user's choice
+/// «Come Apple Maps»). The workout keeps the app running with the screen
+/// down.
 @MainActor
 final class GuideSession: NSObject, ObservableObject {
     /// The route followed; nil on a run without one.
@@ -18,17 +19,11 @@ final class GuideSession: NSObject, ObservableObject {
 
     private var navigation: Navigation?
     private var pen: Pen?
-    private let location = CLLocationManager()
 
-    override init() {
-        super.init()
-        location.delegate = self
-        location.desiredAccuracy = kCLLocationAccuracyBest
-        location.distanceFilter = kCLDistanceFilterNone
-    }
+    /// Whether the end of the route was reached: the track says so.
+    var arrived: Bool { navigation?.arrived == true }
 
-    /// A run along `route` about to start: the guidance from its start, and
-    /// the location asked for now, during the countdown.
+    /// A run along `route` about to start: the guidance from its start.
     func begin(_ route: WatchRoute) {
         let (navigation, _, pen) = route.start()
         self.route = route
@@ -36,21 +31,10 @@ final class GuideSession: NSObject, ObservableObject {
         self.pen = pen
         position = nil
         screen = GuideDisplay.screen(navigation, pen: pen, headingDeg: nil)
-        location.activityType = route.ride ? .otherNavigation : .fitness
-        location.requestWhenInUseAuthorization()
     }
 
-    /// The countdown ended: the fixes start.
-    func run() {
-        guard route != nil else {
-            return
-        }
-        location.startUpdatingLocation()
-    }
-
-    /// The workout ended: no more fixes, no route.
+    /// The workout ended: no route.
     func stop() {
-        location.stopUpdatingLocation()
         route = nil
         navigation = nil
         pen = nil
@@ -58,7 +42,8 @@ final class GuideSession: NSObject, ObservableObject {
         position = nil
     }
 
-    private func follow(_ fix: CLLocation) {
+    /// A fix of the watch's GPS, from the TrackRecorder.
+    func follow(_ fix: CLLocation) {
         guard var navigation, fix.horizontalAccuracy >= 0 else {
             return
         }
@@ -100,16 +85,4 @@ final class GuideSession: NSObject, ObservableObject {
             return .click
         }
     }
-}
-
-extension GuideSession: CLLocationManagerDelegate {
-    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        Task { @MainActor in
-            for fix in locations {
-                self.follow(fix)
-            }
-        }
-    }
-
-    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {}
 }

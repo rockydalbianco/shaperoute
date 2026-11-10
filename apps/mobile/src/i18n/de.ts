@@ -1746,6 +1746,11 @@ export const DE: Table = {
   "Line in 2D": "Linie in 2D",
   // src/share/VideoPreview.tsx (TASK-408 C2c, choice 13; «Resume» and «Pause» were there)
   "Video preview": "Videovorschau",
+  // src/share/DescribeVideo.tsx (TASK-408 D, texts of choice 9)
+  "Describe your video": "Beschreibe dein Video",
+  "a horse at night, fireworks at the end": "ein Pferd bei Nacht, Feuerwerk am Ende",
+  "An animal, colours, emoji, the ending. Read on your phone.":
+    "Ein Tier, Farben, Emoji, das Ende. Auf dem Handy gelesen.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "MuW-Wettbewerb",

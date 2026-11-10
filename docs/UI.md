@@ -2943,8 +2943,11 @@ YOU»: la linea del risultato) e la scheda di un percorso a tema, dopo
 «Export GPX» e prima di «Back to Explore» (i luoghi del tema non restano).
 Quello che sopra dice «non c'è mai per una forma del catalogo, né per una
 parola» e «nel mezzo della partenza di "Draw"» per le schede non vale più.
-Una traccia che finisce lontano dalla partenza resta una linea aperta, come
-la prima linea disegnata sulla mappa (TASK-331). Il tasto non c'è per un
+Una traccia che finisce lontano dalla partenza si chiude con un lato dritto
+fino alla partenza (TASK-425, ADR-0353): il percorso la fa una volta e
+torna. Solo se così chiusa non fa un disegno (si incrocia da sola) resta una
+linea aperta, come la prima linea disegnata sulla mappa (TASK-331), e il
+percorso la fa andata e ritorno. Il tasto non c'è per un
 post di sole foto e sotto il risultato di «Draw» (TASK-340). Dalla parte
 B c'è anche sull'acqua: con lo sport «Paddle» «Draw route» chiede il disegno
 in canoa, e la canoa lo pagaia dove ci sta vicino alla partenza, non

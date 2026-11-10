@@ -133,9 +133,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
   TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
-  parte 0, A1 (server, migrazione 0063) e A2 (pagina `site/live/`, #1010)
-  in `main`; server e copia del sito (F.14) col sì nell'aggiornamento
-  unico; prossima B1 (app), poi B2 e C. File: — · `tasks/TASK-424.md`
+  0, A1 (server), A2 (`site/live/`) e B1 (app, sport col GPS, #1025) in
+  `main`; B1 esce con B2 (piscina e palestra) in un OTA a parte, dopo i sì
+  su App Privacy «Health» e Data safety; poi C. File: — ·
+  `tasks/TASK-424.md`
 - **TASK-420 — Tutte le forme in «Explore»** (riaperto il 2026-11-10 come
   parte D, scelta dell'utente «A, griglia per città»; ADR-0347 precisazione
   B) · app in #1022: «Explore» lista unica, «NEAR YOU» poi «FARTHER AWAY»

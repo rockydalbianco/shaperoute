@@ -108,7 +108,8 @@
       [
         "@bacons/apple-targets",
         {
-          "match": "watch"
+          "match": "watch",
+          "appleTeamId": "D6WUSJZKVZ"
         }
       ]
     ],

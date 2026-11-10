@@ -508,6 +508,7 @@ lasciando le righe d'indice.
 - ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano · 2026-11-10 · Accettata
 - ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni · 2026-11-10 · Accettata
 - ADR-0340, correzione — La pagina del post: margini propri nel Modal, chiusa prima di «Edit & run», il tasto solo dove c'è un disegno · 2026-11-10 · Attiva
+- ADR-0356, precisazione — Anche il percorso chiuso che si incrocia diventa un anello alla partenza: «Edit the drawing» su ogni percorso di «Explore» · 2026-11-10 · Attiva
 
 ## Voci nuove
 
@@ -2270,3 +2271,45 @@ dei messaggi resta, il Feed esce dalla barra), scartata con la domanda 1.
 **Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` ferma; motore
 non toccato. Le parti A–E si elencano nel task file, ognuna con la sua
 lista al Coordinatore; una parte che tocca `src/ski/**` lo concorda prima.
+
+## ADR-0356, precisazione — Anche il percorso chiuso che si incrocia diventa un anello alla partenza: «Edit the drawing» su ogni percorso di «Explore»
+
+**Stato**: Attiva · 2026-11-10 · TASK-432 (#1079). Numero dal Coordinatore;
+nessuna domanda nuova all'utente: la figura sulla mappa cambia come con
+ADR-0356, già scelto dall'utente (Coordinatore, 2026-11-10). Deciso
+dall'agente su delega dell'utente.
+
+**Contesto**: l'utente, provando l'OTA di produzione del 2026-11-10: «non mi
+lascia modificare il disegno in explore». La scheda mostra «Edit the
+drawing» solo se la linea del percorso fa un disegno (`cardTrack` in
+`App.tsx`). Un percorso che torna alla partenza era un solo contorno chiuso;
+se si incrocia da solo (parole, farfalle, smiley) `outlineOf` non ne fa uno,
+e il pulsante spariva. ADR-0356 dava l'anello solo alle tracce che finiscono
+lontano dalla partenza. 334 percorsi del catalogo su 575 erano senza
+pulsante, già prima di ADR-0353: il problema c'era da ADR-0313.
+
+**Decisione**:
+
+1. `trackInPlace` (`route/figureLines.ts`) manda come anello alla partenza
+   (punto 1 di ADR-0356) **ogni** traccia il cui contorno chiuso non fa un
+   disegno, anche quella che finisce vicino alla partenza.
+2. Se l'anello non fa un disegno, vale `firstLineOf` sulla linea intera: per
+   un percorso chiuso è il contorno che trova su tutti i punti (l'anello
+   più grande, come per le altre tracce chiuse), per una traccia aperta la
+   linea aperta di prima.
+3. Un test legge tutto `catalog/` (`exploreCatalogEdit.test.ts`): ogni
+   percorso deve avere un disegno e non chiedere più della propria
+   lunghezza.
+
+**Alternative**:
+
+- **L'anello per le tracce chiuse senza il punto 2** (la prima versione
+  della correzione di TASK-410, #1078): lasciava fuori 23 percorsi del
+  catalogo (552 su 575), quelli il cui contorno di 100 punti si incrocia ma
+  che su tutti i punti ne hanno uno; tolta dalla #1078.
+
+**Conseguenze**: sul catalogo di allora 575 percorsi su 575 col pulsante
+(264 contorni, 311 anelli), dopo il quarto giro di TASK-419 597 su 597.
+Gli anelli chiedono 0,91–1,00 volte il percorso (mediana 0,97), mai andata
+e ritorno. Sulla mappa la figura si vede intera con l'anellino alla
+partenza. Solo JavaScript nell'app: esce con il prossimo OTA di produzione.

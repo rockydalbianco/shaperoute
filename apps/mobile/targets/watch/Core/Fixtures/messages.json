@@ -177,7 +177,8 @@
           "anywhere": false,
           "ride": false,
           "paddle": false,
-          "announceM": 50
+          "announceM": 50,
+          "similarity": 0.93
         },
         "favorite": false,
         "at": 1762358500000
@@ -222,7 +223,8 @@
           "anywhere": false,
           "ride": true,
           "paddle": false,
-          "announceM": 100
+          "announceM": 100,
+          "similarity": null
         },
         "favorite": true,
         "at": 1762358500000
@@ -244,6 +246,92 @@
         "type": "routes",
         "favorites": [],
         "at": 1762358520000
+      }
+    },
+    {
+      "name": "a route from a phone older than B3c, without the similarity",
+      "json": {
+        "v": 1,
+        "type": "route",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "activity": "running",
+          "distanceM": 5100,
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291]
+          ],
+          "directions": [
+            {
+              "distance_m": 0,
+              "turn": "depart",
+              "angle_deg": 0,
+              "joined": false,
+              "street": "Via Roma",
+              "branches": 3
+            },
+            {
+              "distance_m": 111.2,
+              "turn": "right",
+              "angle_deg": 90,
+              "joined": false,
+              "street": null,
+              "branches": 4
+            }
+          ],
+          "walks": [],
+          "word": null,
+          "anywhere": false,
+          "ride": false,
+          "paddle": false,
+          "announceM": 50
+        },
+        "favorite": false,
+        "at": 1762358530000
+      },
+      "encoded": {
+        "v": 1,
+        "type": "route",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "activity": "running",
+          "distanceM": 5100,
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291]
+          ],
+          "directions": [
+            {
+              "distance_m": 0,
+              "turn": "depart",
+              "angle_deg": 0,
+              "joined": false,
+              "street": "Via Roma",
+              "branches": 3
+            },
+            {
+              "distance_m": 111.2,
+              "turn": "right",
+              "angle_deg": 90,
+              "joined": false,
+              "street": null,
+              "branches": 4
+            }
+          ],
+          "walks": [],
+          "word": null,
+          "anywhere": false,
+          "ride": false,
+          "paddle": false,
+          "announceM": 50,
+          "similarity": null
+        },
+        "favorite": false,
+        "at": 1762358530000
       }
     }
   ],
@@ -655,6 +743,52 @@
         "v": 1,
         "type": "routes",
         "favorites": ["a1", ""],
+        "at": 1
+      },
+      "error": "invalidField"
+    },
+    {
+      "name": "a route whose similarity is not a number",
+      "json": {
+        "v": 1,
+        "type": "route",
+        "route": {
+          "key": "a1b2c3",
+          "title": "Star",
+          "activity": "running",
+          "distanceM": 5100,
+          "points": [
+            [46.01, 11.29],
+            [46.011, 11.29],
+            [46.011, 11.291]
+          ],
+          "directions": [
+            {
+              "distance_m": 0,
+              "turn": "depart",
+              "angle_deg": 0,
+              "joined": false,
+              "street": "Via Roma",
+              "branches": 3
+            },
+            {
+              "distance_m": 111.2,
+              "turn": "right",
+              "angle_deg": 90,
+              "joined": false,
+              "street": null,
+              "branches": 4
+            }
+          ],
+          "walks": [],
+          "word": null,
+          "anywhere": false,
+          "ride": false,
+          "paddle": false,
+          "announceM": 50,
+          "similarity": "high"
+        },
+        "favorite": false,
         "at": 1
       },
       "error": "invalidField"

@@ -22,6 +22,7 @@ import { apiError, type MemorySecureStore } from "../src/account/testing";
 import { activityKey } from "../src/activities/activityKey";
 import { SIGN_IN_TO_KEEP_RUNS } from "../src/activities/activitiesDoor";
 import { startedLabel } from "../src/activities/activityText";
+import { utcOffsetAt } from "../src/api/activities";
 import {
   loadOutbox,
   MAX_WAITING,
@@ -35,6 +36,11 @@ import {
   type SavedRun,
   saveRun,
 } from "../src/navigation/trackStore";
+
+/** A run as sent: with the phone's offset from UTC at its first fix (TASK-423). */
+const OFFSET = {
+  utc_offset_min: utcOffsetAt(activityRequest.track[0].time_ms),
+};
 
 // Every test renders the whole app, and the first one loads it cold: on a
 // busy machine that alone can take the five seconds a test has.
@@ -542,7 +548,11 @@ test("«Save» keeps the run: the fixes and the route, never the app's numbers",
   const [, init] = calls("PUT", `/me/activities/${KEY}`)[0];
   expect(init?.headers).toMatchObject({ Authorization: `Bearer ${session.token}` });
   // What its route draws went with the app that drew it: the line alone.
-  expect(JSON.parse(String(init?.body))).toEqual({ ...activityRequest, shape: null });
+  expect(JSON.parse(String(init?.body))).toEqual({
+    ...activityRequest,
+    shape: null,
+    ...OFFSET,
+  });
   // Saved: nothing waits on the phone, and «Profile» counts it.
   await waitFor(() => expect(loadOutbox()).toEqual([]));
   expect(loadRun()).toBeNull();
@@ -571,6 +581,7 @@ test("a run without a route is saved too, with no route in it", async () => {
     points: null,
     similarity: null,
     shape: null,
+    ...OFFSET,
   });
   expect(calls("POST", "/track-scores")).toHaveLength(0);
   await waitFor(() => expect(loadOutbox()).toEqual([]));
@@ -731,7 +742,8 @@ test("a run the API will never take stays on the phone, with the reason and «Di
   });
   await openOnRun(FREE_ENDED);
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
-  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
+  // Refused with the phone's offset, then once more without it (TASK-423).
+  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(2));
   await waitFor(() => expect(loadOutbox()[0]?.refused?.message).toBe(REASON));
 
   await screen.findByText("Starting from your position.");
@@ -743,7 +755,7 @@ test("a run the API will never take stays on the phone, with the reason and «Di
   expect(screen.queryByText(/waiting for a connection/)).toBeNull();
   // The page asks its list again; the run is not sent again.
   await waitFor(() => expect(calls("GET", "/me/activities").length).toBeGreaterThan(1));
-  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1);
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(2);
 
   await fireEvent.press(screen.getByRole("button", { name: /^Discard the run of / }));
   await fireEvent.press(screen.getByRole("button", { name: "Keep it" }));

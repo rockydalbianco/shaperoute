@@ -162,7 +162,7 @@ D  (lista data al Coordinatore il 2026-11-10, out/TASK-423/LISTA-D.md)
    giorni) e test/gameTeams.test.ts; i18n de, es, fr, it. Test aggiornati:
    PlayScreen, PlayScreenTabs, ChallengesTab, NewChallenge, goalText,
    gameCatalogCompat, api/activities, activitiesTurn, activityHeights,
-   activitiesDoorQueue
+   activitiesDoorQueue, __tests__/AppActivities e __tests__/AppPlay
 E  services/api/migrations/00NN_game_prizes.sql (nuovo),
    shaperoute_api/game_prizes.py (nuovo), game.py, profiles.py, push.py;
    apps/mobile/src/game/*, src/profile/ (cornice, titolo, badge),

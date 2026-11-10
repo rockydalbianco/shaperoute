@@ -111,9 +111,7 @@ def ski_season_routes() -> APIRouter:
         if (to_day - from_day).days + 1 > MAX_SEASON_DAYS:
             raise HTTPException(422, LONG_SEASON)
         since = datetime.combine(from_day, time.min, tzinfo=UTC)
-        until = datetime.combine(
-            to_day + timedelta(days=1), time.min, tzinfo=UTC
-        )
+        until = datetime.combine(to_day + timedelta(days=1), time.min, tzinfo=UTC)
         with accounts.database.connect() as conn:
             rows: list[Mapping[str, Any]] = conn.execute(
                 "SELECT rs.stats FROM runs r"

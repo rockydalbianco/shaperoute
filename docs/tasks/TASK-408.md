@@ -1,12 +1,16 @@
 # TASK-408 — L'editor del video dell'attività: un animale 3D corre il percorso, le modifiche, il prompt
 
-**Stato**: Proposto · nessun codice prima delle scelte dell'utente e della
-lista dei file di ogni parte, approvata dal Coordinatore
+**Stato**: Done · 2026-11-10 · le parti A–E fatte: 13 animali (l'elefante
+animato da MuW), il foglio «Edit video» con scene, finale, camera dietro,
+anteprima e «Describe your video»; in produzione con l'OTA del 2026-11-10
+salvo l'elefante (#1066), che esce con il prossimo OTA di produzione dal
+Coordinatore. Resta fuori dal task la pagina dei crediti del sito
+(TASK-237), con il testo qui sotto.
 **Fase**: 5 · **Branch**: `docs/TASK-408-video-editor` (documenti); il
 codice `feat/TASK-408-b-…`
 **Dipende da**: TASK-351 (il video con la mappa sotto, i tre stili, il 3D
 che gira). TASK-351 resta chiuso così com'è.
-**ADR**: ADR-0339 (proposto)
+**ADR**: ADR-0339 (attiva), precisazioni B, C, C2, C2b, C2c, D, B2
 
 ## Obiettivo
 
@@ -301,6 +305,21 @@ Riusati senza cambiarli, perché l'app li ha già: «Style», «Night», «Day»
 
 ### La riga dei crediti (Termini › «Services of others»)
 
+**Il testo in uso** (scelta dell'utente del 2026-11-10, «Tutti e due»; in
+`about/content/*.ts` dalla #1066). È anche quello da mettere nella pagina
+dei crediti del sito, TASK-237, ancora da assegnare:
+
+- **en**: The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm and SahuAvdhesh on Sketchfab (CC BY 4.0), animated and adapted by MuW.
+- **it**: Gli animali 3D del video vengono da Quaternius (CC0); l'elefante è "Elephant Anim" di Shivoahm e SahuAvdhesh su Sketchfab (CC BY 4.0), animato e adattato da MuW.
+- **de**: Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm und SahuAvdhesh auf Sketchfab (CC BY 4.0), von MuW animiert und angepasst.
+- **es**: Los animales 3D del vídeo vienen de Quaternius (CC0); el elefante es «Elephant Anim» de Shivoahm y SahuAvdhesh en Sketchfab (CC BY 4.0), animado y adaptado por MuW.
+- **fr**: Les animaux 3D de la vidéo viennent de Quaternius (CC0) ; l'éléphant est « Elephant Anim » de Shivoahm et SahuAvdhesh sur Sketchfab (CC BY 4.0), animé et adapté par MuW.
+
+Link alla pagina del modello per il sito:
+https://sketchfab.com/3d-models/elephant-anim-766f267ff6bd4a87a45e3d26286b9d27.
+
+La proposta di prima, superata dalla scelta qui sopra:
+
 - **en** (approvata): The 3D animals in the video come from Quaternius (CC0); the elephant is "Elephant Anim" by Shivoahm on Sketchfab (CC BY 4.0), adapted by MuW.
 - **it** (approvata): Gli animali 3D del video vengono da Quaternius (CC0); l'elefante è "Elephant Anim" di Shivoahm su Sketchfab (CC BY 4.0), adattato da MuW.
 - **de**: Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm auf Sketchfab (CC BY 4.0), angepasst von MuW.
@@ -330,9 +349,36 @@ c'è già in «Share your run», quindi niente «Export video».
     (simulatore: prima prova 15,0 s e giallo, seconda 6,8 s con la mappa).
     È il comportamento di TASK-351, non nuovo di B1; la misura sul telefono
     è della parte E.
-  - **B2**: l'elefante (il file lo scarica l'utente da Sketchfab, che chiede
-    un account) e la riga dei crediti nei Termini (`about/content/*.ts`,
-    dopo la #908). La camera dietro l'animale sul 3D passa a C2.
+  - **B2** (branch `feat/TASK-408-b2-elephant`): l'elefante e la riga dei
+    crediti nei Termini. La camera dietro l'animale sul 3D è passata a C2.
+    - **Il modello**: «Elephant Anim»,
+      https://sketchfab.com/3d-models/elephant-anim-766f267ff6bd4a87a45e3d26286b9d27,
+      CC BY 4.0. Scaricato il 2026-11-10 dall'account dell'utente («fallo
+      tu», con il suo sì al download): GLB, glTF e il `.blend` originale.
+      Nessuno dei tre ha animazioni, nonostante il nome. La pagina lo
+      attribuisce a @Shivoahm («Optimized 3f models and animation»), il
+      file di licenza a SahuAvdhesh («3D models for AR, VR and video»).
+    - **Modificato da MuW**: con il sì dell'utente è stato installato
+      Blender (Homebrew), e `out/TASK-408/elephant-tools/animate.py` gli dà
+      due animazioni fatte ruotando le ossa, «Gallop» (un passo veloce in
+      sequenza laterale, 0,8 s) e «Idle» (orecchie, proboscide e coda, 3 s),
+      e un grigio piatto, la media della sua texture. Niente immagini:
+      330 KB, `assets/characters/elephant.zip`.
+    - **La pagina del video**: legava la pelle alle ossa con la matrice del
+      nodo del modello, che per glTF va ignorata. L'elefante sta sotto nodi
+      ruotati e scalati: veniva sottosopra, e a pezzi in corsa. Ora il bind
+      è all'identità, e le matrici si aggiornano dopo il bind, prima di
+      misurare l'animale (senza, l'elefante risultava di pochi centimetri e
+      finiva disegnato enorme, fuori vista). Gli animali di Quaternius
+      restano identici (provato con il cavallo, contro il GLTFLoader di
+      three.js 0.159.0 e nel simulatore). Video del simulatore, Notte e
+      Day con l'elefante, in `out/TASK-408/sim-b2/`.
+    - **Crediti** (scelta dell'utente del 2026-11-10, «Tutti e due»): «The
+      3D animals in the video come from Quaternius (CC0); the elephant is
+      "Elephant Anim" by Shivoahm and SahuAvdhesh on Sketchfab (CC BY 4.0),
+      animated and adapted by MuW.», nelle cinque lingue, in «Services of
+      others»; la data dei Termini al 10 novembre. Il sito non pubblica i
+      Termini: niente da rigenerare.
 - **C — l'editor**: il foglio «Edit video», colori, emoji lungo il
   percorso, scene, finale, lo stile 2D. In due PR (ADR-0339, precisazione
   C):
@@ -400,7 +446,15 @@ c'è già in «Share your run», quindi niente «Export video».
   danno nulla (test). L'elefante entra nella tabella con B2. Provato nel
   simulatore (schermata in `out/TASK-408/sim-d/`).
 - **E — la prova sul telefono**: il tempo dell'esportazione con ogni
-  personaggio, nei tre stili.
+  personaggio, nei tre stili. Il 2026-11-10 l'utente ha provato sul suo
+  telefono: «funziona top». Misure di tempi e batteria non prese.
+
+**In produzione** (2026-11-10, dal Coordinatore): C1, C2 (compresa C2c,
+#1011) e D (#1019) sono usciti con l'OTA di produzione del mattino: commit
+88e5f88f, gruppo 4eca1d42-cb1c-407a-84aa-0d929ede781d, update iOS
+01a1c482-7073-7baa-8070-7289e90a2387, runtime 6f8bba4c; anteprima, gruppo
+b0f9913b. Il sì dell'utente («e pubblica si») è registrato; B2 esce con un
+OTA successivo.
 
 Ogni parte manda prima al Coordinatore la sua lista dei file. Il
 2026-11-06 sono liberi `videoScene.ts`, `videoPage.ts`, `videoStyle.ts`,
@@ -456,6 +510,17 @@ e `.test.tsx`, `videoScene.ts` e `.test.ts`, `videoPage.ts` e `.test.ts`,
 `docs/STATUS.md`, `docs/DECISIONS.md`. `SharePost.test.tsx` e
 `TabSwipeOwners.test.ts` erano nella lista ma non sono serviti.
 
+Parte B2 (lista approvata dal Coordinatore il 2026-11-10):
+`apps/mobile/assets/characters/elephant.zip` (nuovo);
+`apps/mobile/src/share/videoCharacter.ts` e `.test.ts`, `videoPage.ts` e
+`.test.ts`, `videoWords.ts` e `.test.ts`;
+`apps/mobile/src/i18n/{it,de,es,fr}.ts`;
+`apps/mobile/src/about/content/{en,it,de,es,fr}.ts` (dopo la #1051);
+`apps/mobile/src/about/documents.test.ts` e `AboutPage.test.tsx` (solo la
+data dei Termini, aggiunti dal Coordinatore il 2026-11-10);
+`docs/tasks/TASK-408.md`. STATUS e DECISIONS in una PR di soli documenti
+dopo il merge.
+
 Parte D (lista mandata al Coordinatore il 2026-11-10):
 `apps/mobile/src/share/videoWords.ts` e `.test.ts`, `DescribeVideo.tsx` e
 `.test.tsx` (nuovi); `EditVideoSheet.tsx` e `.test.tsx`;
@@ -479,13 +544,14 @@ di soli documenti dopo il merge (regola del Coordinatore del 2026-11-08).
 
 ## Criteri di accettazione
 
-- [ ] Le domande 1–6 hanno una risposta scritta qui.
-- [ ] Ogni modello 3D ha la licenza scritta qui, con il link alla pagina.
-- [ ] Il prompt sceglie solo voci dell'editor e non chiama la rete: un
+- [x] Le domande 1–6 hanno una risposta scritta qui.
+- [x] Ogni modello 3D ha la licenza scritta qui, con il link alla pagina.
+- [x] Il prompt sceglie solo voci dell'editor e non chiama la rete: un
   test lo prova con parole sconosciute e con numeri che sembrano
-  coordinate.
-- [ ] Ogni parte ha la lista dei file approvata dal Coordinatore e test
+  coordinate (`videoWords.test.ts`).
+- [x] Ogni parte ha la lista dei file approvata dal Coordinatore e test
   deterministici.
-- [ ] Il video esce sempre: senza mappa, senza modello o su un telefono
+- [x] Il video esce sempre: senza mappa, senza modello o su un telefono
   lento, il personaggio si toglie o la camera si ferma, mai un errore.
-- [ ] L'impronta iOS non cambia, salvo una lista che lo dica.
+- [x] L'impronta iOS non cambia, salvo una lista che lo dica: nessuna
+  parte ha cambiato codice nativo.

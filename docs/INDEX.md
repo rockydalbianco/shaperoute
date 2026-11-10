@@ -41,7 +41,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Pubblicità, AdMob, pagamenti | `PUBBLICITA.md`, ADR-0198 |
 | Feed: schede, filtri «Tutti»/«Seguiti», percorsi di MuW | `API.md` «Feed», ADR-0306, ADR-0308, ADR-0310 |
 | Post: video, compositore, calorie e battito | `API.md` «Drawings», `tasks/TASK-336.md`, `tasks/TASK-348.md`, `tasks/TASK-345.md` |
-| La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 (precisazioni C, F), `API.md` «Run stats», `DATABASE.md` (0064) |
+| La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 (precisazioni C, D, F), `API.md` «Run stats», `DATABASE.md` (0064) |
 | La mia immagine al posto dell'animale nel video (foto tonda, GIF, cartellino sul 3D) e il video «Together» con le persone taggate sullo stesso orologio | `tasks/TASK-417.md`, `DECISIONS.md` ADR-0345 e ADR-0339, `tasks/TASK-408.md` |
 | Video della corsa ed editor con l'animale 3D | ADR-0303, ADR-0339, `UI.md` «Il post da condividere», `tasks/TASK-408.md` |
 | Messaggi, chat, allegati | `API.md` «Messages», `UI.md`, ADR-0279, ADR-0305 |
@@ -65,7 +65,8 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Apple Watch | `tasks/TASK-370.md`, ADR-0314 |
 | Dati dal vivo in registrazione, «Share live activity» (link web a token) | `tasks/TASK-424.md`, ADR-0352, `API.md` «Live shares», `SITO.md` «La pagina dal vivo», `UI.md` «La corsa» («Share live») |
 | La corsa in registrazione: le tre pagine «Compass», «Map», «Data», la mappa che gira dove punta il telefono | `UI.md` «La navigazione», ADR-0350, ADR-0137, `tasks/TASK-422.md` |
-| «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0313, `tasks/TASK-425.md` |
+| «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte; se si incrocia, un anello alla partenza | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0356, ADR-0313, `tasks/TASK-425.md`, `tasks/TASK-428.md` |
+| «Draw on the map»: la partenza, un pallino da spostare lungo il disegno | `UI.md` «Disegnare sulla mappa» («La partenza»), ADR-0354, ADR-0336, `tasks/TASK-426.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

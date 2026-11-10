@@ -54,6 +54,14 @@ describe("readVideoWords (TASK-408 D)", () => {
     }
   });
 
+  it("knows the elephant (B2)", () => {
+    expect(readVideoWords("un elefante di notte")).toEqual({
+      character: "elephant",
+      style: "night",
+    });
+    expect(readVideoWords("Éléphant")).toEqual({ character: "elephant" });
+  });
+
   it("reads the longer name first: a white horse, not a horse and a white line", () => {
     expect(readVideoWords("cavallo bianco")).toEqual({ character: "white_horse" });
     expect(readVideoWords("White horse, white line")).toEqual({

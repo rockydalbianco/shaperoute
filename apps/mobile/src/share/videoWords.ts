@@ -14,7 +14,7 @@ import type { VideoStyle } from "./videoStyle";
  * opening, the camera, the ending — and never make a place, a line or a
  * shape: the route stays the run's (ADR-0001). A word the table does not
  * know is skipped, with no error; no network, no AI. New words come with
- * an update of the app. The elephant's words come with the elephant (B2).
+ * an update of the app.
  */
 
 type Words = Readonly<Record<Language, readonly string[]>>;
@@ -34,6 +34,13 @@ export const CHARACTER_WORDS: Readonly<Record<Character | "none", Words>> = {
     de: ["pferd", "pony", "hengst"],
     es: ["caballo", "poni", "potro", "yegua"],
     fr: ["cheval", "poney", "jument", "etalon"],
+  },
+  elephant: {
+    en: ["elephant"],
+    it: ["elefante", "elefantino"],
+    de: ["elefant"],
+    es: ["elefante"],
+    fr: ["elephant"],
   },
   stag: {
     en: ["stag"],

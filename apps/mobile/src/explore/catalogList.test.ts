@@ -1,3 +1,5 @@
+import contract from "@shaperoute/shared-types/fixtures/catalog.json";
+
 import type { RecommendedRoute } from "./recommendedRoutes";
 import {
   CATALOG_PAGE,
@@ -124,4 +126,32 @@ test("the rows: a city's label, then its routes two by two", () => {
   // Every row has a key of its own.
   expect(new Set(rows.map((row) => row.key)).size).toBe(rows.length);
   expect(farRows([])).toEqual([]);
+});
+
+test("the page the API writes (the shared contract) reads as a page", async () => {
+  // packages/shared-types/fixtures/catalog.json: what GET /catalog answers
+  // for the API's test catalogue, limit 2 (services/api/tests/test_recommended.py).
+  const fetchFn = jest.fn().mockResolvedValue(Response.json(contract));
+  const outcome = await fetchCatalogPage("http://api", TRENTO, 0, {
+    fetchFn,
+    key: null,
+  });
+  expect(outcome.kind).toBe("page");
+  if (outcome.kind !== "page") {
+    return;
+  }
+  expect(outcome.page.total).toBe(contract.total);
+  expect(outcome.page.cities).toBe(contract.cities);
+  expect(outcome.page.routes.map((r) => r.id)).toEqual(
+    contract.routes.map((r) => r.id),
+  );
+  // The same fields as a route of «Best near you»: the cards draw it as one.
+  expect(outcome.page.routes[0]).toMatchObject({
+    city: "trento",
+    shape: "star",
+    word: null,
+    distance_m: 5000,
+    rotation_deg: expect.any(Number),
+  });
+  expect(outcome.page.routes[0].preview.length).toBeGreaterThan(2);
 });

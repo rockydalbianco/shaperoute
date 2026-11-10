@@ -32,15 +32,17 @@ function storedZip(
 }
 
 describe("the animals of the video", () => {
-  it("are the twelve of the pack, each with a name and an emoji", () => {
-    expect(CHARACTERS).toHaveLength(12);
-    expect(new Set(CHARACTERS).size).toBe(12);
+  it("are the twelve of the pack and the elephant, each with a name and an emoji", () => {
+    expect(CHARACTERS).toHaveLength(13);
+    expect(new Set(CHARACTERS).size).toBe(13);
     for (const character of CHARACTERS) {
       expect(characterName(character)).not.toBe("");
       expect(characterEmoji(character)).not.toBe("");
     }
     expect(characterName("white_horse")).toBe("White horse");
     expect(characterName("shiba")).toBe("Shiba Inu");
+    expect(characterName("elephant")).toBe("Elephant");
+    expect(characterEmoji("elephant")).toBe("🐘");
   });
 });
 

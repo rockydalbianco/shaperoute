@@ -105,10 +105,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   la prova sulla neve, quando l'utente scia. File: — · `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
-- **TASK-408 — L'editor del video dell'attività** · C1, C2 (scene,
-  finale, camera dietro, anteprima) e D («Describe your video») in `main`,
-  nell'OTA di produzione; restano B2 (elefante, file dall'utente) ed E
-  (telefono). File: — · `tasks/TASK-408.md`
 - **TASK-410 — La pagina del post** · B (#949), F (#980), C (`run_stats`,
   #1001; 0064 e backfill sul server) e D (le sezioni, #1043) in `main`. OTA
   di produzione del 2026-11-10 da 88e5f88f (gruppo `4eca1d42`) con F e C;

@@ -1,7 +1,7 @@
 # TASK-276 — Più percorsi all'ora sullo stesso server
 
-**Stato**: In corso — parte A misurata e parte B in `main` (#1038,
-2026-11-10); resta il server, col sì dell'utente, nel passo server 2
+**Stato**: In corso — parte A misurata, parte B in `main` (#1038) e sul
+server (2026-11-10); resta la misura dei percorsi al minuto con i processi
 **Fase**: 4 · **Branch**: `docs/TASK-276-plan` (questo file); per il
 codice, se si decide di farlo, `feat/TASK-276-route-process-pool`
 · **ADR**: 0242, riservato
@@ -398,3 +398,21 @@ ora: aggiungerebbe 14 forme chiuse su 589.
 **Resta:** il passaggio sul server col sì dell'utente, nel passo server 2
 del Coordinatore, con i controlli di `out/TASK-276/SERVER-B.md`; poi la
 misura dei percorsi al minuto con i processi.
+
+**Sul server (2026-11-10, passo server 2 del Coordinatore):** `main`
+039fe4e1. Nei log `route worker 63 started` e `route worker 64 started`,
+3 processi forkserver (il fork server e i 2 lavoratori), `/tmp` scrivibile
+per l'uid 10001 (controllato prima dell'aggiornamento), nessun
+`Traceback`. Prova: un aereo e un cuore da 5,2 km a Trento `done` in
+10–12 s, con `graph from disk` nel log del lavoratore. Se servisse tornare
+ai thread: `"--route-processes", "0"` nel `command` dell'API, col sì
+dell'utente.
+
+**Resta:** la misura dei percorsi al minuto con i processi, quando il
+Coordinatore dice «server libero» (dopo le zone del telefono e
+`draw_examples`). Script pronto, in sola lettura come `route_bench.py`:
+`out/TASK-276/process_bench.py`, righe ssh nella sezione 5 di
+`out/TASK-276/SERVER-B.md`. Fa le stesse richieste prima coi 2 thread e
+poi coi 2 processi, con 1, 2, 4 e 8 insieme, e stampa i percorsi al
+minuto, i core usati, lo `steal` della macchina condivisa e il picco di
+RAM dei lavoratori. Provato sul Mac nella versione corta.

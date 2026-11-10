@@ -611,6 +611,30 @@ battito) e senza (solo il riepilogo di prima). Schermate in
 due merge di `main` (conflitto solo nel task file). Esce con l'OTA 3, dopo il
 passo server 2, col sì dell'utente.
 
+## Correzione: «Edit & run» e «‹» (2026-11-10)
+
+Segnalato dall'utente sull'iPhone dopo l'OTA 3: «Edit & run» non faceva
+niente, né sulla card né nella pagina, e «‹» della pagina non rispondeva.
+Branch `fix/TASK-410-edit-run`, solo app, esce con un OTA col sì
+dell'utente.
+
+- **«‹» sotto l'orologio.** Dentro un `Modal` i margini dell'app valgono 0:
+  la pagina ora ha un suo `SafeAreaProvider` con `initialWindowMetrics`,
+  come «Heart rate zones» e la ricerca (TASK-366). Anche la barra dei
+  quattro ora sta sopra il bordo basso del telefono.
+- **Nella pagina** la mappa di «Draw on the map» si apriva sotto la pagina,
+  che restava sopra: ora la pagina si chiude prima.
+- **Sulla card** una corsa chiusa il cui contorno non fa un disegno
+  (andata e ritorno sulla stessa strada, un otto) lasciava il tasto senza
+  effetto. Il difetto di `figureLines.ts` lo corregge TASK-432 (#1079, la
+  stessa regola su tutto il catalogo); con la sua versione l'andata e
+  ritorno e l'otto fanno un disegno (provato). Qui resta solo il tasto
+  nascosto dove la linea non fa comunque un disegno (`editRunDoor`).
+
+File: `App.tsx`, `src/feed/PostPage.tsx`, `src/feed/editRunDoor.ts`, i
+test `PostPageInset.test.tsx` e `__tests__/AppEditRun.test.tsx` (nuovi),
+più questo task file. Entra dopo la #1079.
+
 ## Esito
 
 *(a fine task)*

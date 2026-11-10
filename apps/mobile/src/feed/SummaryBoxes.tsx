@@ -21,7 +21,11 @@ export function SummaryBoxes({ rows }: { rows: readonly PostRow[] }) {
           accessible
           accessibilityLabel={`${row.label}: ${row.value}`}
         >
-          <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
+          <Text
+            style={[styles.value, row.energy && styles.energy]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
             {row.value}
           </Text>
           <Text style={styles.label} numberOfLines={1}>
@@ -49,6 +53,10 @@ const styles = StyleSheet.create({
     color: color.text,
     fontWeight: fontWeight.semibold,
     fontVariant: ["tabular-nums"],
+  },
+  // The calories, in red wherever they are (TASK-424 part C3).
+  energy: {
+    color: color.energy,
   },
   label: {
     ...font.detail,

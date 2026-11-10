@@ -54,6 +54,7 @@ ciano di «Start here».
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
+| `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
 | `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il cono di «Compass»; il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |

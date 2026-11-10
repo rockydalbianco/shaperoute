@@ -17,7 +17,21 @@
     "smiley",
     "ghost",
     "donut",
-    "sun"
+    "sun",
+    "airplane",
+    "anchor",
+    "bear_head",
+    "bicycle",
+    "cherries",
+    "espresso_cup",
+    "four_leaf_clover",
+    "leaning_tower",
+    "music_note",
+    "pear",
+    "sailboat",
+    "swan",
+    "windmill",
+    "wine_glass"
   ],
   "phrases": [
     { "text": "faccina sorridente", "accept": ["smiley"] },
@@ -114,7 +128,7 @@
     { "text": "dinosauro", "accept": [null] },
     { "text": "ragno", "accept": [null] },
     { "text": "Pikachu", "accept": [null] },
-    { "text": "aereo", "accept": [null] },
+    { "text": "aereo", "accept": ["airplane"] },
     { "text": "chitarra", "accept": [null] },
     { "text": "quercia", "accept": [null] }
   ]

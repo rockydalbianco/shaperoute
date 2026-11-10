@@ -40,6 +40,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-276 — Più percorsi all'ora sullo stesso server** · Todo, piano
   pronto; aspetta il sì dell'utente e il via del Coordinatore. File: — ·
   `tasks/TASK-276.md`
+  **2026-11-10**: parte A misurata (7–8 percorsi/min); parte B, 2 processi
+  caldi, in `main` (#1038, ADR-0242); resta il server (passo 2, col sì).
 - **TASK-283 — Le foto dei paesi in «NEARBY TOWNS»** · codice in `main`
   (#499); resta il server. File: — · `tasks/TASK-283.md`
 - **TASK-294 — MuW su Google Play** · A, B, C in `main`; manca la copia sul

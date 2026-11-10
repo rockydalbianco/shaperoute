@@ -21,6 +21,20 @@ const SHAPE_NAMES: Readonly<Record<string, string>> = {
   donut: tLater("Donut"),
   // Not "Sun": that is Sunday's, in the list of the days (activityText.ts).
   sun: tLater("The sun"),
+  airplane: tLater("Airplane"),
+  anchor: tLater("Anchor"),
+  bear_head: tLater("Bear head"),
+  bicycle: tLater("Bicycle"),
+  cherries: tLater("Cherries"),
+  espresso_cup: tLater("Espresso cup"),
+  four_leaf_clover: tLater("Four-leaf clover"),
+  leaning_tower: tLater("Leaning Tower"),
+  music_note: tLater("Music note"),
+  pear: tLater("Pear"),
+  sailboat: tLater("Sailboat"),
+  swan: tLater("Swan"),
+  windmill: tLater("Windmill"),
+  wine_glass: tLater("Wine glass"),
 };
 
 /**

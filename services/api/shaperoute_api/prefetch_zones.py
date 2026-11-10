@@ -47,7 +47,7 @@ from route_engine.models import DISTANCE_LIMITS_M
 from route_engine.network import OsmnxSource
 from route_engine.optimizer import FAR_OFFSET_M, SHAPE_POINTS, required_area, zone_area
 from route_engine.overpass_address import reachable
-from route_engine.shapes import SUPPORTED_SHAPES, get_shape
+from route_engine.shapes import get_shape
 from route_engine.stops import union
 
 from shaperoute_api.activity_graphs import ROAD_ACTIVITIES
@@ -67,6 +67,30 @@ THEMED_DISTANCE_M = 10_000
 # without a zone had a second one downloaded for the circle.
 EXAMPLE_SHAPES = ("circle", "heart", "star")
 EXAMPLE_DISTANCE_M = 5_000
+# The shapes whose zones make the box of the longest routes: the catalogue
+# before TASK-418 (ADR-0346). The pear and the Leaning Tower, tall and
+# narrow, would widen it by a tenth on every side, and every zone kept on
+# the server would be downloaded again: at the longest distance one of them
+# may take a few streets beyond the zone, as any route near its edge.
+ZONE_SHAPES = (
+    "circle",
+    "heart",
+    "star",
+    "horse",
+    "moon",
+    "cat",
+    "fish",
+    "butterfly",
+    "snail",
+    "dog_head",
+    "rabbit_head",
+    "pumpkin",
+    "christmas_tree",
+    "smiley",
+    "ghost",
+    "donut",
+    "sun",
+)
 # The longest bike route (TASK-190): its zone holds every shorter one.
 BIKE_DISTANCE_M = DISTANCE_LIMITS_M["cycling"][1]
 # Below this the cache stops growing (MAPS.md: the disk fills up).
@@ -216,7 +240,7 @@ def zone_box(centre: LatLon) -> BBox:
 def longest_route_box(activity: str) -> Callable[[LatLon], BBox]:
     """The box of the area a route of `activity` up to its longest
     (models.DISTANCE_LIMITS_M) from a city's centre needs, the engine's far
-    search included: every shape of the catalogue, the circle the widest.
+    search included: every shape of ZONE_SHAPES, the circle the widest.
     The same function for the same activity."""
     longest = DISTANCE_LIMITS_M[activity][1]
 
@@ -224,7 +248,7 @@ def longest_route_box(activity: str) -> Callable[[LatLon], BBox]:
         return union(
             [
                 zone_area(get_shape(shape)(SHAPE_POINTS), centre, longest, FAR_OFFSET_M)
-                for shape in SUPPORTED_SHAPES
+                for shape in ZONE_SHAPES
             ]
         )
 

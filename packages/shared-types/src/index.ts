@@ -38,12 +38,27 @@ export const SHAPES = [
   "ghost",
   "donut",
   "sun",
+  "airplane",
+  "anchor",
+  "bear_head",
+  "bicycle",
+  "cherries",
+  "espresso_cup",
+  "four_leaf_clover",
+  "leaning_tower",
+  "music_note",
+  "pear",
+  "sailboat",
+  "swan",
+  "windmill",
+  "wine_glass",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 
 /** The shapes that may be drawn with the pen up (TASK-223, ADR-0185): the
  * outline, then each piece on its own, walking from one to the next. The
- * first five lift off their eyes; the others have pieces apart. */
+ * first five lift off their eyes; the others have pieces apart, the last four
+ * the new shapes of TASK-418, which the app draws with the pen down. */
 export const PEN_UP_SHAPES = [
   "cat",
   "fish",
@@ -54,6 +69,10 @@ export const PEN_UP_SHAPES = [
   "ghost",
   "donut",
   "sun",
+  "anchor",
+  "bear_head",
+  "bicycle",
+  "espresso_cup",
 ] as const satisfies readonly Shape[];
 export type PenUpShape = (typeof PEN_UP_SHAPES)[number];
 

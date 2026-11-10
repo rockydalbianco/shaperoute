@@ -1,8 +1,7 @@
 # TASK-276 — Più percorsi all'ora sullo stesso server
 
-**Stato**: In corso — parte A misurata il 2026-11-10; parte B (2 processi
-caldi) in PR da `feat/TASK-276-route-process-pool`; poi il server, col sì
-dell'utente, in un passo a parte
+**Stato**: In corso — parte A misurata e parte B in `main` (#1038,
+2026-11-10); resta il server, col sì dell'utente, nel passo server 2
 **Fase**: 4 · **Branch**: `docs/TASK-276-plan` (questo file); per il
 codice, se si decide di farlo, `feat/TASK-276-route-process-pool`
 · **ADR**: 0242, riservato
@@ -182,7 +181,8 @@ docs/tasks/TASK-276.md
 ```
 
 Dopo il merge, in una PR docs: `docs/DECISIONS.md` (ADR-0242),
-`docs/STATUS.md`, `docs/INDEX.md` se serve.
+`docs/STATUS.md`, `docs/INDEX.md`, `docs/API.md` (gli stati di
+`/route-jobs`), `docs/tasks/TASK-276.md`.
 
 ## Fuori scope
 
@@ -383,5 +383,18 @@ nella PR docs dopo il merge):
   temporanea del container (`/tmp`), che deve essere scrivibile per l'uid
   10001. Da controllare al passaggio.
 
-**Resta:** il merge (Coordinatore), la PR docs (ADR-0242, STATUS), il
-passaggio sul server col sì dell'utente, poi la misura.
+**Esito della parte B:** in `main` dalla #1038 (`b0c56e5c`, 2026-11-10);
+ADR-0242 in `DECISIONS.md` con la PR docs dopo il merge.
+
+**Il traffico vero** (log dell'API, 7 giorni fino al 2026-11-10, riga
+lanciata dall'utente): 148 percorsi calcolati («queued»), 121 già pronti
+(«already drawn»), 8 dall'archivio vicino («kept route reached»). Il 47%
+delle richieste non usa il motore; i calcoli sono circa 21 al giorno, molto
+sotto il tetto di 7–8 al minuto. La parte B serve per i picchi e per i
+concorsi, non per il traffico di oggi. L'archivio allargato «da un punto
+qualsiasi del giro» (TASK-427) è stato misurato a parte e non vale la pena
+ora: aggiungerebbe 14 forme chiuse su 589.
+
+**Resta:** il passaggio sul server col sì dell'utente, nel passo server 2
+del Coordinatore, con i controlli di `out/TASK-276/SERVER-B.md`; poi la
+misura dei percorsi al minuto con i processi.

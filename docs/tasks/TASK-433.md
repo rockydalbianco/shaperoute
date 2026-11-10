@@ -158,6 +158,11 @@ simulatore non è stata vista girare.
    Coordinatore. Prima del server l'app nuova salva le schede guidate solo
    sul telefono: il `PUT` con `program` torna `422` dall'API vecchia e la
    scheda resta in attesa; per questo l'OTA va dopo il server.
-2. OTA di produzione.
+   **Fatto il 2026-11-10**: server a 8138b456, 0066 applicata, copia
+   `shaperoute-2026-11-10T1738Z.dump`, ritorno = immagine
+   `shaperoute-api:before-passo5`; controlli di `out/TASK-433/SERVER.md`
+   («plans 0 without weeks 0 read ok», rotte 401/404 come attese).
+2. OTA di produzione: partito dal Coordinatore da main 2c3442f7 (senza la
+   parte B, che esce con l'OTA dopo il suo merge).
 3. La privacy non cambia: le schede (nome, giorni, esercizi e valori
    obiettivo) restano sul telefono e sull'account come in TASK-411 D.

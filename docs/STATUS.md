@@ -107,10 +107,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   stazione nell'app). File: quelli della D3b · `tasks/TASK-406.md`
 - **TASK-407 — La 1.0.2 solo per gli screenshot** · build da
   `release/1.0.2`, la lancia l'utente. File: — · `tasks/TASK-407.md`
-- **TASK-408 — L'editor del video dell'attività** · C1, C2a (scene e
-  finale) e C2b (camera dietro l'animale) in `main`; C2c (anteprima nel
-  foglio) in lavorazione; poi B2 (elefante), D (prompt), E (telefono).
-  File: `apps/mobile/src/share/` (C2c) · `tasks/TASK-408.md`
+- **TASK-408 — L'editor del video dell'attività** · C1 e C2 (scene,
+  finale, camera dietro l'animale, anteprima nel foglio) in `main`, OTA col
+  prossimo giro di produzione; poi B2 (elefante, file dall'utente), D
+  (prompt), E (telefono). File: — · `tasks/TASK-408.md`
 - **TASK-409 — Il nuoto in piscina** · A (calorie) in `main` e in produzione;
   B1 (battito sulla corsa, migrazione 0061) in `main` (#979), sul server con
   l'aggiornamento del Coordinatore; B2 (l'app) in PR, entra dopo il server.

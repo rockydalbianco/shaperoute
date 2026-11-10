@@ -1953,6 +1953,10 @@ export const DE: Table = {
   // The Apple Watch (TASK-370 part B3a).
   "Send to watch": "An die Uhr senden",
   "Sent to your watch": "An die Uhr gesendet",
+  "Your activity from the watch is ready": "Deine Aktivität von der Uhr ist bereit",
+  "Open MuW to save it.": "Öffne MuW, um sie zu speichern.",
+  "From your Apple Watch": "Von deiner Apple Watch",
+  Open: "Öffnen",
   "Send a route from MuW on your iPhone": "Sende eine Route aus MuW auf dem iPhone",
   "Off route": "Abseits der Route",
   Arrived: "Ziel",

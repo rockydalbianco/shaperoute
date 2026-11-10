@@ -1831,6 +1831,14 @@ export const FR: Table = {
   Lengths: "Longueurs",
   "Pool swim": "Nage en piscine",
   "Pace /100 m": "Allure /100 m",
+  // TASK-409 part B: the heart rate of a swim in a pool.
+  "Add heart rate from Apple Health": "Ajouter la fréquence cardiaque depuis Santé",
+  "No heart rate from your watch for this swim.":
+    "Aucune fréquence cardiaque de ta montre pour cette nage.",
+  "Show heart rate": "Afficher la fréquence cardiaque",
+  "Avg heart rate": "FC moyenne",
+  "Time in zones": "Temps par zone",
+  "From your watch, via Apple Health": "De ta montre, via Santé",
   // src/explore/ExploredCard.tsx, src/social/DrawingCard.tsx (TASK-313)
   "Draw it near me": "La dessiner près de moi",
   // src/route/RoutePanel.tsx (TASK-311 B: a word in one line that did not come out)

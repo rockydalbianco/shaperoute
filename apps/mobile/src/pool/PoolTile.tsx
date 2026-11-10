@@ -91,6 +91,12 @@ export function PoolTile({ width, height, durationS, metres, figures = null }: P
               {`${t("Pace /100 m")} ${clockLabel(pace * 1000)}`}
             </Text>
           )}
+          {/* When its owner shows it (TASK-409 part B). */}
+          {figures?.heart_avg_bpm !== undefined && (
+            <Text style={styles.line} testID="pool-tile-heart">
+              {`${t("Avg heart rate")} ${figures.heart_avg_bpm} bpm`}
+            </Text>
+          )}
         </>
       )}
     </View>

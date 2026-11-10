@@ -161,11 +161,17 @@ export function parseLengths(text: string): number | null {
   return isLengths(lengths) ? lengths : null;
 }
 
+/** The heart rate sent with a swim (TASK-409 part B): its average and
+ * maximum, and «Show heart rate». */
+export type PoolHeartSent = { avgBpm: number; maxBpm: number; shown: boolean };
+
 /** The body of PUT /me/pool-swims/{key}; null before its end, or with
- * lengths the API would refuse (too many, too fast). */
+ * lengths the API would refuse (too many, too fast). With `heart`, its
+ * heart rate too. */
 export function poolSwimRequest(
   swim: PoolSwim,
   lengths: number,
+  heart: PoolHeartSent | null = null,
 ): PoolSwimRequest | null {
   if (swim.endedMs === null || !isLengths(lengths) || !isPoolLength(swim.poolLengthM)) {
     return null;
@@ -188,5 +194,12 @@ export function poolSwimRequest(
     pauses,
     pool_length_m: swim.poolLengthM,
     lengths,
+    ...(heart === null
+      ? {}
+      : {
+          heart_avg_bpm: heart.avgBpm,
+          heart_max_bpm: heart.maxBpm,
+          heart_shown: heart.shown,
+        }),
   };
 }

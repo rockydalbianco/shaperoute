@@ -441,7 +441,7 @@ const privacy: AboutDocument = {
     {
       heading: "Apple Santé et Health Connect",
       blocks: [
-        "Dès que tu actives «Enregistrer dans Apple Santé» (iPhone) ou «Enregistrer dans Health Connect» (Android), chaque activité que tu enregistres y est aussi écrite, sur ton téléphone : le sport, quand elle a commencé et fini, la distance, le parcours et, pour une course, les calories actives estimées. MuW ne lit jamais tes données de santé, et rien de celles-ci n'atteint notre serveur ni aucune publicité. Tu peux l'arrêter dans l'app Santé ou dans Health Connect. Ce qui y est déjà reste jusqu'à ce que tu l'y supprimes, même quand tu supprimes la course ou ton compte.",
+        "Dès que tu actives «Enregistrer dans Apple Santé» (iPhone) ou «Enregistrer dans Health Connect» (Android), chaque activité que tu enregistres y est aussi écrite, sur ton téléphone : le sport, quand elle a commencé et fini, la distance, le parcours et, pour une course, les calories actives estimées. Si, à la fin d'une nage en piscine, tu touches «Ajouter la fréquence cardiaque depuis Santé», MuW lit la fréquence cardiaque que ta montre a enregistrée pendant cette nage, et rien d'autre. La moyenne et le maximum restent avec la nage sur notre serveur et s'affichent dans sa publication, sauf si tu désactives «Afficher la fréquence cardiaque» ; le temps dans chaque zone reste sur ton téléphone. Aucune de tes données de santé n'atteint une publicité. Tu peux l'arrêter dans l'app Santé ou dans Health Connect. Ce qui y est déjà reste jusqu'à ce que tu l'y supprimes, même quand tu supprimes la course ou ton compte.",
       ],
     },
     {
@@ -489,7 +489,7 @@ const privacy: AboutDocument = {
           bullets: [
             "Pour te fournir le service que tu demandes (contrat) : ton compte, ton profil, les parcours que tu demandes, et les courses, favoris, commentaires, réactions et abonnements que tu enregistres, les e-mails des notifications que tu as allumées, et le jeu des formes.",
             "Notre intérêt légitime à faire fonctionner MuW, à la garder sûre et à l'améliorer : les courts journaux du serveur, les comptages qui limitent les téléchargements de cartes et les événements de recherche, qui ne disent rien de qui tu es ; la comparaison des numéros de tes contacts, dont aucun n'est gardé ; l'e-mail en cas d'absence, que tu peux refuser à l'inscription, dans «Réglages» ou dans chaque e-mail ; les e-mails des signalements, pour garder MuW sûre ; l'archive des parcours dessinés, qui ne dit rien de qui tu es ; les messages de «Envoie-nous ton avis», pour les lire et te répondre.",
-            "Ton consentement : le numéro de téléphone que tu choisis d'ajouter, la connexion à Strava et l'enregistrement de tes activités dans Apple Santé ou Health Connect. Tu peux retirer un consentement à tout moment ; ce qui a été fait avant reste licite.",
+            "Ton consentement : le numéro de téléphone que tu choisis d'ajouter, la connexion à Strava, l'enregistrement de tes activités dans Apple Santé ou Health Connect et la lecture de ta fréquence cardiaque depuis Apple Santé. Tu peux retirer un consentement à tout moment ; ce qui a été fait avant reste licite.",
             "Une obligation légale, quand une loi nous demande de conserver ou de remettre des données.",
           ],
         },

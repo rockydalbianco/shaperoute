@@ -136,11 +136,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   streak, 0065) e la privacy in `main`; server A+B fatto, il backfill
   riparte dopo la fix #1037 (corse senza traccia); la 0065 nel passo server
   2. Poi D (dopo la #971) ed E. File: quelli della #1037 · `tasks/TASK-423.md`
-- **TASK-421 — I percorsi a piedi non passano per i cancelli chiusi** · motore
-  in `main` (#973, ADR-0349, impronta `8ab61d8e87f9`); restano il server e le
-  zone foot da rifare (`DEPLOY.md` F.15, sì dell'utente dato), al «via server
-  973» del Coordinatore. File: — · `tasks/TASK-421.md`
-
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
 la figura, 305 parapendio, 336 video nei post, 341 badge, 345 calorie e

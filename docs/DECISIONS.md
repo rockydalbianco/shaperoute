@@ -466,6 +466,7 @@ lasciando le righe d'indice.
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
 - ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
+- ADR-0352, precisazione A2 — La pagina dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -484,6 +485,8 @@ lasciando le righe d'indice.
 - ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta · 2026-11-08 · Attiva
 - ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina · 2026-11-08 · Attiva
+- ADR-0339, precisazione C2c — L'anteprima nel foglio: la pagina del video in modo «play» · 2026-11-08 · Attiva
+- ADR-0340, precisazione C — `run_stats`: passi dal server, profilo e calorie dal telefono, il battito resta in `runs` · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
 
@@ -623,6 +626,40 @@ dall'agente su delega dell'utente
 - Le copie notturne del database (`deploy/backup.sh`) lasciano fuori le
   righe dei due tavoli (`--exclude-table-data`): la privacy dice che le
   posizioni si cancellano, e nelle copie resterebbero 14 giorni.
+
+## ADR-0352, precisazione A2 — La pagina dei link dal vivo
+
+**Stato**: Attiva · 2026-11-08 · TASK-424 parte A2 (#1010) · deciso
+dall'agente su delega dell'utente
+
+- `site/live/` senza framework né build: la logica pura in `view.js`
+  (token, richieste, risposte, riga sotto il titolo, numeri, stile della
+  mappa), provata con la fixture `live-view.json`; `live.js` solo pagina,
+  mappa e timer. `view.js` è un file in più rispetto alla lista approvata,
+  nuovo e nella stessa cartella.
+- Le richieste: ogni 10 s; subito con `more`; ogni 60 s quando l'attività
+  è finita (non cambia più, si aspetta solo la scadenza); nessuna più dopo
+  `stopped` o `expired`; dopo un `429` 30 s, perché il browser non può
+  leggere `Retry-After` (l'API non lo espone col CORS). Una richiesta alla
+  volta; al ritorno sulla scheda una subito.
+- L'ora dell'ultimo aggiornamento si misura col clock del browser: la
+  prima risposta usa `updated_at`, le altre al più un giro (10 s) prima
+  dell'arrivo, così un orologio del computer sbagliato non fa dire «No
+  update since» a un link vivo. Il tempo avanza fra due risposte solo con
+  `live`; dopo 2 minuti di silenzio torna l'ultimo del telefono.
+- Passo o velocità come l'app: velocità per bici, gravel, MTB, roller e
+  sci alpino, passo per 500 m in canoa e per 100 m a nuoto, passo per km
+  per gli altri (anche gli sport che verranno); arrotondato come
+  `paceClock`. Miglia e piedi per un browser `en-US`/`en-GB` (le regioni
+  di `phoneUnits.ts`).
+- La mappa ha lo stile scuro dell'app copiato in `view.js`; i suoi colori
+  stanno una volta in `live.css` e un test li confronta con `tokens.ts`.
+  MapLibre 5.24.0 copiato dal pacchetto npm; un test ne confronta gli hash
+  con gli SRI di `mapPage.ts`.
+- Un indirizzo senza token valido dice «This link has expired», come
+  l'API. `?api=` (solo da `127.0.0.1`/`localhost`, solo verso un indirizzo
+  locale) serve a provarla sul Mac contro un finto `/live`: l'API vera
+  lascia leggere `/live` solo a `https://getmuw.app`.
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole
@@ -1356,6 +1393,71 @@ scelta dell'utente 12 (la camera si sceglie solo sul 3D).
    posata ha i pixel stirati vicino alla camera, quindi nel modo `chase`
    la pagina mette punta, emoji e animale alla quota di metri della
    scena, non di pixel. Gli altri modi restano come prima.
+
+## ADR-0339, precisazione C2c — L'anteprima nel foglio: la pagina del video in modo «play»
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-08), con la
+scelta dell'utente 13 (il video vero in loop, non un fotogramma fermo).
+
+1. **La stessa pagina del video, visibile**: l'anteprima è `videoPage` in
+   una WebView in cima a «Edit video», in un modo nuovo `play` che disegna
+   i fotogrammi della scena in tempo reale su un canvas sopra la pagina,
+   senza codificarli. Mappa, animale e camera sono quelli del video: niente
+   secondo disegnatore da tenere uguale al primo. L'esportazione (`make`)
+   non cambia.
+2. **La pagina alla misura della sua mappa** (360 × 640 punti), mostrata
+   rimpicciolita a 150 punti di larghezza: la mappa si disegna come per il
+   video, dentro una pagina visibile.
+3. **La scena si calcola mezzo secondo dopo l'ultima scelta**, non a ogni
+   tocco; una nuova scena prende il posto della vecchia allo stesso
+   secondo. Un nuovo stile o un nuovo animale ricaricano la pagina, perché
+   la pagina prepara la mappa e il modello una volta sola.
+4. **Sulle mappe parte a mappa pronta** (o quando non è venuta): prima
+   resta fermo il fondo, anche sul 3D che può chiedere qualche secondo
+   (richiesta del Coordinatore). Senza mappa parte subito.
+5. **Il costo**: nel simulatore circa il 32 % di un core del Mac sulla
+   Notte e il 40 % sul 3D con la camera dietro, solo con il foglio aperto
+   (che smonta la pagina quando si chiude) e fermabile con un tocco. La
+   batteria si misura sul telefono nella parte E.
+
+## ADR-0340, precisazione C — `run_stats`: passi dal server, profilo e calorie dal telefono, il battito resta in `runs`
+
+**Stato**: Attiva · 2026-11-08 · TASK-410 parte C (#1001). Scelte
+dell'utente in `tasks/TASK-410.md` (2: «Visibili, nascondibili»); il posto
+del battito deciso dal Coordinatore; il resto deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: la pagina del post mostra passi, dislivello, cadenza, calorie
+e battito solo quando ci sono. ADR-0340 metteva tutto in una tabella
+`run_stats`; nel frattempo TASK-409 B1 (#979, `0061`) ha messo il battito
+in `runs`.
+
+**Decisione**:
+
+1. **`run_stats`** (`0064`): una riga per corsa, `stats` `jsonb` con
+   `splits_km`, `splits_mile`, `elevation`, `cadence_spm`, `kcal`. **Il
+   battito non c'è**: si legge da `runs.heart_*` (scelta del Coordinatore,
+   un posto solo), e `heart_shown` decide anche le calorie per chi guarda.
+2. **I passi li conta il server** dalla traccia e dalle pause, a ogni `PUT
+   /me/activities/{key}/stats`, non al salvataggio della corsa:
+   `activities.py` resta com'è. L'ultimo pezzo dopo l'ultimo intero è un
+   passo marcato (`partial_m`) solo da 100 m in su.
+3. **Il telefono manda** profilo (dalle altezze dei punti, al più 120 a
+   passi uguali) e calorie (`activeKcal` col corpo del telefono, metri e
+   secondi del server), una volta, dopo che il server ha preso la corsa;
+   niente nuovi tentativi: la pagina funziona senza. La cadenza resta
+   `null` finché una registrazione non la dà.
+4. **Il filtro sta nel server**: `stats` in `GET /drawings/{id}`, con
+   battito e calorie per gli altri solo se `heart_shown`; all'autore
+   sempre; `null` senza dati. `GET /feed` non lo manda.
+5. **Le corse vecchie**: i passi col backfill `python -m
+   shaperoute_api.run_stats` (solo le righe che mancano), col sì
+   dell'utente; profilo e calorie non li avranno.
+
+**Conseguenze**: la parte D legge `stats` con `statsOf`
+(`api/runStats.ts`) senza toccare `DrawingDetail`; TASK-345 B scrive il
+battito in `runs` e lo trova già nella pagina; il server ha la `0064` da
+applicare nel passo unico.
 
 ## ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso
 

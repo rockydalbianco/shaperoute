@@ -1,8 +1,9 @@
 # TASK-413 — Ciaspole: forme piccole libere sulla neve
 
-**Stato**: In corso — parte 0 in `main` (#933, `189374bc`); A1 nella PR #957
-(`feat/TASK-413-a1-snow-engine`; server e `draw_examples` approvati
-dall'utente il 2026-11-08, «approvo tutto»; aspetta «merge 957»); prossime A2, B, ciascuna in una sessione nuova
+**Stato**: In corso — parte 0 in `main` (#933, `189374bc`); A1 in `main` con
+la #957 (`a63254d3`, mergiata dall'utente) e sul server col passo unico del
+2026-11-10 (main `9cf5576b`; controllo in `out/TASK-413/check-957.md`);
+prossime A2, B, ciascuna in una sessione nuova
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal

@@ -506,8 +506,58 @@ lasciando le righe d'indice.
 - ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF · 2026-11-10 · Attiva
 - ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Accettata
 - ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano · 2026-11-10 · Accettata
+- ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni · 2026-11-10 · Accettata
 
 ## Voci nuove
+
+## ADR-0359 — «Compass»: la freccia di chi corre punta dove punta la mappa, col cono azzurro; le schede della corsa coi disegni
+
+**Stato**: Accettata · 2026-11-10 · TASK-431 (#1081, `5747259d`). Le
+scelte di quello che si vede sono dell'utente, che su un'anteprima con due
+varianti ha scelto la «B»; il modo è deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: provando l'OTA del 2026-11-10 l'utente ha chiesto una pagina
+«Compass» (TASK-422, ADR-0350) più ordinata e una freccia della posizione da
+cui si capisca dove punta. La mappa girava con la bussola, ma la freccia
+seguiva solo la traccia GPS degli ultimi 10 m, e `MapView` mandava la
+direzione alla pagina della mappa solo con un fix nuovo: da fermi la
+freccia non diceva dove si guardava.
+
+**Decisione**:
+- **La direzione della mappa è quella della freccia**: `useHeadingUpMap`
+  espone `facing`, la direzione dell'ultima rotazione su «Compass» (null
+  fuori pagina e col nord in alto). `App.tsx` la passa a `MapView`, che la
+  manda alla pagina col messaggio nuovo `face` a ogni grado intero nuovo, e
+  una volta `null` all'uscita. Nella pagina la freccia gira lì anche senza
+  un fix, un fix con la direzione della traccia non la sovrascrive, e
+  `stopFollow` la dimentica. Così la freccia sta sempre in alto e cambia
+  con la mappa (4°, 400 ms, ADR-0350).
+- **Un solo disegno** (`HEADING_ARROW_SVG`, riquadro di 160 pt): freccia
+  chiara grande col bordo scuro, anello azzurro, e davanti un cono a
+  gradiente radiale acceso solo da `face`. Il riquadro ha
+  `pointer-events: none`, così le dita sul cono spostano la mappa.
+- **Due token nuovi**, nei due toni: `you` (azzurro: anello, cono, la
+  scheda aperta) e `north` (rosso: la punta della freccia del nord). Né
+  giallo, che è del percorso, né ciano, che è di «Start here».
+  `palettes.test.ts` controlla ≥ 3:1 su mappa, fondo e `surfaceRaised` per
+  ogni tono e passo.
+- **Le schede Compass | Map | Data** hanno un disegno fatto di View
+  (`RunPageGlyphs.tsx`: l'app non ha icone né SVG), nascosto a VoiceOver.
+  La pagina aperta ha la superficie chiara, il disegno `you` e una linea
+  `you`; l'altezza resta 56 pt.
+
+**Alternative scartate**: girare la freccia sulla bussola grezza (avrebbe
+tremato in mano e si sarebbe staccata dalla mappa, che gira a soglie);
+mandare la direzione dentro `follow` (arriva solo con un fix: da fermi non
+basta); il cono anche su «Map» (lì la bussola è spenta, e un cono sulla
+traccia promette quello che non sa); un'icona di una libreria (dipendenza
+nuova).
+
+**Conseguenze**: un solo stile di freccia per tutte le pagine con la mappa.
+Il cono non mostra quanto è precisa la bussola (fuori scope). Arriva sui
+telefoni con l'OTA di produzione, col sì dell'utente; resta la prova sul
+telefono.
 
 ## ADR-0358 — I percorsi di MuW fuori dal Feed: un interruttore nell'app, endpoint e catalogo restano
 

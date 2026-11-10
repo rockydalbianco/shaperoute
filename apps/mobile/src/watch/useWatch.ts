@@ -91,12 +91,15 @@ export function followWatch(
 
   // The start message reaches the watch only with MuW open there: Apple
   // wakes the app (part B4), and once it is up the start goes again, with
-  // the app's sport. A watch already in its workout lets it go.
+  // the app's sport. A watch already in its workout lets it go. Without
+  // Apple Health's permission for workouts, or without a watch, Apple says
+  // no: the run on the phone goes on all the same.
   const wakeWatch = () => {
     if (wake === null) {
       return;
     }
-    void wake(activity).then((woken) => {
+    const asked = wake(activity).catch(() => false);
+    void asked.then((woken) => {
       const still = started && !ended && phonePhase !== "idle";
       if (woken && still && watchPhase === null) {
         link.send({

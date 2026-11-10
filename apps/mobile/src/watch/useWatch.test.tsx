@@ -186,6 +186,23 @@ test("a watch already in its workout, or not woken, gets one start only (part B4
   stopOther();
 });
 
+test("without Apple Health's permission the watch is not woken, and the run goes on (part B4)", async () => {
+  const link = fakeLink();
+  // HealthKit refuses: the app may not save workouts.
+  const wake = jest.fn(async () => {
+    throw new Error("Not authorized");
+  });
+  const { stop } = follow(link, "running", wake);
+  const session = beginRun();
+  await act(async () => {});
+  expect(wake).toHaveBeenCalledTimes(1);
+  expect(commands(link)).toEqual(["start"]);
+  skipCountdown();
+  expect(runControl().phase).toBe("running");
+  session.end();
+  stop();
+});
+
 test("Pause and Resume on the phone go to the watch, by hand or by standing still", () => {
   const link = fakeLink();
   const { stop } = follow(link);

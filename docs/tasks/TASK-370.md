@@ -186,7 +186,16 @@ provato, senza tenere ferme le altre cose.
    nella tabella di «B3, la proposta».
 
 **Da chiedere, una per volta** (con una proposta pronta):
-6. La riga della privacy e l'etichetta App Privacy (prima della build 1.1).
+6. **La privacy** (2026-11-10): «Sì, approvato» — una sezione «The MuW app
+   on Apple Watch» nella «Privacy» dell'app e del sito, prima di «Apple
+   Health and Health Connect»: posizione, battito e calorie registrati
+   dall'orologio durante un allenamento e salvati in Apple Salute
+   sull'orologio; i percorsi scelti all'orologio; la traccia al telefono
+   finché non la si salva o scarta, poi al server come ogni corsa; il
+   battito al telefono durante la corsa, mai al server; la posizione chiesta
+   solo durante un allenamento. L'etichetta App Privacy non cambia
+   (posizione e attività già dichiarate, il battito non arriva al server).
+   La copia online del sito (DEPLOY F.14) col sì dell'utente.
 
 9. **Il permesso di posizione dell'orologio** (2026-11-08): «Approvo la
    proposta» — en «MuW uses your location during a workout to guide you
@@ -499,6 +508,18 @@ nell'allenamento di Salute), il file a fine allenamento con
 `transferFile`. Il percorso porta ora `similarity` (facoltativa), che torna
 con la traccia per il punteggio. B3c2: il telefono riceve e mostra.
 
+**B3c2 fatta** (branch `feat/TASK-370-b3c2-phone-run`): il telefono
+riceve il file dell'orologio (`watchFiles()`, l'evento `WatchFileReceived` e
+quelli arrivati ad app chiusa con `getQueuedFiles`), lo tiene tra le corse in
+attesa (`watchRuns.ts`, al massimo 10, in un file con `keptList`), manda la
+notifica e mostra la scheda «From your Apple Watch» in cima a «My
+activities» (`WatchRunCard`, una riga in `ActivitiesList.tsx`). «Open» la
+toglie dall'attesa e apre la fine corsa di sempre (13 righe in `App.tsx`:
+«finish» col punteggio per un percorso, «runFinish» senza); «Discard» la
+toglie. La linea la rifà il registratore del telefono (`watchRun.ts`:
+`addFix`, `pauseTrack`, `resumeTrack`), con i suoi metri e le sue pause. Da
+provare con l'orologio vero: l'arrivo del file e la notifica.
+
 ## File toccati
 
 Parte 0 (questa proposta):
@@ -552,6 +573,16 @@ apps/mobile/App.tsx, la schermata della corsa («Send to watch», il battito)
 apps/mobile/src/health/ (l'allenamento salvato dall'orologio)
 apps/mobile/src/i18n/*.ts, site/privacy/ (testi e privacy, col sì)
 docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-370.md
+```
+
+La privacy dell'orologio (2026-11-10, turno dal Coordinatore dopo la #998):
+
+```
+apps/mobile/src/about/content/{en,it,de,es,fr}.ts (la sezione e la data)
+apps/mobile/src/about/AboutPage.test.tsx, documents.test.ts (solo la data)
+site/privacy/index.html, site/privacy/{it,de,es,fr}/index.html (rigenerati)
+site/tests/privacy.test.mjs (solo la data)
+docs/tasks/TASK-370.md
 ```
 
 ## Criteri di accettazione

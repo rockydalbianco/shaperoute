@@ -194,6 +194,9 @@ test("near the start, with no city chosen: one list, no label", async () => {
   );
   await screen.findByText("Star · 5.1 km");
   expect(screen.getAllByTestId("route-card")).toHaveLength(levico.length);
-  expect(screen.queryByText(/^NEAR /)).toBeNull();
+  // Only «NEAR YOU» over the list, since the page goes on with the catalog
+  // (TASK-420); no town's name.
+  expect(screen.getByText("NEAR YOU")).toBeOnTheScreen();
+  expect(screen.queryByText(/^NEAR (?!YOU)/)).toBeNull();
   expect(routeJobShapes()).toEqual([]);
 });

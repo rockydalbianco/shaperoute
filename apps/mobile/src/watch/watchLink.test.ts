@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 
 import {
+  filesOn,
   linkOn,
   WATCH_EVENTS,
   WATCH_NATIVE_MODULE,
@@ -14,7 +15,7 @@ import type { WatchMessage } from "./watchMessages";
 
 type Listener = (body: unknown) => void;
 
-function fakeNative(context: object | null = null) {
+function fakeNative(context: object | null = null, queued: object = {}) {
   const listeners = new Map<string, Set<Listener>>();
   const native = {
     sendMessage: jest.fn((_message: object) => Promise.resolve({})),
@@ -23,6 +24,8 @@ function fakeNative(context: object | null = null) {
     getApplicationContext: jest.fn(() => Promise.resolve(context)),
     getIsPaired: jest.fn(() => Promise.resolve(true)),
     getIsWatchAppInstalled: jest.fn(() => Promise.resolve(true)),
+    getQueuedFiles: jest.fn(() => Promise.resolve(queued)),
+    dequeueFile: jest.fn((_ids: string[]) => {}),
     addListener: jest.fn(),
     removeListeners: jest.fn(),
   } satisfies WatchNative;
@@ -197,4 +200,28 @@ test("the watch is ready only when it is paired and has the app", async () => {
     Promise.reject(new Error("no session")),
   );
   await expect(link.ready()).resolves.toBe(false);
+});
+
+test("a file of the watch is heard, those that came before too, and given back when done", async () => {
+  const before = {
+    id: "1",
+    timestamp: 1,
+    url: "file:///docs/FilesReceived/workout-1.json",
+    metadata: { type: "track", v: 1 },
+  };
+  const { native, emitter, emit, count } = fakeNative(null, { "1": before });
+  const files = filesOn(native, emitter);
+  const heard: unknown[] = [];
+  const stop = files.listen((file) => heard.push(file));
+  await settle();
+  emit(WATCH_EVENTS.file, { id: "2", url: "file:///docs/b.json", metadata: null });
+  emit(WATCH_EVENTS.file, { id: 3 });
+  expect(heard).toEqual([
+    { id: "1", url: before.url, metadata: { type: "track", v: 1 } },
+    { id: "2", url: "file:///docs/b.json", metadata: {} },
+  ]);
+  files.done("1");
+  expect(native.dequeueFile).toHaveBeenCalledWith(["1"]);
+  stop();
+  expect(count()).toBe(0);
 });

@@ -227,6 +227,20 @@ export const IT: Table = {
   Ghost: "Fantasmino",
   Donut: "Ciambella",
   "The sun": "Sole",
+  Airplane: "Aereo",
+  Anchor: "Ancora",
+  "Bear head": "Testa d'orso",
+  Bicycle: "Bicicletta",
+  Cherries: "Ciliegie",
+  "Espresso cup": "Tazzina di caffè",
+  "Four-leaf clover": "Quadrifoglio",
+  "Leaning Tower": "Torre di Pisa",
+  "Music note": "Nota musicale",
+  Pear: "Pera",
+  Sailboat: "Barca a vela",
+  Swan: "Cigno",
+  Windmill: "Mulino a vento",
+  "Wine glass": "Calice",
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "PAESI VICINI",
@@ -1284,7 +1298,6 @@ export const IT: Table = {
   "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
     "Qui non ci sono ancora percorsi consigliati: forme di {distance} dal centro, disegnate adesso.",
   "Three first, more while you choose.": "Prima tre, altre mentre scegli.",
-  "Best near you": "I migliori vicino a te",
   "Starting within {distance} of {place}": "Con partenza entro {distance} da {place}",
   "your start": "dove sei",
   "Loading routes…": "Carico i percorsi…",
@@ -1929,6 +1942,10 @@ export const IT: Table = {
   // The Apple Watch (TASK-370 part B3a).
   "Send to watch": "Invia all'orologio",
   "Sent to your watch": "Inviato all'orologio",
+  "Your activity from the watch is ready": "L'attività dall'orologio è pronta",
+  "Open MuW to save it.": "Apri MuW per salvarla.",
+  "From your Apple Watch": "Dal tuo Apple Watch",
+  Open: "Apri",
   "Send a route from MuW on your iPhone": "Invia un percorso da MuW sull'iPhone",
   "Off route": "Fuori percorso",
   Arrived: "Arrivo",
@@ -2151,6 +2168,20 @@ export const IT: Table = {
   "Keep sharing": "Continua",
   "Couldn't create the link. Try again.":
     "Non è stato possibile creare il link. Riprova.",
+  // src/explore/ExploreScreen.tsx, FartherAway.tsx, AskLine.tsx (TASK-420: every
+  // drawing of the catalog in «Explore», the nearest first)
+  "{count} drawings in {cities} cities · the nearest first":
+    "{count} disegni in {cities} città · prima i più vicini",
+  "{count} drawings · the nearest first": "{count} disegni · prima i più vicini",
+  "within {distance} · {count}": "entro {distance} · {count}",
+  "FARTHER AWAY": "PIÙ LONTANO",
+  "{count} drawing · by city": "{count} disegno · per città",
+  "{count} drawings · by city": "{count} disegni · per città",
+  "Ask for a route": "Chiedi un percorso",
+  "Famous places, best views, food… in any city":
+    "Luoghi famosi, panorami, cibo… in qualsiasi città",
+  "The rest could not load.": "Il resto non si è caricato.",
+  "Loading more…": "Ne arrivano altri…",
   "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
     "Chiunque abbia il link può seguirti su una pagina web, senza l'app: tempo, vasche o esercizio, calorie e il battito quando un orologio lo manda.",
 };

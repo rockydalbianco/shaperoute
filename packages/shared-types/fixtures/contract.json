@@ -16,7 +16,21 @@
     "smiley",
     "ghost",
     "donut",
-    "sun"
+    "sun",
+    "airplane",
+    "anchor",
+    "bear_head",
+    "bicycle",
+    "cherries",
+    "espresso_cup",
+    "four_leaf_clover",
+    "leaning_tower",
+    "music_note",
+    "pear",
+    "sailboat",
+    "swan",
+    "windmill",
+    "wine_glass"
   ],
   "pen_up_shapes": [
     "cat",
@@ -27,7 +41,11 @@
     "smiley",
     "ghost",
     "donut",
-    "sun"
+    "sun",
+    "anchor",
+    "bear_head",
+    "bicycle",
+    "espresso_cup"
   ],
   "activities": [
     "running",

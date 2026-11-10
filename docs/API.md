@@ -88,7 +88,7 @@ richiesta risponde subito e il percorso si chiede dopo.
 
   | `status` | Vuol dire |
   |---|---|
-  | `queued` | in coda: i due thread di lavoro sono occupati |
+  | `queued` | in coda: i due lavoratori (processi, ADR-0242) sono occupati |
   | `downloading_map` | la zona non è in cache e si scarica da Overpass |
   | `computing` | grafo pronto (o in lettura dal disco), il motore calcola |
   | `done` | `result` è il `RouteResult` |
@@ -96,7 +96,9 @@ richiesta risponde subito e il percorso si chiede dopo.
 
 - `DELETE /route-jobs/{job_id}` annulla: `204`. Una richiesta in coda non
   parte; una che sta caricando il grafo si ferma prima di calcolare; una
-  che sta già calcolando finisce nel suo thread e il risultato si butta.
+  che sta già calcolando finisce nel suo processo e il risultato si butta.
+  Un percorso ha al massimo 600 s: oltre, finisce `failed` con
+  `engine_error` (ADR-0242).
   L'annullamento è un evento delle ricerche (`cancelled`, TASK-142).
 - Un `job_id` sconosciuto (annullato, finito da più di 10 minuti, o API
   riavviata) risponde `404 http_error`.
@@ -445,6 +447,22 @@ che non è un numero fra −180 e 180 si legge `0`.
 I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
 `--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
 nuovo vuole un riavvio dell'API.
+
+### `GET /catalog` (TASK-420 parte E, ADR-0347 precisazione B)
+
+Tutto il catalogo, una pagina alla volta, per il fondo di «Explore»
+(«Farther away»): `?lat=…&lon=…`, facoltativi `offset` (da 0, default 0)
+e `limit` (1–200, default 40). Risponde `{total, cities, routes}`: quanti
+percorsi ha il catalogo in tutto, in quante città, e i percorsi della
+pagina nello stesso corpo di `/recommended-routes` (con `away_m` dal
+punto). L'ordine è **città per città dalla più vicina** al punto (una
+città sta dove sta la sua partenza più vicina), e dentro la città prima
+la somiglianza più alta, a parità il più vicino: lo stesso ordine su ogni
+pagina, così le pagine si attaccano. Corpo in
+`packages/shared-types/fixtures/catalog.json`. Senza catalogo
+`{total: 0, cities: 0, routes: []}`. L'app mostra le prime 40 voci e
+chiede le altre mentre si scorre; un'API senza questa strada (404) la
+lascia com'era.
 
 ### `GET /recommended` (TASK-092, ADR-0229)
 

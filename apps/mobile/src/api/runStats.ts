@@ -1,4 +1,9 @@
-import type { DrawingDetail } from "@shaperoute/shared-types";
+import type {
+  DrawingDetail,
+  SkiDescents,
+  SkiPart,
+  SkiPartRequest,
+} from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "./accounts";
 
@@ -32,6 +37,11 @@ export type RunStats = {
   cadence_spm: number | null;
   kcal: number | null;
   heart: { avg_bpm: number; max_bpm: number } | null;
+  /** A day of skiing's lifts and descents (TASK-424 part C2b): absent from
+   * an API before it. */
+  ski_parts?: SkiPart[] | null;
+  /** Their descents together, what the day's calories are counted on. */
+  ski_descents?: SkiDescents | null;
 };
 
 /** PUT /me/activities/{key}/stats: packages/shared-types/fixtures/
@@ -40,6 +50,12 @@ export type RunStatsRequest = {
   elevation: ElevationPoint[] | null;
   cadence_spm: number | null;
   kcal: number | null;
+  /**
+   * A day of skiing's lifts and descents (TASK-424 part C2b, sent by
+   * TASK-429's app). Only to a server with part C2b: one before it refuses
+   * the whole body (422). Left out, none.
+   */
+  ski_parts?: SkiPartRequest[];
 };
 
 /** As many points as the page draws (run_stats.py MAX_ELEVATION_POINTS). */
@@ -78,6 +94,26 @@ function isElevationPoint(value: unknown): value is ElevationPoint {
   return isRecord(value) && isNumber(value.distance_m) && isNumber(value.altitude_m);
 }
 
+function isSkiPart(value: unknown): value is SkiPart {
+  return (
+    isRecord(value) &&
+    (value.kind === "lift" || value.kind === "descent") &&
+    isNumber(value.n) &&
+    isNumber(value.start_s) &&
+    isNumber(value.end_s) &&
+    isNumber(value.moving_s) &&
+    isNumber(value.metres) &&
+    isNumber(value.height_m) &&
+    isNumberOrNull(value.top_mps)
+  );
+}
+
+/** The descents of a day of skiing, as a post or its figures give them;
+ * null or missing for none (TASK-424 part C2b). */
+export function isSkiDescents(value: unknown): value is SkiDescents {
+  return isRecord(value) && isNumber(value.metres) && isNumber(value.moving_s);
+}
+
 /** A body of the API's figures; a field missing counts as null, so an API
  * that adds one later is still read. */
 export function isRunStats(body: unknown): body is RunStats {
@@ -91,6 +127,10 @@ export function isRunStats(body: unknown): body is RunStats {
     isListOrNull(body.elevation, isElevationPoint) &&
     isNumberOrNull(body.cadence_spm) &&
     isNumberOrNull(body.kcal) &&
+    isListOrNull(body.ski_parts, isSkiPart) &&
+    (body.ski_descents === null ||
+      body.ski_descents === undefined ||
+      isSkiDescents(body.ski_descents)) &&
     (heart === null ||
       heart === undefined ||
       (isRecord(heart) && isNumber(heart.avg_bpm) && isNumber(heart.max_bpm)))
@@ -111,6 +151,8 @@ export function statsOf(detail: DrawingDetail): RunStats | null {
     cadence_spm: stats.cadence_spm ?? null,
     kcal: stats.kcal ?? null,
     heart: stats.heart ?? null,
+    ski_parts: stats.ski_parts ?? null,
+    ski_descents: stats.ski_descents ?? null,
   };
 }
 

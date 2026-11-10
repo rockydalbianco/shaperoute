@@ -1,8 +1,9 @@
 # TASK-418 — Forme nuove per il catalogo di «Explore»
 
 **Stato**: In corso — parte A (le forme candidate) Done, in `main` con la
-PR #953; la registrazione delle forme approvate su strada è Todo.
-**Fase**: 4 · **Branch**: `feat/TASK-418-new-shapes` · **ADR**: ADR-0346
+PR #953; parte B (la registrazione delle 14 forme approvate su strada) in PR.
+**Fase**: 4 · **Branch**: `feat/TASK-418-new-shapes` (A),
+`feat/TASK-418-b-register-shapes` (B) · **ADR**: ADR-0346
 (numeri dal Coordinatore) ·
 parte A del catalogo grande; B è TASK-419 (i 1000 disegni e la scelta),
 C è TASK-420 (la pagina del catalogo)
@@ -94,3 +95,75 @@ quattro forme erano sbagliate (bracci dell'ancora e vele staccati,
 quadrifoglio a nuvola, coda della balena): corrette. La moka a Barcellona
 si legge poco: la scelta la fa l'utente su TASK-419. Prossimo: la
 registrazione delle forme approvate (una parte successiva di TASK-418).
+
+## Parte B — Le forme approvate entrano nel catalogo
+
+**Via**: l'utente, «ok procedi» ai 20 percorsi di `pending_outlines` in
+`tools/catalog_kept.json` (TASK-419), dal Coordinatore il 2026-11-10. Sono
+14 forme: `airplane`, `anchor`, `bear_head`, `bicycle`, `cherries`,
+`espresso_cup`, `four_leaf_clover`, `leaning_tower`, `music_note`, `pear`,
+`sailboat`, `swan`, `windmill`, `wine_glass`.
+
+**Cosa cambia**:
+
+- i 14 file passano da `candidate_outlines/` a
+  `route_engine/shapes/outlines/` (`APPROVED` in `tools/draw_new_shapes.py`)
+  ed entrano in `SHAPES`; le altre 35 restano candidate;
+- contratto (`SHAPES`, `PEN_UP_SHAPES`), descrizioni per l'AI, nomi in
+  cinque lingue, emoji, parole della ricerca, categorie (orso e cigno negli
+  animali; ancora, quadrifoglio e nota nei simboli; il resto nelle emoji:
+  nessuna categoria nuova, TASK-344), `catalogueShapes.json`, `engine.zip`;
+- **penna giù soltanto** nell'app: ancora, orso, bici e tazzina hanno pezzi,
+  quindi l'API le accetta con la penna alzata (`PEN_UP_SHAPES`, come il
+  sole), ma «Draw» non la offre finché l'utente non le ha giudicate così;
+- **le zone non cambiano**: `prefetch_zones.ZONE_SHAPES` tiene la scatola
+  dei percorsi più lunghi sulle 17 forme di prima (deciso dal Coordinatore
+  su delega). Il limite: in bici pera e Torre di Pisa stanno nella zona fino
+  a 26 km, non a 30 (`test_prefetch_zones.py`);
+- **stessi percorsi**: le 9 rotte di `test_same_routes.py` identiche sul Mac
+  prima e dopo; `SAME_ROUTES_AS` 2bca806f467b → 8ab61d8e87f9 (tutto tranne
+  il nuoto), 55b54eea0e14 → 17d7608bd912 (nuoto), cf585f8fb31b →
+  8a62c5877031 (pagaiata).
+
+**File toccati (B)**:
+
+```
+services/route-engine/route_engine/shapes/outlines/<14>.json   (spostati)
+services/route-engine/candidate_outlines/<14>.json             (tolti)
+services/route-engine/route_engine/shapes/__init__.py
+services/route-engine/tests/test_pieces.py
+services/route-engine/tests/test_water_pieces.py
+tools/draw_new_shapes.py
+tools/test_draw_new_shapes.py
+tools/test_catalogue_shapes.py
+packages/shared-types/src/index.ts
+packages/shared-types/fixtures/contract.json
+services/api/shaperoute_api/prefetch_zones.py
+services/api/shaperoute_api/route_store.py
+services/api/tests/test_prefetch_zones.py
+services/api/tests/test_zone_shapes.py                          (nuovo)
+services/api/tests/fixtures/same_routes/2bca806f467b.json       (nuovo)
+services/ai/shaperoute_ai/prompt.py
+services/ai/tests/phrases.json
+services/ai/tests/phrases-holdout.json
+apps/mobile/src/i18n/shapeNames.ts
+apps/mobile/src/i18n/it.ts
+apps/mobile/src/i18n/de.ts
+apps/mobile/src/i18n/es.ts
+apps/mobile/src/i18n/fr.ts
+apps/mobile/src/route/ShapeTiles.tsx
+apps/mobile/src/route/shapeWords.ts
+apps/mobile/src/route/shapeWords.test.ts
+apps/mobile/src/route/ShapeNamesLanguages.test.tsx
+apps/mobile/src/search/categories.ts
+apps/mobile/src/mapdraw/catalogueShapes.json
+apps/mobile/src/mapdraw/ChangeFigureApp.test.tsx
+apps/mobile/assets/engine/engine.zip
+docs/tasks/TASK-418.md
+```
+
+**Dopo il merge** (non qui): sul server checkout e `draw_examples` per la
+nuova impronta, in catena dal Coordinatore; TASK-419 mette i 20 percorsi
+nel catalogo; le righe di STATUS, DECISIONS (la precisazione di ADR-0346
+sulle zone) e INDEX in una PR di soli documenti.
+

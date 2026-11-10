@@ -173,6 +173,12 @@ it("counts the energy as before", () => {
     inline_skating: "met",
     walking: "oxygen",
     gravel_biking: "met",
+    // Every activity its calories (TASK-424 part C2, the user's choice of
+    // 2026-11-10): the swim in open water and the days on the snow too.
+    swimming: "met",
+    skiing: "met",
+    xc_skiing: "met",
+    ski_touring: "oxygen",
   });
   expect(profileOf("hiking").energy).toEqual(profileOf("walking").energy);
   expect(profileOf("running").energy).toEqual({
@@ -205,6 +211,41 @@ it("counts the energy as before", () => {
     ],
   });
   expect(metAt("paddling", 100)).toBe(12.5);
+});
+
+it("gives every activity its energy (TASK-424 part C2)", () => {
+  // Only the gym has none here: it counts its own, from its sets.
+  expect(
+    SPORT_PROFILES.filter((sport) => sport.energy === undefined).map(
+      (sport) => sport.activity,
+    ),
+  ).toEqual(["gym"]);
+  // A swim in open water: a pool's bands, its paces /100 m in km/h.
+  expect(profileOf("swimming").energy).toEqual({
+    kind: "met",
+    bands: [
+      { belowKmh: 360 / 138, met: 5.8 },
+      { belowKmh: 360 / 105, met: 8.0 },
+      { belowKmh: 360 / 73, met: 10.5 },
+      { belowKmh: Infinity, met: 14.5 },
+    ],
+  });
+  // Downhill: one MET, on the descents alone (activities/trackEffort.ts).
+  expect(profileOf("skiing").energy).toEqual({
+    kind: "met",
+    bands: [{ belowKmh: Infinity, met: 5.3 }],
+  });
+  expect(profileOf("xc_skiing").energy).toEqual({
+    kind: "met",
+    bands: [
+      { belowKmh: 4 * MPH_KMH, met: 6.8 },
+      { belowKmh: 5 * MPH_KMH, met: 9.0 },
+      { belowKmh: 8 * MPH_KMH, met: 12.5 },
+      { belowKmh: Infinity, met: 15.0 },
+    ],
+  });
+  // Up on skins: a hike's, the metres climbed most of all.
+  expect(profileOf("ski_touring").energy).toEqual(profileOf("hiking").energy);
 });
 
 it("starts a run without a route and labels a MuW route as before", () => {

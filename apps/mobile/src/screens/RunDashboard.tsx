@@ -127,7 +127,10 @@ export function RunCard({
   fetchFn,
   apiKey,
 }: Props) {
-  const numbers = useRunNumbers(track, live && !arrived, route, activity);
+  // The sport «Save» takes, the one of «Settings»: its calories (TASK-424
+  // part C2), and the watch's activity.
+  const sport = runActivityOf(useSport());
+  const numbers = useRunNumbers(track, live && !arrived, route, activity, sport);
   const control = useRunControl();
   const pocket = usePocketMode(live && !arrived);
   // The screen on for the whole run, pocket mode or not (TASK-255).
@@ -136,8 +139,8 @@ export function RunCard({
   // run starts; the line then follows the track, on both pages.
   const game = useRunGameStrip(track, activity, { fetchFn, key: apiKey });
   // The Apple Watch along (TASK-370 A3): the same state on both, its heart
-  // rate here; the sport «Save» takes, the one of «Settings».
-  const bpm = useWatch(runActivityOf(useSport()), onStop);
+  // rate here.
+  const bpm = useWatch(sport, onStop);
   const page = useRunPage();
   // The next run opens on «Map» again.
   useEffect(() => () => setRunPage(FIRST_PAGE), []);

@@ -27,7 +27,8 @@ import { NO_NUMBER, Tile, useRunNumbers } from "./RunPanel";
  * run's numbers. Skiing: the kilometres of the descents, how many, the
  * metres skied down, the top and the average speed, the lifts and the
  * time. Cross-country: the distance, the average pace, the metres climbed
- * and the time. No calories on the snow: there is no estimate for it yet.
+ * and the time. Their calories too (TASK-424 part C2, the user's choice
+ * of 2026-11-10): downhill counted on the descents alone.
  */
 
 /** Metres a second in km/h or, with miles, in mph: "42.3". */
@@ -55,8 +56,9 @@ type Props = {
 
 export function SnowFinishCard({ run, activity, onResume, onDone }: Props) {
   const { track } = run;
-  // The time, the pace and the metres climbed as a run's.
-  const numbers = useRunNumbers(track, false);
+  // The time, the pace and the metres climbed as a run's; the calories of
+  // the day's own sport.
+  const numbers = useRunNumbers(track, false, undefined, undefined, activity);
   const day = useMemo(() => snowDay(track), [track]);
   // Downhill the metres skied, lifts left out (src/sports).
   const skiing = profileOf(activity).skied === true;
@@ -106,6 +108,9 @@ export function SnowFinishCard({ run, activity, onResume, onDone }: Props) {
               label={t("Total")}
               value={runDistanceLabel(track.distanceM, numbers.units)}
             />
+            {numbers.energy !== null && (
+              <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
+            )}
           </View>
         </View>
       ) : (
@@ -117,6 +122,11 @@ export function SnowFinishCard({ run, activity, onResume, onDone }: Props) {
           />
           <Tile label={t("Elev. gain")} value={numbers.climb} unit="m" />
           <Tile label={t("Time")} value={numbers.time} />
+        </View>
+      )}
+      {!skiing && numbers.energy !== null && (
+        <View style={styles.tiles}>
+          <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
         </View>
       )}
       {/* The snow and the gear of the day, sent with it at «Save». */}

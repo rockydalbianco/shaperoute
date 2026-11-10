@@ -193,7 +193,10 @@ def test_the_examples_are_the_bodies() -> None:
     request = _load("activity-request-imported.json")
     # A file has no route: its request is that of a free run, with `source`.
     assert set(request) == (
-        set(ActivityRequestBody.model_fields) - {"walks", "rotation_deg"}
+        set(ActivityRequestBody.model_fields)
+        - {"walks", "rotation_deg"}
+        # The phone's offset is the game's (TASK-423 C): a file counts not.
+        - {"utc_offset_min"}
     )
     assert ActivityRequestBody.model_validate(request).source == "file"
     listed = _load("activities-imported.json")

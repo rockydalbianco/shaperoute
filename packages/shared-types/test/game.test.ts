@@ -3,8 +3,16 @@ import { test } from "node:test";
 
 import catalog from "../fixtures/game-catalog.json" with { type: "json" };
 import me from "../fixtures/game-me.json" with { type: "json" };
+import personalFixture from "../fixtures/game-personal.json" with { type: "json" };
 import run from "../fixtures/game-run.json" with { type: "json" };
-import type { GameCatalog, GameMe, GameShape, RunGame } from "../src/index.ts";
+import type {
+  GameCatalog,
+  GameMe,
+  GamePersonal,
+  GamePersonalUnit,
+  GameShape,
+  RunGame,
+} from "../src/index.ts";
 
 // The shape game (TASK-296, ADR-0255): the examples the app's tests read,
 // shaped as the API's game.py answers.
@@ -52,4 +60,43 @@ test("the game of the account names every shape of the catalog", () => {
 test("a run that unlocked a shape names one of the catalog", () => {
   assert.ok(worth.counted);
   assert.ok(worth.unlocked.every((id) => served.shapes.some((s) => s.id === id)));
+});
+
+// The personal challenges (TASK-423 part C): as game_personal_api.py answers.
+const personal: GamePersonal = {
+  ...personalFixture,
+  week: {
+    ...personalFixture.week,
+    challenges: personalFixture.week.challenges.map((c) => ({
+      ...c,
+      unit: c.unit as GamePersonalUnit,
+    })),
+  },
+  month: {
+    ...personalFixture.month,
+    challenges: personalFixture.month.challenges.map((c) => ({
+      ...c,
+      unit: c.unit as GamePersonalUnit,
+    })),
+  },
+  finished: personalFixture.finished.map((f) => ({
+    ...f,
+    unit: f.unit as GamePersonalUnit,
+    period: f.period as "week" | "month",
+  })),
+};
+
+test("the personal challenges have three steps and a step within them", () => {
+  for (const period of [personal.week, personal.month]) {
+    assert.ok(period.start < period.end);
+    for (const challenge of period.challenges) {
+      assert.equal(challenge.tiers.length, 3);
+      assert.ok(challenge.tier >= 0 && challenge.tier <= 3);
+    }
+  }
+  assert.deepEqual(
+    personal.streaks.map((line) => line.runs),
+    [1, 2, 3],
+  );
+  assert.ok(personal.finished.every((f) => f.tier >= 1 && f.tier <= 3));
 });

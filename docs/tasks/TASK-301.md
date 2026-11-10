@@ -1,7 +1,7 @@
 # TASK-301 — La musica nel video della corsa
 
-**Stato**: In lavorazione — PR #568 aperta, aspetta il merge e la prova
-sull'iPhone
+**Stato**: Done · 2026-11-10 · #568 in `main` dal 2026-10-26; resta solo la
+prova dell'utente sull'iPhone (Instagram accetta il video)
 **Fase**: 4 · **Branch**: `feat/TASK-301-video-music`
 **ADR**: ADR-0262 (sostituisce il punto 1 «Niente musica» di ADR-0254,
 che resta com'è) · **Migrazione**: nessuna · **Solo app** (nessun server,
@@ -219,3 +219,7 @@ Coordinatore.
 Prossimi passi: il merge del Coordinatore e `preview`; la prova
 dell'utente sull'iPhone (la riga, l'ascolto, un video con la musica
 accettato da Instagram); poi la PR di chiusura di questo file.
+
+## Chiusura (2026-11-10)
+
+Chiuso dal giro delle chiusure del 2026-11-10 (sessione «Task backlog review», su assegnazione del Coordinatore): la #568 è in `main` dal 2026-10-26, solo JS, uscita con gli OTA di produzione. **Resta per l'utente**, l'ultimo criterio: sull'iPhone la riga «Music», l'ascolto di un brano e un video con la musica accettato da Instagram.

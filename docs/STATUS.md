@@ -116,10 +116,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   l'aggiornamento del Coordinatore; B2 (l'app) in PR, entra dopo il server.
   La B fa anche i pezzi di TASK-345 B/C e 374 D. File: `src/pool/`,
   `src/health/heart*`, `src/about/content/`, `site/privacy/` · `tasks/TASK-409.md`
-- **TASK-410 — La pagina del post** · B in `main` (#949) e in produzione
-  (OTA `8b1af1b4`); F (la card del Feed come la pagina) in `main` (#980),
-  esce col prossimo OTA unico. Poi C (`run_stats`, lista al Coordinatore
-  prima del codice), D, E. File: — · `tasks/TASK-410.md`
+- **TASK-410 — La pagina del post** · B (#949, OTA `8b1af1b4`), F (#980) e
+  C (`run_stats`, #1001, migrazione 0064) in `main`; F e l'invio delle stats
+  col prossimo OTA unico, la 0064 col passo unico sul server, il backfill
+  dei passi col sì dell'utente. Poi D, E. File: — · `tasks/TASK-410.md`
 - **TASK-411 — La palestra per tutti i giorni** · A–F in `main` (la
   migrazione 0058 delle schede); restano il server (0058 e il calendario), il
   sito della privacy e un OTA dedicato, ognuno col sì. File: — ·

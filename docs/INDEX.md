@@ -40,7 +40,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Pubblicità, AdMob, pagamenti | `PUBBLICITA.md`, ADR-0198 |
 | Feed: schede, filtri «Tutti»/«Seguiti», percorsi di MuW | `API.md` «Feed», ADR-0306, ADR-0308, ADR-0310 |
 | Post: video, compositore, calorie e battito | `API.md` «Drawings», `tasks/TASK-336.md`, `tasks/TASK-348.md`, `tasks/TASK-345.md` |
-| La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 |
+| La pagina del post (foto, video, foglio, sezioni, `run_stats`) | `tasks/TASK-410.md`, ADR-0340 (precisazioni C, F), `API.md` «Run stats», `DATABASE.md` (0064) |
 | La mia immagine al posto dell'animale nel video (foto tonda, GIF, cartellino sul 3D) e il video «Together» con le persone taggate sullo stesso orologio | `tasks/TASK-417.md`, `DECISIONS.md` ADR-0345 e ADR-0339, `tasks/TASK-408.md` |
 | Video della corsa ed editor con l'animale 3D | ADR-0303, ADR-0339, `UI.md` «Il post da condividere», `tasks/TASK-408.md` |
 | Messaggi, chat, allegati | `API.md` «Messages», `UI.md`, ADR-0279, ADR-0305 |

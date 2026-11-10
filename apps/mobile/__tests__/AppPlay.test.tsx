@@ -110,8 +110,9 @@ test("the row opens the game over the app, and «←» goes back to «Draw»", a
   const game = screen.getByTestId("play-overlay");
   expect(within(game).getByRole("header")).toHaveTextContent("Play");
   expect(within(game).getByTestId("play-screen")).toBeOnTheScreen();
-  // Nobody signed in: the shapes as they are, and the way to sign in.
-  expect(within(game).getByTestId("shape-card-triangle")).toBeOnTheScreen();
+  // Nobody signed in: the collections (TASK-423), none taken, and the way
+  // to sign in.
+  expect(within(game).getByTestId("collection-geometry")).toHaveTextContent(/0 \/ 2/);
   expect(within(game).getByText("Sign in to collect shapes.")).toBeOnTheScreen();
   // The pages are not under it: the game takes the whole screen.
   expect(screen.queryByTestId("tab-bar")).toBeNull();

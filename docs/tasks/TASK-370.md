@@ -565,6 +565,34 @@ senza disegno, più colori e più informazioni. La proposta approvata è
 di `climbM`) e `LiveLine` (un punto ogni 5 m, al massimo 1500). Da
 provare al polso con la build 12, insieme a B4.
 
+## B4, il risveglio dell'orologio (2026-11-10)
+
+Prova con la build 11: una corsa avviata sull'iPhone fa partire
+l'orologio solo se MuW è già aperta al polso. Il messaggio di partenza
+(`sendMessage`) arriva solo a un'app raggiungibile.
+
+- **Telefono.** Al conto alla rovescia chiede ad Apple di avviare
+  l'allenamento sull'orologio (`HKHealthStore.startWatchApp(with:)`), che
+  lancia l'app anche chiusa. La funzione c'è già nella libreria HealthKit
+  della build 1.0.1 (`startWatchApp` di @kingstinct/react-native-healthkit
+  16.2.0), quindi basta JavaScript (`src/watch/watchWake.ts`). La libreria
+  si carica come in `health/healthModules.ts`; senza il suo codice nativo
+  (Expo Go, Android) non succede nulla. Quando Apple risponde sì e
+  l'orologio non ha ancora detto il suo stato, il telefono rimanda la
+  partenza con lo sport dell'app.
+- **Senza permesso di Salute, o senza orologio,** Apple dice no: il
+  risveglio fallisce in silenzio e la corsa sul telefono va avanti (test).
+- **Orologio.** Un `WKApplicationDelegate` (`AppDelegate.swift`) riceve la
+  configurazione dell'allenamento. `WorkoutManager.wake` aspetta 3 s la
+  partenza del telefono, con lo sport esatto: bici, mountain bike e gravel
+  per Apple sono tutte «ciclismo». Se non arriva, parte il primo sport
+  con quel tipo e lo stesso GPS (`WatchWake.sport`). Una seconda partenza
+  durante un allenamento non cambia nulla.
+- **Impronta iOS** misurata su copia pulita con `APP_VARIANT=production`:
+  6f8bba4c sul branch e su main, ferma.
+
+Da provare al polso con la build 12.
+
 ## File toccati
 
 Parte 0 (questa proposta):
@@ -643,6 +671,18 @@ apps/mobile/targets/watch/Core/Fixtures/messages.json
 apps/mobile/targets/watch/App/LiveMapView.swift (nuovo)
 apps/mobile/targets/watch/App/MuWWatchApp.swift, RouteMapView.swift, WorkoutManager.swift
 apps/mobile/targets/watch/{en,it,de,es,fr}.lproj/Localizable.strings (rigenerati)
+docs/tasks/TASK-370.md
+```
+
+Parte B4 (lista mandata al Coordinatore il 2026-11-10):
+
+```
+apps/mobile/src/watch/watchWake.ts, watchWake.test.ts (nuovi)
+apps/mobile/src/watch/useWatch.ts, useWatch.test.tsx
+apps/mobile/targets/watch/App/AppDelegate.swift (nuovo)
+apps/mobile/targets/watch/App/MuWWatchApp.swift, WorkoutManager.swift
+apps/mobile/targets/watch/Core/Sources/WatchCore/WatchWake.swift (nuovo)
+apps/mobile/targets/watch/Core/Tests/WatchCoreTests/WatchWakeTests.swift (nuovo)
 docs/tasks/TASK-370.md
 ```
 

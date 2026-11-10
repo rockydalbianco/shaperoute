@@ -111,6 +111,30 @@ test("a pace shape shows the best time once the distance was run in one go", () 
   );
 });
 
+// A milestone of TASK-423: a pace any run meets, over one run of the distance.
+const FIRST_HALF: GameGoal = {
+  kind: "pace",
+  total_m: null,
+  distance_m: 21097,
+  pace_s: 1200,
+  single_run: true,
+};
+
+test("a milestone asks for one run of the distance, its pace unsaid", () => {
+  expect(goalText(FIRST_HALF, "km")).toBe("One run of 21.1 km");
+  expect(goalText(FIRST_HALF, "mi")).toBe("One run of 13.1 mi");
+  // Without the field, as an older API's: the pace, as before.
+  const { single_run: _one, ...older } = FIRST_HALF;
+  expect(goalText(older, "km")).toBe("21.1 km under 20:00 /km");
+  expect(goalText({ ...FIRST_HALF, single_run: false }, "km")).toBe(
+    "21.1 km under 20:00 /km",
+  );
+  // How far along: the longest run so far.
+  expect(progressText(FIRST_HALF, me({ longest_m: 15400 }), "km")).toBe(
+    "Longest run 15.4 km",
+  );
+});
+
 test("in Italian the words follow the language, the comma too", () => {
   saveLanguageChoice("it");
   expect(goalText(FIVE_KM, "km")).toBe("5 km in totale");

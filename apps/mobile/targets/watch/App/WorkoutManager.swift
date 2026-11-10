@@ -41,6 +41,8 @@ final class WorkoutManager: NSObject, ObservableObject {
     private var session: HKWorkoutSession?
     private var builder: HKLiveWorkoutBuilder?
     private var countdownTask: Task<Void, Never>?
+    /// Woken by the phone (part B4): the wait for its start message.
+    private var wakeTask: Task<Void, Never>?
     /// When the phone was last told the heart rate and the distance.
     private var heartSentAt: Int64 = 0
     /// The heart rates of the workout, for its average in the track.
@@ -154,6 +156,8 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     /// A workout of `sport`, along `route` when there is one (part B3b).
     func start(_ sport: WatchSport, route: WatchRoute? = nil) {
+        wakeTask?.cancel()
+        wakeTask = nil
         var next = Workout(activity: sport.activity)
         guard phase == .ready, next.apply(.start, at: Self.now()) else {
             return
@@ -203,6 +207,32 @@ final class WorkoutManager: NSObject, ObservableObject {
             return
         }
         session?.resume()
+    }
+
+    /// The phone woke the app for a workout (part B4): its start message,
+    /// with the app's sport, follows once the app is up. Without it within
+    /// `WatchWake.waitS`, the sport of the configuration starts; a workout
+    /// already on lets it go, as a second start.
+    func wake(_ configuration: HKWorkoutConfiguration) {
+        guard phase == .ready, wakeTask == nil else {
+            return
+        }
+        let appleWorkout = Int(configuration.activityType.rawValue)
+        let outdoor = configuration.locationType != .indoor
+        wakeTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(WatchWake.waitS * 1_000_000_000))
+            guard let self, !Task.isCancelled else {
+                return
+            }
+            self.wakeTask = nil
+            guard self.phase == .ready,
+                let sport = WatchWake.sport(
+                    appleWorkout: appleWorkout, outdoor: outdoor, among: self.sports)
+            else {
+                return
+            }
+            self.start(sport)
+        }
     }
 
     /// The end; during the countdown it stops it, and nothing is recorded.

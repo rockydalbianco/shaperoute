@@ -22,11 +22,18 @@ export function goalPaceLabel(paceS: number, units: Units = appUnits()): string 
   return paceLabel(1000, paceS * 1000, units) ?? "";
 }
 
-/** "5 km in total", "1 km under 5:00 /km": what the shape asks. */
+/** "5 km in total", "1 km under 5:00 /km", "One run of 21.1 km": what the
+ * shape asks. A milestone (TASK-423) is a pace any run meets, over one run:
+ * its pace is not said. */
 export function goalText(goal: GameGoal, units: Units = appUnits()): string {
   if (goal.kind === "distance") {
     return t("{distance} in total", {
       distance: goalDistanceLabel(goal.total_m, units),
+    });
+  }
+  if (goal.single_run === true) {
+    return t("One run of {distance}", {
+      distance: goalDistanceLabel(goal.distance_m, units),
     });
   }
   return t("{distance} under {pace}", {
@@ -38,7 +45,8 @@ export function goalText(goal: GameGoal, units: Units = appUnits()): string {
 /**
  * How far along a shape not unlocked yet is, in words: "14.2 / 20 km" for
  * a distance; for a pace, the best time against the target once the
- * distance was run in one go, else the longest run so far.
+ * distance was run in one go, else the longest run so far; for a milestone,
+ * the longest run so far.
  */
 export function progressText(
   goal: GameGoal,
@@ -49,7 +57,7 @@ export function progressText(
     return `${decimal(inUnits(me.counted_m, units))} / ${goalDistanceLabel(goal.total_m, units)}`;
   }
   const bestS = me.best_s[String(goal.distance_m)];
-  if (bestS !== undefined && bestS > 0) {
+  if (goal.single_run !== true && bestS !== undefined && bestS > 0) {
     return t("Best {best} · target {target}", {
       best: paceLabel(goal.distance_m, bestS * 1000, units) ?? "",
       target: goalPaceLabel(goal.pace_s, units),

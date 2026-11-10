@@ -51,8 +51,10 @@ test("a catalog from before TASK-423 still reads", () => {
   expect(isGameCatalog({ ...before, shapes })).toBe(true);
 });
 
-test("the app of today writes a milestone as a pace that any run meets", () => {
-  // Until part D says «One run of 5 km», the old words stay true.
+test("a milestone reads «One run of 5 km»; an app before part D wrote the pace", () => {
+  // The app before TASK-423 part D did not read `single_run`: its words, a
+  // pace that any run meets, stayed true. From part D, the milestone's own.
   const goal = { kind: "pace", total_m: null, distance_m: 5000, pace_s: 1200 } as const;
-  expect(goalText({ ...goal, single_run: true }, "km")).toBe("5 km under 20:00 /km");
+  expect(goalText(goal, "km")).toBe("5 km under 20:00 /km");
+  expect(goalText({ ...goal, single_run: true }, "km")).toBe("One run of 5 km");
 });

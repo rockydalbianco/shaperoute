@@ -1,7 +1,9 @@
 # TASK-432 — «Edit the drawing» sui percorsi chiusi che si incrociano
 
-**Stato**: In lavorazione · 2026-11-10 · branch
-`fix/TASK-432-edit-closed-crossing`
+**Stato**: Done · 2026-11-10 · codice nella #1079 (`1907a50e`), documenti
+nella PR di `docs/TASK-432-done`. Esito: «Edit the drawing» su tutti i 597
+percorsi del catalogo di «Explore»; resta l'OTA di produzione del
+Coordinatore.
 **Fase**: 5 · **ADR**: precisazione di ADR-0356 (nella PR di soli documenti)
 · numero dal Coordinatore («Coordinatore (fork)», 2026-11-10)
 
@@ -67,9 +69,11 @@ suoi test passano con questa versione (Coordinatore, 2026-11-10).
 - `apps/mobile/src/route/exploreCatalogEdit.test.ts` (nuovo)
 - `docs/tasks/TASK-432.md`
 
-PR di soli documenti, dopo il merge: `docs/STATUS.md`, `docs/DECISIONS.md`
-(precisazione di ADR-0356), `docs/INDEX.md`, `docs/archive/COMPLETATI.md` e
-questo file.
+PR di soli documenti, dopo il merge: `docs/DECISIONS.md` (precisazione di
+ADR-0356 e la sua riga d'indice), `docs/INDEX.md`,
+`docs/archive/COMPLETATI.md`, `docs/UI.md` («Edit the drawing: la figura
+sulla mappa») e questo file. `docs/STATUS.md` non cambia: TASK-432 non ha
+mai avuto una voce in «In lavorazione».
 
 ## Criteri di accettazione
 
@@ -79,7 +83,7 @@ questo file.
       più del percorso stesso (`exploreCatalogEdit.test.ts`, 597 su 597;
       fallisce sul codice di `main`).
 - [x] I test di TASK-425 e TASK-428 restano verdi.
-- [x] Test toccati, `tsc`, lint e Prettier verdi in locale.
+- [x] Test toccati, `tsc`, lint e Prettier verdi in locale; CI verde.
 
 ## Dopo il merge
 

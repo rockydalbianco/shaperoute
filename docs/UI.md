@@ -2972,7 +2972,10 @@ fino alla partenza (TASK-425, ADR-0353): il percorso la fa una volta e
 torna. Se così chiusa non fa un contorno (si incrocia da sola, o il lato di
 ritorno la attraversa) diventa un anello appeso alla partenza, con lo stesso
 lato dritto (TASK-428, ADR-0356): il percorso la fa ancora una volta e
-torna, e sulla mappa si vede chiusa allo stesso modo. Solo se nemmeno così
+torna, e sulla mappa si vede chiusa allo stesso modo. Lo stesso anello vale
+per un percorso che torna alla partenza e si incrocia da solo, come una
+parola o una farfalla di «Explore» (TASK-432): prima non faceva un disegno e
+la scheda non aveva il tasto. Solo se nemmeno così
 fa un disegno resta una linea aperta, come la prima linea disegnata sulla
 mappa (TASK-331), e il percorso la fa andata e ritorno. Il tasto non c'è per un
 post di sole foto e sotto il risultato di «Draw» (TASK-340). Dalla parte

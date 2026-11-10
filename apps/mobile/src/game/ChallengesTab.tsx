@@ -12,6 +12,7 @@ import {
 
 import { t, tPlural } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
+import { useContest } from "../contest/useContest";
 import { useFollowsDoor } from "../social/followsDoor";
 import {
   color,
@@ -28,9 +29,14 @@ import {
   useRequestedChallenge,
 } from "./challengeDoor";
 import { useGameCatalog } from "./gameCatalog";
+import { MonthChallengeRow } from "./MonthChallengeRow";
+import { PersonalCard } from "./PersonalCard";
+import { challengeName, medalName, periodLeftText, periodText } from "./personalText";
 import { shapeNameIn } from "./ShapeCard";
+import { StreakCard } from "./StreakCard";
 import { TeamView } from "./TeamView";
 import { keepChallenge } from "./useChallenge";
+import { usePersonal } from "./usePersonal";
 import { useTeams } from "./useTeams";
 
 type Props = {
@@ -50,11 +56,17 @@ type Props = {
 type Open = { teamId: string | null; challengeId: string | null; team?: GameTeam };
 
 /**
- * The «Challenges» tab of «Play» (TASK-296 part D, docs/GIOCO.md §9): the
- * account's teams, «Create» with a name and «Join» with a code, and the
- * team opened, with its challenge. Without an account, the way to sign in;
- * on an API without the teams yet, a quiet line and no error. A challenge's
- * notification touched opens that challenge (`challengeDoor`).
+ * The «Challenges» tab of «Play» (TASK-296 part D, TASK-423 part D;
+ * docs/GIOCO.md §9): one list in three parts. «In progress»: the personal
+ * challenges of the week and the month, the streak, the teams with a
+ * challenge going, the monthly challenge once entered. «Available»: the
+ * other teams, «Create» with a name and «Join» with a code, the monthly
+ * challenge not entered yet. «Finished»: the medals of the last weeks, the
+ * teams' challenges done or out of time, the link to the past monthly
+ * challenges. A team touched opens, with its challenge. Without an account,
+ * the way to sign in; on an API without the teams or the personal
+ * challenges yet, a quiet line and no error. A challenge's notification
+ * touched opens that challenge (`challengeDoor`).
  */
 export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props) {
   const { account } = useFollowsDoor();
@@ -66,6 +78,9 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
   const language = useLanguage();
   const catalog = useGameCatalog();
   const teams = useTeams(active, { fetchFn, key: apiKey });
+  const personal = usePersonal(active, { fetchFn, key: apiKey });
+  // The monthly challenge (TASK-343): only its link, for who is signed in.
+  const month = useContest(active && me !== null, { fetchFn, key: apiKey });
   const [open, setOpen] = useState<Open | null>(null);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -136,13 +151,6 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
       </Pressable>
     );
   }
-  if (teams.shown.status === "none") {
-    return (
-      <Text style={styles.muted} testID="challenges-none">
-        {t("Teams are not on this server yet.")}
-      </Text>
-    );
-  }
   if (open !== null) {
     const team =
       list.find((each) => each.id === open.teamId) ??
@@ -170,9 +178,132 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
       />
     );
   }
+  const nowMs = (now ?? Date.now)();
+  const going = list.filter((team) => team.challenge?.status === "active");
+  const others = list.filter((team) => team.challenge?.status !== "active");
+  const ended = list.filter(
+    (team) => team.challenge !== null && team.challenge.status !== "active",
+  );
+  const mine = personal.shown.status === "ready" ? personal.shown.personal : null;
+  const contest = month.contest;
+  const contestOpen = contest !== null && contest.closed_at === null;
+  // `mine` of the contest: the account's best post in it; undefined before
+  // the API answered for this account.
+  const entered = contestOpen && month.mine !== null && month.mine !== undefined;
+
+  function teamRow(team: GameTeam) {
+    const shape = catalog?.shapes.find((each) => each.id === team.challenge?.shape_id);
+    const summary =
+      team.challenge === null
+        ? t("No challenge yet")
+        : `${shape === undefined ? team.challenge.shape_id : shapeNameIn(shape, language)} · ${t(
+            "{done} of {total} pieces done",
+            {
+              done: team.challenge.pieces.filter((piece) => piece.done).length,
+              total: team.challenge.pieces.length,
+            },
+          )}`;
+    return (
+      <Pressable
+        key={team.id}
+        style={styles.team}
+        onPress={() => show(team)}
+        accessibilityRole="button"
+        accessibilityLabel={`${team.name}, ${tPlural(
+          team.members.length,
+          "{count} member",
+          "{count} members",
+        )}, ${summary}`}
+        testID={`team-${team.id}`}
+      >
+        <Text style={styles.teamName} numberOfLines={1}>
+          {team.name}
+        </Text>
+        <Text style={styles.teamLine}>
+          {tPlural(team.members.length, "{count} member", "{count} members")}
+        </Text>
+        <Text style={styles.teamLine} numberOfLines={1}>
+          {summary}
+        </Text>
+      </Pressable>
+    );
+  }
+
+  const finishedCount =
+    (mine?.finished.length ?? 0) + ended.length + (contest !== null ? 1 : 0);
+
   return (
     <View style={styles.tab} testID="challenges-tab">
-      <Text style={styles.heading}>{t("YOUR TEAMS")}</Text>
+      <Text style={styles.heading} accessibilityRole="header">
+        {t("In progress")}
+      </Text>
+      {personal.shown.status === "loading" && (
+        <ActivityIndicator color={color.textMuted} style={styles.wait} />
+      )}
+      {personal.shown.status === "failed" && (
+        <View style={styles.notice}>
+          <Text style={styles.noticeText}>{personal.shown.problem}</Text>
+          <Pressable
+            style={styles.button}
+            onPress={personal.refresh}
+            accessibilityRole="button"
+            testID="personal-retry"
+          >
+            <Text style={styles.buttonText}>{t("Try again")}</Text>
+          </Pressable>
+        </View>
+      )}
+      {mine !== null && (
+        <>
+          <Text style={styles.period} testID="personal-week">
+            {`${t("This week")} · ${periodLeftText(mine.week.end, nowMs)}`}
+          </Text>
+          {mine.week.challenges.map((standing) => (
+            <PersonalCard key={standing.id} standing={standing} units={units} />
+          ))}
+          <Text style={styles.period} testID="personal-month">
+            {`${t("This month")} · ${periodLeftText(mine.month.end, nowMs)}`}
+          </Text>
+          {mine.month.challenges.map((standing) => (
+            <PersonalCard key={standing.id} standing={standing} units={units} />
+          ))}
+          <StreakCard streaks={mine.streaks} />
+        </>
+      )}
+      {going.map(teamRow)}
+      {entered && (
+        <MonthChallengeRow
+          contest={contest}
+          language={language}
+          kind="challenge"
+          nowMs={nowMs}
+        />
+      )}
+      {mine === null &&
+        going.length === 0 &&
+        !entered &&
+        personal.shown.status !== "loading" && (
+          <Text style={styles.muted} testID="in-progress-empty">
+            {t("Nothing in progress.")}
+          </Text>
+        )}
+
+      <Text style={styles.heading} accessibilityRole="header">
+        {t("Available")}
+      </Text>
+      {contestOpen && !entered && (
+        <MonthChallengeRow
+          contest={contest}
+          language={language}
+          kind="challenge"
+          nowMs={nowMs}
+        />
+      )}
+      {teams.shown.status === "none" && (
+        <Text style={styles.muted} testID="challenges-none">
+          {t("Teams are not on this server yet.")}
+        </Text>
+      )}
       {teams.shown.status === "loading" && (
         <ActivityIndicator color={color.textMuted} style={styles.wait} />
       )}
@@ -194,117 +325,148 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
           {t("No team yet. Create one, or join one with its code.")}
         </Text>
       )}
-      {list.map((team) => {
+      {others.map(teamRow)}
+
+      {teams.shown.status !== "none" && (
+        <>
+          <Text style={styles.subheading}>{t("Create")}</Text>
+          <View style={styles.form}>
+            <TextInput
+              style={styles.field}
+              value={name}
+              onChangeText={setName}
+              placeholder={t("Team name")}
+              placeholderTextColor={color.textFaint}
+              accessibilityLabel={t("Team name")}
+              maxLength={40}
+              editable={!creating}
+              keyboardAppearance="dark"
+              returnKeyType="done"
+              onSubmitEditing={() => void create()}
+              testID="team-name"
+            />
+            <Pressable
+              style={[styles.button, (creating || name.trim() === "") && styles.off]}
+              onPress={() => void create()}
+              disabled={creating || name.trim() === ""}
+              accessibilityRole="button"
+              testID="team-create"
+            >
+              <Text style={styles.buttonText}>{t("Create")}</Text>
+            </Pressable>
+          </View>
+          {createProblem !== null && (
+            <Text
+              style={styles.problem}
+              accessibilityLiveRegion="polite"
+              testID="create-problem"
+            >
+              {createProblem}
+            </Text>
+          )}
+
+          <Text style={styles.subheading}>{t("Join")}</Text>
+          <View style={styles.form}>
+            <TextInput
+              style={styles.field}
+              value={code}
+              onChangeText={setCode}
+              placeholder={t("Team code")}
+              placeholderTextColor={color.textFaint}
+              accessibilityLabel={t("Team code")}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={8}
+              editable={!joining}
+              keyboardAppearance="dark"
+              returnKeyType="done"
+              onSubmitEditing={() => void join()}
+              testID="team-code-field"
+            />
+            <Pressable
+              style={[styles.button, (joining || code.trim() === "") && styles.off]}
+              onPress={() => void join()}
+              disabled={joining || code.trim() === ""}
+              accessibilityRole="button"
+              testID="team-join"
+            >
+              <Text style={styles.buttonText}>{t("Join")}</Text>
+            </Pressable>
+          </View>
+          {joinProblem !== null && (
+            <Text
+              style={styles.problem}
+              accessibilityLiveRegion="polite"
+              testID="join-problem"
+            >
+              {joinProblem}
+            </Text>
+          )}
+        </>
+      )}
+
+      <Text style={styles.heading} accessibilityRole="header">
+        {t("Finished")}
+      </Text>
+      {mine?.finished.map((medal) => (
+        <View
+          key={`${medal.period}-${medal.start}-${medal.id}`}
+          style={styles.medal}
+          accessible
+          accessibilityLabel={`${challengeName(medal.id)}, ${medalName(medal.tier)}, ${periodText(
+            medal.period,
+            medal.start,
+          )}`}
+          testID={`medal-${medal.id}-${medal.start}`}
+        >
+          <View style={styles.medalLine}>
+            <Text style={[styles.teamName, styles.grow]} numberOfLines={1}>
+              {challengeName(medal.id)}
+            </Text>
+            <Text style={styles.medalName}>{medalName(medal.tier)}</Text>
+          </View>
+          <Text style={styles.teamLine}>{periodText(medal.period, medal.start)}</Text>
+        </View>
+      ))}
+      {ended.map((team) => {
+        const done = team.challenge?.status === "completed";
         const shape = catalog?.shapes.find(
           (each) => each.id === team.challenge?.shape_id,
         );
-        const summary =
-          team.challenge === null
-            ? t("No challenge yet")
-            : `${shape === undefined ? team.challenge.shape_id : shapeNameIn(shape, language)} · ${t(
-                "{done} of {total} pieces done",
-                {
-                  done: team.challenge.pieces.filter((piece) => piece.done).length,
-                  total: team.challenge.pieces.length,
-                },
-              )}`;
+        const shapeName =
+          shape === undefined
+            ? (team.challenge?.shape_id ?? "")
+            : shapeNameIn(shape, language);
+        const line = `${shapeName} · ${done ? t("Shape completed") : t("Time is up")}`;
         return (
           <Pressable
-            key={team.id}
+            key={`ended-${team.id}`}
             style={styles.team}
             onPress={() => show(team)}
             accessibilityRole="button"
-            accessibilityLabel={`${team.name}, ${tPlural(
-              team.members.length,
-              "{count} member",
-              "{count} members",
-            )}, ${summary}`}
-            testID={`team-${team.id}`}
+            accessibilityLabel={`${team.name}, ${line}`}
+            testID={`ended-${team.id}`}
           >
             <Text style={styles.teamName} numberOfLines={1}>
               {team.name}
             </Text>
-            <Text style={styles.teamLine}>
-              {tPlural(team.members.length, "{count} member", "{count} members")}
-            </Text>
             <Text style={styles.teamLine} numberOfLines={1}>
-              {summary}
+              {line}
             </Text>
           </Pressable>
         );
       })}
-
-      <Text style={styles.heading}>{t("Create")}</Text>
-      <View style={styles.form}>
-        <TextInput
-          style={styles.field}
-          value={name}
-          onChangeText={setName}
-          placeholder={t("Team name")}
-          placeholderTextColor={color.textFaint}
-          accessibilityLabel={t("Team name")}
-          maxLength={40}
-          editable={!creating}
-          keyboardAppearance="dark"
-          returnKeyType="done"
-          onSubmitEditing={() => void create()}
-          testID="team-name"
+      {contest !== null && (
+        <MonthChallengeRow
+          contest={contest}
+          language={language}
+          kind="archive"
+          nowMs={nowMs}
         />
-        <Pressable
-          style={[styles.button, (creating || name.trim() === "") && styles.off]}
-          onPress={() => void create()}
-          disabled={creating || name.trim() === ""}
-          accessibilityRole="button"
-          testID="team-create"
-        >
-          <Text style={styles.buttonText}>{t("Create")}</Text>
-        </Pressable>
-      </View>
-      {createProblem !== null && (
-        <Text
-          style={styles.problem}
-          accessibilityLiveRegion="polite"
-          testID="create-problem"
-        >
-          {createProblem}
-        </Text>
       )}
-
-      <Text style={styles.heading}>{t("Join")}</Text>
-      <View style={styles.form}>
-        <TextInput
-          style={styles.field}
-          value={code}
-          onChangeText={setCode}
-          placeholder={t("Team code")}
-          placeholderTextColor={color.textFaint}
-          accessibilityLabel={t("Team code")}
-          autoCapitalize="characters"
-          autoCorrect={false}
-          maxLength={8}
-          editable={!joining}
-          keyboardAppearance="dark"
-          returnKeyType="done"
-          onSubmitEditing={() => void join()}
-          testID="team-code-field"
-        />
-        <Pressable
-          style={[styles.button, (joining || code.trim() === "") && styles.off]}
-          onPress={() => void join()}
-          disabled={joining || code.trim() === ""}
-          accessibilityRole="button"
-          testID="team-join"
-        >
-          <Text style={styles.buttonText}>{t("Join")}</Text>
-        </Pressable>
-      </View>
-      {joinProblem !== null && (
-        <Text
-          style={styles.problem}
-          accessibilityLiveRegion="polite"
-          testID="join-problem"
-        >
-          {joinProblem}
+      {finishedCount === 0 && (
+        <Text style={styles.muted} testID="finished-empty">
+          {t("Nothing finished yet.")}
         </Text>
       )}
     </View>
@@ -333,6 +495,37 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
     letterSpacing: 1,
     textTransform: "uppercase",
+  },
+  subheading: {
+    marginTop: space.xs,
+    color: color.textMuted,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
+  },
+  period: {
+    marginTop: space.xs,
+    color: color.textMuted,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
+  },
+  medal: {
+    padding: space.md,
+    borderRadius: radius.lg,
+    backgroundColor: color.surface,
+    gap: 2,
+  },
+  medalLine: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: space.sm,
+  },
+  grow: {
+    flex: 1,
+  },
+  medalName: {
+    color: color.accent,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
   },
   wait: {
     marginVertical: space.sm,

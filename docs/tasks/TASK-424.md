@@ -202,6 +202,10 @@ Tutte prese dall'utente il 2026-11-08, una per volta.
 10. **App Privacy e Data safety** — **proposta approvata dall'utente il
     2026-11-08** («Sì, approvo»), sotto in «Privacy»; ogni aggiornamento
     delle etichette resta un sì a parte, prima dell'OTA di B.
+11. **Il consenso a ogni link** — **deciso dall'utente il 2026-11-10**
+    («ok procedi», sulla proposta della parte B1): il foglio che dice cosa
+    vede chi ha il link, battito compreso, torna a ogni link nuovo, non
+    solo la prima volta.
 
 ### Testi
 
@@ -457,8 +461,9 @@ Privacy, sezione «Sharing live»:
   docs/tasks/TASK-424.md
   ```
   Il sito sul server si copia col sì dell'utente, dopo il server.
-- **B1** — l'app, sport col GPS: branch `feat/TASK-424-b1-live-share-app`
-  (2026-11-10), da `main` con #971 dentro. File approvati dal
+- **B1** — l'app, sport col GPS: #1025 in `main` (a25a24a9, 2026-11-10),
+  dopo l'OTA unico di produzione (88e5f88f), che non la contiene. File
+  approvati dal
   Coordinatore il 2026-11-08:
   ```
   apps/mobile/src/liveShare/*            (nuovi: liveShareApi, liveSharer,
@@ -473,7 +478,7 @@ Privacy, sezione «Sharing live»:
   ```
   Scelte tecniche (decise dall'agente su delega dell'utente; la voce in
   `DECISIONS.md`, precisazione B1 di ADR-0352, va nella PR di soli
-  documenti dopo il merge):
+  documenti, ADR-0352 precisazione B1):
   - **Lo stato fuori da React** (`liveShareStore.ts`), un link alla volta
     come la corsa: il task della posizione (`runPosition.ts`) gli passa
     ogni posizione e fa partire l'invio, anche a telefono bloccato; nessun
@@ -499,13 +504,16 @@ Privacy, sezione «Sharing live»:
     no), non quando `live` diventa falso: un GPS perso a metà corsa non
     chiude il link. Una fine mentre il link si sta facendo lo cancella.
   - **Il consenso** torna a ogni link nuovo (ogni link è nuovo, e il
-    battito è un dato di salute); il foglio di condivisione si apre dopo
+    battito è un dato di salute): scelta dell'utente del 2026-11-10 (la
+    11 sopra); il foglio di condivisione si apre dopo
     che il nostro foglio è sparito (iOS ne mostra uno alla volta,
     TASK-358). Su «Compass» niente pulsante né etichetta (le sue righe non
     si toccano).
   Prove: 43 test nuovi (`src/liveShare/`), i test della corsa e
-  dell'i18n, `tsc`, prettier, lint. **Resta**: l'impronta iOS nella PR, la
-  prova su un telefono vero, l'OTA con B2 e il sì dell'utente.
+  dell'i18n, `tsc`, prettier, lint, CI verde. Impronta iOS su copia
+  pulita: `6f8bba4c`, uguale a `main` e alla build 8 di produzione.
+  **Resta**: la prova su un telefono vero; l'OTA, a parte, insieme a B2
+  e dopo i sì dell'utente su App Privacy «Health» e Data safety.
 - **B2** (piscina e palestra) e **C** (i dati dal vivo che mancano): dopo
   TASK-409 B, TASK-411 C e TASK-370 B3. Le PR di codice non toccano
   `STATUS.md`, `DECISIONS.md` né `INDEX.md` (regola del Coordinatore del

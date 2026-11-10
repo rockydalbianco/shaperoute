@@ -136,6 +136,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   mockup e le quattro scelte dell'utente (schede, sei sezioni, colori,
   testi). Prossima la parte A (la modalità e le schede), con la lista al
   Coordinatore. File: — · `tasks/TASK-429.md`
+- **TASK-431 — «Compass» più bella** (ADR-0359) · in `main` (#1081): la
+  freccia «B» con anello e cono azzurri che punta dove punta la mappa, le
+  tre schede coi disegni, la punta rossa del nord. Restano l'OTA di
+  produzione (col sì dell'utente) e la prova sul telefono. File: — ·
+  `tasks/TASK-431.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

@@ -1,6 +1,8 @@
 # TASK-431 — La pagina «Compass» più bella: la freccia che punta dove guardi, le tre schede con i disegni
 
-**Stato**: In review · 2026-11-10 · branch `feat/TASK-431-compass-restyle`
+**Stato**: Codice in `main` · 2026-11-10 · #1081 (`5747259d`); documenti
+nella PR di `docs/TASK-431-docs`. Restano l'OTA di produzione (col sì
+dell'utente) e la prova sul telefono, l'ultimo criterio.
 **Fase**: 5 · **ADR**: ADR-0359 · numeri dal Coordinatore («Coordinatore
 (fork)», 2026-11-10) · seguito di TASK-422
 

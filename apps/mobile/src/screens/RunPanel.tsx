@@ -1,4 +1,4 @@
-import type { Activity } from "@shaperoute/shared-types";
+import type { Activity, RunActivity } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -9,6 +9,7 @@ import { isPaddle, PADDLE_PACE_M, per500S } from "../navigation/paddle";
 import { distanceLabel } from "../navigation/phrases";
 import { isRide, speedNumber } from "../navigation/ride";
 import { useRunControl } from "../navigation/runControl";
+import { skiedDay, trackEffort } from "../activities/trackEffort";
 import { activeKcal } from "../body/energy";
 import { useBody } from "../body/useBody";
 import { climbM } from "../navigation/runMetrics";
@@ -104,8 +105,8 @@ export type RunNumbers = {
   time: string;
   /** "42", metres, or NO_NUMBER when the phone gives no height. */
   climb: string;
-  /** "187", kilocalories; null for a swim, which has no formula yet
-   * (TASK-374): no tile. */
+  /** "187", kilocalories of the sport recorded (TASK-374; every activity
+   * since TASK-424 part C2); null for one with no formula here: no tile. */
   energy: string | null;
   /** "3.2 km to go" and "about 17 min", along a route; with miles
    * "2.0 mi to go". */
@@ -126,6 +127,10 @@ export function useRunNumbers(
   live: boolean,
   route?: RouteProgress,
   activity?: Activity,
+  /** The sport recorded, whose calories these are (TASK-424 part C2): a
+   * day of skiing has a ride's speeds but its own energy. `activity` when
+   * not given. */
+  sport?: RunActivity,
 ): RunNumbers {
   const { phase } = useRunControl();
   const units = useUnits();
@@ -150,6 +155,9 @@ export function useRunNumbers(
   const lastM = paddle ? PADDLE_PACE_M : swim ? SWIM_PACE_M : metresPer(units);
   const lastKm = useMemo(() => lastKmS(track, lastM), [track, lastM]);
   const climbed = useMemo(() => climbM(track), [track]);
+  const energyOf: RunActivity = sport ?? activity ?? DEFAULT_ACTIVITY;
+  // The descents of a day of skiing: once per fix, not once per second.
+  const day = useMemo(() => skiedDay(energyOf, track), [energyOf, track]);
   const eta = route ? etaMs(route.remainingM, track, ms) : null;
   // The seconds of a kilometre or of a mile, as a pace or as a speed.
   const said = (seconds: number | null) =>
@@ -177,18 +185,13 @@ export function useRunNumbers(
     pace100: clock(average === null ? null : per100S(average)),
     time: clockLabel(ms),
     climb: climbed === null ? NO_NUMBER : String(Math.round(climbed)),
-    // None for a sport that counts no energy (src/sports): a swim.
+    // None for a sport that counts no energy here (src/sports): the gym.
     energy:
-      profileOf(activity ?? DEFAULT_ACTIVITY).energy === undefined
+      profileOf(energyOf).energy === undefined
         ? null
         : String(
             activeKcal(
-              {
-                activity: activity ?? "running",
-                metres: track.distanceM,
-                seconds: ms / 1000,
-                climbM: climbed,
-              },
+              trackEffort(energyOf, track, ms / 1000, climbed, day),
               body,
               new Date(at).getFullYear(),
             ),
@@ -321,10 +324,14 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
           )}
         </View>
       ) : numbers.swim ? (
-        // A swim: a swimmer's pace, of 100 m (TASK-323 D).
+        // A swim: a swimmer's pace, of 100 m (TASK-323 D), and its
+        // calories (TASK-424 part C2).
         <View style={styles.tiles}>
           <Tile label={t("Avg /100 m")} value={numbers.pace100} />
           <Tile label={t("Last 100 m")} value={numbers.lastKm} />
+          {numbers.energy !== null && (
+            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
+          )}
         </View>
       ) : (
         <View style={styles.tiles}>

@@ -2,12 +2,13 @@
 PostgreSQL: kept with the phone's key, listed in their order, the latest
 change wins, dropped; at most twenty; only the owner's; the workout that
 followed one says so, and the calendar writes its name and the days
-skipped."""
+skipped. A plan made with the guide keeps its weeks (`program`, 0066): the
+days planned follow its cycle and the weeks written by hand."""
 
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +29,7 @@ from shaperoute_api.gym_plans import (
     GymPlanItemBody,
     GymPlanRequestBody,
     GymPlansBody,
+    GymProgramBody,
     days_mask,
     mask_days,
 )
@@ -39,6 +41,7 @@ Headers = dict[str, str]
 EXAMPLE = json.loads((FIXTURES / "gym-plans.json").read_text(encoding="utf-8"))
 PUSH = EXAMPLE["plans"][0]
 LEGS = EXAMPLE["plans"][1]
+MUSCLE = EXAMPLE["plans"][2]
 
 
 def request(plan: dict[str, Any], **changes: Any) -> dict[str, Any]:
@@ -68,7 +71,11 @@ def comparable(plan: dict[str, Any]) -> dict[str, Any]:
 
 def test_the_example_is_the_contract() -> None:
     body = GymPlansBody.model_validate(EXAMPLE)
-    assert [plan.key for plan in body.plans] == [PUSH["key"], LEGS["key"]]
+    assert [plan.key for plan in body.plans] == [
+        PUSH["key"],
+        LEGS["key"],
+        MUSCLE["key"],
+    ]
 
 
 def test_the_days_are_seven_bits() -> None:
@@ -104,6 +111,72 @@ def test_a_plan_s_days_are_of_the_week_once() -> None:
             GymPlanRequestBody.model_validate(request(PUSH, days=days))
     with pytest.raises(ValueError):
         GymPlanRequestBody.model_validate(request(PUSH, name=""))
+
+
+def program(**changes: Any) -> dict[str, Any]:
+    return {**MUSCLE["program"], **changes}
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        # One workout a day, at least one, days of the week.
+        {"sessions": [MUSCLE["program"]["sessions"][0]] * 2},
+        {"sessions": []},
+        {"sessions": [{"day": 8, "name": "A", "items": []}]},
+        # A week written by hand is one of the cycle, from the second, once.
+        {"weeks": 3},
+        {"custom": [{"week": 1, "sessions": []}]},
+        {"custom": [{"week": 2, "sessions": []}] * 2},
+        # From 1 to 12 weeks; a mode and a goal it knows; a step of 0–20 kg.
+        {"weeks": 0},
+        {"weeks": 13},
+        {"mode": "random"},
+        {"goal": "speed"},
+        {"step_kg": 25},
+    ],
+)
+def test_a_program_s_weeks_are_of_its_cycle(changes: dict[str, Any]) -> None:
+    with pytest.raises(ValueError):
+        GymProgramBody.model_validate(program(**changes))
+
+
+def test_a_program_has_at_most_300_exercises() -> None:
+    item = {"exercise": "plank", "kind": "timed", "sets": 1}
+    full = [{"day": day, "name": "A", "items": [item] * 30} for day in range(1, 8)]
+    weeks = [{"week": week, "sessions": full} for week in (2, 3)]
+    with pytest.raises(ValueError):
+        GymProgramBody.model_validate(program(sessions=full, custom=weeks))
+
+
+def test_the_workout_of_a_day_follows_the_cycle() -> None:
+    body = GymProgramBody.model_validate(MUSCLE["program"])
+
+    def names(day: date) -> list[str]:
+        return [
+            item.exercise or "" for one in body.sessions_on(day) for item in one.items
+        ]
+
+    # It starts on Monday 2 November 2026: nothing before.
+    assert names(date(2026, 11, 1)) == []
+    assert names(date(2026, 11, 2)) == ["bench_press", "lateral_raise"]
+    assert names(date(2026, 11, 4)) == ["lat_pulldown", "pull_up"]
+    assert names(date(2026, 11, 3)) == []
+    # The fourth week is written by hand: Monday only.
+    assert names(date(2026, 11, 23)) == ["push_up"]
+    assert names(date(2026, 11, 25)) == []
+    # Then the cycle starts again.
+    assert names(date(2026, 11, 30)) == ["bench_press", "lateral_raise"]
+    assert body.days() == [1, 3, 5]
+
+
+def test_a_program_started_midweek_counts_from_its_monday() -> None:
+    body = GymProgramBody.model_validate(program(starts_on="2026-11-18"))
+    # Wednesday the 18th is in week 1; Monday the 16th is before it.
+    assert body.sessions_on(date(2026, 11, 16)) == []
+    assert body.sessions_on(date(2026, 11, 18))[0].name == "Back, biceps"
+    # Monday the 7th of December is week 4, the one written by hand.
+    assert body.sessions_on(date(2026, 12, 7))[0].items[0].exercise == "push_up"
 
 
 # --- In the database ---
@@ -221,3 +294,69 @@ def test_a_workout_keeps_its_plan_and_the_calendar_its_days(
         {"day": 4, "plan": "Legs"},
         {"day": 11, "plan": "Legs"},
     ]
+
+
+def test_a_program_is_kept_and_an_older_app_leaves_it(
+    client: TestClient,  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    # The days are the program's, whatever the phone sends.
+    made = put(client, me, MUSCLE["key"], request(MUSCLE, days=[]))
+    assert made.status_code == 201, made.text
+    assert comparable(made.json()) == comparable(MUSCLE)
+
+    # An app older than the guide sends no program: it stays.
+    older_app = {
+        field: value
+        for field, value in request(MUSCLE, name="Muscle").items()
+        if field != "program"
+    }
+    older_app["updated_at"] = "2026-11-10T10:00:00Z"
+    kept_plan = put(client, me, MUSCLE["key"], older_app).json()
+    assert kept_plan["name"] == "Muscle"
+    assert kept_plan["program"] == MUSCLE["program"]
+
+    # Null makes it a plan of one workout again.
+    plain = request(MUSCLE, program=None, days=[2], updated_at="2026-11-10T11:00:00Z")
+    answer = put(client, me, MUSCLE["key"], plain).json()
+    assert "program" not in answer
+    assert answer["days"] == [2]
+
+
+def test_the_calendar_skips_the_days_of_the_cycle(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    wall.t = datetime(2026, 11, 2, 8, tzinfo=UTC)
+    put(client, me, MUSCLE["key"], request(MUSCLE))
+    wall.t = datetime(2026, 11, 26, 12, tzinfo=UTC)
+    kept(
+        client,
+        me,
+        "wk00000000000001",
+        started_at="2026-11-02T17:00:00+00:00",
+        ended_at="2026-11-02T18:00:00+00:00",
+        pauses=[],
+        sets=[],
+        plan=MUSCLE["key"],
+    )
+    answer = client.get(
+        "/me/gym-calendar",
+        params={"tz": "Europe/Rome", "month": "2026-11"},
+        headers=me,
+    ).json()
+    # Monday, Wednesday and Friday of three weeks, but the fourth (from
+    # Monday the 23rd) has Monday only; Thursday the 26th is today.
+    assert [one["day"] for one in answer["skipped"]] == [
+        4,
+        6,
+        9,
+        11,
+        13,
+        16,
+        18,
+        20,
+        23,
+    ]
+    assert {one["plan"] for one in answer["skipped"]} == {"Muscle · 3 days"}

@@ -142,6 +142,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   tre schede coi disegni, la punta rossa del nord. Restano l'OTA di
   produzione (col sì dell'utente) e la prova sul telefono. File: — ·
   `tasks/TASK-431.md`
+- **TASK-433 — Le schede della palestra guidate** (ADR-0360) · in `main`
+  (#1095): la guida in 5 passi, le settimane che cambiano (4 modi, ciclo
+  4/6/8), «My plans» e «Today» con la settimana. Restano il server
+  (migrazione 0066) e poi l'OTA, nel passo unico del Coordinatore col sì
+  dell'utente, e la prova sul telefono. File: — · `tasks/TASK-433.md`
+- **TASK-435 — Primo percorso subito, alternative dopo** (ADR-0361) ·
+  parte 0 fatta: piano, misura (una vicina vince nel 38% delle prove;
+  guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il
+  primo resta A»). Prossima la parte A (motore), poi B (API) e C (app).
+  File: — · `tasks/TASK-435.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

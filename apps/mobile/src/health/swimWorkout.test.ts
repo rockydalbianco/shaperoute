@@ -14,16 +14,18 @@ const SWIM: Track = {
   pauses: [],
 };
 
-test("a swim goes to Apple Health as a swim, with the swimming distance, no energy", () => {
+test("a swim goes to Apple Health as a swim, with the swimming distance and energy", () => {
   const workout = workoutOf(SWIM, "swimming");
-  expect(workout).toMatchObject({ activity: "swimming", kcal: null });
+  // A pool's bands (TASK-424 part C2): 520 m in 10 min, 1:55 /100 m, 8 MET.
+  expect(workout).toMatchObject({ activity: "swimming", kcal: 86 });
   const apple = appleWorkout(workout!);
   // HKWorkoutActivityType.swimming.
   expect(apple.activityType).toBe(46);
   expect(apple.quantities.map((sample) => sample.quantityType)).toEqual([
     "HKQuantityTypeIdentifierDistanceSwimming",
+    "HKQuantityTypeIdentifierActiveEnergyBurned",
   ]);
-  expect(apple.totals).toEqual({ distance: 520 });
+  expect(apple.totals).toEqual({ distance: 520, energyBurned: 86 });
   expect(DISTANCE_TYPE.swimming).toBe("HKQuantityTypeIdentifierDistanceSwimming");
 });
 

@@ -42,7 +42,14 @@ export type WorkoutPause = { fromMs: number; toMs: number | null };
 
 /** The plan a workout follows (TASK-411 C, ADR-0341 point 4): copied when
  * it starts, so changing the plan later leaves the workout as it was. */
-export type WorkoutPlan = { key: string; name: string; items: GymPlanItem[] };
+export type WorkoutPlan = {
+  key: string;
+  name: string;
+  items: GymPlanItem[];
+  /** The rest the guide proposed for the plan's goal: each exercise's first
+   * rest, until another is chosen. */
+  restS?: number;
+};
 
 export type Workout = {
   /** Its key on the API (gymKey.ts). */
@@ -93,7 +100,12 @@ export function newWorkout(
     rest: null,
     rests: 0,
     restS: 0,
-    restChoices: {},
+    restChoices:
+      plan?.restS === undefined
+        ? {}
+        : Object.fromEntries(
+            plan.items.map((item) => [entryKey(entryOf(item)), plan.restS as number]),
+          ),
     lastActiveMs: nowMs,
     endedMs: null,
     nextN: 1,

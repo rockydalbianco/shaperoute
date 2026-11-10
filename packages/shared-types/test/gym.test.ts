@@ -10,9 +10,12 @@ import runActivities from "../fixtures/run-activities.json" with { type: "json" 
 import session from "../fixtures/gym-session.json" with { type: "json" };
 import {
   GYM_LEVEL_MEASURES,
+  GYM_PLAN_MODES,
   GYM_SET_KINDS,
   MAX_GYM_PLAN_ITEMS,
+  MAX_GYM_PLAN_WEEKS,
   MAX_GYM_PLANS,
+  MAX_GYM_PROGRAM_ITEMS,
   type GymCalendar,
   type GymLeaderboard,
   type GymLevel,
@@ -160,13 +163,29 @@ test("a plan's days are of the week once, its exercises of the catalog and its k
     assert.ok(plan.days.every((day) => day >= 1 && day <= 7));
     assert.equal(new Set(plan.days).size, plan.days.length);
     assert.ok(plan.items.length <= MAX_GYM_PLAN_ITEMS);
-    for (const item of plan.items) {
+    const program = plan.program ?? null;
+    const sessions =
+      program === null
+        ? []
+        : [...program.sessions, ...program.custom.flatMap((week) => week.sessions)];
+    const items = [...plan.items, ...sessions.flatMap((one) => one.items)];
+    for (const item of items) {
       assert.ok(item.sets >= 1 && item.sets <= 20);
       assert.ok((item.exercise === undefined) !== (item.name === undefined));
       if (item.exercise !== undefined) {
         const exercise = catalog.exercises.find((one) => one.key === item.exercise);
         assert.equal(exercise?.kind, item.kind);
       }
+    }
+    if (program !== null) {
+      // The days kept are the program's, its weeks of its cycle.
+      assert.deepEqual(plan.days, [...new Set(sessions.map((one) => one.day))].sort());
+      assert.ok(program.weeks >= 1 && program.weeks <= MAX_GYM_PLAN_WEEKS);
+      assert.ok((GYM_PLAN_MODES as readonly string[]).includes(program.mode));
+      assert.ok(
+        program.custom.every((week) => week.week >= 2 && week.week <= program.weeks),
+      );
+      assert.ok(sessions.length > 0 && items.length <= MAX_GYM_PROGRAM_ITEMS);
     }
   }
 });

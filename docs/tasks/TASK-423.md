@@ -253,8 +253,10 @@ E  services/api/migrations/00NN_game_prizes.sql (nuovo),
   della corsa (non per i file di altre app) e, se l'API lo rifiuta, la
   rimanda senza; «New challenge» fino a 20 pezzi e 30 giorni, con le forme
   per collezione. I limiti in shared-types li lega a `game_challenges.py`
-  un test di contratto. Testi nuovi nelle 5 lingue da approvare con
-  l'utente prima del merge. Esce con l'OTA successivo, col sì dell'utente.
+  un test di contratto. PR #1080. I 50 testi nuovi nelle 5 lingue
+  (`out/TASK-423/TESTI-D.md` del checkout principale; tolto solo «YOUR
+  TEAMS») approvati dall'utente il 2026-11-10 con «Sì, approvo». Esce con
+  l'OTA successivo, col sì dell'utente.
 
 ## Esito
 

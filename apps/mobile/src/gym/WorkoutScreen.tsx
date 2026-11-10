@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useBody } from "../body/useBody";
 import { t } from "../i18n";
 import { appLanguage } from "../i18n/language";
+import { LiveShareButton } from "../liveShare/LiveShareButton";
+import { useLiveShareNumbers } from "../liveShare/useLiveShareNumbers";
 import { clockLabel } from "../navigation/freeRun";
 import { useRunAwake } from "../navigation/useRunAwake";
 import { HoldButton } from "../screens/HoldButton";
@@ -18,6 +20,7 @@ import { planItemLine } from "./GymDrawGuide";
 import { ExerciseList } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
 import { gymKcal, gymKcalLabel } from "./gymKcal";
+import { gymLiveStats } from "./gymLive";
 import { gymStyles } from "./gymStyles";
 import { moveOf } from "./moves";
 import { useRestAlert } from "./restAlert";
@@ -73,9 +76,22 @@ export function nextLabel(workout: Workout): string | null {
  * with the boxes of its next set, «Log set» and «Same again», «+ Exercise»,
  * the rest after each set, the sets so far, «Pause» and «Stop» to hold.
  * A set or a rest ends a «Pause»; the clock runs through the rests. The
- * screen stays on while a rest counts down.
+ * screen stays on while a rest counts down. «Share live» (TASK-424 part
+ * B2): the link shows the time, the exercise in progress and the calories,
+ * with no map.
  */
-export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: number }) {
+export function WorkoutScreen({
+  workout,
+  nowMs,
+  fetchFn,
+  apiKey,
+}: {
+  workout: Workout;
+  nowMs: number;
+  /** For the tests: the fetch and the API key of «Share live». */
+  fetchFn?: typeof fetch;
+  apiKey?: string | null;
+}) {
   const insets = useSafeAreaInsets();
   const units = useUnits();
   const body = useBody();
@@ -121,6 +137,12 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
   const next = nextLabel(workout);
   useRestAlert(rest, next);
   useRunAwake(rest !== null);
+  // No watch follows a workout at the gym yet: no live heart rate to send.
+  const liveNumbers = useCallback(
+    (atMs: number) => gymLiveStats(workout, atMs, body, entryName, null),
+    [workout, body],
+  );
+  useLiveShareNumbers(liveNumbers, paused);
 
   const current = workout.current;
   const typed =
@@ -216,6 +238,12 @@ export function WorkoutScreen({ workout, nowMs }: { workout: Workout; nowMs: num
             </Text>
           )}
           {paused && <Text style={gymStyles.muted}>{t("Paused")}</Text>}
+          <LiveShareButton
+            canStart={workout.endedMs === null}
+            trackless={{ activity: "gym" }}
+            fetchFn={fetchFn}
+            apiKey={apiKey}
+          />
         </View>
         {stillAsking(workout, nowMs) && (
           <StillTraining

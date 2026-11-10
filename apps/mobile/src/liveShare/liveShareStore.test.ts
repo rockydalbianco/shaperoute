@@ -2,7 +2,8 @@
  * The live link of the activity under way (TASK-424 part B1, ADR-0352):
  * made from the button, fed by the position task with the phone locked and
  * by the recording screen, ended by a 410, a stop or the end of the
- * activity.
+ * activity. A swim in a pool and a workout at the gym (part B2): their
+ * numbers with no points.
  */
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
@@ -19,6 +20,7 @@ import {
 import {
   finishLiveShare,
   liveShareStatus,
+  observeLiveNumbers,
   observeLiveShare,
   resetLiveShare,
   startLiveShare,
@@ -298,4 +300,84 @@ test("without a link, fixes and numbers send nothing", async () => {
   finishLiveShare();
   await wait(60_000);
   expect(fetchFn).not.toHaveBeenCalled();
+});
+
+test("a swim in a pool: the link names its pool, the updates carry its numbers and no points", async () => {
+  const fetchFn = answers(CREATED, LIVE, LIVE, LIVE);
+  const numbers = (atMs: number) => ({
+    duration_s: Math.round((atMs - T0) / 1000),
+    lengths: 3,
+    kcal: null,
+    heart_bpm: null,
+  });
+  observeLiveNumbers(numbers, false);
+  jest.setSystemTime(T0 + 90_000);
+  await startLiveShare(api(fetchFn), "swimming", 25);
+  expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual({
+    activity: "swimming",
+    pool_length_m: 25,
+  });
+  await wait(0);
+  expect(updates(fetchFn)).toEqual([
+    {
+      points: [],
+      stats: { duration_s: 90, lengths: 3, kcal: null, heart_bpm: null },
+      state: "live",
+    },
+  ]);
+  // The clock is read at each update: 15 s on, with no new numbers.
+  await wait(15_000);
+  expect(updates(fetchFn)[1].stats.duration_s).toBe(105);
+  // A pause goes at once.
+  observeLiveNumbers(numbers, true);
+  await wait(0);
+  expect(updates(fetchFn)[2].state).toBe("paused");
+});
+
+test("the end of a recording without a track: `finished`, its time where it ended", async () => {
+  const fetchFn = answers(CREATED, LIVE, {
+    status: 200,
+    body: { id: "s1", status: "finished", expires_at: "2026-11-09T08:00:00Z" },
+  });
+  observeLiveNumbers(
+    (atMs) => ({
+      duration_s: Math.round((atMs - T0) / 1000),
+      kcal: 40,
+      heart_bpm: null,
+      exercise: "Squat",
+    }),
+    false,
+  );
+  jest.setSystemTime(T0 + 600_000);
+  await startLiveShare(api(fetchFn), "gym");
+  expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual({
+    activity: "gym",
+  });
+  await wait(0);
+  finishLiveShare();
+  await wait(5000);
+  const last = updates(fetchFn)[1];
+  expect(last).toEqual({
+    points: [],
+    stats: { duration_s: 600, kcal: 40, heart_bpm: null, exercise: "Squat" },
+    state: "finished",
+  });
+  expect(liveShareStatus()).toEqual({ kind: "off" });
+});
+
+test("a run after a workout: its track's numbers again, not the workout's", async () => {
+  const fetchFn = answers(CREATED, LIVE);
+  observeLiveNumbers(() => ({ duration_s: 1, exercise: "Squat" }), false);
+  const track = trackTo(10);
+  jest.setSystemTime(T0 + 10_000);
+  observeLiveShare({ track, kcal: null, bpm: null, paused: false });
+  await startLiveShare(api(fetchFn), "running");
+  await wait(0);
+  expect(updates(fetchFn)[0].stats).toEqual({
+    distance_m: Math.round(track.distanceM),
+    duration_s: 10,
+    climb_m: null,
+    kcal: null,
+    heart_bpm: null,
+  });
 });

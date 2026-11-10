@@ -45,6 +45,9 @@ const ANDROID_SOURCE = "expoAutolinkingConfig:android";
 // plugin: its widget target's files count in neither either, as no update
 // reaches them; its native module in the iPhone app
 // (modules/live-activity, Apple only) is counted by iOS autolinking.
+// So a change to the Live Activity's data goes through
+// modules/live-activity, never only targets/live-activity: else an update
+// could send data the widget of an older build does not read.
 
 /** The plugins for the iPhone only, by name, and the keys of
  * `ios.infoPlist` an Android build never reads: the Live Activity's

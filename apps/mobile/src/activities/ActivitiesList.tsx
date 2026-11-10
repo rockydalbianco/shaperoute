@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { type Activity, isImported } from "../api/activities";
 import { t, tPlural } from "../i18n";
 import { AddPastActivity } from "../imports/AddPastActivity";
+import { WatchRunCard } from "../watch/WatchRunCard";
 import { ImportedMark } from "../imports/ImportedMark";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { waitingText } from "../social/PublicParts";
@@ -59,6 +60,7 @@ export function ActivitiesList() {
 
   return (
     <View style={styles.list}>
+      <WatchRunCard />
       <AddPastActivity />
       {activities.problem !== null && (
         <Text style={styles.problem} accessibilityRole="alert">

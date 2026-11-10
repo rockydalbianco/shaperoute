@@ -1,7 +1,9 @@
 # TASK-425 — «Edit the drawing» non raddoppia la distanza delle tracce aperte
 
-**Stato**: In review · 2026-11-10 · codice nella PR di
-`feat/TASK-425-open-track-closed`
+**Stato**: Done · 2026-11-10 · codice nella #1021 (`acbd59e8`), documenti
+nella PR di `docs/TASK-425-done`. Esito: la traccia aperta si chiude fino
+alla partenza; quelle che si incrociano da sole restano doppie (motore
+proposto a parte). Resta l'OTA unico del Coordinatore.
 **Fase**: 5 · **ADR**: ADR-0353 · numeri dal Coordinatore («Coordinatore
 (fork)», 2026-11-10)
 
@@ -64,8 +66,9 @@ rientra in questo.
 - `apps/mobile/src/route/figureLines.test.ts`
 - `docs/tasks/TASK-425.md`
 
-`STATUS.md`, `DECISIONS.md` (ADR-0353) e `INDEX.md` nella PR di soli
-documenti dopo il merge.
+PR di soli documenti, dopo il merge: `docs/DECISIONS.md` (ADR-0353 e la sua
+riga d'indice), `docs/INDEX.md`, `docs/archive/COMPLETATI.md`, `docs/UI.md`
+(«Edit the drawing: la figura sulla mappa») e questo file.
 
 ## Criteri di accettazione
 

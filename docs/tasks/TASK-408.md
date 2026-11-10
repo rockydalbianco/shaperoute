@@ -451,7 +451,9 @@ c'è già in «Share your run», quindi niente «Export video».
   il riquadro «Describe your video», `DescribeVideo.tsx`, la tabella
   `share/videoWords.ts` (con le parole dell'elefante di B2), i loro test e
   i tre testi della scelta 9 nelle quattro lingue. Il resto di «Edit
-  video» resta com'è. ADR-0339 precisazione D resta come storia.
+  video» resta com'è. ADR-0339 precisazione D resta come storia,
+  segnata come superata. In `main` con #1075 (30fc2789), esce col
+  prossimo OTA di produzione.
 - **E — la prova sul telefono**: il tempo dell'esportazione con ogni
   personaggio, nei tre stili. Il 2026-11-10 l'utente ha provato sul suo
   telefono: «funziona top». Misure di tempi e batteria non prese.

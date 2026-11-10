@@ -495,7 +495,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
-- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
+- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Superata dalla scelta dell'utente del 2026-11-10 (TASK-408 D2, #1075)
 - ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
 - ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute · 2026-11-10 · Attiva
 - ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda · 2026-11-10 · Attiva
@@ -1874,6 +1874,11 @@ più. Tutto esce con il passo unico sul server e l'OTA unico.
 
 **Stato:** deciso dall'agente su delega dell'utente (2026-11-10), dentro la
 scelta dell'utente 9 (nessuna AI, nessun costo, la prima tabella).
+
+**Superata dalla scelta dell'utente del 2026-11-10**, dopo la prova sul
+telefono: «togli la parte di scrivere per modificare il video». Il campo
+«Describe your video» e la tabella `share/videoWords.ts` sono tolti
+dall'app (TASK-408 D2, #1075); la voce resta come storia.
 
 1. **La tabella è un file dell'app** (`share/videoWords.ts`), nelle cinque
    lingue, letta come le parole delle forme (ADR-0036): accenti, maiuscole

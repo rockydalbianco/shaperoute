@@ -1,8 +1,8 @@
 # TASK-435 — Primo percorso subito, alternative dopo
 
-**Stato**: In attesa — parte 0 scritta (piano e misura); l'utente ha scelto
-il 2026-11-10 di aspettare il numero di TASK-434 sui figli delle partenze
-vicine prima di costruire. Nessun codice, nessun file occupato
+**Stato**: In corso — parte 0 chiusa (piano, misura, le scelte
+dell'utente del 2026-11-10: si costruisce, e il primo percorso resta A);
+prossima la parte A (motore)
 **Fase**: 5 · **Branch**: `docs/TASK-435-plan` (questo file); poi una per
 parte, sotto · **ADR**: 0361
 
@@ -146,15 +146,15 @@ Oggi vincerebbe lei.
   mostrato diventa il migliore, come oggi, e il primo passa fra le
   alternative. In 38 richieste su 100 la mappa cambierebbe dopo 1–3 s.
 
-**Risposta dell'utente, 2026-11-10: «Sì, aspetta».** Prima di costruire si
-aspetta il numero del profilo del motore (TASK-434): quanto dell'attesa
-toglierebbero i figli delle partenze vicine già avviati. Poi:
+**Le risposte dell'utente, 2026-11-10.**
 
-- se bastano quelli, questo task resta una proposta ferma e la parte 0 lo
-  chiude così;
-- se non bastano, si torna qui: la scelta fra «il primo resta» e «il
-  migliore sostituisce» è ancora da fare (la proposta resta «il primo
-  resta»), poi le parti A, B, C.
+1. «Sì, aspetta»: prima di costruire, il numero del profilo del motore
+   (TASK-434) sui figli delle partenze vicine. È arrivato lo stesso giorno
+   (sotto).
+2. «Costruisci lo stesso», con quel numero davanti e la raccomandazione
+   dell'agente di fermarsi.
+3. **«Il primo resta A».** Il primo percorso resta quello mostrato; gli
+   altri si aggiungono come B e C, dal migliore; tre percorsi in tutto.
 
 ## Il numero di TASK-434 (2026-11-10)
 
@@ -189,7 +189,8 @@ aggiornate comprese, senza toccare contratto e app e senza mostrare per
 primo un percorso che nel 38% dei casi non è il migliore. Dopo, a questo
 task resta troppo poco per tre PR, un passo sul server e un OTA: chiuderlo
 come proposta ferma, e riaprirlo solo se la misura sul server dopo i figli
-già avviati mostra ancora un'attesa che vale la pena.
+già avviati mostra ancora un'attesa che vale la pena. **L'utente ha scelto
+di costruirlo lo stesso** (sopra).
 
 ## Il piano, in parti
 
@@ -200,7 +201,7 @@ soli documenti dopo il merge.
 ### Parte 0 — documenti (questa)
 
 Task file, misura, ADR-0361, riga in `STATUS.md` e in `INDEX.md`. Una PR
-sola, aperta dopo la risposta alla domanda.
+sola, aperta dopo le risposte dell'utente.
 
 ```
 docs/tasks/TASK-435.md
@@ -302,8 +303,9 @@ docs/tasks/TASK-435.md
    («Explore», esempi, canoa) non lo passano e non cambiano.
 2. `route/useRouteRequest.ts`: all'arrivo di `first` lo stato è già `done`
    col primo percorso e `more: true`; all'arrivo del risultato intero
-   `more` cade e le scelte sono quelle della risposta alla domanda
-   (`route/choices.ts`: il primo resta A, oppure il migliore sostituisce).
+   `more` cade e le scelte sono (`route/choices.ts`, «il primo resta A»):
+   il primo, poi i percorsi della risposta dal migliore, senza quello
+   uguale al primo (stessi punti), tre in tutto.
    Se dopo il primo il job fallisce o il server non risponde, il primo
    resta, da solo.
 3. `route/RoutePanel.tsx`: mentre `more` è vero, una riga sotto le schede

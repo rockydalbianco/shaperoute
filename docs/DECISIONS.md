@@ -514,8 +514,65 @@ lasciando le righe d'indice.
 - ADR-0351, precisazione D — L'app di «Play» grande: collezioni contate dal telefono, una lista sola, l'ora del telefono con il secondo invio senza · 2026-11-10 · Attiva
 - ADR-0357, precisazione A — La modalità sci nell'app: le schede dallo sport, «Oggi» sulla pagina «choose», le icone come `face`, la barra ricostruita · 2026-11-10 · Attiva
 - ADR-0360 — Le schede della palestra guidate: le settimane in una colonna `program`, i valori di ogni settimana dal telefono, l'app di prima che legge ancora · 2026-11-10 · Accettata
+- ADR-0361 — Primo percorso subito: `plan_nearby` avvisa quando la partenza ha il suo piano, il job lo porta in `first` a chi lo chiede, nell'app il primo resta A · 2026-11-10 · Accettata
 
 ## Voci nuove
+
+## ADR-0361 — Primo percorso subito: `plan_nearby` avvisa quando la partenza ha il suo piano, il job lo porta in `first` a chi lo chiede, nell'app il primo resta A
+
+**Stato**: Accettata · 2026-11-10 · TASK-435. Scelte di prodotto
+dell'utente: mostrare il primo percorso appena è pronto e aggiungere dopo
+le alternative; costruirlo anche col guadagno misurato; «il primo resta
+A». Il come è deciso dall'agente su delega dell'utente.
+
+**Contesto.** Un percorso è pianificato dalla partenza dell'utente e,
+insieme, da fino a 3 partenze vicine in processi figli (ADR-0071); finito
+il piano della partenza il job aspetta i figli fino a 8 s (3 s se quel
+piano è già buono, ADR-0087), sceglie la forma migliore e manda tutto
+insieme. Misurato (`tasks/TASK-435.md`): una vicina vince in 31 richieste
+di prova su 81 (38%, +3,6 punti di somiglianza in mediana); l'attesa dopo
+il piano della partenza vale circa 1 s in mediana sul server (0–3,5 s su
+9 job), 0,2 s sul Mac. TASK-434 stima che coi figli già avviati ne resti
+meno: l'utente ha scelto di costruirlo lo stesso.
+
+**Decisione.**
+
+1. **Motore.** `nearby_starts.plan_nearby(..., on_first=None)`: chiamato
+   una volta col piano della partenza appena c'è, se ci sono partenze
+   vicine da aspettare; mai senza vicine, né quando la partenza non ha un
+   percorso. La scadenza dei figli si calcola prima della chiamata. La
+   scelta, le alternative e i punti non cambiano: prova
+   `test_same_routes` e riga in `SAME_ROUTES_AS`.
+2. **Job.** La sorgente del job (`jobs._Reporting`) riceve quel piano
+   (`first_plan`), gli dà le indicazioni e il job lo tiene in `first`, con
+   lo stato che resta `computing`. Dal processo caldo (ADR-0242) arriva
+   come messaggio `("first", seq, plan)`, accanto allo stato.
+3. **Contratto, solo esteso.** `RouteJob.first`, `null` di norma.
+   `GET /route-jobs/{id}?first=1` lo riempie mentre il job calcola; a
+   `done` il `result` è quello di sempre (scelto + alternative). Un
+   parametro e non `X-MuW-Reads`: l'app lo chiede finché non l'ha avuto e
+   poi smette, e chi non lo chiede non riceve un percorso in più a ogni
+   lettura. Un'app non aggiornata non lo chiede e ignora il campo; un
+   server non aggiornato ignora il parametro.
+4. **App: il primo resta A.** All'arrivo di `first` il percorso è sullo
+   schermo, con «Start» e l'esportazione. A `done` gli altri si aggiungono
+   come B e C, dal migliore (la percentuale è già sulle schede); quello
+   uguale al primo non si ripete; tre in tutto, quindi se il primo non è
+   fra quelli che il motore tiene esce l'ultima alternativa. Se dopo il
+   primo il job fallisce o il server non risponde, il primo resta da solo.
+5. Archivio, registro delle richieste, `POST /routes`, «Explore», acqua e
+   motore sul telefono: come prima, sul risultato finale.
+
+**Alternative scartate.** Il migliore sostituisce il primo (la mappa
+cambierebbe sotto gli occhi in 38 richieste su 100); `first` in ogni
+risposta (un percorso in più a ogni lettura, anche per le app vecchie); un
+nuovo stato del job (un'app vecchia lo leggerebbe come `computing`, ma il
+`result` a metà cambierebbe il contratto di `done`).
+
+**Conseguenze.** Chi vede il primo percorso può avere come A un percorso
+che non è il migliore; l'archivio tiene comunque la risposta del motore,
+col migliore per primo. Tre PR (motore, API, app), poi server e OTA, ognuno
+col sì dell'utente.
 
 ## ADR-0360 — Le schede della palestra guidate: le settimane in una colonna `program`, i valori di ogni settimana dal telefono, l'app di prima che legge ancora
 

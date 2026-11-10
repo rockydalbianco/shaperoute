@@ -167,6 +167,11 @@ export const FIRST_MARK_RADIUS = 9;
 export const FAINT_OPACITY = 0.35;
 export const BOX_WIDTH = 1.5;
 
+/** Where the route of the figure starts (TASK-426, ADR-0354): a dot in the
+ * colour of a start, which a finger drags with «Move». */
+export const START_DOT_RADIUS = 9;
+export const START_DOT_COLOR = color.startHere;
+
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
 export const TRACK_WIDTH = track.width;
@@ -302,6 +307,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
     var chosenBox = noRoute;
     var links = noRoute;
     var marks = noRoute;
+    var startDot = noRoute;
     var ink = [];
     // The bearing the map keeps (TASK-232): the one of the route shown, so
     // its drawing is upright, until the app or two fingers turn the map.
@@ -567,6 +573,19 @@ export function buildMapPage(language: Language = appLanguage()): string {
           "circle-color": ${toScript(ROUTE_COLOR)},
           "circle-stroke-color": ${toScript(stop.outline)},
           "circle-stroke-width": 2,
+        },
+      });
+      // Where the route of the figure starts (TASK-426), over all.
+      map.addSource("canvas-start", { type: "geojson", data: startDot });
+      map.addLayer({
+        id: "canvas-start",
+        type: "circle",
+        source: "canvas-start",
+        paint: {
+          "circle-radius": ${START_DOT_RADIUS},
+          "circle-color": ${toScript(START_DOT_COLOR)},
+          "circle-stroke-color": ${toScript(stop.outline)},
+          "circle-stroke-width": 3,
         },
       });
       if (canvas) {
@@ -1004,11 +1023,12 @@ export function buildMapPage(language: Language = appLanguage()): string {
     // with «Erase» it rubs lines out, in a wide pale band; both are told as
     // a line drawn, and two fingers move and zoom the map. With «Move» one
     // finger drags the figure, when it starts on it, or the map, or bends a
-    // line it held still first; two fingers size the figure, when their
-    // middle is on it, or zoom the map. The app is told of each line drawn
-    // (\`drawn\`) and bent (\`bent\`), with the metres of a pixel, of the
-    // figure moved or sized (\`figure\`), and of where the map is
-    // (\`centre\`): a figure is put there.
+    // line it held still first, or drags the start dot along the figure's
+    // line (TASK-426); two fingers size the figure, when their middle is on
+    // it, or zoom the map. The app is told of each line drawn (\`drawn\`)
+    // and bent (\`bent\`), with the metres of a pixel, of the figure moved
+    // or sized (\`figure\`), of the start left (\`started\`), and of where
+    // the map is (\`centre\`): a figure is put there.
     var canvas = null;
     var canvasListening = false;
     var gesture = null;
@@ -1102,6 +1122,44 @@ export function buildMapPage(language: Language = appLanguage()): string {
         }),
       };
       setSource("canvas-marks", marks);
+    }
+    // The dot where the route of the figure starts (TASK-426), or none.
+    function drawStart(lngLat) {
+      startDot = lngLat
+        ? { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: lngLat } }
+        : noRoute;
+      setSource("canvas-start", startDot);
+    }
+    // Whether a finger at \`point\` is on the start dot, which may move.
+    function onStart(point) {
+      return Boolean(
+        canvas.start &&
+          canvas.startLine.length > 1 &&
+          screenDist(map.project(canvas.start), point) <= ${GRAB_PX},
+      );
+    }
+    // Where the start goes for a finger at \`point\`: the point of its line
+    // nearest on the screen, or the nearer of its two ends.
+    function startAt(point) {
+      var line = canvas.startLine;
+      var best = null;
+      if (canvas.startEnds) {
+        [line[0], line[line.length - 1]].forEach(function (end) {
+          var away = screenDist(map.project(end), point);
+          if (!best || away < best.away) {
+            best = { at: end, away: away };
+          }
+        });
+        return best.at;
+      }
+      for (var i = 1; i < line.length; i += 1) {
+        var at = nearestOnScreen(point, map.project(line[i - 1]), map.project(line[i]));
+        var away = screenDist(at, point);
+        if (!best || away < best.away) {
+          best = { at: at, away: away };
+        }
+      }
+      return lngLatAt(best.at);
     }
     // How many metres a pixel of the map is, in its middle.
     function metresPerPx() {
@@ -1335,6 +1393,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
     function drawChanged(change) {
       drawFigure(mapLines(canvas.lines, change));
       drawBox(canvas.box.map(change));
+      drawStart(canvas.start && moves(0) ? change(canvas.start) : canvas.start);
     }
     function tellCentre() {
       var centre = map.getCenter();
@@ -1348,6 +1407,11 @@ export function buildMapPage(language: Language = appLanguage()): string {
       canvas.lines = lines;
       canvas.centre = centre;
       canvas.box = canvas.box.map(change);
+      if (moves(0)) {
+        canvas.start = canvas.start && change(canvas.start);
+        canvas.startLine = canvas.startLine.map(change);
+      }
+      drawStart(canvas.start);
       canvas.shrink /= factor;
       canvas.grow /= factor;
       drawFigure(lines);
@@ -1389,6 +1453,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
         } else if (canvas.mode === "line") {
           gesture = { kind: "tap", at: at };
           bandTo(at);
+        } else if (onStart(at)) {
+          // The start dot, dragged along the figure's line (TASK-426).
+          gesture = { kind: "start", from: at, at: canvas.start };
         } else if (onFigure(at)) {
           // Held still on a line first, the drag bends it.
           gesture = { kind: "drag", from: at, by: null, since: time, grab: grabAt(at) };
@@ -1463,6 +1530,16 @@ export function buildMapPage(language: Language = appLanguage()): string {
           drawFigure(canvas.lines);
           drawMarks(canvas.marks);
         }
+      } else if (was.kind === "start") {
+        if (lifted && was.at !== canvas.start) {
+          // The dot stays there until the app answers.
+          post({ type: "started", lngLat: was.at, metresPerPx: metresPerPx() });
+        } else {
+          drawStart(canvas.start);
+          if (lifted) {
+            tellTap(was.from);
+          }
+        }
       } else if (was.kind === "drag") {
         if (was.by) {
           keepFigure(function (p) {
@@ -1501,6 +1578,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
         drawBox(canvas.box);
         drawMarks(canvas.marks);
       }
+      if (gesture && (gesture.kind === "drag" || gesture.kind === "size" || gesture.kind === "start")) {
+        drawStart(canvas.start);
+      }
       if (gesture && (gesture.kind === "ink" || gesture.kind === "tap")) {
         ink = [];
         drawInk();
@@ -1520,6 +1600,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
         bandTo(gesture.at);
       } else if (gesture.kind === "bend" && touches.length === 1) {
         bendTo(pointOf(touches[0]));
+      } else if (gesture.kind === "start" && touches.length === 1) {
+        gesture.at = startAt(pointOf(touches[0]));
+        drawStart(gesture.at);
       } else if (gesture.kind === "drag" && touches.length === 1) {
         var now = pointOf(touches[0]);
         var from = gesture.from;
@@ -1670,6 +1753,9 @@ export function buildMapPage(language: Language = appLanguage()): string {
         choosing: message.choosing === true,
         chosen: message.chosen || [],
         box: message.box || [],
+        start: message.start || null,
+        startLine: message.startLine || [],
+        startEnds: message.startEnds === true,
       };
       // The app has answered the line drawn: the figure takes its place.
       ink = [];
@@ -1678,6 +1764,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       drawFigure(message.lines);
       drawBox(canvas.box);
       drawMarks(message.marks);
+      drawStart(canvas.start);
       if (message.frame) {
         frameCanvas();
       }
@@ -1694,6 +1781,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       drawFigure([]);
       drawBox([]);
       drawMarks([]);
+      drawStart(null);
       GESTURES.forEach(function (name) {
         var handler = map[name];
         if (handler && gesturesBefore && gesturesBefore[name]) {

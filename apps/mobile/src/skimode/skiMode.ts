@@ -59,3 +59,24 @@ export function pageAfterModeChange(
   }
   return page === "skiDays" || page === "skiResorts" ? "choose" : null;
 }
+
+/**
+ * The pages of the tab bar for `sport`, built from the app's own five (in
+ * APP_PAGES' order) and the ski mode's own: «Today» (on «choose»), «Days»
+ * and «Resorts». In the ski mode the others, «Feed» and «Profile», are the
+ * app's as they are.
+ */
+export function shellPagesOf<P>(
+  sport: Sport,
+  appPages: readonly P[],
+  skiOwn: { choose: P; skiDays: P; skiResorts: P },
+): readonly P[] {
+  if (!isSkiMode(sport)) {
+    return appPages;
+  }
+  return SKI_PAGES.map((page) =>
+    page === "choose" || page === "skiDays" || page === "skiResorts"
+      ? skiOwn[page]
+      : appPages[APP_PAGES.indexOf(page)],
+  );
+}

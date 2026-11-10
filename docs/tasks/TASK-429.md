@@ -198,6 +198,12 @@ domanda 2).
 - **la Ricerca** dell'app normale non ha più la scheda «Ski».
 
 Scelte tecniche, decise dall'agente su delega dell'utente:
+- **la barra si ricostruisce quando la modalità cambia** (`key` di
+  `TabShell`): le schede sono altre, e le luci della barra ripartono dalla
+  pagina sullo schermo;
+- **le icone delle schede sci** sono di Lucide come le altre, disegnate
+  dagli SVG con lo Swift del Mac alle stesse linee (1,8 e 2,6 su 24),
+  senza dipendenze nuove;
 - **la modalità è una funzione dello sport** (`isSkiMode(sport)`), nessuno
   stato nuovo: scelto un altro sport, `App.tsx` torna alle pagine di prima;
 - **Oggi usa la pagina «choose»**: ogni «indietro» che oggi riporta a
@@ -263,6 +269,11 @@ Parte A (mandata al Coordinatore il 2026-11-10). File nuovi:
   `SkiResortsPage.tsx` e `MessagesButton.tsx`, ognuno col suo test;
 - `apps/mobile/src/skimode/skiModeShell.test.tsx` (entrare e uscire: le
   schede cambiano con lo sport).
+- aggiunti strada facendo, file nuovi: `apps/mobile/src/skimode/SkiMessages.tsx`
+  (i messaggi sopra l'app, con «‹ Back») e `SkiTabIcon.tsx` (le icone delle
+  schede sci come `face` della barra, così `TabBar.tsx` non cambia), ognuno
+  col suo test; le icone Lucide `mountain`, `calendar` e `cable-car` in
+  `apps/mobile/assets/ui/tabs/` (normale e `-active`, 1x, 2x, 3x).
 
 File da cambiare: `apps/mobile/App.tsx` (le pagine della barra, l'icona
 dei messaggi, i messaggi sopra l'app), `apps/mobile/src/settings/SportButton.tsx`

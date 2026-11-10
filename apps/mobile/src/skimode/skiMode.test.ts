@@ -3,6 +3,7 @@ import {
   barPagesOf,
   isSkiMode,
   pageAfterModeChange,
+  shellPagesOf,
   SKI_PAGES,
 } from "./skiMode";
 
@@ -54,5 +55,18 @@ describe("the ski mode (TASK-429)", () => {
   it("does nothing while the mode stays as it is", () => {
     expect(pageAfterModeChange("feed", false, false)).toBeNull();
     expect(pageAfterModeChange("skiDays", true, true)).toBeNull();
+  });
+
+  it("builds the bar from the app's pages and the ski mode's own", () => {
+    const app = ["Feed", "Draw", "Messages", "Explore", "Profile"];
+    const ski = { choose: "Today", skiDays: "Days", skiResorts: "Resorts" };
+    expect(shellPagesOf("ski", app, ski)).toEqual([
+      "Today",
+      "Days",
+      "Resorts",
+      "Feed",
+      "Profile",
+    ]);
+    expect(shellPagesOf("run", app, ski)).toBe(app);
   });
 });

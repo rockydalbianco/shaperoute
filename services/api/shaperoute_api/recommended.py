@@ -4,7 +4,9 @@ The routes are the seed catalogue of TASK-125 (catalog/seed/<city>.json,
 ADR-0097), read once when the API starts: nothing is planned and no graph is
 read. GET /recommended-routes lists the routes that start near a point, each
 with a light preview of its line; GET /recommended-routes/{id} gives one
-route whole, to show on the map and export.
+route whole, to show on the map and export. GET /catalog gives the whole
+catalogue a page at a time, city by city from the nearest, for the end of
+"Explore" (TASK-420 part E, ADR-0347 precisazione B).
 
 Until the database (TASK-114) the files are the catalogue: a new file needs
 a restart of the API.
@@ -29,6 +31,9 @@ DEFAULT_DIR = Path("catalog/seed")
 DEFAULT_RADIUS_M = 5_000
 MAX_RADIUS_M = 50_000
 MAX_ROUTES = 60
+# A page of the whole catalogue (GET /catalog): a screenful and the next.
+DEFAULT_PAGE = 40
+MAX_PAGE = 200
 # The preview of a line: enough to recognise the shape on a small card.
 PREVIEW_POINTS = 64
 PREVIEW_DECIMALS = 5
@@ -64,6 +69,16 @@ class RecommendedRouteBody(BaseModel):
 
 
 class RecommendedRoutesBody(BaseModel):
+    routes: list[RecommendedRouteBody]
+
+
+class CatalogPageBody(BaseModel):
+    """GET /catalog: a page of the whole catalogue, with its size."""
+
+    total: int
+    """How many routes the catalogue has in all."""
+    cities: int
+    """How many cities they are in."""
     routes: list[RecommendedRouteBody]
 
 
@@ -227,6 +242,37 @@ class RecommendedCatalog:
                 found.append((r, away))
         found.sort(key=lambda f: (-f[0].similarity, f[1], f[0].id))
         return [listed(r, away) for r, away in found[:limit]]
+
+    def page(
+        self,
+        point: LatLon,
+        offset: int = 0,
+        limit: int = DEFAULT_PAGE,
+    ) -> CatalogPageBody:
+        """The whole catalogue from `offset`, at most `limit` routes: city
+        by city from the one whose nearest start is nearest `point`, and
+        inside a city the best first, equally good ones nearer first, as
+        `near`. The same order on every page, so pages join."""
+        away = {r.id: distance_m(point, r.start) for r in self.routes.values()}
+        city_away: dict[str, float] = {}
+        for r in self.routes.values():
+            city_away[r.city] = min(city_away.get(r.city, math.inf), away[r.id])
+        ordered = sorted(
+            self.routes.values(),
+            key=lambda r: (
+                city_away[r.city],
+                r.city,
+                -r.similarity,
+                away[r.id],
+                r.id,
+            ),
+        )
+        page = ordered[max(0, offset) : max(0, offset) + max(0, limit)]
+        return CatalogPageBody(
+            total=len(ordered),
+            cities=len(city_away),
+            routes=[listed(r, away[r.id]) for r in page],
+        )
 
     def get(self, route_id: str) -> RecommendedRouteDetailBody | None:
         r = self.routes.get(route_id)

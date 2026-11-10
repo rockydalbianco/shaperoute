@@ -106,7 +106,7 @@ test("a long track keeps at most the corners an outline may have, its start firs
 
 /** A line of 60 points going east from Trento, 1.2 km: it ends away from
  * its start, and a side back to it crosses its wiggles, so closed it makes
- * no drawing. */
+ * no outline. */
 const LINE: LatLon[] = Array.from({ length: 60 }, (_, i) => [
   TRENTO[0] + 0.0005 * Math.sin(i / 6),
   TRENTO[1] + (0.015 * i) / 59,
@@ -186,25 +186,56 @@ test("a closed track asks the distance it is, as before", () => {
   expect(askedFor(square)).toBeCloseTo(4000, -1);
 });
 
-test("a track that makes no drawing once closed stays open: a ring at its start and the line hung on it", () => {
+/** The length of a track, in metres. */
+function lengthOf(track: LatLon[]): number {
+  return track.slice(1).reduce((total, p, i) => total + metresBetween(track[i], p), 0);
+}
+
+test("a track whose side back crosses it is a loop hung on a ring at its start (TASK-428)", () => {
   const { lines, centre, unitM } = trackInPlace(LINE);
-  // The outline is the small ring on the first point, the line a detail.
+  // The outline is the small ring on the first point, the loop a detail.
   expect(isOpenLine(lines.outline, lines.details)).toBe(true);
   expect(lines.details).toHaveLength(1);
   const at = (point: OutlinePoint) =>
     onMap({ figure: { kind: "shape", shape: "heart" }, centre, unitM }, point);
   expect(metresBetween(at(lines.outline[0]), LINE[0])).toBeLessThan(1);
   const detail = lines.details[0];
+  // It starts where the track did and ends on that very point: run once.
   expect(metresBetween(at(detail[0]), LINE[0])).toBeLessThan(1);
+  expect(detail[detail.length - 1]).toEqual(detail[0]);
+  // It reaches the end of the track.
+  const end = LINE[LINE.length - 1];
   expect(
-    metresBetween(at(detail[detail.length - 1]), LINE[LINE.length - 1]),
+    Math.min(...detail.map((point) => metresBetween(at(point), end))),
   ).toBeLessThan(1);
   // Every point of the detail lies on the track.
   for (const point of detail) {
     expect(Math.min(...LINE.map((p) => metresBetween(p, at(point))))).toBeLessThan(15);
   }
-  // A drawing of the map takes it as a line drawn there would be.
-  expect(drawingOf(lines)).not.toBeNull();
+  // The track once and the straight way back, not out and back.
+  const once = lengthOf(LINE) + metresBetween(end, LINE[0]);
+  expect(askedFor(LINE) / once).toBeGreaterThan(0.97);
+  expect(askedFor(LINE) / once).toBeLessThan(1.03);
+});
+
+test("a track that crosses itself is run once with the way back, not twice (TASK-428)", () => {
+  // 5 km of sides, the fourth crossing the first; it ends 1.6 km away.
+  const crossing = trackOf([
+    [0, 0],
+    [1000, 0],
+    [1000, 1000],
+    [500, 1000],
+    [500, -500],
+    [1500, -500],
+  ]);
+  const { lines } = trackInPlace(crossing);
+  expect(isOpenLine(lines.outline, lines.details)).toBe(true);
+  const detail = lines.details[0];
+  expect(detail[detail.length - 1]).toEqual(detail[0]);
+  // Before, out and back: over 10 km.
+  const once = 5000 + Math.hypot(1500, 500);
+  expect(askedFor(crossing) / once).toBeGreaterThan(0.99);
+  expect(askedFor(crossing) / once).toBeLessThan(1.01);
 });
 
 test("a track that ends near its start is still one closed outline", () => {

@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — documenti, A (#984), B (#1005) e privacy (#1007) in `main`; C nella #1018
+**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018) e privacy (#1007) in `main`; prossime D ed E
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,
@@ -210,6 +210,16 @@ E  services/api/migrations/00NN_game_prizes.sql (nuovo),
   `game_runs`), `test_activities.py` e `test_imported_runs.py` (il contratto
   delle fixture senza `utc_offset_min`). La 0065 va nel passo unico sul
   server solo se la #1018 è in `main` prima che parta.
+
+- 2026-11-10 — Parte C in `main` (#1018, 638d4fe2); la 0065 va nel passo
+  server 2. Il passo server di A+B è fatto; il backfill (regole 3) si è
+  fermato su una sessione di palestra senza traccia (`runs.track` NULL, con
+  `source` muw, come le nuotate in piscina): la #1037 le lascia fuori
+  (`track IS NOT NULL` nelle due query del backfill), con un test che su
+  `main` falliva come sul server. Il percorso del salvataggio non era
+  colpito (solo `PUT /me/activities`, sempre con una traccia). Gli account
+  fatti prima dell'errore restano a regole 3, quello in errore è tornato
+  indietro: il backfill rilanciato fa solo quelli che mancano.
 
 ## Esito
 

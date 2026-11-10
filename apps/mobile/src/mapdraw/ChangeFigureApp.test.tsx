@@ -6,6 +6,7 @@
  * chosen. The requests alone are in resultFigure.test.ts, the figure on the
  * map in useMapCanvasChange.test.ts.
  */
+import { SHAPES } from "@shaperoute/shared-types";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
 import * as Location from "expo-location";
@@ -155,8 +156,10 @@ afterEach(() => {
 test("from «Draw» a shape of the row is drawn from the same start, as long; «←» finds it chosen", async () => {
   await startingAt(TRENTO);
   await drawRoute();
-  // The 17 shapes and the 16 pictures, the heart drawn marked.
-  expect(row().getAllByRole("button")).toHaveLength(33);
+  // The shapes and the pictures, the heart drawn marked.
+  expect(row().getAllByRole("button")).toHaveLength(
+    SHAPES.length + SAMPLE_PICTURES.length,
+  );
   expect(row().getByRole("button", { name: "heart" })).toBeSelected();
   expect(row().getByRole("button", { name: "Rocket" })).toBeOnTheScreen();
 
@@ -217,7 +220,7 @@ test("on the water only the shapes, and a shape left somewhere stays there", asy
   apiAnswers(WATER_DONE);
   await startingAt(RICCIONE);
   await drawRoute();
-  expect(row().getAllByRole("button")).toHaveLength(17);
+  expect(row().getAllByRole("button")).toHaveLength(SHAPES.length);
   expect(row().queryByRole("button", { name: "Rocket" })).toBeNull();
 
   // Moved with a finger (TASK-238): asked again with `near`.
@@ -246,7 +249,9 @@ test("from «Draw on the map» the new figure takes the place of the old; «Undo
   await drawRoute();
   expect(row().getByRole("button", { name: "heart" })).toBeSelected();
   // The tiles of the map, without «+ photo».
-  expect(row().getAllByRole("button")).toHaveLength(33);
+  expect(row().getAllByRole("button")).toHaveLength(
+    SHAPES.length + SAMPLE_PICTURES.length,
+  );
   expect(row().queryByText("+ photo")).toBeNull();
 
   await change("star");

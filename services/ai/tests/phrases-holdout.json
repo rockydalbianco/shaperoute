@@ -17,7 +17,21 @@
     "smiley",
     "ghost",
     "donut",
-    "sun"
+    "sun",
+    "airplane",
+    "anchor",
+    "bear_head",
+    "bicycle",
+    "cherries",
+    "espresso_cup",
+    "four_leaf_clover",
+    "leaning_tower",
+    "music_note",
+    "pear",
+    "sailboat",
+    "swan",
+    "windmill",
+    "wine_glass"
   ],
   "phrases": [
     { "text": "faccia felice", "accept": ["smiley"] },
@@ -79,7 +93,7 @@
     { "text": "bersaglio", "accept": ["circle"] },
 
     { "text": "gufo", "accept": [null] },
-    { "text": "bicicletta", "accept": [null] },
+    { "text": "bicicletta", "accept": ["bicycle"] },
     { "text": "Colosseo", "accept": [null] },
     { "text": "Topolino", "accept": [null] },
     { "text": "chiave", "accept": [null] },

@@ -27,6 +27,9 @@ const URL = "http://api";
 const TOKEN = "the-token";
 const ID = activity.id;
 const AUTH = { Authorization: `Bearer ${TOKEN}` };
+/** The phone's clock an hour ahead of UTC (TASK-423), whatever the machine's. */
+const OFFSET_MIN = 60;
+const offsetAt = () => OFFSET_MIN;
 
 test("the examples of the API are what the app reads", () => {
   expect(isActivitiesPage(activities)).toBe(true);
@@ -83,7 +86,11 @@ test("saving sends the run under its key; new or already saved is the same", asy
   );
   const body = request as ActivityRequest;
   for (let i = 0; i < 2; i += 1) {
-    const outcome = await saveActivity(URL, TOKEN, ID, body, { fetchFn, key: null });
+    const outcome = await saveActivity(URL, TOKEN, ID, body, {
+      fetchFn,
+      key: null,
+      offsetAt,
+    });
     expect(outcome).toEqual({ kind: "ok", value: saved });
   }
   const [url, init] = fetchFn.mock.calls[0];
@@ -92,7 +99,11 @@ test("saving sends the run under its key; new or already saved is the same", asy
     method: "PUT",
     headers: { ...AUTH, "Content-Type": "application/json" },
   });
-  expect(JSON.parse(String(init?.body))).toEqual(request);
+  // With the phone's offset from UTC at the first fix (TASK-423).
+  expect(JSON.parse(String(init?.body))).toEqual({
+    ...request,
+    utc_offset_min: OFFSET_MIN,
+  });
 });
 
 test("deleting answers with nothing", async () => {
@@ -173,19 +184,25 @@ test("the request of an older app has neither walks nor the pen", () => {
 
 test("a run with walks an older API refuses goes once more as before", async () => {
   const [saved] = activities.activities;
-  const fetchFn: jest.Mock = answers(
-    {
-      status: 422,
-      body: apiError("invalid_request", "Extra inputs are not permitted"),
-    },
-    { status: 201, body: saved },
-  );
+  const refused = {
+    status: 422,
+    body: apiError("invalid_request", "Extra inputs are not permitted"),
+  };
+  const fetchFn: jest.Mock = answers(refused, refused, { status: 201, body: saved });
   const body = walkedRequest as ActivityRequest;
-  const outcome = await saveActivity(URL, TOKEN, ID, body, { fetchFn, key: null });
+  const outcome = await saveActivity(URL, TOKEN, ID, body, {
+    fetchFn,
+    key: null,
+    offsetAt,
+  });
   expect(outcome).toEqual({ kind: "ok", value: saved });
-  expect(fetchFn).toHaveBeenCalledTimes(2);
-  expect(String(fetchFn.mock.calls[0][1]?.body)).toBe(JSON.stringify(walkedRequest));
-  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(
+  // An API before TASK-199 is older than TASK-423 too: the offset goes first.
+  expect(fetchFn).toHaveBeenCalledTimes(3);
+  expect(String(fetchFn.mock.calls[0][1]?.body)).toBe(
+    JSON.stringify({ ...walkedRequest, utc_offset_min: OFFSET_MIN }),
+  );
+  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(JSON.stringify(walkedRequest));
+  expect(String(fetchFn.mock.calls[2][1]?.body)).toBe(
     JSON.stringify(withoutPenUp(body)),
   );
 });
@@ -193,11 +210,13 @@ test("a run with walks an older API refuses goes once more as before", async () 
 test("any other refusal, or a run without walks, is not sent again", async () => {
   const fetchFn: jest.Mock = answers(
     { status: 422, body: apiError("invalid_request", "A list that is full.") },
+    { status: 422, body: apiError("invalid_request", "A list that is full.") },
     { status: 422, body: apiError("invalid_request", "Still full.") },
     new Error("no network"),
   );
-  const options = { fetchFn, key: null };
-  // Refused as before TASK-199, then refused again: the API's own word.
+  const options = { fetchFn, key: null, offsetAt };
+  // Refused with the offset, without it, then as before TASK-199: the
+  // API's own last word.
   const walked = walkedRequest as ActivityRequest;
   expect(await saveActivity(URL, TOKEN, ID, walked, options)).toMatchObject({
     kind: "api_error",
@@ -209,16 +228,19 @@ test("any other refusal, or a run without walks, is not sent again", async () =>
     kind: "unreachable",
     url: URL,
   });
-  expect(fetchFn).toHaveBeenCalledTimes(3);
-  const once: jest.Mock = answers({
+  expect(fetchFn).toHaveBeenCalledTimes(4);
+  // A run without walks: once more without the offset, no more.
+  const full = {
     status: 422,
     body: apiError("invalid_request", "A list that is full."),
-  });
+  };
+  const twice: jest.Mock = answers(full, full);
   const plain = request as ActivityRequest;
   expect(
-    await saveActivity(URL, TOKEN, ID, plain, { fetchFn: once, key: null }),
+    await saveActivity(URL, TOKEN, ID, plain, { fetchFn: twice, key: null, offsetAt }),
   ).toMatchObject({ kind: "api_error", code: "invalid_request" });
-  expect(once).toHaveBeenCalledTimes(1);
+  expect(twice).toHaveBeenCalledTimes(2);
+  expect(JSON.parse(String(twice.mock.calls[1][1]?.body))).toEqual(request);
 });
 
 // --- The pauses of a run opened whole (TASK-200) ---

@@ -50,9 +50,24 @@ final class WatchMessageTests: XCTestCase {
 
     func testTheUnitsOfThePhoneAreRead() throws {
         let fields: [String: Any] = ["v": 1, "type": "settings", "units": "mi", "at": 9]
-        XCTAssertEqual(try WatchMessage.decode(fields), .settings(units: .mi, at: 9))
         XCTAssertEqual(
-            NSDictionary(dictionary: WatchMessage.settings(units: .km, at: 3).encoded()),
+            try WatchMessage.decode(fields), .settings(units: .mi, heartZones: nil, at: 9))
+        XCTAssertEqual(
+            NSDictionary(
+                dictionary: WatchMessage.settings(units: .km, heartZones: nil, at: 3).encoded()),
             NSDictionary(dictionary: ["v": 1, "type": "settings", "units": "km", "at": 3]))
+    }
+
+    func testTheZonesOfThePhoneAreRead() throws {
+        let limits = [95, 114, 133, 152, 171, 190]
+        let fields: [String: Any] = [
+            "v": 1, "type": "settings", "units": "km", "heartZones": limits, "at": 9,
+        ]
+        let zones = try XCTUnwrap(HeartZones(limits: limits))
+        XCTAssertEqual(
+            try WatchMessage.decode(fields), .settings(units: .km, heartZones: zones, at: 9))
+        XCTAssertEqual(
+            WatchMessage.settings(units: .km, heartZones: zones, at: 9).encoded()["heartZones"]
+                as? [Int], limits)
     }
 }

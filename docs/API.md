@@ -3616,6 +3616,30 @@ della collezione. Le regole sono in `GIOCO.md`; il codice in
 - **Le corse salvate prima**: `python -m shaperoute_api.game_backfill`,
   una volta dopo il deploy e a ogni `RULES_VERSION` nuova; non manda push.
 
+**Sfide personali e streak** (TASK-423 parte C, ADR-0351;
+`game_personal.py` puro, `game_personal_api.py`; regole in `GIOCO.md`
+§6.6–6.7). Con l'account.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /game/personal?utc_offset_min=60` | le sfide di questa settimana e di questo mese con il punto e il gradino, la streak, le medaglie delle ultime 8 settimane; `utc_offset_min` (da −840 a 840) è l'orologio del telefono, senza vale quello della corsa più recente, poi UTC | `200` `GamePersonal`; `422` offset fuori dai fusi |
+
+- **`GamePersonal`**: `week` e `month` (`start`, `end` = il giorno dopo,
+  `challenges`), `streaks` (tre righe: `runs` 1, 2, 3 uscite a settimana,
+  `current`, `best`), `finished` (le medaglie dei periodi passati: `id`,
+  `unit`, `tiers`, `period`, `start`, `tier`, `done_at`). Ogni sfida ha
+  `id`, `unit` (`m`, `count`, `days`, `pace_s` dove più basso è meglio),
+  `tiers` (bronzo, argento, oro), `value` (`null` per un passo senza una
+  corsa di quella distanza) e `tier` (0–3).
+- **L'ora del telefono**: `PUT /me/activities/{key}` accetta
+  `utc_offset_min` facoltativo (da −840 a 840, i minuti dell'orologio
+  avanti rispetto a UTC all'inizio della corsa); si salva in `game_runs`,
+  mai un luogo; il backfill lo tiene. Un'app più vecchia non lo manda: UTC.
+- **Le medaglie** si scrivono nella transazione del salvataggio, per la
+  settimana e il mese locali della corsa, solo quando il gradino sale; il
+  backfill non le scrive. Restano se la corsa si cancella; si cancellano
+  con l'account.
+
 **Parte C — squadre e sfide** (`game_teams.py`, `game_challenges.py`;
 regole in `GIOCO.md` §6). Tutti con l'account; i compagni vedono di un
 iscritto solo nome, foto, pezzi e metri: mai tracce, orari o luoghi.
@@ -3626,7 +3650,7 @@ iscritto solo nome, foto, pezzi e metri: mai tracce, orari o luoghi.
 | `POST /game/teams/join` | entrare: `{code}`, 6 caratteri in qualunque maiuscola | `200` `Team` (anche se già dentro); `404` codice sconosciuto; `403 http_error` «You can't join this team.» con un blocco in mezzo, 20 iscritti o 10 squadre |
 | `GET /game/teams` | le mie squadre, nell'ordine in cui sono entrato, ognuna con la sfida più recente | `200` `{teams: [Team]}` |
 | `DELETE /game/teams/{id}/members/{public_id}` | esco (il mio `public_id`), o chi ha creato la squadra toglie un iscritto | `204`; `404` squadra o iscritto che non c'è; `422` se non sono il proprietario |
-| `POST /game/teams/{id}/challenges` | una sfida: `{shape_id, pieces (2–12), piece, days (1–14, default 7)}`; `piece` è `{kind: "distance", total_m}` (1 000–50 000) o `{kind: "pace", distance_m (1000 o 5000), pace_s (150–900)}` | `201` `Challenge`; `409` se ce n'è una in corso; `422` fuori dai limiti o forma non in catalogo |
+| `POST /game/teams/{id}/challenges` | una sfida: `{shape_id, pieces (2–20; 2–12 prima di TASK-423 C), piece, days (1–30; 1–14 prima), default 7}`; `piece` è `{kind: "distance", total_m}` (1 000–50 000) o `{kind: "pace", distance_m (1000 o 5000), pace_s (150–900)}` | `201` `Challenge`; `409` se ce n'è una in corso; `422` fuori dai limiti o forma non in catalogo |
 | `GET /game/challenges/{id}` | la sfida: pezzi, titolari, metri, contributi, tempo che resta | `200` `Challenge`; `404` se non sono della squadra |
 | `POST /game/challenges/{id}/pieces/{idx}/hold` | prendo il pezzo `idx` | `200` `Challenge`; `409` pezzo preso, fatto, un altro già in mano, o sfida finita |
 | `DELETE /game/challenges/{id}/pieces/{idx}/hold` | lascio il pezzo, che resta libero con i suoi metri | `200` `Challenge`; `409` se non è mio o è fatto |

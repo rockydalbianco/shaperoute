@@ -66,7 +66,9 @@ test("a day of skiing reads its parts and its descents (TASK-424 part C2b)", () 
     metres: 2900,
     moving_s: 285,
   });
-  expect(isRunStats({ ...day, ski_parts: [{ ...parts[0], kind: "walk" }] })).toBe(false);
+  expect(isRunStats({ ...day, ski_parts: [{ ...parts[0], kind: "walk" }] })).toBe(
+    false,
+  );
   expect(isRunStats({ ...day, ski_descents: { metres: 2900 } })).toBe(false);
   // The request of a day: what TASK-429's app sends, to a server with C2b.
   const request: RunStatsRequest = skiPartsRequest as RunStatsRequest;

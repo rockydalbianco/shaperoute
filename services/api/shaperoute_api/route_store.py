@@ -148,6 +148,11 @@ SAME_ROUTES_AS: dict[str, str] = {
     "2bca806f467b": "8ab61d8e87f9",  # every route but a swim
     "55b54eea0e14": "17d7608bd912",  # the swims
     "cf585f8fb31b": "8a62c5877031",  # the app's paddling examples
+    # TASK-436: the two tables a search works out once for its graph, made
+    # in blocks (ADR-0362); every route of before drawn the same.
+    "7375da81cabc": "2bca806f467b",  # every route but a swim
+    "14873fd65adb": "55b54eea0e14",  # the swims
+    "3984555281d5": "cf585f8fb31b",  # the app's paddling examples
 }
 
 

@@ -662,6 +662,15 @@ Privacy, sezione «Sharing live»:
     `tokens.ts`, col contrasto misurato nei due temi, su ogni numero di
     calorie dell'app (corsa, neve, piscina, palestra, Feed, «Activities»,
     immagini da condividere).
+    Branch `feat/TASK-424-c3-red-kcal`. Tre token: `energy` (nel tono, 4,5:1
+    almeno su fondo, superficie e superficie rialzata a ogni passo),
+    `energyOnAccent` per il riquadro giallo della palestra (anche nella sua
+    immagine da condividere) e `energyOnScrim` per le parole sopra una
+    foto. La riga di fatti di un post («… · 280 kcal») e di un'attività
+    ha solo le calorie in rosso (`feed/FactsText.tsx`, nuovo); i riquadri
+    (`Tile`, `energy`) numero e unità; le righe del post (`PostRow.energy`)
+    il valore. Fuori: l'app dell'orologio (Swift) e la pagina web dal vivo
+    di getmuw.app, che non sono l'app.
 
   **Seguito, fuori da TASK-424**: le calorie in rosso anche nell'app
   dell'orologio (Swift, build nativa). Il battito di piscina e palestra

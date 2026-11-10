@@ -477,6 +477,7 @@ lasciando le righe d'indice.
 ---
 
 - ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme · 2026-11-08 · Proposto
+- ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D · 2026-11-10 · Attiva
 - ADR-0351 — «Play» grande: 94 forme in 10 collezioni, passi su 10 distanze, sfide personali e premi dentro l'app · 2026-11-08 · Accettata
 - ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono · 2026-11-08 · Accettata
 - ADR-0314, precisazione — La parte B3a1: il percorso all'orologio e la lista «Routes» · 2026-11-08 · Attiva
@@ -1001,6 +1002,48 @@ immediata da «Start» (`App.tsx`); le categorie dal catalogo delle forme
 quando TASK-418 le scrive; il rilancio di `catalog-data.mjs` a ogni seme
 nuovo, da chi cambia il seme (TASK-419; una riga nel suo task file e nel
 `README` del catalogo, dalla sua sessione).
+
+## ADR-0345, precisazione B — La mia immagine nel video: i fotogrammi in RGBA entro 2 MiB, le scelte sotto la riga, il cartellino sul 3D
+
+**Stato**: Attiva · 2026-11-10 · TASK-417 parti B e C (#1067, 87f98fd6) ·
+deciso dall'agente su delega dell'utente; le scelte di prodotto restano le
+1–5 del task file
+
+- **Il ritaglio**: `expo-image-picker` con `allowsEditing` e
+  `aspect: [1, 1]`, per la libreria e per la fotocamera. Su iOS l'editor
+  ritaglia ogni fotogramma di una GIF e la lascia animata
+  (`processGifData` con `cropRect` in expo-image-picker 57). Una foto si
+  tiene come JPEG di 256 px (`expo-image-manipulator`), una GIF così com'è,
+  dopo averla letta una volta. Un'immagine sola, nella cartella documenti
+  dell'app (`my-image.jpg` o `my-image.gif`).
+- **Il formato verso la pagina** (punto 3, misurato): una foto passa come
+  data URL JPEG, letta da un `img`; una GIF come i suoi fotogrammi in RGBA
+  base64, posati con `putImageData`. Al più 8 fotogrammi a distanza uguale,
+  di al più 256 px; tutti insieme entro **2 MiB** di RGBA: se non ci stanno,
+  meno fotogrammi, mai meno di uno. Ognuno dura quanto i fotogrammi che
+  rappresenta, così il giro tiene la sua velocità. Oltre 40 milioni di
+  pixel da posare (una GIF lunga) si legge solo il primo. Una GIF di 12
+  fotogrammi scritta da ImageIO: 8 fotogrammi in 7 ms (Node).
+- **Le scelte sotto la riga**, non in un foglio sopra il foglio: «Choose a
+  photo», «Take a photo» e «Remove image» compaiono sotto «Character»,
+  come quelle della foto del profilo; così il picker di sistema si apre
+  sopra senza un Modal che si chiude. La casella vuota apre le scelte;
+  un'immagine tenuta e non scelta si sceglie con un tocco; toccata da
+  scelta, riapre le scelte.
+- **Nel video**: tonda, larga 0,6 della lunghezza dell'animale, con un
+  anello del colore della linea; inclinata al più di 12° nel verso della
+  strada, mai capovolta; il saltello lo calcola la scena (`hop`, |sin| a
+  2,5 salti al secondo, al più il 7 % della lunghezza dell'animale, 0 a
+  riposo). Sul 3D sta in piedi su un'asticella alta 0,55 volte la sua
+  larghezza, sopra un'ombra tonda.
+- **Il personaggio** è `Actor = Character | "my_image"`
+  (`share/videoActor.ts`); `prepareActorCall` dà alla pagina la chiamata
+  per l'animale o per l'immagine, `null` se non si legge.
+- **Nessuna rete**: `prepareImage` non carica three.js né altro; un test
+  legge l'immagine dalla cartella dell'app con `fetch` e `XMLHttpRequest`
+  sotto controllo.
+- **Impronta** iOS `6f8bba4c` e Android `227457f3`, invariate; nessuna
+  dipendenza nuova.
 
 ## ADR-0345 — La mia immagine al posto dell'animale e il video «Together»: un lettore GIF nostro, i tempi delle tracce solo per il video insieme
 

@@ -1310,7 +1310,6 @@ export const DE: Table = {
   "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
     "Hier gibt es noch keine empfohlenen Routen: Formen von {distance} ab dem Zentrum, jetzt gezeichnet.",
   "Three first, more while you choose.": "Erst drei, weitere während du wählst.",
-  "Best near you": "Die besten in deiner Nähe",
   "Starting within {distance} of {place}": "Start innerhalb von {distance} um {place}",
   "your start": "deinen Start",
   "Loading routes…": "Routen werden geladen…",
@@ -2085,6 +2084,21 @@ export const DE: Table = {
   "Edit & run": "Bearbeiten und laufen",
   "Post settings": "Beitragseinstellungen",
   Summary: "Übersicht",
+  // src/feed/postSections.ts (TASK-410 part D: approved 2026-11-07)
+  "Fastest km": "Schnellster km",
+  "Fastest mile": "Schnellste Meile",
+  "Avg cadence": "Ø Kadenz",
+  "Elevation gain": "Höhenmeter bergauf",
+  Splits: "Zwischenzeiten",
+  Mile: "Meile",
+  "Fastest: km {n} · {pace}": "Am schnellsten: km {n} · {pace}",
+  "Fastest: mile {n} · {pace}": "Am schnellsten: Meile {n} · {pace}",
+  Elevation: "Höhenprofil",
+  "Elevation along the route, from {min} to {max} m":
+    "Höhe entlang der Strecke, von {min} bis {max} m",
+  "Heart rate": "Herzfrequenz",
+  Average: "Durchschnitt",
+  Max: "Max.",
 
   // src/feed/muwLabel.ts (TASK-365: the routes MuW draws, labels approved)
   "Route created by MuW – ride it yourself": "Route von MuW – fahr sie selbst",
@@ -2194,4 +2208,18 @@ export const DE: Table = {
   "Keep sharing": "Weiter teilen",
   "Couldn't create the link. Try again.":
     "Der Link konnte nicht erstellt werden. Versuch es noch einmal.",
+  // src/explore/ExploreScreen.tsx, FartherAway.tsx, AskLine.tsx (TASK-420: every
+  // drawing of the catalog in «Explore», the nearest first)
+  "{count} drawings in {cities} cities · the nearest first":
+    "{count} Zeichnungen in {cities} Städten · die nächsten zuerst",
+  "{count} drawings · the nearest first": "{count} Zeichnungen · die nächsten zuerst",
+  "within {distance} · {count}": "innerhalb von {distance} · {count}",
+  "FARTHER AWAY": "WEITER WEG",
+  "{count} drawing · by city": "{count} Zeichnung · nach Stadt",
+  "{count} drawings · by city": "{count} Zeichnungen · nach Stadt",
+  "Ask for a route": "Eine Route anfragen",
+  "Famous places, best views, food… in any city":
+    "Berühmte Orte, Aussichten, Essen… in jeder Stadt",
+  "The rest could not load.": "Der Rest konnte nicht geladen werden.",
+  "Loading more…": "Weitere werden geladen…",
 };

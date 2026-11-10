@@ -11,8 +11,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "6 November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). */
-const PRIVACY_UPDATED = "8 November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). */
+const PRIVACY_UPDATED = "10 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -437,6 +437,14 @@ const privacy: AboutDocument = {
       heading: "Strava",
       blocks: [
         "A run goes to Strava only when you ask for it, and only after you connected your Strava profile. While it is connected, our server keeps your Strava name and the keys Strava gave us for your profile. We then send Strava the track with its times, the name and one line of description. We ask Strava only for the permission to add activities, never to read yours. On Strava the activity follows your Strava privacy settings, not MuW's.",
+      ],
+    },
+    {
+      heading: "The MuW app on Apple Watch",
+      blocks: [
+        "With the MuW app on Apple Watch, during a workout you start the watch records your position, your heart rate and your active calories, and saves the workout in Apple Health on the watch.",
+        "The phone sends the watch the routes you choose («Send to watch» and your favorites). At the end of a workout the watch sends the phone its track, which stays there until you save it or discard it: a run you save goes to our server as described under «Your runs and their GPS tracks».",
+        "During a run the watch sends the phone your heart rate, to show it on the run's screen: it does not reach our server. The watch asks for your position only during a workout.",
       ],
     },
     {

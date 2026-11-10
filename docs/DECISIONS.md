@@ -482,6 +482,7 @@ lasciando le righe d'indice.
 - ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
 - ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
 - ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
+- ADR-0346, precisazione B — Le 14 forme approvate entrano nel catalogo; le zone restano sulle 17 forme di prima · 2026-11-10 · Attiva
 - ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
 - ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
@@ -1814,6 +1815,56 @@ prova al polso.
 
 **Conseguenze**: l'arrivo del file e la notifica si provano con l'orologio
 vero (build 1.1).
+
+## ADR-0346, precisazione B — Le 14 forme approvate entrano nel catalogo; le zone restano sulle 17 forme di prima
+
+**Stato**: Attiva · 2026-11-10 · TASK-418 parte B (#1042). Deciso
+dall'agente su delega dell'utente (la scatola delle zone: dal Coordinatore,
+su delega).
+
+**Contesto**: l'utente ha approvato su strada 20 percorsi di TASK-419 fatti
+con 14 forme candidate. `prefetch_zones.longest_route_box` faceva l'unione
+delle zone di **tutte** le forme del catalogo: pera e Torre di Pisa, strette
+e alte, a parità di distanza disegnano più in grande e la allargavano di un
+decimo per ogni sport (la corsa a 50 km da circa 40 a 44 km di lato). Ogni
+zona tenuta sul server avrebbe cambiato chiave e andava riscaricata.
+
+**Decisione**:
+
+1. I 14 file passano da `candidate_outlines/` a
+   `route_engine/shapes/outlines/` (`APPROVED` in
+   `tools/draw_new_shapes.py`) ed entrano in `SHAPES`, nel contratto,
+   nell'API, nelle descrizioni per l'AI e nell'app; le altre 35 restano
+   candidate.
+2. `prefetch_zones.ZONE_SHAPES`: la scatola dei percorsi più lunghi resta
+   calcolata sulle 17 forme di prima. `test_zone_shapes.py` fissa le
+   scatole di ogni sport come erano.
+3. Penna alzata: ancora, orso, bici e tazzina hanno pezzi, quindi l'API le
+   accetta (`PEN_UP_SHAPES` viene dal motore, come per il sole); l'app non
+   la offre finché l'utente non le ha giudicate così.
+4. Le categorie della ricerca restano quelle di TASK-344: orso e cigno negli
+   animali, ancora, quadrifoglio e nota nei simboli, il resto nelle emoji.
+
+**Il limite accettato**: in bici, pera e Torre di Pisa stanno nella zona
+già scaricata fino a 26 km, non a 30 (`test_prefetch_zones.py`). Oltre,
+come ogni percorso vicino al bordo, possono prendere qualche strada fuori
+zona. Le altre forme nuove stanno nella zona a 30 km.
+
+**Motivo**: nessuna zona da riscaricare e nessun download in più su
+Overpass per un caso raro (una pera di 30 km).
+
+**Alternative**:
+
+- **La scatola sull'intero catalogo**: zone del 10% più larghe e tutte da
+  riscaricare; scartata.
+- **Una scatola per forma**: più chiavi di zona per la stessa città;
+  scartata.
+
+**Conseguenze**: impronta del codice 2bca806f467b (nuoto 55b54eea0e14,
+pagaiata cf585f8fb31b), con le righe `SAME_ROUTES_AS` verso le impronte di
+prima: le 9 rotte di `test_same_routes.py` sono identiche, gli esempi
+tenuti restano validi. Sul server, il passo 2 (`out/TASK-418/SERVER.md`);
+nell'app le forme arrivano con l'OTA dopo il server.
 
 ## ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta
 

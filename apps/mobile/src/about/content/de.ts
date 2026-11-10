@@ -10,8 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "6. November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). */
-const PRIVACY_UPDATED = "8. November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). */
+const PRIVACY_UPDATED = "10. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -436,6 +436,14 @@ const privacy: AboutDocument = {
       heading: "Strava",
       blocks: [
         "Ein Lauf geht nur an Strava, wenn du es verlangst, und erst nachdem du dein Strava-Profil verbunden hast. Solange es verbunden ist, bewahrt unser Server deinen Strava-Namen und die Schlüssel auf, die Strava uns für dein Profil gegeben hat. Wir senden Strava dann die Spur mit ihren Zeiten, den Namen und eine Zeile Beschreibung. Wir bitten Strava nur um die Erlaubnis, Aktivitäten hinzuzufügen, nie darum, deine zu lesen. Auf Strava folgt die Aktivität deinen Datenschutzeinstellungen bei Strava, nicht denen von MuW.",
+      ],
+    },
+    {
+      heading: "Die MuW-App auf der Apple Watch",
+      blocks: [
+        "Mit der MuW-App auf der Apple Watch zeichnet die Uhr während eines Trainings, das du startest, deinen Standort, deine Herzfrequenz und deine aktiven Kalorien auf und speichert das Training in Apple Health auf der Uhr.",
+        "Das Telefon schickt der Uhr die Routen, die du wählst («An die Uhr senden» und deine Favoriten). Am Ende eines Trainings schickt die Uhr dem Telefon die Spur; sie bleibt dort, bis du sie speicherst oder verwirfst: Ein gespeicherter Lauf geht an unseren Server, wie unter «Deine Läufe und ihre GPS-Spuren» beschrieben.",
+        "Während eines Laufs schickt die Uhr dem Telefon deine Herzfrequenz, um sie auf dem Laufbildschirm zu zeigen: Sie erreicht unseren Server nicht. Die Uhr fragt nach deinem Standort nur während eines Trainings.",
       ],
     },
     {

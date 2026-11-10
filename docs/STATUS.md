@@ -123,10 +123,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
   TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
-  0, A1 (server), A2 (`site/live/`) e B1 (app, sport col GPS, #1025) in
-  `main`; B1 esce con B2 (piscina e palestra) in un OTA a parte, dopo i sì
-  su App Privacy «Health» e Data safety; poi C. File: — ·
-  `tasks/TASK-424.md`
+  0, A1, A2, B1 e B2 (piscina e palestra, #1053) in `main`; server, sito e
+  B1 in produzione dal 2026-11-10 (OTA `01a1c493`); B2 esce con il
+  prossimo OTA, col sì dell'utente; poi C. File: — · `tasks/TASK-424.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · primo giro sul server
   (155); secondo giro nella PR #1028 (386 percorsi in 45 città, scelta
   dell'utente del 2026-11-10), poi «via server catalogo». Restano 16 città

@@ -502,6 +502,7 @@ lasciando le righe d'indice.
 - ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
 - ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì · 2026-11-10 · Accettata
 - ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF · 2026-11-10 · Attiva
+- ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Proposta
 
 ## Voci nuove
 
@@ -2025,3 +2026,41 @@ Blender, e i crediti con i due nomi («Tutti e due»).
    matrici si aggiornano prima di misurare l'animale, altrimenti la misura
    era sbagliata e l'animale finiva fuori vista. Gli animali di Quaternius,
    con la mesh nell'origine, si disegnano identici.
+
+## ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci
+
+**Stato**: Proposta · 2026-11-10 · TASK-429, parte 0 (solo documenti).
+Numero dal Coordinatore. Le scelte di prodotto sono dell'utente, una
+domanda alla volta nel task file, prima del codice.
+
+**Contesto**: dopo TASK-406 l'utente non trova lo sci nell'app: sta nella
+Ricerca e dietro lo sport «Ski». Il 2026-11-10 chiede che, scelto lo sci,
+«l'app deve cambiare» e diventare un'app per lo sci «tipo Slopes», con più
+sezioni, tutti i dati (impianti presi compresi) e la mappa con linee
+colorate e legenda. Lo sci non va messo in vista nell'app normale.
+
+**Proposta** (dettagli e mockup in `tasks/TASK-429.md`):
+
+1. **La modalità segue lo sport già salvato** (`saveSport`, `useSport`):
+   con «Ski» l'app è nella modalità sci, con un altro sport è quella di
+   sempre. Si entra e si esce dal tasto dello sport in alto o da
+   Impostazioni; nessuno stato nuovo da ricordare.
+2. **Le stesse cinque schede di `TabShell`**, con tre pagine diverse: Oggi ·
+   Giornate · Stazioni · Feed · Profilo. I messaggi passano a un'icona in
+   alto. È lo schema che «Explore» usa già per acqua e nuoto
+   (`PaddleExplore`), allargato.
+3. **Si riusa quello che c'è**: `src/ski/` (stazioni, meteo, neve,
+   seguite), `SnowFinishCard`, `snowDay.ts`, `ski-names`.
+4. **I colori della giornata solo come token** (`ski.descent`,
+   `ski.lift`), con tratteggio, numeri ed etichette perché la legenda si
+   legga senza colori. Tocca due regole di `tokens.ts` (giallo = percorso,
+   rosso = badge): decide l'utente.
+5. **Il server** serve per due cose sole: i totali della stagione e i nomi
+   tratto per tratto.
+
+**Alternative**: un tasto «Ski» in più nell'app normale, scartato
+dall'utente il 2026-11-10; un'app a parte, che vorrebbe una build nativa
+nuova e l'impronta iOS cambiata.
+
+**Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` ferma; motore
+non toccato. Le parti A–E si elencano nel task file dopo le risposte.

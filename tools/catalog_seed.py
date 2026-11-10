@@ -769,6 +769,7 @@ def run_cities(
     overpass_url: str | None = None,
     enrich: bool = False,
     outlines: Sequence[Path] = (),
+    slot_wait_max_s: float = 6 * 3600,
     say: Callable[[str], None] = print,
 ) -> int:
     """Plans the cases of `cities` not yet in `log`, one city at a time:
@@ -779,7 +780,10 @@ def run_cities(
     `road_shares`. With `enrich`, measures those two again for every run of
     the city not measured this way yet (the imported ones) whose area is
     here. `outlines` adds the cases of those JSON outline files
-    (`outline_cases`). Returns how many cases were planned."""
+    (`outline_cases`). A download waits for a free slot of Overpass's status
+    page up to `slot_wait_max_s`; with 0 it is tried at once, one attempt
+    (MAPS.md: when Overpass does not answer, skip and try later, not in a
+    loop). Returns how many cases were planned."""
     import numpy as np
     import osmnx as ox
     from route_engine import seed_catalog
@@ -919,7 +923,9 @@ def run_cities(
             zone = (s - m, w - m, n + m, e + m)
             if max_downloads is not None and downloads >= max_downloads:
                 say(f"{city.name}: {len(away)} cases want the zone, no download left")
-            elif not wait_for_slot(say=say):
+            elif slot_wait_max_s > 0 and not wait_for_slot(
+                say=say, max_s=slot_wait_max_s
+            ):
                 say(f"{city.name}: Overpass closed, {len(away)} cases skipped")
             else:
                 box = tuple(round(x, 3) for x in zone)
@@ -1012,6 +1018,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "--max-downloads", type=int, default=1, help="zones to download (default 1)"
     )
     p.add_argument(
+        "--slot-wait-hours",
+        type=float,
+        default=6.0,
+        help="how long to wait for a free slot of Overpass before a download "
+        "(default 6; 0 tries at once, one attempt)",
+    )
+    p.add_argument(
         "--overpass-url", help="a mirror of Overpass instead of overpass-api.de"
     )
     p.add_argument(
@@ -1060,6 +1073,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             overpass_url=args.overpass_url,
             enrich=args.enrich,
             outlines=outlines,
+            slot_wait_max_s=args.slot_wait_hours * 3600,
         )
         print(f"{planned} cases planned")
     runs = read_runs(args.log)

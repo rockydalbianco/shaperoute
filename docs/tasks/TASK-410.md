@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: In lavorazione — B, F e C (`run_stats`, #1001) in `main` (2026-11-08); A è TASK-355 B; poi D ed E
+**Stato**: In lavorazione — B, F, C e D (#1043) in `main` (2026-11-10); D esce con l'OTA 3; A è TASK-355 B; poi E
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -294,7 +294,8 @@ e backfill dei passi, ognuno col sì dell'utente.
 - [ ] Una sezione senza dati non c'è; una riga senza valore non c'è.
 - [ ] La tabella dei passi: una riga per km (o miglio), il più veloce
       evidenziato, l'ultimo km parziale indicato come tale.
-- [ ] Le % per zona sommano a 100 (arrotondate) e si calcolano dai secondi.
+- [ ] Le % per zona sommano a 100 (arrotondate) e si calcolano dai secondi
+      (spostato a quando ci sono i secondi per zona: vedi «Parte D»).
 - [ ] Foto se c'è, lettera se no, nel Feed e nella pagina.
 - [ ] Colori solo da `tokens.ts`; testi con i18n nelle cinque lingue.
 - [ ] Niente dipendenze nuove; `schemas.py` e `engine.zip` intatti.
@@ -542,6 +543,73 @@ sul canale preview (gruppo `b0f9913b-b8cf-4765-92b2-796924d597c1`, runtime
 `exposdk:57.0.0`) per l'iPhone di prova. Porta la card del Feed come la
 pagina (F) e l'invio delle stats (C). La parte D (#1043) esce col secondo
 OTA, dopo il passo server 2, col sì dell'utente.
+
+## Parte D — le sezioni nella pagina del post (2026-11-10)
+
+Chiesta dall'utente il 2026-11-10 («continua con la parte d»); lista dei
+file approvata dal Coordinatore lo stesso giorno. Branch
+`feat/TASK-410-d-sections`, solo app, esce con un OTA (quello unico se è in
+`main` in tempo, altrimenti il successivo).
+
+```
+apps/mobile/src/feed/postSections.ts + postSections.test.ts
+apps/mobile/src/sports/postMetrics.ts
+apps/mobile/src/feed/PostPage.tsx + PostPage.test.tsx
+apps/mobile/src/feed/usePostStats.ts           (nuovo)
+apps/mobile/src/feed/PostSplits.tsx            (nuovo)
+apps/mobile/src/feed/PostElevation.tsx         (nuovo)
+apps/mobile/src/feed/PostSplits.test.tsx       (nuovo, anche PostElevation)
+apps/mobile/src/i18n/{it,es,de,fr}.ts          (i testi della D approvati il 2026-11-07)
+docs/tasks/TASK-410.md
+```
+
+Cosa fa:
+
+- All'apertura la pagina legge `GET /drawings/{id}` una volta
+  (`usePostStats`, `statsOf` della parte C). Senza stats, o senza rete,
+  resta il riepilogo di prima.
+- **Riepilogo**: distanza, tempo, passo (o velocità), km più veloce,
+  cadenza media, calorie, dislivello positivo; ogni riga solo quando c'è.
+- **Parziali**: una riga per km (o miglio con le miglia): il passo a
+  sinistra, una barra lunga quanto è stato veloce, il numero a destra; il
+  più veloce in `accent`; l'ultimo pezzo con la sua lunghezza («0.43») al
+  posto del numero, in corsivo; sotto «Il più veloce: km 3 · 4:59 /km».
+- **Altimetria**: il dislivello in alto, poi una colonna di `View` per
+  punto del profilo (al più 120), dalla più bassa alla più alta; VoiceOver
+  legge «Altitudine lungo il percorso, da … a … m».
+- **Battito**: medio e massimo, come li manda il server (`runs.heart_*`),
+  solo se l'autore li mostra.
+- **Per sport** (`postMetrics`): parziali a piedi e su ruote, non in acqua,
+  sulla neve, in palestra; altimetria ovunque tranne acqua e palestra;
+  cadenza solo a piedi.
+
+Decisioni (le prime due del Coordinatore su delega dell'utente, il resto
+dell'agente su delega dell'utente; in DECISIONS nella PR dei documenti):
+
+- **Zone e battito minimo non ci sono**: nessuno li manda ancora
+  (`stats.heart` ha medio e massimo). Le barre delle zone, il minimo e il
+  criterio «% per zona» arrivano quando TASK-345 C / TASK-374 D danno i
+  secondi per zona.
+- **Il dislivello si conta dal profilo** (120 punti, la regola dei 3 m di
+  `climbM`): è una **sotto stima** di quello della traccia intera, che il
+  post non ha.
+- **Calorie**: quelle dell'autore (`stats.kcal`) quando ci sono; se l'autore
+  le nasconde, la stima di prima (70 kg), che non dice niente del suo corpo.
+- In miglia il dislivello è in piedi; la cadenza si scrive «168 spm» e il
+  battito «148 bpm», unità non tradotte come «kcal».
+- La barra di un parziale è lunga quanto il suo passo rispetto al più
+  veloce (il più veloce piena).
+
+Provata sul simulatore (Expo Go, 2026-11-10) con un harness temporaneo che
+apre la pagina di un post di un altro: con le stats dell'esempio
+(`run-stats.json`: riepilogo con km più veloce, cadenza, calorie e
+dislivello; parziali col 3 in giallo e «0.43» in corsivo; altimetria;
+battito) e senza (solo il riepilogo di prima). Schermate in
+`out/TASK-410-d/` della copia principale.
+
+**Esito della parte D** (2026-11-10): #1043 in `main` (`bc03b9a7`), dopo
+due merge di `main` (conflitto solo nel task file). Esce con l'OTA 3, dopo il
+passo server 2, col sì dell'utente.
 
 ## Esito
 

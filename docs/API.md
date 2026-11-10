@@ -448,6 +448,22 @@ I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
 `--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
 nuovo vuole un riavvio dell'API.
 
+### `GET /catalog` (TASK-420 parte E, ADR-0347 precisazione B)
+
+Tutto il catalogo, una pagina alla volta, per il fondo di «Explore»
+(«Farther away»): `?lat=…&lon=…`, facoltativi `offset` (da 0, default 0)
+e `limit` (1–200, default 40). Risponde `{total, cities, routes}`: quanti
+percorsi ha il catalogo in tutto, in quante città, e i percorsi della
+pagina nello stesso corpo di `/recommended-routes` (con `away_m` dal
+punto). L'ordine è **città per città dalla più vicina** al punto (una
+città sta dove sta la sua partenza più vicina), e dentro la città prima
+la somiglianza più alta, a parità il più vicino: lo stesso ordine su ogni
+pagina, così le pagine si attaccano. Corpo in
+`packages/shared-types/fixtures/catalog.json`. Senza catalogo
+`{total: 0, cities: 0, routes: []}`. L'app mostra le prime 40 voci e
+chiede le altre mentre si scorre; un'API senza questa strada (404) la
+lascia com'era.
+
 ### `GET /recommended` (TASK-092, ADR-0229)
 
 La riga «Recommended» di «Explore»: gli stessi percorsi del catalogo di
@@ -3078,8 +3094,8 @@ senza app né account. Tipi in `shared-types/src/liveShare.ts`
 - **Solo il sito legge `/live`**: `Access-Control-Allow-Origin:
   https://getmuw.app`, `Cache-Control: no-store`, `Referrer-Policy:
   no-referrer`, anche sul `429`.
-- **La pulizia**: ogni 5 minuti un giro (`LiveShareSweep`, avviato da
-  `__main__`) cancella punti e numeri dei link finiti; la riga vuota resta
+- **La pulizia**: ogni 5 minuti un giro (`LiveShareSweep`, acceso e
+  spento col lifespan dell'app, prima che il database si chiuda) cancella punti e numeri dei link finiti; la riga vuota resta
   un giorno, perché la pagina possa dire «stopped». Le copie notturne del
   database non tengono le righe dei link (`deploy/backup.sh`). Cancellare
   l'account cancella i link. Test in `test_live_shares.py`.

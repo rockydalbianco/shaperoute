@@ -1,7 +1,15 @@
+import drawingDetails from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
+import runStats from "@shaperoute/shared-types/fixtures/run-stats.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { FeedPost as Post, Session } from "@shaperoute/shared-types";
-import { fireEvent, render, screen, within } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 
 import type { AccountState } from "../account/useAccount";
 import { FollowsContext } from "../social/followsDoor";
@@ -48,8 +56,21 @@ async function show(post: Post, edit = jest.fn()) {
   return { onClose, edit };
 }
 
+let fetchSpy: jest.SpyInstance;
+
+/** GET /drawings/{id} answers the post whole, with `stats` as given. */
+function detailWith(stats: unknown) {
+  fetchSpy.mockImplementation(async () => Response.json({ ...drawingDetails, stats }));
+}
+
 beforeEach(() => {
   forgetFeedMaps();
+  fetchSpy = jest.spyOn(global, "fetch");
+  detailWith(null);
+});
+
+afterEach(() => {
+  fetchSpy.mockRestore();
 });
 
 test("the author's letter at the top, as big as the page wants", async () => {
@@ -115,4 +136,42 @@ test("a tap on the drawing opens it on the map, as from the card before", async 
   await render(<PostPage post={shownPost(OTHERS)} onClose={jest.fn()} onMap={onMap} />);
   await fireEvent.press(screen.getByTestId("post-map"));
   expect(onMap).toHaveBeenCalledTimes(1);
+});
+
+// --- The figures of the post (TASK-410 part D) ---
+
+test("with the figures of the post: splits, elevation, heart rate", async () => {
+  detailWith(runStats);
+  await show(OTHERS);
+  await screen.findByTestId("post-splits");
+  expect(String(fetchSpy.mock.calls[0][0])).toBe(`${URL}/drawings/${OTHERS.id}`);
+  const splits = within(screen.getByTestId("post-splits"));
+  expect(splits.getByText("Splits")).toBeOnTheScreen();
+  expect(splits.getByText("Fastest: km 3 · 4:59 /km")).toBeOnTheScreen();
+  expect(splits.getByText("0.43")).toBeOnTheScreen();
+  expect(splits.getAllByTestId("split-bar")).toHaveLength(4);
+  const elevation = within(screen.getByTestId("post-elevation"));
+  expect(elevation.getByText("+21 m")).toBeOnTheScreen();
+  expect(
+    elevation.getByLabelText("Elevation along the route, from 194 to 215 m"),
+  ).toBeOnTheScreen();
+  const heart = within(screen.getByTestId("post-heart"));
+  expect(heart.getByText("148 bpm")).toBeOnTheScreen();
+  expect(heart.getByText("171 bpm")).toBeOnTheScreen();
+  // The summary takes the fastest kilometre and the author's calories.
+  const summary = within(screen.getByTestId("post-summary"));
+  expect(summary.getByText("Fastest km")).toBeOnTheScreen();
+  expect(summary.getByText("355 kcal")).toBeOnTheScreen();
+});
+
+test("a post without figures, or an API that cannot be reached: the summary only", async () => {
+  await show(OTHERS);
+  await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+  expect(screen.getByTestId("post-summary")).toBeOnTheScreen();
+  expect(screen.queryByTestId("post-splits")).toBeNull();
+  expect(screen.queryByTestId("post-elevation")).toBeNull();
+  expect(screen.queryByTestId("post-heart")).toBeNull();
+  fetchSpy.mockRejectedValue(new Error("offline"));
+  await show(OTHERS);
+  expect(screen.queryByTestId("post-splits")).toBeNull();
 });

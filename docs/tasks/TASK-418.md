@@ -1,7 +1,7 @@
 # TASK-418 — Forme nuove per il catalogo di «Explore»
 
-**Stato**: In corso — parte A (le forme candidate) Done, in `main` con la
-PR #953; parte B (la registrazione delle 14 forme approvate su strada) in PR.
+**Stato**: Done — parte A (le forme candidate) con la PR #953, parte B (le
+14 forme approvate su strada nel catalogo) con la PR #1042.
 **Fase**: 4 · **Branch**: `feat/TASK-418-new-shapes` (A),
 `feat/TASK-418-b-register-shapes` (B) · **ADR**: ADR-0346
 (numeri dal Coordinatore) ·
@@ -167,4 +167,13 @@ docs/tasks/TASK-418.md
 nuova impronta, in catena dal Coordinatore; TASK-419 mette i 20 percorsi
 nel catalogo; le righe di STATUS, DECISIONS (la precisazione di ADR-0346
 sulle zone) e INDEX in una PR di soli documenti.
+
+## Esito (parte B)
+
+Le 14 forme approvate sono nel catalogo del motore, del contratto, dell'API,
+dell'AI e dell'app (31 forme in «Draw»), con gli stessi percorsi di prima
+per le altre 17 e nessuna zona cambiata (ADR-0346, precisazione B). Resta,
+fuori da questo task: il passo server 2 (`out/TASK-418/SERVER.md`, dal
+Coordinatore, con `draw_examples`), poi l'OTA con le forme nell'app, poi i
+20 percorsi nel catalogo da TASK-419.
 

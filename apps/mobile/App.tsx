@@ -18,6 +18,7 @@ import { useActivitiesDoor } from "./src/activities/activitiesDoor";
 import { ActivityCard } from "./src/activities/ActivityCard";
 import { type Drawn, sameLine } from "./src/activities/recordedRun";
 import { RunEnd } from "./src/activities/RunEnd";
+import { snowParts } from "./src/activities/snowDay";
 import { type Lifts, snowLiftsOf } from "./src/activities/snowLifts";
 import { apiUrl } from "./src/api/apiUrl";
 import { PickStart } from "./src/location/PickStart";
@@ -182,6 +183,7 @@ import { withoutRouteIcon } from "./src/screens/RunNoRouteButton";
 import { SportButton } from "./src/settings/SportButton";
 import { useSport } from "./src/settings/useSport";
 import { MessagesButton } from "./src/skimode/MessagesButton";
+import { type SkiLabel, skiDayLabels } from "./src/skimode/skiDayLabels";
 import {
   barPagesOf,
   isSkiMode,
@@ -319,11 +321,20 @@ type FreeFinished = {
   /** «Run» again would go on with its track. */
   resumable: boolean;
   lifts: Lifts | null;
+  /** The numbers of its descents and lifts on the map (TASK-429 part B). */
+  liftLabels: SkiLabel[];
 };
 
 function freeFinishedRun(run: FreeRun, resumable: boolean): FreeFinished {
   const line = run.track.fixes.map((fix) => fix.point);
-  return { run, line, resumable, lifts: snowLiftsOf(run) };
+  const lifts = snowLiftsOf(run);
+  return {
+    run,
+    line,
+    resumable,
+    lifts,
+    liftLabels: lifts === null ? [] : skiDayLabels(line, snowParts(run.track)),
+  };
 }
 
 /** A run without a route left when the app was last open, if any. */
@@ -1493,6 +1504,7 @@ function MuW() {
                     : null
             }
             lifts={freeFinishing ? freeFinished.lifts : null}
+            liftLabels={freeFinishing ? freeFinished.liftLabels : undefined}
             following={
               navigating && navigation.status === "following"
                 ? navigation.position

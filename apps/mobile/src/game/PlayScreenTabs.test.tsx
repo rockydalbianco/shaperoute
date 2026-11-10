@@ -79,6 +79,10 @@ function fakeApi(teamsStatus = 200): jest.Mock {
     if (path === `/game/challenges/${GOING.id}`) {
       return Response.json(GOING);
     }
+    // A server before TASK-423 part C, and no monthly challenge: no cards.
+    if (path.startsWith("/game/personal?") || path === "/contests/current") {
+      return Response.json(apiError("http_error", "Not Found"), { status: 404 });
+    }
     throw new Error(`No answer for ${path}`);
   });
 }
@@ -118,10 +122,11 @@ test("the page opens on the collection, and «Challenges» shows the teams", asy
   await fireEvent.press(screen.getByRole("button", { name: "Challenges" }));
   await waitFor(() => expect(screen.getByTestId(`team-${TEAM.id}`)).toBeOnTheScreen());
   expect(screen.queryByTestId("play-totals")).toBeNull();
-  expect(screen.queryByTestId("shape-card-triangle")).toBeNull();
+  expect(screen.queryByTestId("collection-list")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Collection" }));
   expect(screen.getByTestId("play-totals")).toBeOnTheScreen();
-  expect(screen.getByTestId("shape-card-triangle")).toBeOnTheScreen();
+  // The catalog in collections (TASK-423): the list of them.
+  expect(screen.getByTestId("collection-geometry")).toBeOnTheScreen();
 });
 
 test("a server without the teams keeps the tab quiet", async () => {

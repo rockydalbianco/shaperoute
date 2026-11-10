@@ -3011,7 +3011,19 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   massimo 20 (`422`). Un esercizio: `exercise` o `name`, `kind`, `sets`
   1–20 e i valori obiettivo del suo tipo, facoltativi. `PUT
   /me/gym-sessions/{key}` accetta `plan`, la chiave della scheda seguita.
-  Esempio `fixtures/gym-plans.json`; `gym_plans.py`.
+  Esempio `fixtures/gym-plans.json`; `gym_plans.py`. Una scheda fatta con
+  la guida (TASK-433, migrazione 0066) ha `program`: `goal` facoltativo
+  (`muscle`, `strength`, `tone`, `fit`), `starts_on` (`YYYY-MM-DD`, le
+  settimane contano dal suo lunedì), `weeks` 1–12, `mode` (`load`, `reps`,
+  `alternate`, `same`), `step_kg` 0–20, `rest_s` facoltativo 10–600,
+  `sessions` (la prima settimana: 1–7 allenamenti `{day, name, items}`, un
+  giorno una volta) e `custom` (le settimane scritte a mano, `{week,
+  sessions}`, dalla 2 a `weeks`, ognuna una volta); al massimo 300 esercizi
+  in tutto. Con `program` i `days` tenuti sono quelli dei suoi allenamenti;
+  `program: null` la riporta a una scheda di un allenamento; un `PUT` senza
+  `program` (un'app di prima) lo lascia com'era. I valori di ogni settimana
+  li calcola il telefono; l'API sa solo quali giorni sono in programma (il
+  calendario).
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`

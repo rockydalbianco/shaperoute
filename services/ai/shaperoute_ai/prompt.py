@@ -33,6 +33,20 @@ OUTLINES: dict[str, str] = {
     "ghost": "a cartoon ghost, a sheet with a wavy hem and two eyes",
     "donut": "a doughnut seen from above, a thick ring with a hole",
     "sun": "the sun, a round disc with rays all around",
+    "airplane": "an airliner seen from above, with swept wings and a tail",
+    "anchor": "a ship's anchor, with a ring, a stock and curved arms",
+    "bear_head": "the head of a teddy bear, with round ears, eyes and a snout",
+    "bicycle": "a bicycle seen from the side, with two wheels and a saddle",
+    "cherries": "two cherries hanging from their joined stalks, with a leaf",
+    "espresso_cup": "an espresso cup on its saucer, with steam rising",
+    "four_leaf_clover": "a four-leaf clover with its stalk",
+    "leaning_tower": "the Leaning Tower of Pisa, a tiered tower that leans",
+    "music_note": "a musical eighth note, with a round head, a stem and a flag",
+    "pear": "a pear with its stalk and a leaf",
+    "sailboat": "a sailboat seen from the side, with a mast and two sails",
+    "swan": "a swan floating, with its long curved neck",
+    "windmill": "a Dutch windmill, a tapered tower with four sails",
+    "wine_glass": "a wine glass, with a round bowl, a thin stem and a foot",
 }
 
 SYSTEM = """\

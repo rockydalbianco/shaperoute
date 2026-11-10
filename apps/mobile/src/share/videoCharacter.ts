@@ -8,14 +8,17 @@ import { t } from "../i18n";
  * low-poly 3D model drawn by three.js in the video's page, at the tip of the
  * line as it draws, turned along it. The models are Quaternius's «Ultimate
  * Animated Animals» (CC0), cut to their gallop and their rest by
- * `out/TASK-408/shrink.mjs`, each a `.glb` stored in a `.zip`: Metro bundles
- * a zip as it is, and a glb not at all.
+ * `out/TASK-408/shrink.mjs`; the elephant is «Elephant Anim» from Sketchfab
+ * (CC BY 4.0, credited in the Terms), given a gallop and a rest by MuW with
+ * `out/TASK-408/elephant-tools/animate.py` (part B2). Each is a `.glb`
+ * stored in a `.zip`: Metro bundles a zip as it is, and a glb not at all.
  */
 
 /** The animals, in the order «Share your run» shows them. */
 export const CHARACTERS = [
   "horse",
   "white_horse",
+  "elephant",
   "stag",
   "deer",
   "fox",
@@ -33,6 +36,7 @@ export type Character = (typeof CHARACTERS)[number];
 const FILES: Record<Character, number> = {
   horse: require("../../assets/characters/horse.zip"),
   white_horse: require("../../assets/characters/white_horse.zip"),
+  elephant: require("../../assets/characters/elephant.zip"),
   stag: require("../../assets/characters/stag.zip"),
   deer: require("../../assets/characters/deer.zip"),
   fox: require("../../assets/characters/fox.zip"),
@@ -54,6 +58,8 @@ export function characterEmoji(character: Character): string {
     case "stag":
     case "deer":
       return "🦌";
+    case "elephant":
+      return "🐘";
     case "fox":
       return "🦊";
     case "wolf":
@@ -80,6 +86,8 @@ export function characterName(character: Character): string {
       return t("Horse");
     case "white_horse":
       return t("White horse");
+    case "elephant":
+      return t("Elephant");
     case "stag":
       return t("Stag");
     case "deer":

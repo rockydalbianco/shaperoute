@@ -1052,6 +1052,21 @@ describe("the video page, with an animal (TASK-408)", () => {
     character: "horse",
   });
 
+  it("binds an animal's skin as glTF says, with no matrix of the mesh's own node (TASK-408 B2)", () => {
+    // The elephant's mesh hangs under turned and scaled nodes: bound with
+    // its node's world matrix, it came out upside down, and in pieces once
+    // it ran. Checked by eye in three.js 0.159.0 against its GLTFLoader.
+    expect(script()).toContain(
+      "one.mesh.bind(new THREE.Skeleton(bones, inverses), new THREE.Matrix4());",
+    );
+    expect(script()).not.toContain("one.mesh.matrixWorld);");
+    // And the matrices brought up to date after binding, before the
+    // animal's size is measured.
+    expect(script()).toMatch(
+      /new THREE\.Matrix4\(\)\);\s*\}\);\s*(\/\/[^\n]*\s*)*root\.updateMatrixWorld\(true\);/,
+    );
+  });
+
   it("loads three.js only when an animal is asked, pinned and checked against its hash", () => {
     expect(THREE_JS_URL).toMatch(
       /^https:\/\/unpkg\.com\/three@\d+\.\d+\.\d+\/build\/three\.min\.js$/,

@@ -1,12 +1,18 @@
+import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useBody } from "../body/useBody";
 import { gymStyles } from "../gym/gymStyles";
 import { t } from "../i18n";
+import { LiveShareButton } from "../liveShare/LiveShareButton";
+import { useLiveShareNumbers } from "../liveShare/useLiveShareNumbers";
 import { clockLabel } from "../navigation/freeRun";
 import { HoldButton } from "../screens/HoldButton";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
+import { averagePace } from "./poolChoice";
 import { metresLabel } from "./PoolDraw";
+import { poolLiveStats } from "./poolLive";
 import {
   activeMs,
   finishPoolSwim,
@@ -20,11 +26,33 @@ import { changePoolSwim } from "./usePoolSwim";
 /**
  * A swim in a pool while it lasts (TASK-400 part B, ADR-0334, point 3): the
  * pool, the time without the pauses, «Pause» and «Stop» to hold. No GPS:
- * the phone waits at the edge of the pool.
+ * the phone waits at the edge of the pool. «Share live» (TASK-424 part B2):
+ * the link shows the time, the lengths estimated from the pace and the
+ * calories, with no map.
  */
-export function PoolSwimScreen({ swim, nowMs }: { swim: PoolSwim; nowMs: number }) {
+export function PoolSwimScreen({
+  swim,
+  nowMs,
+  fetchFn,
+  apiKey,
+}: {
+  swim: PoolSwim;
+  nowMs: number;
+  /** For the tests: the fetch and the API key of «Share live». */
+  fetchFn?: typeof fetch;
+  apiKey?: string | null;
+}) {
   const insets = useSafeAreaInsets();
   const paused = isPaused(swim);
+  const body = useBody();
+  // The pace of the last swims, as «How many lengths?» will propose.
+  const [pace] = useState(averagePace);
+  // No watch follows a swim in a pool yet: no live heart rate to send.
+  const numbers = useCallback(
+    (atMs: number) => poolLiveStats(swim, atMs, pace, body, null),
+    [swim, pace, body],
+  );
+  useLiveShareNumbers(numbers, paused);
   return (
     <View style={gymStyles.screen} testID="pool-swim">
       <View style={[styles.head, { paddingTop: insets.top + space.xl }]}>
@@ -35,6 +63,12 @@ export function PoolSwimScreen({ swim, nowMs }: { swim: PoolSwim; nowMs: number 
           {clockLabel(activeMs(swim, nowMs))}
         </Text>
         {paused && <Text style={gymStyles.muted}>{t("Paused")}</Text>}
+        <LiveShareButton
+          canStart={swim.endedMs === null}
+          trackless={{ activity: "swimming", poolLengthM: swim.poolLengthM }}
+          fetchFn={fetchFn}
+          apiKey={apiKey}
+        />
       </View>
       <View style={[styles.foot, { paddingBottom: insets.bottom + space.md }]}>
         <Pressable

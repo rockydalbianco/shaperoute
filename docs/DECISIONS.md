@@ -444,7 +444,7 @@ lasciando le righe d'indice.
 - ADR-0324 — Il Roller: una rete sua di vie lisce e asfaltate, ogni via nei due sensi · 2026-11-06 · Accettato
 - ADR-0324, precisazione — La parte A: il Roller nel motore, nel contratto e nell'API, l'impronta del motore resta · 2026-11-06 · Accettato
 - ADR-0324, seconda precisazione — Le soglie «veicolo» del Roller: 35 km/h su 200 m, 28 di media · 2026-11-06 · Accettata (scelta dell'utente, «Sì, 35 e
-- ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono · 2026-11-06 · Proposto
+- ADR-0339 — L'editor del video dell'attività: un animale 3D corre il percorso con three.js nella pagina del video, l'editor, il prompt letto dal telefono · 2026-11-06 · Attiva
 - ADR-0339, precisazione B — L'animale disegnato a parte e posato sul fotogramma, three.js r159, i modelli in uno zip · 2026-11-06
 - ADR-0274, precisazione B — Lo schermo di corsa: la strada nel ciclo delle posizioni, nessun testo nuovo, il server a telefono bloccato · 2026-11-06 · Accettato
 - ADR-0339, precisazione C — Il foglio «Edit video»: le scelte in un oggetto, il colore come ruolo, le emoji dove passa la linea · 2026-11-06
@@ -482,6 +482,7 @@ lasciando le righe d'indice.
 - ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
 - ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
 - ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
+- ADR-0346, precisazione B — Le 14 forme approvate entrano nel catalogo; le zone restano sulle 17 forme di prima · 2026-11-10 · Attiva
 - ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
 - ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy · 2026-11-08 · Attiva
 - ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
@@ -497,6 +498,11 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B3c1: la traccia dell'orologio al telefono e in Apple Salute · 2026-11-10 · Attiva
 - ADR-0314, precisazione — La parte B3c2: la corsa dell'orologio sul telefono, avviso e scheda · 2026-11-10 · Attiva
 - ADR-0242 — I percorsi dell'API in 2 processi caldi, non nei 2 thread che si dividevano il GIL · 2026-11-10 · Accettata
+- ADR-0340, precisazione D — Le sezioni della pagina: parziali, altimetria, battito medio e massimo; zone e minimo rimandati, dislivello dal profilo · 2026-11-10 · Attiva
+- ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta · 2026-11-10 · Accettata
+- ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì · 2026-11-10 · Accettata
+- ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF · 2026-11-10 · Attiva
+- ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci · 2026-11-10 · Proposta
 
 ## Voci nuove
 
@@ -1813,3 +1819,248 @@ prova al polso.
 
 **Conseguenze**: l'arrivo del file e la notifica si provano con l'orologio
 vero (build 1.1).
+
+## ADR-0346, precisazione B — Le 14 forme approvate entrano nel catalogo; le zone restano sulle 17 forme di prima
+
+**Stato**: Attiva · 2026-11-10 · TASK-418 parte B (#1042). Deciso
+dall'agente su delega dell'utente (la scatola delle zone: dal Coordinatore,
+su delega).
+
+**Contesto**: l'utente ha approvato su strada 20 percorsi di TASK-419 fatti
+con 14 forme candidate. `prefetch_zones.longest_route_box` faceva l'unione
+delle zone di **tutte** le forme del catalogo: pera e Torre di Pisa, strette
+e alte, a parità di distanza disegnano più in grande e la allargavano di un
+decimo per ogni sport (la corsa a 50 km da circa 40 a 44 km di lato). Ogni
+zona tenuta sul server avrebbe cambiato chiave e andava riscaricata.
+
+**Decisione**:
+
+1. I 14 file passano da `candidate_outlines/` a
+   `route_engine/shapes/outlines/` (`APPROVED` in
+   `tools/draw_new_shapes.py`) ed entrano in `SHAPES`, nel contratto,
+   nell'API, nelle descrizioni per l'AI e nell'app; le altre 35 restano
+   candidate.
+2. `prefetch_zones.ZONE_SHAPES`: la scatola dei percorsi più lunghi resta
+   calcolata sulle 17 forme di prima. `test_zone_shapes.py` fissa le
+   scatole di ogni sport come erano.
+3. Penna alzata: ancora, orso, bici e tazzina hanno pezzi, quindi l'API le
+   accetta (`PEN_UP_SHAPES` viene dal motore, come per il sole); l'app non
+   la offre finché l'utente non le ha giudicate così.
+4. Le categorie della ricerca restano quelle di TASK-344: orso e cigno negli
+   animali, ancora, quadrifoglio e nota nei simboli, il resto nelle emoji.
+
+**Il limite accettato**: in bici, pera e Torre di Pisa stanno nella zona
+già scaricata fino a 26 km, non a 30 (`test_prefetch_zones.py`). Oltre,
+come ogni percorso vicino al bordo, possono prendere qualche strada fuori
+zona. Le altre forme nuove stanno nella zona a 30 km.
+
+**Motivo**: nessuna zona da riscaricare e nessun download in più su
+Overpass per un caso raro (una pera di 30 km).
+
+**Alternative**:
+
+- **La scatola sull'intero catalogo**: zone del 10% più larghe e tutte da
+  riscaricare; scartata.
+- **Una scatola per forma**: più chiavi di zona per la stessa città;
+  scartata.
+
+**Conseguenze**: impronta del codice 2bca806f467b (nuoto 55b54eea0e14,
+pagaiata cf585f8fb31b), con le righe `SAME_ROUTES_AS` verso le impronte di
+prima: le 9 rotte di `test_same_routes.py` sono identiche, gli esempi
+tenuti restano validi. Sul server, il passo 2 (`out/TASK-418/SERVER.md`);
+nell'app le forme arrivano con l'OTA dopo il server.
+
+## ADR-0340, precisazione D — Le sezioni della pagina: parziali, altimetria, battito medio e massimo; zone e minimo rimandati, dislivello dal profilo
+
+**Stato**: Attiva · 2026-11-10 · TASK-410 parte D (#1043). Testi approvati
+dall'utente il 2026-11-07 (scelta 6); i punti 1 e 2 decisi dal Coordinatore
+su delega dell'utente, il resto deciso dall'agente su delega dell'utente.
+
+**Contesto**: la parte C (precisazione C) mette nel dettaglio del post
+`stats`: parziali per km e per miglio, profilo, cadenza, calorie
+dell'autore, battito medio e massimo. Il brief chiedeva anche il battito
+minimo e il tempo e la % per zona: nessuna fonte li manda ancora.
+
+**Decisione**:
+
+1. **Zone e minimo rimandati**: la card «Battito» mostra medio e massimo. Le
+   barre delle zone, il minimo e il criterio «% per zona» arrivano quando
+   TASK-345 C o TASK-374 D danno i secondi per zona.
+2. **Il dislivello si conta dal profilo** (al più 120 punti, la regola dei
+   3 m di `climbM`): è una sotto stima di quello della traccia intera, che
+   il post non porta. In miglia è in piedi.
+3. **La pagina legge `GET /drawings/{id}` una volta all'apertura**
+   (`usePostStats`, `statsOf`): `GET /feed` resta leggero. Senza stats o
+   senza rete resta il riepilogo di prima.
+4. **Calorie**: quelle dell'autore (`stats.kcal`) quando il server le manda;
+   se l'autore le nasconde, la stima di prima (70 kg), che non dice niente
+   del suo corpo.
+5. **Per sport** (`postMetrics`): parziali a piedi e su ruote, non in
+   acqua, sulla neve, in palestra; altimetria ovunque tranne acqua e
+   palestra; cadenza solo a piedi.
+6. **Grafici a `View`**: barre dei parziali lunghe quanto il passo rispetto
+   al più veloce (il più veloce in `accent`), una colonna per punto del
+   profilo; niente `react-native-svg`, niente build nuova.
+
+**Conseguenze**: la parte D esce con un OTA; le zone hanno un posto pronto
+nella card «Battito» quando arrivano i secondi; il dislivello del post può
+essere qualche metro sotto quello dello schermo della corsa.
+
+## ADR-0356 — «Edit the drawing»: la traccia aperta che si incrocia diventa un anello alla partenza, corso una volta
+
+**Stato**: Accettata · 2026-11-10 · TASK-428 (#1040). Numeri dal
+Coordinatore. Scelta dell'utente del 2026-11-10: «Sì, fallo così» (l'anello
+solo nell'app, invece del ritorno disegnato a parte dal motore); come
+costruire l'anello è deciso dall'agente su delega dell'utente.
+
+**Contesto**: dopo ADR-0353 una traccia aperta che, chiusa con un lato
+dritto, non fa un contorno (si incrocia da sola, o il lato di ritorno la
+attraversa) restava una linea appesa a un anellino alla partenza, corsa
+andata e ritorno: 1,4–1,8 volte la traccia più il ritorno, su circa il 60%
+delle tracce aperte vere. Motore e API sapevano già fare il resto: un
+dettaglio che finisce sul **proprio primo punto** è un anello corso una
+volta sola (`_loop_start` in `shapes/outline.py`, `travelledLength`
+nell'app), e le richieste di un disegno passano da
+`parse_outline(..., allow_crossings=True)`, che lascia incrociare un
+dettaglio.
+
+**Decisione**:
+
+1. `trackInPlace` (`route/figureLines.ts`), quando la traccia chiusa non fa
+   un disegno, la manda come **anellino alla partenza più un dettaglio**: la
+   linea, semplificata come una prima linea disegnata (`firstLineOf`), e un
+   ultimo lato fino al suo primo punto. Il percorso la fa una volta e torna
+   verso la partenza seguendo quel lato.
+2. L'anello si costruisce **dalla linea aperta**, non passando la traccia
+   chiusa a `firstLineOf`: quella proverebbe `outlineOf`, che di una linea che
+   si incrocia tiene l'anello più grande e taglia il resto (7 tracce su 124
+   perdevano fino a un terzo della figura).
+3. Se nemmeno l'anello fa un disegno, la traccia resta aperta come prima.
+
+**Alternative**:
+
+- **Ritorno disegnato a parte, sulla strada più breve calcolata dal
+  motore**: scartata dall'utente per ora; chiede che il motore segni dove
+  finisce la figura e dove comincia il ritorno, la prova `test_same_routes`
+  e un cambio di contratto, qualche giorno di lavoro.
+- **Mandare la traccia chiusa come `path`** (la linea sola delle parole, che
+  può incrociarsi): scartata, il contratto delle richieste di un disegno non
+  ha `path` e la modifica sulla mappa lavora su contorno e dettagli.
+
+**Conseguenze**: su 124 tracce aperte vere (1 GPX ogni 8 di `samples/`,
+tagliato al 50% e al 75%), 45 si chiudono come con ADR-0353 e 79 diventano
+anello: distanza chiesta 0,76–0,99 volte la traccia più il ritorno dritto
+(mediana 0,97; prima 1,60), tutte accettate da `outline_of`. Tre percorsi
+veri a Trento (`plan_request`, `placement="anchored"`): 7,6 km per 7,0
+chiesti, 10,5 per 10,7, 19,3 per 17,0, somiglianza 0,97–1,00. Il ritorno è
+dritto verso la partenza, non la via più breve, e sulla mappa fa parte della
+figura. Solo JavaScript nell'app: esce con il prossimo OTA di produzione,
+dopo il passo server 2.
+
+## ADR-0354 — La partenza di «Draw on the map» si sposta lungo il disegno: il contorno ricomincia da lì
+
+**Stato**: Accettata · 2026-11-10 · TASK-426 (#1035). Il gesto e cosa si
+vede sono scelta dell'utente del 2026-11-10 («Sì, così»); il modo di farlo
+è deciso dall'agente su delega dell'utente.
+
+**Contesto**: in «Draw on the map» il percorso parte sempre dal primo punto
+del contorno (`lookOf(...).start`), che la mappa non mostrava. L'utente
+voleva poterlo spostare in un altro punto della linea. Il motore mette il
+primo punto della figura sulla partenza (`anchored.py`) e prova anche altre
+fasi lungo la forma (`optimizer.PHASES`), sempre con la partenza chiesta.
+
+**Decisione**:
+
+1. **Un pallino** (ciano, `color.startHere`) sul primo punto della figura
+   mostrata, in tutti i modi; con «Move» un dito che parte sul pallino lo
+   trascina lungo la linea, e la pagina dice dove lo lascia (`started`).
+2. **Il contorno ricomincia dal punto scelto** (`mapdraw/startPoint.ts`):
+   un angolo entro mezzo dito (`CORNER_SHARE · REACH_PX`), altrimenti un
+   punto nuovo sul lato, se il contorno ha meno di `MAX_OUTLINE_POINTS`
+   angoli. La figura non si muove e `start` della richiesta viene da sé
+   (`placedStart`): niente di nuovo nel contratto né nel motore.
+3. **Linea aperta**: solo le due estremità; all'altra la linea si gira e
+   l'anellino di partenza (`startRing`) si rifà lì. Non si gira se finisce
+   in un occhiello o se un altro dettaglio è appeso all'anellino.
+4. **Emoji**: spostata, diventa il suo contorno (`shapeOutline`), come una
+   girata (ADR-0336); a penna alzata il pallino è fermo.
+5. **Pezzi**: si sposta il primo pezzo, che dà il contorno; fermo mentre è
+   scelto un altro pezzo. **Sull'acqua** nessun pallino: lì il motore parte
+   dalla riva e la figura non è ancorata (ADR-0313).
+6. Ogni spostamento è un passo di «Undo» (`swap`, o del pezzo).
+
+**Alternative**:
+
+- **Un campo nuovo con la partenza, separato dal contorno**: scartata, ogni
+  modifica della figura (penna, gomma, piega) avrebbe dovuto tenerlo
+  allineato; girare il contorno basta, e la richiesta resta quella di oggi.
+- **Tenere premuto il pallino prima di trascinarlo**: scartata dall'utente;
+  tenere premuto su una linea resta la piega.
+
+**Conseguenze**: solo JavaScript nell'app (`mapdraw/`, `map/mapPage.ts`,
+`map/messages.ts`, `map/MapView.tsx`), nessun testo nuovo, hash SRI di
+MapLibre invariati; esce con l'OTA di produzione. Come oggi il motore può
+ancora spostare la figura per trovare le strade, ma parte dal punto scelto.
+
+## ADR-0339, precisazione B2 — L'elefante: animato da MuW, e la pelle legata alle ossa come vuole glTF
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-10), con le
+scelte dell'utente: scaricarlo dal suo account («fallo tu»), installare
+Blender, e i crediti con i due nomi («Tutti e due»).
+
+1. **Il modello**: «Elephant Anim»
+   (https://sketchfab.com/3d-models/elephant-anim-766f267ff6bd4a87a45e3d26286b9d27),
+   CC BY 4.0. Nessuno dei file scaricabili (GLB, glTF, `.blend`) ha
+   animazioni. MuW gli ha fatto due cicli in Blender ruotando le ossa
+   («Gallop», un passo veloce in sequenza laterale, 0,8 s; «Idle»,
+   orecchie, proboscide e coda, 3 s) e un grigio piatto, la media della
+   sua texture, senza immagini: 330 KB. Lo script è fuori dal repository
+   (`out/TASK-408/elephant-tools/animate.py`).
+2. **I crediti**: la pagina lo attribuisce a @Shivoahm, il file di licenza
+   a SahuAvdhesh; i Termini nominano tutti e due e dicono che MuW l'ha
+   animato e adattato.
+3. **La pelle legata alle ossa con l'identità**: per glTF la trasformazione
+   del nodo di una mesh con scheletro si ignora, perché le ossa la portano
+   già. Legata con la matrice del suo nodo, la mesh dell'elefante (sotto
+   nodi ruotati e scalati) veniva sottosopra, e a pezzi in corsa. Poi le
+   matrici si aggiornano prima di misurare l'animale, altrimenti la misura
+   era sbagliata e l'animale finiva fuori vista. Gli animali di Quaternius,
+   con la mesh nell'origine, si disegnano identici.
+
+## ADR-0357 — La modalità sci: scelto lo sci, le schede e le pagine diventano quelle dello sci
+
+**Stato**: Proposta · 2026-11-10 · TASK-429, parte 0 (solo documenti).
+Numero dal Coordinatore. Le scelte di prodotto sono dell'utente, una
+domanda alla volta nel task file, prima del codice.
+
+**Contesto**: dopo TASK-406 l'utente non trova lo sci nell'app: sta nella
+Ricerca e dietro lo sport «Ski». Il 2026-11-10 chiede che, scelto lo sci,
+«l'app deve cambiare» e diventare un'app per lo sci «tipo Slopes», con più
+sezioni, tutti i dati (impianti presi compresi) e la mappa con linee
+colorate e legenda. Lo sci non va messo in vista nell'app normale.
+
+**Proposta** (dettagli e mockup in `tasks/TASK-429.md`):
+
+1. **La modalità segue lo sport già salvato** (`saveSport`, `useSport`):
+   con «Ski» l'app è nella modalità sci, con un altro sport è quella di
+   sempre. Si entra e si esce dal tasto dello sport in alto o da
+   Impostazioni; nessuno stato nuovo da ricordare.
+2. **Le stesse cinque schede di `TabShell`**, con tre pagine diverse: Oggi ·
+   Giornate · Stazioni · Feed · Profilo. I messaggi passano a un'icona in
+   alto. È lo schema che «Explore» usa già per acqua e nuoto
+   (`PaddleExplore`), allargato.
+3. **Si riusa quello che c'è**: `src/ski/` (stazioni, meteo, neve,
+   seguite), `SnowFinishCard`, `snowDay.ts`, `ski-names`.
+4. **I colori della giornata solo come token** (`ski.descent`,
+   `ski.lift`), con tratteggio, numeri ed etichette perché la legenda si
+   legga senza colori. Tocca due regole di `tokens.ts` (giallo = percorso,
+   rosso = badge): decide l'utente.
+5. **Il server** serve per due cose sole: i totali della stagione e i nomi
+   tratto per tratto.
+
+**Alternative**: un tasto «Ski» in più nell'app normale, scartato
+dall'utente il 2026-11-10; un'app a parte, che vorrebbe una build nativa
+nuova e l'impronta iOS cambiata.
+
+**Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` ferma; motore
+non toccato. Le parti A–E si elencano nel task file dopo le risposte.

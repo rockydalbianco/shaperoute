@@ -1486,75 +1486,112 @@ vanno cambiati tutti e due insieme (l'utente su
 
 ### F.15 Rifare le zone foot per i cancelli (TASK-421, ADR-0349)
 
-Le zone `foot_*` del server sono state fatte semplificate e senza i tag
-dei nodi: i cancelli chiusi ci stanno dentro finché non si rifanno
-(`MAPS.md`, «I cancelli chiusi»). Il motore nuovo non le tocca da solo.
-**Si fa solo col sì dell'utente**, dopo il server aggiornato al `main` con
-TASK-421, e mai mentre girano `draw_examples` o `phone_zone_api` (stanno
-nel container dell'API: un riavvio li uccide).
+Le zone `foot_*` fatte prima di TASK-421 sono semplificate e senza i tag
+dei nodi: i cancelli chiusi ci restano finché non si rifanno (`MAPS.md`,
+«I cancelli chiusi»). Il motore nuovo non le tocca da solo. **Si fa solo
+col sì dell'utente**, con il server già al `main` di TASK-421 e l'immagine
+`shaperoute-prefetch` rifatta sopra l'API nuova (porta il motore: senza, le
+zone escono coi cancelli), e mai mentre girano `draw_examples` o
+`phone_zone_api` (stanno nel container dell'API: un riavvio li uccide).
 
-Cosa c'è da rifare (2026-11-08): le zone `foot_*` delle 52 città italiane
-più Rovereto, dall'estratto; le 10 estere, da Overpass; poi le zone del
-telefono `*.zone.json.gz` di quelle `foot_*` e gli esempi. Le zone `bike_*`
-non c'entrano (rete loro). Costo: circa un minuto a città italiana (una
-alla volta, memoria fino a 4 GB), le estere quanto Overpass concede; poi
-80 minuti di zone del telefono e 35 di esempi, tutti in sottofondo con
-l'API accesa. Finché una zona manca, la prima richiesta su quella città la
-scarica da Overpass (lento, o rifiutato): meglio di notte, con il passo 3
-subito dopo il 2.
+**Due cose imparate il 2026-11-10**, che decidono il metodo:
 
-1. **Una copia e lo spazio prima** (dal Mac, un comando per volta):
+- In cache **non c'è una zona per città**: 934 `foot_*` per le 63 città di
+  «Explore» più USA, Europa e Italia 50k (ottobre). Ogni richiesta che
+  nessuna zona copriva ha salvato il proprio riquadro (da 3x3 a 23x23 km):
+  Trento ne aveva un centinaio. L'API prende la zona **più piccola** che
+  contiene la richiesta (`OsmnxSource.covering_path`), quindi una vecchia
+  dentro la nuova vince, coi cancelli. E spostare tutte le zone da parte per
+  rifare solo «Explore» lascia scoperte centinaia di città (ogni prima
+  richiesta da Overpass, lenta o rifiutata): non si fa.
+- **Due download insieme non ci stanno in memoria**: osmium da solo prende
+  3,6 GB e con `--memory 4g` il cgroup uccide il container (OOM, lo dice
+  `journalctl -k`); con `5g` passa. Un container per volta.
+
+Il metodo, fatto così il 2026-11-10 per le 53 zone di «Explore» (un comando
+ssh per volta, dal Mac):
+
+1. **Copia e spazio**: `backup.sh now`, `df -h /`, `du -sh data/cache`
+   (F.1); servono circa 15 GB liberi per le zone nuove.
+
+2. **Le zone nuove in una cartella a parte**, non nella cache: l'API
+   continua con le vecchie finché le nuove non sono pronte, e
+   `prefetch_zones` non trova «ready» le vecchie. I `names_*.json` si
+   copiano nella cartella (senza, ogni città chiede i nomi a Overpass); per
+   l'estratto non serve altro.
 
    ```bash
-   ssh root@188.245.9.220 'cd /root/shaperoute && docker compose -f deploy/compose.yaml exec backup bash /backup.sh now && df -h / && du -sh data/cache'
+   ssh root@188.245.9.220 'cd /root/shaperoute/data && mkdir -p cache-task421 && cp cache/names_*.json cache-task421/ && ls cache-task421 | wc -l'
    ```
 
-2. **Da parte le zone vecchie**, non cancellate: `prefetch_zones` salta una
-   città «ready», quindi i file devono sparire dalla cartella; e se qualcosa
-   va storto si rimettono.
-
    ```bash
-   ssh root@188.245.9.220 'cd /root/shaperoute/data/cache && mkdir -p before-task421 && mv foot_*.graphml foot_*.pickle foot_*.zone.json.gz before-task421/ && ls before-task421 | wc -l'
-   ```
-
-3. **Le italiane dall'estratto**, nell'immagine `shaperoute-prefetch`
-   (`MAPS.md`, «Da un estratto, senza Overpass»), staccato dalla ssh:
-
-   ```bash
-   ssh -f root@188.245.9.220 'cd /root/shaperoute && (setsid nohup docker run --rm --memory 4g --env-file deploy/.env -v /root/shaperoute/data/cache:/app/data/cache -v /srv/shaperoute/extracts:/extracts shaperoute-prefetch python -m shaperoute_api.prefetch_zones --preset italy Rovereto --extract /extracts/italy-260930-highways.osm.pbf --cache-dir /app/data/cache > data/prefetch-task421.log 2>&1 &)'
+   ssh -f root@188.245.9.220 'cd /root/shaperoute && (setsid nohup docker run --rm --memory 5g --env-file deploy/.env -v /root/shaperoute/data/cache-task421:/app/data/cache -v /srv/shaperoute/extracts:/extracts shaperoute-prefetch python -m shaperoute_api.prefetch_zones --preset italy --preset featured Rovereto --extract /extracts/italy-260930-highways.osm.pbf --cache-dir /app/data/cache > data/prefetch-task421.log 2>&1 &)'
    ```
 
    L'estratto è del 2026-09-30: le zone tornano a quei dati OSM, come la
-   prima volta. Per dati freschi, prima un estratto nuovo da Geofabrik e
-   `osmium tags-filter … w/highway` (`MAPS.md`), 2,2 GB da scaricare. Si
-   segue il log (`tail data/prefetch-task421.log`): ogni città
-   «downloaded» con i MB; alla fine «missing» deve essere vuoto.
+   prima volta (per dati freschi, prima un estratto nuovo da Geofabrik e
+   `osmium tags-filter … w/highway`, `MAPS.md`). Circa 85 secondi a zona;
+   le estere di `featured` vengono da Overpass. Si segue il log: ogni città
+   «downloaded» coi MB e i secondi, alla fine «missing» vuoto (il
+   2026-11-10: 53 su 53, 4 ready e 49 downloaded, in poco più di un'ora).
 
-4. **Le estere da Overpass** (`--preset featured`, che ripete le italiane
-   già «ready»), con la pausa e il tetto: Overpass rifiuta il server dopo
-   pochi download grandi (`MAPS.md`), quindi più giri. In alternativa le
-   rifà il Mac dalle risposte in `data/cache/http/` (Barcellona, Parigi,
-   New York) e le copia con `rsync` (F.5), solo quei file.
+3. **Scambio per nome**: per ogni `foot_*` nuova, la vecchia con lo stesso
+   nome (graphml, pickle, `.zone.json.gz`) va in `cache/before-task421/`
+   (col suffisso `.old`) e la nuova entra in `cache/`. Una città il cui
+   centro è cambiato di poco nella ricerca dà un nome nuovo (il 2026-11-10:
+   Firenze, Milano, Trento, Levico): la nuova entra e la vecchia resta, la
+   toglie il punto 4.
 
-5. **Le zone del telefono**: `phone_zone_api` riscrive da solo un
-   `*.zone.json.gz` mancante o più vecchio del suo grafo, quindi basta
-   rilanciarlo (80 minuti per tutte il 2026-10-05):
+4. **Le zone all'ombra**: lo script `out/TASK-421/zone_shadows.py` del Mac
+   (python puro, gira sull'host; prima senza `--apply`, che stampa l'elenco
+   per zona nuova con km e MB, poi con) mette in `before-task421/` le
+   vecchie **contenute** in una nuova e quelle **della stessa città**
+   (centro dentro una nuova e non più grandi: fra due 17x17 spostate di un
+   millesimo di grado la scelta è un pareggio sulla quarta cifra). Il
+   2026-11-10: 934 zone, 53 nuove → 414 contenute (13,7 GB) e 63 della
+   stessa città (2,0 GB), 477 zone e 1.413 file; restano 457 `foot_*` in
+   cache. **Niente riavvio**: `covering_path` rilegge il disco a ogni
+   richiesta e `ZoneGraphs` tiene in memoria al massimo due zone.
 
    ```bash
-   ssh -f root@188.245.9.220 'cd /root/shaperoute && (setsid nohup docker compose -f deploy/compose.yaml exec -T api nice -n 19 python -m shaperoute_api.phone_zone_api > data/phone-zones-task421.log 2>&1 &)'
+   ssh root@188.245.9.220 'python3 - /root/shaperoute/data/cache --new-after 2026-11-10T08:00' < out/TASK-421/zone_shadows.py
    ```
 
-6. **Gli esempi** (`draw_examples`, circa 35 minuti, `AGENTI.md` punto
-   11): l'impronta del motore è nuova, quindi vanno comunque ridisegnati
-   all'aggiornamento; farlo **dopo** le zone, altrimenti gli esempi escono
-   dalle zone vecchie coi cancelli.
+   Lo stesso con `--apply` in fondo per spostare davvero. Dopo, le richieste
+   che stavano **solo** in una zona «della stessa città» (ai bordi) sono
+   scoperte: la prima scarica da Overpass, senza cancelli.
 
-7. **Controllo**: il percorso che l'utente ha corso il 2026-11-08 chiesto di
-   nuovo dall'app non passa più dal cancello; `du -sh data/cache`; dopo una
-   settimana buona, `rm -r data/cache/before-task421`.
+5. **L'API riavviata** (col `main` del giorno), poi **le zone del
+   telefono**: `phone_zone_api` riscrive da solo un `*.zone.json.gz`
+   mancante o più vecchio del suo grafo (quelli delle zone spostate sono
+   andati con loro), 80 minuti il 2026-10-05:
 
-Rollback: `mv data/cache/before-task421/* data/cache/` e `docker compose
-restart api` (tiene le zone in memoria).
+   ```bash
+   ssh -f root@188.245.9.220 'cd /root/shaperoute/deploy && (setsid nohup docker compose exec -T api nice -n 19 python -m shaperoute_api.phone_zone_api > ../data/phone-zones-task421.log 2>&1 &)'
+   ```
+
+6. **Gli esempi** (`draw_examples`, circa 35 minuti, `AGENTI.md` punto 11):
+   l'impronta del motore è nuova, quindi vanno comunque ridisegnati; **dopo**
+   il punto 4, altrimenti escono dalle zone vecchie coi cancelli.
+
+7. **Controllo**: nel log dell'API una richiesta a Trento dice «graph from
+   disk (foot_45.98990_…)», la zona nuova; dall'app il percorso del
+   2026-11-08 non passa più dal cancello; `du -sh data/cache`. Dopo una
+   settimana buona, `rm -r data/cache/before-task421` (26 GB) e
+   `data/cache-task421`.
+
+**Cosa resta coi cancelli**: le circa 400 zone non toccate, cioè le città
+fuori da «Explore» (USA, Europa, Italia 50k) e, nelle stesse 53 città, le
+zone più grandi della nuova (Trento 23 e 19 km), che servono solo alle
+distanze lunghe. Rifarle vuole i riquadri dati a `prefetch_zones`
+(un'opzione `--boxes FILE`, PR a parte) e, per le estere, un estratto per
+paese (sul server c'è solo l'Italia): circa 85 secondi e 5 GB a zona, ore
+di server in più sere, un container per volta. È una scelta dell'utente.
+Invalidare le zone dall'impronta della rete nel nome non si fa: ogni città
+fuori dalle 53 tornerebbe a scaricare alla prima richiesta.
+
+Rollback: `mv data/cache/before-task421/* data/cache/`, ai file `.old` il
+nome di prima, e `docker compose restart api` (tiene le zone in memoria).
 
 ## Scartate (2026-09-26)
 

@@ -1,7 +1,8 @@
 # TASK-426 — Spostare la partenza lungo il disegno
 
-**Stato**: In corso · gesto approvato dall'utente (2026-11-10); codice in
-`feat/TASK-426-move-start`
+**Stato**: Done · codice in `main` (#1035, 09dd1af9); documenti nella PR
+`docs/TASK-426-docs`. Resta: l'OTA di produzione (dal Coordinatore, col sì
+dell'utente) e la prova sul telefono.
 **Fase**: 5 · **Branch**: `feat/TASK-426-move-start` · **ADR**: ADR-0354 ·
 numeri dal Coordinatore (2026-11-10)
 
@@ -85,6 +86,9 @@ apps/mobile/src/map/messages.ts
 ```
 
 ## Dove siamo
+
+- **Esito** (2026-11-10): #1035 in `main` (09dd1af9); ADR-0354, `UI.md`,
+  `INDEX.md` e la riga in `archive/COMPLETATI.md` nella PR di documenti.
 
 - 2026-11-10: codice e test nella PR di `feat/TASK-426-move-start`
   (startPoint 15, useMapCanvasStart 8, mapPageStart 7; i test vicini e

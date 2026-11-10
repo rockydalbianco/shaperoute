@@ -1702,6 +1702,8 @@ export const FR: Table = {
   Bull: "Taureau",
   Donkey: "Âne",
   Alpaca: "Alpaga",
+  // TASK-408 B2: the elephant
+  Elephant: "Éléphant",
 
   // src/share/ (TASK-408 C1: «Edit video», the line's colour, the video's emoji)
   "2D": "2D",
@@ -2216,4 +2218,6 @@ export const FR: Table = {
     "Ton image reste sur ton téléphone. Elle n'en sort que dans la vidéo que tu partages.",
   "This image can't be read. The video goes out without it.":
     "Cette image est illisible. La vidéo sort sans elle.",
+  "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
+    "Toute personne qui a le lien peut te suivre sur une page web, sans l'app : le temps, les longueurs ou l'exercice, les calories et ta fréquence cardiaque quand une montre l'envoie.",
 };

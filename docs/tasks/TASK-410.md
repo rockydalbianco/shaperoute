@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: In lavorazione — B, F e C in `main`; D (le sezioni) in PR (2026-11-10); A è TASK-355 B; poi E
+**Stato**: In lavorazione — B, F, C e D (#1043) in `main` (2026-11-10); D esce con l'OTA 3; A è TASK-355 B; poi E
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -606,6 +606,10 @@ apre la pagina di un post di un altro: con le stats dell'esempio
 dislivello; parziali col 3 in giallo e «0.43» in corsivo; altimetria;
 battito) e senza (solo il riepilogo di prima). Schermate in
 `out/TASK-410-d/` della copia principale.
+
+**Esito della parte D** (2026-11-10): #1043 in `main` (`bc03b9a7`), dopo
+due merge di `main` (conflitto solo nel task file). Esce con l'OTA 3, dopo il
+passo server 2, col sì dell'utente.
 
 ## Esito
 

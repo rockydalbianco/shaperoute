@@ -43,6 +43,12 @@ esempio.
   discesa per discesa, la stagione, Stazioni. Con la stessa risposta la
   Ricerca dell'app normale perde la scheda «Ski»: le stazioni stanno solo
   nella modalità sci.
+- 2026-11-10, domanda 3: «Sì, così». Nella modalità sci le discese sono
+  gialle, a linea piena, numerate 1, 2…; le risalite rosse, tratteggiate,
+  numerate L1, L2…, in un rosso più chiaro del numero rosso (`#FF5A4E` sul
+  tono scuro). Due token nuovi in `tokens.ts`, `ski.descent` e `ski.lift`;
+  la legenda dice tutto anche a parole. Fuori dalla modalità la giornata
+  resta bianca come oggi.
 
 ## Cosa c'è già (non si rifà)
 
@@ -184,8 +190,23 @@ nuovi in cinque lingue col sì dell'utente; server e OTA col sì dell'utente.
    tutte e sei».**
 3. **I colori della legenda.** Proposta: discese gialle piene, risalite
    rosse tratteggiate (un rosso diverso dal numero rosso), con numeri ed
-   etichette.
-4. **I testi** in cinque lingue.
+   etichette. **Risposta dell'utente, 2026-11-10: «Sì, così».**
+4. **I testi** in cinque lingue. Proposta: la tabella qui sotto, in inglese
+   con l'italiano; de, fr ed es tradotti allo stesso modo. I testi che
+   l'app ha già (stazione, meteo, neve, «Record your day», le caselle di
+   fine giornata, «Lifts and pistes») restano quelli approvati.
+
+   | Dove | en · it |
+   |---|---|
+   | Menu dello sport, sotto «Ski» | «Turns MuW into your ski app» · Trasforma MuW nella tua app per lo sci |
+   | Menu dello sport, nella modalità | «Ski mode» · Modalità sci; «Choose another sport to go back to MuW as always.» · Scegli un altro sport per tornare a MuW di sempre. |
+   | Schede (VoiceOver) | «Today» · Oggi; «Days» · Giornate; «Resorts» · Stazioni |
+   | Oggi | «This season» · Questa stagione; «Friends here today» · Amici qui oggi; «{names} skied {resort}» · {names} hanno sciato a {resort} |
+   | Giornata in corso | «On a lift» · Sulla risalita; «Vertical skied» · Dislivello sciato; «Highest» · Quota massima; «End day» · Fine giornata |
+   | La giornata | «Summary» · Riepilogo; «Map» · Mappa; «Runs» · Discese; «Lifts taken» · Impianti presi; «{rides} rides · {lifts} lifts» · {rides} salite · {lifts} impianti |
+   | Legenda | «Legend» · Legenda; «Descents · solid, numbered» · Discese · linea piena, numerate; «Lifts · dashed, L1, L2…» · Risalite · tratteggiate, L1, L2…; «Start and end» · Partenza e arrivo |
+   | Discesa per discesa | «Lift» · Risalita; «Piste without a name» · Pista senza nome; «{speed} top» · {speed} max; «Stopped {minutes} min» · Fermo {minutes} min |
+   | Stagione | «Season {years}» · Stagione {years}; «Vertical this season» · Dislivello della stagione; «Days» · Giornate; «On snow» · Sulla neve; «Your days» · Le tue giornate |
 
 ## File toccati
 

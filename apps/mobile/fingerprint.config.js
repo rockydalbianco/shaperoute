@@ -140,8 +140,9 @@ function pluginName(plugin) {
   return Array.isArray(plugin) ? plugin[0] : plugin;
 }
 
-/** `config` without the iPhone's plugins, and the plugins taken out, in
- * their order. */
+/** `config` without the iPhone's plugins and what they add to it for EAS
+ * (the watch's credentials, `extra.eas.build.experimental.ios`), and what
+ * was taken out: nothing when there is none of it. */
 function splitIosOnly(config) {
   const plugins = config.plugins ?? [];
   const taken = plugins.filter((plugin) =>
@@ -151,6 +152,18 @@ function splitIosOnly(config) {
     config.plugins = plugins.filter(
       (plugin) => !IOS_ONLY.plugins.includes(pluginName(plugin)),
     );
+  }
+  const build = config.extra?.eas?.build;
+  const ios = build?.experimental?.ios;
+  if (ios !== undefined) {
+    taken.push({ "extra.eas.build.experimental.ios": ios });
+    delete build.experimental.ios;
+    if (Object.keys(build.experimental).length === 0) {
+      delete build.experimental;
+    }
+    if (Object.keys(build).length === 0) {
+      delete config.extra.eas.build;
+    }
   }
   return { config, taken };
 }

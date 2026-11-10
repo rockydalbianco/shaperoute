@@ -13,7 +13,6 @@ import {
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
 import { CharacterRow } from "./CharacterRow";
-import { DescribeVideo } from "./DescribeVideo";
 import { EndingRow } from "./EndingRow";
 import { LineColourRow } from "./LineColourRow";
 import type { PostRun } from "./postRun";
@@ -38,8 +37,7 @@ type Props = {
 /**
  * «Edit video» (TASK-408, ADR-0339, part C1): a sheet from the bottom of
  * «Share your run», with the video's own choices in rows, as the proposal's
- * board draws it: «Describe your video» (part D) and the preview at the
- * top (part C2c), then «Style»,
+ * board draws it: the preview at the top (part C2c), then «Style»,
  * «Character», «Line colour», the emoji
  * «Along the way» and «At the end», then «Scenes» and «Ending» (part C2).
  * Every choice holds at once; «Done»
@@ -93,7 +91,6 @@ function SheetBody({ run, edit, onChange, onClose, sceneOf }: Omit<Props, "visib
           </Pressable>
         </View>
         <ScrollView contentContainerStyle={styles.rows}>
-          <DescribeVideo edit={edit} onChange={onChange} />
           <VideoPreview edit={edit} sceneOf={sceneOf} />
           <StyleRow
             run={run}

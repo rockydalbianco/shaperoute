@@ -793,8 +793,6 @@ export const IT: Table = {
   // src/screens/FreeRunScreen.tsx, SnowFinishCard.tsx (TASK-375 part C)
   "Your day": "La tua giornata",
   "White: where you skied.": "Bianco: dove hai sciato.",
-  "White: your descents. Dashed: the lifts.":
-    "Bianco: le discese. Tratteggio: gli impianti.",
   "Skied: {distance}": "Sciati: {distance}",
   Descents: "Discese",
   Vertical: "Dislivello",
@@ -2255,4 +2253,13 @@ export const IT: Table = {
     "Questa immagine non si legge. Il video esce senza.",
   "Anyone with the link can follow you on a web page, without the app: time, lengths or exercise, calories and your heart rate when a watch sends it.":
     "Chiunque abbia il link può seguirti su una pagina web, senza l'app: tempo, vasche o esercizio, calorie e il battito quando un orologio lo manda.",
+
+  // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
+  "Runs@@ski": "Discese",
+  Legend: "Legenda",
+  "Descents · solid, numbered": "Discese · linea piena, numerate",
+  "Lifts · dashed, L1, L2…": "Risalite · tratteggiate, L1, L2…",
+  Lift: "Risalita",
+  "{speed} top": "{speed} max",
+  "Stopped {minutes} min": "Fermo {minutes} min",
 };

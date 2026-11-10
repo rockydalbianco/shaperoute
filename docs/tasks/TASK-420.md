@@ -1,9 +1,10 @@
 # TASK-420 — La pagina del catalogo in «Explore» (grande catalogo, parte C)
 
-**Stato**: **Riaperto il 2026-11-10** come parte D, «tutte le forme in
-«Explore»»: app in #1022, endpoint `GET /catalog` in #1027 (parte E,
-«Sì, fallo tu» dell'utente); poi il server col sì dell'utente e l'OTA. Prima: pagina costruita (#954), poi tolta
-con la #978 per scelta dell'utente del 2026-11-08; documenti in #952
+**Stato**: **Done** · 2026-11-10 · parti D ed E in `main` (#1022 app,
+#1027 `GET /catalog`, #1024 documenti, #1062 test di contratto); restano
+sul Coordinatore il server (passo 2) e l'OTA 3, col sì dell'utente. Prima:
+pagina costruita (#954), poi tolta con la #978 per scelta dell'utente del
+2026-11-08; documenti in #952
 **Fase**: 5 · **Branch**: `docs/TASK-420-catalog-page` (documenti), poi
 `feat/TASK-420-catalog-page` (codice)
 **Dipende da**: TASK-418 (forme e parole nuove: i nomi e le categorie),
@@ -244,20 +245,35 @@ impronta ferma, nessuna dipendenza nuova.
 
 **Criteri di accettazione della parte D**
 
-- [ ] #1022 in `main`: con un'API senza `/catalog` la pagina è come prima
-      (titolo a parte) e i test di `explore` restano verdi.
+- [x] #1022 in `main` (`ecc689bf`): con un'API senza `/catalog` la pagina è
+      come prima (titolo a parte) e i test di `explore` restano verdi.
 - [ ] Con l'endpoint sul server: il titolo conta il catalogo, «FARTHER
       AWAY» mostra ogni città dalla più vicina, lo scorrimento carica le
-      pagine seguenti, le schede aprono il percorso sulla mappa.
-- [ ] #1027 in `main` e sul server (deploy col sì dell'utente).
-- [ ] Prova sul telefono con l'OTA, col sì dell'utente.
-- [ ] Seguito piccolo: il test di contratto lato app su `catalog.json`
-      (`catalogList.test.ts`), quando #1022 e #1027 sono tutte e due in `main`.
+      pagine seguenti, le schede aprono il percorso sulla mappa (da vedere
+      sul telefono con l'OTA 3).
+- [x] #1027 in `main` (`4db68261`); sul server col passo 2 del Coordinatore,
+      col sì dell'utente.
+- [ ] Prova sul telefono con l'OTA 3, col sì dell'utente (la tiene il
+      Coordinatore).
+- [x] Il test di contratto lato app su `catalog.json` (#1062).
 
 **Fuori scope della parte D**: filtri e ordinamenti (ADR-0144); un JSON
 nell'app (ADR-0348, superata); la partenza immediata da una scheda.
 
 ## Esito
+
+**2026-11-10, Done (parti D ed E).** Tutte le forme del catalogo stanno in
+«Explore»: la pagina è una lista sola, «NEAR YOU» entro 5 km, «Ask for a
+route» come riga, «FARTHER AWAY» città per città dalla più vicina da
+`GET /catalog` a pagine di 40 (#1022, `ecc689bf`); l'endpoint nell'API
+(#1027, `4db68261`), senza migrazione; il contratto condiviso
+`catalog.json` letto da tutte e due le parti (#1062). Non provata nel
+simulatore: la prova sul telefono arriva con l'OTA 3, dopo il passo 2 del
+server, entrambi col sì dell'utente, tenuti dal Coordinatore. Rimandato:
+la partenza immediata da una scheda; le categorie dal catalogo delle forme
+(TASK-418). Il secondo giro del seme (TASK-419, #1028: 386 percorsi in 45
+città) entra nella pagina da solo, dal server.
+
 
 **2026-11-08, Done: pagina costruita, poi tolta.** La pagina «Catalog» è
 stata costruita e mergiata (#954, `1df7dbf5`: scheda d'ingresso sotto la

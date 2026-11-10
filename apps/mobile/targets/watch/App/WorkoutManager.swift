@@ -38,6 +38,14 @@ final class WorkoutManager: NSObject, ObservableObject {
     private var countdownTask: Task<Void, Never>?
     /// When the phone was last told the heart rate and the distance.
     private var heartSentAt: Int64 = 0
+    /// The heart rates of the workout, for its average in the track.
+    private var heartSum = 0.0
+    private var heartCount = 0
+    /// The route followed and when the workout started, for the track.
+    private var followed: WatchRoute?
+    private var startedAtMs: Int64 = 0
+    /// Whether the end of the route was reached, read when the workout ends.
+    private var arrived = false
     private var stateSentAt: Int64 = 0
 
     /// The seconds of the countdown, as the phone's.
@@ -55,12 +63,18 @@ final class WorkoutManager: NSObject, ObservableObject {
     private let routes: RouteStore?
     /// The guidance along a route, on a run with one (part B3b).
     let guide = GuideSession()
+    /// The positions of a workout with the GPS, for the phone and Apple
+    /// Health (part B3c).
+    private let recorder = TrackRecorder()
 
     init(routes: RouteStore? = nil) {
         self.routes = routes
         super.init()
         phone.onMessage = { [weak self] message in
             self?.receive(message)
+        }
+        recorder.onFix = { [weak self] fix in
+            self?.guide.follow(fix)
         }
     }
 
@@ -101,8 +115,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         let quantities = Self.distanceTypes.union([
             HKQuantityType(.heartRate), HKQuantityType(.activeEnergyBurned),
         ])
+        // The workout's line too (part B3c): HKWorkoutRouteBuilder.
         let share: Set<HKSampleType> = Set(quantities.filter { $0 != HKQuantityType(.heartRate) })
-            .union([HKObjectType.workoutType()])
+            .union([HKObjectType.workoutType(), HKSeriesType.workoutRoute()])
         let read: Set<HKObjectType> = Set(quantities).union([HKObjectType.workoutType()])
         try? await store.requestAuthorization(toShare: share, read: read)
     }
@@ -117,6 +132,14 @@ final class WorkoutManager: NSObject, ObservableObject {
         }
         if let route {
             guide.begin(route)
+        }
+        followed = route
+        arrived = false
+        startedAtMs = Self.now()
+        heartSum = 0
+        heartCount = 0
+        if sport.gps {
+            recorder.prepare(store: store, ride: route?.ride ?? false)
         }
         self.sport = sport
         workout = next
@@ -162,6 +185,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             countdownTask?.cancel()
             countdownTask = nil
             guide.stop()
+            recorder.discard()
             builder?.discardWorkout()
             session?.end()
             session = nil
@@ -173,9 +197,16 @@ final class WorkoutManager: NSObject, ObservableObject {
         guard apply(.end) else {
             return
         }
+        arrived = guide.arrived
         guide.stop()
-        // The builder saves the workout when the session says it ended.
-        session?.end()
+        recorder.stop()
+        // The builder saves the workout when the session says it ended, and
+        // the track goes to the phone then; without Apple Health, now.
+        if let session {
+            session.end()
+        } else {
+            sendTrack(endedAt: Date(), workout: nil)
+        }
     }
 
     /// The summary seen: ready for the next workout.
@@ -224,7 +255,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             return
         }
         paces.add(movingMs: 0, metres: 0)
-        guide.run()
+        recorder.start()
         let date = Date()
         session?.startActivity(with: date)
         builder?.beginCollection(withStart: date) { _, _ in }
@@ -234,10 +265,17 @@ final class WorkoutManager: NSObject, ObservableObject {
     /// does not apply in this phase.
     @discardableResult
     private func apply(_ event: WorkoutEvent) -> Bool {
-        guard var next = workout, next.apply(event, at: Self.now()) else {
+        let at = Self.now()
+        guard var next = workout, next.apply(event, at: at) else {
             return false
         }
         workout = next
+        // The track leaves out the pauses, as the phone's (part B3c).
+        if event == .pause {
+            recorder.pause(at: at)
+        } else if event == .resume {
+            recorder.resume(at: at)
+        }
         changed()
         return true
     }
@@ -282,10 +320,35 @@ final class WorkoutManager: NSObject, ObservableObject {
             return
         }
         builder.endCollection(withEnd: date) { _, _ in
-            builder.finishWorkout { _, _ in }
+            builder.finishWorkout { workout, _ in
+                Task { @MainActor [weak self] in
+                    self?.sendTrack(endedAt: date, workout: workout)
+                }
+            }
         }
         session = nil
         self.builder = nil
+    }
+
+    /// The finished workout to the phone, as a file (part B3c): the phone
+    /// shows it until it is saved or let go of. A workout without the GPS
+    /// has no line, but its time, calories and heart all the same. The line
+    /// goes into the workout Apple Health saved, too.
+    private func sendTrack(endedAt date: Date, workout saved: HKWorkout?) {
+        recorder.stop()
+        recorder.finishRoute(with: saved)
+        guard let sport, let workout else {
+            return
+        }
+        let endedAtMs = Self.ms(date)
+        let track = recorder.log.track(
+            activity: sport.activity, startedAtMs: startedAtMs,
+            endedAtMs: max(endedAtMs, startedAtMs),
+            status: arrived ? .arrived : .stopped, route: followed, distanceM: distanceM,
+            movingMs: workout.movingMs(at: endedAtMs), kcal: kcal > 0 ? kcal : nil,
+            heartAvgBpm: heartCount > 0 ? Int((heartSum / Double(heartCount)).rounded()) : nil)
+        phone.sendTrack(track)
+        followed = nil
     }
 
     private func collected(metres: Double?, bpm: Double?, energy: Double?) {
@@ -301,6 +364,10 @@ final class WorkoutManager: NSObject, ObservableObject {
         let at = Self.now()
         if let bpm {
             heartRate = Int(bpm.rounded())
+            if bpm > 0 {
+                heartSum += bpm
+                heartCount += 1
+            }
             if let rate = heartRate, rate > 0, rate <= 300, at - heartSentAt >= Self.sendEveryMs {
                 heartSentAt = at
                 phone.send(.heartRate(bpm: rate, at: at))

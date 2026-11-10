@@ -41,6 +41,9 @@ export type WatchRoute = {
   ride: boolean;
   paddle: boolean;
   announceM: number;
+  /** How much the route looks like its shape (part B3c): the watch sends it
+   * back with the track, for the score at the end. null when not known. */
+  similarity: number | null;
 };
 
 /** The watch keeps this many routes sent with «Send to watch», besides the
@@ -71,6 +74,7 @@ export type RouteToSend = {
   directions: readonly Direction[];
   walks?: readonly Walk[] | null;
   word?: string | null;
+  similarity?: number | null;
 };
 
 /** The route as the watch follows it; null when it cannot be followed
@@ -104,6 +108,7 @@ export function watchRouteOf(route: RouteToSend): WatchRoute | null {
     ride: isRide(activity),
     paddle: activity === "paddling",
     announceM: announceMOf(activity),
+    similarity: route.similarity ?? null,
   };
 }
 
@@ -122,6 +127,7 @@ export function routeToSendOf(
     directions,
     walks: request.walks ?? null,
     word: request.word,
+    similarity: request.similarity,
   };
 }
 
@@ -196,8 +202,18 @@ export function decodeWatchRoute(value: unknown): WatchRoute | null {
   if (!isFields(value)) {
     return null;
   }
-  const { key, title, activity, distanceM, word, anywhere, ride, paddle, announceM } =
-    value;
+  const {
+    key,
+    title,
+    activity,
+    distanceM,
+    word,
+    anywhere,
+    ride,
+    paddle,
+    announceM,
+    similarity,
+  } = value;
   if (
     typeof key !== "string" ||
     key === "" ||
@@ -212,6 +228,7 @@ export function decodeWatchRoute(value: unknown): WatchRoute | null {
     typeof paddle !== "boolean" ||
     !isReal(announceM) ||
     announceM <= 0 ||
+    (similarity !== undefined && similarity !== null && !isReal(similarity)) ||
     !Array.isArray(value.points) ||
     !Array.isArray(value.directions) ||
     !Array.isArray(value.walks)
@@ -247,5 +264,6 @@ export function decodeWatchRoute(value: unknown): WatchRoute | null {
     ride,
     paddle,
     announceM,
+    similarity: isReal(similarity) ? similarity : null,
   };
 }

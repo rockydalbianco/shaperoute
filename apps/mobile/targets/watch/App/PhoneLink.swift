@@ -50,6 +50,27 @@ final class PhoneLink: NSObject, WCSessionDelegate {
         }
     }
 
+    /// A finished workout, as a file (part B3c): WatchConnectivity keeps it
+    /// until the phone takes it, also when it is away now. The file is in
+    /// the caches, named by its start; the metadata says what it is.
+    func sendTrack(_ track: WatchTrack) {
+        guard WCSession.isSupported(), WCSession.default.activationState == .activated,
+            let data = try? track.data()
+        else {
+            return
+        }
+        let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
+        let file = folder.appendingPathComponent("workout-\(track.startedAtMs).json")
+        do {
+            try data.write(to: file, options: .atomic)
+        } catch {
+            return
+        }
+        WCSession.default.transferFile(
+            file, metadata: ["type": "track", "v": WatchTrack.version])
+    }
+
     func session(
         _ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState,
         error: Error?

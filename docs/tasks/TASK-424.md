@@ -457,19 +457,55 @@ Privacy, sezione «Sharing live»:
   docs/tasks/TASK-424.md
   ```
   Il sito sul server si copia col sì dell'utente, dopo il server.
-- **B1** — l'app, sport col GPS (dopo A2, da `main` con #971 dentro).
-  File proposti:
+- **B1** — l'app, sport col GPS: branch `feat/TASK-424-b1-live-share-app`
+  (2026-11-10), da `main` con #971 dentro. File approvati dal
+  Coordinatore il 2026-11-08:
   ```
-  apps/mobile/src/liveShare/*            (nuovi: client, coda, invio,
-                                          pulsante, foglio del consenso,
-                                          test)
-  apps/mobile/src/navigation/runPosition.ts  (i punti all'invio, anche a
-                                          telefono bloccato)
-  apps/mobile/src/screens/RunDashboard.tsx   (il pulsante e l'etichetta)
-  apps/mobile/src/i18n/{en,it,de,fr,es}.ts   (i testi approvati)
+  apps/mobile/src/liveShare/*            (nuovi: liveShareApi, liveSharer,
+                                          liveShareStore, liveStats,
+                                          useLiveShareFeed, LiveShareButton
+                                          e i loro test)
+  apps/mobile/src/navigation/runPosition.ts  (i punti del task all'invio)
+  apps/mobile/src/screens/RunDashboard.tsx   (il pulsante, i numeri)
+  apps/mobile/src/i18n/{it,de,fr,es}.ts      (i testi approvati; l'inglese
+                                          è la chiave, `en.ts` non c'è)
   docs/UI.md, docs/tasks/TASK-424.md
   ```
-  L'impronta iOS si misura prima della PR.
+  Scelte tecniche (decise dall'agente su delega dell'utente; la voce in
+  `DECISIONS.md`, precisazione B1 di ADR-0352, va nella PR di soli
+  documenti dopo il merge):
+  - **Lo stato fuori da React** (`liveShareStore.ts`), un link alla volta
+    come la corsa: il task della posizione (`runPosition.ts`) gli passa
+    ogni posizione e fa partire l'invio, anche a telefono bloccato; nessun
+    task nuovo. Lo schermo della corsa gli passa traccia, calorie, battito
+    e pausa (`useLiveShareFeed`); i numeri si calcolano dalla traccia al
+    momento dell'invio. Davanti, un timer di 5 s porta i segnali della
+    pausa e i nuovi tentativi della fine anche senza posizioni.
+  - **La macchina degli invii** (`liveSharer.ts`) senza orologio né timer
+    suoi, provata con un orologio in mano: 15 s in movimento, 60 s in
+    pausa, subito a ogni cambio di stato; uno ogni 5 s al più, 200 per
+    invio (e subito il resto dopo un invio pieno), coda di 500 che perde i
+    più vecchi; un tentativo fallito aspetta il giro normale. `410`, `404`
+    e `401` chiudono il link; un `422` scarta quei punti; rete, `5xx` e
+    `429` li tengono. `finished` riprovato fino a 4 volte, poi il link
+    scade da solo. Lo stop chiude subito sul telefono e manda il `DELETE`
+    (una seconda volta se manca la rete).
+  - **I punti**: dal task della posizione (precisione entro
+    `MAX_ACCURACY_M`) e, dove il GPS va solo in primo piano (Expo Go, un
+    servizio Android rifiutato), dalle posizioni nuove della traccia dello
+    schermo; la stessa posizione non entra due volte. Solo da quando c'è il
+    link: il server non prende punti più vecchi di 5 minuti.
+  - **La fine** è quando la scheda della corsa se ne va (fine, salvata o
+    no), non quando `live` diventa falso: un GPS perso a metà corsa non
+    chiude il link. Una fine mentre il link si sta facendo lo cancella.
+  - **Il consenso** torna a ogni link nuovo (ogni link è nuovo, e il
+    battito è un dato di salute); il foglio di condivisione si apre dopo
+    che il nostro foglio è sparito (iOS ne mostra uno alla volta,
+    TASK-358). Su «Compass» niente pulsante né etichetta (le sue righe non
+    si toccano).
+  Prove: 43 test nuovi (`src/liveShare/`), i test della corsa e
+  dell'i18n, `tsc`, prettier, lint. **Resta**: l'impronta iOS nella PR, la
+  prova su un telefono vero, l'OTA con B2 e il sì dell'utente.
 - **B2** (piscina e palestra) e **C** (i dati dal vivo che mancano): dopo
   TASK-409 B, TASK-411 C e TASK-370 B3. Le PR di codice non toccano
   `STATUS.md`, `DECISIONS.md` né `INDEX.md` (regola del Coordinatore del

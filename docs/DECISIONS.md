@@ -462,6 +462,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Proposto
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
+- ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog` · 2026-11-10 · Accettata
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
@@ -489,6 +490,9 @@ lasciando le righe d'indice.
 - ADR-0340, precisazione C — `run_stats`: passi dal server, profilo e calorie dal telefono, il battito resta in `runs` · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
+- ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
+- ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono · 2026-11-10 · Attiva
+- ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte · 2026-11-10 · Accettata
 
 ## Voci nuove
 
@@ -660,6 +664,45 @@ dall'agente su delega dell'utente
   l'API. `?api=` (solo da `127.0.0.1`/`localhost`, solo verso un indirizzo
   locale) serve a provarla sul Mac contro un finto `/live`: l'API vera
   lascia leggere `/live` solo a `https://getmuw.app`.
+## ADR-0347, precisazione B — Tutti i disegni del catalogo nella pagina «Explore», città per città dalla più vicina, a pagine da `GET /catalog`
+
+**Stato**: Accettata · 2026-11-10 · TASK-420 parte D. Scelta dell'utente,
+parole sue: «tutte le forme devono essere nella pagina ma non dentro
+catalogo, migliora la pagina esterna»; sul mockup «A, griglia per città».
+Il resto deciso dall'agente su delega dell'utente.
+
+**Contesto**: la precisazione precedente mette i tenuti «nella lista di
+«Explore» che c'è», cioè «Best near you» entro 5 km e gli esempi per città:
+così si vede solo quello che sta vicino. L'utente vuole invece **tutte** le
+forme del catalogo nella pagina, senza una pagina a parte (ADR-0348,
+superata) e senza filtri (ADR-0144).
+
+**Decisione**:
+
+1. **«Explore» è una lista sola, virtualizzata** (`FlatList`): la testata è
+   la pagina com'era (ricerca, chip, paesi vicini, esempi, «Recommended»,
+   le schede entro 5 km sotto «NEAR YOU»), le righe sono il catalogo.
+2. **Il catalogo arriva dal server a pagine**: `GET /catalog?lat&lon&offset&limit`
+   dà `{total, cities, routes}` con le stesse voci di `/recommended-routes`,
+   città per città dalla più vicina al punto, per somiglianza dentro la
+   città. L'app chiede 40 voci alla volta mentre si scorre e non mostra due
+   volte quelle di «NEAR YOU». Niente JSON nell'app.
+3. **Senza l'endpoint la pagina è quella di prima**: 404 o una risposta
+   che non è una pagina valgono «niente catalogo»; l'app entra prima del
+   server. Una pagina fallita dopo la prima lo dice in fondo con «Try again».
+4. **«Ask for a route» diventa una riga** che apre il modulo sotto di sé:
+   la pagina continua e il modulo non può più stare in fondo.
+5. **Il titolo è «Explore»** con il conto del catalogo; «Best near you»
+   resta solo come etichetta «NEAR YOU» della prima sezione.
+
+**Alternative**: righe orizzontali per figura (B del mockup), scartata
+dall'utente; un JSON nel bundle (ADR-0348), superato: il seme cresce con
+TASK-419; alzare i limiti di `/recommended-routes` (60 entro 50 km): non
+dà l'ordine per città né il totale.
+
+**Conseguenze**: un endpoint nuovo nell'API, senza migrazione, da
+assegnare (TASK-420 parte E o TASK-419); l'app in #1022.
+
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole
@@ -1508,3 +1551,99 @@ Coordinatore. In `main` con la #1012.
 
 **Conseguenze**: la traccia della corsa resta sull'orologio finché B3c non
 la manda al telefono. Le vibrazioni si provano al polso con la build A-flip.
+
+## ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore
+
+**Stato**: Attiva · 2026-11-08 · TASK-406 parte D3b (#1006) e #1004. Deciso
+dall'agente su delega dell'utente, con la lista dei file approvata dal
+Coordinatore; i testi sono dell'utente («Sì, approvati», 2026-11-08).
+
+**Contesto**: la pagina della stazione mostra «Follow», la neve dei membri e
+le loro giornate lì; «Your resorts» sta in cima all'elenco delle stazioni,
+nella scheda «Ski» e in «Cambia».
+
+**Decisione**:
+
+1. **Una sola lista delle stazioni seguite** per tutta l'app
+   (`useFollowedResorts`), letta una volta per sessione dalla porta dei
+   disegni. Un tocco la cambia subito, e torna com'era se il server dice di
+   no: la pagina e l'elenco cambiano insieme.
+2. **I post di una stazione hanno l'autore**, come nel Feed: `GET
+   /ski-resorts/{id}/drawings` risponde `{posts, next, total}` con
+   `FeedPostBody` (#1004). Sono di più membri, mentre la pagina di un profilo
+   è di uno solo. La forma è cambiata prima che la rotta arrivasse sul
+   server.
+3. **Un post toccato si apre sulla mappa e chiude la ricerca**, come i
+   risultati della ricerca (`SearchScreen`: `onLeave={onClose}`).
+4. **Le parti vuote non compaiono**; senza account la pagina resta quella
+   della parte C.
+
+**Alternative**:
+
+- **Le seguite lette da ogni schermo**: scartate, la pagina e l'elenco
+  avrebbero potuto dire cose diverse.
+- **I post senza autore**: scartati, non si saprebbe di chi è la giornata.
+
+**Conseguenze**: solo JavaScript nell'app; sul server nessuna migrazione in
+più. Tutto esce con il passo unico sul server e l'OTA unico.
+
+## ADR-0339, precisazione D — «Describe your video»: una tabella di parole letta sul telefono
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-10), dentro la
+scelta dell'utente 9 (nessuna AI, nessun costo, la prima tabella).
+
+1. **La tabella è un file dell'app** (`share/videoWords.ts`), nelle cinque
+   lingue, letta come le parole delle forme (ADR-0036): accenti, maiuscole
+   e apostrofi non contano, e le parole di ogni lingua valgono qualunque
+   sia la lingua dell'app. Parole nuove arrivano con un OTA.
+2. **Sceglie solo le voci del foglio** (animale, stile, colore, emoji,
+   apertura, camera, finale) e niente altro: il risultato è un `VideoEdit`
+   con gli stessi campi, e un test prova che numeri come coordinate non
+   danno nulla (ADR-0001).
+3. **Come legge**: la frase si divide in parti alle virgole e alle «e»; i
+   nomi più lunghi prima («cavallo bianco» prima di «cavallo» e «bianco»).
+   Un'emoji va «alla fine» se la sua parte lo dice, altrimenti lungo il
+   percorso; «cuore» è il finale dove la parte parla del finale, altrimenti
+   l'emoji; i finali contano solo dove si parla della fine. Una camera
+   senza stile sceglie il 3D, l'unico stile dove si muove.
+4. **Quando**: alla fine del campo (Invio o uscita), non a ogni lettera.
+   Una parola sconosciuta si salta senza messaggi; il resto del foglio
+   resta com'era.
+
+## ADR-0353 — «Edit the drawing» chiude la traccia aperta con un lato fino alla partenza, invece di correrla due volte
+
+**Stato**: Accettata · 2026-11-10 · TASK-425 (#1021). Scelta dell'utente del
+2026-11-10: «Sì, chiudile»; il ripiego quando la chiusura non fa un disegno
+è deciso dall'agente su delega dell'utente.
+
+**Contesto**: dal TASK-369 (ADR-0313) una traccia che finisce lontano dalla
+partenza (oltre `CLOSED_SHARE`, il 15% della sua grandezza) restava aperta in
+«Edit the drawing»: un anellino alla partenza e tutta la linea come
+dettaglio. I dettagli si contano e si corrono andata e ritorno, quindi la
+distanza chiesta era il doppio della traccia (4.000 m → 8.029 m). Lo ha
+notato un amico dell'utente: «come se ci passasse sopra due volte».
+
+**Decisione**:
+
+1. `trackInPlace` (`route/figureLines.ts`) **chiude anche la traccia che
+   finisce lontano**, con un lato dritto dalla fine al primo punto. La
+   distanza diventa la traccia più il ritorno, e la partenza resta dov'era.
+2. **Se chiusa non fa un disegno** (`drawingOf` nullo: la traccia si incrocia
+   da sola, o il lato di ritorno la attraversa), resta aperta come prima,
+   perché il tasto deve continuare a funzionare.
+
+**Alternative**:
+
+- **Lasciare la linea aperta e contarla una volta sola**: scartata, il motore
+  corre comunque i dettagli andata e ritorno; la distanza sarebbe stata
+  sbagliata.
+- **Tenere solo l'anello più grande quando la traccia chiusa si incrocia**:
+  scartata, toglie pezzi del disegno.
+
+**Conseguenze**: su 124 tracce aperte vere (i percorsi di `samples/` tagliati
+al 50% e al 75%), 46 si chiudono con la distanza giusta (0,9–1,0 volte la
+traccia più il ritorno) e 76 restano doppie come prima, perché si incrociano
+da sole e il motore prende solo contorni semplici. Per loro servirebbe il
+motore (linea aperta corsa una volta, ritorno per la via più breve): è
+proposto all'utente come task a parte. Solo JavaScript nell'app, nell'OTA
+unico.

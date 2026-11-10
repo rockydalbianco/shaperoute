@@ -1722,6 +1722,12 @@ export const ES: Table = {
   "Line in 2D": "Línea en 2D",
   // src/share/VideoPreview.tsx (TASK-408 C2c, choice 13; «Resume» and «Pause» were there)
   "Video preview": "Vista previa del vídeo",
+  // src/share/DescribeVideo.tsx (TASK-408 D, texts of choice 9)
+  "Describe your video": "Describe tu vídeo",
+  "a horse at night, fireworks at the end":
+    "un caballo de noche, fuegos artificiales al final",
+  "An animal, colours, emoji, the ending. Read on your phone.":
+    "Un animal, colores, emojis, el final. Se lee en el móvil.",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "Concurso MuW",
@@ -2133,6 +2139,24 @@ export const ES: Table = {
     "Indicada por los miembros en las últimas 24 horas.",
   "Members' days here": "Las jornadas de los miembros aquí",
 
+  // src/liveShare/LiveShareButton.tsx (TASK-424 part B1; «Not now» above)
+  "Share live": "Compartir en directo",
+  "Sharing live": "Compartiendo en directo",
+  "Sign in to share live": "Inicia sesión para compartir en directo",
+  "Share this activity live": "Compartir esta actividad en directo",
+  "Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it.":
+    "Cualquiera que tenga el enlace puede seguirte en una página web, sin la app: tu posición exacta en el mapa, el recorrido hecho, distancia, tiempo, ritmo o velocidad, desnivel, calorías y tu pulso cuando un reloj lo envía.",
+  "The link stops working one hour after you finish, or as soon as you stop sharing. Then your positions are deleted.":
+    "El enlace deja de funcionar una hora después de terminar, o en cuanto dejas de compartir. Después se borran tus posiciones.",
+  "Share link": "Compartir enlace",
+  "Follow my activity live on MuW: {url}":
+    "Sigue mi actividad en directo en MuW: {url}",
+  "Stop sharing?": "¿Dejar de compartir?",
+  "The link stops working now.": "El enlace deja de funcionar ahora.",
+  "Stop sharing": "Dejar de compartir",
+  "Keep sharing": "Seguir",
+  "Couldn't create the link. Try again.":
+    "No se ha podido crear el enlace. Inténtalo de nuevo.",
   // src/explore/ExploreScreen.tsx, FartherAway.tsx, AskLine.tsx (TASK-420: every
   // drawing of the catalog in «Explore», the nearest first)
   "{count} drawings in {cities} cities · the nearest first":

@@ -1,0 +1,327 @@
+import { type ReactNode, useRef, useState } from "react";
+import { Alert, Platform, Share, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { t } from "../i18n";
+import { runActivityOf } from "../settings/sport";
+import { useSport } from "../settings/useSport";
+import { useFollowsDoor } from "../social/followsDoor";
+import {
+  color,
+  font,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "../theme/tokens";
+import { SheetModal } from "../ui/SheetModal";
+import { Tap } from "../ui/Tap";
+import { startLiveShare, stopLiveShare, useLiveShare } from "./liveShareStore";
+
+/**
+ * «Share live» on the recording screen (TASK-424 part B1, ADR-0352;
+ * docs/UI.md «La corsa»). With an account, a button: it opens the sheet
+ * that says what whoever has the link sees, heart rate included; «Share
+ * link» makes the link and, once the sheet is down, opens the phone's
+ * share sheet with one line and the link. While it shares, «Sharing live»:
+ * a touch asks, then stops it. Without an account, «Sign in to share live»
+ * in grey, with nothing to touch. Never on by itself.
+ */
+
+type Props = {
+  /** A link can be made now: the activity is under way. While one is on,
+   * «Sharing live» shows whatever this says, so it can be stopped. */
+  canStart: boolean;
+  /** For the tests: the fetch and the API key. */
+  fetchFn?: typeof fetch;
+  apiKey?: string | null;
+};
+
+/** The line the share sheet carries. */
+export function liveShareMessage(url: string): string {
+  return t("Follow my activity live on MuW: {url}", { url });
+}
+
+/** Asks, then stops sharing: the link stops working now. */
+export function confirmStopSharing(): void {
+  Alert.alert(t("Stop sharing?"), t("The link stops working now."), [
+    { text: t("Keep sharing"), style: "cancel" },
+    {
+      text: t("Stop sharing"),
+      style: "destructive",
+      onPress: () => void stopLiveShare(),
+    },
+  ]);
+}
+
+export function LiveShareButton({ canStart, fetchFn, apiKey }: Props) {
+  const { apiUrl, account } = useFollowsDoor();
+  const status = useLiveShare();
+  const activity = runActivityOf(useSport());
+  const [open, setOpen] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  // The link made, until the sheet has gone: iOS opens one sheet at a time,
+  // and the phone's, shown while ours is closing, never comes up
+  // (TASK-358).
+  const toShare = useRef<string | null>(null);
+  const session = account.state.status === "signedIn" ? account.state.session : null;
+  const starting = status.kind === "starting";
+
+  const openShareSheet = () => {
+    const url = toShare.current;
+    toShare.current = null;
+    if (url !== null) {
+      // The link is on already: a share sheet closed without sending keeps
+      // it on, and «Sharing live» says so.
+      void Share.share({ message: liveShareMessage(url) }).catch(() => undefined);
+    }
+  };
+
+  const share = async () => {
+    if (session === null || apiUrl === null) {
+      return;
+    }
+    setProblem(null);
+    const outcome = await startLiveShare(
+      { baseUrl: apiUrl, token: session.token, fetchFn, key: apiKey },
+      activity,
+    );
+    if (outcome.kind === "started") {
+      toShare.current = outcome.url;
+      setOpen(false);
+    } else if (outcome.kind === "failed") {
+      setProblem(t("Couldn't create the link. Try again."));
+    }
+  };
+
+  let control: ReactNode;
+  if (status.kind !== "sharing" && !canStart && !open) {
+    return null;
+  }
+  if (status.kind === "sharing") {
+    control = (
+      <Tap
+        style={[styles.chip, styles.live]}
+        onPress={confirmStopSharing}
+        accessibilityRole="button"
+        accessibilityLabel={t("Sharing live")}
+        accessibilityHint={t("Stop sharing?")}
+        testID="live-share-on"
+      >
+        <View style={styles.dot} />
+        <Text style={styles.chipText}>{t("Sharing live")}</Text>
+      </Tap>
+    );
+  } else if (session === null || apiUrl === null) {
+    control = (
+      <Text style={styles.signIn} testID="live-share-sign-in">
+        {t("Sign in to share live")}
+      </Text>
+    );
+  } else {
+    control = (
+      <Tap
+        style={styles.chip}
+        onPress={() => {
+          setProblem(null);
+          setOpen(true);
+        }}
+        disabled={starting}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: starting, busy: starting }}
+        testID="live-share"
+      >
+        <Text style={styles.chipText}>{t("Share live")}</Text>
+      </Tap>
+    );
+  }
+
+  return (
+    <View style={styles.row}>
+      {control}
+      {/* Kept whatever the state: the link on, the sheet still goes down. */}
+      <SheetModal
+        visible={open}
+        dim
+        onRequestClose={() => !starting && setOpen(false)}
+        onHidden={Platform.OS === "ios" ? undefined : openShareSheet}
+        onDismiss={Platform.OS === "ios" ? openShareSheet : undefined}
+        testID="live-share-sheet"
+      >
+        <ConsentSheet
+          starting={starting}
+          problem={problem}
+          onShare={() => void share()}
+          onCancel={() => setOpen(false)}
+        />
+      </SheetModal>
+    </View>
+  );
+}
+
+function ConsentSheet({
+  starting,
+  problem,
+  onShare,
+  onCancel,
+}: {
+  starting: boolean;
+  problem: string | null;
+  onShare: () => void;
+  onCancel: () => void;
+}) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={styles.fill}>
+      <Tap
+        style={styles.backdrop}
+        onPress={() => !starting && onCancel()}
+        accessible={false}
+        importantForAccessibility="no"
+        pressScale={1}
+      />
+      <View style={[styles.sheet, { paddingBottom: insets.bottom + space.md }]}>
+        <Text style={styles.title} accessibilityRole="header">
+          {t("Share this activity live")}
+        </Text>
+        <Text style={styles.body}>
+          {t(
+            "Anyone with the link can follow you on a web page, without the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain, calories and your heart rate when a watch sends it.",
+          )}
+        </Text>
+        <Text style={styles.body}>
+          {t(
+            "The link stops working one hour after you finish, or as soon as you stop sharing. Then your positions are deleted.",
+          )}
+        </Text>
+        {problem !== null && (
+          <Text style={styles.problem} accessibilityLiveRegion="polite">
+            {problem}
+          </Text>
+        )}
+        <View style={styles.buttons}>
+          <Tap
+            style={styles.button}
+            onPress={onCancel}
+            disabled={starting}
+            accessibilityRole="button"
+            testID="live-share-not-now"
+          >
+            <Text style={styles.buttonText}>{t("Not now")}</Text>
+          </Tap>
+          <Tap
+            style={[styles.button, styles.primary, starting && styles.off]}
+            onPress={onShare}
+            disabled={starting}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: starting, busy: starting }}
+            testID="live-share-confirm"
+          >
+            <Text style={[styles.buttonText, styles.primaryText]}>
+              {t("Share link")}
+            </Text>
+          </Tap>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const DOT = 8;
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  chip: {
+    minHeight: MIN_TAP_SIZE,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  live: {
+    borderColor: color.warning,
+  },
+  dot: {
+    width: DOT,
+    height: DOT,
+    borderRadius: DOT / 2,
+    backgroundColor: color.warning,
+  },
+  chipText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  signIn: {
+    minHeight: MIN_TAP_SIZE,
+    textAlignVertical: "center",
+    lineHeight: MIN_TAP_SIZE,
+    color: color.textMuted,
+    fontSize: fontSize.small,
+  },
+  fill: {
+    flex: 1,
+  },
+  backdrop: {
+    flexGrow: 1,
+  },
+  sheet: {
+    paddingHorizontal: space.lg,
+    paddingTop: space.lg,
+    gap: space.md,
+    borderTopLeftRadius: radius.sheet,
+    borderTopRightRadius: radius.sheet,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: color.hairline,
+    backgroundColor: color.surface,
+  },
+  title: {
+    ...font.heading,
+    color: color.text,
+  },
+  body: {
+    color: color.textMuted,
+    fontSize: fontSize.body,
+  },
+  problem: {
+    color: color.error,
+    fontSize: fontSize.small,
+  },
+  buttons: {
+    flexDirection: "row",
+    gap: space.sm,
+  },
+  button: {
+    flex: 1,
+    minHeight: MIN_TAP_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  primary: {
+    borderColor: color.text,
+    backgroundColor: color.text,
+  },
+  off: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  primaryText: {
+    color: color.background,
+  },
+});

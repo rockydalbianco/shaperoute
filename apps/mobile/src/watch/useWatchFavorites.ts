@@ -79,6 +79,7 @@ export async function syncFavorites(
       directions,
       walks: detail.walks ?? null,
       word: detail.word,
+      similarity: detail.similarity,
     });
     // A route the watch cannot keep is not tried again: it never will.
     if (route !== null) {

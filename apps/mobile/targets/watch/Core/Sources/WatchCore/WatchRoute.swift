@@ -31,6 +31,10 @@ public struct WatchRoute: Equatable, Sendable {
     public var ride: Bool
     public var paddle: Bool
     public var announceM: Double
+    /// How much the route looks like its shape (part B3c): the watch sends
+    /// it back with the track, for the phone's score. nil when a phone older
+    /// than B3c did not say.
+    public var similarity: Double? = nil
 
     /// The navigation at the start, what is told then, and the pen of a
     /// route in pieces (nil for one of a piece).
@@ -79,7 +83,8 @@ public struct WatchRoute: Equatable, Sendable {
             key: key, title: title, activity: activity, distanceM: distanceM, points: line,
             directions: try directions.map(direction),
             walks: try fitting(walks, pointCount: line.count),
-            word: word, anywhere: anywhere, ride: ride, paddle: paddle, announceM: announceM)
+            word: word, anywhere: anywhere, ride: ride, paddle: paddle, announceM: announceM,
+            similarity: try WatchTrack.optionalReal(fields["similarity"]))
     }
 
     /// The route as a message carries it.
@@ -106,6 +111,7 @@ public struct WatchRoute: Equatable, Sendable {
             "ride": ride,
             "paddle": paddle,
             "announceM": announceM,
+            "similarity": similarity ?? NSNull(),
         ]
     }
 

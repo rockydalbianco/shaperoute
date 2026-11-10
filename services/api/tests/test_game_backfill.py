@@ -115,13 +115,13 @@ def test_the_backfill_gives_the_rows_of_a_save(
     )
     assert game_rows(database) == saved
     # At the end of the run that reached each. The first, paused after 10
-    # minutes, has no 5 km in one go: its km and kilometres only. The
-    # second has the 5 km, and 12 km in all: the square.
+    # minutes, has no 5 km in one go: all the rest. The second has the 5 km,
+    # and 12 km in all: the square.
     end_of_first = saved[0]["ended_at"]
     end_of_second = saved[1]["ended_at"]
-    first = {"oval", "pentagon", "triangle", "penguin", "cat", "bear"}
+    second = {"bridge", "arch", "lighthouse", "ferris_wheel", "balloon"}
     assert unlocks(database) == sorted(
-        [(s, end_of_first if s in first else end_of_second) for s in SIX_KM_UNLOCKS]
+        [(s, end_of_second if s in second else end_of_first) for s in SIX_KM_UNLOCKS]
         + [("square", end_of_second)]
     )
     # Nobody is told.

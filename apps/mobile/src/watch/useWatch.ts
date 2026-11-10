@@ -10,6 +10,7 @@ import {
 import { appUnits, subscribeUnits, type Units } from "../units/units";
 import { type WatchLink, watchLink } from "./watchLink";
 import type { WatchPhase } from "./watchMessages";
+import { type WatchWaker, watchWaker } from "./watchWake";
 
 /**
  * The run on the phone and the workout on the Apple Watch together
@@ -54,6 +55,8 @@ export type FollowWatch = {
   onEnd: () => void;
   /** The heart rate the watch measures; null once its workout is over. */
   onHeart: (bpm: number | null) => void;
+  /** Wakes the watch app at the countdown (part B4); none in Expo Go. */
+  wake?: WatchWaker | null;
   now?: () => number;
 };
 
@@ -62,7 +65,7 @@ export type FollowWatch = {
  * workout too. */
 export function followWatch(
   link: WatchLink,
-  { activity, onEnd, onHeart, now = Date.now }: FollowWatch,
+  { activity, onEnd, onHeart, wake = watchWaker(), now = Date.now }: FollowWatch,
 ): () => void {
   const since = now() - CLOCK_SLACK_MS;
   let phonePhase: RunPhase = "idle";
@@ -86,6 +89,27 @@ export function followWatch(
   sendUnits(appUnits());
   const stopUnits = subscribeUnits(sendUnits);
 
+  // The start message reaches the watch only with MuW open there: Apple
+  // wakes the app (part B4), and once it is up the start goes again, with
+  // the app's sport. A watch already in its workout lets it go.
+  const wakeWatch = () => {
+    if (wake === null) {
+      return;
+    }
+    void wake(activity).then((woken) => {
+      const still = started && !ended && phonePhase !== "idle";
+      if (woken && still && watchPhase === null) {
+        link.send({
+          type: "command",
+          command: "start",
+          activity,
+          from: "phone",
+          at: now(),
+        });
+      }
+    });
+  };
+
   const onControl = () => {
     const previous = phonePhase;
     const next = runControl().phase;
@@ -101,6 +125,7 @@ export function followWatch(
       ended = false;
       watchPhase = null;
       link.send({ type: "command", command: "start", activity, from: "phone", at });
+      wakeWatch();
     } else if (previous === "running" && next === "paused") {
       link.send({ type: "command", command: "pause", from: "phone", at });
     } else if (previous === "paused" && next === "running") {

@@ -13,6 +13,7 @@ import { saveUnitsChoice } from "../units/units";
 import { CLOCK_SLACK_MS, followWatch, useWatch, watchSavesWorkout } from "./useWatch";
 import type { WatchLink } from "./watchLink";
 import type { WatchMessage, WatchPhase } from "./watchMessages";
+import type { WatchWaker } from "./watchWake";
 
 // The run on the phone with the workout on the watch (TASK-370 part A3): a
 // fake link stands for WatchConnectivity, the run's controls are the real
@@ -92,10 +93,10 @@ function commands(link: FakeLink): string[] {
   );
 }
 
-function follow(link: FakeLink, activity = "running") {
+function follow(link: FakeLink, activity = "running", wake: WatchWaker | null = null) {
   const onEnd = jest.fn();
   const onHeart = jest.fn();
-  const stop = followWatch(link, { activity, onEnd, onHeart });
+  const stop = followWatch(link, { activity, onEnd, onHeart, wake });
   return { onEnd, onHeart, stop };
 }
 
@@ -140,6 +141,49 @@ test("a run already under the controls when the screen comes starts the watch", 
   expect(commands(link)).toEqual(["start"]);
   session.end();
   stop();
+});
+
+test("the countdown wakes the watch app, and the start goes again once it is up (part B4)", async () => {
+  const link = fakeLink();
+  const wake = jest.fn(async (_activity: string) => true);
+  const { stop } = follow(link, "cycling", wake);
+  const session = beginRun();
+  expect(wake).toHaveBeenCalledWith("cycling");
+  await act(async () => {});
+  // The first start was lost on a closed app; the second has the sport.
+  expect(link.sent).toEqual([
+    { type: "command", command: "start", activity: "cycling", from: "phone", at: NOW },
+    { type: "command", command: "start", activity: "cycling", from: "phone", at: NOW },
+  ]);
+  session.end();
+  stop();
+});
+
+test("a watch already in its workout, or not woken, gets one start only (part B4)", async () => {
+  const link = fakeLink();
+  let answer: (woken: boolean) => void = () => {};
+  const wake = jest.fn(
+    () =>
+      new Promise<boolean>((resolve) => {
+        answer = resolve;
+      }),
+  );
+  const { stop } = follow(link, "running", wake);
+  const session = beginRun();
+  // The app was open: it answers before Apple does.
+  link.hear(watchState("countdown"));
+  await act(async () => answer(true));
+  expect(commands(link)).toEqual(["start"]);
+  session.end();
+  stop();
+
+  const other = fakeLink();
+  const { stop: stopOther } = follow(other, "running", async () => false);
+  const again = beginRun();
+  await act(async () => {});
+  expect(commands(other)).toEqual(["start"]);
+  again.end();
+  stopOther();
 });
 
 test("Pause and Resume on the phone go to the watch, by hand or by standing still", () => {

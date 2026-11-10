@@ -8,6 +8,7 @@ import type { CanvasMode } from "../map/messages";
 import type { ImageSource, Picked } from "../route/pickImage";
 import type { SamplePicture } from "../route/samplePictures";
 import { type ImageState, useImageOutline } from "../route/useImageOutline";
+import { isOnWater } from "../swim/water";
 import { appUnits } from "../units/units";
 import { canvasRequest, figureApart, piecesRequest } from "./canvasRequest";
 import { isOpenLine, linkedOf, newDrawing, withDetail } from "./drawing";
@@ -20,7 +21,9 @@ import {
   type Placed,
   placeAt,
   placedLines,
+  placedStart,
   unitLimits,
+  unitsOn,
   withinLimits,
 } from "./figure";
 import { dist } from "./geometry";
@@ -39,8 +42,10 @@ import {
   piecesTurnedBy,
 } from "./pieces";
 import { type FigureChoice, figureOf } from "./resultFigure";
+import { startedAt, startLineOf } from "./startPoint";
 import {
   bent,
+  CORNER_SHARE,
   erased,
   type Straight,
   straightGoneOn,
@@ -48,7 +53,14 @@ import {
   type ToolProblem,
   unitsOf,
 } from "./tools";
-import { normalDeg, shownFigure, turnedBy, turnedTo, turnOf } from "./turn";
+import {
+  normalDeg,
+  shapeOutline,
+  shownFigure,
+  turnedBy,
+  turnedTo,
+  turnOf,
+} from "./turn";
 
 /** What «Undo» takes back (TASK-281), and «Redo» puts again (TASK-331 part
  * B): a figure put on the map or drawn, or taken away, in place of what was
@@ -541,6 +553,34 @@ export function useMapCanvas({
     [placed, within, change],
   );
 
+  /** The start dot left with «Move» (TASK-426, ADR-0354): the figure, or
+   * the first piece, starting at the point of its line nearest, a corner
+   * winning within half a finger's reach; a step «Undo» takes back. */
+  const moveStart = useCallback(
+    (point: LatLon, reachM: number) => {
+      if (placed === null || isOnWater(activity)) {
+        return;
+      }
+      const alone = pieces.length === 1;
+      const next = startedAt(
+        placed.figure,
+        unitsOn(placed, point),
+        reachM / placed.unitM,
+        alone && apartOf(shownFigure(placed)),
+      );
+      if (next === null) {
+        return;
+      }
+      setProblem(null);
+      if (alone) {
+        change(within({ ...placed, figure: next }), "swap");
+      } else {
+        changePiece(0, { ...placed, figure: next });
+      }
+    },
+    [placed, pieces, activity, apartOf, within, change, changePiece],
+  );
+
   const onCanvas = useCallback(
     (event: CanvasEvent) => {
       if (event.type === "centre") {
@@ -599,6 +639,10 @@ export function useMapCanvas({
       // A line drawn or bent: the page shows it until the app answers,
       // whatever comes of it.
       setAnswers((n) => n + 1);
+      if (event.type === "started") {
+        moveStart(event.point, CORNER_SHARE * REACH_PX * event.metresPerPx);
+        return;
+      }
       if (event.type === "bent") {
         bend(event.from, event.to, REACH_PX * event.metresPerPx);
         return;
@@ -645,6 +689,7 @@ export function useMapCanvas({
       erase,
       tap,
       bend,
+      moveStart,
       change,
       changePiece,
     ],
@@ -817,6 +862,20 @@ export function useMapCanvas({
       shrink = Math.min(1, smallest / own);
       grow = Math.max(1, (highest - others) / own);
     }
+    // Where the route starts, a dot, none on the water (TASK-426): on the
+    // first piece, which gives the outline; it moves along that piece's
+    // line, unless another piece is chosen.
+    const water = isOnWater(activity);
+    const startFigure =
+      joined === null
+        ? shown.figure
+        : figure.kind === "shape"
+          ? shapeOutline(figure.shape)
+          : figure;
+    const along =
+      water || (chosenNow !== null && chosenNow > 0)
+        ? null
+        : startLineOf(startFigure, joined === null && apart);
     return {
       mode,
       lines,
@@ -843,6 +902,9 @@ export function useMapCanvas({
           : owners.flatMap((owner, i) => (owner === chosenNow ? [i] : [])),
       box: chosenNow === null ? [] : pieceBox(pieces[chosenNow], chosenNow),
       framing,
+      start: water ? null : placedStart(shown, apart),
+      startLine: along === null ? [] : along.line.map((point) => onMap(placed, point)),
+      startEnds: along?.ends === true,
     };
     // A new answer to a line is a new canvas, so the page clears its ink.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -857,6 +919,7 @@ export function useMapCanvas({
     marks,
     lowest,
     highest,
+    activity,
     framing,
     answers,
   ]);

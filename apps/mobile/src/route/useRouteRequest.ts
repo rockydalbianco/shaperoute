@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { routeQueue } from "../api/routeQueue";
 import { type AnyRouteRequest, isImageRequest, type RouteOutcome } from "../api/routes";
 import { requestRouteOnPhoneFirst } from "../engine/onPhone";
+import { withFirst } from "./choices";
 
 export type { AnyRouteRequest };
 
@@ -24,7 +25,15 @@ export type RouteState =
       /** What the API says it is doing; "sending" until it has answered. */
       phase: "sending" | JobStatus;
     }
-  | { status: "done"; request: AnyRouteRequest; result: RouteResult }
+  | {
+      status: "done";
+      request: AnyRouteRequest;
+      result: RouteResult;
+      /** The route is the first one, from the user's own start, and the
+       * others are still coming (TASK-435, ADR-0361): when they come, the
+       * result is this route with them as its alternatives. */
+      more?: true;
+    }
   | { status: "failed"; request: AnyRouteRequest; problem: RouteProblem };
 
 /**
@@ -59,12 +68,23 @@ export function useRouteRequest(baseUrl: string | null): {
           );
         }
       };
+      // The route from the user's own start, when the API has it before
+      // the whole answer (TASK-435): on screen at once, to start or export,
+      // while the other routes are still coming.
+      const shown: { first: RouteResult | null } = { first: null };
+      const onFirst = (first: RouteResult) => {
+        if (current.current === mine) {
+          shown.first = first;
+          setState({ status: "done", request, result: first, more: true });
+        }
+      };
       // The user's: first in the app's queue of route requests (TASK-287).
       const outcome: Promise<RouteOutcome | { kind: "no_api_url" }> = baseUrl
         ? routeQueue.user(() =>
             requestRouteOnPhoneFirst(baseUrl, request, {
               signal: mine.signal,
               onStatus,
+              onFirst,
             }),
           )
         : Promise.resolve({ kind: "no_api_url" });
@@ -76,7 +96,14 @@ export function useRouteRequest(baseUrl: string | null): {
         if (answer.kind === "cancelled") {
           setState({ status: "idle" });
         } else if (answer.kind === "route") {
-          setState({ status: "done", request, result: answer.result });
+          // The first route stays the one shown (the user's choice).
+          const result = shown.first
+            ? withFirst(shown.first, answer.result)
+            : answer.result;
+          setState({ status: "done", request, result });
+        } else if (shown.first) {
+          // The others never came: the first route stays, alone.
+          setState({ status: "done", request, result: shown.first });
         } else {
           setState({ status: "failed", request, problem: answer });
         }

@@ -2,8 +2,8 @@
 
 **Stato**: Done · 2026-11-10. Esito: calorie (A, #922) in `main` e in
 produzione; battito medio e tempo nelle zone (B1 #979 server, B2 #998 app) in
-`main`, server con la `0061`. Restano l'OTA di produzione della B2 e App
-Privacy «Salute», col sì dell'utente già dato (Esito, sotto)
+`main`, server con la `0061`, OTA di produzione `3056f4e4` e App Privacy
+«Salute» pubblicati (2026-11-10). Niente in sospeso
 **Fase**: 5 · **Branch**: `feat/TASK-409-a-pool-calories` (parte A, col task
 file); la parte B avrà il suo
 **Dipende da**: TASK-400 (nuoto in piscina, chiuso), TASK-374 (Il mio corpo,
@@ -238,12 +238,14 @@ docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-409.md
   (0061–0064, 2026-11-10), lanciato dall'utente («ok si»).
 - **Parte B2** (2026-11-10): #998 in `main` (`73acca24`), unita dal
   Coordinatore. Documenti B1/B2 in #996.
-- **Resta, col sì dell'utente già dato** («ok va bene tutto», «sblocca e dai
-  l'ok», 2026-11-10): l'OTA di produzione che porta la B2, pubblicato dalla
-  sessione del Feed al via del Coordinatore; poi App Privacy «Salute» su App
-  Store Connect, che l'utente fa nel suo account (testo in
-  `out/TASK-409/app-privacy.md` della cartella principale, passato dal
-  Coordinatore; vale anche per TASK-424). Data safety di Google Play
+- **OTA di produzione della B2** (2026-11-10, col sì dell'utente «ok va bene
+  tutto», «sblocca e dai l'ok»): commit `e1bb8a58`, gruppo
+  `3056f4e4-e8a7-41b9-ba28-49ba477f9644`, update iOS
+  `01a1c493-2854-72fb-9a4b-26799e529206`, runtime `6f8bba4c`; preview gruppo
+  `01a7e1e2-320e-400a-85cc-4d26fcd9d67b`.
+- **App Privacy «Salute»** pubblicata su App Store Connect dal Coordinatore lo
+  stesso giorno: Salute, solo Funzionalità dell'app, collegata all'identità,
+  niente monitoraggio (vale anche per TASK-424). Data safety di Google Play
   invariata finché Android non legge il battito (TASK-321 C).
 - **Per TASK-345 C e TASK-374 D**: la lettura del battito
   (`health/heartSamples.ts`, `health/heartModules.ts`) e il tempo in zona

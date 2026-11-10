@@ -9,7 +9,7 @@ import type { AboutContent, AboutDocument } from "../documents";
  * of 2026-10-07).
  */
 
-const UPDATED = "6. November 2026";
+const UPDATED = "10. November 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). */
 const PRIVACY_UPDATED = "10. November 2026";
 
@@ -231,6 +231,7 @@ const terms: AboutDocument = {
         {
           bullets: [
             "Die Karten stammen von OpenFreeMap und aus den Daten von OpenStreetMap (© OpenStreetMap-Mitwirkende).",
+            "Die 3D-Tiere im Video stammen von Quaternius (CC0); der Elefant ist „Elephant Anim“ von Shivoahm und SahuAvdhesh auf Sketchfab (CC BY 4.0), von MuW animiert und angepasst.",
             "Orte werden mit Geoapify gesucht.",
             "Wenn du Strava verbindest, gelten für die Läufe, die du dorthin sendest, die Bedingungen und Datenschutzeinstellungen von Strava.",
             "Ein Bild, das du teilst, verlässt das Handy über das Teilen-Menü: Die App, die es empfängt, hat ihre eigenen Bedingungen.",

@@ -1,11 +1,13 @@
 # TASK-419 — I 1000 disegni del catalogo e la selezione (Explore, parte B)
 
-**Stato**: In corso — primo giro sul server (#966, 155); secondo giro in
-`main` (#1028, 386); terzo giro in PR (530 in 63 città); restano i 20
-contorni dopo TASK-418 B e una quindicina di casi da 21 km da Overpass
+**Stato**: Done (2026-11-10) — 572 percorsi in 63 città in `main` (#966,
+#1028, #1059, #1061, #1071) e sul server dal riavvio del 2026-11-10 («572
+recommended routes from catalog/seed»); nell'app con l'OTA 3 di TASK-420
 **Fase**: 4 · **Branch**: `docs/TASK-419-catalog-seed` (proposta, #951),
 `feat/TASK-419-catalog-seed` (codice e primo giro, #966),
-`docs/TASK-419-first-round` (questi documenti) · **ADR**: ADR-0347 e la sua
+`docs/TASK-419-first-round`, `feat/TASK-419-outline-routes` (#1061),
+`feat/TASK-419-fourth-round` (#1071), `docs/TASK-419-done` (chiusura) ·
+**ADR**: ADR-0347 e la sua
 precisazione
 · numeri dal Coordinatore (2026-11-08) · sessione «task-419-catalog-seed»,
 avviata dal Coordinatore su «Sì, avviale» dell'utente
@@ -132,18 +134,18 @@ catalog/` e lo stesso `restart`.
 ## Criteri di accettazione
 
 - [x] Circa 1000 casi pianificati nel registro, in città italiane ed europee
-      (1600 candidati dopo il secondo giro, 917 pianificati da TASK-419;
-      16 città europee aspettano Overpass).
+      (2169 candidati distinti alla chiusura, tutti i casi pianificati
+      disegnati; 1431 passano il filtro).
 - [x] Il filtro automatico scarta sotto 0,90, fuori ±10%, con ripassi in più
       oltre il 10% o con tratti su `motorway`/`trunk`; provato con test
       deterministici (40 test, #966).
 - [x] Pagina di revisione mandata all'utente; la scelta è sua (primo giro).
 - [x] 200–400 disegni in `catalog/seed/*.json`, almeno 3 per città, ODbL
-      (530 dopo il terzo giro, scelta dell'utente sopra i 400; almeno 4 per
+      (572 dopo il quarto giro, scelta dell'utente sopra i 400; almeno 4 per
       città).
 - [x] `pytest tools` verde; `test_featured_catalog` verde.
 - [x] CI verde; STATUS, task file e ADR aggiornati; Coordinatore avvisato
-      (primo giro).
+      (ogni giro; chiusura con questa PR).
 
 ## File toccati
 
@@ -172,6 +174,28 @@ Coordinatore prima.
 - Le città fuori dall'Europa oltre a quelle già in evidenza.
 
 ## Esito
+
+*Chiusura (2026-11-10)*: 572 percorsi in 63 città (4–14 per città) in
+`main` e sul server («572 recommended routes from catalog/seed», `GET
+/catalog` total 572, cities 63); nell'app con la pagina «Explore» di
+TASK-420 (OTA 3, 52010be4). Registro finale: 2169 candidati distinti, 1431
+passano il filtro, 2981 righe in `out/TASK-419/runs.jsonl` (non tracciato,
+nel checkout principale).
+
+**Seguito, se l'utente lo vuole**: i 24 casi da 21 km nelle 14 città
+rimaste (Amburgo, Nizza, Cagliari, Copenaghen, Dublino, Edimburgo, Ferrara,
+Lecce, Lubiana, Pisa, Porto, Rovereto, Stoccolma, Trieste) sono stati
+disegnati nel pomeriggio del 2026-11-10, quando Overpass ha dato le zone di
+Amburgo e Nizza (`rounds-europe.sh`, un tentativo per giro); 27 passano il
+filtro ma **non sono mai stati proposti all'utente**. Un quinto giro è
+`python3 tools/catalog_seed.py --preselect` + `tools/catalog_review.py`
+sul registro, la scelta dell'utente, `--write`, PR, passo server.
+
+*Quarto giro (2026-11-10)*: le sei forme nuove nelle 11 città del seme che
+non le avevano (198 casi dalle zone copiate, 137 passano); l'utente ha
+confermato le due migliori per città («Sì, aggiungili»): 22 in più, 572
+(#1071). Prima, i 20 contorni di TASK-418 B dopo la registrazione delle
+forme (#1042): 550 (#1061).
 
 *Terzo giro (2026-11-10)*: le 16 città europee avevano la zona nella copia
 del server (chieste da utenti), Zurigo da Overpass con `--slot-wait-hours 0`

@@ -11,7 +11,10 @@ in the order they were saved, in one transaction under the account's lock
 if each run had just been saved. The shapes reached are unlocked at the
 end of the run that reached them. No push is sent. Run twice, the second
 time changes nothing. Only the runs recorded by the app (`source` `muw`):
-a run added from another app's file has no game (TASK-312, ADR-0272).
+a run added from another app's file has no game (TASK-312, ADR-0272). Nor
+has an activity without a track, a gym session (TASK-385) or a pool swim
+(TASK-409): it is saved by its own endpoint, never by the game's path
+(TASK-423, the backfill of rules 3 stopped on one).
 """
 
 from __future__ import annotations
@@ -40,7 +43,7 @@ def backfill(database: Database) -> Backfilled:
             for row in conn.execute(
                 "SELECT DISTINCT r.user_id FROM runs r"
                 " LEFT JOIN game_runs g ON g.run_id = r.id"
-                " WHERE r.source = 'muw'"
+                " WHERE r.source = 'muw' AND r.track IS NOT NULL"
                 " AND (g.run_id IS NULL OR g.rules_version < %s)"
                 " ORDER BY r.user_id",
                 (RULES_VERSION,),
@@ -64,7 +67,7 @@ def _account(database: Database, user_id: int) -> tuple[int, int]:
             int(row["id"])
             for row in conn.execute(
                 "SELECT id FROM runs WHERE user_id = %s AND source = 'muw'"
-                " ORDER BY id",
+                " AND track IS NOT NULL ORDER BY id",
                 (user_id,),
             ).fetchall()
         ]

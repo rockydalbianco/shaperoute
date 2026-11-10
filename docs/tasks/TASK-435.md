@@ -105,6 +105,21 @@ conteggi). 18 righe, 10 con le partenze vicine:
   le vicine hanno calcolato per meno di 2 s e il `wait` è stato 2,5 e
   4,1 s. Non è di questo task; va al profilo del motore.
 - `chosen`: una vicina ha vinto in 4 job su 10, come nelle prove (38%).
+- **Il campione è piccolo**: il container dell'API è stato ricreato
+  quattro volte il 2026-11-10 e il log tiene solo quello corrente (dalle
+  13:28 UTC, già coi 2 processi caldi). Dentro ci sono anche richieste di
+  prova del Coordinatore (aereo e cuore da 5,2 km a Trento). Il
+  Coordinatore rifà la lettura fra qualche giorno; i numeri sopra valgono
+  come ordine di grandezza, e concordano con la stima del giro 2b.
+
+**La raccomandazione dell'agente.** Lo stesso secondo si può forse
+togliere a tutti, app vecchie comprese e senza mostrare un percorso che
+nel 38% dei casi non è il migliore: i figli delle partenze vicine perdono
+circa 2 s a partire, e sul Mac, dove partono in fretta, finiscono prima
+della partenza e l'attesa è 0,2 s. È una stima, non una misura: la dà il
+profilo del motore (TASK-434). Proposta: aspettare quel numero prima di
+costruire B e C; se i figli già avviati bastano, questo task resta una
+proposta ferma (come TASK-427).
 
 **Cosa vuol dire.** Il grosso dell'attesa sul server è il piano della
 partenza stesso (mediana 4,7 s), che questo task non accorcia. «Primo

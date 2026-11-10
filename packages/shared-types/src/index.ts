@@ -2883,4 +2883,5 @@ export interface OutfitShop {
 }
 export * from "./skiResorts.ts";
 export * from "./skiDays.ts";
+export * from "./skiSeason.ts";
 export * from "./resortFollows.ts";

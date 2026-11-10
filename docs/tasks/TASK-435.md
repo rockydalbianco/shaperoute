@@ -1,7 +1,8 @@
 # TASK-435 — Primo percorso subito, alternative dopo
 
-**Stato**: In corso — parte 0 (piano e misura); una domanda di prodotto
-aperta per l'utente (sotto, «La domanda»)
+**Stato**: In attesa — parte 0 scritta (piano e misura); l'utente ha scelto
+il 2026-11-10 di aspettare il numero di TASK-434 sui figli delle partenze
+vicine prima di costruire. Nessun codice, nessun file occupato
 **Fase**: 5 · **Branch**: `docs/TASK-435-plan` (questo file); poi una per
 parte, sotto · **ADR**: 0361
 
@@ -145,7 +146,15 @@ Oggi vincerebbe lei.
   mostrato diventa il migliore, come oggi, e il primo passa fra le
   alternative. In 38 richieste su 100 la mappa cambierebbe dopo 1–3 s.
 
-*(La risposta dell'utente va scritta qui.)*
+**Risposta dell'utente, 2026-11-10: «Sì, aspetta».** Prima di costruire si
+aspetta il numero del profilo del motore (TASK-434): quanto dell'attesa
+toglierebbero i figli delle partenze vicine già avviati. Poi:
+
+- se bastano quelli, questo task resta una proposta ferma e la parte 0 lo
+  chiude così;
+- se non bastano, si torna qui: la scelta fra «il primo resta» e «il
+  migliore sostituisce» è ancora da fare (la proposta resta «il primo
+  resta»), poi le parti A, B, C.
 
 ## Il piano, in parti
 

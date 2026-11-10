@@ -136,6 +136,13 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   parte 0, A1 (server, migrazione 0063) e A2 (pagina `site/live/`, #1010)
   in `main`; server e copia del sito (F.14) col sì nell'aggiornamento
   unico; prossima B1 (app), poi B2 e C. File: — · `tasks/TASK-424.md`
+- **TASK-420 — Tutte le forme in «Explore»** (riaperto il 2026-11-10 come
+  parte D, scelta dell'utente «A, griglia per città»; ADR-0347 precisazione
+  B) · app in #1022: «Explore» lista unica, «NEAR YOU» poi «FARTHER AWAY»
+  città per città da `GET /catalog`, a pagine; senza endpoint la pagina è
+  come prima; endpoint `GET /catalog` in #1027 (parte E). Prossimo: merge
+  di #1022 e #1027, server col sì dell'utente, poi l'OTA. File: — ·
+  `tasks/TASK-420.md`
 - **TASK-419 — Il catalogo grande di «Explore»** · primo giro sul server
   (155); secondo giro nella PR #1028 (386 percorsi in 45 città, scelta
   dell'utente del 2026-11-10), poi «via server catalogo». Restano 16 città

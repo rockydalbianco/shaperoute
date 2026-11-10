@@ -1,0 +1,23 @@
+{
+  "splits_km": [
+    { "n": 1, "seconds": 312.4 },
+    { "n": 2, "seconds": 305.0 },
+    { "n": 3, "seconds": 298.7 },
+    { "n": 4, "seconds": 140.2, "partial_m": 430 }
+  ],
+  "splits_mile": [
+    { "n": 1, "seconds": 498.1 },
+    { "n": 2, "seconds": 500.3 },
+    { "n": 3, "seconds": 57.9, "partial_m": 211 }
+  ],
+  "elevation": [
+    { "distance_m": 0, "altitude_m": 194.0 },
+    { "distance_m": 1000, "altitude_m": 201.5 },
+    { "distance_m": 2000, "altitude_m": 215.0 },
+    { "distance_m": 3000, "altitude_m": 208.0 },
+    { "distance_m": 4000, "altitude_m": 196.5 }
+  ],
+  "cadence_spm": 168,
+  "kcal": 355,
+  "heart": { "avg_bpm": 148, "max_bpm": 171 }
+}

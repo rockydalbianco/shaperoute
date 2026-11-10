@@ -3082,6 +3082,40 @@ senza app né account. Tipi in `shared-types/src/liveShare.ts`
   database non tengono le righe dei link (`deploy/backup.sh`). Cancellare
   l'account cancella i link. Test in `test_live_shares.py`.
 
+### Run stats (TASK-410 parte C, ADR-0340)
+
+I dati della pagina del post oltre a metri e tempo: passi, profilo del
+dislivello, cadenza, calorie, battito. Token richiesto; il codice in
+`run_stats.py`, la tabella `run_stats` (`DATABASE.md`); esempi in
+`fixtures/run-stats-request.json` e `fixtures/run-stats.json`; tipi
+dell'app in `apps/mobile/src/api/runStats.ts`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/activities/{key}/stats` | quello che sa il telefono a fine attività: `elevation` (2–120 punti `{distance_m, altitude_m}`, lungo la corsa), `cadence_spm`, `kcal` | `200` `RunStats` come lo vede l'autore; `404` per una chiave non sua |
+| `GET /drawings/{id}` | il campo nuovo `stats`, `RunStats` o `null` | come prima |
+
+- **I passi li conta il server** dalla traccia (`runs.track`, M in
+  secondi) e dalle pause, a ogni `PUT …/stats`: per ogni km (`splits_km`) e
+  ogni miglio (`splits_mile`) `{n, seconds, partial_m}`, il tempo in
+  movimento al decimo di secondo. Le pause chieste dal corridore non
+  contano né metri né secondi, come in `activities.py`. Quello che resta
+  dopo l'ultimo intero è un passo marcato con `partial_m` (i suoi metri),
+  solo da 100 m in su. Una corsa senza traccia (piscina, palestra) non ne
+  ha.
+- **Tutto ogni volta**: un campo non mandato o `null` è un dato che non
+  c'è. Le calorie le conta il telefono col corpo dell'autore e manda solo
+  il numero; la cadenza oggi non la manda nessuno (`null`).
+- **Già filtrato**: in `GET /drawings/{id}` battito (`heart`, da
+  `runs.heart_*` di TASK-409 B) e `kcal` arrivano a chi guarda solo se
+  l'autore mostra il battito (`runs.heart_shown`; la scelta 2,
+  «Visibili, nascondibili»); all'autore sempre. Un dato spento non esce
+  dal server. Senza nessun dato, o per una corsa di prima, `stats` è
+  `null`. **`GET /feed` non lo manda.**
+- Backfill dei passi per le corse vecchie: `python -m
+  shaperoute_api.run_stats`, solo col sì dell'utente. Test in
+  `test_run_stats.py`.
+
 ### Ski names (TASK-375 parte D2, ADR-0319)
 
 `GET /drawings/{id}/ski-names`, con il token: gli impianti presi e le piste
@@ -3225,6 +3259,27 @@ Queste tre rotte chiedono il token: toccano le giornate dei membri.
   - `404` per una stazione che non c'è.
 - **Il codice:** `ski_days.py`. Migrazione `0056`, tipi in
   `packages/shared-types/src/skiDays.ts`.
+
+**Seguire una stazione e i suoi post (TASK-406 parte D3a)**
+
+Chiedono tutte il token.
+- **`PUT /me/ski-resorts/{id}/follow`**: segue la stazione, `204`. Due
+  volte vale una. `404` per una stazione che non c'è.
+- **`DELETE /me/ski-resorts/{id}/follow`**: non la segue più, `204`, anche
+  se non la seguiva.
+- **`GET /me/ski-resorts`**: «Your resorts», le stazioni seguite, l'ultima
+  seguita prima, al più 200. La forma è quella di `GET /ski-resorts`, con
+  `away_m` `null` (`followed-resorts.json`). Nessuna notifica (la scelta
+  dell'utente).
+- **`GET /ski-resorts/{id}/drawings?cursor=…&limit=…`**: i post delle
+  giornate di sci con quella stazione (`ski_resort_id` della D1).
+  - Solo quelli che chi chiede vede su un profilo (`shown_sql`), e solo se
+    l'app legge `skiing` (`X-MuW-Reads`).
+  - Dalla giornata più recente, a pagine: `posts`, `next`, `total`
+    (`resort-posts.json`). Ogni post ha il suo `author`, come nel Feed.
+  - `404` per una stazione che non c'è.
+- **Il codice:** `resort_follows.py`. Migrazione `0062`, tipi in
+  `packages/shared-types/src/resortFollows.ts`.
 
 ### Drawing search (TASK-344, ADR-0297)
 
@@ -3562,13 +3617,16 @@ della collezione. Le regole sono in `GIOCO.md`; il codice in
 
 | Endpoint | Account | Cosa | Risposta |
 |---|---|---|---|
-| `GET /game/catalog` | no | le forme del gioco: `rules_version` e `shapes`, ognuna con `id`, `names` (`en`, `de`, `it`, `es`, `fr`), `goal` e `outline` | `200` |
-| `GET /game/me` | sì | `counted_m`, `longest_m`, `best_s` (`{"1000": 287.4}`) e ogni forma del catalogo con `unlocked_at` e `progress` | `200` |
+| `GET /game/catalog` | no | le forme del gioco: `rules_version`, `shapes`, ognuna con `id`, `names` (`en`, `de`, `it`, `es`, `fr`), `goal`, `outline` e `collection`, e `collections` (TASK-423) in ordine, ognuna con `id` e `names` | `200` |
+| `GET /game/me` | sì | `counted_m`, `longest_m`, `best_s` (`{"1000": 287.4}`; dalle regole 3, TASK-423, su 400, 1000, 1609, 3000, 5000, 10000, 15000, 21097, 30000, 42195 e 50000 m), ogni forma del catalogo con `unlocked_at` e `progress`, e `collections` (TASK-423): per ognuna `id`, `unlocked`, `total` | `200` |
 | `GET /game/runs/{key}` | sì | che cosa ha valso la corsa `key`: `counted`, `reason`, `counted_m`, `best_s`, `unlocked` (gli id sbloccati da lei) | `200`, `404` |
 
 - **`goal`**: `{kind: "distance", total_m}` oppure `{kind: "pace",
   distance_m, pace_s}` (secondi al km); i campi dell'altro tipo sono
-  `null`. **`outline`**: chiuso (l'ultimo punto è il primo), da 0 a 1, y
+  `null`. Da TASK-423 ha anche `single_run`: `true` per un traguardo di una
+  corsa (la prima 5K, la prima maratona), servito come `pace` a 1200 s/km
+  perché le app installate rifiutano un `kind` che non conoscono. Il
+  catalogo ha 94 forme in 10 collezioni (`GIOCO.md` §5.3). **`outline`**: chiuso (l'ultimo punto è il primo), da 0 a 1, y
   verso il basso come sullo schermo.
 - **`GET /game/catalog` accende «Play»** (ADR-0255): l'app mostra la
   pagina solo se risponde `200`; un'API precedente risponde `404`. Non
@@ -3577,7 +3635,8 @@ della collezione. Le regole sono in `GIOCO.md`; il codice in
   la prima volta, scrive la riga di `game_runs` nella stessa transazione
   della corsa e sblocca le forme raggiunte; la sua risposta non cambia.
   L'app chiede `GET /game/runs/{key}` dopo «Save»: risponde anche alle
-  volte dopo, con le stesse `unlocked`.
+  volte dopo, con le stesse `unlocked`. Una corsa che sblocca forme manda
+  **una** push `shape_unlocked`, quante che siano (TASK-423).
 - **`reason`**: `not_running` (bici, pagaia), `vehicle` (velocità da
   veicolo), `overlap` (un'altra corsa salvata prima copre lo stesso
   tempo), `daily_cap` (la corsa conta solo fino a 120 km nel giorno UTC;

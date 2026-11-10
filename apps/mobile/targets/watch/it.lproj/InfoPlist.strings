@@ -3,3 +3,4 @@
 
 NSHealthShareUsageDescription = "MuW legge il tuo battito da Apple Salute durante ogni attività, per mostrarlo con l'attività e nel tuo post. Puoi nasconderlo prima di pubblicare.";
 NSHealthUpdateUsageDescription = "MuW salva le tue attività finite in Apple Salute, con il tempo, la distanza, il percorso e, per le corse, le calorie stimate, così compaiono anche nell'app Fitness.";
+NSLocationWhenInUseUsageDescription = "MuW usa la tua posizione durante un allenamento per guidarti lungo il percorso e per registrarlo.";

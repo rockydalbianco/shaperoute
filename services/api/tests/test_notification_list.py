@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
+import pytest
 from fastapi.testclient import TestClient
 from test_drawings import (
     KEY,
@@ -28,6 +29,7 @@ from test_drawings import (
     wall,  # noqa: F401
 )
 
+from shaperoute_api import game as game_module
 from shaperoute_api.db import Database
 from shaperoute_api.notification_list import (
     BELL_KINDS,
@@ -43,6 +45,14 @@ FIXTURES = (
     Path(__file__).resolve().parents[3] / "packages" / "shared-types" / "fixtures"
 )
 CONTEST = UUID("6f2d0c4e-8a1b-4c3d-9e5f-0a1b2c3d4e5f")
+
+
+@pytest.fixture(autouse=True)
+def no_game_shapes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A saved run here unlocks no shape of the game: from TASK-423 the first
+    km does, and its line in the bell is not these tests' (test_game_api.py
+    has it)."""
+    monkeypatch.setattr(game_module, "CATALOG", ())
 
 
 def bell(app: TestClient, headers: dict[str, str], **query: Any) -> dict[str, Any]:

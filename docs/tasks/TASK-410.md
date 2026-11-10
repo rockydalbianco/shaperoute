@@ -1,6 +1,6 @@
 # TASK-410 — La pagina del post: più dati e più ordine
 
-**Stato**: In lavorazione — B fatta e pubblicata, F (la card del Feed) in PR (2026-11-08); A è TASK-355 B; prossima C, poi D ed E
+**Stato**: In lavorazione — B, F e C (`run_stats`, #1001) in `main` (2026-11-08); A è TASK-355 B; poi D ed E
 **Fase**: 4 · **Branch**: `docs/TASK-410-post-page` (documenti), poi una PR
 per parte · numeri dal Coordinatore il 2026-11-06 (TASK-410, ADR-0340)
 
@@ -458,6 +458,78 @@ Provata sul simulatore (Expo Go, 2026-11-08): la card di una corsa di un
 altro (quattro riquadri, Like ed Edit & run), di una bici (velocità in
 km/h) e di un proprio allenamento in palestra (solo il tempo, Like e Share,
 niente Edit & run).
+
+## Parte C — `run_stats` sul server (2026-11-08)
+
+Lista dei file approvata dal Coordinatore il 2026-11-08. Aggiunte dello
+stesso giorno: `services/api/tests/test_drawings.py` (due righe, `stats` in
+`NEW_FIELDS` e `SOURCE` come `order` di TASK-348), approvata dal
+Coordinatore; i tre test di `activitiesDoor` che contano le richieste (il
+finto API risponde 200 a `…/stats` e lo toglie dalla lista) e il nuovo
+`activitiesDoorStats.test.tsx`, approvati dal Coordinatore; `api/drawings.ts`
+esce dalla lista. Dopo la prima CI, due test dell'app intera che contano i
+PUT di `/me/activities/` (`AppActivities`, `AppPenUpSaved`): non contano
+`…/stats`, approvati dal Coordinatore. Dopo la seconda CI,
+`drawing-details-imported.json` prende `"stats": null`, come risponde il
+server (`test_imported_runs.py` confronta la fixture col corpo intero):
+approvato dal Coordinatore. Branch `feat/TASK-410-c-run-stats`, #1001 in
+`main` (`72ac332b`).
+
+```
+services/api/migrations/0064_run_stats.sql       (nuovo; numero in bozza, il vero al merge)
+services/api/shaperoute_api/run_stats.py         (nuovo)
+services/api/shaperoute_api/drawings.py          (stats in DrawingDetailBody e in seen)
+services/api/shaperoute_api/app.py               (install_run_stats)
+services/api/tests/test_run_stats.py             (nuovo)
+services/api/tests/test_drawings.py              (stats fra i campi nuovi delle fixture vecchie)
+packages/shared-types/fixtures/run-stats.json, run-stats-request.json (nuovi)
+packages/shared-types/fixtures/drawing-details-imported.json ("stats": null)
+apps/mobile/src/api/runStats.ts (+ test)         (nuovo: tipi, guardia, statsOf, PUT)
+apps/mobile/src/activities/runStatsOut.ts (+ test) (nuovo: profilo e calorie)
+apps/mobile/src/activities/activitiesDoor.ts     (manda le stats dopo il salvataggio)
+apps/mobile/src/activities/activitiesDoorStats.test.tsx (nuovo)
+apps/mobile/src/activities/activitiesDoorQueue/Drawing/Game.test.tsx (rispondono a …/stats)
+apps/mobile/__tests__/AppActivities.test.tsx, AppPenUpSaved.test.tsx (non contano …/stats fra i PUT)
+docs/API.md («Run stats»), docs/DATABASE.md (la 0064)
+docs/tasks/TASK-410.md
+```
+
+Cosa fa:
+
+- **Tabella `run_stats`**: `run_id`, `stats` `jsonb`, `updated_at`. Dentro:
+  `splits_km`, `splits_mile`, `elevation`, `cadence_spm`, `kcal`.
+- **Battito**: **non** in `run_stats`. Scelta del Coordinatore
+  (2026-11-08): la #979 (TASK-409 B1) lo tiene in `runs` (`heart_avg_bpm`,
+  `heart_max_bpm`, `heart_shown`, migrazione 0061, entrata in `main` il
+  2026-11-08), e la parte C lo legge da lì. Da scrivere come precisazione
+  di ADR-0340 nella PR dei documenti dopo il merge.
+- **Il filtro**: battito e calorie degli altri solo con `heart_shown`;
+  all'autore sempre. Senza dati, o per una corsa di prima, `stats` è
+  `null`. `GET /feed` non lo manda.
+- **L'app**: dopo che il server ha preso la corsa, `activitiesDoor` manda
+  una volta `PUT …/stats` con il profilo (dalle altezze dei punti, al più
+  120 punti a passi uguali) e le calorie (`activeKcal` col corpo del
+  telefono, metri e secondi contati dal server, come `postEnergy`). La
+  cadenza resta `null`: oggi nessuna registrazione la dà. `statsOf` legge
+  `stats` dal dettaglio del post per la parte D.
+
+Decisioni dell'agente su delega dell'utente (da riportare in DECISIONS.md
+con la precisazione):
+
+- I passi si contano a ogni `PUT …/stats`, non al salvataggio della corsa:
+  `activities.py` resta com'è; le corse senza `PUT` (app vecchie) li
+  avranno col backfill.
+- L'ultimo pezzo dopo l'ultimo km intero è un passo solo da 100 m in su
+  (`MIN_PARTIAL_M`): pochi metri darebbero un passo senza senso.
+- Il profilo lo calcola il telefono, come dice il task, anche se le altezze
+  arrivano già al server (TASK-324): così `activities.py` non cambia.
+- `PUT …/stats` non si ripete se fallisce: la pagina funziona anche senza.
+- `api/drawings.ts` non cambia: `stats` si legge con `statsOf`, senza
+  toccare il tipo `DrawingDetail` di `shared-types`.
+
+Restano, ognuno col sì dell'utente chiesto dal Coordinatore: il deploy del
+server con la migrazione in produzione, il backfill dei passi
+(`python -m shaperoute_api.run_stats`), l'OTA della parte app.
 
 ## Esito
 

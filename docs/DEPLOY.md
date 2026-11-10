@@ -1430,7 +1430,7 @@ utente `caddy` e non entra in `/root`.
    cd /root/shaperoute
    git fetch origin main
    rm -rf /srv/getmuw-site.new && mkdir -p /srv/getmuw-site.new
-   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy site/support site/account-deletion | tar -x -C /srv/getmuw-site.new --strip-components=1
+   git archive origin/main site/index.html site/styles.css site/main.js site/render.js site/content.js site/config.js site/data site/assets site/privacy site/support site/account-deletion site/live | tar -x -C /srv/getmuw-site.new --strip-components=1
    chmod -R a+rX /srv/getmuw-site.new
    rm -rf /srv/getmuw-site.old
    if [ -d /srv/getmuw-site ]; then mv /srv/getmuw-site /srv/getmuw-site.old; fi
@@ -1483,6 +1483,78 @@ vanno cambiati tutti e due insieme (l'utente su
 -d`): non fa parte di TASK-265.
 
 ---
+
+### F.15 Rifare le zone foot per i cancelli (TASK-421, ADR-0349)
+
+Le zone `foot_*` del server sono state fatte semplificate e senza i tag
+dei nodi: i cancelli chiusi ci stanno dentro finché non si rifanno
+(`MAPS.md`, «I cancelli chiusi»). Il motore nuovo non le tocca da solo.
+**Si fa solo col sì dell'utente**, dopo il server aggiornato al `main` con
+TASK-421, e mai mentre girano `draw_examples` o `phone_zone_api` (stanno
+nel container dell'API: un riavvio li uccide).
+
+Cosa c'è da rifare (2026-11-08): le zone `foot_*` delle 52 città italiane
+più Rovereto, dall'estratto; le 10 estere, da Overpass; poi le zone del
+telefono `*.zone.json.gz` di quelle `foot_*` e gli esempi. Le zone `bike_*`
+non c'entrano (rete loro). Costo: circa un minuto a città italiana (una
+alla volta, memoria fino a 4 GB), le estere quanto Overpass concede; poi
+80 minuti di zone del telefono e 35 di esempi, tutti in sottofondo con
+l'API accesa. Finché una zona manca, la prima richiesta su quella città la
+scarica da Overpass (lento, o rifiutato): meglio di notte, con il passo 3
+subito dopo il 2.
+
+1. **Una copia e lo spazio prima** (dal Mac, un comando per volta):
+
+   ```bash
+   ssh root@188.245.9.220 'cd /root/shaperoute && docker compose -f deploy/compose.yaml exec backup bash /backup.sh now && df -h / && du -sh data/cache'
+   ```
+
+2. **Da parte le zone vecchie**, non cancellate: `prefetch_zones` salta una
+   città «ready», quindi i file devono sparire dalla cartella; e se qualcosa
+   va storto si rimettono.
+
+   ```bash
+   ssh root@188.245.9.220 'cd /root/shaperoute/data/cache && mkdir -p before-task421 && mv foot_*.graphml foot_*.pickle foot_*.zone.json.gz before-task421/ && ls before-task421 | wc -l'
+   ```
+
+3. **Le italiane dall'estratto**, nell'immagine `shaperoute-prefetch`
+   (`MAPS.md`, «Da un estratto, senza Overpass»), staccato dalla ssh:
+
+   ```bash
+   ssh -f root@188.245.9.220 'cd /root/shaperoute && (setsid nohup docker run --rm --memory 4g --env-file deploy/.env -v /root/shaperoute/data/cache:/app/data/cache -v /srv/shaperoute/extracts:/extracts shaperoute-prefetch python -m shaperoute_api.prefetch_zones --preset italy Rovereto --extract /extracts/italy-260930-highways.osm.pbf --cache-dir /app/data/cache > data/prefetch-task421.log 2>&1 &)'
+   ```
+
+   L'estratto è del 2026-09-30: le zone tornano a quei dati OSM, come la
+   prima volta. Per dati freschi, prima un estratto nuovo da Geofabrik e
+   `osmium tags-filter … w/highway` (`MAPS.md`), 2,2 GB da scaricare. Si
+   segue il log (`tail data/prefetch-task421.log`): ogni città
+   «downloaded» con i MB; alla fine «missing» deve essere vuoto.
+
+4. **Le estere da Overpass** (`--preset featured`, che ripete le italiane
+   già «ready»), con la pausa e il tetto: Overpass rifiuta il server dopo
+   pochi download grandi (`MAPS.md`), quindi più giri. In alternativa le
+   rifà il Mac dalle risposte in `data/cache/http/` (Barcellona, Parigi,
+   New York) e le copia con `rsync` (F.5), solo quei file.
+
+5. **Le zone del telefono**: `phone_zone_api` riscrive da solo un
+   `*.zone.json.gz` mancante o più vecchio del suo grafo, quindi basta
+   rilanciarlo (80 minuti per tutte il 2026-10-05):
+
+   ```bash
+   ssh -f root@188.245.9.220 'cd /root/shaperoute && (setsid nohup docker compose -f deploy/compose.yaml exec -T api nice -n 19 python -m shaperoute_api.phone_zone_api > data/phone-zones-task421.log 2>&1 &)'
+   ```
+
+6. **Gli esempi** (`draw_examples`, circa 35 minuti, `AGENTI.md` punto
+   11): l'impronta del motore è nuova, quindi vanno comunque ridisegnati
+   all'aggiornamento; farlo **dopo** le zone, altrimenti gli esempi escono
+   dalle zone vecchie coi cancelli.
+
+7. **Controllo**: il percorso che l'utente ha corso il 2026-11-08 chiesto di
+   nuovo dall'app non passa più dal cancello; `du -sh data/cache`; dopo una
+   settimana buona, `rm -r data/cache/before-task421`.
+
+Rollback: `mv data/cache/before-task421/* data/cache/` e `docker compose
+restart api` (tiene le zone in memoria).
 
 ## Scartate (2026-09-26)
 

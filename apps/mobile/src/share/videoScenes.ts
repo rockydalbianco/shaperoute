@@ -26,6 +26,14 @@ export const CUTS = ["cut", "fade"] as const;
 
 export type Cut = (typeof CUTS)[number];
 
+/** How the route is seen on «3D» (part C2b): the camera turning around
+ * the whole run (as before the scenes), the camera behind the animal, or
+ * the line drawn from above. Only «3D» offers a choice: the other styles
+ * see the route from above (the user's choice 12). */
+export const ROUTE_CAMERAS = ["around", "behind", "line"] as const;
+
+export type RouteCamera = (typeof ROUTE_CAMERAS)[number];
+
 /** What the ending shows: the numbers, the whole drawing (as before the
  * scenes), the heart of MuW, or all three. */
 export const ENDINGS = ["numbers", "drawing", "heart", "all"] as const;
@@ -130,5 +138,16 @@ export function endingName(ending: Ending): string {
       return t("All three");
     default:
       return t("Whole drawing");
+  }
+}
+
+export function routeCameraName(camera: RouteCamera): string {
+  switch (camera) {
+    case "behind":
+      return t("Camera behind");
+    case "line":
+      return t("Line in 2D");
+    default:
+      return t("Camera around");
   }
 }

@@ -24,8 +24,9 @@ from route_engine.geo import haversine_m
 # Raised whenever a rule below changes: game_backfill.py computes the runs
 # again. 2: a walk counts its metres (TASK-371). A hike counts as a walk
 # (TASK-377) and kept 2: no run saved before it could be a hike (0051); so
-# did a skate (TASK-380, 0055), with its own "vehicle" thresholds too.
-RULES_VERSION = 2
+# did a skate (TASK-380, 0055), with its own "vehicle" thresholds too. 3:
+# best times over 11 distances, not 4 (TASK-423 part B, ADR-0351).
+RULES_VERSION = 3
 
 # A stretch of at least VEHICLE_WINDOW_M covered faster than this is not
 # run: 2:23 a kilometre, quicker than a world record over 1500 m.
@@ -49,8 +50,22 @@ MAX_GAP_S = 30.0
 MAX_FIX_INTERVAL_S = 10.0
 # The metres of one account that count in one day (UTC).
 DAILY_CAP_M = 120_000
-# The distances of the best times, in metres: what the pace shapes ask.
-BEST_DISTANCES_M: tuple[int, ...] = (1_000, 5_000, 10_000, 21_097)
+# The distances of the best times, in metres: what the pace shapes ask
+# (TASK-423): 400 m, 1 km, the mile, 3, 5, 10 and 15 km, the half, 30 km,
+# the marathon; and 50 km, for the ultra of one run.
+BEST_DISTANCES_M: tuple[int, ...] = (
+    400,
+    1_000,
+    1_609,
+    3_000,
+    5_000,
+    10_000,
+    15_000,
+    21_097,
+    30_000,
+    42_195,
+    50_000,
+)
 # A shape not unlocked yet shows at most this much of its way.
 MAX_PROGRESS = 0.99
 
@@ -296,10 +311,17 @@ class DistanceGoal:
 
 @dataclass(frozen=True)
 class PaceGoal:
-    """`distance_m` in one run at `pace_s` a kilometre or better."""
+    """`distance_m` in one run at `pace_s` a kilometre or better.
+
+    `single_run`: a milestone of one run (the first 5K, the first marathon:
+    TASK-423, ADR-0351). Its pace is so slow that any run of the distance
+    meets it, and the app says «One run of 5 km»; it stays a pace goal so
+    that the apps already installed, which know only `distance` and `pace`,
+    keep reading the catalog."""
 
     distance_m: int
     pace_s: int
+    single_run: bool = False
 
     @property
     def target_s(self) -> float:

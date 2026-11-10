@@ -35,9 +35,10 @@ import { MAPLIBRE_JS_SRI, MAPLIBRE_JS_URL } from "../map/mapPage";
 export type PageTimes = Record<string, number>;
 
 /** How the page draws the map under the pictures: the one picture of a
- * flat map; the one picture of the leaning map, zoomed slowly; or the
- * leaning map drawn again for every picture, the camera turning. */
-export type MapMode = "flat" | "still" | "orbit";
+ * flat map; the one picture of the leaning map, zoomed slowly; the
+ * leaning map drawn again for every picture, the camera turning; or, with
+ * «Camera behind» (TASK-408, part C2b), the camera following the animal. */
+export type MapMode = "flat" | "still" | "orbit" | "chase";
 
 /** What the page says to the app. */
 export type VideoPageMessage =
@@ -65,6 +66,8 @@ export type VideoPageMessage =
   /** The animal is ready to be drawn (`ok`), or not and why: the video then
    * comes without it, the pen's tip on the line as before (TASK-408). */
   | { type: "character"; ok: boolean; why: string | null; ms: number }
+  /** In the preview (TASK-408, part C2c): the second shown. */
+  | { type: "time"; seconds: number }
   | { type: "failed"; error: string };
 
 /**
@@ -168,6 +171,12 @@ const SCRIPT = String.raw`
   var live = null;
   var lineAtRest = null;
   var boxMiddle = null;
+  // «Camera behind» (TASK-408, part C2b): the camera on the whole drawing,
+  // which the scene's cameras behind the animal are reached from, and the
+  // metres run up to each point of the line, by which the scene places
+  // things along it (the leaning picture stretches its pixels).
+  var restCamera = null;
+  var geoRun = null;
   // The animal, once ready (TASK-408): its model, camera and canvas.
   var actor = null;
   var casting = false;
@@ -268,6 +277,50 @@ const SCRIPT = String.raw`
       out.push(at.x * spec.pixelRatio, at.y * spec.pixelRatio);
     }
     return out;
+  }
+
+  // The metres run up to each point of a line of [lon, lat], on a flat
+  // plane about its start, as the app measures it (videoChase).
+  function metresRun(line) {
+    var run = [0];
+    if (line.length === 0) {
+      return run;
+    }
+    var k = 111195 * Math.cos((line[0][1] * Math.PI) / 180);
+    for (var i = 1; i < line.length; i += 1) {
+      run.push(run[i - 1] + Math.hypot((line[i][0] - line[i - 1][0]) * k, (line[i][1] - line[i - 1][1]) * 111195));
+    }
+    return run;
+  }
+
+  // How far along the laid line, in pixels, "share" of the run is: by
+  // metres when the camera follows the animal, by pixels otherwise.
+  function shareLength(path, share) {
+    if (mode !== "chase" || geoRun === null || geoRun.length * 2 !== path.length || geoRun.length < 2) {
+      return share * lengthOf(path);
+    }
+    var target = share * geoRun[geoRun.length - 1];
+    var walked = 0;
+    for (var i = 1; i < geoRun.length; i += 1) {
+      var step = Math.hypot(path[2 * i] - path[2 * i - 2], path[2 * i + 1] - path[2 * i - 1]);
+      if (geoRun[i] >= target) {
+        var span = geoRun[i] - geoRun[i - 1];
+        return walked + (span > 0 ? step * (target - geoRun[i - 1]) / span : 0);
+      }
+      walked += step;
+    }
+    return walked;
+  }
+
+  // The camera "u" of the way from a to b, the bearing the short way round.
+  function blendCamera(a, b, u) {
+    var turn = ((((b.bearing - a.bearing) % 360) + 540) % 360) - 180;
+    return {
+      center: [a.center[0] + (b.center[0] - a.center[0]) * u, a.center[1] + (b.center[1] - a.center[1]) * u],
+      zoom: a.zoom + (b.zoom - a.zoom) * u,
+      bearing: a.bearing + turn * u,
+      pitch: a.pitch + (b.pitch - a.pitch) * u
+    };
   }
 
   // The line zoomed about the box's middle, as the still picture is.
@@ -422,7 +475,7 @@ const SCRIPT = String.raw`
           why = messageOf(error);
         }
       }
-      if (ok && mode === "orbit") {
+      if (ok && (mode === "orbit" || mode === "chase")) {
         live = { map: map, box: box, spec: spec };
       } else {
         release();
@@ -432,7 +485,10 @@ const SCRIPT = String.raw`
     // The camera's turn tried before the video: a pass for the tiles of
     // every bearing to come, then a pass to measure what a picture costs
     // (the map drawn and copied, the line laid on the hills), as the median.
+    // With «Camera behind», the scene's cameras along the run instead.
     function dryRun() {
+      var cameras = spec.chase ? spec.chase.cameras : null;
+      var steps = cameras !== null ? cameras.length : DRY_RUN_STEPS;
       return new Promise(function (resolve, reject) {
         var scratch = document.createElement("canvas");
         scratch.width = spec.width * spec.pixelRatio;
@@ -447,11 +503,11 @@ const SCRIPT = String.raw`
             resolve(Infinity);
             return;
           }
-          if (k >= DRY_RUN_STEPS) {
+          if (k >= steps) {
             k = 0;
             pass += 1;
             if (pass >= DRY_RUN_PASSES) {
-              map.jumpTo({ bearing: spec.camera.bearing });
+              map.jumpTo(cameras !== null ? restCamera : { bearing: spec.camera.bearing });
               costs.sort(function (a, b) { return a - b; });
               resolve(Math.round(costs[Math.floor(costs.length / 2)] * 10) / 10);
               return;
@@ -461,11 +517,14 @@ const SCRIPT = String.raw`
             setTimeout(tiles, PULSE_MS);
             return;
           }
-          var share = DRY_RUN_STEPS > 1 ? k / (DRY_RUN_STEPS - 1) : 0;
-          var bearing = spec.camera.bearing + spec.turn.from + (spec.turn.to - spec.turn.from) * share;
           var t = now();
           try {
-            map.jumpTo({ bearing: bearing });
+            if (cameras !== null) {
+              map.jumpTo(cameras[k]);
+            } else {
+              var share = DRY_RUN_STEPS > 1 ? k / (DRY_RUN_STEPS - 1) : 0;
+              map.jumpTo({ bearing: spec.camera.bearing + spec.turn.from + (spec.turn.to - spec.turn.from) * share });
+            }
             map.redraw();
             g.drawImage(map.getCanvas(), 0, 0, scratch.width, scratch.height);
             projectLine(map, spec);
@@ -531,7 +590,17 @@ const SCRIPT = String.raw`
         }
         phase = "shot";
         takePicture();
-        if (relief && spec.turn) {
+        if (relief && (spec.turn || spec.chase)) {
+          if (spec.chase) {
+            var middle = map.getCenter();
+            restCamera = {
+              center: [middle.lng, middle.lat],
+              zoom: map.getZoom(),
+              bearing: map.getBearing(),
+              pitch: map.getPitch()
+            };
+            geoRun = metresRun(spec.line);
+          }
           // Busy until the dry run is over.
           phase = "dry";
           dryRun().then(
@@ -541,7 +610,7 @@ const SCRIPT = String.raw`
               }
               busy = false;
               mapTimes.frame = frameMs;
-              mode = frameMs <= spec.budgetMs ? "orbit" : "still";
+              mode = frameMs <= spec.budgetMs ? (spec.chase ? "chase" : "orbit") : "still";
               finish(true, null);
             },
             function () {
@@ -1077,6 +1146,11 @@ const SCRIPT = String.raw`
           if (flatBackground !== null) {
             g.drawImage(flatBackground, 0, 0, scene.width, scene.height);
           }
+        } else if (live !== null && mode === "chase") {
+          live.map.jumpTo(op.chase ? blendCamera(restCamera, op.chase, op.u || 0) : restCamera);
+          live.map.redraw();
+          g.drawImage(live.map.getCanvas(), 0, 0, scene.width, scene.height);
+          laid = projectLine(live.map, live.spec);
         } else if (live !== null && mode === "orbit") {
           live.map.jumpTo({ bearing: live.spec.camera.bearing + (op.turn || 0) });
           live.map.redraw();
@@ -1118,13 +1192,13 @@ const SCRIPT = String.raw`
         if (path && path.length >= 4) {
           g.strokeStyle = colorOf(scene, op.color);
           g.lineWidth = op.width;
-          stroke(g, path, onHills ? op.share * lengthOf(path) : op.upTo);
+          stroke(g, path, onHills ? shareLength(path, op.share) : op.upTo);
         }
       } else if (op.k === "dot") {
         var x = op.x;
         var y = op.y;
         if (typeof op.share === "number" && laid !== null && laid.length >= 4) {
-          var at = pointAlong(laid, op.share * lengthOf(laid));
+          var at = pointAlong(laid, shareLength(laid, op.share));
           x = at[0];
           y = at[1];
         }
@@ -1158,7 +1232,7 @@ const SCRIPT = String.raw`
         var ex = op.x;
         var ey = op.y;
         if (typeof op.share === "number" && laid !== null && laid.length >= 4) {
-          var on = pointAlong(laid, op.share * lengthOf(laid));
+          var on = pointAlong(laid, shareLength(laid, op.share));
           ex = on[0];
           ey = on[1];
         }
@@ -1170,7 +1244,7 @@ const SCRIPT = String.raw`
         var onTheHills = typeof op.share === "number" && laid !== null;
         var track = onTheHills ? laid : scene.paths[op.path];
         if (track && track.length >= 4) {
-          drawCharacter(g, track, onTheHills ? op.share * lengthOf(track) : op.upTo, op);
+          drawCharacter(g, track, onTheHills ? shareLength(track, op.share) : op.upTo, op);
         }
       }
     }
@@ -1243,9 +1317,86 @@ const SCRIPT = String.raw`
     post({ type: "done", frames: scene.frames.length, ms: mapTimes, mode: mode });
   }
 
+  // The preview of «Edit video» (TASK-408, part C2c): the scene's
+  // pictures drawn as they come, on a canvas over the whole page, round
+  // and round, with no encoding; the map and the animal as for the video.
+  // A new scene takes the old one's place at the same second; "pause"
+  // holds the picture. The second shown goes to the app four times a
+  // second.
+  var playing = null;
+  var PLAY_STEP_MS = 33;
+  var TIME_EVERY_MS = 250;
+  function play(scene) {
+    if (playing === null) {
+      var canvas = document.createElement("canvas");
+      canvas.style.position = "fixed";
+      canvas.style.left = "0";
+      canvas.style.top = "0";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.style.zIndex = "10";
+      var wide = (window.innerWidth || scene.width) * (window.devicePixelRatio || 1);
+      var k = Math.min(1, wide / scene.width);
+      canvas.width = Math.round(scene.width * k);
+      canvas.height = Math.round(scene.height * k);
+      document.body.appendChild(canvas);
+      var g = canvas.getContext("2d");
+      g.setTransform(k, 0, 0, k, 0, 0);
+      playing = { scene: scene, g: g, start: now(), paused: false, at: 0, drawn: -1, told: 0 };
+      tick();
+      return;
+    }
+    playing.scene = scene;
+    playing.drawn = -1;
+  }
+  function secondsOf(p) {
+    var length = p.scene.frames.length / p.scene.fps;
+    return p.paused ? p.at : ((now() - p.start) / 1000) % length;
+  }
+  function tick() {
+    var p = playing;
+    if (p === null) {
+      return;
+    }
+    var at = secondsOf(p);
+    var i = Math.min(p.scene.frames.length - 1, Math.floor(at * p.scene.fps));
+    if (i !== p.drawn) {
+      try {
+        draw(p.g, p.scene, p.scene.frames[i]);
+      } catch (error) {
+        // A picture not drawn: the next one is tried.
+      }
+      p.drawn = i;
+    }
+    if (now() - p.told >= TIME_EVERY_MS) {
+      p.told = now();
+      post({ type: "time", seconds: Math.round(at * 10) / 10 });
+    }
+    setTimeout(tick, PLAY_STEP_MS);
+  }
+  function pause() {
+    if (playing !== null && !playing.paused) {
+      playing.at = secondsOf(playing);
+      playing.paused = true;
+    }
+  }
+  function stop() {
+    playing = null;
+  }
+  function resume() {
+    if (playing !== null && playing.paused) {
+      playing.start = now() - playing.at * 1000;
+      playing.paused = false;
+    }
+  }
+
   window.muwVideo = {
     prepareMap: prepareMap,
     prepareCharacter: prepareCharacter,
+    play: play,
+    pause: pause,
+    resume: resume,
+    stop: stop,
     make: function (scene) {
       if (started) {
         return;
@@ -1327,6 +1478,20 @@ export const VIDEO_PAGE_BASE = "https://video.muw.invalid/";
 /** What the app asks the page to do: make the video of `sceneJson`. */
 export function makeCall(sceneJson: string): string {
   return `window.muwVideo.make(${sceneJson}); true;`;
+}
+
+/** What the preview asks (TASK-408, part C2c): play `sceneJson` round and
+ * round, in place of what it plays now; hold the picture; go on. */
+export function playCall(sceneJson: string): string {
+  return `window.muwVideo.play(${sceneJson}); true;`;
+}
+
+export function pauseCall(): string {
+  return "window.muwVideo.pause(); true;";
+}
+
+export function resumeCall(): string {
+  return "window.muwVideo.resume(); true;";
 }
 
 /** What the app asks first with an animal: make it ready, from its model

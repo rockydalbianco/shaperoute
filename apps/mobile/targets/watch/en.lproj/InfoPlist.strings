@@ -3,3 +3,4 @@
 
 NSHealthShareUsageDescription = "MuW reads your heart rate from Apple Health during each activity, to show it with the activity and in your post. You can hide it before you publish.";
 NSHealthUpdateUsageDescription = "MuW saves your finished activities to Apple Health, with their time, distance, route and, for runs, estimated calories, so they also appear in the Fitness app.";
+NSLocationWhenInUseUsageDescription = "MuW uses your location during a workout to guide you along your route and to record it.";

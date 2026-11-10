@@ -69,6 +69,7 @@ from shaperoute_api.outfit_tags import OutfitTagBody, tags_on_photos
 from shaperoute_api.push import notify_tagged, tagged_before
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.recommended import preview
+from shaperoute_api.run_stats import RunStatsBody, seen_stats
 from shaperoute_api.schemas import ErrorBody
 
 # A shorter track is a rounding of a fix, not a drawing.
@@ -408,6 +409,10 @@ class DrawingDetailBody(SeenFields):
     track: list[LatLon]
     """The track, every point of it, without times; empty only for its
     owner's run too short to publish."""
+    stats: RunStatsBody | None = None
+    """Splits, elevation, cadence, calories, heart rate (TASK-410 C,
+    run_stats.py), as the one who asks may see them; null for a run without
+    any, as every run saved before them."""
 
 
 # --- The drawings in the database ---
@@ -845,7 +850,8 @@ class Drawings:
             return None
         with self.database.connect() as conn:
             row = conn.execute(
-                f"SELECT {SEEN_COLUMNS}, u.public_id, u.username FROM drawings d"
+                f"SELECT {SEEN_COLUMNS}, u.public_id, u.username,"
+                " r.id AS run_id, r.user_id AS author_id FROM drawings d"
                 " JOIN runs r ON r.id = d.run_id JOIN users u ON u.id = r.user_id"
                 f" WHERE d.id = %s AND {drawing_seen_sql('%s')}"
                 f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}",
@@ -854,11 +860,15 @@ class Drawings:
             if row is None:
                 return None
             details = _details(conn, [row["id"]], viewer_id)
+            stats = seen_stats(
+                conn, row["run_id"], author=row["author_id"] == viewer_id
+            )
         return DrawingDetailBody(
             **_seen(row, details),
             author=AuthorBody(public_id=row["public_id"], username=row["username"]),
             public=row["visibility"] == "everyone",
             track=_line(row["track"]),
+            stats=stats,
         )
 
 

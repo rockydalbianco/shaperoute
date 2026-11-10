@@ -14,7 +14,10 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   l'esclusione di `highway=cycleway`. In Trentino le ciclabili sono quasi
   sempre ciclopedonali, e il filtro `walk` le scartava: nel rettangolo del
   cuore da 5 km a Levico mancavano 4,6 km di ciclabili, lungo il lago e a
-  sud del paese. Filtro in `FOOT_FILTER`, `route_engine/network.py`.
+  sud del paese. Filtro in `FOOT_FILTER`, `route_engine/networks/foot.py`.
+  Da TASK-421 il download non semplifica e toglie i cancelli chiusi e le
+  vie `access=no` prima di unire le vie in archi («I cancelli chiusi»,
+  sotto).
 - Il grafo si costruisce con `network_type="walk"` insieme al filtro: è ciò
   che rende ogni strada percorribile nei due sensi. Con il solo filtro
   OSMnx rispetta i sensi unici, che a piedi non valgono, e alcuni punti
@@ -278,6 +281,54 @@ Limite che resta: nel ritaglio vince il pezzo più grande **dell'area
 chiesta**, non quello della partenza. Dal centro di Venezia a 5 km l'area
 è tutta laguna e isola; un'area che prende più terraferma che isola dà la
 terraferma, e la partenza si aggancia lì.
+
+### I cancelli chiusi (TASK-421, ADR-0349)
+
+Un cancello è un **nodo** di OpenStreetMap (`barrier=gate`, `lift_gate`,
+`swing_gate`…) con i suoi tag; `FOOT_FILTER` filtra solo le vie e non lo
+vede, e OSMnx semplificando perdeva i tag dei nodi. Da TASK-421 il download
+della rete foot non semplifica (`download_foot_graph`, come `roller` e
+`bike`): chiede i tag dei nodi `barrier`, `access`, `foot`, `locked`
+(`FOOT_NODE_TAGS`) e `foot` sulle vie, `foot_ways` toglie i nodi che
+bloccano chi va a piedi e le vie chiuse, poi semplifica. Togliere il nodo
+taglia la via lì: il percorso non passa.
+
+- **Nodi tolti** (`blocks_foot`): `foot=no|private`; una `fence` o un `wall`
+  come nodo; un `gate`, `lift_gate`, `swing_gate`, `sliding_gate`,
+  `wicket_gate`, `turnstile`, `entrance` o altra barriera con `access=no`,
+  `access=private` o `locked=yes`. **Restano**: un cancello senza tag, uno
+  con `foot=yes|designated|permissive|destination` (vince su tutto), i
+  `kissing_gate`, `stile`, `bollard`, `kerb`, `cycle_barrier`, `block`,
+  `cattle_grid`, `log`, `chain`, `planter`, `height_restrictor`… anche con
+  `access=no` (parla ai veicoli), e `access=customers|destination|permit`.
+- **Vie tolte** (`closed_to_foot`): `foot=no|private`; `access=no|private`
+  senza un `foot` che apre. `access=destination` resta. Il filtro Overpass
+  non cambia: l'estratto lo legge come prima (`zone_extract`), e serve anche
+  i tag dei nodi.
+- La rete `hike` passa dallo stesso download e perde gli stessi nodi.
+- **Misure** (dalle risposte Overpass in cache, senza rete): Trento 9 km
+  1.871 nodi `barrier`, 122 tolti (6,5 %), 7,0 km di vie chiuse, rete
+  841,8 → 832,0 km; Milano 17 km 28.462 (quasi tutti `kerb`), 123 tolti,
+  46,0 km di vie (38,6 km di `service` con `access=no`), 3.224,8 → 3.176,7
+  km; Levico 126, 26 tolti, 2,1 km, 628,9 → 626,1 km; Parigi 11.755, 132
+  tolti, 14,7 km, 1.391,6 → 1.375,4 km. Il banco di corsa prima e dopo è
+  in `tasks/TASK-421.md`: Trento e Milano uguali, a Levico le forme piccole
+  dal Lido non attraversano più i vialetti privati del lido e del parco.
+- **Le zone già in cache non cambiano da sole**: sono semplificate e senza
+  tag, e i cancelli ci restano finché non si rifanno. Sul Mac le zone che
+  hanno la risposta grezza in `data/cache/http/` (18 su 52 il 2026-11-08:
+  Trento, Levico, Milano, Mantova, Asiago, Fiemme, Torino, Barcellona,
+  Parigi, New York…) si rifanno **senza rete**: spostare altrove il
+  `foot_*.graphml` col suo `.pickle` e chiedere la zona di nuovo (CLI o
+  banco): OSMnx rilegge la risposta dalla cache HTTP, con lo stesso filtro
+  e riquadro. Le altre vogliono Overpass. Sul server: `DEPLOY.md` F.15.
+- **Il bordo della zona**: OSMnx semplificava con 500 m di margine e poi
+  ritagliava, buttando le strade con un capo fuori; ora ritaglia prima e
+  semplifica dopo (come `bike` e `roller`), e il tratto interno di una
+  strada che esce resta (Levico: 3.531 → 3.621 nodi, 607 → 629 km, stessa
+  risposta). Al banco, la rete ricostruita così senza la regola dà le
+  stesse 72 forme della cache di oggi, punto per punto (una sola diversa,
+  con la stessa somiglianza).
 
 ### Zone scaricate prima (TASK-137, ADR-0119)
 

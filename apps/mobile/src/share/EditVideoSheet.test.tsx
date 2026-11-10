@@ -3,8 +3,11 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { EditVideoSheet } from "./EditVideoSheet";
-import type { PostRun } from "./postRun";
+import { POST_RESULTS, type PostRun } from "./postRun";
 import { FIRST_EDIT, type VideoEdit } from "./videoEdit";
+import { videoScene } from "./videoScene";
+
+jest.mock("react-native-webview");
 
 const METRICS = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -40,6 +43,7 @@ async function shown(
         edit={edit}
         onChange={onChange}
         onClose={onClose}
+        sceneOf={(next) => videoScene(RUN, POST_RESULTS, [], next.style, next)}
       />
     </SafeAreaProvider>,
   );
@@ -143,12 +147,40 @@ describe("EditVideoSheet, the scenes (TASK-408 C2)", () => {
     expect(onChange).toHaveBeenLastCalledWith({ ...open, cut: "cut" });
   });
 
-  it("chooses the ending, and hides it with the ending off", async () => {
+  it("chooses the ending", async () => {
     const { onChange } = await shown();
     await fireEvent.press(screen.getByRole("radio", { name: "All three" }));
     expect(onChange).toHaveBeenLastCalledWith({ ...FIRST_EDIT, ending: "all" });
-    screen.unmount();
+  });
+
+  it("hides the ending's choices with the ending off", async () => {
     await shown(jest.fn(), jest.fn(), { ...FIRST_EDIT, off: ["ending"] });
+    expect(screen.getByText("Scenes")).toBeOnTheScreen();
     expect(screen.queryByTestId("ending-drawing")).toBeNull();
+  });
+});
+
+describe("EditVideoSheet, the camera of the route (TASK-408 C2b)", () => {
+  it("offers no camera on the other styles", async () => {
+    await shown();
+    expect(screen.getByText("Scenes")).toBeOnTheScreen();
+    expect(screen.queryByTestId("camera-behind")).toBeNull();
+  });
+
+  it("offers no camera on «3D» with the route off", async () => {
+    await shown(jest.fn(), jest.fn(), { ...FIRST_EDIT, style: "3d", off: ["route"] });
+    expect(screen.getByText("Scenes")).toBeOnTheScreen();
+    expect(screen.queryByTestId("camera-behind")).toBeNull();
+  });
+
+  it("chooses the camera behind the animal, around the run as before, or the line from above", async () => {
+    const onChange = jest.fn();
+    const threeD = { ...FIRST_EDIT, style: "3d" as const };
+    await shown(onChange, jest.fn(), threeD);
+    expect(screen.getByTestId("camera-around")).toBeChecked();
+    await fireEvent.press(screen.getByRole("radio", { name: "Camera behind" }));
+    expect(onChange).toHaveBeenLastCalledWith({ ...threeD, camera: "behind" });
+    await fireEvent.press(screen.getByRole("radio", { name: "Line in 2D" }));
+    expect(onChange).toHaveBeenLastCalledWith({ ...threeD, camera: "line" });
   });
 });

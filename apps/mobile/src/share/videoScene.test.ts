@@ -12,6 +12,7 @@ import {
   TERRAIN_CREDIT,
   TURN_DEG,
 } from "./videoMap";
+import { CHASE_PITCH, CHASE_SAMPLES } from "./videoChase";
 import { DAY, NIGHT } from "./videoStyle";
 import {
   lengthOf,
@@ -891,5 +892,66 @@ describe("videoScene, with the scenes of «Edit video» (TASK-408 C2)", () => {
   it("keeps the map's credit on through the opening", () => {
     const s = videoScene(RUN, POST_RESULTS, [], "night", { ...opened, cut: "cut" });
     expect(shownWords(at(s, 2))).toContain(MAP_CREDIT);
+  });
+});
+
+describe("videoScene, with the camera of the route on «3D» (TASK-408 C2b)", () => {
+  type Map = Extract<VideoOp, { k: "map" }>;
+  type Animal = Extract<VideoOp, { k: "character" }>;
+  const mapOf = (frame: VideoOp[]) => frame.find((op): op is Map => op.k === "map");
+  const at = (s: { frames: VideoOp[][] }, seconds: number) =>
+    s.frames[Math.round(seconds * VIDEO_FPS)];
+  const behind = videoScene(RUN, POST_RESULTS, [], "3d", {
+    camera: "behind",
+    character: "horse",
+  });
+
+  it("gives the page cameras along the run to try, only with «Camera behind»", () => {
+    expect(behind.map?.chase?.cameras).toHaveLength(CHASE_SAMPLES);
+    expect(videoScene(RUN, POST_RESULTS, [], "3d").map?.chase).toBeUndefined();
+    expect(
+      videoScene(RUN, POST_RESULTS, [], "night", { camera: "behind" }).map?.chase,
+    ).toBeUndefined();
+  });
+
+  it("comes down to the animal over the route's first second, follows it, and goes back up after", () => {
+    expect(mapOf(at(behind, 0))?.u).toBeUndefined();
+    const coming = mapOf(at(behind, 0.5)) as Map;
+    expect(coming.u).toBeGreaterThan(0);
+    expect(coming.u).toBeLessThan(1);
+    const running = mapOf(at(behind, 5)) as Map;
+    expect(running.u).toBe(1);
+    expect(running.chase?.pitch).toBe(CHASE_PITCH);
+    // The run goes north: the camera looks north, its middle further north
+    // as the line draws.
+    expect(running.chase?.bearing).toBeCloseTo(0, 0);
+    const later = mapOf(at(behind, 7)) as Map;
+    expect(later.chase?.center[1]).toBeGreaterThan(running.chase?.center[1] as number);
+    expect(mapOf(at(behind, 9.5))?.u).toBeLessThan(1);
+    expect(mapOf(at(behind, 11))?.u).toBeUndefined();
+  });
+
+  it("sees the animal from as low as the camera leans", () => {
+    const animal = at(behind, 5).find(
+      (op): op is Animal => op.k === "character",
+    ) as Animal;
+    expect(animal.tilt).toBe(90 - CHASE_PITCH);
+  });
+
+  it("draws the whole video from straight above with «Line in 2D»", () => {
+    const flat = videoScene(RUN, POST_RESULTS, [], "3d", { camera: "line" });
+    expect(flat.map?.flat).toBe(true);
+    for (const seconds of [0.5, 5, 11]) {
+      const map = mapOf(at(flat, seconds)) as Map;
+      expect(map.flat).toBe(true);
+      expect(map.turn).toBeUndefined();
+    }
+    expect((runLine(at(flat, 5)) as Line).share).toBeUndefined();
+  });
+
+  it("keeps the turn around the run with «Camera around», as before", () => {
+    expect(
+      videoScene(RUN, POST_RESULTS, STICKERS, "3d", { camera: "around" }).frames,
+    ).toEqual(videoScene(RUN, POST_RESULTS, STICKERS, "3d").frames);
   });
 });

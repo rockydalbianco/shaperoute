@@ -180,8 +180,9 @@ def test_a_skate_out_of_its_distances_is_refused(distance: int) -> None:
 
 def test_a_skate_counts_in_the_shape_game_as_a_walk() -> None:
     assert INLINE_SKATING == SKATE and SKATE in ON_FOOT
-    # No run saved before 0055 could be a skate: the rules kept their version.
-    assert RULES_VERSION == 2
+    # No run saved before 0055 could be a skate: the rules kept their version
+    # 2 (3 is TASK-423's best times, which a skate has none of).
+    assert RULES_VERSION >= 2
     # 8 km at 18 km/h, a skater's pace.
     fixes = Runner().run(8_000, 5.0).fixes
     skate, walk = evaluate(fixes, [], SKATE), evaluate(fixes, [], "walking")

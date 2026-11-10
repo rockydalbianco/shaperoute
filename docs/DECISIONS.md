@@ -465,8 +465,11 @@ lasciando le righe d'indice.
 - ADR-0348 — Il catalogo in «Explore»: una pagina sua, i dati del seme nell'app, filtri e ordine sul telefono · 2026-11-08 · Superata (scelta dell'utente del 2026-11-08: i disegni nella lista esistente di «Explore», pagina tolta con la #978)
 - ADR-0322 e ADR-0324, precisazione — Gravel, MTB e Roller registrano con i numeri della bici · 2026-11-08 · Accettata
 - ADR-0352 — «Share live activity»: punti ogni 15 s dal task della posizione, la pagina statica chiede ogni 10 s, link a token dopo il `#` · 2026-11-08 · Accettato
+- ADR-0352, precisazione A1 — Il server dei link dal vivo · 2026-11-08 · Attiva
+- ADR-0352, precisazione A2 — La pagina dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
+- ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
 
 ---
 
@@ -477,6 +480,16 @@ lasciando le righe d'indice.
 - ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali · 2026-11-08 · Attiva
 - ADR-0340, precisazione F — La card del Feed come la pagina: i numeri in riquadri e la barra delle quattro azioni; supera la scelta 4 di TASK-355 · 2026-11-08 · Attiva
 - ADR-0346 — Le forme candidate: disegnate da primitive, fuori dal pacchetto finché l'utente non le giudica · 2026-11-08 · Attiva
+- ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate» · 2026-11-08 · Attiva
+- ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy · 2026-11-08 · Attiva
+- ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id` · 2026-11-08 · Attiva
+- ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta · 2026-11-08 · Attiva
+- ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina · 2026-11-08 · Attiva
+- ADR-0339, precisazione C2c — L'anteprima nel foglio: la pagina del video in modo «play» · 2026-11-08 · Attiva
+- ADR-0340, precisazione C — `run_stats`: passi dal server, profilo e calorie dal telefono, il battito resta in `runs` · 2026-11-08 · Attiva
+- ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso · 2026-11-08 · Attiva
+- ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio · 2026-11-08 · Attiva
+- ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore · 2026-11-08 · Attiva
 
 ## Voci nuove
 
@@ -593,6 +606,61 @@ log d'accesso).
 per `getmuw.app` (va nella privacy, col sì dell'utente); il
 server va aggiornato col sì; una richiesta ogni 15 s in più durante una
 condivisione.
+
+## ADR-0352, precisazione A1 — Il server dei link dal vivo
+
+**Stato**: Attiva · 2026-11-08 · TASK-424 parte A1 (#983) · deciso
+dall'agente su delega dell'utente
+
+- Migrazione `0063_live_shares.sql`: `live_shares` (hash SHA-256 del
+  token, mai il token) e `live_share_points`, `CASCADE` dall'account.
+- Un token sconosciuto e uno scaduto rispondono uguali (`200`, `status:
+  "expired"`): la pagina non distingue un link mai esistito da uno finito.
+  Uno fermato risponde `stopped` finché la sua riga vuota resta (un
+  giorno).
+- Un link nuovo ferma quelli dello stesso account non ancora finiti; quelli
+  finiti tengono la loro ora di riepilogo. Dopo `finished`, `stop` o la
+  scadenza, gli aggiornamenti rispondono `410`.
+- Limiti: 20 link al giorno per account, 200 punti per aggiornamento,
+  20 000 per link, 2000 per risposta (`more`), 120 letture al minuto per
+  link, anche il `429` con l'intestazione CORS del sito.
+- Le copie notturne del database (`deploy/backup.sh`) lasciano fuori le
+  righe dei due tavoli (`--exclude-table-data`): la privacy dice che le
+  posizioni si cancellano, e nelle copie resterebbero 14 giorni.
+
+## ADR-0352, precisazione A2 — La pagina dei link dal vivo
+
+**Stato**: Attiva · 2026-11-08 · TASK-424 parte A2 (#1010) · deciso
+dall'agente su delega dell'utente
+
+- `site/live/` senza framework né build: la logica pura in `view.js`
+  (token, richieste, risposte, riga sotto il titolo, numeri, stile della
+  mappa), provata con la fixture `live-view.json`; `live.js` solo pagina,
+  mappa e timer. `view.js` è un file in più rispetto alla lista approvata,
+  nuovo e nella stessa cartella.
+- Le richieste: ogni 10 s; subito con `more`; ogni 60 s quando l'attività
+  è finita (non cambia più, si aspetta solo la scadenza); nessuna più dopo
+  `stopped` o `expired`; dopo un `429` 30 s, perché il browser non può
+  leggere `Retry-After` (l'API non lo espone col CORS). Una richiesta alla
+  volta; al ritorno sulla scheda una subito.
+- L'ora dell'ultimo aggiornamento si misura col clock del browser: la
+  prima risposta usa `updated_at`, le altre al più un giro (10 s) prima
+  dell'arrivo, così un orologio del computer sbagliato non fa dire «No
+  update since» a un link vivo. Il tempo avanza fra due risposte solo con
+  `live`; dopo 2 minuti di silenzio torna l'ultimo del telefono.
+- Passo o velocità come l'app: velocità per bici, gravel, MTB, roller e
+  sci alpino, passo per 500 m in canoa e per 100 m a nuoto, passo per km
+  per gli altri (anche gli sport che verranno); arrotondato come
+  `paceClock`. Miglia e piedi per un browser `en-US`/`en-GB` (le regioni
+  di `phoneUnits.ts`).
+- La mappa ha lo stile scuro dell'app copiato in `view.js`; i suoi colori
+  stanno una volta in `live.css` e un test li confronta con `tokens.ts`.
+  MapLibre 5.24.0 copiato dal pacchetto npm; un test ne confronta gli hash
+  con gli SRI di `mapPage.ts`.
+- Un indirizzo senza token valido dice «This link has expired», come
+  l'API. `?api=` (solo da `127.0.0.1`/`localhost`, solo verso un indirizzo
+  locale) serve a provarla sul Mac contro un finto `/live`: l'API vera
+  lascia leggere `/live` solo a `https://getmuw.app`.
 ## ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro
 
 **Stato**: Accettata · 2026-11-08 · TASK-419. Scelta dell'utente, parole
@@ -1080,3 +1148,399 @@ finché l'utente non ha scelto.
 **Conseguenze**: TASK-419 pianifica le candidate con `--outline` (o con il
 seme esteso a leggere `candidate_outlines/`). La registrazione delle forme
 approvate è una parte successiva di TASK-418.
+
+## ADR-0334, precisazione D, aggiunta B1 — Il battito sulla corsa: medio, massimo, «Show heart rate»
+
+**Stato**: Attiva · 2026-11-08 · TASK-409 parte B1. Scelte dell'utente in
+`tasks/TASK-409.md` (5: «Anche nel post del Feed»; 6: «Pulsante a fine
+nuoto»); il resto è deciso dall'agente su delega dell'utente, e col
+Coordinatore: la parte B costruisce i pezzi di TASK-345 B (server) e C, e di
+TASK-374 D.
+
+1. **Sulla corsa, non sul nuoto**: `runs.heart_avg_bpm`, `heart_max_bpm`,
+   `heart_shown` (`0061`), così TASK-345 B li usa per ogni sport senza una
+   migrazione sua. Oggi li scrive solo `PUT /me/pool-swims/{key}`.
+2. **Limiti**: da 30 a 230 bpm, tutti e due o nessuno, il medio non sopra il
+   massimo: nel contratto (`422`) e nel vincolo del database.
+3. **Chi li vede**: il proprietario sempre; gli altri in `GET
+   /drawings/{id}/pool-swim` solo se `heart_shown` (vero se il telefono non
+   lo manda). Il filtro sta nel server. Il Feed generico (`FeedPost`) e «My
+   activities» non li hanno ancora: arrivano con TASK-345 B.
+4. **Una volta sola**: col primo `PUT`, come il resto del nuoto. Cambiare
+   «Show heart rate» dopo non si può ancora.
+5. **Compatibilità**: senza battito le risposte non hanno i campi
+   (`response_model_exclude_none`), così le app di oggi e i loro test vedono
+   lo stesso corpo di prima; il vecchio esempio `pool-swim.json` resta, quello
+   col battito è `pool-swim-heart.json`.
+
+## ADR-0334, precisazione D, aggiunta B2 — Il battito a fine nuoto: lettura da Salute, tempo nelle zone, privacy
+
+**Stato**: Attiva · 2026-11-08 · TASK-409 parte B2. Scelte dell'utente in
+`tasks/TASK-409.md` (5, 6, 7); il resto è deciso dall'agente su delega
+dell'utente.
+
+1. **Moduli condivisi, file nuovi**: `health/heartSamples.ts` (la lettura in
+   una finestra, pause escluse; letture fuori da 30–230 scartate; medio e
+   massimo interi, il medio mai sopra il massimo) e `body/zoneTime.ts` (i
+   secondi in ogni zona). Sono i pezzi di TASK-345 C e TASK-374 D: quei task
+   li agganciano alle corse senza riscriverli.
+2. **Solo dove c'è il nativo**: `health/heartModules.ts`, separato da
+   `healthModules.ts`, carica la libreria solo con Nitro su iOS. Sulla build 7
+   e su Android è null e non si chiede nulla. La 1.0.1 ha già
+   `NSHealthShareUsageDescription` per il battito: il tipo si chiede a runtime
+   (`toRead`), l'impronta `6f8bba4c` non cambia.
+3. **Il consenso**: il primo tocco su «Add heart rate from Apple Health»
+   apre la richiesta di iOS ed è tenuto in `pool-heart.json`; ai nuoti dopo si
+   legge da solo. iOS non dice se la lettura è stata negata: negata vuol dire
+   nessuna lettura, e allora «No heart rate from your watch for this swim.».
+4. **Tempo in zona**: una lettura dura fino alla successiva, al più 60 s (un
+   buco più lungo è una lettura persa); l'ultima fino alla fine, con lo stesso
+   limite. Sotto la zona 1 non conta, sopra il massimo è zona 5. Le zone sono
+   quelle di «Heart rate zones» (TASK-374 B); senza FC massima né anno di
+   nascita si vede solo il medio.
+5. **Dove si vede**: a fine nuoto (medio, zone, fonte); «Show heart rate»
+   nel modulo del post, acceso; il medio nella tessera del Feed e nella
+   scheda, quando l'API lo dà. Il tempo nelle zone resta sul telefono.
+6. **Privacy** dell'app e del sito con i testi approvati (scelta 7), datata 8
+   novembre 2026: da ridatare al giorno del merge se entra dopo.
+
+## ADR-0338, aggiunta — Seguire una stazione: «Le tue stazioni» senza notifiche, i post della stazione da `runs.ski_resort_id`
+
+**Stato**: Attiva · 2026-11-08 · TASK-406 parte D3a. La scelta di cosa vuol
+dire seguire è dell'utente («Le tue stazioni», 2026-11-08); il resto è
+deciso dall'agente su delega dell'utente, con la lista dei file mandata al
+Coordinatore.
+
+**Contesto**: la domanda 4 voleva nella pagina della stazione i post dei
+membri e un tasto per seguirla. Seguire poteva dare anche notifiche.
+
+**Decisione**:
+
+1. **Seguire** mette la stazione fra «Your resorts», per prime nella scheda
+   «Ski» e in «Cambia» durante la giornata. Nessuna notifica. La tabella
+   `resort_follows` (migrazione `0062`) ha l'account e la stazione, tutti e
+   due con `ON DELETE CASCADE`: una stazione tolta da un import esce dalle
+   seguite.
+2. **Le rotte**: `PUT` e `DELETE /me/ski-resorts/{id}/follow` (204, la
+   `PUT` dà 404 per una stazione che non c'è), `GET /me/ski-resorts` (le
+   seguite, l'ultima prima, nella forma della ricerca, al più 200).
+3. **I post della stazione**: `GET /ski-resorts/{id}/drawings` dà le
+   giornate di sci con quella stazione (`runs.ski_resort_id`, della D1) che
+   chi chiede vede su un profilo (`shown_sql`), con `X-MuW-Reads`, dalla più
+   recente, a pagine come un profilo. Riusa le colonne e i dettagli di
+   `drawings.py` come fa `contests.py`, senza cambiare quel file.
+
+**Alternative**:
+
+- **Le notifiche** a ogni giornata pubblicata in una stazione seguita:
+  scartate dall'utente.
+- **Le seguite sul telefono**: scartate, perché si perdono cambiando
+  telefono e non seguono l'account.
+
+**Conseguenze**: una migrazione (`0062`), quindi
+il server col sì dell'utente. L'app (D3b) viene dopo, con i suoi testi.
+
+---
+
+## ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no
+
+**Stato**: Accettato · 2026-11-08 · TASK-421, PR #973. Numeri dal
+Coordinatore. La richiesta è dell'utente (correndo ha trovato strade del
+percorso chiuse da un cancello); la lista dei tag e il modo di togliere
+sono decisi dall'agente su delega dell'utente.
+
+**Contesto**: `FOOT_FILTER` (`networks/foot.py`) scarta le vie
+`access=private` e `foot=no`, ma Overpass filtra solo le vie: un cancello è
+un **nodo** (`barrier=gate`, `lift_gate`, `swing_gate`…) con i suoi tag
+(`access`, `foot`, `locked`), e il filtro non lo vede. OSMnx semplificava il
+grafo appena scaricato, unendo le vie in archi e buttando i tag dei nodi:
+nelle zone in cache un cancello chiuso è un punto qualunque di un arco, e
+il motore ci disegna sopra. La rete `roller` (ADR-0324, `skate_ways`) e la
+carrozzina (ADR-0343, punto 2: «una barriera che blocca toglie il nodo»)
+hanno già il modo: scaricare senza semplificare, con i tag che servono,
+togliere, poi semplificare. Misurato offline dalle risposte Overpass in
+cache (`data/cache/http/`): Trento 17 km 1.871 nodi `barrier`, 122 tolti
+(6,5 %), 7,0 km di vie chiuse, rete 841,8 → 832,0 km; Milano 28.462 (quasi
+tutti `kerb`), 123 tolti, 46,0 km di vie (38,6 km di `service` con
+`access=no`), 3.224,8 → 3.176,7 km; Levico 126, 26 tolti, 2,1 km, 628,9 →
+626,1 km; Parigi 11.755, 132 tolti, 14,7 km, 1.391,6 → 1.375,4 km. I
+cancelli **senza tag** sono la maggioranza (Trento 627 `gate` e 220
+`lift_gate` nudi) e restano. Cancelli nudi su vie `access=destination`: 4 a
+Trento, 9 a Milano.
+
+1. **Il download della rete foot non semplifica** (`download_foot_graph`,
+   `simplify=False`), chiede i tag dei nodi `barrier`, `access`, `foot`,
+   `locked` (`FOOT_NODE_TAGS`, `base.node_tags` accanto a `way_tags`) e
+   `foot` sulle vie; `foot_ways` toglie i nodi che bloccano e le vie
+   chiuse, poi semplifica come OSMnx (`simplify_graph`, come `skate_ways`).
+   Il grafo foot resta senza attributo `network`, come prima.
+2. **Un nodo `barrier` si toglie** (`blocks_foot`), nell'ordine:
+   `foot=no|private` → tolto; `foot=yes|designated|permissive|destination`
+   → resta, qualunque cosa dicano gli altri tag; `barrier=fence|wall` (una
+   recinzione disegnata come nodo della via) → tolto; `bollard`, `kerb`,
+   `cycle_barrier`, `block`, `kissing_gate`, `stile`, `cattle_grid`, `log`,
+   `planter`, `chain`, `rope`, `height_restrictor`, `motorcycle_barrier`,
+   `jersey_barrier`, `sump_buster`, `bus_trap`, `debris` → resta (il suo
+   `access` parla ai veicoli: un dissuasore con `access=no` ferma le auto);
+   ogni altra barriera (`gate`, `lift_gate`, `swing_gate`, `sliding_gate`,
+   `wicket_gate`, `turnstile`, `entrance`, `yes`…) → tolta se `access=no`,
+   `access=private` o `locked=yes`, altrimenti resta. Un cancello nudo
+   passa. Togliere il nodo taglia la via lì: si passa o no, niente tratti
+   «a piedi».
+3. **Una via si toglie** (`closed_to_foot`) se `foot=no|private`, o se
+   `access=no|private` senza un `foot` che apre; `access=destination`,
+   `customers`, `permit`, `agricultural` restano. Il filtro Overpass resta
+   com'è (l'estratto lo legge, `zone_extract`, e serve i tag dei nodi).
+4. **La rete `hike` eredita** tutto: passa da `download_foot_graph`.
+5. **Il bordo della zona cambia di poco**: OSMnx semplificava con 500 m di
+   margine e poi ritagliava, buttando intere strade con un capo fuori; ora
+   si ritaglia prima e si semplifica dopo (come `bike` e `roller`), e il
+   tratto interno di una strada che esce resta (Levico: 3.531 → 3.621 nodi,
+   607 → 629 km con la stessa risposta). Al banco la rete ricostruita così
+   senza la regola dà le stesse 72 forme della cache di oggi, punto per
+   punto (una diversa, stessa somiglianza).
+6. **Le zone in cache restano valide** finché non si rifanno: sono
+   semplificate e senza tag, quindi i cancelli restano lì dentro. Il piano
+   (Mac dalle risposte in cache, server dall'estratto) è in `MAPS.md` «I
+   cancelli chiusi» e `DEPLOY.md` F.15; l'azione sul server aspetta il sì
+   dell'utente, con `phone_zone_api` e `draw_examples` dopo.
+7. **L'impronta del motore cambia** (è un cambio di comportamento):
+   `ROUTES` nuovo in `tests/test_walk_fingerprint.py`; nuotate e canoa non
+   usano la rete foot e tengono la loro con una prova delle stesse rotte
+   (`SAME_ROUTES_AS`, ADR-0320).
+
+**Motivo**: la regola segue i tag di OpenStreetMap così come sono scritti
+(`access` sul nodo, `foot` che vince, `locked`), e toglie poco: l'1–7 % dei
+nodi `barrier` e l'1–1,5 % dei km, soprattutto cortili privati. Al banco di
+corsa (8 forme × 3/5/10 km) Trento e Milano non cambiano (mediana 0,91 e
+0,96); a Levico la mediana passa da 0,84 a 0,80 perché le forme piccole
+dal Lido non attraversano più otto cancelli privati o chiusi a chiave dei
+vialetti del lido e del parco: è il caso del task.
+
+**Alternative scartate**:
+- togliere ogni `barrier=gate`: a Trento 627 cancelli nudi su 1.001, quasi
+  tutti aperti o di campagna;
+- ereditare l'`access` della via sul cancello nudo (`access=destination`):
+  4 casi a Trento, 9 a Milano, e una via `access=destination` si percorre;
+- un costo alto invece di togliere: un cancello chiuso non si passa, e un
+  arco caro finisce nei percorsi lo stesso quando è l'unica via;
+- rileggere i tag dei nodi dalle zone già in cache: non ci sono più;
+- lasciare che l'utente segnali un cancello dall'app: scelta di prodotto,
+  fuori scope (`tasks/TASK-421.md`).
+
+**Conseguenze**:
+- i percorsi nuovi evitano i cancelli chiusi e privati e le vie
+  `access=no`; qualche vicolo cieco in più (Trento 231 → 266 pezzi,
+  spezzoni dietro un cancello); dove c'era un cancello la forma cambia;
+- ogni zona foot va rifatta per avere l'effetto: Mac e server (piano in
+  `MAPS.md`/`DEPLOY.md`), poi `phone_zone_api` e `draw_examples`;
+- `bike`, `mtb` e `roller` non cambiano (reti loro); `hike` sì;
+- `engine.zip` del telefono ricostruito; le misure e il banco in
+  `tasks/TASK-421.md`.
+---
+
+## ADR-0314, precisazione — La parte B3a2: i preferiti sull'orologio da soli, uno alla volta
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B3a2, decisa dall'agente su
+delega dell'utente («Pulsante e preferiti»); lista dei file approvata dal
+Coordinatore (local_3f55a0e9). In `main` con la #993.
+
+**Contesto**: i preferiti devono stare sull'orologio senza che l'utente li
+mandi uno per uno, ma l'API li dà senza direzioni: ognuno va scaricato
+intero e le sue direzioni chieste, come al via di una corsa.
+
+**Decisione**:
+1. **`useWatchFavorites`**, montato in `favoritesDoor.ts`, a ogni cambio
+   della lista dei preferiti (con l'orologio pronto e l'account aperto)
+   manda all'orologio quelli che non ha («route», `favorite: true`) e alla
+   fine le chiavi di tutti («routes»): l'orologio lascia andare i tolti.
+2. **Uno alla volta**: scaricato, direzioni, consegnato a WatchConnectivity,
+   poi il successivo; mai due giri insieme, un cambio durante un giro ne fa
+   partire un altro dopo.
+3. **Senza rete si ferma** dove è arrivato: le chiavi già mandate stanno in
+   un file (`watchSent.ts`, scritto dopo ognuna), il resto parte al cambio o
+   all'apertura successiva. Un percorso che l'orologio non può tenere non si
+   riprova.
+
+**Conseguenze**: chi ha molti preferiti li vede arrivare sull'orologio uno
+dopo l'altro, la prima volta. Se l'app dell'orologio viene reinstallata il
+telefono non lo sa: i preferiti tornano al cambio successivo della lista.
+
+## ADR-0339, precisazione C2b — La camera dietro l'animale: calcolata nell'app, mossa dalla pagina
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-08), con la
+scelta dell'utente 12 (la camera si sceglie solo sul 3D).
+
+1. **L'anteprima nel foglio diventa C2c**: è un modo nuovo della pagina
+   del video, in una WebView visibile, e merita una PR sua. C2b è solo la
+   camera.
+2. **Tre modi di vedere il percorso sul 3D**: «Camera around» (il giro di
+   prima, la scelta all'apertura del post: il video non cambia), «Camera
+   behind» e «Line in 2D». Quest'ultima disegna tutto sulla foto dall'alto
+   di C2a, come uno stile piatto.
+3. **La camera la calcola l'app** (`videoChase.ts`), dalla traccia vera in
+   metri su un piano attorno alla partenza: il centro 60 m davanti
+   all'animale, la direzione della strada presa su 120 m e smussata su
+   300 m (niente scossoni dal GPS), inclinazione 62°, 1,8 livelli di zoom
+   più vicino del disegno intero (al massimo 16,5). Ogni fotogramma del
+   percorso porta la sua camera e quanto la camera è scesa dalla vista
+   intera (`u`): giù nel primo secondo, su nel secondo dopo il percorso.
+   Così i test la provano senza la mappa.
+4. **La pagina muove la mappa** a ogni fotogramma (modo `chase`). Prima del
+   video prova 16 camere lungo il percorso, per le tessere e per il costo,
+   come il giro di prima; sopra il budget, o finito il tempo, la mappa
+   resta ferma con lo zoom lento (`still`) e l'animale corre lo stesso.
+5. **Lungo la linea si misura in metri**: con la camera bassa la linea
+   posata ha i pixel stirati vicino alla camera, quindi nel modo `chase`
+   la pagina mette punta, emoji e animale alla quota di metri della
+   scena, non di pixel. Gli altri modi restano come prima.
+
+## ADR-0339, precisazione C2c — L'anteprima nel foglio: la pagina del video in modo «play»
+
+**Stato:** deciso dall'agente su delega dell'utente (2026-11-08), con la
+scelta dell'utente 13 (il video vero in loop, non un fotogramma fermo).
+
+1. **La stessa pagina del video, visibile**: l'anteprima è `videoPage` in
+   una WebView in cima a «Edit video», in un modo nuovo `play` che disegna
+   i fotogrammi della scena in tempo reale su un canvas sopra la pagina,
+   senza codificarli. Mappa, animale e camera sono quelli del video: niente
+   secondo disegnatore da tenere uguale al primo. L'esportazione (`make`)
+   non cambia.
+2. **La pagina alla misura della sua mappa** (360 × 640 punti), mostrata
+   rimpicciolita a 150 punti di larghezza: la mappa si disegna come per il
+   video, dentro una pagina visibile.
+3. **La scena si calcola mezzo secondo dopo l'ultima scelta**, non a ogni
+   tocco; una nuova scena prende il posto della vecchia allo stesso
+   secondo. Un nuovo stile o un nuovo animale ricaricano la pagina, perché
+   la pagina prepara la mappa e il modello una volta sola.
+4. **Sulle mappe parte a mappa pronta** (o quando non è venuta): prima
+   resta fermo il fondo, anche sul 3D che può chiedere qualche secondo
+   (richiesta del Coordinatore). Senza mappa parte subito.
+5. **Il costo**: nel simulatore circa il 32 % di un core del Mac sulla
+   Notte e il 40 % sul 3D con la camera dietro, solo con il foglio aperto
+   (che smonta la pagina quando si chiude) e fermabile con un tocco. La
+   batteria si misura sul telefono nella parte E.
+
+## ADR-0340, precisazione C — `run_stats`: passi dal server, profilo e calorie dal telefono, il battito resta in `runs`
+
+**Stato**: Attiva · 2026-11-08 · TASK-410 parte C (#1001). Scelte
+dell'utente in `tasks/TASK-410.md` (2: «Visibili, nascondibili»); il posto
+del battito deciso dal Coordinatore; il resto deciso dall'agente su delega
+dell'utente.
+
+**Contesto**: la pagina del post mostra passi, dislivello, cadenza, calorie
+e battito solo quando ci sono. ADR-0340 metteva tutto in una tabella
+`run_stats`; nel frattempo TASK-409 B1 (#979, `0061`) ha messo il battito
+in `runs`.
+
+**Decisione**:
+
+1. **`run_stats`** (`0064`): una riga per corsa, `stats` `jsonb` con
+   `splits_km`, `splits_mile`, `elevation`, `cadence_spm`, `kcal`. **Il
+   battito non c'è**: si legge da `runs.heart_*` (scelta del Coordinatore,
+   un posto solo), e `heart_shown` decide anche le calorie per chi guarda.
+2. **I passi li conta il server** dalla traccia e dalle pause, a ogni `PUT
+   /me/activities/{key}/stats`, non al salvataggio della corsa:
+   `activities.py` resta com'è. L'ultimo pezzo dopo l'ultimo intero è un
+   passo marcato (`partial_m`) solo da 100 m in su.
+3. **Il telefono manda** profilo (dalle altezze dei punti, al più 120 a
+   passi uguali) e calorie (`activeKcal` col corpo del telefono, metri e
+   secondi del server), una volta, dopo che il server ha preso la corsa;
+   niente nuovi tentativi: la pagina funziona senza. La cadenza resta
+   `null` finché una registrazione non la dà.
+4. **Il filtro sta nel server**: `stats` in `GET /drawings/{id}`, con
+   battito e calorie per gli altri solo se `heart_shown`; all'autore
+   sempre; `null` senza dati. `GET /feed` non lo manda.
+5. **Le corse vecchie**: i passi col backfill `python -m
+   shaperoute_api.run_stats` (solo le righe che mancano), col sì
+   dell'utente; profilo e calorie non li avranno.
+
+**Conseguenze**: la parte D legge `stats` con `statsOf`
+(`api/runStats.ts`) senza toccare `DrawingDetail`; TASK-345 B scrive il
+battito in `runs` e lo trova già nella pagina; il server ha la `0064` da
+applicare nel passo unico.
+
+## ADR-0314, precisazione — La parte B3b1: cosa mostra e come vibra il polso
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B3b1, decisa dall'agente su
+delega dell'utente («Come Apple Maps», «Freccia prima»); lista dei file
+approvata dal Coordinatore. In `main` con la #1008.
+
+**Contesto**: gli avvisi di B1 e B2 sono tipi, non frasi; l'orologio deve
+farne una schermata e una vibrazione, uguali per ogni sport.
+
+**Decisione**:
+1. **`GuideDisplay`**, puro in WatchCore: dagli avvisi la vibrazione
+   (`GuideHaptic`: svolta a destra, a sinistra, altra manovra, fuori rotta,
+   di nuovo sul percorso, arrivo, penna), ogni tipo una volta per posizione;
+   la partenza e «dov'è il percorso» si vedono soltanto.
+2. **La schermata** (`GuideScreen`): in attesa del percorso chiuso, lungo il
+   percorso, fuori rotta, arrivo; la freccia girata dell'angolo della
+   svolta, o fuori rotta verso il percorso rispetto alla direzione di marcia
+   (a nord in su senza direzione); i metri alla svolta, alla fine o al
+   percorso; il tipo di svolta e la via; la penna («To the O», «Next part»).
+
+**Conseguenze**: l'app dell'orologio disegna e suona soltanto; ogni regola
+di cosa mostrare ha i suoi test in Swift.
+
+## ADR-0314, precisazione — La parte B3b2: la corsa guidata sull'orologio
+
+**Stato**: Attiva · 2026-11-08 · TASK-370 parte B3b2, decisa dall'agente su
+delega dell'utente; testi e permesso di posizione approvati dall'utente il
+2026-11-08 (scelte 5 e 9 del task file); lista dei file approvata dal
+Coordinatore. In `main` con la #1012.
+
+**Decisione**:
+1. **Un tocco su un percorso di «Routes»** fa partire il suo sport con la
+   guida; `GuideSession` chiede la posizione al via e accende il GPS a fine
+   conto alla rovescia; a ogni posizione Navigator, Pen, la schermata e le
+   vibrazioni di watchOS (quelle di navigazione di Apple Maps per le
+   svolte, «failure», «success», «click»).
+2. **Le pagine** lungo un percorso: la freccia (`GuideView`), la mappa
+   piccola che inquadra il disegno intero (`RouteMapView`), poi i numeri.
+   Senza percorso le pagine restano quelle di prima.
+3. **Niente parole delle svolte** sullo schermo: la freccia vale in ogni
+   lingua e lo schermo è piccolo. «Back on route» e «Pen down» non si
+   scrivono: lo dice la vibrazione.
+4. **Il permesso di posizione dell'orologio** ha una frase sua, approvata
+   dall'utente nelle cinque lingue: quella del telefono parla del telefono
+   bloccato e della barra blu. CoreLocation e MapKit nel target dell'orologio;
+   l'impronta iOS senza `MUW_WATCH` resta `6f8bba4c`.
+
+**Conseguenze**: la traccia della corsa resta sull'orologio finché B3c non
+la manda al telefono. Le vibrazioni si provano al polso con la build A-flip.
+
+## ADR-0338, aggiunta — La pagina della stazione nell'app: una sola lista delle seguite, i post con l'autore
+
+**Stato**: Attiva · 2026-11-08 · TASK-406 parte D3b (#1006) e #1004. Deciso
+dall'agente su delega dell'utente, con la lista dei file approvata dal
+Coordinatore; i testi sono dell'utente («Sì, approvati», 2026-11-08).
+
+**Contesto**: la pagina della stazione mostra «Follow», la neve dei membri e
+le loro giornate lì; «Your resorts» sta in cima all'elenco delle stazioni,
+nella scheda «Ski» e in «Cambia».
+
+**Decisione**:
+
+1. **Una sola lista delle stazioni seguite** per tutta l'app
+   (`useFollowedResorts`), letta una volta per sessione dalla porta dei
+   disegni. Un tocco la cambia subito, e torna com'era se il server dice di
+   no: la pagina e l'elenco cambiano insieme.
+2. **I post di una stazione hanno l'autore**, come nel Feed: `GET
+   /ski-resorts/{id}/drawings` risponde `{posts, next, total}` con
+   `FeedPostBody` (#1004). Sono di più membri, mentre la pagina di un profilo
+   è di uno solo. La forma è cambiata prima che la rotta arrivasse sul
+   server.
+3. **Un post toccato si apre sulla mappa e chiude la ricerca**, come i
+   risultati della ricerca (`SearchScreen`: `onLeave={onClose}`).
+4. **Le parti vuote non compaiono**; senza account la pagina resta quella
+   della parte C.
+
+**Alternative**:
+
+- **Le seguite lette da ogni schermo**: scartate, la pagina e l'elenco
+  avrebbero potuto dire cose diverse.
+- **I post senza autore**: scartati, non si saprebbe di chi è la giornata.
+
+**Conseguenze**: solo JavaScript nell'app; sul server nessuna migrazione in
+più. Tutto esce con il passo unico sul server e l'OTA unico.

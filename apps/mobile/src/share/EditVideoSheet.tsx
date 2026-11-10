@@ -20,6 +20,8 @@ import { ScenesRows } from "./ScenesRows";
 import { StyleRow } from "./StyleRow";
 import type { VideoEdit } from "./videoEdit";
 import { VideoEmojiRow } from "./VideoEmojiRow";
+import { VideoPreview } from "./VideoPreview";
+import type { VideoScene } from "./videoScene";
 
 type Props = {
   visible: boolean;
@@ -28,25 +30,41 @@ type Props = {
   /** Each change at once: the sheet has no «Cancel», only «Done». */
   onChange: (edit: VideoEdit) => void;
   onClose: () => void;
+  /** The video of the post with an edit, for the preview (part C2c). */
+  sceneOf: (edit: VideoEdit) => VideoScene;
 };
 
 /**
  * «Edit video» (TASK-408, ADR-0339, part C1): a sheet from the bottom of
  * «Share your run», with the video's own choices in rows, as the proposal's
- * board draws it: «Style», «Character», «Line colour», the emoji
+ * board draws it: the preview at the top (part C2c), then «Style»,
+ * «Character», «Line colour», the emoji
  * «Along the way» and «At the end», then «Scenes» and «Ending» (part C2).
  * Every choice holds at once; «Done»
  * closes the sheet, and «Export video» makes the video as chosen.
  */
-export function EditVideoSheet({ visible, run, edit, onChange, onClose }: Props) {
+export function EditVideoSheet({
+  visible,
+  run,
+  edit,
+  onChange,
+  onClose,
+  sceneOf,
+}: Props) {
   return (
     <SheetModal visible={visible} onRequestClose={onClose} dim testID="edit-video">
-      <SheetBody run={run} edit={edit} onChange={onChange} onClose={onClose} />
+      <SheetBody
+        run={run}
+        edit={edit}
+        onChange={onChange}
+        onClose={onClose}
+        sceneOf={sceneOf}
+      />
     </SheetModal>
   );
 }
 
-function SheetBody({ run, edit, onChange, onClose }: Omit<Props, "visible">) {
+function SheetBody({ run, edit, onChange, onClose, sceneOf }: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
   const change = (part: Partial<VideoEdit>) => onChange({ ...edit, ...part });
   return (
@@ -73,6 +91,7 @@ function SheetBody({ run, edit, onChange, onClose }: Omit<Props, "visible">) {
           </Pressable>
         </View>
         <ScrollView contentContainerStyle={styles.rows}>
+          <VideoPreview edit={edit} sceneOf={sceneOf} />
           <StyleRow
             run={run}
             style={edit.style}

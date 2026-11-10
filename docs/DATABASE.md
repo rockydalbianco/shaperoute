@@ -1102,6 +1102,36 @@ numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
   restano null (TASK-345 B li userà per ogni sport). Si cancellano con la
   corsa e con l'account. Nessun backfill. Test in `test_pool_swims.py`.
 
+Migrazione `0062_followed_resorts.sql` (TASK-406 parte D3a, ADR-0338, `API.md`
+«Seguire una stazione e i suoi post»; il numero è il primo libero al merge):
+
+- **`resort_follows`**: le stazioni che un account segue, «Your resorts».
+  - `user_id` verso `users(id)` e `resort_id` verso `ski_resorts(id)`, tutti
+    e due con `ON DELETE CASCADE`: un account cancellato, o una stazione
+    tolta da un import, se le porta via.
+  - `created_at`, per l'ordine: l'ultima seguita prima.
+  - Chiave `(user_id, resort_id)`: seguire due volte vale una.
+- La vede solo l'account. Nessuna posizione, nessuna riga di prima cambia,
+  nessun backfill. Test in `test_resort_follows.py`.
+
+Migrazione `0064_run_stats.sql` (TASK-410 parte C, ADR-0340, `API.md`
+«Run stats»; numero in bozza, il vero è del Coordinatore, il primo libero al
+merge):
+
+- **`run_stats`**: al più una riga per corsa, chiave `run_id` (`ON DELETE
+  CASCADE`), `stats` (`jsonb`, un oggetto) e `updated_at`. In `stats`:
+  `splits_km` e `splits_mile` (li conta il server dalla traccia), poi
+  `elevation` (al più 120 punti), `cadence_spm` e `kcal` (li manda il
+  telefono a fine attività). Una chiave assente o `null` è un dato che la
+  corsa non ha.
+- **Il battito non è qui**: sta in `runs` (`heart_avg_bpm`,
+  `heart_max_bpm`, `heart_shown`, TASK-409 B), e `heart_shown` decide anche
+  le calorie per chi guarda (scelta del Coordinatore, 2026-11-08).
+- Nessuna colonna nuova in `runs`, nessuna riga di prima cambia. Il
+  backfill dei passi delle corse vecchie (`python -m
+  shaperoute_api.run_stats`) scrive solo le righe che mancano, e si lancia
+  col sì dell'utente. Test in `test_run_stats.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

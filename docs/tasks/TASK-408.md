@@ -191,6 +191,14 @@ oggi:
    i numeri. «Camera behind» e «Camera around» compaiono solo con lo stile
    3D; su 2D, Night e Day il percorso si vede dall'alto. L'altra strada era
    il video della tavola (2D → percorso → finale) per tutti.
+13. **L'anteprima nel foglio** (2026-11-08, parte C2c): «Sì, così». In cima
+   a «Edit video», il video vero in piccolo (9:16), che gira da solo in
+   loop, senza musica; un tocco lo ferma o lo riprende; sotto, una barra e
+   «0:06 / 0:12». Si aggiorna mezzo secondo dopo ogni scelta; sulle mappe
+   parte quando la mappa è pronta (sul 3D qualche secondo). Testi per
+   VoiceOver: «Video preview» (nuovo, nelle cinque lingue) e «Pause» e
+   «Resume», che l'app ha già (in tedesco «Resume» resta «Weiter»).
+   L'altra strada era un fotogramma fermo.
 
 ## Domande aperte (una alla volta)
 
@@ -351,8 +359,35 @@ c'è già in «Share your run», quindi niente «Export video».
       2026-11-08: 3D con apertura dall'alto, cavallo e finale «Heart»;
       Notte con titolo, volpe e finale «Numbers» (video in
       `out/TASK-408/sim-c2/`, fuori dal repository).
-    - **C2b**: la camera dietro l'animale sul 3D, con la riga «Camera
-      behind»/«Camera around», e l'anteprima nel foglio.
+    - **C2b** (branch `feat/TASK-408-c2b-chase`): sul 3D, sotto «The
+      route», tre scelte: «Camera around» (di base, il giro di prima),
+      «Camera behind» (la camera segue l'animale da dietro e un po'
+      dall'alto, scendendo dalla vista intera nel primo secondo del
+      percorso e risalendo dopo) e «Line in 2D» (tutto il video dall'alto,
+      sulla foto piatta di C2a). Se il telefono non regge la camera dietro,
+      la mappa resta ferma con lo zoom lento e l'animale corre lo stesso. Lista approvata
+      dal Coordinatore il 2026-11-08. Provato nel simulatore: la prima
+      volta, con le tessere da scaricare, la mappa ha usato i 15 s e il
+      video è uscito con la mappa ferma; poi un fotogramma dietro
+      l'animale costava 24–29 ms (budget 25, il simulatore non ha la
+      scheda grafica del telefono). Con il budget alzato solo nella prova,
+      la camera scende, segue il cavallo e risale; «Line in 2D» dall'alto
+      con la volpe (video in `out/TASK-408/sim-c2b/`). La misura vera è
+      della parte E.
+    - **C2c** (branch `feat/TASK-408-c2c-preview`): l'anteprima nel foglio
+      (scelta 13). È la pagina del video in una WebView visibile, in un
+      modo «play»: disegna i fotogrammi della scena in tempo reale su un
+      canvas sopra la pagina, senza codificarli, con la stessa mappa, lo
+      stesso animale e la stessa camera. La scena si calcola mezzo secondo
+      dopo l'ultima scelta; un nuovo stile o un nuovo animale ricaricano la
+      pagina. Lista approvata dal Coordinatore il 2026-11-08. Provata nel
+      simulatore (iPhone 17): CPU media sul Mac, in percento di un core,
+      Notte con il cavallo circa 32 (Expo Go 5, pagina 12, grafica 14); 3D
+      con la camera dietro circa 40 (pagina 31, grafica 7, Expo Go 2). Il
+      simulatore disegna senza la scheda grafica del telefono, e la
+      batteria non si misura: la parte E la misura sul telefono. Il costo
+      c'è solo con il foglio aperto, che smonta la pagina quando si chiude,
+      e un tocco ferma il disegno (video in `out/TASK-408/sim-c2c/`).
 - **D — il prompt**: la tabella di parole nell'app e il riquadro; niente
   server.
 - **E — la prova sul telefono**: il tempo dell'esportazione con ogni
@@ -411,6 +446,21 @@ e `.test.tsx`, `videoScene.ts` e `.test.ts`, `videoPage.ts` e `.test.ts`,
 `apps/mobile/src/i18n/{it,de,es,fr}.ts`; `docs/tasks/TASK-408.md`,
 `docs/STATUS.md`, `docs/DECISIONS.md`. `SharePost.test.tsx` e
 `TabSwipeOwners.test.ts` erano nella lista ma non sono serviti.
+
+Parte C2c (lista approvata dal Coordinatore il 2026-11-08):
+`apps/mobile/src/share/VideoPreview.tsx` e `.test.tsx` (nuovi);
+`videoPage.ts` e `.test.ts`, `EditVideoSheet.tsx` e `.test.tsx`,
+`SharePost.tsx`; `apps/mobile/src/i18n/{it,de,es,fr}.ts`;
+`docs/tasks/TASK-408.md`. `SharePostVideo.test.tsx` era nella lista ma non è
+servito. STATUS e DECISIONS in una PR di soli documenti dopo il merge.
+
+Parte C2b (lista mandata al Coordinatore il 2026-11-08):
+`apps/mobile/src/share/videoChase.ts` e `.test.ts` (nuovi); `videoEdit.ts`
+e `.test.ts`, `videoScenes.ts`, `ScenesRows.tsx`, `EditVideoSheet.test.tsx`,
+`videoScene.ts` e `.test.ts`, `videoPage.ts` e `.test.ts`,
+`SharePostVideo.test.tsx`; `apps/mobile/src/i18n/{it,de,es,fr}.ts`;
+`docs/tasks/TASK-408.md`. `docs/STATUS.md` e `docs/DECISIONS.md` in una PR
+di soli documenti dopo il merge (regola del Coordinatore del 2026-11-08).
 
 ## Criteri di accettazione
 

@@ -4,8 +4,8 @@ import WatchCore
 /// The first screen of the watch (TASK-370 part B3a, the user's choice
 /// «Pulsante e preferiti»): «Run without a route», which opens the sports,
 /// then the routes the phone sent, newest first, the favorites with a
-/// heart. A route starts its sport's workout; following it with the arrow
-/// and the vibrations is part B3b.
+/// heart. A route starts its sport's workout along it, with the arrow and
+/// the vibrations (part B3b).
 struct RoutesView: View {
     @EnvironmentObject private var workouts: WorkoutManager
     @EnvironmentObject private var store: RouteStore
@@ -52,7 +52,7 @@ struct RoutesView: View {
 
     private func start(_ route: WatchRoute) {
         if let sport = sport(of: route) {
-            workouts.start(sport)
+            workouts.start(sport, route: route)
         }
     }
 }

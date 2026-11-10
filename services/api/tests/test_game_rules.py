@@ -8,9 +8,11 @@ import pytest
 from route_engine.geo import haversine_m
 
 from shaperoute_api.game_rules import (
+    BEST_DISTANCES_M,
     DAILY_CAP_M,
     MAX_PROGRESS,
     NOT_RUNNING,
+    RULES_VERSION,
     VEHICLE,
     DistanceGoal,
     Fix,
@@ -77,7 +79,14 @@ def test_a_steady_run_counts_whole_with_its_best_times() -> None:
     game = evaluate(Runner().run(6_000, 3.0).fixes, [], "running")
     assert game.counted and game.reason is None
     assert game.counted_m == 6_000
-    assert game.best_s == {1_000: 333.3, 5_000: 1666.7}
+    # Every distance of 6 km or less, from 400 m to 5 km (TASK-423).
+    assert game.best_s == {
+        400: 133.3,
+        1_000: 333.3,
+        1_609: 536.3,
+        3_000: 1000.0,
+        5_000: 1666.7,
+    }
     assert game.elapsed_s == pytest.approx(2_000)
 
 
@@ -108,15 +117,19 @@ def test_a_short_vehicle_stretch_is_left_out() -> None:
     assert game.counted
     # The stretch, and at most a few steps around it that its windows hold.
     assert 5_650 <= game.counted_m <= 5_700
-    # The best times never cross it: each side is run at 3 m/s.
-    assert game.best_s == {1_000: 333.3}
+    # The best times never cross it: each side is run at 3 m/s, and neither
+    # holds 3 km once the steps around the stretch are left out.
+    assert game.best_s == {400: 133.3, 1_000: 333.3, 1_609: 536.3}
 
 
 def test_seven_metres_a_second_is_still_a_runner() -> None:
     fixes = Runner().run(1_500, 6.9).fixes
     game = evaluate(fixes, [], "running")
     assert game.counted and game.counted_m == 1_500
-    assert game.best_s == {1_000: pytest.approx(144.9, abs=0.1)}
+    assert game.best_s == {
+        400: pytest.approx(58.0, abs=0.1),
+        1_000: pytest.approx(144.9, abs=0.1),
+    }
 
 
 def test_a_fast_mean_over_three_km_voids_the_run() -> None:
@@ -135,8 +148,8 @@ def test_a_gap_counts_in_the_metres_but_breaks_the_best_times() -> None:
     fixes = Runner().run(2_940, 3.0).jump(120, 40).run(2_940, 3.0).fixes
     game = evaluate(fixes, [], "running")
     assert game.counted and game.counted_m == 6_000
-    # No 5 km without the gap.
-    assert game.best_s == {1_000: 333.3}
+    # No 3 km, nor 5, without the gap: 2.94 km on each side.
+    assert game.best_s == {400: 133.3, 1_000: 333.3, 1_609: 536.3}
 
 
 def test_a_step_across_a_pause_asked_for_is_not_run() -> None:
@@ -157,9 +170,10 @@ def test_an_auto_pause_is_left_out_of_the_best_times() -> None:
     stop_at = runner.at[1]
     fixes = runner.stand(60).run(750, 3.0).fixes
     standing = evaluate(fixes, [], "running")
-    assert standing.best_s == {1_000: pytest.approx(393.3, abs=0.1)}
+    # 400 m fit on either side of the stop.
+    assert standing.best_s == {400: 133.3, 1_000: pytest.approx(393.3, abs=0.1)}
     paused = evaluate(fixes, [RunPause(stop_at, stop_at + 60, auto=True)], "running")
-    assert paused.best_s == {1_000: 333.3}
+    assert paused.best_s == {400: 133.3, 1_000: 333.3}
     assert paused.counted_m == standing.counted_m == 1_500
 
 
@@ -168,6 +182,67 @@ def test_a_sparse_track_has_no_best_times() -> None:
     game = evaluate(Runner().run(3_000, 3.0, every_s=15).fixes, [], "running")
     assert game.counted and game.counted_m == 3_000
     assert game.best_s == {}
+
+
+def test_the_best_times_are_over_eleven_distances() -> None:
+    # TASK-423 part B (ADR-0351): the paces of the catalog, and 50 km for
+    # the ultra of one run; computed again on the old runs (rules 3).
+    assert BEST_DISTANCES_M == (
+        400,
+        1_000,
+        1_609,
+        3_000,
+        5_000,
+        10_000,
+        15_000,
+        21_097,
+        30_000,
+        42_195,
+        50_000,
+    )
+    assert RULES_VERSION == 3
+
+
+def test_an_ultra_has_every_best_time() -> None:
+    # 50.5 km at 3.5 m/s (4:46 a km), a fix every 5 s: every distance.
+    game = evaluate(Runner().run(50_500, 3.5, every_s=5.0).fixes, [], "running")
+    assert game.counted and game.counted_m == 50_500
+    assert game.best_s == {d: round(d / 3.5, 1) for d in BEST_DISTANCES_M}
+
+
+def test_fifty_km_less_a_little_is_no_ultra() -> None:
+    game = evaluate(Runner().run(49_900, 3.5, every_s=5.0).fixes, [], "running")
+    assert 42_195 in game.best_s and 50_000 not in game.best_s
+
+
+def test_a_fast_lap_is_the_best_400_m() -> None:
+    # 1 km at 3 m/s, 400 m at 5 m/s (3:20 a km), 1 km at 3 m/s.
+    fixes = Runner().run(1_000, 3.0).run(400, 5.0).run(1_000, 3.0).fixes
+    game = evaluate(fixes, [], "running")
+    assert game.best_s[400] == pytest.approx(80.0, abs=0.1)
+    # The best kilometre holds the lap and 600 m at 3 m/s.
+    assert game.best_s[1_000] == pytest.approx(80.0 + 200.0, abs=0.1)
+    # The best mile holds it too: 1209 m at 3 m/s around it.
+    assert game.best_s[1_609] == pytest.approx(80.0 + 1_209 / 3, abs=0.1)
+
+
+def test_the_mile_is_the_mile() -> None:
+    # 1609 m of a run, not 1.6 km nor 1609.344: the window the catalog asks.
+    game = evaluate(Runner().run(1_610, 3.0).fixes, [], "running")
+    assert game.best_s[1_609] == pytest.approx(1_609 / 3, abs=0.1)
+    assert evaluate(Runner().run(1_600, 3.0).fixes, [], "running").best_s == {
+        400: 133.3,
+        1_000: 333.3,
+    }
+
+
+def test_a_gap_leaves_the_short_times_on_each_side() -> None:
+    # 20 km with a gap at 12 km: 10 km on the first side, no 15 km.
+    fixes = Runner().run(11_940, 3.0).jump(120, 40).run(7_940, 3.0).fixes
+    game = evaluate(fixes, [], "running")
+    assert game.counted and game.counted_m == 20_000
+    assert game.best_s[10_000] == pytest.approx(3333.3, abs=0.1)
+    assert 15_000 not in game.best_s
 
 
 def test_a_run_of_one_fix_counts_nothing() -> None:

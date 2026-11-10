@@ -1727,6 +1727,11 @@ export const DE: Table = {
   "Whole drawing": "Ganze Zeichnung",
   "All three": "Alle drei",
   "At least one scene stays on.": "Mindestens eine Szene bleibt an.",
+  "Camera behind": "Kamera dahinter",
+  "Camera around": "Kamera rundherum",
+  "Line in 2D": "Linie in 2D",
+  // src/share/VideoPreview.tsx (TASK-408 C2c, choice 13; «Resume» and «Pause» were there)
+  "Video preview": "Videovorschau",
 
   // src/contest/ (TASK-299 B: the contest card, its rules, the Winner badge)
   "MuW contest": "MuW-Wettbewerb",
@@ -1944,6 +1949,11 @@ export const DE: Table = {
   "Send to watch": "An die Uhr senden",
   "Sent to your watch": "An die Uhr gesendet",
   "Send a route from MuW on your iPhone": "Sende eine Route aus MuW auf dem iPhone",
+  "Off route": "Abseits der Route",
+  Arrived: "Ziel",
+  "Reach the route to start": "Zur Route gehen, um zu starten",
+  "To the {letter}": "Zum {letter}",
+  "Next part": "Nächster Teil",
   // The drawings of the private messages (TASK-333 part C).
   "Send to a friend": "An Freunde senden",
   "Send to…": "Senden an…",
@@ -2134,4 +2144,12 @@ export const DE: Table = {
   Resort: "Skigebiet",
   Snow: "Schnee",
   Gear: "Ausrüstung",
+  // src/ski/ResortList.tsx, ResortSnow.tsx, ResortPosts.tsx (TASK-406 part D3b:
+  // the resort's page, texts approved on 2026-11-08)
+  "Your resorts": "Deine Skigebiete",
+  "Snow today": "Schnee heute",
+  "{snow} ×{days}": "{snow} ×{days}",
+  "Marked by the members in the last 24 hours.":
+    "Von den Mitgliedern in den letzten 24 Stunden angegeben.",
+  "Members' days here": "Tage der Mitglieder hier",
 };

@@ -631,6 +631,32 @@ within 2 km: too few roads, the shape collapses onto a single road node
 wherever it is placed» (TASK-277, aggiunta ad ADR-0040). Prima era un
 `ValueError` che finiva in `engine_error`.
 
+### I cancelli chiusi sulla rete a piedi (TASK-421)
+
+Un cancello è un **nodo** di OpenStreetMap con i suoi tag; il filtro
+Overpass della rete `foot` sceglie le vie e non lo vede, e OSMnx
+semplificando buttava i tag dei nodi: nelle zone fatte prima di TASK-421
+un cancello chiuso è un punto qualunque di un arco, e il percorso ci passa
+(l'utente l'ha trovato correndo, 2026-11-08). Da TASK-421 (ADR-0349) il
+download della rete `foot` non semplifica, chiede i tag dei nodi `barrier`,
+`access`, `foot`, `locked` e `foot` sulle vie, e `foot_ways`
+(`networks/foot.py`) toglie prima di semplificare:
+
+- i nodi che bloccano chi va a piedi (`blocks_foot`): `foot=no|private`;
+  `fence` o `wall` come nodo; `gate`, `lift_gate`, `swing_gate` e ogni altra
+  barriera con `access=no|private` o `locked=yes`. Un cancello senza tag,
+  un `kissing_gate`, uno `stile`, un dissuasore o un cordolo passano, anche
+  con `access=no` (parla ai veicoli); `foot=yes|designated|permissive|
+  destination` vince su tutto. Togliere il nodo taglia la via lì: si passa
+  o no, niente tratti «a piedi» (ADR-0343, punto 2);
+- le vie chiuse (`closed_to_foot`): `foot=no|private`, o `access=no|private`
+  senza un `foot` che apre. `access=destination|customers|permit` restano.
+
+La rete `hike` passa dallo stesso download e perde gli stessi nodi; `bike`,
+`mtb` e `roller` hanno le loro regole. Le zone in cache fatte prima restano
+coi cancelli finché non si rifanno (`MAPS.md`, «I cancelli chiusi»;
+`DEPLOY.md` F.15). Misure e banco prima/dopo in `tasks/TASK-421.md`.
+
 ### La rete della bici (TASK-190)
 
 Una richiesta `activity: "cycling"` (10–30 km, `DISTANCE_LIMITS_M` in

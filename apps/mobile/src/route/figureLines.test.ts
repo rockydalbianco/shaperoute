@@ -238,6 +238,35 @@ test("a track that crosses itself is run once with the way back, not twice (TASK
   expect(askedFor(crossing) / once).toBeLessThan(1.01);
 });
 
+test("a closed track that crosses itself is a loop hung on a ring at its start, run once", () => {
+  // A bowtie back to its start, 4.8 km: its two halves cross in the
+  // middle, so it makes no outline. Before, «Edit the drawing» had no
+  // drawing of it and the card of «Explore» showed no button.
+  const sides = [
+    [0, 0],
+    [1000, 1000],
+    [1000, 0],
+    [0, 1000],
+    [0, 0],
+  ] as [number, number][];
+  const bowtie = trackOf(sides);
+  const { lines, centre, unitM } = trackInPlace(bowtie);
+  expect(drawingOf(lines)).not.toBeNull();
+  expect(routeTrack(bowtie)).toEqual({ lines, centre, unitM });
+  expect(isOpenLine(lines.outline, lines.details)).toBe(true);
+  expect(lines.details).toHaveLength(1);
+  const detail = lines.details[0];
+  // It starts where the track did and ends on that very point: run once.
+  const at = (point: OutlinePoint) =>
+    onMap({ figure: { kind: "shape", shape: "heart" }, centre, unitM }, point);
+  expect(metresBetween(at(detail[0]), bowtie[0])).toBeLessThan(1);
+  expect(detail[detail.length - 1]).toEqual(detail[0]);
+  // The whole bowtie once, not out and back.
+  const once = 2000 + 2 * Math.hypot(1000, 1000);
+  expect(askedFor(bowtie) / once).toBeGreaterThan(0.99);
+  expect(askedFor(bowtie) / once).toBeLessThan(1.01);
+});
+
 test("a track that ends near its start is still one closed outline", () => {
   expect(isOpenLine(trackInPlace(RING).lines.outline, [])).toBe(false);
   expect(trackInPlace(RING).lines.details).toEqual([]);

@@ -4,6 +4,7 @@ import { onFootLines } from "../route/onFoot";
 import { piecesOf, walksOf } from "../route/walks";
 import { type LngLat, metresBetween, toLngLat } from "./coordinates";
 import type { MapKind } from "./mapKind";
+import type { SkiLabel } from "../skimode/skiDayLabels";
 import type { RouteSplit } from "./routeSplit";
 
 /**
@@ -44,7 +45,13 @@ export type ToPage =
   | { type: "showOthers"; lines: LngLat[][] }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
-  | { type: "showLifts"; skied: LngLat[][]; lifts: LngLat[][] }
+  | {
+      type: "showLifts";
+      skied: LngLat[][];
+      lifts: LngLat[][];
+      /** The numbers on the lines (TASK-429 part B); none from an app before. */
+      labels?: { point: LngLat; text: string; kind: "lift" | "descent" }[];
+    }
   | { type: "clearLifts" }
   | { type: "follow"; lngLat: LngLat; heading: number | null }
   /** Where the phone points on «Compass» (TASK-431), or null off it. */
@@ -247,12 +254,23 @@ export function clearTrack(): ToPage {
 }
 
 /** A day of skiing (TASK-375 part C2): the track as what was skied, solid
- * as a run's, and the lifts dashed. */
-export function showLifts(skied: LatLon[][], lifts: LatLon[][]): ToPage {
+ * as a run's, and the lifts dashed. In the colours of the ski mode, with
+ * the numbers of the descents and the lifts on them (TASK-429 part B,
+ * ADR-0357). */
+export function showLifts(
+  skied: LatLon[][],
+  lifts: LatLon[][],
+  labels: readonly SkiLabel[] = [],
+): ToPage {
   return {
     type: "showLifts",
     skied: skied.map((line) => line.map(toLngLat)),
     lifts: lifts.map((line) => line.map(toLngLat)),
+    labels: labels.map((label) => ({
+      point: toLngLat(label.point),
+      text: label.text,
+      kind: label.kind,
+    })),
   };
 }
 

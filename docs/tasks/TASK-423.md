@@ -286,6 +286,17 @@ E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
   di sola lettura per il passo server 6 in `out/TASK-423/SERVER-E.md` del
   checkout principale. E2 (l'app) entra in `main` solo dopo «server E1
   fatto» del Coordinatore.
+- 2026-11-10 — Passo server 6 fatto (lanciato dall'utente, adf0dec0, 0067):
+  15 edizioni argento, nessun oro, controlli di SERVER-E a 0, `game_prefs`
+  vuota. «Server E1 fatto» del Coordinatore.
+- 2026-11-10 — «Play» dopo l'uso (#1113): l'utente ha visto che le forme
+  sbloccate non dicono l'obiettivo e che un passo mai fatto è al 60–80 %;
+  delle proposte ha scelto «Dalla 1 alla 4». L'obiettivo sotto la data; la
+  barra di un passo fra il livello prima e questo (`shapeProgress.ts`),
+  vuota finché il livello prima non è fatto, con «… /km to go»; «First run
+  15 km in one go» invece di una percentuale; i nomi delle distanze (400 m,
+  1 mile, Half marathon, Marathon). Solo app; i 6 testi nuovi nelle 5
+  lingue approvati dall'utente («Sì, approvo»).
 
 ## Esito
 

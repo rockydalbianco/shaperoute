@@ -41,6 +41,7 @@ import { useStylePosts } from "../feed/useStylePosts";
 // The routes MuW drew (TASK-365, ADR-0310): in «All», one row in 6 at most.
 import { feedWithMuw, type MuwItem } from "../feed/feedWithMuw";
 import { MuwPost } from "../feed/MuwPost";
+import { MUW_ROUTES_IN_FEED } from "../feed/muwInFeed";
 import { useMuwRoutes } from "../feed/useMuwRoutes";
 import { t } from "../i18n";
 import { useDrawingsDoor } from "../social/drawingsDoor";
@@ -131,7 +132,9 @@ export function FeedScreen({
   const stylePosts = useStylePosts(active);
   const withStyle = stylePosts.length > 0;
   const styleInFeed = useStyleInFeed();
-  const muwRoutes = useMuwRoutes(active);
+  // The routes MuW drew: none while they are off (TASK-430), not even asked.
+  const fetchedMuw = useMuwRoutes(active && MUW_ROUTES_IN_FEED);
+  const muwRoutes = MUW_ROUTES_IN_FEED ? fetchedMuw : NO_MUW;
   const [styleOpened, setStyleOpened] = useState(chosen === "style");
   const all = useFeed(
     active &&

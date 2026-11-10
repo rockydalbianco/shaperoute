@@ -3,6 +3,7 @@ import * as TaskManager from "expo-task-manager";
 import { Platform } from "react-native";
 
 import { t } from "../i18n";
+import { liveShareFix } from "../liveShare/liveShareStore";
 import { color } from "../theme/tokens";
 
 /**
@@ -15,6 +16,10 @@ import { color } from "../theme/tokens";
  * Android shows its notification for as long as the run is on. Where that
  * cannot be (Expo Go, an app built without the background mode or the
  * service) the GPS is followed in the foreground only, as before TASK-261.
+ * Each position of the task also goes to the live link, when the runner
+ * shares one (TASK-424 part B1): its updates leave from here, with the
+ * phone locked too, and need no task of their own. In the foreground only,
+ * the link takes the fixes from the recording screen's track.
  */
 
 /** The task iOS hands the run's positions to. */
@@ -70,6 +75,7 @@ TaskManager.defineTask<{ locations?: Location.LocationObject[] }>(
     }
     for (const position of data.locations ?? []) {
       run.onPosition(position);
+      liveShareFix(position);
     }
   },
 );

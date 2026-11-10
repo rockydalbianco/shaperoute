@@ -150,6 +150,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   in `main` (#973, ADR-0349, impronta `8ab61d8e87f9`); restano il server e le
   zone foot da rifare (`DEPLOY.md` F.15, sì dell'utente dato), al «via server
   973» del Coordinatore. File: — · `tasks/TASK-421.md`
+- **TASK-429 — La modalità sci** (ADR-0357) · proposta e canvas dei
+  mockup nel task file; aspetta le scelte dell'utente (domanda 1: come si
+  entra e quali schede), poi la lista della parte A al Coordinatore.
+  File: — · `tasks/TASK-429.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

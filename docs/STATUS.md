@@ -120,8 +120,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
 - **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
-  proposta in `main` (ADR-0345), scelte dell'utente fatte; parte B dopo
-  TASK-408 C2, con la lista al Coordinatore. File: — · `tasks/TASK-417.md`
+  B e C («My image», #1067) in `main`, escono col prossimo OTA di
+  produzione; prossime D («Together») ed E (telefono: anche il picker di
+  sistema). File: — · `tasks/TASK-417.md`
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
   0, A1, A2, B1 e B2 (piscina e palestra, #1053) in `main` e in
   produzione dal 2026-11-10 (server, sito, OTA 2 con B1, OTA 3 con B2).

@@ -1,7 +1,7 @@
 # TASK-417 — La mia immagine al posto dell'animale, e il video «Together» con le persone taggate
 
-**Stato**: Proposto · nessun codice prima delle scelte dell'utente e della
-lista dei file di ogni parte, approvata dal Coordinatore
+**Stato**: In lavorazione · B e C in `main` (#1067, 2026-11-10); D ed E
+da fare, ognuna con la sua lista dei file approvata dal Coordinatore
 **Fase**: 5 · **Branch**: `docs/TASK-417-my-image-video-proposal`
 (documenti); il codice `feat/TASK-417-b-…`
 **Dipende da**: TASK-408 (l'editor del video, ADR-0339): l'animale è l'op
@@ -304,6 +304,56 @@ Parti B–E: si elencano prima di ciascuna.
 - [ ] La privacy ha la riga nuova nelle cinque lingue prima che «Together»
   vada in produzione.
 - [ ] L'impronta iOS non cambia.
+
+## Parti B e C — fatte (2026-11-10)
+
+**#1067** (87f98fd6), lista approvata dal Coordinatore il 2026-11-10, con
+la parte C dentro. Esce con il prossimo OTA di produzione. Il come è
+in ADR-0345, precisazione B.
+
+- **Nell'app**: «My image» nella riga «Character», dopo «No animal». Le
+  scelte «Choose a photo», «Take a photo» e «Remove image» stanno sotto la
+  riga, con la frase su dove resta l'immagine. Testi approvati in cinque
+  lingue (scelta 5).
+- **File nuovi**: `share/gifFrames.ts` (il lettore GIF),
+  `share/myImage.ts`, `share/videoActor.ts`, `share/MyImageChoices.tsx`,
+  `share/gifWriter.testing.ts`.
+- **File toccati**: `videoEdit.ts`, `videoScene.ts`, `videoPage.ts`,
+  `RunVideo.tsx`, `VideoPreview.tsx`, `CharacterRow.tsx`, `SharePost.tsx`,
+  i loro test, `i18n/{it,de,es,fr}.ts`.
+- **Prova nel simulatore** (iPhone 17, Expo Go, harness temporaneo):
+  quattro video fatti dalla pagina vera, in `out/TASK-417/sim/`. Sono la
+  foto su «Night», la GIF su «Day», la foto sul 3D con «Camera behind» e la
+  GIF sul 3D. Ci sono anche le caselle vuota e con la GIF.
+- **Impronta** iOS `6f8bba4c`, Android `227457f3`: invariate.
+
+**Da provare nella parte E: il picker di sistema.** La scelta dalla
+libreria, il ritaglio quadrato e la GIF ritagliata ancora animata non
+sono stati provati nel simulatore: `simctl addmedia` lo ha bloccato.
+Vanno provati sul telefono, con una foto, una GIF e la fotocamera.
+
+### Il testo del permesso della fotocamera (2026-11-10)
+
+Oggi il permesso della fotocamera e quello della libreria parlano solo del
+contorno del percorso («MuW uses the photo you take to trace the outline
+your route will draw.»). Non hanno traduzioni, quindi iOS li mostra in
+inglese in tutte le lingue.
+
+Le scelte dell'utente, testuali:
+
+1. Al Coordinatore, sulla nota che il testo parla solo del contorno: «ok
+   si attiva anche per quello per fare le foto ed i video».
+2. Alla domanda se «i video» vuol dire anche registrare video con la
+   fotocamera dentro l'app: «Anche registrare video».
+3. Alla nota che oggi l'app non registra video con la fotocamera, e che
+   farlo è una funzione nuova con il microfono da riscrivere (oggi «MuW
+   never records sound») e una riga nella privacy: «Aspetta la funzione
+   video».
+
+Quindi per ora nessuna PR del permesso. I testi di fotocamera, libreria,
+microfono e privacy si scrivono insieme quando si decide la registrazione
+di video nell'app, che è un task a parte. È un cambio nativo, quindi
+richiede una build nuova.
 
 ## Esito
 

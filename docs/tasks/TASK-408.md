@@ -497,6 +497,8 @@ Parte B2 (lista approvata dal Coordinatore il 2026-11-10):
 `.test.ts`, `videoWords.ts` e `.test.ts`;
 `apps/mobile/src/i18n/{it,de,es,fr}.ts`;
 `apps/mobile/src/about/content/{en,it,de,es,fr}.ts` (dopo la #1051);
+`apps/mobile/src/about/documents.test.ts` e `AboutPage.test.tsx` (solo la
+data dei Termini, aggiunti dal Coordinatore il 2026-11-10);
 `docs/tasks/TASK-408.md`. STATUS e DECISIONS in una PR di soli documenti
 dopo il merge.
 

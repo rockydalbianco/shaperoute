@@ -125,6 +125,14 @@ const CHARACTER_LOOK_BACK = 0.6;
 /** How far ahead of the line's tip the animal's middle is, in lengths: the
  * line comes out from under its hind legs. */
 const CHARACTER_AHEAD = 0.25;
+/** The runner's own image in place of the animal (TASK-417, ADR-0345): its
+ * width, as a share of the animal's length; how far it leans into the way
+ * the line goes, at most, in degrees; its ring, as a share of its width;
+ * and on «3D», how high it stands on its stick, in widths. */
+const IMAGE_SIZE = 0.6;
+const IMAGE_LEAN = 12;
+const IMAGE_RING = 0.06;
+const IMAGE_STICK = 0.55;
 
 /** The app's own font on each phone, then any. */
 const FONT = '-apple-system, system-ui, Roboto, "Helvetica Neue", sans-serif';
@@ -152,6 +160,10 @@ const SCRIPT = String.raw`
   var CHARACTER_VIEW = ${CHARACTER_VIEW};
   var CHARACTER_LOOK_BACK = ${CHARACTER_LOOK_BACK};
   var CHARACTER_AHEAD = ${CHARACTER_AHEAD};
+  var IMAGE_SIZE = ${IMAGE_SIZE};
+  var IMAGE_LEAN = ${IMAGE_LEAN};
+  var IMAGE_RING = ${IMAGE_RING};
+  var IMAGE_STICK = ${IMAGE_STICK};
   var FONT = ${JSON.stringify(FONT)};
   var codec = null;
   var started = false;
@@ -177,7 +189,8 @@ const SCRIPT = String.raw`
   // things along it (the leaning picture stretches its pixels).
   var restCamera = null;
   var geoRun = null;
-  // The animal, once ready (TASK-408): its model, camera and canvas.
+  // The animal, once ready (TASK-408): its model, camera and canvas; or
+  // the runner's own image (TASK-417): its frames and their times.
   var actor = null;
   var casting = false;
 
@@ -1036,6 +1049,148 @@ const SCRIPT = String.raw`
     g.drawImage(actor.canvas, here[0] - side / 2, here[1] - side / 2, side, side);
   }
 
+  // One frame of the runner's image, ready to draw: a JPEG through an img,
+  // a GIF's frame from its pixels through a canvas of its own.
+  function imageFrameOf(frame) {
+    if (typeof frame.src === "string") {
+      return new Promise(function (resolve, reject) {
+        var img = document.createElement("img");
+        img.onload = function () { resolve(img); };
+        img.onerror = function () { reject(new Error("the image did not load")); };
+        img.src = frame.src;
+      });
+    }
+    var bytes = bytesOfBase64(frame.rgba || "");
+    if (!(frame.width > 0 && frame.height > 0) || bytes.length !== frame.width * frame.height * 4) {
+      return Promise.reject(new Error("the frame's pixels are not whole"));
+    }
+    var canvas = document.createElement("canvas");
+    canvas.width = frame.width;
+    canvas.height = frame.height;
+    var g = canvas.getContext("2d");
+    var data = g.createImageData(frame.width, frame.height);
+    data.data.set(bytes);
+    g.putImageData(data, 0, 0);
+    return Promise.resolve(canvas);
+  }
+
+  // The runner's own image (TASK-417), made ready before the video in place
+  // of an animal: no three.js, nothing from the network, only its frames.
+  function prepareImage(spec) {
+    if (casting || actor !== null) {
+      return;
+    }
+    casting = true;
+    var t0 = now();
+    var settled = false;
+    function finish(ok, why) {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      post({ type: "character", ok: ok, why: why, ms: Math.round(now() - t0) });
+    }
+    var timer = setTimeout(function () { finish(false, "timeout"); }, CHARACTER_WAIT_MS);
+    var frames = (spec && spec.frames) || [];
+    // Each frame in a promise of its own: a frame that throws as it is read
+    // fails the image, not the page.
+    Promise.all(frames.map(function (frame) {
+      return Promise.resolve(frame).then(imageFrameOf);
+    })).then(function (made) {
+      if (settled) {
+        return;
+      }
+      clearTimeout(timer);
+      if (made.length === 0) {
+        finish(false, "no frames");
+        return;
+      }
+      var ms = made.map(function (_, i) { return Math.max(0, (spec.frameMs || [])[i] || 0); });
+      actor = {
+        image: true,
+        frames: made,
+        frameMs: ms,
+        loop: ms.reduce(function (a, b) { return a + b; }, 0),
+        lean: 0
+      };
+      finish(true, null);
+    }).catch(function (error) {
+      clearTimeout(timer);
+      actor = null;
+      finish(false, messageOf(error));
+    });
+  }
+
+  // The frame of the image at seconds into its clip: a GIF round and round
+  // on its own times, a photo still.
+  function imageFrameAt(seconds) {
+    if (actor.frames.length === 1 || actor.loop <= 0) {
+      return actor.frames[0];
+    }
+    var at = (Math.max(0, seconds) * 1000) % actor.loop;
+    for (var i = 0; i < actor.frames.length; i += 1) {
+      at -= actor.frameMs[i];
+      if (at < 0) {
+        return actor.frames[i];
+      }
+    }
+    return actor.frames[actor.frames.length - 1];
+  }
+
+  // The runner's image at upTo pixels along the path: round, in a ring of
+  // the line's colour, hopping as the scene says, leaning a little into the
+  // way the line goes and never upside down. On «3D» it stands on a stick
+  // over its round shadow, where the line is on the hills.
+  function drawImageActor(g, scene, path, upTo, op, standing) {
+    var here = pointAlong(path, upTo);
+    var from = pointAlong(path, Math.max(0, upTo - op.size * CHARACTER_LOOK_BACK));
+    var dx = here[0] - from[0];
+    var dy = here[1] - from[1];
+    var far = Math.hypot(dx, dy);
+    if (far > 0.5) {
+      actor.lean = (dx / far) * IMAGE_LEAN * Math.PI / 180;
+    }
+    var side = op.size * IMAGE_SIZE;
+    var hop = op.hop || 0;
+    var ring = scene.colors.line || scene.colors.ink;
+    var y = here[1] - hop;
+    g.save();
+    g.globalAlpha = typeof op.alpha === "number" ? op.alpha : 1;
+    if (standing) {
+      var stick = side * IMAGE_STICK;
+      // The shadow shrinks a little as the image hops up.
+      g.fillStyle = "rgba(0, 0, 0, 0.35)";
+      g.beginPath();
+      g.ellipse(here[0], here[1], side * 0.3 * (1 - hop / side / 2), side * 0.1, 0, 0, 2 * Math.PI);
+      g.fill();
+      g.strokeStyle = ring;
+      g.lineWidth = Math.max(2, side * IMAGE_RING * 0.6);
+      g.lineCap = "round";
+      g.beginPath();
+      g.moveTo(here[0], here[1]);
+      g.lineTo(here[0], here[1] - stick - hop);
+      g.stroke();
+      y = here[1] - stick - hop - side / 2;
+    }
+    var frame = imageFrameAt(op.time || 0);
+    var w = frame.naturalWidth || frame.width || 1;
+    var h = frame.naturalHeight || frame.height || 1;
+    var fit = side / Math.min(w, h);
+    g.translate(here[0], y);
+    g.rotate(actor.lean);
+    g.beginPath();
+    g.arc(0, 0, side / 2, 0, 2 * Math.PI);
+    g.closePath();
+    g.save();
+    g.clip();
+    g.drawImage(frame, -w * fit / 2, -h * fit / 2, w * fit, h * fit);
+    g.restore();
+    g.lineWidth = side * IMAGE_RING;
+    g.strokeStyle = ring;
+    g.stroke();
+    g.restore();
+  }
+
   // The path from its start to upTo pixels along it.
   function stroke(g, path, upTo) {
     g.beginPath();
@@ -1252,7 +1407,12 @@ const SCRIPT = String.raw`
         var onTheHills = typeof op.share === "number" && laid !== null;
         var track = onTheHills ? laid : scene.paths[op.path];
         if (track && track.length >= 4) {
-          drawCharacter(g, track, onTheHills ? shareLength(track, op.share) : op.upTo, op);
+          var along = onTheHills ? shareLength(track, op.share) : op.upTo;
+          if (actor.image) {
+            drawImageActor(g, scene, track, along, op, typeof op.share === "number");
+          } else {
+            drawCharacter(g, track, along, op);
+          }
         }
       }
     }
@@ -1401,6 +1561,7 @@ const SCRIPT = String.raw`
   window.muwVideo = {
     prepareMap: prepareMap,
     prepareCharacter: prepareCharacter,
+    prepareImage: prepareImage,
     play: play,
     pause: pause,
     resume: resume,
@@ -1506,6 +1667,22 @@ export function resumeCall(): string {
  * (`modelBase64`, the .glb's bytes). */
 export function prepareCharacterCall(modelBase64: string): string {
   return `window.muwVideo.prepareCharacter(${JSON.stringify({ model: modelBase64 })}); true;`;
+}
+
+/**
+ * The runner's own image for the page (TASK-417, ADR-0345): a JPEG as a
+ * data URL, or a GIF's frames as their RGBA in base64, each shown for its
+ * `frameMs`, round and round.
+ */
+export type PageImageFrame =
+  { src: string } | { width: number; height: number; rgba: string };
+
+export type PageImage = { frames: PageImageFrame[]; frameMs: number[] };
+
+/** What the app asks first with the runner's image in place of an animal:
+ * make it ready, from its frames. Nothing in it points to the network. */
+export function prepareImageCall(image: PageImage): string {
+  return `window.muwVideo.prepareImage(${JSON.stringify(image)}); true;`;
 }
 
 /** What the app asks first, on the map looks: draw the map of `mapJson`. */

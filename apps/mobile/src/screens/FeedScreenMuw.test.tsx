@@ -2,7 +2,9 @@
  * The routes MuW drew in «Feed» (TASK-365, ADR-0310): while the API has
  * them, one row in 6 of «All» at most, the first after the 3rd drawing, also
  * among the examples without an account, never in «Following»; a tap opens
- * the route. From an API without them, the Feed is as before.
+ * the route. From an API without them, the Feed is as before. They are off
+ * since TASK-430 (FeedScreenNoMuw.test.tsx): here they are switched on, as
+ * they would be again.
  */
 import page from "@shaperoute/shared-types/fixtures/feed.json";
 import list from "@shaperoute/shared-types/fixtures/muw-routes.json";
@@ -34,6 +36,7 @@ jest.mock("../feed/feedTabChoice", () => {
     }),
   };
 });
+jest.mock("../feed/muwInFeed", () => ({ MUW_ROUTES_IN_FEED: true }));
 jest.mock("expo-file-system", () => {
   class MockFile {
     get exists() {

@@ -1,13 +1,15 @@
 # TASK-429 — La modalità sci: scelto lo sci, MuW diventa un'app per lo sci
 
-**Stato**: Proposto · proposta e mockup; nessun codice prima delle risposte
-alle domande e dei «File toccati» mandati al Coordinatore
-**Fase**: 5 · **Branch**: `docs/TASK-429-ski-mode` (documenti); il codice
+**Stato**: Todo · parte 0 fatta il 2026-11-10: proposta, mockup e le
+quattro scelte dell'utente qui sotto; prossima la parte A, con la lista dei
+file al Coordinatore
+**Fase**: 5 · **Branch**: `docs/TASK-429-ski-mode` e `docs/TASK-429-part0`
+(documenti); il codice
 `feat/TASK-429-a-…`
 **Dipende da**: TASK-375 (la giornata di sci, impianti e piste per nome) e
 TASK-406 (stazioni, meteo, neve, «Follow»), tutti e due online dal
 2026-11-10. Non li riapre: ne riusa le pagine.
-**ADR**: ADR-0357 (proposto)
+**ADR**: ADR-0357 (accettata il 2026-11-10)
 
 ## Obiettivo
 
@@ -43,6 +45,16 @@ esempio.
   discesa per discesa, la stagione, Stazioni. Con la stessa risposta la
   Ricerca dell'app normale perde la scheda «Ski»: le stazioni stanno solo
   nella modalità sci.
+- 2026-11-10, domanda 3: «Sì, così». Nella modalità sci le discese sono
+  gialle, a linea piena, numerate 1, 2…; le risalite rosse, tratteggiate,
+  numerate L1, L2…, in un rosso più chiaro del numero rosso (`#FF5A4E` sul
+  tono scuro). Due token nuovi in `tokens.ts`, `ski.descent` e `ski.lift`;
+  la legenda dice tutto anche a parole. Fuori dalla modalità la giornata
+  resta bianca come oggi.
+- 2026-11-10, domanda 4: «Sì, approvati». I testi della tabella della
+  domanda 4, in inglese con l'italiano; de, fr ed es tradotti allo stesso
+  modo. «Discese» resta anche il nome della sezione discesa per discesa
+  («Runs»).
 
 ## Cosa c'è già (non si rifà)
 
@@ -184,13 +196,31 @@ nuovi in cinque lingue col sì dell'utente; server e OTA col sì dell'utente.
    tutte e sei».**
 3. **I colori della legenda.** Proposta: discese gialle piene, risalite
    rosse tratteggiate (un rosso diverso dal numero rosso), con numeri ed
-   etichette.
-4. **I testi** in cinque lingue.
+   etichette. **Risposta dell'utente, 2026-11-10: «Sì, così».**
+4. **I testi** in cinque lingue. Proposta: la tabella qui sotto, in inglese
+   con l'italiano; de, fr ed es tradotti allo stesso modo. I testi che
+   l'app ha già (stazione, meteo, neve, «Record your day», le caselle di
+   fine giornata, «Lifts and pistes») restano quelli approvati.
+   **Risposta dell'utente, 2026-11-10: «Sì, approvati».**
+
+   | Dove | en · it |
+   |---|---|
+   | Menu dello sport, sotto «Ski» | «Turns MuW into your ski app» · Trasforma MuW nella tua app per lo sci |
+   | Menu dello sport, nella modalità | «Ski mode» · Modalità sci; «Choose another sport to go back to MuW as always.» · Scegli un altro sport per tornare a MuW di sempre. |
+   | Schede (VoiceOver) | «Today» · Oggi; «Days» · Giornate; «Resorts» · Stazioni |
+   | Oggi | «This season» · Questa stagione; «Friends here today» · Amici qui oggi; «{names} skied {resort}» · {names} hanno sciato a {resort} |
+   | Giornata in corso | «On a lift» · Sulla risalita; «Vertical skied» · Dislivello sciato; «Highest» · Quota massima; «End day» · Fine giornata |
+   | La giornata | «Summary» · Riepilogo; «Map» · Mappa; «Runs» · Discese; «Lifts taken» · Impianti presi; «{rides} rides · {lifts} lifts» · {rides} salite · {lifts} impianti |
+   | Legenda | «Legend» · Legenda; «Descents · solid, numbered» · Discese · linea piena, numerate; «Lifts · dashed, L1, L2…» · Risalite · tratteggiate, L1, L2…; «Start and end» · Partenza e arrivo |
+   | Discesa per discesa | «Lift» · Risalita; «Piste without a name» · Pista senza nome; «{speed} top» · {speed} max; «Stopped {minutes} min» · Fermo {minutes} min |
+   | Stagione | «Season {years}» · Stagione {years}; «Vertical this season» · Dislivello della stagione; «Days» · Giornate; «On snow» · Sulla neve; «Your days» · Le tue giornate |
 
 ## File toccati
 
-Questa PR (documenti): `docs/tasks/TASK-429.md` (nuovo). Le righe di
-`STATUS.md`, `DECISIONS.md` e `INDEX.md` in una PR di soli documenti.
+Parte 0 (documenti): `docs/tasks/TASK-429.md` (nuovo), `docs/DECISIONS.md`
+(ADR-0357), `docs/STATUS.md` (una voce), `docs/INDEX.md` (una riga). La
+proposta è in `main` con #1065, la risposta 2 con #1072; le risposte 3 e 4
+e l'ADR accettata in una sola PR di documenti.
 
 Parti A–E: si elencano prima di ciascuna.
 

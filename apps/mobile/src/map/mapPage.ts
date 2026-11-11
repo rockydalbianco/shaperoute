@@ -179,6 +179,13 @@ export const TRACK_OPACITY = track.opacity;
 /** The lifts of a day of skiing (TASK-375 part C2): the track's line,
  * dashed as the stretches with the bike on foot. */
 export const LIFT_DASH = onFoot.dash;
+/** A day of skiing in the ski mode (TASK-429 part B, ADR-0357): the
+ * descents and the lifts in their colours, and the numbers on them, dark
+ * in a dot of the line's colour. */
+export const SKI_DESCENT_COLOR = color.ski.descent;
+export const SKI_LIFT_COLOR = color.ski.lift;
+export const SKI_LABEL_COLOR = color.ski.onLine;
+export const SKI_LABEL_RADIUS = 10;
 
 /**
  * The start asked for. MapLibre's default marker is a light blue that reads
@@ -311,6 +318,10 @@ export function buildMapPage(language: Language = appLanguage()): string {
     var track = noRoute;
     // A day of skiing (TASK-375 part C2): its lifts, dashed.
     var lifts = noRoute;
+    // A day of skiing shown (TASK-429 part B): its lines in the ski mode's
+    // colours, and the numbers of its descents and lifts.
+    var skiDay = false;
+    var skiLabels = noRoute;
     var stops = noRoute;
     var others = noRoute;
     // «Draw on the map» (TASK-281): the figure as drawn, its links dashed
@@ -488,7 +499,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
         source: "track",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": ${toScript(TRACK_COLOR)},
+          "line-color": skiDay ? ${toScript(SKI_DESCENT_COLOR)} : ${toScript(TRACK_COLOR)},
           "line-width": ${TRACK_WIDTH},
           "line-opacity": ${TRACK_OPACITY},
         },
@@ -502,11 +513,42 @@ export function buildMapPage(language: Language = appLanguage()): string {
         source: "lifts",
         layout: { "line-join": "round" },
         paint: {
-          "line-color": ${toScript(TRACK_COLOR)},
+          "line-color": skiDay ? ${toScript(SKI_LIFT_COLOR)} : ${toScript(TRACK_COLOR)},
           "line-width": ${TRACK_WIDTH},
           "line-opacity": ${TRACK_OPACITY},
           "line-dasharray": ${toScript(LIFT_DASH)},
         },
+      });
+      // Their numbers (TASK-429 part B): a dot of the line's colour, the
+      // number dark on it.
+      map.addSource("ski-labels", { type: "geojson", data: skiLabels });
+      map.addLayer({
+        id: "ski-label-dots",
+        type: "circle",
+        source: "ski-labels",
+        paint: {
+          "circle-radius": ${SKI_LABEL_RADIUS},
+          "circle-color": [
+            "match",
+            ["get", "kind"],
+            "lift",
+            ${toScript(SKI_LIFT_COLOR)},
+            ${toScript(SKI_DESCENT_COLOR)},
+          ],
+        },
+      });
+      map.addLayer({
+        id: "ski-label-text",
+        type: "symbol",
+        source: "ski-labels",
+        layout: {
+          "text-field": ["get", "text"],
+          "text-font": ${toScript(LABEL_FONT)},
+          "text-size": 11,
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+        },
+        paint: { "text-color": ${toScript(SKI_LABEL_COLOR)} },
       });
       // «Draw on the map» (TASK-281): the figure in the route's yellow, as
       // the route will draw it, and the line a finger is drawing, over all.
@@ -790,6 +832,29 @@ export function buildMapPage(language: Language = appLanguage()): string {
       var source = map.getSource("lifts");
       if (source) {
         source.setData(lifts);
+      }
+    }
+    // The colours of a day of skiing on, or the run's back (TASK-429).
+    function setSkiDay(on, labels) {
+      skiDay = on;
+      skiLabels = labels;
+      if (map.getLayer("track")) {
+        map.setPaintProperty(
+          "track",
+          "line-color",
+          on ? ${toScript(SKI_DESCENT_COLOR)} : ${toScript(TRACK_COLOR)},
+        );
+      }
+      if (map.getLayer("lifts")) {
+        map.setPaintProperty(
+          "lifts",
+          "line-color",
+          on ? ${toScript(SKI_LIFT_COLOR)} : ${toScript(TRACK_COLOR)},
+        );
+      }
+      var source = map.getSource("ski-labels");
+      if (source) {
+        source.setData(skiLabels);
       }
     }
     // The map turned, by the app or by two fingers: the app is told each
@@ -1991,8 +2056,19 @@ export function buildMapPage(language: Language = appLanguage()): string {
             properties: {},
             geometry: { type: "MultiLineString", coordinates: message.lifts },
           });
+          setSkiDay(true, {
+            type: "FeatureCollection",
+            features: (message.labels || []).map(function (label) {
+              return {
+                type: "Feature",
+                properties: { text: label.text, kind: label.kind },
+                geometry: { type: "Point", coordinates: label.point },
+              };
+            }),
+          });
         } else if (message.type === "clearLifts") {
           setLifts(noRoute);
+          setSkiDay(false, noRoute);
         } else if (message.type === "showProgress") {
           showProgress(message);
         } else if (message.type === "clearProgress") {

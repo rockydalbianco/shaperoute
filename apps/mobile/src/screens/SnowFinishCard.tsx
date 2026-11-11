@@ -1,13 +1,15 @@
 import type { RecordActivity } from "@shaperoute/shared-types";
-import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { snowDay } from "../activities/snowDay";
+import { snowDay, snowParts } from "../activities/snowDay";
 import { t } from "../i18n";
 import type { FreeRun } from "../navigation/freeRun";
 import { postOfTrack } from "../share/postRun";
 import { SharePostButton } from "../share/SharePost";
 import { DayChoices } from "../ski/DayChoices";
+import { type SkiDaySection, SkiDaySections } from "../skimode/SkiDaySections";
+import { SkiRuns } from "../skimode/SkiRuns";
 import { profileOf } from "../sports";
 import {
   color,
@@ -64,73 +66,97 @@ export function SnowFinishCard({ run, activity, onResume, onDone }: Props) {
   const skiing = profileOf(activity).skied === true;
   const total = runDistanceLabel(skiing ? day.skiedM : track.distanceM, numbers.units);
   const speed = speedUnit(numbers.units);
+  // «Summary · Map · Runs» of a day of skiing (TASK-429 part B, ADR-0357).
+  const [section, setSection] = useState<SkiDaySection>("summary");
+  const parts = useMemo(() => (skiing ? snowParts(track) : null), [skiing, track]);
+  const shown: SkiDaySection = skiing ? section : "summary";
   return (
     <View style={styles.finish}>
-      <Text
-        style={styles.total}
-        accessibilityLabel={
-          skiing
-            ? t("Skied: {distance}", { distance: total })
-            : t("Distance: {distance}", { distance: total })
-        }
-      >
-        {total}
-      </Text>
-      {skiing ? (
-        <View style={styles.grid}>
-          <View style={styles.tiles}>
-            <Tile label={t("Descents")} value={countOf(day.descents)} />
-            <Tile
-              label={t("Vertical")}
-              value={
-                day.verticalM === null ? NO_NUMBER : String(Math.round(day.verticalM))
-              }
-              unit="m"
-            />
-            <Tile
-              label={t("Top speed")}
-              value={speedOf(day.topMps, numbers.units)}
-              unit={speed}
-            />
-          </View>
-          <View style={styles.tiles}>
-            <Tile
-              label={t("Avg speed")}
-              value={speedOf(day.averageMps, numbers.units)}
-              unit={speed}
-            />
-            <Tile label={t("Lifts")} value={countOf(day.lifts?.length ?? null)} />
-            <Tile label={t("Time")} value={numbers.time} />
-          </View>
-          {/* The whole day, descents and lifts together (TASK-406 part D2). */}
-          <View style={styles.tiles}>
-            <Tile
-              label={t("Total")}
-              value={runDistanceLabel(track.distanceM, numbers.units)}
-            />
-            {numbers.energy !== null && (
-              <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
-            )}
-          </View>
-        </View>
-      ) : (
-        <View style={styles.tiles}>
-          <Tile
-            label={t("Avg pace")}
-            value={numbers.average}
-            unit={paceUnit(numbers.units)}
+      {skiing && <SkiDaySections section={section} onSection={setSection} />}
+      {shown === "runs" && (
+        <ScrollView style={styles.runs}>
+          <SkiRuns
+            parts={parts ?? []}
+            speedText={(mps) => `${speedOf(mps, numbers.units)} ${speed}`}
           />
-          <Tile label={t("Elev. gain")} value={numbers.climb} unit="m" />
-          <Tile label={t("Time")} value={numbers.time} />
-        </View>
+        </ScrollView>
       )}
-      {!skiing && numbers.energy !== null && (
-        <View style={styles.tiles}>
-          <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
-        </View>
+      {shown === "summary" && (
+        <>
+          <Text
+            style={styles.total}
+            accessibilityLabel={
+              skiing
+                ? t("Skied: {distance}", { distance: total })
+                : t("Distance: {distance}", { distance: total })
+            }
+          >
+            {total}
+          </Text>
+          {skiing ? (
+            <View style={styles.grid}>
+              <View style={styles.tiles}>
+                <Tile label={t("Descents")} value={countOf(day.descents)} />
+                <Tile
+                  label={t("Vertical")}
+                  value={
+                    day.verticalM === null
+                      ? NO_NUMBER
+                      : String(Math.round(day.verticalM))
+                  }
+                  unit="m"
+                />
+                <Tile
+                  label={t("Top speed")}
+                  value={speedOf(day.topMps, numbers.units)}
+                  unit={speed}
+                />
+              </View>
+              <View style={styles.tiles}>
+                <Tile
+                  label={t("Avg speed")}
+                  value={speedOf(day.averageMps, numbers.units)}
+                  unit={speed}
+                />
+                <Tile label={t("Lifts")} value={countOf(day.lifts?.length ?? null)} />
+                <Tile label={t("Time")} value={numbers.time} />
+              </View>
+              {/* The whole day, descents and lifts together (TASK-406 part D2). */}
+              <View style={styles.tiles}>
+                <Tile
+                  label={t("Total")}
+                  value={runDistanceLabel(track.distanceM, numbers.units)}
+                />
+                {numbers.energy !== null && (
+                  <Tile
+                    label={t("Calories")}
+                    value={numbers.energy}
+                    unit="kcal"
+                    energy
+                  />
+                )}
+              </View>
+            </View>
+          ) : (
+            <View style={styles.tiles}>
+              <Tile
+                label={t("Avg pace")}
+                value={numbers.average}
+                unit={paceUnit(numbers.units)}
+              />
+              <Tile label={t("Elev. gain")} value={numbers.climb} unit="m" />
+              <Tile label={t("Time")} value={numbers.time} />
+            </View>
+          )}
+          {!skiing && numbers.energy !== null && (
+            <View style={styles.tiles}>
+              <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
+            </View>
+          )}
+          {/* The snow and the gear of the day, sent with it at «Save». */}
+          {skiing && <DayChoices />}
+        </>
       )}
-      {/* The snow and the gear of the day, sent with it at «Save». */}
-      {skiing && <DayChoices />}
       <View style={styles.buttons}>
         {/* The post of the day (TASK-231): a line, as a run without a route. */}
         <SharePostButton makeRun={() => postOfTrack(track)} />
@@ -156,6 +182,10 @@ export function SnowFinishCard({ run, activity, onResume, onDone }: Props) {
 const styles = StyleSheet.create({
   finish: {
     gap: space.md,
+  },
+  // The day's parts scroll in a card that leaves the map in sight.
+  runs: {
+    maxHeight: 320,
   },
   total: {
     color: color.text,

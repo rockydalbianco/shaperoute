@@ -9,6 +9,11 @@ GET /drawings/{id}/ski-day: on the post, for whoever can see it, as the
 lifts and pistes (ski_names_api.py): who cannot open the drawing, or an app
 that does not read skiing (X-MuW-Reads, TASK-387), finds nothing.
 
+Since TASK-429 part C1 (ADR-0357) the GET also has the day's lifts and
+descents, with the fixes they cover and their names (ski_day_parts.py),
+when the phone sent them: `parts`, missing on a day without them and on the
+PUT's answer.
+
 GET /ski-resorts/{id}/snow: the snow the members marked at the resort in
 the last 24 hours, only from the days whose post the asker sees on a
 profile (drawings.shown_sql), and only how many of each: never who.
@@ -21,7 +26,7 @@ from datetime import datetime, timedelta
 from typing import Annotated, Any, Literal, cast, get_args
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from shaperoute_api.accounts import (
@@ -35,6 +40,13 @@ from shaperoute_api.activities import UNKNOWN_ACTIVITY, Key
 from shaperoute_api.drawings import NO_DRAWING, drawing_seen_sql, shown_sql
 from shaperoute_api.reads import Shown
 from shaperoute_api.schemas import ErrorBody
+from shaperoute_api.ski_day_parts import (
+    NamesCache,
+    SkiDayPartBody,
+    day_parts,
+    namer_of,
+    stored_parts,
+)
 from shaperoute_api.ski_resorts_api import NO_RESORT
 
 SnowType = Literal["powder", "groomed", "icy", "spring", "heavy"]
@@ -82,6 +94,14 @@ class SkiDayBody(BaseModel):
     snow: SnowType | None
 
 
+class SkiDayPartsBody(SkiDayBody):
+    """GET /drawings/{id}/ski-day: the day, and its lifts and descents
+    (TASK-429 part C1) when its figures have them; without them, the day as
+    before, with no `parts` at all. An app before them reads past it."""
+
+    parts: list[SkiDayPartBody] | None = None
+
+
 class SnowCountBody(BaseModel):
     snow: SnowType
     days: int = Field(ge=1)
@@ -99,6 +119,13 @@ class ResortSnowBody(BaseModel):
 
 
 NO_DAY = SkiDayBody(resort=None, gear=None, snow=None)
+
+# The track of a run as (lat, lon, seconds from its first fix), in order.
+DAY_FIXES = (
+    "SELECT array_agg(ARRAY[ST_Y(p.geom), ST_X(p.geom), ST_M(p.geom)]"
+    " ORDER BY p.path[1]) AS fixes FROM runs r, ST_DumpPoints(r.track) AS p"
+    " WHERE r.id = %s"
+)
 
 
 def _day(row: Mapping[str, Any]) -> SkiDayBody:
@@ -164,30 +191,55 @@ def ski_days_routes() -> APIRouter:
             raise HTTPException(404, UNKNOWN_ACTIVITY)
         return _day(row)
 
-    @router.get("/drawings/{drawing_id}/ski-day", responses={404: {"model": ErrorBody}})
+    @router.get(
+        "/drawings/{drawing_id}/ski-day",
+        responses={404: {"model": ErrorBody}},
+        # `parts` only when the day has them: the answer is otherwise as
+        # before TASK-429.
+        response_model_exclude_unset=True,
+    )
     def ski_day(
         drawing_id: str,
+        request: Request,
         accounts: Annotated[Accounts, Depends(accounts_of)],
         user: Annotated[UserBody, Depends(current_user)],
         reads: Shown,
-    ) -> SkiDayBody:
+    ) -> SkiDayPartsBody:
         try:
             wanted = UUID(drawing_id)
         except ValueError:
             raise HTTPException(404, NO_DRAWING) from None
         with accounts.database.connect() as conn:
             row = conn.execute(
-                "SELECT r.activity, r.ski_resort_id, r.ski_gear, r.snow,"
-                " s.name AS resort_name"
+                "SELECT r.id AS run_id, r.activity, r.ski_resort_id, r.ski_gear,"
+                " r.snow, s.name AS resort_name, rs.stats, rs.updated_at"
                 " FROM drawings d JOIN runs r ON r.id = d.run_id"
                 " LEFT JOIN ski_resorts s ON s.id = r.ski_resort_id"
+                " LEFT JOIN run_stats rs ON rs.run_id = r.id"
                 f" WHERE d.id = %s AND {drawing_seen_sql('%s')}"
                 f" AND {reads.sql('r.activity', 'r.track IS NOT NULL')}",
                 (wanted, user.id),
             ).fetchone()
-        if row is None:
-            raise HTTPException(404, NO_DRAWING)
-        return NO_DAY if row["activity"] != "skiing" else _day(row)
+            if row is None:
+                raise HTTPException(404, NO_DRAWING)
+            if row["activity"] != "skiing":
+                return SkiDayPartsBody(**NO_DAY.model_dump())
+            day = _day(row).model_dump()
+            stored = stored_parts(row["stats"])
+            if not stored:
+                return SkiDayPartsBody(**day)
+            cache: NamesCache = request.app.state.ski_day_parts
+
+            def make() -> list[SkiDayPartBody]:
+                fixes = conn.execute(DAY_FIXES, (row["run_id"],)).fetchone()
+                return day_parts(
+                    stored,
+                    [tuple(fix) for fix in (fixes["fixes"] or [])],
+                    namer_of(getattr(request.app.state, "ski_dir", None)),
+                )
+
+            key = (int(row["run_id"]), str(row["updated_at"]))
+            return SkiDayPartsBody(**day, parts=cache.get(key, make))
 
     @router.get("/ski-resorts/{resort_id}/snow", responses={404: {"model": ErrorBody}})
     def resort_snow(
@@ -230,4 +282,5 @@ def ski_days_routes() -> APIRouter:
 def install_ski_days(app: FastAPI) -> None:
     """The resort, gear and snow of the days of skiing; after
     install_accounts, which sets the database and the errors."""
+    app.state.ski_day_parts = NamesCache()
     app.include_router(ski_days_routes())

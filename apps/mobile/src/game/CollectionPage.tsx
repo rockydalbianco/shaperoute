@@ -1,4 +1,4 @@
-import type { GameMe, GameShapeState } from "@shaperoute/shared-types";
+import type { GameMe, GameShape, GameShapeState } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
@@ -17,6 +17,8 @@ import { ShapeCard } from "./ShapeCard";
 
 type Props = {
   row: CollectionRow;
+  /** Every shape of the catalog: the levels of a pace, for its bar. */
+  shapes: readonly GameShape[];
   /** The account's state of each shape, by id; empty without an account. */
   states: ReadonlyMap<string, GameShapeState>;
   me: GameMe | null;
@@ -34,6 +36,7 @@ type Props = {
  */
 export function CollectionPage({
   row,
+  shapes,
   states,
   me,
   cardWidth,
@@ -73,6 +76,7 @@ export function CollectionPage({
           <ShapeCard
             key={shape.id}
             shape={shape}
+            shapes={shapes}
             state={states.get(shape.id) ?? null}
             me={me}
             width={cardWidth}

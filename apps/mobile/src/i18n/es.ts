@@ -1340,6 +1340,36 @@ export const ES: Table = {
   "Lower body B": "Tren inferior B",
   "Arms, core": "Brazos, abdomen",
   "Workout {letter}": "Entrenamiento {letter}",
+  // src/gym/RunnerStep.tsx, runPace.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-452, approved 2026-11-11)
+  "Pace@@run": "Ritmo",
+  "Intermediate@@runner": "Intermedio",
+  "Expert@@runner": "Experto",
+  Yes: "Sí",
+  "Your runs say {pace}/km over 10 km: update the paces?":
+    "Tus carreras dicen {pace}/km en 10 km: ¿actualizo los ritmos?",
+  "From your {pace}/km over 10 km and your long run of {long}.":
+    "A partir de tu {pace}/km en 10 km y tu tirada larga de {long}.",
+  "How do you run today?": "¿Cómo corres hoy?",
+  "Make my paces": "Calcular mis ritmos",
+  "Two answers and the plan's paces are yours.":
+    "Dos respuestas y los ritmos del plan son los tuyos.",
+  "Your paces": "Tus ritmos",
+  "at {pace}/km": "a {pace}/km",
+  "10 km in {time}": "10 km en {time}",
+  "At the end of each cycle": "Al final de cada ciclo",
+  "Easy: your pace over 10 km + 1:05. Long: + 1:15. Intervals of 400 m: − 0:25. The long run starts from yours and grows 1 km a week; the easy run is about half of it.":
+    "Suave: tu ritmo de 10 km + 1:05. Larga: + 1:15. Series de 400 m: − 0:25. La tirada larga parte de la tuya y crece 1 km por semana; la suave es más o menos la mitad.",
+  "How I work them out": "Cómo los calculo",
+  "I don't know: I'll pick my level": "No lo sé: elijo mi nivel",
+  "I look at your runs: if you got faster, I propose new paces.":
+    "Miro tus carreras: si has mejorado, te propongo ritmos nuevos.",
+  "The longest run you do without strain":
+    "La carrera más larga que haces sin esfuerzo",
+  "Your long run, today": "Tu tirada larga, hoy",
+  "Your pace over 10 km": "Tu ritmo en 10 km",
+  "minutes per km": "minutos por km",
+  "{n} minutes": "{n} minutos",
+  Beginner: "Principiante",
   // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
   "Your plan, step by step": "Tu plan, paso a paso",
   "A minute to make it, then it guides you every time.":

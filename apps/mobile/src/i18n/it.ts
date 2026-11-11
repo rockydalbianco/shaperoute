@@ -1336,6 +1336,35 @@ export const IT: Table = {
   "Lower body B": "Parte bassa B",
   "Arms, core": "Braccia, addome",
   "Workout {letter}": "Allenamento {letter}",
+  // src/gym/RunnerStep.tsx, runPace.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-452, approved 2026-11-11)
+  "Pace@@run": "Ritmo",
+  "Intermediate@@runner": "Intermedio",
+  "Expert@@runner": "Esperto",
+  Yes: "Sì",
+  "Your runs say {pace}/km over 10 km: update the paces?":
+    "Le tue corse dicono {pace}/km sui 10 km: aggiorno i ritmi?",
+  "From your {pace}/km over 10 km and your long run of {long}.":
+    "Dal tuo {pace}/km sui 10 km e dal tuo lungo di {long}.",
+  "How do you run today?": "Come corri oggi?",
+  "Make my paces": "Fai i miei ritmi",
+  "Two answers and the plan's paces are yours.":
+    "Due risposte e i ritmi della scheda sono i tuoi.",
+  "Your paces": "I tuoi ritmi",
+  "at {pace}/km": "a {pace}/km",
+  "10 km in {time}": "10 km in {time}",
+  "At the end of each cycle": "A fine ciclo",
+  "Easy: your pace over 10 km + 1:05. Long: + 1:15. Intervals of 400 m: − 0:25. The long run starts from yours and grows 1 km a week; the easy run is about half of it.":
+    "Lenta: il tuo ritmo dei 10 km + 1:05. Lungo: + 1:15. Ripetute da 400 m: − 0:25. Il lungo parte dal tuo e cresce di 1 km a settimana; la lenta è circa metà del lungo.",
+  "How I work them out": "Come li calcolo",
+  "I don't know: I'll pick my level": "Non lo so: scelgo il mio livello",
+  "I look at your runs: if you got faster, I propose new paces.":
+    "Guardo le tue corse: se sei migliorato, ti propongo ritmi nuovi.",
+  "The longest run you do without strain": "La corsa più lunga che fai senza fatica",
+  "Your long run, today": "Il tuo lungo, oggi",
+  "Your pace over 10 km": "Il tuo ritmo sui 10 km",
+  "minutes per km": "minuti al km",
+  "{n} minutes": "{n} minuti",
+  Beginner: "Principiante",
   // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
   "Your plan, step by step": "La tua scheda, passo per passo",
   "A minute to make it, then it guides you every time.":

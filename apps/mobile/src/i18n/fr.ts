@@ -1341,6 +1341,36 @@ export const FR: Table = {
   "Lower body B": "Bas du corps B",
   "Arms, core": "Bras, abdos",
   "Workout {letter}": "Séance {letter}",
+  // src/gym/RunnerStep.tsx, runPace.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-452, approved 2026-11-11)
+  "Pace@@run": "Allure",
+  "Intermediate@@runner": "Intermédiaire",
+  "Expert@@runner": "Confirmé",
+  Yes: "Oui",
+  "Your runs say {pace}/km over 10 km: update the paces?":
+    "Tes courses disent {pace}/km sur 10 km : je mets à jour les allures ?",
+  "From your {pace}/km over 10 km and your long run of {long}.":
+    "D'après ton {pace}/km sur 10 km et ta sortie longue de {long}.",
+  "How do you run today?": "Comment cours-tu aujourd'hui ?",
+  "Make my paces": "Calculer mes allures",
+  "Two answers and the plan's paces are yours.":
+    "Deux réponses et les allures du programme sont les tiennes.",
+  "Your paces": "Tes allures",
+  "at {pace}/km": "à {pace}/km",
+  "10 km in {time}": "10 km en {time}",
+  "At the end of each cycle": "À la fin de chaque cycle",
+  "Easy: your pace over 10 km + 1:05. Long: + 1:15. Intervals of 400 m: − 0:25. The long run starts from yours and grows 1 km a week; the easy run is about half of it.":
+    "Lente : ton allure sur 10 km + 1:05. Longue : + 1:15. Fractionné de 400 m : − 0:25. La sortie longue part de la tienne et grandit de 1 km par semaine ; la lente en fait environ la moitié.",
+  "How I work them out": "Comment je les calcule",
+  "I don't know: I'll pick my level": "Je ne sais pas : je choisis mon niveau",
+  "I look at your runs: if you got faster, I propose new paces.":
+    "Je regarde tes courses : si tu es plus rapide, je te propose de nouvelles allures.",
+  "The longest run you do without strain":
+    "La plus longue course que tu fais sans peine",
+  "Your long run, today": "Ta sortie longue, aujourd'hui",
+  "Your pace over 10 km": "Ton allure sur 10 km",
+  "minutes per km": "minutes au km",
+  "{n} minutes": "{n} minutes",
+  Beginner: "Débutant",
   // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
   "Your plan, step by step": "Ton programme, étape par étape",
   "A minute to make it, then it guides you every time.":

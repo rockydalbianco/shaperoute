@@ -185,6 +185,16 @@ la corsa e «Go to the run · 5.5 km» passa a «Run» coi km già scritti; una
 corsa fatta quel giorno conta come fatta nel calendario. La sigla «RUN» ha
 il suo colore (`runDay`). `runDay.ts`, `RunDayEditor.tsx`.
 
+**La corsa su misura** (TASK-452): con almeno una corsa la guida chiede
+«How do you run today?»: il ritmo sui 10 km (o il livello) e il lungo di oggi
+(km o minuti). I ritmi vengono da lì (lenta +1:05/km, lungo +1:15, ripetute
+da 400 m −0:25), il lungo parte dal suo e cresce di 1 km a settimana, la
+lenta è circa metà del lungo; «Your paces» li mostra prima della scheda. In
+«Draw» il giorno di corsa dice ritmo e tempo; a fine ciclo, se le corse
+salvate delle ultime 4 settimane dicono un ritmo più veloce, «Your runs say
+5:20/km over 10 km: update the paces?» li cambia solo col sì.
+`runPace.ts`, `RunnerStep.tsx`.
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una

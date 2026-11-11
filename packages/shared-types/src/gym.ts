@@ -268,6 +268,18 @@ export interface GymPlanWeek {
   sessions: GymPlanSession[];
 }
 
+/** How the owner of a plan with run days runs (mirrors gym_plans.py
+ * `GymPlanRunnerBody`), asked by the guide: the paces of the run days are
+ * worked out from it on the phone. */
+export interface GymPlanRunner {
+  /** Seconds a kilometre over 10 km, 180–900. */
+  pace_10k_s: number;
+  /** The longest run done without strain: a distance (1–60 km) or a time
+   * (10 min – 6 h), one of the two. */
+  long_m?: number;
+  long_s?: number;
+}
+
 /** The weeks of a plan made with the guide (mirrors gym_plans.py): the
  * phone works out each week's values from `sessions` and `mode`. */
 export interface GymProgram {
@@ -285,6 +297,9 @@ export interface GymProgram {
   sessions: GymPlanSession[];
   /** The weeks written by hand, each once. */
   custom: GymPlanWeek[];
+  /** How its owner runs; absent without run days, and from an API older
+   * than the paces. */
+  runner?: GymPlanRunner;
 }
 
 /** A plan as kept, with the key the phone chose. */

@@ -3218,6 +3218,22 @@ grande come il suo percorso. Non muove la mappa. Non c'è mentre si corre,
 in «Explore» e sui percorsi a tema; sull'acqua e con un'API che non manda
 `placed_outline` non si disegna niente.
 
+**Il primo percorso subito** (TASK-435, ADR-0361, scelte dell'utente):
+quando il server ha pronto il percorso dalla partenza dell'utente prima
+della risposta intera, l'app lo mostra subito, con distanza, avvisi,
+«Start» ed «Export GPX», e sotto una riga grigia «Looking for other
+routes…» finché gli altri non arrivano. **Il primo resta A**: quando
+arrivano, gli altri percorsi si aggiungono come B e C, dal migliore, con
+la loro percentuale; una B che somiglia di più si vede dal numero, e il
+percorso sullo schermo non cambia sotto gli occhi. Tre tessere in tutto:
+se il motore non aveva tenuto il primo, esce l'ultima alternativa. Se dopo
+il primo il calcolo fallisce o la rete cade, il primo resta, da solo, e la
+riga sparisce. Vale per «Draw route» verso il server; gli esempi di
+«Explore», l'acqua e il motore sul telefono danno la risposta intera, come
+prima (`api/routes.ts` `onFirst`, `route/useRouteRequest.ts` `more`,
+`route/choices.ts` `withFirst`). Il primo percorso ha già la sua forma
+ideale sotto (TASK-442).
+
 **Dove la forma viene meglio** (TASK-234, ADR-0197, scelta dell'utente):
 quando l'API manda `better_distance_m`, sotto le tessere c'è una riga
 grigia come un avviso da sapere, «This shape comes out better at about 8

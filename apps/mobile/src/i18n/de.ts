@@ -763,6 +763,9 @@ export const DE: Table = {
     "Route {label}, {distance}, {likeness} wie die Form",
   "The outline traced from the picture": "Der aus dem Bild gezeichnete Umriss",
 
+  // src/route/RoutePanel.tsx (TASK-435: the first route is shown, the others are coming)
+  "Looking for other routes…": "Weitere Routen werden gesucht…",
+
   // src/screens/PeopleScreen.tsx
   "Find friends": "Freunde finden",
 

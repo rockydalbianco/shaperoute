@@ -143,7 +143,13 @@ test("a run that waited is told of its shapes at once", async () => {
   const { fetchFn, calls } = api({ a: run });
   await door(fetchFn);
   await waitFor(() => expect(told).toHaveBeenCalledTimes(1));
-  expect(told).toHaveBeenCalledWith({ shapeIds: ["triangle"], keptAt: null });
+  // With the edition and the collection the API's example names (TASK-423 E).
+  expect(told).toHaveBeenCalledWith({
+    shapeIds: ["triangle"],
+    keptAt: null,
+    editions: [{ shapeId: "lightning", edition: "silver" }],
+    collectionsDone: ["geometry"],
+  });
   expect(calls).toContain("PUT /me/activities/a");
   expect(calls).toContain("GET /game/runs/a");
 });
@@ -173,7 +179,9 @@ test("a run that unlocked nothing, or an API before the game, tells nothing", as
     owner: OWNER,
     request: request as ActivityRequest,
   } as Waiting);
-  const { fetchFn, calls } = api({ a: { ...run, unlocked: [] } });
+  const { fetchFn, calls } = api({
+    a: { ...run, unlocked: [], editions: [], collections_done: [] },
+  });
   await door(fetchFn);
   await waitFor(() => expect(calls).toContain("GET /game/runs/b"));
   await waitFor(() => expect(calls.filter((c) => c.startsWith("PUT"))).toHaveLength(2));

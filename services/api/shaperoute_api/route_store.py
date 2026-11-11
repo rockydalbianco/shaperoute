@@ -163,6 +163,12 @@ SAME_ROUTES_AS: dict[str, str] = {
     "ca29e58777cb": "b4967ef32e9a",  # every route but a swim
     "c9c2683a72ea": "3ce5d60ec0cd",  # the swims
     "3984555281d5": "cf585f8fb31b",  # the app's paddling examples
+    # TASK-413 A2: snowshoeing moves from ENGINE_ONLY to ENGINE_ACTIVITIES,
+    # in the contract, and nothing is anchored on the snow (anchored.py);
+    # every route of before drawn the same (ADR-0342).
+    "427ed1a16a97": "ca29e58777cb",  # every route but a swim
+    "d943bfbe8c44": "c9c2683a72ea",  # the swims
+    "f54db2ee707d": "3984555281d5",  # the app's paddling examples
 }
 
 

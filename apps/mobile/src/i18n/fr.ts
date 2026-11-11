@@ -2497,4 +2497,28 @@ export const FR: Table = {
   "Vertical this season": "Dénivelé de la saison",
   "On snow": "Sur la neige",
   "Piste without a name": "Piste sans nom",
+  // TASK-415 part B: ski touring, its phases and its VAM (approved 2026-11-11).
+  "Ski touring": "Ski de randonnée",
+  Phase: "Phase",
+  Climb: "Montée",
+  Descent: "Descente",
+  Changeover: "Transition",
+  "VAM 5 min": "VAM 5 min",
+  Altitude: "Altitude",
+  "Elev. loss": "Dénivelé nég.",
+  "Time up": "Temps de montée",
+  "Time down": "Temps de descente",
+  "Avg VAM": "VAM moy.",
+  "Max altitude": "Alt. max",
+  Phases: "Phases",
+  "Climb {n}": "Montée {n}",
+  "Descent {n}": "Descente {n}",
+  "Lift {n}": "Remontée {n}",
+  "Skins off": "Peaux enlevées",
+  "Skins on": "Peaux mises",
+  "Climbed: {metres} m": "Dénivelé : {metres} m",
+  "{phase}, from {time}, for {duration}":
+    "{phase}, à partir de {time}, pendant {duration}",
+  "No heights from the phone: no phases for this tour.":
+    "Le téléphone n'a pas donné d'altitudes : pas de phases pour cette sortie.",
 };

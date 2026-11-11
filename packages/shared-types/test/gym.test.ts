@@ -61,7 +61,7 @@ test("the example workout is a request of the contract", () => {
 
 test("the catalog names each exercise once, of a kind and a scale it has", () => {
   const keys = catalog.exercises.map((exercise) => exercise.key);
-  assert.equal(keys.length, 91);
+  assert.equal(keys.length, 95);
   assert.equal(new Set(keys).size, keys.length);
   for (const exercise of catalog.exercises) {
     assert.ok(

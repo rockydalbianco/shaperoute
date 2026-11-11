@@ -3,7 +3,9 @@
 **Stato**: In corso — parte 0 in `main` (#933, `189374bc`); A1 in `main` con
 la #957 (`a63254d3`, mergiata dall'utente) e sul server col passo unico del
 2026-11-10 (main `9cf5576b`; controllo in `out/TASK-413/check-957.md`);
-A2 in PR (`feat/TASK-413-a2-snowshoes-api`, 2026-11-10), poi B
+A2 in `main` con la #1130 (`ac08ae94`, mergiata dall'utente il
+2026-11-11), sul server col passo 8 del Coordinatore (controllo in
+`out/TASK-413/SERVER-A2.md`), l'app nascosta col decimo OTA; poi B
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -270,7 +272,9 @@ Tutte come la proposta, tranne la terza:
       (2026-11-08: 48 forme su 60 sul motore vero, Milano nessuna; 27
       canoe identiche, i nove percorsi fissi identici).
 - [ ] A2: lo sport è nel contratto e nell'API, nascosto nell'app; il server
-      scarica la neve di un posto nuovo.
+      scarica la neve di un posto nuovo. (Contratto, API e app in `main`
+      con la #1130; resta il server, passo 8: si spunta coi controlli 1–3
+      di `SERVER-A2.md`.)
 - [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
       e i testi sono in cinque lingue.
 

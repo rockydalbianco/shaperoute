@@ -527,8 +527,54 @@ lasciando le righe d'indice.
 - ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale · 2026-11-11 · Attiva
 - ADR-0351, precisazione E2 — I premi nell'app: la pagina «Prizes», le schede di edizioni e collezioni, la scelta del profilo e la privacy · 2026-11-11 · Attiva
 - ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix` · 2026-11-11 · Attiva
+- ADR-0342, precisazione A2 — Le ciaspole nel contratto e nell'API: nessun percorso sulla neve tenuto, le quote dal disco a ogni richiesta, il profilo nascosto nell'app · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0342, precisazione A2 — Le ciaspole nel contratto e nell'API: nessun percorso sulla neve tenuto, le quote dal disco a ogni richiesta, il profilo nascosto nell'app
+
+**Stato**: Attiva · 2026-11-11 · TASK-413 A2 (#1130, `ac08ae94`). Deciso
+dall'agente su delega dell'utente; lista dei file e migrazione 0068
+approvate dal Coordinatore.
+
+1. **Le ciaspole sono uno sport del contratto.** `snowshoeing` passa da
+   `activities.ENGINE_ONLY` (ora vuota) a `ENGINE_ACTIVITIES`, dopo
+   `inline_skating`; `SNOWSHOEING` (0,5–3 km) entra in `PLANNED_SPORTS` di
+   shared-types, in `RunActivity`, in `reads.NEWER_ACTIVITIES` e nel gioco
+   come una camminata (`game_rules.ON_FOOT`), senza record. La migrazione
+   `0068_snowshoeing.sql` allarga i vincoli d'attività di `runs`,
+   `favorites` e `group_runs` rileggendoli (come la 0055); `run_bests` no.
+2. **Niente ancorato sulla neve**: `anchored.check_placement` rifiuta
+   `FREE_ACTIVITIES` (acqua e neve), e `way_back` non propone ritorni sulla
+   neve.
+3. **Nessun percorso sulla neve è tenuto**: né `route_store` né l'archivio
+   (`route_archive._kept`). I file della neve stanno fuori dall'impronta
+   (`SNOW_ONLY`, ADR-0342 aggiunta 5): un percorso tenuto sopravvivrebbe
+   alle regole che l'hanno disegnato.
+4. **Neve e quote nella cache del server**, scaricate alla prima richiesta
+   di un posto: `ServerSnow` in `<cache>/snow/`, le tegole Terrarium in
+   `<cache>/heights/` lette con un `TerrariumTiles` nuovo per richiesta, così
+   le tegole decodificate non restano in memoria per ogni posto. Un download
+   che non riesce è `503 map_data_unavailable`, come una zona. Il ramo della
+   neve è in `activity_graphs.ground_for`, nei job, nei processi caldi
+   (ADR-0242) e in `images.plan_request`.
+5. **L'errore propone il mezzo km** a cui la forma entra, come sull'acqua
+   (`errors.suggested_distance` su `FREE_ACTIVITIES`), e nessuna distanza
+   sotto 0,5 km.
+6. **L'impronta**: il registro la cambia senza cambiare un percorso. Tre
+   righe in `SAME_ROUTES_AS` dopo quelle di TASK-436 (`427ed1a16a97 →
+   ca29e58777cb`, `d943bfbe8c44 → c9c2683a72ea`, `f54db2ee707d →
+   3984555281d5`) con la prova `427ed1a16a97.json` (i nove percorsi fissi
+   identici, darwin-arm64): nessun `draw_examples`.
+7. **Il profilo nell'app è nascosto** fino a B: nessuna riga in
+   «Impostazioni», fuori dalla ricerca (`searchFilters.NOT_YET`) e dal
+   modulo per pubblicare; nome in inglese, niente `caution` né tempo.
+   Calorie di Hike (TASK-424 C2), Apple Salute `hiking` (24), Health
+   Connect `EXERCISE_TYPE_SNOWSHOEING` (63). Solo JavaScript: l'impronta iOS
+   resta `6f8bba4c`.
+8. **La città lenta** (fino a 44 s al banco) resta: un controllo «poca neve»
+   prima del piazzamento toccherebbe il motore. Se i tempi del server lo
+   chiedono, è un passo a parte.
 
 ## ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale
 

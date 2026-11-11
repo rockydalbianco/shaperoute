@@ -153,7 +153,7 @@
       "onWater": false,
       "guided": false,
       "gps": true,
-      "onWatch": true
+      "onWatch": false
     },
     {
       "activity": "gym",

@@ -118,12 +118,18 @@ export function WeekStrip({
                 key={index}
                 style={[
                   styles.day,
-                  activities.length > 0 && styles.dayDone,
+                  // Today's border is grey only without an activity: done
+                  // keeps its yellow, and today is said by its bold name.
                   index === todayIndex && styles.today,
+                  activities.length > 0 && styles.dayDone,
                 ]}
                 testID={`week-day-${index}`}
               >
-                <Text style={styles.weekday}>{t(WEEKDAYS[index])}</Text>
+                <Text
+                  style={[styles.weekday, index === todayIndex && styles.weekdayToday]}
+                >
+                  {t(WEEKDAYS[index])}
+                </Text>
                 <Text style={styles.icons}>
                   {activities.length > 0 ? dayIcons(activities) : String(day.getDate())}
                 </Text>
@@ -206,6 +212,10 @@ const styles = StyleSheet.create({
   weekday: {
     color: color.textMuted,
     fontSize: fontSize.label,
+  },
+  weekdayToday: {
+    color: color.text,
+    fontWeight: fontWeight.bold,
   },
   icons: {
     color: color.text,

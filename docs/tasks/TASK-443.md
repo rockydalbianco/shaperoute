@@ -109,3 +109,13 @@ bandierina.
   La #1143 non era ancora in `main`: il ramo è partito dalla testa della 442
   (a0ffd992) e si riallinea a `main` dopo il suo merge; la PR si apre solo
   dopo «#1143 in main».
+- 2026-11-11 sera: codice e test scritti (commit a30bc225). La pagina è
+  stata provata nel browser con MapLibre vero (402 × 335): il conto di dove
+  cade un punto sullo schermo coincide con `map.project` anche a mappa
+  girata; un percorso che toccherebbe un pulsante scende sotto la riga;
+  accorciata la mappa viene inquadrata di nuovo. `tsc` pulito, `src/map` e i
+  test di `MapScreen` verdi. Chiesto al Coordinatore un file in più, per una
+  riga: `MapViewLanguage.test.tsx` controllava il fumetto con `.setText`.
+  Mancano gli screenshot nel simulatore (un'altra sessione aveva acceso il
+  suo pochi secondi prima: aspetto il turno), il sì dell'utente, la PR dopo
+  «#1143 in main».

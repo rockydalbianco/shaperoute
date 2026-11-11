@@ -1,10 +1,12 @@
-import type { GamePrizes } from "@shaperoute/shared-types";
+import type { GamePrizes, GamePrizesShown } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { accountProblem, sessionEnded } from "../account/messages";
+import { t } from "../i18n";
 import { useFollowsDoor } from "../social/followsDoor";
 import { noGame } from "./gameApi";
-import { fetchGamePrizes } from "./prizesApi";
+import { fetchGamePrizes, saveShownPrizes } from "./prizesApi";
+import type { Done } from "./useTeams";
 
 /**
  * The prizes of who is signed in (TASK-423 part E, docs/GIOCO.md §5.4):
@@ -36,7 +38,12 @@ const OFF: PrizesShown = { status: "off" };
 export function usePrizes(
   active: boolean,
   options: Options = {},
-): { shown: PrizesShown; refresh: () => void } {
+): {
+  shown: PrizesShown;
+  refresh: () => void;
+  /** What the profile shows (TASK-423 E2b): the prizes again, or why not. */
+  show: (choice: GamePrizesShown) => Promise<Done<GamePrizes>>;
+} {
   const { apiUrl, account } = useFollowsDoor();
   const token =
     account.state.status === "signedIn" ? account.state.session.token : null;
@@ -90,9 +97,28 @@ export function usePrizes(
     }
   }, [ask, token]);
 
+  const show = useCallback(
+    async (choice: GamePrizesShown): Promise<Done<GamePrizes>> => {
+      if (apiUrl === null || token === null) {
+        return { ok: false, problem: t("Sign in to collect shapes.") };
+      }
+      const outcome = await saveShownPrizes(apiUrl, token, choice, { fetchFn, key });
+      if (outcome.kind === "ok") {
+        kept = { token, prizes: outcome.value };
+        setHeld({ token, state: { status: "ready", prizes: outcome.value } });
+        return { ok: true, value: outcome.value };
+      }
+      if (sessionEnded(outcome)) {
+        endSession(token);
+      }
+      return { ok: false, problem: accountProblem(outcome) };
+    },
+    [apiUrl, endSession, fetchFn, key, token],
+  );
+
   const shown: PrizesShown =
     token === null ? OFF : held !== null && held.token === token ? held.state : LOADING;
-  return { shown, refresh };
+  return { shown, refresh, show };
 }
 
 /** For the tests: as an app just opened. */

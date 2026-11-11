@@ -10,8 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "10 novembre 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). */
-const PRIVACY_UPDATED = "10 novembre 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). */
+const PRIVACY_UPDATED = "11 novembre 2026";
 
 const help: AboutDocument = {
   title: "Comment fonctionne MuW",
@@ -396,7 +396,7 @@ const privacy: AboutDocument = {
     {
       heading: "Le jeu des formes",
       blocks: [
-        "Avec un compte, notre serveur calcule à partir de tes courses à pied enregistrées combien de kilomètres comptent pour le jeu, tes meilleurs temps sur des distances de 400 m à 50 km, et les formes que tu as collectionnées. Toi seul vois ta collection et tes meilleurs temps. Pour les défis personnels, l'app envoie aussi avec chaque course l'écart entre l'horloge du téléphone et l'heure UTC (le fuseau horaire, par exemple +1 heure), jamais le lieu : il sert à compter les courses faites avant 8 h, le soir ou le week-end, et les semaines selon ton heure. Toi seul vois tes défis personnels et ta série. Si tu rejoins une équipe, ses membres voient ton nom d'utilisateur, ta photo, les pièces d'un défi que tu as prises et les kilomètres que tu as donnés à chacune, jamais tes tracés, les heures de tes courses ni où tu as couru. Une équipe ne se trouve qu'avec son code : elle n'est jamais dans une recherche. Supprimer une course retire ses kilomètres du compte, et les formes déjà collectionnées restent. Quand tu supprimes ton compte, tes données du jeu sont supprimées avec lui ; dans les défis d'une équipe, les pièces que tu as courues restent pour les autres, sans ton nom.",
+        "Avec un compte, notre serveur calcule à partir de tes courses à pied enregistrées combien de kilomètres comptent pour le jeu, tes meilleurs temps sur des distances de 400 m à 50 km, et les formes que tu as collectionnées. Toi seul vois ta collection et tes meilleurs temps. Les récompenses du jeu (éditions, cadres, titres et badges), toi seul les vois, jusqu'à ce que tu choisisses de montrer sur ton profil un cadre, un titre ou jusqu'à 3 badges : à partir de là, les personnes qui peuvent voir ton profil les voient. Sans ton choix, rien n'est montré, et tu peux les retirer quand tu veux. Pour les défis personnels, l'app envoie aussi avec chaque course l'écart entre l'horloge du téléphone et l'heure UTC (le fuseau horaire, par exemple +1 heure), jamais le lieu : il sert à compter les courses faites avant 8 h, le soir ou le week-end, et les semaines selon ton heure. Toi seul vois tes défis personnels et ta série. Si tu rejoins une équipe, ses membres voient ton nom d'utilisateur, ta photo, les pièces d'un défi que tu as prises et les kilomètres que tu as donnés à chacune, jamais tes tracés, les heures de tes courses ni où tu as couru. Une équipe ne se trouve qu'avec son code : elle n'est jamais dans une recherche. Supprimer une course retire ses kilomètres du compte, et les formes déjà collectionnées restent. Quand tu supprimes ton compte, tes données du jeu sont supprimées avec lui ; dans les défis d'une équipe, les pièces que tu as courues restent pour les autres, sans ton nom.",
       ],
     },
     {

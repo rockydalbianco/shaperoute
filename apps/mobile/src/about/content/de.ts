@@ -10,8 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "10. November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). */
-const PRIVACY_UPDATED = "10. November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). */
+const PRIVACY_UPDATED = "11. November 2026";
 
 const help: AboutDocument = {
   title: "So funktioniert MuW",
@@ -396,7 +396,7 @@ const privacy: AboutDocument = {
     {
       heading: "Das Formenspiel",
       blocks: [
-        "Mit einem Konto berechnet unser Server aus deinen gespeicherten Läufen zu Fuß, wie viele Kilometer für das Spiel zählen, deine Bestzeiten über Distanzen von 400 m bis 50 km und die Formen, die du gesammelt hast. Nur du siehst deine Sammlung und deine Bestzeiten. Für die persönlichen Herausforderungen sendet die App mit jedem Lauf auch den Unterschied zwischen der Uhr des Telefons und UTC (die Zeitzone, zum Beispiel +1 Stunde), nie den Ort: Damit zählen wir die Läufe vor 8 Uhr, am Abend oder am Wochenende und die Wochen nach deiner Zeit. Deine persönlichen Herausforderungen und deine Serie siehst nur du. Wenn du einem Team beitrittst, sehen seine Mitglieder deinen Benutzernamen, dein Bild, die Teile einer Herausforderung, die du übernommen hast, und die Kilometer, die du zu jedem beigetragen hast, nie deine Strecken, die Zeiten deiner Läufe oder wo du gelaufen bist. Ein Team findet man nur mit seinem Code: Es ist nie in einer Suche. Wenn du einen Lauf löschst, fallen seine Kilometer aus der Zählung, und die Formen, die du schon gesammelt hast, bleiben. Wenn du dein Konto löschst, werden deine Spieldaten mit gelöscht; in den Herausforderungen eines Teams bleiben die Teile, die du gelaufen bist, für die anderen, ohne deinen Namen.",
+        "Mit einem Konto berechnet unser Server aus deinen gespeicherten Läufen zu Fuß, wie viele Kilometer für das Spiel zählen, deine Bestzeiten über Distanzen von 400 m bis 50 km und die Formen, die du gesammelt hast. Nur du siehst deine Sammlung und deine Bestzeiten. Die Preise des Spiels (Editionen, Rahmen, Titel und Abzeichen) siehst nur du, bis du dich entscheidest, auf deinem Profil einen Rahmen, einen Titel oder bis zu 3 Abzeichen zu zeigen: Ab dann sieht sie, wer dein Profil sehen kann. Ohne deine Wahl wird nichts gezeigt, und du kannst sie jederzeit wieder entfernen. Für die persönlichen Herausforderungen sendet die App mit jedem Lauf auch den Unterschied zwischen der Uhr des Telefons und UTC (die Zeitzone, zum Beispiel +1 Stunde), nie den Ort: Damit zählen wir die Läufe vor 8 Uhr, am Abend oder am Wochenende und die Wochen nach deiner Zeit. Deine persönlichen Herausforderungen und deine Serie siehst nur du. Wenn du einem Team beitrittst, sehen seine Mitglieder deinen Benutzernamen, dein Bild, die Teile einer Herausforderung, die du übernommen hast, und die Kilometer, die du zu jedem beigetragen hast, nie deine Strecken, die Zeiten deiner Läufe oder wo du gelaufen bist. Ein Team findet man nur mit seinem Code: Es ist nie in einer Suche. Wenn du einen Lauf löschst, fallen seine Kilometer aus der Zählung, und die Formen, die du schon gesammelt hast, bleiben. Wenn du dein Konto löschst, werden deine Spieldaten mit gelöscht; in den Herausforderungen eines Teams bleiben die Teile, die du gelaufen bist, für die anderen, ohne deinen Namen.",
       ],
     },
     {

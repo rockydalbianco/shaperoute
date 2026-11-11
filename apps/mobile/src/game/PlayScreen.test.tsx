@@ -214,15 +214,16 @@ test("«Prizes» opens the frames, titles and badges, and «←» goes back", as
   expect(screen.getByTestId("prizes-editions")).toHaveTextContent(
     /Silver editions: 1.*Gold editions: 0/,
   );
+  // The example shows the frame of «Geometry» and one badge (TASK-423 E2b).
   expect(screen.getByTestId("prize-frame-geometry")).toHaveTextContent(
-    /Geometry.*Earned/,
+    /Geometry.*On your profile/,
   );
   expect(screen.getByTestId("prize-frame-sky")).toHaveTextContent(/Sky.*0 \/ 1/);
   expect(screen.getByTestId("prize-runner")).toHaveTextContent(
     /Runner.*14.2 \/ 100 km.*100 km in total/,
   );
   expect(screen.getByTestId("prize-streak_4")).toHaveTextContent(
-    /4-week streak.*Earned/,
+    /4-week streak.*On your profile/,
   );
   await fireEvent.press(screen.getByTestId("prizes-back"));
   expect(screen.getByTestId("collection-list")).toBeTruthy();
@@ -260,4 +261,43 @@ test("an unlocked pace shape shows its edition and the runs to the next", async 
   expect(screen.getByTestId("edition-silver")).toBeTruthy();
   // The frame of «Sky», all its shapes now unlocked.
   expect(screen.getByTestId("collection-frame")).toHaveTextContent(/Sky frame.*Earned/);
+});
+
+// --- What the profile shows (TASK-423 E2b) ---
+
+test("a prize got, touched, goes on the profile or off it; locked ones do nothing", async () => {
+  setGameCatalog(CATALOG);
+  const fetchFn = jest.fn(async (url: string, init?: RequestInit) => {
+    if (url.endsWith("/game/me")) {
+      return Response.json(me);
+    }
+    if (url.endsWith("/game/prizes/shown")) {
+      const shown = JSON.parse(String(init?.body));
+      return Response.json({ ...prizes, shown });
+    }
+    return Response.json(prizes);
+  });
+  await shown(fetchFn as unknown as jest.Mock);
+  await waitFor(() => expect(screen.getByTestId("play-prizes")).toBeTruthy());
+  await fireEvent.press(screen.getByTestId("play-prizes"));
+  await waitFor(() => expect(screen.getByTestId("prizes-profile")).toBeTruthy());
+  const puts = () =>
+    fetchFn.mock.calls
+      .filter(([, init]) => init?.method === "PUT")
+      .map(([, init]) => JSON.parse(String(init?.body)));
+  // The badge on the profile, touched: off it.
+  await fireEvent.press(screen.getByTestId("prize-streak_4"));
+  await waitFor(() => expect(puts()).toHaveLength(1));
+  expect(puts()[0]).toEqual({ frame: "geometry", title: null, badges: [] });
+  await waitFor(() =>
+    expect(screen.getByTestId("prize-streak_4")).toHaveTextContent(/Earned/),
+  );
+  // The frame, touched: off it too.
+  await fireEvent.press(screen.getByTestId("prize-frame-geometry"));
+  await waitFor(() => expect(puts()).toHaveLength(2));
+  expect(puts()[1]).toEqual({ frame: null, title: null, badges: [] });
+  // A prize not got: nothing.
+  await fireEvent.press(screen.getByTestId("prize-team_1"));
+  await fireEvent.press(screen.getByTestId("prize-frame-sky"));
+  expect(puts()).toHaveLength(2);
 });

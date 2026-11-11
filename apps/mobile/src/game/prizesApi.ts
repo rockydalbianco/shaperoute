@@ -1,4 +1,4 @@
-import type { GamePrizes } from "@shaperoute/shared-types";
+import type { GamePrizes, GamePrizesShown } from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "../api/accounts";
 
@@ -34,7 +34,9 @@ function isFrame(value: unknown): boolean {
   );
 }
 
-function isShown(value: unknown): boolean {
+/** What a profile shows of the game, as the API says it: anything else
+ * (an older or a broken answer) shows nothing. */
+export function isGamePrizesShown(value: unknown): value is GamePrizesShown {
   return (
     isRecord(value) &&
     (value.frame === null || typeof value.frame === "string") &&
@@ -56,7 +58,7 @@ export function isGamePrizes(value: unknown): value is GamePrizes {
     isRecord(value.editions) &&
     typeof value.editions.silver === "number" &&
     typeof value.editions.gold === "number" &&
-    isShown(value.shown)
+    isGamePrizesShown(value.shown)
   );
 }
 
@@ -67,4 +69,22 @@ export function fetchGamePrizes(
   options: Options = {},
 ): Promise<AccountOutcome<GamePrizes>> {
   return ask(baseUrl, "/game/prizes", { method: "GET", token }, isGamePrizes, options);
+}
+
+/** PUT /game/prizes/shown (TASK-423 part E2b): what the public profile
+ * shows, one frame, one title, up to 3 badges, only among the prizes the
+ * account has; the API answers the prizes again. */
+export function saveShownPrizes(
+  baseUrl: string,
+  token: string,
+  shown: GamePrizesShown,
+  options: Options = {},
+): Promise<AccountOutcome<GamePrizes>> {
+  return ask(
+    baseUrl,
+    "/game/prizes/shown",
+    { method: "PUT", body: shown, token },
+    isGamePrizes,
+    options,
+  );
 }

@@ -86,7 +86,26 @@ Il catalogo sta solo nel processo principale (i route worker nascono dal
 fork server, senza). A 2000 percorsi: circa 32 MB di file e +200 MB di
 memoria. Quasi tutta è dei punti tenuti come tuple di float (104 byte a
 punto): tenerli in un `array('d')` li porterebbe a 16 byte, circa 35 MB a
-2000 percorsi, senza cambiare i file. Da decidere col Coordinatore.
+2000 percorsi, senza cambiare i file. **Coordinatore, 2026-11-11**: il
+server ha 7,7 GB, 6,2 disponibili, il contenitore dell'API ne usa 627 MB:
++150–200 MB non pesano, l'`array('d')` non si fa in questa PR; se il
+catalogo cresce ancora, a parte.
+
+## Con quale motore sono nati i disegni
+
+Serve se un cambio del motore chiede di rifarne una parte (TASK-447, «via i
+baffi», in coda: penalizza andata e ritorno sullo stesso arco e gli anelli
+piccoli alla partenza; da decidere con l'utente se passa prima o vale solo
+per le richieste nuove).
+
+- **A2**, le parole di `out/TASK-441/runs.jsonl`: motore `8ab61d8e87f9`
+  (codice `b4967ef32e9a`, `main` `88d0a492`; `out/TASK-441/fingerprint.py`),
+  l'11 novembre 2026.
+- **A1**, dal registro di TASK-419: ogni riga ha `planned_at` e `source`
+  (`2026-10` il seme di ottobre, `TASK-419` i giri dell'8–10 novembre,
+  `TASK-418 outline` i contorni).
+- I baffi il filtro li conta già: `extra_doubled`, la quota di strada
+  ripassata oltre quella che la forma ripassa di suo, scarta sopra il 10 %.
 
 ## Criteri di accettazione (parte A)
 

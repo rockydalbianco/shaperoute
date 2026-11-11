@@ -6,6 +6,7 @@ import {
   JOB_STATUSES,
   type JobStatus,
   type RouteJob,
+  type RouteJobWithFirst,
   type RouteRequest,
   type RouteResult,
   TURNS,
@@ -142,10 +143,13 @@ export async function requestRoute(
     if (job.status === "failed" && job.error) {
       return { kind: "api_error", ...job.error };
     }
-    // A first route that cannot be drawn is as none: the answer will come.
-    if (wantsFirst && isRouteResult(job.first)) {
+    // The job asked with `?first=1` may carry its first route
+    // (RouteJobWithFirst); an API before it sends a plain RouteJob. A first
+    // route that cannot be drawn is as none: the answer will come.
+    const first: unknown = (job as Partial<RouteJobWithFirst>).first;
+    if (wantsFirst && isRouteResult(first)) {
       wantsFirst = false;
-      onFirst?.(job.first);
+      onFirst?.(first);
     }
     onStatus?.(knownStatus(job.status));
     if (Date.now() >= deadline) {

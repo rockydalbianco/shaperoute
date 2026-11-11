@@ -126,10 +126,10 @@ libero al merge),
       valido per il server), la spiegazione B che sale e si chiude, «Today» in
       un giorno di corsa, «My plans» con «RUN». Tutto come la tela, tranne
       «No» di «And running?» che scelto aveva il bordo azzurro delle corse:
-      ora neutro (#1133, esce con l'ottavo OTA, insieme allo sci). Schermate in
+      ora neutro (#1133, in `main` cd0c8b08, uscito con l'ottavo OTA). Schermate in
       `out/TASK-433/simulator/` del checkout principale.
-- [ ] Prova sul telefono dell'utente (tutto tranne il «No» neutro è nel
-      settimo OTA; il «No» neutro nell'ottavo).
+- [ ] Prova sul telefono dell'utente: il settimo OTA provato il 2026-11-11
+      (prova generale, sotto); manca il «No» neutro dell'ottavo.
 
 ## Parte B — «Come funzionano le schede» toccando Palestra
 
@@ -254,3 +254,10 @@ settimo aggiornamento. È una **prova generale** del settimo OTA: l'utente
 non ha nominato le singole funzioni, quindi per la C2 (giorni di corsa) non
 vale come giro guidato dei passi della guida. Il «No» neutro di «And
 running?» (#1133) non c'era ancora: esce con l'ottavo OTA.
+
+Ottavo OTA in produzione il 2026-11-11 alle 14:09Z da `main` cd0c8b08, con
+la #1133 (il «No» neutro di «And running?»): iOS
+`0cf2abd4-69dc-44ca-b5ea-429a0155a1f8`, Android
+`41d7bb93-47c7-4236-b80f-3f61fd454220`, preview
+`76f5ccd6-6bf5-45dd-9c70-163a7d6b860b`. Resta la prova sul telefono di
+questo ritocco; poi TASK-433 si chiude.

@@ -1,0 +1,148 @@
+{
+  "month": "2026-11",
+  "tz": "Europe/Rome",
+  "sport": null,
+  "count": 4,
+  "distance_m": 19100.0,
+  "duration_s": 22661,
+  "days": [
+    {
+      "day": 1,
+      "activities": [
+        {
+          "id": "ab00000000000101",
+          "activity": "running",
+          "started_at": "2026-11-01T07:12:00Z",
+          "distance_m": 5200.0,
+          "duration_s": 1661,
+          "kcal": 389,
+          "shape": "heart",
+          "word": null,
+          "title": null,
+          "place": "Trento"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "activities": [
+        {
+          "id": "ab00000000000102",
+          "activity": "swimming",
+          "started_at": "2026-11-05T06:30:00Z",
+          "distance_m": 1500.0,
+          "duration_s": 2100,
+          "kcal": null,
+          "shape": null,
+          "word": null,
+          "title": null,
+          "place": null
+        },
+        {
+          "id": "ab00000000000103",
+          "activity": "gym",
+          "started_at": "2026-11-05T17:30:00Z",
+          "distance_m": 0.0,
+          "duration_s": 3300,
+          "kcal": 310,
+          "shape": null,
+          "word": null,
+          "title": null,
+          "place": null
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "activities": [
+        {
+          "id": "ab00000000000104",
+          "activity": "hiking",
+          "started_at": "2026-11-08T08:00:00Z",
+          "distance_m": 12400.0,
+          "duration_s": 15600,
+          "kcal": 1120,
+          "shape": null,
+          "word": null,
+          "title": null,
+          "place": "Sardagna"
+        }
+      ]
+    }
+  ],
+  "trend": [
+    {
+      "month": "2025-12",
+      "count": 3,
+      "distance_m": 21000.0,
+      "duration_s": 9200
+    },
+    {
+      "month": "2026-01",
+      "count": 5,
+      "distance_m": 30500.0,
+      "duration_s": 13100
+    },
+    {
+      "month": "2026-02",
+      "count": 4,
+      "distance_m": 26000.0,
+      "duration_s": 11800
+    },
+    {
+      "month": "2026-03",
+      "count": 6,
+      "distance_m": 41200.0,
+      "duration_s": 17900
+    },
+    {
+      "month": "2026-04",
+      "count": 7,
+      "distance_m": 52300.0,
+      "duration_s": 20400
+    },
+    {
+      "month": "2026-05",
+      "count": 5,
+      "distance_m": 38900.0,
+      "duration_s": 16800
+    },
+    {
+      "month": "2026-06",
+      "count": 8,
+      "distance_m": 60100.0,
+      "duration_s": 24500
+    },
+    {
+      "month": "2026-07",
+      "count": 6,
+      "distance_m": 44800.0,
+      "duration_s": 19300
+    },
+    {
+      "month": "2026-08",
+      "count": 9,
+      "distance_m": 71500.0,
+      "duration_s": 27600
+    },
+    {
+      "month": "2026-09",
+      "count": 7,
+      "distance_m": 55200.0,
+      "duration_s": 21900
+    },
+    {
+      "month": "2026-10",
+      "count": 8,
+      "distance_m": 58700.0,
+      "duration_s": 23800
+    },
+    {
+      "month": "2026-11",
+      "count": 4,
+      "distance_m": 19100.0,
+      "duration_s": 22661
+    }
+  ],
+  "sports": ["running", "hiking", "gym", "swimming"]
+}

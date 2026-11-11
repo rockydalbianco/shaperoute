@@ -2808,6 +2808,7 @@ export interface StyleShop {
 
 export * from "./gym.ts";
 export * from "./poolSwim.ts";
+export * from "./activityCalendar.ts";
 export * from "./liveShare.ts";
 
 /**

@@ -1,6 +1,6 @@
 # TASK-443 — Inquadratura della mappa del risultato
 
-**Stato**: In corso · 2026-11-11
+**Stato**: Done · 2026-11-11 · PR #1165 in `main` (4fbcebef)
 **Fase**: 5 · **Branch**: `feat/TASK-443-result-map-fit`
 **Dipende da**: TASK-442 (la sagoma sotto il percorso, PR #1143)
 **ADR**: nessuno · numero dal Coordinatore l'11 novembre 2026 (P2 di
@@ -55,28 +55,30 @@ bandierina.
 
 ## Criteri di accettazione
 
-- [ ] Con safe area e pulsanti detti alla pagina, il percorso è inquadrato
+- [x] Con safe area e pulsanti detti alla pagina, il percorso è inquadrato
       sotto la safe area e sopra l'attribuzione; se toccherebbe un pulsante,
       sotto i pulsanti (`mapPageFrame.test.ts`).
-- [ ] Cambiata l'altezza della mappa, il percorso è inquadrato di nuovo; non
+- [x] Cambiata l'altezza della mappa, il percorso è inquadrato di nuovo; non
       se l'utente ha mosso la mappa (`mapPageFrame.test.ts`).
-- [ ] La sagoma entra nell'inquadratura e una nuova inquadratura non la
+- [x] La sagoma entra nell'inquadratura e una nuova inquadratura non la
       tocca (`mapPageFrame.test.ts`).
-- [ ] Il fumetto non sta mai nella safe area, sotto un pulsante o fuori dai
+- [x] Il fumetto non sta mai nella safe area, sotto un pulsante o fuori dai
       bordi, e ha i colori del tema (`mapPageStartHere.test.ts`).
-- [ ] La partenza è una bandierina, non una goccia
+- [x] La partenza è una bandierina, non una goccia
       (`mapPageStartHere.test.ts`, `mapPage.test.ts`).
-- [ ] L'attribuzione resta aperta, con testo e link leggibili (contrasto
+- [x] L'attribuzione resta aperta, con testo e link leggibili (contrasto
       ≥ 4,5:1) in ogni tono, e fuori dal pannello e dai pulsanti
       (`mapPageAttribution.test.ts`, `MapScreenCover.test.tsx`).
-- [ ] `MapScreen` dice cosa copre la mappa e `MapView` lo manda alla pagina
+- [x] `MapScreen` dice cosa copre la mappa e `MapView` lo manda alla pagina
       prima del percorso (`mapCover.test.ts`, `MapScreenCover.test.tsx`,
       `MapViewCover.test.tsx`).
-- [ ] `tsc` pulito, test dei file toccati verdi. Impronta iOS attesa
-      `6f8bba4c` (solo JS/TS).
-- [ ] Screenshot prima e dopo delle varianti A, B, C in `out/TASK-443/`
-      (cuore 5 km da 46.0679, 11.1211).
-- [ ] Sì dell'utente su ciò che si vede, prima di «#NNN pronta».
+- [x] `tsc` pulito, test dei file toccati verdi (65 suite, 524 test in
+      locale; la suite intera in CI). Impronta iOS attesa `6f8bba4c` (solo
+      JS/TS), non misurata su copia pulita.
+- [x] Screenshot prima e dopo delle varianti A, B, C in `out/TASK-443/`
+      del checkout principale (cuore 5 km da 46.0679, 11.1211, iPhone 17):
+      `before-A/B/C.png`, `after-A/B/C.png`, il foglio `prima-dopo.png`.
+- [x] Sì dell'utente su ciò che si vede: «Sì, va bene», l'11 novembre 2026.
 
 ## File toccati
 
@@ -121,3 +123,23 @@ bandierina.
   Mancano gli screenshot nel simulatore (un'altra sessione aveva acceso il
   suo pochi secondi prima: aspetto il turno), il sì dell'utente, la PR dopo
   «#1143 in main».
+- 2026-11-11 notte: ramo riallineato a `main` dopo «#1143 in main», PR
+  #1165. Screenshot nel simulatore al turno dato dal Coordinatore: in B il
+  percorso entra tutto (prima usciva in alto e in basso), fumetto scuro
+  sopra la bandierina, attribuzione senza fascia grigia; A e C, disegni
+  girati, entravano già e ora sono un po' più piccoli. L'utente: «Sì, va
+  bene». #1165 in `main` (4fbcebef).
+
+## Esito
+
+In `main` con la #1165. **Resta**: l'uscita nell'app. L'utente ha deciso di
+non pubblicare aggiornamenti di produzione per due giorni: la 443 esce con
+l'aggiornamento completo, dal Coordinatore col suo sì; nella versione di
+prova (preview) la pubblica il Coordinatore. Poi la prova sul telefono.
+
+**Non fatto, proposto**: un'inquadratura più stretta per i disegni girati.
+MapLibre inquadra il rettangolo di latitudine e longitudine girato, non i
+punti: A e C restano più piccoli del possibile. Il conto di dove cade un
+punto sullo schermo è già nella pagina (`underButtons`) ed è esatto: la
+camera si può calcolare dai punti del percorso. L'utente ha visto la
+proposta e ha approvato così com'è; sarebbe una task nuova.

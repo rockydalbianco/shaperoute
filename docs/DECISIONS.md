@@ -529,8 +529,47 @@ lasciando le righe d'indice.
 - ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix` · 2026-11-11 · Attiva
 - ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste · 2026-11-11 · Attiva
 - ADR-0342, precisazione A2 — Le ciaspole nel contratto e nell'API: nessun percorso sulla neve tenuto, le quote dal disco a ogni richiesta, il profilo nascosto nell'app · 2026-11-11 · Attiva
+- ADR-0344, precisazione B — Fasi, cambi pelli e VAM sul telefono sopra i tratti della neve; il pannello sopra la scheda della corsa · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0344, precisazione B — Fasi, cambi pelli e VAM sul telefono sopra i tratti della neve; il pannello sopra la scheda della corsa
+
+**Stato**: Attiva · 2026-11-11 · TASK-415 parte B (#1160, `c378cd69`).
+Deciso dall'agente su delega dell'utente, dentro le scelte dell'utente del
+2026-11-07 (metriche, «Acceso con a e b»); lista dei file approvata dal
+Coordinatore, testi e schermate approvati dall'utente l'11-11.
+
+**Decisione**:
+
+1. **Un modulo puro e generico**, `activities/mountainPhases.ts`: legge la
+   traccia coi tratti di `snowDay.ts` (`legs`, `isLift`, `droppedM`,
+   esportati con una svolta facoltativa `turnM`; lo sci non cambia) e una
+   svolta di 20 m. Un tratto che sale ed è un impianto è **risalita**, che
+   sale e non lo è **salita**, che scende di almeno 30 m **discesa**; il
+   resto si unisce alla fase vicina, e due fasi uguali vicine sono una.
+2. **Un cambio pelli** sta fra una salita e ciò che non lo è: le
+   posizioni ferme attorno alla svolta (sotto 0,5 m/s sull'orologio del
+   telefono, pause comprese, entro 50 m di quota), almeno 90 s. «Pelli
+   tolte» dopo una salita, «Pelli messe» prima.
+3. **La VAM** è metri saliti (a passi di 3 m, come `climbM`) sul tempo in
+   movimento: i passi sotto 0,2 m/s e le pause non contano. In gita: gli
+   ultimi 5 minuti, solo in salita e dopo 2 minuti di salita. Il D+ conta
+   le salite (non gli impianti), il D− le discese.
+4. **In gita**, «Cambio pelli» quando la gita è ferma da 90 s, o in pausa,
+   vicino alla quota della svolta; altrimenti la fase in corso.
+5. **Dove sta**: lo sport in «Settings» è `skimo`, salvato come
+   `ski_touring`, pronto. La fine gita è una scheda sua
+   (`SkiTourFinishCard.tsx`), il pannello sta sopra la scheda della corsa
+   in `FreeRunScreen.tsx` come `DayResort` per lo sci (`SkiTourLive.tsx`):
+   `RunDashboard.tsx` non cambia. Due caselle per riga, perché le
+   etichette in italiano e tedesco sono lunghe.
+
+**Conseguenze**: solo app; impronta del motore `427ed1a16a97 8ab61d8e87f9`
+e impronta iOS `6f8bba4c` invariate; nessun invio nuovo al server (le fasi
+nel post sono la B2, in `run_stats`). Le soglie si tarano su una gita vera
+(parte E): una sosta lunga a metà salita può sembrare un cambio. Hike e
+ciaspole possono usare lo stesso modulo.
 
 ## ADR-0342, precisazione A2 — Le ciaspole nel contratto e nell'API: nessun percorso sulla neve tenuto, le quote dal disco a ogni richiesta, il profilo nascosto nell'app
 

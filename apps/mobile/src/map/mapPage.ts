@@ -11,6 +11,7 @@ import {
   route,
   routeAhead,
   routeCasing,
+  shapeGhost,
   stop,
   track,
   walk,
@@ -97,6 +98,13 @@ export const AHEAD_BEAT_MS = routeAhead.beatMs;
 export const OTHER_ROUTE_COLOR = otherRoute.color;
 export const OTHER_ROUTE_WIDTH = otherRoute.width;
 export const OTHER_ROUTE_OPACITY = otherRoute.opacity;
+
+/** The shape asked for as the search placed it, dotted under the route and
+ * the other routes (TASK-442). */
+export const GHOST_COLOR = shapeGhost.color;
+export const GHOST_WIDTH = shapeGhost.width;
+export const GHOST_OPACITY = shapeGhost.opacity;
+export const GHOST_DASH = shapeGhost.dash;
 
 /** The walks of a word with the pen up, dashed under the route (TASK-198). */
 export const WALK_COLOR = walk.color;
@@ -324,6 +332,8 @@ export function buildMapPage(language: Language = appLanguage()): string {
     var skiLabels = noRoute;
     var stops = noRoute;
     var others = noRoute;
+    // The shape asked for, where the search placed it (TASK-442).
+    var ghost = noRoute;
     // «Draw on the map» (TASK-281): the figure as drawn, its links dashed
     // and the dots of a straight line being tapped (TASK-331 part B), and
     // the line a finger is drawing.
@@ -360,6 +370,21 @@ export function buildMapPage(language: Language = appLanguage()): string {
     map.addControl(new maplibregl.AttributionControl({ compact: false }));
     map.once("style.load", function () {
       styleLoaded = true;
+      // The shape asked for as the search placed it, under everything
+      // drawn: the route is compared with it (TASK-442).
+      map.addSource("ghost", { type: "geojson", data: ghost });
+      map.addLayer({
+        id: "ghost",
+        type: "line",
+        source: "ghost",
+        layout: { "line-join": "round", "line-cap": "butt" },
+        paint: {
+          "line-color": ${toScript(GHOST_COLOR)},
+          "line-width": ${GHOST_WIDTH},
+          "line-opacity": ${GHOST_OPACITY},
+          "line-dasharray": ${toScript(GHOST_DASH)},
+        },
+      });
       // The other routes to choose from, under the route.
       map.addSource("others", { type: "geojson", data: others });
       map.addLayer({
@@ -818,6 +843,13 @@ export function buildMapPage(language: Language = appLanguage()): string {
       var source = map.getSource("others");
       if (source) {
         source.setData(others);
+      }
+    }
+    function setGhost(data) {
+      ghost = data;
+      var source = map.getSource("ghost");
+      if (source) {
+        source.setData(ghost);
       }
     }
     function setTrack(data) {
@@ -2043,6 +2075,16 @@ export function buildMapPage(language: Language = appLanguage()): string {
             properties: {},
             geometry: { type: "MultiLineString", coordinates: message.lines },
           });
+        } else if (message.type === "showGhost") {
+          setGhost(
+            message.lines.length === 0
+              ? noRoute
+              : {
+                  type: "Feature",
+                  properties: {},
+                  geometry: { type: "MultiLineString", coordinates: message.lines },
+                },
+          );
         } else if (message.type === "clearTrack") {
           setTrack(noRoute);
         } else if (message.type === "showLifts") {

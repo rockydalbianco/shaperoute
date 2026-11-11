@@ -1,5 +1,5 @@
 import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   AppState,
   Linking,
@@ -52,6 +52,7 @@ import {
   setPick,
   setPosition,
   showLifts,
+  showGhost,
   showOthers,
   showProgress,
   showRejoinLine,
@@ -68,6 +69,8 @@ import type { SkiLabel } from "../skimode/skiDayLabels";
 /** One empty list, so the map is not told again and again of no routes. */
 const NO_OTHERS: LatLon[][] = [];
 const NO_LABELS: readonly SkiLabel[] = [];
+/** No shape under the route. */
+const NO_GHOST: LatLon[][] = [];
 
 /** The figure of «Draw on the map» as the map shows it (TASK-281). */
 export type MapCanvas = {
@@ -124,6 +127,14 @@ type Props = {
   onFoot?: Stretch[] | null;
   /** The other routes to choose from, grey under the route (TASK-093). */
   others?: LatLon[][];
+  /** The shape asked for as the search placed it, a result's
+   * `placed_outline`: dotted under the route and the others, to compare
+   * the route with (TASK-442). None, or no line, draws nothing. */
+  ghost?: LatLon[][] | null;
+  /** Something shown over the map and under its bar and its error, as the
+   * shape while its route is drawn (TASK-442). It takes no part in the
+   * map: the page is told nothing of it. */
+  over?: ReactNode;
   /** The run to draw over the route, or null for none (TASK-113). */
   track?: LatLon[] | null;
   /** The lifts of a day of skiing, as stretches of `track` (TASK-375 part
@@ -204,6 +215,8 @@ export function MapView({
   walks = null,
   onFoot = null,
   others = NO_OTHERS,
+  ghost = null,
+  over,
   track = null,
   lifts = null,
   liftLabels = NO_LABELS,
@@ -253,6 +266,7 @@ export function MapView({
   const liftsShown = useRef(false);
   const stopsShown = useRef(false);
   const othersShown = useRef(false);
+  const ghostShown = useRef(false);
   const progressShown = useRef(false);
   const rejoinShown = useRef(false);
   const doubleTapAsked = useRef(false);
@@ -330,6 +344,19 @@ export function MapView({
       othersShown.current = others.length > 0;
     }
   }, [ready, others]);
+
+  // The shape under the route (TASK-442): it does not move the map either.
+  // None after one: the shape of the last result goes away.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    const lines = ghost ?? NO_GHOST;
+    if (lines.length > 0 || ghostShown.current) {
+      webView.current?.injectJavaScript(pageScript(showGhost(lines)));
+      ghostShown.current = lines.length > 0;
+    }
+  }, [ready, ghost]);
 
   // After the start, so the map frames the route rather than the start.
   useEffect(() => {
@@ -654,6 +681,7 @@ export function MapView({
         // iOS may stop the page to free memory: without a reload it stays white.
         onContentProcessDidTerminate={() => webView.current?.reload()}
       />
+      {over}
       {loading && !failed && (
         <View style={styles.loading} pointerEvents="none">
           <MapLoadingBar />

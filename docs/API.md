@@ -1204,7 +1204,7 @@ salva, si elenca e si apre come una giornata di sci; Strava non ha il
 parapendio e lo riceve come `Workout`, il GPX dice
 `<type>paragliding</type>`. Niente percorsi (il pianificatore di ADR-0265
 è un'altra cosa), niente gioco delle forme, niente record personali;
-preferiti e corse di gruppo no (migrazione `0070`). Lo legge solo un'app
+preferiti e corse di gruppo no (migrazione `0069`). Lo legge solo un'app
 che dice `paragliding` in `X-MuW-Reads`.
 
 ### Quello che un'app sa leggere: `X-MuW-Reads` (TASK-387, ADR-0328)

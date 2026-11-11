@@ -1109,9 +1109,8 @@ bozza, quello vero è il primo libero al merge, dal Coordinatore):
 - `run_bests` no: nessun record personale, come Hike.
 - Nessuna riga cambia. Test in `test_snowshoeing_api.py`.
 
-Migrazione `0070_paragliding.sql` (TASK-305 parte R1, ADR-0375; numero in
-bozza dal Coordinatore, la `0069` è di TASK-463: quello vero è il primo
-libero al merge):
+Migrazione `0069_paragliding.sql` (TASK-305 parte R1, ADR-0375; il numero
+è del Coordinatore, il primo libero in `main` al merge):
 
 - Il vincolo `runs_activity_check` prende anche `'paragliding'`: un volo
   si salva come corsa, come una giornata di sci (`0044`). La migrazione

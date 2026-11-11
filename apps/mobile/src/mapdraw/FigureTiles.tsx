@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text } from "react-native";
 
 import { t } from "../i18n";
 import { SAMPLE_PICTURES } from "../route/samplePictures";
-import { SHAPE_SIGNS } from "../route/ShapeTiles";
+import { ShapeGlyph } from "../route/ShapeGlyph";
 import { shapeName } from "../route/shapeWords";
 import {
   color,
@@ -30,7 +30,7 @@ type Props = {
 
 /**
  * The figures as a row of tiles that slides sideways (TASK-281, TASK-286):
- * the 17 shapes of the catalogue by their signs and the 16 ready-made
+ * the shapes of the catalogue by their outlines (TASK-444) and the ready-made
  * pictures of «Draw» (TASK-280, TASK-290). The same tiles on the map of «Draw on the
  * map», where «+ photo» comes first, and under the route drawn.
  */
@@ -71,7 +71,7 @@ export function FigureTiles({
             accessibilityLabel={shapeName(shape)}
             accessibilityState={{ selected }}
           >
-            <Text style={styles.sign}>{SHAPE_SIGNS[shape]}</Text>
+            <ShapeGlyph shape={shape} size={GLYPH} />
           </Pressable>
         );
       })}
@@ -96,6 +96,8 @@ export function FigureTiles({
 }
 
 const TILE = MIN_TAP_SIZE + space.md;
+/** A shape's outline in its tile, with room around it. */
+const GLYPH = 28;
 
 const styles = StyleSheet.create({
   row: {
@@ -123,10 +125,6 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.small,
     fontWeight: fontWeight.semibold,
-  },
-  sign: {
-    color: color.text,
-    fontSize: fontSize.title,
   },
   picture: {
     width: TILE - space.md,

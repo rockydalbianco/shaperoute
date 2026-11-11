@@ -1000,6 +1000,7 @@ export const DE: Table = {
   "{count} min ago": "vor {count} Min.",
   "{count} h ago": "vor {count} Std.",
   "{count} d ago": "vor {count} Tg.",
+  yesterday: "gestern",
   "Write a comment": "Kommentar schreiben",
   "{count} comment": "{count} Kommentar",
   "{count} comments": "{count} Kommentare",

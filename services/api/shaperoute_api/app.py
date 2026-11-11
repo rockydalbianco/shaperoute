@@ -45,6 +45,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from shaperoute_api.access import protect
 from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.activities import PlaceNames, install_activities
+from shaperoute_api.activity_calendar import install_activity_calendar
 from shaperoute_api.activity_graphs import (
     Graphs,
     check_supported,
@@ -395,6 +396,9 @@ def create_app(
     # The calendar of one's own workouts at the gym (TASK-411 B); it needs
     # a token.
     install_gym_calendar(app)
+    # The calendar of all one's own activities, with the twelve months up
+    # to it (TASK-462 A); it needs a token.
+    install_activity_calendar(app)
     # The plans of the gym (TASK-411 C); they need a token.
     install_gym_plans(app)
     # The swims in a pool, saved without a track, and their lengths

@@ -1776,6 +1776,36 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   `activity-imported.json`. Un'API di prima rifiuta il campo: `422
   invalid_request`.
 
+### Il calendario delle attività (TASK-462 parte A, ADR-0372)
+
+Il calendario di tutte le attività del proprietario, di ogni sport, per la
+striscia della settimana nel profilo e per il calendario del profilo e di «My
+activities». Vuole il token (`401 not_signed_in`; senza database `503
+accounts_unavailable`). Esempio `fixtures/activity-calendar.json`; tipi in
+`shared-types` `src/activityCalendar.ts`; codice `activity_calendar.py`.
+Solo lettura da `runs` e `run_stats`, nessuna migrazione.
+
+- **`GET /me/activity-calendar?tz=&month=&sport=`**: `tz` è il fuso del
+  telefono (nome IANA, `422` se no), `month` un mese `YYYY-MM` su quel fuso
+  (questo se manca), `sport` un'attività di una corsa (`running`, `gym`,
+  `swimming`…; tutte se manca, `422` se non è una di loro).
+- Risponde `month`, `tz`, `sport` (`null` per tutti), `count`,
+  `distance_m`, `duration_s` del mese e `days`: solo i giorni con
+  un'attività, ognuna con `id` (la chiave di «My activities»), `activity`,
+  `started_at`, `distance_m` (0 per la palestra), `duration_s`, `kcal`
+  (quelle che il telefono ha mandato con `PUT /me/activities/{key}/stats`,
+  `null` se nessuna), `tracked` (`false` senza traccia: la palestra e la
+  piscina, che non aprono una mappa), `shape`, `word`, `title`, `place`; la
+  prima prima.
+- `trend`: i 12 mesi fino a `month`, il più vecchio prima, ognuno anche
+  vuoto, con `count`, `distance_m`, `duration_s`; dello `sport` chiesto.
+  Sono le barre dello «storico tempi».
+- `sports`: gli sport di cui il proprietario ha attività, di ogni mese e
+  qualunque sia `sport`, il più frequente prima: i filtri del calendario.
+- Come «My activities», solo ciò che l'app legge (`X-MuW-Reads`, `reads.py`):
+  un'app di prima vede solo corsa, bici e pagaia; la palestra vuole
+  `gym` e `trackless`, la piscina anche `pool`.
+
 ### Profile picture (TASK-178, ADR-0146)
 
 La foto del profilo di un account. Tutti gli endpoint vogliono il token:

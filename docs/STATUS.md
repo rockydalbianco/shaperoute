@@ -124,10 +124,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   di produzione del 2026-11-10 da 88e5f88f (gruppo `4eca1d42`) con F e C;
   D con l'OTA 3, dopo il passo server 2, col sì dell'utente. Poi E. File: —
   · `tasks/TASK-410.md`
-- **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
-  `heights.py` condiviso) e sul server col passo unico del 2026-11-10;
-  prossime A2 (contratto, API, migrazione in bozza 0057) e B. File: — ·
-  `tasks/TASK-413.md`
+- **TASK-413 — Ciaspole** · 0, A1 e A2 in `main` (#1130, `ac08ae94`: lo
+  sport nel contratto e nell'API, nascosto nell'app, migrazione 0068); A2
+  sul server col passo 8 del Coordinatore, col sì dell'utente; l'app col
+  decimo OTA. Prossima B. File: — · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·
   `tasks/TASK-414.md`

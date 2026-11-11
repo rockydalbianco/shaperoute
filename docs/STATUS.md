@@ -180,6 +180,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
   tornano nella B a penna alzata; il server aspetta la correzione. Poi B
   (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
+- **TASK-462 — Il calendario di tutte le attività** · A (server) in `main`
+  (#1162, ADR-0372), sul server col passo 9; B (app) nella #1172 in bozza,
+  aspetta il server e il sì dell'utente sugli screenshot. File: `profile/ProfileHome.tsx`,
+  `activities/ActivitiesList.tsx` (B) · `tasks/TASK-462.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

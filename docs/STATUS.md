@@ -148,10 +148,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   in produzione con l'OTA 4 del 2026-11-10. E1 (premi sul server, 0067) in
   `main` con la #1099, il passo server 6 aspetta il sì dell'utente; poi E2
   (l'app) e la privacy. File: — · `tasks/TASK-423.md`
-- **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1 in `main`
-  (#1093, #1108, #1114); A e B1 escono con gli OTA 5 e 6, C1 va sul server
-  nel passo 7 con TASK-424 C2b. B2 (i tratti a «Salva») e C2 (stagione e
-  giornata salvata) scritte, si aprono dopo il server. File: — · `tasks/TASK-429.md`
+- **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1, B2, C2 in
+  `main` (#1093, #1108, #1114, #1129, #1131); A e B1 fuori con gli OTA 5 e
+  6, C1 sul server dal passo 7 dell'11-11. B2 (i tratti a «Salva») e C2
+  (stagione e giornata salvata) in produzione con l'ottavo OTA dell'11-11.
+  Restano la prova sul telefono e la parte E (lista prima). File: — · `tasks/TASK-429.md`
 - **TASK-431 — «Compass» più bella** (ADR-0359) · in `main` (#1081): la
   freccia «B» con anello e cono azzurri che punta dove punta la mappa, le
   tre schede coi disegni, la punta rossa del nord. Restano l'OTA di

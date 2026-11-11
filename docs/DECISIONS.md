@@ -524,8 +524,48 @@ lasciando le righe d'indice.
 - ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale · 2026-11-10 · Attiva
 - ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw» · 2026-11-10 · Accettata
 - ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi · 2026-11-11 · Attiva
+- ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix` · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix`
+
+**Stato**: Attiva · 2026-11-11 · TASK-429 parti B2 (#1129, `a0837cec`) e C2
+(#1131, `d327ff41`). Deciso dall'agente su delega dell'utente, dentro le
+scelte dell'utente di ADR-0357 (i tratti dal telefono, «Sì, così»; i testi
+della stagione e di «Pista senza nome» approvati il 2026-11-10).
+
+**Decisione**:
+
+1. **I tratti partono a «Salva» dentro i run-stats** (B2): `runStatsRequest`
+   aggiunge `ski_parts` per una giornata di sci (`skiPartsOf`: i `snowParts`
+   dei punti mandati, al più 500 come li tiene l'API; `moving_s` mai più
+   della durata del tratto; `top_mps` nullo per le risalite). Un altro
+   sport, o una giornata senza quote, non manda il campo.
+2. **Il ripiego al `422`** (B2): `sendRunStats` rimanda una volta sola i
+   run-stats **senza `ski_parts`** quando l'API risponde `422
+   invalid_request` (un server prima della C2b di TASK-424 rifiuta le chiavi
+   che non conosce), così profilo e calorie non si perdono coi tratti.
+   Nessun secondo invio quando i tratti non c'erano.
+3. **La stagione va dal 1° luglio al 30 giugno** (C2, `seasonOf` sulla data
+   del telefono, «2026/27»): `GET /me/ski-season` si chiede con quei due
+   giorni. Una giornata salvata prima dei tratti conta solo come giornata;
+   senza risposta o senza giornate la stagione non si mostra.
+4. **La giornata salvata ha le tre sezioni di fine giornata** (C2,
+   `SkiDayPage`, da un tocco in «Giornate»): «Summary · Map · Runs» dai
+   `parts` del server; «Map» apre il post sulla mappa; «Runs» ha ogni
+   risalita e discesa col suo nome, «Piste without a name» dove il server
+   non l'ha trovato. Una giornata senza tratti mostra chilometri e tempo.
+5. **La mappa del post di sci si disegna da `from_fix`/`to_fix`** (C2,
+   `useSkiDayMap`, `App.tsx`): le risalite e i numeri vengono dai punti che
+   il server lega a ogni tratto, coi token e i `lifts`/`liftLabels` di B1.
+   Senza una risalita coi suoi punti il post si disegna come prima;
+   `partsOf` tiene solo i tratti ben formati, così un'API prima della C1 non
+   cambia nulla.
+
+**Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` invariata
+(misurata l'11-11 su tutte e due le PR); il server non cambia. In
+produzione con l'ottavo OTA dell'11-11 (da `main` `cd0c8b08`).
 
 ## ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi
 

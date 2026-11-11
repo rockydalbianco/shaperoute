@@ -1,8 +1,9 @@
 # TASK-433 — Le schede della palestra guidate, con le settimane che cambiano
 
-**Stato**: In lavorazione · 2026-11-11 · A (#1095) sul server e nell'OTA 5,
-B (#1103) nell'OTA 6, C1 (#1117) sul server, C2 (#1115) in `main`: esce col
-settimo OTA, col sì dell'utente; resta la prova sul telefono
+**Stato**: Done · 2026-11-11 · A (#1095), B (#1103), C1 (#1117) e C2 (#1115,
+#1133) in `main`, sul server e negli OTA 5–8; provato sul telefono
+dall'utente. Esito: schede guidate, settimane che cambiano, spiegazione e
+giorni di corsa in produzione
 **Fase**: 5 · **Branch**: `feat/TASK-433-gym-guided-plans`
 **Dipende da**: TASK-411 (le schede, parte C: tabella `gym_plans`, 0058)
 **ADR**: ADR-0360 (proposto) · numeri dal Coordinatore il 2026-11-10
@@ -115,11 +116,22 @@ libero al merge),
       `out/TASK-433/SERVER-C.md` tutti come attesi); righe di controllo di sola
       lettura in `out/TASK-433/SERVER.md` e `SERVER-C.md`
       (cartella `out/` del checkout principale).
-- [ ] Settimo OTA con la C2 (#1115, 23308c9e), dal Coordinatore col sì
-      dell'utente.
-- [ ] Prova sul telefono dell'utente. **Sul simulatore la guida non è stata
-      vista girare**: provata solo coi test (jest); l'utente la prova dopo
-      l'OTA del 2026-11-10.
+- [x] Settimo OTA con la C2 (#1115, 23308c9e), dal Coordinatore col sì
+      dell'utente: in produzione da `main` 7e24e7d1 il 2026-11-11 ~14:30Z (iOS
+      `3906eb66-1292-4b9c-86e9-bbaf34a88ce5`, Android
+      `7b0ec9eb-baae-4484-8dae-233de28598c0`, preview
+      `59cbd83c-011b-475f-b294-54561e46d19c`).
+- [x] Vista girare nel simulatore il 2026-11-11 (Expo Go, una pagina di prova
+      temporanea da `main` 7e24e7d1, mai committata): i 5 passi con due corse,
+      le ripetute, la settimana 2 scritta a mano, il salvataggio (programma
+      valido per il server), la spiegazione B che sale e si chiude, «Today» in
+      un giorno di corsa, «My plans» con «RUN». Tutto come la tela, tranne
+      «No» di «And running?» che scelto aveva il bordo azzurro delle corse:
+      ora neutro (#1133, in `main` cd0c8b08, uscito con l'ottavo OTA). Schermate in
+      `out/TASK-433/simulator/` del checkout principale.
+- [x] Prova sul telefono dell'utente: il settimo OTA il 2026-11-11 (prova
+      generale, sotto), il «No» neutro dell'ottavo confermato lo stesso giorno
+      («Sì, va bene»).
 
 ## Parte B — «Come funzionano le schede» toccando Palestra
 
@@ -232,3 +244,22 @@ simulatore non è stata vista girare.
    parte B, che esce con l'OTA dopo il suo merge).
 3. La privacy non cambia: le schede (nome, giorni, esercizi e valori
    obiettivo) restano sul telefono e sull'account come in TASK-411 D.
+
+## Prova sul telefono (2026-11-11)
+
+Settimo OTA in produzione da `main` 7e24e7d1 (~14:30Z; iOS
+`3906eb66-1292-4b9c-86e9-bbaf34a88ce5`, Android
+`7b0ec9eb-baae-4484-8dae-233de28598c0`), con la C2 (#1115). L'utente l'ha
+provato sul telefono e ha scritto al Coordinatore «procedi funziona tutto
+ok procedi», poi «Sì, sul telefono» alla domanda se era la prova del
+settimo aggiornamento. È una **prova generale** del settimo OTA: l'utente
+non ha nominato le singole funzioni, quindi per la C2 (giorni di corsa) non
+vale come giro guidato dei passi della guida. Il «No» neutro di «And
+running?» (#1133) non c'era ancora: esce con l'ottavo OTA.
+
+Ottavo OTA in produzione il 2026-11-11 alle 14:09Z da `main` cd0c8b08, con
+la #1133 (il «No» neutro di «And running?»): iOS
+`0cf2abd4-69dc-44ca-b5ea-429a0155a1f8`, Android
+`41d7bb93-47c7-4236-b80f-3f61fd454220`, preview
+`76f5ccd6-6bf5-45dd-9c70-163a7d6b860b`. L'utente ha confermato il «No»
+neutro sul telefono («Sì, va bene»): TASK-433 è chiuso.

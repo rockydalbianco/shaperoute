@@ -543,6 +543,30 @@ export const otherRoute = {
   opacity: 0.8,
 } as const;
 
+/**
+ * The shape asked for, as the search placed it (TASK-442): a thin dotted
+ * line under the route, so the eye can tell how much the route looks like
+ * it; and the same outline over the map while the route is drawn, breathing
+ * between two opacities with a dot going round it. Never yellow, which is
+ * the route's; thinner and lighter than the other routes to choose from.
+ */
+export const shapeGhost = {
+  color: color.text,
+  width: 1.5,
+  opacity: 0.55,
+  /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
+  dash: [2, 2],
+  /** While the route is drawn: the line over the map, in points, and the
+   * two opacities it breathes between, one way in `breathMs`. */
+  waitWidth: 2,
+  waitDim: 0.35,
+  waitBright: 0.8,
+  breathMs: 1400,
+  /** The dot going round the outline, in points across, and one lap. */
+  pen: 8,
+  lapMs: 5000,
+} as const;
+
 /** The route drawn on the map. */
 export const route = {
   color: color.accent,
@@ -622,4 +646,27 @@ export const videoLine = {
   pink: "#FF8FB8",
   green: "#8EE08A",
   white: "#FFFFFF",
+} as const;
+
+/**
+ * The prizes of the shape game (TASK-423 part E, ADR-0351): the ring of each
+ * collection's frame, one colour per collection, light enough to read on the
+ * dark surfaces and on a photo; and the silver and gold of the editions.
+ * Never alone: a frame always has its collection's name, an edition its word.
+ */
+export const gamePrize = {
+  frame: {
+    geometry: "#FFD02B",
+    animals: "#F2A65A",
+    sea: "#4FB3E8",
+    sky: "#9BB8FF",
+    nature: "#7DD87A",
+    city: "#C9A0FF",
+    milestones: "#FF7A7A",
+    seasons: "#FF9ED2",
+    legends: "#E8C76A",
+    greece: "#7FD6C8",
+  },
+  silver: "#C7CDD6",
+  gold: "#E8B23A",
 } as const;

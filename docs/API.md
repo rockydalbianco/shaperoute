@@ -1103,6 +1103,48 @@ motore.)
   ad allora): in `shared-types` `Activity` resta quella dell'app, e
   `API_ACTIVITIES` ha anche `swimming`.
 
+### Sulla neve: `"activity": "snowshoeing"` (TASK-413 parte A2, ADR-0342)
+
+```json
+{ "start": [45.8757, 11.5097], "shape": "heart", "distance_m": 1000, "activity": "snowshoeing" }
+```
+
+(`fixtures/route-request-snowshoeing.json`, ad Asiago.)
+
+- **La forma è il percorso**, come sull'acqua: il motore
+  (`snowshoeing.plan_snowshoeing`, parte A1) la mette sulla neve dove si
+  può camminare, lontano dai pendii oltre 25° (e 30 m attorno a quelli
+  oltre 30°), da boschi, piste, impianti, rocce, ghiacciai, paesi,
+  ruscelli, riserve e biotopi, e la unisce a una strada minore, una
+  carrareccia o un sentiero con un tratto dritto. Vale per `/routes` e
+  `/route-jobs`.
+- **Da 0,5 a 3 km** (`DISTANCE_LIMITS_M.snowshoeing`, scelta 2): fuori è
+  `422 invalid_request`. Solo una forma del catalogo: una parola,
+  un'immagine o un disegno a mano sono `422` (`on the snow only a shape of
+  the catalogue is drawn`); `"placement": "anchored"` anche (`a shape is
+  anchored to the roads only, not on the water or the snow`).
+- **Il `RouteResult`** è quello della canoa: `points` chiuso dal punto
+  d'ingresso, `similarity` 1, niente indicazioni né alternative.
+- **Gli errori**: niente neve attorno alla partenza o una forma che non
+  entra sono `422 shape_not_drawable`. `suggested_distance_m` è la
+  distanza a cui la forma entra, arrotondata in giù al mezzo km come
+  sull'acqua, e manca quando sarebbe sotto 0,5 km (il motore può dire
+  «0.2 km»).
+- **La neve e le quote** stanno nella cache del server, `<cache>/snow/`
+  accanto a `water/` e `<cache>/heights/` (tegole Terrarium):
+  `ServerSnow` (`snowshoeing.py`) le scarica alla prima richiesta di un
+  posto (Overpass, 23–38 s per riquadro), e il job dice
+  `downloading_map` intanto. Un download che non riesce è `503
+  map_data_unavailable`. Nessuna zona in memoria.
+- **Niente percorsi tenuti**: né `route_store` né l'archivio (TASK-297)
+  tengono un percorso sulla neve, perché i file della neve stanno fuori
+  dall'impronta del motore (`SNOW_ONLY`). Niente via del ritorno
+  (`POST /way-back`: `No way back on the snow`).
+- **Salvata**: Strava `Snowshoe`, GPX `<type>snowshoeing</type>`; nel
+  gioco delle forme conta come Hike (scelta 5), senza tempi migliori né
+  record personali. Preferiti e corse di gruppo sì (migrazione `0068`).
+  La legge solo un'app che dice `snowshoeing` in `X-MuW-Reads`.
+
 ### A piedi, camminando: `"activity": "walking"` (TASK-371, ADR-0315)
 
 ```json

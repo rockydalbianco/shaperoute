@@ -1,6 +1,6 @@
 # TASK-436 — Le due tabelle del grafo fatte a blocchi
 
-**Stato**: In PR (aspetta il merge dell'utente)
+**Stato**: Done — in `main` con la #1106 (`4dfeca6d`, 2026-11-11)
 **Fase**: 5 · **Branch**: `feat/TASK-436-graph-tables` · **ADR**: 0362
 
 ## Obiettivo
@@ -41,7 +41,7 @@ danno gli stessi identici numeri di prima: stessi percorsi, meno tempo.
 - [x] `test_same_routes`: le 9 rotte hanno gli stessi hash di prima; le
       impronte efficaci (`engine_fingerprint`) non cambiano.
 - [x] `engine.zip` corrisponde ai sorgenti (`test_phone_engine`).
-- [ ] CI verde.
+- [x] CI verde.
 - [x] I secondi prima e dopo sono scritti in «Tempi».
 
 ## File toccati
@@ -154,7 +154,11 @@ stima di TASK-434 resta una stima.
 Le due tabelle del grafo si fanno a blocchi (7 e 4 volte più in fretta) e
 `perimeter` una volta a ricerca: un percorso da 5 km sul Mac passa da 1,72
 a 1,51 s e usa il 15% di CPU in meno, con gli stessi identici percorsi
-(impronte efficaci invariate). Resta: il merge (dell'utente), il passo sul
-server (del Coordinatore, col sì) e l'OTA per il motore sul telefono
-(`engine.zip`); le righe di `STATUS.md`, `DECISIONS.md` (ADR-0362) e
-`INDEX.md` in una PR di soli documenti dopo il merge.
+(impronte efficaci invariate). In `main` dall'11 novembre 2026 con la
+#1106 (`4dfeca6d`, merge dell'utente, CI verde), dopo TASK-435 A (#1105).
+
+Resta, non di questo task: il passo sul server (passo 8 del Coordinatore,
+col sì dell'utente) e l'OTA che porta `engine.zip` sul telefono. Sul server
+i tempi non sono misurati: se serve un «dopo», le righe `job_times` del
+log delle richieste prima e dopo il passo 8. Le altre proposte di TASK-434
+restano da costruire.

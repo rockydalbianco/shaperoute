@@ -523,8 +523,209 @@ lasciando le righe d'indice.
 - ADR-0357, precisazione C1 — I tratti della giornata salvata e la stagione sul server: `parts` solo quando ci sono, nomi alla lettura con una cache per processo · 2026-11-10 · Attiva
 - ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale · 2026-11-10 · Attiva
 - ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw» · 2026-11-10 · Accettata
+- ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi · 2026-11-11 · Attiva
+- ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale · 2026-11-11 · Attiva
+- ADR-0351, precisazione E2 — I premi nell'app: la pagina «Prizes», le schede di edizioni e collezioni, la scelta del profilo e la privacy · 2026-11-11 · Attiva
+- ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix` · 2026-11-11 · Attiva
+- ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste
+
+**Stato**: Attiva · 2026-11-11 · TASK-441, parte A (#1149). L'utente ha
+chiesto di portare «Explore» a 2000 disegni e ha approvato le liste di
+parole e l'ordine misto («Sì, vai»), poi i disegni nuovi dalle due pagine
+(«Sì, vanno bene»). Le scelte tecniche sono dell'agente su delega
+dell'utente.
+
+**Contesto**: il catalogo aveva 572 percorsi, 55 soli di parole. Il
+registro di TASK-419 teneva altri 878 disegni che passavano il filtro e non
+erano mai entrati. Su una riga le parole passano il filtro fino a 4 lettere
+(a 5 una su cinque, a 6 nessuna).
+
+**Decisione**:
+
+- **I già fatti entrano tutti** quando passano il filtro e sono di una
+  parola o di una forma che il motore ha (776; i 102 di contorni non
+  registrati aspettano la parte C). Anche la stessa parola nei due stili
+  nella stessa città (60 casi).
+- **Parole corte, 2–4 lettere, su una riga**, da uno strumento nuovo
+  accanto a quello di TASK-419 (`tools/catalog_words.py`, che usa
+  `catalog_seed.py` senza cambiarlo): le parole della città, quelle della
+  sua lingua, un turno di una lista comune con stagione e parole del
+  momento. Ogni parola nei due stili, entra la migliore (615). Nessuna zona
+  scaricata: bastano quelle a piedi di `data/cache`.
+- **L'ordine misto** (`recommended.varied`): `GET /recommended-routes` e
+  ogni città di `GET /catalog` danno prima la migliore di ogni forma e di
+  ogni parola, poi la seconda, e così via; dentro un giro vale l'ordine di
+  prima (somiglianza, poi distanza). Il tetto di 60 in «NEAR YOU» resta.
+- **Niente memoria compatta per ora**: i punti restano tuple (32,6 MB di
+  file, +218 MB residenti all'avvio contro +57). Deciso dal Coordinatore
+  sui numeri del server; se il catalogo cresce ancora, un `array('d')`.
+
+**Motivo**: i già fatti costavano zero e avevano già passato lo stesso
+filtro. Le parole lunghe vogliono la penna alzata, che il formato del seme
+non tiene ancora (parte B, ADR-0366). Senza l'ordine misto i 60 disegni
+vicino a Milano, che ora ne ha 91, sarebbero quasi tutti cerchi e cuori.
+
+**Conseguenze**: 1963 percorsi in 63 città, 757 di parole (79 diverse). Gli
+id dei percorsi tengono il posto nel file e cambiano dove il file cresce,
+come a ogni giro di TASK-419: «Feed» ritrova il percorso per città, forma e
+lunghezza. I disegni delle parole sono del motore `8ab61d8e87f9`: se un
+cambio del motore chiede di rifarli (TASK-447), il giro riparte da
+`out/TASK-441/run.sh`. Sul server servono i file del catalogo **e**
+l'immagine nuova (l'ordine è codice).
+
+**Corretto lo stesso giorno, prima del server**: guardate nel catalogo, le
+parole nuove a riga unica hanno le lettere unite e non si leggono. L'utente
+(«Sì, toglile», riferito dal Coordinatore) le toglie tutte e 702, le 615
+di questa voce e le 87 dei già fatti, con una PR di correzione
+(`fix/TASK-441-a-drop-words`): il catalogo scende a 1261, i 572 di prima
+più 689 forme. Le parole tornano con la parte B, a penna alzata fra le
+lettere come negli esempi delle città, dopo una pagina di prova mostrata
+all'utente. Il filtro (somiglianza ≥ 0,90) non misura se una parola si
+legge: per le parole non basta. Dei punti qui sopra restano i già fatti di
+forme, l'ordine misto e lo strumento.
+
+## ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale
+
+**Stato**: Attiva · 2026-11-11 · TASK-423, «Play» dopo l'uso (#1113).
+Richiesta dall'utente dopo averla usata («Dalla 1 alla 4»); i testi
+approvati dall'utente («Sì, approvo»). Le scelte tecniche sono dell'agente
+su delega dell'utente.
+
+**Decisione**:
+
+- **La barra di una forma di passo non è più `target / best`** (il
+  `progress` del server): 5:00 /km non è il 60% di 3:00 /km. Il telefono
+  (`shapeProgress.ts`, puro) la calcola fra il livello prima sulla stessa
+  distanza (il passo più lento più vicino; per il primo livello, un minuto
+  in più) e questo, dal tempo migliore che `/game/me` dà già: vuota finché
+  il livello prima non è fatto. Il server non cambia.
+- **Una distanza mai corsa di fila non ha percentuale**: «First run 15 km in
+  one go · longest 12 km». I totali e i traguardi tengono la quota di
+  strada.
+- **Le distanze di una corsa per nome** (`runDistanceLabel`): 400 m, 1
+  mile, Half marathon, Marathon. I totali restano in km o miglia;
+  `goalDistanceLabel` e `progressText`, usati da altri task, non cambiano.
+
+## ADR-0351, precisazione E2 — I premi nell'app: la pagina «Prizes», le schede di edizioni e collezioni, la scelta del profilo e la privacy
+
+**Stato**: Attiva · 2026-11-11 · TASK-423 parte E2 (#1132, #1144). Testi
+(55 e 4) e frase della privacy approvati dall'utente («Sì, approvo»).
+Deciso dall'agente su delega dell'utente.
+
+**Decisione**:
+
+- **Due PR**: E2a mette i premi dentro «Play» senza cambiare niente di
+  quello che vedono gli altri; E2b porta la scelta del profilo insieme alla
+  frase della privacy, così il profilo mostra i premi solo da quando
+  l'informativa lo dice.
+- **Le schede di sblocco** sono una sola `UnlockCard` per forma, edizione,
+  collezione e riepilogo; oltre 3 cose da una corsa, una scheda sola.
+  L'app legge `editions` e `collections_done` della corsa con prudenza: un
+  campo assente (API vecchia) o rotto non mostra niente.
+- **Le push** `edition_up` e `collection_done` aprono «Play» (non il
+  profilo che i dati nominano) e ad app aperta non si mostrano, come
+  `shape_unlocked`.
+- **La scelta del profilo** si fa toccando un premio preso nella pagina
+  «Prizes» (`PUT /game/prizes/shown`), salvata a ogni tocco. Il profilo
+  legge `game_prizes` con `isGamePrizesShown`; una cornice che il catalogo
+  del telefono non conosce resta fuori.
+- **I colori delle cornici** sono un blocco `gamePrize` in `tokens.ts`, mai
+  da soli: la cornice ha sempre il nome della collezione accanto.
+
+## ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix`
+
+**Stato**: Attiva · 2026-11-11 · TASK-429 parti B2 (#1129, `a0837cec`) e C2
+(#1131, `d327ff41`). Deciso dall'agente su delega dell'utente, dentro le
+scelte dell'utente di ADR-0357 (i tratti dal telefono, «Sì, così»; i testi
+della stagione e di «Pista senza nome» approvati il 2026-11-10).
+
+**Decisione**:
+
+1. **I tratti partono a «Salva» dentro i run-stats** (B2): `runStatsRequest`
+   aggiunge `ski_parts` per una giornata di sci (`skiPartsOf`: i `snowParts`
+   dei punti mandati, al più 500 come li tiene l'API; `moving_s` mai più
+   della durata del tratto; `top_mps` nullo per le risalite). Un altro
+   sport, o una giornata senza quote, non manda il campo.
+2. **Il ripiego al `422`** (B2): `sendRunStats` rimanda una volta sola i
+   run-stats **senza `ski_parts`** quando l'API risponde `422
+   invalid_request` (un server prima della C2b di TASK-424 rifiuta le chiavi
+   che non conosce), così profilo e calorie non si perdono coi tratti.
+   Nessun secondo invio quando i tratti non c'erano.
+3. **La stagione va dal 1° luglio al 30 giugno** (C2, `seasonOf` sulla data
+   del telefono, «2026/27»): `GET /me/ski-season` si chiede con quei due
+   giorni. Una giornata salvata prima dei tratti conta solo come giornata;
+   senza risposta o senza giornate la stagione non si mostra.
+4. **La giornata salvata ha le tre sezioni di fine giornata** (C2,
+   `SkiDayPage`, da un tocco in «Giornate»): «Summary · Map · Runs» dai
+   `parts` del server; «Map» apre il post sulla mappa; «Runs» ha ogni
+   risalita e discesa col suo nome, «Piste without a name» dove il server
+   non l'ha trovato. Una giornata senza tratti mostra chilometri e tempo.
+5. **La mappa del post di sci si disegna da `from_fix`/`to_fix`** (C2,
+   `useSkiDayMap`, `App.tsx`): le risalite e i numeri vengono dai punti che
+   il server lega a ogni tratto, coi token e i `lifts`/`liftLabels` di B1.
+   Senza una risalita coi suoi punti il post si disegna come prima;
+   `partsOf` tiene solo i tratti ben formati, così un'API prima della C1 non
+   cambia nulla.
+
+**Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` invariata
+(misurata l'11-11 su tutte e due le PR); il server non cambia. In
+produzione con l'ottavo OTA dell'11-11 (da `main` `cd0c8b08`).
+
+## ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi
+
+**Stato**: Attiva · 2026-11-11 · deciso dall'agente su delega dell'utente
+(TASK-436, #1106, `4dfeca6d`; numero e lista dei file dal Coordinatore).
+
+**Contesto**: il profilo di TASK-434 (proposte 1 e 7) ha trovato che il
+30–40% di ogni ricerca su un grafo da 5 km andava in due tabelle calcolate
+una volta per grafo con una chiamata Python a shapely per arco (circa
+31.000 archi): i tre punti di ogni arco (`network._work_out_samples`,
+0,12 s) e i punti di ogni strada per la maschera (`RoadMask.__init__`,
+0,09 s). Le rifanno il processo della richiesta e ogni figlio delle
+partenze vicine. In più `road_fit` ricalcolava `perimeter(shape)` a ogni
+piazzamento (circa 5.500 volte a ricerca, sempre lo stesso valore).
+
+**Decisione**:
+- **Una lettura sola delle geometrie**: `shapely.get_coordinates(...,
+  return_index=True)` su tutte le geometrie insieme, in
+  `_work_out_samples` e nella nuova `optimizer._road_points`; verso della
+  geometria, punto di mezzo e capi escono da indici numpy. Nessuna
+  dipendenza nuova: shapely 2 e numpy c'erano già, anche sul telefono.
+- **Gli stessi numeri, per costruzione**: quale capo di una geometria
+  viene prima lo diceva `math.dist`, che non arrotonda come la radice di
+  numpy. Dove le due distanze sono uguali entro 1e-9 (i cappi, di fatto)
+  decide ancora `math.dist`, arco per arco. Nella maschera l'array dei
+  punti è quello di prima nello stesso ordine e il conto che segue non è
+  toccato.
+- **`perimeter(shape)` una volta** in `search`, col prodotto
+  `band_share * shape_perimeter * scale` nello stesso ordine.
+- **Stessi percorsi, impronte tenute**: tre righe in coda a
+  `SAME_ROUTES_AS` (ADR-0320), dopo quelle di TASK-435 A: motore
+  `ca29e58777cb` → `b4967ef32e9a`, nuotate `c9c2683a72ea` →
+  `3ce5d60ec0cd`, esempi di canoa `3984555281d5` → `cf585f8fb31b`. Le
+  impronte efficaci restano `8ab61d8e87f9`, `b9d00c37d28d`,
+  `574fbfba41eb`: sul server nessun percorso tenuto, zona o esempio si
+  rifà.
+
+**Alternative scartate**:
+- *Il prototipo così com'era* (solo `np.sqrt` per il verso): uguale sui 10
+  grafi misurati, ma non per costruzione; un test mostra quasi-pareggi in
+  cui girerebbe l'arco dall'altra parte.
+- *Tenere le tabelle tra una richiesta e l'altra, o passarle ai figli*: è
+  un'altra proposta di TASK-434, fuori da questo task.
+
+**Conseguenze**: sul Mac `_work_out_samples` 0,123 → 0,017 s e
+`RoadMask.__init__` 0,094 → 0,025 s a grafo; un percorso da 5 km 1,725 →
+1,509 s (−12,5%) e 4,00 → 3,40 s di CPU tra processo e figli (−15%); sul
+cuore da 10 km il tempo intero non cambia (−0,4%, si aspettano i figli),
+la CPU −4,4%. Sul server non è misurato. Chi tocca queste due funzioni ha
+in `tests/test_graph_tables.py` il codice di prima come riferimento: le
+tabelle devono restare uguali con `np.array_equal`. Dettagli e misure in
+`tasks/TASK-436.md`.
 
 ## ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw»
 

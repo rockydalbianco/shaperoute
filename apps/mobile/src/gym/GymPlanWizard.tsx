@@ -540,7 +540,8 @@ export function GymPlanWizard({
                 style={({ pressed }) => [
                   styles.count,
                   styles.countSmall,
-                  on && styles.runOn,
+                  // «No» is no run: chosen, it looks chosen, not blue.
+                  on && (count === 0 ? styles.noRunsOn : styles.runOn),
                   pressed && styles.pressed,
                 ]}
                 onPress={() => setRunDays(proposedRunDays(count, days))}
@@ -1188,6 +1189,11 @@ const styles = StyleSheet.create({
   runOn: {
     borderWidth: 2,
     borderColor: color.runDay,
+    backgroundColor: color.surfaceRaised,
+  },
+  noRunsOn: {
+    borderWidth: 2,
+    borderColor: color.borderStrong,
     backgroundColor: color.surfaceRaised,
   },
   muted: {

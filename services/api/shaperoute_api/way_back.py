@@ -17,7 +17,7 @@ from dataclasses import asdict, replace
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
-from route_engine.models import WATER_ACTIVITIES, InvalidRequestError
+from route_engine.models import FREE_ACTIVITIES, WATER_ACTIVITIES, InvalidRequestError
 from route_engine.network import BBox
 from route_engine.optimizer import GraphLoader
 from route_engine.way_back import WayBack, way_back
@@ -42,6 +42,8 @@ COORD_DIGITS = 7
 TENTH_DIGITS = 1
 
 ON_THE_WATER = "No way back on the water: the straight line is the way."
+# Nor on the snow (TASK-413): there is no network there either.
+ON_THE_SNOW = "No way back on the snow: the straight line is the way."
 NOT_KEPT = "No map kept here for this area."
 
 Latitude = Annotated[float, Field(ge=-90.0, le=90.0)]
@@ -123,8 +125,9 @@ def find_way_back(graphs: Graphs, body: WayBackRequestBody) -> WayBack:
     already kept. InvalidRequestError on the water or with no way within
     MAX_WAY_M; MapDataUnavailableError with no zone kept for the area."""
     check_supported(body.activity)
-    if body.activity in WATER_ACTIVITIES:
-        raise InvalidRequestError(ON_THE_WATER)
+    if body.activity in FREE_ACTIVITIES:
+        on_snow = body.activity not in WATER_ACTIVITIES
+        raise InvalidRequestError(ON_THE_SNOW if on_snow else ON_THE_WATER)
     source = source_for(graphs, body.activity)
     bbox = bbox_around([body.here, *body.ahead], MARGIN_M)
     if _not_kept(source, bbox):

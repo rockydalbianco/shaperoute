@@ -8,8 +8,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "10 novembre 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). */
-const PRIVACY_UPDATED = "10 novembre 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). */
+const PRIVACY_UPDATED = "11 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -394,7 +394,7 @@ const privacy: AboutDocument = {
     {
       heading: "Il gioco delle forme",
       blocks: [
-        "Con un account, il nostro server calcola dalle tue corse a piedi salvate quanti chilometri contano per il gioco, i tuoi tempi migliori su distanze da 400 m a 50 km e le forme che hai collezionato. Solo tu vedi la tua collezione e i tuoi tempi migliori. Per le sfide personali l'app manda con ogni corsa anche la differenza fra l'orologio del telefono e l'ora UTC (il fuso orario, per esempio +1 ora), mai il luogo: serve a contare le corse fatte prima delle 8, di sera o nel weekend, e le settimane secondo la tua ora. Le tue sfide personali e la tua streak le vedi solo tu. Se entri in una squadra, i suoi iscritti vedono il tuo nome utente, la tua foto, i pezzi di una sfida che hai preso e i chilometri che hai dato a ognuno, mai le tue tracce, gli orari delle tue corse o dove hai corso. Una squadra si trova solo con il suo codice: non è mai in una ricerca. Eliminare una corsa toglie i suoi chilometri dal conteggio, e le forme che hai già collezionato restano. Quando elimini l'account, i tuoi dati del gioco si cancellano con lui; nelle sfide di una squadra i pezzi che hai corso restano agli altri, senza il tuo nome.",
+        "Con un account, il nostro server calcola dalle tue corse a piedi salvate quanti chilometri contano per il gioco, i tuoi tempi migliori su distanze da 400 m a 50 km e le forme che hai collezionato. Solo tu vedi la tua collezione e i tuoi tempi migliori. I premi del gioco (edizioni, cornici, titoli e badge) li vedi solo tu, finché non scegli di mostrare sul tuo profilo una cornice, un titolo o fino a 3 badge: da quel momento li vede chi può vedere il tuo profilo. Senza la tua scelta non si vede niente, e puoi toglierli quando vuoi. Per le sfide personali l'app manda con ogni corsa anche la differenza fra l'orologio del telefono e l'ora UTC (il fuso orario, per esempio +1 ora), mai il luogo: serve a contare le corse fatte prima delle 8, di sera o nel weekend, e le settimane secondo la tua ora. Le tue sfide personali e la tua streak le vedi solo tu. Se entri in una squadra, i suoi iscritti vedono il tuo nome utente, la tua foto, i pezzi di una sfida che hai preso e i chilometri che hai dato a ognuno, mai le tue tracce, gli orari delle tue corse o dove hai corso. Una squadra si trova solo con il suo codice: non è mai in una ricerca. Eliminare una corsa toglie i suoi chilometri dal conteggio, e le forme che hai già collezionato restano. Quando elimini l'account, i tuoi dati del gioco si cancellano con lui; nelle sfide di una squadra i pezzi che hai corso restano agli altri, senza il tuo nome.",
       ],
     },
     {

@@ -20,7 +20,8 @@ from typing import Any, Protocol, runtime_checkable
 from route_engine.anchored import AnchoredPlan
 from route_engine.directions import guidance
 from route_engine.geo import LatLon
-from route_engine.models import WATER_ACTIVITIES, RouteResult
+from route_engine.heights import Heights
+from route_engine.models import SNOW_ACTIVITIES, WATER_ACTIVITIES, RouteResult
 from route_engine.nearby_starts import NearbyPlan
 from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
@@ -28,18 +29,25 @@ from route_engine.shore_names import ShoreNameSource, ShorePlace
 from route_engine.sidewalks import NamedRoad
 from route_engine.water import Element, WaterSource
 
-from shaperoute_api.activity_graphs import Graphs, Ground, source_for, water_for
+from shaperoute_api.activity_graphs import (
+    Graphs,
+    Ground,
+    snow_for,
+    source_for,
+    water_for,
+)
 from shaperoute_api.alongs import NamedRoads, with_alongs
 from shaperoute_api.errors import error_of
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import AnyRequest, placed_outlines
 from shaperoute_api.job_times import JobTimes, line
 from shaperoute_api.schemas import ErrorDetail, JobStatus
+from shaperoute_api.snowshoeing import SnowGround
 
 log = logging.getLogger(__name__)
 
-# A shape, a word, or an image's outline (TASK-073), on the roads or on the
-# water (TASK-191).
+# A shape, a word, or an image's outline (TASK-073), on the roads, on the
+# water (TASK-191) or on the snow (TASK-413).
 Planner = Callable[[AnyRequest, Ground], Plan]
 
 # Two, not one: a cancelled 15 km keeps its thread until the engine ends,
@@ -51,8 +59,8 @@ KEEP_S = 600.0
 
 @runtime_checkable
 class KnowsDownloads(Protocol):
-    """A graph or water source that can tell a download in advance
-    (ZoneGraphs, paddling.ServerWater)."""
+    """A graph, water or snow source that can tell a download in advance
+    (ZoneGraphs, paddling.ServerWater, snowshoeing.ServerSnow)."""
 
     def needs_download(self, bbox: BBox) -> bool: ...
 
@@ -213,6 +221,16 @@ class RouteJobs:
                     self._clock,
                 )
                 result = with_choices(self._plan(job, water, times), [])
+            elif activity in SNOW_ACTIVITIES:
+                # On the snow (TASK-413): no graph either, so no directions.
+                snow = _ReportingSnow(
+                    snow_for(self._source, activity),
+                    report,
+                    wanted,
+                    times,
+                    self._clock,
+                )
+                result = with_choices(self._plan(job, snow, times), [])
             else:
                 # The zones of the network of the request's activity (TASK-190).
                 graphs = source_for(self._source, activity)
@@ -490,6 +508,26 @@ class _ReportingWater:
         if isinstance(self._source, ShoreNameSource):
             return self._source.places(bbox)
         return []
+
+
+class _ReportingSnow(_ReportingWater):
+    """The job's snow (TASK-413), as its water: says when a download of the
+    snow starts and ends, and stops the job if it was cancelled meanwhile;
+    the heights are its source's."""
+
+    def __init__(
+        self,
+        source: SnowGround,
+        report: Callable[[JobStatus], object],
+        wanted: Callable[[], bool],
+        times: JobTimes | None = None,
+        clock: Callable[[], float] = time.monotonic,
+    ):
+        super().__init__(source, report, wanted, times, clock)
+        self._snow = source
+
+    def heights(self) -> Heights:
+        return self._snow.heights()
 
 
 def with_choices(

@@ -127,6 +127,7 @@ import { shapeAsked } from "./src/route/penUpShapes";
 import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { averagePace } from "./src/route/runTime";
+import { WaitingShape } from "./src/route/ShapeGhost";
 import { shapeName, toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import { useImageOutline } from "./src/route/useImageOutline";
@@ -196,6 +197,7 @@ import { SkiMessages } from "./src/skimode/SkiMessages";
 import { SkiResortsPage } from "./src/skimode/SkiResortsPage";
 import { SkiTabIcon } from "./src/skimode/SkiTabIcon";
 import { SkiTodayPage } from "./src/skimode/SkiTodayPage";
+import { useSkiDayMap } from "./src/skimode/useSkiDayMap";
 import { DrawingCard } from "./src/social/DrawingCard";
 import { drawingDoubleTapped } from "./src/social/DrawingReactions";
 import { drawnOf, followedOf } from "./src/social/drawingRoute";
@@ -476,6 +478,9 @@ function MuW() {
   // route, and over it what was run. Or a drawing: the run cut as the
   // others see it, in the route's yellow as in «Feed», the map framed on it.
   const reviewing = screen === "map" && (activity !== null || drawing !== null);
+  // A post of a day of skiing with its parts: its lifts and numbers, in the
+  // ski mode's colours (TASK-429 part C).
+  const skiDayMap = useSkiDayMap(drawing);
   const reviewed = useMemo(
     () =>
       activity !== null
@@ -488,16 +493,27 @@ function MuW() {
             others: NO_OTHERS,
             track: activity.track,
           }
-        : drawing !== null
+        : drawing !== null && skiDayMap !== null
           ? {
+              // A day of skiing as at its end: the track, not a route.
               start: null,
-              route: drawing.track.length > 1 ? drawing.track : null,
+              route: null,
               walks: null,
               others: NO_OTHERS,
-              track: null,
+              track: drawing.track,
+              lifts: skiDayMap.lifts,
+              liftLabels: skiDayMap.labels,
             }
-          : null,
-    [activity, drawing],
+          : drawing !== null
+            ? {
+                start: null,
+                route: drawing.track.length > 1 ? drawing.track : null,
+                walks: null,
+                others: NO_OTHERS,
+                track: null,
+              }
+            : null,
+    [activity, drawing, skiDayMap],
   );
   const { position, refresh } = useCurrentPosition();
   // The size of the first maps of the phone while they download (TASK-214).
@@ -1317,6 +1333,14 @@ function MuW() {
   // screen.
   const page = pages.indexOf(screen);
 
+  // With the routes of «Draw» on the map to choose from (TASK-442): under
+  // the one chosen, the shape asked for as the search placed it; while they
+  // are drawn, the shape itself over the map.
+  const drawnOnMap =
+    screen === "map" && !reviewing && !theming && !exploring && exploreRun === null;
+  const ghost = drawnOnMap ? (chosen?.placed_outline ?? null) : null;
+  const waitingFor = drawnOnMap && view.status === "waiting" ? view.request : null;
+
   // The card of a shape unlocked, or its notification, asks for «Play»
   // (TASK-296): only while a page is on screen, never over a run; already
   // open, it stays as it is.
@@ -1490,6 +1514,10 @@ function MuW() {
                     ? null
                     : (followedOnFoot ?? move.left?.onFoot ?? null)
             }
+            // The shape asked for, under the route drawn, and over the map
+            // while it is drawn (TASK-442).
+            ghost={ghost}
+            over={waitingFor && <WaitingShape request={waitingFor} />}
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.
             others={

@@ -47,7 +47,13 @@ from typing import Any
 
 import route_engine
 from route_engine.directions import Direction
-from route_engine.models import Landmark, RouteRequest, RouteResult, SwimTurn
+from route_engine.models import (
+    SNOW_ACTIVITIES,
+    Landmark,
+    RouteRequest,
+    RouteResult,
+    SwimTurn,
+)
 
 log = logging.getLogger(__name__)
 
@@ -157,6 +163,12 @@ SAME_ROUTES_AS: dict[str, str] = {
     "ca29e58777cb": "b4967ef32e9a",  # every route but a swim
     "c9c2683a72ea": "3ce5d60ec0cd",  # the swims
     "3984555281d5": "cf585f8fb31b",  # the app's paddling examples
+    # TASK-413 A2: snowshoeing moves from ENGINE_ONLY to ENGINE_ACTIVITIES,
+    # in the contract, and nothing is anchored on the snow (anchored.py);
+    # every route of before drawn the same (ADR-0342).
+    "427ed1a16a97": "ca29e58777cb",  # every route but a swim
+    "d943bfbe8c44": "c9c2683a72ea",  # the swims
+    "f54db2ee707d": "3984555281d5",  # the app's paddling examples
 }
 
 
@@ -430,6 +442,11 @@ class RouteStore:
             return None  # a shape moved by the user (TASK-238): theirs too
         if getattr(request, "placement", "free") != "free":
             return None  # anchored where the user drew it (TASK-347): theirs
+        if request.activity in SNOW_ACTIVITIES:
+            # The snow's files are out of the fingerprint (SNOW_ONLY): a
+            # route on the snow kept would outlive the rules that drew it
+            # (TASK-413, ADR-0342).
+            return None
         same = json.dumps(
             [self._engine_of(request), self._same(request)], sort_keys=True
         )

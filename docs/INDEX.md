@@ -27,6 +27,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Endpoint, contratti REST, validazione input | `API.md`, `ARCHITECTURE.md` §3 |
 | Quanti percorsi regge il server; i processi che calcolano i percorsi (`--route-processes`) | `tasks/TASK-276.md`, ADR-0242 |
 | Il primo percorso mostrato mentre il job calcola (`first`, `?first=1`), le alternative dopo | `tasks/TASK-435.md`, ADR-0361, `API.md` «Richieste in due tempi» |
+| Dove va il tempo di un percorso nel motore; le tabelle calcolate una volta per grafo (punti degli archi, maschera delle strade) | `tasks/TASK-434.md`, `tasks/TASK-436.md`, ADR-0362 |
 | Cosa sa leggere un'app vecchia, `X-MuW-Reads`, uno sport nuovo nelle liste | `API.md` «Quello che un'app sa leggere», ADR-0328 |
 | Parole lette dall'AI, Ollama | `AI.md` |
 | Schermate, mappa, «Draw», «Edit the drawing», disegno a mano, girare la figura, i pezzi | `UI.md`, `PRODUCT.md` |
@@ -56,6 +57,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |
 | Percorsi in bici di MuW in «Explore» | `UI.md` «Pedalalo tu», ADR-0309 |
 | Il catalogo di «Explore»: forme nuove, i mille disegni, la pagina | `../catalog/README.md`, ADR-0347, `tasks/TASK-418.md`, `tasks/TASK-419.md`, `tasks/TASK-420.md` |
+| Il catalogo di «Explore» a 2000 disegni: parole corte per città, i disegni già fatti, l'ordine misto di «NEAR YOU» | `../catalog/README.md`, `tasks/TASK-441.md`, ADR-0347 e la precisazione C |
 | Le forme candidate e quelle approvate: `candidate_outlines/`, `tools/draw_new_shapes.py` (`APPROVED`), `ZONE_SHAPES` | `tasks/TASK-418.md`, ADR-0346 e la precisazione B, ADR-0036 |
 | Aggiungere uno sport, il banco `tools/sport_bench/` | `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md`, ADR-0320 |
 | Uno sport in particolare (corsa, bici, canoa, hike, gravel, roller, gym, skimo, wheelchair, snowshoes) | `sports/<sport>.md` e il suo task file se aperto |

@@ -225,7 +225,7 @@ docs/INDEX.md               (una riga)
 Le scelte sono nella stessa PR: sono arrivate prima che la PR fosse aperta.
 
 Parte A (lista rifatta su `main` `78c2fc87` e approvata dal Coordinatore il
-2026-11-11; migrazione `0069` in bozza, il numero vero è il primo libero al
+2026-11-11; migrazione `0070` in bozza, il numero vero è il primo libero al
 merge). Rispetto a quella dell'8 novembre: STATUS, DECISIONS e INDEX vanno
 nella PR di documenti dopo il merge; in più `searchFilters.ts`, i test con
 le liste in ordine (`test_inline_skating.py`, `test_snowshoeing.py`,
@@ -250,7 +250,7 @@ packages/shared-types/test/sportRegistry.test.ts
 services/api/shaperoute_api/sports/wheelchair.py                 (nuovo)
 services/api/shaperoute_api/sports/__init__.py
 services/api/shaperoute_api/activities.py, personal_bests.py, reads.py, game_rules.py
-services/api/migrations/0069_wheelchair.sql                      (nuovo)
+services/api/migrations/0070_wheelchair.sql                      (nuovo)
 services/api/tests/test_wheelchair_api.py                        (nuovo)
 services/api/tests/ (le liste): test_sport_registry_api.py, test_personal_bests.py,
     test_cycling.py, test_record_only.py, test_favorites.py, test_paddling.py,
@@ -302,7 +302,7 @@ Coordinatore Sport e il Coordinatore (dopo o prima di 413 A e 415 A).
   non riscaricare.
 
 2026-11-11, parte A (branch `feat/TASK-414-a-wheelchair`, lista rifatta su
-`main` `78c2fc87`, via del Coordinatore, migrazione `0069` in bozza):
+`main` `78c2fc87`, via del Coordinatore, migrazione `0070` in bozza):
 
 - **Motore**: la rete `wheel` (`networks/wheel.py`) è `wheelcalm` del
   banco più le regole della rete foot di TASK-421; sui 30 download grezzi

@@ -1109,7 +1109,7 @@ bozza, quello vero è il primo libero al merge, dal Coordinatore):
 - `run_bests` no: nessun record personale, come Hike.
 - Nessuna riga cambia. Test in `test_snowshoeing_api.py`.
 
-Migrazione `0069_wheelchair.sql` (TASK-414 parte A, ADR-0343; numero in
+Migrazione `0070_wheelchair.sql` (TASK-414 parte A, ADR-0343; numero in
 bozza, quello vero è il primo libero al merge, dal Coordinatore):
 
 - I vincoli `runs_activity_check`, `favorites_activity_check`,

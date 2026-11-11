@@ -181,7 +181,7 @@ def test_the_migration_keeps_the_walk_of_0043(
     before = re.findall(r"'([a-z_]+)'", _runs_check(migrated))
     # A hike comes with 0051 (TASK-377), gravel and MTB with 0052 (TASK-378),
     # a skate with 0055 (TASK-380), snowshoeing with 0068 (TASK-413), a
-    # wheelchair with 0069 (TASK-414).
+    # wheelchair with 0070 (TASK-414).
     newer = {
         "hiking",
         "mountain_biking",

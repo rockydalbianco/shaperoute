@@ -1175,7 +1175,7 @@ motore.)
   per un passeggino (scelta 8); nel gioco delle forme conta come una
   camminata, coi controlli «veicolo» della corsa e senza tempi migliori
   (scelta 7); record personali suoi su 1 e 5 km. Preferiti e corse di
-  gruppo sì (migrazione `0069`, numero in bozza). La legge solo un'app che
+  gruppo sì (migrazione `0070`, numero in bozza). La legge solo un'app che
   dice `wheelchair` in `X-MuW-Reads`.
 
 ### A piedi, camminando: `"activity": "walking"` (TASK-371, ADR-0315)

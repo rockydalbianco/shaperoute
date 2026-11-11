@@ -74,8 +74,11 @@ python tools/catalog_words.py --write          # catalog/seed dai due registri
 Il giro non scarica niente: usa le zone a piedi di `data/cache`. Parole più
 lunghe vogliono la penna alzata, che questo formato non tiene ancora.
 
-Col giro dell'11 novembre 2026 il seme ha **1963 percorsi in 63 città**
-(erano 572): 776 disegni già fatti e 615 parole nuove.
+Dall'11 novembre 2026 il seme ha **1261 percorsi in 63 città** (erano
+572): le 689 forme già disegnate che passano il filtro. Le parole aggiunte
+quel giorno, a riga unica con le lettere unite, non si leggevano e sono
+uscite: tornano a penna alzata, come gli esempi di città, quando il
+formato terrà le camminate fra le lettere (TASK-441 B).
 
 ### Le città in evidenza
 

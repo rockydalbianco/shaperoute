@@ -523,6 +523,7 @@ lasciando le righe d'indice.
 - ADR-0357, precisazione C1 — I tratti della giornata salvata e la stagione sul server: `parts` solo quando ci sono, nomi alla lettura con una cache per processo · 2026-11-10 · Attiva
 - ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale · 2026-11-10 · Attiva
 - ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw» · 2026-11-10 · Accettata
+- ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi · 2026-11-11 · Attiva
 - ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix` · 2026-11-11 · Attiva
 
 ## Voci nuove
@@ -565,6 +566,59 @@ della stagione e di «Pista senza nome» approvati il 2026-11-10).
 **Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` invariata
 (misurata l'11-11 su tutte e due le PR); il server non cambia. Non sono nel
 settimo OTA: escono con l'ottavo, col sì dell'utente.
+
+## ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi
+
+**Stato**: Attiva · 2026-11-11 · deciso dall'agente su delega dell'utente
+(TASK-436, #1106, `4dfeca6d`; numero e lista dei file dal Coordinatore).
+
+**Contesto**: il profilo di TASK-434 (proposte 1 e 7) ha trovato che il
+30–40% di ogni ricerca su un grafo da 5 km andava in due tabelle calcolate
+una volta per grafo con una chiamata Python a shapely per arco (circa
+31.000 archi): i tre punti di ogni arco (`network._work_out_samples`,
+0,12 s) e i punti di ogni strada per la maschera (`RoadMask.__init__`,
+0,09 s). Le rifanno il processo della richiesta e ogni figlio delle
+partenze vicine. In più `road_fit` ricalcolava `perimeter(shape)` a ogni
+piazzamento (circa 5.500 volte a ricerca, sempre lo stesso valore).
+
+**Decisione**:
+- **Una lettura sola delle geometrie**: `shapely.get_coordinates(...,
+  return_index=True)` su tutte le geometrie insieme, in
+  `_work_out_samples` e nella nuova `optimizer._road_points`; verso della
+  geometria, punto di mezzo e capi escono da indici numpy. Nessuna
+  dipendenza nuova: shapely 2 e numpy c'erano già, anche sul telefono.
+- **Gli stessi numeri, per costruzione**: quale capo di una geometria
+  viene prima lo diceva `math.dist`, che non arrotonda come la radice di
+  numpy. Dove le due distanze sono uguali entro 1e-9 (i cappi, di fatto)
+  decide ancora `math.dist`, arco per arco. Nella maschera l'array dei
+  punti è quello di prima nello stesso ordine e il conto che segue non è
+  toccato.
+- **`perimeter(shape)` una volta** in `search`, col prodotto
+  `band_share * shape_perimeter * scale` nello stesso ordine.
+- **Stessi percorsi, impronte tenute**: tre righe in coda a
+  `SAME_ROUTES_AS` (ADR-0320), dopo quelle di TASK-435 A: motore
+  `ca29e58777cb` → `b4967ef32e9a`, nuotate `c9c2683a72ea` →
+  `3ce5d60ec0cd`, esempi di canoa `3984555281d5` → `cf585f8fb31b`. Le
+  impronte efficaci restano `8ab61d8e87f9`, `b9d00c37d28d`,
+  `574fbfba41eb`: sul server nessun percorso tenuto, zona o esempio si
+  rifà.
+
+**Alternative scartate**:
+- *Il prototipo così com'era* (solo `np.sqrt` per il verso): uguale sui 10
+  grafi misurati, ma non per costruzione; un test mostra quasi-pareggi in
+  cui girerebbe l'arco dall'altra parte.
+- *Tenere le tabelle tra una richiesta e l'altra, o passarle ai figli*: è
+  un'altra proposta di TASK-434, fuori da questo task.
+
+**Conseguenze**: sul Mac `_work_out_samples` 0,123 → 0,017 s e
+`RoadMask.__init__` 0,094 → 0,025 s a grafo; un percorso da 5 km 1,725 →
+1,509 s (−12,5%) e 4,00 → 3,40 s di CPU tra processo e figli (−15%); sul
+cuore da 10 km il tempo intero non cambia (−0,4%, si aspettano i figli),
+la CPU −4,4%. Sul server non è misurato. Chi tocca queste due funzioni ha
+in `tests/test_graph_tables.py` il codice di prima come riferimento: le
+tabelle devono restare uguali con `np.array_equal`. Dettagli e misure in
+`tasks/TASK-436.md`.
+
 
 ## ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw»
 

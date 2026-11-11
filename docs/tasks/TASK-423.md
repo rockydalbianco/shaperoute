@@ -174,6 +174,18 @@ E1 services/api/migrations/0067_game_prizes.sql (bozza, numero al merge),
    campi nuovi); docs/API.md. PR #1099; i testi delle push edition_up e
    collection_done nelle 5 lingue (out/TASK-423/TESTI-E1.md) approvati
    dall'utente il 2026-11-10 con «Sì, approvo»
+E2a (in due PR: E2a in Play, E2b il profilo e la privacy)
+   apps/mobile/src/game/: prizesApi.ts, usePrizes.ts, prizesText.ts,
+   PrizesPage.tsx, EditionMark.tsx, ProfileFrame.tsx (nuovi, con
+   prizesText.test.ts); PlayScreen.tsx (+test), ShapeCard.tsx,
+   CollectionPage.tsx, UnlockCard.tsx, UnlockLayer.tsx (+test), unlocks.ts,
+   unlockedRuns.ts (+test); src/notifications/notificationTap.ts,
+   pushDevice.ts (+test); src/theme/tokens.ts (gamePrize); i18n. PR
+   #1132; i 55 testi nelle 5 lingue (out/TASK-423/TESTI-E2a.md) approvati
+   dall'utente il 2026-11-11 con «Sì, approvo»
+E2b src/profile/ (ProfileHeader, ProfileHome, UserProfilePage),
+   game/GamePrizesRow.tsx, la scelta in PrizesPage (PUT
+   /game/prizes/shown), la privacy
 E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
    GamePrizesRow, prizesApi, usePrizes, prizesText; PlayScreen,
    CollectionPage, ShapeCard, UnlockCard, UnlockLayer, unlocks.ts),

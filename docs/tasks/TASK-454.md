@@ -1,12 +1,12 @@
 # TASK-454 — Reazioni e super like
 
-**Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · in attesa del
-sì del Coordinatore sui file e di TASK-444 in `main`
+**Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · C1 (server) in
+corso · A aspetta TASK-444 in `main`, B dopo A, C2 dopo il server di C1
 **Fase**: 5 · **Branch**: `feat/TASK-454-reactions` (parte A; una PR per parte)
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
-**ADR**: da chiedere al Coordinatore per la parte C (risposte e reazioni ai
-commenti: tabelle e contratto nuovi) · numero dal Coordinatore l'11
+**ADR**: ADR-0377 per la parte C (risposte e reazioni ai commenti: tabelle e
+contratto nuovi), dal Coordinatore · numero dal Coordinatore l'11
 novembre 2026 (S3 e S4 di `out/prova-app-2026-11-11/PROPOSTE.md`, «Seconda
 prova: lato social»)
 
@@ -78,8 +78,10 @@ In più, per scelta dell'utente: ai commenti si risponde e si reagisce.
      cuore col numero), ma **solo le cinque** 🔥 👏 💪 😂 😮: il logo MuW
      resta il super like del post. Una a testa, su commenti e risposte;
    - **avvisi**: una risposta manda una notifica a chi ha scritto il
-     commento («{name} replied to your comment: {text}», interruttore
-     «Comments»); l'autore del post riceve il solito avviso di commento.
+     commento («{name} replied to your comment: {text}»; l'interruttore
+     è l'unico che c'è, «Push notifications», non uno dei commenti come
+     detto per errore nella domanda); l'autore del post riceve il solito
+     avviso di commento.
      Una reazione a un commento compare **solo nella campanella**
      («{name} reacted to your comment»), senza notifica sul telefono.
 6. **Doppio tocco**: **sì, ed è il super like** (proposta era «no»): doppio
@@ -153,3 +155,97 @@ Parte A:
 - [ ] Il foglio del super like dice la riga approvata, anche a VoiceOver.
 
 I criteri di B, C1 e C2 si scrivono qui quando la parte comincia.
+
+## Parte C1 — server (ADR-0377)
+
+**Stato**: codice e test scritti (2026-11-11), PR da aprire dopo «#1162 in
+main» · branch `feat/TASK-454-c1-comment-replies` · migrazione `0072` in
+bozza (il numero vero è il primo libero al merge).
+
+Scelte dell'utente: quelle del punto 5 qui sopra. Il resto è **deciso
+dall'agente su delega dell'utente** (va in `DECISIONS.md` come ADR-0377 con
+la PR di documenti dopo il merge):
+
+1. **Una risposta è una riga di `comments`** con `parent_id`: controlli,
+   filtro delle parole, limite al minuto, segnalazione, `hidden_at`, blocchi
+   e cancellazione sono quelli dei commenti, senza codice a parte.
+2. **Un livello solo, tenuto dal server**: `reply_to` può essere un commento
+   o una risposta; `parent_id` è sempre il commento in cima. Chi si nomina
+   («@nome») è una colonna (`mention_user_id`) e un campo (`mention`), non
+   testo scritto dall'app: il testo resta quello dell'utente, il nome segue
+   un cambio di username e sparisce per chi ha bloccato quell'iscritto.
+3. **Due modi di leggere, uno per le app di prima**: senza `threads` la
+   lista è piatta e per data, risposte comprese (un'app di prima le mostra
+   come commenti, e chi riceve «replied to your comment» le trova);
+   `?threads=true` dà i commenti con le due risposte più vecchie e
+   `reply_count`, le altre da `GET /comments/{id}/replies`. Scartato:
+   nascondere le risposte alle app di prima (la notifica aprirebbe un
+   disegno dove la risposta non c'è).
+4. **Una risposta si legge col suo commento**: se chi chiede non legge il
+   commento in cima (blocco, nascosto), non legge le risposte sotto, e non
+   contano in `total`.
+5. **Le reazioni ai commenti in una tabella loro** (`comment_reactions`,
+   cinque codici), lette insieme ai commenti (`reactions` in ogni commento:
+   niente richiesta in più per riga) e scritte da `PUT`/`DELETE
+   /comments/{id}/reaction`. Scartato: riusare `reactions` con una colonna
+   in più (la chiave e il vincolo dei sei tipi sono del disegno, e i
+   concorsi contano i `super_like` di quella tabella).
+6. **Avvisi**: `comment_reply` a chi ha scritto il commento o la risposta a
+   cui si risponde; il proprietario del disegno riceve il solito `comment`,
+   ma non quando è lui quello a cui si risponde (una notizia, una volta).
+   `comment_reaction` passa solo agli ascoltatori di `push.py`
+   (`BELL_ONLY`): la campanella la tiene, nessun telefono suona. Nessuno
+   dei due entra nell'email delle notizie (`EMAIL_KINDS` non cambia).
+   Tutti e due aprono il disegno: le app di prima aprono già qualunque
+   avviso con `drawing_id`.
+7. **L'interruttore è uno**: sul server c'è solo «Push notifications»
+   (`users.notify_push`), non uno per i commenti e uno per le reazioni come
+   detto per errore nella domanda all'utente. La notifica della risposta lo
+   rispetta; la campanella tiene tutto comunque, com'è da ADR-0311.
+
+Testi nelle altre lingue (da far vedere all'utente con la PR): risposta
+«{name} hat auf deinen Kommentar geantwortet: {text}» / «{name} ha risposto
+al tuo commento: {text}» / «{name} ha respondido a tu comentario: {text}» /
+«{name} a répondu à ton commentaire : {text}»; reazione «{name} hat auf
+deinen Kommentar reagiert.» / «{name} ha reagito al tuo commento.» /
+«{name} ha reaccionado a tu comentario.» / «{name} a réagi à ton
+commentaire.»
+
+**Privacy**: le risposte sono commenti (già descritti). Di nuovo c'è la
+reazione a un commento: gli altri vedono quante, chi ha scritto il commento
+legge nella campanella chi ha reagito. La frase di «Favorites, comments,
+reactions and follows» va fatta approvare all'utente e aggiornata con C2
+(`about/content/**`, `site/privacy`: turno dal Coordinatore).
+
+File toccati (C1):
+
+```
+services/api/migrations/0072_comment_replies.sql        (nuovo)
+services/api/shaperoute_api/comment_reactions.py        (nuovo)
+services/api/shaperoute_api/comments.py
+services/api/shaperoute_api/push.py
+services/api/shaperoute_api/notification_list.py
+services/api/shaperoute_api/app.py                      (a turno: due righe)
+services/api/tests/test_comment_threads.py              (nuovo)
+packages/shared-types/src/index.ts                      (a turno)
+packages/shared-types/test/commentThreads.test.ts       (nuovo)
+packages/shared-types/fixtures/comment-reply-request.json    (nuovo)
+packages/shared-types/fixtures/comment-reply.json            (nuovo)
+packages/shared-types/fixtures/comment-threads.json          (nuovo)
+packages/shared-types/fixtures/comment-reactions.json        (nuovo)
+packages/shared-types/fixtures/comment-reaction-request.json (nuovo)
+docs/API.md                                             (a turno)
+docs/DATABASE.md
+docs/tasks/TASK-454.md
+```
+
+Criteri di accettazione (C1):
+
+- [ ] `test_comment_threads.py` verde: risposte a un livello, pagine,
+      «app di prima», blocchi, segnalazione e nascosto, cinque reazioni,
+      avvisi (risposta col push, reazione solo campanella).
+- [ ] I test di prima di `comments`, `reactions`, `push`,
+      `notification_list` restano verdi senza modifiche.
+- [ ] `ruff` e `black` puliti; `shared-types` typecheck e test verdi.
+- [ ] Dopo il passo sul server (dell'utente): controllo in
+      `out/TASK-454/SERVER-C1.md`, senza TestClient.

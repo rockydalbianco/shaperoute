@@ -112,7 +112,45 @@ libero al merge),
 - [ ] Migrazione sul server e poi OTA, dal Coordinatore col sì dell'utente;
       righe di controllo di sola lettura in `out/TASK-433/SERVER.md`
       (cartella `out/` del checkout principale).
-- [ ] Prova sul telefono dell'utente.
+- [ ] Prova sul telefono dell'utente. **Sul simulatore la guida non è stata
+      vista girare**: provata solo coi test (jest); l'utente la prova dopo
+      l'OTA del 2026-11-10.
+
+## Parte B — «Come funzionano le schede» toccando Palestra
+
+Chiesta dall'utente il 2026-11-10 al Coordinatore («inserire la scheda che
+spieghi come funziona ma solamente quando l'utente clicca sullo sport
+gym»); scelte una alla volta, sulla schermata «B» della tela:
+
+1. **Quando**: «Solo la prima volta» che tocca Palestra in «Draw»; mai
+   all'avvio dell'app (anche con la palestra già scelta), mai negli altri
+   sport. Ascolta lo sport scelto (`saveSport` avvisa solo di una scelta
+   fatta), non la pagina della palestra che compare; vista, resta vista sul
+   telefono (`gym-intro.json`).
+2. **Chiudere e rivedere**: «Così» — «Create my plan» apre la guida in 5
+   passi (dopo che il riquadro è sceso: un Modal alla volta), «Not now» o un
+   tocco fuori lo chiude; la riga «How plans work» nella palestra di
+   «Draw» lo riapre quando si vuole. Senza account c'è solo «Not now».
+3. **Testi e grafica**: «Approvo» — riquadro dal basso con le quattro barre
+   delle settimane, «Your plan, step by step», tre passi numerati.
+
+| en | it |
+|---|---|
+| Your plan, step by step | La tua scheda, passo per passo |
+| A minute to make it, then it guides you every time. | Un minuto per farla, poi ti guida ogni volta. |
+| Choose your goal and days | Scegli obiettivo e giorni |
+| More muscle, more strength, tone up or get back in shape, 2 to 5 days. | Più muscoli, più forza, tonificare o rimetterti in forma, da 2 a 5 giorni. |
+| The plan is ready | La scheda è già pronta |
+| Exercises, sets and reps proposed: touch an exercise to change it. | Esercizi, serie e ripetizioni proposti: tocca un esercizio per cambiarlo. |
+| The weeks change by themselves | Le settimane cambiano da sole |
+| More load, more reps or weeks A / B. Here you find today's workout. | Più peso, più ripetizioni o settimane A / B. Qui trovi l'allenamento di oggi. |
+| Create my plan · Not now · How plans work | Crea la mia scheda · Non ora · Come funzionano le schede |
+
+File (solo app, lista mandata al Coordinatore): nuovi
+`apps/mobile/src/gym/gymIntro.ts`, `GymIntroSheet.tsx`, `GymIntro.test.tsx`;
+`gym/GymDrawGuide.tsx`, `i18n/{it,de,fr,es}.ts`; `docs/tasks/TASK-433.md`,
+`docs/sports/gym.md`. Niente server: esce con l'OTA dopo il merge. Sul
+simulatore non è stata vista girare.
 
 ## Da fare dopo il merge (Coordinatore, col sì dell'utente)
 
@@ -120,6 +158,11 @@ libero al merge),
    Coordinatore. Prima del server l'app nuova salva le schede guidate solo
    sul telefono: il `PUT` con `program` torna `422` dall'API vecchia e la
    scheda resta in attesa; per questo l'OTA va dopo il server.
-2. OTA di produzione.
+   **Fatto il 2026-11-10**: server a 8138b456, 0066 applicata, copia
+   `shaperoute-2026-11-10T1738Z.dump`, ritorno = immagine
+   `shaperoute-api:before-passo5`; controlli di `out/TASK-433/SERVER.md`
+   («plans 0 without weeks 0 read ok», rotte 401/404 come attese).
+2. OTA di produzione: partito dal Coordinatore da main 2c3442f7 (senza la
+   parte B, che esce con l'OTA dopo il suo merge).
 3. La privacy non cambia: le schede (nome, giorni, esercizi e valori
    obiettivo) restano sul telefono e sull'account come in TASK-411 D.

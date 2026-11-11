@@ -19,6 +19,7 @@ from test_drawings import (
     client,  # noqa: F401  (the fixtures of the drawings' tests)
     database,  # noqa: F401
     other,
+    saved,
     signed_up,
     wall,  # noqa: F401
 )
@@ -28,7 +29,9 @@ from shaperoute_api.gym_plans import (
     MAX_PLANS,
     GymPlanItemBody,
     GymPlanRequestBody,
+    GymPlanRunBody,
     GymPlansBody,
+    GymPlanSessionBody,
     GymProgramBody,
     days_mask,
     mask_days,
@@ -42,6 +45,7 @@ EXAMPLE = json.loads((FIXTURES / "gym-plans.json").read_text(encoding="utf-8"))
 PUSH = EXAMPLE["plans"][0]
 LEGS = EXAMPLE["plans"][1]
 MUSCLE = EXAMPLE["plans"][2]
+LIFT_AND_RUN = EXAMPLE["plans"][3]
 
 
 def request(plan: dict[str, Any], **changes: Any) -> dict[str, Any]:
@@ -75,6 +79,7 @@ def test_the_example_is_the_contract() -> None:
         PUSH["key"],
         LEGS["key"],
         MUSCLE["key"],
+        LIFT_AND_RUN["key"],
     ]
 
 
@@ -177,6 +182,40 @@ def test_a_program_started_midweek_counts_from_its_monday() -> None:
     assert body.sessions_on(date(2026, 11, 18))[0].name == "Back, biceps"
     # Monday the 7th of December is week 4, the one written by hand.
     assert body.sessions_on(date(2026, 12, 7))[0].items[0].exercise == "push_up"
+
+
+@pytest.mark.parametrize(
+    "run",
+    [
+        # An easy or long run: a distance or a time, not both, no reps.
+        {"kind": "easy"},
+        {"kind": "easy", "distance_m": 5000, "duration_s": 1800},
+        {"kind": "long", "distance_m": 12000, "reps": 2},
+        # Intervals: reps, each in metres or seconds.
+        {"kind": "intervals", "reps": 6},
+        {"kind": "intervals", "reps": 6, "rep_m": 400, "rep_s": 90},
+        {"kind": "intervals", "reps": 6, "rep_m": 400, "distance_m": 5000},
+        # A kind it knows, values in their range.
+        {"kind": "tempo", "distance_m": 5000},
+        {"kind": "easy", "distance_m": 50},
+    ],
+)
+def test_a_run_day_has_the_fields_of_its_kind(run: dict[str, Any]) -> None:
+    with pytest.raises(ValueError):
+        GymPlanRunBody.model_validate(run)
+
+
+def test_a_run_day_has_no_exercises() -> None:
+    item = {"exercise": "plank", "kind": "timed", "sets": 1}
+    run = {"kind": "easy", "distance_m": 5000}
+    with pytest.raises(ValueError):
+        GymPlanSessionBody.model_validate(
+            {"day": 2, "name": "Run", "items": [item], "run": run}
+        )
+    body = GymProgramBody.model_validate(LIFT_AND_RUN["program"])
+    tuesday = body.sessions_on(date(2026, 11, 3))
+    assert tuesday[0].run is not None and tuesday[0].run.distance_m == 5000
+    assert body.days() == [1, 2, 4, 6]
 
 
 # --- In the database ---
@@ -360,3 +399,27 @@ def test_the_calendar_skips_the_days_of_the_cycle(
         23,
     ]
     assert {one["plan"] for one in answer["skipped"]} == {"Muscle · 3 days"}
+
+
+def test_a_run_day_is_done_by_a_run(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    # Monday 21 September 2026, the day of the example run.
+    wall.t = datetime(2026, 9, 21, 8, tzinfo=UTC)
+    program = {**LIFT_AND_RUN["program"], "starts_on": "2026-09-21"}
+    made = put(client, me, LIFT_AND_RUN["key"], request(LIFT_AND_RUN, program=program))
+    assert made.status_code == 201, made.text
+    assert comparable(made.json()) == comparable({**LIFT_AND_RUN, "program": program})
+    # A run on Tuesday the 22nd (the example, a day on): its run day is done.
+    wall.t = datetime(2026, 9, 27, 12, tzinfo=UTC)
+    saved(client, me, days_later=1)
+    answer = client.get(
+        "/me/gym-calendar",
+        params={"tz": "Europe/Rome", "month": "2026-09"},
+        headers=me,
+    ).json()
+    # Monday the 21st (the gym), Thursday the 24th (intervals) and Saturday
+    # the 26th (long run) without; Tuesday the 22nd run.
+    assert [one["day"] for one in answer["skipped"]] == [21, 24, 26]

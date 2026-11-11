@@ -138,20 +138,20 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   produzione; prossime D («Together») ed E (telefono: anche il picker di
   sistema). File: — · `tasks/TASK-417.md`
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
-  0, A, B in produzione; C1 (#1096, OTA 5) e C2 (#1098, calorie di ogni
-  attività) in `main`. In corso C2b (le discese dello sci al server, con
-  TASK-429; il server col sì dell'utente), poi C3 (calorie in rosso).
-  Resta la prova sul telefono. File: quelli di C2b · `tasks/TASK-424.md`
+  0, A, B in produzione; C1 (#1096, OTA 5), C2 (#1098), C2b (#1110) e C3
+  (#1123, calorie in rosso) in `main`. Restano: il server di C2b (passo 7)
+  e l'OTA di C2 e C3, col sì dell'utente; la prova sul telefono.
+  File: — · `tasks/TASK-424.md`
 - **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
   privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
   collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
   in produzione con l'OTA 4 del 2026-11-10. E1 (premi sul server, 0067) in
   `main` con la #1099, il passo server 6 aspetta il sì dell'utente; poi E2
   (l'app) e la privacy. File: — · `tasks/TASK-423.md`
-- **TASK-429 — La modalità sci** (ADR-0357) · 0 e A in `main` (A: #1093,
-  esce col prossimo OTA). B1 (mappa a colori, legenda, «Summary · Map ·
-  Runs») scritta, PR dopo la #1098; poi B2 e C, i tratti `ski_parts` con
-  TASK-424 C2b (scelta dell'utente «Sì, così»). File: — · `tasks/TASK-429.md`
+- **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1 in `main`
+  (#1093, #1108, #1114); A e B1 escono con gli OTA 5 e 6, C1 va sul server
+  nel passo 7 con TASK-424 C2b. B2 (i tratti a «Salva») e C2 (stagione e
+  giornata salvata) scritte, si aprono dopo il server. File: — · `tasks/TASK-429.md`
 - **TASK-431 — «Compass» più bella** (ADR-0359) · in `main` (#1081): la
   freccia «B» con anello e cono azzurri che punta dove punta la mappa, le
   tre schede coi disegni, la punta rossa del nord. Restano l'OTA di

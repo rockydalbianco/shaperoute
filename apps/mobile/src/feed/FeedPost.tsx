@@ -52,6 +52,7 @@ import { useEditRunDoor } from "./editRunDoor";
 import { isImportedPost, isShown } from "./feedPosts";
 import { PostActions } from "./PostActions";
 import { gymPostEnergy, postEnergy } from "./postEnergy";
+import { FactsText, factsEnergy } from "./FactsText";
 import { summaryRows } from "./postSections";
 import { drawingHeight, RouteMap } from "./RouteMap";
 import { SummaryBoxes } from "./SummaryBoxes";
@@ -332,7 +333,13 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const words = (
     <View style={styles.words}>
       <Text style={styles.title}>{post.title}</Text>
-      {!shown && <Text style={styles.facts}>{postFacts(post, exercises?.sets)}</Text>}
+      {!shown && (
+        <FactsText
+          style={styles.facts}
+          facts={postFacts(post, exercises?.sets)}
+          kcal={factsEnergy(post, exercises?.sets)}
+        />
+      )}
       {/* The figures this workout reached first (TASK-385 E). */}
       {gym && <NewLevels exercises={exercises} />}
     </View>
@@ -364,7 +371,12 @@ export function FeedPost({ post, width, onOpen }: Props) {
       >
         <Text style={styles.titleOnPhoto}>{post.title}</Text>
         {!shown && (
-          <Text style={styles.factsOnPhoto}>{postFacts(post, exercises?.sets)}</Text>
+          <FactsText
+            style={styles.factsOnPhoto}
+            facts={postFacts(post, exercises?.sets)}
+            kcal={factsEnergy(post, exercises?.sets)}
+            energyColor={color.energyOnScrim}
+          />
         )}
       </View>
     </>

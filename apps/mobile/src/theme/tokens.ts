@@ -33,11 +33,19 @@ const FIXED = {
 
   /**
    * Someone waits for the user's answer: the number on the way to «Profile»
-   * and on «Requests» (TASK-239). Red by the user's choice; nothing else is.
+   * and on «Requests» (TASK-239). Red by the user's choice; so are the
+   * calories (`energy`, TASK-424 part C3), and nothing else is.
    */
   badge: "#E02D2D",
   /** The number on `badge`: 4.6:1. */
   onBadge: "#FFFFFF",
+  /**
+   * The calories on the yellow (TASK-424 part C3): a gym workout's tile and
+   * its picture to share. 6.3:1 on `accent`.
+   */
+  energyOnAccent: "#8F1216",
+  /** The calories over a photo, on `scrim` like `onScrim`: 6.8:1. */
+  energyOnScrim: "#FF6363",
 
   /**
    * The dark laid over the app around the part the tour shows (TASK-266),
@@ -106,6 +114,12 @@ export type Shade = {
   readonly warning: string;
   /** A request that failed. */
   readonly error: string;
+  /**
+   * The calories, wherever they are shown (TASK-424 part C3, the user's
+   * choice of 2026-11-10: «segnate con colore rosso in tutte»): 4.5:1 at
+   * least on `background`, `surface` and `surfaceRaised`, at every step.
+   */
+  readonly energy: string;
 
   /** Where a moved route begins (ADR-0040). Cyan, so it never reads as route. */
   readonly startHere: string;
@@ -176,6 +190,7 @@ export const SHADES: Readonly<
       textFaint: "#908980",
       warning: "#FF7A59",
       error: "#FF6B6B",
+      energy: "#FF6363",
       startHere: "#4DD2FF",
       you: "#3D9BFF",
       north: "#FF5B4F",
@@ -205,6 +220,7 @@ export const SHADES: Readonly<
       textFaint: "#BAB4AB",
       warning: "#FF9478",
       error: "#FF8A8A",
+      energy: "#FFA3A3",
       startHere: "#6EDBFF",
       you: "#5AAEFF",
       north: "#FF7068",
@@ -236,6 +252,7 @@ export const SHADES: Readonly<
       textFaint: "#55504A",
       warning: "#9A330A",
       error: "#A1221B",
+      energy: "#8F1216",
       startHere: "#006E94",
       you: "#1565C0",
       north: "#C42F24",
@@ -265,6 +282,7 @@ export const SHADES: Readonly<
       textFaint: "#68625A",
       warning: "#B23C0B",
       error: "#B3261E",
+      energy: "#B71C1C",
       startHere: "#007BA3",
       you: "#1460B8",
       north: "#C8352A",

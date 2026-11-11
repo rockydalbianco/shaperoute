@@ -1,9 +1,10 @@
 # TASK-429 — La modalità sci: scelto lo sci, MuW diventa un'app per lo sci
 
-**Stato**: In lavorazione · parte 0 e parte A in `main` (A: #1093); B1
-scritta, aspetta la #1098 di TASK-424; poi B2 e C
+**Stato**: In lavorazione · 0, A, B1 e C1 in `main` (#1093, #1108, #1114);
+C1 va sul server nel passo 7 con TASK-424 C2b; poi B2 e C2, scritte
 **Fase**: 5 · **Branch**: `docs/TASK-429-…` (documenti); il codice
-`feat/TASK-429-a-ski-mode` (A, in `main`), `feat/TASK-429-b-ski-day` (B1)
+`feat/TASK-429-a-ski-mode`, `feat/TASK-429-b-ski-day`,
+`feat/TASK-429-c1-ski-day-parts` (in `main`), `feat/TASK-429-c2-ski-days`
 **Dipende da**: TASK-375 (la giornata di sci, impianti e piste per nome) e
 TASK-406 (stazioni, meteo, neve, «Follow»), tutti e due online dal
 2026-11-10. Non li riapre: ne riusa le pagine.
@@ -388,7 +389,28 @@ Scelte tecniche della C1, decise dall'agente su delega dell'utente:
 - **la stagione** è fra due giorni chiesti dall'app (al più 400), solo
   numeri e solo le proprie giornate.
 
-Parti C2 ed E: si elencano prima di ciascuna.
+**B1 in `main` il 2026-11-10** (#1108, `42a5309c`): la mappa della
+giornata a colori con i numeri, la legenda, «Summary · Map · Runs» a fine
+giornata, con le calorie di TASK-424 C2 dentro «Summary». Impronta iOS
+`6f8bba4c` invariata. Esce con l'OTA 6 del Coordinatore, col sì
+dell'utente.
+
+**C1 in `main` il 2026-11-10** (#1114, `3d41ab96`): `parts` nella giornata
+salvata e `GET /me/ski-season`. Va sul server nel passo 7 insieme alla C2b
+di TASK-424 (#1110) e alla C1 della palestra, col sì dell'utente; le righe
+di controllo di sola lettura sono in `out/TASK-429/SERVER-C1.md`.
+
+Parte C2, l'app (approvata dal Coordinatore il 2026-11-10; si apre dopo la
+C1 sul server). File nuovi: `apps/mobile/src/api/skiSeason.ts`,
+`apps/mobile/src/skimode/SkiSeason.tsx`, `SkiDayPage.tsx` e
+`useSkiDayMap.ts` (aggiunto col sì del Coordinatore), ognuno col suo test.
+File da cambiare: `apps/mobile/src/skimode/SkiDaysPage.tsx` e `SkiRuns.tsx`
+coi loro test, `apps/mobile/src/social/drawingsDoor.ts` (`skiSeasonOf`),
+`apps/mobile/App.tsx` (il post di sci aperto sulla mappa a colori, a turno
+col Coordinatore), `apps/mobile/src/i18n/{it,de,fr,es}.ts` (i quattro testi
+approvati della stagione e di «Pista senza nome»).
+
+Parte E: si elenca prima.
 
 ## Criteri di accettazione
 

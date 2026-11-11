@@ -128,7 +128,12 @@ export function SnowFinishCard({ run, activity, onResume, onDone }: Props) {
                   value={runDistanceLabel(track.distanceM, numbers.units)}
                 />
                 {numbers.energy !== null && (
-                  <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
+                  <Tile
+                    label={t("Calories")}
+                    value={numbers.energy}
+                    unit="kcal"
+                    energy
+                  />
                 )}
               </View>
             </View>
@@ -145,7 +150,7 @@ export function SnowFinishCard({ run, activity, onResume, onDone }: Props) {
           )}
           {!skiing && numbers.energy !== null && (
             <View style={styles.tiles}>
-              <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
+              <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
             </View>
           )}
           {/* The snow and the gear of the day, sent with it at «Save». */}

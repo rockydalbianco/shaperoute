@@ -1,0 +1,47 @@
+{
+  "elevation": null,
+  "cadence_spm": null,
+  "kcal": 412,
+  "ski_parts": [
+    {
+      "kind": "lift",
+      "n": 1,
+      "start_ms": 1790000000000,
+      "end_ms": 1790000300000,
+      "moving_s": 300,
+      "metres": 1200,
+      "height_m": 300,
+      "top_mps": null
+    },
+    {
+      "kind": "descent",
+      "n": 1,
+      "start_ms": 1790000300000,
+      "end_ms": 1790000420000,
+      "moving_s": 115,
+      "metres": 1250,
+      "height_m": 300,
+      "top_mps": 14.2
+    },
+    {
+      "kind": "lift",
+      "n": 2,
+      "start_ms": 1790000420000,
+      "end_ms": 1790000720000,
+      "moving_s": 300,
+      "metres": 1200,
+      "height_m": 300,
+      "top_mps": null
+    },
+    {
+      "kind": "descent",
+      "n": 2,
+      "start_ms": 1790000720000,
+      "end_ms": 1790000900000,
+      "moving_s": 170,
+      "metres": 1650,
+      "height_m": 300,
+      "top_mps": 16.8
+    }
+  ]
+}

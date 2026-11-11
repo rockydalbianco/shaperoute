@@ -21,7 +21,6 @@ import {
   savePost,
 } from "../api/activities";
 import { type DrawingChoice, isSeen } from "../api/drawings";
-import { saveRunStats } from "../api/runStats";
 import { appBody } from "../body/bodyProfile";
 import { tellUnlocked } from "../game/unlockedRuns";
 import { t, tLater } from "../i18n";
@@ -46,7 +45,7 @@ import {
   type Waiting,
 } from "./outbox";
 import { type Drawn, type RecordedRun, recordedRun } from "./recordedRun";
-import { runStatsRequest } from "./runStatsOut";
+import { runStatsRequest, sendRunStats } from "./runStatsOut";
 import { activityProblem, type ActivitiesState, useActivities } from "./useActivities";
 
 /** A run of this phone the API will not take (TASK-257), as «My
@@ -366,7 +365,9 @@ export function useActivitiesOf(
               new Date().getFullYear(),
             );
             if (stats !== null) {
-              void saveRunStats(baseUrl, token, run.id, stats, { fetchFn, key });
+              // A day of skiing's parts go with them, and again without
+              // them to an API that refuses them (TASK-429 part B2).
+              void sendRunStats(baseUrl, token, run.id, stats, { fetchFn, key });
             }
             stopWaiting(owner, run.id);
             // The shape game (TASK-296): what the run unlocked, now that the

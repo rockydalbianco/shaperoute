@@ -2498,4 +2498,10 @@ export const DE: Table = {
   Lift: "Lift",
   "{speed} top": "{speed} max.",
   "Stopped {minutes} min": "Pause {minutes} Min.",
+
+  // src/skimode/ (TASK-429 part C: the season and the saved day)
+  "Season {years}": "Saison {years}",
+  "Vertical this season": "Höhenmeter der Saison",
+  "On snow": "Im Schnee",
+  "Piste without a name": "Piste ohne Namen",
 };

@@ -166,6 +166,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   tocco di Palestra) uscita con l'OTA 6; C (ADR-0363, giorni di corsa) C1
   #1117 in `main` e sul server (2ed26af7), C2 #1115 in `main` (23308c9e):
   esce col settimo OTA, col sì dell'utente. Resta la prova sul telefono.
+  Settimo OTA (C2) in produzione il 2026-11-11 da 7e24e7d1; l'utente l'ha
+  provato sul telefono («funziona tutto ok», prova generale). #1133 (il «No»
+  neutro) esce con l'ottavo OTA.
 - **TASK-435 — Primo percorso subito, alternative dopo** (ADR-0361) ·
   parte 0 fatta: piano, misura (una vicina vince nel 38% delle prove;
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il

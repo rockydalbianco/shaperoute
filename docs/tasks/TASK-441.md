@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A in `main` (#1149, 2026-11-11): 1963 percorsi; resta il server; poi B
+**Stato**: In lavorazione — parte A in `main` (#1149, 2026-11-11); le 702 parole nuove escono con una PR di correzione (→ 1261); resta il server; poi B
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -154,6 +154,11 @@ docs/tasks/TASK-441.md            (nuovo)
   (`review-new-words.html`, `review-already-drawn.html`) entrano tutti,
   anche le 60 parole che in una città compaiono nei due stili (l'altra
   scelta era «Togli i doppi», 1903).
+- 2026-11-11, dopo il merge, «Sì, toglile» (in un'altra sessione,
+  riferito dal Coordinatore): guardate nel catalogo, le 702 parole nuove a
+  riga unica (615 di A2, 87 di A1) hanno le lettere unite e non si
+  leggono. Escono tutte; tornano nella parte B a penna alzata, leggibili
+  come negli esempi delle città.
 
 ## Com'è uscita la parte A
 
@@ -183,17 +188,29 @@ docs/tasks/TASK-441.md            (nuovo)
 ## Dove siamo
 
 *2026-11-11*: **parte A in `main`** (#1149, merge del Coordinatore dopo il
-sì dell'utente; documenti in una PR a parte, ADR-0347 precisazione C).
-Giro delle parole dalle 14:21 alle 16:10 dal worktree
-`.claude/worktrees/TASK-441-a`.
+sì dell'utente; documenti #1153, ADR-0347 precisazione C). Giro delle
+parole dalle 14:21 alle 16:10.
 
-**Resta per la parte A, sul server** (un sì dell'utente, dal Coordinatore):
-i file di `catalog/` e l'immagine nuova (l'ordine misto è codice), nessuna
-migrazione. Controlli dopo: il log dice «1963 recommended routes from
-catalog/seed»; `GET /recommended-routes?lat=45.4642&lon=9.19` dà 60
-percorsi con 48 nomi diversi, i primi 48 tutti diversi.
+**La correzione**: l'utente ha poi tolto le 702 parole nuove (sopra,
+«Scelte dell'utente»). La PR è di un'altra sessione, sul branch
+`fix/TASK-441-a-drop-words`, che lavora nel worktree
+`.claude/worktrees/TASK-441-a`: `tools/catalog_kept.json` e
+`catalog/seed/**` non si toccano finché il Coordinatore non scrive che è
+in `main`. Dopo: 1261 percorsi (572 + 689 forme); una riga di documenti
+col numero vero.
+
+**Il server** (un sì dell'utente, dal Coordinatore) aspetta la correzione:
+file di `catalog/` e immagine nuova (l'ordine misto è codice), nessuna
+migrazione. Controlli dopo: il log dice «1261 recommended routes from
+catalog/seed»; i primi disegni di `GET /recommended-routes` da Milano
+hanno tutti un nome diverso (i numeri «60 48 48» valevano con le parole:
+da ricontare sul seme corretto).
 
 **Poi la parte B**: il turno su API, shared-types e app lo dà il
 Coordinatore dopo «#1130 in main»; prima mandargli la lista dei file (la
 #1139 di TASK-435 B tocca `schemas.py`, `app.py` e
-`packages/shared-types/src/index.ts`). ADR-0366.
+`packages/shared-types/src/index.ts`). ADR-0366. **Le parole si rifanno
+qui, a penna alzata**: prima una pagina di prova all'utente con poche
+parole in due o tre città, e solo dopo il suo sì il giro intero. Il
+registro di A2 (`out/TASK-441/runs.jsonl`) resta, ma quei disegni non
+entrano.

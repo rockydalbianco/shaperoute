@@ -577,6 +577,17 @@ cambio del motore chiede di rifarli (TASK-447), il giro riparte da
 `out/TASK-441/run.sh`. Sul server servono i file del catalogo **e**
 l'immagine nuova (l'ordine è codice).
 
+**Corretto lo stesso giorno, prima del server**: guardate nel catalogo, le
+parole nuove a riga unica hanno le lettere unite e non si leggono. L'utente
+(«Sì, toglile», riferito dal Coordinatore) le toglie tutte e 702, le 615
+di questa voce e le 87 dei già fatti, con una PR di correzione
+(`fix/TASK-441-a-drop-words`): il catalogo scende a 1261, i 572 di prima
+più 689 forme. Le parole tornano con la parte B, a penna alzata fra le
+lettere come negli esempi delle città, dopo una pagina di prova mostrata
+all'utente. Il filtro (somiglianza ≥ 0,90) non misura se una parola si
+legge: per le parole non basta. Dei punti qui sopra restano i già fatti di
+forme, l'ordine misto e lo strumento.
+
 ## ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale
 
 **Stato**: Attiva · 2026-11-11 · TASK-423, «Play» dopo l'uso (#1113).

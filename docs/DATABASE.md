@@ -1098,6 +1098,17 @@ del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
   nessun record personale.
 - Nessuna riga cambia. Test in `test_ski_touring_api.py`.
 
+Migrazione `0068_snowshoeing.sql` (TASK-413 parte A2, ADR-0342; numero in
+bozza, quello vero è il primo libero al merge, dal Coordinatore):
+
+- I vincoli `runs_activity_check`, `favorites_activity_check` e
+  `group_runs_activity_check` prendono anche `'snowshoeing'`: un percorso
+  sulla neve si salva, si tiene tra i preferiti e si propone come corsa di
+  gruppo. La migrazione rilegge ciascun vincolo e lo riscrive col nome in
+  più, in fondo, come la `0055`.
+- `run_bests` no: nessun record personale, come Hike.
+- Nessuna riga cambia. Test in `test_snowshoeing_api.py`.
+
 Migrazione `0061_run_heart.sql` (TASK-409 parte B1, ADR-0334 precisazione D;
 numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
 

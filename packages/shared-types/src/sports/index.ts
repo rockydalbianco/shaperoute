@@ -14,6 +14,7 @@ import { PADDLING } from "./paddling.ts";
 import { RUNNING } from "./running.ts";
 import { SKI_TOURING } from "./ski_touring.ts";
 import { SKIING } from "./skiing.ts";
+import { SNOWSHOEING } from "./snowshoeing.ts";
 import { SWIMMING } from "./swimming.ts";
 import { WALKING } from "./walking.ts";
 import { XC_SKIING } from "./xc_skiing.ts";
@@ -35,6 +36,7 @@ export {
   RUNNING,
   SKI_TOURING,
   SKIING,
+  SNOWSHOEING,
   SWIMMING,
   WALKING,
   XC_SKIING,
@@ -48,6 +50,7 @@ export const PLANNED_SPORTS = [
   HIKING,
   MOUNTAIN_BIKING,
   INLINE_SKATING,
+  SNOWSHOEING,
   WALKING,
   GRAVEL_BIKING,
 ] as const;

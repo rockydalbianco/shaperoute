@@ -29,8 +29,10 @@ ENGINE_ACTIVITIES: tuple[Activity, ...] = (
     hiking.ACTIVITY,
     mountain_biking.ACTIVITY,
     inline_skating.ACTIVITY,
+    # On the snow (TASK-413, ADR-0342): in ENGINE_ONLY until its part A2.
+    snowshoeing.ACTIVITY,
 )
 
-# Drawn by the engine, not yet in the contract: snowshoeing until the API
-# has it (TASK-413 part A2 moves it into ENGINE_ACTIVITIES, ADR-0342).
-ENGINE_ONLY: tuple[Activity, ...] = (snowshoeing.ACTIVITY,)
+# Drawn by the engine, not yet in the contract: none now (snowshoeing was,
+# until TASK-413 part A2).
+ENGINE_ONLY: tuple[Activity, ...] = ()

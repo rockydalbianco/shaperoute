@@ -1,6 +1,6 @@
 # TASK-465 — Il muscolo allenato accanto all'omino della palestra
 
-**Stato**: In corso · 2026-11-11 (codice scritto, mancano screenshot e sì)
+**Stato**: In corso · 2026-11-11 (PR #1173, sì dell'utente dato; manca il merge)
 **Fase**: 5 · **Branch**: `feat/TASK-465-muscle-on-figure`
 **Dipende da**: TASK-411 E (l'omino, ADR-0341); TASK-461 A1 (#1163) per i
 quattro esercizi nuovi a corpo libero
@@ -113,15 +113,16 @@ nomi dei muscoli nelle cinque lingue?». Risposta: **«Sì, vanno bene»**.
 
 ## Criteri di accettazione
 
-- [ ] Ogni esercizio del catalogo ha almeno un muscolo principale; nessun
+- [x] Ogni esercizio del catalogo ha almeno un muscolo principale; nessun
       muscolo sconosciuto; nessuna chiave della tabella fuori dal catalogo
       condiviso (test deterministici).
-- [ ] La sagoma si vede nella scheda, durante l'allenamento, in griglia e
+- [x] La sagoma si vede nella scheda, durante l'allenamento, in griglia e
       in lista; nella scheda anche i secondari, col contorno, e i nomi.
-- [ ] Il principale non si distingue solo per il colore; contrasti
+- [x] Il principale non si distingue solo per il colore; contrasti
       rispettati nei due toni.
-- [ ] Screenshot prima/dopo dal simulatore; il sì dell'utente è scritto
-      qui sotto, in «Cronologia» (2026-11-11).
+- [x] Screenshot prima/dopo dal simulatore in `out/TASK-465/`; il sì
+      dell'utente è scritto qui sotto, in «Cronologia» (2026-11-11:
+      «Vanno bene»).
 - [ ] Solo JavaScript: impronta iOS
       `6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`.
 - [ ] PR verde, segnalata al Coordinatore («#NNNN pronta»). Niente OTA,
@@ -144,5 +145,13 @@ nomi dei muscoli nelle cinque lingue?». Risposta: **«Sì, vanno bene»**.
   verde» ha risposto **«per me va bene si»**, e a «il tuo sì su aspetto e
   colore» **«si»**. Gli screenshot si fanno lo stesso e gli vengono
   mostrati: se lì qualcosa non gli va, si cambia prima del merge.
-  Mancano: gli screenshot dal simulatore (al «simulatore tuo»), la CI
-  verde, «#1173 pronta».
+- 2026-11-11 — screenshot prima/dopo dal simulatore (iPhone 17e, Expo Go
+  dal worktree) in `out/TASK-465/`: scheda della panca, allenamento,
+  griglia «Chest» e «Legs», ricerca «row» (`before-*`, `after-*`; il
+  «prima» coi quattro schermi di `origin/main`). Mostrati all'utente con
+  le differenze dai disegni (sagome piccole larghe circa 18 pt, in un
+  gruppo come «Chest» tutte uguali, corpo a contorno vuoto) e la domanda
+  «Gli screenshot veri ti vanno bene, o cambio qualcosa prima di segnalare
+  la PR pronta?». Risposta: **«Vanno bene»**.
+  Mancano: la CI verde e «#1173 pronta» al Coordinatore; dopo il merge la
+  PR di sola documentazione (ADR-0376, `STATUS.md`, `COMPLETATI.md`).

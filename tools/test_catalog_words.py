@@ -10,20 +10,37 @@ import catalog_seed as cs
 import pytest
 from catalog_words import (
     LANGUAGE,
+    LETTER_M,
     LOCAL,
+    LONG_LOCAL,
+    LONG_OWN,
+    LONG_POOL,
     MAX_LETTERS,
     OWN,
     POOL,
     POOL_PER_CITY,
     best_words,
     cities,
+    doubled_share,
+    drawn_m,
     language_of,
+    long_words_of,
     main,
+    pen_up_keep,
+    pen_up_key,
+    pen_up_page,
+    pen_up_plan,
+    pen_up_reasons,
+    pen_up_words,
+    pieces,
     plan,
     propose,
+    reasons,
     registered_shapes,
     spare,
     word_keys,
+    word_of_key,
+    word_svg,
     words_of,
 )
 from test_catalog_seed import run
@@ -246,3 +263,220 @@ def test_write_rebuilds_the_city_files_from_the_kept_keys_of_both_logs(
         ("circle", None),
         (None, "VAI"),
     ]
+
+
+# --- The pen up (part B1) --------------------------------------------------------
+
+
+def test_long_words_are_five_or_six_letters_of_the_engine_s_alphabet() -> None:
+    words = set(LONG_POOL) | {w for ws in LONG_LOCAL.values() for w in ws}
+    words |= {w for ws in LONG_OWN.values() for w in ws}
+    for w in words:
+        assert w.isascii() and w.isalpha() and w == w.upper(), w
+        assert 5 <= len(w) <= 6, w
+    assert set(LONG_OWN) <= set(cs.BY_NAME)
+    assert set(LONG_LOCAL) <= set(LOCAL)
+
+
+def test_a_city_has_its_name_a_turn_of_its_language_and_of_the_pool() -> None:
+    words = long_words_of("milano", 0)
+    assert words[0] == "MILANO"
+    assert set(words[1:6]) <= set(LONG_LOCAL["it"])
+    assert set(words[6:]) <= set(LONG_POOL) and len(words) == 8
+    # The next city has the rest of the Italian list.
+    assert set(long_words_of("roma", 1)) != set(long_words_of("roma", 0))
+    # A language without long words of its own has the pool's.
+    assert set(long_words_of("tokyo", 4)) <= set(LONG_POOL)
+
+
+def test_a_key_with_the_pen_up_says_so_and_asks_three_km_a_letter() -> None:
+    assert pen_up_key("roma", "CIAO") == "roma/CIAO:pen_up/12000"
+    assert word_of_key("roma/CIAO:pen_up/12000") == ("roma", "CIAO")
+    assert word_of_key("roma/CIAO:block/15000") == ("roma", "CIAO")
+    assert LETTER_M == 3000
+
+
+def test_the_words_with_the_pen_up_are_the_short_the_long_and_the_kept_ones() -> None:
+    roma = cs.BY_NAME["roma"]
+    words = pen_up_words(roma, 3, ["roma/SALVE:round/21000", "bari/NOPE:block/15000"])
+    assert {"ROMA", "DAJE", "CIAO"} <= set(words)
+    assert set(long_words_of("roma", 3)) <= set(words)
+    assert "SALVE" in words and "NOPE" not in words
+    assert len(words) == len(set(words))
+    assert max(map(len, words)) == 6
+
+
+def test_a_city_with_little_room_writes_only_what_fits() -> None:
+    venezia = cs.BY_NAME["venezia"]
+    index = [c.name for c in cs.CITIES].index("venezia")
+    words = pen_up_words(venezia, index, ["venezia/CIAO:round/10000"])
+    # 10 km of room: three letters of 3 km, no more.
+    assert words and all(len(w) <= 3 for w in words)
+
+
+def test_the_plan_with_the_pen_up_leaves_out_what_is_done() -> None:
+    todo = pen_up_plan(names=["bari"])
+    keys = [pen_up_key(c.name, w) for c, w in todo]
+    assert len(keys) == len(set(keys)) and "bari/BARI:pen_up/12000" in keys
+    rest = pen_up_plan(["bari/BARI:pen_up/12000"], ["bari"])
+    assert len(rest) == len(todo) - 1
+    assert 900 <= len(pen_up_plan()) <= 1300
+
+
+LINE = [[46.0 + i / 1000, 11.0] for i in range(11)]
+
+
+def test_the_pieces_are_what_is_drawn_and_what_is_walked() -> None:
+    drawn, walked = pieces(LINE, [[2, 4], [7, 8]])
+    assert drawn == [LINE[:3], LINE[4:8], LINE[8:]]
+    assert walked == [LINE[2:5], LINE[7:9]]
+    assert pieces(LINE, []) == ([LINE], [])
+
+
+def test_the_drawing_is_the_route_without_its_walks() -> None:
+    whole = cs.path_length_m([(p[0], p[1]) for p in LINE])
+    assert drawn_m(LINE, []) == pytest.approx(whole)
+    # Three of the ten steps are walked.
+    assert drawn_m(LINE, [[2, 4], [7, 8]]) == pytest.approx(whole * 0.7)
+
+
+def test_the_doubled_share_counts_the_drawing_alone() -> None:
+    out_and_back = LINE[:4] + LINE[2::-1]
+    assert doubled_share(out_and_back, []) == pytest.approx(1.0)
+    assert doubled_share(LINE, []) == 0.0
+    # The way back is walked, not drawn: nothing is drawn twice.
+    assert doubled_share(out_and_back, [[3, 6]]) == 0.0
+
+
+def pen_up(key: str, similarity: float, **more: object) -> dict[str, object]:
+    city, word = word_of_key(key)
+    asked = len(word) * LETTER_M
+    line = [[46.0 + i * asked / 111_195 / 10, 11.0] for i in range(11)]
+    return {
+        "key": key,
+        "city": city,
+        "word": word,
+        "style": "round",
+        "pen_up": True,
+        "distance_m": asked,
+        "route_m": round(asked * 1.2),
+        "drawn_m": asked,
+        "similarity": similarity,
+        "points": line,
+        "walks": [[4, 6]],
+        "planned_at": "2026-11-11T21:40:00Z",
+        **more,
+    }
+
+
+def test_a_word_with_the_pen_up_is_judged_on_its_drawing_not_on_its_walks() -> None:
+    good = pen_up("roma/VAI:pen_up/9000", 0.95)
+    # 20% longer than asked with the walks: on one line it would be out.
+    assert pen_up_reasons(good) == [] and reasons(good) == []
+    assert cs.reasons(good) == ["distance +20% off"]
+    assert pen_up_reasons(pen_up("roma/VAI:pen_up/9000", 0.89)) == [
+        "similarity 0.89 < 0.90"
+    ]
+    short = pen_up("roma/VAI:pen_up/9000", 0.95, drawn_m=7500)
+    assert pen_up_reasons(short) == ["drawing -17% off"]
+    road = pen_up("roma/VAI:pen_up/9000", 0.95, road_shares={"trunk": 0.1, "path": 0.9})
+    assert pen_up_reasons(road) == ["10% on motorway or trunk"]
+    failed = {"key": "roma/VAI:pen_up/9000", "error_kind": "failed"}
+    assert pen_up_reasons(failed) == ["failed"]
+
+
+def test_a_shape_is_judged_as_before() -> None:
+    assert reasons(run("trento/star/5000", 0.80)) == cs.reasons(
+        run("trento/star/5000", 0.80)
+    )
+
+
+def test_keeping_takes_the_one_line_words_out_and_the_passing_ones_in() -> None:
+    kept = [
+        "trento/circle/5000",
+        "trento/CIAO:block/15000",
+        "roma/LOVE:round/15000",
+        "trento/heart/5000",
+    ]
+    runs = [
+        pen_up("trento/CIAO:pen_up/12000", 0.95),
+        pen_up("roma/LOVE:pen_up/12000", 0.85),  # does not pass: LOVE leaves Rome
+        pen_up("bari/VAI:pen_up/9000", 0.92),
+    ]
+    assert pen_up_keep(runs, kept) == [
+        "trento/circle/5000",
+        "trento/heart/5000",
+        "bari/VAI:pen_up/9000",
+        "trento/CIAO:pen_up/12000",
+    ]
+    # Run again on its own answer, nothing moves.
+    assert pen_up_keep(runs, pen_up_keep(runs, kept)) == pen_up_keep(runs, kept)
+
+
+def test_the_city_file_of_a_word_with_the_pen_up_says_its_walks() -> None:
+    runs = [pen_up("trento/GO:pen_up/6000", 0.95), run("trento/circle/5000", 0.93)]
+    files = cs.city_files(runs, [r["key"] for r in runs])
+    word, shape = json.loads(files["trento.json"])["routes"]
+    assert (word["word"], word["style"], word["walks"]) == ("GO", "round", [[4, 6]])
+    assert (word["distance_m"], word["route_m"]) == (6000, 7200)
+    assert "walks" not in shape and "pen_up" not in word
+
+
+def test_the_page_draws_the_letters_and_dashes_the_walks() -> None:
+    svg = word_svg(pen_up("trento/GO:pen_up/6000", 0.95))
+    assert svg.count('class="pen"') == 2 and svg.count('class="walk"') == 1
+    # Turned back as the app shows it: a line going north, turned a quarter
+    # counterclockwise by the engine, is drawn level again.
+    flat = word_svg(pen_up("trento/GO:pen_up/6000", 0.95, rotation_deg=90.0))
+    ys = {xy.split(",")[1] for xy in flat.split('points="')[1].split('"')[0].split()}
+    assert len(ys) == 1
+
+
+def test_the_page_counts_by_length_and_fades_what_does_not_pass() -> None:
+    page = pen_up_page(
+        [
+            pen_up("trento/GO:pen_up/6000", 0.95),
+            pen_up("roma/VAI:pen_up/9000", 0.80),
+            {"key": "roma/SI:pen_up/6000", "error_kind": "failed"},
+        ]
+    )
+    assert "<td>2 lettere</td><td>1</td><td>1</td>" in page
+    assert "<td>3 lettere</td><td>0</td><td>1</td>" in page
+    assert page.count('<article class="in">') == 1
+    assert page.count('<article class="out">') == 1
+    assert "similarity 0.80 &lt; 0.90" in page and "<h3>SI" not in page
+
+
+def test_pen_up_plan_and_propose_from_the_command_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    log, kept, page = (tmp_path / n for n in ("pen.jsonl", "kept.json", "page.html"))
+    write_log(
+        log,
+        [pen_up("bari/BARI:pen_up/12000", 0.95), pen_up("bari/UE:pen_up/6000", 0.7)],
+    )
+    cs.write_kept(kept, ["bari/circle/5000", "bari/CIAO:round/15000"])
+    args = ["--pen-up", "--pen-up-log", str(log), "--kept", str(kept)]
+    assert main([*args, "--plan", "--cities", "bari"]) == 0
+    out = capsys.readouterr()
+    keys = out.out.split()
+    assert "bari/CIAO:pen_up/12000" in keys and "bari/BARI:pen_up/12000" not in keys
+    assert f"{len(keys)} words with the pen up" in out.err
+    assert main([*args, "--propose", "--page", str(page)]) == 0
+    assert json.loads(capsys.readouterr().out) == {
+        "kept": ["bari/circle/5000", "bari/BARI:pen_up/12000"]
+    }
+    assert "<h3>BARI" in page.read_text(encoding="utf-8")
+
+
+def test_write_reads_the_log_of_the_pen_up_too(tmp_path: Path) -> None:
+    old, pen, kept = (tmp_path / n for n in ("old.jsonl", "pen.jsonl", "kept.json"))
+    write_log(old, [run("trento/circle/5000", 0.93)])
+    write_log(pen, [pen_up("trento/GO:pen_up/6000", 0.95)])
+    cs.write_kept(kept, ["trento/circle/5000", "trento/GO:pen_up/6000"])
+    out = tmp_path / "seed"
+    args = ["--write", "--old-log", str(old), "--log", str(tmp_path / "none.jsonl")]
+    args += ["--pen-up-log", str(pen), "--kept", str(kept), "--out", str(out)]
+    assert main(args) == 0
+    routes = json.loads((out / "trento.json").read_text(encoding="utf-8"))["routes"]
+    assert [r.get("walks") for r in routes] == [[[4, 6]], None]

@@ -383,6 +383,7 @@ export const FR: Table = {
   "{length} of {max} characters": "{length} sur {max} caractères",
   "Saving…": "Enregistrement…",
   Save: "Enregistrer",
+  Saved: "Enregistré",
 
   // src/profile/PhotoChoices.tsx
   "Removing…": "Suppression…",

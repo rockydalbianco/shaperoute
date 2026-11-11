@@ -193,18 +193,19 @@ Fermi per scelta dell'utente
 | `services/api/tests/conftest.py`, `.github/workflows/ci.yml` | TASK-439 quando parte; fino ad allora si chiede al coordinatore |
 | `apps/mobile/src/share/**` | TASK-417 (D, E) |
 | `apps/mobile/src/feed/FeedPost.tsx`, `feed/PhotoViewer.tsx` | TASK-440 |
+| `catalog/seed/**`, `tools/catalog_words.py`, `tools/catalog_kept.json`, `services/api/shaperoute_api/recommended.py` | TASK-441 |
 | `apps/mobile/src/i18n/{de,es,fr,it}.ts` | tutti: ognuno aggiunge chiavi, conflitti tenendo tutte |
 | `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md` | solo PR di documenti, una alla volta, solo la propria voce |
 | `docs/AGENTI.md`, `CLAUDE.md`, `docs/sports/CONDIVISO.md` | coordinatore |
 
 ## Numeri
 
-- Task: presi fino a **TASK-440** (438 i test dell'API in 4 parti, 439
-  il database modello dei test, non ancora avviato, 440 la foto del post
-  a schermo intero con «Save»). Il prossimo libero è **TASK-441**.
-- ADR: presi fino a **ADR-0365** (0363 TASK-433 C, i giorni di corsa
-  nelle schede; 0364 TASK-438; 0365 riservato a TASK-439). Il prossimo
-  libero è **ADR-0366**.
+- Task: presi fino a **TASK-441** (439 il database modello dei test,
+  non ancora avviato, 440 la foto del post a schermo intero con «Save»,
+  441 «Explore a 2000 disegni»). Il prossimo libero è **TASK-442**.
+- ADR: presi fino a **ADR-0366** (0364 TASK-438; 0365 riservato a
+  TASK-439; 0366 TASK-441, i campi `walks` e `activity` del catalogo). Il
+  prossimo libero è **ADR-0367**.
 - Migrazioni in `main` e sul server: fino a `0067_game_prizes.sql`
   (0059 e 0060 non esistono). In bozza: `0068_snowshoeing.sql` (TASK-413
   A2). Il numero vero è il primo libero al merge.
@@ -256,9 +257,9 @@ Fermi per scelta dell'utente
   2026-11-10)**: build 12 provata al polso («funziona tutto»). Si
   costruisce da `release/1.1.0` (#1116) e si unisce in `main` solo dopo
   l'approvazione di Apple, così `main` resta aggiornabile via OTA per la
-  1.0.2. Build 13 partita l'11 novembre da `356e3f66` (EAS `09229e56`, tre
-  target: app, orologio, Live Activity), con invio automatico a
-  TestFlight interno; la segue la sessione A3 (`local_fd12d88e`).
+  1.0.2. Build **14** dell'11 novembre da `356e3f66` (EAS `09229e56`, tre
+  target: app, orologio, Live Activity) su TestFlight interno, provata
+  dall'utente («Tutto ok»); la segue la sessione A3 (`local_fd12d88e`).
   Poi: prova dell'utente (`out/TASK-370/prova-build-13.md`), scheda
   (screenshot Watch approvati, testi da approvare), invio col sì.
 - **Sito**: pubblicato da `main` `514b6ab3` il 2026-11-10 (F.14): pagina

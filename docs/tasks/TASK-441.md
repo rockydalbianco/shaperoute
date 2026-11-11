@@ -154,11 +154,14 @@ docs/tasks/TASK-441.md            (nuovo)
   (`review-new-words.html`, `review-already-drawn.html`) entrano tutti,
   anche le 60 parole che in una città compaiono nei due stili (l'altra
   scelta era «Togli i doppi», 1903).
-- 2026-11-11, dopo il merge, «Sì, toglile» (in un'altra sessione,
-  riferito dal Coordinatore): guardate nel catalogo, le 702 parole nuove a
-  riga unica (615 di A2, 87 di A1) hanno le lettere unite e non si
-  leggono. Escono tutte; tornano nella parte B a penna alzata, leggibili
-  come negli esempi delle città.
+- 2026-11-11, viste le parole nell'app dopo il merge di #1149, nella
+  sessione «Forme generate strane» (che lo riporta così): «Le forme che
+  hai aggiunto non vengono bene come le altre … copia il metodo», poi «Sì,
+  toglile». Le 702 parole aggiunte (615 di A2, 87 di A1) erano a riga
+  unica con le lettere unite e non si leggevano; gli esempi di città
+  (`services/api/shaperoute_api/city_examples.py`) le scrivono a penna
+  alzata, tonde, 3 km a lettera. Escono dal catalogo; nella parte B tutte
+  le parole si rifanno con quel metodo.
 
 ## Com'è uscita la parte A
 
@@ -185,6 +188,26 @@ docs/tasks/TASK-441.md            (nuovo)
   `out/TASK-441/review-new-words.html` (615) e
   `out/TASK-441/review-already-drawn.html` (776), checkout principale.
 
+## Le parole tolte (2026-11-11 sera, #1155)
+
+Dalla sessione «Forme generate strane», che ha fatto la correzione:
+
+- Prova a Milano col metodo degli esempi di città (`pen_up`, `round`,
+  3 km a lettera; `out/TASK-441/penup/`, checkout principale): BACI,
+  FAST, COOL, STAR si leggono, somiglianza 0,97–1,00 contro 0,91–0,96 a
+  riga unica, 5 s l'una. Confronto: `out/TASK-441/penup/milano.html`.
+- `tools/catalog_kept.json` tiene le 572 di prima più le **689 forme** di
+  A1: **1261 percorsi**, 55 parole (quelle di prima). Seme riscritto con
+  `catalog_words.py --write`; Milano 71, la città più piccola 4.
+- Il catalogo non tiene `walks`: senza, l'app unirebbe le lettere a
+  piedi come prima. Per questo le parole aspettano la parte B, che dà il
+  campo al catalogo e poi rigenera tutte le parole a penna alzata (anche
+  le 55 di prima, da decidere con l'utente).
+- `catalog_words.py --propose` rimette ancora le parole a riga unica: **non
+  usarlo per le parole** fino alla parte B.
+- I numeri di «Com'è uscita la parte A» qui sopra (1963, 757 parole, 91 a
+  Milano) sono quelli del merge di #1149, prima della correzione.
+
 ## Dove siamo
 
 *2026-11-11*: **parte A in `main`** (#1149, merge del Coordinatore dopo il
@@ -192,7 +215,7 @@ sì dell'utente; documenti #1153, ADR-0347 precisazione C). Giro delle
 parole dalle 14:21 alle 16:10.
 
 **La correzione**: l'utente ha poi tolto le 702 parole nuove (sopra,
-«Scelte dell'utente»). La PR è di un'altra sessione, sul branch
+«Scelte dell'utente»). La PR è la #1155 di un'altra sessione, sul branch
 `fix/TASK-441-a-drop-words`, che lavora nel worktree
 `.claude/worktrees/TASK-441-a`: `tools/catalog_kept.json` e
 `catalog/seed/**` non si toccano finché il Coordinatore non scrive che è

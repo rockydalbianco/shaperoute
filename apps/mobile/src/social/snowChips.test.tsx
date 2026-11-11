@@ -29,6 +29,15 @@ test("a day of skiing is one of the three days on the snow", async () => {
   expect(onActivity).toHaveBeenCalledWith("xc_skiing");
 });
 
+test("a flight stays a flight, apart from the snow", async () => {
+  // TASK-305 (ADR-0375): recorded without a shape, but no day on the snow.
+  await render(<ActivityChips value="paragliding" onChange={jest.fn()} />);
+  expect(
+    screen.getByRole("radio", { name: "Paragliding", checked: true }),
+  ).toBeTruthy();
+  expect(screen.getAllByRole("radio")).toHaveLength(1);
+});
+
 test("a run keeps its chips, with no snow among them", async () => {
   await render(<ActivityChips value="running" onChange={jest.fn()} />);
   expect(screen.getByRole("radio", { name: "Run", checked: true })).toBeTruthy();

@@ -43,6 +43,7 @@ export type ToPage =
     }
   | { type: "clearProgress" }
   | { type: "showOthers"; lines: LngLat[][] }
+  | { type: "showGhost"; lines: LngLat[][] }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
   | {
@@ -346,6 +347,13 @@ export function clearRejoin(): ToPage {
  * the map (TASK-093); none clears them. */
 export function showOthers(routes: LatLon[][]): ToPage {
   return { type: "showOthers", lines: routes.map((points) => points.map(toLngLat)) };
+}
+
+/** Draws the shape asked for as the search placed it, faint under the
+ * route and the other routes, without moving the map (TASK-442): the
+ * `placed_outline` of a result; none clears it. */
+export function showGhost(lines: LatLon[][]): ToPage {
+  return { type: "showGhost", lines: lines.map((points) => points.map(toLngLat)) };
 }
 
 /**

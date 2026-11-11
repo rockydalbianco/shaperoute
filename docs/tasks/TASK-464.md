@@ -1,7 +1,10 @@
 # TASK-464 — Zone già in memoria nei processi di calcolo
 
-**Stato**: In corso — PR di codice aperta, aspetta il merge del
-Coordinatore; poi il passo sul server (col sì dell'utente)
+**Stato**: In corso — PR #1167 aperta. Il Coordinatore la tiene ferma
+fino a «passo 8 fatto», per non mescolare questo cambio di memoria coi
+cambi del passo 8. Poi: unire main, merge, un passo sul server suo (col sì
+dell'utente) col default 500 MB. Le letture per il dopo sono in
+`out/TASK-464/SERVER.md`.
 **Fase**: 5 · **Branch**: `feat/TASK-464-warm-zones` ·
 **ADR**: ADR-0374 (la voce va nella PR di documenti dopo il merge)
 

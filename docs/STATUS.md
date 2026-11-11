@@ -138,10 +138,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   produzione; prossime D («Together») ed E (telefono: anche il picker di
   sistema). File: — · `tasks/TASK-417.md`
 - **TASK-424 — Dati dal vivo per ogni sport e «Share live activity»** ·
-  0, A, B in produzione; C1 (#1096, OTA 5), C2 (#1098) e C2b (#1110, le
-  discese dello sci al server: passo server 7, col sì dell'utente) in
-  `main`. In corso C3 (calorie in rosso). Resta la prova sul telefono.
-  File: quelli di C3 · `tasks/TASK-424.md`
+  0, A, B in produzione; C1 (#1096, OTA 5), C2 (#1098), C2b (#1110) e C3
+  (#1123, calorie in rosso) in `main`. Restano: il server di C2b (passo 7)
+  e l'OTA di C2 e C3, col sì dell'utente; la prova sul telefono.
+  File: — · `tasks/TASK-424.md`
 - **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
   privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
   collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,

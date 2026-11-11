@@ -7,6 +7,7 @@ environment, everything else the standard library alone):
     python tools/catalog_words.py --plan
     services/api/.venv/bin/python tools/catalog_words.py --run
     python tools/catalog_words.py --propose > out/TASK-441/kept-proposal.json
+    python tools/catalog_words.py --write
 
 `tools/catalog_seed.py` (TASK-419) is used as it is: its cities and squares,
 its run loop (`run_cities`), its filter and its score. This module only says
@@ -272,11 +273,17 @@ def _build_parser() -> argparse.ArgumentParser:
         help="print the keys to keep: the kept ones, A1 and A2",
     )
     p.add_argument(
+        "--write",
+        action="store_true",
+        help="rebuild catalog/seed from --kept and the two logs",
+    )
+    p.add_argument(
         "--cities", type=lambda v: v.split(","), default=[], help="comma-separated"
     )
     p.add_argument("--log", type=Path, default=DEFAULT_LOG)
     p.add_argument("--old-log", type=Path, default=OLD_LOG)
     p.add_argument("--kept", type=Path, default=cs.DEFAULT_KEPT)
+    p.add_argument("--out", type=Path, default=cs.DEFAULT_SEED)
     p.add_argument("--cache-dir", type=Path, default=cs.DEFAULT_CACHE)
     return p
 
@@ -306,6 +313,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             old_runs, word_runs, cs.read_kept(args.kept), registered_shapes()
         )
         print(json.dumps({"kept": keys}, indent=1))
+        return 0
+    if args.write:
+        kept = cs.read_kept(args.kept)
+        both = cs.read_logs([args.old_log, args.log])
+        cs.write_files(cs.city_files(both, kept), args.out)
+        print(cs.summary(both, kept), file=sys.stderr)
         return 0
     print(cs.summary(word_runs), file=sys.stderr)
     return 0

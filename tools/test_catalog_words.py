@@ -225,3 +225,24 @@ def test_propose_prints_the_keys_to_keep(
     assert json.loads(capsys.readouterr().out) == {
         "kept": ["trento/circle/5000", "trento/heart/5000", "trento/VAI:round/12000"]
     }
+
+
+def test_write_rebuilds_the_city_files_from_the_kept_keys_of_both_logs(
+    tmp_path: Path,
+) -> None:
+    old, new, kept = (tmp_path / n for n in ("old.jsonl", "new.jsonl", "kept.json"))
+    write_log(old, [run("trento/circle/5000", 0.93), run("trento/heart/5000", 0.97)])
+    write_log(
+        new, [word("trento/VAI:round/12000", 0.92), word("roma/GO:block/8000", 0.95)]
+    )
+    cs.write_kept(kept, ["trento/circle/5000", "trento/VAI:round/12000"])
+    out = tmp_path / "seed"
+    args = ["--write", "--log", str(new), "--old-log", str(old)]
+    assert main([*args, "--kept", str(kept), "--out", str(out)]) == 0
+    assert [f.name for f in out.iterdir()] == ["trento.json"]
+    body = json.loads((out / "trento.json").read_text(encoding="utf-8"))
+    assert body["license"] == cs.LICENSE
+    assert [(r.get("shape"), r.get("word")) for r in body["routes"]] == [
+        ("circle", None),
+        (None, "VAI"),
+    ]

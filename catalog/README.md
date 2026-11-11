@@ -68,7 +68,7 @@ momento) sono nello strumento e le ha approvate l'utente il 2026-11-11.
 ```
 bash out/TASK-441/run.sh                       # il giro, dalle zone in cache
 python tools/catalog_words.py --propose        # le chiavi da tenere
-python tools/catalog_seed.py --write           # su un registro che li unisce
+python tools/catalog_words.py --write          # catalog/seed dai due registri
 ```
 
 Il giro non scarica niente: usa le zone a piedi di `data/cache`. Parole più

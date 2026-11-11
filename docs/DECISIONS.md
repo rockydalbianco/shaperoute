@@ -527,8 +527,66 @@ lasciando le righe d'indice.
 - ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale · 2026-11-11 · Attiva
 - ADR-0351, precisazione E2 — I premi nell'app: la pagina «Prizes», le schede di edizioni e collezioni, la scelta del profilo e la privacy · 2026-11-11 · Attiva
 - ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix` · 2026-11-11 · Attiva
+- ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste
+
+**Stato**: Attiva · 2026-11-11 · TASK-441, parte A (#1149). L'utente ha
+chiesto di portare «Explore» a 2000 disegni e ha approvato le liste di
+parole e l'ordine misto («Sì, vai»), poi i disegni nuovi dalle due pagine
+(«Sì, vanno bene»). Le scelte tecniche sono dell'agente su delega
+dell'utente.
+
+**Contesto**: il catalogo aveva 572 percorsi, 55 soli di parole. Il
+registro di TASK-419 teneva altri 878 disegni che passavano il filtro e non
+erano mai entrati. Su una riga le parole passano il filtro fino a 4 lettere
+(a 5 una su cinque, a 6 nessuna).
+
+**Decisione**:
+
+- **I già fatti entrano tutti** quando passano il filtro e sono di una
+  parola o di una forma che il motore ha (776; i 102 di contorni non
+  registrati aspettano la parte C). Anche la stessa parola nei due stili
+  nella stessa città (60 casi).
+- **Parole corte, 2–4 lettere, su una riga**, da uno strumento nuovo
+  accanto a quello di TASK-419 (`tools/catalog_words.py`, che usa
+  `catalog_seed.py` senza cambiarlo): le parole della città, quelle della
+  sua lingua, un turno di una lista comune con stagione e parole del
+  momento. Ogni parola nei due stili, entra la migliore (615). Nessuna zona
+  scaricata: bastano quelle a piedi di `data/cache`.
+- **L'ordine misto** (`recommended.varied`): `GET /recommended-routes` e
+  ogni città di `GET /catalog` danno prima la migliore di ogni forma e di
+  ogni parola, poi la seconda, e così via; dentro un giro vale l'ordine di
+  prima (somiglianza, poi distanza). Il tetto di 60 in «NEAR YOU» resta.
+- **Niente memoria compatta per ora**: i punti restano tuple (32,6 MB di
+  file, +218 MB residenti all'avvio contro +57). Deciso dal Coordinatore
+  sui numeri del server; se il catalogo cresce ancora, un `array('d')`.
+
+**Motivo**: i già fatti costavano zero e avevano già passato lo stesso
+filtro. Le parole lunghe vogliono la penna alzata, che il formato del seme
+non tiene ancora (parte B, ADR-0366). Senza l'ordine misto i 60 disegni
+vicino a Milano, che ora ne ha 91, sarebbero quasi tutti cerchi e cuori.
+
+**Conseguenze**: 1963 percorsi in 63 città, 757 di parole (79 diverse). Gli
+id dei percorsi tengono il posto nel file e cambiano dove il file cresce,
+come a ogni giro di TASK-419: «Feed» ritrova il percorso per città, forma e
+lunghezza. I disegni delle parole sono del motore `8ab61d8e87f9`: se un
+cambio del motore chiede di rifarli (TASK-447), il giro riparte da
+`out/TASK-441/run.sh`. Sul server servono i file del catalogo **e**
+l'immagine nuova (l'ordine è codice).
+
+**Corretto lo stesso giorno, prima del server**: guardate nel catalogo, le
+parole nuove a riga unica hanno le lettere unite e non si leggono. L'utente
+(«Sì, toglile», riferito dal Coordinatore) le toglie tutte e 702, le 615
+di questa voce e le 87 dei già fatti, con una PR di correzione
+(`fix/TASK-441-a-drop-words`): il catalogo scende a 1261, i 572 di prima
+più 689 forme. Le parole tornano con la parte B, a penna alzata fra le
+lettere come negli esempi delle città, dopo una pagina di prova mostrata
+all'utente. Il filtro (somiglianza ≥ 0,90) non misura se una parola si
+legge: per le parole non basta. Dei punti qui sopra restano i già fatti di
+forme, l'ordine misto e lo strumento.
 
 ## ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale
 

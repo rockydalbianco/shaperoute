@@ -1,9 +1,9 @@
 # TASK-445 — Quanto dura ogni fase di un percorso
 
-**Stato**: In corso — misure fatte (Mac e righe del server), le 3
-ottimizzazioni scritte; aspetta la risposta dell'utente alla domanda in
-fondo
-**Fase**: 5 · **Branch**: `docs/TASK-445-route-job-timing` (questo file) ·
+**Stato**: Done — misure fatte, le 3 ottimizzazioni scritte, l'utente ha
+scelto «solo percorsi identici» (2026-11-11)
+**Fase**: 5 · **Branch**: `docs/TASK-445-route-job-timing` (#1147),
+`docs/TASK-445-done` (chiusura) ·
 **ADR**: nessuno (solo misure)
 
 ## Obiettivo
@@ -149,6 +149,16 @@ Ogni scelta che tocca `services/route-engine` entra nella coda del motore
 Coordinatore; il profilo di `snap_to_network` chiede un altro turno del
 Mac.
 
+**Risposta dell'utente (2026-11-11)**: «Solo percorsi identici». La
+seconda ricerca inclinata resta com'è; si fanno solo ottimizzazioni che
+lasciano gli stessi percorsi (le tre sopra).
+
 ## Esito
 
-—
+Done il 2026-11-11 (#1147 e la PR di chiusura). Il tempo di un cuore da 5 km
+sul Mac è 2,0 s a caldo: tre quarti della ricerca sono routing, e l'attesa
+delle partenze vicine viene dai processi figli aperti a ogni richiesta.
+Restano come task nuovi, coi numeri del Coordinatore: le 3 ottimizzazioni
+a percorsi identici (la 1 e la 2 nella coda del motore; la 2 dopo un
+profilo di `snap_to_network`, con un turno del Mac) e la rilettura dei
+tempi del server dopo il passo 8.

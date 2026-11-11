@@ -31,6 +31,7 @@ ADR-0092).
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
@@ -65,6 +66,21 @@ class NotesNearby(Protocol):
     """A job's graph source that keeps the job's times (jobs._Reporting)."""
 
     def note_nearby(self, nearby: NearbyPlan) -> None: ...
+
+
+@runtime_checkable
+class ShowsFirst(Protocol):
+    """A job's graph source that shows the plan from the user's own start
+    while the nearby starts are still planned (jobs._Reporting, TASK-435,
+    ADR-0361)."""
+
+    def first_plan(self, plan: Plan) -> None: ...
+
+
+def first_of(source: object) -> Callable[[Plan], None] | None:
+    """What to tell the start's own plan to (nearby_starts.plan_nearby's
+    `on_first`): `source`'s, if it shows it."""
+    return source.first_plan if isinstance(source, ShowsFirst) else None
 
 
 def noted(source: object, nearby: NearbyPlan) -> Plan:

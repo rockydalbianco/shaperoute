@@ -213,7 +213,7 @@ export function WorkoutScreen({
             {clockLabel(timeMs)}
           </Text>
           {kcal !== null && (
-            <Text style={gymStyles.muted} testID="gym-kcal">
+            <Text style={[gymStyles.muted, styles.energy]} testID="gym-kcal">
               {kcal}
             </Text>
           )}
@@ -400,6 +400,10 @@ const DOT = 10;
 const BAR = 6;
 
 const styles = StyleSheet.create({
+  // The calories, in red wherever they are (TASK-424 part C3).
+  energy: {
+    color: color.energy,
+  },
   guide: {
     flex: 1,
   },

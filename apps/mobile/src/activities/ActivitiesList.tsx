@@ -23,6 +23,7 @@ import { type RefusedRun, useActivitiesDoor } from "./activitiesDoor";
 import { GymTile } from "../gym/GymTile";
 import { clockLabel } from "../navigation/freeRun";
 import { useBody } from "../body/useBody";
+import { FactsText } from "../feed/FactsText";
 import { poolKcal, poolKcalLabel } from "../pool/poolKcal";
 import { isPoolSwimRun, PoolTile } from "../pool/PoolTile";
 import { runFacts, startedLabel, whereAndWhat } from "./activityText";
@@ -321,9 +322,12 @@ function ActivityRow({
           <Text style={styles.detail} numberOfLines={1}>
             {where}
           </Text>
-          <Text style={styles.facts} numberOfLines={1}>
-            {opening ? t("Opening…") : facts}
-          </Text>
+          <FactsText
+            style={styles.facts}
+            numberOfLines={1}
+            facts={opening ? t("Opening…") : facts}
+            kcal={opening ? null : kcal}
+          />
           {(isPublic || isImported(activity)) && (
             <View style={styles.marks}>
               {isPublic && (

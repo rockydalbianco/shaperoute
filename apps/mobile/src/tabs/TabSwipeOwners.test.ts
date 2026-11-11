@@ -45,6 +45,9 @@ const ROWS = [
   "share/VideoEmojiRow.tsx",
   // In the search's «Ski»: the hours of a resort's weather (TASK-406 C).
   "ski/ResortWeather.tsx",
+  // In the gym's guide, over the whole screen: the tabs of a week of more
+  // than four workouts (TASK-433 C).
+  "gym/GymPlanWizard.tsx",
 ];
 
 /** The one that hands the finger on: the drawing, then the photo, of a card

@@ -9,6 +9,7 @@ import {
   programDays,
   programItemCount,
   programOfPlan,
+  runInWeek,
   sessionOn,
   sessionsOfWeek,
 } from "./program";
@@ -16,7 +17,7 @@ import {
 // The weeks of a plan made with the guide: worked out from the first,
 // written by hand, again from the start after the last.
 
-const [PUSH, , MUSCLE] = plans.plans as GymPlan[];
+const [PUSH, , MUSCLE, LIFT_AND_RUN] = plans.plans as GymPlan[];
 const PROGRAM = MUSCLE.program as GymProgram;
 const BENCH: GymPlanItem = {
   exercise: "bench_press",
@@ -119,4 +120,34 @@ test("its days, its exercises, and a plan of before as one week", () => {
     [4, "Push"],
   ]);
   expect(isoDate(new Date(2026, 0, 5, 23))).toBe("2026-01-05");
+});
+
+test("a run day grows a tenth a week, the last week shorter; intervals a rep", () => {
+  const easy = { kind: "easy", distance_m: 5000 } as const;
+  expect(
+    [1, 2, 3, 4].map((week) => runInWeek(easy, "load", 4, week, 0).distance_m),
+  ).toEqual([5000, 5500, 6000, 4000]);
+  // The next cycle a step on; minutes in whole minutes.
+  expect(runInWeek(easy, "reps", 4, 1, 1).distance_m).toBe(5500);
+  const long = { kind: "long", duration_s: 3600 } as const;
+  expect(runInWeek(long, "load", 4, 2, 0).duration_s).toBe(3960);
+  const intervals = { kind: "intervals", reps: 6, rep_m: 400 } as const;
+  expect(
+    [1, 2, 3, 4].map((week) => runInWeek(intervals, "load", 4, week, 0).reps),
+  ).toEqual([6, 7, 8, 4]);
+  // «Always the same»: as written.
+  expect(runInWeek(easy, "same", 1, 1, 3)).toBe(easy);
+});
+
+test("today on a run day: its run of this week, and no workout of the gym", () => {
+  // Tuesday 10 November 2026: week 2, the easy run a tenth longer.
+  const tuesday = new Date(2026, 10, 10, 9);
+  expect(todayPlan([LIFT_AND_RUN], tuesday)).toMatchObject({
+    name: "Easy run",
+    items: [],
+    run: { kind: "easy", distance_m: 5500 },
+    week: 2,
+  });
+  // Monday is the gym's.
+  expect(todayPlan([LIFT_AND_RUN], new Date(2026, 10, 9, 9))?.run).toBeUndefined();
 });

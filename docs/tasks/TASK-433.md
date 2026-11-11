@@ -126,10 +126,10 @@ libero al merge),
       valido per il server), la spiegazione B che sale e si chiude, «Today» in
       un giorno di corsa, «My plans» con «RUN». Tutto come la tela, tranne
       «No» di «And running?» che scelto aveva il bordo azzurro delle corse:
-      ora neutro (#1133, esce col prossimo OTA). Schermate in
+      ora neutro (#1133, esce con l'ottavo OTA, insieme allo sci). Schermate in
       `out/TASK-433/simulator/` del checkout principale.
 - [ ] Prova sul telefono dell'utente (tutto tranne il «No» neutro è nel
-      settimo OTA).
+      settimo OTA; il «No» neutro nell'ottavo).
 
 ## Parte B — «Come funzionano le schede» toccando Palestra
 

@@ -101,3 +101,53 @@ test("a touch outside the card closes it", async () => {
   await fireEvent.press(screen.getByTestId("unlock-card"));
   expect(screen.queryByTestId("unlock-card")).toBeNull();
 });
+
+// --- Editions, collections, one card past three (TASK-423 part E) ---
+
+test("a shape says its collection; an edition and a collection completed have their cards", async () => {
+  await render(<UnlockLayer />);
+  await act(async () =>
+    showUnlocked(["triangle"], null, {
+      editions: [{ shapeId: "lightning", edition: "silver" }],
+      collectionsDone: ["geometry"],
+    }),
+  );
+  expect(screen.getByText("In your Geometry collection.")).toBeTruthy();
+  await fireEvent.press(screen.getByTestId("unlock-close"));
+  expect(screen.getByText("Silver edition")).toBeTruthy();
+  expect(screen.getByText("Lightning")).toBeTruthy();
+  expect(screen.getByText("You met its goal in 3 runs.")).toBeTruthy();
+  await fireEvent.press(screen.getByTestId("unlock-close"));
+  expect(screen.getByText("Collection complete")).toBeTruthy();
+  expect(screen.getByText("Geometry")).toBeTruthy();
+  expect(screen.getByText("A new frame for your profile.")).toBeTruthy();
+  await fireEvent.press(screen.getByTestId("unlock-close"));
+  expect(screen.queryByTestId("unlock-card")).toBeNull();
+});
+
+test("past three things from one run, one card says them all", async () => {
+  await render(<UnlockLayer />);
+  await act(async () =>
+    showUnlocked(["triangle", "hexagon"], null, {
+      editions: [{ shapeId: "lightning", edition: "gold" }],
+      collectionsDone: ["geometry"],
+    }),
+  );
+  expect(screen.getByText("New in Play")).toBeTruthy();
+  expect(
+    screen.getByText("2 new shapes · 1 new edition · Geometry complete"),
+  ).toBeTruthy();
+  await fireEvent.press(screen.getByTestId("unlock-close"));
+  expect(screen.queryByTestId("unlock-card")).toBeNull();
+});
+
+test("an edition of a shape the phone does not know is not shown", async () => {
+  await render(<UnlockLayer />);
+  await act(async () =>
+    showUnlocked([], null, {
+      editions: [{ shapeId: "teapot", edition: "silver" }],
+      collectionsDone: ["atlantis"],
+    }),
+  );
+  expect(screen.queryByTestId("unlock-card")).toBeNull();
+});

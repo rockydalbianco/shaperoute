@@ -383,6 +383,7 @@ export const FR: Table = {
   "{length} of {max} characters": "{length} sur {max} caractères",
   "Saving…": "Enregistrement…",
   Save: "Enregistrer",
+  Saved: "Enregistré",
 
   // src/profile/PhotoChoices.tsx
   "Removing…": "Suppression…",
@@ -1728,6 +1729,75 @@ export const FR: Table = {
     "Cours d'abord {distance} d'affilée · jusqu'ici {longest}",
   "No time over {distance} yet": "Pas encore de temps sur {distance}",
   "Best {best} · {gap} to go": "Meilleur {best} · encore {gap}",
+  // src/game/ (TASK-423 part E2a: the prizes in Play, the editions, the
+  // unlock card of an edition or a collection)
+  Prizes: "Récompenses",
+  "Frames, titles and badges": "Cadres, titres et badges",
+  "Prizes are not on this server yet.":
+    "Les récompenses ne sont pas encore sur ce serveur.",
+  "Silver editions: {count}": "Éditions argent : {count}",
+  "Gold editions: {count}": "Éditions or : {count}",
+  Frames: "Cadres",
+  "Complete a collection to earn its frame.":
+    "Complète une collection pour obtenir son cadre.",
+  Titles: "Titres",
+  Badges: "Badges",
+  Earned: "Obtenu",
+  "Complete the collection to earn it.": "Complète la collection pour l'obtenir.",
+  "{collection} frame": "Cadre {collection}",
+  "Bronze edition": "Édition bronze",
+  "Silver edition": "Édition argent",
+  "Gold edition": "Édition or",
+  "{runs} of {need} runs for silver": "{runs} courses sur {need} pour l'argent",
+  "{runs} of {need} runs for gold": "{runs} courses sur {need} pour l'or",
+  Runner: "Coureur",
+  Explorer: "Explorateur",
+  Traveller: "Voyageur",
+  Globetrotter: "Globe-trotteur",
+  Marathoner: "Marathonien",
+  Ultrarunner: "Ultra-traileur",
+  Steady: "Régulier",
+  Collector: "Collectionneur",
+  "4-week streak": "Série de 4 semaines",
+  "12-week streak": "Série de 12 semaines",
+  "52-week streak": "Série de 52 semaines",
+  "10 medals": "10 médailles",
+  "50 medals": "50 médailles",
+  "10 gold editions": "10 éditions or",
+  "Team shape": "Forme d'équipe",
+  "10 team shapes": "10 formes d'équipe",
+  "Run a marathon": "Cours un marathon",
+  "Run 50 km in one go": "Cours 50 km d'affilée",
+  "Complete every collection": "Complète toutes les collections",
+  "{count} week in a row with an outing": "{count} semaine d'affilée avec une sortie",
+  "{count} weeks in a row with an outing": "{count} semaines d'affilée avec une sortie",
+  "{count} medal in the personal challenges":
+    "{count} médaille dans les défis personnels",
+  "{count} medals in the personal challenges":
+    "{count} médailles dans les défis personnels",
+  "{count} shape in its gold edition": "{count} forme dans son édition or",
+  "{count} shapes in their gold edition": "{count} formes dans leur édition or",
+  "{count} team challenge completed": "{count} défi d'équipe réussi",
+  "{count} team challenges completed": "{count} défis d'équipe réussis",
+  "In your {collection} collection.": "Dans ta collection {collection}.",
+  "You met its goal in {count} runs.": "Tu as atteint l'objectif en {count} courses.",
+  "Collection complete": "Collection terminée",
+  "A new frame for your profile.": "Un nouveau cadre pour ton profil.",
+  "New in Play": "Nouveau dans Play",
+  "See them in your collection.": "Tu les trouveras dans ta collection.",
+  "{count} new shape": "{count} nouvelle forme",
+  "{count} new shapes": "{count} nouvelles formes",
+  "{count} new edition": "{count} nouvelle édition",
+  "{count} new editions": "{count} nouvelles éditions",
+  "{collection} complete": "{collection} terminée",
+  // src/game/PrizesPage.tsx, GamePrizesRow.tsx (TASK-423 part E2b: what
+  // the profile shows)
+  "Touch a prize you have to show it on your profile. Nothing is shown until you choose.":
+    "Touche une récompense que tu as pour la montrer sur ton profil. Tant que tu ne choisis pas, rien n'est montré.",
+  "On your profile": "Sur ton profil",
+  "Your profile shows up to {count} badges.":
+    "Ton profil montre jusqu'à {count} badges.",
+  "Title: {title}": "Titre : {title}",
 
   // src/navigation/runPosition.ts, the Android notification of a run (TASK-294)
   "MuW is recording your activity": "MuW enregistre ton activité",
@@ -2421,4 +2491,10 @@ export const FR: Table = {
   Lift: "Remontée",
   "{speed} top": "{speed} max",
   "Stopped {minutes} min": "Arrêt {minutes} min",
+
+  // src/skimode/ (TASK-429 part C: the season and the saved day)
+  "Season {years}": "Saison {years}",
+  "Vertical this season": "Dénivelé de la saison",
+  "On snow": "Sur la neige",
+  "Piste without a name": "Piste sans nom",
 };

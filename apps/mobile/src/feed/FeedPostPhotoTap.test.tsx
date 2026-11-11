@@ -55,7 +55,7 @@ test("the drawing and each photo take a tap themselves", async () => {
   expect(within(pages()[1]).getByTestId("feed-photo")).toBeOnTheScreen();
 });
 
-test("a tap on a photo opens the drawing, as one on the card", async () => {
+test("a tap on a photo opens it on the whole screen, not the route", async () => {
   const onOpen = jest.fn();
   await show(onOpen);
   await act(() =>
@@ -63,9 +63,34 @@ test("a tap on a photo opens the drawing, as one on the card", async () => {
       nativeEvent: { contentOffset: { x: WIDTH, y: 0 } },
     }),
   );
+  expect(screen.queryByTestId("feed-photo-viewer")).toBeNull();
   await fireEvent(pages()[1], "pressIn", at(200, 300));
   await fireEvent.press(pages()[1], at(204, 302));
+  expect(onOpen).not.toHaveBeenCalled();
+  expect(screen.getByTestId("feed-photo-viewer")).toBeOnTheScreen();
+  expect(screen.getByTestId("feed-photo-whole").props.source).toEqual(
+    screen.getByTestId("feed-photo").props.source,
+  );
+  await fireEvent.press(screen.getByTestId("feed-photo-close"));
+  expect(screen.queryByTestId("feed-photo-viewer")).toBeNull();
+});
+
+test("a tap on the drawing still opens its route", async () => {
+  const onOpen = jest.fn();
+  await show(onOpen);
+  await fireEvent(pages()[0], "pressIn", at(200, 300));
+  await fireEvent.press(pages()[0], at(204, 302));
   expect(onOpen).toHaveBeenCalledTimes(1);
+  expect(screen.queryByTestId("feed-photo-viewer")).toBeNull();
+});
+
+test("a finger that moved across a photo opens nothing", async () => {
+  const onOpen = jest.fn();
+  await show(onOpen);
+  await fireEvent(pages()[1], "pressIn", at(80, 300));
+  await fireEvent.press(pages()[1], at(340, 300));
+  expect(onOpen).not.toHaveBeenCalled();
+  expect(screen.queryByTestId("feed-photo-viewer")).toBeNull();
 });
 
 test("a finger that moved across a photo has not tapped", async () => {

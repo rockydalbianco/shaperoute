@@ -194,7 +194,8 @@ def _steps(graph: Graph, nodes: list[Any]) -> list[dict[str, Any]]:
 
 def test_inline_skating_is_an_activity_of_the_engine_on_its_own_network() -> None:
     assert inline_skating.ACTIVITY in ENGINE_ACTIVITIES
-    assert SUPPORTED_ACTIVITIES[-1] == "inline_skating"
+    # The last on a network; snowshoeing on the snow after it (TASK-413).
+    assert SUPPORTED_ACTIVITIES[-2:] == ("inline_skating", "snowshoeing")
     assert NETWORKS["inline_skating"] == ROLLER_NETWORK_NAME == "roller"
     assert NETWORKS_BY_NAME["roller"].overpass_filter == ROLLER_FILTER
     assert network.FILTERS["roller"] == ROLLER_FILTER

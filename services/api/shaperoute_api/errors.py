@@ -11,7 +11,7 @@ import math
 
 from route_engine.models import (
     DISTANCE_LIMITS_M,
-    WATER_ACTIVITIES,
+    FREE_ACTIVITIES,
     InvalidRequestError,
 )
 from route_engine.optimizer import ShapeNotDrawableError
@@ -24,7 +24,8 @@ from shaperoute_api.schemas import ErrorDetail
 ENGINE_FAILED = "The route engine failed; see the API log."
 # On the water a shape fits up to some distance and no further (ADR-0154):
 # the distance suggested is rounded down to this, so that it fits when asked
-# (TASK-191, ADR-0164). Half a km: paddling routes are 1-5 km.
+# (TASK-191, ADR-0164). Half a km: paddling routes are 1-5 km. The same on
+# the snow (TASK-413, ADR-0342), whose routes are 0.5-3 km.
 WATER_STEP_M = 500
 
 
@@ -53,12 +54,13 @@ def suggested_distance(
     """The distance of the engine's best route, to the whole km and within
     the limits of a request of `activity`: one the user can ask for
     (TASK-031); 10-30 km by bike (TASK-190), 1-30 km on a walk (TASK-371).
-    On the water, down to the half km it fits at, and None when that is
-    below the shortest route: a shorter one cannot be asked (TASK-191)."""
+    On the water and on the snow, down to the half km it fits at, and None
+    when that is below the shortest route: a shorter one cannot be asked
+    (TASK-191; TASK-413, where a shape may fit at 0.2 km only)."""
     if best_distance_m is None:
         return None
     low, high = API_DISTANCE_LIMITS_M.get(activity, DISTANCE_LIMITS_M["running"])
-    if activity in WATER_ACTIVITIES:
+    if activity in FREE_ACTIVITIES:
         fits = math.floor(best_distance_m / WATER_STEP_M) * WATER_STEP_M
         return None if fits < low else min(fits, high)
     km = round(best_distance_m / 1000)

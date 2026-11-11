@@ -10,8 +10,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "10 de noviembre de 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). */
-const PRIVACY_UPDATED = "10 de noviembre de 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). */
+const PRIVACY_UPDATED = "11 de noviembre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -396,7 +396,7 @@ const privacy: AboutDocument = {
     {
       heading: "El juego de las formas",
       blocks: [
-        "Con una cuenta, nuestro servidor calcula a partir de tus carreras a pie guardadas cuántos kilómetros cuentan para el juego, tus mejores tiempos en distancias de 400 m a 50 km y las formas que has coleccionado. Solo tú ves tu colección y tus mejores tiempos. Para los retos personales, la app también envía con cada carrera la diferencia entre el reloj del teléfono y la hora UTC (la zona horaria, por ejemplo +1 hora), nunca el lugar: sirve para contar las carreras hechas antes de las 8, por la tarde o el fin de semana, y las semanas según tu hora. Tus retos personales y tu racha solo los ves tú. Si te unes a un equipo, sus miembros ven tu nombre de usuario, tu foto, las piezas de un reto que tomaste y los kilómetros que diste a cada una, nunca tus trazados, los tiempos de tus carreras ni dónde corriste. A un equipo solo se llega con su código: nunca está en una búsqueda. Borrar una carrera quita sus kilómetros del recuento, y las formas que ya coleccionaste se quedan. Cuando eliminas tu cuenta, tus datos del juego se eliminan con ella; en los retos de un equipo, las piezas que corriste se quedan para los demás, sin tu nombre.",
+        "Con una cuenta, nuestro servidor calcula a partir de tus carreras a pie guardadas cuántos kilómetros cuentan para el juego, tus mejores tiempos en distancias de 400 m a 50 km y las formas que has coleccionado. Solo tú ves tu colección y tus mejores tiempos. Los premios del juego (ediciones, marcos, títulos e insignias) solo los ves tú, hasta que eliges mostrar en tu perfil un marco, un título o hasta 3 insignias: desde entonces los ve quien puede ver tu perfil. Sin tu elección no se muestra nada, y puedes quitarlos cuando quieras. Para los retos personales, la app también envía con cada carrera la diferencia entre el reloj del teléfono y la hora UTC (la zona horaria, por ejemplo +1 hora), nunca el lugar: sirve para contar las carreras hechas antes de las 8, por la tarde o el fin de semana, y las semanas según tu hora. Tus retos personales y tu racha solo los ves tú. Si te unes a un equipo, sus miembros ven tu nombre de usuario, tu foto, las piezas de un reto que tomaste y los kilómetros que diste a cada una, nunca tus trazados, los tiempos de tus carreras ni dónde corriste. A un equipo solo se llega con su código: nunca está en una búsqueda. Borrar una carrera quita sus kilómetros del recuento, y las formas que ya coleccionaste se quedan. Cuando eliminas tu cuenta, tus datos del juego se eliminan con ella; en los retos de un equipo, las piezas que corriste se quedan para los demás, sin tu nombre.",
       ],
     },
     {

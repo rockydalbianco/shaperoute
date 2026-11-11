@@ -67,3 +67,23 @@ test("a lift has no top speed", async () => {
   await render(<SkiRuns parts={[lift]} speedText={speedText} />);
   expect(screen.queryByText(/top$/)).toBeNull();
 });
+
+test("a saved day's parts have their names, a descent without one says so (part C)", async () => {
+  const names = new Map([
+    ["L1", "Ciampinoi"],
+    ["1", null],
+  ]);
+  await render(
+    <SkiRuns
+      parts={[lift, descent]}
+      speedText={speedText}
+      nameOf={(each) =>
+        names.get(each.kind === "lift" ? `L${each.n}` : `${each.n}`) ?? null
+      }
+    />,
+  );
+  expect(screen.getByText("Ciampinoi")).toBeOnTheScreen();
+  expect(screen.queryByText("Lift")).toBeNull();
+  expect(screen.getByText("Piste without a name")).toBeOnTheScreen();
+  expect(screen.getByText("09:19 · 4 min")).toBeOnTheScreen();
+});

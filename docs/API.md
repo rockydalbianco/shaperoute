@@ -103,6 +103,28 @@ richiesta risponde subito e il percorso si chiede dopo.
 - Un `job_id` sconosciuto (annullato, finito da più di 10 minuti, o API
   riavviata) risponde `404 http_error`.
 
+**Il primo percorso, mentre il job calcola** (TASK-435, ADR-0361):
+`GET /route-jobs/{job_id}?first=1` risponde il `RouteJob` con un campo in
+più, `first`.
+
+- Mentre lo stato è `computing`, appena il piano dalla partenza
+  dell'utente è pronto e le partenze vicine stanno ancora calcolando,
+  `first` è quel percorso: un `RouteResult` intero, con le sue `directions`
+  e il suo `placed_outline`, e `alternatives` vuoto. Prima, e quando non
+  c'è niente da aspettare (nessuna partenza vicina, acqua, disegno
+  ancorato, percorso già tenuto), è `null`.
+- A `done` il `result` è **quello di sempre**, scelto dal motore con le
+  sue alternative, e `first` torna `null`. Il primo percorso può essere il
+  `result`, una delle sue `alternatives`, o nessuno dei due (il motore
+  tiene al più due alternative, entro 10 punti dal migliore): si riconosce
+  dai `points` uguali.
+- **Solo a chi lo chiede.** Senza `?first=1` (e nella risposta al `POST`)
+  il `RouteJob` è quello di prima, senza il campo: un'app che non lo
+  conosce non riceve un percorso in più a ogni lettura. Un'API precedente
+  ignora il parametro: il campo manca, e l'app aspetta `done` come prima.
+- L'app lo chiede finché non l'ha avuto, poi legge senza. `false`, `0` o
+  niente: come prima.
+
 Il `RouteResult` di una richiesta in due tempi porta anche le
 **indicazioni di svolta** (`directions`, TASK-048, ADR-0045 e ADR-0047): la
 prima è la partenza (`"turn": "depart"`, la via da cui si parte), poi una
@@ -1080,6 +1102,48 @@ motore.)
   L'app mostra il nuoto con la parte C di TASK-323 (`ready: false` fino
   ad allora): in `shared-types` `Activity` resta quella dell'app, e
   `API_ACTIVITIES` ha anche `swimming`.
+
+### Sulla neve: `"activity": "snowshoeing"` (TASK-413 parte A2, ADR-0342)
+
+```json
+{ "start": [45.8757, 11.5097], "shape": "heart", "distance_m": 1000, "activity": "snowshoeing" }
+```
+
+(`fixtures/route-request-snowshoeing.json`, ad Asiago.)
+
+- **La forma è il percorso**, come sull'acqua: il motore
+  (`snowshoeing.plan_snowshoeing`, parte A1) la mette sulla neve dove si
+  può camminare, lontano dai pendii oltre 25° (e 30 m attorno a quelli
+  oltre 30°), da boschi, piste, impianti, rocce, ghiacciai, paesi,
+  ruscelli, riserve e biotopi, e la unisce a una strada minore, una
+  carrareccia o un sentiero con un tratto dritto. Vale per `/routes` e
+  `/route-jobs`.
+- **Da 0,5 a 3 km** (`DISTANCE_LIMITS_M.snowshoeing`, scelta 2): fuori è
+  `422 invalid_request`. Solo una forma del catalogo: una parola,
+  un'immagine o un disegno a mano sono `422` (`on the snow only a shape of
+  the catalogue is drawn`); `"placement": "anchored"` anche (`a shape is
+  anchored to the roads only, not on the water or the snow`).
+- **Il `RouteResult`** è quello della canoa: `points` chiuso dal punto
+  d'ingresso, `similarity` 1, niente indicazioni né alternative.
+- **Gli errori**: niente neve attorno alla partenza o una forma che non
+  entra sono `422 shape_not_drawable`. `suggested_distance_m` è la
+  distanza a cui la forma entra, arrotondata in giù al mezzo km come
+  sull'acqua, e manca quando sarebbe sotto 0,5 km (il motore può dire
+  «0.2 km»).
+- **La neve e le quote** stanno nella cache del server, `<cache>/snow/`
+  accanto a `water/` e `<cache>/heights/` (tegole Terrarium):
+  `ServerSnow` (`snowshoeing.py`) le scarica alla prima richiesta di un
+  posto (Overpass, 23–38 s per riquadro), e il job dice
+  `downloading_map` intanto. Un download che non riesce è `503
+  map_data_unavailable`. Nessuna zona in memoria.
+- **Niente percorsi tenuti**: né `route_store` né l'archivio (TASK-297)
+  tengono un percorso sulla neve, perché i file della neve stanno fuori
+  dall'impronta del motore (`SNOW_ONLY`). Niente via del ritorno
+  (`POST /way-back`: `No way back on the snow`).
+- **Salvata**: Strava `Snowshoe`, GPX `<type>snowshoeing</type>`; nel
+  gioco delle forme conta come Hike (scelta 5), senza tempi migliori né
+  record personali. Preferiti e corse di gruppo sì (migrazione `0068`).
+  La legge solo un'app che dice `snowshoeing` in `X-MuW-Reads`.
 
 ### A piedi, camminando: `"activity": "walking"` (TASK-371, ADR-0315)
 
@@ -3032,7 +3096,10 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   `kind` (`easy`, `intervals`, `long`), per `easy` e `long` `distance_m`
   (100–100 000) o `duration_s` (60 s–6 h), per `intervals` `reps` (1–50) e
   `rep_m` (50–5000) o `rep_s` (10–1800); nel calendario è fatto se quel
-  giorno c'è una corsa (`running`).
+  giorno c'è una corsa (`running`). Il programma può avere `runner`
+  (TASK-452, ADR-0369): `pace_10k_s` 180–900 (il ritmo sui 10 km, in
+  secondi al km) e il lungo, `long_m` (1–60 km) o `long_s` (10 min–6 h); i
+  ritmi li calcola il telefono.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`

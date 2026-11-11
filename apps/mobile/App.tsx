@@ -57,6 +57,7 @@ import { startViewOf, useStartDirections } from "./src/explore/useStartDirection
 import { isHere, nearMeRequest } from "./src/explore/themedIdeas";
 import { useThemedRoute } from "./src/explore/useThemedRoute";
 import { FavoriteHeart } from "./src/favorites/FavoriteHeart";
+import { SaveRouteButton } from "./src/favorites/SaveRouteButton";
 import { useWatchRuns } from "./src/watch/useWatchRuns";
 import {
   drawnKeepable,
@@ -126,6 +127,7 @@ import { shapeAsked } from "./src/route/penUpShapes";
 import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { averagePace } from "./src/route/runTime";
+import { WaitingShape } from "./src/route/ShapeGhost";
 import { shapeName, toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import { useImageOutline } from "./src/route/useImageOutline";
@@ -195,6 +197,7 @@ import { SkiMessages } from "./src/skimode/SkiMessages";
 import { SkiResortsPage } from "./src/skimode/SkiResortsPage";
 import { SkiTabIcon } from "./src/skimode/SkiTabIcon";
 import { SkiTodayPage } from "./src/skimode/SkiTodayPage";
+import { useSkiDayMap } from "./src/skimode/useSkiDayMap";
 import { DrawingCard } from "./src/social/DrawingCard";
 import { drawingDoubleTapped } from "./src/social/DrawingReactions";
 import { drawnOf, followedOf } from "./src/social/drawingRoute";
@@ -475,6 +478,9 @@ function MuW() {
   // route, and over it what was run. Or a drawing: the run cut as the
   // others see it, in the route's yellow as in «Feed», the map framed on it.
   const reviewing = screen === "map" && (activity !== null || drawing !== null);
+  // A post of a day of skiing with its parts: its lifts and numbers, in the
+  // ski mode's colours (TASK-429 part C).
+  const skiDayMap = useSkiDayMap(drawing);
   const reviewed = useMemo(
     () =>
       activity !== null
@@ -487,16 +493,27 @@ function MuW() {
             others: NO_OTHERS,
             track: activity.track,
           }
-        : drawing !== null
+        : drawing !== null && skiDayMap !== null
           ? {
+              // A day of skiing as at its end: the track, not a route.
               start: null,
-              route: drawing.track.length > 1 ? drawing.track : null,
+              route: null,
               walks: null,
               others: NO_OTHERS,
-              track: null,
+              track: drawing.track,
+              lifts: skiDayMap.lifts,
+              liftLabels: skiDayMap.labels,
             }
-          : null,
-    [activity, drawing],
+          : drawing !== null
+            ? {
+                start: null,
+                route: drawing.track.length > 1 ? drawing.track : null,
+                walks: null,
+                others: NO_OTHERS,
+                track: null,
+              }
+            : null,
+    [activity, drawing, skiDayMap],
   );
   const { position, refresh } = useCurrentPosition();
   // The size of the first maps of the phone while they download (TASK-214).
@@ -638,6 +655,9 @@ function MuW() {
     start: start?.point ?? null,
   });
   const [fromCanvas, setFromCanvas] = useState(false);
+  // The figure on the map came from an edit («Edit & run» of a post, «Edit
+  // the drawing» of «Explore»): its route gets «Save» beside «Start».
+  const [fromEdit, setFromEdit] = useState(false);
   const asked = fromCanvas ? mapDraw.request : request;
   // A new start, shape, word or distance leaves the last answer behind; so
   // does a figure moved or changed.
@@ -1177,6 +1197,7 @@ function MuW() {
       closeExplore();
       leaveDrawing();
       if (mapDraw.editInPlace(track.lines, track.centre, track.unitM)) {
+        setFromEdit(true);
         setScreen("canvas");
       }
     };
@@ -1188,6 +1209,7 @@ function MuW() {
     // The drawn route takes the map back from "Explore".
     closeExplore();
     setFromCanvas(false);
+    setFromEdit(false);
     // The same route already drawn is shown again, not asked for again.
     if (request && (fromCanvas || view.status !== "done")) {
       draw(request);
@@ -1200,6 +1222,7 @@ function MuW() {
   function onOpenCanvas() {
     Keyboard.dismiss();
     mapDraw.open();
+    setFromEdit(false);
     setScreen("canvas");
   }
 
@@ -1309,6 +1332,14 @@ function MuW() {
   // The page on screen; -1 while the map, a run or «Play» takes the whole
   // screen.
   const page = pages.indexOf(screen);
+
+  // With the routes of «Draw» on the map to choose from (TASK-442): under
+  // the one chosen, the shape asked for as the search placed it; while they
+  // are drawn, the shape itself over the map.
+  const drawnOnMap =
+    screen === "map" && !reviewing && !theming && !exploring && exploreRun === null;
+  const ghost = drawnOnMap ? (chosen?.placed_outline ?? null) : null;
+  const waitingFor = drawnOnMap && view.status === "waiting" ? view.request : null;
 
   // The card of a shape unlocked, or its notification, asks for «Play»
   // (TASK-296): only while a page is on screen, never over a run; already
@@ -1483,6 +1514,10 @@ function MuW() {
                     ? null
                     : (followedOnFoot ?? move.left?.onFoot ?? null)
             }
+            // The shape asked for, under the route drawn, and over the map
+            // while it is drawn (TASK-442).
+            ghost={ghost}
+            over={waitingFor && <WaitingShape request={waitingFor} />}
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.
             others={
@@ -1757,6 +1792,11 @@ function MuW() {
               }
             }}
             onMove={move.available ? move.begin : undefined}
+            save={
+              fromEdit && fromCanvas && drawnFavorite !== null ? (
+                <SaveRouteButton route={drawnFavorite} />
+              ) : undefined
+            }
             movedElsewhere={move.elsewhere}
             choices={choices}
             chosen={chosenIndex}

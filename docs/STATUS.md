@@ -124,10 +124,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   di produzione del 2026-11-10 da 88e5f88f (gruppo `4eca1d42`) con F e C;
   D con l'OTA 3, dopo il passo server 2, col sì dell'utente. Poi E. File: —
   · `tasks/TASK-410.md`
-- **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
-  `heights.py` condiviso) e sul server col passo unico del 2026-11-10;
-  prossime A2 (contratto, API, migrazione in bozza 0057) e B. File: — ·
-  `tasks/TASK-413.md`
+- **TASK-413 — Ciaspole** · 0, A1 e A2 in `main` (#1130, `ac08ae94`: lo
+  sport nel contratto e nell'API, nascosto nell'app, migrazione 0068); A2
+  sul server col passo 8 del Coordinatore, col sì dell'utente; l'app col
+  decimo OTA. Prossima B. File: — · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·
   `tasks/TASK-414.md`
@@ -145,13 +145,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
   privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
   collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
-  in produzione con l'OTA 4 del 2026-11-10. E1 (premi sul server, 0067) in
-  `main` con la #1099, il passo server 6 aspetta il sì dell'utente; poi E2
-  (l'app) e la privacy. File: — · `tasks/TASK-423.md`
-- **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1 in `main`
-  (#1093, #1108, #1114); A e B1 escono con gli OTA 5 e 6, C1 va sul server
-  nel passo 7 con TASK-424 C2b. B2 (i tratti a «Salva») e C2 (stagione e
-  giornata salvata) scritte, si aprono dopo il server. File: — · `tasks/TASK-429.md`
+  in produzione con l'OTA 4 del 2026-11-10; correzioni di «Play» (#1113)
+  provate sul telefono con l'OTA 7. E1 sul server (passo 6, 0067); E2a
+  (#1132) ed E2b (#1144, profilo e privacy) in `main`, escono col nono OTA;
+  poi la copia della privacy sul sito e la prova sul telefono, col sì
+  dell'utente. File: — · `tasks/TASK-423.md`
+- **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1, B2, C2 in
+  `main` (#1093, #1108, #1114, #1129, #1131); A e B1 fuori con gli OTA 5 e
+  6, C1 sul server dal passo 7 dell'11-11. B2 (i tratti a «Salva») e C2
+  (stagione e giornata salvata) in produzione con l'ottavo OTA dell'11-11.
+  Restano la prova sul telefono e la parte E (lista prima). File: — · `tasks/TASK-429.md`
 - **TASK-431 — «Compass» più bella** (ADR-0359) · in `main` (#1081): la
   freccia «B» con anello e cono azzurri che punta dove punta la mappa, le
   tre schede coi disegni, la punta rossa del nord. Restano l'OTA di
@@ -162,11 +165,27 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   4/6/8), «My plans» e «Today» con la settimana. Restano il server
   (migrazione 0066) e poi l'OTA, nel passo unico del Coordinatore col sì
   dell'utente, e la prova sul telefono. File: — · `tasks/TASK-433.md`
+  **2026-11-11**: server 0066 e OTA 5 fatti; B (#1103, spiegazione al primo
+  tocco di Palestra) uscita con l'OTA 6; C (ADR-0363, giorni di corsa) C1
+  #1117 in `main` e sul server (2ed26af7), C2 #1115 in `main` (23308c9e):
+  esce col settimo OTA, col sì dell'utente. Resta la prova sul telefono.
+  Settimo OTA (C2) in produzione il 2026-11-11 da 7e24e7d1; l'utente l'ha
+  provato sul telefono («funziona tutto ok», prova generale). #1133 (il «No»
+  neutro) esce con l'ottavo OTA.
+  Ottavo OTA il 2026-11-11 da cd0c8b08, con la #1133: resta solo la prova
+  sul telefono del «No» neutro, poi la chiusura.
+  **Chiuso il 2026-11-11**: A, B e C in `main`, sul server e negli OTA 5–8;
+  provato sul telefono dall'utente; vedi `archive/COMPLETATI.md`.
 - **TASK-435 — Primo percorso subito, alternative dopo** (ADR-0361) ·
   parte 0 fatta: piano, misura (una vicina vince nel 38% delle prove;
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il
   primo resta A»). Prossima la parte A (motore), poi B (API) e C (app).
   File: — · `tasks/TASK-435.md`
+- **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
+  1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
+  unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
+  tornano nella B a penna alzata; il server aspetta la correzione. Poi B
+  (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

@@ -385,6 +385,10 @@ type OutcomeProps = {
   /** A swim drawn again in `laps` laps (TASK-323 C2): «Bigger shape» and
    * «Smaller shape» under it. Without it no button is offered. */
   onSwimLaps?: (laps: number) => void;
+  /** «Save» beside «Start» (a route drawn from an edit: «Edit & run», «Edit
+   * the drawing»): the two in one row, «Start» on the right. Without it
+   * «Start» alone, as before. */
+  save?: ReactNode;
 };
 
 /** Under the map: the wait, the route, or why there is none. */
@@ -406,6 +410,7 @@ export function RouteOutcome({
   figures,
   onLiftPen,
   onSwimLaps,
+  save,
 }: OutcomeProps) {
   // The distances are written in the app's units, at once (TASK-182).
   const units = useUnits();
@@ -482,7 +487,19 @@ export function RouteOutcome({
           <WhileRouting request={view.request} startedAt={view.startedAt} />
         </View>
       );
-    case "done":
+    case "done": {
+      // Only with directions: a route traced without them has no turns. On
+      // the water there are none to follow: the line is the way.
+      const startsHere = view.result.directions.length > 0 || onWater(view.request);
+      const startButton = (
+        <Pressable
+          style={[styles.draw, save !== undefined && styles.halfRow]}
+          onPress={() => use("start", onStart)}
+          accessibilityRole="button"
+        >
+          <Text style={styles.drawText}>{t("Start")}</Text>
+        </Pressable>
+      );
       return (
         <View style={styles.panel}>
           <View>
@@ -535,16 +552,13 @@ export function RouteOutcome({
           )}
           <SportCaution activity={view.request.activity} />
           {figures}
-          {/* Only with directions: a route traced without them has no turns.
-              On the water there are none to follow: the line is the way. */}
-          {(view.result.directions.length > 0 || onWater(view.request)) && (
-            <Pressable
-              style={styles.draw}
-              onPress={() => use("start", onStart)}
-              accessibilityRole="button"
-            >
-              <Text style={styles.drawText}>{t("Start")}</Text>
-            </Pressable>
+          {save === undefined ? (
+            startsHere && startButton
+          ) : (
+            <View style={styles.saveStart}>
+              {save}
+              {startsHere && startButton}
+            </View>
           )}
           {onMove && (
             <Pressable
@@ -568,6 +582,7 @@ export function RouteOutcome({
           {exporting.status === "failed" && <Problem problem={exporting.problem} />}
         </View>
       );
+    }
     case "failed":
       return (
         <>
@@ -1096,6 +1111,14 @@ const styles = StyleSheet.create({
   },
   off: {
     opacity: 0.4,
+  },
+  // «Save» and «Start» side by side, as wide each (a route from an edit).
+  saveStart: {
+    flexDirection: "row",
+    gap: space.sm,
+  },
+  halfRow: {
+    flex: 1,
   },
   // Dark on yellow: white does not reach the contrast minimum (ADR-0046).
   drawText: {

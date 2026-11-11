@@ -1186,9 +1186,14 @@ export const FR: Table = {
   "Cross-country ski": "Ski de fond",
   // src/sports/gym.ts, src/gym/ (TASK-385 B0: a workout at the gym)
   Gym: "Salle de sport",
-  "{n} exercises · {s} sets": "{n} exercices · {s} séries",
-  "{n} rests · avg {time} · {total} resting":
-    "{n} récups · moy. {time} · {total} de récup",
+  // The counts of a workout, one or more (TASK-453)
+  "{count} exercise": "{count} exercice",
+  "{count} exercises": "{count} exercices",
+  "{count} set": "{count} série",
+  "{count} sets": "{count} séries",
+  "{count} rest": "{count} récup",
+  "{count} rests": "{count} récups",
+  "avg {time} · {total} resting": "moy. {time} · {total} de récup",
   // src/gym/ (TASK-385 part B), approved on 2026-11-04
   "Start workout": "Commencer la séance",
   "No route in the gym: MuW times your workout.":

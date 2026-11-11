@@ -145,6 +145,17 @@
       "onWatch": true
     },
     {
+      "activity": "paragliding",
+      "name": "Paragliding",
+      "emoji": "🪂",
+      "appleWorkout": 3000,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": true,
+      "onWatch": true
+    },
+    {
       "activity": "gym",
       "name": "Gym",
       "emoji": "🏋️",

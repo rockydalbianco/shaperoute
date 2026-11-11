@@ -1198,6 +1198,15 @@ niente gioco delle forme, niente record personali; preferiti e corse di
 gruppo no (migrazione `0057`). Lo legge solo un'app che dice
 `ski_touring` in `X-MuW-Reads`.
 
+**Il parapendio** (`paragliding`, TASK-305 parte R1, ADR-0375) è un quarto
+sport senza forma, dopo `ski_touring` in `RECORD_ACTIVITIES`: un volo si
+salva, si elenca e si apre come una giornata di sci; Strava non ha il
+parapendio e lo riceve come `Workout`, il GPX dice
+`<type>paragliding</type>`. Niente percorsi (il pianificatore di ADR-0265
+è un'altra cosa), niente gioco delle forme, niente record personali;
+preferiti e corse di gruppo no (migrazione `0070`). Lo legge solo un'app
+che dice `paragliding` in `X-MuW-Reads`.
+
 ### Quello che un'app sa leggere: `X-MuW-Reads` (TASK-387, ADR-0328)
 
 Ogni richiesta dell'app dice nell'header `X-MuW-Reads` i tipi in più che sa
@@ -3179,6 +3188,14 @@ senza app né account. Tipi in `shared-types/src/liveShare.ts`
 - **I numeri** (`LiveStats`): distanza, tempo senza pause, dislivello,
   calorie, battito (quando l'orologio lo manda), vasche stimate, esercizio
   della palestra. La pagina calcola passo o velocità medi.
+  Per un volo di parapendio (TASK-305 parte R1, ADR-0375) quattro numeri
+  in più, tutti facoltativi: `alt_m` (quota adesso, metri sul mare,
+  −500…9000), `max_alt_m` (la più alta finora, stessi limiti),
+  `vario_mps` (sale o scende, m/s, −30…30) e `speed_mps` (velocità al
+  suolo adesso, 0…100). Fuori dai limiti è `422`. Un'app che non li manda
+  e una pagina che non li legge funzionano come prima; nella `LiveView`
+  sono `null` quando mancano. Con `extra="forbid"` un server di prima li
+  rifiuta: il server esce prima dell'app.
 - **Solo il sito legge `/live`**: `Access-Control-Allow-Origin:
   https://getmuw.app`, `Cache-Control: no-store`, `Referrer-Policy:
   no-referrer`, anche sul `429`.

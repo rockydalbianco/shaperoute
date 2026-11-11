@@ -13,7 +13,11 @@
     "kcal": 4,
     "heart_bpm": 128,
     "lengths": null,
-    "exercise": null
+    "exercise": null,
+    "alt_m": null,
+    "max_alt_m": null,
+    "vario_mps": null,
+    "speed_mps": null
   },
   "points": [
     [46.06712, 11.12108, 1794207605.0],

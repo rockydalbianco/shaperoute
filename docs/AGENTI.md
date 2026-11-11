@@ -100,24 +100,35 @@ quando la sessione scrive «#NNN pronta» (il motore lo mergia l'utente).
 
 | # | Task | Stato | Note |
 |---|---|---|---|
-| #1106 | TASK-436, tabelle del grafo a blocchi (motore) | CI in corso | riallineata su #1105: motore `ca29e58777cb` tenuto come `8ab61d8e87f9`; **merge dell'utente**, proposta per prima |
-| #1130 | TASK-413 A2, ciaspole nel contratto e nell'API (motore, 0068) | CI in corso | aperta fuori coda su parola dell'utente; motore `d76429946a7c`; **merge dell'utente**; chi entra dopo l'altra unisce `main` e rifà prova, righe ed `engine.zip` |
+| #1130 | TASK-413 A2, ciaspole nel contratto e nell'API (motore, 0068) | CI in corso | la prossima del motore: si riallinea su #1106 (prova, righe, `engine.zip`); **merge dell'utente** |
 | #1129 | TASK-429 B2, invio di `ski_parts` | CI in corso | merge al verde; OTA 8 |
 | #1131 | TASK-429 C2, giornate salvate e stagione (app) | CI in corso | ha `App.tsx`; tocca i file i18n come #1132: entra la prima verde, l'altra unisce `main` |
 | #1132 | TASK-423 E2a, i premi dentro Play (app) | CI in corso | 55 testi approvati dall'utente l'11-11; vedi #1131 |
 | #1133 | TASK-433, il «No» di «And running?» senza bordo azzurro | CI in corso | merge al verde; OTA 8 |
+| #1137 | TASK-440, la foto del post a schermo intero | CI in corso | solo `src/feed`; merge al verde; OTA 8 |
 | #1116 | `release/1.1.0`: orologio + Live Activity | bozza, **trattenuta** | testa `356e3f66`, impronta iOS `5e1b5ce5`, Android `227457f3`; si unisce **solo dopo l'approvazione di Apple**; allora #1058 e #862 si chiudono |
 | #1058, #862 | A-flip dell'orologio, Live Activity | bozze | dentro `release/1.1.0`; non si uniscono da sole |
 
-**In `main` l'11 novembre**: #1105 (435 A, motore `b4967ef32e9a`, merge
-dell'utente), #1115 (433 C2), #1120 (437), i documenti #1126, #1127.
+**In `main` l'11 novembre**: #1105 (435 A) e #1106 (436, motore
+`ca29e58777cb` tenuto come `8ab61d8e87f9`), merge dell'utente; #1115
+(433 C2), #1120 (437); i documenti #1126, #1127, #1128.
 
-**Motore, in ordine**: #1106 (436) e #1130 (413 A2) col merge
-dell'utente → 435 B (API, `schemas.py`, `engine.zip`; scritta, senza PR,
-si apre dopo «#1106 in main») → 435 C (app). A ogni «in main» chi segue
-unisce `main` e rifà per ultimi prova, righe ed `engine.zip`. Il server
-è ancora al motore `2bca806f467b`: #1105, #1106 e #1130 (con la 0068)
-entrano col passo 8.
+**Motore, in ordine**: #1130 (413 A2, migrazione 0068) → 435 B (API,
+`schemas.py`, `engine.zip`; bozza finché la #1130 non è in `main`) → 435
+C (app) → TASK-447 (via i «baffi»: cambia i percorsi scelti, quindi
+impronta efficace ed esempi del catalogo; da decidere con l'utente
+insieme a TASK-441). A ogni «in main» chi segue unisce `main` e rifà per
+ultimi prova, righe ed `engine.zip`. Il server è ancora al motore
+`2bca806f467b`: #1105, #1106 e #1130 entrano col passo 8
+(`out/coordinatore/passo8.sh`).
+
+**Dalla prova dell'11 novembre, in ordine**: TASK-442 adesso (`App.tsx`
+solo dopo la #1131) e TASK-445 in parallelo (misure: un bench alla volta
+sul Mac, si chiede al coordinatore) → TASK-443 dopo la 442 → TASK-444
+dopo la #1137 (il rosso delle kcal nel Feed capovolge TASK-424 C3: lo
+conferma l'utente) → TASK-446 dopo 435 C (carico sui 2 route worker) →
+TASK-447 nella coda del motore. Le apre la sessione «Pompo» una alla
+volta; ognuna manda la lista dei file al coordinatore prima del codice.
 
 **CI**: da TASK-438 (#1119, ADR-0364) i test dell'API girano in 4 parti
 (`api-tests (1)`…`(4)`, circa 10 minuti l'una) e il check obbligatorio
@@ -200,12 +211,16 @@ Fermi per scelta dell'utente
 
 ## Numeri
 
-- Task: presi fino a **TASK-441** (439 il database modello dei test,
-  non ancora avviato, 440 la foto del post a schermo intero con «Save»,
-  441 «Explore a 2000 disegni»). Il prossimo libero è **TASK-442**.
-- ADR: presi fino a **ADR-0366** (0364 TASK-438; 0365 riservato a
-  TASK-439; 0366 TASK-441, i campi `walks` e `activity` del catalogo). Il
-  prossimo libero è **ADR-0367**.
+- Task: presi fino a **TASK-447** (440 la foto del post a schermo
+  intero, 441 «Explore a 2000 disegni»; dalla prova nel simulatore
+  dell'11 novembre, `out/prova-app-2026-11-11/PROPOSTE.md`: 442 sagoma
+  fantasma e attesa animata, 443 inquadratura della mappa del risultato,
+  444 icone e colori coerenti, 445 velocità (solo misure), 446 calcolo
+  anticipato, 447 via i «baffi» dal motore). Il prossimo libero è
+  **TASK-448**.
+- ADR: presi fino a **ADR-0368** (0365 riservato a TASK-439; 0366
+  TASK-441; 0367 TASK-446; 0368 TASK-447). Il prossimo libero è
+  **ADR-0369**.
 - Migrazioni in `main` e sul server: fino a `0067_game_prizes.sql`
   (0059 e 0060 non esistono). In bozza: `0068_snowshoeing.sql` (TASK-413
   A2). Il numero vero è il primo libero al merge.

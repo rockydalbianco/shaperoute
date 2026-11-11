@@ -147,9 +147,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
   in produzione con l'OTA 4 del 2026-11-10; correzioni di «Play» (#1113)
   provate sul telefono con l'OTA 7. E1 sul server (passo 6, 0067); E2a
-  (#1132) ed E2b (#1144, profilo e privacy) in `main`, escono col nono OTA;
-  poi la copia della privacy sul sito e la prova sul telefono, col sì
-  dell'utente. File: — · `tasks/TASK-423.md`
+  (#1132) ed E2b (#1144, profilo e privacy) in produzione con l'OTA 9 del
+  2026-11-11, privacy copiata sul sito. Resta la prova sul telefono (premi
+  in «Play», scelta sul profilo). File: — · `tasks/TASK-423.md`
 - **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1, B2, C2 in
   `main` (#1093, #1108, #1114, #1129, #1131); A e B1 fuori con gli OTA 5 e
   6, C1 sul server dal passo 7 dell'11-11. B2 (i tratti a «Salva») e C2

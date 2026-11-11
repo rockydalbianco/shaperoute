@@ -1,17 +1,24 @@
-import type { RunActivity } from "@shaperoute/shared-types";
+import type { RunActivity, SkiPartRequest } from "@shaperoute/shared-types";
 
+import type { AccountOutcome } from "../api/accounts";
 import type { ActivityPause, ActivityRequest } from "../api/activities";
 import {
   type ElevationPoint,
   MAX_ELEVATION_POINTS,
+  type RunStats,
   type RunStatsRequest,
+  saveRunStats,
 } from "../api/runStats";
 import type { BodyProfile } from "../body/bodyProfile";
 import { activeKcal } from "../body/energy";
 import { metresBetween } from "../map/coordinates";
 import type { Track } from "../navigation/trackRecorder";
 import { findProfile } from "../sports";
+import { snowParts } from "./snowDay";
 import { trackEffort } from "./trackEffort";
+
+/** The most parts a day sends (as the API keeps them, TASK-424 part C2b). */
+export const MAX_SKI_PARTS = 500;
 
 /**
  * What the phone sends at the end of an activity for the page of its post
@@ -29,10 +36,71 @@ export function runStatsRequest(
 ): RunStatsRequest | null {
   const elevation = elevationProfile(request);
   const kcal = runKcal(request, counted, body, year);
-  if (elevation === null && kcal === null) {
+  // A day of skiing's lifts and descents (TASK-429 part B2, ADR-0357): what
+  // the post of a saved day and the season are made of on the server.
+  const parts =
+    counted.activity === "skiing" ? skiPartsOf(request, counted.metres) : [];
+  if (elevation === null && kcal === null && parts.length === 0) {
     return null;
   }
-  return { elevation, cadence_spm: null, kcal };
+  return {
+    elevation,
+    cadence_spm: null,
+    kcal,
+    ...(parts.length > 0 ? { ski_parts: parts } : {}),
+  };
+}
+
+/** Rounded to a tenth. */
+const tenth = (value: number) => Math.round(value * 10) / 10;
+
+/**
+ * The lifts and descents of a day of skiing as the API takes them
+ * (`ski_parts`, TASK-424 part C2b): read from the fixes sent, as at the end
+ * of the day (snowParts), on the clock of their `time_ms`. None without
+ * heights.
+ */
+export function skiPartsOf(request: ActivityRequest, metres: number): SkiPartRequest[] {
+  const parts = snowParts(trackOf(request, metres)) ?? [];
+  return parts.slice(0, MAX_SKI_PARTS).map((part) => {
+    const lasts = Math.max(0, part.endMs - part.startMs) / 1000;
+    return {
+      kind: part.kind,
+      n: part.n,
+      start_ms: part.startMs,
+      end_ms: Math.max(part.startMs, part.endMs),
+      moving_s: Math.min(tenth(part.ms / 1000), lasts),
+      metres: tenth(part.metres),
+      height_m: tenth(part.heightM),
+      top_mps: part.kind === "lift" || part.topMps === null ? null : tenth(part.topMps),
+    };
+  });
+}
+
+/**
+ * PUT /me/activities/{key}/stats with the day's parts, and once more without
+ * them when the API refuses the request (TASK-429 part B2): an API before
+ * TASK-424 part C2b answers 422 to `ski_parts`, and the profile and the
+ * calories must not be lost with them.
+ */
+export async function sendRunStats(
+  baseUrl: string,
+  token: string,
+  key: string,
+  request: RunStatsRequest,
+  options: { fetchFn?: typeof fetch; key?: string | null } = {},
+  save: typeof saveRunStats = saveRunStats,
+): Promise<AccountOutcome<RunStats>> {
+  const outcome = await save(baseUrl, token, key, request, options);
+  if (
+    outcome.kind === "api_error" &&
+    outcome.code === "invalid_request" &&
+    request.ski_parts !== undefined
+  ) {
+    const { ski_parts: _parts, ...without } = request;
+    return save(baseUrl, token, key, without, options);
+  }
+  return outcome;
 }
 
 /** A pause the runner asked for between two fixes: the step across it is

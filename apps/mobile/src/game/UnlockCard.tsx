@@ -1,4 +1,3 @@
-import type { GameShape } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import {
   AccessibilityInfo,
@@ -11,7 +10,6 @@ import {
 } from "react-native";
 
 import { t } from "../i18n";
-import type { Language } from "../i18n/languages";
 import {
   color,
   fontSize,
@@ -20,12 +18,20 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { shapeNameIn } from "./ShapeCard";
 import { ShapeOutline } from "./ShapeOutline";
 
 type Props = {
-  shape: GameShape;
-  language: Language;
+  /** «New shape unlocked», «Silver edition», «Collection complete». */
+  title: string;
+  /** The shape's or the collection's name, under the drawing. */
+  name: string;
+  /** What it means: «In your Animals collection.» */
+  line: string;
+  /** What is drawn, and in which colour. */
+  outline: readonly (readonly [number, number])[];
+  tint: string;
+  /** What a screen reader says as it comes up. */
+  announce: string;
   /** «See collection»: the app shows «Play». */
   onPlay: () => void;
   onClose: () => void;
@@ -40,17 +46,26 @@ const DRAW_WIDEST = 260;
 /**
  * «New shape unlocked» (TASK-296 part B, docs/GIOCO.md §9): over the app,
  * once the logo after «Save» has gone, the shape is drawn in the yellow,
- * stroke by stroke, with its name. A touch outside closes it.
+ * stroke by stroke, with its name. A touch outside closes it. Since
+ * TASK-423 part E the same card says an edition (in silver or gold), a
+ * collection completed (in its frame's colour), or, past 3 at once, all of
+ * them in one.
  */
-export function UnlockCard({ shape, language, onPlay, onClose }: Props) {
+export function UnlockCard({
+  title,
+  name,
+  line,
+  outline,
+  tint,
+  announce,
+  onPlay,
+  onClose,
+}: Props) {
   const { width } = useWindowDimensions();
   const size = Math.min(width * DRAW_SHARE, DRAW_WIDEST);
   const [draw] = useState(() => new Animated.Value(0));
-  const name = shapeNameIn(shape, language);
   useEffect(() => {
-    AccessibilityInfo.announceForAccessibility(
-      t("New shape unlocked: {name}", { name }),
-    );
+    AccessibilityInfo.announceForAccessibility(announce);
     const drawing = Animated.timing(draw, {
       toValue: 1,
       duration: DRAW_MS,
@@ -58,7 +73,7 @@ export function UnlockCard({ shape, language, onPlay, onClose }: Props) {
     });
     drawing.start();
     return () => drawing.stop();
-  }, [draw, name]);
+  }, [draw, announce]);
   return (
     <Pressable
       style={[StyleSheet.absoluteFill, styles.scrim]}
@@ -68,17 +83,17 @@ export function UnlockCard({ shape, language, onPlay, onClose }: Props) {
       testID="unlock-card"
     >
       <Pressable style={styles.card} onPress={() => {}} accessible={false}>
-        <Text style={styles.title}>{t("New shape unlocked")}</Text>
+        <Text style={styles.title}>{title}</Text>
         <ShapeOutline
-          outline={shape.outline}
+          outline={outline}
           size={size}
-          color={color.accent}
+          color={tint}
           thickness={5}
           draw={draw}
           testID="unlock-drawing"
         />
         <Text style={styles.name}>{name}</Text>
-        <Text style={styles.line}>{t("It is in your collection.")}</Text>
+        <Text style={styles.line}>{line}</Text>
         <View style={styles.buttons}>
           <Pressable
             style={styles.button}

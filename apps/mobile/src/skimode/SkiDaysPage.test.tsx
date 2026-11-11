@@ -13,6 +13,11 @@ import {
 import { FollowsContext } from "../social/followsDoor";
 import { PAGES_PER_ASK, SkiDaysPage, skiDaysOf } from "./SkiDaysPage";
 
+jest.mock(
+  "react-native-safe-area-context",
+  () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
+);
+
 // «Days», the second page of the ski mode (TASK-429 part A): the account's
 // own days of skiing from the posts of its profile, a touch that opens one,
 // «Show more», and the page without an account.
@@ -107,14 +112,17 @@ test("lists the own days of skiing, with the day, the town, the km and the time"
   expect(screen.queryByTestId(`ski-day-${run.id}`)).toBeNull();
 });
 
-test("a touch opens the day's post", async () => {
+test("a touch opens the day's own page, and «Back» comes back (part C)", async () => {
   const open = jest.fn();
   await render(
     wrap(<SkiDaysPage onLogIn={jest.fn()} />, async () => ok([sella], null), open),
   );
   await settle();
   await fireEvent.press(screen.getByTestId("ski-day-d1"));
-  expect(open).toHaveBeenCalledWith(sella);
+  expect(screen.getByTestId("ski-day-page")).toBeOnTheScreen();
+  expect(open).not.toHaveBeenCalled();
+  await fireEvent.press(screen.getByTestId("ski-day-back"));
+  expect(screen.queryByTestId("ski-day-page")).toBeNull();
 });
 
 test("pages without a day are passed over, up to PAGES_PER_ASK a time", async () => {

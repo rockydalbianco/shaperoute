@@ -10,6 +10,9 @@ test("every notification but a shape unlocked is shown while the app is open", (
   expect(
     shownWhileOpen({ kind: "shape_unlocked", public_id: "x", username: "ada" }),
   ).toBe(false);
+  // Their cards after «Save» say them (TASK-423 part E).
+  expect(shownWhileOpen({ kind: "edition_up" })).toBe(false);
+  expect(shownWhileOpen({ kind: "collection_done" })).toBe(false);
   // Data the app does not know is shown: better once too many than lost.
   expect(shownWhileOpen(undefined)).toBe(true);
   expect(shownWhileOpen({})).toBe(true);

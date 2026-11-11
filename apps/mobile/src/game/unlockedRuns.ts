@@ -20,8 +20,22 @@ export async function tellUnlocked(
 ): Promise<void> {
   try {
     const outcome = await fetchRunGame(baseUrl, token, key, options);
-    if (outcome.kind === "ok" && outcome.value.unlocked.length > 0) {
-      showUnlocked(outcome.value.unlocked, keptAt);
+    if (outcome.kind === "ok") {
+      // The editions and the collections completed (TASK-423 part E):
+      // absent from an older API.
+      showUnlocked(outcome.value.unlocked, keptAt, {
+        editions: (Array.isArray(outcome.value.editions) ? outcome.value.editions : [])
+          .filter(
+            (up) =>
+              typeof up?.shape_id === "string" &&
+              (up.edition === "silver" || up.edition === "gold"),
+          )
+          .map((up) => ({ shapeId: up.shape_id, edition: up.edition })),
+        collectionsDone: (Array.isArray(outcome.value.collections_done)
+          ? outcome.value.collections_done
+          : []
+        ).filter((id): id is string => typeof id === "string"),
+      });
     }
   } catch {
     // Nothing: the collection has the shape all the same.

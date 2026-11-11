@@ -24,6 +24,7 @@ from shaperoute_api.recommended import (
     parse_city,
     preview,
     turn_of,
+    varied,
 )
 
 HERE = Path(__file__).parent
@@ -63,12 +64,13 @@ def test_one_route_is_the_shared_contract(api: TestClient) -> None:
 
 def test_the_best_first_and_far_ones_left_out(api: TestClient) -> None:
     routes = api.get("/recommended-routes", params=PIAZZA_DUOMO).json()["routes"]
-    # The 21 km heart starts 3.8 km away: inside 5 km, outside 3 km.
+    # The 21 km heart starts 3.8 km away: inside 5 km, outside 3 km. It is
+    # the second heart: it comes after the best of each (TASK-441).
     assert [r["id"] for r in routes] == [
         "trento-star-5000-0",
         "trento-heart-10000-1",
-        "trento-heart-21000-2",
         "trento-ciao-15000-3",
+        "trento-heart-21000-2",
     ]
     near = api.get("/recommended-routes", params={**PIAZZA_DUOMO, "radius_m": 3000})
     assert [r["id"] for r in near.json()["routes"]] == [
@@ -235,16 +237,16 @@ def test_the_page_counts_the_whole_catalogue_and_joins_with_the_next(
 ) -> None:
     first = api.get("/catalog", params={**PIAZZA_DUOMO, "limit": 3}).json()
     assert (first["total"], first["cities"]) == (4, 1)
-    # Inside a city, as /recommended-routes: the best first, nearer first.
+    # Inside a city, as /recommended-routes: the best of each first.
     assert [r["id"] for r in first["routes"]] == [
         "trento-star-5000-0",
         "trento-heart-10000-1",
-        "trento-heart-21000-2",
+        "trento-ciao-15000-3",
     ]
     second = api.get(
         "/catalog", params={**PIAZZA_DUOMO, "offset": 3, "limit": 3}
     ).json()
-    assert [r["id"] for r in second["routes"]] == ["trento-ciao-15000-3"]
+    assert [r["id"] for r in second["routes"]] == ["trento-heart-21000-2"]
     assert (second["total"], second["cities"]) == (4, 1)
     beyond = api.get("/catalog", params={**PIAZZA_DUOMO, "offset": 9}).json()
     assert beyond["routes"] == []
@@ -254,14 +256,37 @@ def test_the_page_counts_the_whole_catalogue_and_joins_with_the_next(
 
 
 def _route(
-    city: str, name: str, lat: float, lon: float, similarity: float
+    city: str, name: str, lat: float, lon: float, similarity: float, i: int = 0
 ) -> CatalogRoute:
     return CatalogRoute(
-        id=f"{city}-{name}-5000-0",
+        id=f"{city}-{name}-5000-{i}",
         city=city,
         shape=name,
         word=None,
         style=None,
+        distance_m=5000,
+        route_m=5100,
+        similarity=similarity,
+        points=((lat, lon), (lat + 0.001, lon + 0.001)),
+        license="",
+    )
+
+
+def _word(
+    city: str,
+    word: str,
+    style: str,
+    lat: float,
+    lon: float,
+    similarity: float,
+    i: int = 0,
+) -> CatalogRoute:
+    return CatalogRoute(
+        id=f"{city}-{word.lower()}-5000-{i}",
+        city=city,
+        shape=None,
+        word=word,
+        style=style,
         distance_m=5000,
         route_m=5100,
         similarity=similarity,
@@ -300,6 +325,81 @@ def test_cities_come_from_the_nearest_whole_before_the_next() -> None:
         "rovereto-moon-5000-0",
         "trento-heart-5000-0",
     ]
+
+
+def test_varied_puts_the_first_of_every_kind_before_the_second_of_any() -> None:
+    ranked = ["a1", "a2", "b1", "a3", "c1", "b2"]
+    assert varied(ranked, lambda item: item[0]) == [
+        "a1",
+        "b1",
+        "c1",
+        "a2",
+        "b2",
+        "a3",
+    ]
+    assert varied([], len) == []
+
+
+def test_near_shows_the_best_of_every_shape_and_word_before_a_second() -> None:
+    here = (46.067, 11.1215)
+    routes = [
+        _route("trento", "circle", *here, 0.99, i=0),
+        _route("trento", "circle", *here, 0.98, i=1),
+        _route("trento", "circle", *here, 0.97, i=2),
+        _route("trento", "heart", *here, 0.93, i=3),
+        _route("trento", "heart", *here, 0.92, i=4),
+        _word("trento", "CIAO", "round", *here, 0.91, i=5),
+        _word("trento", "CIAO", "block", *here, 0.90, i=6),
+    ]
+    catalog = RecommendedCatalog(routes)
+    mixed = [
+        "trento-circle-5000-0",
+        "trento-heart-5000-3",
+        "trento-ciao-5000-5",
+        "trento-circle-5000-1",
+        "trento-heart-5000-4",
+        # The same word in the other style is a second of its kind.
+        "trento-ciao-5000-6",
+        "trento-circle-5000-2",
+    ]
+    assert [r.id for r in catalog.near(here)] == mixed
+    # The limit cuts the mixed list: four cards, three kinds.
+    assert [r.id for r in catalog.near(here, limit=4)] == mixed[:4]
+    # One shape asked for: its routes, the best first, as before.
+    assert [r.id for r in catalog.near(here, shape="circle")] == [
+        "trento-circle-5000-0",
+        "trento-circle-5000-1",
+        "trento-circle-5000-2",
+    ]
+
+
+def test_a_page_mixes_inside_each_city_and_never_across_two() -> None:
+    catalog = RecommendedCatalog(
+        [
+            _route("trento", "circle", 46.067, 11.1215, 0.99, i=0),
+            _route("trento", "circle", 46.067, 11.1215, 0.98, i=1),
+            _route("trento", "heart", 46.067, 11.1215, 0.93, i=2),
+            _route("rovereto", "circle", 45.89, 11.04, 0.97, i=0),
+            _route("rovereto", "circle", 45.89, 11.04, 0.96, i=1),
+            _route("rovereto", "moon", 45.89, 11.04, 0.91, i=2),
+        ]
+    )
+    ids = [r.id for r in catalog.page((46.067, 11.1215), 0, 10).routes]
+    assert ids == [
+        "trento-circle-5000-0",
+        "trento-heart-5000-2",
+        "trento-circle-5000-1",
+        "rovereto-circle-5000-0",
+        "rovereto-moon-5000-2",
+        "rovereto-circle-5000-1",
+    ]
+    # Pages still join.
+    joined = [
+        r.id
+        for offset in (0, 2, 4)
+        for r in catalog.page((46.067, 11.1215), offset, 2).routes
+    ]
+    assert joined == ids
 
 
 @pytest.mark.parametrize(

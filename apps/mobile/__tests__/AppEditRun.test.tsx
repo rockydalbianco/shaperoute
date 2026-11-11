@@ -115,7 +115,7 @@ beforeEach(() => {
         { status: 202 },
       );
     }
-    if (method === "GET" && path === "/route-jobs/4f2c9e1a") {
+    if (method === "GET" && path.split("?")[0] === "/route-jobs/4f2c9e1a") {
       return Response.json(DRAWING_DONE);
     }
     // «Save» after an edit: the route kept as the heart keeps it.

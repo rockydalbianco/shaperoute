@@ -1110,9 +1110,21 @@ bozza, quello vero è il primo libero al merge, dal Coordinatore):
 - `run_bests` no: nessun record personale, come Hike.
 - Nessuna riga cambia. Test in `test_snowshoeing_api.py`.
 
-Migrazione `0072_comment_replies.sql` (TASK-454 parte C1, ADR-0377, `API.md`
-«Comments», «Risposte e reazioni ai commenti»; numero in bozza dal
-Coordinatore, quello vero è il primo libero al merge):
+Migrazione `0069_paragliding.sql` (TASK-305 parte R1, ADR-0375; il numero
+è del Coordinatore, il primo libero in `main` al merge):
+
+- Il vincolo `runs_activity_check` prende anche `'paragliding'`: un volo
+  si salva come corsa, come una giornata di sci (`0044`). La migrazione
+  rilegge il vincolo che trova e lo riscrive col nome in più, in fondo,
+  come la `0057`: l'ordine con un'altra migrazione che lo allarga non
+  conta.
+- `favorites`, `group_runs` e `run_bests` no: nessun percorso da rifare,
+  nessun record personale.
+- Nessuna riga cambia. Test in `test_paragliding_api.py`.
+
+Migrazione `0070_comment_replies.sql` (TASK-454 parte C1, ADR-0377, `API.md`
+«Comments», «Risposte e reazioni ai commenti»; il numero è il primo
+libero in `main` al merge):
 
 - **`comments.parent_id`** (`uuid`, null, `ON DELETE CASCADE` su
   `comments`): il commento sotto cui sta una risposta. **Un livello solo**:

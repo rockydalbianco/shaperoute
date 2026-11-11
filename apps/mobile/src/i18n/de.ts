@@ -763,6 +763,9 @@ export const DE: Table = {
     "Route {label}, {distance}, {likeness} wie die Form",
   "The outline traced from the picture": "Der aus dem Bild gezeichnete Umriss",
 
+  // src/route/RoutePanel.tsx (TASK-435: the first route is shown, the others are coming)
+  "Looking for other routes…": "Weitere Routen werden gesucht…",
+
   // src/screens/PeopleScreen.tsx
   "Find friends": "Freunde finden",
 
@@ -1000,6 +1003,7 @@ export const DE: Table = {
   "{count} min ago": "vor {count} Min.",
   "{count} h ago": "vor {count} Std.",
   "{count} d ago": "vor {count} Tg.",
+  yesterday: "gestern",
   "Write a comment": "Kommentar schreiben",
   "{count} comment": "{count} Kommentar",
   "{count} comments": "{count} Kommentare",

@@ -13,6 +13,7 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 from test_drawings import (
     WallClock,
     api,
@@ -33,6 +34,7 @@ from shaperoute_api.live_shares import (
     LiveShareRequestBody,
     LiveShares,
     LiveShareSweep,
+    LiveStatsBody,
     LiveUpdateBody,
     LiveViewBody,
     token_hash,
@@ -415,3 +417,80 @@ def test_stop_waits_for_the_round_under_way_and_ends_them() -> None:
     time.sleep(0.05)
     assert shares.rounds == done
     assert live_rounds() == []
+
+
+# --- A paragliding flight (TASK-305 parts R, ADR-0375) ---
+
+
+FLIGHT_NUMBERS = {"alt_m": 1820, "max_alt_m": 2140, "vario_mps": -1.4, "speed_mps": 9.7}
+
+
+def test_the_numbers_of_a_flight_are_optional() -> None:
+    # The update of the app of today, without them, is valid as before.
+    today = LiveUpdateBody.model_validate(fixture("live-share-update.json"))
+    assert today.stats.alt_m is None and today.stats.vario_mps is None
+    flight = LiveStatsBody.model_validate(
+        {**today.stats.model_dump(), **FLIGHT_NUMBERS}
+    )
+    assert flight.max_alt_m == 2140 and flight.speed_mps == 9.7
+
+
+@pytest.mark.parametrize(
+    "wrong",
+    [
+        {"alt_m": 9_001},
+        {"alt_m": -501},
+        {"max_alt_m": 12_000},
+        {"vario_mps": 31},
+        {"vario_mps": -30.5},
+        {"vario_mps": float("nan")},
+        {"speed_mps": -1},
+        {"speed_mps": 101},
+    ],
+)
+def test_the_numbers_of_a_flight_have_their_limits(wrong: dict[str, Any]) -> None:
+    with pytest.raises(ValidationError):
+        LiveStatsBody.model_validate({"distance_m": 10, **wrong})
+
+
+def test_the_page_sees_the_numbers_of_a_flight(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    ada = signed_up(client)
+    share = made(client, ada, activity="paragliding")
+    wall.t = START + 15 * SECOND
+    stats = {**fixture("live-share-update.json")["stats"], **FLIGHT_NUMBERS}
+    assert sent(client, ada, share, stats=stats).status_code == 200
+    view = LiveViewBody.model_validate(seen(client, share))
+    assert view.activity == "paragliding"
+    assert view.stats is not None
+    assert view.stats.model_dump(include=set(FLIGHT_NUMBERS)) == FLIGHT_NUMBERS
+    assert view.stats.heart_bpm == 128 and view.stats.kcal == 4
+
+
+def test_a_run_of_today_is_seen_as_before(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    # The app of today sends no numbers of a flight; the page of today reads
+    # the view by name, and the new ones come back empty.
+    ada = signed_up(client)
+    share = made(client, ada)
+    wall.t = START + 15 * SECOND
+    assert sent(client, ada, share).status_code == 200
+    view = seen(client, share)
+    expected = fixture("live-view.json")
+    assert view["stats"] == expected["stats"]
+    assert all(view["stats"][name] is None for name in FLIGHT_NUMBERS)
+
+
+def test_a_wrong_number_of_a_flight_is_refused(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    ada = signed_up(client)
+    share = made(client, ada, activity="paragliding")
+    wall.t = START + 15 * SECOND
+    stats = {**fixture("live-share-update.json")["stats"], "vario_mps": 99}
+    assert sent(client, ada, share, stats=stats).status_code == 422

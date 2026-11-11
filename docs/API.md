@@ -1198,6 +1198,15 @@ niente gioco delle forme, niente record personali; preferiti e corse di
 gruppo no (migrazione `0057`). Lo legge solo un'app che dice
 `ski_touring` in `X-MuW-Reads`.
 
+**Il parapendio** (`paragliding`, TASK-305 parte R1, ADR-0375) è un quarto
+sport senza forma, dopo `ski_touring` in `RECORD_ACTIVITIES`: un volo si
+salva, si elenca e si apre come una giornata di sci; Strava non ha il
+parapendio e lo riceve come `Workout`, il GPX dice
+`<type>paragliding</type>`. Niente percorsi (il pianificatore di ADR-0265
+è un'altra cosa), niente gioco delle forme, niente record personali;
+preferiti e corse di gruppo no (migrazione `0069`). Lo legge solo un'app
+che dice `paragliding` in `X-MuW-Reads`.
+
 ### Quello che un'app sa leggere: `X-MuW-Reads` (TASK-387, ADR-0328)
 
 Ogni richiesta dell'app dice nell'header `X-MuW-Reads` i tipi in più che sa
@@ -3180,7 +3189,7 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   Esempio `fixtures/gym-plans.json`; `gym_plans.py`. Una scheda fatta con
   la guida (TASK-433, migrazione 0066) ha `program`: `goal` facoltativo
   (`muscle`, `strength`, `tone`, `fit`), `starts_on` (`YYYY-MM-DD`, le
-  settimane contano dal suo lunedì), `weeks` 1–12, `mode` (`load`, `reps`,
+  settimane contano dal suo lunedì), `weeks` 1–24, `mode` (`load`, `reps`,
   `alternate`, `same`), `step_kg` 0–20, `rest_s` facoltativo 10–600,
   `sessions` (la prima settimana: 1–7 allenamenti `{day, name, items}`, un
   giorno una volta) e `custom` (le settimane scritte a mano, `{week,
@@ -3196,7 +3205,22 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   giorno c'è una corsa (`running`). Il programma può avere `runner`
   (TASK-452, ADR-0369): `pace_10k_s` 180–900 (il ritmo sui 10 km, in
   secondi al km) e il lungo, `long_m` (1–60 km) o `long_s` (10 min–6 h); i
-  ritmi li calcola il telefono.
+  ritmi li calcola il telefono. Un giorno fuori di un altro sport
+  (TASK-461 B e C, ADR-0371) ha `outing` e né esercizi né `run`: `sport`
+  (`walk`, `hike`, `bike`, `gravel`, `mtb`, `swim`, `paddle`; la corsa resta
+  `run`), `kind` (`easy`, `intervals`, `long`; `brisk`, il passo svelto, solo
+  a piedi; `climb`, la salita di un hike), i campi di una corsa
+  (`distance_m` fino a 300 km in bici, 100 km a piedi o in canoa, 10 km a
+  nuoto; `duration_s` 60 s–12 h; `reps`, `rep_m` 25–5000, `rep_s`), a piedi
+  `climb_m` (50–5000, obbligatorio per `climb`), un nuoto `pool` (vasca
+  `true`, acque libere `false`); nel calendario è fatto se quel giorno c'è
+  un'attività del suo sport (`walking`, `hiking`, `cycling`, `gravel_biking`,
+  `mountain_biking`, `swimming`, `paddling`). Il programma può avere
+  `target`: `sport` (anche `run`), `distance_m` (500 m–300 km) o, per
+  `hike`, `climb_m` (100–5000), `on` facoltativo (`YYYY-MM-DD`); con un
+  obiettivo `weeks` arriva a 24. Un'app di prima non mostra «Today» in un
+  giorno fuori (non ha né corsa né esercizi), ne mostra il nome nella lista
+  e, salvando di nuovo la scheda, tiene `outing` e `target`.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`
@@ -3276,6 +3300,14 @@ senza app né account. Tipi in `shared-types/src/liveShare.ts`
 - **I numeri** (`LiveStats`): distanza, tempo senza pause, dislivello,
   calorie, battito (quando l'orologio lo manda), vasche stimate, esercizio
   della palestra. La pagina calcola passo o velocità medi.
+  Per un volo di parapendio (TASK-305 parte R1, ADR-0375) quattro numeri
+  in più, tutti facoltativi: `alt_m` (quota adesso, metri sul mare,
+  −500…9000), `max_alt_m` (la più alta finora, stessi limiti),
+  `vario_mps` (sale o scende, m/s, −30…30) e `speed_mps` (velocità al
+  suolo adesso, 0…100). Fuori dai limiti è `422`. Un'app che non li manda
+  e una pagina che non li legge funzionano come prima; nella `LiveView`
+  sono `null` quando mancano. Con `extra="forbid"` un server di prima li
+  rifiuta: il server esce prima dell'app.
 - **Solo il sito legge `/live`**: `Access-Control-Allow-Origin:
   https://getmuw.app`, `Cache-Control: no-store`, `Referrer-Policy:
   no-referrer`, anche sul `429`.

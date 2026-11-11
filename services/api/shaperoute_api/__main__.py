@@ -93,6 +93,7 @@ from shaperoute_api.ski_names_api import install_ski_names
 from shaperoute_api.ski_resorts_api import install_ski_resorts
 from shaperoute_api.ski_season import install_ski_season
 from shaperoute_api.themed import StopFinder, ThemedJobs
+from shaperoute_api.warm_zones import ZonesConfigError, warm_graphs, zones_mb_from_env
 from shaperoute_api.water_spots import read_spots
 
 DEFAULT_PORT = 8000
@@ -214,11 +215,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         notice_setup = NoticeSetup.from_env()
         report_setup = ReportSetup.from_env()
         feedback_setup = FeedbackSetup.from_env()
+        zones_mb = zones_mb_from_env()
     except (
         AccessConfigError,
         AwayConfigError,
         ReportConfigError,
         FeedbackConfigError,
+        ZonesConfigError,
     ) as exc:
         raise SystemExit(str(exc)) from None
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
@@ -281,11 +284,13 @@ def main(argv: Sequence[str] | None = None) -> None:
     )
     # Each route in a worker process of its own, kept warm (TASK-276,
     # ADR-0242): the API's threads drew one route at a time, on one core.
+    # Its foot zones kept up to SHAPEROUTE_ZONES_MB, the most used read as
+    # it starts (TASK-464, ADR-0374).
     processes = (
         None
         if args.route_processes < 1
         else RouteProcesses(
-            partial(ActivityGraphs.from_cache, args.cache_dir),
+            partial(warm_graphs, args.cache_dir, zones_mb),
             workers=args.route_processes,
         )
     )

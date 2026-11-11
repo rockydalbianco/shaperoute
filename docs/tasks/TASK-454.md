@@ -158,9 +158,9 @@ I criteri di B, C1 e C2 si scrivono qui quando la parte comincia.
 
 ## Parte C1 — server (ADR-0377)
 
-**Stato**: codice e test scritti (2026-11-11), PR da aprire dopo «#1162 in
-main» · branch `feat/TASK-454-c1-comment-replies` · migrazione `0072` in
-bozza (il numero vero è il primo libero al merge).
+**Stato**: PR #1180 aperta (2026-11-11) · branch
+`feat/TASK-454-c1-comment-replies` · migrazione `0070` (il primo numero
+libero in `main` il 2026-11-12; se un'altra PR lo prende prima, si rinomina).
 
 Scelte dell'utente: quelle del punto 5 qui sopra. Il resto è **deciso
 dall'agente su delega dell'utente** (va in `DECISIONS.md` come ADR-0377 con
@@ -220,7 +220,7 @@ reactions and follows» va fatta approvare all'utente e aggiornata con C2
 File toccati (C1):
 
 ```
-services/api/migrations/0072_comment_replies.sql        (nuovo)
+services/api/migrations/0070_comment_replies.sql        (nuovo)
 services/api/shaperoute_api/comment_reactions.py        (nuovo)
 services/api/shaperoute_api/comments.py
 services/api/shaperoute_api/push.py

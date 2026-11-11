@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037, privacy (#1007) D (#1080), E1 (#1099), E2a (#1132) ed E2b (#1144) in `main`; A, B, C ed E1 sul server; D in produzione con l'OTA 4; E2a ed E2b in produzione con l'OTA 9 e privacy sul sito; resta la prova sul telefono
+**Stato**: Done — tutte le parti (documenti, A, B, C, fix #1037, D, D2, E1, E2a, E2b) in `main` e in produzione (server fino al passo 6, OTA 9, privacy sul sito); provate sul telefono dall'utente il 2026-11-11
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,
@@ -347,7 +347,19 @@ E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
   profilo, sci, foto del post, No della palestra); sue parole al
   Coordinatore (~21:05Z): «procedi funziona tutto ok procedi». Non ha
   nominato le singole funzioni: non vale come giro guidato di E2a ed E2b.
+- 2026-11-11 — Conferma punto per punto dei premi, chiesta all'utente nella
+  sessione di TASK-423 (la riga «Premi» con cornici, titoli e badge; le
+  edizioni d'argento sulle forme; la cornice in fondo a una collezione; un
+  premio scelto sul profilo). Sue parole: «Funziona tutto».
 
 ## Esito
 
-*(a fine task)*
+Fatto il 2026-11-11. «Play» ha 94 forme in 10 collezioni, km da 1 a
+10 000, i passi su 11 distanze, le sfide personali della settimana e del
+mese con la streak, la lista unica di «Challenges», la barra onesta delle
+forme di passo, le edizioni argento e oro, cornici, titoli e badge, e la
+scelta di che cosa mostrare sul profilo, con la privacy nuova sul sito.
+Server fino al passo 6 (migrazioni 0065 e 0067, backfill a regole 3 e
+delle edizioni), app con gli OTA 4, 7 e 9; provato sul telefono
+dall'utente («Funziona tutto»). PR: #982, #984, #1005, #1007, #1018,
+#1037, #1080, #1099, #1113, #1132, #1144 e le PR di documenti.

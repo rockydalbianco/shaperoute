@@ -376,6 +376,10 @@ const styles = StyleSheet.create({
     width: `${Math.floor(100 / FRAMES_PER_ROW) - 4}%`,
     alignItems: "center",
     gap: space.xs,
+    // Round, as every card: the yellow line of a frame on the profile
+    // follows it (TASK-460, seen in the simulator).
+    paddingVertical: space.sm,
+    borderRadius: radius.lg,
   },
   frameName: {
     color: color.text,

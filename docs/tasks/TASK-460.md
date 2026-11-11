@@ -58,7 +58,9 @@ apps/mobile/src/game/PlayTabs.test.tsx       (nuovo: PlayTabs e SlideIn)
 apps/mobile/src/game/PlayScreen.tsx, CollectionList.tsx, CollectionPage.tsx,
   ChallengesTab.tsx, MonthChallengeRow.tsx, PlayOverlay.tsx,
   NewChallenge.tsx, TeamView.tsx, ChallengeView.tsx, PrizesPage.tsx,
-  UnlockCard.tsx                             (Pressable → Tap, i tic)
+  UnlockCard.tsx                             (Pressable → Tap, i tic; in
+                                             PrizesPage anche gli angoli
+                                             tondi della cornice scelta)
 docs/tasks/TASK-460.md                       (nuovo)
 ```
 
@@ -77,6 +79,12 @@ Non si toccano `screens/Segmented.tsx`, `ui/Tap.tsx`, `haptics/haptics.ts`,
   file approvati dal Coordinatore. Codice scritto: 192 test di `src/game`,
   3 nuovi e `__tests__/AppPlay` verdi sul Mac; impronta iOS su copia pulita
   6f8bba4c, uguale a `main`.
+- 2026-11-11 — Video dal simulatore (iPhone 17, Expo Go, una pagina di
+  prova con i dati d'esempio, tolta dopo): schede che scorrono, collezione
+  e «Prizes» che entrano di lato, la lista che rientra da sinistra, i tasti
+  che si rimpiccioliscono. In `out/TASK-460/play-motion.mp4` del checkout
+  principale. Simulatore spento dopo. Visto lì: il riquadro della cornice
+  scelta in «Prizes» aveva gli angoli vivi, ora tondi come le carte.
 
 ## Esito
 

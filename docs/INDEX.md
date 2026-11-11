@@ -27,6 +27,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Endpoint, contratti REST, validazione input | `API.md`, `ARCHITECTURE.md` §3 |
 | Quanti percorsi regge il server; i processi che calcolano i percorsi (`--route-processes`) | `tasks/TASK-276.md`, ADR-0242 |
 | Il primo percorso mostrato mentre il job calcola (`first`, `?first=1`), le alternative dopo | `tasks/TASK-435.md`, ADR-0361, `API.md` «Richieste in due tempi» |
+| Dove va il tempo di un percorso nel motore; le tabelle calcolate una volta per grafo (punti degli archi, maschera delle strade) | `tasks/TASK-434.md`, `tasks/TASK-436.md`, ADR-0362 |
 | Cosa sa leggere un'app vecchia, `X-MuW-Reads`, uno sport nuovo nelle liste | `API.md` «Quello che un'app sa leggere», ADR-0328 |
 | Parole lette dall'AI, Ollama | `AI.md` |
 | Schermate, mappa, «Draw», «Edit the drawing», disegno a mano, girare la figura, i pezzi | `UI.md`, `PRODUCT.md` |

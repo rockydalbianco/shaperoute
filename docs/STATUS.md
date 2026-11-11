@@ -189,6 +189,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
 
+- **TASK-462 — Il calendario di tutte le attività** · A (server) in `main`
+  (#1162, ADR-0372), sul server col passo 9; B (app) nella #1172 in bozza,
+  aspetta il server e il sì dell'utente sugli screenshot. File: `profile/ProfileHome.tsx`,
+  `activities/ActivitiesList.tsx` (B) · `tasks/TASK-462.md`
+
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
 la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e

@@ -185,6 +185,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
   R2 (app, col turno), R3 (`site/live/`). Il pianificatore resta Proposto.
   File: — · `tasks/TASK-305.md`
+- **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
+  (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
+  B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

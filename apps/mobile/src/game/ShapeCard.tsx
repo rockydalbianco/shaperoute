@@ -6,7 +6,9 @@ import { t } from "../i18n";
 import type { Language } from "../i18n/languages";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
 import type { Units } from "../units/units";
+import { EditionMark } from "./EditionMark";
 import { goalText, percentText } from "./goalText";
+import { editionAlong, editionName } from "./prizesText";
 import { ShapeOutline } from "./ShapeOutline";
 import { shapeProgress } from "./shapeProgress";
 
@@ -46,11 +48,17 @@ export function ShapeCard({ shape, shapes, state, me, width, units, language }: 
   const way =
     unlocked === null && me !== null ? shapeProgress(shape, shapes, me, units) : null;
   const progress = way?.share ?? null;
+  const edition = unlocked !== null ? (state?.edition ?? null) : null;
+  const runs = state?.edition_runs ?? null;
+  const nextEdition =
+    edition !== null && runs !== null ? editionAlong(edition, runs) : null;
   const along = way?.line ?? null;
   const label = [
     name,
     unlocked !== null ? t("Unlocked {date}", { date: dayLabel(unlocked) }) : null,
     asks,
+    edition !== null && edition !== "bronze" ? editionName(edition) : null,
+    nextEdition,
     progress !== null ? percentText(progress) : null,
     along,
   ]
@@ -81,6 +89,13 @@ export function ShapeCard({ shape, shapes, state, me, width, units, language }: 
           <Text style={styles.asks} numberOfLines={2} testID="shape-goal">
             {asks}
           </Text>
+          {/* Its edition, and the runs to the next (TASK-423 part E). */}
+          {edition !== null && <EditionMark edition={edition} />}
+          {nextEdition !== null && (
+            <Text style={styles.along} numberOfLines={2}>
+              {nextEdition}
+            </Text>
+          )}
         </>
       ) : (
         <>

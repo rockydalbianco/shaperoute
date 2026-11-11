@@ -1,5 +1,6 @@
 import catalog from "@shaperoute/shared-types/fixtures/game-catalog.json";
 import me from "@shaperoute/shared-types/fixtures/game-me.json";
+import prizes from "@shaperoute/shared-types/fixtures/game-prizes.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { GameCatalog, Session } from "@shaperoute/shared-types";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
@@ -12,6 +13,7 @@ import { saveUnitsChoice } from "../units/units";
 import { forgetGameCatalog, setGameCatalog } from "./gameCatalog";
 import { PlayScreen } from "./PlayScreen";
 import { forgetGameMe } from "./useGameMe";
+import { forgetPrizes } from "./usePrizes";
 
 jest.mock(
   "react-native-safe-area-context",
@@ -60,6 +62,7 @@ const fake = (...list: Parameters<typeof answers>): jest.Mock => answers(...list
 
 beforeEach(() => {
   forgetGameMe();
+  forgetPrizes();
   setGameCatalog(GRID);
 });
 
@@ -198,4 +201,63 @@ test("without an account the collections are there, none taken", async () => {
   );
   expect(screen.getByTestId("collection-sky")).toHaveTextContent(/Cielo.*0 \/ 1/);
   expect(screen.getByTestId("play-sign-in")).toBeTruthy();
+});
+
+// --- Prizes and editions (TASK-423 part E) ---
+
+test("«Prizes» opens the frames, titles and badges, and «←» goes back", async () => {
+  setGameCatalog(CATALOG);
+  await shown(fake({ status: 200, body: me }, { status: 200, body: prizes }));
+  await waitFor(() => expect(screen.getByTestId("play-prizes")).toBeTruthy());
+  await fireEvent.press(screen.getByTestId("play-prizes"));
+  await waitFor(() => expect(screen.getByTestId("prizes-editions")).toBeTruthy());
+  expect(screen.getByTestId("prizes-editions")).toHaveTextContent(
+    /Silver editions: 1.*Gold editions: 0/,
+  );
+  expect(screen.getByTestId("prize-frame-geometry")).toHaveTextContent(
+    /Geometry.*Earned/,
+  );
+  expect(screen.getByTestId("prize-frame-sky")).toHaveTextContent(/Sky.*0 \/ 1/);
+  expect(screen.getByTestId("prize-runner")).toHaveTextContent(
+    /Runner.*14.2 \/ 100 km.*100 km in total/,
+  );
+  expect(screen.getByTestId("prize-streak_4")).toHaveTextContent(
+    /4-week streak.*Earned/,
+  );
+  await fireEvent.press(screen.getByTestId("prizes-back"));
+  expect(screen.getByTestId("collection-list")).toBeTruthy();
+});
+
+test("without an account there is no «Prizes»", async () => {
+  setGameCatalog(CATALOG);
+  await shown(fake(), SIGNED_OUT);
+  expect(screen.getByTestId("collection-list")).toBeTruthy();
+  expect(screen.queryByTestId("play-prizes")).toBeNull();
+});
+
+test("an unlocked pace shape shows its edition and the runs to the next", async () => {
+  setGameCatalog(CATALOG);
+  const silver = {
+    ...me,
+    shapes: me.shapes.map((shape) =>
+      shape.id === "lightning"
+        ? {
+            ...shape,
+            unlocked_at: "2026-10-24T08:00:00Z",
+            progress: 1,
+            edition: "silver",
+            edition_runs: 4,
+          }
+        : shape,
+    ),
+  };
+  await shown(fake({ status: 200, body: silver }));
+  await waitFor(() => expect(screen.getByTestId("collection-sky")).toBeTruthy());
+  await fireEvent.press(screen.getByTestId("collection-sky"));
+  expect(screen.getByTestId("shape-card-lightning")).toHaveTextContent(
+    /Lightning.*Unlocked.*1 km under 5:00 \/km.*Silver edition.*4 of 10 runs for gold/,
+  );
+  expect(screen.getByTestId("edition-silver")).toBeTruthy();
+  // The frame of «Sky», all its shapes now unlocked.
+  expect(screen.getByTestId("collection-frame")).toHaveTextContent(/Sky frame.*Earned/);
 });

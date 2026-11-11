@@ -31,6 +31,7 @@ import { CollectionPage } from "./CollectionPage";
 import { collectionRows, hasCollections } from "./collections";
 import { useGameCatalog } from "./gameCatalog";
 import { ShapeCard } from "./ShapeCard";
+import { PrizesPage } from "./PrizesPage";
 import { useGameMe } from "./useGameMe";
 
 type Props = {
@@ -71,6 +72,8 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
   const [tab, setTab] = useState<PlayTab>("collection");
   // The collection whose page is open; null: the list of them.
   const [openId, setOpenId] = useState<string | null>(null);
+  // «Prizes» open over the collections (TASK-423 part E).
+  const [prizesOpen, setPrizesOpen] = useState(false);
   // A challenge asked for from outside (a notification): its tab, once
   // per request; the tab opens the challenge itself.
   const requested = useRequestedChallenge();
@@ -155,6 +158,16 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
           <Text style={styles.noticeText}>
             {t("The game is not available right now.")}
           </Text>
+        ) : prizesOpen && me !== null ? (
+          <PrizesPage
+            active={active}
+            catalog={catalog}
+            units={units}
+            language={language}
+            onBack={() => setPrizesOpen(false)}
+            fetchFn={fetchFn}
+            apiKey={apiKey}
+          />
         ) : opened !== null ? (
           <CollectionPage
             row={opened}
@@ -167,7 +180,23 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
             onBack={() => setOpenId(null)}
           />
         ) : rows !== null ? (
-          <CollectionList rows={rows} language={language} onOpen={setOpenId} />
+          <>
+            {me !== null && (
+              <Pressable
+                style={styles.prizes}
+                onPress={() => setPrizesOpen(true)}
+                accessibilityRole="button"
+                testID="play-prizes"
+              >
+                <Text style={styles.prizesText}>{t("Prizes")}</Text>
+                <Text style={styles.prizesLine} numberOfLines={1}>
+                  {t("Frames, titles and badges")}
+                </Text>
+                <Text style={styles.arrow}>›</Text>
+              </Pressable>
+            )}
+            <CollectionList rows={rows} language={language} onOpen={setOpenId} />
+          </>
         ) : (
           <View style={styles.grid}>
             {catalog.shapes.map((shape) => (
@@ -192,6 +221,29 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: color.background,
+  },
+  prizes: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    padding: space.md,
+    minHeight: MIN_TAP_SIZE,
+    borderRadius: radius.lg,
+    backgroundColor: color.surface,
+  },
+  prizesText: {
+    color: color.accent,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.bold,
+  },
+  prizesLine: {
+    flex: 1,
+    color: color.textMuted,
+    fontSize: fontSize.small,
+  },
+  arrow: {
+    color: color.textMuted,
+    fontSize: fontSize.title,
   },
   content: {
     padding: space.md,

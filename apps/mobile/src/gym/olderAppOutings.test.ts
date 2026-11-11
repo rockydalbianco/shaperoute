@@ -1,9 +1,37 @@
 import plans from "@shaperoute/shared-types/fixtures/gym-plans.json";
 import type { GymPlan } from "@shaperoute/shared-types";
 
-import { todayPlan } from "./plans";
+import { answers } from "../account/testing";
+import { isGymPlans, saveGymPlan } from "../api/gymPlans";
+import { forgetPlans, keepPlan, todayPlan } from "./plans";
 import { sessionsOfWeek } from "./program";
 import { withDays } from "./proposal";
+
+jest.mock("expo-file-system", () => {
+  const files = new Map<string, string>();
+  class File {
+    uri: string;
+    constructor(directory: { uri: string }, name: string) {
+      this.uri = `${directory.uri}${name}`;
+    }
+    get exists(): boolean {
+      return files.has(this.uri);
+    }
+    create(): void {
+      files.set(this.uri, "");
+    }
+    write(text: string): void {
+      files.set(this.uri, text);
+    }
+    textSync(): string {
+      return files.get(this.uri) ?? "";
+    }
+    delete(): void {
+      files.delete(this.uri);
+    }
+  }
+  return { File, files, Paths: { document: { uri: "file:///documents/" } } };
+});
 
 // TASK-461 B and C (ADR-0371): an app older than the days out reads a plan
 // with them (a ride, a pool swim, a brisk walk, a climb) without showing
@@ -58,4 +86,31 @@ test("an older app keeps the days out and the target when it works out or edits 
   const edited = withDays(program, bike.days, naming);
   expect(edited.target).toEqual(program.target);
   expect(edited.sessions).toEqual(program.sessions);
+});
+
+const { files } = jest.requireMock<{ files: Map<string, string> }>("expo-file-system");
+
+test("an older app reads such a plan and saves it again with its days out and target", async () => {
+  files.clear();
+  forgetPlans();
+  // The answer of GET /me/gym-plans is a list it takes.
+  expect(isGymPlans({ plans: [bike, mountain] })).toBe(true);
+  // Renamed on an older phone: kept on the phone, then sent whole.
+  const { key, position: _position, updated_at: _at, ...rest } = mountain;
+  const kept = keepPlan(7, key, { ...rest, name: "Rifugio" });
+  expect(kept.program?.target).toEqual(mountain.program?.target);
+  expect(kept.program?.sessions).toEqual(mountain.program?.sessions);
+  const saving: jest.Mock = jest.fn(
+    answers({ status: 200, body: { ...mountain, name: "Rifugio" } }),
+  );
+  const { owner: _owner, state: _state, key: _key, ...request } = kept;
+  await saveGymPlan("http://api", "token", key, request, {
+    fetchFn: saving,
+    key: null,
+  });
+  const sent = JSON.parse(String(saving.mock.calls[0][1]?.body));
+  expect(sent.program.target).toEqual({ sport: "hike", climb_m: 1000 });
+  expect(sent.program.sessions.map((one: { outing?: unknown }) => one.outing)).toEqual(
+    mountain.program?.sessions.map((one) => one.outing),
+  );
 });

@@ -59,6 +59,10 @@ quando va letta dal disco (5 su 20 sopra 0,5 s). In 10 su 20 la ricerca
 usa tutte le 30 tracce; converge prima solo in 3. In 12 su 20 vince il
 percorso dalla partenza dell'utente.
 
+Queste righe sono del motore di prima di #1105 e #1106, che arrivano sul
+server col passo 8 (dove girano già due processi di calcolo caldi,
+TASK-276 B): vanno rilette dopo quel passo.
+
 `traces=30` vuol dire che la ricerca dritta (20 tracce, `MAX_TRACES`) non
 ha trovato un percorso buono ed è ripartita con la forma inclinata (10 in
 più, `TILTED_TRACES`, TASK-232).
@@ -108,9 +112,11 @@ Stime sul Mac misurate; quelle sul server sono una proporzione (il server
    ~−1 s sulla mediana di 5,4 (attesa 1,12 + serializzazione). Stessi
    percorsi. Tocca motore (`nearby_starts.py`) e API
    (`route_processes.py`). Rischi: memoria (una zona per processo, sul CX33)
-   e il blocco di TASK-248 coi pool. Con TASK-435 B e C il primo percorso
-   arriva comunque prima: questa accorcia la risposta intera (alternative e
-   percorso migliore) e il lavoro del server.
+   e il blocco di TASK-248 coi pool. **Non accorcia il primo percorso**:
+   l'attesa delle vicine la toglie già dalla vista TASK-435 (A in `main`
+   con la #1105, B nella #1139, C l'app con «Looking for other routes…»),
+   dopo la quale il primo percorso arriva in ~1,3 s sul Mac. Questa
+   accorcia il tempo delle alternative e il lavoro del server.
 2. **Routing più veloce, stessi percorsi.** Il routing è tre quarti del
    piano (0,63 di 0,85 s), e quasi metà sono i costi del corridoio, ricalcolati
    per ogni traccia. Vettorizzarli o riusarli tra le tracce: stima −0,15/−0,3 s
@@ -137,6 +143,11 @@ server). Tagliarla o accorciarla rende quei percorsi più veloci, ma
 qualche forma verrebbe meno fedele o non verrebbe proprio. **Si prova a
 tagliarla (più veloce, forme a volte peggiori), o si ottimizza solo a
 percorsi identici (le tre sopra)?**
+
+Ogni scelta che tocca `services/route-engine` entra nella coda del motore
+(#1130 → TASK-435 B → TASK-447) con un numero di task chiesto al
+Coordinatore; il profilo di `snap_to_network` chiede un altro turno del
+Mac.
 
 ## Esito
 

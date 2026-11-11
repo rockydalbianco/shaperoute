@@ -85,6 +85,7 @@ Non si toccano `screens/Segmented.tsx`, `ui/Tap.tsx`, `haptics/haptics.ts`,
   che si rimpiccioliscono. In `out/TASK-460/play-motion.mp4` del checkout
   principale. Simulatore spento dopo. Visto lì: il riquadro della cornice
   scelta in «Prizes» aveva gli angoli vivi, ora tondi come le carte.
+- 2026-11-11 — Video visto dall'utente: «Sì, vanno bene». PR #1156.
 
 ## Esito
 

@@ -1,10 +1,12 @@
 # TASK-429 — La modalità sci: scelto lo sci, MuW diventa un'app per lo sci
 
-**Stato**: In lavorazione · 0, A, B1 e C1 in `main` (#1093, #1108, #1114);
-C1 va sul server nel passo 7 con TASK-424 C2b; poi B2 e C2, scritte
+**Stato**: In lavorazione · 0, A, B1, C1, B2 e C2 in `main` (#1093, #1108,
+#1114, #1129, #1131); C1 sul server dall'11-11; B2 e C2 escono con l'ottavo
+OTA, col sì dell'utente, poi la prova sul telefono; resta la parte E
 **Fase**: 5 · **Branch**: `docs/TASK-429-…` (documenti); il codice
 `feat/TASK-429-a-ski-mode`, `feat/TASK-429-b-ski-day`,
-`feat/TASK-429-c1-ski-day-parts` (in `main`), `feat/TASK-429-c2-ski-days`
+`feat/TASK-429-c1-ski-day-parts`, `feat/TASK-429-b2-ski-parts`,
+`feat/TASK-429-c2-ski-days` (tutti in `main`)
 **Dipende da**: TASK-375 (la giornata di sci, impianti e piste per nome) e
 TASK-406 (stazioni, meteo, neve, «Follow»), tutti e due online dal
 2026-11-10. Non li riapre: ne riusa le pagine.
@@ -409,6 +411,23 @@ coi loro test, `apps/mobile/src/social/drawingsDoor.ts` (`skiSeasonOf`),
 `apps/mobile/App.tsx` (il post di sci aperto sulla mappa a colori, a turno
 col Coordinatore), `apps/mobile/src/i18n/{it,de,fr,es}.ts` (i quattro testi
 approvati della stagione e di «Pista senza nome»).
+
+**C1 sul server l'11-11** (passo 7, `2ed26af7`, insieme alla C2b di
+TASK-424 e alla C1 della palestra).
+
+**B2 in `main` l'11-11** (#1129, `a0837cec`): a «Salva» di una giornata di
+sci i tratti vanno nei run-stats (`ski_parts`, al più 500); al `422
+invalid_request` `sendRunStats` li rimanda senza. Impronta iOS `6f8bba4c`
+invariata.
+
+**C2 in `main` l'11-11** (#1131, `d327ff41`): la stagione in cima a
+«Giornate», la giornata salvata con «Summary · Map · Runs», il post di sci
+sulla mappa a colori coi numeri. Impronta iOS `6f8bba4c` invariata; un
+commit in più all'apertura, solo Prettier (`src/api/skiSeason.test.ts`).
+B2 e C2 non sono nel settimo OTA: escono con l'ottavo, che pubblica il
+Coordinatore col sì dell'utente (ADR-0357, precisazione B2/C2). **Resta la
+prova sul telefono** dopo l'OTA: una giornata di sci salvata coi suoi
+tratti, la stagione in «Giornate», il post di sci sulla mappa.
 
 Parte E: si elenca prima.
 

@@ -93,7 +93,10 @@ punto): tenerli in un `array('d')` li porterebbe a 16 byte, circa 35 MB a
 - [ ] `pytest tools` verde; `tools/test_catalog_words.py` copre parole,
       piano, A1, A2 e la proposta senza rete né motore.
 - [ ] Il giro delle parole finito: registro in `out/TASK-441/runs.jsonl`.
-- [ ] Sì dell'utente sulle liste di parole e sull'ordine di «NEAR YOU».
+- [x] Sì dell'utente sulle liste di parole e sull'ordine di «NEAR YOU»
+      (2026-11-11).
+- [x] L'ordine misto in `near` e dentro ogni città in `page`
+      (`recommended.varied`), con test; le pagine si uniscono ancora.
 - [ ] `catalog/seed/*.json` riscritti; `test_featured_catalog` verde.
 - [ ] Avvio e memoria dell'API misurati e scritti qui.
 - [ ] CI verde; numero nuovo dei percorsi detto al Coordinatore per il
@@ -107,8 +110,9 @@ tools/test_catalog_words.py       (nuovo)
 tools/catalog_kept.json
 catalog/seed/<città>.json
 catalog/README.md
-services/api/shaperoute_api/recommended.py   (l'ordine di «NEAR YOU», col sì)
+services/api/shaperoute_api/recommended.py   (l'ordine misto)
 services/api/tests/test_recommended.py
+packages/shared-types/fixtures/recommended-routes.json   (l'ordine: il secondo cuore dopo CIAO)
 docs/tasks/TASK-441.md            (nuovo)
 ```
 
@@ -116,8 +120,10 @@ docs/tasks/TASK-441.md            (nuovo)
 
 ## Scelte dell'utente
 
-- (in attesa) le liste di parole di `out/explore-2000/proposta.md`;
-  l'ordine misto di «NEAR YOU».
+- 2026-11-11, «Sì, vai»: le liste di parole di
+  `out/explore-2000/proposta.md` (quelle di `tools/catalog_words.py`, senza
+  LFG) e l'ordine misto di «NEAR YOU»: prima la migliore di ogni forma e
+  parola, poi la seconda, e così via.
 
 ## Dove siamo
 

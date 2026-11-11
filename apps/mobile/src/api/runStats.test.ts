@@ -1,6 +1,7 @@
 import drawingDetails from "@shaperoute/shared-types/fixtures/drawing-details.json";
 import runStatsRequest from "@shaperoute/shared-types/fixtures/run-stats-request.json";
 import runStats from "@shaperoute/shared-types/fixtures/run-stats.json";
+import skiPartsRequest from "@shaperoute/shared-types/fixtures/ski-parts-request.json";
 import type { DrawingDetail } from "@shaperoute/shared-types";
 
 import { answers } from "../account/testing";
@@ -26,7 +27,11 @@ test("the examples are the bodies", () => {
 test("a post reads its figures; one without them has none", () => {
   expect(statsOf(DETAIL)).toBeNull();
   expect(statsOf({ ...DETAIL, stats: null } as DrawingDetail)).toBeNull();
-  expect(statsOf({ ...DETAIL, stats: runStats } as DrawingDetail)).toEqual(runStats);
+  expect(statsOf({ ...DETAIL, stats: runStats } as DrawingDetail)).toEqual({
+    ...runStats,
+    ski_parts: null,
+    ski_descents: null,
+  });
   // Hidden by its author: the API sent the rest only.
   const hidden = { ...runStats, kcal: null, heart: null };
   expect(statsOf({ ...DETAIL, stats: hidden } as DrawingDetail)?.heart).toBeNull();
@@ -39,7 +44,35 @@ test("a post reads its figures; one without them has none", () => {
     cadence_spm: null,
     kcal: null,
     heart: null,
+    ski_parts: null,
+    ski_descents: null,
   });
+});
+
+test("a day of skiing reads its parts and its descents (TASK-424 part C2b)", () => {
+  // As test_ski_parts.py keeps the example: its times from the track's start.
+  const parts = skiPartsRequest.ski_parts.map(({ start_ms, end_ms, ...part }) => ({
+    ...part,
+    start_s: (start_ms - skiPartsRequest.ski_parts[0].start_ms) / 1000,
+    end_s: (end_ms - skiPartsRequest.ski_parts[0].start_ms) / 1000,
+  }));
+  const day = {
+    ...runStats,
+    ski_parts: parts,
+    ski_descents: { metres: 2900, moving_s: 285 },
+  };
+  expect(isRunStats(day)).toBe(true);
+  expect(statsOf({ ...DETAIL, stats: day } as DrawingDetail)?.ski_descents).toEqual({
+    metres: 2900,
+    moving_s: 285,
+  });
+  expect(isRunStats({ ...day, ski_parts: [{ ...parts[0], kind: "walk" }] })).toBe(
+    false,
+  );
+  expect(isRunStats({ ...day, ski_descents: { metres: 2900 } })).toBe(false);
+  // The request of a day: what TASK-429's app sends, to a server with C2b.
+  const request: RunStatsRequest = skiPartsRequest as RunStatsRequest;
+  expect(request.ski_parts).toHaveLength(4);
 });
 
 test("the phone's figures go to the run's key, with the token", async () => {

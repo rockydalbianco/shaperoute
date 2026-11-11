@@ -1,4 +1,4 @@
-import type { Activity } from "@shaperoute/shared-types";
+import type { RunActivity } from "@shaperoute/shared-types";
 
 import { type MetBand, profileOf } from "../sports";
 import { ageIn, type BodyProfile, type Sex } from "./bodyProfile";
@@ -17,10 +17,16 @@ import { ageIn, type BodyProfile, type Sex } from "./bodyProfile";
  *   and kilometre on the flat.
  * - Cycling and paddling: the MET of the Compendium of Physical Activities
  *   (2024) for the average moving speed.
+ * - Every other activity its own (TASK-424 part C2, the user's choice of
+ *   2026-11-10: calories for every activity, src/sports): a swim in open
+ *   water a pool's MET, cross-country skiing the Compendium's by speed, ski
+ *   touring a hike's equation, alpine skiing one MET on the descents alone
+ *   (activities/trackEffort.ts gives their metres and seconds).
  * - At rest: Mifflin-St Jeor with sex, age, weight and height; with any of
  *   them missing, one standard MET.
  *
- * A swim has none yet (TASK-323 C2).
+ * A workout at the gym counts its own (gym/gymKcal.ts), and so does a swim
+ * in a pool (pool/poolKcal.ts).
  *
  * With no body at all a flat run is 1.0 kcal per kilogram and kilometre for
  * 70 kg, as near as the 1.036 of before (−3.5%).
@@ -56,7 +62,7 @@ function metOf(bands: readonly MetBand[], kmh: number): number {
 
 /** What an activity was, as far as its energy goes. */
 export type Effort = {
-  activity: Activity;
+  activity: RunActivity;
   metres: number;
   /** In movement, pauses left out; null when not known (a post of the Feed
    * without its time): a run or a walk is then counted from its metres
@@ -98,7 +104,7 @@ function oxygenMlKg(effort: Effort, minutes: number): number {
  * never below zero, and none without metres: standing still is rest.
  */
 export function activeKcal(effort: Effort, body: BodyProfile, year: number): number {
-  // A swim has no formula yet (TASK-323 C2): its sport has no energy.
+  // A workout at the gym has none here: it counts its sets (gymKcal.ts).
   if (!(effort.metres > 0) || profileOf(effort.activity).energy === undefined) {
     return 0;
   }

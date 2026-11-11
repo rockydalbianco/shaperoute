@@ -24,6 +24,7 @@ from typing import Any, Protocol, TypeVar
 
 import networkx as nx
 import numpy as np
+import shapely
 
 from route_engine.activities import ENGINE_ACTIVITIES
 from route_engine.errors import CollapsedShapeError, NoRoadsError
@@ -861,11 +862,58 @@ def _edge_samples(graph: Graph) -> np.ndarray:
 
 
 def _work_out_samples(graph: Graph) -> np.ndarray:
-    samples = []
-    for u, v, data in graph.edges(data=True):
-        coords = _edge_coords(graph, u, v, data)
-        samples.extend((coords[0], coords[len(coords) // 2], coords[-1]))
-    return np.array(samples).reshape(-1, 2)
+    # The points `_edge_coords` gives edge by edge (its first, the one at
+    # half its count, its last), bit for bit, with every geometry read in
+    # one call to shapely: a call an edge was 0.1 s of each search on the
+    # graph of a 5 km route (TASK-436, ADR-0362).
+    ids, latlon = _node_table(graph)
+    row = {node: i for i, node in enumerate(ids)}
+    first_node: list[int] = []
+    last_node: list[int] = []
+    drawn: list[int] = []
+    geometries: list[Any] = []
+    for edge, (u, v, data) in enumerate(graph.edges(data=True)):
+        first_node.append(row[u])
+        last_node.append(row[v])
+        geometry = data.get("geometry")
+        if geometry is not None:
+            drawn.append(edge)
+            geometries.append(geometry)
+    if not first_node:
+        return np.empty((0, 2))
+    start, end = latlon[first_node], latlon[last_node]
+    samples = np.empty((len(first_node), 3, 2))
+    # Without a geometry the points are the two nodes: the one at half the
+    # count is the second.
+    samples[:, 0], samples[:, 1], samples[:, 2] = start, end, end
+    if drawn:
+        lonlat, which = shapely.get_coordinates(
+            np.array(geometries, dtype=object), return_index=True
+        )
+        coords = lonlat[:, ::-1]
+        counts = np.bincount(which, minlength=len(geometries))
+        if not counts.all():
+            raise IndexError("an edge with an empty geometry")
+        first = np.cumsum(counts) - counts
+        last = first + counts - 1
+        # A geometry written from v to u is read from its last point.
+        node = start[drawn]
+        to_first = np.sqrt(((coords[first] - node) ** 2).sum(axis=1))
+        to_last = np.sqrt(((coords[last] - node) ** 2).sum(axis=1))
+        turned = to_last < to_first
+        # `math.dist` rounds its own way: where the two ends are as far to
+        # within the last digits (a loop, mostly) it has the last word, as
+        # in `_edge_coords`.
+        near = np.abs(to_last - to_first) <= 1e-9 * np.maximum(to_last, to_first)
+        for i in np.flatnonzero(near):
+            turned[i] = math.dist(coords[last[i]], node[i]) < math.dist(
+                coords[first[i]], node[i]
+            )
+        middle = np.where(turned, last - counts // 2, first + counts // 2)
+        samples[drawn, 0] = np.where(turned[:, None], coords[last], coords[first])
+        samples[drawn, 1] = coords[middle]
+        samples[drawn, 2] = np.where(turned[:, None], coords[first], coords[last])
+    return samples.reshape(-1, 2)
 
 
 _distinct_kept: weakref.WeakKeyDictionary[

@@ -4,14 +4,18 @@ import { test } from "node:test";
 import catalog from "../fixtures/game-catalog.json" with { type: "json" };
 import me from "../fixtures/game-me.json" with { type: "json" };
 import personalFixture from "../fixtures/game-personal.json" with { type: "json" };
+import prizesFixture from "../fixtures/game-prizes.json" with { type: "json" };
 import run from "../fixtures/game-run.json" with { type: "json" };
-import type {
-  GameCatalog,
-  GameMe,
-  GamePersonal,
-  GamePersonalUnit,
-  GameShape,
-  RunGame,
+import {
+  GAME_SHOWN_BADGES_MAX,
+  type GameCatalog,
+  type GameEditionUp,
+  type GameMe,
+  type GamePersonal,
+  type GamePersonalUnit,
+  type GamePrizes,
+  type GameShape,
+  type RunGame,
 } from "../src/index.ts";
 
 // The shape game (TASK-296, ADR-0255): the examples the app's tests read,
@@ -36,7 +40,14 @@ const shapes: GameShape[] = catalog.shapes.map((shape) => ({
 }));
 const served: GameCatalog = { rules_version: catalog.rules_version, shapes };
 const mine: GameMe = me;
-const worth: RunGame = { ...run, reason: null };
+const worth: RunGame = {
+  ...run,
+  reason: null,
+  editions: run.editions.map((up) => ({
+    ...up,
+    edition: up.edition as GameEditionUp["edition"],
+  })),
+};
 
 test("each shape has a closed outline on the card and its five names", () => {
   for (const shape of served.shapes) {
@@ -99,4 +110,41 @@ test("the personal challenges have three steps and a step within them", () => {
     [1, 2, 3],
   );
   assert.ok(personal.finished.every((f) => f.tier >= 1 && f.tier <= 3));
+});
+
+// The prizes (TASK-423 part E): as game_prizes_api.py answers.
+const prizes: GamePrizes = prizesFixture;
+
+test("the editions, the frames and the choice of the profile hold together", () => {
+  // Only pace and milestone shapes have editions: a shape of the kilometres none.
+  const triangle = mine.shapes.find((shape) => shape.id === "triangle");
+  assert.equal(triangle?.edition, null);
+  assert.equal(triangle?.edition_runs, null);
+  const lightning = mine.shapes.find((shape) => shape.id === "lightning");
+  assert.equal(lightning?.edition_runs, 0);
+  const editions: GameEditionUp[] = worth.editions ?? [];
+  assert.ok(editions.every((up) => served.shapes.some((s) => s.id === up.shape_id)));
+  assert.ok(
+    (worth.collections_done ?? []).every((id) =>
+      (catalog.collections ?? []).some((c) => c.id === id),
+    ),
+  );
+  // The frames are the catalog's collections, in order.
+  assert.deepEqual(
+    prizes.frames.map((frame) => frame.id),
+    (catalog.collections ?? []).map((c) => c.id),
+  );
+  for (const frame of prizes.frames) {
+    assert.equal(frame.got, frame.unlocked === frame.total);
+  }
+  for (const prize of [...prizes.titles, ...prizes.badges]) {
+    assert.equal(prize.got, prize.value >= prize.target);
+  }
+  // Only what is got is shown, and at most three badges.
+  const got = new Set(
+    [...prizes.badges, ...prizes.titles].filter((p) => p.got).map((p) => p.id),
+  );
+  assert.ok(prizes.shown.badges.length <= GAME_SHOWN_BADGES_MAX);
+  assert.ok(prizes.shown.badges.every((id) => got.has(id)));
+  assert.ok(prizes.frames.some((f) => f.id === prizes.shown.frame && f.got));
 });

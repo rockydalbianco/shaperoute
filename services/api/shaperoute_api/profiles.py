@@ -12,7 +12,8 @@ who asks stands towards it (follows.py); since TASK-324 its totals: metres,
 climb and reactions received (profile_totals.py); since TASK-368 its
 personal bests (profile_bests.py); since TASK-397 its VO₂ max, with its
 owner's yes (vo2max.py); since TASK-385 E its levels at the gym
-(gym_levels.py). Never the email, the role, the
+(gym_levels.py); since TASK-423 E the prizes of the shape game its owner
+chose to show (game_prizes_api.py), nothing by default. Never the email, the role, the
 internal id or when the account was made. It needs the token of an account:
 what members share is for members, as the feed (ADR-0114, point 4). The id
 is the random `public_id` of the account, not `id`: a sequence would let
@@ -59,6 +60,7 @@ from shaperoute_api.follows import (
     followers_count_sql,
     following_count_sql,
 )
+from shaperoute_api.game_prizes_api import ShownBody, shown_prizes
 from shaperoute_api.gym_leaderboard import gym_wins_sql
 from shaperoute_api.gym_levels import GymLevelBody, gym_levels_sql
 from shaperoute_api.profile_bests import PersonalBestBody, personal_bests_sql
@@ -140,6 +142,13 @@ class PublicProfileBody(BaseModel):
     gym_levels: list[GymLevelBody] = Field(
         description="The highest level first, then as the catalog; [] without one."
     )
+    # The prizes of the shape game (TASK-423 E, ADR-0351): only those its
+    # owner chose and still has; an app before E does not read it.
+    game_prizes: ShownBody | None = Field(
+        default=None,
+        description="The frame, title and up to 3 badges chosen; null when"
+        " nothing is.",
+    )
 
 
 def checked_username(value: str) -> str:
@@ -198,7 +207,7 @@ class Profiles:
         now = self.now()
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT u.public_id, u.username, u.bio, p.jpeg,"
+                "SELECT u.id, u.public_id, u.username, u.bio, p.jpeg,"
                 # Only the runs published, and those the viewer may see
                 # (TASK-117, TASK-208, ADR-0114 point 4).
                 f" {published_count_sql('u.id', '%s')} AS drawings,"
@@ -222,6 +231,7 @@ class Profiles:
                 f" AND NOT {apart_sql('%s', 'u.id')}",
                 (viewer_id,) * 7 + (since_of(now), wanted, viewer_id),
             ).fetchone()
+            prizes = None if row is None else shown_prizes(conn, int(row["id"]))
         if row is None:
             return None
         jpeg = row["jpeg"]
@@ -243,6 +253,7 @@ class Profiles:
             personal_bests=row["personal_bests"],
             vo2max=shown(vo2max, now.date()) if vo2max["show"] else None,
             gym_levels=row["gym_levels"],
+            game_prizes=prizes,
         )
 
 

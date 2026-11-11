@@ -31,11 +31,13 @@ import {
 
 const page = buildMapPage();
 
-/** Every colour the tokens name, the map's included. */
+/** Every colour the tokens name, the map's and the ski day's included. */
 const tokenColours = new Set<string>(
-  [...Object.values(color), ...Object.values(color.map)].flatMap((value) =>
-    typeof value === "string" ? [value] : [],
-  ),
+  [
+    ...Object.values(color),
+    ...Object.values(color.map),
+    ...Object.values(color.ski),
+  ].flatMap((value) => (typeof value === "string" ? [value] : [])),
 );
 
 test("loads a pinned MapLibre GL JS with SRI hashes", () => {

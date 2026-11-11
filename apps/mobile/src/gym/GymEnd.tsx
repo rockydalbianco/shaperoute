@@ -163,7 +163,7 @@ export function GymEnd({
             {clockLabel(timeMs)}
           </Text>
           {kcal !== null && (
-            <Text style={gymStyles.muted} testID="gym-end-kcal">
+            <Text style={[gymStyles.muted, styles.energy]} testID="gym-end-kcal">
               {kcal}
             </Text>
           )}
@@ -325,6 +325,10 @@ export function GymEnd({
 }
 
 const styles = StyleSheet.create({
+  // The calories, in red wherever they are (TASK-424 part C3).
+  energy: {
+    color: color.energy,
+  },
   head: {
     alignItems: "center",
     gap: space.xs,

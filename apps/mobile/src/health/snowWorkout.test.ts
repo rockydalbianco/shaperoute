@@ -17,14 +17,18 @@ const DAY: Track = {
 
 test("a day of alpine skiing goes to Apple Health as downhill skiing", () => {
   const workout = workoutOf(DAY, "skiing", NO_BODY);
-  // No estimate of the energy before part C.
-  expect(workout).toMatchObject({ activity: "skiing", distanceM: 8000, kcal: null });
+  // Its energy on the descents (TASK-424 part C2); with no heights the
+  // whole day is one: two hours at 5.3 MET, 70 kg, less the rest.
+  expect(workout).toMatchObject({ activity: "skiing", distanceM: 8000, kcal: 632 });
   const apple = appleWorkout(workout!);
   // HKWorkoutActivityType.downhillSkiing.
   expect(apple.activityType).toBe(61);
-  // Its own distance would be a new permission: the total only.
-  expect(apple.quantities).toEqual([]);
-  expect(apple.totals).toEqual({ distance: 8000 });
+  // Its own distance would be a new permission: the total only, and the
+  // energy every workout writes.
+  expect(apple.quantities.map((sample) => sample.quantityType)).toEqual([
+    "HKQuantityTypeIdentifierActiveEnergyBurned",
+  ]);
+  expect(apple.totals).toEqual({ distance: 8000, energyBurned: 632 });
   expect(apple.locations).toHaveLength(2);
   // Nothing new to ask Apple Health for.
   expect(Object.keys(DISTANCE_TYPE)).not.toContain("skiing");
@@ -34,7 +38,10 @@ test("a day of cross-country skiing goes to Apple Health as such", () => {
   const apple = appleWorkout(workoutOf(DAY, "xc_skiing", NO_BODY)!);
   // HKWorkoutActivityType.crossCountrySkiing.
   expect(apple.activityType).toBe(60);
-  expect(apple.quantities).toEqual([]);
+  // 4 km/h on average: slow, 6.8 MET for two hours.
+  expect(
+    apple.quantities.map((sample) => [sample.quantityType, sample.quantity]),
+  ).toEqual([["HKQuantityTypeIdentifierActiveEnergyBurned", 853]]);
   expect(Object.keys(DISTANCE_TYPE)).not.toContain("xc_skiing");
 });
 
@@ -45,7 +52,9 @@ test.each(["skiing", "xc_skiing"] as const)(
     // ExerciseSessionRecord.EXERCISE_TYPE_SKIING, for both.
     expect(records.session.exerciseType).toBe(61);
     expect(records.distance?.distance).toEqual({ value: 8000, unit: "meters" });
-    expect(records.calories).toBeNull();
+    // Its energy too (TASK-424 part C2).
+    expect(records.calories?.energy.unit).toBe("kilocalories");
+    expect(records.calories?.energy.value).toBeGreaterThan(0);
   },
 );
 

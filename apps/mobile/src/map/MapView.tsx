@@ -63,9 +63,11 @@ import {
 } from "./messages";
 import { doneMetres, splitRoute } from "./routeSplit";
 import type { Turn } from "./turnedMap";
+import type { SkiLabel } from "../skimode/skiDayLabels";
 
 /** One empty list, so the map is not told again and again of no routes. */
 const NO_OTHERS: LatLon[][] = [];
+const NO_LABELS: readonly SkiLabel[] = [];
 
 /** The figure of «Draw on the map» as the map shows it (TASK-281). */
 export type MapCanvas = {
@@ -127,6 +129,9 @@ type Props = {
   /** The lifts of a day of skiing, as stretches of `track` (TASK-375 part
    * C2): dashed, the descents solid. None draws the track as a run's. */
   lifts?: Lifts | null;
+  /** The numbers of the descents and the lifts on them (TASK-429 part B):
+   * none, the lines alone. */
+  liftLabels?: readonly SkiLabel[];
   /** While navigating, the phone's position: the map follows it (TASK-049). */
   following?: LatLon | null;
   /** Where the runner is heading, in degrees clockwise from north: the
@@ -201,6 +206,7 @@ export function MapView({
   others = NO_OTHERS,
   track = null,
   lifts = null,
+  liftLabels = NO_LABELS,
   following = null,
   heading = null,
   facing = null,
@@ -348,7 +354,9 @@ export function MapView({
     if (track && track.length > 1) {
       if (lifts !== null && lifts.length > 0) {
         const cut = splitAtLifts(track, lifts);
-        webView.current?.injectJavaScript(pageScript(showLifts(cut.skied, cut.lifts)));
+        webView.current?.injectJavaScript(
+          pageScript(showLifts(cut.skied, cut.lifts, liftLabels)),
+        );
         liftsShown.current = true;
       } else {
         webView.current?.injectJavaScript(pageScript(showTrack(track)));
@@ -362,7 +370,7 @@ export function MapView({
       webView.current?.injectJavaScript(pageScript(clearLifts()));
       liftsShown.current = false;
     }
-  }, [ready, track, lifts]);
+  }, [ready, track, lifts, liftLabels]);
 
   useEffect(() => {
     if (!ready) {

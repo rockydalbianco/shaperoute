@@ -1,4 +1,5 @@
 import { type BodyProfile, NO_BODY } from "./bodyProfile";
+import { poolKcal } from "../pool/poolKcal";
 import { activeKcal, DEFAULT_WEIGHT_KG, metAt, restKcalPerMin } from "./energy";
 
 // The cases are worked out by hand in ADR-0318's units: 5 kcal a litre of
@@ -140,11 +141,56 @@ describe("at rest", () => {
     expect(restKcalPerMin({ ...MAN, sex: "unsaid" }, YEAR)).toBeCloseTo(1667 / 1440);
   });
 
-  test("a swim has none yet (TASK-323 C2)", () => {
+  test("a swim in open water counts as a swim in a pool (TASK-424 part C2)", () => {
     const effort = {
       activity: "swimming",
       metres: 1500,
       seconds: 2700,
+      climbM: null,
+    } as const;
+    // 3:00 /100 m: the pool's slowest band, as poolKcal counts it.
+    expect(activeKcal(effort, NO_BODY, YEAR)).toBe(poolKcal(1500, 2700, NO_BODY, YEAR));
+    expect(activeKcal(effort, NO_BODY, YEAR)).toBeGreaterThan(0);
+  });
+
+  test("every day on the snow has its energy (TASK-424 part C2)", () => {
+    // 10 km in an hour of cross-country skiing: 6.2 mph, brisk, 12.5 MET.
+    const xc = {
+      activity: "xc_skiing",
+      metres: 10_000,
+      seconds: 3600,
+      climbM: null,
+    } as const;
+    expect(activeKcal(xc, NO_BODY, YEAR)).toBe(
+      Math.round(((12.5 - 1) * 3.5 * 60 * 5 * 70) / 1000),
+    );
+    // Downhill, an hour on the descents: 5.3 MET.
+    const down = {
+      activity: "skiing",
+      metres: 20_000,
+      seconds: 3600,
+      climbM: null,
+    } as const;
+    expect(activeKcal(down, NO_BODY, YEAR)).toBe(
+      Math.round(((5.3 - 1) * 3.5 * 60 * 5 * 70) / 1000),
+    );
+    // Up on skins: a hike's, most of it the metres climbed.
+    const up = {
+      activity: "ski_touring",
+      metres: 5000,
+      seconds: 7200,
+      climbM: 1000,
+    } as const;
+    expect(activeKcal(up, NO_BODY, YEAR)).toBe(
+      activeKcal({ ...up, activity: "hiking" }, NO_BODY, YEAR),
+    );
+  });
+
+  test("the gym has none here: its sets count it (gymKcal.ts)", () => {
+    const effort = {
+      activity: "gym",
+      metres: 100,
+      seconds: 600,
       climbM: null,
     } as const;
     expect(activeKcal(effort, NO_BODY, YEAR)).toBe(0);

@@ -1,4 +1,4 @@
-import type { Activity } from "@shaperoute/shared-types";
+import type { Activity, RunActivity } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -9,6 +9,7 @@ import { isPaddle, PADDLE_PACE_M, per500S } from "../navigation/paddle";
 import { distanceLabel } from "../navigation/phrases";
 import { isRide, speedNumber } from "../navigation/ride";
 import { useRunControl } from "../navigation/runControl";
+import { skiedDay, trackEffort } from "../activities/trackEffort";
 import { activeKcal } from "../body/energy";
 import { useBody } from "../body/useBody";
 import { climbM } from "../navigation/runMetrics";
@@ -104,8 +105,8 @@ export type RunNumbers = {
   time: string;
   /** "42", metres, or NO_NUMBER when the phone gives no height. */
   climb: string;
-  /** "187", kilocalories; null for a swim, which has no formula yet
-   * (TASK-374): no tile. */
+  /** "187", kilocalories of the sport recorded (TASK-374; every activity
+   * since TASK-424 part C2); null for one with no formula here: no tile. */
   energy: string | null;
   /** "3.2 km to go" and "about 17 min", along a route; with miles
    * "2.0 mi to go". */
@@ -126,6 +127,10 @@ export function useRunNumbers(
   live: boolean,
   route?: RouteProgress,
   activity?: Activity,
+  /** The sport recorded, whose calories these are (TASK-424 part C2): a
+   * day of skiing has a ride's speeds but its own energy. `activity` when
+   * not given. */
+  sport?: RunActivity,
 ): RunNumbers {
   const { phase } = useRunControl();
   const units = useUnits();
@@ -150,6 +155,9 @@ export function useRunNumbers(
   const lastM = paddle ? PADDLE_PACE_M : swim ? SWIM_PACE_M : metresPer(units);
   const lastKm = useMemo(() => lastKmS(track, lastM), [track, lastM]);
   const climbed = useMemo(() => climbM(track), [track]);
+  const energyOf: RunActivity = sport ?? activity ?? DEFAULT_ACTIVITY;
+  // The descents of a day of skiing: once per fix, not once per second.
+  const day = useMemo(() => skiedDay(energyOf, track), [energyOf, track]);
   const eta = route ? etaMs(route.remainingM, track, ms) : null;
   // The seconds of a kilometre or of a mile, as a pace or as a speed.
   const said = (seconds: number | null) =>
@@ -177,18 +185,13 @@ export function useRunNumbers(
     pace100: clock(average === null ? null : per100S(average)),
     time: clockLabel(ms),
     climb: climbed === null ? NO_NUMBER : String(Math.round(climbed)),
-    // None for a sport that counts no energy (src/sports): a swim.
+    // None for a sport that counts no energy here (src/sports): the gym.
     energy:
-      profileOf(activity ?? DEFAULT_ACTIVITY).energy === undefined
+      profileOf(energyOf).energy === undefined
         ? null
         : String(
             activeKcal(
-              {
-                activity: activity ?? "running",
-                metres: track.distanceM,
-                seconds: ms / 1000,
-                climbM: climbed,
-              },
+              trackEffort(energyOf, track, ms / 1000, climbed, day),
               body,
               new Date(at).getFullYear(),
             ),
@@ -271,22 +274,29 @@ function Value({
   value,
   unit,
   size,
+  energy = false,
 }: {
   value: string;
   unit?: string;
   size: "lead" | "metric" | "tile";
+  /** Calories: in red, number and unit (TASK-424 part C3). */
+  energy?: boolean;
 }) {
   return (
     <View style={styles.valueRow}>
       {/* An hour and more is seven characters: smaller, never cut. */}
       <Text
-        style={[styles.value, size === "lead" && styles.valueLead]}
+        style={[
+          styles.value,
+          size === "lead" && styles.valueLead,
+          energy && styles.energy,
+        ]}
         numberOfLines={1}
         adjustsFontSizeToFit
       >
         {value}
       </Text>
-      {unit && <Text style={styles.unit}>{unit}</Text>}
+      {unit && <Text style={[styles.unit, energy && styles.energy]}>{unit}</Text>}
     </View>
   );
 }
@@ -317,14 +327,18 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
           <Tile label={t("Avg /500 m")} value={numbers.pace500} />
           <Tile label={t("Last 500 m")} value={numbers.lastKm} />
           {numbers.energy !== null && (
-            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
+            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
           )}
         </View>
       ) : numbers.swim ? (
-        // A swim: a swimmer's pace, of 100 m (TASK-323 D).
+        // A swim: a swimmer's pace, of 100 m (TASK-323 D), and its
+        // calories (TASK-424 part C2).
         <View style={styles.tiles}>
           <Tile label={t("Avg /100 m")} value={numbers.pace100} />
           <Tile label={t("Last 100 m")} value={numbers.lastKm} />
+          {numbers.energy !== null && (
+            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
+          )}
         </View>
       ) : (
         <View style={styles.tiles}>
@@ -337,7 +351,7 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
           {/* Each sport its own energy (TASK-374, ADR-0318): the tile is
               back on a bike, where the runner's formula had taken it off. */}
           {numbers.energy !== null && (
-            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
+            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
           )}
         </View>
       )}
@@ -375,10 +389,13 @@ export function Tile({
   label,
   value,
   unit,
+  energy = false,
 }: {
   label: string;
   value: string;
   unit?: string;
+  /** The calories: in red (TASK-424 part C3). */
+  energy?: boolean;
 }) {
   return (
     <View
@@ -386,7 +403,7 @@ export function Tile({
       accessible
       accessibilityLabel={`${label}: ${value}${unit ? ` ${unit}` : ""}`}
     >
-      <Value value={value} unit={unit} size="tile" />
+      <Value value={value} unit={unit} size="tile" energy={energy} />
       <Text style={styles.label} numberOfLines={1}>
         {label}
       </Text>
@@ -443,6 +460,10 @@ const styles = StyleSheet.create({
   },
   valueLead: {
     fontSize: fontSize.display,
+  },
+  // The calories, in red wherever they are (TASK-424 part C3).
+  energy: {
+    color: color.energy,
   },
   unit: {
     color: color.textMuted,

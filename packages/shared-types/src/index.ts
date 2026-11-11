@@ -15,6 +15,7 @@ import {
   TRACKLESS_SPORTS,
 } from "./sports/index.ts";
 import type { GymLevel } from "./gym.ts";
+import type { SkiDescents } from "./skiParts.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -525,14 +526,22 @@ export interface RouteJob {
   result: RouteResult | null;
   /** Only when `status` is "failed". */
   error: ApiError["error"] | null;
+}
+
+/**
+ * The answer to GET /route-jobs/{job_id}?first=1 (TASK-435, ADR-0361): the
+ * RouteJob and, while it computes, its first route. Without `?first=1`, and
+ * from an API before it, the answer is a RouteJob: `first` is missing, and
+ * who reads must take it as none.
+ */
+export interface RouteJobWithFirst extends RouteJob {
   /**
-   * Only in the answer to GET /route-jobs/{job_id}?first=1, while the job
-   * computes (TASK-435, ADR-0361): the route from the user's own start, with
-   * no alternatives, as soon as it is planned and the nearby starts are not
-   * yet. Missing without `?first=1` and from an API before it; the whole
+   * The route from the user's own start, with no alternatives, as soon as
+   * it is planned and the nearby starts are not yet; null before that, when
+   * nothing is waited for, and once the job has its answer. The whole
    * answer is `result`, as ever.
    */
-  first?: RouteResult | null;
+  first: RouteResult | null;
 }
 
 /** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */
@@ -1040,6 +1049,11 @@ export interface PublicProfile {
    * API older than TASK-385 E.
    */
   gym_levels?: GymLevel[];
+  /**
+   * The prizes of the shape game its owner chose to show (TASK-423 part E):
+   * null when none; missing from an API older than TASK-423 E.
+   */
+  game_prizes?: GamePrizesShown | null;
 }
 
 /** Where a VO₂ max comes from (TASK-397). */
@@ -1363,6 +1377,13 @@ interface DrawingFields {
    * saved before; missing from an API before TASK-232 part C.
    */
   rotation_deg?: number | null;
+  /**
+   * A day of alpine skiing: the metres and the seconds of its descents
+   * alone, which its calories are counted on (TASK-424 part C2b,
+   * skiParts.ts). Null for any other run and for a day whose phone sent no
+   * parts; missing from an API before it.
+   */
+  ski_descents?: SkiDescents | null;
 }
 
 /** One drawing of GET /users/{public_id}/drawings. */
@@ -1691,7 +1712,7 @@ export type PushData =
  * unlocked. Its `data` carries the runner's own profile, as a follow
  * event's would; the app opens «Play» instead.
  */
-export type GamePushKind = "shape_unlocked";
+export type GamePushKind = "shape_unlocked" | "edition_up" | "collection_done";
 
 /**
  * What a shape of the game asks (GET /game/catalog): so many metres in
@@ -1757,7 +1778,20 @@ export interface GameShapeState {
   id: string;
   unlocked_at: string | null;
   progress: number;
+  /**
+   * The edition of a pace or milestone shape (TASK-423 part E): bronze once
+   * unlocked, silver once its goal is met in 3 runs, gold in 10; null
+   * before, and for a shape of the total kilometres. Absent from an older
+   * API.
+   */
+  edition?: GameEdition | null;
+  /** The counted runs that met its goal; null for a shape of the total
+   * kilometres. Absent from an older API. */
+  edition_runs?: number | null;
 }
+
+/** The editions of a shape (TASK-423 part E, ADR-0351). */
+export type GameEdition = "bronze" | "silver" | "gold";
 
 /** GET /game/me: the game of the account. `best_s` has the best moving
  * seconds by distance in metres, as text: {"1000": 287.4}. */
@@ -1841,6 +1875,61 @@ export interface RunGame {
   counted_m: number;
   best_s: Record<string, number>;
   unlocked: string[];
+  /** The silver and gold editions the run gave (TASK-423 part E); absent
+   * from an older API. */
+  editions?: GameEditionUp[];
+  /** The collections the run completed, each a new frame (TASK-423 part
+   * E); absent from an older API. */
+  collections_done?: string[];
+}
+
+/** An edition a run gave. */
+export interface GameEditionUp {
+  shape_id: string;
+  edition: "silver" | "gold";
+}
+
+/**
+ * A title or a badge of the game (TASK-423 part E): reached or not, and how
+ * far along, in its own unit (metres, weeks, medals, editions, challenges).
+ */
+export interface GamePrizeState {
+  id: string;
+  got: boolean;
+  value: number;
+  target: number;
+}
+
+/** The frame of a collection: got once all its shapes are unlocked. */
+export interface GameFrame {
+  /** The collection's id. */
+  id: string;
+  got: boolean;
+  unlocked: number;
+  total: number;
+}
+
+/** What an account shows of the game on its public profile: one frame, one
+ * title, up to `GAME_SHOWN_BADGES_MAX` badges. Nothing by default. */
+export interface GamePrizesShown {
+  frame: string | null;
+  title: string | null;
+  badges: string[];
+}
+
+export const GAME_SHOWN_BADGES_MAX = 3;
+
+/**
+ * GET /game/prizes, and the answer of PUT /game/prizes/shown (TASK-423 part
+ * E, ADR-0351): the account's frames, titles and badges, its editions and
+ * what it shows. An API before part E answers 404.
+ */
+export interface GamePrizes {
+  frames: GameFrame[];
+  titles: GamePrizeState[];
+  badges: GamePrizeState[];
+  editions: { silver: number; gold: number };
+  shown: GamePrizesShown;
 }
 
 /** The most hashes one POST /people/from-contacts takes (TASK-262 C). */
@@ -2818,4 +2907,6 @@ export interface OutfitShop {
 }
 export * from "./skiResorts.ts";
 export * from "./skiDays.ts";
+export * from "./skiSeason.ts";
 export * from "./resortFollows.ts";
+export * from "./skiParts.ts";

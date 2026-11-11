@@ -84,9 +84,22 @@ jobs:
 
   # L'API FastAPI, installata insieme al route-engine che espone (ADR-0030).
   # I test girano sul grafo piccolo di Levico e sui JSON di shared-types.
-  api:
+  #
+  # Da TASK-438 la suite gira divisa in parti, una per job della matrice:
+  # tutta insieme durava da 27 a 39 minuti, senza un file che pesasse più
+  # del 5 % (ogni test crea il suo database e ci applica le migrazioni).
+  # tools/ci_api_shards.py dà a ogni parte i suoi file, ogni file a una
+  # parte sola, bilanciando sul numero di test. Per cambiare il numero delle
+  # parti basta la lista `shard` qui sotto: il resto lo legge da
+  # `strategy.job-total`. Una parte che fallisce non ferma le altre: la PR
+  # vede tutti i test rotti in un giro solo.
+  api-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -113,17 +126,50 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ../route-engine -e ../ai -e ".[dev]"
 
+      # Lint e controllo delle parti una volta sola, nella prima.
       - name: Lint
-        if: steps.changes.outputs.code == 'true'
+        if: steps.changes.outputs.code == 'true' && matrix.shard == 1
         working-directory: services/api
         run: |
           ruff check .
           black --check .
 
+      # pytest elenca tutta la suite senza eseguirla (circa 10 secondi): se
+      # raccoglie un test da un file che nessuna parte esegue, il job
+      # fallisce invece di perderlo in silenzio. Stampa anche il totale.
+      - name: Every test is in a shard
+        if: steps.changes.outputs.code == 'true' && matrix.shard == 1
+        working-directory: services/api
+        run: |
+          pytest --collect-only -q -m "not network" > "$RUNNER_TEMP/api-collected.txt" \
+            || { tail -n 50 "$RUNNER_TEMP/api-collected.txt"; exit 1; }
+          python ../../tools/ci_api_shards.py --of ${{ strategy.job-total }} \
+            --check "$RUNNER_TEMP/api-collected.txt"
+
+      # Senza file pytest eseguirebbe tutta la suite: la lista vuota è un
+      # errore. --durations lascia nel log i test più lenti della parte.
       - name: Test
         if: steps.changes.outputs.code == 'true'
         working-directory: services/api
-        run: pytest -m "not network"
+        run: |
+          python ../../tools/ci_api_shards.py --shard ${{ matrix.shard }} \
+            --of ${{ strategy.job-total }} > "$RUNNER_TEMP/api-shard.txt"
+          mapfile -t files < "$RUNNER_TEMP/api-shard.txt"
+          test "${#files[@]}" -gt 0
+          pytest -m "not network" --durations=25 "${files[@]}"
+
+  # Il check obbligatorio `api` del ruleset di main: verde solo se tutte le
+  # parti di `api-tests` sono verdi. `always()` e non il default: un job
+  # saltato conta come passato per il ruleset, e con una parte fallita o
+  # annullata questo job verrebbe saltato.
+  api:
+    needs: api-tests
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every shard passed
+        run: test "${{ needs.api-tests.result }}" = success
 
   # Il pacchetto che legge le parole della forma (ADR-0012): solo libreria
   # standard. I test usano un modello finto e un server HTTP locale finto;

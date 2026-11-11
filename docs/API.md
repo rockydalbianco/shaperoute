@@ -1873,6 +1873,11 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   lettura da `gym_sets`; un esercizio scritto da chi si allena non ha
   scala. Esempio `fixtures/gym-levels.json`; `gym_levels.py`; un'API
   precedente non ha il campo.
+- **I premi del gioco** (TASK-423 E, ADR-0351): `game_prizes`, solo quello
+  che il proprietario ha scelto di mostrare con `PUT /game/prizes/shown`
+  e ha ancora: `{frame, title, badges}` (una cornice, un titolo, fino a 3
+  badge); `null` quando non ha scelto niente, il default. `game_prizes_api.py`;
+  un'API precedente non ha il campo.
 - **«Winner» anche dalla palestra** (TASK-385 F): nel profilo pubblico
   `contest_wins` somma ai concorsi vinti le classifiche mensili della
   palestra vinte: primo di un esercizio in un mese finito, con almeno 3
@@ -3045,7 +3050,11 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   `program: null` la riporta a una scheda di un allenamento; un `PUT` senza
   `program` (un'app di prima) lo lascia com'era. I valori di ogni settimana
   li calcola il telefono; l'API sa solo quali giorni sono in programma (il
-  calendario).
+  calendario). Un giorno di corsa (TASK-433 C, ADR-0363) ha `run` e nessun esercizio:
+  `kind` (`easy`, `intervals`, `long`), per `easy` e `long` `distance_m`
+  (100–100 000) o `duration_s` (60 s–6 h), per `intervals` `reps` (1–50) e
+  `rep_m` (50–5000) o `rep_s` (10–1800); nel calendario è fatto se quel
+  giorno c'è una corsa (`running`).
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`
@@ -3167,6 +3176,27 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
 - Backfill dei passi per le corse vecchie: `python -m
   shaperoute_api.run_stats`, solo col sì dell'utente. Test in
   `test_run_stats.py`.
+- **I tratti di una giornata di sci** (TASK-424 parte C2b, con TASK-429;
+  tipi in `packages/shared-types/src/skiParts.ts`, esempi in
+  `fixtures/ski-parts-request.json` e `fixtures/drawing-ski.json`, test in
+  `test_ski_parts.py`). Il telefono può mandare in più `ski_parts`, al più
+  500, nell'ordine della giornata:
+  `{kind: "lift"|"descent", n, start_ms, end_ms, moving_s, metres,
+  height_m, top_mps}`. `start_ms` ed `end_ms` sono sull'orologio dei
+  `time_ms` della traccia; `moving_s` non supera la durata del tratto;
+  `top_mps` è `null` per una risalita. L'API li tiene in `stats` con
+  `start_s`/`end_s` al posto dei millisecondi (secondi dal primo punto
+  tenuto della traccia, come la M di `runs.track`), e calcola
+  `ski_descents` `{metres, moving_s}`, la somma delle sole discese. Una
+  lista vuota o assente è nessuno. `GET /drawings/{id}` dà `ski_parts` e
+  `ski_descents` dentro `stats`, a chi vede il post; ogni lista di post
+  (`GET /feed`, il profilo, la stazione, la ricerca, le gare) dà
+  `ski_descents` sul post, `null` senza tratti: il Feed ci conta le
+  calorie dello sci come la fine della giornata.
+  **Prima il server, poi l'app**: un server senza C2b rifiuta un
+  `PUT …/stats` con `ski_parts` (422, `extra="forbid"`) e la giornata
+  perde tutti i suoi dati. Nessuna app manda i tratti prima che il server
+  con C2b sia acceso.
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 
@@ -3332,6 +3362,38 @@ Chiedono tutte il token.
   - `404` per una stazione che non c'è.
 - **Il codice:** `resort_follows.py`. Migrazione `0062`, tipi in
   `packages/shared-types/src/resortFollows.ts`.
+
+**I tratti della giornata e la stagione (TASK-429 parte C1, ADR-0357)**
+
+Il telefono manda risalite e discese della giornata a «Salva», come
+`ski_parts` dei run-stats (`PUT /me/activities/{key}/stats`, TASK-424 parte
+C2b). Il server tiene la traccia con le ore ma senza le quote, quindi non
+le trova da sé: le giornate salvate prima non ne hanno (scelta dell'utente
+del 2026-11-10).
+- **`GET /drawings/{id}/ski-day`** dà in più `parts`, solo quando la
+  giornata li ha (`ski-day-parts.json`); senza, la risposta è quella di
+  prima, senza la chiave. Il `PUT` della giornata non la dà mai.
+  - Ogni tratto, nell'ordine della giornata: `kind` (`lift`|`descent`),
+    `n` (contati a parte: «L2», «3»), `start_s` ed `end_s` sui secondi
+    della traccia del server, `moving_s`, `metres`, `height_m` (salito o
+    sceso), `top_mps` (null per le risalite);
+  - `from_fix` e `to_fix`: il primo e l'ultimo punto della traccia del post
+    nel tratto (il post la mostra intera, ADR-0330), null se nessuno;
+  - `name`: l'impianto o la pista, trovato come per la giornata intera
+    (`ski_names.py`) sul pezzo di traccia del tratto; null se nessuno.
+  - I nomi si cercano alla lettura e restano in una cache di ogni processo:
+    al più 256 giornate, per 10 minuti, per corsa e per l'ultimo invio dei
+    run-stats. L'API gira in più processi (ADR-0242), quindi ognuno ha la
+    sua.
+- **`GET /me/ski-season?from=YYYY-MM-DD&to=YYYY-MM-DD`**, con il token: le
+  proprie giornate di sci iniziate fra i due giorni (UTC, compresi) e le
+  somme dei loro tratti (`ski-season.json`): `days`, `days_with_parts`,
+  `skied_m` e `vertical_m` delle discese, `descents`, `lifts`, `top_mps`,
+  `moving_s`. Una giornata senza tratti conta solo in `days`. `422` se `to`
+  viene prima di `from`, o per più di 400 giorni.
+- **Il codice:** `ski_day_parts.py`, `ski_days.py`, `ski_season.py`; tipi
+  in `packages/shared-types/src/skiDays.ts` (`SkiDayPart`,
+  `SkiDayWithParts`) e `skiSeason.ts`.
 
 ### Drawing search (TASK-344, ADR-0297)
 
@@ -3725,6 +3787,35 @@ della collezione. Le regole sono in `GIOCO.md`; il codice in
   settimana e il mese locali della corsa, solo quando il gradino sale; il
   backfill non le scrive. Restano se la corsa si cancella; si cancellano
   con l'account.
+
+**Premi** (TASK-423 parte E, ADR-0351; `game_prizes.py` puro,
+`game_prizes_api.py`; regole in `GIOCO.md` §5.4). Con l'account.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /game/prizes` | cornici, titoli e badge, presi e no, con quanto manca; le edizioni; che cosa mostra il profilo | `200` `GamePrizes` |
+| `PUT /game/prizes/shown` | che cosa mostra il profilo pubblico: `{frame, title, badges}` (`null` e `[]` = niente), solo fra i premi presi | `200` `GamePrizes`; `422 invalid_request` per un premio non preso o sconosciuto, o più di 3 badge |
+
+- **`GamePrizes`**: `frames` (una per collezione, in ordine: `id` della
+  collezione, `got`, `unlocked`, `total`), `titles` e `badges` (`id`,
+  `got`, `value`, `target`, nell'unità del premio: metri, settimane,
+  medaglie, edizioni, sfide), `editions` (`{silver, gold}`: quante),
+  `shown` (`{frame, title, badges}`). Esempio `fixtures/game-prizes.json`.
+- **Le edizioni**: una forma di passo o di traguardo è bronzo quando si
+  sblocca, **argento** quando il requisito è fatto in 3 corse contate,
+  **oro** in 10; righe `silver` e `gold` di `game_unlocks` scritte nella
+  transazione del salvataggio con la corsa che le dà. **`GET /game/me`**
+  ha in più, per ogni forma, `edition` (`bronze`, `silver`, `gold`; `null`
+  prima e per le forme dei km totali) e `edition_runs` (le corse che fanno
+  il requisito; `null` per le forme dei km totali). **`GET
+  /game/runs/{key}`** ha in più `editions` (`[{shape_id, edition}]`) e
+  `collections_done` (le collezioni che la corsa ha completato). Campi
+  solo aggiunti: l'app di prima non li legge.
+- **Push**: `edition_up` («Lightning: silver edition! …», `number` 3 o 10)
+  e `collection_done` («Animals collection complete! A new frame …»), una per corsa
+  ciascuna, dopo `shape_unlocked`, come lei a chi corre. Il backfill
+  scrive le edizioni delle corse vecchie con la corsa che le ha date,
+  senza push; rilanciato non aggiunge niente.
 
 **Parte C — squadre e sfide** (`game_teams.py`, `game_challenges.py`;
 regole in `GIOCO.md` §6). Tutti con l'account; i compagni vedono di un

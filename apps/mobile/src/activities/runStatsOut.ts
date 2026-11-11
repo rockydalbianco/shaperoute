@@ -1,8 +1,4 @@
-import {
-  ACTIVITIES,
-  type Activity as Sport,
-  type RunActivity,
-} from "@shaperoute/shared-types";
+import type { RunActivity } from "@shaperoute/shared-types";
 
 import type { ActivityPause, ActivityRequest } from "../api/activities";
 import {
@@ -13,6 +9,9 @@ import {
 import type { BodyProfile } from "../body/bodyProfile";
 import { activeKcal } from "../body/energy";
 import { metresBetween } from "../map/coordinates";
+import type { Track } from "../navigation/trackRecorder";
+import { findProfile } from "../sports";
+import { trackEffort } from "./trackEffort";
 
 /**
  * What the phone sends at the end of an activity for the page of its post
@@ -29,7 +28,7 @@ export function runStatsRequest(
   year: number,
 ): RunStatsRequest | null {
   const elevation = elevationProfile(request);
-  const kcal = runKcal(counted, body, year);
+  const kcal = runKcal(request, counted, body, year);
   if (elevation === null && kcal === null) {
     return null;
   }
@@ -101,24 +100,45 @@ function evenly(line: ElevationPoint[], count: number): ElevationPoint[] {
   return points;
 }
 
-/** The calories as the post of one's own shows them (feed/postEnergy.ts):
- * none on the snow, at the gym, or for a sport without a formula. */
+/** The track of `request` as the phone recorded it: its fixes, heights
+ * and the runner's own pauses. */
+function trackOf(request: ActivityRequest, metres: number): Track {
+  return {
+    fixes: request.track.map((fix) => ({
+      point: fix.point,
+      timeMs: fix.time_ms,
+      accuracyM: fix.accuracy_m ?? null,
+      altitudeM: fix.altitude_m ?? null,
+    })),
+    distanceM: metres,
+    pauses: request.pauses.map((pause) => ({
+      fromMs: pause.from_ms,
+      toMs: pause.to_ms,
+      ...(pause.auto ? { auto: true as const } : {}),
+    })),
+  };
+}
+
+/** The calories of the post's page, each activity its own (TASK-424 part
+ * C2): a day of alpine skiing on its descents, read from the fixes sent;
+ * none at the gym (its sets count them) or without metres. */
 function runKcal(
+  request: ActivityRequest,
   counted: { activity: RunActivity | null; metres: number; seconds: number },
   body: BodyProfile,
   year: number,
 ): number | null {
   const activity = counted.activity ?? "running";
-  if (!(ACTIVITIES as readonly string[]).includes(activity) || counted.metres <= 0) {
+  // A sport newer than the app has no formula here.
+  const profile = findProfile(activity);
+  if (profile?.energy === undefined || counted.metres <= 0) {
     return null;
   }
+  const seconds = counted.seconds > 0 ? counted.seconds : null;
   const energy = activeKcal(
-    {
-      activity: activity as Sport,
-      metres: counted.metres,
-      seconds: counted.seconds > 0 ? counted.seconds : null,
-      climbM: null,
-    },
+    profile.skied === true
+      ? trackEffort(activity, trackOf(request, counted.metres), 0, null)
+      : { activity, metres: counted.metres, seconds, climbM: null },
     body,
     year,
   );

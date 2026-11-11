@@ -1,9 +1,11 @@
 import {
   GYM_PLAN_MODES,
+  GYM_RUN_KINDS,
   GYM_SET_KINDS,
   type GymPlan,
   type GymPlanItem,
   type GymPlanRequest,
+  type GymPlanRun,
   type GymPlans,
   type GymPlanSession,
   type GymProgram,
@@ -54,6 +56,24 @@ function isDay(day: unknown): boolean {
   return Number.isInteger(day) && (day as number) >= 1 && (day as number) <= 7;
 }
 
+const RUN_VALUES = ["distance_m", "duration_s", "reps", "rep_m", "rep_s"] as const;
+
+/** The run of a run day (TASK-433 C). */
+export function isGymPlanRun(body: unknown): body is GymPlanRun {
+  if (typeof body !== "object" || body === null) {
+    return false;
+  }
+  const run = body as Record<string, unknown>;
+  return (
+    (GYM_RUN_KINDS as readonly unknown[]).includes(run.kind) &&
+    RUN_VALUES.every(
+      (field) =>
+        run[field] === undefined ||
+        (typeof run[field] === "number" && Number.isFinite(run[field])),
+    )
+  );
+}
+
 function isSessions(body: unknown): body is GymPlanSession[] {
   return (
     Array.isArray(body) &&
@@ -61,12 +81,13 @@ function isSessions(body: unknown): body is GymPlanSession[] {
       if (typeof one !== "object" || one === null) {
         return false;
       }
-      const { day, name, items } = one as Record<string, unknown>;
+      const { day, name, items, run } = one as Record<string, unknown>;
       return (
         isDay(day) &&
         typeof name === "string" &&
         Array.isArray(items) &&
-        items.every(isGymPlanItem)
+        items.every(isGymPlanItem) &&
+        (run === undefined || isGymPlanRun(run))
       );
     })
   );

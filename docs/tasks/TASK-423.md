@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037, privacy (#1007) e D (#1080) in `main`; A, B e C sul server; D in produzione con l'OTA 4; prossima E
+**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037, privacy (#1007) e D (#1080) ed E1 (#1099) in `main`; A, B e C sul server; D in produzione con l'OTA 4; prossimi il server di E1 ed E2
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,
@@ -163,10 +163,23 @@ D  (lista data al Coordinatore il 2026-11-10, out/TASK-423/LISTA-D.md)
    PlayScreen, PlayScreenTabs, ChallengesTab, NewChallenge, goalText,
    gameCatalogCompat, api/activities, activitiesTurn, activityHeights,
    activitiesDoorQueue, __tests__/AppActivities e __tests__/AppPlay
-E  services/api/migrations/00NN_game_prizes.sql (nuovo),
-   shaperoute_api/game_prizes.py (nuovo), game.py, profiles.py, push.py;
-   apps/mobile/src/game/*, src/profile/ (cornice, titolo, badge),
-   src/theme/tokens.ts, i18n; il testo della privacy, col sì
+E  (lista data al Coordinatore il 2026-11-10, out/TASK-423/LISTA-E.md;
+   due PR, E1 il server ed E2 l'app da main dopo E1)
+E1 services/api/migrations/0067_game_prizes.sql (bozza, numero al merge),
+   shaperoute_api/game_prizes.py, game_prizes_api.py,
+   tests/test_game_prizes.py, test_game_prizes_api.py (nuovi); game.py,
+   game_backfill.py, push.py, profiles.py; packages/shared-types
+   (index.ts, fixture game-me, game-run, game-prizes, test/game.test.ts);
+   apps/mobile/src/game/gameCatalogCompat.test.ts (l'app di oggi legge i
+   campi nuovi); docs/API.md. PR #1099; i testi delle push edition_up e
+   collection_done nelle 5 lingue (out/TASK-423/TESTI-E1.md) approvati
+   dall'utente il 2026-11-10 con «Sì, approvo»
+E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
+   GamePrizesRow, prizesApi, usePrizes, prizesText; PlayScreen,
+   CollectionPage, ShapeCard, UnlockCard, UnlockLayer, unlocks.ts),
+   src/profile/ (ProfileHeader, ProfileHome, UserProfilePage),
+   src/notifications/ (notificationTap, pushDevice), src/theme/tokens.ts,
+   i18n; il testo della privacy, col sì
 ```
 
 ## Fuori scope
@@ -263,6 +276,27 @@ E  services/api/migrations/00NN_game_prizes.sql (nuovo),
   preview gruppo e72c1aad-3239-4b34-ae0a-c65c64b3ddec. Resta E: la sua
   migrazione nasce in bozza e prende il primo numero libero al merge (la
   0066 è in bozza per TASK-433).
+- 2026-11-10 — Parte E iniziata col sì dell'utente («si garzie», riferito
+  dalla sessione madre); lista approvata dal Coordinatore, due PR. E1 in
+  `main` (#1099, adf0dec0): edizioni argento e oro in `game_unlocks`,
+  `game_prefs`, `GET /game/prizes` e `PUT /game/prizes/shown`,
+  `game_prizes` nel profilo pubblico, le push `edition_up` e
+  `collection_done` (testi approvati dall'utente: «Sì, approvo»), le
+  edizioni nel backfill senza push; migrazione 0067_game_prizes. Controlli
+  di sola lettura per il passo server 6 in `out/TASK-423/SERVER-E.md` del
+  checkout principale. E2 (l'app) entra in `main` solo dopo «server E1
+  fatto» del Coordinatore.
+- 2026-11-10 — Passo server 6 fatto (lanciato dall'utente, adf0dec0, 0067):
+  15 edizioni argento, nessun oro, controlli di SERVER-E a 0, `game_prefs`
+  vuota. «Server E1 fatto» del Coordinatore.
+- 2026-11-10 — «Play» dopo l'uso (#1113): l'utente ha visto che le forme
+  sbloccate non dicono l'obiettivo e che un passo mai fatto è al 60–80 %;
+  delle proposte ha scelto «Dalla 1 alla 4». L'obiettivo sotto la data; la
+  barra di un passo fra il livello prima e questo (`shapeProgress.ts`),
+  vuota finché il livello prima non è fatto, con «… /km to go»; «First run
+  15 km in one go» invece di una percentuale; i nomi delle distanze (400 m,
+  1 mile, Half marathon, Marathon). Solo app; i 6 testi nuovi nelle 5
+  lingue approvati dall'utente («Sì, approvo»).
 
 ## Esito
 

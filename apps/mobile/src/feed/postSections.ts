@@ -19,7 +19,12 @@ import type { ShownPost } from "./feedPosts";
 import { gymPostEnergy, postEnergy } from "./postEnergy";
 
 /** One line of a section: what it is, and how much. */
-export type PostRow = { label: string; value: string };
+export type PostRow = {
+  label: string;
+  value: string;
+  /** The calories: shown in red (TASK-424 part C3). */
+  energy?: true;
+};
 
 /** A line of the table of the splits (TASK-410 part D). */
 export type SplitRow = {
@@ -205,7 +210,7 @@ export function summaryRows(
           value: splitPace(fastest.seconds, metresPer(units), units),
         },
     cadence === null ? null : { label: t("Avg cadence"), value: `${cadence} spm` },
-    energy === null ? null : { label: t("Calories"), value: energy },
+    energy === null ? null : { label: t("Calories"), value: energy, energy: true },
     climb === null || climb < 1
       ? null
       : { label: t("Elevation gain"), value: heightLabel(climb, units) },

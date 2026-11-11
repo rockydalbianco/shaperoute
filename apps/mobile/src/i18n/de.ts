@@ -383,6 +383,7 @@ export const DE: Table = {
   "{length} of {max} characters": "{length} von {max} Zeichen",
   "Saving…": "Wird gespeichert…",
   Save: "Speichern",
+  Saved: "Gespeichert",
 
   // src/profile/PhotoChoices.tsx
   "Removing…": "Wird entfernt…",
@@ -806,8 +807,6 @@ export const DE: Table = {
   // src/screens/FreeRunScreen.tsx, SnowFinishCard.tsx (TASK-375 part C)
   "Your day": "Dein Tag",
   "White: where you skied.": "Weiß: wo du gefahren bist.",
-  "White: your descents. Dashed: the lifts.":
-    "Weiß: deine Abfahrten. Gestrichelt: die Lifte.",
   "Skied: {distance}": "Gefahren: {distance}",
   Descents: "Abfahrten",
   Vertical: "Höhenmeter",
@@ -1299,9 +1298,6 @@ export const DE: Table = {
     "Daraus ergeben sich Sätze, Wiederholungen und Pausen. Du kannst sie später ändern.",
   "to start with": "für den Einstieg",
   "How many days a week?": "Wie viele Tage pro Woche?",
-  "Which days": "Welche Tage",
-  "With a day of rest in between, where it fits.":
-    "Mit einem Ruhetag dazwischen, wo es passt.",
   "How the work is split": "So wird die Arbeit aufgeteilt",
   "Your plan": "Dein Plan",
   "Here is your plan": "Hier ist dein Plan",
@@ -1356,6 +1352,47 @@ export const DE: Table = {
   "Lower body B": "Unterkörper B",
   "Arms, core": "Arme, Bauch",
   "Workout {letter}": "Training {letter}",
+  // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
+  "Your plan, step by step": "Dein Plan, Schritt für Schritt",
+  "A minute to make it, then it guides you every time.":
+    "Eine Minute, um ihn zu erstellen, dann führt er dich jedes Mal.",
+  "Choose your goal and days": "Wähle Ziel und Tage",
+  "More muscle, more strength, tone up or get back in shape, 2 to 5 days.":
+    "Mehr Muskeln, mehr Kraft, straffen oder wieder fit werden, 2 bis 5 Tage.",
+  "The plan is ready": "Der Plan ist schon fertig",
+  "Exercises, sets and reps proposed: touch an exercise to change it.":
+    "Übungen, Sätze und Wiederholungen vorgeschlagen: tippe auf eine Übung, um sie zu ändern.",
+  "The weeks change by themselves": "Die Wochen ändern sich von selbst",
+  "More load, more reps or weeks A / B. Here you find today's workout.":
+    "Mehr Gewicht, mehr Wiederholungen oder Wochen A / B. Hier findest du das heutige Training.",
+  "Create my plan": "Meinen Plan erstellen",
+  "How plans work": "So funktionieren Pläne",
+  // src/gym/RunDayEditor.tsx, runDay.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-433 C, approved 2026-11-10)
+  "Go to the run · {amount}": "Zum Lauf · {amount}",
+  "Gym today instead": "Heute lieber Fitnessstudio",
+  "And running?": "Und Laufen?",
+  No: "Nein",
+  "Touch a day to change it: gym, run or rest.":
+    "Tippe auf einen Tag, um ihn zu ändern: Studio, Lauf oder Pause.",
+  "Your week": "Deine Woche",
+  "How much": "Wie viel",
+  "The same every week.": "Jede Woche gleich.",
+  "Which run": "Welcher Lauf",
+  "With the weeks": "Mit den Wochen",
+  minutes: "Minuten",
+  "{values}; week {n}: {last} to recover": "{values}; Woche {n}: {last} zur Erholung",
+  "Easy run": "Lockerer Lauf",
+  Intervals: "Intervalle",
+  "Easy, at a pace you can talk at.":
+    "Locker, in einem Tempo, bei dem du noch reden kannst.",
+  "Easy@@run": "Locker",
+  "Fast stretches with a slow jog between.":
+    "Schnelle Abschnitte mit lockerem Traben dazwischen.",
+  "Long@@run": "Lang",
+  "Longer than the others, slowly.": "Länger als die anderen, langsam.",
+  "easy, you can talk": "locker, du kannst reden",
+  "fast + recovery": "schnell + Erholung",
+  "more km, slowly": "mehr km, langsam",
   Workout: "Training",
   "Only sets logged live count.": "Es zählen nur live eingetragene Sätze.",
   // src/screens/ChooseScreen.tsx (TASK-375)
@@ -1696,6 +1733,15 @@ export const DE: Table = {
   "No run of {distance} yet": "Noch kein Lauf über {distance}",
   "Week of {date}": "Woche ab {date}",
   "Month of {date}": "Monat ab {date}",
+  // src/game/goalText.ts, shapeProgress.ts (TASK-423 after use: the names
+  // of the distances, the bar of a pace)
+  "1 mile": "1 Meile",
+  "One half marathon": "Ein Halbmarathon",
+  "One marathon": "Ein Marathon",
+  "First run {distance} in one go · longest {longest}":
+    "Lauf zuerst {distance} am Stück · bisher {longest}",
+  "No time over {distance} yet": "Noch keine Zeit über {distance}",
+  "Best {best} · {gap} to go": "Beste {best} · noch {gap}",
 
   // src/navigation/runPosition.ts, the Android notification of a run (TASK-294)
   "MuW is recording your activity": "MuW zeichnet deine Aktivität auf",
@@ -2384,4 +2430,13 @@ export const DE: Table = {
     "Wähle eine andere Sportart, um zu MuW wie immer zurückzukehren.",
   "Log in to see your days.": "Melde dich an, um deine Tage zu sehen.",
   "No days on the snow yet.": "Noch keine Tage im Schnee.",
+
+  // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
+  "Runs@@ski": "Abfahrten",
+  Legend: "Legende",
+  "Descents · solid, numbered": "Abfahrten · durchgezogen, nummeriert",
+  "Lifts · dashed, L1, L2…": "Lifte · gestrichelt, L1, L2…",
+  Lift: "Lift",
+  "{speed} top": "{speed} max.",
+  "Stopped {minutes} min": "Pause {minutes} Min.",
 };

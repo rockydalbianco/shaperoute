@@ -11,6 +11,7 @@ import session from "../fixtures/gym-session.json" with { type: "json" };
 import {
   GYM_LEVEL_MEASURES,
   GYM_PLAN_MODES,
+  GYM_RUN_KINDS,
   GYM_SET_KINDS,
   MAX_GYM_PLAN_ITEMS,
   MAX_GYM_PLAN_WEEKS,
@@ -186,6 +187,19 @@ test("a plan's days are of the week once, its exercises of the catalog and its k
         program.custom.every((week) => week.week >= 2 && week.week <= program.weeks),
       );
       assert.ok(sessions.length > 0 && items.length <= MAX_GYM_PROGRAM_ITEMS);
+      for (const session of sessions) {
+        if (session.run !== undefined) {
+          // A run day has no exercises, and a distance, a time or its reps.
+          assert.equal(session.items.length, 0);
+          assert.ok((GYM_RUN_KINDS as readonly string[]).includes(session.run.kind));
+          const { distance_m, duration_s, reps } = session.run;
+          assert.ok(
+            session.run.kind === "intervals"
+              ? reps !== undefined
+              : (distance_m === undefined) !== (duration_s === undefined),
+          );
+        }
+      }
     }
   }
 });

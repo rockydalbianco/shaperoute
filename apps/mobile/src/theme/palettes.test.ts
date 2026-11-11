@@ -43,16 +43,21 @@ test("with no choice the app is dark at its darkest (ADR-0046), warm (ADR-0293)"
     textFaint: "#908980",
     warning: "#FF7A59",
     error: "#FF6B6B",
+    energy: "#FF6363",
     badge: "#E02D2D",
     onBadge: "#FFFFFF",
+    energyOnAccent: "#8F1216",
+    energyOnScrim: "#FF6363",
     // The tour's dark and the edge of its light (TASK-266).
     scrim: "#0B0A08",
     onScrim: "#FFFFFF",
     startHere: "#4DD2FF",
     you: "#3D9BFF",
     north: "#FF5B4F",
+    runDay: "#4DD2FF",
     strava: "#FC5200",
     onStrava: "#FFFFFF",
+    ski: { descent: "#FFD02B", lift: "#FF5A4E", onLine: "#0B0A08" },
     // The text at 20 %, for the thin divisions (TASK-339).
     hairline: "#F6F3EC33",
     map: {
@@ -114,6 +119,12 @@ test.each(EVERY)("%s at step %i keeps the contrasts", (_tone, _step, c) => {
       expect(contrast(text, under)).toBeGreaterThanOrEqual(4.5);
     }
   }
+  // The calories in red (TASK-424 part C3), on everything they are shown on.
+  for (const under of [c.background, c.surface, c.surfaceRaised]) {
+    expect(contrast(c.energy, under)).toBeGreaterThanOrEqual(4.5);
+  }
+  expect(contrast(c.energyOnAccent, c.accent)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(c.energyOnScrim, c.scrim)).toBeGreaterThanOrEqual(4.5);
   // A control is seen as one (TASK-086): WCAG's 3:1 for its edge.
   expect(contrast(c.borderStrong, c.background)).toBeGreaterThanOrEqual(3);
   expect(contrast(c.borderStrong, c.surface)).toBeGreaterThanOrEqual(3);
@@ -125,6 +136,10 @@ test.each(EVERY)("%s at step %i keeps the contrasts", (_tone, _step, c) => {
   expect(contrast(c.you, c.map.background)).toBeGreaterThanOrEqual(3);
   expect(contrast(c.you, c.background)).toBeGreaterThanOrEqual(3);
   expect(contrast(c.north, c.surfaceRaised)).toBeGreaterThanOrEqual(3);
+  // The «RUN» mark of a run day, bold, on a card and on its chip (TASK-433 C).
+  for (const under of [c.surface, c.surfaceRaised]) {
+    expect(contrast(c.runDay, under)).toBeGreaterThanOrEqual(3);
+  }
   // Text on yellow does not depend on the tone.
   expect(contrast(c.onAccent, c.accent)).toBeGreaterThanOrEqual(7);
 });

@@ -621,10 +621,56 @@ Privacy, sezione «Sharing live»:
     tempo in pista (risalite escluse, `snowDay`); sci di fondo e
     scialpinismo con la loro formula. Dal vivo (lo sport registrato, non
     quello di `freeRunAs`), a fine giornata, in Apple Salute e nel Feed.
+    Branch `feat/TASK-424-c2-kcal-every-sport`. Le formule, in tabella,
+    in `UI.md` («Calories»). Scelte tecniche (decise dall'agente su delega
+    dell'utente; la voce in `DECISIONS.md` nella PR di soli documenti):
+    - una funzione sola, `activities/trackEffort.ts` (file nuovo), dà
+      metri, secondi e salita di una traccia: per lo sci alpino quelli
+      delle discese (`snowDay`, che ora dà anche `skiedMs`). La usano lo
+      schermo, Apple Salute e la pagina del post;
+    - dal vivo le calorie sono dello sport di «Settings» (quello che
+      «Save» salva e che va in Apple Salute), non di `freeRunAs`: lo sci
+      ha le velocità della bici e le sue calorie;
+    - la pagina del post (`runStatsOut.ts`) rilegge le discese dai punti
+      mandati, con le quote;
+    - nel Feed lo sci alpino resta senza calorie fino a **C2b**: il post
+      ha solo distanza e tempo della giornata intera. Scelta dell'utente
+      del 2026-11-10, «Sì, il server»: l'API calcola e tiene il tempo
+      delle discese, il Feed le conta come la fine giornata; C2b esce con
+      un aggiornamento del server, col sì dell'utente;
+    - uno sport che l'app non conosce (più nuovo dell'app) non ha calorie
+      e non fa errori (`findProfile`).
+    In più rispetto alla lista: il file nuovo `trackEffort.ts`,
+    `RunSportEnergy.test.tsx` (nuovo) e i test che dicevano «niente
+    calorie» per neve e acque libere (`snowWorkout`, `swimWorkout`,
+    `snowFeed`, `RunSwim`, `SnowFinishCard`, `navigation/swim`).
+  - **C2b — Le discese dello sci al server** (con TASK-429; lista comune
+    approvata dal Coordinatore il 2026-11-10; scelta dell'utente «Sì, il
+    server»). Branch `feat/TASK-424-c2b-ski-parts`. Un campo solo per due
+    usi: il telefono manda `ski_parts` (risalite e discese) dentro
+    `PUT /me/activities/{key}/stats`; l'API li tiene in `run_stats.stats`
+    (nessuna migrazione) coi tempi sui secondi della traccia e ne ricava
+    `ski_descents` `{metres, moving_s}`, che ogni lista di post rimanda. Il
+    Feed conta le calorie dello sci su quelle, come la fine giornata; la
+    429 legge `ski_parts` per riepilogo e mappa. A mandarli è l'app della
+    429 B. **Prima il server, poi l'app**: un server senza C2b dà 422 a
+    quel PUT. I controlli del server, prima e dopo, sono nel checkout
+    principale, in `out/TASK-424/c2b-server-checks.md`. In più rispetto
+    alla lista: `tests/test_run_stats.py` e `tests/test_drawings.py`, che
+    contano i campi delle fixture vecchie (una riga ciascuno).
   - **C3 — Le calorie in rosso ovunque**: un token nuovo `energy` in
     `tokens.ts`, col contrasto misurato nei due temi, su ogni numero di
     calorie dell'app (corsa, neve, piscina, palestra, Feed, «Activities»,
     immagini da condividere).
+    Branch `feat/TASK-424-c3-red-kcal`. Tre token: `energy` (nel tono, 4,5:1
+    almeno su fondo, superficie e superficie rialzata a ogni passo),
+    `energyOnAccent` per il riquadro giallo della palestra (anche nella sua
+    immagine da condividere) e `energyOnScrim` per le parole sopra una
+    foto. La riga di fatti di un post («… · 280 kcal») e di un'attività
+    ha solo le calorie in rosso (`feed/FactsText.tsx`, nuovo); i riquadri
+    (`Tile`, `energy`) numero e unità; le righe del post (`PostRow.energy`)
+    il valore. Fuori: l'app dell'orologio (Swift) e la pagina web dal vivo
+    di getmuw.app, che non sono l'app.
 
   **Seguito, fuori da TASK-424**: le calorie in rosso anche nell'app
   dell'orologio (Swift, build nativa). Il battito di piscina e palestra

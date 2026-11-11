@@ -201,7 +201,7 @@ export function PoolSwimEnd({
             value={lengths === null || pace === null ? "–" : clockLabel(pace * 1000)}
             testID="pool-pace"
           />
-          <Figure label={t("Calories")} value={kcal ?? "–"} testID="pool-kcal" />
+          <Figure label={t("Calories")} value={kcal ?? "–"} testID="pool-kcal" energy />
         </View>
         <PoolHeartLines state={heartState} onAdd={addHeart} />
         {signedIn && (
@@ -288,14 +288,17 @@ function Figure({
   label,
   value,
   testID,
+  energy = false,
 }: {
   label: string;
   value: string;
   testID?: string;
+  /** The calories: in red (TASK-424 part C3). */
+  energy?: boolean;
 }) {
   return (
     <View style={styles.figure} accessible accessibilityLabel={`${label}: ${value}`}>
-      <Text style={styles.value} testID={testID}>
+      <Text style={[styles.value, energy && styles.energy]} testID={testID}>
         {value}
       </Text>
       <Text style={gymStyles.muted}>{label}</Text>
@@ -360,6 +363,10 @@ const styles = StyleSheet.create({
     fontSize: fontSize.heading,
     fontWeight: fontWeight.bold,
     fontVariant: ["tabular-nums"],
+  },
+  // The calories, in red wherever they are (TASK-424 part C3).
+  energy: {
+    color: color.energy,
   },
   link: {
     textDecorationLine: "underline",

@@ -193,7 +193,7 @@ id, nome nelle 5 lingue e ordine. Le forme, i nomi e i requisiti uno per
 uno: `tasks/TASK-423-proposta.md` §2. Contorni: 18 letti dal motore, 8
 calcolati, 56 disegnati come poligoni nel catalogo.
 
-### 5.4 Premi (423 E)
+### 5.4 Premi (server in `main` con 423 E1; l'app è 423 E2)
 
 Solo dentro l'app, mai denaro.
 
@@ -212,6 +212,17 @@ Solo dentro l'app, mai denaro.
   alto preso (§6.6).
 - **Sul profilo pubblico** niente del gioco finché non lo si sceglie: una
   cornice, un titolo e fino a 3 badge. Di default niente.
+- **Come si contano** (E1): le edizioni argento e oro sono righe di
+  `game_unlocks` scritte quando si salva la corsa che le dà, contando le
+  corse contate che fanno il requisito; il backfill le dà alle corse
+  vecchie senza push. Cornici, titoli e badge non si salvano: si leggono a
+  ogni richiesta da quello che il gioco tiene già (km contati, tempi
+  migliori, la streak più lunga con almeno 1 uscita a settimana, le
+  medaglie, le edizioni oro, le sfide di squadra completate a cui si è
+  contribuito). La scelta del profilo è in `game_prefs`; il profilo mostra
+  solo i premi scelti che si hanno ancora.
+- **Push** (E1): `edition_up` e `collection_done`, una per corsa ciascuna,
+  a chi corre, come `shape_unlocked`. Niente push per le sfide personali.
 
 ## 6. Squadre e sfide
 

@@ -54,6 +54,7 @@ ciano di «Start here».
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
+| `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
 | `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il cono di «Compass»; il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
@@ -3700,7 +3701,27 @@ la quota; conta le salite di almeno 3 m, perché la quota del GPS oscilla.
 «Calories» è una stima dell'energia attiva, con la formula di ogni sport e
 il corpo di «Settings» → «Body» (TASK-374, ADR-0318): senza dati, 70 kg, circa
 una kilocaloria per kg e per km di corsa in piano, di più in salita; in bici e
-in canoa dalla velocità media. Il battito non c'è: il telefono non lo
+in canoa dalla velocità media. **Ogni attività ha le sue** (TASK-424 parte
+C2, scelta dell'utente del 2026-11-10: «le calorie devono essere calcolate
+per ogni attività»), sempre meno quello che il corpo spende a riposo nello
+stesso tempo, mai sotto zero; sono le stesse dal vivo, a fine attività, in
+Apple Salute e Health Connect, sulla pagina del post e nel Feed:
+
+| Attività | Formula (`src/sports/`, `body/energy.ts`) |
+|---|---|
+| Corsa | ACSM corsa: 0,2 ml/kg per metro, 0,9 per metro di salita |
+| Walk, hike | ACSM cammino: 0,1 ml/kg per metro, 1,8 per metro di salita |
+| Bici, gravel, MTB, roller, canoa | MET del Compendium 2024 per la velocità media |
+| Nuoto in acque libere | MET per passo della piscina (`pool/poolKcal.ts`): 5,8 sopra 2:18 /100 m, 8,0 fino a 1:45, 10,5 fino a 1:13, 14,5 più veloce |
+| Nuoto in piscina | lo stesso MET sulle vasche (`poolKcal`), dal vivo sulle vasche stimate |
+| Sci alpino | MET 5,3 (discesa, sforzo moderato, solo tempo attivo) sui soli metri e secondi delle discese di `snowDay`: le risalite e il tempo fra una discesa e l'altra non contano; senza quota, tutta la giornata |
+| Sci di fondo | MET per velocità media: 6,8 sotto 4 mph, 9,0 fino a 5, 12,5 fino a 8, 15,0 oltre |
+| Scialpinismo | ACSM cammino, come l'hike: conta soprattutto la salita |
+| Palestra | le sue serie (`gym/gymKcal.ts`) |
+
+Nel Feed un giorno di sci alpino non ha ancora calorie: il post ha il tempo
+di tutta la giornata, risalite comprese. Le avrà quando l'API terrà il
+tempo delle discese (TASK-424 parte C2b). Il battito non c'è: il telefono non lo
 misura, e un sensore si collega solo in una build propria (seguiti in
 `tasks/TASK-169.md`). Sotto il banner della svolta restano le due
 etichette piccole di TASK-164: «42% drawn» e il punto cardinale («NE»).

@@ -3,9 +3,27 @@
   "longest_m": 6000,
   "best_s": { "1000": 322.0, "5000": 1666.7 },
   "shapes": [
-    { "id": "triangle", "unlocked_at": "2026-10-23T12:00:00Z", "progress": 1.0 },
-    { "id": "hexagon", "unlocked_at": null, "progress": 0.71 },
-    { "id": "lightning", "unlocked_at": null, "progress": 0.9317 }
+    {
+      "id": "triangle",
+      "unlocked_at": "2026-10-23T12:00:00Z",
+      "progress": 1.0,
+      "edition": null,
+      "edition_runs": null
+    },
+    {
+      "id": "hexagon",
+      "unlocked_at": null,
+      "progress": 0.71,
+      "edition": null,
+      "edition_runs": null
+    },
+    {
+      "id": "lightning",
+      "unlocked_at": null,
+      "progress": 0.9317,
+      "edition": null,
+      "edition_runs": 0
+    }
   ],
   "collections": [
     { "id": "geometry", "unlocked": 1, "total": 2 },

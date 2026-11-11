@@ -1,7 +1,7 @@
 # TASK-276 — Più percorsi all'ora sullo stesso server
 
-**Stato**: In corso — parte A misurata, parte B in `main` (#1038), sul
-server e misurata (2026-11-10); resta la chiusura del Coordinatore
+**Stato**: Done · 2026-11-10 · A misurata, B #1038 (ADR-0242) sul server,
+misura coi processi #1097: da circa 7,5 a 8,5–9,5 percorsi al minuto
 **Fase**: 4 · **Branch**: `docs/TASK-276-plan` (questo file); per il
 codice, se si decide di farlo, `feat/TASK-276-route-process-pool`
 · **ADR**: 0242, riservato
@@ -446,3 +446,7 @@ a Trento, prima coi 2 thread e poi coi 2 processi, nessun errore.
 **Resta:** niente di tecnico. La leva più grande nei picchi resta la
 scelta di prodotto (partenze vicine spente sotto carico, ×3), poi il
 telefono (TASK-214).
+
+## Chiusura (2026-11-10)
+
+Chiuso dal giro delle chiusure del 2026-11-10 (sessione «Task backlog review», su assegnazione del Coordinatore): la parte B è in `main` (#1038) e sul server dal passo server 2; la misura (#1097) dice 8,5–9,5 percorsi al minuto coi 2 processi, contro circa 7,5 coi thread. Niente di tecnico resta; la leva più grande nei picchi è una scelta di prodotto (partenze vicine spente sotto carico), poi il telefono (TASK-214).

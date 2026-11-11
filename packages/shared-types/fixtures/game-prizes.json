@@ -1,0 +1,53 @@
+{
+  "frames": [
+    {
+      "id": "geometry",
+      "got": true,
+      "unlocked": 2,
+      "total": 2
+    },
+    {
+      "id": "sky",
+      "got": false,
+      "unlocked": 0,
+      "total": 1
+    }
+  ],
+  "titles": [
+    {
+      "id": "runner",
+      "got": false,
+      "value": 14200.0,
+      "target": 100000.0
+    },
+    {
+      "id": "marathoner",
+      "got": false,
+      "value": 0.0,
+      "target": 1.0
+    }
+  ],
+  "badges": [
+    {
+      "id": "streak_4",
+      "got": true,
+      "value": 4.0,
+      "target": 4.0
+    },
+    {
+      "id": "team_1",
+      "got": false,
+      "value": 0.0,
+      "target": 1.0
+    }
+  ],
+  "editions": {
+    "silver": 1,
+    "gold": 0
+  },
+  "shown": {
+    "frame": "geometry",
+    "title": null,
+    "badges": ["streak_4"]
+  }
+}

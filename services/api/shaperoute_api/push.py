@@ -86,6 +86,8 @@ Kind = Literal[
     "comment",
     "tag",
     "shape_unlocked",
+    "edition_up",
+    "collection_done",
     "piece_done",
     "challenge_done",
     "challenge_ending",
@@ -106,6 +108,8 @@ Kind = Literal[
 OWN_KINDS: frozenset[str] = frozenset(
     {
         "shape_unlocked",
+        "edition_up",
+        "collection_done",
         "challenge_done",
         "challenge_ending",
         "contest_won",
@@ -127,6 +131,9 @@ RECEIPT_KEPT_S = 24 * 60 * 60
 SAME_EVENT_S = 24 * 60 * 60
 # A comment in a notification: its beginning.
 MAX_QUOTED = 100
+# The runs of a gold edition of the game (game_prizes.EDITION_RUNS): its
+# push has its own words.
+GOLD_RUNS = 10
 
 
 class PushTokenRequestBody(BaseModel):
@@ -290,6 +297,33 @@ TEXTS: dict[str, dict[str, str]] = {
         "fr": "Tu as débloqué une nouvelle forme ! Tu la trouveras dans ta"
         " collection, dans Play.",
     },
+    # The prizes of the game (TASK-423 E): the shape's name, or the
+    # collection's, in the phone's language; {n} the runs of the edition.
+    "edition_up": {
+        "en": "{shape}: silver edition! You met its goal in {n} runs.",
+        "de": "{shape}: Silber-Edition! Du hast das Ziel in {n} Läufen erreicht.",
+        "it": "{shape}: edizione d'argento! Hai raggiunto l'obiettivo in {n} corse.",
+        "es": "{shape}: ¡edición de plata! Has cumplido el objetivo en {n} carreras.",
+        "fr": "{shape} : édition argent ! Tu as atteint l'objectif en {n} courses.",
+    },
+    "edition_up_gold": {
+        "en": "{shape}: gold edition! You met its goal in {n} runs.",
+        "de": "{shape}: Gold-Edition! Du hast das Ziel in {n} Läufen erreicht.",
+        "it": "{shape}: edizione d'oro! Hai raggiunto l'obiettivo in {n} corse.",
+        "es": "{shape}: ¡edición de oro! Has cumplido el objetivo en {n} carreras.",
+        "fr": "{shape} : édition or ! Tu as atteint l'objectif en {n} courses.",
+    },
+    "collection_done": {
+        "en": "{shape} collection complete! A new frame for your profile," " in Play.",
+        "de": "Sammlung {shape} komplett! Ein neuer Rahmen für dein Profil,"
+        " unter Play.",
+        "it": "Collezione {shape} completata! Una nuova cornice per il tuo"
+        " profilo, in Play.",
+        "es": "¡Colección {shape} completada! Un nuevo marco para tu perfil,"
+        " en Play.",
+        "fr": "Collection {shape} terminée ! Un nouveau cadre pour ton profil,"
+        " dans Play.",
+    },
     # The game's teams (TASK-296 C): the shape's name first, in the phone's
     # language, then the news; {n} is the piece, or the pieces missing.
     "piece_done": {
@@ -451,6 +485,8 @@ def text_of(event: PushEvent, name: str, language: str | None) -> str:
     which: str = event.kind
     if event.kind == "reaction" and event.reaction == "super_like":
         which = "super_like"
+    if event.kind == "edition_up" and event.number == GOLD_RUNS:
+        which = "edition_up_gold"
     if event.kind == "message" and event.attachment is not None:
         which = f"message_{event.attachment}" + ("_text" if event.text else "")
     texts = TEXTS[which]

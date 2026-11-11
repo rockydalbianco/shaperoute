@@ -146,6 +146,19 @@ class GymCalendars:
                 " ORDER BY r.started_at DESC, r.id DESC LIMIT 1",
                 params,
             ).fetchone()
+            # The days with a run: a run day of a plan done (TASK-433 C).
+            ran = {
+                row["day"]
+                for row in conn.execute(
+                    "SELECT DISTINCT extract(day FROM r.started_at AT TIME ZONE"
+                    " %(tz)s)::int AS day FROM runs r"
+                    " WHERE r.user_id = %(owner)s AND r.activity = 'running'"
+                    f" AND r.started_at >= ({start} AT TIME ZONE %(tz)s)"
+                    f" AND r.started_at < (({start} + interval '1 month')"
+                    " AT TIME ZONE %(tz)s)",
+                    params,
+                ).fetchall()
+            }
             kept = conn.execute(
                 "SELECT key, name, days, created_at, program FROM gym_plans"
                 " WHERE user_id = %(owner)s ORDER BY position, key",
@@ -161,6 +174,30 @@ class GymCalendars:
         zone = ZoneInfo(tz)
         today = self.now().astimezone(zone).date()
         year, number = params["year"], params["month"]
+
+        def missed(plan: dict[str, Any], day: int) -> bool:
+            """Whether `plan` had a workout on `day` not done: a run day
+            done by any run, a workout of the gym by one that followed it."""
+            on = date(year, number, day)
+            program = plan["program"]
+            if program is None:
+                return (
+                    planned_on(plan["days"], None, on)
+                    and (
+                        day,
+                        plan["key"],
+                    )
+                    not in followed
+                )
+            return any(
+                (
+                    day not in ran
+                    if session.run is not None
+                    else (day, plan["key"]) not in followed
+                )
+                for session in program.sessions_on(on)
+            )
+
         skipped = [
             GymCalendarSkippedBody(day=day, plan=plan["name"])
             for day in range(1, monthrange(year, number)[1] + 1)
@@ -168,8 +205,7 @@ class GymCalendars:
             if plan["created_at"].astimezone(zone).date()
             <= date(year, number, day)
             < today
-            and planned_on(plan["days"], plan["program"], date(year, number, day))
-            and (day, plan["key"]) not in followed
+            and missed(plan, day)
         ]
         return GymCalendarBody(
             month=month,

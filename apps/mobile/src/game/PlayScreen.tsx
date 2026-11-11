@@ -158,6 +158,7 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
         ) : opened !== null ? (
           <CollectionPage
             row={opened}
+            shapes={catalog.shapes}
             states={states}
             me={me}
             cardWidth={cardWidth}
@@ -173,6 +174,7 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
               <ShapeCard
                 key={shape.id}
                 shape={shape}
+                shapes={catalog.shapes}
                 state={states.get(shape.id) ?? null}
                 me={me}
                 width={cardWidth}

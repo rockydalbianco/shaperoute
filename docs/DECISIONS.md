@@ -522,8 +522,62 @@ lasciando le righe d'indice.
 - ADR-0357, precisazione B1 — La giornata di sci a colori: un solo calcolo dei tratti, i colori come token, i numeri sulle linee · 2026-11-10 · Attiva
 - ADR-0357, precisazione C1 — I tratti della giornata salvata e la stagione sul server: `parts` solo quando ci sono, nomi alla lettura con una cache per processo · 2026-11-10 · Attiva
 - ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale · 2026-11-10 · Attiva
+- ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw» · 2026-11-10 · Accettata
 
 ## Voci nuove
+
+## ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw»
+
+**Stato**: Accettata · 2026-11-10 · TASK-433 parte C: C1 server e tipi
+(#1117, `2ed26af7`), C2 l'app (#1115). Le scelte di quello che si vede sono
+dell'utente, una alla volta sulle schermate C1–C3 della tela («Giorni di
+corsa nella scheda», «Così», «Sì, così», «Sì, così», «Approvo»); il modo è
+deciso dall'agente su delega dell'utente, numero dal Coordinatore.
+
+**Contesto**: dopo le schede guidate (ADR-0360) l'utente ha chiesto di
+poter mettere la corsa nella scheda della palestra. Un giorno del programma
+era solo un allenamento di esercizi.
+
+**Decisione**:
+- **Un campo, nessuna tabella e nessuna migrazione**: un giorno del
+  programma (`GymPlanSession`) ha `run` facoltativo e allora nessun
+  esercizio. `run` è `kind` (`easy`, `intervals`, `long`) con `distance_m`
+  (100–100 000) o `duration_s` (60 s–6 h); le ripetute `reps` (1–50) con
+  `rep_m` (50–5000) o `rep_s` (10–1800). Sta nel JSONB `program` di
+  `gym_plans` (0066), lo valida `gym_plans.py` (`GymPlanRunBody`).
+- **La crescita la calcola il telefono** (`program.ts`, `runInWeek`): circa
+  +10% a settimana, in mezzi km o minuti interi; le ripetute +1; l'ultima
+  settimana di un ciclo di 3 o più all'80% della prima (le ripetute 2 in
+  meno); il ciclo dopo riparte un passo avanti; «Always the same» la lascia
+  com'è. Una settimana scritta a mano tiene la corsa scritta.
+- **Fatto nel calendario**: `gym_calendar.py` dà per fatto un giorno di
+  corsa se quel giorno (sul fuso chiesto) c'è una corsa (`runs.activity =
+  'running'`), qualunque; un giorno di palestra come prima.
+- **«Go to the run»**: `saveSport("run")` e un canale nuovo in
+  `units/useDrawDistance.ts` (`chooseDrawDistance`) che scrive i km nel
+  campo di «Draw», entro i limiti dello sport; le ripetute e le corse a
+  tempo non scrivono km. «Start workout» quel giorno è un allenamento libero
+  (`planForToday` è null).
+- **Il colore**: un token nuovo `runDay` per la sigla «RUN», con i valori
+  di `startHere` per tono (l'azzurro che l'utente ha approvato) ma suo, così
+  ognuno ha un significato; contrasto ≥ 3:1 su `surface` e `surfaceRaised`
+  in ogni tono (`palettes.test.ts`).
+- **Due PR**, condizione del Coordinatore: il server deve accettare `run`
+  prima che l'app lo mandi (lo schema vieta i campi in più: `422`, e la
+  scheda resterebbe in attesa sul telefono). Quindi C1 (server e tipi) in
+  `main` e sul server, poi C2 (l'app).
+
+**Cosa vede l'app di prima** (l'OTA 5 e 6): un giorno di corsa è un giorno
+senza esercizi; la sua `isGymProgram` non guarda `run`; non diventa mai
+«Today»; la sua guida lo mostra come un giorno di palestra vuoto e non
+lascia salvare finché non ha esercizi. Lo prova `api/gymPlans.test.ts`
+(«the example of the API is what the app reads») con l'esempio «Lift and
+run» di `fixtures/gym-plans.json`, verde sul codice dell'app di prima.
+
+**Conseguenze**: un giorno di corsa conta come fatto con qualsiasi corsa di
+quel giorno, anche più corta di quella scritta. I testi in
+`docs/tasks/TASK-433.md` «Parte C»; il comportamento in `sports/gym.md`; il
+contratto in `API.md`.
 
 ## ADR-0352, precisazione C3 — Le calorie in rosso ovunque: un token per tono, due fissi per il giallo e le foto, solo le kcal in rosso nella riga dei fatti
 

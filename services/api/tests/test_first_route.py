@@ -8,6 +8,7 @@ the one of before for everybody.
 
 from __future__ import annotations
 
+import json
 import multiprocessing
 import multiprocessing.forkserver
 import pickle
@@ -36,8 +37,9 @@ from shaperoute_api.images import AnyRequest, ImageRequest, outline_of, plan_req
 from shaperoute_api.job_times import ShowsFirst, first_of
 from shaperoute_api.jobs import Job, RouteJobs, _Reporting
 from shaperoute_api.route_processes import RouteProcesses
-from shaperoute_api.schemas import RouteJobBody
+from shaperoute_api.schemas import RouteJobBody, RouteJobWithFirstBody
 
+FIXTURES = Path(__file__).resolve().parents[3] / "packages/shared-types/fixtures"
 WAIT_S = 120.0
 HEART = {"start": [46.0671, 11.1214], "shape": "heart", "distance_m": 5000}
 REQUEST = RouteRequest(start=(46.0671, 11.1214), shape="circle", distance_m=1000)
@@ -504,3 +506,17 @@ def test_first_is_a_yes_or_no(gated: tuple[TestClient, Gate]) -> None:
     assert gate.told.wait(WAIT_S)
     assert set(client.get(f"/route-jobs/{job_id}?first=0").json()) == OLD_KEYS
     assert "first" in client.get(f"/route-jobs/{job_id}?first=true").json()
+
+
+# --- the contract of packages/shared-types --------------------------------------
+
+
+def test_the_shared_fixture_of_a_job_with_its_first_route_is_a_valid_body() -> None:
+    """The JSON packages/shared-types checks RouteJobWithFirst against
+    (test/firstRoute.test.ts): one field more than the job of before."""
+    data = json.loads((FIXTURES / "route-job-first.json").read_text("utf-8"))
+    assert set(data) == set(RouteJobWithFirstBody.model_fields)
+    assert set(data) - set(RouteJobBody.model_fields) == {"first"}
+    body = RouteJobWithFirstBody.model_validate(data)
+    assert body.status == "computing" and body.result is None
+    assert body.first is not None and body.first.alternatives == []

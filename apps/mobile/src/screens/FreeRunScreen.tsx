@@ -21,6 +21,7 @@ import { useSport } from "../settings/useSport";
 import { postOfTrack } from "../share/postRun";
 import { SharePostButton } from "../share/SharePost";
 import { DayResort } from "../ski/DayResort";
+import { SkiLegend } from "../skimode/SkiLegend";
 import {
   color,
   fontSize,
@@ -160,19 +161,20 @@ export function FreeRunCard({
 
 export function FreeFinishBanner() {
   // A day on the snow is a day, not a run (TASK-375 part C); a day of
-  // skiing has its lifts dashed on the map (part C2).
+  // skiing has its descents yellow and its lifts red and dashed on the map,
+  // numbered, and the legend says so (TASK-429 part B, ADR-0357).
   const activity = runActivityOf(useSport());
   const snow = isOnSnow(activity);
   return (
     <View style={styles.banner}>
       <Text style={styles.title}>{snow ? t("Your day") : t("Your run")}</Text>
-      <Text style={styles.message}>
-        {activity === "skiing"
-          ? t("White: your descents. Dashed: the lifts.")
-          : snow
-            ? t("White: where you skied.")
-            : t("White: what you ran.")}
-      </Text>
+      {activity === "skiing" ? (
+        <SkiLegend />
+      ) : (
+        <Text style={styles.message}>
+          {snow ? t("White: where you skied.") : t("White: what you ran.")}
+        </Text>
+      )}
     </View>
   );
 }

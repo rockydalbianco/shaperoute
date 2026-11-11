@@ -97,8 +97,11 @@ dopo il merge.
 - I 10 grafi del banco (Trento, ~31.000 archi): motore di prima =
   prototipo e motore nuovo = prototipo, bit per bit
   (`out/TASK-436/tables-{before,after}.jsonl`).
-- `test_same_routes`: i 9 hash di `7375da81cabc.json` (motore nuovo, Mac)
-  sono quelli di `2bca806f467b.json`. Tre righe in coda a
+- `test_same_routes`: i 9 hash di `ca29e58777cb.json` (motore nuovo, Mac)
+  sono quelli di `b4967ef32e9a.json`, la prova di `main` dopo TASK-435 A
+  (#1105, entrata prima: la prova è stata rifatta dopo aver unito `main`;
+  prima dell'unione il motore era `7375da81cabc`, con gli stessi 9 hash di
+  `2bca806f467b.json`). Tre righe in coda a
   `SAME_ROUTES_AS`: le impronte efficaci restano `8ab61d8e87f9` (percorsi),
   `b9d00c37d28d` (nuotate), `574fbfba41eb` (esempi di canoa). Sul server
   quindi niente cambia per i percorsi tenuti, le zone e gli esempi: nessun

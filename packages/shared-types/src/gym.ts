@@ -226,14 +226,39 @@ export type GymPlanGoal = (typeof GYM_PLAN_GOALS)[number];
 export const GYM_PLAN_MODES = ["load", "reps", "alternate", "same"] as const;
 export type GymPlanMode = (typeof GYM_PLAN_MODES)[number];
 
-/** A workout of a program: its day of the week, its name, its exercises. */
+/** The kinds of a run day (TASK-433 C): easy, intervals, long. */
+export const GYM_RUN_KINDS = ["easy", "intervals", "long"] as const;
+export type GymRunKind = (typeof GYM_RUN_KINDS)[number];
+
+/** The run of a run day (mirrors gym_plans.py `GymPlanRunBody`): an easy or
+ * long run is a distance or a time; intervals are `reps`, each `rep_m`
+ * metres or `rep_s` seconds. */
+export interface GymPlanRun {
+  kind: GymRunKind;
+  /** 100–100 000 m. */
+  distance_m?: number;
+  /** 60 s – 6 h. */
+  duration_s?: number;
+  /** 1–50. */
+  reps?: number;
+  /** 50–5000 m. */
+  rep_m?: number;
+  /** 10–1800 s. */
+  rep_s?: number;
+}
+
+/** A workout of a program: its day of the week, its name, its exercises;
+ * a run day (TASK-433 C) has its `run` and no exercises. */
 export interface GymPlanSession {
   /** 1 Monday to 7 Sunday, once a week. */
   day: number;
   /** 1–40 characters. */
   name: string;
-  /** At most 30, in order. */
+  /** At most 30, in order; empty on a run day. */
   items: GymPlanItem[];
+  /** Absent from a workout of the gym, and from an API older than
+   * TASK-433 C. */
+  run?: GymPlanRun;
 }
 
 /** A week of the cycle written by hand, in place of the one worked out. */

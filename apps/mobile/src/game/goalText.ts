@@ -17,12 +17,32 @@ export function goalDistanceLabel(metres: number, units: Units = appUnits()): st
   return `${Number.isInteger(rounded) ? String(rounded) : decimal(rounded)} ${units}`;
 }
 
+/**
+ * The distance of one run as a runner says it (TASK-423, after use): "400 m",
+ * "1 mile", "Half marathon", "Marathon"; any other as `goalDistanceLabel`.
+ * Only for what one run asks: the totals stay in kilometres or miles.
+ */
+export function runDistanceLabel(metres: number, units: Units = appUnits()): string {
+  switch (metres) {
+    case 400:
+      return "400 m";
+    case 1609:
+      return units === "mi" ? "1 mi" : t("1 mile");
+    case 21097:
+      return t("Half marathon");
+    case 42195:
+      return t("Marathon");
+    default:
+      return goalDistanceLabel(metres, units);
+  }
+}
+
 /** "5:00 /km", "8:03 /mi": a pace of so many seconds a kilometre. */
 export function goalPaceLabel(paceS: number, units: Units = appUnits()): string {
   return paceLabel(1000, paceS * 1000, units) ?? "";
 }
 
-/** "5 km in total", "1 km under 5:00 /km", "One run of 21.1 km": what the
+/** "5 km in total", "400 m under 4:00 /km", "One half marathon": what the
  * shape asks. A milestone (TASK-423) is a pace any run meets, over one run:
  * its pace is not said. */
 export function goalText(goal: GameGoal, units: Units = appUnits()): string {
@@ -32,12 +52,18 @@ export function goalText(goal: GameGoal, units: Units = appUnits()): string {
     });
   }
   if (goal.single_run === true) {
+    if (goal.distance_m === 21097) {
+      return t("One half marathon");
+    }
+    if (goal.distance_m === 42195) {
+      return t("One marathon");
+    }
     return t("One run of {distance}", {
-      distance: goalDistanceLabel(goal.distance_m, units),
+      distance: runDistanceLabel(goal.distance_m, units),
     });
   }
   return t("{distance} under {pace}", {
-    distance: goalDistanceLabel(goal.distance_m, units),
+    distance: runDistanceLabel(goal.distance_m, units),
     pace: goalPaceLabel(goal.pace_s, units),
   });
 }

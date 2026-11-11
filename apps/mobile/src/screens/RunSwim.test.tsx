@@ -158,7 +158,8 @@ test("a swim has speeds in km/h and a swimmer's pace, of 100 m", async () => {
   expect(screen.getAllByLabelText("Distance: 0.60 km")).toHaveLength(2);
   expect(screen.queryByText("Avg /500 m")).toBeNull();
   expect(screen.queryByText("Elev. gain")).toBeNull();
-  expect(screen.queryByLabelText(/^Calories: /)).toBeNull();
+  // A pool's bands (TASK-424 part C2): 2:15 /100 m, 8 MET for 13 min 30 s.
+  expect(screen.getByLabelText("Calories: 116 kcal")).toBeOnTheScreen();
   // The same line run is a walk too slow to have a pace now.
   expect(screen.getByLabelText("Pace now: – /km")).toBeOnTheScreen();
 });

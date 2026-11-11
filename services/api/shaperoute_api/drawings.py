@@ -69,7 +69,7 @@ from shaperoute_api.outfit_tags import OutfitTagBody, tags_on_photos
 from shaperoute_api.push import notify_tagged, tagged_before
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.recommended import preview
-from shaperoute_api.run_stats import RunStatsBody, seen_stats
+from shaperoute_api.run_stats import RunStatsBody, SkiDescentsBody, seen_stats
 from shaperoute_api.schemas import ErrorBody
 
 # A shorter track is a rounding of a fix, not a drawing.
@@ -379,6 +379,11 @@ class SeenFields(BaseModel):
     upright. Null for a run without a route, one north up and every run
     saved before. Always answered; the default is for the examples written
     before."""
+    ski_descents: SkiDescentsBody | None = None
+    """A day of alpine skiing: the metres and the seconds of its descents
+    alone, which its calories are counted on (TASK-424 part C2b,
+    run_stats.py); null for any other run, and for a day whose phone sent no
+    parts."""
 
 
 class DrawingBody(SeenFields):
@@ -421,7 +426,11 @@ _SEEN_FIELDS = (
     "d.id, d.title, d.visibility, d.description, d.published_at,"
     " r.started_at, r.place, r.shape, r.word, r.style, r.title AS route_title,"
     " r.distance_m, r.duration_s, r.score, r.fidelity, r.activity,"
-    " r.route_rotation_deg, r.source"
+    " r.route_rotation_deg, r.source,"
+    # The descents of a day of skiing (TASK-424 part C2b): one key of its
+    # run_stats row, by its primary key.
+    " (SELECT s.stats -> 'ski_descents' FROM run_stats s WHERE s.run_id = r.id)"
+    " AS ski_descents"
 )
 # One drawing, its track whole.
 SEEN_COLUMNS = f"{_SEEN_FIELDS}, ST_AsGeoJSON(d.track, 15) AS track"
@@ -556,6 +565,7 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         "order": details.orders.get(row["id"]),
         # The run's, as My activities answers it (activities._turn).
         "rotation_deg": turn_kept(row["route_rotation_deg"]),
+        "ski_descents": row.get("ski_descents"),
     }
 
 

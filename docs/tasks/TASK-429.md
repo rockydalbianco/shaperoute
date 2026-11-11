@@ -1,9 +1,10 @@
 # TASK-429 — La modalità sci: scelto lo sci, MuW diventa un'app per lo sci
 
-**Stato**: In lavorazione · parte 0 e parte A in `main` (A: #1093); B1
-scritta, aspetta la #1098 di TASK-424; poi B2 e C
+**Stato**: In lavorazione · 0, A, B1 e C1 in `main` (#1093, #1108, #1114);
+C1 va sul server nel passo 7 con TASK-424 C2b; poi B2 e C2, scritte
 **Fase**: 5 · **Branch**: `docs/TASK-429-…` (documenti); il codice
-`feat/TASK-429-a-ski-mode` (A, in `main`), `feat/TASK-429-b-ski-day` (B1)
+`feat/TASK-429-a-ski-mode`, `feat/TASK-429-b-ski-day`,
+`feat/TASK-429-c1-ski-day-parts` (in `main`), `feat/TASK-429-c2-ski-days`
 **Dipende da**: TASK-375 (la giornata di sci, impianti e piste per nome) e
 TASK-406 (stazioni, meteo, neve, «Follow»), tutti e due online dal
 2026-11-10. Non li riapre: ne riusa le pagine.
@@ -363,7 +364,53 @@ TASK-424 C2b): `apps/mobile/src/activities/runStatsOut.ts` e il suo test,
 con il tipo `SkiPart` di `apps/mobile/src/api/runStats.ts` (di C2b) e un
 test del ripiego al `422`.
 
-Parti C ed E: si elencano prima di ciascuna.
+Parte C1, il server (approvata dal Coordinatore il 2026-11-10; dopo la C2b
+di TASK-424, che salva `ski_parts`). File nuovi:
+`services/api/shaperoute_api/ski_day_parts.py` e `ski_season.py`,
+`services/api/tests/test_ski_day_parts.py` e `test_ski_season.py`,
+`packages/shared-types/src/skiSeason.ts`, `fixtures/ski-day-parts.json`,
+`fixtures/ski-season.json` e `test/skiSeason.test.ts`. File da cambiare:
+`services/api/shaperoute_api/ski_days.py` (`parts` nel `GET`),
+`__main__.py` (la rotta della stagione), `packages/shared-types/src/skiDays.ts`
+(`SkiDayPart`, `SkiDayWithParts`) e `index.ts` (una riga), `docs/API.md` e
+questa lista.
+
+Scelte tecniche della C1, decise dall'agente su delega dell'utente:
+- **`parts` solo quando ci sono**: il `GET` ha un corpo suo
+  (`SkiDayPartsBody`) e non scrive la chiave senza tratti, così la
+  risposta di prima e il `PUT` restano identici e un'app in produzione
+  legge quello che leggeva;
+- **i tratti si legano alla traccia per ore**: `start_s` ed `end_s` di C2b
+  danno il primo e l'ultimo punto (`from_fix`, `to_fix`), che l'app usa
+  per colorare la mappa del post;
+- **i nomi alla lettura**, con `ski_names.py` sul pezzo di traccia di ogni
+  tratto, e una cache per processo di al più 256 giornate per 10 minuti,
+  per corsa e per l'ultimo invio dei run-stats: niente colonne nuove;
+- **la stagione** è fra due giorni chiesti dall'app (al più 400), solo
+  numeri e solo le proprie giornate.
+
+**B1 in `main` il 2026-11-10** (#1108, `42a5309c`): la mappa della
+giornata a colori con i numeri, la legenda, «Summary · Map · Runs» a fine
+giornata, con le calorie di TASK-424 C2 dentro «Summary». Impronta iOS
+`6f8bba4c` invariata. Esce con l'OTA 6 del Coordinatore, col sì
+dell'utente.
+
+**C1 in `main` il 2026-11-10** (#1114, `3d41ab96`): `parts` nella giornata
+salvata e `GET /me/ski-season`. Va sul server nel passo 7 insieme alla C2b
+di TASK-424 (#1110) e alla C1 della palestra, col sì dell'utente; le righe
+di controllo di sola lettura sono in `out/TASK-429/SERVER-C1.md`.
+
+Parte C2, l'app (approvata dal Coordinatore il 2026-11-10; si apre dopo la
+C1 sul server). File nuovi: `apps/mobile/src/api/skiSeason.ts`,
+`apps/mobile/src/skimode/SkiSeason.tsx`, `SkiDayPage.tsx` e
+`useSkiDayMap.ts` (aggiunto col sì del Coordinatore), ognuno col suo test.
+File da cambiare: `apps/mobile/src/skimode/SkiDaysPage.tsx` e `SkiRuns.tsx`
+coi loro test, `apps/mobile/src/social/drawingsDoor.ts` (`skiSeasonOf`),
+`apps/mobile/App.tsx` (il post di sci aperto sulla mappa a colori, a turno
+col Coordinatore), `apps/mobile/src/i18n/{it,de,fr,es}.ts` (i quattro testi
+approvati della stagione e di «Pista senza nome»).
+
+Parte E: si elenca prima.
 
 ## Criteri di accettazione
 

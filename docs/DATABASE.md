@@ -1139,6 +1139,13 @@ merge):
   backfill dei passi delle corse vecchie (`python -m
   shaperoute_api.run_stats`) scrive solo le righe che mancano, e si lancia
   col sì dell'utente. Test in `test_run_stats.py`.
+- **Due chiavi in più in `stats`** (TASK-424 parte C2b, con TASK-429;
+  nessuna migrazione nuova): `ski_parts`, i tratti di una giornata di sci
+  (risalite e discese, al più 500, con `start_s`/`end_s` sui secondi della
+  traccia), e `ski_descents` `{metres, moving_s}`, la somma delle sole
+  discese, calcolata al `PUT`. Le liste dei post leggono `ski_descents`
+  con una sottoquery sulla chiave primaria (`drawings.py`, `_SEEN_FIELDS`).
+  Test in `test_ski_parts.py`.
 
 ## Come si memorizza una traccia
 

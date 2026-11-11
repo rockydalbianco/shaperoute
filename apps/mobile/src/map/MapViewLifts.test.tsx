@@ -50,9 +50,31 @@ test("a day with lifts is drawn cut at them, not as one line", async () => {
       type: "showLifts",
       skied: [lngLat(LINE.slice(0, 3)), lngLat(LINE.slice(4))],
       lifts: [lngLat(LINE.slice(2, 5))],
+      labels: [],
     },
   ]);
   expect(messages("showTrack")).toEqual([]);
+});
+
+test("the numbers of the descents and the lifts go with them (TASK-429 part B)", async () => {
+  await render(
+    <MapView
+      start={null}
+      route={null}
+      track={LINE}
+      lifts={LIFTS}
+      liftLabels={[
+        { point: LINE[1], text: "1", kind: "descent" },
+        { point: LINE[3], text: "L1", kind: "lift" },
+      ]}
+      onError={jest.fn()}
+    />,
+  );
+  await pagePosts('{"type":"ready"}');
+  expect(messages("showLifts")[0].labels).toEqual([
+    { point: lngLat([LINE[1]])[0], text: "1", kind: "descent" },
+    { point: lngLat([LINE[3]])[0], text: "L1", kind: "lift" },
+  ]);
 });
 
 test("without lifts the track is a run's", async () => {

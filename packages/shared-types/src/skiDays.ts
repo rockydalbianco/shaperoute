@@ -30,6 +30,38 @@ export interface SkiDay {
   snow: SnowType | null;
 }
 
+/**
+ * A lift or a descent of a saved day (TASK-429 part C1, ADR-0357), as the
+ * phone sent it in the run's figures (`ski_parts`, TASK-424 part C2b), with
+ * the fixes of the post's track it covers and its lift's or piste's name.
+ */
+export interface SkiDayPart {
+  kind: "lift" | "descent";
+  /** Counted apart for lifts and descents, from 1: «L2», «3». */
+  n: number;
+  /** On the seconds of the server's track; null when not counted. */
+  start_s: number | null;
+  end_s: number | null;
+  moving_s: number;
+  metres: number;
+  /** Climbed by a lift, dropped by a descent. */
+  height_m: number;
+  /** A descent's top speed; null for a lift. */
+  top_mps: number | null;
+  /** The first and the last fix of the post's track in it; null when none. */
+  from_fix: number | null;
+  to_fix: number | null;
+  /** Its lift's or piste's name; null when none was found. */
+  name: string | null;
+}
+
+/** GET /drawings/{id}/ski-day since TASK-429 part C1: the day and, when its
+ * figures have them, its parts in the order of the day:
+ * fixtures/ski-day-parts.json. Without them there is no `parts`. */
+export interface SkiDayWithParts extends SkiDay {
+  parts?: SkiDayPart[];
+}
+
 /** GET /ski-resorts/{id}/snow: the snow the members marked at the resort in
  * the 24 hours from `since`, from the posts the asker can see, as numbers
  * only: fixtures/resort-snow.json. The most marked first; empty when none. */

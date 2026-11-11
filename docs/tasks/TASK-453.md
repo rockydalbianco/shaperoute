@@ -134,7 +134,9 @@ c'era un'API di prova).
 
 **Pubblicazione**: l'utente ha deciso col Coordinatore l'11 novembre 2026
 («No, tra due giorni») nessun aggiornamento dell'app per due giorni, poi
-un'uscita completa: TASK-453 esce con quella, dal Coordinatore.
+un'uscita completa: TASK-453 esce con quella, dal Coordinatore. È già
+nell'aggiornamento di prova (canale `preview`) pubblicato dal Coordinatore da
+`a9ade90c`, gruppo `149b3411-1be6-4dfb-b4dc-b0abbbde94ee`.
 
 **Rimandato**:
 

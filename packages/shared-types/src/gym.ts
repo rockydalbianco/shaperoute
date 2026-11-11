@@ -247,8 +247,71 @@ export interface GymPlanRun {
   rep_s?: number;
 }
 
+/** The sports of a day out that is not a run (TASK-461 B and C, ADR-0371):
+ * a run day stays a `run`, which an app older than the outings shows. */
+export const GYM_OUTING_SPORTS = [
+  "walk",
+  "hike",
+  "bike",
+  "gravel",
+  "mtb",
+  "swim",
+  "paddle",
+] as const;
+export type GymOutingSport = (typeof GYM_OUTING_SPORTS)[number];
+
+/** Easy, intervals (a swim's sets too) and long as for a run; brisk, the
+ * quality day on foot; climb, a hike measured by its climb. */
+export const GYM_OUTING_KINDS = [
+  "easy",
+  "intervals",
+  "long",
+  "brisk",
+  "climb",
+] as const;
+export type GymOutingKind = (typeof GYM_OUTING_KINDS)[number];
+
+/** A day out of a plan that is not a run (mirrors gym_plans.py
+ * `GymPlanOutingBody`): a distance or a time, or `reps` each `rep_m` metres
+ * or `rep_s` seconds; on foot also the metres of climb (a `climb` is a
+ * hike's climb, a distance or a time besides at most); a swim says its
+ * water. */
+export interface GymPlanOuting {
+  sport: GymOutingSport;
+  kind: GymOutingKind;
+  /** 100 m – 300 km; at most 10 km swimming, 100 km on foot or paddling. */
+  distance_m?: number;
+  /** 60 s – 12 h. */
+  duration_s?: number;
+  /** 1–50. */
+  reps?: number;
+  /** 25–5000 m. */
+  rep_m?: number;
+  /** 10–1800 s. */
+  rep_s?: number;
+  /** 50–5000 m of climb to look for: on foot only. */
+  climb_m?: number;
+  /** A swim only: in a pool (true) or in open water (false). */
+  pool?: boolean;
+}
+
+/** What a plan leads to (mirrors gym_plans.py `GymPlanTargetBody`): its
+ * last day is a distance of a sport, or a hike's climb. */
+export interface GymPlanTarget {
+  sport: "run" | GymOutingSport;
+  /** 500 m – 300 km; or */
+  distance_m?: number;
+  /** 100–5000 m, a hike's. */
+  climb_m?: number;
+  /** YYYY-MM-DD, the day of the race or of the outing; absent: when ready. */
+  on?: string;
+}
+
 /** A workout of a program: its day of the week, its name, its exercises;
- * a run day (TASK-433 C) has its `run` and no exercises. */
+ * a run day (TASK-433 C) has its `run` and no exercises, a day out of
+ * another sport (TASK-461 B) its `outing` and neither. An app older than
+ * the outings shows no «Today» for a day out and keeps its `outing` when it
+ * saves the plan again. */
 export interface GymPlanSession {
   /** 1 Monday to 7 Sunday, once a week. */
   day: number;
@@ -259,6 +322,9 @@ export interface GymPlanSession {
   /** Absent from a workout of the gym, and from an API older than
    * TASK-433 C. */
   run?: GymPlanRun;
+  /** Absent from a workout of the gym and from a run day; and from an API
+   * older than TASK-461 B. */
+  outing?: GymPlanOuting;
 }
 
 /** A week of the cycle written by hand, in place of the one worked out. */
@@ -268,13 +334,26 @@ export interface GymPlanWeek {
   sessions: GymPlanSession[];
 }
 
+/** How the owner of a plan with run days runs (mirrors gym_plans.py
+ * `GymPlanRunnerBody`), asked by the guide: the paces of the run days are
+ * worked out from it on the phone. */
+export interface GymPlanRunner {
+  /** Seconds a kilometre over 10 km, 180–900. */
+  pace_10k_s: number;
+  /** The longest run done without strain: a distance (1–60 km) or a time
+   * (10 min – 6 h), one of the two. */
+  long_m?: number;
+  long_s?: number;
+}
+
 /** The weeks of a plan made with the guide (mirrors gym_plans.py): the
  * phone works out each week's values from `sessions` and `mode`. */
 export interface GymProgram {
   goal?: GymPlanGoal;
   /** YYYY-MM-DD: the cycle's weeks are counted from its Monday. */
   starts_on: string;
-  /** 1–12. */
+  /** 1–24: a cycle of the gym is 4, 6 or 8; a plan with a `target` runs
+   * up to 24 weeks to its day. */
   weeks: number;
   mode: GymPlanMode;
   /** The kg added at each step, 0–20. */
@@ -285,6 +364,12 @@ export interface GymProgram {
   sessions: GymPlanSession[];
   /** The weeks written by hand, each once. */
   custom: GymPlanWeek[];
+  /** How its owner runs; absent without run days, and from an API older
+   * than the paces. */
+  runner?: GymPlanRunner;
+  /** What it leads to (TASK-461 B and C); absent from a cycle that
+   * repeats, and from an API older than the targets. */
+  target?: GymPlanTarget;
 }
 
 /** A plan as kept, with the key the phone chose. */
@@ -301,7 +386,7 @@ export interface GymPlans {
 export const MAX_GYM_PLANS = 20;
 export const MAX_GYM_PLAN_ITEMS = 30;
 /** The weeks of a cycle, and exercises of a whole program. */
-export const MAX_GYM_PLAN_WEEKS = 12;
+export const MAX_GYM_PLAN_WEEKS = 24;
 export const MAX_GYM_PROGRAM_ITEMS = 300;
 
 /** PUT /me/gym-sessions/{key}/show-exercises. */

@@ -28,10 +28,13 @@ from test_gym import kept
 from shaperoute_api.gym_plans import (
     MAX_PLANS,
     GymPlanItemBody,
+    GymPlanOutingBody,
     GymPlanRequestBody,
     GymPlanRunBody,
+    GymPlanRunnerBody,
     GymPlansBody,
     GymPlanSessionBody,
+    GymPlanTargetBody,
     GymProgramBody,
     days_mask,
     mask_days,
@@ -46,6 +49,8 @@ PUSH = EXAMPLE["plans"][0]
 LEGS = EXAMPLE["plans"][1]
 MUSCLE = EXAMPLE["plans"][2]
 LIFT_AND_RUN = EXAMPLE["plans"][3]
+BIKE = EXAMPLE["plans"][4]
+MOUNTAIN = EXAMPLE["plans"][5]
 
 
 def request(plan: dict[str, Any], **changes: Any) -> dict[str, Any]:
@@ -80,6 +85,8 @@ def test_the_example_is_the_contract() -> None:
         LEGS["key"],
         MUSCLE["key"],
         LIFT_AND_RUN["key"],
+        BIKE["key"],
+        MOUNTAIN["key"],
     ]
 
 
@@ -133,7 +140,8 @@ def program(**changes: Any) -> dict[str, Any]:
         {"weeks": 3},
         {"custom": [{"week": 1, "sessions": []}]},
         {"custom": [{"week": 2, "sessions": []}] * 2},
-        # From 1 to 12 weeks; a mode and a goal it knows; a step of 0–20 kg.
+        # From 1 to 12 weeks (24 with a target); a mode and a goal it knows;
+        # a step of 0–20 kg.
         {"weeks": 0},
         {"weeks": 13},
         {"mode": "random"},
@@ -423,3 +431,153 @@ def test_a_run_day_is_done_by_a_run(
     # Monday the 21st (the gym), Thursday the 24th (intervals) and Saturday
     # the 26th (long run) without; Tuesday the 22nd run.
     assert [one["day"] for one in answer["skipped"]] == [21, 24, 26]
+
+
+@pytest.mark.parametrize(
+    "runner",
+    [
+        # A pace of 3:00 to 15:00 a kilometre.
+        {"pace_10k_s": 170, "long_m": 12000},
+        {"pace_10k_s": 901, "long_m": 12000},
+        # The long run: a distance or a time, not both, not neither.
+        {"pace_10k_s": 330},
+        {"pace_10k_s": 330, "long_m": 12000, "long_s": 4500},
+        {"pace_10k_s": 330, "long_m": 500},
+    ],
+)
+def test_a_runner_has_a_pace_and_a_long_run(runner: dict[str, Any]) -> None:
+    with pytest.raises(ValueError):
+        GymPlanRunnerBody.model_validate(runner)
+
+
+def test_a_program_keeps_its_runner(
+    client: TestClient,  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    runner = {"pace_10k_s": 330, "long_m": 12000}
+    program = {**LIFT_AND_RUN["program"], "runner": runner}
+    made = put(client, me, LIFT_AND_RUN["key"], request(LIFT_AND_RUN, program=program))
+    assert made.status_code == 201, made.text
+    assert made.json()["program"]["runner"] == runner
+    # Without it, as before: absent, not null.
+    plain = put(client, me, MUSCLE["key"], request(MUSCLE)).json()
+    assert "runner" not in plain["program"]
+
+
+# --- Days out and targets (TASK-461 B and C, ADR-0371) ---
+
+
+@pytest.mark.parametrize(
+    "outing",
+    [
+        # A sport it knows; a run stays a `run`.
+        {"sport": "run", "kind": "easy", "distance_m": 5000},
+        # A distance or a time, not both, not neither; no reps but intervals.
+        {"sport": "bike", "kind": "long"},
+        {"sport": "bike", "kind": "long", "distance_m": 30000, "duration_s": 3600},
+        {"sport": "bike", "kind": "easy", "distance_m": 20000, "reps": 2},
+        # Intervals: reps, each in metres or seconds, nothing else.
+        {"sport": "bike", "kind": "intervals", "reps": 5},
+        {
+            "sport": "bike",
+            "kind": "intervals",
+            "reps": 5,
+            "rep_s": 180,
+            "distance_m": 9,
+        },
+        # Brisk and climb are on foot; a climb is a hike's, with its metres.
+        {"sport": "bike", "kind": "brisk", "duration_s": 2700},
+        {"sport": "walk", "kind": "climb", "climb_m": 300},
+        {"sport": "hike", "kind": "climb"},
+        {"sport": "bike", "kind": "long", "distance_m": 30000, "climb_m": 400},
+        # A swim says its water; nothing else does.
+        {"sport": "swim", "kind": "easy", "distance_m": 1000},
+        {"sport": "paddle", "kind": "easy", "distance_m": 5000, "pool": False},
+        # Within each sport's longest day.
+        {"sport": "swim", "kind": "long", "distance_m": 12000, "pool": False},
+        {"sport": "bike", "kind": "long", "distance_m": 400000},
+    ],
+)
+def test_a_day_out_has_the_fields_of_its_sport_and_kind(
+    outing: dict[str, Any],
+) -> None:
+    with pytest.raises(ValueError):
+        GymPlanOutingBody.model_validate(outing)
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        {"sport": "bike"},
+        {"sport": "bike", "distance_m": 60000, "climb_m": 800},
+        {"sport": "bike", "climb_m": 800},
+        {"sport": "run", "distance_m": 400},
+    ],
+)
+def test_a_target_is_a_distance_or_a_hike_s_climb(target: dict[str, Any]) -> None:
+    with pytest.raises(ValueError):
+        GymPlanTargetBody.model_validate(target)
+
+
+def test_a_day_out_has_no_exercises_and_no_run() -> None:
+    item = {"exercise": "plank", "kind": "timed", "sets": 1}
+    outing = {"sport": "walk", "kind": "easy", "duration_s": 1800}
+    for extra in ({"items": [item]}, {"run": {"kind": "easy", "distance_m": 5000}}):
+        with pytest.raises(ValueError):
+            GymPlanSessionBody.model_validate(
+                {
+                    "day": 2,
+                    "name": "Walk · 30 min",
+                    "items": [],
+                    "outing": outing,
+                    **extra,
+                }
+            )
+    body = GymProgramBody.model_validate(MOUNTAIN["program"])
+    saturday = body.sessions_on(date(2026, 11, 7))[0]
+    assert saturday.outing is not None and saturday.outing.climb_m == 450
+    assert body.target is not None and body.target.climb_m == 1000
+    # Up to 24 weeks toward its day.
+    GymProgramBody.model_validate({**BIKE["program"], "weeks": 24})
+    with pytest.raises(ValueError):
+        GymProgramBody.model_validate({**BIKE["program"], "weeks": 25})
+    # Without its target it is a cycle again: at most 12.
+    cycle = {key: value for key, value in BIKE["program"].items() if key != "target"}
+    with pytest.raises(ValueError):
+        GymProgramBody.model_validate({**cycle, "weeks": 13})
+
+
+def test_a_plan_with_days_out_is_kept_as_sent(
+    client: TestClient,  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    for plan in (BIKE, MOUNTAIN):
+        made = put(client, me, plan["key"], request(plan))
+        assert made.status_code == 201, made.text
+        assert comparable(made.json()) == comparable(plan)
+    assert listed(client, me) == [comparable(BIKE), comparable(MOUNTAIN)]
+
+
+def test_a_day_out_is_done_by_its_sport(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    # Monday 21 September 2026, the day of the example run.
+    wall.t = datetime(2026, 9, 21, 8, tzinfo=UTC)
+    program = {**BIKE["program"], "starts_on": "2026-09-21"}
+    made = put(client, me, BIKE["key"], request(BIKE, program=program))
+    assert made.status_code == 201, made.text
+    # A ride on Wednesday the 23rd: the bike intervals are done. A run on
+    # Friday the 25th is no swim.
+    wall.t = datetime(2026, 9, 28, 12, tzinfo=UTC)
+    saved(client, me, days_later=2, activity="cycling")
+    saved(client, me, key="7c2e91a4b05d3f69", days_later=4)
+    answer = client.get(
+        "/me/gym-calendar",
+        params={"tz": "Europe/Rome", "month": "2026-09"},
+        headers=me,
+    ).json()
+    # Monday the 21st (the gym), Friday the 25th (the pool) and Sunday the
+    # 27th (the long ride) without.
+    assert [one["day"] for one in answer["skipped"]] == [21, 25, 27]

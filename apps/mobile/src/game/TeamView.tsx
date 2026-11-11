@@ -21,6 +21,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import type { Units } from "../units/units";
 import { ChallengeView } from "./ChallengeView";
 import { NewChallenge } from "./NewChallenge";
@@ -156,7 +157,7 @@ export function TeamView({
   return (
     <View style={styles.view} testID="team-view">
       <View style={styles.header}>
-        <Pressable
+        <Tap
           style={styles.back}
           onPress={onBack}
           accessibilityRole="button"
@@ -164,7 +165,7 @@ export function TeamView({
           testID="team-back"
         >
           <Text style={styles.backText}>←</Text>
-        </Pressable>
+        </Tap>
         <Text style={styles.name} accessibilityRole="header" numberOfLines={1}>
           {team?.name ?? t("Challenges")}
         </Text>
@@ -174,14 +175,14 @@ export function TeamView({
           <Text style={styles.code} selectable testID="team-code">
             {t("Code {code}", { code: team.code })}
           </Text>
-          <Pressable
+          <Tap
             style={styles.button}
             onPress={() => void shareTeamCode(team)}
             accessibilityRole="button"
             testID="team-share"
           >
             <Text style={styles.buttonText}>{t("Share code")}</Text>
-          </Pressable>
+          </Tap>
         </View>
       )}
 
@@ -207,14 +208,14 @@ export function TeamView({
           {shown.status === "failed" && (
             <View style={styles.notice}>
               <Text style={styles.noticeText}>{shown.problem}</Text>
-              <Pressable
+              <Tap
                 style={styles.button}
                 onPress={refresh}
                 accessibilityRole="button"
                 testID="challenge-retry"
               >
                 <Text style={styles.buttonText}>{t("Try again")}</Text>
-              </Pressable>
+              </Tap>
             </View>
           )}
           {challenge !== null && (
@@ -238,14 +239,14 @@ export function TeamView({
             </Text>
           )}
           {team !== null && catalog !== null && (shownId === null || over) && (
-            <Pressable
+            <Tap
               style={styles.primary}
               onPress={() => setMaking(true)}
               accessibilityRole="button"
               testID="team-new-challenge"
             >
               <Text style={styles.primaryText}>{t("New challenge")}</Text>
-            </Pressable>
+            </Tap>
           )}
         </>
       )}
@@ -277,7 +278,7 @@ export function TeamView({
                 <Text style={styles.ownerTag}>{t("Owner")}</Text>
               )}
               {owner && member.public_id !== me && (
-                <Pressable
+                <Tap
                   style={[styles.button, busy && styles.off]}
                   onPress={() => void remove(member.public_id)}
                   disabled={busy}
@@ -286,7 +287,7 @@ export function TeamView({
                   testID={`remove-${member.public_id}`}
                 >
                   <Text style={styles.buttonText}>{t("Remove")}</Text>
-                </Pressable>
+                </Tap>
               )}
             </View>
           ))}
@@ -299,7 +300,7 @@ export function TeamView({
             (leaving ? (
               <View style={styles.leaveRow}>
                 <Text style={styles.noticeText}>{t("Leave this team?")}</Text>
-                <Pressable
+                <Tap
                   style={[styles.button, busy && styles.off]}
                   onPress={() => void leave()}
                   disabled={busy}
@@ -307,25 +308,25 @@ export function TeamView({
                   testID="team-leave-confirm"
                 >
                   <Text style={styles.buttonText}>{t("Leave team")}</Text>
-                </Pressable>
-                <Pressable
+                </Tap>
+                <Tap
                   style={styles.button}
                   onPress={() => setLeaving(false)}
                   accessibilityRole="button"
                   testID="team-leave-cancel"
                 >
                   <Text style={styles.buttonText}>{t("Cancel")}</Text>
-                </Pressable>
+                </Tap>
               </View>
             ) : (
-              <Pressable
+              <Tap
                 style={styles.leave}
                 onPress={() => setLeaving(true)}
                 accessibilityRole="button"
                 testID="team-leave"
               >
                 <Text style={styles.leaveText}>{t("Leave team")}</Text>
-              </Pressable>
+              </Tap>
             ))}
         </>
       )}

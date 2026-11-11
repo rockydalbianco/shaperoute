@@ -51,7 +51,11 @@ MAX_PLANS = 20
 MAX_ITEMS = 30
 MAX_SETS = 20
 PLANS_FULL = "An account keeps at most 20 plans."
-MAX_WEEKS = 12
+MAX_WEEKS = 24
+"""A cycle of the gym is 4, 6 or 8 weeks; a plan toward a distance or a
+climb (TASK-461 B) runs up to 24 weeks to its day."""
+MAX_CYCLE_WEEKS = 12
+"""The weeks of a program without a target, which repeats."""
 MAX_SESSIONS = 7
 MAX_PROGRAM_ITEMS = 300
 
@@ -141,10 +145,113 @@ class GymPlanRunBody(BaseModel):
         return self
 
 
+OutingSport = Literal["walk", "hike", "bike", "gravel", "mtb", "swim", "paddle"]
+"""The sports of a day out that is not a run (TASK-461 B and C, ADR-0371):
+a run day stays a `run`, so an app older than the outings shows it."""
+OutingKind = Literal["easy", "intervals", "long", "brisk", "climb"]
+"""Easy, intervals (a swim's sets too) and long as for a run; brisk, the
+quality day on foot; climb, a hike measured by its climb."""
+
+OUTING_MAX_M: dict[str, int] = {
+    "walk": 100_000,
+    "hike": 100_000,
+    "bike": 300_000,
+    "gravel": 300_000,
+    "mtb": 300_000,
+    "swim": 10_000,
+    "paddle": 100_000,
+}
+"""The longest day of each sport: a bike plan goes up to 150 km and more."""
+ON_FOOT = ("walk", "hike")
+OUTING_ACTIVITY: dict[str, str] = {
+    "walk": "walking",
+    "hike": "hiking",
+    "bike": "cycling",
+    "gravel": "gravel_biking",
+    "mtb": "mountain_biking",
+    "swim": "swimming",
+    "paddle": "paddling",
+}
+"""The activity a day out of each sport is done by: any of that sport that
+day (a pool swim and one in open water are both `swimming`)."""
+
+
+class GymPlanOutingBody(BaseModel):
+    """A day out of a plan that is not a run (TASK-461 B and C, ADR-0371):
+    packages/shared-types src/gym.ts, `GymPlanOuting`. A distance or a
+    time, or reps each a distance or a time; on foot also the metres of
+    climb; a swim in a pool or in open water."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    sport: OutingSport
+    kind: OutingKind
+    distance_m: int | None = Field(default=None, ge=100, le=300_000)
+    duration_s: int | None = Field(default=None, ge=60, le=12 * 3600)
+    reps: int | None = Field(default=None, ge=1, le=50)
+    rep_m: int | None = Field(default=None, ge=25, le=5_000)
+    rep_s: int | None = Field(default=None, ge=10, le=1_800)
+    climb_m: int | None = Field(default=None, ge=50, le=5_000)
+    """Metres of climb to look for: a day on foot only."""
+    pool: bool | None = None
+    """A swim in a pool (true) or in open water (false); a swim only."""
+
+    @model_validator(mode="after")
+    def the_fields_of_its_sport_and_kind(self) -> GymPlanOutingBody:
+        timed = (self.distance_m is not None) + (self.duration_s is not None)
+        if self.kind == "intervals":
+            if self.reps is None or (self.rep_m is None) == (self.rep_s is None):
+                raise ValueError("intervals are reps, each in metres or seconds")
+            if timed:
+                raise ValueError("intervals are given by their reps")
+        else:
+            if any(value is not None for value in (self.reps, self.rep_m, self.rep_s)):
+                raise ValueError(f"a {self.kind} day has no reps")
+            if self.kind == "climb":
+                if self.sport != "hike" or self.climb_m is None or timed > 1:
+                    raise ValueError("a climb is a hike's metres of climb")
+            elif timed != 1:
+                raise ValueError(f"a {self.kind} day is a distance or a time")
+        if self.kind == "brisk" and self.sport not in ON_FOOT:
+            raise ValueError("a brisk day is on foot")
+        if self.climb_m is not None and self.sport not in ON_FOOT:
+            raise ValueError("a climb is on foot")
+        if (self.pool is not None) != (self.sport == "swim"):
+            raise ValueError("a swim says its water, nothing else does")
+        if self.distance_m is not None and self.distance_m > OUTING_MAX_M[self.sport]:
+            raise ValueError(f"a day of {self.sport} is shorter")
+        return self
+
+
+TargetSport = Literal["run", "walk", "hike", "bike", "gravel", "mtb", "swim", "paddle"]
+
+
+class GymPlanTargetBody(BaseModel):
+    """What a plan leads to (TASK-461 B and C, ADR-0371): its last day is a
+    distance of a sport, or a hike's climb; on a date, or when ready.
+    `GymPlanTarget`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    sport: TargetSport
+    distance_m: int | None = Field(default=None, ge=500, le=300_000)
+    climb_m: int | None = Field(default=None, ge=100, le=5_000)
+    on: date | None = None
+    """The day of the race or of the outing; absent: when ready."""
+
+    @model_validator(mode="after")
+    def a_distance_or_a_climb(self) -> GymPlanTargetBody:
+        if (self.distance_m is None) == (self.climb_m is None):
+            raise ValueError("a target is a distance or a climb")
+        if self.climb_m is not None and self.sport != "hike":
+            raise ValueError("a climb is a hike's")
+        return self
+
+
 class GymPlanSessionBody(BaseModel):
     """A workout of a program: packages/shared-types src/gym.ts,
     `GymPlanSession`. A run day (TASK-433 C) has its `run` and no
-    exercises."""
+    exercises; a day out of another sport (TASK-461 B) its `outing`."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -153,11 +260,14 @@ class GymPlanSessionBody(BaseModel):
     name: str = Field(min_length=1, max_length=MAX_NAME_LENGTH)
     items: list[GymPlanItemBody] = Field(default_factory=list, max_length=MAX_ITEMS)
     run: GymPlanRunBody | None = None
+    outing: GymPlanOutingBody | None = None
 
     @model_validator(mode="after")
     def a_run_or_exercises(self) -> GymPlanSessionBody:
         if self.run is not None and self.items:
             raise ValueError("a run day has no exercises")
+        if self.outing is not None and (self.items or self.run is not None):
+            raise ValueError("a day out has no exercises and no run")
         return self
 
 
@@ -172,6 +282,26 @@ class GymPlanWeekBody(BaseModel):
     @model_validator(mode="after")
     def one_workout_a_day(self) -> GymPlanWeekBody:
         _days_once(self.sessions)
+        return self
+
+
+class GymPlanRunnerBody(BaseModel):
+    """How its owner runs, asked by the guide for a plan with run days:
+    packages/shared-types src/gym.ts, `GymPlanRunner`. The paces of the
+    run days are worked out from it on the phone."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pace_10k_s: int = Field(ge=180, le=900)
+    """Seconds a kilometre over 10 km: 3:00 to 15:00."""
+    long_m: int | None = Field(default=None, ge=1_000, le=60_000)
+    long_s: int | None = Field(default=None, ge=600, le=6 * 3600)
+    """The longest run done without strain: a distance or a time."""
+
+    @model_validator(mode="after")
+    def a_distance_or_a_time(self) -> GymPlanRunnerBody:
+        if (self.long_m is None) == (self.long_s is None):
+            raise ValueError("the long run is a distance or a time")
         return self
 
 
@@ -193,10 +323,19 @@ class GymProgramBody(BaseModel):
         default_factory=list, max_length=MAX_WEEKS - 1
     )
     """The weeks written by hand, in place of the ones worked out."""
+    runner: GymPlanRunnerBody | None = None
+    """How its owner runs, for the paces of its run days; absent without."""
+    target: GymPlanTargetBody | None = None
+    """What it leads to (TASK-461 B and C); absent from a cycle that
+    repeats."""
 
     @model_validator(mode="after")
     def weeks_of_the_cycle(self) -> GymProgramBody:
         _days_once(self.sessions)
+        if self.weeks > MAX_CYCLE_WEEKS and self.target is None:
+            raise ValueError(
+                f"a cycle is at most {MAX_CYCLE_WEEKS} weeks; more lead to a target"
+            )
         numbers = [week.week for week in self.custom]
         if len(set(numbers)) != len(numbers):
             raise ValueError("a week is written once")

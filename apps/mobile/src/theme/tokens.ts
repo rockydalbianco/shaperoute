@@ -138,6 +138,14 @@ export type Shade = {
    * choice, kept as its own token so that each keeps one meaning.
    */
   readonly runDay: string;
+  /**
+   * The muscles an exercise of the gym works, lit on the body drawn beside
+   * its figure (TASK-465, ADR-0376). A pink, so it reads neither as the
+   * load (yellow) nor as the calories (red); 3:1 at least on `background`,
+   * `surface` and `surfaceRaised`, and never the only sign: a main muscle
+   * is filled, one that helps has an outline.
+   */
+  readonly muscle: string;
 
   readonly map: {
     readonly background: string;
@@ -201,6 +209,7 @@ export const SHADES: Readonly<
       you: "#3D9BFF",
       north: "#FF5B4F",
       runDay: "#4DD2FF",
+      muscle: "#FF6FB5",
       map: {
         background: "#100F0C",
         water: "#101F29",
@@ -232,6 +241,7 @@ export const SHADES: Readonly<
       you: "#5AAEFF",
       north: "#FF7068",
       runDay: "#6EDBFF",
+      muscle: "#FF8FC5",
       map: {
         background: "#2B2925",
         water: "#1F3A4B",
@@ -265,6 +275,7 @@ export const SHADES: Readonly<
       you: "#1565C0",
       north: "#C42F24",
       runDay: "#006E94",
+      muscle: "#A8185F",
       map: {
         background: "#DAD7CF",
         water: "#9CC2D8",
@@ -296,6 +307,7 @@ export const SHADES: Readonly<
       you: "#1460B8",
       north: "#C8352A",
       runDay: "#007BA3",
+      muscle: "#B81D6A",
       map: {
         background: "#F5F4F0",
         water: "#B5D6E8",

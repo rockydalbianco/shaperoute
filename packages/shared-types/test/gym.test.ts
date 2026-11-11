@@ -10,6 +10,8 @@ import runActivities from "../fixtures/run-activities.json" with { type: "json" 
 import session from "../fixtures/gym-session.json" with { type: "json" };
 import {
   GYM_LEVEL_MEASURES,
+  GYM_OUTING_KINDS,
+  GYM_OUTING_SPORTS,
   GYM_PLAN_MODES,
   GYM_RUN_KINDS,
   GYM_SET_KINDS,
@@ -61,7 +63,7 @@ test("the example workout is a request of the contract", () => {
 
 test("the catalog names each exercise once, of a kind and a scale it has", () => {
   const keys = catalog.exercises.map((exercise) => exercise.key);
-  assert.equal(keys.length, 91);
+  assert.equal(keys.length, 95);
   assert.equal(new Set(keys).size, keys.length);
   for (const exercise of catalog.exercises) {
     assert.ok(
@@ -187,6 +189,12 @@ test("a plan's days are of the week once, its exercises of the catalog and its k
         program.custom.every((week) => week.week >= 2 && week.week <= program.weeks),
       );
       assert.ok(sessions.length > 0 && items.length <= MAX_GYM_PROGRAM_ITEMS);
+      if (program.runner !== undefined) {
+        // A pace of 3:00 to 15:00 a km; the long run a distance or a time.
+        const { pace_10k_s, long_m, long_s } = program.runner;
+        assert.ok(pace_10k_s >= 180 && pace_10k_s <= 900);
+        assert.ok((long_m === undefined) !== (long_s === undefined));
+      }
       for (const session of sessions) {
         if (session.run !== undefined) {
           // A run day has no exercises, and a distance, a time or its reps.
@@ -199,7 +207,48 @@ test("a plan's days are of the week once, its exercises of the catalog and its k
               : (distance_m === undefined) !== (duration_s === undefined),
           );
         }
+        if (session.outing !== undefined) {
+          // A day out (TASK-461 B): no exercises, no run; its sport and kind;
+          // a distance or a time, its reps, or a hike's climb; a swim's water.
+          const outing = session.outing;
+          assert.equal(session.items.length, 0);
+          assert.equal(session.run, undefined);
+          assert.ok((GYM_OUTING_SPORTS as readonly string[]).includes(outing.sport));
+          assert.ok((GYM_OUTING_KINDS as readonly string[]).includes(outing.kind));
+          if (outing.kind === "intervals") {
+            assert.ok(outing.reps !== undefined);
+            assert.ok((outing.rep_m === undefined) !== (outing.rep_s === undefined));
+          } else if (outing.kind === "climb") {
+            assert.equal(outing.sport, "hike");
+            assert.ok(outing.climb_m !== undefined);
+          } else {
+            assert.ok(
+              (outing.distance_m === undefined) !== (outing.duration_s === undefined),
+            );
+          }
+          assert.equal(outing.pool !== undefined, outing.sport === "swim");
+          // Its name says the sport and the amount: an older app shows it.
+          assert.ok(session.name.length > 0);
+        }
+      }
+      if (program.target !== undefined) {
+        // What it leads to: a distance, or a hike's climb.
+        const { sport, distance_m, climb_m } = program.target;
+        assert.ok((distance_m === undefined) !== (climb_m === undefined));
+        assert.ok(climb_m === undefined || sport === "hike");
       }
     }
   }
+  const outings = plans.plans.flatMap((plan) =>
+    (plan.program?.sessions ?? []).flatMap((one) =>
+      one.outing === undefined ? [] : [one],
+    ),
+  );
+  // The example has a ride, a pool swim, a brisk walk and a climb.
+  assert.deepEqual([...new Set(outings.map((one) => one.outing?.sport))].sort(), [
+    "bike",
+    "hike",
+    "swim",
+    "walk",
+  ]);
 });

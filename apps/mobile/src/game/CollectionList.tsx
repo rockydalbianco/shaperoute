@@ -10,6 +10,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { type CollectionRow, collectionNameIn, countText } from "./collections";
 import { ShapeOutline } from "./ShapeOutline";
 
@@ -36,7 +37,7 @@ export function CollectionList({ rows, language, onOpen }: Props) {
         const name = collectionNameIn(row.collection, language);
         const share = row.total > 0 ? row.unlocked / row.total : 0;
         return (
-          <Pressable
+          <Tap
             key={row.collection.id}
             style={styles.row}
             onPress={() => onOpen(row.collection.id)}
@@ -65,7 +66,7 @@ export function CollectionList({ rows, language, onOpen }: Props) {
                 <View style={[styles.fill, { width: `${Math.round(share * 100)}%` }]} />
               </View>
             </View>
-          </Pressable>
+          </Tap>
         );
       })}
     </View>

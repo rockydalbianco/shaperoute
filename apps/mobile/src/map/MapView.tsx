@@ -29,6 +29,7 @@ import {
   space,
 } from "../theme/tokens";
 import { fromLngLat, type LngLat } from "./coordinates";
+import { useMapCover } from "./mapCover";
 import { type MapKind, useMapKind } from "./mapKind";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
@@ -46,6 +47,7 @@ import {
   pageScript,
   parsePageMessage,
   setCanvas,
+  setCover,
   setDoubleTap,
   setKind,
   setMove,
@@ -267,6 +269,10 @@ export function MapView({
   const stopsShown = useRef(false);
   const othersShown = useRef(false);
   const ghostShown = useRef(false);
+  // What lies over the top of the map, as the screen around it says
+  // (TASK-443), and whether the page was told.
+  const cover = useMapCover();
+  const coverTold = useRef(false);
   const progressShown = useRef(false);
   const rejoinShown = useRef(false);
   const doubleTapAsked = useRef(false);
@@ -325,6 +331,18 @@ export function MapView({
     });
     return () => watching.remove();
   }, [failed]);
+
+  // Before the route, so it is framed clear of the status bar and of the
+  // buttons at once (TASK-443). None after some: framed as never told.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (cover !== null || coverTold.current) {
+      webView.current?.injectJavaScript(pageScript(setCover(cover)));
+      coverTold.current = cover !== null;
+    }
+  }, [ready, cover]);
 
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {

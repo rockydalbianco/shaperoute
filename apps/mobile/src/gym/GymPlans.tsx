@@ -22,7 +22,7 @@ import { GymPlanWizard, type WizardStep } from "./GymPlanWizard";
 import { gymStyles } from "./gymStyles";
 import { isoDay, useGymPlans } from "./plans";
 import { cycleWeekOf, sessionsOfWeek } from "./program";
-import { sessionLetter } from "./proposal";
+import { gymIndex, isRunDay, sessionLetter } from "./proposal";
 
 /** At most this many plans an account keeps (gym_plans.py). */
 export const MAX_PLANS = 20;
@@ -208,10 +208,14 @@ function ProgramCard({
   const week = where?.week ?? 1;
   const sessions = sessionsOfWeek(program, week, where?.cycle ?? 0);
   const todayDay = isoDay(today);
+  // A, B, C… for the gym's days, «RUN» for a run day (TASK-433 C).
   const letters = new Map(
-    [...program.sessions]
-      .sort((a, b) => a.day - b.day)
-      .map((session, index) => [session.day, sessionLetter(index)]),
+    program.sessions.map((session) => [
+      session.day,
+      isRunDay(session)
+        ? "RUN"
+        : sessionLetter(gymIndex(program.sessions, session.day)),
+    ]),
   );
   return (
     <View style={styles.program} testID="gym-plan-program">
@@ -266,6 +270,7 @@ function ProgramCard({
                 <View
                   style={[
                     styles.dayDot,
+                    session.run !== undefined && styles.dayDotRun,
                     number < todayDay && where !== null && styles.dayDotPast,
                     isToday && styles.dayDotToday,
                   ]}
@@ -274,6 +279,7 @@ function ProgramCard({
                   <Text
                     style={[
                       styles.dayLetter,
+                      session.run !== undefined && styles.dayLetterRun,
                       number < todayDay && where !== null && styles.dayLetterPast,
                     ]}
                   >
@@ -451,6 +457,13 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.small,
     fontWeight: fontWeight.bold,
+  },
+  dayDotRun: {
+    borderColor: color.runDay,
+  },
+  dayLetterRun: {
+    color: color.runDay,
+    fontSize: fontSize.label,
   },
   dayLetterPast: {
     color: color.onAccent,

@@ -36,6 +36,8 @@ export type SnowDay = {
   descents: number | null;
   /** The metres of the descents, or of the whole day without heights. */
   skiedM: number;
+  /** Their milliseconds: the time the calories count (TASK-424 part C2). */
+  skiedMs: number;
   /** The metres skied down; null without heights. */
   verticalM: number | null;
   /** In metres a second; null before any descent has its seconds. */
@@ -177,8 +179,13 @@ function topOf(track: Track, leg: Leg): number | null {
   return top;
 }
 
-/** The day of `track`: its descents, its lifts and its numbers. */
-export function snowDay(track: Track): SnowDay {
+/** The lifts and the descents of `track`, in their order, and whether the
+ * phone gave any height. */
+function liftsAndDescents(track: Track): {
+  heights: boolean;
+  lifts: Leg[];
+  descents: Leg[];
+} {
   const last = track.fixes.length - 1;
   const read = legs(track);
   const heights = track.fixes.some((_, index) => heightOf(track, index) !== null);
@@ -202,6 +209,12 @@ export function snowDay(track: Track): SnowDay {
     : last > 0
       ? [{ from: 0, to: last }]
       : [];
+  return { heights, lifts, descents };
+}
+
+/** The day of `track`: its descents, its lifts and its numbers. */
+export function snowDay(track: Track): SnowDay {
+  const { heights, lifts, descents } = liftsAndDescents(track);
   let skiedM = 0;
   let skiedMs = 0;
   let verticalM = 0;
@@ -219,9 +232,73 @@ export function snowDay(track: Track): SnowDay {
   return {
     descents: heights ? descents.length : null,
     skiedM,
+    skiedMs,
     verticalM: heights ? verticalM : null,
     topMps,
     averageMps: skiedMs > 0 ? skiedM / (skiedMs / 1000) : null,
     lifts: heights ? lifts : null,
   };
+}
+
+/**
+ * A lift or a descent of the day, with its own numbers (TASK-429 part B,
+ * ADR-0357): what «Runs» shows, one after the other, and what the map
+ * numbers. `n` counts the lifts and the descents apart, from 1.
+ */
+export type SnowPart = {
+  kind: "lift" | "descent";
+  n: number;
+  leg: Leg;
+  /** When it began and ended, on the phone's clock. */
+  startMs: number;
+  endMs: number;
+  /** Its time, pauses left out, and its metres. */
+  ms: number;
+  metres: number;
+  /** The metres a lift climbed, or a descent dropped. */
+  heightM: number;
+  /** A descent's top speed, in metres a second; null for a lift, and for
+   * a descent too short to say. */
+  topMps: number | null;
+};
+
+/** The lifts and the descents of `track` in the order of the day; null
+ * when the phone gave no height, and the day has none to tell apart. */
+export function snowParts(track: Track): SnowPart[] | null {
+  const { heights, lifts, descents } = liftsAndDescents(track);
+  if (!heights) {
+    return null;
+  }
+  const parts: SnowPart[] = [
+    ...lifts.map((leg, at) => {
+      const { metres, ms } = metresAndMs(track, leg);
+      const rise = (heightOf(track, leg.to) ?? 0) - (heightOf(track, leg.from) ?? 0);
+      return {
+        kind: "lift" as const,
+        n: at + 1,
+        leg,
+        startMs: track.fixes[leg.from].timeMs,
+        endMs: track.fixes[leg.to].timeMs,
+        ms,
+        metres,
+        heightM: Math.max(0, rise),
+        topMps: null,
+      };
+    }),
+    ...descents.map((leg, at) => {
+      const { metres, ms } = metresAndMs(track, leg);
+      return {
+        kind: "descent" as const,
+        n: at + 1,
+        leg,
+        startMs: track.fixes[leg.from].timeMs,
+        endMs: track.fixes[leg.to].timeMs,
+        ms,
+        metres,
+        heightM: droppedM(track, leg),
+        topMps: topOf(track, leg),
+      };
+    }),
+  ];
+  return parts.sort((a, b) => a.leg.from - b.leg.from);
 }

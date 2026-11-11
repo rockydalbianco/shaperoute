@@ -221,5 +221,5 @@ def test_the_command_says_what_it_did(
     assert main([]) == 0
     assert capsys.readouterr().out.strip() == (
         f"game_backfill: rules {game_backfill.RULES_VERSION}, 1 account(s),"
-        f" 1 run(s), {len(SIX_KM_UNLOCKS)} shape(s) unlocked"
+        f" 1 run(s), {len(SIX_KM_UNLOCKS)} shape(s) unlocked, 0 edition(s)"
     )

@@ -77,8 +77,9 @@ test("a swim of «My activities» has the pace of 100 m, its post too", () => {
   expect(resultValue(postOfActivity(detail), "pace")).toBe("2:24 /100 m");
 });
 
-test("in the Feed a swim says its sport first, and its pace of 100 m", () => {
+test("in the Feed a swim says its sport first, its pace of 100 m and its calories", () => {
   const [post] = SAMPLE_FEED;
+  // A pool's bands in open water too (TASK-424 part C2): 2:00 /100 m, 8 MET.
   expect(
     postFacts({
       ...post!,
@@ -87,5 +88,5 @@ test("in the Feed a swim says its sport first, and its pace of 100 m", () => {
       minutes: 20,
       activity: "swimming",
     }),
-  ).toBe("Swim · Heart · 1.0 km · 20 min · 2:00 /100 m");
+  ).toBe("Swim · Heart · 1.0 km · 20 min · 2:00 /100 m · 172 kcal");
 });

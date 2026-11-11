@@ -83,14 +83,20 @@ test("the snow is told apart, and has no route's activity", () => {
 });
 
 test.each([
-  ["skiing", "Ski"],
-  ["xc_skiing", "Cross-country ski"],
-] as const)("a post of %s says its sport, with no energy guessed", (activity, name) => {
-  const shown = shownPost(post(activity));
-  expect(postFacts(shown).startsWith(`${name} · `)).toBe(true);
-  expect(postEnergy(shown)).toBeNull();
-  expect(postEnergy(shownPost(post("running")))).not.toBeNull();
-});
+  // Downhill counts its descents, which the post does not have: none until
+  // the API keeps their time (TASK-424 part C2b).
+  ["skiing", "Ski", false],
+  // Cross-country its own formula (TASK-424 part C2).
+  ["xc_skiing", "Cross-country ski", true],
+] as const)(
+  "a post of %s says its sport, and its energy when it can",
+  (activity, name, has) => {
+    const shown = shownPost(post(activity));
+    expect(postFacts(shown).startsWith(`${name} · `)).toBe(true);
+    expect(postEnergy(shown) !== null).toBe(has);
+    expect(postEnergy(shownPost(post("running")))).not.toBeNull();
+  },
+);
 
 test.each(SNOW)(
   "the Feed's card of %s: like, Share, never «Edit & run» (TASK-410 F)",

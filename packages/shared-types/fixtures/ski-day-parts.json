@@ -1,0 +1,46 @@
+{
+  "resort": { "id": "aaa1", "name": "Test Valley" },
+  "gear": "Snowboard Burton Custom 158",
+  "snow": "powder",
+  "parts": [
+    {
+      "kind": "lift",
+      "n": 1,
+      "start_s": 0,
+      "end_s": 600,
+      "moving_s": 600,
+      "metres": 2000,
+      "height_m": 400,
+      "top_mps": null,
+      "from_fix": 0,
+      "to_fix": 20,
+      "name": "Ciampinoi"
+    },
+    {
+      "kind": "descent",
+      "n": 1,
+      "start_s": 600,
+      "end_s": 1500,
+      "moving_s": 880,
+      "metres": 3000,
+      "height_m": 398.5,
+      "top_mps": 19.4,
+      "from_fix": 20,
+      "to_fix": 50,
+      "name": "Saslong"
+    },
+    {
+      "kind": "descent",
+      "n": 2,
+      "start_s": null,
+      "end_s": null,
+      "moving_s": 300,
+      "metres": 900,
+      "height_m": 120,
+      "top_mps": null,
+      "from_fix": null,
+      "to_fix": null,
+      "name": null
+    }
+  ]
+}

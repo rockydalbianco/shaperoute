@@ -84,6 +84,9 @@ SOURCE |= {"order"}
 # The figures of the run (TASK-410 part C): no fixture written before has
 # them (test_run_stats.py has their examples).
 NEW_FIELDS |= {"stats"}
+# The descents of a day of skiing, TASK-424 part C2b (test_ski_parts.py).
+NEW_FIELDS |= {"ski_descents"}
+SOURCE |= {"ski_descents"}
 SOURCE |= {"stats"}
 THIRD_EMAIL = "third@example.com"
 

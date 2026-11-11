@@ -1,10 +1,10 @@
 # TASK-435 — Primo percorso subito, alternative dopo
 
-**Stato**: In corso — parte 0 in `main` (#1104); parte A (motore) nella
-PR #1105, la mergia l'utente; B (API) e C (app) scritte e provate sui
-branch `feat/TASK-435-b-first-in-job` e `feat/TASK-435-c-app-first-route`,
-una sopra l'altra, in PR quando quella prima è in `main`. Guadagno
-misurato sul Mac scritto sotto («Parte D»)
+**Stato**: In corso — parte 0 (#1104), A motore (#1105) e B API (#1139)
+in `main` e **sul server dal passo 8** (`ab5b2983`, 2026-11-11 22:14Z);
+C app nella PR #1161, provata nel simulatore, aspetta il sì dell'utente al
+prima/dopo e il merge del Coordinatore; esce con l'aggiornamento completo
+dell'app. Misure sotto («Parte D»)
 **Fase**: 5 · **Branch**: `docs/TASK-435-plan` (questo file); poi una per
 parte, sotto · **ADR**: 0361
 
@@ -361,8 +361,53 @@ scaldato i due processi; il job letto ogni 10 ms):
   diretta della parte 0 (0,2 s in mediana, `plan_nearby` chiamato da
   solo): il perché non è stato cercato.
 
-**Non ancora misurato**: il server (dopo il passo server, dalle righe
-«times» del log) e l'app su un telefono vero (dopo l'OTA di anteprima).
+**Sul server, prima del passo 8** (`out/TASK-435/server-times-before-passo8.txt`:
+78 righe «times» lette dal Coordinatore l'11 novembre, coi 2 processi
+caldi; 22 job con le partenze vicine e senza zona scaricata; dentro ci
+sono anche richieste di prova):
+
+| | Mediana | Media | 75° percentile | Massimo |
+|---|---|---|---|---|
+| Risposta intera (`total`) | 8,1 s | 8,5 | 10,9 | 14,9 |
+| Piano della partenza (`start`) | 4,5 s | 4,6 | 6,2 | 7,3 |
+| Attesa delle vicine (`wait`) | **2,9 s** | 3,4 | 5,7 | 8,3 |
+| `wait` meno 0,6 s (quello che il primo percorso guadagna) | 2,3 s | 2,8 | 5,1 | 7,7 |
+
+- `wait` è almeno 2 s in 13 job su 22, almeno 3 s in 10, almeno 5 s in 7:
+  più dei 9 job della parte 0 (mediana 1,5 s).
+- Una vicina ha vinto in 13 job su 22: lì il primo percorso resta A e la
+  migliore è B.
+- In 4 job una vicina è stata lasciata perché in ritardo: lì il primo
+  percorso arriva almeno 3 s prima della risposta.
+
+**Sul server, dopo il passo 8** (`out/coordinatore/prova-passo8.out`, la
+prova di `SERVER-B.md` lanciata dall'utente l'11 novembre alle 22:18Z, un
+cuore da 5,3 km a Trento): primo percorso dopo 11,2 s, risposta intera dopo
+14,0 s, **2,7 s guadagnati**; il primo era la seconda alternativa di 3;
+senza `?first=1` le chiavi del job erano quelle di prima a ogni lettura, lo
+stesso `result` con e senza, `first` di nuovo `null` a `done`. È una
+richiesta sola, a processo appena avviato. Le righe «times» di dopo il
+passo le legge il Coordinatore fra qualche giorno.
+
+**Nel simulatore** (iPhone 17e, Expo Go dal ramo della C, API del ramo
+sul Mac con `--no-route-store`, una stella da 10 km da Piazza del Duomo a
+Trento; strisce e video in `out/TASK-435/`: `TASK-435-prima.jpg`,
+`TASK-435-dopo.jpg`, `prima.mov`, `dopo.mov`):
+
+- **Dopo**: la sagoma d'attesa (TASK-442) per circa 3 s, poi il primo
+  percorso (9,7 km) con «Looking for other routes…», «Start» ed «Export
+  GPX»; circa 2,5 s dopo le schede: A 9,7 km · 92% (il primo), B 10,4 km ·
+  97% (la migliore), C 9,3 km · 91%. Il percorso sulla mappa non cambia;
+  il pannello si alza di qualche riga quando entrano le schede.
+- **Prima** (lo stesso codice senza chiedere `first`): la sagoma d'attesa
+  fino alla risposta intera, poi tutto insieme, con A la migliore (97%).
+- Il Mac era carico: il job del «dopo» è durato 4,8 s, quello del «prima»
+  7,5 s. Il guadagno si legge dentro la ripresa «dopo», non dal confronto
+  dei due totali. Con un cuore da 10 km le vicine hanno finito prima della
+  partenza e la riga non si è vista: primo percorso e schede nello stesso
+  secondo.
+
+**Non ancora provato**: l'app su un telefono vero.
 
 **Come sono fatte le parti, rispetto al piano.**
 

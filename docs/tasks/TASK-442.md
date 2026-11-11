@@ -94,7 +94,7 @@ stessa sagoma si muove piano sopra la mappa.
   vedere l'attesa nel simulatore serve un'API locale con `--no-route-store`
   (quella sulla porta 8000 risponde subito col percorso tenuto).
 - 2026-11-11: codice e test scritti, screenshot «dopo» fatti (variante A e
-  B: ognuna ha la sua sagoma). PR aperta. Mancano: il sì dell'utente su ciò
+  B: ognuna ha la sua sagoma). PR #1143 aperta. Mancano: il sì dell'utente su ciò
   che si vede, poi «#NNN pronta» al Coordinatore, che mergia lui; dopo il
   merge la PR di soli documenti (STATUS → COMPLETATI, stato `Done`) e
   l'OTA, col sì dell'utente, dal Coordinatore.

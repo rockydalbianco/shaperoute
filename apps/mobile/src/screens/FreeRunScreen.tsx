@@ -21,6 +21,7 @@ import { useSport } from "../settings/useSport";
 import { postOfTrack } from "../share/postRun";
 import { SharePostButton } from "../share/SharePost";
 import { DayResort } from "../ski/DayResort";
+import { SkiLegend } from "../skimode/SkiLegend";
 import {
   color,
   fontSize,
@@ -33,6 +34,8 @@ import { runDistanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { RunCard } from "./RunDashboard";
 import { RunGrid, useRunNumbers } from "./RunPanel";
+import { SkiTourFinishCard } from "./SkiTourFinishCard";
+import { SkiTourLive } from "./SkiTourLive";
 import { SnowFinishCard } from "./SnowFinishCard";
 
 /**
@@ -147,10 +150,16 @@ export function FreeRunCard({
     />
   );
   // On the slopes, the resort of the day and its weather over the numbers
-  // (TASK-406 part D2).
+  // (TASK-406 part D2); on a ski tour, its phase, its VAM, the metres
+  // climbed and the height (TASK-415 part B).
   return sport === "skiing" ? (
     <View style={styles.skiing}>
       <DayResort />
+      {card}
+    </View>
+  ) : sport === "ski_touring" ? (
+    <View style={styles.skiing}>
+      <SkiTourLive track={track} live={running} />
       {card}
     </View>
   ) : (
@@ -160,19 +169,20 @@ export function FreeRunCard({
 
 export function FreeFinishBanner() {
   // A day on the snow is a day, not a run (TASK-375 part C); a day of
-  // skiing has its lifts dashed on the map (part C2).
+  // skiing has its descents yellow and its lifts red and dashed on the map,
+  // numbered, and the legend says so (TASK-429 part B, ADR-0357).
   const activity = runActivityOf(useSport());
   const snow = isOnSnow(activity);
   return (
     <View style={styles.banner}>
       <Text style={styles.title}>{snow ? t("Your day") : t("Your run")}</Text>
-      <Text style={styles.message}>
-        {activity === "skiing"
-          ? t("White: your descents. Dashed: the lifts.")
-          : snow
-            ? t("White: where you skied.")
-            : t("White: what you ran.")}
-      </Text>
+      {activity === "skiing" ? (
+        <SkiLegend />
+      ) : (
+        <Text style={styles.message}>
+          {snow ? t("White: where you skied.") : t("White: what you ran.")}
+        </Text>
+      )}
     </View>
   );
 }
@@ -187,10 +197,13 @@ type FinishProps = {
 };
 
 /** The end of a run without a route or, on the snow, of the day
- * (TASK-375 part C): the sport of «Settings» says which. */
+ * (TASK-375 part C), or of a ski tour with its phases (TASK-415 part B):
+ * the sport of «Settings» says which. */
 export function FreeFinishCard(props: FinishProps) {
   const activity = runActivityOf(useSport());
-  return isOnSnow(activity) ? (
+  return activity === "ski_touring" ? (
+    <SkiTourFinishCard {...props} activity={activity} />
+  ) : isOnSnow(activity) ? (
     <SnowFinishCard {...props} activity={activity} />
   ) : (
     <RunFinishCard {...props} />

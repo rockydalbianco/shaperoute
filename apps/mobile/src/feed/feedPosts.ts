@@ -1,6 +1,7 @@
 import type { FeedPost } from "@shaperoute/shared-types";
 
 import { dayLabel } from "../activities/activityText";
+import { isSkiDescents } from "../api/runStats";
 import { shapeName } from "../i18n/shapeNames";
 import type { SamplePost } from "./sampleFeed";
 
@@ -57,6 +58,8 @@ export function shownPost(post: FeedPost): ShownPost {
     line: post.track_preview,
     activity: post.activity ?? "running",
     ...(post.rotation_deg != null ? { rotation_deg: post.rotation_deg } : {}),
+    // A day of skiing's descents, for its calories (TASK-424 part C2b).
+    ...(isSkiDescents(post.ski_descents) ? { ski_descents: post.ski_descents } : {}),
     drawing: post,
   };
 }

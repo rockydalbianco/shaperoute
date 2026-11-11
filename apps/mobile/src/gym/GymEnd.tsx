@@ -13,7 +13,7 @@ import { appLanguage } from "../i18n/language";
 import { clockLabel } from "../navigation/freeRun";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
 import { useUnits } from "../units/useUnits";
-import { restsLabel, rowsOf, setLabel } from "./ExerciseList";
+import { countsLabel, restsLabel, rowsOf, setLabel } from "./ExerciseList";
 import { ExercisePicker } from "./ExercisePicker";
 import { type GymPost, GymPostForm, newGymPost } from "./GymPostForm";
 import { saveGymToHealth } from "./gymHealth";
@@ -46,12 +46,14 @@ type Editing = { kind: "set"; n: number; entry: Entry } | { kind: "new"; entry: 
  * «Sì, anche alla fine»), as at the end of a run. «Save» keeps it on the
  * phone and sends it, its post after it, and writes it to Apple Health or
  * Health Connect after the user's yes (part C); «Discard» asks first.
- * Signed out, it says to sign in, as the end of a run does. Its energy
+ * Signed out, it says to sign in, as the end of a run does: `onSignIn` is
+ * the way there of what shows it over the app (TASK-453). Its energy
  * under its time (part C, the user's «Stima MET sempre»).
  */
 export function GymEnd({
   workout,
   onSave,
+  onSignIn,
   pick,
   fetchFn,
   apiKey,
@@ -59,6 +61,8 @@ export function GymEnd({
 }: {
   workout: Workout;
   onSave: (workout: Workout, post?: GymPost) => GymSaved;
+  /** «Sign up or log in», signed out; without it, the account's own door. */
+  onSignIn?: () => void;
   /** The fakes of the tests: the photo picker, the fetch of the tag search. */
   pick?: PickPhoto;
   fetchFn?: typeof fetch;
@@ -163,17 +167,17 @@ export function GymEnd({
             {clockLabel(timeMs)}
           </Text>
           {kcal !== null && (
-            <Text style={gymStyles.muted} testID="gym-end-kcal">
+            <Text style={[gymStyles.muted, styles.energy]} testID="gym-end-kcal">
               {kcal}
             </Text>
           )}
         </View>
         {workout.sets.length > 0 && (
           <Text style={gymStyles.text}>
-            {t("{n} exercises · {s} sets", {
-              n: String(rowsOf(workout.sets, appLanguage()).length),
-              s: String(workout.sets.length),
-            })}
+            {countsLabel(
+              rowsOf(workout.sets, appLanguage()).length,
+              workout.sets.length,
+            )}
           </Text>
         )}
         {rests !== null && <Text style={gymStyles.muted}>{rests}</Text>}
@@ -262,7 +266,7 @@ export function GymEnd({
           </Text>
         )}
         {!signedIn && (
-          <Pressable onPress={signIn} accessibilityRole="button">
+          <Pressable onPress={onSignIn ?? signIn} accessibilityRole="button">
             <Text style={[gymStyles.text, styles.link]}>{t(SIGN_IN_TO_KEEP_RUNS)}</Text>
           </Pressable>
         )}
@@ -325,6 +329,10 @@ export function GymEnd({
 }
 
 const styles = StyleSheet.create({
+  // The calories, in red wherever they are (TASK-424 part C3).
+  energy: {
+    color: color.energy,
+  },
   head: {
     alignItems: "center",
     gap: space.xs,

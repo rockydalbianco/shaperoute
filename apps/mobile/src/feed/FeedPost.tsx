@@ -50,8 +50,10 @@ import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { useEditRunDoor } from "./editRunDoor";
 import { isImportedPost, isShown } from "./feedPosts";
+import { PhotoViewer } from "./PhotoViewer";
 import { PostActions } from "./PostActions";
 import { gymPostEnergy, postEnergy } from "./postEnergy";
+import { FactsText, factsEnergy } from "./FactsText";
 import { summaryRows } from "./postSections";
 import { drawingHeight, RouteMap } from "./RouteMap";
 import { SummaryBoxes } from "./SummaryBoxes";
@@ -154,7 +156,8 @@ export function postFacts(post: SamplePost, sets?: readonly GymSet[] | null): st
  * (`PostActions`, TASK-410 F); the «…» and the actions stay outside the card's
  * button, where a screen reader reaches them. So does its author's name with
  * the initial: a tap on them opens the author's profile, as a tagged name
- * does (TASK-399).
+ * does (TASK-399). A tap on a photo opens it on the whole screen, where
+ * «Save» keeps it on the phone; a tap on the drawing opens its route.
  */
 export function FeedPost({ post, width, onOpen }: Props) {
   // The line of facts is written again when «Settings» changes the units
@@ -166,6 +169,8 @@ export function FeedPost({ post, width, onOpen }: Props) {
   // reached: the photos up to the one after it are loaded, and stay.
   const [page, setPage] = useState(0);
   const [reached, setReached] = useState(0);
+  // The photo shown on the whole screen, by its place; null when none.
+  const [viewing, setViewing] = useState<number | null>(null);
   const author = isShown(post) ? post.drawing.author : null;
   const blocked = useBlockedNow(author === null ? null : author.public_id);
   const bearing = bearingOf(post.rotation_deg);
@@ -251,11 +256,20 @@ export function FeedPost({ post, width, onOpen }: Props) {
             { kind: "drawing" as const },
           ]
         : ordered;
+  // A photo's page is the one shown, a whole width each: the tap opens it.
+  const onPhotoPress = tapped(() => {
+    const item = pages[page];
+    if (item !== undefined && item.kind === "photo") {
+      setViewing(item.n);
+    }
+  });
   // Each page of the photos takes a tap itself (TASK-330): were the card
   // the one touched, iOS would not let the photos scroll inside it, and the
   // swipe would turn the app's page to «Draw» instead. A page is as wide as
   // the card and as tall as the tallest, the drawing with its words.
-  function tappable(key: string | number, shown: ReactNode) {
+  // A photo's page opens the photo on the whole screen, to look at and to
+  // save; the drawing's opens its route, as the card does.
+  function tappable(key: string | number, shown: ReactNode, isPhoto = false) {
     if (onOpen === undefined) {
       return (
         <View key={key} style={{ width }}>
@@ -268,7 +282,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
         key={key}
         style={{ width }}
         onPressIn={onPressIn}
-        onPress={onPress}
+        onPress={isPhoto ? onPhotoPress : onPress}
         accessible={false}
         testID="feed-page-tap"
       >
@@ -332,7 +346,13 @@ export function FeedPost({ post, width, onOpen }: Props) {
   const words = (
     <View style={styles.words}>
       <Text style={styles.title}>{post.title}</Text>
-      {!shown && <Text style={styles.facts}>{postFacts(post, exercises?.sets)}</Text>}
+      {!shown && (
+        <FactsText
+          style={styles.facts}
+          facts={postFacts(post, exercises?.sets)}
+          kcal={factsEnergy(post, exercises?.sets)}
+        />
+      )}
       {/* The figures this workout reached first (TASK-385 E). */}
       {gym && <NewLevels exercises={exercises} />}
     </View>
@@ -364,7 +384,12 @@ export function FeedPost({ post, width, onOpen }: Props) {
       >
         <Text style={styles.titleOnPhoto}>{post.title}</Text>
         {!shown && (
-          <Text style={styles.factsOnPhoto}>{postFacts(post, exercises?.sets)}</Text>
+          <FactsText
+            style={styles.factsOnPhoto}
+            facts={postFacts(post, exercises?.sets)}
+            kcal={factsEnergy(post, exercises?.sets)}
+            energyColor={color.energyOnScrim}
+          />
         )}
       </View>
     </>
@@ -476,6 +501,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
                       style={[StyleSheet.absoluteFill, styles.photo]}
                     />
                   ),
+                  photo !== undefined,
                 );
               })}
             </ScrollView>
@@ -528,6 +554,16 @@ export function FeedPost({ post, width, onOpen }: Props) {
         {body}
       </Tap>
     );
+  const whole = photos.find((photo) => photo.n === viewing);
+  const viewer =
+    whole === undefined || !isShown(post) ? null : (
+      <PhotoViewer
+        source={whole.source}
+        drawingId={post.drawing.id}
+        n={whole.n}
+        onClose={() => setViewing(null)}
+      />
+    );
   if (!isShown(post)) {
     return card;
   }
@@ -550,6 +586,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
           <PostActions post={post} mine={mine} onEditRun={onEditRun} />
         </>
       )}
+      {viewer}
     </View>
   );
 }

@@ -9,7 +9,7 @@ import { dropGymPlan, fetchGymPlans, isGymPlans, saveGymPlan } from "./gymPlans"
 const URL = "http://api";
 const TOKEN = "the-token";
 const options = (fetchFn: jest.Mock) => ({ fetchFn, key: null });
-const [push, , muscle] = plans.plans as GymPlan[];
+const [push, , muscle, liftAndRun] = plans.plans as GymPlan[];
 
 test("the example of the API is what the app reads", () => {
   expect(isGymPlans(plans)).toBe(true);
@@ -85,4 +85,17 @@ test("an app of before reads a plan with weeks: its days, no exercises, no «Tod
   expect(muscle.days).toEqual([1, 3, 5]);
   // Without exercises its «Today» of before (days and items) is never one.
   expect(muscle.items).toEqual([]);
+});
+
+test("a run day of a plan (TASK-433 C): its run, read; one it does not know, not", () => {
+  const run = liftAndRun.program!.sessions[1].run;
+  expect(run).toEqual({ kind: "easy", distance_m: 5000 });
+  const broken = {
+    ...liftAndRun,
+    program: {
+      ...liftAndRun.program!,
+      sessions: [{ day: 2, name: "Run", items: [], run: { kind: "tempo" } }],
+    },
+  };
+  expect(isGymPlans({ plans: [broken] })).toBe(false);
 });

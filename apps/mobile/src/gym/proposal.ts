@@ -2,9 +2,11 @@ import type {
   GymPlanGoal,
   GymPlanItem,
   GymPlanMode,
+  GymPlanRun,
   GymPlanSession,
   GymPlanWeek,
   GymProgram,
+  GymRunKind,
 } from "@shaperoute/shared-types";
 
 import { tLater } from "../i18n";
@@ -296,9 +298,83 @@ function sessionOf(
  * Sunday), changing as `mode` says over `weeks`; the workouts' names are
  * written in the app's language, and the plan keeps them as written.
  */
+/** The run days the guide picks for `count` runs: the days without the
+ * gym, Tuesday and Saturday first (TASK-433 C). */
+const RUN_DAY_ORDER = [2, 6, 4, 7, 3, 5, 1];
+
+export function proposedRunDays(count: number, gymDays: number[]): number[] {
+  return RUN_DAY_ORDER.filter((day) => !gymDays.includes(day))
+    .slice(0, Math.max(0, count))
+    .sort((a, b) => a - b);
+}
+
+/** The names of the run days, by kind. */
+export const RUN_NAMES: Readonly<Record<GymRunKind, string>> = {
+  easy: tLater("Easy run"),
+  intervals: tLater("Intervals"),
+  long: tLater("Long run"),
+};
+
+/** The runs the guide proposes, in order: easy, long, intervals; shorter
+ * to get back in shape. */
+export function proposedRun(index: number, goal: GymPlanGoal): GymPlanRun {
+  const fit = goal === "fit";
+  switch (index % 3) {
+    case 0:
+      return { kind: "easy", distance_m: fit ? 3000 : 5000 };
+    case 1:
+      return { kind: "long", distance_m: fit ? 5000 : 8000 };
+    default:
+      return fit
+        ? { kind: "intervals", reps: 5, rep_m: 200 }
+        : { kind: "intervals", reps: 6, rep_m: 400 };
+  }
+}
+
+function runSession(
+  day: number,
+  index: number,
+  goal: GymPlanGoal,
+  naming: Naming,
+): GymPlanSession {
+  const run = proposedRun(index, goal);
+  return { day, name: naming.t(RUN_NAMES[run.kind]), items: [], run };
+}
+
+/** A run day of a program. */
+export function isRunDay(session: GymPlanSession): boolean {
+  return session.run !== undefined;
+}
+
+function byDay(a: GymPlanSession, b: GymPlanSession): number {
+  return a.day - b.day;
+}
+
+/** The gym's workouts of a week as a turn of `TURNS`, its run days as
+ * they are. */
+function turnOf(
+  sessions: GymPlanSession[],
+  goal: GymPlanGoal,
+  naming: Naming,
+): GymPlanSession[] {
+  const gym = sessions.filter((one) => !isRunDay(one)).sort(byDay);
+  const count = Math.min(7, Math.max(1, gym.length));
+  const turned = gym.map((session, index) =>
+    sessionOf(TURNS[count][index], session.day, goal, naming),
+  );
+  return [...turned, ...sessions.filter(isRunDay)].sort(byDay);
+}
+
+/**
+ * The program the guide proposes for `goal` on `days` (1 Monday to 7
+ * Sunday) at the gym and `runDays` running (TASK-433 C), changing as
+ * `mode` says over `weeks`; the workouts' names are written in the app's
+ * language, and the plan keeps them as written.
+ */
 export function proposeProgram({
   goal,
   days,
+  runDays = [],
   mode,
   weeks,
   startsOn,
@@ -306,28 +382,24 @@ export function proposeProgram({
 }: {
   goal: GymPlanGoal;
   days: number[];
+  runDays?: number[];
   mode: GymPlanMode;
   weeks: number;
   startsOn: string;
   naming: Naming;
 }): GymProgram {
   const sorted = [...new Set(days)].sort((a, b) => a - b);
+  const runs = [...new Set(runDays)]
+    .filter((day) => !sorted.includes(day))
+    .sort((a, b) => a - b);
   const count = Math.min(7, Math.max(1, sorted.length));
   const split = SPLITS[count];
-  const sessions = sorted.map((day, index) =>
-    sessionOf(split[index], day, goal, naming),
-  );
+  const sessions = [
+    ...sorted.map((day, index) => sessionOf(split[index], day, goal, naming)),
+    ...runs.map((day, index) => runSession(day, index, goal, naming)),
+  ].sort(byDay);
   const custom: GymPlanWeek[] =
-    mode === "alternate"
-      ? [
-          {
-            week: 2,
-            sessions: sorted.map((day, index) =>
-              sessionOf(TURNS[count][index], day, goal, naming),
-            ),
-          },
-        ]
-      : [];
+    mode === "alternate" ? [{ week: 2, sessions: turnOf(sessions, goal, naming) }] : [];
   return {
     goal,
     starts_on: startsOn,
@@ -361,14 +433,8 @@ export function withCycle(
   const length = cycleWeeks(mode, weeks);
   let custom = program.custom.filter((week) => week.week <= length);
   if (mode === "alternate" && !custom.some((week) => week.week === 2)) {
-    const count = Math.min(7, Math.max(1, program.sessions.length));
     custom = [
-      {
-        week: 2,
-        sessions: program.sessions.map((session, index) =>
-          sessionOf(TURNS[count][index], session.day, program.goal ?? "muscle", naming),
-        ),
-      },
+      { week: 2, sessions: turnOf(program.sessions, program.goal ?? "muscle", naming) },
     ];
   }
   return {
@@ -385,30 +451,52 @@ export function sessionLetter(index: number): string {
   return String.fromCharCode(65 + index);
 }
 
-/** The program on other days of the week: its workouts, in order, move to
- * the new days; a day more gets the guide's workout, a day less drops the
- * last one. The weeks written by hand follow their workouts' days. */
+/** The program on other days of the week: its workouts of the gym, in
+ * order, move to the new `days`, its run days to `runDays` (TASK-433 C); a
+ * day more gets the guide's workout or run, a day less drops the last one.
+ * The weeks written by hand follow their workouts' days. */
 export function withDays(
   program: GymProgram,
   days: number[],
   naming: Naming,
+  runDays: number[] = program.sessions.filter(isRunDay).map((one) => one.day),
 ): GymProgram {
   const sorted = [...new Set(days)].sort((a, b) => a - b);
-  const before = [...program.sessions].sort((a, b) => a.day - b.day);
-  const moved = new Map(before.map((session, index) => [session.day, sorted[index]]));
-  const count = Math.min(7, Math.max(1, sorted.length));
+  const runs = [...new Set(runDays)]
+    .filter((day) => !sorted.includes(day))
+    .sort((a, b) => a - b);
   const goal = program.goal ?? "muscle";
-  const sessions = sorted.map((day, index) =>
-    index < before.length
-      ? { ...before[index], day }
-      : sessionOf(SPLITS[count][index], day, goal, naming),
-  );
+  const gymBefore = program.sessions.filter((one) => !isRunDay(one)).sort(byDay);
+  const runBefore = program.sessions.filter(isRunDay).sort(byDay);
+  const moved = new Map<number, number>([
+    ...gymBefore.flatMap((session, index): [number, number][] =>
+      index < sorted.length ? [[session.day, sorted[index]]] : [],
+    ),
+    ...runBefore.flatMap((session, index): [number, number][] =>
+      index < runs.length ? [[session.day, runs[index]]] : [],
+    ),
+  ]);
+  const count = Math.min(7, Math.max(1, sorted.length));
+  const sessions = [
+    ...sorted.map((day, index) =>
+      index < gymBefore.length
+        ? { ...gymBefore[index], day }
+        : sessionOf(SPLITS[count][index], day, goal, naming),
+    ),
+    ...runs.map((day, index) =>
+      index < runBefore.length
+        ? { ...runBefore[index], day }
+        : runSession(day, index, goal, naming),
+    ),
+  ].sort(byDay);
   const custom = program.custom.map((week) => ({
     ...week,
-    sessions: week.sessions.flatMap((session) => {
-      const day = moved.get(session.day);
-      return day === undefined ? [] : [{ ...session, day }];
-    }),
+    sessions: week.sessions
+      .flatMap((session) => {
+        const day = moved.get(session.day);
+        return day === undefined ? [] : [{ ...session, day }];
+      })
+      .sort(byDay),
   }));
   return { ...program, sessions, custom };
 }
@@ -420,11 +508,29 @@ const WORKOUT_LETTER = tLater("Workout {letter}");
 export function emptyProgram(program: GymProgram, naming: Naming): GymProgram {
   return {
     ...program,
-    sessions: program.sessions.map((session, index) => ({
-      ...session,
-      name: naming.t(WORKOUT_LETTER).replace("{letter}", sessionLetter(index)),
-      items: [],
-    })),
+    sessions: program.sessions.map((session) =>
+      isRunDay(session)
+        ? session
+        : {
+            ...session,
+            name: naming
+              .t(WORKOUT_LETTER)
+              .replace(
+                "{letter}",
+                sessionLetter(gymIndex(program.sessions, session.day)),
+              ),
+            items: [],
+          },
+    ),
     custom: [],
   };
+}
+
+/** The letter's index of the gym's workout on `day`: A, B, C… count only
+ * the gym's days, a run day is «Run». */
+export function gymIndex(sessions: GymPlanSession[], day: number): number {
+  return sessions
+    .filter((one) => !isRunDay(one))
+    .sort(byDay)
+    .findIndex((one) => one.day === day);
 }

@@ -228,7 +228,9 @@ function SectionBody({ section }: { section: PostSection }) {
           accessibilityLabel={`${row.label}: ${row.value}`}
         >
           <Text style={styles.rowLabel}>{row.label}</Text>
-          <Text style={styles.rowValue}>{row.value}</Text>
+          <Text style={[styles.rowValue, row.energy && styles.energy]}>
+            {row.value}
+          </Text>
         </View>
       ))}
     </View>
@@ -318,5 +320,9 @@ const styles = StyleSheet.create({
   rowValue: {
     ...font.heading,
     color: color.text,
+  },
+  // The calories, in red wherever they are (TASK-424 part C3).
+  energy: {
+    color: color.energy,
   },
 });

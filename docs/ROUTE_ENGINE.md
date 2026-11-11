@@ -1090,6 +1090,17 @@ danno lo stesso percorso scelto punto per punto. Dove le partenze vicine
 sono poche (una sola a Levico, via Montebello) le alternative possono
 mancare: l'app mostra allora il percorso da solo, come prima.
 
+**Il piano della partenza, appena c'è** (TASK-435, ADR-0361):
+`plan_nearby(..., on_first=...)` chiama `on_first` una volta col piano
+della partenza dell'utente appena è pronto, mentre le partenze vicine
+stanno ancora calcolando: l'API lo mostra all'app prima della risposta
+intera. Non lo chiama quando la partenza non ha un percorso, né quando non
+ci sono partenze vicine da aspettare (nessun nodo vicino, grafo oltre
+`NEARBY_MAX_NODES`, memoria): lì la risposta è già intera. Non cambia la
+risposta: la scadenza dei figli si calcola prima della chiamata, e scelta,
+alternative e punti restano gli stessi (`test_nearby_first.py`, e la riga
+di `SAME_ROUTES_AS`).
+
 ### Dove la forma viene meglio (TASK-234)
 
 Un percorso può riuscire alla distanza chiesta mentre, a un'altra, la

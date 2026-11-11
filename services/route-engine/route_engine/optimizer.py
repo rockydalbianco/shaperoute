@@ -21,6 +21,7 @@ from dataclasses import dataclass, field, replace
 from typing import Any, Protocol
 
 import numpy as np
+import shapely
 
 from route_engine import pen_up, pieces
 from route_engine.errors import (
@@ -259,6 +260,58 @@ def _perimeter_m(xy: np.ndarray) -> float:
     return float(np.hypot(*np.diff(xy, axis=0).T).sum())
 
 
+def _road_points(graph: Graph) -> tuple[np.ndarray, np.ndarray]:
+    """The (lat, lon) points of every road of `graph`, one road after the
+    other in the order of its edges, each road once whichever way its edges
+    run (the first of them), and the rows where a segment begins: every
+    point but the last of its road.
+
+    Every geometry is read in one call to shapely, not one an edge: 0.05 s
+    less of each search on the graph of a 5 km route, for the same points
+    (TASK-436, ADR-0362)."""
+    nodes = graph.nodes
+    seen: set[frozenset[Any]] = set()
+    plain: list[int] = []
+    ends: list[tuple[float, float, float, float]] = []
+    drawn: list[int] = []
+    geometries: list[Any] = []
+    for u, v, data in graph.edges(data=True):
+        road = frozenset((u, v))
+        if road in seen:
+            continue
+        seen.add(road)
+        geometry = data.get("geometry")
+        if geometry is None:
+            a, b = nodes[u], nodes[v]
+            plain.append(len(seen) - 1)
+            ends.append((a["y"], a["x"], b["y"], b["x"]))
+        else:
+            drawn.append(len(seen) - 1)
+            geometries.append(geometry)
+    counts = np.full(len(seen), 2)
+    if drawn:
+        lonlat, which = shapely.get_coordinates(
+            np.array(geometries, dtype=object), return_index=True
+        )
+        counts[drawn] = np.bincount(which, minlength=len(drawn))
+    first = np.cumsum(counts) - counts
+    points = np.empty((int(counts.sum()), 2))
+    if drawn:
+        # Each point of a geometry goes as far into its road's rows as it is
+        # into the geometry's own.
+        own = np.cumsum(counts[drawn]) - counts[drawn]
+        points[first[drawn][which] + np.arange(len(which)) - own[which]] = lonlat[
+            :, ::-1
+        ]
+    if plain:
+        two = np.array(ends)
+        points[first[plain]] = two[:, :2]
+        points[first[plain] + 1] = two[:, 2:]
+    begins = np.ones(len(points), bool)
+    begins[(first + counts - 1)[counts > 0]] = False
+    return points, np.flatnonzero(begins)
+
+
 class RoadMask:
     """Which places lie within a band of some road, on a grid around `origin`.
 
@@ -268,32 +321,13 @@ class RoadMask:
 
     def __init__(self, graph: Graph, origin: LatLon, step_m: float = 10.0) -> None:
         self.origin = origin
-        coords: list[tuple[float, float]] = []
-        segments: list[tuple[int, int]] = []
-        seen: set[frozenset[Any]] = set()
-        for u, v, data in graph.edges(data=True):
-            if frozenset((u, v)) in seen:
-                continue
-            seen.add(frozenset((u, v)))
-            geometry = data.get("geometry")
-            if geometry is None:
-                line = [
-                    (graph.nodes[u]["y"], graph.nodes[u]["x"]),
-                    (graph.nodes[v]["y"], graph.nodes[v]["x"]),
-                ]
-            else:
-                line = [(lat, lon) for lon, lat in geometry.coords]
-            segments.extend(
-                (len(coords) + i, len(coords) + i + 1) for i in range(len(line) - 1)
-            )
-            coords.extend(line)
-        if not segments:
+        points, begins = _road_points(graph)
+        if not len(begins):
             # A graph without a road, like the one node left of a crop: said
             # as it is, not an index into no samples (TASK-180).
             raise NoRoadsError()
-        xy = latlon_to_local_array(origin, np.array(coords))
-        idx = np.array(segments)
-        a, b = xy[idx[:, 0]], xy[idx[:, 1]]
+        xy = latlon_to_local_array(origin, points)
+        a, b = xy[begins], xy[begins + 1]
         counts = np.maximum(1, np.ceil(np.hypot(*(b - a).T) / step_m).astype(int))
         seg = np.repeat(np.arange(len(a)), counts)
         t = (
@@ -650,6 +684,9 @@ def search(
     # A shape with strokes is judged finer (ADR-0039); normalized, its sides
     # drawn twice coincide exactly.
     band_share = CORRIDOR_BAND * detail_scale(np.array(shape), near_m=1e-9)
+    # The same for every placement: once here, not once a placement (5 500
+    # a search, TASK-436).
+    shape_perimeter = perimeter(shape)
     # One band for every trace, so the letters share one grid of roads.
     letter_band = float(round(LETTER_BAND * base_scale * word.height)) if word else 0.0
     grid: dict[LatLon, list[float]] = {}
@@ -716,7 +753,7 @@ def search(
             return float(scores.mean()) - moved
         # The band follows the scale alone, so every placement at one scale
         # shares the same grid.
-        band = round(band_share * perimeter(shape) * scale, 3)
+        band = round(band_share * shape_perimeter * scale, 3)
         outline = outline_xy(p, scale)
         fit = mask.fit_xy(outline, band)
         corners = outline[phase_corners[p.phase]]

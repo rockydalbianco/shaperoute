@@ -33,6 +33,8 @@ test("the limits are whole miles inside today's: 1–13, 7–18, 1–3; a swim's
     hiking: [1, 18],
     mountain_biking: [7, 18],
     inline_skating: [4, 18],
+    // By half a mile too, as a swim (TASK-413).
+    snowshoeing: [0.5, 1.5],
     walking: [1, 18],
     gravel_biking: [7, 18],
   });

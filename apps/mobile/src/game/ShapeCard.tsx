@@ -6,11 +6,16 @@ import { t } from "../i18n";
 import type { Language } from "../i18n/languages";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
 import type { Units } from "../units/units";
-import { goalText, percentText, progressText } from "./goalText";
+import { EditionMark } from "./EditionMark";
+import { goalText, percentText } from "./goalText";
+import { editionAlong, editionName } from "./prizesText";
 import { ShapeOutline } from "./ShapeOutline";
+import { shapeProgress } from "./shapeProgress";
 
 type Props = {
   shape: GameShape;
+  /** Every shape of the catalog: the levels of a pace, for its bar. */
+  shapes: readonly GameShape[];
   /** The account's state of it; null without an account, or not yet. */
   state: GameShapeState | null;
   /** The account's totals, for how far along a locked shape is. */
@@ -34,17 +39,28 @@ export function shapeNameIn(shape: GameShape, language: Language): string {
  * in the yellow with the day; locked, in grey with what it asks and how far
  * along the account is.
  */
-export function ShapeCard({ shape, state, me, width, units, language }: Props) {
+export function ShapeCard({ shape, shapes, state, me, width, units, language }: Props) {
   const unlocked = state?.unlocked_at ?? null;
   const name = shapeNameIn(shape, language);
   const asks = goalText(shape.goal, units);
-  const progress = unlocked === null ? (state?.progress ?? null) : null;
-  const along =
-    unlocked === null && me !== null ? progressText(shape.goal, me, units) : null;
+  // How far along, from the account's totals and best times (TASK-423):
+  // none once unlocked, nor without an account.
+  const way =
+    unlocked === null && me !== null ? shapeProgress(shape, shapes, me, units) : null;
+  const progress = way?.share ?? null;
+  const edition = unlocked !== null ? (state?.edition ?? null) : null;
+  const runs = state?.edition_runs ?? null;
+  const nextEdition =
+    edition !== null && runs !== null ? editionAlong(edition, runs) : null;
+  const along = way?.line ?? null;
   const label = [
     name,
-    unlocked !== null ? t("Unlocked {date}", { date: dayLabel(unlocked) }) : asks,
+    unlocked !== null ? t("Unlocked {date}", { date: dayLabel(unlocked) }) : null,
+    asks,
+    edition !== null && edition !== "bronze" ? editionName(edition) : null,
+    nextEdition,
     progress !== null ? percentText(progress) : null,
+    along,
   ]
     .filter((part) => part !== null)
     .join(", ");
@@ -65,9 +81,22 @@ export function ShapeCard({ shape, state, me, width, units, language }: Props) {
         {name}
       </Text>
       {unlocked !== null ? (
-        <Text style={styles.when}>
-          {t("Unlocked {date}", { date: dayLabel(unlocked) })}
-        </Text>
+        <>
+          <Text style={styles.when}>
+            {t("Unlocked {date}", { date: dayLabel(unlocked) })}
+          </Text>
+          {/* What it asked, so a shape taken still says what it is worth. */}
+          <Text style={styles.asks} numberOfLines={2} testID="shape-goal">
+            {asks}
+          </Text>
+          {/* Its edition, and the runs to the next (TASK-423 part E). */}
+          {edition !== null && <EditionMark edition={edition} />}
+          {nextEdition !== null && (
+            <Text style={styles.along} numberOfLines={2}>
+              {nextEdition}
+            </Text>
+          )}
+        </>
       ) : (
         <>
           <Text style={styles.asks} numberOfLines={2}>
@@ -84,7 +113,7 @@ export function ShapeCard({ shape, state, me, width, units, language }: Props) {
             </View>
           )}
           {along !== null && (
-            <Text style={styles.along} numberOfLines={1}>
+            <Text style={styles.along} numberOfLines={2}>
               {along}
             </Text>
           )}

@@ -15,6 +15,7 @@ import {
   TRACKLESS_SPORTS,
 } from "./sports/index.ts";
 import type { GymLevel } from "./gym.ts";
+import type { SkiDescents } from "./skiParts.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -525,6 +526,22 @@ export interface RouteJob {
   result: RouteResult | null;
   /** Only when `status` is "failed". */
   error: ApiError["error"] | null;
+}
+
+/**
+ * The answer to GET /route-jobs/{job_id}?first=1 (TASK-435, ADR-0361): the
+ * RouteJob and, while it computes, its first route. Without `?first=1`, and
+ * from an API before it, the answer is a RouteJob: `first` is missing, and
+ * who reads must take it as none.
+ */
+export interface RouteJobWithFirst extends RouteJob {
+  /**
+   * The route from the user's own start, with no alternatives, as soon as
+   * it is planned and the nearby starts are not yet; null before that, when
+   * nothing is waited for, and once the job has its answer. The whole
+   * answer is `result`, as ever.
+   */
+  first: RouteResult | null;
 }
 
 /** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */
@@ -1360,6 +1377,13 @@ interface DrawingFields {
    * saved before; missing from an API before TASK-232 part C.
    */
   rotation_deg?: number | null;
+  /**
+   * A day of alpine skiing: the metres and the seconds of its descents
+   * alone, which its calories are counted on (TASK-424 part C2b,
+   * skiParts.ts). Null for any other run and for a day whose phone sent no
+   * parts; missing from an API before it.
+   */
+  ski_descents?: SkiDescents | null;
 }
 
 /** One drawing of GET /users/{public_id}/drawings. */
@@ -2883,4 +2907,6 @@ export interface OutfitShop {
 }
 export * from "./skiResorts.ts";
 export * from "./skiDays.ts";
+export * from "./skiSeason.ts";
 export * from "./resortFollows.ts";
+export * from "./skiParts.ts";

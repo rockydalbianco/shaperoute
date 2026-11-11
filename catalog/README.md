@@ -55,6 +55,31 @@ e `--write` riscrive i file di `seed/` da lì: i file delle città del seme
 sono stati riscritti con i tenuti (155 percorsi in 23 città il 2026-11-08).
 Il filtro e la scrittura hanno test deterministici in `tools/`.
 
+### Le parole corte e i disegni già fatti (TASK-441)
+
+`tools/catalog_words.py` aggiunge al catalogo, senza cambiare
+`catalog_seed.py`: i disegni del registro di TASK-419 che passano il filtro
+e non erano tenuti, di forme che il motore ha (`spare`); e molte parole di
+2–4 lettere su una riga, scritte in ogni città nei due stili, di cui entra
+la migliore (`best_words`). Le parole per città (quelle sue, quelle della
+lingua, un turno di una lista comune con la stagione e le parole del
+momento) sono nello strumento e le ha approvate l'utente il 2026-11-11.
+
+```
+bash out/TASK-441/run.sh                       # il giro, dalle zone in cache
+python tools/catalog_words.py --propose        # le chiavi da tenere
+python tools/catalog_words.py --write          # catalog/seed dai due registri
+```
+
+Il giro non scarica niente: usa le zone a piedi di `data/cache`. Parole più
+lunghe vogliono la penna alzata, che questo formato non tiene ancora.
+
+Dall'11 novembre 2026 il seme ha **1261 percorsi in 63 città** (erano
+572): le 689 forme già disegnate che passano il filtro. Le parole aggiunte
+quel giorno, a riga unica con le lettere unite, non si leggevano e sono
+uscite: tornano a penna alzata, come gli esempi di città, quando il
+formato terrà le camminate fra le lettere (TASK-441 B).
+
 ### Le città in evidenza
 
 Le città che «Explore» mostra per prime (`FEATURED_CITIES` nell'app) e che

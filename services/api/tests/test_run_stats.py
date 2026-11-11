@@ -148,12 +148,19 @@ def test_a_few_metres_more_are_no_split() -> None:
 # --- The contract ---
 
 
+# A day of skiing's parts have their own example (test_ski_parts.py,
+# ski-parts-request.json, TASK-424 part C2b).
+SKI_FIELDS = {"ski_parts", "ski_descents"}
+
+
 def test_the_examples_are_the_bodies() -> None:
     request = RunStatsRequestBody.model_validate(_load("run-stats-request.json"))
-    assert set(_load("run-stats-request.json")) == set(RunStatsRequestBody.model_fields)
+    assert set(_load("run-stats-request.json")) == (
+        set(RunStatsRequestBody.model_fields) - SKI_FIELDS
+    )
     assert request.kcal == 355
     example = _load("run-stats.json")
-    assert set(example) == set(RunStatsBody.model_fields)
+    assert set(example) == set(RunStatsBody.model_fields) - SKI_FIELDS
     assert RunStatsBody.model_validate(example).model_dump(exclude_none=True) == example
 
 

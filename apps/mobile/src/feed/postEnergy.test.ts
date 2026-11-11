@@ -82,9 +82,18 @@ test("every activity its calories in the Feed (TASK-424 part C2)", () => {
   // Cross-country and ski touring from the post's metres and time.
   expect(postEnergy({ ...snow, activity: "xc_skiing" })).toMatch(/^[1-9]\d* kcal$/);
   expect(postEnergy({ ...snow, activity: "ski_touring" })).toMatch(/^[1-9]\d* kcal$/);
-  // Downhill counts the descents alone, and the post has the whole day:
-  // none until the API keeps their time (part C2b).
+  // Downhill counts the descents alone (part C2b): with their metres and
+  // seconds, as the end of the day; without them, none.
   expect(postEnergy({ ...snow, activity: "skiing" })).toBeNull();
+  const day = { ...snow, activity: "skiing" as const };
+  // 285 s on the descents at 5.3 MET, 70 kg, less the rest.
+  expect(postEnergy({ ...day, ski_descents: { metres: 2900, moving_s: 285 } })).toBe(
+    `${Math.round(((5.3 - 1) * 3.5 * (285 / 60) * 5 * 70) / 1000)} kcal`,
+  );
+  // The whole day's time does not count: only the descents'.
+  expect(
+    postEnergy({ ...day, minutes: 600, ski_descents: { metres: 2900, moving_s: 285 } }),
+  ).toBe(postEnergy({ ...day, ski_descents: { metres: 2900, moving_s: 285 } }));
   // The gym counts its sets (gymPostEnergy).
   expect(postEnergy({ ...snow, activity: "gym" })).toBeNull();
 });

@@ -40,6 +40,10 @@ import {
 } from "./program";
 import {
   emptyProgram,
+  gymIndex,
+  isRunDay,
+  proposedRunDays,
+  RUN_NAMES,
   GOALS,
   goalOf,
   type Naming,
@@ -49,6 +53,8 @@ import {
   withCycle,
   withDays,
 } from "./proposal";
+import { runTitle } from "./runDay";
+import { RunDayEditor } from "./RunDayEditor";
 import { SessionEditor } from "./SessionEditor";
 
 /** What the guide saves: a plan with its weeks. */
@@ -185,7 +191,13 @@ export function GymPlanWizard({
   const [step, setStep] = useState<WizardStep>(startAt);
   const [goal, setGoal] = useState<GymPlanGoal>(kept?.goal ?? "muscle");
   const [days, setDays] = useState<number[]>(
-    kept === null ? proposedDays(3) : programDays(kept),
+    kept === null
+      ? proposedDays(3)
+      : kept.sessions.filter((one) => !isRunDay(one)).map((one) => one.day),
+  );
+  // The run days (TASK-433 C): «And running?», none at first.
+  const [runDays, setRunDays] = useState<number[]>(
+    kept === null ? [] : kept.sessions.filter(isRunDay).map((one) => one.day),
   );
   const [program, setProgram] = useState<GymProgram | null>(kept);
   // From nothing: the plan's workouts without exercises.
@@ -213,11 +225,12 @@ export function GymPlanWizard({
   function proposed(): GymProgram {
     const forNow = `${goal}`;
     if (program !== null && proposedFor === forNow) {
-      return withDays(program, days, naming);
+      return withDays(program, days, naming, runDays);
     }
     const fresh = proposeProgram({
       goal,
       days,
+      runDays,
       mode: program?.mode ?? "load",
       weeks: weeksChoice,
       startsOn,
@@ -242,7 +255,7 @@ export function GymPlanWizard({
         return;
       case "weeks":
         if (name.trim() === "") {
-          const count = days.length;
+          const count = days.length + runDays.length;
           setName(
             (count === 1
               ? t("{goal} · 1 day", { goal: t(goalValues.title) })
@@ -263,11 +276,15 @@ export function GymPlanWizard({
               ...program,
               starts_on: startsOn,
               // A workout always has a name (gym_plans.py).
-              sessions: program.sessions.map((session, i) =>
+              sessions: program.sessions.map((session) =>
                 session.name.trim() === ""
                   ? {
                       ...session,
-                      name: t("Workout {letter}", { letter: sessionLetter(i) }),
+                      name: t("Workout {letter}", {
+                        letter: sessionLetter(
+                          Math.max(0, gymIndex(program.sessions, session.day)),
+                        ),
+                      }),
                     }
                   : { ...session, name: session.name.trim() },
               ),
@@ -292,11 +309,11 @@ export function GymPlanWizard({
 
   const canGoOn =
     step === "days"
-      ? days.length > 0
+      ? days.length + runDays.length > 0
       : step === "plan"
         ? program !== null &&
           program.sessions.length > 0 &&
-          program.sessions.every((one) => one.items.length > 0) &&
+          program.sessions.every((one) => isRunDay(one) || one.items.length > 0) &&
           programItemCount(program) <= MAX_PROGRAM_ITEMS
         : step === "ready"
           ? name.trim() !== "" &&
@@ -457,11 +474,25 @@ export function GymPlanWizard({
     );
   }
 
+  /** A day touched in «Your week»: the gym, then a run, then rest. */
+  function touchDay(number: number) {
+    if (days.includes(number)) {
+      setDays(days.filter((one) => one !== number));
+      setRunDays([...runDays, number]);
+    } else if (runDays.includes(number)) {
+      setRunDays(runDays.filter((one) => one !== number));
+    } else {
+      setDays([...days, number]);
+    }
+  }
+
   function daysPage() {
     const shown = [...days].sort((a, b) => a - b);
+    const runs = [...runDays].sort((a, b) => a - b);
     const split = proposeProgram({
       goal,
-      days: shown.length === 0 ? [1] : shown,
+      days: shown,
+      runDays: runs,
       mode: "same",
       weeks: 1,
       startsOn,
@@ -469,7 +500,7 @@ export function GymPlanWizard({
     }).sessions;
     const sessions =
       program !== null && proposedFor === goal && !scratch
-        ? withDays(program, shown, naming).sessions
+        ? withDays(program, shown, naming, runs).sessions
         : split;
     return (
       <>
@@ -485,7 +516,11 @@ export function GymPlanWizard({
                   on && styles.optionOn,
                   pressed && styles.pressed,
                 ]}
-                onPress={() => setDays(proposedDays(count))}
+                onPress={() => {
+                  const gym = proposedDays(count);
+                  setDays(gym);
+                  setRunDays(proposedRunDays(runDays.length, gym));
+                }}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: on }}
                 testID={`wizard-count-${count}`}
@@ -495,49 +530,87 @@ export function GymPlanWizard({
             );
           })}
         </View>
-        <Text style={styles.label}>{t("Which days").toUpperCase()}</Text>
+        <Text style={styles.label}>{t("And running?").toUpperCase()}</Text>
+        <View style={styles.counts}>
+          {[0, 1, 2, 3].map((count) => {
+            const on = runDays.length === count;
+            return (
+              <Pressable
+                key={count}
+                style={({ pressed }) => [
+                  styles.count,
+                  styles.countSmall,
+                  // «No» is no run: chosen, it looks chosen, not blue.
+                  on && (count === 0 ? styles.noRunsOn : styles.runOn),
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => setRunDays(proposedRunDays(count, days))}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: on }}
+                testID={`wizard-runs-${count}`}
+              >
+                <Text
+                  style={[styles.countTextSmall, count === 0 && !on && styles.muted]}
+                >
+                  {count === 0 ? t("No") : String(count)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Text style={styles.label}>{t("Your week").toUpperCase()}</Text>
         <View style={styles.weekDays}>
           {WEEK_DAYS.map((day, i) => {
             const number = i + 1;
-            const on = days.includes(number);
+            const gym = days.includes(number);
+            const run = runDays.includes(number);
+            const session = sessions.find((one) => one.day === number);
             return (
               <Pressable
                 key={day}
-                style={[styles.weekDay, on && styles.weekDayOn]}
-                onPress={() =>
-                  setDays((before) =>
-                    on
-                      ? before.filter((one) => one !== number)
-                      : before.length < 7
-                        ? [...before, number]
-                        : before,
-                  )
-                }
+                style={[
+                  styles.weekDay,
+                  gym && styles.weekDayOn,
+                  run && styles.weekDayRun,
+                ]}
+                onPress={() => touchDay(number)}
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked: on }}
-                accessibilityLabel={t(day)}
+                accessibilityState={{ checked: gym ? true : run ? "mixed" : false }}
+                accessibilityLabel={`${t(day)}: ${gym ? t("Gym") : run ? t("Run") : t("Rest")}`}
                 testID={`wizard-day-${number}`}
               >
-                <Text style={[styles.weekDayText, on && styles.weekDayTextOn]}>
-                  {t(day).slice(0, 2)}
+                <Text
+                  style={[
+                    styles.weekDayText,
+                    gym && styles.weekDayTextOn,
+                    run && styles.weekDayTextRun,
+                  ]}
+                >
+                  {gym && session !== undefined && !scratch
+                    ? sessionLetter(Math.max(0, gymIndex(sessions, number)))
+                    : run
+                      ? "RUN"
+                      : t(day).slice(0, 2)}
                 </Text>
               </Pressable>
             );
           })}
         </View>
         <Text style={styles.small}>
-          {t("With a day of rest in between, where it fits.")}
+          {t("Touch a day to change it: gym, run or rest.")}
         </Text>
-        {shown.length > 0 && !scratch && (
+        {sessions.length > 0 && !scratch && (
           <View style={styles.card}>
             <Text style={[styles.label, styles.cardLabel]}>
               {t("How the work is split").toUpperCase()}
             </Text>
-            {sessions.map((session, i) => (
+            {sessions.map((session) => (
               <View key={session.day} style={styles.splitRow}>
-                <Text style={styles.letter}>{sessionLetter(i)}</Text>
+                {mark(sessions, session)}
                 <View style={styles.optionText}>
-                  <Text style={styles.optionTitle}>{session.name}</Text>
+                  <Text style={styles.optionTitle}>
+                    {session.run !== undefined ? runTitle(session.run) : session.name}
+                  </Text>
                   <Text style={styles.optionLine}>{t(WEEK_DAYS[session.day - 1])}</Text>
                 </View>
               </View>
@@ -548,26 +621,55 @@ export function GymPlanWizard({
     );
   }
 
+  /** The yellow letter of a day of the gym, «RUN» in its blue on a run
+   * day. */
+  function mark(sessions: GymPlanSession[], session: GymPlanSession) {
+    return session.run !== undefined ? (
+      <Text style={[styles.letter, styles.letterRun]}>RUN</Text>
+    ) : (
+      <Text style={styles.letter}>
+        {sessionLetter(Math.max(0, gymIndex(sessions, session.day)))}
+      </Text>
+    );
+  }
+
   function tabs(sessions: GymPlanSession[], shown: number, pick: (i: number) => void) {
-    return (
+    // More than four days: the tabs scroll sideways, each wide enough.
+    const many = sessions.length > 4;
+    const row = sessions.map((session, i) => {
+      const on = i === shown;
+      return (
+        <Pressable
+          key={session.day}
+          style={[styles.tab, many && styles.tabWide, on && styles.tabOn]}
+          onPress={() => pick(i)}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: on }}
+          testID={`wizard-tab-${i}`}
+        >
+          <Text style={[styles.tabText, on && styles.tabTextOn]}>
+            {`${
+              session.run !== undefined
+                ? t("Run")
+                : sessionLetter(Math.max(0, gymIndex(sessions, session.day)))
+            } · ${t(WEEK_DAYS[session.day - 1])}`}
+          </Text>
+        </Pressable>
+      );
+    });
+    return many ? (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabsScroll}
+        contentContainerStyle={styles.tabs}
+        accessibilityRole="tablist"
+      >
+        {row}
+      </ScrollView>
+    ) : (
       <View style={styles.tabs} accessibilityRole="tablist">
-        {sessions.map((session, i) => {
-          const on = i === shown;
-          return (
-            <Pressable
-              key={session.day}
-              style={[styles.tab, on && styles.tabOn]}
-              onPress={() => pick(i)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: on }}
-              testID={`wizard-tab-${i}`}
-            >
-              <Text style={[styles.tabText, on && styles.tabTextOn]}>
-                {`${sessionLetter(i)} · ${t(WEEK_DAYS[session.day - 1])}`}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {row}
       </View>
     );
   }
@@ -584,6 +686,30 @@ export function GymPlanWizard({
             : t("Ready to use. Touch an exercise to change it."),
         )}
         {tabs(current.sessions, shown, setTab)}
+        {session.run !== undefined ? (
+          <RunDayEditor
+            run={session.run}
+            mode={current.mode}
+            weeks={current.weeks}
+            onChange={(run) =>
+              setProgram({
+                ...current,
+                sessions: current.sessions.map((one, i) =>
+                  i === shown ? { ...one, run, name: t(RUN_NAMES[run.kind]) } : one,
+                ),
+              })
+            }
+          />
+        ) : (
+          gymDay(current, shown, session)
+        )}
+      </>
+    );
+  }
+
+  function gymDay(current: GymProgram, shown: number, session: GymPlanSession) {
+    return (
+      <>
         <TextInput
           style={styles.sessionName}
           value={session.name}
@@ -739,8 +865,8 @@ export function GymPlanWizard({
     const sessions = written?.sessions ?? sessionsOfWeek(current, number);
     const shown = Math.min(weekTab, Math.max(0, sessions.length - 1));
     const session = sessions[shown];
-    function write(items: GymPlanSession["items"]) {
-      const next = sessions.map((one, i) => (i === shown ? { ...one, items } : one));
+    function write(patch: Partial<GymPlanSession>) {
+      const next = sessions.map((one, i) => (i === shown ? { ...one, ...patch } : one));
       if (number === 1) {
         // The first week is the plan itself: the others are worked out
         // from it.
@@ -762,13 +888,21 @@ export function GymPlanWizard({
           written !== undefined ? t("Written by hand.") : weekCaption(current, number),
         )}
         {sessions.length > 0 && tabs(sessions, shown, setWeekTab)}
-        {session !== undefined && (
-          <SessionEditor
-            key={`${number}-${shown}`}
-            items={session.items}
-            onChange={write}
-          />
-        )}
+        {session !== undefined &&
+          (session.run !== undefined ? (
+            <RunDayEditor
+              run={session.run}
+              mode="same"
+              weeks={1}
+              onChange={(run) => write({ run, name: t(RUN_NAMES[run.kind]) })}
+            />
+          ) : (
+            <SessionEditor
+              key={`${number}-${shown}`}
+              items={session.items}
+              onChange={(items) => write({ items })}
+            />
+          ))}
         {written !== undefined && !(current.mode === "alternate" && number === 2) && (
           <Pressable
             style={({ pressed }) => [styles.link, pressed && styles.pressed]}
@@ -860,11 +994,13 @@ export function GymPlanWizard({
             ))}
           </View>
           <View style={styles.summary}>
-            {current.sessions.map((session, i) => (
+            {current.sessions.map((session) => (
               <View key={session.day} style={styles.summaryRow}>
                 <Text style={styles.summaryKey}>{t(WEEK_DAYS[session.day - 1])}</Text>
                 <Text style={styles.summaryValue} numberOfLines={1}>
-                  {`${sessionLetter(i)} · ${session.name}`}
+                  {session.run !== undefined
+                    ? runTitle(session.run)
+                    : `${sessionLetter(Math.max(0, gymIndex(current.sessions, session.day)))} · ${session.name}`}
                 </Text>
               </View>
             ))}
@@ -1041,6 +1177,32 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.small,
   },
+  weekDayRun: {
+    borderWidth: 2,
+    borderColor: color.runDay,
+  },
+  weekDayTextRun: {
+    color: color.runDay,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.bold,
+  },
+  runOn: {
+    borderWidth: 2,
+    borderColor: color.runDay,
+    backgroundColor: color.surfaceRaised,
+  },
+  noRunsOn: {
+    borderWidth: 2,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  muted: {
+    color: color.textMuted,
+  },
+  letterRun: {
+    color: color.runDay,
+    fontSize: fontSize.label,
+  },
   weekDayTextOn: {
     color: color.onAccent,
     fontWeight: fontWeight.bold,
@@ -1096,6 +1258,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: radius.sm,
+  },
+  tabWide: {
+    flex: 0,
+    minWidth: 96,
+    paddingHorizontal: space.md,
+  },
+  tabsScroll: {
+    flexGrow: 0,
   },
   tabOn: {
     backgroundColor: color.surfaceRaised,

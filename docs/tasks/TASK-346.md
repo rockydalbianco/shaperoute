@@ -1,6 +1,7 @@
 # TASK-346 — «Edit the drawing» nel Feed: la traccia sulla mappa dov'è stata corsa
 
-**Stato**: In corso — pronto in PR, aspetta il merge del Coordinatore
+**Stato**: Done · 2026-11-10 · #655 in `main` dal 2026-10-30; resta solo la
+prova dell'utente sul telefono
 **Fase**: 4 · **Branch**: `feat/TASK-346-edit-track-in-place` · **ADR**: ADR-0299
 
 Numero e ADR dal Coordinatore (2026-10-29: TASK-346, ADR-0299).
@@ -80,3 +81,7 @@ Per portarla vicino a sé resta «Draw it near me».
 - `App.tsx` lo tocca anche TASK-340 («Freehand» primo in «Draw»), che parte
   dopo la #644: chi entra per secondo si riallinea tenendo le righe
   dell'altro.
+
+## Chiusura (2026-11-10)
+
+Chiuso dal giro delle chiusure del 2026-11-10 (sessione «Task backlog review», su assegnazione del Coordinatore): in `main` con la #655 (2026-10-30), solo JS, uscito con gli OTA di produzione. **Resta per l'utente**: la prova sul telefono, «Edit the drawing» su un disegno del Feed apre la traccia dove è stata corsa e «Draw route» parte dal primo punto della corsa.

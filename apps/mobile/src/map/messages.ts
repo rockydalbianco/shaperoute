@@ -3,7 +3,9 @@ import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
 import { onFootLines } from "../route/onFoot";
 import { piecesOf, walksOf } from "../route/walks";
 import { type LngLat, metresBetween, toLngLat } from "./coordinates";
+import type { MapCover } from "./mapCover";
 import type { MapKind } from "./mapKind";
+import type { SkiLabel } from "../skimode/skiDayLabels";
 import type { RouteSplit } from "./routeSplit";
 
 /**
@@ -42,9 +44,19 @@ export type ToPage =
     }
   | { type: "clearProgress" }
   | { type: "showOthers"; lines: LngLat[][] }
+  | { type: "showGhost"; lines: LngLat[][] }
+  /** What lies over the top of the map (TASK-443), or null for nothing
+   * told: the route is framed clear of it. */
+  | { type: "setCover"; cover: MapCover | null }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
-  | { type: "showLifts"; skied: LngLat[][]; lifts: LngLat[][] }
+  | {
+      type: "showLifts";
+      skied: LngLat[][];
+      lifts: LngLat[][];
+      /** The numbers on the lines (TASK-429 part B); none from an app before. */
+      labels?: { point: LngLat; text: string; kind: "lift" | "descent" }[];
+    }
   | { type: "clearLifts" }
   | { type: "follow"; lngLat: LngLat; heading: number | null }
   /** Where the phone points on «Compass» (TASK-431), or null off it. */
@@ -247,12 +259,23 @@ export function clearTrack(): ToPage {
 }
 
 /** A day of skiing (TASK-375 part C2): the track as what was skied, solid
- * as a run's, and the lifts dashed. */
-export function showLifts(skied: LatLon[][], lifts: LatLon[][]): ToPage {
+ * as a run's, and the lifts dashed. In the colours of the ski mode, with
+ * the numbers of the descents and the lifts on them (TASK-429 part B,
+ * ADR-0357). */
+export function showLifts(
+  skied: LatLon[][],
+  lifts: LatLon[][],
+  labels: readonly SkiLabel[] = [],
+): ToPage {
   return {
     type: "showLifts",
     skied: skied.map((line) => line.map(toLngLat)),
     lifts: lifts.map((line) => line.map(toLngLat)),
+    labels: labels.map((label) => ({
+      point: toLngLat(label.point),
+      text: label.text,
+      kind: label.kind,
+    })),
   };
 }
 
@@ -328,6 +351,23 @@ export function clearRejoin(): ToPage {
  * the map (TASK-093); none clears them. */
 export function showOthers(routes: LatLon[][]): ToPage {
   return { type: "showOthers", lines: routes.map((points) => points.map(toLngLat)) };
+}
+
+/** Draws the shape asked for as the search placed it, faint under the
+ * route and the other routes, without moving the map (TASK-442): the
+ * `placed_outline` of a result; none clears it. */
+export function showGhost(lines: LatLon[][]): ToPage {
+  return { type: "showGhost", lines: lines.map((points) => points.map(toLngLat)) };
+}
+
+/**
+ * Tells the map what lies over its top (TASK-443): the status bar and the
+ * buttons. A route is framed under the first and clear of the others, and
+ * «Start here» is written clear of both; a map still framed on its route
+ * frames it again. Null: nothing told, framed as a map never told.
+ */
+export function setCover(cover: MapCover | null): ToPage {
+  return { type: "setCover", cover };
 }
 
 /**

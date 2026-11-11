@@ -1,6 +1,7 @@
 # TASK-388 — Movimenti stile Apple: molle condivise, la barra in basso, l'«isola», fogli e liste
 
-**Stato**: In corso — parte A in `main` (#770, 0d7819c4, 2026-11-05); A2 in `main` (#780, 07d5833c); parte B in `main` (#786, dde301bd); parte C in `main` (#803, fed77512); C2, lo sfondo che sfuma, in PR
+**Stato**: Done · 2026-11-10 · A #770, A2 #780, B #786, C #803, C2 #811, C3 #829,
+tutte in `main` dal 2026-11-05 e approvate dall'utente sui video
 **Fase**: 4 · **Branch**: `feat/TASK-388-a-springs-tab-bar` (parte A) ·
 **ADR**: ADR-0329 · numeri dal Coordinatore (2026-11-04)
 
@@ -471,3 +472,7 @@ carica senza API): il foglio sale in ~0,35 s e si ferma senza rimbalzo, il
 tocco fuori lo fa scendere (`c3-open-frames.jpg`, `c3-close-frames.jpg`).
 Approvato dall'utente il 2026-11-05 («Sì, approvo»); merge del Coordinatore
 a CI verde, dopo la #811.
+
+## Chiusura (2026-11-10)
+
+Chiuso dal giro delle chiusure del 2026-11-10 (sessione «Task backlog review», su assegnazione del Coordinatore): le sei parti A, A2, B, C, C2 e C3 sono in `main` dal 2026-11-05, ognuna col «Sì, approvo» dell'utente sul video o sui collegamenti; solo JS, uscite con gli OTA di produzione. Il task non prevede altre parti; altri punti per l'«isola» li sceglie l'utente (Fuori scope).

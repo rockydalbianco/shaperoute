@@ -20,7 +20,8 @@ from typing import Any, Protocol, runtime_checkable
 from route_engine.anchored import AnchoredPlan
 from route_engine.directions import guidance
 from route_engine.geo import LatLon
-from route_engine.models import WATER_ACTIVITIES, RouteResult
+from route_engine.heights import Heights
+from route_engine.models import SNOW_ACTIVITIES, WATER_ACTIVITIES, RouteResult
 from route_engine.nearby_starts import NearbyPlan
 from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
@@ -28,18 +29,25 @@ from route_engine.shore_names import ShoreNameSource, ShorePlace
 from route_engine.sidewalks import NamedRoad
 from route_engine.water import Element, WaterSource
 
-from shaperoute_api.activity_graphs import Graphs, Ground, source_for, water_for
+from shaperoute_api.activity_graphs import (
+    Graphs,
+    Ground,
+    snow_for,
+    source_for,
+    water_for,
+)
 from shaperoute_api.alongs import NamedRoads, with_alongs
 from shaperoute_api.errors import error_of
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import AnyRequest, placed_outlines
 from shaperoute_api.job_times import JobTimes, line
 from shaperoute_api.schemas import ErrorDetail, JobStatus
+from shaperoute_api.snowshoeing import SnowGround
 
 log = logging.getLogger(__name__)
 
-# A shape, a word, or an image's outline (TASK-073), on the roads or on the
-# water (TASK-191).
+# A shape, a word, or an image's outline (TASK-073), on the roads, on the
+# water (TASK-191) or on the snow (TASK-413).
 Planner = Callable[[AnyRequest, Ground], Plan]
 
 # Two, not one: a cancelled 15 km keeps its thread until the engine ends,
@@ -51,8 +59,8 @@ KEEP_S = 600.0
 
 @runtime_checkable
 class KnowsDownloads(Protocol):
-    """A graph or water source that can tell a download in advance
-    (ZoneGraphs, paddling.ServerWater)."""
+    """A graph, water or snow source that can tell a download in advance
+    (ZoneGraphs, paddling.ServerWater, snowshoeing.ServerSnow)."""
 
     def needs_download(self, bbox: BBox) -> bool: ...
 
@@ -112,6 +120,12 @@ class Job:
     # alternatives (images.placed_outlines, TASK-347): the API's body says
     # it, the engine's result does not. Empty from the archive.
     placed: list[list[list[LatLon]]] = field(default_factory=list)
+    # While the job computes: the route from the user's own start, with its
+    # directions, as soon as it is planned and the nearby starts are not
+    # yet (TASK-435, ADR-0361), and where the engine placed its drawing.
+    # None again once the job has its answer.
+    first: RouteResult | None = None
+    first_placed: list[list[list[LatLon]]] = field(default_factory=list)
 
 
 # Told how a job ended, cancelled ones too (neither result nor error when
@@ -207,12 +221,34 @@ class RouteJobs:
                     self._clock,
                 )
                 result = with_choices(self._plan(job, water, times), [])
+            elif activity in SNOW_ACTIVITIES:
+                # On the snow (TASK-413): no graph either, so no directions.
+                snow = _ReportingSnow(
+                    snow_for(self._source, activity),
+                    report,
+                    wanted,
+                    times,
+                    self._clock,
+                )
+                result = with_choices(self._plan(job, snow, times), [])
             else:
                 # The zones of the network of the request's activity (TASK-190).
                 graphs = source_for(self._source, activity)
-                source = _Reporting(graphs, report, wanted, times, self._clock)
                 names = graphs if isinstance(graphs, KnowsNames) else None
                 named = None if names is None else names.named_roads
+
+                def first(plan: Plan) -> None:
+                    # Alone: its alternatives come with the whole answer.
+                    alone = replace(plan, alternatives=[])
+                    self._show_first(
+                        job,
+                        with_directions(alone, source.graphs, named),
+                        placed_outlines(alone, job.request),
+                    )
+
+                source = _Reporting(
+                    graphs, report, wanted, times, self._clock, first=first
+                )
                 # A route kept within a few metres of the start, reached
                 # along the roads (ADR-0256): the zone is loaded, the
                 # engine does not run.
@@ -340,7 +376,19 @@ class RouteJobs:
             job.placed = placed or []
             if status in ("done", "failed"):
                 job.finished_at = self._clock()
+                # The answer takes the first route's place.
+                job.first, job.first_placed = None, []
             return True
+
+    def _show_first(
+        self, job: Job, result: RouteResult, placed: list[list[list[LatLon]]]
+    ) -> None:
+        """The route from the user's own start, for the app to show while
+        the job goes on computing (TASK-435); not on a job cancelled or
+        already answered."""
+        with self._lock:
+            if job.job_id in self._jobs and job.finished_at is None:
+                job.first, job.first_placed = result, placed
 
     def _wanted(self, job: Job) -> bool:
         with self._lock:
@@ -363,7 +411,9 @@ class _Reporting:
     shape does not fit near the start it loads a larger one and computes
     again (ADR-0040), and a download then shows between two computings.
     It also keeps the job's times: each load's, and how the nearby starts
-    went (job_times.NotesNearby)."""
+    went (job_times.NotesNearby). And it passes on to `first` the plan from
+    the user's own start, as soon as the planner has it
+    (job_times.ShowsFirst, TASK-435)."""
 
     def __init__(
         self,
@@ -372,16 +422,29 @@ class _Reporting:
         wanted: Callable[[], bool],
         times: JobTimes | None = None,
         clock: Callable[[], float] = time.monotonic,
+        first: Callable[[Plan], None] | None = None,
     ):
         self._source = source
         self._report = report
         self._wanted = wanted
         self._times = JobTimes() if times is None else times
         self._clock = clock
+        self._first = first
         self.graphs: list[Graph] = []  # as loaded, for the directions
 
     def note_nearby(self, nearby: NearbyPlan) -> None:
         self._times.nearby = nearby
+
+    def first_plan(self, plan: Plan) -> None:
+        """The start's own plan, while the nearby starts are still planned:
+        to whoever shows it, if the job is still wanted. Showing it is a
+        courtesy: if it fails, the job goes on to its whole answer."""
+        if self._first is None or not self._wanted():
+            return
+        try:
+            self._first(plan)
+        except Exception:
+            log.exception("the first route could not be shown")
 
     def load(self, bbox: BBox) -> Graph:
         downloading = isinstance(self._source, KnowsDownloads) and (
@@ -445,6 +508,26 @@ class _ReportingWater:
         if isinstance(self._source, ShoreNameSource):
             return self._source.places(bbox)
         return []
+
+
+class _ReportingSnow(_ReportingWater):
+    """The job's snow (TASK-413), as its water: says when a download of the
+    snow starts and ends, and stops the job if it was cancelled meanwhile;
+    the heights are its source's."""
+
+    def __init__(
+        self,
+        source: SnowGround,
+        report: Callable[[JobStatus], object],
+        wanted: Callable[[], bool],
+        times: JobTimes | None = None,
+        clock: Callable[[], float] = time.monotonic,
+    ):
+        super().__init__(source, report, wanted, times, clock)
+        self._snow = source
+
+    def heights(self) -> Heights:
+        return self._snow.heights()
 
 
 def with_choices(

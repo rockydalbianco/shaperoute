@@ -3,9 +3,10 @@ gym.md «Le schede»): a name, the days of the week it is for, its exercises
 in order, each with the sets to do and the values aimed at.
 
 A plan made with the guide is a program (`program`, migration 0066): its
-workouts of the week, each on its day with its own exercises, and a cycle
-of weeks that changes as its owner chose; the phone works out each week's
-values, the API keeps what it was given and knows which days are planned.
+workouts of the week, each on its day with its own exercises or a run
+(TASK-433 C), and a cycle of weeks that changes as its owner chose; the
+phone works out each week's values, the API keeps what it was given and
+knows which days are planned.
 
 GET /me/gym-plans lists the account's plans in their order; PUT
 /me/gym-plans/{key} keeps one, with the key the phone chose, so a plan
@@ -107,9 +108,43 @@ def _days_once(sessions: list[GymPlanSessionBody]) -> None:
         raise ValueError("a day of the week has one workout")
 
 
+RunKind = Literal["easy", "intervals", "long"]
+"""A run day of a program (TASK-433 C): easy, intervals or long."""
+
+
+class GymPlanRunBody(BaseModel):
+    """The run of a run day: packages/shared-types src/gym.ts, `GymPlanRun`.
+    An easy or long run is a distance or a time; intervals are how many,
+    each a distance or a time."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: RunKind
+    distance_m: int | None = Field(default=None, ge=100, le=100_000)
+    duration_s: int | None = Field(default=None, ge=60, le=6 * 3600)
+    reps: int | None = Field(default=None, ge=1, le=50)
+    rep_m: int | None = Field(default=None, ge=50, le=5_000)
+    rep_s: int | None = Field(default=None, ge=10, le=1_800)
+
+    @model_validator(mode="after")
+    def the_fields_of_its_kind(self) -> GymPlanRunBody:
+        if self.kind == "intervals":
+            if self.reps is None or (self.rep_m is None) == (self.rep_s is None):
+                raise ValueError("intervals are reps, each in metres or seconds")
+            if self.distance_m is not None or self.duration_s is not None:
+                raise ValueError("intervals are given by their reps")
+        else:
+            if (self.distance_m is None) == (self.duration_s is None):
+                raise ValueError(f"a {self.kind} run is a distance or a time")
+            if any(value is not None for value in (self.reps, self.rep_m, self.rep_s)):
+                raise ValueError(f"a {self.kind} run has no reps")
+        return self
+
+
 class GymPlanSessionBody(BaseModel):
     """A workout of a program: packages/shared-types src/gym.ts,
-    `GymPlanSession`."""
+    `GymPlanSession`. A run day (TASK-433 C) has its `run` and no
+    exercises."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -117,6 +152,13 @@ class GymPlanSessionBody(BaseModel):
     """The day of the week it is for, 1 Monday to 7 Sunday."""
     name: str = Field(min_length=1, max_length=MAX_NAME_LENGTH)
     items: list[GymPlanItemBody] = Field(default_factory=list, max_length=MAX_ITEMS)
+    run: GymPlanRunBody | None = None
+
+    @model_validator(mode="after")
+    def a_run_or_exercises(self) -> GymPlanSessionBody:
+        if self.run is not None and self.items:
+            raise ValueError("a run day has no exercises")
+        return self
 
 
 class GymPlanWeekBody(BaseModel):
@@ -130,6 +172,26 @@ class GymPlanWeekBody(BaseModel):
     @model_validator(mode="after")
     def one_workout_a_day(self) -> GymPlanWeekBody:
         _days_once(self.sessions)
+        return self
+
+
+class GymPlanRunnerBody(BaseModel):
+    """How its owner runs, asked by the guide for a plan with run days:
+    packages/shared-types src/gym.ts, `GymPlanRunner`. The paces of the
+    run days are worked out from it on the phone."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pace_10k_s: int = Field(ge=180, le=900)
+    """Seconds a kilometre over 10 km: 3:00 to 15:00."""
+    long_m: int | None = Field(default=None, ge=1_000, le=60_000)
+    long_s: int | None = Field(default=None, ge=600, le=6 * 3600)
+    """The longest run done without strain: a distance or a time."""
+
+    @model_validator(mode="after")
+    def a_distance_or_a_time(self) -> GymPlanRunnerBody:
+        if (self.long_m is None) == (self.long_s is None):
+            raise ValueError("the long run is a distance or a time")
         return self
 
 
@@ -151,6 +213,8 @@ class GymProgramBody(BaseModel):
         default_factory=list, max_length=MAX_WEEKS - 1
     )
     """The weeks written by hand, in place of the ones worked out."""
+    runner: GymPlanRunnerBody | None = None
+    """How its owner runs, for the paces of its run days; absent without."""
 
     @model_validator(mode="after")
     def weeks_of_the_cycle(self) -> GymProgramBody:

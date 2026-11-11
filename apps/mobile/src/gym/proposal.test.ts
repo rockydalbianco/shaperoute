@@ -3,8 +3,10 @@ import { programDays } from "./program";
 import {
   GOALS,
   proposeProgram,
+  gymIndex,
   proposedDays,
   proposedItem,
+  proposedRunDays,
   sessionLetter,
   withCycle,
   withDays,
@@ -177,4 +179,46 @@ test("five days: a muscle group a day, named in the app's language", () => {
     "Spalle",
     "Arms, core",
   ]);
+});
+
+test("run days: on days without the gym, easy, long, intervals (TASK-433 C)", () => {
+  expect(proposedRunDays(2, [1, 3, 5])).toEqual([2, 6]);
+  expect(proposedRunDays(3, [1, 3, 5])).toEqual([2, 4, 6]);
+  expect(proposedRunDays(0, [1, 3, 5])).toEqual([]);
+  const program = proposeProgram({
+    goal: "muscle",
+    days: [1, 3, 5],
+    runDays: [2, 6],
+    mode: "alternate",
+    weeks: 4,
+    startsOn: "2026-11-16",
+    naming: same,
+  });
+  expect(program.sessions.map((one) => [one.day, one.name, one.run?.kind])).toEqual([
+    [1, "Chest, shoulders, triceps", undefined],
+    [2, "Easy run", "easy"],
+    [3, "Back, biceps", undefined],
+    [5, "Legs, core", undefined],
+    [6, "Long run", "long"],
+  ]);
+  expect(program.sessions[1]).toMatchObject({ items: [], run: { distance_m: 5000 } });
+  // Week B turns the gym's workouts only.
+  expect(program.custom[0].sessions.map((one) => one.name)).toEqual([
+    "Upper body B",
+    "Easy run",
+    "Lower body B",
+    "Arms, core",
+    "Long run",
+  ]);
+  // The letters count the gym's days only.
+  expect([1, 3, 5].map((day) => gymIndex(program.sessions, day))).toEqual([0, 1, 2]);
+  // A run day moves with the runs, the gym's with the gym.
+  const moved = withDays(program, [1, 3, 5], same, [4]);
+  expect(moved.sessions.map((one) => [one.day, one.name])).toEqual([
+    [1, "Chest, shoulders, triceps"],
+    [3, "Back, biceps"],
+    [4, "Easy run"],
+    [5, "Legs, core"],
+  ]);
+  expect(moved.custom[0].sessions.map((one) => one.day)).toEqual([1, 3, 4, 5]);
 });

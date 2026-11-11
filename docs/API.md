@@ -103,6 +103,28 @@ richiesta risponde subito e il percorso si chiede dopo.
 - Un `job_id` sconosciuto (annullato, finito da più di 10 minuti, o API
   riavviata) risponde `404 http_error`.
 
+**Il primo percorso, mentre il job calcola** (TASK-435, ADR-0361):
+`GET /route-jobs/{job_id}?first=1` risponde il `RouteJob` con un campo in
+più, `first`.
+
+- Mentre lo stato è `computing`, appena il piano dalla partenza
+  dell'utente è pronto e le partenze vicine stanno ancora calcolando,
+  `first` è quel percorso: un `RouteResult` intero, con le sue `directions`
+  e il suo `placed_outline`, e `alternatives` vuoto. Prima, e quando non
+  c'è niente da aspettare (nessuna partenza vicina, acqua, disegno
+  ancorato, percorso già tenuto), è `null`.
+- A `done` il `result` è **quello di sempre**, scelto dal motore con le
+  sue alternative, e `first` torna `null`. Il primo percorso può essere il
+  `result`, una delle sue `alternatives`, o nessuno dei due (il motore
+  tiene al più due alternative, entro 10 punti dal migliore): si riconosce
+  dai `points` uguali.
+- **Solo a chi lo chiede.** Senza `?first=1` (e nella risposta al `POST`)
+  il `RouteJob` è quello di prima, senza il campo: un'app che non lo
+  conosce non riceve un percorso in più a ogni lettura. Un'API precedente
+  ignora il parametro: il campo manca, e l'app aspetta `done` come prima.
+- L'app lo chiede finché non l'ha avuto, poi legge senza. `false`, `0` o
+  niente: come prima.
+
 Il `RouteResult` di una richiesta in due tempi porta anche le
 **indicazioni di svolta** (`directions`, TASK-048, ADR-0045 e ADR-0047): la
 prima è la partenza (`"turn": "depart"`, la via da cui si parte), poi una
@@ -1080,6 +1102,48 @@ motore.)
   L'app mostra il nuoto con la parte C di TASK-323 (`ready: false` fino
   ad allora): in `shared-types` `Activity` resta quella dell'app, e
   `API_ACTIVITIES` ha anche `swimming`.
+
+### Sulla neve: `"activity": "snowshoeing"` (TASK-413 parte A2, ADR-0342)
+
+```json
+{ "start": [45.8757, 11.5097], "shape": "heart", "distance_m": 1000, "activity": "snowshoeing" }
+```
+
+(`fixtures/route-request-snowshoeing.json`, ad Asiago.)
+
+- **La forma è il percorso**, come sull'acqua: il motore
+  (`snowshoeing.plan_snowshoeing`, parte A1) la mette sulla neve dove si
+  può camminare, lontano dai pendii oltre 25° (e 30 m attorno a quelli
+  oltre 30°), da boschi, piste, impianti, rocce, ghiacciai, paesi,
+  ruscelli, riserve e biotopi, e la unisce a una strada minore, una
+  carrareccia o un sentiero con un tratto dritto. Vale per `/routes` e
+  `/route-jobs`.
+- **Da 0,5 a 3 km** (`DISTANCE_LIMITS_M.snowshoeing`, scelta 2): fuori è
+  `422 invalid_request`. Solo una forma del catalogo: una parola,
+  un'immagine o un disegno a mano sono `422` (`on the snow only a shape of
+  the catalogue is drawn`); `"placement": "anchored"` anche (`a shape is
+  anchored to the roads only, not on the water or the snow`).
+- **Il `RouteResult`** è quello della canoa: `points` chiuso dal punto
+  d'ingresso, `similarity` 1, niente indicazioni né alternative.
+- **Gli errori**: niente neve attorno alla partenza o una forma che non
+  entra sono `422 shape_not_drawable`. `suggested_distance_m` è la
+  distanza a cui la forma entra, arrotondata in giù al mezzo km come
+  sull'acqua, e manca quando sarebbe sotto 0,5 km (il motore può dire
+  «0.2 km»).
+- **La neve e le quote** stanno nella cache del server, `<cache>/snow/`
+  accanto a `water/` e `<cache>/heights/` (tegole Terrarium):
+  `ServerSnow` (`snowshoeing.py`) le scarica alla prima richiesta di un
+  posto (Overpass, 23–38 s per riquadro), e il job dice
+  `downloading_map` intanto. Un download che non riesce è `503
+  map_data_unavailable`. Nessuna zona in memoria.
+- **Niente percorsi tenuti**: né `route_store` né l'archivio (TASK-297)
+  tengono un percorso sulla neve, perché i file della neve stanno fuori
+  dall'impronta del motore (`SNOW_ONLY`). Niente via del ritorno
+  (`POST /way-back`: `No way back on the snow`).
+- **Salvata**: Strava `Snowshoe`, GPX `<type>snowshoeing</type>`; nel
+  gioco delle forme conta come Hike (scelta 5), senza tempi migliori né
+  record personali. Preferiti e corse di gruppo sì (migrazione `0068`).
+  La legge solo un'app che dice `snowshoeing` in `X-MuW-Reads`.
 
 ### A piedi, camminando: `"activity": "walking"` (TASK-371, ADR-0315)
 
@@ -3028,7 +3092,14 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   `program: null` la riporta a una scheda di un allenamento; un `PUT` senza
   `program` (un'app di prima) lo lascia com'era. I valori di ogni settimana
   li calcola il telefono; l'API sa solo quali giorni sono in programma (il
-  calendario).
+  calendario). Un giorno di corsa (TASK-433 C, ADR-0363) ha `run` e nessun esercizio:
+  `kind` (`easy`, `intervals`, `long`), per `easy` e `long` `distance_m`
+  (100–100 000) o `duration_s` (60 s–6 h), per `intervals` `reps` (1–50) e
+  `rep_m` (50–5000) o `rep_s` (10–1800); nel calendario è fatto se quel
+  giorno c'è una corsa (`running`). Il programma può avere `runner`
+  (TASK-452, ADR-0369): `pace_10k_s` 180–900 (il ritmo sui 10 km, in
+  secondi al km) e il lungo, `long_m` (1–60 km) o `long_s` (10 min–6 h); i
+  ritmi li calcola il telefono.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`
@@ -3150,6 +3221,27 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
 - Backfill dei passi per le corse vecchie: `python -m
   shaperoute_api.run_stats`, solo col sì dell'utente. Test in
   `test_run_stats.py`.
+- **I tratti di una giornata di sci** (TASK-424 parte C2b, con TASK-429;
+  tipi in `packages/shared-types/src/skiParts.ts`, esempi in
+  `fixtures/ski-parts-request.json` e `fixtures/drawing-ski.json`, test in
+  `test_ski_parts.py`). Il telefono può mandare in più `ski_parts`, al più
+  500, nell'ordine della giornata:
+  `{kind: "lift"|"descent", n, start_ms, end_ms, moving_s, metres,
+  height_m, top_mps}`. `start_ms` ed `end_ms` sono sull'orologio dei
+  `time_ms` della traccia; `moving_s` non supera la durata del tratto;
+  `top_mps` è `null` per una risalita. L'API li tiene in `stats` con
+  `start_s`/`end_s` al posto dei millisecondi (secondi dal primo punto
+  tenuto della traccia, come la M di `runs.track`), e calcola
+  `ski_descents` `{metres, moving_s}`, la somma delle sole discese. Una
+  lista vuota o assente è nessuno. `GET /drawings/{id}` dà `ski_parts` e
+  `ski_descents` dentro `stats`, a chi vede il post; ogni lista di post
+  (`GET /feed`, il profilo, la stazione, la ricerca, le gare) dà
+  `ski_descents` sul post, `null` senza tratti: il Feed ci conta le
+  calorie dello sci come la fine della giornata.
+  **Prima il server, poi l'app**: un server senza C2b rifiuta un
+  `PUT …/stats` con `ski_parts` (422, `extra="forbid"`) e la giornata
+  perde tutti i suoi dati. Nessuna app manda i tratti prima che il server
+  con C2b sia acceso.
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 
@@ -3315,6 +3407,38 @@ Chiedono tutte il token.
   - `404` per una stazione che non c'è.
 - **Il codice:** `resort_follows.py`. Migrazione `0062`, tipi in
   `packages/shared-types/src/resortFollows.ts`.
+
+**I tratti della giornata e la stagione (TASK-429 parte C1, ADR-0357)**
+
+Il telefono manda risalite e discese della giornata a «Salva», come
+`ski_parts` dei run-stats (`PUT /me/activities/{key}/stats`, TASK-424 parte
+C2b). Il server tiene la traccia con le ore ma senza le quote, quindi non
+le trova da sé: le giornate salvate prima non ne hanno (scelta dell'utente
+del 2026-11-10).
+- **`GET /drawings/{id}/ski-day`** dà in più `parts`, solo quando la
+  giornata li ha (`ski-day-parts.json`); senza, la risposta è quella di
+  prima, senza la chiave. Il `PUT` della giornata non la dà mai.
+  - Ogni tratto, nell'ordine della giornata: `kind` (`lift`|`descent`),
+    `n` (contati a parte: «L2», «3»), `start_s` ed `end_s` sui secondi
+    della traccia del server, `moving_s`, `metres`, `height_m` (salito o
+    sceso), `top_mps` (null per le risalite);
+  - `from_fix` e `to_fix`: il primo e l'ultimo punto della traccia del post
+    nel tratto (il post la mostra intera, ADR-0330), null se nessuno;
+  - `name`: l'impianto o la pista, trovato come per la giornata intera
+    (`ski_names.py`) sul pezzo di traccia del tratto; null se nessuno.
+  - I nomi si cercano alla lettura e restano in una cache di ogni processo:
+    al più 256 giornate, per 10 minuti, per corsa e per l'ultimo invio dei
+    run-stats. L'API gira in più processi (ADR-0242), quindi ognuno ha la
+    sua.
+- **`GET /me/ski-season?from=YYYY-MM-DD&to=YYYY-MM-DD`**, con il token: le
+  proprie giornate di sci iniziate fra i due giorni (UTC, compresi) e le
+  somme dei loro tratti (`ski-season.json`): `days`, `days_with_parts`,
+  `skied_m` e `vertical_m` delle discese, `descents`, `lifts`, `top_mps`,
+  `moving_s`. Una giornata senza tratti conta solo in `days`. `422` se `to`
+  viene prima di `from`, o per più di 400 giorni.
+- **Il codice:** `ski_day_parts.py`, `ski_days.py`, `ski_season.py`; tipi
+  in `packages/shared-types/src/skiDays.ts` (`SkiDayPart`,
+  `SkiDayWithParts`) e `skiSeason.ts`.
 
 ### Drawing search (TASK-344, ADR-0297)
 

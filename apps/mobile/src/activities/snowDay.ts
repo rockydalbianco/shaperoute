@@ -55,9 +55,10 @@ function heightOf(track: Track, index: number): number | null {
 }
 
 /** The track as it climbs and drops, from turn to turn: a turn is where
- * the height, after going one way, has gone back the other by `TURN_M`.
+ * the height, after going one way, has gone back the other by `turnM`
+ * (`TURN_M` on a ski day; a tour's phases take a wider one, TASK-415 B).
  * Fixes without a height belong to the stretch they are in. */
-function legs(track: Track): { leg: Leg; up: boolean }[] {
+export function legs(track: Track, turnM = TURN_M): { leg: Leg; up: boolean }[] {
   const found: { leg: Leg; up: boolean }[] = [];
   let start = -1;
   let extreme = -1;
@@ -75,7 +76,7 @@ function legs(track: Track): { leg: Leg; up: boolean }[] {
     const top = heightOf(track, extreme) as number;
     if (up === null) {
       // The first way the day goes, once it has gone far enough.
-      if (Math.abs(height - top) >= TURN_M) {
+      if (Math.abs(height - top) >= turnM) {
         up = height > top;
         extreme = index;
       }
@@ -83,7 +84,7 @@ function legs(track: Track): { leg: Leg; up: boolean }[] {
     }
     if (up ? height >= top : height <= top) {
       extreme = index;
-    } else if (Math.abs(height - top) >= TURN_M) {
+    } else if (Math.abs(height - top) >= turnM) {
       found.push({ leg: { from: start, to: extreme }, up });
       start = extreme;
       extreme = index;
@@ -109,7 +110,7 @@ function metresAndMs(track: Track, leg: Leg): { metres: number; ms: number } {
 }
 
 /** Whether a climbing stretch is a lift: long, fast up and steady. */
-function isLift(track: Track, leg: Leg): boolean {
+export function isLift(track: Track, leg: Leg): boolean {
   const { ms } = metresAndMs(track, leg);
   const rise = (heightOf(track, leg.to) ?? 0) - (heightOf(track, leg.from) ?? 0);
   if (ms < LIFT_MIN_MS || rise / (ms / 1000) < LIFT_MIN_RISE_MPS) {
@@ -131,8 +132,8 @@ function isLift(track: Track, leg: Leg): boolean {
 }
 
 /** The metres dropped along a stretch, from turn to turn as `legs` reads
- * them: the climbs between take nothing away. */
-function droppedM(track: Track, leg: Leg): number {
+ * them with the same `turnM`: the climbs between take nothing away. */
+export function droppedM(track: Track, leg: Leg, turnM = TURN_M): number {
   let dropped = 0;
   let from: number | null = null;
   for (let index = leg.from; index <= leg.to; index += 1) {
@@ -142,7 +143,7 @@ function droppedM(track: Track, leg: Leg): number {
     }
     if (from === null || height > from) {
       from = height;
-    } else if (from - height >= TURN_M) {
+    } else if (from - height >= turnM) {
       dropped += from - height;
       from = height;
     }
@@ -179,8 +180,13 @@ function topOf(track: Track, leg: Leg): number | null {
   return top;
 }
 
-/** The day of `track`: its descents, its lifts and its numbers. */
-export function snowDay(track: Track): SnowDay {
+/** The lifts and the descents of `track`, in their order, and whether the
+ * phone gave any height. */
+function liftsAndDescents(track: Track): {
+  heights: boolean;
+  lifts: Leg[];
+  descents: Leg[];
+} {
   const last = track.fixes.length - 1;
   const read = legs(track);
   const heights = track.fixes.some((_, index) => heightOf(track, index) !== null);
@@ -204,6 +210,12 @@ export function snowDay(track: Track): SnowDay {
     : last > 0
       ? [{ from: 0, to: last }]
       : [];
+  return { heights, lifts, descents };
+}
+
+/** The day of `track`: its descents, its lifts and its numbers. */
+export function snowDay(track: Track): SnowDay {
+  const { heights, lifts, descents } = liftsAndDescents(track);
   let skiedM = 0;
   let skiedMs = 0;
   let verticalM = 0;
@@ -227,4 +239,67 @@ export function snowDay(track: Track): SnowDay {
     averageMps: skiedMs > 0 ? skiedM / (skiedMs / 1000) : null,
     lifts: heights ? lifts : null,
   };
+}
+
+/**
+ * A lift or a descent of the day, with its own numbers (TASK-429 part B,
+ * ADR-0357): what «Runs» shows, one after the other, and what the map
+ * numbers. `n` counts the lifts and the descents apart, from 1.
+ */
+export type SnowPart = {
+  kind: "lift" | "descent";
+  n: number;
+  leg: Leg;
+  /** When it began and ended, on the phone's clock. */
+  startMs: number;
+  endMs: number;
+  /** Its time, pauses left out, and its metres. */
+  ms: number;
+  metres: number;
+  /** The metres a lift climbed, or a descent dropped. */
+  heightM: number;
+  /** A descent's top speed, in metres a second; null for a lift, and for
+   * a descent too short to say. */
+  topMps: number | null;
+};
+
+/** The lifts and the descents of `track` in the order of the day; null
+ * when the phone gave no height, and the day has none to tell apart. */
+export function snowParts(track: Track): SnowPart[] | null {
+  const { heights, lifts, descents } = liftsAndDescents(track);
+  if (!heights) {
+    return null;
+  }
+  const parts: SnowPart[] = [
+    ...lifts.map((leg, at) => {
+      const { metres, ms } = metresAndMs(track, leg);
+      const rise = (heightOf(track, leg.to) ?? 0) - (heightOf(track, leg.from) ?? 0);
+      return {
+        kind: "lift" as const,
+        n: at + 1,
+        leg,
+        startMs: track.fixes[leg.from].timeMs,
+        endMs: track.fixes[leg.to].timeMs,
+        ms,
+        metres,
+        heightM: Math.max(0, rise),
+        topMps: null,
+      };
+    }),
+    ...descents.map((leg, at) => {
+      const { metres, ms } = metresAndMs(track, leg);
+      return {
+        kind: "descent" as const,
+        n: at + 1,
+        leg,
+        startMs: track.fixes[leg.from].timeMs,
+        endMs: track.fixes[leg.to].timeMs,
+        ms,
+        metres,
+        heightM: droppedM(track, leg),
+        topMps: topOf(track, leg),
+      };
+    }),
+  ];
+  return parts.sort((a, b) => a.leg.from - b.leg.from);
 }

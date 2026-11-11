@@ -1,7 +1,7 @@
 # TASK-371 — La camminata, «Walk»
 
-**Stato**: In lavorazione — parti A (#741) e B (#747) Done il 2026-11-04;
-restano l'accensione di «Walk» e la parte C
+**Stato**: Done · 2026-11-10 · A #741, B #747, C #755, «Walk» acceso #923;
+il server ha la 0043 e le regole del gioco; nulla resta da fare
 **Fase**: 4 · **Branch**: `docs/TASK-371-walk` (documenti),
 `feat/TASK-371-a-walk-engine-api` (parte A), `feat/TASK-371-b-walk-app`
 (parte B), `feat/TASK-371-c-walk-game` (parte C) · **ADR**: ADR-0315 ·
@@ -292,3 +292,7 @@ cambiano. Test toccati: `sport.test.ts`, `sportRows.test.ts`,
 `SportSetting.test.tsx`, `SportButton.test.tsx`, `SportStoreBuild.test.tsx`,
 `hikeApp.test.tsx`, `sports/gravelMtbProfile.test.ts`, `search/walkFilter.test.tsx`,
 `profile/SettingsPage.test.tsx`. Solo JS: impronta iOS invariata.
+
+## Chiusura (2026-11-10)
+
+Chiuso dal giro delle chiusure del 2026-11-10 (sessione «Task backlog review», su assegnazione del Coordinatore): A, B e C in `main`, «Walk» acceso il 2026-11-06 (#923) e in produzione; il server ha la 0043 e il gioco conta le camminate. «NEAR YOU» per la camminata resta fuori, scelta dell'utente «Solo corsa, per ora».

@@ -54,6 +54,7 @@ ciano di «Start here».
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
+| `energy` | `#FF6363` (scuro, fino a `#FFA3A3` al passo più chiaro); `#8F1216`–`#B71C1C` nel tono chiaro | le calorie, ovunque si vedano: riquadri della corsa e della neve, piscina, palestra, la riga del post e dell'attività, i riquadri e le righe della pagina del post (TASK-424 parte C3, scelta dell'utente del 2026-11-10: «segnate con colore rosso in tutte»); almeno 4,5:1 su `background`, `surface` e `surfaceRaised` a ogni passo. Sul giallo della palestra `energyOnAccent` `#8F1216` (6,3:1), sopra una foto `energyOnScrim` `#FF6363` (6,8:1 sul velo) |
 | `scrim`, `onScrim` | `#0B0A08`, `#FFFFFF` | il buio del tour (TASK-266) e il velo sotto le parole sulle foto (`Scrim`, TASK-339); il bordo della luce |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
 | `you` | `#3D9BFF` | chi corre sulla mappa: l'anello della freccia e il cono di «Compass»; il disegno e la linea della pagina aperta della corsa (TASK-431); nel tono chiaro `#1565C0` |
@@ -301,8 +302,20 @@ pagine»):
    (qualche via attorno); con un percorso, la linea e la mappa inquadrata
    su di lui. Si sposta e si ingrandisce con le dita: i pulsanti + e − non
    ci sono più (TASK-175, chiesto dall'utente). L'attribuzione dei dati è
-   sempre visibile in basso, per intero; i suoi link si aprono nel browser
+   sempre visibile in basso, per intero, coi colori del tema (`surface`,
+   `textMuted`, link `text`; TASK-443); i suoi link si aprono nel browser
    del telefono.
+
+   **L'inquadratura** (TASK-443): il percorso entra sempre tutto, sotto la
+   barra di stato e sopra l'attribuzione, con 16 px di respiro, e mai sotto
+   un pulsante: se toccherebbe «←», il tipo di mappa o la freccia del nord
+   scende sotto la loro riga. Con lui entra la sagoma tratteggiata della
+   forma chiesta (TASK-442). Quando la scheda sotto cambia altezza la mappa
+   si inquadra di nuovo, se l'utente non l'ha mossa. Dove il motore ha
+   spostato l'inizio c'è una bandierina in un tondo ciano (non una goccia,
+   che è la partenza chiesta) con «Start here» nei colori di un controllo:
+   sopra la bandierina, o sotto quando sopra finirebbe nella barra di stato
+   o sotto un pulsante.
 
    **Il tipo di mappa** (TASK-264, ADR-0232, chiesto dall'utente): in alto
    a destra, di fronte a «←», un pulsante tondo con due fogli; mentre si
@@ -3133,6 +3146,16 @@ le foto non arrivano, e dopo due la fila non ne chiede altre. Sotto la fila
 c'è «Maps: …», come in «Explore». Le schede non si toccano, e la fila
 sparisce con la scheda dell'attesa.
 
+**La sagoma nell'attesa** (TASK-442): mentre il percorso si calcola, al
+centro della mappa c'è il contorno della forma chiesta, chiaro e sottile
+(`shapeGhost` nei token), che respira fra due opacità mentre un punto giallo
+lo percorre come una penna. È a schermo, **non in un posto della mappa**: il
+motore non l'ha ancora messa. Il contorno è quello che l'app ha già: per una
+forma del catalogo lo stesso dell'anteprima di «Draw», per un'immagine o un
+disegno quello della richiesta; per una parola l'app non ha le lettere e
+l'attesa resta senza sagoma. Con «Riduci movimento» sta ferma e senza
+punto. Non prende tocchi e non dice nulla a VoiceOver: lo dice già la barra.
+
 - Fino a 10 km il percorso di solito arriva in 5–35 s, da 15 a 21 km in
   30–50 s; una zona nuova aggiunge il suo download, circa 105 s per un
   21 km (`API.md`, «Tempi»).
@@ -3185,6 +3208,15 @@ sotto (`otherRoute` nei token); una tessera toccata diventa il percorso:
 distanza, avvisi, «Start» e «Export GPX» sono i suoi. Durante la corsa le
 linee grigie spariscono. Un nuovo risultato riparte da A. Con un percorso
 solo, niente tessere, come prima.
+
+**La forma ideale sotto il percorso** (TASK-442): nel risultato di «Draw»,
+sotto il percorso e sotto le linee grigie, c'è la forma chiesta come il
+motore l'ha messa (`placed_outline` del risultato, TASK-347): una linea
+chiara, sottile e tratteggiata (`shapeGhost`), mai gialla, per vedere a
+occhio quanto il percorso le somiglia. Ogni tessera ha la sua, girata e
+grande come il suo percorso. Non muove la mappa. Non c'è mentre si corre,
+in «Explore» e sui percorsi a tema; sull'acqua e con un'API che non manda
+`placed_outline` non si disegna niente.
 
 **Dove la forma viene meglio** (TASK-234, ADR-0197, scelta dell'utente):
 quando l'API manda `better_distance_m`, sotto le tessere c'è una riga

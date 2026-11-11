@@ -1,8 +1,9 @@
 # TASK-433 — Le schede della palestra guidate, con le settimane che cambiano
 
-**Stato**: In lavorazione · 2026-11-10 · codice in `main` (#1095,
-`8138b456`); restano server (0066) e OTA nel passo unico del Coordinatore,
-col sì dell'utente, e la prova sul telefono
+**Stato**: Done · 2026-11-11 · A (#1095), B (#1103), C1 (#1117) e C2 (#1115,
+#1133) in `main`, sul server e negli OTA 5–8; provato sul telefono
+dall'utente. Esito: schede guidate, settimane che cambiano, spiegazione e
+giorni di corsa in produzione
 **Fase**: 5 · **Branch**: `feat/TASK-433-gym-guided-plans`
 **Dipende da**: TASK-411 (le schede, parte C: tabella `gym_plans`, 0058)
 **ADR**: ADR-0360 (proposto) · numeri dal Coordinatore il 2026-11-10
@@ -109,10 +110,125 @@ libero al merge),
 - [x] Testi nelle cinque lingue (`tables.test.ts`).
 - [x] Testi approvati dall'utente («Approvo», 2026-11-10).
 - [x] CI verde e merge (#1095, `8138b456`).
-- [ ] Migrazione sul server e poi OTA, dal Coordinatore col sì dell'utente;
-      righe di controllo di sola lettura in `out/TASK-433/SERVER.md`
+- [x] Migrazione sul server e poi OTA, dal Coordinatore col sì dell'utente
+      (0066 il 2026-11-10, OTA 5 da 2c3442f7; B nell'OTA 6 da c4ab00a3; C1
+      sul server col passo 7 del 2026-11-11, 2ed26af7, controlli di
+      `out/TASK-433/SERVER-C.md` tutti come attesi); righe di controllo di sola
+      lettura in `out/TASK-433/SERVER.md` e `SERVER-C.md`
       (cartella `out/` del checkout principale).
-- [ ] Prova sul telefono dell'utente.
+- [x] Settimo OTA con la C2 (#1115, 23308c9e), dal Coordinatore col sì
+      dell'utente: in produzione da `main` 7e24e7d1 il 2026-11-11 ~14:30Z (iOS
+      `3906eb66-1292-4b9c-86e9-bbaf34a88ce5`, Android
+      `7b0ec9eb-baae-4484-8dae-233de28598c0`, preview
+      `59cbd83c-011b-475f-b294-54561e46d19c`).
+- [x] Vista girare nel simulatore il 2026-11-11 (Expo Go, una pagina di prova
+      temporanea da `main` 7e24e7d1, mai committata): i 5 passi con due corse,
+      le ripetute, la settimana 2 scritta a mano, il salvataggio (programma
+      valido per il server), la spiegazione B che sale e si chiude, «Today» in
+      un giorno di corsa, «My plans» con «RUN». Tutto come la tela, tranne
+      «No» di «And running?» che scelto aveva il bordo azzurro delle corse:
+      ora neutro (#1133, in `main` cd0c8b08, uscito con l'ottavo OTA). Schermate in
+      `out/TASK-433/simulator/` del checkout principale.
+- [x] Prova sul telefono dell'utente: il settimo OTA il 2026-11-11 (prova
+      generale, sotto), il «No» neutro dell'ottavo confermato lo stesso giorno
+      («Sì, va bene»).
+
+## Parte B — «Come funzionano le schede» toccando Palestra
+
+Chiesta dall'utente il 2026-11-10 al Coordinatore («inserire la scheda che
+spieghi come funziona ma solamente quando l'utente clicca sullo sport
+gym»); scelte una alla volta, sulla schermata «B» della tela:
+
+1. **Quando**: «Solo la prima volta» che tocca Palestra in «Draw»; mai
+   all'avvio dell'app (anche con la palestra già scelta), mai negli altri
+   sport. Ascolta lo sport scelto (`saveSport` avvisa solo di una scelta
+   fatta), non la pagina della palestra che compare; vista, resta vista sul
+   telefono (`gym-intro.json`).
+2. **Chiudere e rivedere**: «Così» — «Create my plan» apre la guida in 5
+   passi (dopo che il riquadro è sceso: un Modal alla volta), «Not now» o un
+   tocco fuori lo chiude; la riga «How plans work» nella palestra di
+   «Draw» lo riapre quando si vuole. Senza account c'è solo «Not now».
+3. **Testi e grafica**: «Approvo» — riquadro dal basso con le quattro barre
+   delle settimane, «Your plan, step by step», tre passi numerati.
+
+| en | it |
+|---|---|
+| Your plan, step by step | La tua scheda, passo per passo |
+| A minute to make it, then it guides you every time. | Un minuto per farla, poi ti guida ogni volta. |
+| Choose your goal and days | Scegli obiettivo e giorni |
+| More muscle, more strength, tone up or get back in shape, 2 to 5 days. | Più muscoli, più forza, tonificare o rimetterti in forma, da 2 a 5 giorni. |
+| The plan is ready | La scheda è già pronta |
+| Exercises, sets and reps proposed: touch an exercise to change it. | Esercizi, serie e ripetizioni proposti: tocca un esercizio per cambiarlo. |
+| The weeks change by themselves | Le settimane cambiano da sole |
+| More load, more reps or weeks A / B. Here you find today's workout. | Più peso, più ripetizioni o settimane A / B. Qui trovi l'allenamento di oggi. |
+| Create my plan · Not now · How plans work | Crea la mia scheda · Non ora · Come funzionano le schede |
+
+File (solo app, lista mandata al Coordinatore): nuovi
+`apps/mobile/src/gym/gymIntro.ts`, `GymIntroSheet.tsx`, `GymIntro.test.tsx`;
+`gym/GymDrawGuide.tsx`, `i18n/{it,de,fr,es}.ts`; `docs/tasks/TASK-433.md`,
+`docs/sports/gym.md`. Niente server: esce con l'OTA dopo il merge. Sul
+simulatore non è stata vista girare.
+
+## Parte C — I giorni di corsa nella scheda
+
+Chiesta dall'utente il 2026-11-10 («aggiungi anche la possibilità di
+aggiungere una scheda di allenamento di corsa nella sezione palestra»);
+alla prima domanda «Giorni di corsa nella scheda», poi «continua con questa
+task»; scelte una alla volta sulle schermate C1–C3 della tela:
+
+1. **Come si aggiunge**: «Così» — al passo 2, sotto i giorni, «And
+   running?» No / 1 / 2 / 3: le corse vanno nei giorni senza palestra
+   (martedì e sabato per primi); in «Your week» ogni giorno si tocca:
+   palestra, corsa, riposo. Di base «No».
+2. **Che corsa**: «Sì, così» — Lenta, Ripetute, Lungo; km o minuti (le
+   ripetute: quante e quanto ciascuna, 200/400/800/1000 m); con le
+   settimane +10% circa a settimana (mezzi km, minuti interi), le ripetute
+   +1, l'ultima settimana di un ciclo di 3 o più all'80% della prima;
+   «Always the same» la lascia com'è.
+3. **In «Draw»**: «Sì, così» — «Today» mostra la corsa della settimana
+   («Easy run · 5.5 km», la riga del tipo); «Go to the run · 5.5 km» passa
+   «Draw» a «Run» coi km già scritti (forma o corsa senza percorso); «Gym
+   today instead» fa un allenamento libero. Una corsa fatta quel giorno
+   conta come fatta nel calendario della palestra.
+4. **Testi e grafica**: «Approvo» — la sigla «RUN» nell'azzurro di un token
+   nuovo `runDay` (lo stesso colore di `startHere`, ma un token suo, così
+   ognuno ha un significato), le lettere dei giorni di palestra in giallo.
+
+**Il disegno tecnico** (ADR-0363, numero del Coordinatore del 2026-11-10;
+la voce intera con la PR di soli documenti dopo il merge): un giorno del programma ha un campo nuovo
+facoltativo `run` (`kind`, `distance_m` o `duration_s`; per le ripetute
+`reps` e `rep_m` o `rep_s`) e nessun esercizio; niente migrazione, sta nel
+JSONB di `program`. I valori di ogni settimana li calcola il telefono
+(`program.ts`, `runInWeek`). Il calendario (`gym_calendar.py`) dà per fatto
+un giorno di corsa se quel giorno c'è una corsa (`runs.activity =
+'running'`). «Go to the run» usa `saveSport("run")` e un canale nuovo di
+`useDrawDistance.ts` (`chooseDrawDistance`) per scrivere i km di «Draw».
+
+**Cosa vede l'app in produzione** (l'OTA del 2026-11-10, che ha le schede
+guidate ma non i giorni di corsa): un giorno di corsa è un allenamento senza
+esercizi; la sua `isGymProgram` non guarda `run` e lo legge; in «Draw» non
+diventa «Today» (zero esercizi); in «Edit» la guida di prima lo mostra come
+un giorno di palestra vuoto e non lascia salvare finché non ha esercizi. Il
+server va aggiornato prima dell'OTA: quello di oggi rifiuta un giorno con
+`run` (campi in più vietati) e la scheda resta in attesa sul telefono.
+
+**Due PR** (Coordinatore): C1 #1117 server e shared-types, C2 #1115
+l'app, che entra in `main` solo dopo il «server C1 fatto» del Coordinatore
+(l'app manderebbe `run` a un server che lo rifiuta con `422`). Righe di
+controllo del server in `out/TASK-433/SERVER-C.md`.
+
+File (lista approvata dal Coordinatore il 2026-11-10): server `gym_plans.py`,
+`gym_calendar.py`, `tests/test_gym_plans.py`; shared-types `src/gym.ts`,
+`fixtures/gym-plans.json`, `test/gym.test.ts`; app `api/gymPlans.ts` (+
+test), `gym/program.ts` (+ test), `gym/proposal.ts` (+ test),
+`gym/plans.ts`, `gym/GymPlanWizard.tsx`, `gym/GymPlans.tsx` (+ test),
+`gym/GymDrawGuide.tsx`, nuovi `gym/runDay.ts`, `gym/RunDayEditor.tsx`;
+`units/useDrawDistance.ts` e il test nuovo
+`units/chooseDrawDistance.test.tsx`; `theme/tokens.ts` e
+`theme/palettes.test.ts` (il token `runDay`); `tabs/TabSwipeOwners.test.ts` (le linguette che scorrono, una riga); `i18n/{it,de,fr,es}.ts` (via
+«Which days» e la sua riga, che il passo 2 non mostra più); documenti
+`docs/tasks/TASK-433.md`, `docs/sports/gym.md`, `docs/API.md`. Sul
+simulatore non è stata vista girare.
 
 ## Da fare dopo il merge (Coordinatore, col sì dell'utente)
 
@@ -120,6 +236,30 @@ libero al merge),
    Coordinatore. Prima del server l'app nuova salva le schede guidate solo
    sul telefono: il `PUT` con `program` torna `422` dall'API vecchia e la
    scheda resta in attesa; per questo l'OTA va dopo il server.
-2. OTA di produzione.
+   **Fatto il 2026-11-10**: server a 8138b456, 0066 applicata, copia
+   `shaperoute-2026-11-10T1738Z.dump`, ritorno = immagine
+   `shaperoute-api:before-passo5`; controlli di `out/TASK-433/SERVER.md`
+   («plans 0 without weeks 0 read ok», rotte 401/404 come attese).
+2. OTA di produzione: partito dal Coordinatore da main 2c3442f7 (senza la
+   parte B, che esce con l'OTA dopo il suo merge).
 3. La privacy non cambia: le schede (nome, giorni, esercizi e valori
    obiettivo) restano sul telefono e sull'account come in TASK-411 D.
+
+## Prova sul telefono (2026-11-11)
+
+Settimo OTA in produzione da `main` 7e24e7d1 (~14:30Z; iOS
+`3906eb66-1292-4b9c-86e9-bbaf34a88ce5`, Android
+`7b0ec9eb-baae-4484-8dae-233de28598c0`), con la C2 (#1115). L'utente l'ha
+provato sul telefono e ha scritto al Coordinatore «procedi funziona tutto
+ok procedi», poi «Sì, sul telefono» alla domanda se era la prova del
+settimo aggiornamento. È una **prova generale** del settimo OTA: l'utente
+non ha nominato le singole funzioni, quindi per la C2 (giorni di corsa) non
+vale come giro guidato dei passi della guida. Il «No» neutro di «And
+running?» (#1133) non c'era ancora: esce con l'ottavo OTA.
+
+Ottavo OTA in produzione il 2026-11-11 alle 14:09Z da `main` cd0c8b08, con
+la #1133 (il «No» neutro di «And running?»): iOS
+`0cf2abd4-69dc-44ca-b5ea-429a0155a1f8`, Android
+`41d7bb93-47c7-4236-b80f-3f61fd454220`, preview
+`76f5ccd6-6bf5-45dd-9c70-163a7d6b860b`. L'utente ha confermato il «No»
+neutro sul telefono («Sì, va bene»): TASK-433 è chiuso.

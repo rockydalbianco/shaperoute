@@ -1,8 +1,10 @@
 # TASK-370 — L'app per Apple Watch, per tutti gli sport, anche senza telefono
 
 **Stato**: In lavorazione · proposta e piano della parte A in `main`; A1 in
-`main` (#839, 2026-11-05); A2 in `main` (#866 e #883, 2026-11-06); A3 in PR
-(2026-11-08); poi A-flip alla build 1.1
+`main` (#839, 2026-11-05); A2 in `main` (#866 e #883, 2026-11-06); A3 in
+`main` (#943, 2026-11-08); A-flip con B4 e B5 nella **1.1.0 build 14**,
+inviata ad Apple il 2026-11-11 (branch di rilascio `release/1.1.0`, #1116 in
+bozza fino all'approvazione)
 **Fase**: 5 · **Branch**: `docs/TASK-370-apple-watch` (documenti); il codice
 `feat/TASK-370-a-…`, `feat/TASK-370-b-…`, …
 **Dipende da**: TASK-321 B (HealthKit nella build, in `main`), TASK-376 B3 (il
@@ -571,6 +573,38 @@ l'orologio solo se MuW è già aperta al polso. Il messaggio di partenza
   6f8bba4c sul branch e su main, ferma.
 
 Da provare al polso con la build 12.
+
+## La 1.1.0: le prove al polso e l'invio (2026-11-10/11)
+
+Tre build su TestFlight interno (EAS, profilo `production`), provate
+dall'utente su iPhone e Apple Watch Ultra 2; esiti in
+`out/TASK-370/prova-build-*.md` (fuori dal repository).
+
+- **Build 11** (1.1.0, EAS `d4ccec04`, da #1058 `6cdc938f`, impronta iOS
+  `77a5233c`): tutto ok con MuW già aperta sul polso; con l'app chiusa
+  l'orologio non partiva (mancava il risveglio) → **B4**.
+- **Build 12** (EAS `d55e13de`, da A-flip `6c4475d6` con B4 e B5): tutto ok,
+  anche il risveglio con MuW chiusa e la corsa libera con mappa, colori, zona
+  e dettagli («funziona tutto pubblica»).
+- **Build 14** (EAS `09229e56`, da `release/1.1.0` `356e3f66` = `main` +
+  A-flip + TASK-401 B, la Live Activity): tutto ok («Tutto ok», 2026-11-11).
+  Il numero 13 l'ha consumato un lancio del 2026-11-10 rimasto fermo al
+  login Apple.
+
+Il taglio della 1.1.0 (scelta dell'utente al Coordinatore: «Anche Live
+Activity», «ok procedi con tutto»): `release/1.1.0` da `main` con le due
+branch unite lì, i conflitti risolti solo lì (`app.json`: un solo
+`@bacons/apple-targets` con `match` `{live-activity,watch}`), e
+`fingerprint.config.js` che conta `NSSupportsLiveActivities` e il target
+della Live Activity solo per l'iPhone. Impronte: iOS **`5e1b5ce5`** (nuova,
+1.1.0), Android **`227457f3`** (invariata).
+
+**Inviata alla revisione** il 2026-11-11 (~13:38Z) dal Coordinatore col sì
+dell'utente, rilascio automatico dopo l'approvazione; scheda con What's New,
+due righe nuove nella descrizione e quattro screenshot dell'orologio dal
+simulatore (Ultra, 422×514), approvati dall'utente. All'approvazione:
+`main` riunito in `release/1.1.0`, impronte rimisurate, #1116 unita (chiude
+#1058 e #862) e subito un OTA sul runtime nuovo.
 
 ## File toccati
 

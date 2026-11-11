@@ -47,7 +47,13 @@ from typing import Any
 
 import route_engine
 from route_engine.directions import Direction
-from route_engine.models import Landmark, RouteRequest, RouteResult, SwimTurn
+from route_engine.models import (
+    SNOW_ACTIVITIES,
+    Landmark,
+    RouteRequest,
+    RouteResult,
+    SwimTurn,
+)
 
 log = logging.getLogger(__name__)
 
@@ -148,6 +154,21 @@ SAME_ROUTES_AS: dict[str, str] = {
     "2bca806f467b": "8ab61d8e87f9",  # every route but a swim
     "55b54eea0e14": "17d7608bd912",  # the swims
     "cf585f8fb31b": "8a62c5877031",  # the app's paddling examples
+    # TASK-435: plan_nearby tells the start's own plan as soon as it is
+    # there (ADR-0361); every route drawn the same.
+    "b4967ef32e9a": "2bca806f467b",  # every route but a swim
+    "3ce5d60ec0cd": "55b54eea0e14",  # the swims
+    # TASK-436: the two tables a search works out once for its graph, made
+    # in blocks (ADR-0362); every route of before drawn the same.
+    "ca29e58777cb": "b4967ef32e9a",  # every route but a swim
+    "c9c2683a72ea": "3ce5d60ec0cd",  # the swims
+    "3984555281d5": "cf585f8fb31b",  # the app's paddling examples
+    # TASK-413 A2: snowshoeing moves from ENGINE_ONLY to ENGINE_ACTIVITIES,
+    # in the contract, and nothing is anchored on the snow (anchored.py);
+    # every route of before drawn the same (ADR-0342).
+    "427ed1a16a97": "ca29e58777cb",  # every route but a swim
+    "d943bfbe8c44": "c9c2683a72ea",  # the swims
+    "f54db2ee707d": "3984555281d5",  # the app's paddling examples
 }
 
 
@@ -421,6 +442,11 @@ class RouteStore:
             return None  # a shape moved by the user (TASK-238): theirs too
         if getattr(request, "placement", "free") != "free":
             return None  # anchored where the user drew it (TASK-347): theirs
+        if request.activity in SNOW_ACTIVITIES:
+            # The snow's files are out of the fingerprint (SNOW_ONLY): a
+            # route on the snow kept would outlive the rules that drew it
+            # (TASK-413, ADR-0342).
+            return None
         same = json.dumps(
             [self._engine_of(request), self._same(request)], sort_keys=True
         )

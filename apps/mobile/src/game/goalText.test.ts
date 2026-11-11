@@ -7,6 +7,7 @@ import {
   goalText,
   percentText,
   progressText,
+  runDistanceLabel,
 } from "./goalText";
 
 // The phone's documents folder, in memory: the language.
@@ -121,18 +122,37 @@ const FIRST_HALF: GameGoal = {
 };
 
 test("a milestone asks for one run of the distance, its pace unsaid", () => {
-  expect(goalText(FIRST_HALF, "km")).toBe("One run of 21.1 km");
-  expect(goalText(FIRST_HALF, "mi")).toBe("One run of 13.1 mi");
-  // Without the field, as an older API's: the pace, as before.
+  // The half marathon by its name, in any units (TASK-423, after use).
+  expect(goalText(FIRST_HALF, "km")).toBe("One half marathon");
+  expect(goalText(FIRST_HALF, "mi")).toBe("One half marathon");
+  expect(goalText({ ...FIRST_HALF, distance_m: 10000 }, "km")).toBe("One run of 10 km");
+  expect(goalText({ ...FIRST_HALF, distance_m: 42195 }, "km")).toBe("One marathon");
+  // Without the field, as an older API's: the pace.
   const { single_run: _one, ...older } = FIRST_HALF;
-  expect(goalText(older, "km")).toBe("21.1 km under 20:00 /km");
+  expect(goalText(older, "km")).toBe("Half marathon under 20:00 /km");
   expect(goalText({ ...FIRST_HALF, single_run: false }, "km")).toBe(
-    "21.1 km under 20:00 /km",
+    "Half marathon under 20:00 /km",
   );
   // How far along: the longest run so far.
   expect(progressText(FIRST_HALF, me({ longest_m: 15400 }), "km")).toBe(
     "Longest run 15.4 km",
   );
+});
+
+test("the distance of one run as a runner says it; the totals stay in km", () => {
+  expect(runDistanceLabel(400, "km")).toBe("400 m");
+  expect(runDistanceLabel(400, "mi")).toBe("400 m");
+  expect(runDistanceLabel(1609, "km")).toBe("1 mile");
+  expect(runDistanceLabel(1609, "mi")).toBe("1 mi");
+  expect(runDistanceLabel(21097, "km")).toBe("Half marathon");
+  expect(runDistanceLabel(42195, "mi")).toBe("Marathon");
+  expect(runDistanceLabel(3000, "km")).toBe("3 km");
+  expect(runDistanceLabel(15000, "mi")).toBe("9.3 mi");
+  expect(goalText({ ...FAST_KM, distance_m: 400, pace_s: 240 }, "km")).toBe(
+    "400 m under 4:00 /km",
+  );
+  // A total is not a run: 21.1 km, never «Half marathon».
+  expect(goalText(HALF, "km")).toBe("21.1 km in total");
 });
 
 test("in Italian the words follow the language, the comma too", () => {

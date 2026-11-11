@@ -120,7 +120,11 @@ def test_the_example_is_the_body() -> None:
     post = page["posts"][0]
     # Written before TASK-312 and TASK-348: a post of a run of the app, never
     # ordered (feed-imported.json, test_imported_runs.py).
-    assert set(post) == set(FeedPostBody.model_fields) - {"source", "order"}
+    assert set(post) == set(FeedPostBody.model_fields) - {
+        "source",
+        "order",
+        "ski_descents",
+    }
     assert set(post["author"]) == set(AuthorBody.model_fields)
     assert post["author"] == _load("drawing-details.json")["author"]
     assert re.match(CURSOR_PATTERN, page["next"])

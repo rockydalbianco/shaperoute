@@ -8,6 +8,7 @@ import { CardMapsCredit } from "../explore/RouteCard";
 import { thumbSegments } from "../explore/RouteThumb";
 import { postsFor } from "../explore/WhileDrawing";
 import { FeedMapShooter, useFeedMap } from "../feed/FeedMaps";
+import { FactsText, factsEnergy } from "../feed/FactsText";
 import { postFacts } from "../feed/FeedPost";
 import { SAMPLE_FEED, type SamplePost } from "../feed/sampleFeed";
 import { turnedLine } from "../feed/turnedLine";
@@ -187,9 +188,12 @@ function Card({ post, mapAsked, onMap }: CardProps) {
       <Text style={styles.title} numberOfLines={1}>
         {post.title}
       </Text>
-      <Text style={styles.facts} numberOfLines={1}>
-        {facts}
-      </Text>
+      <FactsText
+        style={styles.facts}
+        numberOfLines={1}
+        facts={facts}
+        kcal={factsEnergy(post)}
+      />
     </View>
   );
 }

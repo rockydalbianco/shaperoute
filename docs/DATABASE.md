@@ -1098,6 +1098,17 @@ del Coordinatore: la `0056` è di TASK-406 D1, entrata prima):
   nessun record personale.
 - Nessuna riga cambia. Test in `test_ski_touring_api.py`.
 
+Migrazione `0068_snowshoeing.sql` (TASK-413 parte A2, ADR-0342; numero in
+bozza, quello vero è il primo libero al merge, dal Coordinatore):
+
+- I vincoli `runs_activity_check`, `favorites_activity_check` e
+  `group_runs_activity_check` prendono anche `'snowshoeing'`: un percorso
+  sulla neve si salva, si tiene tra i preferiti e si propone come corsa di
+  gruppo. La migrazione rilegge ciascun vincolo e lo riscrive col nome in
+  più, in fondo, come la `0055`.
+- `run_bests` no: nessun record personale, come Hike.
+- Nessuna riga cambia. Test in `test_snowshoeing_api.py`.
+
 Migrazione `0061_run_heart.sql` (TASK-409 parte B1, ADR-0334 precisazione D;
 numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
 
@@ -1139,6 +1150,13 @@ merge):
   backfill dei passi delle corse vecchie (`python -m
   shaperoute_api.run_stats`) scrive solo le righe che mancano, e si lancia
   col sì dell'utente. Test in `test_run_stats.py`.
+- **Due chiavi in più in `stats`** (TASK-424 parte C2b, con TASK-429;
+  nessuna migrazione nuova): `ski_parts`, i tratti di una giornata di sci
+  (risalite e discese, al più 500, con `start_s`/`end_s` sui secondi della
+  traccia), e `ski_descents` `{metres, moving_s}`, la somma delle sole
+  discese, calcolata al `PUT`. Le liste dei post leggono `ski_descents`
+  con una sottoquery sulla chiave primaria (`drawings.py`, `_SEEN_FIELDS`).
+  Test in `test_ski_parts.py`.
 
 ## Come si memorizza una traccia
 

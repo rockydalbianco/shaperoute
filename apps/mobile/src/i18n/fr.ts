@@ -383,6 +383,7 @@ export const FR: Table = {
   "{length} of {max} characters": "{length} sur {max} caractères",
   "Saving…": "Enregistrement…",
   Save: "Enregistrer",
+  Saved: "Enregistré",
 
   // src/profile/PhotoChoices.tsx
   "Removing…": "Suppression…",
@@ -796,8 +797,6 @@ export const FR: Table = {
   // src/screens/FreeRunScreen.tsx, SnowFinishCard.tsx (TASK-375 part C)
   "Your day": "Ta journée",
   "White: where you skied.": "Blanc : là où tu as skié.",
-  "White: your descents. Dashed: the lifts.":
-    "Blanc : tes descentes. Pointillés : les remontées.",
   "Skied: {distance}": "Skié : {distance}",
   Descents: "Descentes",
   Vertical: "Dénivelé",
@@ -1187,9 +1186,14 @@ export const FR: Table = {
   "Cross-country ski": "Ski de fond",
   // src/sports/gym.ts, src/gym/ (TASK-385 B0: a workout at the gym)
   Gym: "Salle de sport",
-  "{n} exercises · {s} sets": "{n} exercices · {s} séries",
-  "{n} rests · avg {time} · {total} resting":
-    "{n} récups · moy. {time} · {total} de récup",
+  // The counts of a workout, one or more (TASK-453)
+  "{count} exercise": "{count} exercice",
+  "{count} exercises": "{count} exercices",
+  "{count} set": "{count} série",
+  "{count} sets": "{count} séries",
+  "{count} rest": "{count} récup",
+  "{count} rests": "{count} récups",
+  "avg {time} · {total} resting": "moy. {time} · {total} de récup",
   // src/gym/ (TASK-385 part B), approved on 2026-11-04
   "Start workout": "Commencer la séance",
   "No route in the gym: MuW times your workout.":
@@ -1286,9 +1290,6 @@ export const FR: Table = {
     "Séries, répétitions et récup en découlent. Tu pourras les changer ensuite.",
   "to start with": "pour commencer",
   "How many days a week?": "Combien de jours par semaine ?",
-  "Which days": "Quels jours",
-  "With a day of rest in between, where it fits.":
-    "Avec un jour de repos entre deux, quand c'est possible.",
   "How the work is split": "Comment le travail est réparti",
   "Your plan": "Ton programme",
   "Here is your plan": "Voici ton programme",
@@ -1345,6 +1346,47 @@ export const FR: Table = {
   "Lower body B": "Bas du corps B",
   "Arms, core": "Bras, abdos",
   "Workout {letter}": "Séance {letter}",
+  // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
+  "Your plan, step by step": "Ton programme, étape par étape",
+  "A minute to make it, then it guides you every time.":
+    "Une minute pour le créer, puis il te guide à chaque fois.",
+  "Choose your goal and days": "Choisis ton objectif et tes jours",
+  "More muscle, more strength, tone up or get back in shape, 2 to 5 days.":
+    "Plus de muscle, plus de force, tonifier ou retrouver la forme, de 2 à 5 jours.",
+  "The plan is ready": "Le programme est déjà prêt",
+  "Exercises, sets and reps proposed: touch an exercise to change it.":
+    "Exercices, séries et répétitions proposés : touche un exercice pour le changer.",
+  "The weeks change by themselves": "Les semaines changent d'elles-mêmes",
+  "More load, more reps or weeks A / B. Here you find today's workout.":
+    "Plus de charge, plus de répétitions ou semaines A / B. Ici, tu trouves la séance du jour.",
+  "Create my plan": "Créer mon programme",
+  "How plans work": "Comment marchent les programmes",
+  // src/gym/RunDayEditor.tsx, runDay.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-433 C, approved 2026-11-10)
+  "Go to the run · {amount}": "Aller à la course · {amount}",
+  "Gym today instead": "Plutôt la salle aujourd'hui",
+  "And running?": "Et la course ?",
+  No: "Non",
+  "Touch a day to change it: gym, run or rest.":
+    "Touche un jour pour le changer : salle, course ou repos.",
+  "Your week": "Ta semaine",
+  "How much": "Combien",
+  "The same every week.": "Pareil chaque semaine.",
+  "Which run": "Quelle course",
+  "With the weeks": "Au fil des semaines",
+  minutes: "minutes",
+  "{values}; week {n}: {last} to recover":
+    "{values} ; semaine {n} : {last} pour récupérer",
+  "Easy run": "Course lente",
+  Intervals: "Fractionné",
+  "Easy, at a pace you can talk at.": "Facile, à une allure où tu peux parler.",
+  "Easy@@run": "Lente",
+  "Fast stretches with a slow jog between.":
+    "Des portions rapides avec un footing lent entre deux.",
+  "Long@@run": "Longue",
+  "Longer than the others, slowly.": "Plus longue que les autres, doucement.",
+  "easy, you can talk": "facile, tu parles",
+  "fast + recovery": "rapide + récup",
+  "more km, slowly": "plus de km, doucement",
   Workout: "Séance",
   "Only sets logged live count.": "Seules les séries notées en direct comptent.",
   // src/screens/ChooseScreen.tsx (TASK-375)
@@ -1683,6 +1725,84 @@ export const FR: Table = {
   "No run of {distance} yet": "Pas encore de course de {distance}",
   "Week of {date}": "Semaine du {date}",
   "Month of {date}": "Mois du {date}",
+  // src/game/goalText.ts, shapeProgress.ts (TASK-423 after use: the names
+  // of the distances, the bar of a pace)
+  "1 mile": "1 mile",
+  "One half marathon": "Un semi-marathon",
+  "One marathon": "Un marathon",
+  "First run {distance} in one go · longest {longest}":
+    "Cours d'abord {distance} d'affilée · jusqu'ici {longest}",
+  "No time over {distance} yet": "Pas encore de temps sur {distance}",
+  "Best {best} · {gap} to go": "Meilleur {best} · encore {gap}",
+  // src/game/ (TASK-423 part E2a: the prizes in Play, the editions, the
+  // unlock card of an edition or a collection)
+  Prizes: "Récompenses",
+  "Frames, titles and badges": "Cadres, titres et badges",
+  "Prizes are not on this server yet.":
+    "Les récompenses ne sont pas encore sur ce serveur.",
+  "Silver editions: {count}": "Éditions argent : {count}",
+  "Gold editions: {count}": "Éditions or : {count}",
+  Frames: "Cadres",
+  "Complete a collection to earn its frame.":
+    "Complète une collection pour obtenir son cadre.",
+  Titles: "Titres",
+  Badges: "Badges",
+  Earned: "Obtenu",
+  "Complete the collection to earn it.": "Complète la collection pour l'obtenir.",
+  "{collection} frame": "Cadre {collection}",
+  "Bronze edition": "Édition bronze",
+  "Silver edition": "Édition argent",
+  "Gold edition": "Édition or",
+  "{runs} of {need} runs for silver": "{runs} courses sur {need} pour l'argent",
+  "{runs} of {need} runs for gold": "{runs} courses sur {need} pour l'or",
+  Runner: "Coureur",
+  Explorer: "Explorateur",
+  Traveller: "Voyageur",
+  Globetrotter: "Globe-trotteur",
+  Marathoner: "Marathonien",
+  Ultrarunner: "Ultra-traileur",
+  Steady: "Régulier",
+  Collector: "Collectionneur",
+  "4-week streak": "Série de 4 semaines",
+  "12-week streak": "Série de 12 semaines",
+  "52-week streak": "Série de 52 semaines",
+  "10 medals": "10 médailles",
+  "50 medals": "50 médailles",
+  "10 gold editions": "10 éditions or",
+  "Team shape": "Forme d'équipe",
+  "10 team shapes": "10 formes d'équipe",
+  "Run a marathon": "Cours un marathon",
+  "Run 50 km in one go": "Cours 50 km d'affilée",
+  "Complete every collection": "Complète toutes les collections",
+  "{count} week in a row with an outing": "{count} semaine d'affilée avec une sortie",
+  "{count} weeks in a row with an outing": "{count} semaines d'affilée avec une sortie",
+  "{count} medal in the personal challenges":
+    "{count} médaille dans les défis personnels",
+  "{count} medals in the personal challenges":
+    "{count} médailles dans les défis personnels",
+  "{count} shape in its gold edition": "{count} forme dans son édition or",
+  "{count} shapes in their gold edition": "{count} formes dans leur édition or",
+  "{count} team challenge completed": "{count} défi d'équipe réussi",
+  "{count} team challenges completed": "{count} défis d'équipe réussis",
+  "In your {collection} collection.": "Dans ta collection {collection}.",
+  "You met its goal in {count} runs.": "Tu as atteint l'objectif en {count} courses.",
+  "Collection complete": "Collection terminée",
+  "A new frame for your profile.": "Un nouveau cadre pour ton profil.",
+  "New in Play": "Nouveau dans Play",
+  "See them in your collection.": "Tu les trouveras dans ta collection.",
+  "{count} new shape": "{count} nouvelle forme",
+  "{count} new shapes": "{count} nouvelles formes",
+  "{count} new edition": "{count} nouvelle édition",
+  "{count} new editions": "{count} nouvelles éditions",
+  "{collection} complete": "{collection} terminée",
+  // src/game/PrizesPage.tsx, GamePrizesRow.tsx (TASK-423 part E2b: what
+  // the profile shows)
+  "Touch a prize you have to show it on your profile. Nothing is shown until you choose.":
+    "Touche une récompense que tu as pour la montrer sur ton profil. Tant que tu ne choisis pas, rien n'est montré.",
+  "On your profile": "Sur ton profil",
+  "Your profile shows up to {count} badges.":
+    "Ton profil montre jusqu'à {count} badges.",
+  "Title: {title}": "Titre : {title}",
 
   // src/navigation/runPosition.ts, the Android notification of a run (TASK-294)
   "MuW is recording your activity": "MuW enregistre ton activité",
@@ -2367,4 +2487,43 @@ export const FR: Table = {
     "Choisis un autre sport pour retrouver MuW comme toujours.",
   "Log in to see your days.": "Connecte-toi pour voir tes journées.",
   "No days on the snow yet.": "Pas encore de journée sur la neige.",
+
+  // src/skimode/ (TASK-429 part B: the day of skiing, its legend and its parts)
+  "Runs@@ski": "Descentes",
+  Legend: "Légende",
+  "Descents · solid, numbered": "Descentes · trait plein, numérotées",
+  "Lifts · dashed, L1, L2…": "Remontées · pointillés, L1, L2…",
+  Lift: "Remontée",
+  "{speed} top": "{speed} max",
+  "Stopped {minutes} min": "Arrêt {minutes} min",
+
+  // src/skimode/ (TASK-429 part C: the season and the saved day)
+  "Season {years}": "Saison {years}",
+  "Vertical this season": "Dénivelé de la saison",
+  "On snow": "Sur la neige",
+  "Piste without a name": "Piste sans nom",
+  // TASK-415 part B: ski touring, its phases and its VAM (approved 2026-11-11).
+  "Ski touring": "Ski de randonnée",
+  Phase: "Phase",
+  Climb: "Montée",
+  Descent: "Descente",
+  Changeover: "Transition",
+  "VAM 5 min": "VAM 5 min",
+  Altitude: "Altitude",
+  "Elev. loss": "Dénivelé nég.",
+  "Time up": "Temps de montée",
+  "Time down": "Temps de descente",
+  "Avg VAM": "VAM moy.",
+  "Max altitude": "Alt. max",
+  Phases: "Phases",
+  "Climb {n}": "Montée {n}",
+  "Descent {n}": "Descente {n}",
+  "Lift {n}": "Remontée {n}",
+  "Skins off": "Peaux enlevées",
+  "Skins on": "Peaux mises",
+  "Climbed: {metres} m": "Dénivelé : {metres} m",
+  "{phase}, from {time}, for {duration}":
+    "{phase}, à partir de {time}, pendant {duration}",
+  "No heights from the phone: no phases for this tour.":
+    "Le téléphone n'a pas donné d'altitudes : pas de phases pour cette sortie.",
 };

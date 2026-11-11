@@ -33,11 +33,19 @@ const FIXED = {
 
   /**
    * Someone waits for the user's answer: the number on the way to «Profile»
-   * and on «Requests» (TASK-239). Red by the user's choice; nothing else is.
+   * and on «Requests» (TASK-239). Red by the user's choice; so are the
+   * calories (`energy`, TASK-424 part C3), and nothing else is.
    */
   badge: "#E02D2D",
   /** The number on `badge`: 4.6:1. */
   onBadge: "#FFFFFF",
+  /**
+   * The calories on the yellow (TASK-424 part C3): a gym workout's tile and
+   * its picture to share. 6.3:1 on `accent`.
+   */
+  energyOnAccent: "#8F1216",
+  /** The calories over a photo, on `scrim` like `onScrim`: 6.8:1. */
+  energyOnScrim: "#FF6363",
 
   /**
    * The dark laid over the app around the part the tour shows (TASK-266),
@@ -56,6 +64,20 @@ const FIXED = {
   strava: "#FC5200",
   /** Text on `strava`: white, as Strava's own button; semibold, 3:1. */
   onStrava: "#FFFFFF",
+
+  /**
+   * A day of skiing on its map, in the ski mode only (TASK-429, ADR-0357,
+   * the user's choice): the descents in the brand yellow, solid, and the
+   * lifts in a red lighter than `badge`, dashed. There the app draws no
+   * route, so the yellow keeps one meaning; numbers on the lines and a
+   * legend in words say it without the colours.
+   */
+  ski: {
+    descent: "#FFD02B",
+    lift: "#FF5A4E",
+    /** The numbers on the lines: dark, as `onAccent`. */
+    onLine: "#0B0A08",
+  },
 } as const;
 
 /**
@@ -92,6 +114,12 @@ export type Shade = {
   readonly warning: string;
   /** A request that failed. */
   readonly error: string;
+  /**
+   * The calories, wherever they are shown (TASK-424 part C3, the user's
+   * choice of 2026-11-10: «segnate con colore rosso in tutte»): 4.5:1 at
+   * least on `background`, `surface` and `surfaceRaised`, at every step.
+   */
+  readonly energy: string;
 
   /** Where a moved route begins (ADR-0040). Cyan, so it never reads as route. */
   readonly startHere: string;
@@ -104,6 +132,12 @@ export type Shade = {
   readonly you: string;
   /** The tip of the north arrow (TASK-431): north at a glance. */
   readonly north: string;
+  /**
+   * A run day of a plan of the gym (TASK-433 C): the «RUN» mark beside the
+   * yellow letters of the gym's days. The cyan of `startHere`, the user's
+   * choice, kept as its own token so that each keeps one meaning.
+   */
+  readonly runDay: string;
 
   readonly map: {
     readonly background: string;
@@ -162,9 +196,11 @@ export const SHADES: Readonly<
       textFaint: "#908980",
       warning: "#FF7A59",
       error: "#FF6B6B",
+      energy: "#FF6363",
       startHere: "#4DD2FF",
       you: "#3D9BFF",
       north: "#FF5B4F",
+      runDay: "#4DD2FF",
       map: {
         background: "#100F0C",
         water: "#101F29",
@@ -191,9 +227,11 @@ export const SHADES: Readonly<
       textFaint: "#BAB4AB",
       warning: "#FF9478",
       error: "#FF8A8A",
+      energy: "#FFA3A3",
       startHere: "#6EDBFF",
       you: "#5AAEFF",
       north: "#FF7068",
+      runDay: "#6EDBFF",
       map: {
         background: "#2B2925",
         water: "#1F3A4B",
@@ -222,9 +260,11 @@ export const SHADES: Readonly<
       textFaint: "#55504A",
       warning: "#9A330A",
       error: "#A1221B",
+      energy: "#8F1216",
       startHere: "#006E94",
       you: "#1565C0",
       north: "#C42F24",
+      runDay: "#006E94",
       map: {
         background: "#DAD7CF",
         water: "#9CC2D8",
@@ -251,9 +291,11 @@ export const SHADES: Readonly<
       textFaint: "#68625A",
       warning: "#B23C0B",
       error: "#B3261E",
+      energy: "#B71C1C",
       startHere: "#007BA3",
       you: "#1460B8",
       north: "#C8352A",
+      runDay: "#007BA3",
       map: {
         background: "#F5F4F0",
         water: "#B5D6E8",
@@ -501,6 +543,30 @@ export const otherRoute = {
   opacity: 0.8,
 } as const;
 
+/**
+ * The shape asked for, as the search placed it (TASK-442): a thin dotted
+ * line under the route, so the eye can tell how much the route looks like
+ * it; and the same outline over the map while the route is drawn, breathing
+ * between two opacities with a dot going round it. Never yellow, which is
+ * the route's; thinner and lighter than the other routes to choose from.
+ */
+export const shapeGhost = {
+  color: color.text,
+  width: 1.5,
+  opacity: 0.55,
+  /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
+  dash: [2, 2],
+  /** While the route is drawn: the line over the map, in points, and the
+   * two opacities it breathes between, one way in `breathMs`. */
+  waitWidth: 2,
+  waitDim: 0.35,
+  waitBright: 0.8,
+  breathMs: 1400,
+  /** The dot going round the outline, in points across, and one lap. */
+  pen: 8,
+  lapMs: 5000,
+} as const;
+
 /** The route drawn on the map. */
 export const route = {
   color: color.accent,
@@ -580,4 +646,27 @@ export const videoLine = {
   pink: "#FF8FB8",
   green: "#8EE08A",
   white: "#FFFFFF",
+} as const;
+
+/**
+ * The prizes of the shape game (TASK-423 part E, ADR-0351): the ring of each
+ * collection's frame, one colour per collection, light enough to read on the
+ * dark surfaces and on a photo; and the silver and gold of the editions.
+ * Never alone: a frame always has its collection's name, an edition its word.
+ */
+export const gamePrize = {
+  frame: {
+    geometry: "#FFD02B",
+    animals: "#F2A65A",
+    sea: "#4FB3E8",
+    sky: "#9BB8FF",
+    nature: "#7DD87A",
+    city: "#C9A0FF",
+    milestones: "#FF7A7A",
+    seasons: "#FF9ED2",
+    legends: "#E8C76A",
+    greece: "#7FD6C8",
+  },
+  silver: "#C7CDD6",
+  gold: "#E8B23A",
 } as const;

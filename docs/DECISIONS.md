@@ -470,6 +470,9 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione A2 — La pagina dei link dal vivo · 2026-11-08 · Attiva
 - ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link · 2026-11-10 · Attiva
 - ADR-0352, precisazione B2 — Piscina e palestra: gli stessi pulsante e invii, i numeri senza traccia, il consenso senza mappa · 2026-11-10 · Attiva
+- ADR-0352, precisazione C — I dati dal vivo che mancano: il battito su «Data», la piscina dal vivo, le calorie di ogni attività (lo sci sulle discese) · 2026-11-10 · Attiva
+- ADR-0352, precisazione C2b — I tratti della giornata di sci nei run-stats, le discese in ogni lista di post: un campo solo con TASK-429, nessuna migrazione · 2026-11-10 · Attiva
+- ADR-0352, precisazione C3 — Le calorie in rosso ovunque: un token per tono, due fissi per il giallo e le foto, solo le kcal in rosso nella riga dei fatti · 2026-11-10 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -516,8 +519,498 @@ lasciando le righe d'indice.
 - ADR-0360 — Le schede della palestra guidate: le settimane in una colonna `program`, i valori di ogni settimana dal telefono, l'app di prima che legge ancora · 2026-11-10 · Accettata
 - ADR-0361 — Primo percorso subito: `plan_nearby` avvisa quando la partenza ha il suo piano, il job lo porta in `first` a chi lo chiede, nell'app il primo resta A · 2026-11-10 · Accettata
 - ADR-0351, precisazione E1 — I premi sul server: le edizioni come righe di `game_unlocks`, cornici, titoli e badge letti a ogni richiesta, la scelta del profilo in `game_prefs` · 2026-11-10 · Attiva
+- ADR-0357, precisazione B1 — La giornata di sci a colori: un solo calcolo dei tratti, i colori come token, i numeri sulle linee · 2026-11-10 · Attiva
+- ADR-0357, precisazione C1 — I tratti della giornata salvata e la stagione sul server: `parts` solo quando ci sono, nomi alla lettura con una cache per processo · 2026-11-10 · Attiva
+- ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale · 2026-11-10 · Attiva
+- ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw» · 2026-11-10 · Accettata
+- ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi · 2026-11-11 · Attiva
+- ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale · 2026-11-11 · Attiva
+- ADR-0351, precisazione E2 — I premi nell'app: la pagina «Prizes», le schede di edizioni e collezioni, la scelta del profilo e la privacy · 2026-11-11 · Attiva
+- ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix` · 2026-11-11 · Attiva
+- ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste · 2026-11-11 · Attiva
+- ADR-0342, precisazione A2 — Le ciaspole nel contratto e nell'API: nessun percorso sulla neve tenuto, le quote dal disco a ogni richiesta, il profilo nascosto nell'app · 2026-11-11 · Attiva
+- ADR-0344, precisazione B — Fasi, cambi pelli e VAM sul telefono sopra i tratti della neve; il pannello sopra la scheda della corsa · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0344, precisazione B — Fasi, cambi pelli e VAM sul telefono sopra i tratti della neve; il pannello sopra la scheda della corsa
+
+**Stato**: Attiva · 2026-11-11 · TASK-415 parte B (#1160, `c378cd69`).
+Deciso dall'agente su delega dell'utente, dentro le scelte dell'utente del
+2026-11-07 (metriche, «Acceso con a e b»); lista dei file approvata dal
+Coordinatore, testi e schermate approvati dall'utente l'11-11.
+
+**Decisione**:
+
+1. **Un modulo puro e generico**, `activities/mountainPhases.ts`: legge la
+   traccia coi tratti di `snowDay.ts` (`legs`, `isLift`, `droppedM`,
+   esportati con una svolta facoltativa `turnM`; lo sci non cambia) e una
+   svolta di 20 m. Un tratto che sale ed è un impianto è **risalita**, che
+   sale e non lo è **salita**, che scende di almeno 30 m **discesa**; il
+   resto si unisce alla fase vicina, e due fasi uguali vicine sono una.
+2. **Un cambio pelli** sta fra una salita e ciò che non lo è: le
+   posizioni ferme attorno alla svolta (sotto 0,5 m/s sull'orologio del
+   telefono, pause comprese, entro 50 m di quota), almeno 90 s. «Pelli
+   tolte» dopo una salita, «Pelli messe» prima.
+3. **La VAM** è metri saliti (a passi di 3 m, come `climbM`) sul tempo in
+   movimento: i passi sotto 0,2 m/s e le pause non contano. In gita: gli
+   ultimi 5 minuti, solo in salita e dopo 2 minuti di salita. Il D+ conta
+   le salite (non gli impianti), il D− le discese.
+4. **In gita**, «Cambio pelli» quando la gita è ferma da 90 s, o in pausa,
+   vicino alla quota della svolta; altrimenti la fase in corso.
+5. **Dove sta**: lo sport in «Settings» è `skimo`, salvato come
+   `ski_touring`, pronto. La fine gita è una scheda sua
+   (`SkiTourFinishCard.tsx`), il pannello sta sopra la scheda della corsa
+   in `FreeRunScreen.tsx` come `DayResort` per lo sci (`SkiTourLive.tsx`):
+   `RunDashboard.tsx` non cambia. Due caselle per riga, perché le
+   etichette in italiano e tedesco sono lunghe.
+
+**Conseguenze**: solo app; impronta del motore `427ed1a16a97 8ab61d8e87f9`
+e impronta iOS `6f8bba4c` invariate; nessun invio nuovo al server (le fasi
+nel post sono la B2, in `run_stats`). Le soglie si tarano su una gita vera
+(parte E): una sosta lunga a metà salita può sembrare un cambio. Hike e
+ciaspole possono usare lo stesso modulo.
+
+## ADR-0342, precisazione A2 — Le ciaspole nel contratto e nell'API: nessun percorso sulla neve tenuto, le quote dal disco a ogni richiesta, il profilo nascosto nell'app
+
+**Stato**: Attiva · 2026-11-11 · TASK-413 A2 (#1130, `ac08ae94`). Deciso
+dall'agente su delega dell'utente; lista dei file e migrazione 0068
+approvate dal Coordinatore.
+
+1. **Le ciaspole sono uno sport del contratto.** `snowshoeing` passa da
+   `activities.ENGINE_ONLY` (ora vuota) a `ENGINE_ACTIVITIES`, dopo
+   `inline_skating`; `SNOWSHOEING` (0,5–3 km) entra in `PLANNED_SPORTS` di
+   shared-types, in `RunActivity`, in `reads.NEWER_ACTIVITIES` e nel gioco
+   come una camminata (`game_rules.ON_FOOT`), senza record. La migrazione
+   `0068_snowshoeing.sql` allarga i vincoli d'attività di `runs`,
+   `favorites` e `group_runs` rileggendoli (come la 0055); `run_bests` no.
+2. **Niente ancorato sulla neve**: `anchored.check_placement` rifiuta
+   `FREE_ACTIVITIES` (acqua e neve), e `way_back` non propone ritorni sulla
+   neve.
+3. **Nessun percorso sulla neve è tenuto**: né `route_store` né l'archivio
+   (`route_archive._kept`). I file della neve stanno fuori dall'impronta
+   (`SNOW_ONLY`, ADR-0342 aggiunta 5): un percorso tenuto sopravvivrebbe
+   alle regole che l'hanno disegnato.
+4. **Neve e quote nella cache del server**, scaricate alla prima richiesta
+   di un posto: `ServerSnow` in `<cache>/snow/`, le tegole Terrarium in
+   `<cache>/heights/` lette con un `TerrariumTiles` nuovo per richiesta, così
+   le tegole decodificate non restano in memoria per ogni posto. Un download
+   che non riesce è `503 map_data_unavailable`, come una zona. Il ramo della
+   neve è in `activity_graphs.ground_for`, nei job, nei processi caldi
+   (ADR-0242) e in `images.plan_request`.
+5. **L'errore propone il mezzo km** a cui la forma entra, come sull'acqua
+   (`errors.suggested_distance` su `FREE_ACTIVITIES`), e nessuna distanza
+   sotto 0,5 km.
+6. **L'impronta**: il registro la cambia senza cambiare un percorso. Tre
+   righe in `SAME_ROUTES_AS` dopo quelle di TASK-436 (`427ed1a16a97 →
+   ca29e58777cb`, `d943bfbe8c44 → c9c2683a72ea`, `f54db2ee707d →
+   3984555281d5`) con la prova `427ed1a16a97.json` (i nove percorsi fissi
+   identici, darwin-arm64): nessun `draw_examples`.
+7. **Il profilo nell'app è nascosto** fino a B: nessuna riga in
+   «Impostazioni», fuori dalla ricerca (`searchFilters.NOT_YET`) e dal
+   modulo per pubblicare; nome in inglese, niente `caution` né tempo.
+   Calorie di Hike (TASK-424 C2), Apple Salute `hiking` (24), Health
+   Connect `EXERCISE_TYPE_SNOWSHOEING` (63). Solo JavaScript: l'impronta iOS
+   resta `6f8bba4c`.
+8. **La città lenta** (fino a 44 s al banco) resta: un controllo «poca neve»
+   prima del piazzamento toccherebbe il motore. Se i tempi del server lo
+   chiedono, è un passo a parte.
+## ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste
+
+**Stato**: Attiva · 2026-11-11 · TASK-441, parte A (#1149). L'utente ha
+chiesto di portare «Explore» a 2000 disegni e ha approvato le liste di
+parole e l'ordine misto («Sì, vai»), poi i disegni nuovi dalle due pagine
+(«Sì, vanno bene»). Le scelte tecniche sono dell'agente su delega
+dell'utente.
+
+**Contesto**: il catalogo aveva 572 percorsi, 55 soli di parole. Il
+registro di TASK-419 teneva altri 878 disegni che passavano il filtro e non
+erano mai entrati. Su una riga le parole passano il filtro fino a 4 lettere
+(a 5 una su cinque, a 6 nessuna).
+
+**Decisione**:
+
+- **I già fatti entrano tutti** quando passano il filtro e sono di una
+  parola o di una forma che il motore ha (776; i 102 di contorni non
+  registrati aspettano la parte C). Anche la stessa parola nei due stili
+  nella stessa città (60 casi).
+- **Parole corte, 2–4 lettere, su una riga**, da uno strumento nuovo
+  accanto a quello di TASK-419 (`tools/catalog_words.py`, che usa
+  `catalog_seed.py` senza cambiarlo): le parole della città, quelle della
+  sua lingua, un turno di una lista comune con stagione e parole del
+  momento. Ogni parola nei due stili, entra la migliore (615). Nessuna zona
+  scaricata: bastano quelle a piedi di `data/cache`.
+- **L'ordine misto** (`recommended.varied`): `GET /recommended-routes` e
+  ogni città di `GET /catalog` danno prima la migliore di ogni forma e di
+  ogni parola, poi la seconda, e così via; dentro un giro vale l'ordine di
+  prima (somiglianza, poi distanza). Il tetto di 60 in «NEAR YOU» resta.
+- **Niente memoria compatta per ora**: i punti restano tuple (32,6 MB di
+  file, +218 MB residenti all'avvio contro +57). Deciso dal Coordinatore
+  sui numeri del server; se il catalogo cresce ancora, un `array('d')`.
+
+**Motivo**: i già fatti costavano zero e avevano già passato lo stesso
+filtro. Le parole lunghe vogliono la penna alzata, che il formato del seme
+non tiene ancora (parte B, ADR-0366). Senza l'ordine misto i 60 disegni
+vicino a Milano, che ora ne ha 91, sarebbero quasi tutti cerchi e cuori.
+
+**Conseguenze**: 1963 percorsi in 63 città, 757 di parole (79 diverse). Gli
+id dei percorsi tengono il posto nel file e cambiano dove il file cresce,
+come a ogni giro di TASK-419: «Feed» ritrova il percorso per città, forma e
+lunghezza. I disegni delle parole sono del motore `8ab61d8e87f9`: se un
+cambio del motore chiede di rifarli (TASK-447), il giro riparte da
+`out/TASK-441/run.sh`. Sul server servono i file del catalogo **e**
+l'immagine nuova (l'ordine è codice).
+
+**Corretto lo stesso giorno, prima del server**: guardate nel catalogo, le
+parole nuove a riga unica hanno le lettere unite e non si leggono. L'utente
+(«Sì, toglile», riferito dal Coordinatore) le toglie tutte e 702, le 615
+di questa voce e le 87 dei già fatti, con una PR di correzione
+(`fix/TASK-441-a-drop-words`): il catalogo scende a 1261, i 572 di prima
+più 689 forme. Le parole tornano con la parte B, a penna alzata fra le
+lettere come negli esempi delle città, dopo una pagina di prova mostrata
+all'utente. Il filtro (somiglianza ≥ 0,90) non misura se una parola si
+legge: per le parole non basta. Dei punti qui sopra restano i già fatti di
+forme, l'ordine misto e lo strumento.
+
+## ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale
+
+**Stato**: Attiva · 2026-11-11 · TASK-423, «Play» dopo l'uso (#1113).
+Richiesta dall'utente dopo averla usata («Dalla 1 alla 4»); i testi
+approvati dall'utente («Sì, approvo»). Le scelte tecniche sono dell'agente
+su delega dell'utente.
+
+**Decisione**:
+
+- **La barra di una forma di passo non è più `target / best`** (il
+  `progress` del server): 5:00 /km non è il 60% di 3:00 /km. Il telefono
+  (`shapeProgress.ts`, puro) la calcola fra il livello prima sulla stessa
+  distanza (il passo più lento più vicino; per il primo livello, un minuto
+  in più) e questo, dal tempo migliore che `/game/me` dà già: vuota finché
+  il livello prima non è fatto. Il server non cambia.
+- **Una distanza mai corsa di fila non ha percentuale**: «First run 15 km in
+  one go · longest 12 km». I totali e i traguardi tengono la quota di
+  strada.
+- **Le distanze di una corsa per nome** (`runDistanceLabel`): 400 m, 1
+  mile, Half marathon, Marathon. I totali restano in km o miglia;
+  `goalDistanceLabel` e `progressText`, usati da altri task, non cambiano.
+
+## ADR-0351, precisazione E2 — I premi nell'app: la pagina «Prizes», le schede di edizioni e collezioni, la scelta del profilo e la privacy
+
+**Stato**: Attiva · 2026-11-11 · TASK-423 parte E2 (#1132, #1144). Testi
+(55 e 4) e frase della privacy approvati dall'utente («Sì, approvo»).
+Deciso dall'agente su delega dell'utente.
+
+**Decisione**:
+
+- **Due PR**: E2a mette i premi dentro «Play» senza cambiare niente di
+  quello che vedono gli altri; E2b porta la scelta del profilo insieme alla
+  frase della privacy, così il profilo mostra i premi solo da quando
+  l'informativa lo dice.
+- **Le schede di sblocco** sono una sola `UnlockCard` per forma, edizione,
+  collezione e riepilogo; oltre 3 cose da una corsa, una scheda sola.
+  L'app legge `editions` e `collections_done` della corsa con prudenza: un
+  campo assente (API vecchia) o rotto non mostra niente.
+- **Le push** `edition_up` e `collection_done` aprono «Play» (non il
+  profilo che i dati nominano) e ad app aperta non si mostrano, come
+  `shape_unlocked`.
+- **La scelta del profilo** si fa toccando un premio preso nella pagina
+  «Prizes» (`PUT /game/prizes/shown`), salvata a ogni tocco. Il profilo
+  legge `game_prizes` con `isGamePrizesShown`; una cornice che il catalogo
+  del telefono non conosce resta fuori.
+- **I colori delle cornici** sono un blocco `gamePrize` in `tokens.ts`, mai
+  da soli: la cornice ha sempre il nome della collezione accanto.
+
+## ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix`
+
+**Stato**: Attiva · 2026-11-11 · TASK-429 parti B2 (#1129, `a0837cec`) e C2
+(#1131, `d327ff41`). Deciso dall'agente su delega dell'utente, dentro le
+scelte dell'utente di ADR-0357 (i tratti dal telefono, «Sì, così»; i testi
+della stagione e di «Pista senza nome» approvati il 2026-11-10).
+
+**Decisione**:
+
+1. **I tratti partono a «Salva» dentro i run-stats** (B2): `runStatsRequest`
+   aggiunge `ski_parts` per una giornata di sci (`skiPartsOf`: i `snowParts`
+   dei punti mandati, al più 500 come li tiene l'API; `moving_s` mai più
+   della durata del tratto; `top_mps` nullo per le risalite). Un altro
+   sport, o una giornata senza quote, non manda il campo.
+2. **Il ripiego al `422`** (B2): `sendRunStats` rimanda una volta sola i
+   run-stats **senza `ski_parts`** quando l'API risponde `422
+   invalid_request` (un server prima della C2b di TASK-424 rifiuta le chiavi
+   che non conosce), così profilo e calorie non si perdono coi tratti.
+   Nessun secondo invio quando i tratti non c'erano.
+3. **La stagione va dal 1° luglio al 30 giugno** (C2, `seasonOf` sulla data
+   del telefono, «2026/27»): `GET /me/ski-season` si chiede con quei due
+   giorni. Una giornata salvata prima dei tratti conta solo come giornata;
+   senza risposta o senza giornate la stagione non si mostra.
+4. **La giornata salvata ha le tre sezioni di fine giornata** (C2,
+   `SkiDayPage`, da un tocco in «Giornate»): «Summary · Map · Runs» dai
+   `parts` del server; «Map» apre il post sulla mappa; «Runs» ha ogni
+   risalita e discesa col suo nome, «Piste without a name» dove il server
+   non l'ha trovato. Una giornata senza tratti mostra chilometri e tempo.
+5. **La mappa del post di sci si disegna da `from_fix`/`to_fix`** (C2,
+   `useSkiDayMap`, `App.tsx`): le risalite e i numeri vengono dai punti che
+   il server lega a ogni tratto, coi token e i `lifts`/`liftLabels` di B1.
+   Senza una risalita coi suoi punti il post si disegna come prima;
+   `partsOf` tiene solo i tratti ben formati, così un'API prima della C1 non
+   cambia nulla.
+
+**Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` invariata
+(misurata l'11-11 su tutte e due le PR); il server non cambia. In
+produzione con l'ottavo OTA dell'11-11 (da `main` `cd0c8b08`).
+
+## ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi
+
+**Stato**: Attiva · 2026-11-11 · deciso dall'agente su delega dell'utente
+(TASK-436, #1106, `4dfeca6d`; numero e lista dei file dal Coordinatore).
+
+**Contesto**: il profilo di TASK-434 (proposte 1 e 7) ha trovato che il
+30–40% di ogni ricerca su un grafo da 5 km andava in due tabelle calcolate
+una volta per grafo con una chiamata Python a shapely per arco (circa
+31.000 archi): i tre punti di ogni arco (`network._work_out_samples`,
+0,12 s) e i punti di ogni strada per la maschera (`RoadMask.__init__`,
+0,09 s). Le rifanno il processo della richiesta e ogni figlio delle
+partenze vicine. In più `road_fit` ricalcolava `perimeter(shape)` a ogni
+piazzamento (circa 5.500 volte a ricerca, sempre lo stesso valore).
+
+**Decisione**:
+- **Una lettura sola delle geometrie**: `shapely.get_coordinates(...,
+  return_index=True)` su tutte le geometrie insieme, in
+  `_work_out_samples` e nella nuova `optimizer._road_points`; verso della
+  geometria, punto di mezzo e capi escono da indici numpy. Nessuna
+  dipendenza nuova: shapely 2 e numpy c'erano già, anche sul telefono.
+- **Gli stessi numeri, per costruzione**: quale capo di una geometria
+  viene prima lo diceva `math.dist`, che non arrotonda come la radice di
+  numpy. Dove le due distanze sono uguali entro 1e-9 (i cappi, di fatto)
+  decide ancora `math.dist`, arco per arco. Nella maschera l'array dei
+  punti è quello di prima nello stesso ordine e il conto che segue non è
+  toccato.
+- **`perimeter(shape)` una volta** in `search`, col prodotto
+  `band_share * shape_perimeter * scale` nello stesso ordine.
+- **Stessi percorsi, impronte tenute**: tre righe in coda a
+  `SAME_ROUTES_AS` (ADR-0320), dopo quelle di TASK-435 A: motore
+  `ca29e58777cb` → `b4967ef32e9a`, nuotate `c9c2683a72ea` →
+  `3ce5d60ec0cd`, esempi di canoa `3984555281d5` → `cf585f8fb31b`. Le
+  impronte efficaci restano `8ab61d8e87f9`, `b9d00c37d28d`,
+  `574fbfba41eb`: sul server nessun percorso tenuto, zona o esempio si
+  rifà.
+
+**Alternative scartate**:
+- *Il prototipo così com'era* (solo `np.sqrt` per il verso): uguale sui 10
+  grafi misurati, ma non per costruzione; un test mostra quasi-pareggi in
+  cui girerebbe l'arco dall'altra parte.
+- *Tenere le tabelle tra una richiesta e l'altra, o passarle ai figli*: è
+  un'altra proposta di TASK-434, fuori da questo task.
+
+**Conseguenze**: sul Mac `_work_out_samples` 0,123 → 0,017 s e
+`RoadMask.__init__` 0,094 → 0,025 s a grafo; un percorso da 5 km 1,725 →
+1,509 s (−12,5%) e 4,00 → 3,40 s di CPU tra processo e figli (−15%); sul
+cuore da 10 km il tempo intero non cambia (−0,4%, si aspettano i figli),
+la CPU −4,4%. Sul server non è misurato. Chi tocca queste due funzioni ha
+in `tests/test_graph_tables.py` il codice di prima come riferimento: le
+tabelle devono restare uguali con `np.array_equal`. Dettagli e misure in
+`tasks/TASK-436.md`.
+
+## ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw»
+
+**Stato**: Accettata · 2026-11-10 · TASK-433 parte C: C1 server e tipi
+(#1117, `2ed26af7`), C2 l'app (#1115). Le scelte di quello che si vede sono
+dell'utente, una alla volta sulle schermate C1–C3 della tela («Giorni di
+corsa nella scheda», «Così», «Sì, così», «Sì, così», «Approvo»); il modo è
+deciso dall'agente su delega dell'utente, numero dal Coordinatore.
+
+**Contesto**: dopo le schede guidate (ADR-0360) l'utente ha chiesto di
+poter mettere la corsa nella scheda della palestra. Un giorno del programma
+era solo un allenamento di esercizi.
+
+**Decisione**:
+- **Un campo, nessuna tabella e nessuna migrazione**: un giorno del
+  programma (`GymPlanSession`) ha `run` facoltativo e allora nessun
+  esercizio. `run` è `kind` (`easy`, `intervals`, `long`) con `distance_m`
+  (100–100 000) o `duration_s` (60 s–6 h); le ripetute `reps` (1–50) con
+  `rep_m` (50–5000) o `rep_s` (10–1800). Sta nel JSONB `program` di
+  `gym_plans` (0066), lo valida `gym_plans.py` (`GymPlanRunBody`).
+- **La crescita la calcola il telefono** (`program.ts`, `runInWeek`): circa
+  +10% a settimana, in mezzi km o minuti interi; le ripetute +1; l'ultima
+  settimana di un ciclo di 3 o più all'80% della prima (le ripetute 2 in
+  meno); il ciclo dopo riparte un passo avanti; «Always the same» la lascia
+  com'è. Una settimana scritta a mano tiene la corsa scritta.
+- **Fatto nel calendario**: `gym_calendar.py` dà per fatto un giorno di
+  corsa se quel giorno (sul fuso chiesto) c'è una corsa (`runs.activity =
+  'running'`), qualunque; un giorno di palestra come prima.
+- **«Go to the run»**: `saveSport("run")` e un canale nuovo in
+  `units/useDrawDistance.ts` (`chooseDrawDistance`) che scrive i km nel
+  campo di «Draw», entro i limiti dello sport; le ripetute e le corse a
+  tempo non scrivono km. «Start workout» quel giorno è un allenamento libero
+  (`planForToday` è null).
+- **Il colore**: un token nuovo `runDay` per la sigla «RUN», con i valori
+  di `startHere` per tono (l'azzurro che l'utente ha approvato) ma suo, così
+  ognuno ha un significato; contrasto ≥ 3:1 su `surface` e `surfaceRaised`
+  in ogni tono (`palettes.test.ts`).
+- **Due PR**, condizione del Coordinatore: il server deve accettare `run`
+  prima che l'app lo mandi (lo schema vieta i campi in più: `422`, e la
+  scheda resterebbe in attesa sul telefono). Quindi C1 (server e tipi) in
+  `main` e sul server, poi C2 (l'app).
+
+**Cosa vede l'app di prima** (l'OTA 5 e 6): un giorno di corsa è un giorno
+senza esercizi; la sua `isGymProgram` non guarda `run`; non diventa mai
+«Today»; la sua guida lo mostra come un giorno di palestra vuoto e non
+lascia salvare finché non ha esercizi. Lo prova `api/gymPlans.test.ts`
+(«the example of the API is what the app reads») con l'esempio «Lift and
+run» di `fixtures/gym-plans.json`, verde sul codice dell'app di prima.
+
+**Conseguenze**: un giorno di corsa conta come fatto con qualsiasi corsa di
+quel giorno, anche più corta di quella scritta. I testi in
+`docs/tasks/TASK-433.md` «Parte C»; il comportamento in `sports/gym.md`; il
+contratto in `API.md`.
+
+## ADR-0352, precisazione C3 — Le calorie in rosso ovunque: un token per tono, due fissi per il giallo e le foto, solo le kcal in rosso nella riga dei fatti
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parte C3 (#1123, 801408fd).
+Scelta dell'utente del 2026-11-10, parole sue: «le calorie devono essere
+calcolate per ogni attività, e segnate con colore rosso in tutte». Il
+resto deciso dall'agente su delega dell'utente.
+
+- **Un token nuovo per tono**, `energy`: scuro `#FF6363` → `#FFA3A3`,
+  chiaro `#8F1216` → `#B71C1C`; almeno 4,5:1 su `background`, `surface` e
+  `surfaceRaised` a ogni passo di luminosità (`palettes.test.ts`).
+- **Due rossi fissi** dove il fondo non è quello del tono:
+  `energyOnAccent` `#8F1216` sul giallo della palestra (6,3:1) e
+  `energyOnScrim` `#FF6363` sopra una foto (6,8:1 sul velo).
+- **Dove**: riquadri della corsa e della neve (numero e unità), piscina,
+  palestra, riquadri e righe del post, la riga dei fatti di un post, di
+  un'attività e del post mostrato mentre si disegna. Nella riga dei fatti
+  solo le «280 kcal» finali sono rosse (`feed/FactsText.tsx`): un lettore
+  di schermo sente sempre una riga sola.
+- **Fuori**: l'app dell'orologio (Swift, build nativa) e la pagina web dal
+  vivo di getmuw.app; seguiti, se l'utente li vuole.
+- Solo JavaScript, nessun testo nuovo, nessuna dipendenza nuova.
+
+## ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale
+
+**Stato**: Attiva · 2026-11-10 · deciso dall'agente su delega dell'utente
+(TASK-438; numero e via libera del Coordinatore).
+
+**Contesto**: il job `api` di `ci.yml` eseguiva tutta la suite dell'API su
+una macchina: 27 minuti sulla PR #1105, 39 sulla #1103, annullata al limite
+di 40 con ogni passo verde. Misurato su quattro run del 2026-11-10 (3099
+test, 176 file): tutto il tempo è in pytest; nessun file pesa più del
+4,5 %; tra un run da 27 e uno da 37 minuti ogni file è più lento dello
+stesso fattore, cioè è la macchina; il costo è per test, perché ogni test
+riceve un database vuoto a cui la fixture del file applica tutte le
+migrazioni. La suite è raddoppiata in tre settimane.
+
+**Decisione**:
+
+- il job diventa la matrice `api-tests` con 4 parti (`fail-fast: false`,
+  25 minuti di limite ciascuna). `tools/ci_api_shards.py`, solo libreria
+  standard, dà ogni file di `services/api/tests` a una parte sola: un file
+  pesa quanti `def test_` ha e va, dal più pesante, alla parte più leggera;
+  a parità decide il nome. Stessi file, stesse parti. Il numero delle parti
+  è la sola lista `shard` di `ci.yml` (`strategy.job-total` fa il resto);
+- lint e controllo di copertura girano una volta, nella parte 1: pytest
+  elenca tutta la suite senza eseguirla e il job fallisce se raccoglie un
+  test da un file che nessuna parte esegue; lo stesso passo stampa il
+  totale dei test raccolti;
+- un job finale `api` (`needs: api-tests`, `if: always()`) passa solo se il
+  risultato della matrice è `success`. Il check obbligatorio del ruleset
+  resta `api`; `api-tests (1)` … `api-tests (4)` non sono obbligatori;
+- ogni parte stampa i suoi 25 test più lenti (`--durations=25`).
+
+**Perché così**: senza un file dominante non c'è un test da sistemare, e
+dividere per file non chiede dipendenze né cambia i test. Il giro
+alfabetico dei file con 4 parti lasciava la più lenta a 9–13 minuti contro
+7–10 del bilanciamento sul numero di test, che resta entro il 10 % dalla
+divisione ideale senza tempi salvati che invecchiano. `always()` sul job
+finale perché un job saltato vale come passato per il ruleset, e con il
+default una parte fallita o annullata lo farebbe saltare. Con una lista di
+file vuota pytest eseguirebbe tutta la suite: lo script rifiuta più parti
+che file e il passo controlla che la lista non sia vuota.
+
+**Scartato**: `pytest-xdist` (dipendenza nuova, stato condiviso tra file da
+verificare; non serve per stare sotto i 15 minuti); tempi per file salvati
+nel repository (invecchiano a ogni PR); un database modello con le
+migrazioni applicate una volta per run (`CREATE DATABASE … TEMPLATE`): è
+la riduzione più grande del tempo totale, ma cambia `tests/conftest.py` e
+le fixture dei test, quindi è una proposta a parte, non costruita.
+
+**Conseguenze**: sulla #1119, due run consecutivi con la parte più lenta a
+10 min 48 s e 10 min 02 s; le quattro parti raccolgono 833 + 739 + 790 +
+752 = 3114 test, quanti la suite intera sullo stesso commit. I minuti di
+macchina non calano: si dividono su quattro job, più circa un minuto di
+installazione per parte. Un file di test nuovo entra da solo in una parte.
+Una PR di soli documenti fa partire quattro job `api-tests` invece di uno,
+tutti verdi in pochi secondi col passo «Changes» (ADR-0331). In locale non
+cambia niente: `pytest` esegue tutta la suite.
+
+## ADR-0352, precisazione C2b — I tratti della giornata di sci nei run-stats, le discese in ogni lista di post: un campo solo con TASK-429, nessuna migrazione
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parte C2b (#1110, d5226b1e),
+disegnata con TASK-429 (modalità sci). Scelta dell'utente del 2026-11-10,
+«Sì, il server» (le calorie dello sci nel Feed come a fine giornata). Il
+resto deciso dall'agente su delega dell'utente, d'accordo con la sessione
+della 429 e col Coordinatore («un campo solo, una migrazione al più»).
+
+- **Un campo per due usi**: il telefono manda `ski_parts` (risalite e
+  discese: tipo, numero, inizio e fine sull'orologio della traccia, tempo
+  in movimento, metri, dislivello, velocità massima; al più 500, in
+  ordine) dentro `PUT /me/activities/{key}/stats`. La 429 ne legge la
+  lista per riepilogo e mappa; il Feed le somme delle discese per le
+  calorie.
+- **Nessuna migrazione**: stanno in `run_stats.stats` (jsonb della 0064),
+  coi tempi portati sui secondi della traccia del server (`start_s`,
+  `end_s`) e la somma delle discese (`ski_descents`) calcolata una volta al
+  `PUT`. Le liste dei post la leggono con una sottoquery sulla chiave
+  primaria di `run_stats`.
+- **Visibilità**: `ski_parts` e `ski_descents` a chiunque veda il post,
+  come i passi e il profilo; non sono battito né calorie.
+- **Prima il server, poi l'app**: il corpo dei run-stats rifiuta le chiavi
+  sconosciute (`extra="forbid"`), quindi un server senza C2b dà 422 a un
+  `PUT` con i tratti e la giornata perde tutti i suoi dati. L'app di C2b
+  non li manda (solo tipi e lettura); li manda la 429 B, dopo il server.
+- **Il Feed dello sci alpino** conta le calorie su `ski_descents` (MET 5,3
+  sui secondi delle sole discese), lo stesso numero di fine giornata; un
+  post senza tratti, salvato prima o da un telefono che non li manda, resta
+  senza.
+
+## ADR-0352, precisazione C — I dati dal vivo che mancano: il battito su «Data», la piscina dal vivo, le calorie di ogni attività (lo sci sulle discese)
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parti C1 (#1096, in produzione
+con l'OTA 5) e C2 (#1098, a064a486). Scelte dell'utente del 2026-11-10,
+parole sue: «Formula da sci» (sulla domanda delle calorie dello sci), poi
+«le calorie devono essere calcolate per ogni attività, e segnate con colore
+rosso in tutte», e «Sì, il server» per lo sci nel Feed (parte C2b). Il
+resto deciso dall'agente su delega dell'utente.
+
+- **Superate dalla scelta dell'utente del 2026-11-10**: «Niente calorie
+  sulla neve» di TASK-375 (ADR-0319) e la scelta 2 di TASK-415
+  (scialpinismo, «Niente calorie sulla neve (come TASK-375)»). I file di
+  quei task non si toccano (CLAUDE.md): vale questa voce.
+- **C1**: su «Data» la stessa riga del battito di «Map» (`WatchHeart`),
+  sotto i sei riquadri; in piscina, sotto l'orologio, vasche e calorie
+  stimate da `poolLiveStats`, gli stessi numeri che manda «Share live»,
+  ogni secondo, fermi in pausa.
+- **C2, una formula per ogni attività** (`src/sports/`, tabella in
+  `UI.md` «Calories»): acque libere con le fasce a MET per passo della
+  piscina; sci alpino MET 5,3 (discesa, sforzo moderato, solo tempo
+  attivo) sui soli metri e secondi delle discese; sci di fondo MET per
+  velocità media (Compendium 2024: 6,8 / 9,0 / 12,5 / 15,0 a 4, 5 e 8
+  mph); scialpinismo l'equazione ACSM del cammino, come l'hike. Solo la
+  palestra conta le sue serie.
+- **Una funzione sola per le discese**: `activities/trackEffort.ts`
+  (`skiedDay`, `trackEffort`) dà metri, secondi e salita di una traccia,
+  per lo sci alpino quelli delle discese di `snowDay` (che dà anche
+  `skiedMs`). La usano lo schermo, Apple Salute, la pagina del post; la
+  riusa TASK-429 B.
+- **Dal vivo le calorie sono dello sport registrato** (quello di
+  «Settings» che «Save» salva), non di `freeRunAs`: lo sci tiene le
+  velocità della bici e prende le sue calorie.
+- **Uno sport più nuovo dell'app** non ha calorie e non fa errori
+  (`findProfile`).
+- **Il Feed dello sci alpino** resta senza calorie fino a C2b: il post ha
+  solo distanza e tempo della giornata intera, risalite comprese.
+- **Impronta iOS** invariata: C1 e C2 sono solo JavaScript. Nessuna
+  dipendenza nuova.
 
 ## ADR-0351, precisazione E1 — I premi sul server: le edizioni come righe di `game_unlocks`, cornici, titoli e badge letti a ogni richiesta, la scelta del profilo in `game_prefs`
 
@@ -2593,4 +3086,60 @@ invariata; `src/ski/` non cambia. Per le parti dopo, l'utente ha scelto il
 2026-11-10 («Sì, così») che il telefono mandi i tratti della giornata a
 «Salva», in un solo campo `ski_parts` dei run-stats condiviso con TASK-424
 C2b (`tasks/TASK-429.md`, «La parte C»).
+
+## ADR-0357, precisazione B1 — La giornata di sci a colori: un solo calcolo dei tratti, i colori come token, i numeri sulle linee
+
+**Stato**: Attiva · 2026-11-10 · TASK-429 parte B1 (#1108). Deciso
+dall'agente su delega dell'utente, dentro le scelte dell'utente di ADR-0357
+(domande 3 e 4).
+
+**Decisione**:
+
+1. **Un solo calcolo dei tratti**: `snowDay.ts` tiene una funzione interna,
+   `liftsAndDescents`, che usano sia `snowDay` sia la nuova
+   `snowParts(track) → SnowPart[] | null` (tipo, numero, inizio e fine, tempo
+   in movimento, metri, dislivello, velocità massima). Il resto
+   (`skiedDay`, `skiedMs` di TASK-424 C2) si riusa.
+2. **I colori solo come token** (`ski.descent`, `ski.lift`, `ski.onLine`):
+   la pagina della mappa colora la traccia e le risalite quando arriva una
+   giornata di sci, e spenta torna al bianco della corsa.
+3. **I numeri sulle linee** sono un punto del colore della linea col numero
+   scuro, a metà del tratto (`skiDayLabels`); la legenda in parole sta in
+   cima alla mappa, al posto della riga di prima.
+4. **«Summary · Map · Runs»** sulla scheda di fine giornata: «Map» nasconde
+   i numeri e lascia la mappa; «Runs» mostra i tratti e le soste di 10
+   minuti o più.
+
+**Conseguenze**: solo app, impronta iOS `6f8bba4c` invariata, nessun invio
+nuovo al server (quello è la B2).
+
+## ADR-0357, precisazione C1 — I tratti della giornata salvata e la stagione sul server: `parts` solo quando ci sono, nomi alla lettura con una cache per processo
+
+**Stato**: Attiva · 2026-11-10 · TASK-429 parte C1 (#1114). Deciso
+dall'agente su delega dell'utente, dentro la scelta dell'utente del
+2026-11-10 («Sì, così»: i tratti dal telefono, le giornate di prima senza).
+
+**Contesto**: il server tiene la traccia con le ore ma senza le quote. I
+tratti li manda il telefono come `ski_parts` dei run-stats (TASK-424 C2b,
+`run_stats.stats` della `0064`), un solo campo per lo sci e per le calorie.
+
+**Decisione**:
+
+1. **`GET /drawings/{id}/ski-day` dà `parts` solo quando ci sono**: un corpo
+   suo per il `GET` (`SkiDayPartsBody`, `response_model_exclude_unset`), così
+   la risposta senza tratti e quella del `PUT` restano identiche e l'app in
+   produzione legge quello che leggeva.
+2. **I tratti si legano alla traccia per ore**: `start_s` ed `end_s` danno il
+   primo e l'ultimo punto (`from_fix`, `to_fix`) della traccia del post, che
+   il post mostra intera (ADR-0330).
+3. **I nomi alla lettura**, con `ski_names.py` sul pezzo di traccia di ogni
+   tratto, in una cache di ogni processo: al più 256 giornate, per 10
+   minuti, per corsa e per l'ultimo invio dei run-stats. Niente colonne né
+   migrazioni.
+4. **`GET /me/ski-season?from&to`**: solo le giornate di chi chiede, solo
+   numeri, al più 400 giorni; una giornata senza tratti conta solo come
+   giornata.
+
+**Conseguenze**: nessuna migrazione; sul server col passo 7, insieme alla
+C2b di TASK-424.
 

@@ -1,5 +1,5 @@
 import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   AppState,
   Linking,
@@ -29,6 +29,7 @@ import {
   space,
 } from "../theme/tokens";
 import { fromLngLat, type LngLat } from "./coordinates";
+import { useMapCover } from "./mapCover";
 import { type MapKind, useMapKind } from "./mapKind";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
@@ -46,12 +47,14 @@ import {
   pageScript,
   parsePageMessage,
   setCanvas,
+  setCover,
   setDoubleTap,
   setKind,
   setMove,
   setPick,
   setPosition,
   showLifts,
+  showGhost,
   showOthers,
   showProgress,
   showRejoinLine,
@@ -63,9 +66,13 @@ import {
 } from "./messages";
 import { doneMetres, splitRoute } from "./routeSplit";
 import type { Turn } from "./turnedMap";
+import type { SkiLabel } from "../skimode/skiDayLabels";
 
 /** One empty list, so the map is not told again and again of no routes. */
 const NO_OTHERS: LatLon[][] = [];
+const NO_LABELS: readonly SkiLabel[] = [];
+/** No shape under the route. */
+const NO_GHOST: LatLon[][] = [];
 
 /** The figure of «Draw on the map» as the map shows it (TASK-281). */
 export type MapCanvas = {
@@ -122,11 +129,22 @@ type Props = {
   onFoot?: Stretch[] | null;
   /** The other routes to choose from, grey under the route (TASK-093). */
   others?: LatLon[][];
+  /** The shape asked for as the search placed it, a result's
+   * `placed_outline`: dotted under the route and the others, to compare
+   * the route with (TASK-442). None, or no line, draws nothing. */
+  ghost?: LatLon[][] | null;
+  /** Something shown over the map and under its bar and its error, as the
+   * shape while its route is drawn (TASK-442). It takes no part in the
+   * map: the page is told nothing of it. */
+  over?: ReactNode;
   /** The run to draw over the route, or null for none (TASK-113). */
   track?: LatLon[] | null;
   /** The lifts of a day of skiing, as stretches of `track` (TASK-375 part
    * C2): dashed, the descents solid. None draws the track as a run's. */
   lifts?: Lifts | null;
+  /** The numbers of the descents and the lifts on them (TASK-429 part B):
+   * none, the lines alone. */
+  liftLabels?: readonly SkiLabel[];
   /** While navigating, the phone's position: the map follows it (TASK-049). */
   following?: LatLon | null;
   /** Where the runner is heading, in degrees clockwise from north: the
@@ -199,8 +217,11 @@ export function MapView({
   walks = null,
   onFoot = null,
   others = NO_OTHERS,
+  ghost = null,
+  over,
   track = null,
   lifts = null,
+  liftLabels = NO_LABELS,
   following = null,
   heading = null,
   facing = null,
@@ -247,6 +268,11 @@ export function MapView({
   const liftsShown = useRef(false);
   const stopsShown = useRef(false);
   const othersShown = useRef(false);
+  const ghostShown = useRef(false);
+  // What lies over the top of the map, as the screen around it says
+  // (TASK-443), and whether the page was told.
+  const cover = useMapCover();
+  const coverTold = useRef(false);
   const progressShown = useRef(false);
   const rejoinShown = useRef(false);
   const doubleTapAsked = useRef(false);
@@ -306,6 +332,18 @@ export function MapView({
     return () => watching.remove();
   }, [failed]);
 
+  // Before the route, so it is framed clear of the status bar and of the
+  // buttons at once (TASK-443). None after some: framed as never told.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (cover !== null || coverTold.current) {
+      webView.current?.injectJavaScript(pageScript(setCover(cover)));
+      coverTold.current = cover !== null;
+    }
+  }, [ready, cover]);
+
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {
     if (ready && start) {
@@ -324,6 +362,19 @@ export function MapView({
       othersShown.current = others.length > 0;
     }
   }, [ready, others]);
+
+  // The shape under the route (TASK-442): it does not move the map either.
+  // None after one: the shape of the last result goes away.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    const lines = ghost ?? NO_GHOST;
+    if (lines.length > 0 || ghostShown.current) {
+      webView.current?.injectJavaScript(pageScript(showGhost(lines)));
+      ghostShown.current = lines.length > 0;
+    }
+  }, [ready, ghost]);
 
   // After the start, so the map frames the route rather than the start.
   useEffect(() => {
@@ -348,7 +399,9 @@ export function MapView({
     if (track && track.length > 1) {
       if (lifts !== null && lifts.length > 0) {
         const cut = splitAtLifts(track, lifts);
-        webView.current?.injectJavaScript(pageScript(showLifts(cut.skied, cut.lifts)));
+        webView.current?.injectJavaScript(
+          pageScript(showLifts(cut.skied, cut.lifts, liftLabels)),
+        );
         liftsShown.current = true;
       } else {
         webView.current?.injectJavaScript(pageScript(showTrack(track)));
@@ -362,7 +415,7 @@ export function MapView({
       webView.current?.injectJavaScript(pageScript(clearLifts()));
       liftsShown.current = false;
     }
-  }, [ready, track, lifts]);
+  }, [ready, track, lifts, liftLabels]);
 
   useEffect(() => {
     if (!ready) {
@@ -646,6 +699,7 @@ export function MapView({
         // iOS may stop the page to free memory: without a reload it stays white.
         onContentProcessDidTerminate={() => webView.current?.reload()}
       />
+      {over}
       {loading && !failed && (
         <View style={styles.loading} pointerEvents="none">
           <MapLoadingBar />

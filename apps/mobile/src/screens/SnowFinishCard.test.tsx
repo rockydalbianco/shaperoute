@@ -134,8 +134,6 @@ test("a run keeps its own end", async () => {
 });
 
 test.each<[Sport, string, string]>([
-  // A day of skiing has its lifts dashed on the map (part C2).
-  ["ski", "Your day", "White: your descents. Dashed: the lifts."],
   ["xc_ski", "Your day", "White: where you skied."],
   ["run", "Your run", "White: what you ran."],
 ])("over the map of %s: %s", async (sport, title, line) => {
@@ -160,7 +158,40 @@ test("the approved texts, in Italian", () => {
   expect(translate("it", "Vertical")).toBe("Dislivello");
   expect(translate("it", "Top speed")).toBe("Vel. max");
   expect(translate("it", "Lifts")).toBe("Risalite");
-  expect(translate("it", "White: your descents. Dashed: the lifts.")).toBe(
-    "Bianco: le discese. Tratteggio: gli impianti.",
-  );
+});
+
+// TASK-429 part B: over the map of a day of skiing the legend of its
+// colours; on the card «Summary · Map · Runs».
+
+test("over the map of a day of skiing: «Your day» and the legend", async () => {
+  mockSport = "ski";
+  await render(<FreeFinishBanner />);
+  expect(screen.getByText("Your day")).toBeOnTheScreen();
+  expect(screen.getByTestId("ski-legend")).toBeOnTheScreen();
+  expect(screen.getByText("Descents · solid, numbered")).toBeOnTheScreen();
+});
+
+test("a day of skiing opens on «Summary»; «Map» leaves the map, «Runs» the parts", async () => {
+  await render(<FreeFinishCard run={dayOf(twoDescents())} onDone={jest.fn()} />);
+  expect(screen.getByRole("tab", { name: "Summary" })).toBeSelected();
+  expect(screen.getByLabelText("Descents: 2")).toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByRole("tab", { name: "Map" }));
+  expect(screen.queryByLabelText("Descents: 2")).toBeNull();
+  expect(screen.queryByTestId("ski-runs")).toBeNull();
+  // The way out stays.
+  expect(screen.getByRole("button", { name: "Done" })).toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByRole("tab", { name: "Runs" }));
+  expect(screen.getByTestId("ski-runs")).toBeOnTheScreen();
+  expect(screen.getByTestId("ski-run-1")).toBeOnTheScreen();
+  expect(screen.getByTestId("ski-run-L1")).toBeOnTheScreen();
+  expect(screen.getByTestId("ski-run-2")).toBeOnTheScreen();
+  expect(screen.getAllByText("36.0 km/h top")).toHaveLength(2);
+});
+
+test("cross-country has no sections", async () => {
+  mockSport = "xc_ski";
+  await render(<FreeFinishCard run={dayOf(twoDescents())} onDone={jest.fn()} />);
+  expect(screen.queryByRole("tab")).toBeNull();
 });

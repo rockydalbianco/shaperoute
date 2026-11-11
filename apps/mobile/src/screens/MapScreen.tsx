@@ -1,8 +1,9 @@
-import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { type ReactNode, useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../i18n";
+import { mapCover, MapCoverContext } from "../map/mapCover";
 import { MapKindButton } from "../map/MapKindButton";
 import { color, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { MapError } from "./ChooseScreen";
@@ -38,17 +39,43 @@ export function MapScreen({
   children,
 }: Props) {
   const insets = useSafeAreaInsets();
+  // What lies over the top of the map (TASK-443): the map frames its
+  // route clear of it. The map goes from side to side of the window; a
+  // banner is as high as it turns out.
+  const { width } = useWindowDimensions();
+  const [rowHeight, setRowHeight] = useState<number | null>(null);
+  const hasBanner = banner !== undefined && banner !== null;
+  // Without a banner the row is the buttons': its height is not asked, so
+  // the menu of the map's kind opening does not frame the map again.
+  const bannerHeight = hasBanner ? (rowHeight ?? MIN_TAP_SIZE) : null;
+  const hasCompass = compass !== undefined && compass !== null;
+  const cover = useMemo(
+    () =>
+      active
+        ? mapCover({
+            insetTop: insets.top,
+            width,
+            bannerHeight,
+            compass: hasCompass,
+          })
+        : null,
+    [active, insets.top, width, bannerHeight, hasCompass],
+  );
   return (
     <View style={styles.screen}>
-      <View style={styles.map}>
-        {map}
+      <View style={styles.map} testID="map-area">
+        <MapCoverContext.Provider value={cover}>{map}</MapCoverContext.Provider>
         {active && (
           <View
             style={[styles.top, { top: insets.top + space.sm }]}
             // Beside the north arrow a finger is on the map.
             pointerEvents="box-none"
           >
-            <View style={styles.row} testID="map-top-row">
+            <View
+              style={styles.row}
+              testID="map-top-row"
+              onLayout={(event) => setRowHeight(event.nativeEvent.layout.height)}
+            >
               {banner ?? (
                 <Pressable
                   style={styles.back}
@@ -78,7 +105,10 @@ export function MapScreen({
         )}
       </View>
       {active && (
-        <View style={[styles.card, { paddingBottom: insets.bottom + space.md }]}>
+        <View
+          style={[styles.card, { paddingBottom: insets.bottom + space.md }]}
+          testID="map-card"
+        >
           {children}
         </View>
       )}

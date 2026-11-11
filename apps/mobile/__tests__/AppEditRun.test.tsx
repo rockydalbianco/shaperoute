@@ -118,6 +118,20 @@ beforeEach(() => {
     if (method === "GET" && path === "/route-jobs/4f2c9e1a") {
       return Response.json(DRAWING_DONE);
     }
+    // «Save» after an edit: the route kept as the heart keeps it.
+    if (method === "PUT" && path.startsWith("/me/favorites/")) {
+      const kept = JSON.parse(String(init?.body));
+      return Response.json(
+        {
+          ...kept,
+          start: kept.points[0],
+          preview: kept.points,
+          id: path.slice("/me/favorites/".length),
+          created_at: "2026-11-10T09:00:00Z",
+        },
+        { status: 201 },
+      );
+    }
     const answers: Record<string, () => Response> = {
       "GET /me": () => Response.json(session.user),
       "GET /me/favorites": () => Response.json({ favorites: [] }),
@@ -185,4 +199,25 @@ test("«‹» on the page of a post goes back to the Feed", async () => {
 
   expect(screen.queryByTestId("post-page")).toBeNull();
   expect(screen.getByText(String(feed.posts[0].title))).toBeOnTheScreen();
+});
+
+test("after «Edit & run», the route drawn has «Save» beside «Start»; «Save» keeps it", async () => {
+  await onPage();
+  await fireEvent.press(
+    within(screen.getByTestId("post-page")).getByTestId("post-edit-run"),
+  );
+  onTheCanvas();
+
+  await fireEvent.press(screen.getByText("Draw route"));
+  await screen.findByText(/^Drawing · on roads · target/, {}, { timeout: 3000 });
+
+  expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Save" }));
+  expect(await screen.findByRole("button", { name: "Saved" })).toBeSelected();
+  expect(
+    fetchSpy.mock.calls.some(
+      ([input, init]) =>
+        init?.method === "PUT" && String(input).startsWith(`${API}/me/favorites/`),
+    ),
+  ).toBe(true);
 });

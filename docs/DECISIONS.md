@@ -530,6 +530,7 @@ lasciando le righe d'indice.
 - ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste · 2026-11-11 · Attiva
 - ADR-0342, precisazione A2 — Le ciaspole nel contratto e nell'API: nessun percorso sulla neve tenuto, le quote dal disco a ogni richiesta, il profilo nascosto nell'app · 2026-11-11 · Attiva
 - ADR-0344, precisazione B — Fasi, cambi pelli e VAM sul telefono sopra i tratti della neve; il pannello sopra la scheda della corsa · 2026-11-11 · Attiva
+- ADR-0375 — Il parapendio registrato senza forma, con la condivisione dal vivo e i numeri del volo (quota, variometro, velocità del momento) · 2026-11-11 · Attiva
 - ADR-0372 — Il calendario di tutte le attività: `GET /me/activity-calendar` letto da `runs` e `run_stats`, i 12 mesi e gli sport dell'account nella stessa risposta, nessuna migrazione · 2026-11-11 · Attiva
 
 ## Voci nuove
@@ -581,6 +582,50 @@ registro.
 l'esempio `fixtures/activity-calendar.json`, controllato dall'API e da
 `shared-types`; il controllo dopo il passo sul server in
 `out/TASK-462/SERVER.md`. I dettagli in `tasks/TASK-462.md`.
+
+## ADR-0375 — Il parapendio registrato senza forma, con la condivisione dal vivo e i numeri del volo
+
+**Stato**: Attiva · 2026-11-11 · scelte di prodotto dell'utente; il come
+deciso dall'agente su delega dell'utente (TASK-305, parti R; numero e
+ordine dal Coordinatore).
+
+**Contesto**: il pianificatore del parapendio (ADR-0265) aspetta una
+licenza per gli spazi aerei che non c'è. L'utente il 2026-11-11: un amico
+fa una gara e vuole condividere posizione, velocità, battito e calorie in
+tempo reale, e tracciare tutto il volo. La condivisione dal vivo (TASK-424,
+ADR-0352) e la categoria «Record only» (TASK-375, ADR-0319) ci sono già.
+
+**Decisione**:
+- **Il parapendio diventa uno sport «Record only»**, attività
+  `paragliding`, prima del pianificatore e senza toccarlo: si registra, si
+  condivide dal vivo, si salva, si pubblica. Strava non ha il parapendio:
+  il volo ci va come `Workout`.
+- **Quattro numeri facoltativi nel live**: `alt_m`, `max_alt_m`,
+  `vario_mps`, `speed_mps` in `LiveStatsBody` e `LiveStats` (scelta
+  dell'utente: «Sì, numeri del volo»). Con `extra="forbid"` il server
+  esce prima dell'app e della pagina.
+- **Dalla quota del GPS, senza barometro**: la quota dei fix c'è già
+  (TASK-324); il variometro è la pendenza della quota su 10 s, non fra due
+  fix. Un barometro sarebbe più preciso ma è un modulo nativo nuovo.
+- **Le calorie** con la formula di ADR-0352 C2 e il MET 3,5 del volo
+  libero (Compendium, «hang gliding»).
+- **Nessuna guida in volo**: l'app mostra numeri, non direzioni; un
+  avviso breve al primo volo registrato, testo dell'utente.
+- **Il battito dal vivo** resta quello dell'orologio (ADR-0352): senza il
+  parapendio nell'app dell'orologio un volo non ha battito; è una parte a
+  sé (R4, nativa, dopo la 1.1), da proporre.
+
+**Alternative scartate**:
+- *Registrare il volo come un altro sport* (escursione, bici): numeri,
+  calorie e Feed sbagliati, e la quota non arriva al link.
+- *Aspettare il pianificatore*: la licenza degli spazi aerei non ha una
+  data.
+- *Solo i numeri di oggi sul link*: l'utente ha scelto i numeri del volo.
+
+**Conseguenze**: tre parti (R1 server e contratto con una migrazione che
+allarga `runs_activity_check`, R2 app, R3 pagina `site/live/`), ognuna
+col sì dell'utente per server, OTA e sito. Un'app vecchia non riceve i
+voli (`X-MuW-Reads`). Dettagli in `tasks/TASK-305.md`, «Le parti R».
 
 ## ADR-0344, precisazione B — Fasi, cambi pelli e VAM sul telefono sopra i tratti della neve; il pannello sopra la scheda della corsa
 

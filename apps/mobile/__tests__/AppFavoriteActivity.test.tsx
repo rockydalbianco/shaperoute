@@ -88,7 +88,7 @@ function api(answers: Answers) {
         { status: 202 },
       );
     }
-    if (method === "GET" && path === "/route-jobs/4f2c9e1a") {
+    if (method === "GET" && path.split("?")[0] === "/route-jobs/4f2c9e1a") {
       return Response.json(jobDone);
     }
     return Response.json(apiError("http_error", path), { status: 404 });

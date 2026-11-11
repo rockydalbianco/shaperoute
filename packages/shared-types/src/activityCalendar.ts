@@ -21,6 +21,9 @@ export interface CalendarActivity {
   duration_s: number;
   /** What the phone sent at the end of it; null when it sent none. */
   kcal: number | null;
+  /** It has a track: false for a workout at the gym and a swim in a pool,
+   * which open no map. */
+  tracked: boolean;
   shape: string | null;
   word: string | null;
   title: string | null;

@@ -51,6 +51,10 @@ class CalendarActivityBody(BaseModel):
     kcal: int | None = Field(
         ge=0, description="What the phone sent at the end; null when it sent none."
     )
+    tracked: bool = Field(
+        description="It has a track: false for a workout at the gym and a"
+        " swim in a pool, which open no map."
+    )
     shape: str | None
     word: str | None
     title: str | None
@@ -101,6 +105,7 @@ def _activity(row: dict[str, Any]) -> CalendarActivityBody:
         distance_m=round(float(row["distance_m"]), 1),
         duration_s=row["duration_s"],
         kcal=row["kcal"],
+        tracked=row["tracked"],
         shape=row["shape"],
         word=row["word"],
         title=row["title"],
@@ -155,6 +160,7 @@ class ActivityCalendars:
             rows = conn.execute(
                 "SELECT r.key, r.activity, r.started_at, r.distance_m,"
                 " r.duration_s, r.shape, r.word, r.title, r.place,"
+                " r.track IS NOT NULL AS tracked,"
                 " CASE WHEN jsonb_typeof(s.stats -> 'kcal') = 'number'"
                 " THEN (s.stats ->> 'kcal')::numeric::int END AS kcal,"
                 " extract(day FROM r.started_at AT TIME ZONE %(tz)s)::int AS day"

@@ -145,9 +145,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
   privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
   collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
-  in produzione con l'OTA 4 del 2026-11-10. E1 (premi sul server, 0067) in
-  `main` con la #1099, il passo server 6 aspetta il sì dell'utente; poi E2
-  (l'app) e la privacy. File: — · `tasks/TASK-423.md`
+  in produzione con l'OTA 4 del 2026-11-10; correzioni di «Play» (#1113)
+  provate sul telefono con l'OTA 7. E1 sul server (passo 6, 0067); E2a
+  (#1132) ed E2b (#1144, profilo e privacy) in `main`, escono col nono OTA;
+  poi la copia della privacy sul sito e la prova sul telefono, col sì
+  dell'utente. File: — · `tasks/TASK-423.md`
 - **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1, B2, C2 in
   `main` (#1093, #1108, #1114, #1129, #1131); A e B1 fuori con gli OTA 5 e
   6, C1 sul server dal passo 7 dell'11-11. B2 (i tratti a «Salva») e C2

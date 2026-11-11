@@ -193,7 +193,7 @@ id, nome nelle 5 lingue e ordine. Le forme, i nomi e i requisiti uno per
 uno: `tasks/TASK-423-proposta.md` §2. Contorni: 18 letti dal motore, 8
 calcolati, 56 disegnati come poligoni nel catalogo.
 
-### 5.4 Premi (server in `main` con 423 E1; l'app è 423 E2)
+### 5.4 Premi
 
 Solo dentro l'app, mai denaro.
 
@@ -487,12 +487,24 @@ una volta per sfida.
   catalogo senza collezioni resta la griglia unica. I traguardi dicono
   «One run of 5 km». «Challenges» è la lista del §6.8. «New challenge»
   sceglie la forma per collezione, fino a 20 pezzi e 30 giorni.
-- **(423 E)**: in cima a «Collection», «Prizes» apre la pagina dei premi,
-  dove si sceglie che cosa mostra il profilo; la cornice in fondo alla
-  pagina di una collezione. Le carte delle forme di passo e di traguardo
-  hanno il segno dell'edizione. La scheda di sblocco dice la collezione
-  («Animals · 8 / 13»), le edizioni nuove e la collezione completa; oltre 3
-  cose in una corsa, una scheda sola di riepilogo. Il profilo mostra
-  cornice, titolo e badge scelti.
+- **Da TASK-423 parte E2**: in cima a «Collection» (con l'account),
+  «Prizes» apre la pagina dei premi: le 10 cornici, gli 8 titoli e gli 8
+  badge, presi o con quanto manca, e quante edizioni d'argento e d'oro. Un
+  premio preso, toccato, va sul profilo o ne esce: una cornice, un titolo,
+  fino a 3 badge; niente finché non si sceglie. La cornice di una
+  collezione è anche in fondo alla sua pagina. Una forma sbloccata dice il
+  suo obiettivo e, se è di passo o di traguardo, l'edizione e le corse alla
+  prossima («4 of 10 runs for gold»). La scheda di sblocco dice la
+  collezione («In your Animals collection.»), e un'edizione salita o una
+  collezione completa hanno la loro scheda; oltre 3 cose in una corsa, una
+  scheda sola di riepilogo. Le push `edition_up` e `collection_done` aprono
+  «Play» e ad app aperta non si mostrano. Il profilo mostra la cornice
+  intorno alla foto, il titolo e i badge scelti sotto il nome.
+- **La barra di una forma** (TASK-423, dopo l'uso): per una forma di passo
+  misura quanto si è avanti fra il livello prima, sulla stessa distanza, e
+  questo, dal tempo migliore («Best 5:00 /km · 2:00 /km to go»); vuota
+  finché il livello prima non è fatto. Una distanza mai corsa di fila non
+  ha barra: «First run 15 km in one go · longest 12 km». Le distanze di una
+  corsa hanno il loro nome (400 m, 1 mile, Half marathon, Marathon).
 - I colori vengono da `src/theme/tokens.ts`. I testi sono in inglese e
   tradotti nelle cinque lingue.

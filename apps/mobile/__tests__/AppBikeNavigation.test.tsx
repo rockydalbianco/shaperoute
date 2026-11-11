@@ -77,7 +77,7 @@ function api(result: unknown, answers: Record<string, () => Response> = {}) {
         { status: 202 },
       );
     }
-    if (method === "GET" && path === "/route-jobs/4f2c9e1a") {
+    if (method === "GET" && path.split("?")[0] === "/route-jobs/4f2c9e1a") {
       return Response.json({ job_id: "4f2c9e1a", status: "done", result, error: null });
     }
     return Response.json(apiError("http_error", path), { status: 404 });

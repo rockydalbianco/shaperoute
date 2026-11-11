@@ -619,7 +619,6 @@ in `tests/test_graph_tables.py` il codice di prima come riferimento: le
 tabelle devono restare uguali con `np.array_equal`. Dettagli e misure in
 `tasks/TASK-436.md`.
 
-
 ## ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw»
 
 **Stato**: Accettata · 2026-11-10 · TASK-433 parte C: C1 server e tipi

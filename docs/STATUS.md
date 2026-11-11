@@ -169,6 +169,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Settimo OTA (C2) in produzione il 2026-11-11 da 7e24e7d1; l'utente l'ha
   provato sul telefono («funziona tutto ok», prova generale). #1133 (il «No»
   neutro) esce con l'ottavo OTA.
+  Ottavo OTA il 2026-11-11 da cd0c8b08, con la #1133: resta solo la prova
+  sul telefono del «No» neutro, poi la chiusura.
 - **TASK-435 — Primo percorso subito, alternative dopo** (ADR-0361) ·
   parte 0 fatta: piano, misura (una vicina vince nel 38% delle prove;
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il

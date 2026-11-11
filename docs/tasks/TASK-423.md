@@ -350,7 +350,9 @@ E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
 - 2026-11-11 — Conferma punto per punto dei premi, chiesta all'utente nella
   sessione di TASK-423 (la riga «Premi» con cornici, titoli e badge; le
   edizioni d'argento sulle forme; la cornice in fondo a una collezione; un
-  premio scelto sul profilo). Sue parole: «Funziona tutto».
+  premio scelto sul profilo). Sue parole: «Funziona tutto». Confermato
+  anche nella sessione madre, con le quattro cose elencate: «Sì, tutti e
+  quattro».
 
 ## Esito
 

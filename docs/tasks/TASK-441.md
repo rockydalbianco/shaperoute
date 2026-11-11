@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A (A1 + A2) in PR: 1963 percorsi; poi B
+**Stato**: In lavorazione — parte A in `main` (#1149, 2026-11-11); le 702 parole nuove escono con una PR di correzione (→ 1261); resta il server; poi B
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -124,8 +124,8 @@ per le richieste nuove).
       (`recommended.varied`), con test; le pagine si uniscono ancora.
 - [x] `catalog/seed/*.json` riscritti; `test_featured_catalog` verde.
 - [x] Avvio e memoria dell'API misurati e scritti qui.
-- [ ] CI verde; numero nuovo dei percorsi detto al Coordinatore per il
-      passo «catalogo».
+- [x] CI verde; numero nuovo dei percorsi detto al Coordinatore per il
+      passo «catalogo» (1963).
 
 ## File toccati (parte A)
 
@@ -150,6 +150,18 @@ docs/tasks/TASK-441.md            (nuovo)
   `out/explore-2000/proposta.md` (quelle di `tools/catalog_words.py`, senza
   LFG) e l'ordine misto di «NEAR YOU»: prima la migliore di ogni forma e
   parola, poi la seconda, e così via.
+- 2026-11-11, «Sì, vanno bene»: i disegni nuovi delle due pagine
+  (`review-new-words.html`, `review-already-drawn.html`) entrano tutti,
+  anche le 60 parole che in una città compaiono nei due stili (l'altra
+  scelta era «Togli i doppi», 1903).
+- 2026-11-11, viste le parole nell'app dopo il merge di #1149, nella
+  sessione «Forme generate strane» (che lo riporta così): «Le forme che
+  hai aggiunto non vengono bene come le altre … copia il metodo», poi «Sì,
+  toglile». Le 702 parole aggiunte (615 di A2, 87 di A1) erano a riga
+  unica con le lettere unite e non si leggevano; gli esempi di città
+  (`services/api/shaperoute_api/city_examples.py`) le scrivono a penna
+  alzata, tonde, 3 km a lettera. Escono dal catalogo; nella parte B tutte
+  le parole si rifanno con quel metodo.
 
 ## Com'è uscita la parte A
 
@@ -176,13 +188,52 @@ docs/tasks/TASK-441.md            (nuovo)
   `out/TASK-441/review-new-words.html` (615) e
   `out/TASK-441/review-already-drawn.html` (776), checkout principale.
 
+## Le parole tolte (2026-11-11 sera, #1155)
+
+Dalla sessione «Forme generate strane», che ha fatto la correzione:
+
+- Prova a Milano col metodo degli esempi di città (`pen_up`, `round`,
+  3 km a lettera; `out/TASK-441/penup/`, checkout principale): BACI,
+  FAST, COOL, STAR si leggono, somiglianza 0,97–1,00 contro 0,91–0,96 a
+  riga unica, 5 s l'una. Confronto: `out/TASK-441/penup/milano.html`.
+- `tools/catalog_kept.json` tiene le 572 di prima più le **689 forme** di
+  A1: **1261 percorsi**, 55 parole (quelle di prima). Seme riscritto con
+  `catalog_words.py --write`; Milano 71, la città più piccola 4.
+- Il catalogo non tiene `walks`: senza, l'app unirebbe le lettere a
+  piedi come prima. Per questo le parole aspettano la parte B, che dà il
+  campo al catalogo e poi rigenera tutte le parole a penna alzata (anche
+  le 55 di prima, da decidere con l'utente).
+- `catalog_words.py --propose` rimette ancora le parole a riga unica: **non
+  usarlo per le parole** fino alla parte B.
+- I numeri di «Com'è uscita la parte A» qui sopra (1963, 757 parole, 91 a
+  Milano) sono quelli del merge di #1149, prima della correzione.
+
 ## Dove siamo
 
-*2026-11-11*: numeri dal Coordinatore (un task, una PR per parte; C a
-parte). Strumento e 19 test; giro delle parole dalle 14:21 alle 16:10 dal
-worktree `.claude/worktrees/TASK-441-a`. Catalogo riscritto, PR della parte
-A aperta. **Dopo il merge**: il passo «catalogo» sul server (un sì
-dell'utente, dal Coordinatore: il suo script si aspetta «572 recommended
-routes», ora 1963), poi la PR di soli documenti con le righe di
-`STATUS.md` e `INDEX.md`. **Poi la parte B**: chiedere il turno al
-Coordinatore (dopo #1130), ADR-0366.
+*2026-11-11*: **parte A in `main`** (#1149, merge del Coordinatore dopo il
+sì dell'utente; documenti #1153, ADR-0347 precisazione C). Giro delle
+parole dalle 14:21 alle 16:10.
+
+**La correzione**: l'utente ha poi tolto le 702 parole nuove (sopra,
+«Scelte dell'utente»). La PR è la #1155 di un'altra sessione, sul branch
+`fix/TASK-441-a-drop-words`, che lavora nel worktree
+`.claude/worktrees/TASK-441-a`: `tools/catalog_kept.json` e
+`catalog/seed/**` non si toccano finché il Coordinatore non scrive che è
+in `main`. Dopo: 1261 percorsi (572 + 689 forme); una riga di documenti
+col numero vero.
+
+**Il server** (un sì dell'utente, dal Coordinatore) aspetta la correzione:
+file di `catalog/` e immagine nuova (l'ordine misto è codice), nessuna
+migrazione. Controlli dopo: il log dice «1261 recommended routes from
+catalog/seed»; i primi disegni di `GET /recommended-routes` da Milano
+hanno tutti un nome diverso (i numeri «60 48 48» valevano con le parole:
+da ricontare sul seme corretto).
+
+**Poi la parte B**: il turno su API, shared-types e app lo dà il
+Coordinatore dopo «#1130 in main»; prima mandargli la lista dei file (la
+#1139 di TASK-435 B tocca `schemas.py`, `app.py` e
+`packages/shared-types/src/index.ts`). ADR-0366. **Le parole si rifanno
+qui, a penna alzata**: prima una pagina di prova all'utente con poche
+parole in due o tre città, e solo dopo il suo sì il giro intero. Il
+registro di A2 (`out/TASK-441/runs.jsonl`) resta, ma quei disegni non
+entrano.

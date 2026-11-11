@@ -527,8 +527,111 @@ lasciando le righe d'indice.
 - ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale · 2026-11-11 · Attiva
 - ADR-0351, precisazione E2 — I premi nell'app: la pagina «Prizes», le schede di edizioni e collezioni, la scelta del profilo e la privacy · 2026-11-11 · Attiva
 - ADR-0357, precisazione B2/C2 — I tratti della giornata a «Salva» col ripiego al 422; la stagione da luglio a giugno, la giornata salvata a tre sezioni, la mappa del post di sci da `from_fix`/`to_fix` · 2026-11-11 · Attiva
+- ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste · 2026-11-11 · Attiva
+- ADR-0342, precisazione A2 — Le ciaspole nel contratto e nell'API: nessun percorso sulla neve tenuto, le quote dal disco a ogni richiesta, il profilo nascosto nell'app · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0342, precisazione A2 — Le ciaspole nel contratto e nell'API: nessun percorso sulla neve tenuto, le quote dal disco a ogni richiesta, il profilo nascosto nell'app
+
+**Stato**: Attiva · 2026-11-11 · TASK-413 A2 (#1130, `ac08ae94`). Deciso
+dall'agente su delega dell'utente; lista dei file e migrazione 0068
+approvate dal Coordinatore.
+
+1. **Le ciaspole sono uno sport del contratto.** `snowshoeing` passa da
+   `activities.ENGINE_ONLY` (ora vuota) a `ENGINE_ACTIVITIES`, dopo
+   `inline_skating`; `SNOWSHOEING` (0,5–3 km) entra in `PLANNED_SPORTS` di
+   shared-types, in `RunActivity`, in `reads.NEWER_ACTIVITIES` e nel gioco
+   come una camminata (`game_rules.ON_FOOT`), senza record. La migrazione
+   `0068_snowshoeing.sql` allarga i vincoli d'attività di `runs`,
+   `favorites` e `group_runs` rileggendoli (come la 0055); `run_bests` no.
+2. **Niente ancorato sulla neve**: `anchored.check_placement` rifiuta
+   `FREE_ACTIVITIES` (acqua e neve), e `way_back` non propone ritorni sulla
+   neve.
+3. **Nessun percorso sulla neve è tenuto**: né `route_store` né l'archivio
+   (`route_archive._kept`). I file della neve stanno fuori dall'impronta
+   (`SNOW_ONLY`, ADR-0342 aggiunta 5): un percorso tenuto sopravvivrebbe
+   alle regole che l'hanno disegnato.
+4. **Neve e quote nella cache del server**, scaricate alla prima richiesta
+   di un posto: `ServerSnow` in `<cache>/snow/`, le tegole Terrarium in
+   `<cache>/heights/` lette con un `TerrariumTiles` nuovo per richiesta, così
+   le tegole decodificate non restano in memoria per ogni posto. Un download
+   che non riesce è `503 map_data_unavailable`, come una zona. Il ramo della
+   neve è in `activity_graphs.ground_for`, nei job, nei processi caldi
+   (ADR-0242) e in `images.plan_request`.
+5. **L'errore propone il mezzo km** a cui la forma entra, come sull'acqua
+   (`errors.suggested_distance` su `FREE_ACTIVITIES`), e nessuna distanza
+   sotto 0,5 km.
+6. **L'impronta**: il registro la cambia senza cambiare un percorso. Tre
+   righe in `SAME_ROUTES_AS` dopo quelle di TASK-436 (`427ed1a16a97 →
+   ca29e58777cb`, `d943bfbe8c44 → c9c2683a72ea`, `f54db2ee707d →
+   3984555281d5`) con la prova `427ed1a16a97.json` (i nove percorsi fissi
+   identici, darwin-arm64): nessun `draw_examples`.
+7. **Il profilo nell'app è nascosto** fino a B: nessuna riga in
+   «Impostazioni», fuori dalla ricerca (`searchFilters.NOT_YET`) e dal
+   modulo per pubblicare; nome in inglese, niente `caution` né tempo.
+   Calorie di Hike (TASK-424 C2), Apple Salute `hiking` (24), Health
+   Connect `EXERCISE_TYPE_SNOWSHOEING` (63). Solo JavaScript: l'impronta iOS
+   resta `6f8bba4c`.
+8. **La città lenta** (fino a 44 s al banco) resta: un controllo «poca neve»
+   prima del piazzamento toccherebbe il motore. Se i tempi del server lo
+   chiedono, è un passo a parte.
+## ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste
+
+**Stato**: Attiva · 2026-11-11 · TASK-441, parte A (#1149). L'utente ha
+chiesto di portare «Explore» a 2000 disegni e ha approvato le liste di
+parole e l'ordine misto («Sì, vai»), poi i disegni nuovi dalle due pagine
+(«Sì, vanno bene»). Le scelte tecniche sono dell'agente su delega
+dell'utente.
+
+**Contesto**: il catalogo aveva 572 percorsi, 55 soli di parole. Il
+registro di TASK-419 teneva altri 878 disegni che passavano il filtro e non
+erano mai entrati. Su una riga le parole passano il filtro fino a 4 lettere
+(a 5 una su cinque, a 6 nessuna).
+
+**Decisione**:
+
+- **I già fatti entrano tutti** quando passano il filtro e sono di una
+  parola o di una forma che il motore ha (776; i 102 di contorni non
+  registrati aspettano la parte C). Anche la stessa parola nei due stili
+  nella stessa città (60 casi).
+- **Parole corte, 2–4 lettere, su una riga**, da uno strumento nuovo
+  accanto a quello di TASK-419 (`tools/catalog_words.py`, che usa
+  `catalog_seed.py` senza cambiarlo): le parole della città, quelle della
+  sua lingua, un turno di una lista comune con stagione e parole del
+  momento. Ogni parola nei due stili, entra la migliore (615). Nessuna zona
+  scaricata: bastano quelle a piedi di `data/cache`.
+- **L'ordine misto** (`recommended.varied`): `GET /recommended-routes` e
+  ogni città di `GET /catalog` danno prima la migliore di ogni forma e di
+  ogni parola, poi la seconda, e così via; dentro un giro vale l'ordine di
+  prima (somiglianza, poi distanza). Il tetto di 60 in «NEAR YOU» resta.
+- **Niente memoria compatta per ora**: i punti restano tuple (32,6 MB di
+  file, +218 MB residenti all'avvio contro +57). Deciso dal Coordinatore
+  sui numeri del server; se il catalogo cresce ancora, un `array('d')`.
+
+**Motivo**: i già fatti costavano zero e avevano già passato lo stesso
+filtro. Le parole lunghe vogliono la penna alzata, che il formato del seme
+non tiene ancora (parte B, ADR-0366). Senza l'ordine misto i 60 disegni
+vicino a Milano, che ora ne ha 91, sarebbero quasi tutti cerchi e cuori.
+
+**Conseguenze**: 1963 percorsi in 63 città, 757 di parole (79 diverse). Gli
+id dei percorsi tengono il posto nel file e cambiano dove il file cresce,
+come a ogni giro di TASK-419: «Feed» ritrova il percorso per città, forma e
+lunghezza. I disegni delle parole sono del motore `8ab61d8e87f9`: se un
+cambio del motore chiede di rifarli (TASK-447), il giro riparte da
+`out/TASK-441/run.sh`. Sul server servono i file del catalogo **e**
+l'immagine nuova (l'ordine è codice).
+
+**Corretto lo stesso giorno, prima del server**: guardate nel catalogo, le
+parole nuove a riga unica hanno le lettere unite e non si leggono. L'utente
+(«Sì, toglile», riferito dal Coordinatore) le toglie tutte e 702, le 615
+di questa voce e le 87 dei già fatti, con una PR di correzione
+(`fix/TASK-441-a-drop-words`): il catalogo scende a 1261, i 572 di prima
+più 689 forme. Le parole tornano con la parte B, a penna alzata fra le
+lettere come negli esempi delle città, dopo una pagina di prova mostrata
+all'utente. Il filtro (somiglianza ≥ 0,90) non misura se una parola si
+legge: per le parole non basta. Dei punti qui sopra restano i già fatti di
+forme, l'ordine misto e lo strumento.
 
 ## ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale
 

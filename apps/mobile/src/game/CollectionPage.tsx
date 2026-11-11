@@ -11,6 +11,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import type { Units } from "../units/units";
 import { type CollectionRow, collectionNameIn, countText } from "./collections";
 import { ProfileFrame } from "./ProfileFrame";
@@ -50,7 +51,7 @@ export function CollectionPage({
   return (
     <View style={styles.page} testID={`collection-page-${row.collection.id}`}>
       <View style={styles.header}>
-        <Pressable
+        <Tap
           style={styles.back}
           onPress={onBack}
           accessibilityRole="button"
@@ -58,7 +59,7 @@ export function CollectionPage({
           testID="collection-back"
         >
           <Text style={styles.backText}>←</Text>
-        </Pressable>
+        </Tap>
         <Text style={styles.name} accessibilityRole="header" numberOfLines={1}>
           {name}
         </Text>

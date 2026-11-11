@@ -134,6 +134,7 @@ from shaperoute_api.schemas import (
     ImageOutlineRequestBody,
     ImageRouteRequestBody,
     RouteJobBody,
+    RouteJobWithFirstBody,
     RouteRequestBody,
     RouteResultBody,
     ShapeReadingBody,
@@ -243,6 +244,15 @@ def job_body(job: Job) -> RouteJobBody:
     return RouteJobBody(
         job_id=job.job_id, status=job.status, result=result, error=job.error
     )
+
+
+def job_body_with_first(job: Job) -> RouteJobWithFirstBody:
+    """`job_body` and, while the job still computes, the route from the
+    user's own start (TASK-435, ADR-0361): for who asks with `?first=1`."""
+    first = None
+    if job.first is not None:
+        first = with_placed(RouteResultBody.from_result(job.first), job.first_placed)
+    return RouteJobWithFirstBody(**dict(job_body(job)), first=first)
 
 
 def job_recorder(request_log: RequestLog) -> JobEnd:
@@ -463,11 +473,15 @@ def create_app(
         return edit_outline(body)
 
     @app.get("/route-jobs/{job_id}", responses={404: {"model": ErrorBody}})
-    def get_route_job(job_id: str) -> RouteJobBody:
+    def get_route_job(
+        job_id: str, first: bool = False
+    ) -> RouteJobWithFirstBody | RouteJobBody:
         job = route_jobs.get(job_id)
         if job is None:
             raise HTTPException(404, UNKNOWN_JOB)
-        return job_body(job)
+        # The first route only to who asks (TASK-435): the body of an app
+        # that does not know it stays as it was.
+        return job_body_with_first(job) if first else job_body(job)
 
     @app.delete(
         "/route-jobs/{job_id}", status_code=204, responses={404: {"model": ErrorBody}}

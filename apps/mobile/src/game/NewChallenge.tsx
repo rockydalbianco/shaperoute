@@ -13,14 +13,7 @@ import {
   type GameCatalog,
 } from "@shaperoute/shared-types";
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import type { Language } from "../i18n/languages";
@@ -33,6 +26,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { metresPer } from "../units/format";
 import type { Units } from "../units/units";
 import { collectionNameIn, shapesByCollection } from "./collections";
@@ -155,7 +149,7 @@ export function NewChallenge({
                   ? t("Other shapes")
                   : collectionNameIn(each.collection, language);
               return (
-                <Pressable
+                <Tap
                   key={id ?? ""}
                   style={[styles.group, selected && styles.shapeSelected]}
                   onPress={() => setGroupId(id)}
@@ -164,7 +158,7 @@ export function NewChallenge({
                   testID={`new-collection-${id ?? "other"}`}
                 >
                   <Text style={styles.shapeName}>{name}</Text>
-                </Pressable>
+                </Tap>
               );
             })}
           </View>
@@ -175,7 +169,7 @@ export function NewChallenge({
           {(group?.shapes ?? []).map((shape) => {
             const selected = shape.id === shapeId;
             return (
-              <Pressable
+              <Tap
                 key={shape.id}
                 style={[styles.shape, selected && styles.shapeSelected]}
                 onPress={() => setShapeId(shape.id)}
@@ -193,7 +187,7 @@ export function NewChallenge({
                 <Text style={styles.shapeName} numberOfLines={1}>
                   {shapeNameIn(shape, language)}
                 </Text>
-              </Pressable>
+              </Tap>
             );
           })}
         </View>
@@ -287,7 +281,7 @@ export function NewChallenge({
         </Text>
       )}
       <View style={styles.buttons}>
-        <Pressable
+        <Tap
           style={[styles.start, !canStart && styles.off]}
           onPress={() => onStart({ shape_id: shapeId, pieces, piece, days })}
           disabled={!canStart}
@@ -299,15 +293,15 @@ export function NewChallenge({
           ) : (
             <Text style={styles.startText}>{t("Start the challenge")}</Text>
           )}
-        </Pressable>
-        <Pressable
+        </Tap>
+        <Tap
           style={styles.cancel}
           onPress={onCancel}
           accessibilityRole="button"
           testID="new-cancel"
         >
           <Text style={styles.cancelText}>{t("Cancel")}</Text>
-        </Pressable>
+        </Tap>
       </View>
     </View>
   );
@@ -329,7 +323,7 @@ function Stepper({
 }) {
   return (
     <View style={styles.stepper}>
-      <Pressable
+      <Tap
         style={styles.step}
         onPress={() => onStep(-1)}
         accessibilityRole="button"
@@ -337,11 +331,11 @@ function Stepper({
         testID={`${testID}-less`}
       >
         <Text style={styles.stepText}>−</Text>
-      </Pressable>
+      </Tap>
       <Text style={styles.value} testID={testID}>
         {value}
       </Text>
-      <Pressable
+      <Tap
         style={styles.step}
         onPress={() => onStep(1)}
         accessibilityRole="button"
@@ -349,7 +343,7 @@ function Stepper({
         testID={`${testID}-more`}
       >
         <Text style={styles.stepText}>+</Text>
-      </Pressable>
+      </Tap>
     </View>
   );
 }

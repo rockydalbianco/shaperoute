@@ -103,6 +103,28 @@ richiesta risponde subito e il percorso si chiede dopo.
 - Un `job_id` sconosciuto (annullato, finito da più di 10 minuti, o API
   riavviata) risponde `404 http_error`.
 
+**Il primo percorso, mentre il job calcola** (TASK-435, ADR-0361):
+`GET /route-jobs/{job_id}?first=1` risponde il `RouteJob` con un campo in
+più, `first`.
+
+- Mentre lo stato è `computing`, appena il piano dalla partenza
+  dell'utente è pronto e le partenze vicine stanno ancora calcolando,
+  `first` è quel percorso: un `RouteResult` intero, con le sue `directions`
+  e il suo `placed_outline`, e `alternatives` vuoto. Prima, e quando non
+  c'è niente da aspettare (nessuna partenza vicina, acqua, disegno
+  ancorato, percorso già tenuto), è `null`.
+- A `done` il `result` è **quello di sempre**, scelto dal motore con le
+  sue alternative, e `first` torna `null`. Il primo percorso può essere il
+  `result`, una delle sue `alternatives`, o nessuno dei due (il motore
+  tiene al più due alternative, entro 10 punti dal migliore): si riconosce
+  dai `points` uguali.
+- **Solo a chi lo chiede.** Senza `?first=1` (e nella risposta al `POST`)
+  il `RouteJob` è quello di prima, senza il campo: un'app che non lo
+  conosce non riceve un percorso in più a ogni lettura. Un'API precedente
+  ignora il parametro: il campo manca, e l'app aspetta `done` come prima.
+- L'app lo chiede finché non l'ha avuto, poi legge senza. `false`, `0` o
+  niente: come prima.
+
 Il `RouteResult` di una richiesta in due tempi porta anche le
 **indicazioni di svolta** (`directions`, TASK-048, ADR-0045 e ADR-0047): la
 prima è la partenza (`"turn": "depart"`, la via da cui si parte), poi una
@@ -3074,7 +3096,10 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   `kind` (`easy`, `intervals`, `long`), per `easy` e `long` `distance_m`
   (100–100 000) o `duration_s` (60 s–6 h), per `intervals` `reps` (1–50) e
   `rep_m` (50–5000) o `rep_s` (10–1800); nel calendario è fatto se quel
-  giorno c'è una corsa (`running`).
+  giorno c'è una corsa (`running`). Il programma può avere `runner`
+  (TASK-452, ADR-0369): `pace_10k_s` 180–900 (il ritmo sui 10 km, in
+  secondi al km) e il lungo, `long_m` (1–60 km) o `long_s` (10 min–6 h); i
+  ritmi li calcola il telefono.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`

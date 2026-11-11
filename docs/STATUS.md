@@ -124,10 +124,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   di produzione del 2026-11-10 da 88e5f88f (gruppo `4eca1d42`) con F e C;
   D con l'OTA 3, dopo il passo server 2, col sì dell'utente. Poi E. File: —
   · `tasks/TASK-410.md`
-- **TASK-413 — Ciaspole** · 0 e A1 in `main` (#957: la neve nel motore,
-  `heights.py` condiviso) e sul server col passo unico del 2026-11-10;
-  prossime A2 (contratto, API, migrazione in bozza 0057) e B. File: — ·
-  `tasks/TASK-413.md`
+- **TASK-413 — Ciaspole** · 0, A1 e A2 in `main` (#1130, `ac08ae94`: lo
+  sport nel contratto e nell'API, nascosto nell'app, migrazione 0068); A2
+  sul server col passo 8 del Coordinatore, col sì dell'utente; l'app col
+  decimo OTA. Prossima B. File: — · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·
   `tasks/TASK-414.md`
@@ -173,6 +173,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il
   primo resta A»). Prossima la parte A (motore), poi B (API) e C (app).
   File: — · `tasks/TASK-435.md`
+- **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
+  1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
+  unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
+  tornano nella B a penna alzata; il server aspetta la correzione. Poi B
+  (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

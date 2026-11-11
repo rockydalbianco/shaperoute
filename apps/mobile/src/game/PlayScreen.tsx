@@ -2,7 +2,6 @@ import type { GameMe } from "@shaperoute/shared-types";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,7 +12,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { decimal, t } from "../i18n";
 import { useLanguage } from "../i18n/useLanguage";
-import { Segmented } from "../screens/Segmented";
 import {
   color,
   fontSize,
@@ -22,6 +20,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { inUnits } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { type RequestedChallenge, useRequestedChallenge } from "./challengeDoor";
@@ -31,7 +30,9 @@ import { CollectionPage } from "./CollectionPage";
 import { collectionRows, hasCollections } from "./collections";
 import { useGameCatalog } from "./gameCatalog";
 import { ShapeCard } from "./ShapeCard";
+import { PlayTabs } from "./PlayTabs";
 import { PrizesPage } from "./PrizesPage";
+import { SlideIn } from "./SlideIn";
 import { useGameMe } from "./useGameMe";
 
 type Props = {
@@ -74,6 +75,12 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
   // «Prizes» open over the collections (TASK-423 part E).
   const [prizesOpen, setPrizesOpen] = useState(false);
+  // A page of the collections was opened since «Play» came up: the list
+  // then comes back from the left.
+  const [visited, setVisited] = useState(false);
+  if ((prizesOpen || openId !== null) && !visited) {
+    setVisited(true);
+  }
   // A challenge asked for from outside (a notification): its tab, once
   // per request; the tab opens the challenge itself.
   const requested = useRequestedChallenge();
@@ -102,7 +109,7 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
       keyboardShouldPersistTaps="handled"
       testID="play-screen"
     >
-      <Segmented
+      <PlayTabs
         options={[
           { value: "collection", label: t("Collection") },
           { value: "challenges", label: t("Challenges") },
@@ -121,14 +128,14 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
         />
       )}
       {collection && shown.status === "off" && (
-        <Pressable
+        <Tap
           style={styles.notice}
           onPress={onSignIn}
           accessibilityRole="button"
           testID="play-sign-in"
         >
           <Text style={styles.noticeText}>{t("Sign in to collect shapes.")}</Text>
-        </Pressable>
+        </Tap>
       )}
       {collection && shown.status === "loading" && (
         <ActivityIndicator color={color.textMuted} style={styles.wait} />
@@ -136,14 +143,14 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
       {collection && shown.status === "failed" && (
         <View style={styles.notice}>
           <Text style={styles.noticeText}>{shown.problem}</Text>
-          <Pressable
+          <Tap
             style={styles.retry}
             onPress={refresh}
             accessibilityRole="button"
             testID="play-retry"
           >
             <Text style={styles.retryText}>{t("Try again")}</Text>
-          </Pressable>
+          </Tap>
         </View>
       )}
       {collection && me !== null && (
@@ -159,30 +166,35 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
             {t("The game is not available right now.")}
           </Text>
         ) : prizesOpen && me !== null ? (
-          <PrizesPage
-            active={active}
-            catalog={catalog}
-            units={units}
-            language={language}
-            onBack={() => setPrizesOpen(false)}
-            fetchFn={fetchFn}
-            apiKey={apiKey}
-          />
+          <SlideIn key="prizes" from="right">
+            <PrizesPage
+              active={active}
+              catalog={catalog}
+              units={units}
+              language={language}
+              onBack={() => setPrizesOpen(false)}
+              fetchFn={fetchFn}
+              apiKey={apiKey}
+            />
+          </SlideIn>
         ) : opened !== null ? (
-          <CollectionPage
-            row={opened}
-            shapes={catalog.shapes}
-            states={states}
-            me={me}
-            cardWidth={cardWidth}
-            units={units}
-            language={language}
-            onBack={() => setOpenId(null)}
-          />
+          <SlideIn key={`collection-${opened.collection.id}`} from="right">
+            <CollectionPage
+              row={opened}
+              shapes={catalog.shapes}
+              states={states}
+              me={me}
+              cardWidth={cardWidth}
+              units={units}
+              language={language}
+              onBack={() => setOpenId(null)}
+            />
+          </SlideIn>
         ) : rows !== null ? (
-          <>
+          // Back on the list: it comes from the left (TASK-423, the motion).
+          <SlideIn key="collections" from={visited ? "left" : "right"}>
             {me !== null && (
-              <Pressable
+              <Tap
                 style={styles.prizes}
                 onPress={() => setPrizesOpen(true)}
                 accessibilityRole="button"
@@ -193,10 +205,10 @@ export function PlayScreen({ active, onSignIn, fetchFn, apiKey, now }: Props) {
                   {t("Frames, titles and badges")}
                 </Text>
                 <Text style={styles.arrow}>›</Text>
-              </Pressable>
+              </Tap>
             )}
             <CollectionList rows={rows} language={language} onOpen={setOpenId} />
-          </>
+          </SlideIn>
         ) : (
           <View style={styles.grid}>
             {catalog.shapes.map((shape) => (

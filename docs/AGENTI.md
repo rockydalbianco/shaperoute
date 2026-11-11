@@ -127,7 +127,9 @@ solo dopo la #1131) e TASK-445 in parallelo (misure: un bench alla volta
 sul Mac, si chiede al coordinatore) → TASK-443 dopo la 442 → TASK-444
 dopo la #1137 (il rosso delle kcal nel Feed capovolge TASK-424 C3: lo
 conferma l'utente) → TASK-446 dopo 435 C (carico sui 2 route worker) →
-TASK-447 nella coda del motore. Le apre la sessione «Pompo» una alla
+TASK-447 nella coda del motore; poi le idee: 449, 448, 450 (`src/share`
+è di TASK-417: turno), 451, ognuna dalla «parte 0» con le domande
+all'utente. Le apre la sessione «Pompo» una alla
 volta; ognuna manda la lista dei file al coordinatore prima del codice.
 
 **CI**: da TASK-438 (#1119, ADR-0364) i test dell'API girano in 4 parti
@@ -216,8 +218,11 @@ Fermi per scelta dell'utente
   dell'11 novembre, `out/prova-app-2026-11-11/PROPOSTE.md`: 442 sagoma
   fantasma e attesa animata, 443 inquadratura della mappa del risultato,
   444 icone e colori coerenti, 445 velocità (solo misure), 446 calcolo
-  anticipato, 447 via i «baffi» dal motore). Il prossimo libero è
-  **TASK-448**.
+  anticipato, 447 via i «baffi» dal motore; dalle idee della stessa
+  prova: 448 «Sorprendimi», 449 anteprima dal vivo della sagoma su Crea,
+  450 poster da condividere, 451 «Rifai meglio»; la Live Activity in
+  corsa è TASK-401 B e «Accedi con Apple» è TASK-322, senza numeri
+  nuovi). Il prossimo libero è **TASK-452**.
 - ADR: presi fino a **ADR-0368** (0365 riservato a TASK-439; 0366
   TASK-441; 0367 TASK-446; 0368 TASK-447). Il prossimo libero è
   **ADR-0369**.

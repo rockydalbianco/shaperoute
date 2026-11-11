@@ -215,10 +215,48 @@ Salite per zona (mediana della salita per km, tratto più ripido su 200 m):
 | asiago | 10 m, 6,7 % | 7 m, 11,3 % | 7 m, 6,2 % | 7 m, 5,0 % | 7 m, 7,1 % |
 | pianura | 5 m, 5,3 % | 4 m, 5,0 % | 4 m, 3,9 % | 3 m, 3,0 % | 4 m, 2,6 % |
 
+## La parte A nel motore (TASK-414 A, 2026-11-11)
+
+Branch `feat/TASK-414-a-wheelchair`, sul Mac. Script e risultati in
+`out/TASK-414/part-a/` (ignorato da git).
+
+- **La rete `wheel` del motore è `wheelcalm`**: `networks/wheel.py` rifatta
+  sui 30 download grezzi della parte 0 dà gli stessi km e le stesse vie
+  della rete del banco, zona per zona (`same_as_bench.py`: zero vie
+  diverse). In più tiene le regole della rete foot di TASK-421 (cancelli
+  chiusi, vie chiuse a piedi), che nei download grezzi non si vedono.
+- **Corsa, bici e canoa non cambiano**: i nove percorsi fissi di
+  `test_same_routes.py` hanno gli stessi hash (impronta `e0834d054b6e` →
+  `427ed1a16a97`, `SAME_ROUTES_AS`).
+- **Le forme**: il motore disegna per `wheelchair` solo cerchio, cuore,
+  stella e luna (`Activity.shapes`); ogni altra forma, una parola,
+  un'immagine, un disegno o un tratto è una richiesta non valida, prima di
+  toccare la rete.
+- **Quanto pesa una zona `wheel`.** Il server la scarica grande quanto il
+  percorso più lungo, 5 km: circa 8,5 × 8,5 km attorno al centro di una
+  città (`longest_route_box`; quella della corsa è 17 × 17 km). Dal
+  download più grande di ogni zona della parte 0 (`weigh.py`, il pezzo più
+  grande letto come lo legge il server):
+
+  | Zona | download | km a piedi | km `wheel` | sul disco | in memoria |
+  |---|---|---|---|---|---|
+  | trento | 8,5 × 8,5 km | 1.220,2 | 668,2 | 24 MB | 32 MB |
+  | valsugana | 8,5 × 8,5 km | 578,1 | 193,8 | 4 MB | 4 MB |
+  | milano | 5,7 × 5,7 km | 1.534,8 | 1.363,0 | 52 MB | 75 MB |
+  | fiemme | 8,5 × 8,5 km | 518,2 | 143,1 | 3 MB | 3 MB |
+  | asiago | 8,5 × 8,5 km | 407,3 | 89,2 | 2 MB | 2 MB |
+  | pianura | 8,5 × 8,5 km | 701,2 | 460,0 | 10 MB | 13 MB |
+
+  A Milano il download del banco è più piccolo: sulla zona del server, più
+  del doppio dell'area, circa 170 MB. Il server ne tiene una in memoria
+  (`ZONES_IN_MEMORY`), accanto alle altre: da pochi MB in montagna a circa
+  170 MB in una grande città, meno di una zona del Roller (452 MB a
+  Milano).
+
 ## Cosa resta da misurare
 
 - **Le salite**: il motore non conosce le quote. Se la parte G di TASK-347
   porta il dislivello dal server (ADR-0300), carrozzina e passeggino sono,
   col Roller, i primi sport a volerlo anche per scegliere le vie.
-- **La parte A**: la rete scaricata col suo filtro sulle zone intere, come
-  il Roller, e quanto pesa una zona in memoria sul server.
+- **Sul server**: il primo percorso di una zona appena scaricata, dopo il
+  passo server della parte A.

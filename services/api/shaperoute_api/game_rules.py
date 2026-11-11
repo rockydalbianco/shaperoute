@@ -25,7 +25,9 @@ from route_engine.geo import haversine_m
 # again. 2: a walk counts its metres (TASK-371). A hike counts as a walk
 # (TASK-377) and kept 2: no run saved before it could be a hike (0051); so
 # did a skate (TASK-380, 0055), with its own "vehicle" thresholds too. 3:
-# best times over 11 distances, not 4 (TASK-423 part B, ADR-0351).
+# best times over 11 distances, not 4 (TASK-423 part B, ADR-0351). A
+# wheelchair route counts as a walk (TASK-414) and kept 3: no run saved
+# before it could be one (0069).
 RULES_VERSION = 3
 
 # A stretch of at least VEHICLE_WINDOW_M covered faster than this is not
@@ -88,7 +90,11 @@ INLINE_SKATING = "inline_skating"
 # Snowshoeing counts as a hike, so as a walk (TASK-413, ADR-0342, the user's
 # choice 5): its metres with a run's checks, no best times.
 SNOWSHOEING = "snowshoeing"
-ON_FOOT = (RUNNING, WALKING, HIKING, INLINE_SKATING, SNOWSHOEING)
+# A wheelchair or a stroller counts as a walk (TASK-414, ADR-0343, the
+# user's choice 7): its metres with a run's checks, no best times; its
+# personal bests are its own.
+WHEELCHAIR = "wheelchair"
+ON_FOOT = (RUNNING, WALKING, HIKING, INLINE_SKATING, SNOWSHOEING, WHEELCHAIR)
 
 
 @dataclass(frozen=True)
@@ -137,8 +143,9 @@ class _Step:
 def evaluate(
     fixes: Sequence[Fix], pauses: Sequence[RunPause], activity: str
 ) -> RunGame:
-    """The run as the game sees it. Only runs, walks, hikes, skates and
-    snowshoe routes count, and only a run has best times."""
+    """The run as the game sees it. Only runs, walks, hikes, skates,
+    snowshoe routes and wheelchair routes count, and only a run has best
+    times."""
     elapsed_s = fixes[-1].t_s - fixes[0].t_s if fixes else 0.0
     if activity not in ON_FOOT:
         return RunGame(False, NOT_RUNNING, 0, {}, elapsed_s)

@@ -39,7 +39,8 @@ import {
 // (TASK-377), before the walk; an MTB ride (TASK-378) after the hike and a
 // gravel ride after the walk; a skate (TASK-380) after the MTB ride, hidden
 // until part B; snowshoeing (TASK-413) after the skate, hidden until part
-// B; a day of ski touring (TASK-415) after the days on the snow, hidden
+// B; a wheelchair route (TASK-414) after snowshoeing, hidden until part B;
+// a day of ski touring (TASK-415) after the days on the snow, hidden
 // until part B.
 
 const MPH_KMH = 1.609344;
@@ -76,6 +77,10 @@ it("gives «Draw» the distances of before", () => {
       ],
     ],
     [
+      "wheelchair",
+      [DISTANCE_LIMITS_M.wheelchair[0] / 1000, DISTANCE_LIMITS_M.wheelchair[1] / 1000],
+    ],
+    [
       "walking",
       [DISTANCE_LIMITS_M.walking[0] / 1000, DISTANCE_LIMITS_M.walking[1] / 1000],
     ],
@@ -90,11 +95,12 @@ it("gives «Draw» the distances of before", () => {
     ["mountain_biking", [7, 18]],
     ["inline_skating", [4, 18]],
     ["snowshoeing", [0.5, 1.5]],
+    ["wheelchair", [1, 3]],
     ["walking", [1, 18]],
     ["gravel_biking", [7, 18]],
   ]);
   expect(ACTIVITIES.map((activity) => distanceStep(activity))).toEqual([
-    1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 1,
+    1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 1, 1,
   ]);
   expect(distanceForSport("7", "paddling", "km")).toBe("2");
   expect(distanceForSport("7", "swimming", "km")).toBe("1");
@@ -114,6 +120,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     inline_skating: 39,
     // `.hiking`: Apple has no type for it (TASK-413).
     snowshoeing: 24,
+    // `.wheelchairWalkPace` (TASK-414).
+    wheelchair: 70,
     walking: 52,
     gravel_biking: 13,
     skiing: 61,
@@ -145,6 +153,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     inline_skating: 60,
     // EXERCISE_TYPE_SNOWSHOEING (TASK-413).
     snowshoeing: 63,
+    // EXERCISE_TYPE_WHEELCHAIR (TASK-414).
+    wheelchair: 82,
     walking: 79,
     gravel_biking: 8,
     skiing: 61,
@@ -166,6 +176,7 @@ it("names the sports, and draws on the phone the ones of before", () => {
     ["mountain_biking", "MTB"],
     ["inline_skating", "Roller"],
     ["snowshoeing", "Snowshoes"],
+    ["wheelchair", "Wheelchair & stroller"],
     ["walking", "Walk"],
     ["gravel_biking", "Gravel"],
   ]);
@@ -196,9 +207,12 @@ it("counts the energy as before", () => {
     ski_touring: "oxygen",
     // Snowshoeing as a hike (TASK-413).
     snowshoeing: "oxygen",
+    // A wheelchair route as a walk until part B (TASK-414).
+    wheelchair: "oxygen",
   });
   expect(profileOf("hiking").energy).toEqual(profileOf("walking").energy);
   expect(profileOf("snowshoeing").energy).toEqual(profileOf("hiking").energy);
+  expect(profileOf("wheelchair").energy).toEqual(profileOf("walking").energy);
   expect(profileOf("running").energy).toEqual({
     kind: "oxygen",
     mlKgPerM: 0.2,
@@ -276,6 +290,7 @@ it("starts a run without a route and labels a MuW route as before", () => {
     "mountain_biking",
     "inline_skating",
     "snowshoeing",
+    "wheelchair",
     "walking",
     "gravel_biking",
     "cycling",
@@ -322,6 +337,7 @@ it("gives the screens what they told apart before (part B3b)", () => {
     mountain_biking: "🚵",
     inline_skating: "🛼",
     snowshoeing: "❄️",
+    wheelchair: "♿",
     walking: "🚶",
     gravel_biking: "🚲",
     skiing: "⛷️",
@@ -339,10 +355,13 @@ it("gives the screens what they told apart before (part B3b)", () => {
     swimming: true,
     // A shape of the catalogue only on the snow (TASK-413).
     snowshoeing: true,
+    // A circle, a heart, a star or a moon only (TASK-414).
+    wheelchair: true,
   });
   expect(tableOf((sport) => sport.noImages)).toEqual({
     paddling: true,
     snowshoeing: true,
+    wheelchair: true,
   });
   expect(tableOf((sport) => sport.drawNote)).toEqual({
     paddling: "On the water, the drawing goes where it fits near the start.",

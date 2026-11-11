@@ -205,6 +205,7 @@ def test_the_migration_adds_ski_touring_to_runs_only_and_keeps_the_rest(
     }
     assert after == expected
     # Every activity of a run is let in once all migrations ran, but the
-    # ones of a later migration: snowshoeing (0068, TASK-413).
-    later = {"snowshoeing"}
+    # ones of a later migration: snowshoeing (0068, TASK-413), a wheelchair
+    # (0069, TASK-414).
+    later = {"snowshoeing", "wheelchair"}
     assert set(get_args(RunActivity)) - later <= set(after["runs_activity_check"])

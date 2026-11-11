@@ -127,6 +127,7 @@ import { shapeAsked } from "./src/route/penUpShapes";
 import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { averagePace } from "./src/route/runTime";
+import { WaitingShape } from "./src/route/ShapeGhost";
 import { shapeName, toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import { useImageOutline } from "./src/route/useImageOutline";
@@ -1332,6 +1333,14 @@ function MuW() {
   // screen.
   const page = pages.indexOf(screen);
 
+  // With the routes of «Draw» on the map to choose from (TASK-442): under
+  // the one chosen, the shape asked for as the search placed it; while they
+  // are drawn, the shape itself over the map.
+  const drawnOnMap =
+    screen === "map" && !reviewing && !theming && !exploring && exploreRun === null;
+  const ghost = drawnOnMap ? (chosen?.placed_outline ?? null) : null;
+  const waitingFor = drawnOnMap && view.status === "waiting" ? view.request : null;
+
   // The card of a shape unlocked, or its notification, asks for «Play»
   // (TASK-296): only while a page is on screen, never over a run; already
   // open, it stays as it is.
@@ -1505,6 +1514,10 @@ function MuW() {
                     ? null
                     : (followedOnFoot ?? move.left?.onFoot ?? null)
             }
+            // The shape asked for, under the route drawn, and over the map
+            // while it is drawn (TASK-442).
+            ghost={ghost}
+            over={waitingFor && <WaitingShape request={waitingFor} />}
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.
             others={

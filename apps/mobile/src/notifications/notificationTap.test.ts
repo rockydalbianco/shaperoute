@@ -15,6 +15,11 @@ test("a shape of the game unlocked opens «Play», whoever the data names (TASK-
   const [, profile] = examples;
   expect(tapTarget({ ...profile, kind: "shape_unlocked" })).toEqual({ kind: "play" });
   expect(tapTarget({ kind: "shape_unlocked" })).toEqual({ kind: "play" });
+  // An edition, a collection completed (TASK-423 part E): «Play» too, not
+  // the runner's own profile the data names.
+  for (const kind of ["edition_up", "collection_done"]) {
+    expect(tapTarget({ ...profile, kind })).toEqual({ kind: "play" });
+  }
 });
 
 test("a monthly challenge's three notifications open its page (TASK-343 part B)", () => {

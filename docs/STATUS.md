@@ -133,6 +133,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `tasks/TASK-414.md`
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
+  **2026-11-11**: B in `main` (#1160) e nella preview; in produzione con
+  l'uscita completa (OTA col sì), poi la prova sul telefono; dopo B2, C, D.
 - **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
   B e C («My image», #1067) in `main`, escono col prossimo OTA di
   produzione; prossime D («Together») ed E (telefono: anche il picker di

@@ -220,6 +220,11 @@ def three(app: TestClient, push: bool = True) -> tuple[Headers, Headers, Headers
 
 
 def test_the_examples_of_shared_types_are_the_contract() -> None:
+    # The whole bodies: every field of now is in the examples.
+    assert set(_load("comment-reply-request.json")) == set(
+        CommentRequestBody.model_fields
+    )
+    assert set(_load("comment-reply.json")) == set(CommentBody.model_fields)
     request = CommentRequestBody.model_validate(_load("comment-reply-request.json"))
     assert request.reply_to is not None
     reply = CommentBody.model_validate(_load("comment-reply.json"))

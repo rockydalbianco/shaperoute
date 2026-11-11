@@ -227,6 +227,7 @@ services/api/shaperoute_api/push.py
 services/api/shaperoute_api/notification_list.py
 services/api/shaperoute_api/app.py                      (a turno: due righe)
 services/api/tests/test_comment_threads.py              (nuovo)
+services/api/tests/test_comments.py                     (due righe: vedi sotto)
 packages/shared-types/src/index.ts                      (a turno)
 packages/shared-types/test/commentThreads.test.ts       (nuovo)
 packages/shared-types/fixtures/comment-reply-request.json    (nuovo)
@@ -245,7 +246,11 @@ Criteri di accettazione (C1):
       «app di prima», blocchi, segnalazione e nascosto, cinque reazioni,
       avvisi (risposta col push, reazione solo campanella).
 - [ ] I test di prima di `comments`, `reactions`, `push`,
-      `notification_list` restano verdi senza modifiche.
+      `notification_list` restano verdi. Una sola modifica, in
+      `test_comments.py`: gli esempi di prima (`comment.json`,
+      `comment-request.json`) non hanno più *tutti* i campi del corpo ma
+      una parte (`<=` al posto di `==`); che gli esempi nuovi li abbiano
+      tutti lo controlla `test_comment_threads.py`.
 - [ ] `ruff` e `black` puliti; `shared-types` typecheck e test verdi.
 - [ ] Dopo il passo sul server (dell'utente): controllo in
       `out/TASK-454/SERVER-C1.md`, senza TestClient.

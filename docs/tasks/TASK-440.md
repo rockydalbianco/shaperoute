@@ -55,3 +55,5 @@ docs/tasks/TASK-440.md
 ## Esito
 
 Fatto in #1137 (2026-11-11): un tocco sulla foto del post nel Feed la apre a schermo intero, «Save» apre il foglio del telefono con «Salva immagine»; nessuna dipendenza nuova né testo nuovo. Esce con l'ottavo OTA, poi la prova sul telefono.
+
+Uscito con l'ottavo OTA in produzione (2026-11-11 14:09Z, da main cd0c8b08): iOS gruppo 0cf2abd4-69dc-44ca-b5ea-429a0155a1f8, Android 41d7bb93-47c7-4236-b80f-3f61fd454220, preview 76f5ccd6-6bf5-45dd-9c70-163a7d6b860b. Resta la prova dell'utente sul telefono: nel Feed, tocco sulla foto di un post, poi «Save» e «Salva immagine».

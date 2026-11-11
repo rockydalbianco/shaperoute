@@ -1,0 +1,110 @@
+# TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
+
+**Stato**: In lavorazione — parte A (A1 + A2) in corso
+**Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
+per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
+numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
+
+## Obiettivo
+
+Il catalogo di «Explore» passa da 572 a circa 2000 disegni: molte più
+parole, parole lunghe a penna alzata, percorsi lunghi in bici, forme in
+canoa e a nuoto. Le liste di parole e i temi li approva l'utente.
+
+## Contesto
+
+L'utente, 2026-11-11: «Lavora tanto anche su parole e amplia il settore
+explore con parole, frasi anche con l'alzata di penna e anche nuove
+immagini, magari anche trend topic. Lavoro anche se più chilometri tipo 50 km
+in bici, sul nuoto, canoa: arriviamo a 2000 immagini».
+
+Da leggere: `catalog/README.md`, `tasks/TASK-419.md` (lo strumento, il
+filtro, il passo «catalogo» sul server), `tasks/TASK-311.md` (la misura
+delle parole), ADR-0347, ADR-0130, ADR-0157 (penna alzata). La proposta
+intera, con le liste: `out/explore-2000/proposta.md` (checkout principale,
+non tracciato).
+
+## Com'è oggi (main `88d0a492`)
+
+- 572 percorsi in 63 città, tutti a piedi, al massimo 21 km; 30 forme e
+  solo 55 parole (CIAO 33, LOVE 8).
+- Il registro di TASK-419 (`out/TASK-419/runs.jsonl`, copiato nel checkout
+  principale) ha 878 disegni che passano il filtro e non sono tenuti: 776
+  di forme che il motore ha o di parole, 102 di 35 contorni mai registrati.
+- Sul filtro del catalogo le parole su una riga passano così, per
+  lunghezza (registro di TASK-419): 2 lettere 4/4, 3 lettere 14/14,
+  4 lettere 95/106, 5 lettere 29/131, 6 lettere 0/56.
+- Il motore scrive solo A–Z (niente spazio, niente cifre), al massimo 8
+  lettere, almeno 3 km a lettera; parole e immagini sull'acqua le rifiuta.
+- Il seme non ha né le camminate fra le lettere (`walks`) né lo sport
+  (`activity`): i percorsi in bici stanno a parte in `catalog/muw_routes`.
+- L'API non ha un filtro delle parole (TASK-311 C e D non sono partite):
+  le liste sono scelte a mano.
+
+## Le parti
+
+| Parte | Cosa | Tocca | Uscita |
+|---|---|---|---|
+| A1 | i 776 già disegnati che passano il filtro | catalogo | passo «catalogo» sul server |
+| A2 | parole corte (2–4 lettere) su una riga nelle 63 città, la migliore dei due stili | `tools/`, catalogo | come A1, stessa PR |
+| B | `walks` e `activity` nel catalogo: parole di 5–8 lettere a penna alzata, bici 30–50 km, canoa e nuoto | API, shared-types, app, `tools/` | server, poi OTA |
+| C | motore: spazio nelle frasi, cifre, forme nuove a tema, i 35 contorni in attesa | `services/route-engine` | **task e ADR a parte**, da chiedere al Coordinatore |
+
+## Parte A — cosa fare
+
+1. `tools/catalog_words.py` (nuovo, usa `catalog_seed.py` senza cambiarlo):
+   le parole per città (quelle sue, quelle della lingua, un turno di una
+   lista comune con stagione e parole del momento), il giro col motore dalle
+   zone foot di `data/cache` senza scaricare niente, e la proposta delle
+   chiavi: le tenute, poi A1 (`spare`), poi A2 (`best_words`).
+2. Il giro: `bash out/TASK-441/run.sh` (un processo, `nice -n 10`,
+   ripartibile; registro `out/TASK-441/runs.jsonl`, log `run.log`). 1326
+   prove.
+3. La pagina di revisione (`tools/catalog_review.py`) all'utente, col sì
+   sulle liste di parole **prima del merge**.
+4. `tools/catalog_kept.json` con le chiavi scelte; `catalog/seed/*.json`
+   riscritti da `catalog_seed.py --write` sui due registri.
+5. «NEAR YOU»: l'API ne dà già al massimo 60 (`MAX_ROUTES`), le più simili
+   prima. Con 130 disegni a Milano le prime sarebbero quasi tutte cerchi e
+   cuori: proposta all'utente, **prima la migliore di ogni forma e parola,
+   poi la seconda…** (`recommended.py` + test, stessa PR).
+6. Prima della PR: tempo d'avvio e memoria dell'API con 1450 e con 2000
+   percorsi (richiesta del Coordinatore), scritti qui sotto.
+
+## Criteri di accettazione (parte A)
+
+- [ ] `pytest tools` verde; `tools/test_catalog_words.py` copre parole,
+      piano, A1, A2 e la proposta senza rete né motore.
+- [ ] Il giro delle parole finito: registro in `out/TASK-441/runs.jsonl`.
+- [ ] Sì dell'utente sulle liste di parole e sull'ordine di «NEAR YOU».
+- [ ] `catalog/seed/*.json` riscritti; `test_featured_catalog` verde.
+- [ ] Avvio e memoria dell'API misurati e scritti qui.
+- [ ] CI verde; numero nuovo dei percorsi detto al Coordinatore per il
+      passo «catalogo».
+
+## File toccati (parte A)
+
+```
+tools/catalog_words.py            (nuovo)
+tools/test_catalog_words.py       (nuovo)
+tools/catalog_kept.json
+catalog/seed/<città>.json
+catalog/README.md
+services/api/shaperoute_api/recommended.py   (l'ordine di «NEAR YOU», col sì)
+services/api/tests/test_recommended.py
+docs/tasks/TASK-441.md            (nuovo)
+```
+
+`tools/catalog_seed.py` e `services/route-engine/` non si toccano.
+
+## Scelte dell'utente
+
+- (in attesa) le liste di parole di `out/explore-2000/proposta.md`;
+  l'ordine misto di «NEAR YOU».
+
+## Dove siamo
+
+*2026-11-11*: numeri dal Coordinatore (un task, una PR per parte; C a
+parte). Strumento e 18 test scritti; giro delle parole lanciato alle 14:40
+dal worktree `.claude/worktrees/TASK-441-a` (il Coordinatore può chiedere
+«ferma il giro» per un bench: riparte con `bash out/TASK-441/run.sh`).

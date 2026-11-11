@@ -1,6 +1,7 @@
 # TASK-442 — Sagoma fantasma e attesa animata
 
-**Stato**: In corso · 2026-11-11
+**Stato**: Done · 2026-11-11 · in `main` con #1143 (`ee0ca7ce`); esce col
+prossimo OTA di produzione, del Coordinatore, col sì dell'utente
 **Fase**: 5 · **Branch**: `feat/TASK-442-shape-ghost`
 **Dipende da**: TASK-347 A (`placed_outline` nel contratto), TASK-361
 (l'anteprima di Crea)
@@ -61,7 +62,11 @@ stessa sagoma si muove piano sopra la mappa.
 - [x] Screenshot prima e dopo dell'attesa e del risultato in
       `out/TASK-442/` (cuore 5 km da 46.0679, 11.1211): `before-*.png`,
       `after-*.png`, il foglio `prima-dopo.png`.
-- [ ] Sì dell'utente su ciò che si vede, prima di «#NNN pronta».
+- [x] Sì dell'utente su ciò che si vede, prima di «#1143 pronta»: l'11
+      novembre 2026, sugli screenshot prima/dopo (`prima-dopo.png` e la
+      variante B), alla domanda «Ti va bene come si vedono la sagoma
+      nell'attesa e quella tratteggiata sotto il percorso?», parole sue:
+      «Sì, va bene».
 
 ## File toccati
 
@@ -78,6 +83,7 @@ stessa sagoma si muove piano sopra la mappa.
 - `apps/mobile/src/route/waitingOutline.ts` (nuovo)
 - `apps/mobile/src/route/waitingOutline.test.ts` (nuovo)
 - `docs/tasks/TASK-442.md`
+- `docs/UI.md`, `docs/archive/COMPLETATI.md` (PR di soli documenti)
 
 ## Fuori scope
 
@@ -98,3 +104,20 @@ stessa sagoma si muove piano sopra la mappa.
   che si vede, poi «#NNN pronta» al Coordinatore, che mergia lui; dopo il
   merge la PR di soli documenti (STATUS → COMPLETATI, stato `Done`) e
   l'OTA, col sì dell'utente, dal Coordinatore.
+- 2026-11-11: sì dell'utente, «#1143 pronta»; main unito nel ramo su
+  richiesta del Coordinatore (le modifiche a `tokens.ts` di #1132 e di
+  questa non erano mai passate insieme dalla CI), poi il merge suo.
+
+## Esito
+
+In `main` con #1143 (`ee0ca7ce`, 2026-11-11): nel risultato di «Draw» la
+forma ideale è tratteggiata sotto il percorso, una per variante; nell'attesa
+la sagoma respira al centro della mappa con un punto giallo che la percorre.
+Nessun cambio al contratto, nessun testo nuovo, solo JS/TS. `UI.md`
+aggiornato («Più percorsi fra cui scegliere» e l'attesa).
+
+Resta: l'OTA di produzione (Coordinatore, col sì dell'utente; l'impronta iOS
+la misura lui su copia pulita, attesa `6f8bba4c`) e la prova sul telefono.
+TASK-443 (inquadratura) parte dagli stessi file della mappa: `MapView` ha
+già le prop `ghost` e `over`; la sagoma può uscire di poco dai bordi del
+percorso, e l'inquadratura oggi guarda solo il percorso.

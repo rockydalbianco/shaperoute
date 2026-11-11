@@ -485,6 +485,21 @@ class RouteJobBody(BaseModel):
     error: ErrorDetail | None = Field(description="Only when status is failed.")
 
 
+class RouteJobWithFirstBody(RouteJobBody):
+    """A route job read with `?first=1` (TASK-435, ADR-0361): the RouteJob
+    of packages/shared-types with its `first`. Who does not ask gets a
+    RouteJobBody, as before: an app that does not know the field is sent
+    no route more at each read."""
+
+    first: RouteResultBody | None = Field(
+        description=(
+            "Only while the job is computing: the route from the user's own "
+            "start, with no alternatives, as soon as it is planned and the "
+            "nearby starts are not yet. The whole answer is `result`, as ever."
+        )
+    )
+
+
 class GpxRequestBody(BaseModel):
     """What the app sends to POST /gpx: GpxRequest in packages/shared-types."""
 

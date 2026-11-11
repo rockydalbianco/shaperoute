@@ -120,6 +120,12 @@ class Job:
     # alternatives (images.placed_outlines, TASK-347): the API's body says
     # it, the engine's result does not. Empty from the archive.
     placed: list[list[list[LatLon]]] = field(default_factory=list)
+    # While the job computes: the route from the user's own start, with its
+    # directions, as soon as it is planned and the nearby starts are not
+    # yet (TASK-435, ADR-0361), and where the engine placed its drawing.
+    # None again once the job has its answer.
+    first: RouteResult | None = None
+    first_placed: list[list[list[LatLon]]] = field(default_factory=list)
 
 
 # Told how a job ended, cancelled ones too (neither result nor error when
@@ -228,9 +234,21 @@ class RouteJobs:
             else:
                 # The zones of the network of the request's activity (TASK-190).
                 graphs = source_for(self._source, activity)
-                source = _Reporting(graphs, report, wanted, times, self._clock)
                 names = graphs if isinstance(graphs, KnowsNames) else None
                 named = None if names is None else names.named_roads
+
+                def first(plan: Plan) -> None:
+                    # Alone: its alternatives come with the whole answer.
+                    alone = replace(plan, alternatives=[])
+                    self._show_first(
+                        job,
+                        with_directions(alone, source.graphs, named),
+                        placed_outlines(alone, job.request),
+                    )
+
+                source = _Reporting(
+                    graphs, report, wanted, times, self._clock, first=first
+                )
                 # A route kept within a few metres of the start, reached
                 # along the roads (ADR-0256): the zone is loaded, the
                 # engine does not run.
@@ -358,7 +376,19 @@ class RouteJobs:
             job.placed = placed or []
             if status in ("done", "failed"):
                 job.finished_at = self._clock()
+                # The answer takes the first route's place.
+                job.first, job.first_placed = None, []
             return True
+
+    def _show_first(
+        self, job: Job, result: RouteResult, placed: list[list[list[LatLon]]]
+    ) -> None:
+        """The route from the user's own start, for the app to show while
+        the job goes on computing (TASK-435); not on a job cancelled or
+        already answered."""
+        with self._lock:
+            if job.job_id in self._jobs and job.finished_at is None:
+                job.first, job.first_placed = result, placed
 
     def _wanted(self, job: Job) -> bool:
         with self._lock:
@@ -381,7 +411,9 @@ class _Reporting:
     shape does not fit near the start it loads a larger one and computes
     again (ADR-0040), and a download then shows between two computings.
     It also keeps the job's times: each load's, and how the nearby starts
-    went (job_times.NotesNearby)."""
+    went (job_times.NotesNearby). And it passes on to `first` the plan from
+    the user's own start, as soon as the planner has it
+    (job_times.ShowsFirst, TASK-435)."""
 
     def __init__(
         self,
@@ -390,16 +422,29 @@ class _Reporting:
         wanted: Callable[[], bool],
         times: JobTimes | None = None,
         clock: Callable[[], float] = time.monotonic,
+        first: Callable[[Plan], None] | None = None,
     ):
         self._source = source
         self._report = report
         self._wanted = wanted
         self._times = JobTimes() if times is None else times
         self._clock = clock
+        self._first = first
         self.graphs: list[Graph] = []  # as loaded, for the directions
 
     def note_nearby(self, nearby: NearbyPlan) -> None:
         self._times.nearby = nearby
+
+    def first_plan(self, plan: Plan) -> None:
+        """The start's own plan, while the nearby starts are still planned:
+        to whoever shows it, if the job is still wanted. Showing it is a
+        courtesy: if it fails, the job goes on to its whole answer."""
+        if self._first is None or not self._wanted():
+            return
+        try:
+            self._first(plan)
+        except Exception:
+            log.exception("the first route could not be shown")
 
     def load(self, bbox: BBox) -> Graph:
         downloading = isinstance(self._source, KnowsDownloads) and (

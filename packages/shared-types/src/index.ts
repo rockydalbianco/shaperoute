@@ -528,6 +528,22 @@ export interface RouteJob {
   error: ApiError["error"] | null;
 }
 
+/**
+ * The answer to GET /route-jobs/{job_id}?first=1 (TASK-435, ADR-0361): the
+ * RouteJob and, while it computes, its first route. Without `?first=1`, and
+ * from an API before it, the answer is a RouteJob: `first` is missing, and
+ * who reads must take it as none.
+ */
+export interface RouteJobWithFirst extends RouteJob {
+  /**
+   * The route from the user's own start, with no alternatives, as soon as
+   * it is planned and the nearby starts are not yet; null before that, when
+   * nothing is waited for, and once the job has its answer. The whole
+   * answer is `result`, as ever.
+   */
+  first: RouteResult | null;
+}
+
 /** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */
 export interface GpxRequest {
   request: RouteRequest | ImageRouteRequest;

@@ -15,7 +15,7 @@ import binascii
 import io
 import logging
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from typing import Any, cast
 
@@ -36,7 +36,7 @@ from route_engine.models import (
     check_outline_drawn,
     check_start,
 )
-from route_engine.nearby_starts import ShapeJob, plan_nearby
+from route_engine.nearby_starts import NearbyPlan, ShapeJob, plan_nearby
 from route_engine.optimizer import (
     SHAPE_POINTS,
     GraphLoader,
@@ -51,7 +51,7 @@ from route_engine.walking import engine_activity
 from route_engine.water import WaterSource
 from route_engine.words import Word
 
-from shaperoute_api.job_times import noted
+from shaperoute_api.job_times import first_of, noted
 from shaperoute_api.paddling import plan_swim, plan_water
 from shaperoute_api.schemas import (
     MAX_IMAGE_BYTES,
@@ -330,14 +330,32 @@ def plan_request(
     roads = cast(GraphLoader, source)
     if placement_of(request) == "anchored":
         return plan_anchored(request, roads)
-    # The job's source keeps how the nearby starts went, for its times.
+    # The job's source keeps how the nearby starts went, for its times, and
+    # shows the start's own plan as soon as it is there (TASK-435).
+    first = first_of(source)
     if isinstance(request, ImageRequest):
-        plan = noted(source, plan_nearby(image_job(request), request.start, roads))
+        # Shown as the whole answer will be: with no name.
+        unnamed = None if first is None else (lambda plan: first(_unnamed(plan)))
+        found = _plan_nearby(image_job(request), request.start, roads, unnamed)
+        plan = noted(source, found)
         return replace(
             _unnamed(plan), alternatives=[_unnamed(p) for p in plan.alternatives]
         )
     job = ShapeJob.of_request(request)
-    return noted(source, plan_nearby(job, request.start, roads))
+    return noted(source, _plan_nearby(job, request.start, roads, first))
+
+
+def _plan_nearby(
+    job: ShapeJob,
+    start: LatLon,
+    roads: GraphLoader,
+    first: Callable[[Plan], None] | None,
+) -> NearbyPlan:
+    """`plan_nearby`, telling `first` the start's own plan as soon as it is
+    there (TASK-435, ADR-0361); with nobody to tell, called as before."""
+    if first is None:
+        return plan_nearby(job, start, roads)
+    return plan_nearby(job, start, roads, on_first=first)
 
 
 def plan_drawing_on_water(request: ImageRequest, water: WaterSource) -> Plan:

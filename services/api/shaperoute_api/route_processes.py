@@ -18,7 +18,9 @@ them). Because the zones are the worker's, so are a job's directions: they
 come back already on the plan and on each alternative, and the job's
 thread, which loaded no graph, leaves them as they are (jobs.with_choices).
 
-What crosses from the worker: the job's status (a zone to download), its
+What crosses from the worker: the job's status (a zone to download), the
+plan from the user's own start as soon as it is there, with its directions
+(TASK-435: the job shows it while the nearby starts are still planned), its
 times, and the plan, an error or "dropped". What crosses to it: the
 request, and a cancel when the app forgot the job meanwhile, which the
 worker checks where the job's thread checked it, after each load.
@@ -164,10 +166,18 @@ class RouteProcesses:
         report: Callable[[Any], object] | None = getattr(ground, "_report", None)
         wanted: Callable[[], bool] | None = getattr(ground, "_wanted", None)
         times: JobTimes | None = getattr(ground, "_times", None)
+        # The job shows the start's own plan as soon as it is there.
+        first: Callable[[Plan], None] | None = getattr(ground, "first_plan", None)
         worker = self._take()
         try:
             answer = worker.ask(
-                self._next_seq(), request, directions, report, wanted, self._max_job_s
+                self._next_seq(),
+                request,
+                directions,
+                report,
+                wanted,
+                self._max_job_s,
+                first,
             )
         except BaseException:
             self._drop(worker)
@@ -270,9 +280,12 @@ class _Worker:
         report: Callable[[Any], object] | None,
         wanted: Callable[[], bool] | None,
         max_job_s: float,
+        first: Callable[[Plan], None] | None = None,
     ) -> tuple[str, Any, JobTimes | None]:
         """The worker's answer to `request`: ("done", plan, times),
-        ("dropped", None, times) or ("failed", pickled error, times)."""
+        ("dropped", None, times) or ("failed", pickled error, times).
+        Before it, `report` is told each status and `first` the plan from
+        the user's own start, if the worker sends one."""
         self.conn.send(("plan", seq, request, directions))
         began = time.monotonic()
         cancelled = False
@@ -289,6 +302,10 @@ class _Worker:
                 if kind == "status":
                     if report is not None:
                         report(message[2])
+                    continue
+                if kind == "first":
+                    if first is not None:
+                        first(message[2])
                     continue
                 return kind, message[2], message[3]
             if not self.process.is_alive():
@@ -402,10 +419,19 @@ def _plan(
             plan = planner(request, snow)
         else:
             roads = source_for(graphs, activity)
-            ground = _Reporting(roads, report, wanted, times)
+            names = roads.named_roads if isinstance(roads, KnowsNames) else None
+
+            def first(plan: Plan) -> None:
+                # Alone, with its directions when the job wants them: its
+                # alternatives come with the whole answer.
+                alone = replace(plan, alternatives=[])
+                if directions:
+                    alone = _with_directions(alone, ground.graphs, names)
+                conn.send(("first", seq, alone))
+
+            ground = _Reporting(roads, report, wanted, times, first=first)
             plan = planner(request, ground)
             if directions:
-                names = roads.named_roads if isinstance(roads, KnowsNames) else None
                 plan = _with_directions(plan, ground.graphs, names)
     except _Dropped:
         return stop, ("dropped", seq, None, times)

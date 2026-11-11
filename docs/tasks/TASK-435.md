@@ -407,6 +407,9 @@ Trento; strisce e video in `out/TASK-435/`: `TASK-435-prima.jpg`,
   partenza e la riga non si è vista: primo percorso e schede nello stesso
   secondo.
 
+**Il sì dell'utente al prima/dopo, 2026-11-11**: «Sì, va bene», davanti
+alle due strisce del simulatore.
+
 **Non ancora provato**: l'app su un telefono vero.
 
 **Come sono fatte le parti, rispetto al piano.**

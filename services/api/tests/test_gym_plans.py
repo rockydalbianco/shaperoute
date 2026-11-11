@@ -30,6 +30,7 @@ from shaperoute_api.gym_plans import (
     GymPlanItemBody,
     GymPlanRequestBody,
     GymPlanRunBody,
+    GymPlanRunnerBody,
     GymPlansBody,
     GymPlanSessionBody,
     GymProgramBody,
@@ -423,3 +424,34 @@ def test_a_run_day_is_done_by_a_run(
     # Monday the 21st (the gym), Thursday the 24th (intervals) and Saturday
     # the 26th (long run) without; Tuesday the 22nd run.
     assert [one["day"] for one in answer["skipped"]] == [21, 24, 26]
+
+
+@pytest.mark.parametrize(
+    "runner",
+    [
+        # A pace of 3:00 to 15:00 a kilometre.
+        {"pace_10k_s": 170, "long_m": 12000},
+        {"pace_10k_s": 901, "long_m": 12000},
+        # The long run: a distance or a time, not both, not neither.
+        {"pace_10k_s": 330},
+        {"pace_10k_s": 330, "long_m": 12000, "long_s": 4500},
+        {"pace_10k_s": 330, "long_m": 500},
+    ],
+)
+def test_a_runner_has_a_pace_and_a_long_run(runner: dict[str, Any]) -> None:
+    with pytest.raises(ValueError):
+        GymPlanRunnerBody.model_validate(runner)
+
+
+def test_a_program_keeps_its_runner(
+    client: TestClient,  # noqa: F811
+) -> None:
+    me = signed_up(client)
+    runner = {"pace_10k_s": 330, "long_m": 12000}
+    program = {**LIFT_AND_RUN["program"], "runner": runner}
+    made = put(client, me, LIFT_AND_RUN["key"], request(LIFT_AND_RUN, program=program))
+    assert made.status_code == 201, made.text
+    assert made.json()["program"]["runner"] == runner
+    # Without it, as before: absent, not null.
+    plain = put(client, me, MUSCLE["key"], request(MUSCLE)).json()
+    assert "runner" not in plain["program"]

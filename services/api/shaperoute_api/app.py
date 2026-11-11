@@ -425,6 +425,7 @@ def create_app(
     # What the members leave under a drawing with one tap, the super like
     # with a comment (TASK-119); they need a token.
     install_reactions(app)
+    # What they leave on a comment, or on a reply (TASK-454); a token too.
     install_comment_reactions(app)
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.

@@ -564,8 +564,8 @@ della stagione e di «Pista senza nome» approvati il 2026-11-10).
    cambia nulla.
 
 **Conseguenze**: solo JavaScript, impronta iOS `6f8bba4c` invariata
-(misurata l'11-11 su tutte e due le PR); il server non cambia. Non sono nel
-settimo OTA: escono con l'ottavo, col sì dell'utente.
+(misurata l'11-11 su tutte e due le PR); il server non cambia. In
+produzione con l'ottavo OTA dell'11-11 (da `main` `cd0c8b08`).
 
 ## ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi
 

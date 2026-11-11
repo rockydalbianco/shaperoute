@@ -1,8 +1,8 @@
 # TASK-429 — La modalità sci: scelto lo sci, MuW diventa un'app per lo sci
 
 **Stato**: In lavorazione · 0, A, B1, C1, B2 e C2 in `main` (#1093, #1108,
-#1114, #1129, #1131); C1 sul server dall'11-11; B2 e C2 escono con l'ottavo
-OTA, col sì dell'utente, poi la prova sul telefono; resta la parte E
+#1114, #1129, #1131); C1 sul server dall'11-11; B2 e C2 in produzione con
+l'ottavo OTA dell'11-11; resta la prova sul telefono e la parte E
 **Fase**: 5 · **Branch**: `docs/TASK-429-…` (documenti); il codice
 `feat/TASK-429-a-ski-mode`, `feat/TASK-429-b-ski-day`,
 `feat/TASK-429-c1-ski-day-parts`, `feat/TASK-429-b2-ski-parts`,
@@ -427,10 +427,14 @@ invariata.
 «Giornate», la giornata salvata con «Summary · Map · Runs», il post di sci
 sulla mappa a colori coi numeri. Impronta iOS `6f8bba4c` invariata; un
 commit in più all'apertura, solo Prettier (`src/api/skiSeason.test.ts`).
-B2 e C2 non sono nel settimo OTA: escono con l'ottavo, che pubblica il
-Coordinatore col sì dell'utente (ADR-0357, precisazione B2/C2). **Resta la
-prova sul telefono** dopo l'OTA: una giornata di sci salvata coi suoi
-tratti, la stagione in «Giornate», il post di sci sulla mappa.
+
+**B2 e C2 in produzione con l'ottavo OTA l'11-11** (14:09Z, da `main`
+`cd0c8b08`, pubblicato dal Coordinatore; ADR-0357, precisazione B2/C2):
+iOS gruppo `0cf2abd4-69dc-44ca-b5ea-429a0155a1f8`, Android
+`41d7bb93-47c7-4236-b80f-3f61fd454220`, preview
+`76f5ccd6-6bf5-45dd-9c70-163a7d6b860b`. **Resta la prova sul telefono
+dell'utente**: una giornata di sci salvata coi suoi tratti, la stagione in
+«Giornate», il post di sci sulla mappa.
 
 Parte E: si elenca prima.
 

@@ -151,8 +151,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1, B2, C2 in
   `main` (#1093, #1108, #1114, #1129, #1131); A e B1 fuori con gli OTA 5 e
   6, C1 sul server dal passo 7 dell'11-11. B2 (i tratti a «Salva») e C2
-  (stagione e giornata salvata) escono con l'ottavo OTA, col sì dell'utente.
-  Resta la parte E (lista prima). File: — · `tasks/TASK-429.md`
+  (stagione e giornata salvata) in produzione con l'ottavo OTA dell'11-11.
+  Restano la prova sul telefono e la parte E (lista prima). File: — · `tasks/TASK-429.md`
 - **TASK-431 — «Compass» più bella** (ADR-0359) · in `main` (#1081): la
   freccia «B» con anello e cono azzurri che punta dove punta la mappa, le
   tre schede coi disegni, la punta rossa del nord. Restano l'OTA di

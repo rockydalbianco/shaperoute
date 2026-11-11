@@ -1,8 +1,9 @@
 # TASK-433 — Le schede della palestra guidate, con le settimane che cambiano
 
-**Stato**: In lavorazione · 2026-11-11 · A (#1095) sul server e nell'OTA 5,
-B (#1103) nell'OTA 6, C1 (#1117) sul server, C2 (#1115) nel settimo OTA;
-resta la prova sul telefono dell'utente
+**Stato**: Done · 2026-11-11 · A (#1095), B (#1103), C1 (#1117) e C2 (#1115,
+#1133) in `main`, sul server e negli OTA 5–8; provato sul telefono
+dall'utente. Esito: schede guidate, settimane che cambiano, spiegazione e
+giorni di corsa in produzione
 **Fase**: 5 · **Branch**: `feat/TASK-433-gym-guided-plans`
 **Dipende da**: TASK-411 (le schede, parte C: tabella `gym_plans`, 0058)
 **ADR**: ADR-0360 (proposto) · numeri dal Coordinatore il 2026-11-10
@@ -128,8 +129,9 @@ libero al merge),
       «No» di «And running?» che scelto aveva il bordo azzurro delle corse:
       ora neutro (#1133, in `main` cd0c8b08, uscito con l'ottavo OTA). Schermate in
       `out/TASK-433/simulator/` del checkout principale.
-- [ ] Prova sul telefono dell'utente: il settimo OTA provato il 2026-11-11
-      (prova generale, sotto); manca il «No» neutro dell'ottavo.
+- [x] Prova sul telefono dell'utente: il settimo OTA il 2026-11-11 (prova
+      generale, sotto), il «No» neutro dell'ottavo confermato lo stesso giorno
+      («Sì, va bene»).
 
 ## Parte B — «Come funzionano le schede» toccando Palestra
 
@@ -259,5 +261,5 @@ Ottavo OTA in produzione il 2026-11-11 alle 14:09Z da `main` cd0c8b08, con
 la #1133 (il «No» neutro di «And running?»): iOS
 `0cf2abd4-69dc-44ca-b5ea-429a0155a1f8`, Android
 `41d7bb93-47c7-4236-b80f-3f61fd454220`, preview
-`76f5ccd6-6bf5-45dd-9c70-163a7d6b860b`. Resta la prova sul telefono di
-questo ritocco; poi TASK-433 si chiude.
+`76f5ccd6-6bf5-45dd-9c70-163a7d6b860b`. L'utente ha confermato il «No»
+neutro sul telefono («Sì, va bene»): TASK-433 è chiuso.

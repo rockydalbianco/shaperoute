@@ -228,3 +228,6 @@ pronta in «Settings». Impronta del motore uguale a `main`
 `6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`, come `main` e la produzione. Lo sport si accende col primo OTA di
 produzione dopo il merge: quell'OTA vuole il sì dell'utente anche per lo
 scialpinismo.
+
+Gli screenshot dal simulatore (pannello in gita e fine gita, due caselle
+per riga) visti dall'utente il 2026-11-11: «Sì, va bene».

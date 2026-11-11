@@ -133,6 +133,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `tasks/TASK-414.md`
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
+  **2026-11-11**: B in `main` (#1160) e nella preview; in produzione con
+  l'uscita completa (OTA col sì), poi la prova sul telefono; dopo B2, C, D.
 - **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
   B e C («My image», #1067) in `main`, escono col prossimo OTA di
   produzione; prossime D («Together») ed E (telefono: anche il picker di
@@ -142,14 +144,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (#1123, calorie in rosso) in `main`. Restano: il server di C2b (passo 7)
   e l'OTA di C2 e C3, col sì dell'utente; la prova sul telefono.
   File: — · `tasks/TASK-424.md`
-- **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
-  privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
-  collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
-  in produzione con l'OTA 4 del 2026-11-10; correzioni di «Play» (#1113)
-  provate sul telefono con l'OTA 7. E1 sul server (passo 6, 0067); E2a
-  (#1132) ed E2b (#1144, profilo e privacy) in `main`, escono col nono OTA;
-  poi la copia della privacy sul sito e la prova sul telefono, col sì
-  dell'utente. File: — · `tasks/TASK-423.md`
 - **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1, B2, C2 in
   `main` (#1093, #1108, #1114, #1129, #1131); A e B1 fuori con gli OTA 5 e
   6, C1 sul server dal passo 7 dell'11-11. B2 (i tratti a «Salva») e C2
@@ -186,10 +180,15 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
   tornano nella B a penna alzata; il server aspetta la correzione. Poi B
   (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
+- **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
+  R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
+  (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
+  R2 (app, col turno), R3 (`site/live/`). Il pianificatore resta Proposto.
+  File: — · `tasks/TASK-305.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
-la figura, 305 parapendio, 336 video nei post, 341 badge, 345 calorie e
+la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e
 battito nel Feed, 373 sci alpino, 375 «Record only».
 
 ## Bloccato

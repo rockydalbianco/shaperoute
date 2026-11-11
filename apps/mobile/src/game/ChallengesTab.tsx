@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -22,6 +21,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { useUnits } from "../units/useUnits";
 import {
   clearRequestedChallenge,
@@ -33,6 +33,7 @@ import { MonthChallengeRow } from "./MonthChallengeRow";
 import { PersonalCard } from "./PersonalCard";
 import { challengeName, medalName, periodLeftText, periodText } from "./personalText";
 import { shapeNameIn } from "./ShapeCard";
+import { SlideIn } from "./SlideIn";
 import { StreakCard } from "./StreakCard";
 import { TeamView } from "./TeamView";
 import { keepChallenge } from "./useChallenge";
@@ -141,14 +142,14 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
 
   if (teams.shown.status === "off") {
     return (
-      <Pressable
+      <Tap
         style={styles.notice}
         onPress={onSignIn}
         accessibilityRole="button"
         testID="challenges-sign-in"
       >
         <Text style={styles.noticeText}>{t("Sign in to play with a team.")}</Text>
-      </Pressable>
+      </Tap>
     );
   }
   if (open !== null) {
@@ -158,24 +159,27 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
       open.team ??
       null;
     return (
-      <TeamView
-        key={`${open.teamId ?? ""}-${open.challengeId ?? ""}`}
-        team={team}
-        challengeId={open.challengeId}
-        me={me}
-        catalog={catalog}
-        units={units}
-        language={language}
-        onBack={() => {
-          setOpen(null);
-          teams.reread();
-        }}
-        onRemove={teams.remove}
-        onChanged={teams.reread}
-        fetchFn={fetchFn}
-        apiKey={apiKey}
-        now={now}
-      />
+      // A team opened slides in (TASK-423, the motion of «Play»).
+      <SlideIn key={`${open.teamId ?? ""}-${open.challengeId ?? ""}`} from="right">
+        <TeamView
+          key={`${open.teamId ?? ""}-${open.challengeId ?? ""}`}
+          team={team}
+          challengeId={open.challengeId}
+          me={me}
+          catalog={catalog}
+          units={units}
+          language={language}
+          onBack={() => {
+            setOpen(null);
+            teams.reread();
+          }}
+          onRemove={teams.remove}
+          onChanged={teams.reread}
+          fetchFn={fetchFn}
+          apiKey={apiKey}
+          now={now}
+        />
+      </SlideIn>
     );
   }
   const nowMs = (now ?? Date.now)();
@@ -204,7 +208,7 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
             },
           )}`;
     return (
-      <Pressable
+      <Tap
         key={team.id}
         style={styles.team}
         onPress={() => show(team)}
@@ -225,7 +229,7 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
         <Text style={styles.teamLine} numberOfLines={1}>
           {summary}
         </Text>
-      </Pressable>
+      </Tap>
     );
   }
 
@@ -243,14 +247,14 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
       {personal.shown.status === "failed" && (
         <View style={styles.notice}>
           <Text style={styles.noticeText}>{personal.shown.problem}</Text>
-          <Pressable
+          <Tap
             style={styles.button}
             onPress={personal.refresh}
             accessibilityRole="button"
             testID="personal-retry"
           >
             <Text style={styles.buttonText}>{t("Try again")}</Text>
-          </Pressable>
+          </Tap>
         </View>
       )}
       {mine !== null && (
@@ -310,14 +314,14 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
       {teams.shown.status === "failed" && (
         <View style={styles.notice}>
           <Text style={styles.noticeText}>{teams.shown.problem}</Text>
-          <Pressable
+          <Tap
             style={styles.button}
             onPress={teams.refresh}
             accessibilityRole="button"
             testID="challenges-retry"
           >
             <Text style={styles.buttonText}>{t("Try again")}</Text>
-          </Pressable>
+          </Tap>
         </View>
       )}
       {teams.shown.status === "ready" && list.length === 0 && (
@@ -345,7 +349,7 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
               onSubmitEditing={() => void create()}
               testID="team-name"
             />
-            <Pressable
+            <Tap
               style={[styles.button, (creating || name.trim() === "") && styles.off]}
               onPress={() => void create()}
               disabled={creating || name.trim() === ""}
@@ -353,7 +357,7 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
               testID="team-create"
             >
               <Text style={styles.buttonText}>{t("Create")}</Text>
-            </Pressable>
+            </Tap>
           </View>
           {createProblem !== null && (
             <Text
@@ -383,7 +387,7 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
               onSubmitEditing={() => void join()}
               testID="team-code-field"
             />
-            <Pressable
+            <Tap
               style={[styles.button, (joining || code.trim() === "") && styles.off]}
               onPress={() => void join()}
               disabled={joining || code.trim() === ""}
@@ -391,7 +395,7 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
               testID="team-join"
             >
               <Text style={styles.buttonText}>{t("Join")}</Text>
-            </Pressable>
+            </Tap>
           </View>
           {joinProblem !== null && (
             <Text
@@ -439,7 +443,7 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
             : shapeNameIn(shape, language);
         const line = `${shapeName} · ${done ? t("Shape completed") : t("Time is up")}`;
         return (
-          <Pressable
+          <Tap
             key={`ended-${team.id}`}
             style={styles.team}
             onPress={() => show(team)}
@@ -453,7 +457,7 @@ export function ChallengesTab({ active, onSignIn, fetchFn, apiKey, now }: Props)
             <Text style={styles.teamLine} numberOfLines={1}>
               {line}
             </Text>
-          </Pressable>
+          </Tap>
         );
       })}
       {contest !== null && (

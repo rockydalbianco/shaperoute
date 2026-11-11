@@ -1,15 +1,16 @@
 # TASK-305 — Parapendio: proposta e prova di fattibilità
 
-**Stato**: Proposto · solo documenti e misure (questa PR). L'utente il
-2026-10-26: «è una bella idea», senza navigatore; le parti partono dopo le
-tre condizioni dello studio (licenza degli spazi aerei, decolli scelti,
-parere legale)
-**Fase**: 5 · **Branch**: `docs/TASK-305-paragliding-proposal` (documenti);
-le parti, se si fanno, `feat/TASK-305-a1-air-cone` e così via
-**Dipende da**: nulla per lo studio. Le parti dipendono da scelte
-dell'utente (in fondo) e da due licenze da sciogliere (spazi aerei,
-decolli).
-**ADR**: ADR-0265 (proposto)
+**Stato**: In lavorazione · parti R (la registrazione in volo, ADR-0375):
+PR di documenti, poi R1 → R2 → R3. Le parti del pianificatore (A1…F)
+restano Proposte: partono dopo le tre condizioni dello studio (licenza
+degli spazi aerei, decolli scelti, parere legale)
+**Fase**: 5 · **Branch**: `docs/TASK-305-paragliding-proposal` (studio),
+`docs/TASK-305-r-recording` (le parti R); il codice
+`feat/TASK-305-r1-paragliding-api` e così via
+**Dipende da**: nulla per le parti R. Le parti del pianificatore dipendono
+da scelte dell'utente (in fondo) e da due licenze da sciogliere (spazi
+aerei, decolli).
+**ADR**: ADR-0265 (proposto, il pianificatore), ADR-0375 (le parti R)
 
 ## Obiettivo
 
@@ -77,6 +78,23 @@ traiettorie è un costo a parte; se non si può fare bene, lo studio dice
   Le traduzioni nelle altre lingue si fanno con la parte D1 e si fanno
   approvare all'utente.
 
+## Scelte dell'utente (2026-11-11)
+
+- **La registrazione prima del pianificatore**: «per il parapendio continua
+  lo sviluppo ma lavora sulla registrazione: un mio amico fa la gara e vuole
+  condividerci la posizione, la velocità, i battiti, le calorie in tempo
+  reale più tracciare il tutto». Il parapendio si accende come sport
+  «Record only» (TASK-375, ADR-0319), come lo sci e lo scialpinismo: si
+  registra il volo, si condivide dal vivo col link di TASK-424, si salva e
+  si pubblica. Le parti del pianificatore restano dove sono. Non è una
+  guida in volo: l'app registra e mostra numeri, non dice dove andare
+  (la scelta del 2026-10-26 resta).
+- **I numeri del volo sul link**: «Sì, numeri del volo». Chi guarda il
+  link vede, oltre a posizione, traccia, distanza, tempo, battito e
+  calorie, anche **la quota, il variometro (m/s), la velocità del momento,
+  la quota massima e il tempo di volo**. Servono un passo sul server e la
+  copia del sito, ognuno col sì dell'utente.
+
 ## Il punto, in breve
 
 - **Il modello**: niente strade, il cono di planata. Da ogni punto della
@@ -121,6 +139,80 @@ traiettorie è un costo a parte; se non si può fare bene, lo studio dice
   fonte di spazi aerei con licenza prima del codice; un elenco di decolli
   scelti a mano dove la forma è ≥ 1,5 km; un parere legale e una prova con
   un pilota e il club prima di pubblicare.
+
+## Le parti R — la registrazione in volo (ADR-0375)
+
+Ordine dal Coordinatore (2026-11-11): questa PR di documenti, poi R1 → R2
+→ R3. Ogni parte è un branch e una PR; la lista dei file va al
+Coordinatore prima di ogni PR; il merge è suo («#NNNN pronta»). Server,
+OTA e sito solo col sì dell'utente, dato al Coordinatore. Il 2026-11-11
+l'utente ha deciso: nessun OTA di produzione per due giorni, poi
+un'uscita completa.
+
+### R1 — Contratto, API, migrazione
+
+Come TASK-415 A (`23a3c23f`, lo scialpinismo):
+
+1. `paragliding` come attività registrata senza forma: un file nuovo in
+   `packages/shared-types/src/sports/` e in
+   `services/api/shaperoute_api/sports/` (`record_only=True`; Strava non
+   ha il parapendio: `strava_type="Workout"`), le fixture
+   `run-activities.json` e `reads.json`, `reads.py` (un'app vecchia non
+   riceve i voli che non sa leggere).
+2. La migrazione che allarga `runs_activity_check` leggendolo, come 0044:
+   numero provvisorio **0070** (0069 è di TASK-463); il numero vero è il
+   primo libero al merge, e la seconda delle due riparte dallo stato
+   lasciato dalla prima.
+3. `LiveStatsBody` (`live_shares.py`, `extra="forbid"`) e `LiveStats` di
+   `liveShare.ts` prendono quattro campi facoltativi: `alt_m` (quota
+   adesso, m, −500…9000), `max_alt_m`, `vario_mps` (m/s, −30…30, un
+   decimale) e `speed_mps` (velocità adesso, 0…100). Un'app vecchia non li
+   manda; una pagina vecchia non li legge.
+4. **Il server prima dell'app e della pagina**: con `extra="forbid"` un
+   update coi campi nuovi a un server vecchio prende 422. Il controllo
+   dopo il passo sta in `out/TASK-305/SERVER-R1.md`, senza TestClient
+   (l'immagine di produzione non ha httpx).
+
+### R2 — App: il volo registrato
+
+1. `paragliding` in `settings/sport.ts` prende la sua attività e diventa
+   `ready` e `recordOnly`: «Draw» mostra solo «Record your flight» (il
+   testo da approvare); il pianificatore non c'è.
+2. I numeri del volo dalla quota dei fix (TASK-324, già nei fix): quota
+   adesso, quota massima, variometro su una finestra di 10 s (la quota del
+   GPS è rumorosa, un fix solo non basta), velocità del momento dalla
+   velocità del fix, tempo di volo. Niente barometro: è un modulo nativo
+   nuovo e una dipendenza da chiedere.
+3. Le calorie con la formula di C2 di TASK-424 e il MET del volo libero
+   del Compendium (3,5, «hang gliding»), in rosso come le altre (C3).
+4. L'update dal vivo manda i quattro campi nuovi; la fine del volo mostra
+   tempo di volo, distanza, quota massima, dislivello, velocità massima e
+   calorie; il post nel Feed ha il tipo `paragliding`.
+5. Un avviso breve prima del primo volo registrato su quel telefono, da
+   far approvare all'utente; la proposta: «MuW is not a flight
+   instrument: it records your flight and shares it. Fly with your own
+   instrument, licence and judgement.»
+
+File, a grandi linee (la lista vera al Coordinatore prima della PR, col
+turno: `settings/sport.ts`, `sports/**` e `social/PublicParts.tsx` sono
+oggi della #1160, poi di TASK-413 B e TASK-463): `settings/sport.ts`, i
+file della registrazione libera e dei dati dal vivo, `src/air/` (nuovi),
+le lingue, i test.
+
+**Il battito dal vivo viene solo dall'orologio** (TASK-424, ADR-0352): il
+telefono non lo misura. La build 1.1.0 dell'orologio (in revisione da
+Apple) non ha il parapendio nel suo `sports.json`, quindi un volo avviato
+dal telefono non parte al polso. Il battito in tempo reale chiede una
+parte in più (R4: il parapendio nell'app dell'orologio, codice nativo,
+una build nuova dopo la 1.1), da proporre all'utente.
+
+### R3 — La pagina del link
+
+`site/live/`: per l'attività `paragliding` la pagina mostra quota,
+variometro (sale/scende), velocità del momento, quota massima e tempo di
+volo, nelle cinque lingue; le altre attività come oggi. La copia sul sito
+è una pubblicazione: col sì dell'utente, dal Coordinatore
+(`out/coordinatore/sito.sh <sha>`).
 
 ## Cosa fare (se l'utente decide di sì)
 
@@ -389,6 +481,15 @@ e TASK-299): **prima di archiviare il worktree vanno copiati in
 capo con `fetch_dem.py`, `run_study.py`, `fly_sim.py` e `build_grid.py`
 (circa 40 minuti, terreno dall'API pubblica di OpenTopoData).
 
+## File toccati (PR di documenti delle parti R)
+
+```
+docs/tasks/TASK-305.md          (le parti R, le scelte del 2026-11-11)
+docs/DECISIONS.md               (ADR-0375, voce e riga d'indice)
+docs/STATUS.md                  (la voce di TASK-305)
+docs/INDEX.md                   (una riga: il parapendio registrato)
+```
+
 ## Fuori scope
 
 - Codice dell'app, del motore o dell'API: niente, nemmeno uno stub.
@@ -423,3 +524,7 @@ riga in Settings con «Soon» da subito, il nome «Paragliding» e l'avviso di
 sicurezza (2026-10-27; la riga è la parte D0). Restano le tre condizioni
 del verdetto prima della parte A1 e, prima della build 1.0.1, la scelta se
 tenere «Soon» nelle build per lo store.
+
+Il 2026-11-11 l'utente ha chiesto la registrazione in volo con la
+condivisione dal vivo, prima del pianificatore: parti R (ADR-0375), da
+questa PR di documenti.

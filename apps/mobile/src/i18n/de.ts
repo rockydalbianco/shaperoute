@@ -763,6 +763,9 @@ export const DE: Table = {
     "Route {label}, {distance}, {likeness} wie die Form",
   "The outline traced from the picture": "Der aus dem Bild gezeichnete Umriss",
 
+  // src/route/RoutePanel.tsx (TASK-435: the first route is shown, the others are coming)
+  "Looking for other routes…": "Weitere Routen werden gesucht…",
+
   // src/screens/PeopleScreen.tsx
   "Find friends": "Freunde finden",
 
@@ -1196,9 +1199,14 @@ export const DE: Table = {
   "Cross-country ski": "Langlauf",
   // src/sports/gym.ts, src/gym/ (TASK-385 B0: a workout at the gym)
   Gym: "Fitnessstudio",
-  "{n} exercises · {s} sets": "{n} Übungen · {s} Sätze",
-  "{n} rests · avg {time} · {total} resting":
-    "{n} Satzpausen · Ø {time} · {total} Pause",
+  // The counts of a workout, one or more (TASK-453)
+  "{count} exercise": "{count} Übung",
+  "{count} exercises": "{count} Übungen",
+  "{count} set": "{count} Satz",
+  "{count} sets": "{count} Sätze",
+  "{count} rest": "{count} Satzpause",
+  "{count} rests": "{count} Satzpausen",
+  "avg {time} · {total} resting": "Ø {time} · {total} Pause",
   // src/gym/ (TASK-385 part B), approved on 2026-11-04
   "Start workout": "Training starten",
   "No route in the gym: MuW times your workout.":
@@ -2542,4 +2550,27 @@ export const DE: Table = {
   "Vertical this season": "Höhenmeter der Saison",
   "On snow": "Im Schnee",
   "Piste without a name": "Piste ohne Namen",
+  // TASK-415 part B: ski touring, its phases and its VAM (approved 2026-11-11).
+  "Ski touring": "Skitour",
+  Phase: "Phase",
+  Climb: "Aufstieg",
+  Descent: "Abfahrt",
+  Changeover: "Fellwechsel",
+  "VAM 5 min": "VAM 5 Min.",
+  Altitude: "Höhe",
+  "Elev. loss": "Abstieg",
+  "Time up": "Zeit bergauf",
+  "Time down": "Zeit bergab",
+  "Avg VAM": "Ø VAM",
+  "Max altitude": "Max. Höhe",
+  Phases: "Phasen",
+  "Climb {n}": "Aufstieg {n}",
+  "Descent {n}": "Abfahrt {n}",
+  "Lift {n}": "Lift {n}",
+  "Skins off": "Felle ab",
+  "Skins on": "Felle auf",
+  "Climbed: {metres} m": "Anstieg: {metres} m",
+  "{phase}, from {time}, for {duration}": "{phase}, ab {time}, {duration} lang",
+  "No heights from the phone: no phases for this tour.":
+    "Das Telefon hat keine Höhen geliefert: keine Phasen für diese Tour.",
 };

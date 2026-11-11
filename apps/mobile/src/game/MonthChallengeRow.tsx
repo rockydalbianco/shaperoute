@@ -14,6 +14,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 
 type Props = {
   contest: Contest;
@@ -41,7 +42,7 @@ export function MonthChallengeRow({ contest, language, kind, nowMs }: Props) {
       ? t("Themes and winners of the past months")
       : `${t("Monthly challenge")} · ${daysLeftText(contest.ends_at, nowMs)}`;
   return (
-    <Pressable
+    <Tap
       style={styles.row}
       onPress={() => openContestPage(contest.id)}
       accessibilityRole="link"
@@ -57,7 +58,7 @@ export function MonthChallengeRow({ contest, language, kind, nowMs }: Props) {
         </Text>
       </View>
       <Text style={styles.arrow}>›</Text>
-    </Pressable>
+    </Tap>
   );
 }
 

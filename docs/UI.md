@@ -302,8 +302,20 @@ pagine»):
    (qualche via attorno); con un percorso, la linea e la mappa inquadrata
    su di lui. Si sposta e si ingrandisce con le dita: i pulsanti + e − non
    ci sono più (TASK-175, chiesto dall'utente). L'attribuzione dei dati è
-   sempre visibile in basso, per intero; i suoi link si aprono nel browser
+   sempre visibile in basso, per intero, coi colori del tema (`surface`,
+   `textMuted`, link `text`; TASK-443); i suoi link si aprono nel browser
    del telefono.
+
+   **L'inquadratura** (TASK-443): il percorso entra sempre tutto, sotto la
+   barra di stato e sopra l'attribuzione, con 16 px di respiro, e mai sotto
+   un pulsante: se toccherebbe «←», il tipo di mappa o la freccia del nord
+   scende sotto la loro riga. Con lui entra la sagoma tratteggiata della
+   forma chiesta (TASK-442). Quando la scheda sotto cambia altezza la mappa
+   si inquadra di nuovo, se l'utente non l'ha mossa. Dove il motore ha
+   spostato l'inizio c'è una bandierina in un tondo ciano (non una goccia,
+   che è la partenza chiesta) con «Start here» nei colori di un controllo:
+   sopra la bandierina, o sotto quando sopra finirebbe nella barra di stato
+   o sotto un pulsante.
 
    **Il tipo di mappa** (TASK-264, ADR-0232, chiesto dall'utente): in alto
    a destra, di fronte a «←», un pulsante tondo con due fogli; mentre si
@@ -3205,6 +3217,22 @@ occhio quanto il percorso le somiglia. Ogni tessera ha la sua, girata e
 grande come il suo percorso. Non muove la mappa. Non c'è mentre si corre,
 in «Explore» e sui percorsi a tema; sull'acqua e con un'API che non manda
 `placed_outline` non si disegna niente.
+
+**Il primo percorso subito** (TASK-435, ADR-0361, scelte dell'utente):
+quando il server ha pronto il percorso dalla partenza dell'utente prima
+della risposta intera, l'app lo mostra subito, con distanza, avvisi,
+«Start» ed «Export GPX», e sotto una riga grigia «Looking for other
+routes…» finché gli altri non arrivano. **Il primo resta A**: quando
+arrivano, gli altri percorsi si aggiungono come B e C, dal migliore, con
+la loro percentuale; una B che somiglia di più si vede dal numero, e il
+percorso sullo schermo non cambia sotto gli occhi. Tre tessere in tutto:
+se il motore non aveva tenuto il primo, esce l'ultima alternativa. Se dopo
+il primo il calcolo fallisce o la rete cade, il primo resta, da solo, e la
+riga sparisce. Vale per «Draw route» verso il server; gli esempi di
+«Explore», l'acqua e il motore sul telefono danno la risposta intera, come
+prima (`api/routes.ts` `onFirst`, `route/useRouteRequest.ts` `more`,
+`route/choices.ts` `withFirst`). Il primo percorso ha già la sua forma
+ideale sotto (TASK-442).
 
 **Dove la forma viene meglio** (TASK-234, ADR-0197, scelta dell'utente):
 quando l'API manda `better_distance_m`, sotto le tessere c'è una riga

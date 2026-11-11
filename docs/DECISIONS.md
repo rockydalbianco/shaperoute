@@ -472,6 +472,7 @@ lasciando le righe d'indice.
 - ADR-0352, precisazione B2 — Piscina e palestra: gli stessi pulsante e invii, i numeri senza traccia, il consenso senza mappa · 2026-11-10 · Attiva
 - ADR-0352, precisazione C — I dati dal vivo che mancano: il battito su «Data», la piscina dal vivo, le calorie di ogni attività (lo sci sulle discese) · 2026-11-10 · Attiva
 - ADR-0352, precisazione C2b — I tratti della giornata di sci nei run-stats, le discese in ogni lista di post: un campo solo con TASK-429, nessuna migrazione · 2026-11-10 · Attiva
+- ADR-0352, precisazione C3 — Le calorie in rosso ovunque: un token per tono, due fissi per il giallo e le foto, solo le kcal in rosso nella riga dei fatti · 2026-11-10 · Attiva
 - ADR-0341, precisazione C — Le schede della palestra: la chiave nell'allenamento, l'ultima modifica vince, i giorni saltati · 2026-11-08 · Attiva
 - ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py` · 2026-11-08 · Accettato
 - ADR-0349 — I cancelli chiusi tolgono il nodo dalla rete foot: si passa o no · 2026-11-08 · Accettato
@@ -523,6 +524,28 @@ lasciando le righe d'indice.
 - ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale · 2026-11-10 · Attiva
 
 ## Voci nuove
+
+## ADR-0352, precisazione C3 — Le calorie in rosso ovunque: un token per tono, due fissi per il giallo e le foto, solo le kcal in rosso nella riga dei fatti
+
+**Stato**: Attiva · 2026-11-10 · TASK-424 parte C3 (#1123, 801408fd).
+Scelta dell'utente del 2026-11-10, parole sue: «le calorie devono essere
+calcolate per ogni attività, e segnate con colore rosso in tutte». Il
+resto deciso dall'agente su delega dell'utente.
+
+- **Un token nuovo per tono**, `energy`: scuro `#FF6363` → `#FFA3A3`,
+  chiaro `#8F1216` → `#B71C1C`; almeno 4,5:1 su `background`, `surface` e
+  `surfaceRaised` a ogni passo di luminosità (`palettes.test.ts`).
+- **Due rossi fissi** dove il fondo non è quello del tono:
+  `energyOnAccent` `#8F1216` sul giallo della palestra (6,3:1) e
+  `energyOnScrim` `#FF6363` sopra una foto (6,8:1 sul velo).
+- **Dove**: riquadri della corsa e della neve (numero e unità), piscina,
+  palestra, riquadri e righe del post, la riga dei fatti di un post, di
+  un'attività e del post mostrato mentre si disegna. Nella riga dei fatti
+  solo le «280 kcal» finali sono rosse (`feed/FactsText.tsx`): un lettore
+  di schermo sente sempre una riga sola.
+- **Fuori**: l'app dell'orologio (Swift, build nativa) e la pagina web dal
+  vivo di getmuw.app; seguiti, se l'utente li vuole.
+- Solo JavaScript, nessun testo nuovo, nessuna dipendenza nuova.
 
 ## ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale
 

@@ -3,7 +3,7 @@
 **Stato**: In corso — parte 0 in `main` (#933, `189374bc`); A1 in `main` con
 la #957 (`a63254d3`, mergiata dall'utente) e sul server col passo unico del
 2026-11-10 (main `9cf5576b`; controllo in `out/TASK-413/check-957.md`);
-prossime A2, B, ciascuna in una sessione nuova
+A2 in PR (`feat/TASK-413-a2-snowshoes-api`, 2026-11-10), poi B
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -177,6 +177,38 @@ Connect: `EXERCISE_TYPE_SNOWSHOEING`, da verificare sulla libreria. Solo
 JavaScript: l'impronta iOS non si muove. La lista al Coordinatore prima del
 codice.
 
+**Accordi e scelte della parte A2** (2026-11-10, decise dall'agente su
+delega dell'utente):
+
+- **La migrazione è `0068_snowshoeing.sql`** in bozza: la 0057 è passata a
+  TASK-415, il server è alla 0066 e la 0067 è della #1099 (TASK-423 E1),
+  aperta. Il numero vero è il primo libero al merge (Coordinatore).
+  L'utente ha dato il via al codice («continua e risolvi») prima della
+  risposta del Coordinatore sulla lista.
+- **Nessun percorso sulla neve è tenuto**: né `route_store` né l'archivio
+  (`route_archive._kept`). I file della neve stanno fuori dall'impronta
+  (`SNOW_ONLY`): un percorso tenuto sopravvivrebbe alle regole che l'hanno
+  disegnato.
+- **Le quote si leggono con un `TerrariumTiles` nuovo per richiesta**: le
+  tegole restano su disco in `<cache>/heights/`, non in memoria per ogni
+  posto chiesto. Un download che non riesce (neve o quote) è `503
+  map_data_unavailable`, come una zona.
+- **L'errore propone il mezzo km** a cui la forma entra, come sull'acqua
+  (`errors.suggested_distance` su `FREE_ACTIVITIES`), e nessuna distanza
+  sotto 0,5 km.
+- **La città lenta** (fino a 44 s, `sports/snowshoes.md`): A2 non aggiunge
+  un controllo «poca neve» prima del piazzamento, che toccherebbe il motore
+  (`snowshoeing.py`); il job è asincrono e una città non è un posto da
+  ciaspole. Se i tempi del server lo chiedono, è un passo a parte.
+- **Il profilo nell'app è nascosto**: nessuna riga in «Impostazioni», la
+  ricerca lo lascia fuori (`searchFilters.NOT_YET`), il modulo per
+  pubblicare non lo elenca. Nome in inglese senza `tLater`, niente
+  `caution` né tempo: li porta B con i testi. Le calorie sono quelle di
+  Hike, come per lo scialpinismo (TASK-424 C2, #1098: calorie per ogni
+  attività, scelta dell'utente del 2026-11-10). Apple Salute `hiking`
+  (24, nessun tipo per le ciaspole), Health Connect
+  `EXERCISE_TYPE_SNOWSHOEING` (63, verificato sulla libreria).
+
 ## Scelte dell'utente
 
 Una alla volta, ciascuna con la proposta dell'agente, il 2026-11-08.
@@ -273,6 +305,37 @@ docs/tasks/TASK-413.md, docs/sports/snowshoes.md
 docs/STATUS.md, docs/DECISIONS.md (aggiunta ad ADR-0342): in una PR di soli documenti dopo il merge (regola del Coordinatore, 2026-11-08)
 ```
 
-Parti A2 e B: le liste qui sopra, da confermare al Coordinatore prima
-del codice. `docs/sports/CONDIVISO.md` lo tiene il Coordinatore Sport: la
+Parte A2 (`feat/TASK-413-a2-snowshoes-api`; lista mandata al Coordinatore
+il 2026-11-10, i file in più rispetto alla lista di sopra segnati «+»):
+
+```
+services/route-engine/route_engine/activities/__init__.py   (snowshoeing in ENGINE_ACTIVITIES)
++ services/route-engine/route_engine/anchored.py             (FREE_ACTIVITIES; in ANCHORED_ONLY)
+services/route-engine/tests/test_sport_registry.py, + test_anchored.py, + test_snowshoeing.py,
+    + test_bike_network.py, + test_inline_skating.py, + test_walking.py   (le liste)
++ services/api/shaperoute_api/route_store.py                 (SAME_ROUTES_AS; nessun percorso sulla neve tenuto)
++ services/api/tests/fixtures/same_routes/<impronta>.json    (la prova)
+packages/shared-types/src/sports/snowshoeing.ts (nuovo), src/sports/index.ts
+packages/shared-types/fixtures/route-request-snowshoeing.json (nuovo), contract.json, reads.json, run-activities.json
+packages/shared-types/test/snowshoeing.test.ts (nuovo), sportRegistry.test.ts
+services/api/shaperoute_api/sports/snowshoeing.py (nuovo), sports/__init__.py
+services/api/shaperoute_api/snowshoeing.py (nuovo)
+services/api/shaperoute_api/jobs.py, activity_graphs.py, errors.py, way_back.py, route_archive.py
++ services/api/shaperoute_api/images.py, route_processes.py  (il ramo della neve)
+services/api/shaperoute_api/activities.py, reads.py, game_rules.py
+services/api/migrations/0068_snowshoeing.sql (nuovo)
+services/api/tests/test_snowshoeing_api.py (nuovo), test_sport_registry_api.py,
+    test_record_only.py, test_favorites.py, + test_cycling.py
+apps/mobile/src/sports/snowshoeing.ts (nuovo), src/sports/index.ts, src/search/searchFilters.ts
+apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts,
+    src/route/distanceMiles.test.ts, src/api/accounts.test.ts
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json,
+    targets/watch/{de,en,es,fr,it}.lproj/Localizable.strings   (dagli script)
+apps/mobile/assets/engine/engine.zip                         (rifatto, ultimo commit)
+docs/tasks/TASK-413.md, + docs/API.md, + docs/DATABASE.md
+docs/STATUS.md, docs/DECISIONS.md (precisazione di ADR-0342): in una PR di soli documenti dopo il merge
+```
+
+Parte B: la lista qui sopra, da confermare al Coordinatore prima del
+codice. `docs/sports/CONDIVISO.md` lo tiene il Coordinatore Sport: la
 voce della neve gli è mandata, non scritta da qui.

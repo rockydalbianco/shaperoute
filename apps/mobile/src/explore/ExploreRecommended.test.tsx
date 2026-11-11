@@ -23,8 +23,8 @@ jest.mock("../account/sessionStore", () => ({
 const fetchMock = jest.spyOn(globalThis, "fetch");
 const session = jest.mocked(loadSession);
 const routes = list.routes as RecommendedRoute[];
-// The API recommends the last of the list first.
-const recommended = [routes[routes.length - 1]];
+// The API recommends the word of the list.
+const recommended = routes.filter((route) => route.word === "CIAO");
 
 beforeEach(() => {
   fetchMock.mockReset();

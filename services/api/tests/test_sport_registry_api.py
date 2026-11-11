@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import get_args
 
-from route_engine.models import SUPPORTED_ACTIVITIES, WATER_ACTIVITIES
+from route_engine.models import FREE_ACTIVITIES, SUPPORTED_ACTIVITIES
 from route_engine.walking import API_ACTIVITIES
 
 from shaperoute_api import prefetch_zones, sports
@@ -50,12 +50,13 @@ BEFORE_STREET_NAMES = {"running": True, "cycling": False}
 # Added since, each by a file of sports/ and a line of its register: a hike
 # (TASK-377), planned before the walk in the order of the contract; an MTB
 # ride after it and a gravel ride after the walk (TASK-378); a skate after
-# the MTB ride (TASK-380); a day of ski touring after the days on the snow
-# (TASK-415).
+# the MTB ride (TASK-380); snowshoeing after the skate (TASK-413); a day of
+# ski touring after the days on the snow (TASK-415).
 SINCE_SPORT_TYPES = {
     "hiking": "Hike",
     "mountain_biking": "MountainBikeRide",
     "inline_skating": "InlineSkate",
+    "snowshoeing": "Snowshoe",
     "gravel_biking": "GravelRide",
     "ski_touring": "BackcountrySki",
 }
@@ -64,6 +65,7 @@ SINCE_GPX_TYPES = {
     "hiking": "hiking",
     "mountain_biking": "mountain_biking",
     "inline_skating": "inline_skating",
+    "snowshoeing": "snowshoeing",
     "gravel_biking": "gravel_biking",
     "ski_touring": "ski_touring",
 }
@@ -89,9 +91,10 @@ def test_the_tables_are_those_of_before_in_their_order() -> None:
     assert _without_since(SPORT_TYPES) == list(BEFORE_SPORT_TYPES.items())
     assert {name: SPORT_TYPES[name] for name in SINCE} == SINCE_SPORT_TYPES
     order = list(SPORT_TYPES)
-    assert order.index("hiking") == order.index("walking") - 3
-    assert order.index("mountain_biking") == order.index("walking") - 2
-    assert order.index("inline_skating") == order.index("walking") - 1
+    assert order.index("hiking") == order.index("walking") - 4
+    assert order.index("mountain_biking") == order.index("walking") - 3
+    assert order.index("inline_skating") == order.index("walking") - 2
+    assert order.index("snowshoeing") == order.index("walking") - 1
     assert order.index("gravel_biking") == order.index("walking") + 1
     assert order.index("ski_touring") == order.index("xc_skiing") + 1
     assert RECORD_ACTIVITIES == (*BEFORE_RECORD_ACTIVITIES, "ski_touring")
@@ -158,7 +161,8 @@ def test_the_zone_boxes_are_those_of_before() -> None:
 
 
 def test_every_sport_on_roads_has_zones_and_no_other() -> None:
-    roads = {a for a in SUPPORTED_ACTIVITIES if a not in WATER_ACTIVITIES}
+    # On the water and on the snow (TASK-413) there are no zones.
+    roads = {a for a in SUPPORTED_ACTIVITIES if a not in FREE_ACTIVITIES}
     with_zones = {s.activity for s in API_SPORTS if s.zones is not None}
     assert with_zones == roads
 
@@ -211,6 +215,9 @@ def test_the_zones_in_memory_and_the_description_are_those_of_before() -> None:
         f"S2, or sac_scale T2 when they give none (TASK-378); "
         f"inline_skating on the smooth paved ways of its own network, no primary "
         f"or secondary roads, every way both ways (TASK-380); "
+        f"snowshoeing on open snow, 0.5-3 km, a shape of the catalogue only, "
+        f"away from slopes over 25 degrees, woods, pistes, rock and villages, "
+        f"from a way in on foot (TASK-413); "
         f"walking on the foot network of a run (TASK-371); "
         f"gravel_biking is drawn as cycling, on the bike network (TASK-378)."
     )

@@ -79,6 +79,17 @@
       "onWatch": true
     },
     {
+      "activity": "snowshoeing",
+      "name": "Snowshoes",
+      "emoji": "❄️",
+      "appleWorkout": 24,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
       "activity": "walking",
       "name": "Walk",
       "emoji": "🚶",

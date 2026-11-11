@@ -1,6 +1,6 @@
 # TASK-423 — «Play» grande: collezioni, km fino a 10 000, passi, sfide personali, premi
 
-**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037, privacy (#1007) e D (#1080) ed E1 (#1099) in `main`; A, B e C sul server; D in produzione con l'OTA 4; prossimi il server di E1 ed E2
+**Stato**: In corso — documenti, A (#984), B (#1005), C (#1018), fix #1037, privacy (#1007) D (#1080), E1 (#1099), E2a (#1132) ed E2b (#1144) in `main`; A, B, C ed E1 sul server; D in produzione con l'OTA 4; E2a ed E2b escono col nono OTA, poi la copia della privacy sul sito
 **Fase**: 5 · **Branch**: `docs/TASK-423-play-expansion` (documenti), poi
 `feat/TASK-423-a-catalog`, `-b-paces`, `-c-personal`, `-d-app`, `-e-prizes`
 **ADR**: ADR-0351 (estende ADR-0255) · **Migrazioni**: una in C, una in E,
@@ -315,7 +315,23 @@ E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
   vuota finché il livello prima non è fatto, con «… /km to go»; «First run
   15 km in one go» invece di una percentuale; i nomi delle distanze (400 m,
   1 mile, Half marathon, Marathon). Solo app; i 6 testi nuovi nelle 5
-  lingue approvati dall'utente («Sì, approvo»).
+  lingue approvati dall'utente («Sì, approvo»). In `main` (#1113,
+  18aea2da).
+- 2026-11-11 — Prova sul telefono del settimo OTA (main 7e24e7d1, con la
+  #1113), fatta dall'utente; sue parole al Coordinatore: «procedi funziona
+  tutto ok procedi», poi «Sì, sul telefono». Prova generale, senza nominare
+  le singole funzioni.
+- 2026-11-11 — E2 divisa in due PR. E2a in `main` (#1132, feb955ef): la
+  pagina «Prizes», le edizioni sulle forme, la cornice in fondo a ogni
+  collezione, le schede di sblocco di edizioni e collezioni (una sola oltre
+  3), le push nuove che aprono «Play»; 55 testi approvati («Sì, approvo»).
+  E2b in `main` (#1144, 68b082ef): la scelta dei premi del profilo (`PUT
+  /game/prizes/shown`), cornice, titolo e badge sul profilo, la frase della
+  privacy nelle 5 lingue con la data 11 novembre e `site/privacy`
+  rigenerato; frase e 4 testi approvati («Sì, approvo»). Escono col nono
+  OTA (l'ottavo partiva da prima del merge); poi la copia della privacy sul
+  sito (F.14) col sì dell'utente al Coordinatore, poi la prova sul
+  telefono.
 
 ## Esito
 

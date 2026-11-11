@@ -524,8 +524,58 @@ lasciando le righe d'indice.
 - ADR-0364 — I test dell'API in CI girano in 4 parti per file; il check `api` è un job finale · 2026-11-10 · Attiva
 - ADR-0363 — I giorni di corsa nelle schede della palestra: un campo `run` facoltativo nel giorno del programma, la crescita dal telefono, «Go to the run» con i km di «Draw» · 2026-11-10 · Accettata
 - ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi · 2026-11-11 · Attiva
+- ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale · 2026-11-11 · Attiva
+- ADR-0351, precisazione E2 — I premi nell'app: la pagina «Prizes», le schede di edizioni e collezioni, la scelta del profilo e la privacy · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0351, precisazione D2 — La barra di una forma di passo fra il livello prima e questo, sul telefono; una distanza mai corsa di fila senza percentuale
+
+**Stato**: Attiva · 2026-11-11 · TASK-423, «Play» dopo l'uso (#1113).
+Richiesta dall'utente dopo averla usata («Dalla 1 alla 4»); i testi
+approvati dall'utente («Sì, approvo»). Le scelte tecniche sono dell'agente
+su delega dell'utente.
+
+**Decisione**:
+
+- **La barra di una forma di passo non è più `target / best`** (il
+  `progress` del server): 5:00 /km non è il 60% di 3:00 /km. Il telefono
+  (`shapeProgress.ts`, puro) la calcola fra il livello prima sulla stessa
+  distanza (il passo più lento più vicino; per il primo livello, un minuto
+  in più) e questo, dal tempo migliore che `/game/me` dà già: vuota finché
+  il livello prima non è fatto. Il server non cambia.
+- **Una distanza mai corsa di fila non ha percentuale**: «First run 15 km in
+  one go · longest 12 km». I totali e i traguardi tengono la quota di
+  strada.
+- **Le distanze di una corsa per nome** (`runDistanceLabel`): 400 m, 1
+  mile, Half marathon, Marathon. I totali restano in km o miglia;
+  `goalDistanceLabel` e `progressText`, usati da altri task, non cambiano.
+
+## ADR-0351, precisazione E2 — I premi nell'app: la pagina «Prizes», le schede di edizioni e collezioni, la scelta del profilo e la privacy
+
+**Stato**: Attiva · 2026-11-11 · TASK-423 parte E2 (#1132, #1144). Testi
+(55 e 4) e frase della privacy approvati dall'utente («Sì, approvo»).
+Deciso dall'agente su delega dell'utente.
+
+**Decisione**:
+
+- **Due PR**: E2a mette i premi dentro «Play» senza cambiare niente di
+  quello che vedono gli altri; E2b porta la scelta del profilo insieme alla
+  frase della privacy, così il profilo mostra i premi solo da quando
+  l'informativa lo dice.
+- **Le schede di sblocco** sono una sola `UnlockCard` per forma, edizione,
+  collezione e riepilogo; oltre 3 cose da una corsa, una scheda sola.
+  L'app legge `editions` e `collections_done` della corsa con prudenza: un
+  campo assente (API vecchia) o rotto non mostra niente.
+- **Le push** `edition_up` e `collection_done` aprono «Play» (non il
+  profilo che i dati nominano) e ad app aperta non si mostrano, come
+  `shape_unlocked`.
+- **La scelta del profilo** si fa toccando un premio preso nella pagina
+  «Prizes» (`PUT /game/prizes/shown`), salvata a ogni tocco. Il profilo
+  legge `game_prizes` con `isGamePrizesShown`; una cornice che il catalogo
+  del telefono non conosce resta fuori.
+- **I colori delle cornici** sono un blocco `gamePrize` in `tokens.ts`, mai
+  da soli: la cornice ha sempre il nome della collezione accanto.
 
 ## ADR-0362 — Le due tabelle che il motore calcola una volta per grafo si fanno a blocchi con shapely, uguali bit per bit a prima; `math.dist` decide ancora i quasi-pareggi
 

@@ -234,3 +234,49 @@ più volte (Asiago, Rolle, Milano): lo script riprova dopo 90 s.
 
 - La neve scaricata dal server alla prima richiesta di un posto, e i tempi
   sul server (la città sopra).
+
+## La parte A3: la città detta subito (2026-11-12)
+
+Sul server, al passo 8, Trento (cuore di 3 km, la prima volta) ha risposto
+`shape_not_drawable` in 76,4 s. Al banco sul Mac (Milano dalla cache,
+83.000 elementi) la ricerca costa 0,7 s e `snow.build_area` 16–19 s,
+quasi tutto shapely elemento per elemento; sul server c'è in più lo
+scarico della prima volta. Un controllo «poca neve» prima della ricerca
+non serve: il tempo va prima. A3 conta gli edifici attorno alla partenza
+prima di leggere la neve.
+
+**Gli edifici per km²** nel riquadro di 4,8 km di lato attorno alla
+partenza (`snow.town_bbox`), dalla neve in cache del banco o da Overpass
+(`out count`, una richiesta per volta, 2026-11-12; fixture
+`snow_built_up.json`):
+
+| Con neve | per km² | Città | per km² |
+|---|---|---|---|
+| Asiago | 180 | Milano (Duomo) | 700 |
+| Cortina d'Ampezzo | 145 | Trento | 350 |
+| Bormio | 114 | Belluno | 345 |
+| Cavalese | 100 | Aosta | 247 |
+| Pinzolo | 77 | Bolzano | 207 |
+| Ortisei | 75 | | |
+| Livigno | 63 | | |
+| Folgaria | 54 | | |
+| Selva di Val Gardena | 52 | | |
+| Moena | 45 | | |
+| Canazei | 43 | | |
+| Madonna di Campiglio | 26 | | |
+| Sestriere | 20 | | |
+| Viote del Monte Bondone | 6 | | |
+| Passo Rolle, Passo Lavazè | 2 | | |
+
+- **Soglia 280**: dette subito Milano, Trento (1,25 volte la soglia) e
+  Belluno; Asiago resta al 64%. Bolzano e Aosta vanno avanti come prima:
+  una soglia sotto 200 starebbe all'11% da Asiago.
+- **Il riquadro della richiesta non va**: cresce con la forma, e per un
+  cuore di 3 km Bolzano scendeva a 135 per km² (le montagne attorno),
+  sotto Asiago (128–170 a seconda della distanza).
+- **Overpass, stanotte**: anche un `out count` ha chiesto 30–50 s, o ha
+  risposto 502, 504, 429. Col tempo massimo di 6 s il conteggio spesso non
+  arriva: la richiesta va avanti come prima e la volta dopo il rifiuto
+  viene dalla neve in cache.
+- **I tempi** (banco sul Mac, col turno del Mac del Coordinatore): da
+  misurare.

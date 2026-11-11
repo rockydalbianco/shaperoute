@@ -1,6 +1,6 @@
 # TASK-440 — Foto del post a schermo intero, con «Salva»
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: app · **Branch**: `feat/TASK-440-feed-photo-viewer`
 
 ## Obiettivo
@@ -54,4 +54,4 @@ docs/tasks/TASK-440.md
 
 ## Esito
 
-_(a fine task)_
+Fatto in #1137 (2026-11-11): un tocco sulla foto del post nel Feed la apre a schermo intero, «Save» apre il foglio del telefono con «Salva immagine»; nessuna dipendenza nuova né testo nuovo. Esce con l'ottavo OTA, poi la prova sul telefono.

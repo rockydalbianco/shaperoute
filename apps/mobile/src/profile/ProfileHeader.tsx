@@ -1,4 +1,4 @@
-import type { ProfileBadge } from "@shaperoute/shared-types";
+import type { GamePrizesShown, ProfileBadge } from "@shaperoute/shared-types";
 import { StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
@@ -12,6 +12,10 @@ import {
   space,
 } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
+import { useGameCatalog } from "../game/gameCatalog";
+import { GamePrizesRow } from "../game/GamePrizesRow";
+import { isGamePrizesShown } from "../game/prizesApi";
+import { ProfileFrame } from "../game/ProfileFrame";
 import { Avatar } from "./Avatar";
 import { BadgeRow } from "./BadgeRow";
 
@@ -47,7 +51,16 @@ type Props = {
    * still to earn, dimmed.
    */
   badges?: readonly ProfileBadge[] | null;
+  /**
+   * The prizes of the shape game its owner chose to show (TASK-423 E2b):
+   * the frame around the photo, the title and up to 3 badges under the
+   * name; null or left out: none.
+   */
+  gamePrizes?: GamePrizesShown | null;
 };
+
+/** A frame's ring around the photo: the photo keeps its size inside it. */
+const FRAME_RING = 7;
 
 /**
  * Who a profile is (TASK-116): the picture, the name, a line about it and
@@ -64,15 +77,44 @@ export function ProfileHeader({
   photoButton,
   winner = false,
   badges = null,
+  gamePrizes = null,
 }: Props) {
-  const avatar = <Avatar name={username} size={PROFILE_AVATAR_SIZE} photo={photo} />;
+  const catalog = useGameCatalog();
+  // Read as the API says it; a broken answer shows nothing.
+  const prizes = isGamePrizesShown(gamePrizes) ? gamePrizes : null;
+  const frame = prizes?.frame ?? null;
+  const hardest =
+    frame === null
+      ? undefined
+      : catalog?.shapes.filter((shape) => shape.collection === frame).at(-1);
+  const photoCircle = (
+    <Avatar name={username} size={PROFILE_AVATAR_SIZE} photo={photo} />
+  );
+  // A frame the catalog on the phone knows goes around the photo.
+  const framed = frame !== null && hardest !== undefined;
+  const side = framed ? PROFILE_AVATAR_SIZE + 2 * FRAME_RING : PROFILE_AVATAR_SIZE;
+  const avatar =
+    framed && hardest !== undefined ? (
+      <ProfileFrame
+        collection={frame}
+        outline={hardest.outline}
+        size={side}
+        got
+        badgeSide="left"
+        testID="profile-frame"
+      >
+        {photoCircle}
+      </ProfileFrame>
+    ) : (
+      photoCircle
+    );
   return (
     <View style={styles.who}>
       {photoButton === undefined ? (
         avatar
       ) : (
         <Tap
-          style={styles.circle}
+          style={[styles.circle, { width: side, height: side }]}
           onPress={photoButton.onPress}
           disabled={photoButton.busy}
           accessibilityRole="button"
@@ -91,6 +133,7 @@ export function ProfileHeader({
         </Tap>
       )}
       <Text style={styles.username}>{username}</Text>
+      <GamePrizesRow shown={prizes} />
       <BadgeRow winner={winner} badges={badges} own={photoButton !== undefined} />
       <Text style={styles.detail}>{detail}</Text>
       {bio !== "" && <Text style={styles.bio}>{bio}</Text>}

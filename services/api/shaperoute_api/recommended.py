@@ -17,10 +17,12 @@ from __future__ import annotations
 import json
 import logging
 import math
-from collections.abc import Iterable, Sequence
+from collections import Counter
+from collections.abc import Callable, Hashable, Iterable, Sequence
 from dataclasses import dataclass
+from itertools import groupby
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar
 
 from pydantic import BaseModel
 
@@ -40,6 +42,7 @@ PREVIEW_DECIMALS = 5
 EARTH_RADIUS_M = 6_371_008.8
 
 LatLon = tuple[float, float]
+T = TypeVar("T")
 
 
 class RecommendedRouteBody(BaseModel):
@@ -116,6 +119,24 @@ class CatalogRoute:
     @property
     def start(self) -> LatLon:
         return self.points[0]
+
+    @property
+    def name(self) -> str:
+        """What it draws: its shape, or its word whatever the style."""
+        return self.shape if self.shape is not None else str(self.word)
+
+
+def varied(ranked: Sequence[T], kind: Callable[[T], Hashable]) -> list[T]:
+    """`ranked` with the first of every kind before the second of any, then
+    the seconds, and so on, each turn in the order it had (TASK-441): a city
+    with a hundred routes does not open with ten circles."""
+    seen: Counter[Hashable] = Counter()
+    turns = []
+    for i, item in enumerate(ranked):
+        k = kind(item)
+        turns.append((seen[k], i))
+        seen[k] += 1
+    return [ranked[i] for _, i in sorted(turns)]
 
 
 def distance_m(a: LatLon, b: LatLon) -> float:
@@ -228,9 +249,11 @@ class RecommendedCatalog:
         distance: int | None = None,
         limit: int = MAX_ROUTES,
     ) -> list[RecommendedRouteBody]:
-        """The routes starting within `radius_m` of `point`, the best first;
-        equally good ones nearer first. Every one is kept, even on the same
-        roads (TASK-092, point 3)."""
+        """The routes starting within `radius_m` of `point`: the best of
+        every shape and word first, then the second best of each, and so on
+        (`varied`, TASK-441); in a turn the best first, equally good ones
+        nearer first. Every one is kept, even on the same roads (TASK-092,
+        point 3), up to `limit`."""
         found = []
         for r in self.routes.values():
             if shape is not None and shape not in (r.shape, r.word):
@@ -241,6 +264,7 @@ class RecommendedCatalog:
             if away <= radius_m:
                 found.append((r, away))
         found.sort(key=lambda f: (-f[0].similarity, f[1], f[0].id))
+        found = varied(found, lambda f: f[0].name)
         return [listed(r, away) for r, away in found[:limit]]
 
     def page(
@@ -251,8 +275,9 @@ class RecommendedCatalog:
     ) -> CatalogPageBody:
         """The whole catalogue from `offset`, at most `limit` routes: city
         by city from the one whose nearest start is nearest `point`, and
-        inside a city the best first, equally good ones nearer first, as
-        `near`. The same order on every page, so pages join."""
+        inside a city as `near`: the best of every shape and word, then the
+        second best of each, in a turn the best first and equally good ones
+        nearer first. The same order on every page, so pages join."""
         away = {r.id: distance_m(point, r.start) for r in self.routes.values()}
         city_away: dict[str, float] = {}
         for r in self.routes.values():
@@ -267,6 +292,11 @@ class RecommendedCatalog:
                 r.id,
             ),
         )
+        ordered = [
+            r
+            for _, routes in groupby(ordered, key=lambda r: r.city)
+            for r in varied(list(routes), lambda r: r.name)
+        ]
         page = ordered[max(0, offset) : max(0, offset) + max(0, limit)]
         return CatalogPageBody(
             total=len(ordered),

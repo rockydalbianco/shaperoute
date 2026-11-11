@@ -43,8 +43,8 @@ OTHER_KEY = "a41b77c2d09e5f13"
 BIKE_KEY = "b7d2e94a0c3f6158"
 # The migrations of a favorite's activity: the column (TASK-200), and the
 # check widened for paddling (TASK-191), for swimming (TASK-323), for
-# walking (TASK-371), for hiking (TASK-377), for gravel and MTB (TASK-378)
-# and for inline skating (TASK-380).
+# walking (TASK-371), for hiking (TASK-377), for gravel and MTB (TASK-378),
+# for inline skating (TASK-380) and for snowshoeing (TASK-413).
 ACTIVITY_MIGRATIONS = (
     "_favorite_activity.sql",
     "_favorite_paddling.sql",
@@ -53,6 +53,7 @@ ACTIVITY_MIGRATIONS = (
     "_hiking.sql",
     "_gravel_mtb.sql",
     "_inline_skating.sql",
+    "_snowshoeing.sql",
 )
 # Added by TASK-206 part B: the fixtures written before are what an older
 # app sends and an older API answers.

@@ -647,3 +647,26 @@ export const videoLine = {
   green: "#8EE08A",
   white: "#FFFFFF",
 } as const;
+
+/**
+ * The prizes of the shape game (TASK-423 part E, ADR-0351): the ring of each
+ * collection's frame, one colour per collection, light enough to read on the
+ * dark surfaces and on a photo; and the silver and gold of the editions.
+ * Never alone: a frame always has its collection's name, an edition its word.
+ */
+export const gamePrize = {
+  frame: {
+    geometry: "#FFD02B",
+    animals: "#F2A65A",
+    sea: "#4FB3E8",
+    sky: "#9BB8FF",
+    nature: "#7DD87A",
+    city: "#C9A0FF",
+    milestones: "#FF7A7A",
+    seasons: "#FF9ED2",
+    legends: "#E8C76A",
+    greece: "#7FD6C8",
+  },
+  silver: "#C7CDD6",
+  gold: "#E8B23A",
+} as const;

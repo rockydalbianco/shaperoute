@@ -145,13 +145,16 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-423 — «Play» grande** (ADR-0351) · A, B, C, la fix #1037 e la
   privacy in `main` e sul server (0065, backfill a regole 3); D (l'app:
   collezioni, lista unica di «Challenges», `utc_offset_min`) con la #1080,
-  in produzione con l'OTA 4 del 2026-11-10. E1 (premi sul server, 0067) in
-  `main` con la #1099, il passo server 6 aspetta il sì dell'utente; poi E2
-  (l'app) e la privacy. File: — · `tasks/TASK-423.md`
-- **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1 in `main`
-  (#1093, #1108, #1114); A e B1 escono con gli OTA 5 e 6, C1 va sul server
-  nel passo 7 con TASK-424 C2b. B2 (i tratti a «Salva») e C2 (stagione e
-  giornata salvata) scritte, si aprono dopo il server. File: — · `tasks/TASK-429.md`
+  in produzione con l'OTA 4 del 2026-11-10; correzioni di «Play» (#1113)
+  provate sul telefono con l'OTA 7. E1 sul server (passo 6, 0067); E2a
+  (#1132) ed E2b (#1144, profilo e privacy) in `main`, escono col nono OTA;
+  poi la copia della privacy sul sito e la prova sul telefono, col sì
+  dell'utente. File: — · `tasks/TASK-423.md`
+- **TASK-429 — La modalità sci** (ADR-0357) · 0, A, B1, C1, B2, C2 in
+  `main` (#1093, #1108, #1114, #1129, #1131); A e B1 fuori con gli OTA 5 e
+  6, C1 sul server dal passo 7 dell'11-11. B2 (i tratti a «Salva») e C2
+  (stagione e giornata salvata) in produzione con l'ottavo OTA dell'11-11.
+  Restano la prova sul telefono e la parte E (lista prima). File: — · `tasks/TASK-429.md`
 - **TASK-431 — «Compass» più bella** (ADR-0359) · in `main` (#1081): la
   freccia «B» con anello e cono azzurri che punta dove punta la mappa, le
   tre schede coi disegni, la punta rossa del nord. Restano l'OTA di
@@ -169,6 +172,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   Settimo OTA (C2) in produzione il 2026-11-11 da 7e24e7d1; l'utente l'ha
   provato sul telefono («funziona tutto ok», prova generale). #1133 (il «No»
   neutro) esce con l'ottavo OTA.
+  Ottavo OTA il 2026-11-11 da cd0c8b08, con la #1133: resta solo la prova
+  sul telefono del «No» neutro, poi la chiusura.
 - **TASK-435 — Primo percorso subito, alternative dopo** (ADR-0361) ·
   parte 0 fatta: piano, misura (una vicina vince nel 38% delle prove;
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il

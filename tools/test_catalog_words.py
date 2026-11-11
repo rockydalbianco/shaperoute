@@ -17,6 +17,7 @@ from catalog_words import (
     LONG_POOL,
     MAX_LETTERS,
     OWN,
+    PEN_UP_READ,
     POOL,
     POOL_PER_CITY,
     best_words,
@@ -35,6 +36,7 @@ from catalog_words import (
     pieces,
     plan,
     propose,
+    read_keys,
     reasons,
     registered_shapes,
     spare,
@@ -413,6 +415,28 @@ def test_keeping_takes_the_one_line_words_out_and_the_passing_ones_in() -> None:
     assert pen_up_keep(runs, pen_up_keep(runs, kept)) == pen_up_keep(runs, kept)
 
 
+def test_only_the_words_that_read_are_kept() -> None:
+    runs = [
+        pen_up("trento/CIAO:pen_up/12000", 0.95),
+        pen_up("bari/VAI:pen_up/9000", 0.99),  # passes, and nobody could read it
+        pen_up("roma/LOVE:pen_up/12000", 0.85),  # reads, and does not pass
+    ]
+    read = ["trento/CIAO:pen_up/12000", "roma/LOVE:pen_up/12000"]
+    kept = ["trento/circle/5000", "bari/VAI:pen_up/9000"]
+    assert pen_up_keep(runs, kept, read) == [
+        "trento/circle/5000",
+        "trento/CIAO:pen_up/12000",
+    ]
+
+
+def test_the_words_that_read_are_words_with_the_pen_up_once_each() -> None:
+    keys = read_keys(PEN_UP_READ)
+    assert len(keys) == len(set(keys)) == 340
+    for key in keys:
+        city, word = word_of_key(key)
+        assert city in cs.BY_NAME and key == pen_up_key(city, word), key
+
+
 def test_the_city_file_of_a_word_with_the_pen_up_says_its_walks() -> None:
     runs = [pen_up("trento/GO:pen_up/6000", 0.95), run("trento/circle/5000", 0.93)]
     files = cs.city_files(runs, [r["key"] for r in runs])
@@ -462,11 +486,40 @@ def test_pen_up_plan_and_propose_from_the_command_line(
     keys = out.out.split()
     assert "bari/CIAO:pen_up/12000" in keys and "bari/BARI:pen_up/12000" not in keys
     assert f"{len(keys)} words with the pen up" in out.err
-    assert main([*args, "--propose", "--page", str(page)]) == 0
+    none = ["--read", str(tmp_path / "none.json")]
+    assert main([*args, *none, "--propose", "--page", str(page)]) == 0
     assert json.loads(capsys.readouterr().out) == {
         "kept": ["bari/circle/5000", "bari/BARI:pen_up/12000"]
     }
+    # Without a list of the words that read, the page shows all of them.
     assert "<h3>BARI" in page.read_text(encoding="utf-8")
+    assert "<h3>UE" in page.read_text(encoding="utf-8")
+
+
+def test_with_the_list_of_those_that_read_the_page_and_the_keys_follow_it(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    log, kept, page = (tmp_path / n for n in ("pen.jsonl", "kept.json", "page.html"))
+    read = tmp_path / "read.json"
+    runs = [
+        pen_up("bari/BARI:pen_up/12000", 0.95),
+        pen_up("bari/VAI:pen_up/9000", 0.97),
+    ]
+    write_log(log, runs)
+    cs.write_kept(kept, ["bari/circle/5000"])
+    read.write_text(json.dumps({"read": ["bari/VAI:pen_up/9000"]}), encoding="utf-8")
+    args = ["--pen-up", "--pen-up-log", str(log), "--kept", str(kept)]
+    args += ["--read", str(read), "--page", str(page)]
+    assert main([*args, "--propose"]) == 0
+    assert json.loads(capsys.readouterr().out) == {
+        "kept": ["bari/circle/5000", "bari/VAI:pen_up/9000"]
+    }
+    text = page.read_text(encoding="utf-8")
+    assert "<h3>VAI" in text and "<h3>BARI" not in text
+    assert main([*args, "--unread"]) == 0
+    text = page.read_text(encoding="utf-8")
+    assert "<h3>BARI" in text and "<h3>VAI" not in text
+    assert "2 pass of 2 written with the pen up, 1 read" in capsys.readouterr().err
 
 
 def test_write_reads_the_log_of_the_pen_up_too(tmp_path: Path) -> None:

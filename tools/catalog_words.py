@@ -29,8 +29,13 @@ other and the word does not read, whatever its similarity: the user had the
 the app's city examples write them (services/api city_examples.py): round
 letters, each drawn on its own, 3 km a letter, the route walking from one to
 the next (`walks`). `--pen-up --run` plans them, `--pen-up --propose` takes
-the one-line words out of the kept keys and puts in the words that pass,
-`--write` reads the three logs.
+the one-line words out of the kept keys and puts in the words that pass
+and read, `--write` reads the three logs.
+
+The filter does not tell whether a word reads: of the 761 words that passed
+it, 340 could be read at the size of a card of the app without their name
+(tools/catalog_pen_up_read.json, read one by one on 2026-11-12). Only those
+enter: a word of a new run is out until someone reads it and adds its key.
 
     services/api/.venv/bin/python tools/catalog_words.py --pen-up --run
     python tools/catalog_words.py --pen-up --propose
@@ -56,6 +61,7 @@ import catalog_seed as cs
 REPO_ROOT = cs.REPO_ROOT
 DEFAULT_LOG = REPO_ROOT / "out" / "TASK-441" / "runs.jsonl"
 PEN_UP_LOG = REPO_ROOT / "out" / "TASK-441" / "pen-up.jsonl"
+PEN_UP_READ = Path(__file__).resolve().with_name("catalog_pen_up_read.json")
 OLD_LOG = cs.DEFAULT_LOG
 SHAPES_PY = (
     REPO_ROOT / "services" / "route-engine" / "route_engine" / "shapes" / "__init__.py"
@@ -464,11 +470,30 @@ def reasons(run: cs.Run) -> list[str]:
     return pen_up_reasons(run) if run.get(PEN_UP) else cs.reasons(run)
 
 
-def pen_up_keep(pen_up_runs: Iterable[cs.Run], kept: Sequence[str]) -> list[str]:
-    """The kept keys without the words on one line, then every word with
-    the pen up that passes, by city and word."""
-    shapes = [k for k in kept if not is_word_key(k) or f":{PEN_UP}/" in k]
-    words = sorted(r["key"] for r in pen_up_runs if not pen_up_reasons(r))
+def read_keys(path: Path) -> list[str]:
+    """The keys of the words that read: {"read": [...]}."""
+    keys = json.loads(path.read_text(encoding="utf-8"))["read"]
+    if not isinstance(keys, list) or not all(isinstance(k, str) for k in keys):
+        raise ValueError(f"{path}: not a list of keys")
+    return keys
+
+
+def pen_up_keep(
+    pen_up_runs: Iterable[cs.Run],
+    kept: Sequence[str],
+    read: Iterable[str] | None = None,
+) -> list[str]:
+    """The kept keys without the words, then every word with the pen up
+    that passes the filter and is among those that `read` (all of them when
+    None), by city and word. The words kept before are judged again: one
+    that no longer passes, or does not read, goes out."""
+    shapes = [k for k in kept if not is_word_key(k)]
+    legible = None if read is None else set(read)
+    words = sorted(
+        r["key"]
+        for r in pen_up_runs
+        if not pen_up_reasons(r) and (legible is None or r["key"] in legible)
+    )
     return list(dict.fromkeys([*shapes, *words]))
 
 
@@ -731,6 +756,17 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--page", type=Path, help="with --pen-up: write the page of the words drawn"
     )
+    p.add_argument(
+        "--read",
+        type=Path,
+        default=PEN_UP_READ,
+        help="with --pen-up: the keys of the words that read",
+    )
+    p.add_argument(
+        "--unread",
+        action="store_true",
+        help="with --page: the words that pass the filter and do not read",
+    )
     p.add_argument("--kept", type=Path, default=cs.DEFAULT_KEPT)
     p.add_argument("--out", type=Path, default=cs.DEFAULT_SEED)
     p.add_argument("--cache-dir", type=Path, default=cs.DEFAULT_CACHE)
@@ -787,14 +823,28 @@ def _pen_up(args: argparse.Namespace) -> int:
     if args.run:
         print(f"{run_pen_up(todo, args.pen_up_log, args.cache_dir)} words planned")
     runs = cs.read_runs(args.pen_up_log)
+    read = set(read_keys(args.read)) if args.read.exists() else None
+    passing = [r for r in runs if not pen_up_reasons(r)]
     if args.page:
-        shown = [r for r in runs if not args.cities or r["city"] in args.cities]
-        args.page.write_text(pen_up_page(shown), encoding="utf-8")
+        shown = [
+            r
+            for r in (runs if read is None else passing)
+            if (not args.cities or r["city"] in args.cities)
+            and (read is None or (r["key"] in read) != args.unread)
+        ]
+        title = "Parole a penna alzata"
+        if read is not None:
+            what = "scartate: non si leggono" if args.unread else "che entrano"
+            title = f"Parole a penna alzata {what} ({len(shown)})"
+        args.page.write_text(pen_up_page(shown, title), encoding="utf-8")
     if args.propose:
-        print(json.dumps({"kept": pen_up_keep(runs, kept)}, indent=1))
+        print(json.dumps({"kept": pen_up_keep(runs, kept, read)}, indent=1))
         return 0
-    ok = sum(1 for r in runs if not pen_up_reasons(r))
-    print(f"{ok} pass of {len(runs)} written with the pen up", file=sys.stderr)
+    legible = len(passing) if read is None else sum(r["key"] in read for r in passing)
+    print(
+        f"{len(passing)} pass of {len(runs)} written with the pen up, {legible} read",
+        file=sys.stderr,
+    )
     return 0
 
 

@@ -190,7 +190,9 @@ E2b src/profile/ (ProfileHeader, ProfileHome, UserProfilePage, con
    (frase approvata dall'utente il 2026-11-11 con «Sì, approvo», data 11
    novembre), site/privacy rigenerato, i test della data
    (about/AboutPage.test.tsx, about/documents.test.ts,
-   site/tests/privacy.test.mjs)
+   site/tests/privacy.test.mjs). I 4 testi nuovi nelle 5 lingue
+   (out/TASK-423/TESTI-E2b.md) approvati dall'utente il 2026-11-11 con
+   «Sì, approvo»
 E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
    GamePrizesRow, prizesApi, usePrizes, prizesText; PlayScreen,
    CollectionPage, ShapeCard, UnlockCard, UnlockLayer, unlocks.ts),

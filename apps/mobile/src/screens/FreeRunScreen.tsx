@@ -34,6 +34,8 @@ import { runDistanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { RunCard } from "./RunDashboard";
 import { RunGrid, useRunNumbers } from "./RunPanel";
+import { SkiTourFinishCard } from "./SkiTourFinishCard";
+import { SkiTourLive } from "./SkiTourLive";
 import { SnowFinishCard } from "./SnowFinishCard";
 
 /**
@@ -148,10 +150,16 @@ export function FreeRunCard({
     />
   );
   // On the slopes, the resort of the day and its weather over the numbers
-  // (TASK-406 part D2).
+  // (TASK-406 part D2); on a ski tour, its phase, its VAM, the metres
+  // climbed and the height (TASK-415 part B).
   return sport === "skiing" ? (
     <View style={styles.skiing}>
       <DayResort />
+      {card}
+    </View>
+  ) : sport === "ski_touring" ? (
+    <View style={styles.skiing}>
+      <SkiTourLive track={track} live={running} />
       {card}
     </View>
   ) : (
@@ -189,10 +197,13 @@ type FinishProps = {
 };
 
 /** The end of a run without a route or, on the snow, of the day
- * (TASK-375 part C): the sport of «Settings» says which. */
+ * (TASK-375 part C), or of a ski tour with its phases (TASK-415 part B):
+ * the sport of «Settings» says which. */
 export function FreeFinishCard(props: FinishProps) {
   const activity = runActivityOf(useSport());
-  return isOnSnow(activity) ? (
+  return activity === "ski_touring" ? (
+    <SkiTourFinishCard {...props} activity={activity} />
+  ) : isOnSnow(activity) ? (
     <SnowFinishCard {...props} activity={activity} />
   ) : (
     <RunFinishCard {...props} />

@@ -1,6 +1,6 @@
 # TASK-460 — I movimenti dei tasti di «Play»
 
-**Stato**: In corso — codice scritto, PR da aprire dopo il video
+**Stato**: Done — in `main` (#1156, 6888f759); esce con l'aggiornamento completo dell'app
 **Fase**: app · **Branch**: `feat/TASK-460-play-motion`
 **ADR**: — (nessuno riservato) · Numero dato dal Coordinatore il 2026-11-11
 
@@ -42,12 +42,12 @@ pastiglia e le pagine sono subito al loro posto.
 
 ## Criteri di accettazione
 
-- [ ] I tasti di «Play» rispondono al tocco come nel resto dell'app.
-- [ ] Le schede scorrono, solo in «Play».
-- [ ] Le pagine interne entrano di lato; con «Riduci movimento», no.
-- [ ] Il tic sulle tre scelte, mai altrove.
-- [ ] Niente dipendenze né nativo: impronta iOS invariata (6f8bba4c).
-- [ ] Un video corto dal simulatore visto dall'utente prima del merge.
+- [x] I tasti di «Play» rispondono al tocco come nel resto dell'app.
+- [x] Le schede scorrono, solo in «Play».
+- [x] Le pagine interne entrano di lato; con «Riduci movimento», no.
+- [x] Il tic sulle tre scelte, mai altrove.
+- [x] Niente dipendenze né nativo: impronta iOS invariata (6f8bba4c).
+- [x] Un video corto dal simulatore visto dall'utente prima del merge.
 
 ## File toccati
 
@@ -85,8 +85,14 @@ Non si toccano `screens/Segmented.tsx`, `ui/Tap.tsx`, `haptics/haptics.ts`,
   che si rimpiccioliscono. In `out/TASK-460/play-motion.mp4` del checkout
   principale. Simulatore spento dopo. Visto lì: il riquadro della cornice
   scelta in «Prizes» aveva gli angoli vivi, ora tondi come le carte.
-- 2026-11-11 — Video visto dall'utente: «Sì, vanno bene». PR #1156.
+- 2026-11-11 — Video visto dall'utente: «Sì, vanno bene». PR #1156, in
+  `main` (6888f759).
 
 ## Esito
 
-*(a fine task)*
+Fatto il 2026-11-11: in «Play» i tasti rispondono al tocco, le schede
+scorrono, le pagine interne entrano di lato e le tre scelte danno un tic;
+con «Riduci movimento» niente si muove. In `main` con la #1156 (6888f759),
+video dal simulatore approvato dall'utente («Sì, vanno bene»). Esce con
+l'aggiornamento completo dell'app che l'utente vuole tra due giorni,
+nessun OTA intermedio se non lo chiede lui.

@@ -136,7 +136,7 @@ test("a set, its rest by itself, Skip, Same again", async () => {
   expect(screen.queryByTestId("rest-panel")).toBeNull();
 
   await fireEvent.press(screen.getByTestId("same-again"));
-  expect(screen.getByText("1 exercises · 2 sets")).toBeOnTheScreen();
+  expect(screen.getByText("1 exercise · 2 sets")).toBeOnTheScreen();
   expect(screen.getByText("60 kg × 10 · 60 kg × 10")).toBeOnTheScreen();
   expect(loadWorkout()?.sets).toHaveLength(2);
 });

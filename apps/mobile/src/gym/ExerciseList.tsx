@@ -2,7 +2,7 @@ import type { GymExercises, GymSet } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { weightLabel } from "../body/bodyUnits";
-import { t } from "../i18n";
+import { t, tPlural } from "../i18n";
 import { appLanguage } from "../i18n/language";
 import type { Language } from "../i18n/languages";
 import { clockLabel } from "../navigation/freeRun";
@@ -62,16 +62,27 @@ export function setLabel(set: GymSet, units: Units): string {
   }
 }
 
-/** «6 rests · avg 1:30 · 9:00 resting»; null without rests. */
+/** «8 exercises · 10 sets», and «1 exercise · 1 set» (TASK-453). */
+export function countsLabel(exercises: number, sets: number): string {
+  return `${tPlural(exercises, "{count} exercise", "{count} exercises")} · ${tPlural(
+    sets,
+    "{count} set",
+    "{count} sets",
+  )}`;
+}
+
+/** «6 rests · avg 1:30 · 9:00 resting», «1 rest · …»; null without rests. */
 export function restsLabel(exercises: GymExercises): string | null {
   if (exercises.rests === 0) {
     return null;
   }
-  return t("{n} rests · avg {time} · {total} resting", {
-    n: String(exercises.rests),
-    time: clockLabel((exercises.rest_s / exercises.rests) * 1000),
-    total: clockLabel(exercises.rest_s * 1000),
-  });
+  return `${tPlural(exercises.rests, "{count} rest", "{count} rests")} · ${t(
+    "avg {time} · {total} resting",
+    {
+      time: clockLabel((exercises.rest_s / exercises.rests) * 1000),
+      total: clockLabel(exercises.rest_s * 1000),
+    },
+  )}`;
 }
 
 /**
@@ -91,10 +102,7 @@ export function ExerciseList({ exercises, onExercise }: Props) {
   return (
     <View style={styles.list} testID="gym-exercises">
       <Text style={styles.title} accessibilityRole="header">
-        {t("{n} exercises · {s} sets", {
-          n: String(rows.length),
-          s: String(exercises.sets.length),
-        })}
+        {countsLabel(rows.length, exercises.sets.length)}
       </Text>
       {rows.map((row, n) => {
         const key = row.sets[0]?.exercise;

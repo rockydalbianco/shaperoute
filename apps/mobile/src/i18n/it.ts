@@ -2482,4 +2482,10 @@ export const IT: Table = {
   "Vertical this season": "Dislivello della stagione",
   "On snow": "Sulla neve",
   "Piste without a name": "Pista senza nome",
+
+  // src/activities/ (TASK-462: the calendar of every sport)
+  Calendar: "Calendario",
+  "Last 12 months": "Ultimi 12 mesi",
+  "{count} activity": "{count} attività",
+  "{count} activities": "{count} attività",
 };

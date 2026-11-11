@@ -1,7 +1,8 @@
 # TASK-462 — Il calendario di tutte le attività, con lo storico dei tempi
 
-**Stato**: In corso — parte A (server) in PR
-**Fase**: 5 · **Branch**: `feat/TASK-462-a-activity-calendar-api` (A) ·
+**Stato**: In corso — parte A (server) #1162, parte B (app) in bozza
+**Fase**: 5 · **Branch**: `feat/TASK-462-a-activity-calendar-api` (A),
+`feat/TASK-462-b-activity-calendar-app` (B) ·
 **ADR**: ADR-0372 (`GET /me/activity-calendar`)
 
 ## Obiettivo
@@ -64,6 +65,38 @@ packages/shared-types/test/activityCalendar.test.ts (nuovo)
 docs/API.md
 docs/tasks/TASK-462.md                             (nuovo)
 ```
+
+## Criteri di accettazione (parte B)
+
+- [x] Nel profilo, sotto i totali, la settimana da lunedì con le icone degli
+      sport fatti e i suoi totali; un tocco apre il calendario. Un'API
+      senza calendario lascia il profilo com'era.
+- [x] In «My activities», sopra la lista, «📅 Calendar» apre lo stesso
+      calendario.
+- [x] Nel mese solo le icone; un giorno toccato elenca ogni attività con
+      ora, km, tempo, passo e kcal; una apre la sua corsa come in «My
+      activities» (una nuotata in piscina no).
+- [x] Il filtro per sport (gli sport dell'account), le barre dei 12 mesi
+      (tempo) che aprono il loro mese, sotto i record dello sport scelto.
+- [x] Testi in it, de, es, fr; colori solo da `tokens.ts`; nessuna
+      dipendenza nuova, niente di nativo.
+
+## File toccati (parte B)
+
+```
+apps/mobile/src/api/activityCalendar.ts            (nuovo)
+apps/mobile/src/api/activityCalendar.test.ts       (nuovo)
+apps/mobile/src/activities/ActivityCalendar.tsx    (nuovo)
+apps/mobile/src/activities/ActivityCalendar.test.tsx (nuovo)
+apps/mobile/src/activities/WeekStrip.tsx           (nuovo)
+apps/mobile/src/activities/calendarText.ts         (nuovo)
+apps/mobile/src/activities/ActivitiesList.tsx
+apps/mobile/src/profile/ProfileHome.tsx
+apps/mobile/src/i18n/it.ts, de.ts, es.ts, fr.ts
+docs/tasks/TASK-462.md
+```
+
+`gym/GymCalendar.tsx` non è toccato: `monthGrid` era già esportato.
 
 ## Fuori scope
 

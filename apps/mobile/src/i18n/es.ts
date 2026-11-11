@@ -2498,4 +2498,10 @@ export const ES: Table = {
   "Vertical this season": "Desnivel de la temporada",
   "On snow": "En la nieve",
   "Piste without a name": "Pista sin nombre",
+
+  // src/activities/ (TASK-462: the calendar of every sport)
+  Calendar: "Calendario",
+  "Last 12 months": "Últimos 12 meses",
+  "{count} activity": "{count} actividad",
+  "{count} activities": "{count} actividades",
 };

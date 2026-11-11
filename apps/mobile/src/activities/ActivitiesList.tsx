@@ -29,6 +29,7 @@ import { isPoolSwimRun, PoolTile } from "../pool/PoolTile";
 import { runFacts, startedLabel, whereAndWhat } from "./activityText";
 import { RunDrawing } from "./RunDrawing";
 import { isTrackless } from "./snow";
+import { ActivityCalendarSheet, activityCalendarTitle } from "./ActivityCalendar";
 
 /** The side of a run's drawing in the list. */
 const DRAWING = 88;
@@ -39,13 +40,16 @@ const DRAWING = 88;
  * «Delete» asks first. A public run says so (TASK-117), one added from a
  * file of another app says «Imported» (TASK-312). Over them, the runs of
  * this phone the API will not take, with its reason and «Discard»
- * (TASK-257); over all, «Add past activity» (TASK-312).
+ * (TASK-257); over all, «Add past activity» (TASK-312), and over that
+ * «Calendar», the calendar of every sport of the profile (TASK-462).
  */
 export function ActivitiesList() {
   const activities = useActivitiesDoor();
   const { publicKeys, refreshMine } = useDrawingsDoor();
   // The run whose «Delete» was tapped, waiting for a yes.
   const [confirming, setConfirming] = useState<string | null>(null);
+  // The calendar of every sport (TASK-462), the same as the profile's.
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const { refresh, clearProblem, list } = activities;
   // The refused ones are not waiting for a connection: they have rows.
   const waiting = activities.waiting - activities.refused.length;
@@ -61,6 +65,22 @@ export function ActivitiesList() {
 
   return (
     <View style={styles.list}>
+      {activities.list.length > 0 && (
+        <>
+          <Tap
+            style={styles.button}
+            onPress={() => setCalendarOpen(true)}
+            accessibilityRole="button"
+            testID="activities-calendar"
+          >
+            <Text style={styles.buttonText}>{`📅 ${activityCalendarTitle()}`}</Text>
+          </Tap>
+          <ActivityCalendarSheet
+            visible={calendarOpen}
+            onClose={() => setCalendarOpen(false)}
+          />
+        </>
+      )}
       <WatchRunCard />
       <AddPastActivity />
       {activities.problem !== null && (

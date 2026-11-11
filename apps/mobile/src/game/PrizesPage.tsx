@@ -7,6 +7,7 @@ import { GAME_SHOWN_BADGES_MAX } from "@shaperoute/shared-types";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { selectionFeel } from "../haptics/haptics";
 import { t } from "../i18n";
 import type { Language } from "../i18n/languages";
 import {
@@ -18,6 +19,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import type { Units } from "../units/units";
 import { collectionNameIn } from "./collections";
 import { ProfileFrame } from "./ProfileFrame";
@@ -63,6 +65,7 @@ export function PrizesPage({
   /** What the profile shows (TASK-423 E2b): a prize got, touched, goes on
    * it or off it; one frame, one title, up to 3 badges. */
   async function choose(next: GamePrizesShown) {
+    selectionFeel();
     setSaving(true);
     setProblem(null);
     const done = await show(next);
@@ -95,7 +98,7 @@ export function PrizesPage({
   return (
     <View style={styles.page} testID="prizes-page">
       <View style={styles.header}>
-        <Pressable
+        <Tap
           style={styles.back}
           onPress={onBack}
           accessibilityRole="button"
@@ -103,7 +106,7 @@ export function PrizesPage({
           testID="prizes-back"
         >
           <Text style={styles.backText}>←</Text>
-        </Pressable>
+        </Tap>
         <Text style={styles.title} accessibilityRole="header">
           {t("Prizes")}
         </Text>
@@ -119,14 +122,14 @@ export function PrizesPage({
       {shown.status === "failed" && (
         <View style={styles.notice}>
           <Text style={styles.noticeText}>{shown.problem}</Text>
-          <Pressable
+          <Tap
             style={styles.retry}
             onPress={refresh}
             accessibilityRole="button"
             testID="prizes-retry"
           >
             <Text style={styles.retryText}>{t("Try again")}</Text>
-          </Pressable>
+          </Tap>
         </View>
       )}
       {prizes !== null && (
@@ -168,7 +171,7 @@ export function PrizesPage({
                   ? frame.id
                   : collectionNameIn(collection, language);
               return (
-                <Pressable
+                <Tap
                   key={frame.id}
                   style={[styles.frame, chosen?.frame === frame.id && styles.chosen]}
                   onPress={() => toggleFrame(frame.id)}
@@ -196,7 +199,7 @@ export function PrizesPage({
                         ? t("Earned")
                         : `${frame.unlocked} / ${frame.total}`}
                   </Text>
-                </Pressable>
+                </Tap>
               );
             })}
           </View>
@@ -259,7 +262,7 @@ function PrizeRow({
       : prizeAlong(state, units);
   const share = state.target > 0 ? Math.min(1, state.value / state.target) : 0;
   return (
-    <Pressable
+    <Tap
       style={[styles.row, !state.got && styles.rowLocked, onProfile && styles.chosen]}
       onPress={onPress}
       disabled={!state.got || disabled}
@@ -280,7 +283,7 @@ function PrizeRow({
           <View style={[styles.fill, { width: `${Math.round(share * 100)}%` }]} />
         </View>
       )}
-    </Pressable>
+    </Tap>
   );
 }
 

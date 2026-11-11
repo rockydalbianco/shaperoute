@@ -11,6 +11,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { PlayScreen } from "./PlayScreen";
 
 type Props = {
@@ -39,14 +40,14 @@ export function PlayOverlay({ onBack, onSignIn }: Props) {
     >
       {/* As the title of «Messages» (MessagesOverlay.tsx). */}
       <View style={styles.titleRow}>
-        <Pressable
+        <Tap
           style={styles.back}
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel={t("Back")}
         >
           <Text style={styles.backText}>←</Text>
-        </Pressable>
+        </Tap>
         <Text style={styles.title} accessibilityRole="header">
           {pageTitle("play")}
         </Text>

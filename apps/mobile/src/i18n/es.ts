@@ -380,6 +380,7 @@ export const ES: Table = {
   "{length} of {max} characters": "{length} de {max} caracteres",
   "Saving…": "Guardando…",
   Save: "Guardar",
+  Saved: "Guardado",
 
   // src/profile/PhotoChoices.tsx
   "Removing…": "Quitando…",

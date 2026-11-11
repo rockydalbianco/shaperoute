@@ -65,9 +65,10 @@ test("a day on the snow is saved as its own activity, the others as their route"
   for (const sport of EVERY) {
     expect(RUN_ACTIVITIES).toContain(runActivityOf(sport));
   }
-  // Ski touring too, since TASK-415 part B.
+  // Ski touring too, since TASK-415 part B. Paragliding is in the contract
+  // (TASK-305 R1) and «Soon» in «Settings» until part R2.
   expect(EVERY.filter((id) => isRecordOnly(id)).map(runActivityOf)).toEqual(
-    RECORD_ACTIVITIES,
+    RECORD_ACTIVITIES.filter((activity) => activity !== "paragliding"),
   );
   // No route is ever asked for the snow: «Draw» asks a run, never shown.
   expect(activityOf("ski")).toBe("running");

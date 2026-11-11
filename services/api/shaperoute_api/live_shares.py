@@ -136,6 +136,19 @@ class LiveStatsBody(BaseModel):
     """A swim in a pool: the lengths the app estimates."""
     exercise: str | None = Field(default=None, min_length=1, max_length=80)
     """At the gym: the exercise in progress."""
+    # A paragliding flight (TASK-305 parts R, ADR-0375, the user's choice
+    # «Sì, numeri del volo»): the numbers of the flight. Optional, so an app
+    # that does not send them and a page that does not read them work as
+    # before; a server without them refuses them (extra="forbid"), so the
+    # server goes out before the app and the page.
+    alt_m: int | None = Field(default=None, ge=-500, le=9_000)
+    """The height now, metres above the sea, from the phone's fixes."""
+    max_alt_m: int | None = Field(default=None, ge=-500, le=9_000)
+    """The highest so far."""
+    vario_mps: float | None = Field(default=None, ge=-30, le=30, allow_inf_nan=False)
+    """Climbing (+) or sinking (-), metres a second, over the last seconds."""
+    speed_mps: float | None = Field(default=None, ge=0, le=100, allow_inf_nan=False)
+    """The speed over the ground now, metres a second."""
 
 
 class LiveUpdateBody(BaseModel):

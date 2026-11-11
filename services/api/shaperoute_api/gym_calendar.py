@@ -30,7 +30,7 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.db import Database
-from shaperoute_api.gym_plans import planned_on, program_of
+from shaperoute_api.gym_plans import OUTING_ACTIVITY, planned_on, program_of
 from shaperoute_api.schemas import ErrorBody
 
 MONTH = re.compile(r"^(\d{4})-(0[1-9]|1[0-2])$")
@@ -146,19 +146,23 @@ class GymCalendars:
                 " ORDER BY r.started_at DESC, r.id DESC LIMIT 1",
                 params,
             ).fetchone()
-            # The days with a run: a run day of a plan done (TASK-433 C).
-            ran = {
-                row["day"]
-                for row in conn.execute(
-                    "SELECT DISTINCT extract(day FROM r.started_at AT TIME ZONE"
-                    " %(tz)s)::int AS day FROM runs r"
-                    " WHERE r.user_id = %(owner)s AND r.activity = 'running'"
-                    f" AND r.started_at >= ({start} AT TIME ZONE %(tz)s)"
-                    f" AND r.started_at < (({start} + interval '1 month')"
-                    " AT TIME ZONE %(tz)s)",
-                    params,
-                ).fetchall()
-            }
+            # The days with an activity of each sport: a run day of a plan
+            # done by a run (TASK-433 C), a day out by its sport (TASK-461 B).
+            done: dict[str, set[int]] = {}
+            for row in conn.execute(
+                "SELECT DISTINCT r.activity, extract(day FROM r.started_at AT"
+                " TIME ZONE %(tz)s)::int AS day FROM runs r"
+                " WHERE r.user_id = %(owner)s AND r.activity = ANY(%(sports)s)"
+                f" AND r.started_at >= ({start} AT TIME ZONE %(tz)s)"
+                f" AND r.started_at < (({start} + interval '1 month')"
+                " AT TIME ZONE %(tz)s)",
+                {
+                    **params,
+                    "sports": ["running", *sorted(set(OUTING_ACTIVITY.values()))],
+                },
+            ).fetchall():
+                done.setdefault(row["activity"], set()).add(row["day"])
+            ran = done.get("running", set())
             kept = conn.execute(
                 "SELECT key, name, days, created_at, program FROM gym_plans"
                 " WHERE user_id = %(owner)s ORDER BY position, key",
@@ -177,7 +181,8 @@ class GymCalendars:
 
         def missed(plan: dict[str, Any], day: int) -> bool:
             """Whether `plan` had a workout on `day` not done: a run day
-            done by any run, a workout of the gym by one that followed it."""
+            done by any run, a day out by any activity of its sport, a
+            workout of the gym by one that followed it."""
             on = date(year, number, day)
             program = plan["program"]
             if program is None:
@@ -193,7 +198,11 @@ class GymCalendars:
                 (
                     day not in ran
                     if session.run is not None
-                    else (day, plan["key"]) not in followed
+                    else (
+                        day not in done.get(OUTING_ACTIVITY[session.outing.sport], ())
+                        if session.outing is not None
+                        else (day, plan["key"]) not in followed
+                    )
                 )
                 for session in program.sessions_on(on)
             )

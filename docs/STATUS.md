@@ -125,9 +125,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   D con l'OTA 3, dopo il passo server 2, col sì dell'utente. Poi E. File: —
   · `tasks/TASK-410.md`
 - **TASK-413 — Ciaspole** · 0, A1 e A2 in `main` (#1130, `ac08ae94`: lo
-  sport nel contratto e nell'API, nascosto nell'app, migrazione 0068); A2
-  sul server col passo 8 del Coordinatore, col sì dell'utente; l'app col
-  decimo OTA. Prossima B. File: — · `tasks/TASK-413.md`
+  sport nel contratto e nell'API, nascosto nell'app, migrazione 0068) e
+  sul server col passo 8 del 2026-11-11; l'app col decimo OTA. Prima di B,
+  la città lenta (76 s per un rifiuto). File: — · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·
   `tasks/TASK-414.md`
@@ -180,10 +180,15 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
   tornano nella B a penna alzata; il server aspetta la correzione. Poi B
   (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
+- **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
+  R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
+  (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
+  R2 (app, col turno), R3 (`site/live/`). Il pianificatore resta Proposto.
+  File: — · `tasks/TASK-305.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
-la figura, 305 parapendio, 336 video nei post, 341 badge, 345 calorie e
+la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e
 battito nel Feed, 373 sci alpino, 375 «Record only».
 
 ## Bloccato

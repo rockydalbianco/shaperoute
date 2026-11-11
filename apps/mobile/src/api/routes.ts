@@ -6,6 +6,7 @@ import {
   JOB_STATUSES,
   type JobStatus,
   type RouteJob,
+  type RouteJobWithFirst,
   type RouteRequest,
   type RouteResult,
   TURNS,
@@ -63,6 +64,12 @@ type Options = {
   signal?: AbortSignal;
   /** Called with each state the API reports while working. */
   onStatus?: (status: JobStatus) => void;
+  /**
+   * Called once with the route from the user's own start, when the API has
+   * it before the whole answer (TASK-435, ADR-0361). Giving it is what asks
+   * the API for it (`?first=1`): without, the job is read as before.
+   */
+  onFirst?: (first: RouteResult) => void;
   fetchFn?: typeof fetch;
   /** Sent in every call; by default EXPO_PUBLIC_API_KEY (TASK-081). */
   apiKey?: string | null;
@@ -92,6 +99,7 @@ export async function requestRoute(
   {
     signal,
     onStatus,
+    onFirst,
     fetchFn = fetch,
     apiKey = configuredKey(),
     pollMs = POLL_MS,
@@ -125,12 +133,23 @@ export async function requestRoute(
     void fetchFn(jobUrl, { method: "DELETE", headers: auth }).catch(() => undefined);
 
   let failures = 0;
+  // The first route is asked for until it has come (TASK-435): after it,
+  // and for who gave no `onFirst`, the job is read as before.
+  let wantsFirst = onFirst !== undefined;
   for (;;) {
     if (job.status === "done" && job.result) {
       return { kind: "route", result: job.result };
     }
     if (job.status === "failed" && job.error) {
       return { kind: "api_error", ...job.error };
+    }
+    // The job asked with `?first=1` may carry its first route
+    // (RouteJobWithFirst); an API before it sends a plain RouteJob. A first
+    // route that cannot be drawn is as none: the answer will come.
+    const first: unknown = (job as Partial<RouteJobWithFirst>).first;
+    if (wantsFirst && isRouteResult(first)) {
+      wantsFirst = false;
+      onFirst?.(first);
     }
     onStatus?.(knownStatus(job.status));
     if (Date.now() >= deadline) {
@@ -139,7 +158,8 @@ export async function requestRoute(
     }
     try {
       await sleep(pollDelay(Date.now() - asked, pollMs), signal);
-      answer = await call(fetchFn, jobUrl, { headers: auth, signal });
+      const readUrl = wantsFirst ? `${jobUrl}?first=1` : jobUrl;
+      answer = await call(fetchFn, readUrl, { headers: auth, signal });
     } catch {
       if (signal?.aborted) {
         forget();
@@ -185,21 +205,25 @@ function knownStatus(status: string): JobStatus {
  * a new kind of turn must not refuse the whole route.
  */
 export function withKnownTurns(body: unknown): unknown {
-  if (
-    !isRecord(body) ||
-    !isRecord(body.result) ||
-    !Array.isArray(body.result.directions)
-  ) {
+  if (!isRecord(body)) {
     return body;
   }
-  const directions = body.result.directions.map((direction: unknown) =>
-    isRecord(direction) &&
-    typeof direction.turn === "string" &&
-    !(TURNS as readonly string[]).includes(direction.turn)
-      ? { ...direction, turn: "straight" }
-      : direction,
-  );
-  return { ...body, result: { ...body.result, directions } };
+  let known = body;
+  // The job's answer, and its first route while it computes (TASK-435).
+  for (const key of ["result", "first"]) {
+    const route = known[key];
+    if (isRecord(route) && Array.isArray(route.directions)) {
+      const directions = route.directions.map((direction: unknown) =>
+        isRecord(direction) &&
+        typeof direction.turn === "string" &&
+        !(TURNS as readonly string[]).includes(direction.turn)
+          ? { ...direction, turn: "straight" }
+          : direction,
+      );
+      known = { ...known, [key]: { ...route, directions } };
+    }
+  }
+  return known;
 }
 
 async function call(

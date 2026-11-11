@@ -756,6 +756,9 @@ export const FR: Table = {
     "Parcours {label}, {distance}, ressemble à la forme à {likeness}",
   "The outline traced from the picture": "Le contour tracé d'après la photo",
 
+  // src/route/RoutePanel.tsx (TASK-435: the first route is shown, the others are coming)
+  "Looking for other routes…": "Recherche d'autres parcours…",
+
   // src/screens/PeopleScreen.tsx
   "Find friends": "Trouver des amis",
 

@@ -185,6 +185,20 @@ la corsa e «Go to the run · 5.5 km» passa a «Run» coi km già scritti; una
 corsa fatta quel giorno conta come fatta nel calendario. La sigla «RUN» ha
 il suo colore (`runDay`). `runDay.ts`, `RunDayEditor.tsx`.
 
+**Il pianificatore completo** (TASK-461, ADR-0371): un piano nuovo mescola
+sempre almeno due sport (scelta dell'utente del 2026-11-11, «Almeno due,
+sempre»): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e
+canoa, montagna. Un piano può portare a un obiettivo (`target`): una
+distanza di uno sport (corsa 5–42,2 km, bici 30–150 km, nuoto 1–5 km…) o la
+salita di una gita in montagna (500–2000 m), in una data o «Quando sono
+pronto», fino a 24 settimane. I giorni di corsa restano `run`; quelli degli
+altri sport sono `outing` (camminata svelta, uscita in bici, serie in
+vasca, uscita in salita), fatti nel calendario da un'attività del loro
+sport quel giorno. Il nome del giorno dice sport e misura («Long ride · 30
+km»), così anche un'app di prima, che non mostra «Today» per un giorno
+fuori, nella lista dice il vero. Il resto (le domande della guida, «Oggi»
+oltre il massimo di Draw, il promemoria alle 8) è nel task file.
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una

@@ -3096,7 +3096,10 @@ con le sue serie. Token richiesto; tipi in `shared-types/src/gym.ts`
   `kind` (`easy`, `intervals`, `long`), per `easy` e `long` `distance_m`
   (100–100 000) o `duration_s` (60 s–6 h), per `intervals` `reps` (1–50) e
   `rep_m` (50–5000) o `rep_s` (10–1800); nel calendario è fatto se quel
-  giorno c'è una corsa (`running`).
+  giorno c'è una corsa (`running`). Il programma può avere `runner`
+  (TASK-452, ADR-0369): `pace_10k_s` 180–900 (il ritmo sui 10 km, in
+  secondi al km) e il lungo, `long_m` (1–60 km) o `long_s` (10 min–6 h); i
+  ritmi li calcola il telefono.
 - **Fuori per costruzione**: niente record personali, gioco delle forme,
   GPX, Strava (`POST /me/activities/{key}/strava` è `422`, non ha una
   traccia da caricare). `PUT /me/activities/{key}` con `activity: "gym"`

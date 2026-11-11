@@ -79,6 +79,16 @@ server), ADR-0300 (le quote dalle tegole, parte G di TASK-347),
 - I moduli sono generici, non dello scialpinismo: `mountainPhases.ts`,
   `terrain.py`, `summits.py`. Le ciaspole e Hike possono usarli.
 - Il resto del disegno tecnico: `docs/sports/skimo.md` e ADR-0344.
+- Parte B (2026-11-11): lo sport in «Settings» si chiama `skimo` (gli id
+  di «Settings» sono corti, come `xc_ski`); si salva come `ski_touring`.
+  Il D+ della fine gita e del pannello conta solo le salite (le risalite
+  in impianto no); il D− solo le discese. Il tempo «in movimento» delle
+  fasi e della VAM lascia fuori i passi sotto 0,2 m/s (`MOVING_MIN_MPS`):
+  la soglia di 0,5 m/s vale solo per i cambi. Il pannello dice «Cambio
+  pelli» quando la gita è ferma da 90 s (o in pausa) vicino alla quota
+  della svolta: una sosta lunga a metà salita può sembrarlo, da tarare in
+  E. Il pannello sta sopra la scheda della corsa (`FreeRunScreen.tsx`,
+  come `DayResort` per lo sci): `RunDashboard.tsx` non cambia.
 
 ## Le parti
 
@@ -159,6 +169,28 @@ impronta iOS invariata.
 
 Parti B–D: la lista si manda al Coordinatore prima di ciascuna.
 
+Parte B (`feat/TASK-415-b-skimo-phases`), mandata al Coordinatore il
+2026-11-11:
+
+```
+apps/mobile/src/activities/mountainPhases.ts, .test.ts     (nuovi)
+apps/mobile/src/screens/SkiTourFinishCard.tsx, .test.tsx   (nuovi: la fine gita, e i test del pannello)
+apps/mobile/src/screens/SkiTourLive.tsx                    (nuovo: il pannello in gita)
+apps/mobile/src/activities/snowDay.ts                      (export di legs, isLift, droppedM; turnM facoltativo)
+apps/mobile/src/screens/FreeRunScreen.tsx                  (i due rami dello scialpinismo)
+apps/mobile/src/settings/sport.ts                          ("skimo", pronto)
+apps/mobile/src/screens/RunNoRouteButton.tsx               (🏔️)
+apps/mobile/src/sports/ski_touring.ts                      (nome con tLater)
+apps/mobile/src/social/PublicParts.tsx                     (via NOT_YET_ON_SNOW)
+apps/mobile/src/i18n/{it,de,fr,es}.ts                      (testi approvati dall'utente il 2026-11-11)
+apps/mobile/targets/watch/{de,es,fr,it}.lproj/Localizable.strings
+                                                           (rigenerati da scripts/watch-texts.sh: solo il nome)
+apps/mobile/src/settings/{sport,snowSport,sportRows}.test.ts,
+    {SportButton,SportSetting,SportStoreBuild,SportVoiceItalian}.test.tsx,
+    src/social/snowChips.test.tsx                          (le liste «di prima»)
+docs/tasks/TASK-415.md
+```
+
 ## Dove si è
 
 2026-11-07: le cinque scelte dell'utente prese. 2026-11-08: parte 0 in PR,
@@ -186,3 +218,16 @@ dell'utente («Sì, ok server», al Coordinatore): copia
 migrazioni in cima `0057_ski_touring` e `0056_ski_days`,
 `runs_activity_check` con `'ski_touring'`, `/health` ok. Prossimo: la lista
 della parte B al Coordinatore.
+
+2026-11-11, parte B: lista al Coordinatore; i testi nuovi nelle cinque
+lingue approvati dall'utente («Approvo così»; sull'orologio solo il
+nome). Fasi, cambi e VAM in `activities/mountainPhases.ts`, fine gita
+`SkiTourFinishCard.tsx`, pannello `SkiTourLive.tsx`, riga «Ski touring»
+pronta in «Settings». Impronta del motore uguale a `main`
+(`427ed1a16a97 8ab61d8e87f9`), impronta iOS su una copia pulita
+`6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`, come `main` e la produzione. Lo sport si accende col primo OTA di
+produzione dopo il merge: quell'OTA vuole il sì dell'utente anche per lo
+scialpinismo.
+
+Gli screenshot dal simulatore (pannello in gita e fine gita, due caselle
+per riga) visti dall'utente il 2026-11-11: «Sì, va bene».

@@ -61,7 +61,7 @@ test("the example workout is a request of the contract", () => {
 
 test("the catalog names each exercise once, of a kind and a scale it has", () => {
   const keys = catalog.exercises.map((exercise) => exercise.key);
-  assert.equal(keys.length, 91);
+  assert.equal(keys.length, 95);
   assert.equal(new Set(keys).size, keys.length);
   for (const exercise of catalog.exercises) {
     assert.ok(
@@ -187,6 +187,12 @@ test("a plan's days are of the week once, its exercises of the catalog and its k
         program.custom.every((week) => week.week >= 2 && week.week <= program.weeks),
       );
       assert.ok(sessions.length > 0 && items.length <= MAX_GYM_PROGRAM_ITEMS);
+      if (program.runner !== undefined) {
+        // A pace of 3:00 to 15:00 a km; the long run a distance or a time.
+        const { pace_10k_s, long_m, long_s } = program.runner;
+        assert.ok(pace_10k_s >= 180 && pace_10k_s <= 900);
+        assert.ok((long_m === undefined) !== (long_s === undefined));
+      }
       for (const session of sessions) {
         if (session.run !== undefined) {
           // A run day has no exercises, and a distance, a time or its reps.

@@ -18,6 +18,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Tap } from "../ui/Tap";
 import { ShapeOutline } from "./ShapeOutline";
 
 type Props = {
@@ -95,15 +96,15 @@ export function UnlockCard({
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.line}>{line}</Text>
         <View style={styles.buttons}>
-          <Pressable
+          <Tap
             style={styles.button}
             onPress={onClose}
             accessibilityRole="button"
             testID="unlock-close"
           >
             <Text style={styles.buttonText}>{t("Close")}</Text>
-          </Pressable>
-          <Pressable
+          </Tap>
+          <Tap
             style={[styles.button, styles.buttonMain]}
             onPress={onPlay}
             accessibilityRole="button"
@@ -112,7 +113,7 @@ export function UnlockCard({
             <Text style={[styles.buttonText, styles.buttonMainText]}>
               {t("See collection")}
             </Text>
-          </Pressable>
+          </Tap>
         </View>
       </Pressable>
     </Pressable>

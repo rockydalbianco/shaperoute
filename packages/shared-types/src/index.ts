@@ -1452,7 +1452,46 @@ export type CommentReason = (typeof COMMENT_REASONS)[number];
  */
 export interface CommentRequest {
   text: string;
+  /**
+   * The comment of this drawing these words answer, a reply too (TASK-454):
+   * they go under its comment. Left out, a comment of the drawing.
+   */
+  reply_to?: string;
 }
+
+/**
+ * The reactions to a comment (TASK-454, ADR-0377), in the order the app
+ * shows them: those of a drawing without the MuW heart, which is a
+ * drawing's only. Codes, never the emoji: the app draws them.
+ */
+export const COMMENT_REACTION_KINDS = [
+  "fire",
+  "clap",
+  "strong",
+  "laugh",
+  "wow",
+] as const;
+export type CommentReactionKind = (typeof COMMENT_REACTION_KINDS)[number];
+
+/** PUT /comments/{id}/reaction: one for each member on a comment. */
+export interface CommentReactionRequest {
+  kind: CommentReactionKind;
+}
+
+/**
+ * The reactions of a comment as who asks sees them: with each comment, and
+ * the answer of PUT and DELETE /comments/{id}/reaction.
+ */
+export interface CommentReactions {
+  /** How many of each kind, all five, zero included. */
+  counts: Record<CommentReactionKind, number>;
+  total: number;
+  /** The reaction of who asks; null when it left none. */
+  mine: CommentReactionKind | null;
+}
+
+/** The replies that come with their comment when the threads are asked for. */
+export const COMMENT_REPLIES_SHOWN = 2;
 
 /** One comment under a drawing, as who asks sees it. */
 export interface Comment {
@@ -1464,14 +1503,37 @@ export interface Comment {
   created_at: string;
   /** Who asks may delete it: it wrote it, or it owns the drawing. */
   deletable: boolean;
+  // What follows came with the replies (TASK-454): an API from before does
+  // not send it.
+  /** The comment a reply stands under; null for a comment. */
+  parent_id?: string | null;
+  /**
+   * Who a reply to a reply answers, shown as «@name» before its words; null
+   * for the others, and when who asks does not see that member.
+   */
+  mention?: DrawingAuthor | null;
+  /** How many replies who asks reads under it; 0 for a reply. */
+  reply_count?: number;
+  /**
+   * With `?threads=true`, the oldest COMMENT_REPLIES_SHOWN of them, the
+   * others from GET /comments/{id}/replies; null when the threads were not
+   * asked for, and for a reply.
+   */
+  replies?: Comment[] | null;
+  reactions?: CommentReactions;
 }
 
-/** GET /drawings/{id}/comments: a page, the oldest first. */
+/**
+ * GET /drawings/{id}/comments: a page, the oldest first. With
+ * `?threads=true` the comments only, each with its first replies; without,
+ * the replies among the comments by time, as before them (TASK-454). GET
+ * /comments/{id}/replies: a page of the replies of a comment.
+ */
 export interface CommentsPage {
   comments: Comment[];
   /** The `cursor` of the next page; null on the last one. */
   next: string | null;
-  /** How many comments the drawing has, on every page. */
+  /** How many comments and replies there are, on every page. */
   total: number;
 }
 

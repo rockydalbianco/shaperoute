@@ -21,7 +21,8 @@ import { profileOf } from "../sports";
  * Paragliding (TASK-305 D0, ADR-0265) is only «Soon» for now: never chosen,
  * so never a route, and wherever the sports are told apart it goes as a
  * run. A day of alpine skiing («Ski») or of cross-country skiing is
- * recorded without a shape (TASK-375, ADR-0319): `recordOnly`. A workout
+ * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
+ * a ski tour («Ski touring», TASK-415 part B, ADR-0344). A workout
  * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
  * «Draw» offers only «Start workout». */
 export type Sport =
@@ -36,6 +37,7 @@ export type Sport =
   | "swim"
   | "ski"
   | "xc_ski"
+  | "skimo"
   | "gym"
   | "paragliding";
 
@@ -83,6 +85,7 @@ const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
   roller: "inline_skating",
   ski: "skiing",
   xc_ski: "xc_skiing",
+  skimo: "ski_touring",
   gym: "gym",
 };
 
@@ -134,6 +137,11 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // The cross-country ski not yet.
   fromProfile("ski", true),
   fromProfile("xc_ski", false),
+  // Ski touring, saved as "ski_touring": on since its phases and its VAM
+  // (TASK-415 part B), the user's «Acceso con a e b» (2026-11-07), with
+  // the OTA that carries them; the server has had part A and its migration
+  // 0057 since 2026-11-08.
+  fromProfile("skimo", true),
   // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in
   // the store builds too, the user's «ok accendi» (2026-11-05): the server
   // keeps its posts from the apps that cannot read them (X-MuW-Reads).
@@ -312,6 +320,7 @@ export function withoutRouteLabel(sport: Sport): string {
       return t("Swim without a route");
     case "ski":
     case "xc_ski":
+    case "skimo":
       // No shapes on the slopes (TASK-375): the only way to go.
       return t("Record your day");
     case "gym":

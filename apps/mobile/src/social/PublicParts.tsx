@@ -253,13 +253,6 @@ function isRecordActivity(activity: RunActivity): boolean {
   return (RECORD_ACTIVITIES as readonly string[]).includes(activity);
 }
 
-/** Never a day of ski touring before «Settings» has it (TASK-415 part B
- * removes it, as TASK-380 B did the skate's `NOT_YET`). */
-const NOT_YET_ON_SNOW: readonly RunActivity[] = ["ski_touring"];
-const SNOW_SHOWN: readonly RunActivity[] = RECORD_ACTIVITIES.filter(
-  (activity) => !NOT_YET_ON_SNOW.includes(activity),
-);
-
 /** «Activity»: what the run was, Run, Bike or Paddle; for a day on the snow,
  * Ski or Cross-country ski (TASK-375); a workout at the gym stays one, Gym
  * alone (TASK-385 B0): it has no track to be a run. */
@@ -279,7 +272,7 @@ export function ActivityChips({
     alone || isTrackless(value)
       ? [value]
       : isRecordActivity(value)
-        ? SNOW_SHOWN
+        ? RECORD_ACTIVITIES
         : ACTIVITIES_SHOWN;
   return (
     <Chips

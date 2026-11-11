@@ -76,6 +76,7 @@ export function PoolSwimScreen({
             value={typeof now.kcal === "number" ? String(now.kcal) : "–"}
             unit={typeof now.kcal === "number" ? "kcal" : undefined}
             testID="pool-live-kcal"
+            energy
           />
         </View>
         {paused && <Text style={gymStyles.muted}>{t("Paused")}</Text>}
@@ -113,11 +114,14 @@ function Figure({
   value,
   unit,
   testID,
+  energy = false,
 }: {
   label: string;
   value: string;
   unit?: string;
   testID: string;
+  /** The calories: in red (TASK-424 part C3). */
+  energy?: boolean;
 }) {
   return (
     <View
@@ -125,7 +129,7 @@ function Figure({
       accessible
       accessibilityLabel={`${label}: ${value}${unit ? ` ${unit}` : ""}`}
     >
-      <Text style={styles.value} testID={testID}>
+      <Text style={[styles.value, energy && styles.energy]} testID={testID}>
         {unit ? `${value} ${unit}` : value}
       </Text>
       <Text style={gymStyles.muted}>{label}</Text>
@@ -159,6 +163,10 @@ const styles = StyleSheet.create({
     fontSize: fontSize.title,
     fontWeight: fontWeight.bold,
     fontVariant: ["tabular-nums"],
+  },
+  // The calories, in red wherever they are (TASK-424 part C3).
+  energy: {
+    color: color.energy,
   },
   foot: {
     flexDirection: "row",

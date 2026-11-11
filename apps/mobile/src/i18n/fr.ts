@@ -1284,9 +1284,6 @@ export const FR: Table = {
     "Séries, répétitions et récup en découlent. Tu pourras les changer ensuite.",
   "to start with": "pour commencer",
   "How many days a week?": "Combien de jours par semaine ?",
-  "Which days": "Quels jours",
-  "With a day of rest in between, where it fits.":
-    "Avec un jour de repos entre deux, quand c'est possible.",
   "How the work is split": "Comment le travail est réparti",
   "Your plan": "Ton programme",
   "Here is your plan": "Voici ton programme",
@@ -1358,6 +1355,32 @@ export const FR: Table = {
     "Plus de charge, plus de répétitions ou semaines A / B. Ici, tu trouves la séance du jour.",
   "Create my plan": "Créer mon programme",
   "How plans work": "Comment marchent les programmes",
+  // src/gym/RunDayEditor.tsx, runDay.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-433 C, approved 2026-11-10)
+  "Go to the run · {amount}": "Aller à la course · {amount}",
+  "Gym today instead": "Plutôt la salle aujourd'hui",
+  "And running?": "Et la course ?",
+  No: "Non",
+  "Touch a day to change it: gym, run or rest.":
+    "Touche un jour pour le changer : salle, course ou repos.",
+  "Your week": "Ta semaine",
+  "How much": "Combien",
+  "The same every week.": "Pareil chaque semaine.",
+  "Which run": "Quelle course",
+  "With the weeks": "Au fil des semaines",
+  minutes: "minutes",
+  "{values}; week {n}: {last} to recover":
+    "{values} ; semaine {n} : {last} pour récupérer",
+  "Easy run": "Course lente",
+  Intervals: "Fractionné",
+  "Easy, at a pace you can talk at.": "Facile, à une allure où tu peux parler.",
+  "Easy@@run": "Lente",
+  "Fast stretches with a slow jog between.":
+    "Des portions rapides avec un footing lent entre deux.",
+  "Long@@run": "Longue",
+  "Longer than the others, slowly.": "Plus longue que les autres, doucement.",
+  "easy, you can talk": "facile, tu parles",
+  "fast + recovery": "rapide + récup",
+  "more km, slowly": "plus de km, doucement",
   Workout: "Séance",
   "Only sets logged live count.": "Seules les séries notées en direct comptent.",
   // src/screens/ChooseScreen.tsx (TASK-375)
@@ -1696,6 +1719,15 @@ export const FR: Table = {
   "No run of {distance} yet": "Pas encore de course de {distance}",
   "Week of {date}": "Semaine du {date}",
   "Month of {date}": "Mois du {date}",
+  // src/game/goalText.ts, shapeProgress.ts (TASK-423 after use: the names
+  // of the distances, the bar of a pace)
+  "1 mile": "1 mile",
+  "One half marathon": "Un semi-marathon",
+  "One marathon": "Un marathon",
+  "First run {distance} in one go · longest {longest}":
+    "Cours d'abord {distance} d'affilée · jusqu'ici {longest}",
+  "No time over {distance} yet": "Pas encore de temps sur {distance}",
+  "Best {best} · {gap} to go": "Meilleur {best} · encore {gap}",
 
   // src/navigation/runPosition.ts, the Android notification of a run (TASK-294)
   "MuW is recording your activity": "MuW enregistre ton activité",

@@ -274,22 +274,29 @@ function Value({
   value,
   unit,
   size,
+  energy = false,
 }: {
   value: string;
   unit?: string;
   size: "lead" | "metric" | "tile";
+  /** Calories: in red, number and unit (TASK-424 part C3). */
+  energy?: boolean;
 }) {
   return (
     <View style={styles.valueRow}>
       {/* An hour and more is seven characters: smaller, never cut. */}
       <Text
-        style={[styles.value, size === "lead" && styles.valueLead]}
+        style={[
+          styles.value,
+          size === "lead" && styles.valueLead,
+          energy && styles.energy,
+        ]}
         numberOfLines={1}
         adjustsFontSizeToFit
       >
         {value}
       </Text>
-      {unit && <Text style={styles.unit}>{unit}</Text>}
+      {unit && <Text style={[styles.unit, energy && styles.energy]}>{unit}</Text>}
     </View>
   );
 }
@@ -320,7 +327,7 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
           <Tile label={t("Avg /500 m")} value={numbers.pace500} />
           <Tile label={t("Last 500 m")} value={numbers.lastKm} />
           {numbers.energy !== null && (
-            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
+            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
           )}
         </View>
       ) : numbers.swim ? (
@@ -330,7 +337,7 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
           <Tile label={t("Avg /100 m")} value={numbers.pace100} />
           <Tile label={t("Last 100 m")} value={numbers.lastKm} />
           {numbers.energy !== null && (
-            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
+            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
           )}
         </View>
       ) : (
@@ -344,7 +351,7 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
           {/* Each sport its own energy (TASK-374, ADR-0318): the tile is
               back on a bike, where the runner's formula had taken it off. */}
           {numbers.energy !== null && (
-            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" />
+            <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
           )}
         </View>
       )}
@@ -382,10 +389,13 @@ export function Tile({
   label,
   value,
   unit,
+  energy = false,
 }: {
   label: string;
   value: string;
   unit?: string;
+  /** The calories: in red (TASK-424 part C3). */
+  energy?: boolean;
 }) {
   return (
     <View
@@ -393,7 +403,7 @@ export function Tile({
       accessible
       accessibilityLabel={`${label}: ${value}${unit ? ` ${unit}` : ""}`}
     >
-      <Value value={value} unit={unit} size="tile" />
+      <Value value={value} unit={unit} size="tile" energy={energy} />
       <Text style={styles.label} numberOfLines={1}>
         {label}
       </Text>
@@ -450,6 +460,10 @@ const styles = StyleSheet.create({
   },
   valueLead: {
     fontSize: fontSize.display,
+  },
+  // The calories, in red wherever they are (TASK-424 part C3).
+  energy: {
+    color: color.energy,
   },
   unit: {
     color: color.textMuted,

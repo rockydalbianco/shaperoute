@@ -49,7 +49,7 @@ export function GymTile({
           <Text style={styles.name}>{t(GYM.name)}</Text>
           <Text style={styles.time}>{durationLabel(durationS * 1000)}</Text>
           {kcal !== null && (
-            <Text style={styles.name} testID="gym-tile-kcal">
+            <Text style={[styles.name, styles.energy]} testID="gym-tile-kcal">
               {kcal}
             </Text>
           )}
@@ -84,6 +84,10 @@ const styles = StyleSheet.create({
   name: {
     ...font.label,
     color: color.onAccent,
+  },
+  // The calories in red, one that reads on the yellow (TASK-424 part C3).
+  energy: {
+    color: color.energyOnAccent,
   },
   time: {
     ...font.title,

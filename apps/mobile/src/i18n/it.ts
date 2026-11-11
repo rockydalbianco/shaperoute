@@ -380,6 +380,7 @@ export const IT: Table = {
   "{length} of {max} characters": "{length} di {max} caratteri",
   "Saving…": "Salvataggio…",
   Save: "Salva",
+  Saved: "Salvato",
 
   // src/profile/PhotoChoices.tsx
   "Removing…": "Rimozione…",

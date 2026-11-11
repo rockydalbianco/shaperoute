@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A (A1 + A2) in corso
+**Stato**: In lavorazione — parte A (A1 + A2) in PR: 1963 percorsi; poi B
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -62,8 +62,9 @@ non tracciato).
    prove.
 3. La pagina di revisione (`tools/catalog_review.py`) all'utente, col sì
    sulle liste di parole **prima del merge**.
-4. `tools/catalog_kept.json` con le chiavi scelte; `catalog/seed/*.json`
-   riscritti da `catalog_seed.py --write` sui due registri.
+4. `tools/catalog_kept.json` con le chiavi scelte (`--propose`);
+   `catalog/seed/*.json` riscritti da `catalog_words.py --write` sui due
+   registri.
 5. «NEAR YOU»: l'API ne dà già al massimo 60 (`MAX_ROUTES`), le più simili
    prima. Con 130 disegni a Milano le prime sarebbero quasi tutte cerchi e
    cuori: proposta all'utente, **prima la migliore di ogni forma e parola,
@@ -81,6 +82,10 @@ tempo di `RecommendedCatalog.from_dir`, la memoria residente in più, una
 |---|---|---|---|---|---|
 | `main` | 572 | 8,8 MB | 0,16 s | +57 MB | 3,5 ms |
 | A1 | 1348 | 21,6 MB | 0,62 s | +134 MB | 14,4 ms |
+| A1 + A2 (questa PR) | 1963 | 32,6 MB | 0,43 s | +218 MB | 6,1 ms |
+
+L'ultima riga è misurata a giro finito, col Mac scarico: per questo è più
+veloce di quella sopra.
 
 Il catalogo sta solo nel processo principale (i route worker nascono dal
 fork server, senza). A 2000 percorsi: circa 32 MB di file e +200 MB di
@@ -109,15 +114,16 @@ per le richieste nuove).
 
 ## Criteri di accettazione (parte A)
 
-- [ ] `pytest tools` verde; `tools/test_catalog_words.py` copre parole,
-      piano, A1, A2 e la proposta senza rete né motore.
-- [ ] Il giro delle parole finito: registro in `out/TASK-441/runs.jsonl`.
+- [x] `pytest tools` verde (550); `tools/test_catalog_words.py` copre
+      parole, piano, A1, A2 e la proposta senza rete né motore.
+- [x] Il giro delle parole finito: registro in `out/TASK-441/runs.jsonl`
+      (1326 prove, nessun errore).
 - [x] Sì dell'utente sulle liste di parole e sull'ordine di «NEAR YOU»
       (2026-11-11).
 - [x] L'ordine misto in `near` e dentro ogni città in `page`
       (`recommended.varied`), con test; le pagine si uniscono ancora.
-- [ ] `catalog/seed/*.json` riscritti; `test_featured_catalog` verde.
-- [ ] Avvio e memoria dell'API misurati e scritti qui.
+- [x] `catalog/seed/*.json` riscritti; `test_featured_catalog` verde.
+- [x] Avvio e memoria dell'API misurati e scritti qui.
 - [ ] CI verde; numero nuovo dei percorsi detto al Coordinatore per il
       passo «catalogo».
 
@@ -132,6 +138,7 @@ catalog/README.md
 services/api/shaperoute_api/recommended.py   (l'ordine misto)
 services/api/tests/test_recommended.py
 packages/shared-types/fixtures/recommended-routes.json   (l'ordine: il secondo cuore dopo CIAO)
+apps/mobile/src/explore/ExploreRecommended.test.tsx      (prendeva «l'ultimo» dell'esempio: ora CIAO per nome)
 docs/tasks/TASK-441.md            (nuovo)
 ```
 
@@ -144,9 +151,38 @@ docs/tasks/TASK-441.md            (nuovo)
   LFG) e l'ordine misto di «NEAR YOU»: prima la migliore di ogni forma e
   parola, poi la seconda, e così via.
 
+## Com'è uscita la parte A
+
+- **1963 percorsi** in 63 città (erano 572): 1206 forme e 757 parole, 79
+  parole diverse (erano 55 disegni di parole). Somiglianza media 0,96.
+- **A1, +776**: tutti i disegni del registro di TASK-419 che passano il
+  filtro. In 60 casi la stessa parola nella stessa città entra nei due
+  stili (tondo e a blocchi): con l'ordine misto il secondo arriva dopo.
+- **A2, +615**: 663 coppie città-parola provate nei due stili (1326 prove),
+  615 con almeno uno stile che passa. Per lunghezza, prove che passano:
+  2 lettere 168/174, 3 lettere 539/600, 4 lettere 432/552.
+- Milano ne ha 91, Roma e Bari 62, la città più piccola 9. «NEAR YOU» ne
+  mostra sempre al massimo 60, la migliore di ogni forma e parola per prima.
+- Gli id dei percorsi (`<città>-<nome>-<distanza>-<posto nel file>`)
+  cambiano dove il file è cresciuto, come a ogni giro di TASK-419: i 15
+  disegni di «Feed» ritrovano il loro percorso per città, forma e lunghezza
+  (provato: 14 su 15 fra i primi 21 di «NEAR YOU»; `trento-star-5000-0` non
+  c'era già più in `main`).
+- `exploreCatalogEdit.test.ts` (app) passa su tutti i 1963: ognuno ha il
+  suo «Edit the drawing»; 10 s sul Mac, tempo massimo 60 s.
+- `main` intanto ha il motore di TASK-436 (#1106, stessi percorsi provati):
+  i disegni di A2 restano quelli del motore `8ab61d8e87f9`.
+- Le due pagine coi soli disegni nuovi, per l'utente:
+  `out/TASK-441/review-new-words.html` (615) e
+  `out/TASK-441/review-already-drawn.html` (776), checkout principale.
+
 ## Dove siamo
 
 *2026-11-11*: numeri dal Coordinatore (un task, una PR per parte; C a
-parte). Strumento e 18 test scritti; giro delle parole lanciato alle 14:21
-dal worktree `.claude/worktrees/TASK-441-a` (il Coordinatore può chiedere
-«ferma il giro» per un bench: riparte con `bash out/TASK-441/run.sh`).
+parte). Strumento e 19 test; giro delle parole dalle 14:21 alle 16:10 dal
+worktree `.claude/worktrees/TASK-441-a`. Catalogo riscritto, PR della parte
+A aperta. **Dopo il merge**: il passo «catalogo» sul server (un sì
+dell'utente, dal Coordinatore: il suo script si aspetta «572 recommended
+routes», ora 1963), poi la PR di soli documenti con le righe di
+`STATUS.md` e `INDEX.md`. **Poi la parte B**: chiedere il turno al
+Coordinatore (dopo #1130), ADR-0366.

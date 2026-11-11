@@ -74,6 +74,9 @@ python tools/catalog_words.py --write          # catalog/seed dai due registri
 Il giro non scarica niente: usa le zone a piedi di `data/cache`. Parole più
 lunghe vogliono la penna alzata, che questo formato non tiene ancora.
 
+Col giro dell'11 novembre 2026 il seme ha **1963 percorsi in 63 città**
+(erano 572): 776 disegni già fatti e 615 parole nuove.
+
 ### Le città in evidenza
 
 Le città che «Explore» mostra per prime (`FEATURED_CITIES` nell'app) e che

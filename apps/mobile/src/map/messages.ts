@@ -3,6 +3,7 @@ import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
 import { onFootLines } from "../route/onFoot";
 import { piecesOf, walksOf } from "../route/walks";
 import { type LngLat, metresBetween, toLngLat } from "./coordinates";
+import type { MapCover } from "./mapCover";
 import type { MapKind } from "./mapKind";
 import type { SkiLabel } from "../skimode/skiDayLabels";
 import type { RouteSplit } from "./routeSplit";
@@ -44,6 +45,9 @@ export type ToPage =
   | { type: "clearProgress" }
   | { type: "showOthers"; lines: LngLat[][] }
   | { type: "showGhost"; lines: LngLat[][] }
+  /** What lies over the top of the map (TASK-443), or null for nothing
+   * told: the route is framed clear of it. */
+  | { type: "setCover"; cover: MapCover | null }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
   | {
@@ -354,6 +358,16 @@ export function showOthers(routes: LatLon[][]): ToPage {
  * `placed_outline` of a result; none clears it. */
 export function showGhost(lines: LatLon[][]): ToPage {
   return { type: "showGhost", lines: lines.map((points) => points.map(toLngLat)) };
+}
+
+/**
+ * Tells the map what lies over its top (TASK-443): the status bar and the
+ * buttons. A route is framed under the first and clear of the others, and
+ * «Start here» is written clear of both; a map still framed on its route
+ * frames it again. Null: nothing told, framed as a map never told.
+ */
+export function setCover(cover: MapCover | null): ToPage {
+  return { type: "setCover", cover };
 }
 
 /**

@@ -180,7 +180,9 @@ E2a (in due PR: E2a in Play, E2b il profilo e la privacy)
    prizesText.test.ts); PlayScreen.tsx (+test), ShapeCard.tsx,
    CollectionPage.tsx, UnlockCard.tsx, UnlockLayer.tsx (+test), unlocks.ts,
    unlockedRuns.ts (+test); src/notifications/notificationTap.ts,
-   pushDevice.ts (+test); src/theme/tokens.ts (gamePrize); i18n
+   pushDevice.ts (+test); src/theme/tokens.ts (gamePrize); i18n. PR
+   #1132; i 55 testi nelle 5 lingue (out/TASK-423/TESTI-E2a.md) approvati
+   dall'utente il 2026-11-11 con «Sì, approvo»
 E2b src/profile/ (ProfileHeader, ProfileHome, UserProfilePage),
    game/GamePrizesRow.tsx, la scelta in PrizesPage (PUT
    /game/prizes/shown), la privacy

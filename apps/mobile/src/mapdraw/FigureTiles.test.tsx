@@ -49,3 +49,14 @@ test("«+ photo» first on the map, waiting while a photo is traced", async () =
   await fireEvent.press(screen.getByText("+ photo"));
   expect(onPhoto).toHaveBeenCalledTimes(1);
 });
+
+// TASK-444: the shapes by their outlines, as in the grid of «Draw».
+test("every shape is shown by its outline, none by an emoji", async () => {
+  await render(<FigureTiles chosen={NO_TILE} onChoose={jest.fn()} />);
+  for (const shape of SHAPES) {
+    expect(
+      screen.getByTestId(`shape-glyph-${shape}`, { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
+  }
+  expect(screen.queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
+});

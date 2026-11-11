@@ -10,7 +10,12 @@ test("how long ago a comment was written", () => {
   expect(ago("2026-10-03T12:00:20Z")).toBe("just now");
   expect(ago("2026-10-03T11:55:00Z")).toBe("5 min ago");
   expect(ago("2026-10-03T09:00:00Z")).toBe("3 h ago");
+  // From 24 to 48 hours «yesterday», not «1 d ago» (TASK-444).
+  expect(ago("2026-10-02T12:00:00Z")).toBe("yesterday");
+  expect(ago("2026-10-01T12:00:01Z")).toBe("yesterday");
+  expect(ago("2026-10-01T12:00:00Z")).toBe("2 d ago");
   expect(ago("2026-10-01T11:00:00Z")).toBe("2 d ago");
+  expect(ago("2026-09-26T12:00:01Z")).toBe("6 d ago");
   expect(ago("2026-09-20T07:13:20Z")).toBe(dayLabel("2026-09-20T07:13:20Z"));
   expect(ago("yesterday")).toBe("");
 });

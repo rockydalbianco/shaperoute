@@ -14,7 +14,7 @@ import {
 } from "../theme/tokens";
 import { useTourPart } from "../tour/tourParts";
 import { TOUR_PART } from "../tour/tourSteps";
-import { SHAPE_SIGNS } from "./ShapeTiles";
+import { ShapeGlyph } from "./ShapeGlyph";
 import { shapeName } from "./shapeWords";
 
 /** Tiles in a row: four fit a phone with room for the names. */
@@ -53,6 +53,7 @@ type Props = {
  * The shapes of the catalogue in a grid of two rows (TASK-361), in place of
  * the row that slid sideways and was cut at the edge (ADR-0084): nothing
  * hides. The last tile, «See all», opens every shape; «Show fewer» closes.
+ * Each shape by its outline (`ShapeGlyph`, TASK-444), not by an emoji.
  */
 export function ShapeGrid({ chosen, onPick }: Props) {
   const [open, setOpen] = useState(false);
@@ -76,7 +77,7 @@ export function ShapeGrid({ chosen, onPick }: Props) {
             accessibilityLabel={shapeName(shape)}
             accessibilityState={{ selected }}
           >
-            <Text style={styles.sign}>{SHAPE_SIGNS[shape]}</Text>
+            <ShapeGlyph shape={shape} />
             <Text
               style={[styles.name, selected && styles.selectedName]}
               numberOfLines={2}
@@ -135,10 +136,6 @@ const styles = StyleSheet.create({
     borderColor: color.text,
     borderWidth: 2,
     backgroundColor: color.surfaceRaised,
-  },
-  sign: {
-    color: color.text,
-    fontSize: fontSize.title,
   },
   // textMuted, not textFaint: the names are read, not hinted (WCAG AA).
   name: {

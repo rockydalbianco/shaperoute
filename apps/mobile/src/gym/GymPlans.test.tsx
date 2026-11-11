@@ -19,6 +19,9 @@ import { GymDrawGuide } from "./GymDrawGuide";
 import { GymPlansSheet } from "./GymPlans";
 import { forgetPlans, mergePlans, planForToday, plansOf, workoutPlan } from "./plans";
 import { isoDate } from "./program";
+import { loadSport } from "../settings/sport";
+import { useDrawDistance } from "../units/useDrawDistance";
+import { Text } from "react-native";
 import { forgetHeldWorkout } from "./useWorkout";
 import { logSet, newWorkout, planStep } from "./workout";
 import { WorkoutScreen } from "./WorkoutScreen";
@@ -56,7 +59,7 @@ jest.mock("expo-file-system", () => {
 
 const { files } = jest.requireMock<{ files: Map<string, string> }>("expo-file-system");
 const OWNER = 7;
-const [PUSH, , MUSCLE] = plans.plans as GymPlan[];
+const [PUSH, , MUSCLE, LIFT_AND_RUN] = plans.plans as GymPlan[];
 // Every day of the week: «Today» whatever day the test runs.
 const EVERY_DAY: GymPlan = { ...PUSH, days: [1, 2, 3, 4, 5, 6, 7] };
 
@@ -359,4 +362,87 @@ test("in Draw without a plan: «Start workout», «New plan» and the plans' til
   expect(screen.getByTestId("gym-guide-plans")).toHaveTextContent(
     /📋 Plans(2 plans|1 plan)/,
   );
+});
+
+test("run days in the guide: «And running?», the week, the run's editor (TASK-433 C)", async () => {
+  const fetchFn = api([]);
+  await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />);
+  await fireEvent.press(screen.getByTestId("gym-guide-new-plan"));
+  await act(async () => {});
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // No runs at first; two on Tuesday and Saturday.
+  expect(screen.getByTestId("wizard-runs-0")).toBeSelected();
+  await fireEvent.press(screen.getByTestId("wizard-runs-2"));
+  expect(screen.getByTestId("wizard-day-2")).toHaveTextContent("RUN");
+  expect(screen.getByTestId("wizard-day-6")).toHaveTextContent("RUN");
+  expect(screen.getByText("Easy run · 5 km")).toBeOnTheScreen();
+  expect(screen.getByText("Long run · 8 km")).toBeOnTheScreen();
+  // Saturday touched: rest; Sunday touched: the gym.
+  await fireEvent.press(screen.getByTestId("wizard-day-6"));
+  expect(screen.getByTestId("wizard-day-6")).not.toHaveTextContent("RUN");
+  await fireEvent.press(screen.getByTestId("wizard-day-7"));
+  expect(screen.getByTestId("wizard-day-7")).toBeChecked();
+  await fireEvent.press(screen.getByTestId("wizard-day-7"));
+  await fireEvent.press(screen.getByTestId("wizard-day-7"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
+  // The run's tab: half a km more, then the plan saved.
+  expect(screen.getByTestId("wizard-tab-1")).toHaveTextContent("Run · Tue");
+  await fireEvent.press(screen.getByTestId("wizard-tab-1"));
+  expect(screen.getByTestId("run-day-editor")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("run-more"));
+  expect(screen.getByTestId("run-value")).toHaveTextContent("5.5");
+  expect(screen.getByTestId("run-growth")).toHaveTextContent(
+    "5.5 km · 6 km · 6.5 km; week 4: 4.5 km to recover",
+  );
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  await act(async () => {});
+
+  const [kept] = plansOf(OWNER);
+  expect(kept.days).toEqual([1, 2, 3, 5]);
+  expect(kept.program?.sessions[1]).toEqual({
+    day: 2,
+    name: "Easy run",
+    items: [],
+    run: { kind: "easy", distance_m: 5500 },
+  });
+  expect(screen.getByTestId("gym-plan-program")).toHaveTextContent(/RUN/);
+});
+
+test("in Draw on a run day: the run of the week, and «Go to the run» turns to Run", async () => {
+  const now = new Date();
+  const lastWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+  const program = LIFT_AND_RUN.program!;
+  const runs: GymPlan = {
+    ...LIFT_AND_RUN,
+    days: [1, 2, 3, 4, 5, 6, 7],
+    program: {
+      ...program,
+      starts_on: isoDate(lastWeek),
+      sessions: [1, 2, 3, 4, 5, 6, 7].map((day) => ({ ...program.sessions[1], day })),
+    },
+  };
+  function Field() {
+    const distance = useDrawDistance("running");
+    return <Text testID="draw-metres">{String(distance.metres)}</Text>;
+  }
+  await shown(
+    <>
+      <GymDrawGuide fetchFn={api([runs]) as unknown as typeof fetch} />
+      <Field />
+    </>,
+  );
+  const today = screen.getByTestId("gym-guide-today");
+  expect(
+    within(today).getByRole("header", { name: "Easy run · 5.5 km" }),
+  ).toBeOnTheScreen();
+  expect(within(today).getByText("Easy, at a pace you can talk at.")).toBeOnTheScreen();
+  // A run day is no workout of the gym.
+  expect(planForToday()).toBeNull();
+  await fireEvent.press(screen.getByTestId("gym-guide-go-run"));
+  expect(loadSport()).toBe("run");
+  expect(screen.getByTestId("draw-metres")).toHaveTextContent("5500");
 });

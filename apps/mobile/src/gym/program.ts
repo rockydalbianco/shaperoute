@@ -2,6 +2,7 @@ import type {
   GymPlan,
   GymPlanItem,
   GymPlanMode,
+  GymPlanRun,
   GymPlanSession,
   GymProgram,
 } from "@shaperoute/shared-types";
@@ -20,6 +21,10 @@ import type {
  *   back to the first reps (10, 11, 12, then heavier and 10).
  * - «alternate»: two weeks in turn, the second written by hand.
  * - «same»: the same week again and again.
+ *
+ * A run day (TASK-433 C, the user's choice of 2026-11-10) grows by about a
+ * tenth a week, intervals by one rep, the last week of a cycle of 3 or more
+ * shorter to recover; «same» keeps it as written.
  */
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -111,6 +116,48 @@ export function itemInWeek(
   }
 }
 
+/** A run grows a tenth a week: whole half kilometres, whole minutes. */
+const RUN_STEP = 0.1;
+/** The lighter last week: this much of the cycle's first. */
+const RUN_LIGHTER = 0.8;
+
+function roundTo(value: number, step: number, lowest: number): number {
+  return Math.max(lowest, Math.round(value / step) * step);
+}
+
+/** The run of a run day of the first week, as it is in `week` (1-based)
+ * of the `cycle`-th cycle. */
+export function runInWeek(
+  run: GymPlanRun,
+  mode: GymPlanMode,
+  weeks: number,
+  week: number,
+  cycle: number,
+): GymPlanRun {
+  if (mode === "same") {
+    return run;
+  }
+  const lighter = weeks >= 3 && week === weeks;
+  const steps = lighter ? cycle : cycle + week - 1;
+  const factor = (1 + RUN_STEP * steps) * (lighter ? RUN_LIGHTER : 1);
+  if (run.kind === "intervals") {
+    const reps = run.reps ?? 1;
+    return {
+      ...run,
+      reps: Math.min(50, Math.max(1, lighter ? reps + cycle - 2 : reps + steps)),
+    };
+  }
+  return {
+    ...run,
+    ...(run.distance_m === undefined
+      ? {}
+      : { distance_m: roundTo(run.distance_m * factor, 500, 500) }),
+    ...(run.duration_s === undefined
+      ? {}
+      : { duration_s: roundTo(run.duration_s * factor, 60, 60) }),
+  };
+}
+
 /** The workouts of `week` of the `cycle`-th cycle, with their values. */
 export function sessionsOfWeek(
   program: GymProgram,
@@ -136,6 +183,9 @@ export function sessionsOfWeek(
     items: session.items.map((item) =>
       itemInWeek(item, program.mode, program.weeks, program.step_kg, week, cycle),
     ),
+    ...(session.run === undefined
+      ? {}
+      : { run: runInWeek(session.run, program.mode, program.weeks, week, cycle) }),
   }));
 }
 

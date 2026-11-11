@@ -132,6 +132,12 @@ export type Shade = {
   readonly you: string;
   /** The tip of the north arrow (TASK-431): north at a glance. */
   readonly north: string;
+  /**
+   * A run day of a plan of the gym (TASK-433 C): the «RUN» mark beside the
+   * yellow letters of the gym's days. The cyan of `startHere`, the user's
+   * choice, kept as its own token so that each keeps one meaning.
+   */
+  readonly runDay: string;
 
   readonly map: {
     readonly background: string;
@@ -194,6 +200,7 @@ export const SHADES: Readonly<
       startHere: "#4DD2FF",
       you: "#3D9BFF",
       north: "#FF5B4F",
+      runDay: "#4DD2FF",
       map: {
         background: "#100F0C",
         water: "#101F29",
@@ -224,6 +231,7 @@ export const SHADES: Readonly<
       startHere: "#6EDBFF",
       you: "#5AAEFF",
       north: "#FF7068",
+      runDay: "#6EDBFF",
       map: {
         background: "#2B2925",
         water: "#1F3A4B",
@@ -256,6 +264,7 @@ export const SHADES: Readonly<
       startHere: "#006E94",
       you: "#1565C0",
       north: "#C42F24",
+      runDay: "#006E94",
       map: {
         background: "#DAD7CF",
         water: "#9CC2D8",
@@ -286,6 +295,7 @@ export const SHADES: Readonly<
       startHere: "#007BA3",
       you: "#1460B8",
       north: "#C8352A",
+      runDay: "#007BA3",
       map: {
         background: "#F5F4F0",
         water: "#B5D6E8",

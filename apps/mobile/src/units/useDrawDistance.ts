@@ -1,5 +1,5 @@
 import type { Activity } from "@shaperoute/shared-types";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   distanceMOf,
@@ -24,6 +24,20 @@ export type DrawDistanceField = {
   choose: (metres: number) => void;
 };
 
+/** Who writes the distance of «Draw» when asked from elsewhere. */
+const askers = new Set<(metres: number) => void>();
+
+/**
+ * A distance for «Draw» chosen elsewhere, in metres (TASK-433 C: «Go to the
+ * run · 5.5 km» of a run day of the gym): as a «Try» chooses one, kept
+ * within the sport's limits.
+ */
+export function chooseDrawDistance(metres: number): void {
+  for (const ask of askers) {
+    ask(metres);
+  }
+}
+
 /**
  * The distance asked for in «Draw», kept at the root of the app (TASK-182
  * part E, ADR-0149): the text typed, or the metres the app chose, shown in
@@ -43,6 +57,12 @@ export function useDrawDistance(activity: Activity): DrawDistanceField {
   }
   const type = useCallback((text: string) => setDistance({ text }), []);
   const choose = useCallback((metres: number) => setDistance({ metres }), []);
+  useEffect(() => {
+    askers.add(choose);
+    return () => {
+      askers.delete(choose);
+    };
+  }, [choose]);
   return {
     text: fieldText(distance, units),
     metres: distanceMOf(distance, activity, units),

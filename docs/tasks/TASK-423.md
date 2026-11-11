@@ -342,6 +342,11 @@ E2 apps/mobile/src/game/ (PrizesPage, EditionMark, ProfileFrame,
   November 2026» e la frase nuova nelle 5 lingue (controllato dal
   Coordinatore). Resta la prova dell'utente sul telefono: i premi dentro
   «Play» e la scelta sul profilo.
+- 2026-11-11 — Prova generale sul telefono dopo il nono OTA, fatta
+  dall'utente sulla lista del Coordinatore (Play con premi e scelta sul
+  profilo, sci, foto del post, No della palestra); sue parole al
+  Coordinatore (~21:05Z): «procedi funziona tutto ok procedi». Non ha
+  nominato le singole funzioni: non vale come giro guidato di E2a ed E2b.
 
 ## Esito
 

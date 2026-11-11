@@ -1,6 +1,7 @@
 # TASK-453 — Riepilogo palestra senza account e plurali
 
-**Stato**: In corso · 2026-11-11 · codice e test fatti, PR da aprire
+**Stato**: In corso · 2026-11-11 · codice e test in PR; mancano gli screenshot
+dal simulatore (turno dato dal Coordinatore)
 **Fase**: 5 · **Branch**: `fix/TASK-453-gym-end-no-account`
 **ADR**: nessuno · numero dal Coordinatore l'11 novembre 2026
 
@@ -41,7 +42,7 @@ di una corsa segue già (TASK-278 parte B, scelta del 13 ottobre).
    che scrivono la stessa riga. Sette chiavi nuove nelle quattro tabelle,
    via le due vecchie (`tables.test.ts` rifiuta le chiavi non più usate).
 
-## I testi (da far approvare all'utente prima di «pronta»)
+## I testi (approvati dall'utente l'11 novembre 2026: «Sì, vanno bene»)
 
 | Inglese | Italiano | Tedesco | Spagnolo | Francese |
 | --- | --- | --- | --- | --- |
@@ -68,7 +69,7 @@ il 4 novembre (TASK-385), solo divise in due; nuovi sono i singolari.
       (`src/gym/ExerciseList.test.tsx`).
 - [x] `tsc` pulito; test dei file toccati verdi.
 - [ ] Screenshot dal simulatore prima e dopo in `out/TASK-453/`.
-- [ ] I testi approvati dall'utente.
+- [x] I testi approvati dall'utente.
 - [ ] PR aperta e «#NNN pronta» al Coordinatore.
 
 ## File toccati

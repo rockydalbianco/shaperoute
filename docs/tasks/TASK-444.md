@@ -31,6 +31,11 @@ Solo app (`apps/mobile`). Nessuna dipendenza nuova, niente codice nativo
 3. **Colore degli avvisi** (parte 2): da scegliere sugli screenshot, tra
    cambiare il valore del token `warning` (vale per 11 schermate) e
    togliere la striscia colorata lasciando un'icona.
+4. **La parte 1 va bene così** («Sì, va bene», sulle cinque coppie prima e
+   dopo del simulatore): anche i contorni **a penna alzata** dove il
+   catalogo li ha (faccina, ciambella, gatto, sole: senza la riga che
+   attraversa la figura per arrivare agli occhi), al posto della linea
+   unica che il percorso disegna.
 
 ## Parti
 
@@ -42,8 +47,11 @@ Due PR, decise col Coordinatore: i file della parte 2 sono occupati.
   catalogo, lo stesso dell'anteprima di «Draw» (`shapeScale`, cioè
   `mapdraw/catalogueShapes.json`, scritto dal motore). Niente SVG: lati
   fatti di `View` girate, come `OutlineLines`. Alla misura di un riquadro i
-  punti si sfoltiscono (Douglas–Peucker, tolleranza in frazione del
-  riquadro): stessa figura, meno `View`. Usato nella griglia di «Draw» e in
+  punti si sfoltiscono (Douglas–Peucker, tolleranza 0,6 % del lato: solo
+  punti del catalogo, nessuno spostato): stessa figura, circa 45 `View` a
+  forma invece di 65. Dove il catalogo ha la figura a penna alzata si usa
+  quella (`lookOf(…, true)`). Deciso dall'agente su delega dell'utente,
+  senza ADR (Coordinatore, 2026-11-11); visto e approvato dall'utente. Usato nella griglia di «Draw» e in
   «See all» (`ShapeGrid`), nella riga che scorre (`ShapeTiles`) e nella
   riga delle figure sotto il risultato e in «Draw on the map»
   (`FigureTiles`). `SHAPE_SIGNS` (le emoji) esce.
@@ -112,19 +120,34 @@ coi test.
 
 Parte 1:
 
-- [ ] Ogni forma del catalogo ha il suo contorno, preso da
+- [x] Ogni forma del catalogo ha il suo contorno, preso da
       `catalogueShapes.json`; nessuna emoji nei riquadri delle forme
       (`ShapeGlyph.test.tsx`, `ShapeGrid.test.tsx`, `FigureTiles.test.tsx`).
-- [ ] Il contorno sfoltito resta dentro la tolleranza da quello vero e
+- [x] Il contorno sfoltito resta dentro la tolleranza da quello vero e
       tiene primo e ultimo punto (`ShapeGlyph.test.tsx`).
-- [ ] Sotto un post nessuna emoji: quattro icone, nascoste al lettore di
+- [x] Sotto un post nessuna emoji: quattro icone, nascoste al lettore di
       schermo, che legge la parola (`PostActions.test.tsx`).
-- [ ] «yesterday» tra 24 e 48 ore, «2 d ago» da 48 (`commentText.test.ts`);
+- [x] «yesterday» tra 24 e 48 ore, «2 d ago» da 48 (`commentText.test.ts`);
       il testo c'è nelle cinque lingue.
-- [ ] «Guide» senza ❓ (`GuideRowTap.test.tsx`).
-- [ ] Solo colori dei token; `tsc` pulito; impronta iOS `6f8bba4c`.
-- [ ] Screenshot prima e dopo in `out/TASK-444/`, visti dall'utente.
+- [x] «Guide» senza ❓ (`GuideRowTap.test.tsx`).
+- [x] Solo colori dei token; `tsc` pulito. Impronta iOS: il diff è solo
+      JavaScript e risorse di Metro (nessun `package.json`, `app.json`,
+      config o nativo); la misura su `main` la fa il Coordinatore prima di
+      pubblicare.
+- [x] Screenshot prima e dopo in `out/TASK-444/`, visti dall'utente.
+
+## Cronologia
+
+- **2026-11-11** — parte 1 nella PR #1176. Prima e dopo dal simulatore
+  (iPhone 17e, Expo Go dal worktree) in `out/TASK-444/` del checkout
+  principale: `TASK-444-1-griglia.jpg` … `TASK-444-5-profilo.jpg`.
+  L'API locale non ha account, quindi nel Feed ci sono solo gli esempi,
+  senza azioni né data: per le immagini un innesto temporaneo, non
+  committato, le ha mostrate sotto gli esempi. Su un post vero la riga
+  delle azioni va guardata sul telefono. Sì dell'utente lo stesso giorno.
+- Parte 2: da iniziare quando `RoutePanel.tsx` (#1161) e i riquadri della
+  palestra (TASK-465, #1173) sono in `main`.
 
 ## Esito
 
-(da scrivere)
+(da scrivere alla chiusura, dopo la parte 2)

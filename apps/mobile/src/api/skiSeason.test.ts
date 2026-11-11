@@ -5,7 +5,13 @@ import type { SkiDay } from "@shaperoute/shared-types";
 
 import { answers } from "../account/testing";
 import { isSkiDay } from "./skiDays";
-import { fetchSkiSeason, isSkiDayPart, isSkiSeason, partsOf, seasonOf } from "./skiSeason";
+import {
+  fetchSkiSeason,
+  isSkiDayPart,
+  isSkiSeason,
+  partsOf,
+  seasonOf,
+} from "./skiSeason";
 
 // A skier's season and the parts of a saved day (TASK-429 part C): the same
 // JSON as the API's test_ski_season.py and test_ski_day_parts.py.

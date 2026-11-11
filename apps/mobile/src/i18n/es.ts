@@ -1789,6 +1789,14 @@ export const ES: Table = {
   "{count} new edition": "{count} edición nueva",
   "{count} new editions": "{count} ediciones nuevas",
   "{collection} complete": "{collection} completada",
+  // src/game/PrizesPage.tsx, GamePrizesRow.tsx (TASK-423 part E2b: what
+  // the profile shows)
+  "Touch a prize you have to show it on your profile. Nothing is shown until you choose.":
+    "Toca un premio que tengas para mostrarlo en tu perfil. Hasta que elijas, no se muestra nada.",
+  "On your profile": "En tu perfil",
+  "Your profile shows up to {count} badges.":
+    "Tu perfil muestra hasta {count} insignias.",
+  "Title: {title}": "Título: {title}",
 
   // src/navigation/runPosition.ts, the Android notification of a run (TASK-294)
   "MuW is recording your activity": "MuW está registrando tu actividad",

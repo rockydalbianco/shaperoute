@@ -1,4 +1,10 @@
-import type { GameCatalog, GamePrizeState } from "@shaperoute/shared-types";
+import type {
+  GameCatalog,
+  GamePrizesShown,
+  GamePrizeState,
+} from "@shaperoute/shared-types";
+import { GAME_SHOWN_BADGES_MAX } from "@shaperoute/shared-types";
+import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
@@ -36,8 +42,9 @@ const FRAMES_PER_ROW = 3;
 /**
  * «Prizes» (TASK-423 part E, docs/GIOCO.md §5.4): the frames of the
  * collections, the titles and the badges, each reached or not with what it
- * asks and how far along the account is, and the editions it holds. Only
- * inside the app: what the profile shows comes later, with its own choice.
+ * asks and how far along the account is, and the editions it holds. A
+ * prize got, touched, goes on the public profile or off it (TASK-423 E2b):
+ * one frame, one title, up to 3 badges; nothing until the runner chooses.
  */
 export function PrizesPage({
   active,
@@ -48,8 +55,43 @@ export function PrizesPage({
   fetchFn,
   apiKey,
 }: Props) {
-  const { shown, refresh } = usePrizes(active, { fetchFn, key: apiKey });
+  const { shown, refresh, show } = usePrizes(active, { fetchFn, key: apiKey });
   const prizes = shown.status === "ready" ? shown.prizes : null;
+  const [saving, setSaving] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+
+  /** What the profile shows (TASK-423 E2b): a prize got, touched, goes on
+   * it or off it; one frame, one title, up to 3 badges. */
+  async function choose(next: GamePrizesShown) {
+    setSaving(true);
+    setProblem(null);
+    const done = await show(next);
+    setSaving(false);
+    if (!done.ok) {
+      setProblem(done.problem);
+    }
+  }
+  const chosen = prizes?.shown ?? null;
+  const toggleFrame = (id: string) =>
+    chosen !== null &&
+    void choose({ ...chosen, frame: chosen.frame === id ? null : id });
+  const toggleTitle = (id: string) =>
+    chosen !== null &&
+    void choose({ ...chosen, title: chosen.title === id ? null : id });
+  const toggleBadge = (id: string) => {
+    if (chosen === null) {
+      return;
+    }
+    if (chosen.badges.includes(id)) {
+      void choose({ ...chosen, badges: chosen.badges.filter((each) => each !== id) });
+    } else if (chosen.badges.length >= GAME_SHOWN_BADGES_MAX) {
+      setProblem(
+        t("Your profile shows up to {count} badges.", { count: GAME_SHOWN_BADGES_MAX }),
+      );
+    } else {
+      void choose({ ...chosen, badges: [...chosen.badges, id] });
+    }
+  };
   return (
     <View style={styles.page} testID="prizes-page">
       <View style={styles.header}>
@@ -98,6 +140,20 @@ export function PrizesPage({
             </Text>
           </View>
 
+          <View style={styles.notice} testID="prizes-profile">
+            <Text style={styles.noticeText}>
+              {t(
+                "Touch a prize you have to show it on your profile. Nothing is shown until you choose.",
+              )}
+            </Text>
+            {saving && <ActivityIndicator color={color.textMuted} />}
+            {problem !== null && (
+              <Text style={styles.problem} accessibilityLiveRegion="polite">
+                {problem}
+              </Text>
+            )}
+          </View>
+
           <Text style={styles.heading}>{t("Frames")}</Text>
           <Text style={styles.muted}>
             {t("Complete a collection to earn its frame.")}
@@ -112,10 +168,13 @@ export function PrizesPage({
                   ? frame.id
                   : collectionNameIn(collection, language);
               return (
-                <View
+                <Pressable
                   key={frame.id}
-                  style={styles.frame}
-                  accessible
+                  style={[styles.frame, chosen?.frame === frame.id && styles.chosen]}
+                  onPress={() => toggleFrame(frame.id)}
+                  disabled={!frame.got || saving}
+                  accessibilityRole={frame.got ? "button" : undefined}
+                  accessibilityState={{ selected: chosen?.frame === frame.id }}
                   accessibilityLabel={`${frameName(name)}, ${
                     frame.got ? t("Earned") : `${frame.unlocked} / ${frame.total}`
                   }`}
@@ -131,9 +190,13 @@ export function PrizesPage({
                     {name}
                   </Text>
                   <Text style={styles.small}>
-                    {frame.got ? t("Earned") : `${frame.unlocked} / ${frame.total}`}
+                    {chosen?.frame === frame.id
+                      ? t("On your profile")
+                      : frame.got
+                        ? t("Earned")
+                        : `${frame.unlocked} / ${frame.total}`}
                   </Text>
-                </View>
+                </Pressable>
               );
             })}
           </View>
@@ -145,6 +208,9 @@ export function PrizesPage({
               state={state}
               name={titleName(state.id)}
               units={units}
+              onProfile={chosen?.title === state.id}
+              disabled={saving}
+              onPress={() => toggleTitle(state.id)}
             />
           ))}
 
@@ -155,6 +221,9 @@ export function PrizesPage({
               state={state}
               name={badgeName(state.id)}
               units={units}
+              onProfile={chosen?.badges.includes(state.id) ?? false}
+              disabled={saving}
+              onPress={() => toggleBadge(state.id)}
             />
           ))}
         </>
@@ -169,18 +238,33 @@ function PrizeRow({
   state,
   name,
   units,
+  onProfile,
+  disabled,
+  onPress,
 }: {
   state: GamePrizeState;
   name: string;
   units: Units;
+  /** Shown on the public profile (TASK-423 E2b). */
+  onProfile: boolean;
+  disabled: boolean;
+  /** A prize got, touched: on the profile or off it. */
+  onPress: () => void;
 }) {
   const need = prizeNeed(state, units);
-  const along = state.got ? t("Earned") : prizeAlong(state, units);
+  const along = onProfile
+    ? t("On your profile")
+    : state.got
+      ? t("Earned")
+      : prizeAlong(state, units);
   const share = state.target > 0 ? Math.min(1, state.value / state.target) : 0;
   return (
-    <View
-      style={[styles.row, !state.got && styles.rowLocked]}
-      accessible
+    <Pressable
+      style={[styles.row, !state.got && styles.rowLocked, onProfile && styles.chosen]}
+      onPress={onPress}
+      disabled={!state.got || disabled}
+      accessibilityRole={state.got ? "button" : undefined}
+      accessibilityState={{ selected: onProfile }}
       accessibilityLabel={[name, need, along].filter((part) => part !== "").join(", ")}
       testID={`prize-${state.id}`}
     >
@@ -196,7 +280,7 @@ function PrizeRow({
           <View style={[styles.fill, { width: `${Math.round(share * 100)}%` }]} />
         </View>
       )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -301,6 +385,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     backgroundColor: color.surface,
     gap: space.xs,
+  },
+  chosen: {
+    borderWidth: 1,
+    borderColor: color.accent,
+  },
+  problem: {
+    color: color.error,
+    fontSize: fontSize.small,
   },
   rowLocked: {
     opacity: 0.85,

@@ -14,6 +14,9 @@ type Props = {
   got: boolean;
   /** What the ring holds: the photo of the profile, or nothing. */
   children?: ReactNode;
+  /** Where the badge with the outline sits; on a profile, left, away from
+   * the «+» of one's own photo. */
+  badgeSide?: "left" | "right";
   testID?: string;
 };
 
@@ -41,6 +44,7 @@ export function ProfileFrame({
   size,
   got,
   children,
+  badgeSide = "right",
   testID,
 }: Props) {
   const tint = got ? frameColor(collection) : color.border;
@@ -65,6 +69,7 @@ export function ProfileFrame({
       <View
         style={[
           styles.badge,
+          badgeSide === "left" ? { left: 0 } : { right: 0 },
           {
             width: badge,
             height: badge,
@@ -93,7 +98,6 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    right: 0,
     bottom: 0,
     alignItems: "center",
     justifyContent: "center",

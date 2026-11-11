@@ -9,6 +9,7 @@ import type {
   SkiDayRequest,
   SkiNames,
   SkiResort,
+  SkiSeason,
 } from "@shaperoute/shared-types";
 import { DRAWING_PHOTO_PLACES } from "@shaperoute/shared-types";
 import {
@@ -50,6 +51,7 @@ import {
   sentOf,
 } from "../api/skiDays";
 import { fetchSkiNames } from "../api/skiNames";
+import { fetchSkiSeason } from "../api/skiSeason";
 import { themedOf } from "../contest/contestApi";
 import { enteredIn, keptContest } from "../contest/contestKept";
 import { sendEntry } from "../contest/sendEntry";
@@ -171,6 +173,10 @@ export type DrawingsDoor = {
   followedResortsOf?: () => Promise<SkiResort[] | null>;
   /** Follows the resort, or no more; false when it did not go. */
   followResortOf?: (resortId: string, on: boolean) => Promise<boolean>;
+  /** The account's season of skiing between two days (TASK-429 part C);
+   * null with nobody signed in, or when the API did not give it. Without
+   * it (a door of a test made before) there is no season. */
+  skiSeasonOf?: (from: string, to: string) => Promise<SkiSeason | null>;
 };
 
 const NO_KEYS: ReadonlySet<string> = new Set();
@@ -200,6 +206,7 @@ const NOTHING: DrawingsDoor = {
   resortPostsOf: async () => null,
   followedResortsOf: async () => null,
   followResortOf: async () => false,
+  skiSeasonOf: async () => null,
 };
 
 /** Without «Profile» around it (a test of one screen): no drawings. */
@@ -535,6 +542,21 @@ export function useDrawingsOf(
     [baseUrl, ended, fetchFn, key, token],
   );
 
+  const skiSeasonOf = useCallback(
+    async (from: string, to: string) => {
+      if (token === null || baseUrl === null) {
+        return null;
+      }
+      const outcome = await fetchSkiSeason(baseUrl, token, from, to, { fetchFn, key });
+      if (outcome.kind === "ok") {
+        return outcome.value;
+      }
+      ended(token, outcome);
+      return null;
+    },
+    [baseUrl, ended, fetchFn, key, token],
+  );
+
   const keepSkiDayOf = useCallback(
     async (runKey: string, request: SkiDayRequest): Promise<SkiDaySent> => {
       if (token === null || baseUrl === null) {
@@ -692,6 +714,7 @@ export function useDrawingsOf(
       resortPostsOf,
       followedResortsOf,
       followResortOf,
+      skiSeasonOf,
     }),
     [
       publicKeys,
@@ -719,6 +742,7 @@ export function useDrawingsOf(
       resortPostsOf,
       followedResortsOf,
       followResortOf,
+      skiSeasonOf,
     ],
   );
 }

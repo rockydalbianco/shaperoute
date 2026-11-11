@@ -166,6 +166,7 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
           photo={profilePhotoUri(profile)}
           winner={(profile.contest_wins ?? 0) > 0}
           badges={profile.badges ?? null}
+          gamePrizes={profile.game_prizes ?? null}
           detail={profileDetail({
             ...profile,
             followers:

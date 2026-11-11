@@ -12,6 +12,8 @@ import { distanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { Hairline } from "../ui/Hairline";
 import { Tap } from "../ui/Tap";
+import { SkiDayPage } from "./SkiDayPage";
+import { SkiSeason } from "./SkiSeason";
 
 /** How many pages of the profile one ask reads at most, looking for days
  * of skiing among the other posts. */
@@ -38,14 +40,14 @@ type Props = {
 /**
  * «Days», the second page of the ski mode (TASK-429 part A, ADR-0357): the
  * account's own days of skiing, the latest first, with the day, the town,
- * the kilometres and the time; a touch opens the day's post on the map, as
- * from «Profile». They are the posts of the profile with the activity
- * `skiing`: the season's totals come with part C, the three pages of a day
- * with part B.
+ * the kilometres and the time. They are the posts of the profile with the
+ * activity `skiing`. Over them the season (part C, `SkiSeason`); a touch
+ * opens the day with «Summary · Map · Runs» (part C, `SkiDayPage`).
  */
 export function SkiDaysPage({ onLogIn }: Props) {
   const { account } = useFollowsDoor();
-  const { pageOf, open } = useDrawingsDoor();
+  const { pageOf } = useDrawingsDoor();
+  const [opened, setOpened] = useState<Drawing | null>(null);
   const units = useUnits();
   const owner =
     account.state.status === "signedIn"
@@ -119,68 +121,74 @@ export function SkiDaysPage({ onLogIn }: Props) {
   }
 
   return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.content}>
-      <Text style={styles.title} accessibilityRole="header">
-        {t("Days@@ski")}
-      </Text>
-      {owner === null ? (
-        <View style={styles.empty}>
-          <Text style={styles.line}>{t("Log in to see your days.")}</Text>
-          <Tap
-            style={styles.button}
-            onPress={onLogIn}
-            accessibilityRole="button"
-            testID="ski-days-log-in"
-          >
-            <Text style={styles.buttonText}>{t("Log in")}</Text>
-          </Tap>
-        </View>
-      ) : shown === null ? null : shown.days.length === 0 && shown.next === null ? (
-        <Text style={[styles.line, styles.empty]}>{t("No days on the snow yet.")}</Text>
-      ) : (
-        <>
-          <Text style={styles.label} accessibilityRole="header">
-            {t("Your days")}
-          </Text>
-          <View style={styles.card}>
-            {shown.days.map((day, at) => (
-              <View key={day.id}>
-                {at > 0 && <Hairline style={styles.inset} />}
-                <Tap
-                  style={styles.row}
-                  onPress={() => open(day)}
-                  accessibilityRole="button"
-                  testID={`ski-day-${day.id}`}
-                >
-                  <Text style={styles.day}>
-                    {day.place === null
-                      ? dayLabel(day.started_at)
-                      : `${dayLabel(day.started_at)} · ${day.place}`}
-                  </Text>
-                  <Text style={styles.numbers}>
-                    {`${distanceLabel(day.distance_m, units)} · ${durationText(day.duration_s)}`}
-                  </Text>
-                </Tap>
-              </View>
-            ))}
-          </View>
-          {shown.next !== null && (
+    <View style={styles.page}>
+      <ScrollView style={styles.page} contentContainerStyle={styles.content}>
+        <Text style={styles.title} accessibilityRole="header">
+          {t("Days@@ski")}
+        </Text>
+        {owner !== null && <SkiSeason />}
+        {owner === null ? (
+          <View style={styles.empty}>
+            <Text style={styles.line}>{t("Log in to see your days.")}</Text>
             <Tap
               style={styles.button}
-              onPress={more}
-              disabled={asking}
+              onPress={onLogIn}
               accessibilityRole="button"
-              accessibilityState={{ disabled: asking, busy: asking }}
-              testID="ski-days-more"
+              testID="ski-days-log-in"
             >
-              <Text style={styles.buttonText}>
-                {t(asking ? "Loading…" : "Show more")}
-              </Text>
+              <Text style={styles.buttonText}>{t("Log in")}</Text>
             </Tap>
-          )}
-        </>
-      )}
-    </ScrollView>
+          </View>
+        ) : shown === null ? null : shown.days.length === 0 && shown.next === null ? (
+          <Text style={[styles.line, styles.empty]}>
+            {t("No days on the snow yet.")}
+          </Text>
+        ) : (
+          <>
+            <Text style={styles.label} accessibilityRole="header">
+              {t("Your days")}
+            </Text>
+            <View style={styles.card}>
+              {shown.days.map((day, at) => (
+                <View key={day.id}>
+                  {at > 0 && <Hairline style={styles.inset} />}
+                  <Tap
+                    style={styles.row}
+                    onPress={() => setOpened(day)}
+                    accessibilityRole="button"
+                    testID={`ski-day-${day.id}`}
+                  >
+                    <Text style={styles.day}>
+                      {day.place === null
+                        ? dayLabel(day.started_at)
+                        : `${dayLabel(day.started_at)} · ${day.place}`}
+                    </Text>
+                    <Text style={styles.numbers}>
+                      {`${distanceLabel(day.distance_m, units)} · ${durationText(day.duration_s)}`}
+                    </Text>
+                  </Tap>
+                </View>
+              ))}
+            </View>
+            {shown.next !== null && (
+              <Tap
+                style={styles.button}
+                onPress={more}
+                disabled={asking}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: asking, busy: asking }}
+                testID="ski-days-more"
+              >
+                <Text style={styles.buttonText}>
+                  {t(asking ? "Loading…" : "Show more")}
+                </Text>
+              </Tap>
+            )}
+          </>
+        )}
+      </ScrollView>
+      {opened !== null && <SkiDayPage day={opened} onBack={() => setOpened(null)} />}
+    </View>
   );
 }
 

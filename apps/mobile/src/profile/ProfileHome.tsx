@@ -106,6 +106,7 @@ export function ProfileHome({
           // The profile's count has the gym's monthly wins too (TASK-385 F).
           winner={(own?.contest_wins ?? user.contest_wins ?? 0) > 0}
           badges={own?.badges ?? null}
+          gamePrizes={own?.game_prizes ?? null}
           photoButton={{
             open: photoOpen,
             busy: photo.busy !== null,

@@ -85,7 +85,10 @@ HIKING = "hiking"
 # skater is a person on foot, with thresholds of its own (speed_limits); the
 # personal bests of a skate are its own.
 INLINE_SKATING = "inline_skating"
-ON_FOOT = (RUNNING, WALKING, HIKING, INLINE_SKATING)
+# Snowshoeing counts as a hike, so as a walk (TASK-413, ADR-0342, the user's
+# choice 5): its metres with a run's checks, no best times.
+SNOWSHOEING = "snowshoeing"
+ON_FOOT = (RUNNING, WALKING, HIKING, INLINE_SKATING, SNOWSHOEING)
 
 
 @dataclass(frozen=True)
@@ -134,8 +137,8 @@ class _Step:
 def evaluate(
     fixes: Sequence[Fix], pauses: Sequence[RunPause], activity: str
 ) -> RunGame:
-    """The run as the game sees it. Only runs, walks, hikes and skates
-    count, and only a run has best times."""
+    """The run as the game sees it. Only runs, walks, hikes, skates and
+    snowshoe routes count, and only a run has best times."""
     elapsed_s = fixes[-1].t_s - fixes[0].t_s if fixes else 0.0
     if activity not in ON_FOOT:
         return RunGame(False, NOT_RUNNING, 0, {}, elapsed_s)

@@ -55,7 +55,13 @@ export function tapTarget(data: unknown): TapTarget | null {
     return null;
   }
   const kind = field(data, "kind");
-  if (kind === "shape_unlocked") {
+  // The game's own news (TASK-296; editions and frames, TASK-423 part E):
+  // «Play». An older server sends the runner's profile with them too.
+  if (
+    kind === "shape_unlocked" ||
+    kind === "edition_up" ||
+    kind === "collection_done"
+  ) {
     return { kind: "play" };
   }
   if (kind !== null && (CHALLENGE_KINDS as readonly string[]).includes(kind)) {

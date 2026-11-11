@@ -1,8 +1,8 @@
 # TASK-437 — «Save» e «Start» sul percorso arrivato da un Edit
 
-**Stato**: Done · 2026-11-11 · in `main` con #1120 (`7e24e7d1`); esce col
-settimo OTA di produzione (Coordinatore, col sì dell'utente), poi la prova
-sul telefono
+**Stato**: Done · 2026-11-11 · in `main` con #1120 (`7e24e7d1`), in
+produzione col settimo OTA (iOS `3906eb66`, Android `7b0ec9eb`), provato
+dall'utente sul telefono
 **Fase**: 5 · **Branch**: `feat/TASK-437-edit-save-start`
 **Dipende da**: TASK-410 («Edit & run»), TASK-369 («Edit the drawing»),
 TASK-171 (i preferiti)
@@ -42,8 +42,10 @@ arrivati da un Edit; gli altri percorsi di «Draw» restano come prima.
 - [x] «Start» parte come prima; senza Edit «Start» resta solo
       (`RoutePanelSaveStart.test.tsx`).
 - [x] Un percorso senza indicazioni tiene «Save» senza «Start».
-- [ ] OTA di produzione (il settimo, dal Coordinatore col sì dell'utente),
-      poi la prova sul telefono.
+- [x] OTA di produzione: il settimo, 2026-11-11 (iOS `3906eb66`, Android
+      `7b0ec9eb`; preview `59cbd83c`).
+- [x] Prova sul telefono, 2026-11-11: parole dell'utente al Coordinatore
+      «procedi funziona tutto ok procedi», poi «Sì, sul telefono».
 - [x] Testo nuovo «Saved» (it «Salvato», fr «Enregistré», de «Gespeichert»,
       es «Guardado») approvato dall'utente il 2026-11-10: «Sì, vanno bene».
 
@@ -61,4 +63,5 @@ arrivati da un Edit; gli altri percorsi di «Draw» restano come prima.
 
 2026-11-11: in `main` con #1120. Dopo «Edit & run» o «Edit the drawing» e
 «Draw route», il percorso ha «Save» (nei preferiti, poi «Saved») accanto a
-«Start». Restano l'OTA e la prova sul telefono.
+«Start». In produzione col settimo OTA e provato dall'utente sul telefono:
+non resta niente.

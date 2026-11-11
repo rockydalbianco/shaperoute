@@ -85,6 +85,8 @@ bandierina.
 - `apps/mobile/src/map/MapView.tsx`
 - `apps/mobile/src/screens/MapScreen.tsx`
 - `apps/mobile/src/map/mapPage.test.ts` (la riga sullo spillo di partenza)
+- `apps/mobile/src/map/MapViewLanguage.test.tsx` (la riga sul testo del
+  fumetto; sì del Coordinatore l'11 novembre)
 - `apps/mobile/src/map/mapCover.ts` (nuovo)
 - `apps/mobile/src/map/mapCover.test.ts` (nuovo)
 - `apps/mobile/src/map/mapPageFrame.test.ts` (nuovo)

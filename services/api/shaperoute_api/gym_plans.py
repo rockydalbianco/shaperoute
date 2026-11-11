@@ -175,6 +175,26 @@ class GymPlanWeekBody(BaseModel):
         return self
 
 
+class GymPlanRunnerBody(BaseModel):
+    """How its owner runs, asked by the guide for a plan with run days:
+    packages/shared-types src/gym.ts, `GymPlanRunner`. The paces of the
+    run days are worked out from it on the phone."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pace_10k_s: int = Field(ge=180, le=900)
+    """Seconds a kilometre over 10 km: 3:00 to 15:00."""
+    long_m: int | None = Field(default=None, ge=1_000, le=60_000)
+    long_s: int | None = Field(default=None, ge=600, le=6 * 3600)
+    """The longest run done without strain: a distance or a time."""
+
+    @model_validator(mode="after")
+    def a_distance_or_a_time(self) -> GymPlanRunnerBody:
+        if (self.long_m is None) == (self.long_s is None):
+            raise ValueError("the long run is a distance or a time")
+        return self
+
+
 class GymProgramBody(BaseModel):
     """The weeks of a plan made with the guide: `GymProgram`."""
 
@@ -193,6 +213,8 @@ class GymProgramBody(BaseModel):
         default_factory=list, max_length=MAX_WEEKS - 1
     )
     """The weeks written by hand, in place of the ones worked out."""
+    runner: GymPlanRunnerBody | None = None
+    """How its owner runs, for the paces of its run days; absent without."""
 
     @model_validator(mode="after")
     def weeks_of_the_cycle(self) -> GymProgramBody:

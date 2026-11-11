@@ -2410,4 +2410,10 @@ export const IT: Table = {
   Lift: "Risalita",
   "{speed} top": "{speed} max",
   "Stopped {minutes} min": "Fermo {minutes} min",
+
+  // src/skimode/ (TASK-429 part C: the season and the saved day)
+  "Season {years}": "Stagione {years}",
+  "Vertical this season": "Dislivello della stagione",
+  "On snow": "Sulla neve",
+  "Piste without a name": "Pista senza nome",
 };

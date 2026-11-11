@@ -196,6 +196,7 @@ import { SkiMessages } from "./src/skimode/SkiMessages";
 import { SkiResortsPage } from "./src/skimode/SkiResortsPage";
 import { SkiTabIcon } from "./src/skimode/SkiTabIcon";
 import { SkiTodayPage } from "./src/skimode/SkiTodayPage";
+import { useSkiDayMap } from "./src/skimode/useSkiDayMap";
 import { DrawingCard } from "./src/social/DrawingCard";
 import { drawingDoubleTapped } from "./src/social/DrawingReactions";
 import { drawnOf, followedOf } from "./src/social/drawingRoute";
@@ -476,6 +477,9 @@ function MuW() {
   // route, and over it what was run. Or a drawing: the run cut as the
   // others see it, in the route's yellow as in «Feed», the map framed on it.
   const reviewing = screen === "map" && (activity !== null || drawing !== null);
+  // A post of a day of skiing with its parts: its lifts and numbers, in the
+  // ski mode's colours (TASK-429 part C).
+  const skiDayMap = useSkiDayMap(drawing);
   const reviewed = useMemo(
     () =>
       activity !== null
@@ -488,16 +492,27 @@ function MuW() {
             others: NO_OTHERS,
             track: activity.track,
           }
-        : drawing !== null
+        : drawing !== null && skiDayMap !== null
           ? {
+              // A day of skiing as at its end: the track, not a route.
               start: null,
-              route: drawing.track.length > 1 ? drawing.track : null,
+              route: null,
               walks: null,
               others: NO_OTHERS,
-              track: null,
+              track: drawing.track,
+              lifts: skiDayMap.lifts,
+              liftLabels: skiDayMap.labels,
             }
-          : null,
-    [activity, drawing],
+          : drawing !== null
+            ? {
+                start: null,
+                route: drawing.track.length > 1 ? drawing.track : null,
+                walks: null,
+                others: NO_OTHERS,
+                track: null,
+              }
+            : null,
+    [activity, drawing, skiDayMap],
   );
   const { position, refresh } = useCurrentPosition();
   // The size of the first maps of the phone while they download (TASK-214).

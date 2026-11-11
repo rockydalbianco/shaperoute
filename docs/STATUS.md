@@ -180,6 +180,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
   tornano nella B a penna alzata; il server aspetta la correzione. Poi B
   (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
+- **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
+  (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
+  B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

@@ -1,6 +1,7 @@
 /**
- * The form of a day on the snow (TASK-375): «Activity» says Ski or
- * Cross-country ski, never a run, a ride or a paddle, which have a route.
+ * The form of a day on the snow (TASK-375): «Activity» says Ski,
+ * Cross-country ski or, since TASK-415 part B, Ski touring; never a run, a
+ * ride or a paddle, which have a route.
  */
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
@@ -11,7 +12,7 @@ jest.mock(
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
 );
 
-test("a day of skiing is one of the two days on the snow", async () => {
+test("a day of skiing is one of the three days on the snow", async () => {
   const onActivity = jest.fn();
   await render(<ActivityChips value="skiing" onChange={onActivity} />);
   expect(screen.getByRole("radio", { name: "Ski", checked: true })).toBeTruthy();
@@ -20,7 +21,10 @@ test("a day of skiing is one of the two days on the snow", async () => {
   ).toBeTruthy();
   expect(screen.queryByRole("radio", { name: "Run" })).toBeNull();
   expect(screen.queryByRole("radio", { name: "Bike" })).toBeNull();
-  expect(screen.getAllByRole("radio")).toHaveLength(2);
+  expect(
+    screen.getByRole("radio", { name: "Ski touring", checked: false }),
+  ).toBeTruthy();
+  expect(screen.getAllByRole("radio")).toHaveLength(3);
   await fireEvent.press(screen.getByRole("radio", { name: "Cross-country ski" }));
   expect(onActivity).toHaveBeenCalledWith("xc_skiing");
 });
@@ -34,5 +38,6 @@ test("a run keeps its chips, with no snow among them", async () => {
 test("a day on the snow has its name", () => {
   expect(activityName("skiing")).toBe("Ski");
   expect(activityName("xc_skiing")).toBe("Cross-country ski");
+  expect(activityName("ski_touring")).toBe("Ski touring");
   expect(activityName("cycling")).toBe("Bike");
 });

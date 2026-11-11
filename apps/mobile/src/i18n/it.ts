@@ -1183,9 +1183,14 @@ export const IT: Table = {
   "Cross-country ski": "Sci di fondo",
   // src/sports/gym.ts, src/gym/ (TASK-385 B0: a workout at the gym)
   Gym: "Palestra",
-  "{n} exercises · {s} sets": "{n} esercizi · {s} serie",
-  "{n} rests · avg {time} · {total} resting":
-    "{n} recuperi · media {time} · {total} di recupero",
+  // The counts of a workout, one or more (TASK-453)
+  "{count} exercise": "{count} esercizio",
+  "{count} exercises": "{count} esercizi",
+  "{count} set": "{count} serie",
+  "{count} sets": "{count} serie",
+  "{count} rest": "{count} recupero",
+  "{count} rests": "{count} recuperi",
+  "avg {time} · {total} resting": "media {time} · {total} di recupero",
   // src/gym/ (TASK-385 part B), approved on 2026-11-04
   "Start workout": "Inizia l'allenamento",
   "No route in the gym: MuW times your workout.":
@@ -2482,4 +2487,27 @@ export const IT: Table = {
   "Vertical this season": "Dislivello della stagione",
   "On snow": "Sulla neve",
   "Piste without a name": "Pista senza nome",
+  // TASK-415 part B: ski touring, its phases and its VAM (approved 2026-11-11).
+  "Ski touring": "Scialpinismo",
+  Phase: "Fase",
+  Climb: "Salita",
+  Descent: "Discesa",
+  Changeover: "Cambio pelli",
+  "VAM 5 min": "VAM 5 min",
+  Altitude: "Quota",
+  "Elev. loss": "Disl. negativo",
+  "Time up": "Tempo in salita",
+  "Time down": "Tempo in discesa",
+  "Avg VAM": "VAM media",
+  "Max altitude": "Quota max",
+  Phases: "Fasi",
+  "Climb {n}": "Salita {n}",
+  "Descent {n}": "Discesa {n}",
+  "Lift {n}": "Risalita {n}",
+  "Skins off": "Pelli tolte",
+  "Skins on": "Pelli messe",
+  "Climbed: {metres} m": "Dislivello: {metres} m",
+  "{phase}, from {time}, for {duration}": "{phase}, dalle {time}, per {duration}",
+  "No heights from the phone: no phases for this tour.":
+    "Il telefono non ha dato le quote: niente fasi per questa gita.",
 };

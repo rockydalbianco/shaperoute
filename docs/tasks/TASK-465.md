@@ -107,8 +107,9 @@ Approvati dal Coordinatore l'11 novembre 2026 («lista approvata»).
 ## Testi nuovi da far approvare all'utente
 
 I nomi dei 17 muscoli e le quattro parole, nelle cinque lingue, sono in
-`muscles.ts` (`NAMES`, `WORDS`). Da mostrare all'utente con gli screenshot,
-prima di «#NNNN pronta» (richiesta del Coordinatore).
+`muscles.ts` (`NAMES`, `WORDS`). Mostrati all'utente in una tabella l'11
+novembre 2026 (richiesta del Coordinatore), con la domanda «Vanno bene i
+nomi dei muscoli nelle cinque lingue?». Risposta: **«Sì, vanno bene»**.
 
 ## Criteri di accettazione
 
@@ -132,5 +133,6 @@ prima di «#NNNN pronta» (richiesta del Coordinatore).
   dei file mandata al Coordinatore.
 - 2026-11-11 — sì del Coordinatore sulla lista, ADR-0376; codice e test
   scritti (test dei file toccati, `tsc` ed `eslint` verdi in locale).
+- 2026-11-11 — sì dell'utente sui nomi dei muscoli («Sì, vanno bene»).
   Mancano: screenshot dal simulatore (al «simulatore tuo»), il sì
-  dell'utente su aspetto, colore e nomi, la PR.
+  dell'utente su aspetto e colore, la PR.

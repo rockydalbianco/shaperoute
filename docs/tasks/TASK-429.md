@@ -364,7 +364,10 @@ mappa), `apps/mobile/src/screens/SnowFinishCard.tsx` e il suo test,
 Parte B2 (approvata dal Coordinatore il 2026-11-10, dopo il merge di
 TASK-424 C2b): `apps/mobile/src/activities/runStatsOut.ts` e il suo test,
 con il tipo `SkiPart` di `apps/mobile/src/api/runStats.ts` (di C2b) e un
-test del ripiego al `422`.
+test del ripiego al `422`. Aggiunto col sì del Coordinatore il 2026-11-10:
+`apps/mobile/src/activities/activitiesDoor.ts` (due righe: l'invio passa da
+`sendRunStats`, che rimanda i run-stats senza `ski_parts` se l'API li
+rifiuta).
 
 Parte C1, il server (approvata dal Coordinatore il 2026-11-10; dopo la C2b
 di TASK-424, che salva `ski_parts`). File nuovi:

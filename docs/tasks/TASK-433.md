@@ -1,8 +1,8 @@
 # TASK-433 — Le schede della palestra guidate, con le settimane che cambiano
 
-**Stato**: In lavorazione · 2026-11-10 · codice in `main` (#1095,
-`8138b456`); restano server (0066) e OTA nel passo unico del Coordinatore,
-col sì dell'utente, e la prova sul telefono
+**Stato**: In lavorazione · 2026-11-11 · A (#1095) sul server e nell'OTA 5,
+B (#1103) nell'OTA 6, C1 (#1117) sul server, C2 (#1115) in `main`: esce col
+settimo OTA, col sì dell'utente; resta la prova sul telefono
 **Fase**: 5 · **Branch**: `feat/TASK-433-gym-guided-plans`
 **Dipende da**: TASK-411 (le schede, parte C: tabella `gym_plans`, 0058)
 **ADR**: ADR-0360 (proposto) · numeri dal Coordinatore il 2026-11-10
@@ -109,9 +109,14 @@ libero al merge),
 - [x] Testi nelle cinque lingue (`tables.test.ts`).
 - [x] Testi approvati dall'utente («Approvo», 2026-11-10).
 - [x] CI verde e merge (#1095, `8138b456`).
-- [ ] Migrazione sul server e poi OTA, dal Coordinatore col sì dell'utente;
-      righe di controllo di sola lettura in `out/TASK-433/SERVER.md`
+- [x] Migrazione sul server e poi OTA, dal Coordinatore col sì dell'utente
+      (0066 il 2026-11-10, OTA 5 da 2c3442f7; B nell'OTA 6 da c4ab00a3; C1
+      sul server col passo 7 del 2026-11-11, 2ed26af7, controlli di
+      `out/TASK-433/SERVER-C.md` tutti come attesi); righe di controllo di sola
+      lettura in `out/TASK-433/SERVER.md` e `SERVER-C.md`
       (cartella `out/` del checkout principale).
+- [ ] Settimo OTA con la C2 (#1115, 23308c9e), dal Coordinatore col sì
+      dell'utente.
 - [ ] Prova sul telefono dell'utente. **Sul simulatore la guida non è stata
       vista girare**: provata solo coi test (jest); l'utente la prova dopo
       l'OTA del 2026-11-10.

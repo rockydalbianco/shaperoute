@@ -1588,6 +1588,8 @@ export const IT: Table = {
   "Right side": "Lato destro",
   "Left side": "Lato sinistro",
   "Switch sides": "Cambia lato",
+  End: "Fine",
+  "Next: {exercise}": "Dopo: {exercise}",
   "{seconds} seconds left": "Mancano {seconds} secondi",
   "Stop if it hurts.": "Fermati se fa male.",
   // «Draw»: src/route/samplePictures.ts (TASK-280)

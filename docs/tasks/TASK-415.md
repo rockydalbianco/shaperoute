@@ -1,6 +1,6 @@
 # TASK-415 — Ski touring: lo scialpinismo «Record only»
 
-**Stato**: In corso — parte 0 in `main` (#932), parte A in `main` (#948) e sul server.
+**Stato**: In corso — parte 0 in `main` (#932), parte A in `main` (#948) e sul server, parte B in `main` (#1160) e nella preview.
 **Fase**: 4 · **Branch**: `docs/TASK-415-0-skimo` (parte 0), poi
 `feat/TASK-415-a-ski-touring-api`, `feat/TASK-415-b-…` ·
 **ADR**: ADR-0344 · numeri dal Coordinatore · sessione dello sport,
@@ -231,3 +231,20 @@ scialpinismo.
 
 Gli screenshot dal simulatore (pannello in gita e fine gita, due caselle
 per riga) visti dall'utente il 2026-11-11: «Sì, va bene».
+
+2026-11-11, parte B in `main`: #1160, merge `c378cd69` (Coordinatore),
+precisazione B di ADR-0344. **Preview**: pubblicata dal Coordinatore da
+`main` `a9ade90c`, gruppo `149b3411-1be6-4dfb-b4dc-b0abbbde94ee` (iOS
+`01a1cca3-f6f3-7b5e-90b0-063bf210516f`, Android
+`01a1cca3-f6f3-7567-a35a-0daf8e792f5b`): lo scialpinismo è acceso lì.
+**Produzione**: no per ora. L'utente ha deciso col Coordinatore di non far
+uscire aggiornamenti per due giorni, poi un'uscita completa; il suo «sì
+pubblica» valeva per la preview. Restano:
+- l'OTA di produzione con l'uscita completa (Coordinatore, col sì
+  dell'utente): accende lo sport;
+- la prova sul telefono: una gita registrata, la fine gita, il pannello;
+- sull'orologio della 1.1 (build 14) lo scialpinismo c'è già
+  (`sports.json`, `onWatch`); il nome tradotto arriva con la prossima build
+  dell'orologio;
+- dopo: B2 (numeri e fasi nel post, `run_stats`), C (pendenza), D (vette),
+  E (taratura sulla neve).

@@ -14,7 +14,11 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { ActivityCalendarSheet, activityCalendarTitle } from "./ActivityCalendar";
+import {
+  ActivityCalendarSheet,
+  activityCalendarTitle,
+  CalendarIcon,
+} from "./ActivityCalendar";
 import { dayIcons, monthOf, totalsLine, weekOf, WEEKDAYS } from "./calendarText";
 
 /** The activities of each day of the week, Monday first. */
@@ -100,7 +104,10 @@ export function WeekStrip({
         testID="week-strip"
       >
         <View style={styles.top}>
-          <Text style={styles.title}>{`📅 ${activityCalendarTitle()}`}</Text>
+          <View style={styles.named}>
+            <CalendarIcon />
+            <Text style={styles.title}>{activityCalendarTitle()}</Text>
+          </View>
           <Text style={styles.arrow}>›</Text>
         </View>
         <View style={styles.days}>
@@ -161,6 +168,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     minHeight: MIN_TAP_SIZE - space.md,
+  },
+  named: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
   },
   title: {
     color: color.text,

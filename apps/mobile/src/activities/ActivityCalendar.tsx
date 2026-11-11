@@ -5,7 +5,15 @@ import type {
   RunActivity,
 } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import {
   initialWindowMetrics,
   SafeAreaProvider,
@@ -52,6 +60,24 @@ const BAR_MIN = 3;
 /** The title of the calendar and of the rows that open it. */
 export function activityCalendarTitle(): string {
   return t("Calendar");
+}
+
+/** The calendar of Lucide, as the ski tab's (TASK-444: line icons, not
+ * emoji, on what the app does): white, coloured by `tintColor`. */
+const CALENDAR = require("../../assets/ui/tabs/calendar.png");
+/** The side of the icon beside a title. */
+export const CALENDAR_ICON_SIZE = 20;
+
+/** The icon of the rows that open the calendar, in the colour of the text. */
+export function CalendarIcon() {
+  return (
+    <Image
+      source={CALENDAR}
+      style={styles.calendarIcon}
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+    />
+  );
 }
 
 /** Whether an activity of a day opens on the map, as in «My activities»: a
@@ -454,6 +480,11 @@ function Chip({
 }
 
 const styles = StyleSheet.create({
+  calendarIcon: {
+    width: CALENDAR_ICON_SIZE,
+    height: CALENDAR_ICON_SIZE,
+    tintColor: color.text,
+  },
   screen: {
     flex: 1,
     gap: space.md,

@@ -29,7 +29,11 @@ import { isPoolSwimRun, PoolTile } from "../pool/PoolTile";
 import { runFacts, startedLabel, whereAndWhat } from "./activityText";
 import { RunDrawing } from "./RunDrawing";
 import { isTrackless } from "./snow";
-import { ActivityCalendarSheet, activityCalendarTitle } from "./ActivityCalendar";
+import {
+  ActivityCalendarSheet,
+  activityCalendarTitle,
+  CalendarIcon,
+} from "./ActivityCalendar";
 
 /** The side of a run's drawing in the list. */
 const DRAWING = 88;
@@ -73,7 +77,10 @@ export function ActivitiesList() {
             accessibilityRole="button"
             testID="activities-calendar"
           >
-            <Text style={styles.buttonText}>{`📅 ${activityCalendarTitle()}`}</Text>
+            <View style={styles.named}>
+              <CalendarIcon />
+              <Text style={styles.buttonText}>{activityCalendarTitle()}</Text>
+            </View>
           </Tap>
           <ActivityCalendarSheet
             visible={calendarOpen}
@@ -493,6 +500,11 @@ const styles = StyleSheet.create({
     backgroundColor: color.surfaceRaised,
     borderWidth: 1,
     borderColor: color.borderStrong,
+  },
+  named: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
   },
   buttonText: {
     color: color.text,

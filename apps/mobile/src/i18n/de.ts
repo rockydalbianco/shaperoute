@@ -383,6 +383,7 @@ export const DE: Table = {
   "{length} of {max} characters": "{length} von {max} Zeichen",
   "Saving…": "Wird gespeichert…",
   Save: "Speichern",
+  Saved: "Gespeichert",
 
   // src/profile/PhotoChoices.tsx
   "Removing…": "Wird entfernt…",
@@ -1294,9 +1295,6 @@ export const DE: Table = {
     "Daraus ergeben sich Sätze, Wiederholungen und Pausen. Du kannst sie später ändern.",
   "to start with": "für den Einstieg",
   "How many days a week?": "Wie viele Tage pro Woche?",
-  "Which days": "Welche Tage",
-  "With a day of rest in between, where it fits.":
-    "Mit einem Ruhetag dazwischen, wo es passt.",
   "How the work is split": "So wird die Arbeit aufgeteilt",
   "Your plan": "Dein Plan",
   "Here is your plan": "Hier ist dein Plan",
@@ -1366,6 +1364,32 @@ export const DE: Table = {
     "Mehr Gewicht, mehr Wiederholungen oder Wochen A / B. Hier findest du das heutige Training.",
   "Create my plan": "Meinen Plan erstellen",
   "How plans work": "So funktionieren Pläne",
+  // src/gym/RunDayEditor.tsx, runDay.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-433 C, approved 2026-11-10)
+  "Go to the run · {amount}": "Zum Lauf · {amount}",
+  "Gym today instead": "Heute lieber Fitnessstudio",
+  "And running?": "Und Laufen?",
+  No: "Nein",
+  "Touch a day to change it: gym, run or rest.":
+    "Tippe auf einen Tag, um ihn zu ändern: Studio, Lauf oder Pause.",
+  "Your week": "Deine Woche",
+  "How much": "Wie viel",
+  "The same every week.": "Jede Woche gleich.",
+  "Which run": "Welcher Lauf",
+  "With the weeks": "Mit den Wochen",
+  minutes: "Minuten",
+  "{values}; week {n}: {last} to recover": "{values}; Woche {n}: {last} zur Erholung",
+  "Easy run": "Lockerer Lauf",
+  Intervals: "Intervalle",
+  "Easy, at a pace you can talk at.":
+    "Locker, in einem Tempo, bei dem du noch reden kannst.",
+  "Easy@@run": "Locker",
+  "Fast stretches with a slow jog between.":
+    "Schnelle Abschnitte mit lockerem Traben dazwischen.",
+  "Long@@run": "Lang",
+  "Longer than the others, slowly.": "Länger als die anderen, langsam.",
+  "easy, you can talk": "locker, du kannst reden",
+  "fast + recovery": "schnell + Erholung",
+  "more km, slowly": "mehr km, langsam",
   Workout: "Training",
   "Only sets logged live count.": "Es zählen nur live eingetragene Sätze.",
   // src/screens/ChooseScreen.tsx (TASK-375)

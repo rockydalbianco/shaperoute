@@ -1,4 +1,9 @@
-import type { GymPlan, GymPlanItem, GymPlanRequest } from "@shaperoute/shared-types";
+import type {
+  GymPlan,
+  GymPlanItem,
+  GymPlanRequest,
+  GymPlanRun,
+} from "@shaperoute/shared-types";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 import { useActivitiesDoor } from "../activities/activitiesDoor";
@@ -211,12 +216,17 @@ export type TodayWorkout = {
   weeks: number | null;
   /** The rest of the plan's goal, for a plan made with the guide. */
   restS?: number;
+  /** A run day (TASK-433 C): the run of this week, and no exercises. */
+  run?: GymPlanRun;
 };
 
 function todayOf(plan: GymPlan, date: Date): TodayWorkout | null {
   if (plan.program != null) {
     const found = sessionOn(plan.program, date);
-    if (found === null || found.session.items.length === 0) {
+    if (
+      found === null ||
+      (found.session.items.length === 0 && found.session.run === undefined)
+    ) {
       return null;
     }
     return {
@@ -227,6 +237,7 @@ function todayOf(plan: GymPlan, date: Date): TodayWorkout | null {
       week: plan.program.weeks > 1 ? found.week : null,
       weeks: plan.program.weeks > 1 ? plan.program.weeks : null,
       ...(plan.program.rest_s === undefined ? {} : { restS: plan.program.rest_s }),
+      ...(found.session.run === undefined ? {} : { run: found.session.run }),
     };
   }
   if (!plan.days.includes(isoDay(date)) || plan.items.length === 0) {
@@ -276,7 +287,8 @@ export function planForToday(date: Date = new Date()): WorkoutPlan | null {
     return null;
   }
   const today = todayPlan(plansOf(shownOwner), date);
-  return today === null ? null : workoutPlan(today);
+  // A run day is not a workout of the gym: «Start workout» is a free one.
+  return today === null || today.run !== undefined ? null : workoutPlan(today);
 }
 
 /** For the tests: the file read again, nobody shown. */

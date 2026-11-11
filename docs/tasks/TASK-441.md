@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A (A1 + A2) in PR: 1963 percorsi; poi B
+**Stato**: In lavorazione — parte A in `main` (#1149, 2026-11-11): 1963 percorsi; resta il server; poi B
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -124,8 +124,8 @@ per le richieste nuove).
       (`recommended.varied`), con test; le pagine si uniscono ancora.
 - [x] `catalog/seed/*.json` riscritti; `test_featured_catalog` verde.
 - [x] Avvio e memoria dell'API misurati e scritti qui.
-- [ ] CI verde; numero nuovo dei percorsi detto al Coordinatore per il
-      passo «catalogo».
+- [x] CI verde; numero nuovo dei percorsi detto al Coordinatore per il
+      passo «catalogo» (1963).
 
 ## File toccati (parte A)
 
@@ -150,6 +150,10 @@ docs/tasks/TASK-441.md            (nuovo)
   `out/explore-2000/proposta.md` (quelle di `tools/catalog_words.py`, senza
   LFG) e l'ordine misto di «NEAR YOU»: prima la migliore di ogni forma e
   parola, poi la seconda, e così via.
+- 2026-11-11, «Sì, vanno bene»: i disegni nuovi delle due pagine
+  (`review-new-words.html`, `review-already-drawn.html`) entrano tutti,
+  anche le 60 parole che in una città compaiono nei due stili (l'altra
+  scelta era «Togli i doppi», 1903).
 
 ## Com'è uscita la parte A
 
@@ -178,11 +182,18 @@ docs/tasks/TASK-441.md            (nuovo)
 
 ## Dove siamo
 
-*2026-11-11*: numeri dal Coordinatore (un task, una PR per parte; C a
-parte). Strumento e 19 test; giro delle parole dalle 14:21 alle 16:10 dal
-worktree `.claude/worktrees/TASK-441-a`. Catalogo riscritto, PR della parte
-A aperta. **Dopo il merge**: il passo «catalogo» sul server (un sì
-dell'utente, dal Coordinatore: il suo script si aspetta «572 recommended
-routes», ora 1963), poi la PR di soli documenti con le righe di
-`STATUS.md` e `INDEX.md`. **Poi la parte B**: chiedere il turno al
-Coordinatore (dopo #1130), ADR-0366.
+*2026-11-11*: **parte A in `main`** (#1149, merge del Coordinatore dopo il
+sì dell'utente; documenti in una PR a parte, ADR-0347 precisazione C).
+Giro delle parole dalle 14:21 alle 16:10 dal worktree
+`.claude/worktrees/TASK-441-a`.
+
+**Resta per la parte A, sul server** (un sì dell'utente, dal Coordinatore):
+i file di `catalog/` e l'immagine nuova (l'ordine misto è codice), nessuna
+migrazione. Controlli dopo: il log dice «1963 recommended routes from
+catalog/seed»; `GET /recommended-routes?lat=45.4642&lon=9.19` dà 60
+percorsi con 48 nomi diversi, i primi 48 tutti diversi.
+
+**Poi la parte B**: il turno su API, shared-types e app lo dà il
+Coordinatore dopo «#1130 in main»; prima mandargli la lista dei file (la
+#1139 di TASK-435 B tocca `schemas.py`, `app.py` e
+`packages/shared-types/src/index.ts`). ADR-0366.

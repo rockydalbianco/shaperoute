@@ -179,6 +179,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il
   primo resta A»). Prossima la parte A (motore), poi B (API) e C (app).
   File: — · `tasks/TASK-435.md`
+- **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
+  1963 percorsi in 63 città (erano 572), molte parole corte, ordine misto
+  in «NEAR YOU»; resta il passo «catalogo» sul server (col sì). Poi B
+  (penna alzata, bici, canoa, nuoto: ADR-0366) e C (motore, numeri a parte).
+  File: — · `tasks/TASK-441.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

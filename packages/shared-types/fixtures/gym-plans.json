@@ -205,7 +205,11 @@
             }
           }
         ],
-        "custom": []
+        "custom": [],
+        "runner": {
+          "pace_10k_s": 330,
+          "long_m": 12000
+        }
       }
     }
   ]

@@ -158,12 +158,11 @@ SAME_ROUTES_AS: dict[str, str] = {
     # there (ADR-0361); every route drawn the same.
     "b4967ef32e9a": "2bca806f467b",  # every route but a swim
     "3ce5d60ec0cd": "55b54eea0e14",  # the swims
-    # TASK-413 A2: snowshoeing moves from ENGINE_ONLY to ENGINE_ACTIVITIES,
-    # in the contract, and nothing is anchored on the snow (anchored.py);
-    # every route of before drawn the same (ADR-0342).
-    "d76429946a7c": "b4967ef32e9a",  # every route but a swim
-    "73d7b5b19a54": "3ce5d60ec0cd",  # the swims
-    "c22f1b2cfd32": "cf585f8fb31b",  # the app's paddling examples
+    # TASK-436: the two tables a search works out once for its graph, made
+    # in blocks (ADR-0362); every route of before drawn the same.
+    "ca29e58777cb": "b4967ef32e9a",  # every route but a swim
+    "c9c2683a72ea": "3ce5d60ec0cd",  # the swims
+    "3984555281d5": "cf585f8fb31b",  # the app's paddling examples
 }
 
 

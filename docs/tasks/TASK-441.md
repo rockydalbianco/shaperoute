@@ -1,6 +1,7 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A (A1 + A2) in PR: 1963 percorsi; poi B
+**Stato**: In lavorazione — parte A in `main`; le parole tolte (1261
+percorsi, PR `fix/TASK-441-a-drop-words`); poi B
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -150,6 +151,13 @@ docs/tasks/TASK-441.md            (nuovo)
   `out/explore-2000/proposta.md` (quelle di `tools/catalog_words.py`, senza
   LFG) e l'ordine misto di «NEAR YOU»: prima la migliore di ogni forma e
   parola, poi la seconda, e così via.
+- 2026-11-11, viste le parole nell'app dopo il merge di #1149: «Le forme
+  che hai aggiunto non vengono bene come le altre … copia il metodo»,
+  poi «Sì, toglile». Le 702 parole aggiunte (615 di A2, 87 di A1) erano a
+  riga unica con le lettere unite e non si leggevano; gli esempi di città
+  (`services/api/shaperoute_api/city_examples.py`) le scrivono a penna
+  alzata, tonde, 3 km a lettera. Escono dal catalogo; nella parte B tutte
+  le parole si rifanno con quel metodo.
 
 ## Com'è uscita la parte A
 
@@ -176,6 +184,22 @@ docs/tasks/TASK-441.md            (nuovo)
   `out/TASK-441/review-new-words.html` (615) e
   `out/TASK-441/review-already-drawn.html` (776), checkout principale.
 
+## Le parole tolte (2026-11-11 sera)
+
+- Prova a Milano col metodo degli esempi di città (`pen_up`, `round`,
+  3 km a lettera; `out/TASK-441/penup/`, checkout principale): BACI,
+  FAST, COOL, STAR si leggono, somiglianza 0,97–1,00 contro 0,91–0,96 a
+  riga unica, 5 s l'una. Confronto: `out/TASK-441/penup/milano.html`.
+- `tools/catalog_kept.json` tiene le 572 di prima più le **689 forme** di
+  A1: **1261 percorsi**, 55 parole (quelle di prima). Seme riscritto con
+  `catalog_words.py --write`; Milano 71, la città più piccola 4.
+- Il catalogo non tiene `walks`: senza, l'app unirebbe le lettere a
+  piedi come prima. Per questo le parole aspettano la parte B, che dà il
+  campo al catalogo e poi rigenera tutte le parole a penna alzata (anche
+  le 55 di prima, da decidere con l'utente).
+- `catalog_words.py --propose` rimette ancora le parole a riga unica: non
+  usarlo per le parole fino alla parte B.
+
 ## Dove siamo
 
 *2026-11-11*: numeri dal Coordinatore (un task, una PR per parte; C a
@@ -186,3 +210,8 @@ dell'utente, dal Coordinatore: il suo script si aspetta «572 recommended
 routes», ora 1963), poi la PR di soli documenti con le righe di
 `STATUS.md` e `INDEX.md`. **Poi la parte B**: chiedere il turno al
 Coordinatore (dopo #1130), ADR-0366.
+
+*2026-11-11 sera*: #1149 mergiata alle 21:58 col catalogo da 1963; poi
+l'utente ha fatto togliere le parole (sopra). Coordinatore avvisato di non
+fare il passo server con 1963: va fatto dopo la PR
+`fix/TASK-441-a-drop-words`, con **1261** percorsi.

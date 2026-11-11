@@ -6,6 +6,7 @@ import type { Language } from "../i18n/languages";
 import { translate } from "../i18n/translate";
 import {
   color,
+  type Palette,
   onFoot,
   otherRoute,
   route,
@@ -231,6 +232,62 @@ export const HEADING_ARROW_SVG =
 export const START_HERE_COLOR = color.startHere;
 export const START_HERE_LABEL = tLater("Start here");
 
+/**
+ * The mark of «Start here» (TASK-443): a flag in a disc, centred on the
+ * point, so it is told from the pin of the start asked for by its shape and
+ * not by its colour alone. The flag is in the map's own colour, which
+ * reads on the cyan in every tone.
+ */
+export const START_PIN_SIZE = 32;
+export const START_PIN_CLASS = "start-here";
+export const START_PIN_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${START_PIN_SIZE}" height="${START_PIN_SIZE}" viewBox="0 0 32 32">` +
+  `<circle cx="16" cy="16" r="14" fill="${START_HERE_COLOR}" stroke="${color.map.background}" stroke-width="2"/>` +
+  `<path d="M12.5 9 V23.5" fill="none" stroke="${color.map.background}" stroke-width="2.5" stroke-linecap="round"/>` +
+  `<path d="M12.5 9.5 L23 13.5 L12.5 17.5 Z" fill="${color.map.background}" stroke="${color.map.background}" stroke-width="1.5" stroke-linejoin="round"/>` +
+  `</svg>`;
+/**
+ * Its words, in the colours of a control of the app and no longer the
+ * white of MapLibre's popup: over the mark, or under it where over it they
+ * would be in the status bar or under a button; `START_LABEL_GAP_PX` from
+ * the mark, never closer than `START_LABEL_EDGE_PX` to the sides.
+ */
+export const START_LABEL_CLASS = "start-here-label";
+export const START_LABEL_BELOW_CLASS = "below";
+export const START_LABEL_COLORS = {
+  background: color.surfaceRaised,
+  border: color.borderStrong,
+  text: color.text,
+};
+export const START_LABEL_GAP_PX = 6;
+export const START_LABEL_EDGE_PX = 8;
+
+/**
+ * Framing a route (TASK-443). A page told nothing of what lies over it
+ * leaves `FRAME_PADDING_PX` on every side, as it always did. One told
+ * (`setCover`) keeps the route under the status bar and over the
+ * attribution with `FRAME_GAP_PX` to spare, as large as it gets with no
+ * point of it within `BUTTON_GAP_PX` of a button: under the status bar if
+ * that is so, or else under the first row of buttons, and so on down.
+ * `ATTRIBUTION_PX` is the height of the attribution when the page cannot
+ * measure it.
+ */
+export const FRAME_PADDING_PX = 40;
+export const FRAME_GAP_PX = 16;
+export const BUTTON_GAP_PX = 8;
+export const ATTRIBUTION_PX = 20;
+
+/**
+ * The attribution in the colours of the app (TASK-443), in place of
+ * MapLibre's light grey band: its words and its links stay as the style
+ * gives them, always open, and readable in every tone (the licences of
+ * OpenStreetMap and OpenFreeMap ask for it; `mapPageAttribution.test.ts`).
+ */
+export function attributionColors(of: Pick<Palette, "surface" | "textMuted" | "text">) {
+  return { background: of.surface, text: of.textMuted, link: of.text };
+}
+export const ATTRIBUTION_COLORS = attributionColors(color);
+
 /** Behind the map while it loads, so the page never flashes white. */
 export const MAP_BACKGROUND = color.map.background;
 
@@ -281,6 +338,37 @@ export function buildMapPage(language: Language = appLanguage()): string {
 <link rel="stylesheet" href="${MAPLIBRE_CSS_URL}" integrity="${MAPLIBRE_CSS_SRI}" crossorigin="anonymous">
 <style>
   html, body, #map { margin: 0; width: 100%; height: 100%; background: ${MAP_BACKGROUND}; }
+  .maplibregl-ctrl.maplibregl-ctrl-attrib {
+    background-color: ${ATTRIBUTION_COLORS.background};
+    color: ${ATTRIBUTION_COLORS.text};
+    border-top-left-radius: 6px;
+  }
+  .maplibregl-ctrl.maplibregl-ctrl-attrib a { color: ${ATTRIBUTION_COLORS.link}; }
+  .${START_PIN_CLASS} {
+    width: ${START_PIN_SIZE}px;
+    height: ${START_PIN_SIZE}px;
+    line-height: 0;
+    pointer-events: none;
+  }
+  .${START_LABEL_CLASS} {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    margin-bottom: ${START_LABEL_GAP_PX}px;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    border: 1px solid ${START_LABEL_COLORS.border};
+    border-radius: 8px;
+    background: ${START_LABEL_COLORS.background};
+    color: ${START_LABEL_COLORS.text};
+    font: 600 14px/18px -apple-system, system-ui, sans-serif;
+    white-space: nowrap;
+  }
+  .${START_LABEL_CLASS}.${START_LABEL_BELOW_CLASS} {
+    bottom: auto;
+    top: 100%;
+    margin: ${START_LABEL_GAP_PX}px 0 0;
+  }
 </style>
 </head>
 <body>
@@ -310,6 +398,12 @@ export function buildMapPage(language: Language = appLanguage()): string {
     // and opens its cone. Null off that page.
     var facing = null;
     var startHere = null;
+    // The words of «Start here», placed anew as the map moves (TASK-443).
+    var startLabel = null;
+    // What lies over the top of the map, when the app has told (TASK-443).
+    var cover = null;
+    // The points the map is framed on: none of them under a button.
+    var framedPoints = [];
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
     // The route as showRoute sent it: drawn whole when no run is on it.
@@ -736,16 +830,60 @@ export function buildMapPage(language: Language = appLanguage()): string {
         startHere.remove();
         startHere = null;
       }
+      startLabel = null;
       if (lngLat) {
-        var label = new maplibregl.Popup({ closeButton: false, closeOnClick: false })
-          .setText(${toScript(translate(language, START_HERE_LABEL))});
-        startHere = new maplibregl.Marker({ color: ${toScript(START_HERE_COLOR)} })
+        // A flag in a disc, not a pin as the start asked for (TASK-443),
+        // and its words in the app's colours. Fingers go through to the map.
+        var element = document.createElement("div");
+        element.className = ${toScript(START_PIN_CLASS)};
+        element.innerHTML = ${toScript(START_PIN_SVG)};
+        startLabel = document.createElement("div");
+        startLabel.className = ${toScript(START_LABEL_CLASS)};
+        startLabel.textContent = ${toScript(translate(language, START_HERE_LABEL))};
+        element.appendChild(startLabel);
+        startHere = new maplibregl.Marker({ element: element })
           .setLngLat(lngLat)
-          .setPopup(label)
-          .addTo(map)
-          .togglePopup();
+          .addTo(map);
+        placeStartLabel();
       }
     }
+    // The words of «Start here» over their mark, or under it where over it
+    // they would be in the status bar or under a button; moved sideways
+    // where they would leave the map (TASK-443).
+    function placeStartLabel() {
+      if (!startHere || !startLabel) {
+        return;
+      }
+      var at = map.project(startHere.getLngLat());
+      var width = startLabel.offsetWidth;
+      var height = startLabel.offsetHeight;
+      var half = width / 2;
+      var edge = ${START_LABEL_EDGE_PX};
+      var mapWidth = map.getContainer().clientWidth;
+      var shift = 0;
+      if (at.x - half < edge) {
+        shift = edge + half - at.x;
+      } else if (at.x + half > mapWidth - edge) {
+        shift = mapWidth - edge - half - at.x;
+      }
+      var top = at.y - ${START_PIN_SIZE / 2 + START_LABEL_GAP_PX} - height;
+      var left = at.x - half + shift;
+      var hidden =
+        top < (cover ? cover.top : 0) + edge ||
+        (cover ? cover.buttons : []).some(function (button) {
+          return (
+            left < button.x + button.width &&
+            left + width > button.x &&
+            top < button.y + button.height &&
+            top + height > button.y
+          );
+        });
+      startLabel.className = hidden
+        ? ${toScript(`${START_LABEL_CLASS} ${START_LABEL_BELOW_CLASS}`)}
+        : ${toScript(START_LABEL_CLASS)};
+      startLabel.style.transform = "translateX(calc(-50% + " + shift + "px))";
+    }
+    map.on("move", placeStartLabel);
     function setRoute(data) {
       route = data;
       var source = map.getSource("route");
@@ -906,9 +1044,117 @@ export function buildMapPage(language: Language = appLanguage()): string {
         inFrame = false;
       }
     });
+    // The room the attribution takes at the bottom of the map.
+    function attributionRoom() {
+      var bar =
+        typeof document !== "undefined" && document.querySelector
+          ? document.querySelector(".maplibregl-ctrl-attrib")
+          : null;
+      return (bar && bar.offsetHeight) || ${ATTRIBUTION_PX};
+    }
+    // A place in the pixels of the whole world at a zoom, as MapLibre
+    // counts them (Web Mercator, 512 to a tile).
+    function worldOf(lng, lat, scale) {
+      var sin = Math.sin((lat * Math.PI) / 180);
+      return [
+        ((lng + 180) / 360) * scale,
+        (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * scale,
+      ];
+    }
+    // Whether a point the map is framed on would be under a button, or
+    // within ${BUTTON_GAP_PX} px of one, on the flat map as \`camera\` shows it.
+    function underButtons(camera) {
+      var box = map.getContainer();
+      var scale = 512 * Math.pow(2, camera.zoom);
+      var middle = worldOf(camera.center.lng, camera.center.lat, scale);
+      var turn = ((camera.bearing || 0) * Math.PI) / 180;
+      var cos = Math.cos(turn);
+      var sin = Math.sin(turn);
+      var gap = ${BUTTON_GAP_PX};
+      return framedPoints.some(function (point) {
+        var at = worldOf(point[0], point[1], scale);
+        var dx = at[0] - middle[0];
+        var dy = at[1] - middle[1];
+        var x = box.clientWidth / 2 + dx * cos + dy * sin;
+        var y = box.clientHeight / 2 - dx * sin + dy * cos;
+        return cover.buttons.some(function (button) {
+          return (
+            x > button.x - gap &&
+            x < button.x + button.width + gap &&
+            y > button.y - gap &&
+            y < button.y + button.height + gap
+          );
+        });
+      });
+    }
+    // The room left around a route framed (TASK-443). Told what lies over
+    // the map: under the status bar and over the attribution, and from the
+    // top as little as leaves no point under a button, row after row of
+    // them. The leaning map is not measured: under every button.
+    function framePadding() {
+      if (!cover) {
+        return ${FRAME_PADDING_PX};
+      }
+      var gap = ${FRAME_GAP_PX};
+      var bottom = attributionRoom() + gap;
+      var height = map.getContainer().clientHeight;
+      var tops = [cover.top];
+      cover.buttons
+        .map(function (button) {
+          return button.y + button.height;
+        })
+        .sort(function (a, b) {
+          return a - b;
+        })
+        .forEach(function (under) {
+          if (under > tops[tops.length - 1]) {
+            tops.push(under);
+          }
+        });
+      var room = function (top) {
+        return { top: top + gap, bottom: bottom, left: gap, right: gap };
+      };
+      var lowest = room(tops[tops.length - 1]);
+      // A map too low to hold the route under its buttons: under the
+      // status bar, whatever is under a button.
+      if (height - lowest.top - lowest.bottom < ${FRAME_PADDING_PX}) {
+        return room(tops[0]);
+      }
+      if (kind === "3d") {
+        return lowest;
+      }
+      for (var i = 0; i < tops.length - 1; i += 1) {
+        var tried = room(tops[i]);
+        var camera = map.cameraForBounds(framed, { padding: tried, bearing: wanted });
+        if (camera && !underButtons(camera)) {
+          return tried;
+        }
+      }
+      return lowest;
+    }
     function frame() {
       inFrame = true;
-      map.fitBounds(framed, { padding: 40, bearing: wanted });
+      map.fitBounds(framed, { padding: framePadding(), bearing: wanted });
+    }
+    // The map's view changed its size: the card under it grew with its
+    // route, or shrank (TASK-443). Still framed on its route, it frames it
+    // again, at once; moved by the user, it stays where it was left.
+    map.on("resize", function () {
+      if (framed && inFrame && !following) {
+        map.fitBounds(framed, {
+          padding: framePadding(),
+          bearing: wanted,
+          animate: false,
+        });
+      }
+      placeStartLabel();
+    });
+    function setCover(next) {
+      cover = next;
+      if (framed && inFrame && !following) {
+        frame();
+      }
+      placeStartLabel();
     }
     // The map's kind (TASK-264, ADR-0232): the layers of the style it shows,
     // the hills under the 3D map, and how far the map leans. The route and
@@ -922,7 +1168,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
       var pitch = kind === "3d" ? ${PITCH_3D} : 0;
       if (framed && inFrame && !following) {
         // Framed on its route, it is framed again, leaning or flat.
-        map.fitBounds(framed, { padding: 40, bearing: wanted, pitch: pitch });
+        map.fitBounds(framed, { padding: framePadding(), bearing: wanted, pitch: pitch });
       } else {
         map.easeTo({ pitch: pitch, duration: 600 });
       }
@@ -2001,10 +2247,23 @@ export function buildMapPage(language: Language = appLanguage()): string {
           var bounds = points.reduce(function (box, point) {
             return box.extend(point);
           }, new maplibregl.LngLatBounds(points[0], points[0]));
+          framedPoints = points.slice();
+          // The shape asked for under the route (TASK-442), whole in view
+          // with it (TASK-443).
+          if (ghost.geometry) {
+            ghost.geometry.coordinates.forEach(function (line) {
+              line.forEach(function (point) {
+                bounds.extend(point);
+                framedPoints.push(point);
+              });
+            });
+          }
           setStartHere(message.startHere);
           if (message.startHere && marker) {
             // Where the user is and where to go, both in view.
-            bounds.extend(marker.getLngLat());
+            var asked = marker.getLngLat();
+            bounds.extend(asked);
+            framedPoints.push([asked.lng, asked.lat]);
           }
           // Turned as its drawing is (TASK-232): the shape reads upright.
           drawn = message.bearing || 0;
@@ -2075,6 +2334,8 @@ export function buildMapPage(language: Language = appLanguage()): string {
             properties: {},
             geometry: { type: "MultiLineString", coordinates: message.lines },
           });
+        } else if (message.type === "setCover") {
+          setCover(message.cover);
         } else if (message.type === "showGhost") {
           setGhost(
             message.lines.length === 0
@@ -2130,6 +2391,7 @@ export function buildMapPage(language: Language = appLanguage()): string {
           // A map turned for its route is north-up again without it; one
           // turned by the user stays as it was left.
           framed = null;
+          framedPoints = [];
           if (drawn !== 0) {
             drawn = 0;
             wanted = 0;

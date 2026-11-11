@@ -174,11 +174,18 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   neutro) esce con l'ottavo OTA.
   Ottavo OTA il 2026-11-11 da cd0c8b08, con la #1133: resta solo la prova
   sul telefono del «No» neutro, poi la chiusura.
+  **Chiuso il 2026-11-11**: A, B e C in `main`, sul server e negli OTA 5–8;
+  provato sul telefono dall'utente; vedi `archive/COMPLETATI.md`.
 - **TASK-435 — Primo percorso subito, alternative dopo** (ADR-0361) ·
   parte 0 fatta: piano, misura (una vicina vince nel 38% delle prove;
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il
   primo resta A»). Prossima la parte A (motore), poi B (API) e C (app).
   File: — · `tasks/TASK-435.md`
+- **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
+  1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
+  unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
+  tornano nella B a penna alzata; il server aspetta la correzione. Poi B
+  (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

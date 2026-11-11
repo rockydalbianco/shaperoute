@@ -34,6 +34,8 @@ test("its activities and sports are activities of a run", () => {
   for (const activity of example.days.flatMap((day) => day.activities)) {
     assert.ok(known.includes(activity.activity), activity.activity);
     assert.ok(activity.kcal === null || activity.kcal >= 0);
+    // A workout at the gym has no track (TASK-385).
+    assert.ok(activity.activity !== "gym" || !activity.tracked);
   }
   for (const sport of example.sports) {
     assert.ok(known.includes(sport), sport);

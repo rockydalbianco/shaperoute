@@ -1794,7 +1794,9 @@ Solo lettura da `runs` e `run_stats`, nessuna migrazione.
   un'attività, ognuna con `id` (la chiave di «My activities»), `activity`,
   `started_at`, `distance_m` (0 per la palestra), `duration_s`, `kcal`
   (quelle che il telefono ha mandato con `PUT /me/activities/{key}/stats`,
-  `null` se nessuna), `shape`, `word`, `title`, `place`; la prima prima.
+  `null` se nessuna), `tracked` (`false` senza traccia: la palestra e la
+  piscina, che non aprono una mappa), `shape`, `word`, `title`, `place`; la
+  prima prima.
 - `trend`: i 12 mesi fino a `month`, il più vecchio prima, ognuno anche
   vuoto, con `count`, `distance_m`, `duration_s`; dello `sport` chiesto.
   Sono le barre dello «storico tempi».

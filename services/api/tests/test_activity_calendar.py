@@ -125,6 +125,8 @@ def test_every_sport_on_its_day_with_its_calories(
     first = answer["days"][0]["activities"]
     assert [one["activity"] for one in first] == ["running", "gym"]
     assert [one["kcal"] for one in first] == [355, None]
+    # The gym has no track: it opens no map.
+    assert [one["tracked"] for one in first] == [True, False]
     assert first[0]["shape"] == "star"
     assert answer["count"] == 3
     activities = [one for day in answer["days"] for one in day["activities"]]

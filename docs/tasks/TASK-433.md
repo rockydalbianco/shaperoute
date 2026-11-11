@@ -232,3 +232,15 @@ simulatore non è stata vista girare.
    parte B, che esce con l'OTA dopo il suo merge).
 3. La privacy non cambia: le schede (nome, giorni, esercizi e valori
    obiettivo) restano sul telefono e sull'account come in TASK-411 D.
+
+## Prova sul telefono (2026-11-11)
+
+Settimo OTA in produzione da `main` 7e24e7d1 (~14:30Z; iOS
+`3906eb66-1292-4b9c-86e9-bbaf34a88ce5`, Android
+`7b0ec9eb-baae-4484-8dae-233de28598c0`), con la C2 (#1115). L'utente l'ha
+provato sul telefono e ha scritto al Coordinatore «procedi funziona tutto
+ok procedi», poi «Sì, sul telefono» alla domanda se era la prova del
+settimo aggiornamento. È una **prova generale** del settimo OTA: l'utente
+non ha nominato le singole funzioni, quindi per la C2 (giorni di corsa) non
+vale come giro guidato dei passi della guida. Il «No» neutro di «And
+running?» (#1133) non c'era ancora: esce con l'ottavo OTA.

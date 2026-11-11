@@ -68,8 +68,25 @@ non tracciato).
    prima. Con 130 disegni a Milano le prime sarebbero quasi tutte cerchi e
    cuori: proposta all'utente, **prima la migliore di ogni forma e parola,
    poi la seconda…** (`recommended.py` + test, stessa PR).
-6. Prima della PR: tempo d'avvio e memoria dell'API con 1450 e con 2000
+6. Prima della PR: tempo d'avvio e memoria dell'API con 1348 e con 2000
    percorsi (richiesta del Coordinatore), scritti qui sotto.
+
+## Cosa costa il catalogo all'API
+
+`out/TASK-441/measure_api.py <cartella del seme>` (checkout principale): il
+tempo di `RecommendedCatalog.from_dir`, la memoria residente in più, una
+`near` più una `page` da Milano. Sul Mac, col giro delle parole in corso:
+
+| Seme | Percorsi | File | Lettura | Memoria | `near` + `page` |
+|---|---|---|---|---|---|
+| `main` | 572 | 8,8 MB | 0,16 s | +57 MB | 3,5 ms |
+| A1 | 1348 | 21,6 MB | 0,62 s | +134 MB | 14,4 ms |
+
+Il catalogo sta solo nel processo principale (i route worker nascono dal
+fork server, senza). A 2000 percorsi: circa 32 MB di file e +200 MB di
+memoria. Quasi tutta è dei punti tenuti come tuple di float (104 byte a
+punto): tenerli in un `array('d')` li porterebbe a 16 byte, circa 35 MB a
+2000 percorsi, senza cambiare i file. Da decidere col Coordinatore.
 
 ## Criteri di accettazione (parte A)
 
@@ -105,6 +122,6 @@ docs/tasks/TASK-441.md            (nuovo)
 ## Dove siamo
 
 *2026-11-11*: numeri dal Coordinatore (un task, una PR per parte; C a
-parte). Strumento e 18 test scritti; giro delle parole lanciato alle 14:40
+parte). Strumento e 18 test scritti; giro delle parole lanciato alle 14:21
 dal worktree `.claude/worktrees/TASK-441-a` (il Coordinatore può chiedere
 «ferma il giro» per un bench: riparte con `bash out/TASK-441/run.sh`).

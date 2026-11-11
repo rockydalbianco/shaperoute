@@ -112,9 +112,15 @@ libero al merge),
 - [ ] Migrazione sul server e poi OTA, dal Coordinatore col sì dell'utente;
       righe di controllo di sola lettura in `out/TASK-433/SERVER.md`
       (cartella `out/` del checkout principale).
-- [ ] Prova sul telefono dell'utente. **Sul simulatore la guida non è stata
-      vista girare**: provata solo coi test (jest); l'utente la prova dopo
-      l'OTA del 2026-11-10.
+- [x] Vista girare nel simulatore il 2026-11-11 (Expo Go, una pagina di prova
+      temporanea da `main` 7e24e7d1, mai committata): i 5 passi con due corse,
+      le ripetute, la settimana 2 scritta a mano, il salvataggio (programma
+      valido per il server), la spiegazione B che sale e si chiude, «Today» in
+      un giorno di corsa, «My plans» con «RUN». Tutto come la tela, tranne
+      «No» di «And running?» che scelto aveva il bordo azzurro delle corse:
+      ora neutro. Schermate in `out/TASK-433/simulator/` del checkout
+      principale.
+- [ ] Prova sul telefono dell'utente, dopo il settimo OTA.
 
 ## Parte B — «Come funzionano le schede» toccando Palestra
 

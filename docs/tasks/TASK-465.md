@@ -120,7 +120,8 @@ nomi dei muscoli nelle cinque lingue?». Risposta: **«Sì, vanno bene»**.
       in lista; nella scheda anche i secondari, col contorno, e i nomi.
 - [ ] Il principale non si distingue solo per il colore; contrasti
       rispettati nei due toni.
-- [ ] Screenshot prima/dopo dal simulatore e il sì dell'utente scritto qui.
+- [ ] Screenshot prima/dopo dal simulatore; il sì dell'utente è scritto
+      qui sotto, in «Cronologia» (2026-11-11).
 - [ ] Solo JavaScript: impronta iOS
       `6f8bba4cf1b6f95fc3c1c84ba9812d950a2232a1`.
 - [ ] PR verde, segnalata al Coordinatore («#NNNN pronta»). Niente OTA,
@@ -134,5 +135,14 @@ nomi dei muscoli nelle cinque lingue?». Risposta: **«Sì, vanno bene»**.
 - 2026-11-11 — sì del Coordinatore sulla lista, ADR-0376; codice e test
   scritti (test dei file toccati, `tsc` ed `eslint` verdi in locale).
 - 2026-11-11 — sì dell'utente sui nomi dei muscoli («Sì, vanno bene»).
-  Mancano: screenshot dal simulatore (al «simulatore tuo»), il sì
-  dell'utente su aspetto e colore, la PR.
+- 2026-11-11 — PR #1173 aperta come bozza su richiesta del Coordinatore,
+  perché la CI giri intanto.
+- 2026-11-11 — **sì dell'utente su aspetto e colore**, dato sui disegni
+  della parte 0 (sagoma accanto all'omino, zona accesa in rosa) prima
+  degli screenshot. A «Manca: gli screenshot prima/dopo dal simulatore, il
+  tuo sì su aspetto e colore, poi "#1173 pronta" al Coordinatore a CI
+  verde» ha risposto **«per me va bene si»**, e a «il tuo sì su aspetto e
+  colore» **«si»**. Gli screenshot si fanno lo stesso e gli vengono
+  mostrati: se lì qualcosa non gli va, si cambia prima del merge.
+  Mancano: gli screenshot dal simulatore (al «simulatore tuo»), la CI
+  verde, «#1173 pronta».

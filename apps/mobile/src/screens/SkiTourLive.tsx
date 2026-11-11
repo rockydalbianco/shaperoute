@@ -47,39 +47,47 @@ export function SkiTourLive({ track, live }: { track: Track; live: boolean }) {
   const vam = liveVam(track, tour, at);
   const height = track.fixes[track.fixes.length - 1]?.altitudeM;
   return (
+    // Two to a row: «VAM 5 min» and «Elev. gain» are cut short four abreast.
     <View style={styles.box} testID="ski-tour-live">
-      <Tile label={t("Phase")} value={phaseName(phase)} />
-      <Tile
-        label={t("VAM 5 min")}
-        value={vam === null ? NO_NUMBER : String(Math.round(vam))}
-        unit="m/h"
-      />
-      <Tile
-        label={t("Elev. gain")}
-        value={tour === null ? NO_NUMBER : String(Math.round(tour.climbM))}
-        unit="m"
-      />
-      <Tile
-        label={t("Altitude")}
-        value={
-          height === undefined || height === null || !Number.isFinite(height)
-            ? NO_NUMBER
-            : String(Math.round(height))
-        }
-        unit="m"
-      />
+      <View style={styles.row}>
+        <Tile label={t("Phase")} value={phaseName(phase)} />
+        <Tile
+          label={t("VAM 5 min")}
+          value={vam === null ? NO_NUMBER : String(Math.round(vam))}
+          unit="m/h"
+        />
+      </View>
+      <View style={styles.row}>
+        <Tile
+          label={t("Elev. gain")}
+          value={tour === null ? NO_NUMBER : String(Math.round(tour.climbM))}
+          unit="m"
+        />
+        <Tile
+          label={t("Altitude")}
+          value={
+            height === undefined || height === null || !Number.isFinite(height)
+              ? NO_NUMBER
+              : String(Math.round(height))
+          }
+          unit="m"
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   box: {
-    flexDirection: "row",
     gap: space.sm,
     padding: space.md,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: color.borderStrong,
     backgroundColor: color.surfaceRaised,
+  },
+  row: {
+    flexDirection: "row",
+    gap: space.sm,
   },
 });

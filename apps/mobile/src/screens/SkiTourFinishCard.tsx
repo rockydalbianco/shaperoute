@@ -98,6 +98,7 @@ export function SkiTourFinishCard({ run, activity, onResume, onDone }: Props) {
         </Text>
         <Text style={styles.caption}>{t("Elev. gain")}</Text>
       </View>
+      {/* Two to a row: the labels are long in Italian and German. */}
       <View style={styles.grid}>
         <View style={styles.tiles}>
           <Tile
@@ -105,15 +106,17 @@ export function SkiTourFinishCard({ run, activity, onResume, onDone }: Props) {
             value={metresOf(tour?.lossM ?? null)}
             unit="m"
           />
-          <Tile label={t("Time up")} value={timeOf(tour?.climbMs ?? null)} />
-          <Tile label={t("Time down")} value={timeOf(tour?.descentMs ?? null)} />
-        </View>
-        <View style={styles.tiles}>
           <Tile
             label={t("Avg VAM")}
             value={metresOf(tour?.vamMph ?? null)}
             unit="m/h"
           />
+        </View>
+        <View style={styles.tiles}>
+          <Tile label={t("Time up")} value={timeOf(tour?.climbMs ?? null)} />
+          <Tile label={t("Time down")} value={timeOf(tour?.descentMs ?? null)} />
+        </View>
+        <View style={styles.tiles}>
           <Tile
             label={t("Max altitude")}
             value={metresOf(tour?.topM ?? null)}

@@ -18,6 +18,7 @@ import {
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
 import { Tap } from "../ui/Tap";
+import { sharePostLink } from "./postLink";
 
 /**
  * Whether a post can be sent to a friend from here: with an account, and an
@@ -37,6 +38,10 @@ type Props = {
    * drawing of another member leaves the app as a picture with nobody's
    * consent (TASK-355, the user's choice). */
   poster?: () => PostRun;
+  /** The post's link, when it has one (`postLinkOf`): «Share link» gives it
+   * to the phone's own sheet. None on a post that is not for everyone, or
+   * whose owner turned «Links to my posts» off. */
+  link?: string | null;
   onClose: () => void;
 };
 
@@ -45,10 +50,10 @@ type Props = {
  * of 2026-11-12): a small sheet with «Send to a friend», which sends the
  * post in a message as a pointer, and on one's own post «Poster and video».
  * What each opens comes over the sheet, and closing it closes the sheet
- * too: nothing is left open underneath. The link of a post joins them with
- * its own part.
+ * too: nothing is left open underneath. «Share link» (part E) hands the
+ * post's link to the phone's own sheet, and the sheet closes after it.
  */
-export function PostShareSheet({ visible, post, poster, onClose }: Props) {
+export function PostShareSheet({ visible, post, poster, link, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const sendable = usePostSendable();
   const [sending, setSending] = useState(false);
@@ -72,6 +77,12 @@ export function PostShareSheet({ visible, post, poster, onClose }: Props) {
       <View style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}>
         {sendable && (
           <Choice label={t("Send to a friend")} onPress={() => setSending(true)} />
+        )}
+        {link != null && (
+          <Choice
+            label={t("Share link")}
+            onPress={() => void sharePostLink(link).then(closeAll)}
+          />
         )}
         {poster !== undefined && (
           <Choice label={t("Poster and video")} onPress={() => setRun(poster())} />

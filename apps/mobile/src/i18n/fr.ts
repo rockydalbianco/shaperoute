@@ -2724,6 +2724,10 @@ export const FR: Table = {
   "by {user}": "de {user}",
   "This post is no longer available.": "Cette publication n'est plus disponible.",
   "🗺️ Post": "🗺️ Publication",
+  // src/settings/PostLinksSetting.tsx (TASK-455 part E)
+  "Links to my posts": "Liens vers mes publications",
+  "People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.":
+    "Qui voit tes publications pour «Tout le monde» peut partager leur lien. Qui a le lien voit le dessin sur la carte, ton nom d'utilisateur et la distance, même sans MuW. Désactive-le et les liens cessent de fonctionner.",
   // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
   "Add activity": "Ajouter une activité",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,

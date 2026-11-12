@@ -1862,8 +1862,22 @@ l'app, come «Find friends»:
   «Send to a friend» e, sui propri, «Poster and video» (quello che «Share»
   apriva prima); «Cancel» lo chiude, e chiudere quello che una voce apre
   chiude anche il foglietto. Senza i messaggi (nessun account, o un'API di
-  prima) sui post altrui «Share» non c'è. La voce del link arriva con la
-  parte E.
+  prima) sui post altrui «Share» non c'è, se il post non ha un link.
+- **«Share link»** (TASK-455 parte E; testi dell'utente del 2026-11-12):
+  nel foglietto, tra «Send to a friend» e «Poster and video», solo sui post
+  che l'API dice `linkable` (per «Everyone», con la linea, di un autore che
+  tiene «Links to my posts» acceso), propri o altrui. Dà al foglio del
+  telefono l'indirizzo `getmuw.app/p/#<id>` e nient'altro, senza parole
+  nostre (`feed/postLink.ts`); chiuso quello, si chiude anche il foglietto.
+  Un post «Followers» o «Only me», o di un autore con l'interruttore
+  spento, non ha la voce, nemmeno per l'autore.
+- **«Links to my posts»** in «Settings», sotto «Show VO₂ max on my
+  profile» (`settings/PostLinksSetting.tsx`): un interruttore tenuto
+  dall'API (`GET`/`PUT /me/post-links`), acceso all'inizio, con sotto la
+  sua spiegazione: «People who see your «Everyone» posts can share a link
+  to them. Anyone with the link sees the drawing on the map, your username
+  and the distance, even without MuW. Turn this off and the links stop
+  working.». Con un'API di prima la riga non c'è.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale

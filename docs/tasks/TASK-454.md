@@ -4,9 +4,10 @@
 `main` (#1180) e sul server (passo 9, 2026-11-12) · **A (#1195), C2
 (#1199) e la frase della privacy (#1200) in `main` il 2026-11-12**: escono
 con l'aggiornamento completo (OTA 12, 2026-11-12 12:28Z) · **B (doppio
-tocco) scritta per intero nella bozza #1231**: mancano il video dal
-simulatore e il sì dell'utente · resta la prova sul telefono: vedi «Cosa
-resta di questo task»
+tocco) nella #1231, pronta**: provata nel simulatore, video approvati
+dall'utente («Sì, approvo», 2026-11-12); aspetta il merge del Coordinatore
+e l'OTA dopo · poi la prova dei 300 ms sul telefono e la chiusura: vedi
+«Cosa resta di questo task»
 **Fase**: 5 · **Branch**: una PR per parte; la parte B parte da `main`
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
@@ -156,7 +157,7 @@ apps/mobile/src/feed/PostPage.test.tsx               (idem)
 apps/mobile/src/contest/themedContest.test.tsx       (idem; sì del Coordinatore, 2026-11-12)
 apps/mobile/src/screens/FeedScreenContest.test.tsx   (idem)
 apps/mobile/src/screens/FeedScreenPosts.test.tsx     (idem)
-apps/mobile/__tests__/AppDrawAgain.test.tsx          (idem; rossi nella CI del 2026-11-12)
+apps/mobile/__tests__/AppDrawAgain.test.tsx          (idem; rossi nella CI, sì del Coordinatore)
 apps/mobile/__tests__/AppDrawingStart.test.tsx       (idem)
 docs/UI.md
 docs/tasks/TASK-454.md
@@ -198,8 +199,8 @@ Parte B:
 - [x] Col super like già messo il doppio tocco mostra il cuore grande e non
       cambia niente; su un post proprio fa come il cuore della fila.
 - [x] Con «Riduci movimento» il cuore grande compare fermo, alla sua misura.
-- [ ] Video dal simulatore (tocco singolo e doppio, Feed e pagina del post)
-      in `out/TASK-454/` col sì dell'utente.
+- [x] Video dal simulatore (tocco singolo e doppio, Feed e pagina del post)
+      in `out/TASK-454/video/` col sì dell'utente (2026-11-12).
 
 I criteri di C1 e C2 stanno nella loro sezione.
 
@@ -480,9 +481,23 @@ da `main` a `ef07030b`, poi `main` unito a `627767a5` con TASK-467 B2
 dentro). Codice e test scritti per intero: `useDoubleTap`, il super like
 chiesto dall'immagine (`PostReactions`, passato da `PostActions` e
 `PostSheet`), l'immagine di `FeedPost` e di `PostPage` che lo chiede, il
-cuore fermo con «Riduci movimento». **Manca**: il turno del simulatore
-(dal Coordinatore), il video per l'utente e il suo sì; poi «pronta». La PR
-resta in bozza fino ad allora (Coordinatore, 2026-11-12).
+cuore fermo con «Riduci movimento». **Provata nel simulatore il
+2026-11-12** (iPhone 17e, API locale di `main`, un post di un altro
+account): il tocco singolo apre la pagina del post e poi la mappa dopo
+l'attesa; il doppio tocco apre il foglio nella pagina del post e nel Feed;
+mandato il commento la card dice «Mi piace · 3» col cuore di MuW e
+«Commento · 6»; col super like già messo il doppio tocco mostra il cuore
+grande e non cambia niente. **Video approvati dall'utente** («Sì,
+approvo», 2026-11-12); PR pronta, aspetta il merge del Coordinatore.
+
+Video in `out/TASK-454/video/` del checkout principale:
+`TASK-454-B-1-tocco-singolo.mp4` (12 s, codice com'è, 300 ms) e
+`TASK-454-B-2-doppio-tocco.mp4` (34 s). **Un limite della prova, detto
+all'utente prima del suo sì**: lo strumento che tocca lo schermo del
+simulatore perde un secondo tocco entro mezzo secondo circa, quindi il
+secondo video è girato con la finestra allargata a 1500 ms in una modifica
+solo locale, mai committata e tolta subito dopo. Quello che succede è lo
+stesso; la sensazione dei 300 ms si prova solo su un telefono, dopo l'OTA.
 
 Scelta dell'utente: la 6 qui sopra. Il resto è **deciso dall'agente su
 delega dell'utente** (visto dal Coordinatore il 2026-11-12):
@@ -540,7 +555,9 @@ nella pagina del post, e ora aspettano «Start», che è solo sulla mappa.
 Scritto il 2026-11-12, con A, C1, C2 e la privacy in `main`.
 
 - **Parte B — doppio tocco = super like** (scelta 6): vedi la sezione qui
-  sopra. Mancano il video dal simulatore, il sì dell'utente, «pronta».
+  sopra. Approvata dall'utente sui video; mancano il merge (Coordinatore),
+  l'OTA (Coordinatore, col sì dell'utente) e la prova sul telefono del
+  doppio tocco vero, entro 300 ms.
 - **Prova sul telefono: fatta dall'utente il 2026-11-12** con l'OTA 12
   («ok funziona top», sull'elenco qui sotto). Resta da provare lì solo la
   parte B, quando esce. L'elenco, uscito con l'OTA 12 (12:28Z):

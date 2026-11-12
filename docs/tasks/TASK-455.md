@@ -306,6 +306,12 @@ fissano il comportamento di prima: `feed/PostActions.test.tsx`,
 `apps/mobile/src/feed/PostShareSheet.tsx`,
 `apps/mobile/src/messages/PostCard.tsx`,
 `apps/mobile/src/messages/messagePost.ts`, ognuno col suo test.
+Aggiunti il 2026-11-12 col sì del Coordinatore, per chiudere il foglietto
+di «…» dopo «Send to…»: `apps/mobile/src/activities/ActivityCard.tsx` e
+`apps/mobile/src/activities/ActivityCardSend.test.tsx` (nuovo). Tolti dalla
+lista: `api/reads.test.ts` (`post` non entra nella lista comune di
+`X-MuW-Reads`: lo dicono solo le chiamate dei messaggi, o l'esempio
+`reads.json` che l'API confronta coi suoi tipi si romperebbe).
 Non si toccano: `App.tsx`, `feed/FeedPost.tsx`, `feed/PostPage.tsx`,
 `feed/PostSheet.tsx`, `feed/PostReactions.tsx`,
 `messages/MessagesOverlay.tsx`, `social/drawingsDoor.ts`, `share/**`,
@@ -383,3 +389,44 @@ Le altre parti scrivono i loro criteri quando partono.
 - 2026-11-12: lista dei file della parte B approvata dal Coordinatore
   («La parte B, da dove si riparte», sopra). La B parte in un contesto
   nuovo, da questo file.
+- 2026-11-12: **risposta dell'utente sul tocco della scheda in chat: «Come
+  da una notifica»** (la chat si chiude e il post si apre sulla mappa con
+  la sua scheda, `drawingsDoor.open`); la pagina del Feed sopra la chat
+  vorrebbe `App.tsx` e `ProfileLayer.tsx`. Parte B nella **#1255 in
+  bozza**: la scheda del post in chat, «Send to a friend» col rimando, la
+  scheda di un disegno altrui che manda il post, `post` in `X-MuW-Reads`
+  solo nelle chiamate dei messaggi, il foglietto di «Share» scritto e non
+  ancora collegato, i cinque testi con le traduzioni, `UI.md`; chiuso anche
+  il foglietto di «…» di un'attività dopo «Send to…». Mancano
+  `feed/PostActions.tsx` (dopo la #1231 di TASK-454 B), gli screenshot col
+  turno del simulatore e il sì dell'utente.
+- 2026-11-12: l'utente: «sì procedi». **«Share» sotto ogni post** collegato
+  in `feed/PostActions.tsx` (il foglietto si monta al primo «Share»; sui
+  post altrui c'è solo coi messaggi), prima che la #1231 di TASK-454 B sia
+  in `main`: quando entra si unisce `main` qui e si tengono le sue righe
+  (una prop in più, `reactionsHandle`). Test nuovo
+  `feed/PostActionsShare.test.tsx`; `PostActions.test.tsx`,
+  `PostPage.test.tsx` e `snowFeed.test.tsx` non sono toccati e passano:
+  senza i messaggi «Share» resta solo sui propri post. Mancano gli
+  screenshot col turno del simulatore e il sì dell'utente.
+- 2026-11-12: **prova al simulatore** (iPhone 17e, Expo Go, API locale con
+  la `0074` su un database usa e getta, quattro account finti). Visti
+  sullo schermo: «Share» sul post di un altro e il suo foglietto, «Send
+  to…» e «Sent to…», il foglietto sul proprio post con «Poster and video»,
+  la lista con «🗺️ Post», la chat con la scheda del post e «This post is
+  no longer available.», il post aperto dalla chat (e «←» che torna a
+  «Messages»), la nota per un post «Followers», il foglietto di «…» di
+  un'attività che si chiude dopo «Send to…». Nel database il messaggio
+  mandato dall'app ha `attachment = post`, `post_id` e nessuna copia. **Un
+  difetto trovato e corretto**: «Send to…» aperto dal foglietto del Feed
+  stava sotto l'orologio; ora ha i suoi margini dentro il Modal, come la
+  pagina del post (`SendToFriendInset.test.tsx`). Schermate in
+  `out/TASK-455/shots/`, mandate all'utente per il suo sì.
+- 2026-11-12: **l'utente sulle schermate della parte B: «Sì, vanno bene»**
+  (sei schermate: «Share» sul post di un altro, i due foglietti, «Send
+  to…» con la nota per un post «Followers», la chat con la scheda e «This
+  post is no longer available.», il post aperto dalla chat). Detto
+  all'utente e lasciato com'è: nella scheda del post aperto dalla chat
+  l'ultimo pulsante dice «Back to the profile»; il foglietto non scurisce
+  lo sfondo, come quello di «…». Per «pronta» manca solo `main` unito dopo
+  la #1231 di TASK-454 B.

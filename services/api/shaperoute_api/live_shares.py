@@ -300,6 +300,65 @@ MAY_SEE_SQL = (
 )
 
 
+def insert_share(
+    conn: Any,
+    user_id: int,
+    body: LiveShareRequestBody,
+    now: datetime,
+    planned_live_id: UUID | None = None,
+) -> LiveShareCreatedBody:
+    """A new share in the transaction of `conn`: at most MAX_SHARES_PER_DAY a
+    day, and the account's shares of activities never finished stop. A
+    planned live (TASK-468 part A2a) starts its share here too."""
+    token = secrets.token_urlsafe(TOKEN_BYTES) if body.link else None
+    pool = body.pool_length_m if body.activity == "swimming" else None
+    # One account's links change one at a time: the count is right.
+    conn.execute("SELECT 1 FROM users WHERE id = %s FOR UPDATE", (user_id,))
+    made = conn.execute(
+        "SELECT count(*) AS n FROM live_shares"
+        " WHERE user_id = %s AND created_at > %s",
+        (user_id, now - timedelta(days=1)),
+    ).fetchone()
+    assert made is not None
+    if made["n"] >= MAX_SHARES_PER_DAY:
+        raise AccountError(429, "too_many_requests", TOO_MANY_SHARES)
+    # The links of earlier activities never finished: one at a time.
+    open_ids = [
+        r["id"]
+        for r in conn.execute(
+            "SELECT id FROM live_shares WHERE user_id = %s"
+            " AND stopped_at IS NULL AND finished_at IS NULL"
+            " AND expires_at > %s",
+            (user_id, now),
+        ).fetchall()
+    ]
+    for share_id in open_ids:
+        _stop(conn, share_id, now)
+    row = conn.execute(
+        "INSERT INTO live_shares (user_id, token_hash, activity,"
+        " pool_length_m, created_at, expires_at, audience_feed,"
+        " heart_visible, planned_live_id)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id, expires_at",
+        (
+            user_id,
+            None if token is None else token_hash(token),
+            body.activity,
+            None if pool is None else round(pool, 2),
+            now,
+            now + LINK_LIFE,
+            body.audience_feed,
+            body.heart_visible,
+            planned_live_id,
+        ),
+    ).fetchone()
+    assert row is not None
+    return LiveShareCreatedBody(
+        id=str(row["id"]),
+        url=None if token is None else LIVE_PAGE + token,
+        expires_at=row["expires_at"],
+    )
+
+
 @dataclass
 class LiveShares:
     """The live links, in the database of the accounts."""
@@ -308,54 +367,8 @@ class LiveShares:
     now: Callable[[], datetime]
 
     def create(self, user_id: int, body: LiveShareRequestBody) -> LiveShareCreatedBody:
-        now = self.now()
-        token = secrets.token_urlsafe(TOKEN_BYTES) if body.link else None
-        pool = body.pool_length_m if body.activity == "swimming" else None
         with self.database.connect() as conn:
-            # One account's links change one at a time: the count is right.
-            conn.execute("SELECT 1 FROM users WHERE id = %s FOR UPDATE", (user_id,))
-            made = conn.execute(
-                "SELECT count(*) AS n FROM live_shares"
-                " WHERE user_id = %s AND created_at > %s",
-                (user_id, now - timedelta(days=1)),
-            ).fetchone()
-            assert made is not None
-            if made["n"] >= MAX_SHARES_PER_DAY:
-                raise AccountError(429, "too_many_requests", TOO_MANY_SHARES)
-            # The links of earlier activities never finished: one at a time.
-            open_ids = [
-                r["id"]
-                for r in conn.execute(
-                    "SELECT id FROM live_shares WHERE user_id = %s"
-                    " AND stopped_at IS NULL AND finished_at IS NULL"
-                    " AND expires_at > %s",
-                    (user_id, now),
-                ).fetchall()
-            ]
-            for share_id in open_ids:
-                _stop(conn, share_id, now)
-            row = conn.execute(
-                "INSERT INTO live_shares (user_id, token_hash, activity,"
-                " pool_length_m, created_at, expires_at, audience_feed,"
-                " heart_visible)"
-                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id, expires_at",
-                (
-                    user_id,
-                    None if token is None else token_hash(token),
-                    body.activity,
-                    None if pool is None else round(pool, 2),
-                    now,
-                    now + LINK_LIFE,
-                    body.audience_feed,
-                    body.heart_visible,
-                ),
-            ).fetchone()
-            assert row is not None
-        return LiveShareCreatedBody(
-            id=str(row["id"]),
-            url=None if token is None else LIVE_PAGE + token,
-            expires_at=row["expires_at"],
-        )
+            return insert_share(conn, user_id, body, self.now())
 
     def link(self, user_id: int, share_id: str) -> LiveShareCreatedBody:
         """The link of a share, made now: a new token, so a link given
@@ -795,6 +808,11 @@ def install_live_shares(app: FastAPI) -> None:
         app.state.live_share_sweep = sweep
         _around_lifespan(app, sweep)
     app.include_router(live_share_routes())
+    # The planned lives (TASK-468 part A2a) are mounted from here, so
+    # app.py stays as it is; imported here, as they import this module.
+    from shaperoute_api.planned_lives import planned_live_routes
+
+    app.include_router(planned_live_routes())
 
 
 def _around_lifespan(app: FastAPI, sweep: LiveShareSweep) -> None:

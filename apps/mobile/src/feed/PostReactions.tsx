@@ -1,12 +1,12 @@
 import type { ReactionKind } from "@shaperoute/shared-types";
-import { useRef, useState } from "react";
+import { type Ref, useImperativeHandle, useRef, useState } from "react";
 import { Alert, Modal, Platform, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../i18n";
 import { negativeComment } from "../social/commentText";
 import { REACTION_BAR_HEIGHT, ReactionBar } from "../social/DrawingReactions";
-import { SuperLikeSheet } from "../social/SuperLikeSheet";
+import { SuperLikeHeart, SuperLikeSheet } from "../social/SuperLikeSheet";
 import type { DrawingReactions } from "../social/useDrawingReactions";
 import { space } from "../theme/tokens";
 
@@ -29,6 +29,12 @@ export function barPlace(row: RowBox, topInset: number): BarPlace {
   };
 }
 
+/** What the picture of a post asks of its reactions (TASK-454 part B). */
+export type PostReactionsHandle = {
+  /** Two taps on the picture: the super like, as on a drawing that is open. */
+  superLike: () => void;
+};
+
 type Props = {
   /** The reactions of the post, read once by the row for its «Like». */
   reactions: DrawingReactions;
@@ -40,6 +46,8 @@ type Props = {
   onClose: () => void;
   /** A super like went, with its comment: the post has one comment more. */
   onSuperLiked: () => void;
+  /** For the picture of the post, which is not here: its double tap. */
+  handle?: Ref<PostReactionsHandle>;
 };
 
 /**
@@ -49,8 +57,21 @@ type Props = {
  * four buttons down. A choice or a tap anywhere else closes it. One's own,
  * with its ring, chosen again takes it away. The MuW heart is the super
  * like and asks for its comment in the sheet of the drawings (ADR-0193).
+ *
+ * Two taps on the picture of the post are the super like too (part B, the
+ * user's choice of 2026-11-11), as on the map of a drawing that is open:
+ * the sheet with its comment, and nothing left before the comment went.
+ * With the super like already there the big heart comes up for a moment and
+ * nothing changes: a double tap never takes it away.
  */
-export function PostReactions({ reactions, open, row, onClose, onSuperLiked }: Props) {
+export function PostReactions({
+  reactions,
+  open,
+  row,
+  onClose,
+  onSuperLiked,
+  handle,
+}: Props) {
   const [writing, setWriting] = useState(false);
   // The sheet is made at the first super like, and kept: a card in «Feed»
   // does not carry one it never opens.
@@ -59,13 +80,31 @@ export function PostReactions({ reactions, open, row, onClose, onSuperLiked }: P
   // while another Modal is closing never comes up (TASK-358). Android has
   // no such wait, and no `onDismiss` to wait for.
   const heartChosen = useRef(false);
+  // A count, not a flag: a double tap while the heart is up starts it again.
+  const [hearts, setHearts] = useState(0);
   const { mine } = reactions;
+  const ready = reactions.status === "ready";
 
   function askSuperLike() {
     reactions.forgetSendProblem();
     setWritten(true);
     setWriting(true);
   }
+
+  useImperativeHandle(handle, () => ({
+    superLike() {
+      // Nobody signed in, an API without reactions, no answer yet: nothing.
+      // Nor while the bar or the sheet is up.
+      if (!ready || open || writing) {
+        return;
+      }
+      if (mine === "super_like") {
+        setHearts((count) => count + 1);
+      } else {
+        askSuperLike();
+      }
+    },
+  }));
 
   function onChoose(kind: ReactionKind) {
     onClose();
@@ -119,6 +158,7 @@ export function PostReactions({ reactions, open, row, onClose, onSuperLiked }: P
           onCancel={() => setWriting(false)}
         />
       )}
+      {hearts > 0 && <SuperLikeHeart key={hearts} onDone={() => setHearts(0)} />}
     </>
   );
 }

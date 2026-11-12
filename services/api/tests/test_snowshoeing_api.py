@@ -40,6 +40,7 @@ from route_engine.walking import API_ACTIVITIES, API_DISTANCE_LIMITS_M, engine_a
 from route_engine.water import write_water
 from test_cycling import finished
 from test_game_rules import Runner
+from test_sport_registry_api import in_the_contract
 from test_way_back_api import _post as post_way_back
 from test_way_back_api import _Town, request_body
 
@@ -144,7 +145,8 @@ def test_snowshoeing_is_an_activity_of_the_api_half_a_km_to_3() -> None:
     assert contract["activities"] == list(API_ACTIVITIES)
     assert contract["distance_limits_m"][SNOW] == [500, 3_000]
     run_activities = json.loads((CONTRACT / "run-activities.json").read_text())
-    assert run_activities["run_activities"] == list(get_args(RunActivity))
+    # But a day of alpinism, on the server before the contract (TASK-463).
+    assert run_activities["run_activities"] == in_the_contract(get_args(RunActivity))
 
 
 def test_the_request_of_shared_types_is_one() -> None:
@@ -214,6 +216,66 @@ def test_snow_that_cannot_be_downloaded_is_map_data_unavailable(
     monkeypatch.setattr(snow_module, "overpass", refused)
     with pytest.raises(MapDataUnavailableError, match="snow for this area"):
         ServerSnow(tmp_path).elements((45.95, 10.95, 46.05, 11.05))
+
+
+def test_the_buildings_are_counted_from_the_cached_snow(tmp_path: Path) -> None:
+    """TASK-413 A3: the engine says «no snow» at once in a town; the API's
+    snow counts the buildings as the engine's source does."""
+    covering = (45.9, 10.9, 46.1, 11.1)
+    house = {
+        "type": "way",
+        "id": 7,
+        "tags": {"building": "house"},
+        "geometry": [{"lat": 46.0, "lon": 11.0}, {"lat": 46.0001, "lon": 11.0}],
+    }
+    write_water(
+        snow_module.OverpassSnowSource(tmp_path).path(covering),
+        covering,
+        [TRACK, house],
+    )
+    assert ServerSnow(tmp_path).buildings((45.95, 10.95, 46.05, 11.05)) == 1
+
+
+@pytest.mark.parametrize(
+    "failure", [TimeoutError("late"), OSError("429"), RuntimeError("anything")]
+)
+def test_a_count_that_fails_is_no_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: Exception
+) -> None:
+    """Never map_data_unavailable for the count: the request goes on as
+    before, and the snow is downloaded as before."""
+
+    def fails(query: str) -> int:
+        raise failure
+
+    monkeypatch.setattr(snow_module, "count_buildings", fails)
+    assert ServerSnow(tmp_path).buildings((45.95, 10.95, 46.05, 11.05)) is None
+
+
+def test_a_count_that_breaks_the_source_is_no_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def broken(self: object, bbox: object) -> int:
+        raise PermissionError("the cache folder")
+
+    monkeypatch.setattr(snow_module.OverpassSnowSource, "buildings", broken)
+    assert ServerSnow(tmp_path).buildings((45.95, 10.95, 46.05, 11.05)) is None
+
+
+def test_a_town_is_shape_not_drawable_before_its_snow_is_downloaded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def no_download(query: str) -> dict[str, Any]:
+        raise AssertionError("the snow of a town was downloaded")
+
+    monkeypatch.setattr(snow_module, "overpass", no_download)
+    monkeypatch.setattr(snow_module, "count_buildings", lambda query: 10**6)
+    client = TestClient(create_app(ActivityGraphs({}, snow=ServerSnow(tmp_path))))
+    answer = client.post("/routes", json=CIRCLE)
+    assert answer.status_code == 422
+    error = answer.json()["error"]
+    assert error["code"] == "shape_not_drawable"
+    assert "no open snow" in error["message"]
 
 
 def test_heights_that_cannot_be_downloaded_are_map_data_unavailable(

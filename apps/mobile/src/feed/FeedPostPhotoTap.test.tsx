@@ -1,7 +1,14 @@
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { FeedPost as Post, Session } from "@shaperoute/shared-types";
-import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 
 import { forgetBlocked } from "../social/blockedNow";
 import { FollowsContext } from "../social/followsDoor";
@@ -66,8 +73,9 @@ test("a tap on a photo opens it on the whole screen, not the route", async () =>
   expect(screen.queryByTestId("feed-photo-viewer")).toBeNull();
   await fireEvent(pages()[1], "pressIn", at(200, 300));
   await fireEvent.press(pages()[1], at(204, 302));
+  // The tap waits to know it is alone (TASK-454 part B).
+  expect(await screen.findByTestId("feed-photo-viewer")).toBeOnTheScreen();
   expect(onOpen).not.toHaveBeenCalled();
-  expect(screen.getByTestId("feed-photo-viewer")).toBeOnTheScreen();
   expect(screen.getByTestId("feed-photo-whole").props.source).toEqual(
     screen.getByTestId("feed-photo").props.source,
   );
@@ -80,7 +88,7 @@ test("a tap on the drawing still opens its route", async () => {
   await show(onOpen);
   await fireEvent(pages()[0], "pressIn", at(200, 300));
   await fireEvent.press(pages()[0], at(204, 302));
-  expect(onOpen).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(onOpen).toHaveBeenCalledTimes(1));
   expect(screen.queryByTestId("feed-photo-viewer")).toBeNull();
 });
 

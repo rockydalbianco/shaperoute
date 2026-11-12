@@ -29,6 +29,8 @@ from test_drawings import (
 )
 
 from shaperoute_api.db import Database
+from shaperoute_api.drawings import DrawingBody, DrawingDetailBody
+from shaperoute_api.feed import FeedPostBody
 from shaperoute_api.sleep import (
     ActivitySleepBody,
     ActivitySleepRequestBody,
@@ -376,7 +378,9 @@ def test_hidden_only_its_owner_reads_the_night_of_a_post(
     assert answer.status_code == 404
     for other_answer in (none, unknown):
         assert (other_answer.status_code, other_answer.json()) == (404, answer.json())
-    # Nor do the post, the feed or the profile's drawings tell of it.
+    # Nor do the post, the feed or the profile's drawings tell of it: their
+    # `sleep` is the null of a post without a night (part B1b), and nothing
+    # else in them speaks of sleep.
     for path in (
         f"/drawings/{hidden}",
         "/feed",
@@ -384,7 +388,7 @@ def test_hidden_only_its_owner_reads_the_night_of_a_post(
     ):
         told = client.get(path, headers=reader)
         assert told.status_code == 200, path
-        assert "sleep" not in told.text, path
+        assert told.text.count("sleep") == told.text.count('"sleep":null') > 0, path
     # Its owner reads it, and the switch.
     assert client.get(f"/drawings/{hidden}/sleep", headers=me).json() == SUMMARY
     mine = client.get(f"/me/activities/{KEY}/sleep", headers=me).json()
@@ -418,6 +422,186 @@ def test_the_night_is_seen_by_whoever_sees_the_post(client: TestClient) -> None:
     assert client.get(path, headers=stranger).status_code == 404
     mine = public_id(client, me)
     assert client.get(f"/users/{mine}/sleep", headers=stranger).json() == SUMMARY
+
+
+# --- The night in the lists of posts (part B1b) ---
+
+
+def posts_seen(app: TestClient, headers: Headers, author: str) -> dict[str, Any]:
+    """The first post of every list that shows the drawings of `author`,
+    and the drawing whole, as `headers` reads them: by where it was read."""
+    feed = app.get("/feed", headers=headers)
+    profile = app.get(f"/users/{author}/drawings", headers=headers)
+    search = app.get("/search/drawings", params={"q": "sunday"}, headers=headers)
+    for answer in (feed, profile, search):
+        assert answer.status_code == 200, answer.text
+    seen = {
+        "feed": feed.json()["posts"][0],
+        "profile": profile.json()["drawings"][0],
+        "search": search.json()["posts"][0],
+    }
+    whole = app.get(f"/drawings/{seen['feed']['id']}", headers=headers)
+    assert whole.status_code == 200, whole.text
+    return {**seen, "drawing": whole.json()}
+
+
+def test_the_example_of_a_listed_post_with_its_night() -> None:
+    listed = json.loads((FIXTURES / "drawing-sleep.json").read_text("utf-8"))
+    assert set(listed) == set(DrawingBody.model_fields)
+    assert listed["sleep"] == SUMMARY
+    post = DrawingBody.model_validate(listed)
+    assert post.model_dump(mode="json")["sleep"] == SUMMARY
+    # The feed's post and the drawing whole say it in the same field.
+    for model in (FeedPostBody, DrawingDetailBody):
+        assert model.model_fields["sleep"].annotation == (
+            DrawingBody.model_fields["sleep"].annotation
+        )
+
+
+def test_every_list_of_posts_carries_the_night_shown(client: TestClient) -> None:
+    me, reader = signed_up(client), other(client)
+    author = public_id(client, me)
+    saved(client, me)
+    drawing_id = str(drawn(client, me)["id"])
+    # A post without a night says null, to everyone.
+    for headers in (me, reader):
+        for where, post in posts_seen(client, headers, author).items():
+            assert post["sleep"] is None, where
+    attached(client, me)
+    asked = client.get(f"/drawings/{drawing_id}/sleep", headers=reader).json()
+    for headers in (me, reader):
+        for where, post in posts_seen(client, headers, author).items():
+            # What GET /drawings/{id}/sleep answers, with nothing asked.
+            assert post["sleep"] == asked == SUMMARY, where
+
+
+def test_a_night_hidden_is_in_no_list_not_even_its_owner_s(
+    client: TestClient,
+) -> None:
+    me, reader = signed_up(client), other(client)
+    author = public_id(client, me)
+    saved(client, me)
+    drawn(client, me)
+    attached(client, me, shown=False)
+    for headers in (me, reader):
+        for where, post in posts_seen(client, headers, author).items():
+            # The same post as one without a night: nothing tells them apart.
+            assert post["sleep"] is None, where
+            assert json.dumps(post).count("sleep") == 1, where
+    # Its owner has the switch, and the night, from the activity.
+    mine = client.get(f"/me/activities/{KEY}/sleep", headers=me).json()
+    assert mine == {**SUMMARY, "shown": False}
+    client.patch(f"/me/activities/{KEY}/sleep", json={"shown": True}, headers=me)
+    for where, post in posts_seen(client, reader, author).items():
+        assert post["sleep"] == SUMMARY, where
+    client.patch(f"/me/activities/{KEY}/sleep", json={"shown": False}, headers=me)
+    for where, post in posts_seen(client, reader, author).items():
+        assert post["sleep"] is None, where
+
+
+def test_hidden_and_absent_are_the_same_answer_to_the_others(
+    client: TestClient,
+) -> None:
+    me, reader = signed_up(client), other(client)
+    author = public_id(client, me)
+    saved(client, me)
+    saved(client, me, OTHER_KEY, days_later=1)
+    hidden = str(drawn(client, me)["id"])
+    absent = str(drawn(client, me, OTHER_KEY)["id"])
+    attached(client, me, shown=False)
+    lists = (
+        ("/feed", "posts"),
+        (f"/users/{author}/drawings", "drawings"),
+        ("/search/drawings?q=sunday", "posts"),
+    )
+    for path, name in lists:
+        page = client.get(path, headers=reader)
+        assert page.status_code == 200, path
+        posts = {post["id"]: post for post in page.json()[name]}
+        # The same fields, and the same null in `sleep`.
+        assert set(posts[hidden]) == set(posts[absent]), path
+        assert posts[hidden]["sleep"] is None and posts[absent]["sleep"] is None, path
+    one, two = (
+        client.get(f"/drawings/{drawing_id}", headers=reader).json()
+        for drawing_id in (hidden, absent)
+    )
+    assert set(one) == set(two)
+    assert one["sleep"] is None and two["sleep"] is None
+
+
+def test_a_night_on_the_profile_alone_is_in_no_post(client: TestClient) -> None:
+    me, reader = signed_up(client), other(client)
+    author = public_id(client, me)
+    saved(client, me)
+    drawn(client, me)
+    # Shared on the profile, given to no activity: the two switches are apart.
+    shared(client, me)
+    for where, post in posts_seen(client, reader, author).items():
+        assert post["sleep"] is None, where
+    # And a night taken away from the activity leaves its post.
+    attached(client, me)
+    assert posts_seen(client, reader, author)["feed"]["sleep"] == SUMMARY
+    gone = client.delete(f"/me/activities/{KEY}/sleep", headers=me)
+    assert gone.status_code == 204
+    for where, post in posts_seen(client, reader, author).items():
+        assert post["sleep"] is None, where
+
+
+def test_a_night_no_watch_told_the_stages_of_has_none_in_a_list(
+    client: TestClient,
+) -> None:
+    me, reader = signed_up(client), other(client)
+    saved(client, me)
+    drawn(client, me)
+    untold = example("summary-no-stages")
+    body = {key: value for key, value in untold.items() if key != "night"}
+    kept = client.put(
+        f"/me/activities/{KEY}/sleep", json={**body, "night": NIGHT}, headers=me
+    )
+    assert kept.status_code == 200, kept.text
+    for where, post in posts_seen(client, reader, public_id(client, me)).items():
+        # Left out, as GET /drawings/{id}/sleep leaves it out: never null.
+        assert post["sleep"] == {**untold, "night": NIGHT}, where
+        assert "stages" not in post["sleep"], where
+
+
+def test_the_night_in_a_list_is_for_whoever_sees_the_post(
+    client: TestClient,
+) -> None:
+    me, follower, stranger = signed_up(client), other(client), third(client)
+    author = public_id(client, me)
+    saved(client, me)
+    drawing_id = str(drawn(client, me, visibility="followers")["id"])
+    attached(client, me)
+    follows(client, follower, me)
+    assert posts_seen(client, follower, author)["feed"]["sleep"] == SUMMARY
+    # Who does not see the post reads no list with it, so no night either.
+    for path in ("/feed", f"/users/{author}/drawings"):
+        told = client.get(path, headers=stranger)
+        assert told.status_code == 200, path
+        assert drawing_id not in told.text and "sleep" not in told.text, path
+    assert client.get(f"/drawings/{drawing_id}", headers=stranger).status_code == 404
+    # Nor across a block, in either direction.
+    blocked = client.put(f"/users/{public_id(client, follower)}/block", headers=me)
+    assert blocked.status_code == 204
+    for path in ("/feed", "/search/drawings?q=sunday"):
+        told = client.get(path, headers=follower)
+        assert told.status_code == 200, path
+        assert drawing_id not in told.text and "sleep" not in told.text, path
+    for path in (f"/users/{author}/drawings", f"/drawings/{drawing_id}"):
+        assert client.get(path, headers=follower).status_code == 404, path
+
+
+def test_openapi_says_the_night_of_a_post_without_anyone_s(
+    client: TestClient,
+) -> None:
+    schemas = client.get("/openapi.json").json()["components"]["schemas"]
+    for name in ("DrawingBody", "FeedPostBody", "DrawingDetailBody"):
+        said = schemas[name]["properties"]["sleep"]
+        # The night's own shape, or null; no example, no figure.
+        assert {"$ref": "#/components/schemas/SleepSummaryBody"} in said["anyOf"]
+        assert '"example' not in json.dumps(said)
+        assert "sleep" not in schemas[name].get("required", [])
 
 
 def test_only_the_night_before_the_activity(

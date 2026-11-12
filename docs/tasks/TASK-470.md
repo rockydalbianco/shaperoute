@@ -1,6 +1,6 @@
 # TASK-470 — Il controllo della navigazione
 
-**Stato**: Done — A e B in produzione (OTA 13); E, C, D in `main`, escono con l'OTA 14
+**Stato**: Done — tutto in produzione: A e B con l'OTA 13, E, C, D con l'OTA 14 (2026-11-12 15:15Z, `be21e7d8`)
 **Fase**: 5 · **Branch**: `docs/TASK-470-part-0`, poi una per fetta
 (`fix/TASK-470-…`) · **ADR**: ADR-0384 (il gesto dal bordo, fetta E)
 
@@ -141,9 +141,9 @@ Coordinatore sulla lista dei file.
 | Parte 0 | #1232 | in `main` |
 | A — schede (1, 5, base del 2) | #1233 | in produzione: OTA 13, 2026-11-12 13:28Z da `100624e2` (iOS gruppo `86d0f643`, Android `5155f4d2`) |
 | B — tasto indietro di Android (2, 3, 4) | #1237 | in produzione con l'OTA 13 |
-| E — gesto dal bordo su iOS (11, ADR-0384) | #1243 | in `main` (`b79556c3`); video visto dall'utente, sì del 2026-11-12 |
-| C — fogli che perdevano i tocchi (6) | #1250 | in `main` (`89b25f99`) |
-| D — pagine finite sotto altre (7–10) | #1252 | in `main` (`D_MERGE`); provata al simulatore il 2026-11-12 |
+| E — gesto dal bordo su iOS (11, ADR-0384) | #1243 | in produzione con l'OTA 14 (`main` `b79556c3`); video visto dall'utente, sì del 2026-11-12 |
+| C — fogli che perdevano i tocchi (6) | #1250 | in produzione con l'OTA 14 (`main` `89b25f99`) |
+| D — pagine finite sotto altre (7–10) | #1252 | in produzione con l'OTA 14 (`main` `20683c14`); provata al simulatore il 2026-11-12 |
 
 **Al simulatore il 2026-11-12** (`out/TASK-470/`, fuori dal repository):
 - 6: dalla chiusura di un foglio al `Modal` tolto 573 ms; un tocco su

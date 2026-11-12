@@ -31,6 +31,13 @@ TASK-409 B (migration 0061: runs.heart_avg_bpm, heart_max_bpm, heart_shown).
   (drawings.py gives it in every list of posts), as the phone does at the
   end of the day. A PUT with `ski_parts` to a server without this part is
   refused (422): the server goes first, the app after.
+- A flight (TASK-305 part R5a, ADR-0375): the phone sends its highest point
+  and its top speed over the ground (`max_alt_m`, `top_speed_mps`), which
+  the profile reduced to MAX_ELEVATION_POINTS and the track's metres cannot
+  give back. They are kept only for a flight, and ignored for any other
+  sport, so a phone may send them without asking what the run is. GET
+  /me/flight-bests gives the owner's four bests of the air from them and
+  from the runs: the highest, the longest, the farthest, the fastest.
 
     python -m shaperoute_api.run_stats
 
@@ -97,6 +104,12 @@ MAX_SKI_HEIGHT_M = 5_000.0
 MAX_SKI_MPS = 100.0
 # A part's time in movement may pass its span by a rounding of the phone.
 SKI_EPSILON_S = 1.0
+# A flight (TASK-305 part R5a): the only sport with a highest point and a
+# top speed of its own; faster over the ground than any paraglider, as the
+# live link's bounds (live_shares.py).
+FLIGHT = "paragliding"
+MAX_FLIGHT_MPS = 100.0
+FLIGHT_FIELDS = ("max_alt_m", "top_speed_mps")
 # How many runs one question of the backfill reads.
 BATCH = 200
 
@@ -216,6 +229,15 @@ class RunStatsRequestBody(BaseModel):
     ski_parts: list[SkiPartRequestBody] | None = Field(None, max_length=MAX_SKI_PARTS)
     """A day of skiing's lifts and descents, in the order of the day (TASK-424
     part C2b); null, or empty, for none."""
+    max_alt_m: float | None = Field(
+        None, ge=MIN_ALTITUDE_M, le=MAX_ALTITUDE_M, allow_inf_nan=False
+    )
+    """A flight's highest point, from the GPS (TASK-305 part R5a); kept only
+    for a flight."""
+    top_speed_mps: float | None = Field(
+        None, ge=0, le=MAX_FLIGHT_MPS, allow_inf_nan=False
+    )
+    """A flight's top speed over the ground; kept only for a flight."""
 
     @model_validator(mode="after")
     def along_the_run(self) -> RunStatsRequestBody:
@@ -338,6 +360,65 @@ def kept_ski(
     }
 
 
+def kept_flight(body: RunStatsRequestBody) -> dict[str, Any]:
+    """A flight's highest point and top speed as `run_stats.stats` keeps
+    them: to the metre and to the hundredth of a metre a second."""
+    return {
+        "max_alt_m": None if body.max_alt_m is None else round(body.max_alt_m),
+        "top_speed_mps": (
+            None if body.top_speed_mps is None else round(body.top_speed_mps, 2)
+        ),
+    }
+
+
+# --- The bests of the air ---
+
+
+class FlightBestBody(BaseModel):
+    """One best of the air: its value and the flight it was made in."""
+
+    id: str
+    """The key the app gave the flight, as in /me/activities."""
+    started_at: datetime
+    value: float
+
+
+class FlightBestsBody(BaseModel):
+    """GET /me/flight-bests: packages/shared-types/fixtures/flight-bests.json.
+    Each null when no flight has it."""
+
+    highest: FlightBestBody | None = None
+    """The highest point, in metres."""
+    longest: FlightBestBody | None = None
+    """The longest flight, in seconds, pauses left out."""
+    farthest: FlightBestBody | None = None
+    """The longest flight in metres."""
+    fastest: FlightBestBody | None = None
+    """The top speed over the ground, in metres a second."""
+
+
+def flight_bests(rows: Sequence[DictRow]) -> FlightBestsBody:
+    """The bests of the flights in `rows`, the first flown first: at equal
+    values the first one keeps it. Nothing (or zero) is no best."""
+    found: dict[str, FlightBestBody] = {}
+    for row in sorted(rows, key=lambda r: (r["started_at"], r["key"])):
+        for name, column in (
+            ("highest", "max_alt_m"),
+            ("longest", "duration_s"),
+            ("farthest", "distance_m"),
+            ("fastest", "top_speed_mps"),
+        ):
+            value = row[column]
+            if value is None or float(value) <= 0:
+                continue
+            best = found.get(name)
+            if best is None or float(value) > best.value:
+                found[name] = FlightBestBody(
+                    id=row["key"], started_at=row["started_at"], value=float(value)
+                )
+    return FlightBestsBody(**found)
+
+
 # --- In the database ---
 
 
@@ -391,7 +472,8 @@ class RunStats:
         key."""
         with self.database.connect() as conn:
             run = conn.execute(
-                "SELECT id, pauses, started_at, ST_AsText(track) AS track FROM runs"
+                "SELECT id, activity, pauses, started_at, ST_AsText(track) AS track"
+                " FROM runs"
                 " WHERE user_id = %s AND key = %s FOR UPDATE",
                 (user_id, key),
             ).fetchone()
@@ -402,12 +484,30 @@ class RunStats:
             if run["track"] is not None:
                 track, pauses = kept_track(run)
                 kept = counted(track, pauses)
-            kept.update(body.model_dump(mode="json", exclude={"ski_parts"}))
+            kept.update(
+                body.model_dump(mode="json", exclude={"ski_parts", *FLIGHT_FIELDS})
+            )
+            if run["activity"] == FLIGHT:
+                kept.update(kept_flight(body))
             # The run started at its first kept point (activities.recorded).
             first_s = (run["started_at"] - EPOCH).total_seconds()
             kept.update(kept_ski(body.ski_parts, first_s))
             _keep(conn, int(run["id"]), kept, self.now())
             return seen_stats(conn, int(run["id"]), author=True) or RunStatsBody()
+
+    def flight_bests(self, user_id: int) -> FlightBestsBody:
+        """The owner's bests of the air, from the flights there are now: a
+        flight deleted takes its bests with it."""
+        with self.database.connect() as conn:
+            rows = conn.execute(
+                "SELECT r.key, r.started_at, r.distance_m, r.duration_s,"
+                " (s.stats->>'max_alt_m')::float AS max_alt_m,"
+                " (s.stats->>'top_speed_mps')::float AS top_speed_mps"
+                " FROM runs r LEFT JOIN run_stats s ON s.run_id = r.id"
+                " WHERE r.user_id = %s AND r.activity = %s",
+                (user_id, FLIGHT),
+            ).fetchall()
+        return flight_bests(rows)
 
 
 # --- The endpoint ---
@@ -433,6 +533,11 @@ def run_stats_routes() -> APIRouter:
         if saved is None:
             raise HTTPException(404, UNKNOWN_ACTIVITY)
         return saved
+
+    @router.get("/me/flight-bests")
+    def my_flight_bests(stats: Stats, user: Me) -> FlightBestsBody:
+        """One's own bests of the air (TASK-305 part R5a): only the owner."""
+        return stats.flight_bests(user.id)
 
     return router
 

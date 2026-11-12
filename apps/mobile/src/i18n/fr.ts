@@ -637,8 +637,8 @@ export const FR: Table = {
     "Ce contour ne tient pas sur les routes ici. Essaie une autre distance, un autre départ ou une photo plus simple.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Cette forme ne tient pas sur les routes ici. Essaie une autre forme ou un autre départ :",
-  "Map data for this area could not be downloaded. Try again later.":
-    "La carte de cette zone n'a pas pu être téléchargée. Réessaie plus tard.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "Le service de cartes est occupé et cette zone n'a pas pu être chargée. Réessaie dans quelques minutes.",
   "The route engine cannot find one clear outline in this picture.":
     "Aucun contour net n'a été trouvé dans cette photo.",
   "Only PNG and JPEG pictures work. Choose another one.":
@@ -1120,6 +1120,8 @@ export const FR: Table = {
   Pause: "Pause",
   Music: "Musique",
   "Opens Spotify": "Ouvre Spotify",
+  "Show the numbers": "Afficher les chiffres",
+  "Hide the numbers": "Masquer les chiffres",
   Compass: "Boussole",
   Map: "Carte",
   Data: "Données",
@@ -1548,6 +1550,10 @@ export const FR: Table = {
   "{sport}, coming soon": "{sport}, bientôt disponible",
   "Sport, {sport}": "Sport, {sport}",
   "Changes the sport": "Change le sport",
+  // The families of the sport panel: src/settings/sportFamilies.ts
+  "On foot": "À pied",
+  "On wheels": "Sur roues",
+  "Other@@sport": "Autres",
   Sport: "Sport",
   Default: "Par défaut",
   "Voice language and voice: {language}, {voice}":
@@ -2622,4 +2628,12 @@ export const FR: Table = {
   "Deep@@sleep": "Profond",
   "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
     "Calculé par MuW à partir des données d'Apple Santé. Il peut différer du score de l'app Santé.",
+  // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
+  // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
+  "Poster and video": "Affiche et vidéo",
+  "Only people who follow {user} can open it.":
+    "Seules les personnes qui suivent {user} peuvent l'ouvrir.",
+  "by {user}": "de {user}",
+  "This post is no longer available.": "Cette publication n'est plus disponible.",
+  "🗺️ Post": "🗺️ Publication",
 };

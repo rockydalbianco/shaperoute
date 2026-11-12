@@ -217,6 +217,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   `3c513355`) e **B2** (#1236, `627767a5`: il sonno nel post, spenta da
   `SLEEP_POSTS_ON`) in `main`; B1b sul server col passo dopo, col sì. Poi
   B2b (palestra e vasca), B3, C.
+  **B2b in `main`** (#1244, `bb3d3457`: il sonno a fine palestra e a fine
+  vasca, spenta). Prossima B3 (la scheda «Sleep» del profilo), poi C.
 - **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
   (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
   B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`

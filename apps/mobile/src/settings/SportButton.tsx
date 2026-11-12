@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import {
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -20,7 +21,9 @@ import {
 } from "../theme/tokens";
 import { isSkiMode } from "../skimode/skiMode";
 import { Hairline } from "../ui/Hairline";
+import { Tap } from "../ui/Tap";
 import { saveSport, type Sport, SPORTS, type SportOption } from "./sport";
+import { groupSports } from "./sportFamilies";
 import { useSport } from "./useSport";
 
 type Props = {
@@ -28,29 +31,48 @@ type Props = {
   sports?: readonly SportOption[];
 };
 
-/** Where the menu hangs, in the window: its top, and its right edge's gap
- * from the window's right edge. */
-type Anchor = { top: number; right: number };
+/** The panel's gap from the window's sides, and the gap between its tiles. */
+const SIDE = space.lg;
+const GAP = space.sm;
+/** Inside the panel, its tiles' gap from its edges. */
+const INSIDE = space.md;
+
+/** A tile's width for a window `width` wide: two to a row, filling the
+ * panel inside its padding. */
+export function tileWidth(width: number): number {
+  return Math.floor((width - SIDE * 2 - INSIDE * 2 - GAP) / 2);
+}
+
+/** How tall the panel may be, hung at `top` in a window `height` tall
+ * above a bottom inset `bottom`: what does not fit scrolls inside it. */
+export function panelMaxHeight(height: number, top: number, bottom: number): number {
+  return Math.max(MIN_TAP_SIZE * 4, height - top - bottom - space.lg);
+}
+
+/** A tile's height for its width. */
+export function tileHeight(size: number): number {
+  return Math.round(size * 0.78);
+}
 
 /**
  * The sport, at the left of the way to «Profile» (TASK-205, ADR-0165): the
- * emoji of the one chosen, and a tap opens the menu of «Settings»' sports
- * under it. The choice is the one of «Settings» (saveSport), so the two
- * always agree and «Draw» follows at once; a sport not ready says «Soon».
+ * emoji of the one chosen, and a tap opens the panel of «Settings»' sports
+ * under it, as large tiles two to a row, by family (on foot, on wheels, on
+ * the water, on snow, then the rest). The choice is the one of «Settings»
+ * (saveSport), so the two always agree and «Draw» follows at once; a sport
+ * not ready says «Soon».
  */
 export function SportButton({ sports = SPORTS }: Props) {
   const sport = useSport();
   const [open, setOpen] = useState(false);
-  const [anchor, setAnchor] = useState<Anchor | null>(null);
+  const [top, setTop] = useState<number | null>(null);
   const button = useRef<View>(null);
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const current = sports.find((option) => option.id === sport) ?? sports[0];
 
   function openMenu() {
-    button.current?.measureInWindow((x, y, w, h) =>
-      setAnchor({ top: y + h + space.xs, right: width - x - w }),
-    );
+    button.current?.measureInWindow((_x, y, _w, h) => setTop(y + h + space.xs));
     setOpen(true);
   }
 
@@ -60,10 +82,9 @@ export function SportButton({ sports = SPORTS }: Props) {
   }
 
   // Until the button says where it is: where the header of the pages puts it.
-  const hang = anchor ?? {
-    top: insets.top + space.sm + MIN_TAP_SIZE + space.xs,
-    right: space.lg + MIN_TAP_SIZE + space.sm,
-  };
+  const hang = top ?? insets.top + space.sm + MIN_TAP_SIZE + space.xs;
+  const maxHeight = panelMaxHeight(height, hang, insets.bottom);
+  const tile = tileWidth(width);
 
   return (
     <>
@@ -85,86 +106,136 @@ export function SportButton({ sports = SPORTS }: Props) {
         statusBarTranslucent
         onRequestClose={() => setOpen(false)}
       >
-        {/* A tap anywhere else closes the menu and changes nothing. */}
+        {/* A tap anywhere else closes the panel and changes nothing; the
+            screen reader closes it with the panel's own «Close». */}
         <Pressable
-          style={StyleSheet.absoluteFill}
+          testID="sport-backdrop"
+          style={[StyleSheet.absoluteFill, styles.backdrop]}
           onPress={() => setOpen(false)}
-          accessibilityRole="button"
-          accessibilityLabel={t("Close")}
+          accessible={false}
+          importantForAccessibility="no"
         />
         <View
-          style={[styles.menu, hang]}
+          testID="sport-panel"
+          style={[styles.panel, { top: hang, maxHeight }]}
           accessibilityRole="radiogroup"
           accessibilityLabel={t("Sport")}
         >
-          {/* In the ski mode (TASK-429, ADR-0357), how to leave it. */}
-          {isSkiMode(sport) && (
-            <View style={styles.mode} accessible testID="sport-ski-mode">
-              <Text style={styles.modeTitle}>{t("Ski mode")}</Text>
-              <Text style={styles.modeLine}>
-                {t("Choose another sport to go back to MuW as always.")}
-              </Text>
-              <Hairline style={styles.modeRule} />
-            </View>
-          )}
-          {sports.map((option, at) => (
-            <View key={option.id}>
-              {at > 0 && <Hairline style={styles.inset} />}
-              {option.ready ? (
-                <Pressable
-                  style={styles.row}
-                  onPress={() => choose(option.id)}
-                  accessibilityRole="radio"
-                  // One name for the row: the emoji is not read on its own.
-                  accessibilityLabel={t(option.name)}
-                  accessibilityHint={
-                    isSkiMode(option.id) ? t("Turns MuW into your ski app") : undefined
-                  }
-                  accessibilityState={{ checked: option.id === sport }}
-                >
-                  <Text style={styles.emoji}>{option.emoji}</Text>
-                  {isSkiMode(option.id) ? (
-                    // Choosing it changes the app (TASK-429): the row says so.
-                    <View style={styles.words}>
-                      <Text style={styles.rowText}>{t(option.name)}</Text>
-                      <Text style={styles.rowLine}>
-                        {t("Turns MuW into your ski app")}
-                      </Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.rowText}>{t(option.name)}</Text>
-                  )}
-                  {option.id === sport && <Text style={styles.check}>✓</Text>}
-                </Pressable>
-              ) : (
-                <View
-                  style={styles.row}
-                  accessible
-                  accessibilityLabel={t("{sport}, coming soon", {
-                    sport: t(option.name),
-                  })}
-                >
-                  <Text style={styles.emoji}>{option.emoji}</Text>
-                  <Text style={styles.rowText}>{t(option.name)}</Text>
-                  <Text style={styles.soon}>{t("Soon")}</Text>
+          <View style={styles.header}>
+            <Text style={styles.title}>{t("Sport")}</Text>
+            <Pressable
+              style={styles.close}
+              onPress={() => setOpen(false)}
+              accessibilityRole="button"
+              accessibilityLabel={t("Close")}
+            >
+              <Text style={styles.closeMark}>✕</Text>
+            </Pressable>
+          </View>
+          <ScrollView
+            testID="sport-scroll"
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* In the ski mode (TASK-429, ADR-0357), how to leave it. */}
+            {isSkiMode(sport) && (
+              <View style={styles.mode} accessible testID="sport-ski-mode">
+                <Text style={styles.familyTitle}>{t("Ski mode")}</Text>
+                <Text style={styles.modeLine}>
+                  {t("Choose another sport to go back to MuW as always.")}
+                </Text>
+                <Hairline style={styles.modeRule} />
+              </View>
+            )}
+            {groupSports(sports).map((group) => (
+              <View
+                key={group.family}
+                style={styles.family}
+                testID={`sport-family-${group.family}`}
+              >
+                <Text style={styles.familyTitle} accessibilityRole="header">
+                  {t(group.title)}
+                </Text>
+                <View style={styles.grid}>
+                  {group.sports.map((option) => (
+                    <SportTile
+                      key={option.id}
+                      option={option}
+                      size={tile}
+                      chosen={option.id === sport}
+                      onChoose={() => choose(option.id)}
+                    />
+                  ))}
                 </View>
-              )}
-            </View>
-          ))}
+              </View>
+            ))}
+          </ScrollView>
         </View>
       </Modal>
     </>
   );
 }
 
-// The button as the one of «Profile» (`../screens/ProfileLayer`), the rows as
-// those of «Sport» in «Settings» (`./SportSetting`).
+type TileProps = {
+  option: SportOption;
+  /** The tile's width, in points; its height follows. */
+  size: number;
+  chosen: boolean;
+  onChoose: () => void;
+};
+
+/** One sport of the panel: its emoji large, its name under it; the one
+ * chosen with a stronger edge and a ✓, one not ready with «Soon». */
+function SportTile({ option, size, chosen, onChoose }: TileProps) {
+  const box = { width: size, minHeight: tileHeight(size) };
+  if (!option.ready) {
+    return (
+      <View
+        testID={`sport-tile-${option.id}`}
+        style={[styles.tile, styles.tileSoon, box]}
+        accessible
+        accessibilityLabel={t("{sport}, coming soon", { sport: t(option.name) })}
+      >
+        <Text style={styles.tileEmoji}>{option.emoji}</Text>
+        <Text style={styles.tileName} numberOfLines={2}>
+          {t(option.name)}
+        </Text>
+        <Text style={styles.soon}>{t("Soon")}</Text>
+      </View>
+    );
+  }
+  const skiMode = isSkiMode(option.id);
+  return (
+    // It answers the finger through Tap, as the app's other controls.
+    <Tap
+      testID={`sport-tile-${option.id}`}
+      style={[styles.tile, box, chosen && styles.tileChosen]}
+      onPress={onChoose}
+      accessibilityRole="radio"
+      // One name for the tile: the emoji is not read on its own.
+      accessibilityLabel={t(option.name)}
+      accessibilityHint={skiMode ? t("Turns MuW into your ski app") : undefined}
+      accessibilityState={{ checked: chosen }}
+    >
+      {chosen && <Text style={styles.check}>✓</Text>}
+      <Text style={styles.tileEmoji}>{option.emoji}</Text>
+      <Text style={styles.tileName} numberOfLines={2}>
+        {t(option.name)}
+      </Text>
+      {/* Choosing it changes the app (TASK-429): the tile says so. */}
+      {skiMode && (
+        <Text style={styles.tileLine} numberOfLines={2}>
+          {t("Turns MuW into your ski app")}
+        </Text>
+      )}
+    </Tap>
+  );
+}
+
+// The button as the one of «Profile» (`../screens/ProfileLayer`); the panel
+// as a card of «Settings», its tiles neutral: the yellow belongs to the route
+// (docs/UI.md, «Il tema»).
 const styles = StyleSheet.create({
-  /** A division set in from the card's edge, as the rows' words are. */
-  inset: {
-    marginHorizontal: space.md,
-  },
-  // Neutral, as every control that is not the route's (docs/UI.md, «Il tema»).
   button: {
     width: MIN_TAP_SIZE,
     height: MIN_TAP_SIZE,
@@ -178,44 +249,105 @@ const styles = StyleSheet.create({
   buttonEmoji: {
     fontSize: fontSize.input + space.xs,
   },
-  menu: {
+  backdrop: {
+    backgroundColor: color.scrim,
+    opacity: 0.35,
+  },
+  panel: {
     position: "absolute",
-    minWidth: 192,
-    borderRadius: radius.lg,
+    left: SIDE,
+    right: SIDE,
+    borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: color.borderStrong,
     backgroundColor: color.surface,
+    overflow: "hidden",
   },
-  row: {
-    minHeight: MIN_TAP_SIZE + space.sm,
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: space.md,
-    paddingHorizontal: space.md,
+    justifyContent: "space-between",
+    paddingLeft: INSIDE,
+    paddingRight: space.xs,
+    paddingTop: space.xs,
   },
-  emoji: {
-    fontSize: fontSize.input + space.xs,
+  title: {
+    color: color.text,
+    fontSize: fontSize.heading,
+    fontWeight: fontWeight.semibold,
   },
-  words: {
-    flex: 1,
-    paddingVertical: space.sm,
+  close: {
+    width: MIN_TAP_SIZE,
+    height: MIN_TAP_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  rowLine: {
+  closeMark: {
     color: color.textMuted,
-    fontSize: fontSize.small,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.semibold,
   },
-  mode: {
-    gap: space.xs / 2,
-    maxWidth: 260,
-    paddingHorizontal: space.md,
-    paddingTop: space.md,
+  content: {
+    gap: space.lg,
+    paddingHorizontal: INSIDE,
+    paddingBottom: INSIDE,
   },
-  modeTitle: {
+  family: {
+    gap: space.sm,
+  },
+  familyTitle: {
     color: color.textMuted,
     fontSize: fontSize.label,
     fontWeight: fontWeight.semibold,
     letterSpacing: 1.2,
     textTransform: "uppercase",
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: GAP,
+  },
+  tile: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.xs,
+    padding: space.sm,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surfaceRaised,
+  },
+  tileChosen: {
+    borderWidth: 2,
+    borderColor: color.text,
+  },
+  tileSoon: {
+    backgroundColor: color.surface,
+  },
+  tileEmoji: {
+    fontSize: fontSize.title + space.sm,
+  },
+  tileName: {
+    color: color.text,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.medium,
+    textAlign: "center",
+  },
+  tileLine: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+    textAlign: "center",
+  },
+  check: {
+    position: "absolute",
+    top: space.sm,
+    right: space.sm,
+    color: color.text,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.semibold,
+  },
+  mode: {
+    gap: space.xs / 2,
   },
   modeLine: {
     color: color.text,
@@ -223,18 +355,6 @@ const styles = StyleSheet.create({
   },
   modeRule: {
     marginTop: space.md,
-  },
-  rowText: {
-    flex: 1,
-    color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.medium,
-  },
-  // Not yellow: the yellow belongs to the route (docs/UI.md, «Il tema»).
-  check: {
-    color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
   },
   soon: {
     color: color.textFaint,

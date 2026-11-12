@@ -1446,6 +1446,9 @@ function MuW() {
           running ||
           freeFinishing
         }
+        // At the end of an activity the card scrolls: «Save» and «Discard»
+        // under a tall end card stay on the screen (TASK-477).
+        scrolls={finishing || freeFinishing}
         onBack={onBack}
         mapError={mapError}
         banner={

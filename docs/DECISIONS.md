@@ -546,8 +546,81 @@ lasciando le righe d'indice.
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
 - ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
+- ADR-0380, precisazione B1b/B2 — Il sonno nel post: un campo `sleep` nel disegno visto al posto di una richiesta per riga; nell'app tutto dietro `SLEEP_POSTS_ON` e nessun lettore di Salute in `main`; al server solo con l'interruttore acceso e un post che altri vedono · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0380, precisazione B1b/B2 — Il sonno nel post: un campo `sleep` nel disegno visto al posto di una richiesta per riga; nell'app tutto dietro `SLEEP_POSTS_ON` e nessun lettore di Salute in `main`; al server solo con l'interruttore acceso e un post che altri vedono
+
+**Stato**: Attiva · 2026-11-12 · TASK-467 parti B1b (#1227, `3c513355`) e B2
+(#1236, `627767a5`). **Deciso dall'agente su delega dell'utente**, dentro le
+scelte di prodotto della parte 0 (testi approvati l'11 novembre, «Resta
+acceso» il 12); liste dei file approvate dal Coordinatore.
+
+**Contesto**: l'ADR-0380 lasciava aperto come il Feed sa che un post ha il
+sonno, e non diceva niente dell'app. La vasca e la palestra chiedono i loro
+numeri a parte, ma solo per i loro post; il sonno può stare su qualsiasi
+attività. Il modulo nativo di Salute è già nelle build dalla 1.0.1 (per il
+battito), col testo del permesso che nomina solo il battito.
+
+**B1b, sul server**:
+
+1. **Il sonno del post è un campo del disegno visto, non una richiesta.**
+   `sleep` in `SeenFields`, con una sotto-select per chiave primaria in
+   `_SEEN_FIELDS` (`sleep_seen.py`), come `ski_descents` (TASK-424 C2b): è
+   in `GET /drawings/{id}` e in ogni lista che passa da `_seen` (Feed,
+   profilo, ricerca, stazione, gare). Scartato: `GET /drawings/{id}/sleep`
+   per ogni riga del Feed, una richiesta per riga e quasi tutte `404`.
+2. **Solo con `sleep_shown`, anche per l'autore**: nella lista l'autore
+   vede quello che vedono gli altri; l'interruttore lo legge da `GET
+   /me/activities/{key}/sleep`. La chiave c'è sempre: «nascosto» e
+   «assente» sono lo stesso `null`, con gli stessi campi (c'è il test).
+3. **`stages` manca, mai `null`**, per una notte senza fasi, come
+   nell'endpoint: un `field_serializer` senza tipo di ritorno, così lo
+   schema in openapi resta quello della notte.
+4. `SleepStagesBody` e `SleepSummaryBody` stanno in `sleep_seen.py`:
+   `sleep.py` importa `drawings.py`, e il contrario sarebbe un import
+   circolare. Nessuna migrazione.
+
+**B2, nell'app**:
+
+5. **Una sola costante spegne tutto**, `SLEEP_POSTS_ON = false`
+   (`health/sleepModules.ts`), e `sleepReader()` risponde sempre null:
+   l'assenza del modulo nativo non basterebbe a nascondere la funzione.
+   **In `main` niente legge il sonno da Salute**: c'è solo il tipo
+   `SleepReader` con le funzioni pure; il lettore di Apple arriva con la
+   parte C. Un test legge i sorgenti e blocca ogni file del sonno che
+   carichi la libreria o chieda un permesso.
+6. **Quale notte**: i campioni dalle 18 della sera prima alle 18 del
+   giorno dell'attività, sull'ora del telefono, fino all'inizio
+   dell'attività; prima delle 6 senza aver ancora dormito, la notte del
+   giorno prima. `night` è il giorno del calendario del telefono in cui
+   finisce.
+7. **Al server solo quello che si pubblica**: la notte lascia il telefono
+   solo con «Sleep last night» acceso **e** un post che altri vedono; con
+   «Only me» la riga non compare. Due difese: `RunEnd` non la passa alla
+   porta, e `sleepOut.ts` non tiene mai una notte con `shown` diverso da
+   `true`.
+8. **La coda** `sleep-outbox.json`: la notte aspetta sul telefono finché
+   l'API ha l'attività, poi `PUT /me/activities/{key}/sleep` dopo il
+   disegno; un rifiuto dell'API la butta, senza rete aspetta, dopo 30
+   giorni si butta.
+9. **A fine attività il permesso non si chiede mai**: il sì è della scheda
+   «Sleep» del profilo (B3), tenuto in `sleep-health.json`. Senza notte non
+   compare niente.
+10. **Dopo la pubblicazione** l'interruttore sta in «Post settings» e va
+    all'API subito (`PATCH`), non con «Save»; la riga e la scheda seguono
+    all'istante (`health/sleepNow.ts`), senza richiedere la lista.
+11. **Le parole con `@@sleep`** («Light», «Deep», «Good»…): chiavi di
+    contesto. In francese «REM» è «Paradoxal», come nell'app Santé.
+
+**Conseguenze**: nessuna richiesta in più nel Feed; B1b va sul server col
+passo dopo quello dell'aggiornamento completo, col sì dell'utente
+(`out/TASK-467/SERVER-B1b.md`), e fino ad allora il campo manca e l'app non
+mostra niente. Accendere (parte C) vuol dire `SLEEP_POSTS_ON` vero **e** un
+lettore vero solo nella build col testo del permesso nuovo: le build di
+prima ricevono lo stesso OTA e devono restare senza lettore. Palestra e
+nuoto in vasca (form e code loro) nella B2b.
 
 ## ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari
 

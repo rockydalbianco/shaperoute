@@ -463,7 +463,7 @@ const privacy: AboutDocument = {
             "Apple su iPhone, o Google su Android, tramite il servizio di indirizzi del telefono, riceve la posizione da cui parte «Disegna», per scrivere il nome della via. MuW non gli manda nient'altro e non conserva il nome.",
             "Wikimedia dà al nostro server le foto dei paesi: vede quale paese, non chi lo chiede.",
             "Con la mappa «Satellite» Esri fornisce le immagini, e con la mappa «3D» Amazon Web Services fornisce le altezze: come ogni servizio di mappe, vedono quale area guardi.",
-            "Il servizio Overpass dei dati di OpenStreetMap riceve dal nostro server la richiesta della mappa di una zona che non ha ancora: vede quale zona, non chi l'ha chiesta.",
+            "I servizi Overpass dei dati di OpenStreetMap (overpass-api.de e, quando non risponde, overpass.private.coffee) ricevono dal nostro server la richiesta della mappa di una zona che non ha ancora: vedono quale zona, non chi l'ha chiesta.",
             "unpkg serve la libreria della mappa all'avvio dell'app.",
             "Expo serve gli aggiornamenti dell'app.",
             "Google Ireland Limited (Firebase Cloud Messaging), per consegnare le notifiche push ai telefoni Android. Quando accendi le push, l'app chiede a Firebase un token di registrazione per il tuo telefono; il servizio push di Expo passa ogni notifica (chi ha fatto cosa, e l'inizio di un commento) a Google, che la consegna al tuo telefono. Google vede il token e il contenuto di ogni notifica, non il tuo account né la tua posizione. Il token si toglie dal nostro server quando spegni le push, esci dall'account o lo elimini; quello sul telefono se ne va quando disinstalli l'app.",

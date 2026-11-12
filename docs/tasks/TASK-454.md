@@ -536,7 +536,9 @@ Scritto il 2026-11-12, con A, C1, C2 e la privacy in `main`.
 
 - **Parte B — doppio tocco = super like** (scelta 6): vedi la sezione qui
   sopra. Mancano il video dal simulatore, il sì dell'utente, «pronta».
-- **Prova sul telefono**, ora che l'OTA 12 è uscito (2026-11-12, 12:28Z):
+- **Prova sul telefono: fatta dall'utente il 2026-11-12** con l'OTA 12
+  («ok funziona top», sull'elenco qui sotto). Resta da provare lì solo la
+  parte B, quando esce. L'elenco, uscito con l'OTA 12 (12:28Z):
   «Like» apre la fila sopra il pulsante senza
   muovere la card; un super like porta subito il commento sotto il post;
   una risposta a un commento arriva come notifica a chi l'ha scritto; una

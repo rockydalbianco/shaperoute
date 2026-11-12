@@ -233,7 +233,8 @@ class PushEvent:
     # title, by language, is in `names`.
     contest_id: UUID | None = None
     # What a private message carries (TASK-333): "photo", "video",
-    # "drawing", or "post" (TASK-455); its text, if any, is `text`.
+    # "drawing", "post" (TASK-455) or "live" (TASK-468); its text, if any,
+    # is `text`.
     attachment: str | None = None
 
     def same(self) -> tuple[str, int, int, str, str]:
@@ -511,6 +512,19 @@ TEXTS: dict[str, dict[str, str]] = {
     },
     "message_post_text": {
         language: "{name}" + (" : " if language == "fr" else ": ") + "🗺️ {text}"
+        for language in ("en", "de", "it", "es", "fr")
+    },
+    # A live share sent in a message (TASK-468 part A1b, ADR-0381; en and it
+    # approved by the user 2026-11-12, the others with the same sense).
+    "message_live": {
+        "en": "{name} is sharing a live activity with you",
+        "de": "{name} teilt eine Live-Aktivität mit dir",
+        "it": "{name} ti condivide un'attività dal vivo",
+        "es": "{name} comparte contigo una actividad en directo",
+        "fr": "{name} partage une activité en direct avec toi",
+    },
+    "message_live_text": {
+        language: "{name}" + (" : " if language == "fr" else ": ") + "🔴 {text}"
         for language in ("en", "de", "it", "es", "fr")
     },
 }

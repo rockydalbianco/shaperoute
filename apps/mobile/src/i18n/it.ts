@@ -1116,6 +1116,8 @@ export const IT: Table = {
   Pause: "Pausa",
   Music: "Musica",
   "Opens Spotify": "Apre Spotify",
+  "Show the numbers": "Mostra i numeri",
+  "Hide the numbers": "Nascondi i numeri",
   Compass: "Bussola",
   Map: "Mappa",
   Data: "Dati",

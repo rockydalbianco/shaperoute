@@ -341,7 +341,8 @@ test("toward 60 km by bike with bodyweight: the target, today, when, the ladder 
 
   // 6. Its name, the reminder, saved.
   expect(screen.getByTestId("plan-name").props.value).toBe("Toward 60 km");
-  await fireEvent.press(screen.getByTestId("wizard-remind"));
+  // «Remind me at 8» is on at first for a new plan.
+  expect(screen.getByTestId("wizard-remind")).toBeChecked();
   await fireEvent.press(screen.getByTestId("wizard-next"));
   await act(async () => {});
   const [kept] = plansOf(OWNER);

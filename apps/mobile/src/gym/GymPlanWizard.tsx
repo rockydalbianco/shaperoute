@@ -400,8 +400,9 @@ export function GymPlanWizard({
   // The other days of a plan with a target: made at the days' step.
   const [others, setOthers] = useState<GymPlanSession[]>([]);
   const [baseShape, setBaseShape] = useState<TargetBase | null>(null);
-  // «Ricordamelo alle 8» (TASK-461 B): one for all the plans.
-  const [remind, setRemind] = useState(planReminderOn());
+  // «Ricordamelo alle 8» (TASK-461 B): one for all the plans, on at first
+  // for a new plan (the user's «Sì, alle 8» of 2026-11-11).
+  const [remind, setRemind] = useState(withDoor || planReminderOn());
   // The run days of the plan that are not the target's.
   const keptRunDays = targetDoor === "run" && !keepFitRun ? [] : runDays;
   const [program, setProgram] = useState<GymProgram | null>(kept);

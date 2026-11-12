@@ -1065,6 +1065,29 @@ la `0072` di TASK-467 B1):
   live e sull'account, quindi va via con la riga vuota della live, un
   giorno dopo la fine. Nessuna posizione. Test in `test_live_shares.py`.
 
+Migrazione `0075_planned_lives.sql` (TASK-468 parte A2a, ADR-0381, `API.md`
+«Le live programmate e la fila «Live» del Feed»; il numero è del
+Coordinatore, dopo la `0074` di TASK-455 A):
+
+- **`planned_lives`**: una live programmata. `owner_id` (`CASCADE` su
+  `users`), `activity`, `title` (1–60), `starts_at`, `audience_feed`
+  (`followers`/`everyone`), `heart_visible`, `created_at`, `updated_at`,
+  `post_id` (il post che è diventata, `SET NULL` su `drawings`). Indice
+  `(owner_id, starts_at, id)` per la fila e il profilo.
+- **`planned_live_reminders`**: «Remind me» (`planned_live_id`, `user_id`,
+  `created_at`), chiave sulla coppia; `CASCADE` sulla live e sull'account.
+- **`live_shares.planned_live_id`**: la live programmata che la
+  condivisione ha fatto partire (`SET NULL`). Il legame va dalla
+  condivisione alla programmata e non al contrario: i dati di
+  `live_shares` restano fuori dalle copie notturne, e una chiave da una
+  tabella copiata a una lasciata fuori ne romperebbe il ripristino.
+  Indici: `live_shares_planned` e `live_shares_in_feed` (`user_id,
+  created_at` delle live con `audience_feed` diverso da `none`).
+- **Le copie notturne**: `planned_lives` e `planned_live_reminders`
+  restano nelle copie, come le corse di gruppo: niente posizioni, e
+  nessuna chiave verso tabelle lasciate fuori. Test in
+  `test_planned_lives.py`.
+
 Migrazione `0054_ski_resorts.sql` (TASK-406 parte A, ADR-0338, `API.md`
 «Ski resorts»; il numero è del Coordinatore):
 

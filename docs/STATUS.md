@@ -128,6 +128,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sport nel contratto e nell'API, nascosto nell'app, migrazione 0068) e
   sul server col passo 8 del 2026-11-11; l'app col decimo OTA. Prima di B,
   la città lenta (76 s per un rifiuto). File: — · `tasks/TASK-413.md`
+  **A3** in `main` (#1238, `8f5d0516`, 2026-11-12): una città è detta subito «no open snow»; sul server col passo 11. Poi B.
 - **TASK-414 — Carrozzina e passeggino** · 0 e A in `main` (#1183,
   `f614821c`: rete `wheel`, lo sport nel motore, nel contratto e nell'API,
   nascosto nell'app, migrazione 0071); sul server col passo
@@ -237,11 +238,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
   scelto dal minimo disponibile dopo qualche giorno. File: — ·
   `tasks/TASK-464.md`
-- **TASK-455 — Condividere il disegno di un'altra persona** · parte 0 chiusa
-  (scelte dell'utente, 2026-11-12): «Share» su ogni post, il post in chat
-  come rimando, il link a una pagina web con l'interruttore dell'autore.
-  Prossima A (server: il post in un messaggio), poi B app, C–E il link.
-  File: — · `tasks/TASK-455.md`
+- **TASK-455 — Condividere il disegno di un'altra persona** · B0 (niente
+  copia dei disegni «Followers» altrui) in `main` (#1220) e nell'uscita del
+  2026-11-12; A (server: il post in un messaggio, ADR-0382, migrazione
+  `0074`) in `main` (#1230): manca il passo sul server, col sì dell'utente.
+  Prossima B (app), poi C–E il link. File: — · `tasks/TASK-455.md`
 
 - **TASK-466 — Lo stretching nuovo** · A (la figura che respira, si
   rialza e si gira, «Get ready», tick, «Skip») in `main` (#1181,

@@ -1,5 +1,12 @@
 import { type ReactNode, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../i18n";
@@ -23,6 +30,12 @@ type Props = {
   compass?: ReactNode;
   /** The wait, the route or the problem (RouteOutcome). */
   children: ReactNode;
+  /**
+   * The end of an activity (TASK-477): the card and «Save» and «Discard»
+   * under it can be taller than the screen. Then the card stops under the
+   * banner and scrolls, so that nothing falls under the bottom edge.
+   */
+  scrolls?: boolean;
 };
 
 /**
@@ -38,12 +51,13 @@ export function MapScreen({
   banner,
   compass,
   children,
+  scrolls = false,
 }: Props) {
   const insets = useSafeAreaInsets();
   // What lies over the top of the map (TASK-443): the map frames its
   // route clear of it. The map goes from side to side of the window; a
   // banner is as high as it turns out.
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const [rowHeight, setRowHeight] = useState<number | null>(null);
   const hasBanner = banner !== undefined && banner !== null;
   // Without a banner the row is the buttons': its height is not asked, so
@@ -108,7 +122,28 @@ export function MapScreen({
           </View>
         )}
       </View>
-      {active && (
+      {active && scrolls && (
+        // At most as high as the screen under the banner's row: the rest
+        // scrolls, «Save» at its foot included (TASK-477).
+        <View
+          style={[
+            styles.card,
+            styles.scrolling,
+            { maxHeight: cardMaxHeight(height, insets.top, bannerHeight) },
+          ]}
+          testID="map-card"
+        >
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={{ paddingBottom: insets.bottom + space.md }}
+            keyboardShouldPersistTaps="handled"
+            testID="map-card-scroll"
+          >
+            {children}
+          </ScrollView>
+        </View>
+      )}
+      {active && !scrolls && (
         <View
           style={[styles.card, { paddingBottom: insets.bottom + space.md }]}
           testID="map-card"
@@ -117,6 +152,22 @@ export function MapScreen({
         </View>
       )}
     </View>
+  );
+}
+
+/**
+ * The highest the card goes at the end of an activity (TASK-477): the
+ * window, less the safe area at the top, the banner's row and a gap under
+ * it, so that the banner stays in sight.
+ */
+export function cardMaxHeight(
+  windowHeight: number,
+  insetTop: number,
+  bannerHeight: number | null,
+): number {
+  return Math.max(
+    0,
+    windowHeight - insetTop - space.sm - (bannerHeight ?? MIN_TAP_SIZE) - space.sm,
   );
 }
 
@@ -169,5 +220,13 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radius.sheet,
     borderTopRightRadius: radius.sheet,
     backgroundColor: color.surface,
+  },
+  // The card that scrolls: its padding at the foot is the content's.
+  scrolling: {
+    paddingBottom: 0,
+  },
+  // As high as its content, up to the card's height.
+  scroll: {
+    flexGrow: 0,
   },
 });

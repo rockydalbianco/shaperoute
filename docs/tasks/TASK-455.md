@@ -495,8 +495,16 @@ Le altre parti scrivono i loro criteri quando partono.
   spiegazione, la frase della privacy nelle cinque lingue e le pagine del
   sito rigenerate (`make_privacy.mjs`). Traduzioni dell'agente. Nella
   frase della privacy l'agente ha aggiunto «the sport» (la pagina del link
-  mostra «Run · 4.3 km»): **chiesto all'utente, in attesa**; con un no si
-  tolgono le due parole nelle cinque lingue e si rigenerano le pagine.
+  mostra «Run · 4.3 km»): **l'utente, alla domanda «Nella frase della
+  privacy sul link va bene aggiungere «the sport»?»: «Sì, aggiungi»**. La
+  frase approvata è quindi: «A post for «Everyone» can also be opened with
+  a link. You, or any member who sees the post, can share its link, and
+  whoever has the link sees the drawing on the map, your username, the
+  title, the sport and the distance on a web page, even without MuW: never
+  your photos, the comments or your times. Search engines are asked not to
+  list these pages. Turn off «Links to my posts» in Settings and no link
+  to your posts works any more. A post for «Followers» or «Only me» never
+  has a link.»
   Segnalato all'utente anche che la spiegazione dell'interruttore, com'è
   approvata, non nomina titolo e sport. Mancano: la prova al simulatore
   (turno del Coordinatore) con le schermate per l'utente. Esce con un OTA

@@ -538,6 +538,7 @@ lasciando le righe d'indice.
 - ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro · 2026-11-12 · Attiva
 - ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Proposta
 - ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
 
 ## Voci nuove
@@ -586,6 +587,47 @@ scelte dell'utente del 2026-11-08 sono in `main`, tranne l'app (parte B).
    inglese, calorie della camminata, Apple Salute `.wheelchairWalkPace`
    (70), Health Connect 82. Solo JavaScript e i file del Watch generati:
    l'impronta iOS non cambia.
+
+## ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0
+
+**Stato**: Proposta · 2026-11-12 · TASK-469, nessun codice ancora. La
+direzione è scelta dell'utente (2026-11-12, «Capsula» fra tre direzioni:
+https://claude.ai/artifact/HD397UmJcu94vNZvGBH2bs); il modo è deciso
+dall'agente su delega dell'utente, coi vincoli del Coordinatore; numero
+dal Coordinatore.
+
+**Contesto**: l'utente vuole l'app più moderna, nello stile Liquid Glass
+di iOS 26. Oggi la barra è `background` al 95% e le superfici sono piene
+(TASK-339, TASK-388). Nell'app non ci sono `expo-blur` né
+`expo-glass-effect`; React Native 0.86 ha già ombre anche interne,
+sfumature e bordi di colore diverso per lato. Sull'App Store sono
+dichiarati «Sufficient Contrast» e il tema scuro.
+
+**Decisione**:
+- **«Capsula»**: la barra delle schede si stacca dai bordi e diventa una
+  capsula di vetro che galleggia, con bordo di luce e ombra morbida; la
+  scheda attiva ha una pillola chiara che scivola. I segmenti sono una
+  pillola di vetro con l'indicatore in rilievo; nelle card la riga del
+  titolo è una lastra di vetro dentro la foto, a 8 pt dal bordo. Raggi:
+  card 28, gruppi 24, il resto a capsula. L'header si dissolve in vetro
+  allo scroll.
+- **Parte A senza blur, via OTA**: il vetro è una velatura del fondo del
+  tono a circa 86–92%, più il bordo di luce e l'ombra. Si intravede
+  appena: è il prezzo per tenere testo e icone ≥ 4,5:1 sul caso peggiore
+  (foto bianca sotto il tono scuro, nera sotto il chiaro). Le icone spente
+  della barra passano da `textFaint` a `textMuted`. Colori solo da token
+  nuovi in `tokens.ts`; i valori esistenti non cambiano; il giallo mai
+  come tinta.
+- **Accessibilità**: «Riduci trasparenza» → superfici opache; «Aumenta
+  contrasto» → opache col bordo `borderStrong`; «Riduci movimento» → solo
+  dissolvenze brevi.
+- **Parte B** con `expo-glass-effect` solo in una build dopo l'uscita
+  della 1.1.0, col sì dell'utente.
+
+**Conseguenze**: la A arriva in fette piccole dopo l'aggiornamento
+completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta
+`6f8bba4c`. Niente blur sopra la mappa mentre si registra. `docs/UI.md`
+si aggiorna fetta per fetta.
 
 ## ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio
 

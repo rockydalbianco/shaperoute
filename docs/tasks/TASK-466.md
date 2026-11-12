@@ -116,7 +116,9 @@ della privacy se cambia cosa vedono gli altri (sì dell'utente).
 - [x] «Skip» passa al «Get ready» dell'esercizio dopo; «End» esce.
 - [x] Test di `src/stretch`, `src/i18n`, `__tests__/AppStretch`,
       `src/gym/restAlert` verdi; `tsc` pulito.
-- [ ] Screenshot o video dal simulatore, col turno del Coordinatore.
+- [x] Screenshot o video dal simulatore, col turno del Coordinatore
+      (2026-11-12, iPhone 17e, Expo Go: `out/TASK-466/`, cinque schermate
+      e un video di 3 minuti).
 - [x] Sì dell'utente sui due testi nuovi (2026-11-12, «Sì, approvo»).
 
 ## File toccati (parte A)

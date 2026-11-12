@@ -1120,6 +1120,8 @@ export const FR: Table = {
   Pause: "Pause",
   Music: "Musique",
   "Opens Spotify": "Ouvre Spotify",
+  "Show the numbers": "Afficher les chiffres",
+  "Hide the numbers": "Masquer les chiffres",
   Compass: "Boussole",
   Map: "Carte",
   Data: "Données",

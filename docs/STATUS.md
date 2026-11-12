@@ -248,6 +248,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
   dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
 
+- **TASK-471 — Overpass in errore: rispondere prima** (ADR-0385) · in
+  `main`: un download fallito per job (#1251), 5 s invece di 60 e il secondo
+  servizio spento (#1269), le frasi dell'app e della privacy (#1259, #1263,
+  OTA 14). Restano, col sì dell'utente: passo sul server, copia del sito,
+  accensione del secondo servizio. File: — · `tasks/TASK-471.md`
+
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
 la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e

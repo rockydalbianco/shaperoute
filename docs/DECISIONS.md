@@ -553,8 +553,88 @@ lasciando le righe d'indice.
 - ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km · 2026-11-12 · Attiva
 - ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`) · 2026-11-12 · Attiva
 - ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
+- ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende · 2026-11-12 · Accettata
 
 ## Voci nuove
+
+## ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende
+
+**Stato**: Accettata · 2026-11-12 · TASK-471 (#1251 e #1269 in `main`;
+#1259 e #1263, i testi, nell'OTA 14). La regola del punto 1 è
+decisa dall'agente su delega dell'utente, col via del Coordinatore; i
+punti 2, 3 e i testi sono scelte dell'utente, con le sue parole nel task
+file.
+
+**Contesto.** Il 12 novembre `overpass-api.de` rispondeva `502` («at
+capacity») e due richieste di percorso in una zona nuova hanno aspettato
+140 s e 163 s prima di `map_data_unavailable`. Letto nel codice e nel log:
+osmnx 2.1.1 prima di ogni richiesta legge `/api/status`, e quando la
+pagina non è quella attesa (con Overpass pieno è la pagina 502) aspetta
+60 s fissi (`default_pause`, argomento di una funzione privata, non
+un'impostazione), poi fa la richiesta comunque. In tutti e due i job la
+zona attorno alla partenza è stata scaricata (75 s e 98 s) e la zona più
+larga della ricerca lontana (ADR-0040) è fallita un minuto dopo: 120 s
+dell'attesa erano la pausa, due volte. Nel codice c'era anche un doppio
+tentativo vero: l'archivio (ADR-0256) ingoiava l'errore del suo download
+e il processo di calcolo ne provava un altro.
+
+**Decisione.**
+
+1. **Un job chiede a Overpass una volta sola.** Dopo un download fallito,
+   il caricamento successivo dello stesso job che ne avrebbe bisogno
+   fallisce subito con lo stesso errore; i caricamenti dalla cache
+   continuano, quindi un percorso che non ha bisogno di scaricare si
+   disegna. Lo stato passa dal thread del job al processo di calcolo
+   insieme alla richiesta (`jobs._Reporting.unavailable`,
+   `route_processes`).
+2. **Cinque secondi invece di sessanta** («Sì, 5 secondi»): per la durata
+   di un download chiesto dall'app (`graphs.ZoneGraphs._download`) la
+   pausa di osmnx quando lo stato non dice nulla di utile è 5 s
+   (`overpass_pause.py`). Non cambiano l'attesa che Overpass chiede da sé
+   né il download: nessun limite di tempo, perché uno riuscito dura da 75
+   a 200 s. Se osmnx non ha più quella funzione il download va come
+   prima, con una riga di avviso.
+3. **Un tentativo su un secondo servizio** («Sì, un tentativo»): quando il
+   principale risponde con un errore HTTP o non si raggiunge (non dopo un
+   timeout), una volta sola (`overpass_fallback.py`). **Spento nel
+   codice**: lo accende `SHAPEROUTE_OVERPASS_FALLBACK_URL` sul server,
+   dopo che la privacy nomina il servizio (#1263), in un passo a parte
+   col sì dell'utente. Il servizio scelto è `overpass.private.coffee`: le
+   sue condizioni, lette il 12 novembre, permettono ogni progetto, anche
+   commerciale, senza limiti dichiarati; chiedono uno User-Agent che dica
+   chi siamo (`MuW/1.0 (https://getmuw.app)`), un avviso prima di usi
+   grandi e nessun dato personale nelle richieste (mandiamo il riquadro).
+4. Il lavoro a lotti (`prefetch_zones`) resta com'era: 60 s e solo il
+   principale, come scelto dall'utente lo stesso giorno.
+5. L'errore dice il perché in una riga (prima portava la pagina di
+   Overpass); l'app dice «The map service is busy, so this area could not
+   be loaded. Try again in a few minutes.».
+
+**Alternative scartate.**
+
+- Chiudere il job al primo errore dell'archivio senza guardare la cache:
+  farebbe fallire un percorso che si poteva disegnare.
+- Un limite di tempo sul download: sotto i tre minuti taglierebbe
+  download che riescono.
+- Scaricare subito la zona larga, un download invece di due («Sì,
+  com'è»: non si fa): tre volte l'area per ogni prima richiesta, per
+  accelerare il 3% dei job che cerca lontano.
+- Rispondere col percorso della zona vicina quando fallisce solo la
+  larga («ok procedi»: non adesso): sta nel motore, cambia l'impronta, e
+  aiuta solo quando vicino c'è un percorso inclinato disegnabile.
+- Il secondo servizio acceso nel codice: un altro gestore vedrebbe le
+  aree prima che la privacy lo dica.
+
+**Conseguenze.** I percorsi e le impronte non cambiano (niente motore,
+niente `route_store.py`). Con Overpass a 502: un download fallito costa
+circa 10–20 s invece di 70–80 s, e al massimo uno per job. Acqua e neve
+non passano da osmnx e non avevano la pausa; il secondo servizio vale
+anche per la loro richiesta («Sì, aggiungilo»), con la stessa variabile
+(`paddling.py`, `snowshoeing.py`). I servizi pubblici gratuiti sono per
+progetti piccoli e il principale chiede che l'uso commerciale passi a un
+servizio a pagamento o proprio: con la società, o se i download
+crescono, un servizio con chiave o le zone dagli estratti. Come si
+accende il secondo servizio e cosa leggere dopo: `tasks/TASK-471.md`.
 
 ## ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false`
 

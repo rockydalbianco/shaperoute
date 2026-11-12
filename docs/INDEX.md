@@ -86,6 +86,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Il calendario di tutte le attività nel profilo e in «My activities», lo storico mese per mese | `UI.md` «Il calendario delle attività», `API.md` «Il calendario delle attività», ADR-0372, `tasks/TASK-462.md` |
 | Lo stretching: la figura che respira e si gira, «Get ready», tick, «Skip»; routine, palestra, mattino, routine pubblicate | `tasks/TASK-466.md`, ADR-0378, ADR-0247, ADR-0147 |
 | I segni a linea: il contorno delle forme nei riquadri (`ShapeGlyph`), le icone sotto i post, gli avvisi del percorso col triangolo e la «i» (`NoteRow`), le icone in `assets/ui/icons/` | `UI.md` (la griglia delle forme, «Feed», gli avvisi «in parole semplici»), `tasks/TASK-444.md` |
+| Overpass in errore: una richiesta per job, la pausa di OSMnx, il secondo servizio | `tasks/TASK-471.md`, ADR-0385, `MAPS.md` «Overpass: come si scarica» |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

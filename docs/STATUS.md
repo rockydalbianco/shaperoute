@@ -197,6 +197,12 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   col sì dell'utente. Poi A (le reazioni nel Feed), B (doppio tocco), C2
   (l'app dei commenti, dopo il server). File: — · `tasks/TASK-454.md`
 
+- **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
+  (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
+  default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
+  scelto dal minimo disponibile dopo qualche giorno. File: — ·
+  `tasks/TASK-464.md`
+
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta
 la figura, 305 parapendio (il pianificatore), 336 video nei post, 341 badge, 345 calorie e

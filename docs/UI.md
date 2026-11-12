@@ -1781,6 +1781,31 @@ l'app, come «Find friends»:
   linea (`RouteThumb`), «🗺️ Drawing» e «Star · 5.1 km»; un tocco lo apre
   sulla mappa come un preferito, con «Start», «Export GPX», il cuore e
   «Draw it near me», e «Back to the list» torna alla conversazione.
+- **I post** (TASK-455 parte B, ADR-0382; scelte e testi dell'utente del
+  2026-11-12). Il disegno **di un altro** non si copia mai in un messaggio:
+  si manda come **post**, un rimando che il server risolve per chi legge.
+  Sulla scheda di un disegno altrui «Send to a friend» manda il post (anche
+  di un disegno «Followers»; sul proprio resta la copia di sopra); sotto un
+  post del Feed lo fa «Share» (sotto, «Share» sui post). «Send to…» è la
+  stessa lista; per un post «Followers» di un altro dice prima «Only people
+  who follow {user} can open it.». **Nella conversazione** il post è la
+  sua scheda (`messages/PostCard.tsx`): la linea, il titolo (o quello che
+  disegna) e «by {user} · 4.0 km»; un tocco chiude la conversazione e apre
+  il post **come lo apre una notifica**, sulla mappa con la sua scheda
+  (foto, commenti, reazioni, «Start», «Draw it near me», «Edit the
+  drawing»). Se chi legge non può vederlo, o non c'è più, al posto della
+  scheda c'è «This post is no longer available.», che non si tocca: vale
+  anche per chi l'ha mandato. Nella lista «🗺️ Post»; VoiceOver legge
+  titolo, autore e km. Il «+» della conversazione non ha i post. L'app
+  dice `post` in `X-MuW-Reads` solo nelle chiamate dei messaggi
+  (`api/messages.ts`).
+- **«Share» sui post** (TASK-455 parte B; scelta 2 dell'utente): sotto
+  ogni post «Share» apre un foglietto (`feed/PostShareSheet.tsx`) con
+  «Send to a friend» e, sui propri, «Poster and video» (quello che «Share»
+  apriva prima); «Cancel» lo chiude, e chiudere quello che una voce apre
+  chiude anche il foglietto. Senza i messaggi (nessun account, o un'API di
+  prima) sui post altrui «Share» non c'è. La voce del link arriva con la
+  parte E.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale

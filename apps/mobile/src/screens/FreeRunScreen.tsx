@@ -2,6 +2,11 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { isOnSnow } from "../activities/snow";
+import { isFlight } from "../air/flight";
+import { FlightFinishCard } from "../air/FlightFinishCard";
+import { FlightLive } from "../air/FlightLive";
+import { useFlightNotice } from "../air/flightNotice";
+import { useStartLiveAtStart } from "../air/liveAtStart";
 import type { FreeRun } from "../navigation/freeRun";
 import { freeRunActivity } from "../navigation/freeSport";
 import { t } from "../i18n";
@@ -140,6 +145,10 @@ export function FreeRunCard({
   // With «Paddle» in «Settings» the numbers are a paddler's (TASK-251),
   // with «Bike» speeds, as along a route (TASK-251 C); a run's as before.
   const sport = runActivityOf(useSport());
+  // Before the first flight on this phone, the notice (TASK-305 part R2).
+  useFlightNotice(isFlight(sport));
+  // «Share live at start»: the link at the end of the countdown (part R5b).
+  useStartLiveAtStart(isFlight(sport));
   const card = (
     <RunCard
       track={track}
@@ -151,7 +160,8 @@ export function FreeRunCard({
   );
   // On the slopes, the resort of the day and its weather over the numbers
   // (TASK-406 part D2); on a ski tour, its phase, its VAM, the metres
-  // climbed and the height (TASK-415 part B).
+  // climbed and the height (TASK-415 part B); in flight, the altitude, the
+  // vario and the highest altitude (TASK-305 part R2).
   return sport === "skiing" ? (
     <View style={styles.skiing}>
       <DayResort />
@@ -160,6 +170,11 @@ export function FreeRunCard({
   ) : sport === "ski_touring" ? (
     <View style={styles.skiing}>
       <SkiTourLive track={track} live={running} />
+      {card}
+    </View>
+  ) : isFlight(sport) ? (
+    <View style={styles.skiing}>
+      <FlightLive track={track} live={running} />
       {card}
     </View>
   ) : (
@@ -172,6 +187,15 @@ export function FreeFinishBanner() {
   // skiing has its descents yellow and its lifts red and dashed on the map,
   // numbered, and the legend says so (TASK-429 part B, ADR-0357).
   const activity = runActivityOf(useSport());
+  if (isFlight(activity)) {
+    // A flight is a flight (TASK-305 part R2).
+    return (
+      <View style={styles.banner}>
+        <Text style={styles.title}>{t("Your flight")}</Text>
+        <Text style={styles.message}>{t("White: where you flew.")}</Text>
+      </View>
+    );
+  }
   const snow = isOnSnow(activity);
   return (
     <View style={styles.banner}>
@@ -197,11 +221,14 @@ type FinishProps = {
 };
 
 /** The end of a run without a route or, on the snow, of the day
- * (TASK-375 part C), or of a ski tour with its phases (TASK-415 part B):
+ * (TASK-375 part C), or of a ski tour with its phases (TASK-415 part B), or
+ * of a flight (TASK-305 part R2):
  * the sport of «Settings» says which. */
 export function FreeFinishCard(props: FinishProps) {
   const activity = runActivityOf(useSport());
-  return activity === "ski_touring" ? (
+  return activity === "paragliding" ? (
+    <FlightFinishCard {...props} activity={activity} />
+  ) : activity === "ski_touring" ? (
     <SkiTourFinishCard {...props} activity={activity} />
   ) : isOnSnow(activity) ? (
     <SnowFinishCard {...props} activity={activity} />

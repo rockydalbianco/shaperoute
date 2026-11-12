@@ -47,6 +47,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | La mia immagine al posto dell'animale nel video (foto tonda, GIF, cartellino sul 3D) e il video «Together» con le persone taggate sullo stesso orologio | `tasks/TASK-417.md`, `DECISIONS.md` ADR-0345 e ADR-0339, `tasks/TASK-408.md` |
 | Video della corsa ed editor con l'animale 3D | ADR-0303, ADR-0339, `UI.md` «Il post da condividere», `tasks/TASK-408.md` |
 | Messaggi, chat, allegati | `API.md` «Messages», `UI.md`, ADR-0279, ADR-0305 |
+| Condividere un post: «Share» sui post, il post mandato in chat come rimando, il link di un post | `tasks/TASK-455.md`, ADR-0382, `API.md` «Un post in un messaggio» |
 | Profilo: record personali, badge, il mio corpo, VO₂ max | `API.md` «Profile», ADR-0312, ADR-0318, `tasks/TASK-341.md`, `tasks/TASK-397.md` |
 | Posizione del telefono e privacy | `tasks/TASK-363.md`, ADR-0306 |
 | Il gioco delle forme, squadre e sfide | `GIOCO.md` |
@@ -56,6 +57,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Il parapendio registrato in volo: lo sport «Record only», i numeri del volo nel link dal vivo | `tasks/TASK-305.md` «Le parti R», ADR-0375, ADR-0352, ADR-0319 |
 | Apple Salute, Health Connect | ADR-0281, `tasks/TASK-321.md` |
 | Il punteggio del sonno MuW | `tasks/TASK-467.md` |
+| La live in chat e nel Feed, anche programmata (una gara) | `tasks/TASK-468.md`, ADR-0381, ADR-0352, `API.md` «Live shares» e «Messages» |
 | «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |
 | Percorsi in bici di MuW in «Explore» | `UI.md` «Pedalalo tu», ADR-0309 |
 | Il catalogo di «Explore»: forme nuove, i mille disegni, la pagina | `../catalog/README.md`, ADR-0347, `tasks/TASK-418.md`, `tasks/TASK-419.md`, `tasks/TASK-420.md` |
@@ -64,6 +66,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Le forme candidate e quelle approvate: `candidate_outlines/`, `tools/draw_new_shapes.py` (`APPROVED`), `ZONE_SHAPES` | `tasks/TASK-418.md`, ADR-0346 e la precisazione B, ADR-0036 |
 | Aggiungere uno sport, il banco `tools/sport_bench/` | `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md`, ADR-0320 |
 | Uno sport in particolare (corsa, bici, canoa, hike, gravel, roller, gym, skimo, wheelchair, snowshoes) | `sports/<sport>.md` e il suo task file se aperto |
+| La carrozzina e il passeggino: la rete `wheel`, le sole forme di un'attività (`Activity.shapes`) | `sports/wheelchair.md`, `tasks/TASK-414.md`, ADR-0343 e la sua precisazione A |
 | Nuoto in piscina: calorie, battito e zone | `tasks/TASK-409.md`, ADR-0318, ADR-0334 |
 | Walk, nuoto in acque libere | `ROUTE_ENGINE.md` (le reti, §8), `tasks/TASK-371.md` |
 | Sci: «Record only», stazioni, meteo | `MAPS.md` «Impianti e piste da sci», ADR-0319, ADR-0338, `tasks/TASK-375.md`, `tasks/TASK-406.md` |
@@ -74,10 +77,13 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | La freccia di chi corre (anello e cono azzurri, punta dove punta la mappa su «Compass»), i disegni delle tre schede, i token `you` e `north` | `UI.md` «La freccia di direzione» e «La corsa: tre pagine», ADR-0359, `tasks/TASK-431.md` |
 | Le schede della palestra guidate: la guida in 5 passi, le settimane che cambiano, «My plans», l'app di prima che le legge | `sports/gym.md` «Le schede guidate», ADR-0360, ADR-0341, `API.md` «Gym», `tasks/TASK-433.md` |
 | I giorni di corsa nella scheda della palestra, «Come funzionano le schede» al primo tocco di Palestra | `sports/gym.md` «Le schede guidate», ADR-0363, `tasks/TASK-433.md` (parti B e C) |
+| La corsa su misura nelle schede della palestra: il ritmo sui 10 km e il lungo nella guida, i ritmi di ogni corsa, la proposta a fine ciclo dalle corse salvate | `sports/gym.md` «Le schede guidate», ADR-0369, `API.md` «Gym», `tasks/TASK-452.md` |
 | «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte; se si incrocia, un anello alla partenza; anche un percorso chiuso di «Explore» che si incrocia | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0356 (e precisazione), ADR-0313, `tasks/TASK-425.md`, `tasks/TASK-428.md`, `tasks/TASK-432.md` |
 | «Draw on the map»: la partenza, un pallino da spostare lungo il disegno | `UI.md` «Disegnare sulla mappa» («La partenza»), ADR-0354, ADR-0336, `tasks/TASK-426.md` |
 | I percorsi di MuW nel Feed: spenti, l'interruttore per riaccenderli | `UI.md` «Feed», ADR-0358, ADR-0310, `tasks/TASK-430.md` |
-| Il calendario di tutte le attività nel profilo e in «My activities», lo storico mese per mese | `API.md` «Il calendario delle attività», ADR-0372, `tasks/TASK-462.md` |
+| Il calendario di tutte le attività nel profilo e in «My activities», lo storico mese per mese | `UI.md` «Il calendario delle attività», `API.md` «Il calendario delle attività», ADR-0372, `tasks/TASK-462.md` |
+| Lo stretching: la figura che respira e si gira, «Get ready», tick, «Skip»; routine, palestra, mattino, routine pubblicate | `tasks/TASK-466.md`, ADR-0378, ADR-0247, ADR-0147 |
+| I segni a linea: il contorno delle forme nei riquadri (`ShapeGlyph`), le icone sotto i post, gli avvisi del percorso col triangolo e la «i» (`NoteRow`), le icone in `assets/ui/icons/` | `UI.md` (la griglia delle forme, «Feed», gli avvisi «in parole semplici»), `tasks/TASK-444.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
 Le righe di prima, con i rimandi ai task chiusi, sono in

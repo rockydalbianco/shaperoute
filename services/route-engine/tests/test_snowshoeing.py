@@ -30,10 +30,11 @@ from route_engine.models import (
 )
 from route_engine.paddling import WATER_SHAPE_POINTS
 from route_engine.shapes import get_shape
-from route_engine.snow import NoSnowError, SnowFitError
+from route_engine.snow import NoSnowError, SnowFitError, no_snow_error, town_bbox
 from route_engine.snowshoeing import (
     check_on_snow,
     plan_snowshoeing,
+    snow_area,
     snow_pieces,
     snow_shape,
 )
@@ -70,6 +71,19 @@ class _Source:
     def elements(self, bbox: tuple[float, float, float, float]) -> list[dict[str, Any]]:
         self.asked.append(bbox)
         return self._elements
+
+
+class _Counted(_Source):
+    """A source that counts the buildings of an area before reading it."""
+
+    def __init__(self, buildings: int | None, *elements: dict[str, Any]) -> None:
+        super().__init__(*elements)
+        self._buildings = buildings
+        self.counted: list[tuple[float, float, float, float]] = []
+
+    def buildings(self, bbox: tuple[float, float, float, float]) -> int | None:
+        self.counted.append(bbox)
+        return self._buildings
 
 
 class _Flat:
@@ -321,3 +335,35 @@ def test_the_command_line_refuses_what_is_for_roads(
         cli.parse_args(argv)
     assert caught.value.code == 2
     assert message in capsys.readouterr().err
+
+
+# --- A town, said before the snow is read (TASK-413 A3) ----------------------
+
+
+def test_a_town_is_no_snow_before_its_snow_is_read() -> None:
+    source = _Counted(10**6, ROAD)
+    with pytest.raises(NoSnowError, match="no open snow") as caught:
+        plan_snowshoeing(_request(), source, _Flat())
+    assert str(caught.value) == str(no_snow_error())
+    assert source.counted == [town_bbox(START)]
+    # Neither the snow nor the heights were read.
+    assert source.asked == []
+
+
+@pytest.mark.parametrize("buildings", [None, 0, 40])
+def test_a_count_not_known_or_low_plans_as_before(buildings: int | None) -> None:
+    counted = plan_snowshoeing(_request(), _Counted(buildings, ROAD), _Flat())
+    before = plan_snowshoeing(_request(), _Source(ROAD), _Flat())
+    assert counted.result == before.result
+
+
+@pytest.mark.parametrize("distance_m", [500, 1000, 3000])
+def test_the_town_box_is_the_same_for_every_distance_and_inside_the_snow_s(
+    distance_m: int,
+) -> None:
+    """Counted once for a start, whatever the shape; and a request's cached
+    snow covers it, so a town asked again is told at once from the cache."""
+    request = _request(distance_m=distance_m)
+    town, box = town_bbox(START), snow_area(request)
+    assert box[0] <= town[0] and box[1] <= town[1]
+    assert box[2] >= town[2] and box[3] >= town[3]

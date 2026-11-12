@@ -11,7 +11,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "10 de noviembre de 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). */
-const PRIVACY_UPDATED = "11 de noviembre de 2026";
+const PRIVACY_UPDATED = "12 de noviembre de 2026";
 
 const help: AboutDocument = {
   title: "Cómo funciona MuW",
@@ -359,7 +359,7 @@ const privacy: AboutDocument = {
         {
           bullets: [
             "Una ruta que guardas en «Favoritos» se almacena entera, con su línea, que a menudo empieza cerca de tu casa. Solo la ve tu cuenta, hasta que la quitas o eliminas la cuenta.",
-            "Tus comentarios y reacciones bajo un dibujo los ven los miembros que ven ese dibujo. Puedes eliminar tus propios comentarios.",
+            "Tus comentarios, respuestas y reacciones bajo un dibujo los ven los miembros que ven ese dibujo. Una reacción a un comentario se les muestra solo como un número; el miembro que escribió ese comentario lee, en la campana, que fuiste tú. Puedes eliminar tus propios comentarios y respuestas, y quitar una reacción.",
             "A quién sigues, quién te sigue y las solicitudes para seguir se guardan con tu cuenta.",
           ],
         },
@@ -465,7 +465,7 @@ const privacy: AboutDocument = {
             "Apple en el iPhone, o Google en Android, a través del servicio de direcciones del teléfono, recibe la posición desde la que empieza «Dibuja», para escribir el nombre de la calle. MuW no le envía nada más y no guarda el nombre.",
             "Wikimedia da a nuestro servidor las fotos de los pueblos: ve qué pueblo, no quién pregunta.",
             "Con el mapa «Satélite» Esri da las imágenes, y con el mapa «3D» Amazon Web Services da las alturas: como cualquier servicio de mapas, ven qué zona miras.",
-            "Nuestro servidor pide al servicio Overpass de datos de OpenStreetMap el mapa de una zona que aún no tiene: ve qué zona, no quién la pidió.",
+            "Nuestro servidor pide a los servicios Overpass de datos de OpenStreetMap (overpass-api.de y, cuando no responde, overpass.private.coffee) el mapa de una zona que aún no tiene: ven qué zona, no quién la pidió.",
             "unpkg sirve la biblioteca del mapa cuando arranca la app.",
             "Expo sirve las actualizaciones de la app.",
             "Google Ireland Limited (Firebase Cloud Messaging), para entregar las notificaciones push a los teléfonos Android. Cuando enciendes push, la app pide a Firebase un token de registro para tu teléfono; el servicio push de Expo pasa cada notificación (quién hizo qué, y el principio de un comentario) a Google, que la entrega a tu teléfono. Google ve el token y el contenido de cada notificación, no tu cuenta ni tu posición. El token se quita de nuestro servidor cuando apagas push, cierras sesión o borras tu cuenta; el del teléfono se va cuando desinstalas la app.",

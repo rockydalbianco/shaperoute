@@ -29,7 +29,7 @@ const OUR_SIDE = "Something went wrong on our side. Try again in a moment.";
 test.each<[RouteProblem, string, string | undefined]>([
   [
     { kind: "api_error", code: "map_data_unavailable", message: "Overpass timed out" },
-    "Map data for this area could not be downloaded. Try again later.",
+    "The map service is busy, so this area could not be loaded. Try again in a few minutes.",
     "Overpass timed out",
   ],
   [

@@ -1,6 +1,7 @@
 # TASK-466 — Lo stretching nuovo: animazioni, routine, palestra, mattino, routine pubblicate
 
-**Stato**: In corso · parte A in PR (bozza)
+**Stato**: In corso · parte A in `main` (#1181, `437f152f`, 2026-11-12;
+esce con l'aggiornamento completo); prossima B
 **Fase**: 4 · **Branch**: `feat/TASK-466-a-stretch-motion` (A); B, C, D, E
 ciascuna col suo branch e la sua PR
 **ADR**: ADR-0378 (una per tutte le parti; la voce va nella PR di soli

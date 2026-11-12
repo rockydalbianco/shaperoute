@@ -25,18 +25,61 @@ export const LIVE_POINT_EVERY_S = 5;
 /** Links an account may make in a day. */
 export const LIVE_SHARES_PER_DAY_MAX = 20;
 
+/** The chat (TASK-468, ADR-0381): people in one send, and sends a minute. */
+export const LIVE_RECIPIENTS_MAX = 20;
+export const LIVE_SENDS_PER_MINUTE_MAX = 20;
+
+/** Who sees a share in the Feed (TASK-468, the user's choice 1). */
+export const LIVE_AUDIENCES = ["none", "followers", "everyone"] as const;
+export type LiveAudience = (typeof LIVE_AUDIENCES)[number];
+
 /** POST /me/live-shares: fixtures/live-share-request.json. */
 export interface LiveShareRequest {
   activity: RunActivity;
   /** A swim in a pool: the page shows lengths, with no map. */
   pool_length_m?: number | null;
+  /** Make the link now (the default). False for a share only in the chat
+   * or the Feed: `url` is null, POST /me/live-shares/{id}/link makes it. */
+  link?: boolean;
+  /** Default "none". */
+  audience_feed?: LiveAudience;
+  /** The heart rate to the viewers in the app; default false. The link
+   * always shows it. */
+  heart_visible?: boolean;
 }
 
-/** 201: the new link. `url` carries the token, never given again. */
+/** 201: the new link. `url` carries the token, never given again. Also the
+ * answer of POST /me/live-shares/{id}/link, which makes a new token (the
+ * old link stops). */
 export interface LiveShareCreated {
   id: string;
   url: string;
   expires_at: string;
+}
+
+/** 201 for a request with `link: false` (TASK-468): `url` is null until
+ * POST /me/live-shares/{id}/link. */
+export interface LiveShareMade extends Omit<LiveShareCreated, "url"> {
+  url: string | null;
+}
+
+/** PATCH /me/live-shares/{id}: what is given changes. 410 once ended. */
+export interface LiveAudienceChange {
+  audience_feed?: LiveAudience | null;
+  heart_visible?: boolean | null;
+}
+
+/** POST /me/live-shares/{id}/send: fixtures/live-share-send-request.json.
+ * The people, by public_id; 1 to LIVE_RECIPIENTS_MAX. */
+export interface LiveShareSend {
+  to: string[];
+}
+
+/** Who may now see the share in the app, and who not: no such account,
+ * oneself, or kept apart by a block (the same answer for all). */
+export interface LiveShareSent {
+  sent: string[];
+  skipped: string[];
 }
 
 /** A fix, exact as the phone took it. */
@@ -81,15 +124,21 @@ export interface LiveUpdate {
   state: LiveState;
 }
 
-/** The answer to an update. */
+/** The answer to an update, and to PATCH. */
 export interface LiveShare {
   id: string;
   status: LiveStatus;
   expires_at: string;
+  /** TASK-468: absent from a server of before. */
+  link?: boolean;
+  audience_feed?: LiveAudience;
+  heart_visible?: boolean;
 }
 
 /** GET /live?t=<token>&after=<seq>, without the API key:
- * fixtures/live-view.json. For a link stopped, expired or never made, only
+ * fixtures/live-view.json. The same from GET /live-shares/{id}?after=<seq>
+ * with the account's token (TASK-468): 404 to whoever may not see it, and
+ * `stats.heart_bpm` null unless the owner turned `heart_visible` on. For a link stopped, expired or never made, only
  * `status`. `points` are [lat, lon, epoch seconds]. */
 export interface LiveView {
   status: LiveStatus;
@@ -106,3 +155,10 @@ export interface LiveView {
   /** More points than one answer holds: ask again at once. */
   more: boolean;
 }
+
+// The planned lives (TASK-468 part A2a): exported from here, so index.ts
+// stays as it is.
+export * from "./plannedLive.ts";
+
+// A live share in a private message (TASK-468 part A1b).
+export * from "./messageLive.ts";

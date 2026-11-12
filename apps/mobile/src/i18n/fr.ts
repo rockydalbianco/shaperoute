@@ -69,7 +69,6 @@ export const FR: Table = {
   // «Keep it» answers two questions (a run, Strava): a word that fits both.
   "Keep it": "Annuler",
   "Delete run": "Supprimer la course",
-  "Delete the run of {when}": "Supprimer la course du {when}",
   Delete: "Supprimer",
   // A run the API will not take (TASK-257).
   "The server could not take this run: {message}":
@@ -86,6 +85,7 @@ export const FR: Table = {
     "Jaune : le parcours. Blanc : ce que tu as couru.",
   "White: what you ran.": "Blanc : ce que tu as couru.",
   "Back to the list": "Retour à la liste",
+  "Edit post": "Modifier la publication",
 
   // src/activities/activitiesDoor.ts
   "Sign up or log in to keep your runs and share them as drawings.":
@@ -637,8 +637,8 @@ export const FR: Table = {
     "Ce contour ne tient pas sur les routes ici. Essaie une autre distance, un autre départ ou une photo plus simple.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Cette forme ne tient pas sur les routes ici. Essaie une autre forme ou un autre départ :",
-  "Map data for this area could not be downloaded. Try again later.":
-    "La carte de cette zone n'a pas pu être téléchargée. Réessaie plus tard.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "Le service de cartes est occupé et cette zone n'a pas pu être chargée. Réessaie dans quelques minutes.",
   "The route engine cannot find one clear outline in this picture.":
     "Aucun contour net n'a été trouvé dans cette photo.",
   "Only PNG and JPEG pictures work. Choose another one.":
@@ -949,6 +949,10 @@ export const FR: Table = {
   "Show more comments": "Afficher plus de commentaires",
   "{name}, {ago}: {text}": "{name}, {ago} : {text}",
   "Touch and hold to delete.": "Maintiens appuyé pour supprimer.",
+  Reply: "Répondre",
+  "Replying to {name}": "Réponse à {name}",
+  "View {count} more reply": "Voir {count} autre réponse",
+  "View {count} more replies": "Voir {count} autres réponses",
 
   // src/social/DrawingReactions.tsx
   React: "Réagir",
@@ -979,6 +983,8 @@ export const FR: Table = {
   "Write a comment to send your super like":
     "Écris un commentaire pour envoyer ton super like",
   Send: "Envoyer",
+  "A super like comes with a comment. Everyone who sees the post can read it.":
+    "Un super like s'accompagne d'un commentaire. Tous ceux qui voient la publication peuvent le lire.",
 
   // src/social/reactionKinds.ts
   "MuW heart, super like": "Cœur MuW, super like",
@@ -1114,6 +1120,8 @@ export const FR: Table = {
   Pause: "Pause",
   Music: "Musique",
   "Opens Spotify": "Ouvre Spotify",
+  "Show the numbers": "Afficher les chiffres",
+  "Hide the numbers": "Masquer les chiffres",
   Compass: "Boussole",
   Map: "Carte",
   Data: "Données",
@@ -1185,6 +1193,12 @@ export const FR: Table = {
   Roller: "Roller",
   "Watch for traffic and steep descents: check the route before you set off.":
     "Attention à la circulation et aux descentes raides : vérifie le parcours avant de partir.",
+  // src/sports/wheelchair.ts, settings/sport.ts (TASK-414 part B), approved on
+  // 2026-11-08 (the user's choice 6)
+  "Wheelchair & stroller": "Fauteuil et poussette",
+  "Go without a route": "Partir sans parcours",
+  "Map data can miss kerbs, steps and steep slopes: check the route before you set off.":
+    "Les données de la carte peuvent oublier des bordures, des marches et des pentes raides : vérifie le parcours avant de partir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Ski",
   "Cross-country ski": "Ski de fond",
@@ -1536,6 +1550,10 @@ export const FR: Table = {
   "{sport}, coming soon": "{sport}, bientôt disponible",
   "Sport, {sport}": "Sport, {sport}",
   "Changes the sport": "Change le sport",
+  // The families of the sport panel: src/settings/sportFamilies.ts
+  "On foot": "À pied",
+  "On wheels": "Sur roues",
+  "Other@@sport": "Autres",
   Sport: "Sport",
   Default: "Par défaut",
   "Voice language and voice: {language}, {voice}":
@@ -1593,8 +1611,8 @@ export const FR: Table = {
   "You have not blocked anyone.": "Tu n'as bloqué personne.",
   Unblock: "Débloquer",
   "Unblock {name}": "Débloquer {name}",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Tu as bloqué {user}. Tu peux le débloquer dans Personnes bloquées de ton profil.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Tu as bloqué {user}. Tu peux le débloquer dans Personnes bloquées, dans Réglages.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
@@ -2603,4 +2621,69 @@ export const FR: Table = {
   "Last 12 months": "12 derniers mois",
   "{count} activity": "{count} activité",
   "{count} activities": "{count} activités",
+
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Enregistrer le vol",
+  "Before you fly": "Avant de voler",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW n'est pas un instrument de vol : il enregistre votre vol et le partage. Volez avec votre propre instrument, votre licence et votre jugement.",
+  "Got it": "Compris",
+  Vario: "Vario",
+  "Flight time": "Temps de vol",
+  "Your flight": "Votre vol",
+  "No shapes in the air yet: MuW records your flight.":
+    "Pas encore de formes en vol : MuW enregistre votre vol.",
+  "White: where you flew.": "Blanc : là où vous avez volé.",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Ton premier dessin",
+  "Start from a route that already draws a shape near you.":
+    "Pars d'un parcours qui dessine déjà une forme près de toi.",
+  "Find a route near you": "Trouver un parcours près de toi",
+  "Record a run with MuW and publish its drawing.":
+    "Enregistre une course avec MuW et publie son dessin.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Publie 10 dessins de courses enregistrées avec MuW.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Publie le dessin d'une course d'au moins {distance}.",
+  // «Sleep last night» in a post (TASK-467 part B2): src/health/sleepText.ts,
+  // SleepRunEnd.tsx, SleepCard.tsx
+  "Sleep last night": "Sommeil de la nuit dernière",
+  "Shown in this post. Turn it off to keep it to yourself.":
+    "Visible dans cette publication. Désactive-le pour le garder pour toi.",
+  "Sleep score": "Score de sommeil",
+  "Poor@@sleep": "Faible",
+  "Fair@@sleep": "Passable",
+  "Good@@sleep": "Bon",
+  "Very good@@sleep": "Très bon",
+  "Excellent@@sleep": "Excellent",
+  "Awake@@sleep": "Éveillé",
+  "REM@@sleep": "Paradoxal",
+  "Light@@sleep": "Léger",
+  "Deep@@sleep": "Profond",
+  "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
+    "Calculé par MuW à partir des données d'Apple Santé. Il peut différer du score de l'app Santé.",
+  // TASK-305 part R5b: under «Record your flight» (approved 2026-11-12).
+  "Your flights": "Vos vols",
+  "{count} flight · {time}": "{count} vol · {time}",
+  "{count} flights · {time}": "{count} vols · {time}",
+  "No flights this month": "Aucun vol ce mois-ci",
+  "Your best flights": "Vos records de vol",
+  "Longest flight": "Vol le plus long",
+  "Farthest flight": "Vol le plus lointain",
+  "Ready to fly": "Prêt à décoller",
+  "Waiting for GPS…": "En attente du GPS…",
+  "GPS ready · ±{m} m": "GPS prêt · ±{m} m",
+  "Weak GPS · ±{m} m: wait in the open": "GPS faible · ±{m} m : attendez à découvert",
+  "Share live at start": "Partager en direct au départ",
+  "When the countdown ends, MuW makes the link and opens the share sheet.":
+    "À la fin du compte à rebours, MuW crée le lien et ouvre le partage.",
+  // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
+  // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
+  "Poster and video": "Affiche et vidéo",
+  "Only people who follow {user} can open it.":
+    "Seules les personnes qui suivent {user} peuvent l'ouvrir.",
+  "by {user}": "de {user}",
+  "This post is no longer available.": "Cette publication n'est plus disponible.",
+  "🗺️ Post": "🗺️ Publication",
 };

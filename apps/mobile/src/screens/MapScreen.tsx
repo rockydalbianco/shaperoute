@@ -6,6 +6,7 @@ import { t } from "../i18n";
 import { mapCover, MapCoverContext } from "../map/mapCover";
 import { MapKindButton } from "../map/MapKindButton";
 import { color, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
 import { MapError } from "./ChooseScreen";
 
 type Props = {
@@ -49,6 +50,9 @@ export function MapScreen({
   // the menu of the map's kind opening does not frame the map again.
   const bannerHeight = hasBanner ? (rowHeight ?? MIN_TAP_SIZE) : null;
   const hasCompass = compass !== undefined && compass !== null;
+  // Android's «back» is the «←», where there is one: not during a run,
+  // whose banner takes its place.
+  useBackCloses(active && !hasBanner, onBack);
   const cover = useMemo(
     () =>
       active

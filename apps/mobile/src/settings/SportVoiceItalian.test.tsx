@@ -73,7 +73,8 @@ test("«Sport» in «Settings» speaks Italian", async () => {
   expect(screen.getByRole("radio", { name: "Corsa" })).toBeChecked();
   expect(screen.getByRole("radio", { name: "Bici" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Pagaia" })).not.toBeChecked();
-  expect(screen.getByLabelText("Parapendio, in arrivo")).toBeOnTheScreen();
+  // A flight is chosen like the others since TASK-305 R2.
+  expect(screen.getByRole("radio", { name: "Parapendio" })).not.toBeChecked();
   expect(screen.queryByText("Run")).toBeNull();
 });
 
@@ -83,8 +84,9 @@ test("a sport not ready says «Soon» in Italian", async () => {
   // Bici, Pagaia, Nuoto (TASK-323 C, TASK-400), Camminata (TASK-371),
   // Escursione (TASK-377), Gravel e MTB (TASK-378), Roller (TASK-380), Sci e
   // Sci di fondo (TASK-375), Scialpinismo (TASK-415 B), Palestra (TASK-385
-  // B) and Parapendio (TASK-305 D0).
-  expect(screen.getAllByText("In arrivo")).toHaveLength(13);
+  // B), Parapendio (TASK-305 R2) e Carrozzina e passeggino (TASK-414 B).
+  expect(screen.getAllByText("In arrivo")).toHaveLength(14);
+  expect(screen.getByLabelText("Carrozzina e passeggino, in arrivo")).toBeOnTheScreen();
   expect(screen.getByLabelText("Roller, in arrivo")).toBeOnTheScreen();
   expect(screen.getByLabelText("MTB, in arrivo")).toBeOnTheScreen();
   expect(screen.getByLabelText("Escursione, in arrivo")).toBeOnTheScreen();

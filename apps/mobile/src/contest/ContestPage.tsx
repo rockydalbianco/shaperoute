@@ -7,6 +7,7 @@ import type {
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Pressable,
   StyleSheet,
@@ -24,6 +25,8 @@ import { useLanguage } from "../i18n/useLanguage";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { useFollowsDoor } from "../social/followsDoor";
 import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
+import { useEdgeBack } from "../ui/EdgeBack";
 import { fetchPastContests, themedOf, themeText } from "./contestApi";
 import { closeContestPage, useAskedContest } from "./contestDoor";
 import { GalleryEntry, GalleryOrder, useContestGallery } from "./ContestGallery";
@@ -89,6 +92,10 @@ export function ContestPage({
   const [lookedFor, setLookedFor] = useState(false);
   const [rules, setRules] = useState(false);
   const [archive, setArchive] = useState(false);
+  // Android's «back» is the «←»: from the archive back to the contest;
+  // hidden behind a drawing opened from it, the drawing's.
+  useBackCloses(!hidden, archive ? () => setArchive(false) : onBack);
+  const edge = useEdgeBack(archive ? () => setArchive(false) : onBack, !hidden);
   const gallery = useContestGallery(contestId, { fetchFn, key: apiKey });
 
   useEffect(() => {
@@ -140,7 +147,16 @@ export function ContestPage({
   );
 
   return (
-    <View style={[StyleSheet.absoluteFill, styles.screen, hidden && styles.hidden]}>
+    <Animated.View
+      style={[
+        StyleSheet.absoluteFill,
+        styles.screen,
+        hidden && styles.hidden,
+        edge.style,
+      ]}
+      {...edge.handlers}
+    >
+      {edge.shade}
       {/* Hidden, a page draws no map: it would hold up every picture. */}
       {!hidden && <FeedMapShooter width={width} height={drawingHeight(width)} />}
       {archive ? (
@@ -265,7 +281,7 @@ export function ContestPage({
           ListFooterComponent={<PastButton onPress={() => setArchive(true)} />}
         />
       )}
-    </View>
+    </Animated.View>
   );
 }
 

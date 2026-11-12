@@ -21,6 +21,7 @@ from shaperoute_api.sports import (
     snowshoeing,
     swimming,
     walking,
+    wheelchair,
     xc_skiing,
 )
 from shaperoute_api.sports.base import ApiSport
@@ -34,6 +35,7 @@ API_SPORTS: tuple[ApiSport, ...] = (
     mountain_biking.SPORT,
     inline_skating.SPORT,
     snowshoeing.SPORT,
+    wheelchair.SPORT,
     walking.SPORT,
     gravel_biking.SPORT,
     skiing.SPORT,

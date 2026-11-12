@@ -46,6 +46,7 @@ import {
 import { DistanceDial } from "./DistanceDial";
 import { ImageChoice } from "./ImageChoice";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
+import { NoteRow } from "./NoteRow";
 import { penUpHint } from "./penUpHint";
 import { offersPenUp } from "./penUpShapes";
 import type { ImageSource } from "./pickImage";
@@ -968,7 +969,7 @@ function BetterDistance({
   onTry: () => void;
 }) {
   return (
-    <View style={[styles.noteRow, styles.info, styles.problemBox]}>
+    <View style={[styles.noteRow, styles.problemBox]}>
       <Text style={styles.noteText}>{text}</Text>
       <Pressable
         style={[styles.secondary, styles.choice]}
@@ -977,20 +978,6 @@ function BetterDistance({
       >
         <Text style={styles.secondaryText}>{tryLabel}</Text>
       </Pressable>
-    </View>
-  );
-}
-
-/**
- * A warning of the engine in plain words (warnings.ts), with a stripe that says
- * whether to watch for it (warning) or just to know it.
- */
-function NoteRow({ note }: { note: Note }) {
-  return (
-    <View
-      style={[styles.noteRow, note.tone === "caution" ? styles.caution : styles.info]}
-    >
-      <Text style={styles.noteText}>{note.text}</Text>
     </View>
   );
 }
@@ -1163,19 +1150,12 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.body,
   },
+  // A box as a note's (NoteRow), with a button under its words.
   noteRow: {
     paddingVertical: space.sm,
     paddingHorizontal: space.md,
-    borderLeftWidth: 3,
     borderRadius: radius.sm,
     backgroundColor: color.surfaceRaised,
-  },
-  // Not yellow: that means "route", and a warning is something else.
-  caution: {
-    borderLeftColor: color.warning,
-  },
-  info: {
-    borderLeftColor: color.borderStrong,
   },
   noteText: {
     color: color.text,

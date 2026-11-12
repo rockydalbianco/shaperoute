@@ -1,4 +1,4 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { Activity, LatLon } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
@@ -23,6 +23,7 @@ import { distanceLabel, nearDistanceLabel, wholeDistanceLabel } from "../units/f
 import { type Units, appUnits } from "../units/units";
 import { useUnits } from "../units/useUnits";
 import {
+  activityParam,
   cityName,
   fetchRecommended,
   NEAR_RADIUS_M,
@@ -87,6 +88,9 @@ type Props = {
   /** An example of «Feed» found by the search at the top (TASK-367 part B);
    * left out, its route opens as a route of «Explore». */
   onOpenExample?: (post: SamplePost) => void;
+  /** Whose drawings the page lists (TASK-441): a ride's for the bike, a
+   * run's when left out. */
+  activity?: Activity;
 };
 
 const NO_ROUTES: RecommendedRoute[] = [];
@@ -132,6 +136,7 @@ export function ExploreScreen({
   onAsk,
   onIdea,
   onOpenExample,
+  activity = "running",
 }: Props) {
   // A city searched for takes the place of the start (TASK-129).
   const near = city?.point ?? start;
@@ -153,9 +158,9 @@ export function ExploreScreen({
   const key =
     apiUrl === null || lat === undefined || lon === undefined
       ? null
-      : `${apiUrl} ${lat},${lon}`;
+      : `${apiUrl} ${lat},${lon}${activityParam(activity)}`;
   // The list fetched as the app opened (TASK-306), read once a start: it is
-  // not asked again.
+  // not asked again. It is a run's: a ride's has another key, and is asked.
   const ahead = useMemo(() => (key === null ? undefined : listAhead(key)), [key]);
 
   useEffect(() => {
@@ -169,21 +174,22 @@ export function ExploreScreen({
       return;
     }
     const controller = new AbortController();
-    void fetchRecommended(apiUrl, [lat, lon], { signal: controller.signal }).then(
-      (outcome) => {
-        if (!controller.signal.aborted) {
-          setAnswer({
-            key,
-            list:
-              outcome.kind === "routes"
-                ? { status: "done", routes: outcome.routes }
-                : { status: "failed" },
-          });
-        }
-      },
-    );
+    void fetchRecommended(apiUrl, [lat, lon], {
+      signal: controller.signal,
+      activity,
+    }).then((outcome) => {
+      if (!controller.signal.aborted) {
+        setAnswer({
+          key,
+          list:
+            outcome.kind === "routes"
+              ? { status: "done", routes: outcome.routes }
+              : { status: "failed" },
+        });
+      }
+    });
     return () => controller.abort();
-  }, [key, apiUrl, lat, lon, ahead]);
+  }, [key, apiUrl, lat, lon, ahead, activity]);
 
   const list: ListState =
     key === null
@@ -196,7 +202,7 @@ export function ExploreScreen({
   const routes = list.status === "done" ? list.routes : NO_ROUTES;
   // Every drawing of the catalog, city by city from the nearest (TASK-420,
   // the user's choice of 2026-11-10), under the ones near the start.
-  const catalog = useCatalog(apiUrl, near);
+  const catalog = useCatalog(apiUrl, near, { activity });
   const farRowsOfPage = useMemo(() => {
     const shownNear = new Set(routes.map((route) => route.id));
     return farRows(groupByCity(catalog.routes, shownNear));

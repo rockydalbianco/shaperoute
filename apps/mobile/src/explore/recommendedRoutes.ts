@@ -111,14 +111,33 @@ export type ListOutcome =
 export type DetailOutcome =
   { kind: "route"; route: RecommendedRouteDetail } | { kind: "failed" };
 
-type Options = { fetchFn?: typeof fetch; key?: string | null; signal?: AbortSignal };
+type Options = {
+  fetchFn?: typeof fetch;
+  key?: string | null;
+  signal?: AbortSignal;
+  /** Whose drawings: a run's when left out. */
+  activity?: Activity;
+};
+
+/**
+ * What a list is asked with for the drawings of `activity` (TASK-441): a
+ * run's are asked as ever, with nothing, and an API that does not know the
+ * word answers with those.
+ */
+export function activityParam(activity: Activity = "running"): string {
+  return activity === "running" ? "" : `&activity=${encodeURIComponent(activity)}`;
+}
 
 export function recommendedUrl(
   baseUrl: string,
   near: LatLon,
   radiusM: number = NEAR_RADIUS_M,
+  activity: Activity = "running",
 ): string {
-  return `${baseUrl}/recommended-routes?${nearParams(near)}&radius_m=${radiusM}`;
+  return (
+    `${baseUrl}/recommended-routes?${nearParams(near)}&radius_m=${radiusM}` +
+    activityParam(activity)
+  );
 }
 
 /**
@@ -139,13 +158,13 @@ export function measuredFrom(
 export async function fetchRecommended(
   baseUrl: string,
   near: LatLon,
-  { fetchFn = fetch, key = apiKey(), signal }: Options = {},
+  { fetchFn = fetch, key = apiKey(), signal, activity }: Options = {},
 ): Promise<ListOutcome> {
   try {
-    const response = await fetchFn(recommendedUrl(baseUrl, near), {
-      headers: keyHeaders(key),
-      signal,
-    });
+    const response = await fetchFn(
+      recommendedUrl(baseUrl, near, NEAR_RADIUS_M, activity),
+      { headers: keyHeaders(key), signal },
+    );
     const body: unknown = await response.json();
     return response.ok && isRecommendedList(body)
       ? { kind: "routes", routes: measuredFrom(near, body.routes) }

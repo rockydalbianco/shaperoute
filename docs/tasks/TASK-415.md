@@ -270,3 +270,11 @@ toccano; «Pelli tolte» o «Pelli messe» dalla svolta più vicina (entro
 10 minuti), altrimenti dalla fase in corso. Stanno in
 `skin-changes.json` sul telefono, legati alla gita dall'ora del primo
 punto; niente server (il post è la B2). Nessun testo nuovo.
+
+La parte B3 è approvata dal Coordinatore il 2026-11-12. La prova vera è
+quella sulla neve, quest'inverno: l'utente la fa con la parte E. Il
+simulatore non può provare lo spostamento di 30 m che chiude da solo un
+cambio, né il GPS fermo durante un cambio vero: lo copre un test
+(`SkiTourFinishCard.test.tsx`, «ends by itself once the tour moves on»).
+Le impronte le misura il Coordinatore sul commit di `main` prima
+dell'OTA: il diff è solo in `apps/mobile/src/`.

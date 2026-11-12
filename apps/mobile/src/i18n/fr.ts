@@ -2587,4 +2587,21 @@ export const FR: Table = {
   "No shapes in the air yet: MuW records your flight.":
     "Pas encore de formes en vol : MuW enregistre votre vol.",
   "White: where you flew.": "Blanc : là où vous avez volé.",
+  // «Sleep last night» in a post (TASK-467 part B2): src/health/sleepText.ts,
+  // SleepRunEnd.tsx, SleepCard.tsx
+  "Sleep last night": "Sommeil de la nuit dernière",
+  "Shown in this post. Turn it off to keep it to yourself.":
+    "Visible dans cette publication. Désactive-le pour le garder pour toi.",
+  "Sleep score": "Score de sommeil",
+  "Poor@@sleep": "Faible",
+  "Fair@@sleep": "Passable",
+  "Good@@sleep": "Bon",
+  "Very good@@sleep": "Très bon",
+  "Excellent@@sleep": "Excellent",
+  "Awake@@sleep": "Éveillé",
+  "REM@@sleep": "Paradoxal",
+  "Light@@sleep": "Léger",
+  "Deep@@sleep": "Profond",
+  "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
+    "Calculé par MuW à partir des données d'Apple Santé. Il peut différer du score de l'app Santé.",
 };

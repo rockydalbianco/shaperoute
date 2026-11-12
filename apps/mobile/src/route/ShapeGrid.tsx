@@ -141,7 +141,10 @@ const styles = StyleSheet.create({
     backgroundColor: color.surfaceRaised,
   },
   // textMuted, not textFaint: the names are read, not hinted (WCAG AA).
+  // As wide as its tile, not as its own first measure: in a row of four
+  // «luna» came out «lu…» (TASK-414).
   name: {
+    alignSelf: "stretch",
     color: color.textMuted,
     fontSize: fontSize.small,
     textAlign: "center",

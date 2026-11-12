@@ -1322,6 +1322,32 @@ dato dal Coordinatore):
   disegno, per il `SET NULL` quando si cancella. Test in
   `test_message_posts.py`.
 
+Migrazione `0077_message_live.sql` (TASK-468 parte A1b, ADR-0381, `API.md`
+«Una live in un messaggio»; il numero è del Coordinatore):
+
+- `messages.attachment` accetta anche `live` (`messages_attachment_check`
+  rifatto con tutti i tipi: `photo`, `video`, `drawing`, `post`, `live`).
+- `messages.live_share_id` (`uuid`), **senza chiave esterna**: le copie
+  notturne tengono `messages` e lasciano fuori i dati di `live_shares`
+  (`deploy/backup.sh`), e una chiave dall'una all'altra ne romperebbe il
+  ripristino. Quando la riga della live va via (un giorno dopo la fine)
+  l'id non rimanda più a niente: la scheda è `null`, «Live ended».
+  `messages_live_check`: un `live_share_id` solo con `attachment =
+  'live'`. Test in `test_message_lives.py`.
+
+Migrazione `0078_post_links.sql` (TASK-455 parte C, ADR-0382, `API.md`
+«Post links»; numero provvisorio del Coordinatore, quello vero è il primo
+libero al merge):
+
+- `users.post_links` (`boolean NOT NULL DEFAULT true`): «Links to my
+  posts». Acceso all'inizio anche per gli account di prima (scelta
+  dell'utente del 2026-11-12, detta nella privacy). Finché è vero, i
+  disegni `everyone` dell'account si aprono dal loro link senza account
+  (`post_links.py`); falso, nessuno. Nessuna tabella dei link: il link è
+  l'id del disegno, e chi lo può aprire si chiede a ogni richiesta
+  (`drawings.LINKABLE_SQL`). Nessuna riga di prima cambia. Test in
+  `test_post_links.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

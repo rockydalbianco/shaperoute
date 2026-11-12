@@ -14,7 +14,9 @@ test("a walk is offered since «Walk» is ready, and not while it is «Soon»", 
   expect(ALL_SPORTS.find((sport) => sport.id === "walk")?.ready).toBe(true);
   expect(activityOffered("walking")).toBe(true);
   // And the hike since «Hike» is ready (TASK-377), gravel and MTB since
-  // «Gravel» and «MTB» are (TASK-378), the skate since «Roller» is (TASK-380).
+  // «Gravel» and «MTB» are (TASK-378), the skate since «Roller» is (TASK-380),
+  // a wheelchair since «Wheelchair & stroller» is (TASK-414 B), snowshoes
+  // since «Snowshoes» is (TASK-413).
   expect(SEARCH_ACTIVITIES).toEqual([
     "running",
     "cycling",
@@ -23,6 +25,8 @@ test("a walk is offered since «Walk» is ready, and not while it is «Soon»", 
     "hiking",
     "mountain_biking",
     "inline_skating",
+    "snowshoeing",
+    "wheelchair",
     "walking",
     "gravel_biking",
   ]);

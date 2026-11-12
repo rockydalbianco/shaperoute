@@ -30,18 +30,25 @@ test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191), «Swim» (T
   // And «Gym» (TASK-385 B), on in Expo Go and preview, «Hike» (TASK-377),
   // «Gravel» and «MTB» (TASK-378), «Walk» (TASK-371), «Ski touring»
   // (TASK-415 B).
-  // And «Paragliding» (TASK-305 R2), and «Cross-country ski» (TASK-375).
-  expect(screen.getAllByRole("radio")).toHaveLength(14);
+  // And «Paragliding» (TASK-305 R2), «Cross-country ski» (TASK-375) and
+  // «Wheelchair & stroller» (TASK-414 B).
+  // And «Snowshoes» (TASK-413).
+  expect(screen.getAllByRole("radio")).toHaveLength(16);
   expect(screen.getByRole("radio", { name: "Walk" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Hike" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Gravel" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "MTB" })).not.toBeChecked();
   // And «Roller» (TASK-380).
   expect(screen.getByRole("radio", { name: "Roller" })).not.toBeChecked();
-  // «Cross-country ski» (TASK-375) is on too; only «Wheelchair & stroller»
-  // (TASK-414 B, until the server has part A) says «Soon».
+  // «Cross-country ski» (TASK-375), «Wheelchair & stroller» (TASK-414 B) and
+  // «Snowshoes» (TASK-413) are on too: only «Mountaineering» (TASK-463 B)
+  // says «Soon», until it is turned on.
   expect(screen.getAllByText("Soon")).toHaveLength(1);
-  expect(screen.getByLabelText("Wheelchair & stroller, coming soon")).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Snowshoes" })).not.toBeChecked();
+  expect(screen.getByLabelText("Mountaineering, coming soon")).toBeOnTheScreen();
+  expect(
+    screen.getByRole("radio", { name: "Wheelchair & stroller" }),
+  ).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Cross-country ski" })).not.toBeChecked();
   expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
 });
@@ -71,8 +78,9 @@ test("a sport not ready says «Soon» and takes no tap", async () => {
   // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
   // (TASK-377), Gravel and MTB (TASK-378), Roller (TASK-380), Ski and
   // Cross-country ski (TASK-375), Ski touring (TASK-415 B), Gym (TASK-385 B)
-  // Paragliding (TASK-305 R2) and Wheelchair & stroller (TASK-414 B).
-  expect(screen.getAllByText("Soon")).toHaveLength(14);
+  // Paragliding (TASK-305 R2), Wheelchair & stroller (TASK-414 B) and
+  // Snowshoes (TASK-413 B), Mountaineering (TASK-463 B).
+  expect(screen.getAllByText("Soon")).toHaveLength(16);
 });
 
 test("a sport that is ready is chosen with a tap, and kept", async () => {

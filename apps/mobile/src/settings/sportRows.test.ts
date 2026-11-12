@@ -20,9 +20,9 @@ it("shows the rows of before, in their order", () => {
     { id: "mtb", emoji: "🚵", name: "MTB", ready: true },
     // The skate (TASK-380 part B), on since the server has part A.
     { id: "roller", emoji: "🛼", name: "Roller", ready: true },
-    // A wheelchair or a stroller (TASK-414 part B), «Soon» until the server
-    // has part A and its migration 0071.
-    { id: "wheelchair", emoji: "♿", name: "Wheelchair & stroller", ready: false },
+    // A wheelchair or a stroller (TASK-414 part B), on since the server has
+    // part A and its migration 0071.
+    { id: "wheelchair", emoji: "♿", name: "Wheelchair & stroller", ready: true },
     { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
     { id: "swim", emoji: "🏊", name: "Swim", ready: true },
     { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },
@@ -35,6 +35,16 @@ it("shows the rows of before, in their order", () => {
     },
     // Ski touring (TASK-415 part B), on with its phases and its VAM.
     { id: "skimo", emoji: "🏔️", name: "Ski touring", ready: true, recordOnly: true },
+    // Snowshoes (TASK-413 parts B and C), on since the server has #1266.
+    { id: "snowshoe", emoji: "❄️", name: "Snowshoes", ready: true },
+    // A day of mountaineering (TASK-463 part B), «Soon» until it is turned on.
+    {
+      id: "alpinism",
+      emoji: "🧗",
+      name: "Mountaineering",
+      ready: false,
+      recordOnly: true,
+    },
     { id: "gym", emoji: "🏋️", name: "Gym", ready: true },
     // Paragliding (TASK-305 part R2), on with the numbers of the flight.
     {
@@ -48,7 +58,7 @@ it("shows the rows of before, in their order", () => {
   // Only the rows that say it carry «Record only».
   expect(
     ALL_SPORTS.filter((option) => "recordOnly" in option).map((o) => o.id),
-  ).toEqual(["ski", "xc_ski", "skimo", "paragliding"]);
+  ).toEqual(["ski", "xc_ski", "skimo", "alpinism", "paragliding"]);
 });
 
 it("asks and saves the activities of before", () => {
@@ -67,6 +77,8 @@ it("asks and saves the activities of before", () => {
     "running",
     "running",
     "running",
+    "snowshoeing",
+    "running",
     "running",
     "running",
   ]);
@@ -84,6 +96,8 @@ it("asks and saves the activities of before", () => {
     "skiing",
     "xc_skiing",
     "ski_touring",
+    "snowshoeing",
+    "alpinism",
     "gym",
     "paragliding",
   ]);

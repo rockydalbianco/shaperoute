@@ -134,6 +134,18 @@ export const GUIDES_FR: Guides = {
     "Remonte jusqu'à ce que ton corps soit bien aligné.",
     "Ne te cambre pas au-delà de la ligne droite.",
   ],
+  superman: [
+    "Allongé sur le ventre, bras tendus devant.",
+    "Soulève ensemble les bras, la poitrine et les jambes.",
+    "Tiens un instant, puis redescends doucement.",
+    "Regard vers le sol, nuque allongée.",
+  ],
+  bodyweight_squat: [
+    "Pieds écartés à la largeur des épaules, bras devant.",
+    "Descends le bassin en arrière jusqu'à avoir les cuisses parallèles au sol.",
+    "Pousse sur les talons et remonte.",
+    "Genoux dans l'axe des pointes de pieds.",
+  ],
   back_squat: [
     "Barre sur le haut du dos, pieds à la largeur des épaules.",
     "Assieds-toi en arrière et descends jusqu'à avoir les cuisses parallèles au sol.",
@@ -205,6 +217,12 @@ export const GUIDES_FR: Guides = {
     "Monte les hanches jusqu'à avoir le corps à plat des genoux aux épaules.",
     "Redescends lentement.",
     "Pousse sur les talons, menton rentré.",
+  ],
+  glute_bridge: [
+    "Allongé sur le dos, genoux pliés, pieds au sol.",
+    "Pousse sur les talons et soulève le bassin.",
+    "Serre les fessiers en haut, puis redescends doucement.",
+    "Ne cambre pas le dos.",
   ],
   glute_machine: [
     "Place-toi debout ou à genoux sur la machine, mains sur les poignées.",
@@ -421,6 +439,12 @@ export const GUIDES_FR: Guides = {
     "Glisse vers le bas jusqu'à avoir les genoux à 90°.",
     "Tiens la position et respire.",
     "Garde les genoux au-dessus des chevilles.",
+  ],
+  mountain_climber: [
+    "En position de pompe, bras tendus.",
+    "Ramène un genou vers la poitrine.",
+    "Change de jambe vite, comme si tu courais.",
+    "Bassin bas, épaules au-dessus des mains.",
   ],
   power_clean: [
     "Pars comme pour un soulevé de terre, barre au-dessus des pieds.",

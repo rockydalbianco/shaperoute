@@ -1,0 +1,29 @@
+/*
+ * The page of a post's link (TASK-455). Over ../styles.css and
+ * ../live/live.css: the map, its colours and the title are the live page's,
+ * so the two pages of the site that draw a line look the same.
+ */
+.post__by {
+  margin: 0 0 4px;
+  color: var(--text);
+  font-size: 1.15rem;
+}
+
+/* Without a title, who drew it is what the page is called. */
+.post__by--title {
+  margin: 8px 0 6px;
+  font-size: clamp(1.7rem, 5vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+/* The drawing is gone: the words alone, as the live page's ended link. */
+.post__by--gone {
+  margin-top: 8px;
+  font-size: 1.15rem;
+}
+
+.post__get {
+  display: flex;
+  justify-content: flex-start;
+}

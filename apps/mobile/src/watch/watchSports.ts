@@ -48,7 +48,11 @@ const INDOORS: ReadonlySet<RunActivity> = new Set<RunActivity>(["gym"]);
  * paragliding flight is on since TASK-305 part R4, for its live heart rate:
  * Apple's `.other` (3000), the watch's usual numbers; the altitude and the
  * vario stay on the phone. */
-const NOT_ON_WATCH: ReadonlySet<RunActivity> = new Set<RunActivity>(["swimming"]);
+const NOT_ON_WATCH: ReadonlySet<RunActivity> = new Set<RunActivity>([
+  "swimming",
+  // A day of mountaineering, until a watch build knows it (TASK-463).
+  "alpinism",
+]);
 
 export function watchSportOf(profile: SportProfile): WatchSport {
   return {

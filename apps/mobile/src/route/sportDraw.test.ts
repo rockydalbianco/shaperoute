@@ -5,7 +5,7 @@
  */
 import { ACTIVITIES, SHAPES } from "@shaperoute/shared-types";
 
-import { drawKindOf, shapeOfSport } from "./sportDraw";
+import { drawKindOf, drawsByHand, figuresOf, shapeOfSport } from "./sportDraw";
 
 test("on the water and swimming, as before the profiles said it", () => {
   for (const kind of ["shape", "word", "image"] as const) {
@@ -38,4 +38,41 @@ test("every other sport asks every shape of the catalogue", () => {
       expect(shapeOfSport(shape, activity)).toBe(shape);
     }
   }
+});
+
+test("under a wheelchair route: its four shapes, no picture, no drawing by hand", () => {
+  expect(figuresOf("wheelchair")).toEqual({
+    shapes: ["circle", "heart", "star", "moon"],
+    pictures: false,
+    editDrawing: false,
+  });
+});
+
+test("under the other routes as before: every shape, pictures but on the water", () => {
+  expect(figuresOf("running")).toEqual({
+    shapes: SHAPES,
+    pictures: true,
+    editDrawing: true,
+  });
+  expect(figuresOf("paddling")).toEqual({
+    shapes: SHAPES,
+    pictures: false,
+    editDrawing: true,
+  });
+  expect(figuresOf("swimming").pictures).toBe(true);
+  expect(figuresOf("cycling").editDrawing).toBe(true);
+});
+
+test("under a snowshoe route: every shape, no picture, no drawing by hand (TASK-413)", () => {
+  // The engine places only a shape of the catalogue on the snow, and
+  // refuses a drawing (ON_SNOW_SHAPES_ONLY).
+  expect(figuresOf("snowshoeing")).toEqual({
+    shapes: SHAPES,
+    pictures: false,
+    editDrawing: false,
+  });
+  expect(drawsByHand("snowshoeing")).toBe(false);
+  expect(drawsByHand("paddling")).toBe(true);
+  expect(drawsByHand("running")).toBe(true);
+  expect(drawsByHand("wheelchair")).toBe(false);
 });

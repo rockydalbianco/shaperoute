@@ -1,6 +1,8 @@
 import {
   CONVERSATION_STATES,
   MESSAGE_MAX_LENGTH,
+  READS_MESSAGE_LIVE,
+  READS_MESSAGE_POST,
   WITH_ATTACHMENTS,
   type Conversation,
   type ConversationBox,
@@ -17,6 +19,7 @@ import { accountProblem, SESSION_ENDED } from "../account/messages";
 import { t } from "../i18n";
 import { type AccountOutcome, ask } from "./accounts";
 import { isPerson } from "./people";
+import { readsHeadersWith } from "./reads";
 
 /**
  * Private messages (TASK-319, ADR-0279): the calls of docs/API.md,
@@ -26,12 +29,34 @@ import { isPerson } from "./people";
  * packages/shared-types/fixtures/message*.json and conversations*.json.
  * Every page and message is asked `?with=attachments` (TASK-333): a message
  * carries its photo, video or drawing in `attachment`, and a server of
- * before simply has none.
+ * before simply has none. A message may carry a post instead (TASK-455): a
+ * pointer to a drawing, its card answered only while who asks may open it.
  */
 
 const WITH = `with=${WITH_ATTACHMENTS}`;
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
+
+/**
+ * The pages of the messages and a message sent say that this app shows a
+ * post attached (TASK-455, ADR-0382): `post` in X-MuW-Reads, after the kinds
+ * every call says. Without it the API sends «[Post]» before the text and no
+ * card. Said here and not by every call: only the messages carry one.
+ */
+function readingPosts(options: Options): Options {
+  const fetchFn = options.fetchFn ?? fetch;
+  return {
+    ...options,
+    fetchFn: (input, init) =>
+      fetchFn(input, {
+        ...init,
+        headers: {
+          ...(init?.headers as Record<string, string> | undefined),
+          ...readsHeadersWith(READS_MESSAGE_POST, READS_MESSAGE_LIVE),
+        },
+      }),
+  };
+}
 
 /** The message as the API keeps it: without the spaces around. */
 export function messageOf(text: string): string {
@@ -69,7 +94,7 @@ export function fetchConversations(
     `/me/conversations?box=${box}${query}&${WITH}`,
     { method: "GET", token },
     isConversationsPage,
-    options,
+    readingPosts(options),
   );
 }
 
@@ -105,7 +130,7 @@ export function fetchMessages(
     `${conversationPath(publicId)}/messages?${WITH}${query}`,
     { method: "GET", token },
     isMessagesPage,
-    options,
+    readingPosts(options),
   );
 }
 
@@ -130,7 +155,7 @@ export function sendMessage(
     `${conversationPath(publicId)}/messages?${WITH}`,
     { method: "POST", body, token },
     isMessage,
-    options,
+    readingPosts(options),
   );
 }
 
@@ -167,7 +192,9 @@ export function isMessageDrawing(body: unknown): body is MessageDrawing {
  */
 export function attachableFiles(page: MessagesPage): ("photo" | "video")[] {
   const kinds = page.attachments?.kinds ?? [];
-  return kinds.filter((kind): kind is "photo" | "video" => kind !== "drawing");
+  return kinds.filter(
+    (kind): kind is "photo" | "video" => kind === "photo" || kind === "video",
+  );
 }
 
 /** PUT /conversations/{public_id}/accept: the request taken into «Messages». */

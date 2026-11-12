@@ -65,11 +65,13 @@ test("a store build leaves out the sports not ready, and keeps the order", () =>
     "gravel",
     "mtb",
     "roller",
+    "wheelchair",
     "paddle",
     "swim",
     "ski",
     "xc_ski",
     "skimo",
+    "snowshoe",
     "gym",
     "paragliding",
   ]);
@@ -92,11 +94,13 @@ test("in a store build `SPORTS` has «Paragliding» since TASK-305 R2", () => {
       "gravel",
       "mtb",
       "roller",
+      "wheelchair",
       "paddle",
       "swim",
       "ski",
       "xc_ski",
       "skimo",
+      "snowshoe",
       "gym",
       "paragliding",
     ]);
@@ -108,8 +112,12 @@ test("«Settings» of a store build has no «Soon» row", async () => {
   // Walk (TASK-371), run, the hike (TASK-377), bike, gravel and MTB
   // (TASK-378), the skate (TASK-380), paddle, the swim (TASK-323), the
   // alpine and the cross-country ski (TASK-375), ski touring (TASK-415 B),
-  // the gym (TASK-385 B) and the flight (TASK-305 R2).
-  expect(screen.getAllByRole("radio")).toHaveLength(14);
+  // the gym (TASK-385 B), the flight (TASK-305 R2), the wheelchair
+  // (TASK-414 B) and the snowshoes (TASK-413).
+  expect(screen.getAllByRole("radio")).toHaveLength(16);
+  expect(
+    screen.getByRole("radio", { name: "Wheelchair & stroller" }),
+  ).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Cross-country ski" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Roller" })).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Walk" })).toBeOnTheScreen();
@@ -130,8 +138,8 @@ test("«Settings» of a store build has no «Soon» row", async () => {
 test("the sport menu of «Draw» in a store build has no «Soon» row", async () => {
   await render(<SportButton sports={STORE} />);
   await fireEvent.press(screen.getByRole("button", { name: "Sport, Run" }));
-  // The fourteen of «Settings».
-  expect(screen.getAllByRole("radio")).toHaveLength(14);
+  // The sixteen of «Settings».
+  expect(screen.getAllByRole("radio")).toHaveLength(16);
   expect(screen.queryByText("Soon")).toBeNull();
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
 });

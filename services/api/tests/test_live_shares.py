@@ -606,6 +606,7 @@ def test_sent_to_someone_they_see_it_in_the_app_and_nobody_else(
     wall: WallClock,  # noqa: F811
 ) -> None:
     ada, bob = person(client, "ada"), person(client, "bob")
+    follow(client, bob, ada)
     cleo = person(client, "cleo")
     share = app_share(client, ada)
     assert in_app(client, bob, share).status_code == 404
@@ -623,11 +624,12 @@ def test_sent_to_someone_they_see_it_in_the_app_and_nobody_else(
     assert in_app(client, ada, share).status_code == 200
 
 
-def test_sent_twice_is_sent_once_and_oneself_or_nobody_is_skipped(
+def test_sent_twice_is_two_messages_and_oneself_or_nobody_is_skipped(
     client: TestClient,  # noqa: F811
     database: Database,  # noqa: F811
 ) -> None:
     ada, bob = person(client, "ada"), person(client, "bob")
+    follow(client, bob, ada)
     share = app_share(client, ada)
     nobody = str(uuid4())
     body = {"to": [pid(client, bob), pid(client, bob), pid(client, ada), nobody]}
@@ -638,7 +640,23 @@ def test_sent_twice_is_sent_once_and_oneself_or_nobody_is_skipped(
     assert shared_to(client, ada, share, bob).json()["sent"] == [pid(client, bob)]
     with database.connect() as conn:
         n = conn.execute("SELECT count(*) AS n FROM live_share_recipients").fetchone()
+        sent = conn.execute(
+            "SELECT count(*) AS n FROM messages WHERE attachment = 'live'"
+        ).fetchone()
     assert n is not None and n["n"] == 1
+    # Each «Send in MuW» is a message (TASK-468 part A1b).
+    assert sent is not None and sent["n"] == 2
+
+
+def test_only_an_open_conversation_gets_the_share(
+    client: TestClient,  # noqa: F811
+) -> None:
+    """A message request carries no attachment (messages.py): who does not
+    follow the owner, and never wrote to it, is skipped."""
+    ada, cleo = person(client, "ada"), person(client, "cleo")
+    share = app_share(client, ada)
+    assert shared_to(client, ada, share, cleo).json()["skipped"] == [pid(client, cleo)]
+    assert in_app(client, cleo, share).status_code == 404
 
 
 @pytest.mark.parametrize("blocker", ["owner", "viewer"])
@@ -647,6 +665,7 @@ def test_a_block_either_way_keeps_them_apart(
     blocker: str,
 ) -> None:
     ada, bob = person(client, "ada"), person(client, "bob")
+    follow(client, bob, ada)
     share = app_share(client, ada, audience_feed="everyone")
     shared_to(client, ada, share, bob)
     assert in_app(client, bob, share).status_code == 200
@@ -662,6 +681,7 @@ def test_a_hidden_owner_is_seen_by_nobody(
     database: Database,  # noqa: F811
 ) -> None:
     ada, bob = person(client, "ada"), person(client, "bob")
+    follow(client, bob, ada)
     share = app_share(client, ada, audience_feed="everyone")
     shared_to(client, ada, share, bob)
     with database.connect() as conn:
@@ -707,6 +727,7 @@ def test_the_heart_rate_reaches_the_app_only_when_turned_on(
     wall: WallClock,  # noqa: F811
 ) -> None:
     ada, bob = person(client, "ada"), person(client, "bob")
+    follow(client, bob, ada)
     share = made(client, ada)
     shared_to(client, ada, share, bob)
     wall.t = START + 15 * SECOND
@@ -726,6 +747,7 @@ def test_a_share_that_ended_is_seen_as_the_link_and_takes_no_changes(
     wall: WallClock,  # noqa: F811
 ) -> None:
     ada, bob = person(client, "ada"), person(client, "bob")
+    follow(client, bob, ada)
     share = app_share(client, ada)
     shared_to(client, ada, share, bob)
     sent(client, ada, share, state="finished")
@@ -746,6 +768,7 @@ def test_a_stopped_share_shows_nothing_in_the_app(
     wall: WallClock,  # noqa: F811
 ) -> None:
     ada, bob = person(client, "ada"), person(client, "bob")
+    follow(client, bob, ada)
     share = app_share(client, ada)
     shared_to(client, ada, share, bob)
     wall.t = START + 15 * SECOND
@@ -758,6 +781,7 @@ def test_at_most_so_many_sends_a_minute(
     client: TestClient,  # noqa: F811
 ) -> None:
     ada, bob = person(client, "ada"), person(client, "bob")
+    follow(client, bob, ada)
     share = app_share(client, ada)
     for _ in range(SENDS_PER_MINUTE):
         assert shared_to(client, ada, share, bob).status_code == 200
@@ -773,6 +797,7 @@ def test_the_log_never_writes_a_position(
 ) -> None:
     caplog.set_level(logging.DEBUG)
     ada, bob = person(client, "ada"), person(client, "bob")
+    follow(client, bob, ada)
     share = made(client, ada, audience_feed="followers")
     shared_to(client, ada, share, bob)
     wall.t = START + 15 * SECOND

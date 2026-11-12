@@ -1,5 +1,6 @@
 import {
   activityOf,
+  activityOffered,
   ALL_SPORTS,
   canChoose,
   DEFAULT_SPORT,
@@ -76,6 +77,9 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "Ski",
     "Cross-country ski",
     "Ski touring",
+    "Snowshoes",
+    // «Soon» until it is turned on (TASK-463 part B).
+    "Mountaineering",
     "Gym",
     "Paragliding",
   ]);
@@ -87,11 +91,13 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "gravel",
     "mtb",
     "roller",
+    "wheelchair",
     "paddle",
     "swim",
     "ski",
     "xc_ski",
     "skimo",
+    "snowshoe",
     "gym",
     "paragliding",
   ]);
@@ -111,9 +117,38 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
   expect(canChoose("skimo")).toBe(true);
   // And a day of cross-country skiing (TASK-375, 2026-11-12).
   expect(canChoose("xc_ski")).toBe(true);
-  // Not a wheelchair yet: «Soon» until the server has TASK-414 part A.
-  expect(canChoose("wheelchair")).toBe(false);
+  // And a wheelchair or a stroller, since the server has TASK-414 part A.
+  expect(canChoose("wheelchair")).toBe(true);
+  // And snowshoes, since the server has #1266 (TASK-413, «Sì, accendi»).
+  expect(canChoose("snowshoe")).toBe(true);
+  // Not a day of mountaineering yet: «Soon» until it is turned on (TASK-463).
+  expect(canChoose("alpinism")).toBe(false);
   expect(canChoose("golf")).toBe(false);
+});
+
+test("«Snowshoes» ❄️ on the snow: shapes on the open snow, and «Record your day» (TASK-413 B, C)", () => {
+  const index = SPORTS.findIndex((option) => option.id === "snowshoe");
+  expect(SPORTS[index - 1]?.id).toBe("skimo");
+  // Not record-only: «Draw» has its shapes, and the day beside them.
+  expect(SPORTS[index]).toEqual({
+    id: "snowshoe",
+    emoji: "❄️",
+    name: "Snowshoes",
+    ready: true,
+  });
+  expect(isRecordOnly("snowshoe")).toBe(false);
+  expect(activityOf("snowshoe")).toBe("snowshoeing");
+  expect(runActivityOf("snowshoe")).toBe("snowshoeing");
+  expect(withoutRouteLabel("snowshoe")).toBe("Record your day");
+  // Offered where a sport is chosen or looked for, now that it is ready; not
+  // before.
+  expect(activityOffered("snowshoeing")).toBe(true);
+  expect(
+    activityOffered(
+      "snowshoeing",
+      SPORTS.map((option) => ({ ...option, ready: false })),
+    ),
+  ).toBe(false);
 });
 
 test("«Paragliding» comes last, recorded without a shape since TASK-305 R2", () => {

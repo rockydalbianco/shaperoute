@@ -201,6 +201,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **R2 fatta il 2026-11-12**: #1201 in main (f0909495), esce con
   l'aggiornamento completo. Resta: un volo vero col link dal vivo; R4
   (orologio, battito) in bozza #1218 fino alla build dopo la 1.1.0.
+  **R5 fatta il 2026-11-12**: #1258 (server, passo 12) e #1260 (app, OTA
+  16) in main: «Ready to fly», «Your flights», i record di volo. In corso
+  R6 (corsa + volo, #1291 e #1293 in bozza) e il fix #1302 (fine del volo).
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
@@ -221,6 +224,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-12**: parte 0 in `main`; A1a in `main` (#1221, `9328c109`,
   migrazione `0073`), sul server col passo dopo l'uscita completa, col sì.
   Poi A1b dopo TASK-455 A.
+  **2026-11-12 sera**: A1a, A2a (#1245) e A1b (#1265) sul server (passi 11 e
+  12); B1 (app) in `main` (#1275), esce con un OTA col sì. Prossime A2b, B2.
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al

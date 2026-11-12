@@ -1459,6 +1459,20 @@ grande compare alla sua misura, senza crescere, qui e sul disegno aperto.
   your max heart rate to see your zones.». Una FC fuori dai limiti dice
   «Enter a heart rate between 100 and 230 bpm.» (a riposo 30 e 120) e non si
   tiene. Tutto resta sul telefono, in `heart.json`.
+  Sotto «Body», **«Morning stretch»** (🌅, TASK-466 parte D, ADR-0378), con
+  in fondo «Off» oppure l'ora della sveglia e la durata («7:00 · 5 min»). Un
+  tocco apre una pagina intera, «Back» in alto: «MuW can't read your phone's
+  alarm. Set here the time it rings: 5 minutes later a reminder opens your
+  Morning routine.», l'interruttore «Morning stretch» (spento all'inizio),
+  «Alarm time» con «−» e «+» per le ore e per i minuti (di 5 in 5, senza
+  tastiera), «Days» coi sette giorni (lunedì–venerdì all'inizio; l'ultimo
+  non si toglie), «Length» con «3 min», «5 min», «10 min». Accenderlo
+  chiede il permesso delle notifiche; negato, resta spento con «Notifications
+  are off for MuW on this phone. Allow them in Settings to turn this on.» e
+  «Open Settings». Nei giorni scelti, 5 minuti dopo quell'ora, il telefono
+  mostra «Morning stretch» / «5 minutes to wake up your body. Tap to
+  start.»: toccata, apre la routine «Morning» di quella durata, senza
+  chiedere «How long?»; non durante una corsa. Tutto resta sul telefono.
   **«Notifications»**: «Email
   notifications» e «Push notifications», due interruttori salvati
   nell'account (TASK-185, ADR-0206, sotto). **«Feedback»** (TASK-308,
@@ -4533,6 +4547,43 @@ acceso. Testi approvati dall'utente l'11 novembre 2026.
   parte acceso, solo con un post che altri vedono, mai una richiesta di
   permesso. Con la costante spenta le due schermate sono com'erano.
 
+### La scheda Sleep del profilo (TASK-467 parte B3, ADR-0380)
+
+**Spenta in ogni build di oggi**, come «Sleep last night»: stessa costante
+(`SLEEP_POSTS_ON`), nessun lettore di Salute. Quello che segue è com'è
+quando è accesa. Testi approvati dall'utente (11 e 12 novembre 2026).
+
+- **Sul proprio «Profile»**, sotto il VO₂ max (`profile/OwnSleep.tsx`):
+  - *prima del sì*: il pulsante **«Show my sleep from Apple Health»** e
+    sotto «MuW works out a sleep score from your Apple Health sleep
+    data.». Il tocco è il sì a leggere il sonno: apre il foglio del
+    telefono, e da lì anche «Sleep last night» a fine attività legge la
+    notte. È l'unico punto in cui il permesso si chiede;
+  - *la notte*: «Sleep score» con accanto il giorno («12 Nov»), «82 · Very
+    good», «7 h 40 min», le fasi «Awake», «REM», «Light», «Deep» quando un
+    orologio le ha dette, e «Worked out by MuW from Apple Health data. It
+    can differ from the score in the Health app.». La notte è quella da
+    cui ci si è svegliati oggi, riletta dal telefono a ogni apertura del
+    profilo. Senza: «No sleep data for last night in Apple Health.». Se
+    il telefono non può leggere: «MuW can't read your sleep. Allow it in
+    the Health app: your profile › Apps › MuW.»;
+  - *chi la vede*: **«Only you see this»** e il pulsante **«Share»**. Il
+    primo «Share» chiede «Share your sleep?» — «Your score, hours slept
+    and sleep stages show on your profile, to everyone who can see it.»
+    («Cancel» / «Share»), una volta sola per telefono. Condivisa: **«On
+    your profile»** e **«Stop sharing»**, che toglie il sonno dal profilo
+    al tocco, senza conferma;
+  - *una notte più vecchia ancora sul profilo*: sotto quella di oggi, «On
+    your profile · 11 Nov» con «Stop sharing». Ogni notte si condivide col
+    suo «Share»: niente passa sul profilo da solo.
+- **Sul profilo di un altro**, sotto il VO₂ max (`profile/UserSleep.tsx`):
+  l'ultima notte che ha condiviso, nello stesso riquadro, col suo giorno;
+  sola lettura. Una notte non condivisa per gli altri non esiste: nessun
+  riquadro.
+- Mai l'ora in cui si è andati a letto o ci si è svegliati, mai un
+  consiglio; non si chiama mai «di Apple». Nessuna voce nel Feed: il post
+  della notte da sola arriva con TASK-312 C.
+
 ## Il post da condividere (TASK-231, ADR-0194)
 
 «Share» sta sulla scheda di fine corsa (con un percorso e senza) e sulla
@@ -5249,7 +5300,11 @@ c'è anche l'errore.
   l'API rifiuta si butta, non si rimanda. Vale lo stesso per un
   allenamento in palestra e un nuoto in vasca, che aspettano nelle loro
   code (`gym-outbox.json`, `pool-outbox.json`): la notte parte dopo di loro. Il sì a leggere il sonno sta in
-  `sleep-health.json`.
+  `sleep-health.json`. **Dalla scheda «Sleep» del profilo** (parte B3) la
+  notte va all'API solo al tocco di «Share» (lo stesso riassunto, col
+  giorno); «Stop sharing» la toglie dal profilo, e dal server se nessun
+  post la porta. Che il primo «Share» è stato confermato sta in
+  `sleep-share.json`.
 
 ## Quando la mappa non si carica
 

@@ -43,5 +43,7 @@
     "metres": 2900.0,
     "moving_s": 285.0
   },
-  "sleep": null
+  "flight_split": null,
+  "sleep": null,
+  "linkable": false
 }

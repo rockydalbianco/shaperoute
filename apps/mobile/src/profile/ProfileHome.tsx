@@ -21,6 +21,7 @@ import { FirstStep, profileStage } from "./FirstStep";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { ProfileGallery } from "./ProfileGallery";
 import { ProfileHeader } from "./ProfileHeader";
+import { OwnSleep } from "./OwnSleep";
 import { OwnVo2Max } from "./OwnVo2Max";
 import { GymLevels } from "../gym/GymLevels";
 import { WeekStrip } from "../activities/WeekStrip";
@@ -151,6 +152,8 @@ export function ProfileHome({
         {own?.personal_bests && <PersonalBests bests={own.personal_bests} />}
         {/* The VO₂ max (TASK-397): none from an API older than it. */}
         {own?.vo2max !== undefined && <OwnVo2Max />}
+        {/* Last night's sleep (TASK-467 B3): nothing until part C turns it on. */}
+        <OwnSleep />
         {/* The levels at the gym (TASK-385 E): none from an older API. */}
         {own?.gym_levels && <GymLevels levels={own.gym_levels} own />}
       </View>

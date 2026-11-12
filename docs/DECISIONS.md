@@ -543,6 +543,9 @@ lasciando le righe d'indice.
 - ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1, A2 in produzione); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
+- ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
+- ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live` · 2026-11-12 · Attiva
+- ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal` · 2026-11-12 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
@@ -555,6 +558,9 @@ lasciando le righe d'indice.
 - ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
 - ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende · 2026-11-12 · Accettata
 - ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono · 2026-11-11 · Attiva
+- ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304; il foglio «Add activity» con solo «From a file» · 2026-11-12 · Attiva
+- ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo da due campi nel JSON delle statistiche, solo per il volo, `GET /me/flight-bests`, il calendario filtrato sui voli, la precisione del GPS · 2026-11-12 · Attiva
+- ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
 - ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
 
 ## Voci nuove
@@ -609,6 +615,148 @@ dell'utente**, con la lista dei file approvata dal Coordinatore.
 **Conseguenze**: un altro sport piazzato libero userà `isPlacedFree` e
 `drawsByHand`, invece di nuovi `isOnWater` sparsi. Il criterio B del task
 (l'uscita va in Salute) si chiude dopo la prova sul telefono con l'OTA.
+
+## ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304
+
+**Stato**: Attiva · 2026-11-12 · TASK-476 (#1284 in `main`, `bf049887`).
+Il «+», il suo posto, la sua sola voce e «Everyone» sono **scelte
+dell'utente**; il modo è deciso dall'agente su delega dell'utente, numero
+dal Coordinatore.
+
+**Contesto**: l'utente ha chiesto nel Feed, che è la home, «un tasto +
+per poter caricare un'attività manualmente da fuori o dall'app o da
+un'altra app». L'import da file c'era già, in «My activities» (TASK-312
+B, ADR-0272), e una corsa importata partiva sempre «Only me»: aggiunta
+dal Feed, nel Feed non sarebbe comparsa. ADR-0304 dice che nessuno è
+pubblico senza averlo scelto, e la privacy lo prometteva.
+
+**Decisione**:
+- **Il «+» a destra delle schede del Feed**, solo con un account e in una
+  build col selettore di file; apre il foglio «Add activity» con **solo
+  «From a file»** (scelta dell'utente: «Solo From a file»; le altre voci
+  quando sono pronte, senza «Soon»). Il foglio riusa «Add past activity»
+  con due props (`opened`, `onDone`), senza toccare «My activities».
+- **Da lì parte «Everyone»** (l'utente: «Sì, Everyone», poi al
+  Coordinatore «Everyone + privacy»): `imported.visibility` facoltativo in
+  `RunEnd`. «Everyone» si vede scelto, la frase «Every member sees it in
+  your profile.» sta anche sopra «Save», e si cambia prima di salvare. In
+  «My activities» resta «Only me».
+- **La privacy lo dice prima che esca**: nelle cinque lingue (privacy e
+  aiuto) e sulle cinque pagine del sito, testo approvato dall'utente
+  («Approvo il testo»), data 12 novembre 2026; campo e frase entrati
+  insieme.
+
+**Alternative scartate**: «Only me» con il selettore ben in vista sopra
+«Save» (proposta del Coordinatore, non scelta dall'utente); «Record now»
+o l'inserimento a mano nella prima versione (l'utente ha scelto il solo
+file).
+
+**Conseguenze**: un GPX caricato dal Feed spesso parte dalla porta di
+casa: la frase sopra «Save» e la privacy lo dicono, il resto delle regole
+di ADR-0304 non cambia. Esce col prossimo OTA, poi la copia del sito (sì
+dell'utente al Coordinatore). Proposte per dopo nel task file: «Photos
+only» (TASK-312 C), «Apri in MuW» da altre app, Apple Salute, inserimento
+a mano, collegamenti diretti.
+
+## ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo, i voli del mese, pronto al decollo
+
+**Stato**: Attiva · 2026-11-12 · TASK-305 parte R5 (#1258 server, #1260
+app). **Scelte dell'utente** (2026-11-12): fra quattro proposte «I tuoi
+voli», «Record personali» e «Pronto al decollo»; testi approvati nelle
+cinque lingue. Il resto è **deciso dall'agente su delega dell'utente**,
+con le liste dei file approvate dal Coordinatore.
+
+1. **I record del volo vengono dal server.** Quota massima e velocità
+   massima il server non le aveva: il profilo è ridotto a 120 punti e la
+   velocità non c'era.
+   - Il telefono le manda a fine volo (`max_alt_m`, `top_speed_mps`) con
+     `PUT …/stats`.
+   - Il server le tiene nel JSON di `run_stats.stats`, quindi **nessuna
+     migrazione**, e **solo per il volo**: per gli altri sport le ignora
+     invece di rifiutarle.
+2. **`GET /me/flight-bests`** sta nel router di `run_stats`, così `app.py`
+   non si tocca. Dà il più alto, il più lungo, il più lontano e il più
+   veloce.
+   - Solo del proprietario.
+   - A parità vince il primo volato.
+   - Un volo cancellato porta via i suoi record.
+3. **«Your flights»** usa il calendario di TASK-462 filtrato sui voli: per
+   aprirlo filtrato, un prop `sport` opzionale in `ActivityCalendarSheet`.
+4. **«Ready to fly»** legge solo l'errore del GPS (pronto fino a 10 m),
+   finché «Draw» è aperto; la posizione non esce dal telefono.
+5. **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
+   (422) e l'app rimanda le statistiche senza. L'OTA 16 è uscito prima del
+   passo 12: per poco più di un'ora i record sono rimasti nascosti, nessun
+   dato perso.
+
+## ADR-0352, precisazione — «Share live at start»
+
+**Stato**: Attiva · 2026-11-12 · TASK-305 parte R5b (#1260). **Scelta
+dell'utente** (2026-11-12), con le sue parole «Come l'ultima volta», sulla
+proposta del Coordinatore.
+
+ADR-0352 dice che il link dal vivo non si accende mai da solo. Questa
+precisazione aggiunge un caso, solo per il volo e solo se è il pilota a
+volerlo:
+
+1. Su «Ready to fly» c'è l'interruttore «Share live at start». Parte
+   spento; poi **resta com'era l'ultima volta**
+   (`flight-live-at-start.json`), e si vede sempre prima di partire.
+2. Acceso, **a fine conto alla rovescia di un volo** l'app crea il link e
+   apre il foglio di condivisione, come «Share live» a mano. Non lo fa per
+   un volo ripreso dopo la chiusura dell'app, né per gli altri sport, né
+   senza account.
+3. **Solo il link**, mandato a chi vuole il pilota; non va ai pubblici di
+   TASK-468. In volo «Sharing live» dice che è acceso.
+4. Al primo volo sul telefono il foglio aspetta che «Before you fly» sia
+   letto (trovato nel simulatore).
+
+## ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares`
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte A2a (#1245).
+**Deciso dall'agente su delega dell'utente.**
+
+- `live_shares.planned_live_id` → `planned_lives` e non il contrario: i dati
+  di `live_shares` restano fuori dalle copie notturne, e una chiave da una
+  tabella copiata verso una lasciata fuori ne romperebbe il ripristino.
+- La fila (`GET /lives`, scelta 7) unisce le programmate e le live messe nel
+  Feed senza programmarle; ordine: in corso prima (l'ultima partita prima),
+  poi le programmate (la più vicina prima); cursore `rank_chiave_id`.
+- Le rotte stanno in `planned_lives.py`, montato da `install_live_shares`:
+  `app.py` e `feed.py` non cambiano. I tipi in `plannedLive.ts`, esportati
+  da `liveShare.ts`: `index.ts` non cambia.
+- La partenza va da un'ora prima a tre ore dopo; una live fermata per
+  sbaglio può ripartire entro quelle ore. Una programmata mai partita esce
+  dalla fila tre ore dopo la sua ora.
+
+## ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live`
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte A1b (#1265).
+**Deciso dall'agente su delega dell'utente.**
+
+- `messages.live_share_id` senza chiave esterna (le copie tengono
+  `messages`, non i dati di `live_shares`); la scheda si legge a ogni
+  lettura con `MAY_SEE_SQL`, `null` quando la live non c'è più.
+- Come il post (ADR-0382), `live` sta fuori da `MESSAGE_ATTACHMENT_KINDS`:
+  lo riceve solo l'app che dice `live` in `X-MuW-Reads`; le altre leggono
+  «[Live]».
+- «Send in MuW» (`POST /me/live-shares/{id}/send`) manda un messaggio a
+  persona con `Messages.send`, e quindi solo dove la conversazione è aperta
+  a chi manda: gli altri sono in `skipped`.
+
+## ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal`
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte B1 (#1275).
+**Deciso dall'agente su delega dell'utente** (la tecnica; testi e aspetto
+approvati dall'utente).
+
+- «Send in MuW» crea la condivisione con `link: false`; «Share link» la fa
+  dopo, dal menu di «Sharing live». `startLiveShare` resta compatibile
+  (`{kind: "started", url}` com'era, in più `started_without_link`).
+- La schermata dal vivo è un `Modal` a tutto schermo che chiede ogni 10 s:
+  il gesto dal bordo (ADR-0384) non fa nulla, si chiude con «Close»;
+  `TabSwipeOwners.test.ts` la ammette come unica mappa fuori da `map/`
+  oltre alla tela del disegno.
 
 ## ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono
 

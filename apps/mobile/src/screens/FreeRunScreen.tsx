@@ -194,14 +194,22 @@ export function FreeFinishBanner() {
     );
   }
   const snow = isOnSnow(activity);
+  // A day on snowshoes is a day too, walked (TASK-413 part C).
+  const snowshoes = activity === "snowshoeing";
   return (
     <View style={styles.banner}>
-      <Text style={styles.title}>{snow ? t("Your day") : t("Your run")}</Text>
+      <Text style={styles.title}>
+        {snow || snowshoes ? t("Your day") : t("Your run")}
+      </Text>
       {activity === "skiing" ? (
         <SkiLegend />
       ) : (
         <Text style={styles.message}>
-          {snow ? t("White: where you skied.") : t("White: what you ran.")}
+          {snowshoes
+            ? t("White: where you walked.")
+            : snow
+              ? t("White: where you skied.")
+              : t("White: what you ran.")}
         </Text>
       )}
     </View>
@@ -219,7 +227,7 @@ type FinishProps = {
 
 /** The end of a run without a route or, on the snow, of the day
  * (TASK-375 part C), or of a ski tour with its phases (TASK-415 part B), or
- * of a flight (TASK-305 part R2):
+ * of a flight (TASK-305 part R2), or of a day on snowshoes (TASK-413 C):
  * the sport of «Settings» says which. */
 export function FreeFinishCard(props: FinishProps) {
   const activity = runActivityOf(useSport());
@@ -227,7 +235,8 @@ export function FreeFinishCard(props: FinishProps) {
     <FlightFinishCard {...props} activity={activity} />
   ) : activity === "ski_touring" ? (
     <SkiTourFinishCard {...props} activity={activity} />
-  ) : isOnSnow(activity) ? (
+  ) : isOnSnow(activity) || activity === "snowshoeing" ? (
+    // A day on snowshoes ends as a day of cross-country (TASK-413 part C).
     <SnowFinishCard {...props} activity={activity} />
   ) : (
     <RunFinishCard {...props} />

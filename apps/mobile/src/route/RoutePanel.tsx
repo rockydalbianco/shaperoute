@@ -199,7 +199,10 @@ export function RouteChoice({
   const shownKind = left(kind) ? "shape" : kind;
   const kinds = DRAW_KINDS.filter((option) => !left(option.value));
   const shownShape = shapeOfSport(shape, activity);
-  const freehand = shapes === undefined ? onFreehand : undefined;
+  // No drawing by hand on the snow: the engine places only a shape of the
+  // catalogue there (TASK-413, ON_SNOW_SHAPES_ONLY).
+  const freehand =
+    shapes === undefined && !isSnowshoeRoute(activity) ? onFreehand : undefined;
   return (
     <View style={styles.panel}>
       {/* The steps of «Draw» (TASK-361): «1 START» is the start's card. */}

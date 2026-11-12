@@ -1,8 +1,10 @@
 # TASK-455 — Condividere il disegno di un'altra persona
 
 **Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-12; documenti nella
-#1212) · in corso la parte A (server: il post in un messaggio), file
-approvati dal Coordinatore il 2026-11-12
+#1212) · B0 (la copia solo dei disegni propri o «Everyone») nella #1220,
+«pronta» il 2026-11-12 per l'aggiornamento completo di oggi · parte A
+(server: il post in un messaggio) scritta sul suo branch, PR in bozza per
+il giro dopo
 **Fase**: 5 · **Branch**: `docs/TASK-455-share-others-drawing` (parte 0, solo
 documenti); poi una PR per parte, `feat/TASK-455-a-message-post` la prima
 **Dipende da**: TASK-454 A (#1195) in `main` per `feed/PostActions.tsx`
@@ -239,7 +241,8 @@ vero è il primo libero al merge),
 `docs/API.md` (a turno), `docs/DATABASE.md`. Chiesto in più il
 2026-11-12, in attesa del sì: `services/api/shaperoute_api/report_email.py`
 (la pagina del link di una segnalazione legge `drawing_card` per ogni
-allegato che non è foto o video: con `post` darebbe un 500).
+allegato che non è foto o video: con `post` darebbe un 500). Sì del
+Coordinatore lo stesso giorno.
 
 Parte B0 (sì del Coordinatore il 2026-11-12):
 `apps/mobile/src/social/DrawingCard.tsx`,
@@ -288,3 +291,11 @@ Le altre parti scrivono i loro criteri quando partono.
   `X-MuW-Reads`: un valore nuovo di `?with=` un server di prima lo
   rifiuterebbe con `422`. Ferma sul sì per `report_email.py`. Il
   Coordinatore mette la B0 per prima.
+- 2026-11-12: l'utente ha deciso che l'aggiornamento completo esce oggi
+  (Coordinatore: «pronta» entro le 12:30Z). **B0 nella #1220** (`db609aaf`:
+  `copySendable` in `DrawingCard.tsx`, test coi tre casi; prettier,
+  eslint, tsc e jest dei file toccati verdi in locale), «pronta» mandata.
+  Parte A: sì su `report_email.py`, correzione e test aggiunti, `main`
+  unito, branch spinto (`0a6f9f8e`); non va nel passo server di oggi, la
+  PR si apre in bozza dopo la CI della B0. La scelta di `X-MuW-Reads` è
+  nel punto 4 di ADR-0382.

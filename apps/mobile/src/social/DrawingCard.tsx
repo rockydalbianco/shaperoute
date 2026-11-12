@@ -108,8 +108,11 @@ export function DrawingCard({
   const { photoSource } = useDrawingsDoor();
   const { openProfile } = useFollowsDoor();
   const { account } = useMessagesDoor();
+  // An account of an API before the profiles has no public_id: nobody's.
   const me =
-    account.state.status === "signedIn" ? account.state.session.user.public_id : null;
+    account.state.status === "signedIn"
+      ? (account.state.session.user.public_id ?? null)
+      : null;
   const { exporting, exportGpx } = useDrawingGpx();
   const exported = exporting(drawing.id);
   const won = useWinnerDrawingId() === drawing.id;

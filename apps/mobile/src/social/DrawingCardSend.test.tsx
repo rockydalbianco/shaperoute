@@ -18,7 +18,7 @@ jest.mock(
 // never for somebody else's drawing for its followers (TASK-455, ADR-0382,
 // the user's choice 4).
 
-const ME = (session as Session).user.public_id;
+const ME = (session as Session).user.public_id ?? null;
 const signedIn: AccountState = { status: "signedIn", session: session as Session };
 const SOMEBODY = {
   public_id: "1f2e3d4c-0000-4000-8000-0000000000c0",

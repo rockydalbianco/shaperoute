@@ -996,6 +996,7 @@ export const ES: Table = {
   "{count} min ago": "hace {count} min",
   "{count} h ago": "hace {count} h",
   "{count} d ago": "hace {count} d",
+  yesterday: "ayer",
   "Write a comment": "Escribe un comentario",
   "{count} comment": "{count} comentario",
   "{count} comments": "{count} comentarios",

@@ -259,7 +259,9 @@ tocchi sull'app aspettano la fine del tour. Il tour non torna, salvo
 **«Guide»** (TASK-266): con un account è la riga subito sotto
 «Settings» sulla prima pagina di «Profile», ❓ nel cerchio come «Settings»
 (richiesta dell'utente del 2026-10-10); senza account è l'ultima riga,
-sotto il modulo, come le righe di «ABOUT». Apre «How MuW works» con
+sotto il modulo, come le righe di «ABOUT», con l'icona a linea
+`circle-help` di Lucide in `textMuted` al posto del ❓ (TASK-444; con un
+account il ❓ resta fino a TASK-457). Apre «How MuW works» con
 il nome «Guide» e sopra il testo «Watch the tour», che chiude «Profile» e
 rifà il tour; «←» torna a «Profile». «Help» in «Settings» resta, con lo
 stesso pulsante.
@@ -281,7 +283,10 @@ pagine»):
    con, quando servono, il rimando alle Impostazioni e la ricerca del
    luogo; l'errore della mappa; **«2 WHAT YOU DRAW»**, le forme del
    catalogo in una griglia di due righe con «See all» (quella scelta ha il
-   bordo chiaro), «Type another shape» per un'altra parola e la forma in
+   bordo chiaro; ogni forma è il suo contorno vero a linea, nel colore del
+   testo, non un'emoji: `ShapeGlyph`, TASK-444, dal catalogo del motore
+   come la forma in scala, a penna alzata dove il catalogo l'ha — gli occhi
+   di una faccia senza la riga che li raggiunge), «Type another shape» per un'altra parola e la forma in
    scala; **«3 DISTANCE»**, grande, fra − e + di mezzo km, col tempo
    stimato sotto; subito sotto la
    distanza, mentre il server ha il gioco, la riga «PLAY» (TASK-327, sotto
@@ -761,7 +766,12 @@ barra qui sopra, e lo swipe è quello qui sopra.
   (TASK-313). Il «…» e i pulsanti stanno fuori dal pulsante della scheda,
   dove VoiceOver li raggiunge; la data si sente anche nell'etichetta.
   Gli esempi non hanno né segni né pulsanti. Sotto i nomi delle pagine un
-  filo (`Hairline`).
+  filo (`Hairline`). Le azioni sotto un post («Like», «Comment», «Share»,
+  «Edit & run», `feed/PostActions.tsx`) hanno sopra la parola un'icona a
+  linea di Lucide come quelle della barra (`assets/ui/icons/`: `heart`,
+  `message-circle`, `share`, `pencil`; PNG bianche colorate dai token,
+  gialla solo quella di «Edit & run»), non più emoji (TASK-444); il
+  lettore di schermo legge la parola.
   **Senza account, e finché nessuno ha pubblicato qualcosa che si può
   vedere** (o l'API non risponde, o è di prima del feed), mostra
   **quindici disegni di esempio**
@@ -1155,7 +1165,9 @@ un'API senza commenti, il pulsante non c'è. Il tocco apre un **foglio dal
 basso** sopra la mappa (circa tre quarti dello schermo; un tocco sopra il
 foglio o «Close» lo chiude): «Comments», l'elenco **dal più vecchio**
 (la foto o l'iniziale di chi ha scritto, il nome, quanto tempo fa, «just
-now», «5 min ago», «3 h ago», «2 d ago», poi il giorno; e il testo), venti
+now», «5 min ago», «3 h ago», «yesterday» tra 24 e 48 ore (TASK-444,
+scelta dell'utente dell'11 novembre 2026; così anche la data di un post
+nel «Feed»), «2 d ago», poi dal settimo giorno il giorno; e il testo), venti
 per volta con «Show more comments» in fondo; vuoto «No comments yet. Be
 the first.»; mentre arriva «Loading the comments…»; non arrivato il motivo
 e «Try again». In fondo, **sopra la tastiera**, il campo «Add a comment…»
@@ -2722,8 +2734,9 @@ della partenza resta. Sotto la mappa:
   di posto, così le tessere non saltano).
 - **Una riga di tessere** che scorre di lato: **«+ photo»** (una foto della
   libreria; mentre il motore ne traccia il contorno, *Tracing the
-  outline…*, e i suoi rifiuti con le parole di «Image»), le 17 forme del
-  catalogo coi loro simboli, e le 16 immagini pronte (TASK-280, TASK-290). La
+  outline…*, e i suoi rifiuti con le parole di «Image»), le forme del
+  catalogo coi loro contorni a linea (TASK-444, come nella griglia di
+  «Draw»), e le 16 immagini pronte (TASK-280, TASK-290). La
   prima figura va nel centro della mappa, lunga quanto la distanza di
   «Draw», e la mappa si inquadra su di lei; un'altra tessera la cambia
   dov'è, grande uguale sulla mappa. Dopo una tessera l'interruttore passa
@@ -3256,8 +3269,8 @@ del 2026-10-15, «sì, dai la possibilità di cambiare figura dalla mappa»).
 Sotto un percorso disegnato, da «Draw route» di «Draw» o di «Draw on the
 map», quando è arrivato: **sopra «Start»**, dopo le tessere «A · B · C»,
 «Try 8 km» e gli avvisi, la stessa riga di tessere della tela di «Draw on
-the map» (`src/mapdraw/FigureTiles.tsx`): le 17 forme del catalogo coi
-loro simboli e le 16 immagini pronte, senza «+ photo». La figura del
+the map» (`src/mapdraw/FigureTiles.tsx`): le forme del catalogo coi
+loro contorni a linea (TASK-444) e le 16 immagini pronte, senza «+ photo». La figura del
 percorso ha il bordo; un percorso di una parola o di una foto non ne segna
 nessuna. Con «Paddle» solo le forme, come in «Draw». Non c'è durante
 l'attesa, sotto un errore, sugli esempi di «Explore», sui giri, sul

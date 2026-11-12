@@ -44,8 +44,13 @@ export interface WatchSport {
 const INDOORS: ReadonlySet<RunActivity> = new Set<RunActivity>(["gym"]);
 
 /** The sports the watch does not offer yet: the open-water swim until it is
- * tried in the water with the watch (TASK-370 part C, spring 2027). */
-const NOT_ON_WATCH: ReadonlySet<RunActivity> = new Set<RunActivity>(["swimming"]);
+ * tried in the water with the watch (TASK-370 part C, spring 2027); a
+ * paragliding flight until a part of its own brings it to the wrist
+ * (TASK-305, ADR-0375: Apple has no workout type for it). */
+const NOT_ON_WATCH: ReadonlySet<RunActivity> = new Set<RunActivity>([
+  "swimming",
+  "paragliding",
+]);
 
 export function watchSportOf(profile: SportProfile): WatchSport {
   return {

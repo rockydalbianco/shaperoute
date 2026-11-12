@@ -171,6 +171,59 @@ solo a `https://getmuw.app`. Con il server del sito (sotto) e un finto
 `/live` usato per la parte A2 sta, fuori da git, in
 `out/TASK-424/live-stand-in.mjs` della copia principale.
 
+## La pagina di un post
+
+`getmuw.app/p/#<id del disegno>` (TASK-455 parte D, ADR-0382): il link di
+un post, quello che «Share link» dell'app dà. Chi lo apre, senza app né
+account, vede il disegno sulla mappa. L'id sta dopo il `#`, quindi non
+arriva mai al server del sito; la pagina lo manda all'API una volta sola,
+`GET https://api.getmuw.app/post?id=<id>` (`API.md`, «Post links»). L'API
+lascia leggere `/post` solo a `https://getmuw.app` (CORS).
+
+| File | Cosa contiene |
+|---|---|
+| `p/index.html` | la pagina |
+| `p/view.js` | cosa mostrare, senza DOM: l'id, la richiesta, cosa diventa una risposta, la riga sotto il nome, la linea per la mappa (funzioni pure, provate dai test con la fixture `post-link.json`) |
+| `p/post.js` | la pagina e la mappa |
+| `p/texts.js` | i tre testi approvati il 2026-11-12 in cinque lingue, e i nomi degli sport, quelli dell'app |
+| `p/post.css` | il poco che è solo suo |
+
+- **MapLibre, lo stile e i colori della mappa sono quelli della pagina dal
+  vivo**: la pagina carica `../live/maplibre-gl.js`, `.css` e
+  `../live/live.css`, e prende da `live/view.js` l'indirizzo dell'API, lo
+  stile e i confini. Un solo posto da aggiornare quando l'app cambia
+  versione, e un solo test degli hash.
+- **Cosa mostra**: il titolo del post (senza titolo, il nome di chi l'ha
+  disegnato fa da titolo), «{user} drew this on MuW», lo sport come lo
+  chiama l'app e la distanza («Run · 4.3 km»; miglia per un browser degli
+  Stati Uniti e del Regno Unito), la mappa con **la linea intera, come la
+  vede già un iscritto**, e «Get MuW», che porta dove si scarica l'app
+  (`config.js`). Mai foto, commenti, reazioni, descrizione, luogo, giorno o
+  tempi: l'API non li manda e la pagina non ha dove metterli.
+- **Un link che non apre niente**: «This drawing is no longer available.»
+  e «Get MuW», senza mappa. Vale per un `404` dell'API (un post
+  «Followers», privato, nascosto, cancellato, di un autore che ha spento
+  «Links to my posts», un id che non c'è: l'API risponde uguale per tutti),
+  per un indirizzo senza un id valido e per una risposta che non è un
+  disegno.
+- **Se l'API non risponde**: la pagina riprova dopo 2, 5 e 10 secondi e poi
+  resta com'è, senza dire niente di un disegno di cui non sa niente; a un
+  `429` aspetta quanto dice `Retry-After`.
+- **Non va nei motori di ricerca** (`noindex, nofollow, noarchive` nella
+  pagina, `X-Robots-Tag` nella risposta dell'API), non manda da dove si
+  arriva (`no-referrer`) e non tiene niente sul dispositivo. Da fuori
+  carica solo le tile e i font di OpenFreeMap, come la pagina dal vivo.
+
+**Guardarla in locale.** Come la pagina dal vivo: il server del sito
+(sotto) e un finto `/post` che risponde dalla fixture, con `?api=`
+(accettato solo da `127.0.0.1` e `localhost`):
+`http://127.0.0.1:8237/p/?api=http://127.0.0.1:8299#<id>`. Il finto `/post`
+usato per la parte D sta, fuori da git, in `out/TASK-455/post-stand-in.mjs`.
+
+**Online** la pagina c'è solo dopo che il sito è stato copiato con dentro
+`site/p` (`DEPLOY.md` F.14), e funziona solo dopo il passo sul server della
+parte C: prima, ogni link dice «no longer available».
+
 ## Online
 
 Il sito è su **https://getmuw.app** dal 2026-10-08, servito dal Caddy del

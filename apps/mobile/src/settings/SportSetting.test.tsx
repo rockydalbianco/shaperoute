@@ -32,18 +32,20 @@ test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191), «Swim» (T
   // (TASK-415 B).
   // And «Paragliding» (TASK-305 R2), «Cross-country ski» (TASK-375) and
   // «Wheelchair & stroller» (TASK-414 B).
-  expect(screen.getAllByRole("radio")).toHaveLength(15);
+  // And «Snowshoes» (TASK-413).
+  expect(screen.getAllByRole("radio")).toHaveLength(16);
   expect(screen.getByRole("radio", { name: "Walk" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Hike" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Gravel" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "MTB" })).not.toBeChecked();
   // And «Roller» (TASK-380).
   expect(screen.getByRole("radio", { name: "Roller" })).not.toBeChecked();
-  // «Cross-country ski» (TASK-375) and «Wheelchair & stroller» (TASK-414 B)
-  // are on too: only «Snowshoes» says «Soon», until the user's yes
-  // (TASK-413 B).
+  // «Cross-country ski» (TASK-375), «Wheelchair & stroller» (TASK-414 B) and
+  // «Snowshoes» (TASK-413) are on too: only «Mountaineering» (TASK-463 B)
+  // says «Soon», until it is turned on.
   expect(screen.getAllByText("Soon")).toHaveLength(1);
-  expect(screen.getByLabelText("Snowshoes, coming soon")).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Snowshoes" })).not.toBeChecked();
+  expect(screen.getByLabelText("Mountaineering, coming soon")).toBeOnTheScreen();
   expect(
     screen.getByRole("radio", { name: "Wheelchair & stroller" }),
   ).not.toBeChecked();
@@ -77,8 +79,8 @@ test("a sport not ready says «Soon» and takes no tap", async () => {
   // (TASK-377), Gravel and MTB (TASK-378), Roller (TASK-380), Ski and
   // Cross-country ski (TASK-375), Ski touring (TASK-415 B), Gym (TASK-385 B)
   // Paragliding (TASK-305 R2), Wheelchair & stroller (TASK-414 B) and
-  // Snowshoes (TASK-413 B).
-  expect(screen.getAllByText("Soon")).toHaveLength(15);
+  // Snowshoes (TASK-413 B), Mountaineering (TASK-463 B).
+  expect(screen.getAllByText("Soon")).toHaveLength(16);
 });
 
 test("a sport that is ready is chosen with a tap, and kept", async () => {

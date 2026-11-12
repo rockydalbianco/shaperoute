@@ -4,6 +4,7 @@
  * without a track (TASK-385). A new sport is a file of this folder and a
  * line here; index.ts derives its tables.
  */
+import { ALPINISM } from "./alpinism.ts";
 import { CYCLING } from "./cycling.ts";
 import { GRAVEL_BIKING } from "./gravel_biking.ts";
 import { GYM } from "./gym.ts";
@@ -28,6 +29,7 @@ export {
   type TracklessSport,
 } from "./base.ts";
 export {
+  ALPINISM,
   CYCLING,
   GRAVEL_BIKING,
   GYM,
@@ -59,5 +61,11 @@ export const PLANNED_SPORTS = [
   WALKING,
   GRAVEL_BIKING,
 ] as const;
-export const RECORDED_SPORTS = [SKIING, XC_SKIING, SKI_TOURING, PARAGLIDING] as const;
+export const RECORDED_SPORTS = [
+  SKIING,
+  XC_SKIING,
+  SKI_TOURING,
+  PARAGLIDING,
+  ALPINISM,
+] as const;
 export const TRACKLESS_SPORTS = [GYM] as const;

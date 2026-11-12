@@ -1,10 +1,10 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta), poi B3 (app, la scheda «Sleep» del profilo), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta) · **B3 scritta** (app, la scheda «Sleep» del profilo, spenta: branch `feat/TASK-467-b3-sleep-profile`), poi C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
 `feat/TASK-467-b1b-sleep-in-feed` (B1b), `feat/TASK-467-b2-sleep-post` (B2),
-`feat/TASK-467-b2b-sleep-gym-pool` (B2b)
+`feat/TASK-467-b2b-sleep-gym-pool` (B2b), `feat/TASK-467-b3-sleep-profile` (B3)
 **Dipende da**: TASK-321 (Apple Salute nell'app, la stessa libreria),
 TASK-345 C / TASK-409 B (la lettura del battito: il modello del «leggere
 da Salute dopo un tocco»)
@@ -116,6 +116,21 @@ volta, ognuna con la proposta dell'agente:
    frase della privacy è approvata nel contenuto: se per incastrarla
    con quella sul battito cambia, torna all'utente.
 
+8. **Come si smette di condividere (B3).** **Risposta dell'utente
+   (2026-11-12): «Pulsante + riga»** — dopo «Share» la scheda dice «On
+   your profile» e il pulsante diventa «Stop sharing»: un tocco toglie il
+   sonno dal profilo, senza conferma. Prima di «Share» la scheda dice
+   «Only you see this» (il testo del VO₂ max). Testo nuovo: «On your
+   profile». Scartati: il solo pulsante; un interruttore in «Settings».
+9. **Una notte condivisa non recente (B3).** **Risposta dell'utente
+   (2026-11-12): «Col giorno»** — sul profilo, accanto a «Sleep score», il
+   giorno della notte («12 Nov», il formato del VO₂ max, mai un orario).
+   Resta finché se ne condivide un'altra o si tocca «Stop sharing». Sulla
+   propria scheda, se sul profilo c'è ancora una notte più vecchia: la
+   notte di oggi con «Share» e sotto «On your profile · 11 Nov» con «Stop
+   sharing». Scartati: far sparire da sola la notte dopo un giorno; nessun
+   giorno.
+
 | Dove | Testo |
 |---|---|
 | Permesso di iOS (`NSHealthShareUsageDescription`, al posto di quello di oggi) | «MuW reads your heart rate during each activity and your sleep from Apple Health, to show them with your activities and in your posts. You can hide them before you publish.» |
@@ -124,6 +139,7 @@ volta, ognuna con la proposta dell'agente:
 | Sotto il punteggio | «Worked out by MuW from Apple Health data. It can differ from the score in the Health app.» |
 | Primo «Share» | «Share your sleep? Your score, hours slept and sleep stages show on your profile, to everyone who can see it.» · «Share» / «Cancel» (riscritto e riapprovato il 2026-11-12, dopo «Sì, profilo adesso»; prima finiva «…become a post, seen like your other posts.») |
 | Post dell'attività, prima di pubblicare | interruttore «Sleep last night» · «82 · Very good · 7 h 40 min» · «Shown in this post. Turn it off to keep it to yourself.» |
+| Scheda «Sleep», chi la vede (risposte 8 e 9, 2026-11-12) | prima di «Share»: «Only you see this» · dopo: «On your profile» e pulsante «Stop sharing» · una notte più vecchia ancora sul profilo: «On your profile · 11 Nov» · accanto a «Sleep score» il giorno della notte: «12 Nov» |
 | Nessun dato | «No sleep data for last night in Apple Health.» |
 | Permesso negato o tolto | «MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.» |
 | Privacy | «Once you allow it, MuW reads your sleep from Apple Health (time asleep and sleep stages) on your phone and works out a sleep score there. Nothing reaches our server until you publish it: then the score, the hours slept, the stages and the date are kept with your post, seen by whoever can see your posts, until you delete the post or your account. We never use health data for advertising.» |
@@ -545,6 +561,110 @@ Deciso dall'agente su delega dell'utente; nessun testo nuovo.
 che i due test hanno in comune). `GymPostForm.tsx` e `PoolPostForm.tsx`
 non toccati.
 
+### Parte B3 — com'è fatta (2026-11-12, branch `feat/TASK-467-b3-sleep-profile`)
+
+La scheda «Sleep» del profilo, con «Share» di una notte da sola. **Spenta
+come B2**: stessa costante, nessun lettore; niente di quello che segue si
+vede o parte finché la parte C non lo accende. Deciso dall'agente su delega
+dell'utente, dentro le scelte della parte 0 e le risposte 8 e 9; lista dei
+file approvata dal Coordinatore. Nessun codice sul server: bastano le rotte
+di B1.
+
+**Che cosa c'è** (com'è quando è acceso; il dettaglio in `UI.md`, «La
+scheda Sleep del profilo»):
+
+- **Sul proprio profilo** (`profile/OwnSleep.tsx`, montata in
+  `ProfileHome.tsx` sotto il VO₂ max):
+  - *prima del sì*: il pulsante «Show my sleep from Apple Health» e sotto
+    «MuW works out a sleep score from your Apple Health sleep data.». Il
+    tocco è il sì: apre il foglio del telefono (`reader.ask()`), legge la
+    notte e tiene il sì (`keepSleepOn()`, `health/sleepChoice.ts`): da lì
+    anche la fine di un'attività legge il sonno (B2). Un telefono che non
+    può leggere dice «MuW can't read your sleep…» e il sì non si tiene;
+  - *col sì tenuto*, a ogni apertura del profilo la notte si rilegge dal
+    telefono, senza richiedere il permesso: «Sleep score» col giorno, «82 ·
+    Very good», «7 h 40 min», le fasi se un orologio le ha dette, la nota
+    «Worked out by MuW…». Senza notte: «No sleep data for last night in
+    Apple Health.»;
+  - *chi la vede*: «Only you see this» e «Share». Il primo «Share» chiede
+    «Share your sleep?» col testo approvato («Cancel» / «Share»), una
+    volta sola per telefono (`sleep-share.json`); poi `PUT
+    /me/sleep/{night}` coi soli numeri e `shared: true`. Da lì «On your
+    profile» e «Stop sharing», che è `DELETE /me/sleep/shared`, senza
+    conferma;
+  - *una notte più vecchia ancora sul profilo*: sotto quella di oggi (o
+    sotto «No sleep data…») la riga «On your profile · 11 Nov» con «Stop
+    sharing». Condivisa quella di oggi, prende il suo posto.
+- **Sul profilo di un altro** (`profile/UserSleep.tsx`, montata in
+  `UserProfilePage.tsx` sotto il VO₂ max): l'ultima notte condivisa, da
+  `GET /users/{id}/sleep`, nello stesso riquadro
+  (`profile/ProfileSleep.tsx`), sola lettura. Un `404` (nessuna notte,
+  notte non condivisa, blocco: tutti uguali) non mostra niente.
+- **La notte** (`health/sleepProfile.ts`): quella da cui ci si è svegliati
+  oggi, con le stesse funzioni di B2 (`lastNightOf`); distingue «nessuna
+  notte» da «non si può leggere» (telefono senza dati di Salute, o lettura
+  fallita), che `readLastNight` di B2 confonde.
+- **Il client** (`api/sleepProfile.ts`): `PUT /me/sleep/{night}`, `DELETE
+  /me/sleep/shared`, `GET /users/{id}/sleep`.
+
+**Le scelte tecniche** (per «ADR-0380, precisazione B3»):
+
+1. **Quale notte è sul profilo lo dice il server, non il telefono**: la
+   scheda chiede `GET /users/{il proprio id}/sleep` e confronta il giorno
+   con la notte letta. Così vale anche da un altro telefono, e la domanda
+   non porta nessun dato del sonno. Parte solo col sì a leggere il sonno
+   già tenuto: prima, nessuna richiesta.
+2. **Niente lascia il telefono prima di «Share»**: la notte letta resta
+   nella scheda; al server vanno solo punteggio, minuti e fasi, e il giorno
+   nel percorso. Mai gli orari.
+3. **«Stop sharing» toglie ogni notte dal profilo** (`DELETE
+   /me/sleep/shared`), non solo l'ultima: spegnere la sola ultima farebbe
+   ricomparire quella prima (B1). Una notte che nessun post porta sparisce
+   così anche dal server.
+4. **La conferma del primo «Share» è del telefono**, come la domanda del
+   VO₂ max (`vo2max-asked.json`): un telefono nuovo la richiede.
+5. **La notte condivisa non si aggiorna da sola**: se Salute cambia i
+   numeri dopo «Share» (l'orologio sincronizza tardi), sul profilo restano
+   quelli condivisi finché non si condivide di nuovo. Nessun invio senza un
+   tocco.
+6. **«Stop sharing» ha una chiave sua** (`Stop sharing@@sleep`): quella
+   della live è tradotta «Smetti», «Beenden», «Arrêter», che qui non dice
+   che cosa.
+
+**Come resta nascosta.** `OwnSleep` non disegna niente, non legge e non
+chiede niente con `sleepPostsOn()` falso **o** senza lettore
+(`sleepReader()` è null in ogni build); `UserSleep` niente e nessuna
+richiesta con `sleepPostsOn()` falso. I test confrontano l'albero intero
+delle due schermate, spento e acceso, tolto il solo riquadro del sonno
+(`ProfileHomeSleep.test.tsx`, `UserProfileSleep.test.tsx`), anche con un
+lettore finto e il sì già tenuto. `sleepModules.test.ts` invariato: i file
+nuovi passano il suo controllo (nessuna libreria di Salute, nessun
+permesso). Nessun cambio ad `app.json`, `app.config.ts`, plugin o
+dipendenze.
+
+**File**. NUOVI in `apps/mobile/src/`: `api/sleepProfile.ts`,
+`health/sleepProfile.ts`, `profile/ProfileSleep.tsx`, `profile/OwnSleep.tsx`,
+`profile/UserSleep.tsx`, coi test (`api/sleepProfile.test.ts`,
+`health/sleepProfile.test.ts`, `profile/OwnSleep.test.tsx`,
+`profile/UserSleep.test.tsx`, `profile/ProfileHomeSleep.test.tsx`,
+`profile/UserProfileSleep.test.tsx`). MODIFICATI: `profile/ProfileHome.tsx`
+e `profile/UserProfilePage.tsx` (un import e una riga ciascuno),
+`i18n/{it,de,es,fr}.ts`, `docs/UI.md`, questo file.
+
+**Da sapere per C**:
+
+- Il lettore vero deve **lanciare un errore** quando sa che non può
+  leggere (permesso negato dove iOS lo dice, dati di Salute non
+  disponibili): è quello che fa dire «MuW can't read your sleep…». iOS non
+  dice se la lettura è negata: una lettura negata torna vuota e la scheda
+  dice «No sleep data for last night…». Se serve distinguere meglio, è una
+  scelta della parte C.
+- La frase della privacy approvata dice «kept with your post»: la notte
+  condivisa sul profilo non è in un post. La frase va riletta con l'utente
+  prima di accendere.
+- La prova nel simulatore (un lettore finto, la costante accesa in locale)
+  è della parte C o del turno del simulatore: qui niente si vede.
+
 ## Criteri di accettazione
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.
@@ -579,7 +699,20 @@ non toccati.
 - [x] B2b: con `SLEEP_POSTS_ON` spento `GymEnd` e `PoolSwimEnd` si
   disegnano esattamente come prima e le due code non mandano niente sul
   sonno, coi test; nessun file nativo, `sleepModules.test.ts` invariato.
-- [ ] Parti B3, C, D: criteri scritti qui quando partono.
+- [x] B3: sul proprio profilo la scheda «Sleep» (il sì al tocco, la
+  notte, «Share» con la conferma la prima volta, «Stop sharing»); sul
+  profilo di un altro l'ultima notte condivisa; i testi approvati e le
+  risposte 8 e 9, nelle quattro lingue; test deterministici, `tsc`, ESLint
+  e Prettier puliti.
+- [x] B3: **chi non è l'autore non vede mai una notte non condivisa**: il
+  profilo di un altro mostra solo quello che `GET /users/{id}/sleep` dà, e
+  un `404` non mostra niente (coi test); niente lascia il telefono prima di
+  «Share».
+- [x] B3: con `SLEEP_POSTS_ON` spento `ProfileHome` e `UserProfilePage` si
+  disegnano esattamente come prima e non parte nessuna richiesta sul
+  sonno, coi test; `SLEEP_POSTS_ON` resta `false`, nessun lettore, nessun
+  file nativo, `sleepModules.test.ts` invariato.
+- [ ] Parti C, D: criteri scritti qui quando partono.
 
 ## File toccati (documenti, questa PR)
 
@@ -650,3 +783,10 @@ non toccati.
   al turno. Prossima **B3**, la scheda «Sleep» del profilo, in una sessione
   nuova: parte da «Da sapere per B2b, B3 e C» e manda prima la lista dei
   file al Coordinatore (`profile/**` è di TASK-457 finché non lo libera).
+- **2026-11-12, B3**: scritta la B3 in una sessione nuova: la scheda
+  «Sleep» sul proprio profilo e l'ultima notte condivisa su quello di un
+  altro, spente come B2. Due scelte dell'utente (risposte 8 e 9): «Stop
+  sharing» con la riga «On your profile», e il giorno della notte accanto
+  a «Sleep score». Nessun codice sul server. Restano: il merge del
+  Coordinatore, la PR di soli documenti («ADR-0380, precisazione B3», la
+  riga di `STATUS.md`), B1b sul server, la prova nel simulatore; poi C.

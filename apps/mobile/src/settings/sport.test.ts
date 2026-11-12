@@ -78,6 +78,8 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "Cross-country ski",
     "Ski touring",
     "Snowshoes",
+    // «Soon» until it is turned on (TASK-463 part B).
+    "Mountaineering",
     "Gym",
     "Paragliding",
   ]);
@@ -95,6 +97,7 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "ski",
     "xc_ski",
     "skimo",
+    "snowshoe",
     "gym",
     "paragliding",
   ]);
@@ -116,8 +119,10 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
   expect(canChoose("xc_ski")).toBe(true);
   // And a wheelchair or a stroller, since the server has TASK-414 part A.
   expect(canChoose("wheelchair")).toBe(true);
-  // Snowshoes are shown «Soon» until the user's yes (TASK-413 part B).
-  expect(canChoose("snowshoe")).toBe(false);
+  // And snowshoes, since the server has #1266 (TASK-413, «Sì, accendi»).
+  expect(canChoose("snowshoe")).toBe(true);
+  // Not a day of mountaineering yet: «Soon» until it is turned on (TASK-463).
+  expect(canChoose("alpinism")).toBe(false);
   expect(canChoose("golf")).toBe(false);
 });
 
@@ -129,20 +134,21 @@ test("«Snowshoes» ❄️ on the snow: shapes on the open snow, and «Record yo
     id: "snowshoe",
     emoji: "❄️",
     name: "Snowshoes",
-    ready: false,
+    ready: true,
   });
   expect(isRecordOnly("snowshoe")).toBe(false);
   expect(activityOf("snowshoe")).toBe("snowshoeing");
   expect(runActivityOf("snowshoe")).toBe("snowshoeing");
   expect(withoutRouteLabel("snowshoe")).toBe("Record your day");
-  // Not offered where a sport is chosen or looked for until it is ready.
-  expect(activityOffered("snowshoeing")).toBe(false);
+  // Offered where a sport is chosen or looked for, now that it is ready; not
+  // before.
+  expect(activityOffered("snowshoeing")).toBe(true);
   expect(
     activityOffered(
       "snowshoeing",
-      SPORTS.map((option) => ({ ...option, ready: true })),
+      SPORTS.map((option) => ({ ...option, ready: false })),
     ),
-  ).toBe(true);
+  ).toBe(false);
 });
 
 test("«Paragliding» comes last, recorded without a shape since TASK-305 R2", () => {

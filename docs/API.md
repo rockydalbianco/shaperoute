@@ -1240,6 +1240,12 @@ parapendio e lo riceve come `Workout`, il GPX dice
 preferiti e corse di gruppo no (migrazione `0069`). Lo legge solo un'app
 che dice `paragliding` in `X-MuW-Reads`.
 
+**L'alpinismo** (`alpinism`, TASK-463, ADR-0373) è un quinto sport senza
+forma, dopo `paragliding`: Strava lo riceve come `Hike`, il GPX dice
+`<type>alpinism</type>`. Per il resto vale quello che vale per il
+parapendio: niente percorsi, gioco o record, e la migrazione `0076` allarga
+solo `runs`. Lo legge solo un'app che dice `alpinism` in `X-MuW-Reads`.
+
 ### Quello che un'app sa leggere: `X-MuW-Reads` (TASK-387, ADR-0328)
 
 Ogni richiesta dell'app dice nell'header `X-MuW-Reads` i tipi in più che sa
@@ -3519,8 +3525,17 @@ in `planned_lives.py`, montato da `install_live_shares`; tipi in
   o `ended`; `distance_m` e `duration_s` sono gli ultimi numeri, per la
   scheda; `reminded` è il «Remind me» di chi chiede; `can_start` vale
   solo per il proprietario.
-- **«Remind me»** tiene solo chi vuole l'avviso: la push alla partenza
-  arriva con la parte A2b. Test in `test_planned_lives.py`.
+- **«Remind me»** (parte A2b): alla **prima** partenza riuscita (`POST
+  /me/planned-lives/{id}/start`), dopo la scrittura, una push
+  `planned_live_started` a chi l'ha chiesto e la vede ancora: mai al
+  proprietario, a chi è lontano per un blocco, a chi non lo segue più per
+  una live «followers». Testo «{name} is live: {title}» (it «{name} è live:
+  {title}», più de, es, fr); dati `{kind, planned_live_id, share_id}`
+  (`fixtures/planned-live-push-data.json`, `PlannedLivePushData`) per
+  aprire la schermata dal vivo. Una ripartenza dopo uno stop non la manda
+  di nuovo; nessun giro periodico, nessuna migrazione. Le regole di
+  `push.py` valgono come per le altre (push accese, token). Test in
+  `test_planned_lives.py`.
 
 ### Run stats (TASK-410 parte C, ADR-0340)
 
@@ -3597,6 +3612,27 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
     compresi.
   - **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
     (422, `extra="forbid"`).
+- **A piedi e in volo, hike & fly** (TASK-305 parte R6a, ADR-0375
+  «precisazione R6»; tipi in `packages/shared-types/src/flightParts.ts`,
+  esempi in `fixtures/flight-parts-request.json` e
+  `fixtures/flight-split.json`, test in `test_flight_parts.py`).
+  - Il telefono può mandare in più `flight_parts`, al più 200,
+    nell'ordine del volo.
+  - Ogni tratto è `{kind: "foot"|"air", start_ms, end_ms, moving_s,
+    metres, climb_m, max_alt_m}`: i tempi sono sull'orologio dei `time_ms`
+    della traccia, `moving_s` non supera la durata del tratto, e
+    `max_alt_m` è `null` senza quote.
+  - Il server li tiene in `stats` **solo per un volo**, come i tratti dello
+    sci: `start_s`/`end_s` in secondi dal primo punto tenuto. Calcola anche
+    `flight_split` `{foot, air}`, ognuno `{seconds, metres, climb_m,
+    max_alt_m}`, ma solo se il volo ha tratti di tutti e due i tipi. Per gli
+    altri sport li ignora.
+  - `GET /drawings/{id}` dà `flight_parts` e `flight_split` dentro
+    `stats`. Ogni lista di post (Feed, profilo, ricerca, gare, stazione) dà
+    `flight_split` sul post, `null` senza tratti a piedi: il Feed ci scrive
+    «On foot {time} · In the air {time}».
+  - **Prima il server, poi l'app**: un server senza R6a rifiuta
+    `flight_parts` (422).
 
 ### Ski names (TASK-375 parte D2, ADR-0319)
 
@@ -4200,6 +4236,51 @@ share attached» di `messages.py`, la migrazione `0077_message_live.sql`.
   con un testo. Mai la posizione.
 - **Un'API di prima** ignora `live` nell'header e rifiuta `live_share_id`
   con `422` (campo in più). Test in `test_message_lives.py`.
+
+### Post links (TASK-455 parte C, ADR-0382)
+
+Il link di un post: una pagina del sito (`https://getmuw.app/p/#<id del
+disegno>`, `SITO.md`) che chiede all'API quello che il link mostra, **senza
+account e senza la chiave dell'app** (scelte dell'utente del 2026-11-12).
+Tipi in `shared-types` (`PostLink`, `PostLinksSwitch`, `POST_LINK_PAGE`, e
+`linkable` nei disegni), esempio in `fixtures/post-link.json`; il codice in
+`post_links.py`, la condizione in `drawings.LINKABLE_SQL`, la migrazione
+`0078_post_links.sql` (`DATABASE.md`).
+
+| Endpoint | Account | Cosa | Risposta |
+|---|---|---|---|
+| `GET /post?id=<id del disegno>` | no, e senza `X-API-Key` | quello che il link mostra | `200` `PostLink`, `404 http_error`, `429` |
+| `GET /me/post-links` | sì | «Links to my posts» | `200` `{ "post_links": true }` |
+| `PUT /me/post-links` | sì | lo accende o lo spegne, corpo `{ "post_links": false }` | `200` lo stesso corpo, `422` |
+
+- **Chi ha un link**: solo un disegno `everyone`, con una linea, non
+  nascosto, di un autore non nascosto e che lascia **«Links to my posts»**
+  acceso. È una condizione sola (`LINKABLE_SQL`), chiesta a ogni richiesta.
+- **Cosa mostra, e non di più**: `id`, `username` dell'autore, `title`,
+  `shape`, `word`, `route_title`, `distance_m`, `activity`,
+  `rotation_deg` e `track`, **la linea intera come la vede già un
+  iscritto** (ADR-0330). Mai foto, commenti, reazioni, descrizione, persone
+  taggate, luogo, giorno, tempi, né altro dell'account.
+- **Un solo `404`**: un disegno «Followers», uno privato, uno nascosto, uno
+  di un autore nascosto, uno con l'interruttore spento, uno cancellato, un
+  id che non c'è o che non è un UUID rispondono tutti `404 http_error` «No
+  drawing with this id.», identici: un link non dice niente di ciò che non
+  apre. Niente è tenuto: il link smette di funzionare alla richiesta dopo.
+- **`/post` è in `access.OPEN_PATHS`**, come `/live`: la pagina del sito
+  non ha la chiave. La risposta (anche il `404` e il `429`) ha
+  `Access-Control-Allow-Origin: https://getmuw.app`, `Cache-Control:
+  no-store`, `Referrer-Policy: no-referrer` e `X-Robots-Tag: noindex,
+  nofollow, noarchive`. Limite: 60 richieste al minuto per indirizzo
+  (`429 too_many_requests`, `Retry-After`); conta anche un id che non c'è.
+- **«Links to my posts»** (`users.post_links`) è **acceso all'inizio**, anche
+  per gli account di prima. Spento, nessun link ai disegni dell'account
+  funziona, **nemmeno quelli presi dall'autore**, e nessuno dei suoi
+  disegni è `linkable`, nemmeno per lui.
+- **`linkable`** è in tutto quello che un iscritto vede di un disegno (`GET
+  /feed`, `GET /users/{id}/drawings`, `GET /drawings/{id}`, la ricerca, i
+  concorsi): vero quando il disegno ha un link. L'app mostra «Share link»
+  solo allora. Un'app di prima ignora il campo; un'API di prima non lo ha
+  (nessun link).
 
 ### Shape game (TASK-296, ADR-0255)
 

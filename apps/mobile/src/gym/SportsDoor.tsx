@@ -14,7 +14,7 @@ import {
 import { type Equipment, isBodyweightDay } from "./bodyweight";
 import { ExerciseFigure } from "./ExerciseFigure";
 import { MOVES } from "./moves";
-import { isGymDay, isRunDay, proposedDays, proposedRunDays } from "./proposal";
+import { isRunDay, proposedDays, proposedRunDays } from "./proposal";
 
 /**
  * «Cosa vuoi allenare?» (TASK-461 A2, ADR-0371): the door of «New plan»,
@@ -25,7 +25,15 @@ import { isGymDay, isRunDay, proposedDays, proposedRunDays } from "./proposal";
  */
 
 /** The sports a plan of the guide mixes. */
-export const PLAN_SPORTS = ["gym", "body", "run"] as const;
+export const PLAN_SPORTS = [
+  "gym",
+  "body",
+  "run",
+  "walk",
+  "bike",
+  "swim",
+  "mountain",
+] as const;
 export type PlanSport = (typeof PLAN_SPORTS)[number];
 
 /** A plan mixes at least this many. */
@@ -42,12 +50,31 @@ export type SportCounts = Readonly<Record<PlanSport, number>>;
 export function countsFor(chosen: readonly PlanSport[]): SportCounts {
   const gym = chosen.includes("gym");
   const body = chosen.includes("body");
+  // The sports with a distance or a climb (TASK-461 B and C): two days for
+  // the first chosen, one for each other.
+  const endurance = chosen.filter((one) => ENDURANCE_SPORTS.includes(one));
+  const enduranceCount = (sport: PlanSport) =>
+    !chosen.includes(sport) ? 0 : endurance[0] === sport ? (gym && body ? 1 : 2) : 1;
   return {
     gym: gym ? (body ? 2 : 3) : 0,
     body: body ? (gym ? 2 : 3) : 0,
-    run: chosen.includes("run") ? (gym && body ? 1 : 2) : 0,
+    run: enduranceCount("run"),
+    walk: enduranceCount("walk"),
+    bike: enduranceCount("bike"),
+    swim: enduranceCount("swim"),
+    mountain: enduranceCount("mountain"),
   };
 }
+
+/** The sports with a distance or a climb, the first chosen leads to the
+ * plan's target (the user's «Più d'uno» of 2026-11-12). */
+export const ENDURANCE_SPORTS: readonly PlanSport[] = [
+  "run",
+  "walk",
+  "bike",
+  "swim",
+  "mountain",
+];
 
 export const DOOR_COUNTS = countsFor(DOOR_CHOSEN);
 
@@ -62,21 +89,51 @@ export function spreadDays(
   const first: PlanSport = chosen.includes("gym") ? "gym" : "body";
   const primary = count(first) > 0 ? proposedDays(count(first)) : [];
   const second = first === "gym" ? proposedRunDays(count("body"), primary) : [];
-  const run = proposedRunDays(count("run"), [...primary, ...second]);
-  return {
+  const spread: Record<PlanSport, number[]> = {
     gym: first === "gym" ? primary : [],
     body: first === "body" ? primary : second,
-    run,
+    run: [],
+    walk: [],
+    bike: [],
+    swim: [],
+    mountain: [],
   };
+  // The sports with a distance in the order chosen, each on free days.
+  let taken = [...primary, ...second];
+  for (const sport of chosen.filter((one) => ENDURANCE_SPORTS.includes(one))) {
+    spread[sport] = proposedRunDays(count(sport), taken);
+    taken = [...taken, ...spread[sport]];
+  }
+  return spread;
 }
 
 /** The sports of a plan's days. */
 export function sportsOf(sessions: readonly GymPlanSession[]): PlanSport[] {
   return PLAN_SPORTS.filter((sport) =>
-    sessions.some(
-      sport === "gym" ? isGymDay : sport === "body" ? isBodyweightDay : isRunDay,
-    ),
+    sessions.some((one) => sportOfSession(one) === sport),
   );
+}
+
+/** The door's sport of a day of a plan. */
+export function sportOfSession(session: GymPlanSession): PlanSport {
+  if (isRunDay(session)) {
+    return "run";
+  }
+  switch (session.outing?.sport) {
+    case undefined:
+      return isBodyweightDay(session) ? "body" : "gym";
+    case "walk":
+      return "walk";
+    case "hike":
+      return session.outing.kind === "climb" ? "mountain" : "walk";
+    case "bike":
+    case "gravel":
+    case "mtb":
+      return "bike";
+    case "swim":
+    case "paddle":
+      return "swim";
+  }
 }
 
 /** What a proposal was made for: proposed again when it changes. */
@@ -95,23 +152,39 @@ const OPTIONS: readonly { sport: PlanSport; title: string; line: string }[] = [
     title: tLater("Bodyweight"),
     line: tLater("At home or in the park, no equipment"),
   },
-  { sport: "run", title: tLater("Running"), line: tLater("Easy, intervals, long") },
-];
-
-const SOON: readonly { key: string; badge: string; title: string; line: string }[] = [
+  { sport: "run", title: tLater("Running"), line: tLater("Toward 5, 10, 21 or 42 km") },
   {
-    key: "distance",
-    badge: "KM",
-    title: tLater("Toward a distance"),
-    line: tLater("Running, walking, cycling, swimming"),
+    sport: "walk",
+    title: tLater("Walking and hiking"),
+    line: tLater("Toward 10, 15, 20, 30 km"),
   },
   {
-    key: "mountain",
-    badge: "▲",
+    sport: "bike",
+    title: tLater("Cycling"),
+    line: tLater("Road, gravel, MTB · toward 30–150 km"),
+  },
+  {
+    sport: "swim",
+    title: tLater("Swimming and paddling"),
+    line: tLater("Pool or open water"),
+  },
+  {
+    sport: "mountain",
     title: tLater("Mountains"),
     line: tLater("Hikes and trips, more climb each week"),
   },
 ];
+
+/** The mark of each sport of the door, in its square. */
+export const SPORT_BADGES: Readonly<Record<PlanSport, string>> = {
+  gym: "GYM",
+  body: "BODY",
+  run: "RUN",
+  walk: "WALK",
+  bike: "BIKE",
+  swim: "SWIM",
+  mountain: "▲",
+};
 
 const ICON = 44;
 
@@ -136,7 +209,9 @@ export function SportsDoor({
       </View>
       {OPTIONS.map((one) => {
         const on = chosen.includes(one.sport);
-        const run = one.sport === "run";
+        // The sports with a distance in the run's blue (TASK-461 B, C).
+        const run = ENDURANCE_SPORTS.includes(one.sport);
+        const strength = one.sport === "gym" || one.sport === "body";
         return (
           <Pressable
             key={one.sport}
@@ -151,8 +226,8 @@ export function SportsDoor({
             testID={`door-${one.sport}`}
           >
             <View style={styles.icon}>
-              {run ? (
-                <Text style={styles.runBadge}>RUN</Text>
+              {!strength ? (
+                <Text style={styles.runBadge}>{SPORT_BADGES[one.sport]}</Text>
               ) : (
                 <ExerciseFigure
                   move={one.sport === "gym" ? MOVES.bench : MOVES.push_up}
@@ -171,23 +246,6 @@ export function SportsDoor({
           </Pressable>
         );
       })}
-      {SOON.map((one) => (
-        <View
-          key={one.key}
-          style={styles.option}
-          accessibilityState={{ disabled: true }}
-          testID={`door-${one.key}`}
-        >
-          <View style={styles.icon}>
-            <Text style={styles.soonBadge}>{one.badge}</Text>
-          </View>
-          <View style={styles.optionText}>
-            <Text style={[styles.optionTitle, styles.muted]}>{t(one.title)}</Text>
-            <Text style={[styles.optionLine, styles.faint]}>{t(one.line)}</Text>
-          </View>
-          <Text style={styles.soon}>{t("Soon@@door")}</Text>
-        </View>
-      ))}
     </>
   );
 }
@@ -245,11 +303,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.small,
     fontWeight: fontWeight.bold,
   },
-  soonBadge: {
-    color: color.borderStrong,
-    fontSize: fontSize.small,
-    fontWeight: fontWeight.bold,
-  },
   optionText: {
     flex: 1,
     gap: 2,
@@ -262,12 +315,6 @@ const styles = StyleSheet.create({
   optionLine: {
     color: color.textMuted,
     fontSize: fontSize.small,
-  },
-  muted: {
-    color: color.textMuted,
-  },
-  faint: {
-    color: color.textFaint,
   },
   box: {
     width: 22,
@@ -290,14 +337,5 @@ const styles = StyleSheet.create({
     color: color.onAccent,
     fontSize: fontSize.small,
     fontWeight: fontWeight.bold,
-  },
-  soon: {
-    color: color.textMuted,
-    fontSize: fontSize.small,
-    paddingHorizontal: space.sm,
-    paddingVertical: space.xs,
-    borderRadius: radius.md,
-    backgroundColor: color.surfaceRaised,
-    overflow: "hidden",
   },
 });

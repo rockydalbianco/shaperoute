@@ -1401,13 +1401,9 @@ export const FR: Table = {
   "With weights and machines": "Avec poids et machines",
   Bodyweight: "Poids du corps",
   "At home or in the park, no equipment": "À la maison ou au parc, sans matériel",
-  "Easy, intervals, long": "Footing, fractionné, sortie longue",
-  "Toward a distance": "Vers une distance",
-  "Running, walking, cycling, swimming": "Course, marche, vélo, natation",
   Mountains: "Montagne",
   "Hikes and trips, more climb each week":
     "Randonnées et sorties, plus de dénivelé chaque semaine",
-  "Soon@@door": "Bientôt",
   "Next · 1 chosen": "Suivant · 1 choisi",
   "Next · {n} chosen": "Suivant · {n} choisis",
   "More each week": "Plus chaque semaine",
@@ -1432,6 +1428,120 @@ export const FR: Table = {
   "{a} and {b}, for example.": "{a} et {b}, par exemple.",
   "Bodyweight · A": "Poids du corps · A",
   "Bodyweight · B": "Poids du corps · B",
+  // src/gym/outingDay.ts, PlanTodayCard.tsx, TargetSteps.tsx, GymPlanWizard.tsx (TASK-461 B and C, approved 2026-11-11)
+  "Long walk": "Longue marche",
+  "Long hike": "Longue randonnée",
+  "Long ride": "Longue sortie à vélo",
+  "Long swim": "Longue nage",
+  "Long paddle": "Longue sortie en canoë",
+  "Easy walk": "Marche facile",
+  "Easy hike": "Randonnée facile",
+  "Easy ride": "Sortie facile à vélo",
+  "Easy swim": "Nage facile",
+  "Easy paddle": "Canoë facile",
+  "Bike intervals": "Fractionné à vélo",
+  "Swim sets": "Séries de nage",
+  "Paddle intervals": "Fractionné en canoë",
+  "Brisk walk uphill": "Marche rapide en montée",
+  "Brisk walk": "Marche rapide",
+  "Climb outing": "Sortie en montée",
+  "A ride today marks the day done, even a shorter one.":
+    "Une sortie à vélo aujourd'hui valide le jour, même plus courte.",
+  "A swim today marks the day done, even a shorter one.":
+    "Une nage aujourd'hui valide le jour, même plus courte.",
+  "A paddle today marks the day done, even a shorter one.":
+    "Une sortie en canoë aujourd'hui valide le jour, même plus courte.",
+  "A hike today marks the day done, even with less climb.":
+    "Une randonnée aujourd'hui valide le jour, même avec moins de dénivelé.",
+  "A hike today marks the day done, even a shorter one.":
+    "Une randonnée aujourd'hui valide le jour, même plus courte.",
+  "A walk today marks the day done, even a shorter one.":
+    "Une marche aujourd'hui valide le jour, même plus courte.",
+  "Toward {target}, week {n} of {total}.":
+    "Vers les {target}, semaine {n} sur {total}.",
+  "Go to the day · {amount}": "Aller au jour · {amount}",
+  "Look for at least {m} m of climb": "Cherche au moins {m} m de dénivelé",
+  "Record freely and see how much climb is left.":
+    "Enregistre librement et vois combien de dénivelé il reste.",
+  "Draw draws the hike with its km ({km}); the climb depends on where you start. Or record freely and see how much climb is left.":
+    "Draw dessine la randonnée avec ses km ({km}) ; le dénivelé dépend du départ. Ou enregistre librement et vois combien il en reste.",
+  "Draw the hike · {km}": "Dessine la randonnée · {km}",
+  "Record freely · {amount}": "Enregistrer librement · {amount}",
+  "Draw draws {max} at most": "Draw dessine {max} au maximum",
+  "Record freely and see how much is left to {amount}, or draw {max} of shape and do the rest freely.":
+    "Enregistre librement et vois combien il reste jusqu'aux {amount}, ou dessine {max} de forme et fais le reste librement.",
+  "Draw {max}": "Dessine {max}",
+  "Record freely": "Enregistrer librement",
+  "Today: {day}": "Aujourd'hui : {day}",
+  "Already written from your runs: {amount} on {day}.":
+    "Déjà écrit d'après tes courses : {amount} le {day}.",
+  "Already written from your walks: {amount} on {day}.":
+    "Déjà écrit d'après tes marches : {amount} le {day}.",
+  "Already written from your hikes: {amount} on {day}.":
+    "Déjà écrit d'après tes randonnées : {amount} le {day}.",
+  "Already written from your rides: {amount} on {day}.":
+    "Déjà écrit d'après tes sorties à vélo : {amount} le {day}.",
+  "Already written from your swims: {amount} on {day}.":
+    "Déjà écrit d'après tes nages : {amount} le {day}.",
+  "Already written from your paddles: {amount} on {day}.":
+    "Déjà écrit d'après tes sorties en canoë : {amount} le {day}.",
+  Less: "Moins",
+  "What trip do you want to do?": "Quelle sortie veux-tu faire ?",
+  "How much climb in one day. The plan takes you there.":
+    "Combien de dénivelé en une journée. Le plan t'y amène.",
+  "Where do you want to get to?": "Jusqu'où veux-tu aller ?",
+  "The distance of the plan's last day.": "La distance du dernier jour du plan.",
+  Swimming: "Natation",
+  Paddling: "Canoë",
+  "Other@@target": "Autre",
+  "Of climb uphill. 1000 m is, for example, a hut high above the village.":
+    "De dénivelé en montée. 1000 m, c'est par exemple un refuge haut au-dessus du village.",
+  "Just keep fit": "Juste rester en forme",
+  "A plan that stays the same, with no target day":
+    "Un plan qui reste le même, sans jour objectif",
+  "Where do you swim?": "Où nages-tu ?",
+  "How much climb do you do today?": "Combien de dénivelé fais-tu aujourd'hui ?",
+  "The most of the last month, in one outing.":
+    "Le plus du dernier mois, en une seule sortie.",
+  "Where are you today?": "Où en es-tu aujourd'hui ?",
+  "The longest you did in the last month without stopping.":
+    "Le plus long fait le mois dernier sans t'arrêter.",
+  "I'm starting from zero": "Je pars de zéro",
+  "Starting from 200 m, on easy trails":
+    "On commence à 200 m, sur des sentiers faciles",
+  "Starting with walk-run: 1′ running and 2′ walking":
+    "On commence en marche-course : 1′ de course et 2′ de marche",
+  "Starting from {amount}": "On commence à {amount}",
+  "By when?": "Pour quand ?",
+  "When I'm ready": "Quand je suis prêt",
+  "The plan counts the weeks by itself": "Le plan compte les semaines tout seul",
+  "The plan counts the weeks by itself: {n} weeks":
+    "Le plan compte les semaines tout seul : {n} semaines",
+  "A date": "Une date",
+  "A race, an outing: {day}": "Une course, une sortie : {day}",
+  "In {have} weeks you get to {reach}.": "En {have} semaines tu arrives à {reach}.",
+  "For {target} you need {needed} weeks, you have {have}.":
+    "Pour {target} il faut {needed} semaines, tu en as {have}.",
+  "Get to {reach}": "Arriver à {reach}",
+  "Move the date": "Déplacer la date",
+  "At most {n} weeks: choose a nearer date.":
+    "Au plus {n} semaines : choisis une date plus proche.",
+  "Toward {target}": "Vers les {target}",
+  "{n} weeks. The climb grows by a tenth, every 4th lighter, the last day is the trip.":
+    "{n} semaines. Le dénivelé augmente d'un dixième, une sur quatre plus légère, le dernier jour est la sortie.",
+  "{n} weeks. The long one grows by a tenth, every 4th lighter, the last day is the race.":
+    "{n} semaines. La sortie longue augmente d'un dixième, une sur quatre plus légère, le dernier jour est la course.",
+  "Weeks: {first} · {second} · {third} … {last}":
+    "Semaines : {first} · {second} · {third} … {last}",
+  "Toward 5, 10, 21 or 42 km": "Vers 5, 10, 21 ou 42 km",
+  "Walking and hiking": "Marche et randonnée",
+  "Toward 10, 15, 20, 30 km": "Vers 10, 15, 20, 30 km",
+  Cycling: "Vélo",
+  "Road, gravel, MTB · toward 30–150 km": "Route, gravel, VTT · vers 30–150 km",
+  "Swimming and paddling": "Natation et canoë",
+  "Pool or open water": "Piscine ou eau libre",
+  "Remind me at 8": "Rappelle-le-moi à 8 h",
+  "Only on the plan's days": "Seulement les jours du plan",
   // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
   "Your plan, step by step": "Ton programme, étape par étape",
   "A minute to make it, then it guides you every time.":
@@ -1716,6 +1826,16 @@ export const FR: Table = {
   "After run": "Après la course",
   "After gym": "Après la salle",
   "How long?": "Combien de temps ?",
+  // «Morning stretch» in «Settings» and its reminder (TASK-466 part D).
+  "Morning stretch": "Étirements du matin",
+  "{minutes} minutes to wake up your body. Tap to start.":
+    "{minutes} minutes pour réveiller votre corps. Touchez pour commencer.",
+  "MuW can't read your phone's alarm. Set here the time it rings: {minutes} minutes later a reminder opens your Morning routine.":
+    "MuW ne peut pas lire le réveil de votre téléphone. Réglez ici l'heure à laquelle il sonne : {minutes} minutes plus tard, un rappel ouvre votre routine du matin.",
+  "Alarm time": "Heure du réveil",
+  Length: "Durée",
+  Hour: "Heure",
+  Minutes: "Minutes",
   "{index} of {total}": "{index} sur {total}",
   "Right side": "Côté droit",
   "Left side": "Côté gauche",
@@ -2724,6 +2844,8 @@ export const FR: Table = {
   "by {user}": "de {user}",
   "This post is no longer available.": "Cette publication n'est plus disponible.",
   "🗺️ Post": "🗺️ Publication",
+  // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
+  "Add activity": "Ajouter une activité",
   // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
   // 2026-11-08 and 2026-11-12.
   Snowshoes: "Raquettes",
@@ -2772,4 +2894,23 @@ export const FR: Table = {
   "Updated {seconds} s ago": "Mis à jour il y a {seconds} s",
   "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
   "🔴 Live": "🔴 Live",
+  // The «Sleep» card of the profile (TASK-467 part B3): src/profile/OwnSleep.tsx
+  // («On your profile» is with the prizes, «Only you see this» with the VO₂ max)
+  "Show my sleep from Apple Health": "Afficher mon sommeil depuis Apple Santé",
+  "MuW works out a sleep score from your Apple Health sleep data.":
+    "MuW calcule un score de sommeil à partir de tes données de sommeil d'Apple Santé.",
+  "Share your sleep?": "Partager ton sommeil ?",
+  "Your score, hours slept and sleep stages show on your profile, to everyone who can see it.":
+    "Ton score, tes heures de sommeil et tes phases de sommeil s'affichent sur ton profil, pour toutes les personnes qui peuvent le voir.",
+  "No sleep data for last night in Apple Health.":
+    "Aucune donnée de sommeil pour la nuit dernière dans Apple Santé.",
+  "MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.":
+    "MuW ne peut pas lire ton sommeil. Autorise-le dans l'app Santé : ton profil › Apps › MuW.",
+  "Stop sharing@@sleep": "Ne plus partager",
+
+  // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
+  Mountaineering: "Alpinisme",
+  "Before you climb": "Avant de grimper",
+  "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
+    "MuW enregistre ton ascension et la partage : il ne te guide pas. Pars avec ton matériel, ton expérience et ton jugement, et vérifie les conditions avant de partir.",
 };

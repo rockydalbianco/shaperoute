@@ -540,7 +540,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1, A2 in produzione); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
@@ -979,7 +979,9 @@ post funziona o no.
 
 ## ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0
 
-**Stato**: Proposta · 2026-11-12 · TASK-469, nessun codice ancora. La
+**Stato**: **Attiva per la parte A** (A1 #1219 e A2 #1225 in `main` e in
+produzione con l'OTA 14, 2026-11-12; le fette seguenti in corso); la parte
+B resta Proposta · 2026-11-12 · TASK-469. La
 direzione è scelta dell'utente (2026-11-12, «Capsula» fra tre direzioni:
 https://claude.ai/artifact/HD397UmJcu94vNZvGBH2bs); il modo è deciso
 dall'agente su delega dell'utente, coi vincoli del Coordinatore; numero
@@ -1017,6 +1019,22 @@ dichiarati «Sufficient Contrast» e il tema scuro.
 completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta
 `6f8bba4c`. Niente blur sopra la mappa mentre si registra. `docs/UI.md`
 si aggiorna fetta per fetta.
+
+**Come è fatto (A1 e A2, 2026-11-12)**: la velatura è `GLASS_VEIL` = 0,88
+del fondo del tono; `glassOf(scelta)` dà per tono e passo la tinta, il
+riempimento, il bordo di luce in cima (bianco al 22% sul tono scuro, al
+95% sul chiaro), il filo intorno (bianco all'8% sullo scuro, il testo
+all'8% sul chiaro), l'ombra (`scrim` al 55% o al 16%) e la capsula della
+scelta (il testo al 12%). Bordo e luce sono ombre interne di `boxShadow`,
+l'ombra portata è a 8 pt con 24 di sfocatura. `useGlassMode` legge
+«Riduci trasparenza», «Aumenta contrasto» (iOS) e «Testo ad alto
+contrasto» (Android), e vince il contrasto. La barra è una capsula
+staccata di `space.lg` dai lati e alzata sopra l'indicatore home; la
+fascia sotto ha la stessa altezza di prima, così le pagine e `TabShell`
+non cambiano. In `Segmented` la pillola della scelta è una vista sola che
+scivola con la molla `glide` e si ferma senza superare il segno; finché
+la pista non è misurata la scelta porta la pillola da sé. Deciso
+dall'agente su delega dell'utente; l'utente ha approvato le schermate.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

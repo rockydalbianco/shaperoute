@@ -15,6 +15,7 @@ import {
   TRACKLESS_SPORTS,
 } from "./sports/index.ts";
 import type { GymLevel } from "./gym.ts";
+import type { FlightSplit } from "./flightParts.ts";
 import type { SkiDescents } from "./skiParts.ts";
 import type { SleepSummary } from "./sleep.ts";
 
@@ -1397,6 +1398,12 @@ interface DrawingFields {
    * parts; missing from an API before it.
    */
   ski_descents?: SkiDescents | null;
+  /**
+   * A race on foot and in the air (hike & fly, TASK-305 part R6a,
+   * flightParts.ts): each kind added up. Null for any other run and for a
+   * flight with no part on foot; missing from an API before it.
+   */
+  flight_split?: FlightSplit | null;
   /**
    * «Sleep last night» (TASK-467 part B1b, sleep.ts): the night before the
    * activity, while its owner shows it in the post, in every list of posts
@@ -3049,4 +3056,5 @@ export * from "./skiDays.ts";
 export * from "./skiSeason.ts";
 export * from "./resortFollows.ts";
 export * from "./skiParts.ts";
+export * from "./flightParts.ts";
 export * from "./sleep.ts";

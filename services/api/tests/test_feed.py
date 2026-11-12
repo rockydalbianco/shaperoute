@@ -125,6 +125,7 @@ def test_the_example_is_the_body() -> None:
         "order",
         "ski_descents",
         "sleep",
+        "flight_split",
     }
     assert set(post["author"]) == set(AuthorBody.model_fields)
     assert post["author"] == _load("drawing-details.json")["author"]

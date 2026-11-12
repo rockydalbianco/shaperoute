@@ -2716,4 +2716,9 @@ export const FR: Table = {
   "{name} · on the snow · target {km} km": "{name} · sur la neige · objectif {km} km",
   "{name} · on the snow · target {mi} mi": "{name} · sur la neige · objectif {mi} mi",
   "White: where you walked.": "Blanc : là où tu as marché.",
+  // TASK-305 part R6b: on foot and in the air (approved 2026-11-12).
+  "In the air": "En vol",
+  "MuW switches by itself; touch to correct it.":
+    "MuW change tout seul ; touchez pour corriger.",
+  "On foot {foot} · In the air {air}": "À pied {foot} · En vol {air}",
 };

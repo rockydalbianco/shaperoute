@@ -5044,6 +5044,44 @@ Le scelte dell'utente del 2026-11-12, nei testi che ha approvato
     numeri del post. Se un server senza R5a li rifiuta, li rimanda senza,
     come fa con i tratti dello sci.
 
+#### A piedi e in volo, hike & fly (TASK-305 parte R6b)
+
+Nelle gare si corre e si vola nella stessa attività. È la scelta
+dell'utente del 2026-11-12, «Dentro Paragliding»; i testi sono in
+TASK-305.md, «Testi di R6».
+
+- **La divisione** (`src/air/flightParts.ts`). Viene solo dal GPS:
+  - decollo: per almeno 15 s si sale o si scende più di 1,5 m/s, oppure per
+    almeno 20 s si va oltre 25 km/h;
+  - atterraggio: per almeno 60 s si va sotto 9 km/h e si sale o si scende
+    meno di 0,7 m/s;
+  - un tratto più corto di un minuto si unisce a quello vicino.
+- **Durante la registrazione** sopra i riquadri del volo c'è «On foot | In
+  the air» (il controllo a pillola dell'app), con sotto «MuW switches by
+  itself; touch to correct it.».
+  - Un tocco imposta la fase da quel momento. Se arriva entro 5 minuti da un
+    cambio visto dal GPS, annulla quel cambio da quando è avvenuto (la
+    navetta del recupero letta come volo).
+  - Le correzioni restano sul telefono legate al volo
+    (`flight-phase-marks.json`), anche se l'app si chiude.
+  - A piedi i riquadri sono distanza del tratto, dislivello, quota e passo
+    medio; in aria quelli di sempre.
+- **La fine**: sotto la distanza un riquadro con «Total» (il tempo), poi
+  «On foot» (tempo · km · +dislivello) e «In the air» (tempo · km · quota
+  massima).
+  - Le calorie si contano tratto per tratto: a piedi come corsa sotto i
+    7:30 /km, altrimenti come camminata in montagna; in aria col MET del
+    volo.
+  - Un volo senza tratti a piedi finisce come prima.
+- **Il salvataggio** manda `flight_parts` (API.md, «A piedi e in volo»). Se
+  il server non li prende ancora (422), li rimanda senza.
+- **Il Feed**: sotto il titolo del post «On foot 1:58:40 · In the air
+  1:43:30», anche sulla foto e in quello che legge VoiceOver. Nella pagina
+  del post il riepilogo ha due righe in più dopo il tempo, «On foot» e «In
+  the air».
+- **La mappa a due colori** (bianco a piedi, giallo in aria) è la parte
+  R6c, ancora da fare.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di

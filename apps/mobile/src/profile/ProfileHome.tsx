@@ -280,8 +280,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: space.md,
   },
+  // The name at the bottom, also in a tile without its number: beside a
+  // tile that has one, the two names stay on one line (TASK-457).
   tile: {
     flex: 1,
+    justifyContent: "space-between",
     gap: space.xs,
     padding: space.md,
     borderRadius: radius.lg,

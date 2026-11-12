@@ -120,7 +120,9 @@ parla di chi lo guarda.
 - [x] Testi nuovi (en, it, de, es, fr) approvati dall'utente («Sì,
       approvo», 2026-11-12): i tre della scheda, le tre frasi dei badge e
       la frase dopo un blocco.
-- [ ] Schermate del profilo vuoto e di uno con dati.
+- [ ] Schermate del profilo vuoto e di uno con dati: fatte il 2026-11-12
+      sull'iPhone 17e (`out/TASK-457/TASK-457-profilo-nuovo.jpg`), da far
+      vedere all'utente.
 
 ## Cronologia
 
@@ -133,3 +135,10 @@ parla di chi lo guarda.
 - 2026-11-12: PR #1205 in bozza; l'utente approva i sette testi con le
   quattro traduzioni («Sì, approvo»). Restano le schermate col turno del
   simulatore.
+- 2026-11-12: turno del simulatore (iPhone 17e, API di prova sulla 8057 con
+  due account finti, uno senza attività e uno con due corse e un disegno
+  pubblico). Visto: la scheda del primo passo e il suo tasto che apre
+  «Explore», niente zeri nei totali, «Badges» col lucchetto e con il badge
+  preso, «Blocked people» in «Settings». Due ritocchi dalle schermate: la
+  riga «Blocked people» come le altre righe di «Settings» (🚫, peso medio)
+  e il nome delle tessere in fondo, allineato quando una sola ha il numero.

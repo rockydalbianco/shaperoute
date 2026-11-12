@@ -1133,8 +1133,9 @@ tessere «Favorites» e «My activities»); **«Badges»**; cosa ha pubblicato
   attività la scheda sparisce e tornano totali e settimana. Mentre i numeri
   stanno ancora arrivando non si vede né la scheda né una riga di zeri.
 - **Le tessere** «Favorites» e «My activities» con zero elementi mostrano
-  solo il nome, senza «0»; da 1 in su il numero, come prima. I contatori di
-  chi segue restano come sono.
+  solo il nome, senza «0»; da 1 in su il numero, come prima. Il nome sta in
+  fondo alla tessera, così accanto a una tessera col numero i due nomi
+  restano sulla stessa riga. I contatori di chi segue restano come sono.
 - **I badge**: sotto il nome solo quelli **presi** («Winner» e quelli dei
   disegni), sul proprio profilo come su quello di un altro; niente più
   pillole grigie. Più in basso, solo sul proprio, il riquadro **«Badges»**
@@ -1147,8 +1148,8 @@ tessere «Favorites» e «My activities»); **«Badges»**; cosa ha pubblicato
   yet: {badge}. {frase}» per quelli da prendere: preso o no non lo dice
   solo il segno. Con un'API senza i badge, niente riquadro.
 - **«Guide» e «Blocked people» non sono più sul profilo**: «Blocked
-  people» è in «Settings», nella sezione «ACCOUNT»; la guida è «Help» in
-  «ABOUT».
+  people» è in «Settings», nella sezione «ACCOUNT», una riga come le altre
+  (🚫, il nome, «›»); la guida è «Help» in «ABOUT».
 
 **I record personali** (TASK-368, ADR-0312, testi approvati il 2026-11-04).
 Sotto i totali, sul proprio profilo e su quello di un altro, un riquadro

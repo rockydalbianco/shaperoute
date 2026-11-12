@@ -154,10 +154,12 @@ export function BlockedPeople({ fetchFn, apiKey }: Props) {
           setOpen(!open);
         }}
         accessibilityRole="button"
+        // One name for the row: the emoji and the arrow are not read.
         accessibilityLabel={t("Blocked people")}
         accessibilityState={{ expanded: open }}
         testID="blocked-people"
       >
+        <Text style={styles.emoji}>🚫</Text>
         <Text style={styles.rowText}>{t("Blocked people")}</Text>
         <Text style={styles.rowArrow}>{open ? "⌄" : "›"}</Text>
       </Tap>
@@ -221,13 +223,14 @@ const styles = StyleSheet.create({
   section: {
     gap: space.md,
   },
-  // A row in a box, as the first page of «Profile» had them.
+  // As the other rows of «Settings» (`../profile/PhotoRow`), where it sits
+  // since TASK-457: an emoji, the name, and the arrow of a row that opens.
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: space.md,
-    minHeight: MIN_TAP_SIZE,
-    padding: space.md,
+    minHeight: MIN_TAP_SIZE + space.sm,
+    paddingHorizontal: space.md,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: color.border,
@@ -236,11 +239,14 @@ const styles = StyleSheet.create({
   dim: {
     opacity: 0.6,
   },
+  emoji: {
+    fontSize: fontSize.input + space.xs,
+  },
   rowText: {
     flex: 1,
     color: color.text,
     fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
+    fontWeight: fontWeight.medium,
   },
   rowArrow: {
     color: color.textMuted,

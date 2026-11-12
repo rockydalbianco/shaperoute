@@ -23,6 +23,8 @@ import {
 import { chime, tick } from "./chime";
 import { type Exercise, EXERCISES, READY_S, SWITCH_S } from "./exercises";
 import { Figure } from "./Figure";
+import { RoutineChooser } from "./RoutineChooser";
+import { routineExercises, type RoutineKey } from "./routines";
 
 /**
  * The stretching after a run (TASK-285 part B, ADR-0247; the flow of
@@ -54,7 +56,10 @@ export const SAID_EVERY_S = 10;
 type Props = {
   /** The stretching is over, skipped or done: on to «Your run». */
   onLeave: () => void;
+  /** These exercises at once, without asking how long. */
   exercises?: readonly Exercise[];
+  /** The routine whose length is asked first, when no exercises are given. */
+  routine?: RoutineKey;
 };
 
 /** "0:20", "1:05": the seconds left as a clock. */
@@ -82,7 +87,42 @@ function phaseSeconds(step: Step, exercise: Exercise): number {
   return step.side === 1 ? SWITCH_S : READY_S;
 }
 
-export function StretchScreen({ onLeave, exercises = EXERCISES }: Props) {
+/**
+ * The stretching over the app. Given its exercises it starts them at once;
+ * otherwise it first asks how long (`RoutineChooser`, TASK-466 part B) and
+ * runs the routine's exercises for that length.
+ */
+export function StretchScreen({ onLeave, exercises, routine = "afterRun" }: Props) {
+  const [chosen, setChosen] = useState<readonly Exercise[] | undefined>(exercises);
+  return (
+    <Modal
+      visible
+      animationType="fade"
+      statusBarTranslucent
+      // Android's back button leaves, as «End» does.
+      onRequestClose={onLeave}
+    >
+      <StatusBar hidden />
+      {chosen === undefined ? (
+        <RoutineChooser
+          routine={routine}
+          onChoose={(minutes) => setChosen(routineExercises(routine, minutes))}
+          onLeave={onLeave}
+        />
+      ) : (
+        <StretchRun onLeave={onLeave} exercises={chosen} />
+      )}
+    </Modal>
+  );
+}
+
+function StretchRun({
+  onLeave,
+  exercises = EXERCISES,
+}: {
+  onLeave: () => void;
+  exercises?: readonly Exercise[];
+}) {
   const { height: windowHeight } = useWindowDimensions();
   const [step, setStep] = useState<Step>(() => start(0));
   const [paused, setPaused] = useState(false);
@@ -196,80 +236,63 @@ export function StretchScreen({ onLeave, exercises = EXERCISES }: Props) {
   const figureHeight = Math.min(360, windowHeight * 0.4);
 
   return (
-    <Modal
-      visible
-      animationType="fade"
-      statusBarTranslucent
-      // Android's back button leaves, as «End» does.
-      onRequestClose={onLeave}
-    >
-      <StatusBar hidden />
-      <View style={styles.screen} testID="stretch-screen">
-        <View style={styles.top}>
-          <Text style={styles.count}>
-            {t("{index} of {total}", {
-              index: step.index + 1,
-              total: exercises.length,
-            })}
-          </Text>
-          <Text style={styles.name} accessibilityRole="header">
-            {t(exercise.name)}
-          </Text>
-          <Text style={styles.howTo}>{t(exercise.howTo)}</Text>
-          {sideLabel !== null && <Text style={styles.side}>{sideLabel}</Text>}
-        </View>
-        <Figure
-          pose={exercise.pose}
-          breath={exercise.breath}
-          breathing={holding && !paused}
-          height={figureHeight}
-          mirrored={step.side === 1}
-          testID="stretch-figure"
-        />
-        <View style={styles.bottom}>
-          <Text style={styles.phase}>{phaseLabel ?? nextLabel ?? " "}</Text>
-          <Text
-            style={[styles.clock, !holding && styles.clockReady]}
-            accessibilityRole="timer"
-            accessibilityLabel={t("{seconds} seconds left", { seconds: step.left })}
-          >
-            {clockLabel(step.left)}
-          </Text>
-          <View style={styles.bar} accessible={false}>
-            <View
-              style={[styles.barLeft, !holding && styles.barReady, { flex: step.left }]}
-            />
-            <View style={{ flex: total - step.left }} />
-          </View>
-          <View style={styles.buttons}>
-            <Pressable
-              style={styles.button}
-              onPress={() => setPaused((p) => !p)}
-              accessibilityRole="button"
-            >
-              <Text style={styles.buttonText}>{paused ? t("Resume") : t("Pause")}</Text>
-            </Pressable>
-            {!last && (
-              <Pressable
-                style={styles.button}
-                onPress={skip}
-                accessibilityRole="button"
-              >
-                <Text style={styles.buttonText}>{t("Skip")}</Text>
-              </Pressable>
-            )}
-            <Pressable
-              style={styles.button}
-              onPress={onLeave}
-              accessibilityRole="button"
-            >
-              <Text style={styles.buttonText}>{last ? t("Done") : t("End")}</Text>
-            </Pressable>
-          </View>
-          <Text style={styles.care}>{t("Stop if it hurts.")}</Text>
-        </View>
+    <View style={styles.screen} testID="stretch-screen">
+      <View style={styles.top}>
+        <Text style={styles.count}>
+          {t("{index} of {total}", {
+            index: step.index + 1,
+            total: exercises.length,
+          })}
+        </Text>
+        <Text style={styles.name} accessibilityRole="header">
+          {t(exercise.name)}
+        </Text>
+        <Text style={styles.howTo}>{t(exercise.howTo)}</Text>
+        {sideLabel !== null && <Text style={styles.side}>{sideLabel}</Text>}
       </View>
-    </Modal>
+      <Figure
+        pose={exercise.pose}
+        breath={exercise.breath}
+        breathing={holding && !paused}
+        height={figureHeight}
+        mirrored={step.side === 1}
+        testID="stretch-figure"
+      />
+      <View style={styles.bottom}>
+        <Text style={styles.phase}>{phaseLabel ?? nextLabel ?? " "}</Text>
+        <Text
+          style={[styles.clock, !holding && styles.clockReady]}
+          accessibilityRole="timer"
+          accessibilityLabel={t("{seconds} seconds left", { seconds: step.left })}
+        >
+          {clockLabel(step.left)}
+        </Text>
+        <View style={styles.bar} accessible={false}>
+          <View
+            style={[styles.barLeft, !holding && styles.barReady, { flex: step.left }]}
+          />
+          <View style={{ flex: total - step.left }} />
+        </View>
+        <View style={styles.buttons}>
+          <Pressable
+            style={styles.button}
+            onPress={() => setPaused((p) => !p)}
+            accessibilityRole="button"
+          >
+            <Text style={styles.buttonText}>{paused ? t("Resume") : t("Pause")}</Text>
+          </Pressable>
+          {!last && (
+            <Pressable style={styles.button} onPress={skip} accessibilityRole="button">
+              <Text style={styles.buttonText}>{t("Skip")}</Text>
+            </Pressable>
+          )}
+          <Pressable style={styles.button} onPress={onLeave} accessibilityRole="button">
+            <Text style={styles.buttonText}>{last ? t("Done") : t("End")}</Text>
+          </Pressable>
+        </View>
+        <Text style={styles.care}>{t("Stop if it hurts.")}</Text>
+      </View>
+    </View>
   );
 }
 

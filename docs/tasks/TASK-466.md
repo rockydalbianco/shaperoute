@@ -51,7 +51,7 @@ tenendo tutte le voci; nessun OTA di produzione per due giorni.
 
 ## Parte A — Animazioni e schermata
 
-*(branch `feat/TASK-466-a-stretch-motion`)*
+_(branch `feat/TASK-466-a-stretch-motion`)_
 
 1. **Respiro**: mentre la posa è tenuta, la figura va lentamente un po'
    più a fondo e torna (`Breath` in `poses.ts`, `BREATH_MS` = 4 s), pochi
@@ -83,6 +83,60 @@ Ensuite : …, Siguiente: …).
 cinque delle gambe), tre routine — **Morning**, **After run**, **After gym**
 — in tre durate, 3, 5 e 10 minuti. Solo `src/stretch/**` e i18n. Nomi e
 testi col sì dell'utente.
+
+_(branch `feat/TASK-466-b-routines`; lista dei file approvata dal
+Coordinatore il 2026-11-12)_
+
+1. **Dieci esercizi nuovi** (`MORE_EXERCISES`), quindici in tutto, ognuno
+   col suo respiro: Neck stretch, Overhead reach, Shoulder stretch, Chest
+   opener, Triceps stretch, Upper back stretch, Forward fold, Cat stretch,
+   Child's pose, Knee hug. Tutti leggibili di profilo; gli adduttori e le
+   pose sdraiate restano fuori (di lato non si capiscono, la testa tonda
+   andrebbe sotto il pavimento): «Knee hug» si fa in piedi.
+2. **Le routine** (`routines.ts`): per ogni durata una lista e una tenuta
+   sola (20 s a 3 minuti, 25–30 a 5, 40 a 10); `sessionSeconds` conta
+   anche «Get ready» e «Switch sides», e ogni routine sta fra il 90% e il
+   105% dei minuti che dice. `READY_S` e `SWITCH_S` passano in
+   `exercises.ts` (la schermata li riesporta).
+3. **La scelta della durata nella schermata** (scelta dell'utente,
+   2026-11-12, «Nella schermata»): «Stretch» a fine corsa apre
+   `RoutineChooser` — nome della routine, «How long?», tre tasti «3 min»,
+   «5 min», «10 min», «Not now» — poi gli esercizi. Con `exercises` dati
+   la schermata parte subito, come prima; `routine` sceglie la routine
+   (per C e D). Nessun file fuori da `src/stretch`, i18n e i test.
+
+Testi nuovi (sì dell'utente prima del merge): i dieci nomi e le loro
+frasi, «Morning», «After run», «After gym», «How long?».
+
+**Criteri di accettazione (parte B)**
+
+- [x] Quindici esercizi, ognuno con posa, respiro, nome e frase; le pose
+      stanno sul pavimento, al respiro più profondo compreso.
+- [x] Tre routine in 3, 5, 10 minuti, vicine ai minuti, senza doppioni,
+      tenute di almeno 20 s; tutti e quindici gli esercizi usati.
+- [x] A fine corsa la schermata chiede la durata prima del primo
+      esercizio; «Not now» esce.
+- [x] Test di `src/stretch`, `src/i18n`, `__tests__/AppStretch`,
+      `src/gym/restAlert` verdi; `tsc` pulito.
+- [ ] Sì dell'utente su nomi, frasi e traduzioni.
+- [ ] Schermate dal simulatore, col turno del Coordinatore.
+
+**File toccati (parte B)**
+
+```
+apps/mobile/src/stretch/routines.ts               (nuovo)
+apps/mobile/src/stretch/routines.test.ts          (nuovo)
+apps/mobile/src/stretch/RoutineChooser.tsx        (nuovo)
+apps/mobile/src/stretch/RoutineChooser.test.tsx   (nuovo)
+apps/mobile/src/stretch/poses.ts
+apps/mobile/src/stretch/poses.test.ts
+apps/mobile/src/stretch/exercises.ts
+apps/mobile/src/stretch/StretchScreen.tsx
+apps/mobile/src/stretch/StretchScreen.test.tsx
+apps/mobile/__tests__/AppStretch.test.tsx
+apps/mobile/src/i18n/{it,de,fr,es}.ts             (voci nuove)
+docs/tasks/TASK-466.md
+```
 
 ## Parte C — In palestra
 
@@ -151,4 +205,4 @@ nativo, niente server.
 
 ## Esito
 
-*(a fine task)*
+_(a fine task)_

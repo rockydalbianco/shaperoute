@@ -1660,6 +1660,7 @@ export const ES: Table = {
   Morning: "Mañana",
   "After run": "Después de correr",
   "After gym": "Después del gimnasio",
+  "How long?": "¿Cuánto tiempo?",
   "{index} of {total}": "{index} de {total}",
   "Right side": "Lado derecho",
   "Left side": "Lado izquierdo",

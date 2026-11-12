@@ -198,3 +198,43 @@ describe("a tour as it goes", () => {
     expect(liveVam(down, mountainTour(down), 2_100_000)).toBeNull();
   });
 });
+
+describe("changeovers marked by hand (TASK-415 part B3)", () => {
+  it("take the place of the ones found at the same turn, with their own time", () => {
+    // At the top an hour in: marked from 3620 s to 3880 s.
+    const tour = mountainTour(trackOf(twoClimbs()), [
+      { fromMs: 3_620_000, toMs: 3_880_000 },
+    ]);
+    expect(tour?.changes.map((change) => change.kind)).toEqual(["off", "on", "off"]);
+    expect(tour?.changes[0]).toEqual({ kind: "off", atMs: 3_620_000, ms: 260_000 });
+  });
+
+  it("count where none was found: a short stop at the foot", () => {
+    // 40 s at the foot, too short to be found, marked by hand.
+    const steps = then(
+      [[0, 0, 1500]],
+      stretch(1800, 10, 1440, 300),
+      stand(300),
+      stretch(300, 5, -1440, -300),
+      stand(40),
+      stretch(1800, 10, 1440, 300),
+    );
+    const found = mountainTour(trackOf(steps));
+    expect(found?.changes.map((change) => change.kind)).toEqual(["off"]);
+    const marked = mountainTour(trackOf(steps), [
+      { fromMs: 2_405_000, toMs: 2_440_000 },
+    ]);
+    expect(marked?.changes.map((change) => change.kind)).toEqual(["off", "on"]);
+    expect(marked?.changes[1]).toEqual({ kind: "on", atMs: 2_405_000, ms: 35_000 });
+  });
+
+  it("take the skins off at the top of the climb still going, before any descent", () => {
+    const track = trackOf(then([[0, 0, 1500]], stretch(1800, 10, 1440, 300)));
+    const open = [{ fromMs: 1_800_000, toMs: null }];
+    const tour = mountainTour(track, open);
+    expect(tour?.changes).toEqual([{ kind: "off", atMs: 1_800_000, ms: 0 }]);
+    // While one is open the tour is at a changeover, moving or not.
+    expect(tourNow(track, tour, 1_801_000, false, open)).toBe("change");
+    expect(tourNow(track, tour, 1_801_000, false, [])).toBe("climb");
+  });
+});

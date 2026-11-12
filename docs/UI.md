@@ -5072,9 +5072,15 @@ TASK-305.md, «Testi di R6».
   - Le calorie si contano tratto per tratto: a piedi come corsa sotto i
     7:30 /km, altrimenti come camminata in montagna; in aria col MET del
     volo.
+  - Sotto le righe restano solo «Max altitude», «Top speed» (dei soli
+    tratti in aria: la navetta non conta) e le calorie. Tempo e dislivello
+    sono già nelle righe, e con un riquadro in meno «Save» e «Discard»
+    restano sullo schermo (provato nel simulatore il 2026-11-12).
   - Un volo senza tratti a piedi finisce come prima.
-- **Il salvataggio** manda `flight_parts` (API.md, «A piedi e in volo»). Se
-  il server non li prende ancora (422), li rimanda senza.
+- **Il salvataggio** manda `flight_parts` (API.md, «A piedi e in volo»),
+  coi tempi arrotondati al millisecondo: i fix del telefono hanno i
+  decimali e il server vuole interi. Se il server non li prende ancora
+  (422), li rimanda senza.
 - **Il Feed**: sotto il titolo del post «On foot 1:58:40 · In the air
   1:43:30», anche sulla foto e in quello che legge VoiceOver. Nella pagina
   del post il riepilogo ha due righe in più dopo il tempo, «On foot» e «In

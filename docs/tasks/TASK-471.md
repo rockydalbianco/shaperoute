@@ -185,25 +185,54 @@ pura sono i 60 s di pausa quando lo stato non si legge.
 - **(b) Un secondo servizio Overpass** quando il principale è giù (per il
   lavoro a lotti del 12 novembre l'utente ha scelto di aspettare il
   principale: per la produzione va richiesto).
-  **Scelta dell'utente, 2026-11-12: «Sì, un tentativo»** (ADR-0385): quando
-  `overpass-api.de` risponde con un errore (non quando è lento) il server
-  fa un solo tentativo su `overpass.private.coffee`; se fallisce anche
-  quello l'errore è quello di oggi. L'indirizzo sta in una variabile
-  del server (`SHAPEROUTE_OVERPASS_FALLBACK_URL`), per cambiarlo o
-  spegnerlo senza toccare il codice. Il lavoro a lotti aspetta il
-  principale, come deciso. Dalla pagina dei servizi pubblici
-  (wiki.openstreetmap.org/wiki/Overpass_API, letta il 12 novembre): i
-  servizi gratuiti sono per progetti piccoli; il principale chiede che
-  l'uso commerciale passi a un servizio a pagamento o proprio;
-  `private.coffee` non ha limiti ma chiede di essere avvisato prima di
-  un uso su larga scala. **Passo futuro, non di questo task**: con la
-  società, o se i download crescono, un servizio a pagamento con chiave
-  oppure le zone costruite dagli estratti, come le città del preset.
+  **Scelta dell'utente, 2026-11-12: «Sì, un tentativo»** (ADR-0385), alla
+  domanda «Overpass principale in errore: provo una volta un secondo
+  servizio pubblico?». Quando `overpass-api.de` risponde con un errore
+  HTTP o non si raggiunge (non quando è lento: dopo un timeout no) il
+  server fa un solo tentativo su un secondo servizio; se fallisce anche
+  quello l'errore è quello di oggi. Il lavoro a lotti aspetta il
+  principale, come deciso.
+  **Nel codice è spento**: si accende sul server con
+  `SHAPEROUTE_OVERPASS_FALLBACK_URL=https://overpass.private.coffee/api`
+  in `deploy/.env`, in un passo del Coordinatore col sì dell'utente, e
+  **solo dopo la frase della privacy** qui sotto: è un altro gestore che
+  vede le aree chieste (mai chi le chiede).
+  Condizioni d'uso di `overpass.private.coffee`, lette sulla sua pagina
+  il 12 novembre: «Use our endpoints in any project requiring access to
+  OpenStreetMap data, including commercial use»; nessuna registrazione,
+  «free and unlimited access … without any rate limits»; chiede uno
+  User-Agent che dica progetto e contatto (il server si presenta come
+  `MuW/1.0 (https://getmuw.app)`), richieste POST (osmnx le fa così),
+  un avviso prima di usi grandi (più di dieci richieste al secondo o
+  insieme: noi una per volta, poche al giorno), l'attribuzione a
+  OpenStreetMap (già nell'app), niente dati personali nelle richieste
+  (mandiamo solo il riquadro); tiene nei log indirizzi IP troncati per
+  al massimo 48 ore. Il nostro uso ci sta. Agli usi commerciali chiede
+  di considerare una donazione.
+  Dalla pagina dei servizi pubblici
+  (wiki.openstreetmap.org/wiki/Overpass_API): i servizi gratuiti sono
+  per progetti piccoli e il principale chiede che l'uso commerciale
+  passi a un servizio a pagamento o proprio. **Passo futuro, non di
+  questo task**: con la società, o se i download crescono, un servizio
+  a pagamento con chiave oppure le zone costruite dagli estratti, come
+  le città del preset.
+  **Frase della privacy, proposta (serve il sì dell'utente; app e sito,
+  cinque lingue, PR a parte)**. Oggi (`about/content/en.ts`, «Others who
+  receive data»): «The Overpass service of OpenStreetMap data is asked by
+  our server for the map of an area it does not have yet: it sees which
+  area, not who asked.» Proposta: «The Overpass services of
+  OpenStreetMap data (overpass-api.de and, when it does not answer,
+  overpass.private.coffee) are asked by our server for the map of an
+  area it does not have yet: they see which area, not who asked.» In
+  italiano: «I servizi Overpass dei dati di OpenStreetMap
+  (overpass-api.de e, quando non risponde, overpass.private.coffee)
+  ricevono dal nostro server la richiesta della mappa di una zona che
+  non ha ancora: vedono quale zona, non chi l'ha chiesta.»
 - **(c) Cosa dice l'app.** Oggi: «Map data for this area could not be
   downloaded. Try again later.» con «Retry» (`route/problems.ts`); il
   `message` dell'API porta dentro tutta la pagina d'errore di Overpass.
 
-### Parte B: cinque secondi invece di sessanta (PR a parte)
+### Parte B: cinque secondi invece di sessanta, e il secondo servizio (una PR)
 
 Scelta (a). Per la durata di un download chiesto dall'app
 (`graphs.ZoneGraphs._download`) la pausa di osmnx quando lo stato di
@@ -222,11 +251,18 @@ Attesa dopo la parte B, con Overpass a 502: un download fallito circa
 scaricata, zona larga fallita) circa 60 s in meno per ciascuno dei due
 download.
 
+Nella stessa PR la scelta (b): `overpass_fallback.py` (modulo nuovo),
+chiamato nello stesso punto. Spento se la variabile non c'è; acceso,
+un solo tentativo in più e solo dopo un errore HTTP o di connessione;
+per quel tentativo cambia l'indirizzo e lo User-Agent di osmnx e li
+rimette com'erano; `prefetch_zones` non lo usa mai. Test senza rete per
+ognuna di queste cose.
+
 File della parte B (ramo `fix/TASK-471-b-overpass-pause`, dopo la prima
-PR in `main`): `services/api/shaperoute_api/overpass_pause.py` (nuovo),
-`services/api/tests/test_overpass_pause.py` (nuovo),
-`services/api/shaperoute_api/graphs.py`,
-`services/api/tests/test_graphs.py`,
+PR in `main`): `services/api/shaperoute_api/overpass_pause.py`,
+`overpass_fallback.py` e i loro test `test_overpass_pause.py`,
+`test_overpass_fallback.py` (nuovi), `services/api/shaperoute_api/graphs.py`,
+`services/api/tests/test_graphs.py`, `.env.example` (una voce),
 `apps/mobile/assets/engine/engine.zip` (rifatto: anche `graphs.py` va
 sul telefono).
 
@@ -234,7 +270,9 @@ Dopo il passo sul server, sola lettura: nel log nessuna riga
 `osmnx has no _get_overpass_pause` (c'è solo se l'immagine ha un osmnx
 diverso dal 2.1.1 e la funzione è cambiata); quando Overpass è pieno,
 fra `Overpass: … through …` e l'errore passano secondi, non più di un
-minuto.
+minuto. Col secondo servizio acceso: la riga `Overpass answered with an
+error (…): one attempt on overpass.private.coffee` conta le volte che è
+servito; senza la variabile non compare mai.
 
 ## File toccati
 

@@ -30,16 +30,22 @@ test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191), «Swim» (T
   // And «Gym» (TASK-385 B), on in Expo Go and preview, «Hike» (TASK-377),
   // «Gravel» and «MTB» (TASK-378), «Walk» (TASK-371), «Ski touring»
   // (TASK-415 B).
-  // And «Paragliding» (TASK-305 R2).
-  expect(screen.getAllByRole("radio")).toHaveLength(13);
+  // And «Paragliding» (TASK-305 R2), «Cross-country ski» (TASK-375) and
+  // «Wheelchair & stroller» (TASK-414 B).
+  expect(screen.getAllByRole("radio")).toHaveLength(15);
   expect(screen.getByRole("radio", { name: "Walk" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Hike" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "Gravel" })).not.toBeChecked();
   expect(screen.getByRole("radio", { name: "MTB" })).not.toBeChecked();
   // And «Roller» (TASK-380).
   expect(screen.getByRole("radio", { name: "Roller" })).not.toBeChecked();
-  // Only «Cross-country ski» (TASK-375) says «Soon».
-  expect(screen.getAllByText("Soon")).toHaveLength(1);
+  // «Cross-country ski» (TASK-375) and «Wheelchair & stroller» (TASK-414 B)
+  // are on too: no sport says «Soon».
+  expect(screen.queryByText("Soon")).toBeNull();
+  expect(
+    screen.getByRole("radio", { name: "Wheelchair & stroller" }),
+  ).not.toBeChecked();
+  expect(screen.getByRole("radio", { name: "Cross-country ski" })).not.toBeChecked();
   expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
 });
 
@@ -68,8 +74,8 @@ test("a sport not ready says «Soon» and takes no tap", async () => {
   // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
   // (TASK-377), Gravel and MTB (TASK-378), Roller (TASK-380), Ski and
   // Cross-country ski (TASK-375), Ski touring (TASK-415 B), Gym (TASK-385 B)
-  // and Paragliding (TASK-305 R2).
-  expect(screen.getAllByText("Soon")).toHaveLength(13);
+  // Paragliding (TASK-305 R2) and Wheelchair & stroller (TASK-414 B).
+  expect(screen.getAllByText("Soon")).toHaveLength(14);
 });
 
 test("a sport that is ready is chosen with a tap, and kept", async () => {

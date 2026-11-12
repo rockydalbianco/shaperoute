@@ -1,8 +1,8 @@
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, type Ref, useRef, useState } from "react";
 import { Image, type ImageSourcePropType, StyleSheet, Text, View } from "react-native";
 
 import { t, tPlural } from "../i18n";
-import { SharePost } from "../share/SharePost";
+import { postOfFeed } from "../messages/messagePost";
 import type { PostRun } from "../share/postRun";
 import { CommentsSheet } from "../social/DrawingComments";
 import { ReactionMark } from "../social/DrawingReactions";
@@ -19,7 +19,8 @@ import {
 } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
 import type { ShownPost } from "./feedPosts";
-import { PostReactions, type RowBox } from "./PostReactions";
+import { PostReactions, type PostReactionsHandle, type RowBox } from "./PostReactions";
+import { PostShareSheet, usePostSendable } from "./PostShareSheet";
 
 /** The actions' icons, from Lucide (ISC, assets/ui/icons/LICENSE-lucide.txt)
  * as the bar's are (TASK-444): white, coloured by `tintColor`. Emoji in
@@ -52,11 +53,16 @@ export function postOfDrawing({ drawing }: Pick<ShownPost, "drawing">): PostRun 
 
 type Props = {
   post: ShownPost;
-  /** One's own post: «Share». A drawing of somebody else leaves the app
-   * only with a consent nobody has asked for (TASK-355, the user's choice). */
+  /** One's own post: «Share» has «Poster and video» too. A drawing of
+   * somebody else leaves the app as a picture only with a consent nobody
+   * has asked for (TASK-355, the user's choice): it is sent to a friend, as
+   * a pointer (TASK-455). */
   mine: boolean;
   /** «Edit & run»; none, no button (on the snow, at the gym, no line). */
   onEditRun?: () => void;
+  /** For the picture of the post, drawn by who draws this row: two taps on
+   * it are the super like (TASK-454 part B). */
+  reactionsHandle?: Ref<PostReactionsHandle>;
 };
 
 /**
@@ -64,17 +70,18 @@ type Props = {
  * «Feed» (part F) and at the foot of its page (part B): «Like» opens the
  * six reactions in a bar that hangs over the row and moves nothing (there
  * is no 👍 among them: the user's choice, 2026-11-08), «Comment» the
- * comments with how many there are, «Share» one's own post only, «Edit &
- * run» its line to change and run, in yellow: what the post leads to.
- * Beside the card's button and not inside it, or a screen reader would
- * never reach them.
+ * comments with how many there are, «Share» a small sheet (TASK-455, the
+ * user's choice of 2026-11-12: «Send to a friend», and on one's own post
+ * «Poster and video»), «Edit & run» its line to change and run, in yellow:
+ * what the post leads to. Beside the card's button and not inside it, or a
+ * screen reader would never reach them.
  *
  * «Like» says what is there (TASK-454, the user's choices of 2026-11-11):
  * one's own reaction in place of the heart, its word in bold, and how many
  * reactions the post has, as «Comment» does. A super like's comment is one
  * of the post's comments, so they are read again once it went.
  */
-export function PostActions({ post, mine, onEditRun }: Props) {
+export function PostActions({ post, mine, onEditRun, reactionsHandle }: Props) {
   const [reacting, setReacting] = useState(false);
   // Where the row is on the screen, asked at each «Like»: the bar hangs
   // over it, in a Modal of its own.
@@ -84,7 +91,12 @@ export function PostActions({ post, mine, onEditRun }: Props) {
   // The comments' sheet is made at the first «Comment», and kept: a card in
   // «Feed» does not carry one it never opens.
   const [commented, setCommented] = useState(false);
-  const [sharing, setSharing] = useState<PostRun | null>(null);
+  // The sheet of «Share» is made at the first «Share», and kept, as the
+  // comments' is. On somebody else's post it has only «Send to a friend»:
+  // without the messages there would be nothing in it, so no «Share».
+  const [sharing, setSharing] = useState(false);
+  const [shared, setShared] = useState(false);
+  const sendable = usePostSendable();
   const comments = useDrawingComments(post.drawing.id);
   const commentCount =
     comments.status === "ready" && comments.total > 0 ? ` · ${comments.total}` : "";
@@ -143,11 +155,14 @@ export function PostActions({ post, mine, onEditRun }: Props) {
             testID="post-comment"
           />
         )}
-        {mine && (
+        {(mine || sendable) && (
           <Action
             icon={ICONS.share}
             label={t("Share")}
-            onPress={() => setSharing(postOfDrawing(post))}
+            onPress={() => {
+              setShared(true);
+              setSharing(true);
+            }}
             testID="post-share"
           />
         )}
@@ -172,6 +187,7 @@ export function PostActions({ post, mine, onEditRun }: Props) {
         row={rowBox}
         onClose={() => setReacting(false)}
         onSuperLiked={comments.reload}
+        handle={reactionsHandle}
       />
       {commented && (
         <CommentsSheet
@@ -180,7 +196,14 @@ export function PostActions({ post, mine, onEditRun }: Props) {
           onClose={() => setCommenting(false)}
         />
       )}
-      {sharing !== null && <SharePost run={sharing} onClose={() => setSharing(null)} />}
+      {shared && (
+        <PostShareSheet
+          visible={sharing}
+          post={postOfFeed(post.drawing)}
+          poster={mine ? () => postOfDrawing(post) : undefined}
+          onClose={() => setSharing(false)}
+        />
+      )}
     </>
   );
 }

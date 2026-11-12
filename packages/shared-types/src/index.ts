@@ -1122,16 +1122,28 @@ export const CYCLING_BEST_DISTANCES = [
 /** On inline skates (TASK-380, ADR-0324): a run's races, bests of their own. */
 export const INLINE_SKATING_BEST_DISTANCES = ["5k", "10k", "half", "marathon"] as const;
 
+/** In a wheelchair or pushing a stroller (TASK-414, ADR-0343, the user's
+ * choice 7): bests of its own over 1 and 5 km. */
+export const WHEELCHAIR_BEST_DISTANCES = ["1k", "5k"] as const;
+
 /**
  * The fastest stretch of a distance inside any run of the account, private
  * ones too (TASK-368): moving seconds, the pauses left out.
  */
 export interface PersonalBest {
-  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322), and
-   * a skate's (TASK-380, ADR-0324). */
-  sport: "running" | "cycling" | "gravel_biking" | "mountain_biking" | "inline_skating";
+  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322), a
+   * skate's (TASK-380, ADR-0324) and a wheelchair's (TASK-414, ADR-0343). */
+  sport:
+    | "running"
+    | "cycling"
+    | "gravel_biking"
+    | "mountain_biking"
+    | "inline_skating"
+    | "wheelchair";
   distance:
-    (typeof RUNNING_BEST_DISTANCES)[number] | (typeof CYCLING_BEST_DISTANCES)[number];
+    | (typeof RUNNING_BEST_DISTANCES)[number]
+    | (typeof CYCLING_BEST_DISTANCES)[number]
+    | (typeof WHEELCHAIR_BEST_DISTANCES)[number];
   distance_m: number;
   seconds: number;
   /** When the run it was made in began: its day. */
@@ -2705,7 +2717,8 @@ export interface MessageDrawingCard {
 
 /** What a message carries besides its text. */
 export interface MessageAttachment {
-  kind: MessageAttachmentKind;
+  /** `post` (MESSAGE_POST_KIND) only for an app that says it reads one. */
+  kind: MessageAttachmentKind | typeof MESSAGE_POST_KIND;
   /** A photo's or a video's: GET /message-media/{media_id}, with the key
    * and the token. Null for a drawing and a video expired. */
   media_id: string | null;
@@ -2774,7 +2787,7 @@ export interface MessagePostCard {
  * says READS_MESSAGE_POST also finds MESSAGE_POST_KIND here (TASK-455).
  */
 export interface AttachmentsAllowed {
-  kinds: MessageAttachmentKind[];
+  kinds: (MessageAttachmentKind | typeof MESSAGE_POST_KIND)[];
   video_max_s: number;
   video_max_bytes: number;
   photo_max_bytes: number;
@@ -2933,6 +2946,7 @@ export interface StyleShop {
 export * from "./gym.ts";
 export * from "./poolSwim.ts";
 export * from "./activityCalendar.ts";
+export * from "./flightBests.ts";
 export * from "./liveShare.ts";
 
 /**

@@ -20,6 +20,9 @@ it("shows the rows of before, in their order", () => {
     { id: "mtb", emoji: "🚵", name: "MTB", ready: true },
     // The skate (TASK-380 part B), on since the server has part A.
     { id: "roller", emoji: "🛼", name: "Roller", ready: true },
+    // A wheelchair or a stroller (TASK-414 part B), on since the server has
+    // part A and its migration 0071.
+    { id: "wheelchair", emoji: "♿", name: "Wheelchair & stroller", ready: true },
     { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
     { id: "swim", emoji: "🏊", name: "Swim", ready: true },
     { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },
@@ -27,7 +30,7 @@ it("shows the rows of before, in their order", () => {
       id: "xc_ski",
       emoji: "🎿",
       name: "Cross-country ski",
-      ready: false,
+      ready: true,
       recordOnly: true,
     },
     // Ski touring (TASK-415 part B), on with its phases and its VAM.
@@ -58,6 +61,7 @@ it("asks and saves the activities of before", () => {
     "gravel_biking",
     "mountain_biking",
     "inline_skating",
+    "wheelchair",
     "paddling",
     "swimming",
     "running",
@@ -74,6 +78,7 @@ it("asks and saves the activities of before", () => {
     "gravel_biking",
     "mountain_biking",
     "inline_skating",
+    "wheelchair",
     "paddling",
     "swimming",
     "skiing",

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -23,18 +24,22 @@ import { isPoolLine } from "../pool/PoolTile";
 import { Avatar } from "../profile/Avatar";
 import { useFollowsDoor } from "../social/followsDoor";
 import { activityName } from "../social/PublicParts";
+import { OverAppSlot, useModalPage, useOverAppShown } from "../screens/overAppContext";
 import { ReportMenu } from "../social/ReportMenu";
 import { color, font, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
+import { closeTopLayer } from "../ui/backLayers";
 import { Tap } from "../ui/Tap";
 import { useUnits } from "../units/useUnits";
 import { useEditRunDoor } from "./editRunDoor";
 import type { ShownPost } from "./feedPosts";
 import { PostElevation } from "./PostElevation";
+import type { PostReactionsHandle } from "./PostReactions";
 import { type PostSection, postSections } from "./postSections";
 import { PostSettings } from "./PostSettings";
 import { PostSheet } from "./PostSheet";
 import { PostSplits } from "./PostSplits";
 import { RouteMap } from "./RouteMap";
+import { useDoubleTap } from "./useDoubleTap";
 import { usePostStats } from "./usePostStats";
 
 /** The side of the author's picture at the top of the page. */
@@ -62,12 +67,22 @@ type Props = {
  * it, as on the card.
  */
 export function PostPage({ post, onClose, onMap }: Props) {
+  // A profile opened from it comes over it, in its slot (TASK-470 D).
+  useModalPage();
+  const overShown = useOverAppShown();
   return (
-    <Modal visible animationType="slide" onRequestClose={onClose} testID="post-page">
+    <Modal
+      visible
+      animationType="slide"
+      // Android's «back»: a page opened over the post first.
+      onRequestClose={() => (overShown ? closeTopLayer() : onClose())}
+      testID="post-page"
+    >
       {/* Its own edges, as «Heart rate zones» has them (TASK-366): inside a
           Modal the app's are none, and «‹» sat under the clock (TASK-410). */}
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <Page post={post} onClose={onClose} onMap={onMap} />
+        <OverAppSlot />
       </SafeAreaProvider>
     </Modal>
   );
@@ -81,6 +96,11 @@ function Page({ post, onClose, onMap }: Props) {
   const editRun = useEditRunDoor();
   // What the owner changed in the sheet, shown at once.
   const [saved, setSaved] = useState<DrawingChoice | null>(null);
+  // Two taps on the drawing are the post's super like (TASK-454 part B):
+  // asked of the reactions the bar at the foot reads. One tap waits to know
+  // it is alone, then opens the drawing on the map as before.
+  const reactions = useRef<PostReactionsHandle>(null);
+  const tap = useDoubleTap(() => reactions.current?.superLike());
   const { drawing } = post;
   const { state } = account;
   const mine =
@@ -160,12 +180,19 @@ function Page({ post, onClose, onMap }: Props) {
         </View>
         {lined &&
           (onMap === undefined ? (
-            map
+            // Not a button: nothing opens. Two taps are still the super like.
+            <Pressable
+              onPress={() => tap(() => {})}
+              accessible={false}
+              testID="post-map-taps"
+            >
+              {map}
+            </Pressable>
           ) : (
             // A tap opens it on the map, as from the card before the page:
             // «Start» on its track, «Export GPX», «Send to a friend».
             <Tap
-              onPress={onMap}
+              onPress={() => tap(onMap)}
               accessibilityRole="button"
               accessibilityLabel={title}
               accessibilityHint={t("Opens the route on the map")}
@@ -198,6 +225,7 @@ function Page({ post, onClose, onMap }: Props) {
         onEditRun={onEditRun}
         insetBottom={insets.bottom}
         settings={mine ? <PostSettings post={post} onSaved={setSaved} /> : undefined}
+        reactionsHandle={reactions}
       />
     </View>
   );

@@ -123,6 +123,7 @@ import {
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
 import { withPenUp } from "./src/route/penUpHint";
+import { drawKindOf, figuresOf, shapeOfSport } from "./src/route/sportDraw";
 import { shapeAsked } from "./src/route/penUpShapes";
 import { drawLabel, drawWhat } from "./src/route/drawLabel";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
@@ -154,6 +155,8 @@ import {
   FreeRunCard,
 } from "./src/screens/FreeRunScreen";
 import { MapScreen } from "./src/screens/MapScreen";
+import { showsMap } from "./src/screens/mapOver";
+import { useCoverOverApp } from "./src/screens/overAppContext";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { pageTitle } from "./src/screens/pageTitles";
 import {
@@ -452,10 +455,16 @@ function MuW() {
     setScreen("choose");
   }
   const onPage = pages.includes(screenNow);
-  const screen: Screen =
-    (favorite !== null || activity !== null || drawing !== null) && onPage
-      ? "map"
-      : screenNow;
+  const screen: Screen = showsMap(
+    screenNow,
+    pages,
+    favorite !== null || activity !== null || drawing !== null,
+  )
+    ? "map"
+    : screenNow;
+  // «Play» over the pages over the app (a profile, a conversation) keeps
+  // them, out of sight, until its «←» (TASK-470 D).
+  useCoverOverApp(screen === "play");
   // The fourth page asked for from elsewhere (TASK-278 part B, the user's
   // choice): from the map or the end of a run with nobody signed in (the
   // heart, «Save»), «←» goes back there, and so does signing in, with the
@@ -608,11 +617,12 @@ function MuW() {
   // asked from the map (TASK-331).
   // On the water only a shape of the catalogue is drawn (TASK-191): a word or
   // a picture chosen before «Paddle» waits for another sport. A swim draws a
-  // shape or a drawing, a word chosen before it waits too (TASK-323).
-  const drawKind: ChoiceKind =
-    sportActivity === "paddling" || (sportActivity === "swimming" && kind === "word")
-      ? "shape"
-      : kind;
+  // shape or a drawing, a word chosen before it waits too (TASK-323). A
+  // wheelchair draws four shapes only: another chosen before waits too
+  // (TASK-414). Each sport says it in its profile.
+  const drawKind: ChoiceKind = drawKindOf(kind, sportActivity);
+  const sportShape = shapeOfSport(shape, sportActivity);
+  const resultFigures = figuresOf(sportActivity);
   const drawn:
     | { shape: Shape }
     | { shape: PenUpShape; pen_up: true }
@@ -620,9 +630,9 @@ function MuW() {
     | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
     | null =
     drawKind === "shape"
-      ? shape !== null
+      ? sportShape !== null
         ? // A shape in pieces with the pen up, on the roads (TASK-223).
-          shapeAsked(shape, penUp, sportActivity)
+          shapeAsked(sportShape, penUp, sportActivity)
         : null
       : drawKind === "word"
         ? wordCheck.ok
@@ -844,11 +854,9 @@ function MuW() {
   // «Explore» prepared around the start until it is first opened: then
   // the page asks for itself. On the water it has its own (TASK-246).
   const [exploreSeen, setExploreSeen] = useState(false);
-  useEffect(() => {
-    if (screen === "explore") {
-      setExploreSeen(true);
-    }
-  }, [screen]);
+  if (screen === "explore" && !exploreSeen) {
+    setExploreSeen(true);
+  }
   const aheadLat = start?.point[0];
   const aheadLon = start?.point[1];
   useEffect(() => {
@@ -1806,11 +1814,15 @@ function MuW() {
                 <FigureTiles
                   chosen={resultTile}
                   onChoose={onChangeFigure}
-                  // On the water only the shapes, as in «Draw».
-                  pictures={sportActivity !== "paddling"}
+                  // As in «Draw»: on the water no picture, in a wheelchair
+                  // its four shapes and no drawing by hand (TASK-414).
+                  pictures={resultFigures.pictures}
+                  shapes={resultFigures.shapes}
                   testID="result-figures"
                 />
-                <EditDrawingButton onPress={editTrackOf(resultTrack)} />
+                {resultFigures.editDrawing && (
+                  <EditDrawingButton onPress={editTrackOf(resultTrack)} />
+                )}
               </>
             }
           />

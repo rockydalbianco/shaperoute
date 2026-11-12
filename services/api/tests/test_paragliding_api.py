@@ -30,6 +30,7 @@ from test_personal_bests import (
     saved,
     signed_up,
 )
+from test_sport_registry_api import in_the_contract
 
 from shaperoute_api.activities import RECORD_ACTIVITIES, RunActivity
 from shaperoute_api.activity_graphs import check_supported
@@ -51,13 +52,21 @@ FLIGHT = "paragliding"
 
 
 def test_a_flight_is_recorded_without_a_shape_after_ski_touring() -> None:
-    assert RECORD_ACTIVITIES == ("skiing", "xc_skiing", "ski_touring", FLIGHT)
+    # A day of alpinism comes after it (TASK-463).
+    assert RECORD_ACTIVITIES == (
+        "skiing",
+        "xc_skiing",
+        "ski_touring",
+        FLIGHT,
+        "alpinism",
+    )
     order = list(get_args(RunActivity))
     assert order.index(FLIGHT) == order.index("ski_touring") + 1
-    assert order.index("gym") == order.index(FLIGHT) + 1
+    assert order.index("alpinism") == order.index(FLIGHT) + 1
     run_activities = json.loads((CONTRACT / "run-activities.json").read_text())
-    assert run_activities["run_activities"] == order
-    assert run_activities["record_activities"] == list(RECORD_ACTIVITIES)
+    # But a day of alpinism, on the server before the contract (TASK-463).
+    assert run_activities["run_activities"] == in_the_contract(order)
+    assert run_activities["record_activities"] == in_the_contract(RECORD_ACTIVITIES)
     # The contract of the routes keeps only what is drawn: no line there.
     contract = json.loads((CONTRACT / "contract.json").read_text())
     assert FLIGHT not in contract["activities"]
@@ -205,6 +214,7 @@ def test_the_migration_adds_paragliding_to_runs_only_and_keeps_the_rest(
     }
     assert after == expected
     # Every activity of a run is let in once all migrations up to this one
-    # ran, but the ones of a later migration: a wheelchair (0071, TASK-414).
-    later = {"wheelchair"}
+    # ran, but the ones of a later migration: a wheelchair (0071, TASK-414),
+    # alpinism (TASK-463).
+    later = {"wheelchair", "alpinism"}
     assert set(get_args(RunActivity)) - later <= set(after["runs_activity_check"])

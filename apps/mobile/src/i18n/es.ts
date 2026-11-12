@@ -638,8 +638,8 @@ export const ES: Table = {
     "Este contorno no cabe en las calles aquí. Prueba otra distancia, otro inicio o una foto más sencilla.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Esta forma no cabe en las calles aquí. Prueba otra forma u otro inicio:",
-  "Map data for this area could not be downloaded. Try again later.":
-    "No se pudo descargar el mapa de esta zona. Inténtalo más tarde.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "El servicio de mapas está ocupado y no se pudo cargar esta zona. Inténtalo de nuevo en unos minutos.",
   "The route engine cannot find one clear outline in this picture.":
     "En esta foto no se encuentra un contorno claro.",
   "Only PNG and JPEG pictures work. Choose another one.":
@@ -1121,6 +1121,8 @@ export const ES: Table = {
   Pause: "Pausa",
   Music: "Música",
   "Opens Spotify": "Abre Spotify",
+  "Show the numbers": "Mostrar los números",
+  "Hide the numbers": "Ocultar los números",
   Compass: "Brújula",
   Map: "Mapa",
   Data: "Datos",
@@ -1192,6 +1194,12 @@ export const ES: Table = {
   Roller: "Patines",
   "Watch for traffic and steep descents: check the route before you set off.":
     "Cuidado con el tráfico y las bajadas pronunciadas: revisa la ruta antes de salir.",
+  // src/sports/wheelchair.ts, settings/sport.ts (TASK-414 part B), approved on
+  // 2026-11-08 (the user's choice 6)
+  "Wheelchair & stroller": "Silla y carrito",
+  "Go without a route": "Salir sin ruta",
+  "Map data can miss kerbs, steps and steep slopes: check the route before you set off.":
+    "Los datos del mapa pueden no mostrar bordillos, escalones y cuestas pronunciadas: revisa la ruta antes de salir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Esquí",
   "Cross-country ski": "Esquí de fondo",
@@ -1582,6 +1590,10 @@ export const ES: Table = {
   "{sport}, coming soon": "{sport}, próximamente",
   "Sport, {sport}": "Deporte, {sport}",
   "Changes the sport": "Cambia el deporte",
+  // The families of the sport panel: src/settings/sportFamilies.ts
+  "On foot": "A pie",
+  "On wheels": "Sobre ruedas",
+  "Other@@sport": "Otros",
   Sport: "Deporte",
   Default: "Predeterminada",
   "Voice language and voice: {language}, {voice}": "Idioma y voz: {language}, {voice}",
@@ -2655,4 +2667,27 @@ export const ES: Table = {
   "Deep@@sleep": "Profundo",
   "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
     "Calculada por MuW con los datos de Apple Salud. Puede ser distinta de la puntuación de la app Salud.",
+  // TASK-305 part R5b: under «Record your flight» (approved 2026-11-12).
+  "Your flights": "Tus vuelos",
+  "{count} flight · {time}": "{count} vuelo · {time}",
+  "{count} flights · {time}": "{count} vuelos · {time}",
+  "No flights this month": "Ningún vuelo este mes",
+  "Your best flights": "Tus récords de vuelo",
+  "Longest flight": "Vuelo más largo",
+  "Farthest flight": "Vuelo más lejano",
+  "Ready to fly": "Listo para despegar",
+  "Waiting for GPS…": "Esperando el GPS…",
+  "GPS ready · ±{m} m": "GPS listo · ±{m} m",
+  "Weak GPS · ±{m} m: wait in the open": "GPS débil · ±{m} m: espera al aire libre",
+  "Share live at start": "Compartir en directo al empezar",
+  "When the countdown ends, MuW makes the link and opens the share sheet.":
+    "Al terminar la cuenta atrás, MuW crea el enlace y abre el menú para compartir.",
+  // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
+  // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
+  "Poster and video": "Póster y vídeo",
+  "Only people who follow {user} can open it.":
+    "Solo quien sigue a {user} puede abrirla.",
+  "by {user}": "de {user}",
+  "This post is no longer available.": "Esta publicación ya no está disponible.",
+  "🗺️ Post": "🗺️ Publicación",
 };

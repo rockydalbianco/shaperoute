@@ -68,6 +68,7 @@ import {
   RunStrip,
   useRunNumbers,
 } from "./RunPanel";
+import { FoldHandle, foldedAfter, RunFoldedStrip, upOrDown } from "./RunFoldedStrip";
 import { RunPageGlyph } from "./RunPageGlyphs";
 
 /**
@@ -153,20 +154,28 @@ export function RunCard({
   const share = (
     <LiveShareButton canStart={live && !arrived} fetchFn={fetchFn} apiKey={apiKey} />
   );
+  // The card of «Map» folded to a strip (TASK-472): only while running,
+  // paused it is open with «Stop» and «Resume».
+  const [folded, setFolded] = useState(false);
+  const foldable =
+    page === "map" && live && !arrived && !paused && track.fixes.length > 0;
   // One responder for the whole run: the page it starts from is read as
-  // the finger lifts.
+  // the finger lifts; up or down, on «Map», folds the card or opens it.
   const swipe = useMemo(
     () =>
       PanResponder.create({
-        onMoveShouldSetPanResponder: (_event, { dx, dy }) => sideways(dx, dy),
+        onMoveShouldSetPanResponder: (_event, { dx, dy }) =>
+          sideways(dx, dy) || (foldable && upOrDown(dx, dy)),
         onPanResponderRelease: (_event, { dx, dy }) => {
           const to = swipedTo(dx, dy, runPage());
           if (to !== null) {
             setRunPage(to);
+          } else if (foldable) {
+            setFolded(foldedAfter(dx, dy, folded));
           }
         },
       }),
-    [],
+    [folded, foldable],
   );
   // «Compass» (TASK-422): the map, and under it only the way to pause and
   // to stop. No number is drawn, so the map takes the room.
@@ -188,21 +197,32 @@ export function RunCard({
 
   return (
     <View style={styles.card} testID="run-card" {...swipe.panHandlers}>
-      {!compassPage &&
-        (paused ? (
-          <>
-            <Kilometres numbers={numbers} />
-            <RunGrid numbers={numbers} />
-          </>
-        ) : (
-          <RunStrip numbers={numbers} />
-        ))}
-      {!compassPage && <RunGameLine text={game} />}
-      {!compassPage && <WatchHeart bpm={bpm} />}
-      {!compassPage && route && <RouteBar route={route} numbers={numbers} />}
-      {!compassPage && page !== "data" && share}
-      {buttons}
-      <PageTabs page={page} onPage={setRunPage} />
+      {foldable && folded ? (
+        <RunFoldedStrip
+          numbers={numbers}
+          onOpen={() => setFolded(false)}
+          onPause={pauseRun}
+        />
+      ) : (
+        <>
+          {foldable && <FoldHandle folded={false} onPress={() => setFolded(true)} />}
+          {!compassPage &&
+            (paused ? (
+              <>
+                <Kilometres numbers={numbers} />
+                <RunGrid numbers={numbers} />
+              </>
+            ) : (
+              <RunStrip numbers={numbers} />
+            ))}
+          {!compassPage && <RunGameLine text={game} />}
+          {!compassPage && <WatchHeart bpm={bpm} />}
+          {!compassPage && route && <RouteBar route={route} numbers={numbers} />}
+          {!compassPage && page !== "data" && share}
+          {buttons}
+          <PageTabs page={page} onPage={setRunPage} />
+        </>
+      )}
       {page !== "data" && dark}
       <Countdown />
       <DataPage

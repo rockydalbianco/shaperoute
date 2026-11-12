@@ -205,7 +205,9 @@ export function problemText(
         }
         case "map_data_unavailable":
           return {
-            text: t("Map data for this area could not be downloaded. Try again later."),
+            text: t(
+              "The map service is busy, so this area could not be loaded. Try again in a few minutes.",
+            ),
             detail: devDetail(problem.message),
             retry: true,
           };

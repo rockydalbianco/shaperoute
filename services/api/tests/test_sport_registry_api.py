@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import ast
 import json
+from collections.abc import Iterable
 from pathlib import Path
 from typing import get_args
 
@@ -54,7 +55,7 @@ BEFORE_STREET_NAMES = {"running": True, "cycling": False}
 # the MTB ride (TASK-380); snowshoeing after the skate (TASK-413); a
 # wheelchair after snowshoeing (TASK-414); a day of ski touring after the
 # days on the snow (TASK-415); a paragliding flight after it (TASK-305
-# parts R).
+# parts R); a day of alpinism after the flight (TASK-463).
 SINCE_SPORT_TYPES = {
     "hiking": "Hike",
     "mountain_biking": "MountainBikeRide",
@@ -64,6 +65,7 @@ SINCE_SPORT_TYPES = {
     "gravel_biking": "GravelRide",
     "ski_touring": "BackcountrySki",
     "paragliding": "Workout",
+    "alpinism": "Hike",
 }
 SINCE = tuple(SINCE_SPORT_TYPES)
 SINCE_GPX_TYPES = {
@@ -75,7 +77,20 @@ SINCE_GPX_TYPES = {
     "gravel_biking": "gravel_biking",
     "ski_touring": "ski_touring",
     "paragliding": "paragliding",
+    "alpinism": "alpinism",
 }
+
+# The sports the API saves before the contract of packages/shared-types has
+# them (TASK-463 part A, ADR-0373): a day of alpinism. An app never reads it
+# (X-MuW-Reads), as no app says it. The app part takes it away, bringing the
+# contract and the app's hidden profile together; every test that holds the
+# API to the contract's lists reads them through `in_the_contract`.
+SERVER_FIRST: tuple[str, ...] = ("alpinism",)
+
+
+def in_the_contract(names: Iterable[str]) -> list[str]:
+    """`names` but the sports the contract does not have yet, in order."""
+    return [name for name in names if name not in SERVER_FIRST]
 
 
 def _without_since(table: dict[str, object]) -> list[tuple[str, object]]:
@@ -87,7 +102,7 @@ def test_the_sports_are_those_of_the_contract_in_its_order() -> None:
     names = [sport.activity for sport in API_SPORTS]
     contract = json.loads(RUN_ACTIVITIES_JSON.read_text("utf-8"))
     # A workout at the gym the last of them (TASK-385).
-    assert names == contract["run_activities"]
+    assert in_the_contract(names) == contract["run_activities"]
     assert list(SPORTS_BY_ACTIVITY) == names
     planned = [s.activity for s in API_SPORTS if not s.record_only and not s.trackless]
     assert tuple(planned) == API_ACTIVITIES
@@ -106,10 +121,12 @@ def test_the_tables_are_those_of_before_in_their_order() -> None:
     assert order.index("gravel_biking") == order.index("walking") + 1
     assert order.index("ski_touring") == order.index("xc_skiing") + 1
     assert order.index("paragliding") == order.index("ski_touring") + 1
+    assert order.index("alpinism") == order.index("paragliding") + 1
     assert RECORD_ACTIVITIES == (
         *BEFORE_RECORD_ACTIVITIES,
         "ski_touring",
         "paragliding",
+        "alpinism",
     )
     assert _without_since(GPX_TYPES) == list(BEFORE_GPX_TYPES.items())
     assert {name: GPX_TYPES[name] for name in SINCE} == SINCE_GPX_TYPES

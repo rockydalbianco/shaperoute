@@ -1065,6 +1065,29 @@ la `0072` di TASK-467 B1):
   live e sull'account, quindi va via con la riga vuota della live, un
   giorno dopo la fine. Nessuna posizione. Test in `test_live_shares.py`.
 
+Migrazione `0075_planned_lives.sql` (TASK-468 parte A2a, ADR-0381, `API.md`
+«Le live programmate e la fila «Live» del Feed»; il numero è del
+Coordinatore, dopo la `0074` di TASK-455 A):
+
+- **`planned_lives`**: una live programmata. `owner_id` (`CASCADE` su
+  `users`), `activity`, `title` (1–60), `starts_at`, `audience_feed`
+  (`followers`/`everyone`), `heart_visible`, `created_at`, `updated_at`,
+  `post_id` (il post che è diventata, `SET NULL` su `drawings`). Indice
+  `(owner_id, starts_at, id)` per la fila e il profilo.
+- **`planned_live_reminders`**: «Remind me» (`planned_live_id`, `user_id`,
+  `created_at`), chiave sulla coppia; `CASCADE` sulla live e sull'account.
+- **`live_shares.planned_live_id`**: la live programmata che la
+  condivisione ha fatto partire (`SET NULL`). Il legame va dalla
+  condivisione alla programmata e non al contrario: i dati di
+  `live_shares` restano fuori dalle copie notturne, e una chiave da una
+  tabella copiata a una lasciata fuori ne romperebbe il ripristino.
+  Indici: `live_shares_planned` e `live_shares_in_feed` (`user_id,
+  created_at` delle live con `audience_feed` diverso da `none`).
+- **Le copie notturne**: `planned_lives` e `planned_live_reminders`
+  restano nelle copie, come le corse di gruppo: niente posizioni, e
+  nessuna chiave verso tabelle lasciate fuori. Test in
+  `test_planned_lives.py`.
+
 Migrazione `0054_ski_resorts.sql` (TASK-406 parte A, ADR-0338, `API.md`
 «Ski resorts»; il numero è del Coordinatore):
 
@@ -1170,6 +1193,19 @@ bozza, quello vero è il primo libero al merge, dal Coordinatore):
   personali suoi su 1 e 5 km (scelta 7). La migrazione rilegge ciascun
   vincolo e lo riscrive col nome in più, in fondo, come la `0055`.
 - Nessuna riga cambia. Test in `test_wheelchair_api.py`.
+
+Migrazione `0076_alpinism.sql` (TASK-463 parte A, ADR-0373; il primo numero
+libero dopo la `0075` di TASK-468 A2a, #1245):
+
+- Il vincolo `runs_activity_check` prende anche `'alpinism'`: una giornata
+  di alpinismo si salva come corsa, registrata senza percorso, come lo
+  scialpinismo (`0057`) e il parapendio (`0069`). La migrazione rilegge il
+  vincolo che trova e lo riscrive col nome in più, in fondo.
+- `favorites`, `group_runs` e `run_bests` no: nessun percorso da rifare,
+  nessun record personale.
+- Il server la ha prima del contratto (`shared-types`): nessuna app la
+  legge finché la parte app non porta contratto e profilo insieme.
+- Nessuna riga cambia. Test in `test_alpinism_api.py`.
 
 Migrazione `0061_run_heart.sql` (TASK-409 parte B1, ADR-0334 precisazione D;
 numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
@@ -1285,6 +1321,19 @@ dato dal Coordinatore):
 - `messages_of_post`: l'indice parziale dei messaggi che rimandano a un
   disegno, per il `SET NULL` quando si cancella. Test in
   `test_message_posts.py`.
+
+Migrazione `0077_message_live.sql` (TASK-468 parte A1b, ADR-0381, `API.md`
+«Una live in un messaggio»; il numero è del Coordinatore):
+
+- `messages.attachment` accetta anche `live` (`messages_attachment_check`
+  rifatto con tutti i tipi: `photo`, `video`, `drawing`, `post`, `live`).
+- `messages.live_share_id` (`uuid`), **senza chiave esterna**: le copie
+  notturne tengono `messages` e lasciano fuori i dati di `live_shares`
+  (`deploy/backup.sh`), e una chiave dall'una all'altra ne romperebbe il
+  ripristino. Quando la riga della live va via (un giorno dopo la fine)
+  l'id non rimanda più a niente: la scheda è `null`, «Live ended».
+  `messages_live_check`: un `live_share_id` solo con `attachment =
+  'live'`. Test in `test_message_lives.py`.
 
 ## Come si memorizza una traccia
 

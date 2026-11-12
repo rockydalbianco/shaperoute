@@ -1145,6 +1145,39 @@ motore.)
   record personali. Preferiti e corse di gruppo sì (migrazione `0068`).
   La legge solo un'app che dice `snowshoeing` in `X-MuW-Reads`.
 
+### Carrozzina e passeggino: `"activity": "wheelchair"` (TASK-414 parte A, ADR-0343)
+
+```json
+{ "start": [46.0671, 11.1214], "shape": "heart", "distance_m": 3000, "activity": "wheelchair" }
+```
+
+(`fixtures/route-request-wheelchair.json`, a Trento.)
+
+- **La rete `wheel`** (`networks/wheel.py`): le vie della rete foot che si
+  spingono con le ruote, la rete `wheelcalm` del banco
+  (`sports/wheelchair.md`). Fuori scale, cordoli alti (il nodo taglia la
+  via), `incline` scritto oltre l'8%, superfici ruvide, `smoothness` da
+  `bad` in giù, `wheelchair=no`, sentieri con `sac_scale`, tornelli,
+  scalette e cancelli a bussola, e le strade principali e secondarie (anche
+  `trunk`) che non scrivono un marciapiede. `path` e `track` solo con una
+  superficie scritta (o `tracktype=grade1`). `wheelchair=yes` o
+  `designated` tiene la via o il nodo. Ogni via nei due sensi.
+- **Da 1 a 5 km** (`DISTANCE_LIMITS_M.wheelchair`, scelta 4): fuori è
+  `422 invalid_request`.
+- **Solo cerchio, cuore, stella e luna** (scelta 5, `Activity.shapes`):
+  ogni altra forma del catalogo, una parola, un'immagine, un disegno a
+  mano o un tratto sono `422 invalid_request` (`wheelchair draws only these
+  shapes: circle, heart, star, moon, not …`), prima di toccare la rete.
+- **Le zone** sono sue, nella cache come `wheel_<area>.graphml`, grandi
+  quanto il suo percorso più lungo (`longest`, 5 km), coi nomi delle strade
+  come a piedi; il server ne tiene una in memoria.
+- **Salvata**: Strava `Wheelchair` e GPX `<type>wheelchair</type>`, anche
+  per un passeggino (scelta 8); nel gioco delle forme conta come una
+  camminata, coi controlli «veicolo» della corsa e senza tempi migliori
+  (scelta 7); record personali suoi su 1 e 5 km. Preferiti e corse di
+  gruppo sì (migrazione `0071`, numero in bozza). La legge solo un'app che
+  dice `wheelchair` in `X-MuW-Reads`.
+
 ### A piedi, camminando: `"activity": "walking"` (TASK-371, ADR-0315)
 
 ```json

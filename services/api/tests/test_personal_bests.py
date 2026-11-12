@@ -366,15 +366,16 @@ def test_the_backfill_counts_the_runs_saved_before_as_the_save_does(
     saved(client, owner, KEYS[0], five_k(30))
     saved(client, owner, KEYS[1], five_k(27, day=1, source="file"))
     counted = _kept(database)
-    # A run's 5K and a skate's (TASK-380), for each run.
-    assert len(counted) == 4
+    # A run's 5K, a skate's (TASK-380) and a wheelchair's 1K and 5K
+    # (TASK-414), for each run.
+    assert len(counted) == 8
     # The runs as they were before part A: no bests kept.
     with database.connect() as conn:
         conn.execute("DELETE FROM run_bests")
     assert bests_seen(client, owner, owner) == []
 
     done = backfill(database)
-    assert (done.runs, done.bests) == (2, 4)
+    assert (done.runs, done.bests) == (2, 8)
     assert _kept(database) == counted
     assert [b["seconds"] for b in bests_seen(client, owner, owner)] == [1_350]
     # Twice, the same.

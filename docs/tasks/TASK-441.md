@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A in `main` e sul server (1261); parte B1 (parole a penna alzata, 1546) in PR, aspetta il sì dell'utente alla pagina; poi l'app e l'OTA, poi B2
+**Stato**: In lavorazione — parte A in `main` e sul server (1261); parte B1 (parole a penna alzata, 1546): server in `main` (#1184), app nella #1185; sul server e in OTA insieme nell'aggiornamento completo; poi B2
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -167,6 +167,11 @@ docs/tasks/TASK-441.md            (nuovo)
   server dopo la #1155 con 1261 «si va bene»; parte B e le 55 parole di
   prima da rifare a penna alzata «si procedi e ifalle».
 - 2026-11-11, vista la pagina di prova: «Sì, rifai il giro».
+- 2026-11-12, «Sì, vanno bene»: le 340 parole a penna alzata entrano nel
+  catalogo. Viste le due pagine (`parole-che-entrano.html`,
+  `parole-scartate.html`) e il campione grande (`campione-grande.html`:
+  57 parole disegnate grandi, per ogni lunghezza le meno somiglianti,
+  quelle di mezzo e le più somiglianti).
 
 ## Com'è uscita la parte A
 
@@ -265,8 +270,7 @@ città, ora in 10).
   dal lato che torna alla partenza, come le parole degli esempi di città.
   **Limite noto**: modificarla lettera per lettera non si può.
 
-**L'app** (branch `feat/TASK-441-b1-app-pen-up`, commit locale, PR dopo il
-server): `gaps` alle schede in `ExploreScreen.tsx` e `route/NearYou.tsx`,
+**L'app** (branch `feat/TASK-441-b1-app-pen-up`, PR #1185): `gaps` alle schede in `ExploreScreen.tsx` e `route/NearYou.tsx`,
 `pen_up` in `toRequest` (`explored.ts`) per una parola con `walks`, due
 commenti in `recommendedRoutes.ts`. Senza l'OTA le schede uniscono le
 lettere con un tratto dritto; la mappa le mostra già staccate (`toResult`
@@ -300,13 +304,26 @@ apps/mobile/src/route/NearYou.tsx
 - [x] Giro finito, registro in `out/TASK-441/pen-up.jsonl`.
 - [x] Test deterministici: strumento (39), API (61), l'app sul catalogo.
 - [x] I file di oggi identici byte per byte con le tre righe nuove.
-- [ ] Sì dell'utente alla pagina delle 340 parole
+- [x] Sì dell'utente alla pagina delle 340 parole
       (`out/TASK-441/penup/parole-che-entrano.html`; le scartate in
       `parole-scartate.html`) **prima del merge**.
-- [ ] CI verde, merge del Coordinatore, passo sul server (sì dell'utente).
-- [ ] PR dell'app, OTA (sì dell'utente).
+- [x] CI verde, merge del Coordinatore (#1184, `defe1357`, 2026-11-12).
+- [x] PR dell'app (#1185).
+- [ ] Passo sul server e OTA, insieme nell'aggiornamento completo (un sì
+      dell'utente per ognuno, dal Coordinatore). Controlli di sola lettura
+      per dopo il passo: `out/TASK-441/SERVER-B1.md` (checkout principale).
 
 ## Dove siamo
+
+*2026-11-12*: **il server della B1 è in `main`** (#1184), entrato col sì
+dell'utente alle 340 parole; l'app è la #1185. In produzione non c'è
+ancora niente: il server resta al catalogo a 1261 finché non esce l'OTA,
+perché un'app senza la #1185 unisce le lettere con un tratto dritto sulle
+schede. Attesi dopo il passo: nel log «1546 recommended routes from
+catalog/seed»; da Milano `60 50 50`, 19 parole a penna alzata;
+`milano-star-12000-0` coi suoi tre tratti. **Poi B2** (bici 30–50 km,
+canoa, nuoto, il campo `activity`): prima la lista dei file al
+Coordinatore.
 
 *2026-11-11, 22:14Z*: **parte A sul server** («passo 8 fatto», Coordinatore):
 checkout `ab5b2983`, nel log «1261 recommended routes from catalog/seed»,

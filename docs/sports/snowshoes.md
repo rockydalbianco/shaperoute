@@ -283,5 +283,19 @@ partenza (`snow.town_bbox`), dalla neve in cache del banco o da Overpass
   0,3 s; il conteggio dalla neve in cache (16 170 edifici) chiede 0,3 s.
   Prima della A3 solo `build_area` chiedeva 16–19 s. Asiago: 4 153 edifici
   contati in 0,05 s, e va avanti come prima.
-- **I tempi del banco** (prima e dopo su tutti i posti, col turno del Mac
-  del Coordinatore): da misurare.
+- **Il banco** (2026-11-12, turno del Mac del Coordinatore, dalla cache,
+  `out/TASK-413/results/a3-compare.txt`): 72 richieste (6 posti, cerchio,
+  cuore e stella, da 0,5 a 3 km), prima col motore di main e dopo con la A3.
+  Le 60 dei cinque posti con neve sono **identiche** (esito, lunghezza,
+  scala, spostamento, tratto, accesso). Le 12 di Milano erano già
+  `shape_not_drawable` (la forma non ci sta) e ora lo sono subito, «no open
+  snow».
+
+| Posto | Prima | Dopo |
+|---|---|---|
+| Milano | 67,0 s (4,7–6,8 a richiesta) | 3,3 s (0,27–0,32) |
+| Asiago | 24,9 s | 24,3 s |
+| Fiemme | 19,5 s | 16,1 s |
+| Lavazè | 10,3 s | 10,4 s |
+| Bondone | 9,5 s | 9,4 s |
+| Rolle | 9,2 s | 9,5 s |

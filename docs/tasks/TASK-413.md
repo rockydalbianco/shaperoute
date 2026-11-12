@@ -227,13 +227,16 @@ Coordinatore, `feat/TASK-413-b-snowshoes-app`):
   - (2) «Record your day» dentro le ciaspole che già ci sono.
 
   Vale la (2): una riga sola, «Snowshoes», nessuna migrazione, nessun
-  passo sul server, esce con un OTA. Proposta dell'agente, da
-  confermare con l'utente insieme al testo nuovo:
+  passo sul server, esce con un OTA. L'utente ha approvato il
+  2026-11-12, con le parole «Sì, vanno bene», la proposta dell'agente e
+  il testo nuovo nelle cinque lingue:
   - il bottone in alto di «Draw» diventa «Record your day», al posto di
     «Snowshoe without a route»;
   - a fine uscita c'è la scheda «Your day» del fondo (distanza, passo,
     metri saliti, tempo, calorie);
-  - sulla mappa la riga è «White: where you walked.»
+  - sulla mappa la riga è «White: where you walked.»: it «Bianco: dove
+    hai camminato.», de «Weiß: wo du gegangen bist.», fr «Blanc : là où
+    tu as marché.», es «Blanco: donde caminaste.».
 
 **Accordi e scelte della parte A2** (2026-11-10, decise dall'agente su
 delega dell'utente):

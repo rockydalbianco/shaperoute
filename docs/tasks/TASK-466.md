@@ -262,6 +262,7 @@ apps/mobile/src/stretch/MorningStretchLayer.test.tsx     (nuovo)
 apps/mobile/__tests__/AppMorningStretch.test.tsx         (nuovo)
 apps/mobile/App.tsx                                      (una riga e l'import)
 apps/mobile/src/profile/SettingsPage.tsx                 (una riga e l'import)
+apps/mobile/src/profile/SettingsPage.test.tsx            (il conto dei tasti: 14)
 apps/mobile/src/i18n/{it,de,fr,es}.ts                    (voci nuove)
 docs/UI.md
 docs/tasks/TASK-466.md

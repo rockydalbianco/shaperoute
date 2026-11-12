@@ -1,15 +1,16 @@
 # TASK-455 — Condividere il disegno di un'altra persona
 
-**Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-12; documenti nella
-#1212) · B0 (la copia solo dei disegni propri o «Everyone») nella #1220,
-«pronta» il 2026-11-12 per l'aggiornamento completo di oggi · parte A
-(server: il post in un messaggio) scritta sul suo branch, PR in bozza per
-il giro dopo
-**Fase**: 5 · **Branch**: `docs/TASK-455-share-others-drawing` (parte 0, solo
-documenti); poi una PR per parte, `feat/TASK-455-a-message-post` la prima
-**Dipende da**: TASK-454 A (#1195) in `main` per `feed/PostActions.tsx`
-(parte B); il turno su `shared-types` e `docs/API.md` (parti A e C: li
-tocca anche la #1211 di TASK-467 B1, si unisce `main` prima di «pronta»)
+**Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-12; documenti in
+`main` con la #1226) · **B0** in `main` (#1220, `34333964`), uscita con
+l'aggiornamento completo del 2026-11-12 · **A** (server: il post in un
+messaggio) in `main` (#1230, `5c53e141`, migrazione `0074`): **manca il
+passo sul server**, col sì dell'utente · prossima **B** (app), lista dei
+file approvata, in un contesto nuovo
+**Fase**: 5 · **Branch**: una PR per parte; la prossima
+`feat/TASK-455-b-share-post`
+**Dipende da**: per la parte B, la #1231 di TASK-454 B in `main` (solo per
+`feed/PostActions.tsx`, che si scrive per ultimo), il passo sul server
+della A e il turno del simulatore
 **ADR**: **ADR-0382** (il post in un messaggio, il link di un post,
 l'interruttore dell'account), numero dal Coordinatore il 2026-11-12 ·
 numero del task dal Coordinatore l'11 novembre 2026 (S5 e gruppo C di
@@ -133,7 +134,10 @@ novità.
 
 ## Le parti (proposta dell'agente; il server prima dell'app)
 
-- **A — Server: il post in un messaggio.** Un allegato nuovo, `post`: il
+- **B0 — App: niente copia dei disegni «Followers» altrui** (aggiunta il
+  2026-11-12, la correzione di riservatezza). **In `main`, #1220.**
+- **A — Server: il post in un messaggio** (**in `main`, #1230; manca il
+  passo sul server**). Un allegato nuovo, `post`: il
   messaggio tiene l'id del disegno, non la linea. Mandarlo vuole che chi
   manda veda il disegno e una conversazione aperta, come ogni allegato.
   Leggerlo: a ogni pagina il server risolve la scheda **per chi legge**
@@ -164,7 +168,7 @@ novità.
 - **F — Più avanti, con una build nativa**: il link che apre il post
   dentro l'app (link universali); un «Copy link» vero, se lo si vuole.
 
-Ordine: A → B → C → D → E. A e B danno già «manda a un amico» e il post in
+Ordine: B0 → A → B → C → D → E. A e B danno già «manda a un amico» e il post in
 chat; C, D ed E il link. Esce tutto con l'aggiornamento completo: nessuna
 OTA da sola.
 
@@ -225,6 +229,44 @@ Ordine sui file dell'app (Coordinatore): `feed/PostActions.tsx` dopo la
 dopo. In `messages.py` e `push.py` l'allegato sta in un blocco suo:
 TASK-468 («Share live» in chat) li tocca dopo.
 
+## La parte B, da dove si riparte (2026-11-12)
+
+Lista dei file **approvata dal Coordinatore** il 2026-11-12; branch
+`feat/TASK-455-b-share-post` da `main`. Si scrive tutto il resto e si tiene
+`feed/PostActions.tsx` per ultimo: prima entra la #1231 di TASK-454 B, e
+lo dice il Coordinatore. Su `messages/**` questo task va per primo; dopo
+entra TASK-468 B.
+
+Cosa fa: «Share» su ogni post apre un foglietto («Send to a friend», sui
+propri anche «Poster and video»; «Share link» arriva con la parte E); «Send
+to a friend» da un post manda il rimando (`attachment: { post_id }`), con
+la nota «Only people who follow {user} can open it.» per un post
+«Followers»; nella conversazione la scheda del post («by {user}», o «This
+post is no longer available.»); la lista dice «🗺️ Post»; l'app dice `post`
+in `X-MuW-Reads`; la scheda di un disegno altrui manda il rimando e il
+pulsante torna sui «Followers» (la B0 l'aveva tolto).
+
+- **Da chiedere all'utente all'inizio** (una domanda, con la proposta): il
+  tocco sulla scheda in chat. La pagina del post del Feed (`PostPage`, con
+  «Edit & run») vive dentro `FeedScreen`; da una notifica o dalla ricerca
+  un post si apre oggi con `drawingsDoor.open` (mappa e scheda con foto,
+  commenti, reazioni, «Draw it near me», «Edit the drawing»). Proposta:
+  aprirlo allo stesso modo dalla chat, senza toccare `App.tsx` (al
+  Coordinatore va bene).
+- **Un server di prima** rifiuta `post_id` con `422`: l'app lo dice con le
+  parole che ha già. `attachments.kinds` di una conversazione aperta ha
+  `post` quando il server lo accetta.
+- **I tipi**: `MESSAGE_ATTACHMENT_KINDS` è rimasto com'era e il tipo è
+  `MESSAGE_POST_KIND` a parte (parte A), così l'app compila; la B allarga
+  il tipo di `MessageAttachment.kind`.
+- **Di passaggio** (nota del Coordinatore): TASK-456 ha lasciato segnato
+  un difetto in `messages/SendDrawingButton.tsx`, dopo «Send to…» il
+  foglietto di «…» resta aperto. Se sono due righe si chiude qui e lo si
+  scrive nella PR; se è di più si lascia.
+- **Testi**: quelli approvati il 2026-11-12 (sopra); le traduzioni sono
+  dell'agente. Gli screenshot col turno del simulatore, prima di «pronta».
+- **Per uscire** aspetta il passo sul server della A.
+
 ## File toccati
 
 Parte 0 (la #1212, solo documenti): `docs/tasks/TASK-455.md`,
@@ -232,8 +274,8 @@ Parte 0 (la #1212, solo documenti): `docs/tasks/TASK-455.md`,
 
 Parte A (sì del Coordinatore il 2026-11-12):
 `services/api/shaperoute_api/messages.py`, `services/api/shaperoute_api/push.py`,
-`services/api/migrations/0075_message_post.sql` (numero provvisorio: il
-vero è il primo libero al merge),
+`services/api/migrations/0074_message_post.sql` (era `0075` in bozza: il
+numero è il primo libero al merge),
 `services/api/tests/test_message_posts.py` (nuovo),
 `packages/shared-types/src/index.ts` (a turno),
 `packages/shared-types/fixtures/message-post.json` (nuovo),
@@ -242,11 +284,32 @@ vero è il primo libero al merge),
 2026-11-12, in attesa del sì: `services/api/shaperoute_api/report_email.py`
 (la pagina del link di una segnalazione legge `drawing_card` per ogni
 allegato che non è foto o video: con `post` darebbe un 500). Sì del
-Coordinatore lo stesso giorno.
+Coordinatore lo stesso giorno. In `main` con la #1230.
 
-Parte B0 (sì del Coordinatore il 2026-11-12):
+Parte B0 (sì del Coordinatore il 2026-11-12; in `main` con la #1220):
 `apps/mobile/src/social/DrawingCard.tsx`,
 `apps/mobile/src/social/DrawingCardSend.test.tsx` (nuovo).
+
+Parte B (sì del Coordinatore il 2026-11-12). Si modificano:
+`apps/mobile/src/feed/PostActions.tsx` (per ultimo, dopo la #1231),
+`apps/mobile/src/messages/SendToFriend.tsx`, `SendDrawingButton.tsx`,
+`MessageMedia.tsx`, `ConversationScreen.tsx`, `attachmentText.ts`,
+`apps/mobile/src/api/messages.ts`, `apps/mobile/src/api/reads.ts`,
+`apps/mobile/src/social/DrawingCard.tsx`,
+`packages/shared-types/src/index.ts` (a turno),
+`apps/mobile/src/i18n/{de,es,fr,it}.ts`, `docs/UI.md`, e i test che oggi
+fissano il comportamento di prima: `feed/PostActions.test.tsx`,
+`feed/PostPage.test.tsx`, `feed/snowFeed.test.tsx`, `api/reads.test.ts`,
+`social/DrawingCardSend.test.tsx`, `messages/Attachments.test.tsx` e
+`messages/Drawings.test.tsx` solo se cambiano le firme,
+`packages/shared-types/test/message-post.test.ts`. Nuovi:
+`apps/mobile/src/feed/PostShareSheet.tsx`,
+`apps/mobile/src/messages/PostCard.tsx`,
+`apps/mobile/src/messages/messagePost.ts`, ognuno col suo test.
+Non si toccano: `App.tsx`, `feed/FeedPost.tsx`, `feed/PostPage.tsx`,
+`feed/PostSheet.tsx`, `feed/PostReactions.tsx`,
+`messages/MessagesOverlay.tsx`, `social/drawingsDoor.ts`, `share/**`,
+`about/content/**` (la riga di «Help» va con la privacy, parte E).
 
 ## Criteri di accettazione
 
@@ -256,17 +319,24 @@ Parte 0:
 - [x] Una sola PR di documenti con tutte le risposte (#1212).
 - [x] Lista dei file della parte A mandata al Coordinatore, sì ricevuto.
 
-Parte A:
-- [ ] Un messaggio con l'allegato `post` tiene solo l'id del disegno.
-- [ ] Mandare un post che chi manda non vede è `404`; in una richiesta
+Parte B0 (in `main`, #1220):
+- [x] «Send to a friend» sulla scheda di un disegno: c'è sul proprio (anche
+      «Followers») e su quello altrui «Everyone»; non c'è su quello altrui
+      «Followers».
+
+Parte A (in `main`, #1230):
+- [x] Un messaggio con l'allegato `post` tiene solo l'id del disegno.
+- [x] Mandare un post che chi manda non vede è `404`; in una richiesta
       non aperta è `409`, come ogni allegato.
-- [ ] La scheda si risolve coi permessi di chi legge a ogni lettura; test
+- [x] La scheda si risolve coi permessi di chi legge a ogni lettura; test
       per: bloccato nei due versi, non follower, follow tolto, post
       cancellato, visibilità cambiata dopo l'invio, post nascosto.
-- [ ] Un'app che non dice di leggere `post` riceve «[Post]» e mai la
+- [x] Un'app che non dice di leggere `post` riceve «[Post]» e mai la
       scheda; la push e la lista dicono «🗺️ Post».
-- [ ] `API.md`, `DATABASE.md`, tipi ed esempio aggiornati; test dei file
+- [x] `API.md`, `DATABASE.md`, tipi ed esempio aggiornati; test dei file
       toccati verdi in locale, la suite in CI.
+- [ ] Il passo sul server, col sì dell'utente dato al Coordinatore, e i
+      controlli di sola lettura di `out/TASK-455/SERVER-A.md`.
 
 Parte D (fissati col Coordinatore):
 - [ ] La pagina risponde solo per post «Everyone» con l'interruttore
@@ -299,3 +369,17 @@ Le altre parti scrivono i loro criteri quando partono.
   unito, branch spinto (`0a6f9f8e`); non va nel passo server di oggi, la
   PR si apre in bozza dopo la CI della B0. La scelta di `X-MuW-Reads` è
   nel punto 4 di ADR-0382.
+- 2026-11-12: **B0 in `main`** (#1220, `34333964`), dentro l'aggiornamento
+  completo uscito lo stesso giorno (commit dell'uscita `1eb3e5a8`). I
+  documenti della parte 0 in `main` con la PR unica del Coordinatore
+  (#1226), che ha chiuso la #1212 come unita.
+- 2026-11-12: **A in `main`** (#1230, `5c53e141`), migrazione
+  `0074_message_post.sql`, 13 test nuovi in `test_message_posts.py` (anche
+  la pagina di una segnalazione). Non era nel passo sul server di quel
+  giorno (12:20Z): va col prossimo, col sì dell'utente; i controlli di sola
+  lettura sono in `out/TASK-455/SERVER-A.md` (tre passi, scritti e non
+  ancora provati su un database vero). Tornare all'immagine di prima è
+  sicuro finché nessun messaggio porta un post, cioè fino alla parte B.
+- 2026-11-12: lista dei file della parte B approvata dal Coordinatore
+  («La parte B, da dove si riparte», sopra). La B parte in un contesto
+  nuovo, da questo file.

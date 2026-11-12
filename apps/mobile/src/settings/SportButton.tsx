@@ -36,11 +36,20 @@ const SIDE = space.lg;
 const GAP = space.sm;
 /** Inside the panel, its tiles' gap from its edges. */
 const INSIDE = space.md;
+/** The panel's edge, on each side. */
+const EDGE = 1;
 
 /** A tile's width for a window `width` wide: two to a row, filling the
- * panel inside its padding. */
+ * panel inside its edge and its padding. */
 export function tileWidth(width: number): number {
-  return Math.floor((width - SIDE * 2 - INSIDE * 2 - GAP) / 2);
+  return pairWidth(width - SIDE * 2 - EDGE * 2);
+}
+
+/** A tile's width for a panel whose inside (edge left out) is `inner`
+ * wide: two tiles and their gap, a point to spare so rounding never
+ * pushes the second to the next row. */
+export function pairWidth(inner: number): number {
+  return Math.max(0, Math.floor((inner - INSIDE * 2 - GAP - 1) / 2));
 }
 
 /** How tall the panel may be, hung at `top` in a window `height` tall
@@ -66,6 +75,8 @@ export function SportButton({ sports = SPORTS }: Props) {
   const sport = useSport();
   const [open, setOpen] = useState(false);
   const [top, setTop] = useState<number | null>(null);
+  // The panel's inside as laid out: until then, as the window says.
+  const [inner, setInner] = useState<number | null>(null);
   const button = useRef<View>(null);
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
@@ -84,7 +95,7 @@ export function SportButton({ sports = SPORTS }: Props) {
   // Until the button says where it is: where the header of the pages puts it.
   const hang = top ?? insets.top + space.sm + MIN_TAP_SIZE + space.xs;
   const maxHeight = panelMaxHeight(height, hang, insets.bottom);
-  const tile = tileWidth(width);
+  const tile = inner === null ? tileWidth(width) : pairWidth(inner);
 
   return (
     <>
@@ -134,6 +145,7 @@ export function SportButton({ sports = SPORTS }: Props) {
           </View>
           <ScrollView
             testID="sport-scroll"
+            onLayout={(event) => setInner(event.nativeEvent.layout.width)}
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
@@ -258,7 +270,7 @@ const styles = StyleSheet.create({
     left: SIDE,
     right: SIDE,
     borderRadius: radius.xl,
-    borderWidth: 1,
+    borderWidth: EDGE,
     borderColor: color.borderStrong,
     backgroundColor: color.surface,
     overflow: "hidden",

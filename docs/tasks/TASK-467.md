@@ -177,8 +177,10 @@ Coordinatore: prima dell'uscita della 1.1.0 non si tocca il nativo).
   nativa), quale finestra di campioni è «la notte scorsa» (serve l'ora
   locale: sta nel lettore), e nella parte B il valore di partenza
   dell'interruttore nel post dell'attività in **una sola costante**
-  (richiesta del Coordinatore: la scelta «acceso/spento» è stata
-  riproposta all'utente il 2026-11-12).
+  (richiesta del Coordinatore). La scelta «acceso/spento» è stata
+  riproposta all'utente il 2026-11-12, con «spento» come proposta e i
+  due rischi detti (il consenso esplicito di Apple 5.1.3; la frase della
+  privacy «private unless you choose otherwise»): **«Resta acceso»**.
 
 **File toccati (parte A)**: `apps/mobile/src/health/sleepNight.ts`,
 `sleepNight.test.ts`, `sleepScore.ts`, `sleepScore.test.ts` (nuovi),

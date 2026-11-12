@@ -532,8 +532,44 @@ lasciando le righe d'indice.
 - ADR-0344, precisazione B — Fasi, cambi pelli e VAM sul telefono sopra i tratti della neve; il pannello sopra la scheda della corsa · 2026-11-11 · Attiva
 - ADR-0375 — Il parapendio registrato senza forma, con la condivisione dal vivo e i numeri del volo (quota, variometro, velocità del momento) · 2026-11-11 · Attiva
 - ADR-0372 — Il calendario di tutte le attività: `GET /me/activity-calendar` letto da `runs` e `run_stats`, i 12 mesi e gli sport dell'account nella stessa risposta, nessuna migrazione · 2026-11-11 · Attiva
+- ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro
+
+**Stato**: Attiva · 2026-11-12 · TASK-435, parti A (#1105), B (#1139) e C
+(#1161) in `main`. Deciso dall'agente su delega dell'utente, costruendo;
+le scelte di prodotto restano quelle di ADR-0361.
+
+1. **Senza `?first=1` il campo `first` non c'è**, non è `null` (ADR-0361
+   diceva «`null` di norma»). Il job letto con `?first=1` è un tipo a sé,
+   `RouteJobWithFirstBody` nell'API e `RouteJobWithFirst` in
+   `packages/shared-types`; `RouteJob` e `RouteJobBody` restano com'erano.
+   Perché: il corpo per un'app non aggiornata resta quello di prima campo
+   per campo, e i controlli del contratto (`contract.test.ts`,
+   `test_contract.py`) confrontano i campi di `RouteJob` con le risposte
+   d'esempio: un campo in più lì li faceva fallire.
+2. **Il pianificatore chiama `plan_nearby` come prima quando nessuno
+   mostra il primo percorso** (`images._plan_nearby`): `on_first` passa
+   solo se la sorgente del job lo sa mostrare (`job_times.ShowsFirst`).
+   Mostrarlo non fa mai fallire il job: un errore lì si scrive nel log e il
+   job va avanti fino alla risposta intera.
+3. **Nell'app il primo percorso tiene la sua `better_distance_m`**, e gli
+   altri non ne hanno, come le alternative del motore (`choices.withFirst`):
+   la riga «This shape comes out better at…» non cambia quando arrivano le
+   schede. Un primo percorso che non si può disegnare vale come nessuno.
+   Se l'utente annulla dopo il primo, lo stato torna vuoto come per ogni
+   annullamento.
+4. **Un server di prima ignora `?first=1`**: provato sul codice del commit
+   in produzione prima del passo 8 (`2ed26af7`), che risponde come senza
+   parametro. Quattro test dell'app (`__tests__/AppBikeNavigation`,
+   `AppEditDrawing`, `AppEditRun`, `AppFavoriteActivity`) fingevano un
+   server che rispondeva alla lettura del job solo all'indirizzo esatto:
+   ora ignorano il parametro, come fa il server vero.
+5. **Misure** (`tasks/TASK-435.md`, «Parte D»): sul Mac 0,8 s in mediana
+   coi 2 processi caldi; sul server 2,7 s nella prova dopo il passo 8, e
+   `wait` 2,9 s in mediana su 22 job di prima del passo.
 
 ## ADR-0372 — Il calendario di tutte le attività: `GET /me/activity-calendar` letto da `runs` e `run_stats`, i 12 mesi e gli sport dell'account nella stessa risposta, nessuna migrazione
 

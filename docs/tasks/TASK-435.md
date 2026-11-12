@@ -1,10 +1,9 @@
 # TASK-435 — Primo percorso subito, alternative dopo
 
-**Stato**: In corso — parte 0 (#1104), A motore (#1105) e B API (#1139)
-in `main` e **sul server dal passo 8** (`ab5b2983`, 2026-11-11 22:14Z);
-C app nella PR #1161, provata nel simulatore, aspetta il sì dell'utente al
-prima/dopo e il merge del Coordinatore; esce con l'aggiornamento completo
-dell'app. Misure sotto («Parte D»)
+**Stato**: Done (2026-11-12) — A motore (#1105), B API (#1139) e C app
+(#1161) in `main`; A e B **sul server dal passo 8** (`ab5b2983`,
+2026-11-11 22:14Z); la C esce con l'aggiornamento completo dell'app.
+Restano due controlli, in «Esito». Misure sotto («Parte D»)
 **Fase**: 5 · **Branch**: `docs/TASK-435-plan` (questo file); poi una per
 parte, sotto · **ADR**: 0361
 
@@ -420,6 +419,18 @@ alle due strisce del simulatore.
   pianificatore chiama `plan_nearby` come prima quando nessuno mostra il
   primo percorso (`images._plan_nearby`).
 - B: il test dell'app pubblicata è `apps/mobile/src/api/routesFirstCompat.test.ts`.
+- B, file in più rispetto alla lista (approvati dal Coordinatore): in
+  `packages/shared-types` il tipo `RouteJobWithFirst` al posto di un campo
+  in `RouteJob`, la risposta d'esempio `fixtures/route-job-first.json` e
+  `test/firstRoute.test.ts`; `services/api/tests/first_route_helpers.py`.
+- C, file in più (approvati dal Coordinatore), una riga ciascuno:
+  `apps/mobile/__tests__/AppBikeNavigation.test.tsx`,
+  `AppEditDrawing.test.tsx`, `AppEditRun.test.tsx`,
+  `AppFavoriteActivity.test.tsx`. Il loro server finto rispondeva alla
+  lettura del job solo all'indirizzo esatto; ora ignora `?first=1`.
+- Le PR sono entrate una dopo l'altra (#1105 → #1139 → #1161), ognuna
+  costruita sul branch di quella prima e aperta quando quella era in
+  `main`.
 - C: `withFirst` (`route/choices.ts`) tiene del primo percorso anche la
   sua `better_distance_m`, e la toglie agli altri, come fa il motore con le
   alternative. Se dopo il primo l'utente annulla, lo stato torna vuoto come
@@ -456,18 +467,18 @@ liberi»). Da tenere d'occhio:
 
 ## Criteri di accettazione
 
-- [ ] A server scarico i percorsi finali (scelto + alternative) sono
+- [x] A server scarico i percorsi finali (scelto + alternative) sono
       quelli di oggi: `test_same_routes` verde con la riga in
       `SAME_ROUTES_AS`.
-- [ ] Il job dice `first` prima che le partenze vicine finiscano (test
+- [x] Il job dice `first` prima che le partenze vicine finiscano (test
       con pianificatore finto, thread e processi).
-- [ ] Un'app non aggiornata riceve gli stessi stati e lo stesso `result`
+- [x] Un'app non aggiornata riceve gli stessi stati e lo stesso `result`
       di oggi (test del corpo senza `?first=1`).
-- [ ] L'app mostra il primo percorso all'arrivo di `first` e aggiunge le
+- [x] L'app mostra il primo percorso all'arrivo di `first` e aggiunge le
       alternative a `done`, secondo la risposta dell'utente (test).
-- [ ] Il guadagno misurato sul Mac è scritto qui; quello del server dopo
+- [x] Il guadagno misurato sul Mac è scritto qui; quello del server dopo
       il passo server.
-- [ ] CI verde per ogni PR.
+- [x] CI verde per ogni PR.
 
 ## Fuori scope
 
@@ -485,4 +496,40 @@ liberi»). Da tenere d'occhio:
 
 ## Esito
 
-*(a fine task)*
+**Done il 2026-11-12.** Mentre il server calcola, il percorso dalla
+partenza dell'utente arriva all'app appena è pronto e si può già correre o
+esportare; gli altri si aggiungono come B e C e il primo resta A. I
+percorsi finali sono quelli di prima, e un'app non aggiornata riceve la
+risposta di prima. Come sono state costruite le parti: ADR-0361 e la sua
+precisazione.
+
+I criteri di accettazione: tutti soddisfatti (prova `test_same_routes` e
+righe di `SAME_ROUTES_AS` nella #1105; `test_first_route.py`,
+`firstRoute.test.ts` e `routesFirstCompat.test.ts` nella #1139; i quattro
+test nuovi dell'app nella #1161; misure in «Parte D»; CI verde per le
+quattro PR).
+
+**Resta, fuori dal codice:**
+
+- **L'uscita nell'app**: la C esce col prossimo aggiornamento completo
+  (lo pubblica il Coordinatore, col sì dell'utente). Finché non esce, le
+  app di adesso funzionano come prima.
+- **La prova su un telefono vero**, dopo l'uscita: «Draw route» verso il
+  server per un percorso oltre gli 8 km a piedi (sotto, con una zona
+  salvata, lo disegna il telefono, che dà la risposta intera).
+- **Le righe «times» di dopo il passo 8**: il Coordinatore le rilegge fra
+  qualche giorno in `out/TASK-435/`; `wait` dice quanti secondi prima
+  arriva il primo percorso sul traffico vero.
+
+**Emerso e non fatto qui:**
+
+- Sul server i figli delle partenze vicine impiegano circa 2 s solo a
+  partire: figli già avviati toglierebbero quell'attesa a ogni percorso
+  (proposta 2 di TASK-434).
+- Il motore sul telefono pianifica le partenze vicine una dopo l'altra: lì
+  il primo percorso arriverebbe molto prima della risposta intera, ma serve
+  un messaggio a metà calcolo dalla pagina di Pyodide. `on_first` lo rende
+  possibile; non è stato misurato né proposto all'utente.
+- Quando entrano le schede A, B, C il pannello si alza di qualche riga e
+  la mappa si rimpicciolisce: il percorso non cambia, ma lo spostamento si
+  vede (striscia `TASK-435-dopo.jpg`).

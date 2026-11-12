@@ -1,8 +1,9 @@
 # TASK-454 — Reazioni e super like
 
 **Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · C1 (server) in
-`main` (#1180, 2026-11-12), manca il passo sul server · prossima A (TASK-444
-parte 1 è in `main` con la #1176), B dopo A, C2 dopo il server di C1
+`main` (#1180) e sul server (passo 9, 2026-11-12) · A nella #1195 in bozza
+(mancano gli screenshot e il sì dell'utente) · B dopo A · C2 può partire: la
+lista dei file è dal Coordinatore
 **Fase**: 5 · **Branch**: `feat/TASK-454-reactions` (parte A; una PR per parte)
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
@@ -161,8 +162,10 @@ I criteri di B, C1 e C2 si scrivono qui quando la parte comincia.
 
 **Stato**: in `main` il 2026-11-12 (#1180, `02214e9b`, CI verde) ·
 migrazione `0070_comment_replies.sql` · ADR-0377 in `DECISIONS.md` con la PR
-di documenti `docs/TASK-454-c1-docs`. Resta il passo sul server (dell'utente,
-col Coordinatore) e, dopo, il controllo in `out/TASK-454/SERVER-C1.md`.
+di documenti #1186. **Sul server col passo 9 del Coordinatore, alle 08:38Z
+del 2026-11-12** (col sì dell'utente): colonne, tabella, indici e rotte
+controllati da lui in sola lettura; i controlli e tre righe in più,
+facoltative, in `out/TASK-454/SERVER-C1.md` del checkout principale.
 
 Scelte dell'utente: quelle del punto 5 qui sopra. Il resto è **deciso
 dall'agente su delega dell'utente** (va in `DECISIONS.md` come ADR-0377 con
@@ -257,8 +260,9 @@ Criteri di accettazione (C1):
       `==`); che gli esempi nuovi li abbiano tutti lo controlla
       `test_comment_threads.py`.
 - [x] `ruff` e `black` puliti; `shared-types` typecheck e test verdi.
-- [ ] Dopo il passo sul server (dell'utente): controllo in
-      `out/TASK-454/SERVER-C1.md`, senza TestClient.
+- [x] Dopo il passo sul server (dell'utente): controllo in
+      `out/TASK-454/SERVER-C1.md`, senza TestClient (fatto dal Coordinatore
+      il 2026-11-12; il file lo riporta).
 
 ## Parte A — le reazioni nel Feed (app)
 

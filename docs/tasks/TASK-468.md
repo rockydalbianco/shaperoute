@@ -71,6 +71,28 @@ deciderlo».
   (`audience`: link / persone / follower / tutti), `GET` dal vivo con il
   token d'account per chi ne ha il diritto, battito filtrato se spento;
   messaggio di tipo live in `messages.py`; push. Migrazione.
+  **Divisa in due PR** (Coordinatore, 2026-11-12), perché `messages.py`,
+  `push.py` e il CHECK dell'allegato dei messaggi li tocca anche TASK-455 A
+  (allegato «post»):
+  - **A1a** (`feat/TASK-468-a1-live-audiences`): `live_shares.py`
+    (`audience_feed`, `heart_visible`, token del link facoltativo,
+    `live_share_recipients`, `GET /live-shares/{id}?after=` col token
+    d'account, `POST /me/live-shares/{id}/send`), migrazione provvisoria
+    `0074` (solo `live_shares` e `live_share_recipients`),
+    `shared-types/src/liveShare.ts` + test + fixture
+    `live-share-send-request.json`, `test_live_shares.py`, `API.md` «Live
+    shares», `DATABASE.md`.
+  - **A1b**, dopo TASK-455 A in `main`: l'allegato «live» in `messages.py`
+    e `push.py`, la riga di `MESSAGE_ATTACHMENT_KINDS` in `index.ts` (i
+    tipi nuovi in `liveShare.ts`), `messages.live_share_id` e il CHECK con
+    tutti i tipi («post» compreso) in una migrazione sua,
+    `message-live.json`, `test_messages.py`, `test_push.py`.
+  **Criteri di A1 (coperti dai test)**: `404`, mai `403`, a chi non può
+  vedere; bloccati e nascosti nei due versi; un follow tolto a metà live
+  toglie la vista; una live finita, fermata o scaduta come oggi; con
+  `heart_visible` spento il battito è `null` per chi guarda dall'app; al
+  più 20 destinatari per invio e 20 invii al minuto; nessuna coordinata
+  nei log.
 - **A2 — Server, live programmate**: tabella delle live programmate,
   scheda nel Feed (`feed.py`), «Remind me», partenza che lega la
   programmata alla `live_share`, passaggio al post a fine. Migrazione.

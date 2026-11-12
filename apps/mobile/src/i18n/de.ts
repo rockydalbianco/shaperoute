@@ -1691,6 +1691,41 @@ export const DE: Table = {
   "Glute stretch": "Gesäß dehnen",
   "Cross one ankle over the other knee. Sit back as if into a chair.":
     "Einen Knöchel aufs andere Knie legen. Zurücksetzen wie auf einen Stuhl.",
+  // src/stretch, the routines (TASK-466 part B)
+  "Neck stretch": "Nacken dehnen",
+  "Stand tall. Let your chin drop toward your chest, shoulders low.":
+    "Aufrecht stehen. Das Kinn zur Brust sinken lassen, Schultern locker.",
+  "Overhead reach": "Nach oben strecken",
+  "Reach both arms up high. Grow tall, chest open.":
+    "Beide Arme hoch strecken. Lang machen, Brust offen.",
+  "Shoulder stretch": "Schulter dehnen",
+  "Bring one arm across your chest. Pull it in with the other hand.":
+    "Einen Arm vor die Brust führen. Mit der anderen Hand heranziehen.",
+  "Chest opener": "Brust öffnen",
+  "Clasp your hands behind your back. Lift them a little, chest out.":
+    "Hände hinter dem Rücken verschränken. Leicht anheben, Brust raus.",
+  "Triceps stretch": "Trizeps dehnen",
+  "Raise one elbow, hand down your back. Press the elbow back gently.":
+    "Einen Ellbogen heben, die Hand zum Rücken. Den Ellbogen sanft nach hinten drücken.",
+  "Upper back stretch": "Oberen Rücken dehnen",
+  "Reach your arms forward, hands together. Round your back, head down.":
+    "Arme nach vorn strecken, Hände zusammen. Rücken rund machen, Kopf runter.",
+  "Forward fold": "Vorbeuge",
+  "Fold forward from the hips. Let your arms hang, knees soft.":
+    "Aus der Hüfte nach vorn beugen. Arme hängen lassen, Knie locker.",
+  "Cat stretch": "Katzenbuckel",
+  "On hands and knees. Round your back up, let your head drop.":
+    "Auf Händen und Knien. Rücken nach oben rund machen, Kopf hängen lassen.",
+  "Child's pose": "Kindhaltung",
+  "Sit back on your heels. Reach your arms forward, forehead down.":
+    "Auf die Fersen setzen. Arme nach vorn strecken, Stirn nach unten.",
+  "Knee hug": "Knie zur Brust",
+  "Stand on one leg. Hug the other knee to your chest.":
+    "Auf einem Bein stehen. Das andere Knie an die Brust ziehen.",
+  Morning: "Morgens",
+  "After run": "Nach dem Laufen",
+  "After gym": "Nach dem Fitnessstudio",
+  "How long?": "Wie lange?",
   "{index} of {total}": "{index} von {total}",
   "Right side": "Rechte Seite",
   "Left side": "Linke Seite",
@@ -2735,4 +2770,20 @@ export const DE: Table = {
   "MuW switches by itself; touch to correct it.":
     "MuW wechselt von selbst; tippe, um es zu korrigieren.",
   "On foot {foot} · In the air {air}": "Zu Fuß {foot} · In der Luft {air}",
+  // src/liveShare/ (TASK-468 part B1: «Send in MuW», the heart rate, the
+  // live in the app; en and it approved by the user 2026-11-12)
+  "Send in MuW": "In MuW senden",
+  "Show my heart rate": "Meinen Puls zeigen",
+  "Off: nobody sees your heart rate. On: they see it when a watch sends it.":
+    "Aus: Niemand sieht deinen Puls. An: Sie sehen ihn, wenn eine Uhr ihn sendet.",
+  "Choose who gets your live": "Wähle, wer dein Live bekommt",
+  "They can follow you in the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain and calories.":
+    "Sie folgen dir in der App: deine genaue Position auf der Karte, die bisherige Strecke, Distanz, Zeit, Pace oder Tempo, Höhenmeter und Kalorien.",
+  "Send ({count})": "Senden ({count})",
+  "Live ended": "Live beendet",
+  "Finished · {distance} · {time}": "Beendet · {distance} · {time}",
+  "No update since {time}": "Keine Aktualisierung seit {time}",
+  "Updated {seconds} s ago": "Vor {seconds} s aktualisiert",
+  "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
+  "🔴 Live": "🔴 Live",
 };

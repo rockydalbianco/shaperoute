@@ -9,17 +9,22 @@ import datetime as dt
 import logging
 import sys
 import threading
+from pathlib import Path
 from typing import Any
 
 import osmnx._overpass as overpass
 import pytest
 import requests
+from route_engine.geo import LatLon
+from route_engine.network import BBox
 
+from shaperoute_api import overpass_pause
 from shaperoute_api.overpass_pause import (
     APP_PAUSE_S,
     PAUSE_FUNCTION,
     short_overpass_pause,
 )
+from shaperoute_api.prefetch_zones import prefetch
 
 URL = "https://overpass.example/api"
 # What overpass-api.de answered on 2026-11-12, to the status page too.
@@ -138,12 +143,15 @@ def test_an_osmnx_without_the_function_keeps_its_own_wait(
         return 42.0
 
     monkeypatch.setattr(overpass, PAUSE_FUNCTION, theirs)
+    monkeypatch.setattr(overpass_pause, "_warned", False)
     with caplog.at_level(logging.WARNING, logger="shaperoute_api.overpass_pause"):
-        with short_overpass_pause():
-            assert getattr(overpass, PAUSE_FUNCTION) is theirs
-            assert osmnx_pause() == 42.0
+        for _ in range(3):  # three downloads
+            with short_overpass_pause():
+                assert getattr(overpass, PAUSE_FUNCTION) is theirs
+                assert osmnx_pause() == 42.0
     assert getattr(overpass, PAUSE_FUNCTION) is theirs
-    assert "its own wait stays" in caplog.text
+    # Said once, not at every download.
+    assert caplog.text.count("its own wait stays") == 1
 
 
 def test_without_osmnx_the_block_changes_nothing(
@@ -157,3 +165,50 @@ def test_without_osmnx_the_block_changes_nothing(
     with short_overpass_pause():
         ran = True
     assert ran and getattr(overpass, PAUSE_FUNCTION) is original
+
+
+class BatchSource:
+    """OsmnxSource for prefetch_zones, without the network: its download
+    notes how long OSMnx would wait before the request."""
+
+    def __init__(self, cache_dir: Path) -> None:
+        self.cache_dir = cache_dir
+        self.waits: list[float] = []
+
+    def cache_path(self, bbox: BBox) -> Path:
+        return self.cache_dir / "foot_zone.graphml"
+
+    def covering_path(self, bbox: BBox) -> Path | None:
+        return None
+
+    def load(self, bbox: BBox) -> object:
+        self.waits.append(osmnx_pause())
+        return object()
+
+    def named_roads(self, bbox: BBox, download: bool = True) -> object:
+        return []
+
+
+def test_the_batch_downloads_keep_the_minute(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """prefetch_zones downloads with the engine's source alone, not through
+    ZoneGraphs: nobody is waiting, and Overpass is asked as gently as
+    before."""
+    status_is(monkeypatch, FULL)
+    source = BatchSource(tmp_path)
+
+    def find(city: str) -> tuple[str, LatLon]:
+        return city, (46.0671, 11.1214)
+
+    outcomes = prefetch(
+        ["Trento"],
+        source,
+        find,
+        overpass_wait=lambda: 0.0,
+        free_bytes=lambda: 10**12,
+        street_names=False,
+        sleep=lambda seconds: None,
+    )
+    assert [o.status for o in outcomes] == ["downloaded"]
+    assert source.waits == [OSMNX_MINUTE_S]

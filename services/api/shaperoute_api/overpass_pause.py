@@ -19,8 +19,9 @@ batch downloads (prefetch_zones) use the engine's OsmnxSource alone and
 keep the minute.
 
 The function is OSMnx's own (2.1.1), and private: when it is not there, or
-takes no `default_pause`, nothing is changed and the minute stays, with a
-warning in the log; this module's tests fail on such an OSMnx.
+takes no `default_pause`, nothing is changed and the minute stays, with one
+warning in the log, the first time; this module's tests fail on such an
+OSMnx.
 """
 
 from __future__ import annotations
@@ -44,6 +45,7 @@ PAUSE_ARGUMENT = "default_pause"
 _guard = threading.Lock()
 _blocks = 0  # under way, in any thread
 _original: Callable[..., float] | None = None
+_warned = False  # once for the process, not at every download
 
 
 @contextmanager
@@ -69,16 +71,18 @@ def short_overpass_pause(pause_s: float = APP_PAUSE_S) -> Iterator[None]:
 
 def _enter(overpass: Any, pause_s: float) -> bool:
     """Whether the block counts: False on an OSMnx without the function."""
-    global _blocks, _original
+    global _blocks, _original, _warned
     with _guard:
         if _blocks == 0:
             original = getattr(overpass, PAUSE_FUNCTION, None)
             if not _takes_the_pause(original):
-                log.warning(
-                    "osmnx has no %s(%s=): its own wait stays",
-                    PAUSE_FUNCTION,
-                    PAUSE_ARGUMENT,
-                )
+                if not _warned:
+                    _warned = True
+                    log.warning(
+                        "osmnx has no %s(%s=): its own wait stays",
+                        PAUSE_FUNCTION,
+                        PAUSE_ARGUMENT,
+                    )
                 return False
             _original = original
             setattr(overpass, PAUSE_FUNCTION, _shortened(original, pause_s))

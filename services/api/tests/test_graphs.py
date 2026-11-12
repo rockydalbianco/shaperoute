@@ -291,3 +291,36 @@ def test_a_download_does_not_hold_up_a_zone_in_memory() -> None:
     assert answered.wait(5)
     source.release.set()
     downloading.join(5)
+
+
+def test_a_download_does_not_wait_osmnx_minute_for_a_silent_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A zone downloaded for a route someone is waiting for (TASK-471,
+    ADR-0385): when Overpass's status page says nothing usable, OSMnx
+    would wait a minute before the request; inside ZoneGraphs' download it
+    waits five seconds, and its minute is back afterwards. No network: the
+    status page is a fake answer, the wait is asked as OSMnx asks it."""
+    import osmnx._overpass as overpass
+
+    class Page:
+        text = "# 502 Gateway Timeout\n\nThis server is at capacity.\n"
+
+    monkeypatch.setattr(overpass.requests, "get", lambda url, **kwargs: Page())
+
+    def osmnx_wait() -> float:
+        return float(overpass._get_overpass_pause("https://overpass.example/api"))
+
+    class Waiting(FakeSource):
+        waited: float | None = None
+
+        def load(self, bbox: BBox) -> Graph:
+            self.waited = osmnx_wait()
+            return super().load(bbox)
+
+    source = Waiting([], download=grid(46.0, 11.0))
+    graphs = ZoneGraphs(source, read=CountingReader(source))
+    assert osmnx_wait() == 60
+    graphs.load(inside(ZONE_A))
+    assert source.downloads == 1 and source.waited == 5.0
+    assert osmnx_wait() == 60

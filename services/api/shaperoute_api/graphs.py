@@ -24,6 +24,8 @@ from route_engine.network import BBox, Graph, read_graph
 from route_engine.sidewalks import NamedRoad
 from route_engine.zone_crop import ZoneCrop
 
+from shaperoute_api.overpass_pause import short_overpass_pause
+
 log = logging.getLogger(__name__)
 
 # A zone graph takes hundreds of MB in memory (Milan's pickle alone is 44 MB).
@@ -144,8 +146,11 @@ class ZoneGraphs:
 
     def _download(self, bbox: BBox) -> Graph:
         try:
-            # Downloads the zone and saves it in the cache, like the CLI.
-            return self._source.load(bbox)
+            # Downloads the zone and saves it in the cache, like the CLI;
+            # someone is waiting for this one, so without OSMnx's minute
+            # when Overpass's status says nothing (TASK-471, ADR-0385).
+            with short_overpass_pause():
+                return self._source.load(bbox)
         except Exception as exc:
             raise MapDataUnavailableError(
                 f"OpenStreetMap data for this area could not be downloaded: {exc}"

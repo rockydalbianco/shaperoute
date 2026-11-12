@@ -20,9 +20,9 @@ it("shows the rows of before, in their order", () => {
     { id: "mtb", emoji: "🚵", name: "MTB", ready: true },
     // The skate (TASK-380 part B), on since the server has part A.
     { id: "roller", emoji: "🛼", name: "Roller", ready: true },
-    // A wheelchair or a stroller (TASK-414 part B), «Soon» until the server
-    // has part A and its migration 0071.
-    { id: "wheelchair", emoji: "♿", name: "Wheelchair & stroller", ready: false },
+    // A wheelchair or a stroller (TASK-414 part B), on since the server has
+    // part A and its migration 0071.
+    { id: "wheelchair", emoji: "♿", name: "Wheelchair & stroller", ready: true },
     { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
     { id: "swim", emoji: "🏊", name: "Swim", ready: true },
     { id: "ski", emoji: "⛷️", name: "Ski", ready: true, recordOnly: true },

@@ -25,6 +25,21 @@ function isRead(value: unknown): value is string {
 const kept: KeptList<string> = keptList(FLIGHT_NOTICE_FILE, isRead);
 /** Read in this app run, even when the phone refused to keep it. */
 let readNow = false;
+/** On screen now, not read yet. */
+let showing = false;
+/** What waits for the notice to be read (part R5b: the share sheet of
+ * «Share live at start», which iOS would put over it). */
+let waiting: (() => void)[] = [];
+
+/** Runs `then` now, or once the notice on screen is read: two sheets at a
+ * time, iOS shows one over the other. */
+export function afterFlightNotice(then: () => void): void {
+  if (showing) {
+    waiting.push(then);
+  } else {
+    then();
+  }
+}
 
 type Show = (title: string, message: string, onRead: () => void) => void;
 
@@ -41,9 +56,16 @@ export function showFlightNotice(
   if (readNow || list.load().includes(READ)) {
     return false;
   }
+  showing = true;
   show(t(FLIGHT_NOTICE_TITLE), t(FLIGHT_NOTICE), () => {
     readNow = true;
+    showing = false;
     list.save([READ]);
+    const then = waiting;
+    waiting = [];
+    for (const one of then) {
+      one();
+    }
   });
   return true;
 }
@@ -51,6 +73,8 @@ export function showFlightNotice(
 /** For the tests: as at the start of the app. */
 export function resetFlightNotice(): void {
   readNow = false;
+  showing = false;
+  waiting = [];
 }
 
 /** The notice as a flight's screen opens. */

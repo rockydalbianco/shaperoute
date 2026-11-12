@@ -458,7 +458,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B1: la guida in Swift, legata al telefono dalle tracce · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte A3: il telefono · 2026-11-08 · Attiva
 - ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server · 2026-11-08 · Proposto
-- ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Accettato (2026-11-12, parte A in `main`, vedi la precisazione A)
+- ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Accettato (2026-11-12, parti A e B in `main`, vedi le precisazioni A e B)
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Accettata (chiuso il 2026-11-10: 572 percorsi in 63 città)
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
@@ -540,17 +540,147 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
-- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Proposta
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1, A2 in produzione); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
+- ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
 - ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
 - ADR-0380, precisazione B1b/B2 — Il sonno nel post: un campo `sleep` nel disegno visto al posto di una richiesta per riga; nell'app tutto dietro `SLEEP_POSTS_ON` e nessun lettore di Salute in `main`; al server solo con l'interruttore acceso e un post che altri vedono · 2026-11-12 · Attiva
 - ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla · 2026-11-12 · Attiva
 - ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire · 2026-11-12 · Attiva
+- ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km · 2026-11-12 · Attiva
+- ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`) · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`)
+
+**Stato**: Attiva · 2026-11-12 · TASK-463 parte A in `main` (#1242,
+`f8d91aba`), sul server col passo 12 del Coordinatore (col sì
+dell'utente). Lo sport è una scelta dell'utente dell'11 novembre 2026,
+durante TASK-462 («alpinismo: sì, registrato senza percorso»); il modo è
+deciso dall'agente su delega dell'utente, la strada «solo server» dal
+Coordinatore; numeri dal Coordinatore.
+
+**Contesto**: l'alpinismo (roccia, neve, ghiaccio) non ha una forma da
+disegnare: è come lo scialpinismo (ADR-0344) e il parapendio (ADR-0375),
+sport «Record only» (ADR-0319). La ricetta (`sports/COME-AGGIUNGERE.md`)
+vuole nella parte A anche il contratto e il profilo nascosto nell'app:
+un'attività in `shared-types` finisce subito in `X-MuW-Reads` e i test
+dell'app chiedono un profilo. Ma `sports/**` e `settings/sport.ts`
+erano occupati da TASK-414 B e TASK-413 B.
+
+**Decisione**:
+- **`alpinism` è uno sport del registro dell'API**, `record_only`, dopo
+  `paragliding` e prima di `gym` (`RunActivity`, `API_SPORTS`,
+  `NEWER_ACTIVITIES`). Niente percorsi, record personali, gioco o zone.
+- **Strava «Hike», GPX `<type>alpinism</type>`**: Strava non ha
+  l'alpinismo. Sono valori tecnici che l'utente può cambiare con una riga
+  in `sports/alpinism.py`.
+- **La migrazione `0076_alpinism.sql`** allarga solo
+  `runs_activity_check`, rileggendolo come la `0069`.
+- **Prima il server, poi il contratto**: `packages/shared-types` non
+  cambia. Così nessuna app lo dice in `X-MuW-Reads` e nessuna riceve una
+  giornata di alpinismo. La deroga sta in **una costante sola**,
+  `SERVER_FIRST` in `services/api/tests/test_sport_registry_api.py`, e i
+  test che tengono l'API al contratto leggono le sue liste con
+  `in_the_contract`. **La toglie la parte app**, che porta insieme il
+  contratto e il profilo nascosto.
+- `engine.zip` si rifà, perché il registro degli sport va sul telefono.
+
+**Alternative scartate**:
+- *Come il parapendio (#1177)*, cioè contratto e profilo nascosto
+  nell'app nella stessa PR: tocca `sports/**`, `watch/**` e
+  `PublicParts.tsx`, occupati da altri task.
+- *Aspettare TASK-414 B e TASK-413 B*: il server sarebbe rimasto fermo.
+
+**Conseguenze**: il calendario delle attività (ADR-0372) accetta già
+`sport=alpinism`. L'orologio della build 14 non ha l'alpinismo: arriva con
+una build nuova dell'orologio, dopo la parte app. I controlli dopo il passo
+sono in `out/TASK-463/SERVER-A.md`; i dettagli in `tasks/TASK-463.md`.
+
+## ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km
+
+**Stato**: Attiva · 2026-11-12 · TASK-414 B (#1234, `100624e2`) e B2 (#1257,
+`e88d491f`). Deciso dall'agente su delega dell'utente; liste dei file
+approvate dal Coordinatore; schermate approvate dall'utente («Sì, accendi»).
+
+1. **Le forme di uno sport stanno nel suo profilo**: `SportProfile.shapes`
+   (come `Activity.shapes` del motore). La carrozzina ha cerchio, cuore,
+   stella e luna; nessun altro sport ne ha, quindi tutti gli altri vedono il
+   catalogo intero come prima.
+2. **«Disegna» chiede solo quello che lo sport disegna**, letto dal profilo
+   in un punto solo (`route/sportDraw.ts`): `drawKindOf` (una parola o
+   un'immagine che lo sport non disegna aspetta, come prima sull'acqua),
+   `shapeOfSport` (una forma che lo sport non disegna non parte verso il
+   server) e `figuresOf` (la fila di figure sotto il percorso: le forme
+   dello sport, le immagini solo se lo sport le disegna, «Modifica il
+   disegno» solo a chi disegna a mano). Il caso trovato al simulatore: il
+   cavallo sotto un cuore in carrozzina chiedeva al server un 422 e lasciava
+   la scheda vuota.
+3. **Il tempo** sotto la distanza è quello della camminata (`timeAt:
+   "walker"`, 12:00 al km prima di una camminata salvata): chi spinge va
+   come chi cammina.
+4. **I record** su 1 e 5 km stanno nel contratto
+   (`WHEELCHAIR_BEST_DISTANCES`, `PersonalBest.sport` con `wheelchair`) e
+   nel profilo come «1 km» e «5 km», nel gruppo «Wheelchair & stroller» dopo
+   il Roller.
+5. **Salute**: Apple `.wheelchairWalkPace` (70), Health Connect
+   `EXERCISE_TYPE_WHEELCHAIR` (82), anche per il passeggino (scelta 8);
+   nessuna distanza del giorno in Apple Salute, che conterebbe come
+   carrozzina i metri di chi spinge un passeggino. L'energia è quella della
+   camminata, uno sport solo (scelta 1).
+6. **Import**: un file che dice «wheelchair» (MuW, Strava, Garmin
+   `wheelchair_push_*`) è una carrozzina, prima di «run». I file FIT no: i
+   codici FIT della carrozzina non sono verificati.
+7. **Acceso** (`ready: true`) dopo lo sci di fondo (#1249) e il menu a
+   griglia (#1254, la carrozzina nella famiglia «wheels»); solo JavaScript,
+   l'impronta iOS non cambia; esce con l'OTA, col sì dell'utente.
+
+## ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←»
+
+**Stato**: Attiva · 2026-11-12 · TASK-470 parte E, in `main` con la #1243 (OTA 14). Il gesto e la
+versione sono scelta dell'utente (2026-11-12, «A, la pagina segue» fra A e
+B «solo il colpo»); il modo è deciso dall'agente su delega dell'utente, coi
+criteri del Coordinatore; numero dal Coordinatore.
+
+**Contesto**: nell'app non c'è navigazione nativa né `react-native-gesture-handler`:
+le pagine sopra le schede (conversazione, campanella, profili, concorso,
+pagine di «Profile», «Play») sono viste, e si
+chiudevano solo con «←». Su Android il tasto indietro le chiude dalla
+fetta B (`useBackCloses`, una pila delle pagine aperte).
+
+**Decisione**:
+- **Solo iOS**, in JS (`PanResponder` e `Animated`, nessuna dipendenza
+  nuova): esce con un OTA. Su Android c'è il gesto di sistema, che passa
+  dal tasto indietro.
+- **Una striscia fissa di 24 pt** dal bordo sinistro; il dito deve andare a
+  destra di almeno 8 pt e più di lato che in basso: un tocco sulla «←», uno
+  scroll, una lista orizzontale che parte più in là restano della pagina.
+- **La pagina segue il dito**; sotto, l'app un po' scurita (25% di
+  `scrim`, che cala man mano). Lasciata oltre un terzo dello schermo, o con
+  un colpo veloce (0,5 pt/ms), esce in `motion.sheetMs` (280 ms, curva a
+  tempo fisso, non una molla: una molla è ferma molto dopo che la pagina è
+  sparita) e si chiama la sua «←»; altrimenti torna con la molla `glide`.
+  La tastiera si chiude quando il dito prende la pagina; il testo resta
+  finché la pagina non va, come con la «←» (oggi nessuna pagina della
+  lista chiede conferma).
+- **«Riduci movimento»**: la pagina sfuma invece di scorrere.
+- **Dove**: sulla radice di ogni pagina (`useEdgeBack`), con la stessa
+  chiusura della sua «←» e lo stesso «acceso» del tasto indietro. In
+  «Play» chiude la pagina più in alto della pila (premi, collezione), poi
+  «Play». Non sulle schede della barra (lì lo swipe cambia scheda), non su
+  «Profile» come scheda, non sulla mappa, non sui fogli e sulla pagina del
+  post (`Modal` dal basso), **non sulle pagine dentro una scheda**
+  (località e giorno di sci): provato al simulatore il 2026-11-12, il colpo
+  dal bordo chiudeva la pagina e faceva scorrere anche le schede, perché lo
+  scroll nativo della striscia non si ferma per il gesto JS.
+
+**Conseguenze**: `src/ui/EdgeBack.tsx` (`useEdgeBack`, `EdgeBack`,
+`EdgeKeyboardAvoidingView`), poche righe sulla radice di ogni pagina. Le
+pagine dentro una scheda restano col tasto indietro di Android e la «←».
 
 ## ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire
 
@@ -897,7 +1027,9 @@ post funziona o no.
 
 ## ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0
 
-**Stato**: Proposta · 2026-11-12 · TASK-469, nessun codice ancora. La
+**Stato**: **Attiva per la parte A** (A1 #1219 e A2 #1225 in `main` e in
+produzione con l'OTA 14, 2026-11-12; le fette seguenti in corso); la parte
+B resta Proposta · 2026-11-12 · TASK-469. La
 direzione è scelta dell'utente (2026-11-12, «Capsula» fra tre direzioni:
 https://claude.ai/artifact/HD397UmJcu94vNZvGBH2bs); il modo è deciso
 dall'agente su delega dell'utente, coi vincoli del Coordinatore; numero
@@ -935,6 +1067,22 @@ dichiarati «Sufficient Contrast» e il tema scuro.
 completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta
 `6f8bba4c`. Niente blur sopra la mappa mentre si registra. `docs/UI.md`
 si aggiorna fetta per fetta.
+
+**Come è fatto (A1 e A2, 2026-11-12)**: la velatura è `GLASS_VEIL` = 0,88
+del fondo del tono; `glassOf(scelta)` dà per tono e passo la tinta, il
+riempimento, il bordo di luce in cima (bianco al 22% sul tono scuro, al
+95% sul chiaro), il filo intorno (bianco all'8% sullo scuro, il testo
+all'8% sul chiaro), l'ombra (`scrim` al 55% o al 16%) e la capsula della
+scelta (il testo al 12%). Bordo e luce sono ombre interne di `boxShadow`,
+l'ombra portata è a 8 pt con 24 di sfocatura. `useGlassMode` legge
+«Riduci trasparenza», «Aumenta contrasto» (iOS) e «Testo ad alto
+contrasto» (Android), e vince il contrasto. La barra è una capsula
+staccata di `space.lg` dai lati e alzata sopra l'indicatore home; la
+fascia sotto ha la stessa altezza di prima, così le pagine e `TabShell`
+non cambiano. In `Segmented` la pillola della scelta è una vista sola che
+scivola con la molla `glide` e si ferma senza superare il segno; finché
+la pista non è misurata la scelta porta la pillola da sé. Deciso
+dall'agente su delega dell'utente; l'utente ha approvato le schermate.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 
@@ -1680,6 +1828,7 @@ approvate dal Coordinatore.
 8. **La città lenta** (fino a 44 s al banco) resta: un controllo «poca neve»
    prima del piazzamento toccherebbe il motore. Se i tempi del server lo
    chiedono, è un passo a parte.
+
 ## ADR-0347, precisazione C — Il catalogo a 1963 disegni: i già fatti che passano il filtro, le parole corte per città, l'ordine misto nelle liste
 
 **Stato**: Attiva · 2026-11-11 · TASK-441, parte A (#1149). L'utente ha
@@ -2524,6 +2673,7 @@ comincia. Una serie conta per il primo esercizio della scheda dello stesso
 tipo ancora incompleto; finito un esercizio, quello dopo diventa quello in
 corso da solo, coi valori della scheda nei campi se non ci sono serie di
 prima.
+
 ## ADR-0342, aggiunta — La parte A1: la neve nel motore prima del contratto, le quote condivise in `heights.py`
 
 **Stato**: Accettato · 2026-11-08 · TASK-413 A1. Deciso dall'agente su
@@ -2669,6 +2819,7 @@ dall'agente su delega dell'utente
   l'API. `?api=` (solo da `127.0.0.1`/`localhost`, solo verso un indirizzo
   locale) serve a provarla sul Mac contro un finto `/live`: l'API vera
   lascia leggere `/live` solo a `https://getmuw.app`.
+
 ## ADR-0352, precisazione B1 — L'app: lo stato fuori da React, gli invii dal task della posizione, il consenso a ogni link
 
 **Stato**: Attiva · 2026-11-10 · TASK-424 parte B1 (#1025, a25a24a9) ·
@@ -3110,6 +3261,7 @@ mostra le 94 forme nella griglia di sempre finché arriva l'OTA. Due
 migrazioni (C, E).
 
 ---
+
 ## ADR-0350 — La corsa a tre pagine: «Compass», la mappa grande che gira dove punta il telefono
 
 **Data**: 2026-11-08 · **Stato**: Accettata · **Task**: TASK-422 ·
@@ -3210,6 +3362,7 @@ al via.
 necessaria, come al via). B3a2 manderà i preferiti da soli col messaggio
 «routes». Il codice dell'orologio si prova con un prebuild locale
 `MUW_WATCH=1`; impronta iOS senza variabile invariata.
+
 ## ADR-0339, precisazione C2 — Le scene del video: i tempi, la foto piatta, i finali
 
 **Stato:** deciso dall'agente su delega dell'utente (2026-11-08); le scene

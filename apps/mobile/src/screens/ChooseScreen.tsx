@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { FlightPage } from "../air/FlightPage";
 import { GymDrawGuide } from "../gym/GymDrawGuide";
 import { t, tLater } from "../i18n";
 import { useStartAddress } from "../location/startAddress";
@@ -170,17 +171,21 @@ export function ChooseScreen({
               hint={t("No route in the gym: MuW times your workout.")}
             />
           ) : recordOnly ? (
-            <RecordDay
-              label={runLabel}
-              icon={runIcon}
-              onPress={onRun}
-              // A flight is not a day on the slopes (TASK-305 part R2).
-              hint={
-                sport === "paragliding"
-                  ? t("No shapes in the air yet: MuW records your flight.")
-                  : undefined
-              }
-            />
+            <>
+              <RecordDay
+                label={runLabel}
+                icon={runIcon}
+                onPress={onRun}
+                // A flight is not a day on the slopes (TASK-305 part R2).
+                hint={
+                  sport === "paragliding"
+                    ? t("No shapes in the air yet: MuW records your flight.")
+                    : undefined
+                }
+              />
+              {/* Under it, ready to fly, the month and the bests (part R5b). */}
+              {sport === "paragliding" && <FlightPage />}
+            </>
           ) : (
             <>
               <TourPartView name={TOUR_PART.start} style={styles.startCard}>

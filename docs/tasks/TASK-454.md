@@ -312,11 +312,20 @@ ceux qui voient la publication peuvent le lire.» · es «Un super like va con
 un comentario. Quien ve la publicación puede leerlo.»
 
 File toccati davvero: quelli della lista della parte A, meno
-`reactionKinds.test.ts` (non serviva). `docs/UI.md`, «Le reazioni di un
-disegno» (la faccina spenta), è da aggiornare: non è nella lista, chiesto
-al Coordinatore.
+`reactionKinds.test.ts` (non serviva), più `docs/UI.md`, solo «Le reazioni
+di un disegno» e, sotto, «Le reazioni di un post» (col sì del Coordinatore
+del 2026-11-12).
 
 Test in locale (2026-11-12): `PostActions`, `PostReactions`, `PostPage`,
 `DrawingReactions`, `SuperLikeSheet`, `reactionKinds` 65 verdi; con i
 vicini (`snowFeed`, `hikeFeed`, `FeedPostCard`, `DrawingCard*`, `i18n`) 96
 verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.
+
+## Cosa resta (fuori da questo task)
+
+- **Totale e propria reazione nella risposta del Feed**: dalla parte A ogni
+  card del Feed chiede le sue reazioni (`GET /drawings/{id}/reactions`),
+  come già i commenti. Va bene per ora (Coordinatore, 2026-11-12); prima
+  che il Feed cresca, totale e propria reazione (e il numero dei commenti)
+  vanno nella risposta del Feed, così una pagina è una richiesta sola. È
+  server e contratto: un task a parte, che apre il Coordinatore.

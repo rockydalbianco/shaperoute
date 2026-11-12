@@ -78,6 +78,13 @@ Sulla tela «Schede palestra guidate»
     sport, settimane senza kg) e in italiano «piano» per la scheda di più
     settimane («Nuovo piano», «I miei piani»…), mentre il singolo
     allenamento resta «scheda».
+19. **Schermate della A2 al simulatore (2026-11-12)**: «Approvo» —
+    l'ingresso col caso «solo palestra» (tasto spento, «Avanti · 1
+    scelto»), obiettivo e attrezzi, giorni per sport, allenamenti A e B, le
+    settimane senza kg e il prima/dopo di una scheda esistente
+    (`out/TASK-461/shots`, fuori da git). Dalla prova: alla sbarra e alle
+    parallele metà ripetizioni (3 × 8 trazioni accanto a 3 × 15
+    piegamenti).
 
 ### I testi approvati della parte A (italiano; le altre lingue con lo stesso senso)
 

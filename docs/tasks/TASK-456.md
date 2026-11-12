@@ -55,7 +55,7 @@ scelto **A**.
 ## Testi nuovi dell'interfaccia
 
 - «Edit post» (pulsante sulla scheda e titolo del foglio). Sì dell'utente
-  prima del merge.
+  il 12 novembre 2026, viste le schermate («Sì, vai»).
 - Già nell'app, riusati: «More» (etichetta di «…»), «Done», «Delete»,
   «Cancel», «Keep it», «Delete run», «Send to a friend».
 
@@ -104,7 +104,7 @@ Non toccati: `App.tsx` (la prop `onList` resta), `screens/MapScreen.tsx`,
       giorno e ora; una senza titolo è com'era.
 - [x] Nell'elenco nessun «Delete» in vista: «…» → «Delete» → conferma.
 - [x] Test dei file toccati verdi, `tsc` pulito, lint e prettier puliti.
-- [ ] Screenshot prima e dopo dell'elenco e della scheda in
+- [x] Screenshot prima e dopo dell'elenco e della scheda in
       `out/TASK-456/`, col sì dell'utente.
 
 ## Note
@@ -128,10 +128,12 @@ Non toccati: `App.tsx` (la prop `onList` resta), `screens/MapScreen.tsx`,
 
 ## Stato
 
-2026-11-12: proposta fatta, scelta A dell'utente; codice nella PR #1194 (in
-bozza), test dei file toccati verdi, `tsc`, lint e prettier puliti.
-Screenshot prima e dopo in `out/TASK-456/shots/` e nei due fogli
-`out/TASK-456/TASK-456-*-prima-dopo.jpg`, mostrati all'utente. Mancano: il
-sì dell'utente agli screenshot e a «Edit post», poi «#1194 pronta» al
-Coordinatore; dopo il merge, la PR di soli documenti (`STATUS.md`,
-`COMPLETATI.md`).
+2026-11-12: proposta fatta, scelta A dell'utente; codice nella PR #1194,
+con `main` unito dopo la #1172 (il calendario di TASK-462 e la riga nuova
+insieme in `ActivitiesList.tsx`). Test dei file toccati verdi, `tsc`, lint
+e prettier puliti. Screenshot prima e dopo in `out/TASK-456/shots/` e nei
+due fogli `out/TASK-456/TASK-456-*-prima-dopo.jpg`: l'utente ha detto sì
+alle schermate e a «Edit post». «#1194 pronta» al Coordinatore. Mancano: il
+merge (al «merge 1194» del Coordinatore) e poi la PR di soli documenti
+(`STATUS.md`, `COMPLETATI.md`); esce con l'aggiornamento completo, nessun
+OTA prima.

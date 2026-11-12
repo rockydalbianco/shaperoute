@@ -55,7 +55,7 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
         {total}
       </Text>
       {/* Two to a row: «Max altitude» is cut short three abreast. */}
-      <View style={styles.tiles}>
+      <View style={styles.tiles} testID="flight-finish-row">
         <Tile label={t("Flight time")} value={numbers.time} />
         <Tile
           label={t("Max altitude")}
@@ -63,19 +63,21 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
           unit="m"
         />
       </View>
-      <View style={styles.tiles}>
+      {/* The calories beside them, three abreast: their labels are short.
+          Two rows, not three, so that «Save» and «Discard» under the card
+          stay on a phone of 844 pt (TASK-305, tried in the simulator on
+          2026-11-12). */}
+      <View style={styles.tiles} testID="flight-finish-row">
         <Tile label={t("Elev. gain")} value={numbers.climb} unit="m" />
         <Tile
           label={t("Top speed")}
           value={speedOf(top, numbers.units)}
           unit={speedUnit(numbers.units)}
         />
-      </View>
-      {numbers.energy !== null && (
-        <View style={styles.tiles}>
+        {numbers.energy !== null && (
           <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
-        </View>
-      )}
+        )}
+      </View>
       <View style={styles.buttons}>
         <SharePostButton makeRun={() => postOfTrack(track)} />
         {onResume && (

@@ -5038,8 +5038,10 @@ yet: MuW records your flight.»: nessuna forma, nessun percorso. Il volo si regi
   `speed_mps` (API.md, «Live shares»); la pagina del link li mostra
   (SITO.md). Il battito c'è solo con l'orologio, che oggi non ha il volo.
 - **La fine**: «Your flight» e «White: where you flew.»; sotto la distanza
-  in grande e, due per riga, «Flight time», «Max altitude», «Elev. gain»,
-  «Top speed», poi «Calories». Provato nel simulatore il 2026-11-12. Nel Feed il volo è un post senza percorso, come una giornata
+  in grande, «Flight time» e «Max altitude» in una riga, poi «Elev. gain»,
+  «Top speed» e «Calories» nella seconda. Due righe e non tre, perché con
+  un account «Save» e «Discard» sotto la scheda restino sullo schermo di un
+  telefono da 844 pt (fix/TASK-305-flight-end-fits, 2026-11-12). Provato nel simulatore il 2026-11-12. Nel Feed il volo è un post senza percorso, come una giornata
   sulla neve, con la velocità al posto del passo.
 
 #### Sotto «Record your flight» (TASK-305 parte R5b)

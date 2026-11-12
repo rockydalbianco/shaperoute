@@ -6,7 +6,7 @@
  * map.
  */
 import type { LatLon } from "@shaperoute/shared-types";
-import { render, screen } from "@testing-library/react-native";
+import { render, screen, within } from "@testing-library/react-native";
 import { Alert } from "react-native";
 
 import type { FreeRun } from "../navigation/freeRun";
@@ -120,6 +120,11 @@ test("the end of a flight: distance, time, highest, climbed, top speed, calories
   expect(screen.getByLabelText("Top speed: 43.2 km/h")).toBeOnTheScreen();
   expect(screen.getByText("Elev. gain")).toBeOnTheScreen();
   expect(screen.getByLabelText("Calories: 21 kcal")).toBeOnTheScreen();
+  // Two rows of tiles, not three: under the card «Save» and «Discard» stay
+  // on a phone of 844 pt (tried in the simulator, 2026-11-12).
+  const rows = screen.getAllByTestId("flight-finish-row");
+  expect(rows).toHaveLength(2);
+  expect(within(rows[1]).getByLabelText("Calories: 21 kcal")).toBeOnTheScreen();
 });
 
 test("a flight ends on its own card and banner, from the sport of «Settings»", async () => {

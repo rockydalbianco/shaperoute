@@ -152,6 +152,26 @@ notifica locale con `expo-notifications` (già dipendenza) che apre la
 routine. JS, esce con un OTA. La lettura della sveglia su Android è una
 parte separata, nativa, con una build.
 
+Scelte dell'utente (2026-11-12, «Sì, va bene» alla proposta intera):
+
+- una voce **«Morning stretch»** in Impostazioni: interruttore (spento
+  all'inizio), **orario della sveglia** scritto dall'utente, **giorni**
+  (lunedì–venerdì all'inizio), **durata** 3, 5 o 10 minuti (5 all'inizio);
+- una **notifica locale 5 minuti dopo la sveglia**: «Morning stretch» /
+  «{minutes} minutes to wake up your body. Tap to start.» (in italiano
+  «Stretching del mattino» / «{minutes} minuti per svegliare il corpo.
+  Tocca per iniziare.»); toccata, apre la routine **Morning** della durata
+  scelta, senza chiedere;
+- il permesso è quello delle notifiche push; negato, la voce lo dice.
+
+Parte dopo il merge della B (usa `routines.ts`), da `main`, branch
+`feat/TASK-466-d-morning`. File (lista mandata al Coordinatore il
+2026-11-12, turno da chiedere su `App.tsx`, `SettingsPage.tsx`,
+`notifications/`): nuovi `src/stretch/morning.ts`,
+`MorningStretchSetting.tsx` e i loro test; una o due righe in
+`src/profile/SettingsPage.tsx`, `src/notifications/notificationTap.ts`,
+`openTarget.ts` (e test), `App.tsx`; i18n; task file.
+
 ## Parte E — La tua routine, pubblicata
 
 Scegli esercizi, ordine e secondi; la salvi; la pubblichi nel Feed

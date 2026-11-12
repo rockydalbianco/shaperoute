@@ -1,10 +1,11 @@
 # TASK-454 — Reazioni e super like
 
 **Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · C1 (server) in
-`main` (#1180) e sul server (passo 9, 2026-11-12) · A nella #1195 in bozza
-(mancano gli screenshot e il sì dell'utente) · B dopo A · C2 può partire: la
-lista dei file è dal Coordinatore
-**Fase**: 5 · **Branch**: `feat/TASK-454-reactions` (parte A; una PR per parte)
+`main` (#1180) e sul server (passo 9, 2026-11-12) · **A (#1195), C2
+(#1199) e la frase della privacy (#1200) in `main` il 2026-11-12**: escono
+con l'aggiornamento completo · restano B (doppio tocco) e la prova sul
+telefono: vedi «Cosa resta di questo task»
+**Fase**: 5 · **Branch**: una PR per parte; la parte B parte da `main`
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
 **ADR**: ADR-0377 per la parte C (risposte e reazioni ai commenti: tabelle e
@@ -270,8 +271,9 @@ Criteri di accettazione (C1):
 `feat/TASK-454-reactions` (da `main` a `02214e9b`, con TASK-444 parte 1
 dentro) · PR #1195 pronta: provata nel simulatore il 2026-11-12 (iPhone
 17e, API locale di `main` con C1), schermate prima/dopo approvate
-dall'utente («Sì, approvo», 2026-11-12), traduzioni approvate. Aspetta il
-merge del Coordinatore.
+dall'utente («Sì, approvo», 2026-11-12), traduzioni approvate.
+**In `main` il 2026-11-12** (#1195, `544fc168`): esce con l'aggiornamento
+completo.
 
 Schermate in `out/TASK-454/` del checkout principale:
 `TASK-454-1-feed-like.jpg` (la striscia che spingeva la riga, la fila in
@@ -330,6 +332,125 @@ Test in locale (2026-11-12): `PostActions`, `PostReactions`, `PostPage`,
 `DrawingReactions`, `SuperLikeSheet`, `reactionKinds` 65 verdi; con i
 vicini (`snowFeed`, `hikeFeed`, `FeedPostCard`, `DrawingCard*`, `i18n`) 96
 verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.
+
+## Parte C2 — risposte e reazioni ai commenti (app)
+
+**Stato**: codice e test scritti il 2026-11-12 sul branch
+`feat/TASK-454-c2-comment-replies` (da `main` a `29221702`, senza
+dipendere dalla #1195) · PR #1199: provata nel simulatore il 2026-11-12
+(iPhone 17e, API locale di `main` con C1), schermate approvate dall'utente
+(«Sì, approvo», 2026-11-12), testi nuovi e traduzioni approvati.
+**In `main` il 2026-11-12** (#1199, `4a2078fe`, dopo la #1195 e con `main`
+unito); la frase della privacy, con le quattro traduzioni e le pagine di
+`site/privacy` rigenerate, in `main` con la #1200 (`1582ffb8`). Escono con
+l'aggiornamento completo; la copia di `site/privacy` sul sito la lancia il
+Coordinatore dopo l'OTA, col sì dell'utente.
+
+Schermate in `out/TASK-454/` del checkout principale:
+`TASK-454-5-commenti.jpg` (l'elenco piatto di prima; le risposte sotto il
+loro commento, «@nome», «View 1 more reply»; tutte le risposte) e
+`-6-commenti-azioni.jpg` (le cinque emoji al posto della riga, «Replying
+to…» con la ✕, la risposta mandata sotto il suo commento). Nel simulatore
+niente da correggere.
+
+Scelta 5 dell'utente. Il modo è **deciso dall'agente su delega
+dell'utente** (dentro ADR-0377, nessun ADR nuovo):
+
+1. **L'app chiede sempre `?threads=true`**: un'API di prima non conosce il
+   parametro e risponde la lista di sempre; i commenti senza `reactions`
+   non offrono né «Reply» né reazioni (`hasThreads`).
+2. **La porta dei commenti ha una parte in più, facoltativa**
+   (`CommentsDoor.threads`: le altre risposte, la reazione): tre test fuori
+   da questo task costruiscono una porta a mano e restano com'erano.
+3. **La lista è fatta da funzioni pure** (`social/commentThreads.ts`): una
+   risposta scritta compare subito sotto il suo commento, anche se ce ne
+   sono di più vecchie ancora da chiedere; le pagine delle risposte si
+   uniscono senza doppioni, per data; un commento cancellato toglie dal
+   totale anche le sue risposte.
+4. **«Reply» e le reazioni stanno fuori dalla riga del commento**, che per
+   VoiceOver è un elemento solo: così i pulsanti si raggiungono; «Reply» è
+   anche un'azione della riga.
+5. **Le cinque emoji al posto della riga, non sopra**: scegliendo, la riga
+   «Reply · reazione · totale» diventa le cinque più «Cancel», alta uguale
+   (32 pt, col tocco portato a 44): nella lista niente si sposta, e non
+   serve un `Modal` dentro il foglio.
+6. **Una reazione per volta**, mostrata subito e rimessa com'era se l'API
+   non la tiene, col testo che c'era già per i disegni.
+7. **La campanella non cambia**: mostra il testo che manda il server e apre
+   già il disegno per ogni avviso con `drawing_id`.
+
+Testi nuovi, **approvati dall'utente il 2026-11-12** («Sì, approvo») con
+le traduzioni: «Replying to {name}» e il singolare «View 1 more reply» (in
+codice «View {count} more reply»). Approvati con le scelte: «Reply», «View
+{count} more replies». Traduzioni: «Reply» it «Rispondi» · de «Antworten» · fr «Répondre» · es
+«Responder»; «Replying to {name}» it «Risposta a {name}» · de «Antwort an
+{name}» · fr «Réponse à {name}» · es «Respuesta a {name}»; «View {count}
+more reply/replies» it «Vedi {count} altra risposta» / «Vedi altre {count}
+risposte» · de «{count} weitere Antwort ansehen» / «{count} weitere
+Antworten ansehen» · fr «Voir {count} autre réponse» / «Voir {count} autres
+réponses» · es «Ver {count} respuesta más» / «Ver {count} respuestas más».
+
+File toccati (lista approvata dal Coordinatore il 2026-11-12):
+
+```
+apps/mobile/src/api/comments.ts                  + comments.test.ts
+apps/mobile/src/social/commentsDoor.ts           + commentsDoor.test.ts
+apps/mobile/src/social/useDrawingComments.ts
+apps/mobile/src/social/DrawingComments.tsx       + DrawingComments.test.tsx
+apps/mobile/src/social/CommentActions.tsx        (nuovo) + test (nuovo)
+apps/mobile/src/social/commentThreads.ts         (nuovo) + test (nuovo)
+apps/mobile/src/social/useDrawingComments.test.tsx (nuovo)
+apps/mobile/src/i18n/{it,de,fr,es}.ts            (quattro chiavi, sezione dei commenti)
+docs/UI.md                                       (solo «Risposte e reazioni ai commenti»)
+docs/tasks/TASK-454.md
+```
+
+Più avanti, a turno e col sì dell'utente sulla frase: `about/content/**` e
+`site/privacy` (le reazioni ai commenti).
+
+Criteri di accettazione (C2):
+
+- [x] Le risposte stanno sotto il loro commento, a un livello, con «@nome»
+      per la risposta a una risposta; oltre due, «View N more replies».
+- [x] «Reply» scrive «Replying to {name}» sopra il campo; mandato, la
+      risposta è sotto quel commento e il numero dei commenti sale.
+- [x] Su commenti e risposte le cinque emoji, una a testa, senza il cuore
+      di MuW; la riga non cambia altezza scegliendo.
+- [x] Con un'API o una porta di prima i commenti sono com'erano.
+- [x] Testi nuovi e traduzioni col sì dell'utente (2026-11-12).
+- [x] Screenshot dal simulatore in `out/TASK-454/` col sì dell'utente (2026-11-12).
+- [x] Frase della privacy col sì dell'utente (2026-11-12): nella #1200, con le traduzioni.
+
+Test in locale (2026-11-12): `src/social` intera, `api/comments`, i vicini
+(`PostActions`, `PostPage`, `importedMarks`, `cardsInMiles`) e `i18n`: 63
+file, 454 test verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.
+
+## Cosa resta di questo task
+
+Scritto il 2026-11-12, con A, C1, C2 e la privacy in `main`.
+
+- **Parte B — doppio tocco = super like** (scelta 6), nel giro dopo
+  l'aggiornamento completo. Due tocchi sull'immagine di un post, nel Feed e
+  nella pagina del post, aprono il foglio del super like; il tocco singolo
+  aspetta 300 ms e poi fa quello che fa oggi. File previsti:
+  `feed/FeedPost.tsx`, `feed/PostPage.tsx` (oggi di TASK-467 B2: la parte B
+  viene dopo di lei), `feed/PostSheet.tsx` (nella pagina del post la fila
+  delle azioni sta lì, l'immagine in `PostPage`), `feed/PostActions.tsx` e
+  `feed/PostReactions.tsx` (il super like chiesto da fuori della fila), un
+  file nuovo `feed/useDoubleTap.ts`, i loro test e `docs/UI.md`. Prima di
+  toccarli: lista al Coordinatore e il suo sì. Poi
+  test, turno del simulatore, sì dell'utente sulle schermate, «pronta».
+  Nessun testo nuovo previsto: il foglio è quello della parte A.
+- **Prova sul telefono**, dopo l'OTA dell'aggiornamento completo (la
+  pubblica il Coordinatore): «Like» apre la fila sopra il pulsante senza
+  muovere la card; un super like porta subito il commento sotto il post;
+  una risposta a un commento arriva come notifica a chi l'ha scritto; una
+  reazione a un commento compare solo nella campanella; la pagina della
+  privacy nell'app e sul sito porta la frase nuova e la data del 12
+  novembre 2026.
+- **Chiusura**: con la parte B in `main`, la PR di soli documenti (la voce
+  esce da `STATUS.md`, una riga in `docs/archive/COMPLETATI.md`, questo
+  file a `Done`) e «TASK-454 fatto» al Coordinatore.
 
 ## Cosa resta (fuori da questo task)
 

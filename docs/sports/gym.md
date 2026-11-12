@@ -20,6 +20,11 @@ esercizi e le scale dei traguardi. Lo scrive la sessione di TASK-385.
   Keytel 2005 (parte G).
 - **Il battito** a sessione finita, da Salute (TASK-345 C): medio, massimo,
   tempo nelle zone.
+- **Senza account** (TASK-453): il riepilogo mostra «Sign up or log in…»;
+  toccarlo fa da parte il riepilogo e mostra la pagina del profilo;
+  l'allenamento resta sul telefono e il riepilogo torna con «Save» dopo
+  l'iscrizione, o com'era se la pagina viene lasciata. Lo stesso alla fine
+  di una nuotata in piscina.
 
 ## Cosa non registra
 

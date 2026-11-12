@@ -1,8 +1,9 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · prossima **B1** (server e contratto, ADR-0380), poi B2 e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server col passo dell'aggiornamento completo) · **B1b scritta** (#1227: il campo `sleep` nel disegno visto, server; la unisce il Coordinatore, sul server col passo dopo), poi **B2** (app, il sonno nel post) e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
-`feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1)
+`feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
+`feat/TASK-467-b1b-sleep-in-feed` (B1b)
 **Dipende da**: TASK-321 (Apple Salute nell'app, la stessa libreria),
 TASK-345 C / TASK-409 B (la lettura del battito: il modello del «leggere
 da Salute dopo un tocco»)
@@ -118,7 +119,7 @@ volta, ognuna con la proposta dell'agente:
 | Profilo, scheda «Sleep», prima del sì | pulsante «Show my sleep from Apple Health» · sotto: «MuW works out a sleep score from your Apple Health sleep data.» |
 | Scheda «Sleep», con i dati | «Sleep score» · «82 · Very good» · «7 h 40 min» · fasi «Awake», «REM», «Light», «Deep» · pulsante «Share» |
 | Sotto il punteggio | «Worked out by MuW from Apple Health data. It can differ from the score in the Health app.» |
-| Primo «Share» | «Share your sleep? Your score, hours slept and sleep stages become a post, seen like your other posts.» · «Share» / «Cancel» |
+| Primo «Share» | «Share your sleep? Your score, hours slept and sleep stages show on your profile, to everyone who can see it.» · «Share» / «Cancel» (riscritto e riapprovato il 2026-11-12, dopo «Sì, profilo adesso»; prima finiva «…become a post, seen like your other posts.») |
 | Post dell'attività, prima di pubblicare | interruttore «Sleep last night» · «82 · Very good · 7 h 40 min» · «Shown in this post. Turn it off to keep it to yourself.» |
 | Nessun dato | «No sleep data for last night in Apple Health.» |
 | Permesso negato o tolto | «MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.» |
@@ -275,11 +276,142 @@ sul server e il contratto):
   `TestClient`.
 - B1 si scrive in un contesto pulito, da `STATUS.md` e da questo file.
 
-**Testo da riapprovare**: il primo «Share» dal profilo. Proposto
-all'utente il 2026-11-12, in attesa della risposta: «Share your sleep?
-Your score, hours slept and sleep stages show on your profile, to
-everyone who can see it.» (al posto di «…become a post, seen like your
-other posts.»).
+**Testo del primo «Share» dal profilo, approvato dall'utente il
+2026-11-12 («Approvo così»)**: «Share your sleep? Your score, hours slept
+and sleep stages show on your profile, to everyone who can see it.» Prende
+il posto di «…become a post, seen like your other posts.» nella tabella
+della risposta 7; lo usa B3, con le traduzioni nelle altre tre lingue.
+
+### Parte B1 — com'è fatta (2026-11-12, branch `feat/TASK-467-b1-sleep-server`)
+
+Il sonno sul server e nel contratto (ADR-0380, deciso dall'agente su delega
+dell'utente dentro la strada data dal Coordinatore). Nessuna app lo usa
+ancora: può stare in `main` e sul server senza che si veda niente.
+
+**File**. NUOVI: `services/api/migrations/0072_sleep_nights.sql`,
+`services/api/shaperoute_api/sleep.py`, `services/api/tests/test_sleep.py`
+(42 test), `packages/shared-types/src/sleep.ts`,
+`packages/shared-types/fixtures/sleep-*.json` (sei),
+`packages/shared-types/test/sleep.test.ts`. MODIFICATI:
+`packages/shared-types/src/index.ts` (una riga di export), `docs/API.md`
+(«Sleep»), `docs/DATABASE.md` (la migrazione `0072`), questo file, e per
+ultima la riga del router in `services/api/shaperoute_api/app.py` (import
+e `install_sleep(app)`, col via del Coordinatore del 2026-11-12: il cambio
+di TASK-441 B2 è in un altro punto del file, chi entra per secondo unisce
+`main`). Il numero `0072` è confermato: il primo libero dopo la `0071`.
+
+**Che cosa c'è** (il dettaglio in `API.md`, «Sleep»):
+
+- `sleep_nights`, una riga per notte pubblicata: giorno del risveglio,
+  punteggio, minuti dormiti e svegli, minuti per fase se detti, `shared`
+  DEFAULT false. Su `runs`: `sleep_night_id` (`ON DELETE SET NULL`) e
+  `sleep_shown` DEFAULT true («Resta acceso»).
+- Nel profilo: `PUT`/`PATCH`/`GET`/`DELETE /me/sleep/{night}`, `DELETE
+  /me/sleep/shared` («smetti di condividere»), `GET /users/{id}/sleep`
+  (l'ultima notte condivisa, per chi può aprire il profilo).
+- Nel post: `PUT`/`PATCH`/`GET`/`DELETE /me/activities/{key}/sleep`, `GET
+  /drawings/{id}/sleep` (per chi vede il disegno, finché `shown` è acceso).
+
+**Le scelte tecniche (ADR-0380)**:
+
+1. **Si tiene solo quello che è pubblicato.** Una notte che non è nel
+   profilo e che nessuna attività porta si cancella: lo fa `sleep.py`
+   quando `shared` si spegne (la risposta è `204` al posto della notte) e
+   lo fa il database, con due trigger su `runs`, quando l'ultima attività
+   la lascia o viene cancellata. Così «al server solo quello che l'utente
+   pubblica» vale anche dopo, non solo all'arrivo. La logica sta nel
+   database e non in `activities.py` (d'accordo il Coordinatore: è la
+   scelta che tiene meno dati); i tre casi hanno il test: attività
+   cancellata, sonno tolto dall'attività, account cancellato. Il lanciatore
+   delle migrazioni (`db.py`, `migrate`) manda il file intero a PostgreSQL
+   senza spezzarlo sui punti e virgola: il corpo `$$ … $$` passa com'è.
+2. **Nessun orario**: `night` è il giorno del risveglio; l'ora di andare a
+   letto e di svegliarsi non lascia il telefono. La parola («Poor» …
+   «Excellent») non si salva: la ricava l'app dal punteggio.
+3. **Una notte per account e per giorno**; rimandata prende i numeri
+   nuovi. Più attività dello stesso giorno portano la stessa notte.
+4. **Una chiamata sola dal post**: `PUT /me/activities/{key}/sleep` porta
+   i numeri, `night` e `shown`, salva la notte e la dà all'attività. La
+   notte deve essere «quella prima»: entro 2 giorni dall'inizio
+   dell'attività (fusi orari compresi), se no `422`.
+5. **Chi non è l'autore riceve lo stesso `404`** per una notte non
+   condivisa, per il sonno nascosto di un post e per un profilo o un post
+   che una notte non ce l'ha; nessun conteggio, nessun esempio in openapi
+   (c'è il test). I due interruttori sono separati.
+6. **Il profilo ha un endpoint suo** (`GET /users/{id}/sleep`), non un
+   campo di `GET /users/{id}`: `profiles.py` non si tocca; B3 fa una
+   chiamata in più.
+7. **Niente in `X-MuW-Reads`**: gli endpoint li chiama solo un'app che li
+   conosce; il post resta leggibile dalle app di prima, senza il sonno.
+
+**Esportazione e cancellazione dell'account**: la cancellazione è la
+cascata da `users` (c'è il test). **Un'esportazione automatica non
+esiste**: nessun file elenca le tabelle; la copia che uno chiede per email
+(policy, «ask us for a copy of your data») si fa a mano, e le due query
+per il sonno (le notti, e le attività che le portano con `sleep_shown`)
+sono scritte in `DATABASE.md` e in `out/TASK-467/SERVER-B1.md`: una
+richiesta di copia comprende il sonno. Nessun file da toccare.
+
+**Da sapere per B2 e B3**:
+
+- Il Feed e il dettaglio del post **non dicono** se un post ha il sonno
+  (`feed.py` e `drawings.py` non toccati). B2 sceglie: chiedere `GET
+  /drawings/{id}/sleep` quando la riga si vede (come la vasca per il
+  nuoto), oppure un campo nella riga del Feed, che vuol dire toccare
+  `drawings.py` col suo proprietario.
+- Il valore di partenza dell'interruttore sta in `SLEEP_SHOWN_DEFAULT`
+  (`shared-types/src/sleep.ts`): l'app usa quello.
+- «Smetti di condividere» nel profilo è `DELETE /me/sleep/shared`: spegnere
+  solo l'ultima notte farebbe comparire quella prima.
+- Sul server: i controlli di sola lettura in `out/TASK-467/SERVER-B1.md`
+  (checkout principale), il passo è del Coordinatore col sì dell'utente.
+
+### Parte B1b — com'è fatta (2026-11-12, branch `feat/TASK-467-b1b-sleep-in-feed`)
+
+Il punto lasciato aperto da B1 («il Feed non dice se un post ha il sonno»),
+chiuso prima di B2 col sì del Coordinatore. Deciso dall'agente su delega
+dell'utente; nessuna migrazione, nessuna app lo legge ancora.
+
+**Perché un campo e non una richiesta.** La vasca e la palestra chiedono i
+loro numeri a parte (`GET /drawings/{id}/pool-swim`), ma solo per i loro
+post. Il sonno può stare su qualsiasi attività: chiedere `GET
+/drawings/{id}/sleep` vorrebbe dire una richiesta per riga del Feed, quasi
+tutte `404`, accanto a quella delle reazioni. Il precedente è
+`ski_descents` (TASK-424 C2b): un campo facoltativo del disegno visto.
+
+**Che cosa c'è.** Ogni disegno visto porta `sleep`: lo stesso
+`SleepSummary` di `GET /drawings/{id}/sleep`, **solo mentre `sleep_shown`
+è acceso**; `null` per un post senza notte e per uno col sonno nascosto,
+anche al suo autore (l'interruttore lo legge da `GET
+/me/activities/{key}/sleep`: nella lista vede quello che vedono gli
+altri). Vale per `GET /drawings/{id}` e per ogni lista che passa da
+`_seen`: Feed, profilo, ricerca, stazione, gare. Chi non vede il post non
+lo trova in nessuna lista, e così attraverso un blocco. `stages` manca per
+una notte senza fasi, come nell'endpoint, mai `null`.
+
+**Com'è fatto.** Una sotto-select in `_SEEN_FIELDS` (`sleep_seen.py`,
+`SEEN_SLEEP_SQL`: una riga di `sleep_nights` per chiave primaria, con
+`AND r.sleep_shown`), letta da `_seen`. `SleepStagesBody` e
+`SleepSummaryBody` passano da `sleep.py` a `sleep_seen.py`, perché
+`sleep.py` importa `drawings.py` e non può valere il contrario. Un nome
+solo in openapi, nessun esempio.
+
+**File**. NUOVI: `services/api/shaperoute_api/sleep_seen.py`,
+`packages/shared-types/fixtures/drawing-sleep.json`. MODIFICATI:
+`services/api/shaperoute_api/drawings.py` (`SeenFields`, `_SEEN_FIELDS`,
+`_seen`), `services/api/shaperoute_api/sleep.py` (le due classi importate),
+`packages/shared-types/src/index.ts` (il campo accanto a `ski_descents`),
+`packages/shared-types/test/sleep.test.ts`, `services/api/tests/test_sleep.py`
+(8 test nuovi; quello di B1 sul sonno nascosto ora vuole `"sleep":null`),
+`docs/API.md` («Sleep»), questo file. E, a una riga, quello che fissa
+l'elenco dei campi del disegno visto, come per `ski_descents`:
+`services/api/tests/test_drawings.py`, `test_feed.py`, e `"sleep": null`
+in `fixtures/drawing-ski.json`, `feed-imported.json`,
+`drawing-details-imported.json`.
+
+**Sul server**: va col passo dopo l'aggiornamento completo del 12
+novembre, col sì dell'utente; prima di allora le app non vedono il campo
+e B2 non mostra niente.
 
 ## Criteri di accettazione
 
@@ -288,10 +420,14 @@ other posts.»).
 - [x] A: dai campioni alla notte e dalla notte al punteggio, con test
   deterministici (22), `tsc` ed `eslint` puliti; nessun file esistente
   dell'app toccato, impronte ferme.
-- [ ] B1: `sleep_nights` e il sonno dell'attività sul server e nel
+- [x] B1: `sleep_nights` e il sonno dell'attività sul server e nel
   contratto, coi test; chi non è l'autore non legge mai una notte con
   `shared` false né il sonno di un post con `sleep_shown` false;
   esportazione e cancellazione dell'account coprono `sleep_nights`.
+- [x] B1b: il disegno visto porta `sleep` solo con `sleep_shown` acceso,
+  la stessa regola di `GET /drawings/{id}/sleep` per chi non è l'autore,
+  in ogni lista che usa `_seen`; coi test per chi non è l'autore, per chi
+  non vede il post e attraverso un blocco; nessuna migrazione.
 - [ ] Parti B2–D: criteri scritti qui quando partono.
 
 ## File toccati (documenti, questa PR)
@@ -315,3 +451,20 @@ other posts.»).
   parte B, taglio B1/B2/B3 e strada `sleep_nights` dal Coordinatore;
   l'utente: «Resta acceso» (il sonno nel post dell'attività) e «Sì,
   profilo adesso» (la notte da sola). B1 parte in un contesto pulito.
+- **2026-11-12, B1**: scritta in una sessione, #1211 (migrazione `0072`,
+  `sleep.py`, contratto, 42 test). Restano: il merge del Coordinatore, la
+  PR di soli documenti (ADR-0380, `STATUS.md`), il server. Sul server B1
+  non va da sola: arriva col passo dell'aggiornamento completo, che il
+  Coordinatore compone e per cui chiede lui il sì all'utente (`main` ha già
+  le parole a penna alzata di Explore, che escono solo con la loro OTA). Il
+  testo nuovo del primo «Share» è approvato («Approvo così», 2026-11-12).
+- **2026-11-12, B1 in `main`**: #1211 unita dal Coordinatore a CI verde
+  (`71e24188`); ADR-0380 in `DECISIONS.md`. La `0072` va sul server col
+  passo dell'aggiornamento completo; i controlli di sola lettura sono in
+  `out/TASK-467/SERVER-B1.md`. B1b e B2 le scrive una sessione a parte:
+  B1b è il campo `sleep` nel disegno visto (riga del Feed, liste,
+  dettaglio), solo quando il sonno è mostrato, in `drawings.py`.
+- **2026-11-12, B1b**: #1211 in `main` (`71e24188`). Scritta la B1b, il
+  campo `sleep` nel disegno visto, perché il Feed non faccia una richiesta
+  per riga. Restano: il merge del Coordinatore e il passo sul server dopo
+  quello dell'aggiornamento completo, col sì dell'utente. Poi B2.

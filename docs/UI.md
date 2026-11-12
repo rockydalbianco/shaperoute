@@ -256,15 +256,14 @@ primi 5 secondi del tour non si tocca e dice i secondi che mancano,
 tocchi sull'app aspettano la fine del tour. Il tour non torna, salvo
 «Watch the tour» nella guida (qui «Skip» si tocca subito).
 
-**«Guide»** (TASK-266): con un account è la riga subito sotto
-«Settings» sulla prima pagina di «Profile», ❓ nel cerchio come «Settings»
-(richiesta dell'utente del 2026-10-10); senza account è l'ultima riga,
+**«Guide»** (TASK-266): senza account è l'ultima riga di «Profile»,
 sotto il modulo, come le righe di «ABOUT», con l'icona a linea
-`circle-help` di Lucide in `textMuted` al posto del ❓ (TASK-444; con un
-account il ❓ resta fino a TASK-457). Apre «How MuW works» con
+`circle-help` di Lucide in `textMuted` (TASK-444). Apre «How MuW works» con
 il nome «Guide» e sopra il testo «Watch the tour», che chiude «Profile» e
-rifà il tour; «←» torna a «Profile». «Help» in «Settings» resta, con lo
-stesso pulsante.
+rifà il tour; «←» torna a «Profile». **Con un account la riga non c'è più**
+(TASK-457, scelta dell'utente del 2026-11-12: «Guide» e «Help» aprivano la
+stessa pagina): resta **«Help» in «Settings»**, sotto «ABOUT», con lo
+stesso testo e lo stesso pulsante.
 
 ## Le due schermate
 
@@ -1116,6 +1115,42 @@ vuota «No photos yet.», sul proprio «No photos yet. Add some to a public
 drawing in My activities.»; non arrivate, il motivo e «Try again». Con
 un'API senza i totali niente riquadri né schede, come prima.
 
+**Il profilo nuovo** (TASK-457, scelte dell'utente del 2026-11-12; nella
+prova dell'11 novembre un profilo appena creato mostrava nove zeri). Il
+proprio profilo, dall'alto, a blocchi: chi è (foto, nome, badge presi,
+«Edit profile»); cosa ha fatto (totali e settimana, poi record, VO₂ max,
+palestra); chi lo segue (Requests, Followers, Following); cosa tiene (le
+tessere «Favorites» e «My activities»); **«Badges»**; cosa ha pubblicato
+(«Drawings» | «Photos»).
+
+- **Finché non c'è nessuna attività** (zero in «My activities» e i tre
+  totali a zero) i totali e la striscia della settimana non ci sono: al
+  loro posto **una scheda sola**, la figura del cuore come nelle pagine
+  vuote (`EmptyState`), il titolo **«Your first drawing»**, la riga «Start
+  from a route that already draws a shape near you.» e il tasto neutro
+  **«Find a route near you»**, che porta alla scheda **«Explore»** (nella
+  modalità sci, che non ha «Explore», la scheda è senza tasto). Alla prima
+  attività la scheda sparisce e tornano totali e settimana. Mentre i numeri
+  stanno ancora arrivando non si vede né la scheda né una riga di zeri.
+- **Le tessere** «Favorites» e «My activities» con zero elementi mostrano
+  solo il nome, senza «0»; da 1 in su il numero, come prima. Il nome sta in
+  fondo alla tessera, così accanto a una tessera col numero i due nomi
+  restano sulla stessa riga. I contatori di chi segue restano come sono.
+- **I badge**: sotto il nome solo quelli **presi** («Winner» e quelli dei
+  disegni), sul proprio profilo come su quello di un altro; niente più
+  pillole grigie. Più in basso, solo sul proprio, il riquadro **«Badges»**
+  elenca i tre badge dei disegni, ognuno con un tondo (la sua emoji se
+  preso, il lucchetto 🔒 se no), il nome e la frase che dice come si
+  prende: «First drawing» — «Record a run with MuW and publish its
+  drawing.»; «10 drawings» — «Publish 10 drawings of runs recorded with
+  MuW.»; «30 km drawing» — «Publish the drawing of a run of 30 km or
+  more.» (la distanza nelle unità dell'app). VoiceOver legge «Not earned
+  yet: {badge}. {frase}» per quelli da prendere: preso o no non lo dice
+  solo il segno. Con un'API senza i badge, niente riquadro.
+- **«Guide» e «Blocked people» non sono più sul profilo**: «Blocked
+  people» è in «Settings», nella sezione «ACCOUNT», una riga come le altre
+  (🚫, il nome, «›»); la guida è «Help» in «ABOUT».
+
 **I record personali** (TASK-368, ADR-0312, testi approvati il 2026-11-04).
 Sotto i totali, sul proprio profilo e su quello di un altro, un riquadro
 **«Personal bests»** («Record personali»): due gruppi, **RUN** e **BIKE**
@@ -1185,6 +1220,30 @@ VoiceOver è l'azione «{name}'s profile» della riga. Un autore appena
 bloccato non apre niente (TASK-338). **Il
 testo è sempre solo testo**: un link non si tocca, un tag HTML si legge
 com'è scritto, e il commento non entra mai nella WebView della mappa.
+
+**Risposte e reazioni ai commenti** (TASK-454 parte C, ADR-0377, scelte
+dell'utente dell'11 novembre 2026), nello stesso foglio, dal Feed, dalla
+pagina del post e dal disegno aperto. Sotto le parole di ogni commento una
+riga bassa: **«Reply»**, poi il pulsante della propria reazione (senza, il
+cuore a linea di «Like»: «React» per VoiceOver; con, l'emoji: «Your
+reaction: Fire») e, se ce ne sono, le più usate e **il totale** («3
+reactions»). **Le risposte stanno sotto il loro commento, rientrate, a un
+livello solo**, dalla più vecchia, con la foto più piccola; ne arrivano
+due, le altre con **«View 3 more replies»** («View 1 more reply» per una).
+«Reply» su un commento o su una risposta scrive sopra il campo **«Replying
+to {name}»** con una ✕ («Cancel») che lo toglie: quello che si manda va
+sotto quel commento e compare subito lì; rispondendo a una risposta
+davanti al testo c'è **«@nome»** di chi l'ha scritta (lo dà l'API, non è
+testo scritto dall'app). Per VoiceOver «Reply» è anche un'azione della
+riga. **Le reazioni sono le cinque emoji** 🔥 👏 💪 😂 😮, una a testa su
+commenti e risposte: il pulsante trasforma la riga nelle cinque più
+«Cancel», la propria col bordo; la riga è alta uguale, niente si sposta.
+La propria toccata di nuovo si toglie; si vede subito e, se l'API non la
+tiene, torna com'era con «Your reaction wasn't saved. Check the
+connection.» sopra il campo. **Il cuore di MuW qui non c'è**: il super like
+è del post. Cancellare un commento toglie anche le sue risposte, e il
+numero dei commenti scende di tutte. Con un'API di prima delle risposte i
+commenti sono com'erano: niente «Reply», niente reazioni.
 
 **Le reazioni di un disegno** (TASK-119, ADR-0193, scelte dell'utente del
 2026-10-04): nella scheda di un disegno aperto, **sulla riga del pulsante
@@ -1624,11 +1683,12 @@ foglio con due tasti e «Cancel»:
 Bloccato, il foglio si chiude da solo: **le schede di quella persona
 spariscono subito da «Feed»**, e alla lettura dopo l'API non le manda più;
 il suo profilo dice «You blocked {name}. Unblock them from Blocked people in
-your profile.»; gli elenchi di chi segue in «Profile» si rileggono (il
+Settings.» (TASK-457; prima «…in your profile.»); gli elenchi di chi segue in «Profile» si rileggono (il
 blocco chiude ogni follow). Se la richiesta non va, il foglio dice perché
 («This is not available any more.» per un'API di prima o una persona
-sparita). In «Profile», sotto «Settings», la riga **«Blocked people»**:
-toccata apre sotto l'elenco dei bloccati, l'ultimo per primo, con foto e
+sparita). In «Settings», nella sezione «ACCOUNT» sotto il numero di
+telefono (TASK-457; prima era una riga della prima pagina di «Profile»),
+la riga **«Blocked people»**: toccata apre sotto l'elenco dei bloccati, l'ultimo per primo, con foto e
 nome e il tasto **«Unblock»** (VoiceOver: «Unblock {name}»); vuoto, «You
 have not blocked anyone.»; venti per volta, poi «Show more». Sbloccato,
 esce dall'elenco e torna in «Feed» alla lettura dopo; il follow non

@@ -66,37 +66,29 @@ afterEach(async () => {
   jest.mocked(askTour).mockClear();
 });
 
-test.each([
-  ["without an account", SIGNED_OUT],
-  ["with an account", SIGNED_IN],
-] as const)(
-  "«Guide» on the first page of «Profile» %s opens the guide",
-  async (_, of) => {
-    await render(<Profile of={of} first="account" />);
-    await fireEvent.press(screen.getByRole("button", { name: "Guide" }));
-    expect(pages).toEqual(["help"]);
-    // Named as its row, then the text's own title.
-    expect(screen.getByRole("header", { name: "Guide" })).toBeOnTheScreen();
-    expect(screen.getByRole("header", { name: "How MuW works" })).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "Watch the tour" })).toBeOnTheScreen();
-    // «←» comes back to the first page, not to «Settings».
-    await fireEvent.press(screen.getByRole("button", { name: "Back" }));
-    expect(pages).toEqual(["help", "account"]);
-    expect(screen.getByRole("button", { name: "Guide" })).toBeOnTheScreen();
-    expect(onBack).not.toHaveBeenCalled();
-  },
-);
+test("«Guide» on the first page of «Profile» without an account opens the guide", async () => {
+  await render(<Profile of={SIGNED_OUT} first="account" />);
+  await fireEvent.press(screen.getByRole("button", { name: "Guide" }));
+  expect(pages).toEqual(["help"]);
+  // Named as its row, then the text's own title.
+  expect(screen.getByRole("header", { name: "Guide" })).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: "How MuW works" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Watch the tour" })).toBeOnTheScreen();
+  // «←» comes back to the first page, not to «Settings».
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(pages).toEqual(["help", "account"]);
+  expect(screen.getByRole("button", { name: "Guide" })).toBeOnTheScreen();
+  expect(onBack).not.toHaveBeenCalled();
+});
 
-test("with an account «Settings» is the gear at the top, «Guide» a row under it", async () => {
+test("with an account the profile has no «Guide» row: «Help» is in «Settings» (TASK-457)", async () => {
   await render(<Profile of={SIGNED_IN} first="account" />);
-  const names = screen
-    .getAllByRole("button")
-    .map((button) => button.props.accessibilityLabel as string | undefined);
-  // The gear at the top right (TASK-367), before the rows; «Guide» further down.
-  expect(names.indexOf("Settings")).toBeGreaterThanOrEqual(0);
-  expect(names.indexOf("Settings")).toBeLessThan(names.indexOf("Guide"));
+  // The gear at the top right (TASK-367) is the way to it.
   expect(screen.getAllByRole("button", { name: "Settings" })).toHaveLength(1);
-  expect(screen.getAllByRole("button", { name: "Guide" })).toHaveLength(1);
+  expect(screen.queryByRole("button", { name: "Guide" })).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Settings" }));
+  expect(pages).toEqual(["settings"]);
+  expect(screen.getByRole("button", { name: "Help" })).toBeOnTheScreen();
 });
 
 test("without an account «Guide» is the last row, under the form", async () => {

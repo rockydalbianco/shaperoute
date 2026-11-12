@@ -27,11 +27,13 @@ from test_messages import (
     follow,
     page,
     pid,
+    report,
     rows,
     sent,
     signed_up,
 )
 from test_push import FakeExpo, push_on, put_token
+from test_report_email import FakeResend, setup_with, token_of
 
 from shaperoute_api.accounts import Accounts
 from shaperoute_api.activities import PlaceNames
@@ -49,6 +51,7 @@ from shaperoute_api.messages import (
 )
 from shaperoute_api.push import Pusher
 from shaperoute_api.reads import READS_HEADER
+from shaperoute_api.report_email import LINK_PATH, ReportEmails, install_report_email
 
 BOB_PHONE = "ExponentPushToken[phone-of-bob]"
 WITH = {"with": "attachments"}
@@ -74,7 +77,14 @@ def expo() -> FakeExpo:
 
 
 @pytest.fixture
-def client(database: Database, wall: WallClock, expo: FakeExpo) -> TestClient:
+def resend() -> FakeResend:
+    return FakeResend()
+
+
+@pytest.fixture
+def client(
+    database: Database, wall: WallClock, expo: FakeExpo, resend: FakeResend
+) -> TestClient:
     app = create_app(
         FileSource(Path("unused.graphml")),
         accounts=Accounts(database, now=wall, hasher=FAST_HASHER),
@@ -82,6 +92,10 @@ def client(database: Database, wall: WallClock, expo: FakeExpo) -> TestClient:
     )
     app.state.pusher = Pusher(
         database, Expo(send=expo), run=lambda task: task(), later=lambda *_: None
+    )
+    install_report_email(
+        app,
+        ReportEmails(database, setup_with(resend), now=wall, run=lambda job: job()),
     )
     return TestClient(app)
 
@@ -382,3 +396,35 @@ def test_the_push_says_a_post_and_nothing_of_it(
         "ada: 🗺️ Her best so far",
     ]
     assert expo.sent[-1]["data"]["kind"] == "message"
+
+
+# --- A report ---
+
+
+def test_a_reported_message_with_a_post_has_its_page(
+    client: TestClient, resend: FakeResend
+) -> None:
+    ada, bob = talking(client)
+    cleo = signed_up(client, "cleo")
+    post_id = posted(client, cleo)
+    message = attached(client, ada, bob, post_id, "Look at this")
+    assert report(client, bob, message["id"]).status_code == 204
+    email = resend.emails()[-1]
+    assert "Look at this" in email["text"]
+    assert f"With a post attached (drawing {post_id})" in email["text"]
+    # The page of the link opens, with nothing of the post on it.
+    token = token_of(email["html"])
+    asked = client.get(LINK_PATH, params={"t": token})
+    assert asked.status_code == 200
+    assert "<polyline" not in asked.text
+    assert (
+        client.get(LINK_PATH, params={"t": token, "part": "media"}).status_code == 404
+    )
+    # Once the post is deleted the email says so, and the page still opens.
+    assert client.delete(f"/me/activities/{KEY}", headers=cleo).is_success
+    again = attached(client, bob, ada, posted(client, cleo), "And this")
+    assert client.delete(f"/me/activities/{KEY}", headers=cleo).is_success
+    assert report(client, ada, again["id"]).status_code == 204
+    email = resend.emails()[-1]
+    assert "With a post attached (deleted since)" in email["text"]
+    assert client.get(LINK_PATH, params={"t": token_of(email["html"])}).is_success

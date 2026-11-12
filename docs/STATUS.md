@@ -209,6 +209,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
   scelto dal minimo disponibile dopo qualche giorno. File: — ·
   `tasks/TASK-464.md`
+- **TASK-455 — Condividere il disegno di un'altra persona** · parte 0 chiusa
+  (scelte dell'utente, 2026-11-12): «Share» su ogni post, il post in chat
+  come rimando, il link a una pagina web con l'interruttore dell'autore.
+  Prossima A (server: il post in un messaggio), poi B app, C–E il link.
+  File: — · `tasks/TASK-455.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

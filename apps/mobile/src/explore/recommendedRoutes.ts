@@ -40,7 +40,8 @@ export type RecommendedRoute = {
   /**
    * The points of `preview` the route comes to without drawing: a card
    * draws no segment that ends at one (an example drawn in pieces on the
-   * water, TASK-226). Absent for a route in one line.
+   * water, TASK-226; a word of the catalogue written letter by letter,
+   * TASK-441). Absent for a route in one line.
    */
   gaps?: number[];
   /**
@@ -70,7 +71,8 @@ export type RecommendedRouteDetail = {
   activity?: Activity;
   /**
    * The stretches with the pen up of a shape drawn in pieces on the water
-   * (TASK-226), as RouteResult.walks: an example's only, when it has some.
+   * (TASK-226), as RouteResult.walks: an example's, when it has some, and a
+   * word of the catalogue written letter by letter (TASK-441).
    */
   walks?: Walk[];
   /**

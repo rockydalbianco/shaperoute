@@ -3,6 +3,7 @@ import type {
   GymPlanItem,
   GymPlanRequest,
   GymPlanRun,
+  GymPlanRunner,
 } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 
@@ -218,6 +219,8 @@ export type TodayWorkout = {
   restS?: number;
   /** A run day (TASK-433 C): the run of this week, and no exercises. */
   run?: GymPlanRun;
+  /** How the plan's owner runs (TASK-452), for the run's pace. */
+  runner?: GymPlanRunner;
 };
 
 function todayOf(plan: GymPlan, date: Date): TodayWorkout | null {
@@ -238,6 +241,7 @@ function todayOf(plan: GymPlan, date: Date): TodayWorkout | null {
       weeks: plan.program.weeks > 1 ? plan.program.weeks : null,
       ...(plan.program.rest_s === undefined ? {} : { restS: plan.program.rest_s }),
       ...(found.session.run === undefined ? {} : { run: found.session.run }),
+      ...(plan.program.runner === undefined ? {} : { runner: plan.program.runner }),
     };
   }
   if (!plan.days.includes(isoDay(date)) || plan.items.length === 0) {

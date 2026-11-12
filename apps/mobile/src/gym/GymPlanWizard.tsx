@@ -2,6 +2,7 @@ import {
   type GymPlan,
   type GymPlanGoal,
   type GymPlanMode,
+  type GymPlanRunner,
   type GymPlanSession,
   type GymProgram,
   MAX_GYM_PROGRAM_ITEMS as MAX_PROGRAM_ITEMS,
@@ -54,6 +55,8 @@ import {
   withDays,
 } from "./proposal";
 import { runTitle } from "./runDay";
+import { clock, DEFAULT_RUNNER, LEVELS, withRunner } from "./runPace";
+import { RunnerPaces, RunnerQuestions } from "./RunnerStep";
 import { RunDayEditor } from "./RunDayEditor";
 import { SessionEditor } from "./SessionEditor";
 
@@ -66,8 +69,17 @@ export type WizardDraft = {
 };
 
 /** The guide's steps (the user's flow of 2026-11-10). */
-export type WizardStep = "goal" | "days" | "plan" | "weeks" | "ready";
+export type WizardStep = "goal" | "days" | "runner" | "plan" | "weeks" | "ready";
 const STEPS: readonly WizardStep[] = ["goal", "days", "plan", "weeks", "ready"];
+/** With run days, «How do you run today?» comes after the days (TASK-452). */
+const STEPS_WITH_RUNS: readonly WizardStep[] = [
+  "goal",
+  "days",
+  "runner",
+  "plan",
+  "weeks",
+  "ready",
+];
 
 /** The modes of the weeks, in the guide's order. */
 const MODES: readonly { mode: GymPlanMode; title: string; line: string }[] = [
@@ -96,6 +108,21 @@ const MODES: readonly { mode: GymPlanMode; title: string; line: string }[] = [
 /** «2,5», «5»: kg without a needless «,0». */
 export function kgText(kg: number): string {
   return Number.isInteger(kg) ? String(kg) : decimal(kg);
+}
+
+/** «Get back in shape»: the beginner's pace and long run at first. */
+const FIT_RUNNER: GymPlanRunner = {
+  pace_10k_s: LEVELS[0].pace10kS,
+  long_m: LEVELS[0].longM,
+};
+
+/** A plan whose run days were all taken away keeps no runner. */
+function withoutRunnerIfNoRuns(program: GymProgram): GymProgram {
+  if (program.sessions.some((one) => one.run !== undefined)) {
+    return program;
+  }
+  const { runner: _runner, ...rest } = program;
+  return rest;
 }
 
 /** About how long a workout lasts: a set and its rest, two minutes or
@@ -220,7 +247,14 @@ export function GymPlanWizard({
   const [startsOn, setStartsOn] = useState(
     kept?.starts_on ?? (today.getDay() === 1 ? todayIso : isoDate(monday)),
   );
-  const index = STEPS.indexOf(step);
+  // How the owner runs (TASK-452): asked only for a plan with run days.
+  const [runner, setRunner] = useState<GymPlanRunner>(
+    kept?.runner ?? (goal === "fit" ? FIT_RUNNER : DEFAULT_RUNNER),
+  );
+  // «Your paces», after «How do you run today?».
+  const [paces, setPaces] = useState(false);
+  const steps = runDays.length > 0 ? STEPS_WITH_RUNS : STEPS;
+  const index = Math.max(0, steps.indexOf(step));
 
   function proposed(): GymProgram {
     const forNow = `${goal}`;
@@ -248,6 +282,18 @@ export function GymPlanWizard({
       case "days":
         setProgram(proposed());
         setTab(0);
+        setPaces(false);
+        setStep(runDays.length > 0 ? "runner" : "plan");
+        return;
+      case "runner":
+        if (!paces) {
+          setPaces(true);
+          return;
+        }
+        if (program !== null) {
+          setProgram(withRunner(program, runner));
+        }
+        setPaces(false);
         setStep("plan");
         return;
       case "plan":
@@ -273,7 +319,7 @@ export function GymPlanWizard({
             days: programDays(program),
             items: [],
             program: {
-              ...program,
+              ...withoutRunnerIfNoRuns(program),
               starts_on: startsOn,
               // A workout always has a name (gym_plans.py).
               sessions: program.sessions.map((session) =>
@@ -300,11 +346,15 @@ export function GymPlanWizard({
       setWeek(null);
       return;
     }
+    if (step === "runner" && paces) {
+      setPaces(false);
+      return;
+    }
     if (index === 0) {
       onClose();
       return;
     }
-    setStep(STEPS[index - 1]);
+    setStep(steps[index - 1]);
   }
 
   const canGoOn =
@@ -321,13 +371,17 @@ export function GymPlanWizard({
             programItemCount(program) <= MAX_PROGRAM_ITEMS
           : true;
   const primaryLabel =
-    step === "plan"
-      ? t("Looks good")
-      : step === "ready"
-        ? t("Save plan")
-        : week !== null
-          ? t("Done")
-          : t("Continue");
+    step === "runner"
+      ? paces
+        ? t("Looks good")
+        : t("Make my paces")
+      : step === "plan"
+        ? t("Looks good")
+        : step === "ready"
+          ? t("Save plan")
+          : week !== null
+            ? t("Done")
+            : t("Continue");
 
   let body: ReactNode = null;
   if (week !== null && program !== null) {
@@ -336,6 +390,8 @@ export function GymPlanWizard({
     body = goalPage();
   } else if (step === "days") {
     body = daysPage();
+  } else if (step === "runner" && program !== null) {
+    body = runnerPage(program);
   } else if (step === "plan" && program !== null) {
     body = planPage(program);
   } else if (step === "weeks" && program !== null) {
@@ -361,13 +417,13 @@ export function GymPlanWizard({
         <Text style={styles.stepLabel}>
           {t("Step {n} of {total}", {
             n: String(index + 1),
-            total: String(STEPS.length),
+            total: String(steps.length),
           }).toUpperCase()}
         </Text>
         <View style={styles.round} />
       </View>
       <View style={styles.progress} accessibilityElementsHidden>
-        {STEPS.map((one, i) => (
+        {steps.map((one, i) => (
           <View key={one} style={[styles.segment, i <= index && styles.segmentOn]} />
         ))}
       </View>
@@ -633,6 +689,36 @@ export function GymPlanWizard({
     );
   }
 
+  function runnerPage(current: GymProgram) {
+    if (paces) {
+      const long =
+        runner.long_m !== undefined
+          ? `${runner.long_m / 1000} km`
+          : `${Math.round((runner.long_s ?? 0) / 60)} min`;
+      return (
+        <>
+          {heading(
+            t("Your paces"),
+            t("From your {pace}/km over 10 km and your long run of {long}.", {
+              pace: clock(runner.pace_10k_s),
+              long,
+            }),
+          )}
+          <RunnerPaces runner={runner} sessions={current.sessions} />
+        </>
+      );
+    }
+    return (
+      <>
+        {heading(
+          t("How do you run today?"),
+          t("Two answers and the plan's paces are yours."),
+        )}
+        <RunnerQuestions runner={runner} onChange={setRunner} />
+      </>
+    );
+  }
+
   function tabs(sessions: GymPlanSession[], shown: number, pick: (i: number) => void) {
     // More than four days: the tabs scroll sideways, each wide enough.
     const many = sessions.length > 4;
@@ -691,6 +777,7 @@ export function GymPlanWizard({
             run={session.run}
             mode={current.mode}
             weeks={current.weeks}
+            runner={current.runner}
             onChange={(run) =>
               setProgram({
                 ...current,
@@ -894,6 +981,7 @@ export function GymPlanWizard({
               run={session.run}
               mode="same"
               weeks={1}
+              runner={current.runner}
               onChange={(run) => write({ run, name: t(RUN_NAMES[run.kind]) })}
             />
           ) : (

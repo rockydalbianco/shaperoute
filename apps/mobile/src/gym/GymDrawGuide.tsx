@@ -31,6 +31,15 @@ import { WEEK_DAYS } from "./planLimits";
 import { GymPlansSheet } from "./GymPlans";
 import { isoDay, todayPlan, useGymPlans } from "./plans";
 import { goToRun, RUN_HINTS, runAmount, runTitle } from "./runDay";
+import {
+  clock,
+  fasterRunner,
+  keepPaceAsked,
+  paceAsked,
+  paceOf,
+  timeOf,
+  withRunner,
+} from "./runPace";
 import { startGymWorkout } from "./useWorkout";
 
 /** The three steps of «How it works» (texts approved on 2026-11-06). */
@@ -118,7 +127,7 @@ export function GymDrawGuide({
   fetchFn?: typeof fetch;
 }) {
   const { apiUrl, account } = useFollowsDoor();
-  const { total } = useActivitiesDoor();
+  const { total, list } = useActivitiesDoor();
   const language = useLanguage();
   const token =
     account.state.status === "signedIn" ? account.state.session.token : null;
@@ -127,8 +136,25 @@ export function GymDrawGuide({
   const [plansOpen, setPlansOpen] = useState(false);
   // «New plan» opens the editor straight away, not the empty list.
   const [newPlan, setNewPlan] = useState(false);
-  const { owner, plans } = useGymPlans(fetchFn);
+  const { owner, plans, keep } = useGymPlans(fetchFn);
   const today = todayPlan(plans);
+  // At the end of a cycle, new paces from the runs saved (TASK-452): asked
+  // once a cycle, changed only on a yes.
+  // Answered: drawn again without the proposal.
+  const [, setAnswered] = useState(0);
+  const proposal = (() => {
+    const now = new Date();
+    for (const plan of plans) {
+      if (plan.program == null) {
+        continue;
+      }
+      const faster = fasterRunner(plan.program, list ?? [], now);
+      if (faster !== null && !paceAsked(plan.key, faster.cycle)) {
+        return { plan, program: plan.program, ...faster };
+      }
+    }
+    return null;
+  })();
   // «Your plan, step by step»: up the first time «Gym» is touched (TASK-433
   // B); «Create my plan» opens the guide once the sheet is down.
   const intro = useGymIntro();
@@ -177,6 +203,53 @@ export function GymDrawGuide({
 
   return (
     <View style={styles.page} testID="gym-guide">
+      {proposal !== null && (
+        <View style={styles.box} testID="gym-guide-new-paces">
+          <Text style={styles.proposalText}>
+            {t("Your runs say {pace}/km over 10 km: update the paces?", {
+              pace: clock(proposal.runner.pace_10k_s),
+            })}
+          </Text>
+          <View style={styles.proposalRow}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.ghost,
+                styles.half,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => {
+                keepPaceAsked(proposal.plan.key, proposal.cycle);
+                setAnswered((n) => n + 1);
+              }}
+              accessibilityRole="button"
+              testID="gym-guide-new-paces-no"
+            >
+              <Text style={styles.ghostText}>{t("No")}</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.start,
+                styles.half,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => {
+                keepPaceAsked(proposal.plan.key, proposal.cycle);
+                keep(proposal.plan.key, {
+                  name: proposal.plan.name,
+                  days: proposal.plan.days,
+                  items: proposal.plan.items,
+                  program: withRunner(proposal.program, proposal.runner),
+                });
+                setAnswered((n) => n + 1);
+              }}
+              accessibilityRole="button"
+              testID="gym-guide-new-paces-yes"
+            >
+              <Text style={styles.startText}>{t("Yes")}</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
       {today !== null ? (
         <View style={styles.box} testID="gym-guide-today">
           <View style={styles.todayTop}>
@@ -205,6 +278,24 @@ export function GymDrawGuide({
                   <Text style={styles.muted}>{today.plan}</Text>
                 </View>
               </View>
+              {today.runner !== undefined && (
+                <View style={styles.tilesRow}>
+                  <View style={styles.paceTile}>
+                    <Text style={styles.tileLabel}>{t("Pace@@run").toUpperCase()}</Text>
+                    <Text style={styles.paceValue} testID="gym-guide-pace">
+                      {`${clock(paceOf(today.run, today.runner))} /km`}
+                    </Text>
+                  </View>
+                  {timeOf(today.run, paceOf(today.run, today.runner)) !== null && (
+                    <View style={styles.paceTile}>
+                      <Text style={styles.tileLabel}>{t("Time").toUpperCase()}</Text>
+                      <Text style={styles.paceValue} testID="gym-guide-time">
+                        {timeOf(today.run, paceOf(today.run, today.runner))}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
               <Text style={styles.muted}>{t(RUN_HINTS[today.run.kind])}</Text>
               <Pressable
                 style={({ pressed }) => [styles.start, pressed && styles.pressed]}
@@ -398,6 +489,39 @@ const styles = StyleSheet.create({
   runText: {
     flex: 1,
     gap: 2,
+  },
+  tilesRow: {
+    flexDirection: "row",
+    gap: space.sm,
+  },
+  paceTile: {
+    flex: 1,
+    gap: 2,
+    padding: space.md,
+    borderRadius: radius.md,
+    backgroundColor: color.surfaceRaised,
+  },
+  tileLabel: {
+    ...font.label,
+    color: color.textMuted,
+  },
+  paceValue: {
+    color: color.text,
+    fontSize: fontSize.heading,
+    fontWeight: fontWeight.bold,
+    fontVariant: ["tabular-nums"],
+  },
+  proposalText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  proposalRow: {
+    flexDirection: "row",
+    gap: space.sm,
+  },
+  half: {
+    flex: 1,
   },
   todayTop: {
     flexDirection: "row",

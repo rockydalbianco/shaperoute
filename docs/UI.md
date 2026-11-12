@@ -1189,7 +1189,8 @@ com'è scritto, e il commento non entra mai nella WebView della mappa.
 **Le reazioni di un disegno** (TASK-119, ADR-0193, scelte dell'utente del
 2026-10-04): nella scheda di un disegno aperto, **sulla riga del pulsante
 dei commenti, alla sua sinistra**, un pulsante tondo neutro con la propria
-reazione (senza, una faccina 🙂 spenta: «React» per VoiceOver, poi «Your
+reazione (senza, il cuore a linea di «Like», l'icona di TASK-444, al posto
+della faccina 🙂 spenta di prima: TASK-454; «React» per VoiceOver, poi «Your
 reaction: Fire»), poi **le tre più usate** (a pari numero, l'ordine della
 barra) e **il totale** («7»; per VoiceOver «7 reactions»); senza reazioni
 solo il pulsante. Senza account, con un'API senza reazioni o se non
@@ -1206,7 +1207,10 @@ connection.», che va via alla scelta dopo. **Il cuore di Sgrava è il super
 like**: si mette con **un doppio tocco sulla mappa del disegno aperto**, o
 dal cuore nella barra (così anche con VoiceOver). Compare **il cuore
 grande** (128 pt, sul giallo) sopra il disegno e, dal basso sopra la
-tastiera, il foglio **«Super like»**: il campo «Write a comment to send
+tastiera, il foglio **«Super like»**: sotto il titolo la riga «A super like
+comes with a comment. Everyone who sees the post can read it.» (TASK-454,
+testo dell'utente: il commento è uno dei commenti del post, e chi lo
+credeva una nota privata l'ha detto), poi il campo «Write a comment to send
 your super like», sotto «At least 2 characters» finché mancano, «Cancel» e
 **«Send»**, spento sotto i 2 caratteri (senza gli spazi ai lati) e oltre i
 500 (da 450 il conto, come nei commenti). **Non conta prima che l'API lo
@@ -1221,6 +1225,24 @@ il cuore grande per un attimo (0,9 s) e non cambia niente; il proprio cuore
 toccato nella barra lo toglie, e il commento resta. **Su un disegno aperto
 il doppio tocco non fa lo zoom** della mappa (le due dita sì); altrove la
 mappa è quella di prima.
+
+**Le reazioni di un post, nel Feed e nella sua pagina** (TASK-454 parte A,
+scelte dell'utente del 2026-11-11): lì il pulsante tondo non c'è, e le
+reazioni stanno in **«Like»**, il primo dei quattro pulsanti. Un tocco
+**appende la barra delle sei sopra la riga**, in sovrimpressione: la card
+non cambia altezza e i pulsanti restano dove sono (prima si apriva una
+striscia che li spingeva giù). Una scelta, o **un tocco in qualunque altro
+punto**, la chiude. **Con una propria reazione** «Like» la mostra al posto
+del cuore (l'emoji, o il cuore di MuW sul giallo), la parola è **in
+grassetto** e accanto c'è **il totale**, come nei commenti («Like · 4»);
+senza reazioni nessun numero. Per VoiceOver «Your reaction: Fire», col
+valore «4 reactions». La propria, col suo bordo nella barra, toccata di
+nuovo si toglie. Il cuore di MuW nella barra apre lo stesso foglio «Super
+like»; mandato, **i commenti del post si rileggono**: il commento c'è
+subito e «Comment · N» sale. Una reazione che l'API non tiene torna
+com'era, con «Your reaction wasn't saved. Check the connection.» sotto la
+riga. Senza account o senza reazioni da leggere «Like» resta e non apre
+niente.
 
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 

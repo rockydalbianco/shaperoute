@@ -109,12 +109,15 @@ const styles = StyleSheet.create({
   backdrop: {
     flexGrow: 1,
   },
-  // Up to the top less the status bar: the form of a run is long.
+  // Up to the top less the status bar: the form of a run is long. The
+  // app's sheet: its radius, one physical pixel at the top (TASK-339 D).
   sheet: {
     flexShrink: 1,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    backgroundColor: color.background,
+    borderTopLeftRadius: radius.sheet,
+    borderTopRightRadius: radius.sheet,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: color.hairline,
+    backgroundColor: color.surface,
   },
   head: {
     flexDirection: "row",

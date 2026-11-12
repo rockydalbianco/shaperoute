@@ -57,6 +57,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Il parapendio registrato in volo: lo sport «Record only», i numeri del volo nel link dal vivo | `tasks/TASK-305.md` «Le parti R», ADR-0375, ADR-0352, ADR-0319 |
 | Apple Salute, Health Connect | ADR-0281, `tasks/TASK-321.md` |
 | Il punteggio del sonno MuW | `tasks/TASK-467.md` |
+| Le schede, lo swipe, il tasto indietro, il gesto dal bordo, i fogli, le pagine sopra l'app | `tasks/TASK-470.md`, ADR-0384, `UI.md` «Le pagine e la barra di schede» |
 | La live in chat e nel Feed, anche programmata (una gara) | `tasks/TASK-468.md`, ADR-0381, ADR-0352, `API.md` «Live shares» e «Messages» |
 | «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |
 | Percorsi in bici di MuW in «Explore» | `UI.md` «Pedalalo tu», ADR-0309 |
@@ -66,6 +67,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Le forme candidate e quelle approvate: `candidate_outlines/`, `tools/draw_new_shapes.py` (`APPROVED`), `ZONE_SHAPES` | `tasks/TASK-418.md`, ADR-0346 e la precisazione B, ADR-0036 |
 | Aggiungere uno sport, il banco `tools/sport_bench/` | `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md`, ADR-0320 |
 | Uno sport in particolare (corsa, bici, canoa, hike, gravel, roller, gym, skimo, wheelchair, snowshoes) | `sports/<sport>.md` e il suo task file se aperto |
+| L'alpinismo registrato senza percorso; uno sport sul server prima del contratto (`SERVER_FIRST`) | `tasks/TASK-463.md`, ADR-0373, ADR-0319, `sports/COME-AGGIUNGERE.md` |
 | La carrozzina e il passeggino: la rete `wheel`, le sole forme di un'attività (`Activity.shapes`) | `sports/wheelchair.md`, `tasks/TASK-414.md`, ADR-0343 e la sua precisazione A |
 | Nuoto in piscina: calorie, battito e zone | `tasks/TASK-409.md`, ADR-0318, ADR-0334 |
 | Walk, nuoto in acque libere | `ROUTE_ENGINE.md` (le reti, §8), `tasks/TASK-371.md` |

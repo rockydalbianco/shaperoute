@@ -1393,6 +1393,44 @@ export const ES: Table = {
   "minutes per km": "minutos por km",
   "{n} minutes": "{n} minutos",
   Beginner: "Principiante",
+  // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
+  "What do you want to train?": "¿Qué quieres entrenar?",
+  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
+    "Elige al menos dos: un plan siempre mezcla dos deportes. Luego te guiamos en 5 pasos.",
+  "With weights and machines": "Con pesas y máquinas",
+  Bodyweight: "Peso corporal",
+  "At home or in the park, no equipment": "En casa o en el parque, sin material",
+  "Easy, intervals, long": "Suave, series, tirada larga",
+  "Toward a distance": "Hacia una distancia",
+  "Running, walking, cycling, swimming": "Correr, caminar, bici, natación",
+  Mountains: "Montaña",
+  "Hikes and trips, more climb each week":
+    "Rutas y excursiones, más desnivel cada semana",
+  "Soon@@door": "Pronto",
+  "Next · 1 chosen": "Siguiente · 1 elegido",
+  "Next · {n} chosen": "Siguiente · {n} elegidos",
+  "More each week": "Más cada semana",
+  "+1 rep, +5 s held; week {n} lighter":
+    "+1 repetición, +5 s en las isométricas; la semana {n} más ligera",
+  "Without weights you grow with reps and seconds.":
+    "Sin pesas se progresa con repeticiones y segundos.",
+  "with the hardest exercises": "con los ejercicios más duros",
+  "What do you have?": "¿Qué tienes a mano?",
+  "A pull-up bar": "Una barra de dominadas",
+  "Bar and dip bars": "Barra y paralelas",
+  "With the bar we add pull-ups, with the dip bars the dips.":
+    "Con la barra añadimos dominadas, con las paralelas los fondos.",
+  "How many days for each sport?": "¿Cuántos días para cada deporte?",
+  "Already spread out, with rest in between. Touch a day to change it.":
+    "Ya repartidos, con descanso entre medias. Toca un día para cambiarlo.",
+  "The whole body, {n} times a week. Touch an exercise to change it.":
+    "Todo el cuerpo, {n} veces por semana. Toca un ejercicio para cambiarlo.",
+  "No equipment": "Sin material",
+  "A cycle of {n} weeks, then it starts again from where you got to.":
+    "Un ciclo de {n} semanas, luego sigue desde donde llegaste.",
+  "{a} and {b}, for example.": "{a} y {b}, por ejemplo.",
+  "Bodyweight · A": "Peso corporal · A",
+  "Bodyweight · B": "Peso corporal · B",
   // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
   "Your plan, step by step": "Tu plan, paso a paso",
   "A minute to make it, then it guides you every time.":
@@ -2629,6 +2667,21 @@ export const ES: Table = {
   "Deep@@sleep": "Profundo",
   "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
     "Calculada por MuW con los datos de Apple Salud. Puede ser distinta de la puntuación de la app Salud.",
+  // TASK-305 part R5b: under «Record your flight» (approved 2026-11-12).
+  "Your flights": "Tus vuelos",
+  "{count} flight · {time}": "{count} vuelo · {time}",
+  "{count} flights · {time}": "{count} vuelos · {time}",
+  "No flights this month": "Ningún vuelo este mes",
+  "Your best flights": "Tus récords de vuelo",
+  "Longest flight": "Vuelo más largo",
+  "Farthest flight": "Vuelo más lejano",
+  "Ready to fly": "Listo para despegar",
+  "Waiting for GPS…": "Esperando el GPS…",
+  "GPS ready · ±{m} m": "GPS listo · ±{m} m",
+  "Weak GPS · ±{m} m: wait in the open": "GPS débil · ±{m} m: espera al aire libre",
+  "Share live at start": "Compartir en directo al empezar",
+  "When the countdown ends, MuW makes the link and opens the share sheet.":
+    "Al terminar la cuenta atrás, MuW crea el enlace y abre el menú para compartir.",
   // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
   // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
   "Poster and video": "Póster y vídeo",

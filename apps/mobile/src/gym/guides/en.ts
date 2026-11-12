@@ -134,6 +134,18 @@ export const GUIDES_EN: Guides = {
     "Come up until your body is in a straight line.",
     "Don't arch back past the straight line.",
   ],
+  superman: [
+    "Lie face down, arms stretched out in front.",
+    "Lift your arms, chest and legs together.",
+    "Hold for a moment, then lower slowly.",
+    "Look at the floor, keep your neck long.",
+  ],
+  bodyweight_squat: [
+    "Feet shoulder-width apart, arms out in front.",
+    "Sit your hips back until your thighs are level with the floor.",
+    "Push through your heels and stand back up.",
+    "Knees point the same way as your toes.",
+  ],
   back_squat: [
     "Bar on your upper back, feet shoulder-wide.",
     "Sit back and down until your thighs are level with the floor.",
@@ -205,6 +217,12 @@ export const GUIDES_EN: Guides = {
     "Push your hips up until your body is flat from knees to shoulders.",
     "Lower them slowly.",
     "Push through your heels, chin tucked.",
+  ],
+  glute_bridge: [
+    "Lie on your back, knees bent, feet flat on the floor.",
+    "Push through your heels and lift your hips.",
+    "Squeeze your glutes at the top, then lower slowly.",
+    "Don't arch your back.",
   ],
   glute_machine: [
     "Stand or kneel on the machine, hands on the handles.",
@@ -421,6 +439,12 @@ export const GUIDES_EN: Guides = {
     "Slide down until your knees are at 90°.",
     "Hold it and breathe.",
     "Keep your knees over your ankles.",
+  ],
+  mountain_climber: [
+    "Get into a push-up position, arms straight.",
+    "Bring one knee towards your chest.",
+    "Switch legs quickly, as if you were running.",
+    "Keep your hips low, shoulders over your hands.",
   ],
   power_clean: [
     "Start as for a deadlift, the bar over your feet.",

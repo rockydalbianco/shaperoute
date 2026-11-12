@@ -183,6 +183,20 @@ export const GYM_EXERCISES: readonly GymExercise[] = [
     "Extension lombaire",
     "Hiperextensiones",
   ]),
+  exercise("superman", "back", "bodyweight", [
+    "Superman",
+    "Superman",
+    "Superman",
+    "Superman",
+    "Superman",
+  ]),
+  exercise("bodyweight_squat", "legs", "bodyweight", [
+    "Bodyweight squat",
+    "Squat a corpo libero",
+    "Kniebeuge ohne Gewicht",
+    "Squat au poids du corps",
+    "Sentadilla sin peso",
+  ]),
   exercise("back_squat", "legs", "load", [
     "Squat",
     "Squat",
@@ -266,6 +280,13 @@ export const GYM_EXERCISES: readonly GymExercise[] = [
     "Hip Thrust",
     "Hip thrust",
     "Hip thrust",
+  ]),
+  exercise("glute_bridge", "legs", "bodyweight", [
+    "Glute bridge",
+    "Ponte glutei",
+    "Glute Bridge",
+    "Pont fessier",
+    "Puente de glúteos",
   ]),
   exercise("glute_machine", "legs", "load", [
     "Glute machine",
@@ -518,6 +539,13 @@ export const GYM_EXERCISES: readonly GymExercise[] = [
     "Wandsitzen",
     "Chaise",
     "Sentadilla isométrica en pared",
+  ]),
+  exercise("mountain_climber", "core", "timed", [
+    "Mountain climber",
+    "Mountain climber",
+    "Bergsteiger",
+    "Grimpeur",
+    "Escaladores",
   ]),
   exercise("power_clean", "full_body", "load", [
     "Power clean",

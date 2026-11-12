@@ -2767,4 +2767,12 @@ export const FR: Table = {
   "Updated {seconds} s ago": "Mis à jour il y a {seconds} s",
   "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
   "🔴 Live": "🔴 Live",
+  // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
+  // the stop of a share without a link; en and it approved 2026-11-12)
+  "Live in the Feed": "Live dans le Feed",
+  "Who can follow": "Qui peut te suivre",
+  "Remind me": "Me prévenir",
+  "We'll notify you when it starts.": "On te prévient quand ça commence.",
+  "Nobody can follow you any more.": "Plus personne ne peut te suivre.",
+  "Live · {day} {time} · {title}": "Live · {day} {time} · {title}",
 };

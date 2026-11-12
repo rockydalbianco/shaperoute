@@ -44,6 +44,7 @@ import { MuwPost } from "../feed/MuwPost";
 import { MUW_ROUTES_IN_FEED } from "../feed/muwInFeed";
 import { useMuwRoutes } from "../feed/useMuwRoutes";
 import { t } from "../i18n";
+import { LivesRow } from "../liveShare/LivesRow";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { usePeopleDoor } from "../social/peopleDoor";
 import { color, font, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
@@ -219,6 +220,9 @@ export function FeedScreen({
                   onOpen={signedIn ? open : undefined}
                 />
               )}
+              {/* The «Live» row (TASK-468 part B2a): one's own and the
+                  followed accounts' lives. */}
+              {signedIn && <LivesRow active={active} />}
               {problem}
             </View>
           }

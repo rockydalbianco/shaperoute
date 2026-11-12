@@ -2781,4 +2781,12 @@ export const DE: Table = {
   "Updated {seconds} s ago": "Vor {seconds} s aktualisiert",
   "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
   "🔴 Live": "🔴 Live",
+  // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
+  // the stop of a share without a link; en and it approved 2026-11-12)
+  "Live in the Feed": "Live im Feed",
+  "Who can follow": "Wer dir folgen kann",
+  "Remind me": "Erinnere mich",
+  "We'll notify you when it starts.": "Wir benachrichtigen dich, wenn es losgeht.",
+  "Nobody can follow you any more.": "Niemand kann dir mehr folgen.",
+  "Live · {day} {time} · {title}": "Live · {day} {time} · {title}",
 };

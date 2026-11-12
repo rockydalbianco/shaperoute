@@ -43,7 +43,16 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
 
 - **Un download alla volta**, mai istanze OSMnx in parallelo per aggirare i
   limiti del server (lo raccomanda OSMnx stesso). Il limitatore di OSMnx
-  resta attivo.
+  resta attivo. **Dal TASK-471 (ADR-0385)**, solo per le zone chieste
+  dall'app (`ZoneGraphs`): quando la pagina dello stato di Overpass non
+  dice nulla di utile OSMnx aspetta 5 s invece dei suoi 60 fissi; l'attesa
+  che Overpass chiede da sé resta. Il lavoro a lotti tiene i 60 s.
+- **Un job chiede una volta** (ADR-0385): dopo un download fallito lo
+  stesso job non ne prova un altro; e con
+  `SHAPEROUTE_OVERPASS_FALLBACK_URL` impostata sul server, a un errore
+  HTTP o di connessione del principale segue un solo tentativo sul
+  secondo servizio, anche per l'acqua e la neve. Mai per il lavoro a
+  lotti.
 - **Un tentativo per grafo**: se Overpass non risponde si salta e si
   riprova più tardi, non in un ciclo stretto. Il 2026-09-22 sera, dopo due
   download, Overpass ha smesso di accettare connessioni per il resto della

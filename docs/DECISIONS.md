@@ -543,6 +543,9 @@ lasciando le righe d'indice.
 - ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1, A2 in produzione); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
+- ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
+- ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live` · 2026-11-12 · Attiva
+- ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal` · 2026-11-12 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
@@ -553,8 +556,194 @@ lasciando le righe d'indice.
 - ADR-0343, precisazione B — La carrozzina nell'app: le forme di uno sport nel suo profilo, la fila sotto il percorso dalle stesse forme, il tempo della camminata, i record su 1 e 5 km · 2026-11-12 · Attiva
 - ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`) · 2026-11-12 · Attiva
 - ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false` · 2026-11-12 · Proposta
+- ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende · 2026-11-12 · Accettata
+- ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono · 2026-11-11 · Attiva
 
 ## Voci nuove
+
+## ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares`
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte A2a (#1245).
+**Deciso dall'agente su delega dell'utente.**
+
+- `live_shares.planned_live_id` → `planned_lives` e non il contrario: i dati
+  di `live_shares` restano fuori dalle copie notturne, e una chiave da una
+  tabella copiata verso una lasciata fuori ne romperebbe il ripristino.
+- La fila (`GET /lives`, scelta 7) unisce le programmate e le live messe nel
+  Feed senza programmarle; ordine: in corso prima (l'ultima partita prima),
+  poi le programmate (la più vicina prima); cursore `rank_chiave_id`.
+- Le rotte stanno in `planned_lives.py`, montato da `install_live_shares`:
+  `app.py` e `feed.py` non cambiano. I tipi in `plannedLive.ts`, esportati
+  da `liveShare.ts`: `index.ts` non cambia.
+- La partenza va da un'ora prima a tre ore dopo; una live fermata per
+  sbaglio può ripartire entro quelle ore. Una programmata mai partita esce
+  dalla fila tre ore dopo la sua ora.
+
+## ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live`
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte A1b (#1265).
+**Deciso dall'agente su delega dell'utente.**
+
+- `messages.live_share_id` senza chiave esterna (le copie tengono
+  `messages`, non i dati di `live_shares`); la scheda si legge a ogni
+  lettura con `MAY_SEE_SQL`, `null` quando la live non c'è più.
+- Come il post (ADR-0382), `live` sta fuori da `MESSAGE_ATTACHMENT_KINDS`:
+  lo riceve solo l'app che dice `live` in `X-MuW-Reads`; le altre leggono
+  «[Live]».
+- «Send in MuW» (`POST /me/live-shares/{id}/send`) manda un messaggio a
+  persona con `Messages.send`, e quindi solo dove la conversazione è aperta
+  a chi manda: gli altri sono in `skipped`.
+
+## ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal`
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte B1 (#1275).
+**Deciso dall'agente su delega dell'utente** (la tecnica; testi e aspetto
+approvati dall'utente).
+
+- «Send in MuW» crea la condivisione con `link: false`; «Share link» la fa
+  dopo, dal menu di «Sharing live». `startLiveShare` resta compatibile
+  (`{kind: "started", url}` com'era, in più `started_without_link`).
+- La schermata dal vivo è un `Modal` a tutto schermo che chiede ogni 10 s:
+  il gesto dal bordo (ADR-0384) non fa nulla, si chiude con «Close»;
+  `TabSwipeOwners.test.ts` la ammette come unica mappa fuori da `map/`
+  oltre alla tela del disegno.
+
+## ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono
+
+**Stato**: Attiva · 2026-11-11 · TASK-461. A1 (#1163) e B1 (#1175, server)
+in `main` e sul server (passo 9, 2026-11-12); B2a (#1196) e A2 (#1208,
+app) in `main`, A2 esce col prossimo OTA; B2b/C2 (l'app di distanza e
+montagna) dopo. Le scelte di prodotto sono dell'utente, una alla volta con
+la proposta (2026-11-11: «B, comune a tutti», «Corpo libero», «Sì, quattro
+nuovi», «Almeno due, sempre», «Sì, il dislivello», righe E, F, G della tela
+«Schede palestra guidate» e i testi «Approvo»; 2026-11-12: «Sì, così» alle
+settimane senza kg anche per le schede già fatte, «Approvo» a testi e
+schermate della A2). Il modo è deciso dall'agente su delega dell'utente;
+numeri dal Coordinatore.
+
+**Contesto**: le schede guidate (ADR-0360, ADR-0363, ADR-0369) erano di
+palestra con giorni di corsa. L'utente ha chiesto il corpo libero, la
+camminata, la corsa e l'hike, la bici e le gite in montagna nello stesso
+pianificatore, e che ogni piano mescoli almeno due sport.
+
+**Decisione**:
+- **Un piano nuovo mescola almeno due sport.** «New plan» apre
+  «What do you want to train?»: palestra, corpo libero, corsa (distanza e
+  montagna dicono «Soon» finché non c'è B2b/C2); con meno di due il tasto
+  è spento. Le schede di prima si aprono come prima, senza ingresso.
+- **Il corpo libero non cambia il contratto.** Un giorno di corpo libero è
+  uno fatto solo di esercizi senza attrezzi della palestra (`bodyweight.ts`),
+  «Bodyweight · A» e «· B» in turno; quattro esercizi nuovi
+  (`bodyweight_squat`, `glute_bridge`, `superman`, `mountain_climber`)
+  vanno prima nel catalogo del server, che rifiuta una chiave che non ha,
+  poi nell'app. Nel modo `reps` un esercizio senza kg cresce di una
+  ripetizione a settimana (5 s se tenuto), l'ultima settimana del ciclo ha
+  una serie in meno, il ciclo dopo riparte da dove è arrivato; vale anche
+  per le schede già fatte. Il server non ha copia di questo conto.
+- **I giorni di altri sport stanno in `outing`, non in `run`**: sport
+  (walk, hike, bike, gravel, mtb, swim, paddle), tipo (easy, intervals,
+  long, brisk, climb), distanza o tempo, ripetute, salita a piedi, vasca o
+  acque libere. Un'app di prima mostrerebbe un `run` come corsa («Go to the
+  run»); un giorno senza `run` e senza esercizi invece lo salta in «Today»
+  e nella lista ne dice il nome («Long ride · 30 km»), e salvando di nuovo
+  tiene `outing` e `target`. Un giorno fuori è fatto nel calendario da
+  un'attività del suo sport (`gym_calendar.py`).
+- **La meta è `target` sul programma**: una distanza di uno sport (corsa
+  compresa) o la salita di un hike, con una data o «quando sono pronto»;
+  solo un piano con `target` supera le 12 settimane, fino a 24.
+- **Le settimane verso la meta si calcolano sul telefono**
+  (`targetWeeks.ts`), come quelle della palestra: il piano tiene la prima
+  settimana. Il lungo (o la salita) arriva alla meta l'ultima settimana, un
+  decimo in meno ogni settimana prima, ogni 4ª più leggera; le settimane
+  servite sono le meno possibili, almeno 4; oltre 24, o se la data è troppo
+  vicina, il piano propone dove si arriva. «Dove sei oggi?» viene dalle
+  attività dell'ultimo mese (`outingHistory.ts`).
+
+**Conseguenze**: nessuna migrazione (il programma è già JSONB). Chi resta
+su un'app di prima vede i giorni fuori per nome e il giro di ripetizioni
+di prima. Partendo da zero la regola del decimo dà piani lunghi (corsa da
+2 a 10 km: 23 settimane). La salita di un hike non è nell'elenco delle
+attività: finché il server non la dà, l'app la chiede. Il promemoria alle
+8 è una notifica locale del telefono (B2b).
+
+## ADR-0385 — Overpass in errore: un job lo chiede una volta sola, 5 secondi invece di 60 quando il suo stato non si legge, un tentativo su un secondo servizio spento finché il server non lo accende
+
+**Stato**: Accettata · 2026-11-12 · TASK-471 (#1251 e #1269 in `main`;
+#1259 e #1263, i testi, nell'OTA 14). La regola del punto 1 è
+decisa dall'agente su delega dell'utente, col via del Coordinatore; i
+punti 2, 3 e i testi sono scelte dell'utente, con le sue parole nel task
+file.
+
+**Contesto.** Il 12 novembre `overpass-api.de` rispondeva `502` («at
+capacity») e due richieste di percorso in una zona nuova hanno aspettato
+140 s e 163 s prima di `map_data_unavailable`. Letto nel codice e nel log:
+osmnx 2.1.1 prima di ogni richiesta legge `/api/status`, e quando la
+pagina non è quella attesa (con Overpass pieno è la pagina 502) aspetta
+60 s fissi (`default_pause`, argomento di una funzione privata, non
+un'impostazione), poi fa la richiesta comunque. In tutti e due i job la
+zona attorno alla partenza è stata scaricata (75 s e 98 s) e la zona più
+larga della ricerca lontana (ADR-0040) è fallita un minuto dopo: 120 s
+dell'attesa erano la pausa, due volte. Nel codice c'era anche un doppio
+tentativo vero: l'archivio (ADR-0256) ingoiava l'errore del suo download
+e il processo di calcolo ne provava un altro.
+
+**Decisione.**
+
+1. **Un job chiede a Overpass una volta sola.** Dopo un download fallito,
+   il caricamento successivo dello stesso job che ne avrebbe bisogno
+   fallisce subito con lo stesso errore; i caricamenti dalla cache
+   continuano, quindi un percorso che non ha bisogno di scaricare si
+   disegna. Lo stato passa dal thread del job al processo di calcolo
+   insieme alla richiesta (`jobs._Reporting.unavailable`,
+   `route_processes`).
+2. **Cinque secondi invece di sessanta** («Sì, 5 secondi»): per la durata
+   di un download chiesto dall'app (`graphs.ZoneGraphs._download`) la
+   pausa di osmnx quando lo stato non dice nulla di utile è 5 s
+   (`overpass_pause.py`). Non cambiano l'attesa che Overpass chiede da sé
+   né il download: nessun limite di tempo, perché uno riuscito dura da 75
+   a 200 s. Se osmnx non ha più quella funzione il download va come
+   prima, con una riga di avviso.
+3. **Un tentativo su un secondo servizio** («Sì, un tentativo»): quando il
+   principale risponde con un errore HTTP o non si raggiunge (non dopo un
+   timeout), una volta sola (`overpass_fallback.py`). **Spento nel
+   codice**: lo accende `SHAPEROUTE_OVERPASS_FALLBACK_URL` sul server,
+   dopo che la privacy nomina il servizio (#1263), in un passo a parte
+   col sì dell'utente. Il servizio scelto è `overpass.private.coffee`: le
+   sue condizioni, lette il 12 novembre, permettono ogni progetto, anche
+   commerciale, senza limiti dichiarati; chiedono uno User-Agent che dica
+   chi siamo (`MuW/1.0 (https://getmuw.app)`), un avviso prima di usi
+   grandi e nessun dato personale nelle richieste (mandiamo il riquadro).
+4. Il lavoro a lotti (`prefetch_zones`) resta com'era: 60 s e solo il
+   principale, come scelto dall'utente lo stesso giorno.
+5. L'errore dice il perché in una riga (prima portava la pagina di
+   Overpass); l'app dice «The map service is busy, so this area could not
+   be loaded. Try again in a few minutes.».
+
+**Alternative scartate.**
+
+- Chiudere il job al primo errore dell'archivio senza guardare la cache:
+  farebbe fallire un percorso che si poteva disegnare.
+- Un limite di tempo sul download: sotto i tre minuti taglierebbe
+  download che riescono.
+- Scaricare subito la zona larga, un download invece di due («Sì,
+  com'è»: non si fa): tre volte l'area per ogni prima richiesta, per
+  accelerare il 3% dei job che cerca lontano.
+- Rispondere col percorso della zona vicina quando fallisce solo la
+  larga («ok procedi»: non adesso): sta nel motore, cambia l'impronta, e
+  aiuta solo quando vicino c'è un percorso inclinato disegnabile.
+- Il secondo servizio acceso nel codice: un altro gestore vedrebbe le
+  aree prima che la privacy lo dica.
+
+**Conseguenze.** I percorsi e le impronte non cambiano (niente motore,
+niente `route_store.py`). Con Overpass a 502: un download fallito costa
+circa 10–20 s invece di 70–80 s, e al massimo uno per job. Acqua e neve
+non passano da osmnx e non avevano la pausa; il secondo servizio vale
+anche per la loro richiesta («Sì, aggiungilo»), con la stessa variabile
+(`paddling.py`, `snowshoeing.py`). I servizi pubblici gratuiti sono per
+progetti piccoli e il principale chiede che l'uso commerciale passi a un
+servizio a pagamento o proprio: con la società, o se i download
+crescono, un servizio con chiave o le zone dagli estratti. Come si
+accende il secondo servizio e cosa leggere dopo: `tasks/TASK-471.md`.
 
 ## ADR-0386 — Lo stretching come sport: l'attività `stretching` registrata senza percorso come la palestra, le routine di ADR-0378 in «Draw», lo sport nato `ready: false`
 
@@ -962,9 +1151,29 @@ subito e solo il «ding» alla fine.
   5 s dell'ultimo lato.
 - **«Riduci movimento»**: ogni posa subito, niente respiro.
 
+**Decisione** (parte B, in `main` con la #1216, `05f5a725`, 2026-11-12;
+nomi, frasi, traduzioni e schermate col sì dell'utente; il modo deciso
+dall'agente su delega dell'utente):
+- **Dieci esercizi in più** (`MORE_EXERCISES`), quindici in tutto, tutti
+  leggibili di profilo; **tre routine** (`routines.ts`: Morning, After
+  run, After gym) in 3, 5 e 10 minuti, una tenuta sola per durata, la
+  sessione intera fra il 90% e il 105% dei minuti detti. A fine corsa la
+  schermata chiede «How long?» prima del primo esercizio
+  (`RoutineChooser`).
+- **Nessuna giuntura a dimensione zero**: su iOS una vista riusata con la
+  cornice esattamente (0, 0, 0, 0) tiene la posizione che aveva prima, e
+  alla seconda apertura dello stretching una gamba restava staccata (in
+  produzione con la parte A dall'OTA 12 fino al primo OTA dopo la #1216).
+  Ogni giuntura è un quadrato di 2 pt attorno al suo punto (`JOINT`).
+  Scartati: l'animazione guidata da JS (non cambia nulla) e
+  `collapsable={false}` (peggiora: più viste vere, più viste fuori posto).
+- **Una posa che arriva lontano scivola indietro**: oltre `REACH` (0,46
+  dell'altezza dall'anca) tutta la figura si sposta di quanto serve
+  (`drift`); oggi solo «Child's pose», che usciva dal bordo di un
+  telefono da 390 pt.
+
 **Le parti dopo** (ciascuna con la sua PR, i testi col sì dell'utente):
-B, ~15 esercizi e le routine Morning, After run, After gym da 3, 5, 10
-minuti; C, lo stretching in palestra (dopo TASK-461 A2 e TASK-465, col
+C, lo stretching in palestra (dopo TASK-461 A2 e TASK-465, col
 turno su `src/gym`); D, «Morning stretch» con l'orario scritto dall'utente
 e una notifica locale (iOS non lascia leggere le sveglie dell'Orologio;
 la prossima sveglia di Android è nativa e va in una build); E, le routine
@@ -1131,6 +1340,10 @@ non cambiano. In `Segmented` la pillola della scelta è una vista sola che
 scivola con la molla `glide` e si ferma senza superare il segno; finché
 la pista non è misurata la scelta porta la pillola da sé. Deciso
 dall'agente su delega dell'utente; l'utente ha approvato le schermate.
+**A3 (#1276)**: la pista dei segmenti è vetro posato, non sospeso (filo e
+luce interni, nessuna ombra portata), la pillola ha la luce in cima e
+un'ombra a 2 pt con 6 di sfocatura; nelle modalità opache tutto torna
+piatto. Lo stesso in `PlayTabs`. Il fondo passato da chi chiama vince.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

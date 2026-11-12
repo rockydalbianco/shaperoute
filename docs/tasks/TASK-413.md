@@ -8,7 +8,10 @@ A2 in `main` con la #1130 (`ac08ae94`, mergiata dall'utente il
 controllo in `out/TASK-413/SERVER-A2.md`), l'app nascosta col decimo OTA;
 A3 (la città detta subito) in `main` con la #1238 (`8f5d0516`, unita
 dall'utente il 2026-11-12), sul server col passo 11 (controllo in
-`out/TASK-413/SERVER-A3.md`); poi B
+`out/TASK-413/SERVER-A3.md`), corretta dalla #1266 (`b079f067`: il job
+non passava il conteggio) col passo 12; B e C in `main` con la #1280
+(`335f75f5`, `ready: false`); privacy delle quote nella #1281; accensione
+con `feat/TASK-413-snowshoes-on`
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -182,6 +185,83 @@ Connect: `EXERCISE_TYPE_SNOWSHOEING`, da verificare sulla libreria. Solo
 JavaScript: l'impronta iOS non si muove. La lista al Coordinatore prima del
 codice.
 
+**Parte B, accordi** (2026-11-12; lista dei file approvata dal
+Coordinatore, `feat/TASK-413-b-snowshoes-app`):
+
+- **I testi sono riapprovati dall'utente** il 2026-11-12, con le parole
+  «Sì, vanno bene». Sono:
+  - l'avviso valanghe intero nelle cinque lingue, mostrato di nuovo perché
+    è un testo di sicurezza;
+  - nome e riga sotto ogni percorso, come nella scelta 4;
+  - i testi nuovi della neve, nelle cinque lingue:
+    - «There is no open snow near this start. Start within 2 km of open
+      snow, away from towns, woods and pistes.» (in miglia, «1 mile»);
+    - «This shape does not fit on the snow here at this distance. It fits
+      at about {km} km.»;
+    - «This shape does not fit on the snow here. Try a shorter distance,
+      another shape, or another start:»;
+    - «{name} · on the snow · target {km} km».
+- **`isPlacedFree`** (`src/snow/snow.ts`, acqua o neve) è un predicato
+  nuovo: `isOnWater` non si allarga. Lo chiedono i punti dove la neve fa
+  come l'acqua:
+  - pezzi a penna alzata;
+  - nessun «Move» del punto di partenza;
+  - nessuna indicazione, né sul telefono né sull'orologio.
+
+  Gli esempi, i posti e gli avvisi dell'acqua restano `isOnWater`. Un test
+  dice che per ogni attività tranne le ciaspole `isPlacedFree` vale quanto
+  `isOnWater`.
+- **Nessun tempo sotto la distanza**: il passo di chi cammina, sulla neve,
+  prometterebbe meno tempo di quello reale. Deciso dall'agente su delega
+  dell'utente.
+- **Lo sport resta `ready: false`** nella PR. Si accende con una riga a
+  parte, col sì dell'utente dato al Coordinatore, dopo le schermate.
+- **Accensione**: l'utente ha detto «Sì, accendi» alle schermate
+  (2026-11-12, `out/TASK-413/sim/`). La PR piccola
+  `feat/TASK-413-snowshoes-on` porta `fromProfile("snowshoe", true)` e i
+  test delle liste. Si apre dopo che il Coordinatore conferma «passo 12 e
+  prova come attesi», con la riga della privacy (#1281) in `main`.
+- **Anche «Record your day»**: scelta dell'utente del 2026-11-12, «Anche
+  Record your day», contro la proposta dell'agente «solo forme». Le
+  ciaspole avranno anche la giornata sulla neve da registrare intera, come
+  lo sci e lo scialpinismo. È una **parte a sé, dopo B** (la parte C):
+  - la B resta quella delle forme, con il suo «Snowshoe without a route»;
+  - la C porta la riga in Impostazioni, la giornata, i suoi numeri e i suoi
+    testi;
+  - la lista dei file e il disegno della C vanno al Coordinatore prima del
+    codice.
+- **La C sta dentro le ciaspole**: scelta dell'utente del 2026-11-12,
+  «Dentro le ciaspole», fra le due strade portate dal Coordinatore:
+  - (1) una riga nuova «Snowshoe day» in Impostazioni, sport a sé;
+  - (2) «Record your day» dentro le ciaspole che già ci sono.
+
+  Vale la (2): una riga sola, «Snowshoes», nessuna migrazione, nessun
+  passo sul server, esce con un OTA. L'utente ha approvato il
+  2026-11-12, con le parole «Sì, vanno bene», la proposta dell'agente e
+  il testo nuovo nelle cinque lingue:
+  - il bottone in alto di «Draw» diventa «Record your day», al posto di
+    «Snowshoe without a route»;
+  - a fine uscita c'è la scheda «Your day» del fondo (distanza, passo,
+    metri saliti, tempo, calorie);
+  - sulla mappa la riga è «White: where you walked.»: it «Bianco: dove
+    hai camminato.», de «Weiß: wo du gegangen bist.», fr «Blanc : là où
+    tu as marché.», es «Blanco: donde caminaste.».
+
+- **Privacy delle quote** (2026-11-12): per la neve il server scarica le
+  quote da Amazon Web Services (tessere Terrarium, `heights.py`), e la
+  privacy nominava Amazon solo per la mappa «3D» del telefono. L'utente ha
+  approvato con le parole «Sì, va bene» la riga nuova da aggiungere in «Chi
+  altro riceve dati»:
+  - en: «For a snowshoe route our server asks Amazon Web Services for the
+    heights of an area it does not have yet: it sees which area, not who
+    asked.»;
+  - it: «Per un percorso con le ciaspole il nostro server chiede ad Amazon
+    Web Services le altezze di una zona che non ha ancora: vede quale zona,
+    non chi l'ha chiesta.».
+
+  Va scritta prima dell'accensione, nel turno del Coordinatore su
+  `about/content/**` e `site/privacy/**`.
+
 **Accordi e scelte della parte A2** (2026-11-10, decise dall'agente su
 delega dell'utente):
 
@@ -335,10 +415,13 @@ Tutte come la proposta, tranne la terza:
       scarica la neve di un posto nuovo (#1130; passo 8 del 2026-11-11:
       0068 e i tre vincoli, impronte attese, cuore di 1 km alle Viote in
       38,2 s la prima volta e 4,1 s la seconda, 1000 m, 0 indicazioni).
-- [ ] A3: una città è detta subito senza leggerne la neve (Trento, Belluno,
+- [x] A3: una città è detta subito senza leggerne la neve (Trento, Belluno,
       Milano), ogni posto con neve del banco va avanti come prima; un
       conteggio che non arriva non cambia nulla; impronte invariate; sul
-      server Trento 3 km in pochi secondi.
+      server Trento 3 km in pochi secondi. (#1238 e la correzione #1266;
+      passo 12, prova del 2026-11-12 17:00Z su `eee85a69`: Milano 1,1 s,
+      Trento 1,1 s e 0,65 s, tutte «no open snow»; 16170 e 8091 edifici
+      contati dalla neve in cache; `out/coordinatore/prova-passo12.out`.)
 - [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
       e i testi sono in cinque lingue.
 

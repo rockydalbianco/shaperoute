@@ -1,11 +1,30 @@
 # TASK-471 — Overpass in errore: rispondere prima
 
-**Stato**: In corso — 2026-11-12: la correzione è in `main` (#1251), la
-frase dell'app (#1259) e quella della privacy (#1263) sono in `main` e
-nell'OTA 14; la parte B (5 secondi, secondo servizio spento, errore in
-una riga) è nella sua PR. Tutte le scelte dell'utente sono qui sotto, con
-le sue parole. Restano: il passo sul server (12), la copia del sito con
-la privacy, l'accensione del secondo servizio, la PR di documenti.
+**Stato**: Done — 2026-11-12. Esito: con Overpass in errore l'app lo sa
+dopo secondi invece che dopo più di due minuti: un download fallito per
+job (#1251), 5 secondi invece dei 60 di osmnx quando lo stato non si
+legge e l'errore in una riga (#1269), la frase nuova dell'app (#1259);
+il secondo servizio Overpass è nel codice, **spento**, per strade, acqua
+e neve (#1269), e la privacy lo nomina già (#1263). Sul server dal passo
+12 (2026-11-12, ~16:56Z, `eee85a69`); app con l'OTA 14. Decisione:
+ADR-0385 (#1286, entrata con la #1289).
+
+**Resta** (fuori dalla chiusura, ognuno col sì dell'utente):
+- **Accensione del secondo servizio**: aspetta la copia del sito con la
+  privacy nuova. Poi, in `/root/shaperoute/deploy/.env`, la riga
+  `SHAPEROUTE_OVERPASS_FALLBACK_URL=https://overpass.private.coffee/api`
+  e il contenitore dell'API ricreato; lettura di controllo in «Accendere
+  il secondo servizio».
+- **Letture dopo il passo 12** (`out/coordinatore/passo12/remote.out` e
+  `check-471.out`): server a `eee85a69`, `fallback_url()` = `None`,
+  health 200, nessun Traceback; `check_once.py` nel contenitore dà
+  «downloads tried: 1 (expected 1)». Dopo le 16:56Z ci sono 8 righe
+  `times total`, tutte di richieste di prova delle ciaspole finite «no
+  open snow» (`loads=0`): passano dal processo di calcolo, quindi il
+  messaggio nuovo fra thread e processo arriva e torna. **Non ancora
+  visto**: un job su strada `done` dopo il passo, con i campi del piano;
+  lo aggiunge il Coordinatore quando ne vede uno.
+- Da riprendere solo se i log lo chiedono: le scelte (e) e (d) qui sotto.
 **Fase**: 5 · **Branch**: `fix/TASK-471-map-unavailable-once` (#1251),
 `fix/TASK-471-b-overpass-pause` (parte B) ·
 **ADR**: ADR-0385 (la voce va nella PR di documenti dopo il merge)
@@ -363,7 +382,7 @@ c'è `map_data_unavailable` no.
 - [x] `ruff`, `black` e i test dei file toccati verdi in locale
       (`test_jobs_map_unavailable`, `test_jobs`, `test_first_route`,
       `test_job_times`, `test_route_processes`: 57 passati).
-- [ ] CI verde.
+- [x] CI verde (#1251, #1269, #1259, #1263 in `main`).
 - [x] Nessun file del motore né `route_store.py` nel diff.
 
 ## Dopo il passo sul server (sola lettura)

@@ -1672,6 +1672,41 @@ export const IT: Table = {
   "Glute stretch": "Stretching del gluteo",
   "Cross one ankle over the other knee. Sit back as if into a chair.":
     "Incrocia una caviglia sull'altro ginocchio. Siediti indietro come su una sedia.",
+  // src/stretch, the routines (TASK-466 part B)
+  "Neck stretch": "Stretching del collo",
+  "Stand tall. Let your chin drop toward your chest, shoulders low.":
+    "In piedi, dritto. Lascia scendere il mento verso il petto, spalle basse.",
+  "Overhead reach": "Allungamento in alto",
+  "Reach both arms up high. Grow tall, chest open.":
+    "Porta le braccia in alto. Allungati, petto aperto.",
+  "Shoulder stretch": "Stretching della spalla",
+  "Bring one arm across your chest. Pull it in with the other hand.":
+    "Porta un braccio davanti al petto. Tiralo a te con l'altra mano.",
+  "Chest opener": "Apertura del petto",
+  "Clasp your hands behind your back. Lift them a little, chest out.":
+    "Intreccia le mani dietro la schiena. Alzale un poco, petto in fuori.",
+  "Triceps stretch": "Stretching del tricipite",
+  "Raise one elbow, hand down your back. Press the elbow back gently.":
+    "Alza un gomito, la mano scende sulla schiena. Spingi piano il gomito indietro.",
+  "Upper back stretch": "Stretching della parte alta della schiena",
+  "Reach your arms forward, hands together. Round your back, head down.":
+    "Braccia avanti, mani unite. Arrotonda la schiena, testa giù.",
+  "Forward fold": "Piegamento in avanti",
+  "Fold forward from the hips. Let your arms hang, knees soft.":
+    "Piegati in avanti dalle anche. Lascia pendere le braccia, ginocchia morbide.",
+  "Cat stretch": "Stretching del gatto",
+  "On hands and knees. Round your back up, let your head drop.":
+    "A quattro zampe. Inarca la schiena verso l'alto, lascia cadere la testa.",
+  "Child's pose": "Posizione del bambino",
+  "Sit back on your heels. Reach your arms forward, forehead down.":
+    "Siediti sui talloni. Allunga le braccia in avanti, fronte giù.",
+  "Knee hug": "Ginocchio al petto",
+  "Stand on one leg. Hug the other knee to your chest.":
+    "In piedi su una gamba. Stringi l'altro ginocchio al petto.",
+  Morning: "Mattino",
+  "After run": "Dopo la corsa",
+  "After gym": "Dopo la palestra",
+  "How long?": "Quanto tempo?",
   "{index} of {total}": "{index} di {total}",
   "Right side": "Lato destro",
   "Left side": "Lato sinistro",
@@ -2670,4 +2705,49 @@ export const IT: Table = {
   "by {user}": "di {user}",
   "This post is no longer available.": "Questo post non è più disponibile.",
   "🗺️ Post": "🗺️ Post",
+  // src/feed/AddToFeed.tsx (TASK-476: the Feed's «+»)
+  "Add activity": "Aggiungi attività",
+  // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
+  // 2026-11-08 and 2026-11-12.
+  Snowshoes: "Ciaspole",
+  "Off-trail on snow: check the avalanche bulletin first.":
+    "Fuori sentiero sulla neve: prima guarda il bollettino valanghe.",
+  "Before you head out on snowshoes": "Prima di uscire con le ciaspole",
+  "Check the avalanche bulletin and the weather before you go. MuW does not know them.":
+    "Controlla il bollettino valanghe e il meteo prima di partire. MuW non li conosce.",
+  "The route avoids slopes over 25°, woods, pistes and rock. That does not make it safe: an avalanche can come from above.":
+    "Il percorso evita i pendii oltre 25°, i boschi, le piste e le rocce. Questo non lo rende sicuro: una valanga può arrivare dall'alto.",
+  "Stay off the pistes and follow the local rules: parks, reserves, wildlife quiet zones, private land. MuW does not know them all.":
+    "Non camminare sulle piste e rispetta le regole del posto: parchi, riserve, zone di quiete per la fauna, terreni privati. MuW non le conosce tutte.",
+  "Never go alone, tell someone where you are going, and turn back if the snow or the weather changes.":
+    "Non andare da solo, di' a qualcuno dove vai e torna indietro se la neve o il tempo cambiano.",
+  "There is no open snow near this start. Start within 2 km of open snow, away from towns, woods and pistes.":
+    "Qui vicino non c'è neve aperta. Parti entro 2 km da neve aperta, lontano da paesi, boschi e piste.",
+  "There is no open snow near this start. Start within 1 mile of open snow, away from towns, woods and pistes.":
+    "Qui vicino non c'è neve aperta. Parti entro 1 miglio da neve aperta, lontano da paesi, boschi e piste.",
+  "This shape does not fit on the snow here at this distance. It fits at about {km} km.":
+    "Qui questa forma non sta sulla neve a questa distanza. Ci sta a circa {km} km.",
+  "This shape does not fit on the snow here at this distance. It fits at about {mi} mi.":
+    "Qui questa forma non sta sulla neve a questa distanza. Ci sta a circa {mi} mi.",
+  "This shape does not fit on the snow here. Try a shorter distance, another shape, or another start:":
+    "Qui questa forma non sta sulla neve. Prova una distanza più corta, un'altra forma o un'altra partenza:",
+  "{name} · on the snow · target {km} km": "{name} · sulla neve · obiettivo {km} km",
+  "{name} · on the snow · target {mi} mi": "{name} · sulla neve · obiettivo {mi} mi",
+  "White: where you walked.": "Bianco: dove hai camminato.",
+  // src/liveShare/ (TASK-468 part B1: «Send in MuW», the heart rate, the
+  // live in the app; en and it approved by the user 2026-11-12)
+  "Send in MuW": "Invia su MuW",
+  "Show my heart rate": "Mostra il mio battito",
+  "Off: nobody sees your heart rate. On: they see it when a watch sends it.":
+    "Spento: nessuno vede il tuo battito. Acceso: lo vedono quando un orologio lo manda.",
+  "Choose who gets your live": "Scegli a chi mandare la live",
+  "They can follow you in the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain and calories.":
+    "Ti seguono nell'app: la tua posizione esatta sulla mappa, il percorso fatto, distanza, tempo, passo o velocità, dislivello e calorie.",
+  "Send ({count})": "Invia ({count})",
+  "Live ended": "Live finita",
+  "Finished · {distance} · {time}": "Finita · {distance} · {time}",
+  "No update since {time}": "Nessun aggiornamento dalle {time}",
+  "Updated {seconds} s ago": "Aggiornato {seconds} s fa",
+  "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
+  "🔴 Live": "🔴 Live",
 };

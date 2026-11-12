@@ -220,33 +220,42 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-12**: parte 0 in `main`; A1a in `main` (#1221, `9328c109`,
   migrazione `0073`), sul server col passo dopo l'uscita completa, col sì.
   Poi A1b dopo TASK-455 A.
+  **2026-11-12 sera**: A1a, A2a (#1245) e A1b (#1265) sul server (passi 11 e
+  12); B1 (app) in `main` (#1275), esce con un OTA col sì. Prossime A2b, B2.
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
   default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
   scelto dal minimo disponibile dopo qualche giorno. File: — ·
   `tasks/TASK-464.md`
-- **TASK-455 — Condividere il disegno di un'altra persona** · B0 (niente
-  copia dei disegni «Followers» altrui) in `main` (#1220) e nell'uscita del
-  2026-11-12; A (server: il post in un messaggio, ADR-0382, migrazione
-  `0074`) in `main` (#1230): manca il passo sul server, col sì dell'utente.
-  Prossima B (app), poi C–E il link. File: — · `tasks/TASK-455.md`
+- **TASK-455 — Condividere il disegno di un'altra persona** · B0, A
+  (server, passo 11, migrazione `0074`) e B (app, #1255, OTA 15) fatte e in
+  produzione il 2026-11-12: «Share» su ogni post, il post in chat come
+  rimando (ADR-0382). Resta la prova dell'utente sul telefono. Prossima C
+  (server: link e interruttore), poi D sito, E app. File: — · `tasks/TASK-455.md`
 
-- **TASK-466 — Lo stretching nuovo** · A (la figura che respira, si
-  rialza e si gira, «Get ready», tick, «Skip») in `main` (#1181,
-  ADR-0378), esce con l'aggiornamento completo. Poi B (routine 3/5/10
-  min), D (mattino), C (palestra, dopo 461 A2 e 465), E (routine
-  pubblicate). File: — · `tasks/TASK-466.md`
+- **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (#1181,
+  OTA 12); B (dieci esercizi, routine Morning / After run / After gym da
+  3, 5, 10 min, e la gamba staccata alla seconda apertura corretta) in
+  `main` (#1216), col prossimo OTA. Poi D (mattino, lista al Coordinatore
+  prima del codice), C (palestra), E. File: — · `tasks/TASK-466.md`
 
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
-  l'OTA 14 (2026-11-12). Prossima A3, lista dei file al Coordinatore prima
-  del codice; B nativa dopo la 1.1.0. File: — · `tasks/TASK-469.md`
+  l'OTA 14; A3 pista di vetro (#1276) in `main`, col prossimo OTA. Prossima
+  i chip, lista al Coordinatore prima del codice; B dopo la 1.1.0. File: —
+  · `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);
   manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
   dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
+
+- **TASK-461 — Il pianificatore completo** (ADR-0371) · A1 e B1 (server:
+  quattro esercizi, giorni fuori `outing`, `target`) in `main` e sul server;
+  B2a (settimane verso una meta) e A2 (ingresso «Cosa vuoi allenare?», corpo
+  libero) in `main` (#1196, #1208), A2 esce col prossimo OTA. Prossime B2b/C2
+  (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

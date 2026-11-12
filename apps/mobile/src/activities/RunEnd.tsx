@@ -2,6 +2,7 @@ import {
   type Activity,
   type LatLon,
   SLEEP_SHOWN_DEFAULT,
+  type Visibility,
 } from "@shaperoute/shared-types";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
@@ -69,9 +70,11 @@ type Props = {
    * the sport the file says (null: the one of «Settings»): «Imported» over
    * the form, and a line that it does not count for Play or the contests.
    * Neither «Send to Strava» (it often comes from Strava itself) nor the
-   * phone's health data (the other app wrote it there already).
+   * phone's health data (the other app wrote it there already). It starts
+   * on «Only me», or on `visibility` when given: «Everyone» from the Feed's
+   * «+» (TASK-476, the user's choice), seen over «Save» and changeable.
    */
-  imported?: { sport: Activity | null };
+  imported?: { sport: Activity | null; visibility?: Visibility };
 };
 
 /** How much of the screen the form may take: the map and the buttons
@@ -145,12 +148,16 @@ export function RunEnd({
   const [send, setSend] = useState(loadSendToStrava);
   // «Only me» until the account saves another choice, then the last one
   // saved (the user's choice, ADR-0304): nobody is public without having
-  // chosen it. An activity added from a file is an old one: always «Only me».
+  // chosen it. An activity added from a file is an old one: «Only me», but
+  // from the Feed's «+» «Everyone» (TASK-476, the user's choice).
   // The activity is the sport chosen in «Settings», or the one the file says.
   const [choice, setChoice] = useState<DrawingChoice>(() => ({
     ...NOT_CHOSEN,
     activity: imported?.sport ?? runActivityOf(sport),
-    visibility: imported === undefined ? loadVisibility(owner) : "only_me",
+    visibility:
+      imported === undefined
+        ? loadVisibility(owner)
+        : (imported.visibility ?? "only_me"),
   }));
   // Started from a remembered «Everyone» or «Followers»: the form scrolls, so
   // its words stay over «Save» too, seen before the run goes public.

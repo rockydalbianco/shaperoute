@@ -1,16 +1,16 @@
 # TASK-455 — Condividere il disegno di un'altra persona
 
-**Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-12; documenti in
-`main` con la #1226) · **B0** in `main` (#1220, `34333964`), uscita con
-l'aggiornamento completo del 2026-11-12 · **A** (server: il post in un
-messaggio) in `main` (#1230, `5c53e141`, migrazione `0074`): **manca il
-passo sul server**, col sì dell'utente · prossima **B** (app), lista dei
-file approvata, in un contesto nuovo
+**Stato**: **B0, A e B fatte e in produzione** (2026-11-12): B0 nella
+#1220, A nella #1230 e sul server col passo 11 (migrazione `0074`), B nella
+#1255 con l'OTA 15 · resta la prova dell'utente sul telefono · prossima
+**C** (server: il link e l'interruttore), che comincia da una domanda
+all'utente e dalla frase della privacy; poi D (sito) ed E (app)
 **Fase**: 5 · **Branch**: una PR per parte; la prossima
-`feat/TASK-455-b-share-post`
-**Dipende da**: per la parte B, la #1231 di TASK-454 B in `main` (solo per
-`feed/PostActions.tsx`, che si scrive per ultimo), il passo sul server
-della A e il turno del simulatore
+`feat/TASK-455-c-post-links`
+**Dipende da**: per la parte C, la risposta dell'utente sul link
+dell'autore con l'interruttore spento, la frase della privacy e l'avviso
+nelle novità approvati **prima** del passo sul server, il sì del
+Coordinatore sui file
 **ADR**: **ADR-0382** (il post in un messaggio, il link di un post,
 l'interruttore dell'account), numero dal Coordinatore il 2026-11-12 ·
 numero del task dal Coordinatore l'11 novembre 2026 (S5 e gruppo C di
@@ -129,15 +129,31 @@ senza mostrarlo a chi non potrebbe vederlo.
 | Impostazioni, interruttore (acceso all'inizio) | «Links to my posts» · «People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.» |
 | Pagina web | «{user} drew this on MuW» · «Get MuW» · «This drawing is no longer available.» |
 
-Da approvare ancora: il paragrafo della privacy (parte E) e la riga delle
-novità.
+**La frase della privacy, approvata il 2026-11-12 («Approvo così»)**, da
+aggiungere dopo quella su «Everyone» e «Followers», nell'app e sul sito
+(traduzioni dell'agente):
+
+> A post for «Everyone» can also be opened with a link. You, or any member
+> who sees the post, can share its link, and whoever has the link sees the
+> drawing on the map, your username, the title and the distance on a web
+> page, even without MuW: never your photos, the comments or your times.
+> Search engines are asked not to list these pages. Turn off «Links to my
+> posts» in Settings and no link to your posts works any more. A post for
+> «Followers» or «Only me» never has a link.
+
+**Le novità, scelta dell'utente del 2026-11-12: «Solo privacy e App
+Store».** Nessun avviso dentro l'app (oggi non ha un posto per le novità):
+la frase della privacy, e nelle note di versione dello store alla prossima
+build «Share a post: send it to a friend or share its link. Links to your
+«Everyone» posts are on; turn them off in Settings.» (La proposta era un
+foglietto nell'app, una volta.)
 
 ## Le parti (proposta dell'agente; il server prima dell'app)
 
 - **B0 — App: niente copia dei disegni «Followers» altrui** (aggiunta il
   2026-11-12, la correzione di riservatezza). **In `main`, #1220.**
-- **A — Server: il post in un messaggio** (**in `main`, #1230; manca il
-  passo sul server**). Un allegato nuovo, `post`: il
+- **A — Server: il post in un messaggio** (**in `main`, #1230, e sul
+  server col passo 11**). Un allegato nuovo, `post`: il
   messaggio tiene l'id del disegno, non la linea. Mandarlo vuole che chi
   manda veda il disegno e una conversazione aperta, come ogni allegato.
   Leggerlo: a ogni pagina il server risolve la scheda **per chi legge**
@@ -146,7 +162,8 @@ novità.
   «[Post]» davanti al testo; la push dice «🗺️ Post». Migrazione, tipi in
   `shared-types`, esempi, `API.md`, `DATABASE.md`. Poi il passo sul server,
   col sì dell'utente dato al Coordinatore.
-- **B — App: «Share» su ogni post e la scheda in chat.** Il foglietto di
+- **B — App: «Share» su ogni post e la scheda in chat** (**in `main`,
+  #1255, in produzione con l'OTA 15**). Il foglietto di
   «Share» (file nuovo) nella riga delle azioni del Feed e della pagina del
   post; «Send to a friend» manda il rimando; la scheda del post nella
   conversazione, che apre la pagina del post; la nota per i post
@@ -217,10 +234,14 @@ OTA da sola.
    server. Server e sito li lancia il Coordinatore coi sì dell'utente;
    nessuna OTA di produzione fino all'aggiornamento completo.
 
-Da chiedere all'utente prima della parte C: con l'interruttore spento, il
-link che l'autore prende del **proprio** post funziona? La risposta 5 dice
-che l'autore lo può sempre prendere, il testo dell'interruttore dice che
-spento «the links stop working».
+Chiesto all'utente il 2026-11-12, prima della parte C: con l'interruttore
+spento, il link che l'autore prende del **proprio** post funziona?
+**Risposta: «No: spento vuol dire nessun link».** Una regola sola, quella
+che il testo approvato dice già («Turn this off and the links stop
+working»): spento, nessun link ai miei post funziona, nemmeno quelli che ho
+mandato io, e «Share link» sparisce anche sui miei post; per mandarne uno
+lo riaccendo. Precisa la risposta 5 («l'autore lo può sempre prendere»
+vale con l'interruttore acceso). Nessun dato in più da tenere per post.
 
 Ordine sui file dell'app (Coordinatore): `feed/PostActions.tsx` dopo la
 #1195 (TASK-454 A) e accanto a TASK-454 B (`FeedPost.tsx`, `PostPage.tsx`,
@@ -341,8 +362,21 @@ Parte A (in `main`, #1230):
       scheda; la push e la lista dicono «🗺️ Post».
 - [x] `API.md`, `DATABASE.md`, tipi ed esempio aggiornati; test dei file
       toccati verdi in locale, la suite in CI.
-- [ ] Il passo sul server, col sì dell'utente dato al Coordinatore, e i
-      controlli di sola lettura di `out/TASK-455/SERVER-A.md`.
+- [x] Il passo sul server, col sì dell'utente dato al Coordinatore, e i
+      controlli di sola lettura di `out/TASK-455/SERVER-A.md` (passo 11,
+      2026-11-12).
+
+Parte B (in `main`, #1255; in produzione con l'OTA 15):
+- [x] «Share» sotto ogni post apre il foglietto: «Send to a friend», e
+      sui propri «Poster and video»; sui post altrui c'è solo coi messaggi.
+- [x] «Send to a friend» da un post manda `{ post_id }` e mai la linea;
+      per un post «Followers» altrui dice prima chi lo può aprire.
+- [x] In chat la scheda del post, o «This post is no longer available.»;
+      il tocco apre il post come una notifica; la lista dice «🗺️ Post».
+- [x] La scheda di un disegno altrui manda il post, anche «Followers».
+- [x] Schermate dal simulatore approvate dall'utente («Sì, vanno bene»).
+- [ ] La prova dell'utente sul telefono: mandare il post di un altro a un
+      amico e aprirlo dalla chat.
 
 Parte D (fissati col Coordinatore):
 - [ ] La pagina risponde solo per post «Everyone» con l'interruttore
@@ -430,6 +464,30 @@ Le altre parti scrivono i loro criteri quando partono.
   l'ultimo pulsante dice «Back to the profile»; il foglietto non scurisce
   lo sfondo, come quello di «…». Per «pronta» manca solo `main` unito dopo
   la #1231 di TASK-454 B.
+- 2026-11-12: **«server A fatto»** (Coordinatore): passo 11 lanciato
+  dall'utente alle 15:03Z, server a `338e4d9b`, `0074_message_post`
+  applicata; le letture di `SERVER-A.md` come previste (colonna, i due
+  controlli, l'indice, gli allegati di prima invariati, nessun post, «post
+  ok True [Post] post», «everyone owner 1 stranger 1 points [64]»). Sul
+  server non c'è nessun disegno «Followers»: quel caso lì non è stato
+  provato, lo coprono i test e la prova al simulatore.
+- 2026-11-12: **B in `main`** (#1255, `360e26f6`; `main` unito con la
+  #1231 di TASK-454 B tenendo `reactionsHandle`) e **in produzione con
+  l'OTA 15** (15:46Z, commit `e88d491f`). Resta la prova dell'utente sul
+  telefono. Prossima la parte C: la domanda all'utente (con
+  l'interruttore spento, il link che l'autore prende del proprio post
+  funziona?), la frase della privacy e l'avviso nelle novità da approvare
+  prima del passo sul server, la lista dei file al Coordinatore prima del
+  codice.
+- 2026-11-12: risposta dell'utente per la parte C: con «Links to my posts»
+  spento nessun link funziona, nemmeno quelli dell'autore («No: spento
+  vuol dire nessun link»). Lista dei file della parte C mandata al
+  Coordinatore; frase della privacy e avviso nelle novità proposti
+  all'utente.
+- 2026-11-12: frase della privacy approvata («Approvo così») e scelta
+  sulle novità («Solo privacy e App Store»): testi sopra, in «I testi
+  approvati». Con questo le due cose chieste prima del passo sul server
+  della parte C hanno il sì dell'utente.
 - 2026-11-12: **parte D scritta** (`feat/TASK-455-d-post-page`): la pagina
   `site/p/` sul modello di `site/live/` (stessa mappa, stesso MapLibre,
   nessuna copia), dieci test nuovi, la sezione «La pagina di un post» in

@@ -1131,6 +1131,10 @@ non cambiano. In `Segmented` la pillola della scelta è una vista sola che
 scivola con la molla `glide` e si ferma senza superare il segno; finché
 la pista non è misurata la scelta porta la pillola da sé. Deciso
 dall'agente su delega dell'utente; l'utente ha approvato le schermate.
+**A3 (#1276)**: la pista dei segmenti è vetro posato, non sospeso (filo e
+luce interni, nessuna ombra portata), la pillola ha la luce in cima e
+un'ombra a 2 pt con 6 di sfocatura; nelle modalità opache tutto torna
+piatto. Lo stesso in `PlayTabs`. Il fondo passato da chi chiama vince.
 
 ## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
 

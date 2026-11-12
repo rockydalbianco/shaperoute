@@ -3468,6 +3468,51 @@ esempio in `fixtures/live-share-send-request.json`.
   `heart_visible`; un'app di prima non li legge. Il log non scrive
   posizioni (test in `test_live_shares.py`).
 
+#### Le live programmate e la fila «Live» del Feed (TASK-468 parte A2a, ADR-0381)
+
+Una live fatta in anticipo, una gara per esempio: sport, titolo, giorno e
+ora, chi la segue (`followers` o `everyone`) e se vede il battito. Il codice
+in `planned_lives.py`, montato da `install_live_shares`; tipi in
+`plannedLive.ts` (`PlannedLiveRequest`, `PlannedLiveChange`,
+`PlannedLiveStart`, `PlannedLivePost`, `LiveItem`, `LivesPage`), esempi in
+`fixtures/planned-live-request.json`, `planned-live.json`,
+`lives-page.json`. Tutti vogliono il token d'account.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /me/planned-lives` | `activity`, `title` (1–60, una riga, filtro dei commenti), `starts_at` (da adesso a 60 giorni), `audience_feed` (default `followers`), `heart_visible` (default `false`) | `201` `LiveItem`; `422` oltre 10 non finite |
+| `GET /me/planned-lives` | le mie non finite e non pubblicate, la più vicina prima, con `can_start` | `200` `LiveItem[]` |
+| `PUT /me/planned-lives/{id}` | cambia quello che si dà, solo prima della partenza | `200` `LiveItem`; `404`; `422` se è partita |
+| `DELETE /me/planned-lives/{id}` | la toglie coi promemoria; una live partita va avanti per conto suo | `204`; `404` |
+| `POST /me/planned-lives/{id}/start` | la sua live: da un'ora prima a tre ore dopo, col suo pubblico e il suo battito; senza link se non lo si chiede (`link`) | `201` `LiveShareCreated`; `404`; `422` fuori dalle ore o se è già in corso |
+| `PUT /me/planned-lives/{id}/post` | `drawing_id`: il post che è diventata (scelta 5) | `204`; `404` per un post non suo |
+| `GET /planned-lives/{id}` | una live programmata, anche finita (`ended`) | `200` `LiveItem`; `404` a chi non può |
+| `PUT` / `DELETE /planned-lives/{id}/reminder` | «Remind me» o no: due volte è una | `204`; `404`; `422` se è già partita (solo `PUT`) |
+| `GET /lives?limit=&cursor=` | la fila del Feed | `200` `LivesPage` |
+| `GET /users/{public_id}/lives` | le live non finite di un profilo che chi chiede può vedere | `200` `LiveItem[]`; `404` come il profilo |
+
+- **Chi vede**: il proprietario; gli altri se non sono lontani per un
+  blocco (dei due versi) o un nascosto, e se la live è `everyone` o lo
+  seguono. A chi non può, `404`, mai `403`.
+- **La fila** (scelta 7 dell'utente): solo le proprie e quelle di chi si
+  segue, **mai quelle di uno sconosciuto**, anche `everyone` (quelle si
+  aprono dal profilo o da un link). Ci sono le programmate e le live messe
+  nel Feed senza programmarle (`audience_feed` di `POST /me/live-shares`,
+  scelta 6). Prima quelle in corso (anche `finished` per l'ora del
+  riepilogo), l'ultima partita prima; poi le programmate, la più vicina
+  prima. A pagine: `limit` 1–50, `next` è il `cursor` della pagina dopo.
+  Escono: una programmata mai partita tre ore dopo la sua ora, una live
+  fermata o scaduta, una programmata diventata post.
+- **`LiveItem`**: `id` è quello della programmata, o della live per una
+  messa nel Feed senza programmarla (`planned_live_id` `null`); `share_id`
+  c'è solo mentre è in corso o finita da meno di un'ora, e apre `GET
+  /live-shares/{id}`; `state` è `planned`, `live`, `paused`, `finished`
+  o `ended`; `distance_m` e `duration_s` sono gli ultimi numeri, per la
+  scheda; `reminded` è il «Remind me» di chi chiede; `can_start` vale
+  solo per il proprietario.
+- **«Remind me»** tiene solo chi vuole l'avviso: la push alla partenza
+  arriva con la parte A2b. Test in `test_planned_lives.py`.
+
 ### Run stats (TASK-410 parte C, ADR-0340)
 
 I dati della pagina del post oltre a metri e tempo: passi, profilo del

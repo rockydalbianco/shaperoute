@@ -606,9 +606,20 @@ il tratto sottile e `textFaint`; la foto del profilo attivo ha un bordo
 sottile del colore del testo. Niente giallo: è del percorso. Su «Messages»
 un numero rosso con le conversazioni nuove e le richieste; sul profilo
 quello delle richieste di follow. VoiceOver legge ogni scheda col suo nome
-(«Messages, 3 waiting») e quella sullo schermo come selezionata. La barra è
-quasi opaca (`background` al 95%): il blur vero chiede `expo-blur`, una
-build.
+(«Messages, 3 waiting») e quella sullo schermo come selezionata.
+
+**Il vetro della barra** (TASK-469 A1, ADR-0383, «Capsula»; prima era
+`background` al 95% attaccata in basso): la barra è una capsula di vetro
+che galleggia, staccata di `space.lg` dai lati e alzata sopra l'indicatore
+home (a 8 pt dal bordo dove non c'è). Il vetro è il fondo del tono velato
+all'88% (`glass` in `tokens.ts`, `src/ui/Glass.tsx`), con un filo di luce
+in cima, un bordo sottile e un'ombra morbida: senza blur si riconosce da
+questi, non dalla trasparenza, ed è il prezzo dei 4,5:1 sopra una foto
+bianca o nera. La capsula della scheda attiva è il testo al 12%; le icone
+spente sono `textMuted`. Con «Riduci trasparenza» la barra è `surface`
+opaca, con «Aumenta contrasto» opaca col bordo `borderStrong`. La fascia
+sotto la barra resta alta quanto prima: le pagine non ci passano sotto. Il
+vetro vero (`expo-glass-effect`) è la parte B, in una build dopo la 1.1.0.
 
 **Il movimento della barra** (TASK-388, ADR-0329): dietro la scheda attiva
 una capsula morbida (`surfaceRaised`) che scivola alla nuova con la molla
@@ -620,6 +631,15 @@ molla; quella che prende la scheda sale di 1,5 pt e passa dal contorno al
 pieno in dissolvenza. Una vibrazione leggera solo quando un tocco cambia scheda. Con
 «Riduci movimento» la capsula compare in dissolvenza dove va, le icone
 solo sfumano.
+
+**I segmenti che scivolano** (TASK-469 A2, `src/screens/Segmented.tsx`):
+la scelta fra due o tre (la partenza, forma o parola) è una pillola sola,
+`surfaceRaised` col bordo `borderStrong`, che scivola sotto la nuova con la
+stessa molla `glide` della barra e si ferma senza superarla; un tocco
+mentre viaggia la manda avanti da dov'è. Le parole stanno sopra e restano
+leggibili; quelle lunghe vanno a capo. Con «Riduci movimento» la pillola
+compare in dissolvenza dove va. Gli altri segmenti (`FeedTabs`,
+`ExploreTools`, `PlayTabs`) seguono con A3.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce

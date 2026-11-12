@@ -252,10 +252,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   min), D (mattino), C (palestra, dopo 461 A2 e 465), E (routine
   pubblicate). File: — · `tasks/TASK-466.md`
 
-- **TASK-469 — Il look Liquid Glass** (ADR-0383) · parte 0 fatta, l'utente
-  ha scelto «Capsula». Poi A in fette via OTA, dopo l'aggiornamento
-  completo; B nativa dopo la 1.1.0. File: — ·
-  `tasks/TASK-469.md`
+- **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
+  vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
+  l'OTA 14 (2026-11-12). Prossima A3, lista dei file al Coordinatore prima
+  del codice; B nativa dopo la 1.1.0. File: — · `tasks/TASK-469.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

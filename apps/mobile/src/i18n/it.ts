@@ -2888,4 +2888,12 @@ export const IT: Table = {
   "Before you climb": "Prima di salire",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW registra la tua salita e la condivide: non ti guida. Vai con la tua attrezzatura, la tua esperienza e il tuo giudizio, e controlla le condizioni prima di partire.",
+  // src/liveShare/ (TASK-468 part B2a: the «Live» row, «Live in the Feed»,
+  // the stop of a share without a link; en and it approved 2026-11-12)
+  "Live in the Feed": "Live nel Feed",
+  "Who can follow": "Chi può seguirti",
+  "Remind me": "Avvisami",
+  "We'll notify you when it starts.": "Ti avvisiamo quando parte.",
+  "Nobody can follow you any more.": "Nessuno potrà più seguirti.",
+  "Live · {day} {time} · {title}": "Live · {day} {time} · {title}",
 };

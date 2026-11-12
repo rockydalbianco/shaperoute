@@ -1,4 +1,9 @@
-import type { LiveShareSent, LiveStats, RunActivity } from "@shaperoute/shared-types";
+import type {
+  LiveAudience,
+  LiveShareSent,
+  LiveStats,
+  RunActivity,
+} from "@shaperoute/shared-types";
 import { useSyncExternalStore } from "react";
 
 import { emptyTrack, MAX_ACCURACY_M, type Track } from "../navigation/trackRecorder";
@@ -9,6 +14,7 @@ import {
   makeLiveLink,
   sendLiveShareTo,
   sendLiveUpdate,
+  setLiveAudience,
   stopLiveShareRequest,
 } from "./liveShareApi";
 import { type LiveEnd, LiveSharer } from "./liveSharer";
@@ -118,7 +124,7 @@ export async function startLiveShare(
   poolLengthM: number | null = null,
   /** TASK-468 part B1: without its link, for the chat only; the heart rate
    * to the viewers in the app (off unless turned on). */
-  choice: { link?: boolean; heartVisible?: boolean } = {},
+  choice: { link?: boolean; heartVisible?: boolean; audience?: LiveAudience } = {},
 ): Promise<StartOutcome> {
   if (status.kind !== "off") {
     return { kind: "busy" };
@@ -130,6 +136,9 @@ export async function startLiveShare(
     ...(poolLengthM === null ? {} : { pool_length_m: poolLengthM }),
     ...(choice.link === false ? { link: false } : {}),
     ...(choice.heartVisible === true ? { heart_visible: true } : {}),
+    ...(choice.audience !== undefined && choice.audience !== "none"
+      ? { audience_feed: choice.audience }
+      : {}),
   };
   const answer =
     choice.link === false
@@ -195,6 +204,17 @@ export async function liveShareLink(): Promise<string | null> {
   }
   put({ kind: "sharing", id, url: answer.value.url });
   return answer.value.url;
+}
+
+/** «Live in the Feed» while a share is on (TASK-468 part B2a): who sees it
+ * there; false when it could not be changed. */
+export async function liveInFeed(audience: LiveAudience): Promise<boolean> {
+  const api = sharing;
+  if (status.kind !== "sharing" || api === null) {
+    return false;
+  }
+  const answer = await setLiveAudience(api, status.id, audience);
+  return answer.kind === "ok";
 }
 
 /** «Send in MuW» (TASK-468 part B1): the share in a message to each

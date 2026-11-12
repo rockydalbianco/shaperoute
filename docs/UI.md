@@ -3818,6 +3818,23 @@ cui tiene i numeri.
   «[Live]». La schermata dal vivo è un `Modal` a tutto schermo come
   `MediaViewer`: lo scorrimento fra le schede non parte sotto di lei e il
   gesto dal bordo sinistro (ADR-0384) non fa nulla; si chiude con «Close».
+- **La fila «Live» del Feed e «Live in the Feed»** (TASK-468 parte B2a,
+  ADR-0381; testi approvati il 2026-11-12). In «All», sotto la scheda del
+  concorso, con un account: al più 5 schede una sopra l'altra (una fila che
+  scorre di lato litigherebbe con lo scorrimento fra le schede del Feed),
+  solo le proprie live e quelle di chi si segue (scelta 7), prima quelle in
+  corso. Una live in corso: il nome con un pallino rosso e «LIVE · {sport} ·
+  {distance}» (o «Finished · …» nell'ora del riepilogo); il tocco apre la
+  schermata dal vivo. Una programmata: «Live · {day} {time} · {title}» e,
+  se non è propria, «Remind me» (pieno quando chiesto; «We'll notify you
+  when it starts.» per VoiceOver). Si rilegge ogni minuto (`GET /lives`).
+  Nel foglio di «Share live», sotto «Send in MuW», «Live in the Feed»: un
+  avviso «Who can follow» con «Followers» · «Everyone» · «Not now», poi la
+  condivisione senza link per il Feed (nessun foglio delle persone). Lo
+  stesso nel menu di «Sharing live», che cambia chi la vede (`PATCH`).
+  Fermare una condivisione senza link chiede «Stop sharing?» con «Nobody
+  can follow you any more.» (scelta 8); con un link resta «The link stops
+  working now.».
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,

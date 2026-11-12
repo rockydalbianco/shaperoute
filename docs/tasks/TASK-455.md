@@ -129,8 +129,24 @@ senza mostrarlo a chi non potrebbe vederlo.
 | Impostazioni, interruttore (acceso all'inizio) | «Links to my posts» · «People who see your «Everyone» posts can share a link to them. Anyone with the link sees the drawing on the map, your username and the distance, even without MuW. Turn this off and the links stop working.» |
 | Pagina web | «{user} drew this on MuW» · «Get MuW» · «This drawing is no longer available.» |
 
-Da approvare ancora: il paragrafo della privacy (parte E) e la riga delle
-novità.
+**La frase della privacy, approvata il 2026-11-12 («Approvo così»)**, da
+aggiungere dopo quella su «Everyone» e «Followers», nell'app e sul sito
+(traduzioni dell'agente):
+
+> A post for «Everyone» can also be opened with a link. You, or any member
+> who sees the post, can share its link, and whoever has the link sees the
+> drawing on the map, your username, the title and the distance on a web
+> page, even without MuW: never your photos, the comments or your times.
+> Search engines are asked not to list these pages. Turn off «Links to my
+> posts» in Settings and no link to your posts works any more. A post for
+> «Followers» or «Only me» never has a link.
+
+**Le novità, scelta dell'utente del 2026-11-12: «Solo privacy e App
+Store».** Nessun avviso dentro l'app (oggi non ha un posto per le novità):
+la frase della privacy, e nelle note di versione dello store alla prossima
+build «Share a post: send it to a friend or share its link. Links to your
+«Everyone» posts are on; turn them off in Settings.» (La proposta era un
+foglietto nell'app, una volta.)
 
 ## Le parti (proposta dell'agente; il server prima dell'app)
 
@@ -468,3 +484,7 @@ Le altre parti scrivono i loro criteri quando partono.
   vuol dire nessun link»). Lista dei file della parte C mandata al
   Coordinatore; frase della privacy e avviso nelle novità proposti
   all'utente.
+- 2026-11-12: frase della privacy approvata («Approvo così») e scelta
+  sulle novità («Solo privacy e App Store»): testi sopra, in «I testi
+  approvati». Con questo le due cose chieste prima del passo sul server
+  della parte C hanno il sì dell'utente.

@@ -131,6 +131,11 @@ site/privacy/**/index.html                           (rigenerate con make_privac
       foglio; «✕» chiude (test).
 - [x] «My activities» come prima (`AddPastActivity.test.tsx` verde).
 - [x] `tsc` e jest dei file toccati verdi.
-- [ ] Schermate dal simulatore e testo «Add activity» approvati
-      dall'utente.
-- [ ] CI verde, «#NNNN pronta» al Coordinatore.
+- [x] Schermate dal simulatore e testo «Add activity» approvati
+      dall'utente il 2026-11-12 («Approvo»): prova completa su iPhone 18
+      Pro con Expo Go e un'API locale (post salvato `everyone`, fonte
+      `file`); il foglio ha preso lo stile dei fogli dell'app.
+- [ ] CI verde, «#1284 pronta» al Coordinatore.
+
+Nota a margine, fuori da questo task: la scheda del Feed (`FeedPost`) non
+mostra «Imported», solo `DrawingCard` sulla mappa.

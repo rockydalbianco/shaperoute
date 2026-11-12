@@ -18,9 +18,6 @@ export const REACTION_EMOJI: Readonly<Record<EmojiKind, string>> = {
   wow: "😮",
 };
 
-/** On the button of who left no reaction yet. */
-export const NO_REACTION_FACE = "🙂";
-
 /** How many of the most used show under a drawing. */
 export const TOP_SHOWN = 3;
 

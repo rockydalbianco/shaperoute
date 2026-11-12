@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
+import { isFlight } from "../air/flight";
 import { RunGameLine, useRunGameStrip } from "../game/RunGameStrip";
 import { t, tLater } from "../i18n";
 import { LiveShareButton } from "../liveShare/LiveShareButton";
@@ -147,7 +148,8 @@ export function RunCard({
   const paused = openPause(track) !== null;
   // «Share live» (TASK-424 part B1): the numbers go to the live link, when
   // the runner made one; the end of this screen ends it.
-  useLiveShareFeed(track, numbers.energy, bpm, paused);
+  // A flight sends the numbers of the air too (TASK-305 part R2).
+  useLiveShareFeed(track, numbers.energy, bpm, paused, isFlight(sport));
   const share = (
     <LiveShareButton canStart={live && !arrived} fetchFn={fetchFn} apiKey={apiKey} />
   );

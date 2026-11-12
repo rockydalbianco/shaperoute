@@ -91,6 +91,7 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "ski",
     "skimo",
     "gym",
+    "paragliding",
   ]);
   expect(canChoose("run")).toBe(true);
   expect(canChoose("bike")).toBe(true);
@@ -110,20 +111,21 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
   expect(canChoose("golf")).toBe(false);
 });
 
-test("«Paragliding» comes last, only «Soon»: never chosen, never a route (TASK-305 D0)", () => {
+test("«Paragliding» comes last, recorded without a shape since TASK-305 R2", () => {
   expect(SPORTS.at(-1)).toEqual({
     id: "paragliding",
     emoji: "🪂",
     name: "Paragliding",
-    ready: false,
+    ready: true,
+    recordOnly: true,
   });
-  expect(canChoose("paragliding")).toBe(false);
-  // A phone that somehow kept it reads it as run, as any sport not ready.
+  expect(canChoose("paragliding")).toBe(true);
   saveSport("paragliding");
-  expect(loadSport()).toBe("run");
-  // Wherever the sports are told apart, it goes as a run.
+  expect(loadSport()).toBe("paragliding");
+  // Saved as a flight; no route is asked: «Draw» asks a run, never shown.
+  expect(runActivityOf("paragliding")).toBe("paragliding");
   expect(activityOf("paragliding")).toBe("running");
-  expect(withoutRouteLabel("paragliding")).toBe("Run without a route");
+  expect(withoutRouteLabel("paragliding")).toBe("Record your flight");
 });
 
 test("«Swim» 🏊 comes after «Paddle», on since the server swims (TASK-323)", () => {

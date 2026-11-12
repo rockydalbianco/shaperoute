@@ -15,13 +15,15 @@ ADR-0385 (#1286, entrata con la #1289).
   `SHAPEROUTE_OVERPASS_FALLBACK_URL=https://overpass.private.coffee/api`
   e il contenitore dell'API ricreato; lettura di controllo in «Accendere
   il secondo servizio».
-- **Due letture non ancora fatte dopo il passo 12** (punti 1 e 2 di «Dopo
-  il passo sul server»): un job `done` dopo le 16:56Z, cioè una riga
-  `times total` nel log (dice che thread e processo di calcolo si parlano
-  col messaggio nuovo; in CI lo prova un processo vero), e
-  `out/TASK-471/check_once.py`. Lette al passo: server a `eee85a69`,
-  `fallback_url()` = `None`, health 200, nessun Traceback
-  (`out/coordinatore/passo12/remote.out`).
+- **Letture dopo il passo 12** (`out/coordinatore/passo12/remote.out` e
+  `check-471.out`): server a `eee85a69`, `fallback_url()` = `None`,
+  health 200, nessun Traceback; `check_once.py` nel contenitore dà
+  «downloads tried: 1 (expected 1)». Dopo le 16:56Z ci sono 8 righe
+  `times total`, tutte di richieste di prova delle ciaspole finite «no
+  open snow» (`loads=0`): passano dal processo di calcolo, quindi il
+  messaggio nuovo fra thread e processo arriva e torna. **Non ancora
+  visto**: un job su strada `done` dopo il passo, con i campi del piano;
+  lo aggiunge il Coordinatore quando ne vede uno.
 - Da riprendere solo se i log lo chiedono: le scelte (e) e (d) qui sotto.
 **Fase**: 5 · **Branch**: `fix/TASK-471-map-unavailable-once` (#1251),
 `fix/TASK-471-b-overpass-pause` (parte B) ·

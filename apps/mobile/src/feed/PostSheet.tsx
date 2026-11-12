@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, type Ref, useMemo, useState } from "react";
 import { Animated, PanResponder, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
@@ -7,6 +7,7 @@ import { Tap } from "../ui/Tap";
 import { useReduceMotion } from "../ui/useReduceMotion";
 import type { ShownPost } from "./feedPosts";
 import { PostActions } from "./PostActions";
+import type { PostReactionsHandle } from "./PostReactions";
 
 /** How far a drag must go, in points, to open or close the sheet. */
 const DRAG_TO_TOGGLE = 40;
@@ -21,6 +22,9 @@ type Props = {
   settings?: ReactNode;
   /** How far the phone's bottom edge reaches into the screen. */
   insetBottom: number;
+  /** For the picture of the page, above the bar: two taps on it are the
+   * super like (TASK-454 part B). */
+  reactionsHandle?: Ref<PostReactionsHandle>;
 };
 
 /**
@@ -32,7 +36,14 @@ type Props = {
  * down closes them. React Native's `Animated` and `PanResponder`: no
  * library.
  */
-export function PostSheet({ post, mine, onEditRun, settings, insetBottom }: Props) {
+export function PostSheet({
+  post,
+  mine,
+  onEditRun,
+  settings,
+  insetBottom,
+  reactionsHandle,
+}: Props) {
   const [open, setOpen] = useState(false);
   const still = useReduceMotion();
   const openable = mine && settings !== undefined;
@@ -89,7 +100,12 @@ export function PostSheet({ post, mine, onEditRun, settings, insetBottom }: Prop
           <View style={styles.handle} />
         </View>
       )}
-      <PostActions post={post} mine={mine} onEditRun={onEditRun} />
+      <PostActions
+        post={post}
+        mine={mine}
+        onEditRun={onEditRun}
+        reactionsHandle={reactionsHandle}
+      />
       {open && openable && (
         <View style={styles.settings} testID="post-settings">
           <Text style={styles.heading} accessibilityRole="header">

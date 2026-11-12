@@ -264,9 +264,17 @@ Criteri di accettazione (C1):
 
 **Stato**: codice e test scritti il 2026-11-12 sul branch
 `feat/TASK-454-c2-comment-replies` (da `main` a `29221702`, senza
-dipendere dalla #1195) · PR #1199 in bozza: mancano gli screenshot dal
-simulatore (turno dal Coordinatore) col sì dell'utente e la frase della
-privacy. Testi nuovi e traduzioni approvati.
+dipendere dalla #1195) · PR #1199: provata nel simulatore il 2026-11-12
+(iPhone 17e, API locale di `main` con C1), schermate approvate dall'utente
+(«Sì, approvo», 2026-11-12), testi nuovi e traduzioni approvati. Entra dopo
+la #1195, con `main` unito; la frase della privacy è nella #1200.
+
+Schermate in `out/TASK-454/` del checkout principale:
+`TASK-454-5-commenti.jpg` (l'elenco piatto di prima; le risposte sotto il
+loro commento, «@nome», «View 1 more reply»; tutte le risposte) e
+`-6-commenti-azioni.jpg` (le cinque emoji al posto della riga, «Replying
+to…» con la ✕, la risposta mandata sotto il suo commento). Nel simulatore
+niente da correggere.
 
 Scelta 5 dell'utente. Il modo è **deciso dall'agente su delega
 dell'utente** (dentro ADR-0377, nessun ADR nuovo):
@@ -333,8 +341,8 @@ Criteri di accettazione (C2):
       di MuW; la riga non cambia altezza scegliendo.
 - [x] Con un'API o una porta di prima i commenti sono com'erano.
 - [x] Testi nuovi e traduzioni col sì dell'utente (2026-11-12).
-- [ ] Screenshot dal simulatore in `out/TASK-454/` col sì dell'utente.
-- [ ] Frase della privacy col sì dell'utente (file a turno).
+- [x] Screenshot dal simulatore in `out/TASK-454/` col sì dell'utente (2026-11-12).
+- [x] Frase della privacy col sì dell'utente (2026-11-12): nella #1200, con le traduzioni.
 
 Test in locale (2026-11-12): `src/social` intera, `api/comments`, i vicini
 (`PostActions`, `PostPage`, `importedMarks`, `cardsInMiles`) e `i18n`: 63

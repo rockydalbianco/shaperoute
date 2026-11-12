@@ -113,6 +113,10 @@ Coordinatore il 2026-11-12)_
    le giunture erano tutte a dimensione zero. Ora ogni giuntura è un
    quadrato di 2 pt attorno al suo punto (`JOINT` in `Figure.tsx`); la
    figura è la stessa. Deciso dall'agente su delega dell'utente.
+   **Il difetto è in produzione**: la #1181 è uscita con l'aggiornamento
+   completo del 12 novembre (OTA 12); la correzione esce col primo OTA
+   dopo il merge della #1216. Prima e dopo in
+   `out/TASK-466/b/TASK-466-b-3-prima-dopo.jpg`.
 5. **«Child's pose» dentro lo schermo**: le braccia lunghe arrivavano a
    0,60 dell'altezza davanti all'anca, più di mezzo telefono da 390 pt.
    Una posa che va oltre `REACH` (0,46) fa scivolare indietro tutta la
@@ -255,9 +259,9 @@ La prima sessione si è archiviata qui; chi riprende parte da questo file.
   `main` unito e schermate fatte il 2026-11-12 pomeriggio da una
   sessione nuova (`out/TASK-466/b/`; punti 4 e 5 qui sopra). Manca il sì
   dell'utente sulle schermate, poi togliere la bozza e «#1216 pronta»
-  con lo SHA. Ricetta del simulatore (un file di prova che monta la
-  schermata come `App.tsx`, cioè la smonta all'uscita: è così che si
-  vede il difetto del punto 4). Ricetta che ha funzionato per A: `metro.config.js` non tracciato con
+  con lo SHA. Nella prova il file che monta la schermata deve smontarla
+  all'uscita, come fa `App.tsx`: è alla seconda apertura che si vede il
+  difetto del punto 4. Ricetta che ha funzionato per A: `metro.config.js` non tracciato con
   `watchFolders` sul `node_modules` del checkout principale, un
   `index.ts` temporaneo che monta la schermata, Metro con `CI=1` su una
   porta propria, iPhone 17e con Expo Go; alla fine tutto via e

@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A in `main` e sul server (1261); parte B1 (parole a penna alzata, 1546): server in `main` (#1184), app nella #1185; sul server e in OTA insieme nell'aggiornamento completo; poi B2
+**Stato**: In lavorazione — A sul server (1261); B1 (parole a penna alzata, 1546) tutta in `main` (#1184, #1185), esce con l'aggiornamento completo; **B2 (bici fino a 30 km) in lavorazione**: strumento e API scritti, giro dei disegni in corso
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -48,7 +48,8 @@ non tracciato).
 | A1 | i 776 già disegnati che passano il filtro | catalogo | passo «catalogo» sul server |
 | A2 | parole corte (2–4 lettere) su una riga nelle 63 città, la migliore dei due stili | `tools/`, catalogo | come A1, stessa PR |
 | B1 | `walks` nel catalogo: le parole a penna alzata, fino a 6 lettere, solo quelle che si leggono; due PR, prima il server poi l'app | API, esempi condivisi, `tools/`, catalogo; poi app | server, poi OTA |
-| B2 | `activity` nel catalogo: bici 30–50 km, canoa e nuoto | API, app, `tools/` | server, poi OTA |
+| B2 | `activity` nel catalogo: **solo bici, 20–30 km** (scelta dell'utente del 2026-11-12); due PR, prima il server poi l'app | API, esempi condivisi, `tools/`, catalogo; poi app | server, poi OTA |
+| B3 | bici a 40–50 km: il limite del motore da 30 a 50 km e le zone bici grandi | `services/route-engine`, contratto, app | **da chiedere al Coordinatore** (PR del motore, dell'utente) |
 | C | motore: spazio nelle frasi, cifre, forme nuove a tema, i 35 contorni in attesa | `services/route-engine` | **task e ADR a parte**, da chiedere al Coordinatore |
 
 ## Parte A — cosa fare
@@ -167,6 +168,11 @@ docs/tasks/TASK-441.md            (nuovo)
   server dopo la #1155 con 1261 «si va bene»; parte B e le 55 parole di
   prima da rifare a penna alzata «si procedi e ifalle».
 - 2026-11-11, vista la pagina di prova: «Sì, rifai il giro».
+- 2026-11-12, «Sì, così»: la B2 è **solo bici, subito fino a 30 km**, e i
+  40–50 km un passo a parte. Canoa e nuoto non entrano nel catalogo: con
+  lo sport «Paddle» o «Open water swim» «Explore» mostra già laghi e
+  spiagge con otto forme l'uno. I disegni in bici si vedono quando lo
+  sport è «Bike».
 - 2026-11-12, «Sì, vanno bene»: le 340 parole a penna alzata entrano nel
   catalogo. Viste le due pagine (`parole-che-entrano.html`,
   `parole-scartate.html`) e il campione grande (`campione-grande.html`:
@@ -313,7 +319,101 @@ apps/mobile/src/route/NearYou.tsx
       dell'utente per ognuno, dal Coordinatore). Controlli di sola lettura
       per dopo il passo: `out/TASK-441/SERVER-B1.md` (checkout principale).
 
+## Parte B2 — i disegni in bici (ADR-0366)
+
+**Cosa c'era** (`main` di 2026-11-12): con lo sport «Paddle» o «Open water
+swim» «Explore» è `PaddleExplore` (760 laghi e 67 spiagge, otto forme
+l'uno; sull'acqua la forma è appoggiata, somiglianza sempre 1): niente da
+aggiungere dal catalogo. Con «Bike» mostra il catalogo a piedi (5–21 km) e
+le tre idee di «RIDE IT YOURSELF». Il motore disegna in bici da 10 a 30 km
+(`activities/cycling.py`).
+
+**La prova** (`out/TASK-441/b2/`, checkout principale): a 25–30 km dalle
+zone bici in cache Milano, Trento e Barcellona danno 0,94–0,97 in dieci
+secondi a disegno. A 40 e 50 km (solo a Mantova, col limite tolto nello
+script di prova e una zona scaricata apposta): cuore 0,92 e 0,90, stella
+0,95 e 0,94, cerchio 0,77 e 0,92. Una richiesta di 30 km vuole una zona di
+22,7 km di lato, una di 40 km 29,5, una di 50 km 36,5. L'utente: «Sì,
+così» (sopra).
+
+**Cosa cambia**:
+
+- `tools/catalog_bike.py` (nuovo): dodici forme per città (`SHAPES`: le
+  sette di base più cavallo, gatto, pesce, lumaca, testa di cane), una
+  distanza a forma fra 30, 25 e 20 km a turno, sulla rete bici
+  (`OsmnxSource.for_activity`), dalla piazza delle stesse 63 città. Chiave
+  `città/forma@cycling/distanza`. Filtro: `catalog_seed.reasons` com'è.
+  `--plan`, `--run [--downloads N]`, `--page [--whole]`, `--propose`,
+  `--write` (legge i quattro registri).
+- `tools/catalog_seed.py`: `_route_body` scrive `activity` quando la riga
+  lo ha; `city_files` mette le uscite in bici **in fondo** al file della
+  città, così un percorso a piedi tiene il posto e quindi l'id. Prova:
+  `--write` dai registri di prima dà 63 file identici byte per byte a
+  `catalog/seed` di `main` (sha256 dei file in fila `792e815e52dccb22`).
+- API (`recommended.py`, `app.py`): un percorso del seme dice `activity`
+  (una corsa quando non lo dice). `GET /recommended-routes` e `GET
+  /catalog` prendono `activity` (senza: le corse, come prima);
+  `RecommendedCatalog.routes` resta «solo le corse», le uscite stanno in
+  `others`: `best_routes.py` e ogni lista senza parametro non vedono mai
+  una bici. `activity` manca dalla risposta di una corsa, che resta
+  identica. Esempi nuovi: `recommended-routes-bike.json`,
+  `recommended-route-bike.json`.
+
+**Il giro**: Milano dalla zona in cache, 12 su 12 passano (0,93–1,00). Le
+altre 62 città con `zsh out/TASK-441/b2/run-bike.sh` (checkout principale):
+una città alla volta, una zona bici a città da Overpass, le piccole prima;
+si ferma da solo se una città supera 25 minuti o 2 GB (limiti del
+Coordinatore) o se Overpass non dà una zona per un'ora; rilanciato,
+riprende dalla città dov'era. Registro `out/TASK-441/bike.jsonl`.
+
+**L'app** (PR dopo il server; `App.tsx` dopo il via del Coordinatore): con
+lo sport «Bike», «Explore» chiede le liste con `activity=cycling`.
+
+### File toccati (B2, PR del server)
+
+```
+tools/catalog_bike.py, tools/test_catalog_bike.py       (nuovi)
+tools/catalog_seed.py                                   (`activity`, le uscite in fondo)
+tools/catalog_kept.json, catalog/seed/<città>.json, catalog/README.md
+services/api/shaperoute_api/recommended.py, services/api/tests/test_recommended.py
+services/api/shaperoute_api/app.py                      (il parametro `activity` sulle due rotte)
+services/api/tests/fixtures/catalog_bike/trento.json    (nuovo)
+packages/shared-types/fixtures/recommended-routes-bike.json, recommended-route-bike.json  (nuovi)
+docs/tasks/TASK-441.md
+```
+
+### File toccati (B2, PR dell'app)
+
+```
+apps/mobile/src/explore/recommendedRoutes.ts, ExploreScreen.tsx
+apps/mobile/src/route/NearYou.tsx
+apps/mobile/App.tsx                                     (lo sport a ExploreScreen; dopo TASK-457)
+```
+
+### Criteri di accettazione (B2)
+
+- [x] Test deterministici: strumento (14), API (`test_recommended.py`).
+- [x] I file di oggi identici byte per byte con le righe nuove.
+- [ ] Giro finito nelle 63 città.
+- [ ] Campione grande all'utente per lunghezza (20, 25, 30 km) e il suo sì
+      **prima del merge**.
+- [ ] `catalog/seed` riscritto, `catalog/README.md`, controlli di sola
+      lettura in `out/TASK-441/SERVER-B2.md`.
+- [ ] CI verde, merge del Coordinatore; `app.py` reso al Coordinatore.
+- [ ] PR dell'app, OTA (sì dell'utente).
+
 ## Dove siamo
+
+*2026-11-12, B2*: branch `feat/TASK-441-b2-bike` (worktree
+`.claude/worktrees/TASK-441-b2`), pubblicato senza PR: strumento e API.
+Il giro delle 62 città aspetta Overpass (pieno dalle 10:30). **Da fare
+quando finisce**: `catalog_bike.py --page` (campione grande) → sì
+dell'utente → `--propose` in `tools/catalog_kept.json` → `--write` coi
+registri del checkout principale (`--old-log out/TASK-419/runs.jsonl
+--words-log out/TASK-441/runs.jsonl --pen-up-log out/TASK-441/pen-up.jsonl
+--log out/TASK-441/bike.jsonl`) → `exploreCatalogEdit.test.ts` sul seme
+nuovo → README, `SERVER-B2.md`, PR. `docs/API.md` (il parametro) nella PR
+di soli documenti dopo il merge.
 
 *2026-11-12*: **il server della B1 è in `main`** (#1184), entrato col sì
 dell'utente alle 340 parole; l'app è la #1185. In produzione non c'è

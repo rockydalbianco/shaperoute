@@ -1,6 +1,6 @@
 # TASK-469 — Il look Liquid Glass
 
-**Stato**: In corso (parte 0: scelta della direzione)
+**Stato**: In corso (parte 0 fatta: «Capsula»; A aspetta l'aggiornamento completo)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: `docs/TASK-469-liquid-glass`
 (questo file), poi `feat/TASK-469-a1-glass-tokens` e le fette seguenti
 
@@ -27,8 +27,8 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
   di vetro dentro la foto), **Lastra** (barra attaccata in basso con gli
   angoli alti arrotondati, card a due superfici, vetro solo su barra e
   header), **Luce** (profilo in un cerchio di vetro a parte, alone sulla
-  scheda attiva, chip e righe di vetro staccate). Proposta dell'agente:
-  Capsula. Nessun codice prima della risposta.
+  scheda attiva, chip e righe di vetro staccate). **Scelta dell'utente
+  (2026-11-12): «Capsula».**
 - **A — Vetro senza dipendenze, via OTA**, in fette piccole, ognuna una PR
   da `main`, **dopo l'aggiornamento completo** e col sì del Coordinatore
   sulla lista dei file prima del codice:
@@ -104,7 +104,7 @@ diverso per lato: la parte A non chiede niente di nativo.
 
 ## File toccati
 
-Questa PR: `docs/tasks/TASK-469.md`, `docs/STATUS.md`.
+Questa PR: `docs/tasks/TASK-469.md`, `docs/STATUS.md`, `docs/DECISIONS.md`.
 La lista di ogni fetta di A va al Coordinatore prima del codice.
 
 ## Fuori scope
@@ -118,7 +118,9 @@ La lista di ogni fetta di A va al Coordinatore prima del codice.
 ## Cronologia
 
 - **2026-11-12**: numeri dal Coordinatore (TASK-469, ADR-0383); tre
-  direzioni pubblicate; si aspetta la scelta dell'utente.
+  direzioni pubblicate; l'utente sceglie «Capsula» (ADR-0383). A1 parte
+  da `main` dopo l'aggiornamento completo, col sì del Coordinatore sulla
+  lista dei file.
 
 ## Schermate prima/dopo
 

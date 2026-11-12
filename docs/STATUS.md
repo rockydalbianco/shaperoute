@@ -216,9 +216,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   scelto dal minimo disponibile dopo qualche giorno. File: — ·
   `tasks/TASK-464.md`
 
-- **TASK-469 — Il look Liquid Glass** (ADR-0383) · parte 0: tre direzioni
-  pubblicate, aspetta la scelta dell'utente. Poi A in fette via OTA, dopo
-  l'aggiornamento completo; B nativa dopo la 1.1.0. File: — ·
+- **TASK-469 — Il look Liquid Glass** (ADR-0383) · parte 0 fatta, l'utente
+  ha scelto «Capsula». Poi A in fette via OTA, dopo l'aggiornamento
+  completo; B nativa dopo la 1.1.0. File: — ·
   `tasks/TASK-469.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero

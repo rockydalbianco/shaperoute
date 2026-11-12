@@ -226,11 +226,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
   scelto dal minimo disponibile dopo qualche giorno. File: — ·
   `tasks/TASK-464.md`
-- **TASK-455 — Condividere il disegno di un'altra persona** · B0 (niente
-  copia dei disegni «Followers» altrui) in `main` (#1220) e nell'uscita del
-  2026-11-12; A (server: il post in un messaggio, ADR-0382, migrazione
-  `0074`) in `main` (#1230): manca il passo sul server, col sì dell'utente.
-  Prossima B (app), poi C–E il link. File: — · `tasks/TASK-455.md`
+- **TASK-455 — Condividere il disegno di un'altra persona** · B0, A
+  (server, passo 11, migrazione `0074`) e B (app, #1255, OTA 15) fatte e in
+  produzione il 2026-11-12: «Share» su ogni post, il post in chat come
+  rimando (ADR-0382). Resta la prova dell'utente sul telefono. Prossima C
+  (server: link e interruttore), poi D sito, E app. File: — · `tasks/TASK-455.md`
 
 - **TASK-466 — Lo stretching nuovo** · A (la figura che respira, si
   rialza e si gira, «Get ready», tick, «Skip») in `main` (#1181,
@@ -240,13 +240,26 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
-  l'OTA 14 (2026-11-12). Prossima A3, lista dei file al Coordinatore prima
-  del codice; B nativa dopo la 1.1.0. File: — · `tasks/TASK-469.md`
+  l'OTA 14; A3 pista di vetro (#1276) in `main`, col prossimo OTA. Prossima
+  i chip, lista al Coordinatore prima del codice; B dopo la 1.1.0. File: —
+  · `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);
   manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
   dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
+
+- **TASK-471 — Overpass in errore: rispondere prima** (ADR-0385) · in
+  `main`: un download fallito per job (#1251), 5 s invece di 60 e il secondo
+  servizio spento (#1269), le frasi dell'app e della privacy (#1259, #1263,
+  OTA 14). Restano, col sì dell'utente: passo sul server, copia del sito,
+  accensione del secondo servizio. File: — · `tasks/TASK-471.md`
+
+- **TASK-461 — Il pianificatore completo** (ADR-0371) · A1 e B1 (server:
+  quattro esercizi, giorni fuori `outing`, `target`) in `main` e sul server;
+  B2a (settimane verso una meta) e A2 (ingresso «Cosa vuoi allenare?», corpo
+  libero) in `main` (#1196, #1208), A2 esce col prossimo OTA. Prossime B2b/C2
+  (distanza e montagna nell'app). File: — · `tasks/TASK-461.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

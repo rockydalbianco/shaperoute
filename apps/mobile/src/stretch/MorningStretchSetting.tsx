@@ -212,7 +212,7 @@ function Page({
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>{t("Days")}</Text>
-          <View style={styles.choices}>
+          <View style={styles.week}>
             {WEEK.map((day) => {
               const chosen = setting.days.includes(day);
               return (
@@ -455,10 +455,15 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     backgroundColor: color.surface,
   },
+  // The seven days on one row, each as wide as the others.
+  week: {
+    flexDirection: "row",
+    gap: space.xs,
+  },
   day: {
-    minWidth: MIN_TAP_SIZE + space.sm,
+    flex: 1,
     alignItems: "center",
-    paddingHorizontal: space.sm,
+    paddingHorizontal: 0,
   },
   chosen: {
     borderColor: color.borderStrong,

@@ -248,9 +248,14 @@ c'erano già.
 - [x] Sì dell'utente sui testi nuovi e sulle traduzioni (2026-11-12,
       «Sì, approvo»: la frase della pagina, «Alarm time», «Length»,
       «Hour», «Minutes» e le traduzioni dei due testi della notifica).
-- [ ] Schermate dal simulatore, col turno del Coordinatore, e sì
-      dell'utente. La notifica vera (suona, apre l'app) si prova sul
-      telefono dopo l'OTA: in Expo Go non è la stessa cosa.
+- [x] Schermate dal simulatore, col turno del Coordinatore (2026-11-12,
+      iPhone 17e, Expo Go: `out/TASK-466/d/`, sette schermate: la riga
+      spenta e accesa, la pagina spenta e accesa, il permesso negato,
+      l'italiano). Nella prova i sette giorni sono passati su una riga
+      sola.
+- [ ] Sì dell'utente sulle schermate.
+- [ ] La notifica vera (suona, apre l'app, anche ad app chiusa) si prova
+      sul telefono dopo l'OTA: in Expo Go non è la stessa cosa.
 
 **File toccati (parte D)**
 

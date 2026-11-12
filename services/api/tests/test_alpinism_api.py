@@ -48,7 +48,7 @@ from shaperoute_api.strava import SPORT_TYPES
 
 REPO = Path(__file__).resolve().parents[3]
 CONTRACT = REPO / "packages" / "shared-types" / "fixtures"
-MIGRATION = "0075_alpinism.sql"
+MIGRATION = "0076_alpinism.sql"
 CLIMB = "alpinism"
 
 

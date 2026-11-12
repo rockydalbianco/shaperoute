@@ -91,6 +91,12 @@ test("a run's lists are asked with nothing, a ride's with its activity", () => {
   expect(activityParam()).toBe("");
   expect(activityParam("running")).toBe("");
   expect(activityParam("cycling")).toBe("&activity=cycling");
+  // A walk has no drawings of its own: a run's, as before.
+  expect(activityParam("walking")).toBe("");
+  expect(recommendedUrl(API, TRENTO, 5000, "walking")).toBe(
+    recommendedUrl(API, TRENTO),
+  );
+  expect(catalogUrl(API, TRENTO, 0, 40, "walking")).toBe(catalogUrl(API, TRENTO, 0));
   expect(recommendedUrl(API, TRENTO)).toBe(
     recommendedUrl(API, TRENTO, 5000, "running"),
   );

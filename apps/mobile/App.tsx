@@ -2034,6 +2034,7 @@ function MuW() {
                     <ExploreScreen
                       apiUrl={API_URL}
                       near={start?.point ?? null}
+                      activity={sportActivity}
                       onOpen={(route) => {
                         closeExplore();
                         openExplored(route);

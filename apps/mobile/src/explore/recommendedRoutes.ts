@@ -119,13 +119,17 @@ type Options = {
   activity?: Activity;
 };
 
+/** The activities the catalogue has drawings of its own for (TASK-441): a
+ * walk, like every other, is shown a run's, as ever. */
+const CATALOG_ACTIVITIES: readonly Activity[] = ["cycling"];
+
 /**
  * What a list is asked with for the drawings of `activity` (TASK-441): a
- * run's are asked as ever, with nothing, and an API that does not know the
- * word answers with those.
+ * ride's by its name, a run's as ever, with nothing, and an API that does
+ * not know the word answers with a run's.
  */
 export function activityParam(activity: Activity = "running"): string {
-  return activity === "running" ? "" : `&activity=${encodeURIComponent(activity)}`;
+  return CATALOG_ACTIVITIES.includes(activity) ? `&activity=${activity}` : "";
 }
 
 export function recommendedUrl(

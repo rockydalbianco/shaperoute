@@ -88,8 +88,8 @@ type Props = {
   /** An example of «Feed» found by the search at the top (TASK-367 part B);
    * left out, its route opens as a route of «Explore». */
   onOpenExample?: (post: SamplePost) => void;
-  /** Whose drawings the page lists (TASK-441): a ride's for the bike, a
-   * run's when left out. */
+  /** The sport's activity (TASK-441): a ride's drawings for the bike, a
+   * run's for every other and when left out. */
   activity?: Activity;
 };
 

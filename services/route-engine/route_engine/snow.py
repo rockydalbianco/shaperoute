@@ -31,18 +31,22 @@ cache miss.
 
 from __future__ import annotations
 
+import json
+import logging
 import math
+import urllib.parse
+import urllib.request
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
 import shapely
 from shapely.geometry.base import BaseGeometry
 
 from route_engine.errors import ShapeNotDrawableError
-from route_engine.geo import LatLon, local_to_latlon
+from route_engine.geo import EARTH_RADIUS_M, LatLon, local_to_latlon
 from route_engine.heights import Heights, SlopeGrid, slope_grid
 from route_engine.water import (
     EMPTY,
@@ -69,6 +73,8 @@ from route_engine.water_fit import (
     _outline_length,
     _reach,
 )
+
+log = logging.getLogger(__name__)
 
 # --- The rules (TASK-413, the user's choice 3 of 2026-11-08) ----------------
 
@@ -189,6 +195,30 @@ SNOW_QUERY = (
 )
 SNOW_TIMEOUT_S = 180
 
+# --- A town, said before the snow is read (TASK-413 part A3) ----------------
+
+# The town box: the square round the start where a shape may lie at all
+# (MOVE_MAX_M + APPROACH_MAX_M, and BOX_MARGIN_M), the same for every shape
+# and distance. The box of a request (snow_bbox) grows with the shape: for
+# a 3 km heart in a valley town it reaches the mountains round it, and the
+# town is no longer dense (Bolzano, the bench of A3).
+TOWN_HALF_M = MOVE_MAX_M + APPROACH_MAX_M + BOX_MARGIN_M
+# A town box with more buildings than this per km² is a town: no snow to
+# walk on there, said before its snow is downloaded and built (16-19 s for
+# Milano on the Mac, 76 s for Trento on the server the first time). Chosen
+# on the bench of part A3 (sports/snowshoes.md), on the cautious side: a
+# mountain village waits as before rather than hear a wrong «no». The
+# densest place with snow was Asiago (180), the towns Trento (350),
+# Belluno (345), Milano (700); Bolzano (207) and Aosta (247) are as dense
+# as a village and go on as before.
+BUILT_UP_PER_KM2 = 280.0
+# The buildings are counted by Overpass with a short time (the count is
+# small), or read from the snow when it is cached. A count that does not
+# come is no count: the request goes on as before.
+COUNT_QUERY = '[out:json][timeout:{timeout}];way["building"]({b});out count;'
+COUNT_TIMEOUT_S = 5
+COUNT_WAIT_S = 6.0
+
 
 class NoSnowError(ShapeNotDrawableError):
     """No snow one may walk on near the start: a town, a valley of woods, a
@@ -204,6 +234,15 @@ class SnowFitError(ShapeNotDrawableError):
 
 class SnowNotCachedError(LookupError):
     """No cached snow covers the area, and downloading was not allowed."""
+
+
+def no_snow_error() -> NoSnowError:
+    """The error of a start with no open snow near it, as one text."""
+    return NoSnowError(
+        f"there is no open snow to walk on within {MOVE_MAX_M / 1000:g} km "
+        "of here: off woods, pistes, rock, towns and slopes over "
+        f"{CHOSEN.max_slope_deg:g}°"
+    )
 
 
 # --- Elements ---------------------------------------------------------------
@@ -308,6 +347,14 @@ class SnowSource(Protocol):
     def elements(self, bbox: BBox) -> list[Element]: ...
 
 
+@runtime_checkable
+class CountsBuildings(Protocol):
+    """A snow source that can say how many buildings an area has before its
+    snow is read: None when it cannot say (TASK-413 A3)."""
+
+    def buildings(self, bbox: BBox) -> int | None: ...
+
+
 class FileSnowSource:
     """Snow read from one file (water.read_water's format), whatever the
     area asked: fixtures and samples."""
@@ -318,6 +365,9 @@ class FileSnowSource:
 
     def elements(self, bbox: BBox) -> list[Element]:
         return self._elements
+
+    def buildings(self, bbox: BBox) -> int | None:
+        return buildings_in(self._elements, bbox)
 
 
 class OverpassSnowSource:
@@ -368,11 +418,108 @@ class OverpassSnowSource:
         write_water(self.path(bbox), bbox, elements)
         return elements
 
+    def count_path(self, bbox: BBox) -> Path:
+        south, west, north, east = bbox
+        return self.folder / (
+            f"count_{south:.5f}_{west:.5f}_{north:.5f}_{east:.5f}.json"
+        )
+
+    def buildings(self, bbox: BBox) -> int | None:
+        """The buildings of `bbox`: read from the cached snow that covers
+        it, else from the cached count, else counted by Overpass and saved.
+        None when Overpass does not answer in time or answers wrong, or
+        downloading is not allowed: the request then goes on as before."""
+        covering = self.covering_path(bbox)
+        if covering is not None:
+            return buildings_in(read_water(covering)[1], bbox)
+        path = self.count_path(bbox)
+        try:
+            return int(json.loads(path.read_text())["buildings"])
+        except (OSError, ValueError, KeyError, TypeError):
+            pass
+        if not self.download:
+            return None
+        try:
+            count = count_buildings(count_query(bbox))
+        except Exception as exc:  # any failure of the count: go on as before
+            log.info("snow: no count of the buildings (%s)", type(exc).__name__)
+            return None
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"bbox": list(bbox), "buildings": count}))
+        return count
+
 
 def snow_query(bbox: BBox, timeout_s: int = SNOW_TIMEOUT_S) -> str:
     south, west, north, east = bbox
     b = f"{south:.5f},{west:.5f},{north:.5f},{east:.5f}"
     return SNOW_QUERY.format(timeout=timeout_s, b=b)
+
+
+def count_query(bbox: BBox, timeout_s: int = COUNT_TIMEOUT_S) -> str:
+    south, west, north, east = bbox
+    b = f"{south:.5f},{west:.5f},{north:.5f},{east:.5f}"
+    return COUNT_QUERY.format(timeout=timeout_s, b=b)
+
+
+def count_buildings(query: str, wait_s: float = COUNT_WAIT_S) -> int:
+    """The ways an Overpass `out count` query counts. Not through
+    overpass_address's lock: a download of minutes may hold it, and the
+    count must be short. An address that refuses is tried after the other
+    by the connection itself; any failure raises."""
+    import osmnx as ox
+
+    request = urllib.request.Request(
+        f"{ox.settings.overpass_url.rstrip('/')}/interpreter",
+        data=urllib.parse.urlencode({"data": query}).encode(),
+        headers={"User-Agent": ox.settings.http_user_agent},
+    )
+    with urllib.request.urlopen(request, timeout=wait_s) as answer:
+        result: dict[str, Any] = json.load(answer)
+    return int(result["elements"][0]["tags"]["ways"])
+
+
+def buildings_in(elements: Iterable[Element], bbox: BBox) -> int:
+    """The buildings among `elements` with a point inside `bbox`, as
+    Overpass counts the ways of a box."""
+    south, west, north, east = bbox
+    count = 0
+    for element in elements:
+        if element.get("type") != "way" or "building" not in element.get("tags", {}):
+            continue
+        if any(
+            south <= p["lat"] <= north and west <= p["lon"] <= east
+            for p in element.get("geometry", [])
+        ):
+            count += 1
+    return count
+
+
+def box_km2(bbox: BBox) -> float:
+    """The area of `bbox` in km², on the sphere of geo.py near its middle."""
+    south, west, north, east = bbox
+    km_per_degree = math.radians(EARTH_RADIUS_M / 1000)
+    middle = math.radians((south + north) / 2)
+    return (north - south) * (east - west) * km_per_degree**2 * math.cos(middle)
+
+
+def town_bbox(start: LatLon) -> BBox:
+    """The town box round `start` (TOWN_HALF_M), rounded outward to 1e-4°
+    as snow_bbox: the same start finds the same count."""
+    south, west = local_to_latlon(start, -TOWN_HALF_M, -TOWN_HALF_M)
+    north, east = local_to_latlon(start, TOWN_HALF_M, TOWN_HALF_M)
+    step = 1e-4
+    return (
+        math.floor(south / step) * step,
+        math.floor(west / step) * step,
+        math.ceil(north / step) * step,
+        math.ceil(east / step) * step,
+    )
+
+
+def built_up(buildings: int | None, bbox: BBox) -> bool:
+    """True when `bbox` has more than BUILT_UP_PER_KM2 buildings per km²: a
+    town. False when the count is None (not known)."""
+    return buildings is not None and buildings > BUILT_UP_PER_KM2 * box_km2(bbox)
 
 
 # --- The area ---------------------------------------------------------------
@@ -565,11 +712,7 @@ def as_snow_error(
     SnowFitError, with the distance the shape fits at."""
     km = distance_m / 1000
     if isinstance(error, NoWaterError):
-        return NoSnowError(
-            f"there is no open snow to walk on within {MOVE_MAX_M / 1000:g} km "
-            "of here: off woods, pistes, rock, towns and slopes over "
-            f"{CHOSEN.max_slope_deg:g}°"
-        )
+        return no_snow_error()
     if error.best_distance_m is not None:
         return SnowFitError(
             f"the {name} does not fit at {km:g} km on open snow here: "

@@ -23,7 +23,8 @@ import type {
  * - «same»: the same week again and again.
  *
  * A run day (TASK-433 C, the user's choice of 2026-11-10) grows by about a
- * tenth a week, intervals by one rep, the last week of a cycle of 3 or more
+ * tenth a week (a long run made for its runner a kilometre a week,
+ * TASK-452), intervals by one rep, the last week of a cycle of 3 or more
  * shorter to recover; «same» keeps it as written.
  */
 
@@ -133,12 +134,27 @@ export function runInWeek(
   weeks: number,
   week: number,
   cycle: number,
+  personal: boolean = false,
 ): GymPlanRun {
   if (mode === "same") {
     return run;
   }
   const lighter = weeks >= 3 && week === weeks;
   const steps = lighter ? cycle : cycle + week - 1;
+  // A long run made for its runner (TASK-452): a kilometre (five minutes)
+  // more a week, the lighter week at 80% of the cycle's first.
+  if (personal && run.kind === "long") {
+    const scale = lighter ? RUN_LIGHTER : 1;
+    return {
+      ...run,
+      ...(run.distance_m === undefined
+        ? {}
+        : { distance_m: roundTo((run.distance_m + steps * 1000) * scale, 500, 500) }),
+      ...(run.duration_s === undefined
+        ? {}
+        : { duration_s: roundTo((run.duration_s + steps * 300) * scale, 60, 60) }),
+    };
+  }
   const factor = (1 + RUN_STEP * steps) * (lighter ? RUN_LIGHTER : 1);
   if (run.kind === "intervals") {
     const reps = run.reps ?? 1;
@@ -185,7 +201,16 @@ export function sessionsOfWeek(
     ),
     ...(session.run === undefined
       ? {}
-      : { run: runInWeek(session.run, program.mode, program.weeks, week, cycle) }),
+      : {
+          run: runInWeek(
+            session.run,
+            program.mode,
+            program.weeks,
+            week,
+            cycle,
+            program.runner !== undefined,
+          ),
+        }),
   }));
 }
 

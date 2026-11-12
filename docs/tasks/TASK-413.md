@@ -221,6 +221,19 @@ Coordinatore, `feat/TASK-413-b-snowshoes-app`):
     testi;
   - la lista dei file e il disegno della C vanno al Coordinatore prima del
     codice.
+- **La C sta dentro le ciaspole**: scelta dell'utente del 2026-11-12,
+  «Dentro le ciaspole», fra le due strade portate dal Coordinatore:
+  - (1) una riga nuova «Snowshoe day» in Impostazioni, sport a sé;
+  - (2) «Record your day» dentro le ciaspole che già ci sono.
+
+  Vale la (2): una riga sola, «Snowshoes», nessuna migrazione, nessun
+  passo sul server, esce con un OTA. Proposta dell'agente, da
+  confermare con l'utente insieme al testo nuovo:
+  - il bottone in alto di «Draw» diventa «Record your day», al posto di
+    «Snowshoe without a route»;
+  - a fine uscita c'è la scheda «Your day» del fondo (distanza, passo,
+    metri saliti, tempo, calorie);
+  - sulla mappa la riga è «White: where you walked.»
 
 **Accordi e scelte della parte A2** (2026-11-10, decise dall'agente su
 delega dell'utente):

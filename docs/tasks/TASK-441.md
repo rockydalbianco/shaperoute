@@ -385,10 +385,13 @@ docs/tasks/TASK-441.md
 ### File toccati (B2, PR dell'app)
 
 ```
-apps/mobile/src/explore/recommendedRoutes.ts, ExploreScreen.tsx
-apps/mobile/src/route/NearYou.tsx
-apps/mobile/App.tsx                                     (lo sport a ExploreScreen; dopo TASK-457)
+apps/mobile/src/explore/recommendedRoutes.ts, catalogList.ts, ExploreScreen.tsx
+apps/mobile/src/explore/ExploreBike.test.tsx            (nuovo)
+apps/mobile/App.tsx                                     (una riga: lo sport a ExploreScreen)
 ```
+
+«NEAR YOU» sotto la distanza di «Draw» (`route/NearYou.tsx`) non si tocca:
+è della corsa soltanto, per scelta già presa (TASK-306). Nessun testo nuovo.
 
 ### Criteri di accettazione (B2)
 
@@ -403,6 +406,19 @@ apps/mobile/App.tsx                                     (lo sport a ExploreScree
 - [ ] PR dell'app, OTA (sì dell'utente).
 
 ## Dove siamo
+
+*2026-11-12, 13:10, B2*: **giro in pausa dalle 11:09** su richiesta del
+Coordinatore (esce l'aggiornamento completo): fatta solo Milano (12 su 12),
+restano 62 città da Trento; riparte al suo «Mac libero» con
+`caffeinate -i zsh out/TASK-441/b2/run-bike.sh >> out/TASK-441/b2/run-bike.log 2>&1`.
+Intanto **l'app della B2 è scritta** in `.claude/worktrees/TASK-441-b2-app`
+(branch `feat/TASK-441-b2-app-bike`, commit locale, non pubblicato): le due
+liste chieste con `&activity=cycling` quando lo sport è la bici, niente per
+la corsa; un'API che non conosce il parametro risponde con le corse, come
+oggi. **Test scritti e non ancora girati** (Mac occupato): da girare
+`ExploreBike`, `ExploreFartherAway`, `ExploreRecommended`, `exploreAhead`,
+`catalogList`, `recommendedRoutes` e `tsc`; manca la riga in `App.tsx`
+(`activity={sportActivity}` su `ExploreScreen`), col via del Coordinatore.
 
 *2026-11-12, B2*: branch `feat/TASK-441-b2-bike` (worktree
 `.claude/worktrees/TASK-441-b2`), pubblicato senza PR: strumento e API.

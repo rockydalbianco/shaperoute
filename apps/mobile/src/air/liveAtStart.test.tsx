@@ -12,6 +12,7 @@ import { act, render } from "@testing-library/react-native";
 import type { RunPhase } from "../navigation/runControl";
 import { FollowsContext, type FollowsDoor } from "../social/followsDoor";
 import type { KeptList } from "../storage/keptList";
+import { resetFlightNotice, showFlightNotice } from "./flightNotice";
 import {
   liveAtStart,
   resetLiveAtStart,
@@ -99,6 +100,7 @@ beforeEach(() => {
   mockPhase = "idle";
   mockListeners.clear();
   resetLiveAtStart();
+  resetFlightNotice();
 });
 
 test("off until turned on, then as it was left", () => {
@@ -173,4 +175,18 @@ test("a link that could not be made opens no share sheet", async () => {
   await moveTo("running");
   expect(start).toHaveBeenCalledTimes(1);
   expect(share).not.toHaveBeenCalled();
+});
+
+test("before the first flight, the share sheet waits for «Before you fly»", async () => {
+  setLiveAtStart(true, memory());
+  const show = jest.fn();
+  const kept = { load: () => [] as string[], save: () => true };
+  showFlightNotice(show, kept);
+  await moveTo("countdown");
+  const { start, share } = await screenOf(true);
+  await moveTo("running");
+  expect(start).toHaveBeenCalledTimes(1);
+  expect(share).not.toHaveBeenCalled();
+  await act(async () => show.mock.calls[0][2]());
+  expect(share).toHaveBeenCalledWith(expect.stringContaining(URL));
 });

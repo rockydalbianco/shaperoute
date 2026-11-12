@@ -6,6 +6,7 @@ import { startLiveShare } from "../liveShare/liveShareStore";
 import { runControl, subscribeRunControl } from "../navigation/runControl";
 import { useFollowsDoor } from "../social/followsDoor";
 import { type KeptList, keptList } from "../storage/keptList";
+import { afterFlightNotice } from "./flightNotice";
 
 /**
  * «Share live at start» (TASK-305 part R5b, ADR-0352 «precisazione»; the
@@ -74,6 +75,7 @@ const shareSheet: ShareSheet = (message) => {
  * On a flight's screen: when its countdown ends and the switch is on, with
  * an account, the link starts and the share sheet opens. Only at the end of
  * a countdown: a flight taken up again keeps the link it had, or none.
+ * The share sheet waits for «Before you fly» to be read, if it is up.
  * Without network nothing is said: «Share live» is there as always.
  */
 export function useStartLiveAtStart(
@@ -98,7 +100,8 @@ export function useStartLiveAtStart(
     }
     void start({ baseUrl: apiUrl, token }, "paragliding").then((outcome) => {
       if (outcome.kind === "started") {
-        share(liveShareMessage(outcome.url));
+        // Before the first flight on the phone its notice may be up still.
+        afterFlightNotice(() => share(liveShareMessage(outcome.url)));
       }
     });
   }, [flight, phase, apiUrl, token, start, share]);

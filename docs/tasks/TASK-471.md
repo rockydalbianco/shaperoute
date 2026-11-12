@@ -162,7 +162,8 @@ pura sono i 60 s di pausa quando lo stato non si legge.
   insieme; il 12 novembre due volte su due. Proposta fatta all'utente:
   lasciarla per dopo, e riprenderla se nei log il caso torna (con i 5
   secondi l'errore arriva molto prima, e chi riprova trova la zona
-  vicina in cache). Risposta: in attesa.
+  vicina in cache). **Risposta dell'utente, 2026-11-12: «ok procedi»**:
+  non si fa adesso.
 - **(a) La pausa di osmnx quando lo stato di Overpass non si legge**: 60 s
   fissi prima di ogni download, anche del primo e anche di quelli che
   poi riescono. È la parte più grossa dell'attesa in tutti e tre i job.

@@ -221,17 +221,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   migrazione `0073`), sul server col passo dopo l'uscita completa, col sì.
   Poi A1b dopo TASK-455 A.
 
-- **TASK-454 — Reazioni e super like** · parte 0 chiusa (scelte
-  dell'utente, 2026-11-11); C1, risposte e reazioni ai commenti sul server,
-  in `main` (#1180, ADR-0377, migrazione `0070`): manca il passo sul server,
-  col sì dell'utente. Poi A (le reazioni nel Feed), B (doppio tocco), C2
-  (l'app dei commenti, dopo il server). File: — · `tasks/TASK-454.md`
-  **2026-11-12**: C1 sul server (passo 9); A (#1195), C2 (#1199) e la frase
-  della privacy (#1200) in `main`, escono con l'aggiornamento completo.
-  Restano B (doppio tocco, dopo TASK-467 B2) e la prova sul telefono.
-  **Chiuso il 2026-11-12**: B (#1231) in `main` e nell'OTA 14; tutto provato
-  dall'utente sul telefono; vedi `archive/COMPLETATI.md`.
-
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
   default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto

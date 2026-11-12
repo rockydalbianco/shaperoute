@@ -90,6 +90,17 @@
       "onWatch": true
     },
     {
+      "activity": "wheelchair",
+      "name": "Wheelchair & stroller",
+      "emoji": "♿",
+      "appleWorkout": 70,
+      "pace": "km",
+      "onWater": false,
+      "guided": true,
+      "gps": true,
+      "onWatch": true
+    },
+    {
       "activity": "walking",
       "name": "Walk",
       "emoji": "🚶",
@@ -143,6 +154,17 @@
       "guided": false,
       "gps": true,
       "onWatch": true
+    },
+    {
+      "activity": "paragliding",
+      "name": "Paragliding",
+      "emoji": "🪂",
+      "appleWorkout": 3000,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": true,
+      "onWatch": false
     },
     {
       "activity": "gym",

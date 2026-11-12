@@ -1,10 +1,22 @@
 # TASK-464 — Zone già in memoria nei processi di calcolo
 
-**Stato**: In corso — PR #1167 aperta. Il Coordinatore la tiene ferma
-fino a «passo 8 fatto», per non mescolare questo cambio di memoria coi
-cambi del passo 8. Poi: unire main, merge, un passo sul server suo (col sì
-dell'utente) col default 500 MB. Le letture per il dopo sono in
-`out/TASK-464/SERVER.md`.
+**Stato**: In corso — codice in `main` (#1167, 2026-11-12), CI verde.
+Sul server col passo 9 del Coordinatore, 2026-11-12 alle 08:38Z (server a
+`02214e9b`), col default `SHAPEROUTE_ZONES_MB` 500.
+
+Letture a riposo, subito dopo il passo:
+- due processi di calcolo partiti, «0 zones warmed» (giusto al primo avvio:
+  il conteggio non c'era ancora), mai «zone usage not»;
+- processi di calcolo 69 MB l'uno, available 6,5 GB.
+
+Restano:
+- i punti 2 e 4 di `out/TASK-464/SERVER.md` dal 13-11, con PASSO =
+  2026-11-12T08:38:00. Il «prima» di crop e della zona dal disco unisce le
+  righe di prima del passo 8 e quelle tra 8 e 9: 8 su 31 con la zona dal
+  disco. `start` si confronta solo con le 5 dopo il passo 8;
+- il tetto scelto dal minimo disponibile dopo qualche giorno.
+
+PR di documenti: `docs/TASK-464-merged` (#1187).
 **Fase**: 5 · **Branch**: `feat/TASK-464-warm-zones` ·
 **ADR**: ADR-0374 (la voce va nella PR di documenti dopo il merge)
 

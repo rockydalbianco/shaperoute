@@ -160,9 +160,8 @@ Come TASK-415 A (`23a3c23f`, lo scialpinismo):
    `run-activities.json` e `reads.json`, `reads.py` (un'app vecchia non
    riceve i voli che non sa leggere).
 2. La migrazione che allarga `runs_activity_check` leggendolo, come 0044:
-   numero provvisorio **0070** (0069 è di TASK-463); il numero vero è il
-   primo libero al merge, e la seconda delle due riparte dallo stato
-   lasciato dalla prima.
+   `0069_paragliding.sql` (il primo numero libero in main al merge; era
+   provvisoriamente 0070).
 3. `LiveStatsBody` (`live_shares.py`, `extra="forbid"`) e `LiveStats` di
    `liveShare.ts` prendono quattro campi facoltativi: `alt_m` (quota
    adesso, m, −500…9000), `max_alt_m`, `vario_mps` (m/s, −30…30, un
@@ -193,6 +192,22 @@ Come TASK-415 A (`23a3c23f`, lo scialpinismo):
    instrument: it records your flight and shares it. Fly with your own
    instrument, licence and judgement.»
 
+**Testi di R2**, approvati dall'utente il 2026-11-12 (en e it, poi
+de/fr/es; «Sì, approvo»). Quota, quota massima e velocità massima usano le
+parole che l'app ha già («Altitude», «Max altitude», «Top speed»);
+«Vario» è quello di R3.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Record your flight | Registra il volo | Flug aufzeichnen | Enregistrer le vol | Registra tu vuelo |
+| Before you fly | Prima di volare | Vor dem Flug | Avant de voler | Antes de volar |
+| MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement. | MuW non è uno strumento di volo: registra il volo e lo condivide. Vola con il tuo strumento, il tuo brevetto e il tuo giudizio. | MuW ist kein Fluginstrument: Es zeichnet deinen Flug auf und teilt ihn. Flieg mit deinem eigenen Instrument, deiner Lizenz und deinem Urteilsvermögen. | MuW n'est pas un instrument de vol : il enregistre votre vol et le partage. Volez avec votre propre instrument, votre licence et votre jugement. | MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio. |
+| Got it | Ho capito | Verstanden | Compris | Entendido |
+| Flight time | Tempo di volo | Flugzeit | Temps de vol | Tiempo de vuelo |
+| Your flight | Il tuo volo | Dein Flug | Votre vol | Tu vuelo |
+| White: where you flew. | Bianco: dove hai volato. | Weiß: wo du geflogen bist. | Blanc : là où vous avez volé. | Blanco: por donde volaste. |
+| No shapes in the air yet: MuW records your flight. | Niente forme in volo, per ora: MuW registra il tuo volo. | Noch keine Formen in der Luft: MuW zeichnet deinen Flug auf. | Pas encore de formes en vol : MuW enregistre votre vol. | Todavía no hay formas en el aire: MuW registra tu vuelo. |
+
 File, a grandi linee (la lista vera al Coordinatore prima della PR, col
 turno: `settings/sport.ts`, `sports/**` e `social/PublicParts.tsx` sono
 oggi della #1160, poi di TASK-413 B e TASK-463): `settings/sport.ts`, i
@@ -213,6 +228,24 @@ variometro (sale/scende), velocità del momento, quota massima e tempo di
 volo, nelle cinque lingue; le altre attività come oggi. La copia sul sito
 è una pubblicazione: col sì dell'utente, dal Coordinatore
 (`out/coordinatore/sito.sh <sha>`).
+
+I numeri, dopo distanza e tempo: velocità del momento (la media se l'app
+è di prima), quota, variometro col segno (+ sale, − scende; m/s, ft/min
+in miglia), quota massima, poi dislivello, calorie e battito come per le
+altre attività.
+
+**Testi di R3** (le tre etichette nuove; le altre sono quelle approvate di
+TASK-424). **Approvati dall'utente il 2026-11-12**: en e it («Sì,
+approvo»), poi de/fr/es («Sì, approvo»), con le parole che l'app ha già
+per quota e quota massima.
+
+| lingua | quota | variometro | quota massima |
+|---|---|---|---|
+| en | Altitude | Vario | Max altitude |
+| it | Quota | Variometro | Quota massima |
+| de | Höhe | Vario | Max. Höhe |
+| fr | Altitude | Vario | Alt. max |
+| es | Altitud | Variómetro | Alt. máx. |
 
 ## Cosa fare (se l'utente decide di sì)
 
@@ -528,3 +561,46 @@ tenere «Soon» nelle build per lo store.
 Il 2026-11-11 l'utente ha chiesto la registrazione in volo con la
 condivisione dal vivo, prima del pianificatore: parti R (ADR-0375), da
 questa PR di documenti.
+
+**Esito R1** (2026-11-12): PR #1177 in main (83bbbc5d). `paragliding` è
+nel contratto come attività «Record only» (Strava «Workout», GPX
+`paragliding`), la migrazione `0069_paragliding` allarga solo
+`runs_activity_check`, e `LiveStatsBody` prende `alt_m`, `max_alt_m`,
+`vario_mps` e `speed_mps`. Nell'app il profilo c'è ma resta nascosto, e
+il parapendio è fuori dall'orologio (`NOT_ON_WATCH`: il tipo Apple 3000
+«other» è quello che i test dell'orologio usano per uno sport non
+offerto); un volo non è una giornata sulla neve (`SNOW_ACTIVITIES` in
+`social/PublicParts.tsx`). Server al passo 9 il 2026-11-12 alle 08:38Z
+(02214e9b), controlli di `out/TASK-305/SERVER-R1.md` passati. Nota per
+R2: `activities/snow.ts` e `sports/postMetrics.ts` trattano ogni attività
+«Record only» come neve (niente parziali al km): da rivedere per il volo.
+
+**Esito R3** (2026-11-12): PR #1191 in main (60c801aa). Per `paragliding`
+la pagina del link mostra, dopo distanza e tempo, velocità del momento,
+quota, variometro col segno (m/s; ft/min in miglia) e quota massima; da
+un'app di prima la velocità media. Testi approvati dall'utente («Testi di
+R3»). Copia sul sito alle 09:33Z dal Coordinatore col sì dell'utente («Sì,
+copia»; quella di prima, e60e0b35, in `/srv/getmuw-site.old`): cambiano
+solo `live/texts.js` e `live/view.js`, i cinque file serviti sono uguali al
+commit e i controlli di `out/TASK-305/SITO-R3.md` sono passati. Un volo
+vero sulla pagina si vedrà dopo l'aggiornamento completo con R2 (#1201).
+
+**Esito R2** (2026-11-12): PR #1201 in main (f0909495), con le schermate
+approvate dall'utente («Sì, approvo») dopo la prova nel simulatore
+(iPhone 17e, quota finta in salita e in discesa). «Paragliding» è uno
+sport da scegliere, anche nelle build per lo store; «Draw» mostra solo
+«Record your flight»; l'avviso «Before you fly» una volta per telefono; in
+volo quota, variometro, quota massima e dislivello sopra i numeri della
+registrazione; il link dal vivo riceve `alt_m`, `max_alt_m`, `vario_mps`
+e `speed_mps`; la fine del volo ha i suoi numeri. Dalla prova due
+correzioni: i riquadri due per riga («Max altitude» si tagliava) e la riga
+del volo sotto il bottone (`ChooseScreen.tsx`, col sì del Coordinatore).
+Esce con l'aggiornamento completo del 2026-11-12.
+
+**Cosa resta**:
+
+- Una prova di un volo vero, col link dal vivo aperto da un altro
+  telefono, dopo l'uscita.
+- R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
+  fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
+- Le parti del pianificatore (A1…F) restano Proposte.

@@ -205,3 +205,55 @@ export const GLUTE: Pose = {
   shinNear: -35,
   footNear: -100,
 };
+
+/**
+ * How a pose goes a little deeper on each breath while it is held
+ * (TASK-466 part A, ADR-0378): a few degrees more on the segments that make the
+ * stretch, in the same absolute directions as a pose. The figure goes to
+ * the deeper pose and back, slowly, so a held stretch looks alive and
+ * shows where it pulls.
+ */
+export type Breath = Readonly<Partial<Record<Segment, number>>>;
+
+/** The deepest a breath goes, in degrees, on any segment. */
+export const BREATH_MAX_DEGREES = 12;
+
+/** `pose` at the bottom of a breath. */
+export function deepen(pose: Pose, breath: Breath): Pose {
+  const out: Record<Segment, number> = { ...pose };
+  for (const segment of SEGMENTS) {
+    out[segment] = pose[segment] + (breath[segment] ?? 0);
+  }
+  return out;
+}
+
+/** The near thigh further back, the heel and the hand with it. */
+export const QUAD_BREATH: Breath = {
+  thighNear: -8,
+  shinNear: -8,
+  footNear: -8,
+  upperArmNear: -6,
+  forearmNear: -6,
+};
+
+/** A little more lean from the hips, the back straight. */
+export const HAMSTRING_BREATH: Breath = { torso: -8, head: -8 };
+
+/** The body toward the wall, the back heel pressed down. */
+export const CALF_BREATH: Breath = { torso: -5, head: -5, thighFar: -4, thighNear: 5 };
+
+/** The hips forward over the knee, the chest up. */
+export const HIP_FLEXOR_BREATH: Breath = {
+  thighFar: -8,
+  thighNear: 4,
+  torso: 3,
+  head: 3,
+};
+
+/** Sat a little lower, as into a chair, the chest toward the shin. */
+export const GLUTE_BREATH: Breath = {
+  thighFar: 5,
+  shinFar: -5,
+  torso: -6,
+  head: -4,
+};

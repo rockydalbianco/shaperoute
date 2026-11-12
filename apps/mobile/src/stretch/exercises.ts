@@ -1,5 +1,18 @@
 import { tLater } from "../i18n";
-import { CALF, GLUTE, HAMSTRING, HIP_FLEXOR, type Pose, QUAD } from "./poses";
+import {
+  type Breath,
+  CALF,
+  CALF_BREATH,
+  GLUTE,
+  GLUTE_BREATH,
+  HAMSTRING,
+  HAMSTRING_BREATH,
+  HIP_FLEXOR,
+  HIP_FLEXOR_BREATH,
+  type Pose,
+  QUAD,
+  QUAD_BREATH,
+} from "./poses";
 
 /**
  * The five stretches after a run (TASK-285 part B, ADR-0247): the runner's
@@ -19,6 +32,8 @@ export type Exercise = {
   /** How long each side is held. */
   seconds: number;
   pose: Pose;
+  /** How the pose goes deeper on each breath while held; none, it stays still. */
+  breath?: Breath;
 };
 
 /** How long a side is held, in the user's proposal of 2026-10-13. */
@@ -32,6 +47,7 @@ export const EXERCISES: readonly Exercise[] = [
     sides: true,
     seconds: SIDE_SECONDS,
     pose: QUAD,
+    breath: QUAD_BREATH,
   },
   {
     key: "hamstring",
@@ -40,6 +56,7 @@ export const EXERCISES: readonly Exercise[] = [
     sides: true,
     seconds: SIDE_SECONDS,
     pose: HAMSTRING,
+    breath: HAMSTRING_BREATH,
   },
   {
     key: "calf",
@@ -48,6 +65,7 @@ export const EXERCISES: readonly Exercise[] = [
     sides: true,
     seconds: SIDE_SECONDS,
     pose: CALF,
+    breath: CALF_BREATH,
   },
   {
     key: "hipFlexor",
@@ -56,6 +74,7 @@ export const EXERCISES: readonly Exercise[] = [
     sides: true,
     seconds: SIDE_SECONDS,
     pose: HIP_FLEXOR,
+    breath: HIP_FLEXOR_BREATH,
   },
   {
     key: "glute",
@@ -64,6 +83,7 @@ export const EXERCISES: readonly Exercise[] = [
     sides: true,
     seconds: SIDE_SECONDS,
     pose: GLUTE,
+    breath: GLUTE_BREATH,
   },
 ];
 

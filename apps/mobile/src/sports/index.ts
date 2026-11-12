@@ -8,12 +8,14 @@ import { HIKING } from "./hiking";
 import { INLINE_SKATING } from "./inline_skating";
 import { MOUNTAIN_BIKING } from "./mountain_biking";
 import { PADDLING } from "./paddling";
+import { PARAGLIDING } from "./paragliding";
 import { RUNNING } from "./running";
 import { SKI_TOURING } from "./ski_touring";
 import { SKIING } from "./skiing";
 import { SNOWSHOEING } from "./snowshoeing";
 import { SWIMMING } from "./swimming";
 import { WALKING } from "./walking";
+import { WHEELCHAIR } from "./wheelchair";
 import { XC_SKIING } from "./xc_skiing";
 
 export type { Energy, InUnits, MetBand, Network, SportProfile } from "./base";
@@ -31,11 +33,13 @@ export const SPORT_PROFILES: readonly SportProfile[] = [
   MOUNTAIN_BIKING,
   INLINE_SKATING,
   SNOWSHOEING,
+  WHEELCHAIR,
   WALKING,
   GRAVEL_BIKING,
   SKIING,
   XC_SKIING,
   SKI_TOURING,
+  PARAGLIDING,
   GYM,
 ];
 

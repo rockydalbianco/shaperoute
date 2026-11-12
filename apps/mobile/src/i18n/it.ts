@@ -68,7 +68,6 @@ export const IT: Table = {
   // «Keep it» answers two questions (a run, Strava): a word that fits both.
   "Keep it": "Annulla",
   "Delete run": "Elimina corsa",
-  "Delete the run of {when}": "Elimina la corsa di {when}",
   Delete: "Elimina",
   // A run the API will not take (TASK-257).
   "The server could not take this run: {message}":
@@ -85,6 +84,7 @@ export const IT: Table = {
     "Giallo: il percorso. Bianco: quello che hai corso.",
   "White: what you ran.": "Bianco: quello che hai corso.",
   "Back to the list": "Torna all'elenco",
+  "Edit post": "Modifica post",
 
   // src/activities/activitiesDoor.ts
   "Sign up or log in to keep your runs and share them as drawings.":
@@ -946,6 +946,10 @@ export const IT: Table = {
   "Show more comments": "Mostra altri commenti",
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Tieni premuto per eliminare.",
+  Reply: "Rispondi",
+  "Replying to {name}": "Risposta a {name}",
+  "View {count} more reply": "Vedi {count} altra risposta",
+  "View {count} more replies": "Vedi altre {count} risposte",
 
   // src/social/DrawingReactions.tsx
   React: "Reagisci",
@@ -976,6 +980,8 @@ export const IT: Table = {
   "Write a comment to send your super like":
     "Scrivi un commento per inviare il tuo super like",
   Send: "Invia",
+  "A super like comes with a comment. Everyone who sees the post can read it.":
+    "Un super like arriva con un commento. Chi vede il post può leggerlo.",
 
   // src/social/reactionKinds.ts
   "MuW heart, super like": "Cuore di MuW, super like",
@@ -992,6 +998,7 @@ export const IT: Table = {
   "{count} min ago": "{count} min fa",
   "{count} h ago": "{count} h fa",
   "{count} d ago": "{count} g fa",
+  yesterday: "ieri",
   "Write a comment": "Scrivi un commento",
   "{count} comment": "{count} commento",
   "{count} comments": "{count} commenti",
@@ -1344,6 +1351,35 @@ export const IT: Table = {
   "Lower body B": "Parte bassa B",
   "Arms, core": "Braccia, addome",
   "Workout {letter}": "Allenamento {letter}",
+  // src/gym/RunnerStep.tsx, runPace.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-452, approved 2026-11-11)
+  "Pace@@run": "Ritmo",
+  "Intermediate@@runner": "Intermedio",
+  "Expert@@runner": "Esperto",
+  Yes: "Sì",
+  "Your runs say {pace}/km over 10 km: update the paces?":
+    "Le tue corse dicono {pace}/km sui 10 km: aggiorno i ritmi?",
+  "From your {pace}/km over 10 km and your long run of {long}.":
+    "Dal tuo {pace}/km sui 10 km e dal tuo lungo di {long}.",
+  "How do you run today?": "Come corri oggi?",
+  "Make my paces": "Fai i miei ritmi",
+  "Two answers and the plan's paces are yours.":
+    "Due risposte e i ritmi della scheda sono i tuoi.",
+  "Your paces": "I tuoi ritmi",
+  "at {pace}/km": "a {pace}/km",
+  "10 km in {time}": "10 km in {time}",
+  "At the end of each cycle": "A fine ciclo",
+  "Easy: your pace over 10 km + 1:05. Long: + 1:15. Intervals of 400 m: − 0:25. The long run starts from yours and grows 1 km a week; the easy run is about half of it.":
+    "Lenta: il tuo ritmo dei 10 km + 1:05. Lungo: + 1:15. Ripetute da 400 m: − 0:25. Il lungo parte dal tuo e cresce di 1 km a settimana; la lenta è circa metà del lungo.",
+  "How I work them out": "Come li calcolo",
+  "I don't know: I'll pick my level": "Non lo so: scelgo il mio livello",
+  "I look at your runs: if you got faster, I propose new paces.":
+    "Guardo le tue corse: se sei migliorato, ti propongo ritmi nuovi.",
+  "The longest run you do without strain": "La corsa più lunga che fai senza fatica",
+  "Your long run, today": "Il tuo lungo, oggi",
+  "Your pace over 10 km": "Il tuo ritmo sui 10 km",
+  "minutes per km": "minuti al km",
+  "{n} minutes": "{n} minuti",
+  Beginner: "Principiante",
   // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
   "Your plan, step by step": "La tua scheda, passo per passo",
   "A minute to make it, then it guides you every time.":
@@ -1555,8 +1591,8 @@ export const IT: Table = {
   "You have not blocked anyone.": "Non hai bloccato nessuno.",
   Unblock: "Sblocca",
   "Unblock {name}": "Sblocca {name}",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Hai bloccato {user}. Puoi sbloccarlo da Persone bloccate nel tuo profilo.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Hai bloccato {user}. Puoi sbloccarlo da Persone bloccate nelle Impostazioni.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
@@ -1591,6 +1627,8 @@ export const IT: Table = {
   "Right side": "Lato destro",
   "Left side": "Lato sinistro",
   "Switch sides": "Cambia lato",
+  End: "Fine",
+  "Next: {exercise}": "Dopo: {exercise}",
   "{seconds} seconds left": "Mancano {seconds} secondi",
   "Stop if it hurts.": "Fermati se fa male.",
   // «Draw»: src/route/samplePictures.ts (TASK-280)
@@ -2513,4 +2551,35 @@ export const IT: Table = {
   "{phase}, from {time}, for {duration}": "{phase}, dalle {time}, per {duration}",
   "No heights from the phone: no phases for this tour.":
     "Il telefono non ha dato le quote: niente fasi per questa gita.",
+
+  // src/activities/ (TASK-462: the calendar of every sport)
+  Calendar: "Calendario",
+  "Last 12 months": "Ultimi 12 mesi",
+  "{count} activity": "{count} attività",
+  "{count} activities": "{count} attività",
+
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Registra il volo",
+  "Before you fly": "Prima di volare",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW non è uno strumento di volo: registra il volo e lo condivide. Vola con il tuo strumento, il tuo brevetto e il tuo giudizio.",
+  "Got it": "Ho capito",
+  Vario: "Variometro",
+  "Flight time": "Tempo di volo",
+  "Your flight": "Il tuo volo",
+  "No shapes in the air yet: MuW records your flight.":
+    "Niente forme in volo, per ora: MuW registra il tuo volo.",
+  "White: where you flew.": "Bianco: dove hai volato.",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Il tuo primo disegno",
+  "Start from a route that already draws a shape near you.":
+    "Parti da un percorso che disegna già una forma vicino a te.",
+  "Find a route near you": "Trova un percorso vicino a te",
+  "Record a run with MuW and publish its drawing.":
+    "Registra una corsa con MuW e pubblica il suo disegno.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Pubblica 10 disegni di corse registrate con MuW.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Pubblica il disegno di una corsa di almeno {distance}.",
 };

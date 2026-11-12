@@ -128,13 +128,17 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sport nel contratto e nell'API, nascosto nell'app, migrazione 0068) e
   sul server col passo 8 del 2026-11-11; l'app col decimo OTA. Prima di B,
   la città lenta (76 s per un rifiuto). File: — · `tasks/TASK-413.md`
-- **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
-  approvata; prossima A, migrazione 0058 in bozza. File: — ·
-  `tasks/TASK-414.md`
+- **TASK-414 — Carrozzina e passeggino** · 0 e A in `main` (#1183,
+  `f614821c`: rete `wheel`, lo sport nel motore, nel contratto e nell'API,
+  nascosto nell'app, migrazione 0071); sul server col passo
+  dell'aggiornamento completo. Prossima B col via del Coordinatore. File: —
+  · `tasks/TASK-414.md`
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
   **2026-11-11**: B in `main` (#1160) e nella preview; in produzione con
   l'uscita completa (OTA col sì), poi la prova sul telefono; dopo B2, C, D.
+  **2026-11-12**: B3 (cambio pelli a mano) in `main` (#1202); B e B3 escono
+  con l'aggiornamento completo di oggi; prova sulla neve quest'inverno.
 - **TASK-417 — La mia immagine al posto dell'animale e il video «Together»** ·
   B e C («My image», #1067) in `main`, escono col prossimo OTA di
   produzione; prossime D («Together») ed E (telefono: anche il picker di
@@ -175,16 +179,75 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   guadagno circa 1 s in mediana sul server) e le scelte dell'utente («il
   primo resta A»). Prossima la parte A (motore), poi B (API) e C (app).
   File: — · `tasks/TASK-435.md`
+  **Chiuso il 2026-11-12**: A (#1105), B (#1139) e C (#1161) in `main`, A e
+  B sul server dal passo 8; la C esce con l'aggiornamento completo
+  dell'app; vedi `archive/COMPLETATI.md`.
 - **TASK-441 — «Explore» a 2000 disegni** · parte A in `main` (#1149):
   1963 percorsi e ordine misto in «NEAR YOU». Le 702 parole nuove a riga
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
   tornano nella B a penna alzata; il server aspetta la correzione. Poi B
   (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
+  **2026-11-12**: A sul server (1261, passo 8). **B1** (ADR-0366): 340 parole a
+  penna alzata lette a occhio, catalogo a 1546; server in `main` (#1184), app
+  #1185; server e OTA escono insieme nell'aggiornamento completo. Poi B2
+  (bici, canoa, nuoto) e C. File (#1185): `apps/mobile/src/explore/{ExploreScreen.tsx,explored.ts,recommendedRoutes.ts}`, `apps/mobile/src/route/NearYou.tsx`
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
   R2 (app, col turno), R3 (`site/live/`). Il pianificatore resta Proposto.
   File: — · `tasks/TASK-305.md`
+  **R1 fatta il 2026-11-12**: #1177 in main (83bbbc5d), server al passo 9
+  (migrazione 0069_paragliding). Ora R2 (app) e R3 (`site/live/`).
+  **R3 fatta il 2026-11-12**: #1191 in main (60c801aa), sito copiato alle
+  09:33Z. R2 in bozza (#1201), aspetta il simulatore dopo il 454.
+  **R2 fatta il 2026-11-12**: #1201 in main (f0909495), esce con
+  l'aggiornamento completo. Resta: un volo vero col link dal vivo; R4
+  (orologio, battito) in bozza #1218 fino alla build dopo la 1.1.0.
+- **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
+  (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
+  B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
+  **2026-11-12**: A in `main` (#1193, ADR-0379). Poi B1 (server, tabella
+  `sleep_nights`, ADR-0380), B2 e B3 (app), C prima dell'OTA di B2.
+  **B1 in `main`** (#1211, `71e24188`, ADR-0380: migrazione `0072`, endpoint
+  del sonno), sul server col passo dell'aggiornamento completo. Poi B1b
+  (il campo `sleep` nel disegno visto) e B2, in una sessione a parte.
+- **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
+  (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
+  B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
+  **2026-11-12**: parte 0 in `main`; A1a in `main` (#1221, `9328c109`,
+  migrazione `0073`), sul server col passo dopo l'uscita completa, col sì.
+  Poi A1b dopo TASK-455 A.
+
+- **TASK-454 — Reazioni e super like** · parte 0 chiusa (scelte
+  dell'utente, 2026-11-11); C1, risposte e reazioni ai commenti sul server,
+  in `main` (#1180, ADR-0377, migrazione `0070`): manca il passo sul server,
+  col sì dell'utente. Poi A (le reazioni nel Feed), B (doppio tocco), C2
+  (l'app dei commenti, dopo il server). File: — · `tasks/TASK-454.md`
+  **2026-11-12**: C1 sul server (passo 9); A (#1195), C2 (#1199) e la frase
+  della privacy (#1200) in `main`, escono con l'aggiornamento completo.
+  Restano B (doppio tocco, dopo TASK-467 B2) e la prova sul telefono.
+
+- **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
+  (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
+  default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
+  scelto dal minimo disponibile dopo qualche giorno. File: — ·
+  `tasks/TASK-464.md`
+- **TASK-455 — Condividere il disegno di un'altra persona** · parte 0 chiusa
+  (scelte dell'utente, 2026-11-12): «Share» su ogni post, il post in chat
+  come rimando, il link a una pagina web con l'interruttore dell'autore.
+  Prossima A (server: il post in un messaggio), poi B app, C–E il link.
+  File: — · `tasks/TASK-455.md`
+
+- **TASK-466 — Lo stretching nuovo** · A (la figura che respira, si
+  rialza e si gira, «Get ready», tick, «Skip») in `main` (#1181,
+  ADR-0378), esce con l'aggiornamento completo. Poi B (routine 3/5/10
+  min), D (mattino), C (palestra, dopo 461 A2 e 465), E (routine
+  pubblicate). File: — · `tasks/TASK-466.md`
+
+- **TASK-469 — Il look Liquid Glass** (ADR-0383) · parte 0 fatta, l'utente
+  ha scelto «Capsula». Poi A in fette via OTA, dopo l'aggiornamento
+  completo; B nativa dopo la 1.1.0. File: — ·
+  `tasks/TASK-469.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

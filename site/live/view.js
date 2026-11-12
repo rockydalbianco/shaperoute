@@ -35,7 +35,11 @@ const SPEED_ACTIVITIES = new Set([
   "mountain_biking",
   "inline_skating",
   "skiing",
+  "paragliding",
 ]);
+/** The flights (TASK-305 R3, ADR-0375): with the numbers of the air. */
+const FLIGHT_ACTIVITIES = new Set(["paragliding"]);
+const FEET_PER_MINUTE_PER_MPS = 60 / METRES_PER_FOOT;
 /** Tracks of a few metres give no pace worth showing. */
 const PACE_FROM_M = 10;
 
@@ -338,10 +342,55 @@ function average(stats, activity, units, lang) {
   return { key: "pace", value: pace === null || pace >= 6000 ? "–" : clock(Math.round(pace)), unit };
 }
 
+/** A height in metres or, with miles, in feet. */
+function height(key, metres, units, lang) {
+  return units === "mi"
+    ? { key, value: whole(lang, metres / METRES_PER_FOOT), unit: "ft" }
+    : { key, value: whole(lang, metres), unit: "m" };
+}
+
+/**
+ * The numbers of the air, after the time (TASK-305 R3): the speed of the
+ * moment, the altitude, the vario (+ climbing, − sinking) and the highest
+ * altitude. An app of before sends none: then the average speed, as a ride.
+ * @returns {{key: string, value: string, unit: string}[]}
+ */
+function flightNumbers(stats, units, lang) {
+  const rows = [];
+  if (present(stats.speed_mps)) {
+    const perHour = (Number(stats.speed_mps) * 3600) / (units === "mi" ? METRES_PER_MILE : 1000);
+    rows.push({ key: "speed", value: decimals(lang, 1).format(perHour), unit: units === "mi" ? "mph" : "km/h" });
+  } else {
+    rows.push(average(stats, "paragliding", units, lang));
+  }
+  if (present(stats.alt_m)) {
+    rows.push(height("altitude", Number(stats.alt_m), units, lang));
+  }
+  if (present(stats.vario_mps)) {
+    const vario = Number(stats.vario_mps);
+    const signed = (digits) =>
+      new Intl.NumberFormat(lang, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+        signDisplay: "exceptZero",
+      });
+    rows.push(
+      units === "mi"
+        ? { key: "vario", value: signed(0).format(Math.round(vario * FEET_PER_MINUTE_PER_MPS)), unit: "ft/min" }
+        : { key: "vario", value: signed(1).format(Math.round(vario * 10) / 10), unit: "m/s" },
+    );
+  }
+  if (present(stats.max_alt_m)) {
+    rows.push(height("maxAltitude", Number(stats.max_alt_m), units, lang));
+  }
+  return rows;
+}
+
 /**
  * The numbers under the map, in order, as text keys with their value and
  * unit. Missing ones are left out: no heart rate without a watch, no climb
- * on the water.
+ * on the water. A flight shows the numbers of the air in place of the
+ * average.
  * @param {ReturnType<typeof emptyState>} state
  * @param {number} nowMs
  * @param {{lang: string, units: "km" | "mi"}} options
@@ -365,14 +414,13 @@ export function numbersOf(state, nowMs, { lang, units }) {
   }
   rows.push({ key: "time", value: clock(elapsedS(state, nowMs)), unit: "" });
   if (kind === "map") {
-    rows.push(average(stats, state.activity, units, lang));
+    if (FLIGHT_ACTIVITIES.has(state.activity)) {
+      rows.push(...flightNumbers(stats, units, lang));
+    } else {
+      rows.push(average(stats, state.activity, units, lang));
+    }
     if (present(stats.climb_m)) {
-      const climb = Number(stats.climb_m);
-      rows.push(
-        units === "mi"
-          ? { key: "climb", value: whole(lang, climb / METRES_PER_FOOT), unit: "ft" }
-          : { key: "climb", value: whole(lang, climb), unit: "m" },
-      );
+      rows.push(height("climb", Number(stats.climb_m), units, lang));
     }
   }
   if (kind === "pool" && present(stats.lengths)) {

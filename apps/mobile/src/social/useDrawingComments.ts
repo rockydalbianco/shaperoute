@@ -1,15 +1,24 @@
-import type { Comment } from "@shaperoute/shared-types";
-import { useCallback, useEffect, useState } from "react";
+import type { Comment, CommentReactionKind } from "@shaperoute/shared-types";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { commentProblem } from "../api/comments";
+import { reactionNotSaved } from "../api/reactions";
 import { useCommentsDoor } from "./commentsDoor";
+import {
+  withMoreReplies,
+  withMyReaction,
+  withoutComment,
+  withReactions,
+  withReply,
+} from "./commentThreads";
 
 /** The comments of one drawing as its card and its sheet show them. */
 export type DrawingComments = {
   /** `off`: nobody signed in, or an API without comments: no button. */
   status: "loading" | "ready" | "failed" | "off";
+  /** The comments, each with the replies shown under it (TASK-454). */
   comments: Comment[];
-  /** How many the drawing has, also those of pages not asked for yet. */
+  /** How many the drawing has, replies too, also on pages not asked for yet. */
   total: number;
   /** True while there are older pages to ask for: «Show more». */
   more: boolean;
@@ -22,10 +31,23 @@ export type DrawingComments = {
   showMore: () => void;
   /**
    * `sent`: the field empties. `rejected`: a negative comment, which the
-   * sheet says in an alert (ADR-0176); the words stay to be changed.
+   * sheet says in an alert (ADR-0176); the words stay to be changed. With
+   * `replyTo`, a comment or a reply, the words go under its comment.
    */
-  send: (text: string) => Promise<Sent>;
+  send: (text: string, replyTo?: Comment) => Promise<Sent>;
+  /** A comment takes its replies along; a reply goes alone. */
   remove: (commentId: string) => void;
+  /** The app reaches the replies and the reactions (TASK-454 part C); a
+   * comment offers them when the API sent its own too (`hasThreads`). */
+  threads: boolean;
+  /** The next replies of a comment: «View N more replies». */
+  showReplies: (commentId: string) => void;
+  /**
+   * One's own reaction to a comment or a reply becomes `kind`, or goes when
+   * it is `kind` already. Shown at once, and back as it was, with
+   * `sendProblem`, if the API refuses.
+   */
+  react: (comment: Comment, kind: CommentReactionKind) => void;
 };
 
 /** What came of a comment written. */
@@ -56,9 +78,15 @@ export function useDrawingComments(drawingId: string): DrawingComments {
   const [tries, setTries] = useState(0);
   const [sending, setSending] = useState(false);
   const [sendProblem, setSendProblem] = useState<string | null>(null);
+  // Where the replies of each comment go on, by comment: the `next` of the
+  // last page asked for. A list asked again starts each from the beginning.
+  const repliesNext = useRef(new Map<string, string | null>());
+  // One reaction at a time: the next waits for the API's answer to this one.
+  const reacting = useRef(false);
 
   useEffect(() => {
     let live = true;
+    repliesNext.current = new Map();
     void door.pageOf(drawingId, null).then((outcome) => {
       if (!live) {
         return;
@@ -129,11 +157,14 @@ export function useDrawingComments(drawingId: string): DrawingComments {
   }, [door, drawingId, next, update]);
 
   const send = useCallback(
-    async (text: string): Promise<Sent> => {
+    async (text: string, replyTo?: Comment): Promise<Sent> => {
       const asked = drawingId;
       setSending(true);
       setSendProblem(null);
-      const outcome = await door.write(asked, text);
+      const outcome =
+        replyTo === undefined
+          ? await door.write(asked, text)
+          : await door.write(asked, text, replyTo.id);
       setSending(false);
       if (outcome === null) {
         return "failed";
@@ -146,12 +177,21 @@ export function useDrawingComments(drawingId: string): DrawingComments {
         return "failed";
       }
       const added = outcome.value;
-      // The newest goes at the end: shown now only when the end is shown.
-      update(asked, (was) => ({
-        ...was,
-        comments: was.next === null ? [...was.comments, added] : was.comments,
-        total: was.total + 1,
-      }));
+      update(asked, (was) => {
+        // A reply goes under its comment, wherever that is in the list.
+        const under = withReply(was.comments, added);
+        if (under !== null) {
+          return { ...was, comments: under, total: was.total + 1 };
+        }
+        // A comment is the newest: shown now only when the end is shown. A
+        // reply whose comment is on a page not asked for comes with it.
+        const atEnd = was.next === null && (added.parent_id ?? null) === null;
+        return {
+          ...was,
+          comments: atEnd ? [...was.comments, added] : was.comments,
+          total: was.total + 1,
+        };
+      });
       return "sent";
     },
     [door, drawingId, update],
@@ -166,11 +206,15 @@ export function useDrawingComments(drawingId: string): DrawingComments {
           return;
         }
         if (outcome.kind === "ok") {
-          update(asked, (was) => ({
-            ...was,
-            comments: was.comments.filter((c) => c.id !== commentId),
-            total: Math.max(0, was.total - 1),
-          }));
+          update(asked, (was) => {
+            const { comments, gone } = withoutComment(was.comments, commentId);
+            // Its replies went with it, shown or not.
+            return {
+              ...was,
+              comments,
+              total: Math.max(0, was.total - Math.max(1, gone)),
+            };
+          });
         } else if (outcome.kind === "api_error" && outcome.code === "http_error") {
           // Already gone, or no longer ours to delete: the list as it is now.
           reload();
@@ -180,6 +224,71 @@ export function useDrawingComments(drawingId: string): DrawingComments {
       });
     },
     [door, drawingId, reload, update],
+  );
+
+  const { threads } = door;
+  const showReplies = useCallback(
+    (commentId: string) => {
+      if (threads === undefined) {
+        return;
+      }
+      const asked = drawingId;
+      const cursors = repliesNext.current;
+      void threads
+        .repliesOf(commentId, cursors.get(commentId) ?? null)
+        .then((outcome) => {
+          if (outcome === null) {
+            return;
+          }
+          if (outcome.kind !== "ok") {
+            setSendProblem(commentProblem(outcome));
+            return;
+          }
+          const page = outcome.value;
+          cursors.set(commentId, page.next);
+          update(asked, (was) => ({
+            ...was,
+            comments: withMoreReplies(
+              was.comments,
+              commentId,
+              page.comments,
+              page.total,
+            ),
+          }));
+        });
+    },
+    [drawingId, threads, update],
+  );
+
+  const react = useCallback(
+    (comment: Comment, kind: CommentReactionKind) => {
+      const before = comment.reactions;
+      if (threads === undefined || before === undefined || reacting.current) {
+        return;
+      }
+      const asked = drawingId;
+      // One's own again takes it away.
+      const mine = before.mine === kind ? null : kind;
+      const show = (reactions: typeof before) =>
+        update(asked, (was) => ({
+          ...was,
+          comments: withReactions(was.comments, comment.id, reactions),
+        }));
+      reacting.current = true;
+      setSendProblem(null);
+      show(withMyReaction(before, mine));
+      void threads.react(comment.id, mine).then((outcome) => {
+        reacting.current = false;
+        if (outcome !== null && outcome.kind === "ok") {
+          // What the API counts is what stays.
+          show(outcome.value);
+        } else {
+          show(before);
+          setSendProblem(reactionNotSaved());
+        }
+      });
+    },
+    [drawingId, threads, update],
   );
 
   return {
@@ -194,5 +303,8 @@ export function useDrawingComments(drawingId: string): DrawingComments {
     showMore,
     send,
     remove,
+    threads: threads !== undefined,
+    showReplies,
+    react,
   };
 }

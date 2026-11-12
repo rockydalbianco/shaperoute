@@ -113,11 +113,11 @@ def _request(shape: str = "circle", distance_m: int = 1000, **kw: Any) -> RouteR
 
 def test_snowshoeing_is_drawn_by_the_engine_and_in_the_contract() -> None:
     # In ENGINE_ONLY until TASK-413 part A2, which gives it to the contract,
-    # after the skate.
+    # after the skate; a wheelchair after it (TASK-414).
     assert ENGINE_ONLY == ()
     (activity,) = (a for a in ENGINE_ACTIVITIES if a.name == "snowshoeing")
-    assert SUPPORTED_ACTIVITIES[-1] == "snowshoeing"
-    assert ACTIVITIES[-1] == "snowshoeing"
+    assert SUPPORTED_ACTIVITIES[-2:] == ("snowshoeing", "wheelchair")
+    assert ACTIVITIES[-2:] == ("snowshoeing", "wheelchair")
     assert DISTANCE_LIMITS_M["snowshoeing"] == (500, 3_000)
     assert SNOW_ACTIVITIES == {"snowshoeing"}
     assert FREE_ACTIVITIES == WATER_ACTIVITIES | {"snowshoeing"}

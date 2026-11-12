@@ -54,6 +54,7 @@ from shaperoute_api.activity_graphs import (
 )
 from shaperoute_api.best_routes import install_best_routes
 from shaperoute_api.cities import CitySearch, SuggestionsBody
+from shaperoute_api.comment_reactions import install_comment_reactions
 from shaperoute_api.comments import install_comments
 from shaperoute_api.contact import install_contact
 from shaperoute_api.contact_people import install_contact_people
@@ -148,6 +149,7 @@ from shaperoute_api.sign_in_providers import (
     install_sign_in_providers,
 )
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
+from shaperoute_api.sleep import install_sleep
 from shaperoute_api.strava import install_strava
 from shaperoute_api.strava_client import Strava
 from shaperoute_api.stroke_matches_api import install_stroke_matches
@@ -404,6 +406,9 @@ def create_app(
     # The swims in a pool, saved without a track, and their lengths
     # (TASK-400); they need a token.
     install_pool_swims(app)
+    # The nights of sleep a person publishes, on the profile and in the
+    # post of an activity (TASK-467 B1); they need a token.
+    install_sleep(app)
     # The figures of a run for the page of its post: splits, elevation,
     # cadence, calories (TASK-410 C); they need a token.
     install_run_stats(app)
@@ -424,6 +429,8 @@ def create_app(
     # What the members leave under a drawing with one tap, the super like
     # with a comment (TASK-119); they need a token.
     install_reactions(app)
+    # What they leave on a comment, or on a reply (TASK-454); a token too.
+    install_comment_reactions(app)
     # The drawings the members publish, read by whoever is signed in
     # (TASK-118); it needs a token.
     install_feed(app)

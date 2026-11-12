@@ -28,26 +28,33 @@ const BEFORE_LIMITS = {
   walking: [1_000, 30_000],
 };
 // Added since, each by a line of sports/index.ts: a hike (TASK-377), an MTB
-// ride (TASK-378), a skate (TASK-380) and snowshoeing (TASK-413), planned
-// before the walk, in the order of the route engine; a gravel ride
+// ride (TASK-378), a skate (TASK-380), snowshoeing (TASK-413) and a
+// wheelchair or a stroller (TASK-414), planned before the walk, in the order
+// of the route engine; a gravel ride
 // (TASK-378) after it, drawn as a ride as the walk is drawn as a run.
 const SINCE_LIMITS: Readonly<Record<string, readonly [number, number]>> = {
   hiking: [1_000, 30_000],
   mountain_biking: [10_000, 30_000],
   inline_skating: [5_000, 30_000],
   snowshoeing: [500, 3_000],
+  wheelchair: [1_000, 5_000],
   gravel_biking: [10_000, 30_000],
 };
 const SINCE = Object.keys(SINCE_LIMITS);
-// And a day of ski touring (TASK-415), recorded without a shape after the
-// days on the snow of before.
-const NOW_RECORD_ACTIVITIES = [...BEFORE_RECORD_ACTIVITIES, "ski_touring"];
+// And a day of ski touring (TASK-415) and a paragliding flight (TASK-305
+// parts R), recorded without a shape after the days on the snow of before.
+const NOW_RECORD_ACTIVITIES = [
+  ...BEFORE_RECORD_ACTIVITIES,
+  "ski_touring",
+  "paragliding",
+];
 const NOW_ACTIVITIES = [
   ...BEFORE_ACTIVITIES.slice(0, 4),
   "hiking",
   "mountain_biking",
   "inline_skating",
   "snowshoeing",
+  "wheelchair",
   "walking",
   "gravel_biking",
 ];
@@ -57,7 +64,7 @@ test("the activities are those of before, in their order", () => {
   assert.deepEqual([...API_ACTIVITIES], NOW_ACTIVITIES);
   assert.deepEqual([...RECORD_ACTIVITIES], NOW_RECORD_ACTIVITIES);
   assert.deepEqual(
-    NOW_RECORD_ACTIVITIES.filter((a) => a !== "ski_touring"),
+    NOW_RECORD_ACTIVITIES.filter((a) => a !== "ski_touring" && a !== "paragliding"),
     BEFORE_RECORD_ACTIVITIES,
   );
   // Then a workout at the gym, saved without a track (TASK-385 B0).
@@ -111,6 +118,7 @@ test("the types are the literals of before", () => {
     | "mountain_biking"
     | "inline_skating"
     | "snowshoeing"
+    | "wheelchair"
     | "walking"
     | "gravel_biking"
     ? true

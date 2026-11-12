@@ -2079,6 +2079,9 @@ function MuW() {
                   <OwnProfile
                     active={screen === "profile"}
                     onBack={profileFrom !== null ? backFromProfile : undefined}
+                    // The first step of a new profile (TASK-457); the ski
+                    // mode's bar has no «Explore».
+                    onExplore={skiMode ? undefined : () => showPage("explore")}
                   />
                 ),
               },

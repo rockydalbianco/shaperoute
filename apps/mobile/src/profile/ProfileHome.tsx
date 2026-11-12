@@ -11,18 +11,19 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { tourTexts } from "../tour/tourTexts";
-import { BlockedPeople } from "../social/BlockedPeople";
 import { useBlocksVersion } from "../social/blockedNow";
 import { FollowLists } from "../social/FollowLists";
 import { useFollowsDoor } from "../social/followsDoor";
 import { TAB_ICON_SIZE } from "../tabs/TabBar";
 import { Tap } from "../ui/Tap";
+import { BadgesSection } from "./BadgesSection";
+import { FirstStep, profileStage } from "./FirstStep";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { ProfileGallery } from "./ProfileGallery";
 import { ProfileHeader } from "./ProfileHeader";
 import { OwnVo2Max } from "./OwnVo2Max";
 import { GymLevels } from "../gym/GymLevels";
+import { WeekStrip } from "../activities/WeekStrip";
 import { PersonalBests } from "./PersonalBests";
 import { ProfileStats, totalsOf, useOwnProfile } from "./ProfileStats";
 import { bioOf } from "./profileFields";
@@ -50,8 +51,9 @@ type Props = {
   onOpen: (section: ProfileSection) => void;
   /** «Edit profile»: username and bio (TASK-116). */
   onEdit: () => void;
-  /** «Guide», under «Settings»: how the app works and its tour (TASK-266). */
-  onGuide?: () => void;
+  /** The first step of a new profile opens «Explore» (TASK-457); left out,
+   * its card has no button. */
+  onExplore?: () => void;
 };
 
 /**
@@ -62,11 +64,16 @@ type Props = {
  * TASK-367), and the drawings it made public
  * (TASK-117), as the others see them. A tap on the circle opens the ways
  * to change the picture under it, as the row of «Settings» (TASK-207).
- * «Guide» (TASK-266), then «Blocked people», to unblock (TASK-121); after
- * a block the lists of who follows are read again: a block ends every
- * follow. «Messages» is a tab of its own (TASK-367). Its totals under «Edit profile»,
- * and its drawings and photos at the bottom, as the others see them
- * (TASK-324).
+ * After a block the lists of who follows are read again: a block ends
+ * every follow. «Messages» is a tab of its own (TASK-367). Its totals under
+ * «Edit profile», and its drawings and photos at the bottom, as the others
+ * see them (TASK-324).
+ *
+ * In blocks, top to bottom (TASK-457): who it is; what it did (the totals
+ * and the week, or the first step while nothing was done, then bests, VO₂
+ * max and gym); who follows; what it keeps; its badges; what it made.
+ * «Guide» and «Blocked people» are in «Settings»: this page says only what
+ * is of the account.
  */
 export function ProfileHome({
   user,
@@ -74,7 +81,7 @@ export function ProfileHome({
   activities,
   onOpen,
   onEdit,
-  onGuide,
+  onExplore,
 }: Props) {
   const photo = useProfilePhoto();
   const blocks = useBlocksVersion();
@@ -83,6 +90,10 @@ export function ProfileHome({
   // Null while it comes; the totals also from an API older than TASK-324.
   const own = useOwnProfile(publicId);
   const totals = own === null ? null : totalsOf(own);
+  // Nothing done yet: the first step, not a row of zeros (TASK-457). An API
+  // without the totals says nothing of it: the profile as it was.
+  const stage =
+    own !== null && totals === null ? "active" : profileStage(activities, totals);
   const [photoOpen, setPhotoOpen] = useState(false);
   const busyText = photoBusyText(photo.busy);
   return (
@@ -131,7 +142,11 @@ export function ProfileHome({
         >
           <Text style={styles.editText}>{t("Edit profile")}</Text>
         </Pressable>
-        {totals !== null && <ProfileStats totals={totals} />}
+        {/* What it did: the totals, then the week and the calendar of every
+            sport (TASK-462; nothing from an API without it). */}
+        {stage === "active" && totals !== null && <ProfileStats totals={totals} />}
+        {stage === "active" && <WeekStrip bests={own?.personal_bests} />}
+        {stage === "new" && <FirstStep onExplore={onExplore} />}
         {/* The personal bests (TASK-368): none from an older API. */}
         {own?.personal_bests && <PersonalBests bests={own.personal_bests} />}
         {/* The VO₂ max (TASK-397): none from an API older than it. */}
@@ -141,6 +156,7 @@ export function ProfileHome({
       </View>
       {/* Built again at every block and unblock: it reads its lists anew. */}
       <FollowLists key={blocks} />
+      {/* What it keeps. */}
       <View style={styles.tiles}>
         <Tile
           emoji={SECTION_EMOJI.favorites}
@@ -155,8 +171,9 @@ export function ProfileHome({
           onPress={() => onOpen("activities")}
         />
       </View>
-      {onGuide && <SectionRow emoji="❓" name={tourTexts().guide} onPress={onGuide} />}
-      <BlockedPeople />
+      {/* The badges of the drawings, with how each is earned (TASK-457). */}
+      <BadgesSection badges={own?.badges ?? null} />
+      {/* What it made. */}
       <ProfileGallery
         publicId={publicId}
         own
@@ -186,7 +203,7 @@ function Tile({
       onPress={onPress}
       accessibilityRole="button"
       // One name for the whole tile: the emoji is not read on its own.
-      accessibilityLabel={count !== null ? `${name}, ${count}` : name}
+      accessibilityLabel={count !== null && count > 0 ? `${name}, ${count}` : name}
     >
       <View style={styles.tileTop}>
         <View style={styles.badge}>
@@ -194,36 +211,13 @@ function Tile({
         </View>
         <Text style={styles.rowArrow}>›</Text>
       </View>
-      <Text style={[styles.count, count === null && styles.countUnknown]}>
-        {count !== null ? String(count) : "–"}
-      </Text>
+      {/* Nothing kept yet: the name alone, not a zero (TASK-457). */}
+      {count !== 0 && (
+        <Text style={[styles.count, count === null && styles.countUnknown]}>
+          {count !== null ? String(count) : "–"}
+        </Text>
+      )}
       <Text style={styles.tileName}>{name}</Text>
-    </Pressable>
-  );
-}
-
-/** A row of the first page that opens a page: «Settings», «Guide». */
-function SectionRow({
-  emoji,
-  name,
-  onPress,
-}: {
-  emoji: string;
-  name: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={name}
-    >
-      <View style={styles.badge}>
-        <Text style={styles.emoji}>{emoji}</Text>
-      </View>
-      <Text style={styles.rowText}>{name}</Text>
-      <Text style={styles.rowArrow}>›</Text>
     </Pressable>
   );
 }
@@ -286,8 +280,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: space.md,
   },
+  // The name at the bottom, also in a tile without its number: beside a
+  // tile that has one, the two names stay on one line (TASK-457).
   tile: {
     flex: 1,
+    justifyContent: "space-between",
     gap: space.xs,
     padding: space.md,
     borderRadius: radius.lg,
@@ -325,24 +322,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    padding: space.md,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: color.border,
-    backgroundColor: color.surface,
-  },
   pressed: {
     opacity: 0.6,
-  },
-  rowText: {
-    flex: 1,
-    color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.semibold,
   },
   rowArrow: {
     color: color.textMuted,

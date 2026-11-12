@@ -1,15 +1,35 @@
-import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { type ReactNode, useRef, useState } from "react";
+import { Image, type ImageSourcePropType, StyleSheet, Text, View } from "react-native";
 
-import { t } from "../i18n";
+import { t, tPlural } from "../i18n";
 import { SharePost } from "../share/SharePost";
 import type { PostRun } from "../share/postRun";
 import { CommentsSheet } from "../social/DrawingComments";
-import { DrawingReactions } from "../social/DrawingReactions";
+import { ReactionMark } from "../social/DrawingReactions";
+import { reactionName } from "../social/reactionKinds";
 import { useDrawingComments } from "../social/useDrawingComments";
-import { color, font, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
+import { useDrawingReactions } from "../social/useDrawingReactions";
+import {
+  color,
+  font,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  space,
+} from "../theme/tokens";
 import { Tap } from "../ui/Tap";
 import type { ShownPost } from "./feedPosts";
+import { PostReactions, type RowBox } from "./PostReactions";
+
+/** The actions' icons, from Lucide (ISC, assets/ui/icons/LICENSE-lucide.txt)
+ * as the bar's are (TASK-444): white, coloured by `tintColor`. Emoji in
+ * colours stood here, beside the bar's thin lines. */
+const ICONS = {
+  like: require("../../assets/ui/icons/heart.png"),
+  comment: require("../../assets/ui/icons/message-circle.png"),
+  share: require("../../assets/ui/icons/share.png"),
+  editRun: require("../../assets/ui/icons/pencil.png"),
+} satisfies Record<string, ImageSourcePropType>;
 
 /**
  * A member's drawing as its post shows it. What the card has is already cut
@@ -42,14 +62,24 @@ type Props = {
 /**
  * The four actions of a post (TASK-410, ADR-0340), the same in the card of
  * «Feed» (part F) and at the foot of its page (part B): «Like» opens the
- * six reactions over the row (there is no 👍 among them: the user's choice,
- * 2026-11-08), «Comment» the comments with how many there are, «Share» one's
- * own post only, «Edit & run» its line to change and run, in yellow: what
- * the post leads to. Beside the card's button and not inside it, or a
- * screen reader would never reach them.
+ * six reactions in a bar that hangs over the row and moves nothing (there
+ * is no 👍 among them: the user's choice, 2026-11-08), «Comment» the
+ * comments with how many there are, «Share» one's own post only, «Edit &
+ * run» its line to change and run, in yellow: what the post leads to.
+ * Beside the card's button and not inside it, or a screen reader would
+ * never reach them.
+ *
+ * «Like» says what is there (TASK-454, the user's choices of 2026-11-11):
+ * one's own reaction in place of the heart, its word in bold, and how many
+ * reactions the post has, as «Comment» does. A super like's comment is one
+ * of the post's comments, so they are read again once it went.
  */
 export function PostActions({ post, mine, onEditRun }: Props) {
   const [reacting, setReacting] = useState(false);
+  // Where the row is on the screen, asked at each «Like»: the bar hangs
+  // over it, in a Modal of its own.
+  const row = useRef<View>(null);
+  const [rowBox, setRowBox] = useState<RowBox | null>(null);
   const [commenting, setCommenting] = useState(false);
   // The comments' sheet is made at the first «Comment», and kept: a card in
   // «Feed» does not carry one it never opens.
@@ -58,24 +88,53 @@ export function PostActions({ post, mine, onEditRun }: Props) {
   const comments = useDrawingComments(post.drawing.id);
   const commentCount =
     comments.status === "ready" && comments.total > 0 ? ` · ${comments.total}` : "";
+  const reactions = useDrawingReactions(post.drawing.id);
+  const reactionsReady = reactions.status === "ready";
+  const reaction = reactionsReady ? reactions.mine : null;
+  const reactionCount = reactionsReady ? reactions.total : 0;
+
+  function onLike() {
+    // Nobody signed in, an API without reactions, no answer yet: no bar.
+    if (!reactionsReady) {
+      return;
+    }
+    // Asked again each time: the card has scrolled since the last.
+    setRowBox(null);
+    row.current?.measureInWindow((x, y, width) => setRowBox({ x, y, width }));
+    setReacting(true);
+  }
+
   return (
     <>
-      {reacting && (
-        <View style={styles.reactions} testID="post-reactions">
-          <DrawingReactions drawingId={post.drawing.id} barAtStart />
-        </View>
-      )}
-      <View style={styles.actions} testID="feed-actions">
+      <View ref={row} style={styles.actions} collapsable={false} testID="feed-actions">
         <Action
-          mark="👍"
-          label={t("Like")}
-          onPress={() => setReacting((was) => !was)}
+          icon={ICONS.like}
+          mark={
+            reaction === null ? undefined : (
+              <ReactionMark kind={reaction} side={ICON_SIZE} />
+            )
+          }
+          label={`${t("Like")}${reactionCount > 0 ? ` · ${reactionCount}` : ""}`}
+          // The word and the number are for the eye; a screen reader hears
+          // which reaction is one's own, and how many there are.
+          spoken={
+            reaction === null
+              ? t("Like")
+              : t("Your reaction: {name}", { name: reactionName(reaction) })
+          }
+          spokenValue={
+            reactionCount > 0
+              ? tPlural(reactionCount, "{count} reaction", "{count} reactions")
+              : undefined
+          }
+          onPress={onLike}
           expanded={reacting}
+          bold={reaction !== null}
           testID="post-like"
         />
         {comments.status !== "off" && (
           <Action
-            mark="💬"
+            icon={ICONS.comment}
             label={`${t("Comment")}${commentCount}`}
             onPress={() => {
               setCommented(true);
@@ -86,7 +145,7 @@ export function PostActions({ post, mine, onEditRun }: Props) {
         )}
         {mine && (
           <Action
-            mark="↗"
+            icon={ICONS.share}
             label={t("Share")}
             onPress={() => setSharing(postOfDrawing(post))}
             testID="post-share"
@@ -94,7 +153,7 @@ export function PostActions({ post, mine, onEditRun }: Props) {
         )}
         {onEditRun !== undefined && (
           <Action
-            mark="✏️"
+            icon={ICONS.editRun}
             label={t("Edit & run")}
             onPress={onEditRun}
             strong
@@ -102,6 +161,18 @@ export function PostActions({ post, mine, onEditRun }: Props) {
           />
         )}
       </View>
+      {reactions.problem !== null && (
+        <Text style={styles.problem} accessibilityLiveRegion="polite">
+          {reactions.problem}
+        </Text>
+      )}
+      <PostReactions
+        reactions={reactions}
+        open={reacting}
+        row={rowBox}
+        onClose={() => setReacting(false)}
+        onSuperLiked={comments.reload}
+      />
       {commented && (
         <CommentsSheet
           visible={commenting}
@@ -116,21 +187,33 @@ export function PostActions({ post, mine, onEditRun }: Props) {
 
 type ActionProps = {
   /** Drawn over the word, hidden from a screen reader: the word says it. */
-  mark: string;
+  icon: ImageSourcePropType;
+  /** Drawn in place of the icon, in its box: one's own reaction on «Like». */
+  mark?: ReactNode;
   label: string;
+  /** What a screen reader says in place of the word; the word, without. */
+  spoken?: string;
+  /** And after it, as the button's value: how many there are. */
+  spokenValue?: string;
   onPress: () => void;
   expanded?: boolean;
   /** The row's one yellow word: what the post leads to. */
   strong?: boolean;
+  /** The word in bold, in its own colour: something of one's own is there. */
+  bold?: boolean;
   testID: string;
 };
 
 function Action({
+  icon,
   mark,
   label,
+  spoken = label,
+  spokenValue,
   onPress,
   expanded,
   strong = false,
+  bold = false,
   testID,
 }: ActionProps) {
   return (
@@ -138,26 +221,53 @@ function Action({
       style={styles.action}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={spoken}
+      {...(spokenValue === undefined
+        ? {}
+        : { accessibilityValue: { text: spokenValue } })}
       {...(expanded === undefined ? {} : { accessibilityState: { expanded } })}
       testID={testID}
     >
-      <Text style={styles.mark} accessible={false} importantForAccessibility="no">
-        {mark}
-      </Text>
-      <Text style={[styles.label, strong && styles.labelStrong]} numberOfLines={1}>
+      {mark === undefined ? (
+        <Image
+          source={icon}
+          style={[styles.icon, strong && styles.iconStrong]}
+          accessible={false}
+          importantForAccessibility="no"
+          testID={`${testID}-icon`}
+        />
+      ) : (
+        <View
+          style={styles.mark}
+          accessible={false}
+          importantForAccessibility="no-hide-descendants"
+          testID={`${testID}-mark`}
+        >
+          {mark}
+        </View>
+      )}
+      <Text
+        style={[styles.label, strong && styles.labelStrong, bold && styles.labelBold]}
+        numberOfLines={1}
+      >
         {label}
       </Text>
     </Tap>
   );
 }
 
+/** The side of an action's icon, in points: the size its PNG is drawn at. */
+const ICON_SIZE = 22;
+
 const styles = StyleSheet.create({
-  reactions: {
-    paddingBottom: space.sm,
-  },
   actions: {
     flexDirection: "row",
+  },
+  problem: {
+    paddingBottom: space.sm,
+    color: color.error,
+    fontSize: fontSize.small,
+    textAlign: "center",
   },
   action: {
     flex: 1,
@@ -166,9 +276,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: space.xs,
   },
+  icon: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    tintColor: color.text,
+  },
+  iconStrong: {
+    tintColor: color.accent,
+  },
+  // The icon's own box: the row is as tall with a reaction as without.
   mark: {
-    ...font.body,
-    color: color.text,
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
   },
   label: {
     ...font.detail,
@@ -176,6 +297,9 @@ const styles = StyleSheet.create({
   },
   labelStrong: {
     color: color.accent,
+    fontWeight: fontWeight.semibold,
+  },
+  labelBold: {
     fontWeight: fontWeight.semibold,
   },
 });

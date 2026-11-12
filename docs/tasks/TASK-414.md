@@ -1,8 +1,10 @@
 # TASK-414 — Carrozzina e passeggino: forme semplici di pochi km, dove si spinge davvero
 
-**Stato**: In corso — parte 0 (misure e scelte dell'utente, solo documenti).
+**Stato**: In corso — parte 0 in `main` (#939); parte A in `main` (#1183,
+`f614821c`, 2026-11-12: motore, contratto, API, profilo nascosto
+nell'app); prossima B col via del Coordinatore.
 **Fase**: 4 · **Branch**: `docs/TASK-414-0-wheelchair` (parte 0), poi
-parte A e parte B · **ADR**: ADR-0343 (proposto) · numeri dal Coordinatore
+parte A e parte B · **ADR**: ADR-0343 (accettato 2026-11-12, precisazione A) · numeri dal Coordinatore
 · sessione dello sport, avviata dal «Coordinatore Sport»
 
 ## Obiettivo
@@ -201,9 +203,10 @@ come la proposta, tranne la prima:
 - [x] 0: le scelte dell'utente sono scritte qui, una per una (2026-11-08).
 - [x] 0: la lista della parte A è al Coordinatore, con la domanda sul numero
       della migrazione (approvata, 0058 in bozza, 2026-11-08).
-- [ ] A: un percorso sul grafo di prova evita scale, cordoli alti, superfici
+- [x] A: un percorso sul grafo di prova evita scale, cordoli alti, superfici
       ruvide e strade grandi senza marciapiede; test deterministici; corsa,
-      bici e canoa invariate al banco (`compare --same`).
+      bici e canoa invariate (i nove percorsi fissi di `test_same_routes.py`,
+      2026-11-11).
 - [ ] B: lo sport si sceglie, si percorre, si salva e va in Salute; i testi
       sono in cinque lingue.
 
@@ -220,6 +223,50 @@ docs/INDEX.md               (una riga)
 ```
 
 Le scelte sono nella stessa PR: sono arrivate prima che la PR fosse aperta.
+
+Parte A (lista rifatta su `main` `78c2fc87` e approvata dal Coordinatore il
+2026-11-11; migrazione `0071` in bozza, il numero vero è il primo libero al
+merge). Rispetto a quella dell'8 novembre: STATUS, DECISIONS e INDEX vanno
+nella PR di documenti dopo il merge; in più `searchFilters.ts`, i test con
+le liste in ordine (`test_inline_skating.py`, `test_snowshoeing.py`,
+`test_ski_touring_api.py`, `test_personal_bests.py`), `docs/API.md` e `docs/DATABASE.md`, come Roller
+A (#912) e Ciaspole A2 (#1130).
+
+```
+services/route-engine/route_engine/networks/wheel.py             (nuovo)
+services/route-engine/route_engine/networks/__init__.py
+services/route-engine/route_engine/activities/wheelchair.py      (nuovo)
+services/route-engine/route_engine/activities/__init__.py, base.py
+services/route-engine/route_engine/models.py
+services/route-engine/tests/test_wheelchair.py                   (nuovo)
+services/route-engine/tests/test_sport_registry.py, test_bike_network.py,
+    test_inline_skating.py, test_snowshoeing.py
+packages/shared-types/src/sports/wheelchair.ts                   (nuovo)
+packages/shared-types/src/sports/index.ts
+packages/shared-types/fixtures/route-request-wheelchair.json     (nuovo)
+packages/shared-types/fixtures/contract.json, reads.json, run-activities.json
+packages/shared-types/test/wheelchair.test.ts                    (nuovo)
+packages/shared-types/test/sportRegistry.test.ts
+services/api/shaperoute_api/sports/wheelchair.py                 (nuovo)
+services/api/shaperoute_api/sports/__init__.py
+services/api/shaperoute_api/activities.py, personal_bests.py, reads.py, game_rules.py
+services/api/migrations/0071_wheelchair.sql                      (nuovo)
+services/api/tests/test_wheelchair_api.py                        (nuovo)
+services/api/tests/ (le liste): test_sport_registry_api.py, test_personal_bests.py,
+    test_cycling.py, test_record_only.py, test_favorites.py, test_paddling.py,
+    test_gravel_mtb_api.py, test_inline_skating_api.py, test_ski_touring_api.py
+services/api/shaperoute_api/route_store.py                       (SAME_ROUTES_AS)
+services/api/tests/fixtures/same_routes/<impronta>.json          (nuovo: la prova)
+apps/mobile/src/sports/wheelchair.ts                             (nuovo, nascosto)
+apps/mobile/src/sports/index.ts
+apps/mobile/src/search/searchFilters.ts                          (NOT_YET)
+apps/mobile/src/sports/sportProfiles.test.ts, activityName.test.ts,
+    src/route/distanceMiles.test.ts, src/api/accounts.test.ts
+apps/mobile/targets/watch/Core/Sources/WatchCore/Resources/sports.json
+apps/mobile/targets/watch/{de,en,es,fr,it}.lproj/Localizable.strings
+apps/mobile/assets/engine/engine.zip                             (rifatto, ultimo commit)
+docs/tasks/TASK-414.md, docs/sports/wheelchair.md, docs/API.md, docs/DATABASE.md
+```
 
 ## Dove si è
 
@@ -253,3 +300,46 @@ Coordinatore Sport e il Coordinatore (dopo o prima di 413 A e 415 A).
   `elevation.py`, `tags.py`, `summ.py`, `bench.sh`. I download grezzi delle
   sei zone sono in `out/TASK-414/cache/raw_*.pickle`: utili alla parte A per
   non riscaricare.
+
+2026-11-11, parte A (branch `feat/TASK-414-a-wheelchair`, lista rifatta su
+`main` `78c2fc87`, via del Coordinatore, migrazione `0071` in bozza):
+
+- **Motore**: la rete `wheel` (`networks/wheel.py`) è `wheelcalm` del
+  banco più le regole della rete foot di TASK-421; sui 30 download grezzi
+  della parte 0 ha gli stessi km e le stesse vie della rete del banco.
+  L'attività `wheelchair`, 1–5 km, ha `Activity.shapes` = cerchio, cuore,
+  stella, luna: `models.py` rifiuta ogni altra forma, le parole, le
+  immagini, i disegni e i tratti.
+- **Impronta**: i nove percorsi fissi uguali (`e0834d054b6e` →
+  `427ed1a16a97`); sul server, dopo il passo, `e0834d054b6e 8ab61d8e87f9
+  b9d00c37d28d 574fbfba41eb` (se nessun altro motore entra prima).
+- **API**: Strava `Wheelchair`, GPX `wheelchair`, record su 1 e 5 km (25
+  km/h come pavimento, come un salto del GPS a piedi), nel gioco come la
+  camminata coi controlli della corsa; zone sue di 8,5 × 8,5 km coi nomi
+  delle strade, una in memoria (da 2 a circa 170 MB, `sports/wheelchair.md`).
+  Ogni corsa salvata tiene anche i record `wheelchair` (come per il
+  Roller): la migrazione va applicata prima che parta il codice nuovo.
+- **App**: profilo nascosto (nessuna riga in «Impostazioni», fuori dalla
+  ricerca), nome inglese e calorie della camminata fino alla parte B.
+- **Restano**: il passo server col sì dell'utente (controlli in
+  `out/TASK-414/SERVER-A.md`), la PR di documenti dopo il merge (STATUS,
+  DECISIONS con ADR-0343 «Accettato», INDEX), poi la parte B.
+
+2026-11-12: la #1183 è in `main` (`f614821c`), unita dall'utente sulla
+testa `53a3b9cc`, dopo il merge di `main` col parapendio (0069) e le
+risposte ai commenti (0070): la migrazione è la `0071_wheelchair.sql`.
+Impronte invariate. ADR-0343 è accettato, con la precisazione A.
+
+## Cosa resta
+
+- **Server**: la `0071` col passo dell'aggiornamento completo, col sì
+  dell'utente; si applica all'avvio, prima del codice nuovo (ogni corsa
+  salvata scrive anche i record `wheelchair`). I controlli sono in
+  `out/TASK-414/SERVER-A.md` (impronte attese `e0834d054b6e 8ab61d8e87f9
+  b9d00c37d28d 574fbfba41eb`, un cuore di 3 km a Trento, una forma
+  rifiutata col 422).
+- **Orologio**: i file di `targets/watch/**` della parte A (`sports.json`,
+  `Localizable.strings`) non entrano nella build 14 dell'orologio già in
+  revisione; entrano con la build dopo.
+- **Parte B** (l'app): solo col via del Coordinatore e la lista dei file;
+  `settings/sport.ts` e `sports/**` adesso sono di TASK-305 R2.

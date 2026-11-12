@@ -16,9 +16,11 @@ const DAY_MS = 24 * HOUR_MS;
 const WEEK_MS = 7 * DAY_MS;
 
 /**
- * How long ago a comment was written: "just now", "5 min ago", "3 h ago",
- * "2 d ago"; after a week the day, "Fri 2 Oct 2026". A clock a little
- * behind the API's says "just now", never a time to come.
+ * How long ago a comment was written, or a post run: "just now", "5 min
+ * ago", "3 h ago", "yesterday" from 24 to 48 hours (TASK-444, the user's
+ * choice: not "1 d ago"), "2 d ago"; after a week the day, "Fri 2 Oct
+ * 2026". A clock a little behind the API's says "just now", never a time
+ * to come.
  */
 export function agoLabel(createdAt: string, now: number = Date.now()): string {
   const when = Date.parse(createdAt);
@@ -34,6 +36,9 @@ export function agoLabel(createdAt: string, now: number = Date.now()): string {
   }
   if (ago < DAY_MS) {
     return t("{count} h ago", { count: Math.floor(ago / HOUR_MS) });
+  }
+  if (ago < 2 * DAY_MS) {
+    return t("yesterday");
   }
   if (ago < WEEK_MS) {
     return t("{count} d ago", { count: Math.floor(ago / DAY_MS) });

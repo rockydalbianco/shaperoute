@@ -2716,4 +2716,20 @@ export const FR: Table = {
   "{name} · on the snow · target {km} km": "{name} · sur la neige · objectif {km} km",
   "{name} · on the snow · target {mi} mi": "{name} · sur la neige · objectif {mi} mi",
   "White: where you walked.": "Blanc : là où tu as marché.",
+  // src/liveShare/ (TASK-468 part B1: «Send in MuW», the heart rate, the
+  // live in the app; en and it approved by the user 2026-11-12)
+  "Send in MuW": "Envoyer sur MuW",
+  "Show my heart rate": "Montrer ma fréquence cardiaque",
+  "Off: nobody sees your heart rate. On: they see it when a watch sends it.":
+    "Désactivé : personne ne voit ta fréquence cardiaque. Activé : ils la voient quand une montre l'envoie.",
+  "Choose who gets your live": "Choisis qui reçoit ton live",
+  "They can follow you in the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain and calories.":
+    "Ils te suivent dans l'app : ta position exacte sur la carte, le parcours fait, distance, temps, allure ou vitesse, dénivelé et calories.",
+  "Send ({count})": "Envoyer ({count})",
+  "Live ended": "Live terminé",
+  "Finished · {distance} · {time}": "Terminé · {distance} · {time}",
+  "No update since {time}": "Aucune mise à jour depuis {time}",
+  "Updated {seconds} s ago": "Mis à jour il y a {seconds} s",
+  "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
+  "🔴 Live": "🔴 Live",
 };

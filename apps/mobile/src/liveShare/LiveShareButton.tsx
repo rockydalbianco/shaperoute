@@ -1,6 +1,6 @@
 import type { RunActivity } from "@shaperoute/shared-types";
 import { type ReactNode, useRef, useState } from "react";
-import { Alert, Platform, Share, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, Share, StyleSheet, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../i18n";
@@ -18,7 +18,13 @@ import {
 } from "../theme/tokens";
 import { SheetModal } from "../ui/SheetModal";
 import { Tap } from "../ui/Tap";
-import { startLiveShare, stopLiveShare, useLiveShare } from "./liveShareStore";
+import {
+  liveShareLink,
+  startLiveShare,
+  stopLiveShare,
+  useLiveShare,
+} from "./liveShareStore";
+import { SendLiveSheet } from "./SendLiveSheet";
 
 /**
  * «Share live» on the recording screen (TASK-424 part B1, ADR-0352;
@@ -30,6 +36,11 @@ import { startLiveShare, stopLiveShare, useLiveShare } from "./liveShareStore";
  * in grey, with nothing to touch. Never on by itself. A swim in a pool and
  * a workout at the gym (part B2) have it too, with no map: the sheet says
  * what their page shows.
+ *
+ * TASK-468 part B1 (ADR-0381): the sheet also offers «Send in MuW», the
+ * share in a message to people chosen in the app (made without its link),
+ * and «Show my heart rate» for them, off unless turned on. While it
+ * shares, a touch offers «Send in MuW», «Share link» and «Stop sharing».
  */
 
 /** A recording with no map (part B2): its activity, and for a swim in a
@@ -52,6 +63,25 @@ export function liveShareMessage(url: string): string {
   return t("Follow my activity live on MuW: {url}", { url });
 }
 
+/** «Share link» while sharing: the link (made now for a share made for the
+ * chat), then the phone's share sheet. */
+async function shareLinkNow(): Promise<void> {
+  const url = await liveShareLink();
+  if (url !== null) {
+    void Share.share({ message: liveShareMessage(url) }).catch(() => undefined);
+  }
+}
+
+/** What a touch on «Sharing live» offers (TASK-468 part B1). */
+export function sharingMenu(onSend: () => void): void {
+  Alert.alert(t("Sharing live"), undefined, [
+    { text: t("Send in MuW"), onPress: onSend },
+    { text: t("Share link"), onPress: () => void shareLinkNow() },
+    { text: t("Stop sharing"), style: "destructive", onPress: confirmStopSharing },
+    { text: t("Keep sharing"), style: "cancel" },
+  ]);
+}
+
 /** Asks, then stops sharing: the link stops working now. */
 export function confirmStopSharing(): void {
   Alert.alert(t("Stop sharing?"), t("The link stops working now."), [
@@ -71,6 +101,11 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
   const activity = trackless?.activity ?? sport;
   const [open, setOpen] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  // TASK-468 part B1: the heart rate to the viewers in the app, and the
+  // people sheet. It opens once the consent sheet is down, as the phone's.
+  const [heart, setHeart] = useState(false);
+  const [choosing, setChoosing] = useState(false);
+  const toChoose = useRef(false);
   // The link made, until the sheet has gone: iOS opens one sheet at a time,
   // and the phone's, shown while ours is closing, never comes up
   // (TASK-358).
@@ -79,6 +114,10 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
   const starting = status.kind === "starting";
 
   const openShareSheet = () => {
+    if (toChoose.current) {
+      toChoose.current = false;
+      setChoosing(true);
+    }
     const url = toShare.current;
     toShare.current = null;
     if (url !== null) {
@@ -88,7 +127,7 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
     }
   };
 
-  const share = async () => {
+  const share = async (link: boolean) => {
     if (session === null || apiUrl === null) {
       return;
     }
@@ -97,9 +136,14 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
       { baseUrl: apiUrl, token: session.token, fetchFn, key: apiKey },
       activity,
       trackless?.poolLengthM ?? null,
+      { link, heartVisible: heart },
     );
     if (outcome.kind === "started") {
       toShare.current = outcome.url;
+      setOpen(false);
+    } else if (outcome.kind === "started_without_link") {
+      // The people once the sheet is down: iOS shows one at a time.
+      toChoose.current = true;
       setOpen(false);
     } else if (outcome.kind === "failed") {
       setProblem(t("Couldn't create the link. Try again."));
@@ -114,10 +158,9 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
     control = (
       <Tap
         style={[styles.chip, styles.live]}
-        onPress={confirmStopSharing}
+        onPress={() => sharingMenu(() => setChoosing(true))}
         accessibilityRole="button"
         accessibilityLabel={t("Sharing live")}
-        accessibilityHint={t("Stop sharing?")}
         testID="live-share-on"
       >
         <View style={styles.dot} />
@@ -164,10 +207,20 @@ export function LiveShareButton({ canStart, trackless, fetchFn, apiKey }: Props)
           withMap={trackless === undefined}
           starting={starting}
           problem={problem}
-          onShare={() => void share()}
+          heart={heart}
+          onHeart={setHeart}
+          onShare={() => void share(true)}
+          onSend={() => void share(false)}
           onCancel={() => setOpen(false)}
         />
       </SheetModal>
+      {choosing && (
+        <SendLiveSheet
+          onClose={() => setChoosing(false)}
+          fetchFn={fetchFn}
+          apiKey={apiKey}
+        />
+      )}
     </View>
   );
 }
@@ -176,13 +229,19 @@ function ConsentSheet({
   withMap,
   starting,
   problem,
+  heart,
+  onHeart,
   onShare,
+  onSend,
   onCancel,
 }: {
   withMap: boolean;
   starting: boolean;
   problem: string | null;
+  heart: boolean;
+  onHeart: (on: boolean) => void;
   onShare: () => void;
+  onSend: () => void;
   onCancel: () => void;
 }) {
   const insets = useSafeAreaInsets();
@@ -213,6 +272,23 @@ function ConsentSheet({
             "The link stops working one hour after you finish, or as soon as you stop sharing. Then your positions are deleted.",
           )}
         </Text>
+        <View style={styles.heartRow}>
+          <View style={styles.heartWords}>
+            <Text style={styles.heartTitle}>{t("Show my heart rate")}</Text>
+            <Text style={styles.body}>
+              {t(
+                "Off: nobody sees your heart rate. On: they see it when a watch sends it.",
+              )}
+            </Text>
+          </View>
+          <Switch
+            value={heart}
+            onValueChange={onHeart}
+            disabled={starting}
+            accessibilityLabel={t("Show my heart rate")}
+            testID="live-share-heart"
+          />
+        </View>
         {problem !== null && (
           <Text style={styles.problem} accessibilityLiveRegion="polite">
             {problem}
@@ -241,6 +317,16 @@ function ConsentSheet({
             </Text>
           </Tap>
         </View>
+        <Tap
+          style={[styles.button, styles.wide, starting && styles.off]}
+          onPress={onSend}
+          disabled={starting}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: starting, busy: starting }}
+          testID="live-share-send-in-muw"
+        >
+          <Text style={styles.buttonText}>{t("Send in MuW")}</Text>
+        </Tap>
       </View>
     </View>
   );
@@ -326,6 +412,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.borderStrong,
     backgroundColor: color.surfaceRaised,
+  },
+  wide: {
+    flex: 0,
+  },
+  heartRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+  },
+  heartWords: {
+    flex: 1,
+    gap: space.xs,
+  },
+  heartTitle: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   primary: {
     borderColor: color.text,

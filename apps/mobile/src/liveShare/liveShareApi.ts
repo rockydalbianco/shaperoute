@@ -1,8 +1,11 @@
 import type {
   LiveShare,
   LiveShareCreated,
+  LiveShareMade,
   LiveShareRequest,
+  LiveShareSent,
   LiveUpdate,
+  LiveView,
 } from "@shaperoute/shared-types";
 
 import { authHeaders } from "../api/accounts";
@@ -39,7 +42,7 @@ export const CREATE_TIMEOUT_MS = 20_000;
 
 async function send<T>(
   { baseUrl, token, fetchFn = fetch, key = apiKey() }: LiveApiOptions,
-  method: "POST" | "DELETE",
+  method: "GET" | "POST" | "DELETE",
   path: string,
   body: unknown,
   timeoutMs: number,
@@ -94,6 +97,25 @@ function isCreated(value: unknown): value is LiveShareCreated {
   );
 }
 
+/** A share made without its link (TASK-468): `url` is null. */
+function isMade(value: unknown): value is LiveShareMade {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    (value.url === null || (typeof value.url === "string" && value.url !== ""))
+  );
+}
+
+function isSent(value: unknown): value is LiveShareSent {
+  return isRecord(value) && Array.isArray(value.sent) && Array.isArray(value.skipped);
+}
+
+function isView(value: unknown): value is LiveView {
+  return (
+    isRecord(value) && typeof value.status === "string" && Array.isArray(value.points)
+  );
+}
+
 function isShare(value: unknown): value is LiveShare {
   return isRecord(value) && typeof value.status === "string";
 }
@@ -145,5 +167,63 @@ export function stopLiveShareRequest(
     undefined,
     UPDATE_TIMEOUT_MS,
     isNothing,
+  );
+}
+
+/** POST /me/live-shares with `link` and `heart_visible` (TASK-468): a share
+ * made only for the chat has no link, `url` null. */
+export function createLiveShareMade(
+  options: LiveApiOptions,
+  request: LiveShareRequest,
+): Promise<LiveAnswer<LiveShareMade>> {
+  return send(options, "POST", "/me/live-shares", request, CREATE_TIMEOUT_MS, isMade);
+}
+
+/** POST /me/live-shares/{id}/link: its link, made now (a new token). */
+export function makeLiveLink(
+  options: LiveApiOptions,
+  id: string,
+): Promise<LiveAnswer<LiveShareCreated>> {
+  return send(
+    options,
+    "POST",
+    `/me/live-shares/${encodeURIComponent(id)}/link`,
+    undefined,
+    CREATE_TIMEOUT_MS,
+    isCreated,
+  );
+}
+
+/** POST /me/live-shares/{id}/send: «Send in MuW», a message to each
+ * person (TASK-468 part A1b). */
+export function sendLiveShareTo(
+  options: LiveApiOptions,
+  id: string,
+  publicIds: string[],
+): Promise<LiveAnswer<LiveShareSent>> {
+  return send(
+    options,
+    "POST",
+    `/me/live-shares/${encodeURIComponent(id)}/send`,
+    { to: publicIds },
+    CREATE_TIMEOUT_MS,
+    isSent,
+  );
+}
+
+/** GET /live-shares/{id}?after=: what a signed-in viewer sees (TASK-468).
+ * «ended» (404, 401) for one it may not see, or gone. */
+export function fetchLiveView(
+  options: LiveApiOptions,
+  id: string,
+  after: number,
+): Promise<LiveAnswer<LiveView>> {
+  return send(
+    options,
+    "GET",
+    `/live-shares/${encodeURIComponent(id)}?after=${after}`,
+    undefined,
+    UPDATE_TIMEOUT_MS,
+    isView,
   );
 }

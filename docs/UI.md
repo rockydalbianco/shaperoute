@@ -4918,6 +4918,45 @@ yet: MuW records your flight.»: nessuna forma, nessun percorso. Il volo si regi
   «Top speed», poi «Calories». Provato nel simulatore il 2026-11-12. Nel Feed il volo è un post senza percorso, come una giornata
   sulla neve, con la velocità al posto del passo.
 
+#### Sotto «Record your flight» (TASK-305 parte R5b)
+
+Le scelte dell'utente del 2026-11-12, nei testi che ha approvato
+(TASK-305.md, «Testi di R5»). Sotto il bottone, tre schede (`FlightPage`):
+
+- **«Ready to fly»**, la prima, perché è quella che serve prima di partire.
+  - La precisione del GPS del telefono, letta una volta al secondo finché
+    «Draw» è aperto. La posizione non esce dal telefono; si mostra solo
+    l'errore.
+  - Fino a 10 m: «GPS ready · ±5 m», col punto giallo. Oltre: «Weak GPS ·
+    ±25 m: wait in the open». Prima del primo fix: «Waiting for GPS…».
+  - Senza permesso della posizione la riga non c'è.
+  - Con un account c'è l'interruttore **«Share live at start»**, con sotto
+    «When the countdown ends, MuW makes the link and opens the share
+    sheet.». Parte spento e poi resta com'era al volo prima (il file
+    `flight-live-at-start.json`).
+  - Acceso, alla fine del conto alla rovescia di un volo l'app crea il link
+    dal vivo e apre il foglio di condivisione, come «Share live» a mano. Non
+    succede per un volo ripreso dopo la chiusura dell'app, né per gli altri
+    sport.
+  - Crea solo il link (ADR-0352, precisazione), e in volo resta «Sharing
+    live». Se il link non si crea l'app non dice niente: «Share live» è lì
+    come sempre.
+- **«Your flights»**, solo con un account.
+  - Il mese, con i giorni volati in giallo, e sotto «2 flights · 2:30:00»
+    (o «No flights this month»).
+  - Viene da `GET /me/activity-calendar?sport=paragliding` e si aggiorna
+    quando cambiano le attività dell'account.
+  - Toccato, apre il calendario delle attività (TASK-462) già filtrato sui
+    voli.
+- **«Your best flights»**, solo con un account e almeno un record.
+  - Quattro righe, solo quelle che ci sono: «Max altitude» (m), «Longest
+    flight», «Farthest flight», «Top speed». Ognuna ha il giorno e apre il
+    suo volo.
+  - Vengono da `GET /me/flight-bests` (API.md, «I numeri di un volo»).
+  - A fine volo il telefono manda `max_alt_m` e `top_speed_mps` con i
+    numeri del post. Se un server senza R5a li rifiuta, li rimanda senza,
+    come fa con i tratti dello sci.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di

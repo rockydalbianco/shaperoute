@@ -6,6 +6,7 @@ import { isFlight } from "../air/flight";
 import { FlightFinishCard } from "../air/FlightFinishCard";
 import { FlightLive } from "../air/FlightLive";
 import { useFlightNotice } from "../air/flightNotice";
+import { useStartLiveAtStart } from "../air/liveAtStart";
 import type { FreeRun } from "../navigation/freeRun";
 import { freeRunActivity } from "../navigation/freeSport";
 import { t } from "../i18n";
@@ -146,6 +147,8 @@ export function FreeRunCard({
   const sport = runActivityOf(useSport());
   // Before the first flight on this phone, the notice (TASK-305 part R2).
   useFlightNotice(isFlight(sport));
+  // «Share live at start»: the link at the end of the countdown (part R5b).
+  useStartLiveAtStart(isFlight(sport));
   const card = (
     <RunCard
       track={track}

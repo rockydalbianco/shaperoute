@@ -2623,4 +2623,19 @@ export const ES: Table = {
   "Deep@@sleep": "Profundo",
   "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
     "Calculada por MuW con los datos de Apple Salud. Puede ser distinta de la puntuación de la app Salud.",
+  // TASK-305 part R5b: under «Record your flight» (approved 2026-11-12).
+  "Your flights": "Tus vuelos",
+  "{count} flight · {time}": "{count} vuelo · {time}",
+  "{count} flights · {time}": "{count} vuelos · {time}",
+  "No flights this month": "Ningún vuelo este mes",
+  "Your best flights": "Tus récords de vuelo",
+  "Longest flight": "Vuelo más largo",
+  "Farthest flight": "Vuelo más lejano",
+  "Ready to fly": "Listo para despegar",
+  "Waiting for GPS…": "Esperando el GPS…",
+  "GPS ready · ±{m} m": "GPS listo · ±{m} m",
+  "Weak GPS · ±{m} m: wait in the open": "GPS débil · ±{m} m: espera al aire libre",
+  "Share live at start": "Compartir en directo al empezar",
+  "When the countdown ends, MuW makes the link and opens the share sheet.":
+    "Al terminar la cuenta atrás, MuW crea el enlace y abre el menú para compartir.",
 };

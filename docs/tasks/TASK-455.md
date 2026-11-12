@@ -422,3 +422,11 @@ Le altre parti scrivono i loro criteri quando partono.
   stava sotto l'orologio; ora ha i suoi margini dentro il Modal, come la
   pagina del post (`SendToFriendInset.test.tsx`). Schermate in
   `out/TASK-455/shots/`, mandate all'utente per il suo sì.
+- 2026-11-12: **l'utente sulle schermate della parte B: «Sì, vanno bene»**
+  (sei schermate: «Share» sul post di un altro, i due foglietti, «Send
+  to…» con la nota per un post «Followers», la chat con la scheda e «This
+  post is no longer available.», il post aperto dalla chat). Detto
+  all'utente e lasciato com'è: nella scheda del post aperto dalla chat
+  l'ultimo pulsante dice «Back to the profile»; il foglietto non scurisce
+  lo sfondo, come quello di «…». Per «pronta» manca solo `main` unito dopo
+  la #1231 di TASK-454 B.

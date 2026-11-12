@@ -30,6 +30,7 @@ from route_engine.track_score import TrackPoint
 from route_engine.walking import API_ACTIVITIES, API_DISTANCE_LIMITS_M, engine_activity
 from test_cycling import RESULT, TOWN, Network, finished, loading
 from test_game_rules import Runner
+from test_sport_registry_api import in_the_contract
 
 from shaperoute_api import prefetch_zones
 from shaperoute_api.activities import RunActivity
@@ -92,7 +93,8 @@ def test_wheelchair_is_an_activity_of_the_api_1_to_5_km() -> None:
     assert contract["activities"] == list(API_ACTIVITIES)
     assert contract["distance_limits_m"][WHEELS] == [1_000, 5_000]
     run_activities = json.loads((CONTRACT / "run-activities.json").read_text())
-    assert run_activities["run_activities"] == list(get_args(RunActivity))
+    # But a day of alpinism, on the server before the contract (TASK-463).
+    assert run_activities["run_activities"] == in_the_contract(get_args(RunActivity))
 
 
 def test_the_request_of_shared_types_is_one() -> None:
@@ -349,5 +351,7 @@ def test_the_migration_adds_wheelchair_to_the_four_tables_and_keeps_the_rest(
     assert database.migrate(tmp_path) == []
     after = _checks(database)
     assert after == {name: [*kept, WHEELS] for name, kept in before.items()}
-    # Every activity of a run is let in once all migrations ran.
-    assert set(get_args(RunActivity)) <= set(after["runs_activity_check"])
+    # Every activity of a run is let in once all migrations up to this one
+    # ran, but the ones of a later migration: alpinism (TASK-463).
+    later = {"alpinism"}
+    assert set(get_args(RunActivity)) - later <= set(after["runs_activity_check"])

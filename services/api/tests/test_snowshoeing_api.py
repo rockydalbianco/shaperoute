@@ -40,6 +40,7 @@ from route_engine.walking import API_ACTIVITIES, API_DISTANCE_LIMITS_M, engine_a
 from route_engine.water import write_water
 from test_cycling import finished
 from test_game_rules import Runner
+from test_sport_registry_api import in_the_contract
 from test_way_back_api import _post as post_way_back
 from test_way_back_api import _Town, request_body
 
@@ -144,7 +145,8 @@ def test_snowshoeing_is_an_activity_of_the_api_half_a_km_to_3() -> None:
     assert contract["activities"] == list(API_ACTIVITIES)
     assert contract["distance_limits_m"][SNOW] == [500, 3_000]
     run_activities = json.loads((CONTRACT / "run-activities.json").read_text())
-    assert run_activities["run_activities"] == list(get_args(RunActivity))
+    # But a day of alpinism, on the server before the contract (TASK-463).
+    assert run_activities["run_activities"] == in_the_contract(get_args(RunActivity))
 
 
 def test_the_request_of_shared_types_is_one() -> None:

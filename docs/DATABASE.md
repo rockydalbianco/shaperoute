@@ -1171,6 +1171,20 @@ bozza, quello vero è il primo libero al merge, dal Coordinatore):
   vincolo e lo riscrive col nome in più, in fondo, come la `0055`.
 - Nessuna riga cambia. Test in `test_wheelchair_api.py`.
 
+Migrazione `0076_alpinism.sql` (TASK-463 parte A, ADR-0373; numero
+provvisorio dal Coordinatore, quello vero è il primo libero in `main` al
+merge):
+
+- Il vincolo `runs_activity_check` prende anche `'alpinism'`: una giornata
+  di alpinismo si salva come corsa, registrata senza percorso, come lo
+  scialpinismo (`0057`) e il parapendio (`0069`). La migrazione rilegge il
+  vincolo che trova e lo riscrive col nome in più, in fondo.
+- `favorites`, `group_runs` e `run_bests` no: nessun percorso da rifare,
+  nessun record personale.
+- Il server la ha prima del contratto (`shared-types`): nessuna app la
+  legge finché la parte app non porta contratto e profilo insieme.
+- Nessuna riga cambia. Test in `test_alpinism_api.py`.
+
 Migrazione `0061_run_heart.sql` (TASK-409 parte B1, ADR-0334 precisazione D;
 numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
 

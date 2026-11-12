@@ -542,11 +542,41 @@ lasciando le righe d'indice.
 - ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
 - ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
+- ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
 - ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte A1a (#1221, `9328c109`).
+**Deciso dall'agente su delega dell'utente.**
+
+- **Il link è facoltativo, il token resta unico**: `token_hash` può essere
+  nullo (migrazione `0073`); `POST /me/live-shares/{id}/link` fa un token
+  nuovo e il link dato prima smette di funzionare, così non ci sono mai due
+  link vivi per la stessa live.
+- **`LiveShareCreated.url` resta `string`** nel contratto: l'app di oggi
+  (`liveShareStore.ts`) lo mette dove serve una stringa. La risposta senza
+  link è un tipo a parte, `LiveShareMade` (`url: string | null`), che usa
+  solo l'app nuova (B1).
+- **Chi può vedere** si calcola nella query (`MAY_SEE_SQL`) a ogni
+  richiesta, con `follows.apart_sql` e `follows_sql`: a chi non può, `404`
+  come per una live che non c'è, mai `403`.
+- **Limiti**: la vista nell'app conta per persona e live (120 al minuto,
+  come la pagina), non per live, perché una gara seguita da tanti non
+  diventi «troppe richieste»; `send` 20 persone per volta e 20 invii al
+  minuto per account, come i messaggi.
+- **`skipped`**: chi non ha un account, se stessi e chi è lontano per un
+  blocco o un nascosto sono saltati tutti uguali, per non dire chi ha
+  bloccato chi (come il `404` dei messaggi).
+- **Le copie notturne**: i dati di `live_share_recipients` restano fuori
+  come quelli di `live_shares` (riga in `deploy/backup.sh` col passo sul
+  server): con le live fuori e i destinatari dentro il ripristino
+  fallirebbe sulla chiave esterna, e chi ha visto la live di chi non va
+  tenuto 14 giorni.
 
 ## ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate
 

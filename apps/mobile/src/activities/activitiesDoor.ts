@@ -9,6 +9,8 @@ import {
 } from "react";
 import { AppState } from "react-native";
 
+import type { ActivitySleepRequest } from "@shaperoute/shared-types";
+
 import type { Account } from "../account/useAccount";
 import { sessionEnded } from "../account/messages";
 import type { AccountOutcome } from "../api/accounts";
@@ -46,6 +48,7 @@ import {
 } from "./outbox";
 import { type Drawn, type RecordedRun, recordedRun } from "./recordedRun";
 import { runStatsRequest, sendRunStats } from "./runStatsOut";
+import { forgetSleepFor, keepSleepFor, sendWaitingSleep } from "./sleepOut";
 import { activityProblem, type ActivitiesState, useActivities } from "./useActivities";
 
 /** A run of this phone the API will not take (TASK-257), as «My
@@ -115,6 +118,13 @@ export type ActivitiesDoor = ActivitiesState & {
   /** And the items tagged on each of them, in their order (TASK-394 part B);
    * absent from the fakes of the tests made before it. */
   toOutfit?: (tags: readonly (readonly OutfitDraft[])[]) => void;
+  /**
+   * «Sleep last night» of the next `record` (TASK-467 part B2): the night
+   * to show in its post, sent once the API has the run; null: none, and
+   * nothing of the night leaves the phone. Absent from the fakes of the
+   * tests made before it.
+   */
+  toSleep?: (sleep: ActivitySleepRequest | null) => void;
   /** The runs of this account still on the phone, waiting for the API;
    * those it refused too. */
   waiting: number;
@@ -172,6 +182,7 @@ const NOTHING: ActivitiesDoor = {
   toPhotos: () => {},
   toOrder: () => {},
   toOutfit: () => {},
+  toSleep: () => {},
   waiting: 0,
   full: false,
   refused: [],
@@ -420,6 +431,16 @@ export function useActivitiesOf(
           ended = true;
           endSession(token);
         }
+        // The nights shown in the posts of the runs the API has now
+        // (TASK-467 part B2).
+        if (
+          !ended &&
+          (await sendWaitingSleep(baseUrl, token, owner, { fetchFn, key })) ===
+            "session_ended"
+        ) {
+          ended = true;
+          endSession(token);
+        }
         // And what waits for Strava. A run that ends meanwhile still makes
         // another round.
         if (
@@ -490,6 +511,12 @@ export function useActivitiesOf(
     nextOutfit.current = tags;
   }, []);
 
+  // And for «Sleep last night» (TASK-467 part B2).
+  const nextSleep = useRef<ActivitySleepRequest | null>(null);
+  const toSleep = useCallback((sleep: ActivitySleepRequest | null) => {
+    nextSleep.current = sleep;
+  }, []);
+
   // What `record` and `recordImported` share: the run on the phone, with
   // what was told for it just before «Save».
   const keep = useCallback(
@@ -504,6 +531,8 @@ export function useActivitiesOf(
       nextOrder.current = null;
       const outfit = nextOutfit.current;
       nextOutfit.current = [];
+      const sleep = nextSleep.current;
+      nextSleep.current = null;
       if (owner === null || recorded === null) {
         return false;
       }
@@ -525,6 +554,10 @@ export function useActivitiesOf(
       keepOutfits(owner, recorded.id, outfit);
       if (order !== null) {
         keepOrder(owner, recorded.id, order);
+      }
+      // Its night, only when its post shows it (sleepOut.ts).
+      if (sleep !== null) {
+        keepSleepFor(owner, recorded.id, sleep);
       }
       recount();
       justKept.current.set(recorded.id, Date.now());
@@ -570,6 +603,7 @@ export function useActivitiesOf(
     (id: string) => {
       if (owner !== null) {
         stopWaiting(owner, id);
+        forgetSleepFor(owner, id);
         recount();
       }
     },
@@ -691,6 +725,7 @@ export function useActivitiesOf(
       toPhotos,
       toOrder,
       toOutfit,
+      toSleep,
       waiting,
       full: waiting >= MAX_WAITING,
       refused: refusedRuns,
@@ -721,6 +756,7 @@ export function useActivitiesOf(
       toPhotos,
       toOrder,
       toOutfit,
+      toSleep,
       waiting,
       refusedRuns,
       discard,

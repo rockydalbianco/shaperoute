@@ -4388,6 +4388,45 @@ mostra le lettere unite da linee dritte sulla base.
 Niente nella scheda è giallo: il giallo resta del percorso e dell'azione
 principale.
 
+### Il sonno della notte prima: «Sleep last night» (TASK-467 parte B2, ADR-0379 e ADR-0380)
+
+**Spento in ogni build di oggi** (`SLEEP_POSTS_ON = false` in
+`health/sleepModules.ts`, e nessun lettore di Salute): si accende con la
+parte C, dopo la build nativa che viene dopo la 1.1.0, la frase della
+privacy e la scheda «App Privacy». Quello che segue è com'è quando è
+acceso. Testi approvati dall'utente l'11 novembre 2026.
+
+- **A fine attività**, sotto «Save to Apple Health» e in vista sopra
+  «Save» (`health/SleepRunEnd.tsx`): l'interruttore **«Sleep last night»**,
+  la riga «82 · Very good · 7 h 40 min» (punteggio di MuW, una delle cinque
+  parole, ore dormite) e, finché è acceso, «Shown in this post. Turn it off
+  to keep it to yourself.». **Parte acceso** (scelta dell'utente,
+  `SLEEP_SHOWN_DEFAULT`). Compare solo se: l'utente ha detto sì a leggere
+  il sonno (dalla scheda «Sleep» del profilo, parte B3: qui il permesso non
+  si chiede mai), c'è una notte, e il post lo vedono altri («Everyone» o
+  «Followers»): con «Only me» non c'è niente da mostrare a nessuno e la
+  riga non compare. Mai per un'attività aggiunta da un file. Senza notte
+  non compare niente (la frase «No sleep data…» è della scheda del
+  profilo).
+- **Quale notte**: quella da cui ci si è svegliati il giorno dell'attività
+  (i campioni dalle 18 della sera prima alle 18 di quel giorno, fino
+  all'inizio dell'attività); per un'attività prima delle 6 senza aver
+  ancora dormito, quella del giorno prima. Un pisolino non è la notte.
+- **Nel Feed** (`health/SleepLine.tsx`), una riga sotto i numeri del post:
+  «Sleep score 82 · Very good · 7 h 40 min». **Nella pagina del post**
+  (`health/SleepCard.tsx`), una scheda dopo quelle della corsa: «Sleep
+  score», «82 · Very good», «7 h 40 min», le fasi «Awake», «REM», «Light»
+  (il «Core» di Salute), «Deep» quando un orologio le ha dette, e sotto
+  «Worked out by MuW from Apple Health data. It can differ from the score
+  in the Health app.». Mai l'ora in cui si è andati a letto o ci si è
+  svegliati, mai la data della notte, mai un consiglio; non si chiama mai
+  «di Apple».
+- **Dopo la pubblicazione**, nelle impostazioni del proprio post («Post
+  settings», `health/SleepPostSwitch.tsx`): lo stesso interruttore, che va
+  all'API subito (non aspetta «Save»); la scheda e la riga seguono
+  all'istante.
+- Palestra e nuoto in vasca hanno un form loro: arrivano con la parte B2b.
+
 ## Il post da condividere (TASK-231, ADR-0194)
 
 «Share» sta sulla scheda di fine corsa (con un percorso e senza) e sulla
@@ -5053,6 +5092,16 @@ c'è anche l'errore.
   l'API le cancella (ADR-0170, punto 7: scelta dell'utente). Una corsa
   cancellata le cancella anche dal telefono. Le foto di una corsa privata
   non passano mai da un telefono all'altro, e si perdono con l'app.
+- **Il sonno della notte prima** (TASK-467, spento fino alla parte C): i
+  campioni di Salute non lasciano mai il telefono, e nemmeno l'ora in cui
+  si è andati a letto o ci si è svegliati. All'API va solo il riassunto
+  (giorno del risveglio, punteggio, minuti dormiti e svegli, minuti per
+  fase), **solo con «Sleep last night» acceso e un post che altri
+  vedono**: spento, o con «Only me», non parte niente e niente si tiene.
+  Finché l'API non ha l'attività il riassunto aspetta in
+  `sleep-outbox.json` (al più 30 giorni, poi si butta); una notte che
+  l'API rifiuta si butta, non si rimanda. Il sì a leggere il sonno sta in
+  `sleep-health.json`.
 
 ## Quando la mappa non si carica
 

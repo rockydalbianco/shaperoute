@@ -22,6 +22,7 @@ import { NewLevels } from "../gym/NewLevels";
 import { useGymExercises } from "../gym/useGymExercises";
 import { isPoolLine, PoolTile } from "../pool/PoolTile";
 import { usePoolFigures } from "../pool/usePoolFigures";
+import { SleepLine } from "../health/SleepLine";
 import { t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
 import { useLanguage } from "../i18n/useLanguage";
@@ -579,6 +580,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
       {who}
       {card}
       <SummaryBoxes rows={summaryRows(post, units, exercises?.sets)} />
+      <SleepLine drawingId={post.drawing.id} sleep={post.drawing.sleep} />
       {menu !== null && <View style={styles.menu}>{menu}</View>}
       {onOpen !== undefined && (
         <>

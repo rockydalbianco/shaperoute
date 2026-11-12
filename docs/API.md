@@ -3307,6 +3307,72 @@ con la vasca e le vasche. Token richiesto; tipi in
   /drawings/{id}/pool-swim` dà medio e massimo agli altri solo se
   `heart_shown`. Senza battito le risposte non hanno i campi, come prima.
 
+### Sleep (TASK-467 parte B1, ADR-0380)
+
+Le notti di sonno che una persona pubblica. Il punteggio lo calcola il
+telefono dai dati di Apple Salute (ADR-0379); al server arriva **solo il
+riassunto di una notte pubblicata**: il giorno del risveglio, il punteggio,
+i minuti dormiti e svegli e, se un orologio li ha detti, i minuti per fase.
+Mai i campioni, mai l'ora in cui si è andati a letto o ci si è svegliati.
+Token richiesto; tipi in `shared-types/src/sleep.ts` (`SleepNightRequest`,
+`SleepNight`, `ActivitySleepRequest`, `ActivitySleep`, `SleepSummary`),
+esempi in `fixtures/sleep-*.json`; il codice in `sleep.py`.
+
+Una notte si pubblica in due modi, ognuno col suo interruttore:
+
+- **nel profilo**, `shared`: spento finché il proprietario non lo accende;
+- **nel post di un'attività**, `shown` («Sleep last night»): acceso se il
+  proprietario non lo spegne (scelta dell'utente del 2026-11-12).
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/sleep/{night}` | la notte del giorno `night` (`YYYY-MM-DD`) coi suoi numeri e `shared`; senza `shared` resta com'era | `200` `SleepNight`; `204` se niente la pubblica: non si tiene |
+| `PATCH /me/sleep/{night}` | solo `shared`, senza i numeri | `200` `SleepNight`; `204` come sopra; `404` se non c'è |
+| `GET /me/sleep/{night}` | la notte del suo proprietario | `200` `SleepNight`, o `404` |
+| `DELETE /me/sleep/{night}` | via dal server: dal profilo e dai post che la portavano | `204`, anche la seconda volta |
+| `DELETE /me/sleep/shared` | «smetti di condividere»: nessuna notte nel profilo | `204` |
+| `GET /users/{id}/sleep` | l'ultima notte condivisa di un profilo, per chi può aprirlo | `200` `SleepSummary`, o `404` |
+| `PUT /me/activities/{key}/sleep` | la notte prima dell'attività: numeri, `night` e `shown` | `200` `ActivitySleep`; `404` senza l'attività; `422` se non è la notte prima |
+| `PATCH /me/activities/{key}/sleep` | solo `shown` | `200` `ActivitySleep`; `404` senza notte |
+| `GET /me/activities/{key}/sleep` | la notte dell'attività, per il suo proprietario | `200` `ActivitySleep`, o `404` |
+| `DELETE /me/activities/{key}/sleep` | l'attività senza notte | `204`, anche la seconda volta |
+| `GET /drawings/{id}/sleep` | la notte nel post, per chi vede il disegno e finché è mostrata | `200` `SleepSummary`, o `404` |
+
+- **I numeri**: `score` intero da 0 a 100; `asleep_min` da 1 a 1440;
+  `awake_min` da 0 a 1440 (sveglio fra l'addormentarsi e l'ultimo
+  risveglio); `stages` (`rem_min`, `light_min`, `deep_min`: «Light» è il
+  «Core» di Apple) tutti e tre o niente, e insieme non più di `asleep_min`
+  (il sonno senza fase detta sta solo lì). Ogni altro campo è `422`. La
+  parola accanto al punteggio («Poor» … «Excellent») la ricava l'app.
+- **`night`** è il giorno del risveglio, com'è sul calendario del telefono:
+  dal 2020-01-01 a domani (un telefono a est dell'API è avanti di un
+  giorno al più), se no `422`. Una notte per account e per giorno:
+  rimandata, prende i numeri nuovi (l'orologio ha sincronizzato dopo).
+- **Si tiene solo quello che è pubblicato**: una notte che non è nel
+  profilo e che nessuna attività porta non resta sul server. Per questo
+  `PUT` e `PATCH /me/sleep/{night}` rispondono `204` quando, spento
+  `shared`, non la porta nessun post; e togliere la notte all'ultima
+  attività che la portava, o cancellare quell'attività, cancella la notte
+  (lo fa il database, migrazione `0072`).
+- **Chi non è l'autore** legge una notte solo da `GET /users/{id}/sleep`
+  (l'ultima con `shared` acceso, per chi può aprire il profilo: mai
+  attraverso un blocco) e da `GET /drawings/{id}/sleep` (se vede il
+  disegno, come `drawing_seen_sql`, e `shown` è acceso). Una notte non
+  condivisa, o il sonno di un post nascosto, rispondono lo **stesso `404`**
+  di un profilo o di un post che una notte non ce l'ha: nessuna risposta
+  li conta, e il profilo, il Feed e il dettaglio del post non ne dicono
+  niente. Il proprietario dal suo profilo vede quello che vedono gli altri.
+- **Nel post**: `PUT /me/activities/{key}/sleep` salva la notte (senza
+  toccare `shared`) e la dà all'attività, al posto di quella che aveva.
+  «La notte prima» vuol dire `night` entro 2 giorni dal giorno d'inizio
+  dell'attività (in UTC: il giorno stesso o quello prima, più un giorno di
+  fuso), se no `422`. Più attività dello stesso giorno portano la stessa
+  notte. I due interruttori sono separati: `shown` non la mette nel
+  profilo, `shared` non la mostra in un post nascosto.
+- Cancellare l'account cancella tutte le sue notti. Nessun punteggio lo
+  calcola il server, nessuna classifica, nessuna ricerca, niente Strava.
+  Test in `test_sleep.py`.
+
 ### Live shares (TASK-424, ADR-0352)
 
 «Share live activity»: un link che mostra una registrazione dal vivo, su

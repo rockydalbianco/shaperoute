@@ -11,8 +11,8 @@ import type { AboutContent, AboutDocument } from "../documents";
  */
 
 const UPDATED = "10 November 2026";
-/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). */
-const PRIVACY_UPDATED = "11 November 2026";
+/** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day the contacts (TASK-262 C), the figure drawn by hand (TASK-320), the activities added from a file (TASK-312 B), Apple Health and Health Connect (TASK-321 B) and the drawing inside a published photo (TASK-348) entered; redated for the whole drawing (TASK-390), for the items tagged on photos (TASK-394 B), for the gym (TASK-385 F) for the gym plans (TASK-411 D) for sharing live (TASK-424) and for the heart rate of a swim in a pool (TASK-409 B). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). Redated for the replies and the reactions to a comment (TASK-454 C). */
+const PRIVACY_UPDATED = "12 November 2026";
 
 const help: AboutDocument = {
   title: "How MuW works",
@@ -360,7 +360,7 @@ const privacy: AboutDocument = {
         {
           bullets: [
             "A route you keep in «Favorites» is stored whole, with its line, which often starts near your home. Only your account sees it, until you remove it or delete the account.",
-            "Your comments and reactions under a drawing are seen by the members who see that drawing. You can delete your own comments.",
+            "Your comments, replies and reactions under a drawing are seen by the members who see that drawing. A reaction to a comment is shown to them only as a number; the member who wrote that comment reads, in the bell, that it was you. You can delete your own comments and replies, and take back a reaction.",
             "Who you follow, who follows you and the requests to follow are kept with your account.",
           ],
         },

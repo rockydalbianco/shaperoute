@@ -1,4 +1,8 @@
-import { type Comment, COMMENT_MAX_LENGTH } from "@shaperoute/shared-types";
+import {
+  type Comment,
+  COMMENT_MAX_LENGTH,
+  type CommentReactionKind,
+} from "@shaperoute/shared-types";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,7 +21,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { commentOf, commentTextProblem } from "../api/comments";
-import { t } from "../i18n";
+import { t, tPlural } from "../i18n";
 import { Avatar } from "../profile/Avatar";
 import {
   color,
@@ -31,8 +35,10 @@ import { Cascade } from "../ui/Cascade";
 import { IslandLayer } from "../ui/IslandLayer";
 import { SheetModal } from "../ui/SheetModal";
 import { useBlockedNow } from "./blockedNow";
+import { CommentActions } from "./CommentActions";
 import { useCommentChoices } from "./commentChoices";
 import { useCommentsDoor } from "./commentsDoor";
+import { hasThreads, hiddenReplies, shownReplies } from "./commentThreads";
 import { agoLabel, commentsLabel, negativeComment } from "./commentText";
 import { useFollowsDoor } from "./followsDoor";
 import {
@@ -43,13 +49,15 @@ import {
 /** How much of the screen the sheet takes, before the keyboard. */
 const SHEET_SHARE = 0.72;
 const AVATAR_SIDE = 32;
-// The picture is small: its touch reaches the size of a button.
-const AVATAR_SLOP = (MIN_TAP_SIZE - AVATAR_SIDE) / 2;
+/** The picture beside a reply: smaller, under the words of its comment. */
+const REPLY_AVATAR_SIDE = 24;
 // The count shows from here, so the limit never comes as a surprise.
 const COUNT_FROM = COMMENT_MAX_LENGTH - 50;
 
 /** What a comment can be asked for, held or with VoiceOver's actions. */
 type CommentAction = "report" | "block" | "delete";
+/** The name of VoiceOver's action that answers a comment. */
+const REPLY_ACTION = "reply";
 
 type Props = {
   drawingId: string;
@@ -93,12 +101,20 @@ type SheetProps = {
   onClose: () => void;
 };
 
-/** The comments, the oldest first, and the field to write one, over the keyboard. */
+/**
+ * The comments, the oldest first, and the field to write one, over the
+ * keyboard. Under each comment its replies, one level deep (TASK-454 part
+ * C, ADR-0377): «Reply» on a comment or on a reply fills «Replying to
+ * {name}» over the field, and what is written goes under that comment.
+ */
 export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const typing = useKeyboardShown();
   const [text, setText] = useState("");
+  // The comment, or the reply, the words in the field answer.
+  const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+  const field = useRef<TextInput>(null);
   const list = useRef<FlatList<Comment>>(null);
   const length = [...commentOf(text)].length;
   const tooLong = length > COMMENT_MAX_LENGTH;
@@ -122,13 +138,23 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
     if (!canSend) {
       return;
     }
-    const sent = await comments.send(text);
+    const sent = await comments.send(text, replyingTo ?? undefined);
     if (sent === "sent") {
       setText("");
-      list.current?.scrollToEnd({ animated: true });
+      setReplyingTo(null);
+      // A comment is the newest, at the end; a reply is under its comment,
+      // where who wrote it was looking.
+      if (replyingTo === null) {
+        list.current?.scrollToEnd({ animated: true });
+      }
     } else if (sent === "rejected") {
       Alert.alert(negativeComment());
     }
+  }
+
+  function onReply(comment: Comment) {
+    setReplyingTo(comment);
+    field.current?.focus();
   }
 
   function askDelete(comment: Comment) {
@@ -137,7 +163,13 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
       {
         text: t("Delete"),
         style: "destructive",
-        onPress: () => comments.remove(comment.id),
+        onPress: () => {
+          // Nothing is left to answer: the words go to the drawing.
+          if (replyingTo !== null && goesWith(comment, replyingTo)) {
+            setReplyingTo(null);
+          }
+          comments.remove(comment.id);
+        },
       },
     ]);
   }
@@ -212,14 +244,31 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
             onHold={onHold}
             onAction={onAction}
             onAuthor={onAuthor}
+            onReply={onReply}
           />
           {comments.sendProblem !== null && (
             <Text style={styles.problem} accessibilityLiveRegion="polite">
               {comments.sendProblem}
             </Text>
           )}
+          {replyingTo !== null && (
+            <View style={styles.replying} testID="comment-replying">
+              <Text style={styles.replyingText} numberOfLines={1}>
+                {t("Replying to {name}", { name: replyingTo.author.username })}
+              </Text>
+              <Pressable
+                style={styles.replyingCancel}
+                onPress={() => setReplyingTo(null)}
+                accessibilityRole="button"
+                accessibilityLabel={t("Cancel")}
+              >
+                <Text style={styles.replyingCross}>✕</Text>
+              </Pressable>
+            </View>
+          )}
           <View style={styles.writeRow}>
             <TextInput
+              ref={field}
               style={styles.field}
               value={text}
               onChangeText={setText}
@@ -259,6 +308,11 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
   );
 }
 
+/** `comment` deleted takes `other` with it: itself, or one of its replies. */
+function goesWith(comment: Comment, other: Comment): boolean {
+  return other.id === comment.id || (other.parent_id ?? null) === comment.id;
+}
+
 /** What `comment` offers to `me`: «Report» and «Block» if another wrote it,
  * «Delete» if the API says it can go. */
 function actionsOf(comment: Comment, me: string | null): CommentAction[] {
@@ -288,9 +342,19 @@ type ListProps = {
   onAction: (comment: Comment, action: CommentAction) => void;
   /** Opens the profile of who wrote `comment`. */
   onAuthor: (comment: Comment) => void;
+  /** The field answers `comment`, a reply too. */
+  onReply: (comment: Comment) => void;
 };
 
-function CommentsList({ comments, list, me, onHold, onAction, onAuthor }: ListProps) {
+function CommentsList({
+  comments,
+  list,
+  me,
+  onHold,
+  onAction,
+  onAuthor,
+  onReply,
+}: ListProps) {
   if (comments.status === "loading") {
     return (
       <View style={styles.middle}>
@@ -320,17 +384,50 @@ function CommentsList({ comments, list, me, onHold, onAction, onAuthor }: ListPr
       contentContainerStyle={styles.listContent}
       data={comments.comments}
       keyExtractor={(comment) => comment.id}
-      renderItem={({ item, index }) => (
-        <Cascade index={index}>
+      renderItem={({ item, index }) => {
+        // The replies and the reactions, where the app reaches them and the
+        // API sent them: with one of before, the comments as they were.
+        const threads = comments.threads && hasThreads(item);
+        const row = (comment: Comment, reply: boolean) => (
           <CommentRow
-            comment={item}
+            key={comment.id}
+            comment={comment}
+            reply={reply}
             me={me}
             onHold={onHold}
             onAction={onAction}
             onAuthor={onAuthor}
+            onReply={threads ? onReply : undefined}
+            onReact={threads ? comments.react : undefined}
           />
-        </Cascade>
-      )}
+        );
+        const hidden = hiddenReplies(item);
+        return (
+          <Cascade index={index}>
+            {row(item, false)}
+            {threads && (shownReplies(item).length > 0 || hidden > 0) && (
+              <View style={styles.replies} testID={`comment-replies-${item.id}`}>
+                {shownReplies(item).map((reply) => row(reply, true))}
+                {hidden > 0 && (
+                  <Pressable
+                    style={styles.moreReplies}
+                    onPress={() => comments.showReplies(item.id)}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.moreRepliesText}>
+                      {tPlural(
+                        hidden,
+                        "View {count} more reply",
+                        "View {count} more replies",
+                      )}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
+          </Cascade>
+        );
+      }}
       keyboardShouldPersistTaps="handled"
       ListEmptyComponent={
         <Text style={[styles.muted, styles.empty]}>
@@ -354,10 +451,15 @@ function CommentsList({ comments, list, me, onHold, onAction, onAuthor }: ListPr
 
 type RowProps = {
   comment: Comment;
+  /** Under its comment: a smaller picture. */
+  reply: boolean;
   me: string | null;
   onHold: (comment: Comment) => void;
   onAction: (comment: Comment, action: CommentAction) => void;
   onAuthor: (comment: Comment) => void;
+  /** «Reply» and the reactions under the words; none, as before them. */
+  onReply?: (comment: Comment) => void;
+  onReact?: (comment: Comment, kind: CommentReactionKind) => void;
 };
 
 /** The name of VoiceOver's action that opens the author's profile. */
@@ -365,9 +467,21 @@ const PROFILE_ACTION = "profile";
 
 /**
  * One comment: who, how long ago, and the words, always as plain text. A
- * touch on the picture opens who wrote it (TASK-338).
+ * touch on the picture opens who wrote it (TASK-338). Under the words,
+ * outside the row a screen reader takes as one, «Reply» and the reactions
+ * (TASK-454 part C). A reply to a reply says who it answers, «@name», before
+ * its words: a name the API gives, never read out of the text.
  */
-function CommentRow({ comment, me, onHold, onAction, onAuthor }: RowProps) {
+function CommentRow({
+  comment,
+  reply,
+  me,
+  onHold,
+  onAction,
+  onAuthor,
+  onReply,
+  onReact,
+}: RowProps) {
   const door = useCommentsDoor();
   const [photo, setPhoto] = useState<string | null>(null);
   const publicId = comment.author.public_id;
@@ -388,10 +502,14 @@ function CommentRow({ comment, me, onHold, onAction, onAuthor }: RowProps) {
   // until the page, asked again, leaves them out.
   const blocked = useBlockedNow(publicId);
   const profileLabel = t("{name}'s profile", { name: comment.author.username });
-  const picture = (
-    <Avatar name={comment.author.username} size={AVATAR_SIDE} photo={photo} />
-  );
-  return (
+  const side = reply ? REPLY_AVATAR_SIDE : AVATAR_SIDE;
+  const picture = <Avatar name={comment.author.username} size={side} photo={photo} />;
+  const mention =
+    comment.mention === undefined || comment.mention === null
+      ? ""
+      : `@${comment.mention.username} `;
+  const reactions = comment.reactions;
+  const main = (
     <Pressable
       style={styles.row}
       onLongPress={() => onHold(comment)}
@@ -399,7 +517,7 @@ function CommentRow({ comment, me, onHold, onAction, onAuthor }: RowProps) {
       accessibilityLabel={t("{name}, {ago}: {text}", {
         name: comment.author.username,
         ago,
-        text: comment.text,
+        text: `${mention}${comment.text}`,
       })}
       accessibilityHint={
         actions.includes("report")
@@ -411,6 +529,7 @@ function CommentRow({ comment, me, onHold, onAction, onAuthor }: RowProps) {
       // VoiceOver has no long press: the same choices as actions. The row is
       // one element, so the picture's profile is one of them too.
       accessibilityActions={[
+        ...(onReply === undefined ? [] : [{ name: REPLY_ACTION, label: t("Reply") }]),
         ...actions.map((action) => ({
           name: action,
           label: actionLabel(comment, action),
@@ -419,6 +538,10 @@ function CommentRow({ comment, me, onHold, onAction, onAuthor }: RowProps) {
       ]}
       onAccessibilityAction={(event) => {
         const name = event.nativeEvent.actionName;
+        if (name === REPLY_ACTION) {
+          onReply?.(comment);
+          return;
+        }
         if (name === PROFILE_ACTION) {
           if (!blocked) {
             onAuthor(comment);
@@ -438,7 +561,8 @@ function CommentRow({ comment, me, onHold, onAction, onAuthor }: RowProps) {
           onPress={() => onAuthor(comment)}
           // Held, the picture is still the comment's.
           onLongPress={() => onHold(comment)}
-          hitSlop={AVATAR_SLOP}
+          // The picture is small: its touch reaches the size of a button.
+          hitSlop={(MIN_TAP_SIZE - side) / 2}
           accessibilityRole="button"
           accessibilityLabel={profileLabel}
         >
@@ -450,9 +574,29 @@ function CommentRow({ comment, me, onHold, onAction, onAuthor }: RowProps) {
           {comment.author.username}
           <Text style={styles.ago}>{`  ${ago}`}</Text>
         </Text>
-        <Text style={styles.text}>{comment.text}</Text>
+        <Text style={styles.text}>
+          {mention !== "" && <Text style={styles.mention}>{mention}</Text>}
+          {comment.text}
+        </Text>
       </View>
     </Pressable>
+  );
+  if (onReply === undefined || onReact === undefined || reactions === undefined) {
+    return main;
+  }
+  return (
+    <View>
+      {main}
+      {/* Under the words, from where they start. */}
+      <View style={{ marginLeft: side + space.md }}>
+        <CommentActions
+          reactions={reactions}
+          onReply={() => onReply(comment)}
+          onReact={(kind) => onReact(comment, kind)}
+          testID={`comment-actions-${comment.id}`}
+        />
+      </View>
+    </View>
   );
 }
 
@@ -563,6 +707,46 @@ const styles = StyleSheet.create({
   },
   text: {
     color: color.text,
+    fontSize: fontSize.body,
+  },
+  mention: {
+    fontWeight: fontWeight.semibold,
+  },
+  // The replies of a comment: under its words, from where they start.
+  replies: {
+    marginLeft: AVATAR_SIDE + space.md,
+    marginTop: space.sm,
+    gap: space.sm,
+  },
+  moreReplies: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    alignSelf: "flex-start",
+  },
+  moreRepliesText: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
+  },
+  replying: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.sm,
+  },
+  replyingText: {
+    flex: 1,
+    color: color.textMuted,
+    fontSize: fontSize.small,
+  },
+  replyingCancel: {
+    minWidth: MIN_TAP_SIZE,
+    minHeight: MIN_TAP_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  replyingCross: {
+    color: color.textMuted,
     fontSize: fontSize.body,
   },
   muted: {

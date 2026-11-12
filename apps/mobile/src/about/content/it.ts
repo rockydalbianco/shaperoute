@@ -9,7 +9,7 @@ import type { AboutContent, AboutDocument } from "../documents";
 
 const UPDATED = "10 novembre 2026";
 /** «Privacy» is final since the user approved it (TASK-237 D; without ads, TASK-267 B); dated the day Apple Health and Health Connect entered (TASK-321 B); redated for the whole drawing (TASK-390). Redated for the MuW app on Apple Watch (TASK-370). Redated for the prizes of the game shown on the profile (TASK-423 E2b). */
-const PRIVACY_UPDATED = "11 novembre 2026";
+const PRIVACY_UPDATED = "12 novembre 2026";
 
 const help: AboutDocument = {
   title: "Come funziona MuW",
@@ -357,7 +357,7 @@ const privacy: AboutDocument = {
         {
           bullets: [
             "Un percorso che tieni fra i «Preferiti» è conservato intero, con la sua linea, che spesso parte vicino a casa tua. Lo vede solo il tuo account, finché non lo togli o elimini l'account.",
-            "I tuoi commenti e le tue reazioni sotto un disegno li vedono gli iscritti che vedono quel disegno. Puoi eliminare i tuoi commenti.",
+            "I tuoi commenti, le tue risposte e le tue reazioni sotto un disegno li vedono gli iscritti che vedono quel disegno. Una reazione a un commento agli altri compare solo come numero; chi ha scritto quel commento legge, nella campanella, che la reazione è tua. Puoi eliminare i tuoi commenti e le tue risposte, e togliere una reazione.",
             "Chi segui, chi ti segue e le richieste di follow sono conservati con il tuo account.",
           ],
         },

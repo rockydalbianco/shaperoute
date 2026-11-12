@@ -1,8 +1,7 @@
 -- The planned lives (TASK-468 part A2a, ADR-0381, docs/DATABASE.md): a live
 -- made in advance, a race say, that the owner's followers see in the Feed
--- before it starts. The number is provisional: the first free one when it
--- is merged. A migration already in main is never edited: write the next
--- one.
+-- before it starts. A migration already in main is never edited: write
+-- the next one.
 
 -- One planned live: who, what, when, who may follow it, whether the heart
 -- rate is shown; the post it became, once its owner posted the activity.

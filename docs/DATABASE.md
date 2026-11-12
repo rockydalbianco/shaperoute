@@ -1065,9 +1065,9 @@ la `0072` di TASK-467 B1):
   live e sull'account, quindi va via con la riga vuota della live, un
   giorno dopo la fine. Nessuna posizione. Test in `test_live_shares.py`.
 
-Migrazione `0077_planned_lives.sql` (TASK-468 parte A2a, ADR-0381, `API.md`
-«Le live programmate e la fila «Live» del Feed»; numero provvisorio del
-Coordinatore, quello vero il primo libero al merge):
+Migrazione `0075_planned_lives.sql` (TASK-468 parte A2a, ADR-0381, `API.md`
+«Le live programmate e la fila «Live» del Feed»; il numero è del
+Coordinatore, dopo la `0074` di TASK-455 A):
 
 - **`planned_lives`**: una live programmata. `owner_id` (`CASCADE` su
   `users`), `activity`, `title` (1–60), `starts_at`, `audience_feed`

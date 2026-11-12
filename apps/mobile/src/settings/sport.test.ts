@@ -76,6 +76,8 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "Ski",
     "Cross-country ski",
     "Ski touring",
+    // «Soon» until it is turned on (TASK-463 part B).
+    "Mountaineering",
     "Gym",
     "Paragliding",
   ]);
@@ -114,6 +116,8 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
   expect(canChoose("xc_ski")).toBe(true);
   // And a wheelchair or a stroller, since the server has TASK-414 part A.
   expect(canChoose("wheelchair")).toBe(true);
+  // Not a day of mountaineering yet: «Soon» until it is turned on (TASK-463).
+  expect(canChoose("alpinism")).toBe(false);
   expect(canChoose("golf")).toBe(false);
 });
 

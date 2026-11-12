@@ -5,14 +5,12 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import replace
 from pathlib import Path
 from typing import Any, get_args
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from test_sport_registry_api import in_the_contract
 
 from shaperoute_api.activities import RunActivity
 from shaperoute_api.reads import (
@@ -46,8 +44,7 @@ def test_the_header_and_its_values_are_those_of_shared_types() -> None:
     fixture = _fixture()
     assert fixture["header"] == READS_HEADER
     assert list(OLD_APP_ACTIVITIES) == fixture["old_app_activities"]
-    # But a day of alpinism, on the server before the contract (TASK-463).
-    assert in_the_contract(KINDS) == fixture["kinds"]
+    assert list(KINDS) == fixture["kinds"]
 
 
 def test_every_activity_a_run_says_is_read_by_someone() -> None:
@@ -82,11 +79,8 @@ def test_several_lines_of_the_header_add_up() -> None:
 def test_the_app_of_today_reads_everything() -> None:
     reads = reads_from([_fixture()["this_app"]])
     # A workout at the gym and its post without a line too (TASK-385 B0),
-    # and a swim in a pool since TASK-400 B. Not a day of alpinism, which
-    # is on the server before the contract (TASK-463).
-    assert reads == replace(
-        EVERYTHING, activities=tuple(in_the_contract(EVERYTHING.activities))
-    )
+    # and a swim in a pool since TASK-400 B.
+    assert reads == EVERYTHING
 
 
 def test_shows_asks_the_activity_and_the_track() -> None:

@@ -23,7 +23,8 @@ import { profileOf } from "../sports";
  * Paragliding (TASK-305 R2, ADR-0375) is a flight recorded without a
  * shape, never a route. A day of alpine skiing («Ski») or of cross-country skiing is
  * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
- * a ski tour («Ski touring», TASK-415 part B, ADR-0344). A workout
+ * a ski tour («Ski touring», TASK-415 part B, ADR-0344) and a day of
+ * mountaineering («Mountaineering», TASK-463 part B, ADR-0373). A workout
  * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
  * «Draw» offers only «Start workout». */
 export type Sport =
@@ -41,7 +42,8 @@ export type Sport =
   | "xc_ski"
   | "skimo"
   | "gym"
-  | "paragliding";
+  | "paragliding"
+  | "alpinism";
 
 export type SportOption = {
   id: Sport;
@@ -91,6 +93,7 @@ const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
   skimo: "ski_touring",
   gym: "gym",
   paragliding: "paragliding",
+  alpinism: "alpinism",
 };
 
 /** A sport of «Settings» as its profile says it (TASK-376 part B3c,
@@ -154,6 +157,11 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // the OTA that carries them; the server has had part A and its migration
   // 0057 since 2026-11-08.
   fromProfile("skimo", true),
+  // A day of mountaineering, saved as "alpinism", recorded without a shape
+  // (TASK-463 part B, ADR-0373), with its notice «Before you climb». «Soon»
+  // until the server has part A and its migration 0076 and the user says
+  // yes on the screens: turning it on is a small PR of its own.
+  fromProfile("alpinism", false),
   // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in
   // the store builds too, the user's «ok accendi» (2026-11-05): the server
   // keeps its posts from the apps that cannot read them (X-MuW-Reads).
@@ -341,7 +349,9 @@ export function withoutRouteLabel(sport: Sport): string {
     case "ski":
     case "xc_ski":
     case "skimo":
-      // No shapes on the slopes (TASK-375): the only way to go.
+    case "alpinism":
+      // No shapes on the slopes (TASK-375) nor up a mountain (TASK-463):
+      // the only way to go.
       return t("Record your day");
     case "gym":
       // No route in the gym (TASK-385 part B): the workout's own start.

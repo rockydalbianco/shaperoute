@@ -30,6 +30,8 @@ export const FAMILY_OF: { readonly [S in Sport]: SportFamily } = {
   ski: "snow",
   xc_ski: "snow",
   skimo: "snow",
+  // A day of mountaineering (TASK-463), after ski touring.
+  alpinism: "snow",
   gym: "other",
   paragliding: "other",
 };

@@ -167,6 +167,17 @@
       "onWatch": false
     },
     {
+      "activity": "alpinism",
+      "name": "Mountaineering",
+      "emoji": "🧗",
+      "appleWorkout": 9,
+      "pace": "km",
+      "onWater": false,
+      "guided": false,
+      "gps": true,
+      "onWatch": false
+    },
+    {
       "activity": "gym",
       "name": "Gym",
       "emoji": "🏋️",

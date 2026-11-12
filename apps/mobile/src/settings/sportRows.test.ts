@@ -35,6 +35,14 @@ it("shows the rows of before, in their order", () => {
     },
     // Ski touring (TASK-415 part B), on with its phases and its VAM.
     { id: "skimo", emoji: "🏔️", name: "Ski touring", ready: true, recordOnly: true },
+    // A day of mountaineering (TASK-463 part B), «Soon» until it is turned on.
+    {
+      id: "alpinism",
+      emoji: "🧗",
+      name: "Mountaineering",
+      ready: false,
+      recordOnly: true,
+    },
     { id: "gym", emoji: "🏋️", name: "Gym", ready: true },
     // Paragliding (TASK-305 part R2), on with the numbers of the flight.
     {
@@ -48,7 +56,7 @@ it("shows the rows of before, in their order", () => {
   // Only the rows that say it carry «Record only».
   expect(
     ALL_SPORTS.filter((option) => "recordOnly" in option).map((o) => o.id),
-  ).toEqual(["ski", "xc_ski", "skimo", "paragliding"]);
+  ).toEqual(["ski", "xc_ski", "skimo", "alpinism", "paragliding"]);
 });
 
 it("asks and saves the activities of before", () => {
@@ -69,6 +77,7 @@ it("asks and saves the activities of before", () => {
     "running",
     "running",
     "running",
+    "running",
   ]);
   expect(every.map(runActivityOf)).toEqual([
     "walking",
@@ -84,6 +93,7 @@ it("asks and saves the activities of before", () => {
     "skiing",
     "xc_skiing",
     "ski_touring",
+    "alpinism",
     "gym",
     "paragliding",
   ]);

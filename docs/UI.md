@@ -4966,6 +4966,27 @@ yet: MuW records your flight.»: nessuna forma, nessun percorso. Il volo si regi
   «Top speed», poi «Calories». Provato nel simulatore il 2026-11-12. Nel Feed il volo è un post senza percorso, come una giornata
   sulla neve, con la velocità al posto del passo.
 
+### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
+
+«Mountaineering» 🧗 (IT «Alpinismo») sta in «Settings» e nel menu degli
+sport nella famiglia «On snow», dopo «Ski touring». Fino all'accensione,
+che è una PR a parte col sì dell'utente sulle schermate, dice «Soon» e nelle
+build per lo store non c'è. Acceso, «Draw» mostra solo **«Record your
+day»** 🧗, senza forme né percorsi. La giornata si registra come una corsa
+senza percorso, coi numeri di un'escursione (km, tempo, salita), e si
+salva come `alpinism`.
+
+- **L'avviso**, la prima volta su quel telefono, all'apertura della
+  schermata: «Before you climb» — «MuW records your climb and shares it:
+  it does not guide you. Go with your own gear, skills and judgement, and
+  check the conditions before you set off.», un solo bottone «Got it». Una
+  volta letto non torna più (il file `climb-notice.json`). Testi approvati
+  dall'utente il 2026-11-12, nelle cinque lingue in `tasks/TASK-463.md`.
+- Le calorie si contano come per un'escursione. In Apple Salute va come
+  «Climbing».
+- Nel modulo del post non è un giorno sulla neve: resta alpinismo. Sull'orologio non
+  c'è, finché una sua build non lo conosce.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di

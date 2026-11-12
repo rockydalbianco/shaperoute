@@ -2618,4 +2618,10 @@ export const IT: Table = {
   "by {user}": "di {user}",
   "This post is no longer available.": "Questo post non è più disponibile.",
   "🗺️ Post": "🗺️ Post",
+
+  // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
+  Mountaineering: "Alpinismo",
+  "Before you climb": "Prima di salire",
+  "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
+    "MuW registra la tua salita e la condivide: non ti guida. Vai con la tua attrezzatura, la tua esperienza e il tuo giudizio, e controlla le condizioni prima di partire.",
 };

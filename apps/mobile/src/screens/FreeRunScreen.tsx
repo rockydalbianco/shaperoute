@@ -6,6 +6,7 @@ import { isFlight } from "../air/flight";
 import { FlightFinishCard } from "../air/FlightFinishCard";
 import { FlightLive } from "../air/FlightLive";
 import { useFlightNotice } from "../air/flightNotice";
+import { useClimbNotice } from "../mountain/climbNotice";
 import type { FreeRun } from "../navigation/freeRun";
 import { freeRunActivity } from "../navigation/freeSport";
 import { t } from "../i18n";
@@ -146,6 +147,8 @@ export function FreeRunCard({
   const sport = runActivityOf(useSport());
   // Before the first flight on this phone, the notice (TASK-305 part R2).
   useFlightNotice(isFlight(sport));
+  // Before the first day of mountaineering, its own (TASK-463 part B).
+  useClimbNotice(sport === "alpinism");
   const card = (
     <RunCard
       track={track}

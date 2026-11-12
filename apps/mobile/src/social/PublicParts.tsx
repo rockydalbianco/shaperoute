@@ -252,9 +252,9 @@ const ACTIVITIES_SHOWN: readonly Activity[] = (
 /** A day on the snow is one or the other (TASK-375): never a run, a ride
  * or a paddle, which have a route. A paragliding flight is recorded without
  * a shape too (TASK-305, ADR-0375), but it is no day on the snow: it stays
- * a flight. */
+ * a flight; and so does a day of mountaineering (TASK-463, ADR-0373). */
 const SNOW_ACTIVITIES: readonly RunActivity[] = RECORD_ACTIVITIES.filter(
-  (activity) => activity !== "paragliding",
+  (activity) => activity !== "paragliding" && activity !== "alpinism",
 );
 
 function isSnowActivity(activity: RunActivity): boolean {

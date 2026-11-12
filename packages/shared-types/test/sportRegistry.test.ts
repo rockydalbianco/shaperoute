@@ -41,13 +41,16 @@ const SINCE_LIMITS: Readonly<Record<string, readonly [number, number]>> = {
   gravel_biking: [10_000, 30_000],
 };
 const SINCE = Object.keys(SINCE_LIMITS);
-// And a day of ski touring (TASK-415) and a paragliding flight (TASK-305
-// parts R), recorded without a shape after the days on the snow of before.
+// And a day of ski touring (TASK-415), a paragliding flight (TASK-305
+// parts R) and a day of mountaineering (TASK-463), recorded without a shape
+// after the days on the snow of before.
 const NOW_RECORD_ACTIVITIES = [
   ...BEFORE_RECORD_ACTIVITIES,
   "ski_touring",
   "paragliding",
+  "alpinism",
 ];
+const SINCE_RECORD_ACTIVITIES = ["ski_touring", "paragliding", "alpinism"];
 const NOW_ACTIVITIES = [
   ...BEFORE_ACTIVITIES.slice(0, 4),
   "hiking",
@@ -64,7 +67,7 @@ test("the activities are those of before, in their order", () => {
   assert.deepEqual([...API_ACTIVITIES], NOW_ACTIVITIES);
   assert.deepEqual([...RECORD_ACTIVITIES], NOW_RECORD_ACTIVITIES);
   assert.deepEqual(
-    NOW_RECORD_ACTIVITIES.filter((a) => a !== "ski_touring" && a !== "paragliding"),
+    NOW_RECORD_ACTIVITIES.filter((a) => !SINCE_RECORD_ACTIVITIES.includes(a)),
     BEFORE_RECORD_ACTIVITIES,
   );
   // Then a workout at the gym, saved without a track (TASK-385 B0).

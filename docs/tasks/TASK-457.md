@@ -117,8 +117,10 @@ parla di chi lo guarda.
 - [ ] Il profilo di un altro iscritto non cambia.
 - [ ] Nessun colore scritto a mano, nessuna dipendenza nuova, impronta iOS
       `6f8bba4c`.
-- [ ] Testi nuovi (en, it, de, es, fr) approvati dall'utente; schermate del
-      profilo vuoto e di uno con dati.
+- [x] Testi nuovi (en, it, de, es, fr) approvati dall'utente («Sì,
+      approvo», 2026-11-12): i tre della scheda, le tre frasi dei badge e
+      la frase dopo un blocco.
+- [ ] Schermate del profilo vuoto e di uno con dati.
 
 ## Cronologia
 
@@ -128,3 +130,6 @@ parla di chi lo guarda.
 - 2026-11-12: codice e test scritti; quinta domanda all'utente («Guide» e
   «Help» sono la stessa pagina). Restano: i tre file in più, le traduzioni
   da far approvare, le schermate col turno del simulatore.
+- 2026-11-12: PR #1205 in bozza; l'utente approva i sette testi con le
+  quattro traduzioni («Sì, approvo»). Restano le schermate col turno del
+  simulatore.

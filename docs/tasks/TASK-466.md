@@ -1,7 +1,7 @@
 # TASK-466 — Lo stretching nuovo: animazioni, routine, palestra, mattino, routine pubblicate
 
-**Stato**: In corso · parte A in `main` (#1181, `437f152f`, 2026-11-12;
-esce con l'aggiornamento completo); prossima B
+**Stato**: In corso · A in produzione (#1181, OTA 12); B in `main`
+(#1216, `05f5a725`, 2026-11-12; esce col prossimo OTA); prossima D
 **Fase**: 4 · **Branch**: `feat/TASK-466-a-stretch-motion` (A); B, C, D, E
 ciascuna col suo branch e la sua PR
 **ADR**: ADR-0378 (una per tutte le parti; la voce va nella PR di soli
@@ -256,18 +256,19 @@ La prima sessione si è archiviata qui; chi riprende parte da questo file.
 
 - **A**: in `main` (#1181, `437f152f`); documenti nella PR unica del
   Coordinatore #1226 (la #1210 si chiude con lei: non toccarla).
-- **B**: PR #1216, branch `feat/TASK-466-b-routines`, testi approvati,
-  `main` unito e schermate fatte il 2026-11-12 pomeriggio da una
-  sessione nuova (`out/TASK-466/b/`; punti 4 e 5 qui sopra); schermate
-  approvate dall'utente, bozza tolta, «#1216 pronta» al Coordinatore, che
-  la unisce al verde. Poi la PR di soli documenti. Nella prova il file che monta la schermata deve smontarla
-  all'uscita, come fa `App.tsx`: è alla seconda apertura che si vede il
-  difetto del punto 4. Ricetta che ha funzionato per A: `metro.config.js` non tracciato con
-  `watchFolders` sul `node_modules` del checkout principale, un
-  `index.ts` temporaneo che monta la schermata, Metro con `CI=1` su una
-  porta propria, iPhone 17e con Expo Go; alla fine tutto via e
-  «simulatore libero». Con `exercises` non dati la schermata apre già la
-  scelta: basta montare `<StretchScreen onLeave={…} routine="morning" />`.
+- **B**: in `main` (#1216, `05f5a725`, 2026-11-12), schermate approvate
+  dall'utente («Sì, approvo»); esce col prossimo OTA, che porta anche la
+  correzione della gamba staccata (punto 4: in produzione dall'OTA 12).
+  Resta la prova sul telefono dopo l'OTA: lo stretching aperto due volte
+  di fila, e «Child's pose».
+- **La prova al simulatore** (ha funzionato per A e B): `metro.config.js`
+  non tracciato con `watchFolders` sul `node_modules` del checkout
+  principale, un `index.ts` temporaneo che monta la schermata, Metro con
+  `CI=1` su una porta propria, iPhone 17e con Expo Go; alla fine tutto
+  via e «simulatore libero». Il file di prova deve smontare la schermata
+  all'uscita, come fa `App.tsx`: è alla seconda apertura che si vede un
+  difetto come quello del punto 4. Con `exercises` non dati la schermata
+  apre già la scelta: basta `<StretchScreen onLeave={…} routine="morning" />`.
 - **D**: scelte dell'utente nella sezione D; parte da `main` dopo il
   merge della B, col turno del Coordinatore su `App.tsx`,
   `SettingsPage.tsx`, `notifications/`.

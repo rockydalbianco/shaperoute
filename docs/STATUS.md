@@ -232,11 +232,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   rimando (ADR-0382). Resta la prova dell'utente sul telefono. Prossima C
   (server: link e interruttore), poi D sito, E app. File: — · `tasks/TASK-455.md`
 
-- **TASK-466 — Lo stretching nuovo** · A (la figura che respira, si
-  rialza e si gira, «Get ready», tick, «Skip») in `main` (#1181,
-  ADR-0378), esce con l'aggiornamento completo. Poi B (routine 3/5/10
-  min), D (mattino), C (palestra, dopo 461 A2 e 465), E (routine
-  pubblicate). File: — · `tasks/TASK-466.md`
+- **TASK-466 — Lo stretching nuovo** (ADR-0378) · A in produzione (#1181,
+  OTA 12); B (dieci esercizi, routine Morning / After run / After gym da
+  3, 5, 10 min, e la gamba staccata alla seconda apertura corretta) in
+  `main` (#1216), col prossimo OTA. Poi D (mattino, lista al Coordinatore
+  prima del codice), C (palestra), E. File: — · `tasks/TASK-466.md`
 
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con

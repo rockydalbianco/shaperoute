@@ -289,7 +289,7 @@ apps/mobile/src/route/RoutePanelWheelchair.test.tsx  (nuovo)
 apps/mobile/src/settings/: sport.test.ts, sportRows.test.ts, SportButton.test.tsx,
     SportSetting.test.tsx, SportVoiceItalian.test.tsx; src/sports/sportProfiles.test.ts,
     src/profile/SettingsPage.test.tsx                (le liste)
-apps/mobile/src/profile/PersonalBests.tsx (+ test)   (dopo il merge della #1205)
+apps/mobile/src/profile/PersonalBests.tsx (+ test)   (il gruppo dei record, dopo la #1205)
 apps/mobile/App.tsx                                  (una riga, ultima, nel turno del Coordinatore)
 docs/tasks/TASK-414.md, docs/sports/wheelchair.md
 ```
@@ -367,9 +367,9 @@ Impronte invariate. ADR-0343 è accettato, con la precisazione A.
 - **Orologio**: i file di `targets/watch/**` della parte A (`sports.json`,
   `Localizable.strings`) non entrano nella build 14 dell'orologio già in
   revisione; entrano con la build dopo.
-- **Parte B** (l'app): in PR. Restano `profile/PersonalBests.tsx` (dopo
-  la #1205) e la riga di `App.tsx` (una forma non delle quattro non parte),
-  nel turno che dà il Coordinatore; poi le schermate e il simulatore.
+- **Parte B** (l'app): in PR (#1234). Resta la riga di `App.tsx` (una
+  forma non delle quattro non parte), nel turno che dà il Coordinatore;
+  poi le schermate e il simulatore.
 - **Accensione**: `ready: true` con una riga a parte, col sì dell'utente,
   dopo che il server ha la `0071` e dopo le schermate.
 
@@ -391,6 +391,7 @@ approvata dal Coordinatore, da `main` `ef07030b`):
   energia della camminata anche per la carrozzina (uno sport solo, scelta
   1), Apple `.wheelchairWalkPace` senza distanza del giorno (la distanza
   «carrozzina» di Salute sarebbe sbagliata per chi spinge un passeggino).
+  Nel profilo il gruppo dei record «Wheelchair & stroller» dopo il Roller.
 - **Import**: un file che dice «wheelchair» (MuW, Strava, Garmin
   `wheelchair_push_*`) è una carrozzina, mai una corsa.
 - Solo JavaScript: impronta iOS invariata.

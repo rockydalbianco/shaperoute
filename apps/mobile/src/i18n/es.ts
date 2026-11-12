@@ -984,6 +984,8 @@ export const ES: Table = {
   "Write a comment to send your super like":
     "Escribe un comentario para enviar tu super like",
   Send: "Enviar",
+  "A super like comes with a comment. Everyone who sees the post can read it.":
+    "Un super like va con un comentario. Quien ve la publicación puede leerlo.",
 
   // src/social/reactionKinds.ts
   "MuW heart, super like": "Corazón de MuW, super like",

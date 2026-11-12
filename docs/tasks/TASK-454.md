@@ -1,8 +1,9 @@
 # TASK-454 — Reazioni e super like
 
 **Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · C1 (server) in
-`main` (#1180, 2026-11-12), manca il passo sul server · prossima A (TASK-444
-parte 1 è in `main` con la #1176), B dopo A, C2 dopo il server di C1
+`main` (#1180) e sul server (passo 9, 2026-11-12) · A nella #1195 e C2
+nella #1199, provate nel simulatore e approvate dall'utente (2026-11-12);
+la privacy nella #1200 · B (doppio tocco) nel giro dopo
 **Fase**: 5 · **Branch**: `feat/TASK-454-reactions` (parte A; una PR per parte)
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
@@ -145,15 +146,15 @@ nuovo col sì dell'utente prima del merge, «#NNN pronta» al Coordinatore.
 
 Parte A:
 
-- [ ] Toccare «Like» non cambia l'altezza della card né la posizione dei
+- [x] Toccare «Like» non cambia l'altezza della card né la posizione dei
       quattro pulsanti; la fila si chiude scegliendo o toccando fuori.
-- [ ] Con una mia reazione «Like» la mostra, in grassetto, col totale; senza
+- [x] Con una mia reazione «Like» la mostra, in grassetto, col totale; senza
       reazioni nessun numero.
-- [ ] Nel Feed e nella pagina del post non c'è più il cerchio; sul disegno
+- [x] Nel Feed e nella pagina del post non c'è più il cerchio; sul disegno
       aperto c'è, col cuore a linea finché non ho reagito.
-- [ ] Dopo un super like il commento è tra i commenti del post e
+- [x] Dopo un super like il commento è tra i commenti del post e
       «Comment · N» sale, senza ricaricare il Feed.
-- [ ] Il foglio del super like dice la riga approvata, anche a VoiceOver.
+- [x] Il foglio del super like dice la riga approvata, anche a VoiceOver.
 
 I criteri di B, C1 e C2 si scrivono qui quando la parte comincia.
 
@@ -161,8 +162,10 @@ I criteri di B, C1 e C2 si scrivono qui quando la parte comincia.
 
 **Stato**: in `main` il 2026-11-12 (#1180, `02214e9b`, CI verde) ·
 migrazione `0070_comment_replies.sql` · ADR-0377 in `DECISIONS.md` con la PR
-di documenti `docs/TASK-454-c1-docs`. Resta il passo sul server (dell'utente,
-col Coordinatore) e, dopo, il controllo in `out/TASK-454/SERVER-C1.md`.
+di documenti #1186. **Sul server col passo 9 del Coordinatore, alle 08:38Z
+del 2026-11-12** (col sì dell'utente): colonne, tabella, indici e rotte
+controllati da lui in sola lettura; i controlli e tre righe in più,
+facoltative, in `out/TASK-454/SERVER-C1.md` del checkout principale.
 
 Scelte dell'utente: quelle del punto 5 qui sopra. Il resto è **deciso
 dall'agente su delega dell'utente** (va in `DECISIONS.md` come ADR-0377 con
@@ -257,8 +260,76 @@ Criteri di accettazione (C1):
       `==`); che gli esempi nuovi li abbiano tutti lo controlla
       `test_comment_threads.py`.
 - [x] `ruff` e `black` puliti; `shared-types` typecheck e test verdi.
-- [ ] Dopo il passo sul server (dell'utente): controllo in
-      `out/TASK-454/SERVER-C1.md`, senza TestClient.
+- [x] Dopo il passo sul server (dell'utente): controllo in
+      `out/TASK-454/SERVER-C1.md`, senza TestClient (fatto dal Coordinatore
+      il 2026-11-12; il file lo riporta).
+
+## Parte A — le reazioni nel Feed (app)
+
+**Stato**: codice e test scritti il 2026-11-12 sul branch
+`feat/TASK-454-reactions` (da `main` a `02214e9b`, con TASK-444 parte 1
+dentro) · PR #1195 pronta: provata nel simulatore il 2026-11-12 (iPhone
+17e, API locale di `main` con C1), schermate prima/dopo approvate
+dall'utente («Sì, approvo», 2026-11-12), traduzioni approvate. Aspetta il
+merge del Coordinatore.
+
+Schermate in `out/TASK-454/` del checkout principale:
+`TASK-454-1-feed-like.jpg` (la striscia che spingeva la riga, la fila in
+sovrimpressione, «Like · 3» con la propria), `-2-superlike.jpg` (la riga
+del foglio; mandato, «Comment» sale da 5 a 6), `-3-pagina-post.jpg`,
+`-4-mappa.jpg` (il cuore a linea nel cerchio); le grezze in `shots/`
+(`b*` = `main`, `a*` = dopo). Nel simulatore: la fila sta dove dice la
+riga, anche nella pagina del post, che è un `Modal`; il foglio del super
+like sale dopo che la fila è andata via; niente da correggere.
+
+Le scelte 1–4 sono dell'utente. Il modo è **deciso dall'agente su delega
+dell'utente** (nessun ADR nuovo: l'app soltanto, dentro ADR-0193 e
+ADR-0340):
+
+1. **La fila sta in un `Modal` trasparente suo** (`feed/PostReactions.tsx`),
+   appesa sopra la riga dove la riga dice di essere (`measureInWindow`,
+   chiesto a ogni «Like»: la card intanto è scorsa). Solo così «toccare
+   fuori» la chiude dovunque sia il tocco, e la card (`overflow: hidden`)
+   non la taglia. Finché la riga non ha risposto la fila c'è ma non si vede.
+   Scartato: una fila assoluta dentro la card (su Android un figlio fuori
+   dal padre non riceve i tocchi, e un tocco fuori aprirebbe il post).
+2. **Il foglio del super like aspetta che la fila sia andata via** su iOS
+   (`onDismiss`), come «+» nei messaggi (TASK-358): un foglio mostrato
+   mentre un altro `Modal` si chiude non sale. Su Android subito.
+3. **Le reazioni si leggono una volta per card** (`useDrawingReactions` in
+   `PostActions`), come già i commenti: servono a «Like» prima di toccarlo
+   (la mia reazione, il totale). È una richiesta in più per card del Feed
+   (`GET /drawings/{id}/reactions`); se pesa, il totale e la propria
+   reazione possono entrare nella risposta del Feed (server, fuori da qui).
+4. **«Like» senza reazioni da leggere** (nessun account, API di prima,
+   niente rete) resta al suo posto e non apre niente, com'era.
+5. **Per VoiceOver** «Like» si chiama «Your reaction: {name}» quando c'è la
+   propria, col valore «{count} reactions»: testi che c'erano già.
+6. **Una reazione non salvata** si dice sotto la riga («Your reaction wasn't
+   saved. Check the connection.», testo di prima): è l'unico caso in cui
+   la card cambia altezza.
+7. **La fila e il segno di una reazione sono gli stessi** del disegno sulla
+   mappa (`ReactionBar`, `ReactionMark` esportati da `DrawingReactions.tsx`);
+   lì il cerchio senza reazione ha il cuore a linea di «Like»
+   (`assets/ui/icons/heart.png`, TASK-444) al posto di 🙂.
+
+Traduzioni della riga del foglio, **approvate dall'utente il 2026-11-12**
+(«Sì, approvo»): it «Un
+super like arriva con un commento. Chi vede il post può leggerlo.» · de
+«Ein Super-Like kommt mit einem Kommentar. Alle, die den Beitrag sehen,
+können ihn lesen.» · fr «Un super like s'accompagne d'un commentaire. Tous
+ceux qui voient la publication peuvent le lire.» · es «Un super like va con
+un comentario. Quien ve la publicación puede leerlo.»
+
+File toccati davvero: quelli della lista della parte A, meno
+`reactionKinds.test.ts` (non serviva), più `docs/UI.md`, solo «Le reazioni
+di un disegno» e, sotto, «Le reazioni di un post» (col sì del Coordinatore
+del 2026-11-12).
+
+Test in locale (2026-11-12): `PostActions`, `PostReactions`, `PostPage`,
+`DrawingReactions`, `SuperLikeSheet`, `reactionKinds` 65 verdi; con i
+vicini (`snowFeed`, `hikeFeed`, `FeedPostCard`, `DrawingCard*`, `i18n`) 96
+verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.
 
 ## Parte C2 — risposte e reazioni ai commenti (app)
 
@@ -347,3 +418,12 @@ Criteri di accettazione (C2):
 Test in locale (2026-11-12): `src/social` intera, `api/comments`, i vicini
 (`PostActions`, `PostPage`, `importedMarks`, `cardsInMiles`) e `i18n`: 63
 file, 454 test verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.
+
+## Cosa resta (fuori da questo task)
+
+- **Totale e propria reazione nella risposta del Feed**: dalla parte A ogni
+  card del Feed chiede le sue reazioni (`GET /drawings/{id}/reactions`),
+  come già i commenti. Va bene per ora (Coordinatore, 2026-11-12); prima
+  che il Feed cresca, totale e propria reazione (e il numero dei commenti)
+  vanno nella risposta del Feed, così una pagina è una richiesta sola. È
+  server e contratto: un task a parte, che apre il Coordinatore.

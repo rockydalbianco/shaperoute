@@ -290,7 +290,8 @@ apps/mobile/src/settings/: sport.test.ts, sportRows.test.ts, SportButton.test.ts
     SportSetting.test.tsx, SportVoiceItalian.test.tsx; src/sports/sportProfiles.test.ts,
     src/profile/SettingsPage.test.tsx                (le liste)
 apps/mobile/src/profile/PersonalBests.tsx (+ test)   (il gruppo dei record, dopo la #1205)
-apps/mobile/App.tsx                                  (una riga, ultima, nel turno del Coordinatore)
+apps/mobile/App.tsx                                  (drawKind e la forma dal profilo, nel turno del Coordinatore)
+apps/mobile/src/route/sportDraw.ts (+ test)          (nuovo: drawKindOf, shapeOfSport)
 docs/tasks/TASK-414.md, docs/sports/wheelchair.md
 ```
 
@@ -367,9 +368,16 @@ Impronte invariate. ADR-0343 è accettato, con la precisazione A.
 - **Orologio**: i file di `targets/watch/**` della parte A (`sports.json`,
   `Localizable.strings`) non entrano nella build 14 dell'orologio già in
   revisione; entrano con la build dopo.
-- **Parte B** (l'app): in PR (#1234). Resta la riga di `App.tsx` (una
-  forma non delle quattro non parte), nel turno che dà il Coordinatore;
-  poi le schermate e il simulatore.
+- **Parte B** (l'app): in PR (#1234), `App.tsx` compreso (una forma non
+  delle quattro non parte, `route/sportDraw.ts`). Restano le schermate al
+  turno di simulatore della sessione (dopo l'OTA di oggi; coda 461 A2 →
+  470 → 466 B → 469 A1 → 414 B) e il sì dell'utente.
+- **Lasciati apposta in B**: `imports/fit.ts` (i codici FIT della
+  carrozzina non sono verificati: un file FIT di carrozzina resta allo
+  sport di «Impostazioni»; GPX e TCX che dicono «wheelchair» sì);
+  `route/runTime.ts` e `sports/postMetrics.ts` non cambiano (tempo al
+  passo della camminata, le righe del post di una camminata senza
+  cadenza).
 - **Accensione**: `ready: true` con una riga a parte, col sì dell'utente,
   dopo che il server ha la `0071` e dopo le schermate.
 

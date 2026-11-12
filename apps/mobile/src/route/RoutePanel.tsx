@@ -57,6 +57,7 @@ import { type Pace, runTimeText } from "./runTime";
 import { ShapeGrid } from "./ShapeGrid";
 import { ShapePreview } from "./ShapePreview";
 import { shapeList, shapeName } from "./shapeWords";
+import { shapeOfSport } from "./sportDraw";
 import type { ExportState } from "./useGpxExport";
 import type { ImageState } from "./useImageOutline";
 import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
@@ -197,7 +198,7 @@ export function RouteChoice({
     (noWords && value === "word") || (noImages && value === "image");
   const shownKind = left(kind) ? "shape" : kind;
   const kinds = DRAW_KINDS.filter((option) => !left(option.value));
-  const shownShape = shape !== null && shapes?.includes(shape) === false ? null : shape;
+  const shownShape = shapeOfSport(shape, activity);
   const freehand = shapes === undefined ? onFreehand : undefined;
   return (
     <View style={styles.panel}>

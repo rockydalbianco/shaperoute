@@ -488,3 +488,16 @@ Le altre parti scrivono i loro criteri quando partono.
   sulle novità («Solo privacy e App Store»): testi sopra, in «I testi
   approvati». Con questo le due cose chieste prima del passo sul server
   della parte C hanno il sì dell'utente.
+- 2026-11-12: **parte E scritta** (`feat/TASK-455-e-share-link`, bozza):
+  «Share link» nel foglietto di «Share» solo sui post `linkable` (dà al
+  foglio del telefono l'indirizzo `getmuw.app/p/#<id>` e nient'altro),
+  «Links to my posts» in «Settings» sotto il VO₂ max con la sua
+  spiegazione, la frase della privacy nelle cinque lingue e le pagine del
+  sito rigenerate (`make_privacy.mjs`). Traduzioni dell'agente. Nella
+  frase della privacy l'agente ha aggiunto «the sport» (la pagina del link
+  mostra «Run · 4.3 km»): **chiesto all'utente, in attesa**; con un no si
+  tolgono le due parole nelle cinque lingue e si rigenerano le pagine.
+  Segnalato all'utente anche che la spiegazione dell'interruttore, com'è
+  approvata, non nomina titolo e sport. Mancano: la prova al simulatore
+  (turno del Coordinatore) con le schermate per l'utente. Esce con un OTA
+  solo dopo «server C fatto» e la copia del sito con la pagina (parte D).

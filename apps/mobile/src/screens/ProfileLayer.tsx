@@ -531,12 +531,16 @@ export function ProfileLayer({ apiUrl, children }: Props) {
 export function OwnProfile({
   active,
   onBack,
+  onExplore,
 }: {
   active: boolean;
   /** Back to the map or the end of a run it was asked for from, until
    * somebody signs in: «←» and the title, as over the app (TASK-278 part
    * B, the user's choice). Left out, none, as on the other pages. */
   onBack?: () => void;
+  /** To «Explore», from the first step of a new profile (TASK-457); left
+   * out where the bar has no «Explore». */
+  onExplore?: () => void;
 }) {
   const own = useContext(OwnContext);
   const covered = own !== null && own.covered;
@@ -563,6 +567,7 @@ export function OwnProfile({
         onPage={own.open}
         hint={own.asked.hint}
         onBack={onBack}
+        onExplore={onExplore}
       />
     </FollowsContext.Provider>
   );

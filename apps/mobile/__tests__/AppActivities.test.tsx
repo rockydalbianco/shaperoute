@@ -219,8 +219,8 @@ test("«My activities» in «Profile» lists the runs, with how many they are", 
   api({ ...ACCOUNT, "GET /me/activities": () => Response.json(activities) });
   await open();
   await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
-  // Under «Favorites», with its number.
-  expect(screen.getByRole("button", { name: "Favorites, 0" })).toBeOnTheScreen();
+  // Under «Favorites», which keeps nothing yet: its name alone (TASK-457).
+  expect(screen.getByRole("button", { name: "Favorites" })).toBeOnTheScreen();
   await fireEvent.press(
     await screen.findByRole("button", { name: "My activities, 2" }),
   );

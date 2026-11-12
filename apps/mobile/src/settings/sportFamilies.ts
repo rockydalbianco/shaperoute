@@ -30,6 +30,7 @@ export const FAMILY_OF: { readonly [S in Sport]: SportFamily } = {
   ski: "snow",
   xc_ski: "snow",
   skimo: "snow",
+  snowshoe: "snow",
   gym: "other",
   paragliding: "other",
 };

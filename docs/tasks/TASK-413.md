@@ -182,6 +182,78 @@ Connect: `EXERCISE_TYPE_SNOWSHOEING`, da verificare sulla libreria. Solo
 JavaScript: l'impronta iOS non si muove. La lista al Coordinatore prima del
 codice.
 
+**Parte B, accordi** (2026-11-12; lista dei file approvata dal
+Coordinatore, `feat/TASK-413-b-snowshoes-app`):
+
+- **I testi sono riapprovati dall'utente** il 2026-11-12, con le parole
+  «Sì, vanno bene». Sono:
+  - l'avviso valanghe intero nelle cinque lingue, mostrato di nuovo perché
+    è un testo di sicurezza;
+  - nome e riga sotto ogni percorso, come nella scelta 4;
+  - i testi nuovi della neve, nelle cinque lingue:
+    - «There is no open snow near this start. Start within 2 km of open
+      snow, away from towns, woods and pistes.» (in miglia, «1 mile»);
+    - «This shape does not fit on the snow here at this distance. It fits
+      at about {km} km.»;
+    - «This shape does not fit on the snow here. Try a shorter distance,
+      another shape, or another start:»;
+    - «{name} · on the snow · target {km} km».
+- **`isPlacedFree`** (`src/snow/snow.ts`, acqua o neve) è un predicato
+  nuovo: `isOnWater` non si allarga. Lo chiedono i punti dove la neve fa
+  come l'acqua:
+  - pezzi a penna alzata;
+  - nessun «Move» del punto di partenza;
+  - nessuna indicazione, né sul telefono né sull'orologio.
+
+  Gli esempi, i posti e gli avvisi dell'acqua restano `isOnWater`. Un test
+  dice che per ogni attività tranne le ciaspole `isPlacedFree` vale quanto
+  `isOnWater`.
+- **Nessun tempo sotto la distanza**: il passo di chi cammina, sulla neve,
+  prometterebbe meno tempo di quello reale. Deciso dall'agente su delega
+  dell'utente.
+- **Lo sport resta `ready: false`** nella PR. Si accende con una riga a
+  parte, col sì dell'utente dato al Coordinatore, dopo le schermate.
+- **Anche «Record your day»**: scelta dell'utente del 2026-11-12, «Anche
+  Record your day», contro la proposta dell'agente «solo forme». Le
+  ciaspole avranno anche la giornata sulla neve da registrare intera, come
+  lo sci e lo scialpinismo. È una **parte a sé, dopo B** (la parte C):
+  - la B resta quella delle forme, con il suo «Snowshoe without a route»;
+  - la C porta la riga in Impostazioni, la giornata, i suoi numeri e i suoi
+    testi;
+  - la lista dei file e il disegno della C vanno al Coordinatore prima del
+    codice.
+- **La C sta dentro le ciaspole**: scelta dell'utente del 2026-11-12,
+  «Dentro le ciaspole», fra le due strade portate dal Coordinatore:
+  - (1) una riga nuova «Snowshoe day» in Impostazioni, sport a sé;
+  - (2) «Record your day» dentro le ciaspole che già ci sono.
+
+  Vale la (2): una riga sola, «Snowshoes», nessuna migrazione, nessun
+  passo sul server, esce con un OTA. L'utente ha approvato il
+  2026-11-12, con le parole «Sì, vanno bene», la proposta dell'agente e
+  il testo nuovo nelle cinque lingue:
+  - il bottone in alto di «Draw» diventa «Record your day», al posto di
+    «Snowshoe without a route»;
+  - a fine uscita c'è la scheda «Your day» del fondo (distanza, passo,
+    metri saliti, tempo, calorie);
+  - sulla mappa la riga è «White: where you walked.»: it «Bianco: dove
+    hai camminato.», de «Weiß: wo du gegangen bist.», fr «Blanc : là où
+    tu as marché.», es «Blanco: donde caminaste.».
+
+- **Privacy delle quote** (2026-11-12): per la neve il server scarica le
+  quote da Amazon Web Services (tessere Terrarium, `heights.py`), e la
+  privacy nominava Amazon solo per la mappa «3D» del telefono. L'utente ha
+  approvato con le parole «Sì, va bene» la riga nuova da aggiungere in «Chi
+  altro riceve dati»:
+  - en: «For a snowshoe route our server asks Amazon Web Services for the
+    heights of an area it does not have yet: it sees which area, not who
+    asked.»;
+  - it: «Per un percorso con le ciaspole il nostro server chiede ad Amazon
+    Web Services le altezze di una zona che non ha ancora: vede quale zona,
+    non chi l'ha chiesta.».
+
+  Va scritta prima dell'accensione, nel turno del Coordinatore su
+  `about/content/**` e `site/privacy/**`.
+
 **Accordi e scelte della parte A2** (2026-11-10, decise dall'agente su
 delega dell'utente):
 

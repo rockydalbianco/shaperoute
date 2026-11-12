@@ -1,10 +1,11 @@
 # TASK-469 — Il look Liquid Glass
 
 **Stato**: In corso (0 fatta: «Capsula»; A1 e A2 in produzione con l'OTA 14;
-prossima A3)
+A3 in `main`, esce col prossimo OTA; prossima la fetta dei chip)
 **Fase**: 5 · **ADR**: ADR-0383 · **Branch**: una per fetta, da `main`
 (`feat/TASK-469-a1-glass-bar` #1219, `feat/TASK-469-a2-sliding-segments`
-#1225, `docs/TASK-469-a-done` questa)
+#1225, `feat/TASK-469-a3-glass-segments` #1276; documenti
+`docs/TASK-469-a-done` #1270, `docs/TASK-469-a3-done` questa)
 
 ## Obiettivo
 
@@ -42,8 +43,12 @@ Feed e Settings, poi il resto. Richiesta dell'utente del 2026-11-12.
     stesura sono diventate una sola;
   - **A2 fatta** (#1225, in `main` 24320b68): `Segmented` con la pillola che
     scivola alla scelta nuova;
-  - A3 gli altri segmenti (`FeedTabs`, `ExploreTools`, `PlayTabs`) con la
-    pillola che scivola, e la pista dei segmenti di vetro;
+  - **A3 fatta** (#1276, in `main` 666f67af): la pista dei segmenti di
+    vetro e la pillola in rilievo, in `Segmented` e in `PlayTabs`.
+    `FeedTabs` usa `Segmented` e prende tutto senza essere toccato;
+    `ExploreTools` ha chip, non segmenti, e va con la fetta dei chip;
+    `RoutePanel.tsx` non si tocca (di TASK-413 B) ma prende il vetro da
+    `Segmented`;
   - A4 le card di Explore e Feed (superfici stratificate, raggi più grandi);
   - A5 l'header che si dissolve allo scroll (`AppHeader`);
   - A6 Settings (dopo TASK-457, che tiene `src/profile/**`);
@@ -122,7 +127,12 @@ Spuntati per A1 e A2 (2026-11-12):
   riga, col sì del Coordinatore).
 - A2 (#1225): `apps/mobile/src/screens/Segmented.tsx`,
   `src/screens/Segmented.test.tsx` (nuovo).
-- Questa PR di documenti: `docs/tasks/TASK-469.md`, `docs/tasks/TASK-469/*.jpg`
+- A3 (#1276): `apps/mobile/src/screens/Segmented.tsx`,
+  `src/game/PlayTabs.tsx`, `src/screens/SegmentedGlass.test.tsx` (nuovo).
+- La PR di documenti di A3: `docs/tasks/TASK-469.md`,
+  `docs/tasks/TASK-469/*-A3-*.jpg`, `a3-*.jpg` (nuove), `docs/STATUS.md`,
+  `docs/DECISIONS.md`, `docs/UI.md`.
+- La PR di documenti di A1 e A2: `docs/tasks/TASK-469.md`, `docs/tasks/TASK-469/*.jpg`
   (nuove), `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md`.
 
 La lista di ogni fetta seguente va al Coordinatore prima del codice.
@@ -150,6 +160,13 @@ La lista di ogni fetta seguente va al Coordinatore prima del codice.
   dall'ombra, non dalla trasparenza: la fascia sotto la barra resta
   opaca e il contenuto non le passa sotto. La capsula ora ha margine a
   destra: prima la pillola del profilo toccava il bordo.
+- **2026-11-12**: A3 (#1276): lista dei file col sì del Coordinatore,
+  codice, turno di simulatore (prima = i due file di `main` rimessi per un
+  momento nel worktree, dopo = il branch); l'utente approva le schermate
+  («Sì, vai»). #1276 in `main` 666f67af, esce col prossimo OTA.
+- Imparato: il simulatore può restare sullo sport di un'altra sessione;
+  per Draw e Play si torna a «Run» da Settings. Metro in modo CI non
+  ricarica: una variante, un riavvio.
 
 ## Schermate prima/dopo
 
@@ -173,6 +190,20 @@ scivola da una scelta all'altra in circa 160 ms senza superarla:
 ![A2 in tedesco](TASK-469/a2-dark-de-draw.jpg)
 ![A2, i fotogrammi dello scivolamento](TASK-469/a2-dark-de-slide-frames.jpg)
 
+**A3, la pista e la pillola** — la pista ha un filo di luce sul bordo,
+la pillola una luce in cima e un'ombra corta. L'effetto è sottile, più
+visibile in scuro; Draw, Feed e Play:
+
+![A3, i segmenti da vicino](TASK-469/TASK-469-A3-segmenti-da-vicino.jpg)
+![A3 scuro, prima e dopo](TASK-469/TASK-469-A3-scuro-prima-dopo.jpg)
+![A3 chiaro, prima e dopo](TASK-469/TASK-469-A3-chiaro-prima-dopo.jpg)
+
+Con «Riduci trasparenza» la pista è il fondo opaco come prima (11,10,8 al
+pixel) e la barra `surface` (22,20,17):
+
+![A3, Riduci trasparenza](TASK-469/a3-dark-reduce-transparency-draw.jpg)
+
 ## Esito
 
-*(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14).
+*(a fine task)* — A1 e A2 in produzione dal 2026-11-12 (OTA 14); A3 in
+`main` dal 2026-11-12, col prossimo OTA.

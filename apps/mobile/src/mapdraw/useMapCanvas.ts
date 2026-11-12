@@ -8,7 +8,7 @@ import type { CanvasMode } from "../map/messages";
 import type { ImageSource, Picked } from "../route/pickImage";
 import type { SamplePicture } from "../route/samplePictures";
 import { type ImageState, useImageOutline } from "../route/useImageOutline";
-import { isOnWater } from "../swim/water";
+import { isPlacedFree } from "../snow/snow";
 import { appUnits } from "../units/units";
 import { canvasRequest, figureApart, piecesRequest } from "./canvasRequest";
 import { isOpenLine, linkedOf, newDrawing, withDetail } from "./drawing";
@@ -558,7 +558,7 @@ export function useMapCanvas({
    * winning within half a finger's reach; a step «Undo» takes back. */
   const moveStart = useCallback(
     (point: LatLon, reachM: number) => {
-      if (placed === null || isOnWater(activity)) {
+      if (placed === null || isPlacedFree(activity)) {
         return;
       }
       const alone = pieces.length === 1;
@@ -862,10 +862,11 @@ export function useMapCanvas({
       shrink = Math.min(1, smallest / own);
       grow = Math.max(1, (highest - others) / own);
     }
-    // Where the route starts, a dot, none on the water (TASK-426): on the
+    // Where the route starts, a dot, none on the water or the snow
+    // (TASK-426, TASK-413 B: the engine places the shape there): on the
     // first piece, which gives the outline; it moves along that piece's
     // line, unless another piece is chosen.
-    const water = isOnWater(activity);
+    const water = isPlacedFree(activity);
     const startFigure =
       joined === null
         ? shown.figure

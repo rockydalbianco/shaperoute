@@ -2,7 +2,8 @@
 
 **Stato**: In corso · 2026-11-12 · parte 0 chiusa; A1 e B1 in `main` e
 sul server (passo 9, 2026-11-12); B2a in `main` (#1196); A2 (app del corpo
-libero) in PR bozza #1208; poi B2b/C2
+libero) in `main` (#1208, `da3d86f1`), esce col prossimo OTA col sì
+dell'utente; poi B2b/C2 (lista dei file al Coordinatore prima del codice)
 **Fase**: 5 · **Branch**: `feat/TASK-461-a1-bodyweight-catalog` (A1),
 `feat/TASK-461-b1-distance-mountain-server` (B1),
 `feat/TASK-461-b2a-target-plans` (B2a), `feat/TASK-461-a2-bodyweight-app` (A2)

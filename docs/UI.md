@@ -638,8 +638,18 @@ la scelta fra due o tre (la partenza, forma o parola) è una pillola sola,
 stessa molla `glide` della barra e si ferma senza superarla; un tocco
 mentre viaggia la manda avanti da dov'è. Le parole stanno sopra e restano
 leggibili; quelle lunghe vanno a capo. Con «Riduci movimento» la pillola
-compare in dissolvenza dove va. Gli altri segmenti (`FeedTabs`,
-`ExploreTools`, `PlayTabs`) seguono con A3.
+compare in dissolvenza dove va.
+
+**La pista di vetro** (TASK-469 A3): la pista dei segmenti è una capsula di
+vetro posata nella pagina, non sospesa: il fondo velato col filo di luce
+in cima e un bordo sottile, senza ombra portata (`segmentTrackFace`). La
+pillola esce dalla pista: una luce in cima e un'ombra corta, il bordo
+`borderStrong` resta (`segmentPillFace`). Chi passa un suo fondo (le
+schede del Feed, il pannello del percorso, Play su `surface`) lo tiene, e
+bordo e luce si aggiungono. Con «Riduci trasparenza» la pista è il fondo
+opaco col bordo `border`, con «Aumenta contrasto» col bordo
+`borderStrong`; la pillola resta piatta. Le schede di Play (`PlayTabs`)
+hanno lo stesso aspetto, con la loro molla e il loro tick.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce

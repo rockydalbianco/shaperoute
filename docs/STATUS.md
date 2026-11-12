@@ -129,6 +129,7 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sul server col passo 8 del 2026-11-11; l'app col decimo OTA. Prima di B,
   la città lenta (76 s per un rifiuto). File: — · `tasks/TASK-413.md`
   **A3** in `main` (#1238, `8f5d0516`, 2026-11-12): una città è detta subito «no open snow»; sul server col passo 11. Poi B.
+  **B, C e accensione** in `main` (#1280, #1266, #1281, #1296 `ba569576`, 2026-11-12): le ciaspole accese con «Record your day»; A3 sul server col passo 12. Restano l'OTA e la prova in Salute sul telefono.
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
   **2026-11-11**: B in `main` (#1160) e nella preview; in produzione con

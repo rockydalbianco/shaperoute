@@ -561,8 +561,60 @@ lasciando le righe d'indice.
 - ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304; il foglio «Add activity» con solo «From a file» · 2026-11-12 · Attiva
 - ADR-0375, precisazione R5 — Sotto «Record your flight»: i record del volo da due campi nel JSON delle statistiche, solo per il volo, `GET /me/flight-bests`, il calendario filtrato sui voli, la precisione del GPS · 2026-11-12 · Attiva
 - ADR-0352, precisazione — «Share live at start»: il link dal vivo a fine conto alla rovescia di un volo, se il pilota lo ha acceso; resta com'era l'ultima volta, solo il link · 2026-11-12 · Attiva
+- ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0342, precisazione B e C — Le ciaspole nell'app: `isPlacedFree` dove la neve fa come l'acqua, nessun disegno a mano sulla neve, «Record your day» dentro le ciaspole, il conteggio anche nei job
+
+**Stato**: Attiva · 2026-11-12 · TASK-413 B e C (#1280, `335f75f5`),
+correzione della A3 (#1266, `b079f067`), accensione (#1296, `ba569576`).
+Le scelte di prodotto sono dell'utente (testi «Sì, vanno bene», «Dentro le
+ciaspole», «Sì, accendi»); le altre sono **decise dall'agente su delega
+dell'utente**, con la lista dei file approvata dal Coordinatore.
+
+1. **`isPlacedFree`** (`src/snow/snow.ts`) vale per l'acqua e per la neve,
+   e sta dove la neve fa come l'acqua:
+   - pezzi a penna alzata, senza interruttore della penna;
+   - nessun «Move» del punto di partenza;
+   - nessuna indicazione, né sul telefono né sull'orologio.
+
+   `isOnWater` non si allarga: gli esempi, i posti e gli avvisi dell'acqua
+   restano suoi. Un test dice che per ogni attività tranne le ciaspole
+   `isPlacedFree` vale quanto `isOnWater`. Il predicato della sola neve è
+   `isSnowshoeRoute`, per non confonderlo con `activities/snow.ts`
+   `isOnSnow`, che dice una giornata registrata senza forma.
+2. **Nessun disegno a mano sulla neve**: il motore lo rifiuta
+   (`ON_SNOW_SHAPES_ONLY`). `sportDraw.drawsByHand` decide insieme
+   «Freehand» in «Draw» ed «Edit the drawing» sotto il percorso. Lo ha
+   trovato il controllo al simulatore.
+3. **Nessun tempo sotto la distanza** (`timeAt` assente): il passo di chi
+   cammina, sulla neve, prometterebbe meno tempo di quello reale.
+4. **«Record your day» dentro le ciaspole** (parte C, «Dentro le
+   ciaspole», contro una riga «Snowshoe day» a sé):
+   - il bottone in alto di «Draw» è «Record your day» ❄️, al posto di
+     «Snowshoe without a route»;
+   - l'uscita si salva come `snowshoeing`: niente attività nuova, niente
+     migrazione, niente passo sul server;
+   - alla fine c'è «Your day» con i numeri del fondo (`SnowFinishCard`) e
+     la riga «White: where you walked.».
+5. **L'avviso valanghe** (`snow/safetyNotice.ts`, file `snow-notice.json`)
+   compare al primo «Start» sulla neve: una forma, «Record your day» o un
+   disegno del Feed. In `App.tsx` lo sceglie `noticeOf(activity)`, insieme
+   a quelli della canoa e del nuoto.
+6. **Il conteggio degli edifici passa anche dai job** (#1266).
+   `jobs._ReportingSnow` non aveva `buildings`, e su `/route-jobs` il
+   motore non contava mai: è quello che chiedono l'app e i processi caldi.
+   Ora lo passa alla sorgente, o dà None se la sorgente non sa contare. Un
+   test chiede una città via `/route-jobs`. Al passo 12 (2026-11-12):
+   - Milano: 16170 edifici, rifiutata in circa 1,1 s;
+   - Trento: 8091 edifici, rifiutata in 0,65–1,1 s.
+7. **Privacy**: il server prende le quote da Amazon Web Services. La riga
+   è nella #1281, in cinque lingue, col sì dell'utente.
+
+**Conseguenze**: un altro sport piazzato libero userà `isPlacedFree` e
+`drawsByHand`, invece di nuovi `isOnWater` sparsi. Il criterio B del task
+(l'uscita va in Salute) si chiude dopo la prova sul telefono con l'OTA.
 
 ## ADR-0387 — Il «+» del Feed: un'attività aggiunta da lì parte con «Everyone», eccezione ad ADR-0304
 

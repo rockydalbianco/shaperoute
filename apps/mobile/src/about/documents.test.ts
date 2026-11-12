@@ -128,7 +128,7 @@ describe("«Privacy» is final, approved by the user (TASK-237 D)", () => {
     expect(content.privacy.draft).toBe(false);
     // Redated for the prizes of the game on the profile (TASK-423 E2b).
     expect(content.privacy.updated).toMatch(
-      /^11 November 2026$|^11 novembre 2026$|^11\. November 2026$|^11 de noviembre de 2026$/,
+      /^12 November 2026$|^12 novembre 2026$|^12\. November 2026$|^12 de noviembre de 2026$/,
     );
   });
 

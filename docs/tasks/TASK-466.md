@@ -143,7 +143,8 @@ frasi, «Morning», «After run», «After gym», «How long?».
       pose nuove, le tre scelte «How long?», «Mattino» e una posa in
       italiano; la schermata aperta tre volte di fila senza gambe
       staccate).
-- [ ] Sì dell'utente sulle schermate.
+- [x] Sì dell'utente sulle schermate (2026-11-12, «Sì, approvo»: le
+      dieci pose, le tre routine e il prima/dopo della gamba staccata).
 
 **File toccati (parte B)**
 
@@ -257,9 +258,9 @@ La prima sessione si è archiviata qui; chi riprende parte da questo file.
   Coordinatore #1226 (la #1210 si chiude con lei: non toccarla).
 - **B**: PR #1216, branch `feat/TASK-466-b-routines`, testi approvati,
   `main` unito e schermate fatte il 2026-11-12 pomeriggio da una
-  sessione nuova (`out/TASK-466/b/`; punti 4 e 5 qui sopra). Manca il sì
-  dell'utente sulle schermate, poi togliere la bozza e «#1216 pronta»
-  con lo SHA. Nella prova il file che monta la schermata deve smontarla
+  sessione nuova (`out/TASK-466/b/`; punti 4 e 5 qui sopra); schermate
+  approvate dall'utente, bozza tolta, «#1216 pronta» al Coordinatore, che
+  la unisce al verde. Poi la PR di soli documenti. Nella prova il file che monta la schermata deve smontarla
   all'uscita, come fa `App.tsx`: è alla seconda apertura che si vede il
   difetto del punto 4. Ricetta che ha funzionato per A: `metro.config.js` non tracciato con
   `watchFolders` sul `node_modules` del checkout principale, un

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import listed from "../fixtures/drawing-sleep.json" with { type: "json" };
 import activityRequest from "../fixtures/sleep-activity-request.json" with { type: "json" };
 import activity from "../fixtures/sleep-activity.json" with { type: "json" };
 import nightRequest from "../fixtures/sleep-night-request.json" with { type: "json" };
@@ -10,6 +11,7 @@ import summary from "../fixtures/sleep-summary.json" with { type: "json" };
 import {
   type ActivitySleep,
   type ActivitySleepRequest,
+  type Drawing,
   SLEEP_NIGHT_MAX_MIN,
   SLEEP_SCORE_MAX,
   SLEEP_SHARED_DEFAULT,
@@ -92,4 +94,13 @@ test("what others read has neither switch", () => {
 test("off on the profile until turned on, on in a post unless turned off", () => {
   assert.equal(SLEEP_SHARED_DEFAULT, false);
   assert.equal(SLEEP_SHOWN_DEFAULT, true);
+});
+
+test("a post in a list carries the night its owner shows, as others read it", () => {
+  // TASK-467 part B1b: GET /feed and every other list of posts.
+  const post = listed as Drawing;
+  assert.deepEqual(post.sleep, seen);
+  // A post without a night, or with one its owner hides, says null.
+  const without: Drawing = { ...post, sleep: null };
+  assert.equal(without.sleep, null);
 });

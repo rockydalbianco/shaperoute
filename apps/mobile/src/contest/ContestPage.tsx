@@ -24,6 +24,7 @@ import { useLanguage } from "../i18n/useLanguage";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { useFollowsDoor } from "../social/followsDoor";
 import { color, fontSize, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
 import { fetchPastContests, themedOf, themeText } from "./contestApi";
 import { closeContestPage, useAskedContest } from "./contestDoor";
 import { GalleryEntry, GalleryOrder, useContestGallery } from "./ContestGallery";
@@ -89,6 +90,8 @@ export function ContestPage({
   const [lookedFor, setLookedFor] = useState(false);
   const [rules, setRules] = useState(false);
   const [archive, setArchive] = useState(false);
+  // Android's «back» is the «←»: from the archive back to the contest.
+  useBackCloses(true, archive ? () => setArchive(false) : onBack);
   const gallery = useContestGallery(contestId, { fetchFn, key: apiKey });
 
   useEffect(() => {

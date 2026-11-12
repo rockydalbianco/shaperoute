@@ -34,6 +34,7 @@ import {
 import { GuideRow } from "../tour/GuideRow";
 import { tourTexts } from "../tour/tourTexts";
 import { askTour } from "../tour/useTour";
+import { useBackCloses } from "../ui/backLayers";
 import { SignInScreen } from "./SignInScreen";
 
 type Notice = { text: string; tone: "warning" | "muted" };
@@ -125,6 +126,13 @@ export function ProfileScreen({
   const under = isAboutId(page) ? (page === "help" ? helpFrom : "settings") : page;
   // A page of the account is one step into «Profile»: back goes to it first.
   const inside = !signedOut && under !== "account";
+  // Android's «back» is the «←» on screen: a text of «ABOUT», a page of the
+  // account, then «Profile» itself when it has one.
+  const aboutBack = () => onPage(about === "help" ? helpFrom : "settings");
+  useBackCloses(
+    about !== null || inside || onBack !== undefined,
+    about !== null ? aboutBack : inside ? () => onPage("account") : () => onBack?.(),
+  );
   // Out of the account from «Settings» or «Edit profile»: who comes back in
   // finds «Profile».
   useEffect(() => {
@@ -226,7 +234,7 @@ export function ProfileScreen({
       {about !== null && (
         <AboutScreen
           id={about}
-          onBack={() => onPage(about === "help" ? helpFrom : "settings")}
+          onBack={aboutBack}
           // Named as the row that opened it.
           name={
             about === "help" && helpFrom === "account" ? tourTexts().guide : undefined

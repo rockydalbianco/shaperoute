@@ -1,6 +1,6 @@
 # TASK-441 — «Explore» a 2000 disegni: parole, penna alzata, bici, canoa, nuoto
 
-**Stato**: In lavorazione — parte A in `main` (#1149, 2026-11-11); le 702 parole nuove escono con una PR di correzione (→ 1261); resta il server; poi B
+**Stato**: In lavorazione — parte A in `main` e sul server (1261); parte B1 (parole a penna alzata, 1546) in PR, aspetta il sì dell'utente alla pagina; poi l'app e l'OTA, poi B2
 **Fase**: 5 · **Branch**: `feat/TASK-441-a-explore-2000` (parte A); una PR
 per parte · **ADR**: ADR-0366 (i due campi nuovi del catalogo, parte B) ·
 numeri dal Coordinatore il 2026-11-11 · seguito di TASK-419
@@ -47,7 +47,8 @@ non tracciato).
 |---|---|---|---|
 | A1 | i 776 già disegnati che passano il filtro | catalogo | passo «catalogo» sul server |
 | A2 | parole corte (2–4 lettere) su una riga nelle 63 città, la migliore dei due stili | `tools/`, catalogo | come A1, stessa PR |
-| B | `walks` e `activity` nel catalogo: parole di 5–8 lettere a penna alzata, bici 30–50 km, canoa e nuoto | API, shared-types, app, `tools/` | server, poi OTA |
+| B1 | `walks` nel catalogo: le parole a penna alzata, fino a 6 lettere, solo quelle che si leggono; due PR, prima il server poi l'app | API, esempi condivisi, `tools/`, catalogo; poi app | server, poi OTA |
+| B2 | `activity` nel catalogo: bici 30–50 km, canoa e nuoto | API, app, `tools/` | server, poi OTA |
 | C | motore: spazio nelle frasi, cifre, forme nuove a tema, i 35 contorni in attesa | `services/route-engine` | **task e ADR a parte**, da chiedere al Coordinatore |
 
 ## Parte A — cosa fare
@@ -162,6 +163,10 @@ docs/tasks/TASK-441.md            (nuovo)
   (`services/api/shaperoute_api/city_examples.py`) le scrivono a penna
   alzata, tonde, 3 km a lettera. Escono dal catalogo; nella parte B tutte
   le parole si rifanno con quel metodo.
+- 2026-11-11, sui passi dopo la correzione: merge «ok procedi garzie»;
+  server dopo la #1155 con 1261 «si va bene»; parte B e le 55 parole di
+  prima da rifare a penna alzata «si procedi e ifalle».
+- 2026-11-11, vista la pagina di prova: «Sì, rifai il giro».
 
 ## Com'è uscita la parte A
 
@@ -208,7 +213,106 @@ Dalla sessione «Forme generate strane», che ha fatto la correzione:
 - I numeri di «Com'è uscita la parte A» qui sopra (1963, 757 parole, 91 a
   Milano) sono quelli del merge di #1149, prima della correzione.
 
+## Parte B1 — le parole a penna alzata (ADR-0366)
+
+Divisione approvata dal Coordinatore il 2026-11-11: B1 le parole, B2 bici,
+canoa e nuoto; B1 in due PR, **prima il server, poi l'app e l'OTA**.
+
+**La prova** (2026-11-11 sera, `out/TASK-441/penup/`): 30 parole in quattro
+città, come gli esempi di città (`city_examples.py`: tonde, `pen_up`, 3 km
+a lettera). Fino a 6 lettere passano nelle città grandi (0,92–1,00); a 7
+(FOREVER) restano fra 0,85 e 0,89 dovunque; a 8 serve una zona più grande
+di quelle in cache. L'utente: «Sì, rifai il giro».
+
+**Il giro** (`bash out/TASK-441/run-pen-up.sh`, 2026-11-11 notte, un'ora e
+venti): 1047 parole da 2 a 6 lettere in 63 città, comprese quelle che il
+catalogo aveva a riga unica. 1011 disegnate (36 senza zona in cache:
+Overpass è chiuso apposta), **761 passano il filtro**: per lunghezza
+85/89, 267/315, 261/328, 113/179, 35/100. Il filtro guarda la lunghezza
+del solo disegno: i tratti fra le lettere aggiungono in media il 20%.
+
+**Quelle che si leggono**: il filtro non lo dice. A Levico HI e SI a 0,92–
+0,94 non si leggono; a Nizza YES a 0,99 nemmeno. Le 761 sono state lette
+una per una su fogli da 45, alla grandezza di una scheda dell'app,
+**senza il nome sotto** e raddrizzate come le raddrizza l'app
+(`rotation_deg`, fino a ±30°): una parola entra solo se ogni lettera si
+riconosce. **340 su 761** (per lunghezza 60, 117, 132, 22, 9), in 59
+città; somiglianza mediana 0,98 contro 0,94 delle scartate. Le chiavi sono
+in `tools/catalog_pen_up_read.json`. Delle 44 coppie città-parola che il
+catalogo aveva a riga unica, 19 tornano a penna alzata (CIAO era in 33
+città, ora in 10).
+
+**Il catalogo**: 1546 percorsi (1206 forme, 340 parole). Costo per l'API:
+24,7 MB di file, 0,32 s, +166 MB (a 1261: 19 MB). Da Milano «NEAR YOU» dà
+60 percorsi, 50 nomi diversi, i primi 50 tutti diversi, 19 con `gaps`;
+119 KB prima della compressione.
+
+**Cosa cambia**:
+
+- `tools/catalog_words.py --pen-up` (`--plan`, `--run`, `--propose`,
+  `--page`, `--unread`), `tools/catalog_pen_up_read.json` (nuovo).
+- `tools/catalog_seed.py`: `_route_body` scrive `walks` quando la riga li
+  ha (tre righe, permesso del Coordinatore). Prova: `--write` in una
+  cartella a parte dai registri di prima dà 63 file identici byte per byte
+  a `catalog/seed` di `main` (sha256 dei file in fila `ef27c63fe76807c5`).
+- API (`recommended.py`): `walks` nel dettaglio, `gaps` nell'anteprima
+  delle liste (ogni lettera fino a 32 punti, i tratti fra le lettere fuori);
+  tutti e due mancano dalla risposta di un percorso a riga unica, che resta
+  identica. Esempi nuovi: `recommended-routes-pen-up.json`,
+  `recommended-route-pen-up.json`.
+- `exploreCatalogEdit.test.ts`: una parola a pezzi non è un anello;
+  «Edit the drawing» la prende tutta in una riga, tratti compresi, chiusa
+  dal lato che torna alla partenza, come le parole degli esempi di città.
+  **Limite noto**: modificarla lettera per lettera non si può.
+
+**L'app** (branch `feat/TASK-441-b1-app-pen-up`, commit locale, PR dopo il
+server): `gaps` alle schede in `ExploreScreen.tsx` e `route/NearYou.tsx`,
+`pen_up` in `toRequest` (`explored.ts`) per una parola con `walks`, due
+commenti in `recommendedRoutes.ts`. Senza l'OTA le schede uniscono le
+lettere con un tratto dritto; la mappa le mostra già staccate (`toResult`
+porta `walks`).
+
+### File toccati (B1, PR del server)
+
+```
+tools/catalog_words.py, tools/test_catalog_words.py
+tools/catalog_pen_up_read.json                          (nuovo)
+tools/catalog_seed.py                                   (tre righe: `walks`)
+tools/catalog_kept.json, catalog/seed/<città>.json, catalog/README.md
+services/api/shaperoute_api/recommended.py, services/api/tests/test_recommended.py
+services/api/tests/fixtures/catalog_pen_up/trento.json  (nuovo)
+packages/shared-types/fixtures/recommended-routes-pen-up.json, recommended-route-pen-up.json  (nuovi)
+apps/mobile/src/route/exploreCatalogEdit.test.ts
+docs/tasks/TASK-441.md
+```
+
+### File toccati (B1, PR dell'app)
+
+```
+apps/mobile/src/explore/ExploreScreen.tsx, explored.ts, explored.test.ts
+apps/mobile/src/explore/recommendedRoutes.ts            (solo commenti)
+apps/mobile/src/explore/ExplorePenUpWords.test.tsx      (nuovo)
+apps/mobile/src/route/NearYou.tsx
+```
+
+### Criteri di accettazione (B1)
+
+- [x] Giro finito, registro in `out/TASK-441/pen-up.jsonl`.
+- [x] Test deterministici: strumento (39), API (61), l'app sul catalogo.
+- [x] I file di oggi identici byte per byte con le tre righe nuove.
+- [ ] Sì dell'utente alla pagina delle 340 parole
+      (`out/TASK-441/penup/parole-che-entrano.html`; le scartate in
+      `parole-scartate.html`) **prima del merge**.
+- [ ] CI verde, merge del Coordinatore, passo sul server (sì dell'utente).
+- [ ] PR dell'app, OTA (sì dell'utente).
+
 ## Dove siamo
+
+*2026-11-11, 22:14Z*: **parte A sul server** («passo 8 fatto», Coordinatore):
+checkout `ab5b2983`, nel log «1261 recommended routes from catalog/seed»,
+il controllo da Milano dà `60 31 31`; il contenitore dell'API appena
+partito usa 345 MB (processo principale 279 MB). «Explore» in produzione ha
+il catalogo senza le parole a riga unica e l'ordine misto.
 
 *2026-11-11*: **parte A in `main`** (#1149, merge del Coordinatore dopo il
 sì dell'utente; documenti #1153, ADR-0347 precisazione C). Giro delle

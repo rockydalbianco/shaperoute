@@ -19,6 +19,7 @@ import { GymDrawGuide } from "./GymDrawGuide";
 import { GymPlansSheet } from "./GymPlans";
 import { forgetPlans, mergePlans, planForToday, plansOf, workoutPlan } from "./plans";
 import { isoDate } from "./program";
+import { forgetPaceAsked } from "./runPace";
 import { loadSport } from "../settings/sport";
 import { useDrawDistance } from "../units/useDrawDistance";
 import { Text } from "react-native";
@@ -78,7 +79,7 @@ function api(remote: GymPlan[]) {
   });
 }
 
-async function shown(children: React.ReactNode) {
+async function shown(children: React.ReactNode, list: unknown[] = []) {
   const result = await render(
     <FollowsContext.Provider
       value={
@@ -93,7 +94,7 @@ async function shown(children: React.ReactNode) {
       }
     >
       <ActivitiesContext.Provider
-        value={{ owner: OWNER, total: 3 } as unknown as ActivitiesDoor}
+        value={{ owner: OWNER, total: 3, list } as unknown as ActivitiesDoor}
       >
         <DrawingsContext.Provider
           value={{ open: jest.fn() } as unknown as DrawingsDoor}
@@ -109,6 +110,7 @@ async function shown(children: React.ReactNode) {
 
 beforeEach(() => {
   files.clear();
+  forgetPaceAsked();
   forgetPlans();
   forgetHeldWorkout();
 });
@@ -387,14 +389,30 @@ test("run days in the guide: «And running?», the week, the run's editor (TASK-
   await fireEvent.press(screen.getByTestId("wizard-day-7"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
 
+  // With a run, «How do you run today?» (TASK-452): 5:30/km and 12 km at
+  // first; 5:25 and 14 km.
+  expect(screen.getByText("STEP 3 OF 6")).toBeOnTheScreen();
+  expect(screen.getByTestId("runner-pace")).toHaveTextContent("5:30");
+  await fireEvent.press(screen.getByTestId("runner-pace-less"));
+  await fireEvent.press(screen.getByTestId("runner-long-more"));
+  await fireEvent.press(screen.getByTestId("runner-long-more"));
+  expect(screen.getByTestId("runner-long")).toHaveTextContent("14");
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+  // «Your paces»: the easy run half of the long run, at 6:30/km.
+  expect(screen.getByText("Your paces")).toBeOnTheScreen();
+  expect(screen.getByTestId("runner-pace-easy")).toHaveTextContent("6:30");
+  await fireEvent.press(screen.getByTestId("wizard-next"));
+
   // The run's tab: half a km more, then the plan saved.
   expect(screen.getByTestId("wizard-tab-1")).toHaveTextContent("Run · Tue");
   await fireEvent.press(screen.getByTestId("wizard-tab-1"));
   expect(screen.getByTestId("run-day-editor")).toBeOnTheScreen();
+  expect(screen.getByTestId("run-value")).toHaveTextContent("7");
+  expect(screen.getByTestId("run-pace")).toHaveTextContent("at 6:30/km");
   await fireEvent.press(screen.getByTestId("run-more"));
-  expect(screen.getByTestId("run-value")).toHaveTextContent("5.5");
+  expect(screen.getByTestId("run-value")).toHaveTextContent("7.5");
   expect(screen.getByTestId("run-growth")).toHaveTextContent(
-    "5.5 km · 6 km · 6.5 km; week 4: 4.5 km to recover",
+    "7.5 km · 8.5 km · 9 km; week 4: 6 km to recover",
   );
   await fireEvent.press(screen.getByTestId("wizard-next"));
   await fireEvent.press(screen.getByTestId("wizard-next"));
@@ -407,8 +425,9 @@ test("run days in the guide: «And running?», the week, the run's editor (TASK-
     day: 2,
     name: "Easy run",
     items: [],
-    run: { kind: "easy", distance_m: 5500 },
+    run: { kind: "easy", distance_m: 7500 },
   });
+  expect(kept.program?.runner).toEqual({ pace_10k_s: 325, long_m: 14000 });
   expect(screen.getByTestId("gym-plan-program")).toHaveTextContent(/RUN/);
 });
 
@@ -440,9 +459,50 @@ test("in Draw on a run day: the run of the week, and «Go to the run» turns to 
     within(today).getByRole("header", { name: "Easy run · 5.5 km" }),
   ).toBeOnTheScreen();
   expect(within(today).getByText("Easy, at a pace you can talk at.")).toBeOnTheScreen();
+  // Made for its runner (TASK-452): the pace and the time of the run.
+  expect(screen.getByTestId("gym-guide-pace")).toHaveTextContent("6:35 /km");
+  expect(screen.getByTestId("gym-guide-time")).toHaveTextContent("≈ 36 min");
   // A run day is no workout of the gym.
   expect(planForToday()).toBeNull();
   await fireEvent.press(screen.getByTestId("gym-guide-go-run"));
   expect(loadSport()).toBe("run");
   expect(screen.getByTestId("draw-metres")).toHaveTextContent("5500");
+});
+
+test("at the end of a cycle, faster runs propose new paces, changed on a yes (TASK-452)", async () => {
+  const now = new Date();
+  const monday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - ((now.getDay() + 6) % 7),
+  );
+  const threeWeeksBefore = new Date(
+    monday.getFullYear(),
+    monday.getMonth(),
+    monday.getDate() - 21,
+  );
+  const plan: GymPlan = {
+    ...LIFT_AND_RUN,
+    program: { ...LIFT_AND_RUN.program!, starts_on: isoDate(threeWeeksBefore) },
+  };
+  mergePlans(OWNER, [plan]);
+  // 10 km in 50 minutes two days ago: 5:00/km, faster than 5:30.
+  const fast = {
+    started_at: new Date(now.getTime() - 2 * 86400000).toISOString(),
+    distance_m: 10000,
+    duration_s: 3000,
+    activity: "running",
+  };
+  const fetchFn = api([plan]);
+  await shown(<GymDrawGuide fetchFn={fetchFn as unknown as typeof fetch} />, [fast]);
+  expect(
+    within(screen.getByTestId("gym-guide-new-paces")).getByText(
+      "Your runs say 5:00/km over 10 km: update the paces?",
+    ),
+  ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("gym-guide-new-paces-yes"));
+  await act(async () => {});
+  expect(screen.queryByTestId("gym-guide-new-paces")).toBeNull();
+  const [kept] = plansOf(OWNER);
+  expect(kept.program?.runner).toEqual({ pace_10k_s: 300, long_m: 12000 });
 });

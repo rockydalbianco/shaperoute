@@ -151,3 +151,17 @@ test("today on a run day: its run of this week, and no workout of the gym", () =
   // Monday is the gym's.
   expect(todayPlan([LIFT_AND_RUN], new Date(2026, 10, 9, 9))?.run).toBeUndefined();
 });
+
+test("a long run made for its runner grows a kilometre a week (TASK-452)", () => {
+  const long = { kind: "long", distance_m: 12000 } as const;
+  expect(
+    [1, 2, 3, 4].map((week) => runInWeek(long, "load", 4, week, 0, true).distance_m),
+  ).toEqual([12000, 13000, 14000, 9500]);
+  expect(runInWeek(long, "load", 4, 1, 1, true).distance_m).toBe(13000);
+  const timed = { kind: "long", duration_s: 4500 } as const;
+  expect(runInWeek(timed, "load", 4, 2, 0, true).duration_s).toBe(4800);
+  // The easy run still a tenth a week.
+  expect(
+    runInWeek({ kind: "easy", distance_m: 6000 }, "load", 4, 2, 0, true).distance_m,
+  ).toBe(6500);
+});

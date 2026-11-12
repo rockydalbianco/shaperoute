@@ -143,7 +143,10 @@ scaduto. L'API lascia leggere `/live` solo a `https://getmuw.app` (CORS).
   bici, il roller e lo sci, il passo per 500 m in canoa e per 100 m a nuoto,
   come nell'app), dislivello, calorie e battito quando ci sono. Nuoto in
   piscina: tempo, vasche stimate, calorie, battito, senza mappa. Palestra:
-  tempo, esercizio in corso, calorie, battito, senza mappa. Miglia e piedi
+  tempo, esercizio in corso, calorie, battito, senza mappa. Parapendio
+  (TASK-305 R3): al posto della media, velocità del momento, quota,
+  variometro col segno e quota massima (ft/min in miglia); da un'app di
+  prima, la velocità media. Miglia e piedi
   per un browser degli Stati Uniti e del Regno Unito, come l'app dal
   telefono.
 - **La riga sotto il titolo**: «Updated N s ago»; «No update since HH:MM»

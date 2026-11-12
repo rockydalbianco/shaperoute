@@ -1,0 +1,26 @@
+{
+  "id": "trento-go-6000-0",
+  "city": "trento",
+  "shape": null,
+  "word": "GO",
+  "style": "round",
+  "distance_m": 6000,
+  "route_m": 6900,
+  "similarity": 0.95,
+  "points": [
+    [46.067, 11.1215],
+    [46.068, 11.1215],
+    [46.068, 11.1225],
+    [46.067, 11.1225],
+    [46.0675, 11.122],
+    [46.0672, 11.1232],
+    [46.067, 11.124],
+    [46.068, 11.124],
+    [46.068, 11.125],
+    [46.067, 11.125],
+    [46.067, 11.124]
+  ],
+  "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0",
+  "rotation_deg": 0.0,
+  "walks": [[4, 6]]
+}

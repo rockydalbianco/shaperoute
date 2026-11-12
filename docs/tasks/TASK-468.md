@@ -1,6 +1,6 @@
 # TASK-468 — La live in chat e nel Feed, anche programmata
 
-**Stato**: Todo · parte 0 (documenti) in questa PR
+**Stato**: In corso · parte 0 (documenti) in questa PR; poi A1, A2, B1, B2
 **Fase**: 5 · **Branch**: `docs/TASK-468-live-chat-feed` (parte 0) ·
 **ADR**: ADR-0381 · numeri dal Coordinatore (2026-11-12)
 **Estende**: TASK-424 (ADR-0352, «Share live activity»), che metteva fuori
@@ -89,7 +89,10 @@ deciderlo».
   Coordinatore quando c'è la lista. Niente codice prima del sì del
   Coordinatore sulla lista dei file di ogni parte.
 
-### Testi (proposta, en → it; de/fr/es dopo il sì)
+### Testi — **approvati dall'utente il 2026-11-12** («Sì, approvo»)
+
+In inglese nell'app, qui con l'italiano. Tedesco, francese e spagnolo
+si scrivono nelle parti B1 e B2 con lo stesso senso.
 
 Il foglio di «Share live» (accanto a «Share link» di TASK-424):
 
@@ -143,16 +146,17 @@ Privacy dell'app (`about/content`, voce «Your position»), frase in più:
 |---|---|
 | When you choose to go live in the Feed or send a live in chat, the people you choose (your followers, everyone, or the people you pick) see your exact position, the route so far and your activity data while you record, and your heart rate only if you turn it on for that live. Positions are deleted one hour after you finish, unless you post the activity. | Quando scegli di andare live nel Feed o di mandare una live in chat, le persone che scegli (i tuoi follower, tutti, o chi indichi) vedono la tua posizione esatta, il percorso fatto e i dati dell'attività mentre registri, e il battito solo se lo accendi per quella live. Le posizioni si cancellano un'ora dopo la fine, a meno che tu pubblichi l'attività. |
 
-### Da decidere ancora nella parte 0
+### Da decidere ancora
 
-- I testi en/it/de/fr/es (approvazione dell'utente).
 - **Privacy** (Coordinatore, 2026-11-12): la posizione dal vivo mostrata
   a follower, a tutti o in chat è un dato nuovo che esce verso altre
   persone. Una frase nella privacy dell'app (`about/content`) e del sito
-  (`site/privacy`, a turno dopo la #1200), col sì dell'utente; App Privacy
-  e Data safety da rivedere. Ogni live si accende con una scelta
+  (`site/privacy`, a turno dopo la #1200): la frase dell'app è approvata
+  con i testi (2026-11-12); App Privacy e Data safety da rivedere, col sì
+  dell'utente, prima dell'OTA di B. Ogni live si accende con una scelta
   esplicita, mai da sola.
-- Tecnica (ADR): aggiornamento della schermata dal vivo (polling come la
+- Tecnica: in ADR-0381 (proposta). Restano da fissare nelle parti A:
+  aggiornamento della schermata dal vivo (polling come la
   pagina web, 10 s), limiti, chi vede attraverso blocchi e nascosti
   (`follows.apart_sql`), segnalazioni.
 
@@ -176,7 +180,12 @@ Parte 0:
 
 ```
 docs/tasks/TASK-468.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/INDEX.md
 ```
+
+Le liste delle parti A1, A2, B1, B2 vanno al Coordinatore prima del codice.
 
 ## Esito
 

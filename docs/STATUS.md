@@ -199,6 +199,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
+- **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
+  (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
+  B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
 
 - **TASK-462 — Il calendario di tutte le attività** · A (server) in `main`
   (#1162, ADR-0372), sul server col passo 9; B (app) nella #1172 in bozza,

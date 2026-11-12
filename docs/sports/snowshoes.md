@@ -299,3 +299,41 @@ partenza (`snow.town_bbox`), dalla neve in cache del banco o da Overpass
 | Lavazè | 10,3 s | 10,4 s |
 | Bondone | 9,5 s | 9,4 s |
 | Rolle | 9,2 s | 9,5 s |
+
+## Nell'app: parti B e C (2026-11-12)
+
+«Snowshoes» ❄️ è una riga sola in Impostazioni, nella famiglia della neve.
+Resta «Soon» finché l'utente non dice sì alle schermate, e la #1266 non è
+sul server.
+
+**Le forme (parte B).** In «Draw» si sceglie una forma del catalogo:
+- niente parola, niente immagine, niente «Freehand» (il motore rifiuta un
+  disegno a mano sulla neve);
+- distanza fra 0,5 e 3 km;
+- nessun interruttore della penna: una forma a pezzi va sempre a penna
+  alzata, come sull'acqua;
+- nessun «Move» del punto di partenza e nessuna indicazione di svolta,
+  né sul telefono né sull'orologio;
+- sotto la distanza non c'è il tempo: il passo di chi cammina, sulla neve,
+  prometterebbe meno tempo di quello vero.
+
+Il percorso si legge «{forma} · on the snow · target {km} km». Gli errori
+della neve hanno i loro testi: niente neve aperta vicino (anche in città),
+la forma ci sta a un'altra distanza, la forma non ci sta.
+
+Nel codice, `isPlacedFree` (acqua o neve) sta dove la neve fa come l'acqua.
+`isSnowshoeRoute` sta dove serve solo la neve. Non va confuso con
+`activities/snow.ts` `isOnSnow`, che dice una giornata registrata senza
+forma.
+
+**La giornata (parte C).** È la scelta dell'utente «Dentro le ciaspole»:
+- il bottone in alto di «Draw» è «Record your day» ❄️, al posto di
+  «Snowshoe without a route»;
+- l'uscita si salva come `snowshoeing`: niente migrazione e niente server;
+- alla fine compare «Your day» con i numeri del fondo: distanza, passo,
+  metri saliti, tempo, calorie;
+- sulla mappa la riga è «White: where you walked.».
+
+**L'avviso valanghe** compare al primo «Start» sulla neve: forma,
+«Record your day» o un disegno del Feed. Si vede una volta per telefono
+(`snow-notice.json`).

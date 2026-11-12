@@ -400,6 +400,11 @@ class SeenFields(BaseModel):
     """A race on foot and in the air (hike & fly, TASK-305 part R6a,
     run_stats.py): each kind added up; null for any other run, and for a
     flight with no part on foot."""
+    linkable: bool = False
+    """The drawing can be opened by its link on the site, without an account
+    (TASK-455 part C, post_links.py): it is for everyone, it has a line, and
+    its owner leaves «Links to my posts» on. The app shows «Share link» only
+    then. Always answered; the default is for the examples written before."""
     sleep: SleepSummaryBody | None = None
     """«Sleep last night» (TASK-467 part B1b, sleep_seen.py): the night
     before the activity, while its owner shows it in the post; null for a
@@ -454,6 +459,17 @@ class DrawingDetailBody(SeenFields):
 
 # --- The drawings in the database ---
 
+# Whether the drawing `d` of the run `r` can be opened by its link (TASK-455
+# part C, ADR-0382, post_links.py): every member sees it, it is not hidden,
+# it has a line, and its owner is not hidden and leaves «Links to my posts»
+# on. One condition for what the app is told (`linkable`) and for what the
+# page of the link is given: they never disagree.
+LINKABLE_SQL = (
+    "(d.visibility = 'everyone' AND d.hidden_at IS NULL AND d.track IS NOT NULL"
+    " AND EXISTS (SELECT 1 FROM users owner WHERE owner.id = r.user_id"
+    " AND owner.post_links AND owner.hidden_at IS NULL))"
+)
+
 _SEEN_FIELDS = (
     "d.id, d.title, d.visibility, d.description, d.published_at,"
     " r.started_at, r.place, r.shape, r.word, r.style, r.title AS route_title,"
@@ -468,7 +484,10 @@ _SEEN_FIELDS = (
     " AS flight_split,"
     # The night shown in the post (TASK-467 part B1b): one row of
     # sleep_nights, by its primary key.
-    f" {SEEN_SLEEP_SQL} AS sleep"
+    f" {SEEN_SLEEP_SQL} AS sleep,"
+    # Whether the drawing has a link (TASK-455 part C): for everyone, with a
+    # line, and its owner leaves «Links to my posts» on.
+    f" {LINKABLE_SQL} AS linkable"
 )
 # One drawing, its track whole.
 SEEN_COLUMNS = f"{_SEEN_FIELDS}, ST_AsGeoJSON(d.track, 15) AS track"
@@ -606,6 +625,7 @@ def _seen(row: DictRow, details: Details) -> dict[str, Any]:
         "ski_descents": row.get("ski_descents"),
         "flight_split": row.get("flight_split"),
         "sleep": seen_sleep(row.get("sleep")),
+        "linkable": bool(row.get("linkable")),
     }
 
 

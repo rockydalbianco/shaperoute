@@ -35,7 +35,8 @@
       },
       "ski_descents": null,
       "flight_split": null,
-      "sleep": null
+      "sleep": null,
+      "linkable": true
     }
   ],
   "next": null

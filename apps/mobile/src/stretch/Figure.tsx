@@ -6,6 +6,7 @@ import { useReduceMotion } from "../ui/useReduceMotion";
 import {
   type Breath,
   deepen,
+  drift,
   grounding,
   LENGTH,
   PARENT,
@@ -18,12 +19,13 @@ import {
  * The stretching figure (TASK-285 part B, ADR-0247; moves of TASK-466 part
  * A, ADR-0378): a person drawn with thin turned Views, as the heart of the launch
  * animation is (ADR-0147), with no drawing library. Each segment is a
- * zero-sized frame at its joint, turned by its angle, holding its bar and
- * the segments that hang from it: a limb never changes length while it
- * turns.
+ * tiny frame around its joint (`JOINT`), turned by its angle, holding its
+ * bar and the segments that hang from it: a limb never changes length
+ * while it turns.
  *
  * How it moves:
  * - a new pose is reached in `POSE_MS`, every joint turning the short way;
+ * - a pose that reaches far from the hip slides back, to stay on the screen;
  * - from one exercise to the next, or to the other side, it stands up first
  *   and then goes down into the new pose, as a person would;
  * - to do the other side it turns round while standing, narrowing to its
@@ -47,6 +49,15 @@ const FAR_OPACITY = 0.4;
 const SHOULDER_SHARE = 0.9;
 /** The head's diameter, a little more than its segment for a rounder face. */
 const HEAD_SHARE = 1.05;
+/**
+ * Half the side of a joint's frame. A joint is a small square around its
+ * point, not a zero-sized view at it: on iOS a view laid out at exactly
+ * (0, 0, 0, 0) that the system reuses keeps the place it had before, and
+ * the second time the stretching opened a leg hung loose in a corner of
+ * the screen. A frame turns round its centre, so the joint is still the
+ * point `JOINT` in from its corner, and what is drawn in it starts there.
+ */
+const JOINT = 1;
 
 type Props = {
   pose: Pose;
@@ -168,8 +179,8 @@ function Limb({
           style={[
             styles.part,
             {
-              left: -head / 2,
-              top: -line / 2,
+              left: JOINT - head / 2,
+              top: JOINT - line / 2,
               width: head,
               height: head,
               borderRadius: head / 2,
@@ -182,8 +193,8 @@ function Limb({
             style={[
               styles.part,
               {
-                left: -line / 2,
-                top: -line / 2,
+                left: JOINT - line / 2,
+                top: JOINT - line / 2,
                 width: line,
                 height: length + line,
                 borderRadius: line / 2,
@@ -196,8 +207,8 @@ function Limb({
             style={[
               styles.part,
               {
-                left: -line * 0.6,
-                top: length - line * 0.6,
+                left: JOINT - line * 0.6,
+                top: JOINT + length - line * 0.6,
                 width: line * 1.2,
                 height: line * 1.2,
                 borderRadius: line * 0.6,
@@ -298,6 +309,9 @@ export function Figure({
     t.interpolate(ground),
     b.interpolate({ inputRange: [0, 1], outputRange: [0, sink] }),
   );
+  // A pose that reaches far slides back, to stay whole on the screen. The
+  // figure looks to the left, so back is to the right.
+  const slide = t.interpolate(keyframes(move.poses.map((p) => drift(p) * height)));
   // Turning round: narrow to the edge while standing, open the other way.
   const middle = (move.poses.length - 1) / 2;
   const scaleX =
@@ -317,7 +331,12 @@ export function Figure({
       importantForAccessibility="no-hide-descendants"
       accessibilityElementsHidden
     >
-      <Animated.View style={[styles.hip, { transform: [{ translateY: lift }] }]}>
+      <Animated.View
+        style={[
+          styles.hip,
+          { transform: [{ translateX: slide }, { translateY: lift }] },
+        ]}
+      >
         <Limb segment="thighFar" frame={frame} far>
           <Limb segment="shinFar" frame={frame} far>
             <Limb segment="footFar" frame={frame} far />
@@ -352,17 +371,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
   },
-  // The hip, at the floor until lifted by the pose.
+  // The hip, its point at the floor until lifted by the pose.
   hip: {
-    width: 0,
-    height: 0,
+    width: 2 * JOINT,
+    height: 2 * JOINT,
+    marginBottom: -JOINT,
   },
+  // A joint in its parent's frame: both are squares of the same side, so
+  // (0, 0) puts this joint's point on the parent's.
   joint: {
     position: "absolute",
     left: 0,
     top: 0,
-    width: 0,
-    height: 0,
+    width: 2 * JOINT,
+    height: 2 * JOINT,
   },
   part: {
     position: "absolute",

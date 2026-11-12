@@ -83,8 +83,9 @@ test("a sport not ready is not a choice in the menu", async () => {
   // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
   // (TASK-377), Gravel and MTB (TASK-378), Roller (TASK-380), Ski and
   // Cross-country ski (TASK-375), Ski touring (TASK-415 B), Gym (TASK-385 B)
-  // Paragliding (TASK-305 R2) and Wheelchair & stroller (TASK-414 B).
-  expect(screen.getAllByText("Soon")).toHaveLength(14);
+  // Paragliding (TASK-305 R2), Wheelchair & stroller (TASK-414 B) and
+  // Snowshoes (TASK-413 B).
+  expect(screen.getAllByText("Soon")).toHaveLength(15);
 });
 
 test("in the menu «Swim» is a choice like the others (TASK-323)", async () => {
@@ -103,9 +104,9 @@ test("the app's menu ends with «Paragliding», as «Settings» (TASK-305 R2)", 
   // Walk (TASK-371), run, the hike (TASK-377), bike, gravel and MTB
   // (TASK-378), the skate (TASK-380), paddle, the swim in Expo Go, the alpine
   // and the cross-country ski (TASK-375), ski touring (TASK-415 B), the gym
-  // in Expo Go (TASK-385 B), the flight (TASK-305 R2) and the wheelchair
-  // (TASK-414 B).
-  expect(screen.getAllByRole("radio")).toHaveLength(15);
+  // in Expo Go (TASK-385 B), the flight (TASK-305 R2), the wheelchair
+  // (TASK-414 B) and the snowshoes (TASK-413).
+  expect(screen.getAllByRole("radio")).toHaveLength(16);
   expect(screen.queryByLabelText("Paragliding, coming soon")).toBeNull();
   await fireEvent.press(screen.getByRole("radio", { name: "Paragliding" }));
   expect(saveSport).toHaveBeenCalledWith("paragliding");

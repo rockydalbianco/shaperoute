@@ -77,7 +77,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | «Edit the drawing» su una traccia che finisce lontano dalla partenza: chiusa fino alla partenza, non corsa due volte; se si incrocia, un anello alla partenza; anche un percorso chiuso di «Explore» che si incrocia | `UI.md` «Edit the drawing: la figura sulla mappa», ADR-0353, ADR-0356 (e precisazione), ADR-0313, `tasks/TASK-425.md`, `tasks/TASK-428.md`, `tasks/TASK-432.md` |
 | «Draw on the map»: la partenza, un pallino da spostare lungo il disegno | `UI.md` «Disegnare sulla mappa» («La partenza»), ADR-0354, ADR-0336, `tasks/TASK-426.md` |
 | I percorsi di MuW nel Feed: spenti, l'interruttore per riaccenderli | `UI.md` «Feed», ADR-0358, ADR-0310, `tasks/TASK-430.md` |
-| Il calendario di tutte le attività nel profilo e in «My activities», lo storico mese per mese | `API.md` «Il calendario delle attività», ADR-0372, `tasks/TASK-462.md` |
+| Il calendario di tutte le attività nel profilo e in «My activities», lo storico mese per mese | `UI.md` «Il calendario delle attività», `API.md` «Il calendario delle attività», ADR-0372, `tasks/TASK-462.md` |
 | Lo stretching: la figura che respira e si gira, «Get ready», tick, «Skip»; routine, palestra, mattino, routine pubblicate | `tasks/TASK-466.md`, ADR-0378, ADR-0247, ADR-0147 |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 

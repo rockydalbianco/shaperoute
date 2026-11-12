@@ -7,7 +7,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react-native";
 
 import { GYM_EXERCISES } from "./catalog";
-import { exercisesOf, GROUP_EMOJI } from "./ExerciseGrid";
+import { exercisesOf } from "./ExerciseGrid";
 import { ExercisePicker } from "./ExercisePicker";
 import { GYM_GROUPS } from "./groups";
 
@@ -21,7 +21,6 @@ test("every exercise of the catalog is in one group's grid", () => {
   expect(GYM_GROUPS.flatMap((group) => exercisesOf(group)).length).toBe(
     GYM_EXERCISES.length,
   );
-  expect(Object.keys(GROUP_EMOJI).sort()).toEqual([...GYM_GROUPS].sort());
 });
 
 test("the picker opens on the eight groups, with how many exercises each", async () => {
@@ -29,7 +28,7 @@ test("the picker opens on the eight groups, with how many exercises each", async
   const grid = screen.getByTestId("group-grid");
   expect(within(grid).getAllByRole("button")).toHaveLength(8);
   const chest = screen.getByTestId("group-chest");
-  expect(chest).toHaveTextContent(`🫁Chest${exercisesOf("chest").length}`);
+  expect(chest).toHaveTextContent(`Chest${exercisesOf("chest").length}`);
   expect(screen.queryByTestId("exercise-bench_press")).toBeNull();
 });
 
@@ -60,4 +59,20 @@ test("typing searches every group as a list, and a name of one's own is added", 
   expect(screen.getByTestId("add-own-exercise")).toBeOnTheScreen();
   await fireEvent.changeText(screen.getByTestId("exercise-search"), "");
   expect(screen.getByTestId("machine-grid-legs")).toBeOnTheScreen();
+});
+
+test("a group's only sign is its line figure: no emoji on the tiles nor in the title (TASK-444)", async () => {
+  await picker();
+  const grid = screen.getByTestId("group-grid");
+  expect(within(grid).queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
+  await fireEvent.press(screen.getByTestId("group-back"));
+  expect(screen.getByRole("header", { name: "Back" })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByTestId("groups-back"));
+  for (const group of GYM_GROUPS) {
+    await fireEvent.press(screen.getByTestId(`group-${group}`));
+    expect(
+      screen.queryByRole("header", { name: /\p{Extended_Pictographic}/u }),
+    ).toBeNull();
+    await fireEvent.press(screen.getByTestId("groups-back"));
+  }
 });

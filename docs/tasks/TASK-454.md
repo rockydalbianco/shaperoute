@@ -146,15 +146,15 @@ nuovo col sì dell'utente prima del merge, «#NNN pronta» al Coordinatore.
 
 Parte A:
 
-- [ ] Toccare «Like» non cambia l'altezza della card né la posizione dei
+- [x] Toccare «Like» non cambia l'altezza della card né la posizione dei
       quattro pulsanti; la fila si chiude scegliendo o toccando fuori.
-- [ ] Con una mia reazione «Like» la mostra, in grassetto, col totale; senza
+- [x] Con una mia reazione «Like» la mostra, in grassetto, col totale; senza
       reazioni nessun numero.
-- [ ] Nel Feed e nella pagina del post non c'è più il cerchio; sul disegno
+- [x] Nel Feed e nella pagina del post non c'è più il cerchio; sul disegno
       aperto c'è, col cuore a linea finché non ho reagito.
-- [ ] Dopo un super like il commento è tra i commenti del post e
+- [x] Dopo un super like il commento è tra i commenti del post e
       «Comment · N» sale, senza ricaricare il Feed.
-- [ ] Il foglio del super like dice la riga approvata, anche a VoiceOver.
+- [x] Il foglio del super like dice la riga approvata, anche a VoiceOver.
 
 I criteri di B, C1 e C2 si scrivono qui quando la parte comincia.
 
@@ -268,9 +268,19 @@ Criteri di accettazione (C1):
 
 **Stato**: codice e test scritti il 2026-11-12 sul branch
 `feat/TASK-454-reactions` (da `main` a `02214e9b`, con TASK-444 parte 1
-dentro) · PR #1195 in bozza: mancano gli screenshot prima/dopo (turno del
-simulatore dal Coordinatore) e il sì dell'utente su quelli. Le traduzioni
-qui sotto sono approvate.
+dentro) · PR #1195 pronta: provata nel simulatore il 2026-11-12 (iPhone
+17e, API locale di `main` con C1), schermate prima/dopo approvate
+dall'utente («Sì, approvo», 2026-11-12), traduzioni approvate. Aspetta il
+merge del Coordinatore.
+
+Schermate in `out/TASK-454/` del checkout principale:
+`TASK-454-1-feed-like.jpg` (la striscia che spingeva la riga, la fila in
+sovrimpressione, «Like · 3» con la propria), `-2-superlike.jpg` (la riga
+del foglio; mandato, «Comment» sale da 5 a 6), `-3-pagina-post.jpg`,
+`-4-mappa.jpg` (il cuore a linea nel cerchio); le grezze in `shots/`
+(`b*` = `main`, `a*` = dopo). Nel simulatore: la fila sta dove dice la
+riga, anche nella pagina del post, che è un `Modal`; il foglio del super
+like sale dopo che la fila è andata via; niente da correggere.
 
 Le scelte 1–4 sono dell'utente. Il modo è **deciso dall'agente su delega
 dell'utente** (nessun ADR nuovo: l'app soltanto, dentro ADR-0193 e

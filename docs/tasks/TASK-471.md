@@ -185,6 +185,20 @@ pura sono i 60 s di pausa quando lo stato non si legge.
 - **(b) Un secondo servizio Overpass** quando il principale è giù (per il
   lavoro a lotti del 12 novembre l'utente ha scelto di aspettare il
   principale: per la produzione va richiesto).
+  **Scelta dell'utente, 2026-11-12: «Sì, un tentativo»** (ADR-0385): quando
+  `overpass-api.de` risponde con un errore (non quando è lento) il server
+  fa un solo tentativo su `overpass.private.coffee`; se fallisce anche
+  quello l'errore è quello di oggi. L'indirizzo sta in una variabile
+  del server (`SHAPEROUTE_OVERPASS_FALLBACK_URL`), per cambiarlo o
+  spegnerlo senza toccare il codice. Il lavoro a lotti aspetta il
+  principale, come deciso. Dalla pagina dei servizi pubblici
+  (wiki.openstreetmap.org/wiki/Overpass_API, letta il 12 novembre): i
+  servizi gratuiti sono per progetti piccoli; il principale chiede che
+  l'uso commerciale passi a un servizio a pagamento o proprio;
+  `private.coffee` non ha limiti ma chiede di essere avvisato prima di
+  un uso su larga scala. **Passo futuro, non di questo task**: con la
+  società, o se i download crescono, un servizio a pagamento con chiave
+  oppure le zone costruite dagli estratti, come le città del preset.
 - **(c) Cosa dice l'app.** Oggi: «Map data for this area could not be
   downloaded. Try again later.» con «Retry» (`route/problems.ts`); il
   `message` dell'API porta dentro tutta la pagina d'errore di Overpass.

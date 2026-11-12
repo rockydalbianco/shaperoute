@@ -533,6 +533,7 @@ lasciando le righe d'indice.
 - ADR-0375 — Il parapendio registrato senza forma, con la condivisione dal vivo e i numeri del volo (quota, variometro, velocità del momento) · 2026-11-11 · Attiva
 - ADR-0372 — Il calendario di tutte le attività: `GET /me/activity-calendar` letto da `runs` e `run_stats`, i 12 mesi e gli sport dell'account nella stessa risposta, nessuna migrazione · 2026-11-11 · Attiva
 - ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella · 2026-11-12 · Attiva
+- ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle` · 2026-11-11 · Attiva
 - ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio · 2026-11-12 · Attiva
 
 ## Voci nuove
@@ -594,6 +595,72 @@ prende una parola a pezzi come una riga sola, tratti compresi: modificarla
 lettera per lettera non si può, come per gli esempi di città. Una parola
 nuova vuole di nuovo la lettura a occhio: è lavoro a mano, e a 5–6 lettere
 ne resta una su cinque.
+
+## ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle`
+
+**Stato**: Attiva · 2026-11-11 · TASK-465 in `main` (#1173, `55c98f8b`),
+solo app; esce con l'aggiornamento completo dell'app, niente server. Le
+scelte di quello che si vede sono dell'utente (2026-11-11, una domanda
+alla volta: «B, sagoma accanto», «Tutti e tre», «Anche i secondari»; i
+nomi «Sì, vanno bene»; gli screenshot «Vanno bene»); il modo è deciso
+dall'agente su delega dell'utente, numero dal Coordinatore.
+
+**Contesto**: l'utente l'11 novembre 2026: «sulla palestra fai vedere
+sull omino in un altro quale muscolo alleni». L'omino di un esercizio
+(TASK-411 E, ADR-0341) è fatto di `View`, sette ossa e il carico in
+giallo; il catalogo (`catalog.ts`, `gym_catalog.py`, la fixture
+`gym-exercises.json`) sa solo il gruppo di un esercizio, non il muscolo.
+
+**Decisione**:
+- **Una sagoma del corpo accanto all'omino**, ferma, non un colore
+  sull'omino che si muove (scelta dell'utente). Si vede nella guida,
+  accanto all'esercizio in corso, nei riquadri di un gruppo e nelle righe
+  della ricerca (scelta dell'utente: «Tutti e tre»).
+- **La tabella esercizio → muscoli sta nell'app** (`gym/muscles.ts`,
+  `MUSCLES_OF`), come quella dei movimenti (`MOVE_OF`): 17 muscoli (8
+  davanti, 9 dietro), per ogni esercizio uno o più principali e zero o più
+  secondari. Serve solo a disegnare: nessun campo nel contratto, nessuna
+  migrazione, niente sul server.
+- **I nomi dei muscoli e le quattro parole** («Main muscles», «Also»,
+  «Front», «Back») nelle cinque lingue stanno nello stesso file, come i
+  gruppi in `groups.ts`, non nei file di `i18n`.
+- **Il corpo è fatto di `View`** (`gym/MuscleMap.tsx`), senza
+  `react-native-svg` né altre dipendenze: blocchi arrotondati in una
+  scatola 40 × 104, scalati all'altezza chiesta.
+- **Pieno o contorno, mai solo il colore**: il corpo è un contorno vuoto,
+  un muscolo principale è pieno, uno secondario ha il contorno spesso;
+  dietro la testa è piena, così i due lati si distinguono anche in piccolo.
+- **Piccola, un lato solo**: quello del primo muscolo principale, e solo i
+  principali di quel lato; il lettore di schermo li dice tutti. **Nella
+  guida** davanti e dietro, i secondari, e sotto i nomi scritti (la figura
+  lì è nascosta al lettore di schermo: lo dicono le parole).
+- **Un token nuovo `muscle`** in `theme/tokens.ts`, un rosa nei due toni
+  (`#FF6FB5` nel tema scuro): giallo, rosso, azzurro e blu nell'app hanno
+  già un significato. `palettes.test.ts` chiede 3:1 su sfondo, carta e
+  controllo a ogni passo di luminosità.
+- **I test tengono la tabella intera**: ogni esercizio del catalogo ha un
+  principale, nessun muscolo sconosciuto o doppio, nessuna chiave fuori
+  dalla fixture condivisa, il primo principale sta nel gruppo
+  dell'esercizio (`wall_sit` a parte).
+
+**Alternative scartate**:
+- *Il muscolo in un altro colore sullo stesso omino* (la proposta A):
+  l'utente ha scelto la sagoma; sette ossa non bastano a dire petto o
+  dorsali.
+- *I muscoli nel catalogo del server* (`gym_catalog.py`, la fixture):
+  contratto e server da cambiare per un dato che serve solo al disegno;
+  si può fare dopo, se servirà altrove.
+- *`react-native-svg` o immagini*: una dipendenza nativa nuova (l'impronta
+  iOS cambierebbe) o file da tenere per tema e per muscolo.
+- *I secondari anche nelle sagome piccole*: a 18 pt di larghezza un
+  contorno non si legge.
+
+**Conseguenze**: chi aggiunge un esercizio al catalogo aggiunge la sua
+riga in `muscles.ts` (`muscles.test.ts` lo dice); la tabella ha già i
+quattro esercizi di TASK-461 A1. Un esercizio col nome libero non ha
+sagoma, come non ha omino. In un gruppo come «Chest» le sagome piccole
+sono tutte uguali: l'utente l'ha visto negli screenshot. Solo JavaScript.
+Dettagli in `tasks/TASK-465.md`.
 
 ## ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella
 

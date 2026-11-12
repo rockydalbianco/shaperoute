@@ -118,7 +118,7 @@ della privacy se cambia cosa vedono gli altri (sì dell'utente).
       `src/gym/restAlert` verdi; `tsc` pulito.
 - [x] Screenshot o video dal simulatore, col turno del Coordinatore
       (2026-11-12, iPhone 17e, Expo Go: `out/TASK-466/`, cinque schermate
-      e un video di 3 minuti).
+      e un video di 3 minuti); aspetto approvato dall'utente il 2026-11-12.
 - [x] Sì dell'utente sui due testi nuovi (2026-11-12, «Sì, approvo»).
 
 ## File toccati (parte A)

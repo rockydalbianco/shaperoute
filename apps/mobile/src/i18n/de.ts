@@ -1608,8 +1608,8 @@ export const DE: Table = {
   "You have not blocked anyone.": "Du hast niemanden blockiert.",
   Unblock: "Freigeben",
   "Unblock {name}": "{name} freigeben",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Du hast {user} blockiert. Freigeben kannst du unter Blockierte Personen in deinem Profil.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Du hast {user} blockiert. Freigeben kannst du unter Blockierte Personen in den Einstellungen.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
@@ -2601,6 +2601,18 @@ export const DE: Table = {
   "No shapes in the air yet: MuW records your flight.":
     "Noch keine Formen in der Luft: MuW zeichnet deinen Flug auf.",
   "White: where you flew.": "Weiß: wo du geflogen bist.",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Deine erste Zeichnung",
+  "Start from a route that already draws a shape near you.":
+    "Starte mit einer Route, die schon eine Form in deiner Nähe zeichnet.",
+  "Find a route near you": "Route in deiner Nähe finden",
+  "Record a run with MuW and publish its drawing.":
+    "Zeichne einen Lauf mit MuW auf und veröffentliche seine Zeichnung.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Veröffentliche 10 Zeichnungen von Läufen, die du mit MuW aufgezeichnet hast.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Veröffentliche die Zeichnung eines Laufs von mindestens {distance}.",
   // «Sleep last night» in a post (TASK-467 part B2): src/health/sleepText.ts,
   // SleepRunEnd.tsx, SleepCard.tsx
   "Sleep last night": "Schlaf letzte Nacht",

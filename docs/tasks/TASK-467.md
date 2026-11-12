@@ -1,8 +1,9 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 scritta** (server e contratto, ADR-0380: #1211, la mergia il Coordinatore; sul server col suo passo e il sì dell'utente), poi B2 e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server col passo dell'aggiornamento completo) · **B1b scritta** (#1227: il campo `sleep` nel disegno visto, server; la unisce il Coordinatore, sul server col passo dopo), poi **B2** (app, il sonno nel post) e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
-`feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1)
+`feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
+`feat/TASK-467-b1b-sleep-in-feed` (B1b)
 **Dipende da**: TASK-321 (Apple Salute nell'app, la stessa libreria),
 TASK-345 C / TASK-409 B (la lettura del battito: il modello del «leggere
 da Salute dopo un tocco»)
@@ -365,6 +366,53 @@ richiesta di copia comprende il sonno. Nessun file da toccare.
 - Sul server: i controlli di sola lettura in `out/TASK-467/SERVER-B1.md`
   (checkout principale), il passo è del Coordinatore col sì dell'utente.
 
+### Parte B1b — com'è fatta (2026-11-12, branch `feat/TASK-467-b1b-sleep-in-feed`)
+
+Il punto lasciato aperto da B1 («il Feed non dice se un post ha il sonno»),
+chiuso prima di B2 col sì del Coordinatore. Deciso dall'agente su delega
+dell'utente; nessuna migrazione, nessuna app lo legge ancora.
+
+**Perché un campo e non una richiesta.** La vasca e la palestra chiedono i
+loro numeri a parte (`GET /drawings/{id}/pool-swim`), ma solo per i loro
+post. Il sonno può stare su qualsiasi attività: chiedere `GET
+/drawings/{id}/sleep` vorrebbe dire una richiesta per riga del Feed, quasi
+tutte `404`, accanto a quella delle reazioni. Il precedente è
+`ski_descents` (TASK-424 C2b): un campo facoltativo del disegno visto.
+
+**Che cosa c'è.** Ogni disegno visto porta `sleep`: lo stesso
+`SleepSummary` di `GET /drawings/{id}/sleep`, **solo mentre `sleep_shown`
+è acceso**; `null` per un post senza notte e per uno col sonno nascosto,
+anche al suo autore (l'interruttore lo legge da `GET
+/me/activities/{key}/sleep`: nella lista vede quello che vedono gli
+altri). Vale per `GET /drawings/{id}` e per ogni lista che passa da
+`_seen`: Feed, profilo, ricerca, stazione, gare. Chi non vede il post non
+lo trova in nessuna lista, e così attraverso un blocco. `stages` manca per
+una notte senza fasi, come nell'endpoint, mai `null`.
+
+**Com'è fatto.** Una sotto-select in `_SEEN_FIELDS` (`sleep_seen.py`,
+`SEEN_SLEEP_SQL`: una riga di `sleep_nights` per chiave primaria, con
+`AND r.sleep_shown`), letta da `_seen`. `SleepStagesBody` e
+`SleepSummaryBody` passano da `sleep.py` a `sleep_seen.py`, perché
+`sleep.py` importa `drawings.py` e non può valere il contrario. Un nome
+solo in openapi, nessun esempio.
+
+**File**. NUOVI: `services/api/shaperoute_api/sleep_seen.py`,
+`packages/shared-types/fixtures/drawing-sleep.json`. MODIFICATI:
+`services/api/shaperoute_api/drawings.py` (`SeenFields`, `_SEEN_FIELDS`,
+`_seen`), `services/api/shaperoute_api/sleep.py` (le due classi importate),
+`packages/shared-types/src/index.ts` (il campo accanto a `ski_descents`),
+`packages/shared-types/test/sleep.test.ts`, `services/api/tests/test_sleep.py`
+(8 test nuovi; quello di B1 sul sonno nascosto ora vuole `"sleep":null`),
+`docs/API.md` («Sleep»), questo file. E, a una riga, quello che fissa
+l'elenco dei campi del disegno visto, come per `ski_descents`:
+`services/api/tests/test_drawings.py`, `test_feed.py`, e `"sleep": null`
+in `fixtures/drawing-ski.json`, `feed-imported.json`,
+`drawing-details-imported.json`.
+
+**Sul server**: va col passo dopo l'aggiornamento completo del 12
+novembre, col sì dell'utente; prima di allora le app non vedono il campo
+e B2 non mostra niente.
+
 ## Criteri di accettazione
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.
@@ -376,6 +424,10 @@ richiesta di copia comprende il sonno. Nessun file da toccare.
   contratto, coi test; chi non è l'autore non legge mai una notte con
   `shared` false né il sonno di un post con `sleep_shown` false;
   esportazione e cancellazione dell'account coprono `sleep_nights`.
+- [x] B1b: il disegno visto porta `sleep` solo con `sleep_shown` acceso,
+  la stessa regola di `GET /drawings/{id}/sleep` per chi non è l'autore,
+  in ogni lista che usa `_seen`; coi test per chi non è l'autore, per chi
+  non vede il post e attraverso un blocco; nessuna migrazione.
 - [ ] Parti B2–D: criteri scritti qui quando partono.
 
 ## File toccati (documenti, questa PR)
@@ -406,3 +458,13 @@ richiesta di copia comprende il sonno. Nessun file da toccare.
   Coordinatore compone e per cui chiede lui il sì all'utente (`main` ha già
   le parole a penna alzata di Explore, che escono solo con la loro OTA). Il
   testo nuovo del primo «Share» è approvato («Approvo così», 2026-11-12).
+- **2026-11-12, B1 in `main`**: #1211 unita dal Coordinatore a CI verde
+  (`71e24188`); ADR-0380 in `DECISIONS.md`. La `0072` va sul server col
+  passo dell'aggiornamento completo; i controlli di sola lettura sono in
+  `out/TASK-467/SERVER-B1.md`. B1b e B2 le scrive una sessione a parte:
+  B1b è il campo `sleep` nel disegno visto (riga del Feed, liste,
+  dettaglio), solo quando il sonno è mostrato, in `drawings.py`.
+- **2026-11-12, B1b**: #1211 in `main` (`71e24188`). Scritta la B1b, il
+  campo `sleep` nel disegno visto, perché il Feed non faccia una richiesta
+  per riga. Restano: il merge del Coordinatore e il passo sul server dopo
+  quello dell'aggiornamento completo, col sì dell'utente. Poi B2.

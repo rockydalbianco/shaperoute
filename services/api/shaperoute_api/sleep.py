@@ -53,10 +53,13 @@ from shaperoute_api.drawings import drawing_seen_sql
 from shaperoute_api.follows import apart_sql
 from shaperoute_api.reads import EVERYTHING, Reads, Shown
 from shaperoute_api.schemas import ErrorBody
+from shaperoute_api.sleep_seen import (
+    MAX_NIGHT_MIN,
+    SleepStagesBody,
+    SleepSummaryBody,
+)
 
 MAX_SCORE = 100
-# A night is within a day.
-MAX_NIGHT_MIN = 1_440
 EARLIEST_NIGHT = EARLIEST_RUN.date()
 # A phone east of the API is a day ahead of it at most.
 NIGHT_AHEAD = timedelta(days=1)
@@ -70,17 +73,6 @@ NO_NIGHT = "No night of sleep kept for this day."
 NO_ACTIVITY_SLEEP = "No sleep kept for this activity."
 NO_SLEEP = "No sleep to show."
 NOT_LAST_NIGHT = "This is not the night before this activity."
-
-
-class SleepStagesBody(BaseModel):
-    """The minutes in each stage a watch told: Apple Health's «REM», «Core»
-    (MuW's «Light») and «Deep»."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    rem_min: int = Field(ge=0, le=MAX_NIGHT_MIN)
-    light_min: int = Field(ge=0, le=MAX_NIGHT_MIN)
-    deep_min: int = Field(ge=0, le=MAX_NIGHT_MIN)
 
 
 class SleepFiguresBody(BaseModel):
@@ -141,16 +133,6 @@ class SleepShownRequestBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     shown: bool
-
-
-class SleepSummaryBody(BaseModel):
-    """A night as others read it: fixtures/sleep-summary.json."""
-
-    night: date = Field(description="The day the person woke up.")
-    score: int
-    asleep_min: int
-    awake_min: int
-    stages: SleepStagesBody | None = None
 
 
 class SleepNightBody(SleepSummaryBody):

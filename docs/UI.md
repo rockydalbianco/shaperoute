@@ -1186,6 +1186,30 @@ bloccato non apre niente (TASK-338). **Il
 testo è sempre solo testo**: un link non si tocca, un tag HTML si legge
 com'è scritto, e il commento non entra mai nella WebView della mappa.
 
+**Risposte e reazioni ai commenti** (TASK-454 parte C, ADR-0377, scelte
+dell'utente dell'11 novembre 2026), nello stesso foglio, dal Feed, dalla
+pagina del post e dal disegno aperto. Sotto le parole di ogni commento una
+riga bassa: **«Reply»**, poi il pulsante della propria reazione (senza, il
+cuore a linea di «Like»: «React» per VoiceOver; con, l'emoji: «Your
+reaction: Fire») e, se ce ne sono, le più usate e **il totale** («3
+reactions»). **Le risposte stanno sotto il loro commento, rientrate, a un
+livello solo**, dalla più vecchia, con la foto più piccola; ne arrivano
+due, le altre con **«View 3 more replies»** («View 1 more reply» per una).
+«Reply» su un commento o su una risposta scrive sopra il campo **«Replying
+to {name}»** con una ✕ («Cancel») che lo toglie: quello che si manda va
+sotto quel commento e compare subito lì; rispondendo a una risposta
+davanti al testo c'è **«@nome»** di chi l'ha scritta (lo dà l'API, non è
+testo scritto dall'app). Per VoiceOver «Reply» è anche un'azione della
+riga. **Le reazioni sono le cinque emoji** 🔥 👏 💪 😂 😮, una a testa su
+commenti e risposte: il pulsante trasforma la riga nelle cinque più
+«Cancel», la propria col bordo; la riga è alta uguale, niente si sposta.
+La propria toccata di nuovo si toglie; si vede subito e, se l'API non la
+tiene, torna com'era con «Your reaction wasn't saved. Check the
+connection.» sopra il campo. **Il cuore di MuW qui non c'è**: il super like
+è del post. Cancellare un commento toglie anche le sue risposte, e il
+numero dei commenti scende di tutte. Con un'API di prima delle risposte i
+commenti sono com'erano: niente «Reply», niente reazioni.
+
 **Le reazioni di un disegno** (TASK-119, ADR-0193, scelte dell'utente del
 2026-10-04): nella scheda di un disegno aperto, **sulla riga del pulsante
 dei commenti, alla sua sinistra**, un pulsante tondo neutro con la propria

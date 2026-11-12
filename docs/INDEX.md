@@ -57,6 +57,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Il parapendio registrato in volo: lo sport «Record only», i numeri del volo nel link dal vivo | `tasks/TASK-305.md` «Le parti R», ADR-0375, ADR-0352, ADR-0319 |
 | Apple Salute, Health Connect | ADR-0281, `tasks/TASK-321.md` |
 | Il punteggio del sonno MuW | `tasks/TASK-467.md` |
+| Le schede, lo swipe, il tasto indietro, il gesto dal bordo, i fogli, le pagine sopra l'app | `tasks/TASK-470.md`, ADR-0384, `UI.md` «Le pagine e la barra di schede» |
 | La live in chat e nel Feed, anche programmata (una gara) | `tasks/TASK-468.md`, ADR-0381, ADR-0352, `API.md` «Live shares» e «Messages» |
 | «MuW Style» | `STYLE.md`, `tasks/TASK-384.md` |
 | Percorsi in bici di MuW in «Explore» | `UI.md` «Pedalalo tu», ADR-0309 |

@@ -544,12 +544,56 @@ lasciando le righe d'indice.
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
+- ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
 - ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
 - ADR-0380, precisazione B1b/B2 — Il sonno nel post: un campo `sleep` nel disegno visto al posto di una richiesta per riga; nell'app tutto dietro `SLEEP_POSTS_ON` e nessun lettore di Salute in `main`; al server solo con l'interruttore acceso e un post che altri vedono · 2026-11-12 · Attiva
 - ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←»
+
+**Stato**: Attiva · 2026-11-12 · TASK-470 parte E, in `main` con la #1243 (OTA 14). Il gesto e la
+versione sono scelta dell'utente (2026-11-12, «A, la pagina segue» fra A e
+B «solo il colpo»); il modo è deciso dall'agente su delega dell'utente, coi
+criteri del Coordinatore; numero dal Coordinatore.
+
+**Contesto**: nell'app non c'è navigazione nativa né `react-native-gesture-handler`:
+le pagine sopra le schede (conversazione, campanella, profili, concorso,
+pagine di «Profile», «Play») sono viste, e si
+chiudevano solo con «←». Su Android il tasto indietro le chiude dalla
+fetta B (`useBackCloses`, una pila delle pagine aperte).
+
+**Decisione**:
+- **Solo iOS**, in JS (`PanResponder` e `Animated`, nessuna dipendenza
+  nuova): esce con un OTA. Su Android c'è il gesto di sistema, che passa
+  dal tasto indietro.
+- **Una striscia fissa di 24 pt** dal bordo sinistro; il dito deve andare a
+  destra di almeno 8 pt e più di lato che in basso: un tocco sulla «←», uno
+  scroll, una lista orizzontale che parte più in là restano della pagina.
+- **La pagina segue il dito**; sotto, l'app un po' scurita (25% di
+  `scrim`, che cala man mano). Lasciata oltre un terzo dello schermo, o con
+  un colpo veloce (0,5 pt/ms), esce in `motion.sheetMs` (280 ms, curva a
+  tempo fisso, non una molla: una molla è ferma molto dopo che la pagina è
+  sparita) e si chiama la sua «←»; altrimenti torna con la molla `glide`.
+  La tastiera si chiude quando il dito prende la pagina; il testo resta
+  finché la pagina non va, come con la «←» (oggi nessuna pagina della
+  lista chiede conferma).
+- **«Riduci movimento»**: la pagina sfuma invece di scorrere.
+- **Dove**: sulla radice di ogni pagina (`useEdgeBack`), con la stessa
+  chiusura della sua «←» e lo stesso «acceso» del tasto indietro. In
+  «Play» chiude la pagina più in alto della pila (premi, collezione), poi
+  «Play». Non sulle schede della barra (lì lo swipe cambia scheda), non su
+  «Profile» come scheda, non sulla mappa, non sui fogli e sulla pagina del
+  post (`Modal` dal basso), **non sulle pagine dentro una scheda**
+  (località e giorno di sci): provato al simulatore il 2026-11-12, il colpo
+  dal bordo chiudeva la pagina e faceva scorrere anche le schede, perché lo
+  scroll nativo della striscia non si ferma per il gesto JS.
+
+**Conseguenze**: `src/ui/EdgeBack.tsx` (`useEdgeBack`, `EdgeBack`,
+`EdgeKeyboardAvoidingView`), poche righe sulla radice di ogni pagina. Le
+pagine dentro una scheda restano col tasto indietro di Android e la «←».
 
 ## ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla
 

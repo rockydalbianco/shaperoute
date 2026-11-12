@@ -6,9 +6,10 @@ import { isOnWater } from "../swim/water";
  * True for a route on the snow (TASK-413, ADR-0342): snowshoes. The server
  * places a shape of the catalogue freely on the open snow, as on the water;
  * it follows no road and has no directions; «Start» goes through the
- * avalanche notice (snow/safetyNotice.ts).
+ * avalanche notice (snow/safetyNotice.ts). Not activities/snow.ts's
+ * isOnSnow, which says a day recorded on the snow without a shape.
  */
-export function isOnSnow(activity: Activity | undefined): boolean {
+export function isSnowshoeRoute(activity: Activity | undefined): boolean {
   return activity === "snowshoeing";
 }
 
@@ -20,5 +21,5 @@ export function isOnSnow(activity: Activity | undefined): boolean {
  * For paddling and swimming it says what isOnWater says.
  */
 export function isPlacedFree(activity: Activity | undefined): boolean {
-  return isOnWater(activity) || isOnSnow(activity);
+  return isOnWater(activity) || isSnowshoeRoute(activity);
 }

@@ -26,7 +26,7 @@ import { StepTitle } from "../screens/StepTitle";
 import { profileOf } from "../sports";
 import { ON_FOOT_LETTERS, ON_FOOT_PARTS } from "../sports/running";
 import { SwimResult } from "../swim/SwimResult";
-import { isOnSnow, isPlacedFree } from "../snow/snow";
+import { isSnowshoeRoute, isPlacedFree } from "../snow/snow";
 import { milesAtLeast, tenthsToM, unitsNumber } from "../units/distanceInput";
 import { distanceLabel, inUnits, METRES_PER_MILE } from "../units/format";
 import { appUnits, type Units } from "../units/units";
@@ -845,7 +845,7 @@ function placedFree(request: AnyRouteRequest): boolean {
 function targetLine(request: AnyRouteRequest, units: Units): string {
   if (units === "mi") {
     const miles = { name: nameOf(request), mi: unitsNumber(request.distance_m, "mi") };
-    if (isOnSnow(request.activity)) {
+    if (isSnowshoeRoute(request.activity)) {
       return t("{name} · on the snow · target {mi} mi", miles);
     }
     return placedFree(request)
@@ -853,7 +853,7 @@ function targetLine(request: AnyRouteRequest, units: Units): string {
       : t("{name} · on roads · target {mi} mi", miles);
   }
   const values = { name: nameOf(request), km: request.distance_m / 1000 };
-  if (isOnSnow(request.activity)) {
+  if (isSnowshoeRoute(request.activity)) {
     return t("{name} · on the snow · target {km} km", values);
   }
   return placedFree(request)

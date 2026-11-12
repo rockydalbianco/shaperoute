@@ -7,7 +7,7 @@ import {
 } from "@shaperoute/shared-types";
 
 import { decimal, t, tLater } from "../i18n";
-import { isOnSnow } from "../snow/snow";
+import { isSnowshoeRoute } from "../snow/snow";
 import { isOnWater } from "../swim/water";
 import { nearestTenths, tenthsToM, unitsNumber } from "../units/distanceInput";
 import { METRES_PER_MILE } from "../units/format";
@@ -164,7 +164,7 @@ export function problemText(
         case "shape_not_drawable": {
           // On the snow (TASK-413 B), its own words: a shape of the
           // catalogue only, no word and no drawing.
-          if (isOnSnow(activity)) {
+          if (isSnowshoeRoute(activity)) {
             return snowProblemText(
               problem.message,
               fitsAtM(problem.suggested_distance_m, activity, units, asked, true),

@@ -2,11 +2,13 @@ import { ACTIVITIES } from "@shaperoute/shared-types";
 
 import { isOnWater } from "../swim/water";
 
-import { isOnSnow, isPlacedFree } from "./snow";
+import { isSnowshoeRoute, isPlacedFree } from "./snow";
 
 test("on the snow: snowshoes only", () => {
-  expect(ACTIVITIES.filter((activity) => isOnSnow(activity))).toEqual(["snowshoeing"]);
-  expect(isOnSnow(undefined)).toBe(false);
+  expect(ACTIVITIES.filter((activity) => isSnowshoeRoute(activity))).toEqual([
+    "snowshoeing",
+  ]);
+  expect(isSnowshoeRoute(undefined)).toBe(false);
 });
 
 test("placed freely: the water and the snow", () => {

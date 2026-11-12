@@ -2733,6 +2733,8 @@ export const DE: Table = {
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Bergsteigen",
+  "No shapes up a mountain: MuW records your day.":
+    "Keine Formen am Berg: MuW zeichnet deinen Tag auf.",
   "Before you climb": "Bevor du aufsteigst",
   "MuW records your climb and shares it: it does not guide you. Go with your own gear, skills and judgement, and check the conditions before you set off.":
     "MuW zeichnet deinen Aufstieg auf und teilt ihn: Es führt dich nicht. Geh mit deiner Ausrüstung, deinem Können und deinem Urteil, und prüfe die Verhältnisse vor dem Start.",

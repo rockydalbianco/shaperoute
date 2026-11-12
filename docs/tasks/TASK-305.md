@@ -214,6 +214,22 @@ volo, nelle cinque lingue; le altre attività come oggi. La copia sul sito
 è una pubblicazione: col sì dell'utente, dal Coordinatore
 (`out/coordinatore/sito.sh <sha>`).
 
+I numeri, dopo distanza e tempo: velocità del momento (la media se l'app
+è di prima), quota, variometro col segno (+ sale, − scende; m/s, ft/min
+in miglia), quota massima, poi dislivello, calorie e battito come per le
+altre attività.
+
+**Testi di R3** (le tre etichette nuove; le altre sono quelle approvate di
+TASK-424). **Proposta, da approvare dall'utente.**
+
+| lingua | quota | variometro | quota massima |
+|---|---|---|---|
+| en | Altitude | Vario | Max altitude |
+| it | Quota | Variometro | Quota massima |
+| de | Höhe | Vario | Max. Höhe |
+| fr | Altitude | Vario | Altitude max. |
+| es | Altitud | Variómetro | Altitud máx. |
+
 ## Cosa fare (se l'utente decide di sì)
 
 Parti piccole, una sessione per parte, nell'ordine. Ogni parte è un branch

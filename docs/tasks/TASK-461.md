@@ -73,6 +73,11 @@ Sulla tela «Schede palestra guidate»
     restano come prima. Il server non ha una copia del conto
     (`gym_plans.py` e il calendario contano solo i giorni): cambia solo
     l'app.
+18. **Testi della parte A2 e «scheda» → «piano» (2026-11-12)**: «Approvo» —
+    i testi nuovi nelle quattro lingue (ingresso, corpo libero, giorni per
+    sport, settimane senza kg) e in italiano «piano» per la scheda di più
+    settimane («Nuovo piano», «I miei piani»…), mentre il singolo
+    allenamento resta «scheda».
 
 ### I testi approvati della parte A (italiano; le altre lingue con lo stesso senso)
 

@@ -201,6 +201,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
   **2026-11-12**: A in `main` (#1193, ADR-0379). Poi B1 (server, tabella
   `sleep_nights`, ADR-0380), B2 e B3 (app), C prima dell'OTA di B2.
+- **TASK-468 — La live in chat e nel Feed, anche programmata** · parte 0
+  (scelte e testi dell'utente, 2026-11-12, ADR-0381); poi A1, A2 (server),
+  B1, B2 (app, dopo TASK-305 R2). File: — · `tasks/TASK-468.md`
 
 - **TASK-454 — Reazioni e super like** · parte 0 chiusa (scelte
   dell'utente, 2026-11-11); C1, risposte e reazioni ai commenti sul server,

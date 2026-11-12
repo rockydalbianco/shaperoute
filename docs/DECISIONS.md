@@ -540,6 +540,7 @@ lasciando le righe d'indice.
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
 - ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Proposta
+- ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 
 ## Voci nuove
 
@@ -644,6 +645,66 @@ dichiarati «Sufficient Contrast» e il tema scuro.
 completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta
 `6f8bba4c`. Niente blur sopra la mappa mentre si registra. `docs/UI.md`
 si aggiorna fetta per fetta.
+
+## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
+
+**Data**: 2026-11-12 · **Stato**: Proposta (parte 0 di TASK-468) ·
+**Deciso dall'agente su delega dell'utente** (la tecnica); le scelte di
+prodotto sono dell'utente, in `tasks/TASK-468.md`. Estende ADR-0352.
+
+**Contesto.** «Share live» (TASK-424) fa solo un link per una pagina web.
+L'utente vuole mandare la live anche nella chat dell'app, metterla nel
+Feed (follower o tutti, scelto a ogni live) e programmarla in anticipo
+(una gara), sempre per scelta sua.
+
+**Decisione.**
+
+1. **Una `live_share` per registrazione, più pubblici.** Link, chat e Feed
+   sono modi di vedere la stessa condivisione, non condivisioni diverse:
+   oggi un link nuovo ferma quelli non finiti dello stesso account, e così
+   resta. Nuove colonne: `audience_feed` (`none`/`followers`/`everyone`),
+   `heart_visible` (falso di partenza: il battito non esce verso chat e
+   Feed se non è acceso; il link di TASK-424 lo mostra come oggi); il
+   token del link diventa facoltativo (si fa al primo «Share link»).
+   `live_share_recipients` (share, account) per le persone scelte in chat.
+2. **Vedere nell'app**: `GET /live-shares/{id}?after=<seq>` col token
+   d'account, stessa forma di `LiveView` (battito `null` se spento). Può
+   vedere chi è fra i destinatari, chi segue il proprietario se
+   `followers`, chiunque abbia un account se `everyone`; mai attraverso un
+   blocco o un nascosto (`follows.apart_sql`). Chi non può: `404`, come
+   una live che non c'è. Stesso limite di richieste per live del `GET
+   /live`.
+3. **In chat**: `POST /me/live-shares/{id}/send` con fino a 20
+   `public_id`; per ciascuno un messaggio con `live_share_id` (colonna
+   nuova di `messages`, `ON DELETE SET NULL`) e un testo di ripiego («Follow
+   my activity live on MuW»), così un'app di prima mostra il testo. Le
+   regole di `messages.py` restano (richieste, filtro, 20 al minuto); la
+   push è un `MessagePushKind` nuovo, `live`.
+4. **Le live programmate**: `planned_lives` (proprietario, sport, titolo,
+   `starts_at`, `audience_feed`, `heart_visible`, percorso facoltativo,
+   `live_share_id`, `post_id`, stato `planned`/`live`/`ended`/`deleted`) e
+   `planned_live_reminders` (account, live). La scheda entra nel Feed come
+   quella delle corse di gruppo (`group_runs.py`). Alla partenza (dal
+   foglio all'avvio o da «Start live») la `live_share` si lega alla
+   programmata e parte la push «{name} is live» a chi ha chiesto «Remind
+   me». Una programmata non partita entro 3 ore dall'ora prevista diventa
+   `ended`.
+5. **Alla fine diventa il post**: al salvataggio l'app chiede «Post it in
+   the Feed?»; con sì il post dell'attività si salva come oggi e
+   `planned_lives.post_id` lo lega, e la scheda della live nel Feed lascia
+   il posto al post. I punti dal vivo si cancellano comunque un'ora dopo
+   la fine (ADR-0352): il post tiene la traccia salvata della corsa, non i
+   punti della live.
+6. **Niente WebSocket né dipendenze nuove**: la schermata dal vivo
+   nell'app chiede ogni 10 s come la pagina web, con la mappa che l'app
+   ha già. Una migrazione, numero provvisorio `0074`.
+7. **Ordine**: il server esce prima dell'app (`extra="forbid"`); niente
+   OTA di produzione fino all'aggiornamento completo.
+
+**Conseguenze.** La posizione esatta esce verso follower, tutti o le
+persone scelte: una frase nuova nella privacy dell'app e del sito, App
+Privacy e Data safety da rivedere, ogni live accesa solo da una scelta
+esplicita. Il link di TASK-424 non cambia.
 
 ## ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio
 

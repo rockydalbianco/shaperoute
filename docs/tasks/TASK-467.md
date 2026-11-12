@@ -401,6 +401,8 @@ richiesta di copia comprende il sonno. Nessun file da toccare.
   profilo adesso» (la notte da sola). B1 parte in un contesto pulito.
 - **2026-11-12, B1**: scritta in una sessione, #1211 (migrazione `0072`,
   `sleep.py`, contratto, 42 test). Restano: il merge del Coordinatore, la
-  PR di soli documenti (ADR-0380, `STATUS.md`), il passo sul server col sì
-  dell'utente. Il testo nuovo del primo «Share» è approvato («Approvo
-  così», 2026-11-12).
+  PR di soli documenti (ADR-0380, `STATUS.md`), il server. Sul server B1
+  non va da sola: arriva col passo dell'aggiornamento completo, che il
+  Coordinatore compone e per cui chiede lui il sì all'utente (`main` ha già
+  le parole a penna alzata di Explore, che escono solo con la loro OTA). Il
+  testo nuovo del primo «Share» è approvato («Approvo così», 2026-11-12).

@@ -146,10 +146,17 @@ Sulla tela «Schede palestra guidate»
   `gym_catalog.py`, nella fixture `gym-exercises.json` e nella tabella di
   `docs/sports/gym.md`; nessuna migrazione. Il server li conosce prima
   dell'app: le schede e gli allenamenti che li usano passano la validazione.
-- **A2 — app, corpo libero**: dopo la PR dell'app di TASK-452. Ingresso
-  «Cosa vuoi allenare?», passo 1 con gli attrezzi, piano senza kg, settimane
-  che crescono di una ripetizione e 5 s nei tenuti; i quattro esercizi nel
-  catalogo dell'app con omino e guida; «I miei piani».
+- **A2 — app, corpo libero** (branch `feat/TASK-461-a2-bodyweight-app`,
+  lista dei file col sì del Coordinatore il 2026-11-12): ingresso «Cosa vuoi
+  allenare?» (almeno due fra palestra, corpo libero e corsa; distanza e
+  montagna «Presto»), giorni per sport, obiettivi e attrezzi del corpo
+  libero, giorni «Corpo libero · A/B», settimane senza kg che crescono di una
+  ripetizione e 5 s nei tenuti con l'ultima più leggera (anche nelle schede
+  già fatte: sì dell'utente del 2026-11-12, «Sì, così», all'esempio
+  piegamenti 3×10 e plank 3×40 s); i quattro esercizi nel catalogo dell'app
+  con omino e guida; in italiano «piano» per la scheda di più settimane.
+  Prima di «pronta»: le schermate al simulatore (l'ingresso col caso «solo
+  palestra» ben visibile) e il sì dell'utente su testi e traduzioni.
 - **B1 — server di B e C insieme** (questa PR): `outing` sui giorni e
   `target` sul programma, fino a 24 settimane; il calendario segna fatto un
   giorno fuori da un'attività del suo sport.
@@ -205,6 +212,10 @@ Sulla tela «Schede palestra guidate»
 - API: `test_gym_catalog.py` (95 esercizi, fixture e docs uguali),
   `test_gym_plans.py`.
 - App: `catalog.test.ts`, `setKinds.test.ts`, `Leaderboard.test.tsx`, `tsc`.
+- A2: app `bodyweight.test.ts`, `proposal.test.ts`, `program.test.ts`,
+  `catalog.test.ts`, `moves.test.ts`, `muscles.test.ts`,
+  `GymPlans.test.tsx`, `GymIntro.test.tsx`, `olderAppOutings.test.ts`,
+  `plans.test.ts`, i test di `src/i18n`, `tsc`, eslint e prettier.
 - B1: API `test_gym_plans.py` e `test_gym_calendar.py`; shared-types
   `gym.test.ts`; app `olderAppOutings.test.ts`, `plans.test.ts`,
   `GymPlans.test.tsx`, `api/gymPlans.test.ts`, `tsc`.

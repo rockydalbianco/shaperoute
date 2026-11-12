@@ -22,17 +22,21 @@ import {
 
 const EVERY: Sport[] = ALL_SPORTS.map((option) => option.id);
 
-test("«Ski» ⛷️, «Cross-country ski» 🎿 and «Ski touring» 🏔️ are recorded without a shape", () => {
+test("«Ski» ⛷️, «Cross-country ski» 🎿, «Ski touring» 🏔️ and «Paragliding» 🪂 are recorded without a shape", () => {
   const snow = ALL_SPORTS.filter((option) => option.recordOnly === true);
   expect(snow.map(({ id, emoji, name }) => [id, emoji, name])).toEqual([
     ["ski", "⛷️", "Ski"],
     ["xc_ski", "🎿", "Cross-country ski"],
     ["skimo", "🏔️", "Ski touring"],
+    // A flight, since TASK-305 part R2.
+    ["paragliding", "🪂", "Paragliding"],
   ]);
   expect(isRecordOnly("ski")).toBe(true);
   expect(isRecordOnly("xc_ski")).toBe(true);
   expect(isRecordOnly("skimo")).toBe(true);
-  for (const sport of EVERY.filter((id) => !["ski", "xc_ski", "skimo"].includes(id))) {
+  expect(isRecordOnly("paragliding")).toBe(true);
+  const recorded = ["ski", "xc_ski", "skimo", "paragliding"];
+  for (const sport of EVERY.filter((id) => !recorded.includes(id))) {
     expect(isRecordOnly(sport)).toBe(false);
   }
 });
@@ -65,10 +69,9 @@ test("a day on the snow is saved as its own activity, the others as their route"
   for (const sport of EVERY) {
     expect(RUN_ACTIVITIES).toContain(runActivityOf(sport));
   }
-  // Ski touring too, since TASK-415 part B. Paragliding is in the contract
-  // (TASK-305 R1) and «Soon» in «Settings» until part R2.
+  // Ski touring too, since TASK-415 part B; a flight since TASK-305 R2.
   expect(EVERY.filter((id) => isRecordOnly(id)).map(runActivityOf)).toEqual(
-    RECORD_ACTIVITIES.filter((activity) => activity !== "paragliding"),
+    RECORD_ACTIVITIES,
   );
   // No route is ever asked for the snow: «Draw» asks a run, never shown.
   expect(activityOf("ski")).toBe("running");

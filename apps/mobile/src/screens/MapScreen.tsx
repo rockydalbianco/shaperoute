@@ -225,8 +225,10 @@ const styles = StyleSheet.create({
   scrolling: {
     paddingBottom: 0,
   },
-  // As high as its content, up to the card's height.
+  // As high as its content, up to the card's height: it shrinks to fit
+  // the card, and what is left over scrolls.
   scroll: {
     flexGrow: 0,
+    flexShrink: 1,
   },
 });

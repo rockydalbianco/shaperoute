@@ -2514,4 +2514,14 @@ export const IT: Table = {
   "{phase}, from {time}, for {duration}": "{phase}, dalle {time}, per {duration}",
   "No heights from the phone: no phases for this tour.":
     "Il telefono non ha dato le quote: niente fasi per questa gita.",
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Registra il volo",
+  "Before you fly": "Prima di volare",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW non è uno strumento di volo: registra il volo e lo condivide. Vola con il tuo strumento, il tuo brevetto e il tuo giudizio.",
+  "Got it": "Ho capito",
+  Vario: "Variometro",
+  "Flight time": "Tempo di volo",
+  "Your flight": "Il tuo volo",
+  "White: where you flew.": "Bianco: dove hai volato.",
 };

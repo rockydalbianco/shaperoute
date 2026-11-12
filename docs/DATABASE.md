@@ -1207,6 +1207,24 @@ merge):
   con una sottoquery sulla chiave primaria (`drawings.py`, `_SEEN_FIELDS`).
   Test in `test_ski_parts.py`.
 
+Migrazione `0075_message_post.sql` (TASK-455 parte A, ADR-0382, `API.md`
+«Un post in un messaggio»; numero provvisorio del Coordinatore, quello vero
+è il primo libero al merge):
+
+- `messages.attachment` accetta anche `post` (`messages_attachment_check`
+  rifatto).
+- `messages.post_id` (`uuid`, `REFERENCES drawings (id) ON DELETE SET
+  NULL`): il disegno a cui il messaggio rimanda. **Solo l'id**: la scheda
+  si legge da `drawings` a ogni pagina, con `drawing_seen_sql` di chi
+  chiede, e niente del disegno è copiato nel messaggio (`drawing` e
+  `drawing_card` restano `NULL`). Cancellato il disegno (con la corsa o
+  con l'account dell'autore) la colonna torna `NULL` e il messaggio resta,
+  con `attachment` `post`: «non più disponibile». `messages_post_check`:
+  un `post_id` solo con `attachment = 'post'`.
+- `messages_of_post`: l'indice parziale dei messaggi che rimandano a un
+  disegno, per il `SET NULL` quando si cancella. Test in
+  `test_message_posts.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

@@ -266,6 +266,41 @@ function kindsByDay(
 }
 
 /**
+ * The days of one sport toward `aim` (or to keep fit), from where one is:
+ * the target's days of a plan, or those of another sport of the plan kept
+ * as they are (TASK-461 A2b, the user's «Più d'uno» of 2026-11-12: the
+ * first sport chosen has the target, the others keep fit).
+ */
+export function sportDays({
+  aim,
+  level,
+  pool,
+  days,
+  nameOf,
+}: Pick<
+  TargetPlanAnswers,
+  "aim" | "level" | "pool" | "days" | "nameOf"
+>): GymPlanSession[] {
+  const climb = !isKeepFit(aim) && aim.climb_m !== undefined;
+  const kinds = (climb ? CLIMB_KINDS : DISTANCE_KINDS)[days.length];
+  if (kinds === undefined) {
+    return [];
+  }
+  const start = startOf(aim, level);
+  const on = isKeepFit(aim) ? undefined : aim.on;
+  return kindsByDay(days, kinds, on).map(({ day, kind }) => {
+    const unnamed: UnnamedDay = {
+      day,
+      items: [],
+      ...(climb
+        ? climbDay(kind, start)
+        : distanceDay(aim, kind, start, level === null, pool)),
+    };
+    return { ...unnamed, name: nameOf(unnamed) };
+  });
+}
+
+/**
  * The plan the answers make: its first week (the target's days and the
  * other sport's), its weeks and its target. Toward a target the weeks are
  * those needed or those up to the date; «short» when they are not enough,
@@ -289,17 +324,7 @@ export function targetPlan(answers: TargetPlanAnswers): TargetPlan {
   }
   const start = startOf(aim, level);
   const climb = !isKeepFit(aim) && aim.climb_m !== undefined;
-  const on = isKeepFit(aim) ? undefined : aim.on;
-  const made: GymPlanSession[] = kindsByDay(days, kinds, on).map(({ day, kind }) => {
-    const unnamed: UnnamedDay = {
-      day,
-      items: [],
-      ...(climb
-        ? climbDay(kind, start)
-        : distanceDay(aim, kind, start, level === null, pool)),
-    };
-    return { ...unnamed, name: nameOf(unnamed) };
-  });
+  const made = sportDays({ aim, level, pool, days, nameOf });
   const sessions = [...others, ...made].sort((a, b) => a.day - b.day);
   const program = (weeks: number, target?: GymPlanTarget): GymProgram => ({
     ...base,

@@ -1,6 +1,6 @@
 import type { Drawing, SkiDayPart } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useState } from "react";
-import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { dayLabel } from "../activities/activityText";
@@ -22,7 +22,6 @@ import {
   space,
 } from "../theme/tokens";
 import { useBackCloses } from "../ui/backLayers";
-import { useEdgeBack } from "../ui/EdgeBack";
 import { runDistanceLabel } from "../units/format";
 import { speedUnit } from "../units/runFormat";
 import { useUnits } from "../units/useUnits";
@@ -99,7 +98,6 @@ export function SkiDayPage({ day, onBack }: Props) {
   }, [day.id, skiDayOf]);
   // Android's «back» is «←»; only while its tab is on screen.
   useBackCloses(true, onBack);
-  const edge = useEdgeBack(onBack);
 
   const snowParts = useMemo(
     () => (parts ?? []).map((part) => snowPartOf(part, day.started_at)),
@@ -131,12 +129,7 @@ export function SkiDayPage({ day, onBack }: Props) {
   }
 
   return (
-    <Animated.View
-      style={[styles.page, { paddingTop: insets.top }, edge.style]}
-      testID="ski-day-page"
-      {...edge.handlers}
-    >
-      {edge.shade}
+    <View style={[styles.page, { paddingTop: insets.top }]} testID="ski-day-page">
       <Pressable
         style={styles.back}
         onPress={onBack}
@@ -209,7 +202,7 @@ export function SkiDayPage({ day, onBack }: Props) {
           </>
         )}
       </ScrollView>
-    </Animated.View>
+    </View>
   );
 }
 

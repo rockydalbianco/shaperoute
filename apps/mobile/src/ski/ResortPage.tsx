@@ -3,21 +3,12 @@ import {
   type PisteDifficulty,
   type SkiResort,
 } from "@shaperoute/shared-types";
-import {
-  Animated,
-  Linking,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t, tLater } from "../i18n";
 import { color, font, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import { useBackCloses } from "../ui/backLayers";
-import { useEdgeBack } from "../ui/EdgeBack";
 import { distanceLabel, METRES_PER_KM } from "../units/format";
 import type { Units } from "../units/units";
 import { useUnits } from "../units/useUnits";
@@ -82,7 +73,6 @@ export function ResortPage({
   const insets = useSafeAreaInsets();
   // Android's «back» is «‹ Back»: the search again, not another tab.
   useBackCloses(true, onBack);
-  const edge = useEdgeBack(onBack);
   // «Your resorts» (part D3): the same «Follow» as the members'.
   const { isFollowed, toggle } = useFollowedResorts();
   const following = isFollowed(resort.id);
@@ -93,12 +83,7 @@ export function ResortPage({
     (key) => (resort.piste_km_by_difficulty[key] ?? 0) > 0,
   );
   return (
-    <Animated.View
-      style={[styles.page, { paddingTop: insets.top }, edge.style]}
-      testID="resort-page"
-      {...edge.handlers}
-    >
-      {edge.shade}
+    <View style={[styles.page, { paddingTop: insets.top }]} testID="resort-page">
       <Pressable
         style={styles.back}
         onPress={onBack}
@@ -182,7 +167,7 @@ export function ResortPage({
           )}
         </Text>
       </ScrollView>
-    </Animated.View>
+    </View>
   );
 }
 

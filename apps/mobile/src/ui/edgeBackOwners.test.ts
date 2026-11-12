@@ -26,8 +26,6 @@ const PAGES: { file: string; edge: RegExp }[] = [
     file: "game/PlayOverlay.tsx",
     edge: /useEdgeBack\(\(\) => closeTopLayer\(\) \|\| onBack\(\)\)/,
   },
-  { file: "ski/ResortPage.tsx", edge: /useEdgeBack\(onBack\)/ },
-  { file: "skimode/SkiDayPage.tsx", edge: /useEdgeBack\(onBack\)/ },
 ];
 
 test.each(PAGES)(
@@ -39,5 +37,16 @@ test.each(PAGES)(
     expect(source).toMatch(/\{\.\.\.edge\.handlers\}/);
     expect(source).toMatch(/edge\.style/);
     expect(source).toMatch(/\{edge\.shade\}/);
+  },
+);
+
+// A page that lies inside a tab has none: tried in the simulator on
+// 2026-11-12, a flick from the edge closed the page and slid the tabs too,
+// since the tab strip's native scroll does not stop for it. Android's back
+// still closes them (`useBackCloses`).
+test.each(["ski/ResortPage.tsx", "skimode/SkiDayPage.tsx"])(
+  "%s, inside a tab of the ski mode, has no way back from the edge",
+  (file) => {
+    expect(readFileSync(join(SRC, file), "utf8")).not.toMatch(/useEdgeBack/);
   },
 );

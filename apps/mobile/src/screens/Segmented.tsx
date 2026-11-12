@@ -10,8 +10,18 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { color, fontWeight, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
+import {
+  color,
+  fontWeight,
+  glass,
+  type GlassColors,
+  MIN_TAP_SIZE,
+  type Palette,
+  radius,
+  space,
+} from "../theme/tokens";
 import { fadeTo, springTo } from "../ui/motion";
+import { type GlassMode, useGlassMode } from "../ui/useGlassMode";
 import { useReduceMotion } from "../ui/useReduceMotion";
 
 type Props<T extends string> = {
@@ -33,6 +43,73 @@ export function segmentWidth(count: number, width: number): number {
   return (width - 2 * space.xs - (n - 1) * space.xs) / n;
 }
 
+/** A line drawn inside the edge, so it never moves what the track holds. */
+function edge(of: string) {
+  return {
+    inset: true,
+    offsetX: 0,
+    offsetY: 0,
+    blurRadius: 0,
+    spreadDistance: 1,
+    color: of,
+  };
+}
+
+/**
+ * The track of the choices in `mode` (TASK-469 A3, ADR-0383): a capsule of
+ * glass laid in the page, not floating: the veiled background with its rim
+ * and the light on top, no shadow cast. With «Reduce Transparency» the
+ * background as before, opaque, with a thin edge; with «Increase Contrast»
+ * the edge is `borderStrong`. A caller's own background still wins.
+ */
+export function segmentTrackFace(
+  mode: GlassMode,
+  colors: GlassColors = glass,
+  palette: Palette = color,
+): ViewStyle {
+  if (mode === "glass") {
+    return {
+      backgroundColor: colors.fill,
+      boxShadow: [
+        edge(colors.rim),
+        { inset: true, offsetX: 0, offsetY: 1, blurRadius: 0, color: colors.rimTop },
+      ],
+    };
+  }
+  return {
+    backgroundColor: palette.background,
+    boxShadow: [edge(mode === "contrast" ? palette.borderStrong : palette.border)],
+  };
+}
+
+/**
+ * The pill under the choice in `mode`: a lighter surface edged in
+ * `borderStrong` (found in sunlight, TASK-086), never yellow. On the glass
+ * it stands out of the track: a line of light on top and a short shadow.
+ * Opaque modes keep it flat.
+ */
+export function segmentPillFace(
+  mode: GlassMode,
+  colors: GlassColors = glass,
+  palette: Palette = color,
+): ViewStyle {
+  const flat: ViewStyle = {
+    backgroundColor: palette.surfaceRaised,
+    borderWidth: 1,
+    borderColor: palette.borderStrong,
+  };
+  if (mode !== "glass") {
+    return flat;
+  }
+  return {
+    ...flat,
+    boxShadow: [
+      { offsetX: 0, offsetY: 2, blurRadius: 6, color: colors.shadow },
+      { inset: true, offsetX: 0, offsetY: 1, blurRadius: 0, color: colors.rimTop },
+    ],
+  };
+}
+
 /**
  * One choice out of a few, side by side: the start (TASK-054), shape or word
  * (TASK-057). Touching the chosen one again still calls `onChange`: "My
@@ -43,6 +120,9 @@ export function segmentWidth(count: number, width: number): number {
  * and a touch while it travels sends it on from where it is. With «Reduce
  * Motion» it fades in where it goes. Until the track has been measured the
  * chosen one wears the pill itself, so there is never a frame without it.
+ * The track is glass and the pill stands out of it (A3): `segmentTrackFace`,
+ * `segmentPillFace`, which follow «Reduce Transparency» and «Increase
+ * Contrast».
  */
 export function Segmented<T extends string>({
   options,
@@ -51,6 +131,8 @@ export function Segmented<T extends string>({
   style,
 }: Props<T>) {
   const still = useReduceMotion();
+  const mode = useGlassMode();
+  const pillFace = segmentPillFace(mode);
   const [width, setWidth] = useState(0);
   const count = options.length;
   const index = Math.max(
@@ -96,14 +178,18 @@ export function Segmented<T extends string>({
 
   const sliding = width > 0;
   return (
-    <View testID="segmented" style={[styles.modes, style]} onLayout={measured}>
+    <View
+      testID="segmented"
+      style={[styles.modes, segmentTrackFace(mode), style]}
+      onLayout={measured}
+    >
       {sliding && (
         <Animated.View
           testID="segment-pill"
           pointerEvents="none"
           style={[
             styles.pill,
-            styles.modeSelected,
+            pillFace,
             {
               width: segmentWidth(count, width),
               opacity: shown,
@@ -117,7 +203,7 @@ export function Segmented<T extends string>({
         return (
           <Pressable
             key={option.value}
-            style={[styles.mode, selected && !sliding && styles.modeSelected]}
+            style={[styles.mode, selected && !sliding && pillFace]}
             onPress={() => onChange(option.value)}
             accessibilityRole="button"
             accessibilityState={{ selected }}
@@ -138,7 +224,6 @@ const styles = StyleSheet.create({
     padding: space.xs,
     gap: space.xs,
     borderRadius: radius.pill,
-    backgroundColor: color.background,
   },
   mode: {
     flex: 1,
@@ -155,12 +240,6 @@ const styles = StyleSheet.create({
     bottom: space.xs,
     left: 0,
     borderRadius: radius.pill,
-  },
-  // Chosen is told by a lighter surface, not by yellow: that is the route's.
-  modeSelected: {
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
   },
   // On two lines when a label does not fit (TASK-340: «A mano libera»).
   // The choices not taken in the text's colour, lighter (TASK-361: in

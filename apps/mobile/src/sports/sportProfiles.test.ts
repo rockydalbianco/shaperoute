@@ -41,7 +41,8 @@ import {
 // until part B; snowshoeing (TASK-413) after the skate, hidden until part
 // B; a wheelchair route (TASK-414) after snowshoeing, hidden until part B;
 // a day of ski touring (TASK-415) after the days on the snow, hidden
-// until part B.
+// until part B; a paragliding flight (TASK-305) after it, hidden until part
+// R2.
 
 const MPH_KMH = 1.609344;
 
@@ -128,6 +129,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     xc_skiing: 60,
     // `.crossCountrySkiing` too (TASK-415).
     ski_touring: 60,
+    // `.other`: Apple has no type for it (TASK-305 parts R).
+    paragliding: 3000,
     // `.traditionalStrengthTraining` (TASK-385).
     gym: 50,
   });
@@ -161,6 +164,8 @@ it("gives Apple Health and Health Connect the numbers of before", () => {
     xc_skiing: 61,
     // EXERCISE_TYPE_SKIING too (TASK-415).
     ski_touring: 61,
+    // EXERCISE_TYPE_PARAGLIDING (TASK-305 parts R).
+    paragliding: 47,
     // EXERCISE_TYPE_STRENGTH_TRAINING (TASK-385).
     gym: 70,
   });
@@ -205,6 +210,8 @@ it("counts the energy as before", () => {
     skiing: "met",
     xc_skiing: "met",
     ski_touring: "oxygen",
+    // A flight: the Compendium's hang gliding (TASK-305 parts R).
+    paragliding: "met",
     // Snowshoeing as a hike (TASK-413).
     snowshoeing: "oxygen",
     // A wheelchair route as a walk until part B (TASK-414).
@@ -278,6 +285,11 @@ it("gives every activity its energy (TASK-424 part C2)", () => {
   });
   // Up on skins: a hike's, the metres climbed most of all.
   expect(profileOf("ski_touring").energy).toEqual(profileOf("hiking").energy);
+  // In the air: hang gliding, 3.5 at any speed.
+  expect(profileOf("paragliding").energy).toEqual({
+    kind: "met",
+    bands: [{ belowKmh: Infinity, met: 3.5 }],
+  });
 });
 
 it("starts a run without a route and labels a MuW route as before", () => {
@@ -296,6 +308,8 @@ it("starts a run without a route and labels a MuW route as before", () => {
     "cycling",
     undefined,
     undefined,
+    // A flight as a ride, in km/h, until part R2 (TASK-305).
+    "cycling",
     undefined,
   ]);
   expect(muwLabel("running")).toBe("Route created by MuW – run it yourself");
@@ -343,6 +357,7 @@ it("gives the screens what they told apart before (part B3b)", () => {
     skiing: "⛷️",
     xc_skiing: "🎿",
     ski_touring: "🏔️",
+    paragliding: "🪂",
     gym: "🏋️",
   });
   expect(tableOf((sport) => sport.pace)).toEqual({

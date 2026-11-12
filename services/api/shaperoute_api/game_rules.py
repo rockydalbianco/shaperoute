@@ -27,7 +27,7 @@ from route_engine.geo import haversine_m
 # did a skate (TASK-380, 0055), with its own "vehicle" thresholds too. 3:
 # best times over 11 distances, not 4 (TASK-423 part B, ADR-0351). A
 # wheelchair route counts as a walk (TASK-414) and kept 3: no run saved
-# before it could be one (0070).
+# before it could be one (0071).
 RULES_VERSION = 3
 
 # A stretch of at least VEHICLE_WINDOW_M covered faster than this is not

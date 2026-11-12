@@ -21,6 +21,7 @@ it("names a run's sport in the form to publish as before", () => {
     "Ski",
     "Cross-country ski",
     "Ski touring",
+    "Paragliding",
     "Gym",
   ]);
 });

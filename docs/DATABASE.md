@@ -42,7 +42,8 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `drawing_photos` | fino a 3 foto di un disegno oltre alla mappa: posto 1–3, JPEG al più 1080 px di lato, senza EXIF | TASK-208 |
 | `drawing_tags` | gli iscritti taggati in un disegno, in ordine, al più 10 | TASK-208 |
 | `reactions` | disegno, chi reagisce (coppia unica: una a testa), quale delle sei, data | TASK-119 |
-| `comments` | disegno, autore, testo (1–500), data | TASK-120 |
+| `comments` | disegno, autore, testo (1–500), data; il commento sotto cui sta una risposta e chi nomina (TASK-454) | TASK-120, TASK-454 |
+| `comment_reactions` | commento, chi reagisce (coppia unica: una a testa), quale delle cinque, data | TASK-454 |
 | `reports` | chi segnala, cosa (disegno, commento, utente) e il suo id, motivo da un elenco corto, data; una riga per chi segnala e per cosa | TASK-121 |
 | `blocks` | chi blocca, chi è bloccato, data; una riga tiene lontani i due nei due sensi | TASK-121 |
 | `report_links_used` | i link delle email delle segnalazioni già usati: il loro numero a caso e quando | TASK-291 |
@@ -1109,7 +1110,44 @@ bozza, quello vero è il primo libero al merge, dal Coordinatore):
 - `run_bests` no: nessun record personale, come Hike.
 - Nessuna riga cambia. Test in `test_snowshoeing_api.py`.
 
-Migrazione `0070_wheelchair.sql` (TASK-414 parte A, ADR-0343; numero in
+Migrazione `0069_paragliding.sql` (TASK-305 parte R1, ADR-0375; il numero
+è del Coordinatore, il primo libero in `main` al merge):
+
+- Il vincolo `runs_activity_check` prende anche `'paragliding'`: un volo
+  si salva come corsa, come una giornata di sci (`0044`). La migrazione
+  rilegge il vincolo che trova e lo riscrive col nome in più, in fondo,
+  come la `0057`: l'ordine con un'altra migrazione che lo allarga non
+  conta.
+- `favorites`, `group_runs` e `run_bests` no: nessun percorso da rifare,
+  nessun record personale.
+- Nessuna riga cambia. Test in `test_paragliding_api.py`.
+
+Migrazione `0070_comment_replies.sql` (TASK-454 parte C1, ADR-0377, `API.md`
+«Comments», «Risposte e reazioni ai commenti»; il numero è il primo
+libero in `main` al merge):
+
+- **`comments.parent_id`** (`uuid`, null, `ON DELETE CASCADE` su
+  `comments`): il commento sotto cui sta una risposta. **Un livello solo**:
+  è sempre un commento senza `parent_id` (lo controlla `comments.py`, non
+  un vincolo: la risposta a una risposta va sotto lo stesso commento).
+  Cancellare un commento cancella le sue risposte.
+- **`comments.mention_user_id`** (`bigint`, null, `ON DELETE SET NULL` su
+  `users`): chi nomina la risposta a una risposta («@nome» davanti al
+  testo, che resta com'è scritto). Null per una risposta al commento, e
+  quando quell'account viene cancellato.
+- Due indici parziali: le risposte di un commento dal più vecchio
+  (`parent_id`, `created_at`, `id`), e quelle che nominano un account.
+- **`comment_reactions`**: `comment_id` (`ON DELETE CASCADE` su
+  `comments`), `user_id` (`ON DELETE CASCADE` su `users`), `kind` (uno fra
+  `fire`, `clap`, `strong`, `laugh`, `wow`: quelli di `reactions` senza
+  `super_like`, scelta dell'utente), `created_at`. Chiave la coppia: una
+  reazione a testa per commento. Un indice su `user_id`.
+- Una risposta è una riga di `comments` come le altre: `hidden_at`,
+  segnalazioni, blocchi e `notifications.comment_id` valgono anche per lei.
+- Nessuna riga cambia: i commenti di prima sono commenti senza risposte.
+  Test in `test_comment_threads.py`.
+
+Migrazione `0071_wheelchair.sql` (TASK-414 parte A, ADR-0343; numero in
 bozza, quello vero è il primo libero al merge, dal Coordinatore):
 
 - I vincoli `runs_activity_check`, `favorites_activity_check`,

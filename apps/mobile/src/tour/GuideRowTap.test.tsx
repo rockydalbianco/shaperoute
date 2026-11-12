@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Animated } from "react-native";
 
-import { motion } from "../theme/tokens";
+import { color, motion } from "../theme/tokens";
 import { GuideRow, WatchTourButton } from "./GuideRow";
 
 // The premium look, part C2 (TASK-339, ADR-0293): the rows of «Profile» answer
@@ -41,4 +41,12 @@ test("«Watch the tour» answers the same way", async () => {
   await fireEvent.press(screen.getByRole("button"));
   expect(onWatch).toHaveBeenCalledTimes(1);
   timing.mockRestore();
+});
+
+// TASK-444: a red ❓ stood here, beside the lines of the bar.
+test("the guide row has a line icon in a quiet colour, and no emoji", async () => {
+  await render(<GuideRow onOpen={() => {}} />);
+  expect(screen.getByTestId("guide-icon")).toHaveStyle({ tintColor: color.textMuted });
+  expect(screen.queryByText(/\p{Extended_Pictographic}/u)).toBeNull();
+  expect(screen.getByRole("button", { name: "Guide" })).toBeOnTheScreen();
 });

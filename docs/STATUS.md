@@ -125,9 +125,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   D con l'OTA 3, dopo il passo server 2, col sì dell'utente. Poi E. File: —
   · `tasks/TASK-410.md`
 - **TASK-413 — Ciaspole** · 0, A1 e A2 in `main` (#1130, `ac08ae94`: lo
-  sport nel contratto e nell'API, nascosto nell'app, migrazione 0068); A2
-  sul server col passo 8 del Coordinatore, col sì dell'utente; l'app col
-  decimo OTA. Prossima B. File: — · `tasks/TASK-413.md`
+  sport nel contratto e nell'API, nascosto nell'app, migrazione 0068) e
+  sul server col passo 8 del 2026-11-11; l'app col decimo OTA. Prima di B,
+  la città lenta (76 s per un rifiuto). File: — · `tasks/TASK-413.md`
 - **TASK-414 — Carrozzina e passeggino** · parte 0 fatta, lista di A
   approvata; prossima A, migrazione 0058 in bozza. File: — ·
   `tasks/TASK-414.md`
@@ -185,6 +185,14 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),
   R2 (app, col turno), R3 (`site/live/`). Il pianificatore resta Proposto.
   File: — · `tasks/TASK-305.md`
+- **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
+  (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
+  B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`
+
+- **TASK-462 — Il calendario di tutte le attività** · A (server) in `main`
+  (#1162, ADR-0372), sul server col passo 9; B (app) nella #1172 in bozza,
+  aspetta il server e il sì dell'utente sugli screenshot. File: `profile/ProfileHome.tsx`,
+  `activities/ActivitiesList.tsx` (B) · `tasks/TASK-462.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

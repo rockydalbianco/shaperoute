@@ -60,7 +60,7 @@ from shaperoute_api.strava import SPORT_TYPES
 
 REPO = Path(__file__).resolve().parents[3]
 CONTRACT = REPO / "packages" / "shared-types" / "fixtures"
-MIGRATION = "0070_wheelchair.sql"
+MIGRATION = "0071_wheelchair.sql"
 WHEELS = "wheelchair"
 SIMPLE = ("circle", "heart", "star", "moon")
 HEART: dict[str, Any] = {

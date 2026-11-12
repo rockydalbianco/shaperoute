@@ -142,16 +142,32 @@ async function runAndStop() {
   expect(await screen.findByText("Remember to stretch")).toBeOnTheScreen();
 }
 
-test("«Stretch» opens the five exercises, and «End» leaves them for «Your run»", async () => {
+/** «Stretch» on the reminder, then a length on the stretching screen. */
+async function stretchFor(minutes: string) {
+  await fireEvent.press(screen.getByText("Stretch"));
+  expect(await screen.findByText("How long?")).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: "After run" })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: minutes }));
+}
+
+test("«Not now» on the length leaves for «Your run» without stretching", async () => {
   await runAndStop();
   await fireEvent.press(screen.getByText("Stretch"));
+  await fireEvent.press(await screen.findByRole("button", { name: "Not now" }));
+  expect(screen.queryByText("How long?")).toBeNull();
+  expect(await screen.findByText("Your run")).toBeOnTheScreen();
+});
+
+test("«Stretch» opens the five exercises, and «End» leaves them for «Your run»", async () => {
+  await runAndStop();
+  await stretchFor("5 min");
   expect(await screen.findByText("1 of 5")).toBeOnTheScreen();
   expect(screen.getByRole("header", { name: "Quad stretch" })).toBeOnTheScreen();
   expect(screen.getByText("Get ready")).toBeOnTheScreen();
   expect(screen.queryByText("Remember to stretch")).toBeNull();
-  // The time runs on the exercise, not on the run.
+  // The time runs on the exercise, not on the run: 25 s a side in 5 minutes.
   await act(() => jest.advanceTimersByTimeAsync(TICK_MS * (READY_S + 3)));
-  expect(screen.getByText("0:17")).toBeOnTheScreen();
+  expect(screen.getByText("0:22")).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "End" }));
   expect(screen.queryByText("1 of 5")).toBeNull();
   expect(await screen.findByText("Your run")).toBeOnTheScreen();
@@ -160,10 +176,10 @@ test("«Stretch» opens the five exercises, and «End» leaves them for «Your r
 
 test("the exercises go on to the end by themselves, then «Your run»", async () => {
   await runAndStop();
-  await fireEvent.press(screen.getByText("Stretch"));
+  await stretchFor("5 min");
   expect(await screen.findByText("1 of 5")).toBeOnTheScreen();
-  // Five exercises, each «Get ready», 20 s, «Switch sides» and 20 s again.
-  const each = READY_S + 20 + SWITCH_S + 20;
+  // Five exercises, each «Get ready», 25 s, «Switch sides» and 25 s again.
+  const each = READY_S + 25 + SWITCH_S + 25;
   await act(() => jest.advanceTimersByTimeAsync(TICK_MS * (each * 5 - 1)));
   expect(screen.getByText("5 of 5")).toBeOnTheScreen();
   expect(screen.getByText("Left side")).toBeOnTheScreen();

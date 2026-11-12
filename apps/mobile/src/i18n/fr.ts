@@ -2628,6 +2628,21 @@ export const FR: Table = {
   "Deep@@sleep": "Profond",
   "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
     "Calculé par MuW à partir des données d'Apple Santé. Il peut différer du score de l'app Santé.",
+  // TASK-305 part R5b: under «Record your flight» (approved 2026-11-12).
+  "Your flights": "Vos vols",
+  "{count} flight · {time}": "{count} vol · {time}",
+  "{count} flights · {time}": "{count} vols · {time}",
+  "No flights this month": "Aucun vol ce mois-ci",
+  "Your best flights": "Vos records de vol",
+  "Longest flight": "Vol le plus long",
+  "Farthest flight": "Vol le plus lointain",
+  "Ready to fly": "Prêt à décoller",
+  "Waiting for GPS…": "En attente du GPS…",
+  "GPS ready · ±{m} m": "GPS prêt · ±{m} m",
+  "Weak GPS · ±{m} m: wait in the open": "GPS faible · ±{m} m : attendez à découvert",
+  "Share live at start": "Partager en direct au départ",
+  "When the countdown ends, MuW makes the link and opens the share sheet.":
+    "À la fin du compte à rebours, MuW crée le lien et ouvre le partage.",
   // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
   // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
   "Poster and video": "Affiche et vidéo",

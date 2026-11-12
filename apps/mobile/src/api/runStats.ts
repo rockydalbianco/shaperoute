@@ -56,6 +56,14 @@ export type RunStatsRequest = {
    * the whole body (422). Left out, none.
    */
   ski_parts?: SkiPartRequest[];
+  /**
+   * A flight's highest point from the GPS and its top speed over the ground
+   * (TASK-305 part R5a): what its bests are made of. Only to a server with
+   * part R5a, which keeps them for a flight alone; one before it refuses
+   * the whole body (422). Left out, none.
+   */
+  max_alt_m?: number;
+  top_speed_mps?: number;
 };
 
 /** As many points as the page draws (run_stats.py MAX_ELEVATION_POINTS). */

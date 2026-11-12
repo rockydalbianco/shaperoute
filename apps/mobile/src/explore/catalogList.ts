@@ -1,9 +1,10 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { Activity, LatLon } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiKey, keyHeaders } from "../api/apiUrl";
 import { nearParams } from "../places/photon";
 import {
+  activityParam,
   isRecommendedList,
   measuredFrom,
   type RecommendedRoute,
@@ -39,6 +40,8 @@ type Options = {
   key?: string | null;
   signal?: AbortSignal;
   limit?: number;
+  /** Whose drawings (TASK-441): a run's when left out. */
+  activity?: Activity;
 };
 
 export function catalogUrl(
@@ -46,8 +49,12 @@ export function catalogUrl(
   near: LatLon,
   offset: number,
   limit: number = CATALOG_PAGE,
+  activity: Activity = "running",
 ): string {
-  return `${baseUrl}/catalog?${nearParams(near)}&offset=${offset}&limit=${limit}`;
+  return (
+    `${baseUrl}/catalog?${nearParams(near)}&offset=${offset}&limit=${limit}` +
+    activityParam(activity)
+  );
 }
 
 function isCatalogPage(body: unknown): body is CatalogPage {
@@ -68,10 +75,16 @@ export async function fetchCatalogPage(
   baseUrl: string,
   near: LatLon,
   offset: number,
-  { fetchFn = fetch, key = apiKey(), signal, limit = CATALOG_PAGE }: Options = {},
+  {
+    fetchFn = fetch,
+    key = apiKey(),
+    signal,
+    limit = CATALOG_PAGE,
+    activity,
+  }: Options = {},
 ): Promise<PageOutcome> {
   try {
-    const response = await fetchFn(catalogUrl(baseUrl, near, offset, limit), {
+    const response = await fetchFn(catalogUrl(baseUrl, near, offset, limit, activity), {
       headers: keyHeaders(key),
       signal,
     });
@@ -173,14 +186,14 @@ const NO_ROUTES: RecommendedRoute[] = [];
 export function useCatalog(
   apiUrl: string | null,
   near: LatLon | null,
-  { fetchFn, key, limit = CATALOG_PAGE }: Omit<Options, "signal"> = {},
+  { fetchFn, key, limit = CATALOG_PAGE, activity }: Omit<Options, "signal"> = {},
 ): CatalogState {
   const lat = near?.[0];
   const lon = near?.[1];
   const place =
     apiUrl === null || lat === undefined || lon === undefined
       ? null
-      : `${apiUrl} ${nearParams([lat, lon])}`;
+      : `${apiUrl} ${nearParams([lat, lon])}${activityParam(activity)}`;
   const [state, setState] = useState<{
     place: string | null;
     status: CatalogState["status"];
@@ -203,6 +216,7 @@ export function useCatalog(
         fetchFn,
         key,
         limit,
+        activity,
         signal: controller.signal,
       }).then((outcome) => {
         if (controller.signal.aborted) {
@@ -239,7 +253,7 @@ export function useCatalog(
         });
       });
     },
-    [apiUrl, fetchFn, key, lat, limit, lon, place],
+    [activity, apiUrl, fetchFn, key, lat, limit, lon, place],
   );
 
   // A new place: its first page, "loading" until it comes (`shown` is null

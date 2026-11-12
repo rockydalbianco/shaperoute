@@ -634,8 +634,8 @@ export const IT: Table = {
     "Qui questo contorno non sta sulle strade. Prova un'altra distanza, un'altra partenza o una foto più semplice.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Qui questa forma non sta sulle strade. Prova un'altra forma, o un'altra partenza:",
-  "Map data for this area could not be downloaded. Try again later.":
-    "Non si è potuta scaricare la mappa di questa zona. Riprova più tardi.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "Il servizio delle mappe è occupato e questa zona non si è potuta caricare. Riprova tra qualche minuto.",
   "The route engine cannot find one clear outline in this picture.":
     "In questa foto non si trova un contorno chiaro.",
   "Only PNG and JPEG pictures work. Choose another one.":
@@ -1116,6 +1116,8 @@ export const IT: Table = {
   Pause: "Pausa",
   Music: "Musica",
   "Opens Spotify": "Apre Spotify",
+  "Show the numbers": "Mostra i numeri",
+  "Hide the numbers": "Nascondi i numeri",
   Compass: "Bussola",
   Map: "Mappa",
   Data: "Dati",
@@ -1541,6 +1543,10 @@ export const IT: Table = {
   "{sport}, coming soon": "{sport}, in arrivo",
   "Sport, {sport}": "Sport, {sport}",
   "Changes the sport": "Cambia lo sport",
+  // The families of the sport panel: src/settings/sportFamilies.ts
+  "On foot": "A piedi",
+  "On wheels": "Su ruote",
+  "Other@@sport": "Altro",
   Sport: "Sport",
   Default: "Predefinita",
   "Voice language and voice: {language}, {voice}": "Lingua e voce: {language}, {voice}",
@@ -2620,4 +2626,11 @@ export const IT: Table = {
   "Share live at start": "Condividi dal vivo alla partenza",
   "When the countdown ends, MuW makes the link and opens the share sheet.":
     "Finito il conto alla rovescia, MuW crea il link e apre la condivisione.",
+  // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
+  // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
+  "Poster and video": "Poster e video",
+  "Only people who follow {user} can open it.": "Solo chi segue {user} può aprirlo.",
+  "by {user}": "di {user}",
+  "This post is no longer available.": "Questo post non è più disponibile.",
+  "🗺️ Post": "🗺️ Post",
 };

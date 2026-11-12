@@ -8,6 +8,7 @@ import { t } from "../i18n";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
 import { distanceLabel } from "../units/format";
 import { attachmentLine, duration } from "./attachmentText";
+import { PostCard } from "./PostCard";
 
 /** The widest a photo or a video is shown in a message. */
 export const MEDIA_SIDE = 220;
@@ -37,10 +38,14 @@ export function shownSize(
  * What a message carries, in its bubble (TASK-333): a photo, a video's
  * first picture with ▶ and its length (a dark square without one), «This
  * video has expired.», or a drawing: its line, what it draws and how long
- * it is, opened on the map with a tap (part C). The bubble is what is
- * touched, and what VoiceOver reads (attachmentLabel).
+ * it is, opened on the map with a tap (part C); or a post (TASK-455): its
+ * card, or that it is no longer available. The bubble is what is touched,
+ * and what VoiceOver reads (attachmentLabel).
  */
 export function MessageMedia({ attachment, apiUrl, token, apiKey }: Props) {
+  if (attachment.kind === "post") {
+    return <PostCard post={attachment.post ?? null} />;
+  }
   if (attachment.kind === "drawing") {
     const card = attachment.drawing;
     if (card === null) {

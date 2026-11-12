@@ -2717,7 +2717,8 @@ export interface MessageDrawingCard {
 
 /** What a message carries besides its text. */
 export interface MessageAttachment {
-  kind: MessageAttachmentKind;
+  /** `post` (MESSAGE_POST_KIND) only for an app that says it reads one. */
+  kind: MessageAttachmentKind | typeof MESSAGE_POST_KIND;
   /** A photo's or a video's: GET /message-media/{media_id}, with the key
    * and the token. Null for a drawing and a video expired. */
   media_id: string | null;
@@ -2786,7 +2787,7 @@ export interface MessagePostCard {
  * says READS_MESSAGE_POST also finds MESSAGE_POST_KIND here (TASK-455).
  */
 export interface AttachmentsAllowed {
-  kinds: MessageAttachmentKind[];
+  kinds: (MessageAttachmentKind | typeof MESSAGE_POST_KIND)[];
   video_max_s: number;
   video_max_bytes: number;
   photo_max_bytes: number;

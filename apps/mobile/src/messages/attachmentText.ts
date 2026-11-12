@@ -3,6 +3,7 @@ import type { Message, MessageAttachment } from "@shaperoute/shared-types";
 import { favoriteTitle } from "../favorites/favoriteRoute";
 import { t } from "../i18n";
 import { distanceLabel } from "../units/format";
+import { POST_GONE, postByline, postTitle } from "./messagePost";
 
 /**
  * What a message carries, in words (TASK-333, texts approved by the user on
@@ -13,9 +14,10 @@ const SIGN: Record<MessageAttachment["kind"], string> = {
   photo: "📷",
   video: "🎬",
   drawing: "🗺️",
+  post: "🗺️",
 };
 
-/** «📷 Photo», «🎬 Video», «🗺️ Drawing». */
+/** «📷 Photo», «🎬 Video», «🗺️ Drawing», «🗺️ Post». */
 export function attachmentLine(kind: MessageAttachment["kind"]): string {
   switch (kind) {
     case "photo":
@@ -24,6 +26,8 @@ export function attachmentLine(kind: MessageAttachment["kind"]): string {
       return t("🎬 Video");
     case "drawing":
       return t("🗺️ Drawing");
+    case "post":
+      return t("🗺️ Post");
   }
 }
 
@@ -61,6 +65,13 @@ export function attachmentLabel(attachment: MessageAttachment): string {
         title: card === null ? "" : favoriteTitle(card),
         distance: distanceLabel(card?.route_m ?? 0),
       });
+    }
+    case "post": {
+      // Its title, who published it and how long it is; or that it is gone.
+      const card = attachment.post ?? null;
+      return card === null
+        ? t(POST_GONE)
+        : [postTitle(card), postByline(card)].filter((part) => part !== "").join(", ");
     }
   }
 }

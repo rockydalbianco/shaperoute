@@ -6,8 +6,9 @@ la #957 (`a63254d3`, mergiata dall'utente) e sul server col passo unico del
 A2 in `main` con la #1130 (`ac08ae94`, mergiata dall'utente il
 2026-11-11) e sul server col passo 8 (2026-11-11 22:14Z, `ab5b2983`;
 controllo in `out/TASK-413/SERVER-A2.md`), l'app nascosta col decimo OTA;
-A3 (la città detta subito) in PR (`feat/TASK-413-a3-snow-early-no`,
-2026-11-12); poi B
+A3 (la città detta subito) in `main` con la #1238 (`8f5d0516`, unita
+dall'utente il 2026-11-12), sul server col passo 11 (controllo in
+`out/TASK-413/SERVER-A3.md`); poi B
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -251,6 +252,24 @@ dall'agente su delega dell'utente):
 - **Sul server** arriva con un passo suo dopo il merge; controllo: la riga
   di Trento 3 km del passo 8 (76 s) scende a pochi secondi, con lo stesso
   `shape_not_drawable` «no open snow».
+- **In città il messaggio diventa «no open snow»**: prima Milano dava
+  `SnowFitError` («the circle does not fit on open snow here, even at
+  0.4 km», a volte con una distanza più corta); ora dà subito `NoSnowError`
+  («there is no open snow to walk on within 2 km of here»). Per l'app è
+  sempre `shape_not_drawable`.
+- **Il banco prima e dopo** (2026-11-12, turno del Mac,
+  `out/TASK-413/results/a3-compare.txt`): 72 richieste (6 posti, cerchio,
+  cuore e stella, da 0,5 a 3 km). Le 60 dei cinque posti con neve sono
+  identiche. Tempi per posto, prima → dopo:
+  - Milano: 67,0 → 3,3 s (0,3 s a richiesta);
+  - Asiago: 24,9 → 24,3 s;
+  - Fiemme: 19,5 → 16,1 s;
+  - Lavazè: 10,3 → 10,4 s;
+  - Bondone: 9,5 → 9,4 s;
+  - Rolle: 9,2 → 9,5 s.
+- **In `main`** con la #1238 (`8f5d0516`, unita dall'utente); impronte
+  `e0834d054b6e 8ab61d8e87f9 b9d00c37d28d 574fbfba41eb`, come prima.
+  Decisione: ADR-0342, precisazione A3.
 
 ## Scelte dell'utente
 

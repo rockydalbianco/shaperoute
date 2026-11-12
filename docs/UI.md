@@ -1303,6 +1303,23 @@ com'era, con «Your reaction wasn't saved. Check the connection.» sotto la
 riga. Senza account o senza reazioni da leggere «Like» resta e non apre
 niente.
 
+**Il doppio tocco sull'immagine di un post è il suo super like** (TASK-454
+parte B, scelta dell'utente del 2026-11-11), come sulla mappa del disegno
+aperto: **nel Feed** sull'immagine della card (il disegno, la scheda, una
+foto), **nella pagina del post** sulla mappa. Si apre il foglio «Super
+like» col suo commento, senza passare dalla barra, e **niente conta prima
+dell'invio**; mandato, «Like» mostra il cuore di MuW e «Comment · N» sale.
+**Col super like già messo** compare il cuore grande per un attimo (0,9 s)
+e non cambia niente: il doppio tocco non lo toglie mai. Vale anche su un
+post proprio, come il cuore della barra. **Il tocco singolo aspetta 300 ms**
+per sapere che è solo, poi fa quello che faceva: apre il post, la foto a
+tutto schermo, il disegno sulla mappa. Aspetta solo dove ci sono i quattro
+pulsanti: gli esempi rispondono subito, e così il nome dell'autore, «…» e i
+pulsanti. Senza account o senza reazioni da leggere il doppio tocco non fa
+niente. Con VoiceOver il doppio tocco apre il post, com'è suo, e il super
+like si mette dal cuore della barra. **Con «Riduci movimento»** il cuore
+grande compare alla sua misura, senza crescere, qui e sul disegno aperto.
+
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,
@@ -4408,7 +4425,12 @@ acceso. Testi approvati dall'utente l'11 novembre 2026.
   settings», `health/SleepPostSwitch.tsx`): lo stesso interruttore, che va
   all'API subito (non aspetta «Save»); la scheda e la riga seguono
   all'istante.
-- Palestra e nuoto in vasca hanno un form loro: arrivano con la parte B2b.
+- **Anche a fine allenamento in palestra e a fine nuoto in vasca** (parte
+  B2b, `gym/GymEnd.tsx` e `pool/PoolSwimEnd.tsx`): lo stesso interruttore,
+  sotto il form del post e «Save to Apple Health», sopra «Save»; la notte è
+  quella prima dell'inizio dell'allenamento o del nuoto. Stesse regole:
+  parte acceso, solo con un post che altri vedono, mai una richiesta di
+  permesso. Con la costante spenta le due schermate sono com'erano.
 
 ## Il post da condividere (TASK-231, ADR-0194)
 
@@ -5122,7 +5144,9 @@ c'è anche l'errore.
   vedono**: spento, o con «Only me», non parte niente e niente si tiene.
   Finché l'API non ha l'attività il riassunto aspetta in
   `sleep-outbox.json` (al più 30 giorni, poi si butta); una notte che
-  l'API rifiuta si butta, non si rimanda. Il sì a leggere il sonno sta in
+  l'API rifiuta si butta, non si rimanda. Vale lo stesso per un
+  allenamento in palestra e un nuoto in vasca, che aspettano nelle loro
+  code (`gym-outbox.json`, `pool-outbox.json`): la notte parte dopo di loro. Il sì a leggere il sonno sta in
   `sleep-health.json`.
 
 ## Quando la mappa non si carica

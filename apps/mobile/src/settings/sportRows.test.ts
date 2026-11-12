@@ -30,7 +30,7 @@ it("shows the rows of before, in their order", () => {
       id: "xc_ski",
       emoji: "🎿",
       name: "Cross-country ski",
-      ready: false,
+      ready: true,
       recordOnly: true,
     },
     // Ski touring (TASK-415 part B), on with its phases and its VAM.

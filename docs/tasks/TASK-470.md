@@ -1,8 +1,8 @@
 # TASK-470 — Il controllo della navigazione
 
-**Stato**: In corso (parte 0 fatta: l'elenco dei difetti)
+**Stato**: In corso — A e B in produzione (OTA 13); E, C, D in PR
 **Fase**: 5 · **Branch**: `docs/TASK-470-part-0`, poi una per fetta
-(`fix/TASK-470-…`)
+(`fix/TASK-470-…`) · **ADR**: ADR-0384 (il gesto dal bordo, fetta E)
 
 ## Obiettivo
 
@@ -127,6 +127,39 @@ Coordinatore sulla lista dei file.
   `skimode/SkiDaysPage.tsx`, dopo il merge della #1205 (TASK-457) e al
   turno di `App.tsx`.
 - 11 solo con la scelta dell'utente.
+- **E — il gesto dal bordo su iOS** (11): scelta dell'utente del
+  2026-11-12, «A, la pagina segue» (ADR-0384). `ui/EdgeBack.tsx`
+  (`useEdgeBack` sulla radice di ogni pagina sopra l'app) e una modifica
+  alla radice di `MessagesOverlay`, `BellOverlay`, `PeopleScreen`,
+  `ContestPage`, `ProfileScreen` (le pagine dentro «Profile», non la
+  scheda), `PlayOverlay`.
+
+## Dove sono le fette
+
+| Fetta | PR | Stato |
+|---|---|---|
+| Parte 0 | #1232 | in `main` |
+| A — schede (1, 5, base del 2) | #1233 | in produzione: OTA 13, 2026-11-12 13:28Z da `100624e2` (iOS gruppo `86d0f643`, Android `5155f4d2`) |
+| B — tasto indietro di Android (2, 3, 4) | #1237 | in produzione con l'OTA 13 |
+| E — gesto dal bordo su iOS (11, ADR-0384) | #1243 | pronta; video visto dall'utente, sì del 2026-11-12 |
+| C — fogli che perdevano i tocchi (6) | #1250 | pronta |
+| D — pagine finite sotto altre (7–10) | #1252 | trattenuta fino alla prova al simulatore |
+
+**Al simulatore il 2026-11-12** (`out/TASK-470/`, fuori dal repository):
+- 6: dalla chiusura di un foglio al `Modal` tolto 573 ms; un tocco su
+  «Drawings» della ricerca in quel tempo è andato perso. Con la C ~270 ms.
+- 11: sulle pagine sopra l'app («Guide») il gesto segue il dito, torna se
+  lasciato prima di un terzo, chiude col colpo, e la barra sotto non si
+  muove. **Dentro una scheda no**: su una pagina di prova dentro «Explore»
+  il colpo dal bordo chiudeva la pagina e faceva scorrere anche le schede
+  (lo scroll nativo della striscia non si ferma per il gesto JS). Per questo
+  la località e il giorno di sci (dentro le schede della modalità sci)
+  restano senza gesto, col tasto indietro di Android e la «←».
+
+**Seguito possibile, non in questo task**: il gesto dal bordo anche sulle
+pagine dentro una scheda chiederebbe a `TabShell` di fermare il suo swipe
+mentre il gesto ha il dito (lo `scrollEnabled` della striscia, o un gesto
+nativo che ha la precedenza).
 
 ## Criteri di accettazione
 
@@ -134,7 +167,8 @@ Coordinatore sulla lista dei file.
       file dove nasce.
 - [ ] Ogni difetto corretto ha un test deterministico; test dei file
       toccati e `tsc` verdi in locale, CI verde.
-- [ ] 1, 2 e 6 guardati al simulatore.
+- [ ] 1, 2 e 6 guardati al simulatore (6 e 11 fatti il 2026-11-12; 7–10
+      prima del merge della D).
 
 ## File toccati
 

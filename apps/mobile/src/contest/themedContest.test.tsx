@@ -357,7 +357,8 @@ describe("the page", () => {
     );
     const [post] = await screen.findAllByTestId("feed-post");
     await fireEvent.press(post);
-    expect(opens).toHaveBeenCalledWith(GALLERY.entries[0].drawing);
+    // The tap waits to know it is alone (TASK-454 part B).
+    await waitFor(() => expect(opens).toHaveBeenCalledWith(GALLERY.entries[0].drawing));
     await unmount();
     opens.mockClear();
     await render(

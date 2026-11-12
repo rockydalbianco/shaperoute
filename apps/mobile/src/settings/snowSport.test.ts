@@ -41,18 +41,20 @@ test("«Ski» ⛷️, «Cross-country ski» 🎿, «Ski touring» 🏔️ and «
   }
 });
 
-test("«Ski» is on, in the store builds too (D4); «Cross-country ski» still «Soon»", () => {
+test("«Ski» (D4) and «Cross-country ski» are on, in the store builds too", () => {
   expect(canChoose("ski")).toBe(true);
-  expect(canChoose("xc_ski")).toBe(false);
+  expect(canChoose("xc_ski")).toBe(true);
   const store = shownSports(ALL_SPORTS, true).map((option) => option.id);
   expect(store).toContain("ski");
-  expect(store).not.toContain("xc_ski");
-  // The day it is ready, it can be chosen like any other.
-  const ready: SportOption[] = ALL_SPORTS.map((option) =>
-    option.recordOnly === true ? { ...option, ready: true } : option,
+  expect(store).toContain("xc_ski");
+  // Not ready, it would say «Soon» and be left out of the store builds.
+  const notReady: SportOption[] = ALL_SPORTS.map((option) =>
+    option.id === "xc_ski" ? { ...option, ready: false } : option,
   );
-  expect(canChoose("ski", ready)).toBe(true);
-  expect(shownSports(ready, true).map((option) => option.id)).toContain("xc_ski");
+  expect(canChoose("xc_ski", notReady)).toBe(false);
+  expect(shownSports(notReady, true).map((option) => option.id)).not.toContain(
+    "xc_ski",
+  );
 });
 
 test("a day on the snow is saved as its own activity, the others as their route", () => {

@@ -268,9 +268,9 @@ Criteri di accettazione (C1):
 
 **Stato**: codice e test scritti il 2026-11-12 sul branch
 `feat/TASK-454-reactions` (da `main` a `02214e9b`, con TASK-444 parte 1
-dentro) · PR in bozza: mancano gli screenshot prima/dopo (turno del
-simulatore dal Coordinatore) e il sì dell'utente su quelli e sulle
-traduzioni qui sotto.
+dentro) · PR #1195 in bozza: mancano gli screenshot prima/dopo (turno del
+simulatore dal Coordinatore) e il sì dell'utente su quelli. Le traduzioni
+qui sotto sono approvate.
 
 Le scelte 1–4 sono dell'utente. Il modo è **deciso dall'agente su delega
 dell'utente** (nessun ADR nuovo: l'app soltanto, dentro ADR-0193 e
@@ -303,7 +303,8 @@ ADR-0340):
    lì il cerchio senza reazione ha il cuore a linea di «Like»
    (`assets/ui/icons/heart.png`, TASK-444) al posto di 🙂.
 
-Traduzioni della riga del foglio, **da far vedere all'utente**: it «Un
+Traduzioni della riga del foglio, **approvate dall'utente il 2026-11-12**
+(«Sì, approvo»): it «Un
 super like arriva con un commento. Chi vede il post può leggerlo.» · de
 «Ein Super-Like kommt mit einem Kommentar. Alle, die den Beitrag sehen,
 können ihn lesen.» · fr «Un super like s'accompagne d'un commentaire. Tous

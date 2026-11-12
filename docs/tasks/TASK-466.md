@@ -1,7 +1,7 @@
 # TASK-466 — Lo stretching nuovo: animazioni, routine, palestra, mattino, routine pubblicate
 
-**Stato**: In corso · parte A in `main` (#1181, `437f152f`, 2026-11-12;
-esce con l'aggiornamento completo); prossima B
+**Stato**: In corso · A in produzione (#1181, OTA 12); B in `main`
+(#1216, `05f5a725`, 2026-11-12; esce col prossimo OTA); prossima D
 **Fase**: 4 · **Branch**: `feat/TASK-466-a-stretch-motion` (A); B, C, D, E
 ciascuna col suo branch e la sua PR
 **ADR**: ADR-0378 (una per tutte le parti; la voce va nella PR di soli
@@ -85,6 +85,86 @@ cinque delle gambe), tre routine — **Morning**, **After run**, **After gym**
 — in tre durate, 3, 5 e 10 minuti. Solo `src/stretch/**` e i18n. Nomi e
 testi col sì dell'utente.
 
+_(branch `feat/TASK-466-b-routines`; lista dei file approvata dal
+Coordinatore il 2026-11-12)_
+
+1. **Dieci esercizi nuovi** (`MORE_EXERCISES`), quindici in tutto, ognuno
+   col suo respiro: Neck stretch, Overhead reach, Shoulder stretch, Chest
+   opener, Triceps stretch, Upper back stretch, Forward fold, Cat stretch,
+   Child's pose, Knee hug. Tutti leggibili di profilo; gli adduttori e le
+   pose sdraiate restano fuori (di lato non si capiscono, la testa tonda
+   andrebbe sotto il pavimento): «Knee hug» si fa in piedi.
+2. **Le routine** (`routines.ts`): per ogni durata una lista e una tenuta
+   sola (20 s a 3 minuti, 25–30 a 5, 40 a 10); `sessionSeconds` conta
+   anche «Get ready» e «Switch sides», e ogni routine sta fra il 90% e il
+   105% dei minuti che dice. `READY_S` e `SWITCH_S` passano in
+   `exercises.ts` (la schermata li riesporta).
+3. **La scelta della durata nella schermata** (scelta dell'utente,
+   2026-11-12, «Nella schermata»): «Stretch» a fine corsa apre
+   `RoutineChooser` — nome della routine, «How long?», tre tasti «3 min»,
+   «5 min», «10 min», «Not now» — poi gli esercizi. Con `exercises` dati
+   la schermata parte subito, come prima; `routine` sceglie la routine
+   (per C e D). Nessun file fuori da `src/stretch`, i18n e i test.
+4. **La gamba staccata** (trovata nella prova al simulatore del
+   2026-11-12, difetto della parte A): alla seconda apertura dello
+   stretching nella stessa sessione dell'app una gamba della figura
+   restava in basso a destra. iOS riusa le viste, e una vista con la
+   cornice esattamente (0, 0, 0, 0) tiene la posizione che aveva prima:
+   le giunture erano tutte a dimensione zero. Ora ogni giuntura è un
+   quadrato di 2 pt attorno al suo punto (`JOINT` in `Figure.tsx`); la
+   figura è la stessa. Deciso dall'agente su delega dell'utente.
+   **Il difetto è in produzione**: la #1181 è uscita con l'aggiornamento
+   completo del 12 novembre (OTA 12); la correzione esce col primo OTA
+   dopo il merge della #1216. Prima e dopo in
+   `out/TASK-466/b/TASK-466-b-3-prima-dopo.jpg`.
+5. **«Child's pose» dentro lo schermo**: le braccia lunghe arrivavano a
+   0,60 dell'altezza davanti all'anca, più di mezzo telefono da 390 pt.
+   Una posa che va oltre `REACH` (0,46) fa scivolare indietro tutta la
+   figura di quanto serve (`drift` in `poses.ts`); oggi solo questa.
+   Deciso dall'agente su delega dell'utente.
+
+Testi nuovi, approvati dall'utente il 2026-11-12: i dieci nomi e le loro
+frasi, «Morning», «After run», «After gym», «How long?».
+
+**Criteri di accettazione (parte B)**
+
+- [x] Quindici esercizi, ognuno con posa, respiro, nome e frase; le pose
+      stanno sul pavimento, al respiro più profondo compreso.
+- [x] Tre routine in 3, 5, 10 minuti, vicine ai minuti, senza doppioni,
+      tenute di almeno 20 s; tutti e quindici gli esercizi usati.
+- [x] A fine corsa la schermata chiede la durata prima del primo
+      esercizio; «Not now» esce.
+- [x] Test di `src/stretch`, `src/i18n`, `__tests__/AppStretch`,
+      `src/gym/restAlert` verdi; `tsc` pulito.
+- [x] Sì dell'utente su nomi, frasi e traduzioni (2026-11-12, «Sì,
+      approvo»).
+- [x] Schermate dal simulatore, col turno del Coordinatore (2026-11-12,
+      iPhone 17e, Expo Go: `out/TASK-466/b/`, quindici schermate: le dieci
+      pose nuove, le tre scelte «How long?», «Mattino» e una posa in
+      italiano; la schermata aperta tre volte di fila senza gambe
+      staccate).
+- [x] Sì dell'utente sulle schermate (2026-11-12, «Sì, approvo»: le
+      dieci pose, le tre routine e il prima/dopo della gamba staccata).
+
+**File toccati (parte B)**
+
+```
+apps/mobile/src/stretch/routines.ts               (nuovo)
+apps/mobile/src/stretch/routines.test.ts          (nuovo)
+apps/mobile/src/stretch/RoutineChooser.tsx        (nuovo)
+apps/mobile/src/stretch/RoutineChooser.test.tsx   (nuovo)
+apps/mobile/src/stretch/poses.ts
+apps/mobile/src/stretch/poses.test.ts
+apps/mobile/src/stretch/exercises.ts
+apps/mobile/src/stretch/StretchScreen.tsx
+apps/mobile/src/stretch/StretchScreen.test.tsx
+apps/mobile/src/stretch/Figure.tsx                (punti 4 e 5)
+apps/mobile/src/stretch/Figure.test.tsx
+apps/mobile/__tests__/AppStretch.test.tsx
+apps/mobile/src/i18n/{it,de,fr,es}.ts             (voci nuove)
+docs/tasks/TASK-466.md
+```
+
 ## Parte C — In palestra
 
 «Stretch» alla fine dell'allenamento come dopo la corsa, e una voce
@@ -97,6 +177,26 @@ Impostazione «Morning stretch»: orario della sveglia, giorni, durata;
 notifica locale con `expo-notifications` (già dipendenza) che apre la
 routine. JS, esce con un OTA. La lettura della sveglia su Android è una
 parte separata, nativa, con una build.
+
+Scelte dell'utente (2026-11-12, «Sì, va bene» alla proposta intera):
+
+- una voce **«Morning stretch»** in Impostazioni: interruttore (spento
+  all'inizio), **orario della sveglia** scritto dall'utente, **giorni**
+  (lunedì–venerdì all'inizio), **durata** 3, 5 o 10 minuti (5 all'inizio);
+- una **notifica locale 5 minuti dopo la sveglia**: «Morning stretch» /
+  «{minutes} minutes to wake up your body. Tap to start.» (in italiano
+  «Stretching del mattino» / «{minutes} minuti per svegliare il corpo.
+  Tocca per iniziare.»); toccata, apre la routine **Morning** della durata
+  scelta, senza chiedere;
+- il permesso è quello delle notifiche push; negato, la voce lo dice.
+
+Parte dopo il merge della B (usa `routines.ts`), da `main`, branch
+`feat/TASK-466-d-morning`. File (lista mandata al Coordinatore il
+2026-11-12, turno da chiedere su `App.tsx`, `SettingsPage.tsx`,
+`notifications/`): nuovi `src/stretch/morning.ts`,
+`MorningStretchSetting.tsx` e i loro test; una o due righe in
+`src/profile/SettingsPage.tsx`, `src/notifications/notificationTap.ts`,
+`openTarget.ts` (e test), `App.tsx`; i18n; task file.
 
 ## Parte E — La tua routine, pubblicata
 
@@ -149,6 +249,31 @@ nativo, niente server.
 - Una libreria di disegno (svg, Lottie): resta la figura di View girate.
 - La voce che legge gli esercizi: per ora suoni e testo.
 - Leggere le sveglie di iPhone: non si può.
+
+## Dove siamo (2026-11-12, passaggio di mano)
+
+La prima sessione si è archiviata qui; chi riprende parte da questo file.
+
+- **A**: in `main` (#1181, `437f152f`); documenti nella PR unica del
+  Coordinatore #1226 (la #1210 si chiude con lei: non toccarla).
+- **B**: in `main` (#1216, `05f5a725`, 2026-11-12), schermate approvate
+  dall'utente («Sì, approvo»); esce col prossimo OTA, che porta anche la
+  correzione della gamba staccata (punto 4: in produzione dall'OTA 12).
+  Resta la prova sul telefono dopo l'OTA: lo stretching aperto due volte
+  di fila, e «Child's pose».
+- **La prova al simulatore** (ha funzionato per A e B): `metro.config.js`
+  non tracciato con `watchFolders` sul `node_modules` del checkout
+  principale, un `index.ts` temporaneo che monta la schermata, Metro con
+  `CI=1` su una porta propria, iPhone 17e con Expo Go; alla fine tutto
+  via e «simulatore libero». Il file di prova deve smontare la schermata
+  all'uscita, come fa `App.tsx`: è alla seconda apertura che si vede un
+  difetto come quello del punto 4. Con `exercises` non dati la schermata
+  apre già la scelta: basta `<StretchScreen onLeave={…} routine="morning" />`.
+- **D**: scelte dell'utente nella sezione D; parte da `main` dopo il
+  merge della B, col turno del Coordinatore su `App.tsx`,
+  `SettingsPage.tsx`, `notifications/`.
+- **C**: dopo TASK-461 A2 e TASK-465, turno su `src/gym`.
+- **E**: da proporre all'utente (server prima, privacy).
 
 ## Esito
 

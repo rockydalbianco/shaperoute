@@ -63,7 +63,9 @@ function rows() {
 afterEach(() => jest.restoreAllMocks());
 
 test("somebody else's linkable post: a friend, the link, never the poster", async () => {
-  const share = jest.spyOn(Share, "share").mockResolvedValue({ action: "sharedAction" });
+  const share = jest
+    .spyOn(Share, "share")
+    .mockResolvedValue({ action: "sharedAction" });
   await row(LINKABLE, false);
   await fireEvent.press(screen.getByRole("button", { name: "Share" }));
   expect(screen.getByRole("button", { name: "Send to a friend" })).toBeOnTheScreen();
@@ -80,21 +82,32 @@ test("one's own linkable post has the three rows, the link between the two", asy
   jest.spyOn(Share, "share").mockResolvedValue({ action: "sharedAction" });
   await row(LINKABLE, true);
   await fireEvent.press(screen.getByRole("button", { name: "Share" }));
-  expect(rows()).toEqual(["Send to a friend", "Share link", "Poster and video", "Cancel"]);
+  expect(rows()).toEqual([
+    "Send to a friend",
+    "Share link",
+    "Poster and video",
+    "Cancel",
+  ]);
 });
 
 test.each([
   ["for its owner's followers", { ...FIRST, visibility: "followers", linkable: false }],
-  ["of an owner with «Links to my posts» off", { ...FIRST, visibility: "everyone", linkable: false }],
+  [
+    "of an owner with «Links to my posts» off",
+    { ...FIRST, visibility: "everyone", linkable: false },
+  ],
   ["read from an API of before the links", { ...FIRST, visibility: "everyone" }],
-] as [string, FeedPost][])("a post %s has no «Share link», its owner's included", async (_, post) => {
-  const share = jest.spyOn(Share, "share");
-  await row(post, true);
-  await fireEvent.press(screen.getByRole("button", { name: "Share" }));
-  expect(screen.getByRole("button", { name: "Poster and video" })).toBeOnTheScreen();
-  expect(screen.queryByRole("button", { name: "Share link" })).toBeNull();
-  expect(share).not.toHaveBeenCalled();
-});
+] as [string, FeedPost][])(
+  "a post %s has no «Share link», its owner's included",
+  async (_, post) => {
+    const share = jest.spyOn(Share, "share");
+    await row(post, true);
+    await fireEvent.press(screen.getByRole("button", { name: "Share" }));
+    expect(screen.getByRole("button", { name: "Poster and video" })).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Share link" })).toBeNull();
+    expect(share).not.toHaveBeenCalled();
+  },
+);
 
 test("without the messages a linkable post of somebody else still has «Share», for its link", async () => {
   await row(LINKABLE, false, door({ unread: null }));

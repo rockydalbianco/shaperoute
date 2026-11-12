@@ -22,7 +22,9 @@ test("a post the API does not call linkable has none: followers, switch off, an 
 });
 
 test("«Share link» gives the phone's sheet the address and nothing else", async () => {
-  const share = jest.spyOn(Share, "share").mockResolvedValue({ action: "sharedAction" });
+  const share = jest
+    .spyOn(Share, "share")
+    .mockResolvedValue({ action: "sharedAction" });
   await sharePostLink(`${POST_LINK_PAGE}${ID}`);
   expect(share).toHaveBeenCalledTimes(1);
   expect(share).toHaveBeenCalledWith({ message: `https://getmuw.app/p/#${ID}` });

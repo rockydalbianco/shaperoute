@@ -3,10 +3,10 @@
 **Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · C1 (server) in
 `main` (#1180) e sul server (passo 9, 2026-11-12) · **A (#1195), C2
 (#1199) e la frase della privacy (#1200) in `main` il 2026-11-12**: escono
-con l'aggiornamento completo · **B (doppio tocco) in bozza nella #1231**:
-manca l'immagine nel Feed e nella pagina del post (file di TASK-467 B2
-finché non è in `main`), poi simulatore e sì dell'utente · resta la prova
-sul telefono: vedi «Cosa resta di questo task»
+con l'aggiornamento completo (OTA 12, 2026-11-12 12:28Z) · **B (doppio
+tocco) scritta per intero nella bozza #1231**: mancano il video dal
+simulatore e il sì dell'utente · resta la prova sul telefono: vedi «Cosa
+resta di questo task»
 **Fase**: 5 · **Branch**: una PR per parte; la parte B parte da `main`
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
@@ -189,9 +189,9 @@ Parte A:
 
 Parte B:
 
-- [ ] Due tocchi sull'immagine di un post, nel Feed e nella sua pagina,
+- [x] Due tocchi sull'immagine di un post, nel Feed e nella sua pagina,
       aprono il foglio del super like; niente conta prima dell'invio.
-- [ ] Un tocco solo fa quello che faceva (apre il post, la foto, la mappa),
+- [x] Un tocco solo fa quello che faceva (apre il post, la foto, la mappa),
       dopo 300 ms; dove nessuno può reagire non aspetta.
 - [x] Col super like già messo il doppio tocco mostra il cuore grande e non
       cambia niente; su un post proprio fa come il cuore della fila.
@@ -470,13 +470,13 @@ file, 454 test verdi; `tsc`, `eslint` e Prettier puliti sui file toccati.
 ## Parte B — doppio tocco = super like (app)
 
 **Stato**: bozza #1231 dal 2026-11-12 (branch `feat/TASK-454-b-double-tap`,
-da `main` a `ef07030b`). Scritti e provati coi test: `useDoubleTap`, il
-super like chiesto dall'immagine (`PostReactions`, passato da `PostActions`
-e `PostSheet`), il cuore fermo con «Riduci movimento». **Manca**: chiamarli
-da `feed/FeedPost.tsx` e `feed/PostPage.tsx`, che sono di TASK-467 B2
-finché non è in `main` (l'avviso lo manda il Coordinatore), coi loro test;
-poi il turno del simulatore, il video per l'utente e il suo sì. La PR resta
-in bozza fino alla fine (Coordinatore, 2026-11-12): niente merge a metà.
+da `main` a `ef07030b`, poi `main` unito a `627767a5` con TASK-467 B2
+dentro). Codice e test scritti per intero: `useDoubleTap`, il super like
+chiesto dall'immagine (`PostReactions`, passato da `PostActions` e
+`PostSheet`), l'immagine di `FeedPost` e di `PostPage` che lo chiede, il
+cuore fermo con «Riduci movimento». **Manca**: il turno del simulatore
+(dal Coordinatore), il video per l'utente e il suo sì; poi «pronta». La PR
+resta in bozza fino ad allora (Coordinatore, 2026-11-12).
 
 Scelta dell'utente: la 6 qui sopra. Il resto è **deciso dall'agente su
 delega dell'utente** (visto dal Coordinatore il 2026-11-12):
@@ -519,17 +519,19 @@ delega dell'utente** (visto dal Coordinatore il 2026-11-12):
 
 Nessun testo nuovo, niente i18n, niente server, nessuna dipendenza.
 
-Test in locale (2026-11-12): `useDoubleTap`, `PostReactions`, `PostActions`,
-`SuperLikeSheet`, `DrawingReactions`, `PostPage`: 86 test verdi; i vicini
-del Feed 117; `tsc`, `eslint` e Prettier puliti.
+Test in locale (2026-11-12, su `main` a `627767a5`): `src/feed` intera, le
+schermate del Feed, `src/contest`, `src/health`: 85 file, 606 test verdi;
+in più `SuperLikeSheet`, `DrawingReactions` e gli altri file che disegnano
+una card (47 file, 414 test); `tsc`, `eslint` e Prettier puliti. Otto test
+esistenti ora aspettano dopo il tocco singolo (una riga ciascuno, sette
+file; tre fuori dal Feed, col sì del Coordinatore).
 
 ## Cosa resta di questo task
 
 Scritto il 2026-11-12, con A, C1, C2 e la privacy in `main`.
 
 - **Parte B — doppio tocco = super like** (scelta 6): vedi la sezione qui
-  sopra. Mancano `feed/FeedPost.tsx` e `feed/PostPage.tsx` (dopo TASK-467
-  B2), il video dal simulatore, il sì dell'utente, «pronta».
+  sopra. Mancano il video dal simulatore, il sì dell'utente, «pronta».
 - **Prova sul telefono**, dopo l'OTA dell'aggiornamento completo (la
   pubblica il Coordinatore): «Like» apre la fila sopra il pulsante senza
   muovere la card; un super like porta subito il commento sotto il post;

@@ -99,6 +99,9 @@ parla di chi lo guarda.
   `UserProfileReport.test.tsx` (la frase dopo un blocco: «You blocked
   {user}. Unblock them from Blocked people in Settings.», prima «…in your
   profile.»; la chiave vecchia è sostituita nei quattro registri)
+- col sì del Coordinatore del 2026-11-12 (una riga):
+  `apps/mobile/__tests__/AppActivities.test.tsx`, che aspettava «Favorites,
+  0» sulla tessera
 
 ## Criteri di accettazione
 

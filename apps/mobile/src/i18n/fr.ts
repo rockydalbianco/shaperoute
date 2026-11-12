@@ -1394,6 +1394,44 @@ export const FR: Table = {
   "minutes per km": "minutes au km",
   "{n} minutes": "{n} minutes",
   Beginner: "Débutant",
+  // src/gym/SportsDoor.tsx, bodyweight.ts, GymPlanWizard.tsx (TASK-461 A2, approved 2026-11-11)
+  "What do you want to train?": "Que veux-tu entraîner ?",
+  "Choose at least two: a plan always mixes two sports. Then we guide you in 5 steps.":
+    "Choisis-en au moins deux : un plan mélange toujours deux sports. Ensuite, on te guide en 5 étapes.",
+  "With weights and machines": "Avec poids et machines",
+  Bodyweight: "Poids du corps",
+  "At home or in the park, no equipment": "À la maison ou au parc, sans matériel",
+  "Easy, intervals, long": "Footing, fractionné, sortie longue",
+  "Toward a distance": "Vers une distance",
+  "Running, walking, cycling, swimming": "Course, marche, vélo, natation",
+  Mountains: "Montagne",
+  "Hikes and trips, more climb each week":
+    "Randonnées et sorties, plus de dénivelé chaque semaine",
+  "Soon@@door": "Bientôt",
+  "Next · 1 chosen": "Suivant · 1 choisi",
+  "Next · {n} chosen": "Suivant · {n} choisis",
+  "More each week": "Plus chaque semaine",
+  "+1 rep, +5 s held; week {n} lighter":
+    "+1 répétition, +5 s en gainage ; la semaine {n} plus légère",
+  "Without weights you grow with reps and seconds.":
+    "Sans poids, on progresse avec les répétitions et les secondes.",
+  "with the hardest exercises": "avec les exercices les plus durs",
+  "What do you have?": "Qu'as-tu à disposition ?",
+  "A pull-up bar": "Une barre de traction",
+  "Bar and dip bars": "Barre et barres parallèles",
+  "With the bar we add pull-ups, with the dip bars the dips.":
+    "Avec la barre, on ajoute des tractions, avec les barres parallèles, des dips.",
+  "How many days for each sport?": "Combien de jours pour chaque sport ?",
+  "Already spread out, with rest in between. Touch a day to change it.":
+    "Déjà répartis, avec du repos entre les deux. Touche un jour pour le changer.",
+  "The whole body, {n} times a week. Touch an exercise to change it.":
+    "Tout le corps, {n} fois par semaine. Touche un exercice pour le changer.",
+  "No equipment": "Sans matériel",
+  "A cycle of {n} weeks, then it starts again from where you got to.":
+    "Un cycle de {n} semaines, puis on repart de là où tu es arrivé.",
+  "{a} and {b}, for example.": "{a} et {b}, par exemple.",
+  "Bodyweight · A": "Poids du corps · A",
+  "Bodyweight · B": "Poids du corps · B",
   // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
   "Your plan, step by step": "Ton programme, étape par étape",
   "A minute to make it, then it guides you every time.":
@@ -2651,6 +2689,33 @@ export const FR: Table = {
   "by {user}": "de {user}",
   "This post is no longer available.": "Cette publication n'est plus disponible.",
   "🗺️ Post": "🗺️ Publication",
+  // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
+  // 2026-11-08 and 2026-11-12.
+  Snowshoes: "Raquettes",
+  "Off-trail on snow: check the avalanche bulletin first.":
+    "Hors sentier sur la neige : consulte d'abord le bulletin d'avalanches.",
+  "Before you head out on snowshoes": "Avant de partir en raquettes",
+  "Check the avalanche bulletin and the weather before you go. MuW does not know them.":
+    "Consulte le bulletin d'avalanches et la météo avant de partir. MuW ne les connaît pas.",
+  "The route avoids slopes over 25°, woods, pistes and rock. That does not make it safe: an avalanche can come from above.":
+    "Le parcours évite les pentes de plus de 25°, les bois, les pistes et les rochers. Cela ne le rend pas sûr : une avalanche peut venir d'en haut.",
+  "Stay off the pistes and follow the local rules: parks, reserves, wildlife quiet zones, private land. MuW does not know them all.":
+    "Ne marche pas sur les pistes et respecte les règles locales : parcs, réserves, zones de quiétude de la faune, terrains privés. MuW ne les connaît pas toutes.",
+  "Never go alone, tell someone where you are going, and turn back if the snow or the weather changes.":
+    "Ne pars pas seul, dis à quelqu'un où tu vas et fais demi-tour si la neige ou le temps changent.",
+  "There is no open snow near this start. Start within 2 km of open snow, away from towns, woods and pistes.":
+    "Il n'y a pas de neige dégagée près de ce départ. Pars à moins de 2 km d'une neige dégagée, loin des villes, des bois et des pistes.",
+  "There is no open snow near this start. Start within 1 mile of open snow, away from towns, woods and pistes.":
+    "Il n'y a pas de neige dégagée près de ce départ. Pars à moins de 1 mile d'une neige dégagée, loin des villes, des bois et des pistes.",
+  "This shape does not fit on the snow here at this distance. It fits at about {km} km.":
+    "Cette forme ne tient pas sur la neige ici à cette distance. Elle tient à environ {km} km.",
+  "This shape does not fit on the snow here at this distance. It fits at about {mi} mi.":
+    "Cette forme ne tient pas sur la neige ici à cette distance. Elle tient à environ {mi} mi.",
+  "This shape does not fit on the snow here. Try a shorter distance, another shape, or another start:":
+    "Cette forme ne tient pas sur la neige ici. Essaie une distance plus courte, une autre forme ou un autre départ :",
+  "{name} · on the snow · target {km} km": "{name} · sur la neige · objectif {km} km",
+  "{name} · on the snow · target {mi} mi": "{name} · sur la neige · objectif {mi} mi",
+  "White: where you walked.": "Blanc : là où tu as marché.",
   // src/liveShare/ (TASK-468 part B1: «Send in MuW», the heart rate, the
   // live in the app; en and it approved by the user 2026-11-12)
   "Send in MuW": "Envoyer sur MuW",

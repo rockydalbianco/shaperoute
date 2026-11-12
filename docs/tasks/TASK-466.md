@@ -105,6 +105,19 @@ Coordinatore il 2026-11-12)_
    «5 min», «10 min», «Not now» — poi gli esercizi. Con `exercises` dati
    la schermata parte subito, come prima; `routine` sceglie la routine
    (per C e D). Nessun file fuori da `src/stretch`, i18n e i test.
+4. **La gamba staccata** (trovata nella prova al simulatore del
+   2026-11-12, difetto della parte A): alla seconda apertura dello
+   stretching nella stessa sessione dell'app una gamba della figura
+   restava in basso a destra. iOS riusa le viste, e una vista con la
+   cornice esattamente (0, 0, 0, 0) tiene la posizione che aveva prima:
+   le giunture erano tutte a dimensione zero. Ora ogni giuntura è un
+   quadrato di 2 pt attorno al suo punto (`JOINT` in `Figure.tsx`); la
+   figura è la stessa. Deciso dall'agente su delega dell'utente.
+5. **«Child's pose» dentro lo schermo**: le braccia lunghe arrivavano a
+   0,60 dell'altezza davanti all'anca, più di mezzo telefono da 390 pt.
+   Una posa che va oltre `REACH` (0,46) fa scivolare indietro tutta la
+   figura di quanto serve (`drift` in `poses.ts`); oggi solo questa.
+   Deciso dall'agente su delega dell'utente.
 
 Testi nuovi, approvati dall'utente il 2026-11-12: i dieci nomi e le loro
 frasi, «Morning», «After run», «After gym», «How long?».
@@ -121,7 +134,12 @@ frasi, «Morning», «After run», «After gym», «How long?».
       `src/gym/restAlert` verdi; `tsc` pulito.
 - [x] Sì dell'utente su nomi, frasi e traduzioni (2026-11-12, «Sì,
       approvo»).
-- [ ] Schermate dal simulatore, col turno del Coordinatore.
+- [x] Schermate dal simulatore, col turno del Coordinatore (2026-11-12,
+      iPhone 17e, Expo Go: `out/TASK-466/b/`, quindici schermate: le dieci
+      pose nuove, le tre scelte «How long?», «Mattino» e una posa in
+      italiano; la schermata aperta tre volte di fila senza gambe
+      staccate).
+- [ ] Sì dell'utente sulle schermate.
 
 **File toccati (parte B)**
 
@@ -135,6 +153,8 @@ apps/mobile/src/stretch/poses.test.ts
 apps/mobile/src/stretch/exercises.ts
 apps/mobile/src/stretch/StretchScreen.tsx
 apps/mobile/src/stretch/StretchScreen.test.tsx
+apps/mobile/src/stretch/Figure.tsx                (punti 4 e 5)
+apps/mobile/src/stretch/Figure.test.tsx
 apps/mobile/__tests__/AppStretch.test.tsx
 apps/mobile/src/i18n/{it,de,fr,es}.ts             (voci nuove)
 docs/tasks/TASK-466.md
@@ -231,11 +251,13 @@ La prima sessione si è archiviata qui; chi riprende parte da questo file.
 
 - **A**: in `main` (#1181, `437f152f`); documenti nella PR unica del
   Coordinatore #1226 (la #1210 si chiude con lei: non toccarla).
-- **B**: PR in bozza #1216, branch `feat/TASK-466-b-routines`, testi
-  approvati. Manca solo il turno sul simulatore (coda: dopo 461 A2):
-  schermate della scelta «How long?» e di due o tre pose nuove in
-  `out/TASK-466/`, poi togliere la bozza e «#1216 pronta» con lo SHA.
-  Ricetta che ha funzionato per A: `metro.config.js` non tracciato con
+- **B**: PR #1216, branch `feat/TASK-466-b-routines`, testi approvati,
+  `main` unito e schermate fatte il 2026-11-12 pomeriggio da una
+  sessione nuova (`out/TASK-466/b/`; punti 4 e 5 qui sopra). Manca il sì
+  dell'utente sulle schermate, poi togliere la bozza e «#1216 pronta»
+  con lo SHA. Ricetta del simulatore (un file di prova che monta la
+  schermata come `App.tsx`, cioè la smonta all'uscita: è così che si
+  vede il difetto del punto 4). Ricetta che ha funzionato per A: `metro.config.js` non tracciato con
   `watchFolders` sul `node_modules` del checkout principale, un
   `index.ts` temporaneo che monta la schermata, Metro con `CI=1` su una
   porta propria, iPhone 17e con Expo Go; alla fine tutto via e

@@ -109,6 +109,21 @@ export function span(pose: Pose): { back: number; front: number } {
   return { back, front };
 }
 
+/** How far a pose may reach from the hip, forward or back, and still be
+ * whole on a narrow phone, in shares of the height. */
+export const REACH = 0.46;
+
+/**
+ * How far back the whole figure slides in `pose` so that its hands stay on
+ * the screen, in shares of the height (negative: forward). The hip is in
+ * the middle of the screen; a pose that reaches further than `REACH` from
+ * it (child's pose, the arms long on the floor) would be cut at the edge.
+ */
+export function drift(pose: Pose): number {
+  const { back, front } = span(pose);
+  return Math.max(0, front - REACH) - Math.max(0, -back - REACH);
+}
+
 /** Standing, arms by the sides, feet forward: where every exercise starts. */
 export const STAND: Pose = {
   torso: 180,

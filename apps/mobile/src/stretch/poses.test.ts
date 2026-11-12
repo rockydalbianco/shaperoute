@@ -7,6 +7,7 @@ import {
   CHEST,
   CHILD,
   deepen,
+  drift,
   FORWARD_FOLD,
   GLUTE,
   grounding,
@@ -18,6 +19,7 @@ import {
   OVERHEAD_REACH,
   type Pose,
   QUAD,
+  REACH,
   SEGMENTS,
   SHOULDER,
   span,
@@ -196,6 +198,22 @@ describe("the ten stretches of the routines", () => {
       }
       expect(Math.abs(grounding(deep) - grounding(exercise.pose))).toBeLessThan(0.1);
     }
+  });
+
+  it("slide back only to stay on the screen: child's pose, and no other", () => {
+    for (const exercise of [...EXERCISES, ...MORE_EXERCISES]) {
+      const deep = deepen(exercise.pose, exercise.breath ?? {});
+      const slid = drift(exercise.pose);
+      expect(slid === 0).toBe(exercise.pose !== CHILD);
+      for (const pose of [exercise.pose, deep]) {
+        const { back, front } = span(pose);
+        // Half a narrow phone is about half the figure's height.
+        expect(front - slid).toBeLessThan(0.48);
+        expect(back - slid).toBeGreaterThan(-0.48);
+      }
+    }
+    expect(drift(CHILD)).toBeCloseTo(span(CHILD).front - REACH, 6);
+    expect(drift(STAND)).toBe(0);
   });
 
   it("keep the standing ones on both feet, the head up", () => {

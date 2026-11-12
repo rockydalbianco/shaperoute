@@ -83,6 +83,29 @@ nel Feed non sarebbe comparsa. L'utente: «Sì, Everyone», e al Coordinatore
 apps/mobile/src/activities/RunEnd.tsx            (in più, approvato)
 ```
 
+**Privacy, testo approvato dall'utente il 2026-11-12** («Approvo il
+testo»), scritto col turno del Coordinatore («turno privacy tuo»):
+
+- dopo «A saved run is private unless you choose otherwise: only your
+  account sees it.»: «An activity you add with the «+» of the Feed is the
+  exception: it starts on «Everyone», which you see before «Save» and can
+  change.»;
+- «only after you choose «Everyone» or «Followers» under «Who can see
+  it»» diventa «only when «Everyone» or «Followers» is chosen under «Who
+  can see it» when you save it»;
+- l'ultima frase, nella privacy e nell'aiuto: «An activity added from a
+  file in «My activities» starts on «Only me»; one added with the «+» of
+  the Feed starts on «Everyone», and you can change it before «Save».»
+
+Italiano approvato insieme; tedesco, francese e spagnolo sullo stesso
+modello. Data della privacy: 12 November 2026, se la PR arriva a «pronta»
+oggi; altrimenti il giorno del merge, coi tre test che la citano.
+
+```
+apps/mobile/src/about/content/{en,it,de,fr,es}.ts   (turno privacy)
+site/privacy/**/index.html                           (rigenerate con make_privacy.mjs)
+```
+
 ## Proposte per dopo (nessun codice senza il sì dell'utente e la lista dei file)
 
 1. **«Photos only»**: post di sole foto, anche da Instagram — è TASK-312 C

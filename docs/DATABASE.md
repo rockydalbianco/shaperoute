@@ -1065,6 +1065,29 @@ la `0072` di TASK-467 B1):
   live e sull'account, quindi va via con la riga vuota della live, un
   giorno dopo la fine. Nessuna posizione. Test in `test_live_shares.py`.
 
+Migrazione `0075_planned_lives.sql` (TASK-468 parte A2a, ADR-0381, `API.md`
+«Le live programmate e la fila «Live» del Feed»; il numero è del
+Coordinatore, dopo la `0074` di TASK-455 A):
+
+- **`planned_lives`**: una live programmata. `owner_id` (`CASCADE` su
+  `users`), `activity`, `title` (1–60), `starts_at`, `audience_feed`
+  (`followers`/`everyone`), `heart_visible`, `created_at`, `updated_at`,
+  `post_id` (il post che è diventata, `SET NULL` su `drawings`). Indice
+  `(owner_id, starts_at, id)` per la fila e il profilo.
+- **`planned_live_reminders`**: «Remind me» (`planned_live_id`, `user_id`,
+  `created_at`), chiave sulla coppia; `CASCADE` sulla live e sull'account.
+- **`live_shares.planned_live_id`**: la live programmata che la
+  condivisione ha fatto partire (`SET NULL`). Il legame va dalla
+  condivisione alla programmata e non al contrario: i dati di
+  `live_shares` restano fuori dalle copie notturne, e una chiave da una
+  tabella copiata a una lasciata fuori ne romperebbe il ripristino.
+  Indici: `live_shares_planned` e `live_shares_in_feed` (`user_id,
+  created_at` delle live con `audience_feed` diverso da `none`).
+- **Le copie notturne**: `planned_lives` e `planned_live_reminders`
+  restano nelle copie, come le corse di gruppo: niente posizioni, e
+  nessuna chiave verso tabelle lasciate fuori. Test in
+  `test_planned_lives.py`.
+
 Migrazione `0054_ski_resorts.sql` (TASK-406 parte A, ADR-0338, `API.md`
 «Ski resorts»; il numero è del Coordinatore):
 
@@ -1267,6 +1290,24 @@ merge):
   JOIN sleep_nights n ON n.id = r.sleep_night_id WHERE r.user_id = … ORDER
   BY r.started_at`.
 - Nessuna riga di prima cambia, nessun backfill. Test in `test_sleep.py`.
+
+Migrazione `0074_message_post.sql` (TASK-455 parte A, ADR-0382, `API.md`
+«Un post in un messaggio»; il numero è il primo libero in `main` al merge,
+dato dal Coordinatore):
+
+- `messages.attachment` accetta anche `post` (`messages_attachment_check`
+  rifatto).
+- `messages.post_id` (`uuid`, `REFERENCES drawings (id) ON DELETE SET
+  NULL`): il disegno a cui il messaggio rimanda. **Solo l'id**: la scheda
+  si legge da `drawings` a ogni pagina, con `drawing_seen_sql` di chi
+  chiede, e niente del disegno è copiato nel messaggio (`drawing` e
+  `drawing_card` restano `NULL`). Cancellato il disegno (con la corsa o
+  con l'account dell'autore) la colonna torna `NULL` e il messaggio resta,
+  con `attachment` `post`: «non più disponibile». `messages_post_check`:
+  un `post_id` solo con `attachment = 'post'`.
+- `messages_of_post`: l'indice parziale dei messaggi che rimandano a un
+  disegno, per il `SET NULL` quando si cancella. Test in
+  `test_message_posts.py`.
 
 ## Come si memorizza una traccia
 

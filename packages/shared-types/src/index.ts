@@ -1122,16 +1122,28 @@ export const CYCLING_BEST_DISTANCES = [
 /** On inline skates (TASK-380, ADR-0324): a run's races, bests of their own. */
 export const INLINE_SKATING_BEST_DISTANCES = ["5k", "10k", "half", "marathon"] as const;
 
+/** In a wheelchair or pushing a stroller (TASK-414, ADR-0343, the user's
+ * choice 7): bests of its own over 1 and 5 km. */
+export const WHEELCHAIR_BEST_DISTANCES = ["1k", "5k"] as const;
+
 /**
  * The fastest stretch of a distance inside any run of the account, private
  * ones too (TASK-368): moving seconds, the pauses left out.
  */
 export interface PersonalBest {
-  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322), and
-   * a skate's (TASK-380, ADR-0324). */
-  sport: "running" | "cycling" | "gravel_biking" | "mountain_biking" | "inline_skating";
+  /** A gravel or an MTB ride's bests are their own (TASK-378, ADR-0322), a
+   * skate's (TASK-380, ADR-0324) and a wheelchair's (TASK-414, ADR-0343). */
+  sport:
+    | "running"
+    | "cycling"
+    | "gravel_biking"
+    | "mountain_biking"
+    | "inline_skating"
+    | "wheelchair";
   distance:
-    (typeof RUNNING_BEST_DISTANCES)[number] | (typeof CYCLING_BEST_DISTANCES)[number];
+    | (typeof RUNNING_BEST_DISTANCES)[number]
+    | (typeof CYCLING_BEST_DISTANCES)[number]
+    | (typeof WHEELCHAIR_BEST_DISTANCES)[number];
   distance_m: number;
   seconds: number;
   /** When the run it was made in began: its day. */
@@ -2668,11 +2680,13 @@ export interface MessageDrawing {
 /**
  * A message's attachment: a photo or video sent first with POST
  * /me/message-media (the file's bytes as the body, Content-Type image/jpeg,
- * image/png, video/mp4 or video/quicktime), or a drawing. One of the two.
+ * image/png, video/mp4 or video/quicktime), a drawing, or a post (TASK-455).
+ * One of them.
  */
 export type MessageAttachmentRequest =
-  | { media_id: string; drawing?: undefined }
-  | { drawing: MessageDrawing; media_id?: undefined };
+  | { media_id: string; drawing?: undefined; post_id?: undefined }
+  | { drawing: MessageDrawing; media_id?: undefined; post_id?: undefined }
+  | MessagePostRequest;
 
 /** POST /me/message-media (201): the file kept, to send within the hour. */
 export interface MessageMedia {
@@ -2715,11 +2729,61 @@ export interface MessageAttachment {
   /** A video MESSAGE_VIDEO_DAYS after its message: «This video has expired.» */
   expired: boolean;
   drawing: MessageDrawingCard | null;
+  /** A post's card (TASK-455), with the kind MESSAGE_POST_KIND; null for
+   * any other attachment, and for a post who asks may not open, or gone:
+   * «This post is no longer available.» Absent from an API of before. */
+  post?: MessagePostCard | null;
+}
+
+// --- A post in a private message (TASK-455, ADR-0382) ---
+
+/**
+ * The kind of an attachment that is a post: a pointer to a drawing somebody
+ * published, never a copy. Only an app that says READS_MESSAGE_POST receives
+ * it, so it is not among MESSAGE_ATTACHMENT_KINDS, which every app that asks
+ * `?with=attachments` reads; the others read «[Post]» before the text.
+ */
+export const MESSAGE_POST_KIND = "post";
+/** Said in the header X-MuW-Reads, among the kinds the app reads, by an app
+ * that shows a post attached. An API of before leaves it out. */
+export const READS_MESSAGE_POST = "post";
+
+/** A post to send: the id of a drawing who sends sees. 404 for one it does
+ * not see; 422 for its own that only it sees. */
+export interface MessagePostRequest {
+  post_id: string;
+  media_id?: undefined;
+  drawing?: undefined;
+}
+
+/**
+ * A post as the conversation shows it to who asks. The API answers it at
+ * every reading only while who asks may open the post itself (who can see
+ * it, a follow accepted, no block): nothing of it is kept in the message.
+ * GET /drawings/{id} has it whole.
+ */
+export interface MessagePostCard {
+  /** The drawing's. */
+  id: string;
+  author: Person;
+  /** Its owner's; null: none. */
+  title: string | null;
+  shape: string | null;
+  word: string | null;
+  style: string | null;
+  /** As in a drawing: what its route draws without a shape or a word. */
+  route_title: string | null;
+  distance_m: number;
+  activity: string;
+  rotation_deg: number | null;
+  /** At most 64 points of its line; none for a post without one. */
+  preview: LatLon[];
 }
 
 /**
  * What may be attached in a conversation now. "video" leaves while the
- * server is full of them (POST /me/message-media is then 507).
+ * server is full of them (POST /me/message-media is then 507). An app that
+ * says READS_MESSAGE_POST also finds MESSAGE_POST_KIND here (TASK-455).
  */
 export interface AttachmentsAllowed {
   kinds: MessageAttachmentKind[];

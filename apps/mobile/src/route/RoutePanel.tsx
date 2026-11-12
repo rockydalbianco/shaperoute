@@ -57,6 +57,7 @@ import { type Pace, runTimeText } from "./runTime";
 import { ShapeGrid } from "./ShapeGrid";
 import { ShapePreview } from "./ShapePreview";
 import { shapeList, shapeName } from "./shapeWords";
+import { shapeOfSport } from "./sportDraw";
 import type { ExportState } from "./useGpxExport";
 import type { ImageState } from "./useImageOutline";
 import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
@@ -183,20 +184,31 @@ export function RouteChoice({
   // A swim draws a shape or a drawing, never a word (TASK-323); paddling
   // neither a word nor an image (TASK-191, TASK-396): one chosen before
   // waits for another sport, as App.tsx asks. Each sport says it in src/sports.
-  const { noWords = false, noImages = false, drawNote, timeAt } = profileOf(activity);
+  // A wheelchair draws only a circle, a heart, a star or a moon (TASK-414):
+  // no other shape, none typed, no drawing by hand; a shape chosen before
+  // that is not one of them waits for another sport, as App.tsx asks.
+  const {
+    noWords = false,
+    noImages = false,
+    drawNote,
+    timeAt,
+    shapes,
+  } = profileOf(activity);
   const left = (value: ChoiceKind) =>
     (noWords && value === "word") || (noImages && value === "image");
   const shownKind = left(kind) ? "shape" : kind;
   const kinds = DRAW_KINDS.filter((option) => !left(option.value));
+  const shownShape = shapeOfSport(shape, activity);
+  const freehand = shapes === undefined ? onFreehand : undefined;
   return (
     <View style={styles.panel}>
       {/* The steps of «Draw» (TASK-361): «1 START» is the start's card. */}
       <StepTitle number={2} label={t("WHAT YOU DRAW")} />
       {drawNote !== undefined && <Text style={styles.note}>{t(drawNote)}</Text>}
       <Segmented<ChoiceKind | "freehand">
-        options={translated(onFreehand ? [FREEHAND, ...kinds] : kinds)}
+        options={translated(freehand ? [FREEHAND, ...kinds] : kinds)}
         value={shownKind}
-        onChange={(value) => (value === "freehand" ? onFreehand?.() : onKind(value))}
+        onChange={(value) => (value === "freehand" ? freehand?.() : onKind(value))}
         style={styles.kinds}
       />
       {shownKind === "shape" ? (
@@ -204,19 +216,21 @@ export function RouteChoice({
           {/* Two rows, nothing cut at the edge (TASK-361); the field for a
               shape out of the catalogue behind «Type another shape», the
               user's choice of 2026-10-30. */}
-          <ShapeGrid chosen={shape} onPick={onShapeText} />
-          <OtherShapeField
-            text={shapeText}
-            shape={shape}
-            onText={onShapeText}
-            onDone={onShapeDone}
-          >
-            <ShapeNote text={shapeText} shape={shape} reading={reading} />
-          </OtherShapeField>
-          {shape !== null && distanceM !== null && (
-            <ShapePreview shape={shape} distanceM={distanceM} />
+          <ShapeGrid chosen={shownShape} onPick={onShapeText} shapes={shapes} />
+          {shapes === undefined && (
+            <OtherShapeField
+              text={shapeText}
+              shape={shape}
+              onText={onShapeText}
+              onDone={onShapeDone}
+            >
+              <ShapeNote text={shapeText} shape={shape} reading={reading} />
+            </OtherShapeField>
           )}
-          {onPenUp && !isOnWater(activity) && offersPenUp(shape) && (
+          {shownShape !== null && distanceM !== null && (
+            <ShapePreview shape={shownShape} distanceM={distanceM} />
+          )}
+          {onPenUp && !isOnWater(activity) && offersPenUp(shownShape) && (
             <PenSwitch
               label={t("Lift the pen between parts")}
               on={penUp}
@@ -933,17 +947,29 @@ function Problem({
           <Text style={styles.secondaryText}>{tryText(tryDistanceM, units)}</Text>
         </Pressable>
       )}
-      {pickShape && onPickShape && <ShapeChoices onPick={onPickShape} />}
+      {pickShape && onPickShape && (
+        <ShapeChoices
+          onPick={onPickShape}
+          shapes={activity === undefined ? undefined : profileOf(activity).shapes}
+        />
+      )}
       {detail && <Text style={styles.detail}>{detail}</Text>}
     </View>
   );
 }
 
-/** The shapes of the catalogue, each writing itself in the shape field. */
-function ShapeChoices({ onPick }: { onPick: (shape: Shape) => void }) {
+/** The shapes of the catalogue, each writing itself in the shape field; a
+ * sport's own when it has them (TASK-414). */
+function ShapeChoices({
+  onPick,
+  shapes = SHAPES,
+}: {
+  onPick: (shape: Shape) => void;
+  shapes?: readonly Shape[];
+}) {
   return (
     <View style={styles.choices}>
-      {SHAPES.map((shape) => (
+      {shapes.map((shape) => (
         <Pressable
           key={shape}
           style={[styles.secondary, styles.chip]}

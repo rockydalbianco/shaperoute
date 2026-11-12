@@ -15,6 +15,14 @@ import { useReduceMotion } from "./useReduceMotion";
 /** How dark the screen behind a `dim` sheet gets, open. */
 export const SHEET_DIM_OPACITY = 0.5;
 
+/**
+ * How much of the way up a closing sheet has left when it is out of sight:
+ * a tenth of the screen. Its top is then nine tenths of the screen below
+ * where it stood, so a sheet lower than that is gone; the dark behind is
+ * at a twentieth.
+ */
+export const SHEET_GONE = 0.1;
+
 type Props = {
   visible: boolean;
   /** Android's back, as the Modal's own. */
@@ -35,8 +43,8 @@ type Props = {
  * instead of the fixed curve of `animationType="slide"`. Closed half way up,
  * it goes back down from where it is, with its speed; opened again on its
  * way down, it comes back up, with its content new. The Modal stays until
- * the sheet is down, so `visible` false plays the way out; `onHidden`
- * follows it. While it goes, its buttons take no more touches. With `dim`
+ * the sheet is out of sight, so `visible` false plays the way out; `onHidden`
+ * follows it, and a touch right after reaches the screen under it. While it goes, its buttons take no more touches. With `dim`
  * the screen behind darkens where it is, with the sheet's own spring, and
  * does not slide (C2). With «Reduce Motion» it only fades.
  */
@@ -77,13 +85,39 @@ export function SheetModal({
     }
     const to = visible ? 1 : 0;
     const move = still ? fadeTo(up, to) : springTo(up, to, "smooth");
-    move.start(({ finished }) => {
-      if (finished && !visible) {
+    let done = false;
+    const gone = () => {
+      if (!done) {
+        done = true;
         setShown(false);
         hidden.current?.();
       }
+    };
+    // The Modal takes every touch while it is there, seen or not: on its way
+    // down it goes as soon as the sheet is out of sight, not when the spring
+    // rests, a long while later (TASK-470: 573 ms, the taps in between lost).
+    const watching =
+      !visible && !still
+        ? up.addListener(({ value }) => {
+            if (value <= SHEET_GONE && !done) {
+              // Done first: the value set to 0 calls this again.
+              gone();
+              move.stop();
+              up.setValue(0);
+            }
+          })
+        : null;
+    move.start(({ finished }) => {
+      if (finished && !visible) {
+        gone();
+      }
     });
-    return () => move.stop();
+    return () => {
+      if (watching !== null) {
+        up.removeListener(watching);
+      }
+      move.stop();
+    };
   }, [visible, shown, still, up]);
 
   const look = still

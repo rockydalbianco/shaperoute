@@ -1,13 +1,6 @@
 import type { Session } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AboutScreen } from "../about/AboutScreen";
@@ -34,6 +27,8 @@ import {
 import { GuideRow } from "../tour/GuideRow";
 import { tourTexts } from "../tour/tourTexts";
 import { askTour } from "../tour/useTour";
+import { useBackCloses } from "../ui/backLayers";
+import { EdgeKeyboardAvoidingView, useEdgeBack } from "../ui/EdgeBack";
 import { SignInScreen } from "./SignInScreen";
 
 type Notice = { text: string; tone: "warning" | "muted" };
@@ -125,6 +120,19 @@ export function ProfileScreen({
   const under = isAboutId(page) ? (page === "help" ? helpFrom : "settings") : page;
   // A page of the account is one step into «Profile»: back goes to it first.
   const inside = !signedOut && under !== "account";
+  // Android's «back» is the «←» on screen: a text of «ABOUT», a page of the
+  // account, then «Profile» itself when it has one.
+  const aboutBack = () => onPage(about === "help" ? helpFrom : "settings");
+  useBackCloses(
+    about !== null || inside || onBack !== undefined,
+    about !== null ? aboutBack : inside ? () => onPage("account") : () => onBack?.(),
+  );
+  // On iOS, from the left edge, the pages inside «Profile» only: «Profile»
+  // itself can be a tab, where a finger from the edge goes to the tab before.
+  const edge = useEdgeBack(
+    about !== null ? aboutBack : () => onPage("account"),
+    about !== null || inside,
+  );
   // Out of the account from «Settings» or «Edit profile»: who comes back in
   // finds «Profile».
   useEffect(() => {
@@ -133,10 +141,12 @@ export function ProfileScreen({
     }
   }, [signedOut, page, onPage]);
   return (
-    <KeyboardAvoidingView
-      style={[StyleSheet.absoluteFill, styles.screen]}
+    <EdgeKeyboardAvoidingView
+      style={[StyleSheet.absoluteFill, styles.screen, edge.style]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
+      {...edge.handlers}
     >
+      {edge.shade}
       <SightScrollView
         style={about !== null && styles.hidden}
         contentContainerStyle={[
@@ -226,7 +236,7 @@ export function ProfileScreen({
       {about !== null && (
         <AboutScreen
           id={about}
-          onBack={() => onPage(about === "help" ? helpFrom : "settings")}
+          onBack={aboutBack}
           // Named as the row that opened it.
           name={
             about === "help" && helpFrom === "account" ? tourTexts().guide : undefined
@@ -242,7 +252,7 @@ export function ProfileScreen({
           }
         />
       )}
-    </KeyboardAvoidingView>
+    </EdgeKeyboardAvoidingView>
   );
 }
 

@@ -1263,6 +1263,12 @@ palestra (`gym`, TASK-385) non ha traccia: passa solo a chi dice **sia**
 `gym` **sia** `trackless`; l'app lo dirà con la parte B0, insieme alle
 schermate che mostrano un post senza linea.
 
+Nello stesso header un'app dice **`post`** quando sa mostrare un post
+allegato a un messaggio (TASK-455, ADR-0382, «Un post in un messaggio»,
+sotto). Non è un tipo di corsa: lo legge `messages.py`, non `reads.py`.
+Senza, il messaggio arriva con «[Post]» davanti al testo e `attachment`
+`null`.
+
 ### Una parola invece di una forma (TASK-056)
 
 Un `RouteRequest` ha `shape` **oppure** `word`: l'altro manca o è `null`.
@@ -3468,6 +3474,51 @@ esempio in `fixtures/live-share-send-request.json`.
   `heart_visible`; un'app di prima non li legge. Il log non scrive
   posizioni (test in `test_live_shares.py`).
 
+#### Le live programmate e la fila «Live» del Feed (TASK-468 parte A2a, ADR-0381)
+
+Una live fatta in anticipo, una gara per esempio: sport, titolo, giorno e
+ora, chi la segue (`followers` o `everyone`) e se vede il battito. Il codice
+in `planned_lives.py`, montato da `install_live_shares`; tipi in
+`plannedLive.ts` (`PlannedLiveRequest`, `PlannedLiveChange`,
+`PlannedLiveStart`, `PlannedLivePost`, `LiveItem`, `LivesPage`), esempi in
+`fixtures/planned-live-request.json`, `planned-live.json`,
+`lives-page.json`. Tutti vogliono il token d'account.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /me/planned-lives` | `activity`, `title` (1–60, una riga, filtro dei commenti), `starts_at` (da adesso a 60 giorni), `audience_feed` (default `followers`), `heart_visible` (default `false`) | `201` `LiveItem`; `422` oltre 10 non finite |
+| `GET /me/planned-lives` | le mie non finite e non pubblicate, la più vicina prima, con `can_start` | `200` `LiveItem[]` |
+| `PUT /me/planned-lives/{id}` | cambia quello che si dà, solo prima della partenza | `200` `LiveItem`; `404`; `422` se è partita |
+| `DELETE /me/planned-lives/{id}` | la toglie coi promemoria; una live partita va avanti per conto suo | `204`; `404` |
+| `POST /me/planned-lives/{id}/start` | la sua live: da un'ora prima a tre ore dopo, col suo pubblico e il suo battito; senza link se non lo si chiede (`link`) | `201` `LiveShareCreated`; `404`; `422` fuori dalle ore o se è già in corso |
+| `PUT /me/planned-lives/{id}/post` | `drawing_id`: il post che è diventata (scelta 5) | `204`; `404` per un post non suo |
+| `GET /planned-lives/{id}` | una live programmata, anche finita (`ended`) | `200` `LiveItem`; `404` a chi non può |
+| `PUT` / `DELETE /planned-lives/{id}/reminder` | «Remind me» o no: due volte è una | `204`; `404`; `422` se è già partita (solo `PUT`) |
+| `GET /lives?limit=&cursor=` | la fila del Feed | `200` `LivesPage` |
+| `GET /users/{public_id}/lives` | le live non finite di un profilo che chi chiede può vedere | `200` `LiveItem[]`; `404` come il profilo |
+
+- **Chi vede**: il proprietario; gli altri se non sono lontani per un
+  blocco (dei due versi) o un nascosto, e se la live è `everyone` o lo
+  seguono. A chi non può, `404`, mai `403`.
+- **La fila** (scelta 7 dell'utente): solo le proprie e quelle di chi si
+  segue, **mai quelle di uno sconosciuto**, anche `everyone` (quelle si
+  aprono dal profilo o da un link). Ci sono le programmate e le live messe
+  nel Feed senza programmarle (`audience_feed` di `POST /me/live-shares`,
+  scelta 6). Prima quelle in corso (anche `finished` per l'ora del
+  riepilogo), l'ultima partita prima; poi le programmate, la più vicina
+  prima. A pagine: `limit` 1–50, `next` è il `cursor` della pagina dopo.
+  Escono: una programmata mai partita tre ore dopo la sua ora, una live
+  fermata o scaduta, una programmata diventata post.
+- **`LiveItem`**: `id` è quello della programmata, o della live per una
+  messa nel Feed senza programmarla (`planned_live_id` `null`); `share_id`
+  c'è solo mentre è in corso o finita da meno di un'ora, e apre `GET
+  /live-shares/{id}`; `state` è `planned`, `live`, `paused`, `finished`
+  o `ended`; `distance_m` e `duration_s` sono gli ultimi numeri, per la
+  scheda; `reminded` è il «Remind me» di chi chiede; `can_start` vale
+  solo per il proprietario.
+- **«Remind me»** tiene solo chi vuole l'avviso: la push alla partenza
+  arriva con la parte A2b. Test in `test_planned_lives.py`.
+
 ### Run stats (TASK-410 parte C, ADR-0340)
 
 I dati della pagina del post oltre a metri e tempo: passi, profilo del
@@ -4047,6 +4098,52 @@ post, ADR-0292); tipi `MessageAttachmentRequest`, `MessageDrawing`,
   l'app non mostra il «+». Un server senza la cartella (`--media-dir`, di
   solito `data/media`) risponde `404` agli endpoint dei file e offre solo
   i disegni.
+
+#### Un post in un messaggio (TASK-455, ADR-0382)
+
+Un quarto allegato, `post`: **un rimando a un disegno pubblicato, mai una
+copia** (scelte dell'utente del 2026-11-12). Il messaggio tiene l'id del
+disegno e nient'altro: né linea, né titolo, né autore. Nessun endpoint
+nuovo: sono quelli dei messaggi. Tipi in `shared-types`
+(`MessagePostRequest`, `MessagePostCard`, `MESSAGE_POST_KIND`,
+`READS_MESSAGE_POST`), esempio in `fixtures/message-post.json`; il codice
+nel blocco «A post attached» di `messages.py`, la migrazione
+`0074_message_post.sql` (`DATABASE.md`).
+
+- **Mandare**: `POST /conversations/{public_id}/messages` con
+  `attachment: { "post_id": "<id del disegno>" }`, da solo: con `media_id`
+  o `drawing` è `422`. Come ogni allegato solo in una conversazione `open`
+  (`409` in una richiesta), col testo facoltativo. **Chi manda deve vedere
+  il disegno** (`drawings.drawing_seen_sql`): altrimenti `404 http_error`
+  «No drawing with this id.», uguale a un id che non c'è. Un proprio
+  disegno `only_me` è `422 invalid_request` «Only you can see this post:
+  choose who can see it, then send it.». Un post «Followers» si manda: lo
+  apre solo chi segue l'autore.
+- **Leggere: i permessi sono di chi legge, a ogni lettura.** In `GET
+  …/messages`, in `GET /me/conversations` e nella risposta del `POST`
+  l'allegato ha `kind: "post"` e `post`: la scheda (`MessagePostCard`:
+  `id` del disegno, `author` come `Person`, `title`, `shape`, `word`,
+  `style`, `route_title`, `distance_m`, `activity`, `rotation_deg`,
+  `preview` di al più 64 punti) **solo se chi chiede può aprire il post in
+  quel momento**, con la stessa domanda di `GET /drawings/{id}`:
+  visibilità, follow accettato, nessun blocco nei due versi, niente di
+  nascosto, e uno sport che la sua app legge. Altrimenti `post` è `null`:
+  l'app dice «This post is no longer available.». Vale anche per chi l'ha
+  mandato. Niente è tenuto nel messaggio, quindi cambiare «Who can see
+  it», smettere di seguire, bloccare o cancellare agiscono dalla lettura
+  dopo. Un post cancellato lascia il messaggio, con `post` `null` per
+  sempre. Il post intero si apre con `GET /drawings/{id}`.
+- **Chi lo riceve**: solo un'app che dice `post` in `X-MuW-Reads` (sopra,
+  «Quello che un'app sa leggere»). Le app di prima chiedono già
+  `?with=attachments` e non conoscono questo tipo: a loro, e a chi non
+  chiede gli allegati, il testo arriva con davanti «[Post]» e `attachment`
+  è `null`. `MessagesPage.attachments.kinds` ha `post` solo per chi lo
+  legge: l'app sa così che il server lo accetta.
+- **La push**: «{name}: 🗺️ Post» nelle cinque lingue, o «{name}: 🗺️
+  {text}» con un testo. Mai il titolo o l'autore del post: chi la riceve
+  può non essere tra quelli che lo vedono.
+- **Un'API di prima** ignora `post` nell'header e rifiuta `post_id` con
+  `422` (campo in più).
 
 ### Shape game (TASK-296, ADR-0255)
 

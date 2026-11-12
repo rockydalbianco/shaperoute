@@ -66,6 +66,7 @@ Le righe qui sotto che dicono «ADR-…» vogliono dire questo.
 | Le forme candidate e quelle approvate: `candidate_outlines/`, `tools/draw_new_shapes.py` (`APPROVED`), `ZONE_SHAPES` | `tasks/TASK-418.md`, ADR-0346 e la precisazione B, ADR-0036 |
 | Aggiungere uno sport, il banco `tools/sport_bench/` | `sports/README.md`, `sports/COME-AGGIUNGERE.md`, `sports/CONDIVISO.md`, ADR-0320 |
 | Uno sport in particolare (corsa, bici, canoa, hike, gravel, roller, gym, skimo, wheelchair, snowshoes) | `sports/<sport>.md` e il suo task file se aperto |
+| L'alpinismo registrato senza percorso; uno sport sul server prima del contratto (`SERVER_FIRST`) | `tasks/TASK-463.md`, ADR-0373, ADR-0319, `sports/COME-AGGIUNGERE.md` |
 | La carrozzina e il passeggino: la rete `wheel`, le sole forme di un'attività (`Activity.shapes`) | `sports/wheelchair.md`, `tasks/TASK-414.md`, ADR-0343 e la sua precisazione A |
 | Nuoto in piscina: calorie, battito e zone | `tasks/TASK-409.md`, ADR-0318, ADR-0334 |
 | Walk, nuoto in acque libere | `ROUTE_ENGINE.md` (le reti, §8), `tasks/TASK-371.md` |

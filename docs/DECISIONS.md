@@ -548,8 +548,55 @@ lasciando le righe d'indice.
 - ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
 - ADR-0380, precisazione B1b/B2 — Il sonno nel post: un campo `sleep` nel disegno visto al posto di una richiesta per riga; nell'app tutto dietro `SLEEP_POSTS_ON` e nessun lettore di Salute in `main`; al server solo con l'interruttore acceso e un post che altri vedono · 2026-11-12 · Attiva
 - ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla · 2026-11-12 · Attiva
+- ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`) · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0373 — L'alpinismo registrato senza percorso; la parte A solo sul server, prima del contratto, con la deroga in una costante (`SERVER_FIRST`)
+
+**Stato**: Attiva · 2026-11-12 · TASK-463 parte A in `main` (#1242,
+`f8d91aba`), sul server col passo 12 del Coordinatore (col sì
+dell'utente). Lo sport è una scelta dell'utente dell'11 novembre 2026,
+durante TASK-462 («alpinismo: sì, registrato senza percorso»); il modo è
+deciso dall'agente su delega dell'utente, la strada «solo server» dal
+Coordinatore; numeri dal Coordinatore.
+
+**Contesto**: l'alpinismo (roccia, neve, ghiaccio) non ha una forma da
+disegnare: è come lo scialpinismo (ADR-0344) e il parapendio (ADR-0375),
+sport «Record only» (ADR-0319). La ricetta (`sports/COME-AGGIUNGERE.md`)
+vuole nella parte A anche il contratto e il profilo nascosto nell'app:
+un'attività in `shared-types` finisce subito in `X-MuW-Reads` e i test
+dell'app chiedono un profilo. Ma `sports/**` e `settings/sport.ts`
+erano occupati da TASK-414 B e TASK-413 B.
+
+**Decisione**:
+- **`alpinism` è uno sport del registro dell'API**, `record_only`, dopo
+  `paragliding` e prima di `gym` (`RunActivity`, `API_SPORTS`,
+  `NEWER_ACTIVITIES`). Niente percorsi, record personali, gioco o zone.
+- **Strava «Hike», GPX `<type>alpinism</type>`**: Strava non ha
+  l'alpinismo. Sono valori tecnici che l'utente può cambiare con una riga
+  in `sports/alpinism.py`.
+- **La migrazione `0076_alpinism.sql`** allarga solo
+  `runs_activity_check`, rileggendolo come la `0069`.
+- **Prima il server, poi il contratto**: `packages/shared-types` non
+  cambia. Così nessuna app lo dice in `X-MuW-Reads` e nessuna riceve una
+  giornata di alpinismo. La deroga sta in **una costante sola**,
+  `SERVER_FIRST` in `services/api/tests/test_sport_registry_api.py`, e i
+  test che tengono l'API al contratto leggono le sue liste con
+  `in_the_contract`. **La toglie la parte app**, che porta insieme il
+  contratto e il profilo nascosto.
+- `engine.zip` si rifà, perché il registro degli sport va sul telefono.
+
+**Alternative scartate**:
+- *Come il parapendio (#1177)*, cioè contratto e profilo nascosto
+  nell'app nella stessa PR: tocca `sports/**`, `watch/**` e
+  `PublicParts.tsx`, occupati da altri task.
+- *Aspettare TASK-414 B e TASK-413 B*: il server sarebbe rimasto fermo.
+
+**Conseguenze**: il calendario delle attività (ADR-0372) accetta già
+`sport=alpinism`. L'orologio della build 14 non ha l'alpinismo: arriva con
+una build nuova dell'orologio, dopo la parte app. I controlli dopo il passo
+sono in `out/TASK-463/SERVER-A.md`; i dettagli in `tasks/TASK-463.md`.
 
 ## ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla
 

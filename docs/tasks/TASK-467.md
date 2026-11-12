@@ -1,6 +1,6 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b scritta** (#1244: palestra e vasca, spenta: la unisce il Coordinatore), poi B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server dal 2026-11-12 (passo 10)) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 in `main`** (#1236, `627767a5`: app, il sonno nel post, spenta da `SLEEP_POSTS_ON`) · **B2b in `main`** (#1244, `bb3d3457`: palestra e vasca, spenta), poi B3 (app, la scheda «Sleep» del profilo), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
 `feat/TASK-467-b1b-sleep-in-feed` (B1b), `feat/TASK-467-b2-sleep-post` (B2),
@@ -13,7 +13,8 @@ da Salute dopo un tocco»)
 («Accedi con Apple»: la stessa build nativa, dopo la 1.1.0)
 **ADR**: ADR-0379 (la formula e le soglie), ADR-0380 (dove sta il sonno sul
 server e il contratto: con B1), ADR-0380 precisazione B1b/B2 (il campo
-`sleep` nel disegno visto, e come l'app resta spenta)
+`sleep` nel disegno visto, e come l'app resta spenta), ADR-0380
+precisazione B2b (palestra e vasca)
 
 ## Obiettivo
 
@@ -642,3 +643,10 @@ non toccati.
   palestra e a fine vasca, la coda che aspetta anche loro; spenta come B2.
   Restano: il merge del Coordinatore, B1b sul server col passo dopo quello
   dell'aggiornamento completo, la prova nel simulatore al turno; poi B3.
+- **2026-11-12, B2b in `main`**: #1244 unita dal Coordinatore a CI verde
+  (`bb3d3457`), spenta; le scelte in `DECISIONS.md`, «ADR-0380,
+  precisazione B2b». Restano: B1b sul server col passo dopo quello
+  dell'aggiornamento completo (col sì dell'utente), la prova nel simulatore
+  al turno. Prossima **B3**, la scheda «Sleep» del profilo, in una sessione
+  nuova: parte da «Da sapere per B2b, B3 e C» e manda prima la lista dei
+  file al Coordinatore (`profile/**` è di TASK-457 finché non lo libera).

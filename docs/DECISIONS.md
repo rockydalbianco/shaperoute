@@ -548,8 +548,43 @@ lasciando le righe d'indice.
 - ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
 - ADR-0380, precisazione B1b/B2 — Il sonno nel post: un campo `sleep` nel disegno visto al posto di una richiesta per riga; nell'app tutto dietro `SLEEP_POSTS_ON` e nessun lettore di Salute in `main`; al server solo con l'interruttore acceso e un post che altri vedono · 2026-11-12 · Attiva
 - ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla · 2026-11-12 · Attiva
+- ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0380, precisazione B2b — Il sonno a fine palestra e a fine vasca: lo stesso interruttore di B2, e la notte aspetta l'attività nella coda sua prima di partire
+
+**Stato**: Attiva · 2026-11-12 · TASK-467 parte B2b (#1244, `bb3d3457`).
+**Deciso dall'agente su delega dell'utente**; lista dei file approvata dal
+Coordinatore. Nessun testo nuovo, nessuna migrazione, niente di nativo.
+
+**Contesto**: B2 (precisazione B1b/B2) mette «Sleep last night» a fine
+attività solo dove passa `RunEnd`. Un allenamento in palestra e un nuoto in
+vasca hanno una schermata e una coda loro (`gym-outbox.json`,
+`pool-outbox.json`), e per l'API sono corse con la stessa chiave.
+
+1. **Lo stesso componente accanto al form**, non dentro: `SleepRunEnd` in
+   `gym/GymEnd.tsx` e `pool/PoolSwimEnd.tsx`, sopra «Save»;
+   `GymPostForm.tsx` e `PoolPostForm.tsx` non si toccano. La notte è quella
+   prima dell'inizio dell'allenamento o del nuoto; il lettore è una prop che
+   parte da `sleepReader()`, null in ogni build fino alla parte C.
+2. **Una coda sola per le notti**, quella di B2 (`sleep-outbox.json`): a
+   «Save», una volta tenuto l'allenamento o il nuoto, la notte ci entra con
+   la sua chiave, solo con l'interruttore acceso e un post che altri vedono.
+3. **La notte aspetta l'attività dovunque essa aspetti**: `sleepOut.ts`
+   guarda la coda delle corse, quella della palestra e quella della vasca.
+   Mandata prima, l'API risponderebbe `404` e la notte verrebbe buttata. Un
+   allenamento o un nuoto che l'API rifiuta resta nella sua coda: la sua
+   notte non parte mai, e dopo 30 giorni si butta.
+4. **Le due code mandano le notti dopo i disegni**, con una chiamata a
+   `sendWaitingSleep`; senza notti in attesa non chiedono niente.
+5. **Con la costante spenta niente cambia**, coi test: l'albero intero
+   delle due schermate confrontato con quello che ha un lettore, tolto il
+   solo blocco del sonno; «Save» non tiene nessuna notte; nessuna richiesta
+   sul sonno.
+
+**Conseguenze**: quando la parte C accende, il sonno compare a fine di ogni
+attività che ha un post, senza altro lavoro su palestra e vasca.
 
 ## ADR-0342, precisazione A3 — La città detta subito: gli edifici contati attorno alla partenza prima di leggere la neve, sopra 280 per km² «no open snow», un conteggio che non arriva non cambia nulla
 

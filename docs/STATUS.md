@@ -129,11 +129,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   sul server col passo 8 del 2026-11-11; l'app col decimo OTA. Prima di B,
   la città lenta (76 s per un rifiuto). File: — · `tasks/TASK-413.md`
   **A3** in `main` (#1238, `8f5d0516`, 2026-11-12): una città è detta subito «no open snow»; sul server col passo 11. Poi B.
-- **TASK-414 — Carrozzina e passeggino** · 0 e A in `main` (#1183,
-  `f614821c`: rete `wheel`, lo sport nel motore, nel contratto e nell'API,
-  nascosto nell'app, migrazione 0071); sul server col passo
-  dell'aggiornamento completo. Prossima B col via del Coordinatore. File: —
-  · `tasks/TASK-414.md`
 - **TASK-415 — Ski touring** · 0 e A in `main`; prossima B. File: — ·
   `tasks/TASK-415.md`
   **2026-11-11**: B in `main` (#1160) e nella preview; in produzione con
@@ -226,15 +221,6 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   migrazione `0073`), sul server col passo dopo l'uscita completa, col sì.
   Poi A1b dopo TASK-455 A.
 
-- **TASK-454 — Reazioni e super like** · parte 0 chiusa (scelte
-  dell'utente, 2026-11-11); C1, risposte e reazioni ai commenti sul server,
-  in `main` (#1180, ADR-0377, migrazione `0070`): manca il passo sul server,
-  col sì dell'utente. Poi A (le reazioni nel Feed), B (doppio tocco), C2
-  (l'app dei commenti, dopo il server). File: — · `tasks/TASK-454.md`
-  **2026-11-12**: C1 sul server (passo 9); A (#1195), C2 (#1199) e la frase
-  della privacy (#1200) in `main`, escono con l'aggiornamento completo.
-  Restano B (doppio tocco, dopo TASK-467 B2) e la prova sul telefono.
-
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al
   default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
@@ -252,10 +238,15 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   min), D (mattino), C (palestra, dopo 461 A2 e 465), E (routine
   pubblicate). File: — · `tasks/TASK-466.md`
 
-- **TASK-469 — Il look Liquid Glass** (ADR-0383) · parte 0 fatta, l'utente
-  ha scelto «Capsula». Poi A in fette via OTA, dopo l'aggiornamento
-  completo; B nativa dopo la 1.1.0. File: — ·
-  `tasks/TASK-469.md`
+- **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
+  vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
+  l'OTA 14 (2026-11-12). Prossima A3, lista dei file al Coordinatore prima
+  del codice; B nativa dopo la 1.1.0. File: — · `tasks/TASK-469.md`
+
+- **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
+  (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);
+  manca il passo sul server (il 12, col sì dell'utente). Poi la parte app,
+  dopo TASK-414 B e TASK-413 B. File: — · `tasks/TASK-463.md`
 
 In attesa (Proposto o Todo, nessun file occupato): TASK-153 AdMob vero
 (aspetta la società), 279 B frasi a penna alzata, 282 il percorso dove sta

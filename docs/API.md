@@ -3462,11 +3462,14 @@ esempio in `fixtures/live-share-send-request.json`.
 - **Il battito** (scelta 4 dell'utente): a chi guarda dall'app
   `stats.heart_bpm` è `null` finché il proprietario non accende
   `heart_visible`; il proprietario lo vede sempre, il link come prima.
-- **`send`**: chi non ha un account, se stessi o chi è lontano per un
-  blocco o un nascosto finiscono in `skipped`, tutti uguali; lo stesso
-  `public_id` due volte, o mandato di nuovo, conta una volta. In questa
-  parte non manda messaggi: la scheda in chat e la push arrivano con la
-  parte A1b, dopo TASK-455 A.
+- **`send`** («Send in MuW»): dalla parte A1b manda a ciascuno **un
+  messaggio con la live allegata**, come il `POST` dei messaggi (sotto,
+  «Una live in un messaggio»), con la sua push. Chi non ha un account, se
+  stessi, chi è lontano per un blocco o un nascosto e chi non ha la
+  conversazione `open` con chi manda (una richiesta non porta allegati)
+  finiscono in `skipped`, tutti uguali. Lo stesso `public_id` due volte
+  nella stessa richiesta conta una volta; mandata di nuovo, è un messaggio
+  in più.
 - **Fine e stop** come per il link: una live finita si vede col riepilogo
   per un'ora, poi `expired`; fermata, `stopped`, solo lo `status`. Su una
   live finita `link`, `PATCH` e `send` rispondono `410`.
@@ -4165,6 +4168,38 @@ nel blocco «A post attached» di `messages.py`, la migrazione
   può non essere tra quelli che lo vedono.
 - **Un'API di prima** ignora `post` nell'header e rifiuta `post_id` con
   `422` (campo in più).
+
+#### Una live in un messaggio (TASK-468 parte A1b, ADR-0381)
+
+Un quinto allegato, `live`: **un rimando a una propria live in corso, mai
+una copia**, come il post. Si manda da «Send in MuW» (`POST
+/me/live-shares/{id}/send`, sopra in «Live shares») o come allegato. Tipi
+in `messageLive.ts` (`MessageLiveRequest`, `MessageLiveCard`,
+`MessageAttachmentWithLive`, `MESSAGE_LIVE_KIND`, `READS_MESSAGE_LIVE`),
+esempio in `fixtures/message-live.json`; il codice nel blocco «A live
+share attached» di `messages.py`, la migrazione `0077_message_live.sql`.
+
+- **Mandare**: `attachment: { "live_share_id": "<id>" }`, da solo, in una
+  conversazione `open` (`409` in una richiesta). Solo **la propria** live:
+  un'altra o nessuna è `404` «No live share of yours with this id.»; una
+  finita, fermata o scaduta è `422` «This live share has ended: make a new
+  one.». Mandarla dà all'altro il diritto di vederla nell'app (`GET
+  /live-shares/{id}`, riga in `live_share_recipients`).
+- **Leggere, a ogni lettura**: `attachment.live` è la scheda
+  (`MessageLiveCard`: `share_id`, `activity`, `status`, `distance_m`,
+  `duration_s`, `updated_at`) finché chi chiede può vedere la live
+  (`live_shares.MAY_SEE_SQL`: il proprietario, o chi l'ha ricevuta, senza
+  blocchi); `null` quando la riga della live non c'è più (un giorno dopo
+  la fine) o chi chiede non può: l'app dice «Live ended».
+- **Chi la riceve**: solo un'app che dice `live` in `X-MuW-Reads`; alle
+  altre il testo arriva con davanti «[Live]» e `attachment` `null`. Il
+  compositore della chat non la offre (`attachments.kinds` non cambia):
+  si manda dallo schermo della registrazione.
+- **La push**: «{name} is sharing a live activity with you» (it «{name} ti
+  condivide un'attività dal vivo», più de, es, fr), o «{name}: 🔴 {text}»
+  con un testo. Mai la posizione.
+- **Un'API di prima** ignora `live` nell'header e rifiuta `live_share_id`
+  con `422` (campo in più). Test in `test_message_lives.py`.
 
 ### Shape game (TASK-296, ADR-0255)
 

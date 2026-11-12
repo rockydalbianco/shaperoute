@@ -276,6 +276,29 @@ def test_a_town_is_shape_not_drawable_before_its_snow_is_downloaded(
     assert "no open snow" in error["message"]
 
 
+def test_a_town_asked_as_a_job_is_refused_before_its_snow_is_downloaded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The app and the server ask /route-jobs, whose snow is the job's
+    (jobs._ReportingSnow): the buildings are counted there too, so a town is
+    refused at once (TASK-413 A3). On the server after step 11 the job's
+    snow did not count, and Milan waited for its snow."""
+
+    def no_download(query: str) -> dict[str, Any]:
+        raise AssertionError("the snow of a town was downloaded")
+
+    monkeypatch.setattr(snow_module, "overpass", no_download)
+    monkeypatch.setattr(snow_module, "count_buildings", lambda query: 10**6)
+    graphs = ActivityGraphs({}, snow=ServerSnow(tmp_path))
+    with TestClient(create_app(graphs)) as client:
+        job = client.post("/route-jobs", json=CIRCLE).json()
+        done = finished(client, job["job_id"], seconds=30.0)
+    assert done["status"] == "failed", done
+    assert done["error"]["code"] == "shape_not_drawable"
+    assert "no open snow" in done["error"]["message"]
+    assert list(tmp_path.glob("snow/count_*.json"))
+
+
 def test_heights_that_cannot_be_downloaded_are_map_data_unavailable(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

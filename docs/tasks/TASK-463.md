@@ -1,9 +1,10 @@
 # TASK-463 — Alpinismo: uno sport registrato senza percorso
 
-**Stato**: In corso — parte A (server) in PR, ramo
-`feat/TASK-463-a-alpinism-api`; parte app dopo TASK-414 B.
-**Fase**: 4 · **ADR**: ADR-0373 (da scrivere nella PR di documenti dopo il
-merge) · numeri dal Coordinatore · migrazione `0076` (la `0075` è di TASK-468 A2a, #1245)
+**Stato**: In corso — parte A (server) in `main` (#1242, `f8d91aba`,
+2026-11-12); manca il passo sul server (il 12 del Coordinatore, col sì
+dell'utente). Parte app dopo TASK-414 B e TASK-413 B.
+**Fase**: 4 · **ADR**: ADR-0373 · numeri dal Coordinatore · migrazione
+`0076` (la `0075` è di TASK-468 A2a, #1245)
 
 ## Obiettivo
 
@@ -53,19 +54,19 @@ dell'orologio, dopo la parte app.
 
 ## Criteri di accettazione (parte A)
 
-- [ ] `alpinism` in `RunActivity`, dopo `paragliding` e prima di `gym`;
+- [x] `alpinism` in `RunActivity`, dopo `paragliding` e prima di `gym`;
       uno `ApiSport` `record_only` nel registro, nello stesso ordine.
-- [ ] `alpinism` in `NEWER_ACTIVITIES` (`reads.py`): solo un'app che lo dice
+- [x] `alpinism` in `NEWER_ACTIVITIES` (`reads.py`): solo un'app che lo dice
       lo riceve; l'app di oggi no.
-- [ ] Migrazione che allarga solo `runs_activity_check`, rileggendolo.
-- [ ] Nessun percorso pianificabile (`check_supported` rifiuta), nessun
+- [x] Migrazione che allarga solo `runs_activity_check`, rileggendolo.
+- [x] Nessun percorso pianificabile (`check_supported` rifiuta), nessun
       record personale, nessun punto nel gioco.
-- [ ] Test deterministici in `test_alpinism_api.py`; gli insiemi «later» e
+- [x] Test deterministici in `test_alpinism_api.py`; gli insiemi «later» e
       «since» degli altri test aggiornati; deroga in `SERVER_FIRST`.
-- [ ] `engine.zip` dell'app rigenerato (il registro degli sport ci va
+- [x] `engine.zip` dell'app rigenerato (il registro degli sport ci va
       dentro), come ultimo commit dopo il merge di `main`.
-- [ ] Controlli di sola lettura per il server in `out/TASK-463/SERVER-A.md`.
-- [ ] Al «pronta», la migrazione rinominata al primo numero libero in
+- [x] Controlli di sola lettura per il server in `out/TASK-463/SERVER-A.md`.
+- [x] Al «pronta», la migrazione rinominata al primo numero libero in
       `main`.
 
 ## File toccati (parte A)
@@ -174,3 +175,14 @@ fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
 Va sul server in un passo del Coordinatore, col sì dell'utente, dopo il
 merge. I controlli di sola lettura sono in `out/TASK-463/SERVER-A.md` nel
 checkout principale.
+
+## Diario
+
+- **2026-11-12** — Parte A in `main` (#1242, `f8d91aba`). Il Coordinatore
+  ha scelto la strada «solo server», con la deroga `SERVER_FIRST`. La
+  migrazione era provvisoria `0076`, poi `0075`, ed è tornata `0076`
+  quando la #1245 ha preso la `0075`. `engine.zip` è stato rifatto dopo la
+  #1238. In locale passavano i test toccati, migrazioni comprese su
+  PostGIS; la CI era verde. Lo script di `out/TASK-463/SERVER-A.md` provato
+  su un PostGIS locale dà le righe attese. ADR-0373 è nella PR di
+  documenti `docs/TASK-463-a-done`.

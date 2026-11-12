@@ -1322,6 +1322,19 @@ dato dal Coordinatore):
   disegno, per il `SET NULL` quando si cancella. Test in
   `test_message_posts.py`.
 
+Migrazione `0077_message_live.sql` (TASK-468 parte A1b, ADR-0381, `API.md`
+«Una live in un messaggio»; il numero è del Coordinatore):
+
+- `messages.attachment` accetta anche `live` (`messages_attachment_check`
+  rifatto con tutti i tipi: `photo`, `video`, `drawing`, `post`, `live`).
+- `messages.live_share_id` (`uuid`), **senza chiave esterna**: le copie
+  notturne tengono `messages` e lasciano fuori i dati di `live_shares`
+  (`deploy/backup.sh`), e una chiave dall'una all'altra ne romperebbe il
+  ripristino. Quando la riga della live va via (un giorno dopo la fine)
+  l'id non rimanda più a niente: la scheda è `null`, «Live ended».
+  `messages_live_check`: un `live_share_id` solo con `attachment =
+  'live'`. Test in `test_message_lives.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

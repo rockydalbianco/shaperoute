@@ -606,9 +606,20 @@ il tratto sottile e `textFaint`; la foto del profilo attivo ha un bordo
 sottile del colore del testo. Niente giallo: è del percorso. Su «Messages»
 un numero rosso con le conversazioni nuove e le richieste; sul profilo
 quello delle richieste di follow. VoiceOver legge ogni scheda col suo nome
-(«Messages, 3 waiting») e quella sullo schermo come selezionata. La barra è
-quasi opaca (`background` al 95%): il blur vero chiede `expo-blur`, una
-build.
+(«Messages, 3 waiting») e quella sullo schermo come selezionata.
+
+**Il vetro della barra** (TASK-469 A1, ADR-0383, «Capsula»; prima era
+`background` al 95% attaccata in basso): la barra è una capsula di vetro
+che galleggia, staccata di `space.lg` dai lati e alzata sopra l'indicatore
+home (a 8 pt dal bordo dove non c'è). Il vetro è il fondo del tono velato
+all'88% (`glass` in `tokens.ts`, `src/ui/Glass.tsx`), con un filo di luce
+in cima, un bordo sottile e un'ombra morbida: senza blur si riconosce da
+questi, non dalla trasparenza, ed è il prezzo dei 4,5:1 sopra una foto
+bianca o nera. La capsula della scheda attiva è il testo al 12%; le icone
+spente sono `textMuted`. Con «Riduci trasparenza» la barra è `surface`
+opaca, con «Aumenta contrasto» opaca col bordo `borderStrong`. La fascia
+sotto la barra resta alta quanto prima: le pagine non ci passano sotto. Il
+vetro vero (`expo-glass-effect`) è la parte B, in una build dopo la 1.1.0.
 
 **Il movimento della barra** (TASK-388, ADR-0329): dietro la scheda attiva
 una capsula morbida (`surfaceRaised`) che scivola alla nuova con la molla
@@ -620,6 +631,15 @@ molla; quella che prende la scheda sale di 1,5 pt e passa dal contorno al
 pieno in dissolvenza. Una vibrazione leggera solo quando un tocco cambia scheda. Con
 «Riduci movimento» la capsula compare in dissolvenza dove va, le icone
 solo sfumano.
+
+**I segmenti che scivolano** (TASK-469 A2, `src/screens/Segmented.tsx`):
+la scelta fra due o tre (la partenza, forma o parola) è una pillola sola,
+`surfaceRaised` col bordo `borderStrong`, che scivola sotto la nuova con la
+stessa molla `glide` della barra e si ferma senza superarla; un tocco
+mentre viaggia la manda avanti da dov'è. Le parole stanno sopra e restano
+leggibili; quelle lunghe vanno a capo. Con «Riduci movimento» la pillola
+compare in dissolvenza dove va. Gli altri segmenti (`FeedTabs`,
+`ExploreTools`, `PlayTabs`) seguono con A3.
 
 **L'isola** (TASK-388 B, `src/ui/Island.tsx`): una capsula scura in alto al
 centro per una parola breve dopo un gesto, come la Dynamic Island. Nasce
@@ -676,6 +696,17 @@ tags will show up here.».
 - **Il tocco sulla scheda già attiva** riporta la pagina in cima (Feed,
   Draw, Explore, Messages) o alla sua prima vista (il profilo).
 - Su Android il tasto indietro torna alla scheda di prima, poi esce.
+- **Indietro** (TASK-470): una pagina aperta sopra le schede (una
+  conversazione, la campanella, un profilo, un concorso, le pagine di
+  «Profile», «Play», una località o un giorno di sci, la mappa con la sua
+  «←») si chiude col tasto indietro di Android come con la sua «←», prima
+  che il tasto cambi scheda. Su iOS si chiude anche **dal bordo sinistro**
+  (ADR-0384): la pagina segue il dito e sotto si vede l'app un po' scurita;
+  lasciata oltre un terzo dello schermo, o con un colpo veloce, se ne va,
+  altrimenti torna. La tastiera si chiude quando il dito la prende. Con
+  «Riduci movimento» la pagina sfuma. Non sulle schede né sulle pagine dentro
+  una scheda (località e giorno di sci), sulla mappa, sui fogli e sulla
+  pagina di un post.
 - **«Messages»** è la lista delle conversazioni con «Message requests» in
   cima (TASK-319); una conversazione e le richieste si aprono sopra come
   prima, e «←» torna alla scheda. Si rilegge ogni volta che torna sullo
@@ -3654,6 +3685,14 @@ cui tiene i numeri.
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
   gialla del percorso fatto, «3.2 km to go» e «about 17 min».
+  **La scheda ripiegata** (TASK-472, scelta dell'utente del 2026-11-12;
+  codice in `screens/RunFoldedStrip.tsx`): correndo, in cima alla scheda
+  c'è una maniglia. Trascinata in giù (almeno 32 pt, più in verticale che
+  di lato), o la maniglia toccata, la scheda diventa una striscia: i tre
+  numeri su una riga e un «Pause» piccolo; la mappa prende il resto.
+  Trascinata in su, o toccata, torna intera. In pausa è sempre intera
+  («Stop», «Resume»); ripartiti torna piegata. Prima del primo fix, su
+  «Compass» e su «Data» niente maniglia.
 - **«Data»**: nessuna mappa. In alto quello che dice il banner (la svolta
   resta leggibile anche qui), poi i km in grande («2.34», «kilometres»),
   la barra del percorso, e sei riquadri: «Pace now», «Avg pace», «Time»,
@@ -4965,6 +5004,45 @@ yet: MuW records your flight.»: nessuna forma, nessun percorso. Il volo si regi
   in grande e, due per riga, «Flight time», «Max altitude», «Elev. gain»,
   «Top speed», poi «Calories». Provato nel simulatore il 2026-11-12. Nel Feed il volo è un post senza percorso, come una giornata
   sulla neve, con la velocità al posto del passo.
+
+#### Sotto «Record your flight» (TASK-305 parte R5b)
+
+Le scelte dell'utente del 2026-11-12, nei testi che ha approvato
+(TASK-305.md, «Testi di R5»). Sotto il bottone, tre schede (`FlightPage`):
+
+- **«Ready to fly»**, la prima, perché è quella che serve prima di partire.
+  - La precisione del GPS del telefono, letta una volta al secondo finché
+    «Draw» è aperto. La posizione non esce dal telefono; si mostra solo
+    l'errore.
+  - Fino a 10 m: «GPS ready · ±5 m», col punto giallo. Oltre: «Weak GPS ·
+    ±25 m: wait in the open». Prima del primo fix: «Waiting for GPS…».
+  - Senza permesso della posizione la riga non c'è.
+  - Con un account c'è l'interruttore **«Share live at start»**, con sotto
+    «When the countdown ends, MuW makes the link and opens the share
+    sheet.». Parte spento e poi resta com'era al volo prima (il file
+    `flight-live-at-start.json`).
+  - Acceso, alla fine del conto alla rovescia di un volo l'app crea il link
+    dal vivo e apre il foglio di condivisione, come «Share live» a mano. Non
+    succede per un volo ripreso dopo la chiusura dell'app, né per gli altri
+    sport.
+  - Crea solo il link (ADR-0352, precisazione), e in volo resta «Sharing
+    live». Se il link non si crea l'app non dice niente: «Share live» è lì
+    come sempre.
+- **«Your flights»**, solo con un account.
+  - Il mese, con i giorni volati in giallo, e sotto «2 flights · 2:30:00»
+    (o «No flights this month»).
+  - Viene da `GET /me/activity-calendar?sport=paragliding` e si aggiorna
+    quando cambiano le attività dell'account.
+  - Toccato, apre il calendario delle attività (TASK-462) già filtrato sui
+    voli.
+- **«Your best flights»**, solo con un account e almeno un record.
+  - Quattro righe, solo quelle che ci sono: «Max altitude» (m), «Longest
+    flight», «Farthest flight», «Top speed». Ognuna ha il giorno e apre il
+    suo volo.
+  - Vengono da `GET /me/flight-bests` (API.md, «I numeri di un volo»).
+  - A fine volo il telefono manda `max_alt_m` e `top_speed_mps` con i
+    numeri del post. Se un server senza R5a li rifiuta, li rimanda senza,
+    come fa con i tratti dello sci.
 
 ### L'alpinismo: «Mountaineering» (TASK-463 parte B, ADR-0373)
 

@@ -604,6 +604,101 @@ gli esercizi, rimandata.
 stesso stub ai due wav); `__tests__/AppStretch` conta il tempo nuovo
 (`READY_S + 20 + SWITCH_S + 20` a esercizio). Dettagli in
 `tasks/TASK-466.md`.
+- ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
+
+## Voci nuove
+
+## ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio
+
+**Stato**: Accettata · 2026-11-12 · TASK-455, parte 0 chiusa; le parti A–E
+sono da costruire. Quello che si vede e si promette è **scelta
+dell'utente** (2026-11-12, una domanda alla volta: «Tutte e tre insieme»,
+«Share» nella riga su ogni post, «Il post, col nome dell'autore», «Si
+manda, lo apre solo chi può», «Interruttore, acceso all'inizio», «Mappa
+con la linea intera», testi «Approvo così»); il modo è deciso dall'agente
+su delega dell'utente. Numero dal Coordinatore. Estende ADR-0289 (gli
+allegati nei messaggi) e ADR-0170 (chi vede un disegno); capovolge, per i
+soli link, la scelta 5 di TASK-355 («Share» fuori dall'app solo sui
+propri disegni).
+
+**Contesto**: nella prova dell'11 novembre 2026 (S5 di
+`out/prova-app-2026-11-11/PROPOSTE.md`) il post di un altro non si poteva
+mandare a un amico né condividere. «Send to a friend» c'era già
+(TASK-333), ma non nel Feed, e manda **una copia** della linea (ADR-0289,
+punto 2): dalla scheda di un disegno altrui un follower può così mandare
+la traccia intera di un disegno «Followers» a chi non segue l'autore, e la
+copia resta anche se l'autore cancella il post. I post non hanno link: un
+disegno lo vede solo un iscritto (`drawings.drawing_seen_sql`).
+
+**Decisione**:
+
+1. **Un allegato nuovo nei messaggi, `post`: un rimando, mai una copia.**
+   Il messaggio tiene l'id del disegno e nient'altro: né linea, né titolo,
+   né autore. Vale la regola di ogni allegato: solo in una conversazione
+   aperta (ADR-0289, punto 1).
+2. **Mandarlo** vuole che chi manda veda il disegno
+   (`drawing_seen_sql(chi manda)`); altrimenti `404`, come per un id che
+   non c'è.
+3. **Leggerlo: i permessi sono di chi legge, a ogni lettura.** Ogni pagina
+   della conversazione risolve la scheda per l'account che la chiede con
+   la stessa domanda di sempre (`drawing_seen_sql`: visibilità, follow
+   accettato, blocchi nei due versi, disegno o iscritto nascosto) e dà
+   titolo, autore, metri, sport e linea, oppure la scheda vuota: «non
+   disponibile». Vale anche per chi l'ha mandato. Niente è tenuto nel
+   messaggio, quindi cancellare il post, cambiare «Who can see it»,
+   bloccare, smettere di seguire agiscono dalla lettura dopo, senza
+   ripulire niente. Lo stesso per la lista delle conversazioni e per la
+   push, che dicono solo «🗺️ Post».
+4. **Le app di prima**: un'app di oggi chiede già `?with=attachments` e
+   non conosce `post`. Il rimando arriva solo a chi dice di saperlo
+   leggere; agli altri il testo con davanti «[Post]», come «[Drawing]».
+   **Lo dice con `post` nell'header `X-MuW-Reads`** (ADR-0328), non con un
+   valore nuovo di `?with=`: quel parametro ha un modello fisso, e un
+   server di prima risponderebbe `422` a ogni pagina della chat di
+   un'app nuova; l'header invece lascia cadere i valori che non conosce.
+   `post` non è un tipo di corsa: lo legge `messages.py`, e `reads.py`
+   non cambia. Chi lo dice trova `post` anche in `attachments.kinds`, e
+   sa così che il server lo accetta (parte A, deciso dall'agente su
+   delega dell'utente, d'accordo col Coordinatore).
+5. **Da dove**: da un post («Share» del Feed e della pagina del post, la
+   scheda di un disegno altrui) si manda sempre il rimando, anche se il
+   post è proprio. Dalla mappa, dai preferiti e da «My activities» resta
+   la copia di ADR-0289: lì non c'è un post, o il percorso si manda per
+   correrlo.
+6. **Il buco della copia si chiude nell'app**, non sul server: una copia è
+   una fila di punti e il server non può sapere da quale disegno viene. La
+   scheda di un disegno altrui smette di mandare la copia (parte B; prima,
+   se serve, togliendo il pulsante dai disegni «Followers» altrui). Un'app
+   non aggiornata lo tiene finché non si aggiorna: è il limite che resta.
+7. **Il link di un post** porta a una pagina del sito, sul modello di
+   «Share live» (ADR-0352). La lettura senza account risponde **solo** per
+   un post `everyone`, non nascosto, di un autore non nascosto e con
+   l'interruttore acceso; per ogni altro caso `404`, uguale a un id che non
+   c'è. Dà la linea **come la vede già un iscritto, non di più** (ADR-0330),
+   titolo, nome, metri e sport; mai foto, commenti, reazioni, tempi,
+   descrizione o persone taggate. La pagina ha `noindex` e nessuna
+   anteprima per i motori di ricerca.
+8. **«Links to my posts»**: un campo dell'account, **acceso all'inizio**
+   (scelta dell'utente). Spento, gli altri sui miei post hanno solo «Send
+   to a friend» e i link smettono di funzionare alla lettura dopo. Cambia
+   l'esposizione dei post «Everyone» già pubblicati: la frase della
+   privacy e l'avviso nelle novità vanno approvati dall'utente **prima**
+   che la parte C vada sul server.
+9. **Nessuna dipendenza nuova**: il link passa dal foglio del telefono
+   (`Share` di React Native), «Share link». Aprire il post dentro l'app
+   dal link vuole i link universali, cioè una build nativa: parte F.
+
+**Alternative scartate**: la copia con in più autore e rimando al post
+(l'utente ha scelto il rimando: l'autore tiene il controllo);
+l'interruttore spento all'inizio e il link solo dell'autore (proposti,
+l'utente ha scelto acceso); la pagina con la sola figura senza mappa;
+`expo-clipboard` per un «Copy link» vero (cambia l'impronta iOS).
+
+**Conseguenze**: una migrazione per la parte A (provvisoria `0075`) e una
+per la C; `messages.py` e `push.py` li tocca dopo anche TASK-468, quindi
+l'allegato sta in un blocco suo. Da chiedere all'utente prima della parte
+C: con l'interruttore spento, il link che l'autore prende del proprio
+post funziona o no.
 
 ## ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0
 

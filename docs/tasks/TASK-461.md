@@ -1,11 +1,11 @@
 # TASK-461 — Il pianificatore completo: corpo libero, piani verso una distanza, gite in montagna
 
 **Stato**: In corso · 2026-11-12 · parte 0 chiusa; A1 e B1 in `main` e
-sul server (passo 9, 2026-11-12); B2a (la logica dei piani verso un
-obiettivo, solo file nuovi) in PR; A2 dopo l'app di TASK-452, poi B2b/C2
+sul server (passo 9, 2026-11-12); B2a in `main` (#1196); A2 (app del corpo
+libero) in PR bozza #1208; poi B2b/C2
 **Fase**: 5 · **Branch**: `feat/TASK-461-a1-bodyweight-catalog` (A1),
 `feat/TASK-461-b1-distance-mountain-server` (B1),
-`feat/TASK-461-b2a-target-plans` (B2a)
+`feat/TASK-461-b2a-target-plans` (B2a), `feat/TASK-461-a2-bodyweight-app` (A2)
 **Dipende da**: TASK-433 (la guida delle schede, `gym_plans.program`),
 TASK-452 (i ritmi di corsa: la parte A2 parte dopo la sua PR dell'app)
 **ADR**: ADR-0371 (proposto) · numeri dal Coordinatore il 2026-11-11
@@ -64,6 +64,15 @@ Sulla tela «Schede palestra guidate»
 15. **Obiettivo della montagna (C)**: «Sì, il dislivello» — 500, 1000, 1500,
     2000 m o Altro, con una data o «Quando sono pronto».
 16. **Riga G della tela (montagna)** e **testi della parte C**: «Approvo».
+17. **Le settimane degli esercizi senza kg (A2, 2026-11-12)**: «Sì, così»
+    alla domanda «Va bene così per tutti gli esercizi senza kg?», con
+    l'esempio piegamenti 3×10 e plank 3×40 s. Prima: 10, 11, 12, 10, 11,
+    12… e il plank fermo a 40 s. Dopo: 10, 11, 12, la 4ª settimana più
+    leggera (2 serie da 12), poi 13, 14, 15…; plank 40, 45, 50, 4ª leggera,
+    poi 55 s. Vale anche per le schede che ci sono già; gli esercizi coi kg
+    restano come prima. Il server non ha una copia del conto
+    (`gym_plans.py` e il calendario contano solo i giorni): cambia solo
+    l'app.
 
 ### I testi approvati della parte A (italiano; le altre lingue con lo stesso senso)
 
@@ -162,7 +171,7 @@ Sulla tela «Schede palestra guidate»
 - **B1 — server di B e C insieme** (questa PR): `outing` sui giorni e
   `target` sul programma, fino a 24 settimane; il calendario segna fatto un
   giorno fuori da un'attività del suo sport.
-- **B2a — app, la logica dei piani verso un obiettivo** (questa PR, il sì
+- **B2a — app, la logica dei piani verso un obiettivo** (#1196, in `main`; il sì
   del Coordinatore il 2026-11-12): solo file nuovi in
   `apps/mobile/src/gym/`, nessun testo e niente di collegato, quindi niente
   di visibile nell'app. `targetWeeks.ts` (la scala delle settimane),

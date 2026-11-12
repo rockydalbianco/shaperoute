@@ -218,6 +218,66 @@ def test_snow_that_cannot_be_downloaded_is_map_data_unavailable(
         ServerSnow(tmp_path).elements((45.95, 10.95, 46.05, 11.05))
 
 
+def test_the_buildings_are_counted_from_the_cached_snow(tmp_path: Path) -> None:
+    """TASK-413 A3: the engine says «no snow» at once in a town; the API's
+    snow counts the buildings as the engine's source does."""
+    covering = (45.9, 10.9, 46.1, 11.1)
+    house = {
+        "type": "way",
+        "id": 7,
+        "tags": {"building": "house"},
+        "geometry": [{"lat": 46.0, "lon": 11.0}, {"lat": 46.0001, "lon": 11.0}],
+    }
+    write_water(
+        snow_module.OverpassSnowSource(tmp_path).path(covering),
+        covering,
+        [TRACK, house],
+    )
+    assert ServerSnow(tmp_path).buildings((45.95, 10.95, 46.05, 11.05)) == 1
+
+
+@pytest.mark.parametrize(
+    "failure", [TimeoutError("late"), OSError("429"), RuntimeError("anything")]
+)
+def test_a_count_that_fails_is_no_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: Exception
+) -> None:
+    """Never map_data_unavailable for the count: the request goes on as
+    before, and the snow is downloaded as before."""
+
+    def fails(query: str) -> int:
+        raise failure
+
+    monkeypatch.setattr(snow_module, "count_buildings", fails)
+    assert ServerSnow(tmp_path).buildings((45.95, 10.95, 46.05, 11.05)) is None
+
+
+def test_a_count_that_breaks_the_source_is_no_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def broken(self: object, bbox: object) -> int:
+        raise PermissionError("the cache folder")
+
+    monkeypatch.setattr(snow_module.OverpassSnowSource, "buildings", broken)
+    assert ServerSnow(tmp_path).buildings((45.95, 10.95, 46.05, 11.05)) is None
+
+
+def test_a_town_is_shape_not_drawable_before_its_snow_is_downloaded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def no_download(query: str) -> dict[str, Any]:
+        raise AssertionError("the snow of a town was downloaded")
+
+    monkeypatch.setattr(snow_module, "overpass", no_download)
+    monkeypatch.setattr(snow_module, "count_buildings", lambda query: 10**6)
+    client = TestClient(create_app(ActivityGraphs({}, snow=ServerSnow(tmp_path))))
+    answer = client.post("/routes", json=CIRCLE)
+    assert answer.status_code == 422
+    error = answer.json()["error"]
+    assert error["code"] == "shape_not_drawable"
+    assert "no open snow" in error["message"]
+
+
 def test_heights_that_cannot_be_downloaded_are_map_data_unavailable(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

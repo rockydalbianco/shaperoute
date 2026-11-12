@@ -5,6 +5,7 @@ import {
   type Message,
   type MessageAttachment,
   type MessageDrawing,
+  type MessagePostCard,
   type MessagesPage,
   type Person,
 } from "@shaperoute/shared-types";
@@ -34,6 +35,7 @@ import {
 } from "../api/messages";
 import { personPhotoUri } from "../api/people";
 import { useFavoritesDoor } from "../favorites/favoritesDoor";
+import { useDrawingsDoor } from "../social/drawingsDoor";
 import { t } from "../i18n";
 import { Avatar } from "../profile/Avatar";
 import { ReportMenu } from "../social/ReportMenu";
@@ -179,6 +181,7 @@ export function ConversationScreen({
 }: Props) {
   const { apiUrl, account, recount, close, openConversation } = useMessagesDoor();
   const favorites = useFavoritesDoor();
+  const drawings = useDrawingsDoor();
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
   const asked = `${token ?? ""} ${person.public_id}`;
@@ -268,7 +271,13 @@ export function ConversationScreen({
           asked,
           person: page.person,
           state: page.state,
-          files: page.state === "open" ? (page.attachments?.kinds ?? []) : [],
+          // A post is sent from «Share» under it, not from the «+».
+          files:
+            page.state === "open"
+              ? (page.attachments?.kinds ?? []).filter(
+                  (kind): kind is AttachKind => kind !== "post",
+                )
+              : [],
           messages:
             was !== null && "state" in was && was.asked === asked
               ? merged(was.messages, page.messages)
@@ -415,6 +424,19 @@ export function ConversationScreen({
       );
       close();
     });
+  }
+
+  /** A post touched: opened as a notification opens one (the user's
+   * choice, 2026-11-12): the conversation closes and the drawing comes on
+   * the map with its card, its photos, comments and reactions. */
+  function openPost(id: string) {
+    drawings.open({ id });
+    close();
+  }
+
+  /** The tap of a post's bubble; none for a post who reads may not open. */
+  function postOpener(card: MessagePostCard | null | undefined) {
+    return card ? () => openPost(card.id) : null;
   }
 
   function choose(kind: AttachKind) {
@@ -663,9 +685,11 @@ export function ConversationScreen({
                   onOpen={
                     item.attachment?.kind === "drawing"
                       ? () => openDrawing(item)
-                      : item.attachment && item.attachment.media_id !== null
-                        ? () => setViewing(item.attachment ?? null)
-                        : null
+                      : item.attachment?.kind === "post"
+                        ? postOpener(item.attachment.post)
+                        : item.attachment && item.attachment.media_id !== null
+                          ? () => setViewing(item.attachment ?? null)
+                          : null
                   }
                   onLongPress={() => setSheet({ kind: "message", message: item })}
                 />

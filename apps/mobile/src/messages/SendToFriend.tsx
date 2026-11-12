@@ -1,4 +1,8 @@
-import type { MessageDrawing, Person } from "@shaperoute/shared-types";
+import type {
+  MessageAttachmentRequest,
+  MessageDrawing,
+  Person,
+} from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -25,6 +29,7 @@ import {
   space,
 } from "../theme/tokens";
 import { useIsland } from "../ui/useIsland";
+import { followersNote, postAttachment, type PostToSend } from "./messagePost";
 import { useMessagesDoor } from "./messagesDoor";
 
 /** The side of a member's picture in the list. */
@@ -34,7 +39,10 @@ const PHOTO_SIDE = 36;
 const CLOSED = ["Photos, videos and drawings", "Your message request is waiting"];
 
 type Props = {
-  drawing: MessageDrawing;
+  /** A route to copy into the message (TASK-333); or `post`. */
+  drawing?: MessageDrawing;
+  /** A post to point at (TASK-455): the message carries its id only. */
+  post?: PostToSend;
   onClose: () => void;
   fetchFn?: typeof fetch;
   apiKey?: string | null;
@@ -58,9 +66,11 @@ export function peopleOf(talking: Person[], following: Person[]): Person[] {
  * drawing as a message of its own. One who has not accepted a message
  * request gets nothing: a request is text only (the user's choice 1).
  * «Sent» says so in the island at the top (TASK-388 B); a problem stays
- * written over the list.
+ * written over the list. A post (TASK-455, ADR-0382) goes as a pointer and
+ * not as a copy; one for its owner's followers says, before it is sent,
+ * that only who follows them opens it.
  */
-export function SendToFriend({ drawing, onClose, fetchFn, apiKey }: Props) {
+export function SendToFriend({ drawing, post, onClose, fetchFn, apiKey }: Props) {
   const insets = useSafeAreaInsets();
   const { apiUrl, account } = useMessagesDoor();
   const token =
@@ -72,6 +82,17 @@ export function SendToFriend({ drawing, onClose, fetchFn, apiKey }: Props) {
   const [sending, setSending] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [island, say] = useIsland();
+  const me =
+    account.state.status === "signedIn"
+      ? (account.state.session.user.public_id ?? null)
+      : null;
+  const note = post === undefined ? null : followersNote(post, me);
+  const attachment: MessageAttachmentRequest | null =
+    post !== undefined
+      ? postAttachment(post)
+      : drawing !== undefined
+        ? { drawing }
+        : null;
 
   useEffect(() => {
     if (apiUrl === null || token === null) {
@@ -114,12 +135,12 @@ export function SendToFriend({ drawing, onClose, fetchFn, apiKey }: Props) {
   }, [apiKey, apiUrl, fetchFn, token, typed]);
 
   function send(person: Person) {
-    if (apiUrl === null || token === null) {
+    if (apiUrl === null || token === null || attachment === null) {
       return;
     }
     setSending(person.public_id);
     setProblem(null);
-    void sendMessage(apiUrl, token, person.public_id, "", options, { drawing }).then(
+    void sendMessage(apiUrl, token, person.public_id, "", options, attachment).then(
       (outcome) => {
         setSending(null);
         if (outcome.kind === "ok") {
@@ -170,6 +191,7 @@ export function SendToFriend({ drawing, onClose, fetchFn, apiKey }: Props) {
           autoCorrect={false}
           accessibilityLabel={t("Search people")}
         />
+        {note !== null && <Text style={styles.note}>{note}</Text>}
         {problem !== null && (
           <Text style={styles.problem} accessibilityRole="alert">
             {problem}

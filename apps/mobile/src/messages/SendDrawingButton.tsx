@@ -11,6 +11,7 @@ import {
 
 import { t } from "../i18n";
 import { color, fontSize, MIN_TAP_SIZE, radius } from "../theme/tokens";
+import type { PostToSend } from "./messagePost";
 import { useMessagesDoor } from "./messagesDoor";
 import { SendToFriend } from "./SendToFriend";
 
@@ -19,7 +20,9 @@ export const ENVELOPE = "✉︎";
 
 type Props = {
   /** The drawing to send, made when the button is touched; null: none. */
-  drawing: () => MessageDrawing | null;
+  drawing?: () => MessageDrawing | null;
+  /** A post to send in its place (TASK-455): a pointer, not a copy. */
+  post?: PostToSend;
   /** Round, beside the heart on the map; else a row of a card, with its
    * card's look. */
   round?: boolean;
@@ -33,9 +36,12 @@ type Props = {
  * «Send to a friend» (TASK-333, the user's choice 5): on the map beside the
  * heart, and on the cards of «My activities» and of a drawing. Only with an
  * account and an API that has the messages (TASK-319): their numbers say it.
+ * With `post` it sends a post as a pointer (TASK-455): somebody else's
+ * drawing is never copied into a message.
  */
 export function SendDrawingButton({
   drawing,
+  post,
   round = false,
   style,
   textStyle,
@@ -44,12 +50,17 @@ export function SendDrawingButton({
 }: Props) {
   const { account, unread } = useMessagesDoor();
   const [sending, setSending] = useState<MessageDrawing | null>(null);
+  const [sendingPost, setSendingPost] = useState(false);
   if (account.state.status !== "signedIn" || unread === null) {
     return null;
   }
 
   function open() {
-    const made = drawing();
+    if (post !== undefined) {
+      setSendingPost(true);
+      return;
+    }
+    const made = drawing?.() ?? null;
     if (made !== null) {
       setSending(made);
     }
@@ -74,6 +85,14 @@ export function SendDrawingButton({
         <SendToFriend
           drawing={sending}
           onClose={() => setSending(null)}
+          fetchFn={fetchFn}
+          apiKey={apiKey}
+        />
+      )}
+      {sendingPost && post !== undefined && (
+        <SendToFriend
+          post={post}
+          onClose={() => setSendingPost(false)}
           fetchFn={fetchFn}
           apiKey={apiKey}
         />

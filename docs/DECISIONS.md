@@ -1101,9 +1101,29 @@ subito e solo il «ding» alla fine.
   5 s dell'ultimo lato.
 - **«Riduci movimento»**: ogni posa subito, niente respiro.
 
+**Decisione** (parte B, in `main` con la #1216, `05f5a725`, 2026-11-12;
+nomi, frasi, traduzioni e schermate col sì dell'utente; il modo deciso
+dall'agente su delega dell'utente):
+- **Dieci esercizi in più** (`MORE_EXERCISES`), quindici in tutto, tutti
+  leggibili di profilo; **tre routine** (`routines.ts`: Morning, After
+  run, After gym) in 3, 5 e 10 minuti, una tenuta sola per durata, la
+  sessione intera fra il 90% e il 105% dei minuti detti. A fine corsa la
+  schermata chiede «How long?» prima del primo esercizio
+  (`RoutineChooser`).
+- **Nessuna giuntura a dimensione zero**: su iOS una vista riusata con la
+  cornice esattamente (0, 0, 0, 0) tiene la posizione che aveva prima, e
+  alla seconda apertura dello stretching una gamba restava staccata (in
+  produzione con la parte A dall'OTA 12 fino al primo OTA dopo la #1216).
+  Ogni giuntura è un quadrato di 2 pt attorno al suo punto (`JOINT`).
+  Scartati: l'animazione guidata da JS (non cambia nulla) e
+  `collapsable={false}` (peggiora: più viste vere, più viste fuori posto).
+- **Una posa che arriva lontano scivola indietro**: oltre `REACH` (0,46
+  dell'altezza dall'anca) tutta la figura si sposta di quanto serve
+  (`drift`); oggi solo «Child's pose», che usciva dal bordo di un
+  telefono da 390 pt.
+
 **Le parti dopo** (ciascuna con la sua PR, i testi col sì dell'utente):
-B, ~15 esercizi e le routine Morning, After run, After gym da 3, 5, 10
-minuti; C, lo stretching in palestra (dopo TASK-461 A2 e TASK-465, col
+C, lo stretching in palestra (dopo TASK-461 A2 e TASK-465, col
 turno su `src/gym`); D, «Morning stretch» con l'orario scritto dall'utente
 e una notifica locale (iOS non lascia leggere le sveglie dell'Orologio;
 la prossima sveglia di Android è nativa e va in una build); E, le routine

@@ -4,6 +4,7 @@ import {
   type ConversationState,
   type Message,
   type MessageAttachment,
+  type MessageAttachmentWithLive,
   type MessageDrawing,
   type MessagePostCard,
   type MessagesPage,
@@ -53,12 +54,14 @@ import { attachmentLabel } from "./attachmentText";
 import { DrawingPicker } from "./DrawingPicker";
 import { favoriteOfMessage } from "./messageDrawing";
 import { MediaViewer } from "./MediaViewer";
+import { liveCardOpens } from "./LiveMessageCard";
 import { MessageMedia } from "./MessageMedia";
 import { MessageSheet, type SheetFor } from "./MessageSheet";
 import { dayTitle, opensDay, timeLabel } from "./messageTime";
 import { useMessagesDoor } from "./messagesDoor";
 import { type MessageFile, pickMessageFile } from "./pickMessageMedia";
 import { VideoPoster } from "./VideoPoster";
+import { LiveViewScreen } from "../liveShare/LiveViewScreen";
 
 /** How often an open conversation is read again: a reply within seconds. */
 export const CONVERSATION_EVERY_MS = 5_000;
@@ -194,6 +197,8 @@ export function ConversationScreen({
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [viewing, setViewing] = useState<MessageAttachment | null>(null);
+  // A live share opened from its card (TASK-468 part B1): whose, and which.
+  const [watching, setWatching] = useState<{ id: string; name: string } | null>(null);
   const [choosingDrawing, setChoosingDrawing] = useState(false);
   const poster = useRef<Poster | null>(null);
   // Asked to read again at once: a message refused may mean a request
@@ -432,6 +437,18 @@ export function ConversationScreen({
   function openPost(id: string) {
     drawings.open({ id });
     close();
+  }
+
+  /** The tap of a live share's bubble (TASK-468 part B1): the live in the
+   * app while it can be seen; none once it has ended. */
+  function liveOpener(message: Message) {
+    const live = (message.attachment as MessageAttachmentWithLive | null)?.live;
+    if (!liveCardOpens(live ?? null) || live === undefined || live === null) {
+      return null;
+    }
+    const me = state.status === "signedIn" ? state.session.user.username : "";
+    const name = message.mine ? me : person.username;
+    return () => setWatching({ id: live.share_id, name });
   }
 
   /** The tap of a post's bubble; none for a post who reads may not open. */
@@ -683,13 +700,15 @@ export function ConversationScreen({
                     ) : null
                   }
                   onOpen={
-                    item.attachment?.kind === "drawing"
-                      ? () => openDrawing(item)
-                      : item.attachment?.kind === "post"
-                        ? postOpener(item.attachment.post)
-                        : item.attachment && item.attachment.media_id !== null
-                          ? () => setViewing(item.attachment ?? null)
-                          : null
+                    (item.attachment?.kind as string | undefined) === "live"
+                      ? liveOpener(item)
+                      : item.attachment?.kind === "drawing"
+                        ? () => openDrawing(item)
+                        : item.attachment?.kind === "post"
+                          ? postOpener(item.attachment.post)
+                          : item.attachment && item.attachment.media_id !== null
+                            ? () => setViewing(item.attachment ?? null)
+                            : null
                   }
                   onLongPress={() => setSheet({ kind: "message", message: item })}
                 />
@@ -767,6 +786,17 @@ export function ConversationScreen({
           token={token}
           apiKey={apiKey}
           onClose={() => setViewing(null)}
+        />
+      )}
+      {watching !== null && token !== null && apiUrl !== null && (
+        <LiveViewScreen
+          shareId={watching.id}
+          name={watching.name}
+          apiUrl={apiUrl}
+          token={token}
+          fetchFn={fetchFn}
+          apiKey={apiKey}
+          onClose={() => setWatching(null)}
         />
       )}
       {sheet !== null && token !== null && apiUrl !== null && (

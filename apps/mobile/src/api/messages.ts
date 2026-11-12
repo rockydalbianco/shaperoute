@@ -1,6 +1,7 @@
 import {
   CONVERSATION_STATES,
   MESSAGE_MAX_LENGTH,
+  READS_MESSAGE_LIVE,
   READS_MESSAGE_POST,
   WITH_ATTACHMENTS,
   type Conversation,
@@ -51,7 +52,7 @@ function readingPosts(options: Options): Options {
         ...init,
         headers: {
           ...(init?.headers as Record<string, string> | undefined),
-          ...readsHeadersWith(READS_MESSAGE_POST),
+          ...readsHeadersWith(READS_MESSAGE_POST, READS_MESSAGE_LIVE),
         },
       }),
   };

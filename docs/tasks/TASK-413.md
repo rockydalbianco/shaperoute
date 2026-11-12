@@ -8,7 +8,10 @@ A2 in `main` con la #1130 (`ac08ae94`, mergiata dall'utente il
 controllo in `out/TASK-413/SERVER-A2.md`), l'app nascosta col decimo OTA;
 A3 (la città detta subito) in `main` con la #1238 (`8f5d0516`, unita
 dall'utente il 2026-11-12), sul server col passo 11 (controllo in
-`out/TASK-413/SERVER-A3.md`); poi B
+`out/TASK-413/SERVER-A3.md`), corretta dalla #1266 (`b079f067`: il job
+non passava il conteggio) col passo 12; B e C in `main` con la #1280
+(`335f75f5`, `ready: false`); privacy delle quote nella #1281; accensione
+con `feat/TASK-413-snowshoes-on`
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -213,6 +216,11 @@ Coordinatore, `feat/TASK-413-b-snowshoes-app`):
   dell'utente.
 - **Lo sport resta `ready: false`** nella PR. Si accende con una riga a
   parte, col sì dell'utente dato al Coordinatore, dopo le schermate.
+- **Accensione**: l'utente ha detto «Sì, accendi» alle schermate
+  (2026-11-12, `out/TASK-413/sim/`). La PR piccola
+  `feat/TASK-413-snowshoes-on` porta `fromProfile("snowshoe", true)` e i
+  test delle liste. Si apre dopo che il Coordinatore conferma «passo 12 e
+  prova come attesi», con la riga della privacy (#1281) in `main`.
 - **Anche «Record your day»**: scelta dell'utente del 2026-11-12, «Anche
   Record your day», contro la proposta dell'agente «solo forme». Le
   ciaspole avranno anche la giornata sulla neve da registrare intera, come
@@ -407,10 +415,13 @@ Tutte come la proposta, tranne la terza:
       scarica la neve di un posto nuovo (#1130; passo 8 del 2026-11-11:
       0068 e i tre vincoli, impronte attese, cuore di 1 km alle Viote in
       38,2 s la prima volta e 4,1 s la seconda, 1000 m, 0 indicazioni).
-- [ ] A3: una città è detta subito senza leggerne la neve (Trento, Belluno,
+- [x] A3: una città è detta subito senza leggerne la neve (Trento, Belluno,
       Milano), ogni posto con neve del banco va avanti come prima; un
       conteggio che non arriva non cambia nulla; impronte invariate; sul
-      server Trento 3 km in pochi secondi.
+      server Trento 3 km in pochi secondi. (#1238 e la correzione #1266;
+      passo 12, prova del 2026-11-12 17:00Z su `eee85a69`: Milano 1,1 s,
+      Trento 1,1 s e 0,65 s, tutte «no open snow»; 16170 e 8091 edifici
+      contati dalla neve in cache; `out/coordinatore/prova-passo12.out`.)
 - [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
       e i testi sono in cinque lingue.
 

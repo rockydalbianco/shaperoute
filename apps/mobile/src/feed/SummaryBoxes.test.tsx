@@ -7,9 +7,9 @@
 import { render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 
-import { fontSize } from "../theme/tokens";
+import { font, fontSize } from "../theme/tokens";
 import type { PostRow } from "./postSections";
-import { MIN_VALUE_SCALE, SummaryBoxes } from "./SummaryBoxes";
+import { MIN_VALUE_SCALE, SummaryBoxes, VALUE_PAD } from "./SummaryBoxes";
 
 const THREE: PostRow[] = [
   { label: "Distance", value: "4.62 km" },
@@ -60,4 +60,13 @@ test("a value too long for its box shrinks no smaller than its label, then is cu
     expect(text.props.minimumFontScale).toBe(MIN_VALUE_SCALE);
   }
   expect(fontSize.body * MIN_VALUE_SCALE).toBeGreaterThanOrEqual(fontSize.detail);
+});
+
+test("a row of three looks as before: the value's line is as high as the 22 pt one was", async () => {
+  await render(<SummaryBoxes rows={THREE} />);
+  for (const row of THREE) {
+    expect(valueStyle(row.value).paddingVertical).toBe(VALUE_PAD);
+  }
+  // 15 pt in SF is a 17.9 pt line: with the pads, within a pixel of 22.
+  expect(Math.abs(17.9 + 2 * VALUE_PAD - font.body.lineHeight)).toBeLessThan(1 / 3);
 });

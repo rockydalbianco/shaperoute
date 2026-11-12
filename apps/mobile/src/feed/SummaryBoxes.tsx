@@ -44,6 +44,9 @@ export function SummaryBoxes({ rows }: { rows: readonly PostRow[] }) {
  */
 export const MIN_VALUE_SCALE = 0.8;
 
+/** Above and below a value, in place of the 22 pt line of `font.body`. */
+export const VALUE_PAD = 2;
+
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
@@ -58,8 +61,11 @@ const styles = StyleSheet.create({
   // No fixed line height (TASK-474): iOS shrinks a value that does not fit
   // its box, and a fixed line never fits a box a hair shorter than it — a
   // row of four, 39.9999 pt high — so every value went to its smallest.
+  // The 15 pt line is 17.9 pt high: `VALUE_PAD` above and below keeps the
+  // row as high as with the 22 pt line, and the number where it was.
   value: {
     fontSize: fontSize.body,
+    paddingVertical: VALUE_PAD,
     color: color.text,
     fontWeight: fontWeight.semibold,
     fontVariant: ["tabular-nums"],

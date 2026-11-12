@@ -1,6 +1,6 @@
 # TASK-474 — I numeri della scheda del Feed a quattro colonne
 
-**Stato**: In revisione · **Branch**: `fix/TASK-474-feed-card-numbers` · **ADR**: nessuno
+**Stato**: In lavorazione (PR #1277 in bozza: misura e schermate dopo al turno del simulatore) · **Branch**: `fix/TASK-474-feed-card-numbers` · **ADR**: nessuno
 (è un difetto) · assegnato dal Coordinatore il 2026-11-12, visto durante TASK-470.
 
 ## Il difetto
@@ -12,7 +12,7 @@ giusti, e nella pagina del post pure.
 
 **Riprodurlo**: al simulatore iOS, Feed «All», un post di corsa con le
 calorie (seed in `out/TASK-470/seed.py`, post «Star over the old town»).
-Schermate prima e dopo in `out/TASK-474/` (fuori dal repository).
+Schermate in `out/TASK-474/`: prima, e un dopo provvisorio senza i 2 pt (da rifare al turno) (fuori dal repository).
 
 ## La causa
 
@@ -26,8 +26,9 @@ valore non ci sta in altezza e rimpicciolirlo non serve, perché la riga resta
 
 ## La correzione
 
-- Il valore senza altezza di riga fissa: torna a 15 pt in ogni riga (riga di
-  numeri alta 36 pt invece di 40, a tre e a quattro colonne).
+- Il valore senza altezza di riga fissa: torna a 15 pt in ogni riga. Al
+  posto della riga di 22 pt, 2 pt sopra e sotto la riga di 17,9 pt: la riga
+  dei numeri resta alta 40 pt e la scheda a tre colonne non cambia aspetto.
 - `minimumFontScale` 0,8: un valore troppo lungo non scende sotto la
   grandezza della sua etichetta (12 pt), poi si taglia.
 - Test `feed/SummaryBoxes.test.tsx`: senza la correzione falliscono i due

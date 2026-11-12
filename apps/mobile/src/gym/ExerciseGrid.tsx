@@ -36,19 +36,6 @@ const EXERCISE_FIGURE = 52;
 /** The height of the body beside it, with the muscles worked (TASK-465). */
 const EXERCISE_BODY = 48;
 
-/** The sign of each group on its tile (TASK-411 part A, the user's «Gruppi,
- * poi macchinari»). */
-export const GROUP_EMOJI: Readonly<Record<GymGroup, string>> = {
-  chest: "🫁",
-  back: "🧗",
-  legs: "🦵",
-  shoulders: "🤸",
-  arms: "💪",
-  core: "🧘",
-  full_body: "🏋️",
-  cardio: "🏃",
-};
-
 /** The exercises of `group`, in the catalog's order. */
 export function exercisesOf(group: GymGroup): GymExercise[] {
   return GYM_EXERCISES.filter((exercise) => exercise.group === group);
@@ -56,7 +43,9 @@ export function exercisesOf(group: GymGroup): GymExercise[] {
 
 /**
  * The eight groups of «+ Exercise» as big tiles, two a row (TASK-411 part
- * A, ADR-0341): the group's sign, its name and how many exercises it has.
+ * A, ADR-0341): the group's name, how many exercises it has and its line
+ * figure. The figure is the group's only sign (TASK-444): an emoji beside
+ * it was a second picture, in colours, of the same thing.
  */
 export function GroupGrid({
   language,
@@ -84,9 +73,6 @@ export function GroupGrid({
             testID={`group-${group}`}
           >
             <View style={styles.groupWords}>
-              <Text style={styles.emoji} importantForAccessibility="no">
-                {GROUP_EMOJI[group]}
-              </Text>
               <Text style={styles.name} numberOfLines={2}>
                 {name}
               </Text>
@@ -248,9 +234,6 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
-  },
-  emoji: {
-    fontSize: fontSize.title,
   },
   name: {
     color: color.text,

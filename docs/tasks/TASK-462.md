@@ -1,6 +1,6 @@
 # TASK-462 — Il calendario di tutte le attività, con lo storico dei tempi
 
-**Stato**: In corso — parte A (server) #1162, parte B (app) in bozza
+**Stato**: Done — A #1162, B #1172 in `main` (2026-11-12)
 **Fase**: 5 · **Branch**: `feat/TASK-462-a-activity-calendar-api` (A),
 `feat/TASK-462-b-activity-calendar-app` (B) ·
 **ADR**: ADR-0372 (`GET /me/activity-calendar`)
@@ -109,4 +109,14 @@ docs/tasks/TASK-462.md
 
 ## Esito
 
-*(a fine task)*
+Done il 2026-11-12. Parte A in `main` con la #1162 (279a737a), sul server
+col passo 9 del Coordinatore (2026-11-12 08:38Z, server a 02214e9b, i
+controlli di `out/TASK-462/SERVER.md` come attesi). Parte B in `main` con
+la #1172 (46be7779), dopo il sì dell'utente alle schermate in cinque
+lingue («Approvo»). Documenti: #1179 (ADR-0372) e la PR di chiusura.
+
+**Cosa resta**: l'app esce con l'aggiornamento completo (OTA del
+Coordinatore col sì dell'utente), non prima; dopo, la prova sul telefono
+vero (la settimana nel profilo, il foglio da «My activities», un mese con
+più sport, le barre). L'alpinismo è TASK-463 (ADR-0373), dopo TASK-415 B
+e TASK-413 B.

@@ -1,0 +1,73 @@
+{
+  "person": {
+    "public_id": "8c1f7a52-3d4e-4b9a-9f61-2a7c0e5d9b13",
+    "username": "Ada_runs",
+    "photo": null
+  },
+  "state": "open",
+  "messages": [
+    {
+      "id": "3f0d6c1a-7b42-4e85-9a13-5d8e2c704b96",
+      "text": "Shall we run this one on Sunday?",
+      "created_at": "2026-11-12T08:15:30Z",
+      "mine": false,
+      "attachment": {
+        "kind": "post",
+        "media_id": null,
+        "width": null,
+        "height": null,
+        "duration_ms": null,
+        "poster": false,
+        "expired": false,
+        "drawing": null,
+        "post": {
+          "id": "0b7e5a94-6c1d-4f38-8e2a-9d4c1f6b3a57",
+          "author": {
+            "public_id": "c2a9f4d1-5e7b-4a63-b0d8-1f3e6a9c7b24",
+            "username": "cleo_draws",
+            "photo": null
+          },
+          "title": "Sunday star",
+          "shape": "star",
+          "word": null,
+          "style": null,
+          "route_title": null,
+          "distance_m": 4020,
+          "activity": "running",
+          "rotation_deg": null,
+          "preview": [
+            [46.067, 11.1215],
+            [46.07, 11.123],
+            [46.071, 11.126],
+            [46.068, 11.127],
+            [46.067, 11.1215]
+          ]
+        }
+      }
+    },
+    {
+      "id": "a6d24e8f-1c39-4b07-b5e2-8f0a7d3c6e41",
+      "text": "",
+      "created_at": "2026-11-11T19:40:02Z",
+      "mine": true,
+      "attachment": {
+        "kind": "post",
+        "media_id": null,
+        "width": null,
+        "height": null,
+        "duration_ms": null,
+        "poster": false,
+        "expired": false,
+        "drawing": null,
+        "post": null
+      }
+    }
+  ],
+  "next": null,
+  "attachments": {
+    "kinds": ["photo", "video", "drawing", "post"],
+    "video_max_s": 60,
+    "video_max_bytes": 40000000,
+    "photo_max_bytes": 10000000
+  }
+}

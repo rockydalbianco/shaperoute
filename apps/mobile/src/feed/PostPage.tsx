@@ -17,6 +17,7 @@ import { dayLabel } from "../activities/activityText";
 import { isOnSnow, isTrackless } from "../activities/snow";
 import type { DrawingChoice } from "../api/drawings";
 import { cityName } from "../explore/recommendedRoutes";
+import { SleepCard } from "../health/SleepCard";
 import { t } from "../i18n";
 import { isPoolLine } from "../pool/PoolTile";
 import { Avatar } from "../profile/Avatar";
@@ -189,6 +190,7 @@ function Page({ post, onClose, onMap }: Props) {
             <SectionBody section={section} />
           </View>
         ))}
+        <SleepCard drawingId={drawing.id} sleep={drawing.sleep} />
       </ScrollView>
       <PostSheet
         post={post}

@@ -11,6 +11,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
 import { Tap } from "../ui/Tap";
 import { PlayScreen } from "./PlayScreen";
 
@@ -29,6 +30,8 @@ type Props = {
  */
 export function PlayOverlay({ onBack, onSignIn }: Props) {
   const insets = useSafeAreaInsets();
+  // Android's «back» is the «←»: back to «Draw», not out of the app.
+  useBackCloses(true, onBack);
   return (
     <View
       style={[

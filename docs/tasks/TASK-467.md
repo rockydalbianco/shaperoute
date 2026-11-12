@@ -1,9 +1,9 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server col passo dell'aggiornamento completo) · **B1b scritta** (#1227: il campo `sleep` nel disegno visto, server; la unisce il Coordinatore, sul server col passo dopo), poi **B2** (app, il sonno nel post) e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server col passo dell'aggiornamento completo) · **B1b in `main`** (#1227, `3c513355`: il campo `sleep` nel disegno visto; sul server col passo dopo quello dell'aggiornamento completo) · **B2 scritta** (app, il sonno nel post, spenta: la unisce il Coordinatore), poi B2b (palestra e vasca) e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1),
-`feat/TASK-467-b1b-sleep-in-feed` (B1b)
+`feat/TASK-467-b1b-sleep-in-feed` (B1b), `feat/TASK-467-b2-sleep-post` (B2)
 **Dipende da**: TASK-321 (Apple Salute nell'app, la stessa libreria),
 TASK-345 C / TASK-409 B (la lettura del battito: il modello del «leggere
 da Salute dopo un tocco»)
@@ -413,6 +413,96 @@ in `fixtures/drawing-ski.json`, `feed-imported.json`,
 novembre, col sì dell'utente; prima di allora le app non vedono il campo
 e B2 non mostra niente.
 
+### Parte B2 — com'è fatta (2026-11-12, branch `feat/TASK-467-b2-sleep-post`)
+
+Il sonno dentro il post di un'attività, nell'app. **Spento in ogni build
+di oggi**: niente di quello che segue si vede o parte finché la parte C non
+lo accende. Deciso dall'agente su delega dell'utente, dentro le scelte
+della parte 0 e la lista dei file approvata dal Coordinatore.
+
+**Come resta nascosto.** Una sola costante, `SLEEP_POSTS_ON = false`
+(`health/sleepModules.ts`), e `sleepReader()` che risponde sempre null. Il
+modulo nativo di Salute è già nelle build dalla 1.0.1 (per il battito):
+la sua assenza non basterebbe, e il sonno non si chiede col testo del
+permesso di oggi, che nomina solo il battito. Il lettore vero di Apple non
+è in `main`: arriva con la parte C. `sleepModules.test.ts` legge i
+sorgenti e blocca ogni file del sonno che carichi la libreria di Salute o
+chieda un permesso. Nessun cambio ad `app.json`, nessun modulo nativo,
+nessuna dipendenza: l'impronta iOS non si muove (misurata, vedi la PR).
+
+**Che cosa c'è** (com'è quando è acceso; il dettaglio in `UI.md`, «Il
+sonno della notte prima»):
+
+- **La notte** (`health/sleepSamples.ts`, funzioni pure sopra `sleepNight`
+  e `sleepScore` della parte A): i campioni dalle 18 della sera prima alle
+  18 del giorno dell'attività, sull'ora del telefono, fino all'inizio
+  dell'attività; per un'attività prima delle 6 senza aver ancora dormito,
+  la notte del giorno prima. Il punteggio usa le 14 notti prima per l'ora
+  solita. Esce il riassunto del contratto (`SleepSummary`): giorno del
+  risveglio, punteggio, minuti, fasi mai più del sonno.
+- **A fine attività** (`health/SleepRunEnd.tsx`, montato in `RunEnd.tsx`
+  in vista sopra «Save»): l'interruttore «Sleep last night», che parte da
+  `SLEEP_SHOWN_DEFAULT` (acceso, «Resta acceso»), la riga «82 · Very good ·
+  7 h 40 min» e «Shown in this post. Turn it off to keep it to yourself.».
+  Serve il sì a leggere il sonno (`health/sleepChoice.ts`: lo accenderà la
+  scheda «Sleep» del profilo, B3; a fine attività il permesso non si
+  chiede mai). Senza notte non compare niente. Mai per un'attività
+  aggiunta da un file.
+- **Al server solo quello che si pubblica**: la notte lascia il telefono
+  solo con l'interruttore acceso **e** un post che altri vedono; con «Only
+  me» la riga non compare nemmeno. Due difese: `RunEnd` non la passa alla
+  porta (`toSleep(null)`), e `activities/sleepOut.ts` non tiene mai una
+  notte con `shown` diverso da `true`.
+- **La coda** (`activities/sleepOut.ts`, `sleep-outbox.json`): detta a
+  «Save» (`toSleep` in `activitiesDoor.ts`, come `toOutfit`), aspetta sul
+  telefono finché l'API ha l'attività, poi `PUT
+  /me/activities/{key}/sleep`, dopo il disegno. Un rifiuto dell'API (non è
+  la notte prima, attività sconosciuta) la butta; senza rete aspetta; dopo
+  30 giorni si butta; una corsa rifiutata e scartata se la porta via.
+- **Dove si legge**: nel Feed una riga sotto i numeri del post
+  (`health/SleepLine.tsx`); nella pagina del post una scheda dopo quelle
+  della corsa (`health/SleepCard.tsx`: punteggio e parola, ore, fasi, e
+  «Worked out by MuW from Apple Health data…»). Leggono il campo `sleep`
+  del post (B1b): nessuna richiesta in più. Mai orari, mai la data.
+- **Dopo la pubblicazione** (`health/SleepPostSwitch.tsx`, in «Post
+  settings»): il proprietario spegne o riaccende; va all'API subito
+  (`PATCH`), e la riga e la scheda seguono all'istante
+  (`health/sleepNow.ts`).
+- **Il client** `api/sleep.ts`: `PUT`/`PATCH`/`GET`/`DELETE
+  /me/activities/{key}/sleep`, `GET /drawings/{id}/sleep`, e la lettura
+  prudente del campo `sleep` di una lista.
+- **I testi** approvati, nelle quattro lingue, con le chiavi di contesto
+  `@@sleep` per le parole che altrove vorrebbero un'altra traduzione
+  («Light», «Deep», «Good»…). In francese «REM» è «Paradoxal», come
+  nell'app Santé. Nessun testo fuori dalla tabella della risposta 7.
+
+**File**. NUOVI in `apps/mobile/src/`: `health/sleepSamples.ts`,
+`sleepModules.ts`, `sleepChoice.ts`, `sleepText.ts`, `useLastNight.ts`,
+`sleepNow.ts`, `SleepRunEnd.tsx`, `SleepLine.tsx`, `SleepCard.tsx`,
+`SleepPostSwitch.tsx`, `api/sleep.ts`, `activities/sleepOut.ts`, coi test
+(`health/sleepSamples.test.ts`, `sleepModules.test.ts`,
+`sleepChoice.test.ts`, `sleepText.test.ts`, `SleepInPost.test.tsx`,
+`api/sleep.test.ts`, `activities/sleepOut.test.ts`,
+`RunEndSleep.test.tsx`, `activitiesDoorSleep.test.tsx`,
+`feed/FeedSleep.test.tsx`). MODIFICATI: `activities/RunEnd.tsx`,
+`activities/activitiesDoor.ts`, `feed/FeedPost.tsx` e `feed/PostPage.tsx`
+(una riga e un import ciascuno), `feed/PostSettings.tsx` (una riga),
+`i18n/{it,de,es,fr}.ts`, `docs/UI.md`, questo file.
+
+**Da sapere per B2b, B3 e C**:
+
+- **B2b**: palestra e nuoto in vasca hanno form e code loro
+  (`GymPostForm`, `PoolPostForm`, `usePoolOutbox`): stesso componente
+  `SleepRunEnd`, stessa coda. Prima della build nativa.
+- **B3**: la scheda «Sleep» del profilo chiama `keepSleepOn()` al sì
+  dell'utente; da lì a fine attività il sonno si legge.
+- **C**: accendere vuol dire `SLEEP_POSTS_ON` vero **e** un
+  `sleepReader()` vero solo nella build col testo del permesso nuovo (le
+  build di prima ricevono lo stesso OTA: devono restare senza lettore), e
+  aggiornare `sleepModules.test.ts`. Prima: frase della privacy, «App
+  Privacy», note di revisione, ognuna col sì dell'utente.
+- I controlli del server per B1b: `out/TASK-467/SERVER-B1b.md`.
+
 ## Criteri di accettazione
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.
@@ -428,7 +518,19 @@ e B2 non mostra niente.
   la stessa regola di `GET /drawings/{id}/sleep` per chi non è l'autore,
   in ogni lista che usa `_seen`; coi test per chi non è l'autore, per chi
   non vede il post e attraverso un blocco; nessuna migrazione.
-- [ ] Parti B2–D: criteri scritti qui quando partono.
+- [x] B2: a fine attività «Sleep last night» in vista sopra «Save», che
+  parte da `SLEEP_SHOWN_DEFAULT`; la riga nel Feed e la scheda nella
+  pagina del post dal campo `sleep`, senza richieste in più; i testi
+  approvati nelle quattro lingue; test deterministici, `tsc`, ESLint e
+  Prettier puliti.
+- [x] B2: **niente in `main` legge Salute**: `sleepReader()` risponde null,
+  nessun `require` della libreria, nessuna richiesta di permesso, col test
+  che lo blocca; `SLEEP_POSTS_ON` è `false` e con lui spento niente si
+  vede; `app.json` non toccato, impronta iOS ferma.
+- [x] B2: **al server solo quello che si pubblica**: la notte parte solo
+  con l'interruttore acceso e un post che altri vedono, coi test (`RunEnd`
+  e la coda).
+- [ ] Parti B2b, B3, C, D: criteri scritti qui quando partono.
 
 ## File toccati (documenti, questa PR)
 
@@ -468,3 +570,9 @@ e B2 non mostra niente.
   campo `sleep` nel disegno visto, perché il Feed non faccia una richiesta
   per riga. Restano: il merge del Coordinatore e il passo sul server dopo
   quello dell'aggiornamento completo, col sì dell'utente. Poi B2.
+- **2026-11-12, B2**: #1227 (B1b) in `main` (`3c513355`). Scritta B2:
+  l'interruttore a fine attività, la coda, la riga nel Feed, la scheda nella
+  pagina del post, l'interruttore nelle impostazioni del post, i testi in
+  quattro lingue; tutto spento da `SLEEP_POSTS_ON`. Restano: il merge del
+  Coordinatore, la PR di soli documenti (le scelte di B1b e B2), il server
+  di B1b col sì dell'utente, la prova nel simulatore al turno; poi B2b e B3.

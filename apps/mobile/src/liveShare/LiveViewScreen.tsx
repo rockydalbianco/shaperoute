@@ -129,11 +129,13 @@ function Live({
       <View style={styles.map}>
         {points.length > 0 && (
           <MapView
-            start={points[0]}
+            // No start marker: the map follows where the person is now.
+            start={isOver(view.status) ? points[0] : null}
             route={null}
             track={points}
             following={isOver(view.status) ? null : here}
             onError={setMapProblem}
+            style={styles.fill}
           />
         )}
       </View>
@@ -204,6 +206,9 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,
+  },
+  fill: {
+    flex: 1,
   },
   map: {
     flex: 1,

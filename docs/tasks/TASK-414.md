@@ -2,7 +2,8 @@
 
 **Stato**: In corso — parte 0 in `main` (#939); parte A in `main` (#1183,
 `f614821c`, 2026-11-12: motore, contratto, API, profilo nascosto
-nell'app); prossima B col via del Coordinatore.
+nell'app); parte B in PR (l'app, «Soon» fino al sì), branch
+`feat/TASK-414-b-wheelchair-app`.
 **Fase**: 4 · **Branch**: `docs/TASK-414-0-wheelchair` (parte 0), poi
 parte A e parte B · **ADR**: ADR-0343 (accettato 2026-11-12, precisazione A) · numeri dal Coordinatore
 · sessione dello sport, avviata dal «Coordinatore Sport»
@@ -268,6 +269,31 @@ apps/mobile/assets/engine/engine.zip                             (rifatto, ultim
 docs/tasks/TASK-414.md, docs/sports/wheelchair.md, docs/API.md, docs/DATABASE.md
 ```
 
+Parte B (lista approvata dal Coordinatore il 2026-11-12, su `main`
+`ef07030b`):
+
+```
+packages/shared-types/src/index.ts                  (WHEELCHAIR_BEST_DISTANCES, PersonalBest)
+apps/mobile/src/sports/base.ts                       (campo `shapes`)
+apps/mobile/src/sports/wheelchair.ts                 (profilo intero)
+apps/mobile/src/settings/sport.ts                    (la riga «Soon», «Go without a route»)
+apps/mobile/src/screens/RunNoRouteButton.tsx         (♿)
+apps/mobile/src/search/searchFilters.ts              (via da NOT_YET)
+apps/mobile/src/route/RoutePanel.tsx, ShapeGrid.tsx  (le quattro forme)
+apps/mobile/src/social/PublicParts.tsx               (lo sport dei post)
+apps/mobile/src/imports/fileTrack.ts                 («wheelchair» in un file)
+apps/mobile/src/i18n/{de,es,fr,it}.ts                (i tre testi della scelta 6)
+apps/mobile/targets/watch/{de,es,fr,it}.lproj/Localizable.strings (dagli script)
+apps/mobile/src/sports/wheelchairProfile.test.ts     (nuovo)
+apps/mobile/src/route/RoutePanelWheelchair.test.tsx  (nuovo)
+apps/mobile/src/settings/: sport.test.ts, sportRows.test.ts, SportButton.test.tsx,
+    SportSetting.test.tsx, SportVoiceItalian.test.tsx; src/sports/sportProfiles.test.ts,
+    src/profile/SettingsPage.test.tsx                (le liste)
+apps/mobile/src/profile/PersonalBests.tsx (+ test)   (dopo il merge della #1205)
+apps/mobile/App.tsx                                  (una riga, ultima, nel turno del Coordinatore)
+docs/tasks/TASK-414.md, docs/sports/wheelchair.md
+```
+
 ## Dove si è
 
 2026-11-07/08: misurate col banco sei reti di prova, da un download per zona
@@ -341,5 +367,31 @@ Impronte invariate. ADR-0343 è accettato, con la precisazione A.
 - **Orologio**: i file di `targets/watch/**` della parte A (`sports.json`,
   `Localizable.strings`) non entrano nella build 14 dell'orologio già in
   revisione; entrano con la build dopo.
-- **Parte B** (l'app): solo col via del Coordinatore e la lista dei file;
-  `settings/sport.ts` e `sports/**` adesso sono di TASK-305 R2.
+- **Parte B** (l'app): in PR. Restano `profile/PersonalBests.tsx` (dopo
+  la #1205) e la riga di `App.tsx` (una forma non delle quattro non parte),
+  nel turno che dà il Coordinatore; poi le schermate e il simulatore.
+- **Accensione**: `ready: true` con una riga a parte, col sì dell'utente,
+  dopo che il server ha la `0071` e dopo le schermate.
+
+2026-11-12, parte B (branch `feat/TASK-414-b-wheelchair-app`, lista
+approvata dal Coordinatore, da `main` `ef07030b`):
+
+- **«Settings»**: «Wheelchair & stroller» ♿ dopo «Roller», `ready: false`
+  («Soon», fuori dalla ricerca e dal modulo per pubblicare) finché il
+  server non ha la `0071` e l'utente non dice sì: si accende con una riga
+  a parte, dopo le schermate. «Go without a route» per partire senza
+  percorso.
+- **«Disegna»**: il campo nuovo `shapes` del profilo; la carrozzina ha
+  solo cerchio, cuore, stella e luna, tutti in vista. Niente parole,
+  immagini, «Freehand», «altra forma» scritta; una forma scelta prima che
+  non è delle quattro non si mostra; dopo una forma che non entra si
+  propongono solo le quattro. L'avviso sui cordoli sotto ogni percorso.
+- **Profilo**: tempo al passo della camminata (deciso dall'agente: chi
+  spinge va come chi cammina), record su 1 e 5 km («1 km», «5 km»),
+  energia della camminata anche per la carrozzina (uno sport solo, scelta
+  1), Apple `.wheelchairWalkPace` senza distanza del giorno (la distanza
+  «carrozzina» di Salute sarebbe sbagliata per chi spinge un passeggino).
+- **Import**: un file che dice «wheelchair» (MuW, Strava, Garmin
+  `wheelchair_push_*`) è una carrozzina, mai una corsa.
+- Solo JavaScript: impronta iOS invariata.
+

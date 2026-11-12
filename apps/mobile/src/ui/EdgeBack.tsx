@@ -2,12 +2,15 @@ import { type ReactNode, useEffect, useState } from "react";
 import {
   Animated,
   Easing,
+  type GestureResponderHandlers,
   Keyboard,
+  KeyboardAvoidingView,
   type PanResponderGestureState,
   PanResponder,
   Platform,
   StyleSheet,
   useWindowDimensions,
+  type ViewStyle,
 } from "react-native";
 
 import { color, motion } from "../theme/tokens";
@@ -134,17 +137,33 @@ class EdgeGesture {
   }).panHandlers;
 }
 
+/** What a page needs for the way back: the finger's handlers and the
+ * page's movement on its root, which must be an animated view, and the
+ * shade, its first child, that darkens the app as the page uncovers it. */
+export type EdgeBackParts = {
+  handlers: GestureResponderHandlers | Record<string, never>;
+  style: Animated.WithAnimatedValue<ViewStyle>;
+  shade: ReactNode;
+};
+
 /**
- * The way back from the left edge, on iOS (TASK-470 E, the user's choice):
- * a finger from the edge of a page opened over the app takes the page to
- * the right, and the app shows under it, a little dark; let go past a third
- * of the screen, or flicked, the page goes and its «←» is called, else it
- * comes back on the spring `glide`. With «Reduce Motion» the page fades
- * instead of sliding. Android has its own back gesture, which the pages
- * already answer (`useBackCloses`). A touch, a scroll down, a row slid from
- * further in: all stay the page's.
+ * The way back from the left edge, on iOS (TASK-470 E, ADR-0384, the
+ * user's choice): a finger from the edge of a page opened over the app
+ * takes the page to the right, and the app shows under it, a little dark;
+ * let go past a third of the screen, or flicked, the page goes and its «←»
+ * is called, else it comes back on the spring `glide`. With «Reduce
+ * Motion» the page fades instead of sliding. Android has its own back
+ * gesture, which the pages already answer (`useBackCloses`). A touch, a
+ * scroll down, a row slid from further in: all stay the page's.
+ *
+ * A hook on the page's own root, not a view around it: the page's lines
+ * stay where they are.
  */
-export function EdgeBack({ onBack, enabled = true, testID, children }: Props) {
+export function useEdgeBack(
+  onBack: () => void,
+  enabled = true,
+  testID?: string,
+): EdgeBackParts {
   const { width } = useWindowDimensions();
   const still = useReduceMotion();
   // One gesture for the page's life: made again, a page drawn again under
@@ -155,8 +174,7 @@ export function EdgeBack({ onBack, enabled = true, testID, children }: Props) {
     gesture.update({ onBack, on, still, width });
   });
   const x = gesture.x;
-
-  const look = still
+  const style = still
     ? {
         opacity: x.interpolate({
           inputRange: [0, width],
@@ -175,35 +193,49 @@ export function EdgeBack({ onBack, enabled = true, testID, children }: Props) {
           },
         ],
       };
-  // None at rest: a page with clear corners shows nothing more.
+  // None at rest. It lies a screen to the left of the page and goes with
+  // it: it covers just what the page uncovers.
   const dim = x.interpolate({
     inputRange: [0, 1, Math.max(width, 2)],
     outputRange: [0, EDGE_BACK_DIM, 0],
     extrapolate: "clamp",
   });
+  const shade = on && !still && (
+    <Animated.View
+      testID={testID === undefined ? undefined : `${testID}-dim`}
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[styles.shade, { left: -width, width, opacity: dim }]}
+    />
+  );
+  return { handlers: on ? gesture.handlers : {}, style, shade };
+}
+
+/** A page with the way back, for a page whose root is not its own. */
+export function EdgeBack({ onBack, enabled = true, testID, children }: Props) {
+  const edge = useEdgeBack(onBack, enabled, testID);
   return (
-    <Animated.View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      {on && (
-        <Animated.View
-          testID={testID === undefined ? undefined : `${testID}-dim`}
-          pointerEvents="none"
-          style={[styles.dim, { opacity: dim }]}
-        />
-      )}
-      <Animated.View
-        testID={testID}
-        style={[StyleSheet.absoluteFill, look]}
-        {...(on ? gesture.handlers : {})}
-      >
-        {children}
-      </Animated.View>
+    <Animated.View
+      testID={testID}
+      style={[StyleSheet.absoluteFill, edge.style]}
+      {...edge.handlers}
+    >
+      {edge.shade}
+      {children}
     </Animated.View>
   );
 }
 
+/** A `KeyboardAvoidingView` that can move: for a page whose root is one. */
+export const EdgeKeyboardAvoidingView =
+  Animated.createAnimatedComponent(KeyboardAvoidingView);
+
 const styles = StyleSheet.create({
-  dim: {
-    ...StyleSheet.absoluteFill,
+  shade: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
     backgroundColor: color.scrim,
   },
 });

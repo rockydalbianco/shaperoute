@@ -131,7 +131,9 @@ function pageOpacity(): number {
 }
 
 function dim(): number {
-  const style = StyleSheet.flatten(screen.getByTestId("page-dim").props.style) as {
+  const style = StyleSheet.flatten(
+    screen.getByTestId("page-dim", { includeHiddenElements: true }).props.style,
+  ) as {
     opacity: number;
   };
   return style.opacity;
@@ -294,7 +296,9 @@ test("VoiceOver still finds the page's «←»: the way back hides nothing", asy
   );
   expect(screen.getByRole("button", { name: "Back" })).toBeOnTheScreen();
   expect(screen.getByTestId("page").props.accessible).toBeFalsy();
-  expect(screen.getByTestId("page-dim").props.accessibilityElementsHidden).not.toBe(
-    false,
-  );
+  // The shade is no element of the page.
+  expect(
+    screen.getByTestId("page-dim", { includeHiddenElements: true }).props
+      .accessibilityElementsHidden,
+  ).toBe(true);
 });

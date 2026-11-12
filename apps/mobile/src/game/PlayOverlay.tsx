@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../i18n";
@@ -11,7 +11,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { useBackCloses } from "../ui/backLayers";
+import { closeTopLayer, useBackCloses } from "../ui/backLayers";
+import { useEdgeBack } from "../ui/EdgeBack";
 import { Tap } from "../ui/Tap";
 import { PlayScreen } from "./PlayScreen";
 
@@ -32,15 +33,21 @@ export function PlayOverlay({ onBack, onSignIn }: Props) {
   const insets = useSafeAreaInsets();
   // Android's «back» is the «←»: back to «Draw», not out of the app.
   useBackCloses(true, onBack);
+  // On iOS from the left edge too: the page of «Play» on screen closes
+  // first, as its own «←» (the newest on the stack), then «Play».
+  const edge = useEdgeBack(() => closeTopLayer() || onBack());
   return (
-    <View
+    <Animated.View
       style={[
         StyleSheet.absoluteFill,
         styles.screen,
         { paddingTop: insets.top + space.sm },
+        edge.style,
       ]}
       testID="play-overlay"
+      {...edge.handlers}
     >
+      {edge.shade}
       {/* As the title of «Messages» (MessagesOverlay.tsx). */}
       <View style={styles.titleRow}>
         <Tap
@@ -56,7 +63,7 @@ export function PlayOverlay({ onBack, onSignIn }: Props) {
         </Text>
       </View>
       <PlayScreen active onSignIn={onSignIn} />
-    </View>
+    </Animated.View>
   );
 }
 

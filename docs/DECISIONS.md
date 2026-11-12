@@ -533,8 +533,67 @@ lasciando le righe d'indice.
 - ADR-0375 — Il parapendio registrato senza forma, con la condivisione dal vivo e i numeri del volo (quota, variometro, velocità del momento) · 2026-11-11 · Attiva
 - ADR-0372 — Il calendario di tutte le attività: `GET /me/activity-calendar` letto da `runs` e `run_stats`, i 12 mesi e gli sport dell'account nella stessa risposta, nessuna migrazione · 2026-11-11 · Attiva
 - ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella · 2026-11-12 · Attiva
+- ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio
+
+**Stato**: Attiva · 2026-11-12 · TASK-441, parte B1 (#1184 il server, #1185
+l'app). L'utente ha chiesto di rifare a penna alzata tutte le parole del
+catalogo («si procedi e ifalle», poi «Sì, rifai il giro» sulla pagina di
+prova) e ha approvato le 340 che entrano («Sì, vanno bene», viste le due
+pagine e il campione grande). Le scelte tecniche sono dell'agente su delega
+dell'utente.
+
+**Contesto**: le 702 parole a riga unica della parte A avevano le lettere
+unite e non si leggevano: tolte lo stesso giorno (ADR-0347, precisazione
+C). Gli esempi di città scrivono le parole a penna alzata, tonde, 3 km a
+lettera, e si leggono. Il seme del catalogo non aveva dove tenere i tratti
+fra le lettere, e le schede delle liste disegnano una riga sola.
+
+**Decisione**:
+
+- **Il metodo degli esempi di città**: ogni parola del catalogo è tonda, a
+  penna alzata, 3 km a lettera, da 2 a 6 lettere (a 7 la somiglianza resta
+  sotto 0,90 dovunque). Le 55 parole a riga unica di prima escono.
+- **`walks` nel seme e nel dettaglio**: coppie di indici dei punti, in
+  ordine, dei tratti camminati fra le lettere; `catalog_seed._route_body`
+  li scrive solo quando ci sono e `GET /recommended-routes/{id}` li dà
+  uguali. È lo stesso campo del risultato di un percorso: l'app lo leggeva
+  già.
+- **`gaps` nelle liste**: l'anteprima di una parola è fatta lettera per
+  lettera (fino a 32 punti a lettera, i tratti fuori) e `gaps` dice dove
+  una lettera finisce. È il campo che `RouteCard` leggeva già.
+- **I due campi mancano, non sono `null`**, in un percorso a riga unica: la
+  sua risposta resta identica byte per byte e i contratti di prima non
+  cambiano.
+- **Il filtro non basta, si legge a occhio**: per le parole il filtro
+  guarda la lunghezza del solo disegno (±10%), la somiglianza e le strade,
+  ma entra nel catalogo solo la chiave scritta in
+  `tools/catalog_pen_up_read.json`, cioè una parola letta alla grandezza di
+  una scheda, dritta e senza il nome sotto, in cui ogni lettera si
+  riconosce.
+- **L'app chiede di nuovo `pen_up`** quando un disegno del catalogo ha
+  `walks` («Use this route» ridà una parola dello stesso tipo).
+
+**Motivo**: la somiglianza del motore è la media di quanto ogni lettera è
+coperta: a Nizza YES a 0,99 non si legge, a Levico HI a 0,94 nemmeno. Una
+soglia più alta non le separa (mediana 0,98 delle tenute contro 0,94 delle
+scartate, ma si sovrappongono). Riusare `walks` e `gaps` non chiede
+contratti nuovi né codice nuovo nelle schede.
+
+**Conseguenze**: 761 parole passano il filtro, **340 entrano** (60, 117,
+132, 22 e 9 da 2 a 6 lettere; 83 parole diverse in 59 città). Il catalogo
+va a **1546 percorsi** (1206 forme, 340 parole): 24,7 MB di file, +166 MB
+residenti. Da Milano «NEAR YOU» dà 60 percorsi con 50 nomi diversi, 19 a
+penna alzata. Un'app senza l'OTA della #1185 unisce le lettere con un
+tratto dritto sulle schede (la mappa le mostra già staccate): **server e
+OTA escono insieme**, nell'aggiornamento completo. «Edit the drawing»
+prende una parola a pezzi come una riga sola, tratti compresi: modificarla
+lettera per lettera non si può, come per gli esempi di città. Una parola
+nuova vuole di nuovo la lettura a occhio: è lavoro a mano, e a 5–6 lettere
+ne resta una su cinque.
 
 ## ADR-0377 — Risposte e reazioni ai commenti: una risposta è una riga di `comments` a un livello solo, le cinque emoji in `comment_reactions`, la lista piatta per le app di prima, la reazione solo nella campanella
 

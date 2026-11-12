@@ -180,6 +180,10 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   unica non si leggono: escono con `fix/TASK-441-a-drop-words` (→ 1261) e
   tornano nella B a penna alzata; il server aspetta la correzione. Poi B
   (ADR-0366) e C. File: `catalog/seed/**`, `tools/catalog_kept.json` (la correzione) · `tasks/TASK-441.md`
+  **2026-11-12**: A sul server (1261, passo 8). **B1** (ADR-0366): 340 parole a
+  penna alzata lette a occhio, catalogo a 1546; server in `main` (#1184), app
+  #1185; server e OTA escono insieme nell'aggiornamento completo. Poi B2
+  (bici, canoa, nuoto) e C. File (#1185): `apps/mobile/src/explore/{ExploreScreen.tsx,explored.ts,recommendedRoutes.ts}`, `apps/mobile/src/route/NearYou.tsx`
 - **TASK-305 — Parapendio: la registrazione in volo** (ADR-0375) · parti
   R: il volo «Record only» con la condivisione dal vivo e i numeri del volo
   (quota, variometro, velocità). Prima la PR di documenti, poi R1 (server),

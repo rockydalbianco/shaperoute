@@ -442,3 +442,8 @@ Le altre parti scrivono i loro criteri quando partono.
   traduzioni dei tre testi sono dell'agente. Esce dopo la parte C sul
   server e con la copia del sito (`out/TASK-455/SITO-D.md`), che deve
   prendere anche `site/p`.
+- 2026-11-12: col sì del Coordinatore, `site/p` aggiunto alla riga della
+  copia del sito in `docs/DEPLOY.md` (F.14) e un test in
+  `site/tests/post.test.mjs` che lo controlla, con i file che la pagina
+  prende da fuori dalla sua cartella. Il suo `sito.sh` lo aggiorna il
+  Coordinatore alla copia.

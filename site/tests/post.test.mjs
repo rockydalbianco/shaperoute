@@ -164,3 +164,14 @@ test("the page asks the API once, sends nothing of who reads, and keeps nothing"
   const html = read(PAGE, "index.html");
   assert.ok(!/<img[^>]+data-/.test(html));
 });
+
+test("the server's copy (DEPLOY.md F.14) takes the page and what it loads", () => {
+  const deploy = read(REPO, "docs", "DEPLOY.md");
+  const line = deploy.match(/git archive origin\/main ((?:site\/\S+ ?)+)\|/);
+  const copied = line ? line[1].trim().split(/\s+/) : [];
+  // The page's own folder, the live page's (MapLibre, the map's colours) and
+  // the download address: without one of them a link opens a broken page.
+  for (const path of ["site/p", "site/live", "site/config.js", "site/styles.css"]) {
+    assert.ok(copied.includes(path), `DEPLOY.md F.14 copies ${path}`);
+  }
+});

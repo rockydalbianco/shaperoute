@@ -34,7 +34,8 @@
         "username": "ada"
       },
       "ski_descents": null,
-      "sleep": null
+      "sleep": null,
+      "linkable": true
     }
   ],
   "next": null

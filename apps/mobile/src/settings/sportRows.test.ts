@@ -35,8 +35,8 @@ it("shows the rows of before, in their order", () => {
     },
     // Ski touring (TASK-415 part B), on with its phases and its VAM.
     { id: "skimo", emoji: "🏔️", name: "Ski touring", ready: true, recordOnly: true },
-    // Snowshoes (TASK-413 part B), «Soon» until the user's yes.
-    { id: "snowshoe", emoji: "❄️", name: "Snowshoes", ready: false },
+    // Snowshoes (TASK-413 parts B and C), on since the server has #1266.
+    { id: "snowshoe", emoji: "❄️", name: "Snowshoes", ready: true },
     { id: "gym", emoji: "🏋️", name: "Gym", ready: true },
     // Paragliding (TASK-305 part R2), on with the numbers of the flight.
     {

@@ -25,8 +25,7 @@ import { profileOf } from "../sports";
  * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
  * a ski tour («Ski touring», TASK-415 part B, ADR-0344). Snowshoes draw a
  * small shape placed freely on the open snow, as on the water, and record
- * a day without one (TASK-413 parts B and C, ADR-0342), «Soon» until the
- * user's yes. A workout
+ * a day without one (TASK-413 parts B and C, ADR-0342). A workout
  * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
  * «Draw» offers only «Start workout». */
 export type Sport =
@@ -161,9 +160,9 @@ export const ALL_SPORTS: readonly SportOption[] = [
   fromProfile("skimo", true),
   // Snowshoes are asked as "snowshoeing" (activityOf), 0.5-3 km on the open
   // snow of the server (TASK-413 parts A, ADR-0342); «Record your day» is
-  // their way without a shape (part C). Off until the user's yes to the
-  // screenshots, with the server's step for #1266.
-  fromProfile("snowshoe", false),
+  // their way without a shape (part C). On since the server has #1266
+  // (step 12), the user's «Sì, accendi» to the screenshots (2026-11-12).
+  fromProfile("snowshoe", true),
   // Saved as "gym" (runActivityOf), without a track (TASK-385 part B); on in
   // the store builds too, the user's «ok accendi» (2026-11-05): the server
   // keeps its posts from the apps that cannot read them (X-MuW-Reads).

@@ -543,6 +543,9 @@ lasciando le righe d'indice.
 - ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Attiva per A (A1, A2 in produzione); B Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
+- ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares` · 2026-11-12 · Attiva
+- ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live` · 2026-11-12 · Attiva
+- ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal` · 2026-11-12 · Attiva
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
 - ADR-0384 — Il gesto dal bordo sinistro su iOS: la pagina segue il dito e si chiude come la sua «←» · 2026-11-12 · Attiva
 - ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
@@ -612,6 +615,53 @@ volerlo:
    TASK-468. In volo «Sharing live» dice che è acceso.
 4. Al primo volo sul telefono il foglio aspetta che «Before you fly» sia
    letto (trovato nel simulatore).
+
+## ADR-0381, precisazione A2a — Le live programmate: il legame va dalla condivisione alla programmata, la fila solo di chi si segue a pagine, montate da `install_live_shares`
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte A2a (#1245).
+**Deciso dall'agente su delega dell'utente.**
+
+- `live_shares.planned_live_id` → `planned_lives` e non il contrario: i dati
+  di `live_shares` restano fuori dalle copie notturne, e una chiave da una
+  tabella copiata verso una lasciata fuori ne romperebbe il ripristino.
+- La fila (`GET /lives`, scelta 7) unisce le programmate e le live messe nel
+  Feed senza programmarle; ordine: in corso prima (l'ultima partita prima),
+  poi le programmate (la più vicina prima); cursore `rank_chiave_id`.
+- Le rotte stanno in `planned_lives.py`, montato da `install_live_shares`:
+  `app.py` e `feed.py` non cambiano. I tipi in `plannedLive.ts`, esportati
+  da `liveShare.ts`: `index.ts` non cambia.
+- La partenza va da un'ora prima a tre ore dopo; una live fermata per
+  sbaglio può ripartire entro quelle ore. Una programmata mai partita esce
+  dalla fila tre ore dopo la sua ora.
+
+## ADR-0381, precisazione A1b — La live in un messaggio: un rimando senza chiave esterna, solo in una conversazione aperta, solo per chi dice `live`
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte A1b (#1265).
+**Deciso dall'agente su delega dell'utente.**
+
+- `messages.live_share_id` senza chiave esterna (le copie tengono
+  `messages`, non i dati di `live_shares`); la scheda si legge a ogni
+  lettura con `MAY_SEE_SQL`, `null` quando la live non c'è più.
+- Come il post (ADR-0382), `live` sta fuori da `MESSAGE_ATTACHMENT_KINDS`:
+  lo riceve solo l'app che dice `live` in `X-MuW-Reads`; le altre leggono
+  «[Live]».
+- «Send in MuW» (`POST /me/live-shares/{id}/send`) manda un messaggio a
+  persona con `Messages.send`, e quindi solo dove la conversazione è aperta
+  a chi manda: gli altri sono in `skipped`.
+
+## ADR-0381, precisazione B1 — La live in chat nell'app: la condivisione senza link per la chat, il menu di «Sharing live», la schermata dal vivo come `Modal`
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte B1 (#1275).
+**Deciso dall'agente su delega dell'utente** (la tecnica; testi e aspetto
+approvati dall'utente).
+
+- «Send in MuW» crea la condivisione con `link: false`; «Share link» la fa
+  dopo, dal menu di «Sharing live». `startLiveShare` resta compatibile
+  (`{kind: "started", url}` com'era, in più `started_without_link`).
+- La schermata dal vivo è un `Modal` a tutto schermo che chiede ogni 10 s:
+  il gesto dal bordo (ADR-0384) non fa nulla, si chiude con «Close»;
+  `TabSwipeOwners.test.ts` la ammette come unica mappa fuori da `map/`
+  oltre alla tela del disegno.
 
 ## ADR-0371 — Il pianificatore completo: almeno due sport per piano, il corpo libero senza kg, i giorni di altri sport in `outing` e la meta in `target`, le settimane verso la meta calcolate sul telefono
 

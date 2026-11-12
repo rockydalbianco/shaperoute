@@ -1207,6 +1207,42 @@ merge):
   con una sottoquery sulla chiave primaria (`drawings.py`, `_SEEN_FIELDS`).
   Test in `test_ski_parts.py`.
 
+Migrazione `0072_sleep_nights.sql` (TASK-467 parte B1, ADR-0380, `API.md`
+«Sleep»; numero in bozza dal Coordinatore, quello vero è il primo libero al
+merge):
+
+- **`sleep_nights`**: una riga per notte di sonno **pubblicata**, mai i
+  campioni di Apple Salute né gli orari.
+  - `user_id` verso `users(id)` con `ON DELETE CASCADE`: un account
+    cancellato si porta via le sue notti.
+  - `night` (`date`): il giorno del risveglio. `UNIQUE (user_id, night)`.
+  - `score` (`smallint`, 0–100), `asleep_min` (1–1440), `awake_min`
+    (0–1440); `rem_min`, `light_min`, `deep_min` (null se nessun orologio
+    ha detto le fasi). Il vincolo `sleep_nights_stages_check`: le tre fasi
+    tutte o nessuna, non negative, insieme non più di `asleep_min`.
+  - `shared` (`boolean`, `NOT NULL DEFAULT false`): il sì del proprietario
+    a mostrarla nel profilo. `saved_at`.
+  - Un indice parziale `(user_id, night DESC) WHERE shared`: l'ultima notte
+    condivisa di un profilo.
+- **`runs`**: `sleep_night_id` (verso `sleep_nights(id)`, `ON DELETE SET
+  NULL`: togliere la notte lascia l'attività com'era) e `sleep_shown`
+  (`boolean`, `NOT NULL DEFAULT true`, la scelta dell'utente del
+  2026-11-12: nel post dell'attività il sonno parte acceso). Un indice
+  parziale su `sleep_night_id` dove non è null.
+- **Si tiene solo quello che è pubblicato**: la funzione
+  `sleep_night_left()` e i due trigger su `runs` (`AFTER DELETE`, `AFTER
+  UPDATE OF sleep_night_id`) cancellano la notte che l'ultima attività ha
+  lasciato, se non è `shared`. Lo stesso fa `sleep.py` quando `shared` si
+  spegne.
+- È un **dato sulla salute** (GDPR art. 9): arriva solo col gesto di chi lo
+  pubblica («Share», o «Publish» con «Sleep last night» in vista). Si
+  cancella con `DELETE /me/sleep/{night}` e con l'account, per cascata.
+  **Non c'è un'esportazione automatica** dei dati di un account: la copia
+  che uno chiede per email si fa a mano, e per il sonno è `SELECT night,
+  score, asleep_min, awake_min, rem_min, light_min, deep_min, shared,
+  saved_at FROM sleep_nights WHERE user_id = …`.
+- Nessuna riga di prima cambia, nessun backfill. Test in `test_sleep.py`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

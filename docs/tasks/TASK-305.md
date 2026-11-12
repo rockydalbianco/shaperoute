@@ -655,10 +655,21 @@ correzioni: i riquadri due per riga («Max altitude» si tagliava) e la riga
 del volo sotto il bottone (`ChooseScreen.tsx`, col sì del Coordinatore).
 Esce con l'aggiornamento completo del 2026-11-12.
 
+**Esito R5** (2026-11-12): server #1258 in main (291c41ff), acceso al passo
+12 (~16:56Z, server eee85a69, letture di `out/TASK-305/SERVER-R5a.md` come
+attese); app #1260 in main, in produzione con l'OTA 16 (16:42Z), dopo la
+prova nel simulatore e le schermate approvate dall'utente («Sì, approvo»).
+Dalla prova una correzione: il foglio di «Share live at start» aspettava
+«Before you fly». Decisioni: ADR-0375 precisazione R5, ADR-0352
+precisazione.
+
 **Cosa resta**:
 
 - Una prova di un volo vero, col link dal vivo aperto da un altro
   telefono, dopo l'uscita.
 - R4 (il volo sull'orologio, per il battito dal vivo): PR #1218 in bozza,
   fuori da `main` fino alla build dell'orologio dopo la 1.1.0.
+- R6 (corsa + volo): server #1291 dopo TASK-455 C, app #1293 dopo R6a sul
+  server; poi R6c (la mappa a due colori).
+- Il fix #1302: «Save» sullo schermo alla fine del volo.
 - Le parti del pianificatore (A1…F) restano Proposte.

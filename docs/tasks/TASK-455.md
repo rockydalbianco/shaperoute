@@ -187,7 +187,10 @@ OTA da sola.
      `social/DrawingCard.tsx` «Send to a friend» resta solo sui disegni
      propri e su quelli «Everyone» (`drawing.public`); su un disegno
      «Followers» altrui il pulsante non c'è finché non c'è il rimando.
-     Proposta al Coordinatore il 2026-11-12.
+     Sì del Coordinatore il 2026-11-12: **va per prima, prima della parte
+     A**, in una PR sola (`feat/TASK-455-b0-send-own-or-public`), perché
+     esca con l'aggiornamento completo. File: `social/DrawingCard.tsx`,
+     `social/DrawingCardSend.test.tsx` (nuovo).
    - **B**: la scheda di un disegno altrui manda il rimando, e il pulsante
      torna anche sui «Followers».
    Nella parte A **ogni lettura del post allegato si rifà coi permessi di
@@ -232,7 +235,15 @@ vero è il primo libero al merge),
 `services/api/tests/test_message_posts.py` (nuovo),
 `packages/shared-types/src/index.ts` (a turno),
 `packages/shared-types/fixtures/message-post.json` (nuovo),
-`docs/API.md` (a turno), `docs/DATABASE.md`.
+`packages/shared-types/test/message-post.test.ts` (nuovo),
+`docs/API.md` (a turno), `docs/DATABASE.md`. Chiesto in più il
+2026-11-12, in attesa del sì: `services/api/shaperoute_api/report_email.py`
+(la pagina del link di una segnalazione legge `drawing_card` per ogni
+allegato che non è foto o video: con `post` darebbe un 500).
+
+Parte B0 (sì del Coordinatore il 2026-11-12):
+`apps/mobile/src/social/DrawingCard.tsx`,
+`apps/mobile/src/social/DrawingCardSend.test.tsx` (nuovo).
 
 ## Criteri di accettazione
 
@@ -271,3 +282,9 @@ Le altre parti scrivono i loro criteri quando partono.
 - 2026-11-12: risposta del Coordinatore: ADR-0382, migrazione provvisoria
   `0075`, sì ai file della parte A, ordine sui file dell'app, tre cose da
   fissare (sopra). Voce dell'ADR aggiunta alla #1212.
+- 2026-11-12: parte A scritta sul suo branch (migrazione `0075`, blocco
+  «A post attached» in `messages.py`, push, tipi, esempio, `API.md`,
+  `DATABASE.md`; 12 test nuovi verdi in locale). L'app dice `post` in
+  `X-MuW-Reads`: un valore nuovo di `?with=` un server di prima lo
+  rifiuterebbe con `422`. Ferma sul sì per `report_email.py`. Il
+  Coordinatore mette la B0 per prima.

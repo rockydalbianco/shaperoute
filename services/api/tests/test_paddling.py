@@ -138,6 +138,7 @@ def test_paddling_is_offered_and_has_water_not_zones(tmp_path: Path) -> None:
         "hiking",
         "mountain_biking",
         "inline_skating",
+        "wheelchair",
     )
     graphs = ActivityGraphs.from_cache(tmp_path)
     assert isinstance(graphs.water, ServerWater)

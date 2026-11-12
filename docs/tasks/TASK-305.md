@@ -571,3 +571,13 @@ offerto); un volo non è una giornata sulla neve (`SNOW_ACTIVITIES` in
 (02214e9b), controlli di `out/TASK-305/SERVER-R1.md` passati. Nota per
 R2: `activities/snow.ts` e `sports/postMetrics.ts` trattano ogni attività
 «Record only» come neve (niente parziali al km): da rivedere per il volo.
+
+**Esito R3** (2026-11-12): PR #1191 in main (60c801aa). Per `paragliding`
+la pagina del link mostra, dopo distanza e tempo, velocità del momento,
+quota, variometro col segno (m/s; ft/min in miglia) e quota massima; da
+un'app di prima la velocità media. Testi approvati dall'utente («Testi di
+R3»). Copia sul sito alle 09:33Z dal Coordinatore col sì dell'utente («Sì,
+copia»; quella di prima, e60e0b35, in `/srv/getmuw-site.old`): cambiano
+solo `live/texts.js` e `live/view.js`, i cinque file serviti sono uguali al
+commit e i controlli di `out/TASK-305/SITO-R3.md` sono passati. Un volo
+vero sulla pagina si vedrà dopo l'aggiornamento completo con R2 (#1201).

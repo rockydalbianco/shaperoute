@@ -2758,6 +2758,73 @@ Tipi in `shared-types` (`CommentRequest`, `Comment`, `CommentsPage`,
 - **Un'API precedente** non ha questi endpoint: `404 http_error`, e l'app
   non mostra i commenti.
 
+#### Risposte e reazioni ai commenti (TASK-454 parte C1, ADR-0377)
+
+A un commento si risponde e si reagisce. Tutto quello che segue è **in
+più**: un'app di prima chiede e legge come sopra e non si rompe (test
+«an app from before» in `test_comment_threads.py`). Tipi in `shared-types`
+(`CommentReactionKind`, `COMMENT_REACTION_KINDS`, `CommentReactions`,
+`CommentReactionRequest`, i campi nuovi di `Comment` e `CommentRequest`),
+esempi in `fixtures/comment-reply-request.json`, `comment-reply.json`,
+`comment-threads.json`, `comment-reactions.json`,
+`comment-reaction-request.json`; il codice in `comments.py` e
+`comment_reactions.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /drawings/{id}/comments` con `reply_to` | una risposta | `201` `Comment`, o `404 http_error` |
+| `GET /drawings/{id}/comments?threads=true` | i commenti, ognuno con le prime risposte | `200` `CommentsPage`, o `404 http_error` |
+| `GET /comments/{id}/replies` | una pagina delle risposte di un commento, dalla più vecchia | `200` `CommentsPage`, o `404 http_error` |
+| `PUT /comments/{id}/reaction` | lascia o cambia la propria reazione | `200` `CommentReactions`, o `404 http_error` |
+| `DELETE /comments/{id}/reaction` | la toglie | `200` `CommentReactions`, o `404 http_error` |
+
+- **Una risposta** è un commento con `reply_to`, l'`id` del commento (o
+  della risposta) a cui si risponde, dello stesso disegno: stessi
+  controlli, stesso filtro delle parole, stesso limite al minuto. **Un
+  livello solo**: `parent_id` è sempre il commento in cima; rispondere a
+  una risposta la mette sotto lo stesso commento, con `mention` (`public_id`
+  e `username` di chi ha scritto la risposta a cui si risponde), che l'app
+  mostra come «@nome» davanti al testo. `mention` è `null` rispondendo al
+  commento, a sé stessi, e per chi non vede quell'iscritto. Un `reply_to`
+  che non è un commento di quel disegno, o che chi scrive non legge (un
+  blocco, nascosto): `404 http_error` «No comment with this id.».
+- **I campi in più di un commento**: `parent_id` (`null` per un commento),
+  `mention`, `reply_count` (quante risposte legge chi chiede; 0 per una
+  risposta), `replies` e `reactions`.
+- **Con `threads=true`** la pagina ha solo i commenti, dal più vecchio, e
+  ognuno porta in `replies` le sue **due risposte più vecchie**
+  (`REPLIES_SHOWN`); le altre si chiedono a `GET /comments/{id}/replies`
+  (`limit`, `cursor`, `next` e `total` come le altre pagine; `404` per una
+  risposta, che non ne ha di sue). **Senza `threads`** la lista è quella
+  di prima: commenti e risposte insieme, per data, con `replies` `null`.
+  `total` conta commenti e risposte in tutti e due i casi.
+- **Una risposta si legge col suo commento**: se chi chiede non legge il
+  commento (un blocco con chi l'ha scritto, nascosto da una segnalazione),
+  non legge nemmeno le sue risposte, in nessuna delle due liste, e non
+  contano. **Cancellare un commento cancella le sue risposte.** Chi
+  cancella una risposta: chi l'ha scritta o il proprietario del disegno,
+  come ogni commento. Si segnala con `POST /reports` (`kind: "comment"`).
+- **Le reazioni a un commento** sono cinque, **una a testa**: 🔥 👏 💪 😂
+  😮 (`fire`, `clap`, `strong`, `laugh`, `wow`). Il cuore MuW no: il super
+  like è solo del disegno (scelta dell'utente, 2026-11-11), `super_like`
+  qui è `422 invalid_request`. Il corpo del `PUT` è `{ "kind": "fire" }`;
+  un altro tipo prende il posto del primo, lo stesso non cambia niente.
+  Reagisce chi legge il commento, anche a una risposta. `reactions` di un
+  commento, e la risposta di `PUT` e `DELETE`, è `{ counts, total, mine }`
+  come per un disegno, coi cinque tipi: quanti, **mai chi**, e mai quelle
+  di chi un blocco tiene lontano. Al più 30 al minuto per account, a parte
+  da quelle dei disegni.
+- **Chi viene avvisato**: di una risposta, chi ha scritto il commento (o
+  la risposta) a cui si risponde: «ada replied to your comment: …»
+  (`comment_reply`), con le regole di «Push notifications». Il
+  proprietario del disegno riceve il solito «commented on your post», ma
+  non se è lui quello a cui si risponde: una notizia, una volta. Di una
+  reazione a un commento, chi l'ha scritto lo legge **solo nella
+  campanella** («ada reacted to your comment.», `comment_reaction`):
+  nessuna notifica sul telefono, qualunque sia l'interruttore
+  (`push.BELL_ONLY`), e non entra nell'email delle notizie. Tutti e due
+  aprono il disegno (`drawing_id`).
+
 ### Reactions (TASK-119, ADR-0193)
 
 Sotto un disegno gli iscritti lasciano una reazione fra sei, **una a

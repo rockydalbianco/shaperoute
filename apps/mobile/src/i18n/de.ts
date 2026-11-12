@@ -1691,6 +1691,41 @@ export const DE: Table = {
   "Glute stretch": "Gesäß dehnen",
   "Cross one ankle over the other knee. Sit back as if into a chair.":
     "Einen Knöchel aufs andere Knie legen. Zurücksetzen wie auf einen Stuhl.",
+  // src/stretch, the routines (TASK-466 part B)
+  "Neck stretch": "Nacken dehnen",
+  "Stand tall. Let your chin drop toward your chest, shoulders low.":
+    "Aufrecht stehen. Das Kinn zur Brust sinken lassen, Schultern locker.",
+  "Overhead reach": "Nach oben strecken",
+  "Reach both arms up high. Grow tall, chest open.":
+    "Beide Arme hoch strecken. Lang machen, Brust offen.",
+  "Shoulder stretch": "Schulter dehnen",
+  "Bring one arm across your chest. Pull it in with the other hand.":
+    "Einen Arm vor die Brust führen. Mit der anderen Hand heranziehen.",
+  "Chest opener": "Brust öffnen",
+  "Clasp your hands behind your back. Lift them a little, chest out.":
+    "Hände hinter dem Rücken verschränken. Leicht anheben, Brust raus.",
+  "Triceps stretch": "Trizeps dehnen",
+  "Raise one elbow, hand down your back. Press the elbow back gently.":
+    "Einen Ellbogen heben, die Hand zum Rücken. Den Ellbogen sanft nach hinten drücken.",
+  "Upper back stretch": "Oberen Rücken dehnen",
+  "Reach your arms forward, hands together. Round your back, head down.":
+    "Arme nach vorn strecken, Hände zusammen. Rücken rund machen, Kopf runter.",
+  "Forward fold": "Vorbeuge",
+  "Fold forward from the hips. Let your arms hang, knees soft.":
+    "Aus der Hüfte nach vorn beugen. Arme hängen lassen, Knie locker.",
+  "Cat stretch": "Katzenbuckel",
+  "On hands and knees. Round your back up, let your head drop.":
+    "Auf Händen und Knien. Rücken nach oben rund machen, Kopf hängen lassen.",
+  "Child's pose": "Kindhaltung",
+  "Sit back on your heels. Reach your arms forward, forehead down.":
+    "Auf die Fersen setzen. Arme nach vorn strecken, Stirn nach unten.",
+  "Knee hug": "Knie zur Brust",
+  "Stand on one leg. Hug the other knee to your chest.":
+    "Auf einem Bein stehen. Das andere Knie an die Brust ziehen.",
+  Morning: "Morgens",
+  "After run": "Nach dem Laufen",
+  "After gym": "Nach dem Fitnessstudio",
+  "How long?": "Wie lange?",
   "{index} of {total}": "{index} von {total}",
   "Right side": "Rechte Seite",
   "Left side": "Linke Seite",

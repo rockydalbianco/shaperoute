@@ -1681,6 +1681,41 @@ export const FR: Table = {
   "Glute stretch": "Étirement du fessier",
   "Cross one ankle over the other knee. Sit back as if into a chair.":
     "Croisez une cheville sur l'autre genou. Asseyez-vous en arrière comme sur une chaise.",
+  // src/stretch, the routines (TASK-466 part B)
+  "Neck stretch": "Étirement du cou",
+  "Stand tall. Let your chin drop toward your chest, shoulders low.":
+    "Tenez-vous droit. Laissez le menton descendre vers la poitrine, épaules basses.",
+  "Overhead reach": "Étirement vers le haut",
+  "Reach both arms up high. Grow tall, chest open.":
+    "Levez les deux bras bien haut. Grandissez-vous, poitrine ouverte.",
+  "Shoulder stretch": "Étirement de l'épaule",
+  "Bring one arm across your chest. Pull it in with the other hand.":
+    "Passez un bras devant la poitrine. Ramenez-le avec l'autre main.",
+  "Chest opener": "Ouverture de la poitrine",
+  "Clasp your hands behind your back. Lift them a little, chest out.":
+    "Joignez les mains dans le dos. Levez-les un peu, poitrine en avant.",
+  "Triceps stretch": "Étirement du triceps",
+  "Raise one elbow, hand down your back. Press the elbow back gently.":
+    "Levez un coude, la main dans le dos. Poussez doucement le coude vers l'arrière.",
+  "Upper back stretch": "Étirement du haut du dos",
+  "Reach your arms forward, hands together. Round your back, head down.":
+    "Tendez les bras devant vous, mains jointes. Arrondissez le dos, tête basse.",
+  "Forward fold": "Flexion avant",
+  "Fold forward from the hips. Let your arms hang, knees soft.":
+    "Penchez-vous en avant depuis les hanches. Laissez pendre les bras, genoux souples.",
+  "Cat stretch": "Posture du chat",
+  "On hands and knees. Round your back up, let your head drop.":
+    "À quatre pattes. Arrondissez le dos vers le haut, laissez tomber la tête.",
+  "Child's pose": "Posture de l'enfant",
+  "Sit back on your heels. Reach your arms forward, forehead down.":
+    "Asseyez-vous sur les talons. Tendez les bras devant, le front vers le sol.",
+  "Knee hug": "Genou à la poitrine",
+  "Stand on one leg. Hug the other knee to your chest.":
+    "Tenez-vous sur une jambe. Ramenez l'autre genou contre la poitrine.",
+  Morning: "Matin",
+  "After run": "Après la course",
+  "After gym": "Après la salle",
+  "How long?": "Combien de temps ?",
   "{index} of {total}": "{index} sur {total}",
   "Right side": "Côté droit",
   "Left side": "Côté gauche",

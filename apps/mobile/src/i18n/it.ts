@@ -1672,6 +1672,41 @@ export const IT: Table = {
   "Glute stretch": "Stretching del gluteo",
   "Cross one ankle over the other knee. Sit back as if into a chair.":
     "Incrocia una caviglia sull'altro ginocchio. Siediti indietro come su una sedia.",
+  // src/stretch, the routines (TASK-466 part B)
+  "Neck stretch": "Stretching del collo",
+  "Stand tall. Let your chin drop toward your chest, shoulders low.":
+    "In piedi, dritto. Lascia scendere il mento verso il petto, spalle basse.",
+  "Overhead reach": "Allungamento in alto",
+  "Reach both arms up high. Grow tall, chest open.":
+    "Porta le braccia in alto. Allungati, petto aperto.",
+  "Shoulder stretch": "Stretching della spalla",
+  "Bring one arm across your chest. Pull it in with the other hand.":
+    "Porta un braccio davanti al petto. Tiralo a te con l'altra mano.",
+  "Chest opener": "Apertura del petto",
+  "Clasp your hands behind your back. Lift them a little, chest out.":
+    "Intreccia le mani dietro la schiena. Alzale un poco, petto in fuori.",
+  "Triceps stretch": "Stretching del tricipite",
+  "Raise one elbow, hand down your back. Press the elbow back gently.":
+    "Alza un gomito, la mano scende sulla schiena. Spingi piano il gomito indietro.",
+  "Upper back stretch": "Stretching della parte alta della schiena",
+  "Reach your arms forward, hands together. Round your back, head down.":
+    "Braccia avanti, mani unite. Arrotonda la schiena, testa giù.",
+  "Forward fold": "Piegamento in avanti",
+  "Fold forward from the hips. Let your arms hang, knees soft.":
+    "Piegati in avanti dalle anche. Lascia pendere le braccia, ginocchia morbide.",
+  "Cat stretch": "Stretching del gatto",
+  "On hands and knees. Round your back up, let your head drop.":
+    "A quattro zampe. Inarca la schiena verso l'alto, lascia cadere la testa.",
+  "Child's pose": "Posizione del bambino",
+  "Sit back on your heels. Reach your arms forward, forehead down.":
+    "Siediti sui talloni. Allunga le braccia in avanti, fronte giù.",
+  "Knee hug": "Ginocchio al petto",
+  "Stand on one leg. Hug the other knee to your chest.":
+    "In piedi su una gamba. Stringi l'altro ginocchio al petto.",
+  Morning: "Mattino",
+  "After run": "Dopo la corsa",
+  "After gym": "Dopo la palestra",
+  "How long?": "Quanto tempo?",
   "{index} of {total}": "{index} di {total}",
   "Right side": "Lato destro",
   "Left side": "Lato sinistro",

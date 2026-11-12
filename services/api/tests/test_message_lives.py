@@ -108,9 +108,7 @@ def moved(client: TestClient, owner: Headers, share_id: str, **changes: Any) -> 
     assert answer.status_code == 200, answer.text
 
 
-def sent_in_muw(
-    client: TestClient, owner: Headers, share_id: str, *to: Headers
-) -> Any:
+def sent_in_muw(client: TestClient, owner: Headers, share_id: str, *to: Headers) -> Any:
     answer = client.post(
         f"/me/live-shares/{share_id}/send",
         json={"to": [pid(client, h) for h in to]},

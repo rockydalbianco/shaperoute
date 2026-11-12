@@ -427,8 +427,8 @@ BOX_OF: dict[Box, str] = {
 # video if it has one.
 MESSAGE_COLUMNS = (
     "m.id, m.text, m.created_at, m.sender_id, m.attachment, m.drawing_card,"
-    " m.post_id, m.live_share_id, mm.id AS media_id, mm.width, mm.height, mm.duration_ms,"
-    " mm.poster_bytes, mm.stored"
+    " m.post_id, m.live_share_id, mm.id AS media_id, mm.width, mm.height,"
+    " mm.duration_ms, mm.poster_bytes, mm.stored"
 )
 WITH_MEDIA = "LEFT JOIN message_media mm ON mm.message_id = m.id"
 LAST = (
@@ -438,8 +438,8 @@ LAST = (
 )
 LAST_COLUMNS = (
     "last.id, last.text, last.created_at, last.sender_id, last.attachment,"
-    " last.drawing_card, last.post_id, last.live_share_id, last.media_id, last.width, last.height,"
-    " last.duration_ms, last.poster_bytes, last.stored"
+    " last.drawing_card, last.post_id, last.live_share_id, last.media_id,"
+    " last.width, last.height, last.duration_ms, last.poster_bytes, last.stored"
 )
 
 
@@ -1051,9 +1051,7 @@ class Messages:
                 kind: AttachmentKind | None = None
                 drawing = None if attachment is None else attachment.drawing
                 post_id = None if attachment is None else attachment.post_id
-                live_share_id = (
-                    None if attachment is None else attachment.live_share_id
-                )
+                live_share_id = None if attachment is None else attachment.live_share_id
                 if attachment is not None and attachment.media_id is not None:
                     upload = conn.execute(
                         "SELECT kind FROM message_media WHERE id = %s"

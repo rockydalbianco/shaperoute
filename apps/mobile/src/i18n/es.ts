@@ -638,8 +638,8 @@ export const ES: Table = {
     "Este contorno no cabe en las calles aquí. Prueba otra distancia, otro inicio o una foto más sencilla.",
   "This shape does not fit the roads here. Try another shape, or another start:":
     "Esta forma no cabe en las calles aquí. Prueba otra forma u otro inicio:",
-  "Map data for this area could not be downloaded. Try again later.":
-    "No se pudo descargar el mapa de esta zona. Inténtalo más tarde.",
+  "The map service is busy, so this area could not be loaded. Try again in a few minutes.":
+    "El servicio de mapas está ocupado y no se pudo cargar esta zona. Inténtalo de nuevo en unos minutos.",
   "The route engine cannot find one clear outline in this picture.":
     "En esta foto no se encuentra un contorno claro.",
   "Only PNG and JPEG pictures work. Choose another one.":
@@ -1121,6 +1121,8 @@ export const ES: Table = {
   Pause: "Pausa",
   Music: "Música",
   "Opens Spotify": "Abre Spotify",
+  "Show the numbers": "Mostrar los números",
+  "Hide the numbers": "Ocultar los números",
   Compass: "Brújula",
   Map: "Mapa",
   Data: "Datos",
@@ -1550,6 +1552,10 @@ export const ES: Table = {
   "{sport}, coming soon": "{sport}, próximamente",
   "Sport, {sport}": "Deporte, {sport}",
   "Changes the sport": "Cambia el deporte",
+  // The families of the sport panel: src/settings/sportFamilies.ts
+  "On foot": "A pie",
+  "On wheels": "Sobre ruedas",
+  "Other@@sport": "Otros",
   Sport: "Deporte",
   Default: "Predeterminada",
   "Voice language and voice: {language}, {voice}": "Idioma y voz: {language}, {voice}",
@@ -2623,4 +2629,12 @@ export const ES: Table = {
   "Deep@@sleep": "Profundo",
   "Worked out by MuW from Apple Health data. It can differ from the score in the Health app.":
     "Calculada por MuW con los datos de Apple Salud. Puede ser distinta de la puntuación de la app Salud.",
+  // src/feed/PostShareSheet.tsx, src/messages/messagePost.ts, attachmentText.ts
+  // (TASK-455: a post shared and sent in a message; texts approved 2026-11-12)
+  "Poster and video": "Póster y vídeo",
+  "Only people who follow {user} can open it.":
+    "Solo quien sigue a {user} puede abrirla.",
+  "by {user}": "de {user}",
+  "This post is no longer available.": "Esta publicación ya no está disponible.",
+  "🗺️ Post": "🗺️ Publicación",
 };

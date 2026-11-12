@@ -1,12 +1,21 @@
 import { COMMENT_MAX_LENGTH } from "@shaperoute/shared-types";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 
+import { useReduceMotion } from "../ui/useReduceMotion";
 import { HEART_ALONE_MS, SuperLikeHeart, SuperLikeSheet } from "./SuperLikeSheet";
 
 jest.mock(
   "react-native-safe-area-context",
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
 );
+
+jest.mock("../ui/useReduceMotion");
+const reduceMotion = jest.mocked(useReduceMotion);
+
+beforeEach(() => {
+  reduceMotion.mockReturnValue(false);
+});
 
 type Over = Partial<Parameters<typeof SuperLikeSheet>[0]>;
 
@@ -129,5 +138,53 @@ describe("the heart alone", () => {
       jest.advanceTimersByTime(1);
     });
     expect(onDone).toHaveBeenCalledTimes(1);
+  });
+});
+
+// TASK-454 part B: the heart grew even with «Reduce Motion» on.
+describe("how the heart comes up", () => {
+  type Look = { opacity: number; transform: { scale: number }[] };
+  const look = () =>
+    StyleSheet.flatten(screen.getByTestId("super-like-heart").props.style) as Look;
+  const frame = () =>
+    act(async () => {
+      jest.advanceTimersByTime(16);
+    });
+
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  test("it grows to its size", async () => {
+    await render(<SuperLikeHeart onDone={() => {}} />);
+    await frame();
+    expect(look().opacity).toBeLessThan(1);
+    expect(look().transform[0].scale).toBeLessThan(1);
+    await act(async () => {
+      jest.advanceTimersByTime(400);
+    });
+    expect(look()).toEqual({ opacity: 1, transform: [{ scale: 1 }] });
+  });
+
+  test("with «Reduce Motion» it is there at its size, and nothing grows", async () => {
+    reduceMotion.mockReturnValue(true);
+    await render(<SuperLikeHeart onDone={() => {}} />);
+    expect(look()).toEqual({ opacity: 1, transform: [{ scale: 1 }] });
+    await frame();
+    expect(look()).toEqual({ opacity: 1, transform: [{ scale: 1 }] });
+  });
+
+  test("in the sheet too", async () => {
+    reduceMotion.mockReturnValue(true);
+    await render(sheet().node);
+    expect(look()).toEqual({ opacity: 1, transform: [{ scale: 1 }] });
+  });
+
+  test("said a moment after the heart started: it stops at its size", async () => {
+    const { rerender } = await render(<SuperLikeHeart onDone={() => {}} />);
+    await frame();
+    expect(look().transform[0].scale).toBeLessThan(1);
+    reduceMotion.mockReturnValue(true);
+    await rerender(<SuperLikeHeart onDone={() => {}} />);
+    expect(look()).toEqual({ opacity: 1, transform: [{ scale: 1 }] });
   });
 });

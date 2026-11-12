@@ -7,7 +7,13 @@ import { selectionFeel } from "../haptics/haptics";
 import { motion } from "../theme/tokens";
 import { runAnimationsOnJs } from "../ui/animationsOnJs.testing";
 import { useReduceMotion } from "../ui/useReduceMotion";
-import { type BarTab, TAB_CAPSULE_WIDTH, TAB_ICON_RISE, TabBar } from "./TabBar";
+import {
+  type BarTab,
+  TAB_BAR_INSET,
+  TAB_CAPSULE_WIDTH,
+  TAB_ICON_RISE,
+  TabBar,
+} from "./TabBar";
 
 // The capsule, the icons and the buzz of the tab bar (TASK-388, ADR-0329),
 // watched frame by frame on fake timers.
@@ -23,7 +29,8 @@ const TABS: BarTab[] = [
   { title: "Explore", label: "Explore", icon: "search" },
   { title: "Profile", label: "Profile", icon: "house" },
 ];
-const SLOT = Dimensions.get("window").width / TABS.length;
+// The tabs share the glass, inset from the screen's sides (TASK-469).
+const SLOT = (Dimensions.get("window").width - 2 * TAB_BAR_INSET) / TABS.length;
 const FRAME = 16;
 
 /** Where the capsule stands under the tab `index`. */

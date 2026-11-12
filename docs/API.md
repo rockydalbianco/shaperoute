@@ -3574,6 +3574,27 @@ dell'app in `apps/mobile/src/api/runStats.ts`.
   perde tutti i suoi dati. Nessuna app manda i tratti prima che il server
   con C2b sia acceso.
 
+- **I numeri di un volo** (TASK-305 parte R5a, ADR-0375; tipi in
+  `packages/shared-types/src/flightBests.ts`, esempi in
+  `fixtures/flight-stats-request.json` e `fixtures/flight-bests.json`, test
+  in `test_flight_bests.py`).
+  - Il telefono può mandare in più `max_alt_m` (−1000…10000 m, il punto
+    più alto dal GPS, tenuto al metro) e `top_speed_mps` (0…100 m/s, la
+    velocità massima sul suolo, tenuta al centesimo). Il profilo ridotto a
+    120 punti e i metri della traccia non li danno.
+  - Il server li tiene in `stats` **solo per un volo** (`paragliding`): per
+    gli altri sport sono ignorati, non rifiutati. Non escono in
+    `GET /drawings/{id}`.
+  - **`GET /me/flight-bests`**, solo del proprietario (401 senza token):
+    `{highest, longest, farthest, fastest}`, cioè metri, secondi in
+    movimento, metri, m/s. Ognuno è `{id, started_at, value}` (`id` è la
+    chiave dell'app, come in `/me/activities`) o `null` senza un volo che
+    lo abbia; un valore zero non è un record. A parità vince il primo
+    volato, e un volo cancellato porta via i suoi record. Voli privati
+    compresi.
+  - **Prima il server, poi l'app**: un server senza R5a rifiuta i due campi
+    (422, `extra="forbid"`).
+
 ### Ski names (TASK-375 parte D2, ADR-0319)
 
 `GET /drawings/{id}/ski-names`, con il token: gli impianti presi e le piste

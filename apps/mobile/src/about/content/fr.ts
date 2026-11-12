@@ -465,7 +465,7 @@ const privacy: AboutDocument = {
             "Apple sur iPhone, ou Google sur Android, via le service d'adresses du téléphone, reçoit la position d'où part «Dessiner», pour écrire le nom de la rue. MuW ne lui envoie rien d'autre et ne garde pas le nom.",
             "Wikimedia fournit à notre serveur les photos des villes : il voit quelle ville, pas qui demande.",
             "Avec la carte « Satellite », Esri fournit les images, et avec la carte « 3D », Amazon Web Services fournit les altitudes : comme tout service de cartes, ils voient quelle zone tu regardes.",
-            "Le service Overpass des données OpenStreetMap est interrogé par notre serveur pour la carte d'une zone qu'il n'a pas encore : il voit quelle zone, pas qui a demandé.",
+            "Les services Overpass des données OpenStreetMap (overpass-api.de et, quand il ne répond pas, overpass.private.coffee) sont interrogés par notre serveur pour la carte d'une zone qu'il n'a pas encore : ils voient quelle zone, pas qui a demandé.",
             "unpkg fournit la bibliothèque de la carte au démarrage de l'app.",
             "Expo fournit les mises à jour de l'app.",
             "Google Ireland Limited (Firebase Cloud Messaging), pour livrer les notifications push aux téléphones Android. Quand tu allumes le push, l'app demande à Firebase un jeton d'enregistrement pour ton téléphone ; le service push d'Expo transmet chaque notification (qui a fait quoi, et le début d'un commentaire) à Google, qui la livre à ton téléphone. Google voit le jeton et le contenu de chaque notification, pas ton compte ni ta position. Le jeton est retiré de notre serveur quand tu éteins le push, te déconnectes ou supprimes ton compte ; celui du téléphone disparaît quand tu désinstalles l'app.",

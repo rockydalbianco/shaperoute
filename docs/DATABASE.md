@@ -1147,6 +1147,17 @@ libero in `main` al merge):
 - Nessuna riga cambia: i commenti di prima sono commenti senza risposte.
   Test in `test_comment_threads.py`.
 
+Migrazione `0071_wheelchair.sql` (TASK-414 parte A, ADR-0343; numero in
+bozza, quello vero è il primo libero al merge, dal Coordinatore):
+
+- I vincoli `runs_activity_check`, `favorites_activity_check`,
+  `group_runs_activity_check` e `run_bests_sport_check` prendono anche
+  `'wheelchair'`: un percorso in carrozzina o col passeggino si salva, si
+  tiene tra i preferiti, si propone come corsa di gruppo e ha record
+  personali suoi su 1 e 5 km (scelta 7). La migrazione rilegge ciascun
+  vincolo e lo riscrive col nome in più, in fondo, come la `0055`.
+- Nessuna riga cambia. Test in `test_wheelchair_api.py`.
+
 Migrazione `0061_run_heart.sql` (TASK-409 parte B1, ADR-0334 precisazione D;
 numero in bozza dal Coordinatore, quello vero è il primo libero al merge):
 

@@ -1563,8 +1563,8 @@ export const FR: Table = {
   "You have not blocked anyone.": "Tu n'as bloqué personne.",
   Unblock: "Débloquer",
   "Unblock {name}": "Débloquer {name}",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Tu as bloqué {user}. Tu peux le débloquer dans Personnes bloquées de ton profil.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Tu as bloqué {user}. Tu peux le débloquer dans Personnes bloquées, dans Réglages.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":

@@ -1636,7 +1636,7 @@ foglio con due tasti e «Cancel»:
 Bloccato, il foglio si chiude da solo: **le schede di quella persona
 spariscono subito da «Feed»**, e alla lettura dopo l'API non le manda più;
 il suo profilo dice «You blocked {name}. Unblock them from Blocked people in
-your profile.»; gli elenchi di chi segue in «Profile» si rileggono (il
+Settings.» (TASK-457; prima «…in your profile.»); gli elenchi di chi segue in «Profile» si rileggono (il
 blocco chiude ogni follow). Se la richiesta non va, il foglio dice perché
 («This is not available any more.» per un'API di prima o una persona
 sparita). In «Settings», nella sezione «ACCOUNT» sotto il numero di

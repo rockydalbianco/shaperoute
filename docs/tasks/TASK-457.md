@@ -93,11 +93,12 @@ parla di chi lo guarda.
   tocca anche la #1201)
 - registri condivisi: `apps/mobile/src/i18n/{de,es,fr,it}.ts`, `docs/UI.md`
 - `docs/tasks/TASK-457.md`
-- chiesti al Coordinatore il 2026-11-12, in attesa del sì:
+- col sì del Coordinatore del 2026-11-12 (tre file in più):
   `apps/mobile/src/screens/ProfileLayer.test.tsx` (la prova di «Guide» con
   account), `apps/mobile/src/profile/UserProfilePage.tsx` e
-  `UserProfileReport.test.tsx` (la frase dopo un blocco dice «…in your
-  profile»: diventa «…in Settings», testo da approvare)
+  `UserProfileReport.test.tsx` (la frase dopo un blocco: «You blocked
+  {user}. Unblock them from Blocked people in Settings.», prima «…in your
+  profile.»; la chiave vecchia è sostituita nei quattro registri)
 
 ## Criteri di accettazione
 

@@ -186,6 +186,16 @@ fly» del parapendio (`mountain/climbNotice.ts`). Si chiude con «Got it».
 - `docs/UI.md` (la sezione «L'alpinismo»), `docs/API.md` (un paragrafo
   accanto al parapendio), questo file
 
+## Parte C — l'accensione (2026-11-12)
+
+Dopo il passo 12 (server a `eee85a69`, letture di `SERVER-A.md` come
+attese) e il sì dell'utente alle schermate del simulatore, «Mountaineering»
+ha `ready: true` in «Settings»: si sceglie anche nelle build per lo store, ed
+esce con l'OTA del Coordinatore. Sotto «Record your day» compare la sua
+frase, «No shapes up a mountain: MuW records your day.», al posto di quella
+della neve. In «Settings» e nel menu degli sport il solo «Soon» rimasto è
+«Snowshoes».
+
 ## Il server
 
 Va sul server in un passo del Coordinatore, col sì dell'utente, dopo il

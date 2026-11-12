@@ -30,6 +30,9 @@ function file(name: string): Picked {
 
 function spies() {
   return {
+    toDrawing: jest.fn(),
+    toPhotos: jest.fn(),
+    toStrava: jest.fn(),
     recordImported: jest.fn(() => true),
     alreadyKept: jest.fn(async () => false),
   };
@@ -87,4 +90,31 @@ test("a file becomes the form, and «Save» keeps it and closes the sheet", asyn
   expect(door.recordImported).toHaveBeenCalledTimes(1);
   await waitFor(() => expect(screen.queryByTestId("imported-form")).toBeNull());
   await waitFor(() => expect(screen.queryByText("From a file")).toBeNull());
+});
+
+test("from the «+» the form starts on «Everyone», said over «Save»", async () => {
+  const door = spies();
+  await show(door);
+  await openSheet();
+  await fireEvent.press(screen.getByText("From a file"));
+  await screen.findByTestId("imported-form");
+  expect(screen.getByRole("radio", { name: "Everyone", checked: true })).toBeTruthy();
+  // Under «Who can see it», and again over «Save».
+  expect(screen.getAllByText("Every member sees it in your profile.")).toHaveLength(2);
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
+  expect(door.toDrawing).toHaveBeenCalledWith(
+    expect.objectContaining({ visibility: "everyone" }),
+  );
+});
+
+test("«Everyone» can still be changed before «Save»", async () => {
+  const door = spies();
+  await show(door);
+  await openSheet();
+  await fireEvent.press(screen.getByText("From a file"));
+  await screen.findByTestId("imported-form");
+  await fireEvent.press(screen.getByRole("radio", { name: "Only me" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
+  // «Only me» and nothing else chosen: no drawing goes out at all.
+  expect(door.toDrawing).toHaveBeenCalledWith(null);
 });

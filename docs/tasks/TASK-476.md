@@ -59,13 +59,29 @@ File approvati dal Coordinatore il 2026-11-12. Rispetto al suo messaggio:
 hook, il cambio più piccolo; la prova che «My activities» non cambia sono
 i suoi test di prima, verdi senza ritocchi.
 
-### Domanda aperta
+### «Everyone» dal «+» (scelta dell'utente, 2026-11-12)
 
-Una corsa importata parte oggi «Only me» (`RunEnd.tsx`): aggiunta dal «+»
-del Feed, nel Feed non compare finché l'utente non cambia la visibilità
-nel modulo. Chiesto all'utente se dal Feed debba partire «Everyone». Con
-il sì serve anche `apps/mobile/src/activities/RunEnd.tsx`, da chiedere al
-Coordinatore prima del codice.
+Una corsa importata partiva sempre «Only me»: aggiunta dal «+» del Feed,
+nel Feed non sarebbe comparsa. L'utente: «Sì, Everyone», e al Coordinatore
+«Everyone + privacy». Eccezione ad ADR-0304 per questo solo ingresso
+(ADR-0387, nella PR di documenti dopo il merge).
+
+- `RunEnd.tsx`: `imported.visibility` facoltativo (approvato dal
+  Coordinatore); `AddPastActivity` passa «everyone» solo con `opened`. In
+  «My activities» resta «Only me» (`AddPastActivity.test.tsx`, invariato).
+- «Everyone» si vede scelto, la frase «Every member sees it in your
+  profile.» sta anche sopra «Save», e si può cambiare prima di salvare
+  (`AddToFeed.test.tsx`).
+- **Prima che esca**: le frasi della privacy (e dell'aiuto) che dicono
+  «An activity added from a file always starts on «Only me»» vanno
+  riscritte nelle cinque lingue e sul sito, col sì dell'utente.
+  `apps/mobile/src/about/content/**` e `site/privacy/**` sono a turno:
+  chiederlo al Coordinatore. Il campo e la frase entrano in `main`
+  insieme, o la frase prima; l'OTA esce con la copia del sito.
+
+```
+apps/mobile/src/activities/RunEnd.tsx            (in più, approvato)
+```
 
 ## Proposte per dopo (nessun codice senza il sì dell'utente e la lista dei file)
 

@@ -132,7 +132,11 @@ export function AddPastActivity({
           />
         </View>
         <RunEnd
-          imported={{ sport: imported.sport }}
+          // From the Feed's «+», «Everyone» (TASK-476, the user's choice).
+          imported={{
+            sport: imported.sport,
+            visibility: opened ? "everyone" : undefined,
+          }}
           onSave={() => {
             const kept = recordImported(imported);
             if (kept) {

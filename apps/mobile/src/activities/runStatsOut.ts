@@ -106,12 +106,17 @@ const tenth = (value: number) => Math.round(value * 10) / 10;
 export function skiPartsOf(request: ActivityRequest, metres: number): SkiPartRequest[] {
   const parts = snowParts(trackOf(request, metres)) ?? [];
   return parts.slice(0, MAX_SKI_PARTS).map((part) => {
-    const lasts = Math.max(0, part.endMs - part.startMs) / 1000;
+    // In whole milliseconds, as the API takes them: the phone's fixes have
+    // fractions, and a part with them was refused (422), the day's parts
+    // lost (TASK-305, seen in the simulator on 2026-11-12).
+    const start = Math.round(part.startMs);
+    const end = Math.max(start, Math.round(part.endMs));
+    const lasts = (end - start) / 1000;
     return {
       kind: part.kind,
       n: part.n,
-      start_ms: part.startMs,
-      end_ms: Math.max(part.startMs, part.endMs),
+      start_ms: start,
+      end_ms: end,
       moving_s: Math.min(tenth(part.ms / 1000), lasts),
       metres: tenth(part.metres),
       height_m: tenth(part.heightM),

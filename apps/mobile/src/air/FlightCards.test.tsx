@@ -11,7 +11,11 @@ import { Alert } from "react-native";
 
 import type { FreeRun } from "../navigation/freeRun";
 import { addFix, emptyTrack, type Track } from "../navigation/trackRecorder";
-import { FreeFinishBanner, FreeFinishCard, FreeRunCard } from "../screens/FreeRunScreen";
+import {
+  FreeFinishBanner,
+  FreeFinishCard,
+  FreeRunCard,
+} from "../screens/FreeRunScreen";
 import type { Sport } from "../settings/sport";
 import { saveUnitsChoice } from "../units/units";
 import { FlightFinishCard } from "./FlightFinishCard";
@@ -86,6 +90,7 @@ test("in the air: the altitude, the vario and the highest altitude", async () =>
   expect(screen.getByLabelText("Altitude: 1620 m")).toBeOnTheScreen();
   expect(screen.getByLabelText("Vario: -1.5 m/s")).toBeOnTheScreen();
   expect(screen.getByLabelText("Max altitude: 1800 m")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Elev. gain: 300 m")).toBeOnTheScreen();
 });
 
 test("the card of a flight has the flight's numbers over it, and the notice", async () => {
@@ -103,13 +108,18 @@ test("a run has neither the flight's numbers nor the notice", async () => {
 
 test("the end of a flight: distance, time, highest, climbed, top speed, calories", async () => {
   await render(
-    <FlightFinishCard run={flown(flight())} activity="paragliding" onDone={jest.fn()} />,
+    <FlightFinishCard
+      run={flown(flight())}
+      activity="paragliding"
+      onDone={jest.fn()}
+    />,
   );
   expect(screen.getByLabelText("Distance: 4.44 km")).toBeOnTheScreen();
   expect(screen.getByLabelText("Flight time: 7:00")).toBeOnTheScreen();
   expect(screen.getByLabelText("Max altitude: 1800 m")).toBeOnTheScreen();
   expect(screen.getByLabelText("Top speed: 43.2 km/h")).toBeOnTheScreen();
   expect(screen.getByText("Elev. gain")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Calories: 21 kcal")).toBeOnTheScreen();
 });
 
 test("a flight ends on its own card and banner, from the sport of «Settings»", async () => {

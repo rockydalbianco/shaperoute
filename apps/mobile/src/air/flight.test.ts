@@ -6,13 +6,7 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
 import { addFix, emptyTrack, type Track } from "../navigation/trackRecorder";
-import {
-  flightNow,
-  flightStats,
-  isFlight,
-  STALE_FIX_MS,
-  topSpeedMps,
-} from "./flight";
+import { flightNow, flightStats, isFlight, STALE_FIX_MS, topSpeedMps } from "./flight";
 
 const START: LatLon = [45.73, 10.83];
 const METRE = 1 / 111_195;
@@ -21,7 +15,15 @@ const METRE = 1 / 111_195;
  * ground, climbing `vario` m/s from `from` metres. */
 function flying(
   seconds: number,
-  { every = 1, mps = 10, vario = 0, from = 1800, track = emptyTrack(), at = 0, north = 0 } = {},
+  {
+    every = 1,
+    mps = 10,
+    vario = 0,
+    from = 1800,
+    track = emptyTrack(),
+    at = 0,
+    north = 0,
+  } = {},
 ): Track {
   let out = track;
   for (let s = 0; s <= seconds; s += every) {

@@ -4721,8 +4721,8 @@ prima.
 ### Il volo: «Paragliding» (TASK-305 parte R2, ADR-0375)
 
 Con «Paragliding» 🪂 in «Settings» (pronto anche nelle build per lo store)
-«Draw» mostra solo **«Record your flight»**: nessuna forma, nessun
-percorso. Il volo si registra come una corsa senza percorso e si salva come
+«Draw» mostra solo **«Record your flight»**, con sotto «No shapes in the air
+yet: MuW records your flight.»: nessuna forma, nessun percorso. Il volo si registra come una corsa senza percorso e si salva come
 `paragliding`.
 
 - **L'avviso**, la prima volta su quel telefono, all'apertura della
@@ -4731,8 +4731,8 @@ percorso. Il volo si registra come una corsa senza percorso e si salva come
   judgement.», un solo bottone «Got it». Letto, non torna più (il file
   `flight-notice.json`).
 - **In volo**, sopra i numeri della registrazione (tempo, km, velocità in
-  km/h come una bici): «Altitude» (m), «Vario» (m/s col segno, + sale,
-  − scende) e «Max altitude». La quota è quella del GPS: niente barometro.
+  km/h come una bici), due per riga: «Altitude» (m), «Vario» (m/s col
+  segno, + sale, − scende), «Max altitude» e «Elev. gain». La quota è quella del GPS: niente barometro.
   Il variometro è la salita degli ultimi 10 s (almeno 5 s), la velocità
   del momento quella degli ultimi 5 s (almeno 2 s); un fix più vecchio di
   20 s li spegne («–»). Le calorie col MET del volo libero (3,5).
@@ -4740,8 +4740,8 @@ percorso. Il volo si registra come una corsa senza percorso e si salva come
   `speed_mps` (API.md, «Live shares»); la pagina del link li mostra
   (SITO.md). Il battito c'è solo con l'orologio, che oggi non ha il volo.
 - **La fine**: «Your flight» e «White: where you flew.»; sotto la distanza
-  in grande e «Flight time», «Max altitude», «Elev. gain», «Top speed»,
-  «Calories». Nel Feed il volo è un post senza percorso, come una giornata
+  in grande e, due per riga, «Flight time», «Max altitude», «Elev. gain»,
+  «Top speed», poi «Calories». Provato nel simulatore il 2026-11-12. Nel Feed il volo è un post senza percorso, come una giornata
   sulla neve, con la velocità al posto del passo.
 
 ## Export del GPX

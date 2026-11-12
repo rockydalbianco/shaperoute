@@ -54,6 +54,7 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
       >
         {total}
       </Text>
+      {/* Two to a row: «Max altitude» is cut short three abreast. */}
       <View style={styles.tiles}>
         <Tile label={t("Flight time")} value={numbers.time} />
         <Tile
@@ -61,22 +62,28 @@ export function FlightFinishCard({ run, activity, onResume, onDone }: Props) {
           value={highest === null ? NO_NUMBER : String(highest)}
           unit="m"
         />
-        <Tile label={t("Elev. gain")} value={numbers.climb} unit="m" />
       </View>
       <View style={styles.tiles}>
+        <Tile label={t("Elev. gain")} value={numbers.climb} unit="m" />
         <Tile
           label={t("Top speed")}
           value={speedOf(top, numbers.units)}
           unit={speedUnit(numbers.units)}
         />
-        {numbers.energy !== null && (
-          <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
-        )}
       </View>
+      {numbers.energy !== null && (
+        <View style={styles.tiles}>
+          <Tile label={t("Calories")} value={numbers.energy} unit="kcal" energy />
+        </View>
+      )}
       <View style={styles.buttons}>
         <SharePostButton makeRun={() => postOfTrack(track)} />
         {onResume && (
-          <Pressable style={styles.button} onPress={onResume} accessibilityRole="button">
+          <Pressable
+            style={styles.button}
+            onPress={onResume}
+            accessibilityRole="button"
+          >
             <Text style={styles.buttonText}>{t("Keep running")}</Text>
           </Pressable>
         )}

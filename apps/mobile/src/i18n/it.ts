@@ -2559,5 +2559,7 @@ export const IT: Table = {
   Vario: "Variometro",
   "Flight time": "Tempo di volo",
   "Your flight": "Il tuo volo",
+  "No shapes in the air yet: MuW records your flight.":
+    "Niente forme in volo, per ora: MuW registra il tuo volo.",
   "White: where you flew.": "Bianco: dove hai volato.",
 };

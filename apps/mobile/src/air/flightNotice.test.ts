@@ -41,7 +41,11 @@ test("shown once; once read, never again on this phone", () => {
   const kept = memory();
   const show = jest.fn();
   expect(showFlightNotice(show, kept)).toBe(true);
-  expect(show).toHaveBeenCalledWith(FLIGHT_NOTICE_TITLE, FLIGHT_NOTICE, expect.any(Function));
+  expect(show).toHaveBeenCalledWith(
+    FLIGHT_NOTICE_TITLE,
+    FLIGHT_NOTICE,
+    expect.any(Function),
+  );
   // Not read yet: the next flight shows it again.
   expect(showFlightNotice(show, kept)).toBe(true);
   show.mock.calls[1][2]();
@@ -55,7 +59,9 @@ test("shown once; once read, never again on this phone", () => {
 
 test("read in this app run, it stays read even when the phone refuses to keep it", () => {
   const refusing: KeptList<string> = { load: () => [], save: () => false };
-  const show = jest.fn((_title: string, _message: string, onRead: () => void) => onRead());
+  const show = jest.fn((_title: string, _message: string, onRead: () => void) =>
+    onRead(),
+  );
   expect(showFlightNotice(show, refusing)).toBe(true);
   expect(showFlightNotice(show, refusing)).toBe(false);
 });

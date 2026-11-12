@@ -2577,5 +2577,7 @@ export const ES: Table = {
   Vario: "Variómetro",
   "Flight time": "Tiempo de vuelo",
   "Your flight": "Tu vuelo",
+  "No shapes in the air yet: MuW records your flight.":
+    "Todavía no hay formas en el aire: MuW registra tu vuelo.",
   "White: where you flew.": "Blanco: por donde volaste.",
 };

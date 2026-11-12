@@ -106,7 +106,7 @@ export const TEXTS = {
     exercise: "Exercice",
     altitude: "Altitude",
     vario: "Vario",
-    maxAltitude: "Altitude max.",
+    maxAltitude: "Alt. max",
     footer:
       "Partagé depuis MuW. Le lien cesse de fonctionner une heure après la fin de l'activité.",
     privacy: "Politique de confidentialité",
@@ -131,7 +131,7 @@ export const TEXTS = {
     exercise: "Ejercicio",
     altitude: "Altitud",
     vario: "Variómetro",
-    maxAltitude: "Altitud máx.",
+    maxAltitude: "Alt. máx.",
     footer:
       "Compartido desde MuW. El enlace deja de funcionar una hora después de que termine la actividad.",
     privacy: "Política de privacidad",

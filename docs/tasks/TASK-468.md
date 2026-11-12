@@ -89,6 +89,60 @@ deciderlo».
   Coordinatore quando c'è la lista. Niente codice prima del sì del
   Coordinatore sulla lista dei file di ogni parte.
 
+### Testi (proposta, en → it; de/fr/es dopo il sì)
+
+Il foglio di «Share live» (accanto a «Share link» di TASK-424):
+
+| en | it |
+|---|---|
+| Send in MuW | Invia su MuW |
+| Live in the Feed | Live nel Feed |
+| Choose who gets your live | Scegli a chi mandare la live |
+| They can follow you in the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain and calories. | Ti seguono nell'app: la tua posizione esatta sulla mappa, il percorso fatto, distanza, tempo, passo o velocità, dislivello e calorie. |
+| Show my heart rate | Mostra il mio battito |
+| Off: nobody sees your heart rate. On: they see it when a watch sends it. | Spento: nessuno vede il tuo battito. Acceso: lo vedono quando un orologio lo manda. |
+| Who can follow | Chi può seguirti |
+| Followers · Everyone | Follower · Tutti |
+| Send ({count}) | Invia ({count}) |
+| Go live | Vai live |
+
+In chat e nelle push:
+
+| en | it |
+|---|---|
+| LIVE · {sport} · {distance} | LIVE · {sport} · {distance} |
+| {name} is sharing a live activity with you | {name} ti condivide un'attività dal vivo |
+| {name} is live: {title} | {name} è live: {title} |
+| Finished · {distance} · {time} | Finita · {distance} · {time} |
+| Live ended | Live finita |
+| Updated {seconds} s ago | Aggiornato {seconds} s fa |
+| No update since {time} | Nessun aggiornamento dalle {time} |
+
+La live programmata:
+
+| en | it |
+|---|---|
+| Plan a live | Programma una live |
+| Name (e.g. Milano Marathon) | Nome (es. Milano Marathon) |
+| Day and time | Giorno e ora |
+| Live · {day} {time} · {title} | Live · {day} {time} · {title} |
+| Remind me | Avvisami |
+| We'll notify you when it starts. | Ti avvisiamo quando parte. |
+| Start live "{title}"? | Avviare la live «{title}»? |
+| Your followers can follow you now. / Everyone can follow you now. | I tuoi follower possono seguirti adesso. / Tutti possono seguirti adesso. |
+| Start live | Avvia la live |
+| Not this time | Non stavolta |
+| Delete this live? | Cancellare questa live? |
+| Post it in the Feed? (a fine attività) | Pubblicarla nel Feed? |
+| Your live becomes the post of this activity. | La tua live diventa il post di questa attività. |
+| Post · Don't post | Pubblica · Non pubblicare |
+
+Privacy dell'app (`about/content`, voce «Your position»), frase in più:
+
+| en | it |
+|---|---|
+| When you choose to go live in the Feed or send a live in chat, the people you choose (your followers, everyone, or the people you pick) see your exact position, the route so far and your activity data while you record, and your heart rate only if you turn it on for that live. Positions are deleted one hour after you finish, unless you post the activity. | Quando scegli di andare live nel Feed o di mandare una live in chat, le persone che scegli (i tuoi follower, tutti, o chi indichi) vedono la tua posizione esatta, il percorso fatto e i dati dell'attività mentre registri, e il battito solo se lo accendi per quella live. Le posizioni si cancellano un'ora dopo la fine, a meno che tu pubblichi l'attività. |
+
 ### Da decidere ancora nella parte 0
 
 - I testi en/it/de/fr/es (approvazione dell'utente).

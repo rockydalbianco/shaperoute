@@ -359,12 +359,12 @@ Impronte invariate. ADR-0343 è accettato, con la precisazione A.
 
 ## Cosa resta
 
-- **Server**: la `0071` col passo dell'aggiornamento completo, col sì
-  dell'utente; si applica all'avvio, prima del codice nuovo (ogni corsa
-  salvata scrive anche i record `wheelchair`). I controlli sono in
-  `out/TASK-414/SERVER-A.md` (impronte attese `e0834d054b6e 8ab61d8e87f9
-  b9d00c37d28d 574fbfba41eb`, un cuore di 3 km a Trento, una forma
-  rifiutata col 422).
+- **Server**: la parte A è sul server dal passo 10 del 2026-11-12
+  (12:20Z, `1eb3e5a8`), con la `0071_wheelchair` applicata. I controlli 1
+  e 2 di `out/TASK-414/SERVER-A.md` sono come attesi: i quattro vincoli
+  con la carrozzina, health 200, impronte `e0834d054b6e 8ab61d8e87f9
+  b9d00c37d28d 574fbfba41eb`. Restano il 3 e il 4 (un cuore di 3 km a
+  Trento, una forma rifiutata col 422), come riga per l'utente.
 - **Orologio**: i file di `targets/watch/**` della parte A (`sports.json`,
   `Localizable.strings`) non entrano nella build 14 dell'orologio già in
   revisione; entrano con la build dopo.

@@ -3752,7 +3752,9 @@ cui tiene i numeri.
   notizie, «Finished · …» o «Live ended». Chiede `GET
   /live-shares/{id}?after=` ogni 10 s, solo i punti nuovi, e smette a
   live finita. L'app dice `live` in `X-MuW-Reads`: le app di prima leggono
-  «[Live]».
+  «[Live]». La schermata dal vivo è un `Modal` a tutto schermo come
+  `MediaViewer`: lo scorrimento fra le schede non parte sotto di lei e il
+  gesto dal bordo sinistro (ADR-0384) non fa nulla; si chiude con «Close».
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,

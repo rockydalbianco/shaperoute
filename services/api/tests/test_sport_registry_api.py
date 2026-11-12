@@ -23,6 +23,7 @@ from shaperoute_api.sports import API_SPORTS, SPORTS_BY_ACTIVITY
 from shaperoute_api.sports.cycling import BY_BIKE
 from shaperoute_api.sports.inline_skating import ON_SKATES
 from shaperoute_api.sports.running import ON_FOOT
+from shaperoute_api.sports.wheelchair import PUSHED
 from shaperoute_api.strava import SPORT_TYPES
 
 SPORTS_FOLDER = Path(sports.__file__).parent
@@ -50,14 +51,16 @@ BEFORE_STREET_NAMES = {"running": True, "cycling": False}
 # Added since, each by a file of sports/ and a line of its register: a hike
 # (TASK-377), planned before the walk in the order of the contract; an MTB
 # ride after it and a gravel ride after the walk (TASK-378); a skate after
-# the MTB ride (TASK-380); snowshoeing after the skate (TASK-413); a day of
-# ski touring after the days on the snow (TASK-415); a paragliding flight
-# after it (TASK-305 parts R).
+# the MTB ride (TASK-380); snowshoeing after the skate (TASK-413); a
+# wheelchair after snowshoeing (TASK-414); a day of ski touring after the
+# days on the snow (TASK-415); a paragliding flight after it (TASK-305
+# parts R).
 SINCE_SPORT_TYPES = {
     "hiking": "Hike",
     "mountain_biking": "MountainBikeRide",
     "inline_skating": "InlineSkate",
     "snowshoeing": "Snowshoe",
+    "wheelchair": "Wheelchair",
     "gravel_biking": "GravelRide",
     "ski_touring": "BackcountrySki",
     "paragliding": "Workout",
@@ -68,6 +71,7 @@ SINCE_GPX_TYPES = {
     "mountain_biking": "mountain_biking",
     "inline_skating": "inline_skating",
     "snowshoeing": "snowshoeing",
+    "wheelchair": "wheelchair",
     "gravel_biking": "gravel_biking",
     "ski_touring": "ski_touring",
     "paragliding": "paragliding",
@@ -94,10 +98,11 @@ def test_the_tables_are_those_of_before_in_their_order() -> None:
     assert _without_since(SPORT_TYPES) == list(BEFORE_SPORT_TYPES.items())
     assert {name: SPORT_TYPES[name] for name in SINCE} == SINCE_SPORT_TYPES
     order = list(SPORT_TYPES)
-    assert order.index("hiking") == order.index("walking") - 4
-    assert order.index("mountain_biking") == order.index("walking") - 3
-    assert order.index("inline_skating") == order.index("walking") - 2
-    assert order.index("snowshoeing") == order.index("walking") - 1
+    assert order.index("hiking") == order.index("walking") - 5
+    assert order.index("mountain_biking") == order.index("walking") - 4
+    assert order.index("inline_skating") == order.index("walking") - 3
+    assert order.index("snowshoeing") == order.index("walking") - 2
+    assert order.index("wheelchair") == order.index("walking") - 1
     assert order.index("gravel_biking") == order.index("walking") + 1
     assert order.index("ski_touring") == order.index("xc_skiing") + 1
     assert order.index("paragliding") == order.index("ski_touring") + 1
@@ -113,6 +118,7 @@ def test_the_tables_are_those_of_before_in_their_order() -> None:
         ("cycling", BY_BIKE),
         ("mountain_biking", BY_BIKE),
         ("inline_skating", ON_SKATES),
+        ("wheelchair", PUSHED),
         ("gravel_biking", BY_BIKE),
     ]
     assert list(SPORTS) == list(get_args(Sport))
@@ -121,6 +127,7 @@ def test_the_tables_are_those_of_before_in_their_order() -> None:
         "hiking": True,
         "mountain_biking": False,
         "inline_skating": False,
+        "wheelchair": True,
     }
 
 
@@ -157,6 +164,7 @@ def test_the_zone_boxes_are_those_of_before() -> None:
         "hiking",
         "mountain_biking",
         "inline_skating",
+        "wheelchair",
     ]
     assert boxes["running"] is prefetch_zones.zone_box
     assert boxes["hiking"] is prefetch_zones.zone_box
@@ -166,6 +174,10 @@ def test_the_zone_boxes_are_those_of_before() -> None:
     assert boxes["mountain_biking"](city) == prefetch_zones.bike_zone_box(city)
     # A skate's 30 km too (TASK-380).
     assert boxes["inline_skating"](city) == prefetch_zones.bike_zone_box(city)
+    # A wheelchair's own 5 km (TASK-414).
+    assert boxes["wheelchair"](city) == prefetch_zones.longest_route_box("wheelchair")(
+        city
+    )
 
 
 def test_every_sport_on_roads_has_zones_and_no_other() -> None:
@@ -210,6 +222,7 @@ def test_the_zones_in_memory_and_the_description_are_those_of_before() -> None:
         "hiking": 1,
         "mountain_biking": 1,
         "inline_skating": 1,
+        "wheelchair": 1,
     }
     assert ACTIVITY_DESCRIPTION == (
         f"One of: {', '.join(API_ACTIVITIES)}; cycling is drawn on the "
@@ -226,6 +239,9 @@ def test_the_zones_in_memory_and_the_description_are_those_of_before() -> None:
         f"snowshoeing on open snow, 0.5-3 km, a shape of the catalogue only, "
         f"away from slopes over 25 degrees, woods, pistes, rock and villages, "
         f"from a way in on foot (TASK-413); "
+        f"wheelchair for a wheelchair or a stroller, 1-5 km, a circle, a heart, a "
+        f"star or a moon, on its own network: no steps, raised kerbs, rough "
+        f"surfaces or big roads without a sidewalk (TASK-414); "
         f"walking on the foot network of a run (TASK-371); "
         f"gravel_biking is drawn as cycling, on the bike network (TASK-378)."
     )

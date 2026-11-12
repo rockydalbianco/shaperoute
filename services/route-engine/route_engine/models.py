@@ -63,6 +63,17 @@ LAPS_SWIM_ONLY = "laps are for a swim"
 ON_WATER_SHAPES_ONLY = "on the water only a shape of the catalogue is drawn"
 # The same on the snow (TASK-413).
 ON_SNOW_SHAPES_ONLY = "on the snow only a shape of the catalogue is drawn"
+# The activities that draw only a few shapes of the catalogue, and which: no
+# other shape, no word, no image or outline (`Activity.shapes`; a wheelchair
+# or a stroller, TASK-414, ADR-0343).
+ONLY_SHAPES: dict[str, tuple[str, ...]] = {
+    a.name: a.shapes for a in _DRAWN if a.shapes is not None
+}
+
+
+def only_shapes(activity: str) -> str:
+    """Why a shape of ONLY_SHAPES refuses something: the shapes it draws."""
+    return f"{activity} draws only these shapes: {', '.join(ONLY_SHAPES[activity])}"
 
 
 # Why a request with the pen up and no word is refused (TASK-197): the API
@@ -153,6 +164,8 @@ class RouteRequest:
                 f"unknown shape {self.shape!r}; "
                 f"choose one of: {', '.join(SUPPORTED_SHAPES)}"
             )
+        elif self.shape not in ONLY_SHAPES.get(self.activity, SUPPORTED_SHAPES):
+            raise InvalidRequestError(f"{only_shapes(self.activity)}, not {self.shape}")
         check_activity(self.activity)
         if self.style not in STYLES:
             raise InvalidRequestError(
@@ -234,7 +247,10 @@ def check_activity(activity: str) -> None:
 def check_drawn_on_land(activity: str, what: str) -> None:
     """Refuse `what` (a word, an image, an outline) for an activity on the
     water (WATER_ACTIVITIES) or on the snow (SNOW_ACTIVITIES): only a shape
-    of the catalogue is drawn there."""
+    of the catalogue is drawn there; and for one that draws only a few shapes
+    (ONLY_SHAPES, TASK-414)."""
+    if activity in ONLY_SHAPES:
+        raise InvalidRequestError(f"{only_shapes(activity)}, not {what}")
     if activity in WATER_ACTIVITIES:
         raise InvalidRequestError(f"{ON_WATER_SHAPES_ONLY}, not {what}")
     if activity in SNOW_ACTIVITIES:

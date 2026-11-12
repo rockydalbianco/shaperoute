@@ -270,6 +270,9 @@ export function ExploreScreen({
       key={route.id}
       width={width}
       line={route.preview}
+      // A word of the catalogue written letter by letter (TASK-441): the
+      // walks between the letters are not drawn.
+      gaps={route.gaps}
       rotationDeg={route.rotation_deg}
       title={`${capitalised(routeTitle(route))} · ${distanceLabel(route.route_m, units)}`}
       detail={`${cityName(route.city)} · ${awayText(route.away_m)}`}

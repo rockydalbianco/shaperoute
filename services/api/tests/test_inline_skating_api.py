@@ -245,7 +245,15 @@ def _skate(km: float, kmh: float) -> list[TrackPoint]:
 
 def test_the_bests_of_a_skate_are_a_run_s_distances_of_its_own() -> None:
     sports: tuple[Sport, ...] = get_args(Sport)
-    assert sports == ("running", "cycling", "mountain_biking", SKATE, "gravel_biking")
+    # A wheelchair after it since TASK-414.
+    assert sports == (
+        "running",
+        "cycling",
+        "mountain_biking",
+        SKATE,
+        "wheelchair",
+        "gravel_biking",
+    )
     assert list(SPORTS) == list(sports)
     assert [d.name for d in ON_SKATES.distances] == ["5k", "10k", "half", "marathon"]
     run_metres = {d.name: d.metres for d in RUN_BESTS.distances}

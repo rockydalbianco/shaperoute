@@ -1,14 +1,16 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 chiusa l'11 novembre 2026 (le risposte dell'utente, sotto) · nessun codice · poi A, B, C col sì del Coordinatore
-**Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A (il calcolo sul telefono) in PR**, senza nativo, impronte ferme · poi B (post), C (nativa, dopo la 1.1.0), D (Android)
+**Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
+`feat/TASK-467-a-sleep-score` (A)
 **Dipende da**: TASK-321 (Apple Salute nell'app, la stessa libreria),
 TASK-345 C / TASK-409 B (la lettura del battito: il modello del «leggere
 da Salute dopo un tocco»)
 **Si incrocia con**: TASK-312 D (studio «leggere da Salute»), TASK-454
 (reazioni nel Feed: `src/feed/**`), TASK-321 C (Health Connect), TASK-322
 («Accedi con Apple»: la stessa build nativa, dopo la 1.1.0)
-**ADR**: da assegnare dal Coordinatore, con la prima scelta tecnica (parte A)
+**ADR**: ADR-0379 (la formula e le soglie; la voce entra in `DECISIONS.md`
+con la PR di soli documenti dopo il merge di A)
 
 ## Obiettivo
 
@@ -134,14 +136,64 @@ volta, ognuna con la proposta dell'agente:
   TASK-321 C.
 
 La lista precisa dei file di ogni parte va al Coordinatore prima del
-codice. Prima della parte A: controllare sugli header dell'SDK che il
-punteggio di Apple non sia leggibile.
+codice.
+
+### Parte A — com'è fatta (2026-11-12, branch `feat/TASK-467-a-sleep-score`)
+
+Solo funzioni pure, file nuovi, non importati da nessuna schermata: niente
+nativo, niente dipendenze, niente server, impronte ferme (condizione del
+Coordinatore: prima dell'uscita della 1.1.0 non si tocca il nativo).
+
+- **Controllo sull'SDK** (iPhoneOS 27.0, header di HealthKit sul Mac):
+  nessun tipo per il punteggio del sonno di Apple, solo
+  `HKCategoryTypeIdentifierSleepAnalysis`. Il calcolo di MuW serve.
+- **`src/health/sleepNight.ts`** — dai campioni di sonno alla notte:
+  - le fasi di MuW: `awake`, `rem`, `light` (il «Core» di Salute), `deep`,
+    `asleep` (sonno senza fase, il telefono senza orologio); «a letto»
+    non conta;
+  - sorgenti sovrapposte unite senza contare due volte: dove due
+    campioni si sovrappongono vince chi dice di più (fase detta › sveglio ›
+    sonno senza fase; fra le fasi la più profonda);
+  - un silenzio di più di 60 minuti separa i tratti di sonno; la notte è
+    il tratto con più sonno (un pisolino non è la notte), da quando ci si
+    addormenta all'ultimo risveglio; il tempo senza campioni dentro la
+    notte conta come sveglio; sotto i 60 minuti di sonno non c'è notte.
+- **`src/health/sleepScore.ts`** — il punteggio 0–100 (ADR-0379, deciso
+  dall'agente su delega dell'utente):
+  - **durata, 50 punti**: zero fino a 4 ore di sonno, tutti da 8, in
+    linea retta in mezzo;
+  - **regolarità, 30 punti**: l'ora in cui ci si addormenta contro quella
+    solita (la mediana delle notti prima, come ora del giorno): tutti
+    entro 15 minuti, zero da 2 ore;
+  - **interruzioni, 20 punti**: i minuti svegli durante la notte: tutti
+    fino a 5, zero da 60;
+  - con meno di 3 notti prima l'ora solita non si sa: il punteggio sono
+    le altre due parti portate a 100 (`withBedtime: false`);
+  - le cinque fasce dell'utente (`sleepBand`).
+- **Limiti noti**: un giorno vale 24 ore, quindi le notti prima di un
+  cambio d'ora leggono un'ora di scarto; le soglie sono di MuW, il numero
+  può differire da quello dell'app Salute.
+- **Per dopo**: la lettura da Salute (chiede il permesso: con la build
+  nativa), quale finestra di campioni è «la notte scorsa» (serve l'ora
+  locale: sta nel lettore), e nella parte B il valore di partenza
+  dell'interruttore nel post dell'attività in **una sola costante**
+  (richiesta del Coordinatore). La scelta «acceso/spento» è stata
+  riproposta all'utente il 2026-11-12, con «spento» come proposta e i
+  due rischi detti (il consenso esplicito di Apple 5.1.3; la frase della
+  privacy «private unless you choose otherwise»): **«Resta acceso»**.
+
+**File toccati (parte A)**: `apps/mobile/src/health/sleepNight.ts`,
+`sleepNight.test.ts`, `sleepScore.ts`, `sleepScore.test.ts` (nuovi),
+`docs/tasks/TASK-467.md`.
 
 ## Criteri di accettazione (parte 0)
 
 - [x] Le scelte di prodotto sono dell'utente e stanno in questo file.
 - [x] I testi sono approvati dall'utente (tabella della risposta 7).
-- [ ] Parti A–D: criteri scritti qui quando partono.
+- [x] A: dai campioni alla notte e dalla notte al punteggio, con test
+  deterministici (22), `tsc` ed `eslint` puliti; nessun file esistente
+  dell'app toccato, impronte ferme.
+- [ ] Parti B–D: criteri scritti qui quando partono.
 
 ## File toccati (documenti, questa PR)
 
@@ -159,3 +211,5 @@ punteggio di Apple non sia leggibile.
 
 - **2026-11-11**: parte 0 chiusa in una sessione (sette risposte più la
   6b). Numero dal Coordinatore; nessun codice, nessun ADR ancora.
+- **2026-11-12**: parte 0 in `main` (#1182). Parte A scritta: il calcolo
+  sul telefono, ADR-0379. La PR aspetta la CI e il merge del Coordinatore.

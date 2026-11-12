@@ -267,16 +267,17 @@ test("a saved run with walks opens with them dashed; one of before as one line",
   await fireEvent.press(
     screen.getByRole("button", { name: /· II, .*open on the map$/ }),
   );
-  expect(await screen.findByText("Back to the list")).toBeOnTheScreen();
+  expect(await screen.findByTestId("activity-card-heading")).toBeOnTheScreen();
   // As at the end of the run: the letters, and the walk between them apart.
   expect(lastShown()).toContain('"letters":[[');
   expect(lastShown()).toContain('"walks":[[');
 
-  await fireEvent.press(screen.getByText("Back to the list"));
+  // The card of a run has no «Back to the list» (TASK-456): the map's «←».
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   await fireEvent.press(
     screen.getByRole("button", { name: /· Star, .*open on the map$/ }),
   );
-  expect(await screen.findByText("Back to the list")).toBeOnTheScreen();
+  expect(await screen.findByTestId("activity-card-heading")).toBeOnTheScreen();
   await waitFor(() =>
     expect(lastShown()).toContain('"coordinates":[[11.1214,46.0671]'),
   );

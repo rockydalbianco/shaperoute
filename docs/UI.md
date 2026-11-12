@@ -1998,8 +1998,10 @@ telefono dell'account: con un percorso o senza.
 - **La pagina «My activities»**, da «Profile»: una scheda per corsa, dalla
   più recente. A sinistra il disegno, come a fine corsa: il percorso
   giallo e sopra, sottile e chiara, la linea corsa; una corsa senza
-  percorso ha solo la sua linea. A destra il giorno e l'ora dell'inizio,
-  con l'orologio del telefono («Fri 2 Oct 2026 · 08:12»); il luogo e cosa
+  percorso ha solo la sua linea. A destra, in testa, **il titolo del post
+  quando c'è** («My first star», da `GET /me/drawings`) con sotto il giorno
+  e l'ora (TASK-456); senza titolo, in testa il giorno e l'ora dell'inizio,
+  con l'orologio del telefono («Fri 2 Oct 2026 · 08:12»); poi il luogo e cosa
   disegnava («Trento · Star»; il luogo è il paese da cui si parte, trovato
   dall'API, e manca se non lo trova; senza luogo né percorso, «Run»); «4.01
   km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio.
@@ -2013,12 +2015,19 @@ telefono dell'account: con un percorso o senza.
 - **Venti per volta**: in fondo «Show more» porta le venti successive. Il
   numero in «Profile» le conta tutte.
 - **Una scheda apre la corsa sulla mappa**: il percorso giallo e la linea
-  corsa, come a fine corsa; sotto, giorno e ora, luogo e disegno, km,
-  tempo e passo, la legenda («Yellow: the route. White: what you
-  ran.»). «←» e «Back to the list» tornano
-  all'elenco. Niente cuore e niente «Start»: è una corsa, non un percorso.
-- **Strava sulla corsa aperta** (TASK-187), sopra «Delete», solo se l'API
-  ha Strava: **«View on Strava»** se la corsa c'è già (apre la sua pagina);
+  corsa, come a fine corsa. **La mappa ha lo spazio principale** (TASK-456,
+  scelta dell'utente dell'11 novembre 2026): sotto c'è una scheda corta,
+  alta uguale prima e dopo la risposta dell'API. In testa il titolo del
+  post quando c'è, e sotto giorno, ora, luogo e disegno; senza titolo, in
+  testa giorno e ora e sotto luogo e disegno. Poi km, tempo e passo, la
+  legenda («Yellow: the route. White: what you ran.») e una riga con
+  **«Share»** e **«Edit post»**. In alto a destra **«…»** («More» per il
+  lettore di schermo): un foglietto dal basso con «Send to a friend»,
+  Strava, «Delete» e «Cancel». «←» torna all'elenco: «Back to the list»
+  sulla scheda della corsa non c'è più. Niente cuore e niente «Start»: è
+  una corsa, non un percorso.
+- **Strava sulla corsa aperta** (TASK-187), nel foglietto di «…» sopra
+  «Delete», solo se l'API ha Strava: **«View on Strava»** se la corsa c'è già (apre la sua pagina);
   se no il campo «Name on Strava», con il nome che l'API darebbe come
   suggerimento («Star in Trento»), e **«Send to Strava»**, che manda subito
   («Sending to Strava…»). Strava che sta ancora leggendo la corsa: «Strava
@@ -2027,11 +2036,15 @@ telefono dell'account: con un percorso o senza.
   again when you are online.»). Un atleta che ha tolto l'accesso da Strava
   torna a «Connect with Strava».
 - **Il modulo del disegno sulla corsa aperta** (TASK-117, ADR-0159,
-  ADR-0166; TASK-208, ADR-0170), sopra Strava: lo stesso della fine corsa
-  («La fine della corsa», più giù), come l'API lo ha: le foto, «Title»,
-  «How did it go?», «Tag people», «Activity» e «Who can see it», in un
-  riquadro che scorre (al più il 40 % dello schermo). Niente finché l'API
-  non risponde, niente del tutto da un'API senza disegni. Una pillola
+  ADR-0166; TASK-208, ADR-0170), nel foglio **«Edit post»** (TASK-456), che
+  sale dal basso sopra la mappa scurita e si chiude con «Done» o con un
+  tocco sopra il foglio: lo stesso della fine corsa («La fine della
+  corsa», più giù), come l'API lo ha: le foto, «Title», «How did it go?»,
+  «Tag people», «Activity» e «Who can see it», in un riquadro che scorre
+  (al più il 70 % dello schermo; con la tastiera aperta il foglio le sta
+  sopra e il riquadro si accorcia). Il titolo scritto lì diventa subito la
+  testa della scheda. «Edit post» non c'è finché l'API non risponde, né da
+  un'API senza disegni. Una pillola
   («Activity», «Who can see it»), un tag messo o tolto e una foto mandano
   **subito** la scelta intera (`PUT /me/activities/{key}/drawing`); il
   titolo e la descrizione si mandano chiusa la tastiera, se sono cambiati.
@@ -2058,10 +2071,12 @@ telefono dell'account: con un percorso o senza.
   ogni elenco che arriva). Una corsa che aspetta sul telefono e andrà agli
   altri aggiunge, sotto «1 run is on this phone…», «Saved on the phone.
   Others see it when you are back online.».
-- **«Delete»**, in rosso, sulla scheda dell'elenco e sotto la mappa, chiede
-  prima sulla scheda stessa: «Delete this run? It cannot be undone.», con
-  «Keep it» e «Delete run». La corsa sparisce subito; se l'API rifiuta
-  torna dov'era, con il motivo in cima all'elenco.
+- **«Delete»** non è in vista (TASK-456): sta nel foglietto di «…», in
+  alto a destra di ogni scheda dell'elenco e della scheda sotto la mappa,
+  in rosso sopra «Cancel». Chiede prima, nel foglietto stesso: «Delete
+  this run? It cannot be undone.», il nome della corsa, «Delete run» e
+  «Keep it». La corsa sparisce subito; se l'API rifiuta torna dov'era, con
+  il motivo in cima all'elenco.
 - **«Add past activity»** (TASK-312 parte B, ADR-0272,
   `IMPORTAZIONI.md`), in cima alla pagina, neutro come gli altri pulsanti:
   apre **«From a file»**, con sotto «GPX, TCX or FIT from Strava, Garmin,

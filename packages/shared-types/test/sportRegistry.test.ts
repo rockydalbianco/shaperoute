@@ -28,14 +28,16 @@ const BEFORE_LIMITS = {
   walking: [1_000, 30_000],
 };
 // Added since, each by a line of sports/index.ts: a hike (TASK-377), an MTB
-// ride (TASK-378), a skate (TASK-380) and snowshoeing (TASK-413), planned
-// before the walk, in the order of the route engine; a gravel ride
+// ride (TASK-378), a skate (TASK-380), snowshoeing (TASK-413) and a
+// wheelchair or a stroller (TASK-414), planned before the walk, in the order
+// of the route engine; a gravel ride
 // (TASK-378) after it, drawn as a ride as the walk is drawn as a run.
 const SINCE_LIMITS: Readonly<Record<string, readonly [number, number]>> = {
   hiking: [1_000, 30_000],
   mountain_biking: [10_000, 30_000],
   inline_skating: [5_000, 30_000],
   snowshoeing: [500, 3_000],
+  wheelchair: [1_000, 5_000],
   gravel_biking: [10_000, 30_000],
 };
 const SINCE = Object.keys(SINCE_LIMITS);
@@ -52,6 +54,7 @@ const NOW_ACTIVITIES = [
   "mountain_biking",
   "inline_skating",
   "snowshoeing",
+  "wheelchair",
   "walking",
   "gravel_biking",
 ];
@@ -115,6 +118,7 @@ test("the types are the literals of before", () => {
     | "mountain_biking"
     | "inline_skating"
     | "snowshoeing"
+    | "wheelchair"
     | "walking"
     | "gravel_biking"
     ? true

@@ -7,7 +7,7 @@ import importedDrawing from "@shaperoute/shared-types/fixtures/drawing-details-i
 import feed from "@shaperoute/shared-types/fixtures/feed.json";
 import importedFeed from "@shaperoute/shared-types/fixtures/feed-imported.json";
 import type { DrawingDetail, FeedPost as Post } from "@shaperoute/shared-types";
-import { act, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 
 import { ActivitiesList } from "../activities/ActivitiesList";
 import {
@@ -118,12 +118,19 @@ describe("the card of a run opened", () => {
   it("of an imported run says «Imported», with no «Send to Strava»", async () => {
     await card(importedRun);
     expect(screen.getByTestId("imported-mark")).toBeTruthy();
+    // Strava is in the card's «…» (TASK-456): not there either.
+    await fireEvent.press(screen.getByTestId("activity-menu"));
+    expect(screen.getByRole("button", { name: "Delete" })).toBeTruthy();
     expect(screen.queryByText("Send to Strava")).toBeNull();
   });
 
-  it("of a run recorded with MuW has «Send to Strava» as before", async () => {
+  it("of a run recorded with MuW has «Send to Strava» in its «…»", async () => {
     await card(recorded);
     expect(screen.queryByTestId("imported-mark")).toBeNull();
+    expect(screen.queryByText("Send to Strava")).toBeNull();
+    await fireEvent.press(screen.getByTestId("activity-menu"));
+    // What Strava has of it, asked once the sheet shows.
+    await act(async () => {});
     expect(screen.getByText("Send to Strava")).toBeTruthy();
   });
 });

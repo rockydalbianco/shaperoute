@@ -6,7 +6,7 @@ activity goes on which network is in activities/.
 
 from __future__ import annotations
 
-from route_engine.networks import bike, foot, hike, mtb, roller
+from route_engine.networks import bike, foot, hike, mtb, roller, wheel
 from route_engine.networks.base import Network
 
 NETWORKS_BY_NAME: dict[str, Network] = {
@@ -17,5 +17,6 @@ NETWORKS_BY_NAME: dict[str, Network] = {
         hike.NETWORK,
         mtb.NETWORK,
         roller.NETWORK,
+        wheel.NETWORK,
     )
 }

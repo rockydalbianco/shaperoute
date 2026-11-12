@@ -57,7 +57,7 @@ import { type Pace, runTimeText } from "./runTime";
 import { ShapeGrid } from "./ShapeGrid";
 import { ShapePreview } from "./ShapePreview";
 import { shapeList, shapeName } from "./shapeWords";
-import { shapeOfSport } from "./sportDraw";
+import { drawsByHand, shapeOfSport } from "./sportDraw";
 import type { ExportState } from "./useGpxExport";
 import type { ImageState } from "./useImageOutline";
 import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
@@ -199,10 +199,8 @@ export function RouteChoice({
   const shownKind = left(kind) ? "shape" : kind;
   const kinds = DRAW_KINDS.filter((option) => !left(option.value));
   const shownShape = shapeOfSport(shape, activity);
-  // No drawing by hand on the snow: the engine places only a shape of the
-  // catalogue there (TASK-413, ON_SNOW_SHAPES_ONLY).
-  const freehand =
-    shapes === undefined && !isSnowshoeRoute(activity) ? onFreehand : undefined;
+  // No drawing by hand where the sport takes none (sportDraw.drawsByHand).
+  const freehand = drawsByHand(activity) ? onFreehand : undefined;
   return (
     <View style={styles.panel}>
       {/* The steps of «Draw» (TASK-361): «1 START» is the start's card. */}

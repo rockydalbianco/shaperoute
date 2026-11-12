@@ -40,6 +40,12 @@ The texts are in the language the app said with the token, else English.
 An event let through (not one's own, the first of the day) also goes to
 the listeners, before the push: the email of the notices keeps the five
 events of the people for its daily email (notice_email.py, TASK-262 B).
+
+Two more are a comment's (TASK-454 part C1, ADR-0377; comments.py and
+comment_reactions.py): a reply, told to who it answers as every event
+above; and a reaction to a comment, which goes to the listeners only
+(BELL_ONLY): it is read in the bell and no phone rings (the user's choice,
+2026-11-11).
 """
 
 from __future__ import annotations
@@ -84,6 +90,8 @@ Kind = Literal[
     "follow_accepted",
     "reaction",
     "comment",
+    "comment_reply",
+    "comment_reaction",
     "tag",
     "shape_unlocked",
     "edition_up",
@@ -119,6 +127,10 @@ OWN_KINDS: frozenset[str] = frozenset(
         "group_run_soon",
     }
 )
+
+# The events the listeners hear of and no phone is sent: a reaction to a
+# comment is read in the bell only (TASK-454, the user's choice).
+BELL_ONLY: frozenset[str] = frozenset({"comment_reaction"})
 
 # An Expo push token: "ExponentPushToken[…]", or "ExpoPushToken[…]".
 TOKEN_PATTERN = r"^Expo(nent)?PushToken\[[A-Za-z0-9_\-]{1,180}\]$"
@@ -200,13 +212,14 @@ class PushEvent:
     kind: Kind
     actor_id: int
     recipient_id: int
-    # The drawing of a reaction, a comment, a tag.
+    # The drawing of a reaction, a comment, a reply, a tag.
     drawing_id: UUID | None = None
     # The reaction's code (reactions.py), the comment's text.
     reaction: str | None = None
     text: str | None = None
-    # What tells two events of the same kind apart: a comment's id. Two
-    # reactions of one person to one drawing are the same event.
+    # What tells two events of the same kind apart: a comment's id, a
+    # reply's, the id of the comment a reaction was left on. Two reactions
+    # of one person to one drawing, or to one comment, are the same event.
     key: str = ""
     # A challenge of the shape game (TASK-296 C): the app opens it; its text
     # has a number (a piece's, or the pieces missing) and the shape's name
@@ -278,6 +291,21 @@ TEXTS: dict[str, dict[str, str]] = {
         "it": "{name} ha commentato il tuo post: {text}",
         "es": "{name} ha comentado tu publicación: {text}",
         "fr": "{name} a commenté ta publication : {text}",
+    },
+    # A comment's (TASK-454): the English ones are the user's.
+    "comment_reply": {
+        "en": "{name} replied to your comment: {text}",
+        "de": "{name} hat auf deinen Kommentar geantwortet: {text}",
+        "it": "{name} ha risposto al tuo commento: {text}",
+        "es": "{name} ha respondido a tu comentario: {text}",
+        "fr": "{name} a répondu à ton commentaire : {text}",
+    },
+    "comment_reaction": {
+        "en": "{name} reacted to your comment.",
+        "de": "{name} hat auf deinen Kommentar reagiert.",
+        "it": "{name} ha reagito al tuo commento.",
+        "es": "{name} ha reaccionado a tu comentario.",
+        "fr": "{name} a réagi à ton commentaire.",
     },
     "tag": {
         "en": "{name} tagged you in a post.",
@@ -592,6 +620,8 @@ class Pusher:
             if (own and event.kind not in OWN_KINDS) or not self._first(event):
                 return
             self._tell(event)
+            if event.kind in BELL_ONLY:
+                return
             messages = self.messages(event)
             if messages:
                 assert self.run is not None

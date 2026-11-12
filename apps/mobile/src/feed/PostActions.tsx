@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, type ImageSourcePropType, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 import { SharePost } from "../share/SharePost";
@@ -10,6 +10,16 @@ import { useDrawingComments } from "../social/useDrawingComments";
 import { color, font, fontWeight, MIN_TAP_SIZE, space } from "../theme/tokens";
 import { Tap } from "../ui/Tap";
 import type { ShownPost } from "./feedPosts";
+
+/** The actions' icons, from Lucide (ISC, assets/ui/icons/LICENSE-lucide.txt)
+ * as the bar's are (TASK-444): white, coloured by `tintColor`. Emoji in
+ * colours stood here, beside the bar's thin lines. */
+const ICONS = {
+  like: require("../../assets/ui/icons/heart.png"),
+  comment: require("../../assets/ui/icons/message-circle.png"),
+  share: require("../../assets/ui/icons/share.png"),
+  editRun: require("../../assets/ui/icons/pencil.png"),
+} satisfies Record<string, ImageSourcePropType>;
 
 /**
  * A member's drawing as its post shows it. What the card has is already cut
@@ -67,7 +77,7 @@ export function PostActions({ post, mine, onEditRun }: Props) {
       )}
       <View style={styles.actions} testID="feed-actions">
         <Action
-          mark="👍"
+          icon={ICONS.like}
           label={t("Like")}
           onPress={() => setReacting((was) => !was)}
           expanded={reacting}
@@ -75,7 +85,7 @@ export function PostActions({ post, mine, onEditRun }: Props) {
         />
         {comments.status !== "off" && (
           <Action
-            mark="💬"
+            icon={ICONS.comment}
             label={`${t("Comment")}${commentCount}`}
             onPress={() => {
               setCommented(true);
@@ -86,7 +96,7 @@ export function PostActions({ post, mine, onEditRun }: Props) {
         )}
         {mine && (
           <Action
-            mark="↗"
+            icon={ICONS.share}
             label={t("Share")}
             onPress={() => setSharing(postOfDrawing(post))}
             testID="post-share"
@@ -94,7 +104,7 @@ export function PostActions({ post, mine, onEditRun }: Props) {
         )}
         {onEditRun !== undefined && (
           <Action
-            mark="✏️"
+            icon={ICONS.editRun}
             label={t("Edit & run")}
             onPress={onEditRun}
             strong
@@ -116,7 +126,7 @@ export function PostActions({ post, mine, onEditRun }: Props) {
 
 type ActionProps = {
   /** Drawn over the word, hidden from a screen reader: the word says it. */
-  mark: string;
+  icon: ImageSourcePropType;
   label: string;
   onPress: () => void;
   expanded?: boolean;
@@ -126,7 +136,7 @@ type ActionProps = {
 };
 
 function Action({
-  mark,
+  icon,
   label,
   onPress,
   expanded,
@@ -142,15 +152,22 @@ function Action({
       {...(expanded === undefined ? {} : { accessibilityState: { expanded } })}
       testID={testID}
     >
-      <Text style={styles.mark} accessible={false} importantForAccessibility="no">
-        {mark}
-      </Text>
+      <Image
+        source={icon}
+        style={[styles.icon, strong && styles.iconStrong]}
+        accessible={false}
+        importantForAccessibility="no"
+        testID={`${testID}-icon`}
+      />
       <Text style={[styles.label, strong && styles.labelStrong]} numberOfLines={1}>
         {label}
       </Text>
     </Tap>
   );
 }
+
+/** The side of an action's icon, in points: the size its PNG is drawn at. */
+const ICON_SIZE = 22;
 
 const styles = StyleSheet.create({
   reactions: {
@@ -166,9 +183,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: space.xs,
   },
-  mark: {
-    ...font.body,
-    color: color.text,
+  icon: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    tintColor: color.text,
+  },
+  iconStrong: {
+    tintColor: color.accent,
   },
   label: {
     ...font.detail,

@@ -100,48 +100,49 @@ quando la sessione scrive «#NNN pronta» (il motore lo mergia l'utente).
 
 | # | Task | Stato | Note |
 |---|---|---|---|
-| #1130 | TASK-413 A2, ciaspole nel contratto e nell'API (motore, 0068) | CI in corso | la prossima del motore: si riallinea su #1106 (prova, righe, `engine.zip`); **merge dell'utente** |
-| #1129 | TASK-429 B2, invio di `ski_parts` | CI in corso | merge al verde; OTA 8 |
-| #1131 | TASK-429 C2, giornate salvate e stagione (app) | CI in corso | ha `App.tsx`; tocca i file i18n come #1132: entra la prima verde, l'altra unisce `main` |
-| #1132 | TASK-423 E2a, i premi dentro Play (app) | CI in corso | 55 testi approvati dall'utente l'11-11; vedi #1131 |
-| #1133 | TASK-433, il «No» di «And running?» senza bordo azzurro | CI in corso | merge al verde; OTA 8 |
-| #1137 | TASK-440, la foto del post a schermo intero | CI in corso | solo `src/feed`; merge al verde; OTA 8 |
-| #1116 | `release/1.1.0`: orologio + Live Activity | bozza, **trattenuta** | testa `356e3f66`, impronta iOS `5e1b5ce5`, Android `227457f3`; si unisce **solo dopo l'approvazione di Apple**; allora #1058 e #862 si chiudono |
-| #1058, #862 | A-flip dell'orologio, Live Activity | bozze | dentro `release/1.1.0`; non si uniscono da sole |
+| #1158 | TASK-452 A, piani di corsa: campo `runner` (server e tipi) | CI in corso | merge al verde; server prima dell'app |
+| #1159 | TASK-452 B, piani di corsa nell'app | bozza | non prima di «server A fatto» |
+| #1162 | TASK-462 A, `GET /me/activity-calendar` | CI in corso | merge al verde; poi passo sul server |
+| #1163 | TASK-461 A1, quattro esercizi a corpo libero (server) | CI in corso | merge al verde; poi passo sul server |
+| #1156 | TASK-460, i movimenti dei tasti di Play | CI in corso | sì dell'utente al video; merge al verde |
+| #1160 | TASK-415 B, scialpinismo nell'app (fasi e VAM) | CI in corso | sì dell'utente; **il primo OTA dopo il merge accende lo sport** |
+| #1161 | TASK-435 C, il primo percorso subito nell'app | bozza | non prima di «passo 8 fatto»; mancano gli screenshot |
+| #1164 | TASK-453, riepilogo palestra e piscina senza account, plurali | CI in corso | mancano gli screenshot |
+| #1165 | TASK-443, inquadratura della mappa del risultato | CI in corso | mancano gli screenshot |
+| #1116 | `release/1.1.0`: orologio + Live Activity | bozza, **trattenuta** | testa `356e3f66` = build 14, **in revisione da Apple dall'11 novembre, rilascio automatico**; si unisce solo dopo l'approvazione; allora #1058 e #862 si chiudono |
 
-**In `main` l'11 novembre**: #1105 (435 A) e #1106 (436, motore
-`ca29e58777cb` tenuto come `8ab61d8e87f9`), merge dell'utente; #1115
-(433 C2), #1120 (437); i documenti #1126, #1127, #1128.
+**In `main` l'11 novembre**: il motore #1105, #1106, #1130 (merge
+dell'utente; codice `427ed1a16a97`, efficace `8ab61d8e87f9`); #1139
+(435 B); il catalogo di «Explore» #1149 + #1155 (1261 percorsi, ordine
+misto; le parole a riga unica tolte su richiesta dell'utente); l'app
+#1115, #1120, #1129, #1131, #1133, #1137, #1132, #1144, #1143.
 
-**Motore, in ordine**: #1130 (413 A2, migrazione 0068) → 435 B (API,
-`schemas.py`, `engine.zip`; bozza finché la #1130 non è in `main`) → 435
-C (app) → TASK-447 (via i «baffi»: cambia i percorsi scelti, quindi
-impronta efficace ed esempi del catalogo; da decidere con l'utente
-insieme a TASK-441). A ogni «in main» chi segue unisce `main` e rifà per
-ultimi prova, righe ed `engine.zip`. Il server è ancora al motore
-`2bca806f467b`: #1105, #1106 e #1130 entrano col passo 8
-(`out/coordinatore/passo8.sh`).
+**Motore**: nessuna PR aperta. In coda: TASK-447 (via i «baffi»: cambia
+i percorsi, da decidere con l'utente insieme a TASK-441) e, se l'utente
+le vuole, le ottimizzazioni di TASK-445 a percorsi identici (partenze
+vicine in processi caldi, routing più veloce). Le PR che toccano
+`services/route-engine` le mergia l'utente.
 
-**Dalla prova dell'11 novembre, in ordine**: TASK-442 adesso (`App.tsx`
-solo dopo la #1131) e TASK-445 in parallelo (misure: un bench alla volta
-sul Mac, si chiede al coordinatore) → TASK-443 dopo la 442 → TASK-444
-dopo la #1137 (il rosso delle kcal nel Feed capovolge TASK-424 C3: lo
-conferma l'utente) → TASK-446 dopo 435 C (carico sui 2 route worker) →
-TASK-447 nella coda del motore; poi le idee: 449, 448, 450 (`src/share`
-è di TASK-417: turno), 451, ognuna dalla «parte 0» con le domande
-all'utente. Le apre la sessione «Pompo» una alla
-volta; ognuna manda la lista dei file al coordinatore prima del codice.
+**Server, passo 8** (`out/coordinatore/passo8.sh <sha>`, lo lancia
+l'utente al verde di `main`): motore, ciaspole con `0068_snowshoeing`,
+catalogo a 1261, 435 B, e le PR server che entrano prima del lancio.
 
-**CI**: da TASK-438 (#1119, ADR-0364) i test dell'API girano in 4 parti
-(`api-tests (1)`…`(4)`, circa 10 minuti l'una) e il check obbligatorio
-`api` è un job finale. Con molte PR insieme i job aspettano una macchina
-anche mezz'ora: la leva è il database modello dei test (TASK-439, da
-avviare).
+**Dalle prove dell'11 novembre** (`out/prova-app-2026-11-11/PROPOSTE.md`;
+le apre la sessione «Pompo» una alla volta): fatte 442 e 445; in corso
+443, 453; poi 444 (con la coerenza visiva), 454, 456, 457, 455, 458, 459,
+450 (con «Share your run»), 449, 448, 451; 446 dopo 435 C; 447 nella
+coda del motore.
 
-In corso senza PR: TASK-423 E2b (premi sul profilo e privacy: chiede il
-turno), TASK-435 B e C, TASK-413 B, TASK-417 D ed E. Senza sessione:
-TASK-414 A, TASK-415 B e C, TASK-439, TASK-429 E (grafica delle
-Stazioni), TASK-406 E (prova sulla neve).
+**Simulatore, `npm ci`, bench**: uno per volta sul Mac, col turno dato
+dal coordinatore («simulatore tuo» / «simulatore libero»): l'11 novembre
+due simulatori insieme hanno portato il carico a 316.
+
+**CI**: i test dell'API girano in 4 parti (TASK-438); ogni PR chiede 8
+macchine e con dieci PR insieme la coda supera la mezz'ora. La leva è il
+database modello dei test (TASK-439, da avviare).
+
+Senza sessione: TASK-414 A, TASK-415 C, TASK-413 B, TASK-439, TASK-429 E,
+TASK-406 E (prova sulla neve), TASK-322 B e C (Accedi con Apple, nativa).
 
 ## L'albero
 
@@ -195,40 +196,47 @@ Fermi per scelta dell'utente
 
 | File | Di chi |
 |---|---|
-| `apps/mobile/App.tsx` | **a turno**: si chiede al coordinatore prima di toccarlo e si dice «App.tsx libero» all'apertura della PR. Ora: TASK-429 C2 (#1131) |
-| `apps/mobile/src/skimode/**`, `api/skiSeason.ts`, `activities/activitiesDoor.ts` (due righe) | TASK-429 (B2 #1129, C2 #1131) |
-| `services/route-engine/route_engine/network.py`, `optimizer.py` | TASK-436 (#1106) |
-| `services/api/shaperoute_api/route_store.py` (`SAME_ROUTES_AS`), `apps/mobile/assets/engine/engine.zip`, `schemas.py`, `jobs.py`, `images.py`, `route_processes.py` | **a turno**: #1106 e #1130 (merge dell'utente), poi TASK-435 B |
-| `apps/mobile/src/gym/GymPlanWizard.tsx` | TASK-433 (#1133) |
-| `apps/mobile/src/route/RoutePanel.tsx`, `favorites/SaveRouteButton.tsx` | TASK-435 C, quando parte |
+| `apps/mobile/App.tsx` | **a turno**: si chiede al coordinatore prima di toccarlo. Ora: libero |
+| `apps/mobile/src/map/**`, `screens/MapScreen.tsx` | TASK-443 (#1165) |
+| `apps/mobile/src/route/RoutePanel.tsx`, `route/useRouteRequest.ts`, `route/choices.ts`, `api/routes.ts` | TASK-435 C (#1161) |
+| `apps/mobile/src/gym/GymPlanWizard.tsx`, `program.ts`, `plans.ts`, `RunDayEditor.tsx`, `GymDrawGuide.tsx`, `api/gymPlans.ts`; `services/api/shaperoute_api/gym_plans.py` | TASK-452 (#1158, #1159); poi TASK-461 A2 |
+| `apps/mobile/src/gym/GymEnd.tsx`, `GymWorkoutHost.tsx`, `ExerciseList.tsx`, `src/pool/PoolSwimHost.tsx`, `PoolSwimEnd.tsx` | TASK-453 (#1164) |
+| `services/api/shaperoute_api/gym_catalog.py`, `apps/mobile/src/gym/catalog.ts`, `moves.ts`, `guides/**`, `proposal.ts` | TASK-461 (A1 #1163, poi A2) |
+| `apps/mobile/src/game/**` | TASK-460 (#1156) |
+| `apps/mobile/src/settings/sport.ts`, `sports/**`, `social/PublicParts.tsx`, `screens/FreeRunScreen.tsx`, `activities/snowDay.ts` | TASK-415 B (#1160); poi TASK-413 B, poi TASK-463 |
+| `services/api/shaperoute_api/app.py`, `packages/shared-types/src/index.ts`, `docs/API.md` | a turno: TASK-462 A (#1162), TASK-452 A (#1158, solo `API.md`) |
+| `apps/mobile/src/profile/ProfileHome.tsx`, `activities/ActivitiesList.tsx` | TASK-462 B; poi TASK-457 e TASK-456 |
+| `catalog/seed/**`, `tools/catalog_*.py`, `tools/catalog_kept.json`, `services/api/shaperoute_api/recommended.py`, `explore/ExploreScreen.tsx`, `route/NearYou.tsx`, `explore/explored.ts` | TASK-441 (parte B) |
+| `services/api/shaperoute_api/__main__.py`, `warm_zones.py` | TASK-464 |
 | `apps/mobile/src/watch/**`, `targets/**`, `modules/live-activity/**`, `app.json` (plugin), `fingerprint.config.js` | TASK-370 e il taglio della 1.1 (#1116) |
-| `apps/mobile/src/game/**`, `notifications/notificationTap.ts`, `notifications/pushDevice.ts`, `theme/tokens.ts` (blocco `gamePrize`) | TASK-423 (E2a #1132, poi E2b) |
 | `services/api/tests/conftest.py`, `.github/workflows/ci.yml` | TASK-439 quando parte; fino ad allora si chiede al coordinatore |
-| `apps/mobile/src/share/**` | TASK-417 (D, E) |
-| `apps/mobile/src/feed/FeedPost.tsx`, `feed/PhotoViewer.tsx` | TASK-440 |
-| `catalog/seed/**`, `tools/catalog_words.py`, `tools/catalog_kept.json`, `services/api/shaperoute_api/recommended.py` | TASK-441 |
+| `apps/mobile/src/share/**` | TASK-417 (D, E); poi TASK-450 |
 | `apps/mobile/src/i18n/{de,es,fr,it}.ts` | tutti: ognuno aggiunge chiavi, conflitti tenendo tutte |
 | `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/INDEX.md` | solo PR di documenti, una alla volta, solo la propria voce |
 | `docs/AGENTI.md`, `CLAUDE.md`, `docs/sports/CONDIVISO.md` | coordinatore |
 
 ## Numeri
 
-- Task: presi fino a **TASK-447** (440 la foto del post a schermo
-  intero, 441 «Explore a 2000 disegni»; dalla prova nel simulatore
-  dell'11 novembre, `out/prova-app-2026-11-11/PROPOSTE.md`: 442 sagoma
-  fantasma e attesa animata, 443 inquadratura della mappa del risultato,
-  444 icone e colori coerenti, 445 velocità (solo misure), 446 calcolo
-  anticipato, 447 via i «baffi» dal motore; dalle idee della stessa
-  prova: 448 «Sorprendimi», 449 anteprima dal vivo della sagoma su Crea,
-  450 poster da condividere, 451 «Rifai meglio»; la Live Activity in
-  corsa è TASK-401 B e «Accedi con Apple» è TASK-322, senza numeri
-  nuovi). Il prossimo libero è **TASK-452**.
-- ADR: presi fino a **ADR-0368** (0365 riservato a TASK-439; 0366
-  TASK-441; 0367 TASK-446; 0368 TASK-447). Il prossimo libero è
-  **ADR-0369**.
-- Migrazioni in `main` e sul server: fino a `0067_game_prizes.sql`
-  (0059 e 0060 non esistono). In bozza: `0068_snowshoeing.sql` (TASK-413
-  A2). Il numero vero è il primo libero al merge.
+- Task: presi fino a **TASK-464**. Dell'11 novembre: 440 foto del post
+  a schermo intero (fatto), 441 «Explore» più grande, 442 sagoma fantasma
+  (fatto), 443 inquadratura della mappa, 444 icone e colori coerenti, 445
+  misure di velocità (fatto), 446 calcolo anticipato, 447 via i «baffi»,
+  448 «Sorprendimi», 449 anteprima dal vivo della sagoma, 450 «Share your
+  run» e poster, 451 «Rifai meglio», 452 piani di corsa personalizzati,
+  453 riepilogo palestra senza account, 454 reazioni e super like, 455
+  condividere il disegno di un altro, 456 scheda dell'attività, 457
+  profilo nuovo, 458 minori (password, chat), 459 «Follow» segue subito,
+  460 movimenti dei tasti di Play, 461 pianificatore completo, 462
+  calendario delle attività nel profilo, 463 alpinismo senza percorso,
+  464 zone già in memoria nei processi di calcolo. Il prossimo libero è
+  **TASK-465**.
+- ADR: presi fino a **ADR-0374** (0366 TASK-441 B; 0367 TASK-446; 0368
+  TASK-447; 0369 TASK-452; 0370 TASK-459; 0371 TASK-461; 0372 TASK-462;
+  0373 TASK-463; 0374 TASK-464; 0365 riservato a TASK-439). Il prossimo
+  libero è **ADR-0375**.
+- Migrazioni in `main`: fino a `0068_snowshoeing.sql` (sul server fino
+  alla 0067: la 0068 arriva col passo 8). Provvisoria: 0069 per TASK-463.
+  Il numero vero è il primo libero al merge.
 
 ## Il server e l'app
 
@@ -248,10 +256,15 @@ Fermi per scelta dell'utente
   a mano; **ogni script di passo si ferma se il server è già allo SHA
   chiesto**. L'immagine di produzione non ha `httpx`: i controlli dopo un
   passo non usano `fastapi.testclient` (esempio senza:
-  `out/TASK-429/check_c1_asgi.py`). **Passo 8**, da comporre col sì
-  dell'utente: il motore di #1105, #1106 e #1130 (migrazione 0068),
-  righe in `out/TASK-413/SERVER-A2.md`; poi il passo della 435 B con la
-  rilettura delle righe «times» (`out/TASK-435/server-times-b.txt`).
+  `out/TASK-429/check_c1_asgi.py`). **Passo 8** (`out/coordinatore/passo8.sh <sha>`,
+  lo lancia l'utente al verde di `main`): il motore di #1105, #1106 e
+  #1130 con `0068_snowshoeing` (atteso codice `427ed1a16a97`, efficace
+  `8ab61d8e87f9`), il catalogo a 1261 percorsi con l'ordine misto (da
+  Milano «60 31 31»), la 435 B. Controlli dopo, del coordinatore:
+  `out/TASK-413/SERVER-A2.md`, `out/TASK-435/SERVER-B.md`,
+  `out/TASK-452/SERVER.md`, `out/TASK-461/SERVER.md`,
+  `out/TASK-462/SERVER.md` per ciò che c'è dentro; le righe «times» in
+  `out/TASK-435/` e `out/TASK-436/`.
   **Zone foot (TASK-421)**: le 53 del preset rifatte dall'estratto in una
   cartella a parte e scambiate (`--memory 5g`: con 4 GB osmium viene
   ucciso), 477 zone vecchie che facevano ombra messe in
@@ -265,25 +278,30 @@ Fermi per scelta dell'utente
   `out/coordinatore/`, uno per passo.
 - **App**: 1.0.2 sull'App Store (runtime iOS `6f8bba4c`, Android
   `227457f3`). Gli OTA li pubblica il coordinatore da una copia pulita
-  sul T9, col sì dell'utente. **OTA 7** dell'11 novembre da `7e24e7d1`
-  (iOS `3906eb66`, Android `7b0ec9eb`, preview `59cbd83c`): Play con
-  obiettivo e progressi veri (#1113), calorie in rosso (#1123), giorni
-  di corsa nelle schede (#1115), «Save» e «Start» dopo un Edit (#1120),
-  `engine.zip` della #1105. Prima: OTA 6 da `c4ab00a3`, OTA 5 da
-  `2c3442f7`. **OTA 8**, col sì: #1129, #1131, #1132, #1133 quando sono
-  in `main`. Da provare sul telefono dall'utente: 437, 433 C2, 424 C3,
-  423 D2. App Privacy «Salute» pubblicata il 2026-11-10.
-- **1.1.0 (orologio + Live Activity, scelta dell'utente del
-  2026-11-10)**: build 12 provata al polso («funziona tutto»). Si
-  costruisce da `release/1.1.0` (#1116) e si unisce in `main` solo dopo
-  l'approvazione di Apple, così `main` resta aggiornabile via OTA per la
-  1.0.2. Build **14** dell'11 novembre da `356e3f66` (EAS `09229e56`, tre
-  target: app, orologio, Live Activity) su TestFlight interno, provata
-  dall'utente («Tutto ok»); la segue la sessione A3 (`local_fd12d88e`).
-  Poi: prova dell'utente (`out/TASK-370/prova-build-13.md`), scheda
-  (screenshot Watch approvati, testi da approvare), invio col sì.
-- **Sito**: pubblicato da `main` `514b6ab3` il 2026-11-10 (F.14): pagina
-  `live/`, privacy con palestra, Play, link dal vivo e orologio. Da fare:
+  sul T9, col sì dell'utente, dopo il verde del job `mobile` su `main`.
+  L'11 novembre: **OTA 7** da `7e24e7d1` (Play D2, calorie in rosso,
+  giorni di corsa, «Save» e «Start»), **OTA 8** da `cd0c8b08` (iOS
+  `0cf2abd4`, Android `41d7bb93`: sci B2 e C2, foto del post a schermo
+  intero, il «No» della palestra), **OTA 9** da `e60e0b35` (iOS
+  `8e3cffd9`, Android `58b3366a`, preview `9870b7d4`: i premi di Play e
+  la scelta sul profilo, privacy dell'11 novembre). In `main` e non in
+  produzione: la sagoma fantasma (#1143), le parti dell'app delle
+  ciaspole (nascoste, vogliono il passo 8). **L'utente ha chiesto due
+  giorni di lavoro e poi un aggiornamento completo: niente OTA
+  intermedi se non li chiede lui.**
+- **1.1.0 (orologio + Live Activity)**: build **14** da `356e3f66` (EAS
+  `09229e56`), provata dall'utente («Tutto ok»), **inviata ad Apple l'11
+  novembre**, in revisione, **rilascio automatico** (scelta dell'utente:
+  «Lascia com'è»). All'approvazione, in fretta: OTA per la 1.0.2 se
+  `main` ha cose non uscite, «unisci main» alla sessione A3
+  (`local_fd12d88e`), merge della #1116, chiudere #1058 e #862, OTA sul
+  runtime nuovo (iOS `5e1b5ce5`). Da allora gli OTA di `main` arrivano
+  solo alla 1.1.0. I file di `targets/watch/**` non contano nelle
+  impronte: l'orologio della build 14 conosce lo scialpinismo, non le
+  ciaspole.
+- **Sito**: pubblicato da `main` `e60e0b35` l'11 novembre con
+  `out/coordinatore/sito.sh <sha>` (F.14): privacy dell'11 novembre con i
+  premi di Play sul profilo; la copia di prima è `514b6ab3`. Da fare:
   la pagina dei crediti (TASK-237) con il testo dell'elefante (TASK-408).
 - **Server e pubblicazione li fa una sessione sola per volta**, anche
   quando l'utente dà l'ok in più sessioni: chi lo riceve lo scrive al

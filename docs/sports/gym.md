@@ -185,6 +185,20 @@ la corsa e «Go to the run · 5.5 km» passa a «Run» coi km già scritti; una
 corsa fatta quel giorno conta come fatta nel calendario. La sigla «RUN» ha
 il suo colore (`runDay`). `runDay.ts`, `RunDayEditor.tsx`.
 
+**Il pianificatore completo** (TASK-461, ADR-0371): un piano nuovo mescola
+sempre almeno due sport (scelta dell'utente del 2026-11-11, «Almeno due,
+sempre»): palestra, corpo libero, corsa, camminata e hike, bici, nuoto e
+canoa, montagna. Un piano può portare a un obiettivo (`target`): una
+distanza di uno sport (corsa 5–42,2 km, bici 30–150 km, nuoto 1–5 km…) o la
+salita di una gita in montagna (500–2000 m), in una data o «Quando sono
+pronto», fino a 24 settimane. I giorni di corsa restano `run`; quelli degli
+altri sport sono `outing` (camminata svelta, uscita in bici, serie in
+vasca, uscita in salita), fatti nel calendario da un'attività del loro
+sport quel giorno. Il nome del giorno dice sport e misura («Long ride · 30
+km»), così anche un'app di prima, che non mostra «Today» per un giorno
+fuori, nella lista dice il vero. Il resto (le domande della guida, «Oggi»
+oltre il massimo di Draw, il promemoria alle 8) è nel task file.
+
 ## Il calendario e la guida in «Draw» (TASK-411 B, rifatta in F)
 
 In «Draw» la palestra ha una pagina sua (parte F, 2026-11-08). Con una
@@ -241,6 +255,8 @@ il 2026-11-04 («Sì, approvo tutto»).
 | t_bar_row | T-bar row | Rematore T-bar | T-Bar-Rudern | Rowing T-bar | Remo en barra T | Back | L-M |
 | straight_arm_pulldown | Straight-arm pulldown | Pullover ai cavi | Überzüge am Kabel | Pull-over à la poulie | Pullover en polea | Back | L-S |
 | back_extension | Back extension | Hyperextension | Rückenstrecker | Extension lombaire | Hiperextensiones | Back | B-easy |
+| superman | Superman | Superman | Superman | Superman | Superman | Back | B-easy |
+| bodyweight_squat | Bodyweight squat | Squat a corpo libero | Kniebeuge ohne Gewicht | Squat au poids du corps | Sentadilla sin peso | Legs | B-easy |
 | back_squat | Squat | Squat | Kniebeuge | Squat | Sentadilla | Legs | L-big |
 | front_squat | Front squat | Front squat | Frontkniebeuge | Squat avant | Sentadilla frontal | Legs | L-M |
 | smith_squat | Smith machine squat | Squat al multipower | Kniebeuge an der Multipresse | Squat à la Smith machine | Sentadilla en multipower | Legs | L-M |
@@ -253,6 +269,7 @@ il 2026-11-04 («Sì, approvo tutto»).
 | bulgarian_split_squat | Bulgarian split squat | Squat bulgaro | Bulgarische Kniebeuge | Squat bulgare | Sentadilla búlgara | Legs | L-XS |
 | step_up | Step-up | Step-up | Step-ups | Step-up | Subidas al cajón | Legs | L-XS |
 | hip_thrust | Hip thrust | Hip thrust | Hip Thrust | Hip thrust | Hip thrust | Legs | L-big |
+| glute_bridge | Glute bridge | Ponte glutei | Glute Bridge | Pont fessier | Puente de glúteos | Legs | B-easy |
 | glute_machine | Glute machine | Glute machine | Gesäßmaschine | Machine à fessiers | Máquina de glúteos | Legs | L-M |
 | hip_abduction | Hip abduction machine | Abductor machine | Abduktorenmaschine | Machine à abducteurs | Máquina de abductores | Legs | L-M |
 | hip_adduction | Hip adduction machine | Adductor machine | Adduktorenmaschine | Machine à adducteurs | Máquina de aductores | Legs | L-M |
@@ -289,6 +306,7 @@ il 2026-11-04 («Sì, approvo tutto»).
 | plank | Plank | Plank | Unterarmstütz | Gainage | Plancha | Core | T |
 | side_plank | Side plank | Plank laterale | Seitstütz | Gainage latéral | Plancha lateral | Core | T |
 | wall_sit | Wall sit | Sedia al muro | Wandsitzen | Chaise | Sentadilla isométrica en pared | Core | T |
+| mountain_climber | Mountain climber | Mountain climber | Bergsteiger | Grimpeur | Escaladores | Core | T |
 | power_clean | Power clean | Girata al petto | Umsetzen | Épaulé | Cargada | Full body | L-M |
 | snatch | Snatch | Strappo | Reißen | Arraché | Arrancada | Full body | L-M |
 | kettlebell_swing | Kettlebell swing | Swing con kettlebell | Kettlebell-Swing | Swing kettlebell | Swing con kettlebell | Full body | L-S |
@@ -311,9 +329,15 @@ il 2026-11-04 («Sì, approvo tutto»).
 | arm_ergometer | Arm bike | Ergometro per braccia | Armergometer | Ergomètre à bras | Ergómetro de brazos | Cardio | C-time (tempo, livello) |
 | jump_rope | Jump rope | Salto della corda | Seilspringen | Corde à sauter | Comba | Cardio | C-time (tempo) |
 
-91 esercizi; un nome libero («Add "{name}"») per quello che manca, con il
+95 esercizi; un nome libero («Add "{name}"») per quello che manca, con il
 tipo scelto da chi lo scrive. Le aggiunte al catalogo dopo il task sono righe
 nuove qui e nel file del catalogo dell'app.
+
+TASK-461 (ADR-0371) aggiunge quattro esercizi a corpo libero per i piani
+senza attrezzi: `superman`, `bodyweight_squat`, `glute_bridge`,
+`mountain_climber` (scelta dell'utente del 2026-11-11, «Sì, quattro nuovi»;
+nomi e guide approvati lo stesso giorno). Prima il server, poi l'app: un'app
+che non li ha ancora li mostra come un esercizio dal nome libero (sotto).
 
 ## Il post nel Feed (parte D)
 

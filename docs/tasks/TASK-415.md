@@ -191,6 +191,18 @@ apps/mobile/src/settings/{sport,snowSport,sportRows}.test.ts,
 docs/tasks/TASK-415.md
 ```
 
+Parte B3 (`feat/TASK-415-b3-skin-change`), il cambio pelli a mano,
+chiesto dall'utente il 2026-11-12 («aggiungi anche la funzione coambio
+pelli...», poi «Un pulsante a mano»), lista mandata al Coordinatore:
+
+```
+apps/mobile/src/activities/skinChanges.ts, .test.ts        (nuovi: i cambi segnati a mano, su file)
+apps/mobile/src/activities/mountainPhases.ts, .test.ts     (i cambi a mano in mountainTour e tourNow)
+apps/mobile/src/screens/SkiTourLive.tsx                    (il pulsante)
+apps/mobile/src/screens/SkiTourFinishCard.tsx, .test.tsx   (legge i cambi a mano)
+docs/tasks/TASK-415.md
+```
+
 ## Dove si è
 
 2026-11-07: le cinque scelte dell'utente prese. 2026-11-08: parte 0 in PR,
@@ -248,3 +260,13 @@ pubblica» valeva per la preview. Restano:
   dell'orologio;
 - dopo: B2 (numeri e fasi nel post, `run_stats`), C (pendenza), D (vette),
   E (taratura sulla neve).
+
+2026-11-12, parte B3: il cambio pelli a mano. Nel pannello in gita un
+pulsante largo «🎿 Cambio pelli» (`Changeover`, testo già approvato):
+il cambio inizia, il suo tempo corre in «Fase», e finisce con «Riprendi»
+(`Resume`, già tradotto) o da solo quando la gita si sposta di 30 m. I
+cambi a mano prendono il posto di quelli riconosciuti da soli dove si
+toccano; «Pelli tolte» o «Pelli messe» dalla svolta più vicina (entro
+10 minuti), altrimenti dalla fase in corso. Stanno in
+`skin-changes.json` sul telefono, legati alla gita dall'ora del primo
+punto; niente server (il post è la B2). Nessun testo nuovo.

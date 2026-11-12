@@ -2689,4 +2689,31 @@ export const FR: Table = {
   "by {user}": "de {user}",
   "This post is no longer available.": "Cette publication n'est plus disponible.",
   "🗺️ Post": "🗺️ Publication",
+  // Snowshoes (TASK-413 parts B and C, ADR-0342): approved by the user,
+  // 2026-11-08 and 2026-11-12.
+  Snowshoes: "Raquettes",
+  "Off-trail on snow: check the avalanche bulletin first.":
+    "Hors sentier sur la neige : consulte d'abord le bulletin d'avalanches.",
+  "Before you head out on snowshoes": "Avant de partir en raquettes",
+  "Check the avalanche bulletin and the weather before you go. MuW does not know them.":
+    "Consulte le bulletin d'avalanches et la météo avant de partir. MuW ne les connaît pas.",
+  "The route avoids slopes over 25°, woods, pistes and rock. That does not make it safe: an avalanche can come from above.":
+    "Le parcours évite les pentes de plus de 25°, les bois, les pistes et les rochers. Cela ne le rend pas sûr : une avalanche peut venir d'en haut.",
+  "Stay off the pistes and follow the local rules: parks, reserves, wildlife quiet zones, private land. MuW does not know them all.":
+    "Ne marche pas sur les pistes et respecte les règles locales : parcs, réserves, zones de quiétude de la faune, terrains privés. MuW ne les connaît pas toutes.",
+  "Never go alone, tell someone where you are going, and turn back if the snow or the weather changes.":
+    "Ne pars pas seul, dis à quelqu'un où tu vas et fais demi-tour si la neige ou le temps changent.",
+  "There is no open snow near this start. Start within 2 km of open snow, away from towns, woods and pistes.":
+    "Il n'y a pas de neige dégagée près de ce départ. Pars à moins de 2 km d'une neige dégagée, loin des villes, des bois et des pistes.",
+  "There is no open snow near this start. Start within 1 mile of open snow, away from towns, woods and pistes.":
+    "Il n'y a pas de neige dégagée près de ce départ. Pars à moins de 1 mile d'une neige dégagée, loin des villes, des bois et des pistes.",
+  "This shape does not fit on the snow here at this distance. It fits at about {km} km.":
+    "Cette forme ne tient pas sur la neige ici à cette distance. Elle tient à environ {km} km.",
+  "This shape does not fit on the snow here at this distance. It fits at about {mi} mi.":
+    "Cette forme ne tient pas sur la neige ici à cette distance. Elle tient à environ {mi} mi.",
+  "This shape does not fit on the snow here. Try a shorter distance, another shape, or another start:":
+    "Cette forme ne tient pas sur la neige ici. Essaie une distance plus courte, une autre forme ou un autre départ :",
+  "{name} · on the snow · target {km} km": "{name} · sur la neige · objectif {km} km",
+  "{name} · on the snow · target {mi} mi": "{name} · sur la neige · objectif {mi} mi",
+  "White: where you walked.": "Blanc : là où tu as marché.",
 };

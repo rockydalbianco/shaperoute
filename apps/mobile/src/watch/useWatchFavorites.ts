@@ -10,7 +10,7 @@ import {
 import { requestDirections } from "../api/routeDirections";
 import { favoriteTitle } from "../favorites/favoriteRoute";
 import type { KeptList } from "../storage/keptList";
-import { isOnWater } from "../swim/water";
+import { isPlacedFree } from "../snow/snow";
 import { type WatchLink, watchLink } from "./watchLink";
 import { watchRouteOf } from "./watchRoute";
 import { watchSent } from "./watchSent";
@@ -66,7 +66,10 @@ export async function syncFavorites(
       break;
     }
     const activity = favoriteActivity(detail);
-    const directions = isOnWater(activity) ? [] : await doors.directions(detail.points);
+    // No turns on the water or the snow (TASK-413 B).
+    const directions = isPlacedFree(activity)
+      ? []
+      : await doors.directions(detail.points);
     if (directions === null) {
       break;
     }

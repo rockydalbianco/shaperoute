@@ -73,7 +73,7 @@ tenendo tutte le voci; nessun OTA di produzione per due giorni.
    `Next` esiste già tradotta «A seguire»: si riusa «Skip» / «Salta».
 9. **«Riduci movimento»** acceso: ogni posa subito, niente respiro.
 
-Testi nuovi (sì dell'utente prima del merge): «End» (Fine, Beenden,
+Testi nuovi, approvati dall'utente il 2026-11-12: «End» (Fine, Beenden,
 Terminer, Terminar), «Next: {exercise}» (Dopo: …, Als Nächstes: …,
 Ensuite : …, Siguiente: …).
 
@@ -117,7 +117,7 @@ della privacy se cambia cosa vedono gli altri (sì dell'utente).
 - [x] Test di `src/stretch`, `src/i18n`, `__tests__/AppStretch`,
       `src/gym/restAlert` verdi; `tsc` pulito.
 - [ ] Screenshot o video dal simulatore, col turno del Coordinatore.
-- [ ] Sì dell'utente sui due testi nuovi.
+- [x] Sì dell'utente sui due testi nuovi (2026-11-12, «Sì, approvo»).
 
 ## File toccati (parte A)
 

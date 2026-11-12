@@ -517,6 +517,13 @@ export function RouteOutcome({
             <SwimResult result={view.result} onLaps={onSwimLaps} />
           )}
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
+          {/* The first route is on screen, the others are coming (TASK-435):
+              said, so that tiles appearing later are no surprise. */}
+          {view.more === true && (
+            <Text style={styles.target} accessibilityLiveRegion="polite">
+              {t("Looking for other routes…")}
+            </Text>
+          )}
           {better !== null && (
             <BetterDistance
               text={betterDistanceText(kindOf(view.request), better, units)}

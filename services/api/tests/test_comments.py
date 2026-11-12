@@ -159,11 +159,14 @@ def count(database: Database) -> int:
 
 
 def test_the_examples_are_the_bodies() -> None:
+    # These two are the bodies from before the replies (TASK-454): what an
+    # app from before sends and reads. The whole bodies of now are the
+    # examples of test_comment_threads.py.
     request = _load("comment-request.json")
-    assert set(request) == set(CommentRequestBody.model_fields)
+    assert set(request) <= set(CommentRequestBody.model_fields)
     CommentRequestBody.model_validate(request)
     one = _load("comment.json")
-    assert set(one) == set(CommentBody.model_fields)
+    assert set(one) <= set(CommentBody.model_fields)
     CommentBody.model_validate(one)
     page = _load("comments.json")
     assert set(page) == set(CommentsBody.model_fields)

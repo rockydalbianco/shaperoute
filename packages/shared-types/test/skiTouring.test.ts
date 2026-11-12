@@ -30,14 +30,15 @@ test("ski touring is recorded without a shape, never planned", () => {
   assert.ok(!("ski_touring" in contract.distance_limits_m));
 });
 
-test("ski touring comes after cross-country skiing, before the gym", () => {
-  assert.deepEqual(RECORDED_SPORTS.at(-1), SKI_TOURING);
+test("ski touring comes after cross-country skiing, before paragliding", () => {
+  // A paragliding flight (TASK-305 parts R) comes after it, then the gym.
+  assert.deepEqual(RECORDED_SPORTS.at(-2), SKI_TOURING);
   assert.equal(
     RUN_ACTIVITIES.indexOf("ski_touring"),
     RUN_ACTIVITIES.indexOf("xc_skiing") + 1,
   );
   assert.equal(
-    RUN_ACTIVITIES.indexOf("gym"),
+    RUN_ACTIVITIES.indexOf("paragliding"),
     RUN_ACTIVITIES.indexOf("ski_touring") + 1,
   );
   assert.deepEqual(runActivities.run_activities, [...RUN_ACTIVITIES]);

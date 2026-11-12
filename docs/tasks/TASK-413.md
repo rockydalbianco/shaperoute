@@ -4,8 +4,9 @@
 la #957 (`a63254d3`, mergiata dall'utente) e sul server col passo unico del
 2026-11-10 (main `9cf5576b`; controllo in `out/TASK-413/check-957.md`);
 A2 in `main` con la #1130 (`ac08ae94`, mergiata dall'utente il
-2026-11-11), sul server col passo 8 del Coordinatore (controllo in
-`out/TASK-413/SERVER-A2.md`), l'app nascosta col decimo OTA; poi B
+2026-11-11) e sul server col passo 8 (2026-11-11 22:14Z, `ab5b2983`;
+controllo in `out/TASK-413/SERVER-A2.md`), l'app nascosta col decimo OTA;
+poi la città lenta (sotto) e B
 **Fase**: 4 · **Branch**: `docs/TASK-413-0-snowshoes` (parte 0), poi
 `feat/TASK-413-a1-snow-engine`, `feat/TASK-413-a2-snowshoes-api`,
 `feat/TASK-413-b-snowshoes-app` · **ADR**: ADR-0342 · numeri dal
@@ -202,6 +203,12 @@ delega dell'utente):
   un controllo «poca neve» prima del piazzamento, che toccherebbe il motore
   (`snowshoeing.py`); il job è asincrono e una città non è un posto da
   ciaspole. Se i tempi del server lo chiedono, è un passo a parte.
+  **Il server lo chiede**: Trento 3 km, la prima volta, `failed
+  shape_not_drawable` in **76,4 s** (passo 8). Al banco sul Mac (Milano,
+  dalla cache, 83.000 elementi) la ricerca costa 0,7 s e `snow.build_area`
+  16–19 s, quasi tutto shapely elemento per elemento (buffer, unioni);
+  sul server, la prima volta, c'è in più lo scarico da Overpass. Proposta
+  al Coordinatore, in attesa di risposta.
 - **Il profilo nell'app è nascosto**: nessuna riga in «Impostazioni», la
   ricerca lo lascia fuori (`searchFilters.NOT_YET`), il modulo per
   pubblicare non lo elenca. Nome in inglese senza `tLater`, niente
@@ -271,10 +278,10 @@ Tutte come la proposta, tranne la terza:
       senza rete; canoa e nuoto identici al banco (`compare --same`)
       (2026-11-08: 48 forme su 60 sul motore vero, Milano nessuna; 27
       canoe identiche, i nove percorsi fissi identici).
-- [ ] A2: lo sport è nel contratto e nell'API, nascosto nell'app; il server
-      scarica la neve di un posto nuovo. (Contratto, API e app in `main`
-      con la #1130; resta il server, passo 8: si spunta coi controlli 1–3
-      di `SERVER-A2.md`.)
+- [x] A2: lo sport è nel contratto e nell'API, nascosto nell'app; il server
+      scarica la neve di un posto nuovo (#1130; passo 8 del 2026-11-11:
+      0068 e i tre vincoli, impronte attese, cuore di 1 km alle Viote in
+      38,2 s la prima volta e 4,1 s la seconda, 1000 m, 0 indicazioni).
 - [ ] B: lo sport si sceglie, si cammina, si salva e va in Salute; l'avviso
       e i testi sono in cinque lingue.
 

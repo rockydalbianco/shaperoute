@@ -60,6 +60,14 @@ export interface LiveStats {
   lengths?: number | null;
   /** At the gym: the exercise in progress. */
   exercise?: string | null;
+  /** A paragliding flight (TASK-305 parts R, ADR-0375): the height now and
+   * the highest so far, metres above the sea, from the phone's fixes. */
+  alt_m?: number | null;
+  max_alt_m?: number | null;
+  /** Climbing (+) or sinking (-), metres a second, over the last seconds. */
+  vario_mps?: number | null;
+  /** The speed over the ground now, metres a second. */
+  speed_mps?: number | null;
 }
 
 export type LiveState = "live" | "paused" | "finished";

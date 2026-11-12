@@ -458,7 +458,7 @@ lasciando le righe d'indice.
 - ADR-0314, precisazione — La parte B1: la guida in Swift, legata al telefono dalle tracce · 2026-11-08 · Attiva
 - ADR-0314, precisazione — La parte A3: il telefono · 2026-11-08 · Attiva
 - ADR-0344 — Ski touring: lo scialpinismo «Record only», fasi e VAM sul telefono, pendenza e vette dal server · 2026-11-08 · Proposto
-- ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Proposto
+- ADR-0343 — Carrozzina e passeggino: una rete sua dove si spinge, solo forme semplici di pochi km · 2026-11-08 · Accettato (2026-11-12, parte A in `main`, vedi la precisazione A)
 - ADR-0314, precisazione — La parte B2: il percorso chiuso e i pezzi, con le stesse tracce · 2026-11-08 · Attiva
 - ADR-0347 — Il grande catalogo di «Explore»: mille disegni da uno strumento in `tools/`, il filtro automatico, la scelta all'utente · 2026-11-08 · Accettata (chiuso il 2026-11-10: 572 percorsi in 63 città)
 - ADR-0347, precisazione — I tenuti entrano nella lista di «Explore» che c'è, dal catalogo del server; il primo giro · 2026-11-08 · Accettata
@@ -537,8 +537,387 @@ lasciando le righe d'indice.
 - ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle` · 2026-11-11 · Attiva
 - ADR-0361, precisazione — Com'è stato costruito il primo percorso: senza `?first=1` il campo non c'è, il primo tiene la sua distanza migliore, i test dell'app che fingono il server ignorano il parametro · 2026-11-12 · Attiva
 - ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio · 2026-11-12 · Attiva
+- ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
+- ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
+- ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
+- ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Proposta
+- ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
+- ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari · 2026-11-12 · Attiva
+- ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
+- ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate · 2026-11-11 · Accettata
+- ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app · 2026-11-12 · Attiva
 
 ## Voci nuove
+
+## ADR-0381, precisazione A1a — La live vista nell'app: il link facoltativo, `LiveShareMade` per non rompere l'app di oggi, i limiti per persona, `skipped` uguale per tutti, le copie notturne senza destinatari
+
+**Stato**: Attiva · 2026-11-12 · TASK-468 parte A1a (#1221, `9328c109`).
+**Deciso dall'agente su delega dell'utente.**
+
+- **Il link è facoltativo, il token resta unico**: `token_hash` può essere
+  nullo (migrazione `0073`); `POST /me/live-shares/{id}/link` fa un token
+  nuovo e il link dato prima smette di funzionare, così non ci sono mai due
+  link vivi per la stessa live.
+- **`LiveShareCreated.url` resta `string`** nel contratto: l'app di oggi
+  (`liveShareStore.ts`) lo mette dove serve una stringa. La risposta senza
+  link è un tipo a parte, `LiveShareMade` (`url: string | null`), che usa
+  solo l'app nuova (B1).
+- **Chi può vedere** si calcola nella query (`MAY_SEE_SQL`) a ogni
+  richiesta, con `follows.apart_sql` e `follows_sql`: a chi non può, `404`
+  come per una live che non c'è, mai `403`.
+- **Limiti**: la vista nell'app conta per persona e live (120 al minuto,
+  come la pagina), non per live, perché una gara seguita da tanti non
+  diventi «troppe richieste»; `send` 20 persone per volta e 20 invii al
+  minuto per account, come i messaggi.
+- **`skipped`**: chi non ha un account, se stessi e chi è lontano per un
+  blocco o un nascosto sono saltati tutti uguali, per non dire chi ha
+  bloccato chi (come il `404` dei messaggi).
+- **Le copie notturne**: i dati di `live_share_recipients` restano fuori
+  come quelli di `live_shares` (riga in `deploy/backup.sh` col passo sul
+  server): con le live fuori e i destinatari dentro il ripristino
+  fallirebbe sulla chiave esterna, e chi ha visto la live di chi non va
+  tenuto 14 giorni.
+
+## ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate
+
+**Stato**: Attiva · 2026-11-12 · TASK-466, parte A in `main` (#1181,
+`437f152f`), solo app; esce con l'aggiornamento completo dell'app (c'è un
+asset nuovo, `assets/stretch/tick.wav`: le impronte le misura il
+Coordinatore prima dell'OTA). Il piano in cinque parti, i testi «End» e
+«Next: {exercise}» e l'aspetto (schermate e video dal simulatore) sono
+scelte dell'utente (2026-11-11 «Sì, vai»; 2026-11-12 «Sì, approvo» due
+volte); il modo è deciso dall'agente su delega dell'utente, numero dal
+Coordinatore.
+
+**Contesto**: l'utente l'11 novembre 2026 ha chiesto di migliorare lo
+stretching e le sue animazioni, di portarlo in palestra, di farlo al
+mattino dopo la sveglia per 3, 5 o 10 minuti e di poter comporre e
+pubblicare una propria routine. Lo stretching dopo la corsa (TASK-285,
+ADR-0247) aveva cinque esercizi, una figura di `View` girate che passava
+da una posa all'altra con uno scatto al cambio lato, la tenuta che partiva
+subito e solo il «ding» alla fine.
+
+**Decisione** (parte A):
+- **La figura resta di `View` girate** (ADR-0147, ADR-0247), niente
+  librerie di disegno. Ogni giuntura ha due `rotate`: il movimento fra le
+  pose (keyframe 0..n-1 su un solo `Animated.Value`) e il respiro.
+- **Il respiro**: durante la tenuta la posa va un po' più a fondo e torna
+  ogni `BREATH_MS` = 4 s (`Animated.loop`), al massimo 12 gradi
+  (`BREATH_MAX_DEGREES`), solo sui segmenti che fanno l'allungamento: un
+  `Breath` per esercizio in `poses.ts`. Il bacino scende con la posa
+  (`grounding`). In pausa il respiro si posa in 300 ms.
+- **In piedi fra due pose piegate e al cambio lato**: `path()` passa da
+  `STAND`; in piedi la figura si gira stringendosi di profilo (`scaleX` da
+  1 a -1 attorno al momento in piedi), non più lo scatto.
+- **Il tempo**: «Get ready» 5 s prima di ogni esercizio, «Switch sides»
+  3 s fra i lati; la tenuta (20 s a lato) parte solo a figura in posa.
+- **I suoni**: un tick all'inizio della tenuta e sugli ultimi 3 s, poi il
+  «ding» di prima. `tick.wav` è nostro, fatto da `tools/stretch_chime.py`
+  come il ding, che resta identico. expo-audio si carica al primo suono.
+- **I tasti**: «Pause», «Skip» (salta l'esercizio: la chiave `Next` c'era
+  già tradotta «A seguire», quindi niente «Next» sul tasto) ed «End»;
+  all'ultimo esercizio «Pause» e «Done». «Next: {exercise}» negli ultimi
+  5 s dell'ultimo lato.
+- **«Riduci movimento»**: ogni posa subito, niente respiro.
+
+**Le parti dopo** (ciascuna con la sua PR, i testi col sì dell'utente):
+B, ~15 esercizi e le routine Morning, After run, After gym da 3, 5, 10
+minuti; C, lo stretching in palestra (dopo TASK-461 A2 e TASK-465, col
+turno su `src/gym`); D, «Morning stretch» con l'orario scritto dall'utente
+e una notifica locale (iOS non lascia leggere le sveglie dell'Orologio;
+la prossima sveglia di Android è nativa e va in una build); E, le routine
+dell'utente pubblicate nel Feed con «Do this routine» (server prima,
+segnalazione e blocco anche lì).
+
+**Alternative scartate**: una libreria di disegno (svg, Lottie) per la
+figura, una dipendenza e un'impronta nativa nuove per poco; il respiro
+come scala di tutta la figura, che non mostra dove tira; la voce che legge
+gli esercizi, rimandata.
+
+**Conseguenze**: i test della schermata simulano `./chime` (jest dà lo
+stesso stub ai due wav); `__tests__/AppStretch` conta il tempo nuovo
+(`READY_S + 20 + SWITCH_S + 20` a esercizio). Dettagli in
+`tasks/TASK-466.md`.
+
+## ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio
+
+**Stato**: Accettata · 2026-11-12 · TASK-455, parte 0 chiusa; le parti A–E
+sono da costruire. Quello che si vede e si promette è **scelta
+dell'utente** (2026-11-12, una domanda alla volta: «Tutte e tre insieme»,
+«Share» nella riga su ogni post, «Il post, col nome dell'autore», «Si
+manda, lo apre solo chi può», «Interruttore, acceso all'inizio», «Mappa
+con la linea intera», testi «Approvo così»); il modo è deciso dall'agente
+su delega dell'utente. Numero dal Coordinatore. Estende ADR-0289 (gli
+allegati nei messaggi) e ADR-0170 (chi vede un disegno); capovolge, per i
+soli link, la scelta 5 di TASK-355 («Share» fuori dall'app solo sui
+propri disegni).
+
+**Contesto**: nella prova dell'11 novembre 2026 (S5 di
+`out/prova-app-2026-11-11/PROPOSTE.md`) il post di un altro non si poteva
+mandare a un amico né condividere. «Send to a friend» c'era già
+(TASK-333), ma non nel Feed, e manda **una copia** della linea (ADR-0289,
+punto 2): dalla scheda di un disegno altrui un follower può così mandare
+la traccia intera di un disegno «Followers» a chi non segue l'autore, e la
+copia resta anche se l'autore cancella il post. I post non hanno link: un
+disegno lo vede solo un iscritto (`drawings.drawing_seen_sql`).
+
+**Decisione**:
+
+1. **Un allegato nuovo nei messaggi, `post`: un rimando, mai una copia.**
+   Il messaggio tiene l'id del disegno e nient'altro: né linea, né titolo,
+   né autore. Vale la regola di ogni allegato: solo in una conversazione
+   aperta (ADR-0289, punto 1).
+2. **Mandarlo** vuole che chi manda veda il disegno
+   (`drawing_seen_sql(chi manda)`); altrimenti `404`, come per un id che
+   non c'è.
+3. **Leggerlo: i permessi sono di chi legge, a ogni lettura.** Ogni pagina
+   della conversazione risolve la scheda per l'account che la chiede con
+   la stessa domanda di sempre (`drawing_seen_sql`: visibilità, follow
+   accettato, blocchi nei due versi, disegno o iscritto nascosto) e dà
+   titolo, autore, metri, sport e linea, oppure la scheda vuota: «non
+   disponibile». Vale anche per chi l'ha mandato. Niente è tenuto nel
+   messaggio, quindi cancellare il post, cambiare «Who can see it»,
+   bloccare, smettere di seguire agiscono dalla lettura dopo, senza
+   ripulire niente. Lo stesso per la lista delle conversazioni e per la
+   push, che dicono solo «🗺️ Post».
+4. **Le app di prima**: un'app di oggi chiede già `?with=attachments` e
+   non conosce `post`. Il rimando arriva solo a chi dice di saperlo
+   leggere; agli altri il testo con davanti «[Post]», come «[Drawing]».
+   **Lo dice con `post` nell'header `X-MuW-Reads`** (ADR-0328), non con un
+   valore nuovo di `?with=`: quel parametro ha un modello fisso, e un
+   server di prima risponderebbe `422` a ogni pagina della chat di
+   un'app nuova; l'header invece lascia cadere i valori che non conosce.
+   `post` non è un tipo di corsa: lo legge `messages.py`, e `reads.py`
+   non cambia. Chi lo dice trova `post` anche in `attachments.kinds`, e
+   sa così che il server lo accetta (parte A, deciso dall'agente su
+   delega dell'utente, d'accordo col Coordinatore).
+5. **Da dove**: da un post («Share» del Feed e della pagina del post, la
+   scheda di un disegno altrui) si manda sempre il rimando, anche se il
+   post è proprio. Dalla mappa, dai preferiti e da «My activities» resta
+   la copia di ADR-0289: lì non c'è un post, o il percorso si manda per
+   correrlo.
+6. **Il buco della copia si chiude nell'app**, non sul server: una copia è
+   una fila di punti e il server non può sapere da quale disegno viene. La
+   scheda di un disegno altrui smette di mandare la copia (parte B; prima,
+   se serve, togliendo il pulsante dai disegni «Followers» altrui). Un'app
+   non aggiornata lo tiene finché non si aggiorna: è il limite che resta.
+7. **Il link di un post** porta a una pagina del sito, sul modello di
+   «Share live» (ADR-0352). La lettura senza account risponde **solo** per
+   un post `everyone`, non nascosto, di un autore non nascosto e con
+   l'interruttore acceso; per ogni altro caso `404`, uguale a un id che non
+   c'è. Dà la linea **come la vede già un iscritto, non di più** (ADR-0330),
+   titolo, nome, metri e sport; mai foto, commenti, reazioni, tempi,
+   descrizione o persone taggate. La pagina ha `noindex` e nessuna
+   anteprima per i motori di ricerca.
+8. **«Links to my posts»**: un campo dell'account, **acceso all'inizio**
+   (scelta dell'utente). Spento, gli altri sui miei post hanno solo «Send
+   to a friend» e i link smettono di funzionare alla lettura dopo. Cambia
+   l'esposizione dei post «Everyone» già pubblicati: la frase della
+   privacy e l'avviso nelle novità vanno approvati dall'utente **prima**
+   che la parte C vada sul server.
+9. **Nessuna dipendenza nuova**: il link passa dal foglio del telefono
+   (`Share` di React Native), «Share link». Aprire il post dentro l'app
+   dal link vuole i link universali, cioè una build nativa: parte F.
+
+**Alternative scartate**: la copia con in più autore e rimando al post
+(l'utente ha scelto il rimando: l'autore tiene il controllo);
+l'interruttore spento all'inizio e il link solo dell'autore (proposti,
+l'utente ha scelto acceso); la pagina con la sola figura senza mappa;
+`expo-clipboard` per un «Copy link» vero (cambia l'impronta iOS).
+
+**Conseguenze**: una migrazione per la parte A (provvisoria `0075`) e una
+per la C; `messages.py` e `push.py` li tocca dopo anche TASK-468, quindi
+l'allegato sta in un blocco suo. Da chiedere all'utente prima della parte
+C: con l'interruttore spento, il link che l'autore prende del proprio
+post funziona o no.
+
+## ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0
+
+**Stato**: Proposta · 2026-11-12 · TASK-469, nessun codice ancora. La
+direzione è scelta dell'utente (2026-11-12, «Capsula» fra tre direzioni:
+https://claude.ai/artifact/HD397UmJcu94vNZvGBH2bs); il modo è deciso
+dall'agente su delega dell'utente, coi vincoli del Coordinatore; numero
+dal Coordinatore.
+
+**Contesto**: l'utente vuole l'app più moderna, nello stile Liquid Glass
+di iOS 26. Oggi la barra è `background` al 95% e le superfici sono piene
+(TASK-339, TASK-388). Nell'app non ci sono `expo-blur` né
+`expo-glass-effect`; React Native 0.86 ha già ombre anche interne,
+sfumature e bordi di colore diverso per lato. Sull'App Store sono
+dichiarati «Sufficient Contrast» e il tema scuro.
+
+**Decisione**:
+- **«Capsula»**: la barra delle schede si stacca dai bordi e diventa una
+  capsula di vetro che galleggia, con bordo di luce e ombra morbida; la
+  scheda attiva ha una pillola chiara che scivola. I segmenti sono una
+  pillola di vetro con l'indicatore in rilievo; nelle card la riga del
+  titolo è una lastra di vetro dentro la foto, a 8 pt dal bordo. Raggi:
+  card 28, gruppi 24, il resto a capsula. L'header si dissolve in vetro
+  allo scroll.
+- **Parte A senza blur, via OTA**: il vetro è una velatura del fondo del
+  tono a circa 86–92%, più il bordo di luce e l'ombra. Si intravede
+  appena: è il prezzo per tenere testo e icone ≥ 4,5:1 sul caso peggiore
+  (foto bianca sotto il tono scuro, nera sotto il chiaro). Le icone spente
+  della barra passano da `textFaint` a `textMuted`. Colori solo da token
+  nuovi in `tokens.ts`; i valori esistenti non cambiano; il giallo mai
+  come tinta.
+- **Accessibilità**: «Riduci trasparenza» → superfici opache; «Aumenta
+  contrasto» → opache col bordo `borderStrong`; «Riduci movimento» → solo
+  dissolvenze brevi.
+- **Parte B** con `expo-glass-effect` solo in una build dopo l'uscita
+  della 1.1.0, col sì dell'utente.
+
+**Conseguenze**: la A arriva in fette piccole dopo l'aggiornamento
+completo, prima i token e `src/ui/Glass.tsx`; l'impronta iOS resta
+`6f8bba4c`. Niente blur sopra la mappa mentre si registra. `docs/UI.md`
+si aggiorna fetta per fetta.
+
+## ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s
+
+**Data**: 2026-11-12 · **Stato**: Proposta (parte 0 di TASK-468) ·
+**Deciso dall'agente su delega dell'utente** (la tecnica); le scelte di
+prodotto sono dell'utente, in `tasks/TASK-468.md`. Estende ADR-0352.
+
+**Contesto.** «Share live» (TASK-424) fa solo un link per una pagina web.
+L'utente vuole mandare la live anche nella chat dell'app, metterla nel
+Feed (follower o tutti, scelto a ogni live) e programmarla in anticipo
+(una gara), sempre per scelta sua.
+
+**Decisione.**
+
+1. **Una `live_share` per registrazione, più pubblici.** Link, chat e Feed
+   sono modi di vedere la stessa condivisione, non condivisioni diverse:
+   oggi un link nuovo ferma quelli non finiti dello stesso account, e così
+   resta. Nuove colonne: `audience_feed` (`none`/`followers`/`everyone`),
+   `heart_visible` (falso di partenza: il battito non esce verso chat e
+   Feed se non è acceso; il link di TASK-424 lo mostra come oggi); il
+   token del link diventa facoltativo (si fa al primo «Share link»).
+   `live_share_recipients` (share, account) per le persone scelte in chat.
+2. **Vedere nell'app**: `GET /live-shares/{id}?after=<seq>` col token
+   d'account, stessa forma di `LiveView` (battito `null` se spento). Può
+   vedere chi è fra i destinatari, chi segue il proprietario se
+   `followers`, chiunque abbia un account se `everyone`; mai attraverso un
+   blocco o un nascosto (`follows.apart_sql`). Chi non può: `404`, come
+   una live che non c'è. Stesso limite di richieste per live del `GET
+   /live`.
+3. **In chat**: `POST /me/live-shares/{id}/send` con fino a 20
+   `public_id`; per ciascuno un messaggio con `live_share_id` (colonna
+   nuova di `messages`, `ON DELETE SET NULL`) e un testo di ripiego («Follow
+   my activity live on MuW»), così un'app di prima mostra il testo. Le
+   regole di `messages.py` restano (richieste, filtro, 20 al minuto); la
+   push è un `MessagePushKind` nuovo, `live`.
+4. **Le live programmate**: `planned_lives` (proprietario, sport, titolo,
+   `starts_at`, `audience_feed`, `heart_visible`, percorso facoltativo,
+   `live_share_id`, `post_id`, stato `planned`/`live`/`ended`/`deleted`) e
+   `planned_live_reminders` (account, live). La scheda entra nel Feed come
+   quella delle corse di gruppo (`group_runs.py`). Alla partenza (dal
+   foglio all'avvio o da «Start live») la `live_share` si lega alla
+   programmata e parte la push «{name} is live» a chi ha chiesto «Remind
+   me». Una programmata non partita entro 3 ore dall'ora prevista diventa
+   `ended`.
+5. **Alla fine diventa il post**: al salvataggio l'app chiede «Post it in
+   the Feed?»; con sì il post dell'attività si salva come oggi e
+   `planned_lives.post_id` lo lega, e la scheda della live nel Feed lascia
+   il posto al post. I punti dal vivo si cancellano comunque un'ora dopo
+   la fine (ADR-0352): il post tiene la traccia salvata della corsa, non i
+   punti della live.
+6. **Niente WebSocket né dipendenze nuove**: la schermata dal vivo
+   nell'app chiede ogni 10 s come la pagina web, con la mappa che l'app
+   ha già. Una migrazione, numero provvisorio `0074`.
+7. **Ordine**: il server esce prima dell'app (`extra="forbid"`); niente
+   OTA di produzione fino all'aggiornamento completo.
+
+**Conseguenze.** La posizione esatta esce verso follower, tutti o le
+persone scelte: una frase nuova nella privacy dell'app e del sito, App
+Privacy e Data safety da rivedere, ogni live accesa solo da una scelta
+esplicita. Il link di TASK-424 non cambia.
+
+## ADR-0369 — La corsa su misura nelle schede della palestra: un campo `runner` facoltativo nel programma, i ritmi dal telefono, la proposta a fine ciclo dalle corse salvate
+
+**Stato**: Accettata · 2026-11-11 · TASK-452: PR1 server e tipi (#1158,
+`30407b83`, sul server al passo 9 del 2026-11-12), PR2 l'app (#1159,
+`881489fd`). Le scelte di quello che si vede sono dell'utente, una alla
+volta sulle schermate D1–D3 della tela («Così, nella guida», «Sì, così»,
+«Dalle mie corse», «Chiedi prima», «Approvo», «Sì, procedi»); il modo è
+deciso dall'agente su delega dell'utente, numero dal Coordinatore.
+
+**Contesto**: i giorni di corsa delle schede (ADR-0363) avevano distanze
+uguali per tutti e nessun ritmo. L'utente ha chiesto di chiedere il ritmo
+sui 10 km e il lungo di ognuno e fare piani su misura.
+
+**Decisione**:
+- **Un campo, nessuna migrazione**: il programma ha `runner` facoltativo,
+  `pace_10k_s` (180–900) e uno solo fra `long_m` (1–60 km) e `long_s`
+  (10 min–6 h). Sta nel JSONB `program` di `gym_plans` (0066), lo valida
+  `gym_plans.py` (`GymPlanRunnerBody`).
+- **I ritmi li calcola il telefono** (`gym/runPace.ts`): lenta +65 s/km,
+  lungo +75 s/km, ripetute per lunghezza (200 m −30, 400 m −25, 800 m −15,
+  1000 m −10, a tempo −20). Il lungo parte dal suo e, con `runner`, cresce
+  di 1 km (o 5 min) a settimana, l'ultima settimana di un ciclo di 3 o più
+  all'80% (`runInWeek(..., personal)`); la lenta è circa metà del lungo,
+  almeno 3 km (20 min).
+- **La stima dalle corse**: a fine ciclo (l'ultima settimana) le corse
+  salvate delle ultime 4 settimane da 3 km in su, già nella lista che l'app
+  ha (`useActivitiesDoor().list`), senza chiamate nuove; il ritmo sui 10 km
+  dalla migliore con Riegel (t₂ = t₁·(d₂/d₁)^1.06), il lungo dalla più
+  lunga. Proposta solo se più veloce di almeno 5 s/km, una volta a ciclo
+  (`gym-pace-asked.json` sul telefono); cambia la scheda solo col sì.
+- **Due PR**, come per ADR-0363: lo schema vieta i campi in più (`422`),
+  quindi il server prima dell'app.
+
+**Cosa vede l'app di prima** (OTA 8): legge un programma con `runner` (la
+sua `isGymProgram` non lo guarda) e mostra le distanze scritte; se salva la
+scheda, lo copia così com'è.
+
+**Conseguenze**: la stima vale solo per chi salva le corse nell'app; i
+ritmi sono indicativi, non vengono dal battito. I testi e le scelte in
+`docs/tasks/TASK-452.md`; il comportamento in `sports/gym.md`; il contratto
+in `API.md`.
+
+## ADR-0343, precisazione A — La carrozzina nel motore, nel contratto e nell'API: la rete `wheel`, le forme dell'attività in `Activity.shapes`, i record su 1 e 5 km, il profilo nascosto nell'app
+
+**Stato**: Attiva · 2026-11-12 · TASK-414 A (#1183, `f614821c`). Deciso
+dall'agente su delega dell'utente; lista dei file e migrazione 0071
+approvate dal Coordinatore. ADR-0343 (archiviato) passa a «Accettato»: le
+scelte dell'utente del 2026-11-08 sono in `main`, tranne l'app (parte B).
+
+1. **Una rete sua, `wheel`** (`networks/wheel.py`): il download della rete
+   foot (stesso filtro, stessa cache di Overpass) con i tag di
+   accessibilità in più (`kerb`, `wheelchair`, `smoothness`, `incline`,
+   `sidewalk`), poi le regole di `wheelcalm` del banco della parte 0
+   (`rollable`, `blocks_wheels`: niente scale, cordoli alti, superfici
+   ruvide, sentieri senza superficie, pendenze scritte oltre l'8%, strade
+   grandi senza marciapiede) e quelle della rete foot di TASK-421. Sui 30
+   download grezzi della parte 0 ha gli stessi km e le stesse vie della
+   rete del banco.
+2. **Le forme dell'attività**: un campo nuovo `Activity.shapes` (None =
+   tutto il catalogo). `wheelchair` ha cerchio, cuore, stella e luna;
+   `models.py` rifiuta con `invalid_request` ogni altra forma, le parole,
+   le immagini, i contorni e i tratti, col messaggio «wheelchair draws only
+   these shapes: …». Nessuno sport di prima cambia.
+3. **Lo sport nei registri**: `wheelchair` (1–5 km) dopo `snowshoeing` in
+   `ENGINE_ACTIVITIES`, `PLANNED_SPORTS`, `RunActivity`,
+   `reads.NEWER_ACTIVITIES` e nel gioco come una camminata
+   (`game_rules.ON_FOOT`, `RULES_VERSION` resta 3). Strava `Wheelchair`,
+   GPX `wheelchair`; zone di 8,5 × 8,5 km coi nomi delle strade, una in
+   memoria (da 2 a circa 170 MB, `sports/wheelchair.md`).
+4. **Record su 1 e 5 km** (scelta 7), con 25 km/h come tetto di un passo,
+   come un salto del GPS a piedi. Ogni corsa salvata scrive anche i record
+   `wheelchair` in `run_bests`: la migrazione `0071_wheelchair.sql`, che
+   allarga i vincoli di `runs`, `favorites`, `group_runs` e `run_bests`
+   rileggendoli (come la 0055), va applicata prima che giri il codice
+   nuovo.
+5. **L'impronta**: il registro la cambia senza cambiare un percorso. Tre
+   righe in `SAME_ROUTES_AS` (`e0834d054b6e → 427ed1a16a97`,
+   `1063cc95fea3 → d943bfbe8c44`, `4c549677eefb → f54db2ee707d`) con la
+   prova `e0834d054b6e.json` (i nove percorsi fissi identici): nessun
+   `draw_examples`. Sul server: `e0834d054b6e 8ab61d8e87f9 b9d00c37d28d
+   574fbfba41eb`.
+6. **Il profilo nell'app è nascosto** fino a B: nessuna riga in
+   «Impostazioni», fuori dalla ricerca (`searchFilters.NOT_YET`); nome in
+   inglese, calorie della camminata, Apple Salute `.wheelchairWalkPace`
+   (70), Health Connect 82. Solo JavaScript e i file del Watch generati:
+   l'impronta iOS non cambia.
 
 ## ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio
 
@@ -632,6 +1011,142 @@ le scelte di prodotto restano quelle di ADR-0361.
 5. **Misure** (`tasks/TASK-435.md`, «Parte D»): sul Mac 0,8 s in mediana
    coi 2 processi caldi; sul server 2,7 s nella prova dopo il passo 8, e
    `wait` 2,9 s in mediana su 22 job di prima del passo.
+
+## ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato
+
+**Stato**: Attiva · 2026-11-12 · TASK-467 parte B1 in `main` (#1211,
+`71e24188`); sul server col passo dell'aggiornamento completo. Che cosa si
+vede e si pubblica è dell'utente (`tasks/TASK-467.md`: «Resta acceso» nel
+post, «Sì, profilo adesso» per la notte da sola, 2026-11-12); la strada
+(una tabella a parte, mai una riga di `runs`) è del Coordinatore; il
+contratto e il modo sono decisi dall'agente su delega dell'utente, numero
+dal Coordinatore.
+
+**Contesto**: il punteggio del sonno lo calcola il telefono (ADR-0379). Per
+pubblicarlo serve che il server ne tenga qualcosa. Un post senza attività
+non esiste (TASK-312 C è un piano), e una notte come corsa «senza traccia»
+finirebbe in calendario, conteggi, record, classifiche e Strava. È un dato
+sulla salute (GDPR art. 9; Apple 5.1.3): al server solo quello che l'utente
+pubblica, in forma di riassunto.
+
+**Decisione**:
+
+1. **Una tabella a parte**, `sleep_nights` (migrazione `0072`): una riga per
+   notte pubblicata, `UNIQUE (user_id, night)`, con punteggio, minuti
+   dormiti e svegli, minuti per fase se un orologio li ha detti, `shared`.
+   `ON DELETE CASCADE` da `users`. L'attività porta solo il riferimento
+   (`runs.sleep_night_id`, `ON DELETE SET NULL`) e `runs.sleep_shown`.
+2. **Mai i campioni, mai gli orari**: `night` è il giorno del risveglio;
+   l'ora di andare a letto e di svegliarsi non lascia il telefono. La
+   parola accanto al punteggio non si salva: la ricava l'app.
+3. **Due interruttori separati**: `shared` (profilo) DEFAULT false, spento
+   finché il proprietario non lo accende; `sleep_shown` (post) DEFAULT
+   true, la scelta dell'utente. Il valore di partenza per l'app sta in una
+   costante del contratto (`SLEEP_SHOWN_DEFAULT`): se la revisione di Apple
+   lo contesta, si cambia lì.
+4. **Si tiene solo quello che è pubblicato**: una notte che non è nel
+   profilo e che nessuna attività porta si cancella. Lo fa `sleep.py`
+   quando `shared` si spegne (risposta `204` al posto della notte) e lo fa
+   il database, quando l'ultima attività la lascia o viene cancellata: la
+   funzione `sleep_night_left()` e due trigger su `runs`,
+   `runs_sleep_night_deleted` (`AFTER DELETE`) e `runs_sleep_night_changed`
+   (`AFTER UPDATE OF sleep_night_id`), che scattano solo per una corsa che
+   aveva una notte. **La logica sta nel database, non in `activities.py`**:
+   vale per ogni strada che cancella una corsa o le toglie la notte, anche
+   quelle scritte dopo. Tre casi coi test: attività cancellata, sonno
+   tolto dall'attività, account cancellato (lì basta la cascata).
+5. **Chi non è l'autore** legge una notte solo da `GET /users/{id}/sleep`
+   (l'ultima condivisa, per chi può aprire il profilo, mai attraverso un
+   blocco) e da `GET /drawings/{id}/sleep` (se vede il disegno e `shown` è
+   acceso). Una notte non condivisa o nascosta risponde lo stesso `404` di
+   una che non c'è; nessuna risposta le conta, openapi non ha esempi. Il
+   profilo, il Feed e il dettaglio del post non ne dicono niente.
+6. **Una chiamata sola dal post**: `PUT /me/activities/{key}/sleep` porta
+   numeri, `night` e `shown`. «La notte prima» è `night` entro 2 giorni
+   dall'inizio dell'attività, se no `422`. Più attività dello stesso giorno
+   portano la stessa notte; rimandata, la notte prende i numeri nuovi.
+7. **Endpoint propri, moduli degli altri intatti**: il profilo ha `GET
+   /users/{id}/sleep` e non un campo di `GET /users/{id}`; niente di nuovo
+   in `X-MuW-Reads` (li chiama solo un'app che li conosce).
+8. **Esportazione**: non esiste un'esportazione automatica dei dati di un
+   account; la copia chiesta per email si fa a mano, e la query per il
+   sonno sta in `DATABASE.md`. La cancellazione è la cascata.
+
+**Alternative scartate**: la notte come riga di `runs` senza traccia (entra
+in calendario, conteggi, Strava); aspettare i post senza attività di
+TASK-312 C; i numeri del sonno come colonne di `runs`, come il battito (la
+notte condivisa da sola non avrebbe dove stare, e due attività dello stesso
+giorno la terrebbero due volte); tenere sul server ogni notte calcolata
+(più dati sulla salute di quelli pubblicati); una sola notte condivisa per
+account (chiude la strada a una storia nel profilo: oggi si legge l'ultima,
+e «smetti di condividere» le spegne tutte); pulire le notti orfane dal
+codice che cancella le corse (`activities.py` è di altri, e ogni strada
+nuova dovrebbe ricordarsene).
+
+**Conseguenze**: B2 (app, il sonno nel post) e B3 (la scheda «Sleep» nel
+profilo) usano questi endpoint. Il Feed e il dettaglio del post non dicono
+se un post ha il sonno: lo aggiunge la parte B1b (un campo `sleep` nel
+disegno visto, presente solo quando il sonno è mostrato; `drawings.py`,
+nessuna migrazione), scritta dalla sessione di B2. Prima
+dell'OTA di B2: la frase della privacy, «App Privacy», le note di
+revisione (parte C, ognuna col sì dell'utente).
+
+## ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple
+
+**Stato**: Attiva · 2026-11-12 · TASK-467 parte A in `main` (#1193,
+`665e408c`): solo
+funzioni pure, nessuna schermata le usa ancora. Che cosa si vede e si
+pubblica è dell'utente (parte 0 di `tasks/TASK-467.md`, 2026-11-11: «Sì,
+punteggio MuW», le cinque fasce, le fasi nel post); la formula, le soglie
+e il modo sono decisi dall'agente su delega dell'utente, numero dal
+Coordinatore.
+
+**Contesto**: l'utente ha chiesto il 2026-11-11 di pubblicare su MuW il
+punteggio del sonno di Apple Salute. Quel punteggio non si può leggere:
+HealthKit non ha un tipo per lui (header dell'SDK iPhoneOS 27.0
+controllati il 2026-11-12; un ingegnere Apple lo conferma sul forum
+sviluppatori, settembre 2025). Si leggono i campioni da cui nasce
+(`HKCategoryTypeIdentifierSleepAnalysis`), e Apple dice in pubblico le tre
+parti del suo punteggio e i loro pesi, non le soglie.
+
+**Decisione**:
+
+1. **Il punteggio si calcola sul telefono**, in `apps/mobile/src/health/`,
+   con funzioni pure e test deterministici. Al server non arrivano mai i
+   campioni: solo il riassunto che l'utente pubblica (parte B).
+2. **La notte** (`sleepNight.ts`): le sorgenti sovrapposte si uniscono
+   senza contare due volte (fase detta › sveglio › sonno senza fase; fra
+   le fasi la più profonda); un silenzio di più di 60 minuti separa i
+   tratti; la notte è il tratto con più sonno, da quando ci si addormenta
+   all'ultimo risveglio; il tempo senza campioni dentro la notte conta
+   come sveglio; sotto i 60 minuti di sonno non c'è notte. «A letto» non
+   conta. Il «Core» di Salute è `light`.
+3. **Il punteggio** (`sleepScore.ts`), intero da 0 a 100, con i pesi di
+   Apple e soglie di MuW, in linea retta fra gli estremi:
+   - durata, 50: zero fino a 240 minuti di sonno, tutti da 480;
+   - regolarità, 30: lo scarto fra l'ora in cui ci si addormenta e la
+     mediana di quelle delle notti prima, come ora del giorno: tutti entro
+     15 minuti, zero da 120;
+   - interruzioni, 20: i minuti svegli nella notte: tutti fino a 5, zero
+     da 60.
+4. **Senza storia**: con meno di 3 notti prima la regolarità non si sa, e
+   il punteggio sono le altre due parti portate a 100.
+5. **Le fasce** sono quelle dell'utente: 0–39, 40–59, 60–74, 75–89,
+   90–100.
+
+**Alternative scartate**: leggere il punteggio di Apple (non c'è l'API);
+calcolarlo sul server (porterebbe i campioni di Salute fuori dal
+telefono); contare il numero dei risvegli invece dei minuti svegli (gli
+orologi scrivono risvegli di pochi secondi, il numero cambia da un
+orologio all'altro); un obiettivo di sonno per persona al posto delle 8
+ore (MuW non lo chiede a nessuno).
+
+**Conseguenze**: il numero può differire di qualche punto da quello
+dell'app Salute, e nell'interfaccia non si chiama mai «di Apple». Un
+giorno vale 24 ore: le notti prima di un cambio d'ora leggono un'ora di
+scarto nella regolarità. Cambiare una soglia cambia i punteggi delle notti
+non ancora pubblicate; quelli pubblicati restano com'erano, perché al
+server va il numero e non i campioni. Non è una misura medica.
 
 ## ADR-0376 — Il muscolo allenato su una sagoma accanto all'omino della palestra: la tabella esercizio → muscoli nell'app, il corpo fatto di `View`, un token `muscle`
 

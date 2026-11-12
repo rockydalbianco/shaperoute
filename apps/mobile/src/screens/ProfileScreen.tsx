@@ -89,6 +89,9 @@ type Props = {
    * is the fourth page of the pager (TASK-278): no «←» nor title there, as
    * on the other pages. */
   onBack?: () => void;
+  /** Opens «Explore» from the first step of a new profile (TASK-457); left
+   * out where there is no such page to go to. */
+  onExplore?: () => void;
 };
 
 /**
@@ -98,13 +101,21 @@ type Props = {
  * was (TASK-154); its first page is also the fourth page of the pager,
  * from where the others open over the app (TASK-278).
  */
-export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
+export function ProfileScreen({
+  account,
+  page,
+  onPage,
+  hint,
+  onBack,
+  onExplore,
+}: Props) {
   const insets = useSafeAreaInsets();
   const { state } = account;
   const signedOut = state.status !== "signedIn";
   // Where «Help» was opened: its row in «Settings», or «Guide» on the first
-  // page, with an account or without (TASK-266). Opened right on «Help»,
-  // it is «Guide» of the fourth page (TASK-278): back goes there.
+  // page without an account (TASK-266; with one the row left the profile,
+  // TASK-457). Opened right on «Help», it is «Guide» of the fourth page
+  // (TASK-278): back goes there.
   const [helpFrom, setHelpFrom] = useState<"settings" | "account">(() =>
     page === "help" ? "account" : "settings",
   );
@@ -174,14 +185,7 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             <FavoritesList margin={space.lg} />
           )
         ) : state.status === "signedIn" ? (
-          <SignedIn
-            session={state.session}
-            onPage={onPage}
-            onGuide={() => {
-              setHelpFrom("account");
-              onPage("help");
-            }}
-          />
+          <SignedIn session={state.session} onPage={onPage} onExplore={onExplore} />
         ) : (
           <SignInScreen
             // A new form after each way out: no password left in it.
@@ -209,7 +213,7 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             email={account.email}
           />
         )}
-        {/* With an account «Guide» is under «Settings» (ProfileHome). */}
+        {/* With an account it is «Help» in «Settings» (TASK-457). */}
         {signedOut && (
           <GuideRow
             onOpen={() => {
@@ -246,11 +250,11 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
 function SignedIn({
   session,
   onPage,
-  onGuide,
+  onExplore,
 }: {
   session: Session;
   onPage: (page: ProfilePage) => void;
-  onGuide: () => void;
+  onExplore?: () => void;
 }) {
   const favorites = useFavoritesDoor();
   const activities = useActivitiesDoor();
@@ -261,7 +265,7 @@ function SignedIn({
       activities={activities.total}
       onOpen={onPage}
       onEdit={() => onPage("edit")}
-      onGuide={onGuide}
+      onExplore={onExplore}
     />
   );
 }

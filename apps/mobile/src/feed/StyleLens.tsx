@@ -125,7 +125,7 @@ export function StyleLens({ visible, cardWidth, insetBottom, fetchFn }: Props) {
     });
   }, [apiUrl, shown, theme, gender, question, fetchFn]);
 
-  const scroll = useScrollToTopOnReselect<FlatList<Post>>();
+  const scroll = useScrollToTopOnReselect<FlatList<Post>>(visible);
   const filters = (
     <ScrollView
       horizontal

@@ -1,6 +1,6 @@
 # TASK-415 — Ski touring: lo scialpinismo «Record only»
 
-**Stato**: In corso — parte 0 in `main` (#932), parte A in `main` (#948) e sul server, parte B in `main` (#1160) e nella preview.
+**Stato**: In corso — parte 0 in `main` (#932), parte A in `main` (#948) e sul server, parte B in `main` (#1160), parte B3 (cambio pelli a mano) in `main` (#1202).
 **Fase**: 4 · **Branch**: `docs/TASK-415-0-skimo` (parte 0), poi
 `feat/TASK-415-a-ski-touring-api`, `feat/TASK-415-b-…` ·
 **ADR**: ADR-0344 · numeri dal Coordinatore · sessione dello sport,
@@ -191,6 +191,18 @@ apps/mobile/src/settings/{sport,snowSport,sportRows}.test.ts,
 docs/tasks/TASK-415.md
 ```
 
+Parte B3 (`feat/TASK-415-b3-skin-change`), il cambio pelli a mano,
+chiesto dall'utente il 2026-11-12 («aggiungi anche la funzione coambio
+pelli...», poi «Un pulsante a mano»), lista mandata al Coordinatore:
+
+```
+apps/mobile/src/activities/skinChanges.ts, .test.ts        (nuovi: i cambi segnati a mano, su file)
+apps/mobile/src/activities/mountainPhases.ts, .test.ts     (i cambi a mano in mountainTour e tourNow)
+apps/mobile/src/screens/SkiTourLive.tsx                    (il pulsante)
+apps/mobile/src/screens/SkiTourFinishCard.tsx, .test.tsx   (legge i cambi a mano)
+docs/tasks/TASK-415.md
+```
+
 ## Dove si è
 
 2026-11-07: le cinque scelte dell'utente prese. 2026-11-08: parte 0 in PR,
@@ -248,3 +260,30 @@ pubblica» valeva per la preview. Restano:
   dell'orologio;
 - dopo: B2 (numeri e fasi nel post, `run_stats`), C (pendenza), D (vette),
   E (taratura sulla neve).
+
+2026-11-12, parte B3: il cambio pelli a mano. Nel pannello in gita un
+pulsante largo «🎿 Cambio pelli» (`Changeover`, testo già approvato):
+il cambio inizia, il suo tempo corre in «Fase», e finisce con «Riprendi»
+(`Resume`, già tradotto) o da solo quando la gita si sposta di 30 m. I
+cambi a mano prendono il posto di quelli riconosciuti da soli dove si
+toccano; «Pelli tolte» o «Pelli messe» dalla svolta più vicina (entro
+10 minuti), altrimenti dalla fase in corso. Stanno in
+`skin-changes.json` sul telefono, legati alla gita dall'ora del primo
+punto; niente server (il post è la B2). Nessun testo nuovo.
+
+La parte B3 è approvata dal Coordinatore il 2026-11-12. La prova vera è
+quella sulla neve, quest'inverno: l'utente la fa con la parte E. Il
+simulatore non può provare lo spostamento di 30 m che chiude da solo un
+cambio, né il GPS fermo durante un cambio vero: lo copre un test
+(`SkiTourFinishCard.test.tsx`, «ends by itself once the tour moves on»).
+Le impronte le misura il Coordinatore sul commit di `main` prima
+dell'OTA: il diff è solo in `apps/mobile/src/`.
+
+2026-11-12, parte B3 in `main`: #1202 (head `caa732a9`), merge
+`6477f7c0` (Coordinatore). L'utente ha visto le schermate dal simulatore
+(`out/TASK-415/b3-1.png` il pulsante e il cambio in corso,
+`b3-2.png` la fine gita coi cambi a mano) e ha risposto «Sì, va bene».
+L'utente ha deciso col Coordinatore («Sì, oggi») che l'aggiornamento
+completo esce il 2026-11-12: porta in produzione le parti B e B3 e accende
+lo scialpinismo. Restano la prova sulla neve quest'inverno (con la parte
+E), poi B2, C e D.

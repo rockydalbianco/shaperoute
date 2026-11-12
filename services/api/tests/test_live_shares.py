@@ -5,11 +5,13 @@ account, the end of the link and the round that deletes the points."""
 from __future__ import annotations
 
 import json
+import logging
 import threading
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -29,10 +31,13 @@ from shaperoute_api.access import RateLimiter
 from shaperoute_api.db import Database
 from shaperoute_api.live_shares import (
     LIVE_PAGE,
+    MAX_RECIPIENTS,
     MAX_SHARES_PER_DAY,
+    SENDS_PER_MINUTE,
     SITE_ORIGIN,
     LiveShareRequestBody,
     LiveShares,
+    LiveShareSendBody,
     LiveShareSweep,
     LiveStatsBody,
     LiveUpdateBody,
@@ -494,3 +499,285 @@ def test_a_wrong_number_of_a_flight_is_refused(
     wall.t = START + 15 * SECOND
     stats = {**fixture("live-share-update.json")["stats"], "vario_mps": 99}
     assert sent(client, ada, share, stats=stats).status_code == 422
+
+
+# --- In the chat and in the Feed (TASK-468 part A1a, ADR-0381) ---
+
+
+def person(app: TestClient, name: str) -> Headers:
+    return signed_up(app, email=f"{name}@example.com", username=name)
+
+
+def pid(app: TestClient, headers: Headers) -> str:
+    return str(app.get("/me", headers=headers).json()["public_id"])
+
+
+def follow(app: TestClient, follower: Headers, followed: Headers) -> None:
+    """`follower` follows `followed`, the request accepted."""
+    asked = app.post(f"/users/{pid(app, followed)}/follow", headers=follower)
+    assert asked.is_success, asked.text
+    accept = f"/me/follow-requests/{pid(app, follower)}/accept"
+    assert app.post(accept, headers=followed).is_success
+
+
+def shared_to(
+    app: TestClient,
+    owner: Headers,
+    share: dict[str, Any],
+    *to: Headers,
+) -> Any:
+    body = {"to": [pid(app, h) for h in to]}
+    return app.post(f"/me/live-shares/{share['id']}/send", json=body, headers=owner)
+
+
+def in_app(
+    app: TestClient,
+    viewer: Headers,
+    share: dict[str, Any],
+    after: int = 0,
+) -> Any:
+    return app.get(
+        f"/live-shares/{share['id']}", params={"after": after}, headers=viewer
+    )
+
+
+def app_share(app: TestClient, owner: Headers, **changes: Any) -> dict[str, Any]:
+    body = {**fixture("live-share-request.json"), "link": False, **changes}
+    answer = app.post("/me/live-shares", json=body, headers=owner)
+    assert answer.status_code == 201, answer.text
+    share: dict[str, Any] = answer.json()
+    return share
+
+
+def test_the_example_send_is_of_the_contract() -> None:
+    body = LiveShareSendBody.model_validate(fixture("live-share-send-request.json"))
+    assert 1 <= len(body.to) <= MAX_RECIPIENTS
+    with pytest.raises(ValidationError):
+        LiveShareSendBody.model_validate({"to": []})
+    with pytest.raises(ValidationError):
+        LiveShareSendBody.model_validate({"to": [str(uuid4()) for _ in range(21)]})
+
+
+def test_a_share_of_before_is_a_link_in_nobodys_feed(
+    client: TestClient,  # noqa: F811
+) -> None:
+    ada = signed_up(client)
+    share = made(client, ada)
+    answer = sent(client, ada, share).json()
+    assert answer["link"] is True
+    assert answer["audience_feed"] == "none"
+    assert answer["heart_visible"] is False
+
+
+def test_a_share_without_its_link_then_with_it(
+    client: TestClient,  # noqa: F811
+    database: Database,  # noqa: F811
+) -> None:
+    ada = signed_up(client)
+    share = app_share(client, ada)
+    assert share["url"] is None
+    with database.connect() as conn:
+        row = conn.execute("SELECT token_hash FROM live_shares").fetchone()
+    assert row is not None and row["token_hash"] is None
+    linked = client.post(f"/me/live-shares/{share['id']}/link", headers=ada)
+    assert linked.status_code == 201, linked.text
+    first = {**share, "token": linked.json()["url"].removeprefix(LIVE_PAGE)}
+    assert seen(client, first)["status"] == "live"
+    # A new link: the one given before stops working.
+    again = client.post(f"/me/live-shares/{share['id']}/link", headers=ada).json()
+    assert again["url"] != linked.json()["url"]
+    assert seen(client, first)["status"] == "expired"
+
+
+def test_only_the_owner_makes_the_link_or_changes_the_audience(
+    client: TestClient,  # noqa: F811
+) -> None:
+    ada, bob = signed_up(client), other(client)
+    share = app_share(client, ada)
+    path = f"/me/live-shares/{share['id']}"
+    assert client.post(f"{path}/link", headers=bob).status_code == 404
+    patch = {"audience_feed": "everyone"}
+    assert client.patch(path, json=patch, headers=bob).status_code == 404
+    assert shared_to(client, bob, share, ada).status_code == 404
+
+
+def test_sent_to_someone_they_see_it_in_the_app_and_nobody_else(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    ada, bob = person(client, "ada"), person(client, "bob")
+    cleo = person(client, "cleo")
+    share = app_share(client, ada)
+    assert in_app(client, bob, share).status_code == 404
+    answer = shared_to(client, ada, share, bob)
+    assert answer.status_code == 200, answer.text
+    assert answer.json() == {"sent": [pid(client, bob)], "skipped": []}
+    wall.t = START + 15 * SECOND
+    sent(client, ada, share)
+    view = in_app(client, bob, share)
+    assert view.status_code == 200, view.text
+    assert len(view.json()["points"]) == 3
+    # Never 403: one who may not see it is told it is not there.
+    assert in_app(client, cleo, share).status_code == 404
+    assert in_app(client, {}, share).status_code == 401
+    assert in_app(client, ada, share).status_code == 200
+
+
+def test_sent_twice_is_sent_once_and_oneself_or_nobody_is_skipped(
+    client: TestClient,  # noqa: F811
+    database: Database,  # noqa: F811
+) -> None:
+    ada, bob = person(client, "ada"), person(client, "bob")
+    share = app_share(client, ada)
+    nobody = str(uuid4())
+    body = {"to": [pid(client, bob), pid(client, bob), pid(client, ada), nobody]}
+    answer = client.post(
+        f"/me/live-shares/{share['id']}/send", json=body, headers=ada
+    ).json()
+    assert answer == {"sent": [pid(client, bob)], "skipped": [pid(client, ada), nobody]}
+    assert shared_to(client, ada, share, bob).json()["sent"] == [pid(client, bob)]
+    with database.connect() as conn:
+        n = conn.execute("SELECT count(*) AS n FROM live_share_recipients").fetchone()
+    assert n is not None and n["n"] == 1
+
+
+@pytest.mark.parametrize("blocker", ["owner", "viewer"])
+def test_a_block_either_way_keeps_them_apart(
+    client: TestClient,  # noqa: F811
+    blocker: str,
+) -> None:
+    ada, bob = person(client, "ada"), person(client, "bob")
+    share = app_share(client, ada, audience_feed="everyone")
+    shared_to(client, ada, share, bob)
+    assert in_app(client, bob, share).status_code == 200
+    who, whom = (ada, bob) if blocker == "owner" else (bob, ada)
+    assert client.put(f"/users/{pid(client, whom)}/block", headers=who).is_success
+    assert in_app(client, bob, share).status_code == 404
+    # And a block made before: the send skips them.
+    assert shared_to(client, ada, share, bob).json()["sent"] == []
+
+
+def test_a_hidden_owner_is_seen_by_nobody(
+    client: TestClient,  # noqa: F811
+    database: Database,  # noqa: F811
+) -> None:
+    ada, bob = person(client, "ada"), person(client, "bob")
+    share = app_share(client, ada, audience_feed="everyone")
+    shared_to(client, ada, share, bob)
+    with database.connect() as conn:
+        conn.execute("UPDATE users SET hidden_at = now() WHERE username = 'ada'")
+    assert in_app(client, bob, share).status_code == 404
+    assert in_app(client, ada, share).status_code == 200
+
+
+def test_the_followers_see_it_and_an_unfollow_ends_it_at_once(
+    client: TestClient,  # noqa: F811
+) -> None:
+    ada, bob = person(client, "ada"), person(client, "bob")
+    cleo = person(client, "cleo")
+    share = app_share(client, ada, audience_feed="followers")
+    follow(client, bob, ada)
+    assert in_app(client, bob, share).status_code == 200
+    assert in_app(client, cleo, share).status_code == 404
+    # Ada following Cleo is not Cleo following Ada.
+    follow(client, ada, cleo)
+    assert in_app(client, cleo, share).status_code == 404
+    assert client.delete(f"/users/{pid(client, ada)}/follow", headers=bob).is_success
+    assert in_app(client, bob, share).status_code == 404
+
+
+def test_everyone_with_an_account_and_back_to_nobody(
+    client: TestClient,  # noqa: F811
+) -> None:
+    ada, cleo = person(client, "ada"), person(client, "cleo")
+    share = app_share(client, ada)
+    path = f"/me/live-shares/{share['id']}"
+    assert in_app(client, cleo, share).status_code == 404
+    changed = client.patch(path, json={"audience_feed": "everyone"}, headers=ada)
+    assert changed.status_code == 200, changed.text
+    assert changed.json()["audience_feed"] == "everyone"
+    assert changed.json()["link"] is False
+    assert in_app(client, cleo, share).status_code == 200
+    client.patch(path, json={"audience_feed": "none"}, headers=ada)
+    assert in_app(client, cleo, share).status_code == 404
+
+
+def test_the_heart_rate_reaches_the_app_only_when_turned_on(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    ada, bob = person(client, "ada"), person(client, "bob")
+    share = made(client, ada)
+    shared_to(client, ada, share, bob)
+    wall.t = START + 15 * SECOND
+    sent(client, ada, share)
+    assert in_app(client, bob, share).json()["stats"]["heart_bpm"] is None
+    # The owner sees it, and so does the link (TASK-424, choice 3).
+    assert in_app(client, ada, share).json()["stats"]["heart_bpm"] == 128
+    assert seen(client, share)["stats"]["heart_bpm"] == 128
+    path = f"/me/live-shares/{share['id']}"
+    turned = client.patch(path, json={"heart_visible": True}, headers=ada).json()
+    assert turned["heart_visible"] is True and turned["audience_feed"] == "none"
+    assert in_app(client, bob, share).json()["stats"]["heart_bpm"] == 128
+
+
+def test_a_share_that_ended_is_seen_as_the_link_and_takes_no_changes(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    ada, bob = person(client, "ada"), person(client, "bob")
+    share = app_share(client, ada)
+    shared_to(client, ada, share, bob)
+    sent(client, ada, share, state="finished")
+    assert in_app(client, bob, share).json()["status"] == "finished"
+    path = f"/me/live-shares/{share['id']}"
+    assert shared_to(client, ada, share, bob).status_code == 410
+    heart = {"heart_visible": True}
+    assert client.patch(path, json=heart, headers=ada).status_code == 410
+    assert client.post(f"{path}/link", headers=ada).status_code == 410
+    wall.t = START + timedelta(hours=2)
+    assert in_app(client, bob, share).json() == {"status": "expired", **empty_view()}
+    client.delete(path, headers=ada)
+    assert in_app(client, bob, share).json()["status"] == "stopped"
+
+
+def test_a_stopped_share_shows_nothing_in_the_app(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+) -> None:
+    ada, bob = person(client, "ada"), person(client, "bob")
+    share = app_share(client, ada)
+    shared_to(client, ada, share, bob)
+    wall.t = START + 15 * SECOND
+    sent(client, ada, share)
+    assert client.delete(f"/me/live-shares/{share['id']}", headers=ada).is_success
+    assert in_app(client, bob, share).json() == {"status": "stopped", **empty_view()}
+
+
+def test_at_most_so_many_sends_a_minute(
+    client: TestClient,  # noqa: F811
+) -> None:
+    ada, bob = person(client, "ada"), person(client, "bob")
+    share = app_share(client, ada)
+    for _ in range(SENDS_PER_MINUTE):
+        assert shared_to(client, ada, share, bob).status_code == 200
+    refused = shared_to(client, ada, share, bob)
+    assert refused.status_code == 429
+    assert int(refused.headers["Retry-After"]) > 0
+
+
+def test_the_log_never_writes_a_position(
+    client: TestClient,  # noqa: F811
+    wall: WallClock,  # noqa: F811
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.DEBUG)
+    ada, bob = person(client, "ada"), person(client, "bob")
+    share = made(client, ada, audience_feed="followers")
+    shared_to(client, ada, share, bob)
+    wall.t = START + 15 * SECOND
+    sent(client, ada, share)
+    in_app(client, bob, share)
+    seen(client, share)
+    lats = {str(p["lat"]) for p in fixture("live-share-update.json")["points"]}
+    assert not any(lat in caplog.text for lat in lats)

@@ -1,10 +1,15 @@
 # TASK-452 — La corsa su misura nelle schede della palestra
 
-**Stato**: In lavorazione · 2026-11-11 · PR1 (server e tipi) e PR2 (l'app)
-aperte; la PR2 entra solo dopo il server
-**Fase**: 5 · **Branch**: `feat/TASK-452-run-pace`
+**Stato**: Done · 2026-11-12 · PR1 server e tipi (#1158, `30407b83`) in
+`main` e sul server (passo 9, 2026-11-12 08:38Z); PR2 l'app (#1159,
+`881489fd`) in `main`; documenti in una PR a parte
+**Esito**: la guida chiede il ritmo sui 10 km e il lungo a chi mette corse
+nella scheda; ritmi, lungo e lenta su misura in scheda e in «Draw»; a fine
+ciclo, dalle corse salvate, la proposta di ritmi nuovi solo col sì. Esce con
+l'aggiornamento completo dell'app.
+**Fase**: 5 · **Branch**: `feat/TASK-452-run-pace` (unito)
 **Dipende da**: TASK-433 (le schede guidate e i giorni di corsa, Done)
-**ADR**: ADR-0369 (proposto) · numeri dal Coordinatore il 2026-11-11
+**ADR**: ADR-0369 · numeri dal Coordinatore il 2026-11-11
 
 ## Obiettivo
 
@@ -78,6 +83,13 @@ merge.
       `program.test.ts`).
 - [x] Il server tiene e valida `runner` (`test_gym_plans.py`).
 - [x] Testi nelle cinque lingue, approvati.
-- [ ] CI verde; PR1 sul server, poi PR2 e l'OTA, dal Coordinatore col sì
-      dell'utente.
-- [ ] Prova sul telefono.
+- [x] CI verde; PR1 in `main` e sul server (passo 9), poi PR2 in `main`.
+
+## Cosa resta
+
+- L'uscita con l'aggiornamento completo dell'app (OTA di produzione, dal
+  Coordinatore col sì dell'utente): fino ad allora i telefoni non vedono il
+  passo «How do you run today?».
+- La prova sul telefono dopo l'OTA: una scheda con corse nuova, i ritmi in
+  «Draw», e a fine ciclo la proposta (serve una corsa più veloce salvata
+  nelle ultime 4 settimane).

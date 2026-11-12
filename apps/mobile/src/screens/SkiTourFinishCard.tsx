@@ -8,6 +8,7 @@ import {
   type MountainTour,
   mountainTour,
 } from "../activities/mountainPhases";
+import { useSkinChanges } from "../activities/skinChanges";
 import { t } from "../i18n";
 import type { FreeRun } from "../navigation/freeRun";
 import { durationText } from "../route/runTime";
@@ -84,7 +85,9 @@ export function SkiTourFinishCard({ run, activity, onResume, onDone }: Props) {
   const { track } = run;
   // The time and the calories of the tour's own sport.
   const numbers = useRunNumbers(track, false, undefined, undefined, activity);
-  const tour = useMemo(() => mountainTour(track), [track]);
+  // With the changeovers marked by hand (TASK-415 part B3).
+  const byHand = useSkinChanges(track.fixes[0]?.timeMs ?? null);
+  const tour = useMemo(() => mountainTour(track, byHand), [track, byHand]);
   const climbed = metresOf(tour?.climbM ?? null);
   return (
     <View style={styles.finish}>

@@ -950,6 +950,10 @@ export const ES: Table = {
   "Show more comments": "Mostrar más comentarios",
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Mantén pulsado para eliminar.",
+  Reply: "Responder",
+  "Replying to {name}": "Respuesta a {name}",
+  "View {count} more reply": "Ver {count} respuesta más",
+  "View {count} more replies": "Ver {count} respuestas más",
 
   // src/social/DrawingReactions.tsx
   React: "Reaccionar",
@@ -980,6 +984,8 @@ export const ES: Table = {
   "Write a comment to send your super like":
     "Escribe un comentario para enviar tu super like",
   Send: "Enviar",
+  "A super like comes with a comment. Everyone who sees the post can read it.":
+    "Un super like va con un comentario. Quien ve la publicación puede leerlo.",
 
   // src/social/reactionKinds.ts
   "MuW heart, super like": "Corazón de MuW, super like",
@@ -1594,8 +1600,8 @@ export const ES: Table = {
   "You have not blocked anyone.": "No has bloqueado a nadie.",
   Unblock: "Desbloquear",
   "Unblock {name}": "Desbloquear a {name}",
-  "You blocked {user}. Unblock them from Blocked people in your profile.":
-    "Has bloqueado a {user}. Puedes desbloquearlo en Personas bloqueadas de tu perfil.",
+  "You blocked {user}. Unblock them from Blocked people in Settings.":
+    "Has bloqueado a {user}. Puedes desbloquearlo en Personas bloqueadas, en Ajustes.",
 
   // src/settings/NotificationsSetting.tsx, notificationFields.ts (TASK-262: push sent)
   "Push notifications tell you at once about follow requests, reactions, comments and tags. Email notifications sends the same news in one email a day at most. Email when I'm away: one email if you don't open MuW for 2 weeks.":
@@ -2569,4 +2575,29 @@ export const ES: Table = {
   "Last 12 months": "Últimos 12 meses",
   "{count} activity": "{count} actividad",
   "{count} activities": "{count} actividades",
+
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Registra tu vuelo",
+  "Before you fly": "Antes de volar",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio.",
+  "Got it": "Entendido",
+  Vario: "Variómetro",
+  "Flight time": "Tiempo de vuelo",
+  "Your flight": "Tu vuelo",
+  "No shapes in the air yet: MuW records your flight.":
+    "Todavía no hay formas en el aire: MuW registra tu vuelo.",
+  "White: where you flew.": "Blanco: por donde volaste.",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Tu primer dibujo",
+  "Start from a route that already draws a shape near you.":
+    "Empieza con una ruta que ya dibuja una forma cerca de ti.",
+  "Find a route near you": "Buscar una ruta cerca de ti",
+  "Record a run with MuW and publish its drawing.":
+    "Graba una carrera con MuW y publica su dibujo.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Publica 10 dibujos de carreras grabadas con MuW.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Publica el dibujo de una carrera de {distance} o más.",
 };

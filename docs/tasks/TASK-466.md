@@ -105,7 +105,7 @@ Coordinatore il 2026-11-12)_
    la schermata parte subito, come prima; `routine` sceglie la routine
    (per C e D). Nessun file fuori da `src/stretch`, i18n e i test.
 
-Testi nuovi (sì dell'utente prima del merge): i dieci nomi e le loro
+Testi nuovi, approvati dall'utente il 2026-11-12: i dieci nomi e le loro
 frasi, «Morning», «After run», «After gym», «How long?».
 
 **Criteri di accettazione (parte B)**
@@ -118,7 +118,8 @@ frasi, «Morning», «After run», «After gym», «How long?».
       esercizio; «Not now» esce.
 - [x] Test di `src/stretch`, `src/i18n`, `__tests__/AppStretch`,
       `src/gym/restAlert` verdi; `tsc` pulito.
-- [ ] Sì dell'utente su nomi, frasi e traduzioni.
+- [x] Sì dell'utente su nomi, frasi e traduzioni (2026-11-12, «Sì,
+      approvo»).
 - [ ] Schermate dal simulatore, col turno del Coordinatore.
 
 **File toccati (parte B)**

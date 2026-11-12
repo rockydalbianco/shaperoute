@@ -2571,4 +2571,17 @@ export const ES: Table = {
   "Last 12 months": "Últimos 12 meses",
   "{count} activity": "{count} actividad",
   "{count} activities": "{count} actividades",
+
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Registra tu vuelo",
+  "Before you fly": "Antes de volar",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio.",
+  "Got it": "Entendido",
+  Vario: "Variómetro",
+  "Flight time": "Tiempo de vuelo",
+  "Your flight": "Tu vuelo",
+  "No shapes in the air yet: MuW records your flight.":
+    "Todavía no hay formas en el aire: MuW registra tu vuelo.",
+  "White: where you flew.": "Blanco: por donde volaste.",
 };

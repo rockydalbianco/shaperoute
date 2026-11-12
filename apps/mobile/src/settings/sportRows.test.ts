@@ -33,12 +33,19 @@ it("shows the rows of before, in their order", () => {
     // Ski touring (TASK-415 part B), on with its phases and its VAM.
     { id: "skimo", emoji: "🏔️", name: "Ski touring", ready: true, recordOnly: true },
     { id: "gym", emoji: "🏋️", name: "Gym", ready: true },
-    { id: "paragliding", emoji: "🪂", name: "Paragliding", ready: false },
+    // Paragliding (TASK-305 part R2), on with the numbers of the flight.
+    {
+      id: "paragliding",
+      emoji: "🪂",
+      name: "Paragliding",
+      ready: true,
+      recordOnly: true,
+    },
   ]);
   // Only the rows that say it carry «Record only».
   expect(
     ALL_SPORTS.filter((option) => "recordOnly" in option).map((o) => o.id),
-  ).toEqual(["ski", "xc_ski", "skimo"]);
+  ).toEqual(["ski", "xc_ski", "skimo", "paragliding"]);
 });
 
 it("asks and saves the activities of before", () => {
@@ -73,7 +80,7 @@ it("asks and saves the activities of before", () => {
     "xc_skiing",
     "ski_touring",
     "gym",
-    "running",
+    "paragliding",
   ]);
   for (const sport of every) {
     expect(ACTIVITIES).toContain(activityOf(sport));
@@ -81,7 +88,7 @@ it("asks and saves the activities of before", () => {
 });
 
 it("takes emoji and name from the profile of the sport's activity", () => {
-  for (const option of ALL_SPORTS.filter((o) => o.id !== "paragliding")) {
+  for (const option of ALL_SPORTS) {
     const activity = runActivityOf(option.id);
     const profile = profileOf(activity);
     expect([option.emoji, option.name]).toEqual([profile.emoji, profile.name]);

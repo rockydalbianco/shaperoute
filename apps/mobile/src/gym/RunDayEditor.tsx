@@ -1,4 +1,9 @@
-import type { GymPlanMode, GymPlanRun, GymRunKind } from "@shaperoute/shared-types";
+import type {
+  GymPlanMode,
+  GymPlanRun,
+  GymPlanRunner,
+  GymRunKind,
+} from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
@@ -14,6 +19,7 @@ import {
 import { runInWeek } from "./program";
 import { proposedRun } from "./proposal";
 import { RUN_KINDS, runAmount } from "./runDay";
+import { clock, paceOf } from "./runPace";
 
 /** The steps of the boxes: half a km, five minutes, one rep. */
 const KM_STEP_M = 500;
@@ -68,11 +74,14 @@ export function RunDayEditor({
   run,
   mode,
   weeks,
+  runner,
   onChange,
 }: {
   run: GymPlanRun;
   mode: GymPlanMode;
   weeks: number;
+  /** The plan's runner (TASK-452): the run's pace is shown under it. */
+  runner?: GymPlanRunner;
   onChange: (run: GymPlanRun) => void;
 }) {
   const byTime = run.kind !== "intervals" && run.duration_s !== undefined;
@@ -166,6 +175,11 @@ export function RunDayEditor({
             <Text style={styles.roundText}>+</Text>
           </Pressable>
         </View>
+        {runner !== undefined && (
+          <Text style={styles.paceLine} testID="run-pace">
+            {t("at {pace}/km", { pace: clock(paceOf(run, runner)) })}
+          </Text>
+        )}
         {run.kind === "intervals" ? (
           <View style={styles.toggle}>
             {REP_LENGTHS_M.map((metres) => {
@@ -304,6 +318,11 @@ const styles = StyleSheet.create({
   unitText: {
     color: color.textMuted,
     fontSize: 18,
+  },
+  paceLine: {
+    ...font.small,
+    color: color.textMuted,
+    textAlign: "center",
   },
   toggle: {
     flexDirection: "row",

@@ -1358,6 +1358,36 @@ export const DE: Table = {
   "Lower body B": "Unterkörper B",
   "Arms, core": "Arme, Bauch",
   "Workout {letter}": "Training {letter}",
+  // src/gym/RunnerStep.tsx, runPace.ts, GymPlanWizard.tsx, GymDrawGuide.tsx (TASK-452, approved 2026-11-11)
+  "Pace@@run": "Tempo",
+  "Intermediate@@runner": "Fortgeschritten",
+  "Expert@@runner": "Erfahren",
+  Yes: "Ja",
+  "Your runs say {pace}/km over 10 km: update the paces?":
+    "Deine Läufe sagen {pace}/km auf 10 km: Tempos aktualisieren?",
+  "From your {pace}/km over 10 km and your long run of {long}.":
+    "Aus deinem {pace}/km auf 10 km und deinem langen Lauf von {long}.",
+  "How do you run today?": "Wie läufst du heute?",
+  "Make my paces": "Meine Tempos erstellen",
+  "Two answers and the plan's paces are yours.":
+    "Zwei Antworten, und die Tempos des Plans sind deine.",
+  "Your paces": "Deine Tempos",
+  "at {pace}/km": "mit {pace}/km",
+  "10 km in {time}": "10 km in {time}",
+  "At the end of each cycle": "Am Ende jedes Zyklus",
+  "Easy: your pace over 10 km + 1:05. Long: + 1:15. Intervals of 400 m: − 0:25. The long run starts from yours and grows 1 km a week; the easy run is about half of it.":
+    "Locker: dein 10-km-Tempo + 1:05. Lang: + 1:15. Intervalle über 400 m: − 0:25. Der lange Lauf beginnt bei deinem und wächst 1 km pro Woche; der lockere ist etwa halb so lang.",
+  "How I work them out": "So berechne ich sie",
+  "I don't know: I'll pick my level": "Weiß ich nicht: ich wähle mein Niveau",
+  "I look at your runs: if you got faster, I propose new paces.":
+    "Ich sehe mir deine Läufe an: Bist du schneller geworden, schlage ich neue Tempos vor.",
+  "The longest run you do without strain":
+    "Der längste Lauf, den du ohne Mühe schaffst",
+  "Your long run, today": "Dein langer Lauf, heute",
+  "Your pace over 10 km": "Dein Tempo auf 10 km",
+  "minutes per km": "Minuten pro km",
+  "{n} minutes": "{n} Minuten",
+  Beginner: "Einsteiger",
   // src/gym/GymIntroSheet.tsx, GymDrawGuide.tsx (TASK-433 B, approved 2026-11-10)
   "Your plan, step by step": "Dein Plan, Schritt für Schritt",
   "A minute to make it, then it guides you every time.":

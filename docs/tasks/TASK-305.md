@@ -192,6 +192,19 @@ Come TASK-415 A (`23a3c23f`, lo scialpinismo):
    instrument: it records your flight and shares it. Fly with your own
    instrument, licence and judgement.»
 
+**Testi di R2**, approvati dall'utente il 2026-11-12 (en e it, poi
+de/fr/es; «Sì, approvo»). Quota, quota massima e velocità massima usano le
+parole che l'app ha già («Altitude», «Max altitude», «Top speed»);
+«Vario» è quello di R3.
+
+| en | it | de | fr | es |
+|---|---|---|---|---|
+| Record your flight | Registra il volo | Flug aufzeichnen | Enregistrer le vol | Registra tu vuelo |
+| Before you fly | Prima di volare | Vor dem Flug | Avant de voler | Antes de volar |
+| MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement. | MuW non è uno strumento di volo: registra il volo e lo condivide. Vola con il tuo strumento, il tuo brevetto e il tuo giudizio. | MuW ist kein Fluginstrument: Es zeichnet deinen Flug auf und teilt ihn. Flieg mit deinem eigenen Instrument, deiner Lizenz und deinem Urteilsvermögen. | MuW n'est pas un instrument de vol : il enregistre votre vol et le partage. Volez avec votre propre instrument, votre licence et votre jugement. | MuW no es un instrumento de vuelo: graba tu vuelo y lo comparte. Vuela con tu propio instrumento, tu licencia y tu criterio. |
+| Got it | Ho capito | Verstanden | Compris | Entendido |
+| Flight time | Tempo di volo | Flugzeit | Temps de vol | Tiempo de vuelo |
+
 File, a grandi linee (la lista vera al Coordinatore prima della PR, col
 turno: `settings/sport.ts`, `sports/**` e `social/PublicParts.tsx` sono
 oggi della #1160, poi di TASK-413 B e TASK-463): `settings/sport.ts`, i
@@ -212,6 +225,24 @@ variometro (sale/scende), velocità del momento, quota massima e tempo di
 volo, nelle cinque lingue; le altre attività come oggi. La copia sul sito
 è una pubblicazione: col sì dell'utente, dal Coordinatore
 (`out/coordinatore/sito.sh <sha>`).
+
+I numeri, dopo distanza e tempo: velocità del momento (la media se l'app
+è di prima), quota, variometro col segno (+ sale, − scende; m/s, ft/min
+in miglia), quota massima, poi dislivello, calorie e battito come per le
+altre attività.
+
+**Testi di R3** (le tre etichette nuove; le altre sono quelle approvate di
+TASK-424). **Approvati dall'utente il 2026-11-12**: en e it («Sì,
+approvo»), poi de/fr/es («Sì, approvo»), con le parole che l'app ha già
+per quota e quota massima.
+
+| lingua | quota | variometro | quota massima |
+|---|---|---|---|
+| en | Altitude | Vario | Max altitude |
+| it | Quota | Variometro | Quota massima |
+| de | Höhe | Vario | Max. Höhe |
+| fr | Altitude | Vario | Alt. max |
+| es | Altitud | Variómetro | Alt. máx. |
 
 ## Cosa fare (se l'utente decide di sì)
 

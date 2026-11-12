@@ -1,7 +1,8 @@
 # TASK-454 — Reazioni e super like
 
 **Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-11) · C1 (server) in
-corso · A aspetta TASK-444 in `main`, B dopo A, C2 dopo il server di C1
+`main` (#1180, 2026-11-12), manca il passo sul server · prossima A (TASK-444
+parte 1 è in `main` con la #1176), B dopo A, C2 dopo il server di C1
 **Fase**: 5 · **Branch**: `feat/TASK-454-reactions` (parte A; una PR per parte)
 **Dipende da**: TASK-444 parte 1 in `main` (tocca `feed/PostActions.tsx` e
 porta l'icona a cuore di «Like»)
@@ -158,9 +159,10 @@ I criteri di B, C1 e C2 si scrivono qui quando la parte comincia.
 
 ## Parte C1 — server (ADR-0377)
 
-**Stato**: PR #1180 aperta (2026-11-11) · branch
-`feat/TASK-454-c1-comment-replies` · migrazione `0070` (il primo numero
-libero in `main` il 2026-11-12; se un'altra PR lo prende prima, si rinomina).
+**Stato**: in `main` il 2026-11-12 (#1180, `02214e9b`, CI verde) ·
+migrazione `0070_comment_replies.sql` · ADR-0377 in `DECISIONS.md` con la PR
+di documenti `docs/TASK-454-c1-docs`. Resta il passo sul server (dell'utente,
+col Coordinatore) e, dopo, il controllo in `out/TASK-454/SERVER-C1.md`.
 
 Scelte dell'utente: quelle del punto 5 qui sopra. Il resto è **deciso
 dall'agente su delega dell'utente** (va in `DECISIONS.md` come ADR-0377 con
@@ -243,17 +245,17 @@ docs/tasks/TASK-454.md
 
 Criteri di accettazione (C1):
 
-- [ ] `test_comment_threads.py` verde: risposte a un livello, pagine,
+- [x] `test_comment_threads.py` verde: risposte a un livello, pagine,
       «app di prima», blocchi, segnalazione e nascosto, cinque reazioni,
       avvisi (risposta col push, reazione solo campanella).
-- [ ] I test di prima di `comments`, `reactions`, `push`,
+- [x] I test di prima di `comments`, `reactions`, `push`,
       `notification_list` restano verdi (86 su 88 in locale senza
-      toccarli). Una sola modifica, in `test_comments.py` e
+      toccarli; tutti verdi in CI sulla #1180). Una sola modifica, in `test_comments.py` e
       `test_reactions.py`: gli esempi di prima (`comment.json`,
       `comment-request.json`, il commento di `reaction-result.json`) non
       hanno più *tutti* i campi del corpo ma una parte (`<=` al posto di
       `==`); che gli esempi nuovi li abbiano tutti lo controlla
       `test_comment_threads.py`.
-- [ ] `ruff` e `black` puliti; `shared-types` typecheck e test verdi.
+- [x] `ruff` e `black` puliti; `shared-types` typecheck e test verdi.
 - [ ] Dopo il passo sul server (dell'utente): controllo in
       `out/TASK-454/SERVER-C1.md`, senza TestClient.

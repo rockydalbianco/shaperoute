@@ -200,6 +200,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **R2 fatta il 2026-11-12**: #1201 in main (f0909495), esce con
   l'aggiornamento completo. Resta: un volo vero col link dal vivo; R4
   (orologio, battito) in bozza #1218 fino alla build dopo la 1.1.0.
+  **R5 fatta il 2026-11-12**: #1258 (server, passo 12) e #1260 (app, OTA
+  16) in main: «Ready to fly», «Your flights», i record di volo. In corso
+  R6 (corsa + volo, #1291 e #1293 in bozza) e il fix #1302 (fine del volo).
 - **TASK-467 — Il punteggio del sonno MuW, da pubblicare** · parte 0 chiusa
   (scelte e testi dell'utente, 2026-11-11); poi A (calcolo sul telefono),
   B (post), C (nativa, dopo la 1.1.0). File: — · `tasks/TASK-467.md`

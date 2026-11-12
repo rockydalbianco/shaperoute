@@ -5,7 +5,9 @@ On 2026-11-12 overpass-api.de answered `502 Bad Gateway` ("at capacity")
 for hours, and every route in a zone not yet in the cache ended in
 `map_data_unavailable`. With a second service set, a zone's download for a
 route someone is waiting for is tried once more there, and only then is
-the answer an error.
+the answer an error. The same for the water of a paddling route or a swim
+and for the snow of a snowshoe route (paddling.ServerWater,
+snowshoeing.ServerSnow), which the engine asks Overpass for by itself.
 
 Off unless the server says where: SHAPEROUTE_OVERPASS_FALLBACK_URL is the
 second service's address, as OSMnx wants it (`https://host/api`); unset,
@@ -32,6 +34,7 @@ from __future__ import annotations
 import logging
 import os
 import threading
+import urllib.error
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from typing import TypeVar
@@ -62,9 +65,14 @@ def fallback_url(environ: Mapping[str, str] | None = None) -> str | None:
 
 def answered_with_an_error(exc: BaseException) -> bool:
     """Whether a download failed because Overpass said no (an HTTP status
-    of error, OSMnx's ResponseStatusCodeError) or could not be reached;
-    not when it timed out, nor for anything else (a zone with no roads, a
-    full disk)."""
+    of error) or could not be reached; not when it timed out, nor for
+    anything else (a zone with no roads, a full disk). The roads are asked
+    through OSMnx (its ResponseStatusCodeError, requests' errors), the
+    water and the snow by the engine's own request (urllib's)."""
+    if isinstance(exc, urllib.error.HTTPError):
+        return True
+    if isinstance(exc, urllib.error.URLError):
+        return not isinstance(exc.reason, TimeoutError)
     try:
         import requests
         from osmnx._errors import ResponseStatusCodeError

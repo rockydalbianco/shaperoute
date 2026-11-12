@@ -5,6 +5,8 @@ No network: the downloads here are counted and fail as OSMnx's do."""
 
 from __future__ import annotations
 
+import urllib.error
+from email.message import Message
 from pathlib import Path
 
 import osmnx as ox
@@ -27,6 +29,11 @@ SECOND = "https://overpass.example/api"
 SET = {FALLBACK_VARIABLE: SECOND}
 BAD_GATEWAY = ResponseStatusCodeError("'overpass-api.de' responded: 502 Bad Gateway")
 UNREACHABLE = requests.exceptions.ConnectionError("connection refused")
+# As the engine's own request for the water and the snow fails (urllib).
+WATER_BAD_GATEWAY = urllib.error.HTTPError(
+    "https://overpass-api.de/api/interpreter", 502, "Bad Gateway", Message(), None
+)
+WATER_UNREACHABLE = urllib.error.URLError(ConnectionRefusedError("refused"))
 
 
 class Download:
@@ -80,7 +87,11 @@ def test_with_none_set_a_download_is_tried_once(environ: dict[str, str]) -> None
     assert len(download.asked) == 1
 
 
-@pytest.mark.parametrize("failure", [BAD_GATEWAY, UNREACHABLE])
+@pytest.mark.parametrize(
+    "failure",
+    [BAD_GATEWAY, UNREACHABLE, WATER_BAD_GATEWAY, WATER_UNREACHABLE],
+    ids=["502", "unreachable", "502 by urllib", "unreachable by urllib"],
+)
 def test_an_error_of_overpass_is_tried_once_on_the_second_service(
     failure: Exception,
 ) -> None:
@@ -110,11 +121,21 @@ def test_the_second_service_is_tried_once_not_in_a_loop() -> None:
     [
         requests.exceptions.ReadTimeout("180 s"),
         requests.exceptions.ConnectTimeout("180 s"),
+        TimeoutError("the read operation timed out"),
+        urllib.error.URLError(TimeoutError("timed out")),
         InsufficientResponseError("no data elements in server response"),
         RuntimeError("no roads in this area"),
         OSError("no space left on device"),
     ],
-    ids=["read timeout", "connect timeout", "no data", "no roads", "disk"],
+    ids=[
+        "read timeout",
+        "connect timeout",
+        "timeout by urllib",
+        "connect timeout by urllib",
+        "no data",
+        "no roads",
+        "disk",
+    ],
 )
 def test_anything_else_is_not_tried_again(failure: Exception) -> None:
     """A timeout: Overpass was slow, and the user has waited minutes

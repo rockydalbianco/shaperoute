@@ -1639,6 +1639,8 @@ export const DE: Table = {
   "Right side": "Rechte Seite",
   "Left side": "Linke Seite",
   "Switch sides": "Seite wechseln",
+  End: "Beenden",
+  "Next: {exercise}": "Als Nächstes: {exercise}",
   "{seconds} seconds left": "Noch {seconds} Sekunden",
   "Stop if it hurts.": "Hör auf, wenn es wehtut.",
   // «Draw»: src/route/samplePictures.ts (TASK-280)

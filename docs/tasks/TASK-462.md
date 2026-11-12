@@ -93,6 +93,7 @@ apps/mobile/src/activities/calendarText.ts         (nuovo)
 apps/mobile/src/activities/ActivitiesList.tsx
 apps/mobile/src/profile/ProfileHome.tsx
 apps/mobile/src/i18n/it.ts, de.ts, es.ts, fr.ts
+apps/mobile/src/tabs/TabSwipeOwners.test.ts      (una riga: i chip degli sport)
 docs/tasks/TASK-462.md
 ```
 

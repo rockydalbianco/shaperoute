@@ -19,6 +19,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useBackCloses } from "../ui/backLayers";
 import { Cascade } from "../ui/Cascade";
 import { useBell } from "./bellDoor";
 
@@ -51,6 +52,8 @@ export function BellOverlay({ opens, fetchFn, apiKey }: Props) {
 function BellList({ opens, fetchFn, apiKey }: Props) {
   const insets = useSafeAreaInsets();
   const { apiUrl, account, close, read } = useBell();
+  // Android's «back» is the «←».
+  useBackCloses(true, close);
   const token =
     account?.state.status === "signedIn" ? account.state.session.token : null;
   const [list, setList] = useState<List | null>(null);

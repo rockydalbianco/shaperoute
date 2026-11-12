@@ -83,8 +83,8 @@ test("a sport not ready is not a choice in the menu", async () => {
   // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
   // (TASK-377), Gravel and MTB (TASK-378), Roller (TASK-380), Ski and
   // Cross-country ski (TASK-375), Ski touring (TASK-415 B), Gym (TASK-385 B)
-  // and Paragliding (TASK-305 R2).
-  expect(screen.getAllByText("Soon")).toHaveLength(13);
+  // Paragliding (TASK-305 R2) and Wheelchair & stroller (TASK-414 B).
+  expect(screen.getAllByText("Soon")).toHaveLength(14);
 });
 
 test("in the menu «Swim» is a choice like the others (TASK-323)", async () => {

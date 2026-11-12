@@ -38,8 +38,10 @@ test("«Run» is chosen, «Bike» (TASK-190), «Paddle» (TASK-191), «Swim» (T
   expect(screen.getByRole("radio", { name: "MTB" })).not.toBeChecked();
   // And «Roller» (TASK-380).
   expect(screen.getByRole("radio", { name: "Roller" })).not.toBeChecked();
-  // Only «Cross-country ski» (TASK-375) says «Soon».
-  expect(screen.getAllByText("Soon")).toHaveLength(1);
+  // Only «Cross-country ski» (TASK-375) and «Wheelchair & stroller»
+  // (TASK-414 B, until the server has part A) say «Soon».
+  expect(screen.getAllByText("Soon")).toHaveLength(2);
+  expect(screen.getByLabelText("Wheelchair & stroller, coming soon")).toBeOnTheScreen();
   expect(screen.queryByLabelText("Ski, coming soon")).toBeNull();
 });
 
@@ -68,8 +70,8 @@ test("a sport not ready says «Soon» and takes no tap", async () => {
   // Bike, Paddle, Swim (TASK-323), Walk (TASK-371), Hike
   // (TASK-377), Gravel and MTB (TASK-378), Roller (TASK-380), Ski and
   // Cross-country ski (TASK-375), Ski touring (TASK-415 B), Gym (TASK-385 B)
-  // and Paragliding (TASK-305 R2).
-  expect(screen.getAllByText("Soon")).toHaveLength(13);
+  // Paragliding (TASK-305 R2) and Wheelchair & stroller (TASK-414 B).
+  expect(screen.getAllByText("Soon")).toHaveLength(14);
 });
 
 test("a sport that is ready is chosen with a tap, and kept", async () => {

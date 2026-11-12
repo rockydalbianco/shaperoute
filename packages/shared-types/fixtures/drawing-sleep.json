@@ -50,5 +50,6 @@
       "light_min": 268,
       "deep_min": 72
     }
-  }
+  },
+  "linkable": false
 }

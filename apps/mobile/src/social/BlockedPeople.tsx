@@ -35,7 +35,8 @@ type Props = {
 };
 
 /**
- * «Blocked people» in «Profile» (TASK-121, ADR-0228): a row that opens the
+ * «Blocked people» in «Settings», under the account (TASK-121, ADR-0228;
+ * on the first page of «Profile» until TASK-457): a row that opens the
  * list of the members the account blocked, the last first, each with
  * «Unblock». The list is read when the row is opened; an unblocked member
  * leaves it at once. Unblocking brings back no follow: it was ended by the
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
   section: {
     gap: space.md,
   },
-  // As the row of «Settings» (ProfileHome.tsx), without its badge.
+  // A row in a box, as the first page of «Profile» had them.
   row: {
     flexDirection: "row",
     alignItems: "center",

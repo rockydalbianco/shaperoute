@@ -2520,4 +2520,16 @@ export const IT: Table = {
   "Last 12 months": "Ultimi 12 mesi",
   "{count} activity": "{count} attività",
   "{count} activities": "{count} attività",
+
+  // src/profile/FirstStep.tsx, BadgesSection.tsx (TASK-457: a new profile)
+  "Your first drawing": "Il tuo primo disegno",
+  "Start from a route that already draws a shape near you.":
+    "Parti da un percorso che disegna già una forma vicino a te.",
+  "Find a route near you": "Trova un percorso vicino a te",
+  "Record a run with MuW and publish its drawing.":
+    "Registra una corsa con MuW e pubblica il suo disegno.",
+  "Publish 10 drawings of runs recorded with MuW.":
+    "Pubblica 10 disegni di corse registrate con MuW.",
+  "Publish the drawing of a run of {distance} or more.":
+    "Pubblica il disegno di una corsa di almeno {distance}.",
 };

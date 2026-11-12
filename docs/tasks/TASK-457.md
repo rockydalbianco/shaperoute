@@ -3,8 +3,9 @@
 **Stato**: In lavorazione · parte 0 chiusa il 2026-11-12 (scelte dell'utente)
 **Fase**: 5 · **Branch**: `feat/TASK-457-new-profile`
 **Dipende da**: TASK-423 E2b (#1144) e TASK-462 B (#1172), già in `main`
-**ADR**: da chiedere al Coordinatore · numero dal Coordinatore l'11 novembre
-2026 (S9 e «F» di `out/prova-app-2026-11-11/PROPOSTE.md`)
+**ADR**: nessuno (ADR-0380 offerto dal Coordinatore e reso: sono scelte
+d'aspetto, stanno qui e in `docs/UI.md`) · numero dal Coordinatore l'11
+novembre 2026 (S9 e «F» di `out/prova-app-2026-11-11/PROPOSTE.md`)
 
 ## Obiettivo
 
@@ -36,31 +37,67 @@ parla di chi lo guarda.
    - 10 drawings — «Publish 10 drawings of runs recorded with MuW.»
    - 30 km drawing — «Publish the drawing of a run of 30 km or more.» (la
      distanza nelle unità dell'app)
-4. **«Guide» e «Blocked people»** — tutte e due in «Settings»: «Blocked
-   people» nella sezione ACCOUNT, «Guide» in ABOUT accanto a «Help». Senza
-   account «Guide» resta sotto «Sign up», com'è oggi.
+4. **«Guide» e «Blocked people»** — tutte e due via dal profilo, in
+   «Settings»: «Blocked people» nella sezione ACCOUNT. Senza account
+   «Guide» resta sotto «Sign up», com'è oggi.
+5. **«Guide» = «Help»** (domanda in più, 2026-11-12): le due righe aprivano
+   la stessa pagina («How MuW works» con «Watch the tour»). Scelta: «Una
+   riga sola: resta "Help"». In ABOUT non si aggiunge niente.
 
 ## Come funziona
 
-Da scrivere con il codice.
+- **Lo stadio del profilo** (`profile/FirstStep.tsx`, `profileStage`):
+  «active» appena un totale è sopra zero o «My activities» ne ha almeno
+  una; «new» solo quando tutti e due sono arrivati e dicono zero;
+  «unknown» finché un numero manca. `ProfileHome` mostra totali e
+  settimana se «active», la scheda `FirstStep` se «new», nessuno dei due
+  se «unknown»: un profilo con corse non vede mai l'invito mentre carica,
+  uno nuovo non vede mai gli zeri. Con un'API senza i totali il profilo
+  resta com'era.
+- **La scheda** usa `ui/EmptyState` (il cuore, titolo, riga, un tasto
+  neutro) dentro un riquadro come quello dei totali. Il tasto chiama
+  `onExplore`, che scende da `App.tsx` (`showPage("explore")`) per
+  `OwnProfile` → `ProfileScreen` → `ProfileHome`. Non c'era già una porta
+  per cambiare scheda da dentro una pagina. Nella modalità sci la barra non
+  ha «Explore»: lì `onExplore` non c'è e la scheda è senza tasto; lo stesso
+  quando «Profile» è aperto sopra l'app dal vecchio pulsante.
+- **Le tessere**: con `count === 0` il numero non si disegna e VoiceOver
+  legge solo il nome.
+- **I badge**: `BadgeRow` mostra solo quelli presi (la prop `own` e le
+  pillole al 40% non ci sono più) ed esporta `BADGE_ICONS`;
+  `BadgesSection` elenca i tre di `PROFILE_BADGES` con `badgeHow`, il
+  lucchetto per quelli da prendere, la distanza nelle unità dell'app.
+  «Winner» non è un badge dei disegni: resta solo sotto il nome.
+- **«Blocked people»** è lo stesso componente, montato in `SettingsPage`
+  sotto il telefono; `ProfileScreen` dà già a «Settings» il context dei
+  follow che gli serve. Gli elenchi di chi segue si rileggono dopo un
+  blocco come prima (`ProfileHome` li ricostruisce).
+- **«Guide»**: `ProfileHome` non ha più `onGuide`; `ProfileScreen` tiene
+  `helpFrom` per la riga senza account.
 
 ## File toccati
 
-Lista mandata al Coordinatore il 2026-11-12; il codice aspetta il suo sì.
-
-- `apps/mobile/App.tsx` (una prop su `<OwnProfile>` per aprire «Explore»;
-  a turno)
-- `apps/mobile/src/screens/ProfileLayer.tsx`, `screens/ProfileScreen.tsx`
+- `apps/mobile/App.tsx` (una prop su `<OwnProfile>`; turno dato dal
+  Coordinatore il 2026-11-12)
+- `apps/mobile/src/screens/ProfileLayer.tsx` (solo `OwnProfile`),
+  `screens/ProfileScreen.tsx`
 - `apps/mobile/src/profile/ProfileHome.tsx`, `ProfileHeader.tsx`,
-  `BadgeRow.tsx`, `SettingsPage.tsx` e i loro test
-- `apps/mobile/src/social/BlockedPeople.tsx` (solo se serve lo stile della
-  riga dentro «Settings») e il suo test
-- test che cercano le righe spostate: `src/tour/GuideInProfile.test.tsx`,
-  `src/about/AboutInProfile.test.tsx`, `src/profile/premiumLookD.test.tsx`
-- nuovi: `apps/mobile/src/profile/FirstStep.tsx`, `BadgesSection.tsx` e i
-  loro test
+  `BadgeRow.tsx`, `SettingsPage.tsx`; test `ProfileHome.test.tsx`,
+  `ProfileHomeBlocked.test.tsx`, `ProfileHeader.test.tsx`,
+  `BadgeRow.test.tsx`
+- `apps/mobile/src/social/BlockedPeople.tsx` (due commenti)
+- `apps/mobile/src/tour/GuideInProfile.test.tsx`
+- nuovi: `apps/mobile/src/profile/FirstStep.tsx`, `BadgesSection.tsx`,
+  `FirstStep.test.tsx`, `BadgesSection.test.tsx`, `ProfileHomeNew.test.tsx`,
+  `SettingsBlocked.test.tsx` (nuovo apposta: `SettingsPage.test.tsx` lo
+  tocca anche la #1201)
 - registri condivisi: `apps/mobile/src/i18n/{de,es,fr,it}.ts`, `docs/UI.md`
 - `docs/tasks/TASK-457.md`
+- chiesti al Coordinatore il 2026-11-12, in attesa del sì:
+  `apps/mobile/src/screens/ProfileLayer.test.tsx` (la prova di «Guide» con
+  account), `apps/mobile/src/profile/UserProfilePage.tsx` e
+  `UserProfileReport.test.tsx` (la frase dopo un blocco dice «…in your
+  profile»: diventa «…in Settings», testo da approvare)
 
 ## Criteri di accettazione
 
@@ -73,8 +110,9 @@ Lista mandata al Coordinatore il 2026-11-12; il codice aspetta il suo sì.
       mostrano il numero.
 - [ ] Sotto il nome solo i badge presi; la sezione «Badges» elenca i tre
       badge con la frase che dice come si prendono.
-- [ ] «Guide» e «Blocked people» non sono più sul profilo e funzionano da
-      «Settings»; senza account «Guide» resta sotto «Sign up».
+- [ ] «Guide» e «Blocked people» non sono più sul profilo; «Blocked
+      people» funziona da «Settings», la guida è «Help»; senza account
+      «Guide» resta sotto «Sign up».
 - [ ] Il profilo di un altro iscritto non cambia.
 - [ ] Nessun colore scritto a mano, nessuna dipendenza nuova, impronta iOS
       `6f8bba4c`.
@@ -84,4 +122,8 @@ Lista mandata al Coordinatore il 2026-11-12; il codice aspetta il suo sì.
 ## Cronologia
 
 - 2026-11-12: parte 0 con l'utente (quattro domande, una per volta); lista
-  dei file al Coordinatore.
+  dei file al Coordinatore, che dà il sì, il turno di `App.tsx` e offre
+  ADR-0380 (non usato).
+- 2026-11-12: codice e test scritti; quinta domanda all'utente («Guide» e
+  «Help» sono la stessa pagina). Restano: i tre file in più, le traduzioni
+  da far approvare, le schermate col turno del simulatore.

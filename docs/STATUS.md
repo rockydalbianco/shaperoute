@@ -240,8 +240,9 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
 
 - **TASK-469 — Il look Liquid Glass** (ADR-0383) · «Capsula»: A1 barra di
   vetro (#1219) e A2 segmenti che scivolano (#1225) in produzione con
-  l'OTA 14 (2026-11-12). Prossima A3, lista dei file al Coordinatore prima
-  del codice; B nativa dopo la 1.1.0. File: — · `tasks/TASK-469.md`
+  l'OTA 14; A3 pista di vetro (#1276) in `main`, col prossimo OTA. Prossima
+  i chip, lista al Coordinatore prima del codice; B dopo la 1.1.0. File: —
+  · `tasks/TASK-469.md`
 
 - **TASK-463 — L'alpinismo registrato senza percorso** (ADR-0373) · A
   (solo server, prima del contratto) in `main` (#1242, migrazione `0076`);

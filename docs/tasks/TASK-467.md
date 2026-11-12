@@ -1,6 +1,6 @@
 # TASK-467 — Il punteggio del sonno MuW, da pubblicare
 
-**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 scritta** (server e contratto, ADR-0380: #1211, la mergia il Coordinatore; sul server col suo passo e il sì dell'utente), poi B2 e B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
+**Stato**: In lavorazione · parte 0 in `main` (#1182) · **A in `main`** (#1193, `665e408c`: il calcolo sul telefono, ADR-0379) · **B1 in `main`** (#1211, `71e24188`: server e contratto, ADR-0380; sul server col passo dell'aggiornamento completo) · prossime **B1b** (il campo `sleep` nel disegno visto) e **B2** (app, il sonno nel post), in una sessione a parte, poi B3 (app), C (privacy, App Privacy, build nativa dopo la 1.1.0), D (Android)
 **Fase**: 4 · **Branch**: `docs/TASK-467-sleep-score` (documenti),
 `feat/TASK-467-a-sleep-score` (A), `feat/TASK-467-b1-sleep-server` (B1)
 **Dipende da**: TASK-321 (Apple Salute nell'app, la stessa libreria),
@@ -406,3 +406,9 @@ richiesta di copia comprende il sonno. Nessun file da toccare.
   Coordinatore compone e per cui chiede lui il sì all'utente (`main` ha già
   le parole a penna alzata di Explore, che escono solo con la loro OTA). Il
   testo nuovo del primo «Share» è approvato («Approvo così», 2026-11-12).
+- **2026-11-12, B1 in `main`**: #1211 unita dal Coordinatore a CI verde
+  (`71e24188`); ADR-0380 in `DECISIONS.md`. La `0072` va sul server col
+  passo dell'aggiornamento completo; i controlli di sola lettura sono in
+  `out/TASK-467/SERVER-B1.md`. B1b e B2 le scrive una sessione a parte:
+  B1b è il campo `sleep` nel disegno visto (riga del Feed, liste,
+  dettaglio), solo quando il sonno è mostrato, in `drawings.py`.

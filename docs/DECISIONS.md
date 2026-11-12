@@ -539,6 +539,7 @@ lasciando le righe d'indice.
 - ADR-0366 — Le parole del catalogo a penna alzata: `walks` nel seme e nel dettaglio, `gaps` nelle liste, entrano solo quelle lette a occhio · 2026-11-12 · Attiva
 - ADR-0378 — Lo stretching nuovo: la figura che respira, si rialza e si gira, «Get ready» e «Switch sides» prima della tenuta, tick e «Skip»; poi routine da 3, 5, 10 minuti, palestra, mattino, routine pubblicate · 2026-11-12 · Attiva
 - ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple · 2026-11-12 · Attiva
+- ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato · 2026-11-12 · Attiva
 - ADR-0383 — Il look Liquid Glass: la direzione «Capsula», vetro velato senza blur via OTA, il vetro nativo dopo la 1.1.0 · 2026-11-12 · Proposta
 - ADR-0381 — La live in chat e nel Feed, anche programmata: una sola `live_share` per registrazione con più pubblici, le live programmate in `planned_lives`, la schermata dal vivo nell'app che legge ogni 10 s · 2026-11-12 · Proposta
 - ADR-0382 — Il post di un altro si manda come rimando e si linka col consenso dell'autore: l'allegato `post` nei messaggi letto coi permessi di chi legge, la pagina pubblica di un post «Everyone», l'interruttore «Links to my posts» acceso all'inizio · 2026-11-12 · Accettata
@@ -980,6 +981,85 @@ le scelte di prodotto restano quelle di ADR-0361.
 5. **Misure** (`tasks/TASK-435.md`, «Parte D»): sul Mac 0,8 s in mediana
    coi 2 processi caldi; sul server 2,7 s nella prova dopo il passo 8, e
    `wait` 2,9 s in mediana su 22 job di prima del passo.
+
+## ADR-0380 — Il sonno sul server: `sleep_nights`, una riga per notte pubblicata (mai i campioni), nel profilo col sì (`shared`), nel post dell'attività acceso in partenza (`sleep_shown`); si tiene solo quello che è pubblicato
+
+**Stato**: Attiva · 2026-11-12 · TASK-467 parte B1 in `main` (#1211,
+`71e24188`); sul server col passo dell'aggiornamento completo. Che cosa si
+vede e si pubblica è dell'utente (`tasks/TASK-467.md`: «Resta acceso» nel
+post, «Sì, profilo adesso» per la notte da sola, 2026-11-12); la strada
+(una tabella a parte, mai una riga di `runs`) è del Coordinatore; il
+contratto e il modo sono decisi dall'agente su delega dell'utente, numero
+dal Coordinatore.
+
+**Contesto**: il punteggio del sonno lo calcola il telefono (ADR-0379). Per
+pubblicarlo serve che il server ne tenga qualcosa. Un post senza attività
+non esiste (TASK-312 C è un piano), e una notte come corsa «senza traccia»
+finirebbe in calendario, conteggi, record, classifiche e Strava. È un dato
+sulla salute (GDPR art. 9; Apple 5.1.3): al server solo quello che l'utente
+pubblica, in forma di riassunto.
+
+**Decisione**:
+
+1. **Una tabella a parte**, `sleep_nights` (migrazione `0072`): una riga per
+   notte pubblicata, `UNIQUE (user_id, night)`, con punteggio, minuti
+   dormiti e svegli, minuti per fase se un orologio li ha detti, `shared`.
+   `ON DELETE CASCADE` da `users`. L'attività porta solo il riferimento
+   (`runs.sleep_night_id`, `ON DELETE SET NULL`) e `runs.sleep_shown`.
+2. **Mai i campioni, mai gli orari**: `night` è il giorno del risveglio;
+   l'ora di andare a letto e di svegliarsi non lascia il telefono. La
+   parola accanto al punteggio non si salva: la ricava l'app.
+3. **Due interruttori separati**: `shared` (profilo) DEFAULT false, spento
+   finché il proprietario non lo accende; `sleep_shown` (post) DEFAULT
+   true, la scelta dell'utente. Il valore di partenza per l'app sta in una
+   costante del contratto (`SLEEP_SHOWN_DEFAULT`): se la revisione di Apple
+   lo contesta, si cambia lì.
+4. **Si tiene solo quello che è pubblicato**: una notte che non è nel
+   profilo e che nessuna attività porta si cancella. Lo fa `sleep.py`
+   quando `shared` si spegne (risposta `204` al posto della notte) e lo fa
+   il database, quando l'ultima attività la lascia o viene cancellata: la
+   funzione `sleep_night_left()` e due trigger su `runs`,
+   `runs_sleep_night_deleted` (`AFTER DELETE`) e `runs_sleep_night_changed`
+   (`AFTER UPDATE OF sleep_night_id`), che scattano solo per una corsa che
+   aveva una notte. **La logica sta nel database, non in `activities.py`**:
+   vale per ogni strada che cancella una corsa o le toglie la notte, anche
+   quelle scritte dopo. Tre casi coi test: attività cancellata, sonno
+   tolto dall'attività, account cancellato (lì basta la cascata).
+5. **Chi non è l'autore** legge una notte solo da `GET /users/{id}/sleep`
+   (l'ultima condivisa, per chi può aprire il profilo, mai attraverso un
+   blocco) e da `GET /drawings/{id}/sleep` (se vede il disegno e `shown` è
+   acceso). Una notte non condivisa o nascosta risponde lo stesso `404` di
+   una che non c'è; nessuna risposta le conta, openapi non ha esempi. Il
+   profilo, il Feed e il dettaglio del post non ne dicono niente.
+6. **Una chiamata sola dal post**: `PUT /me/activities/{key}/sleep` porta
+   numeri, `night` e `shown`. «La notte prima» è `night` entro 2 giorni
+   dall'inizio dell'attività, se no `422`. Più attività dello stesso giorno
+   portano la stessa notte; rimandata, la notte prende i numeri nuovi.
+7. **Endpoint propri, moduli degli altri intatti**: il profilo ha `GET
+   /users/{id}/sleep` e non un campo di `GET /users/{id}`; niente di nuovo
+   in `X-MuW-Reads` (li chiama solo un'app che li conosce).
+8. **Esportazione**: non esiste un'esportazione automatica dei dati di un
+   account; la copia chiesta per email si fa a mano, e la query per il
+   sonno sta in `DATABASE.md`. La cancellazione è la cascata.
+
+**Alternative scartate**: la notte come riga di `runs` senza traccia (entra
+in calendario, conteggi, Strava); aspettare i post senza attività di
+TASK-312 C; i numeri del sonno come colonne di `runs`, come il battito (la
+notte condivisa da sola non avrebbe dove stare, e due attività dello stesso
+giorno la terrebbero due volte); tenere sul server ogni notte calcolata
+(più dati sulla salute di quelli pubblicati); una sola notte condivisa per
+account (chiude la strada a una storia nel profilo: oggi si legge l'ultima,
+e «smetti di condividere» le spegne tutte); pulire le notti orfane dal
+codice che cancella le corse (`activities.py` è di altri, e ogni strada
+nuova dovrebbe ricordarsene).
+
+**Conseguenze**: B2 (app, il sonno nel post) e B3 (la scheda «Sleep» nel
+profilo) usano questi endpoint. Il Feed e il dettaglio del post non dicono
+se un post ha il sonno: lo aggiunge la parte B1b (un campo `sleep` nel
+disegno visto, presente solo quando il sonno è mostrato; `drawings.py`,
+nessuna migrazione), scritta dalla sessione di B2. Prima
+dell'OTA di B2: la frase della privacy, «App Privacy», le note di
+revisione (parte C, ognuna col sì dell'utente).
 
 ## ADR-0379 — Il punteggio del sonno di MuW: calcolato sul telefono dai campioni di sonno di Apple Salute (durata 50, regolarità 30, interruzioni 20), perché HealthKit non espone quello di Apple
 

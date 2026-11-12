@@ -1672,6 +1672,41 @@ export const IT: Table = {
   "Glute stretch": "Stretching del gluteo",
   "Cross one ankle over the other knee. Sit back as if into a chair.":
     "Incrocia una caviglia sull'altro ginocchio. Siediti indietro come su una sedia.",
+  // src/stretch, the routines (TASK-466 part B)
+  "Neck stretch": "Stretching del collo",
+  "Stand tall. Let your chin drop toward your chest, shoulders low.":
+    "In piedi, dritto. Lascia scendere il mento verso il petto, spalle basse.",
+  "Overhead reach": "Allungamento in alto",
+  "Reach both arms up high. Grow tall, chest open.":
+    "Porta le braccia in alto. Allungati, petto aperto.",
+  "Shoulder stretch": "Stretching della spalla",
+  "Bring one arm across your chest. Pull it in with the other hand.":
+    "Porta un braccio davanti al petto. Tiralo a te con l'altra mano.",
+  "Chest opener": "Apertura del petto",
+  "Clasp your hands behind your back. Lift them a little, chest out.":
+    "Intreccia le mani dietro la schiena. Alzale un poco, petto in fuori.",
+  "Triceps stretch": "Stretching del tricipite",
+  "Raise one elbow, hand down your back. Press the elbow back gently.":
+    "Alza un gomito, la mano scende sulla schiena. Spingi piano il gomito indietro.",
+  "Upper back stretch": "Stretching della parte alta della schiena",
+  "Reach your arms forward, hands together. Round your back, head down.":
+    "Braccia avanti, mani unite. Arrotonda la schiena, testa giù.",
+  "Forward fold": "Piegamento in avanti",
+  "Fold forward from the hips. Let your arms hang, knees soft.":
+    "Piegati in avanti dalle anche. Lascia pendere le braccia, ginocchia morbide.",
+  "Cat stretch": "Stretching del gatto",
+  "On hands and knees. Round your back up, let your head drop.":
+    "A quattro zampe. Inarca la schiena verso l'alto, lascia cadere la testa.",
+  "Child's pose": "Posizione del bambino",
+  "Sit back on your heels. Reach your arms forward, forehead down.":
+    "Siediti sui talloni. Allunga le braccia in avanti, fronte giù.",
+  "Knee hug": "Ginocchio al petto",
+  "Stand on one leg. Hug the other knee to your chest.":
+    "In piedi su una gamba. Stringi l'altro ginocchio al petto.",
+  Morning: "Mattino",
+  "After run": "Dopo la corsa",
+  "After gym": "Dopo la palestra",
+  "How long?": "Quanto tempo?",
   "{index} of {total}": "{index} di {total}",
   "Right side": "Lato destro",
   "Left side": "Lato sinistro",
@@ -2697,6 +2732,22 @@ export const IT: Table = {
   "{name} · on the snow · target {km} km": "{name} · sulla neve · obiettivo {km} km",
   "{name} · on the snow · target {mi} mi": "{name} · sulla neve · obiettivo {mi} mi",
   "White: where you walked.": "Bianco: dove hai camminato.",
+  // src/liveShare/ (TASK-468 part B1: «Send in MuW», the heart rate, the
+  // live in the app; en and it approved by the user 2026-11-12)
+  "Send in MuW": "Invia su MuW",
+  "Show my heart rate": "Mostra il mio battito",
+  "Off: nobody sees your heart rate. On: they see it when a watch sends it.":
+    "Spento: nessuno vede il tuo battito. Acceso: lo vedono quando un orologio lo manda.",
+  "Choose who gets your live": "Scegli a chi mandare la live",
+  "They can follow you in the app: your exact position on the map, the route so far, distance, time, pace or speed, elevation gain and calories.":
+    "Ti seguono nell'app: la tua posizione esatta sulla mappa, il percorso fatto, distanza, tempo, passo o velocità, dislivello e calorie.",
+  "Send ({count})": "Invia ({count})",
+  "Live ended": "Live finita",
+  "Finished · {distance} · {time}": "Finita · {distance} · {time}",
+  "No update since {time}": "Nessun aggiornamento dalle {time}",
+  "Updated {seconds} s ago": "Aggiornato {seconds} s fa",
+  "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
+  "🔴 Live": "🔴 Live",
   // The «Sleep» card of the profile (TASK-467 part B3): src/profile/OwnSleep.tsx
   // («On your profile» is with the prizes, «Only you see this» with the VO₂ max)
   "Show my sleep from Apple Health": "Mostra il mio sonno da Apple Salute",

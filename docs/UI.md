@@ -3777,6 +3777,33 @@ cui tiene i numeri.
   orologio lo manderà (oggi nessuno segue piscina e palestra: vuoto).
   Ogni 15 s, subito a pausa e ripresa, `finished` quando lo schermo se ne
   va (fine, «Still training?» senza risposta).
+- **La live in chat** (TASK-468 parte B1, ADR-0381; testi approvati il
+  2026-11-12). Il foglio di «Share live» ha in più «Show my heart rate»
+  (un interruttore, **spento di partenza**, con «Off: nobody sees your heart
+  rate. On: they see it when a watch sends it.»: vale per chi guarda
+  dall'app; il link lo mostra come prima) e, sotto «Not now» · «Share
+  link», il pulsante largo «Send in MuW». «Send in MuW» fa la condivisione
+  **senza link** (`link: false`) e, sceso il foglio, apre «Choose who gets
+  your live»: chi si scrive, poi chi ci segue (una richiesta di messaggio
+  non porta allegati), con una spunta per persona, al più 20, e il
+  pulsante «Send ({count})» (`POST /me/live-shares/{id}/send`). **Mentre
+  condivide**, il tocco su «Sharing live» apre un menu: «Send in MuW»,
+  «Share link» (per una condivisione nata per la chat fa il link allora,
+  `POST …/link`), «Stop sharing» (poi la domanda di prima) e «Keep
+  sharing». **In chat** il messaggio ha la scheda: un pallino rosso e
+  «LIVE · {sport} · {distance}» mentre va; «Finished · {distance} ·
+  {time}» a fine attività; «Live ended» in grigio quando non c'è più. Nella
+  lista delle conversazioni «🔴 Live». Il tocco, finché la live si vede,
+  apre **la schermata dal vivo** (`src/liveShare/LiveViewScreen.tsx`): il
+  nome, la mappa col percorso fatto e la posizione seguita, distanza,
+  tempo, passo e il battito solo se il proprietario l'ha acceso; sotto
+  «Updated {seconds} s ago», «No update since {time}» dopo un minuto senza
+  notizie, «Finished · …» o «Live ended». Chiede `GET
+  /live-shares/{id}?after=` ogni 10 s, solo i punti nuovi, e smette a
+  live finita. L'app dice `live` in `X-MuW-Reads`: le app di prima leggono
+  «[Live]». La schermata dal vivo è un `Modal` a tutto schermo come
+  `MediaViewer`: lo scorrimento fra le schede non parte sotto di lei e il
+  gesto dal bordo sinistro (ADR-0384) non fa nulla; si chiude con «Close».
 - **La piscina mentre nuoti** (TASK-424 parte C1): sotto l'orologio due
   numeri, «Lengths» (le vasche stimate dal passo delle nuotate prima, 2:00
   /100 m senza nessuna; 0 prima di mezza vasca) e «Calories» («85 kcal»,

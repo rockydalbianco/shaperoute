@@ -1,8 +1,13 @@
-import type { Message, MessageAttachment } from "@shaperoute/shared-types";
+import type {
+  Message,
+  MessageAttachment,
+  MessageAttachmentWithLive,
+} from "@shaperoute/shared-types";
 
 import { favoriteTitle } from "../favorites/favoriteRoute";
 import { t } from "../i18n";
 import { distanceLabel } from "../units/format";
+import { liveCardLine } from "./LiveMessageCard";
 import { POST_GONE, postByline, postTitle } from "./messagePost";
 
 /**
@@ -39,6 +44,10 @@ export function messageLine(message: Message): string {
   if (kind === undefined) {
     return text;
   }
+  // A live share (TASK-468 part B1): «🔴 Live», or the sign before the text.
+  if ((kind as string) === "live") {
+    return text === "" ? t("🔴 Live") : `🔴 ${text}`;
+  }
   return text === "" ? attachmentLine(kind) : `${SIGN[kind]} ${text}`;
 }
 
@@ -50,6 +59,10 @@ export function duration(ms: number): string {
 
 /** What VoiceOver says of an attachment. */
 export function attachmentLabel(attachment: MessageAttachment): string {
+  const withLive = attachment as MessageAttachmentWithLive;
+  if (withLive.kind === "live") {
+    return liveCardLine(withLive.live ?? null);
+  }
   switch (attachment.kind) {
     case "photo":
       return t("Photo");

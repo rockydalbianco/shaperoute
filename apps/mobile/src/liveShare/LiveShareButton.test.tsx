@@ -175,8 +175,20 @@ test("«Sharing live» asks before it stops; «Stop sharing» sends the DELETE",
   await fireEvent.press(screen.getByRole("button", { name: "Share live" }));
   await fireEvent.press(screen.getByRole("button", { name: "Share link" }));
   await fireEvent.press(screen.getByRole("button", { name: "Sharing live" }));
+  // TASK-468 part B1: a touch offers what else to do, «Stop sharing» last.
   expect(alert).toHaveBeenCalledTimes(1);
-  const [title, message, buttons] = alert.mock.calls[0];
+  const [menuTitle, , menu] = alert.mock.calls[0];
+  expect(menuTitle).toBe("Sharing live");
+  const offered = menu as AlertButton[];
+  expect(offered.map((b) => b.text)).toEqual([
+    "Send in MuW",
+    "Share link",
+    "Stop sharing",
+    "Keep sharing",
+  ]);
+  await act(async () => offered[2].onPress?.());
+  expect(alert).toHaveBeenCalledTimes(2);
+  const [title, message, buttons] = alert.mock.calls[1];
   expect(title).toBe("Stop sharing?");
   expect(message).toBe("The link stops working now.");
   const choices = buttons as AlertButton[];
@@ -211,4 +223,100 @@ test("after the end of a route, no new link; one already on can still be stopped
 test("the message follows the app's language", () => {
   saveLanguageChoice("it");
   expect(liveShareMessage(URL)).toBe(`Segui la mia attività dal vivo su MuW: ${URL}`);
+});
+
+// --- «Send in MuW» and the heart rate (TASK-468 part B1) ---
+
+const ADA = {
+  public_id: "8c1f7a52-3d4e-4b9a-9f61-2a7c0e5d9b13",
+  username: "ada",
+  photo: null,
+};
+const BOB = {
+  public_id: "0a9b8c7d-6e5f-4a3b-9c2d-1e0f9a8b7c6d",
+  username: "bob",
+  photo: null,
+};
+
+/** A fetch that answers by path: the share, the lists, the send. */
+function chatServer() {
+  return jest.fn(async (url: string, _init?: RequestInit) => {
+    const path = url.replace(API, "");
+    if (path === "/me/live-shares") {
+      return Response.json(
+        { id: "s1", url: null, expires_at: "2026-11-10T07:00:00Z" },
+        { status: 201 },
+      );
+    }
+    if (path.endsWith("/updates")) {
+      return Response.json(LIVE.body);
+    }
+    if (path.startsWith("/me/conversations")) {
+      return Response.json({ conversations: [], next: null, total: 0 });
+    }
+    if (path.includes("followers")) {
+      return Response.json({ people: [ADA, BOB], next: null, total: 2 });
+    }
+    if (path.endsWith("/send")) {
+      return Response.json({ sent: [ADA.public_id], skipped: [] });
+    }
+    if (path.endsWith("/link")) {
+      return Response.json(CREATED.body, { status: 201 });
+    }
+    return new Response(null, { status: 404 });
+  });
+}
+
+test("«Send in MuW»: the share without its link, the heart as chosen, then the people", async () => {
+  const share = jest
+    .spyOn(Share, "share")
+    .mockResolvedValue({ action: "sharedAction" });
+  const fetchFn = chatServer();
+  await show(SIGNED_IN, fetchFn as unknown as ReturnType<typeof answers>);
+  await fireEvent.press(screen.getByRole("button", { name: "Share live" }));
+  // Off unless turned on.
+  const heart = screen.getByTestId("live-share-heart");
+  expect(heart.props.value).toBe(false);
+  await fireEvent(heart, "valueChange", true);
+  await fireEvent.press(screen.getByRole("button", { name: "Send in MuW" }));
+  const made = fetchFn.mock.calls.find(([url]) => url === `${API}/me/live-shares`);
+  expect(JSON.parse(String(made?.[1]?.body))).toEqual({
+    activity: "running",
+    link: false,
+    heart_visible: true,
+  });
+  expect(liveShareStatus()).toEqual({ kind: "sharing", id: "s1", url: null });
+  // The people once the consent sheet is down; no share sheet: no link.
+  await act(async () => mockGone.current?.());
+  expect(share).not.toHaveBeenCalled();
+  expect(await screen.findByText("Choose who gets your live")).toBeTruthy();
+  const send = screen.getByTestId("send-live-send");
+  expect(send.props.accessibilityState.disabled).toBe(true);
+  await fireEvent.press(await screen.findByRole("checkbox", { name: "ada" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Send (1)" }));
+  const sent = fetchFn.mock.calls.find(([url]) => url.endsWith("/send"));
+  expect(sent?.[0]).toBe(`${API}/me/live-shares/s1/send`);
+  expect(JSON.parse(String(sent?.[1]?.body))).toEqual({ to: [ADA.public_id] });
+  expect(screen.queryByText("Choose who gets your live")).toBeNull();
+});
+
+test("«Share link» while a chat-only share is on makes its link then", async () => {
+  const share = jest
+    .spyOn(Share, "share")
+    .mockResolvedValue({ action: "sharedAction" });
+  const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+  const fetchFn = chatServer();
+  await show(SIGNED_IN, fetchFn as unknown as ReturnType<typeof answers>);
+  await fireEvent.press(screen.getByRole("button", { name: "Share live" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Send in MuW" }));
+  await act(async () => mockGone.current?.());
+  await fireEvent.press(screen.getByTestId("send-live-close"));
+  await fireEvent.press(screen.getByRole("button", { name: "Sharing live" }));
+  const menu = alert.mock.calls[0][2] as AlertButton[];
+  await act(async () => menu[1].onPress?.());
+  expect(
+    fetchFn.mock.calls.some(([url]) => url === `${API}/me/live-shares/s1/link`),
+  ).toBe(true);
+  expect(share).toHaveBeenCalledWith({ message: liveShareMessage(URL) });
+  expect(liveShareStatus()).toEqual({ kind: "sharing", id: "s1", url: URL });
 });

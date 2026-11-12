@@ -1052,6 +1052,19 @@ libero al merge):
   Fuori dalle copie notturne (`backup.sh`, `--exclude-table-data`). Test
   in `test_live_shares.py`.
 
+Migrazione `0074_live_audiences.sql` (TASK-468 parte A1a, ADR-0381, `API.md`
+«Live shares», «In chat e nel Feed»; numero provvisorio del Coordinatore,
+quello vero il primo libero al merge):
+
+- **`live_shares`**: `token_hash` diventa facoltativo (una live solo in
+  chat o nel Feed non ha link finché non lo si chiede; resta unico);
+  `audience_feed` (`none`/`followers`/`everyone`, default `none`: i link
+  di prima restano com'erano); `heart_visible` (default `false`).
+- **`live_share_recipients`**: a chi la live è stata mandata in chat
+  (`share_id`, `user_id`, `sent_at`), chiave sulla coppia; `CASCADE` sulla
+  live e sull'account, quindi va via con la riga vuota della live, un
+  giorno dopo la fine. Nessuna posizione. Test in `test_live_shares.py`.
+
 Migrazione `0054_ski_resorts.sql` (TASK-406 parte A, ADR-0338, `API.md`
 «Ski resorts»; il numero è del Coordinatore):
 

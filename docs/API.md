@@ -3350,6 +3350,44 @@ senza app né account. Tipi in `shared-types/src/liveShare.ts`
   database non tengono le righe dei link (`deploy/backup.sh`). Cancellare
   l'account cancella i link. Test in `test_live_shares.py`.
 
+#### In chat e nel Feed (TASK-468 parte A1a, ADR-0381)
+
+Una sola condivisione per registrazione, vista in più modi: il link è uno
+di questi, ora facoltativo; gli altri sono le persone scelte in chat e il
+Feed (follower o tutti). Tipi nuovi in `liveShare.ts` (`LiveAudience`,
+`LiveShareMade`, `LiveAudienceChange`, `LiveShareSend`, `LiveShareSent`),
+esempio in `fixtures/live-share-send-request.json`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /me/live-shares` | in più, facoltativi: `link` (default `true`), `audience_feed` (`none`/`followers`/`everyone`, default `none`), `heart_visible` (default `false`) | `201`; con `link: false` `url` è `null` (`LiveShareMade`) |
+| `POST /me/live-shares/{id}/link` | fa il link adesso: un token nuovo, il link dato prima smette di funzionare | `201` `LiveShareCreated`; `404` se non è sua; `410` se è finita |
+| `PATCH /me/live-shares/{id}` | `audience_feed` e/o `heart_visible`; il resto resta | `200` `LiveShare`; `404`; `410` se è finita |
+| `POST /me/live-shares/{id}/send` | `to`: da 1 a 20 `public_id` | `200` `LiveShareSent` (`sent`, `skipped`); `404`; `410`; `429` oltre 20 invii al minuto per account |
+| `GET /live-shares/{id}?after=<seq>` | quello che vede nell'app chi ha un account e il diritto | `200` `LiveView`; `404` a chi non può; `429` oltre 120 al minuto per persona e live |
+
+- **Chi vede nell'app**: il proprietario; e, se non è lontano da lui per
+  un blocco (dei due versi) o un account nascosto (`follows.apart_sql`),
+  chi ha ricevuto la live in chat, chi lo segue (follow accettato) se
+  `audience_feed` è `followers`, chiunque abbia un account se è
+  `everyone`. Si controlla a ogni richiesta: un follow tolto o un blocco
+  fatto durante l'attività tolgono la vista subito. A chi non può, `404`
+  come per una live che non c'è, **mai `403`**.
+- **Il battito** (scelta 4 dell'utente): a chi guarda dall'app
+  `stats.heart_bpm` è `null` finché il proprietario non accende
+  `heart_visible`; il proprietario lo vede sempre, il link come prima.
+- **`send`**: chi non ha un account, se stessi o chi è lontano per un
+  blocco o un nascosto finiscono in `skipped`, tutti uguali; lo stesso
+  `public_id` due volte, o mandato di nuovo, conta una volta. In questa
+  parte non manda messaggi: la scheda in chat e la push arrivano con la
+  parte A1b, dopo TASK-455 A.
+- **Fine e stop** come per il link: una live finita si vede col riepilogo
+  per un'ora, poi `expired`; fermata, `stopped`, solo lo `status`. Su una
+  live finita `link`, `PATCH` e `send` rispondono `410`.
+- **`LiveShare`** ha in più `link` (c'è il token), `audience_feed`,
+  `heart_visible`; un'app di prima non li legge. Il log non scrive
+  posizioni (test in `test_live_shares.py`).
+
 ### Run stats (TASK-410 parte C, ADR-0340)
 
 I dati della pagina del post oltre a metri e tempo: passi, profilo del

@@ -70,6 +70,7 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
     "Gravel",
     "MTB",
     "Roller",
+    "Wheelchair & stroller",
     "Paddle",
     "Swim",
     "Ski",
@@ -108,6 +109,8 @@ test("walk, run, bike, paddle, swim and the alpine ski can be chosen (TASK-190, 
   // And a ski tour, with its phases and its VAM (TASK-415 part B).
   expect(canChoose("skimo")).toBe(true);
   expect(canChoose("xc_ski")).toBe(false);
+  // Not a wheelchair yet: «Soon» until the server has TASK-414 part A.
+  expect(canChoose("wheelchair")).toBe(false);
   expect(canChoose("golf")).toBe(false);
 });
 

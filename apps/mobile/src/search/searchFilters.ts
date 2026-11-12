@@ -57,15 +57,15 @@ export const COMPLEXITY_LABELS: Readonly<Record<DrawingComplexity, string>> = {
   complex: tLater("Complex"),
 };
 
-/** Never snowshoeing nor a wheelchair route before «Settings» has it
- * (TASK-413 and TASK-414 part B remove them and offer each once it is
- * ready, as the others). */
-const NOT_YET: readonly Activity[] = ["snowshoeing", "wheelchair"];
+/** Never snowshoeing before «Settings» has it (TASK-413 part B removes it
+ * and offers it once it is ready, as the others). */
+const NOT_YET: readonly Activity[] = ["snowshoeing"];
 
 /** The sports the sheet offers: a walk once «Walk» is ready, a hike once
  * «Hike» is (TASK-377), a gravel or an MTB ride once «Gravel» or «MTB» is
- * (TASK-378), a skate once «Roller» is (TASK-380), so the API never answers
- * 422 to a filter the app shows (TASK-371). */
+ * (TASK-378), a skate once «Roller» is (TASK-380), a wheelchair or a
+ * stroller once «Wheelchair & stroller» is (TASK-414), so the API never
+ * answers 422 to a filter the app shows (TASK-371). */
 export const SEARCH_ACTIVITIES: readonly Activity[] = ACTIVITIES.filter(
   (activity) => !NOT_YET.includes(activity) && activityOffered(activity),
 );

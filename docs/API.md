@@ -3307,7 +3307,7 @@ con la vasca e le vasche. Token richiesto; tipi in
   /drawings/{id}/pool-swim` dà medio e massimo agli altri solo se
   `heart_shown`. Senza battito le risposte non hanno i campi, come prima.
 
-### Sleep (TASK-467 parte B1, ADR-0380)
+### Sleep (TASK-467 parti B1 e B1b, ADR-0380)
 
 Le notti di sonno che una persona pubblica. Il punteggio lo calcola il
 telefono dai dati di Apple Salute (ADR-0379); al server arriva **solo il
@@ -3360,8 +3360,22 @@ Una notte si pubblica in due modi, ognuno col suo interruttore:
   disegno, come `drawing_seen_sql`, e `shown` è acceso). Una notte non
   condivisa, o il sonno di un post nascosto, rispondono lo **stesso `404`**
   di un profilo o di un post che una notte non ce l'ha: nessuna risposta
-  li conta, e il profilo, il Feed e il dettaglio del post non ne dicono
-  niente. Il proprietario dal suo profilo vede quello che vedono gli altri.
+  li conta, e il profilo, il Feed e il dettaglio del post non li
+  distinguono da un post senza notte (`sleep` è `null`, vedi sotto). Il
+  proprietario dal suo profilo vede quello che vedono gli altri.
+- **La notte dentro il post, senza chiederla** (parte B1b): ogni disegno
+  visto porta `sleep`, lo stesso `SleepSummary` di `GET
+  /drawings/{id}/sleep`, **solo mentre `shown` è acceso**; `null` per un
+  post senza notte e per uno col sonno nascosto, anche al suo autore (che
+  l'interruttore lo legge da `GET /me/activities/{key}/sleep`). Vale per
+  `GET /drawings/{id}` e per ogni lista di post: `GET /feed`, il profilo
+  (`GET /users/{id}/drawings`), la ricerca, la stazione, le gare. Chi non
+  vede il post non lo trova in nessuna lista, quindi non ne legge la notte;
+  attraverso un blocco nemmeno. `stages` manca per una notte senza fasi,
+  come nell'endpoint, mai `null`. Così il Feed non fa una richiesta in più
+  per riga; le app di prima ignorano il campo. Il codice in
+  `sleep_seen.py` (la sotto-select, una riga per chiave primaria) e in
+  `drawings.py` (`SeenFields`); esempio in `fixtures/drawing-sleep.json`.
 - **Nel post**: `PUT /me/activities/{key}/sleep` salva la notte (senza
   toccare `shared`) e la dà all'attività, al posto di quella che aveva.
   «La notte prima» vuol dire `night` entro 2 giorni dal giorno d'inizio

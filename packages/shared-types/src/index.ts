@@ -16,6 +16,7 @@ import {
 } from "./sports/index.ts";
 import type { GymLevel } from "./gym.ts";
 import type { SkiDescents } from "./skiParts.ts";
+import type { SleepSummary } from "./sleep.ts";
 
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
@@ -1384,6 +1385,15 @@ interface DrawingFields {
    * parts; missing from an API before it.
    */
   ski_descents?: SkiDescents | null;
+  /**
+   * «Sleep last night» (TASK-467 part B1b, sleep.ts): the night before the
+   * activity, while its owner shows it in the post, in every list of posts
+   * and in the drawing whole, so that nothing more is asked for it. Null
+   * for a post without one and for one whose owner hides it, to the owner
+   * too (GET /me/activities/{key}/sleep has the switch); missing from an
+   * API before it.
+   */
+  sleep?: SleepSummary | null;
 }
 
 /** One drawing of GET /users/{public_id}/drawings. */

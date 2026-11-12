@@ -1171,9 +1171,8 @@ bozza, quello vero è il primo libero al merge, dal Coordinatore):
   vincolo e lo riscrive col nome in più, in fondo, come la `0055`.
 - Nessuna riga cambia. Test in `test_wheelchair_api.py`.
 
-Migrazione `0076_alpinism.sql` (TASK-463 parte A, ADR-0373; numero
-provvisorio dal Coordinatore, quello vero è il primo libero in `main` al
-merge):
+Migrazione `0075_alpinism.sql` (TASK-463 parte A, ADR-0373; il primo numero
+libero in `main` al «pronta», era la provvisoria `0076`):
 
 - Il vincolo `runs_activity_check` prende anche `'alpinism'`: una giornata
   di alpinismo si salva come corsa, registrata senza percorso, come lo

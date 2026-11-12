@@ -3,7 +3,7 @@
 **Stato**: In corso — parte A (server) in PR, ramo
 `feat/TASK-463-a-alpinism-api`; parte app dopo TASK-414 B.
 **Fase**: 4 · **ADR**: ADR-0373 (da scrivere nella PR di documenti dopo il
-merge) · numeri dal Coordinatore · migrazione provvisoria `0076`
+merge) · numeri dal Coordinatore · migrazione `0075` (era la provvisoria `0076`)
 
 ## Obiettivo
 
@@ -74,7 +74,7 @@ dell'orologio, dopo la parte app.
 - `services/api/shaperoute_api/sports/__init__.py`
 - `services/api/shaperoute_api/activities.py`
 - `services/api/shaperoute_api/reads.py`
-- `services/api/migrations/0076_alpinism.sql` (nuovo, numero provvisorio)
+- `services/api/migrations/0075_alpinism.sql` (nuovo; il primo numero libero in `main` al «pronta»)
 - `services/api/tests/test_alpinism_api.py` (nuovo)
 - `services/api/tests/test_sport_registry_api.py` (`SERVER_FIRST`, «since»)
 - `services/api/tests/test_record_only.py`, `test_reads.py`,

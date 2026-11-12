@@ -108,6 +108,7 @@ from shaperoute_api.places import (
     PlacesUnavailableError,
 )
 from shaperoute_api.pool_swims import install_pool_swims
+from shaperoute_api.post_links import install_post_links
 from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.profiles import install_profiles
 from shaperoute_api.push import install_push
@@ -390,6 +391,9 @@ def create_app(
     # The runs an account publishes as drawings, cut for the others
     # (TASK-117); they need a token.
     install_drawings(app)
+    # A drawing for everyone opened by its link, without an account, and
+    # the switch that turns the links of an account off (TASK-455 part C).
+    install_post_links(app)
     # The workouts at the gym, saved without a track, and their sets
     # (TASK-385); they need a token.
     install_gym_sessions(app)

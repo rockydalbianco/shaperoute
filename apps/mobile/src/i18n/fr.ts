@@ -2769,6 +2769,19 @@ export const FR: Table = {
   "Updated {seconds} s ago": "Mis à jour il y a {seconds} s",
   "LIVE · {sport} · {distance}": "LIVE · {sport} · {distance}",
   "🔴 Live": "🔴 Live",
+  // The «Sleep» card of the profile (TASK-467 part B3): src/profile/OwnSleep.tsx
+  // («On your profile» is with the prizes, «Only you see this» with the VO₂ max)
+  "Show my sleep from Apple Health": "Afficher mon sommeil depuis Apple Santé",
+  "MuW works out a sleep score from your Apple Health sleep data.":
+    "MuW calcule un score de sommeil à partir de tes données de sommeil d'Apple Santé.",
+  "Share your sleep?": "Partager ton sommeil ?",
+  "Your score, hours slept and sleep stages show on your profile, to everyone who can see it.":
+    "Ton score, tes heures de sommeil et tes phases de sommeil s'affichent sur ton profil, pour toutes les personnes qui peuvent le voir.",
+  "No sleep data for last night in Apple Health.":
+    "Aucune donnée de sommeil pour la nuit dernière dans Apple Santé.",
+  "MuW can't read your sleep. Allow it in the Health app: your profile › Apps › MuW.":
+    "MuW ne peut pas lire ton sommeil. Autorise-le dans l'app Santé : ton profil › Apps › MuW.",
+  "Stop sharing@@sleep": "Ne plus partager",
 
   // src/sports/alpinism.ts, src/mountain/climbNotice.ts (TASK-463 part B, approved by the user on 2026-11-12)
   Mountaineering: "Alpinisme",

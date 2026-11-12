@@ -4207,6 +4207,51 @@ share attached» di `messages.py`, la migrazione `0077_message_live.sql`.
 - **Un'API di prima** ignora `live` nell'header e rifiuta `live_share_id`
   con `422` (campo in più). Test in `test_message_lives.py`.
 
+### Post links (TASK-455 parte C, ADR-0382)
+
+Il link di un post: una pagina del sito (`https://getmuw.app/p/#<id del
+disegno>`, `SITO.md`) che chiede all'API quello che il link mostra, **senza
+account e senza la chiave dell'app** (scelte dell'utente del 2026-11-12).
+Tipi in `shared-types` (`PostLink`, `PostLinksSwitch`, `POST_LINK_PAGE`, e
+`linkable` nei disegni), esempio in `fixtures/post-link.json`; il codice in
+`post_links.py`, la condizione in `drawings.LINKABLE_SQL`, la migrazione
+`0078_post_links.sql` (`DATABASE.md`).
+
+| Endpoint | Account | Cosa | Risposta |
+|---|---|---|---|
+| `GET /post?id=<id del disegno>` | no, e senza `X-API-Key` | quello che il link mostra | `200` `PostLink`, `404 http_error`, `429` |
+| `GET /me/post-links` | sì | «Links to my posts» | `200` `{ "post_links": true }` |
+| `PUT /me/post-links` | sì | lo accende o lo spegne, corpo `{ "post_links": false }` | `200` lo stesso corpo, `422` |
+
+- **Chi ha un link**: solo un disegno `everyone`, con una linea, non
+  nascosto, di un autore non nascosto e che lascia **«Links to my posts»**
+  acceso. È una condizione sola (`LINKABLE_SQL`), chiesta a ogni richiesta.
+- **Cosa mostra, e non di più**: `id`, `username` dell'autore, `title`,
+  `shape`, `word`, `route_title`, `distance_m`, `activity`,
+  `rotation_deg` e `track`, **la linea intera come la vede già un
+  iscritto** (ADR-0330). Mai foto, commenti, reazioni, descrizione, persone
+  taggate, luogo, giorno, tempi, né altro dell'account.
+- **Un solo `404`**: un disegno «Followers», uno privato, uno nascosto, uno
+  di un autore nascosto, uno con l'interruttore spento, uno cancellato, un
+  id che non c'è o che non è un UUID rispondono tutti `404 http_error` «No
+  drawing with this id.», identici: un link non dice niente di ciò che non
+  apre. Niente è tenuto: il link smette di funzionare alla richiesta dopo.
+- **`/post` è in `access.OPEN_PATHS`**, come `/live`: la pagina del sito
+  non ha la chiave. La risposta (anche il `404` e il `429`) ha
+  `Access-Control-Allow-Origin: https://getmuw.app`, `Cache-Control:
+  no-store`, `Referrer-Policy: no-referrer` e `X-Robots-Tag: noindex,
+  nofollow, noarchive`. Limite: 60 richieste al minuto per indirizzo
+  (`429 too_many_requests`, `Retry-After`); conta anche un id che non c'è.
+- **«Links to my posts»** (`users.post_links`) è **acceso all'inizio**, anche
+  per gli account di prima. Spento, nessun link ai disegni dell'account
+  funziona, **nemmeno quelli presi dall'autore**, e nessuno dei suoi
+  disegni è `linkable`, nemmeno per lui.
+- **`linkable`** è in tutto quello che un iscritto vede di un disegno (`GET
+  /feed`, `GET /users/{id}/drawings`, `GET /drawings/{id}`, la ricerca, i
+  concorsi): vero quando il disegno ha un link. L'app mostra «Share link»
+  solo allora. Un'app di prima ignora il campo; un'API di prima non lo ha
+  (nessun link).
+
 ### Shape game (TASK-296, ADR-0255)
 
 Il gioco delle forme, parte A: che cosa vale una corsa salvata e le forme

@@ -1406,6 +1406,13 @@ interface DrawingFields {
    * API before it.
    */
   sleep?: SleepSummary | null;
+  /**
+   * The drawing can be opened by its link on the site, without an account
+   * (TASK-455 part C, PostLink): it is for everyone, it has a line, and its
+   * owner leaves «Links to my posts» on. The app shows «Share link» only
+   * then, on one's own post too. Missing from an API before it: no link.
+   */
+  linkable?: boolean;
 }
 
 /** One drawing of GET /users/{public_id}/drawings. */
@@ -2734,6 +2741,46 @@ export interface MessageAttachment {
    * any other attachment, and for a post who asks may not open, or gone:
    * «This post is no longer available.» Absent from an API of before. */
   post?: MessagePostCard | null;
+}
+
+// --- The link of a post (TASK-455 part C, ADR-0382) ---
+
+/** Where the link of a post leads: this, then the drawing's id. The page
+ * reads the id after the «#», which no server is sent. */
+export const POST_LINK_PAGE = "https://getmuw.app/p/#";
+
+/**
+ * GET /post?id=<the drawing's id>: what the link of a post shows, asked by
+ * the page of the site with no account and no API key. Only a drawing every
+ * member sees, of an owner who leaves «Links to my posts» on; any other is
+ * 404, as an id that is not there. Never the photos, the comments, the
+ * description, the place nor a time.
+ */
+export interface PostLink {
+  /** The drawing's. */
+  id: string;
+  /** Who drew it. */
+  username: string;
+  /** Its owner's; null: none. */
+  title: string | null;
+  shape: string | null;
+  word: string | null;
+  /** As in a drawing: what its route draws without a shape or a word. */
+  route_title: string | null;
+  distance_m: number;
+  activity: string;
+  rotation_deg: number | null;
+  /** The line as every member sees it already, whole. */
+  track: LatLon[];
+}
+
+/**
+ * GET and PUT /me/post-links: «Links to my posts», on from the start. Off,
+ * no link to the account's drawings works, its owner's own included, and
+ * none of them is `linkable`.
+ */
+export interface PostLinksSwitch {
+  post_links: boolean;
 }
 
 // --- A post in a private message (TASK-455, ADR-0382) ---

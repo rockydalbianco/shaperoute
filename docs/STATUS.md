@@ -220,6 +220,8 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   **2026-11-12**: parte 0 in `main`; A1a in `main` (#1221, `9328c109`,
   migrazione `0073`), sul server col passo dopo l'uscita completa, col sì.
   Poi A1b dopo TASK-455 A.
+  **2026-11-12 sera**: A1a, A2a (#1245) e A1b (#1265) sul server (passi 11 e
+  12); B1 (app) in `main` (#1275), esce con un OTA col sì. Prossime A2b, B2.
 
 - **TASK-464 — Zone già in memoria nei processi di calcolo** · in `main`
   (#1167, ADR-0374); sul server col passo 9, `SHAPEROUTE_ZONES_MB` al

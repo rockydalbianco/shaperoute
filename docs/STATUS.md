@@ -226,11 +226,11 @@ PR aperti; «—» se nessuno), task file. I dettagli stanno nel task file.
   default 500. Poi le letture di `out/TASK-464/SERVER.md` e il tetto
   scelto dal minimo disponibile dopo qualche giorno. File: — ·
   `tasks/TASK-464.md`
-- **TASK-455 — Condividere il disegno di un'altra persona** · B0 (niente
-  copia dei disegni «Followers» altrui) in `main` (#1220) e nell'uscita del
-  2026-11-12; A (server: il post in un messaggio, ADR-0382, migrazione
-  `0074`) in `main` (#1230): manca il passo sul server, col sì dell'utente.
-  Prossima B (app), poi C–E il link. File: — · `tasks/TASK-455.md`
+- **TASK-455 — Condividere il disegno di un'altra persona** · B0, A
+  (server, passo 11, migrazione `0074`) e B (app, #1255, OTA 15) fatte e in
+  produzione il 2026-11-12: «Share» su ogni post, il post in chat come
+  rimando (ADR-0382). Resta la prova dell'utente sul telefono. Prossima C
+  (server: link e interruttore), poi D sito, E app. File: — · `tasks/TASK-455.md`
 
 - **TASK-466 — Lo stretching nuovo** · A (la figura che respira, si
   rialza e si gira, «Get ready», tick, «Skip») in `main` (#1181,

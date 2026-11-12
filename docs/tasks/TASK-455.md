@@ -1,16 +1,16 @@
 # TASK-455 — Condividere il disegno di un'altra persona
 
-**Stato**: Parte 0 chiusa (scelte dell'utente, 2026-11-12; documenti in
-`main` con la #1226) · **B0** in `main` (#1220, `34333964`), uscita con
-l'aggiornamento completo del 2026-11-12 · **A** (server: il post in un
-messaggio) in `main` (#1230, `5c53e141`, migrazione `0074`): **manca il
-passo sul server**, col sì dell'utente · prossima **B** (app), lista dei
-file approvata, in un contesto nuovo
+**Stato**: **B0, A e B fatte e in produzione** (2026-11-12): B0 nella
+#1220, A nella #1230 e sul server col passo 11 (migrazione `0074`), B nella
+#1255 con l'OTA 15 · resta la prova dell'utente sul telefono · prossima
+**C** (server: il link e l'interruttore), che comincia da una domanda
+all'utente e dalla frase della privacy; poi D (sito) ed E (app)
 **Fase**: 5 · **Branch**: una PR per parte; la prossima
-`feat/TASK-455-b-share-post`
-**Dipende da**: per la parte B, la #1231 di TASK-454 B in `main` (solo per
-`feed/PostActions.tsx`, che si scrive per ultimo), il passo sul server
-della A e il turno del simulatore
+`feat/TASK-455-c-post-links`
+**Dipende da**: per la parte C, la risposta dell'utente sul link
+dell'autore con l'interruttore spento, la frase della privacy e l'avviso
+nelle novità approvati **prima** del passo sul server, il sì del
+Coordinatore sui file
 **ADR**: **ADR-0382** (il post in un messaggio, il link di un post,
 l'interruttore dell'account), numero dal Coordinatore il 2026-11-12 ·
 numero del task dal Coordinatore l'11 novembre 2026 (S5 e gruppo C di
@@ -136,8 +136,8 @@ novità.
 
 - **B0 — App: niente copia dei disegni «Followers» altrui** (aggiunta il
   2026-11-12, la correzione di riservatezza). **In `main`, #1220.**
-- **A — Server: il post in un messaggio** (**in `main`, #1230; manca il
-  passo sul server**). Un allegato nuovo, `post`: il
+- **A — Server: il post in un messaggio** (**in `main`, #1230, e sul
+  server col passo 11**). Un allegato nuovo, `post`: il
   messaggio tiene l'id del disegno, non la linea. Mandarlo vuole che chi
   manda veda il disegno e una conversazione aperta, come ogni allegato.
   Leggerlo: a ogni pagina il server risolve la scheda **per chi legge**
@@ -146,7 +146,8 @@ novità.
   «[Post]» davanti al testo; la push dice «🗺️ Post». Migrazione, tipi in
   `shared-types`, esempi, `API.md`, `DATABASE.md`. Poi il passo sul server,
   col sì dell'utente dato al Coordinatore.
-- **B — App: «Share» su ogni post e la scheda in chat.** Il foglietto di
+- **B — App: «Share» su ogni post e la scheda in chat** (**in `main`,
+  #1255, in produzione con l'OTA 15**). Il foglietto di
   «Share» (file nuovo) nella riga delle azioni del Feed e della pagina del
   post; «Send to a friend» manda il rimando; la scheda del post nella
   conversazione, che apre la pagina del post; la nota per i post
@@ -341,8 +342,21 @@ Parte A (in `main`, #1230):
       scheda; la push e la lista dicono «🗺️ Post».
 - [x] `API.md`, `DATABASE.md`, tipi ed esempio aggiornati; test dei file
       toccati verdi in locale, la suite in CI.
-- [ ] Il passo sul server, col sì dell'utente dato al Coordinatore, e i
-      controlli di sola lettura di `out/TASK-455/SERVER-A.md`.
+- [x] Il passo sul server, col sì dell'utente dato al Coordinatore, e i
+      controlli di sola lettura di `out/TASK-455/SERVER-A.md` (passo 11,
+      2026-11-12).
+
+Parte B (in `main`, #1255; in produzione con l'OTA 15):
+- [x] «Share» sotto ogni post apre il foglietto: «Send to a friend», e
+      sui propri «Poster and video»; sui post altrui c'è solo coi messaggi.
+- [x] «Send to a friend» da un post manda `{ post_id }` e mai la linea;
+      per un post «Followers» altrui dice prima chi lo può aprire.
+- [x] In chat la scheda del post, o «This post is no longer available.»;
+      il tocco apre il post come una notifica; la lista dice «🗺️ Post».
+- [x] La scheda di un disegno altrui manda il post, anche «Followers».
+- [x] Schermate dal simulatore approvate dall'utente («Sì, vanno bene»).
+- [ ] La prova dell'utente sul telefono: mandare il post di un altro a un
+      amico e aprirlo dalla chat.
 
 Parte D (fissati col Coordinatore):
 - [ ] La pagina risponde solo per post «Everyone» con l'interruttore
@@ -430,3 +444,18 @@ Le altre parti scrivono i loro criteri quando partono.
   l'ultimo pulsante dice «Back to the profile»; il foglietto non scurisce
   lo sfondo, come quello di «…». Per «pronta» manca solo `main` unito dopo
   la #1231 di TASK-454 B.
+- 2026-11-12: **«server A fatto»** (Coordinatore): passo 11 lanciato
+  dall'utente alle 15:03Z, server a `338e4d9b`, `0074_message_post`
+  applicata; le letture di `SERVER-A.md` come previste (colonna, i due
+  controlli, l'indice, gli allegati di prima invariati, nessun post, «post
+  ok True [Post] post», «everyone owner 1 stranger 1 points [64]»). Sul
+  server non c'è nessun disegno «Followers»: quel caso lì non è stato
+  provato, lo coprono i test e la prova al simulatore.
+- 2026-11-12: **B in `main`** (#1255, `360e26f6`; `main` unito con la
+  #1231 di TASK-454 B tenendo `reactionsHandle`) e **in produzione con
+  l'OTA 15** (15:46Z, commit `e88d491f`). Resta la prova dell'utente sul
+  telefono. Prossima la parte C: la domanda all'utente (con
+  l'interruttore spento, il link che l'autore prende del proprio post
+  funziona?), la frase della privacy e l'avviso nelle novità da approvare
+  prima del passo sul server, la lista dei file al Coordinatore prima del
+  codice.

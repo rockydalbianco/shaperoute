@@ -22,14 +22,18 @@ from shaperoute_api.recommended import (
     RecommendedCatalog,
     distance_m,
     parse_city,
+    pen_up_preview,
     preview,
     turn_of,
     varied,
+    walks_of,
 )
 
 HERE = Path(__file__).parent
 REPO = HERE.parents[2]
 CATALOG = HERE / "fixtures" / "catalog"
+# A word written letter by letter, the pen up between them, and a shape.
+PEN_UP = HERE / "fixtures" / "catalog_pen_up"
 CONTRACT = REPO / "packages" / "shared-types" / "fixtures"
 PIAZZA_DUOMO = {"lat": 46.067, "lon": 11.1215}
 
@@ -419,3 +423,97 @@ def test_a_bad_page_query_is_invalid(api: TestClient, params: dict[str, Any]) ->
 def test_without_a_catalogue_the_page_is_empty() -> None:
     answer = client(None).get("/catalog", params=PIAZZA_DUOMO)
     assert answer.json() == {"total": 0, "cities": 0, "routes": []}
+
+
+# --- A word with the pen up (TASK-441, ADR-0366) -------------------------------
+
+
+@pytest.fixture
+def pen_up() -> TestClient:
+    return client(RecommendedCatalog.from_dir(PEN_UP))
+
+
+def test_the_list_with_a_word_in_pieces_is_the_shared_contract(
+    pen_up: TestClient,
+) -> None:
+    answer = pen_up.get("/recommended-routes", params=PIAZZA_DUOMO)
+    assert answer.status_code == 200
+    contract = CONTRACT / "recommended-routes-pen-up.json"
+    assert answer.json() == json.loads(contract.read_text("utf-8"))
+
+
+def test_a_word_in_pieces_whole_is_the_shared_contract(pen_up: TestClient) -> None:
+    answer = pen_up.get("/recommended-routes/trento-go-6000-0")
+    assert answer.status_code == 200
+    contract = CONTRACT / "recommended-route-pen-up.json"
+    assert answer.json() == json.loads(contract.read_text("utf-8"))
+
+
+def test_the_card_of_a_word_in_pieces_leaves_the_walk_out(pen_up: TestClient) -> None:
+    routes = pen_up.get("/recommended-routes", params=PIAZZA_DUOMO).json()["routes"]
+    word, shape = routes
+    # Five points of G, five of O: the point walked between them is not there,
+    # and O's first point is come to with the pen up.
+    assert len(word["preview"]) == 10
+    assert word["gaps"] == [5]
+    assert [46.0672, 11.1232] not in word["preview"]
+    # A route in one line says nothing new.
+    assert "gaps" not in shape
+    page = pen_up.get("/catalog", params=PIAZZA_DUOMO).json()["routes"]
+    assert [r.get("gaps") for r in page] == [[5], None]
+
+
+def test_only_a_route_in_pieces_says_its_walks(pen_up: TestClient) -> None:
+    word = pen_up.get("/recommended-routes/trento-go-6000-0").json()
+    assert word["walks"] == [[4, 6]]
+    assert len(word["points"]) == 11
+    shape = pen_up.get("/recommended-routes/trento-heart-5000-1").json()
+    assert "walks" not in shape
+
+
+def test_the_preview_of_pieces_thins_each_and_marks_where_the_pen_comes_down() -> None:
+    line = [(46.0 + i / 10000, 11.0) for i in range(300)]
+    preview_, gaps = pen_up_preview(line, [(99, 110), (199, 210)], piece_size=8)
+    assert len(preview_) == 24
+    assert gaps == [8, 16]
+    assert preview_[0] == line[0] and preview_[7] == line[99]
+    assert preview_[8] == line[110] and preview_[15] == line[199]
+    assert preview_[16] == line[210] and preview_[-1] == line[-1]
+
+
+def test_many_pieces_share_the_points_and_keep_two_each() -> None:
+    line = [(46.0 + i / 10000, 11.0) for i in range(100)]
+    walks = [(i, i + 2) for i in range(4, 95, 5)]
+    preview_, gaps = pen_up_preview(line, walks, piece_size=4, pieces=2)
+    assert len(gaps) == len(walks)
+    assert len(preview_) == 2 * (len(walks) + 1)
+
+
+@pytest.mark.parametrize(
+    "walks",
+    [
+        None,
+        [],
+        "4-6",
+        [[4]],
+        [[4, 6, 8]],
+        [[6, 4]],
+        [[4, 4]],
+        [[4, 11]],
+        [[-1, 3]],
+        [[4.0, 6]],
+        [[True, 6]],
+        [[4, 6], [5, 8]],
+    ],
+)
+def test_walks_that_do_not_read_leave_the_route_in_one_line(walks: Any) -> None:
+    assert walks_of({"walks": walks}, 11) == ()
+
+
+def test_walks_in_order_are_kept() -> None:
+    assert walks_of({"walks": [[2, 4], [4, 6], [8, 10]]}, 11) == (
+        (2, 4),
+        (4, 6),
+        (8, 10),
+    )
+    assert walks_of({}, 11) == ()

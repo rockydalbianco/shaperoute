@@ -640,6 +640,9 @@ def _route_body(r: Run) -> dict[str, Any]:
     )
     if r.get("rotation_deg"):
         body["rotation_deg"] = r["rotation_deg"]
+    # A word written with the pen up (TASK-441): where it walks unseen.
+    if r.get("walks"):
+        body["walks"] = r["walks"]
     return body
 
 

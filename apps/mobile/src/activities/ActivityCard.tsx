@@ -133,13 +133,16 @@ export function ActivityCard({ activity, onDelete }: Props) {
           <SharePostButton makeRun={() => postOfActivity(activity)} />
         </View>
         {editable && (
-          <Tap
-            style={[styles.button, styles.half]}
-            onPress={() => setEditing(true)}
-            accessibilityRole="button"
-          >
-            <Text style={styles.buttonText}>{t("Edit post")}</Text>
-          </Tap>
+          // In a half of its own, as «Share»: the two are as wide.
+          <View style={styles.half}>
+            <Tap
+              style={styles.button}
+              onPress={() => setEditing(true)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.buttonText}>{t("Edit post")}</Text>
+            </Tap>
+          </View>
         )}
       </View>
       <ActivitySheet visible={editing} onClose={doneEditing} testID="edit-post-sheet">

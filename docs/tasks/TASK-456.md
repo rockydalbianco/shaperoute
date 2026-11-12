@@ -93,17 +93,17 @@ Non toccati: `App.tsx` (la prop `onList` resta), `screens/MapScreen.tsx`,
 
 ## Criteri di accettazione
 
-- [ ] Sulla scheda dell'attività non ci sono più il modulo del post, «Send
+- [x] Sulla scheda dell'attività non ci sono più il modulo del post, «Send
       to a friend», «Delete» né «Back to the list»: restano titolo o data,
       luogo, statistiche, legenda, «Share», «Edit post» e «…».
-- [ ] «Edit post» apre il foglio col modulo intero; «Done» lo chiude; il
+- [x] «Edit post» apre il foglio col modulo intero; «Done» lo chiude; il
       titolo cambiato nel foglio è quello della scheda.
-- [ ] «…» → «Delete» → «Delete run» cancella la corsa; «Keep it» no.
-- [ ] «…» mostra «Send to a friend» e Strava quando c'erano prima.
-- [ ] Nell'elenco una corsa col post titolato mostra il titolo e sotto
+- [x] «…» → «Delete» → «Delete run» cancella la corsa; «Keep it» no.
+- [x] «…» mostra «Send to a friend» e Strava quando c'erano prima.
+- [x] Nell'elenco una corsa col post titolato mostra il titolo e sotto
       giorno e ora; una senza titolo è com'era.
-- [ ] Nell'elenco nessun «Delete» in vista: «…» → «Delete» → conferma.
-- [ ] Test dei file toccati verdi, `tsc` pulito, lint e prettier puliti.
+- [x] Nell'elenco nessun «Delete» in vista: «…» → «Delete» → conferma.
+- [x] Test dei file toccati verdi, `tsc` pulito, lint e prettier puliti.
 - [ ] Screenshot prima e dopo dell'elenco e della scheda in
       `out/TASK-456/`, col sì dell'utente.
 
@@ -113,12 +113,25 @@ Non toccati: `App.tsx` (la prop `onList` resta), `screens/MapScreen.tsx`,
   il ramo che scriverebbe il problema viene dopo un `return null` che lo
   precede sempre. Era così prima; qui «Edit post» in quel caso non c'è. Non
   toccato: fuori dal task.
-- «Send to a friend» e «Share» aprono le loro pagine (`Modal`) da dentro il
-  foglietto o dalla scheda, come prima: da provare sul simulatore.
+- Provato sul simulatore il 2026-11-12 (iPhone 17e, Expo Go, API di prova
+  sulla porta 8056 con un database usa e getta, `out/TASK-456/seed.py`):
+  «Tag people», la scelta delle foto e «Send to a friend» si aprono da
+  dentro i fogli; con la tastiera il foglio «Edit post» le sale sopra, resta
+  sotto la barra di stato e il modulo scorre; il titolo cambiato nel foglio
+  è subito quello della scheda e, tornati indietro, dell'elenco. Strava non
+  provato sul simulatore (l'API di prova non ce l'ha): lo coprono i test.
+- Chiusa «Send to…» si torna al foglietto di «…», che resta aperto: va
+  chiuso con «Cancel». Per chiuderlo da solo servirebbe toccare
+  `messages/SendDrawingButton.tsx`: fuori dal task.
+- La tastiera di «How did it go?» è chiara sul tema scuro (manca
+  `keyboardAppearance` in `PublicParts.tsx`): c'era già, fuori dal task.
 
 ## Stato
 
-2026-11-12: proposta fatta, scelta A dell'utente; codice scritto, test dei
-file toccati verdi (53 file, 446 test), `tsc`, lint e prettier puliti.
-Mancano: gli screenshot prima e dopo sul simulatore (turno dal
-Coordinatore), il sì dell'utente su «Edit post», la PR «pronta».
+2026-11-12: proposta fatta, scelta A dell'utente; codice nella PR #1194 (in
+bozza), test dei file toccati verdi, `tsc`, lint e prettier puliti.
+Screenshot prima e dopo in `out/TASK-456/shots/` e nei due fogli
+`out/TASK-456/TASK-456-*-prima-dopo.jpg`, mostrati all'utente. Mancano: il
+sì dell'utente agli screenshot e a «Edit post», poi «#1194 pronta» al
+Coordinatore; dopo il merge, la PR di soli documenti (`STATUS.md`,
+`COMPLETATI.md`).

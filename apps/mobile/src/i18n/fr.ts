@@ -979,6 +979,8 @@ export const FR: Table = {
   "Write a comment to send your super like":
     "Écris un commentaire pour envoyer ton super like",
   Send: "Envoyer",
+  "A super like comes with a comment. Everyone who sees the post can read it.":
+    "Un super like s'accompagne d'un commentaire. Tous ceux qui voient la publication peuvent le lire.",
 
   // src/social/reactionKinds.ts
   "MuW heart, super like": "Cœur MuW, super like",
@@ -2568,4 +2570,17 @@ export const FR: Table = {
   "Last 12 months": "12 derniers mois",
   "{count} activity": "{count} activité",
   "{count} activities": "{count} activités",
+
+  // src/settings/sport.ts, src/air/ (TASK-305 part R2, approved by the user on 2026-11-12)
+  "Record your flight": "Enregistrer le vol",
+  "Before you fly": "Avant de voler",
+  "MuW is not a flight instrument: it records your flight and shares it. Fly with your own instrument, licence and judgement.":
+    "MuW n'est pas un instrument de vol : il enregistre votre vol et le partage. Volez avec votre propre instrument, votre licence et votre jugement.",
+  "Got it": "Compris",
+  Vario: "Vario",
+  "Flight time": "Temps de vol",
+  "Your flight": "Votre vol",
+  "No shapes in the air yet: MuW records your flight.":
+    "Pas encore de formes en vol : MuW enregistre votre vol.",
+  "White: where you flew.": "Blanc : là où vous avez volé.",
 };

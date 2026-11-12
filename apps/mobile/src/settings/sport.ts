@@ -7,7 +7,7 @@ import {
 import Constants from "expo-constants";
 import { File, Paths } from "expo-file-system";
 
-import { t, tLater } from "../i18n";
+import { t } from "../i18n";
 import { profileOf } from "../sports";
 
 /** What a route is for: a run, a bike ride since TASK-190, paddling on a
@@ -87,6 +87,7 @@ const ACTIVITY: { readonly [S in Sport]?: RunActivity } = {
   xc_ski: "xc_skiing",
   skimo: "ski_touring",
   gym: "gym",
+  paragliding: "paragliding",
 };
 
 /** A sport of «Settings» as its profile says it (TASK-376 part B3c,
@@ -146,7 +147,10 @@ export const ALL_SPORTS: readonly SportOption[] = [
   // the store builds too, the user's «ok accendi» (2026-11-05): the server
   // keeps its posts from the apps that cannot read them (X-MuW-Reads).
   fromProfile("gym", true),
-  { id: "paragliding", emoji: "🪂", name: tLater("Paragliding"), ready: false },
+  // A flight, saved as "paragliding", recorded without a shape (TASK-305
+  // part R2, ADR-0375): on with its numbers of the air and its notice; the
+  // server has had part R1 and its migration 0069 since 2026-11-12.
+  fromProfile("paragliding", true),
 ];
 
 /** The sports offered only once «Settings» has them ready. */
@@ -326,6 +330,9 @@ export function withoutRouteLabel(sport: Sport): string {
     case "gym":
       // No route in the gym (TASK-385 part B): the workout's own start.
       return t("Start workout");
+    case "paragliding":
+      // No shapes in the air yet (TASK-305 parts R): the flight only.
+      return t("Record your flight");
     default:
       return t("Run without a route");
   }

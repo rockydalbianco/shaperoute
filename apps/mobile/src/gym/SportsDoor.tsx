@@ -155,7 +155,7 @@ export function SportsDoor({
                 <Text style={styles.runBadge}>RUN</Text>
               ) : (
                 <ExerciseFigure
-                  move={one.sport === "gym" ? MOVES.bench : MOVES.air_squat}
+                  move={one.sport === "gym" ? MOVES.bench : MOVES.push_up}
                   size={ICON - space.xs}
                   still
                 />

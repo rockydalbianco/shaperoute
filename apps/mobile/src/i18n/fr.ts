@@ -1400,6 +1400,7 @@ export const FR: Table = {
   "Hikes and trips, more climb each week":
     "Randonnées et sorties, plus de dénivelé chaque semaine",
   "Soon@@door": "Bientôt",
+  "Next · 1 chosen": "Suivant · 1 choisi",
   "Next · {n} chosen": "Suivant · {n} choisis",
   "More each week": "Plus chaque semaine",
   "+1 rep, +5 s held; week {n} lighter":

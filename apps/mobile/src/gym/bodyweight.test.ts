@@ -25,6 +25,17 @@ test("«Tonificare e dimagrire» with nothing: the whole body, as the mockup", (
   expect(bodyweightSession(1, 3, "tone", "none", naming.t).name).toBe("Bodyweight · B");
 });
 
+test("on the bar half the reps: 3 × 15 push-ups, 3 × 8 pull-ups", () => {
+  const items = bodyweightSession(0, 1, "tone", "bar", naming.t).items;
+  expect(items.find((item) => item.exercise === "pull_up")).toMatchObject({
+    sets: 3,
+    reps: 8,
+  });
+  expect(items.find((item) => item.exercise === "push_up")?.reps).toBe(15);
+  const strength = bodyweightSession(0, 1, "strength", "bars", naming.t).items;
+  expect(strength.find((item) => item.exercise === "dips")?.reps).toBe(5);
+});
+
 test("a bar adds pull-ups, dip bars the dips", () => {
   expect(keys(bodyweightSession(0, 1, "muscle", "bar", naming.t))).toEqual([
     "bodyweight_squat",

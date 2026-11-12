@@ -492,7 +492,9 @@ export function GymPlanWizard({
             : true;
   const primaryLabel =
     step === "door"
-      ? t("Next · {n} chosen", { n: String(sports.length) })
+      ? sports.length === 1
+        ? t("Next · 1 chosen")
+        : t("Next · {n} chosen", { n: String(sports.length) })
       : step === "runner"
         ? paces
           ? t("Looks good")
@@ -549,7 +551,10 @@ export function GymPlanWizard({
         </Text>
         <View style={styles.round} />
       </View>
-      <View style={styles.progress} accessibilityElementsHidden>
+      <View
+        style={[styles.progress, step === "door" && styles.hidden]}
+        accessibilityElementsHidden
+      >
         {counted.map((one, i) => (
           <View
             key={one}
@@ -685,7 +690,9 @@ export function GymPlanWizard({
                     accessibilityState={{ selected: on }}
                     testID={`wizard-equipment-${one.equipment}`}
                   >
-                    <Text style={styles.optionTitle}>{t(one.title)}</Text>
+                    <Text style={[styles.optionTitle, styles.centered]}>
+                      {t(one.title)}
+                    </Text>
                   </Pressable>
                 );
               })}
@@ -1348,6 +1355,13 @@ const styles = StyleSheet.create({
   wizard: {
     flex: 1,
     gap: space.md,
+  },
+  centered: {
+    textAlign: "center",
+  },
+  // The door comes before the steps: no bar of the steps over it.
+  hidden: {
+    opacity: 0,
   },
   top: {
     flexDirection: "row",

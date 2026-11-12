@@ -1393,6 +1393,7 @@ export const IT: Table = {
   Mountains: "Montagna",
   "Hikes and trips, more climb each week": "Hike e gite, dislivello che cresce",
   "Soon@@door": "Presto",
+  "Next · 1 chosen": "Avanti · 1 scelto",
   "Next · {n} chosen": "Avanti · {n} scelti",
   "More each week": "Di più ogni settimana",
   "+1 rep, +5 s held; week {n} lighter":

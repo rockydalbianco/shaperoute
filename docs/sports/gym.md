@@ -246,7 +246,9 @@ ingresso. Poi i cinque passi:
    (squat a corpo libero, piegamenti, affondi, ponte glutei, plank; B
    affondi, piegamenti o dip, trazioni supine o superman, mountain climber,
    plank laterale); «More strength» usa split squat bulgaro e, con la
-   sbarra, trazioni e dip. Senza kg: la nota dice l'attrezzo;
+   sbarra, trazioni e dip. Alla sbarra e alle parallele metà ripetizioni,
+   almeno 5 (3 × 15 piegamenti, 3 × 8 trazioni). Senza kg: la nota dice
+   l'attrezzo;
 4. senza palestra i modi sono «More each week», A / B e «Always the same».
    In «More reps each week» (anche nelle schede di palestra) un esercizio
    senza kg cresce di una ripetizione a settimana, 5 s se tenuto; l'ultima

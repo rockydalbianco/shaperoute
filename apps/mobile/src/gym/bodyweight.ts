@@ -80,6 +80,10 @@ export const BODYWEIGHT_NAMES = [
 /** Exercises done on one leg at a time: three reps fewer. */
 const PER_LEG = new Set(["lunge", "bulgarian_split_squat"]);
 
+/** Exercises on the bar or the dip bars: half the reps, at least five
+ * (3 × 15 push-ups are 3 × 8 pull-ups). */
+const ON_THE_BAR = new Set(["pull_up", "chin_up", "dips", "hanging_leg_raise"]);
+
 /** Every exercise a bodyweight workout may have: a workout made only of
  * these is a bodyweight one. */
 export const BODYWEIGHT_KEYS: ReadonlySet<string> = new Set(
@@ -104,7 +108,11 @@ export function bodyweightItem(key: string, goal: GymPlanGoal): GymPlanItem {
       duration_s: values.holdS,
     };
   }
-  const reps = PER_LEG.has(key) ? Math.max(5, values.reps - 3) : values.reps;
+  const reps = ON_THE_BAR.has(key)
+    ? Math.max(5, Math.round(values.reps / 2))
+    : PER_LEG.has(key)
+      ? Math.max(5, values.reps - 3)
+      : values.reps;
   return { exercise: key, kind, sets: values.sets, reps };
 }
 

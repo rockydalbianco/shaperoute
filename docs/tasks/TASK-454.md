@@ -264,9 +264,9 @@ Criteri di accettazione (C1):
 
 **Stato**: codice e test scritti il 2026-11-12 sul branch
 `feat/TASK-454-c2-comment-replies` (da `main` a `29221702`, senza
-dipendere dalla #1195) · PR in bozza: mancano il sì dell'utente sui testi
-nuovi, gli screenshot dal simulatore (turno dal Coordinatore) e la frase
-della privacy.
+dipendere dalla #1195) · PR #1199 in bozza: mancano gli screenshot dal
+simulatore (turno dal Coordinatore) col sì dell'utente e la frase della
+privacy. Testi nuovi e traduzioni approvati.
 
 Scelta 5 dell'utente. Il modo è **deciso dall'agente su delega
 dell'utente** (dentro ADR-0377, nessun ADR nuovo):
@@ -294,10 +294,10 @@ dell'utente** (dentro ADR-0377, nessun ADR nuovo):
 7. **La campanella non cambia**: mostra il testo che manda il server e apre
    già il disegno per ogni avviso con `drawing_id`.
 
-Testi nuovi, **da far approvare all'utente prima del merge**: «Replying to
-{name}» e il singolare «View 1 more reply» (in codice «View {count} more
-reply»). Già approvati: «Reply», «View {count} more replies». Traduzioni,
-da far vedere: «Reply» it «Rispondi» · de «Antworten» · fr «Répondre» · es
+Testi nuovi, **approvati dall'utente il 2026-11-12** («Sì, approvo») con
+le traduzioni: «Replying to {name}» e il singolare «View 1 more reply» (in
+codice «View {count} more reply»). Approvati con le scelte: «Reply», «View
+{count} more replies». Traduzioni: «Reply» it «Rispondi» · de «Antworten» · fr «Répondre» · es
 «Responder»; «Replying to {name}» it «Risposta a {name}» · de «Antwort an
 {name}» · fr «Réponse à {name}» · es «Respuesta a {name}»; «View {count}
 more reply/replies» it «Vedi {count} altra risposta» / «Vedi altre {count}
@@ -332,7 +332,7 @@ Criteri di accettazione (C2):
 - [x] Su commenti e risposte le cinque emoji, una a testa, senza il cuore
       di MuW; la riga non cambia altezza scegliendo.
 - [x] Con un'API o una porta di prima i commenti sono com'erano.
-- [ ] Testi nuovi e traduzioni col sì dell'utente.
+- [x] Testi nuovi e traduzioni col sì dell'utente (2026-11-12).
 - [ ] Screenshot dal simulatore in `out/TASK-454/` col sì dell'utente.
 - [ ] Frase della privacy col sì dell'utente (file a turno).
 

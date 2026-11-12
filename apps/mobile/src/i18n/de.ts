@@ -1201,6 +1201,12 @@ export const DE: Table = {
   Roller: "Inline",
   "Watch for traffic and steep descents: check the route before you set off.":
     "Achte auf Verkehr und steile Abfahrten: Prüf die Route, bevor du losfährst.",
+  // src/sports/wheelchair.ts, settings/sport.ts (TASK-414 part B), approved on
+  // 2026-11-08 (the user's choice 6)
+  "Wheelchair & stroller": "Rollstuhl & Kinderwagen",
+  "Go without a route": "Ohne Route los",
+  "Map data can miss kerbs, steps and steep slopes: check the route before you set off.":
+    "Die Kartendaten zeigen nicht immer Bordsteine, Stufen und steile Steigungen: Prüf die Route, bevor du losgehst.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Ski",
   "Cross-country ski": "Langlauf",

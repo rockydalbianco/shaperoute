@@ -28,6 +28,8 @@ export function withoutRouteIcon(sport: Sport): string {
       return "🚵";
     case "roller":
       return "🛼";
+    case "wheelchair":
+      return "♿";
     case "ski":
       return "⛷️";
     case "xc_ski":

@@ -1191,6 +1191,12 @@ export const FR: Table = {
   Roller: "Roller",
   "Watch for traffic and steep descents: check the route before you set off.":
     "Attention à la circulation et aux descentes raides : vérifie le parcours avant de partir.",
+  // src/sports/wheelchair.ts, settings/sport.ts (TASK-414 part B), approved on
+  // 2026-11-08 (the user's choice 6)
+  "Wheelchair & stroller": "Fauteuil et poussette",
+  "Go without a route": "Partir sans parcours",
+  "Map data can miss kerbs, steps and steep slopes: check the route before you set off.":
+    "Les données de la carte peuvent oublier des bordures, des marches et des pentes raides : vérifie le parcours avant de partir.",
   // src/settings/sport.ts, social/PublicParts.tsx (TASK-375: a day on the snow)
   Ski: "Ski",
   "Cross-country ski": "Ski de fond",

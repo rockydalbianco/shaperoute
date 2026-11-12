@@ -73,12 +73,11 @@ test("every row works: only the sports to come say «Soon»", async () => {
   // the alpine ski (TASK-375 D4) are ready in «Sport» (TASK-189), and the
   // hike (TASK-377), gravel and MTB (TASK-378), walking (TASK-371) and the
   // skate (TASK-380), paragliding (TASK-305 R2), cross-country skiing
-  // (TASK-375) and the wheelchair (TASK-414 B). Only the snowshoes
-  // (TASK-413 B) and mountaineering (TASK-463 B) are to come, until they are
-  // turned on.
-  expect(screen.getAllByText("Soon")).toHaveLength(2);
-  expect(screen.queryAllByLabelText(/coming soon$/)).toHaveLength(2);
-  expect(screen.getByLabelText("Snowshoes, coming soon")).toBeOnTheScreen();
+  // (TASK-375), the wheelchair (TASK-414 B) and the snowshoes (TASK-413).
+  // Only mountaineering (TASK-463 B) is to come, until it is turned on.
+  expect(screen.getAllByText("Soon")).toHaveLength(1);
+  expect(screen.queryAllByLabelText(/coming soon$/)).toHaveLength(1);
+  expect(screen.queryByLabelText("Snowshoes, coming soon")).toBeNull();
   expect(screen.getByLabelText("Mountaineering, coming soon")).toBeOnTheScreen();
   expect(screen.queryByLabelText("Wheelchair & stroller, coming soon")).toBeNull();
   expect(screen.queryByLabelText("Cross-country ski, coming soon")).toBeNull();

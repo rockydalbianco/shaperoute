@@ -25,9 +25,9 @@ import { profileOf } from "../sports";
  * recorded without a shape (TASK-375, ADR-0319): `recordOnly`, and so is
  * a ski tour («Ski touring», TASK-415 part B, ADR-0344). Snowshoes draw a
  * small shape placed freely on the open snow, as on the water, and record
- * a day without one (TASK-413 parts B and C, ADR-0342), «Soon» until the
- * user's yes. A day of mountaineering («Mountaineering», TASK-463 part B,
- * ADR-0373) is recorded without a shape too. A workout
+ * a day without one (TASK-413 parts B and C, ADR-0342). A day of
+ * mountaineering («Mountaineering», TASK-463 part B, ADR-0373) is recorded
+ * without a shape too, «Soon» until it is turned on. A workout
  * at the gym («Gym», TASK-385 part B, ADR-0327) has no route and no GPS:
  * «Draw» offers only «Start workout». */
 export type Sport =
@@ -164,9 +164,9 @@ export const ALL_SPORTS: readonly SportOption[] = [
   fromProfile("skimo", true),
   // Snowshoes are asked as "snowshoeing" (activityOf), 0.5-3 km on the open
   // snow of the server (TASK-413 parts A, ADR-0342); «Record your day» is
-  // their way without a shape (part C). Off until the user's yes to the
-  // screenshots, with the server's step for #1266.
-  fromProfile("snowshoe", false),
+  // their way without a shape (part C). On since the server has #1266
+  // (step 12), the user's «Sì, accendi» to the screenshots (2026-11-12).
+  fromProfile("snowshoe", true),
   // A day of mountaineering, saved as "alpinism", recorded without a shape
   // (TASK-463 part B, ADR-0373), with its notice «Before you climb». «Soon»
   // until the server has part A and its migration 0076 and the user says

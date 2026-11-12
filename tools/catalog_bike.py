@@ -123,6 +123,7 @@ def run(
     *,
     downloads: int = 0,
     slot_wait_max_s: float = 3600,
+    mirror: str | None = None,
     say: Callable[[str], None] = print,
 ) -> int:
     """Plans `cases` on the bike network as the API plans a ride and appends
@@ -131,8 +132,10 @@ def run(
     downloaded, one zone a city, while `downloads` last (after a free slot of
     Overpass); with none left its cases are planned on an older, tighter
     zone when there is one (what fails is tried again at the next run), or
-    skipped and not logged. The engine is imported here. Returns how many
-    cases were planned."""
+    skipped and not logged. `mirror` is another Overpass to download from:
+    it is not asked for a free slot (a mirror may have no status page), and
+    the pause between two cities is the only rate limit. The engine is
+    imported here. Returns how many cases were planned."""
     import numpy as np
     import osmnx as ox
     from route_engine.errors import ShapeNotDrawableError
@@ -144,12 +147,12 @@ def run(
     from route_engine.shapes import get_shape
     from route_engine.stops import union
 
-    open_url = ox.settings.overpass_url
+    open_url = mirror or ox.settings.overpass_url
     source = OsmnxSource.for_activity(cache_dir, ACTIVITY)
 
     def overpass(is_open: bool) -> None:
         ox.settings.overpass_url = open_url if is_open else CLOSED_OVERPASS
-        ox.settings.overpass_rate_limit = is_open
+        ox.settings.overpass_rate_limit = is_open and mirror is None
         ox.settings.requests_timeout = 180 if is_open else 5
 
     def area_of(case: Case) -> tuple[float, float, float, float]:
@@ -240,7 +243,8 @@ def run(
         zone = (s - m, w - m, n + m, e + m)
         if not source.is_cached(zone):
             if downloads <= 0 or (
-                slot_wait_max_s > 0
+                mirror is None
+                and slot_wait_max_s > 0
                 and not cs.wait_for_slot(say=say, max_s=slot_wait_max_s)
             ):
                 if not source.is_cached(tight):
@@ -404,6 +408,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=0,
         help="how many cities' bike zones this run may download (default: none)",
     )
+    p.add_argument(
+        "--overpass-url", help="a mirror of Overpass instead of overpass-api.de"
+    )
     p.add_argument("--page", type=Path, help="write the page of the sample here")
     p.add_argument("--whole", action="store_true", help="with --page: every run")
     p.add_argument("--propose", action="store_true", help="print the keys to keep")
@@ -434,7 +441,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"{len(cases)} bike cases", file=sys.stderr)
         return 0
     if args.run:
-        planned = run(cases, args.log, args.cache_dir, downloads=args.downloads)
+        planned = run(
+            cases,
+            args.log,
+            args.cache_dir,
+            downloads=args.downloads,
+            mirror=args.overpass_url,
+        )
         print(f"{planned} bike cases planned")
     runs = cs.read_runs(args.log)
     if args.page:

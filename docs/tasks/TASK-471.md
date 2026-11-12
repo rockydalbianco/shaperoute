@@ -175,6 +175,13 @@ pura sono i 60 s di pausa quando lo stato non si legge.
   download della prima richiesta in una zona nuova, al prezzo di una
   richiesta più grossa (più lenta, e più facile da rifiutare quando
   Overpass è pieno).
+  **Scelta dell'utente, 2026-11-12: «Sì, com'è»**: non si fa. Il
+  quadrato largo è circa tre volte l'area (15–40 s di download vero il
+  vicino, circa 55 s il largo, il 12 novembre): rallenterebbe ogni prima
+  richiesta in una zona nuova per accelerare quella con la ricerca
+  lontana (3 job su 93). Da riprendere solo se i log mostrano molti
+  download vicini fra loro: una zona larga servirebbe anche le partenze
+  fino a circa 1,7 km.
 - **(b) Un secondo servizio Overpass** quando il principale è giù (per il
   lavoro a lotti del 12 novembre l'utente ha scelto di aspettare il
   principale: per la produzione va richiesto).

@@ -1,6 +1,6 @@
 # TASK-473 — Il menu degli sport a griglia
 
-**Stato**: In corso
+**Stato**: Done (2026-11-12)
 **Fase**: 5 · **Branch**: `feat/TASK-473-sport-grid`
 
 ## Obiettivo
@@ -93,4 +93,7 @@ docs/tasks/TASK-473.md
 
 ## Esito
 
-*(a fine task)*
+Fatto il 2026-11-12: #1254 in main (d33ec29a), in produzione con l'OTA 14
+(15:15Z, commit be21e7d8, produzione e anteprima). Il bottone dello sport
+apre il pannello con i quadrati due per riga per famiglia; nessun ADR, solo
+JavaScript. Resta da guardarlo sul telefono.

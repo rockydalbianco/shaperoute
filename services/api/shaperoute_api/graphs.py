@@ -24,6 +24,7 @@ from route_engine.network import BBox, Graph, read_graph
 from route_engine.sidewalks import NamedRoad
 from route_engine.zone_crop import ZoneCrop
 
+from shaperoute_api.overpass_fallback import with_second_service
 from shaperoute_api.overpass_pause import short_overpass_pause
 
 log = logging.getLogger(__name__)
@@ -148,9 +149,11 @@ class ZoneGraphs:
         try:
             # Downloads the zone and saves it in the cache, like the CLI;
             # someone is waiting for this one, so without OSMnx's minute
-            # when Overpass's status says nothing (TASK-471, ADR-0385).
+            # when Overpass's status says nothing, and once more from the
+            # second service, if the server has one, when Overpass answers
+            # with an error (TASK-471, ADR-0385).
             with short_overpass_pause():
-                return self._source.load(bbox)
+                return with_second_service(lambda: self._source.load(bbox))
         except Exception as exc:
             raise MapDataUnavailableError(
                 f"OpenStreetMap data for this area could not be downloaded: {exc}"

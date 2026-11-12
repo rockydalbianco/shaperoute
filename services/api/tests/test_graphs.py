@@ -324,3 +324,43 @@ def test_a_download_does_not_wait_osmnx_minute_for_a_silent_status(
     graphs.load(inside(ZONE_A))
     assert source.downloads == 1 and source.waited == 5.0
     assert osmnx_wait() == 60
+
+
+def test_an_error_of_overpass_is_tried_once_on_the_servers_second_service(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """With a second Overpass service set on the server (TASK-471,
+    ADR-0385) a zone's download that Overpass answers with an error is
+    tried once more, there; with none set, once, as before."""
+    import osmnx as ox
+    from osmnx._errors import ResponseStatusCodeError
+
+    from shaperoute_api.overpass_fallback import FALLBACK_VARIABLE
+
+    class Busy(FakeSource):
+        """Overpass answers 502 at its usual address only."""
+
+        def __init__(self) -> None:
+            super().__init__([], download=grid(46.0, 11.0))
+            self.usual = ox.settings.overpass_url
+            self.asked: list[str] = []
+
+        def load(self, bbox: BBox) -> Graph:
+            self.asked.append(ox.settings.overpass_url)
+            if ox.settings.overpass_url == self.usual:
+                self.downloads += 1
+                raise ResponseStatusCodeError("502 Bad Gateway")
+            return super().load(bbox)
+
+    monkeypatch.delenv(FALLBACK_VARIABLE, raising=False)
+    source = Busy()
+    with pytest.raises(MapDataUnavailableError, match="502 Bad Gateway"):
+        ZoneGraphs(source, read=CountingReader(source)).load(inside(ZONE_A))
+    assert source.asked == [source.usual]
+
+    monkeypatch.setenv(FALLBACK_VARIABLE, "https://overpass.example/api")
+    source = Busy()
+    graph = ZoneGraphs(source, read=CountingReader(source)).load(inside(ZONE_A))
+    assert len(graph) > 0
+    assert source.asked == [source.usual, "https://overpass.example/api"]
+    assert ox.settings.overpass_url == source.usual
